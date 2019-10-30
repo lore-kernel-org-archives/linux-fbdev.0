@@ -1,119 +1,50 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Tue, 01 Oct 2019 12:58:33 +0000
-Subject: [PATCH v4 3/7] backlight: gpio: simplify the platform data handling
-Message-Id: <20191001125837.4472-4-brgl@bgdev.pl>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Date: Wed, 30 Oct 2019 05:27:46 +0000
+Subject: Re: [Outreachy kernel] [PATCH 1/2] staging: sm750fb: Fix typo in comment
+Message-Id: <alpine.DEB.2.21.1910300627330.2471@hadrien>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191001125837.4472-1-brgl@bgdev.pl>
-In-Reply-To: <20191001125837.4472-1-brgl@bgdev.pl>
+References: <20191029232207.4113-1-gabrielabittencourt00@gmail.com>
+ <20191029232207.4113-2-gabrielabittencourt00@gmail.com>
+In-Reply-To: <20191029232207.4113-2-gabrielabittencourt00@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, trivial@kernel.org, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, outreachy-kernel@googlegroups.com, lkcamp@lists.libreplanetbr.org, sudipm.mukherjee@gmail.com
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Now that the last user of platform data (sh ecovec24) defines a proper
-GPIO lookup and sets the 'default-on' device property, we can drop the
-platform_data-specific GPIO handling and unify a big chunk of code.
 
-The only field used from the platform data is now the fbdev pointer.
+On Tue, 29 Oct 2019, Gabriela Bittencourt wrote:
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/video/backlight/gpio_backlight.c | 62 +++++-------------------
- 1 file changed, 11 insertions(+), 51 deletions(-)
+> Fixing typo in word 'and'.
+>
+> Signed-off-by: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
 
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-index 7e1990199fae..20c5311c7ed2 100644
---- a/drivers/video/backlight/gpio_backlight.c
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -6,7 +6,6 @@
- #include <linux/backlight.h>
- #include <linux/err.h>
- #include <linux/fb.h>
--#include <linux/gpio.h> /* Only for legacy support */
- #include <linux/gpio/consumer.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-@@ -54,28 +53,6 @@ static const struct backlight_ops gpio_backlight_ops = {
- 	.check_fb	= gpio_backlight_check_fb,
- };
- 
--static int gpio_backlight_probe_dt(struct platform_device *pdev,
--				   struct gpio_backlight *gbl)
--{
--	struct device *dev = &pdev->dev;
--	int ret;
--
--	gbl->def_value = device_property_read_bool(dev, "default-on");
--
--	gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
--	if (IS_ERR(gbl->gpiod)) {
--		ret = PTR_ERR(gbl->gpiod);
--
--		if (ret != -EPROBE_DEFER) {
--			dev_err(dev,
--				"Error: The gpios parameter is missing or invalid.\n");
--		}
--		return ret;
--	}
--
--	return 0;
--}
--
- static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
- {
- 	struct device_node *node = gbl->dev->of_node;
-@@ -107,35 +84,18 @@ static int gpio_backlight_probe(struct platform_device *pdev)
- 
- 	gbl->dev = &pdev->dev;
- 
--	if (pdev->dev.fwnode) {
--		ret = gpio_backlight_probe_dt(pdev, gbl);
--		if (ret)
--			return ret;
--	} else if (pdata) {
--		/*
--		 * Legacy platform data GPIO retrieveal. Do not expand
--		 * the use of this code path, currently only used by one
--		 * SH board.
--		 */
--		unsigned long flags = GPIOF_DIR_OUT;
--
-+	if (pdata)
- 		gbl->fbdev = pdata->fbdev;
--		gbl->def_value = pdata->def_value;
--		flags |= gbl->def_value ? GPIOF_INIT_HIGH : GPIOF_INIT_LOW;
--
--		ret = devm_gpio_request_one(gbl->dev, pdata->gpio, flags,
--					    pdata ? pdata->name : "backlight");
--		if (ret < 0) {
--			dev_err(&pdev->dev, "unable to request GPIO\n");
--			return ret;
--		}
--		gbl->gpiod = gpio_to_desc(pdata->gpio);
--		if (!gbl->gpiod)
--			return -EINVAL;
--	} else {
--		dev_err(&pdev->dev,
--			"failed to find platform data or device tree node.\n");
--		return -ENODEV;
-+
-+	gbl->def_value = device_property_read_bool(&pdev->dev, "default-on");
-+
-+	gbl->gpiod = devm_gpiod_get(&pdev->dev, NULL, GPIOD_ASIS);
-+	if (IS_ERR(gbl->gpiod)) {
-+		ret = PTR_ERR(gbl->gpiod);
-+		if (ret != -EPROBE_DEFER)
-+			dev_err(&pdev->dev,
-+				"Error: The gpios parameter is missing or invalid.\n");
-+		return ret;
- 	}
- 
- 	memset(&props, 0, sizeof(props));
--- 
-2.23.0
+Acked-by: Julia Lawall <julia.lawall@lip6.fr>
+
+
+> ---
+>  drivers/staging/sm750fb/sm750_accel.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+> index 645813a87490..5925d7c7d464 100644
+> --- a/drivers/staging/sm750fb/sm750_accel.c
+> +++ b/drivers/staging/sm750fb/sm750_accel.c
+> @@ -224,7 +224,7 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
+>
+>  	/*
+>  	 * Note:
+> -	 * DE_FOREGROUND are DE_BACKGROUND are don't care.
+> +	 * DE_FOREGROUND and DE_BACKGROUND are don't care.
+>  	 * DE_COLOR_COMPARE and DE_COLOR_COMPARE_MAKS
+>  	 * are set by set deSetTransparency().
+>  	 */
+> --
+> 2.20.1
+>
+> --
+> You received this message because you are subscribed to the Google Groups "outreachy-kernel" group.
+> To unsubscribe from this group and stop receiving emails from it, send an email to outreachy-kernel+unsubscribe@googlegroups.com.
+> To view this discussion on the web visit https://groups.google.com/d/msgid/outreachy-kernel/20191029232207.4113-2-gabrielabittencourt00%40gmail.com.
+>

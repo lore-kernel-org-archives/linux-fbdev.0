@@ -1,312 +1,317 @@
-From: Michael Kelley <mikelley@microsoft.com>
-Date: Wed, 27 Nov 2019 18:14:22 +0000
-Subject: RE: [PATCH v2] video: hyperv: hyperv_fb: Use physical memory for fb on HyperV Gen 1 VMs.
-Message-Id: <CY4PR21MB0629A6D880A94949B98A3725D7440@CY4PR21MB0629.namprd21.prod.outlook.com>
+From: Kiran Gunda <kgunda@codeaurora.org>
+Date: Fri, 01 Nov 2019 06:39:03 +0000
+Subject: [PATCH V10 7/8] backlight: qcom-wled: add support for short circuit handling.
+Message-Id: <1572589624-6095-8-git-send-email-kgunda@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191122082408.3210-1-weh@microsoft.com>
-In-Reply-To: <20191122082408.3210-1-weh@microsoft.com>
+References: <1572589624-6095-1-git-send-email-kgunda@codeaurora.org>
+In-Reply-To: <1572589624-6095-1-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wei Hu <weh@microsoft.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, KY Srinivasan <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, "sashal@kernel.org" <sashal@kernel.org>, "hch@lst.de" <hch@lst.de>, "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "mchehab+samsung@kernel.org" <mchehab+samsung@kernel.org>, "sam@ravnborg.org" <sam@ravnborg.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "info@metux.net" <info@metux.net>, "arnd@arndb.de" <arnd@arndb.de>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-k>
+To: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Kiran Gunda <kgunda@codeaurora.org>
 
-From: Wei Hu <weh@microsoft.com> Sent: Friday, November 22, 2019 12:24 AM
-> 
-> On Hyper-V, Generation 1 VMs can directly use VM's physical memory for
-> their framebuffers. This can improve the efficiency of framebuffer and
-> overall performence for VM. The physical memory assigned to framebuffer
-> must be contiguous. We use CMA allocator to get contiguouse physicial
-> memory when the framebuffer size is greater than 4MB. For size under
-> 4MB, we use alloc_pages to achieve this.
-> 
-> To enable framebuffer memory allocation from CMA, supply a kernel
-> parameter to give enough space to CMA allocator at boot time. For
-> example:
->     cma=130m
-> This gives 130MB memory to CAM allocator that can be allocated to
-> framebuffer. If this fails, we fall back to the old way of using
-> mmio for framebuffer.
-> 
-> Signed-off-by: Wei Hu <weh@microsoft.com>
-> ---
->     v2: Incorporated review comments form hch@lst.de, Michael Kelley and
->     Dexuan Cui
->     - Use dma_alloc_coherent to allocate large contiguous memory
->     - Use phys_addr_t for physical addresses
->     - Corrected a few spelling errors and minor cleanups
->     - Also tested on 32 bit Ubuntu guest
-> 
->  drivers/video/fbdev/Kconfig     |   1 +
->  drivers/video/fbdev/hyperv_fb.c | 196 +++++++++++++++++++++++++-------
->  2 files changed, 158 insertions(+), 39 deletions(-)
-> 
+Handle the short circuit interrupt and check if the short circuit
+interrupt is valid. Re-enable the module to check if it goes
+away. Disable the module altogether if the short circuit event
+persists.
 
-[snip]
+Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+---
+ drivers/video/backlight/qcom-wled.c | 144 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 140 insertions(+), 4 deletions(-)
 
-> +/*
-> + * Allocate enough contiguous physical memory.
-> + * Return physical address if succeeded or -1 if failed.
-> + */
-> +static phys_addr_t hvfb_get_phymem(struct hv_device *hdev,
-> +				   unsigned int request_size)
-> +{
-> +	struct page *page = NULL;
-> +	dma_addr_t dma_handle;
-> +	void *vmem;
-> +	unsigned int request_pages;
-> +	phys_addr_t paddr = 0;
-> +	unsigned int order = get_order(request_size);
-> +
-> +	if (request_size == 0)
-> +		return -1;
-> +
-> +	/* Try to call alloc_pages if the size is less than 2^MAX_ORDER */
-> +	if (order < MAX_ORDER) {
-> +		page = alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
-> +		if (!page)
-> +			return -1;
-> +
-> +		paddr = (page_to_pfn(page) << PAGE_SHIFT);
-> +		request_pages = (1 << order);
-> +		goto get_phymem1;
-> +	}
-
-Could you use an 'else' clause here and eliminate the above
-'goto' statement?  I know that makes the below code be indented
-one level deeper, but that doesn't seem particularly problematic
-here.  The reason we have 'else' clauses is to avoid 'goto's and
-labels.  :-)
-
-> +
-> +	/* Allocate from CMA */
-> +	if (hdev == NULL)
-> +		return -1;
-
-The above test seems unnecessary.  A lot of things would have
-broken before getting to this function if hdev was NULL.
-
-> +
-> +	hdev->device.coherent_dma_mask = DMA_BIT_MASK(64);
-> +
-> +	request_pages = (round_up(request_size, PAGE_SIZE) >> PAGE_SHIFT);
-> +
-> +	vmem = dma_alloc_coherent(&hdev->device,
-> +				 request_pages * PAGE_SIZE,
-> +				 &dma_handle,
-> +				 GFP_KERNEL | __GFP_NOWARN);
-> +
-> +	if (!vmem)
-> +		return -1;
-> +
-> +	paddr = virt_to_phys(vmem);
-> +
-> +get_phymem1:
-> +	pr_info("Allocated %d pages starts at physical addr 0x%llx\n",
-> +		request_pages, paddr);
-
-I wonder if we want to show the physical address here.  The Linux kernel
-definitely does not show kernel virtual addresses due to security
-concerns, and I'm wondering if the same applies to physical addresses.
-What's the benefit to showing the physical address?
-
-And in the message "starts" should be "starting".
-
-> +
-> +	return paddr;
-> +}
-> +
-> +/* Release contiguous physical memory */
-> +static void hvfb_release_phymem(struct hv_device *hdev,
-> +				phys_addr_t paddr, unsigned int size)
-> +{
-> +	unsigned int order = get_order(size);
-> +
-> +	if (order < MAX_ORDER)
-> +		__free_pages(pfn_to_page(paddr >> PAGE_SHIFT), order);
-> +	else
-> +		dma_free_coherent(&hdev->device,
-> +				  round_up(size, PAGE_SIZE),
-> +				  phys_to_virt(paddr),
-> +				  paddr);
-> +}
-> +
-> 
->  /* Get framebuffer memory from Hyper-V video pci space */
->  static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
-> @@ -947,8 +1028,57 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info
-> *info)
->  	void __iomem *fb_virt;
->  	int gen2vm = efi_enabled(EFI_BOOT);
->  	resource_size_t pot_start, pot_end;
-> +	phys_addr_t paddr;
->  	int ret;
-> 
-> +	if (!gen2vm) {
-> +		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
-> +			PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
-> +		if (!pdev) {
-> +			pr_err("Unable to find PCI Hyper-V video\n");
-> +			return -ENODEV;
-> +		}
-> +	}
-> +
-> +	info->apertures = alloc_apertures(1);
-> +	if (!info->apertures)
-> +		goto err1;
-
-There's a small memory leak here.  The apertures are never freed in any
-of the error cases in this function, or in hvfb_putmem().  This is not a bug you
-introduced -- the original code had the same leak.
-
-> +
-> +	if (gen2vm) {
-> +		info->apertures->ranges[0].base = screen_info.lfb_base;
-> +		info->apertures->ranges[0].size = screen_info.lfb_size;
-> +	} else {
-> +		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
-> +		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
-> +	}
-> +
-> +	/*
-> +	 * For Gen 1 VM, we can directly use the contiguous memory
-> +	 * from VM. If we succeed, deferred IO happens directly
-> +	 * on this allocated framebuffer memory, avoiding extra
-> +	 * memory copy.
-> +	 */
-> +	if (!gen2vm) {
-> +		paddr = hvfb_get_phymem(hdev, screen_fb_size);
-> +		if (paddr != (phys_addr_t) -1) {
-> +			par->mmio_pp = paddr;
-> +			par->mmio_vp = par->dio_vp = __va(paddr);
-> +
-> +			info->fix.smem_start = paddr;
-> +			info->fix.smem_len = screen_fb_size;
-> +			info->screen_base = par->mmio_vp;
-> +			info->screen_size = screen_fb_size;
-> +
-> +			par->need_docopy = false;
-> +			goto getmem1;
-
-Maybe change the 'getmem1' label to 'done' or something similarly
-indicative having successfully completed everything that needs to be
-done?
-
-> +		}
-> +		pr_info("Unable to allocate enough contiguous physical memory on Gen 1
-> VM. Use MMIO instead.\n");
-
-I'd suggest changing the message to say "Using MMIO instead".  This is just an
-informative message indicating what the driver is doing.  "Use MMIO instead"
-sounds like a directive to the user to do something different, like change his
-kernel configuration, and that's not the intent.
-
-> +	}
-
-In the above code, there are three, almost consecutive, tests of the "gen2vm"
-variable.  It seems like the apertures could be allocated first, and then the three
-tests combined into one test.  Then you have one range of code for Gen 1 and
-another range for Gen 2 and fewer lines 'if' statements, 'else' statements, and
-curly braces.
-
-> +
-> +	/*
-> +	 * Cannot use the contiguous physical memory.
-> +	 * Allocate mmio space for framebuffer.
-> +	 */
->  	dio_fb_size =
->  		screen_width * screen_height * screen_depth / 8;
-> 
-> @@ -956,13 +1086,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info
-> *info)
->  		pot_start = 0;
->  		pot_end = -1;
->  	} else {
-> -		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
-> -			      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
-> -		if (!pdev) {
-> -			pr_err("Unable to find PCI Hyper-V video\n");
-> -			return -ENODEV;
-> -		}
-> -
->  		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
->  		    pci_resource_len(pdev, 0) < screen_fb_size) {
->  			pr_err("Resource not available or (0x%lx < 0x%lx)\n",
-> @@ -991,20 +1114,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info
-> *info)
->  	if (par->dio_vp == NULL)
->  		goto err3;
-> 
-> -	info->apertures = alloc_apertures(1);
-> -	if (!info->apertures)
-> -		goto err4;
-> -
-> -	if (gen2vm) {
-> -		info->apertures->ranges[0].base = screen_info.lfb_base;
-> -		info->apertures->ranges[0].size = screen_info.lfb_size;
-> -		remove_conflicting_framebuffers(info->apertures,
-> -						KBUILD_MODNAME, false);
-> -	} else {
-> -		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
-> -		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
-> -	}
-> -
->  	/* Physical address of FB device */
->  	par->mmio_pp = par->mem->start;
->  	/* Virtual address of FB device */
-> @@ -1015,13 +1124,15 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info
-> *info)
->  	info->screen_base = par->dio_vp;
->  	info->screen_size = dio_fb_size;
-> 
-> +getmem1:
-> +	remove_conflicting_framebuffers(info->apertures,
-> +					KBUILD_MODNAME, false);
-
-With your change, remove_conflicting_framebuffers() is called for both
-Gen 1 and Gen 2 VMs.  In the old code, it was called only for Gen 2 VMs.
-Is this change intentional?  If so, why?  I haven't delved into the details
-of what remove_conflicting_framebuffers() does, so my question is 
-more of a double-check rather than my definitely thinking something
-is wrong.
-
-> +
->  	if (!gen2vm)
->  		pci_dev_put(pdev);
-> 
->  	return 0;
-> 
-> -err4:
-> -	vfree(par->dio_vp);
->  err3:
->  	iounmap(fb_virt);
->  err2:
-> @@ -1035,13 +1146,19 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info
-> *info)
->  }
-> 
->  /* Release the framebuffer */
-> -static void hvfb_putmem(struct fb_info *info)
-> +static void hvfb_putmem(struct hv_device *hdev, struct fb_info *info)
->  {
->  	struct hvfb_par *par = info->par;
-> 
-> -	vfree(par->dio_vp);
-> -	iounmap(info->screen_base);
-> -	vmbus_free_mmio(par->mem->start, screen_fb_size);
-> +	if (par->need_docopy) {
-> +		vfree(par->dio_vp);
-> +		iounmap(info->screen_base);
-> +		vmbus_free_mmio(par->mem->start, screen_fb_size);
-> +	} else {
-> +		hvfb_release_phymem(hdev, info->fix.smem_start,
-> +				    screen_fb_size);
-> +	}
-> +
->  	par->mem = NULL;
-
-There's a small memory leak in the above statement.  The data
-structure pointed to by "mem" is not freed.   The same problem
-occurs in hvfb_getmem() in the "err2" path.   This bug existed in
-the old code as well, so it was not introduced by your changes.
-
-Michael
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 5386ca9..658b1e0 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -2,6 +2,9 @@
+ /* Copyright (c) 2015, Sony Mobile Communications, AB.
+  */
+ 
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/ktime.h>
+ #include <linux/kernel.h>
+ #include <linux/backlight.h>
+ #include <linux/module.h>
+@@ -56,6 +59,16 @@
+ #define WLED3_SINK_REG_STR_CABC(n)			(0x66 + (n * 0x10))
+ #define  WLED3_SINK_REG_STR_CABC_MASK			BIT(7)
+ 
++/* WLED4 specific control registers */
++#define WLED4_CTRL_REG_SHORT_PROTECT			0x5e
++#define  WLED4_CTRL_REG_SHORT_EN_MASK			BIT(7)
++
++#define WLED4_CTRL_REG_SEC_ACCESS			0xd0
++#define  WLED4_CTRL_REG_SEC_UNLOCK			0xa5
++
++#define WLED4_CTRL_REG_TEST1				0xe2
++#define  WLED4_CTRL_REG_TEST1_EXT_FET_DTEST2		0x09
++
+ /* WLED4 specific sink registers */
+ #define WLED4_SINK_REG_CURR_SINK			0x46
+ #define  WLED4_SINK_REG_CURR_SINK_MASK			GENMASK(7, 4)
+@@ -105,17 +118,24 @@ struct wled_config {
+ 	bool cs_out_en;
+ 	bool ext_gen;
+ 	bool cabc;
++	bool external_pfet;
+ };
+ 
+ struct wled {
+ 	const char *name;
+ 	struct device *dev;
+ 	struct regmap *regmap;
++	struct mutex lock;	/* Lock to avoid race from thread irq handler */
++	ktime_t last_short_event;
+ 	u16 ctrl_addr;
+ 	u16 sink_addr;
+ 	u16 max_string_count;
+ 	u32 brightness;
+ 	u32 max_brightness;
++	u32 short_count;
++	bool disabled_by_short;
++	bool has_short_detect;
++	int short_irq;
+ 
+ 	struct wled_config cfg;
+ 	int (*wled_set_brightness)(struct wled *wled, u16 brightness);
+@@ -166,6 +186,9 @@ static int wled_module_enable(struct wled *wled, int val)
+ {
+ 	int rc;
+ 
++	if (wled->disabled_by_short)
++		return -ENXIO;
++
+ 	rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
+ 				WLED3_CTRL_REG_MOD_EN,
+ 				WLED3_CTRL_REG_MOD_EN_MASK,
+@@ -202,18 +225,19 @@ static int wled_update_status(struct backlight_device *bl)
+ 	    bl->props.state & BL_CORE_FBBLANK)
+ 		brightness = 0;
+ 
++	mutex_lock(&wled->lock);
+ 	if (brightness) {
+ 		rc = wled->wled_set_brightness(wled, brightness);
+ 		if (rc < 0) {
+ 			dev_err(wled->dev, "wled failed to set brightness rc:%d\n",
+ 				rc);
+-			return rc;
++			goto unlock_mutex;
+ 		}
+ 
+ 		rc = wled_sync_toggle(wled);
+ 		if (rc < 0) {
+ 			dev_err(wled->dev, "wled sync failed rc:%d\n", rc);
+-			return rc;
++			goto unlock_mutex;
+ 		}
+ 	}
+ 
+@@ -221,15 +245,61 @@ static int wled_update_status(struct backlight_device *bl)
+ 		rc = wled_module_enable(wled, !!brightness);
+ 		if (rc < 0) {
+ 			dev_err(wled->dev, "wled enable failed rc:%d\n", rc);
+-			return rc;
++			goto unlock_mutex;
+ 		}
+ 	}
+ 
+ 	wled->brightness = brightness;
+ 
++unlock_mutex:
++	mutex_unlock(&wled->lock);
++
+ 	return rc;
+ }
+ 
++#define WLED_SHORT_DLY_MS			20
++#define WLED_SHORT_CNT_MAX			5
++#define WLED_SHORT_RESET_CNT_DLY_US		USEC_PER_SEC
++
++static irqreturn_t wled_short_irq_handler(int irq, void *_wled)
++{
++	struct wled *wled = _wled;
++	int rc;
++	s64 elapsed_time;
++
++	wled->short_count++;
++	mutex_lock(&wled->lock);
++	rc = wled_module_enable(wled, false);
++	if (rc < 0) {
++		dev_err(wled->dev, "wled disable failed rc:%d\n", rc);
++		goto unlock_mutex;
++	}
++
++	elapsed_time = ktime_us_delta(ktime_get(),
++				      wled->last_short_event);
++	if (elapsed_time > WLED_SHORT_RESET_CNT_DLY_US)
++		wled->short_count = 1;
++
++	if (wled->short_count > WLED_SHORT_CNT_MAX) {
++		dev_err(wled->dev, "Short trigged %d times, disabling WLED forever!\n",
++			wled->short_count);
++		wled->disabled_by_short = true;
++		goto unlock_mutex;
++	}
++
++	wled->last_short_event = ktime_get();
++
++	msleep(WLED_SHORT_DLY_MS);
++	rc = wled_module_enable(wled, true);
++	if (rc < 0)
++		dev_err(wled->dev, "wled enable failed rc:%d\n", rc);
++
++unlock_mutex:
++	mutex_unlock(&wled->lock);
++
++	return IRQ_HANDLED;
++}
++
+ static int wled3_setup(struct wled *wled)
+ {
+ 	u16 addr;
+@@ -318,7 +388,7 @@ static int wled4_setup(struct wled *wled)
+ 	int rc, temp, i, j;
+ 	u16 addr;
+ 	u8 sink_en = 0;
+-	u32 sink_cfg = 0;
++	u32 sink_cfg;
+ 
+ 	rc = regmap_update_bits(wled->regmap,
+ 				wled->ctrl_addr + WLED3_CTRL_REG_OVP,
+@@ -340,6 +410,21 @@ static int wled4_setup(struct wled *wled)
+ 	if (rc < 0)
+ 		return rc;
+ 
++	if (wled->cfg.external_pfet) {
++		/* Unlock the secure register access */
++		rc = regmap_write(wled->regmap, wled->ctrl_addr +
++				  WLED4_CTRL_REG_SEC_ACCESS,
++				  WLED4_CTRL_REG_SEC_UNLOCK);
++		if (rc < 0)
++			return rc;
++
++		rc = regmap_write(wled->regmap,
++				  wled->ctrl_addr + WLED4_CTRL_REG_TEST1,
++				  WLED4_CTRL_REG_TEST1_EXT_FET_DTEST2);
++		if (rc < 0)
++			return rc;
++	}
++
+ 	rc = regmap_read(wled->regmap, wled->sink_addr +
+ 			 WLED4_SINK_REG_CURR_SINK, &sink_cfg);
+ 	if (rc < 0)
+@@ -425,6 +510,7 @@ static int wled4_setup(struct wled *wled)
+ 	.num_strings = 4,
+ 	.switch_freq = 11,
+ 	.cabc = false,
++	.external_pfet = false,
+ };
+ 
+ static const u32 wled3_boost_i_limit_values[] = {
+@@ -590,6 +676,7 @@ static int wled_configure(struct wled *wled, int version)
+ 		{ "qcom,cs-out", &cfg->cs_out_en, },
+ 		{ "qcom,ext-gen", &cfg->ext_gen, },
+ 		{ "qcom,cabc", &cfg->cabc, },
++		{ "qcom,external-pfet", &cfg->external_pfet, },
+ 	};
+ 
+ 	prop_addr = of_get_address(dev->of_node, 0, NULL, NULL);
+@@ -678,6 +765,38 @@ static int wled_configure(struct wled *wled, int version)
+ 	return 0;
+ }
+ 
++static int wled_configure_short_irq(struct wled *wled,
++				    struct platform_device *pdev)
++{
++	int rc;
++
++	if (!wled->has_short_detect)
++		return 0;
++
++	rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
++				WLED4_CTRL_REG_SHORT_PROTECT,
++				WLED4_CTRL_REG_SHORT_EN_MASK,
++				WLED4_CTRL_REG_SHORT_EN_MASK);
++	if (rc < 0)
++		return rc;
++
++	wled->short_irq = platform_get_irq_byname(pdev, "short");
++	if (wled->short_irq < 0) {
++		dev_dbg(&pdev->dev, "short irq is not used\n");
++		return 0;
++	}
++
++	rc = devm_request_threaded_irq(wled->dev, wled->short_irq,
++				       NULL, wled_short_irq_handler,
++				       IRQF_ONESHOT,
++				       "wled_short_irq", wled);
++	if (rc < 0)
++		dev_err(wled->dev, "Unable to request short_irq (err:%d)\n",
++			rc);
++
++	return rc;
++}
++
+ static const struct backlight_ops wled_ops = {
+ 	.update_status = wled_update_status,
+ };
+@@ -711,6 +830,7 @@ static int wled_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
++	mutex_init(&wled->lock);
+ 	rc = wled_configure(wled, version);
+ 	if (rc)
+ 		return rc;
+@@ -725,6 +845,7 @@ static int wled_probe(struct platform_device *pdev)
+ 		break;
+ 
+ 	case 4:
++		wled->has_short_detect = true;
+ 		rc = wled4_setup(wled);
+ 		if (rc) {
+ 			dev_err(&pdev->dev, "wled4_setup failed\n");
+@@ -737,6 +858,10 @@ static int wled_probe(struct platform_device *pdev)
+ 		break;
+ 	}
+ 
++	rc = wled_configure_short_irq(wled, pdev);
++	if (rc < 0)
++		return rc;
++
+ 	val = WLED_DEFAULT_BRIGHTNESS;
+ 	of_property_read_u32(pdev->dev.of_node, "default-brightness", &val);
+ 
+@@ -750,6 +875,16 @@ static int wled_probe(struct platform_device *pdev)
+ 	return PTR_ERR_OR_ZERO(bl);
+ };
+ 
++static int wled_remove(struct platform_device *pdev)
++{
++	struct wled *wled = dev_get_drvdata(&pdev->dev);
++
++	mutex_destroy(&wled->lock);
++	disable_irq(wled->short_irq);
++
++	return 0;
++}
++
+ static const struct of_device_id wled_match_table[] = {
+ 	{ .compatible = "qcom,pm8941-wled", .data = (void *)3 },
+ 	{ .compatible = "qcom,pmi8998-wled", .data = (void *)4 },
+@@ -760,6 +895,7 @@ static int wled_probe(struct platform_device *pdev)
+ 
+ static struct platform_driver wled_driver = {
+ 	.probe = wled_probe,
++	.remove = wled_remove,
+ 	.driver	= {
+ 		.name = "qcom,wled",
+ 		.of_match_table	= wled_match_table,
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+ a Linux Foundation Collaborative Project

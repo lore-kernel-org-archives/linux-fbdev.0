@@ -1,43 +1,115 @@
-From: Luis Chamberlain <mcgrof@kernel.org>
-Date: Wed, 13 Nov 2019 18:45:05 +0000
-Subject: Re: [PATCH] video: fbdev: atyfb: only use ioremap_uc() on i386 and ia64
-Message-Id: <20191113184505.GW11244@42.do-not-panic.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Fri, 01 Nov 2019 08:58:03 +0000
+Subject: Re: [PATCH v7 0/9] backlight: gpio: simplify the driver
+Message-Id: <20191101085803.GD5700@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191111192258.2234502-1-arnd@arndb.de>
- <20191112105507.GA7122@lst.de>
- <CAKMK7uEEz1n+zuTs29rbPHU74Dspaib=prpMge63L_-rUk_o4A@mail.gmail.com>
- <20191112140631.GA10922@lst.de>
- <CAKMK7uFaA607rOS6x_FWjXQ2+Qdm8dQ1dQ+Oi-9if_Qh_wHWPg@mail.gmail.com>
- <20191112222423.GO11244@42.do-not-panic.com>
- <20191113072708.GA3213@lst.de>
- <CAK8P3a3OpiWAep86tOiN1Fj2W7ud5hQ1OLTkBR8ueAKsMHk-dA@mail.gmail.com>
- <20191113093154.GB32742@smile.fi.intel.com>
-In-Reply-To: <20191113093154.GB32742@smile.fi.intel.com>
+References: <20191022083630.28175-1-brgl@bgdev.pl>
+ <CAMRc=MeyrDZgmHJ+2SMipP7y9NggxiVfkAh4kCLePFWvUku9aQ@mail.gmail.com>
+ <20191023155941.q563d3cfizre4zvt@holly.lan>
+ <20191024064726.GB15843@dell>
+ <20191024071703.6keoebzlfnn2qmyd@uno.localdomain>
+In-Reply-To: <20191024071703.6keoebzlfnn2qmyd@uno.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-ia64@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, dri-devel <dri-devel@lists.freedesktop.org>, "H. Peter Anvin" <hpa@zytor.com>, Lee Jones <lee.jones@linaro.org>, Christoph Hellwig <hch@lst.de>, X86 ML <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>, Tuowen Zhao <ztuowen@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Luis R. Rodriguez" <mcgrof@suse.com>, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Juergen Gross <jgross@suse.com>, Tony Luck <tony.luck@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, AceLan Kao <acelan.kao@canonical.com>, Souptick Joarder <jrdr.linux@gmail.com>, Roman Gilg <subdiff@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Jacopo Mondi <jacopo@jmondi.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Bartosz Golaszewski <brgl@bgdev.pl>, Linux-sh list <linux-sh@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-On Wed, Nov 13, 2019 at 11:31:54AM +0200, Andy Shevchenko wrote:
-> On Wed, Nov 13, 2019 at 08:38:15AM +0100, Arnd Bergmann wrote:
-> > On Wed, Nov 13, 2019 at 8:27 AM Christoph Hellwig <hch@lst.de> wrote:
-> > >
-> > > On Tue, Nov 12, 2019 at 10:24:23PM +0000, Luis Chamberlain wrote:
-> > > > I think this would be possible if we could flop ioremap_nocache() to UC
-> > > > instead of UC- on x86. Otherwise, I can't see how we can remove this by
-> > > > still not allowing direct MTRR calls.
-> > >
-> > > If everything goes well ioremap_nocache will be gone as of 5.5.
-> > 
-> > As ioremap_nocache() just an alias for ioremap(), I suppose the idea would
-> > then be to make x86 ioremap be UC instead of UC-, again matching what the
-> > other architectures do already.
+On Thu, 24 Oct 2019, Jacopo Mondi wrote:
+
+> Hello,
 > 
-> I think it's right thing to do, i.e. assume that ioremap() always does strong
-> UC independently on MTRR settings.
+> On Thu, Oct 24, 2019 at 07:47:26AM +0100, Lee Jones wrote:
+> > On Wed, 23 Oct 2019, Daniel Thompson wrote:
+> >
+> > > On Tue, Oct 22, 2019 at 11:29:54AM +0200, Bartosz Golaszewski wrote:
+> > > > wt., 22 paź 2019 o 10:36 Bartosz Golaszewski <brgl@bgdev.pl> napisał(a):
+> > > > >
+> > > > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > > >
+> > > > > While working on my other series related to gpio-backlight[1] I noticed
+> > > > > that we could simplify the driver if we made the only user of platform
+> > > > > data use GPIO lookups and device properties. This series tries to do
+> > > > > that.
+> > > > >
+> > > > > First two patches contain minor fixes. Third patch makes the driver
+> > > > > explicitly drive the GPIO line. Fourth patch adds all necessary data
+> > > > > structures to ecovec24. Patch 5/9 unifies much of the code for both
+> > > > > pdata and non-pdata cases. Patches 6-7/9 remove unused platform data
+> > > > > fields. Last two patches contain additional improvements for the GPIO
+> > > > > backlight driver while we're already modifying it.
+> > > > >
+> > > > > I don't have access to this HW but hopefully this works. Only compile
+> > > > > tested.
+> > > > >
+> > > > > [1] https://lkml.org/lkml/2019/6/25/900
+> > > > >
+> > > > > v1 -> v2:
+> > > > > - rebased on top of v5.3-rc1 and adjusted to the recent changes from Andy
+> > > > > - added additional two patches with minor improvements
+> > > > >
+> > > > > v2 -> v3:
+> > > > > - in patch 7/7: used initializers to set values for pdata and dev local vars
+> > > > >
+> > > > > v3 -> v4:
+> > > > > - rebased on top of v5.4-rc1
+> > > > > - removed changes that are no longer relevant after commit ec665b756e6f
+> > > > >   ("backlight: gpio-backlight: Correct initial power state handling")
+> > > > > - added patch 7/7
+> > > > >
+> > > > > v4 -> v5:
+> > > > > - in patch 7/7: added a comment replacing the name of the function being
+> > > > >   pulled into probe()
+> > > > >
+> > > > > v5 -> v6:
+> > > > > - added a patch making the driver explicitly set the direction of the GPIO
+> > > > >   to output
+> > > > > - added a patch removing a redundant newline
+> > > > >
+> > > > > v6 -> v7:
+> > > > > - renamed the function calculating the new GPIO value for status update
+> > > > > - collected more tags
+> > > > >
+> > > > > Bartosz Golaszewski (9):
+> > > > >   backlight: gpio: remove unneeded include
+> > > > >   backlight: gpio: remove stray newline
+> > > > >   backlight: gpio: explicitly set the direction of the GPIO
+> > > > >   sh: ecovec24: add additional properties to the backlight device
+> > > > >   backlight: gpio: simplify the platform data handling
+> > > > >   sh: ecovec24: don't set unused fields in platform data
+> > > > >   backlight: gpio: remove unused fields from platform data
+> > > > >   backlight: gpio: use a helper variable for &pdev->dev
+> > > > >   backlight: gpio: pull gpio_backlight_initial_power_state() into probe
+> > > > >
+> > > > >  arch/sh/boards/mach-ecovec24/setup.c         |  33 +++--
+> > > > >  drivers/video/backlight/gpio_backlight.c     | 128 +++++++------------
+> > > > >  include/linux/platform_data/gpio_backlight.h |   3 -
+> > > > >  3 files changed, 69 insertions(+), 95 deletions(-)
+> > > > >
+> > > > >
+> > > >
+> > > > Lee, Daniel, Jingoo,
+> > > >
+> > > > Jacopo is travelling until November 1st and won't be able to test this
+> > > > again before this date. Do you think you can pick it up and in case
+> > > > anything's broken on SH, we can fix it after v5.5-rc1, so that it
+> > > > doesn't miss another merge window?
+> >
+> > November 1st (-rc6) will be fine.
+> >
+> > I'd rather apply it late-tested than early-non-tested.
+> >
+> > Hopefully Jacopo can prioritise testing this on Thursday or Friday,
+> > since Monday will be -rc7 which is really cutting it fine.
+> 
+> I'll do my best, I'll get home Friday late afternoon :)
 
-Agreed wholeheartedly. What are the blockers from making that happen? Do
-we have any left?
+Welcome home!
 
-  Luis
+Just a little reminder in your inbox. TIA. :)
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

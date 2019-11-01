@@ -1,84 +1,34 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 13 Nov 2019 01:49:17 +0000
-Subject: [PATCH AUTOSEL 4.19 141/209] fbdev: sbuslib: use checked version of put_user()
-Message-Id: <20191113015025.9685-141-sashal@kernel.org>
+From: Chuhong Yuan <hslester96@gmail.com>
+Date: Fri, 01 Nov 2019 06:53:33 +0000
+Subject: [PATCH] backlight: lp855x: disable enable regulator when remove
+Message-Id: <20191101065333.7004-1-hslester96@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191113015025.9685-1-sashal@kernel.org>
-In-Reply-To: <20191113015025.9685-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Dan Carpenter <dan.carpenter@oracle.com>, Philippe Ombredanne <pombredanne@nexb.com>, Mathieu Malaterre <malat@debian.org>, Peter Malone <peter.malone@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Milo Kim <milo.kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+lp855x forgets to disable enable regulator when remove.
+Add a call to regulator_disable in remove just like what is done to
+supply regulator.
 
-[ Upstream commit d8bad911e5e55e228d59c0606ff7e6b8131ca7bf ]
-
-I'm not sure why the code assumes that only the first put_user() needs
-an access_ok() check.  I have made all the put_user() and get_user()
-calls checked.
-
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Philippe Ombredanne <pombredanne@nexb.com>
-Cc: Mathieu Malaterre <malat@debian.org>
-Cc: Peter Malone <peter.malone@gmail.com>,
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
 ---
- drivers/video/fbdev/sbuslib.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ drivers/video/backlight/lp855x_bl.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
-index a436d44f1b7fb..90c51330969c2 100644
---- a/drivers/video/fbdev/sbuslib.c
-+++ b/drivers/video/fbdev/sbuslib.c
-@@ -106,11 +106,11 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		struct fbtype __user *f = (struct fbtype __user *) arg;
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
+index f68920131a4a..4fcf9ec18868 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -499,6 +499,8 @@ static int lp855x_remove(struct i2c_client *cl)
+ 	backlight_update_status(lp->bl);
+ 	if (lp->supply)
+ 		regulator_disable(lp->supply);
++	if (lp->enable)
++		regulator_disable(lp->enable);
+ 	sysfs_remove_group(&lp->dev->kobj, &lp855x_attr_group);
  
- 		if (put_user(type, &f->fb_type) ||
--		    __put_user(info->var.yres, &f->fb_height) ||
--		    __put_user(info->var.xres, &f->fb_width) ||
--		    __put_user(fb_depth, &f->fb_depth) ||
--		    __put_user(0, &f->fb_cmsize) ||
--		    __put_user(fb_size, &f->fb_cmsize))
-+		    put_user(info->var.yres, &f->fb_height) ||
-+		    put_user(info->var.xres, &f->fb_width) ||
-+		    put_user(fb_depth, &f->fb_depth) ||
-+		    put_user(0, &f->fb_cmsize) ||
-+		    put_user(fb_size, &f->fb_cmsize))
- 			return -EFAULT;
- 		return 0;
- 	}
-@@ -125,10 +125,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		unsigned int index, count, i;
- 
- 		if (get_user(index, &c->index) ||
--		    __get_user(count, &c->count) ||
--		    __get_user(ured, &c->red) ||
--		    __get_user(ugreen, &c->green) ||
--		    __get_user(ublue, &c->blue))
-+		    get_user(count, &c->count) ||
-+		    get_user(ured, &c->red) ||
-+		    get_user(ugreen, &c->green) ||
-+		    get_user(ublue, &c->blue))
- 			return -EFAULT;
- 
- 		cmap.len = 1;
-@@ -165,10 +165,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		u8 red, green, blue;
- 
- 		if (get_user(index, &c->index) ||
--		    __get_user(count, &c->count) ||
--		    __get_user(ured, &c->red) ||
--		    __get_user(ugreen, &c->green) ||
--		    __get_user(ublue, &c->blue))
-+		    get_user(count, &c->count) ||
-+		    get_user(ured, &c->red) ||
-+		    get_user(ugreen, &c->green) ||
-+		    get_user(ublue, &c->blue))
- 			return -EFAULT;
- 
- 		if (index + count > cmap->len)
+ 	return 0;
 -- 
-2.20.1
+2.23.0

@@ -1,79 +1,227 @@
-From: Wei Hu <weh@microsoft.com>
-Date: Thu, 21 Nov 2019 06:04:35 +0000
-Subject: RE: [PATCH] video: hyperv_fb: Fix hibernation for the deferred IO feature
-Message-Id: <PU1P153MB0169BF13B371A3A5037DA538BB4E0@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
+From: Michael Kelley <mikelley@microsoft.com>
+Date: Sat, 02 Nov 2019 00:28:32 +0000
+Subject: RE: [PATCH] video: hyperv: hyperv_fb: Use physical memory for fb on HyperV Gen 1 VMs.
+Message-Id: <DM5PR21MB013765D349FF1F90E22E247DD77D0@DM5PR21MB0137.namprd21.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1574234028-48574-1-git-send-email-decui@microsoft.com>
- <PU1P153MB01699A8B75901F896F1E4503BB4E0@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
-In-Reply-To: <PU1P153MB01699A8B75901F896F1E4503BB4E0@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
+References: <20191022110905.4032-1-weh@microsoft.com>
+In-Reply-To: <20191022110905.4032-1-weh-0li6OtcxBFHby3iVrkZq2A@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dexuan Cui <decui@microsoft.com>, KY Srinivasan <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, "sashal@kernel.org" <sashal@kernel.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Michael Kelley <mikelley@microsoft.com>, Sasha Levin <Alexander.Levin@microsoft.com>
+To: Wei Hu <weh-0li6OtcxBFHby3iVrkZq2A@public.gmane.org>, "b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, KY Srinivasan <kys-0li6OtcxBFHby3iVrkZq2A@public.gmane.org>, Haiyang Zhang <haiyangz-0li6OtcxBFHby3iVrkZq2A@public.gmane.org>, Stephen Hemminger <sthemmin-0li6OtcxBFHby3iVrkZq2A@public.gmane.org>, "sashal-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <sashal-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "hch-jcswGhMUV9g@public.gmane.org" <hch-jcswGhMUV9g@public.gmane.org>, "m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "robin.murphy-5wv7dgnIgG8@public.gmane.org" <robin.murphy-5wv7dgnIgG8@public.gmane.org>, "mchehab+samsung-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <mchehab+samsung-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "sam-uyr5N9Q2VtJg9hUCZPvPmw@public.gmane.org" <sam-uyr5N9Q2VtJg9hUCZPvPmw@public.gmane.org>, "gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org" <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "alexandre.belloni-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org" <alexandre.belloni-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, "info-EcKl7qYKIbxeoWH0uzbU5w@public.gmane.org" <info-EcKl7qYKIbxeoWH0uzbU5w@public.gmane.org>, "arnd-r2nGTMty4D4@public.gmane.org" <arnd-r2nGTMty4D4@public.gmane.org>, "dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org" <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-hyperv-u79uwXL29TbrhsbdSgBK9A@public.gmane.org
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdlaSBIdQ0KPiBTZW50OiAy
-MDE5xOoxMdTCMjHI1SAxMDo0Nw0KPiBUbzogRGV4dWFuIEN1aSA8ZGVjdWlAbWljcm9zb2Z0LmNv
-bT47IEtZIFNyaW5pdmFzYW4gPGt5c0BtaWNyb3NvZnQuY29tPjsNCj4gSGFpeWFuZyBaaGFuZyA8
-aGFpeWFuZ3pAbWljcm9zb2Z0LmNvbT47IFN0ZXBoZW4gSGVtbWluZ2VyDQo+IDxzdGhlbW1pbkBt
-aWNyb3NvZnQuY29tPjsgc2FzaGFsQGtlcm5lbC5vcmc7IGIuem9sbmllcmtpZUBzYW1zdW5nLmNv
-bTsNCj4gbGludXgtaHlwZXJ2QHZnZXIua2VybmVsLm9yZzsgZHJpLWRldmVsQGxpc3RzLmZyZWVk
-ZXNrdG9wLm9yZzsgbGludXgtDQo+IGZiZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVs
-QHZnZXIua2VybmVsLm9yZzsgTWljaGFlbCBLZWxsZXkNCj4gPG1pa2VsbGV5QG1pY3Jvc29mdC5j
-b20+OyBTYXNoYSBMZXZpbiA8QWxleGFuZGVyLkxldmluQG1pY3Jvc29mdC5jb20+DQo+IFN1Ympl
-Y3Q6IFJFOiBbUEFUQ0hdIHZpZGVvOiBoeXBlcnZfZmI6IEZpeCBoaWJlcm5hdGlvbiBmb3IgdGhl
-IGRlZmVycmVkIElPDQo+IGZlYXR1cmUNCj4gDQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0t
-LS0NCj4gPiBGcm9tOiBEZXh1YW4gQ3VpIDxkZWN1aUBtaWNyb3NvZnQuY29tPg0KPiA+IFNlbnQ6
-IFdlZG5lc2RheSwgTm92ZW1iZXIgMjAsIDIwMTkgMzoxNCBQTQ0KPiA+IFRvOiBLWSBTcmluaXZh
-c2FuIDxreXNAbWljcm9zb2Z0LmNvbT47IEhhaXlhbmcgWmhhbmcNCj4gPiA8aGFpeWFuZ3pAbWlj
-cm9zb2Z0LmNvbT47IFN0ZXBoZW4gSGVtbWluZ2VyDQo+IDxzdGhlbW1pbkBtaWNyb3NvZnQuY29t
-PjsNCj4gPiBzYXNoYWxAa2VybmVsLm9yZzsgYi56b2xuaWVya2llQHNhbXN1bmcuY29tOyBsaW51
-eC1oeXBlcnZAdmdlci5rZXJuZWwub3JnOw0KPiA+IGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3Rv
-cC5vcmc7IGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXgtDQo+ID4ga2VybmVsQHZn
-ZXIua2VybmVsLm9yZzsgTWljaGFlbCBLZWxsZXkgPG1pa2VsbGV5QG1pY3Jvc29mdC5jb20+OyBT
-YXNoYQ0KPiBMZXZpbg0KPiA+IDxBbGV4YW5kZXIuTGV2aW5AbWljcm9zb2Z0LmNvbT4NCj4gPiBD
-YzogV2VpIEh1IDx3ZWhAbWljcm9zb2Z0LmNvbT47IERleHVhbiBDdWkgPGRlY3VpQG1pY3Jvc29m
-dC5jb20+DQo+ID4gU3ViamVjdDogW1BBVENIXSB2aWRlbzogaHlwZXJ2X2ZiOiBGaXggaGliZXJu
-YXRpb24gZm9yIHRoZSBkZWZlcnJlZCBJTyBmZWF0dXJlDQo+ID4NCj4gPiBmYl9kZWZlcnJlZF9p
-b193b3JrKCkgY2FuIGFjY2VzcyB0aGUgdm1idXMgcmluZ2J1ZmZlciBieSBjYWxsaW5nDQo+ID4g
-ZmJkZWZpby0+ZGVmZXJyZWRfaW8oKSAtPiBzeW50aHZpZF9kZWZlcnJlZF9pbygpIC0+IHN5bnRo
-dmlkX3VwZGF0ZSgpLg0KPiA+DQo+ID4gQmVjYXVzZSB0aGUgdm1idXMgcmluZ2J1ZmZlciBpcyBp
-bmFjY2Vzc2libGUgYmV0d2VlbiBodmZiX3N1c3BlbmQoKSBhbmQNCj4gPiBodmZiX3Jlc3VtZSgp
-LCB3ZSBtdXN0IGNhbmNlbCBpbmZvLT5kZWZlcnJlZF93b3JrIGJlZm9yZSBjYWxsaW5nDQo+ID4g
-dm1idXNfY2xvc2UoKSBhbmQgdGhlbiByZXNjaGVkdWxlIGl0IGFmdGVyIHdlIHJlb3BlbiB0aGUg
-Y2hhbm5lbCBpbg0KPiA+IGh2ZmJfcmVzdW1lKCkuDQo+ID4NCj4gPiBGaXhlczogYTRkZGIxMWQy
-OTdlICgidmlkZW86IGh5cGVydjogaHlwZXJ2X2ZiOiBTdXBwb3J0IGRlZmVycmVkIElPIGZvcg0K
-PiA+IEh5cGVyLVYgZnJhbWUgYnVmZmVyIGRyaXZlciIpDQo+ID4gRml4ZXM6IDgyNDk0NmE4YjZm
-YiAoInZpZGVvOiBoeXBlcnZfZmI6IEFkZCB0aGUgc3VwcG9ydCBvZiBoaWJlcm5hdGlvbiIpDQo+
-ID4gU2lnbmVkLW9mZi1ieTogRGV4dWFuIEN1aSA8ZGVjdWlAbWljcm9zb2Z0LmNvbT4NCj4gPiAt
-LS0NCj4gPg0KPiA+IFRoaXMgcGF0Y2ggZml4ZXMgdGhlIDIgYWZvcmVtZW50aW9uZWQgcGF0Y2hl
-cyBvbiBTYXNoYSBMZXZpbidzIEh5cGVyLVYgdHJlZSdzDQo+ID4gaHlwZXJ2LW5leHQgYnJhbmNo
-Og0KPiA+DQo+IGh0dHBzOi8vbmFtMDYuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20v
-P3VybD1odHRwcyUzQSUyRiUyRmdpdC5rZXJuDQo+ID4gZWwub3JnJTJGcHViJTJGc2NtJTJGbGlu
-dXglMkZrZXJuZWwlMkZnaXQlMkZoeXBlcnYlMkZsaW51eC5naXQlMkZsb2cNCj4gPiAlMkYlM0Zo
-JTNEaHlwZXJ2LQ0KPiA+DQo+IG5leHQmYW1wO2RhdGE9MDIlN0MwMSU3Q3dlaCU0MG1pY3Jvc29m
-dC5jb20lN0M0NTExNDNmZjc4ZjA0NDAxZDkNCj4gPiA2ZjA4ZDc2ZDg5M2E4NCU3QzcyZjk4OGJm
-ODZmMTQxYWY5MWFiMmQ3Y2QwMTFkYjQ3JTdDMSU3QzAlN0M2MzcNCj4gPg0KPiAwOTgzMDg0OTMy
-MTcxMjEmYW1wO3NkYXRhPVAyZm8lMkYxVEpVTUlqNUZ0SkNPcDJRd0RyZ2hoVmZQU0NFSjRmMQ0K
-PiA+IHZrT1h2SSUzRCZhbXA7cmVzZXJ2ZWQ9MA0KPiA+DQo+ID4gVGhlIDIgYWZvcmVtZW50aW9u
-ZWQgcGF0Y2hlcyBoYXZlIG5vdCBhcHBlYXJlZCBpbiB0aGUgbWFpbmxpbmUgeWV0LCBzbw0KPiBw
-bGVhc2UNCj4gPiBwaWNrIHVwIHRoaXMgcGF0Y2ggb250byBoZSBzYW1lIGh5cGVydi1uZXh0IGJy
-YW5jaC4NCj4gPg0KPiA+ICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2h5cGVydl9mYi5jIHwgMiArKw0K
-PiA+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspDQo+ID4NCj4gPiBkaWZmIC0tZ2l0
-IGEvZHJpdmVycy92aWRlby9mYmRldi9oeXBlcnZfZmIuYyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYv
-aHlwZXJ2X2ZiLmMNCj4gPiBpbmRleCA0Y2QyN2U1MTcyYTEuLjA4YmMwZGZiNWNlNyAxMDA2NDQN
-Cj4gPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2h5cGVydl9mYi5jDQo+ID4gKysrIGIvZHJp
-dmVycy92aWRlby9mYmRldi9oeXBlcnZfZmIuYw0KPiA+IEBAIC0xMTk0LDYgKzExOTQsNyBAQCBz
-dGF0aWMgaW50IGh2ZmJfc3VzcGVuZChzdHJ1Y3QgaHZfZGV2aWNlICpoZGV2KQ0KPiA+ICAJZmJf
-c2V0X3N1c3BlbmQoaW5mbywgMSk7DQo+ID4NCj4gPiAgCWNhbmNlbF9kZWxheWVkX3dvcmtfc3lu
-YygmcGFyLT5kd29yayk7DQo+ID4gKwljYW5jZWxfZGVsYXllZF93b3JrX3N5bmMoJmluZm8tPmRl
-ZmVycmVkX3dvcmspOw0KPiA+DQo+ID4gIAlwYXItPnVwZGF0ZV9zYXZlZCA9IHBhci0+dXBkYXRl
-Ow0KPiA+ICAJcGFyLT51cGRhdGUgPSBmYWxzZTsNCj4gPiBAQCAtMTIyNyw2ICsxMjI4LDcgQEAg
-c3RhdGljIGludCBodmZiX3Jlc3VtZShzdHJ1Y3QgaHZfZGV2aWNlICpoZGV2KQ0KPiA+ICAJcGFy
-LT5mYl9yZWFkeSA9IHRydWU7DQo+ID4gIAlwYXItPnVwZGF0ZSA9IHBhci0+dXBkYXRlX3NhdmVk
-Ow0KPiA+DQo+ID4gKwlzY2hlZHVsZV9kZWxheWVkX3dvcmsoJmluZm8tPmRlZmVycmVkX3dvcmss
-IGluZm8tPmZiZGVmaW8tPmRlbGF5KTsNCj4gPiAgCXNjaGVkdWxlX2RlbGF5ZWRfd29yaygmcGFy
-LT5kd29yaywgSFZGQl9VUERBVEVfREVMQVkpOw0KPiA+DQo+ID4gIAkvKiAwIG1lYW5zIGRvIHJl
-c3VtZSAqLw0KPiA+IC0tDQo+ID4gMi4xOS4xDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBXZWkgSHUg
-PHdlaEBtaWNyb3NvZnQuY29tPg0KDQpTb3JyeSwgcGxlYXNlIGRpc3JlZ2FyZCB0aGUgU2lnbmVk
-LW9mZi1ieSBsaW5lIEkgYWRkZWQgYWJvdmUuIEl0IHdhcyBteSBtaXN0YWtlLg0Kc2hvdWxkIGJl
-Og0KDQpSZXZpZXdlZC1ieTogV2VpIEh1IDx3ZWhAbWljcm9zb2Z0LmNvbT4NCg0KDQo
+From: Wei Hu <weh@microsoft.com> Sent: Tuesday, October 22, 2019 4:11 AM
+> 
+> On Hyper-V, Generation 1 VMs can directly use VM's physical memory for
+> their framebuffers. This can improve the efficiency of framebuffer and
+> overall performence for VM. The physical memory assigned to framebuffer
+> must be contiguous. We use CMA allocator to get contiguouse physicial
+> memory when the framebuffer size is greater than 4MB. For size under
+> 4MB, we use alloc_pages to achieve this.
+> 
+> To enable framebuffer memory allocation from CMA, supply a kernel
+> parameter to give enough space to CMA allocator at boot time. For
+> example:
+>     cma=130m
+> This gives 130MB memory to CAM allocator that can be allocated to
+> framebuffer. If this fails, we fall back to the old way of using
+> mmio for framebuffer.
+> 
+> Signed-off-by: Wei Hu <weh@microsoft.com>
+> ---
+
+[snip]
+
+> +/*
+> + * Allocate enough contiguous physical memory.
+> + * Return physical address if succeeded or -1 if failed.
+> + */
+> +static unsigned long hvfb_get_phymem(unsigned int request_size)
+> +{
+> +	struct page *page = NULL;
+> +	unsigned int request_pages;
+> +	unsigned long paddr = 0;
+
+Using 'unsigned long' for physical addresses is problematic on 32-bit
+systems with Physical Address Extension (PAE) enabled. Linux has
+phys_addr_t that handles 32-bit PAE correctly and that probably
+should be used here.   This whole driver needs to be carefully
+checked for the correct type for physical addresses.
+
+> +	unsigned int order = get_order(request_size);
+> +
+> +	if (request_size == 0)
+> +		return -1;
+> +
+> +	/* Try call alloc_pages if the size is less than 2^MAX_ORDER */
+> +	if (order < MAX_ORDER) {
+> +		page = alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
+> +		if (!page)
+> +			return -1;
+> +
+> +		request_pages = (1 << order);
+> +		goto get_phymem1;
+> +	}
+> +
+> +	/* Allocate from CMA */
+> +	// request_pages = (request_size >> PAGE_SHIFT) + 1;
+> +	request_pages = (round_up(request_size, PAGE_SIZE) >> PAGE_SHIFT);
+> +	page = dma_alloc_from_contiguous(NULL, request_pages, 0, false);
+> +
+> +	if (page == NULL)
+> +		return -1;
+> +
+> +get_phymem1:
+> +	paddr = (page_to_pfn(page) << PAGE_SHIFT);
+> +
+> +	pr_info("Allocated %d pages starts at physical addr 0x%lx\n",
+> +		request_pages, paddr);
+> +
+> +	return paddr;
+> +}
+> +
+> +/* Release contiguous physical memory */
+> +static void hvfb_release_phymem(unsigned long paddr, unsigned int size)
+
+Same issue here with 'unsigned long paddr'.
+
+> +{
+> +	unsigned int order = get_order(size);
+> +
+> +	if (order < MAX_ORDER)
+> +		__free_pages(pfn_to_page(paddr >> PAGE_SHIFT), order);
+> +	else
+> +		dma_release_from_contiguous(NULL,
+> +					    pfn_to_page(paddr >> PAGE_SHIFT),
+> +					    (round_up(size, PAGE_SIZE) >>
+> +					     PAGE_SHIFT));
+> +					    // (size >> PAGE_SHIFT) + 1);
+> +}
+> +
+> 
+>  /* Get framebuffer memory from Hyper-V video pci space */
+>  static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+> @@ -947,8 +1017,58 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info
+> *info)
+>  	void __iomem *fb_virt;
+>  	int gen2vm = efi_enabled(EFI_BOOT);
+>  	resource_size_t pot_start, pot_end;
+> +	unsigned long paddr;
+
+Same issue with 'unsigned long'.
+
+>  	int ret;
+> 
+> +	if (!gen2vm) {
+> +		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
+> +			PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
+> +		if (!pdev) {
+> +			pr_err("Unable to find PCI Hyper-V video\n");
+> +			return -ENODEV;
+> +		}
+> +	}
+> +
+> +	info->apertures = alloc_apertures(1);
+> +	if (!info->apertures)
+> +		goto err1;
+> +
+> +	if (gen2vm) {
+> +		info->apertures->ranges[0].base = screen_info.lfb_base;
+> +		info->apertures->ranges[0].size = screen_info.lfb_size;
+> +	} else {
+> +		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
+> +		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
+> +	}
+> +
+> +	/*
+> +	 * For Gen 1 VM, we can directly use the contiguous memory
+> +	 * from VM. If we success, deferred IO happens directly
+> +	 * on this allocated framebuffer memory, avoiding extra
+> +	 * memory copy.
+> +	 */
+> +	if (!gen2vm) {
+> +		paddr = hvfb_get_phymem(screen_fb_size);
+> +		if (paddr != (unsigned long) -1) {
+
+phys_addr_t
+
+> +			par->mmio_pp = paddr;
+
+I'm not really sure what to do about the above, because mmio_pp is
+declared as 'unsigned long' when it really should be phys_addr_t.
+But maybe a MMIO address will always be less than 4 Gb and therefore
+will fit in 32 bits?
+
+> +			par->mmio_vp = par->dio_vp = __va(paddr);
+> +
+> +			info->fix.smem_start = paddr;
+
+smem_start is also declared as 'unsigned long', which seems
+problematic with 32-bit PAE.  There are a lot of drivers that cast values
+as 'unsigned long' before storing into smem_start
+
+> +			info->fix.smem_len = screen_fb_size;
+> +			info->screen_base = par->mmio_vp;
+> +			info->screen_size = screen_fb_size;
+> +
+> +			par->need_docopy = false;
+> +			goto getmem1;
+> +		} else {
+> +			pr_info("Unable to allocate enough contiguous physical memory on
+> Gen 1 VM. Use MMIO instead.\n");
+> +		}
+> +	}
+> +
+> +	/*
+> +	 * Cannot use the contiguous physical memory.
+> +	 * Allocate mmio space for framebuffer.
+> +	 */
+>  	dio_fb_size =
+>  		screen_width * screen_height * screen_depth / 8;
+> 
+> @@ -956,13 +1076,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info
+> *info)
+>  		pot_start = 0;
+>  		pot_end = -1;
+>  	} else {
+> -		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
+> -			      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
+> -		if (!pdev) {
+> -			pr_err("Unable to find PCI Hyper-V video\n");
+> -			return -ENODEV;
+> -		}
+> -
+>  		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+>  		    pci_resource_len(pdev, 0) < screen_fb_size) {
+>  			pr_err("Resource not available or (0x%lx < 0x%lx)\n",
+> @@ -991,20 +1104,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info
+> *info)
+>  	if (par->dio_vp == NULL)
+>  		goto err3;
+> 
+> -	info->apertures = alloc_apertures(1);
+> -	if (!info->apertures)
+> -		goto err4;
+> -
+> -	if (gen2vm) {
+> -		info->apertures->ranges[0].base = screen_info.lfb_base;
+> -		info->apertures->ranges[0].size = screen_info.lfb_size;
+> -		remove_conflicting_framebuffers(info->apertures,
+> -						KBUILD_MODNAME, false);
+> -	} else {
+> -		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
+> -		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
+> -	}
+> -
+>  	/* Physical address of FB device */
+>  	par->mmio_pp = par->mem->start;
+
+32-bit PAE problem could also occur here, even though the above line isn't
+part of your patch.
+
+Ideally, we would build the kernel in 32-bit mode with PAE enabled, and
+test in an environment where the frame buffer gets allocated above the
+4 Gbyte line.  There may be some similar bugs in other parts of this
+driver that aren't touched by the patch.
+
+Michael

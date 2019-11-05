@@ -1,55 +1,41 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 27 Nov 2019 18:22:10 +0000
-Subject: Re: [PATCH 04/13] video: udlfb: don't restore fb_mmap after deferred IO cleanup
-Message-Id: <20191127182210.GK406127@phenom.ffwll.local>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Tue, 05 Nov 2019 10:04:44 +0000
+Subject: Re: [PATCH 38/46] video: backlight: tosa: use gpio lookup table
+Message-Id: <CACRpkdajkSh6Bbvpfycm83j1GuCm+pTfw9fQS53JEfG2i07MKg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1574871797.git.jani.nikula@intel.com>
- <21cc1f07daffeddf4d59f2b444796c0216274c87.1574871797.git.jani.nikula@intel.com>
-In-Reply-To: <21cc1f07daffeddf4d59f2b444796c0216274c87.1574871797.git.jani.nikula@intel.com>
+References: <20191018154052.1276506-1-arnd@arndb.de> <20191018154201.1276638-38-arnd@arndb.de>
+In-Reply-To: <20191018154201.1276638-38-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jani Nikula <jani.nikula@intel.com>
-Cc: linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, Bernie Thompson <bernie@plugable.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
 
-On Wed, Nov 27, 2019 at 06:32:00PM +0200, Jani Nikula wrote:
-> Deferred IO now preserves the fb_ops.
-> 
-> Cc: Bernie Thompson <bernie@plugable.com>
+On Fri, Oct 18, 2019 at 5:43 PM Arnd Bergmann <arnd@arndb.de> wrote:
+
+> The driver should not require a machine specific header. Change
+> it to pass the gpio line through a lookup table, and move the
+> timing generator definitions into the drivers itself.
+>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> Cc: Jingoo Han <jingoohan1@gmail.com>
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: dri-devel@lists.freedesktop.org
 > Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
-
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-
-Aside: I wonder whether we should start retiring all the fbdev drivers
-which have kms drivers already ... you get fbdev for free with the latter.
--Daniel
-
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>
 > ---
->  drivers/video/fbdev/udlfb.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-> index fe373b63ddd6..07905d385949 100644
-> --- a/drivers/video/fbdev/udlfb.c
-> +++ b/drivers/video/fbdev/udlfb.c
-> @@ -1037,7 +1037,6 @@ static int dlfb_ops_release(struct fb_info *info, int user)
->  		fb_deferred_io_cleanup(info);
->  		kfree(info->fbdefio);
->  		info->fbdefio = NULL;
-> -		info->fbops->fb_mmap = dlfb_ops_mmap;
->  	}
->  
->  	dev_dbg(info->dev, "release, user=%d count=%d\n", user, dlfb->fb_count);
-> -- 
-> 2.20.1
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+> I'm not overly confident that I got the correct device names
+> for the lookup table, it would be good if someone could
+> double-check.
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+You're anyway doing more than required for the people who
+may or may not be using this platform. Brokenness can surely
+be fixed later, it's not like we are taking down the entire Amazon
+cloud or something.
+
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+
+Yours,
+Linus Walleij

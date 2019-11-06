@@ -1,54 +1,63 @@
-From: Adam Ford <aford173@gmail.com>
-Date: Fri, 08 Nov 2019 13:10:45 +0000
-Subject: Re: [PATCH] fbdev/omap: fix max fclk divider for omap36xx
-Message-Id: <CAHCN7xJ9aAHjHToM5mGixWvJb7hAOenST7Fkett84nNQdUghmA@mail.gmail.com>
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Date: Wed, 06 Nov 2019 09:50:18 +0000
+Subject: [RFC PATCH 00/12] i2c: replace i2c_new_probed_device with an ERR_PTR variant
+Message-Id: <20191106095033.25182-1-wsa+renesas@sang-engineering.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191018130507.29893-1-aford173@gmail.com>
-In-Reply-To: <20191018130507.29893-1-aford173@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Linux-OMAP <linux-omap@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Adam Ford <adam.ford@logicpd.com>, stable <stable@vger.kernel.org>
+To: linux-i2c@vger.kernel.org
+Cc: Wolfram Sang <wsa@the-dreams.de>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-On Fri, Oct 18, 2019 at 8:05 AM Adam Ford <aford173@gmail.com> wrote:
->
-> The OMAP36xx and AM/DM37x TRMs say that the maximum divider for DSS fclk
-> (in CM_CLKSEL_DSS) is 32. Experimentation shows that this is not
-> correct, and using divider of 32 breaks DSS with a flood or underflows
-> and sync losts. Dividers up to 31 seem to work fine.
->
-> There is another patch to the DT files to limit the divider correctly,
-> but as the DSS driver also needs to know the maximum divider to be able
-> to iteratively find good rates, we also need to do the fix in the DSS
-> driver.
->
-> Signed-off-by: Adam Ford <aford173@gmail.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: stable@vger.kernel.org # linux-4.4.y only
+From: Wolfram Sang <wsa@the-dreams.de>
 
-This is basically the same patch as the only Tomi reviewed for 4.9,
-but it is based on 4.4.
+In the on-going mission to let i2c_new_* calls return an ERR_PTR instead
+of NULL, here is a series converting i2c_new_probed_device(). A new
+function called i2c_new_scanned_device() is introduced with the new
+retval, but for now, a compatibility helper is provided until all users
+are converted. The rest of the patches convert all current in-tree
+users.
 
-Is there any way these can be integrated?
+Note that these patches are RFC because I want feedback on the approach
+and hopefully collect acks on the driver conversions. If all goes well,
+I'll apply the first two patches for the next merge window. Then, once
+this dependency is upstream, I'll resend this series with all issues
+fixed and acks collected.
 
-thank you,
+Core changes tested on a Renesas Salvator-XS board (R-Car M3-N), driver
+patches build tested by me and buildbot.
 
-adam
->
-> diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
-> index 9200a8668b49..a57c3a5f4bf8 100644
-> --- a/drivers/video/fbdev/omap2/dss/dss.c
-> +++ b/drivers/video/fbdev/omap2/dss/dss.c
-> @@ -843,7 +843,7 @@ static const struct dss_features omap34xx_dss_feats = {
->  };
->
->  static const struct dss_features omap3630_dss_feats = {
-> -       .fck_div_max            =       32,
-> +       .fck_div_max            =       31,
->         .dss_fck_multiplier     =       1,
->         .parent_clk_name        =       "dpll4_ck",
->         .dpi_select_source      =       &dss_dpi_select_source_omap2_omap3,
-> --
-> 2.17.1
->
+Wolfram Sang (12):
+  i2c: replace i2c_new_probed_device with an ERR_PTR variant
+  i2c: icy: convert to i2c_new_scanned_device
+  macintosh: convert to i2c_new_scanned_device
+  platform: chrome: convert to i2c_new_scanned_device
+  video: fbdev: matrox: convert to i2c_new_scanned_device
+  input: mouse: convert to i2c_new_scanned_device
+  media: pci: cx23885: convert to i2c_new_scanned_device
+  media: pci: cx88: convert to i2c_new_scanned_device
+  media: pci: bt8xx: convert to i2c_new_scanned_device
+  media: pci: cx18: convert to i2c_new_scanned_device
+  media: pci: ivtv: convert to i2c_new_scanned_device
+  media: v4l2-core: convert to i2c_new_scanned_device
+
+ Documentation/i2c/instantiating-devices.rst | 10 ++++-----
+ Documentation/i2c/writing-clients.rst       |  8 +++----
+ drivers/i2c/busses/i2c-icy.c                |  8 +++----
+ drivers/i2c/i2c-core-base.c                 | 25 ++++++++++++++++-----
+ drivers/input/mouse/psmouse-smbus.c         |  8 ++++---
+ drivers/macintosh/therm_windtunnel.c        |  4 ++--
+ drivers/media/pci/bt8xx/bttv-input.c        |  6 ++---
+ drivers/media/pci/cx18/cx18-i2c.c           |  2 +-
+ drivers/media/pci/cx23885/cx23885-i2c.c     |  4 ++--
+ drivers/media/pci/cx88/cx88-input.c         |  2 +-
+ drivers/media/pci/ivtv/ivtv-i2c.c           |  6 ++---
+ drivers/media/pci/ivtv/ivtv-i2c.h           |  2 +-
+ drivers/media/v4l2-core/v4l2-i2c.c          | 10 ++++-----
+ drivers/platform/chrome/chromeos_laptop.c   | 18 ++++++++-------
+ drivers/video/fbdev/matrox/i2c-matroxfb.c   |  4 ++--
+ include/linux/i2c.h                         | 12 +++++++---
+ 16 files changed, 76 insertions(+), 53 deletions(-)
+
+-- 
+2.20.1

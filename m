@@ -1,42 +1,56 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Fri, 29 Nov 2019 10:29:41 +0000
-Subject: [PATCH v2 11/14] HID: picoLCD: constify fb ops
-Message-Id: <8678a9a3566279c881bb4db944850eef35d0a4bb.1575022735.git.jani.nikula@intel.com>
+From: Adam Ford <aford173@gmail.com>
+Date: Fri, 08 Nov 2019 13:09:31 +0000
+Subject: Re: [PATCH] fbdev/omap: fix max fclk divider for omap36xx
+Message-Id: <CAHCN7xJjX4jWhcRstJV02py0D4Wq_XHoWt9aHTxXANEOwdp+rg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1575022735.git.jani.nikula@intel.com>
-In-Reply-To: <cover.1575022735.git.jani.nikula@intel.com>
+References: <20191018124938.29313-1-aford173@gmail.com> <7b8b6eba-2cb3-9b25-66e2-e128cc09ceb4@ti.com>
+In-Reply-To: <7b8b6eba-2cb3-9b25-66e2-e128cc09ceb4@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: jani.nikula@intel.com, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>, linux-input@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, Linux-OMAP <linux-omap@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Adam Ford <adam.ford@logicpd.com>, stable <stable@vger.kernel.org>
 
-Now that the fbops member of struct fb_info is const, we can start
-making the ops const as well.
+On Mon, Oct 21, 2019 at 3:42 AM Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+>
+> On 18/10/2019 15:49, Adam Ford wrote:
+> > The OMAP36xx and AM/DM37x TRMs say that the maximum divider for DSS fclk
+> > (in CM_CLKSEL_DSS) is 32. Experimentation shows that this is not
+> > correct, and using divider of 32 breaks DSS with a flood or underflows
+> > and sync losts. Dividers up to 31 seem to work fine.
+> >
+> > There is another patch to the DT files to limit the divider correctly,
+> > but as the DSS driver also needs to know the maximum divider to be able
+> > to iteratively find good rates, we also need to do the fix in the DSS
+> > driver.
+> >
+> > Signed-off-by: Adam Ford <aford173@gmail.com>
+> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> > Cc: stable@vger.kernel.org #linux-4.9.y+
+> >
+> > diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+> > index 48c6500c24e1..4429ad37b64c 100644
+> > --- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+> > +++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+> > @@ -843,7 +843,7 @@ static const struct dss_features omap34xx_dss_feats = {
+> >   };
+> >
+> >   static const struct dss_features omap3630_dss_feats = {
+> > -     .fck_div_max            =       32,
+> > +     .fck_div_max            =       31,
+> >       .dss_fck_multiplier     =       1,
+> >       .parent_clk_name        =       "dpll4_ck",
+> >       .dpi_select_source      =       &dss_dpi_select_source_omap2_omap3,
+> >
+>
+> Reviewed-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-v2: fix	typo (Christophe de Dinechin)
+What is the next step to get these integrated into 4.9+?
 
-Cc: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
-Cc: linux-input@vger.kernel.org
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Jani Nikula <jani.nikula@intel.com>
----
- drivers/hid/hid-picolcd_fb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
-index e162a668fb7e..a549c42e8c90 100644
---- a/drivers/hid/hid-picolcd_fb.c
-+++ b/drivers/hid/hid-picolcd_fb.c
-@@ -417,8 +417,7 @@ static int picolcd_set_par(struct fb_info *info)
- 	return 0;
- }
-=20
--/* Note this can't be const because of struct fb_info definition */
--static struct fb_ops picolcdfb_ops =3D {
-+static const struct fb_ops picolcdfb_ops =3D {
- 	.owner        =3D THIS_MODULE,
- 	.fb_destroy   =3D picolcd_fb_destroy,
- 	.fb_read      =3D fb_sys_read,
---=20
-2.20.1
+adam
+>
+>   Tomi
+>
+> --
+> Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+> Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

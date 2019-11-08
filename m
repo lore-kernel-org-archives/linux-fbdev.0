@@ -1,55 +1,82 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 27 Nov 2019 18:20:28 +0000
-Subject: Re: [Intel-gfx] [PATCH 03/13] video: smscufx: don't restore fb_mmap after deferred IO cleanup
-Message-Id: <20191127182028.GI406127@phenom.ffwll.local>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Fri, 08 Nov 2019 12:33:32 +0000
+Subject: [PATCH 3/4] drm/fb-helper: Remove drm_fb_helper_unlink_fbi()
+Message-Id: <20191108123333.25274-4-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1574871797.git.jani.nikula@intel.com>
- <5c25b31242a3ae2326ccf163e5be5ae401b04b49.1574871797.git.jani.nikula@intel.com>
-In-Reply-To: <5c25b31242a3ae2326ccf163e5be5ae401b04b49.1574871797.git.jani.nikula@intel.com>
+References: <20191108123333.25274-1-tzimmermann@suse.de>
+In-Reply-To: <20191108123333.25274-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jani Nikula <jani.nikula@intel.com>
-Cc: Steve Glendinning <steve.glendinning@shawell.net>, linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
+To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
 
-On Wed, Nov 27, 2019 at 06:31:59PM +0200, Jani Nikula wrote:
-> Deferred IO now preserves the fb_ops.
-> 
-> Cc: Steve Glendinning <steve.glendinning@shawell.net>
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
-> ---
->  drivers/video/fbdev/smscufx.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
-> index 0e0f5bbfc5ef..e362d7da87fc 100644
-> --- a/drivers/video/fbdev/smscufx.c
-> +++ b/drivers/video/fbdev/smscufx.c
-> @@ -1170,7 +1170,6 @@ static int ufx_ops_release(struct fb_info *info, int user)
->  		fb_deferred_io_cleanup(info);
->  		kfree(info->fbdefio);
->  		info->fbdefio = NULL;
-> -		info->fbops->fb_mmap = ufx_ops_mmap;
+There are no callers of drm_fb_helper_unlink_fbi() left. Remove the
+function.
 
-Also totally pointless to restore this here, since if you have indeed
-loaded the driver twice shit has hit the fan already. I guess that was for
-the module option .... wtf.
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/gpu/drm/drm_fb_helper.c | 16 +---------------
+ include/drm/drm_fb_helper.h     |  6 ------
+ 2 files changed, 1 insertion(+), 21 deletions(-)
 
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-
->  	}
->  
->  	pr_debug("released /dev/fb%d user=%d count=%d",
-> -- 
-> 2.20.1
-> 
-> _______________________________________________
-> Intel-gfx mailing list
-> Intel-gfx@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/intel-gfx
-
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index 1038a2f0639e..eb97f34a15ea 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -563,8 +563,7 @@ EXPORT_SYMBOL(drm_fb_helper_unregister_fbi);
+  * drm_fb_helper_fini - finialize a &struct drm_fb_helper
+  * @fb_helper: driver-allocated fbdev helper, can be NULL
+  *
+- * This cleans up all remaining resources associated with @fb_helper. Must be
+- * called after drm_fb_helper_unlink_fbi() was called.
++ * This cleans up all remaining resources associated with @fb_helper.
+  */
+ void drm_fb_helper_fini(struct drm_fb_helper *fb_helper)
+ {
+@@ -604,19 +603,6 @@ void drm_fb_helper_fini(struct drm_fb_helper *fb_helper)
+ }
+ EXPORT_SYMBOL(drm_fb_helper_fini);
+ 
+-/**
+- * drm_fb_helper_unlink_fbi - wrapper around unlink_framebuffer
+- * @fb_helper: driver-allocated fbdev helper, can be NULL
+- *
+- * A wrapper around unlink_framebuffer implemented by fbdev core
+- */
+-void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper)
+-{
+-	if (fb_helper && fb_helper->fbdev)
+-		unlink_framebuffer(fb_helper->fbdev);
+-}
+-EXPORT_SYMBOL(drm_fb_helper_unlink_fbi);
+-
+ static bool drm_fbdev_use_shadow_fb(struct drm_fb_helper *fb_helper)
+ {
+ 	struct drm_device *dev = fb_helper->dev;
+diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
+index e3a75ff07390..1c2e0c3cf857 100644
+--- a/include/drm/drm_fb_helper.h
++++ b/include/drm/drm_fb_helper.h
+@@ -231,8 +231,6 @@ void drm_fb_helper_fill_info(struct fb_info *info,
+ 			     struct drm_fb_helper *fb_helper,
+ 			     struct drm_fb_helper_surface_size *sizes);
+ 
+-void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper);
+-
+ void drm_fb_helper_deferred_io(struct fb_info *info,
+ 			       struct list_head *pagelist);
+ 
+@@ -356,10 +354,6 @@ static inline int drm_fb_helper_ioctl(struct fb_info *info, unsigned int cmd,
+ 	return 0;
+ }
+ 
+-static inline void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper)
+-{
+-}
+-
+ static inline void drm_fb_helper_deferred_io(struct fb_info *info,
+ 					     struct list_head *pagelist)
+ {
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.23.0

@@ -1,24 +1,25 @@
-From: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
-Date: Wed, 13 Nov 2019 15:26:57 +0000
-Subject: Re: [PATCH v4 2/3] drm/fb-helper: Remove drm_fb_helper_unlink_fbi()
-Message-Id: <9a532541-9c5b-988c-b043-c7c3365aa49d@tronnes.org>
+From: eddy william <greogebrown@gmail.com>
+Date: Sat, 09 Nov 2019 15:12:58 +0000
+Subject: hello
+Message-Id: <CAH0Hv2jUzez_U2Wk0Ac=qmEhqKi9EQna6c96FL=EZ2Tv73xRdw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191113115233.18483-1-tzimmermann@suse.de>
- <20191113115233.18483-3-tzimmermann@suse.de>
-In-Reply-To: <20191113115233.18483-3-tzimmermann@suse.de>
+References: <CACemp=4mAaepgGr1XuueXxXwf2P0M-7DMC57uKMRYGhWCvzMbQ@mail.gmail.com>
+In-Reply-To: <CACemp=4mAaepgGr1XuueXxXwf2P0M-7DMC57uKMRYGhWCvzMbQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Thomas Zimmermann <tzimmermann@suse.de>, airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+Hello
 
+My name is Eddy William I am a lawyer by profession. I wish to offer you
+the next of kin to my client. You will inherit the sum of ($8.5 Million)
+dollars my client left in the bank before his death.
 
-Den 13.11.2019 12.52, skrev Thomas Zimmermann:
-> There are no callers of drm_fb_helper_unlink_fbi() left. Remove the
-> function.
->=20
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
+My client is a citizen of your country who died in auto crash with his wife
+and only son. I will be entitled with 50% of the total fund while 50% will
+be for you.
+Please contact my private email here for more details:eddywilliam0002gmail.com
 
-Reviewed-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
+Many thanks in advance,
+Mr.Eddy William,

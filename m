@@ -1,37 +1,61 @@
-From: Chuhong Yuan <hslester96@gmail.com>
-Date: Sat, 16 Nov 2019 15:44:16 +0000
-Subject: [PATCH] video: fbdev: arcfb: add missed free_irq
-Message-Id: <20191116154416.19390-1-hslester96@gmail.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Tue, 12 Nov 2019 14:04:29 +0000
+Subject: [PATCH v3 3/5] drm/udl: Remove udl implementation of GEM's free_object()
+Message-Id: <20191112140431.7895-4-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191112140431.7895-1-tzimmermann@suse.de>
+In-Reply-To: <20191112140431.7895-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: Jaya Kumar <jayalk@intworks.biz>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>
+To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
 
-The driver forgets to free irq in remove which is requested in
-probe.
-Add the missed call to fix it.
+Udl used to have a custom implementation for free_object() of
+struct drm_gem_object_funcs. It unmapped the memory buffer of
+the fbdev emulation. With the switch to generic fbdev emulation,
+this is now handled by the fbdev code internally.
 
-Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/arcfb.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/gpu/drm/udl/udl_gem.c | 18 +-----------------
+ 1 file changed, 1 insertion(+), 17 deletions(-)
 
-diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
-index a48741aab240..7aed01f001a4 100644
---- a/drivers/video/fbdev/arcfb.c
-+++ b/drivers/video/fbdev/arcfb.c
-@@ -590,8 +590,11 @@ static int arcfb_probe(struct platform_device *dev)
- static int arcfb_remove(struct platform_device *dev)
- {
- 	struct fb_info *info = platform_get_drvdata(dev);
-+	struct arcfb_par *par = info->par;
+diff --git a/drivers/gpu/drm/udl/udl_gem.c b/drivers/gpu/drm/udl/udl_gem.c
+index 6eade6b4b0dc..b6e26f98aa0a 100644
+--- a/drivers/gpu/drm/udl/udl_gem.c
++++ b/drivers/gpu/drm/udl/udl_gem.c
+@@ -17,22 +17,6 @@
+  * GEM object funcs
+  */
  
- 	if (info) {
-+		if (irq)
-+			free_irq(par->irq, info);
- 		unregister_framebuffer(info);
- 		vfree((void __force *)info->screen_base);
- 		framebuffer_release(info);
+-static void udl_gem_object_free_object(struct drm_gem_object *obj)
+-{
+-	struct drm_gem_shmem_object *shmem = to_drm_gem_shmem_obj(obj);
+-
+-	/* Fbdev emulation vmaps the buffer. Unmap it here for consistency
+-	 * with the original udl GEM code.
+-	 *
+-	 * TODO: Switch to generic fbdev emulation and release the
+-	 *       GEM object with drm_gem_shmem_free_object().
+-	 */
+-	if (shmem->vaddr)
+-		drm_gem_shmem_vunmap(obj, shmem->vaddr);
+-
+-	drm_gem_shmem_free_object(obj);
+-}
+-
+ static int udl_gem_object_mmap(struct drm_gem_object *obj,
+ 			       struct vm_area_struct *vma)
+ {
+@@ -91,7 +75,7 @@ static void *udl_gem_object_vmap(struct drm_gem_object *obj)
+ }
+ 
+ static const struct drm_gem_object_funcs udl_gem_object_funcs = {
+-	.free = udl_gem_object_free_object,
++	.free = drm_gem_shmem_free_object,
+ 	.print_info = drm_gem_shmem_print_info,
+ 	.pin = drm_gem_shmem_pin,
+ 	.unpin = drm_gem_shmem_unpin,
 -- 
-2.24.0
+2.23.0

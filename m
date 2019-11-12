@@ -1,39 +1,82 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Fri, 29 Nov 2019 10:29:37 +0000
-Subject: [PATCH v2 07/14] video: omapfb: use const pointer for fb_ops
-Message-Id: <dfa4376e219ffeef9175993eaff91b5fe7ecccab.1575022735.git.jani.nikula@intel.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Tue, 12 Nov 2019 14:04:30 +0000
+Subject: [PATCH v3 4/5] drm/fb-helper: Remove drm_fb_helper_unlink_fbi()
+Message-Id: <20191112140431.7895-5-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1575022735.git.jani.nikula@intel.com>
-In-Reply-To: <cover.1575022735.git.jani.nikula@intel.com>
+References: <20191112140431.7895-1-tzimmermann@suse.de>
+In-Reply-To: <20191112140431.7895-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: jani.nikula@intel.com, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org
+To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
 
-Use const for fb_ops to let us make the info->fbops pointer const in the
-future.
+There are no callers of drm_fb_helper_unlink_fbi() left. Remove the
+function.
 
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-omap@vger.kernel.org
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/omap/omapfb_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/drm_fb_helper.c | 16 +---------------
+ include/drm/drm_fb_helper.h     |  6 ------
+ 2 files changed, 1 insertion(+), 21 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-index 702cca59bda1..e8a304f84ea8 100644
---- a/drivers/video/fbdev/omap/omapfb_main.c
-+++ b/drivers/video/fbdev/omap/omapfb_main.c
-@@ -1052,7 +1052,7 @@ static int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd,
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index 1038a2f0639e..eb97f34a15ea 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -563,8 +563,7 @@ EXPORT_SYMBOL(drm_fb_helper_unregister_fbi);
+  * drm_fb_helper_fini - finialize a &struct drm_fb_helper
+  * @fb_helper: driver-allocated fbdev helper, can be NULL
+  *
+- * This cleans up all remaining resources associated with @fb_helper. Must be
+- * called after drm_fb_helper_unlink_fbi() was called.
++ * This cleans up all remaining resources associated with @fb_helper.
+  */
+ void drm_fb_helper_fini(struct drm_fb_helper *fb_helper)
  {
- 	struct omapfb_plane_struct *plane = fbi->par;
- 	struct omapfb_device	*fbdev = plane->fbdev;
--	struct fb_ops		*ops = fbi->fbops;
-+	const struct fb_ops *ops = fbi->fbops;
- 	union {
- 		struct omapfb_update_window	update_window;
- 		struct omapfb_plane_info	plane_info;
+@@ -604,19 +603,6 @@ void drm_fb_helper_fini(struct drm_fb_helper *fb_helper)
+ }
+ EXPORT_SYMBOL(drm_fb_helper_fini);
+ 
+-/**
+- * drm_fb_helper_unlink_fbi - wrapper around unlink_framebuffer
+- * @fb_helper: driver-allocated fbdev helper, can be NULL
+- *
+- * A wrapper around unlink_framebuffer implemented by fbdev core
+- */
+-void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper)
+-{
+-	if (fb_helper && fb_helper->fbdev)
+-		unlink_framebuffer(fb_helper->fbdev);
+-}
+-EXPORT_SYMBOL(drm_fb_helper_unlink_fbi);
+-
+ static bool drm_fbdev_use_shadow_fb(struct drm_fb_helper *fb_helper)
+ {
+ 	struct drm_device *dev = fb_helper->dev;
+diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
+index e3a75ff07390..1c2e0c3cf857 100644
+--- a/include/drm/drm_fb_helper.h
++++ b/include/drm/drm_fb_helper.h
+@@ -231,8 +231,6 @@ void drm_fb_helper_fill_info(struct fb_info *info,
+ 			     struct drm_fb_helper *fb_helper,
+ 			     struct drm_fb_helper_surface_size *sizes);
+ 
+-void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper);
+-
+ void drm_fb_helper_deferred_io(struct fb_info *info,
+ 			       struct list_head *pagelist);
+ 
+@@ -356,10 +354,6 @@ static inline int drm_fb_helper_ioctl(struct fb_info *info, unsigned int cmd,
+ 	return 0;
+ }
+ 
+-static inline void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper)
+-{
+-}
+-
+ static inline void drm_fb_helper_deferred_io(struct fb_info *info,
+ 					     struct list_head *pagelist)
+ {
 -- 
-2.20.1
+2.23.0

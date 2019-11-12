@@ -1,42 +1,57 @@
-From: "Mr.WEHNER DAVID M." <jesus.valencia@opb.gob.mx>
-Date: Sun, 24 Nov 2019 11:57:30 +0000
-Subject: =?utf-8?Q?Pengar_=C3=B6verf=C3=B6rs?=
-Message-Id: <1105698182.24559.1574596650210.JavaMail.zimbra@opb.gob.mx>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Tue, 12 Nov 2019 14:04:31 +0000
+Subject: [PATCH v3 5/5] fbdev: Unexport unlink_framebuffer()
+Message-Id: <20191112140431.7895-6-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191112140431.7895-1-tzimmermann@suse.de>
+In-Reply-To: <20191112140431.7895-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
 
-Office Of The Head
-Internationell överföring
-Operation Zenith Bank
-(UK) Ltd LONDON United
-Storbritannien och Irland
-Tel: +44 203 389 5674
-Fax: +44 704 307 1539
+There are no external callers of unlink_framebuffer() left. Make the
+function an internal interface.
 
-Hälsning,
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/video/fbdev/core/fbmem.c | 3 +--
+ include/linux/fb.h               | 1 -
+ 2 files changed, 1 insertion(+), 3 deletions(-)
 
-Din e-postadress kom upp i ett slumpmässigt drag som genomfördes i Zenith Banks huvudkontor, International Transfer Operation i London, Storbritannien.
-
-Jag är Mr.WEHNER DAVID M.A personlig bokföring till avdöd Michael Blair som arbetade med Shell British Petroleum. Mr.Michael Blair, en välkänd filantropist, innan han dog, gjorde en testamente i ett advokatbyrå om att 12,5 miljoner US dollar (tolv miljoner femhundra tusen amerikanska dollar) bör doneras till någon lycklig individuell filantrop eller välgörenhetsorganisation utomlands.
-
-Zenith Bank Abp är en överenskommelse med sena Michael Blair om att donera fonden till alla lyckliga individer i Amerika, Europa, Asien och Afrika i andra för att förbättra liv och företag
-
-Vi har gjort vårt slumpmässiga drag och din e-postadress valdes för att ta emot denna fond som mottagare av hans testament. Vänligen snälla tillbaka till mig
-så snart du har fått vårt e-postmeddelande för att aktivera överföringen
-Operationen riktar dig till vad du ska göra för att få denna fond lagligen.
-
-Du rekommenderas att ta med följande nedan:
-
-FULLSTÄNDIGA NAMN:
-
-FULL KONTAKTADRESS:
-
-TELEFON- OCH FAXNUMMER:
-
-Med vänliga hälsningar,
-Mr.WEHNER DAVID M.
-Chef, internationell överföringsoperation
-Zenith Bank (UK) Abp
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 95c32952fa8a..86b06a599f96 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1673,7 +1673,7 @@ static void unbind_console(struct fb_info *fb_info)
+ 	console_unlock();
+ }
+ 
+-void unlink_framebuffer(struct fb_info *fb_info)
++static void unlink_framebuffer(struct fb_info *fb_info)
+ {
+ 	int i;
+ 
+@@ -1692,7 +1692,6 @@ void unlink_framebuffer(struct fb_info *fb_info)
+ 
+ 	fb_info->dev = NULL;
+ }
+-EXPORT_SYMBOL(unlink_framebuffer);
+ 
+ static void do_unregister_framebuffer(struct fb_info *fb_info)
+ {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 41e0069eca0a..a6ad528990de 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -606,7 +606,6 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
+ /* drivers/video/fbmem.c */
+ extern int register_framebuffer(struct fb_info *fb_info);
+ extern void unregister_framebuffer(struct fb_info *fb_info);
+-extern void unlink_framebuffer(struct fb_info *fb_info);
+ extern int remove_conflicting_pci_framebuffers(struct pci_dev *pdev,
+ 					       const char *name);
+ extern int remove_conflicting_framebuffers(struct apertures_struct *a,
+-- 
+2.23.0

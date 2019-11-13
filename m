@@ -1,82 +1,84 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Fri, 08 Nov 2019 12:33:32 +0000
-Subject: [PATCH 3/4] drm/fb-helper: Remove drm_fb_helper_unlink_fbi()
-Message-Id: <20191108123333.25274-4-tzimmermann@suse.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 13 Nov 2019 01:55:49 +0000
+Subject: [PATCH AUTOSEL 4.14 082/115] fbdev: sbuslib: use checked version of put_user()
+Message-Id: <20191113015622.11592-82-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191108123333.25274-1-tzimmermann@suse.de>
-In-Reply-To: <20191108123333.25274-1-tzimmermann@suse.de>
+References: <20191113015622.11592-1-sashal@kernel.org>
+In-Reply-To: <20191113015622.11592-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mathieu Malaterre <malat@debian.org>, dri-devel@lists.freedesktop.org, Philippe Ombredanne <pombredanne@nexb.com>, Dan Carpenter <dan.carpenter@oracle.com>, Peter Malone <peter.malone@gmail.com>
 
-There are no callers of drm_fb_helper_unlink_fbi() left. Remove the
-function.
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+[ Upstream commit d8bad911e5e55e228d59c0606ff7e6b8131ca7bf ]
+
+I'm not sure why the code assumes that only the first put_user() needs
+an access_ok() check.  I have made all the put_user() and get_user()
+calls checked.
+
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Philippe Ombredanne <pombredanne@nexb.com>
+Cc: Mathieu Malaterre <malat@debian.org>
+Cc: Peter Malone <peter.malone@gmail.com>,
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/gpu/drm/drm_fb_helper.c | 16 +---------------
- include/drm/drm_fb_helper.h     |  6 ------
- 2 files changed, 1 insertion(+), 21 deletions(-)
+ drivers/video/fbdev/sbuslib.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index 1038a2f0639e..eb97f34a15ea 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -563,8 +563,7 @@ EXPORT_SYMBOL(drm_fb_helper_unregister_fbi);
-  * drm_fb_helper_fini - finialize a &struct drm_fb_helper
-  * @fb_helper: driver-allocated fbdev helper, can be NULL
-  *
-- * This cleans up all remaining resources associated with @fb_helper. Must be
-- * called after drm_fb_helper_unlink_fbi() was called.
-+ * This cleans up all remaining resources associated with @fb_helper.
-  */
- void drm_fb_helper_fini(struct drm_fb_helper *fb_helper)
- {
-@@ -604,19 +603,6 @@ void drm_fb_helper_fini(struct drm_fb_helper *fb_helper)
- }
- EXPORT_SYMBOL(drm_fb_helper_fini);
+diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+index a436d44f1b7fb..90c51330969c2 100644
+--- a/drivers/video/fbdev/sbuslib.c
++++ b/drivers/video/fbdev/sbuslib.c
+@@ -106,11 +106,11 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		struct fbtype __user *f = (struct fbtype __user *) arg;
  
--/**
-- * drm_fb_helper_unlink_fbi - wrapper around unlink_framebuffer
-- * @fb_helper: driver-allocated fbdev helper, can be NULL
-- *
-- * A wrapper around unlink_framebuffer implemented by fbdev core
-- */
--void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper)
--{
--	if (fb_helper && fb_helper->fbdev)
--		unlink_framebuffer(fb_helper->fbdev);
--}
--EXPORT_SYMBOL(drm_fb_helper_unlink_fbi);
--
- static bool drm_fbdev_use_shadow_fb(struct drm_fb_helper *fb_helper)
- {
- 	struct drm_device *dev = fb_helper->dev;
-diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
-index e3a75ff07390..1c2e0c3cf857 100644
---- a/include/drm/drm_fb_helper.h
-+++ b/include/drm/drm_fb_helper.h
-@@ -231,8 +231,6 @@ void drm_fb_helper_fill_info(struct fb_info *info,
- 			     struct drm_fb_helper *fb_helper,
- 			     struct drm_fb_helper_surface_size *sizes);
+ 		if (put_user(type, &f->fb_type) ||
+-		    __put_user(info->var.yres, &f->fb_height) ||
+-		    __put_user(info->var.xres, &f->fb_width) ||
+-		    __put_user(fb_depth, &f->fb_depth) ||
+-		    __put_user(0, &f->fb_cmsize) ||
+-		    __put_user(fb_size, &f->fb_cmsize))
++		    put_user(info->var.yres, &f->fb_height) ||
++		    put_user(info->var.xres, &f->fb_width) ||
++		    put_user(fb_depth, &f->fb_depth) ||
++		    put_user(0, &f->fb_cmsize) ||
++		    put_user(fb_size, &f->fb_cmsize))
+ 			return -EFAULT;
+ 		return 0;
+ 	}
+@@ -125,10 +125,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		unsigned int index, count, i;
  
--void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper);
--
- void drm_fb_helper_deferred_io(struct fb_info *info,
- 			       struct list_head *pagelist);
+ 		if (get_user(index, &c->index) ||
+-		    __get_user(count, &c->count) ||
+-		    __get_user(ured, &c->red) ||
+-		    __get_user(ugreen, &c->green) ||
+-		    __get_user(ublue, &c->blue))
++		    get_user(count, &c->count) ||
++		    get_user(ured, &c->red) ||
++		    get_user(ugreen, &c->green) ||
++		    get_user(ublue, &c->blue))
+ 			return -EFAULT;
  
-@@ -356,10 +354,6 @@ static inline int drm_fb_helper_ioctl(struct fb_info *info, unsigned int cmd,
- 	return 0;
- }
+ 		cmap.len = 1;
+@@ -165,10 +165,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		u8 red, green, blue;
  
--static inline void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper)
--{
--}
--
- static inline void drm_fb_helper_deferred_io(struct fb_info *info,
- 					     struct list_head *pagelist)
- {
+ 		if (get_user(index, &c->index) ||
+-		    __get_user(count, &c->count) ||
+-		    __get_user(ured, &c->red) ||
+-		    __get_user(ugreen, &c->green) ||
+-		    __get_user(ublue, &c->blue))
++		    get_user(count, &c->count) ||
++		    get_user(ured, &c->red) ||
++		    get_user(ugreen, &c->green) ||
++		    get_user(ublue, &c->blue))
+ 			return -EFAULT;
+ 
+ 		if (index + count > cmap->len)
 -- 
-2.23.0
+2.20.1

@@ -1,82 +1,128 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Tue, 12 Nov 2019 14:04:30 +0000
-Subject: [PATCH v3 4/5] drm/fb-helper: Remove drm_fb_helper_unlink_fbi()
-Message-Id: <20191112140431.7895-5-tzimmermann@suse.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 13 Nov 2019 01:49:19 +0000
+Subject: [PATCH AUTOSEL 4.19 143/209] fbdev: fix broken menu dependencies
+Message-Id: <20191113015025.9685-143-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191112140431.7895-1-tzimmermann@suse.de>
-In-Reply-To: <20191112140431.7895-1-tzimmermann@suse.de>
+References: <20191113015025.9685-1-sashal@kernel.org>
+In-Reply-To: <20191113015025.9685-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
 
-There are no callers of drm_fb_helper_unlink_fbi() left. Remove the
-function.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+[ Upstream commit aae3394ef0ef90cf00a21133357448385f13a5d4 ]
+
+The framebuffer options and devices menu is unintentionally split
+or broken because some items in it do not depend on FB (including
+several under omap and mmp).
+Fix this by moving FB_CMDLINE, FB_NOTIFY, and FB_CLPS711X_OLD to
+just before the FB Kconfig symbol definition and by moving the
+omap, omap2, and mmp menus to last, following FB_SM712.
+
+Also, the FB_VIA dependencies are duplicated by both being inside
+an "if FB_VIA/endif" block and "depends on FB_VIA", so drop the
+"depends on FB_VIA" lines since they are redundant.
+
+Fixes: ea6763c104c9 ("video/fbdev: Always built-in video= cmdline parsing")
+Fixes: 5ec9653806ba ("fbdev: Make fb-notify a no-op if CONFIG_FB=n")
+Fixes: ef74d46a4ef3 ("video: clps711x: Add new Cirrus Logic CLPS711X framebuffer driver")
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Alexander Shiyan <shc_work@mail.ru>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/gpu/drm/drm_fb_helper.c | 16 +---------------
- include/drm/drm_fb_helper.h     |  6 ------
- 2 files changed, 1 insertion(+), 21 deletions(-)
+ drivers/video/fbdev/Kconfig | 34 ++++++++++++++++------------------
+ 1 file changed, 16 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index 1038a2f0639e..eb97f34a15ea 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -563,8 +563,7 @@ EXPORT_SYMBOL(drm_fb_helper_unregister_fbi);
-  * drm_fb_helper_fini - finialize a &struct drm_fb_helper
-  * @fb_helper: driver-allocated fbdev helper, can be NULL
-  *
-- * This cleans up all remaining resources associated with @fb_helper. Must be
-- * called after drm_fb_helper_unlink_fbi() was called.
-+ * This cleans up all remaining resources associated with @fb_helper.
-  */
- void drm_fb_helper_fini(struct drm_fb_helper *fb_helper)
- {
-@@ -604,19 +603,6 @@ void drm_fb_helper_fini(struct drm_fb_helper *fb_helper)
- }
- EXPORT_SYMBOL(drm_fb_helper_fini);
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 591a13a597874..f99558d006bf4 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2,6 +2,18 @@
+ # fbdev configuration
+ #
  
--/**
-- * drm_fb_helper_unlink_fbi - wrapper around unlink_framebuffer
-- * @fb_helper: driver-allocated fbdev helper, can be NULL
-- *
-- * A wrapper around unlink_framebuffer implemented by fbdev core
-- */
--void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper)
--{
--	if (fb_helper && fb_helper->fbdev)
--		unlink_framebuffer(fb_helper->fbdev);
--}
--EXPORT_SYMBOL(drm_fb_helper_unlink_fbi);
++config FB_CMDLINE
++	bool
++
++config FB_NOTIFY
++	bool
++
++config FB_CLPS711X_OLD
++	tristate
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++
+ menuconfig FB
+ 	tristate "Support for frame buffer devices"
+ 	select FB_CMDLINE
+@@ -54,12 +66,6 @@ config FIRMWARE_EDID
+ 	 combination with certain motherboards and monitors are known to
+ 	 suffer from this problem.
+ 
+-config FB_CMDLINE
+-	bool
 -
- static bool drm_fbdev_use_shadow_fb(struct drm_fb_helper *fb_helper)
- {
- 	struct drm_device *dev = fb_helper->dev;
-diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
-index e3a75ff07390..1c2e0c3cf857 100644
---- a/include/drm/drm_fb_helper.h
-+++ b/include/drm/drm_fb_helper.h
-@@ -231,8 +231,6 @@ void drm_fb_helper_fill_info(struct fb_info *info,
- 			     struct drm_fb_helper *fb_helper,
- 			     struct drm_fb_helper_surface_size *sizes);
- 
--void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper);
+-config FB_NOTIFY
+-	bool
 -
- void drm_fb_helper_deferred_io(struct fb_info *info,
- 			       struct list_head *pagelist);
+ config FB_DDC
+        tristate
+        depends on FB
+@@ -329,12 +335,6 @@ config FB_ACORN
+ 	  hardware found in Acorn RISC PCs and other ARM-based machines.  If
+ 	  unsure, say N.
  
-@@ -356,10 +354,6 @@ static inline int drm_fb_helper_ioctl(struct fb_info *info, unsigned int cmd,
- 	return 0;
- }
- 
--static inline void drm_fb_helper_unlink_fbi(struct drm_fb_helper *fb_helper)
--{
--}
+-config FB_CLPS711X_OLD
+-	tristate
+-	select FB_CFB_FILLRECT
+-	select FB_CFB_COPYAREA
+-	select FB_CFB_IMAGEBLIT
 -
- static inline void drm_fb_helper_deferred_io(struct fb_info *info,
- 					     struct list_head *pagelist)
- {
+ config FB_CLPS711X
+ 	tristate "CLPS711X LCD support"
+ 	depends on FB && (ARCH_CLPS711X || COMPILE_TEST)
+@@ -1456,7 +1456,6 @@ if FB_VIA
+ 
+ config FB_VIA_DIRECT_PROCFS
+ 	bool "direct hardware access via procfs (DEPRECATED)(DANGEROUS)"
+-	depends on FB_VIA
+ 	default n
+ 	help
+ 	  Allow direct hardware access to some output registers via procfs.
+@@ -1466,7 +1465,6 @@ config FB_VIA_DIRECT_PROCFS
+ 
+ config FB_VIA_X_COMPATIBILITY
+ 	bool "X server compatibility"
+-	depends on FB_VIA
+ 	default n
+ 	help
+ 	  This option reduces the functionality (power saving, ...) of the
+@@ -2308,10 +2306,6 @@ config FB_SIMPLE
+ 	  Configuration re: surface address, size, and format must be provided
+ 	  through device tree, or plain old platform data.
+ 
+-source "drivers/video/fbdev/omap/Kconfig"
+-source "drivers/video/fbdev/omap2/Kconfig"
+-source "drivers/video/fbdev/mmp/Kconfig"
+-
+ config FB_SSD1307
+ 	tristate "Solomon SSD1307 framebuffer support"
+ 	depends on FB && I2C
+@@ -2341,3 +2335,7 @@ config FB_SM712
+ 	  This driver is also available as a module. The module will be
+ 	  called sm712fb. If you want to compile it as a module, say M
+ 	  here and read <file:Documentation/kbuild/modules.txt>.
++
++source "drivers/video/fbdev/omap/Kconfig"
++source "drivers/video/fbdev/omap2/Kconfig"
++source "drivers/video/fbdev/mmp/Kconfig"
 -- 
-2.23.0
+2.20.1

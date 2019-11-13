@@ -1,84 +1,53 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 13 Nov 2019 01:59:10 +0000
-Subject: [PATCH AUTOSEL 4.9 46/68] fbdev: sbuslib: use checked version of put_user()
-Message-Id: <20191113015932.12655-46-sashal@kernel.org>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Wed, 13 Nov 2019 11:52:30 +0000
+Subject: [PATCH v4 0/3] drm/udl: Replace fbdev by generic emulation
+Message-Id: <20191113115233.18483-1-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191113015932.12655-1-sashal@kernel.org>
-In-Reply-To: <20191113015932.12655-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mathieu Malaterre <malat@debian.org>, dri-devel@lists.freedesktop.org, Philippe Ombredanne <pombredanne@nexb.com>, Dan Carpenter <dan.carpenter@oracle.com>, Peter Malone <peter.malone@gmail.com>
+To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+The udl driver can use the generic fbdev emulation. After conversion,
+a number of cleanups can be applied.
 
-[ Upstream commit d8bad911e5e55e228d59c0606ff7e6b8131ca7bf ]
+The fbdev conversion is in patch 1. As udl was the only remaining
+external user of unlink_framebuffer(), that function now becomes an
+internal interface of the fbdev code (Patches 2 + 3).
 
-I'm not sure why the code assumes that only the first put_user() needs
-an access_ok() check.  I have made all the put_user() and get_user()
-calls checked.
+V4 of the patchset keeps udl_gem_object_free_object(). The function
+is still required to clean up after the damage handler mapped a BO.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Philippe Ombredanne <pombredanne@nexb.com>
-Cc: Mathieu Malaterre <malat@debian.org>
-Cc: Peter Malone <peter.malone@gmail.com>,
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/sbuslib.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+The patchset has been tested by running the console, X11 and Weston
+on a DisplayLink adapter.
 
-diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
-index 31c301d6be621..b425718925c01 100644
---- a/drivers/video/fbdev/sbuslib.c
-+++ b/drivers/video/fbdev/sbuslib.c
-@@ -105,11 +105,11 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		struct fbtype __user *f = (struct fbtype __user *) arg;
- 
- 		if (put_user(type, &f->fb_type) ||
--		    __put_user(info->var.yres, &f->fb_height) ||
--		    __put_user(info->var.xres, &f->fb_width) ||
--		    __put_user(fb_depth, &f->fb_depth) ||
--		    __put_user(0, &f->fb_cmsize) ||
--		    __put_user(fb_size, &f->fb_cmsize))
-+		    put_user(info->var.yres, &f->fb_height) ||
-+		    put_user(info->var.xres, &f->fb_width) ||
-+		    put_user(fb_depth, &f->fb_depth) ||
-+		    put_user(0, &f->fb_cmsize) ||
-+		    put_user(fb_size, &f->fb_cmsize))
- 			return -EFAULT;
- 		return 0;
- 	}
-@@ -124,10 +124,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		unsigned int index, count, i;
- 
- 		if (get_user(index, &c->index) ||
--		    __get_user(count, &c->count) ||
--		    __get_user(ured, &c->red) ||
--		    __get_user(ugreen, &c->green) ||
--		    __get_user(ublue, &c->blue))
-+		    get_user(count, &c->count) ||
-+		    get_user(ured, &c->red) ||
-+		    get_user(ugreen, &c->green) ||
-+		    get_user(ublue, &c->blue))
- 			return -EFAULT;
- 
- 		cmap.len = 1;
-@@ -164,10 +164,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		u8 red, green, blue;
- 
- 		if (get_user(index, &c->index) ||
--		    __get_user(count, &c->count) ||
--		    __get_user(ured, &c->red) ||
--		    __get_user(ugreen, &c->green) ||
--		    __get_user(ublue, &c->blue))
-+		    get_user(count, &c->count) ||
-+		    get_user(ured, &c->red) ||
-+		    get_user(ugreen, &c->green) ||
-+		    get_user(ublue, &c->blue))
- 			return -EFAULT;
- 
- 		if (index + count > cmap->len)
--- 
-2.20.1
+v4:
+	* go back to 24 bpp by default, 16 bpp for console
+	* keep udl_gem_object_free_object(); required by damage handler
+v3:
+	* use 32 bpp by default
+	* use defaults for several callback functions
+	* remove all fb module parameters
+	* remove udl_fbdev_init()
+v2:
+	* converted udl to SHMEM and recreated fbdev patchset on top
+
+Thomas Zimmermann (3):
+  drm/udl: Replace fbdev code with generic emulation
+  drm/fb-helper: Remove drm_fb_helper_unlink_fbi()
+  fbdev: Unexport unlink_framebuffer()
+
+ drivers/gpu/drm/drm_fb_helper.c   |  16 +-
+ drivers/gpu/drm/udl/udl_drv.c     |   1 -
+ drivers/gpu/drm/udl/udl_drv.h     |   6 -
+ drivers/gpu/drm/udl/udl_fb.c      | 282 ------------------------------
+ drivers/gpu/drm/udl/udl_main.c    |   5 +-
+ drivers/gpu/drm/udl/udl_modeset.c |   1 -
+ drivers/video/fbdev/core/fbmem.c  |   3 +-
+ include/drm/drm_fb_helper.h       |   6 -
+ include/linux/fb.h                |   1 -
+ 9 files changed, 4 insertions(+), 317 deletions(-)
+
+--
+2.23.0

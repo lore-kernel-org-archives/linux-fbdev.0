@@ -1,61 +1,66 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Tue, 12 Nov 2019 14:04:29 +0000
-Subject: [PATCH v3 3/5] drm/udl: Remove udl implementation of GEM's free_object()
-Message-Id: <20191112140431.7895-4-tzimmermann@suse.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 13 Nov 2019 01:55:56 +0000
+Subject: [PATCH AUTOSEL 4.14 089/115] backlight: lm3639: Unconditionally call led_classdev_unregister
+Message-Id: <20191113015622.11592-89-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191112140431.7895-1-tzimmermann@suse.de>
-In-Reply-To: <20191112140431.7895-1-tzimmermann@suse.de>
+References: <20191113015622.11592-1-sashal@kernel.org>
+In-Reply-To: <20191113015622.11592-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, clang-built-linux@googlegroups.com, Nathan Chancellor <natechancellor@gmail.com>, Lee Jones <lee.jones@linaro.org>
 
-Udl used to have a custom implementation for free_object() of
-struct drm_gem_object_funcs. It unmapped the memory buffer of
-the fbdev emulation. With the switch to generic fbdev emulation,
-this is now handled by the fbdev code internally.
+From: Nathan Chancellor <natechancellor@gmail.com>
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+[ Upstream commit 7cea645ae9c5a54aa7904fddb2cdf250acd63a6c ]
+
+Clang warns that the address of a pointer will always evaluated as true
+in a boolean context.
+
+drivers/video/backlight/lm3639_bl.c:403:14: warning: address of
+'pchip->cdev_torch' will always evaluate to 'true'
+[-Wpointer-bool-conversion]
+        if (&pchip->cdev_torch)
+        ~~   ~~~~~~~^~~~~~~~~~
+drivers/video/backlight/lm3639_bl.c:405:14: warning: address of
+'pchip->cdev_flash' will always evaluate to 'true'
+[-Wpointer-bool-conversion]
+        if (&pchip->cdev_flash)
+        ~~   ~~~~~~~^~~~~~~~~~
+2 warnings generated.
+
+These statements have been present since 2012, introduced by
+commit 0f59858d5119 ("backlight: add new lm3639 backlight
+driver"). Given that they have been called unconditionally since
+then presumably without any issues, removing the always true if
+statements to fix the warnings without any real world changes.
+
+Link: https://github.com/ClangBuiltLinux/linux/issues/119
+Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/gpu/drm/udl/udl_gem.c | 18 +-----------------
- 1 file changed, 1 insertion(+), 17 deletions(-)
+ drivers/video/backlight/lm3639_bl.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/gpu/drm/udl/udl_gem.c b/drivers/gpu/drm/udl/udl_gem.c
-index 6eade6b4b0dc..b6e26f98aa0a 100644
---- a/drivers/gpu/drm/udl/udl_gem.c
-+++ b/drivers/gpu/drm/udl/udl_gem.c
-@@ -17,22 +17,6 @@
-  * GEM object funcs
-  */
+diff --git a/drivers/video/backlight/lm3639_bl.c b/drivers/video/backlight/lm3639_bl.c
+index cd50df5807ead..086611c7bc03c 100644
+--- a/drivers/video/backlight/lm3639_bl.c
++++ b/drivers/video/backlight/lm3639_bl.c
+@@ -400,10 +400,8 @@ static int lm3639_remove(struct i2c_client *client)
  
--static void udl_gem_object_free_object(struct drm_gem_object *obj)
--{
--	struct drm_gem_shmem_object *shmem = to_drm_gem_shmem_obj(obj);
--
--	/* Fbdev emulation vmaps the buffer. Unmap it here for consistency
--	 * with the original udl GEM code.
--	 *
--	 * TODO: Switch to generic fbdev emulation and release the
--	 *       GEM object with drm_gem_shmem_free_object().
--	 */
--	if (shmem->vaddr)
--		drm_gem_shmem_vunmap(obj, shmem->vaddr);
--
--	drm_gem_shmem_free_object(obj);
--}
--
- static int udl_gem_object_mmap(struct drm_gem_object *obj,
- 			       struct vm_area_struct *vma)
- {
-@@ -91,7 +75,7 @@ static void *udl_gem_object_vmap(struct drm_gem_object *obj)
- }
+ 	regmap_write(pchip->regmap, REG_ENABLE, 0x00);
  
- static const struct drm_gem_object_funcs udl_gem_object_funcs = {
--	.free = udl_gem_object_free_object,
-+	.free = drm_gem_shmem_free_object,
- 	.print_info = drm_gem_shmem_print_info,
- 	.pin = drm_gem_shmem_pin,
- 	.unpin = drm_gem_shmem_unpin,
+-	if (&pchip->cdev_torch)
+-		led_classdev_unregister(&pchip->cdev_torch);
+-	if (&pchip->cdev_flash)
+-		led_classdev_unregister(&pchip->cdev_flash);
++	led_classdev_unregister(&pchip->cdev_torch);
++	led_classdev_unregister(&pchip->cdev_flash);
+ 	if (pchip->bled)
+ 		device_remove_file(&(pchip->bled->dev), &dev_attr_bled_mode);
+ 	return 0;
 -- 
-2.23.0
+2.20.1

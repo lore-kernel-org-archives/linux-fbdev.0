@@ -1,88 +1,84 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Fri, 29 Nov 2019 10:35:44 +0000
-Subject: Re: [Intel-gfx] [PATCH v2 12/14] media: constify fb ops across all drivers
-Message-Id: <87h82nkm0v.fsf@intel.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 13 Nov 2019 01:49:17 +0000
+Subject: [PATCH AUTOSEL 4.19 141/209] fbdev: sbuslib: use checked version of put_user()
+Message-Id: <20191113015025.9685-141-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1575022735.git.jani.nikula@intel.com>
- <9cfc1a171d12a52dfbd5508d737681f2d89d21df.1575022735.git.jani.nikula@intel.com>
-In-Reply-To: <9cfc1a171d12a52dfbd5508d737681f2d89d21df.1575022735.git.jani.nikula@intel.com>
+References: <20191113015025.9685-1-sashal@kernel.org>
+In-Reply-To: <20191113015025.9685-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Andy Walls <awalls@md.metrocast.net>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, ivtv-devel@ivtvdriver.org, Hans Verkuil <hverkuil@xs4all.nl>, linux-media@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Dan Carpenter <dan.carpenter@oracle.com>, Philippe Ombredanne <pombredanne@nexb.com>, Mathieu Malaterre <malat@debian.org>, Peter Malone <peter.malone@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-On Fri, 29 Nov 2019, Jani Nikula <jani.nikula@intel.com> wrote:
-> Now that the fbops member of struct fb_info is const, we can start
-> making the ops const as well.
->
-> Remove the redundant fbops assignments while at it.
->
-> v2:
-> - actually add const in vivid
-> - fix typo (Christophe de Dinechin)
->
-> Cc: Hans Verkuil <hverkuil@xs4all.nl>
-> Cc: Andy Walls <awalls@md.metrocast.net>
-> Cc: linux-media@vger.kernel.org
-> Cc: ivtv-devel@ivtvdriver.org
-> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
->
-> fixup-to-media
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-Rebase artefact, to be removed before applying...
+[ Upstream commit d8bad911e5e55e228d59c0606ff7e6b8131ca7bf ]
 
-BR,
-Jani.
+I'm not sure why the code assumes that only the first put_user() needs
+an access_ok() check.  I have made all the put_user() and get_user()
+calls checked.
 
-> ---
->  drivers/media/pci/ivtv/ivtvfb.c          | 3 +--
->  drivers/media/platform/vivid/vivid-osd.c | 3 +--
->  2 files changed, 2 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
-> index 95a56cce9b65..f2922b554b09 100644
-> --- a/drivers/media/pci/ivtv/ivtvfb.c
-> +++ b/drivers/media/pci/ivtv/ivtvfb.c
-> @@ -925,7 +925,7 @@ static int ivtvfb_blank(int blank_mode, struct fb_info *info)
->  	return 0;
->  }
->  
-> -static struct fb_ops ivtvfb_ops = {
-> +static const struct fb_ops ivtvfb_ops = {
->  	.owner = THIS_MODULE,
->  	.fb_write       = ivtvfb_write,
->  	.fb_check_var   = ivtvfb_check_var,
-> @@ -1049,7 +1049,6 @@ static int ivtvfb_init_vidmode(struct ivtv *itv)
->  
->  	oi->ivtvfb_info.node = -1;
->  	oi->ivtvfb_info.flags = FBINFO_FLAG_DEFAULT;
-> -	oi->ivtvfb_info.fbops = &ivtvfb_ops;
->  	oi->ivtvfb_info.par = itv;
->  	oi->ivtvfb_info.var = oi->ivtvfb_defined;
->  	oi->ivtvfb_info.fix = oi->ivtvfb_fix;
-> diff --git a/drivers/media/platform/vivid/vivid-osd.c b/drivers/media/platform/vivid/vivid-osd.c
-> index f2e789bdf4a6..fbaec8acc161 100644
-> --- a/drivers/media/platform/vivid/vivid-osd.c
-> +++ b/drivers/media/platform/vivid/vivid-osd.c
-> @@ -244,7 +244,7 @@ static int vivid_fb_blank(int blank_mode, struct fb_info *info)
->  	return 0;
->  }
->  
-> -static struct fb_ops vivid_fb_ops = {
-> +static const struct fb_ops vivid_fb_ops = {
->  	.owner = THIS_MODULE,
->  	.fb_check_var   = vivid_fb_check_var,
->  	.fb_set_par     = vivid_fb_set_par,
-> @@ -311,7 +311,6 @@ static int vivid_fb_init_vidmode(struct vivid_dev *dev)
->  
->  	dev->fb_info.node = -1;
->  	dev->fb_info.flags = FBINFO_FLAG_DEFAULT;
-> -	dev->fb_info.fbops = &vivid_fb_ops;
->  	dev->fb_info.par = dev;
->  	dev->fb_info.var = dev->fb_defined;
->  	dev->fb_info.fix = dev->fb_fix;
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Philippe Ombredanne <pombredanne@nexb.com>
+Cc: Mathieu Malaterre <malat@debian.org>
+Cc: Peter Malone <peter.malone@gmail.com>,
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/sbuslib.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
+diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+index a436d44f1b7fb..90c51330969c2 100644
+--- a/drivers/video/fbdev/sbuslib.c
++++ b/drivers/video/fbdev/sbuslib.c
+@@ -106,11 +106,11 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		struct fbtype __user *f = (struct fbtype __user *) arg;
+ 
+ 		if (put_user(type, &f->fb_type) ||
+-		    __put_user(info->var.yres, &f->fb_height) ||
+-		    __put_user(info->var.xres, &f->fb_width) ||
+-		    __put_user(fb_depth, &f->fb_depth) ||
+-		    __put_user(0, &f->fb_cmsize) ||
+-		    __put_user(fb_size, &f->fb_cmsize))
++		    put_user(info->var.yres, &f->fb_height) ||
++		    put_user(info->var.xres, &f->fb_width) ||
++		    put_user(fb_depth, &f->fb_depth) ||
++		    put_user(0, &f->fb_cmsize) ||
++		    put_user(fb_size, &f->fb_cmsize))
+ 			return -EFAULT;
+ 		return 0;
+ 	}
+@@ -125,10 +125,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		unsigned int index, count, i;
+ 
+ 		if (get_user(index, &c->index) ||
+-		    __get_user(count, &c->count) ||
+-		    __get_user(ured, &c->red) ||
+-		    __get_user(ugreen, &c->green) ||
+-		    __get_user(ublue, &c->blue))
++		    get_user(count, &c->count) ||
++		    get_user(ured, &c->red) ||
++		    get_user(ugreen, &c->green) ||
++		    get_user(ublue, &c->blue))
+ 			return -EFAULT;
+ 
+ 		cmap.len = 1;
+@@ -165,10 +165,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		u8 red, green, blue;
+ 
+ 		if (get_user(index, &c->index) ||
+-		    __get_user(count, &c->count) ||
+-		    __get_user(ured, &c->red) ||
+-		    __get_user(ugreen, &c->green) ||
+-		    __get_user(ublue, &c->blue))
++		    get_user(count, &c->count) ||
++		    get_user(ured, &c->red) ||
++		    get_user(ugreen, &c->green) ||
++		    get_user(ublue, &c->blue))
+ 			return -EFAULT;
+ 
+ 		if (index + count > cmap->len)
 -- 
-Jani Nikula, Intel Open Source Graphics Center
+2.20.1

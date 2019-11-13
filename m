@@ -1,53 +1,45 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Wed, 13 Nov 2019 11:52:30 +0000
-Subject: [PATCH v4 0/3] drm/udl: Replace fbdev by generic emulation
-Message-Id: <20191113115233.18483-1-tzimmermann@suse.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 13 Nov 2019 01:49:18 +0000
+Subject: [PATCH AUTOSEL 4.19 142/209] fbdev: sbuslib: integer overflow in sbusfb_ioctl_helper()
+Message-Id: <20191113015025.9685-142-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191113015025.9685-1-sashal@kernel.org>
+In-Reply-To: <20191113015025.9685-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mathieu Malaterre <malat@debian.org>, dri-devel@lists.freedesktop.org, Philippe Ombredanne <pombredanne@nexb.com>, Dan Carpenter <dan.carpenter@oracle.com>, Peter Malone <peter.malone@gmail.com>
 
-The udl driver can use the generic fbdev emulation. After conversion,
-a number of cleanups can be applied.
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-The fbdev conversion is in patch 1. As udl was the only remaining
-external user of unlink_framebuffer(), that function now becomes an
-internal interface of the fbdev code (Patches 2 + 3).
+[ Upstream commit e5017716adb8aa5c01c52386c1b7470101ffe9c5 ]
 
-V4 of the patchset keeps udl_gem_object_free_object(). The function
-is still required to clean up after the damage handler mapped a BO.
+The "index + count" addition can overflow.  Both come directly from the
+user.  This bug leads to an information leak.
 
-The patchset has been tested by running the console, X11 and Weston
-on a DisplayLink adapter.
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Peter Malone <peter.malone@gmail.com>
+Cc: Philippe Ombredanne <pombredanne@nexb.com>
+Cc: Mathieu Malaterre <malat@debian.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/sbuslib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-v4:
-	* go back to 24 bpp by default, 16 bpp for console
-	* keep udl_gem_object_free_object(); required by damage handler
-v3:
-	* use 32 bpp by default
-	* use defaults for several callback functions
-	* remove all fb module parameters
-	* remove udl_fbdev_init()
-v2:
-	* converted udl to SHMEM and recreated fbdev patchset on top
-
-Thomas Zimmermann (3):
-  drm/udl: Replace fbdev code with generic emulation
-  drm/fb-helper: Remove drm_fb_helper_unlink_fbi()
-  fbdev: Unexport unlink_framebuffer()
-
- drivers/gpu/drm/drm_fb_helper.c   |  16 +-
- drivers/gpu/drm/udl/udl_drv.c     |   1 -
- drivers/gpu/drm/udl/udl_drv.h     |   6 -
- drivers/gpu/drm/udl/udl_fb.c      | 282 ------------------------------
- drivers/gpu/drm/udl/udl_main.c    |   5 +-
- drivers/gpu/drm/udl/udl_modeset.c |   1 -
- drivers/video/fbdev/core/fbmem.c  |   3 +-
- include/drm/drm_fb_helper.h       |   6 -
- include/linux/fb.h                |   1 -
- 9 files changed, 4 insertions(+), 317 deletions(-)
-
---
-2.23.0
+diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+index 90c51330969c2..01a7110e61a76 100644
+--- a/drivers/video/fbdev/sbuslib.c
++++ b/drivers/video/fbdev/sbuslib.c
+@@ -171,7 +171,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		    get_user(ublue, &c->blue))
+ 			return -EFAULT;
+ 
+-		if (index + count > cmap->len)
++		if (index > cmap->len || count > cmap->len - index)
+ 			return -EINVAL;
+ 
+ 		for (i = 0; i < count; i++) {
+-- 
+2.20.1

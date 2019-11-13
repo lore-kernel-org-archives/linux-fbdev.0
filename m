@@ -1,128 +1,84 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 13 Nov 2019 01:49:16 +0000
-Subject: [PATCH AUTOSEL 4.19 140/209] atmel_lcdfb: support native-mode display-timings
-Message-Id: <20191113015025.9685-140-sashal@kernel.org>
+Date: Wed, 13 Nov 2019 01:59:10 +0000
+Subject: [PATCH AUTOSEL 4.9 46/68] fbdev: sbuslib: use checked version of put_user()
+Message-Id: <20191113015932.12655-46-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191113015025.9685-1-sashal@kernel.org>
-In-Reply-To: <20191113015025.9685-1-sashal@kernel.org>
+References: <20191113015932.12655-1-sashal@kernel.org>
+In-Reply-To: <20191113015932.12655-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sam Ravnborg <sam@ravnborg.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mathieu Malaterre <malat@debian.org>, dri-devel@lists.freedesktop.org, Philippe Ombredanne <pombredanne@nexb.com>, Dan Carpenter <dan.carpenter@oracle.com>, Peter Malone <peter.malone@gmail.com>
 
-From: Sam Ravnborg <sam@ravnborg.org>
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-[ Upstream commit 60e5e48dba72c6b59a7a9c7686ba320766913368 ]
+[ Upstream commit d8bad911e5e55e228d59c0606ff7e6b8131ca7bf ]
 
-When a device tree set a display-timing using native-mode
-then according to the bindings doc this should:
+I'm not sure why the code assumes that only the first put_user() needs
+an access_ok() check.  I have made all the put_user() and get_user()
+calls checked.
 
-    native-mode:
-    The native mode for the display, in case multiple
-    modes are provided.
-    When omitted, assume the first node is the native.
-
-The atmel_lcdfb used the last timing subnode and did not
-respect the timing mode specified with native-mode.
-
-Introduce use of of_get_videomode() which allowed
-a nice simplification of the code while also
-added support for native-mode.
-
-As a nice side-effect this fixes a memory leak where the
-data used for timings and the display_np was not freed.
-
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Philippe Ombredanne <pombredanne@nexb.com>
+Cc: Mathieu Malaterre <malat@debian.org>
+Cc: Peter Malone <peter.malone@gmail.com>,
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/atmel_lcdfb.c | 43 +++++++------------------------
- 1 file changed, 9 insertions(+), 34 deletions(-)
+ drivers/video/fbdev/sbuslib.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_=
-lcdfb.c
-index 076d24afbd728..4ed55e6bbb840 100644
---- a/drivers/video/fbdev/atmel_lcdfb.c
-+++ b/drivers/video/fbdev/atmel_lcdfb.c
-@@ -22,6 +22,7 @@
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
-+#include <video/of_videomode.h>
- #include <video/of_display_timing.h>
- #include <linux/regulator/consumer.h>
- #include <video/videomode.h>
-@@ -1028,11 +1029,11 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_i=
-nfo *sinfo)
- 	struct device *dev =3D &sinfo->pdev->dev;
- 	struct device_node *np =DEv->of_node;
- 	struct device_node *display_np;
--	struct device_node *timings_np;
--	struct display_timings *timings;
- 	struct atmel_lcdfb_power_ctrl_gpio *og;
- 	bool is_gpio_power =3D false;
-+	struct fb_videomode fb_vm;
- 	struct gpio_desc *gpiod;
-+	struct videomode vm;
- 	int ret =3D -ENOENT;
- 	int i;
-=20
-@@ -1105,44 +1106,18 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_i=
-nfo *sinfo)
- 	pdata->lcdcon_is_backlight =3D of_property_read_bool(display_np, "atmel,l=
-cdcon-backlight");
- 	pdata->lcdcon_pol_negative =3D of_property_read_bool(display_np, "atmel,l=
-cdcon-backlight-inverted");
-=20
--	timings =3D of_get_display_timings(display_np);
--	if (!timings) {
--		dev_err(dev, "failed to get display timings\n");
--		ret =3D -EINVAL;
-+	ret =3D of_get_videomode(display_np, &vm, OF_USE_NATIVE_MODE);
-+	if (ret) {
-+		dev_err(dev, "failed to get videomode from DT\n");
- 		goto put_display_node;
+diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+index 31c301d6be621..b425718925c01 100644
+--- a/drivers/video/fbdev/sbuslib.c
++++ b/drivers/video/fbdev/sbuslib.c
+@@ -105,11 +105,11 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		struct fbtype __user *f = (struct fbtype __user *) arg;
+ 
+ 		if (put_user(type, &f->fb_type) ||
+-		    __put_user(info->var.yres, &f->fb_height) ||
+-		    __put_user(info->var.xres, &f->fb_width) ||
+-		    __put_user(fb_depth, &f->fb_depth) ||
+-		    __put_user(0, &f->fb_cmsize) ||
+-		    __put_user(fb_size, &f->fb_cmsize))
++		    put_user(info->var.yres, &f->fb_height) ||
++		    put_user(info->var.xres, &f->fb_width) ||
++		    put_user(fb_depth, &f->fb_depth) ||
++		    put_user(0, &f->fb_cmsize) ||
++		    put_user(fb_size, &f->fb_cmsize))
+ 			return -EFAULT;
+ 		return 0;
  	}
-=20
--	timings_np =3D of_get_child_by_name(display_np, "display-timings");
--	if (!timings_np) {
--		dev_err(dev, "failed to find display-timings node\n");
--		ret =3D -ENODEV;
-+	ret =3D fb_videomode_from_videomode(&vm, &fb_vm);
-+	if (ret < 0)
- 		goto put_display_node;
--	}
-=20
--	for (i =3D 0; i < of_get_child_count(timings_np); i++) {
--		struct videomode vm;
--		struct fb_videomode fb_vm;
--
--		ret =3D videomode_from_timings(timings, &vm, i);
--		if (ret < 0)
--			goto put_timings_node;
--		ret =3D fb_videomode_from_videomode(&vm, &fb_vm);
--		if (ret < 0)
--			goto put_timings_node;
--
--		fb_add_videomode(&fb_vm, &info->modelist);
--	}
--
--	/*
--	 * FIXME: Make sure we are not referencing any fields in display_np
--	 * and timings_np and drop our references to them before returning to
--	 * avoid leaking the nodes on probe deferral and driver unbind.
--	 */
--
--	return 0;
-+	fb_add_videomode(&fb_vm, &info->modelist);
-=20
--put_timings_node:
--	of_node_put(timings_np);
- put_display_node:
- 	of_node_put(display_np);
- 	return ret;
---=20
+@@ -124,10 +124,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		unsigned int index, count, i;
+ 
+ 		if (get_user(index, &c->index) ||
+-		    __get_user(count, &c->count) ||
+-		    __get_user(ured, &c->red) ||
+-		    __get_user(ugreen, &c->green) ||
+-		    __get_user(ublue, &c->blue))
++		    get_user(count, &c->count) ||
++		    get_user(ured, &c->red) ||
++		    get_user(ugreen, &c->green) ||
++		    get_user(ublue, &c->blue))
+ 			return -EFAULT;
+ 
+ 		cmap.len = 1;
+@@ -164,10 +164,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		u8 red, green, blue;
+ 
+ 		if (get_user(index, &c->index) ||
+-		    __get_user(count, &c->count) ||
+-		    __get_user(ured, &c->red) ||
+-		    __get_user(ugreen, &c->green) ||
+-		    __get_user(ublue, &c->blue))
++		    get_user(count, &c->count) ||
++		    get_user(ured, &c->red) ||
++		    get_user(ugreen, &c->green) ||
++		    get_user(ublue, &c->blue))
+ 			return -EFAULT;
+ 
+ 		if (index + count > cmap->len)
+-- 
 2.20.1

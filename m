@@ -1,58 +1,66 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Wed, 20 Nov 2019 09:57:16 +0000
-Subject: [PATCH v1 5/5] fbtft: Drop OF dependency
-Message-Id: <20191120095716.26628-5-andriy.shevchenko@linux.intel.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 13 Nov 2019 02:01:19 +0000
+Subject: [PATCH AUTOSEL 4.4 36/48] backlight: lm3639: Unconditionally call led_classdev_unregister
+Message-Id: <20191113020131.13356-36-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191120095716.26628-1-andriy.shevchenko@linux.intel.com>
-In-Reply-To: <20191120095716.26628-1-andriy.shevchenko@linux.intel.com>
+References: <20191113020131.13356-1-sashal@kernel.org>
+In-Reply-To: <20191113020131.13356-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, linux-fbdev@vger.kernel.org, Nishad Kamdar <nishadkamdar@gmail.com>, devel@driverdev.osuosl.org
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, clang-built-linux@googlegroups.com, Nathan Chancellor <natechancellor@gmail.com>, Lee Jones <lee.jones@linaro.org>
 
-Now, since driver became OF independent, no need to keep OF dependency.
+From: Nathan Chancellor <natechancellor@gmail.com>
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+[ Upstream commit 7cea645ae9c5a54aa7904fddb2cdf250acd63a6c ]
+
+Clang warns that the address of a pointer will always evaluated as true
+in a boolean context.
+
+drivers/video/backlight/lm3639_bl.c:403:14: warning: address of
+'pchip->cdev_torch' will always evaluate to 'true'
+[-Wpointer-bool-conversion]
+        if (&pchip->cdev_torch)
+        ~~   ~~~~~~~^~~~~~~~~~
+drivers/video/backlight/lm3639_bl.c:405:14: warning: address of
+'pchip->cdev_flash' will always evaluate to 'true'
+[-Wpointer-bool-conversion]
+        if (&pchip->cdev_flash)
+        ~~   ~~~~~~~^~~~~~~~~~
+2 warnings generated.
+
+These statements have been present since 2012, introduced by
+commit 0f59858d5119 ("backlight: add new lm3639 backlight
+driver"). Given that they have been called unconditionally since
+then presumably without any issues, removing the always true if
+statements to fix the warnings without any real world changes.
+
+Link: https://github.com/ClangBuiltLinux/linux/issues/119
+Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/staging/fbtft/Kconfig | 2 +-
- drivers/staging/fbtft/fbtft.h | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/backlight/lm3639_bl.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
-index cb61c2a772bd..54751d9fc0ff 100644
---- a/drivers/staging/fbtft/Kconfig
-+++ b/drivers/staging/fbtft/Kconfig
-@@ -1,7 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0
- menuconfig FB_TFT
- 	tristate "Support for small TFT LCD display modules"
--	depends on FB && SPI && OF
-+	depends on FB && SPI
- 	depends on GPIOLIB || COMPILE_TEST
- 	select FB_SYS_FILLRECT
- 	select FB_SYS_COPYAREA
-diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index 9b6bdb62093d..5f782da51959 100644
---- a/drivers/staging/fbtft/fbtft.h
-+++ b/drivers/staging/fbtft/fbtft.h
-@@ -309,7 +309,7 @@ MODULE_DEVICE_TABLE(of, dt_ids);                                           \
- static struct spi_driver fbtft_driver_spi_driver = {                       \
- 	.driver = {                                                        \
- 		.name   = _name,                                           \
--		.of_match_table = of_match_ptr(dt_ids),                    \
-+		.of_match_table = dt_ids,                                  \
- 	},                                                                 \
- 	.probe  = fbtft_driver_probe_spi,                                  \
- 	.remove = fbtft_driver_remove_spi,                                 \
-@@ -319,7 +319,7 @@ static struct platform_driver fbtft_driver_platform_driver = {             \
- 	.driver = {                                                        \
- 		.name   = _name,                                           \
- 		.owner  = THIS_MODULE,                                     \
--		.of_match_table = of_match_ptr(dt_ids),                    \
-+		.of_match_table = dt_ids,                                  \
- 	},                                                                 \
- 	.probe  = fbtft_driver_probe_pdev,                                 \
- 	.remove = fbtft_driver_remove_pdev,                                \
+diff --git a/drivers/video/backlight/lm3639_bl.c b/drivers/video/backlight/lm3639_bl.c
+index cd50df5807ead..086611c7bc03c 100644
+--- a/drivers/video/backlight/lm3639_bl.c
++++ b/drivers/video/backlight/lm3639_bl.c
+@@ -400,10 +400,8 @@ static int lm3639_remove(struct i2c_client *client)
+ 
+ 	regmap_write(pchip->regmap, REG_ENABLE, 0x00);
+ 
+-	if (&pchip->cdev_torch)
+-		led_classdev_unregister(&pchip->cdev_torch);
+-	if (&pchip->cdev_flash)
+-		led_classdev_unregister(&pchip->cdev_flash);
++	led_classdev_unregister(&pchip->cdev_torch);
++	led_classdev_unregister(&pchip->cdev_flash);
+ 	if (pchip->bled)
+ 		device_remove_file(&(pchip->bled->dev), &dev_attr_bled_mode);
+ 	return 0;
 -- 
-2.24.0
+2.20.1

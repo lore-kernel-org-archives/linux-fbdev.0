@@ -1,37 +1,38 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Fri, 29 Nov 2019 10:29:33 +0000
-Subject: [PATCH v2 03/14] video: smscufx: don't restore fb_mmap after deferred IO cleanup
-Message-Id: <480dcc682481e6972e5648181d7e92120929ec6b.1575022735.git.jani.nikula@intel.com>
+From: Colin King <colin.king@canonical.com>
+Date: Thu, 14 Nov 2019 17:27:20 +0000
+Subject: [PATCH][next] video: hyperv: hyperv_fb: fix indentation issue
+Message-Id: <20191114172720.322023-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1575022735.git.jani.nikula@intel.com>
-In-Reply-To: <cover.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: jani.nikula@intel.com, Steve Glendinning <steve.glendinning@shawell.net>, intel-gfx@lists.freedesktop.org, Daniel Vetter <daniel.vetter@ffwll.ch>
+To: "K . Y . Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, Sasha Levin <sashal@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-hyperv@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Deferred IO now preserves the fb_ops.
+From: Colin Ian King <colin.king@canonical.com>
 
-Cc: Steve Glendinning <steve.glendinning@shawell.net>
-Cc: linux-fbdev@vger.kernel.org
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+There is a block of statements that are indented
+too deeply, remove the extraneous tabs.
+
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/video/fbdev/smscufx.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/fbdev/hyperv_fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
-index 0e0f5bbfc5ef..e362d7da87fc 100644
---- a/drivers/video/fbdev/smscufx.c
-+++ b/drivers/video/fbdev/smscufx.c
-@@ -1170,7 +1170,6 @@ static int ufx_ops_release(struct fb_info *info, int user)
- 		fb_deferred_io_cleanup(info);
- 		kfree(info->fbdefio);
- 		info->fbdefio = NULL;
--		info->fbops->fb_mmap = ufx_ops_mmap;
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 4cd27e5172a1..5fcf4bdf85ab 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -582,8 +582,8 @@ static int synthvid_get_supported_resolution(struct hv_device *hdev)
+ 	t = wait_for_completion_timeout(&par->wait, VSP_TIMEOUT);
+ 	if (!t) {
+ 		pr_err("Time out on waiting resolution response\n");
+-			ret = -ETIMEDOUT;
+-			goto out;
++		ret = -ETIMEDOUT;
++		goto out;
  	}
  
- 	pr_debug("released /dev/fb%d user=%d count=%d",
+ 	if (msg->resolution_resp.resolution_count = 0) {
 -- 
 2.20.1

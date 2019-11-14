@@ -1,42 +1,52 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Fri, 29 Nov 2019 10:35:24 +0000
-Subject: Re: [Intel-gfx] [PATCH v2 10/14] video: constify fb ops across all drivers
-Message-Id: <87k17jkm1f.fsf@intel.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Thu, 14 Nov 2019 12:51:03 +0000
+Subject: [PATCH v5 0/3] drm/udl: Replace fbdev by generic emulation
+Message-Id: <20191114125106.28347-1-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1575022735.git.jani.nikula@intel.com>
- <c89c23a4393566c09c2372c4d69c851eb2724866.1575022735.git.jani.nikula@intel.com>
-In-Reply-To: <c89c23a4393566c09c2372c4d69c851eb2724866.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org
+To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
 
-On Fri, 29 Nov 2019, Jani Nikula <jani.nikula@intel.com> wrote:
-> Now that the fbops member of struct fb_info is const, we can start
-> making the ops const as well.
->
-> This does not cover all drivers; some actually modify the fbops struct,
-> for example to adjust for different configurations, and others do more
-> involved things that I'd rather not touch in practically obsolete
-> drivers. Mostly this is the low hanging fruit where we can add "const"
-> and be done with it.
->
-> v2:
-> - fix typo (Christophe de Dinechin)
-> - use "static const" instead of "const static" in mx3fb.c
-> - also constify smscufx.c
->
-> Cc: linux-fbdev@vger.kernel.org
-> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
->
-> fixup to video drivers
+The udl driver can use the generic fbdev emulation. After conversion,
+a number of cleanups can be applied.
 
-Rebase artefact, to be removed before applying...
+The fbdev conversion is in patch 1. As udl was the only remaining
+external user of unlink_framebuffer(), that function now becomes an
+internal interface of the fbdev code (Patches 2 + 3).
 
-BR,
-Jani.
+The patchset has been tested by running the console, X11 and Weston
+on a DisplayLink adapter.
 
--- 
-Jani Nikula, Intel Open Source Graphics Center
+v5:
+	* initialize console after registering device
+v4:
+	* go back to 24 bpp by default, 16 bpp for console
+	* keep udl_gem_object_free_object(); required by damage handler
+v3:
+	* use 32 bpp by default
+	* use defaults for several callback functions
+	* remove all fb module parameters
+	* remove udl_fbdev_init()
+v2:
+	* converted udl to SHMEM and recreated fbdev patchset on top
+
+Thomas Zimmermann (3):
+  drm/udl: Replace fbdev code with generic emulation
+  drm/fb-helper: Remove drm_fb_helper_unlink_fbi()
+  fbdev: Unexport unlink_framebuffer()
+
+ drivers/gpu/drm/drm_fb_helper.c   |  16 +-
+ drivers/gpu/drm/udl/udl_drv.c     |   8 +-
+ drivers/gpu/drm/udl/udl_drv.h     |   6 -
+ drivers/gpu/drm/udl/udl_fb.c      | 282 ------------------------------
+ drivers/gpu/drm/udl/udl_main.c    |   6 -
+ drivers/gpu/drm/udl/udl_modeset.c |   1 -
+ drivers/video/fbdev/core/fbmem.c  |   3 +-
+ include/drm/drm_fb_helper.h       |   6 -
+ include/linux/fb.h                |   1 -
+ 9 files changed, 9 insertions(+), 320 deletions(-)
+
+--
+2.23.0

@@ -1,84 +1,39 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 13 Nov 2019 02:01:15 +0000
-Subject: [PATCH AUTOSEL 4.4 32/48] fbdev: sbuslib: use checked version of put_user()
-Message-Id: <20191113020131.13356-32-sashal@kernel.org>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Wed, 20 Nov 2019 09:57:13 +0000
+Subject: [PATCH v1 2/5] fbtft: Describe function parameters in kernel-doc
+Message-Id: <20191120095716.26628-2-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191113020131.13356-1-sashal@kernel.org>
-In-Reply-To: <20191113020131.13356-1-sashal@kernel.org>
+References: <20191120095716.26628-1-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20191120095716.26628-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mathieu Malaterre <malat@debian.org>, dri-devel@lists.freedesktop.org, Philippe Ombredanne <pombredanne@nexb.com>, Dan Carpenter <dan.carpenter@oracle.com>, Peter Malone <peter.malone@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, linux-fbdev@vger.kernel.org, Nishad Kamdar <nishadkamdar@gmail.com>, devel@driverdev.osuosl.org
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+Kernel documentation script complains that some of the function parameters
+are not described:
 
-[ Upstream commit d8bad911e5e55e228d59c0606ff7e6b8131ca7bf ]
+drivers/staging/fbtft/fbtft-core.c:543: warning: Function parameter or member 'pdata' not described in 'fbtft_framebuffer_alloc'
 
-I'm not sure why the code assumes that only the first put_user() needs
-an access_ok() check.  I have made all the put_user() and get_user()
-calls checked.
+Describe function parameters where it's appropriate.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Philippe Ombredanne <pombredanne@nexb.com>
-Cc: Mathieu Malaterre <malat@debian.org>
-Cc: Peter Malone <peter.malone@gmail.com>,
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/video/fbdev/sbuslib.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ drivers/staging/fbtft/fbtft-core.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
-index 31c301d6be621..b425718925c01 100644
---- a/drivers/video/fbdev/sbuslib.c
-+++ b/drivers/video/fbdev/sbuslib.c
-@@ -105,11 +105,11 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		struct fbtype __user *f = (struct fbtype __user *) arg;
- 
- 		if (put_user(type, &f->fb_type) ||
--		    __put_user(info->var.yres, &f->fb_height) ||
--		    __put_user(info->var.xres, &f->fb_width) ||
--		    __put_user(fb_depth, &f->fb_depth) ||
--		    __put_user(0, &f->fb_cmsize) ||
--		    __put_user(fb_size, &f->fb_cmsize))
-+		    put_user(info->var.yres, &f->fb_height) ||
-+		    put_user(info->var.xres, &f->fb_width) ||
-+		    put_user(fb_depth, &f->fb_depth) ||
-+		    put_user(0, &f->fb_cmsize) ||
-+		    put_user(fb_size, &f->fb_cmsize))
- 			return -EFAULT;
- 		return 0;
- 	}
-@@ -124,10 +124,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		unsigned int index, count, i;
- 
- 		if (get_user(index, &c->index) ||
--		    __get_user(count, &c->count) ||
--		    __get_user(ured, &c->red) ||
--		    __get_user(ugreen, &c->green) ||
--		    __get_user(ublue, &c->blue))
-+		    get_user(count, &c->count) ||
-+		    get_user(ured, &c->red) ||
-+		    get_user(ugreen, &c->green) ||
-+		    get_user(ublue, &c->blue))
- 			return -EFAULT;
- 
- 		cmap.len = 1;
-@@ -164,10 +164,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		u8 red, green, blue;
- 
- 		if (get_user(index, &c->index) ||
--		    __get_user(count, &c->count) ||
--		    __get_user(ured, &c->red) ||
--		    __get_user(ugreen, &c->green) ||
--		    __get_user(ublue, &c->blue))
-+		    get_user(count, &c->count) ||
-+		    get_user(ured, &c->red) ||
-+		    get_user(ugreen, &c->green) ||
-+		    get_user(ublue, &c->blue))
- 			return -EFAULT;
- 
- 		if (index + count > cmap->len)
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 61f0286fb157..2122c4407bdb 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -529,6 +529,7 @@ static void fbtft_merge_fbtftops(struct fbtft_ops *dst, struct fbtft_ops *src)
+  *
+  * @display: pointer to structure describing the display
+  * @dev: pointer to the device for this fb, this can be NULL
++ * @pdata: platform data for the display in use
+  *
+  * Creates a new frame buffer info structure.
+  *
 -- 
-2.20.1
+2.24.0

@@ -1,72 +1,52 @@
-From: Sean Young <sean@mess.org>
-Date: Wed, 06 Nov 2019 10:06:55 +0000
-Subject: Re: [RFC PATCH 00/12] i2c: replace i2c_new_probed_device with an ERR_PTR variant
-Message-Id: <20191106100655.GA2743@gofer.mess.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Wed, 20 Nov 2019 13:39:11 +0000
+Subject: [PATCH] staging: fbtft: Fix Kconfig indentation
+Message-Id: <20191120133911.13539-1-krzk@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191106095033.25182-1-wsa+renesas@sang-engineering.com>
-In-Reply-To: <20191106095033.25182-1-wsa+renesas@sang-engineering.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org
 
-On Wed, Nov 06, 2019 at 10:50:18AM +0100, Wolfram Sang wrote:
-> From: Wolfram Sang <wsa@the-dreams.de>
-> 
-> In the on-going mission to let i2c_new_* calls return an ERR_PTR instead
-> of NULL, here is a series converting i2c_new_probed_device(). A new
-> function called i2c_new_scanned_device() is introduced with the new
-> retval, but for now, a compatibility helper is provided until all users
-> are converted. The rest of the patches convert all current in-tree
-> users.
-> 
-> Note that these patches are RFC because I want feedback on the approach
-> and hopefully collect acks on the driver conversions. If all goes well,
-> I'll apply the first two patches for the next merge window. Then, once
-> this dependency is upstream, I'll resend this series with all issues
-> fixed and acks collected.
+Adjust indentation from spaces to tab (+optional two spaces) as in
+coding style with command like:
+	$ sed -e 's/^        /\t/' -i */Kconfig
 
-The patches to drivers/media/pci/* are all IR related which have touched
-on/read over the years. So, for those:
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ drivers/staging/fbtft/Kconfig | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Acked-by: Sean Young <sean@mess.org>
-
-> 
-> Core changes tested on a Renesas Salvator-XS board (R-Car M3-N), driver
-> patches build tested by me and buildbot.
-> 
-> Wolfram Sang (12):
->   i2c: replace i2c_new_probed_device with an ERR_PTR variant
->   i2c: icy: convert to i2c_new_scanned_device
->   macintosh: convert to i2c_new_scanned_device
->   platform: chrome: convert to i2c_new_scanned_device
->   video: fbdev: matrox: convert to i2c_new_scanned_device
->   input: mouse: convert to i2c_new_scanned_device
->   media: pci: cx23885: convert to i2c_new_scanned_device
->   media: pci: cx88: convert to i2c_new_scanned_device
->   media: pci: bt8xx: convert to i2c_new_scanned_device
->   media: pci: cx18: convert to i2c_new_scanned_device
->   media: pci: ivtv: convert to i2c_new_scanned_device
->   media: v4l2-core: convert to i2c_new_scanned_device
-> 
->  Documentation/i2c/instantiating-devices.rst | 10 ++++-----
->  Documentation/i2c/writing-clients.rst       |  8 +++----
->  drivers/i2c/busses/i2c-icy.c                |  8 +++----
->  drivers/i2c/i2c-core-base.c                 | 25 ++++++++++++++++-----
->  drivers/input/mouse/psmouse-smbus.c         |  8 ++++---
->  drivers/macintosh/therm_windtunnel.c        |  4 ++--
->  drivers/media/pci/bt8xx/bttv-input.c        |  6 ++---
->  drivers/media/pci/cx18/cx18-i2c.c           |  2 +-
->  drivers/media/pci/cx23885/cx23885-i2c.c     |  4 ++--
->  drivers/media/pci/cx88/cx88-input.c         |  2 +-
->  drivers/media/pci/ivtv/ivtv-i2c.c           |  6 ++---
->  drivers/media/pci/ivtv/ivtv-i2c.h           |  2 +-
->  drivers/media/v4l2-core/v4l2-i2c.c          | 10 ++++-----
->  drivers/platform/chrome/chromeos_laptop.c   | 18 ++++++++-------
->  drivers/video/fbdev/matrox/i2c-matroxfb.c   |  4 ++--
->  include/linux/i2c.h                         | 12 +++++++---
->  16 files changed, 76 insertions(+), 53 deletions(-)
-> 
-> -- 
-> 2.20.1
+diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
+index d994aea84b21..19d9d88e9150 100644
+--- a/drivers/staging/fbtft/Kconfig
++++ b/drivers/staging/fbtft/Kconfig
+@@ -95,8 +95,8 @@ config FB_TFT_PCD8544
+ 	  Generic Framebuffer support for PCD8544
+ 
+ config FB_TFT_RA8875
+-        tristate "FB driver for the RA8875 LCD Controller"
+-        depends on FB_TFT
++	tristate "FB driver for the RA8875 LCD Controller"
++	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for RA8875
+ 
+@@ -132,10 +132,10 @@ config FB_TFT_SSD1289
+ 	  Framebuffer support for SSD1289
+ 
+ config FB_TFT_SSD1305
+-        tristate "FB driver for the SSD1305 OLED Controller"
+-        depends on FB_TFT
+-        help
+-          Framebuffer support for SSD1305
++	tristate "FB driver for the SSD1305 OLED Controller"
++	depends on FB_TFT
++	help
++	  Framebuffer support for SSD1305
+ 
+ config FB_TFT_SSD1306
+ 	tristate "FB driver for the SSD1306 OLED Controller"
+-- 
+2.17.1

@@ -1,25 +1,41 @@
-From: eddy william <greogebrown@gmail.com>
-Date: Sat, 09 Nov 2019 15:12:58 +0000
-Subject: hello
-Message-Id: <CAH0Hv2jUzez_U2Wk0Ac=qmEhqKi9EQna6c96FL=EZ2Tv73xRdw@mail.gmail.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Wed, 20 Nov 2019 09:57:12 +0000
+Subject: [PATCH v1 1/5] fbtft: Make sure string is NULL terminated
+Message-Id: <20191120095716.26628-1-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CACemp=4mAaepgGr1XuueXxXwf2P0M-7DMC57uKMRYGhWCvzMbQ@mail.gmail.com>
-In-Reply-To: <CACemp=4mAaepgGr1XuueXxXwf2P0M-7DMC57uKMRYGhWCvzMbQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, linux-fbdev@vger.kernel.org, Nishad Kamdar <nishadkamdar@gmail.com>, devel@driverdev.osuosl.org
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Hello
+New GCC warns about inappropriate use of strncpy():
 
-My name is Eddy William I am a lawyer by profession. I wish to offer you
-the next of kin to my client. You will inherit the sum of ($8.5 Million)
-dollars my client left in the bank before his death.
+drivers/staging/fbtft/fbtft-core.c: In function ‘fbtft_framebuffer_alloc’:
+drivers/staging/fbtft/fbtft-core.c:665:2: warning: ‘strncpy’ specified bound 16 equals destination size [-Wstringop-truncation]
+  665 |  strncpy(info->fix.id, dev->driver->name, 16);
+      |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-My client is a citizen of your country who died in auto crash with his wife
-and only son. I will be entitled with 50% of the total fund while 50% will
-be for you.
-Please contact my private email here for more details:eddywilliam0002gmail.com
+Later on the copy is being used with the assumption to be NULL terminated.
+Make sure string is NULL terminated by switching to snprintf().
 
-Many thanks in advance,
-Mr.Eddy William,
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/staging/fbtft/fbtft-core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index a0a67aa517f0..61f0286fb157 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -666,7 +666,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
+ 	fbdefio->deferred_io =     fbtft_deferred_io;
+ 	fb_deferred_io_init(info);
+ 
+-	strncpy(info->fix.id, dev->driver->name, 16);
++	snprintf(info->fix.id, sizeof(info->fix.id), "%s", dev->driver->name);
+ 	info->fix.type =           FB_TYPE_PACKED_PIXELS;
+ 	info->fix.visual =         FB_VISUAL_TRUECOLOR;
+ 	info->fix.xpanstep =	   0;
+-- 
+2.24.0

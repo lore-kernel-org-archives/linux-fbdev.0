@@ -1,86 +1,185 @@
-From: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
-Date: Thu, 28 Nov 2019 11:31:00 +0000
-Subject: Re: [PATCH 02/13] drm/fb-helper: don't preserve fb_ops across deferred IO use
-Message-Id: <f8292d00-5d62-cd3c-9d17-37a3feebd74b@tronnes.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Wed, 20 Nov 2019 13:38:38 +0000
+Subject: [PATCH] video: Fix Kconfig indentation
+Message-Id: <20191120133838.13132-1-krzk@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1574871797.git.jani.nikula@intel.com>
- <e2b1685703878612093a37189d37685303fa15e9.1574871797.git.jani.nikula@intel.com>
-In-Reply-To: <e2b1685703878612093a37189d37685303fa15e9.1574871797.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jani Nikula <jani.nikula@intel.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: intel-gfx@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
+Adjust indentation from spaces to tab (+optional two spaces) as in
+coding style with command like:
+	$ sed -e 's/^        /\t/' -i */Kconfig
 
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ drivers/video/backlight/Kconfig |  8 ++--
+ drivers/video/console/Kconfig   | 76 ++++++++++++++++-----------------
+ 2 files changed, 42 insertions(+), 42 deletions(-)
 
-Den 27.11.2019 17.31, skrev Jani Nikula:
-> Deferred IO now preserves the fb_ops.
-> 
-> Cc: Noralf Trønnes <noralf@tronnes.org>
-> Cc: dri-devel@lists.freedesktop.org
-> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
-> ---
->  drivers/gpu/drm/drm_fb_helper.c | 18 ++----------------
->  1 file changed, 2 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-> index 0c088ea70ad0..a5a2a538d085 100644
-> --- a/drivers/gpu/drm/drm_fb_helper.c
-> +++ b/drivers/gpu/drm/drm_fb_helper.c
-> @@ -1954,7 +1954,6 @@ static int drm_fbdev_fb_release(struct fb_info *info, int user)
->  static void drm_fbdev_cleanup(struct drm_fb_helper *fb_helper)
->  {
->  	struct fb_info *fbi = fb_helper->fbdev;
-> -	struct fb_ops *fbops = NULL;
->  	void *shadow = NULL;
->  
->  	if (!fb_helper->dev)
-> @@ -1963,15 +1962,11 @@ static void drm_fbdev_cleanup(struct drm_fb_helper *fb_helper)
->  	if (fbi && fbi->fbdefio) {
->  		fb_deferred_io_cleanup(fbi);
->  		shadow = fbi->screen_buffer;
-> -		fbops = fbi->fbops;
->  	}
->  
->  	drm_fb_helper_fini(fb_helper);
->  
-> -	if (shadow) {
-> -		vfree(shadow);
-> -		kfree(fbops);
-> -	}
-> +	vfree(shadow);
->  
->  	drm_client_framebuffer_delete(fb_helper->buffer);
->  }
-> @@ -2062,23 +2057,14 @@ static int drm_fb_helper_generic_probe(struct drm_fb_helper *fb_helper,
->  	drm_fb_helper_fill_info(fbi, fb_helper, sizes);
->  
->  	if (drm_fbdev_use_shadow_fb(fb_helper)) {
-> -		struct fb_ops *fbops;
->  		void *shadow;
->  
-> -		/*
-> -		 * fb_deferred_io_cleanup() clears &fbops->fb_mmap so a per
-> -		 * instance version is necessary.
-> -		 */
-> -		fbops = kzalloc(sizeof(*fbops), GFP_KERNEL);
->  		shadow = vzalloc(fbi->screen_size);
-> -		if (!fbops || !shadow) {
-> -			kfree(fbops);
-> +		if (!shadow) {
->  			vfree(shadow);
-
-This vfree can is a no-op now and can be dropped. With that:
-
-Reviewed-by: Noralf Trønnes <noralf@tronnes.org>
-
->  			return -ENOMEM;
->  		}
->  
-> -		*fbops = *fbi->fbops;
-> -		fbi->fbops = fbops;
->  		fbi->screen_buffer = shadow;
->  		fbi->fbdefio = &drm_fbdev_defio;
->  
-> 
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 403707a3e503..95e2000c1491 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -9,7 +9,7 @@ menu "Backlight & LCD device support"
+ # LCD
+ #
+ config LCD_CLASS_DEVICE
+-        tristate "Lowlevel LCD controls"
++	tristate "Lowlevel LCD controls"
+ 	help
+ 	  This framework adds support for low-level control of LCD.
+ 	  Some framebuffer devices connect to platform-specific LCD modules
+@@ -141,10 +141,10 @@ endif # LCD_CLASS_DEVICE
+ # Backlight
+ #
+ config BACKLIGHT_CLASS_DEVICE
+-        tristate "Lowlevel Backlight controls"
++	tristate "Lowlevel Backlight controls"
+ 	help
+ 	  This framework adds support for low-level control of the LCD
+-          backlight. This includes support for brightness and power.
++	  backlight. This includes support for brightness and power.
+ 
+ 	  To have support for your specific LCD panel you will have to
+ 	  select the proper drivers which depend on this option.
+@@ -272,7 +272,7 @@ config BACKLIGHT_APPLE
+        tristate "Apple Backlight Driver"
+        depends on X86 && ACPI
+        help
+-         If you have an Intel-based Apple say Y to enable a driver for its
++	 If you have an Intel-based Apple say Y to enable a driver for its
+ 	 backlight.
+ 
+ config BACKLIGHT_TOSA
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index c10e17fb9a9a..ac3a28c08f78 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -27,7 +27,7 @@ config VGACON_SOFT_SCROLLBACK
+        depends on VGA_CONSOLE
+        default n
+        help
+-         The scrollback buffer of the standard VGA console is located in
++	 The scrollback buffer of the standard VGA console is located in
+ 	 the VGA RAM.  The size of this RAM is fixed and is quite small.
+ 	 If you require a larger scrollback buffer, this can be placed in
+ 	 System RAM which is dynamically allocated during initialization.
+@@ -84,12 +84,12 @@ config MDA_CONSOLE
+ 	  If unsure, say N.
+ 
+ config SGI_NEWPORT_CONSOLE
+-        tristate "SGI Newport Console support"
++	tristate "SGI Newport Console support"
+ 	depends on SGI_IP22 && HAS_IOMEM
+-        select FONT_SUPPORT
+-        help
+-          Say Y here if you want the console on the Newport aka XL graphics
+-          card of your Indy.  Most people say Y here.
++	select FONT_SUPPORT
++	help
++	  Say Y here if you want the console on the Newport aka XL graphics
++	  card of your Indy.  Most people say Y here.
+ 
+ config DUMMY_CONSOLE
+ 	bool
+@@ -97,24 +97,24 @@ config DUMMY_CONSOLE
+ 	default y
+ 
+ config DUMMY_CONSOLE_COLUMNS
+-        int "Initial number of console screen columns"
+-        depends on DUMMY_CONSOLE && !ARM
+-        default 160 if PARISC
+-        default 80
+-        help
+-          On PA-RISC, the default value is 160, which should fit a 1280x1024
+-          monitor.
+-          Select 80 if you use a 640x480 resolution by default.
++	int "Initial number of console screen columns"
++	depends on DUMMY_CONSOLE && !ARM
++	default 160 if PARISC
++	default 80
++	help
++	  On PA-RISC, the default value is 160, which should fit a 1280x1024
++	  monitor.
++	  Select 80 if you use a 640x480 resolution by default.
+ 
+ config DUMMY_CONSOLE_ROWS
+-        int "Initial number of console screen rows"
+-        depends on DUMMY_CONSOLE && !ARM
+-        default 64 if PARISC
+-        default 25
+-        help
+-          On PA-RISC, the default value is 64, which should fit a 1280x1024
+-          monitor.
+-          Select 25 if you use a 640x480 resolution by default.
++	int "Initial number of console screen rows"
++	depends on DUMMY_CONSOLE && !ARM
++	default 64 if PARISC
++	default 25
++	help
++	  On PA-RISC, the default value is 64, which should fit a 1280x1024
++	  monitor.
++	  Select 25 if you use a 640x480 resolution by default.
+ 
+ config FRAMEBUFFER_CONSOLE
+ 	bool "Framebuffer Console support"
+@@ -130,11 +130,11 @@ config FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+        depends on FRAMEBUFFER_CONSOLE
+        default n
+        ---help---
+-         If this option is selected, the framebuffer console will
+-         automatically select the primary display device (if the architecture
++	 If this option is selected, the framebuffer console will
++	 automatically select the primary display device (if the architecture
+ 	 supports this feature).  Otherwise, the framebuffer console will
+-         always select the first framebuffer driver that is loaded. The latter
+-         is the default behavior.
++	 always select the first framebuffer driver that is loaded. The latter
++	 is the default behavior.
+ 
+ 	 You can always override the automatic selection of the primary device
+ 	 by using the fbcon=map: boot option.
+@@ -145,11 +145,11 @@ config FRAMEBUFFER_CONSOLE_ROTATION
+        bool "Framebuffer Console Rotation"
+        depends on FRAMEBUFFER_CONSOLE
+        help
+-         Enable display rotation for the framebuffer console.  This is done
+-         in software and may be significantly slower than a normally oriented
+-         display.  Note that the rotation is done at the console level only
+-         such that other users of the framebuffer will remain normally
+-         oriented.
++	 Enable display rotation for the framebuffer console.  This is done
++	 in software and may be significantly slower than a normally oriented
++	 display.  Note that the rotation is done at the console level only
++	 such that other users of the framebuffer will remain normally
++	 oriented.
+ 
+ config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+ 	bool "Framebuffer Console Deferred Takeover"
+@@ -163,14 +163,14 @@ config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+ 	  black screen as soon as fbcon loads.
+ 
+ config STI_CONSOLE
+-        bool "STI text console"
++	bool "STI text console"
+ 	depends on PARISC && HAS_IOMEM
+-        select FONT_SUPPORT
+-        default y
+-        help
+-          The STI console is the builtin display/keyboard on HP-PARISC
+-          machines.  Say Y here to build support for it into your kernel.
+-          The alternative is to use your primary serial port as a console.
++	select FONT_SUPPORT
++	default y
++	help
++	  The STI console is the builtin display/keyboard on HP-PARISC
++	  machines.  Say Y here to build support for it into your kernel.
++	  The alternative is to use your primary serial port as a console.
+ 
+ endmenu
+ 
+-- 
+2.17.1

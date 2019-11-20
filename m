@@ -1,99 +1,56 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Wed, 13 Nov 2019 15:48:20 +0000
-Subject: Re: [PATCH v4 1/3] drm/udl: Replace fbdev code with generic emulation
-Message-Id: <5398d88a-bb4a-7f8f-f043-a101911940aa@suse.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ZQ6pXZQRbgjVW9F6dCLaI2xDfw1j2uWHu"
+From: Dexuan Cui <decui@microsoft.com>
+Date: Wed, 20 Nov 2019 07:13:48 +0000
+Subject: [PATCH] video: hyperv_fb: Fix hibernation for the deferred IO feature
+Message-Id: <1574234028-48574-1-git-send-email-decui@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191113115233.18483-1-tzimmermann@suse.de>
- <20191113115233.18483-2-tzimmermann@suse.de>
- <7c9289a6-1a4e-e0d3-ce9e-3f5d6305da69@tronnes.org>
- <c2d1d12d-d90e-f6f6-9608-9955e63a8bec@suse.de>
-In-Reply-To: <c2d1d12d-d90e-f6f6-9608-9955e63a8bec@suse.de>
-To: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>, airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com, sashal@kernel.org, b.zolnierkie@samsung.com, linux-hyperv@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, mikelley@microsoft.com, Alexander.Levin@microsoft.com
+Cc: weh@microsoft.com, Dexuan Cui <decui@microsoft.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---ZQ6pXZQRbgjVW9F6dCLaI2xDfw1j2uWHu
-Content-Type: multipart/mixed; boundary="HJTtoV33BLx1rsgTppA8uUGQFUTEeDIXM";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>, airlied@redhat.com,
- sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com,
- kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Message-ID: <5398d88a-bb4a-7f8f-f043-a101911940aa@suse.de>
-Subject: Re: [PATCH v4 1/3] drm/udl: Replace fbdev code with generic emulation
-References: <20191113115233.18483-1-tzimmermann@suse.de>
- <20191113115233.18483-2-tzimmermann@suse.de>
- <7c9289a6-1a4e-e0d3-ce9e-3f5d6305da69@tronnes.org>
- <c2d1d12d-d90e-f6f6-9608-9955e63a8bec@suse.de>
-In-Reply-To: <c2d1d12d-d90e-f6f6-9608-9955e63a8bec@suse.de>
+fb_deferred_io_work() can access the vmbus ringbuffer by calling
+fbdefio->deferred_io() -> synthvid_deferred_io() -> synthvid_update().
 
---HJTtoV33BLx1rsgTppA8uUGQFUTEeDIXM
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+Because the vmbus ringbuffer is inaccessible between hvfb_suspend()
+and hvfb_resume(), we must cancel info->deferred_work before calling
+vmbus_close() and then reschedule it after we reopen the channel
+in hvfb_resume().
 
+Fixes: a4ddb11d297e ("video: hyperv: hyperv_fb: Support deferred IO for Hyper-V frame buffer driver")
+Fixes: 824946a8b6fb ("video: hyperv_fb: Add the support of hibernation")
+Signed-off-by: Dexuan Cui <decui@microsoft.com>
+---
 
-Am 13.11.19 um 16:41 schrieb Thomas Zimmermann:
+This patch fixes the 2 aforementioned patches on Sasha Levin's Hyper-V tree's
+hyperv-next branch:
+https://git.kernel.org/pub/scm/linux/kernel/git/hyperv/linux.git/log/?h=hyperv-next
 
->> Either way you choose:
->=20
-> Glad you like it :)
->=20
+The 2 aforementioned patches have not appeared in the mainline yet, so
+please pick up this patch onto he same hyperv-next branch.
 
-more like this
+ drivers/video/fbdev/hyperv_fb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
->>
->> Btw, nice diffstat!
-
-Glad you like it :)
-
->>
->>>  	if (ret)
->>>  		goto err;
->>> =20
->>> @@ -367,6 +368,4 @@ void udl_fini(struct drm_device *dev)
->>> =20
->>>  	if (udl->urbs.count)
->>>  		udl_free_urb_list(dev);
->>> -
->>> -	udl_fbdev_cleanup(dev);
->>>  }
->> _______________________________________________
->> dri-devel mailing list
->> dri-devel@lists.freedesktop.org
->> https://lists.freedesktop.org/mailman/listinfo/dri-devel
->>
->=20
-
---=20
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
-(HRB 36809, AG N=C3=BCrnberg)
-Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
-
-
---HJTtoV33BLx1rsgTppA8uUGQFUTEeDIXM--
-
---ZQ6pXZQRbgjVW9F6dCLaI2xDfw1j2uWHu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEEchf7rIzpz2NEoWjlaA3BHVMLeiMFAl3MJcQACgkQaA3BHVML
-eiNG6Qf/epNWFMYvFoLWFEdBRojEqVCU3W7GD95cNBp25auTYxjmbdeB4dhasdMJ
-vG7gIxe+uRaOSiN5sEDSpenMw3gGUhMVbFwmaQUapxU4THVpdSKB2X/d7iFFOtbP
-ECFxsfAHRSrb7xzTZwoPNsnTR8ptgH++uok/Mh3V+PfgqGqjUaOVHYhZvVtPuMGf
-TF296DjD0hPBuvVvXsSQ9S+vuJeCHsBw6vVHr/peP8hx6/pForieSf3G/MvxkBYV
-M10qhmgQ5mI9MP+9qsP1OiUF2wPentGzQsxA0r1mt6TRH8Taqm7vSNCRdrHVG8Gz
-nhGkHuxLErXgN3hG0y1hXKbjEdG+lw==
-=Ol7h
------END PGP SIGNATURE-----
-
---ZQ6pXZQRbgjVW9F6dCLaI2xDfw1j2uWHu--
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 4cd27e5172a1..08bc0dfb5ce7 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -1194,6 +1194,7 @@ static int hvfb_suspend(struct hv_device *hdev)
+ 	fb_set_suspend(info, 1);
+ 
+ 	cancel_delayed_work_sync(&par->dwork);
++	cancel_delayed_work_sync(&info->deferred_work);
+ 
+ 	par->update_saved = par->update;
+ 	par->update = false;
+@@ -1227,6 +1228,7 @@ static int hvfb_resume(struct hv_device *hdev)
+ 	par->fb_ready = true;
+ 	par->update = par->update_saved;
+ 
++	schedule_delayed_work(&info->deferred_work, info->fbdefio->delay);
+ 	schedule_delayed_work(&par->dwork, HVFB_UPDATE_DELAY);
+ 
+ 	/* 0 means do resume */
+-- 
+2.19.1

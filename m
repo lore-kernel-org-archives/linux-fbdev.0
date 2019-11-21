@@ -1,36 +1,57 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Wed, 27 Nov 2019 16:31:59 +0000
-Subject: [PATCH 03/13] video: smscufx: don't restore fb_mmap after deferred IO cleanup
-Message-Id: <5c25b31242a3ae2326ccf163e5be5ae401b04b49.1574871797.git.jani.nikula@intel.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Thu, 21 Nov 2019 14:02:07 +0000
+Subject: [PATCH v1] fbtft: Fix the initialization from property algorithm
+Message-Id: <20191121140207.65089-1-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1574871797.git.jani.nikula@intel.com>
-In-Reply-To: <cover.1574871797.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: jani.nikula@intel.com, Steve Glendinning <steve.glendinning@shawell.net>, intel-gfx@lists.freedesktop.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Deferred IO now preserves the fb_ops.
+When converting to device property API the commit
+8b2d3aeeb7ec ("fbtft: Make use of device property API")
+mistakenly placed the reading of the first value inside the loop,
+that jumps over value after initialization sequence or sleep commands.
 
-Cc: Steve Glendinning <steve.glendinning@shawell.net>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+Move the above mentioned reading outside of the loop to restore
+correct behaviour.
+
+Besides that, we are using pre-increment operation which may lead to
+out of the boundary access at the end of sequence. Thus, allocate buffer
+with an additional element at the end to prevent out of the boundary
+access.
+
+Fixes: 8b2d3aeeb7ec ("fbtft: Make use of device property API")
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/video/fbdev/smscufx.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/staging/fbtft/fbtft-core.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
-index 0e0f5bbfc5ef..e362d7da87fc 100644
---- a/drivers/video/fbdev/smscufx.c
-+++ b/drivers/video/fbdev/smscufx.c
-@@ -1170,7 +1170,6 @@ static int ufx_ops_release(struct fb_info *info, int user)
- 		fb_deferred_io_cleanup(info);
- 		kfree(info->fbdefio);
- 		info->fbdefio = NULL;
--		info->fbops->fb_mmap = ufx_ops_mmap;
- 	}
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index e87d839d86ac..4fcc82b7de1b 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -913,7 +913,7 @@ static int fbtft_init_display_from_property(struct fbtft_par *par)
+ 	if (count = 0)
+ 		return -EINVAL;
  
- 	pr_debug("released /dev/fb%d user=%d count=%d",
+-	values = kmalloc_array(count, sizeof(*values), GFP_KERNEL);
++	values = kmalloc_array(count + 1, sizeof(*values), GFP_KERNEL);
+ 	if (!values)
+ 		return -ENOMEM;
+ 
+@@ -926,9 +926,9 @@ static int fbtft_init_display_from_property(struct fbtft_par *par)
+ 		gpiod_set_value(par->gpio.cs, 0);  /* Activate chip */
+ 
+ 	index = -1;
+-	while (index < count) {
+-		val = values[++index];
++	val = values[++index];
+ 
++	while (index < count) {
+ 		if (val & FBTFT_OF_INIT_CMD) {
+ 			val &= 0xFFFF;
+ 			i = 0;
 -- 
-2.20.1
+2.24.0

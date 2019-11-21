@@ -1,175 +1,268 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Wed, 27 Nov 2019 16:31:56 +0000
-Subject: [PATCH 00/13] video, drm: constify fbops in struct fb_info
-Message-Id: <cover.1574871797.git.jani.nikula@intel.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Thu, 21 Nov 2019 03:20:03 +0000
+Subject: [PATCH v2] video: Fix Kconfig indentation
+Message-Id: <1574306404-17703-1-git-send-email-krzk@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: jani.nikula@intel.com, intel-gfx@lists.freedesktop.org
+To: linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-So I wanted to quickly move our struct fb_ops to const data because we
-don't modify it... and this series is where the rabbit hole ends. Ugh.
+Adjust indentation from spaces to tab (+optional two spaces) as in
+coding style with command like:
+	$ sed -e 's/^        /\t/' -i */Kconfig
 
-The main pain point is deferred IO, which is covered in patch
-1. Everything gets easier after that. The last 5 could be merged at
-leisure.
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-BR,
-Jani.
+---
 
+Changes since v1:
+1. Fix also 7-space and tab+1 space indentation issues.
+---
+ drivers/video/Kconfig           |   4 +-
+ drivers/video/backlight/Kconfig |  16 ++---
+ drivers/video/console/Kconfig   | 132 ++++++++++++++++++++--------------------
+ 3 files changed, 76 insertions(+), 76 deletions(-)
 
-Jani Nikula (13):
-  video: fb_defio: preserve user fb_ops
-  drm/fb-helper: don't preserve fb_ops across deferred IO use
-  video: smscufx: don't restore fb_mmap after deferred IO cleanup
-  video: udlfb: don't restore fb_mmap after deferred IO cleanup
-  video: fbdev: vesafb: modify the static fb_ops directly
-  video: fbmem: use const pointer for fb_ops
-  video: omapfb: use const pointer for fb_ops
-  video: fbdev: make fbops member of struct fb_info a const pointer
-  drm: constify fb ops across all drivers
-  video: constify fb ops across all drivers
-  HID: picoLCD: constify fb ops
-  media: constify fb ops across all drivers
-  samples: vfio-mdev: constify fb ops
-
- drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c        |  2 +-
- drivers/gpu/drm/armada/armada_fbdev.c         |  2 +-
- drivers/gpu/drm/drm_fb_helper.c               | 20 +++------------
- drivers/gpu/drm/exynos/exynos_drm_fbdev.c     |  2 +-
- .../gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c |  2 +-
- drivers/gpu/drm/i915/display/intel_fbdev.c    |  2 +-
- drivers/gpu/drm/msm/msm_fbdev.c               |  2 +-
- drivers/gpu/drm/nouveau/nouveau_fbcon.c       |  4 +--
- drivers/gpu/drm/omapdrm/omap_fbdev.c          |  2 +-
- drivers/gpu/drm/radeon/radeon_fb.c            |  2 +-
- drivers/gpu/drm/rockchip/rockchip_drm_fbdev.c |  2 +-
- drivers/gpu/drm/tegra/fb.c                    |  2 +-
- drivers/gpu/drm/vmwgfx/vmwgfx_fb.c            |  2 +-
- drivers/hid/hid-picolcd_fb.c                  |  3 +--
- drivers/media/pci/ivtv/ivtvfb.c               |  3 +--
- drivers/media/platform/vivid/vivid-osd.c      |  1 -
- drivers/video/fbdev/68328fb.c                 |  2 +-
- drivers/video/fbdev/acornfb.c                 |  2 +-
- drivers/video/fbdev/amba-clcd.c               |  2 +-
- drivers/video/fbdev/amifb.c                   |  2 +-
- drivers/video/fbdev/arcfb.c                   |  2 +-
- drivers/video/fbdev/arkfb.c                   |  2 +-
- drivers/video/fbdev/asiliantfb.c              |  2 +-
- drivers/video/fbdev/atmel_lcdfb.c             |  2 +-
- drivers/video/fbdev/aty/aty128fb.c            |  2 +-
- drivers/video/fbdev/aty/atyfb_base.c          |  2 +-
- drivers/video/fbdev/aty/radeon_base.c         |  2 +-
- drivers/video/fbdev/au1100fb.c                |  2 +-
- drivers/video/fbdev/au1200fb.c                |  2 +-
- drivers/video/fbdev/broadsheetfb.c            |  2 +-
- drivers/video/fbdev/bw2.c                     |  2 +-
- drivers/video/fbdev/carminefb.c               |  2 +-
- drivers/video/fbdev/cg14.c                    |  2 +-
- drivers/video/fbdev/cg3.c                     |  2 +-
- drivers/video/fbdev/cg6.c                     |  2 +-
- drivers/video/fbdev/chipsfb.c                 |  2 +-
- drivers/video/fbdev/cirrusfb.c                |  2 +-
- drivers/video/fbdev/clps711x-fb.c             |  2 +-
- drivers/video/fbdev/cobalt_lcdfb.c            |  2 +-
- drivers/video/fbdev/controlfb.c               |  2 +-
- drivers/video/fbdev/core/fb_defio.c           | 25 ++++++++++++++++---
- drivers/video/fbdev/core/fbmem.c              |  6 ++---
- drivers/video/fbdev/cyber2000fb.c             |  2 +-
- drivers/video/fbdev/da8xx-fb.c                |  2 +-
- drivers/video/fbdev/dnfb.c                    |  2 +-
- drivers/video/fbdev/efifb.c                   |  2 +-
- drivers/video/fbdev/ep93xx-fb.c               |  2 +-
- drivers/video/fbdev/fb-puv3.c                 |  2 +-
- drivers/video/fbdev/ffb.c                     |  2 +-
- drivers/video/fbdev/fm2fb.c                   |  2 +-
- drivers/video/fbdev/fsl-diu-fb.c              |  2 +-
- drivers/video/fbdev/g364fb.c                  |  2 +-
- drivers/video/fbdev/gbefb.c                   |  2 +-
- drivers/video/fbdev/geode/gx1fb_core.c        |  2 +-
- drivers/video/fbdev/geode/gxfb_core.c         |  2 +-
- drivers/video/fbdev/geode/lxfb_core.c         |  2 +-
- drivers/video/fbdev/goldfishfb.c              |  2 +-
- drivers/video/fbdev/grvga.c                   |  2 +-
- drivers/video/fbdev/gxt4500.c                 |  2 +-
- drivers/video/fbdev/hecubafb.c                |  2 +-
- drivers/video/fbdev/hgafb.c                   |  2 +-
- drivers/video/fbdev/hitfb.c                   |  2 +-
- drivers/video/fbdev/hpfb.c                    |  2 +-
- drivers/video/fbdev/hyperv_fb.c               |  2 +-
- drivers/video/fbdev/i740fb.c                  |  2 +-
- drivers/video/fbdev/imsttfb.c                 |  2 +-
- drivers/video/fbdev/imxfb.c                   |  2 +-
- drivers/video/fbdev/intelfb/intelfbdrv.c      |  2 +-
- drivers/video/fbdev/kyro/fbdev.c              |  2 +-
- drivers/video/fbdev/leo.c                     |  2 +-
- drivers/video/fbdev/macfb.c                   |  2 +-
- drivers/video/fbdev/matrox/matroxfb_crtc2.c   |  2 +-
- drivers/video/fbdev/maxinefb.c                |  2 +-
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c    |  2 +-
- drivers/video/fbdev/mbx/mbxfb.c               |  2 +-
- drivers/video/fbdev/metronomefb.c             |  2 +-
- drivers/video/fbdev/mmp/fb/mmpfb.c            |  2 +-
- drivers/video/fbdev/mx3fb.c                   |  5 ++--
- drivers/video/fbdev/neofb.c                   |  2 +-
- drivers/video/fbdev/nvidia/nvidia.c           |  2 +-
- drivers/video/fbdev/ocfb.c                    |  2 +-
- drivers/video/fbdev/offb.c                    |  2 +-
- drivers/video/fbdev/omap/omapfb_main.c        |  2 +-
- .../video/fbdev/omap2/omapfb/omapfb-main.c    |  2 +-
- drivers/video/fbdev/p9100.c                   |  2 +-
- drivers/video/fbdev/platinumfb.c              |  2 +-
- drivers/video/fbdev/pm2fb.c                   |  2 +-
- drivers/video/fbdev/pm3fb.c                   |  2 +-
- drivers/video/fbdev/pmag-aa-fb.c              |  2 +-
- drivers/video/fbdev/pmag-ba-fb.c              |  2 +-
- drivers/video/fbdev/pmagb-b-fb.c              |  2 +-
- drivers/video/fbdev/ps3fb.c                   |  2 +-
- drivers/video/fbdev/pvr2fb.c                  |  2 +-
- drivers/video/fbdev/pxa168fb.c                |  2 +-
- drivers/video/fbdev/pxafb.c                   |  4 +--
- drivers/video/fbdev/q40fb.c                   |  2 +-
- drivers/video/fbdev/riva/fbdev.c              |  2 +-
- drivers/video/fbdev/s3c-fb.c                  |  2 +-
- drivers/video/fbdev/s3c2410fb.c               |  2 +-
- drivers/video/fbdev/s3fb.c                    |  2 +-
- drivers/video/fbdev/sa1100fb.c                |  2 +-
- drivers/video/fbdev/savage/savagefb_driver.c  |  2 +-
- drivers/video/fbdev/sh7760fb.c                |  2 +-
- drivers/video/fbdev/sh_mobile_lcdcfb.c        |  4 +--
- drivers/video/fbdev/simplefb.c                |  2 +-
- drivers/video/fbdev/sis/sis_main.c            |  2 +-
- drivers/video/fbdev/skeletonfb.c              |  2 +-
- drivers/video/fbdev/sm712fb.c                 |  2 +-
- drivers/video/fbdev/smscufx.c                 |  1 -
- drivers/video/fbdev/ssd1307fb.c               |  2 +-
- drivers/video/fbdev/sstfb.c                   |  2 +-
- drivers/video/fbdev/stifb.c                   |  2 +-
- drivers/video/fbdev/sunxvr1000.c              |  2 +-
- drivers/video/fbdev/sunxvr2500.c              |  2 +-
- drivers/video/fbdev/sunxvr500.c               |  2 +-
- drivers/video/fbdev/tcx.c                     |  2 +-
- drivers/video/fbdev/tdfxfb.c                  |  2 +-
- drivers/video/fbdev/tgafb.c                   |  2 +-
- drivers/video/fbdev/tmiofb.c                  |  2 +-
- drivers/video/fbdev/tridentfb.c               |  2 +-
- drivers/video/fbdev/udlfb.c                   |  1 -
- drivers/video/fbdev/uvesafb.c                 |  2 +-
- drivers/video/fbdev/valkyriefb.c              |  2 +-
- drivers/video/fbdev/vesafb.c                  |  6 ++---
- drivers/video/fbdev/vfb.c                     |  2 +-
- drivers/video/fbdev/vga16fb.c                 |  2 +-
- drivers/video/fbdev/vt8500lcdfb.c             |  2 +-
- drivers/video/fbdev/vt8623fb.c                |  2 +-
- drivers/video/fbdev/w100fb.c                  |  2 +-
- drivers/video/fbdev/wm8505fb.c                |  2 +-
- drivers/video/fbdev/xen-fbfront.c             |  2 +-
- drivers/video/fbdev/xilinxfb.c                |  2 +-
- include/linux/fb.h                            |  5 ++--
- samples/vfio-mdev/mdpy-fb.c                   |  2 +-
- 134 files changed, 165 insertions(+), 163 deletions(-)
-
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 427a993c7f57..74c2f39cec90 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -26,8 +26,8 @@ endmenu
+ source "drivers/video/backlight/Kconfig"
+ 
+ config VGASTATE
+-       tristate
+-       default n
++	tristate
++	default n
+ 
+ config VIDEOMODE_HELPERS
+ 	bool
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 403707a3e503..e25fdd8ce3e7 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -9,7 +9,7 @@ menu "Backlight & LCD device support"
+ # LCD
+ #
+ config LCD_CLASS_DEVICE
+-        tristate "Lowlevel LCD controls"
++	tristate "Lowlevel LCD controls"
+ 	help
+ 	  This framework adds support for low-level control of LCD.
+ 	  Some framebuffer devices connect to platform-specific LCD modules
+@@ -141,10 +141,10 @@ endif # LCD_CLASS_DEVICE
+ # Backlight
+ #
+ config BACKLIGHT_CLASS_DEVICE
+-        tristate "Lowlevel Backlight controls"
++	tristate "Lowlevel Backlight controls"
+ 	help
+ 	  This framework adds support for low-level control of the LCD
+-          backlight. This includes support for brightness and power.
++	  backlight. This includes support for brightness and power.
+ 
+ 	  To have support for your specific LCD panel you will have to
+ 	  select the proper drivers which depend on this option.
+@@ -269,11 +269,11 @@ config BACKLIGHT_MAX8925
+ 	  WLED output, say Y here to enable this driver.
+ 
+ config BACKLIGHT_APPLE
+-       tristate "Apple Backlight Driver"
+-       depends on X86 && ACPI
+-       help
+-         If you have an Intel-based Apple say Y to enable a driver for its
+-	 backlight.
++	tristate "Apple Backlight Driver"
++	depends on X86 && ACPI
++	help
++	  If you have an Intel-based Apple say Y to enable a driver for its
++	  backlight.
+ 
+ config BACKLIGHT_TOSA
+ 	tristate "Sharp SL-6000 Backlight Driver"
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index c10e17fb9a9a..ed8480d324b1 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -23,26 +23,26 @@ config VGA_CONSOLE
+ 	  Say Y.
+ 
+ config VGACON_SOFT_SCROLLBACK
+-       bool "Enable Scrollback Buffer in System RAM"
+-       depends on VGA_CONSOLE
+-       default n
+-       help
+-         The scrollback buffer of the standard VGA console is located in
+-	 the VGA RAM.  The size of this RAM is fixed and is quite small.
+-	 If you require a larger scrollback buffer, this can be placed in
+-	 System RAM which is dynamically allocated during initialization.
+-	 Placing the scrollback buffer in System RAM will slightly slow
+-	 down the console.
+-
+-	 If you want this feature, say 'Y' here and enter the amount of
+-	 RAM to allocate for this buffer.  If unsure, say 'N'.
++	bool "Enable Scrollback Buffer in System RAM"
++	depends on VGA_CONSOLE
++	default n
++	help
++	  The scrollback buffer of the standard VGA console is located in
++	  the VGA RAM.  The size of this RAM is fixed and is quite small.
++	  If you require a larger scrollback buffer, this can be placed in
++	  System RAM which is dynamically allocated during initialization.
++	  Placing the scrollback buffer in System RAM will slightly slow
++	  down the console.
++
++	  If you want this feature, say 'Y' here and enter the amount of
++	  RAM to allocate for this buffer.  If unsure, say 'N'.
+ 
+ config VGACON_SOFT_SCROLLBACK_SIZE
+-       int "Scrollback Buffer Size (in KB)"
+-       depends on VGACON_SOFT_SCROLLBACK
+-       range 1 1024
+-       default "64"
+-       help
++	int "Scrollback Buffer Size (in KB)"
++	depends on VGACON_SOFT_SCROLLBACK
++	range 1 1024
++	default "64"
++	help
+ 	  Enter the amount of System RAM to allocate for scrollback
+ 	  buffers of VGA consoles. Each 64KB will give you approximately
+ 	  16 80x25 screenfuls of scrollback buffer.
+@@ -84,12 +84,12 @@ config MDA_CONSOLE
+ 	  If unsure, say N.
+ 
+ config SGI_NEWPORT_CONSOLE
+-        tristate "SGI Newport Console support"
++	tristate "SGI Newport Console support"
+ 	depends on SGI_IP22 && HAS_IOMEM
+-        select FONT_SUPPORT
+-        help
+-          Say Y here if you want the console on the Newport aka XL graphics
+-          card of your Indy.  Most people say Y here.
++	select FONT_SUPPORT
++	help
++	  Say Y here if you want the console on the Newport aka XL graphics
++	  card of your Indy.  Most people say Y here.
+ 
+ config DUMMY_CONSOLE
+ 	bool
+@@ -97,24 +97,24 @@ config DUMMY_CONSOLE
+ 	default y
+ 
+ config DUMMY_CONSOLE_COLUMNS
+-        int "Initial number of console screen columns"
+-        depends on DUMMY_CONSOLE && !ARM
+-        default 160 if PARISC
+-        default 80
+-        help
+-          On PA-RISC, the default value is 160, which should fit a 1280x1024
+-          monitor.
+-          Select 80 if you use a 640x480 resolution by default.
++	int "Initial number of console screen columns"
++	depends on DUMMY_CONSOLE && !ARM
++	default 160 if PARISC
++	default 80
++	help
++	  On PA-RISC, the default value is 160, which should fit a 1280x1024
++	  monitor.
++	  Select 80 if you use a 640x480 resolution by default.
+ 
+ config DUMMY_CONSOLE_ROWS
+-        int "Initial number of console screen rows"
+-        depends on DUMMY_CONSOLE && !ARM
+-        default 64 if PARISC
+-        default 25
+-        help
+-          On PA-RISC, the default value is 64, which should fit a 1280x1024
+-          monitor.
+-          Select 25 if you use a 640x480 resolution by default.
++	int "Initial number of console screen rows"
++	depends on DUMMY_CONSOLE && !ARM
++	default 64 if PARISC
++	default 25
++	help
++	  On PA-RISC, the default value is 64, which should fit a 1280x1024
++	  monitor.
++	  Select 25 if you use a 640x480 resolution by default.
+ 
+ config FRAMEBUFFER_CONSOLE
+ 	bool "Framebuffer Console support"
+@@ -126,30 +126,30 @@ config FRAMEBUFFER_CONSOLE
+ 	  Low-level framebuffer-based console driver.
+ 
+ config FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+-       bool "Map the console to the primary display device"
+-       depends on FRAMEBUFFER_CONSOLE
+-       default n
+-       ---help---
+-         If this option is selected, the framebuffer console will
+-         automatically select the primary display device (if the architecture
+-	 supports this feature).  Otherwise, the framebuffer console will
+-         always select the first framebuffer driver that is loaded. The latter
+-         is the default behavior.
++	bool "Map the console to the primary display device"
++	depends on FRAMEBUFFER_CONSOLE
++	default n
++	---help---
++	  If this option is selected, the framebuffer console will
++	  automatically select the primary display device (if the architecture
++	  supports this feature).  Otherwise, the framebuffer console will
++	  always select the first framebuffer driver that is loaded. The latter
++	  is the default behavior.
+ 
+-	 You can always override the automatic selection of the primary device
+-	 by using the fbcon=map: boot option.
++	  You can always override the automatic selection of the primary device
++	  by using the fbcon=map: boot option.
+ 
+-	 If unsure, select n.
++	  If unsure, select n.
+ 
+ config FRAMEBUFFER_CONSOLE_ROTATION
+-       bool "Framebuffer Console Rotation"
+-       depends on FRAMEBUFFER_CONSOLE
+-       help
+-         Enable display rotation for the framebuffer console.  This is done
+-         in software and may be significantly slower than a normally oriented
+-         display.  Note that the rotation is done at the console level only
+-         such that other users of the framebuffer will remain normally
+-         oriented.
++	bool "Framebuffer Console Rotation"
++	depends on FRAMEBUFFER_CONSOLE
++	help
++	  Enable display rotation for the framebuffer console.  This is done
++	  in software and may be significantly slower than a normally oriented
++	  display.  Note that the rotation is done at the console level only
++	  such that other users of the framebuffer will remain normally
++	  oriented.
+ 
+ config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+ 	bool "Framebuffer Console Deferred Takeover"
+@@ -163,14 +163,14 @@ config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
+ 	  black screen as soon as fbcon loads.
+ 
+ config STI_CONSOLE
+-        bool "STI text console"
++	bool "STI text console"
+ 	depends on PARISC && HAS_IOMEM
+-        select FONT_SUPPORT
+-        default y
+-        help
+-          The STI console is the builtin display/keyboard on HP-PARISC
+-          machines.  Say Y here to build support for it into your kernel.
+-          The alternative is to use your primary serial port as a console.
++	select FONT_SUPPORT
++	default y
++	help
++	  The STI console is the builtin display/keyboard on HP-PARISC
++	  machines.  Say Y here to build support for it into your kernel.
++	  The alternative is to use your primary serial port as a console.
+ 
+ endmenu
+ 
 -- 
-2.20.1
+2.7.4

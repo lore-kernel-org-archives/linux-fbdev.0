@@ -1,272 +1,372 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 13 Nov 2019 11:41:13 +0000
-Subject: Re: [PATCH 1/4] drm/udl: Replace fbdev code with generic emulation
-Message-Id: <20191113114113.GO23790@phenom.ffwll.local>
+From: Wei Hu <weh@microsoft.com>
+Date: Fri, 22 Nov 2019 08:24:08 +0000
+Subject: [PATCH v2] video: hyperv: hyperv_fb: Use physical memory for fb on HyperV Gen 1 VMs.
+Message-Id: <20191122082408.3210-1-weh@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191108123333.25274-1-tzimmermann@suse.de>
- <20191108123333.25274-2-tzimmermann@suse.de>
- <e8b90928-fdae-36e0-f116-8b49159c4aad@tronnes.org>
- <1704c1d6-ec08-211b-0677-6c22f96ca7aa@suse.de>
- <CAKMK7uF7M60NcPTGicQVJ=09pqf4ua4kWaCmdCcDaC13AgTFQw@mail.gmail.com>
- <6da6c49a-572a-343a-ddb1-103ca7080ccd@suse.de>
- <CAKMK7uHiXtg=FCpqv7ekpopd=2Hofrs7oR3qPNsf8e_E_Wv08w@mail.gmail.com>
- <052a2dd7-9a18-bf0b-7b7f-3396cc5c0dcf@suse.de>
- <CAKMK7uH_0KC5rh3YhHaoBK4xfK=GMqrs61mA6ZFzq0-EdM6BGw@mail.gmail.com>
- <4b330f8f-7baf-7b48-730b-c0d93eee4b81@suse.de>
-In-Reply-To: <4b330f8f-7baf-7b48-730b-c0d93eee4b81@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sean Paul <sean@poorly.run>, dri-devel <dri-devel@lists.freedesktop.org>, Gerd Hoffmann <kraxel@redhat.com>, Dave Airlie <airlied@redhat.com>, Sam Ravnborg <sam@ravnborg.org>, Emil Velikov <emil.velikov@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: b.zolnierkie@samsung.com, kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com, sashal@kernel.org, hch@lst.de, m.szyprowski@samsung.com, mchehab+samsung@kernel.org, sam@ravnborg.org, gregkh@linuxfoundation.org, alexandre.belloni@bootlin.com, info@metux.net, arnd@arndb.de, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-hyperv@vger.kernel.org, decui@microsoft.com, mikelley@microsoft.com
+Cc: Wei Hu <weh@microsoft.com>
 
-On Wed, Nov 13, 2019 at 10:51:51AM +0100, Thomas Zimmermann wrote:
-> Hi
->=20
-> Am 12.11.19 um 16:13 schrieb Daniel Vetter:
-> > On Tue, Nov 12, 2019 at 3:51 PM Thomas Zimmermann <tzimmermann@suse.de>=
- wrote:
-> >>
-> >> Hi
-> >>
-> >> Am 12.11.19 um 15:31 schrieb Daniel Vetter:
-> >>> On Tue, Nov 12, 2019 at 3:03 PM Thomas Zimmermann <tzimmermann@suse.d=
-e> wrote:
-> >>>>
-> >>>> Hi
-> >>>>
-> >>>> Am 12.11.19 um 14:40 schrieb Daniel Vetter:
-> >>>>> On Tue, Nov 12, 2019 at 12:55 PM Thomas Zimmermann <tzimmermann@sus=
-e.de> wrote:
-> >>>>>>
-> >>>>>> Hi
-> >>>>>>
-> >>>>>> Am 08.11.19 um 16:37 schrieb Noralf Tr=F8nnes:
-> >>>>>>>
-> >>>>>>>
-> >>>>>>> Den 08.11.2019 13.33, skrev Thomas Zimmermann:
-> >>>>>>>> The udl driver can use the generic fbdev implementation. Convert=
- it.
-> >>>>>>>>
-> >>>>>>>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> >>>>>>>> ---
-> >>>>>>>
-> >>>>>>>> diff --git a/drivers/gpu/drm/udl/udl_drv.c b/drivers/gpu/drm/udl=
-/udl_drv.c
-> >>>>>>>> index 563cc5809e56..55c0f9dfee29 100644
-> >>>>>>>> --- a/drivers/gpu/drm/udl/udl_drv.c
-> >>>>>>>> +++ b/drivers/gpu/drm/udl/udl_drv.c
-> >>>>>>>
-> >>>>>>>> @@ -47,6 +48,8 @@ static struct drm_driver driver =3D {
-> >>>>>>>>      .driver_features =3D DRIVER_MODESET | DRIVER_GEM,
-> >>>>>>>>      .release =3D udl_driver_release,
-> >>>>>>>>
-> >>>>>>>> +    .lastclose =3D drm_fb_helper_lastclose,
-> >>>>>>>> +
-> >>>>>>>
-> >>>>>>> No need to set this, it's already wired up:
-> >>>>>>>
-> >>>>>>> drm_lastclose -> drm_client_dev_restore -> drm_fbdev_client_resto=
-re ->
-> >>>>>>> drm_fb_helper_lastclose
-> >>>>>>>
-> >>>>>>>>      /* gem hooks */
-> >>>>>>>>      .gem_create_object =3D udl_driver_gem_create_object,
-> >>>>>>>>
-> >>>>>>>
-> >>>>>>>> diff --git a/drivers/gpu/drm/udl/udl_fb.c b/drivers/gpu/drm/udl/=
-udl_fb.c
-> >>>>>>>> index f8153b726343..afe74f892a2b 100644
-> >>>>>>>> --- a/drivers/gpu/drm/udl/udl_fb.c
-> >>>>>>>> +++ b/drivers/gpu/drm/udl/udl_fb.c
-> >>>>>>>> @@ -20,19 +20,9 @@
-> >>>>>>>>
-> >>>>>>>>  #include "udl_drv.h"
-> >>>>>>>>
-> >>>>>>>> -#define DL_DEFIO_WRITE_DELAY    (HZ/20) /* fb_deferred_io.delay=
- in jiffies */
-> >>>>>>>> -
-> >>>>>>>> -static int fb_defio =3D 0;  /* Optionally enable experimental f=
-b_defio mmap support */
-> >>>>>>>>  static int fb_bpp =3D 16;
-> >>>>>>>>
-> >>>>>>>>  module_param(fb_bpp, int, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP=
-);
-> >>>>>>>
-> >>>>>>> Maybe fb_bpp can be dropped too?
-> >>>>>>
-> >>>>>> Sure, makes sense.
-> >>>>>>
-> >>>>>> The driver exposes a preferred color depth of 24 bpp, which we may=
- want
-> >>>>>> to change to 16 then. The internal framebuffer is only 16 bpp anyw=
-ay.
-> >>>>>
-> >>>>> Just something that crossed my mind: Should we ensure that the
-> >>>>> preferred format of the primary plane (should be the first in the
-> >>>>> format array) matches up with the preferred bpp setting? Maybe even
-> >>>>> enforce that for drivers with an explicit primary plane (i.e. atomic
-> >>>>> drivers). I think tiny drivers get this right already.
-> >>>>
-> >>>> IMHO that makes if the userspace can handle it. The preferred bpp co=
-uld
-> >>>> also be retrieved from the formats array automatically. What about HW
-> >>>> with multiple CRTCs with different format defaults (sounds weird, I =
-know)?
-> >>>
-> >>> Ime I haven't seen such a case yet. What I have seen is that the most
-> >>> preferred format might be some fancy compressed format, which not all
-> >>> formats support. But which you can't render into without mesa anyway,
-> >>> so really doesn't matter for preferred bpp.
-> >>>
-> >>>> WRT udl: For v3 of this patchset I've set the preferred color depth =
-to
-> >>>> 32 bpp; although the internal FB is always at 16 bpp. Because when I
-> >>>> tested with a dual-screen setup (radeon + udl) X11 didn't support th=
-e 16
-> >>>> bpp output on the second screen (the one driven by udl). Only setting
-> >>>> both screen to 32 bpp worked out of the box. And the preferred 24 bpp
-> >>>> are not even supported by udl.
-> >>>
-> >>> Uh, if we can only set preferred bpp to make X happy, and X can only
-> >>> support one preferred bpp, then everyone needs to set 32bit. Which
-> >>> defeats the point (and we'd need to hardcode it to 32bpp). Is this
-> >>> really the case?
-> >>
-> >> I guess it would have worked if both screens preferred 16 bpp.
-> >=20
-> > Just noticed that current depth is 24 bpp ... does that work with
-> > current X? If not I think we should actually set it to 16 bpp, and fix
-> > up X. Not as in "make it handle multi-bpp", that's too hard, but make
-> > it pick a common format that works for all drivers (which usually
-> > means go with 32bpp). Since if we just go with 32bpp to paper over X,
-> > then the preferred bpp uapi becomes meaningless.
->=20
-> The good news is that it apparently works with planes correctly configure=
-d.
->=20
-> I tested with udl being converted to simple pipe and universal planes.
-> It exposes RGB565, XRGB8888 and preferred_depth=16. X did the correct
-> thing and choose a format the works with radeon and udl.
+On Hyper-V, Generation 1 VMs can directly use VM's physical memory for
+their framebuffers. This can improve the efficiency of framebuffer and
+overall performence for VM. The physical memory assigned to framebuffer
+must be contiguous. We use CMA allocator to get contiguouse physicial
+memory when the framebuffer size is greater than 4MB. For size under
+4MB, we use alloc_pages to achieve this.
 
-Awesome!
+To enable framebuffer memory allocation from CMA, supply a kernel
+parameter to give enough space to CMA allocator at boot time. For
+example:
+    cma0m
+This gives 130MB memory to CAM allocator that can be allocated to
+framebuffer. If this fails, we fall back to the old way of using
+mmio for framebuffer.
 
-> For the next iteration of the fbdev conversion, I'll just keep the
-> current values. And once converted to universal planes, we can set the
-> optimal values instead.
+Signed-off-by: Wei Hu <weh@microsoft.com>
+---
+    v2: Incorporated review comments form hch@lst.de, Michael Kelley and
+    Dexuan Cui
+    - Use dma_alloc_coherent to allocate large contiguous memory
+    - Use phys_addr_t for physical addresses
+    - Corrected a few spelling errors and minor cleanups
+    - Also tested on 32 bit Ubuntu guest 
 
-Yeah sounds good. Worst case it should at least make it easier to undo the
-bpp change.
--Daniel
+ drivers/video/fbdev/Kconfig     |   1 +
+ drivers/video/fbdev/hyperv_fb.c | 196 +++++++++++++++++++++++++-------
+ 2 files changed, 158 insertions(+), 39 deletions(-)
 
->=20
-> Best regards
-> Thomas
->=20
-> > -Daniel
-> >=20
-> >>
-> >> Best regards
-> >> Thomas
-> >>
-> >>> -Daniel
-> >>>
-> >>>>
-> >>>> Best regards
-> >>>> Thomas
-> >>>>
-> >>>>> -Daniel
-> >>>>>
-> >>>>>>
-> >>>>>> Best regards
-> >>>>>> Thomas
-> >>>>>>
-> >>>>>>>
-> >>>>>>> It's possible to set it on the command line:
-> >>>>>>>
-> >>>>>>> video=3D<xres>x<yres>-<bpp>
-> >>>>>>>
-> >>>>>>> I haven't tried it so I can't say for certain that it actually wo=
-rks>
-> >>>>>>> Ref: Documentation/fb/modedb.rst and drm_fb_helper_single_fb_prob=
-e()
-> >>>>>>>
-> >>>>>>>> -module_param(fb_defio, int, S_IWUSR | S_IRUSR | S_IWGRP | S_IRG=
-RP);
-> >>>>>>>> -
-> >>>>>>>
-> >>>>>>>> diff --git a/drivers/gpu/drm/udl/udl_modeset.c b/drivers/gpu/drm=
-/udl/udl_modeset.c
-> >>>>>>>> index bc1ab6060dc6..1517d5e881b8 100644
-> >>>>>>>> --- a/drivers/gpu/drm/udl/udl_modeset.c
-> >>>>>>>> +++ b/drivers/gpu/drm/udl/udl_modeset.c
-> >>>>>>>
-> >>>>>>>> @@ -422,7 +423,7 @@ static int udl_crtc_init(struct drm_device *=
-dev)
-> >>>>>>>>
-> >>>>>>>>  static const struct drm_mode_config_funcs udl_mode_funcs =3D {
-> >>>>>>>>      .fb_create =3D udl_fb_user_fb_create,
-> >>>>>>>> -    .output_poll_changed =3D NULL,
-> >>>>>>>> +    .output_poll_changed =3D drm_fb_helper_output_poll_changed,
-> >>>>>>>
-> >>>>>>> No need to set this, it's already wired up:
-> >>>>>>>
-> >>>>>>> drm_kms_helper_hotplug_event -> drm_client_dev_hotplug ->
-> >>>>>>> drm_fbdev_client_hotplug -> drm_fb_helper_hotplug_event
-> >>>>>>>
-> >>>>>>> Noralf.
-> >>>>>>>
-> >>>>>>>>  };
-> >>>>>>>>
-> >>>>>>>>  int udl_modeset_init(struct drm_device *dev)
-> >>>>>>>>
-> >>>>>>
-> >>>>>> --
-> >>>>>> Thomas Zimmermann
-> >>>>>> Graphics Driver Developer
-> >>>>>> SUSE Software Solutions Germany GmbH
-> >>>>>> Maxfeldstr. 5, 90409 N=FCrnberg, Germany
-> >>>>>> (HRB 36809, AG N=FCrnberg)
-> >>>>>> Gesch=E4ftsf=FChrer: Felix Imend=F6rffer
-> >>>>>>
-> >>>>>
-> >>>>>
-> >>>>
-> >>>> --
-> >>>> Thomas Zimmermann
-> >>>> Graphics Driver Developer
-> >>>> SUSE Software Solutions Germany GmbH
-> >>>> Maxfeldstr. 5, 90409 N=FCrnberg, Germany
-> >>>> (HRB 36809, AG N=FCrnberg)
-> >>>> Gesch=E4ftsf=FChrer: Felix Imend=F6rffer
-> >>>>
-> >>>
-> >>>
-> >>
-> >> --
-> >> Thomas Zimmermann
-> >> Graphics Driver Developer
-> >> SUSE Software Solutions Germany GmbH
-> >> Maxfeldstr. 5, 90409 N=FCrnberg, Germany
-> >> (HRB 36809, AG N=FCrnberg)
-> >> Gesch=E4ftsf=FChrer: Felix Imend=F6rffer
-> >>
-> >=20
-> >=20
->=20
-> --=20
-> Thomas Zimmermann
-> Graphics Driver Developer
-> SUSE Software Solutions Germany GmbH
-> Maxfeldstr. 5, 90409 N=FCrnberg, Germany
-> (HRB 36809, AG N=FCrnberg)
-> Gesch=E4ftsf=FChrer: Felix Imend=F6rffer
->=20
-
-
-
-
---=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index aa9541bf964b..87b82de4598d 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2215,6 +2215,7 @@ config FB_HYPERV
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB_DEFERRED_IO
++	select DMA_CMA if HAVE_DMA_CONTIGUOUS
+ 	help
+ 	  This framebuffer driver supports Microsoft Hyper-V Synthetic Video.
+ 
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 3f60b7bc8589..8ba96764c749 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -31,6 +31,16 @@
+  * "set-vmvideo" command. For example
+  *     set-vmvideo -vmname name -horizontalresolution:1920 \
+  * -verticalresolution:1200 -resolutiontype single
++ *
++ * Gen 1 VMs also support direct using VM's physical memory for framebuffer.
++ * It could improve the efficiency and performance for framebuffer and VM.
++ * This requires to allocate contiguous physical memory from Linux kernel's
++ * CMA memory allocator. To enable this, supply a kernel parameter to give
++ * enough memory space to CMA allocator for framebuffer. For example:
++ *    cma0m
++ * This gives 130MB memory to CMA allocator that can be allocated to
++ * framebuffer. For reference, 8K resolution (7680x4320) takes about
++ * 127MB memory.
+  */
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+@@ -227,7 +237,6 @@ struct synthvid_msg {
+ } __packed;
+ 
+ 
+-
+ /* FB driver definitions and structures */
+ #define HVFB_WIDTH 1152 /* default screen width */
+ #define HVFB_HEIGHT 864 /* default screen height */
+@@ -256,12 +265,15 @@ struct hvfb_par {
+ 	/* If true, the VSC notifies the VSP on every framebuffer change */
+ 	bool synchronous_fb;
+ 
++	/* If true, need to copy from deferred IO mem to framebuffer mem */
++	bool need_docopy;
++
+ 	struct notifier_block hvfb_panic_nb;
+ 
+ 	/* Memory for deferred IO and frame buffer itself */
+ 	unsigned char *dio_vp;
+ 	unsigned char *mmio_vp;
+-	unsigned long mmio_pp;
++	phys_addr_t mmio_pp;
+ 
+ 	/* Dirty rectangle, protected by delayed_refresh_lock */
+ 	int x1, y1, x2, y2;
+@@ -432,7 +444,7 @@ static void synthvid_deferred_io(struct fb_info *p,
+ 		maxy = max_t(int, maxy, y2);
+ 
+ 		/* Copy from dio space to mmio address */
+-		if (par->fb_ready)
++		if (par->fb_ready && par->need_docopy)
+ 			hvfb_docopy(par, start, PAGE_SIZE);
+ 	}
+ 
+@@ -749,12 +761,12 @@ static void hvfb_update_work(struct work_struct *w)
+ 		return;
+ 
+ 	/* Copy the dirty rectangle to frame buffer memory */
+-	for (j = y1; j < y2; j++) {
+-		hvfb_docopy(par,
+-			    j * info->fix.line_length +
+-			    (x1 * screen_depth / 8),
+-			    (x2 - x1) * screen_depth / 8);
+-	}
++	if (par->need_docopy)
++		for (j = y1; j < y2; j++)
++			hvfb_docopy(par,
++				    j * info->fix.line_length +
++				    (x1 * screen_depth / 8),
++				    (x2 - x1) * screen_depth / 8);
+ 
+ 	/* Refresh */
+ 	if (par->fb_ready && par->update)
+@@ -799,7 +811,8 @@ static int hvfb_on_panic(struct notifier_block *nb,
+ 	par = container_of(nb, struct hvfb_par, hvfb_panic_nb);
+ 	par->synchronous_fb = true;
+ 	info = par->info;
+-	hvfb_docopy(par, 0, dio_fb_size);
++	if (par->need_docopy)
++		hvfb_docopy(par, 0, dio_fb_size);
+ 	synthvid_update(info, 0, 0, INT_MAX, INT_MAX);
+ 
+ 	return NOTIFY_DONE;
+@@ -938,6 +951,74 @@ static void hvfb_get_option(struct fb_info *info)
+ 	return;
+ }
+ 
++/*
++ * Allocate enough contiguous physical memory.
++ * Return physical address if succeeded or -1 if failed.
++ */
++static phys_addr_t hvfb_get_phymem(struct hv_device *hdev,
++				   unsigned int request_size)
++{
++	struct page *page = NULL;
++	dma_addr_t dma_handle;
++	void *vmem;
++	unsigned int request_pages;
++	phys_addr_t paddr = 0;
++	unsigned int order = get_order(request_size);
++
++	if (request_size = 0)
++		return -1;
++
++	/* Try to call alloc_pages if the size is less than 2^MAX_ORDER */
++	if (order < MAX_ORDER) {
++		page = alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
++		if (!page)
++			return -1;
++
++		paddr = (page_to_pfn(page) << PAGE_SHIFT);
++		request_pages = (1 << order);
++		goto get_phymem1;
++	}
++
++	/* Allocate from CMA */
++	if (hdev = NULL)
++		return -1;
++
++	hdev->device.coherent_dma_mask = DMA_BIT_MASK(64);
++
++	request_pages = (round_up(request_size, PAGE_SIZE) >> PAGE_SHIFT);
++
++	vmem = dma_alloc_coherent(&hdev->device,
++				 request_pages * PAGE_SIZE,
++				 &dma_handle,
++				 GFP_KERNEL | __GFP_NOWARN);
++
++	if (!vmem)
++		return -1;
++
++	paddr = virt_to_phys(vmem);
++
++get_phymem1:
++	pr_info("Allocated %d pages starts at physical addr 0x%llx\n",
++		request_pages, paddr);
++
++	return paddr;
++}
++
++/* Release contiguous physical memory */
++static void hvfb_release_phymem(struct hv_device *hdev,
++				phys_addr_t paddr, unsigned int size)
++{
++	unsigned int order = get_order(size);
++
++	if (order < MAX_ORDER)
++		__free_pages(pfn_to_page(paddr >> PAGE_SHIFT), order);
++	else
++		dma_free_coherent(&hdev->device,
++				  round_up(size, PAGE_SIZE),
++				  phys_to_virt(paddr),
++				  paddr);
++}
++
+ 
+ /* Get framebuffer memory from Hyper-V video pci space */
+ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+@@ -947,8 +1028,57 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 	void __iomem *fb_virt;
+ 	int gen2vm = efi_enabled(EFI_BOOT);
+ 	resource_size_t pot_start, pot_end;
++	phys_addr_t paddr;
+ 	int ret;
+ 
++	if (!gen2vm) {
++		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
++			PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
++		if (!pdev) {
++			pr_err("Unable to find PCI Hyper-V video\n");
++			return -ENODEV;
++		}
++	}
++
++	info->apertures = alloc_apertures(1);
++	if (!info->apertures)
++		goto err1;
++
++	if (gen2vm) {
++		info->apertures->ranges[0].base = screen_info.lfb_base;
++		info->apertures->ranges[0].size = screen_info.lfb_size;
++	} else {
++		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
++		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
++	}
++
++	/*
++	 * For Gen 1 VM, we can directly use the contiguous memory
++	 * from VM. If we succeed, deferred IO happens directly
++	 * on this allocated framebuffer memory, avoiding extra
++	 * memory copy.
++	 */
++	if (!gen2vm) {
++		paddr = hvfb_get_phymem(hdev, screen_fb_size);
++		if (paddr != (phys_addr_t) -1) {
++			par->mmio_pp = paddr;
++			par->mmio_vp = par->dio_vp = __va(paddr);
++
++			info->fix.smem_start = paddr;
++			info->fix.smem_len = screen_fb_size;
++			info->screen_base = par->mmio_vp;
++			info->screen_size = screen_fb_size;
++
++			par->need_docopy = false;
++			goto getmem1;
++		}
++		pr_info("Unable to allocate enough contiguous physical memory on Gen 1 VM. Use MMIO instead.\n");
++	}
++
++	/*
++	 * Cannot use the contiguous physical memory.
++	 * Allocate mmio space for framebuffer.
++	 */
+ 	dio_fb_size  		screen_width * screen_height * screen_depth / 8;
+ 
+@@ -956,13 +1086,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 		pot_start = 0;
+ 		pot_end = -1;
+ 	} else {
+-		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
+-			      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
+-		if (!pdev) {
+-			pr_err("Unable to find PCI Hyper-V video\n");
+-			return -ENODEV;
+-		}
+-
+ 		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+ 		    pci_resource_len(pdev, 0) < screen_fb_size) {
+ 			pr_err("Resource not available or (0x%lx < 0x%lx)\n",
+@@ -991,20 +1114,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 	if (par->dio_vp = NULL)
+ 		goto err3;
+ 
+-	info->apertures = alloc_apertures(1);
+-	if (!info->apertures)
+-		goto err4;
+-
+-	if (gen2vm) {
+-		info->apertures->ranges[0].base = screen_info.lfb_base;
+-		info->apertures->ranges[0].size = screen_info.lfb_size;
+-		remove_conflicting_framebuffers(info->apertures,
+-						KBUILD_MODNAME, false);
+-	} else {
+-		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
+-		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
+-	}
+-
+ 	/* Physical address of FB device */
+ 	par->mmio_pp = par->mem->start;
+ 	/* Virtual address of FB device */
+@@ -1015,13 +1124,15 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 	info->screen_base = par->dio_vp;
+ 	info->screen_size = dio_fb_size;
+ 
++getmem1:
++	remove_conflicting_framebuffers(info->apertures,
++					KBUILD_MODNAME, false);
++
+ 	if (!gen2vm)
+ 		pci_dev_put(pdev);
+ 
+ 	return 0;
+ 
+-err4:
+-	vfree(par->dio_vp);
+ err3:
+ 	iounmap(fb_virt);
+ err2:
+@@ -1035,13 +1146,19 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ }
+ 
+ /* Release the framebuffer */
+-static void hvfb_putmem(struct fb_info *info)
++static void hvfb_putmem(struct hv_device *hdev, struct fb_info *info)
+ {
+ 	struct hvfb_par *par = info->par;
+ 
+-	vfree(par->dio_vp);
+-	iounmap(info->screen_base);
+-	vmbus_free_mmio(par->mem->start, screen_fb_size);
++	if (par->need_docopy) {
++		vfree(par->dio_vp);
++		iounmap(info->screen_base);
++		vmbus_free_mmio(par->mem->start, screen_fb_size);
++	} else {
++		hvfb_release_phymem(hdev, info->fix.smem_start,
++				    screen_fb_size);
++	}
++
+ 	par->mem = NULL;
+ }
+ 
+@@ -1060,6 +1177,7 @@ static int hvfb_probe(struct hv_device *hdev,
+ 	par = info->par;
+ 	par->info = info;
+ 	par->fb_ready = false;
++	par->need_docopy = true;
+ 	init_completion(&par->wait);
+ 	INIT_DELAYED_WORK(&par->dwork, hvfb_update_work);
+ 
+@@ -1145,7 +1263,7 @@ static int hvfb_probe(struct hv_device *hdev,
+ 
+ error:
+ 	fb_deferred_io_cleanup(info);
+-	hvfb_putmem(info);
++	hvfb_putmem(hdev, info);
+ error2:
+ 	vmbus_close(hdev->channel);
+ error1:
+@@ -1175,7 +1293,7 @@ static int hvfb_remove(struct hv_device *hdev)
+ 	vmbus_close(hdev->channel);
+ 	hv_set_drvdata(hdev, NULL);
+ 
+-	hvfb_putmem(info);
++	hvfb_putmem(hdev, info);
+ 	framebuffer_release(info);
+ 
+ 	return 0;
+-- 
+2.20.1

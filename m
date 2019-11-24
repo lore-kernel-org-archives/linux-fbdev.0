@@ -1,66 +1,42 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 13 Nov 2019 01:55:56 +0000
-Subject: [PATCH AUTOSEL 4.14 089/115] backlight: lm3639: Unconditionally call led_classdev_unregister
-Message-Id: <20191113015622.11592-89-sashal@kernel.org>
+From: "Mr.WEHNER DAVID M." <jesus.valencia@opb.gob.mx>
+Date: Sun, 24 Nov 2019 11:57:30 +0000
+Subject: =?utf-8?Q?Pengar_=C3=B6verf=C3=B6rs?=
+Message-Id: <1105698182.24559.1574596650210.JavaMail.zimbra@opb.gob.mx>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191113015622.11592-1-sashal@kernel.org>
-In-Reply-To: <20191113015622.11592-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, clang-built-linux@googlegroups.com, Nathan Chancellor <natechancellor@gmail.com>, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
 
-From: Nathan Chancellor <natechancellor@gmail.com>
+Office Of The Head
+Internationell överföring
+Operation Zenith Bank
+(UK) Ltd LONDON United
+Storbritannien och Irland
+Tel: +44 203 389 5674
+Fax: +44 704 307 1539
 
-[ Upstream commit 7cea645ae9c5a54aa7904fddb2cdf250acd63a6c ]
+Hälsning,
 
-Clang warns that the address of a pointer will always evaluated as true
-in a boolean context.
+Din e-postadress kom upp i ett slumpmässigt drag som genomfördes i Zenith Banks huvudkontor, International Transfer Operation i London, Storbritannien.
 
-drivers/video/backlight/lm3639_bl.c:403:14: warning: address of
-'pchip->cdev_torch' will always evaluate to 'true'
-[-Wpointer-bool-conversion]
-        if (&pchip->cdev_torch)
-        ~~   ~~~~~~~^~~~~~~~~~
-drivers/video/backlight/lm3639_bl.c:405:14: warning: address of
-'pchip->cdev_flash' will always evaluate to 'true'
-[-Wpointer-bool-conversion]
-        if (&pchip->cdev_flash)
-        ~~   ~~~~~~~^~~~~~~~~~
-2 warnings generated.
+Jag är Mr.WEHNER DAVID M.A personlig bokföring till avdöd Michael Blair som arbetade med Shell British Petroleum. Mr.Michael Blair, en välkänd filantropist, innan han dog, gjorde en testamente i ett advokatbyrå om att 12,5 miljoner US dollar (tolv miljoner femhundra tusen amerikanska dollar) bör doneras till någon lycklig individuell filantrop eller välgörenhetsorganisation utomlands.
 
-These statements have been present since 2012, introduced by
-commit 0f59858d5119 ("backlight: add new lm3639 backlight
-driver"). Given that they have been called unconditionally since
-then presumably without any issues, removing the always true if
-statements to fix the warnings without any real world changes.
+Zenith Bank Abp är en överenskommelse med sena Michael Blair om att donera fonden till alla lyckliga individer i Amerika, Europa, Asien och Afrika i andra för att förbättra liv och företag
 
-Link: https://github.com/ClangBuiltLinux/linux/issues/119
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/backlight/lm3639_bl.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+Vi har gjort vårt slumpmässiga drag och din e-postadress valdes för att ta emot denna fond som mottagare av hans testament. Vänligen snälla tillbaka till mig
+så snart du har fått vårt e-postmeddelande för att aktivera överföringen
+Operationen riktar dig till vad du ska göra för att få denna fond lagligen.
 
-diff --git a/drivers/video/backlight/lm3639_bl.c b/drivers/video/backlight/lm3639_bl.c
-index cd50df5807ead..086611c7bc03c 100644
---- a/drivers/video/backlight/lm3639_bl.c
-+++ b/drivers/video/backlight/lm3639_bl.c
-@@ -400,10 +400,8 @@ static int lm3639_remove(struct i2c_client *client)
- 
- 	regmap_write(pchip->regmap, REG_ENABLE, 0x00);
- 
--	if (&pchip->cdev_torch)
--		led_classdev_unregister(&pchip->cdev_torch);
--	if (&pchip->cdev_flash)
--		led_classdev_unregister(&pchip->cdev_flash);
-+	led_classdev_unregister(&pchip->cdev_torch);
-+	led_classdev_unregister(&pchip->cdev_flash);
- 	if (pchip->bled)
- 		device_remove_file(&(pchip->bled->dev), &dev_attr_bled_mode);
- 	return 0;
--- 
-2.20.1
+Du rekommenderas att ta med följande nedan:
+
+FULLSTÄNDIGA NAMN:
+
+FULL KONTAKTADRESS:
+
+TELEFON- OCH FAXNUMMER:
+
+Med vänliga hälsningar,
+Mr.WEHNER DAVID M.
+Chef, internationell överföringsoperation
+Zenith Bank (UK) Abp

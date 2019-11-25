@@ -1,33 +1,19 @@
-From: Chuhong Yuan <hslester96@gmail.com>
-Date: Mon, 18 Nov 2019 08:09:00 +0000
-Subject: [PATCH] fbdev: s1d13xxxfb: add missed unregister_framebuffer in remove
-Message-Id: <20191118080900.30634-1-hslester96@gmail.com>
+From: "Mr. Mark Bill" <jennifermbaya43@gmail.com>
+Date: Mon, 25 Nov 2019 07:13:30 +0000
+Subject: Greetings
+Message-Id: <CAEiB6tjMakg5XQm90QscHxHAhjQ1jvpEZOAQLmREefT0Hza=hg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-The driver calls register_framebuffer in probe but does not call
-unregister_framebuffer in remove.
-Add the missed call to fix it.
+Greetings
 
-Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
----
- drivers/video/fbdev/s1d13xxxfb.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/video/fbdev/s1d13xxxfb.c b/drivers/video/fbdev/s1d13xxxfb.c
-index e04efb567b5c..162003ea6b79 100644
---- a/drivers/video/fbdev/s1d13xxxfb.c
-+++ b/drivers/video/fbdev/s1d13xxxfb.c
-@@ -729,6 +729,7 @@ s1d13xxxfb_remove(struct platform_device *pdev)
- 	struct s1d13xxxfb_par *par = NULL;
- 
- 	if (info) {
-+		unregister_framebuffer(info);
- 		par = info->par;
- 		if (par && par->regs) {
- 			/* disable output & enable powersave */
--- 
-2.24.0
+I wonder why you continue neglecting my emails. Please, acknowledge the
+receipt of this message in reference to the subject above as I intend to send
+to you the details of the project.
+Sometimes, try to check your spam box because most of these correspondences
+fall out sometimes in SPAM folder.
+Best regards.
+Mr.Mark Bil

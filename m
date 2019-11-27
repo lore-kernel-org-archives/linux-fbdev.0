@@ -1,126 +1,97 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 08 Nov 2019 14:40:10 +0000
-Subject: Re: [PATCH 08/46] ARM: pxa: move regs-lcd.h into driver
-Message-Id: <ebbfe781-7b48-2ca8-e2b8-e5493e7cf20b@samsung.com>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Wed, 27 Nov 2019 18:18:40 +0000
+Subject: Re: [Intel-gfx] [PATCH 02/13] drm/fb-helper: don't preserve fb_ops across deferred IO use
+Message-Id: <20191127181840.GH406127@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191018154052.1276506-1-arnd@arndb.de>
-        <CGME20191018154227epcas4p26ef3afdc09b34ce4db31b1a8c6ef54d7@epcas4p2.samsung.com>
-        <20191018154201.1276638-8-arnd@arndb.de>
-In-Reply-To: <20191018154201.1276638-8-arnd@arndb.de>
+References: <cover.1574871797.git.jani.nikula@intel.com>
+ <e2b1685703878612093a37189d37685303fa15e9.1574871797.git.jani.nikula@intel.com>
+In-Reply-To: <e2b1685703878612093a37189d37685303fa15e9.1574871797.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Jani Nikula <jani.nikula@intel.com>
+Cc: linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
 
-
-On 10/18/19 5:41 PM, Arnd Bergmann wrote:
-> Only the pxafb driver uses this header, so move it into the
-> same directory. The SMART_* macros are required by some
-> platform data definitions and can go into the
-> linux/platform_data/video-pxafb.h header.
-> 
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+On Wed, Nov 27, 2019 at 06:31:58PM +0200, Jani Nikula wrote:
+> Deferred IO now preserves the fb_ops.
+>=20
+> Cc: Noralf Tr=F8nnes <noralf@tronnes.org>
 > Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
 > ---
->  .../video/fbdev/pxa3xx-regs.h                 | 19 ----------------
->  drivers/video/fbdev/pxafb.c                   |  1 +
->  include/linux/platform_data/video-pxafb.h     | 22 ++++++++++++++++++-
->  3 files changed, 22 insertions(+), 20 deletions(-)
->  rename arch/arm/mach-pxa/include/mach/regs-lcd.h => drivers/video/fbdev/pxa3xx-regs.h (90%)
-> 
-> diff --git a/arch/arm/mach-pxa/include/mach/regs-lcd.h b/drivers/video/fbdev/pxa3xx-regs.h
-> similarity index 90%
-> rename from arch/arm/mach-pxa/include/mach/regs-lcd.h
-> rename to drivers/video/fbdev/pxa3xx-regs.h
-> index 6a434675f84a..6a96610ef9b5 100644
-> --- a/arch/arm/mach-pxa/include/mach/regs-lcd.h
-> +++ b/drivers/video/fbdev/pxa3xx-regs.h
-> @@ -177,23 +177,4 @@
->  #define PRSR_ST_OK	(1 << 9)	/* Status OK */
->  #define PRSR_CON_NT	(1 << 10)	/* Continue to Next Command */
->  
-> -#define SMART_CMD_A0			 (0x1 << 8)
-> -#define SMART_CMD_READ_STATUS_REG	 (0x0 << 9)
-> -#define SMART_CMD_READ_FRAME_BUFFER	((0x0 << 9) | SMART_CMD_A0)
-> -#define SMART_CMD_WRITE_COMMAND		 (0x1 << 9)
-> -#define SMART_CMD_WRITE_DATA		((0x1 << 9) | SMART_CMD_A0)
-> -#define SMART_CMD_WRITE_FRAME		((0x2 << 9) | SMART_CMD_A0)
-> -#define SMART_CMD_WAIT_FOR_VSYNC	 (0x3 << 9)
-> -#define SMART_CMD_NOOP			 (0x4 << 9)
-> -#define SMART_CMD_INTERRUPT		 (0x5 << 9)
-> -
-> -#define SMART_CMD(x)	(SMART_CMD_WRITE_COMMAND | ((x) & 0xff))
-> -#define SMART_DAT(x)	(SMART_CMD_WRITE_DATA | ((x) & 0xff))
-> -
-> -/* SMART_DELAY() is introduced for software controlled delay primitive which
-> - * can be inserted between command sequences, unused command 0x6 is used here
-> - * and delay ranges from 0ms ~ 255ms
-> - */
-> -#define SMART_CMD_DELAY		(0x6 << 9)
-> -#define SMART_DELAY(ms)		(SMART_CMD_DELAY | ((ms) & 0xff))
->  #endif /* __ASM_ARCH_REGS_LCD_H */
-> diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-> index e68b8a69db92..a65453c6c390 100644
-> --- a/drivers/video/fbdev/pxafb.c
-> +++ b/drivers/video/fbdev/pxafb.c
-> @@ -72,6 +72,7 @@
->  #define DEBUG_VAR 1
->  
->  #include "pxafb.h"
-> +#include "pxa3xx-regs.h"
->  
->  /* Bits which should not be set in machine configuration structures */
->  #define LCCR0_INVALID_CONFIG_MASK	(LCCR0_OUM | LCCR0_BM | LCCR0_QDM |\
-> diff --git a/include/linux/platform_data/video-pxafb.h b/include/linux/platform_data/video-pxafb.h
-> index b3d574778326..6333bac166a5 100644
-> --- a/include/linux/platform_data/video-pxafb.h
-> +++ b/include/linux/platform_data/video-pxafb.h
-> @@ -8,7 +8,6 @@
->   */
->  
->  #include <linux/fb.h>
-> -#include <mach/regs-lcd.h>
->  
->  /*
->   * Supported LCD connections
-> @@ -153,6 +152,27 @@ struct pxafb_mach_info {
->  void pxa_set_fb_info(struct device *, struct pxafb_mach_info *);
->  unsigned long pxafb_get_hsync_time(struct device *dev);
->  
-> +/* smartpanel related */
-> +#define SMART_CMD_A0			 (0x1 << 8)
-> +#define SMART_CMD_READ_STATUS_REG	 (0x0 << 9)
-> +#define SMART_CMD_READ_FRAME_BUFFER	((0x0 << 9) | SMART_CMD_A0)
-> +#define SMART_CMD_WRITE_COMMAND		 (0x1 << 9)
-> +#define SMART_CMD_WRITE_DATA		((0x1 << 9) | SMART_CMD_A0)
-> +#define SMART_CMD_WRITE_FRAME		((0x2 << 9) | SMART_CMD_A0)
-> +#define SMART_CMD_WAIT_FOR_VSYNC	 (0x3 << 9)
-> +#define SMART_CMD_NOOP			 (0x4 << 9)
-> +#define SMART_CMD_INTERRUPT		 (0x5 << 9)
-> +
-> +#define SMART_CMD(x)	(SMART_CMD_WRITE_COMMAND | ((x) & 0xff))
-> +#define SMART_DAT(x)	(SMART_CMD_WRITE_DATA | ((x) & 0xff))
-> +
-> +/* SMART_DELAY() is introduced for software controlled delay primitive which
-> + * can be inserted between command sequences, unused command 0x6 is used here
-> + * and delay ranges from 0ms ~ 255ms
-> + */
-> +#define SMART_CMD_DELAY		(0x6 << 9)
-> +#define SMART_DELAY(ms)		(SMART_CMD_DELAY | ((ms) & 0xff))
-> +
->  #ifdef CONFIG_FB_PXA_SMARTPANEL
->  extern int pxafb_smart_queue(struct fb_info *info, uint16_t *cmds, int);
->  extern int pxafb_smart_flush(struct fb_info *info);
-> 
+>  drivers/gpu/drm/drm_fb_helper.c | 18 ++----------------
+>  1 file changed, 2 insertions(+), 16 deletions(-)
+>=20
+> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_hel=
+per.c
+> index 0c088ea70ad0..a5a2a538d085 100644
+> --- a/drivers/gpu/drm/drm_fb_helper.c
+> +++ b/drivers/gpu/drm/drm_fb_helper.c
+> @@ -1954,7 +1954,6 @@ static int drm_fbdev_fb_release(struct fb_info *inf=
+o, int user)
+>  static void drm_fbdev_cleanup(struct drm_fb_helper *fb_helper)
+>  {
+>  	struct fb_info *fbi =3D fb_helper->fbdev;
+> -	struct fb_ops *fbops =3D NULL;
+>  	void *shadow =3D NULL;
+> =20
+>  	if (!fb_helper->dev)
+> @@ -1963,15 +1962,11 @@ static void drm_fbdev_cleanup(struct drm_fb_helpe=
+r *fb_helper)
+>  	if (fbi && fbi->fbdefio) {
+>  		fb_deferred_io_cleanup(fbi);
+>  		shadow =3D fbi->screen_buffer;
+> -		fbops =3D fbi->fbops;
+>  	}
+> =20
+>  	drm_fb_helper_fini(fb_helper);
+> =20
+> -	if (shadow) {
+> -		vfree(shadow);
+> -		kfree(fbops);
+> -	}
+> +	vfree(shadow);
+> =20
+>  	drm_client_framebuffer_delete(fb_helper->buffer);
+>  }
+> @@ -2062,23 +2057,14 @@ static int drm_fb_helper_generic_probe(struct drm=
+_fb_helper *fb_helper,
+>  	drm_fb_helper_fill_info(fbi, fb_helper, sizes);
+> =20
+>  	if (drm_fbdev_use_shadow_fb(fb_helper)) {
+> -		struct fb_ops *fbops;
+>  		void *shadow;
+> =20
+> -		/*
+> -		 * fb_deferred_io_cleanup() clears &fbops->fb_mmap so a per
+> -		 * instance version is necessary.
+> -		 */
+> -		fbops =3D kzalloc(sizeof(*fbops), GFP_KERNEL);
+>  		shadow =3D vzalloc(fbi->screen_size);
+> -		if (!fbops || !shadow) {
+> -			kfree(fbops);
+> +		if (!shadow) {
+>  			vfree(shadow);
+>  			return -ENOMEM;
+>  		}
+> =20
+> -		*fbops =3D *fbi->fbops;
+> -		fbi->fbops =3D fbops;
+>  		fbi->screen_buffer =3D shadow;
+>  		fbi->fbdefio =3D &drm_fbdev_defio;
+> =20
+> --=20
+> 2.20.1
+>=20
+> _______________________________________________
+> Intel-gfx mailing list
+> Intel-gfx@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/intel-gfx
+
+--=20
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

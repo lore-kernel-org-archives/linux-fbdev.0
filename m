@@ -1,54 +1,39 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Tue, 12 Nov 2019 14:04:26 +0000
-Subject: [PATCH v3 0/5] drm/udl: Replace fbdev by generic emulation
-Message-Id: <20191112140431.7895-1-tzimmermann@suse.de>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Wed, 27 Nov 2019 16:32:07 +0000
+Subject: [PATCH 11/13] HID: picoLCD: constify fb ops
+Message-Id: <a578b8c791e1223112b43d0e209766ba4e4ddcbc.1574871797.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1574871797.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1574871797.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: jani.nikula@intel.com, intel-gfx@lists.freedesktop.org, =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>, linux-input@vger.kernel.org
 
-The udl driver can use the generic fbdev emulation. After conversion,
-a number of cleanups can be applied.
+Now that the fbops member of struct fb_info is const, we can star making
+the ops const as well.
 
-Patch 1 prepares the prefered defaults. 32 bpp work well with driver,
-console and X11. The fbdev conversion is in patch 2. The original fbdev
-code in udl mapped the framebuffer's GEM object memory unconditionally,
-and unmapped the memory in the object's free() function. The respective
-code in free() can now be removed (Patch 3). And as udl was the
-only remaining external user of unlink_framebuffer(), that function
-now becomes an internal interface of the fbdev code (Patches 4 + 5).
+Cc: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+Cc: linux-input@vger.kernel.org
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+---
+ drivers/hid/hid-picolcd_fb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-The patchset has been tested by running the console, X11 and Weston
-on a DisplayLink adapter.
-
-v3:
-	* use 32 bpp by default
-	* use defaults for several callback functions
-	* remove all fb module parameters
-	* remove udl_fbdev_init()
-v2:
-	* converted udl to SHMEM and recreated fbdev patchset on top
-
-Thomas Zimmermann (5):
-  drm/udl: Set default color depth to 32 bpp
-  drm/udl: Replace fbdev code with generic emulation
-  drm/udl: Remove udl implementation of GEM's free_object()
-  drm/fb-helper: Remove drm_fb_helper_unlink_fbi()
-  fbdev: Unexport unlink_framebuffer()
-
- drivers/gpu/drm/drm_fb_helper.c   |  16 +-
- drivers/gpu/drm/udl/udl_drv.c     |   1 -
- drivers/gpu/drm/udl/udl_drv.h     |   6 -
- drivers/gpu/drm/udl/udl_fb.c      | 282 ------------------------------
- drivers/gpu/drm/udl/udl_gem.c     |  18 +-
- drivers/gpu/drm/udl/udl_main.c    |   5 +-
- drivers/gpu/drm/udl/udl_modeset.c |   3 +-
- drivers/video/fbdev/core/fbmem.c  |   3 +-
- include/drm/drm_fb_helper.h       |   6 -
- include/linux/fb.h                |   1 -
- 10 files changed, 6 insertions(+), 335 deletions(-)
-
---
-2.23.0
+diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
+index e162a668fb7e..a549c42e8c90 100644
+--- a/drivers/hid/hid-picolcd_fb.c
++++ b/drivers/hid/hid-picolcd_fb.c
+@@ -417,8 +417,7 @@ static int picolcd_set_par(struct fb_info *info)
+ 	return 0;
+ }
+=20
+-/* Note this can't be const because of struct fb_info definition */
+-static struct fb_ops picolcdfb_ops =3D {
++static const struct fb_ops picolcdfb_ops =3D {
+ 	.owner        =3D THIS_MODULE,
+ 	.fb_destroy   =3D picolcd_fb_destroy,
+ 	.fb_read      =3D fb_sys_read,
+--=20
+2.20.1

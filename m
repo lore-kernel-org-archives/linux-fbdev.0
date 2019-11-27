@@ -1,41 +1,47 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 11 Nov 2019 09:24:46 +0000
-Subject: Re: [PATCH V10 1/8] backlight: qcom-wled: Rename pm8941-wled.c to qcom-wled.c
-Message-Id: <20191111092446.GO18902@dell>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Wed, 27 Nov 2019 16:32:01 +0000
+Subject: [PATCH 05/13] video: fbdev: vesafb: modify the static fb_ops directly
+Message-Id: <07acc8c8ef93f36103c7a13dc98e12790c2847df.1574871797.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1572589624-6095-1-git-send-email-kgunda@codeaurora.org>
- <1572589624-6095-2-git-send-email-kgunda@codeaurora.org>
-In-Reply-To: <1572589624-6095-2-git-send-email-kgunda@codeaurora.org>
+References: <cover.1574871797.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1574871797.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Kiran Gunda <kgunda@codeaurora.org>
-Cc: bjorn.andersson@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Dan Murphy <dmurphy@ti.com>, Andy Gross <agross@kernel.org>, linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: jani.nikula@intel.com, intel-gfx@lists.freedesktop.org
 
-On Fri, 01 Nov 2019, Kiran Gunda wrote:
+Avoid modifying the fb_ops via info->fbops to let us make the pointer
+const in the future.
 
-> pm8941-wled.c driver is supporting the WLED peripheral
-> on pm8941. Rename it to qcom-wled.c so that it can support
-> WLED on multiple PMICs.
-> 
-> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
-> Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> Acked-by: Rob Herring <robh@kernel.org>
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> ---
->  .../bindings/leds/backlight/{pm8941-wled.txt => qcom-wled.txt}    | 2 +-
->  drivers/video/backlight/Kconfig                                   | 8 ++++----
->  drivers/video/backlight/Makefile                                  | 2 +-
->  drivers/video/backlight/{pm8941-wled.c => qcom-wled.c}            | 0
->  4 files changed, 6 insertions(+), 6 deletions(-)
->  rename Documentation/devicetree/bindings/leds/backlight/{pm8941-wled.txt => qcom-wled.txt} (95%)
->  rename drivers/video/backlight/{pm8941-wled.c => qcom-wled.c} (100%)
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+---
+ drivers/video/fbdev/vesafb.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Applied, thanks.
-
+diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
+index d9c08f6c2155..a1fe24ea869b 100644
+--- a/drivers/video/fbdev/vesafb.c
++++ b/drivers/video/fbdev/vesafb.c
+@@ -447,15 +447,15 @@ static int vesafb_probe(struct platform_device *dev)
+ 	       vesafb_fix.smem_start, info->screen_base,
+ 	       size_remap/1024, size_total/1024);
+ 
++	if (!ypan)
++		vesafb_ops.fb_pan_display = NULL;
++
+ 	info->fbops = &vesafb_ops;
+ 	info->var = vesafb_defined;
+ 	info->fix = vesafb_fix;
+ 	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE |
+ 		(ypan ? FBINFO_HWACCEL_YPAN : 0);
+ 
+-	if (!ypan)
+-		info->fbops->fb_pan_display = NULL;
+-
+ 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
+ 		err = -ENOMEM;
+ 		goto err;
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.20.1

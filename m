@@ -1,48 +1,55 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Fri, 29 Nov 2019 10:29:36 +0000
-Subject: [PATCH v2 06/14] video: fbmem: use const pointer for fb_ops
-Message-Id: <3a27f95b424a67b3542b5906c660741daf1d4ea6.1575022735.git.jani.nikula@intel.com>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Wed, 27 Nov 2019 18:20:28 +0000
+Subject: Re: [Intel-gfx] [PATCH 03/13] video: smscufx: don't restore fb_mmap after deferred IO cleanup
+Message-Id: <20191127182028.GI406127@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1575022735.git.jani.nikula@intel.com>
-In-Reply-To: <cover.1575022735.git.jani.nikula@intel.com>
+References: <cover.1574871797.git.jani.nikula@intel.com>
+ <5c25b31242a3ae2326ccf163e5be5ae401b04b49.1574871797.git.jani.nikula@intel.com>
+In-Reply-To: <5c25b31242a3ae2326ccf163e5be5ae401b04b49.1574871797.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: jani.nikula@intel.com, intel-gfx@lists.freedesktop.org
+To: Jani Nikula <jani.nikula@intel.com>
+Cc: Steve Glendinning <steve.glendinning@shawell.net>, linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
 
-Use const for fb_ops to let us make the info->fbops pointer const in the
-future.
+On Wed, Nov 27, 2019 at 06:31:59PM +0200, Jani Nikula wrote:
+> Deferred IO now preserves the fb_ops.
+> 
+> Cc: Steve Glendinning <steve.glendinning@shawell.net>
+> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+> ---
+>  drivers/video/fbdev/smscufx.c | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
+> index 0e0f5bbfc5ef..e362d7da87fc 100644
+> --- a/drivers/video/fbdev/smscufx.c
+> +++ b/drivers/video/fbdev/smscufx.c
+> @@ -1170,7 +1170,6 @@ static int ufx_ops_release(struct fb_info *info, int user)
+>  		fb_deferred_io_cleanup(info);
+>  		kfree(info->fbdefio);
+>  		info->fbdefio = NULL;
+> -		info->fbops->fb_mmap = ufx_ops_mmap;
 
-v2: rebase
+Also totally pointless to restore this here, since if you have indeed
+loaded the driver twice shit has hit the fan already. I guess that was for
+the module option .... wtf.
 
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Jani Nikula <jani.nikula@intel.com>
----
- drivers/video/fbdev/core/fbmem.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 990550930a8e..7ddeb90337bc 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1079,7 +1079,7 @@ EXPORT_SYMBOL(fb_blank);
- static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 			unsigned long arg)
- {
--	struct fb_ops *fb;
-+	const struct fb_ops *fb;
- 	struct fb_var_screeninfo var;
- 	struct fb_fix_screeninfo fix;
- 	struct fb_cmap cmap_from;
-@@ -1292,7 +1292,7 @@ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
- 			    unsigned long arg)
- {
- 	struct fb_info *info = file_fb_info(file);
--	struct fb_ops *fb;
-+	const struct fb_ops *fb;
- 	long ret = -ENOIOCTLCMD;
- 
- 	if (!info)
+>  	}
+>  
+>  	pr_debug("released /dev/fb%d user=%d count=%d",
+> -- 
+> 2.20.1
+> 
+> _______________________________________________
+> Intel-gfx mailing list
+> Intel-gfx@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/intel-gfx
+
 -- 
-2.20.1
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

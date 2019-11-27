@@ -1,44 +1,38 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Fri, 08 Nov 2019 12:33:29 +0000
-Subject: [PATCH 0/4] drm/udl: Replace fbdev by generic emulation
-Message-Id: <20191108123333.25274-1-tzimmermann@suse.de>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Wed, 27 Nov 2019 16:32:03 +0000
+Subject: [PATCH 07/13] video: omapfb: use const pointer for fb_ops
+Message-Id: <609dbe6eefdfd0138aa5d2d4ceeb58684811dc6e.1574871797.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1574871797.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1574871797.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: jani.nikula@intel.com, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org
 
-The udl driver can use the generic fbdev emulation. After conversion,
-a number of cleanups can be applied.
+Use const for fb_ops to let us make the info->fbops pointer const in the
+future.
 
-The fbdev conversion is in patch 1. The original fbdev code in udl
-mapped the framebuffer's GEM object memory unconditionally, and
-unmapped the memory in the object's free() function. The respective
-code in free() can now be removed (Patch 2). And as udl was the
-only remaining external user of unlink_framebuffer(), that function
-now becomes an internal interface of the fbdev code.
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-omap@vger.kernel.org
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+---
+ drivers/video/fbdev/omap/omapfb_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The patchset has been tested by running the console, X11 and Weston
-on a DisplayLink adapter.
-
-Thomas Zimmermann (4):
-  drm/udl: Replace fbdev code with generic emulation
-  drm/udl: Remove udl implementation of GEM's free_object()
-  drm/fb-helper: Remove drm_fb_helper_unlink_fbi()
-  fbdev: Unexport unlink_framebuffer()
-
- drivers/gpu/drm/drm_fb_helper.c   |  16 +-
- drivers/gpu/drm/udl/udl_drv.c     |   4 +-
- drivers/gpu/drm/udl/udl_drv.h     |   5 -
- drivers/gpu/drm/udl/udl_fb.c      | 270 +-----------------------------
- drivers/gpu/drm/udl/udl_gem.c     |  18 +-
- drivers/gpu/drm/udl/udl_main.c    |   2 -
- drivers/gpu/drm/udl/udl_modeset.c |   3 +-
- drivers/video/fbdev/core/fbmem.c  |   3 +-
- include/drm/drm_fb_helper.h       |   6 -
- include/linux/fb.h                |   1 -
- 10 files changed, 10 insertions(+), 318 deletions(-)
-
---
-2.23.0
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index 702cca59bda1..e8a304f84ea8 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1052,7 +1052,7 @@ static int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd,
+ {
+ 	struct omapfb_plane_struct *plane = fbi->par;
+ 	struct omapfb_device	*fbdev = plane->fbdev;
+-	struct fb_ops		*ops = fbi->fbops;
++	const struct fb_ops *ops = fbi->fbops;
+ 	union {
+ 		struct omapfb_update_window	update_window;
+ 		struct omapfb_plane_info	plane_info;
+-- 
+2.20.1

@@ -1,58 +1,54 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Thu, 07 Nov 2019 08:33:54 +0000
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Thu, 28 Nov 2019 16:18:46 +0000
 Subject: Re: [RFC PATCH 05/12] video: fbdev: matrox: convert to i2c_new_scanned_device
-Message-Id: <20191107083354.GK23790@phenom.ffwll.local>
+Message-Id: <20191128161846.GE5412@kunai>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Lb0e7rgc7IsuDeGj"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20191106095033.25182-1-wsa+renesas@sang-engineering.com>
  <20191106095033.25182-6-wsa+renesas@sang-engineering.com>
-In-Reply-To: <20191106095033.25182-6-wsa+renesas@sang-engineering.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-i2c@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+ <20191107083354.GK23790@phenom.ffwll.local>
+In-Reply-To: <20191107083354.GK23790@phenom.ffwll.local>
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Wed, Nov 06, 2019 at 10:50:23AM +0100, Wolfram Sang wrote:
-> Move from the deprecated i2c_new_probed_device() to the new
-> i2c_new_scanned_device(). Make use of the new ERRPTR if suitable.
-> 
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-Ack for merging through whatever tree you think this should best land
-through.
--Daniel
+--Lb0e7rgc7IsuDeGj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> ---
-> 
-> Build tested only. RFC, please comment and/or ack, but don't apply yet.
-> 
->  drivers/video/fbdev/matrox/i2c-matroxfb.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/matrox/i2c-matroxfb.c b/drivers/video/fbdev/matrox/i2c-matroxfb.c
-> index 34e2659c3189..e2e4705e3fe0 100644
-> --- a/drivers/video/fbdev/matrox/i2c-matroxfb.c
-> +++ b/drivers/video/fbdev/matrox/i2c-matroxfb.c
-> @@ -191,8 +191,8 @@ static void* i2c_matroxfb_probe(struct matrox_fb_info* minfo) {
->  				0x1b, I2C_CLIENT_END
->  			};
->  
-> -			i2c_new_probed_device(&m2info->maven.adapter,
-> -					      &maven_info, addr_list, NULL);
-> +			i2c_new_scanned_device(&m2info->maven.adapter,
-> +					       &maven_info, addr_list, NULL);
->  		}
->  	}
->  	return m2info;
-> -- 
-> 2.20.1
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+On Thu, Nov 07, 2019 at 09:33:54AM +0100, Daniel Vetter wrote:
+> On Wed, Nov 06, 2019 at 10:50:23AM +0100, Wolfram Sang wrote:
+> > Move from the deprecated i2c_new_probed_device() to the new
+> > i2c_new_scanned_device(). Make use of the new ERRPTR if suitable.
+> >=20
+> > Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+>=20
+> Ack for merging through whatever tree you think this should best land
+> through.
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Ok, because it is a single and simple patch, I'll apply it simply via
+I2C. Thanks!
+
+
+--Lb0e7rgc7IsuDeGj
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl3f82YACgkQFA3kzBSg
+KbbX9g//Z+RQyFWAciAMonU5b6yZmQUfvTRQinqsoRSkTXH8iOP1iPhwBpoLil2P
+ARc4NUfH65Y0HhbFPF9pmctbUghoRgf3ebw6PheU/n8ei64T+p3Vwp5N1RvXOd1s
+/v5gDP8QA4qlSjAKZejHER8oFxFxEhEVFHhYzFuPBgwTO982YQZDG1xkP1/eCH7d
+jtaucmntbd/U8fWk43EBByoU48eRtPHcNGvaby0UfHfixidGI9NwiXKkDATbLQ2C
+tgPEIiIvtDPzliXTgP17/LJv8eK8llfF8G2M4Rz/0Siw39usj1QKxVSt4YPjiZuT
+2GWgPEG7EnozPNyUKuH3V3Acy/F0WwRTlD5ML/PglSda7KJuI92ZwMlEZsrH3WMR
+D1Mn/QwxmqS8DVqoVjsiyyR6jkYm5rlOdV53dFETTptG8IsIkxlT/69E1+CHl9PM
+6bcjaJfOpRZdtr9g78qqo/amISrFXqiMyM2p/lMaKo1W9ifo7vLXoi6lVIBgQcB0
+Ug/sQRizEsZLyRaVDdKPwCx6dOE3suu/h/WJ3kh56/bxTU8kr0aeWV5ohyp1oFiX
+5v1dyL3yiE9ayd38/OVeGKI+tSJszTy/S+teCmcK2uO2w9ooe4rBnMu2i6ek49FT
++Y5ZAB/1fULkJmSlGKYCn0bWSXwXaUF7B2eRqHkKQ5a67kRxm3s=
+=mZJx
+-----END PGP SIGNATURE-----
+
+--Lb0e7rgc7IsuDeGj--

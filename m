@@ -1,49 +1,39 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Thu, 28 Nov 2019 16:19:01 +0000
-Subject: Re: [RFC PATCH 05/12] video: fbdev: matrox: convert to i2c_new_scanned_device
-Message-Id: <20191128161900.GF5412@kunai>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="OzxllxdKGCiKxUZM"
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Fri, 29 Nov 2019 10:29:38 +0000
+Subject: [PATCH v2 08/14] video: fbdev: make fbops member of struct fb_info a const pointer
+Message-Id: <2dd4e6fb18637e3315bd57d422c6ae4a2080e844.1575022735.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191106095033.25182-1-wsa+renesas@sang-engineering.com>
- <20191106095033.25182-6-wsa+renesas@sang-engineering.com>
-In-Reply-To: <20191106095033.25182-6-wsa+renesas@sang-engineering.com>
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-i2c@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <cover.1575022735.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1575022735.git.jani.nikula@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: jani.nikula@intel.com, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org
 
+Now that we no longer modify the fbops, or hold non-const pointers to
+it, we can make it const. After this, we can start making the fbops
+const all over the place.
 
---OzxllxdKGCiKxUZM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Cc: linux-fbdev@vger.kernel.org
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+---
+ include/linux/fb.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Wed, Nov 06, 2019 at 10:50:23AM +0100, Wolfram Sang wrote:
-> Move from the deprecated i2c_new_probed_device() to the new
-> i2c_new_scanned_device(). Make use of the new ERRPTR if suitable.
->=20
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-
-Applied to for-next, thanks!
-
-
---OzxllxdKGCiKxUZM
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl3f83QACgkQFA3kzBSg
-KbbnmxAApek9VsHqO33UsJ6YYN/EWaMYzjYyzXvkR1U5F4veEDwg321WyrfhLzOm
-5eV4bXBhoXIl4sFKk3OUSLDqhGVV56BCa0bGnfjf7gc97hsgNkUX7u9t4N4AEp4h
-0BhEAurF7qBl8E3gxh1cFc8Zm0rxfls1GeBDx8OTRNv787/AcbJxrmXIkgBFtKvw
-BU2fmHwvyRU12p7xmT2cfHZt3iyJsBEZGfKsjF951qQeJF/1em5rh63X4e1oqWYD
-fp40g2HIgZz8SX6HO4GeAf+buu4ZeG4sul6dpRav3ycqMD0WGvK9loTJ+Vfy5pFH
-iBxd9pPzGa66a2Qlxytb2qj5GSh1n9QJQ5BHZUar5lj21NWm77RQdPInKYswVXox
-/JU7/YtJ7w+bfiJsegSxManyYh3n3VBjH9n1mt9ppuS2d4JVmE3/H/4F1/xdxheL
-ym3nY2lBlLRt+M+Y4DMix0+iGwcxqrO6eruUIxXaStgj3/ap5KfSOvMu+FU+bC0g
-Y0SaNaoVcFk1cmEnrYi/eW6akP7eYFfDo+t2lgq1c/uv3AhoNJ9vJFAikoHcgePa
-T6y/DpDTAaQyi/JwiBl8vOkk10L7qgwGHh1x8EghRVr52hQmC5bK6wbOSCR4M0sR
-vW8Oeog6NvyshLgWI5NHU7h+qD7W2aTRYw57Nk/GU6PbsxgD61c=
-=MmdU
------END PGP SIGNATURE-----
-
---OzxllxdKGCiKxUZM--
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index a6ad528990de..6557fabdea62 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -472,7 +472,7 @@ struct fb_info {
+ 	struct fb_deferred_io *fbdefio;
+ #endif
+ 
+-	struct fb_ops *fbops;
++	const struct fb_ops *fbops;
+ 	struct device *device;		/* This is the parent */
+ 	struct device *dev;		/* This is this fb device */
+ 	int class_flag;                    /* private sysfs flags */
+-- 
+2.20.1

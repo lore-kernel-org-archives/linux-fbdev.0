@@ -1,49 +1,52 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 20 Nov 2019 14:01:30 +0000
-Subject: Re: [PATCH] video: Fix Kconfig indentation
-Message-Id: <836ebffa-3074-7c98-c8f1-43227eacdaa1@samsung.com>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Fri, 29 Nov 2019 10:29:44 +0000
+Subject: [PATCH v2 14/14] auxdisplay: constify fb ops
+Message-Id: <94a33cf0a587e803bcadcf80e8152eac9b196f34.1575022735.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191120133838.13132-1-krzk@kernel.org>
-        <20191120134546.GA2654@pine>
-        <CGME20191120135021eucas1p206063d872dc96d25d0f10fc99ab41124@eucas1p2.samsung.com>
-        <20191120135012.GA17348@kozik-lap>
-In-Reply-To: <20191120135012.GA17348@kozik-lap>
+References: <cover.1575022735.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Krzysztof Kozlowski <krzk@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jiri Kosina <trivial@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: jani.nikula@intel.com, Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>, intel-gfx@lists.freedesktop.org, Robin van der Gracht <robin@protonic.nl>
 
+Now that the fbops member of struct fb_info is const, we can start
+making the ops const as well.
 
-[ added Jiri to Cc: ]
+Cc: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>
+Cc: Robin van der Gracht <robin@protonic.nl>
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+---
+ drivers/auxdisplay/cfag12864bfb.c | 2 +-
+ drivers/auxdisplay/ht16k33.c      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-On 11/20/19 2:50 PM, Krzysztof Kozlowski wrote:
-> On Wed, Nov 20, 2019 at 08:45:46AM -0500, Daniel Thompson wrote:
->> On Wed, Nov 20, 2019 at 09:38:38PM +0800, Krzysztof Kozlowski wrote:
->>> Adjust indentation from spaces to tab (+optional two spaces) as in
->>> coding style with command like:
->>> 	$ sed -e 's/^        /\t/' -i */Kconfig
->>>
->>> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
->>
->> No particular objections but I wonder if this would be better sent to
->> trivial@kernel.org .
-> 
-> Thanks for feedback.
-> 
-> I sent to trivial and kernel-janitors my previous version of this
-> patchset which was not split per-subsystem and there was no feedback.
-> Few other patches already came through maintainers. If there will be no
-> reply, I'll send next version through trivial.
-
-If anyone wants to merge it through backlight or trivial tree:
-
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-Otherwise I'll queue this through drm-misc tree for v5.6.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/auxdisplay/cfag12864bfb.c b/drivers/auxdisplay/cfag12864bfb.c
+index 4074886b7bc8..2002291ab338 100644
+--- a/drivers/auxdisplay/cfag12864bfb.c
++++ b/drivers/auxdisplay/cfag12864bfb.c
+@@ -57,7 +57,7 @@ static int cfag12864bfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	return vm_map_pages_zero(vma, &pages, 1);
+ }
+ 
+-static struct fb_ops cfag12864bfb_ops = {
++static const struct fb_ops cfag12864bfb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_read = fb_sys_read,
+ 	.fb_write = fb_sys_write,
+diff --git a/drivers/auxdisplay/ht16k33.c b/drivers/auxdisplay/ht16k33.c
+index a2fcde582e2a..d951d54b26f5 100644
+--- a/drivers/auxdisplay/ht16k33.c
++++ b/drivers/auxdisplay/ht16k33.c
+@@ -228,7 +228,7 @@ static int ht16k33_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	return vm_map_pages_zero(vma, &pages, 1);
+ }
+ 
+-static struct fb_ops ht16k33_fb_ops = {
++static const struct fb_ops ht16k33_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_read = fb_sys_read,
+ 	.fb_write = fb_sys_write,
+-- 
+2.20.1

@@ -1,38 +1,37 @@
-From: Colin King <colin.king@canonical.com>
-Date: Thu, 14 Nov 2019 17:27:20 +0000
-Subject: [PATCH][next] video: hyperv: hyperv_fb: fix indentation issue
-Message-Id: <20191114172720.322023-1-colin.king@canonical.com>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Fri, 29 Nov 2019 10:29:34 +0000
+Subject: [PATCH v2 04/14] video: udlfb: don't restore fb_mmap after deferred IO cleanup
+Message-Id: <0f12bb51a6f2a656571cd21230b7e9d5be320db4.1575022735.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1575022735.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "K . Y . Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, Sasha Levin <sashal@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-hyperv@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: jani.nikula@intel.com, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, Bernie Thompson <bernie@plugable.com>
 
-From: Colin Ian King <colin.king@canonical.com>
+Deferred IO now preserves the fb_ops.
 
-There is a block of statements that are indented
-too deeply, remove the extraneous tabs.
-
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Cc: Bernie Thompson <bernie@plugable.com>
+Cc: linux-fbdev@vger.kernel.org
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
 ---
- drivers/video/fbdev/hyperv_fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/udlfb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-index 4cd27e5172a1..5fcf4bdf85ab 100644
---- a/drivers/video/fbdev/hyperv_fb.c
-+++ b/drivers/video/fbdev/hyperv_fb.c
-@@ -582,8 +582,8 @@ static int synthvid_get_supported_resolution(struct hv_device *hdev)
- 	t = wait_for_completion_timeout(&par->wait, VSP_TIMEOUT);
- 	if (!t) {
- 		pr_err("Time out on waiting resolution response\n");
--			ret = -ETIMEDOUT;
--			goto out;
-+		ret = -ETIMEDOUT;
-+		goto out;
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index fe373b63ddd6..07905d385949 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -1037,7 +1037,6 @@ static int dlfb_ops_release(struct fb_info *info, int user)
+ 		fb_deferred_io_cleanup(info);
+ 		kfree(info->fbdefio);
+ 		info->fbdefio = NULL;
+-		info->fbops->fb_mmap = dlfb_ops_mmap;
  	}
  
- 	if (msg->resolution_resp.resolution_count = 0) {
+ 	dev_dbg(info->dev, "release, user=%d count=%d\n", user, dlfb->fb_count);
 -- 
 2.20.1

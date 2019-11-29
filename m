@@ -1,34 +1,48 @@
-From: Chuhong Yuan <hslester96@gmail.com>
-Date: Mon, 18 Nov 2019 11:41:50 +0000
-Subject: [PATCH] video: ssd1307fb: add the missed regulator_disable
-Message-Id: <20191118114150.25724-1-hslester96@gmail.com>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Fri, 29 Nov 2019 10:29:36 +0000
+Subject: [PATCH v2 06/14] video: fbmem: use const pointer for fb_ops
+Message-Id: <3a27f95b424a67b3542b5906c660741daf1d4ea6.1575022735.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1575022735.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: jani.nikula@intel.com, intel-gfx@lists.freedesktop.org
 
-The driver forgets to disable the regulator in remove like what is done
-in probe failure.
-Add the missed call to fix it.
+Use const for fb_ops to let us make the info->fbops pointer const in the
+future.
 
-Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
+v2: rebase
+
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/core/fbmem.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 78ca7ffc40c2..819fbee18dda 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -791,6 +791,8 @@ static int ssd1307fb_remove(struct i2c_client *client)
- 		pwm_disable(par->pwm);
- 		pwm_put(par->pwm);
- 	}
-+	if (par->vbat_reg)
-+		regulator_disable(par->vbat_reg);
- 	fb_deferred_io_cleanup(info);
- 	__free_pages(__va(info->fix.smem_start), get_order(info->fix.smem_len));
- 	framebuffer_release(info);
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 990550930a8e..7ddeb90337bc 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1079,7 +1079,7 @@ EXPORT_SYMBOL(fb_blank);
+ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			unsigned long arg)
+ {
+-	struct fb_ops *fb;
++	const struct fb_ops *fb;
+ 	struct fb_var_screeninfo var;
+ 	struct fb_fix_screeninfo fix;
+ 	struct fb_cmap cmap_from;
+@@ -1292,7 +1292,7 @@ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
+ 			    unsigned long arg)
+ {
+ 	struct fb_info *info = file_fb_info(file);
+-	struct fb_ops *fb;
++	const struct fb_ops *fb;
+ 	long ret = -ENOIOCTLCMD;
+ 
+ 	if (!info)
 -- 
-2.24.0
+2.20.1

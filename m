@@ -1,57 +1,215 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Fri, 08 Nov 2019 12:33:33 +0000
-Subject: [PATCH 4/4] fbdev: Unexport unlink_framebuffer()
-Message-Id: <20191108123333.25274-5-tzimmermann@suse.de>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Fri, 29 Nov 2019 10:29:39 +0000
+Subject: [PATCH v2 09/14] drm: constify fb ops across all drivers
+Message-Id: <627fdf65f5d7de4a9464a1e898a7345ce3e3652f.1575022735.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191108123333.25274-1-tzimmermann@suse.de>
-In-Reply-To: <20191108123333.25274-1-tzimmermann@suse.de>
+References: <cover.1575022735.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: jani.nikula@intel.com, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org
 
-There are no external callers of unlink_framebuffer() left. Make the
-function an internal interface.
+Now that the fbops member of struct fb_info is const, we can start
+making the ops const as well.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: dri-devel@lists.freedesktop.org
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
 ---
- drivers/video/fbdev/core/fbmem.c | 3 +--
- include/linux/fb.h               | 1 -
- 2 files changed, 1 insertion(+), 3 deletions(-)
+ drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c            | 2 +-
+ drivers/gpu/drm/armada/armada_fbdev.c             | 2 +-
+ drivers/gpu/drm/drm_fb_helper.c                   | 2 +-
+ drivers/gpu/drm/exynos/exynos_drm_fbdev.c         | 2 +-
+ drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c | 2 +-
+ drivers/gpu/drm/i915/display/intel_fbdev.c        | 2 +-
+ drivers/gpu/drm/msm/msm_fbdev.c                   | 2 +-
+ drivers/gpu/drm/nouveau/nouveau_fbcon.c           | 4 ++--
+ drivers/gpu/drm/omapdrm/omap_fbdev.c              | 2 +-
+ drivers/gpu/drm/radeon/radeon_fb.c                | 2 +-
+ drivers/gpu/drm/rockchip/rockchip_drm_fbdev.c     | 2 +-
+ drivers/gpu/drm/tegra/fb.c                        | 2 +-
+ drivers/gpu/drm/vmwgfx/vmwgfx_fb.c                | 2 +-
+ 13 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 95c32952fa8a..86b06a599f96 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1673,7 +1673,7 @@ static void unbind_console(struct fb_info *fb_info)
- 	console_unlock();
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c
+index 143753d237e7..2672dc64a310 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c
+@@ -69,7 +69,7 @@ amdgpufb_release(struct fb_info *info, int user)
+ 	return 0;
  }
  
--void unlink_framebuffer(struct fb_info *fb_info)
-+static void unlink_framebuffer(struct fb_info *fb_info)
- {
- 	int i;
+-static struct fb_ops amdgpufb_ops = {
++static const struct fb_ops amdgpufb_ops = {
+ 	.owner = THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_open = amdgpufb_open,
+diff --git a/drivers/gpu/drm/armada/armada_fbdev.c b/drivers/gpu/drm/armada/armada_fbdev.c
+index 090cc0d699ae..ac8a78bfda03 100644
+--- a/drivers/gpu/drm/armada/armada_fbdev.c
++++ b/drivers/gpu/drm/armada/armada_fbdev.c
+@@ -16,7 +16,7 @@
+ #include "armada_fb.h"
+ #include "armada_gem.h"
  
-@@ -1692,7 +1692,6 @@ void unlink_framebuffer(struct fb_info *fb_info)
- 
- 	fb_info->dev = NULL;
+-static /*const*/ struct fb_ops armada_fb_ops = {
++static const struct fb_ops armada_fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_fillrect	= drm_fb_helper_cfb_fillrect,
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index 1751bb9ee8d8..fb9bff0f4581 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -1997,7 +1997,7 @@ static int drm_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 		return -ENODEV;
  }
--EXPORT_SYMBOL(unlink_framebuffer);
  
- static void do_unregister_framebuffer(struct fb_info *fb_info)
- {
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 41e0069eca0a..a6ad528990de 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -606,7 +606,6 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
- /* drivers/video/fbmem.c */
- extern int register_framebuffer(struct fb_info *fb_info);
- extern void unregister_framebuffer(struct fb_info *fb_info);
--extern void unlink_framebuffer(struct fb_info *fb_info);
- extern int remove_conflicting_pci_framebuffers(struct pci_dev *pdev,
- 					       const char *name);
- extern int remove_conflicting_framebuffers(struct apertures_struct *a,
+-static struct fb_ops drm_fbdev_fb_ops = {
++static const struct fb_ops drm_fbdev_fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_open	= drm_fbdev_fb_open,
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+index b0877b97291c..647a1fd1d815 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+@@ -60,7 +60,7 @@ static int exynos_drm_fb_mmap(struct fb_info *info,
+ 	return 0;
+ }
+ 
+-static struct fb_ops exynos_drm_fb_ops = {
++static const struct fb_ops exynos_drm_fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_mmap        = exynos_drm_fb_mmap,
+diff --git a/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c
+index b4c1cea051e8..1d15560ccb6e 100644
+--- a/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c
++++ b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c
+@@ -38,7 +38,7 @@ static int hibmcfb_create_object(
+ 	return ret;
+ }
+ 
+-static struct fb_ops hibmc_drm_fb_ops = {
++static const struct fb_ops hibmc_drm_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_check_var = drm_fb_helper_check_var,
+ 	.fb_set_par = drm_fb_helper_set_par,
+diff --git a/drivers/gpu/drm/i915/display/intel_fbdev.c b/drivers/gpu/drm/i915/display/intel_fbdev.c
+index 48c960ca12fb..1e98e432c9fa 100644
+--- a/drivers/gpu/drm/i915/display/intel_fbdev.c
++++ b/drivers/gpu/drm/i915/display/intel_fbdev.c
+@@ -100,7 +100,7 @@ static int intel_fbdev_pan_display(struct fb_var_screeninfo *var,
+ 	return ret;
+ }
+ 
+-static struct fb_ops intelfb_ops = {
++static const struct fb_ops intelfb_ops = {
+ 	.owner = THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_set_par = intel_fbdev_set_par,
+diff --git a/drivers/gpu/drm/msm/msm_fbdev.c b/drivers/gpu/drm/msm/msm_fbdev.c
+index cff198b2f470..db48867df47d 100644
+--- a/drivers/gpu/drm/msm/msm_fbdev.c
++++ b/drivers/gpu/drm/msm/msm_fbdev.c
+@@ -26,7 +26,7 @@ struct msm_fbdev {
+ 	struct drm_framebuffer *fb;
+ };
+ 
+-static struct fb_ops msm_fb_ops = {
++static const struct fb_ops msm_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 
+diff --git a/drivers/gpu/drm/nouveau/nouveau_fbcon.c b/drivers/gpu/drm/nouveau/nouveau_fbcon.c
+index f439f0a5b43a..0c5cdda3c336 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_fbcon.c
++++ b/drivers/gpu/drm/nouveau/nouveau_fbcon.c
+@@ -203,7 +203,7 @@ nouveau_fbcon_release(struct fb_info *info, int user)
+ 	return 0;
+ }
+ 
+-static struct fb_ops nouveau_fbcon_ops = {
++static const struct fb_ops nouveau_fbcon_ops = {
+ 	.owner = THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_open = nouveau_fbcon_open,
+@@ -214,7 +214,7 @@ static struct fb_ops nouveau_fbcon_ops = {
+ 	.fb_sync = nouveau_fbcon_sync,
+ };
+ 
+-static struct fb_ops nouveau_fbcon_sw_ops = {
++static const struct fb_ops nouveau_fbcon_sw_ops = {
+ 	.owner = THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_open = nouveau_fbcon_open,
+diff --git a/drivers/gpu/drm/omapdrm/omap_fbdev.c b/drivers/gpu/drm/omapdrm/omap_fbdev.c
+index 58f53946ee4d..b06e5cbfd03a 100644
+--- a/drivers/gpu/drm/omapdrm/omap_fbdev.c
++++ b/drivers/gpu/drm/omapdrm/omap_fbdev.c
+@@ -70,7 +70,7 @@ static int omap_fbdev_pan_display(struct fb_var_screeninfo *var,
+ 	return drm_fb_helper_pan_display(var, fbi);
+ }
+ 
+-static struct fb_ops omap_fb_ops = {
++static const struct fb_ops omap_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 
+ 	.fb_check_var	= drm_fb_helper_check_var,
+diff --git a/drivers/gpu/drm/radeon/radeon_fb.c b/drivers/gpu/drm/radeon/radeon_fb.c
+index 2c564f4f3468..8a93fcce40e5 100644
+--- a/drivers/gpu/drm/radeon/radeon_fb.c
++++ b/drivers/gpu/drm/radeon/radeon_fb.c
+@@ -73,7 +73,7 @@ radeonfb_release(struct fb_info *info, int user)
+ 	return 0;
+ }
+ 
+-static struct fb_ops radeonfb_ops = {
++static const struct fb_ops radeonfb_ops = {
+ 	.owner = THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_open = radeonfb_open,
+diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_fbdev.c b/drivers/gpu/drm/rockchip/rockchip_drm_fbdev.c
+index 02be6c5ff857..521fe42ac5e2 100644
+--- a/drivers/gpu/drm/rockchip/rockchip_drm_fbdev.c
++++ b/drivers/gpu/drm/rockchip/rockchip_drm_fbdev.c
+@@ -27,7 +27,7 @@ static int rockchip_fbdev_mmap(struct fb_info *info,
+ 	return rockchip_gem_mmap_buf(private->fbdev_bo, vma);
+ }
+ 
+-static struct fb_ops rockchip_drm_fbdev_ops = {
++static const struct fb_ops rockchip_drm_fbdev_ops = {
+ 	.owner		= THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_mmap	= rockchip_fbdev_mmap,
+diff --git a/drivers/gpu/drm/tegra/fb.c b/drivers/gpu/drm/tegra/fb.c
+index 7cea89f29a5c..84f0e01e3428 100644
+--- a/drivers/gpu/drm/tegra/fb.c
++++ b/drivers/gpu/drm/tegra/fb.c
+@@ -192,7 +192,7 @@ static int tegra_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	return __tegra_gem_mmap(&bo->gem, vma);
+ }
+ 
+-static struct fb_ops tegra_fb_ops = {
++static const struct fb_ops tegra_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+ 	.fb_fillrect = drm_fb_helper_sys_fillrect,
+diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c b/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
+index ea29953e0b08..c59806d40e15 100644
+--- a/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
++++ b/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
+@@ -624,7 +624,7 @@ static int vmw_fb_set_par(struct fb_info *info)
+ }
+ 
+ 
+-static struct fb_ops vmw_fb_ops = {
++static const struct fb_ops vmw_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_check_var = vmw_fb_check_var,
+ 	.fb_set_par = vmw_fb_set_par,
 -- 
-2.23.0
+2.20.1

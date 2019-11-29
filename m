@@ -1,45 +1,41 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 13 Nov 2019 01:59:11 +0000
-Subject: [PATCH AUTOSEL 4.9 47/68] fbdev: sbuslib: integer overflow in sbusfb_ioctl_helper()
-Message-Id: <20191113015932.12655-47-sashal@kernel.org>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Fri, 29 Nov 2019 10:29:43 +0000
+Subject: [PATCH v2 13/14] samples: vfio-mdev: constify fb ops
+Message-Id: <f8a3078ea4279a45f35ed35c9e59e45059d14b07.1575022735.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191113015932.12655-1-sashal@kernel.org>
-In-Reply-To: <20191113015932.12655-1-sashal@kernel.org>
+References: <cover.1575022735.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mathieu Malaterre <malat@debian.org>, dri-devel@lists.freedesktop.org, Philippe Ombredanne <pombredanne@nexb.com>, Dan Carpenter <dan.carpenter@oracle.com>, Peter Malone <peter.malone@gmail.com>
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: kvm@vger.kernel.org, jani.nikula@intel.com, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, Kirti Wankhede <kwankhede@nvidia.com>
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+Now that the fbops member of struct fb_info is const, we can start
+making the ops const as well.
 
-[ Upstream commit e5017716adb8aa5c01c52386c1b7470101ffe9c5 ]
+v2: fix	typo (Christophe de Dinechin)
 
-The "index + count" addition can overflow.  Both come directly from the
-user.  This bug leads to an information leak.
-
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Peter Malone <peter.malone@gmail.com>
-Cc: Philippe Ombredanne <pombredanne@nexb.com>
-Cc: Mathieu Malaterre <malat@debian.org>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Cc: Kirti Wankhede <kwankhede@nvidia.com>
+Cc: kvm@vger.kernel.org
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
 ---
- drivers/video/fbdev/sbuslib.c | 2 +-
+ samples/vfio-mdev/mdpy-fb.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
-index b425718925c01..52e161dbd2047 100644
---- a/drivers/video/fbdev/sbuslib.c
-+++ b/drivers/video/fbdev/sbuslib.c
-@@ -170,7 +170,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		    get_user(ublue, &c->blue))
- 			return -EFAULT;
+diff --git a/samples/vfio-mdev/mdpy-fb.c b/samples/vfio-mdev/mdpy-fb.c
+index 2719bb259653..21dbf63d6e41 100644
+--- a/samples/vfio-mdev/mdpy-fb.c
++++ b/samples/vfio-mdev/mdpy-fb.c
+@@ -86,7 +86,7 @@ static void mdpy_fb_destroy(struct fb_info *info)
+ 		iounmap(info->screen_base);
+ }
  
--		if (index + count > cmap->len)
-+		if (index > cmap->len || count > cmap->len - index)
- 			return -EINVAL;
- 
- 		for (i = 0; i < count; i++) {
+-static struct fb_ops mdpy_fb_ops = {
++static const struct fb_ops mdpy_fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_destroy	= mdpy_fb_destroy,
+ 	.fb_setcolreg	= mdpy_fb_setcolreg,
 -- 
 2.20.1

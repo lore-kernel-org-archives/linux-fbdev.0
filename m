@@ -1,57 +1,42 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Tue, 12 Nov 2019 14:04:31 +0000
-Subject: [PATCH v3 5/5] fbdev: Unexport unlink_framebuffer()
-Message-Id: <20191112140431.7895-6-tzimmermann@suse.de>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Fri, 29 Nov 2019 10:35:24 +0000
+Subject: Re: [Intel-gfx] [PATCH v2 10/14] video: constify fb ops across all drivers
+Message-Id: <87k17jkm1f.fsf@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191112140431.7895-1-tzimmermann@suse.de>
-In-Reply-To: <20191112140431.7895-1-tzimmermann@suse.de>
+References: <cover.1575022735.git.jani.nikula@intel.com>
+ <c89c23a4393566c09c2372c4d69c851eb2724866.1575022735.git.jani.nikula@intel.com>
+In-Reply-To: <c89c23a4393566c09c2372c4d69c851eb2724866.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org
 
-There are no external callers of unlink_framebuffer() left. Make the
-function an internal interface.
+On Fri, 29 Nov 2019, Jani Nikula <jani.nikula@intel.com> wrote:
+> Now that the fbops member of struct fb_info is const, we can start
+> making the ops const as well.
+>
+> This does not cover all drivers; some actually modify the fbops struct,
+> for example to adjust for different configurations, and others do more
+> involved things that I'd rather not touch in practically obsolete
+> drivers. Mostly this is the low hanging fruit where we can add "const"
+> and be done with it.
+>
+> v2:
+> - fix typo (Christophe de Dinechin)
+> - use "static const" instead of "const static" in mx3fb.c
+> - also constify smscufx.c
+>
+> Cc: linux-fbdev@vger.kernel.org
+> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+>
+> fixup to video drivers
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/video/fbdev/core/fbmem.c | 3 +--
- include/linux/fb.h               | 1 -
- 2 files changed, 1 insertion(+), 3 deletions(-)
+Rebase artefact, to be removed before applying...
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 95c32952fa8a..86b06a599f96 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1673,7 +1673,7 @@ static void unbind_console(struct fb_info *fb_info)
- 	console_unlock();
- }
- 
--void unlink_framebuffer(struct fb_info *fb_info)
-+static void unlink_framebuffer(struct fb_info *fb_info)
- {
- 	int i;
- 
-@@ -1692,7 +1692,6 @@ void unlink_framebuffer(struct fb_info *fb_info)
- 
- 	fb_info->dev = NULL;
- }
--EXPORT_SYMBOL(unlink_framebuffer);
- 
- static void do_unregister_framebuffer(struct fb_info *fb_info)
- {
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 41e0069eca0a..a6ad528990de 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -606,7 +606,6 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
- /* drivers/video/fbmem.c */
- extern int register_framebuffer(struct fb_info *fb_info);
- extern void unregister_framebuffer(struct fb_info *fb_info);
--extern void unlink_framebuffer(struct fb_info *fb_info);
- extern int remove_conflicting_pci_framebuffers(struct pci_dev *pdev,
- 					       const char *name);
- extern int remove_conflicting_framebuffers(struct apertures_struct *a,
+BR,
+Jani.
+
 -- 
-2.23.0
+Jani Nikula, Intel Open Source Graphics Center

@@ -1,58 +1,48 @@
 From: robin <robin@protonic.nl>
-Date: Mon, 02 Dec 2019 07:37:02 +0000
+Date: Mon, 02 Dec 2019 08:08:08 +0000
 Subject: Re: [PATCH v2 14/14] auxdisplay: constify fb ops
-Message-Id: <7644533f18ad010366bd27baaf915082@protonic.nl>
+Message-Id: <db5f3f940317323543fe8b5adbbefff6@protonic.nl>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1575022735.git.jani.nikula@intel.com>
  <94a33cf0a587e803bcadcf80e8152eac9b196f34.1575022735.git.jani.nikula@intel.com>
-In-Reply-To: <94a33cf0a587e803bcadcf80e8152eac9b196f34.1575022735.git.jani.nikula@intel.com>
+ <20191129152424.GG624164@phenom.ffwll.local>
+ <CANiq72kRGg1AZHC-pR_uKykMxmcMPM2+qbXVPVQhHrZRzu723Q@mail.gmail.com>
+ <20191129203007.GV624164@phenom.ffwll.local>
+ <CANiq72mEseWduUkJ069E8m8XKuyctsxOsTEZAfGm9d81WzpGEQ@mail.gmail.com>
+In-Reply-To: <CANiq72mEseWduUkJ069E8m8XKuyctsxOsTEZAfGm9d81WzpGEQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jani Nikula <jani.nikula@intel.com>
-Cc: linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: Jani Nikula <jani.nikula@intel.com>, linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
 
-On 2019-11-29 11:29, Jani Nikula wrote:
-> Now that the fbops member of struct fb_info is const, we can start
-> making the ops const as well.
+On 2019-11-29 21:59, Miguel Ojeda wrote:
+> On Fri, Nov 29, 2019 at 9:30 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+>> 
+>> Well we do have very small lcd display drivers in drm, and before that 
+>> in
+>> fbdev. And you have a fbdev framebuffer driver in there, which looks a 
+>> bit
+>> misplaced ...
+>> 
+>> Afaiui you also have some even tinier lcd drivers where you don't 
+>> address
+>> pixels, but just directly upload text, and those obviously don't fit 
+>> into
+>> drm/fbdev world. But anything where you can address pixels very much 
+>> does.
+>> -Daniel
 > 
-> Cc: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>
-> Cc: Robin van der Gracht <robin@protonic.nl>
-> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
-> ---
->  drivers/auxdisplay/cfag12864bfb.c | 2 +-
->  drivers/auxdisplay/ht16k33.c      | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+> The first driver in the category used fb.h. At the time (~13 years
+> ago) it was decided that the drivers should go into a different
+> category/folder instead and then the other were added.
 > 
-> diff --git a/drivers/auxdisplay/cfag12864bfb.c
-> b/drivers/auxdisplay/cfag12864bfb.c
-> index 4074886b7bc8..2002291ab338 100644
-> --- a/drivers/auxdisplay/cfag12864bfb.c
-> +++ b/drivers/auxdisplay/cfag12864bfb.c
-> @@ -57,7 +57,7 @@ static int cfag12864bfb_mmap(struct fb_info *info,
-> struct vm_area_struct *vma)
->  	return vm_map_pages_zero(vma, &pages, 1);
->  }
-> 
-> -static struct fb_ops cfag12864bfb_ops = {
-> +static const struct fb_ops cfag12864bfb_ops = {
->  	.owner = THIS_MODULE,
->  	.fb_read = fb_sys_read,
->  	.fb_write = fb_sys_write,
-> diff --git a/drivers/auxdisplay/ht16k33.c 
-> b/drivers/auxdisplay/ht16k33.c
-> index a2fcde582e2a..d951d54b26f5 100644
-> --- a/drivers/auxdisplay/ht16k33.c
-> +++ b/drivers/auxdisplay/ht16k33.c
-> @@ -228,7 +228,7 @@ static int ht16k33_mmap(struct fb_info *info,
-> struct vm_area_struct *vma)
->  	return vm_map_pages_zero(vma, &pages, 1);
->  }
-> 
-> -static struct fb_ops ht16k33_fb_ops = {
-> +static const struct fb_ops ht16k33_fb_ops = {
->  	.owner = THIS_MODULE,
->  	.fb_read = fb_sys_read,
->  	.fb_write = fb_sys_write,
+> In any case, I am removing the original ones since I cannot test them
+> anymore and there are likely no user. The only other fb user could be
+> relocated if Robin agrees.
 
-Acked-by: Robin van der Gracht <robin@protonic.nl>
+The ht16k33 driver registers a framebuffer, backlight and input device.
+Not sure if it's OK to let a driver under fbdev register all of those,
+but relocating it is fine by me.
+
+Robin

@@ -1,116 +1,58 @@
-From: Rodrigo Alencar <455.rodrigo.alencar@gmail.com>
-Date: Sun, 08 Dec 2019 20:25:11 +0000
-Subject: Re: [PATCH] video: fbdev: added driver for sharp memory lcd displays
-Message-Id: <CACk9uecHrKDQHdL=fgz0xVF4oKUBOUUyRAt-cMn6m0YCOf9v_g@mail.gmail.com>
+From: robin <robin@protonic.nl>
+Date: Mon, 02 Dec 2019 07:37:02 +0000
+Subject: Re: [PATCH v2 14/14] auxdisplay: constify fb ops
+Message-Id: <7644533f18ad010366bd27baaf915082@protonic.nl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1575554335-27197-1-git-send-email-alencar.fmce@imbel.gov.br> <201912090055.QXDo7ygw%lkp@intel.com>
-In-Reply-To: <201912090055.QXDo7ygw%lkp@intel.com>
+References: <cover.1575022735.git.jani.nikula@intel.com>
+ <94a33cf0a587e803bcadcf80e8152eac9b196f34.1575022735.git.jani.nikula@intel.com>
+In-Reply-To: <94a33cf0a587e803bcadcf80e8152eac9b196f34.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Rodrigo Rolim Mendes de <alencar.fmce@imbel.gov.br>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jani Nikula <jani.nikula@intel.com>
+Cc: linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>
 
-Hello,
-
-Em dom., 8 de dez. de 2019 =C3=A0s 13:56, kbuild test robot <lkp@intel.com>=
- escreveu:
->
-> Hi Rodrigo,
->
-> Thank you for the patch! Perhaps something to improve:
->
-> [auto build test WARNING on linux/master]
-> [also build test WARNING on robh/for-next linus/master v5.4 next-20191208]
-> [if your patch is applied to the wrong git tree, please drop us a note to=
- help
-> improve the system. BTW, we also suggest to use '--base' option to specif=
-y the
-> base tree in git format-patch, please see https://stackoverflow.com/a/374=
-06982]
->
-> url:    https://github.com/0day-ci/linux/commits/Rodrigo-Rolim-Mendes-de-=
-Alencar/video-fbdev-added-driver-for-sharp-memory-lcd-displays/20191207-112=
-607
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.gi=
-t 26bc672134241a080a83b2ab9aa8abede8d30e1c
-> reproduce:
->         # apt-get install sparse
->         # sparse version: v0.6.1-91-g817270f-dirty
->         make ARCH=3Dx86_64 allmodconfig
->         make C=3D1 CF=3D'-fdiagnostic-prefix -D__CHECK_ENDIAN__'
->
-> If you fix the issue, kindly add following tag
-> Reported-by: kbuild test robot <lkp@intel.com>
->
->
-> sparse warnings: (new ones prefixed by >>)
->
-> >> drivers/video/fbdev/smemlcdfb.c:71:29: sparse: sparse: incorrect type =
-in initializer (different address spaces) @@    expected unsigned char [use=
-rtype] *vmem @@    got signed char [usertype] *vmem @@
-> >> drivers/video/fbdev/smemlcdfb.c:71:29: sparse:    expected unsigned ch=
-ar [usertype] *vmem
-> >> drivers/video/fbdev/smemlcdfb.c:71:29: sparse:    got char [noderef] <=
-asn:2> *screen_base
->
-> vim +71 drivers/video/fbdev/smemlcdfb.c
->
->     67
->     68  static void smemlcd_update(struct smemlcd_par *par)
->     69  {
->     70          struct spi_device *spi =3D par->spi;
->   > 71          u8 *vmem =3D par->info->screen_base;
-
-A cast is really necessary here?
-
->     72          u8 *buf_ptr =3D par->spi_buf;
->     73          int ret;
->     74          u32 i,j;
->     75
->     76          if (par->start + par->height > par->info->var.yres) {
->     77                  par->start =3D 0;
->     78                  par->height =3D 0;
->     79          }
->     80          /* go to start line */
->     81          vmem +=3D par->start * par->vmem_width;
->     82          /* update vcom */
->     83          par->vcom ^=3D SMEMLCD_FRAME_INVERSION;
->     84          /* mode selection */
->     85          *(buf_ptr++) =3D (par->height)? (SMEMLCD_DATA_UPDATE | pa=
-r->vcom) : par->vcom;
->     86
->     87          /* not all SPI masters have LSB-first mode, bitrev8 is us=
-ed */
->     88          for (i =3D par->start + 1; i < par->start + par->height +=
- 1; i++) {
->     89                  /* gate line address */
->     90                  *(buf_ptr++) =3D bitrev8(i);
->     91                  /* data writing */
->     92                  for (j =3D 0; j < par->spi_width; j++)
->     93                          *(buf_ptr++) =3D bitrev8(*(vmem++));
->     94                  /* dummy data */
->     95                  *(buf_ptr++) =3D SMEMLCD_DUMMY_DATA;
->     96                  /* video memory alignment */
->     97                  for (; j < par->vmem_width; j++)
->     98                          vmem++;
->     99          }
->    100          /* dummy data */
->    101          *(buf_ptr++) =3D SMEMLCD_DUMMY_DATA;
->    102
->    103          ret =3D spi_write(spi, &(par->spi_buf[0]), par->height * =
-(par->spi_width + 2) + 2);
->    104          if (ret < 0)
->    105                  dev_err(&spi->dev, "Couldn't send SPI command.\n"=
-);
->    106
->    107          par->start =3D U32_MAX;
->    108          par->height =3D 0;
->    109  }
->    110
->
+On 2019-11-29 11:29, Jani Nikula wrote:
+> Now that the fbops member of struct fb_info is const, we can start
+> making the ops const as well.
+> 
+> Cc: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>
+> Cc: Robin van der Gracht <robin@protonic.nl>
+> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
 > ---
-> 0-DAY kernel test infrastructure                 Open Source Technology C=
-enter
-> https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org Intel Corpor=
-ation
+>  drivers/auxdisplay/cfag12864bfb.c | 2 +-
+>  drivers/auxdisplay/ht16k33.c      | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/auxdisplay/cfag12864bfb.c
+> b/drivers/auxdisplay/cfag12864bfb.c
+> index 4074886b7bc8..2002291ab338 100644
+> --- a/drivers/auxdisplay/cfag12864bfb.c
+> +++ b/drivers/auxdisplay/cfag12864bfb.c
+> @@ -57,7 +57,7 @@ static int cfag12864bfb_mmap(struct fb_info *info,
+> struct vm_area_struct *vma)
+>  	return vm_map_pages_zero(vma, &pages, 1);
+>  }
+> 
+> -static struct fb_ops cfag12864bfb_ops = {
+> +static const struct fb_ops cfag12864bfb_ops = {
+>  	.owner = THIS_MODULE,
+>  	.fb_read = fb_sys_read,
+>  	.fb_write = fb_sys_write,
+> diff --git a/drivers/auxdisplay/ht16k33.c 
+> b/drivers/auxdisplay/ht16k33.c
+> index a2fcde582e2a..d951d54b26f5 100644
+> --- a/drivers/auxdisplay/ht16k33.c
+> +++ b/drivers/auxdisplay/ht16k33.c
+> @@ -228,7 +228,7 @@ static int ht16k33_mmap(struct fb_info *info,
+> struct vm_area_struct *vma)
+>  	return vm_map_pages_zero(vma, &pages, 1);
+>  }
+> 
+> -static struct fb_ops ht16k33_fb_ops = {
+> +static const struct fb_ops ht16k33_fb_ops = {
+>  	.owner = THIS_MODULE,
+>  	.fb_read = fb_sys_read,
+>  	.fb_write = fb_sys_write,
+
+Acked-by: Robin van der Gracht <robin@protonic.nl>

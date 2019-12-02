@@ -1,88 +1,50 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Wed, 04 Dec 2019 06:31:06 +0000
-Subject: Re: [Intel-gfx] [PATCH v3 04/12] video: fbdev: uvesafb: modify the static fb_ops directly
-Message-Id: <87muc8haad.fsf@intel.com>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Mon, 02 Dec 2019 08:40:47 +0000
+Subject: Re: [PATCH v2 11/14] HID: picoLCD: constify fb ops
+Message-Id: <20191202094047.34525a7d@aether.lan.sysophe.eu>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1575390740.git.jani.nikula@intel.com>
- <af63cda5de9fee3acd28e7d264f920338298bc0a.1575390740.git.jani.nikula@intel.com>
- <20191203170351.GH624164@phenom.ffwll.local>
-In-Reply-To: <20191203170351.GH624164@phenom.ffwll.local>
+References: <cover.1575022735.git.jani.nikula@intel.com>
+ <8678a9a3566279c881bb4db944850eef35d0a4bb.1575022735.git.jani.nikula@intel.com>
+In-Reply-To: <8678a9a3566279c881bb4db944850eef35d0a4bb.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Jani Nikula <jani.nikula@intel.com>
+Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, Jiri Kosina <jikos@kernel.org>, dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org
 
-On Tue, 03 Dec 2019, Daniel Vetter <daniel@ffwll.ch> wrote:
-> On Tue, Dec 03, 2019 at 06:38:46PM +0200, Jani Nikula wrote:
->> Avoid modifying the fb_ops via info->fbops to let us make the pointer
->> const in the future.
->> 
->> Cc: linux-fbdev@vger.kernel.org
->> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
->> ---
->>  drivers/video/fbdev/uvesafb.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->> 
->> diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
->> index 439565cae7ab..53d08d1b56f5 100644
->> --- a/drivers/video/fbdev/uvesafb.c
->> +++ b/drivers/video/fbdev/uvesafb.c
->> @@ -1440,7 +1440,7 @@ static void uvesafb_init_info(struct fb_info *info, struct vbe_mode_ib *mode)
->>  
->>  	/* Disable blanking if the user requested so. */
->>  	if (!blank)
->> -		info->fbops->fb_blank = NULL;
->> +		uvesafb_ops.fb_blank = NULL;
->>  
->>  	/*
->>  	 * Find out how much IO memory is required for the mode with
->> @@ -1510,7 +1510,7 @@ static void uvesafb_init_info(struct fb_info *info, struct vbe_mode_ib *mode)
->>  			(par->ypan ? FBINFO_HWACCEL_YPAN : 0);
->>  
->>  	if (!par->ypan)
->> -		info->fbops->fb_pan_display = NULL;
->> +		uvesafb_ops.fb_pan_display = NULL;
->>  }
+Hi Jani,
+
+On Fri, 29 Nov 2019 12:29:41 Jani Nikula <jani.nikula@intel.com> wrote:
+> Now that the fbops member of struct fb_info is const, we can start
+> making the ops const as well.
 >
-> I read code.
->
-> I cried.
->
+> v2: fix	typo (Christophe de Dinechin)
+
+Fine with me.
+I don't think going through drm-misc would trigger any conflict, but
+adding Jiri to CC for the case there was any preference.
+
+Acked-by: Bruno Prémont <bonbons@linux-vserver.org>
+
+> Cc: Bruno Prémont <bonbons@linux-vserver.org>
+> Cc: linux-input@vger.kernel.org
 > Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->
-> Also, with more reading and more bad dreams I'll get about this, I'm
-> revising my take on patches 1&2 in this series. On those also
->
-> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->
-> as-is.
-
-Thanks. I feel you.
-
-And remember, all I ever wanted to do was
-
--static struct fb_ops intelfb_ops = {
-+static const struct fb_ops intelfb_ops = {
-
-in drivers/gpu/drm/i915/display/intel_fbdev.c.
-
-
-BR,
-Jani.
-
-
->
-> Cheers, Daniel
->>  
->>  static void uvesafb_init_mtrr(struct fb_info *info)
->> -- 
->> 2.20.1
->> 
->> _______________________________________________
->> Intel-gfx mailing list
->> Intel-gfx@lists.freedesktop.org
->> https://lists.freedesktop.org/mailman/listinfo/intel-gfx
-
--- 
-Jani Nikula, Intel Open Source Graphics Center
+> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+> ---
+>  drivers/hid/hid-picolcd_fb.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
+> index e162a668fb7e..a549c42e8c90 100644
+> --- a/drivers/hid/hid-picolcd_fb.c
+> +++ b/drivers/hid/hid-picolcd_fb.c
+> @@ -417,8 +417,7 @@ static int picolcd_set_par(struct fb_info *info)
+>  	return 0;
+>  }
+>  
+> -/* Note this can't be const because of struct fb_info definition */
+> -static struct fb_ops picolcdfb_ops = {
+> +static const struct fb_ops picolcdfb_ops = {
+>  	.owner        = THIS_MODULE,
+>  	.fb_destroy   = picolcd_fb_destroy,
+>  	.fb_read      = fb_sys_read,

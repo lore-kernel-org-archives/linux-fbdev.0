@@ -1,60 +1,53 @@
-From: Dmitry Vyukov <dvyukov@google.com>
-Date: Wed, 04 Dec 2019 10:54:17 +0000
-Subject: cirrusfb: divide errors in cirrusfb_check_var/cirrusfb_check_pixclock/cirrusfb_set_par_foo
-Message-Id: <CACT4Y+YjudGzx44Jw1UMgEPB4kfzp3jo-TcCVR62U+N+2C6tjA@mail.gmail.com>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Tue, 03 Dec 2019 09:16:00 +0000
+Subject: Re: [PATCH v2 07/14] video: omapfb: use const pointer for fb_ops
+Message-Id: <877e3dkbvz.fsf@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1575022735.git.jani.nikula@intel.com>
+ <dfa4376e219ffeef9175993eaff91b5fe7ecccab.1575022735.git.jani.nikula@intel.com>
+In-Reply-To: <dfa4376e219ffeef9175993eaff91b5fe7ecccab.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, DRI <dri-devel@lists.freedesktop.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, syzkaller <syzkaller@googlegroups.com>, LKML <linux-kernel@vger.kernel.org>
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org
 
-Hello,
+On Fri, 29 Nov 2019, Jani Nikula <jani.nikula@intel.com> wrote:
+> Use const for fb_ops to let us make the info->fbops pointer const in the
+> future.
+>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: linux-omap@vger.kernel.org
+> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
 
-syzkaller has found 3 of divide errors in the cirrusfb driver.
-Kernel is on c5db92909bedd Add linux-next specific files for 20191202.
+Pushed up to and including this patch to drm-misc-next, thanks for the
+reviews and acks.
 
-divide error: 0000 [#1] PREEMPT SMP KASAN
-CPU: 0 PID: 8133 Comm: syz-executor.5 Not tainted 5.4.0-next-20191202+ #13
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS
-rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
-RIP: 0010:cirrusfb_set_par_foo+0x1d17/0x64b0 drivers/video/fbdev/cirrusfb.c:836
-Call Trace:
- cirrusfb_set_par+0x15/0x20 drivers/video/fbdev/cirrusfb.c:1272
- fb_set_var+0x518/0xdd0 drivers/video/fbdev/core/fbmem.c:1024
- do_fb_ioctl+0x50c/0x830 drivers/video/fbdev/core/fbmem.c:1104
- fb_ioctl+0xe6/0x130 drivers/video/fbdev/core/fbmem.c:1180
- vfs_ioctl fs/ioctl.c:47 [inline]
- file_ioctl fs/ioctl.c:545 [inline]
- do_vfs_ioctl+0x1df/0x1420 fs/ioctl.c:732
- ksys_ioctl+0xa9/0xd0 fs/ioctl.c:749
+I may have missed some pointer chasing uses of info->fbops, reported by
+0day. I'll need to double check those before proceeding with the next
+patch.
 
-divide error: 0000 [#1] PREEMPT SMP KASAN
-CPU: 3 PID: 7639 Comm: syz-executor.0 Not tainted 5.4.0-next-20191202+ #12
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS
-rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
-RIP: 0010:cirrusfb_check_pixclock drivers/video/fbdev/cirrusfb.c:482 [inline]
-RIP: 0010:cirrusfb_check_var+0x6e8/0x1150 drivers/video/fbdev/cirrusfb.c:623
-Call Trace:
- fb_set_var+0x236/0xdd0 drivers/video/fbdev/core/fbmem.c:1005
- do_fb_ioctl+0x50c/0x830 drivers/video/fbdev/core/fbmem.c:1104
- fb_ioctl+0xe6/0x130 drivers/video/fbdev/core/fbmem.c:1180
- vfs_ioctl fs/ioctl.c:47 [inline]
- file_ioctl fs/ioctl.c:545 [inline]
- do_vfs_ioctl+0x1df/0x1420 fs/ioctl.c:732
- ksys_ioctl+0xa9/0xd0 fs/ioctl.c:749
+BR,
+Jani.
 
-divide error: 0000 [#1] PREEMPT SMP KASAN
-CPU: 1 PID: 12555 Comm: syz-executor.5 Not tainted 5.4.0-next-20191202+ #15
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS
-rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
-RIP: 0010:cirrusfb_check_var.cold.16+0x12e/0x1e7
-drivers/video/fbdev/cirrusfb.c:581
-Call Trace:
- fb_set_var+0x236/0xdd0 drivers/video/fbdev/core/fbmem.c:1005
- do_fb_ioctl+0x50c/0x830 drivers/video/fbdev/core/fbmem.c:1104
- fb_ioctl+0xe6/0x130 drivers/video/fbdev/core/fbmem.c:1180
- vfs_ioctl fs/ioctl.c:47 [inline]
- file_ioctl fs/ioctl.c:545 [inline]
- do_vfs_ioctl+0x1df/0x1420 fs/ioctl.c:732
- ksys_ioctl+0xa9/0xd0 fs/ioctl.c:749
+> ---
+>  drivers/video/fbdev/omap/omapfb_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+> index 702cca59bda1..e8a304f84ea8 100644
+> --- a/drivers/video/fbdev/omap/omapfb_main.c
+> +++ b/drivers/video/fbdev/omap/omapfb_main.c
+> @@ -1052,7 +1052,7 @@ static int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd,
+>  {
+>  	struct omapfb_plane_struct *plane = fbi->par;
+>  	struct omapfb_device	*fbdev = plane->fbdev;
+> -	struct fb_ops		*ops = fbi->fbops;
+> +	const struct fb_ops *ops = fbi->fbops;
+>  	union {
+>  		struct omapfb_update_window	update_window;
+>  		struct omapfb_plane_info	plane_info;
+
+-- 
+Jani Nikula, Intel Open Source Graphics Center

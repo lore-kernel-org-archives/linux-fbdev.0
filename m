@@ -1,123 +1,77 @@
-From: syzbot <syzbot+83449358d6355b0b9728@syzkaller.appspotmail.com>
-Date: Fri, 27 Dec 2019 07:13:08 +0000
-Subject: BUG: unable to handle kernel paging request in vga16fb_imageblit
-Message-Id: <000000000000cdb581059aaa39b2@google.com>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Tue, 03 Dec 2019 16:38:52 +0000
+Subject: [PATCH v3 10/12] media: constify fb ops across all drivers
+Message-Id: <71794337f8611271f2c1fdb3882119a58e743a87.1575390741.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CA+ydwtrmj_nXc3KNLW3YCE4BU_dOZnWRhkAC7wTXmrj5dXz6_Q@mail.gmail.com>
-In-Reply-To: <CA+ydwtrmj_nXc3KNLW3YCE4BU_dOZnWRhkAC7wTXmrj5dXz6_Q@mail.gmail.com>
+References: <cover.1575390740.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1575390740.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Andy Walls <awalls@md.metrocast.net>, jani.nikula@intel.com, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, ivtv-devel@ivtvdriver.org, Hans Verkuil <hverkuil@xs4all.nl>, linux-media@vger.kernel.org
 
-Hello,
+Now that the fbops member of struct fb_info is const, we can start
+making the ops const as well.
 
-syzbot found the following crash on:
+Remove the redundant fbops assignments while at it.
 
-HEAD commit:    46cf053e Linux 5.5-rc3
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=12e35351e00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=ED9d672709340e35
-dashboard link: https://syzkaller.appspot.com/bug?extid=83449358d6355b0b9728
-compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+v2:
+- actually add const in vivid
+- fix typo (Christophe de Dinechin)
 
-Unfortunately, I don't have any reproducer for this crash yet.
-
-IMPORTANT: if you fix the bug, please add the following tag to the commit:
-Reported-by: syzbot+83449358d6355b0b9728@syzkaller.appspotmail.com
-
-BUG: unable to handle page fault for address: ffff8880ffff7900
-#PF: supervisor write access in kernel mode
-#PF: error_code(0x0002) - not-present page
-PGD c201067 P4D c201067 PUD 0
-Oops: 0002 [#1] PREEMPT SMP KASAN
-CPU: 0 PID: 31197 Comm: syz-executor.4 Not tainted 5.5.0-rc3-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS =20
-Google 01/01/2011
-RIP: 0010:writeb arch/x86/include/asm/io.h:65 [inline]
-RIP: 0010:vga_imageblit_expand drivers/video/fbdev/vga16fb.c:1168 [inline]
-RIP: 0010:vga16fb_imageblit+0xa52/0x2200 drivers/video/fbdev/vga16fb.c:1260
-Code: df 48 89 fa 48 c1 ea 03 0f b6 14 02 48 89 f8 83 e0 07 83 c0 03 38 d0 =
-=20
-7c 09 84 d2 74 05 e8 16 9f f9 fd 41 8b 45 14 48 8b 4d c8 <88> 01 0f ae e8  =
-
-8a 01 b8 05 00 00 00 ba ce 03 00 00 ee 48 c7 c2 d8
-RSP: 0018:ffffc90004e57450 EFLAGS: 00010246
-RAX: 0000000000000000 RBX: 0000000000000007 RCX: ffff8880ffff7900
-RDX: 0000000000000000 RSI: ffffffff83b944b6 RDI: ffffc90004e5760c
-RBP: ffffc90004e574e8 R08: ffff88804b708240 R09: 0000000000000000
-R10: ffffed10432d371b R11: ffff88821969b8df R12: ffffc90004e575fc
-R13: ffffc90004e575f8 R14: ffff8880a3f140c0 R15: 0000000000000001
-FS:  00007f4674e1a700(0000) GS:ffff8880ae800000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffff8880ffff7900 CR3: 000000004de7b000 CR4: 00000000001426f0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-Call Trace:
-  bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:139 [inline]
-  bit_putcs+0x9a3/0xf10 drivers/video/fbdev/core/bitblit.c:188
-  fbcon_putcs+0x33c/0x3e0 drivers/video/fbdev/core/fbcon.c:1353
-  fbcon_redraw_move.isra.0+0x258/0x2a0 drivers/video/fbdev/core/fbcon.c:1733
-  ypan_down_redraw drivers/video/fbdev/core/fbcon.c:1598 [inline]
-  fbcon_scroll+0x2e07/0x35b0 drivers/video/fbdev/core/fbcon.c:2048
-  con_scroll+0x3fd/0x650 drivers/tty/vt/vt.c:631
-  csi_L drivers/tty/vt/vt.c:1974 [inline]
-  do_con_trol+0x5317/0x61b0 drivers/tty/vt/vt.c:2373
-  do_con_write.part.0+0xfd9/0x1ef0 drivers/tty/vt/vt.c:2797
-  do_con_write drivers/tty/vt/vt.c:2565 [inline]
-  con_write+0x46/0xd0 drivers/tty/vt/vt.c:3135
-  process_output_block drivers/tty/n_tty.c:595 [inline]
-  n_tty_write+0x40e/0x1080 drivers/tty/n_tty.c:2333
-  do_tty_write drivers/tty/tty_io.c:962 [inline]
-  tty_write+0x496/0x7f0 drivers/tty/tty_io.c:1046
-  __vfs_write+0x8a/0x110 fs/read_write.c:494
-  vfs_write+0x268/0x5d0 fs/read_write.c:558
-  ksys_write+0x14f/0x290 fs/read_write.c:611
-  __do_sys_write fs/read_write.c:623 [inline]
-  __se_sys_write fs/read_write.c:620 [inline]
-  __x64_sys_write+0x73/0xb0 fs/read_write.c:620
-  do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
-  entry_SYSCALL_64_after_hwframe+0x49/0xbe
-RIP: 0033:0x45a919
-Code: ad b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7 =
-=20
-48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  =
-
-ff 0f 83 7b b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00
-RSP: 002b:00007f4674e19c78 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000045a919
-RDX: 00000000000002c1 RSI: 0000000020000880 RDI: 0000000000000009
-RBP: 000000000075bf20 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 00007f4674e1a6d4
-R13: 00000000004cbd7a R14: 00000000004e5b48 R15: 00000000ffffffff
-Modules linked in:
-CR2: ffff8880ffff7900
----[ end trace 80930dfe0366796b ]---
-RIP: 0010:writeb arch/x86/include/asm/io.h:65 [inline]
-RIP: 0010:vga_imageblit_expand drivers/video/fbdev/vga16fb.c:1168 [inline]
-RIP: 0010:vga16fb_imageblit+0xa52/0x2200 drivers/video/fbdev/vga16fb.c:1260
-Code: df 48 89 fa 48 c1 ea 03 0f b6 14 02 48 89 f8 83 e0 07 83 c0 03 38 d0 =
-=20
-7c 09 84 d2 74 05 e8 16 9f f9 fd 41 8b 45 14 48 8b 4d c8 <88> 01 0f ae e8  =
-
-8a 01 b8 05 00 00 00 ba ce 03 00 00 ee 48 c7 c2 d8
-RSP: 0018:ffffc90004e57450 EFLAGS: 00010246
-RAX: 0000000000000000 RBX: 0000000000000007 RCX: ffff8880ffff7900
-RDX: 0000000000000000 RSI: ffffffff83b944b6 RDI: ffffc90004e5760c
-RBP: ffffc90004e574e8 R08: ffff88804b708240 R09: 0000000000000000
-R10: ffffed10432d371b R11: ffff88821969b8df R12: ffffc90004e575fc
-R13: ffffc90004e575f8 R14: ffff8880a3f140c0 R15: 0000000000000001
-FS:  00007f4674e1a700(0000) GS:ffff8880ae800000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffff8880ffff7900 CR3: 000000004de7b000 CR4: 00000000001426f0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-
-
+Cc: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: Andy Walls <awalls@md.metrocast.net>
+Cc: linux-media@vger.kernel.org
+Cc: ivtv-devel@ivtvdriver.org
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
 ---
-This bug is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ drivers/media/pci/ivtv/ivtvfb.c          | 3 +--
+ drivers/media/platform/vivid/vivid-osd.c | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-syzbot will keep track of this bug report. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
+index 95a56cce9b65..f2922b554b09 100644
+--- a/drivers/media/pci/ivtv/ivtvfb.c
++++ b/drivers/media/pci/ivtv/ivtvfb.c
+@@ -925,7 +925,7 @@ static int ivtvfb_blank(int blank_mode, struct fb_info *info)
+ 	return 0;
+ }
+ 
+-static struct fb_ops ivtvfb_ops = {
++static const struct fb_ops ivtvfb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_write       = ivtvfb_write,
+ 	.fb_check_var   = ivtvfb_check_var,
+@@ -1049,7 +1049,6 @@ static int ivtvfb_init_vidmode(struct ivtv *itv)
+ 
+ 	oi->ivtvfb_info.node = -1;
+ 	oi->ivtvfb_info.flags = FBINFO_FLAG_DEFAULT;
+-	oi->ivtvfb_info.fbops = &ivtvfb_ops;
+ 	oi->ivtvfb_info.par = itv;
+ 	oi->ivtvfb_info.var = oi->ivtvfb_defined;
+ 	oi->ivtvfb_info.fix = oi->ivtvfb_fix;
+diff --git a/drivers/media/platform/vivid/vivid-osd.c b/drivers/media/platform/vivid/vivid-osd.c
+index f2e789bdf4a6..fbaec8acc161 100644
+--- a/drivers/media/platform/vivid/vivid-osd.c
++++ b/drivers/media/platform/vivid/vivid-osd.c
+@@ -244,7 +244,7 @@ static int vivid_fb_blank(int blank_mode, struct fb_info *info)
+ 	return 0;
+ }
+ 
+-static struct fb_ops vivid_fb_ops = {
++static const struct fb_ops vivid_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_check_var   = vivid_fb_check_var,
+ 	.fb_set_par     = vivid_fb_set_par,
+@@ -311,7 +311,6 @@ static int vivid_fb_init_vidmode(struct vivid_dev *dev)
+ 
+ 	dev->fb_info.node = -1;
+ 	dev->fb_info.flags = FBINFO_FLAG_DEFAULT;
+-	dev->fb_info.fbops = &vivid_fb_ops;
+ 	dev->fb_info.par = dev;
+ 	dev->fb_info.var = dev->fb_defined;
+ 	dev->fb_info.fix = dev->fb_fix;
+-- 
+2.20.1

@@ -1,52 +1,87 @@
-From: Michael Kelley <mikelley@microsoft.com>
-Date: Mon, 09 Dec 2019 16:32:56 +0000
-Subject: RE: [PATCH v4] video: hyperv: hyperv_fb: Use physical memory for fb on HyperV Gen 1 VMs.
-Message-Id: <CY4PR21MB06293C21EC5338C98080F6AED7580@CY4PR21MB0629.namprd21.prod.outlook.com>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Tue, 03 Dec 2019 16:38:43 +0000
+Subject: [PATCH v3 01/12] video: fbdev: atyfb: modify the static fb_ops directly
+Message-Id: <7dfbf1d47203157f5eb9a6f447f0095765d0b5e6.1575390740.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191209075749.3804-1-weh@microsoft.com>
-In-Reply-To: <20191209075749.3804-1-weh@microsoft.com>
+References: <cover.1575390740.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1575390740.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wei Hu <weh@microsoft.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, KY Srinivasan <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, "sashal@kernel.org" <sashal@kernel.org>, "hch@lst.de" <hch@lst.de>, "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "mchehab+samsung@kernel.org" <mchehab+samsung@kernel.org>, "sam@ravnborg.org" <sam@ravnborg.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "info@metux.net" <info@metux.net>, "arnd@arndb.de" <arnd@arndb.de>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, Dexuan Cui <decui@microsoft.com>
-Cc: kbuild test robot <lkp@intel.com>
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: jani.nikula@intel.com, intel-gfx@lists.freedesktop.org
 
-From: Wei Hu <weh@microsoft.com> Sent: Sunday, December 8, 2019 11:58 PM
-> 
-> On Hyper-V, Generation 1 VMs can directly use VM's physical memory for
-> their framebuffers. This can improve the efficiency of framebuffer and
-> overall performence for VM. The physical memory assigned to framebuffer
-> must be contiguous. We use CMA allocator to get contiguouse physicial
-> memory when the framebuffer size is greater than 4MB. For size under
-> 4MB, we use alloc_pages to achieve this.
-> 
-> To enable framebuffer memory allocation from CMA, supply a kernel
-> parameter to give enough space to CMA allocator at boot time. For
-> example:
->     cma=130m
-> This gives 130MB memory to CAM allocator that can be allocated to
-> framebuffer. If this fails, we fall back to the old way of using
-> mmio for framebuffer.
-> 
-> Reported-by: kbuild test robot <lkp@intel.com>
-> Signed-off-by: Wei Hu <weh@microsoft.com>
-> ---
->     v2: Incorporated review comments form hch@lst.de, Michael Kelley and
->     Dexuan Cui
->     - Use dma_alloc_coherent to allocate large contiguous memory
->     - Use phys_addr_t for physical addresses
->     - Corrected a few spelling errors and minor cleanups
->     - Also tested on 32 bit Ubuntu guest
->     v3: Fixed a build issue reported by kbuild test robot and incorported
->     some review comments from Michael Kelley
->     - Add CMA check to avoid link failure
->     - Fixed small memory leak introduced by alloc_apertures
->     - Cleaned up so code
->     v4: Removed request_pages variable as it is no longer needed
-> 
->  drivers/video/fbdev/Kconfig     |   1 +
->  drivers/video/fbdev/hyperv_fb.c | 182 +++++++++++++++++++++++++-------
->  2 files changed, 144 insertions(+), 39 deletions(-)
-> 
+Avoid modifying the fb_ops via info->fbops to let us make the pointer
+const in the future.
 
-Reviewed-by: Michael Kelley <mikelley@microsoft.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+---
+ drivers/video/fbdev/aty/atyfb.h         | 2 +-
+ drivers/video/fbdev/aty/atyfb_base.c    | 6 +++---
+ drivers/video/fbdev/aty/mach64_cursor.c | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/fbdev/aty/atyfb.h b/drivers/video/fbdev/aty/atyfb.h
+index e5a347c58180..a7833bc98225 100644
+--- a/drivers/video/fbdev/aty/atyfb.h
++++ b/drivers/video/fbdev/aty/atyfb.h
+@@ -341,7 +341,7 @@ extern const u8 aty_postdividers[8];
+      *  Hardware cursor support
+      */
+ 
+-extern int aty_init_cursor(struct fb_info *info);
++extern int aty_init_cursor(struct fb_info *info, struct fb_ops *atyfb_ops);
+ 
+     /*
+      *  Hardware acceleration
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 6dda5d885a03..bebc08505d94 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -1316,10 +1316,10 @@ static int atyfb_set_par(struct fb_info *info)
+ 	par->accel_flags = var->accel_flags; /* hack */
+ 
+ 	if (var->accel_flags) {
+-		info->fbops->fb_sync = atyfb_sync;
++		atyfb_ops.fb_sync = atyfb_sync;
+ 		info->flags &= ~FBINFO_HWACCEL_DISABLED;
+ 	} else {
+-		info->fbops->fb_sync = NULL;
++		atyfb_ops.fb_sync = NULL;
+ 		info->flags |= FBINFO_HWACCEL_DISABLED;
+ 	}
+ 
+@@ -2702,7 +2702,7 @@ static int aty_init(struct fb_info *info)
+ 
+ #ifdef CONFIG_FB_ATY_CT
+ 	if (!noaccel && M64_HAS(INTEGRATED))
+-		aty_init_cursor(info);
++		aty_init_cursor(info, &atyfb_ops);
+ #endif /* CONFIG_FB_ATY_CT */
+ 	info->var = var;
+ 
+diff --git a/drivers/video/fbdev/aty/mach64_cursor.c b/drivers/video/fbdev/aty/mach64_cursor.c
+index 4cde25eab8e8..b06fa6e42e6e 100644
+--- a/drivers/video/fbdev/aty/mach64_cursor.c
++++ b/drivers/video/fbdev/aty/mach64_cursor.c
+@@ -194,7 +194,7 @@ static int atyfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 	return 0;
+ }
+ 
+-int aty_init_cursor(struct fb_info *info)
++int aty_init_cursor(struct fb_info *info, struct fb_ops *atyfb_ops)
+ {
+ 	unsigned long addr;
+ 
+@@ -219,7 +219,7 @@ int aty_init_cursor(struct fb_info *info)
+ 	info->sprite.buf_align = 16; 	/* and 64 lines tall. */
+ 	info->sprite.flags = FB_PIXMAP_IO;
+ 
+-	info->fbops->fb_cursor = atyfb_cursor;
++	atyfb_ops->fb_cursor = atyfb_cursor;
+ 
+ 	return 0;
+ }
+-- 
+2.20.1

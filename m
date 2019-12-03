@@ -1,53 +1,91 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Tue, 03 Dec 2019 09:16:00 +0000
-Subject: Re: [PATCH v2 07/14] video: omapfb: use const pointer for fb_ops
-Message-Id: <877e3dkbvz.fsf@intel.com>
+From: syzbot <syzbot+13013adc4a234406c29e@syzkaller.appspotmail.com>
+Date: Tue, 03 Dec 2019 20:15:11 +0000
+Subject: divide error in fbcon_switch
+Message-Id: <00000000000072cb4c0598d25a69@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1575022735.git.jani.nikula@intel.com>
- <dfa4376e219ffeef9175993eaff91b5fe7ecccab.1575022735.git.jani.nikula@intel.com>
-In-Reply-To: <dfa4376e219ffeef9175993eaff91b5fe7ecccab.1575022735.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, ghalat@redhat.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, maarten.lankhorst@linux.intel.com, sam@ravnborg.org, syzkaller-bugs@googlegroups.com
 
-On Fri, 29 Nov 2019, Jani Nikula <jani.nikula@intel.com> wrote:
-> Use const for fb_ops to let us make the info->fbops pointer const in the
-> future.
->
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: linux-omap@vger.kernel.org
-> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+Hello,
 
-Pushed up to and including this patch to drm-misc-next, thanks for the
-reviews and acks.
+syzbot found the following crash on:
 
-I may have missed some pointer chasing uses of info->fbops, reported by
-0day. I'll need to double check those before proceeding with the next
-patch.
+HEAD commit:    76bb8b05 Merge tag 'kbuild-v5.5' of git://git.kernel.org/p..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=1508781ee00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=DD226651cb0f364b
+dashboard link: https://syzkaller.appspot.com/bug?extid=13013adc4a234406c29e
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=132b742ae00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1568f97ee00000
 
-BR,
-Jani.
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+13013adc4a234406c29e@syzkaller.appspotmail.com
 
-> ---
->  drivers/video/fbdev/omap/omapfb_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-> index 702cca59bda1..e8a304f84ea8 100644
-> --- a/drivers/video/fbdev/omap/omapfb_main.c
-> +++ b/drivers/video/fbdev/omap/omapfb_main.c
-> @@ -1052,7 +1052,7 @@ static int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd,
->  {
->  	struct omapfb_plane_struct *plane = fbi->par;
->  	struct omapfb_device	*fbdev = plane->fbdev;
-> -	struct fb_ops		*ops = fbi->fbops;
-> +	const struct fb_ops *ops = fbi->fbops;
->  	union {
->  		struct omapfb_update_window	update_window;
->  		struct omapfb_plane_info	plane_info;
+divide error: 0000 [#1] PREEMPT SMP KASAN
+CPU: 0 PID: 12 Comm: kworker/0:1 Not tainted 5.4.0-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS =20
+Google 01/01/2011
+Workqueue: events console_callback
+RIP: 0010:fbcon_update_softback drivers/video/fbdev/core/fbcon.c:378 =20
+[inline]
+RIP: 0010:fbcon_switch+0x20d/0x17f0 drivers/video/fbdev/core/fbcon.c:2247
+Code: a4 3b 08 4c 89 3d 33 a4 3b 08 38 d0 7c 08 84 d2 0f 85 48 13 00 00 41 =
+=20
+8b 9d 3c 03 00 00 31 d2 bf 05 00 00 00 8b 05 f3 07 13 06 <f7> f3 41 89 c4  =
 
--- 
-Jani Nikula, Intel Open Source Graphics Center
+89 c6 e8 67 48 c3 fd 41 83 fc 05 0f 8e d7 0b 00 00
+RSP: 0018:ffffc90000d2f9d8 EFLAGS: 00010246
+RAX: 0000000000008000 RBX: 0000000000000000 RCX: ffffffff83b1b314
+RDX: 0000000000000000 RSI: ffffffff83b1b322 RDI: 0000000000000005
+RBP: ffffc90000d2fb68 R08: ffff8880a9a06300 R09: fffffbfff14b0ac8
+R10: fffffbfff14b0ac7 R11: ffffffff8a58563b R12: 0000000000000000
+R13: ffff88809e21f000 R14: ffff8880a40fc000 R15: ffff8880a3860000
+FS:  0000000000000000(0000) GS:ffff8880ae800000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fb4a5f9a000 CR3: 00000000a64af000 CR4: 00000000001406f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+  redraw_screen+0x2b6/0x7d0 drivers/tty/vt/vt.c:997
+  complete_change_console+0x105/0x3a0 drivers/tty/vt/vt_ioctl.c:1264
+  change_console+0x19b/0x2c0 drivers/tty/vt/vt_ioctl.c:1389
+  console_callback+0x3a1/0x400 drivers/tty/vt/vt.c:2824
+  process_one_work+0x9af/0x1740 kernel/workqueue.c:2264
+  worker_thread+0x98/0xe40 kernel/workqueue.c:2410
+  kthread+0x361/0x430 kernel/kthread.c:255
+  ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:352
+Modules linked in:
+---[ end trace 074c38236abce447 ]---
+RIP: 0010:fbcon_update_softback drivers/video/fbdev/core/fbcon.c:378 =20
+[inline]
+RIP: 0010:fbcon_switch+0x20d/0x17f0 drivers/video/fbdev/core/fbcon.c:2247
+Code: a4 3b 08 4c 89 3d 33 a4 3b 08 38 d0 7c 08 84 d2 0f 85 48 13 00 00 41 =
+=20
+8b 9d 3c 03 00 00 31 d2 bf 05 00 00 00 8b 05 f3 07 13 06 <f7> f3 41 89 c4  =
+
+89 c6 e8 67 48 c3 fd 41 83 fc 05 0f 8e d7 0b 00 00
+RSP: 0018:ffffc90000d2f9d8 EFLAGS: 00010246
+RAX: 0000000000008000 RBX: 0000000000000000 RCX: ffffffff83b1b314
+RDX: 0000000000000000 RSI: ffffffff83b1b322 RDI: 0000000000000005
+RBP: ffffc90000d2fb68 R08: ffff8880a9a06300 R09: fffffbfff14b0ac8
+R10: fffffbfff14b0ac7 R11: ffffffff8a58563b R12: 0000000000000000
+R13: ffff88809e21f000 R14: ffff8880a40fc000 R15: ffff8880a3860000
+FS:  0000000000000000(0000) GS:ffff8880ae800000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fb4a5f9a000 CR3: 00000000a64af000 CR4: 00000000001406f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+
+
+---
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+syzbot can test patches for this bug, for details see:
+https://goo.gl/tpsmEJ#testing-patches

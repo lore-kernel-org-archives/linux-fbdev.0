@@ -1,50 +1,95 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 10 Dec 2019 22:30:28 +0000
-Subject: [PATCH AUTOSEL 4.9 84/91] fbtft: Make sure string is NULL terminated
-Message-Id: <20191210223035.14270-84-sashal@kernel.org>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Tue, 03 Dec 2019 16:54:18 +0000
+Subject: Re: [Intel-gfx] [PATCH v3 03/12] video: fbdev: nvidia: modify the static fb_ops directly
+Message-Id: <20191203165418.GG624164@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191210223035.14270-1-sashal@kernel.org>
-In-Reply-To: <20191210223035.14270-1-sashal@kernel.org>
+References: <cover.1575390740.git.jani.nikula@intel.com>
+ <9639e2305fd4d03311bf909b8914277b221ca582.1575390740.git.jani.nikula@intel.com>
+In-Reply-To: <9639e2305fd4d03311bf909b8914277b221ca582.1575390740.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jani Nikula <jani.nikula@intel.com>
+Cc: linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
 
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+On Tue, Dec 03, 2019 at 06:38:45PM +0200, Jani Nikula wrote:
+> Avoid modifying the fb_ops via info->fbops to let us make the pointer
+> const in the future.
+> 
+> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+> ---
+>  drivers/video/fbdev/nvidia/nvidia.c | 20 +++++++++++---------
+>  1 file changed, 11 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
+> index fbeeed5afe35..c583c018304d 100644
+> --- a/drivers/video/fbdev/nvidia/nvidia.c
+> +++ b/drivers/video/fbdev/nvidia/nvidia.c
+> @@ -607,6 +607,8 @@ static int nvidiafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+>  	return 0;
+>  }
+>  
+> +static struct fb_ops nvidia_fb_ops;
 
-[ Upstream commit 21f585480deb4bcf0d92b08879c35d066dfee030 ]
+Ok this one is two independent flags, I'm not going to ask for a matrix.
+Plus it's all in one file. Plus have you read the coding style used in
+here. Plus ...
 
-New GCC warns about inappropriate use of strncpy():
+Well.
 
-drivers/staging/fbtft/fbtft-core.c: In function ‘fbtft_framebuffer_alloc’:
-drivers/staging/fbtft/fbtft-core.c:665:2: warning: ‘strncpy’ specified bound 16 equals destination size [-Wstringop-truncation]
-  665 |  strncpy(info->fix.id, dev->driver->name, 16);
-      |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-Later on the copy is being used with the assumption to be NULL terminated.
-Make sure string is NULL terminated by switching to snprintf().
+> +
+>  static int nvidiafb_set_par(struct fb_info *info)
+>  {
+>  	struct nvidia_par *par = info->par;
+> @@ -660,19 +662,19 @@ static int nvidiafb_set_par(struct fb_info *info)
+>  	info->fix.line_length = (info->var.xres_virtual *
+>  				 info->var.bits_per_pixel) >> 3;
+>  	if (info->var.accel_flags) {
+> -		info->fbops->fb_imageblit = nvidiafb_imageblit;
+> -		info->fbops->fb_fillrect = nvidiafb_fillrect;
+> -		info->fbops->fb_copyarea = nvidiafb_copyarea;
+> -		info->fbops->fb_sync = nvidiafb_sync;
+> +		nvidia_fb_ops.fb_imageblit = nvidiafb_imageblit;
+> +		nvidia_fb_ops.fb_fillrect = nvidiafb_fillrect;
+> +		nvidia_fb_ops.fb_copyarea = nvidiafb_copyarea;
+> +		nvidia_fb_ops.fb_sync = nvidiafb_sync;
+>  		info->pixmap.scan_align = 4;
+>  		info->flags &= ~FBINFO_HWACCEL_DISABLED;
+>  		info->flags |= FBINFO_READS_FAST;
+>  		NVResetGraphics(info);
+>  	} else {
+> -		info->fbops->fb_imageblit = cfb_imageblit;
+> -		info->fbops->fb_fillrect = cfb_fillrect;
+> -		info->fbops->fb_copyarea = cfb_copyarea;
+> -		info->fbops->fb_sync = NULL;
+> +		nvidia_fb_ops.fb_imageblit = cfb_imageblit;
+> +		nvidia_fb_ops.fb_fillrect = cfb_fillrect;
+> +		nvidia_fb_ops.fb_copyarea = cfb_copyarea;
+> +		nvidia_fb_ops.fb_sync = NULL;
+>  		info->pixmap.scan_align = 1;
+>  		info->flags |= FBINFO_HWACCEL_DISABLED;
+>  		info->flags &= ~FBINFO_READS_FAST;
+> @@ -1165,7 +1167,7 @@ static int nvidia_set_fbinfo(struct fb_info *info)
+>  	info->pixmap.flags = FB_PIXMAP_SYSTEM;
+>  
+>  	if (!hwcur)
+> -	    info->fbops->fb_cursor = NULL;
+> +	    nvidia_fb_ops.fb_cursor = NULL;
+>  
+>  	info->var.accel_flags = (!noaccel);
+>  
+> -- 
+> 2.20.1
+> 
+> _______________________________________________
+> Intel-gfx mailing list
+> Intel-gfx@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/intel-gfx
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Link: https://lore.kernel.org/r/20191120095716.26628-1-andriy.shevchenko@linux.intel.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/staging/fbtft/fbtft-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index d9ba8c0f1353b..ece713d026607 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -766,7 +766,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	fbdefio->deferred_io =     fbtft_deferred_io;
- 	fb_deferred_io_init(info);
- 
--	strncpy(info->fix.id, dev->driver->name, 16);
-+	snprintf(info->fix.id, sizeof(info->fix.id), "%s", dev->driver->name);
- 	info->fix.type =           FB_TYPE_PACKED_PIXELS;
- 	info->fix.visual =         FB_VISUAL_TRUECOLOR;
- 	info->fix.xpanstep =	   0;
 -- 
-2.20.1
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

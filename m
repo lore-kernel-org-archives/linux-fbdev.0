@@ -1,46 +1,202 @@
 From: Jani Nikula <jani.nikula@intel.com>
-Date: Tue, 03 Dec 2019 16:38:46 +0000
-Subject: [PATCH v3 04/12] video: fbdev: uvesafb: modify the static fb_ops directly
-Message-Id: <af63cda5de9fee3acd28e7d264f920338298bc0a.1575390740.git.jani.nikula@intel.com>
+Date: Tue, 03 Dec 2019 16:42:17 +0000
+Subject: Re: [Intel-gfx] [PATCH v3 00/12] video, drm, etc: constify fbops in struct fb_info
+Message-Id: <87immxicnq.fsf@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1575390740.git.jani.nikula@intel.com>
 In-Reply-To: <cover.1575390740.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: jani.nikula@intel.com, intel-gfx@lists.freedesktop.org
+Cc: Steve Glendinning <steve.glendinning@shawell.net>, Andy Walls <awalls@md.metrocast.net>, kvm@vger.kernel.org, Robin van der Gracht <robin@protonic.nl>, intel-gfx@lists.freedesktop.org, Bernie Thompson <bernie@plugable.com>, ivtv-devel@ivtvdriver.org, Hans Verkuil <hverkuil@xs4all.nl>, Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>, Kirti Wankhede <kwankhede@nvidia.com>, linux-input@vger.kernel.org, linux-omap@vger.kernel.org, Jaya Kumar <jayalk@intworks.biz>, Bruno =?utf-8?Q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>, linux-media@vger.kernel.org
 
-Avoid modifying the fb_ops via info->fbops to let us make the pointer
-const in the future.
+On Tue, 03 Dec 2019, Jani Nikula <jani.nikula@intel.com> wrote:
+> This is v3 of https://patchwork.freedesktop.org/series/70198/.
+>
+> 0day reported some build failures, and I needed to add patches 1-5 and 7
 
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Jani Nikula <jani.nikula@intel.com>
----
- drivers/video/fbdev/uvesafb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Should be, patches 1-4 and 7.
 
-diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
-index 439565cae7ab..53d08d1b56f5 100644
---- a/drivers/video/fbdev/uvesafb.c
-+++ b/drivers/video/fbdev/uvesafb.c
-@@ -1440,7 +1440,7 @@ static void uvesafb_init_info(struct fb_info *info, struct vbe_mode_ib *mode)
- 
- 	/* Disable blanking if the user requested so. */
- 	if (!blank)
--		info->fbops->fb_blank = NULL;
-+		uvesafb_ops.fb_blank = NULL;
- 
- 	/*
- 	 * Find out how much IO memory is required for the mode with
-@@ -1510,7 +1510,7 @@ static void uvesafb_init_info(struct fb_info *info, struct vbe_mode_ib *mode)
- 			(par->ypan ? FBINFO_HWACCEL_YPAN : 0);
- 
- 	if (!par->ypan)
--		info->fbops->fb_pan_display = NULL;
-+		uvesafb_ops.fb_pan_display = NULL;
- }
- 
- static void uvesafb_init_mtrr(struct fb_info *info)
+> to address them. Patch 8 was amended accordingly (dropped some consts),
+> but the other patches remain the same from v2, except the ones I merged
+> already.
+>
+> BR,
+> Jani.
+>
+>
+> Cc: Andy Walls <awalls@md.metrocast.net>
+> Cc: Bernie Thompson <bernie@plugable.com>
+> Cc: Bruno Prémont <bonbons@linux-vserver.org>
+> Cc: Daniel Vetter <daniel@ffwll.ch>
+> Cc: Hans Verkuil <hverkuil@xs4all.nl>
+> Cc: Jaya Kumar <jayalk@intworks.biz>
+> Cc: Kirti Wankhede <kwankhede@nvidia.com>
+> Cc: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>
+> Cc: Noralf Trønnes <noralf@tronnes.org>
+> Cc: Robin van der Gracht <robin@protonic.nl>
+> Cc: Steve Glendinning <steve.glendinning@shawell.net>
+> Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: ivtv-devel@ivtvdriver.org
+> Cc: kvm@vger.kernel.org
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: linux-input@vger.kernel.org
+> Cc: linux-media@vger.kernel.org
+> Cc: linux-omap@vger.kernel.org
+>
+> Jani Nikula (12):
+>   video: fbdev: atyfb: modify the static fb_ops directly
+>   video: fbdev: mb862xx: modify the static fb_ops directly
+>   video: fbdev: nvidia: modify the static fb_ops directly
+>   video: fbdev: uvesafb: modify the static fb_ops directly
+>   video: fbdev: make fbops member of struct fb_info a const pointer
+>   drm: constify fb ops across all drivers
+>   video: fbdev: intelfb: use const pointer for fb_ops
+>   video: constify fb ops across all drivers
+>   HID: picoLCD: constify fb ops
+>   media: constify fb ops across all drivers
+>   samples: vfio-mdev: constify fb ops
+>   auxdisplay: constify fb ops
+>
+>  drivers/auxdisplay/cfag12864bfb.c             |  2 +-
+>  drivers/auxdisplay/ht16k33.c                  |  2 +-
+>  drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c        |  2 +-
+>  drivers/gpu/drm/armada/armada_fbdev.c         |  2 +-
+>  drivers/gpu/drm/drm_fb_helper.c               |  2 +-
+>  drivers/gpu/drm/exynos/exynos_drm_fbdev.c     |  2 +-
+>  .../gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c |  2 +-
+>  drivers/gpu/drm/i915/display/intel_fbdev.c    |  2 +-
+>  drivers/gpu/drm/msm/msm_fbdev.c               |  2 +-
+>  drivers/gpu/drm/nouveau/nouveau_fbcon.c       |  4 ++--
+>  drivers/gpu/drm/omapdrm/omap_fbdev.c          |  2 +-
+>  drivers/gpu/drm/radeon/radeon_fb.c            |  2 +-
+>  drivers/gpu/drm/rockchip/rockchip_drm_fbdev.c |  2 +-
+>  drivers/gpu/drm/tegra/fb.c                    |  2 +-
+>  drivers/gpu/drm/vmwgfx/vmwgfx_fb.c            |  2 +-
+>  drivers/hid/hid-picolcd_fb.c                  |  3 +--
+>  drivers/media/pci/ivtv/ivtvfb.c               |  3 +--
+>  drivers/media/platform/vivid/vivid-osd.c      |  3 +--
+>  drivers/video/fbdev/68328fb.c                 |  2 +-
+>  drivers/video/fbdev/acornfb.c                 |  2 +-
+>  drivers/video/fbdev/amba-clcd.c               |  2 +-
+>  drivers/video/fbdev/amifb.c                   |  2 +-
+>  drivers/video/fbdev/arcfb.c                   |  2 +-
+>  drivers/video/fbdev/arkfb.c                   |  2 +-
+>  drivers/video/fbdev/asiliantfb.c              |  2 +-
+>  drivers/video/fbdev/atmel_lcdfb.c             |  2 +-
+>  drivers/video/fbdev/aty/aty128fb.c            |  2 +-
+>  drivers/video/fbdev/aty/atyfb.h               |  2 +-
+>  drivers/video/fbdev/aty/atyfb_base.c          |  6 +++---
+>  drivers/video/fbdev/aty/mach64_cursor.c       |  4 ++--
+>  drivers/video/fbdev/aty/radeon_base.c         |  2 +-
+>  drivers/video/fbdev/au1100fb.c                |  2 +-
+>  drivers/video/fbdev/au1200fb.c                |  2 +-
+>  drivers/video/fbdev/broadsheetfb.c            |  2 +-
+>  drivers/video/fbdev/bw2.c                     |  2 +-
+>  drivers/video/fbdev/carminefb.c               |  2 +-
+>  drivers/video/fbdev/cg14.c                    |  2 +-
+>  drivers/video/fbdev/cg3.c                     |  2 +-
+>  drivers/video/fbdev/cg6.c                     |  2 +-
+>  drivers/video/fbdev/chipsfb.c                 |  2 +-
+>  drivers/video/fbdev/cirrusfb.c                |  2 +-
+>  drivers/video/fbdev/clps711x-fb.c             |  2 +-
+>  drivers/video/fbdev/cobalt_lcdfb.c            |  2 +-
+>  drivers/video/fbdev/controlfb.c               |  2 +-
+>  drivers/video/fbdev/cyber2000fb.c             |  2 +-
+>  drivers/video/fbdev/da8xx-fb.c                |  2 +-
+>  drivers/video/fbdev/dnfb.c                    |  2 +-
+>  drivers/video/fbdev/efifb.c                   |  2 +-
+>  drivers/video/fbdev/ep93xx-fb.c               |  2 +-
+>  drivers/video/fbdev/fb-puv3.c                 |  2 +-
+>  drivers/video/fbdev/ffb.c                     |  2 +-
+>  drivers/video/fbdev/fm2fb.c                   |  2 +-
+>  drivers/video/fbdev/fsl-diu-fb.c              |  2 +-
+>  drivers/video/fbdev/g364fb.c                  |  2 +-
+>  drivers/video/fbdev/gbefb.c                   |  2 +-
+>  drivers/video/fbdev/geode/gx1fb_core.c        |  2 +-
+>  drivers/video/fbdev/geode/gxfb_core.c         |  2 +-
+>  drivers/video/fbdev/geode/lxfb_core.c         |  2 +-
+>  drivers/video/fbdev/goldfishfb.c              |  2 +-
+>  drivers/video/fbdev/grvga.c                   |  2 +-
+>  drivers/video/fbdev/gxt4500.c                 |  2 +-
+>  drivers/video/fbdev/hecubafb.c                |  2 +-
+>  drivers/video/fbdev/hgafb.c                   |  2 +-
+>  drivers/video/fbdev/hitfb.c                   |  2 +-
+>  drivers/video/fbdev/hpfb.c                    |  2 +-
+>  drivers/video/fbdev/hyperv_fb.c               |  2 +-
+>  drivers/video/fbdev/i740fb.c                  |  2 +-
+>  drivers/video/fbdev/imsttfb.c                 |  2 +-
+>  drivers/video/fbdev/imxfb.c                   |  2 +-
+>  drivers/video/fbdev/intelfb/intelfb.h         |  2 +-
+>  drivers/video/fbdev/intelfb/intelfbdrv.c      |  2 +-
+>  drivers/video/fbdev/kyro/fbdev.c              |  2 +-
+>  drivers/video/fbdev/leo.c                     |  2 +-
+>  drivers/video/fbdev/macfb.c                   |  2 +-
+>  drivers/video/fbdev/matrox/matroxfb_crtc2.c   |  2 +-
+>  drivers/video/fbdev/maxinefb.c                |  2 +-
+>  drivers/video/fbdev/mb862xx/mb862xxfb.h       |  2 +-
+>  drivers/video/fbdev/mb862xx/mb862xxfb_accel.c | 15 +++++++-------
+>  drivers/video/fbdev/mb862xx/mb862xxfbdrv.c    |  4 +++-
+>  drivers/video/fbdev/mbx/mbxfb.c               |  2 +-
+>  drivers/video/fbdev/metronomefb.c             |  2 +-
+>  drivers/video/fbdev/mmp/fb/mmpfb.c            |  2 +-
+>  drivers/video/fbdev/mx3fb.c                   |  5 +++--
+>  drivers/video/fbdev/neofb.c                   |  2 +-
+>  drivers/video/fbdev/nvidia/nvidia.c           | 20 ++++++++++---------
+>  drivers/video/fbdev/ocfb.c                    |  2 +-
+>  drivers/video/fbdev/offb.c                    |  2 +-
+>  .../video/fbdev/omap2/omapfb/omapfb-main.c    |  2 +-
+>  drivers/video/fbdev/p9100.c                   |  2 +-
+>  drivers/video/fbdev/platinumfb.c              |  2 +-
+>  drivers/video/fbdev/pm2fb.c                   |  2 +-
+>  drivers/video/fbdev/pm3fb.c                   |  2 +-
+>  drivers/video/fbdev/pmag-aa-fb.c              |  2 +-
+>  drivers/video/fbdev/pmag-ba-fb.c              |  2 +-
+>  drivers/video/fbdev/pmagb-b-fb.c              |  2 +-
+>  drivers/video/fbdev/ps3fb.c                   |  2 +-
+>  drivers/video/fbdev/pvr2fb.c                  |  2 +-
+>  drivers/video/fbdev/pxa168fb.c                |  2 +-
+>  drivers/video/fbdev/pxafb.c                   |  4 ++--
+>  drivers/video/fbdev/q40fb.c                   |  2 +-
+>  drivers/video/fbdev/riva/fbdev.c              |  2 +-
+>  drivers/video/fbdev/s3c-fb.c                  |  2 +-
+>  drivers/video/fbdev/s3c2410fb.c               |  2 +-
+>  drivers/video/fbdev/s3fb.c                    |  2 +-
+>  drivers/video/fbdev/sa1100fb.c                |  2 +-
+>  drivers/video/fbdev/savage/savagefb_driver.c  |  2 +-
+>  drivers/video/fbdev/sh7760fb.c                |  2 +-
+>  drivers/video/fbdev/sh_mobile_lcdcfb.c        |  4 ++--
+>  drivers/video/fbdev/simplefb.c                |  2 +-
+>  drivers/video/fbdev/sis/sis_main.c            |  2 +-
+>  drivers/video/fbdev/skeletonfb.c              |  2 +-
+>  drivers/video/fbdev/sm712fb.c                 |  2 +-
+>  drivers/video/fbdev/smscufx.c                 |  2 +-
+>  drivers/video/fbdev/ssd1307fb.c               |  2 +-
+>  drivers/video/fbdev/sstfb.c                   |  2 +-
+>  drivers/video/fbdev/stifb.c                   |  2 +-
+>  drivers/video/fbdev/sunxvr1000.c              |  2 +-
+>  drivers/video/fbdev/sunxvr2500.c              |  2 +-
+>  drivers/video/fbdev/sunxvr500.c               |  2 +-
+>  drivers/video/fbdev/tcx.c                     |  2 +-
+>  drivers/video/fbdev/tdfxfb.c                  |  2 +-
+>  drivers/video/fbdev/tgafb.c                   |  2 +-
+>  drivers/video/fbdev/tmiofb.c                  |  2 +-
+>  drivers/video/fbdev/tridentfb.c               |  2 +-
+>  drivers/video/fbdev/uvesafb.c                 |  4 ++--
+>  drivers/video/fbdev/valkyriefb.c              |  2 +-
+>  drivers/video/fbdev/vfb.c                     |  2 +-
+>  drivers/video/fbdev/vga16fb.c                 |  2 +-
+>  drivers/video/fbdev/vt8500lcdfb.c             |  2 +-
+>  drivers/video/fbdev/vt8623fb.c                |  2 +-
+>  drivers/video/fbdev/w100fb.c                  |  2 +-
+>  drivers/video/fbdev/wm8505fb.c                |  2 +-
+>  drivers/video/fbdev/xen-fbfront.c             |  2 +-
+>  drivers/video/fbdev/xilinxfb.c                |  2 +-
+>  include/linux/fb.h                            |  2 +-
+>  samples/vfio-mdev/mdpy-fb.c                   |  2 +-
+>  136 files changed, 163 insertions(+), 162 deletions(-)
+
 -- 
-2.20.1
+Jani Nikula, Intel Open Source Graphics Center

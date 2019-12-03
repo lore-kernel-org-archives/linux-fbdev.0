@@ -1,53 +1,73 @@
-From: Dmitry Vyukov <dvyukov@google.com>
-Date: Thu, 05 Dec 2019 11:36:56 +0000
-Subject: Re: KASAN: slab-out-of-bounds Read in fbcon_get_font
-Message-Id: <CACT4Y+bUkzJAezH9Pk=c1amtzO0-r1Hcn3WmDuS+Drn-R3GAQA@mail.gmail.com>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Tue, 03 Dec 2019 17:03:51 +0000
+Subject: Re: [Intel-gfx] [PATCH v3 04/12] video: fbdev: uvesafb: modify the static fb_ops directly
+Message-Id: <20191203170351.GH624164@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <0000000000003e640e0598e7abc3@google.com>
- <41c082f5-5d22-d398-3bdd-3f4bf69d7ea3@redhat.com>
- <CACT4Y+bCHOCLYF+TW062n8+tqfK9vizaRvyjUXNPdneciq0Ahg@mail.gmail.com>
- <f4db22f2-53a3-68ed-0f85-9f4541530f5d@redhat.com>
- <397ad276-ee2b-3883-9ed4-b5b1a2f8cf67@i-love.sakura.ne.jp>
-In-Reply-To: <397ad276-ee2b-3883-9ed4-b5b1a2f8cf67@i-love.sakura.ne.jp>
+References: <cover.1575390740.git.jani.nikula@intel.com>
+ <af63cda5de9fee3acd28e7d264f920338298bc0a.1575390740.git.jani.nikula@intel.com>
+In-Reply-To: <af63cda5de9fee3acd28e7d264f920338298bc0a.1575390740.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, KVM list <kvm@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Russell Currey <ruscur@russell.cc>, DRI <dri-devel@lists.freedesktop.org>, ghalat@redhat.com, "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>, syzbot <syzbot+4455ca3b3291de891abc@syzkaller.appspotmail.com>, Kentaro Takeda <takedakn@nttdata.co.jp>, stewart@linux.vnet.ibm.com, Daniel Thompson <daniel.thompson@linaro.org>, Michael Ellerman <mpe@ellerman.id.au>, the arch/x86 maintainers <x86@kernel.org>, James Morris <jmorris@namei.org>, kasan-dev <kasan-dev@googlegroups.com>, Ingo Molnar <mingo@redhat.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, "Serge E. Hallyn" <serge@hallyn.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Gleb Natapov <gleb@kernel.org>, syzkaller-bugs <syzkaller-bugs@googlegroups.com>, gwshan@linux.vnet.ibm.com, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, linux-security-module <linux-security-module@vger.kernel.org>, Paolo Bonzini <pbonzini@redhat.com>
+To: Jani Nikula <jani.nikula@intel.com>
+Cc: linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
 
-On Thu, Dec 5, 2019 at 11:41 AM Tetsuo Handa
-<penguin-kernel@i-love.sakura.ne.jp> wrote:
->
-> On 2019/12/05 19:22, Paolo Bonzini wrote:
-> > Ah, and because the machine is a KVM guest, kvm_wait appears in a lot of
-> > backtrace and I get to share syzkaller's joy every time. :)
-> >
-> > This bisect result is bogus, though Tetsuo found the bug anyway.
-> > Perhaps you can exclude commits that only touch architectures other than
-> > x86?
-> >
->
-> It would be nice if coverage functionality can extract filenames in the source
-> code and supply the list of filenames as arguments for bisect operation.
->
-> Also, (unrelated but) it would be nice if we can have "make yes2modconfig"
-> target which converts CONFIG_FOO=y to CONFIG_FOO=m if FOO is tristate.
-> syzbot is testing kernel configs close to "make allyesconfig" but I want to
-> save kernel rebuild time by disabling unrelated functionality when manually
-> "debug printk()ing" kernels.
+On Tue, Dec 03, 2019 at 06:38:46PM +0200, Jani Nikula wrote:
+> Avoid modifying the fb_ops via info->fbops to let us make the pointer
+> const in the future.
+> 
+> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+> ---
+>  drivers/video/fbdev/uvesafb.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+> index 439565cae7ab..53d08d1b56f5 100644
+> --- a/drivers/video/fbdev/uvesafb.c
+> +++ b/drivers/video/fbdev/uvesafb.c
+> @@ -1440,7 +1440,7 @@ static void uvesafb_init_info(struct fb_info *info, struct vbe_mode_ib *mode)
+>  
+>  	/* Disable blanking if the user requested so. */
+>  	if (!blank)
+> -		info->fbops->fb_blank = NULL;
+> +		uvesafb_ops.fb_blank = NULL;
+>  
+>  	/*
+>  	 * Find out how much IO memory is required for the mode with
+> @@ -1510,7 +1510,7 @@ static void uvesafb_init_info(struct fb_info *info, struct vbe_mode_ib *mode)
+>  			(par->ypan ? FBINFO_HWACCEL_YPAN : 0);
+>  
+>  	if (!par->ypan)
+> -		info->fbops->fb_pan_display = NULL;
+> +		uvesafb_ops.fb_pan_display = NULL;
+>  }
 
-I thought that maybe sed "s#=y#=m#g" && make olddefconfig will do, but
-unfortunately, it turns off non-tristate configs...
+I read code.
 
-$ egrep "CONFIG_MEMORY_HOTPLUG|CONFIG_TCP_CONG_DCTCP" .config
-CONFIG_MEMORY_HOTPLUG=y
-CONFIG_TCP_CONG_DCTCP=y
-# sed -i "s/CONFIG_MEMORY_HOTPLUG=y/CONFIG_MEMORY_HOTPLUG=m/g" .config
-# sed -i "s/CONFIG_TCP_CONG_DCTCP=y/CONFIG_TCP_CONG_DCTCP=m/g" .config
-# egrep "CONFIG_MEMORY_HOTPLUG|CONFIG_TCP_CONG_DCTCP" .config
-CONFIG_MEMORY_HOTPLUG=m
-CONFIG_TCP_CONG_DCTCP=m
-# make olddefconfig
-# egrep "CONFIG_MEMORY_HOTPLUG|CONFIG_TCP_CONG_DCTCP" .config
-# CONFIG_MEMORY_HOTPLUG is not set
-CONFIG_TCP_CONG_DCTCP=m
+I cried.
+
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+
+Also, with more reading and more bad dreams I'll get about this, I'm
+revising my take on patches 1&2 in this series. On those also
+
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+
+as-is.
+
+Cheers, Daniel
+>  
+>  static void uvesafb_init_mtrr(struct fb_info *info)
+> -- 
+> 2.20.1
+> 
+> _______________________________________________
+> Intel-gfx mailing list
+> Intel-gfx@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/intel-gfx
+
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

@@ -1,44 +1,55 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Thu, 19 Dec 2019 09:35:04 +0000
-Subject: Re: [PATCH 3/3] Staging: sm750fb: sm750.h:Fixed Coding Style Issue
-Message-Id: <20191219093504.GB1198515@kroah.com>
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Tue, 03 Dec 2019 16:38:54 +0000
+Subject: [PATCH v3 12/12] auxdisplay: constify fb ops
+Message-Id: <31c18e3ce9d6962aabda4799b3051039ff591c92.1575390741.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191219090553.13243-1-f20171454@hyderabad.bits-pilani.ac.in>
-In-Reply-To: <20191219090553.13243-1-f20171454@hyderabad.bits-pilani.ac.in>
+References: <cover.1575390740.git.jani.nikula@intel.com>
+In-Reply-To: <cover.1575390740.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Simran Sandhu <f20171454@hyderabad.bits-pilani.ac.in>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, sudipm.mukherjee@gmail.comm, teddy.wang@siliconmotion.com, linux-kernel@vger.kernel.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: jani.nikula@intel.com, Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>, intel-gfx@lists.freedesktop.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Robin van der Gracht <robin@protonic.nl>
 
-On Thu, Dec 19, 2019 at 02:35:53PM +0530, Simran Sandhu wrote:
-> Fixed the checkpath error: function definition arguments
-> should also have identifier names
-> 
-> Signed-of-by: Simran Sandhu <f20171454@hyderabad.bits-pilani.ac.in>
-> ---
->  drivers/staging/sm750fb/sm750.h | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-> index ce90adcb449d..cf986bad7210 100644
-> --- a/drivers/staging/sm750fb/sm750.h
-> +++ b/drivers/staging/sm750fb/sm750.h
-> @@ -66,9 +66,9 @@ struct lynx_accel {
->  						u32, u32, u32, u32,
->  						u32, u32, u32, u32);
->  
-> -	int (*de_imageblit)(struct lynx_accel *, const char *, u32, u32, u32, u32,
-> -							       u32, u32, u32, u32,
-> -							       u32, u32, u32, u32);
-> +	int (*de_imageblit)(struct lynx_accel *A, const char *B, u32 C, u32 D,
-> +		       						u32 E, u32 F, u32 G, u32 H, u32 I,
-> +							       	u32 J, u32 K, u32 L, u32 M, u32 N);
->  
+Now that the fbops member of struct fb_info is const, we can start
+making the ops const as well.
 
-You just caused another coding style violation with this one :(
+Cc: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>
+Cc: Robin van der Gracht <robin@protonic.nl>
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Reviewed-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Acked-by: Robin van der Gracht <robin@protonic.nl>
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+---
+ drivers/auxdisplay/cfag12864bfb.c | 2 +-
+ drivers/auxdisplay/ht16k33.c      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Always run your patches though checkpatch.pl to ensure you do not add
-new problems when trying to fix up things.
-
-greg k-h
+diff --git a/drivers/auxdisplay/cfag12864bfb.c b/drivers/auxdisplay/cfag12864bfb.c
+index 4074886b7bc8..2002291ab338 100644
+--- a/drivers/auxdisplay/cfag12864bfb.c
++++ b/drivers/auxdisplay/cfag12864bfb.c
+@@ -57,7 +57,7 @@ static int cfag12864bfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	return vm_map_pages_zero(vma, &pages, 1);
+ }
+ 
+-static struct fb_ops cfag12864bfb_ops = {
++static const struct fb_ops cfag12864bfb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_read = fb_sys_read,
+ 	.fb_write = fb_sys_write,
+diff --git a/drivers/auxdisplay/ht16k33.c b/drivers/auxdisplay/ht16k33.c
+index a2fcde582e2a..d951d54b26f5 100644
+--- a/drivers/auxdisplay/ht16k33.c
++++ b/drivers/auxdisplay/ht16k33.c
+@@ -228,7 +228,7 @@ static int ht16k33_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	return vm_map_pages_zero(vma, &pages, 1);
+ }
+ 
+-static struct fb_ops ht16k33_fb_ops = {
++static const struct fb_ops ht16k33_fb_ops = {
+ 	.owner = THIS_MODULE,
+ 	.fb_read = fb_sys_read,
+ 	.fb_write = fb_sys_write,
+-- 
+2.20.1

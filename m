@@ -1,42 +1,41 @@
 From: Jani Nikula <jani.nikula@intel.com>
-Date: Wed, 11 Dec 2019 11:11:54 +0000
-Subject: Re: [PATCH v3 12/12] auxdisplay: constify fb ops
-Message-Id: <87wob32k1x.fsf@intel.com>
+Date: Tue, 03 Dec 2019 16:38:53 +0000
+Subject: [PATCH v3 11/12] samples: vfio-mdev: constify fb ops
+Message-Id: <ddb10df1316ef585930cda7718643a580f4fe37b.1575390741.git.jani.nikula@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1575390740.git.jani.nikula@intel.com>
- <31c18e3ce9d6962aabda4799b3051039ff591c92.1575390741.git.jani.nikula@intel.com>
- <87pngx4muv.fsf@intel.com>
- <CANiq72nPccKZghPM-FrNRnQ8AkN_r40cUmM3ruhyGtiTs_DdyQ@mail.gmail.com>
-In-Reply-To: <CANiq72nPccKZghPM-FrNRnQ8AkN_r40cUmM3ruhyGtiTs_DdyQ@mail.gmail.com>
+In-Reply-To: <cover.1575390740.git.jani.nikula@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, Robin van der Gracht <robin@protonic.nl>
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: jani.nikula@intel.com, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, Kirti Wankhede <kwankhede@nvidia.com>, kvm@vger.kernel.org
 
-On Tue, 10 Dec 2019, Miguel Ojeda <miguel.ojeda.sandonis@gmail.com> wrote:
-> On Mon, Dec 9, 2019 at 3:04 PM Jani Nikula <jani.nikula@intel.com> wrote:
->>
->> On Tue, 03 Dec 2019, Jani Nikula <jani.nikula@intel.com> wrote:
->> > Now that the fbops member of struct fb_info is const, we can start
->> > making the ops const as well.
->> >
->> > Cc: Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>
->> > Cc: Robin van der Gracht <robin@protonic.nl>
->> > Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->> > Reviewed-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
->> > Acked-by: Robin van der Gracht <robin@protonic.nl>
->> > Signed-off-by: Jani Nikula <jani.nikula@intel.com>
->>
->> Miguel, Robin, just to err on the safe side, were you both okay with me
->> merging this through drm-misc? Not very likely to conflict badly.
->
-> I think that is fine, go ahead! :)
+Now that the fbops member of struct fb_info is const, we can start
+making the ops const as well.
 
-Thanks, pushed to drm-misc-next!
+v2: fix	typo (Christophe de Dinechin)
 
-BR,
-Jani.
+Cc: Kirti Wankhede <kwankhede@nvidia.com>
+Cc: kvm@vger.kernel.org
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+---
+ samples/vfio-mdev/mdpy-fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/samples/vfio-mdev/mdpy-fb.c b/samples/vfio-mdev/mdpy-fb.c
+index 2719bb259653..21dbf63d6e41 100644
+--- a/samples/vfio-mdev/mdpy-fb.c
++++ b/samples/vfio-mdev/mdpy-fb.c
+@@ -86,7 +86,7 @@ static void mdpy_fb_destroy(struct fb_info *info)
+ 		iounmap(info->screen_base);
+ }
+ 
+-static struct fb_ops mdpy_fb_ops = {
++static const struct fb_ops mdpy_fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_destroy	= mdpy_fb_destroy,
+ 	.fb_setcolreg	= mdpy_fb_setcolreg,
 -- 
-Jani Nikula, Intel Open Source Graphics Center
+2.20.1

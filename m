@@ -1,101 +1,60 @@
-From: syzbot <syzbot+f457c8344e5a2a121e78@syzkaller.appspotmail.com>
-Date: Mon, 09 Dec 2019 12:01:09 +0000
-Subject: general protection fault in fbcon_fb_blanked
-Message-Id: <000000000000adca7b0599442690@google.com>
+From: Dmitry Vyukov <dvyukov@google.com>
+Date: Wed, 04 Dec 2019 10:54:17 +0000
+Subject: cirrusfb: divide errors in cirrusfb_check_var/cirrusfb_check_pixclock/cirrusfb_set_par_foo
+Message-Id: <CACT4Y+YjudGzx44Jw1UMgEPB4kfzp3jo-TcCVR62U+N+2C6tjA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, ghalat@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, maarten.lankhorst@linux.intel.com, sam@ravnborg.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, DRI <dri-devel@lists.freedesktop.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, syzkaller <syzkaller@googlegroups.com>, LKML <linux-kernel@vger.kernel.org>
 
 Hello,
 
-syzbot found the following crash on:
+syzkaller has found 3 of divide errors in the cirrusfb driver.
+Kernel is on c5db92909bedd Add linux-next specific files for 20191202.
 
-HEAD commit:    eea2d5da Merge tag 'for-linus' of git://git.armlinux.org.u..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=1785042ae00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=F07a23020fd7d21a
-dashboard link: https://syzkaller.appspot.com/bug?extid=F457c8344e5a2a121e78
-compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
-
-Unfortunately, I don't have any reproducer for this crash yet.
-
-IMPORTANT: if you fix the bug, please add the following tag to the commit:
-Reported-by: syzbot+f457c8344e5a2a121e78@syzkaller.appspotmail.com
-
-kasan: CONFIG_KASAN_INLINE enabled
-kasan: GPF could be caused by NULL-ptr deref or user memory access
-general protection fault: 0000 [#1] PREEMPT SMP KASAN
-CPU: 1 PID: 12067 Comm: syz-executor.2 Not tainted 5.4.0-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS =20
-Google 01/01/2011
-RIP: 0010:fbcon_fb_blanked+0xe5/0x260 drivers/video/fbdev/core/fbcon.c:3272
-Code: 0f 85 79 01 00 00 48 8d 04 db 4c 8b 3c c5 80 79 0f 8c 48 b8 00 00 00 =
-=20
-00 00 fc ff df 49 8d bf 7c 03 00 00 48 89 fa 48 c1 ea 03 <0f> b6 04 02 48  =
-
-89 fa 83 e2 07 38 d0 7f 08 84 c0 0f 85 21 01 00 00
-RSP: 0018:ffffc9000169fa30 EFLAGS: 00010207
-RAX: dffffc0000000000 RBX: 000000000000003e RCX: ffffc9000dbd6000
-RDX: 000000000000006f RSI: ffffffff83b2430a RDI: 000000000000037c
-RBP: ffffc9000169fa60 R08: ffff8880a702c240 R09: ffffed10147fc003
-R10: ffffc9000169fa60 R11: ffff8880a3fe0017 R12: ffff8880a3fe0000
-R13: ffff8880a3f05400 R14: 0000000000000000 R15: 0000000000000000
-FS:  00007fe327bd5700(0000) GS:ffff8880ae900000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000000400200 CR3: 0000000058b49000 CR4: 00000000001406e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+divide error: 0000 [#1] PREEMPT SMP KASAN
+CPU: 0 PID: 8133 Comm: syz-executor.5 Not tainted 5.4.0-next-20191202+ #13
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS
+rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
+RIP: 0010:cirrusfb_set_par_foo+0x1d17/0x64b0 drivers/video/fbdev/cirrusfb.c:836
 Call Trace:
-  do_fb_ioctl+0x18b/0x7d0 drivers/video/fbdev/core/fbmem.c:1158
-  fb_ioctl+0xe6/0x130 drivers/video/fbdev/core/fbmem.c:1180
-  vfs_ioctl fs/ioctl.c:47 [inline]
-  file_ioctl fs/ioctl.c:545 [inline]
-  do_vfs_ioctl+0x977/0x14e0 fs/ioctl.c:732
-  ksys_ioctl+0xab/0xd0 fs/ioctl.c:749
-  __do_sys_ioctl fs/ioctl.c:756 [inline]
-  __se_sys_ioctl fs/ioctl.c:754 [inline]
-  __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
-  do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
-  entry_SYSCALL_64_after_hwframe+0x49/0xbe
-RIP: 0033:0x45a6f9
-Code: ad b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7 =
-=20
-48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  =
+ cirrusfb_set_par+0x15/0x20 drivers/video/fbdev/cirrusfb.c:1272
+ fb_set_var+0x518/0xdd0 drivers/video/fbdev/core/fbmem.c:1024
+ do_fb_ioctl+0x50c/0x830 drivers/video/fbdev/core/fbmem.c:1104
+ fb_ioctl+0xe6/0x130 drivers/video/fbdev/core/fbmem.c:1180
+ vfs_ioctl fs/ioctl.c:47 [inline]
+ file_ioctl fs/ioctl.c:545 [inline]
+ do_vfs_ioctl+0x1df/0x1420 fs/ioctl.c:732
+ ksys_ioctl+0xa9/0xd0 fs/ioctl.c:749
 
-ff 0f 83 7b b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00
-RSP: 002b:00007fe327bd4c78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000045a6f9
-RDX: 0000000000000000 RSI: 0000000000004611 RDI: 0000000000000004
-RBP: 000000000075bf20 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 00007fe327bd56d4
-R13: 00000000004d09d8 R14: 00000000004dc698 R15: 00000000ffffffff
-Modules linked in:
----[ end trace d8165df606abdd16 ]---
-RIP: 0010:fbcon_fb_blanked+0xe5/0x260 drivers/video/fbdev/core/fbcon.c:3272
-Code: 0f 85 79 01 00 00 48 8d 04 db 4c 8b 3c c5 80 79 0f 8c 48 b8 00 00 00 =
-=20
-00 00 fc ff df 49 8d bf 7c 03 00 00 48 89 fa 48 c1 ea 03 <0f> b6 04 02 48  =
+divide error: 0000 [#1] PREEMPT SMP KASAN
+CPU: 3 PID: 7639 Comm: syz-executor.0 Not tainted 5.4.0-next-20191202+ #12
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS
+rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
+RIP: 0010:cirrusfb_check_pixclock drivers/video/fbdev/cirrusfb.c:482 [inline]
+RIP: 0010:cirrusfb_check_var+0x6e8/0x1150 drivers/video/fbdev/cirrusfb.c:623
+Call Trace:
+ fb_set_var+0x236/0xdd0 drivers/video/fbdev/core/fbmem.c:1005
+ do_fb_ioctl+0x50c/0x830 drivers/video/fbdev/core/fbmem.c:1104
+ fb_ioctl+0xe6/0x130 drivers/video/fbdev/core/fbmem.c:1180
+ vfs_ioctl fs/ioctl.c:47 [inline]
+ file_ioctl fs/ioctl.c:545 [inline]
+ do_vfs_ioctl+0x1df/0x1420 fs/ioctl.c:732
+ ksys_ioctl+0xa9/0xd0 fs/ioctl.c:749
 
-89 fa 83 e2 07 38 d0 7f 08 84 c0 0f 85 21 01 00 00
-RSP: 0018:ffffc9000169fa30 EFLAGS: 00010207
-RAX: dffffc0000000000 RBX: 000000000000003e RCX: ffffc9000dbd6000
-RDX: 000000000000006f RSI: ffffffff83b2430a RDI: 000000000000037c
-RBP: ffffc9000169fa60 R08: ffff8880a702c240 R09: ffffed10147fc003
-R10: ffffc9000169fa60 R11: ffff8880a3fe0017 R12: ffff8880a3fe0000
-R13: ffff8880a3f05400 R14: 0000000000000000 R15: 0000000000000000
-FS:  00007fe327bd5700(0000) GS:ffff8880ae900000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007fa2ff0a3db8 CR3: 0000000058b49000 CR4: 00000000001406e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-
-
----
-This bug is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this bug report. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+divide error: 0000 [#1] PREEMPT SMP KASAN
+CPU: 1 PID: 12555 Comm: syz-executor.5 Not tainted 5.4.0-next-20191202+ #15
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS
+rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
+RIP: 0010:cirrusfb_check_var.cold.16+0x12e/0x1e7
+drivers/video/fbdev/cirrusfb.c:581
+Call Trace:
+ fb_set_var+0x236/0xdd0 drivers/video/fbdev/core/fbmem.c:1005
+ do_fb_ioctl+0x50c/0x830 drivers/video/fbdev/core/fbmem.c:1104
+ fb_ioctl+0xe6/0x130 drivers/video/fbdev/core/fbmem.c:1180
+ vfs_ioctl fs/ioctl.c:47 [inline]
+ file_ioctl fs/ioctl.c:545 [inline]
+ do_vfs_ioctl+0x1df/0x1420 fs/ioctl.c:732
+ ksys_ioctl+0xa9/0xd0 fs/ioctl.c:749

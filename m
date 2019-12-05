@@ -1,7 +1,7 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 05 Dec 2019 10:22:20 +0000
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Date: Thu, 05 Dec 2019 10:30:53 +0000
 Subject: Re: KASAN: slab-out-of-bounds Read in fbcon_get_font
-Message-Id: <f4db22f2-53a3-68ed-0f85-9f4541530f5d@redhat.com>
+Message-Id: <811afcac-ec6e-3ff0-1a4e-c83b98540f0d@i-love.sakura.ne.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <0000000000003e640e0598e7abc3@google.com>
  <41c082f5-5d22-d398-3bdd-3f4bf69d7ea3@redhat.com>
@@ -10,10 +10,10 @@ In-Reply-To: <CACT4Y+bCHOCLYF+TW062n8+tqfK9vizaRvyjUXNPdneciq0Ahg@mail.gmail.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Dmitry Vyukov <dvyukov@google.com>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, KVM list <kvm@vger.kernel.org>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, Daniel Vetter <daniel.vetter@ffwll.ch>, "H. Peter Anvin" <hpa@zytor.com>, DRI <dri-devel@lists.freedesktop.org>, ghalat@redhat.com, Russell Currey <ruscur@russell.cc>, Sam Ravnborg <sam@ravnborg.org>, syzbot <syzbot+4455ca3b3291de891abc@syzkaller.appspotmail.com>, Kentaro Takeda <takedakn@nttdata.co.jp>, stewart@linux.vnet.ibm.com, Daniel Thompson <daniel.thompson@linaro.org>, Michael Ellerman <mpe@ellerman.id.au>, the arch/x86 maintainers <x86@kernel.org>, James Morris <jmorris@namei.org>, kasan-dev <kasan-dev@googlegroups.com>, Ingo Molnar <mingo@redhat.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, "Serge E. Hallyn" <serge@hallyn.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Gleb Natapov <gleb@kernel.org>, syzkaller-bugs <syzkaller-bugs@googlegroups.com>, gwshan@linux.vnet.ibm.com, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, linux-security-module <linux-security-module@vger.kernel.org>
+To: Dmitry Vyukov <dvyukov@google.com>, Paolo Bonzini <pbonzini@redhat.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, KVM list <kvm@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, "H. Peter Anvin" <hpa@zytor.com>, DRI <dri-devel@lists.freedesktop.org>, ghalat@redhat.com, Russell Currey <ruscur@russell.cc>, Sam Ravnborg <sam@ravnborg.org>, syzbot <syzbot+4455ca3b3291de891abc@syzkaller.appspotmail.com>, Kentaro Takeda <takedakn@nttdata.co.jp>, stewart@linux.vnet.ibm.com, Daniel Thompson <daniel.thompson@linaro.org>, Michael Ellerman <mpe@ellerman.id.au>, the arch/x86 maintainers <x86@kernel.org>, James Morris <jmorris@namei.org>, kasan-dev <kasan-dev@googlegroups.com>, Ingo Molnar <mingo@redhat.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, "Serge E. Hallyn" <serge@hallyn.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Gleb Natapov <gleb@kernel.org>, syzkaller-bugs <syzkaller-bugs@googlegroups.com>, gwshan@linux.vnet.ibm.com, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, linux-security-module <linux-security-module@vger.kernel.org>
 
-On 05/12/19 11:16, Dmitry Vyukov wrote:
+On 2019/12/05 19:16, Dmitry Vyukov wrote:
 > On Thu, Dec 5, 2019 at 11:13 AM Paolo Bonzini <pbonzini@redhat.com> wrote:
 >>
 >> On 04/12/19 22:41, syzbot wrote:
@@ -54,12 +54,6 @@ On 05/12/19 11:16, Dmitry Vyukov wrote:
 > The To list should be intersection of 2 groups of emails: result of
 > get_maintainers.pl on the file identified as culprit in the crash
 > message + emails extracted from the bisected to commit.
+>=20
 
-Ah, and because the machine is a KVM guest, kvm_wait appears in a lot of
-backtrace and I get to share syzkaller's joy every time. :)
-
-This bisect result is bogus, though Tetsuo found the bug anyway.
-Perhaps you can exclude commits that only touch architectures other than
-x86?
-
-Paolo
+There is "#syz uncc" command but it is too hard to utilize?

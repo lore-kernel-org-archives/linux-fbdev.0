@@ -1,7 +1,7 @@
 From: Dmitry Vyukov <dvyukov@google.com>
-Date: Thu, 05 Dec 2019 11:35:18 +0000
+Date: Thu, 05 Dec 2019 11:36:56 +0000
 Subject: Re: KASAN: slab-out-of-bounds Read in fbcon_get_font
-Message-Id: <CACT4Y+YqNtRdUo4pDX8HeNubOJYWNfsqcQs_XueRNLPozw=g-Q@mail.gmail.com>
+Message-Id: <CACT4Y+bUkzJAezH9Pk=c1amtzO0-r1Hcn3WmDuS+Drn-R3GAQA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <0000000000003e640e0598e7abc3@google.com>
  <41c082f5-5d22-d398-3bdd-3f4bf69d7ea3@redhat.com>
@@ -29,8 +29,25 @@ On Thu, Dec 5, 2019 at 11:41 AM Tetsuo Handa
 >
 > It would be nice if coverage functionality can extract filenames in the source
 > code and supply the list of filenames as arguments for bisect operation.
+>
+> Also, (unrelated but) it would be nice if we can have "make yes2modconfig"
+> target which converts CONFIG_FOO=y to CONFIG_FOO=m if FOO is tristate.
+> syzbot is testing kernel configs close to "make allyesconfig" but I want to
+> save kernel rebuild time by disabling unrelated functionality when manually
+> "debug printk()ing" kernels.
 
-What is the criteria for file name extraction? What will bisect
-operation do with the set of files?
-If you have a feature/improvement request, please file it at:
-https://github.com/google/syzkaller/issues/new
+I thought that maybe sed "s#=y#=m#g" && make olddefconfig will do, but
+unfortunately, it turns off non-tristate configs...
+
+$ egrep "CONFIG_MEMORY_HOTPLUG|CONFIG_TCP_CONG_DCTCP" .config
+CONFIG_MEMORY_HOTPLUG=y
+CONFIG_TCP_CONG_DCTCP=y
+# sed -i "s/CONFIG_MEMORY_HOTPLUG=y/CONFIG_MEMORY_HOTPLUG=m/g" .config
+# sed -i "s/CONFIG_TCP_CONG_DCTCP=y/CONFIG_TCP_CONG_DCTCP=m/g" .config
+# egrep "CONFIG_MEMORY_HOTPLUG|CONFIG_TCP_CONG_DCTCP" .config
+CONFIG_MEMORY_HOTPLUG=m
+CONFIG_TCP_CONG_DCTCP=m
+# make olddefconfig
+# egrep "CONFIG_MEMORY_HOTPLUG|CONFIG_TCP_CONG_DCTCP" .config
+# CONFIG_MEMORY_HOTPLUG is not set
+CONFIG_TCP_CONG_DCTCP=m

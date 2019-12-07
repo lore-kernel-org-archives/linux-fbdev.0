@@ -1,106 +1,144 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Tue, 03 Dec 2019 16:46:15 +0000
-Subject: Re: [PATCH v3 01/12] video: fbdev: atyfb: modify the static fb_ops directly
-Message-Id: <20191203164615.GE624164@phenom.ffwll.local>
+From: syzbot <syzbot+f11cda116c57db68c227@syzkaller.appspotmail.com>
+Date: Sat, 07 Dec 2019 10:05:08 +0000
+Subject: KASAN: use-after-free Read in fb_mode_is_equal
+Message-Id: <0000000000001b2f4605991a4cc0@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1575390740.git.jani.nikula@intel.com>
- <7dfbf1d47203157f5eb9a6f447f0095765d0b5e6.1575390740.git.jani.nikula@intel.com>
-In-Reply-To: <7dfbf1d47203157f5eb9a6f447f0095765d0b5e6.1575390740.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jani Nikula <jani.nikula@intel.com>
-Cc: linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, mojha@codeaurora.org, shile.zhang@linux.alibaba.com, syzkaller-bugs@googlegroups.com
 
-On Tue, Dec 03, 2019 at 06:38:43PM +0200, Jani Nikula wrote:
-> Avoid modifying the fb_ops via info->fbops to let us make the pointer
-> const in the future.
-> 
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
-> ---
->  drivers/video/fbdev/aty/atyfb.h         | 2 +-
->  drivers/video/fbdev/aty/atyfb_base.c    | 6 +++---
->  drivers/video/fbdev/aty/mach64_cursor.c | 4 ++--
->  3 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/aty/atyfb.h b/drivers/video/fbdev/aty/atyfb.h
-> index e5a347c58180..a7833bc98225 100644
-> --- a/drivers/video/fbdev/aty/atyfb.h
-> +++ b/drivers/video/fbdev/aty/atyfb.h
-> @@ -341,7 +341,7 @@ extern const u8 aty_postdividers[8];
->       *  Hardware cursor support
->       */
->  
-> -extern int aty_init_cursor(struct fb_info *info);
-> +extern int aty_init_cursor(struct fb_info *info, struct fb_ops *atyfb_ops);
->  
->      /*
->       *  Hardware acceleration
-> diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-> index 6dda5d885a03..bebc08505d94 100644
-> --- a/drivers/video/fbdev/aty/atyfb_base.c
-> +++ b/drivers/video/fbdev/aty/atyfb_base.c
-> @@ -1316,10 +1316,10 @@ static int atyfb_set_par(struct fb_info *info)
->  	par->accel_flags = var->accel_flags; /* hack */
->  
->  	if (var->accel_flags) {
-> -		info->fbops->fb_sync = atyfb_sync;
-> +		atyfb_ops.fb_sync = atyfb_sync;
->  		info->flags &= ~FBINFO_HWACCEL_DISABLED;
->  	} else {
-> -		info->fbops->fb_sync = NULL;
-> +		atyfb_ops.fb_sync = NULL;
->  		info->flags |= FBINFO_HWACCEL_DISABLED;
->  	}
->  
-> @@ -2702,7 +2702,7 @@ static int aty_init(struct fb_info *info)
->  
->  #ifdef CONFIG_FB_ATY_CT
->  	if (!noaccel && M64_HAS(INTEGRATED))
-> -		aty_init_cursor(info);
-> +		aty_init_cursor(info, &atyfb_ops);
+Hello,
 
-Uh ... can I bikeshed this to duplicating an atyfb_cursor_ops and then
-just reassigning the info->fbops pointer?
+syzbot found the following crash on:
 
-This here seems a bit too wild.
--Daniel
+HEAD commit:    7ada90eb Merge tag 'drm-next-2019-12-06' of git://anongit...
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=16997c82e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=F07a23020fd7d21a
+dashboard link: https://syzkaller.appspot.com/bug?extid=F11cda116c57db68c227
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
 
->  #endif /* CONFIG_FB_ATY_CT */
->  	info->var = var;
->  
-> diff --git a/drivers/video/fbdev/aty/mach64_cursor.c b/drivers/video/fbdev/aty/mach64_cursor.c
-> index 4cde25eab8e8..b06fa6e42e6e 100644
-> --- a/drivers/video/fbdev/aty/mach64_cursor.c
-> +++ b/drivers/video/fbdev/aty/mach64_cursor.c
-> @@ -194,7 +194,7 @@ static int atyfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
->  	return 0;
->  }
->  
-> -int aty_init_cursor(struct fb_info *info)
-> +int aty_init_cursor(struct fb_info *info, struct fb_ops *atyfb_ops)
->  {
->  	unsigned long addr;
->  
-> @@ -219,7 +219,7 @@ int aty_init_cursor(struct fb_info *info)
->  	info->sprite.buf_align = 16; 	/* and 64 lines tall. */
->  	info->sprite.flags = FB_PIXMAP_IO;
->  
-> -	info->fbops->fb_cursor = atyfb_cursor;
-> +	atyfb_ops->fb_cursor = atyfb_cursor;
->  
->  	return 0;
->  }
-> -- 
-> 2.20.1
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+Unfortunately, I don't have any reproducer for this crash yet.
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+f11cda116c57db68c227@syzkaller.appspotmail.com
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+BUG: KASAN: use-after-free in fb_mode_is_equal+0x297/0x300 =20
+drivers/video/fbdev/core/modedb.c:924
+Read of size 4 at addr ffff8880992d5d9c by task syz-executor.0/32283
+
+CPU: 0 PID: 32283 Comm: syz-executor.0 Not tainted 5.4.0-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS =20
+Google 01/01/2011
+Call Trace:
+  __dump_stack lib/dump_stack.c:77 [inline]
+  dump_stack+0x197/0x210 lib/dump_stack.c:118
+  print_address_description.constprop.0.cold+0xd4/0x30b mm/kasan/report.c:3=
+74
+  __kasan_report.cold+0x1b/0x41 mm/kasan/report.c:506
+  kasan_report+0x12/0x20 mm/kasan/common.c:639
+  __asan_report_load4_noabort+0x14/0x20 mm/kasan/generic_report.c:134
+  fb_mode_is_equal+0x297/0x300 drivers/video/fbdev/core/modedb.c:924
+  fbcon_mode_deleted+0x12c/0x190 drivers/video/fbdev/core/fbcon.c:3060
+  fb_set_var+0xab9/0xdd0 drivers/video/fbdev/core/fbmem.c:971
+  do_fb_ioctl+0x390/0x7d0 drivers/video/fbdev/core/fbmem.c:1104
+  fb_ioctl+0xe6/0x130 drivers/video/fbdev/core/fbmem.c:1180
+  vfs_ioctl fs/ioctl.c:47 [inline]
+  file_ioctl fs/ioctl.c:545 [inline]
+  do_vfs_ioctl+0x977/0x14e0 fs/ioctl.c:732
+  ksys_ioctl+0xab/0xd0 fs/ioctl.c:749
+  __do_sys_ioctl fs/ioctl.c:756 [inline]
+  __se_sys_ioctl fs/ioctl.c:754 [inline]
+  __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
+  do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
+  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+RIP: 0033:0x45a6f9
+Code: ad b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7 =
+=20
+48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  =
+
+ff 0f 83 7b b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007f7aefd54c78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000045a6f9
+RDX: 0000000020000000 RSI: 0000000000004601 RDI: 0000000000000003
+RBP: 000000000075bf20 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 00007f7aefd556d4
+R13: 00000000004c2ef7 R14: 00000000004d8138 R15: 00000000ffffffff
+
+Allocated by task 9205:
+  save_stack+0x23/0x90 mm/kasan/common.c:72
+  set_track mm/kasan/common.c:80 [inline]
+  __kasan_kmalloc mm/kasan/common.c:513 [inline]
+  __kasan_kmalloc.constprop.0+0xcf/0xe0 mm/kasan/common.c:486
+  kasan_kmalloc+0x9/0x10 mm/kasan/common.c:527
+  kmem_cache_alloc_trace+0x158/0x790 mm/slab.c:3551
+  kmalloc include/linux/slab.h:556 [inline]
+  fb_add_videomode drivers/video/fbdev/core/modedb.c:1073 [inline]
+  fb_add_videomode+0x2fb/0x610 drivers/video/fbdev/core/modedb.c:1057
+  fb_set_var+0x5ef/0xdd0 drivers/video/fbdev/core/fbmem.c:1041
+  do_fb_ioctl+0x390/0x7d0 drivers/video/fbdev/core/fbmem.c:1104
+  fb_ioctl+0xe6/0x130 drivers/video/fbdev/core/fbmem.c:1180
+  vfs_ioctl fs/ioctl.c:47 [inline]
+  file_ioctl fs/ioctl.c:545 [inline]
+  do_vfs_ioctl+0x977/0x14e0 fs/ioctl.c:732
+  ksys_ioctl+0xab/0xd0 fs/ioctl.c:749
+  __do_sys_ioctl fs/ioctl.c:756 [inline]
+  __se_sys_ioctl fs/ioctl.c:754 [inline]
+  __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
+  do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
+  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+
+Freed by task 32276:
+  save_stack+0x23/0x90 mm/kasan/common.c:72
+  set_track mm/kasan/common.c:80 [inline]
+  kasan_set_free_info mm/kasan/common.c:335 [inline]
+  __kasan_slab_free+0x102/0x150 mm/kasan/common.c:474
+  kasan_slab_free+0xe/0x10 mm/kasan/common.c:483
+  __cache_free mm/slab.c:3426 [inline]
+  kfree+0x10a/0x2c0 mm/slab.c:3757
+  fb_delete_videomode+0x3fa/0x540 drivers/video/fbdev/core/modedb.c:1104
+  fb_set_var+0xac8/0xdd0 drivers/video/fbdev/core/fbmem.c:974
+  do_fb_ioctl+0x390/0x7d0 drivers/video/fbdev/core/fbmem.c:1104
+  fb_ioctl+0xe6/0x130 drivers/video/fbdev/core/fbmem.c:1180
+  vfs_ioctl fs/ioctl.c:47 [inline]
+  file_ioctl fs/ioctl.c:545 [inline]
+  do_vfs_ioctl+0x977/0x14e0 fs/ioctl.c:732
+  ksys_ioctl+0xab/0xd0 fs/ioctl.c:749
+  __do_sys_ioctl fs/ioctl.c:756 [inline]
+  __se_sys_ioctl fs/ioctl.c:754 [inline]
+  __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
+  do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
+  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+
+The buggy address belongs to the object at ffff8880992d5d80
+  which belongs to the cache kmalloc-96 of size 96
+The buggy address is located 28 bytes inside of
+  96-byte region [ffff8880992d5d80, ffff8880992d5de0)
+The buggy address belongs to the page:
+page:ffffea000264b540 refcount:1 mapcount:0 mapping:ffff8880aa400540 =20
+index:0x0
+raw: 00fffe0000000200 ffffea00025470c8 ffffea0002992508 ffff8880aa400540
+raw: 0000000000000000 ffff8880992d5000 0000000100000020 0000000000000000
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+  ffff8880992d5c80: 00 00 00 00 00 00 00 00 00 00 00 fc fc fc fc fc
+  ffff8880992d5d00: 00 00 00 00 00 00 00 00 00 00 00 00 fc fc fc fc
+> ffff8880992d5d80: fb fb fb fb fb fb fb fb fb fb fb fb fc fc fc fc
+                             ^
+  ffff8880992d5e00: 00 00 00 00 00 00 00 00 00 00 fc fc fc fc fc fc
+  ffff8880992d5e80: 00 00 00 00 00 00 00 00 00 00 fc fc fc fc fc fc
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+
+
+---
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.

@@ -1,79 +1,96 @@
-From: Dmitry Vyukov <dvyukov@google.com>
-Date: Thu, 05 Dec 2019 16:45:22 +0000
-Subject: Re: INFO: task hung in fb_open
-Message-Id: <CACT4Y+ZjQSvpZAnLkp6w8erqtraZGkXB2O84BFmcRN_Rm6fs3Q@mail.gmail.com>
+From: syzbot <syzbot+0568d05e486eee0a1ba2@syzkaller.appspotmail.com>
+Date: Sat, 07 Dec 2019 21:58:08 +0000
+Subject: KASAN: global-out-of-bounds Read in fb_pad_aligned_buffer
+Message-Id: <00000000000000ffab05992442a7@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <0000000000006dff110598d25a9b@google.com>
- <000000000000bcf3bc0598f5090d@google.com>
- <CAKMK7uF4AR_tRxt5wBKxzz6gTPJmub3A=xyuh1HjgvfYy7RCBg@mail.gmail.com>
-In-Reply-To: <CAKMK7uF4AR_tRxt5wBKxzz6gTPJmub3A=xyuh1HjgvfYy7RCBg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Airlie <airlied@linux.ie>, syzkaller-bugs <syzkaller-bugs@googlegroups.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>, Gerd Hoffmann <kraxel@redhat.com>, Ayan Kumar Halder <ayan.halder@arm.com>, Sam Ravnborg <sam@ravnborg.org>, Peter Rosin <peda@axentia.se>, Linux ARM <linux-arm-kernel@lists.infradead.org>, syzbot <syzbot+a4ae1442ccc637162dc1@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, kraxel@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, maarten.lankhorst@linux.intel.com, peda@axentia.se, sam@ravnborg.org, syzkaller-bugs@googlegroups.com
 
-On Thu, Dec 5, 2019 at 3:05 PM Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
->
-> On Thu, Dec 5, 2019 at 2:38 PM syzbot
-> <syzbot+a4ae1442ccc637162dc1@syzkaller.appspotmail.com> wrote:
-> >
-> > syzbot has bisected this bug to:
-> >
-> > commit 979c11ef39cee79d6f556091a357890962be2580
-> > Author: Ayan Kumar Halder <ayan.halder@arm.com>
-> > Date:   Tue Jul 17 17:13:46 2018 +0000
-> >
-> >      drm/sun4i: Substitute sun4i_backend_format_is_yuv() with format->i=
-s_yuv
->
-> Pretty sure your GCD machine is not using the sun4i driver. It's also
-> very far away from the code that's blowing up. bisect gone wrong?
-> -Daniel
+Hello,
 
-Yes, this driver is not even enabled in the config.
-I see 2 issues with kernel in the bisect log:
-1. Unrelated machine hangs get in the way of bisection process (or
-that "no output" another manifestation of this bug?).
-2. Somehow this change to not compiled file changed vmlinux thus
-detection of unrelated changes failed. Non-deterministic kernel builds
-issue is tracked here:
-https://github.com/google/syzkaller/issues/1271#issuecomment-559093018
-but so far I don't have any glues/ideas.
+syzbot found the following crash on:
+
+HEAD commit:    ad910e36 pipe: fix poll/select race introduced by the pipe..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x483196e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x18fa2bff8166d0d
+dashboard link: https://syzkaller.appspot.com/bug?extid68d05e486eee0a1ba2
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+
+Unfortunately, I don't have any reproducer for this crash yet.
+
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+0568d05e486eee0a1ba2@syzkaller.appspotmail.com
+
+=================================
+BUG: KASAN: global-out-of-bounds in __fb_pad_aligned_buffer  
+include/linux/fb.h:655 [inline]
+BUG: KASAN: global-out-of-bounds in fb_pad_aligned_buffer+0x138/0x160  
+drivers/video/fbdev/core/fbmem.c:115
+Read of size 1 at addr ffffffff887274d4 by task syz-executor.2/19900
+
+CPU: 1 PID: 19900 Comm: syz-executor.2 Not tainted 5.4.0-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
+Google 01/01/2011
+Call Trace:
+  __dump_stack lib/dump_stack.c:77 [inline]
+  dump_stack+0x197/0x210 lib/dump_stack.c:118
+  print_address_description.constprop.0.cold+0x5/0x30b mm/kasan/report.c:374
+  __kasan_report.cold+0x1b/0x41 mm/kasan/report.c:506
+  kasan_report+0x12/0x20 mm/kasan/common.c:639
+  __asan_report_load1_noabort+0x14/0x20 mm/kasan/generic_report.c:132
+  __fb_pad_aligned_buffer include/linux/fb.h:655 [inline]
+  fb_pad_aligned_buffer+0x138/0x160 drivers/video/fbdev/core/fbmem.c:115
+  bit_putcs_aligned drivers/video/fbdev/core/bitblit.c:99 [inline]
+  bit_putcs+0xd14/0xf10 drivers/video/fbdev/core/bitblit.c:185
+  fbcon_putcs+0x33c/0x3e0 drivers/video/fbdev/core/fbcon.c:1353
+  do_update_region+0x42b/0x6f0 drivers/tty/vt/vt.c:677
+  redraw_screen+0x676/0x7d0 drivers/tty/vt/vt.c:1011
+  fbcon_do_set_font+0x829/0x960 drivers/video/fbdev/core/fbcon.c:2605
+  fbcon_copy_font+0x12c/0x190 drivers/video/fbdev/core/fbcon.c:2620
+  con_font_copy drivers/tty/vt/vt.c:4594 [inline]
+  con_font_op+0x6b2/0x1270 drivers/tty/vt/vt.c:4609
+  vt_ioctl+0x181a/0x26d0 drivers/tty/vt/vt_ioctl.c:965
+  tty_ioctl+0xa37/0x14f0 drivers/tty/tty_io.c:2660
+  vfs_ioctl fs/ioctl.c:47 [inline]
+  file_ioctl fs/ioctl.c:545 [inline]
+  do_vfs_ioctl+0x977/0x14e0 fs/ioctl.c:732
+  ksys_ioctl+0xab/0xd0 fs/ioctl.c:749
+  __do_sys_ioctl fs/ioctl.c:756 [inline]
+  __se_sys_ioctl fs/ioctl.c:754 [inline]
+  __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
+  do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
+  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+RIP: 0033:0x45a6f9
+Code: ad b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7  
+48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  
+ff 0f 83 7b b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007fe2b58b1c78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000045a6f9
+RDX: 0000000020000000 RSI: 0000000000004b72 RDI: 0000000000000003
+RBP: 000000000075bf20 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 00007fe2b58b26d4
+R13: 00000000004c382b R14: 00000000004d8d78 R15: 00000000ffffffff
+
+The buggy address belongs to the variable:
+  fontdata_8x16+0x1054/0x1120
+
+Memory state around the buggy address:
+  ffffffff88727380: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  ffffffff88727400: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> ffffffff88727480: fa fa fa fa 06 fa fa fa fa fa fa fa 05 fa fa fa
+                                                  ^
+  ffffffff88727500: fa fa fa fa 06 fa fa fa fa fa fa fa 00 00 03 fa
+  ffffffff88727580: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 00
+=================================
 
 
-> > bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=15d2f97ee0=
-0000
-> > start commit:   596cf45c Merge branch 'akpm' (patches from Andrew)
-> > git tree:       upstream
-> > console output: https://syzkaller.appspot.com/x/log.txt?x=13d2f97ee00000
-> > kernel config:  https://syzkaller.appspot.com/x/.config?x}8ab2e0e09c2a82
-> > dashboard link: https://syzkaller.appspot.com/bug?extid=A4ae1442ccc6371=
-62dc1
-> > syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=14273edae00=
-000
-> > C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=15e7677ae00000
-> >
-> > Reported-by: syzbot+a4ae1442ccc637162dc1@syzkaller.appspotmail.com
-> > Fixes: 979c11ef39ce ("drm/sun4i: Substitute sun4i_backend_format_is_yuv=
-()
-> > with format->is_yuv")
-> >
-> > For information about bisection process see: https://goo.gl/tpsmEJ#bise=
-ction
->
->
->
-> --
-> Daniel Vetter
-> Software Engineer, Intel Corporation
-> +41 (0) 79 365 57 48 - http://blog.ffwll.ch
->
-> --
-> You received this message because you are subscribed to the Google Groups=
- "syzkaller-bugs" group.
-> To unsubscribe from this group and stop receiving emails from it, send an=
- email to syzkaller-bugs+unsubscribe@googlegroups.com.
-> To view this discussion on the web visit https://groups.google.com/d/msgi=
-d/syzkaller-bugs/CAKMK7uF4AR_tRxt5wBKxzz6gTPJmub3A%3Dxyuh1HjgvfYy7RCBg%40ma=
-il.gmail.com.
+---
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.

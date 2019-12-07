@@ -1,50 +1,31 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 10 Dec 2019 21:32:09 +0000
-Subject: [PATCH AUTOSEL 4.19 165/177] fbtft: Make sure string is NULL terminated
-Message-Id: <20191210213221.11921-165-sashal@kernel.org>
+From: Michael Kelley <mikelley@microsoft.com>
+Date: Sat, 07 Dec 2019 18:45:29 +0000
+Subject: RE: [PATCH][next] video: hyperv: hyperv_fb: fix indentation issue
+Message-Id: <CY4PR21MB0629CD9D4B8FFAD1AE685C10D75E0@CY4PR21MB0629.namprd21.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191210213221.11921-1-sashal@kernel.org>
-In-Reply-To: <20191210213221.11921-1-sashal@kernel.org>
+References: <20191114172720.322023-1-colin.king@canonical.com>
+In-Reply-To: <20191114172720.322023-1-colin.king@canonical.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Colin King <colin.king@canonical.com>, KY Srinivasan <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, Sasha Levin <sashal@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Cc: "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-
-[ Upstream commit 21f585480deb4bcf0d92b08879c35d066dfee030 ]
-
-New GCC warns about inappropriate use of strncpy():
-
-drivers/staging/fbtft/fbtft-core.c: In function ‘fbtft_framebuffer_alloc’:
-drivers/staging/fbtft/fbtft-core.c:665:2: warning: ‘strncpy’ specified bound 16 equals destination size [-Wstringop-truncation]
-  665 |  strncpy(info->fix.id, dev->driver->name, 16);
-      |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Later on the copy is being used with the assumption to be NULL terminated.
-Make sure string is NULL terminated by switching to snprintf().
-
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Link: https://lore.kernel.org/r/20191120095716.26628-1-andriy.shevchenko@linux.intel.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/staging/fbtft/fbtft-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 16fcf633e60f8..3fe4738720eab 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -771,7 +771,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	fbdefio->deferred_io =     fbtft_deferred_io;
- 	fb_deferred_io_init(info);
- 
--	strncpy(info->fix.id, dev->driver->name, 16);
-+	snprintf(info->fix.id, sizeof(info->fix.id), "%s", dev->driver->name);
- 	info->fix.type =           FB_TYPE_PACKED_PIXELS;
- 	info->fix.visual =         FB_VISUAL_TRUECOLOR;
- 	info->fix.xpanstep =	   0;
--- 
-2.20.1
+RnJvbTogQ29saW4gSWFuIEtpbmcgPGNvbGluLmtpbmdAY2Fub25pY2FsLmNvbT4gU2VudDogVGh1
+cnNkYXksIE5vdmVtYmVyIDE0LCAyMDE5IDk6MjcgQU0NCj4gDQo+IFRoZXJlIGlzIGEgYmxvY2sg
+b2Ygc3RhdGVtZW50cyB0aGF0IGFyZSBpbmRlbnRlZA0KPiB0b28gZGVlcGx5LCByZW1vdmUgdGhl
+IGV4dHJhbmVvdXMgdGFicy4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IENvbGluIElhbiBLaW5nIDxj
+b2xpbi5raW5nQGNhbm9uaWNhbC5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy92aWRlby9mYmRldi9o
+eXBlcnZfZmIuYyB8IDQgKystLQ0KPiAgMSBmaWxlIGNoYW5nZWQsIDIgaW5zZXJ0aW9ucygrKSwg
+MiBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2h5
+cGVydl9mYi5jIGIvZHJpdmVycy92aWRlby9mYmRldi9oeXBlcnZfZmIuYw0KPiBpbmRleCA0Y2Qy
+N2U1MTcyYTEuLjVmY2Y0YmRmODVhYiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRl
+di9oeXBlcnZfZmIuYw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2h5cGVydl9mYi5jDQo+
+IEBAIC01ODIsOCArNTgyLDggQEAgc3RhdGljIGludCBzeW50aHZpZF9nZXRfc3VwcG9ydGVkX3Jl
+c29sdXRpb24oc3RydWN0IGh2X2RldmljZQ0KPiAqaGRldikNCj4gIAl0ID0gd2FpdF9mb3JfY29t
+cGxldGlvbl90aW1lb3V0KCZwYXItPndhaXQsIFZTUF9USU1FT1VUKTsNCj4gIAlpZiAoIXQpIHsN
+Cj4gIAkJcHJfZXJyKCJUaW1lIG91dCBvbiB3YWl0aW5nIHJlc29sdXRpb24gcmVzcG9uc2VcbiIp
+Ow0KPiAtCQkJcmV0ID0gLUVUSU1FRE9VVDsNCj4gLQkJCWdvdG8gb3V0Ow0KPiArCQlyZXQgPSAt
+RVRJTUVET1VUOw0KPiArCQlnb3RvIG91dDsNCj4gIAl9DQo+IA0KPiAgCWlmIChtc2ctPnJlc29s
+dXRpb25fcmVzcC5yZXNvbHV0aW9uX2NvdW50ID09IDApIHsNCj4gLS0NCj4gMi4yMC4xDQoNClJl
+dmlld2VkLWJ5OiBNaWNoYWVsIEtlbGxleSA8bWlrZWxsZXlAbWljcm9zb2Z0LmNvbT4NCg0K

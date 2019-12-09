@@ -1,25 +1,26 @@
 From: syzbot <syzbot+0568d05e486eee0a1ba2@syzkaller.appspotmail.com>
-Date: Sat, 07 Dec 2019 21:58:08 +0000
-Subject: KASAN: global-out-of-bounds Read in fb_pad_aligned_buffer
-Message-Id: <00000000000000ffab05992442a7@google.com>
+Date: Mon, 09 Dec 2019 04:27:09 +0000
+Subject: Re: KASAN: global-out-of-bounds Read in fb_pad_aligned_buffer
+Message-Id: <00000000000017046a05993dcf90@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+In-Reply-To: <00000000000000ffab05992442a7@google.com>
+References: <00000000000000ffab05992442a7@google.com>
+In-Reply-To: <00000000000000ffab05992442a7@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, kraxel@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, maarten.lankhorst@linux.intel.com, peda@axentia.se, sam@ravnborg.org, syzkaller-bugs@googlegroups.com
 
-Hello,
+syzbot has found a reproducer for the following crash on:
 
-syzbot found the following crash on:
-
-HEAD commit:    ad910e36 pipe: fix poll/select race introduced by the pipe..
+HEAD commit:    9455d25f Merge tag 'ntb-5.5' of git://github.com/jonmason/..
 git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x483196e00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x18fa2bff8166d0d
+console output: https://syzkaller.appspot.com/x/log.txt?x1e09dae00000
+kernel config:  https://syzkaller.appspot.com/x/.config?xz3b8f5088d4043a
 dashboard link: https://syzkaller.appspot.com/bug?extid68d05e486eee0a1ba2
 compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
-
-Unfortunately, I don't have any reproducer for this crash yet.
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?xddeca6e00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?xdf9e41e00000
 
 IMPORTANT: if you fix the bug, please add the following tag to the commit:
 Reported-by: syzbot+0568d05e486eee0a1ba2@syzkaller.appspotmail.com
@@ -29,9 +30,9 @@ BUG: KASAN: global-out-of-bounds in __fb_pad_aligned_buffer
 include/linux/fb.h:655 [inline]
 BUG: KASAN: global-out-of-bounds in fb_pad_aligned_buffer+0x138/0x160  
 drivers/video/fbdev/core/fbmem.c:115
-Read of size 1 at addr ffffffff887274d4 by task syz-executor.2/19900
+Read of size 1 at addr ffffffff8872a77c by task syz-executor208/9953
 
-CPU: 1 PID: 19900 Comm: syz-executor.2 Not tainted 5.4.0-syzkaller #0
+CPU: 1 PID: 9953 Comm: syz-executor208 Not tainted 5.4.0-syzkaller #0
 Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
 Google 01/01/2011
 Call Trace:
@@ -63,34 +64,25 @@ Call Trace:
   __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
   do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
   entry_SYSCALL_64_after_hwframe+0x49/0xbe
-RIP: 0033:0x45a6f9
-Code: ad b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7  
+RIP: 0033:0x440269
+Code: 18 89 d0 c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 48 89 f8 48 89 f7  
 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  
-ff 0f 83 7b b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00
-RSP: 002b:00007fe2b58b1c78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000045a6f9
-RDX: 0000000020000000 RSI: 0000000000004b72 RDI: 0000000000000003
-RBP: 000000000075bf20 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 00007fe2b58b26d4
-R13: 00000000004c382b R14: 00000000004d8d78 R15: 00000000ffffffff
+ff 0f 83 5b 14 fc ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007fff65832458 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 00000000004002c8 RCX: 0000000000440269
+RDX: 0000000020000000 RSI: 0000000000004b72 RDI: 0000000000000004
+RBP: 00000000006cb018 R08: 000000000000000d R09: 00000000004002c8
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000401b50
+R13: 0000000000401be0 R14: 0000000000000000 R15: 0000000000000000
 
 The buggy address belongs to the variable:
-  fontdata_8x16+0x1054/0x1120
+  oid_index+0x93c/0xb80
 
 Memory state around the buggy address:
-  ffffffff88727380: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  ffffffff88727400: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> ffffffff88727480: fa fa fa fa 06 fa fa fa fa fa fa fa 05 fa fa fa
-                                                  ^
-  ffffffff88727500: fa fa fa fa 06 fa fa fa fa fa fa fa 00 00 03 fa
-  ffffffff88727580: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 00
+  ffffffff8872a600: 04 fa fa fa fa fa fa fa 00 01 fa fa fa fa fa fa
+  ffffffff8872a680: 04 fa fa fa fa fa fa fa 04 fa fa fa fa fa fa fa
+> ffffffff8872a700: 07 fa fa fa fa fa fa fa 04 fa fa fa fa fa fa fa
+                                                                 ^
+  ffffffff8872a780: 05 fa fa fa fa fa fa fa 01 fa fa fa fa fa fa fa
+  ffffffff8872a800: 00 00 02 fa fa fa fa fa 00 00 00 05 fa fa fa fa
 =================================
-
-
----
-This bug is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this bug report. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.

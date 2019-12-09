@@ -1,50 +1,101 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 10 Dec 2019 21:07:06 +0000
-Subject: [PATCH AUTOSEL 5.4 321/350] fbtft: Make sure string is NULL terminated
-Message-Id: <20191210210735.9077-282-sashal@kernel.org>
+From: syzbot <syzbot+f457c8344e5a2a121e78@syzkaller.appspotmail.com>
+Date: Mon, 09 Dec 2019 12:01:09 +0000
+Subject: general protection fault in fbcon_fb_blanked
+Message-Id: <000000000000adca7b0599442690@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191210210735.9077-1-sashal@kernel.org>
-In-Reply-To: <20191210210735.9077-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, ghalat@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, maarten.lankhorst@linux.intel.com, sam@ravnborg.org, syzkaller-bugs@googlegroups.com
 
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Hello,
 
-[ Upstream commit 21f585480deb4bcf0d92b08879c35d066dfee030 ]
+syzbot found the following crash on:
 
-New GCC warns about inappropriate use of strncpy():
+HEAD commit:    eea2d5da Merge tag 'for-linus' of git://git.armlinux.org.u..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=1785042ae00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=F07a23020fd7d21a
+dashboard link: https://syzkaller.appspot.com/bug?extid=F457c8344e5a2a121e78
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
 
-drivers/staging/fbtft/fbtft-core.c: In function ‘fbtft_framebuffer_alloc’:
-drivers/staging/fbtft/fbtft-core.c:665:2: warning: ‘strncpy’ specified bound 16 equals destination size [-Wstringop-truncation]
-  665 |  strncpy(info->fix.id, dev->driver->name, 16);
-      |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Unfortunately, I don't have any reproducer for this crash yet.
 
-Later on the copy is being used with the assumption to be NULL terminated.
-Make sure string is NULL terminated by switching to snprintf().
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+f457c8344e5a2a121e78@syzkaller.appspotmail.com
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Link: https://lore.kernel.org/r/20191120095716.26628-1-andriy.shevchenko@linux.intel.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+kasan: CONFIG_KASAN_INLINE enabled
+kasan: GPF could be caused by NULL-ptr deref or user memory access
+general protection fault: 0000 [#1] PREEMPT SMP KASAN
+CPU: 1 PID: 12067 Comm: syz-executor.2 Not tainted 5.4.0-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS =20
+Google 01/01/2011
+RIP: 0010:fbcon_fb_blanked+0xe5/0x260 drivers/video/fbdev/core/fbcon.c:3272
+Code: 0f 85 79 01 00 00 48 8d 04 db 4c 8b 3c c5 80 79 0f 8c 48 b8 00 00 00 =
+=20
+00 00 fc ff df 49 8d bf 7c 03 00 00 48 89 fa 48 c1 ea 03 <0f> b6 04 02 48  =
+
+89 fa 83 e2 07 38 d0 7f 08 84 c0 0f 85 21 01 00 00
+RSP: 0018:ffffc9000169fa30 EFLAGS: 00010207
+RAX: dffffc0000000000 RBX: 000000000000003e RCX: ffffc9000dbd6000
+RDX: 000000000000006f RSI: ffffffff83b2430a RDI: 000000000000037c
+RBP: ffffc9000169fa60 R08: ffff8880a702c240 R09: ffffed10147fc003
+R10: ffffc9000169fa60 R11: ffff8880a3fe0017 R12: ffff8880a3fe0000
+R13: ffff8880a3f05400 R14: 0000000000000000 R15: 0000000000000000
+FS:  00007fe327bd5700(0000) GS:ffff8880ae900000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 0000000000400200 CR3: 0000000058b49000 CR4: 00000000001406e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+  do_fb_ioctl+0x18b/0x7d0 drivers/video/fbdev/core/fbmem.c:1158
+  fb_ioctl+0xe6/0x130 drivers/video/fbdev/core/fbmem.c:1180
+  vfs_ioctl fs/ioctl.c:47 [inline]
+  file_ioctl fs/ioctl.c:545 [inline]
+  do_vfs_ioctl+0x977/0x14e0 fs/ioctl.c:732
+  ksys_ioctl+0xab/0xd0 fs/ioctl.c:749
+  __do_sys_ioctl fs/ioctl.c:756 [inline]
+  __se_sys_ioctl fs/ioctl.c:754 [inline]
+  __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
+  do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
+  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+RIP: 0033:0x45a6f9
+Code: ad b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7 =
+=20
+48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  =
+
+ff 0f 83 7b b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007fe327bd4c78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000045a6f9
+RDX: 0000000000000000 RSI: 0000000000004611 RDI: 0000000000000004
+RBP: 000000000075bf20 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 00007fe327bd56d4
+R13: 00000000004d09d8 R14: 00000000004dc698 R15: 00000000ffffffff
+Modules linked in:
+---[ end trace d8165df606abdd16 ]---
+RIP: 0010:fbcon_fb_blanked+0xe5/0x260 drivers/video/fbdev/core/fbcon.c:3272
+Code: 0f 85 79 01 00 00 48 8d 04 db 4c 8b 3c c5 80 79 0f 8c 48 b8 00 00 00 =
+=20
+00 00 fc ff df 49 8d bf 7c 03 00 00 48 89 fa 48 c1 ea 03 <0f> b6 04 02 48  =
+
+89 fa 83 e2 07 38 d0 7f 08 84 c0 0f 85 21 01 00 00
+RSP: 0018:ffffc9000169fa30 EFLAGS: 00010207
+RAX: dffffc0000000000 RBX: 000000000000003e RCX: ffffc9000dbd6000
+RDX: 000000000000006f RSI: ffffffff83b2430a RDI: 000000000000037c
+RBP: ffffc9000169fa60 R08: ffff8880a702c240 R09: ffffed10147fc003
+R10: ffffc9000169fa60 R11: ffff8880a3fe0017 R12: ffff8880a3fe0000
+R13: ffff8880a3f05400 R14: 0000000000000000 R15: 0000000000000000
+FS:  00007fe327bd5700(0000) GS:ffff8880ae900000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007fa2ff0a3db8 CR3: 0000000058b49000 CR4: 00000000001406e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+
+
 ---
- drivers/staging/fbtft/fbtft-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index a0a67aa517f0e..61f0286fb157e 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -666,7 +666,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	fbdefio->deferred_io =     fbtft_deferred_io;
- 	fb_deferred_io_init(info);
- 
--	strncpy(info->fix.id, dev->driver->name, 16);
-+	snprintf(info->fix.id, sizeof(info->fix.id), "%s", dev->driver->name);
- 	info->fix.type =           FB_TYPE_PACKED_PIXELS;
- 	info->fix.visual =         FB_VISUAL_TRUECOLOR;
- 	info->fix.xpanstep =	   0;
--- 
-2.20.1
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.

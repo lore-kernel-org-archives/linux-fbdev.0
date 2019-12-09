@@ -1,60 +1,369 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Thu, 14 Nov 2019 12:51:06 +0000
-Subject: [PATCH v5 3/3] fbdev: Unexport unlink_framebuffer()
-Message-Id: <20191114125106.28347-4-tzimmermann@suse.de>
+From: Wei Hu <weh@microsoft.com>
+Date: Mon, 09 Dec 2019 07:57:49 +0000
+Subject: [PATCH v4] video: hyperv: hyperv_fb: Use physical memory for fb on HyperV Gen 1 VMs.
+Message-Id: <20191209075749.3804-1-weh@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191114125106.28347-1-tzimmermann@suse.de>
-In-Reply-To: <20191114125106.28347-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: airlied@redhat.com, sean@poorly.run, daniel@ffwll.ch, b.zolnierkie@samsung.com, noralf@tronnes.org, kraxel@redhat.com, sam@ravnborg.org, emil.velikov@collabora.com
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: b.zolnierkie@samsung.com, kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com, sashal@kernel.org, hch@lst.de, m.szyprowski@samsung.com, mchehab+samsung@kernel.org, sam@ravnborg.org, gregkh@linuxfoundation.org, alexandre.belloni@bootlin.com, info@metux.net, arnd@arndb.de, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-hyperv@vger.kernel.org, decui@microsoft.com, mikelley@microsoft.com
+Cc: Wei Hu <weh@microsoft.com>, kbuild test robot <lkp@intel.com>
 
-There are no external callers of unlink_framebuffer() left. Make the
-function an internal interface.
+On Hyper-V, Generation 1 VMs can directly use VM's physical memory for
+their framebuffers. This can improve the efficiency of framebuffer and
+overall performence for VM. The physical memory assigned to framebuffer
+must be contiguous. We use CMA allocator to get contiguouse physicial
+memory when the framebuffer size is greater than 4MB. For size under
+4MB, we use alloc_pages to achieve this.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
+To enable framebuffer memory allocation from CMA, supply a kernel
+parameter to give enough space to CMA allocator at boot time. For
+example:
+    cma0m
+This gives 130MB memory to CAM allocator that can be allocated to
+framebuffer. If this fails, we fall back to the old way of using
+mmio for framebuffer.
+
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Wei Hu <weh@microsoft.com>
 ---
- drivers/video/fbdev/core/fbmem.c | 3 +--
- include/linux/fb.h               | 1 -
- 2 files changed, 1 insertion(+), 3 deletions(-)
+    v2: Incorporated review comments form hch@lst.de, Michael Kelley and
+    Dexuan Cui
+    - Use dma_alloc_coherent to allocate large contiguous memory
+    - Use phys_addr_t for physical addresses
+    - Corrected a few spelling errors and minor cleanups
+    - Also tested on 32 bit Ubuntu guest
+    v3: Fixed a build issue reported by kbuild test robot and incorported
+    some review comments from Michael Kelley
+    - Add CMA check to avoid link failure
+    - Fixed small memory leak introduced by alloc_apertures
+    - Cleaned up so code
+    v4: Removed request_pages variable as it is no longer needed
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fb=
-mem.c
-index 95c32952fa8a..86b06a599f96 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1673,7 +1673,7 @@ static void unbind_console(struct fb_info *fb_info)
- 	console_unlock();
+ drivers/video/fbdev/Kconfig     |   1 +
+ drivers/video/fbdev/hyperv_fb.c | 182 +++++++++++++++++++++++++-------
+ 2 files changed, 144 insertions(+), 39 deletions(-)
+
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index aa9541bf964b..f65991a67af2 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2215,6 +2215,7 @@ config FB_HYPERV
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB_DEFERRED_IO
++	select DMA_CMA if HAVE_DMA_CONTIGUOUS && CMA
+ 	help
+ 	  This framebuffer driver supports Microsoft Hyper-V Synthetic Video.
+ 
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 3f60b7bc8589..c15ce2a00886 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -31,6 +31,16 @@
+  * "set-vmvideo" command. For example
+  *     set-vmvideo -vmname name -horizontalresolution:1920 \
+  * -verticalresolution:1200 -resolutiontype single
++ *
++ * Gen 1 VMs also support direct using VM's physical memory for framebuffer.
++ * It could improve the efficiency and performance for framebuffer and VM.
++ * This requires to allocate contiguous physical memory from Linux kernel's
++ * CMA memory allocator. To enable this, supply a kernel parameter to give
++ * enough memory space to CMA allocator for framebuffer. For example:
++ *    cma0m
++ * This gives 130MB memory to CMA allocator that can be allocated to
++ * framebuffer. For reference, 8K resolution (7680x4320) takes about
++ * 127MB memory.
+  */
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+@@ -227,7 +237,6 @@ struct synthvid_msg {
+ } __packed;
+ 
+ 
+-
+ /* FB driver definitions and structures */
+ #define HVFB_WIDTH 1152 /* default screen width */
+ #define HVFB_HEIGHT 864 /* default screen height */
+@@ -256,12 +265,15 @@ struct hvfb_par {
+ 	/* If true, the VSC notifies the VSP on every framebuffer change */
+ 	bool synchronous_fb;
+ 
++	/* If true, need to copy from deferred IO mem to framebuffer mem */
++	bool need_docopy;
++
+ 	struct notifier_block hvfb_panic_nb;
+ 
+ 	/* Memory for deferred IO and frame buffer itself */
+ 	unsigned char *dio_vp;
+ 	unsigned char *mmio_vp;
+-	unsigned long mmio_pp;
++	phys_addr_t mmio_pp;
+ 
+ 	/* Dirty rectangle, protected by delayed_refresh_lock */
+ 	int x1, y1, x2, y2;
+@@ -432,7 +444,7 @@ static void synthvid_deferred_io(struct fb_info *p,
+ 		maxy = max_t(int, maxy, y2);
+ 
+ 		/* Copy from dio space to mmio address */
+-		if (par->fb_ready)
++		if (par->fb_ready && par->need_docopy)
+ 			hvfb_docopy(par, start, PAGE_SIZE);
+ 	}
+ 
+@@ -749,12 +761,12 @@ static void hvfb_update_work(struct work_struct *w)
+ 		return;
+ 
+ 	/* Copy the dirty rectangle to frame buffer memory */
+-	for (j = y1; j < y2; j++) {
+-		hvfb_docopy(par,
+-			    j * info->fix.line_length +
+-			    (x1 * screen_depth / 8),
+-			    (x2 - x1) * screen_depth / 8);
+-	}
++	if (par->need_docopy)
++		for (j = y1; j < y2; j++)
++			hvfb_docopy(par,
++				    j * info->fix.line_length +
++				    (x1 * screen_depth / 8),
++				    (x2 - x1) * screen_depth / 8);
+ 
+ 	/* Refresh */
+ 	if (par->fb_ready && par->update)
+@@ -799,7 +811,8 @@ static int hvfb_on_panic(struct notifier_block *nb,
+ 	par = container_of(nb, struct hvfb_par, hvfb_panic_nb);
+ 	par->synchronous_fb = true;
+ 	info = par->info;
+-	hvfb_docopy(par, 0, dio_fb_size);
++	if (par->need_docopy)
++		hvfb_docopy(par, 0, dio_fb_size);
+ 	synthvid_update(info, 0, 0, INT_MAX, INT_MAX);
+ 
+ 	return NOTIFY_DONE;
+@@ -938,6 +951,62 @@ static void hvfb_get_option(struct fb_info *info)
+ 	return;
  }
-=20
--void unlink_framebuffer(struct fb_info *fb_info)
-+static void unlink_framebuffer(struct fb_info *fb_info)
- {
- 	int i;
-=20
-@@ -1692,7 +1692,6 @@ void unlink_framebuffer(struct fb_info *fb_info)
-=20
- 	fb_info->dev =3D NULL;
+ 
++/*
++ * Allocate enough contiguous physical memory.
++ * Return physical address if succeeded or -1 if failed.
++ */
++static phys_addr_t hvfb_get_phymem(struct hv_device *hdev,
++				   unsigned int request_size)
++{
++	struct page *page = NULL;
++	dma_addr_t dma_handle;
++	void *vmem;
++	phys_addr_t paddr = 0;
++	unsigned int order = get_order(request_size);
++
++	if (request_size = 0)
++		return -1;
++
++	if (order < MAX_ORDER) {
++		/* Call alloc_pages if the size is less than 2^MAX_ORDER */
++		page = alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
++		if (!page)
++			return -1;
++
++		paddr = (page_to_pfn(page) << PAGE_SHIFT);
++	} else {
++		/* Allocate from CMA */
++		hdev->device.coherent_dma_mask = DMA_BIT_MASK(64);
++
++		vmem = dma_alloc_coherent(&hdev->device,
++					  round_up(request_size, PAGE_SIZE),
++					  &dma_handle,
++					  GFP_KERNEL | __GFP_NOWARN);
++
++		if (!vmem)
++			return -1;
++
++		paddr = virt_to_phys(vmem);
++	}
++
++	return paddr;
++}
++
++/* Release contiguous physical memory */
++static void hvfb_release_phymem(struct hv_device *hdev,
++				phys_addr_t paddr, unsigned int size)
++{
++	unsigned int order = get_order(size);
++
++	if (order < MAX_ORDER)
++		__free_pages(pfn_to_page(paddr >> PAGE_SHIFT), order);
++	else
++		dma_free_coherent(&hdev->device,
++				  round_up(size, PAGE_SIZE),
++				  phys_to_virt(paddr),
++				  paddr);
++}
++
+ 
+ /* Get framebuffer memory from Hyper-V video pci space */
+ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+@@ -947,22 +1016,61 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 	void __iomem *fb_virt;
+ 	int gen2vm = efi_enabled(EFI_BOOT);
+ 	resource_size_t pot_start, pot_end;
++	phys_addr_t paddr;
+ 	int ret;
+ 
+-	dio_fb_size -		screen_width * screen_height * screen_depth / 8;
++	info->apertures = alloc_apertures(1);
++	if (!info->apertures)
++		return -ENOMEM;
+ 
+-	if (gen2vm) {
+-		pot_start = 0;
+-		pot_end = -1;
+-	} else {
++	if (!gen2vm) {
+ 		pdev = pci_get_device(PCI_VENDOR_ID_MICROSOFT,
+-			      PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
++			PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
+ 		if (!pdev) {
+ 			pr_err("Unable to find PCI Hyper-V video\n");
++			kfree(info->apertures);
+ 			return -ENODEV;
+ 		}
+ 
++		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
++		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
++
++		/*
++		 * For Gen 1 VM, we can directly use the contiguous memory
++		 * from VM. If we succeed, deferred IO happens directly
++		 * on this allocated framebuffer memory, avoiding extra
++		 * memory copy.
++		 */
++		paddr = hvfb_get_phymem(hdev, screen_fb_size);
++		if (paddr != (phys_addr_t) -1) {
++			par->mmio_pp = paddr;
++			par->mmio_vp = par->dio_vp = __va(paddr);
++
++			info->fix.smem_start = paddr;
++			info->fix.smem_len = screen_fb_size;
++			info->screen_base = par->mmio_vp;
++			info->screen_size = screen_fb_size;
++
++			par->need_docopy = false;
++			goto getmem_done;
++		}
++		pr_info("Unable to allocate enough contiguous physical memory on Gen 1 VM. Using MMIO instead.\n");
++	} else {
++		info->apertures->ranges[0].base = screen_info.lfb_base;
++		info->apertures->ranges[0].size = screen_info.lfb_size;
++	}
++
++	/*
++	 * Cannot use the contiguous physical memory.
++	 * Allocate mmio space for framebuffer.
++	 */
++	dio_fb_size +		screen_width * screen_height * screen_depth / 8;
++
++	if (gen2vm) {
++		pot_start = 0;
++		pot_end = -1;
++	} else {
+ 		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+ 		    pci_resource_len(pdev, 0) < screen_fb_size) {
+ 			pr_err("Resource not available or (0x%lx < 0x%lx)\n",
+@@ -991,20 +1099,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 	if (par->dio_vp = NULL)
+ 		goto err3;
+ 
+-	info->apertures = alloc_apertures(1);
+-	if (!info->apertures)
+-		goto err4;
+-
+-	if (gen2vm) {
+-		info->apertures->ranges[0].base = screen_info.lfb_base;
+-		info->apertures->ranges[0].size = screen_info.lfb_size;
+-		remove_conflicting_framebuffers(info->apertures,
+-						KBUILD_MODNAME, false);
+-	} else {
+-		info->apertures->ranges[0].base = pci_resource_start(pdev, 0);
+-		info->apertures->ranges[0].size = pci_resource_len(pdev, 0);
+-	}
+-
+ 	/* Physical address of FB device */
+ 	par->mmio_pp = par->mem->start;
+ 	/* Virtual address of FB device */
+@@ -1015,13 +1109,15 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 	info->screen_base = par->dio_vp;
+ 	info->screen_size = dio_fb_size;
+ 
++getmem_done:
++	remove_conflicting_framebuffers(info->apertures,
++					KBUILD_MODNAME, false);
+ 	if (!gen2vm)
+ 		pci_dev_put(pdev);
++	kfree(info->apertures);
+ 
+ 	return 0;
+ 
+-err4:
+-	vfree(par->dio_vp);
+ err3:
+ 	iounmap(fb_virt);
+ err2:
+@@ -1030,18 +1126,25 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ err1:
+ 	if (!gen2vm)
+ 		pci_dev_put(pdev);
++	kfree(info->apertures);
+ 
+ 	return -ENOMEM;
  }
--EXPORT_SYMBOL(unlink_framebuffer);
-=20
- static void do_unregister_framebuffer(struct fb_info *fb_info)
+ 
+ /* Release the framebuffer */
+-static void hvfb_putmem(struct fb_info *info)
++static void hvfb_putmem(struct hv_device *hdev, struct fb_info *info)
  {
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 41e0069eca0a..a6ad528990de 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -606,7 +606,6 @@ extern ssize_t fb_sys_write(struct fb_info *info, const=
- char __user *buf,
- /* drivers/video/fbmem.c */
- extern int register_framebuffer(struct fb_info *fb_info);
- extern void unregister_framebuffer(struct fb_info *fb_info);
--extern void unlink_framebuffer(struct fb_info *fb_info);
- extern int remove_conflicting_pci_framebuffers(struct pci_dev *pdev,
- 					       const char *name);
- extern int remove_conflicting_framebuffers(struct apertures_struct *a,
---=20
-2.23.0
+ 	struct hvfb_par *par = info->par;
+ 
+-	vfree(par->dio_vp);
+-	iounmap(info->screen_base);
+-	vmbus_free_mmio(par->mem->start, screen_fb_size);
++	if (par->need_docopy) {
++		vfree(par->dio_vp);
++		iounmap(info->screen_base);
++		vmbus_free_mmio(par->mem->start, screen_fb_size);
++	} else {
++		hvfb_release_phymem(hdev, info->fix.smem_start,
++				    screen_fb_size);
++	}
++
+ 	par->mem = NULL;
+ }
+ 
+@@ -1060,6 +1163,7 @@ static int hvfb_probe(struct hv_device *hdev,
+ 	par = info->par;
+ 	par->info = info;
+ 	par->fb_ready = false;
++	par->need_docopy = true;
+ 	init_completion(&par->wait);
+ 	INIT_DELAYED_WORK(&par->dwork, hvfb_update_work);
+ 
+@@ -1145,7 +1249,7 @@ static int hvfb_probe(struct hv_device *hdev,
+ 
+ error:
+ 	fb_deferred_io_cleanup(info);
+-	hvfb_putmem(info);
++	hvfb_putmem(hdev, info);
+ error2:
+ 	vmbus_close(hdev->channel);
+ error1:
+@@ -1175,7 +1279,7 @@ static int hvfb_remove(struct hv_device *hdev)
+ 	vmbus_close(hdev->channel);
+ 	hv_set_drvdata(hdev, NULL);
+ 
+-	hvfb_putmem(info);
++	hvfb_putmem(hdev, info);
+ 	framebuffer_release(info);
+ 
+ 	return 0;
+-- 
+2.20.1

@@ -1,74 +1,101 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Tue, 03 Dec 2019 16:38:45 +0000
-Subject: [PATCH v3 03/12] video: fbdev: nvidia: modify the static fb_ops directly
-Message-Id: <9639e2305fd4d03311bf909b8914277b221ca582.1575390740.git.jani.nikula@intel.com>
+From: syzbot <syzbot+d396a0ae28ab4507bc89@syzkaller.appspotmail.com>
+Date: Tue, 10 Dec 2019 04:26:08 +0000
+Subject: general protection fault in fbcon_modechanged
+Message-Id: <000000000000442b12059951e9f7@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1575390740.git.jani.nikula@intel.com>
-In-Reply-To: <cover.1575390740.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: jani.nikula@intel.com, intel-gfx@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: b.zolnierkie@samsung.com, daniel.thompson@linaro.org, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, ghalat@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, maarten.lankhorst@linux.intel.com, sam@ravnborg.org, syzkaller-bugs@googlegroups.com
 
-Avoid modifying the fb_ops via info->fbops to let us make the pointer
-const in the future.
+Hello,
 
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+syzbot found the following crash on:
+
+HEAD commit:    e42617b8 Linux 5.5-rc1
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=15229c2ae00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x754e2c78c1adb82
+dashboard link: https://syzkaller.appspot.com/bug?extid=D396a0ae28ab4507bc89
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+userspace arch: i386
+
+Unfortunately, I don't have any reproducer for this crash yet.
+
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+d396a0ae28ab4507bc89@syzkaller.appspotmail.com
+
+kasan: CONFIG_KASAN_INLINE enabled
+kasan: GPF could be caused by NULL-ptr deref or user memory access
+general protection fault: 0000 [#1] PREEMPT SMP KASAN
+CPU: 1 PID: 24279 Comm: syz-executor.0 Not tainted 5.5.0-rc1-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS =20
+Google 01/01/2011
+RIP: 0010:fbcon_modechanged+0xeb/0x790 drivers/video/fbdev/core/fbcon.c:2967
+Code: 8d 14 ff 4c 8b 2c d5 80 19 10 8c 48 ba 00 00 00 00 00 fc ff df 49 8d =
+=20
+85 7c 03 00 00 48 89 c1 48 89 45 c8 83 e0 07 48 c1 e9 03 <0f> b6 14 11 38  =
+
+c2 7f 08 84 d2 0f 85 61 05 00 00 41 0f b6 b5 7c 03
+RSP: 0018:ffffc90002b27828 EFLAGS: 00010207
+RAX: 0000000000000004 RBX: ffff888218cc2400 RCX: 000000000000006f
+RDX: dffffc0000000000 RSI: ffffffff83b22859 RDI: ffffffff8c102af0
+RBP: ffffc90002b27878 R08: ffff888093236040 R09: ffffed1015d2703d
+R10: ffffed1015d2703c R11: ffff8880ae9381e3 R12: ffff888218d25000
+R13: 0000000000000000 R14: ffff888218d25468 R15: 000000000000003e
+FS:  0000000000000000(0000) GS:ffff8880ae900000(0063) knlGS:00000000f5de3b40
+CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
+CR2: 000000000812a0f0 CR3: 000000008f8fb000 CR4: 00000000001426e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+  fbcon_update_vcs+0x42/0x50 drivers/video/fbdev/core/fbcon.c:3038
+  fb_set_var+0xb32/0xdd0 drivers/video/fbdev/core/fbmem.c:1051
+  do_fb_ioctl+0x390/0x7d0 drivers/video/fbdev/core/fbmem.c:1104
+  fb_compat_ioctl+0x305/0xc50 drivers/video/fbdev/core/fbmem.c:1310
+  __do_compat_sys_ioctl fs/compat_ioctl.c:214 [inline]
+  __se_compat_sys_ioctl fs/compat_ioctl.c:142 [inline]
+  __ia32_compat_sys_ioctl+0x233/0x610 fs/compat_ioctl.c:142
+  do_syscall_32_irqs_on arch/x86/entry/common.c:337 [inline]
+  do_fast_syscall_32+0x27b/0xe16 arch/x86/entry/common.c:408
+  entry_SYSENTER_compat+0x70/0x7f arch/x86/entry/entry_64_compat.S:139
+RIP: 0023:0xf7fe7a39
+Code: 00 00 00 89 d3 5b 5e 5f 5d c3 b8 80 96 98 00 eb c4 8b 04 24 c3 8b 1c =
+=20
+24 c3 8b 34 24 c3 8b 3c 24 c3 51 52 55 89 e5 0f 34 cd 80 <5d> 5a 59 c3 90  =
+
+90 90 90 eb 0d 90 90 90 90 90 90 90 90 90 90 90 90
+RSP: 002b:00000000f5de30cc EFLAGS: 00000296 ORIG_RAX: 0000000000000036
+RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 0000000000004601
+RDX: 0000000020000000 RSI: 0000000000000000 RDI: 0000000000000000
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+Modules linked in:
+---[ end trace 500a2104f8ca30f5 ]---
+RIP: 0010:fbcon_modechanged+0xeb/0x790 drivers/video/fbdev/core/fbcon.c:2967
+Code: 8d 14 ff 4c 8b 2c d5 80 19 10 8c 48 ba 00 00 00 00 00 fc ff df 49 8d =
+=20
+85 7c 03 00 00 48 89 c1 48 89 45 c8 83 e0 07 48 c1 e9 03 <0f> b6 14 11 38  =
+
+c2 7f 08 84 d2 0f 85 61 05 00 00 41 0f b6 b5 7c 03
+RSP: 0018:ffffc90002b27828 EFLAGS: 00010207
+RAX: 0000000000000004 RBX: ffff888218cc2400 RCX: 000000000000006f
+RDX: dffffc0000000000 RSI: ffffffff83b22859 RDI: ffffffff8c102af0
+RBP: ffffc90002b27878 R08: ffff888093236040 R09: ffffed1015d2703d
+R10: ffffed1015d2703c R11: ffff8880ae9381e3 R12: ffff888218d25000
+R13: 0000000000000000 R14: ffff888218d25468 R15: 000000000000003e
+FS:  0000000000000000(0000) GS:ffff8880ae900000(0063) knlGS:00000000f5de3b40
+CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
+CR2: 0000000000bf2fd0 CR3: 000000008f8fb000 CR4: 00000000001426e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+
+
 ---
- drivers/video/fbdev/nvidia/nvidia.c | 20 +++++++++++---------
- 1 file changed, 11 insertions(+), 9 deletions(-)
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
-index fbeeed5afe35..c583c018304d 100644
---- a/drivers/video/fbdev/nvidia/nvidia.c
-+++ b/drivers/video/fbdev/nvidia/nvidia.c
-@@ -607,6 +607,8 @@ static int nvidiafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- 	return 0;
- }
- 
-+static struct fb_ops nvidia_fb_ops;
-+
- static int nvidiafb_set_par(struct fb_info *info)
- {
- 	struct nvidia_par *par = info->par;
-@@ -660,19 +662,19 @@ static int nvidiafb_set_par(struct fb_info *info)
- 	info->fix.line_length = (info->var.xres_virtual *
- 				 info->var.bits_per_pixel) >> 3;
- 	if (info->var.accel_flags) {
--		info->fbops->fb_imageblit = nvidiafb_imageblit;
--		info->fbops->fb_fillrect = nvidiafb_fillrect;
--		info->fbops->fb_copyarea = nvidiafb_copyarea;
--		info->fbops->fb_sync = nvidiafb_sync;
-+		nvidia_fb_ops.fb_imageblit = nvidiafb_imageblit;
-+		nvidia_fb_ops.fb_fillrect = nvidiafb_fillrect;
-+		nvidia_fb_ops.fb_copyarea = nvidiafb_copyarea;
-+		nvidia_fb_ops.fb_sync = nvidiafb_sync;
- 		info->pixmap.scan_align = 4;
- 		info->flags &= ~FBINFO_HWACCEL_DISABLED;
- 		info->flags |= FBINFO_READS_FAST;
- 		NVResetGraphics(info);
- 	} else {
--		info->fbops->fb_imageblit = cfb_imageblit;
--		info->fbops->fb_fillrect = cfb_fillrect;
--		info->fbops->fb_copyarea = cfb_copyarea;
--		info->fbops->fb_sync = NULL;
-+		nvidia_fb_ops.fb_imageblit = cfb_imageblit;
-+		nvidia_fb_ops.fb_fillrect = cfb_fillrect;
-+		nvidia_fb_ops.fb_copyarea = cfb_copyarea;
-+		nvidia_fb_ops.fb_sync = NULL;
- 		info->pixmap.scan_align = 1;
- 		info->flags |= FBINFO_HWACCEL_DISABLED;
- 		info->flags &= ~FBINFO_READS_FAST;
-@@ -1165,7 +1167,7 @@ static int nvidia_set_fbinfo(struct fb_info *info)
- 	info->pixmap.flags = FB_PIXMAP_SYSTEM;
- 
- 	if (!hwcur)
--	    info->fbops->fb_cursor = NULL;
-+	    nvidia_fb_ops.fb_cursor = NULL;
- 
- 	info->var.accel_flags = (!noaccel);
- 
--- 
-2.20.1
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.

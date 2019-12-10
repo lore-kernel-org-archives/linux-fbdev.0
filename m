@@ -1,44 +1,50 @@
-From: Chuhong Yuan <hslester96@gmail.com>
-Date: Thu, 05 Dec 2019 16:07:12 +0000
-Subject: [PATCH v2] video: fbdev: vesafb: add missed release_region
-Message-Id: <20191205160712.32245-1-hslester96@gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Tue, 10 Dec 2019 22:02:51 +0000
+Subject: [PATCH AUTOSEL 4.14 120/130] fbtft: Make sure string is NULL terminated
+Message-Id: <20191210220301.13262-120-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191210220301.13262-1-sashal@kernel.org>
+In-Reply-To: <20191210220301.13262-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Cc: linux-fbdev@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-The driver forgets to free the requested irq in remove and probe
-failure.
-Add the missed calls to fix it.
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
+[ Upstream commit 21f585480deb4bcf0d92b08879c35d066dfee030 ]
+
+New GCC warns about inappropriate use of strncpy():
+
+drivers/staging/fbtft/fbtft-core.c: In function ‘fbtft_framebuffer_alloc’:
+drivers/staging/fbtft/fbtft-core.c:665:2: warning: ‘strncpy’ specified bound 16 equals destination size [-Wstringop-truncation]
+  665 |  strncpy(info->fix.id, dev->driver->name, 16);
+      |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Later on the copy is being used with the assumption to be NULL terminated.
+Make sure string is NULL terminated by switching to snprintf().
+
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Link: https://lore.kernel.org/r/20191120095716.26628-1-andriy.shevchenko@linux.intel.com
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-Changes in v2:
-  - Modify commit message.
+ drivers/staging/fbtft/fbtft-core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/video/fbdev/vesafb.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-index d9c08f6c2155..fbb196a8bbf6 100644
---- a/drivers/video/fbdev/vesafb.c
-+++ b/drivers/video/fbdev/vesafb.c
-@@ -468,6 +468,7 @@ static int vesafb_probe(struct platform_device *dev)
- 	fb_info(info, "%s frame buffer device\n", info->fix.id);
- 	return 0;
- err:
-+	release_region(0x3c0, 32);
- 	arch_phys_wc_del(par->wc_cookie);
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
-@@ -480,6 +481,7 @@ static int vesafb_remove(struct platform_device *pdev)
- {
- 	struct fb_info *info = platform_get_drvdata(pdev);
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 0cbcbad8f0742..b81c6dfa5b249 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -780,7 +780,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
+ 	fbdefio->deferred_io =     fbtft_deferred_io;
+ 	fb_deferred_io_init(info);
  
-+	release_region(0x3c0, 32);
- 	unregister_framebuffer(info);
- 	framebuffer_release(info);
- 
+-	strncpy(info->fix.id, dev->driver->name, 16);
++	snprintf(info->fix.id, sizeof(info->fix.id), "%s", dev->driver->name);
+ 	info->fix.type =           FB_TYPE_PACKED_PIXELS;
+ 	info->fix.visual =         FB_VISUAL_TRUECOLOR;
+ 	info->fix.xpanstep =	   0;
 -- 
-2.24.0
+2.20.1

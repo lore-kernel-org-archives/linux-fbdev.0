@@ -1,50 +1,93 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 10 Dec 2019 22:02:51 +0000
-Subject: [PATCH AUTOSEL 4.14 120/130] fbtft: Make sure string is NULL terminated
-Message-Id: <20191210220301.13262-120-sashal@kernel.org>
+From: syzbot <syzbot+29d4ed7f3bdedf2aa2fd@syzkaller.appspotmail.com>
+Date: Tue, 10 Dec 2019 04:35:07 +0000
+Subject: KASAN: global-out-of-bounds Read in fbcon_get_font
+Message-Id: <0000000000006b9e8d059952095e@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191210220301.13262-1-sashal@kernel.org>
-In-Reply-To: <20191210220301.13262-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, ghalat@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, maarten.lankhorst@linux.intel.com, sam@ravnborg.org, syzkaller-bugs@googlegroups.com
 
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Hello,
 
-[ Upstream commit 21f585480deb4bcf0d92b08879c35d066dfee030 ]
+syzbot found the following crash on:
 
-New GCC warns about inappropriate use of strncpy():
+HEAD commit:    6cf8298d Add linux-next specific files for 20191209
+git tree:       linux-next
+console output: https://syzkaller.appspot.com/x/log.txt?x8bbb7ae00000
+kernel config:  https://syzkaller.appspot.com/x/.config?xh2fc0ce6c86e3c7
+dashboard link: https://syzkaller.appspot.com/bug?extid)d4ed7f3bdedf2aa2fd
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?xfff061e00000
 
-drivers/staging/fbtft/fbtft-core.c: In function ‘fbtft_framebuffer_alloc’:
-drivers/staging/fbtft/fbtft-core.c:665:2: warning: ‘strncpy’ specified bound 16 equals destination size [-Wstringop-truncation]
-  665 |  strncpy(info->fix.id, dev->driver->name, 16);
-      |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+29d4ed7f3bdedf2aa2fd@syzkaller.appspotmail.com
 
-Later on the copy is being used with the assumption to be NULL terminated.
-Make sure string is NULL terminated by switching to snprintf().
+=================================
+BUG: KASAN: global-out-of-bounds in memcpy include/linux/string.h:425  
+[inline]
+BUG: KASAN: global-out-of-bounds in fbcon_get_font+0x2b2/0x5e0  
+drivers/video/fbdev/core/fbcon.c:2465
+Read of size 32 at addr ffffffff88729d80 by task syz-executor.3/9100
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Link: https://lore.kernel.org/r/20191120095716.26628-1-andriy.shevchenko@linux.intel.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+CPU: 1 PID: 9100 Comm: syz-executor.3 Not tainted  
+5.5.0-rc1-next-20191209-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
+Google 01/01/2011
+Call Trace:
+  __dump_stack lib/dump_stack.c:77 [inline]
+  dump_stack+0x197/0x210 lib/dump_stack.c:118
+  print_address_description.constprop.0.cold+0x5/0x30b mm/kasan/report.c:374
+  __kasan_report.cold+0x1b/0x41 mm/kasan/report.c:506
+  kasan_report+0x12/0x20 mm/kasan/common.c:639
+  check_memory_region_inline mm/kasan/generic.c:185 [inline]
+  check_memory_region+0x134/0x1a0 mm/kasan/generic.c:192
+  memcpy+0x24/0x50 mm/kasan/common.c:125
+  memcpy include/linux/string.h:425 [inline]
+  fbcon_get_font+0x2b2/0x5e0 drivers/video/fbdev/core/fbcon.c:2465
+  con_font_get drivers/tty/vt/vt.c:4446 [inline]
+  con_font_op+0x20b/0x1270 drivers/tty/vt/vt.c:4605
+  vt_ioctl+0xd2e/0x26d0 drivers/tty/vt/vt_ioctl.c:913
+  tty_ioctl+0xa37/0x14f0 drivers/tty/tty_io.c:2660
+  vfs_ioctl fs/ioctl.c:47 [inline]
+  file_ioctl fs/ioctl.c:545 [inline]
+  do_vfs_ioctl+0x977/0x14e0 fs/ioctl.c:732
+  ksys_ioctl+0xab/0xd0 fs/ioctl.c:749
+  __do_sys_ioctl fs/ioctl.c:756 [inline]
+  __se_sys_ioctl fs/ioctl.c:754 [inline]
+  __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
+  do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
+  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+RIP: 0033:0x45a6f9
+Code: ad b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7  
+48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  
+ff 0f 83 7b b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007f30314dcc78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000045a6f9
+RDX: 0000000000713000 RSI: 0000000000004b60 RDI: 0000000000000004
+RBP: 000000000075bf20 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 00007f30314dd6d4
+R13: 00000000004c6d87 R14: 00000000004dd3e0 R15: 00000000ffffffff
+
+The buggy address belongs to the variable:
+  fontdata_8x16+0x1000/0x1120
+
+Memory state around the buggy address:
+  ffffffff88729c80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  ffffffff88729d00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> ffffffff88729d80: fa fa fa fa 06 fa fa fa fa fa fa fa 05 fa fa fa
+                    ^
+  ffffffff88729e00: fa fa fa fa 06 fa fa fa fa fa fa fa 00 00 03 fa
+  ffffffff88729e80: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 00
+=================================
+
+
 ---
- drivers/staging/fbtft/fbtft-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 0cbcbad8f0742..b81c6dfa5b249 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -780,7 +780,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	fbdefio->deferred_io =     fbtft_deferred_io;
- 	fb_deferred_io_init(info);
- 
--	strncpy(info->fix.id, dev->driver->name, 16);
-+	snprintf(info->fix.id, sizeof(info->fix.id), "%s", dev->driver->name);
- 	info->fix.type =           FB_TYPE_PACKED_PIXELS;
- 	info->fix.visual =         FB_VISUAL_TRUECOLOR;
- 	info->fix.xpanstep =	   0;
--- 
-2.20.1
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+syzbot can test patches for this bug, for details see:
+https://goo.gl/tpsmEJ#testing-patches

@@ -1,85 +1,50 @@
-From: syzbot <syzbot+6acf28c23c81badd89a7@syzkaller.appspotmail.com>
-Date: Fri, 13 Dec 2019 07:21:09 +0000
-Subject: general protection fault in fbcon_cursor
-Message-Id: <000000000000ab87b6059990b486@google.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Tue, 10 Dec 2019 21:32:09 +0000
+Subject: [PATCH AUTOSEL 4.19 165/177] fbtft: Make sure string is NULL terminated
+Message-Id: <20191210213221.11921-165-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191210213221.11921-1-sashal@kernel.org>
+In-Reply-To: <20191210213221.11921-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, maarten.lankhorst@linux.intel.com, sam@ravnborg.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Hello,
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-syzbot found the following crash on:
+[ Upstream commit 21f585480deb4bcf0d92b08879c35d066dfee030 ]
 
-HEAD commit:    ae4b064e Merge tag 'afs-fixes-20191211' of git://git.kerne..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x18c1dee00000
-kernel config:  https://syzkaller.appspot.com/x/.config?xyf79de2a27d3e3d
-dashboard link: https://syzkaller.appspot.com/bug?extidjcf28c23c81badd89a7
-compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+New GCC warns about inappropriate use of strncpy():
 
-Unfortunately, I don't have any reproducer for this crash yet.
+drivers/staging/fbtft/fbtft-core.c: In function ‘fbtft_framebuffer_alloc’:
+drivers/staging/fbtft/fbtft-core.c:665:2: warning: ‘strncpy’ specified bound 16 equals destination size [-Wstringop-truncation]
+  665 |  strncpy(info->fix.id, dev->driver->name, 16);
+      |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-IMPORTANT: if you fix the bug, please add the following tag to the commit:
-Reported-by: syzbot+6acf28c23c81badd89a7@syzkaller.appspotmail.com
+Later on the copy is being used with the assumption to be NULL terminated.
+Make sure string is NULL terminated by switching to snprintf().
 
-kasan: CONFIG_KASAN_INLINE enabled
-kasan: GPF could be caused by NULL-ptr deref or user memory access
-general protection fault: 0000 [#1] PREEMPT SMP KASAN
-CPU: 1 PID: 17 Comm: kworker/1:0 Not tainted 5.5.0-rc1-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
-Google 01/01/2011
-Workqueue: events console_callback
-RIP: 0010:fbcon_cursor+0x114/0x660 drivers/video/fbdev/core/fbcon.c:1380
-Code: 48 89 fa 48 c1 ea 03 80 3c 02 00 0f 85 e6 04 00 00 4d 8b b4 24 a0 03  
-00 00 48 b8 00 00 00 00 00 fc ff df 4c 89 f2 48 c1 ea 03 <0f> b6 14 02 4c  
-89 f0 83 e0 07 83 c0 01 38 d0 7c 08 84 d2 0f 85 ba
-RSP: 0018:ffffc90000d8fb00 EFLAGS: 00010206
-RAX: dffffc0000000000 RBX: ffff8880a4309400 RCX: ffffffff83e01590
-RDX: 000000001fffffe7 RSI: ffffffff83b2804c RDI: ffff8880a282b3a0
-RBP: ffffc90000d8fb40 R08: ffff8880a9a4a480 R09: ffffed10147a3e1c
-R10: ffffed10147a3e1b R11: ffff8880a3d1f0df R12: ffff8880a282b000
-R13: ffff888218c76000 R14: 00000000ffffff3a R15: ffff888218c76468
-FS:  0000000000000000(0000) GS:ffff8880ae900000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00000000004bf9b0 CR3: 000000008e75d000 CR4: 00000000001406e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-Call Trace:
-  set_cursor drivers/tty/vt/vt.c:908 [inline]
-  set_cursor+0x1fb/0x280 drivers/tty/vt/vt.c:899
-  redraw_screen+0x4e1/0x7d0 drivers/tty/vt/vt.c:1013
-  complete_change_console+0x105/0x3a0 drivers/tty/vt/vt_ioctl.c:1264
-  change_console+0x19b/0x2c0 drivers/tty/vt/vt_ioctl.c:1389
-  console_callback+0x3a1/0x400 drivers/tty/vt/vt.c:2824
-  process_one_work+0x9af/0x1740 kernel/workqueue.c:2264
-  worker_thread+0x98/0xe40 kernel/workqueue.c:2410
-  kthread+0x361/0x430 kernel/kthread.c:255
-  ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:352
-Modules linked in:
----[ end trace a825343a1e8757e1 ]---
-RIP: 0010:fbcon_cursor+0x114/0x660 drivers/video/fbdev/core/fbcon.c:1380
-Code: 48 89 fa 48 c1 ea 03 80 3c 02 00 0f 85 e6 04 00 00 4d 8b b4 24 a0 03  
-00 00 48 b8 00 00 00 00 00 fc ff df 4c 89 f2 48 c1 ea 03 <0f> b6 14 02 4c  
-89 f0 83 e0 07 83 c0 01 38 d0 7c 08 84 d2 0f 85 ba
-RSP: 0018:ffffc90000d8fb00 EFLAGS: 00010206
-RAX: dffffc0000000000 RBX: ffff8880a4309400 RCX: ffffffff83e01590
-RDX: 000000001fffffe7 RSI: ffffffff83b2804c RDI: ffff8880a282b3a0
-RBP: ffffc90000d8fb40 R08: ffff8880a9a4a480 R09: ffffed10147a3e1c
-R10: ffffed10147a3e1b R11: ffff8880a3d1f0df R12: ffff8880a282b000
-R13: ffff888218c76000 R14: 00000000ffffff3a R15: ffff888218c76468
-FS:  0000000000000000(0000) GS:ffff8880ae900000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00000000004bf9b0 CR3: 000000008e75d000 CR4: 00000000001406e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-
-
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Link: https://lore.kernel.org/r/20191120095716.26628-1-andriy.shevchenko@linux.intel.com
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-This bug is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ drivers/staging/fbtft/fbtft-core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-syzbot will keep track of this bug report. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 16fcf633e60f8..3fe4738720eab 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -771,7 +771,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
+ 	fbdefio->deferred_io =     fbtft_deferred_io;
+ 	fb_deferred_io_init(info);
+ 
+-	strncpy(info->fix.id, dev->driver->name, 16);
++	snprintf(info->fix.id, sizeof(info->fix.id), "%s", dev->driver->name);
+ 	info->fix.type =           FB_TYPE_PACKED_PIXELS;
+ 	info->fix.visual =         FB_VISUAL_TRUECOLOR;
+ 	info->fix.xpanstep =	   0;
+-- 
+2.20.1

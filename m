@@ -1,117 +1,119 @@
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Fri, 20 Dec 2019 18:07:22 +0000
-Subject: Re: [PATCH] fbcon: Adjust indentation in set_con2fb_map
-Message-Id: <CAKwvOd=DcXiA5d07bS_3qhr4F-mbsGzZic=OgomuhZchGaXeoQ@mail.gmail.com>
+From: syzbot <syzbot+33f89a9a6b6acd893b11@syzkaller.appspotmail.com>
+Date: Tue, 10 Dec 2019 16:38:08 +0000
+Subject: BUG: unable to handle kernel paging request in sys_imageblit
+Message-Id: <0000000000001d3ff605995c23d6@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191218025337.35044-1-natechancellor@gmail.com>
-In-Reply-To: <20191218025337.35044-1-natechancellor@gmail.com>
+References: <CA+ydwtrmj_nXc3KNLW3YCE4BU_dOZnWRhkAC7wTXmrj5dXz6_Q@mail.gmail.com>
+In-Reply-To: <CA+ydwtrmj_nXc3KNLW3YCE4BU_dOZnWRhkAC7wTXmrj5dXz6_Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nathan Chancellor <natechancellor@gmail.com>
-Cc: clang-built-linux <clang-built-linux@googlegroups.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
 
-On Tue, Dec 17, 2019 at 6:53 PM Nathan Chancellor
-<natechancellor@gmail.com> wrote:
->
-> Clang warns:
->
-> ../drivers/video/fbdev/core/fbcon.c:915:3: warning: misleading
-> indentation; statement is not part of the previous 'if'
-> [-Wmisleading-indentation]
->         return err;
->         ^
-> ../drivers/video/fbdev/core/fbcon.c:912:2: note: previous statement is
-> here
->         if (!search_fb_in_map(info_idx))
->         ^
-> 1 warning generated.
->
-> This warning occurs because there is a space before the tab on this
-> line. This happens on several lines in this function; normalize them
-> so that the indentation is consistent with the Linux kernel coding
-> style and clang no longer warns.
->
-> This warning was introduced before the beginning of git history so no
-> fixes tab.
->
-> Link: https://github.com/ClangBuiltLinux/linux/issues/824
-> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+Hello,
 
-Thanks for the patch!
-Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+syzbot found the following crash on:
 
-> ---
->  drivers/video/fbdev/core/fbcon.c | 27 +++++++++++++--------------
->  1 file changed, 13 insertions(+), 14 deletions(-)
->
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index c9235a2f42f8..9d2c43e345a4 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -866,7 +866,7 @@ static int set_con2fb_map(int unit, int newidx, int user)
->         int oldidx = con2fb_map[unit];
->         struct fb_info *info = registered_fb[newidx];
->         struct fb_info *oldinfo = NULL;
-> -       int found, err = 0;
-> +       int found, err = 0;
->
->         WARN_CONSOLE_UNLOCKED();
->
-> @@ -888,31 +888,30 @@ static int set_con2fb_map(int unit, int newidx, int user)
->
->         con2fb_map[unit] = newidx;
->         if (!err && !found)
-> -               err = con2fb_acquire_newinfo(vc, info, unit, oldidx);
-> -
-> +               err = con2fb_acquire_newinfo(vc, info, unit, oldidx);
->
->         /*
->          * If old fb is not mapped to any of the consoles,
->          * fbcon should release it.
->          */
-> -       if (!err && oldinfo && !search_fb_in_map(oldidx))
-> -               err = con2fb_release_oldinfo(vc, oldinfo, info, unit, oldidx,
-> -                                            found);
-> +       if (!err && oldinfo && !search_fb_in_map(oldidx))
-> +               err = con2fb_release_oldinfo(vc, oldinfo, info, unit, oldidx,
-> +                                            found);
->
-> -       if (!err) {
-> -               int show_logo = (fg_console = 0 && !user &&
-> -                                logo_shown != FBCON_LOGO_DONTSHOW);
-> +       if (!err) {
-> +               int show_logo = (fg_console = 0 && !user &&
-> +                                logo_shown != FBCON_LOGO_DONTSHOW);
->
-> -               if (!found)
-> -                       fbcon_add_cursor_timer(info);
-> -               con2fb_map_boot[unit] = newidx;
-> -               con2fb_init_display(vc, info, unit, show_logo);
-> +               if (!found)
-> +                       fbcon_add_cursor_timer(info);
-> +               con2fb_map_boot[unit] = newidx;
-> +               con2fb_init_display(vc, info, unit, show_logo);
->         }
->
->         if (!search_fb_in_map(info_idx))
->                 info_idx = newidx;
->
-> -       return err;
-> +       return err;
->  }
->
->  /*
-> --
-> 2.24.1
->
-> --
-> You received this message because you are subscribed to the Google Groups "Clang Built Linux" group.
-> To unsubscribe from this group and stop receiving emails from it, send an email to clang-built-linux+unsubscribe@googlegroups.com.
-> To view this discussion on the web visit https://groups.google.com/d/msgid/clang-built-linux/20191218025337.35044-1-natechancellor%40gmail.com.
+HEAD commit:    6794862a Merge tag 'for-5.5-rc1-kconfig-tag' of git://git...
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x74aaeae00000
+kernel config:  https://syzkaller.appspot.com/x/.config?xyf79de2a27d3e3d
+dashboard link: https://syzkaller.appspot.com/bug?extid3f89a9a6b6acd893b11
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
 
+Unfortunately, I don't have any reproducer for this crash yet.
+
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+33f89a9a6b6acd893b11@syzkaller.appspotmail.com
+
+BUG: unable to handle page fault for address: fffff5200124c3fc
+#PF: supervisor read access in kernel mode
+#PF: error_code(0x0000) - not-present page
+PGD 7ffcd067 P4D 7ffcd067 PUD 2cd1c067 PMD 299b2067 PTE 0
+Oops: 0000 [#1] PREEMPT SMP KASAN
+CPU: 2 PID: 9109 Comm: syz-executor.2 Not tainted 5.5.0-rc1-syzkaller #0
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS  
+rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
+RIP: 0010:fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
+RIP: 0010:sys_imageblit+0x61c/0x1240  
+drivers/video/fbdev/core/sysimgblt.c:275
+Code: 07 83 c0 03 38 d0 7c 08 84 d2 0f 85 57 0b 00 00 48 b9 00 00 00 00 00  
+fc ff df 4c 89 fa 8b 45 b0 23 07 4d 8d 77 04 48 c1 ea 03 <0f> b6 0c 0a 4c  
+89 fa 83 e2 07 33 45 c4 83 c2 03 38 ca 7c 08 84 c9
+RSP: 0018:ffffc900042c7168 EFLAGS: 00010a06
+RAX: 0000000000000000 RBX: ffff888076970800 RCX: dffffc0000000000
+RDX: 1ffff9200124c3fc RSI: ffffffff83b4fada RDI: ffffffff887498e0
+RBP: ffffc900042c7230 R08: ffff88805d278e40 R09: 000000000000007f
+R10: fffffbfff14f3347 R11: ffffffff8a799a3b R12: 0000000000000007
+R13: 0000000000000007 R14: ffffc90009261fe4 R15: ffffc90009261fe0
+FS:  00007f0af02fc700(0000) GS:ffff88802d200000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: fffff5200124c3fc CR3: 00000000278c2000 CR4: 0000000000340ee0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+  drm_fb_helper_sys_imageblit+0x21/0x180 drivers/gpu/drm/drm_fb_helper.c:768
+  bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:139 [inline]
+  bit_putcs+0x9a3/0xf10 drivers/video/fbdev/core/bitblit.c:188
+  fbcon_putcs+0x33c/0x3e0 drivers/video/fbdev/core/fbcon.c:1353
+  do_update_region+0x42b/0x6f0 drivers/tty/vt/vt.c:677
+  invert_screen+0x2da/0x650 drivers/tty/vt/vt.c:794
+  highlight drivers/tty/vt/selection.c:53 [inline]
+  clear_selection drivers/tty/vt/selection.c:81 [inline]
+  clear_selection+0x59/0x70 drivers/tty/vt/selection.c:77
+  vc_do_resize+0x1163/0x1460 drivers/tty/vt/vt.c:1200
+  vc_resize+0x4d/0x60 drivers/tty/vt/vt.c:1304
+  fbcon_do_set_font+0x4a6/0x960 drivers/video/fbdev/core/fbcon.c:2599
+  fbcon_set_font+0x72e/0x860 drivers/video/fbdev/core/fbcon.c:2696
+  con_font_set drivers/tty/vt/vt.c:4538 [inline]
+  con_font_op+0xe30/0x1270 drivers/tty/vt/vt.c:4603
+  vt_ioctl+0xd2e/0x26d0 drivers/tty/vt/vt_ioctl.c:913
+  tty_ioctl+0xa37/0x14f0 drivers/tty/tty_io.c:2660
+  vfs_ioctl fs/ioctl.c:47 [inline]
+  file_ioctl fs/ioctl.c:545 [inline]
+  do_vfs_ioctl+0x977/0x14e0 fs/ioctl.c:732
+  ksys_ioctl+0xab/0xd0 fs/ioctl.c:749
+  __do_sys_ioctl fs/ioctl.c:756 [inline]
+  __se_sys_ioctl fs/ioctl.c:754 [inline]
+  __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
+  do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
+  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+RIP: 0033:0x45a7c9
+Code: bd b1 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7  
+48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  
+ff 0f 83 8b b1 fb ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007f0af02fbc88 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 000000000072bf00 RCX: 000000000045a7c9
+RDX: 0000000020000000 RSI: 0000000000004b61 RDI: 0000000000000003
+RBP: 0000000000000003 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 00007f0af02fc6d4
+R13: 00000000004ab60f R14: 00000000006ede60 R15: 00000000ffffffff
+Modules linked in:
+CR2: fffff5200124c3fc
+---[ end trace 7698227ca2d5f789 ]---
+RIP: 0010:fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
+RIP: 0010:sys_imageblit+0x61c/0x1240  
+drivers/video/fbdev/core/sysimgblt.c:275
+Code: 07 83 c0 03 38 d0 7c 08 84 d2 0f 85 57 0b 00 00 48 b9 00 00 00 00 00  
+fc ff df 4c 89 fa 8b 45 b0 23 07 4d 8d 77 04 48 c1 ea 03 <0f> b6 0c 0a 4c  
+89 fa 83 e2 07 33 45 c4 83 c2 03 38 ca 7c 08 84 c9
+RSP: 0018:ffffc900042c7168 EFLAGS: 00010a06
+RAX: 0000000000000000 RBX: ffff888076970800 RCX: dffffc0000000000
+RDX: 1ffff9200124c3fc RSI: ffffffff83b4fada RDI: ffffffff887498e0
+RBP: ffffc900042c7230 R08: ffff88805d278e40 R09: 000000000000007f
+R10: fffffbfff14f3347 R11: ffffffff8a799a3b R12: 0000000000000007
+R13: 0000000000000007 R14: ffffc90009261fe4 R15: ffffc90009261fe0
+FS:  00007f0af02fc700(0000) GS:ffff88802d200000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: fffff5200124c3fc CR3: 00000000278c2000 CR4: 0000000000340ee0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
 
 
--- 
-Thanks,
-~Nick Desaulniers
+---
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.

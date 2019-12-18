@@ -1,41 +1,48 @@
 From: syzbot <syzbot+38a3699c7eaf165b97a6@syzkaller.appspotmail.com>
-Date: Fri, 06 Dec 2019 16:34:09 +0000
+Date: Wed, 18 Dec 2019 19:21:09 +0000
 Subject: Re: KASAN: global-out-of-bounds Read in bit_putcs
-Message-Id: <0000000000008409aa05990b9d8a@google.com>
+Message-Id: <000000000000d794080599ff586a@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 In-Reply-To: <0000000000007b17010598f7aa1f@google.com>
 References: <0000000000007b17010598f7aa1f@google.com>
 In-Reply-To: <0000000000007b17010598f7aa1f@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
 
 syzbot has found a reproducer for the following crash on:
 
-HEAD commit:    b0d4beaa Merge branch 'next.autofs' of git://git.kernel.or..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=1015a90ee00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=F07a23020fd7d21a
+HEAD commit:    b9c5ef25 Add linux-next specific files for 20191218
+git tree:       linux-next
+console output: https://syzkaller.appspot.com/x/log.txt?xd57b46e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x.b13492323f151f
 dashboard link: https://syzkaller.appspot.com/bug?extid8a3699c7eaf165b97a6
 compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1795d941e00000
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?xce1f2ee00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x5727dee00000
+
+Bisection is inconclusive: the bug happens on the oldest tested release.
+
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?xcaa5b6e00000
+final crash:    https://syzkaller.appspot.com/x/report.txt?xcaa5b6e00000
+console output: https://syzkaller.appspot.com/x/log.txt?xcaa5b6e00000
 
 IMPORTANT: if you fix the bug, please add the following tag to the commit:
 Reported-by: syzbot+38a3699c7eaf165b97a6@syzkaller.appspotmail.com
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D
-BUG: KASAN: global-out-of-bounds in __fb_pad_aligned_buffer =20
-include/linux/fb.h:655 [inline]
-BUG: KASAN: global-out-of-bounds in bit_putcs_aligned =20
+=================================
+BUG: KASAN: global-out-of-bounds in __fb_pad_aligned_buffer  
+include/linux/fb.h:654 [inline]
+BUG: KASAN: global-out-of-bounds in bit_putcs_aligned  
 drivers/video/fbdev/core/bitblit.c:96 [inline]
-BUG: KASAN: global-out-of-bounds in bit_putcs+0xd5d/0xf10 =20
+BUG: KASAN: global-out-of-bounds in bit_putcs+0xd5d/0xf10  
 drivers/video/fbdev/core/bitblit.c:185
-Read of size 1 at addr ffffffff88726a41 by task syz-executor.5/9415
+Read of size 1 at addr ffffffff8872bb44 by task syz-executor093/14101
 
-CPU: 1 PID: 9415 Comm: syz-executor.5 Not tainted 5.4.0-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS =20
+CPU: 1 PID: 14101 Comm: syz-executor093 Not tainted  
+5.5.0-rc2-next-20191218-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS  
 Google 01/01/2011
 Call Trace:
   __dump_stack lib/dump_stack.c:77 [inline]
@@ -44,7 +51,7 @@ Call Trace:
   __kasan_report.cold+0x1b/0x41 mm/kasan/report.c:506
   kasan_report+0x12/0x20 mm/kasan/common.c:639
   __asan_report_load1_noabort+0x14/0x20 mm/kasan/generic_report.c:132
-  __fb_pad_aligned_buffer include/linux/fb.h:655 [inline]
+  __fb_pad_aligned_buffer include/linux/fb.h:654 [inline]
   bit_putcs_aligned drivers/video/fbdev/core/bitblit.c:96 [inline]
   bit_putcs+0xd5d/0xf10 drivers/video/fbdev/core/bitblit.c:185
   fbcon_putcs+0x33c/0x3e0 drivers/video/fbdev/core/fbcon.c:1353
@@ -65,28 +72,25 @@ Call Trace:
   __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
   do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
   entry_SYSCALL_64_after_hwframe+0x49/0xbe
-RIP: 0033:0x45a679
-Code: ad b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7 =
-=20
-48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  =
-
-ff 0f 83 7b b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00
-RSP: 002b:00007f5b74dffc78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000045a679
-RDX: 0000000020000000 RSI: 0000000000004b72 RDI: 0000000000000005
-RBP: 000000000075bfc8 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 00007f5b74e006d4
-R13: 00000000004c37ab R14: 00000000004d8c38 R15: 00000000ffffffff
+RIP: 0033:0x449c49
+Code: e8 7c e6 ff ff 48 83 c4 18 c3 0f 1f 80 00 00 00 00 48 89 f8 48 89 f7  
+48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  
+ff 0f 83 1b 05 fc ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007fa99f42ace8 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 00000000006e6a38 RCX: 0000000000449c49
+RDX: 0000000020000000 RSI: 0000000000004b72 RDI: 0000000000000004
+RBP: 00000000006e6a30 R08: 00007fa99f42b700 R09: 0000000000000000
+R10: 00007fa99f42b700 R11: 0000000000000246 R12: 00000000006e6a3c
+R13: 00007ffe46ffe5df R14: 00007fa99f42b9c0 R15: 20c49ba5e353f7cf
 
 The buggy address belongs to the variable:
-  oid_index+0xb01/0xb80
+  __func__.44397+0x104/0x1c0
 
 Memory state around the buggy address:
-  ffffffff88726900: 00 00 02 fa fa fa fa fa 00 00 00 05 fa fa fa fa
-  ffffffff88726980: 00 00 00 fa fa fa fa fa 00 00 00 00 00 01 fa fa
-> ffffffff88726a00: fa fa fa fa 00 00 00 00 01 fa fa fa fa fa fa fa
+  ffffffff8872ba00: 00 00 00 00 fa fa fa fa 00 03 fa fa fa fa fa fa
+  ffffffff8872ba80: 00 01 fa fa fa fa fa fa 04 fa fa fa fa fa fa fa
+> ffffffff8872bb00: 04 fa fa fa fa fa fa fa 04 fa fa fa fa fa fa fa
                                             ^
-  ffffffff88726a80: 00 00 00 00 fa fa fa fa 00 03 fa fa fa fa fa fa
-  ffffffff88726b00: 04 fa fa fa fa fa fa fa 00 00 01 fa fa fa fa fa
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D
+  ffffffff8872bb80: 04 fa fa fa fa fa fa fa 07 fa fa fa fa fa fa fa
+  ffffffff8872bc00: 04 fa fa fa fa fa fa fa 00 00 01 fa fa fa fa fa
+=================================

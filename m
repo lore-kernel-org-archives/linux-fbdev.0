@@ -1,25 +1,25 @@
 From: syzbot <syzbot+f11cda116c57db68c227@syzkaller.appspotmail.com>
-Date: Sat, 07 Dec 2019 10:05:08 +0000
-Subject: KASAN: use-after-free Read in fb_mode_is_equal
-Message-Id: <0000000000001b2f4605991a4cc0@google.com>
+Date: Wed, 25 Dec 2019 08:17:10 +0000
+Subject: Re: KASAN: use-after-free Read in fb_mode_is_equal
+Message-Id: <0000000000001b8ab1059a82e37d@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+In-Reply-To: <0000000000001b2f4605991a4cc0@google.com>
+References: <0000000000001b2f4605991a4cc0@google.com>
+In-Reply-To: <0000000000001b2f4605991a4cc0@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, mojha@codeaurora.org, shile.zhang@linux.alibaba.com, syzkaller-bugs@googlegroups.com
+To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, hdanton@sina.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, mojha@codeaurora.org, shile.zhang@linux.alibaba.com, syzkaller-bugs@googlegroups.com
 
-Hello,
+syzbot has found a reproducer for the following crash on:
 
-syzbot found the following crash on:
-
-HEAD commit:    7ada90eb Merge tag 'drm-next-2019-12-06' of git://anongit...
+HEAD commit:    46cf053e Linux 5.5-rc3
 git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=16997c82e00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=F07a23020fd7d21a
+console output: https://syzkaller.appspot.com/x/log.txt?x=15cf54e1e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=ED9d672709340e35
 dashboard link: https://syzkaller.appspot.com/bug?extid=F11cda116c57db68c227
 compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
-
-Unfortunately, I don't have any reproducer for this crash yet.
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=10563ec1e00000
 
 IMPORTANT: if you fix the bug, please add the following tag to the commit:
 Reported-by: syzbot+f11cda116c57db68c227@syzkaller.appspotmail.com
@@ -28,9 +28,9 @@ Reported-by: syzbot+f11cda116c57db68c227@syzkaller.appspotmail.com
 =3D=3D=3D=3D=3D=3D=3D=3D
 BUG: KASAN: use-after-free in fb_mode_is_equal+0x297/0x300 =20
 drivers/video/fbdev/core/modedb.c:924
-Read of size 4 at addr ffff8880992d5d9c by task syz-executor.0/32283
+Read of size 4 at addr ffff8880946fcf9c by task syz-executor.3/9638
 
-CPU: 0 PID: 32283 Comm: syz-executor.0 Not tainted 5.4.0-syzkaller #0
+CPU: 0 PID: 9638 Comm: syz-executor.3 Not tainted 5.5.0-rc3-syzkaller #0
 Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS =20
 Google 01/01/2011
 Call Trace:
@@ -55,20 +55,20 @@ Call Trace:
   __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
   do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
   entry_SYSCALL_64_after_hwframe+0x49/0xbe
-RIP: 0033:0x45a6f9
+RIP: 0033:0x45a919
 Code: ad b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7 =
 =20
 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  =
 
 ff 0f 83 7b b6 fb ff c3 66 2e 0f 1f 84 00 00 00 00
-RSP: 002b:00007f7aefd54c78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000045a6f9
-RDX: 0000000020000000 RSI: 0000000000004601 RDI: 0000000000000003
-RBP: 000000000075bf20 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 00007f7aefd556d4
-R13: 00000000004c2ef7 R14: 00000000004d8138 R15: 00000000ffffffff
+RSP: 002b:00007ff6d156bc78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000045a919
+RDX: 0000000020000000 RSI: 0000000000004601 RDI: 0000000000000013
+RBP: 000000000075bfc8 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 00007ff6d156c6d4
+R13: 00000000004c310d R14: 00000000004d8498 R15: 00000000ffffffff
 
-Allocated by task 9205:
+Allocated by task 9451:
   save_stack+0x23/0x90 mm/kasan/common.c:72
   set_track mm/kasan/common.c:80 [inline]
   __kasan_kmalloc mm/kasan/common.c:513 [inline]
@@ -91,7 +91,7 @@ Allocated by task 9205:
   do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
   entry_SYSCALL_64_after_hwframe+0x49/0xbe
 
-Freed by task 32276:
+Freed by task 9620:
   save_stack+0x23/0x90 mm/kasan/common.c:72
   set_track mm/kasan/common.c:80 [inline]
   kasan_set_free_info mm/kasan/common.c:335 [inline]
@@ -113,32 +113,23 @@ Freed by task 32276:
   do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
   entry_SYSCALL_64_after_hwframe+0x49/0xbe
 
-The buggy address belongs to the object at ffff8880992d5d80
+The buggy address belongs to the object at ffff8880946fcf80
   which belongs to the cache kmalloc-96 of size 96
 The buggy address is located 28 bytes inside of
-  96-byte region [ffff8880992d5d80, ffff8880992d5de0)
+  96-byte region [ffff8880946fcf80, ffff8880946fcfe0)
 The buggy address belongs to the page:
-page:ffffea000264b540 refcount:1 mapcount:0 mapping:ffff8880aa400540 =20
+page:ffffea000251bf00 refcount:1 mapcount:0 mapping:ffff8880aa400540 =20
 index:0x0
-raw: 00fffe0000000200 ffffea00025470c8 ffffea0002992508 ffff8880aa400540
-raw: 0000000000000000 ffff8880992d5000 0000000100000020 0000000000000000
+raw: 00fffe0000000200 ffffea00023b2ac8 ffffea000203fc08 ffff8880aa400540
+raw: 0000000000000000 ffff8880946fc000 0000000100000020 0000000000000000
 page dumped because: kasan: bad access detected
 
 Memory state around the buggy address:
-  ffff8880992d5c80: 00 00 00 00 00 00 00 00 00 00 00 fc fc fc fc fc
-  ffff8880992d5d00: 00 00 00 00 00 00 00 00 00 00 00 00 fc fc fc fc
-> ffff8880992d5d80: fb fb fb fb fb fb fb fb fb fb fb fb fc fc fc fc
+  ffff8880946fce80: fb fb fb fb fb fb fb fb fb fb fb fb fc fc fc fc
+  ffff8880946fcf00: fb fb fb fb fb fb fb fb fb fb fb fb fc fc fc fc
+> ffff8880946fcf80: fb fb fb fb fb fb fb fb fb fb fb fb fc fc fc fc
                              ^
-  ffff8880992d5e00: 00 00 00 00 00 00 00 00 00 00 fc fc fc fc fc fc
-  ffff8880992d5e80: 00 00 00 00 00 00 00 00 00 00 fc fc fc fc fc fc
+  ffff8880946fd000: fc fc fc fc fc fc fc fc fb fb fb fb fb fb fb fb
+  ffff8880946fd080: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D
-
-
----
-This bug is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
-
-syzbot will keep track of this bug report. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.

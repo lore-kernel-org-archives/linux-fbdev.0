@@ -1,43 +1,62 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Date: Tue, 03 Dec 2019 16:38:51 +0000
-Subject: [PATCH v3 09/12] HID: picoLCD: constify fb ops
-Message-Id: <f415010cd52cce7d8a1250d4eca582ec64e67956.1575390741.git.jani.nikula@intel.com>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Date: Mon, 30 Dec 2019 13:27:34 +0000
+Subject: [PATCH] drm/fb-helper: Round up bits_per_pixel if possible
+Message-Id: <20191230132734.4538-1-geert+renesas@glider.be>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1575390740.git.jani.nikula@intel.com>
-In-Reply-To: <cover.1575390740.git.jani.nikula@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: jani.nikula@intel.com, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>, linux-input@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Stefan Agner <stefan@agner.ch>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, Sean Paul <sean@poorly.run>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Now that the fbops member of struct fb_info is const, we can start
-making the ops const as well.
+When userspace requests a video mode parameter value that is not
+supported, frame buffer device drivers should round it up to a supported
+value, if possible, instead of just rejecting it.  This allows
+applications to quickly scan for supported video modes.
 
-v2: fix	typo (Christophe de Dinechin)
+Currently this rule is not followed for the number of bits per pixel,
+causing e.g. "fbset -depth N" to fail, if N is smaller than the current
+number of bits per pixel.
 
-Cc: Bruno Prémont <bonbons@linux-vserver.org>
-Cc: linux-input@vger.kernel.org
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Acked-by: Bruno Prémont <bonbons@linux-vserver.org>
-Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+Fix this by returning an error only if bits per pixel is too large, and
+setting it to the current value otherwise.
+
+See also Documentation/fb/framebuffer.rst, Section 2 (Programmer's View
+of /dev/fb*").
+
+Fixes: 865afb11949e5bf4 ("drm/fb-helper: reject any changes to the fbdev")
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/hid/hid-picolcd_fb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Against drm-misc#for-linux-next.
+Applies with some fuzz against v5.5-rc4.
+---
+ drivers/gpu/drm/drm_fb_helper.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
-index e162a668fb7e..a549c42e8c90 100644
---- a/drivers/hid/hid-picolcd_fb.c
-+++ b/drivers/hid/hid-picolcd_fb.c
-@@ -417,8 +417,7 @@ static int picolcd_set_par(struct fb_info *info)
- 	return 0;
- }
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index f8e9051926083373..cae8fa74781c8db0 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -1267,7 +1267,7 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
+ 	 * Changes struct fb_var_screeninfo are currently not pushed back
+ 	 * to KMS, hence fail if different settings are requested.
+ 	 */
+-	if (var->bits_per_pixel != fb->format->cpp[0] * 8 ||
++	if (var->bits_per_pixel > fb->format->cpp[0] * 8 ||
+ 	    var->xres > fb->width || var->yres > fb->height ||
+ 	    var->xres_virtual > fb->width || var->yres_virtual > fb->height) {
+ 		drm_dbg_kms(dev, "fb requested width/height/bpp can't fit in current fb "
+@@ -1292,6 +1292,11 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
+ 		drm_fb_helper_fill_pixel_fmt(var, fb->format->depth);
+ 	}
  
--/* Note this can't be const because of struct fb_info definition */
--static struct fb_ops picolcdfb_ops = {
-+static const struct fb_ops picolcdfb_ops = {
- 	.owner        = THIS_MODULE,
- 	.fb_destroy   = picolcd_fb_destroy,
- 	.fb_read      = fb_sys_read,
++	/*
++	 * Likewise, bits_per_pixel should be rounded up to a supported value.
++	 */
++	var->bits_per_pixel = fb->format->cpp[0] * 8;
++
+ 	/*
+ 	 * drm fbdev emulation doesn't support changing the pixel format at all,
+ 	 * so reject all pixel format changing requests.
 -- 
-2.20.1
+2.17.1

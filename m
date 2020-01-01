@@ -1,60 +1,45 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Fri, 17 Jan 2020 19:32:23 +0000
-Subject: Re: [PATCH 0/6] video: fbdev: controlfb: small cleanup
-Message-Id: <20200117193223.GD24812@ravnborg.org>
+From: Julia Lawall <Julia.Lawall@inria.fr>
+Date: Wed, 01 Jan 2020 17:49:47 +0000
+Subject: [PATCH 07/10] video: fbdev: use resource_size
+Message-Id: <1577900990-8588-8-git-send-email-Julia.Lawall@inria.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200116140914eucas1p1a62794ad40589e818614176ea8e817ff@eucas1p1.samsung.com>
- <20200116140900.26363-1-b.zolnierkie@samsung.com>
-In-Reply-To: <20200116140900.26363-1-b.zolnierkie@samsung.com>
+References: <1577900990-8588-1-git-send-email-Julia.Lawall@inria.fr>
+In-Reply-To: <1577900990-8588-1-git-send-email-Julia.Lawall@inria.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Hi Bartlomiej
+Use resource_size rather than a verbose computation on
+the end and start fields.
 
-On Thu, Jan 16, 2020 at 03:08:54PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> Hi,
-> 
-> Small cleanup for controlfb driver:
-> 
-> - fix sparse warnings
-> - remove not working module support
-> - add COMPILE_TEST support
-> - remove redundant function prototypes
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
 
-Nice cleanup - with a few comments.
-The last three patches are the good ones.
+<smpl>
+@@ struct resource ptr; @@
+- (ptr.end - ptr.start + 1)
++ resource_size(&ptr)
+</smpl>
 
-With my comments considered - and then up to you if you cahnge anything
-- then all patches are:
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
 
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
-> 
-> Bartlomiej Zolnierkiewicz (6):
->   video: fbdev: controlfb: fix sparse warning about using incorrect type
->   video: fbdev: controlfb: remove obsolete module support
->   video: fbdev: controlfb: add COMPILE_TEST support
->   video: fbdev: controlfb: remove function prototypes part #1
->   video: fbdev: controlfb: remove function prototypes part #2
->   video: fbdev: controlfb: remove function prototypes part #3
-> 
->  drivers/video/fbdev/Kconfig     |   2 +-
->  drivers/video/fbdev/controlfb.c | 810 +++++++++++++++-----------------
->  2 files changed, 383 insertions(+), 429 deletions(-)
-> 
-> -- 
-> 2.24.1
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+---
+ drivers/video/fbdev/cg14.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/cg14.c b/drivers/video/fbdev/cg14.c
+index a620b51cf7d0..6a745eb46ca1 100644
+--- a/drivers/video/fbdev/cg14.c
++++ b/drivers/video/fbdev/cg14.c
+@@ -509,8 +509,7 @@ static int cg14_probe(struct platform_device *op)
+ 	if (!par->regs || !par->clut || !par->cursor || !info->screen_base)
+ 		goto out_unmap_regs;
+ 
+-	is_8mb = (((op->resource[1].end - op->resource[1].start) + 1) =
+-		  (8 * 1024 * 1024));
++	is_8mb = (resource_size(&op->resource[1]) = (8 * 1024 * 1024));
+ 
+ 	BUILD_BUG_ON(sizeof(par->mmap_map) != sizeof(__cg14_mmap_map));
+ 		

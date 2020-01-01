@@ -1,93 +1,91 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 16 Jan 2020 17:01:16 +0000
-Subject: [PATCH AUTOSEL 4.19 438/671] backlight: pwm_bl: Fix heuristic to determine number of brightness leve
-Message-Id: <20200116170509.12787-175-sashal@kernel.org>
+From: syzbot <syzbot+29d4ed7f3bdedf2aa2fd@syzkaller.appspotmail.com>
+Date: Wed, 01 Jan 2020 17:40:08 +0000
+Subject: Re: KASAN: global-out-of-bounds Read in fbcon_get_font
+Message-Id: <0000000000005e40e3059b17917c@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200116170509.12787-1-sashal@kernel.org>
-In-Reply-To: <20200116170509.12787-1-sashal@kernel.org>
+In-Reply-To: <0000000000006b9e8d059952095e@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Matthias Kaehlcke <mka@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, ghalat@redhat.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, maarten.lankhorst@linux.intel.com, sam@ravnborg.org, syzkaller-bugs@googlegroups.com
 
-From: Matthias Kaehlcke <mka@chromium.org>
+syzbot has found a reproducer for the following crash on:
 
-[ Upstream commit 73fbfc499448455f1e1c77717040e09e25f1d976 ]
+HEAD commit:    738d2902 Merge git://git.kernel.org/pub/scm/linux/kernel/g..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=14e396c1e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=874bac2ff63646fa
+dashboard link: https://syzkaller.appspot.com/bug?extid)d4ed7f3bdedf2aa2fd
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=17a0b866e00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=15fc963ee00000
 
-With commit 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of
-LED linearly to human eye") the number of set bits (aka hweight())
-in the PWM period is used in the heuristic to determine the number
-of brightness levels, when the brightness table isn't specified in
-the DT. The number of set bits doesn't provide a reliable clue about
-the length of the period, instead change the heuristic to:
+Bisection is inconclusive: the bug happens on the oldest tested release.
 
- nlevels = period / fls(period)
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=15b75532e00000
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=17b75532e00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=13b75532e00000
 
-Also limit the maximum number of brightness levels to 4096 to avoid
-excessively large tables.
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+29d4ed7f3bdedf2aa2fd@syzkaller.appspotmail.com
 
-With this the number of levels increases monotonically with the PWM
-period, until the maximum of 4096 levels is reached:
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+BUG: KASAN: global-out-of-bounds in memcpy include/linux/string.h:380 =20
+[inline]
+BUG: KASAN: global-out-of-bounds in fbcon_get_font+0x2b2/0x5e0 =20
+drivers/video/fbdev/core/fbcon.c:2465
+Read of size 32 at addr ffffffff88729e80 by task syz-executor334/10190
 
-period (ns)    # levels
+CPU: 0 PID: 10190 Comm: syz-executor334 Not tainted 5.5.0-rc4-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS =20
+Google 01/01/2011
+Call Trace:
+  __dump_stack lib/dump_stack.c:77 [inline]
+  dump_stack+0x197/0x210 lib/dump_stack.c:118
+  print_address_description.constprop.0.cold+0x5/0x30b mm/kasan/report.c:374
+  __kasan_report.cold+0x1b/0x41 mm/kasan/report.c:506
+  kasan_report+0x12/0x20 mm/kasan/common.c:639
+  check_memory_region_inline mm/kasan/generic.c:185 [inline]
+  check_memory_region+0x134/0x1a0 mm/kasan/generic.c:192
+  memcpy+0x24/0x50 mm/kasan/common.c:125
+  memcpy include/linux/string.h:380 [inline]
+  fbcon_get_font+0x2b2/0x5e0 drivers/video/fbdev/core/fbcon.c:2465
+  con_font_get drivers/tty/vt/vt.c:4446 [inline]
+  con_font_op+0x20b/0x1270 drivers/tty/vt/vt.c:4605
+  vt_ioctl+0xd2e/0x26d0 drivers/tty/vt/vt_ioctl.c:913
+  tty_ioctl+0xa37/0x14f0 drivers/tty/tty_io.c:2660
+  vfs_ioctl fs/ioctl.c:47 [inline]
+  file_ioctl fs/ioctl.c:545 [inline]
+  do_vfs_ioctl+0x977/0x14e0 fs/ioctl.c:732
+  ksys_ioctl+0xab/0xd0 fs/ioctl.c:749
+  __do_sys_ioctl fs/ioctl.c:756 [inline]
+  __se_sys_ioctl fs/ioctl.c:754 [inline]
+  __x64_sys_ioctl+0x73/0xb0 fs/ioctl.c:754
+  do_syscall_64+0xfa/0x790 arch/x86/entry/common.c:294
+  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+RIP: 0033:0x4412d9
+Code: e8 3c ad 02 00 48 83 c4 18 c3 0f 1f 80 00 00 00 00 48 89 f8 48 89 f7 =
+=20
+48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff  =
 
-100    	       16
-500	       62
-1000	       111
-5000	       416
-10000	       769
-50000	       3333
-100000	       4096
+ff 0f 83 9b 09 fc ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007ffc49b97f18 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 00000000004a2487 RCX: 00000000004412d9
+RDX: 0000000020000200 RSI: 0000000000004b60 RDI: 0000000000000004
+RBP: 0000000000018ac7 R08: 000000000000000d R09: 00000000004002c8
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000402100
+R13: 0000000000402190 R14: 0000000000000000 R15: 0000000000000000
 
-Fixes: 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-Tested-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/backlight/pwm_bl.c | 24 ++++++------------------
- 1 file changed, 6 insertions(+), 18 deletions(-)
+The buggy address belongs to the variable:
+  fontdata_8x16+0x1000/0x1120
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 7ddc0930e98c..3a3098d4873b 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -199,29 +199,17 @@ int pwm_backlight_brightness_default(struct device *dev,
- 				     struct platform_pwm_backlight_data *data,
- 				     unsigned int period)
- {
--	unsigned int counter = 0;
--	unsigned int i, n;
-+	unsigned int i;
- 	u64 retval;
- 
- 	/*
--	 * Count the number of bits needed to represent the period number. The
--	 * number of bits is used to calculate the number of levels used for the
--	 * brightness-levels table, the purpose of this calculation is have a
--	 * pre-computed table with enough levels to get linear brightness
--	 * perception. The period is divided by the number of bits so for a
--	 * 8-bit PWM we have 255 / 8 = 32 brightness levels or for a 16-bit PWM
--	 * we have 65535 / 16 = 4096 brightness levels.
--	 *
--	 * Note that this method is based on empirical testing on different
--	 * devices with PWM of 8 and 16 bits of resolution.
-+	 * Once we have 4096 levels there's little point going much higher...
-+	 * neither interactive sliders nor animation benefits from having
-+	 * more values in the table.
- 	 */
--	n = period;
--	while (n) {
--		counter += n % 2;
--		n >>= 1;
--	}
-+	data->max_brightness +		min((int)DIV_ROUND_UP(period, fls(period)), 4096);
- 
--	data->max_brightness = DIV_ROUND_UP(period, counter);
- 	data->levels = devm_kcalloc(dev, data->max_brightness,
- 				    sizeof(*data->levels), GFP_KERNEL);
- 	if (!data->levels)
--- 
-2.20.1
+Memory state around the buggy address:
+  ffffffff88729d80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  ffffffff88729e00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> ffffffff88729e80: fa fa fa fa 06 fa fa fa fa fa fa fa 05 fa fa fa
+                    ^
+  ffffffff88729f00: fa fa fa fa 06 fa fa fa fa fa fa fa 00 00 03 fa
+  ffffffff88729f80: fa fa fa fa 00 00 00 00 00 00 00 00 00 00 00 00
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D

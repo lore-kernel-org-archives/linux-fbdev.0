@@ -1,40 +1,94 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Fri, 17 Jan 2020 18:57:22 +0000
-Subject: Re: [PATCH] video: fbdev: arcfb: add COMPILE_TEST support
-Message-Id: <20200117185722.GA24508@ravnborg.org>
+From: Julia Lawall <Julia.Lawall@inria.fr>
+Date: Wed, 01 Jan 2020 17:49:43 +0000
+Subject: [PATCH 03/10] fbdev: s1d13xxxfb: use resource_size
+Message-Id: <1577900990-8588-4-git-send-email-Julia.Lawall@inria.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200116144909eucas1p1b247368aded82dad3ca8da852deaca1a@eucas1p1.samsung.com>
- <acf2cc2e-614d-f0fb-ce40-cee62bfcde4c@samsung.com>
-In-Reply-To: <acf2cc2e-614d-f0fb-ce40-cee62bfcde4c@samsung.com>
+References: <1577900990-8588-1-git-send-email-Julia.Lawall@inria.fr>
+In-Reply-To: <1577900990-8588-1-git-send-email-Julia.Lawall@inria.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Thu, Jan 16, 2020 at 03:49:07PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> Add COMPILE_TEST support to arcfb driver for better compile
-> testing coverage.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> ---
->  drivers/video/fbdev/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: b/drivers/video/fbdev/Kconfig
-> =================================> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -435,7 +435,7 @@ config FB_FM2
->  
->  config FB_ARC
->  	tristate "Arc Monochrome LCD board support"
-> -	depends on FB && X86
-> +	depends on FB && (X86 || COMPILE_TEST)
->  	select FB_SYS_FILLRECT
->  	select FB_SYS_COPYAREA
->  	select FB_SYS_IMAGEBLIT
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+Use resource_size rather than a verbose computation on
+the end and start fields.
+
+The semantic patch that makes these changes is as follows:
+(http://coccinelle.lip6.fr/)
+
+<smpl>
+@@ struct resource ptr; @@
+- (ptr.end - ptr.start + 1)
++ resource_size(&ptr)
+</smpl>
+
+Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+
+---
+ drivers/video/fbdev/s1d13xxxfb.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/fbdev/s1d13xxxfb.c b/drivers/video/fbdev/s1d13xxxfb.c
+index 8048499e398d..eaea8c373753 100644
+--- a/drivers/video/fbdev/s1d13xxxfb.c
++++ b/drivers/video/fbdev/s1d13xxxfb.c
+@@ -746,9 +746,9 @@ s1d13xxxfb_remove(struct platform_device *pdev)
+ 	}
+ 
+ 	release_mem_region(pdev->resource[0].start,
+-			pdev->resource[0].end - pdev->resource[0].start +1);
++			   resource_size(&pdev->resource[0]));
+ 	release_mem_region(pdev->resource[1].start,
+-			pdev->resource[1].end - pdev->resource[1].start +1);
++			   resource_size(&pdev->resource[1]));
+ 	return 0;
+ }
+ 
+@@ -788,14 +788,14 @@ static int s1d13xxxfb_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	if (!request_mem_region(pdev->resource[0].start,
+-		pdev->resource[0].end - pdev->resource[0].start +1, "s1d13xxxfb mem")) {
++		resource_size(&pdev->resource[0]), "s1d13xxxfb mem")) {
+ 		dev_dbg(&pdev->dev, "request_mem_region failed\n");
+ 		ret = -EBUSY;
+ 		goto bail;
+ 	}
+ 
+ 	if (!request_mem_region(pdev->resource[1].start,
+-		pdev->resource[1].end - pdev->resource[1].start +1, "s1d13xxxfb regs")) {
++		resource_size(&pdev->resource[1]), "s1d13xxxfb regs")) {
+ 		dev_dbg(&pdev->dev, "request_mem_region failed\n");
+ 		ret = -EBUSY;
+ 		goto bail;
+@@ -810,7 +810,7 @@ static int s1d13xxxfb_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, info);
+ 	default_par = info->par;
+ 	default_par->regs = ioremap(pdev->resource[1].start,
+-			pdev->resource[1].end - pdev->resource[1].start +1);
++				    resource_size(&pdev->resource[1]));
+ 	if (!default_par->regs) {
+ 		printk(KERN_ERR PFX "unable to map registers\n");
+ 		ret = -ENOMEM;
+@@ -819,7 +819,7 @@ static int s1d13xxxfb_probe(struct platform_device *pdev)
+ 	info->pseudo_palette = default_par->pseudo_palette;
+ 
+ 	info->screen_base = ioremap(pdev->resource[0].start,
+-			pdev->resource[0].end - pdev->resource[0].start +1);
++				    resource_size(&pdev->resource[0]));
+ 
+ 	if (!info->screen_base) {
+ 		printk(KERN_ERR PFX "unable to map framebuffer\n");
+@@ -857,9 +857,9 @@ static int s1d13xxxfb_probe(struct platform_device *pdev)
+ 
+ 	info->fix = s1d13xxxfb_fix;
+ 	info->fix.mmio_start = pdev->resource[1].start;
+-	info->fix.mmio_len = pdev->resource[1].end - pdev->resource[1].start + 1;
++	info->fix.mmio_len = resource_size(&pdev->resource[1]);
+ 	info->fix.smem_start = pdev->resource[0].start;
+-	info->fix.smem_len = pdev->resource[0].end - pdev->resource[0].start + 1;
++	info->fix.smem_len = resource_size(&pdev->resource[0]);
+ 
+ 	printk(KERN_INFO PFX "regs mapped at 0x%p, fb %d KiB mapped at 0x%p\n",
+ 	       default_par->regs, info->fix.smem_len / 1024, info->screen_base);

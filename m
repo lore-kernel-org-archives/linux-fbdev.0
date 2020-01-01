@@ -1,39 +1,60 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 31 Jan 2020 21:46:53 +0000
-Subject: [PATCH 10/18] drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
-Message-Id: <20200131214701.1085737-11-gwan-gyeong.mun@intel.com>
+From: Julia Lawall <Julia.Lawall@inria.fr>
+Date: Wed, 01 Jan 2020 17:49:40 +0000
+Subject: [PATCH 00/10] use resource_size
+Message-Id: <1577900990-8588-1-git-send-email-Julia.Lawall@inria.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-fbdev@vger.kernel.org, Fabio Estevam <festevam@gmail.com>, alsa-devel@alsa-project.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, NXP Linux Team <linux-imx@nxp.com>, Pengutronix Kernel Team <kernel@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 
-Dump out the DP HDR Metadata Infoframe SDP in the normal crtc state dump.
+Use resource_size rather than a verbose computation on
+the end and start fields.
 
-HDMI Dynamic Range and Mastering (DRM) infoframe and DP HDR Metadata
-Infoframe SDP use the same member variable in infoframes of crtc state.
+The semantic patch that makes these changes is as follows:
+(http://coccinelle.lip6.fr/)
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+<smpl>
+@@
+struct resource ptr;
+@@
+
+- ((ptr.end) - (ptr.start) + 1)
++ resource_size(&ptr)
+
+@@
+struct resource *ptr;
+@@
+
+- ((ptr->end) - (ptr->start) + 1)
++ resource_size(ptr)
+
+@@
+struct resource ptr;
+@@
+
+- ((ptr.end) + 1 - (ptr.start))
++ resource_size(&ptr)
+
+@@
+struct resource *ptr;
+@@
+
+- ((ptr->end) + 1 - (ptr->start))
++ resource_size(ptr)
+</smpl>
+
 ---
- drivers/gpu/drm/i915/display/intel_display.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index 239861bcedba..593c63f51210 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -13033,6 +13033,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
- 	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
- 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
-+	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
-+		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
- 
- 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
- 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
--- 
-2.24.1
+ arch/mips/kernel/setup.c                  |    6 ++----
+ arch/powerpc/platforms/83xx/km83xx.c      |    2 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c |    4 ++--
+ arch/x86/kernel/crash.c                   |    2 +-
+ drivers/net/ethernet/freescale/fman/mac.c |    4 ++--
+ drivers/usb/gadget/udc/omap_udc.c         |    6 +++---
+ drivers/video/fbdev/cg14.c                |    3 +--
+ drivers/video/fbdev/s1d13xxxfb.c          |   16 ++++++++--------
+ sound/drivers/ml403-ac97cr.c              |    4 +---
+ sound/soc/sof/imx/imx8.c                  |    3 +--
+ 10 files changed, 22 insertions(+), 28 deletions(-)

@@ -1,50 +1,43 @@
-From: yu kuai <yukuai3@huawei.com>
-Date: Sun, 19 Jan 2020 12:17:27 +0000
-Subject: [PATCH 1/4] video: fbdev: remove set but not used variable 'hSyncPol'
-Message-Id: <20200119121730.10701-2-yukuai3@huawei.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Fri, 03 Jan 2020 17:11:26 +0000
+Subject: [PATCH 14/19] video: exynos: Rename Exynos to lowercase
+Message-Id: <20200103171131.9900-15-krzk@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200119121730.10701-1-yukuai3@huawei.com>
-In-Reply-To: <20200119121730.10701-1-yukuai3@huawei.com>
+References: <20200103171131.9900-1-krzk@kernel.org>
+In-Reply-To: <20200103171131.9900-1-krzk@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: benh@kernel.crashing.org, b.zolnierkie@samsung.com
-Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhengbin13@huawei.com, yukuai3@huawei.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Fixes gcc '-Wunused-but-set-variable' warning:
+Fix up inconsistent usage of upper and lowercase letters in "Exynos"
+name.
 
-drivers/video/fbdev/aty/radeon_base.c: In function
-‘radeonfb_set_par’:
-drivers/video/fbdev/aty/radeon_base.c:1653:6: warning: variable
-‘hSyncPol’ set but not used [-Wunused-but-set-variable]
+"EXYNOS" is not an abbreviation but a regular trademarked name.
+Therefore it should be written with lowercase letters starting with
+capital letter.
 
-It is never used, and so can be removed.
+The lowercase "Exynos" name is promoted by its manufacturer Samsung
+Electronics Co., Ltd., in advertisement materials and on website.
 
-Signed-off-by: yu kuai <yukuai3@huawei.com>
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- drivers/video/fbdev/aty/radeon_base.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ include/video/samsung_fimd.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index 3af00e3b965e..d2e68ec580c2 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -1650,7 +1650,7 @@ static int radeonfb_set_par(struct fb_info *info)
- 	struct fb_var_screeninfo *mode = &info->var;
- 	struct radeon_regs *newmode;
- 	int hTotal, vTotal, hSyncStart, hSyncEnd,
--	    hSyncPol, vSyncStart, vSyncEnd, vSyncPol, cSync;
-+	    vSyncStart, vSyncEnd, vSyncPol, cSync;
- 	u8 hsync_adj_tab[] = {0, 0x12, 9, 9, 6, 5};
- 	u8 hsync_fudge_fp[] = {2, 2, 0, 0, 5, 5};
- 	u32 sync, h_sync_pol, v_sync_pol, dotClock, pixClock;
-@@ -1730,7 +1730,6 @@ static int radeonfb_set_par(struct fb_info *info)
- 	else if (vsync_wid > 0x1f)	/* max */
- 		vsync_wid = 0x1f;
+diff --git a/include/video/samsung_fimd.h b/include/video/samsung_fimd.h
+index b6571c3cfa31..c4a93ce1de48 100644
+--- a/include/video/samsung_fimd.h
++++ b/include/video/samsung_fimd.h
+@@ -10,7 +10,7 @@
+  *
+  * This is the register set for the fimd and new style framebuffer interface
+  * found from the S3C2443 onwards into the S3C2416, S3C2450, the
+- * S3C64XX series such as the S3C6400 and S3C6410, and EXYNOS series.
++ * S3C64XX series such as the S3C6400 and S3C6410, and Exynos series.
+ */
  
--	hSyncPol = mode->sync & FB_SYNC_HOR_HIGH_ACT ? 0 : 1;
- 	vSyncPol = mode->sync & FB_SYNC_VERT_HIGH_ACT ? 0 : 1;
- 
- 	cSync = mode->sync & FB_SYNC_COMP_HIGH_ACT ? (1 << 4) : 0;
+ /* VIDCON0 */
 -- 
-2.17.2
+2.17.1

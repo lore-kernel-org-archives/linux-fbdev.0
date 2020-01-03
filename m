@@ -1,63 +1,82 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 31 Jan 2020 21:46:45 +0000
-Subject: [PATCH 02/18] drm/i915: Add DP VSC SDP payload data to intel_crtc_state.infoframes
-Message-Id: <20200131214701.1085737-3-gwan-gyeong.mun@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 03 Jan 2020 11:38:15 +0000
+Subject: Re: [PATCH 1/3] video: fbdev: mmp: remove duplicated MMP_DISP dependency
+Message-Id: <633e4795-b914-e5ff-7121-7339a936e8ba@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
+References: <CGME20190627140704eucas1p10f9aca669beb24f5359a0e86f2b6d0ba@eucas1p1.samsung.com>
+ <eb28587c-4f8f-f044-1b8b-317a8d7967aa@samsung.com>
+ <0534f6bf-cd94-5416-2d4a-5fc9721aa7ed@samsung.com>
+In-Reply-To: <0534f6bf-cd94-5416-2d4a-5fc9721aa7ed@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Andrzej Hajda <a.hajda@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-In order to support state readout for DP VSC SDP, we need to have a
-structure which holds DP VSC SDP payload data such as
-"union hdmi_infoframe drm" which is used for DRM infoframe.
 
-And In order to support DP HDR10, we have to support VSC SDP and
-HDR Metadata Infoframe SDP. As we will use drm member variable of
-intel_crtc_state.infoframes, we only need to add vsc sdp member variable
-to intel_crtc_state.infoframes.
+On 8/20/19 11:55 AM, Andrzej Hajda wrote:
+> On 27.06.2019 16:07, Bartlomiej Zolnierkiewicz wrote:
+>> This dependency is already present in higher level Kconfig file
+>> (drivers/video/fbdev/mmp/Kconfig).
+>>
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>=20
+>=20
+> Reviewed-by: Andrzej Hajda <a.hajda@samsung.com>
 
-Because DP SDP payload type does not have common structure like as
-"union hdmi_infoframe", it adds "struct intel_dp_vsc_sdp"
-to intel_display_types.h
+Thanks, I've queued the patch for v5.6.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
----
- drivers/gpu/drm/i915/display/intel_display_types.h | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display_types.h b/drivers/gpu/drm/i915/display/intel_display_types.h
-index 33ba93863488..81112d63342c 100644
---- a/drivers/gpu/drm/i915/display/intel_display_types.h
-+++ b/drivers/gpu/drm/i915/display/intel_display_types.h
-@@ -780,6 +780,17 @@ enum intel_output_format {
- 	INTEL_OUTPUT_FORMAT_YCBCR444,
- };
- 
-+struct intel_dp_vsc_sdp {
-+	unsigned char sdp_type; /* Secondary-data Packet Type */
-+	unsigned char revision; /* Revision Number */
-+	unsigned char length; /* Number of Valid Data Bytes */
-+	enum dp_colorspace colorspace;
-+	enum dp_colorimetry colorimetry;
-+	int bpc;
-+	enum dp_dynamic_range dynamic_range;
-+	enum dp_content_type content_type;
-+};
-+
- struct intel_crtc_state {
- 	/*
- 	 * uapi (drm) state. This is the software state shown to userspace.
-@@ -1021,6 +1032,7 @@ struct intel_crtc_state {
- 		union hdmi_infoframe spd;
- 		union hdmi_infoframe hdmi;
- 		union hdmi_infoframe drm;
-+		struct intel_dp_vsc_sdp vsc;
- 	} infoframes;
- 
- 	/* HDMI scrambling status */
--- 
-2.24.1
+> =C2=A0--
+> Regards
+> Andrzej
+>=20
+>=20
+>> ---
+>>  drivers/video/fbdev/mmp/fb/Kconfig |    4 ----
+>>  drivers/video/fbdev/mmp/hw/Kconfig |    4 ----
+>>  2 files changed, 8 deletions(-)
+>>
+>> Index: b/drivers/video/fbdev/mmp/fb/Kconfig
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D>> --- a/drivers/video/fbdev/mmp/fb/Kconfig
+>> +++ b/drivers/video/fbdev/mmp/fb/Kconfig
+>> @@ -1,6 +1,4 @@
+>>  # SPDX-License-Identifier: GPL-2.0-only
+>> -if MMP_DISP
+>> -
+>>  config MMP_FB
+>>  	tristate "fb driver for Marvell MMP Display Subsystem"
+>>  	depends on FB
+>> @@ -10,5 +8,3 @@ config MMP_FB
+>>  	default y
+>>  	help
+>>  		fb driver for Marvell MMP Display Subsystem
+>> -
+>> -endif
+>> Index: b/drivers/video/fbdev/mmp/hw/Kconfig
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D>> --- a/drivers/video/fbdev/mmp/hw/Kconfig
+>> +++ b/drivers/video/fbdev/mmp/hw/Kconfig
+>> @@ -1,6 +1,4 @@
+>>  # SPDX-License-Identifier: GPL-2.0-only
+>> -if MMP_DISP
+>> -
+>>  config MMP_DISP_CONTROLLER
+>>  	bool "mmp display controller hw support"
+>>  	depends on CPU_PXA910 || CPU_MMP2
+>> @@ -16,5 +14,3 @@ config MMP_DISP_SPI
+>>  	help
+>>  		Marvell MMP display hw controller spi port support
+>>  		will register as a spi master for panel usage
+>> -
+>> -endif
+>> _______________________________________________
+>> dri-devel mailing list
+>> dri-devel@lists.freedesktop.org
+>> https://lists.freedesktop.org/mailman/listinfo/dri-devel

@@ -1,58 +1,66 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 16 Jan 2020 17:33:32 +0000
-Subject: [PATCH AUTOSEL 4.9 063/251] fbdev: chipsfb: remove set but not used variable 'size'
-Message-Id: <20200116173641.22137-23-sashal@kernel.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 03 Jan 2020 12:33:54 +0000
+Subject: Re: [PATCH] video: ocfb: Use devm_platform_ioremap_resource() in ocfb_probe()
+Message-Id: <94a71d4e-25c2-5aa4-208f-70e46b6a964e@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200116173641.22137-1-sashal@kernel.org>
-In-Reply-To: <20200116173641.22137-1-sashal@kernel.org>
+References: <CGME20190919143339epcas5p2ca00bc034be8e478353a40475683de13@epcas5p2.samsung.com>
+ <61b75aa6-ff92-e0ed-53f2-50a95d93d1f6@web.de>
+In-Reply-To: <61b75aa6-ff92-e0ed-53f2-50a95d93d1f6@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Ellerman <mpe@ellerman.id.au>, YueHaibing <yuehaibing@huawei.com>, dri-devel@lists.freedesktop.org, Daniel Vetter <daniel.vetter@ffwll.ch>
+To: Markus Elfring <Markus.Elfring@web.de>
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Himanshu Jha <himanshujha199640@gmail.com>
 
-From: YueHaibing <yuehaibing@huawei.com>
 
-[ Upstream commit 8e71fa5e4d86bedfd26df85381d65d6b4c860020 ]
+On 9/19/19 4:33 PM, Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Thu, 19 Sep 2019 16:26:56 +0200
+> 
+> Simplify this function implementation by using a known wrapper function.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-Fixes gcc '-Wunused-but-set-variable' warning:
+Thanks, patch queued for v5.6 (also sorry for the delay).
 
-drivers/video/fbdev/chipsfb.c: In function 'chipsfb_pci_init':
-drivers/video/fbdev/chipsfb.c:352:22: warning:
- variable 'size' set but not used [-Wunused-but-set-variable]
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-Fixes: 8c8709334cec ("[PATCH] ppc32: Remove CONFIG_PMAC_PBOOK").
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-[b.zolnierkie: minor commit summary and description fixups]
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/chipsfb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
-index 59abdc6a97f6..314b7eceb81c 100644
---- a/drivers/video/fbdev/chipsfb.c
-+++ b/drivers/video/fbdev/chipsfb.c
-@@ -350,7 +350,7 @@ static void init_chips(struct fb_info *p, unsigned long addr)
- static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
- {
- 	struct fb_info *p;
--	unsigned long addr, size;
-+	unsigned long addr;
- 	unsigned short cmd;
- 	int rc = -ENODEV;
- 
-@@ -362,7 +362,6 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
- 	if ((dp->resource[0].flags & IORESOURCE_MEM) = 0)
- 		goto err_disable;
- 	addr = pci_resource_start(dp, 0);
--	size = pci_resource_len(dp, 0);
- 	if (addr = 0)
- 		goto err_disable;
- 
--- 
-2.20.1
+> ---
+>  drivers/video/fbdev/ocfb.c | 9 +--------
+>  1 file changed, 1 insertion(+), 8 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/ocfb.c b/drivers/video/fbdev/ocfb.c
+> index a970edc2a6f8..be308b4dc91d 100644
+> --- a/drivers/video/fbdev/ocfb.c
+> +++ b/drivers/video/fbdev/ocfb.c
+> @@ -297,7 +297,6 @@ static int ocfb_probe(struct platform_device *pdev)
+>  {
+>  	int ret = 0;
+>  	struct ocfb_dev *fbdev;
+> -	struct resource *res;
+>  	int fbsize;
+> 
+>  	fbdev = devm_kzalloc(&pdev->dev, sizeof(*fbdev), GFP_KERNEL);
+> @@ -319,13 +318,7 @@ static int ocfb_probe(struct platform_device *pdev)
+>  	ocfb_init_var(fbdev);
+>  	ocfb_init_fix(fbdev);
+> 
+> -	/* Request I/O resource */
+> -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	if (!res) {
+> -		dev_err(&pdev->dev, "I/O resource request failed\n");
+> -		return -ENXIO;
+> -	}
+> -	fbdev->regs = devm_ioremap_resource(&pdev->dev, res);
+> +	fbdev->regs = devm_platform_ioremap_resource(pdev, 0);
+>  	if (IS_ERR(fbdev->regs))
+>  		return PTR_ERR(fbdev->regs);
+> 
+> --
+> 2.23.0

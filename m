@@ -1,50 +1,27 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 03 Jan 2020 12:26:22 +0000
-Subject: Re: [PATCH] video: fbdev: fsl-diu-fb: mark expected switch fall-throughs
-Message-Id: <3cc20993-1f45-ba6d-78b8-32be92b4853d@samsung.com>
+Date: Fri, 03 Jan 2020 12:34:41 +0000
+Subject: Re: [PATCH] video: pxafb: Use devm_platform_ioremap_resource() in pxafb_probe()
+Message-Id: <0d499b49-dc8c-de58-8268-36e3cced5ff0@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190911053645epcas3p36e689569e847f94ea42f1692c7aba22b@epcas3p3.samsung.com>
- <20190911113604.GA31512@embeddedor>
-In-Reply-To: <20190911113604.GA31512@embeddedor>
+References: <CGME20190919150135epcas3p2bf5ab33712e12edd90af2766eeaaccda@epcas3p2.samsung.com>
+ <a1b804b1-43c2-327a-d6d1-df49aebec680@web.de>
+In-Reply-To: <a1b804b1-43c2-327a-d6d1-df49aebec680@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Timur Tabi <timur@kernel.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Markus Elfring <Markus.Elfring@web.de>, Daniel Mack <daniel@zonque.org>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, YueHaibing <yuehaibing@huawei.com>
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Himanshu Jha <himanshujha199640@gmail.com>
 
 
-On 9/11/19 1:36 PM, Gustavo A. R. Silva wrote:
-> Mark switch cases where we are expecting to fall through.
+On 9/19/19 5:01 PM, Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Thu, 19 Sep 2019 16:51:38 +0200
 > 
-> Fix the following warnings (Building: mpc512x_defconfig powerpc):
+> Simplify this function implementation by using a known wrapper function.
 > 
-> drivers/video/fbdev/fsl-diu-fb.c: In function ‘fsl_diu_ioctl’:
-> ./include/linux/device.h:1750:2: warning: this statement may fall through [-Wimplicit-fallthrough=]
->   _dev_warn(dev, dev_fmt(fmt), ##__VA_ARGS__)
->   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> drivers/video/fbdev/fsl-diu-fb.c:1287:3: note: in expansion of macro ‘dev_warn’
->    dev_warn(info->dev,
->    ^~~~~~~~
-> drivers/video/fbdev/fsl-diu-fb.c:1290:2: note: here
->   case MFB_SET_PIXFMT:
->   ^~~~
-> In file included from ./include/linux/acpi.h:15:0,
->                  from ./include/linux/i2c.h:13,
->                  from ./include/uapi/linux/fb.h:6,
->                  from ./include/linux/fb.h:6,
->                  from drivers/video/fbdev/fsl-diu-fb.c:20:
-> ./include/linux/device.h:1750:2: warning: this statement may fall through [-Wimplicit-fallthrough=]
->   _dev_warn(dev, dev_fmt(fmt), ##__VA_ARGS__)
->   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> drivers/video/fbdev/fsl-diu-fb.c:1296:3: note: in expansion of macro ‘dev_warn’
->    dev_warn(info->dev,
->    ^~~~~~~~
-> drivers/video/fbdev/fsl-diu-fb.c:1299:2: note: here
->   case MFB_GET_PIXFMT:
->   ^~~~
+> This issue was detected by using the Coccinelle software.
 > 
-> Reported-by: kbuild test robot <lkp@intel.com>
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
 Thanks, patch queued for v5.6 (also sorry for the delay).
 
@@ -55,27 +32,36 @@ Samsung R&D Institute Poland
 Samsung Electronics
 
 > ---
->  drivers/video/fbdev/fsl-diu-fb.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  drivers/video/fbdev/pxafb.c | 10 +---------
+>  1 file changed, 1 insertion(+), 9 deletions(-)
 > 
-> diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
-> index d19f58263b4e..3e410b9eb272 100644
-> --- a/drivers/video/fbdev/fsl-diu-fb.c
-> +++ b/drivers/video/fbdev/fsl-diu-fb.c
-> @@ -1287,6 +1287,7 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
->  		dev_warn(info->dev,
->  			 "MFB_SET_PIXFMT value of 0x%08x is deprecated.\n",
->  			 MFB_SET_PIXFMT_OLD);
-> +		/* fall through */
->  	case MFB_SET_PIXFMT:
->  		if (copy_from_user(&pix_fmt, buf, sizeof(pix_fmt)))
->  			return -EFAULT;
-> @@ -1296,6 +1297,7 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
->  		dev_warn(info->dev,
->  			 "MFB_GET_PIXFMT value of 0x%08x is deprecated.\n",
->  			 MFB_GET_PIXFMT_OLD);
-> +		/* fall through */
->  	case MFB_GET_PIXFMT:
->  		pix_fmt = ad->pix_fmt;
->  		if (copy_to_user(buf, &pix_fmt, sizeof(pix_fmt)))
+> diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+> index f70c9f79622e..237f8f436fdb 100644
+> --- a/drivers/video/fbdev/pxafb.c
+> +++ b/drivers/video/fbdev/pxafb.c
+> @@ -2237,7 +2237,6 @@ static int pxafb_probe(struct platform_device *dev)
+>  {
+>  	struct pxafb_info *fbi;
+>  	struct pxafb_mach_info *inf, *pdata;
+> -	struct resource *r;
+>  	int i, irq, ret;
 > 
+>  	dev_dbg(&dev->dev, "pxafb_probe\n");
+> @@ -2303,14 +2302,7 @@ static int pxafb_probe(struct platform_device *dev)
+>  		fbi->lcd_supply = NULL;
+>  	}
+> 
+> -	r = platform_get_resource(dev, IORESOURCE_MEM, 0);
+> -	if (r = NULL) {
+> -		dev_err(&dev->dev, "no I/O memory resource defined\n");
+> -		ret = -ENODEV;
+> -		goto failed;
+> -	}
+> -
+> -	fbi->mmio_base = devm_ioremap_resource(&dev->dev, r);
+> +	fbi->mmio_base = devm_platform_ioremap_resource(dev, 0);
+>  	if (IS_ERR(fbi->mmio_base)) {
+>  		dev_err(&dev->dev, "failed to get I/O memory\n");
+>  		ret = -EBUSY;
+> --
+> 2.23.0

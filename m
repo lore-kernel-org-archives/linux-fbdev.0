@@ -1,57 +1,49 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 16 Jan 2020 17:34:50 +0000
-Subject: [PATCH AUTOSEL 4.9 141/251] backlight: lm3630a: Return 0 on success in update_status functions
-Message-Id: <20200116173641.22137-101-sashal@kernel.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 03 Jan 2020 12:14:08 +0000
+Subject: Re: [PATCH -next] fbdev: omapfb: use devm_platform_ioremap_resource() to simplify code
+Message-Id: <3f75dae1-181f-3935-0b1d-40839392226e@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200116173641.22137-1-sashal@kernel.org>
-In-Reply-To: <20200116173641.22137-1-sashal@kernel.org>
+References: <CGME20190904115507epcas1p42d4d5b2f6ee58db0ccf3b1ee27063ac1@epcas1p4.samsung.com>
+ <20190904115406.23880-1-yuehaibing@huawei.com>
+In-Reply-To: <20190904115406.23880-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Brian Masney <masneyb@onstation.org>
+To: YueHaibing <yuehaibing@huawei.com>
+Cc: linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, alexios.zavras@intel.com, tglx@linutronix.de, linux-omap@vger.kernel.org, allison@lohutok.net
 
-From: Brian Masney <masneyb@onstation.org>
 
-[ Upstream commit d3f48ec0954c6aac736ab21c34a35d7554409112 ]
+On 9/4/19 1:54 PM, YueHaibing wrote:
+> Use devm_platform_ioremap_resource() to simplify the code a bit.
+> This is detected by coccinelle.
+> 
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 
-lm3630a_bank_a_update_status() and lm3630a_bank_b_update_status()
-both return the brightness value if the brightness was successfully
-updated. Writing to these attributes via sysfs would cause a 'Bad
-address' error to be returned. These functions should return 0 on
-success, so let's change it to correct that error.
+Thanks, patch queued for v5.6 (also sorry for the delay).
 
-Fixes: 28e64a68a2ef ("backlight: lm3630: apply chip revision")
-Signed-off-by: Brian Masney <masneyb@onstation.org>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/backlight/lm3630a_bl.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-index 60d6c2ac87aa..1771220b2437 100644
---- a/drivers/video/backlight/lm3630a_bl.c
-+++ b/drivers/video/backlight/lm3630a_bl.c
-@@ -200,7 +200,7 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
- 				      LM3630A_LEDA_ENABLE, LM3630A_LEDA_ENABLE);
- 	if (ret < 0)
- 		goto out_i2c_err;
--	return bl->props.brightness;
-+	return 0;
- 
- out_i2c_err:
- 	dev_err(pchip->dev, "i2c failed to access\n");
-@@ -277,7 +277,7 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
- 				      LM3630A_LEDB_ENABLE, LM3630A_LEDB_ENABLE);
- 	if (ret < 0)
- 		goto out_i2c_err;
--	return bl->props.brightness;
-+	return 0;
- 
- out_i2c_err:
- 	dev_err(pchip->dev, "i2c failed to access REG_CTRL\n");
--- 
-2.20.1
+> ---
+>  drivers/video/fbdev/omap2/omapfb/vrfb.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/omap2/omapfb/vrfb.c b/drivers/video/fbdev/omap2/omapfb/vrfb.c
+> index 819e0bc..ee0dd4c 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/vrfb.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/vrfb.c
+> @@ -339,9 +339,7 @@ static int __init vrfb_probe(struct platform_device *pdev)
+>  	int i;
+>  
+>  	/* first resource is the register res, the rest are vrfb contexts */
+> -
+> -	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	vrfb_base = devm_ioremap_resource(&pdev->dev, mem);
+> +	vrfb_base = devm_platform_ioremap_resource(pdev, 0);
+>  	if (IS_ERR(vrfb_base))
+>  		return PTR_ERR(vrfb_base);
+>  

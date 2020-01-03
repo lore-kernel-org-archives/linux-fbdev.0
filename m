@@ -1,59 +1,75 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 31 Jan 2020 21:46:43 +0000
-Subject: [PATCH 00/18] In order to readout DP SDPs, refactors the handling of DP SDPs
-Message-Id: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 03 Jan 2020 11:38:42 +0000
+Subject: Re: [PATCH 2/3] video: fbdev: mmp: add COMPILE_TEST support
+Message-Id: <21153de6-885a-b52f-e051-0d6070daf2e9@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20190627140744eucas1p1eb91c6c21ae36105f38dbf5e42259a7c@eucas1p1.samsung.com>
+ <d21a19ea-8c18-80df-ae79-76de7c5ee67c@samsung.com>
+ <28d91688-6df2-9207-7d88-34d024baf727@samsung.com>
+In-Reply-To: <28d91688-6df2-9207-7d88-34d024baf727@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Andrzej Hajda <a.hajda@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-In order to readout DP SDPs (Secondary Data Packet: DP HDR Metadata
-Infoframe SDP, DP VSC SDP), it refactors handling DP SDPs codes.
-It adds new compute routines for DP HDR Metadata Infoframe SDP
-and DP VSC SDP. 
-And new writing routines of DP SDPs (Secondary Data Packet) that uses
-computed configs.
-New reading routines of DP SDPs are added for readout.
-It adds a logging function for DP VSC SDP.
-When receiving video it is very useful to be able to log DP VSC SDP.
-This greatly simplifies debugging.
-In order to use a common VSC SDP Colorimetry calculating code on PSR,
-it uses a new psr vsc sdp compute routine.
 
-Gwan-gyeong Mun (18):
-  drm: add DP 1.4 VSC SDP Payload related enums
-  drm/i915: Add DP VSC SDP payload data to intel_crtc_state.infoframes
-  drm/i915/dp: Add compute routine for DP VSC SDP
-  drm/i915/dp: Add compute routine for DP HDR Metadata Infoframe SDP
-  drm/i915/dp: Add writing of DP SDPs (Secondary Data Packet)
-  video/hdmi: Add Unpack only function for DRM infoframe
-  drm/i915/dp: Read out DP SDPs (Secondary Data Packet)
-  drm/i915/dp: Add logging function for DP VSC SDP
-  drm/i915: Include HDMI DRM infoframe in the crtc state dump
-  drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
-  drm/i915: Include DP VSC SDP in the crtc state dump
-  drm/i915: Program DP SDPs with computed configs
-  drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
-  drm/i915: Add state readout for DP VSC SDP
-  drm/i915: Program DP SDPs on pipe updates
-  drm/i915: Stop sending DP SDPs on intel_ddi_post_disable_dp()
-  drm/i915/dp: Add compute routine for DP PSR VSC SDP
-  drm/i915/psr: Use new DP VSC SDP compute routine on PSR
+On 8/20/19 11:56 AM, Andrzej Hajda wrote:
+> On 27.06.2019 16:07, Bartlomiej Zolnierkiewicz wrote:
+>> Add COMPILE_TEST support to mmp display subsystem for better compile
+>> testing coverage.
+>>
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>=20
+>=20
+> Reviewed-by: Andrzej Hajda <a.hajda@samsung.com>
 
- drivers/gpu/drm/i915/display/intel_ddi.c      |  19 +-
- drivers/gpu/drm/i915/display/intel_display.c  |  62 ++
- .../drm/i915/display/intel_display_types.h    |   1 +
- drivers/gpu/drm/i915/display/intel_dp.c       | 775 ++++++++++++++----
- drivers/gpu/drm/i915/display/intel_dp.h       |  21 +-
- drivers/gpu/drm/i915/display/intel_psr.c      |  54 +-
- drivers/gpu/drm/i915/display/intel_psr.h      |   6 +-
- drivers/gpu/drm/i915/i915_drv.h               |  12 +
- drivers/video/hdmi.c                          |  58 +-
- include/drm/drm_dp_helper.h                   |  45 +
- include/linux/hdmi.h                          |   2 +
- 11 files changed, 837 insertions(+), 218 deletions(-)
+Thanks, I've queued the patch for v5.6.
 
--- 
-2.24.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> =C2=A0--
+> Regards
+> Andrzej
+>=20
+>=20
+>> ---
+>>  drivers/video/fbdev/mmp/Kconfig    |    2 +-
+>>  drivers/video/fbdev/mmp/hw/Kconfig |    3 ++-
+>>  2 files changed, 3 insertions(+), 2 deletions(-)
+>>
+>> Index: b/drivers/video/fbdev/mmp/Kconfig
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D>> --- a/drivers/video/fbdev/mmp/Kconfig
+>> +++ b/drivers/video/fbdev/mmp/Kconfig
+>> @@ -1,7 +1,7 @@
+>>  # SPDX-License-Identifier: GPL-2.0-only
+>>  menuconfig MMP_DISP
+>>  	tristate "Marvell MMP Display Subsystem support"
+>> -	depends on CPU_PXA910 || CPU_MMP2
+>> +	depends on CPU_PXA910 || CPU_MMP2 || COMPILE_TEST
+>>  	help
+>>  	  Marvell Display Subsystem support.
+>> =20
+>> Index: b/drivers/video/fbdev/mmp/hw/Kconfig
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D>> --- a/drivers/video/fbdev/mmp/hw/Kconfig
+>> +++ b/drivers/video/fbdev/mmp/hw/Kconfig
+>> @@ -1,7 +1,8 @@
+>>  # SPDX-License-Identifier: GPL-2.0-only
+>>  config MMP_DISP_CONTROLLER
+>>  	bool "mmp display controller hw support"
+>> -	depends on CPU_PXA910 || CPU_MMP2
+>> +	depends on HAVE_CLK && HAS_IOMEM
+>> +	depends on CPU_PXA910 || CPU_MMP2 || COMPILE_TEST
+>>  	help
+>>  		Marvell MMP display hw controller support
+>>  		this controller is used on Marvell PXA910 and
+>> _______________________________________________
+>> dri-devel mailing list
+>> dri-devel@lists.freedesktop.org
+>> https://lists.freedesktop.org/mailman/listinfo/dri-devel

@@ -1,58 +1,58 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 16 Jan 2020 17:40:38 +0000
-Subject: [PATCH AUTOSEL 4.4 041/174] fbdev: chipsfb: remove set but not used variable 'size'
-Message-Id: <20200116174251.24326-41-sashal@kernel.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 03 Jan 2020 12:02:41 +0000
+Subject: Re: [PATCH] video/fbdev/68328fb: Remove dead code
+Message-Id: <dc887c33-0374-34e7-8d0d-329b87a5a7c3@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200116174251.24326-1-sashal@kernel.org>
-In-Reply-To: <20200116174251.24326-1-sashal@kernel.org>
+References: <CGME20190902124317epcas1p3933aec8ee7e526f3f42dd9f08ce6bdb0@epcas1p3.samsung.com>
+ <1567428544-8620-1-git-send-email-jrdr.linux@gmail.com>
+In-Reply-To: <1567428544-8620-1-git-send-email-jrdr.linux@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Ellerman <mpe@ellerman.id.au>, YueHaibing <yuehaibing@huawei.com>, dri-devel@lists.freedesktop.org, Daniel Vetter <daniel.vetter@ffwll.ch>
+To: Souptick Joarder <jrdr.linux@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, sabyasachi.linux@gmail.com
 
-From: YueHaibing <yuehaibing@huawei.com>
 
-[ Upstream commit 8e71fa5e4d86bedfd26df85381d65d6b4c860020 ]
+On 9/2/19 2:49 PM, Souptick Joarder wrote:
+> This is dead code since 3.15. If their is no plan to
+> use it further, these can be removed forever.
+> 
+> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
 
-Fixes gcc '-Wunused-but-set-variable' warning:
+Thanks, patch queued for v5.6 (also sorry for the delay).
 
-drivers/video/fbdev/chipsfb.c: In function 'chipsfb_pci_init':
-drivers/video/fbdev/chipsfb.c:352:22: warning:
- variable 'size' set but not used [-Wunused-but-set-variable]
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-Fixes: 8c8709334cec ("[PATCH] ppc32: Remove CONFIG_PMAC_PBOOK").
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-[b.zolnierkie: minor commit summary and description fixups]
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/chipsfb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
-index 59abdc6a97f6..314b7eceb81c 100644
---- a/drivers/video/fbdev/chipsfb.c
-+++ b/drivers/video/fbdev/chipsfb.c
-@@ -350,7 +350,7 @@ static void init_chips(struct fb_info *p, unsigned long addr)
- static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
- {
- 	struct fb_info *p;
--	unsigned long addr, size;
-+	unsigned long addr;
- 	unsigned short cmd;
- 	int rc = -ENODEV;
- 
-@@ -362,7 +362,6 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
- 	if ((dp->resource[0].flags & IORESOURCE_MEM) = 0)
- 		goto err_disable;
- 	addr = pci_resource_start(dp, 0);
--	size = pci_resource_len(dp, 0);
- 	if (addr = 0)
- 		goto err_disable;
- 
--- 
-2.20.1
+> ---
+>  drivers/video/fbdev/68328fb.c | 12 ------------
+>  1 file changed, 12 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
+> index d48e960..02d22b7 100644
+> --- a/drivers/video/fbdev/68328fb.c
+> +++ b/drivers/video/fbdev/68328fb.c
+> @@ -405,20 +405,8 @@ static int mc68x328fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+>  
+>  int __init mc68x328fb_setup(char *options)
+>  {
+> -#if 0
+> -	char *this_opt;
+> -#endif
+> -
+>  	if (!options || !*options)
+>  		return 1;
+> -#if 0
+> -	while ((this_opt = strsep(&options, ",")) != NULL) {
+> -		if (!*this_opt)
+> -			continue;
+> -		if (!strncmp(this_opt, "disable", 7))
+> -			mc68x328fb_enable = 0;
+> -	}
+> -#endif
+>  	return 1;
+>  }
+>  

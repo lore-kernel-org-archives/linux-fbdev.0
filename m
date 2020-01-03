@@ -1,64 +1,83 @@
-From: Julia Lawall <Julia.Lawall@inria.fr>
-Date: Wed, 01 Jan 2020 07:43:18 +0000
-Subject: [PATCH 00/16] constify copied structure
-Message-Id: <1577864614-5543-1-git-send-email-Julia.Lawall@inria.fr>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 03 Jan 2020 13:07:16 +0000
+Subject: Re: [PATCH] fbdev: potential information leak in do_fb_ioctl()
+Message-Id: <fd4e6f01-074b-def7-7ffb-9a9197930c31@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191029182320.GA17569@mwanda>
+ <CGME20191029190229epcas3p4e9b24bd8cde962681ef3dc4644ed2c2e@epcas3p4.samsung.com>
+ <87zhhjjryk.fsf@x220.int.ebiederm.org>
+In-Reply-To: <87zhhjjryk.fsf@x220.int.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jernej Skrabec <jernej.skrabec@siol.net>
-Cc: linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Jonas Karlman <jonas@kwiboo.se>, linux-arm-msm@vger.kernel.org, linux-usb@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-gpio@vger.kernel.org, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-nfs@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Joe Perches <joe@perches.com>
+Cc: linux-fbdev@vger.kernel.org, security@kernel.org, Kees Cook <keescook@chromium.org>, kernel-janitors@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Julia Lawall <Julia.Lawall@lip6.fr>, Gerd Hoffmann <kraxel@redhat.com>, Sam Ravnborg <sam@ravnborg.org>, Peter Rosin <peda@axentia.se>, Dan Carpenter <dan.carpenter@oracle.com>, Andrea Righi <righi.andrea@gmail.com>
 
-Make const static structures that are just copied into other structures.
 
-The semantic patch that detects the opportunity for this change is as
-follows: (http://coccinelle.lip6.fr/)
+On 10/29/19 8:02 PM, Eric W. Biederman wrote:
+> Dan Carpenter <dan.carpenter@oracle.com> writes:
+> 
+>> The "fix" struct has a 2 byte hole after ->ywrapstep and the
+>> "fix = info->fix;" assignment doesn't necessarily clear it.  It depends
+>> on the compiler.
+>>
+>> Fixes: 1f5e31d7e55a ("fbmem: don't call copy_from/to_user() with mutex held")
+>> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+>> ---
+>> I have 13 more similar places to patch...  I'm not totally sure I
+>> understand all the issues involved.
+> 
+> What I have done in a similar situation with struct siginfo, is that
+> where the structure first appears I have initialized it with memset,
+> and then field by field.
+> 
+> Then when the structure is copied I copy the structure with memcpy.
+> 
+> That ensures all of the bytes in the original structure are initialized
+> and that all of the bytes are copied.
+> 
+> The goal is to avoid memory that has values of the previous users of
+> that memory region from leaking to userspace.  Which depending on who
+> the previous user of that memory region is could tell userspace
+> information about what the kernel is doing that it should not be allowed
+> to find out.
+> 
+> I tried to trace through where "info" and thus presumably "info->fix" is
+> coming from and only made it as far as  register_framebuffer.  Given
 
-<smpl>
-@r disable optional_qualifier@
-identifier i,j;
-position p;
-@@
-static struct i j@p = { ... };
+"info" (and thus "info->fix") comes from framebuffer_alloc() (which is
+called by fbdev device drivers prior to registering "info" with
+register_framebuffer()). framebuffer_alloc() does kzalloc() on "info".
 
-@upd@
-position p1;
-identifier r.j;
-expression e;
-@@
-e = j@p1
+Therefore shouldn't memcpy() (as suggested by Jeo Perches) be enough?
 
-@ref@
-position p2 != {r.p,upd.p1};
-identifier r.j;
-@@
-j@p2
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-@script:ocaml depends on upd && !ref@
-i << r.i;
-j << r.j;
-p << r.p;
-@@
-if j = (List.hd p).current_element
-then Coccilib.print_main i p
-</smpl>
-
----
-
- arch/powerpc/sysdev/mpic.c                          |    4 ++--
- drivers/gpu/drm/bridge/synopsys/dw-hdmi-ahb-audio.c |    2 +-
- drivers/media/i2c/mt9v111.c                         |    2 +-
- drivers/media/platform/davinci/isif.c               |    2 +-
- drivers/media/usb/cx231xx/cx231xx-dvb.c             |    2 +-
- drivers/media/usb/dvb-usb-v2/anysee.c               |    4 ++--
- drivers/pinctrl/nuvoton/pinctrl-npcm7xx.c           |    2 +-
- drivers/pinctrl/qcom/pinctrl-ssbi-gpio.c            |    2 +-
- drivers/pinctrl/qcom/pinctrl-ssbi-mpp.c             |    2 +-
- drivers/ptp/ptp_clockmatrix.c                       |    2 +-
- drivers/usb/gadget/udc/atmel_usba_udc.c             |    2 +-
- drivers/video/fbdev/sa1100fb.c                      |    2 +-
- net/sunrpc/xdr.c                                    |    2 +-
- sound/isa/ad1816a/ad1816a_lib.c                     |    2 +-
- sound/pci/hda/hda_controller.c                      |    2 +-
- sound/soc/qcom/qdsp6/q6asm-dai.c                    |    2 +-
- 16 files changed, 18 insertions(+), 18 deletions(-)
+> that I suspect a local memset, and then a field by field copy right
+> before copy_to_user might be a sound solution.  But ick.  That is a lot
+> of fields to copy.
+> 
+> 
+> Eric
+> 
+> 
+> 
+>>  drivers/video/fbdev/core/fbmem.c | 1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+>> index 6f6fc785b545..b4ce6a28aed9 100644
+>> --- a/drivers/video/fbdev/core/fbmem.c
+>> +++ b/drivers/video/fbdev/core/fbmem.c
+>> @@ -1109,6 +1109,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+>>  			ret = -EFAULT;
+>>  		break;
+>>  	case FBIOGET_FSCREENINFO:
+>> +		memset(&fix, 0, sizeof(fix));
+>>  		lock_fb_info(info);
+>>  		fix = info->fix;
+>>  		if (info->flags & FBINFO_HIDE_SMEM_START)

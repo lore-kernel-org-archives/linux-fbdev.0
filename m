@@ -1,133 +1,75 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 15 Jan 2020 15:59:10 +0000
-Subject: Re: [PATCH] fbcon: Adjust indentation in set_con2fb_map
-Message-Id: <02a247ea-6837-847b-c3cb-af881bc26850@samsung.com>
+Date: Fri, 03 Jan 2020 11:51:46 +0000
+Subject: Re: [PATCH v3 1/3] fbdev: fix numbering of fbcon options
+Message-Id: <209fe07a-96d7-98db-7c3b-81a932291bd9@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191218025337.35044-1-natechancellor@gmail.com>
- <CGME20191220180738eucas1p2c5a571666d1f75812de7078ca6b84ab3@eucas1p2.samsung.com>
- <CAKwvOd=DcXiA5d07bS_3qhr4F-mbsGzZic=OgomuhZchGaXeoQ@mail.gmail.com>
-In-Reply-To: <CAKwvOd=DcXiA5d07bS_3qhr4F-mbsGzZic=OgomuhZchGaXeoQ@mail.gmail.com>
+References: <20190827110854.12574-1-peda@axentia.se>
+ <CGME20190827110923epcas1p1ef1052284e2b565746491c0d63a39c1b@epcas1p1.samsung.com>
+ <20190827110854.12574-2-peda@axentia.se>
+In-Reply-To: <20190827110854.12574-2-peda@axentia.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Nick Desaulniers <ndesaulniers@google.com>, Nathan Chancellor <natechancellor@gmail.com>
-Cc: clang-built-linux <clang-built-linux@googlegroups.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Peter Rosin <peda@axentia.se>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
 
 
-On 12/20/19 7:07 PM, Nick Desaulniers wrote:
-> On Tue, Dec 17, 2019 at 6:53 PM Nathan Chancellor
-> <natechancellor@gmail.com> wrote:
->>
->> Clang warns:
->>
->> ../drivers/video/fbdev/core/fbcon.c:915:3: warning: misleading
->> indentation; statement is not part of the previous 'if'
->> [-Wmisleading-indentation]
->>         return err;
->>         ^
->> ../drivers/video/fbdev/core/fbcon.c:912:2: note: previous statement is
->> here
->>         if (!search_fb_in_map(info_idx))
->>         ^
->> 1 warning generated.
->>
->> This warning occurs because there is a space before the tab on this
->> line. This happens on several lines in this function; normalize them
->> so that the indentation is consistent with the Linux kernel coding
->> style and clang no longer warns.
->>
->> This warning was introduced before the beginning of git history so no
->> fixes tab.
->>
->> https://github.com/ClangBuiltLinux/linux/issues/824
->> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
->=20
-> Thanks for the patch!
-> Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+On 8/27/19 1:09 PM, Peter Rosin wrote:
+> Three shall be the number thou shalt count, and the number of the
+> counting shall be three. Four shalt thou not count...
+> 
+> One! Two! Five!
+> 
+> Fixes: efb985f6b265 ("[PATCH] fbcon: Console Rotation - Add framebuffer console documentation")
+> Signed-off-by: Peter Rosin <peda@axentia.se>
 
-Patch queued for v5.6, thanks.
-=20
+Thanks, patch queued for v5.6 (also sorry for the delay).
+
 Best regards,
 --
 Bartlomiej Zolnierkiewicz
 Samsung R&D Institute Poland
 Samsung Electronics
 
->> ---
->>  drivers/video/fbdev/core/fbcon.c | 27 +++++++++++++--------------
->>  1 file changed, 13 insertions(+), 14 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
-/fbcon.c
->> index c9235a2f42f8..9d2c43e345a4 100644
->> --- a/drivers/video/fbdev/core/fbcon.c
->> +++ b/drivers/video/fbdev/core/fbcon.c
->> @@ -866,7 +866,7 @@ static int set_con2fb_map(int unit, int newidx, int =
-user)
->>         int oldidx =3D con2fb_map[unit];
->>         struct fb_info *info =3D registered_fb[newidx];
->>         struct fb_info *oldinfo =3D NULL;
->> -       int found, err =3D 0;
->> +       int found, err =3D 0;
->>
->>         WARN_CONSOLE_UNLOCKED();
->>
->> @@ -888,31 +888,30 @@ static int set_con2fb_map(int unit, int newidx, in=
-t user)
->>
->>         con2fb_map[unit] =3D newidx;
->>         if (!err && !found)
->> -               err =3D con2fb_acquire_newinfo(vc, info, unit, oldidx);
->> -
->> +               err =3D con2fb_acquire_newinfo(vc, info, unit, oldidx);
->>
->>         /*
->>          * If old fb is not mapped to any of the consoles,
->>          * fbcon should release it.
->>          */
->> -       if (!err && oldinfo && !search_fb_in_map(oldidx))
->> -               err =3D con2fb_release_oldinfo(vc, oldinfo, info, unit, =
-oldidx,
->> -                                            found);
->> +       if (!err && oldinfo && !search_fb_in_map(oldidx))
->> +               err =3D con2fb_release_oldinfo(vc, oldinfo, info, unit, =
-oldidx,
->> +                                            found);
->>
->> -       if (!err) {
->> -               int show_logo =3D (fg_console =3D 0 && !user &&
->> -                                logo_shown !=3D FBCON_LOGO_DONTSHOW);
->> +       if (!err) {
->> +               int show_logo =3D (fg_console =3D 0 && !user &&
->> +                                logo_shown !=3D FBCON_LOGO_DONTSHOW);
->>
->> -               if (!found)
->> -                       fbcon_add_cursor_timer(info);
->> -               con2fb_map_boot[unit] =3D newidx;
->> -               con2fb_init_display(vc, info, unit, show_logo);
->> +               if (!found)
->> +                       fbcon_add_cursor_timer(info);
->> +               con2fb_map_boot[unit] =3D newidx;
->> +               con2fb_init_display(vc, info, unit, show_logo);
->>         }
->>
->>         if (!search_fb_in_map(info_idx))
->>                 info_idx =3D newidx;
->>
->> -       return err;
->> +       return err;
->>  }
->>
->>  /*
->> --
->> 2.24.1
->>
->> --
->> You received this message because you are subscribed to the Google Group=
-s "Clang Built Linux" group.
->> To unsubscribe from this group and stop receiving emails from it, send a=
-n email to clang-built-linux+unsubscribe@googlegroups.com.
->> To view this discussion on the web visit https://protect2.fireeye.com/ur=
-l?k=BB9fa192-e64db737-bb9e2add-0cc47a31bee8-3ce98548f51cd7a2&u=3Dhttps://gr=
-oups.google.com/d/msgid/clang-built-linux/20191218025337.35044-1-natechance=
-llor%40gmail.com.
+> ---
+>  Documentation/fb/fbcon.rst | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
+> index ebca41785abe..65ba40255137 100644
+> --- a/Documentation/fb/fbcon.rst
+> +++ b/Documentation/fb/fbcon.rst
+> @@ -127,7 +127,7 @@ C. Boot options
+>  	is typically located on the same video card.  Thus, the consoles that
+>  	are controlled by the VGA console will be garbled.
+>  
+> -4. fbcon=rotate:<n>
+> +5. fbcon=rotate:<n>
+>  
+>  	This option changes the orientation angle of the console display. The
+>  	value 'n' accepts the following:
+> @@ -152,21 +152,21 @@ C. Boot options
+>  	Actually, the underlying fb driver is totally ignorant of console
+>  	rotation.
+>  
+> -5. fbcon=margin:<color>
+> +6. fbcon=margin:<color>
+>  
+>  	This option specifies the color of the margins. The margins are the
+>  	leftover area at the right and the bottom of the screen that are not
+>  	used by text. By default, this area will be black. The 'color' value
+>  	is an integer number that depends on the framebuffer driver being used.
+>  
+> -6. fbcon=nodefer
+> +7. fbcon=nodefer
+>  
+>  	If the kernel is compiled with deferred fbcon takeover support, normally
+>  	the framebuffer contents, left in place by the firmware/bootloader, will
+>  	be preserved until there actually is some text is output to the console.
+>  	This option causes fbcon to bind immediately to the fbdev device.
+>  
+> -7. fbcon=logo-pos:<location>
+> +8. fbcon=logo-pos:<location>
+>  
+>  	The only possible 'location' is 'center' (without quotes), and when
+>  	given, the bootup logo is moved from the default top-left corner

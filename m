@@ -1,70 +1,39 @@
-From: Chen Zhou <chenzhou10@huawei.com>
-Date: Wed, 22 Jan 2020 01:21:26 +0000
-Subject: Re: [PATCH -next] backlight: qcom-wled: fix unsigned comparison to zero
-Message-Id: <a497400e-b734-9346-5ce8-292e051f611a@huawei.com>
+From: Masahiro Yamada <masahiroy@kernel.org>
+Date: Mon, 06 Jan 2020 08:13:52 +0000
+Subject: [PATCH] fbdev: remove object duplication in Makefile
+Message-Id: <20200106081352.27730-1-masahiroy@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200120130143.35363-1-chenzhou10@huawei.com>
- <20200122003932.GA3948@builder>
-In-Reply-To: <20200122003932.GA3948@builder>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: daniel.thompson@linaro.org, kgunda@codeaurora.org, b.zolnierkie@samsung.com, jingoohan1@gmail.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, agross@kernel.org, linux-arm-msm@vger.kernel.org, lee.jones@linaro.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org
+Cc: Masahiro Yamada <masahiroy@kernel.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Bjorn,
+The objects in $(fb-objs) $(fb-y) $(fb-m) are linked to fb.ko .
 
-On 2020/1/22 8:39, Bjorn Andersson wrote:
-> On Mon 20 Jan 05:01 PST 2020, Chen Zhou wrote:
-> 
->> Fixes coccicheck warning:
->> ./drivers/video/backlight/qcom-wled.c:1104:5-15:
->> 	WARNING: Unsigned expression compared with zero: string_len > 0
->>
->> The unsigned variable string_len is assigned a return value from the call
->> to wled_configure, which may return negative error code.
->>
-> 
-> Afaict string_len is the return value of
-> of_property_count_elems_of_size(), rather than wled_configure(). (And
-> please append () to function names to make it even more obvious)
-> 
-> Except for that your patch looks good, so please update the commit
-> message and add my Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> 
-> Regards,
-> Bjorn
+This line adds $(fb-y) to fb-objs, so the objects from $(fb-y) are
+listed twice as the dependency of the module.
 
-Thanks for your review, i will fix this in next version.
+It works because Kbuild trims the duplicated objects from linking,
+but there is no good reason to have this line.
 
-Thanks,
-Chen Zhou
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+---
 
-> 
->> Fixes: 775d2ffb4af6 ("backlight: qcom-wled: Restructure the driver for WLED3")
->> Signed-off-by: Chen Zhou <chenzhou10@huawei.com>
->> ---
->>  drivers/video/backlight/qcom-wled.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
->> index d46052d..3d276b3 100644
->> --- a/drivers/video/backlight/qcom-wled.c
->> +++ b/drivers/video/backlight/qcom-wled.c
->> @@ -956,8 +956,8 @@ static int wled_configure(struct wled *wled, int version)
->>  	struct wled_config *cfg = &wled->cfg;
->>  	struct device *dev = wled->dev;
->>  	const __be32 *prop_addr;
->> -	u32 size, val, c, string_len;
->> -	int rc, i, j;
->> +	u32 size, val, c;
->> +	int rc, i, j, string_len;
->>  
->>  	const struct wled_u32_opts *u32_opts = NULL;
->>  	const struct wled_u32_opts wled3_opts[] = {
->> -- 
->> 2.7.4
->>
-> 
-> .
-> 
+ drivers/video/fbdev/core/Makefile | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+index 37710316a680..26cbc965497c 100644
+--- a/drivers/video/fbdev/core/Makefile
++++ b/drivers/video/fbdev/core/Makefile
+@@ -16,7 +16,6 @@ fb-y				  += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
+ 				     fbcon_ccw.o
+ endif
+ endif
+-fb-objs                           := $(fb-y)
+ 
+ obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
+ obj-$(CONFIG_FB_CFB_COPYAREA)  += cfbcopyarea.o
+-- 
+2.17.1

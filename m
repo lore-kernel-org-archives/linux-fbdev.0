@@ -1,35 +1,79 @@
-From: Chuhong Yuan <hslester96@gmail.com>
-Date: Thu, 05 Dec 2019 16:06:13 +0000
-Subject: [PATCH] pxa168fb: fix release function mismatch in probe failure
-Message-Id: <20191205160613.32075-1-hslester96@gmail.com>
+From: Dexuan Cui <decui@microsoft.com>
+Date: Mon, 06 Jan 2020 22:37:59 +0000
+Subject: RE: [PATCH v4] video: hyperv: hyperv_fb: Use physical memory for fb on HyperV Gen 1 VMs.
+Message-Id: <HK0P153MB0148F18913BEA45144AF8443BF3C0@HK0P153MB0148.APCP153.PROD.OUTLOOK.COM>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191209075749.3804-1-weh@microsoft.com>
+ <CY4PR21MB06293C21EC5338C98080F6AED7580@CY4PR21MB0629.namprd21.prod.outlook.com>
+In-Reply-To: <CY4PR21MB06293C21EC5338C98080F6AED7580@CY4PR21MB0629.namprd21.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: linux-fbdev@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Michael Kelley <mikelley@microsoft.com>, Wei Hu <weh@microsoft.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, KY Srinivasan <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, "sashal@kernel.org" <sashal@kernel.org>, "hch@lst.de" <hch@lst.de>, "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "mchehab+samsung@kernel.org" <mchehab+samsung@kernel.org>, "sam@ravnborg.org" <sam@ravnborg.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "info@metux.net" <info@metux.net>, "arnd@arndb.de" <arnd@arndb.de>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>
+Cc: kbuild test robot <lkp@intel.com>
 
-The driver uses kfree() to release the resource allocated by
-framebuffer_alloc(), which does not match.
-Use framebuffer_release() instead to fix it.
+> From: Michael Kelley <mikelley@microsoft.com>
+> Sent: Monday, December 9, 2019 8:33 AM
+> To: Wei Hu <weh@microsoft.com>; b.zolnierkie@samsung.com; KY
+> Srinivasan <kys@microsoft.com>; Haiyang Zhang <haiyangz@microsoft.com>;
+> Stephen Hemminger <sthemmin@microsoft.com>; sashal@kernel.org;
+> hch@lst.de; m.szyprowski@samsung.com; mchehab+samsung@kernel.org;
+> sam@ravnborg.org; gregkh@linuxfoundation.org;
+> alexandre.belloni@bootlin.com; info@metux.net; arnd@arndb.de;
+> dri-devel@lists.freedesktop.org; linux-fbdev@vger.kernel.org;
+> linux-kernel@vger.kernel.org; linux-hyperv@vger.kernel.org; Dexuan Cui
+> <decui@microsoft.com>
+> Cc: kbuild test robot <lkp@intel.com>
+> Subject: RE: [PATCH v4] video: hyperv: hyperv_fb: Use physical memory for
+> fb on HyperV Gen 1 VMs.
+> 
+> From: Wei Hu <weh@microsoft.com> Sent: Sunday, December 8, 2019 11:58
+> PM
+> >
+> > On Hyper-V, Generation 1 VMs can directly use VM's physical memory for
+> > their framebuffers. This can improve the efficiency of framebuffer and
+> > overall performance for VM. The physical memory assigned to framebuffer
+> > must be contiguous. We use CMA allocator to get contiguous physicial
+> > memory when the framebuffer size is greater than 4MB. For size under
+> > 4MB, we use alloc_pages to achieve this.
+> >
+> > To enable framebuffer memory allocation from CMA, supply a kernel
+> > parameter to give enough space to CMA allocator at boot time. For
+> > example:
+> >     cma=130m
+> > This gives 130MB memory to CAM allocator that can be allocated to
+> > framebuffer. If this fails, we fall back to the old way of using
+> > mmio for framebuffer.
+> >
+> > Reported-by: kbuild test robot <lkp@intel.com>
+> > Signed-off-by: Wei Hu <weh@microsoft.com>
+> > ---
+> >     v2: Incorporated review comments form hch@lst.de, Michael Kelley
+> and
+> >     Dexuan Cui
+> >     - Use dma_alloc_coherent to allocate large contiguous memory
+> >     - Use phys_addr_t for physical addresses
+> >     - Corrected a few spelling errors and minor cleanups
+> >     - Also tested on 32 bit Ubuntu guest
+> >     v3: Fixed a build issue reported by kbuild test robot and incorported
+> >     some review comments from Michael Kelley
+> >     - Add CMA check to avoid link failure
+> >     - Fixed small memory leak introduced by alloc_apertures
+> >     - Cleaned up so code
+> >     v4: Removed request_pages variable as it is no longer needed
+> >
+> >  drivers/video/fbdev/Kconfig     |   1 +
+> >  drivers/video/fbdev/hyperv_fb.c | 182
+> +++++++++++++++++++++++++-------
+> >  2 files changed, 144 insertions(+), 39 deletions(-)
+> >
+> 
+> Reviewed-by: Michael Kelley <mikelley@microsoft.com>
 
-Fixes: 638772c7553f ("fb: add support of LCD display controller on pxa168/910 (base layer)")
-Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
----
- drivers/video/fbdev/pxa168fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Tested-by: Dexuan Cui <decui@microsoft.com>
 
-diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
-index 1410f476e135..b9435133b6f3 100644
---- a/drivers/video/fbdev/pxa168fb.c
-+++ b/drivers/video/fbdev/pxa168fb.c
-@@ -769,7 +769,7 @@ static int pxa168fb_probe(struct platform_device *pdev)
- 	dma_free_coherent(fbi->dev, info->fix.smem_len,
- 			info->screen_base, fbi->fb_start_dma);
- failed_free_info:
--	kfree(info);
-+	framebuffer_release(info);
- 
- 	dev_err(&pdev->dev, "frame buffer device init failed with %d\n", ret);
- 	return ret;
--- 
-2.24.0
+For a Gen-1 VM running on recent Hyper-V hosts, this patch can greatly 
+reduce the CPU utilization because it avoids the slow data copy from the 
+shadow framebuffer to the MMIO framebuffer, and hence it resolves the
+"blurred screen" issue when we output a lot of characters on the text-mode
+ternimal (e.g. "dmesg").

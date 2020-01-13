@@ -1,90 +1,77 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 15 Jan 2020 16:19:04 +0000
-Subject: Re: [PATCH] video: fbdev: nvidia: clean up indentation issues and comment block
-Message-Id: <26ccc9eb-6edb-3ec6-5714-0bb470366b17@samsung.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 13 Jan 2020 12:49:30 +0000
+Subject: Re: [PATCH] fbdev: potential information leak in do_fb_ioctl()
+Message-Id: <CAK8P3a2uLm9pJtx42qDXJSdD71-dVW6+iDcRAnEB85Ajak-HLw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200113144633eucas1p191c367b401a4c984fbf593794534aa7a@eucas1p1.samsung.com>
- <20200113144627.219967-1-colin.king@canonical.com>
-In-Reply-To: <20200113144627.219967-1-colin.king@canonical.com>
+References: <20191029182320.GA17569@mwanda>
+ <CGME20191029190229epcas3p4e9b24bd8cde962681ef3dc4644ed2c2e@epcas3p4.samsung.com>
+ <87zhhjjryk.fsf@x220.int.ebiederm.org>
+ <fd4e6f01-074b-def7-7ffb-9a9197930c31@samsung.com>
+In-Reply-To: <fd4e6f01-074b-def7-7ffb-9a9197930c31@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Colin King <colin.king@canonical.com>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, security@kernel.org, Gerd Hoffmann <kraxel@redhat.com>, Kees Cook <keescook@chromium.org>, kernel-janitors@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Julia Lawall <Julia.Lawall@lip6.fr>, "Eric W. Biederman" <ebiederm@xmission.com>, Joe Perches <joe@perches.com>, Sam Ravnborg <sam@ravnborg.org>, Peter Rosin <peda@axentia.se>, Dan Carpenter <dan.carpenter@oracle.com>, Andrea Righi <righi.andrea@gmail.com>
 
+On Fri, Jan 3, 2020 at 2:09 PM Bartlomiej Zolnierkiewicz
+<b.zolnierkie@samsung.com> wrote:
+> On 10/29/19 8:02 PM, Eric W. Biederman wrote:
+> >
+> > The goal is to avoid memory that has values of the previous users of
+> > that memory region from leaking to userspace.  Which depending on who
+> > the previous user of that memory region is could tell userspace
+> > information about what the kernel is doing that it should not be allowed
+> > to find out.
+> >
+> > I tried to trace through where "info" and thus presumably "info->fix" is
+> > coming from and only made it as far as  register_framebuffer.  Given
+>
+> "info" (and thus "info->fix") comes from framebuffer_alloc() (which is
+> called by fbdev device drivers prior to registering "info" with
+> register_framebuffer()). framebuffer_alloc() does kzalloc() on "info".
+>
+> Therefore shouldn't memcpy() (as suggested by Jeo Perches) be enough?
 
-On 1/13/20 3:46 PM, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> There is a hunk of code that is incorrectly indented, clean up the
-> indentation and a comment block. Also remove block braces around a
-> one line statement on an if condition and add missing spaces after
-> if keywords.
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Is it guaranteed that all drivers call framebuffer_alloc() rather than
+open-coding it somewhere?
 
-Patch queued for v5.6, thanks.
+Here is a list of all files that call register_framebuffer() without first
+calling framebuffer_alloc:
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+$ git grep -wl register_framebuffer | xargs grep -L framebuffer_alloc
+Documentation/fb/framebuffer.rst
+drivers/media/pci/ivtv/ivtvfb.c
+drivers/media/platform/vivid/vivid-osd.c
+drivers/video/fbdev/68328fb.c
+drivers/video/fbdev/acornfb.c
+drivers/video/fbdev/amba-clcd.c
+drivers/video/fbdev/atafb.c
+drivers/video/fbdev/au1100fb.c
+drivers/video/fbdev/controlfb.c
+drivers/video/fbdev/core/fbmem.c
+drivers/video/fbdev/cyber2000fb.c
+drivers/video/fbdev/fsl-diu-fb.c
+drivers/video/fbdev/g364fb.c
+drivers/video/fbdev/goldfishfb.c
+drivers/video/fbdev/hpfb.c
+drivers/video/fbdev/macfb.c
+drivers/video/fbdev/matrox/matroxfb_base.c
+drivers/video/fbdev/matrox/matroxfb_crtc2.c
+drivers/video/fbdev/maxinefb.c
+drivers/video/fbdev/ocfb.c
+drivers/video/fbdev/pxafb.c
+drivers/video/fbdev/sa1100fb.c
+drivers/video/fbdev/stifb.c
+drivers/video/fbdev/valkyriefb.c
+drivers/video/fbdev/vermilion/vermilion.c
+drivers/video/fbdev/vt8500lcdfb.c
+drivers/video/fbdev/wm8505fb.c
+drivers/video/fbdev/xilinxfb.c
 
-> ---
->  drivers/video/fbdev/nvidia/nvidia.c | 41 ++++++++++++++---------------
->  1 file changed, 20 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
-> index c583c018304d..c24de9107958 100644
-> --- a/drivers/video/fbdev/nvidia/nvidia.c
-> +++ b/drivers/video/fbdev/nvidia/nvidia.c
-> @@ -168,27 +168,26 @@ static int nvidia_panel_tweak(struct nvidia_par *par,
->  {
->  	int tweak = 0;
->  
-> -   if (par->paneltweak) {
-> -	   tweak = par->paneltweak;
-> -   } else {
-> -	   /* begin flat panel hacks */
-> -	   /* This is unfortunate, but some chips need this register
-> -	      tweaked or else you get artifacts where adjacent pixels are
-> -	      swapped.  There are no hard rules for what to set here so all
-> -	      we can do is experiment and apply hacks. */
-> -
-> -	   if(((par->Chipset & 0xffff) = 0x0328) && (state->bpp = 32)) {
-> -		   /* At least one NV34 laptop needs this workaround. */
-> -		   tweak = -1;
-> -	   }
-> -
-> -	   if((par->Chipset & 0xfff0) = 0x0310) {
-> -		   tweak = 1;
-> -	   }
-> -	   /* end flat panel hacks */
-> -   }
-> -
-> -   return tweak;
-> +	if (par->paneltweak) {
-> +		tweak = par->paneltweak;
-> +	} else {
-> +		/* Begin flat panel hacks.
-> +		 * This is unfortunate, but some chips need this register
-> +		 * tweaked or else you get artifacts where adjacent pixels are
-> +		 * swapped.  There are no hard rules for what to set here so all
-> +		 * we can do is experiment and apply hacks.
-> +		 */
-> +		if (((par->Chipset & 0xffff) = 0x0328) && (state->bpp = 32)) {
-> +			/* At least one NV34 laptop needs this workaround. */
-> +			tweak = -1;
-> +		}
-> +
-> +		if ((par->Chipset & 0xfff0) = 0x0310)
-> +			tweak = 1;
-> +		/* end flat panel hacks */
-> +	}
-> +
-> +	return tweak;
->  }
->  
->  static void nvidia_screen_off(struct nvidia_par *par, int on)
-> 
+It's possible (even likely, the ones I looked at are fine) that they
+all correctly
+zero out the fb_info structure first, but it seems hard to guarantee, so
+Eric's suggestion would possibly still be the safer choice.
+
+      Arnd

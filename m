@@ -1,26 +1,27 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 03 Jan 2020 12:14:08 +0000
-Subject: Re: [PATCH -next] fbdev: omapfb: use devm_platform_ioremap_resource() to simplify code
-Message-Id: <3f75dae1-181f-3935-0b1d-40839392226e@samsung.com>
+Date: Wed, 15 Jan 2020 14:36:10 +0000
+Subject: Re: [PATCH][next] video: hyperv: hyperv_fb: fix indentation issue
+Message-Id: <060a65e9-1880-0356-f8f3-447cb391b4e7@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190904115507epcas1p42d4d5b2f6ee58db0ccf3b1ee27063ac1@epcas1p4.samsung.com>
- <20190904115406.23880-1-yuehaibing@huawei.com>
-In-Reply-To: <20190904115406.23880-1-yuehaibing@huawei.com>
+References: <CGME20191114172730eucas1p1206011eed67d59f39fbbcf0b9ad1bbca@eucas1p1.samsung.com>
+ <20191114172720.322023-1-colin.king@canonical.com>
+In-Reply-To: <20191114172720.322023-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: YueHaibing <yuehaibing@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, alexios.zavras@intel.com, tglx@linutronix.de, linux-omap@vger.kernel.org, allison@lohutok.net
+To: Colin King <colin.king@canonical.com>
+Cc: Sasha Levin <sashal@kernel.org>, linux-hyperv@vger.kernel.org, Stephen Hemminger <sthemmin@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, "K . Y . Srinivasan" <kys@microsoft.com>
 
 
-On 9/4/19 1:54 PM, YueHaibing wrote:
-> Use devm_platform_ioremap_resource() to simplify the code a bit.
-> This is detected by coccinelle.
+On 11/14/19 6:27 PM, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
 > 
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> There is a block of statements that are indented
+> too deeply, remove the extraneous tabs.
+> 
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
-Thanks, patch queued for v5.6 (also sorry for the delay).
+Patch queued for v5.6, thanks.
 
 Best regards,
 --
@@ -29,21 +30,22 @@ Samsung R&D Institute Poland
 Samsung Electronics
 
 > ---
->  drivers/video/fbdev/omap2/omapfb/vrfb.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+>  drivers/video/fbdev/hyperv_fb.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/video/fbdev/omap2/omapfb/vrfb.c b/drivers/video/fbdev/omap2/omapfb/vrfb.c
-> index 819e0bc..ee0dd4c 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/vrfb.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/vrfb.c
-> @@ -339,9 +339,7 @@ static int __init vrfb_probe(struct platform_device *pdev)
->  	int i;
+> diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+> index 4cd27e5172a1..5fcf4bdf85ab 100644
+> --- a/drivers/video/fbdev/hyperv_fb.c
+> +++ b/drivers/video/fbdev/hyperv_fb.c
+> @@ -582,8 +582,8 @@ static int synthvid_get_supported_resolution(struct hv_device *hdev)
+>  	t = wait_for_completion_timeout(&par->wait, VSP_TIMEOUT);
+>  	if (!t) {
+>  		pr_err("Time out on waiting resolution response\n");
+> -			ret = -ETIMEDOUT;
+> -			goto out;
+> +		ret = -ETIMEDOUT;
+> +		goto out;
+>  	}
 >  
->  	/* first resource is the register res, the rest are vrfb contexts */
-> -
-> -	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	vrfb_base = devm_ioremap_resource(&pdev->dev, mem);
-> +	vrfb_base = devm_platform_ioremap_resource(pdev, 0);
->  	if (IS_ERR(vrfb_base))
->  		return PTR_ERR(vrfb_base);
->  
+>  	if (msg->resolution_resp.resolution_count = 0) {
+> 

@@ -1,51 +1,65 @@
-From: yu kuai <yukuai3@huawei.com>
-Date: Sun, 19 Jan 2020 12:17:28 +0000
-Subject: [PATCH 2/4] video: fbdev: remove set but not used variable 'vSyncPol'
-Message-Id: <20200119121730.10701-3-yukuai3@huawei.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 15 Jan 2020 15:42:40 +0000
+Subject: Re: [PATCH] OMAP: DSS2: remove non-zero check on variable r
+Message-Id: <6a3951c7-4b17-6371-24ab-17742aeaa464@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200119121730.10701-1-yukuai3@huawei.com>
-In-Reply-To: <20200119121730.10701-1-yukuai3@huawei.com>
+References: <CGME20191204152851epcas5p413006712eafa500de3013c2ce8a3bc02@epcas5p4.samsung.com>
+ <20191204152847.1435188-1-colin.king@canonical.com>
+In-Reply-To: <20191204152847.1435188-1-colin.king@canonical.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: benh@kernel.crashing.org, b.zolnierkie@samsung.com
-Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhengbin13@huawei.com, yukuai3@huawei.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Colin King <colin.king@canonical.com>
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-omap@vger.kernel.org
 
-Fixes gcc '-Wunused-but-set-variable' warning:
 
-drivers/video/fbdev/aty/radeon_base.c: In function
-‘radeonfb_set_par’:
-drivers/video/fbdev/aty/radeon_base.c:1653:38: warning: variable
-‘vSyncPol’ set but not used [-Wunused-but-set-variable]
+On 12/4/19 4:28 PM, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+> 
+> Variable r is being initialized to zero, so the check of a non-zero
+> rv is redundant and can be removed.
+> 
+> It appears that the previous case statements set r to be -EINVAL
+> and the "Fallthrough" comment afterwards suggested it was going
+> to fall through to this non-zero check but won't because of the
+> break statement. Remove the confusion by removing the Fallthrough
+> comment too.
+> 
+> Addresses-Coverity: ("Logically dead code")
+> Fixes: b39a982ddecf ("OMAP: DSS2: omapfb driver")
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
-It is never used, and so can be removed.
-
-Signed-off-by: yu kuai <yukuai3@huawei.com>
----
- drivers/video/fbdev/aty/radeon_base.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index d2e68ec580c2..0666f848bf70 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -1650,7 +1650,7 @@ static int radeonfb_set_par(struct fb_info *info)
- 	struct fb_var_screeninfo *mode = &info->var;
- 	struct radeon_regs *newmode;
- 	int hTotal, vTotal, hSyncStart, hSyncEnd,
--	    vSyncStart, vSyncEnd, vSyncPol, cSync;
-+	    vSyncStart, vSyncEnd, cSync;
- 	u8 hsync_adj_tab[] = {0, 0x12, 9, 9, 6, 5};
- 	u8 hsync_fudge_fp[] = {2, 2, 0, 0, 5, 5};
- 	u32 sync, h_sync_pol, v_sync_pol, dotClock, pixClock;
-@@ -1730,8 +1730,6 @@ static int radeonfb_set_par(struct fb_info *info)
- 	else if (vsync_wid > 0x1f)	/* max */
- 		vsync_wid = 0x1f;
+Patch queued for v5.6, thanks.
  
--	vSyncPol = mode->sync & FB_SYNC_VERT_HIGH_ACT ? 0 : 1;
--
- 	cSync = mode->sync & FB_SYNC_COMP_HIGH_ACT ? (1 << 4) : 0;
- 
- 	format = radeon_get_dstbpp(depth);
--- 
-2.17.2
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> ---
+>  drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 4 ----
+>  1 file changed, 4 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+> index 858c2c011d19..a2a2c1b205d9 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+> @@ -1154,16 +1154,12 @@ static int _setcolreg(struct fb_info *fbi, u_int regno, u_int red, u_int green,
+>  		   r = fbdev->ctrl->setcolreg(regno, red, green, blue,
+>  		   transp, update_hw_pal);
+>  		   */
+> -		/* Fallthrough */
+>  		r = -EINVAL;
+>  		break;
+>  	case OMAPFB_COLOR_RGB565:
+>  	case OMAPFB_COLOR_RGB444:
+>  	case OMAPFB_COLOR_RGB24P:
+>  	case OMAPFB_COLOR_RGB24U:
+> -		if (r != 0)
+> -			break;
+> -
+>  		if (regno < 16) {
+>  			u32 pal;
+>  			pal = ((red >> (16 - var->red.length)) <<
+> 

@@ -1,111 +1,55 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 31 Jan 2020 21:46:57 +0000
-Subject: [PATCH 14/18] drm/i915: Add state readout for DP VSC SDP
-Message-Id: <20200131214701.1085737-15-gwan-gyeong.mun@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 15 Jan 2020 15:09:06 +0000
+Subject: Re: [PATCH] video: fbdev: arcfb: add missed free_irq
+Message-Id: <76ebce76-6f24-c4c4-f067-3989a2c41710@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
+References: <CGME20191116154430eucas1p21c738a988e3bc0c3544a388c71f4a75c@eucas1p2.samsung.com>
+ <20191116154416.19390-1-hslester96@gmail.com>
+In-Reply-To: <20191116154416.19390-1-hslester96@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Chuhong Yuan <hslester96@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Jaya Kumar <jayalk@intworks.biz>
 
-Added state readout for DP VSC SDP and enabled state validation
-for DP VSC SDP.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
----
- drivers/gpu/drm/i915/display/intel_ddi.c     |  1 +
- drivers/gpu/drm/i915/display/intel_display.c | 43 ++++++++++++++++++++
- 2 files changed, 44 insertions(+)
+On 11/16/19 4:44 PM, Chuhong Yuan wrote:
+> The driver forgets to free irq in remove which is requested in
+> probe.
+> Add the missed call to fix it.
+> 
+> Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
+> ---
+>  drivers/video/fbdev/arcfb.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+> index a48741aab240..7aed01f001a4 100644
+> --- a/drivers/video/fbdev/arcfb.c
+> +++ b/drivers/video/fbdev/arcfb.c
+> @@ -590,8 +590,11 @@ static int arcfb_probe(struct platform_device *dev)
+>  static int arcfb_remove(struct platform_device *dev)
+>  {
+>  	struct fb_info *info = platform_get_drvdata(dev);
+> +	struct arcfb_par *par = info->par;
+>  
+>  	if (info) {
+> +		if (irq)
+> +			free_irq(par->irq, info);
+>  		unregister_framebuffer(info);
 
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index a9eaf7a6bc15..64e4edefa998 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -4391,6 +4391,7 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
- 			     &pipe_config->infoframes.drm);
- 
- 	intel_read_dp_sdp(encoder, pipe_config, HDMI_PACKET_TYPE_GAMUT_METADATA);
-+	intel_read_dp_sdp(encoder, pipe_config, DP_SDP_VSC);
- }
- 
- static enum intel_output_type
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index 7d298f14799d..d13f70596a84 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -13503,6 +13503,13 @@ intel_compare_infoframe(const union hdmi_infoframe *a,
- 	return memcmp(a, b, sizeof(*a)) = 0;
- }
- 
-+static bool
-+intel_compare_dp_vsc_sdp(const struct intel_dp_vsc_sdp *a,
-+			 const struct intel_dp_vsc_sdp *b)
-+{
-+	return memcmp(a, b, sizeof(*a)) = 0;
-+}
-+
- static void
- pipe_config_infoframe_mismatch(struct drm_i915_private *dev_priv,
- 			       bool fastset, const char *name,
-@@ -13528,6 +13535,30 @@ pipe_config_infoframe_mismatch(struct drm_i915_private *dev_priv,
- 	}
- }
- 
-+static void
-+pipe_config_dp_vsc_sdp_mismatch(struct drm_i915_private *dev_priv,
-+				bool fastset, const char *name,
-+				const struct intel_dp_vsc_sdp *a,
-+				const struct intel_dp_vsc_sdp *b)
-+{
-+	if (fastset) {
-+		if (!drm_debug_enabled(DRM_UT_KMS))
-+			return;
-+
-+		DRM_DEBUG_KMS("fastset mismatch in %s dp sdp\n", name);
-+		DRM_DEBUG_KMS("expected:\n");
-+		intel_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, a);
-+		DRM_DEBUG_KMS("found:\n");
-+		intel_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, b);
-+	} else {
-+		DRM_ERROR("mismatch in %s dp sdp\n", name);
-+		DRM_ERROR("expected:\n");
-+		intel_dp_vsc_sdp_log(KERN_ERR, dev_priv->drm.dev, a);
-+		DRM_ERROR("found:\n");
-+		intel_dp_vsc_sdp_log(KERN_ERR, dev_priv->drm.dev, b);
-+	}
-+}
-+
- static void __printf(4, 5)
- pipe_config_mismatch(bool fastset, const struct intel_crtc *crtc,
- 		     const char *name, const char *format, ...)
-@@ -13729,6 +13760,17 @@ intel_pipe_config_compare(const struct intel_crtc_state *current_config,
- 	} \
- } while (0)
- 
-+#define PIPE_CONF_CHECK_DP_VSC_SDP(name) do { \
-+	if (!intel_compare_dp_vsc_sdp(&current_config->infoframes.name, \
-+				      &pipe_config->infoframes.name)) { \
-+		pipe_config_dp_vsc_sdp_mismatch(dev_priv, fastset, __stringify(name), \
-+						&current_config->infoframes.name, \
-+						&pipe_config->infoframes.name); \
-+		ret = false; \
-+	} \
-+} while (0)
-+
-+
- #define PIPE_CONF_CHECK_COLOR_LUT(name1, name2, bit_precision) do { \
- 	if (current_config->name1 != pipe_config->name1) { \
- 		pipe_config_mismatch(fastset, crtc, __stringify(name1), \
-@@ -13902,6 +13944,7 @@ intel_pipe_config_compare(const struct intel_crtc_state *current_config,
- 	PIPE_CONF_CHECK_INFOFRAME(spd);
- 	PIPE_CONF_CHECK_INFOFRAME(hdmi);
- 	PIPE_CONF_CHECK_INFOFRAME(drm);
-+	PIPE_CONF_CHECK_DP_VSC_SDP(vsc);
- 
- 	PIPE_CONF_CHECK_X(sync_mode_slaves_mask);
- 	PIPE_CONF_CHECK_I(master_transcoder);
--- 
-2.24.1
+We cannot free IRQ while framebuffer is registered (as we can
+deadlock in arcfb_ioctl()).
+
+Also it seems that ordering in the probe function is wrong
+(it should not request IRQ or initialize the hardware after
+registering framebuffer).
+
+>  		vfree((void __force *)info->screen_base);
+>  		framebuffer_release(info);
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

@@ -1,70 +1,57 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 03 Jan 2020 12:13:12 +0000
-Subject: Re: [PATCH -next] fbdev: da8xx-fb: use devm_platform_ioremap_resource() to simplify code
-Message-Id: <3c33d508-9295-1d3a-6f39-43197ad1fccf@samsung.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 16 Jan 2020 17:34:50 +0000
+Subject: [PATCH AUTOSEL 4.9 141/251] backlight: lm3630a: Return 0 on success in update_status functions
+Message-Id: <20200116173641.22137-101-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190904115137epcas2p49e26fe2b912c423caa61e97887849c15@epcas2p4.samsung.com>
- <20190904115028.25392-1-yuehaibing@huawei.com>
-In-Reply-To: <20190904115028.25392-1-yuehaibing@huawei.com>
+References: <20200116173641.22137-1-sashal@kernel.org>
+In-Reply-To: <20200116173641.22137-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: YueHaibing <yuehaibing@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, rfontana@redhat.com, mcgrof@kernel.org, tglx@linutronix.de, allison@lohutok.net
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Brian Masney <masneyb@onstation.org>
 
+From: Brian Masney <masneyb@onstation.org>
 
-On 9/4/19 1:50 PM, YueHaibing wrote:
-> Use devm_platform_ioremap_resource() to simplify the code a bit.
-> This is detected by coccinelle.
-> 
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+[ Upstream commit d3f48ec0954c6aac736ab21c34a35d7554409112 ]
 
-This has been already fixed by:
+lm3630a_bank_a_update_status() and lm3630a_bank_b_update_status()
+both return the brightness value if the brightness was successfully
+updated. Writing to these attributes via sysfs would cause a 'Bad
+address' error to be returned. These functions should return 0 on
+success, so let's change it to correct that error.
 
-commit c957c88f7be109a14294289f013b03bbe94e8af5
-Author:     Bartosz Golaszewski <bgolaszewski@baylibre.com>
-AuthorDate: Mon Jul 22 15:44:21 2019 +0200
-Commit:     Sekhar Nori <nsekhar@ti.com>
-CommitDate: Mon Aug 26 17:53:59 2019 +0530
+Fixes: 28e64a68a2ef ("backlight: lm3630: apply chip revision")
+Signed-off-by: Brian Masney <masneyb@onstation.org>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/backlight/lm3630a_bl.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-    fbdev: da8xx-fb: use devm_platform_ioremap_resource()
-    
-    Shrink the code a bit by using the new helper wrapping the calls to
-    platform_get_resource() and devm_ioremap_resource() together.
-    
-    Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-    Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-    Signed-off-by: Sekhar Nori <nsekhar@ti.com>
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  drivers/video/fbdev/da8xx-fb.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
-> index b1cf248..57518d7 100644
-> --- a/drivers/video/fbdev/da8xx-fb.c
-> +++ b/drivers/video/fbdev/da8xx-fb.c
-> @@ -1328,7 +1328,6 @@ static int fb_probe(struct platform_device *device)
->  {
->  	struct da8xx_lcdc_platform_data *fb_pdata >  						dev_get_platdata(&device->dev);
-> -	struct resource *lcdc_regs;
->  	struct lcd_ctrl_config *lcd_cfg;
->  	struct fb_videomode *lcdc_info;
->  	struct fb_info *da8xx_fb_info;
-> @@ -1346,8 +1345,7 @@ static int fb_probe(struct platform_device *device)
->  	if (lcdc_info = NULL)
->  		return -ENODEV;
->  
-> -	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
-> -	da8xx_fb_reg_base = devm_ioremap_resource(&device->dev, lcdc_regs);
-> +	da8xx_fb_reg_base = devm_platform_ioremap_resource(device, 0);
->  	if (IS_ERR(da8xx_fb_reg_base))
->  		return PTR_ERR(da8xx_fb_reg_base);
-> 
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index 60d6c2ac87aa..1771220b2437 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -200,7 +200,7 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
+ 				      LM3630A_LEDA_ENABLE, LM3630A_LEDA_ENABLE);
+ 	if (ret < 0)
+ 		goto out_i2c_err;
+-	return bl->props.brightness;
++	return 0;
+ 
+ out_i2c_err:
+ 	dev_err(pchip->dev, "i2c failed to access\n");
+@@ -277,7 +277,7 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
+ 				      LM3630A_LEDB_ENABLE, LM3630A_LEDB_ENABLE);
+ 	if (ret < 0)
+ 		goto out_i2c_err;
+-	return bl->props.brightness;
++	return 0;
+ 
+ out_i2c_err:
+ 	dev_err(pchip->dev, "i2c failed to access REG_CTRL\n");
+-- 
+2.20.1

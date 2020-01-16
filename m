@@ -1,82 +1,58 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 03 Jan 2020 11:38:15 +0000
-Subject: Re: [PATCH 1/3] video: fbdev: mmp: remove duplicated MMP_DISP dependency
-Message-Id: <633e4795-b914-e5ff-7121-7339a936e8ba@samsung.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 16 Jan 2020 17:40:38 +0000
+Subject: [PATCH AUTOSEL 4.4 041/174] fbdev: chipsfb: remove set but not used variable 'size'
+Message-Id: <20200116174251.24326-41-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190627140704eucas1p10f9aca669beb24f5359a0e86f2b6d0ba@eucas1p1.samsung.com>
- <eb28587c-4f8f-f044-1b8b-317a8d7967aa@samsung.com>
- <0534f6bf-cd94-5416-2d4a-5fc9721aa7ed@samsung.com>
-In-Reply-To: <0534f6bf-cd94-5416-2d4a-5fc9721aa7ed@samsung.com>
+References: <20200116174251.24326-1-sashal@kernel.org>
+In-Reply-To: <20200116174251.24326-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Andrzej Hajda <a.hajda@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Ellerman <mpe@ellerman.id.au>, YueHaibing <yuehaibing@huawei.com>, dri-devel@lists.freedesktop.org, Daniel Vetter <daniel.vetter@ffwll.ch>
 
+From: YueHaibing <yuehaibing@huawei.com>
 
-On 8/20/19 11:55 AM, Andrzej Hajda wrote:
-> On 27.06.2019 16:07, Bartlomiej Zolnierkiewicz wrote:
->> This dependency is already present in higher level Kconfig file
->> (drivers/video/fbdev/mmp/Kconfig).
->>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->=20
->=20
-> Reviewed-by: Andrzej Hajda <a.hajda@samsung.com>
+[ Upstream commit 8e71fa5e4d86bedfd26df85381d65d6b4c860020 ]
 
-Thanks, I've queued the patch for v5.6.
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+drivers/video/fbdev/chipsfb.c: In function 'chipsfb_pci_init':
+drivers/video/fbdev/chipsfb.c:352:22: warning:
+ variable 'size' set but not used [-Wunused-but-set-variable]
 
-> =C2=A0--
-> Regards
-> Andrzej
->=20
->=20
->> ---
->>  drivers/video/fbdev/mmp/fb/Kconfig |    4 ----
->>  drivers/video/fbdev/mmp/hw/Kconfig |    4 ----
->>  2 files changed, 8 deletions(-)
->>
->> Index: b/drivers/video/fbdev/mmp/fb/Kconfig
->> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D>> --- a/drivers/video/fbdev/mmp/fb/Kconfig
->> +++ b/drivers/video/fbdev/mmp/fb/Kconfig
->> @@ -1,6 +1,4 @@
->>  # SPDX-License-Identifier: GPL-2.0-only
->> -if MMP_DISP
->> -
->>  config MMP_FB
->>  	tristate "fb driver for Marvell MMP Display Subsystem"
->>  	depends on FB
->> @@ -10,5 +8,3 @@ config MMP_FB
->>  	default y
->>  	help
->>  		fb driver for Marvell MMP Display Subsystem
->> -
->> -endif
->> Index: b/drivers/video/fbdev/mmp/hw/Kconfig
->> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D>> --- a/drivers/video/fbdev/mmp/hw/Kconfig
->> +++ b/drivers/video/fbdev/mmp/hw/Kconfig
->> @@ -1,6 +1,4 @@
->>  # SPDX-License-Identifier: GPL-2.0-only
->> -if MMP_DISP
->> -
->>  config MMP_DISP_CONTROLLER
->>  	bool "mmp display controller hw support"
->>  	depends on CPU_PXA910 || CPU_MMP2
->> @@ -16,5 +14,3 @@ config MMP_DISP_SPI
->>  	help
->>  		Marvell MMP display hw controller spi port support
->>  		will register as a spi master for panel usage
->> -
->> -endif
->> _______________________________________________
->> dri-devel mailing list
->> dri-devel@lists.freedesktop.org
->> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+Fixes: 8c8709334cec ("[PATCH] ppc32: Remove CONFIG_PMAC_PBOOK").
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+[b.zolnierkie: minor commit summary and description fixups]
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/chipsfb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
+index 59abdc6a97f6..314b7eceb81c 100644
+--- a/drivers/video/fbdev/chipsfb.c
++++ b/drivers/video/fbdev/chipsfb.c
+@@ -350,7 +350,7 @@ static void init_chips(struct fb_info *p, unsigned long addr)
+ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
+ {
+ 	struct fb_info *p;
+-	unsigned long addr, size;
++	unsigned long addr;
+ 	unsigned short cmd;
+ 	int rc = -ENODEV;
+ 
+@@ -362,7 +362,6 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
+ 	if ((dp->resource[0].flags & IORESOURCE_MEM) = 0)
+ 		goto err_disable;
+ 	addr = pci_resource_start(dp, 0);
+-	size = pci_resource_len(dp, 0);
+ 	if (addr = 0)
+ 		goto err_disable;
+ 
+-- 
+2.20.1

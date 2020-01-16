@@ -1,14 +1,14 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 16 Jan 2020 14:54:42 +0000
+Date: Thu, 16 Jan 2020 14:56:50 +0000
 Subject: [PATCH 1/2] video: fbdev: wm8505fb: fix sparse warnings about using incorrect types
-Message-Id: <411db705-a098-27e6-8f52-acfea2735738@samsung.com>
+Message-Id: <567cba81-5fec-4d91-f711-c0bdbfe5b513@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200116145444eucas1p1b62a023ad7ea3722193c932761eb8493@eucas1p1.samsung.com>
+References: <CGME20200116145653eucas1p2222fb48dd6fe1023a4152e687ec577d5@eucas1p2.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Tony Prisk <linux@prisktech.co.nz>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
 Use ->screen_buffer instead of ->screen_base to fix sparse warnings.
 
@@ -17,6 +17,8 @@ Use ->screen_buffer instead of ->screen_base to fix sparse warnings.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
+Resend with Tony & linux-arm ML added to Cc:.
+
  drivers/video/fbdev/wm8505fb.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 

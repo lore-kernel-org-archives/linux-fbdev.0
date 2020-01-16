@@ -1,51 +1,76 @@
-From: yu kuai <yukuai3@huawei.com>
-Date: Sun, 19 Jan 2020 12:17:29 +0000
-Subject: [PATCH 3/4] video: fbdev: remove set but not used variable 'vSyncPol'
-Message-Id: <20200119121730.10701-4-yukuai3@huawei.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 16 Jan 2020 14:08:56 +0000
+Subject: [PATCH 2/6] video: fbdev: controlfb: remove obsolete module support
+Message-Id: <20200116140900.26363-3-b.zolnierkie@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200119121730.10701-1-yukuai3@huawei.com>
-In-Reply-To: <20200119121730.10701-1-yukuai3@huawei.com>
+References: <20200116140900.26363-1-b.zolnierkie@samsung.com>
+ <CGME20200116140915eucas1p1d3696cbe492d55a4e4946c7e2d13f9d2@eucas1p1.samsung.com>
+In-Reply-To: <20200116140900.26363-1-b.zolnierkie@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: benh@kernel.crashing.org, b.zolnierkie@samsung.com
-Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhengbin13@huawei.com, yukuai3@huawei.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: b.zolnierkie@samsung.com
 
-Fixes gcc '-Wunused-but-set-variable' warning:
+CONFIG_FB_CONTROL is bool, hence the Apple "control" frame buffer
+driver cannot be built as a module.
 
-drivers/video/fbdev/aty/radeon_base.c: In function
-‘radeonfb_set_par’:
-drivers/video/fbdev/aty/radeon_base.c:1653:48: warning: variable
-‘cSync’ set but not used [-Wunused-but-set-variable]
+Replace module_init() by device_initcall().
 
-It is never used, and so can be removed.
-
-Signed-off-by: yu kuai <yukuai3@huawei.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/video/fbdev/aty/radeon_base.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/video/fbdev/controlfb.c | 25 +------------------------
+ 1 file changed, 1 insertion(+), 24 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index 0666f848bf70..7d2ee889ffcd 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -1650,7 +1650,7 @@ static int radeonfb_set_par(struct fb_info *info)
- 	struct fb_var_screeninfo *mode = &info->var;
- 	struct radeon_regs *newmode;
- 	int hTotal, vTotal, hSyncStart, hSyncEnd,
--	    vSyncStart, vSyncEnd, cSync;
-+	    vSyncStart, vSyncEnd;
- 	u8 hsync_adj_tab[] = {0, 0x12, 9, 9, 6, 5};
- 	u8 hsync_fudge_fp[] = {2, 2, 0, 0, 5, 5};
- 	u32 sync, h_sync_pol, v_sync_pol, dotClock, pixClock;
-@@ -1730,8 +1730,6 @@ static int radeonfb_set_par(struct fb_info *info)
- 	else if (vsync_wid > 0x1f)	/* max */
- 		vsync_wid = 0x1f;
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index d7e53520a24c..bd0f61d8bdb5 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -31,7 +31,6 @@
+  *  more details.
+  */
  
--	cSync = mode->sync & FB_SYNC_COMP_HIGH_ACT ? (1 << 4) : 0;
+-#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+ #include <linux/string.h>
+@@ -173,28 +172,6 @@ static const struct fb_ops controlfb_ops = {
+ 
+ /********************  The functions for controlfb_ops ********************/
+ 
+-#ifdef MODULE
+-MODULE_LICENSE("GPL");
 -
- 	format = radeon_get_dstbpp(depth);
- 	bytpp = mode->bits_per_pixel >> 3;
+-int init_module(void)
+-{
+-	struct device_node *dp;
+-	int ret = -ENXIO;
+-
+-	dp = of_find_node_by_name(NULL, "control");
+-	if (dp && !control_of_init(dp))
+-		ret = 0;
+-	of_node_put(dp);
+-
+-	return ret;
+-}
+-
+-void cleanup_module(void)
+-{
+-	control_cleanup();
+-}
+-#endif
+-
+ /*
+  * Checks a var structure
+  */
+@@ -587,7 +564,7 @@ static int __init control_init(void)
+ 	return ret;
+ }
  
+-module_init(control_init);
++device_initcall(control_init);
+ 
+ /* Work out which banks of VRAM we have installed. */
+ /* danj: I guess the card just ignores writes to nonexistant VRAM... */
 -- 
-2.17.2
+2.24.1

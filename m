@@ -1,52 +1,34 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 15 Jan 2020 16:15:49 +0000
-Subject: Re: [PATCH] fbdev: remove object duplication in Makefile
-Message-Id: <a5baddef-59d6-28f6-f882-90d8957089aa@samsung.com>
+Date: Thu, 16 Jan 2020 14:54:42 +0000
+Subject: [PATCH 1/2] video: fbdev: wm8505fb: fix sparse warnings about using incorrect types
+Message-Id: <411db705-a098-27e6-8f52-acfea2735738@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200106081436epcas5p3dc6a4023510ef179e9ce94a056c75fb8@epcas5p3.samsung.com>
- <20200106081352.27730-1-masahiroy@kernel.org>
-In-Reply-To: <20200106081352.27730-1-masahiroy@kernel.org>
+References: <CGME20200116145444eucas1p1b62a023ad7ea3722193c932761eb8493@eucas1p1.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Masahiro Yamada <masahiroy@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
+Use ->screen_buffer instead of ->screen_base to fix sparse warnings.
 
-On 1/6/20 9:13 AM, Masahiro Yamada wrote:
-> The objects in $(fb-objs) $(fb-y) $(fb-m) are linked to fb.ko .
-> 
-> This line adds $(fb-y) to fb-objs, so the objects from $(fb-y) are
-> listed twice as the dependency of the module.
-> 
-> It works because Kbuild trims the duplicated objects from linking,
-> but there is no good reason to have this line.
-> 
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+[ Please see commit 17a7b0b4d974 ("fb.h: Provide alternate screen_base
+  pointer") for details. ]
 
-Patch queued for v5.6, thanks.
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/fbdev/wm8505fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
-> 
->  drivers/video/fbdev/core/Makefile | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
-> index 37710316a680..26cbc965497c 100644
-> --- a/drivers/video/fbdev/core/Makefile
-> +++ b/drivers/video/fbdev/core/Makefile
-> @@ -16,7 +16,6 @@ fb-y				  += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
->  				     fbcon_ccw.o
->  endif
->  endif
-> -fb-objs                           := $(fb-y)
->  
->  obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
->  obj-$(CONFIG_FB_CFB_COPYAREA)  += cfbcopyarea.o
-> 
+Index: b/drivers/video/fbdev/wm8505fb.c
+=================================--- a/drivers/video/fbdev/wm8505fb.c
++++ b/drivers/video/fbdev/wm8505fb.c
+@@ -339,7 +339,7 @@ static int wm8505fb_probe(struct platfor
+ 
+ 	fbi->fb.fix.smem_start		= fb_mem_phys;
+ 	fbi->fb.fix.smem_len		= fb_mem_len;
+-	fbi->fb.screen_base		= fb_mem_virt;
++	fbi->fb.screen_buffer		= fb_mem_virt;
+ 	fbi->fb.screen_size		= fb_mem_len;
+ 
+ 	fbi->contrast = 0x10;

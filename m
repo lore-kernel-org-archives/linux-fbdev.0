@@ -1,50 +1,43 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 15 Jan 2020 16:04:08 +0000
-Subject: Re: [PATCH 07/16] video: sa1100fb: constify copied structure
-Message-Id: <84714bc2-1c5b-7428-a8ae-102f43605f67@samsung.com>
+Date: Thu, 16 Jan 2020 14:51:15 +0000
+Subject: [PATCH 1/2] video: fbdev: sh_mobile_lcdcfb: fix sparse warnings about using incorrect types
+Message-Id: <c687dbc5-cf5a-9508-2a61-e757a1a14568@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1577864614-5543-1-git-send-email-Julia.Lawall@inria.fr>
- <CGME20200101082012epcas5p2b0169522e476fa40aba6bbdd569ca0f0@epcas5p2.samsung.com>
- <1577864614-5543-8-git-send-email-Julia.Lawall@inria.fr>
-In-Reply-To: <1577864614-5543-8-git-send-email-Julia.Lawall@inria.fr>
+References: <CGME20200116145116eucas1p2d512db3f05f01d87bc9039af5bf70af3@eucas1p2.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Julia Lawall <Julia.Lawall@inria.fr>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
+Use ->screen_buffer instead of ->screen_base to fix sparse warnings.
 
-On 1/1/20 8:43 AM, Julia Lawall wrote:
-> The monspecs structure is only copied into another structure,
-> so make it const.
-> 
-> The opportunity for this change was found using Coccinelle.
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+[ Please see commit 17a7b0b4d974 ("fb.h: Provide alternate screen_base
+  pointer") for details. ]
 
-Patch queued for v5.6, thanks.
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/fbdev/sh_mobile_lcdcfb.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+=================================--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -1572,7 +1572,7 @@ sh_mobile_lcdc_overlay_fb_init(struct sh
+ 	info->flags = FBINFO_FLAG_DEFAULT;
+ 	info->fbops = &sh_mobile_lcdc_overlay_ops;
+ 	info->device = priv->dev;
+-	info->screen_base = ovl->fb_mem;
++	info->screen_buffer = ovl->fb_mem;
+ 	info->par = ovl;
  
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  drivers/video/fbdev/sa1100fb.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-> index 4680cc3efb81..c77b43dbc256 100644
-> --- a/drivers/video/fbdev/sa1100fb.c
-> +++ b/drivers/video/fbdev/sa1100fb.c
-> @@ -1053,7 +1053,7 @@ static int sa1100fb_map_video_memory(struct sa1100fb_info *fbi)
->  }
->  
->  /* Fake monspecs to fill in fbinfo structure */
-> -static struct fb_monspecs monspecs = {
-> +static const struct fb_monspecs monspecs = {
->  	.hfmin	= 30000,
->  	.hfmax	= 70000,
->  	.vfmin	= 50,
-> 
+ 	/* Initialize fixed screen information. Restrict pan to 2 lines steps
+@@ -2056,7 +2056,7 @@ sh_mobile_lcdc_channel_fb_init(struct sh
+ 	info->flags = FBINFO_FLAG_DEFAULT;
+ 	info->fbops = &sh_mobile_lcdc_ops;
+ 	info->device = priv->dev;
+-	info->screen_base = ch->fb_mem;
++	info->screen_buffer = ch->fb_mem;
+ 	info->pseudo_palette = &ch->pseudo_palette;
+ 	info->par = ch;
+ 

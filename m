@@ -1,57 +1,110 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 15 Jan 2020 13:34:57 +0000
-Subject: Re: [PATCH][RESEND] video: hyperv_fb: Fix hibernation for the deferred IO feature
-Message-Id: <9fbc3d79-d825-c8be-b9fa-74cc79b30f56@samsung.com>
+Date: Thu, 16 Jan 2020 14:08:57 +0000
+Subject: [PATCH 3/6] video: fbdev: controlfb: add COMPILE_TEST support
+Message-Id: <20200116140900.26363-4-b.zolnierkie@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1578350511-130150-1-git-send-email-decui@microsoft.com>
- <CGME20200111163007eucas1p2e1a121270ec036ba444e3a363d3f7fed@eucas1p2.samsung.com>
- <20200111162957.GK1706@sasha-vm>
-In-Reply-To: <20200111162957.GK1706@sasha-vm>
+References: <20200116140900.26363-1-b.zolnierkie@samsung.com>
+ <CGME20200116140915eucas1p28dfeecf8a58cecb00262fe86fd19c4f5@eucas1p2.samsung.com>
+In-Reply-To: <20200116140900.26363-1-b.zolnierkie@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Sasha Levin <sashal@kernel.org>
-Cc: linux-hyperv@vger.kernel.org, sthemmin@microsoft.com, haiyangz@microsoft.com, Dexuan Cui <decui@microsoft.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, weh@microsoft.com, kys@microsoft.com, Alexander.Levin@microsoft.co, mikelley@microsoft.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: b.zolnierkie@samsung.com
 
+Add COMPILE_TEST support to controlfb driver for better compile
+testing coverage.
 
-On 1/11/20 5:29 PM, Sasha Levin wrote:
-> On Mon, Jan 06, 2020 at 02:41:51PM -0800, Dexuan Cui wrote:
->> fb_deferred_io_work() can access the vmbus ringbuffer by calling
->> fbdefio->deferred_io() -> synthvid_deferred_io() -> synthvid_update().
->>
->> Because the vmbus ringbuffer is inaccessible between hvfb_suspend()
->> and hvfb_resume(), we must cancel info->deferred_work before calling
->> vmbus_close() and then reschedule it after we reopen the channel
->> in hvfb_resume().
->>
->> Fixes: a4ddb11d297e ("video: hyperv: hyperv_fb: Support deferred IO for =
-Hyper-V frame buffer driver")
->> Fixes: 824946a8b6fb ("video: hyperv_fb: Add the support of hibernation")
->> Signed-off-by: Dexuan Cui <decui@microsoft.com>
->> Reviewed-by: Wei Hu <weh@microsoft.com>
->> ---
->>
->> This is a RESEND of https://protect2.fireeye.com/url?k=A9db9902-f41598d1=
--a9da124d-000babff317b-c1ee475745c278a5&u=3Dhttps://lkml.org/lkml/2019/11/2=
-0/73 .
->>
->> The only change is the addition of Wei's Review-ed-by.
->>
->> Please review.
->>
->> If it looks good, Sasha Levin, can you please pick it up via the
->> hyperv/linux.git tree, as you did last time for this driver?
->=20
-> Like with the input driver, if the relevant maintainers here are okay
-> with this type of patches going through the hyperv tree I'll be happy to
-> do it, otherwise I need an explicit ack from them on this patch.
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/fbdev/Kconfig     |  2 +-
+ drivers/video/fbdev/controlfb.c | 21 +++++++++++++++++++--
+ 2 files changed, 20 insertions(+), 3 deletions(-)
 
-Yes, I'm fine with hyperv_fb driver patches going through hyperv tree.
-
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index aa9541bf964b..91c872457863 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -472,7 +472,7 @@ config FB_OF
+ 
+ config FB_CONTROL
+ 	bool "Apple \"control\" display support"
+-	depends on (FB = y) && PPC_PMAC && PPC32
++	depends on (FB = y) && ((PPC_PMAC && PPC32) || COMPILE_TEST)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index bd0f61d8bdb5..87cd817ad4c6 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -47,12 +47,25 @@
+ #include <linux/nvram.h>
+ #include <linux/adb.h>
+ #include <linux/cuda.h>
++#ifdef CONFIG_PPC_PMAC
+ #include <asm/prom.h>
+ #include <asm/btext.h>
++#endif
+ 
+ #include "macmodes.h"
+ #include "controlfb.h"
+ 
++#ifndef CONFIG_PPC_PMAC
++#undef in_8
++#undef out_8
++#undef in_le32
++#undef out_le32
++#define in_8(addr)		0
++#define out_8(addr, val)
++#define in_le32(addr)		0
++#define out_le32(addr, val)
++#endif
++
+ struct fb_par_control {
+ 	int	vmode, cmode;
+ 	int	xres, yres;
+@@ -278,7 +291,9 @@ static int controlfb_mmap(struct fb_info *info,
+ 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 	} else {
+ 		/* framebuffer */
++#ifdef CONFIG_PPC_PMAC
+ 		vma->vm_page_prot = pgprot_cached_wthru(vma->vm_page_prot);
++#endif
+ 	}
+ 
+ 	return vm_iomap_memory(vma, start, len);
+@@ -582,13 +597,14 @@ static void __init find_vram_size(struct fb_info_control *p)
+ 
+ 	out_8(&p->frame_buffer[0x600000], 0xb3);
+ 	out_8(&p->frame_buffer[0x600001], 0x71);
++#ifdef CONFIG_PPC_PMAC
+ 	asm volatile("eieio; dcbf 0,%0" : : "r" (&p->frame_buffer[0x600000])
+ 					: "memory" );
+ 	mb();
+ 	asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0x600000])
+ 					: "memory" );
+ 	mb();
+-
++#endif
+ 	bank2 = (in_8(&p->frame_buffer[0x600000]) = 0xb3)
+ 		&& (in_8(&p->frame_buffer[0x600001]) = 0x71);
+ 
+@@ -601,13 +617,14 @@ static void __init find_vram_size(struct fb_info_control *p)
+ 
+ 	out_8(&p->frame_buffer[0], 0x5a);
+ 	out_8(&p->frame_buffer[1], 0xc7);
++#ifdef CONFIG_PPC_PMAC
+ 	asm volatile("eieio; dcbf 0,%0" : : "r" (&p->frame_buffer[0])
+ 					: "memory" );
+ 	mb();
+ 	asm volatile("eieio; dcbi 0,%0" : : "r" (&p->frame_buffer[0])
+ 					: "memory" );
+ 	mb();
+-
++#endif
+ 	bank1 = (in_8(&p->frame_buffer[0]) = 0x5a)
+ 		&& (in_8(&p->frame_buffer[1]) = 0xc7);
+ 
+-- 
+2.24.1

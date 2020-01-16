@@ -1,58 +1,32 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 03 Jan 2020 12:15:00 +0000
-Subject: Re: [PATCH -next] fbdev: s3c-fb: use devm_platform_ioremap_resource() to simplify code
-Message-Id: <908e757a-11e8-c3f0-13d2-5dc8564e5c43@samsung.com>
+Date: Thu, 16 Jan 2020 14:58:08 +0000
+Subject: [PATCH 2/2] video: fbdev: wm8505fb: add COMPILE_TEST support
+Message-Id: <900c16b3-9306-7d17-f467-0f98bc95416a@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190904115523.25068-1-yuehaibing@huawei.com>
- <CGME20190917192130epcas4p487980f3b24a63f66203a009f1e59293e@epcas4p4.samsung.com>
- <SL2P216MB0105ADD044BE3CA7B33CB6ECAA8F0@SL2P216MB0105.KORP216.PROD.OUTLOOK.COM>
-In-Reply-To: <SL2P216MB0105ADD044BE3CA7B33CB6ECAA8F0@SL2P216MB0105.KORP216.PROD.OUTLOOK.COM>
+References: <CGME20200116145810eucas1p11937b8ef56638752cb2fe501833c63fa@eucas1p1.samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Jingoo Han <jingoohan1@gmail.com>, YueHaibing <yuehaibing@huawei.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Tony Prisk <linux@prisktech.co.nz>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
+Add COMPILE_TEST support to wm8505fb driver for better compile
+testing coverage.
 
-On 9/17/19 9:21 PM, Jingoo Han wrote:
->=20
->=20
-> =EF=BB=BFOn 9/4/19, 7:57 AM, YueHaibing wrote:
->=20
->> Use devm_platform_ioremap_resource() to simplify the code a bit.
->> This is detected by coccinelle.
->>
->> Reported-by: Hulk Robot <hulkci@huawei.com>
->> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
->>
-> Acked-by: Jingoo Han <jingoohan1@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/fbdev/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks, patch queued for v5.6 (also sorry for the delay).
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
->> ---
->>  drivers/video/fbdev/s3c-fb.c | 3 +--
->>  1 file changed, 1 insertion(+), 2 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
->> index ba04d7a..43ac8d7 100644
->> --- a/drivers/video/fbdev/s3c-fb.c
->> +++ b/drivers/video/fbdev/s3c-fb.c
->> @@ -1411,8 +1411,7 @@ static int s3c_fb_probe(struct platform_device *pd=
-ev)
->> =20
->>  	pm_runtime_enable(sfb->dev);
->> =20
->> -	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
->> -	sfb->regs =3D devm_ioremap_resource(dev, res);
->> +	sfb->regs =3D devm_platform_ioremap_resource(pdev, 0);
->>  	if (IS_ERR(sfb->regs)) {
->>  		ret =3D PTR_ERR(sfb->regs);
->>  		goto err_lcd_clk;
->> --=20
->> 2.7.4
+Index: b/drivers/video/fbdev/Kconfig
+=================================--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1639,7 +1639,7 @@ config FB_VT8500
+ 
+ config FB_WM8505
+ 	bool "Wondermedia WM8xxx-series frame buffer support"
+-	depends on (FB = y) && ARM && ARCH_VT8500
++	depends on (FB = y) && HAS_IOMEM && (ARCH_VT8500 || COMPILE_TEST)
+ 	select FB_SYS_FILLRECT if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_COPYAREA if (!FB_WMT_GE_ROPS)
+ 	select FB_SYS_IMAGEBLIT

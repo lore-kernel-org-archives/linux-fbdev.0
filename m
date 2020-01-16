@@ -1,76 +1,93 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 16 Jan 2020 14:08:56 +0000
-Subject: [PATCH 2/6] video: fbdev: controlfb: remove obsolete module support
-Message-Id: <20200116140900.26363-3-b.zolnierkie@samsung.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 16 Jan 2020 17:01:16 +0000
+Subject: [PATCH AUTOSEL 4.19 438/671] backlight: pwm_bl: Fix heuristic to determine number of brightness leve
+Message-Id: <20200116170509.12787-175-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200116140900.26363-1-b.zolnierkie@samsung.com>
- <CGME20200116140915eucas1p1d3696cbe492d55a4e4946c7e2d13f9d2@eucas1p1.samsung.com>
-In-Reply-To: <20200116140900.26363-1-b.zolnierkie@samsung.com>
+References: <20200116170509.12787-1-sashal@kernel.org>
+In-Reply-To: <20200116170509.12787-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: b.zolnierkie@samsung.com
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Matthias Kaehlcke <mka@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>
 
-CONFIG_FB_CONTROL is bool, hence the Apple "control" frame buffer
-driver cannot be built as a module.
+From: Matthias Kaehlcke <mka@chromium.org>
 
-Replace module_init() by device_initcall().
+[ Upstream commit 73fbfc499448455f1e1c77717040e09e25f1d976 ]
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+With commit 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of
+LED linearly to human eye") the number of set bits (aka hweight())
+in the PWM period is used in the heuristic to determine the number
+of brightness levels, when the brightness table isn't specified in
+the DT. The number of set bits doesn't provide a reliable clue about
+the length of the period, instead change the heuristic to:
+
+ nlevels = period / fls(period)
+
+Also limit the maximum number of brightness levels to 4096 to avoid
+excessively large tables.
+
+With this the number of levels increases monotonically with the PWM
+period, until the maximum of 4096 levels is reached:
+
+period (ns)    # levels
+
+100    	       16
+500	       62
+1000	       111
+5000	       416
+10000	       769
+50000	       3333
+100000	       4096
+
+Fixes: 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Tested-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/controlfb.c | 25 +------------------------
- 1 file changed, 1 insertion(+), 24 deletions(-)
+ drivers/video/backlight/pwm_bl.c | 24 ++++++------------------
+ 1 file changed, 6 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
-index d7e53520a24c..bd0f61d8bdb5 100644
---- a/drivers/video/fbdev/controlfb.c
-+++ b/drivers/video/fbdev/controlfb.c
-@@ -31,7 +31,6 @@
-  *  more details.
-  */
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 7ddc0930e98c..3a3098d4873b 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -199,29 +199,17 @@ int pwm_backlight_brightness_default(struct device *dev,
+ 				     struct platform_pwm_backlight_data *data,
+ 				     unsigned int period)
+ {
+-	unsigned int counter = 0;
+-	unsigned int i, n;
++	unsigned int i;
+ 	u64 retval;
  
--#include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/string.h>
-@@ -173,28 +172,6 @@ static const struct fb_ops controlfb_ops = {
+ 	/*
+-	 * Count the number of bits needed to represent the period number. The
+-	 * number of bits is used to calculate the number of levels used for the
+-	 * brightness-levels table, the purpose of this calculation is have a
+-	 * pre-computed table with enough levels to get linear brightness
+-	 * perception. The period is divided by the number of bits so for a
+-	 * 8-bit PWM we have 255 / 8 = 32 brightness levels or for a 16-bit PWM
+-	 * we have 65535 / 16 = 4096 brightness levels.
+-	 *
+-	 * Note that this method is based on empirical testing on different
+-	 * devices with PWM of 8 and 16 bits of resolution.
++	 * Once we have 4096 levels there's little point going much higher...
++	 * neither interactive sliders nor animation benefits from having
++	 * more values in the table.
+ 	 */
+-	n = period;
+-	while (n) {
+-		counter += n % 2;
+-		n >>= 1;
+-	}
++	data->max_brightness +		min((int)DIV_ROUND_UP(period, fls(period)), 4096);
  
- /********************  The functions for controlfb_ops ********************/
- 
--#ifdef MODULE
--MODULE_LICENSE("GPL");
--
--int init_module(void)
--{
--	struct device_node *dp;
--	int ret = -ENXIO;
--
--	dp = of_find_node_by_name(NULL, "control");
--	if (dp && !control_of_init(dp))
--		ret = 0;
--	of_node_put(dp);
--
--	return ret;
--}
--
--void cleanup_module(void)
--{
--	control_cleanup();
--}
--#endif
--
- /*
-  * Checks a var structure
-  */
-@@ -587,7 +564,7 @@ static int __init control_init(void)
- 	return ret;
- }
- 
--module_init(control_init);
-+device_initcall(control_init);
- 
- /* Work out which banks of VRAM we have installed. */
- /* danj: I guess the card just ignores writes to nonexistant VRAM... */
+-	data->max_brightness = DIV_ROUND_UP(period, counter);
+ 	data->levels = devm_kcalloc(dev, data->max_brightness,
+ 				    sizeof(*data->levels), GFP_KERNEL);
+ 	if (!data->levels)
 -- 
-2.24.1
+2.20.1

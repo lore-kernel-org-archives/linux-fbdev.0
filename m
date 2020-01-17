@@ -1,33 +1,33 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 16 Jan 2020 14:51:57 +0000
-Subject: [PATCH 2/2] video: fbdev: sh_mobile_lcdcfb: add COMPILE_TEST support
-Message-Id: <d98fea18-b72e-6d0f-33ac-1421738bd12b@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 17 Jan 2020 14:08:34 +0000
+Subject: Re: [PATCH 2/2] video: fbdev: sh_mobile_lcdcfb: add COMPILE_TEST support
+Message-Id: <CAMuHMdVxesjdmL7asPwOP2xoS6quLs4-onT80afi7ui2GSZ-tg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CGME20200116145157eucas1p2401abc6b00654d767e872edbd0338957@eucas1p2.samsung.com>
+ <d98fea18-b72e-6d0f-33ac-1421738bd12b@samsung.com>
+In-Reply-To: <d98fea18-b72e-6d0f-33ac-1421738bd12b@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>
 
-Add COMPILE_TEST support to sh_mobile_lcdcfb driver for better compile
-testing coverage.
+On Thu, Jan 16, 2020 at 3:52 PM Bartlomiej Zolnierkiewicz
+<b.zolnierkie@samsung.com> wrote:
+> Add COMPILE_TEST support to sh_mobile_lcdcfb driver for better compile
+> testing coverage.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- drivers/video/fbdev/Kconfig |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Index: b/drivers/video/fbdev/Kconfig
-=================================--- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1844,7 +1844,8 @@ config FB_W100
- 
- config FB_SH_MOBILE_LCDC
- 	tristate "SuperH Mobile LCDC framebuffer support"
--	depends on FB && (SUPERH || ARCH_RENESAS) && HAVE_CLK
-+	depends on FB && HAVE_CLK && HAS_IOMEM
-+	depends on SUPERH || ARCH_RENESAS || COMPILE_TEST
- 	select FB_SYS_FILLRECT
- 	select FB_SYS_COPYAREA
- 	select FB_SYS_IMAGEBLIT
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -1,55 +1,51 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 15 Jan 2020 15:09:06 +0000
-Subject: Re: [PATCH] video: fbdev: arcfb: add missed free_irq
-Message-Id: <76ebce76-6f24-c4c4-f067-3989a2c41710@samsung.com>
+From: yu kuai <yukuai3@huawei.com>
+Date: Sun, 19 Jan 2020 12:17:28 +0000
+Subject: [PATCH 2/4] video: fbdev: remove set but not used variable 'vSyncPol'
+Message-Id: <20200119121730.10701-3-yukuai3@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20191116154430eucas1p21c738a988e3bc0c3544a388c71f4a75c@eucas1p2.samsung.com>
- <20191116154416.19390-1-hslester96@gmail.com>
-In-Reply-To: <20191116154416.19390-1-hslester96@gmail.com>
+References: <20200119121730.10701-1-yukuai3@huawei.com>
+In-Reply-To: <20200119121730.10701-1-yukuai3@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Chuhong Yuan <hslester96@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Jaya Kumar <jayalk@intworks.biz>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: benh@kernel.crashing.org, b.zolnierkie@samsung.com
+Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhengbin13@huawei.com, yukuai3@huawei.com
 
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-On 11/16/19 4:44 PM, Chuhong Yuan wrote:
-> The driver forgets to free irq in remove which is requested in
-> probe.
-> Add the missed call to fix it.
-> 
-> Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
-> ---
->  drivers/video/fbdev/arcfb.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
-> index a48741aab240..7aed01f001a4 100644
-> --- a/drivers/video/fbdev/arcfb.c
-> +++ b/drivers/video/fbdev/arcfb.c
-> @@ -590,8 +590,11 @@ static int arcfb_probe(struct platform_device *dev)
->  static int arcfb_remove(struct platform_device *dev)
->  {
->  	struct fb_info *info = platform_get_drvdata(dev);
-> +	struct arcfb_par *par = info->par;
->  
->  	if (info) {
-> +		if (irq)
-> +			free_irq(par->irq, info);
->  		unregister_framebuffer(info);
+drivers/video/fbdev/aty/radeon_base.c: In function
+‘radeonfb_set_par’:
+drivers/video/fbdev/aty/radeon_base.c:1653:38: warning: variable
+‘vSyncPol’ set but not used [-Wunused-but-set-variable]
 
-We cannot free IRQ while framebuffer is registered (as we can
-deadlock in arcfb_ioctl()).
+It is never used, and so can be removed.
 
-Also it seems that ordering in the probe function is wrong
-(it should not request IRQ or initialize the hardware after
-registering framebuffer).
+Signed-off-by: yu kuai <yukuai3@huawei.com>
+---
+ drivers/video/fbdev/aty/radeon_base.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
->  		vfree((void __force *)info->screen_base);
->  		framebuffer_release(info);
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index d2e68ec580c2..0666f848bf70 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -1650,7 +1650,7 @@ static int radeonfb_set_par(struct fb_info *info)
+ 	struct fb_var_screeninfo *mode = &info->var;
+ 	struct radeon_regs *newmode;
+ 	int hTotal, vTotal, hSyncStart, hSyncEnd,
+-	    vSyncStart, vSyncEnd, vSyncPol, cSync;
++	    vSyncStart, vSyncEnd, cSync;
+ 	u8 hsync_adj_tab[] = {0, 0x12, 9, 9, 6, 5};
+ 	u8 hsync_fudge_fp[] = {2, 2, 0, 0, 5, 5};
+ 	u32 sync, h_sync_pol, v_sync_pol, dotClock, pixClock;
+@@ -1730,8 +1730,6 @@ static int radeonfb_set_par(struct fb_info *info)
+ 	else if (vsync_wid > 0x1f)	/* max */
+ 		vsync_wid = 0x1f;
+ 
+-	vSyncPol = mode->sync & FB_SYNC_VERT_HIGH_ACT ? 0 : 1;
+-
+ 	cSync = mode->sync & FB_SYNC_COMP_HIGH_ACT ? (1 << 4) : 0;
+ 
+ 	format = radeon_get_dstbpp(depth);
+-- 
+2.17.2

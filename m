@@ -1,116 +1,50 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 31 Jan 2020 21:47:00 +0000
-Subject: [PATCH 17/18] drm/i915/dp: Add compute routine for DP PSR VSC SDP
-Message-Id: <20200131214701.1085737-18-gwan-gyeong.mun@intel.com>
+From: yu kuai <yukuai3@huawei.com>
+Date: Sun, 19 Jan 2020 12:17:27 +0000
+Subject: [PATCH 1/4] video: fbdev: remove set but not used variable 'hSyncPol'
+Message-Id: <20200119121730.10701-2-yukuai3@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
+References: <20200119121730.10701-1-yukuai3@huawei.com>
+In-Reply-To: <20200119121730.10701-1-yukuai3@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: benh@kernel.crashing.org, b.zolnierkie@samsung.com
+Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhengbin13@huawei.com, yukuai3@huawei.com
 
-In order to use a common VSC SDP Colorimetry calculating code on PSR,
-it adds a compute routine for PSR VSC SDP.
-As PSR routine can not use infoframes.vsc of crtc state, it also adds new
-writing of DP SDPs (Secondary Data Packet) for PSR.
-PSR routine has its own scenario and timings of writing a VSC SDP.
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+drivers/video/fbdev/aty/radeon_base.c: In function
+‘radeonfb_set_par’:
+drivers/video/fbdev/aty/radeon_base.c:1653:6: warning: variable
+‘hSyncPol’ set but not used [-Wunused-but-set-variable]
+
+It is never used, and so can be removed.
+
+Signed-off-by: yu kuai <yukuai3@huawei.com>
 ---
- drivers/gpu/drm/i915/display/intel_dp.c | 53 +++++++++++++++++++++++++
- drivers/gpu/drm/i915/display/intel_dp.h |  7 ++++
- 2 files changed, 60 insertions(+)
+ drivers/video/fbdev/aty/radeon_base.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
-index e8cf12d14dc3..3571e959cdcc 100644
---- a/drivers/gpu/drm/i915/display/intel_dp.c
-+++ b/drivers/gpu/drm/i915/display/intel_dp.c
-@@ -2463,6 +2463,42 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
- 					 &crtc_state->infoframes.vsc);
- }
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 3af00e3b965e..d2e68ec580c2 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -1650,7 +1650,7 @@ static int radeonfb_set_par(struct fb_info *info)
+ 	struct fb_var_screeninfo *mode = &info->var;
+ 	struct radeon_regs *newmode;
+ 	int hTotal, vTotal, hSyncStart, hSyncEnd,
+-	    hSyncPol, vSyncStart, vSyncEnd, vSyncPol, cSync;
++	    vSyncStart, vSyncEnd, vSyncPol, cSync;
+ 	u8 hsync_adj_tab[] = {0, 0x12, 9, 9, 6, 5};
+ 	u8 hsync_fudge_fp[] = {2, 2, 0, 0, 5, 5};
+ 	u32 sync, h_sync_pol, v_sync_pol, dotClock, pixClock;
+@@ -1730,7 +1730,6 @@ static int radeonfb_set_par(struct fb_info *info)
+ 	else if (vsync_wid > 0x1f)	/* max */
+ 		vsync_wid = 0x1f;
  
-+void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
-+				  const struct intel_crtc_state *crtc_state,
-+				  const struct drm_connector_state *conn_state,
-+				  struct intel_dp_vsc_sdp *vsc)
-+{
-+	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
-+
-+	vsc->sdp_type = DP_SDP_VSC;
-+
-+	if (dev_priv->psr.psr2_enabled) {
-+		if (dev_priv->psr.colorimetry_support &&
-+		    intel_dp_needs_vsc_sdp(crtc_state, conn_state)) {
-+			/* [PSR2, +Colorimetry] */
-+			intel_dp_compute_vsc_colorimetry(crtc_state, conn_state,
-+							 vsc);
-+		} else {
-+			/*
-+			 * [PSR2, -Colorimetry]
-+			 * Prepare VSC Header for SU as per eDP 1.4 spec, Table 6-11
-+			 * 3D stereo + PSR/PSR2 + Y-coordinate.
-+			 */
-+			vsc->revision = 0x4;
-+			vsc->length = 0xe;
-+		}
-+	} else {
-+		/*
-+		 * [PSR1]
-+		 * Prepare VSC Header for SU as per DP 1.4 spec, Table 2-118
-+		 * VSC SDP supporting 3D stereo + PSR (applies to eDP v1.3 or
-+		 * higher).
-+		 */
-+		vsc->revision = 0x2;
-+		vsc->length = 0x8;
-+	}
-+}
-+
- static void
- intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_crtc_state *crtc_state,
- 					    const struct drm_connector_state *conn_state)
-@@ -4888,6 +4924,23 @@ static void intel_write_dp_sdp(struct intel_encoder *encoder,
- 	intel_dig_port->write_infoframe(encoder, crtc_state, type, &sdp, len);
- }
+-	hSyncPol = mode->sync & FB_SYNC_HOR_HIGH_ACT ? 0 : 1;
+ 	vSyncPol = mode->sync & FB_SYNC_VERT_HIGH_ACT ? 0 : 1;
  
-+void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
-+			    const struct intel_crtc_state *crtc_state,
-+			    struct intel_dp_vsc_sdp *vsc)
-+{
-+	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
-+	struct dp_sdp sdp = {};
-+	ssize_t len;
-+
-+	len = intel_dp_vsc_sdp_pack(vsc, &sdp, sizeof(sdp));
-+
-+	if (WARN_ON(len < 0))
-+		return;
-+
-+	intel_dig_port->write_infoframe(encoder, crtc_state, DP_SDP_VSC,
-+					&sdp, len);
-+}
-+
- void intel_dp_set_infoframes(struct intel_encoder *encoder,
- 			     bool enable,
- 			     const struct intel_crtc_state *crtc_state,
-diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915/display/intel_dp.h
-index 6d8003eb59f6..fb63e9a2ee78 100644
---- a/drivers/gpu/drm/i915/display/intel_dp.h
-+++ b/drivers/gpu/drm/i915/display/intel_dp.h
-@@ -112,6 +112,13 @@ int intel_dp_link_required(int pixel_clock, int bpp);
- int intel_dp_max_data_rate(int max_link_clock, int max_lanes);
- bool intel_dp_needs_vsc_sdp(const struct intel_crtc_state *crtc_state,
- 			    const struct drm_connector_state *conn_state);
-+void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
-+				  const struct intel_crtc_state *crtc_state,
-+				  const struct drm_connector_state *conn_state,
-+				  struct intel_dp_vsc_sdp *vsc);
-+void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
-+			    const struct intel_crtc_state *crtc_state,
-+			    struct intel_dp_vsc_sdp *vsc);
- void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
- 			     const struct intel_crtc_state *crtc_state,
- 			     const struct drm_connector_state *conn_state);
+ 	cSync = mode->sync & FB_SYNC_COMP_HIGH_ACT ? (1 << 4) : 0;
 -- 
-2.24.1
+2.17.2

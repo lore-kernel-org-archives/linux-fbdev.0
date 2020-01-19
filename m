@@ -1,8 +1,10 @@
 From: yu kuai <yukuai3@huawei.com>
-Date: Sun, 19 Jan 2020 12:19:45 +0000
-Subject: [PATCH] video: remove set but not used variable 'ulScaleRight'
-Message-Id: <20200119121945.12517-1-yukuai3@huawei.com>
+Date: Sun, 19 Jan 2020 12:20:38 +0000
+Subject: [PATCH] video: remove set but not used variable 'mach64RefFreq'
+Message-Id: <20200119122038.13425-1-yukuai3@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200119121945.12517-1-yukuai3@huawei.com>
+In-Reply-To: <20200119121945.12517-1-yukuai3@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -11,38 +13,35 @@ Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.o
 
 Fixes gcc '-Wunused-but-set-variable' warning:
 
-drivers/video/fbdev/kyro/STG4000OverlayDevice.c: In function
-‘SetOverlayViewPort’:
-drivers/video/fbdev/kyro/STG4000OverlayDevice.c:334:19: warning:
-variable ‘ulScaleRight’ set but not used [-Wunused-but-set-variable]
+drivers/video/fbdev/aty/mach64_gx.c: In function ‘aty_var_to_pll_8398’:
+drivers/video/fbdev/aty/mach64_gx.c:621:36: warning: variable
+‘mach64RefFreq’ set but not used [-Wunused-but-set-variable]
 
 It is never used, and so can be removed.
 
 Signed-off-by: yu kuai <yukuai3@huawei.com>
 ---
- drivers/video/fbdev/kyro/STG4000OverlayDevice.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/aty/mach64_gx.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/kyro/STG4000OverlayDevice.c b/drivers/video/fbdev/kyro/STG4000OverlayDevice.c
-index 0aeeaa10708b..9fde0e3b69ec 100644
---- a/drivers/video/fbdev/kyro/STG4000OverlayDevice.c
-+++ b/drivers/video/fbdev/kyro/STG4000OverlayDevice.c
-@@ -331,7 +331,7 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
- 	u32 ulScale;
- 	u32 ulLeft, ulRight;
- 	u32 ulSrcLeft, ulSrcRight;
--	u32 ulScaleLeft, ulScaleRight;
-+	u32 ulScaleLeft;
- 	u32 ulhDecim;
- 	u32 ulsVal;
- 	u32 ulVertDecFactor;
-@@ -470,7 +470,6 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
- 		 * round down the pixel pos to the nearest 8 pixels.
- 		 */
- 		ulScaleLeft = ulSrcLeft;
--		ulScaleRight = ulSrcRight;
+diff --git a/drivers/video/fbdev/aty/mach64_gx.c b/drivers/video/fbdev/aty/mach64_gx.c
+index 27cb65fa2ba2..1b71a5aa2baa 100644
+--- a/drivers/video/fbdev/aty/mach64_gx.c
++++ b/drivers/video/fbdev/aty/mach64_gx.c
+@@ -618,14 +618,12 @@ static int aty_var_to_pll_8398(const struct fb_info *info, u32 vclk_per,
+ 	u32 mhz100;		/* in 0.01 MHz */
+ 	u32 program_bits;
+ 	/* u32 post_divider; */
+-	u32 mach64MinFreq, mach64MaxFreq, mach64RefFreq;
+ 	u16 m, n, k = 0, save_m, save_n, twoToKth;
  
- 		/* shift fxscale until it is in the range of the scaler */
- 		ulhDecim = 0;
+ 	/* Calculate the programming word */
+ 	mhz100 = 100000000 / vclk_per;
+ 	mach64MinFreq = MIN_FREQ_2595;
+ 	mach64MaxFreq = MAX_FREQ_2595;
+-	mach64RefFreq = REF_FREQ_2595;	/* 14.32 MHz */
+ 
+ 	save_m = 0;
+ 	save_n = 0;
 -- 
 2.17.2

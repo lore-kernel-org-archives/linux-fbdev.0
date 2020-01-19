@@ -1,78 +1,51 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 03 Jan 2020 12:00:23 +0000
-Subject: Re: [PATCH] pxa168fb: Fix the function used to release some memory in an error handling path
-Message-Id: <1700b70d-7766-bd6b-10ad-149c73e3998e@samsung.com>
+From: yu kuai <yukuai3@huawei.com>
+Date: Sun, 19 Jan 2020 12:17:29 +0000
+Subject: [PATCH 3/4] video: fbdev: remove set but not used variable 'vSyncPol'
+Message-Id: <20200119121730.10701-4-yukuai3@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190831100024.3248-1-christophe.jaillet@wanadoo.fr>
- <CGME20190902091106epcas2p3519910dfea9c3515cdbe08263a1bcada@epcas2p3.samsung.com>
- <ca0213fd439a2b569e0d3bdb000712ee62ff4836.camel@v3.sk>
-In-Reply-To: <ca0213fd439a2b569e0d3bdb000712ee62ff4836.camel@v3.sk>
+References: <20200119121730.10701-1-yukuai3@huawei.com>
+In-Reply-To: <20200119121730.10701-1-yukuai3@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lubomir Rintel <lkundrak@v3.sk>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, yuehaibing@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: benh@kernel.crashing.org, b.zolnierkie@samsung.com
+Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhengbin13@huawei.com, yukuai3@huawei.com
 
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-On 9/2/19 11:10 AM, Lubomir Rintel wrote:
-> On Sat, 2019-08-31 at 12:00 +0200, Christophe JAILLET wrote:
->> In the probe function, some resources are allocated using 'dma_alloc_wc()',
->> they should be released with 'dma_free_wc()', not 'dma_free_coherent()'.
->>
->> We already use 'dma_free_wc()' in the remove function, but not in the
->> error handling path of the probe function.
->>
->> Also, remove a useless 'PAGE_ALIGN()'. 'info->fix.smem_len' is already
->> PAGE_ALIGNed.
->>
->> Fixes: 638772c7553f ("fb: add support of LCD display controller on pxa168/910 (base layer)")
->> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> 
-> Reviewed-by: Lubomir Rintel <lkundrak@v3.sk>
+drivers/video/fbdev/aty/radeon_base.c: In function
+‘radeonfb_set_par’:
+drivers/video/fbdev/aty/radeon_base.c:1653:48: warning: variable
+‘cSync’ set but not used [-Wunused-but-set-variable]
 
-Thanks, patch queued for v5.6 (also sorry for the delay).
+It is never used, and so can be removed.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: yu kuai <yukuai3@huawei.com>
+---
+ drivers/video/fbdev/aty/radeon_base.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-> Thanks,
-> Lubo
-> 
->> ---
->> The change about PAGE_ALIGN should probably be part of a separate commit.
->> However, git history for this driver is really quiet. If you think it
->> REALLY deserves a separate patch, either split it by yourself or axe this
->> part of the patch. I won't bother resubmitting for this lonely cleanup.
->> Hoping for your understanding.
->> ---
->>  drivers/video/fbdev/pxa168fb.c | 6 +++---
->>  1 file changed, 3 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
->> index 1410f476e135..1fc50fc0694b 100644
->> --- a/drivers/video/fbdev/pxa168fb.c
->> +++ b/drivers/video/fbdev/pxa168fb.c
->> @@ -766,8 +766,8 @@ static int pxa168fb_probe(struct platform_device *pdev)
->>  failed_free_clk:
->>  	clk_disable_unprepare(fbi->clk);
->>  failed_free_fbmem:
->> -	dma_free_coherent(fbi->dev, info->fix.smem_len,
->> -			info->screen_base, fbi->fb_start_dma);
->> +	dma_free_wc(fbi->dev, info->fix.smem_len,
->> +		    info->screen_base, fbi->fb_start_dma);
->>  failed_free_info:
->>  	kfree(info);
->>  
->> @@ -801,7 +801,7 @@ static int pxa168fb_remove(struct platform_device *pdev)
->>  
->>  	irq = platform_get_irq(pdev, 0);
->>  
->> -	dma_free_wc(fbi->dev, PAGE_ALIGN(info->fix.smem_len),
->> +	dma_free_wc(fbi->dev, info->fix.smem_len,
->>  		    info->screen_base, info->fix.smem_start);
->>  
->>  	clk_disable_unprepare(fbi->clk);
-> 
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 0666f848bf70..7d2ee889ffcd 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -1650,7 +1650,7 @@ static int radeonfb_set_par(struct fb_info *info)
+ 	struct fb_var_screeninfo *mode = &info->var;
+ 	struct radeon_regs *newmode;
+ 	int hTotal, vTotal, hSyncStart, hSyncEnd,
+-	    vSyncStart, vSyncEnd, cSync;
++	    vSyncStart, vSyncEnd;
+ 	u8 hsync_adj_tab[] = {0, 0x12, 9, 9, 6, 5};
+ 	u8 hsync_fudge_fp[] = {2, 2, 0, 0, 5, 5};
+ 	u32 sync, h_sync_pol, v_sync_pol, dotClock, pixClock;
+@@ -1730,8 +1730,6 @@ static int radeonfb_set_par(struct fb_info *info)
+ 	else if (vsync_wid > 0x1f)	/* max */
+ 		vsync_wid = 0x1f;
+ 
+-	cSync = mode->sync & FB_SYNC_COMP_HIGH_ACT ? (1 << 4) : 0;
+-
+ 	format = radeon_get_dstbpp(depth);
+ 	bytpp = mode->bits_per_pixel >> 3;
+ 
+-- 
+2.17.2

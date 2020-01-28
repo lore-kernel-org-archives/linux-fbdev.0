@@ -1,75 +1,148 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 28 Jan 2020 15:20:58 +0000
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Tue, 28 Jan 2020 16:39:22 +0000
 Subject: Re: [PATCH] fbdev: wait for references go away
-Message-Id: <e16f568b-c629-b81e-ec3a-7c7dd6edb766@samsung.com>
+Message-Id: <CAKMK7uGMTLoyMnfLmx3r9+qf6sMXcrKT_EgO78f=Gw0Oi51kWQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200120100025eucas1p21f5e2da0fd7c1fcb33cb47a97e9e645c@eucas1p2.samsung.com>
- <20200120100014.23488-1-kraxel@redhat.com>
- <d143e43b-8a38-940e-3ae5-e7b830a74bb3@samsung.com>
- <20200121055348.s4anrveo2z6avin6@sirius.home.kraxel.org>
-In-Reply-To: <20200121055348.s4anrveo2z6avin6@sirius.home.kraxel.org>
+References: <20200120100014.23488-1-kraxel@redhat.com>
+In-Reply-To: <20200120100014.23488-1-kraxel@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, marmarek@invisiblethingslab.com, dri-devel@lists.freedesktop.org, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Gerd Hoffmann <kraxel@redhat.com>, =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>
+Cc: marmarek@invisiblethingslab.com, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+
+On Mon, Jan 20, 2020 at 11:00 AM Gerd Hoffmann <kraxel@redhat.com> wrote:
+>
+> Problem: do_unregister_framebuffer() might return before the device is
+> fully cleaned up, due to userspace having a file handle for /dev/fb0
+> open.  Which can result in drm driver not being able to grab resources
+> (and fail initialization) because the firmware framebuffer still holds
+> them.  Reportedly plymouth can trigger this.
+>
+> Fix this by trying to wait until all references are gone.  Don't wait
+> forever though given that userspace might keep the file handle open.
+>
+> Reported-by: Marek Marczykowski-G=C3=B3recki <marmarek@invisiblethingslab=
+.com>
+> Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+
+(Missed this because lca, so a bit late)
+
+This isn't really how driver unload is supposed to happen. Instead:
+
+- Driver unload starts
+- Driver calls the foo_unregister function, which stops new userspace
+from getting at the driver. If you're subsystem is good (i.e. drm
+since Noralf fixed it) this will also sufficiently synchronize with
+any pending ioctl.
+- Important: This does _not_ wait until userspace closes all
+references. You can't force that.
+- Driver releases all hw structures and mappings and everything else.
+With fbdev this is currently not fully race free because no one is
+synchronizing with userspace everywhere correctly.
+
+... much time can pass ...
+
+- Userspace releases the last references, which triggers the final
+destroy stuff and which releases the memory occupied by various
+structures still (but not anything releated to hw or anything else
+really).
+
+So there's two bits:
+
+1. Synchronizing with pending ioctls. This is mostly there already
+with lock_fb_info/unlock_fb_info. From a quick look the missing bit
+seems to be that the unregister code is not taking that lock, and so
+not sufficiently synchronizing against concurrent ioctl calls and
+other stuff. Plus would need to audit all entry points.
+
+1a. fbcon works differently. Don't look too closely, but this is also
+not the problem your facing here.
+
+2. Refcounting of the fb structure and hw teardown. That's what's
+tracked in fb_info->count. Most likely the fbdev driver you have has a
+wrong split between the hw teardown code and what's in fb_destroy. If
+you have any hw cleanup code in fb_destroy that driver is buggy. efifb
+is very buggy in that area :-) Same for offb, simplefb, vesafb and
+vesa16fb.
+
+We might need a new fb_unregister callback for these drivers to be
+able to fix this properly. Because the unregister comes from the fbdev
+core, and not the driver as usual, so the usual driver unload sequence
+doesnt work:
+
+drm_dev_unregister();
+... release all hw resource ...
+
+drm_dev_put();
+
+Or in terms of fbdev:
+
+unregister_framebuffer(info);
+... release all hw resources ... <- everyone gets this wrong
+framebuffer_release(info); <- also wrong because not refcounted,
+hooray, this should be moved to to end of the ->fb_destroy callback
+
+So we need a callback to put the "release all hw resources" step into
+the flow at the right place. Another option (slightly less midlayer)
+would be to add a fb_takeover hook, for these platforms drivers, which
+would then do the above sequence (like at driver unload).
+
+Also adding Noralf, since he's fixed up all the drm stuff in this area
+in the past.
+
+Cheers, Daniel
+
+> ---
+>  drivers/video/fbdev/core/fbmem.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/=
+fbmem.c
+> index d04554959ea7..2ea8ac05b065 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -35,6 +35,7 @@
+>  #include <linux/fbcon.h>
+>  #include <linux/mem_encrypt.h>
+>  #include <linux/pci.h>
+> +#include <linux/delay.h>
+>
+>  #include <asm/fb.h>
+>
+> @@ -1707,6 +1708,8 @@ static void unlink_framebuffer(struct fb_info *fb_i=
+nfo)
+>
+>  static void do_unregister_framebuffer(struct fb_info *fb_info)
+>  {
+> +       int limit =3D 100;
+> +
+>         unlink_framebuffer(fb_info);
+>         if (fb_info->pixmap.addr &&
+>             (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT))
+> @@ -1726,6 +1729,10 @@ static void do_unregister_framebuffer(struct fb_in=
+fo *fb_info)
+>         fbcon_fb_unregistered(fb_info);
+>         console_unlock();
+>
+> +       /* try wait until all references are gone */
+> +       while (atomic_read(&fb_info->count) > 1 && --limit > 0)
+> +               msleep(10);
+> +
+>         /* this may free fb info */
+>         put_fb_info(fb_info);
+>  }
+> --
+> 2.18.1
+>
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
 
-On 1/21/20 6:53 AM, Gerd Hoffmann wrote:
->   Hi,
-> 
->>> open.  Which can result in drm driver not being able to grab resources
->>> (and fail initialization) because the firmware framebuffer still holds
->>> them.  Reportedly plymouth can trigger this.
->>
->> Could you please describe issue some more?
->>
->> I guess that a problem is happening during DRM driver load while fbdev
->> driver is loaded? I assume do_unregister_framebuffer() is called inside
->> do_remove_conflicting_framebuffers()?
-> 
-> Yes.  Specifically bochs-drm.ko and efifb in virtual machines.
-> 
->> At first glance it seems to be an user-space issue as it should not be
->> holding references on /dev/fb0 while DRM driver is being loaded.
-> 
-> Well, the drm driver is loaded by udev like everything else.
-> 
-> Dunno what plymouth (graphical boot screen tool) does to handle the
-> situation.  I guess listening to udev events.  So it should notice efifb
-> going away and drop the /dev/fb0 reference, but this races against
-> bochs-drm initializing.
 
-It has been a week and there have been no alternative proposals to
-address the problem so I incline to accepting this approach..
-
-However please rework the patch slightly:
-
-- Don't wait in the usual fb_info removal code-path, only in the driver
-  replacement one. You can achieve this by adding additional "bool wait"
-  parameter to do_unregister_framebuffer()
-
-- Add a FIXME comment just before the wait loop with the description of
-  the issue (the above explanation of the race between plymouth and udev
-  would be fine) so we will remember why this workaround is needed.
-
-- Change patch summary to something more descriptive (i.e. to "fbdev:
-  workaround race on driver replacement").
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
->>> Fix this by trying to wait until all references are gone.  Don't wait
->>> forever though given that userspace might keep the file handle open.
->>
->> Where does the 1s maximum delay come from?
-> 
-> Pulled out something out of thin air which I expect being on the safe
-> side.  plymouth responding on the udev event should need only a small
-> fraction of that.
-> 
-> cheers,
->   Gerd
+--=20
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch

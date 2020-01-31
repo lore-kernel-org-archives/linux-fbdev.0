@@ -1,37 +1,59 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 31 Jan 2020 21:46:52 +0000
-Subject: [PATCH 09/18] drm/i915: Include HDMI DRM infoframe in the crtc state dump
-Message-Id: <20200131214701.1085737-10-gwan-gyeong.mun@intel.com>
+Date: Fri, 31 Jan 2020 21:46:43 +0000
+Subject: [PATCH 00/18] In order to readout DP SDPs, refactors the handling of DP SDPs
+Message-Id: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Dump out the HDMI Dynamic Range and Mastering (DRM) infoframe in the
-normal crtc state dump.
+In order to readout DP SDPs (Secondary Data Packet: DP HDR Metadata
+Infoframe SDP, DP VSC SDP), it refactors handling DP SDPs codes.
+It adds new compute routines for DP HDR Metadata Infoframe SDP
+and DP VSC SDP. 
+And new writing routines of DP SDPs (Secondary Data Packet) that uses
+computed configs.
+New reading routines of DP SDPs are added for readout.
+It adds a logging function for DP VSC SDP.
+When receiving video it is very useful to be able to log DP VSC SDP.
+This greatly simplifies debugging.
+In order to use a common VSC SDP Colorimetry calculating code on PSR,
+it uses a new psr vsc sdp compute routine.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
----
- drivers/gpu/drm/i915/display/intel_display.c | 3 +++
- 1 file changed, 3 insertions(+)
+Gwan-gyeong Mun (18):
+  drm: add DP 1.4 VSC SDP Payload related enums
+  drm/i915: Add DP VSC SDP payload data to intel_crtc_state.infoframes
+  drm/i915/dp: Add compute routine for DP VSC SDP
+  drm/i915/dp: Add compute routine for DP HDR Metadata Infoframe SDP
+  drm/i915/dp: Add writing of DP SDPs (Secondary Data Packet)
+  video/hdmi: Add Unpack only function for DRM infoframe
+  drm/i915/dp: Read out DP SDPs (Secondary Data Packet)
+  drm/i915/dp: Add logging function for DP VSC SDP
+  drm/i915: Include HDMI DRM infoframe in the crtc state dump
+  drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
+  drm/i915: Include DP VSC SDP in the crtc state dump
+  drm/i915: Program DP SDPs with computed configs
+  drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
+  drm/i915: Add state readout for DP VSC SDP
+  drm/i915: Program DP SDPs on pipe updates
+  drm/i915: Stop sending DP SDPs on intel_ddi_post_disable_dp()
+  drm/i915/dp: Add compute routine for DP PSR VSC SDP
+  drm/i915/psr: Use new DP VSC SDP compute routine on PSR
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index c0e5002ce64c..239861bcedba 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -13030,6 +13030,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
- 	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_VENDOR))
- 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.hdmi);
-+	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
-+		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
- 
- 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
- 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
+ drivers/gpu/drm/i915/display/intel_ddi.c      |  19 +-
+ drivers/gpu/drm/i915/display/intel_display.c  |  62 ++
+ .../drm/i915/display/intel_display_types.h    |   1 +
+ drivers/gpu/drm/i915/display/intel_dp.c       | 775 ++++++++++++++----
+ drivers/gpu/drm/i915/display/intel_dp.h       |  21 +-
+ drivers/gpu/drm/i915/display/intel_psr.c      |  54 +-
+ drivers/gpu/drm/i915/display/intel_psr.h      |   6 +-
+ drivers/gpu/drm/i915/i915_drv.h               |  12 +
+ drivers/video/hdmi.c                          |  58 +-
+ include/drm/drm_dp_helper.h                   |  45 +
+ include/linux/hdmi.h                          |   2 +
+ 11 files changed, 837 insertions(+), 218 deletions(-)
+
 -- 
 2.24.1

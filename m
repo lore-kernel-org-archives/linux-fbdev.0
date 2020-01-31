@@ -1,57 +1,116 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 16 Jan 2020 16:59:54 +0000
-Subject: [PATCH AUTOSEL 4.19 356/671] backlight: lm3630a: Return 0 on success in update_status functions
-Message-Id: <20200116170509.12787-93-sashal@kernel.org>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 31 Jan 2020 21:47:00 +0000
+Subject: [PATCH 17/18] drm/i915/dp: Add compute routine for DP PSR VSC SDP
+Message-Id: <20200131214701.1085737-18-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200116170509.12787-1-sashal@kernel.org>
-In-Reply-To: <20200116170509.12787-1-sashal@kernel.org>
+References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Brian Masney <masneyb@onstation.org>
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-From: Brian Masney <masneyb@onstation.org>
+In order to use a common VSC SDP Colorimetry calculating code on PSR,
+it adds a compute routine for PSR VSC SDP.
+As PSR routine can not use infoframes.vsc of crtc state, it also adds new
+writing of DP SDPs (Secondary Data Packet) for PSR.
+PSR routine has its own scenario and timings of writing a VSC SDP.
 
-[ Upstream commit d3f48ec0954c6aac736ab21c34a35d7554409112 ]
-
-lm3630a_bank_a_update_status() and lm3630a_bank_b_update_status()
-both return the brightness value if the brightness was successfully
-updated. Writing to these attributes via sysfs would cause a 'Bad
-address' error to be returned. These functions should return 0 on
-success, so let's change it to correct that error.
-
-Fixes: 28e64a68a2ef ("backlight: lm3630: apply chip revision")
-Signed-off-by: Brian Masney <masneyb@onstation.org>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/video/backlight/lm3630a_bl.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/i915/display/intel_dp.c | 53 +++++++++++++++++++++++++
+ drivers/gpu/drm/i915/display/intel_dp.h |  7 ++++
+ 2 files changed, 60 insertions(+)
 
-diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-index 2030a6b77a09..ef2553f452ca 100644
---- a/drivers/video/backlight/lm3630a_bl.c
-+++ b/drivers/video/backlight/lm3630a_bl.c
-@@ -201,7 +201,7 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
- 				      LM3630A_LEDA_ENABLE, LM3630A_LEDA_ENABLE);
- 	if (ret < 0)
- 		goto out_i2c_err;
--	return bl->props.brightness;
-+	return 0;
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
+index e8cf12d14dc3..3571e959cdcc 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.c
++++ b/drivers/gpu/drm/i915/display/intel_dp.c
+@@ -2463,6 +2463,42 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
+ 					 &crtc_state->infoframes.vsc);
+ }
  
- out_i2c_err:
- 	dev_err(pchip->dev, "i2c failed to access\n");
-@@ -278,7 +278,7 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
- 				      LM3630A_LEDB_ENABLE, LM3630A_LEDB_ENABLE);
- 	if (ret < 0)
- 		goto out_i2c_err;
--	return bl->props.brightness;
-+	return 0;
++void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
++				  const struct intel_crtc_state *crtc_state,
++				  const struct drm_connector_state *conn_state,
++				  struct intel_dp_vsc_sdp *vsc)
++{
++	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
++
++	vsc->sdp_type = DP_SDP_VSC;
++
++	if (dev_priv->psr.psr2_enabled) {
++		if (dev_priv->psr.colorimetry_support &&
++		    intel_dp_needs_vsc_sdp(crtc_state, conn_state)) {
++			/* [PSR2, +Colorimetry] */
++			intel_dp_compute_vsc_colorimetry(crtc_state, conn_state,
++							 vsc);
++		} else {
++			/*
++			 * [PSR2, -Colorimetry]
++			 * Prepare VSC Header for SU as per eDP 1.4 spec, Table 6-11
++			 * 3D stereo + PSR/PSR2 + Y-coordinate.
++			 */
++			vsc->revision = 0x4;
++			vsc->length = 0xe;
++		}
++	} else {
++		/*
++		 * [PSR1]
++		 * Prepare VSC Header for SU as per DP 1.4 spec, Table 2-118
++		 * VSC SDP supporting 3D stereo + PSR (applies to eDP v1.3 or
++		 * higher).
++		 */
++		vsc->revision = 0x2;
++		vsc->length = 0x8;
++	}
++}
++
+ static void
+ intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_crtc_state *crtc_state,
+ 					    const struct drm_connector_state *conn_state)
+@@ -4888,6 +4924,23 @@ static void intel_write_dp_sdp(struct intel_encoder *encoder,
+ 	intel_dig_port->write_infoframe(encoder, crtc_state, type, &sdp, len);
+ }
  
- out_i2c_err:
- 	dev_err(pchip->dev, "i2c failed to access REG_CTRL\n");
++void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
++			    const struct intel_crtc_state *crtc_state,
++			    struct intel_dp_vsc_sdp *vsc)
++{
++	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
++	struct dp_sdp sdp = {};
++	ssize_t len;
++
++	len = intel_dp_vsc_sdp_pack(vsc, &sdp, sizeof(sdp));
++
++	if (WARN_ON(len < 0))
++		return;
++
++	intel_dig_port->write_infoframe(encoder, crtc_state, DP_SDP_VSC,
++					&sdp, len);
++}
++
+ void intel_dp_set_infoframes(struct intel_encoder *encoder,
+ 			     bool enable,
+ 			     const struct intel_crtc_state *crtc_state,
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915/display/intel_dp.h
+index 6d8003eb59f6..fb63e9a2ee78 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.h
++++ b/drivers/gpu/drm/i915/display/intel_dp.h
+@@ -112,6 +112,13 @@ int intel_dp_link_required(int pixel_clock, int bpp);
+ int intel_dp_max_data_rate(int max_link_clock, int max_lanes);
+ bool intel_dp_needs_vsc_sdp(const struct intel_crtc_state *crtc_state,
+ 			    const struct drm_connector_state *conn_state);
++void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
++				  const struct intel_crtc_state *crtc_state,
++				  const struct drm_connector_state *conn_state,
++				  struct intel_dp_vsc_sdp *vsc);
++void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
++			    const struct intel_crtc_state *crtc_state,
++			    struct intel_dp_vsc_sdp *vsc);
+ void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
+ 			     const struct intel_crtc_state *crtc_state,
+ 			     const struct drm_connector_state *conn_state);
 -- 
-2.20.1
+2.24.1

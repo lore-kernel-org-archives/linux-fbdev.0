@@ -1,90 +1,85 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 16 Jan 2020 14:08:58 +0000
-Subject: [PATCH 4/6] video: fbdev: controlfb: remove function prototypes part #1
-Message-Id: <20200116140900.26363-5-b.zolnierkie@samsung.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 31 Jan 2020 21:46:44 +0000
+Subject: [PATCH 01/18] drm: add DP 1.4 VSC SDP Payload related enums
+Message-Id: <20200131214701.1085737-2-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200116140900.26363-1-b.zolnierkie@samsung.com>
- <CGME20200116140916eucas1p1a6aff99bd371c4e23b1cc287bc3c42a8@eucas1p1.samsung.com>
-In-Reply-To: <20200116140900.26363-1-b.zolnierkie@samsung.com>
+References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: b.zolnierkie@samsung.com
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Reorder code a bit and then remove no longer needed function
-prototypes.
+It adds new enumeration definitions for VSC SDP Payload for Pixel
+Encoding/Colorimetry Format.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+enum dp_colorspace and enum dp_colorimetry correspond "Pixel Encoding and
+Colorimetry Formats". enum dp_dynamic_range corresponds "Dynamic Range".
+And enum dp_content_type corresponds "Content Type"
+All of them are based on DP 1.4 spec [Table 2-117: VSC SDP Payload for
+DB16 through DB18].
+
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/video/fbdev/controlfb.c | 41 +++++++++++----------------------
- 1 file changed, 13 insertions(+), 28 deletions(-)
+ include/drm/drm_dp_helper.h | 45 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
 
-diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
-index 87cd817ad4c6..32ee6e4b5db4 100644
---- a/drivers/video/fbdev/controlfb.c
-+++ b/drivers/video/fbdev/controlfb.c
-@@ -129,20 +129,6 @@ struct fb_info_control {
- #define CNTRL_REG(INFO,REG) (&(((INFO)->control_regs->REG).r))
+diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
+index 262faf9e5e94..86b1be958a69 100644
+--- a/include/drm/drm_dp_helper.h
++++ b/include/drm/drm_dp_helper.h
+@@ -1209,6 +1209,51 @@ struct dp_sdp {
+ #define EDP_VSC_PSR_UPDATE_RFB		(1<<1)
+ #define EDP_VSC_PSR_CRC_VALUES_VALID	(1<<2)
  
- 
--/******************** Prototypes for exported functions ********************/
--/*
-- * struct fb_ops
-- */
--static int controlfb_pan_display(struct fb_var_screeninfo *var,
--	struct fb_info *info);
--static int controlfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
--	u_int transp, struct fb_info *info);
--static int controlfb_blank(int blank_mode, struct fb_info *info);
--static int controlfb_mmap(struct fb_info *info,
--	struct vm_area_struct *vma);
--static int controlfb_set_par (struct fb_info *info);
--static int controlfb_check_var (struct fb_var_screeninfo *var, struct fb_info *info);
--
- /******************** Prototypes for internal functions **********************/
- 
- static void set_control_clock(unsigned char *params);
-@@ -169,20 +155,6 @@ static int default_vmode __initdata = VMODE_NVRAM;
- static int default_cmode __initdata = CMODE_NVRAM;
- 
- 
--static const struct fb_ops controlfb_ops = {
--	.owner		= THIS_MODULE,
--	.fb_check_var	= controlfb_check_var,
--	.fb_set_par	= controlfb_set_par,
--	.fb_setcolreg	= controlfb_setcolreg,
--	.fb_pan_display = controlfb_pan_display,
--	.fb_blank	= controlfb_blank,
--	.fb_mmap	= controlfb_mmap,
--	.fb_fillrect	= cfb_fillrect,
--	.fb_copyarea	= cfb_copyarea,
--	.fb_imageblit	= cfb_imageblit,
--};
--
--
- /********************  The functions for controlfb_ops ********************/
- 
- /*
-@@ -1014,6 +986,19 @@ static inline void control_par_to_var(struct fb_par_control *par,
- 	var->pixclock >>= par->regvals.clock_params[2];
- }
- 
-+static const struct fb_ops controlfb_ops = {
-+	.owner		= THIS_MODULE,
-+	.fb_check_var	= controlfb_check_var,
-+	.fb_set_par	= controlfb_set_par,
-+	.fb_setcolreg	= controlfb_setcolreg,
-+	.fb_pan_display = controlfb_pan_display,
-+	.fb_blank	= controlfb_blank,
-+	.fb_mmap	= controlfb_mmap,
-+	.fb_fillrect	= cfb_fillrect,
-+	.fb_copyarea	= cfb_copyarea,
-+	.fb_imageblit	= cfb_imageblit,
++/* Based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through DB18] */
++enum dp_colorspace {
++	DP_COLORSPACE_RGB = 0,
++	DP_COLORSPACE_YUV444 = 0x1,
++	DP_COLORSPACE_YUV422 = 0x2,
++	DP_COLORSPACE_YUV420 = 0x3,
++	DP_COLORSPACE_Y_ONLY = 0x4,
++	DP_COLORSPACE_RAW = 0x5,
++	DP_COLORSPACE_RESERVED = 0x6,
 +};
 +
- /*
-  * Set misc info vars for this driver
-  */
++/**
++ * Based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through DB18]
++ * and a name of enum member followes DRM_MODE_COLORIMETRY definition.
++ */
++enum dp_colorimetry {
++	DP_COLORIMETRY_DEFAULT = 0, /* sRGB (IEC 61966-2-1) / ITU-R BT.601 */
++	DP_COLORIMETRY_RGB_WIDE_FIXED = 0x1,
++	DP_COLORIMETRY_BT709_YCC = 0x1,
++	DP_COLORIMETRY_RGB_WIDE_FLOAT = 0x2,
++	DP_COLORIMETRY_XVYCC_601 = 0x2,
++	DP_COLORIMETRY_OPRGB = 0x3,
++	DP_COLORIMETRY_XVYCC_709 = 0x3,
++	DP_COLORIMETRY_DCI_P3_RGB = 0x4,
++	DP_COLORIMETRY_SYCC_601 = 0x4,
++	DP_COLORIMETRY_RGB_CUSTOM = 0x5,
++	DP_COLORIMETRY_OPYCC_601 = 0x5,
++	DP_COLORIMETRY_BT2020_RGB = 0x6,
++	DP_COLORIMETRY_BT2020_CYCC = 0x6,
++	DP_COLORIMETRY_BT2020_YCC = 0x7,
++};
++
++enum dp_dynamic_range {
++	DP_DYNAMIC_RANGE_VESA = 0,
++	DP_DYNAMIC_RANGE_CTA = 1,
++};
++
++enum dp_content_type {
++	DP_CONTENT_TYPE_NOT_DEFINED = 0x00,
++	DP_CONTENT_TYPE_GRAPHICS = 0x01,
++	DP_CONTENT_TYPE_PHOTO = 0x02,
++	DP_CONTENT_TYPE_VIDEO = 0x03,
++	DP_CONTENT_TYPE_GAME = 0x04,
++};
++
+ int drm_dp_psr_setup_time(const u8 psr_cap[EDP_PSR_RECEIVER_CAP_SIZE]);
+ 
+ static inline int
 -- 
 2.24.1

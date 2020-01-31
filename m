@@ -1,50 +1,37 @@
-From: yu kuai <yukuai3@huawei.com>
-Date: Sun, 19 Jan 2020 12:17:30 +0000
-Subject: [PATCH 4/4] video: fbdev: remove set but not used variable 'bytpp'
-Message-Id: <20200119121730.10701-5-yukuai3@huawei.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 31 Jan 2020 21:46:52 +0000
+Subject: [PATCH 09/18] drm/i915: Include HDMI DRM infoframe in the crtc state dump
+Message-Id: <20200131214701.1085737-10-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200119121730.10701-1-yukuai3@huawei.com>
-In-Reply-To: <20200119121730.10701-1-yukuai3@huawei.com>
+References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: benh@kernel.crashing.org, b.zolnierkie@samsung.com
-Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhengbin13@huawei.com, yukuai3@huawei.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Fixes gcc '-Wunused-but-set-variable' warning:
+Dump out the HDMI Dynamic Range and Mastering (DRM) infoframe in the
+normal crtc state dump.
 
-drivers/video/fbdev/aty/radeon_base.c: In function
-‘radeonfb_set_par’:
-drivers/video/fbdev/aty/radeon_base.c:1660:32: warning:
-variable ‘bytpp’ set but not used [-Wunused-but-set-variable]
-
-It is never used, and so can be removed.
-
-Signed-off-by: yu kuai <yukuai3@huawei.com>
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/video/fbdev/aty/radeon_base.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/gpu/drm/i915/display/intel_display.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index 7d2ee889ffcd..22b3ee4f2ffa 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -1657,7 +1657,7 @@ static int radeonfb_set_par(struct fb_info *info)
- 	int i, freq;
- 	int format = 0;
- 	int nopllcalc = 0;
--	int hsync_start, hsync_fudge, bytpp, hsync_wid, vsync_wid;
-+	int hsync_start, hsync_fudge, hsync_wid, vsync_wid;
- 	int primary_mon = PRIMARY_MONITOR(rinfo);
- 	int depth = var_to_depth(mode);
- 	int use_rmx = 0;
-@@ -1731,7 +1731,6 @@ static int radeonfb_set_par(struct fb_info *info)
- 		vsync_wid = 0x1f;
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index c0e5002ce64c..239861bcedba 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -13030,6 +13030,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+ 	if (pipe_config->infoframes.enable &
+ 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_VENDOR))
+ 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.hdmi);
++	if (pipe_config->infoframes.enable &
++	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
++		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
  
- 	format = radeon_get_dstbpp(depth);
--	bytpp = mode->bits_per_pixel >> 3;
- 
- 	if ((primary_mon = MT_DFP) || (primary_mon = MT_LCD))
- 		hsync_fudge = hsync_fudge_fp[format-1];
+ 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
+ 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
 -- 
-2.17.2
+2.24.1

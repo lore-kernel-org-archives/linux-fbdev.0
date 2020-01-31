@@ -1,7 +1,7 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 31 Jan 2020 21:46:46 +0000
-Subject: [PATCH 03/18] drm/i915/dp: Add compute routine for DP VSC SDP
-Message-Id: <20200131214701.1085737-4-gwan-gyeong.mun@intel.com>
+Date: Fri, 31 Jan 2020 21:46:51 +0000
+Subject: [PATCH 08/18] drm/i915/dp: Add logging function for DP VSC SDP
+Message-Id: <20200131214701.1085737-9-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
 In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
@@ -11,127 +11,227 @@ Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-It stores computed dp vsc sdp to infoframes.vsc of crtc state.
-While computing we'll also fill out the inforames.enable bitmask
-appropriately.
-
-The compute routine follows DP 1.4 spec [Table 2-117: VSC SDP Payload for
-DB16 through DB18].
+When receiving video it is very useful to be able to log DP VSC SDP.
+This greatly simplifies debugging.
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_dp.c | 92 +++++++++++++++++++++++++
- 1 file changed, 92 insertions(+)
+ drivers/gpu/drm/i915/display/intel_dp.c | 173 ++++++++++++++++++++++++
+ drivers/gpu/drm/i915/display/intel_dp.h |   4 +
+ 2 files changed, 177 insertions(+)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
-index f4dede6253f8..705d36b548b1 100644
+index 6756030692c8..e33488222ac5 100644
 --- a/drivers/gpu/drm/i915/display/intel_dp.c
 +++ b/drivers/gpu/drm/i915/display/intel_dp.c
-@@ -2372,6 +2372,97 @@ static bool intel_dp_port_has_audio(struct drm_i915_private *dev_priv,
- 	return true;
+@@ -5090,6 +5090,179 @@ void intel_read_dp_sdp(struct intel_encoder *encoder,
+ 	}
  }
  
-+static void intel_dp_compute_vsc_colorimetry(const struct intel_crtc_state *crtc_state,
-+					     const struct drm_connector_state *conn_state,
-+					     struct intel_dp_vsc_sdp *vsc)
++static const char *dp_colorspace_get_name(enum dp_colorspace colorspace)
 +{
-+	/*
-+	 * Prepare VSC Header for SU as per DP 1.4 spec, Table 2-118
-+	 * VSC SDP supporting 3D stereo, PSR2, and Pixel Encoding/
-+	 * Colorimetry Format indication.
-+	 */
-+	vsc->revision = 0x5;
-+	vsc->length = 0x13;
++	if (colorspace < 0 || colorspace > DP_COLORSPACE_RESERVED)
++		return "Invalid";
 +
-+	/* DP 1.4a spec, Table 2-120 */
-+	switch (crtc_state->output_format) {
-+	case INTEL_OUTPUT_FORMAT_YCBCR444:
-+		vsc->colorspace = DP_COLORSPACE_YUV444;
-+		break;
-+	case INTEL_OUTPUT_FORMAT_YCBCR420:
-+		vsc->colorspace = DP_COLORSPACE_YUV420;
-+		break;
-+	case INTEL_OUTPUT_FORMAT_RGB:
++	switch (colorspace) {
++	case DP_COLORSPACE_RGB:
++		return "RGB";
++	case DP_COLORSPACE_YUV444:
++		return "YUV444";
++	case DP_COLORSPACE_YUV422:
++		return "YUV422";
++	case DP_COLORSPACE_YUV420:
++		return "YUV420";
++	case DP_COLORSPACE_Y_ONLY:
++		return "Y_ONLY";
++	case DP_COLORSPACE_RAW:
++		return "RAW";
 +	default:
-+		vsc->colorspace = DP_COLORSPACE_RGB;
++		return "Reserved";
 +	}
-+
-+	switch (conn_state->colorspace) {
-+	case DRM_MODE_COLORIMETRY_BT709_YCC:
-+		vsc->colorimetry = DP_COLORIMETRY_BT709_YCC;
-+		break;
-+	case DRM_MODE_COLORIMETRY_XVYCC_601:
-+		vsc->colorimetry = DP_COLORIMETRY_XVYCC_601;
-+		break;
-+	case DRM_MODE_COLORIMETRY_XVYCC_709:
-+		vsc->colorimetry = DP_COLORIMETRY_XVYCC_709;
-+		break;
-+	case DRM_MODE_COLORIMETRY_SYCC_601:
-+		vsc->colorimetry = DP_COLORIMETRY_SYCC_601;
-+		break;
-+	case DRM_MODE_COLORIMETRY_OPYCC_601:
-+		vsc->colorimetry = DP_COLORIMETRY_OPYCC_601;
-+		break;
-+	case DRM_MODE_COLORIMETRY_BT2020_CYCC:
-+		vsc->colorimetry = DP_COLORIMETRY_BT2020_CYCC;
-+		break;
-+	case DRM_MODE_COLORIMETRY_BT2020_RGB:
-+		vsc->colorimetry = DP_COLORIMETRY_BT2020_RGB;
-+		break;
-+	case DRM_MODE_COLORIMETRY_BT2020_YCC:
-+		vsc->colorimetry = DP_COLORIMETRY_BT2020_YCC;
-+		break;
-+	case DRM_MODE_COLORIMETRY_DCI_P3_RGB_D65:
-+	case DRM_MODE_COLORIMETRY_DCI_P3_RGB_THEATER:
-+		vsc->colorimetry = DP_COLORIMETRY_DCI_P3_RGB;
-+		break;
-+	default:
-+		/*
-+		 * RGB->YCBCR color conversion uses the BT.709
-+		 * color space.
-+		 */
-+		if (crtc_state->output_format = INTEL_OUTPUT_FORMAT_YCBCR420)
-+			vsc->colorimetry = DP_COLORIMETRY_BT709_YCC;
-+		else
-+			vsc->colorimetry = DP_COLORIMETRY_DEFAULT;
-+		break;
-+	}
-+
-+	vsc->bpc = crtc_state->pipe_bpp / 3;
-+	/* all YCbCr are always limited range */
-+	vsc->dynamic_range = DP_DYNAMIC_RANGE_CTA;
-+	vsc->content_type = DP_CONTENT_TYPE_NOT_DEFINED;
 +}
 +
-+static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
-+				     struct intel_crtc_state *crtc_state,
-+				     const struct drm_connector_state *conn_state)
++static const char *dp_colorimetry_get_name(enum dp_colorspace colorspace,
++					   enum dp_colorimetry colorimetry)
 +{
-+	struct intel_dp_vsc_sdp *vsc = &crtc_state->infoframes.vsc;
++	if (colorspace < 0 || colorspace > DP_COLORSPACE_RESERVED)
++		return "Invalid";
 +
-+	/* When PSR is enabled, VSC SDP is handled by PSR routine */
-+	if (intel_psr_enabled(intel_dp))
-+		return;
-+
-+	if (!intel_dp_needs_vsc_sdp(crtc_state, conn_state))
-+		return;
-+
-+	crtc_state->infoframes.enable |= intel_hdmi_infoframe_enable(DP_SDP_VSC);
-+	vsc->sdp_type = DP_SDP_VSC;
-+	intel_dp_compute_vsc_colorimetry(crtc_state, conn_state,
-+					 &crtc_state->infoframes.vsc);
++	switch (colorimetry) {
++	case DP_COLORIMETRY_DEFAULT:
++		switch (colorspace) {
++		case DP_COLORSPACE_RGB:
++			return "sRGB";
++		case DP_COLORSPACE_YUV444:
++		case DP_COLORSPACE_YUV422:
++		case DP_COLORSPACE_YUV420:
++			return "BT.601";
++		case DP_COLORSPACE_Y_ONLY:
++			return "DICOM PS3.14";
++		case DP_COLORSPACE_RAW:
++			return "Custom Color Profile";
++		default:
++			return "Reserved";
++		}
++	case DP_COLORIMETRY_RGB_WIDE_FIXED: /* and DP_COLORIMETRY_BT709_YCC */
++		switch (colorspace) {
++		case DP_COLORSPACE_RGB:
++			return "Wide Fixed";
++		case DP_COLORSPACE_YUV444:
++		case DP_COLORSPACE_YUV422:
++		case DP_COLORSPACE_YUV420:
++			return "BT.709";
++		default:
++			return "Reserved";
++		}
++	case DP_COLORIMETRY_RGB_WIDE_FLOAT: /* and DP_COLORIMETRY_XVYCC_601 */
++		switch (colorspace) {
++		case DP_COLORSPACE_RGB:
++			return "Wide Float";
++		case DP_COLORSPACE_YUV444:
++		case DP_COLORSPACE_YUV422:
++		case DP_COLORSPACE_YUV420:
++			return "xvYCC 601";
++		default:
++			return "Reserved";
++		}
++	case DP_COLORIMETRY_OPRGB: /* and DP_COLORIMETRY_XVYCC_709 */
++		switch (colorspace) {
++		case DP_COLORSPACE_RGB:
++			return "OpRGB";
++		case DP_COLORSPACE_YUV444:
++		case DP_COLORSPACE_YUV422:
++		case DP_COLORSPACE_YUV420:
++			return "xvYCC 709";
++		default:
++			return "Reserved";
++		}
++	case DP_COLORIMETRY_DCI_P3_RGB: /* and DP_COLORIMETRY_SYCC_601 */
++		switch (colorspace) {
++		case DP_COLORSPACE_RGB:
++			return "DCI-P3";
++		case DP_COLORSPACE_YUV444:
++		case DP_COLORSPACE_YUV422:
++		case DP_COLORSPACE_YUV420:
++			return "sYCC 601";
++		default:
++			return "Reserved";
++		}
++	case DP_COLORIMETRY_RGB_CUSTOM: /* and DP_COLORIMETRY_OPYCC_601 */
++		switch (colorspace) {
++		case DP_COLORSPACE_RGB:
++			return "Custom Profile";
++		case DP_COLORSPACE_YUV444:
++		case DP_COLORSPACE_YUV422:
++		case DP_COLORSPACE_YUV420:
++			return "OpYCC 601";
++		default:
++			return "Reserved";
++		}
++	case DP_COLORIMETRY_BT2020_RGB: /* and DP_COLORIMETRY_BT2020_CYCC */
++		switch (colorspace) {
++		case DP_COLORSPACE_RGB:
++			return "BT.2020 RGB";
++		case DP_COLORSPACE_YUV444:
++		case DP_COLORSPACE_YUV422:
++		case DP_COLORSPACE_YUV420:
++			return "BT.2020 CYCC";
++		default:
++			return "Reserved";
++		}
++	case DP_COLORIMETRY_BT2020_YCC:
++		switch (colorspace) {
++		case DP_COLORSPACE_YUV444:
++		case DP_COLORSPACE_YUV422:
++		case DP_COLORSPACE_YUV420:
++			return "BT.2020 YCC";
++		default:
++			return "Reserved";
++		}
++	default:
++		return "Invalid";
++	}
 +}
 +
- int
- intel_dp_compute_config(struct intel_encoder *encoder,
- 			struct intel_crtc_state *pipe_config,
-@@ -2477,6 +2568,7 @@ intel_dp_compute_config(struct intel_encoder *encoder,
- 		intel_dp_set_clock(encoder, pipe_config);
++static const char *dp_dynamic_range_get_name(enum dp_dynamic_range dynamic_range)
++{
++	switch (dynamic_range) {
++	case DP_DYNAMIC_RANGE_VESA:
++		return "VESA range";
++	case DP_DYNAMIC_RANGE_CTA:
++		return "CTA range";
++	default:
++		return "Invalid";
++	}
++}
++
++static const char *dp_content_type_get_name(enum dp_content_type content_type)
++{
++	switch (content_type) {
++	case DP_CONTENT_TYPE_NOT_DEFINED:
++		return "Not defined";
++	case DP_CONTENT_TYPE_GRAPHICS:
++		return "Graphics";
++	case DP_CONTENT_TYPE_PHOTO:
++		return "Photo";
++	case DP_CONTENT_TYPE_VIDEO:
++		return "Video";
++	case DP_CONTENT_TYPE_GAME:
++		return "Game";
++	default:
++		return "Reserved";
++	}
++}
++
++#define dp_sdp_log(fmt, ...) dev_printk(level, dev, fmt, ##__VA_ARGS__)
++void intel_dp_vsc_sdp_log(const char *level, struct device *dev,
++			  const struct intel_dp_vsc_sdp *vsc)
++{
++	dp_sdp_log("DP SDP: %s, revision %u, length %u\n", "VSC",
++		   vsc->revision, vsc->length);
++	dp_sdp_log("    colorspace: %s\n",
++			dp_colorspace_get_name(vsc->colorspace));
++	dp_sdp_log("    colorimetry: %s\n",
++			dp_colorimetry_get_name(vsc->colorspace, vsc->colorimetry));
++	dp_sdp_log("    bpc: %u\n",vsc->bpc);
++	dp_sdp_log("    dynamic range: %s\n",
++			dp_dynamic_range_get_name(vsc->dynamic_range));
++	dp_sdp_log("    content type: %s\n",
++			dp_content_type_get_name(vsc->content_type));
++}
++#undef dp_sdp_log
++
+ static void
+ intel_dp_setup_vsc_sdp(struct intel_dp *intel_dp,
+ 		       const struct intel_crtc_state *crtc_state,
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915/display/intel_dp.h
+index e8f9ba962d09..03b300b58fd0 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.h
++++ b/drivers/gpu/drm/i915/display/intel_dp.h
+@@ -7,6 +7,7 @@
+ #define __INTEL_DP_H__
  
- 	intel_psr_compute_config(intel_dp, pipe_config);
-+	intel_dp_compute_vsc_sdp(intel_dp, pipe_config, conn_state);
+ #include <linux/types.h>
++#include <linux/device.h>
  
- 	return 0;
- }
+ #include <drm/i915_drm.h>
+ 
+@@ -23,6 +24,7 @@ struct intel_crtc_state;
+ struct intel_digital_port;
+ struct intel_dp;
+ struct intel_encoder;
++struct intel_dp_vsc_sdp;
+ 
+ struct link_config_limits {
+ 	int min_clock, max_clock;
+@@ -122,6 +124,8 @@ void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
+ void intel_read_dp_sdp(struct intel_encoder *encoder,
+ 		       struct intel_crtc_state *crtc_state,
+ 		       unsigned int type);
++void intel_dp_vsc_sdp_log(const char *level, struct device *dev,
++			  const struct intel_dp_vsc_sdp *vsc);
+ bool intel_digital_port_connected(struct intel_encoder *encoder);
+ 
+ static inline unsigned int intel_dp_unused_lane_mask(int lane_count)
 -- 
 2.24.1

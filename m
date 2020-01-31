@@ -1,68 +1,36 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 15 Jan 2020 14:50:16 +0000
-Subject: Re: [PATCH v2] video: fbdev: vesafb: add missed release_region
-Message-Id: <69c018bc-b51b-0eab-39bc-6cd14a0245e5@samsung.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 31 Jan 2020 21:46:58 +0000
+Subject: [PATCH 15/18] drm/i915: Program DP SDPs on pipe updates
+Message-Id: <20200131214701.1085737-16-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20191205160725eucas1p226595a8d3043f48183a0a646bda61b4c@eucas1p2.samsung.com>
- <20191205160712.32245-1-hslester96@gmail.com>
-In-Reply-To: <20191205160712.32245-1-hslester96@gmail.com>
+References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Chuhong Yuan <hslester96@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
+Call intel_dp_set_infoframes() function on pipe updates to make sure
+that we send VSC SDP and HDR Metadata Infoframe SDP (when applicable)
+on fastsets.
 
-On 12/5/19 5:07 PM, Chuhong Yuan wrote:
-> The driver forgets to free the requested irq in remove and probe
-> failure.
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_ddi.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-This is I/O region not IRQ.
-
-> Add the missed calls to fix it.
-> 
-> Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
-> ---
-> Changes in v2:
->   - Modify commit message.
-> 
->  drivers/video/fbdev/vesafb.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
-> index d9c08f6c2155..fbb196a8bbf6 100644
-> --- a/drivers/video/fbdev/vesafb.c
-> +++ b/drivers/video/fbdev/vesafb.c
-> @@ -468,6 +468,7 @@ static int vesafb_probe(struct platform_device *dev)
->  	fb_info(info, "%s frame buffer device\n", info->fix.id);
->  	return 0;
->  err:
-> +	release_region(0x3c0, 32);
-
-There is one 'goto err;' instance before request_region() which
-needs to be taken care of first.
-
->  	arch_phys_wc_del(par->wc_cookie);
->  	if (info->screen_base)
->  		iounmap(info->screen_base);
-> @@ -480,6 +481,7 @@ static int vesafb_remove(struct platform_device *pdev)
->  {
->  	struct fb_info *info = platform_get_drvdata(pdev);
->  
-> +	release_region(0x3c0, 32);
->  	unregister_framebuffer(info);
-
-The order of operations on remove should be the reverse of
-order of operations on probe.
-
-[ We cannot release I/O region while framebuffer is active. ]
-
->  	framebuffer_release(info);
-
-Please fix the patch and re-submit.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
+index 64e4edefa998..69073a15edb8 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -4062,6 +4062,7 @@ static void intel_ddi_update_pipe_dp(struct intel_encoder *encoder,
+ 	intel_ddi_set_dp_msa(crtc_state, conn_state);
+ 
+ 	intel_psr_update(intel_dp, crtc_state);
++	intel_dp_set_infoframes(encoder, true, crtc_state, conn_state);
+ 	intel_edp_drrs_enable(intel_dp, crtc_state);
+ 
+ 	intel_panel_update_backlight(encoder, crtc_state, conn_state);
+-- 
+2.24.1

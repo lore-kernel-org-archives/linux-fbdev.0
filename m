@@ -1,198 +1,305 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 03 Jan 2020 11:29:06 +0000
-Subject: Re: [PATCH v6 47/57] video: Remove dev_err() usage after platform_get_irq()
-Message-Id: <467ee450-e6de-e517-b8d9-7048c14a1931@samsung.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 31 Jan 2020 21:46:55 +0000
+Subject: [PATCH 12/18] drm/i915: Program DP SDPs with computed configs
+Message-Id: <20200131214701.1085737-13-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190730181557.90391-1-swboyd@chromium.org>
- <CGME20190730181641epcas3p26b5bd99f64726e7d110e20f1b673efeb@epcas3p2.samsung.com>
- <20190730181557.90391-48-swboyd@chromium.org>
-In-Reply-To: <20190730181557.90391-48-swboyd@chromium.org>
+References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Stephen Boyd <swboyd@chromium.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
+In order to use computed config for DP SDPs (DP VSC SDP and DP HDR Metadata
+Infoframe SDP), it replaces intel_dp_vsc_enable() function and
+intel_dp_hdr_metadata_enable() function to intel_dp_set_infoframes()
+function.
 
-Hi,
+Before applying it, routines of program SDP always calculated configs when
+they called. And it removes unused functions.
 
-Sorry for the late reply.
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_ddi.c |   3 +-
+ drivers/gpu/drm/i915/display/intel_dp.c  | 226 -----------------------
+ drivers/gpu/drm/i915/display/intel_dp.h  |   6 -
+ 3 files changed, 1 insertion(+), 234 deletions(-)
 
-On 7/30/19 8:15 PM, Stephen Boyd wrote:
-> We don't need dev_err() messages when platform_get_irq() fails now that
-> platform_get_irq() prints an error message itself when something goes
-> wrong. Let's remove these prints with a simple semantic patch.
-
-This patch changes handling of -EPROBE_DEFER in the modified drivers
-(most don't support it and error message will no longer be printed).
-
-I cannot apply it as it is (seems that -EPROBE_DEFER handling should
-be audited/fixed in the affected drivers first).
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> // <smpl>
-> @@
-> expression ret;
-> struct platform_device *E;
-> @@
-> 
-> ret > (
-> platform_get_irq(E, ...)
-> |
-> platform_get_irq_byname(E, ...)
-> );
-> 
-> if ( \( ret < 0 \| ret <= 0 \) )
-> {
-> (
-> -if (ret != -EPROBE_DEFER)
-> -{ ...
-> -dev_err(...);
-> -... }
-> |
-> ...
-> -dev_err(...);
-> )
-> ...
-> }
-> // </smpl>
-> 
-> While we're here, remove braces on if statements that only have one
-> statement (manually).
-> 
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Signed-off-by: Stephen Boyd <swboyd@chromium.org>
-> ---
-> 
-> Please apply directly to subsystem trees
-> 
->  drivers/video/fbdev/atmel_lcdfb.c     | 1 -
->  drivers/video/fbdev/mmp/hw/mmp_ctrl.c | 1 -
->  drivers/video/fbdev/nuc900fb.c        | 4 +---
->  drivers/video/fbdev/pxa168fb.c        | 4 +---
->  drivers/video/fbdev/pxa3xx-gcu.c      | 4 +---
->  drivers/video/fbdev/pxafb.c           | 1 -
->  drivers/video/fbdev/s3c2410fb.c       | 4 +---
->  drivers/video/fbdev/vt8500lcdfb.c     | 1 -
->  8 files changed, 4 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-> index 5ff8e0320d95..4a16354d65c8 100644
-> --- a/drivers/video/fbdev/atmel_lcdfb.c
-> +++ b/drivers/video/fbdev/atmel_lcdfb.c
-> @@ -1114,7 +1114,6 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
->  
->  	sinfo->irq_base = platform_get_irq(pdev, 0);
->  	if (sinfo->irq_base < 0) {
-> -		dev_err(dev, "unable to get irq\n");
->  		ret = sinfo->irq_base;
->  		goto stop_clk;
->  	}
-> diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-> index 17174cd7a5bb..d6124976139b 100644
-> --- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-> +++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-> @@ -447,7 +447,6 @@ static int mmphw_probe(struct platform_device *pdev)
->  
->  	irq = platform_get_irq(pdev, 0);
->  	if (irq < 0) {
-> -		dev_err(&pdev->dev, "%s: no IRQ defined\n", __func__);
->  		ret = -ENOENT;
->  		goto failed;
->  	}
-> diff --git a/drivers/video/fbdev/nuc900fb.c b/drivers/video/fbdev/nuc900fb.c
-> index 4fd851598584..c4606c734f44 100644
-> --- a/drivers/video/fbdev/nuc900fb.c
-> +++ b/drivers/video/fbdev/nuc900fb.c
-> @@ -526,10 +526,8 @@ static int nuc900fb_probe(struct platform_device *pdev)
->  	display = mach_info->displays + mach_info->default_display;
->  
->  	irq = platform_get_irq(pdev, 0);
-> -	if (irq < 0) {
-> -		dev_err(&pdev->dev, "no irq for device\n");
-> +	if (irq < 0)
->  		return -ENOENT;
-> -	}
->  
->  	fbinfo = framebuffer_alloc(sizeof(struct nuc900fb_info), &pdev->dev);
->  	if (!fbinfo)
-> diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
-> index 1410f476e135..d9e5258503f0 100644
-> --- a/drivers/video/fbdev/pxa168fb.c
-> +++ b/drivers/video/fbdev/pxa168fb.c
-> @@ -625,10 +625,8 @@ static int pxa168fb_probe(struct platform_device *pdev)
->  	}
->  
->  	irq = platform_get_irq(pdev, 0);
-> -	if (irq < 0) {
-> -		dev_err(&pdev->dev, "no IRQ defined\n");
-> +	if (irq < 0)
->  		return -ENOENT;
-> -	}
->  
->  	info = framebuffer_alloc(sizeof(struct pxa168fb_info), &pdev->dev);
->  	if (info = NULL) {
-> diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
-> index 74ffb446e00c..07414d43cb3f 100644
-> --- a/drivers/video/fbdev/pxa3xx-gcu.c
-> +++ b/drivers/video/fbdev/pxa3xx-gcu.c
-> @@ -614,10 +614,8 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
->  
->  	/* request the IRQ */
->  	irq = platform_get_irq(pdev, 0);
-> -	if (irq < 0) {
-> -		dev_err(dev, "no IRQ defined: %d\n", irq);
-> +	if (irq < 0)
->  		return irq;
-> -	}
->  
->  	ret = devm_request_irq(dev, irq, pxa3xx_gcu_handle_irq,
->  			       0, DRV_NAME, priv);
-> diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-> index 4282cb117b92..b44f402ce552 100644
-> --- a/drivers/video/fbdev/pxafb.c
-> +++ b/drivers/video/fbdev/pxafb.c
-> @@ -2353,7 +2353,6 @@ static int pxafb_probe(struct platform_device *dev)
->  
->  	irq = platform_get_irq(dev, 0);
->  	if (irq < 0) {
-> -		dev_err(&dev->dev, "no IRQ defined\n");
->  		ret = -ENODEV;
->  		goto failed_free_mem;
->  	}
-> diff --git a/drivers/video/fbdev/s3c2410fb.c b/drivers/video/fbdev/s3c2410fb.c
-> index a702da89910b..2a846fd5da2a 100644
-> --- a/drivers/video/fbdev/s3c2410fb.c
-> +++ b/drivers/video/fbdev/s3c2410fb.c
-> @@ -849,10 +849,8 @@ static int s3c24xxfb_probe(struct platform_device *pdev,
->  	display = mach_info->displays + mach_info->default_display;
->  
->  	irq = platform_get_irq(pdev, 0);
-> -	if (irq < 0) {
-> -		dev_err(&pdev->dev, "no irq for device\n");
-> +	if (irq < 0)
->  		return -ENOENT;
-> -	}
->  
->  	fbinfo = framebuffer_alloc(sizeof(struct s3c2410fb_info), &pdev->dev);
->  	if (!fbinfo)
-> diff --git a/drivers/video/fbdev/vt8500lcdfb.c b/drivers/video/fbdev/vt8500lcdfb.c
-> index be8d9702cbb2..a10088e1cdb0 100644
-> --- a/drivers/video/fbdev/vt8500lcdfb.c
-> +++ b/drivers/video/fbdev/vt8500lcdfb.c
-> @@ -372,7 +372,6 @@ static int vt8500lcd_probe(struct platform_device *pdev)
->  
->  	irq = platform_get_irq(pdev, 0);
->  	if (irq < 0) {
-> -		dev_err(&pdev->dev, "no IRQ defined\n");
->  		ret = -ENODEV;
->  		goto failed_free_palette;
->  	}
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i91=
+5/display/intel_ddi.c
+index c96f629cddc3..374ab6a3757c 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -3900,8 +3900,7 @@ static void intel_enable_ddi_dp(struct intel_encoder =
+*encoder,
+=20
+ 	intel_edp_backlight_on(crtc_state, conn_state);
+ 	intel_psr_enable(intel_dp, crtc_state);
+-	intel_dp_vsc_enable(intel_dp, crtc_state, conn_state);
+-	intel_dp_hdr_metadata_enable(intel_dp, crtc_state, conn_state);
++	intel_dp_set_infoframes(encoder, true, crtc_state, conn_state);
+ 	intel_edp_drrs_enable(intel_dp, crtc_state);
+=20
+ 	if (crtc_state->has_audio)
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915=
+/display/intel_dp.c
+index e33488222ac5..e8cf12d14dc3 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.c
++++ b/drivers/gpu/drm/i915/display/intel_dp.c
+@@ -5263,232 +5263,6 @@ void intel_dp_vsc_sdp_log(const char *level, struct=
+ device *dev,
+ }
+ #undef dp_sdp_log
+=20
+-static void
+-intel_dp_setup_vsc_sdp(struct intel_dp *intel_dp,
+-		       const struct intel_crtc_state *crtc_state,
+-		       const struct drm_connector_state *conn_state)
+-{
+-	struct intel_digital_port *intel_dig_port =3D dp_to_dig_port(intel_dp);
+-	struct dp_sdp vsc_sdp =3D {};
+-
+-	/* Prepare VSC Header for SU as per DP 1.4a spec, Table 2-119 */
+-	vsc_sdp.sdp_header.HB0 =3D 0;
+-	vsc_sdp.sdp_header.HB1 =3D 0x7;
+-
+-	/*
+-	 * VSC SDP supporting 3D stereo, PSR2, and Pixel Encoding/
+-	 * Colorimetry Format indication.
+-	 */
+-	vsc_sdp.sdp_header.HB2 =3D 0x5;
+-
+-	/*
+-	 * VSC SDP supporting 3D stereo, + PSR2, + Pixel Encoding/
+-	 * Colorimetry Format indication (HB2 =3D 05h).
+-	 */
+-	vsc_sdp.sdp_header.HB3 =3D 0x13;
+-
+-	/* DP 1.4a spec, Table 2-120 */
+-	switch (crtc_state->output_format) {
+-	case INTEL_OUTPUT_FORMAT_YCBCR444:
+-		vsc_sdp.db[16] =3D 0x1 << 4; /* YCbCr 444 : DB16[7:4] =3D 1h */
+-		break;
+-	case INTEL_OUTPUT_FORMAT_YCBCR420:
+-		vsc_sdp.db[16] =3D 0x3 << 4; /* YCbCr 420 : DB16[7:4] =3D 3h */
+-		break;
+-	case INTEL_OUTPUT_FORMAT_RGB:
+-	default:
+-		/* RGB: DB16[7:4] =3D 0h */
+-		break;
+-	}
+-
+-	switch (conn_state->colorspace) {
+-	case DRM_MODE_COLORIMETRY_BT709_YCC:
+-		vsc_sdp.db[16] |=3D 0x1;
+-		break;
+-	case DRM_MODE_COLORIMETRY_XVYCC_601:
+-		vsc_sdp.db[16] |=3D 0x2;
+-		break;
+-	case DRM_MODE_COLORIMETRY_XVYCC_709:
+-		vsc_sdp.db[16] |=3D 0x3;
+-		break;
+-	case DRM_MODE_COLORIMETRY_SYCC_601:
+-		vsc_sdp.db[16] |=3D 0x4;
+-		break;
+-	case DRM_MODE_COLORIMETRY_OPYCC_601:
+-		vsc_sdp.db[16] |=3D 0x5;
+-		break;
+-	case DRM_MODE_COLORIMETRY_BT2020_CYCC:
+-	case DRM_MODE_COLORIMETRY_BT2020_RGB:
+-		vsc_sdp.db[16] |=3D 0x6;
+-		break;
+-	case DRM_MODE_COLORIMETRY_BT2020_YCC:
+-		vsc_sdp.db[16] |=3D 0x7;
+-		break;
+-	case DRM_MODE_COLORIMETRY_DCI_P3_RGB_D65:
+-	case DRM_MODE_COLORIMETRY_DCI_P3_RGB_THEATER:
+-		vsc_sdp.db[16] |=3D 0x4; /* DCI-P3 (SMPTE RP 431-2) */
+-		break;
+-	default:
+-		/* sRGB (IEC 61966-2-1) / ITU-R BT.601: DB16[0:3] =3D 0h */
+-
+-		/* RGB->YCBCR color conversion uses the BT.709 color space. */
+-		if (crtc_state->output_format =3D INTEL_OUTPUT_FORMAT_YCBCR420)
+-			vsc_sdp.db[16] |=3D 0x1; /* 0x1, ITU-R BT.709 */
+-		break;
+-	}
+-
+-	/*
+-	 * For pixel encoding formats YCbCr444, YCbCr422, YCbCr420, and Y Only,
+-	 * the following Component Bit Depth values are defined:
+-	 * 001b =3D 8bpc.
+-	 * 010b =3D 10bpc.
+-	 * 011b =3D 12bpc.
+-	 * 100b =3D 16bpc.
+-	 */
+-	switch (crtc_state->pipe_bpp) {
+-	case 24: /* 8bpc */
+-		vsc_sdp.db[17] =3D 0x1;
+-		break;
+-	case 30: /* 10bpc */
+-		vsc_sdp.db[17] =3D 0x2;
+-		break;
+-	case 36: /* 12bpc */
+-		vsc_sdp.db[17] =3D 0x3;
+-		break;
+-	case 48: /* 16bpc */
+-		vsc_sdp.db[17] =3D 0x4;
+-		break;
+-	default:
+-		MISSING_CASE(crtc_state->pipe_bpp);
+-		break;
+-	}
+-
+-	/*
+-	 * Dynamic Range (Bit 7)
+-	 * 0 =3D VESA range, 1 =3D CTA range.
+-	 * all YCbCr are always limited range
+-	 */
+-	vsc_sdp.db[17] |=3D 0x80;
+-
+-	/*
+-	 * Content Type (Bits 2:0)
+-	 * 000b =3D Not defined.
+-	 * 001b =3D Graphics.
+-	 * 010b =3D Photo.
+-	 * 011b =3D Video.
+-	 * 100b =3D Game
+-	 * All other values are RESERVED.
+-	 * Note: See CTA-861-G for the definition and expected
+-	 * processing by a stream sink for the above contect types.
+-	 */
+-	vsc_sdp.db[18] =3D 0;
+-
+-	intel_dig_port->write_infoframe(&intel_dig_port->base,
+-			crtc_state, DP_SDP_VSC, &vsc_sdp, sizeof(vsc_sdp));
+-}
+-
+-static void
+-intel_dp_setup_hdr_metadata_infoframe_sdp(struct intel_dp *intel_dp,
+-					  const struct intel_crtc_state *crtc_state,
+-					  const struct drm_connector_state *conn_state)
+-{
+-	struct intel_digital_port *intel_dig_port =3D dp_to_dig_port(intel_dp);
+-	struct dp_sdp infoframe_sdp =3D {};
+-	struct hdmi_drm_infoframe drm_infoframe =3D {};
+-	const int infoframe_size =3D HDMI_INFOFRAME_HEADER_SIZE + HDMI_DRM_INFOFR=
+AME_SIZE;
+-	unsigned char buf[HDMI_INFOFRAME_HEADER_SIZE + HDMI_DRM_INFOFRAME_SIZE];
+-	ssize_t len;
+-	int ret;
+-
+-	ret =3D drm_hdmi_infoframe_set_hdr_metadata(&drm_infoframe, conn_state);
+-	if (ret) {
+-		DRM_DEBUG_KMS("couldn't set HDR metadata in infoframe\n");
+-		return;
+-	}
+-
+-	len =3D hdmi_drm_infoframe_pack_only(&drm_infoframe, buf, sizeof(buf));
+-	if (len < 0) {
+-		DRM_DEBUG_KMS("buffer size is smaller than hdr metadata infoframe\n");
+-		return;
+-	}
+-
+-	if (len !=3D infoframe_size) {
+-		DRM_DEBUG_KMS("wrong static hdr metadata size\n");
+-		return;
+-	}
+-
+-	/*
+-	 * Set up the infoframe sdp packet for HDR static metadata.
+-	 * Prepare VSC Header for SU as per DP 1.4a spec,
+-	 * Table 2-100 and Table 2-101
+-	 */
+-
+-	/* Packet ID, 00h for non-Audio INFOFRAME */
+-	infoframe_sdp.sdp_header.HB0 =3D 0;
+-	/*
+-	 * Packet Type 80h + Non-audio INFOFRAME Type value
+-	 * HDMI_INFOFRAME_TYPE_DRM: 0x87,
+-	 */
+-	infoframe_sdp.sdp_header.HB1 =3D drm_infoframe.type;
+-	/*
+-	 * Least Significant Eight Bits of (Data Byte Count =E2=80=93 1)
+-	 * infoframe_size - 1,
+-	 */
+-	infoframe_sdp.sdp_header.HB2 =3D 0x1D;
+-	/* INFOFRAME SDP Version Number */
+-	infoframe_sdp.sdp_header.HB3 =3D (0x13 << 2);
+-	/* CTA Header Byte 2 (INFOFRAME Version Number) */
+-	infoframe_sdp.db[0] =3D drm_infoframe.version;
+-	/* CTA Header Byte 3 (Length of INFOFRAME): HDMI_DRM_INFOFRAME_SIZE */
+-	infoframe_sdp.db[1] =3D drm_infoframe.length;
+-	/*
+-	 * Copy HDMI_DRM_INFOFRAME_SIZE size from a buffer after
+-	 * HDMI_INFOFRAME_HEADER_SIZE
+-	 */
+-	BUILD_BUG_ON(sizeof(infoframe_sdp.db) < HDMI_DRM_INFOFRAME_SIZE + 2);
+-	memcpy(&infoframe_sdp.db[2], &buf[HDMI_INFOFRAME_HEADER_SIZE],
+-	       HDMI_DRM_INFOFRAME_SIZE);
+-
+-	/*
+-	 * Size of DP infoframe sdp packet for HDR static metadata is consist of
+-	 * - DP SDP Header(struct dp_sdp_header): 4 bytes
+-	 * - Two Data Blocks: 2 bytes
+-	 *    CTA Header Byte2 (INFOFRAME Version Number)
+-	 *    CTA Header Byte3 (Length of INFOFRAME)
+-	 * - HDMI_DRM_INFOFRAME_SIZE: 26 bytes
+-	 *
+-	 * Prior to GEN11's GMP register size is identical to DP HDR static metad=
+ata
+-	 * infoframe size. But GEN11+ has larger than that size, write_infoframe
+-	 * will pad rest of the size.
+-	 */
+-	intel_dig_port->write_infoframe(&intel_dig_port->base, crtc_state,
+-					HDMI_PACKET_TYPE_GAMUT_METADATA,
+-					&infoframe_sdp,
+-					sizeof(struct dp_sdp_header) + 2 + HDMI_DRM_INFOFRAME_SIZE);
+-}
+-
+-void intel_dp_vsc_enable(struct intel_dp *intel_dp,
+-			 const struct intel_crtc_state *crtc_state,
+-			 const struct drm_connector_state *conn_state)
+-{
+-	if (!intel_dp_needs_vsc_sdp(crtc_state, conn_state))
+-		return;
+-
+-	intel_dp_setup_vsc_sdp(intel_dp, crtc_state, conn_state);
+-}
+-
+-void intel_dp_hdr_metadata_enable(struct intel_dp *intel_dp,
+-				  const struct intel_crtc_state *crtc_state,
+-				  const struct drm_connector_state *conn_state)
+-{
+-	if (!conn_state->hdr_output_metadata)
+-		return;
+-
+-	intel_dp_setup_hdr_metadata_infoframe_sdp(intel_dp,
+-						  crtc_state,
+-						  conn_state);
+-}
+-
+ static u8 intel_dp_autotest_link_training(struct intel_dp *intel_dp)
+ {
+ 	int status =3D 0;
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915=
+/display/intel_dp.h
+index 03b300b58fd0..6d8003eb59f6 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.h
++++ b/drivers/gpu/drm/i915/display/intel_dp.h
+@@ -112,12 +112,6 @@ int intel_dp_link_required(int pixel_clock, int bpp);
+ int intel_dp_max_data_rate(int max_link_clock, int max_lanes);
+ bool intel_dp_needs_vsc_sdp(const struct intel_crtc_state *crtc_state,
+ 			    const struct drm_connector_state *conn_state);
+-void intel_dp_vsc_enable(struct intel_dp *intel_dp,
+-			 const struct intel_crtc_state *crtc_state,
+-			 const struct drm_connector_state *conn_state);
+-void intel_dp_hdr_metadata_enable(struct intel_dp *intel_dp,
+-				  const struct intel_crtc_state *crtc_state,
+-				  const struct drm_connector_state *conn_state);
+ void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
+ 			     const struct intel_crtc_state *crtc_state,
+ 			     const struct drm_connector_state *conn_state);
+--=20
+2.24.1

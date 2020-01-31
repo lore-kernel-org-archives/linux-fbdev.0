@@ -1,57 +1,65 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 03 Jan 2020 12:40:27 +0000
-Subject: Re: [PATCH] omapfb/dss: remove unneeded conversions to bool
-Message-Id: <5251890d-e12e-c78c-9790-fe8764501744@samsung.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 31 Jan 2020 21:46:47 +0000
+Subject: [PATCH 04/18] drm/i915/dp: Add compute routine for DP HDR Metadata Infoframe SDP
+Message-Id: <20200131214701.1085737-5-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20191016180541epcas5p4d85d004250e99c95c876da3c03d4d46e@epcas5p4.samsung.com>
-        <20191016180424.23907-1-afd@ti.com>
-In-Reply-To: <20191016180424.23907-1-afd@ti.com>
+References: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200131214701.1085737-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Jiri Kosina <trivial@kernel.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
+It stores computed dp hdr metadata infoframe sdp to infoframes.drm of
+crtc state. It referenced intel_hdmi_compute_drm_infoframe().
 
-On 10/16/19 8:04 PM, Andrew F. Davis wrote:
-> Found with scripts/coccinelle/misc/boolconv.cocci.
-> 
-> Signed-off-by: Andrew F. Davis <afd@ti.com>
+While computing, we'll also fill out the inforames.enable bitmask
+appropriately.
 
-Thanks, patch queued for v5.6 (also sorry for the delay).
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_dp.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-> index 376ee5bc3ddc..ce37da85cc45 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-> @@ -1635,7 +1635,7 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
->  {
->  	int scale_x = out_width != orig_width;
->  	int scale_y = out_height != orig_height;
-> -	bool chroma_upscale = plane != OMAP_DSS_WB ? true : false;
-> +	bool chroma_upscale = plane != OMAP_DSS_WB;
->  
->  	if (!dss_has_feature(FEAT_HANDLE_UV_SEPARATE))
->  		return;
-> @@ -3100,9 +3100,9 @@ static bool _dispc_mgr_pclk_ok(enum omap_channel channel,
->  		unsigned long pclk)
->  {
->  	if (dss_mgr_is_lcd(channel))
-> -		return pclk <= dispc.feat->max_lcd_pclk ? true : false;
-> +		return pclk <= dispc.feat->max_lcd_pclk;
->  	else
-> -		return pclk <= dispc.feat->max_tv_pclk ? true : false;
-> +		return pclk <= dispc.feat->max_tv_pclk;
->  }
->  
->  bool dispc_mgr_timings_ok(enum omap_channel channel,
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
+index 705d36b548b1..64e697445085 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.c
++++ b/drivers/gpu/drm/i915/display/intel_dp.c
+@@ -2463,6 +2463,26 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
+ 					 &crtc_state->infoframes.vsc);
+ }
+ 
++static void
++intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_crtc_state *crtc_state,
++					    const struct drm_connector_state *conn_state)
++{
++	int ret;
++	struct hdmi_drm_infoframe *drm_infoframe = &crtc_state->infoframes.drm.drm;
++
++	if (!conn_state->hdr_output_metadata)
++		return;
++
++	ret = drm_hdmi_infoframe_set_hdr_metadata(drm_infoframe, conn_state);
++
++	if (ret) {
++		DRM_DEBUG_KMS("couldn't set HDR metadata in infoframe\n");
++		return;
++	}
++
++	crtc_state->infoframes.enable |= intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA);
++}
++
+ int
+ intel_dp_compute_config(struct intel_encoder *encoder,
+ 			struct intel_crtc_state *pipe_config,
+@@ -2569,6 +2589,7 @@ intel_dp_compute_config(struct intel_encoder *encoder,
+ 
+ 	intel_psr_compute_config(intel_dp, pipe_config);
+ 	intel_dp_compute_vsc_sdp(intel_dp, pipe_config, conn_state);
++	intel_dp_compute_hdr_metadata_infoframe_sdp(pipe_config, conn_state);
+ 
+ 	return 0;
+ }
+-- 
+2.24.1

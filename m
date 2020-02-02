@@ -1,72 +1,112 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Sun, 09 Feb 2020 03:53:41 +0000
-Subject: [PATCH v5 14/18] drm/i915: Disable DIPs when LSPCON is used
-Message-Id: <20200209035345.357436-15-gwan-gyeong.mun@intel.com>
+Date: Sun, 02 Feb 2020 15:49:34 +0000
+Subject: [PATCH v2 14/18] drm/i915: Add state readout for DP VSC SDP
+Message-Id: <20200202154938.1129610-15-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
+References: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-When LSPCON is used, DIPs(Data Island Packets of DP or HDMI) will not be
-used. Therefore it explicitly disables DIPs on encoder->pre_enable
-callback.
+Added state readout for DP VSC SDP and enabled state validation
+for DP VSC SDP.
 
-It resolves below issue
- - reproduce step of issue
- 1) Boot or Pause & Resume system
- 2) Do not enable SPD (Source Product Description) DIP
- 3) When driver tries to read a DIP Ctl register,
-    it is written that SDP DIP is enabled.
+v2: Minor style fix
 
-Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_ddi.c | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+ drivers/gpu/drm/i915/display/intel_ddi.c     |  1 +
+ drivers/gpu/drm/i915/display/intel_display.c | 42 ++++++++++++++++++++
+ 2 files changed, 43 insertions(+)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index 7f29b08ea202..195e66744c1e 100644
+index a9eaf7a6bc15..64e4edefa998 100644
 --- a/drivers/gpu/drm/i915/display/intel_ddi.c
 +++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -3627,6 +3627,22 @@ static void intel_ddi_pre_enable_hdmi(struct intel_encoder *encoder,
- 				       crtc_state, conn_state);
+@@ -4391,6 +4391,7 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
+ 			     &pipe_config->infoframes.drm);
+ 
+ 	intel_read_dp_sdp(encoder, pipe_config, HDMI_PACKET_TYPE_GAMUT_METADATA);
++	intel_read_dp_sdp(encoder, pipe_config, DP_SDP_VSC);
  }
  
-+static void intel_ddi_disable_dips(struct intel_encoder *encoder,
-+				   const struct intel_crtc_state *crtc_state)
+ static enum intel_output_type
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index 7d298f14799d..be42ed3106ca 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -13503,6 +13503,13 @@ intel_compare_infoframe(const union hdmi_infoframe *a,
+ 	return memcmp(a, b, sizeof(*a)) = 0;
+ }
+ 
++static bool
++intel_compare_dp_vsc_sdp(const struct intel_dp_vsc_sdp *a,
++			 const struct intel_dp_vsc_sdp *b)
 +{
-+	struct drm_i915_private *dev_priv = to_i915(encoder->base.dev);
-+	i915_reg_t reg = HSW_TVIDEO_DIP_CTL(crtc_state->cpu_transcoder);
-+	u32 dip_enable = VIDEO_DIP_ENABLE_VSC_HSW | VIDEO_DIP_ENABLE_AVI_HSW |
-+			 VIDEO_DIP_ENABLE_GCP_HSW | VIDEO_DIP_ENABLE_VS_HSW |
-+			 VIDEO_DIP_ENABLE_GMP_HSW | VIDEO_DIP_ENABLE_SPD_HSW |
-+			 VIDEO_DIP_ENABLE_DRM_GLK;
-+	u32 val = intel_de_read(dev_priv, reg);
-+
-+	val &= ~dip_enable;
-+	intel_de_write(dev_priv, reg, val);
-+	intel_de_posting_read(dev_priv, reg);
++	return memcmp(a, b, sizeof(*a)) = 0;
 +}
 +
- static void intel_ddi_pre_enable(struct intel_encoder *encoder,
- 				 const struct intel_crtc_state *crtc_state,
- 				 const struct drm_connector_state *conn_state)
-@@ -3666,6 +3682,13 @@ static void intel_ddi_pre_enable(struct intel_encoder *encoder,
- 			struct intel_digital_port *dig_port  					enc_to_dig_port(encoder);
+ static void
+ pipe_config_infoframe_mismatch(struct drm_i915_private *dev_priv,
+ 			       bool fastset, const char *name,
+@@ -13528,6 +13535,30 @@ pipe_config_infoframe_mismatch(struct drm_i915_private *dev_priv,
+ 	}
+ }
  
-+			/*
-+			 * When LSPCON is used, DIPs (Data Island Packets of DP
-+			 * or HDMI) will not be used.
-+			 * Therefore we explicitly disable DIPs here.
-+			 */
-+			intel_ddi_disable_dips(encoder, crtc_state);
++static void
++pipe_config_dp_vsc_sdp_mismatch(struct drm_i915_private *dev_priv,
++				bool fastset, const char *name,
++				const struct intel_dp_vsc_sdp *a,
++				const struct intel_dp_vsc_sdp *b)
++{
++	if (fastset) {
++		if (!drm_debug_enabled(DRM_UT_KMS))
++			return;
 +
- 			dig_port->set_infoframes(encoder,
- 						 crtc_state->has_infoframe,
- 						 crtc_state, conn_state);
++		DRM_DEBUG_KMS("fastset mismatch in %s dp sdp\n", name);
++		DRM_DEBUG_KMS("expected:\n");
++		intel_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, a);
++		DRM_DEBUG_KMS("found:\n");
++		intel_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, b);
++	} else {
++		DRM_ERROR("mismatch in %s dp sdp\n", name);
++		DRM_ERROR("expected:\n");
++		intel_dp_vsc_sdp_log(KERN_ERR, dev_priv->drm.dev, a);
++		DRM_ERROR("found:\n");
++		intel_dp_vsc_sdp_log(KERN_ERR, dev_priv->drm.dev, b);
++	}
++}
++
+ static void __printf(4, 5)
+ pipe_config_mismatch(bool fastset, const struct intel_crtc *crtc,
+ 		     const char *name, const char *format, ...)
+@@ -13729,6 +13760,16 @@ intel_pipe_config_compare(const struct intel_crtc_state *current_config,
+ 	} \
+ } while (0)
+ 
++#define PIPE_CONF_CHECK_DP_VSC_SDP(name) do { \
++	if (!intel_compare_dp_vsc_sdp(&current_config->infoframes.name, \
++				      &pipe_config->infoframes.name)) { \
++		pipe_config_dp_vsc_sdp_mismatch(dev_priv, fastset, __stringify(name), \
++						&current_config->infoframes.name, \
++						&pipe_config->infoframes.name); \
++		ret = false; \
++	} \
++} while (0)
++
+ #define PIPE_CONF_CHECK_COLOR_LUT(name1, name2, bit_precision) do { \
+ 	if (current_config->name1 != pipe_config->name1) { \
+ 		pipe_config_mismatch(fastset, crtc, __stringify(name1), \
+@@ -13902,6 +13943,7 @@ intel_pipe_config_compare(const struct intel_crtc_state *current_config,
+ 	PIPE_CONF_CHECK_INFOFRAME(spd);
+ 	PIPE_CONF_CHECK_INFOFRAME(hdmi);
+ 	PIPE_CONF_CHECK_INFOFRAME(drm);
++	PIPE_CONF_CHECK_DP_VSC_SDP(vsc);
+ 
+ 	PIPE_CONF_CHECK_X(sync_mode_slaves_mask);
+ 	PIPE_CONF_CHECK_I(master_transcoder);
 -- 
 2.24.1

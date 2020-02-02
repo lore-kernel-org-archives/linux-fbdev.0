@@ -1,7 +1,7 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Sun, 02 Feb 2020 15:49:30 +0000
-Subject: [PATCH v2 10/18] drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
-Message-Id: <20200202154938.1129610-11-gwan-gyeong.mun@intel.com>
+Date: Sun, 02 Feb 2020 15:49:31 +0000
+Subject: [PATCH v2 11/18] drm/i915: Include DP VSC SDP in the crtc state dump
+Message-Id: <20200202154938.1129610-12-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
 In-Reply-To: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
@@ -11,27 +11,41 @@ Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Dump out the DP HDR Metadata Infoframe SDP in the normal crtc state dump.
-
-HDMI Dynamic Range and Mastering (DRM) infoframe and DP HDR Metadata
-Infoframe SDP use the same member variable in infoframes of crtc state.
+Dump out the DP VSC SDP in the normal crtc state dump
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_display.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/gpu/drm/i915/display/intel_display.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index 239861bcedba..593c63f51210 100644
+index 593c63f51210..7d298f14799d 100644
 --- a/drivers/gpu/drm/i915/display/intel_display.c
 +++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -13033,6 +13033,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+@@ -12878,6 +12878,16 @@ intel_dump_infoframe(struct drm_i915_private *dev_priv,
+ 	hdmi_infoframe_log(KERN_DEBUG, dev_priv->drm.dev, frame);
+ }
+ 
++static void
++intel_dump_dp_vsc_sdp(struct drm_i915_private *dev_priv,
++		      const struct intel_dp_vsc_sdp *vsc)
++{
++	if (!drm_debug_enabled(DRM_UT_KMS))
++		return;
++
++	intel_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, vsc);
++}
++
+ #define OUTPUT_TYPE(x) [INTEL_OUTPUT_ ## x] = #x
+ 
+ static const char * const output_type_str[] = {
+@@ -13036,6 +13046,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
  	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
+ 	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
  		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
 +	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
-+		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
++	    intel_hdmi_infoframe_enable(DP_SDP_VSC))
++		intel_dump_dp_vsc_sdp(dev_priv, &pipe_config->infoframes.vsc);
  
  	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
  	drm_mode_debug_printmodeline(&pipe_config->hw.mode);

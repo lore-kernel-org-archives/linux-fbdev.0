@@ -1,39 +1,53 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Sun, 09 Feb 2020 03:53:43 +0000
-Subject: [PATCH v5 16/18] drm/i915: Stop sending DP SDPs on ddi disable
-Message-Id: <20200209035345.357436-17-gwan-gyeong.mun@intel.com>
+Date: Sun, 02 Feb 2020 15:49:33 +0000
+Subject: [PATCH v2 13/18] drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
+Message-Id: <20200202154938.1129610-14-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
+References: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Call intel_dp_set_infoframes(false) function on intel_ddi_post_disable_dp()
-to make sure not to send VSC SDP and HDR Metadata Infoframe SDP.
-
-v5: Polish commit message [Uma]
+Added state readout for DP HDR Metadata Infoframe SDP.
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_ddi.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/gpu/drm/i915/display/intel_ddi.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index fce6e36feae1..a00433d9cdd1 100644
+index 374ab6a3757c..a9eaf7a6bc15 100644
 --- a/drivers/gpu/drm/i915/display/intel_ddi.c
 +++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -3738,6 +3738,8 @@ static void intel_ddi_post_disable_dp(struct intel_encoder *encoder,
- 					  INTEL_OUTPUT_DP_MST);
- 	enum phy phy = intel_port_to_phy(dev_priv, encoder->port);
+@@ -4322,6 +4322,9 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
+ 				      pipe_config->fec_enable);
+ 		}
  
-+	intel_dp_set_infoframes(encoder, false, old_crtc_state, old_conn_state);
++		pipe_config->infoframes.enable |+			intel_hdmi_infoframes_enabled(encoder, pipe_config);
 +
- 	/*
- 	 * Power down sink before disabling the port, otherwise we end
- 	 * up getting interrupts from the sink on detecting link loss.
+ 		break;
+ 	case TRANS_DDI_MODE_SELECT_DP_MST:
+ 		pipe_config->output_types |= BIT(INTEL_OUTPUT_DP_MST);
+@@ -4333,6 +4336,9 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
+ 					REG_FIELD_GET(TRANS_DDI_MST_TRANSPORT_SELECT_MASK, temp);
+ 
+ 		intel_dp_get_m_n(intel_crtc, pipe_config);
++
++		pipe_config->infoframes.enable |+			intel_hdmi_infoframes_enabled(encoder, pipe_config);
+ 		break;
+ 	default:
+ 		break;
+@@ -4383,6 +4389,8 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
+ 	intel_read_infoframe(encoder, pipe_config,
+ 			     HDMI_INFOFRAME_TYPE_DRM,
+ 			     &pipe_config->infoframes.drm);
++
++	intel_read_dp_sdp(encoder, pipe_config, HDMI_PACKET_TYPE_GAMUT_METADATA);
+ }
+ 
+ static enum intel_output_type
 -- 
 2.24.1

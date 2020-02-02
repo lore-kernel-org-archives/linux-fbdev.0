@@ -1,63 +1,63 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 14 Feb 2020 15:40:31 +0000
-Subject: [PATCH AUTOSEL 5.5 039/542] pxa168fb: Fix the function used to release some memory in an error handl
-Message-Id: <20200214154854.6746-39-sashal@kernel.org>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Sun, 02 Feb 2020 15:49:22 +0000
+Subject: [PATCH v2 02/18] drm/i915: Add DP VSC SDP payload data to intel_crtc_state.infoframes
+Message-Id: <20200202154938.1129610-3-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200214154854.6746-1-sashal@kernel.org>
-In-Reply-To: <20200214154854.6746-1-sashal@kernel.org>
+References: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, YueHaibing <yuehaibing@huawei.com>, dri-devel@lists.freedesktop.org, Lubomir Rintel <lkundrak@v3.sk>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+In order to support state readout for DP VSC SDP, we need to have a
+structure which holds DP VSC SDP payload data such as
+"union hdmi_infoframe drm" which is used for DRM infoframe.
 
-[ Upstream commit 3c911fe799d1c338d94b78e7182ad452c37af897 ]
+And In order to support DP HDR10, we have to support VSC SDP and
+HDR Metadata Infoframe SDP. As we will use drm member variable of
+intel_crtc_state.infoframes, we only need to add vsc sdp member variable
+to intel_crtc_state.infoframes.
 
-In the probe function, some resources are allocated using 'dma_alloc_wc()',
-they should be released with 'dma_free_wc()', not 'dma_free_coherent()'.
+Because DP SDP payload type does not have common structure like as
+"union hdmi_infoframe", it adds "struct intel_dp_vsc_sdp"
+to intel_display_types.h
 
-We already use 'dma_free_wc()' in the remove function, but not in the
-error handling path of the probe function.
-
-Also, remove a useless 'PAGE_ALIGN()'. 'info->fix.smem_len' is already
-PAGE_ALIGNed.
-
-Fixes: 638772c7553f ("fb: add support of LCD display controller on pxa168/910 (base layer)")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Reviewed-by: Lubomir Rintel <lkundrak@v3.sk>
-CC: YueHaibing <yuehaibing@huawei.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20190831100024.3248-1-christophe.jaillet@wanadoo.fr
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/video/fbdev/pxa168fb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/i915/display/intel_display_types.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
-index 1410f476e135d..1fc50fc0694bc 100644
---- a/drivers/video/fbdev/pxa168fb.c
-+++ b/drivers/video/fbdev/pxa168fb.c
-@@ -766,8 +766,8 @@ static int pxa168fb_probe(struct platform_device *pdev)
- failed_free_clk:
- 	clk_disable_unprepare(fbi->clk);
- failed_free_fbmem:
--	dma_free_coherent(fbi->dev, info->fix.smem_len,
--			info->screen_base, fbi->fb_start_dma);
-+	dma_free_wc(fbi->dev, info->fix.smem_len,
-+		    info->screen_base, fbi->fb_start_dma);
- failed_free_info:
- 	kfree(info);
+diff --git a/drivers/gpu/drm/i915/display/intel_display_types.h b/drivers/gpu/drm/i915/display/intel_display_types.h
+index 33ba93863488..81112d63342c 100644
+--- a/drivers/gpu/drm/i915/display/intel_display_types.h
++++ b/drivers/gpu/drm/i915/display/intel_display_types.h
+@@ -780,6 +780,17 @@ enum intel_output_format {
+ 	INTEL_OUTPUT_FORMAT_YCBCR444,
+ };
  
-@@ -801,7 +801,7 @@ static int pxa168fb_remove(struct platform_device *pdev)
++struct intel_dp_vsc_sdp {
++	unsigned char sdp_type; /* Secondary-data Packet Type */
++	unsigned char revision; /* Revision Number */
++	unsigned char length; /* Number of Valid Data Bytes */
++	enum dp_colorspace colorspace;
++	enum dp_colorimetry colorimetry;
++	int bpc;
++	enum dp_dynamic_range dynamic_range;
++	enum dp_content_type content_type;
++};
++
+ struct intel_crtc_state {
+ 	/*
+ 	 * uapi (drm) state. This is the software state shown to userspace.
+@@ -1021,6 +1032,7 @@ struct intel_crtc_state {
+ 		union hdmi_infoframe spd;
+ 		union hdmi_infoframe hdmi;
+ 		union hdmi_infoframe drm;
++		struct intel_dp_vsc_sdp vsc;
+ 	} infoframes;
  
- 	irq = platform_get_irq(pdev, 0);
- 
--	dma_free_wc(fbi->dev, PAGE_ALIGN(info->fix.smem_len),
-+	dma_free_wc(fbi->dev, info->fix.smem_len,
- 		    info->screen_base, info->fix.smem_start);
- 
- 	clk_disable_unprepare(fbi->clk);
+ 	/* HDMI scrambling status */
 -- 
-2.20.1
+2.24.1

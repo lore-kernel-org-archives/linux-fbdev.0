@@ -1,97 +1,100 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Fri, 07 Feb 2020 00:10:21 +0000
-Subject: Re: [PATCH 1/3] fbdev/g364fb: Fix build failure
-Message-Id: <alpine.LNX.2.22.394.2002071054180.13@nippy.intranet>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="-1463811774-1984420675-1581033946=:13"
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Mon, 03 Feb 2020 23:19:58 +0000
+Subject: [PATCH v3 01/17] drm: add DP 1.4 VSC SDP Payload related enums and a structure
+Message-Id: <20200203232014.906651-2-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1580610812.git.fthain@telegraphics.com.au>
- <d8f19ebc00a7688da739d41d584d081d1559f0d2.1580610812.git.fthain@telegraphics.com.au>
- <CAAdtpL7SpzfqSmEcuVszNyXfrRegC20txoS5j7Ss3WkCmyRH+g@mail.gmail.com>
- <alpine.LNX.2.22.394.2002060829410.8@nippy.intranet>
- <CAAdtpL5Cz5YGKZVfbA=X8qMtP7jDc0G7igSj3EB=PfazM5JoDg@mail.gmail.com>
-In-Reply-To: <CAAdtpL5Cz5YGKZVfbA=X8qMtP7jDc0G7igSj3EB=PfazM5JoDg@mail.gmail.com>
-To: =?UTF-8?Q?Philippe_Mathieu-Daud=C3=A9?= <f4bug@amsat.org>
-Cc: linux-fbdev@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Paul Burton <paulburton@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, James Hogan <jhogan@kernel.org>, open list <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>, "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>, Thomas Bogendoerfer <tbogendoerfer@suse.de>, dri-devel@lists.freedesktop.org, Laurent Vivier <laurent@vivier.eu>
+References: <20200203232014.906651-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200203232014.906651-1-gwan-gyeong.mun@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+It adds new enumeration definitions for VSC SDP Payload for Pixel
+Encoding/Colorimetry Format.
+And it adds a new drm data structure for DP VSC SDP.
 
----1463811774-1984420675-1581033946=:13
-Content-Type: text/plain; CHARSET=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-ID: <alpine.LNX.2.22.394.2002071105541.13@nippy.intranet>
+enum dp_colorspace and enum dp_colorimetry correspond "Pixel Encoding and
+Colorimetry Formats". enum dp_dynamic_range corresponds "Dynamic Range".
+And enum dp_content_type corresponds "Content Type"
+All of them are based on DP 1.4 spec [Table 2-117: VSC SDP Payload for
+DB16 through DB18].
 
-On Fri, 7 Feb 2020, Philippe Mathieu-Daud=C3=A9 wrote:
+v3: Add a new drm data structure for DP VSC SDP
 
-> On Wed, Feb 5, 2020 at 11:18 PM Finn Thain <fthain@telegraphics.com.au>  =
-wrote:
-> > On Wed, 5 Feb 2020, Philippe Mathieu-Daud=C3=A9 wrote:
-> > > On Sun, Feb 2, 2020 at 3:41 AM Finn Thain  <fthain@telegraphics.com.a=
-u> wrote:
-> > > >
-> > > > This patch resolves these compiler errors and warnings --
-> > > >
-> > > >   CC      drivers/video/fbdev/g364fb.o
-> > > > drivers/video/fbdev/g364fb.c: In function 'g364fb_cursor':
-> > > > drivers/video/fbdev/g364fb.c:137:9: error: 'x' undeclared (first us=
-e in this function)
-> > > > drivers/video/fbdev/g364fb.c:137:9: note: each undeclared identifie=
-r is reported only once for each function it appears in
-> > > > drivers/video/fbdev/g364fb.c:137:7: error: implicit declaration of =
-function 'fontwidth' [-Werror=3Dimplicit-function-declaration]
-> > > > drivers/video/fbdev/g364fb.c:137:23: error: 'p' undeclared (first u=
-se in this function)
-> > > > drivers/video/fbdev/g364fb.c:137:38: error: 'y' undeclared (first u=
-se in this function)
-> > > > drivers/video/fbdev/g364fb.c:137:7: error: implicit declaration of =
-function 'fontheight' [-Werror=3Dimplicit-function-declaration]
-> > > > drivers/video/fbdev/g364fb.c: In function 'g364fb_init':
-> > > > drivers/video/fbdev/g364fb.c:233:24: error: 'fbvar' undeclared (fir=
-st use in this function)
-> > > > drivers/video/fbdev/g364fb.c:234:24: error: 'xres' undeclared (firs=
-t use in this function)
-> > >
-> > > 18 years unnoticed...
-> > >
-> >
-> > More likely, it was noticed by those without the skills or time to get=
-=20
-> > it fixed upstream.
-> >
-> > Those with the hardware skills and platform knowledge to be affected=20
-> > by an obscure bug aren't necessarily also capable of fixing a kernel=20
-> > bug, sending a patch upstream and getting it past code review.
-> >
-> > Getting a patch into the Linux kernel is itself a lot of work, unless=
-=20
-> > you've had years of experience with that constantly changing process=20
-> > (which varies significantly between subsystems).
->=20
-> I see, I'm not custom to kernel workflow.
->=20
-> > Kernel developers are only human and do accidentally introduce=20
-> > breakage in their work (as contributors) while ironically (as=20
-> > reviewers) they raise the bar for random fixes from users not versed=20
-> > in the 10000+ lines of Documentation/process/*.rst
-> >
-> > Broken code does not mean zero potential users or zero frustrated=20
-> > users yet I often hear kernel developers disingenuously claim that it=
-=20
-> > does. They have an incentive to make that claim and often there's=20
-> > no-one reading the mailing lists to push back.
->=20
-> But broken code is also bad example of code. The removed code is still=20
-> buried in the git tree.
->=20
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+---
+ include/drm/drm_dp_helper.h | 57 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-Some bugs may never be noticed and yet everyone assumes that they are=20
-present (hence "defence in depth" and all of the complexity that entails).
-
-My complaint was really about broken code being used as a rationale to=20
-remove additional code (whatever its quality).
-
-For example, some maintainers would say, "18 years unnoticed... don't stop=
-=20
-at g364fb_cursor(), remove the entire driver".
----1463811774-1984420675-1581033946=:13--
+diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
+index 262faf9e5e94..c098727681fa 100644
+--- a/include/drm/drm_dp_helper.h
++++ b/include/drm/drm_dp_helper.h
+@@ -1209,6 +1209,63 @@ struct dp_sdp {
+ #define EDP_VSC_PSR_UPDATE_RFB		(1<<1)
+ #define EDP_VSC_PSR_CRC_VALUES_VALID	(1<<2)
+ 
++/* Based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through DB18] */
++enum dp_colorspace {
++	DP_COLORSPACE_RGB = 0,
++	DP_COLORSPACE_YUV444 = 0x1,
++	DP_COLORSPACE_YUV422 = 0x2,
++	DP_COLORSPACE_YUV420 = 0x3,
++	DP_COLORSPACE_Y_ONLY = 0x4,
++	DP_COLORSPACE_RAW = 0x5,
++	DP_COLORSPACE_RESERVED = 0x6,
++};
++
++/**
++ * Based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through DB18]
++ * and a name of enum member followes DRM_MODE_COLORIMETRY definition.
++ */
++enum dp_colorimetry {
++	DP_COLORIMETRY_DEFAULT = 0, /* sRGB (IEC 61966-2-1) / ITU-R BT.601 */
++	DP_COLORIMETRY_RGB_WIDE_FIXED = 0x1,
++	DP_COLORIMETRY_BT709_YCC = 0x1,
++	DP_COLORIMETRY_RGB_WIDE_FLOAT = 0x2,
++	DP_COLORIMETRY_XVYCC_601 = 0x2,
++	DP_COLORIMETRY_OPRGB = 0x3,
++	DP_COLORIMETRY_XVYCC_709 = 0x3,
++	DP_COLORIMETRY_DCI_P3_RGB = 0x4,
++	DP_COLORIMETRY_SYCC_601 = 0x4,
++	DP_COLORIMETRY_RGB_CUSTOM = 0x5,
++	DP_COLORIMETRY_OPYCC_601 = 0x5,
++	DP_COLORIMETRY_BT2020_RGB = 0x6,
++	DP_COLORIMETRY_BT2020_CYCC = 0x6,
++	DP_COLORIMETRY_BT2020_YCC = 0x7,
++};
++
++enum dp_dynamic_range {
++	DP_DYNAMIC_RANGE_VESA = 0,
++	DP_DYNAMIC_RANGE_CTA = 1,
++};
++
++enum dp_content_type {
++	DP_CONTENT_TYPE_NOT_DEFINED = 0x00,
++	DP_CONTENT_TYPE_GRAPHICS = 0x01,
++	DP_CONTENT_TYPE_PHOTO = 0x02,
++	DP_CONTENT_TYPE_VIDEO = 0x03,
++	DP_CONTENT_TYPE_GAME = 0x04,
++};
++
++/* DRM DP VSC SDP as per DP 1.4 spec */
++struct drm_dp_vsc_sdp {
++	unsigned char sdp_type; /* Secondary-data Packet Type */
++	unsigned char revision; /* Revision Number */
++	unsigned char length; /* Number of Valid Data Bytes */
++	enum dp_colorspace colorspace;
++	enum dp_colorimetry colorimetry;
++	int bpc; /* bit per color */
++	enum dp_dynamic_range dynamic_range;
++	enum dp_content_type content_type;
++};
++
+ int drm_dp_psr_setup_time(const u8 psr_cap[EDP_PSR_RECEIVER_CAP_SIZE]);
+ 
+ static inline int
+-- 
+2.24.1

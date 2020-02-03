@@ -1,100 +1,147 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Wed, 05 Feb 2020 15:41:21 +0000
-Subject: [PATCH v4 01/17] drm: add DP 1.4 VSC SDP Payload related enums and a structure
-Message-Id: <20200205154137.1202389-2-gwan-gyeong.mun@intel.com>
+Date: Mon, 03 Feb 2020 23:20:02 +0000
+Subject: [PATCH v3 05/17] video/hdmi: Add Unpack only function for DRM infoframe
+Message-Id: <20200203232014.906651-6-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
+References: <20200203232014.906651-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200203232014.906651-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-It adds new enumeration definitions for VSC SDP Payload for Pixel
-Encoding/Colorimetry Format.
-And it adds a new drm data structure for DP VSC SDP.
+It adds an unpack only function for DRM infoframe for dynamic range and
+mastering infoframe readout.
+It unpacks the information data block contained in the binary buffer into
+a structured frame of the HDMI Dynamic Range and Mastering (DRM)
+information frame.
 
-enum dp_colorspace and enum dp_colorimetry correspond "Pixel Encoding and
-Colorimetry Formats". enum dp_dynamic_range corresponds "Dynamic Range".
-And enum dp_content_type corresponds "Content Type"
-All of them are based on DP 1.4 spec [Table 2-117: VSC SDP Payload for
-DB16 through DB18].
+In contrast to hdmi_drm_infoframe_unpack() function, it does not verify
+a checksum.
 
-v3: Add a new drm data structure for DP VSC SDP
+It can be used for unpacking a DP HDR Metadata Infoframe SDP case.
+DP HDR Metadata Infoframe SDP uses the same Dynamic Range and Mastering
+(DRM) information (CTA-861-G spec.) such as HDMI DRM infoframe.
+But DP SDP header and payload structure are different from HDMI DRM
+Infoframe. Therefore unpacking DRM infoframe for DP requires skipping of
+a verifying checksum.
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- include/drm/drm_dp_helper.h | 57 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+ drivers/video/hdmi.c | 58 +++++++++++++++++++++++++++++++-------------
+ include/linux/hdmi.h |  2 ++
+ 2 files changed, 43 insertions(+), 17 deletions(-)
 
-diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
-index 262faf9e5e94..c098727681fa 100644
---- a/include/drm/drm_dp_helper.h
-+++ b/include/drm/drm_dp_helper.h
-@@ -1209,6 +1209,63 @@ struct dp_sdp {
- #define EDP_VSC_PSR_UPDATE_RFB		(1<<1)
- #define EDP_VSC_PSR_CRC_VALUES_VALID	(1<<2)
+diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+index 9c82e2a0a411..9818836d82b7 100644
+--- a/drivers/video/hdmi.c
++++ b/drivers/video/hdmi.c
+@@ -1775,20 +1775,18 @@ hdmi_vendor_any_infoframe_unpack(union hdmi_vendor_any_infoframe *frame,
+ }
  
-+/* Based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through DB18] */
-+enum dp_colorspace {
-+	DP_COLORSPACE_RGB = 0,
-+	DP_COLORSPACE_YUV444 = 0x1,
-+	DP_COLORSPACE_YUV422 = 0x2,
-+	DP_COLORSPACE_YUV420 = 0x3,
-+	DP_COLORSPACE_Y_ONLY = 0x4,
-+	DP_COLORSPACE_RAW = 0x5,
-+	DP_COLORSPACE_RESERVED = 0x6,
-+};
+ /**
+- * hdmi_drm_infoframe_unpack() - unpack binary buffer to a HDMI DRM infoframe
++ * hdmi_drm_infoframe_unpack_only() - unpack binary buffer to a HDMI DRM infoframe
+  * @frame: HDMI DRM infoframe
+  * @buffer: source buffer
+  * @size: size of buffer
+  *
+- * Unpacks the information contained in binary @buffer into a structured
++ * Unpacks the information data block contained in binary @buffer into a structured
+  * @frame of the HDMI Dynamic Range and Mastering (DRM) information frame.
+- * Also verifies the checksum as required by section 5.3.5 of the HDMI 1.4
+- * specification.
+  *
+  * Returns 0 on success or a negative error code on failure.
+  */
+-static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
+-				     const void *buffer, size_t size)
++int hdmi_drm_infoframe_unpack_only(struct hdmi_drm_infoframe *frame,
++				   const void *buffer, size_t size)
+ {
+ 	const u8 *ptr = buffer;
+ 	const u8 *temp;
+@@ -1797,23 +1795,13 @@ static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
+ 	int ret;
+ 	int i;
+ 
+-	if (size < HDMI_INFOFRAME_SIZE(DRM))
+-		return -EINVAL;
+-
+-	if (ptr[0] != HDMI_INFOFRAME_TYPE_DRM ||
+-	    ptr[1] != 1 ||
+-	    ptr[2] != HDMI_DRM_INFOFRAME_SIZE)
+-		return -EINVAL;
+-
+-	if (hdmi_infoframe_checksum(buffer, HDMI_INFOFRAME_SIZE(DRM)) != 0)
++	if (size < HDMI_DRM_INFOFRAME_SIZE)
+ 		return -EINVAL;
+ 
+ 	ret = hdmi_drm_infoframe_init(frame);
+ 	if (ret)
+ 		return ret;
+ 
+-	ptr += HDMI_INFOFRAME_HEADER_SIZE;
+-
+ 	frame->eotf = ptr[0] & 0x7;
+ 	frame->metadata_type = ptr[1] & 0x7;
+ 
+@@ -1837,6 +1825,42 @@ static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(hdmi_drm_infoframe_unpack_only);
 +
 +/**
-+ * Based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through DB18]
-+ * and a name of enum member followes DRM_MODE_COLORIMETRY definition.
++ * hdmi_drm_infoframe_unpack() - unpack binary buffer to a HDMI DRM infoframe
++ * @frame: HDMI DRM infoframe
++ * @buffer: source buffer
++ * @size: size of buffer
++ *
++ * Unpacks the information contained in binary @buffer into a structured
++ * @frame of the HDMI Dynamic Range and Mastering (DRM) information frame.
++ * Also verifies the checksum as required by section 5.3.5 of the HDMI 1.4
++ * specification.
++ *
++ * Returns 0 on success or a negative error code on failure.
 + */
-+enum dp_colorimetry {
-+	DP_COLORIMETRY_DEFAULT = 0, /* sRGB (IEC 61966-2-1) / ITU-R BT.601 */
-+	DP_COLORIMETRY_RGB_WIDE_FIXED = 0x1,
-+	DP_COLORIMETRY_BT709_YCC = 0x1,
-+	DP_COLORIMETRY_RGB_WIDE_FLOAT = 0x2,
-+	DP_COLORIMETRY_XVYCC_601 = 0x2,
-+	DP_COLORIMETRY_OPRGB = 0x3,
-+	DP_COLORIMETRY_XVYCC_709 = 0x3,
-+	DP_COLORIMETRY_DCI_P3_RGB = 0x4,
-+	DP_COLORIMETRY_SYCC_601 = 0x4,
-+	DP_COLORIMETRY_RGB_CUSTOM = 0x5,
-+	DP_COLORIMETRY_OPYCC_601 = 0x5,
-+	DP_COLORIMETRY_BT2020_RGB = 0x6,
-+	DP_COLORIMETRY_BT2020_CYCC = 0x6,
-+	DP_COLORIMETRY_BT2020_YCC = 0x7,
-+};
++static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
++				     const void *buffer, size_t size)
++{
++	const u8 *ptr = buffer;
++	int ret;
 +
-+enum dp_dynamic_range {
-+	DP_DYNAMIC_RANGE_VESA = 0,
-+	DP_DYNAMIC_RANGE_CTA = 1,
-+};
++	if (size < HDMI_INFOFRAME_SIZE(DRM))
++		return -EINVAL;
 +
-+enum dp_content_type {
-+	DP_CONTENT_TYPE_NOT_DEFINED = 0x00,
-+	DP_CONTENT_TYPE_GRAPHICS = 0x01,
-+	DP_CONTENT_TYPE_PHOTO = 0x02,
-+	DP_CONTENT_TYPE_VIDEO = 0x03,
-+	DP_CONTENT_TYPE_GAME = 0x04,
-+};
++	if (ptr[0] != HDMI_INFOFRAME_TYPE_DRM ||
++	    ptr[1] != 1 ||
++	    ptr[2] != HDMI_DRM_INFOFRAME_SIZE)
++		return -EINVAL;
 +
-+/* DRM DP VSC SDP as per DP 1.4 spec */
-+struct drm_dp_vsc_sdp {
-+	unsigned char sdp_type; /* Secondary-data Packet Type */
-+	unsigned char revision; /* Revision Number */
-+	unsigned char length; /* Number of Valid Data Bytes */
-+	enum dp_colorspace colorspace;
-+	enum dp_colorimetry colorimetry;
-+	int bpc; /* bit per color */
-+	enum dp_dynamic_range dynamic_range;
-+	enum dp_content_type content_type;
-+};
++	if (hdmi_infoframe_checksum(buffer, HDMI_INFOFRAME_SIZE(DRM)) != 0)
++		return -EINVAL;
 +
- int drm_dp_psr_setup_time(const u8 psr_cap[EDP_PSR_RECEIVER_CAP_SIZE]);
++	ret = hdmi_drm_infoframe_unpack_only(frame, ptr + HDMI_INFOFRAME_HEADER_SIZE,
++					     size - HDMI_INFOFRAME_HEADER_SIZE);
++	return ret;
++}
  
- static inline int
+ /**
+  * hdmi_infoframe_unpack() - unpack binary buffer to a HDMI infoframe
+diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
+index 9918a6c910c5..afb43efc03e0 100644
+--- a/include/linux/hdmi.h
++++ b/include/linux/hdmi.h
+@@ -219,6 +219,8 @@ ssize_t hdmi_drm_infoframe_pack(struct hdmi_drm_infoframe *frame, void *buffer,
+ ssize_t hdmi_drm_infoframe_pack_only(const struct hdmi_drm_infoframe *frame,
+ 				     void *buffer, size_t size);
+ int hdmi_drm_infoframe_check(struct hdmi_drm_infoframe *frame);
++int hdmi_drm_infoframe_unpack_only(struct hdmi_drm_infoframe *frame,
++				   const void *buffer, size_t size);
+ 
+ enum hdmi_spd_sdi {
+ 	HDMI_SPD_SDI_UNKNOWN,
 -- 
 2.24.1

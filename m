@@ -1,70 +1,67 @@
-From: Paul Burton <paulburton@kernel.org>
-Date: Wed, 19 Feb 2020 19:03:52 +0000
-Subject: Re: [PATCH v2 0/3] Improve MIPS Magnum support
-Message-Id: <5e4d869d.1c69fb81.aa02.151b@mx.google.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Mon, 03 Feb 2020 23:20:00 +0000
+Subject: [PATCH v3 03/17] drm/i915/dp: Add compute routine for DP HDR Metadata Infoframe SDP
+Message-Id: <20200203232014.906651-4-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1581030073.git.fthain@telegraphics.com.au>
-In-Reply-To: <cover.1581030073.git.fthain@telegraphics.com.au>
+References: <20200203232014.906651-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200203232014.906651-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Finn Thain <fthain@telegraphics.com.au>
-Cc: linux-fbdev@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Paul Burton <paulburton@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, James Hogan <jhogan@kernel.org>, linux-mips@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>, =?utf-8?q?Philippe_Math?= =?utf-8?q?ieu-Daud=C3=A9?= <f4bug@amsat.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Hello,
+It stores computed dp hdr metadata infoframe sdp to infoframes.drm of
+crtc state. It referenced intel_hdmi_compute_drm_infoframe().
 
-Finn Thain wrote:
-> A few minor patches are needed to more easily boot a MIPS Magnum build
-> under QEMU. This series fixes a build failure in the g364fb driver and
-> modifies jazz_defconfig for use with 'qemu-system-mips64el -M magnum'.
-> 
-> Note that QEMU's dp8393x implementation has bugs, one of which prevents
-> the Linux jazzsonic driver from probing the chip. I have fixed the bugs
-> that I know of in a series of patches at,
-> https://github.com/fthain/qemu/commits/sonic
-> 
-> Changed since v1:
->  - Added reviewed-by and tested-by tags from Philippe Mathieu-Daudé.
->  - Rebased.
-> 
-> 
-> Finn Thain (3):
->   fbdev/g364fb: Fix build failure
->   mips/jazz: Remove redundant settings and shrink jazz_defconfig
->   mips/jazz: Update jazz_defconfig for MIPS Magnum
+While computing, we'll also fill out the inforames.enable bitmask
+appropriately.
 
-Series applied to mips-next.
+v2: Wrap a long line.
 
-> fbdev/g364fb: Fix build failure
->   commit c584f9532115
->   https://git.kernel.org/mips/c/c584f9532115
->   
->   Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
->   Reviewed-by: Philippe Mathieu-Daudé <f4bug@amsat.org>
->   Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
->   Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->   Tested-by: Philippe Mathieu-Daudé <f4bug@amsat.org>
->   Signed-off-by: Paul Burton <paulburton@kernel.org>
-> 
-> mips/jazz: Remove redundant settings and shrink jazz_defconfig
->   commit a7047b8dd098
->   https://git.kernel.org/mips/c/a7047b8dd098
->   
->   Tested-by: Philippe Mathieu-Daudé <f4bug@amsat.org>
->   Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
->   Signed-off-by: Paul Burton <paulburton@kernel.org>
-> 
-> mips/jazz: Update jazz_defconfig for MIPS Magnum
->   commit 91f40e896444
->   https://git.kernel.org/mips/c/91f40e896444
->   
->   Reviewed-by: Philippe Mathieu-Daudé <f4bug@amsat.org>
->   Tested-by: Philippe Mathieu-Daudé <f4bug@amsat.org>
->   Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
->   Signed-off-by: Paul Burton <paulburton@kernel.org>
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_dp.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-Thanks,
-    Paul
-
-[ This message was auto-generated; if you believe anything is incorrect
-  then please email paulburton@kernel.org to report it. ]
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
+index 2bdc43c80e03..b265b5c599f2 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.c
++++ b/drivers/gpu/drm/i915/display/intel_dp.c
+@@ -2463,6 +2463,27 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
+ 					 &crtc_state->infoframes.vsc);
+ }
+ 
++static void
++intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_crtc_state *crtc_state,
++					    const struct drm_connector_state *conn_state)
++{
++	int ret;
++	struct hdmi_drm_infoframe *drm_infoframe = &crtc_state->infoframes.drm.drm;
++
++	if (!conn_state->hdr_output_metadata)
++		return;
++
++	ret = drm_hdmi_infoframe_set_hdr_metadata(drm_infoframe, conn_state);
++
++	if (ret) {
++		DRM_DEBUG_KMS("couldn't set HDR metadata in infoframe\n");
++		return;
++	}
++
++	crtc_state->infoframes.enable |+		intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA);
++}
++
+ int
+ intel_dp_compute_config(struct intel_encoder *encoder,
+ 			struct intel_crtc_state *pipe_config,
+@@ -2569,6 +2590,7 @@ intel_dp_compute_config(struct intel_encoder *encoder,
+ 
+ 	intel_psr_compute_config(intel_dp, pipe_config);
+ 	intel_dp_compute_vsc_sdp(intel_dp, pipe_config, conn_state);
++	intel_dp_compute_hdr_metadata_infoframe_sdp(pipe_config, conn_state);
+ 
+ 	return 0;
+ }
+-- 
+2.24.1

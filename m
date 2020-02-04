@@ -1,148 +1,32 @@
-From: "Shankar, Uma" <uma.shankar@intel.com>
-Date: Wed, 05 Feb 2020 17:12:21 +0000
-Subject: RE: [PATCH v3 16/17] drm/i915/dp: Add compute routine for DP PSR VSC SDP
-Message-Id: <E7C9878FBA1C6D42A1CA3F62AEB6945F823DD16B@BGSMSX104.gar.corp.intel.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Tue, 04 Feb 2020 16:21:14 +0000
+Subject: [PATCH v1] fbdev: simplefb: Platform data shan't include kernel.h
+Message-Id: <20200204162114.28937-1-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200203232014.906651-1-gwan-gyeong.mun@intel.com>
- <20200203232014.906651-17-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200203232014.906651-17-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Mun, Gwan-gyeong" <gwan-gyeong.mun@intel.com>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+To: linux-fbdev@vger.kernel.org
 
+Replace with appropriate types.h.
 
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ include/linux/platform_data/simplefb.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> -----Original Message-----
-> From: dri-devel <dri-devel-bounces@lists.freedesktop.org> On Behalf Of Gwan-
-> gyeong Mun
-> Sent: Tuesday, February 4, 2020 4:50 AM
-> To: intel-gfx@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org; dri-devel@lists.freedesktop.org
-> Subject: [PATCH v3 16/17] drm/i915/dp: Add compute routine for DP PSR VSC SDP
-> 
-> In order to use a common VSC SDP Colorimetry calculating code on PSR, it adds a
-> compute routine for PSR VSC SDP.
-> As PSR routine can not use infoframes.vsc of crtc state, it also adds new writing of
-> DP SDPs (Secondary Data Packet) for PSR.
-> PSR routine has its own scenario and timings of writing a VSC SDP.
-> 
-> v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-
-Looks good to me.
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
-
-> Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-> ---
->  drivers/gpu/drm/i915/display/intel_dp.c | 53 +++++++++++++++++++++++++
-> drivers/gpu/drm/i915/display/intel_dp.h |  8 ++++
->  2 files changed, 61 insertions(+)
-> 
-> diff --git a/drivers/gpu/drm/i915/display/intel_dp.c
-> b/drivers/gpu/drm/i915/display/intel_dp.c
-> index cffb77daec96..4d65ef36577f 100644
-> --- a/drivers/gpu/drm/i915/display/intel_dp.c
-> +++ b/drivers/gpu/drm/i915/display/intel_dp.c
-> @@ -2463,6 +2463,42 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp
-> *intel_dp,
->  					 &crtc_state->infoframes.vsc);
->  }
-> 
-> +void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
-> +				  const struct intel_crtc_state *crtc_state,
-> +				  const struct drm_connector_state *conn_state,
-> +				  struct drm_dp_vsc_sdp *vsc)
-> +{
-> +	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
-> +
-> +	vsc->sdp_type = DP_SDP_VSC;
-> +
-> +	if (dev_priv->psr.psr2_enabled) {
-> +		if (dev_priv->psr.colorimetry_support &&
-> +		    intel_dp_needs_vsc_sdp(crtc_state, conn_state)) {
-> +			/* [PSR2, +Colorimetry] */
-> +			intel_dp_compute_vsc_colorimetry(crtc_state, conn_state,
-> +							 vsc);
-> +		} else {
-> +			/*
-> +			 * [PSR2, -Colorimetry]
-> +			 * Prepare VSC Header for SU as per eDP 1.4 spec, Table 6-
-> 11
-> +			 * 3D stereo + PSR/PSR2 + Y-coordinate.
-> +			 */
-> +			vsc->revision = 0x4;
-> +			vsc->length = 0xe;
-> +		}
-> +	} else {
-> +		/*
-> +		 * [PSR1]
-> +		 * Prepare VSC Header for SU as per DP 1.4 spec, Table 2-118
-> +		 * VSC SDP supporting 3D stereo + PSR (applies to eDP v1.3 or
-> +		 * higher).
-> +		 */
-> +		vsc->revision = 0x2;
-> +		vsc->length = 0x8;
-> +	}
-> +}
-> +
->  static void
->  intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_crtc_state
-> *crtc_state,
->  					    const struct drm_connector_state
-> *conn_state) @@ -4889,6 +4925,23 @@ static void intel_write_dp_sdp(struct
-> intel_encoder *encoder,
->  	intel_dig_port->write_infoframe(encoder, crtc_state, type, &sdp, len);  }
-> 
-> +void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
-> +			    const struct intel_crtc_state *crtc_state,
-> +			    struct drm_dp_vsc_sdp *vsc)
-> +{
-> +	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
-> +	struct dp_sdp sdp = {};
-> +	ssize_t len;
-> +
-> +	len = intel_dp_vsc_sdp_pack(vsc, &sdp, sizeof(sdp));
-> +
-> +	if (WARN_ON(len < 0))
-> +		return;
-> +
-> +	intel_dig_port->write_infoframe(encoder, crtc_state, DP_SDP_VSC,
-> +					&sdp, len);
-> +}
-> +
->  void intel_dp_set_infoframes(struct intel_encoder *encoder,
->  			     bool enable,
->  			     const struct intel_crtc_state *crtc_state, diff --git
-> a/drivers/gpu/drm/i915/display/intel_dp.h
-> b/drivers/gpu/drm/i915/display/intel_dp.h
-> index 6562bb8edeba..5074e52722c0 100644
-> --- a/drivers/gpu/drm/i915/display/intel_dp.h
-> +++ b/drivers/gpu/drm/i915/display/intel_dp.h
-> @@ -18,6 +18,7 @@ struct drm_connector_state;  struct drm_encoder;  struct
-> drm_i915_private;  struct drm_modeset_acquire_ctx;
-> +struct drm_dp_vsc_sdp;
->  struct intel_connector;
->  struct intel_crtc_state;
->  struct intel_digital_port;
-> @@ -110,6 +111,13 @@ int intel_dp_link_required(int pixel_clock, int bpp);  int
-> intel_dp_max_data_rate(int max_link_clock, int max_lanes);  bool
-> intel_dp_needs_vsc_sdp(const struct intel_crtc_state *crtc_state,
->  			    const struct drm_connector_state *conn_state);
-> +void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
-> +				  const struct intel_crtc_state *crtc_state,
-> +				  const struct drm_connector_state *conn_state,
-> +				  struct drm_dp_vsc_sdp *vsc);
-> +void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
-> +			    const struct intel_crtc_state *crtc_state,
-> +			    struct drm_dp_vsc_sdp *vsc);
->  void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
->  			     const struct intel_crtc_state *crtc_state,
->  			     const struct drm_connector_state *conn_state);
-> --
-> 2.24.1
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+diff --git a/include/linux/platform_data/simplefb.h b/include/linux/platform_data/simplefb.h
+index 4f733a411d18..ca8337695c2a 100644
+--- a/include/linux/platform_data/simplefb.h
++++ b/include/linux/platform_data/simplefb.h
+@@ -10,7 +10,7 @@
+ 
+ #include <drm/drm_fourcc.h>
+ #include <linux/fb.h>
+-#include <linux/kernel.h>
++#include <linux/types.h>
+ 
+ /* format array, use it to initialize a "struct simplefb_format" array */
+ #define SIMPLEFB_FORMATS \
+-- 
+2.24.1

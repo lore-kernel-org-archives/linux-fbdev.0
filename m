@@ -1,63 +1,240 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 14 Feb 2020 16:07:49 +0000
-Subject: [PATCH AUTOSEL 4.19 014/252] pxa168fb: Fix the function used to release some memory in an error hand
-Message-Id: <20200214161147.15842-14-sashal@kernel.org>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Wed, 05 Feb 2020 15:41:26 +0000
+Subject: [PATCH v4 06/17] drm/i915/dp: Read out DP SDPs (Secondary Data Packet)
+Message-Id: <20200205154137.1202389-7-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200214161147.15842-1-sashal@kernel.org>
-In-Reply-To: <20200214161147.15842-1-sashal@kernel.org>
+References: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, YueHaibing <yuehaibing@huawei.com>, dri-devel@lists.freedesktop.org, Lubomir Rintel <lkundrak@v3.sk>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+It adds code to read the DP SDPs from the video DIP and unpack them into
+the crtc state.
 
-[ Upstream commit 3c911fe799d1c338d94b78e7182ad452c37af897 ]
+It adds routines that read out DP VSC SDP and DP HDR Metadata Infoframe SDP
+In order to unpack DP VSC SDP, it adds intel_dp_vsc_sdp_unpack() function.
+It follows DP 1.4a spec. [Table 2-116: VSC SDP Header Bytes] and
+[Table 2-117: VSC SDP Payload for DB16 through DB18]
 
-In the probe function, some resources are allocated using 'dma_alloc_wc()',
-they should be released with 'dma_free_wc()', not 'dma_free_coherent()'.
+In order to unpack DP HDR Metadata Infoframe SDP, it adds
+intel_dp_hdr_metadata_infoframe_sdp_unpack(). And it follows DP 1.4a spec.
+([Table 2-125: INFOFRAME SDP v1.2 Header Bytes] and
+[Table 2-126: INFOFRAME SDP v1.2 Payload Data Bytes - DB0 through DB31])
+and CTA-861-G spec. [Table-42 Dynamic Range and Mastering InfoFrame].
 
-We already use 'dma_free_wc()' in the remove function, but not in the
-error handling path of the probe function.
+A nameing rule and style of intel_read_dp_sdp() function references
+intel_read_infoframe() function of intel_hdmi.c
 
-Also, remove a useless 'PAGE_ALIGN()'. 'info->fix.smem_len' is already
-PAGE_ALIGNed.
+v2: Minor style fix
+v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+v4: Use struct drm_device logging macros
 
-Fixes: 638772c7553f ("fb: add support of LCD display controller on pxa168/910 (base layer)")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Reviewed-by: Lubomir Rintel <lkundrak@v3.sk>
-CC: YueHaibing <yuehaibing@huawei.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20190831100024.3248-1-christophe.jaillet@wanadoo.fr
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/video/fbdev/pxa168fb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/i915/display/intel_dp.c | 173 ++++++++++++++++++++++++
+ drivers/gpu/drm/i915/display/intel_dp.h |   3 +
+ 2 files changed, 176 insertions(+)
 
-diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
-index d059d04c63acd..20195d3dbf088 100644
---- a/drivers/video/fbdev/pxa168fb.c
-+++ b/drivers/video/fbdev/pxa168fb.c
-@@ -769,8 +769,8 @@ static int pxa168fb_probe(struct platform_device *pdev)
- failed_free_clk:
- 	clk_disable_unprepare(fbi->clk);
- failed_free_fbmem:
--	dma_free_coherent(fbi->dev, info->fix.smem_len,
--			info->screen_base, fbi->fb_start_dma);
-+	dma_free_wc(fbi->dev, info->fix.smem_len,
-+		    info->screen_base, fbi->fb_start_dma);
- failed_free_info:
- 	kfree(info);
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
+index f941bc261f6a..c30272e80dc7 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.c
++++ b/drivers/gpu/drm/i915/display/intel_dp.c
+@@ -4928,6 +4928,179 @@ void intel_dp_set_infoframes(struct intel_encoder *encoder,
+ 	intel_write_dp_sdp(encoder, crtc_state, HDMI_PACKET_TYPE_GAMUT_METADATA);
+ }
  
-@@ -804,7 +804,7 @@ static int pxa168fb_remove(struct platform_device *pdev)
++static int intel_dp_vsc_sdp_unpack(struct drm_dp_vsc_sdp *vsc,
++				   const void *buffer, size_t size)
++{
++	const struct dp_sdp *sdp = buffer;
++
++	if (size < sizeof(struct dp_sdp))
++		return -EINVAL;
++
++	memset(vsc, 0, size);
++
++	if (sdp->sdp_header.HB0 != 0)
++		return -EINVAL;
++
++	if (sdp->sdp_header.HB1 != DP_SDP_VSC)
++		return -EINVAL;
++	vsc->sdp_type = sdp->sdp_header.HB1;
++
++	if (sdp->sdp_header.HB2 = 0x2 && sdp->sdp_header.HB3 = 0x8) {
++		vsc->revision = sdp->sdp_header.HB2;
++		vsc->length = sdp->sdp_header.HB3;
++	} else if (sdp->sdp_header.HB2 = 0x4 && sdp->sdp_header.HB3 = 0xe) {
++		vsc->revision = sdp->sdp_header.HB2;
++		vsc->length = sdp->sdp_header.HB3;
++	} else if (sdp->sdp_header.HB2 = 0x5 && sdp->sdp_header.HB3 = 0x13) {
++		vsc->revision = sdp->sdp_header.HB2;
++		vsc->length = sdp->sdp_header.HB3;
++		vsc->colorspace = (sdp->db[16] >> 4) & 0xf;
++		vsc->colorimetry = sdp->db[16] & 0xf;
++		vsc->dynamic_range = (sdp->db[17] >> 7) & 0x1;
++
++		switch (sdp->db[17] & 0x7) {
++		case 0x1:
++			vsc->bpc = 8;
++			break;
++		case 0x2:
++			vsc->bpc = 10;
++			break;
++		case 0x3:
++			vsc->bpc = 12;
++			break;
++		case 0x4:
++			vsc->bpc = 16;
++			break;
++		default:
++			MISSING_CASE(sdp->db[17] & 0x7);
++			return -EINVAL;
++		}
++
++		vsc->content_type = sdp->db[18] & 0x7;
++	} else {
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int
++intel_dp_hdr_metadata_infoframe_sdp_unpack(struct hdmi_drm_infoframe *drm_infoframe,
++					   const void *buffer, size_t size)
++{
++	int ret;
++
++	const struct dp_sdp *sdp = buffer;
++
++	if (size < sizeof(struct dp_sdp))
++		return -EINVAL;
++
++	if (sdp->sdp_header.HB0 != 0)
++		return -EINVAL;
++
++	if (sdp->sdp_header.HB1 != HDMI_INFOFRAME_TYPE_DRM)
++		return -EINVAL;
++
++	/*
++	 * Least Significant Eight Bits of (Data Byte Count – 1)
++	 * 1Dh (i.e., Data Byte Count = 30 bytes).
++	 */
++	if (sdp->sdp_header.HB2 != 0x1D)
++		return -EINVAL;
++
++	/* Most Significant Two Bits of (Data Byte Count – 1), Clear to 00b. */
++	if ((sdp->sdp_header.HB3 & 0x3) != 0)
++		return -EINVAL;
++
++	/* INFOFRAME SDP Version Number */
++	if (((sdp->sdp_header.HB3 >> 2) & 0x3f) != 0x13)
++		return -EINVAL;
++
++	/* CTA Header Byte 2 (INFOFRAME Version Number) */
++	if (sdp->db[0] != 1)
++		return -EINVAL;
++
++	/* CTA Header Byte 3 (Length of INFOFRAME): HDMI_DRM_INFOFRAME_SIZE */
++	if (sdp->db[1] != HDMI_DRM_INFOFRAME_SIZE)
++		return -EINVAL;
++
++	ret = hdmi_drm_infoframe_unpack_only(drm_infoframe, &sdp->db[2],
++					     HDMI_DRM_INFOFRAME_SIZE);
++
++	return ret;
++}
++
++static void intel_read_dp_vsc_sdp(struct intel_encoder *encoder,
++				  struct intel_crtc_state *crtc_state,
++				  struct drm_dp_vsc_sdp *vsc)
++{
++	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
++	struct intel_dp *intel_dp = enc_to_intel_dp(encoder);
++	struct drm_i915_private *dev_priv = to_i915(encoder->base.dev);
++	unsigned int type = DP_SDP_VSC;
++	struct dp_sdp sdp = {};
++	int ret;
++
++	/* When PSR is enabled, VSC SDP is handled by PSR routine */
++	if (intel_psr_enabled(intel_dp))
++		return;
++
++	if ((crtc_state->infoframes.enable &
++	     intel_hdmi_infoframe_enable(type)) = 0)
++		return;
++
++	intel_dig_port->read_infoframe(encoder, crtc_state, type, &sdp, sizeof(sdp));
++
++	ret = intel_dp_vsc_sdp_unpack(vsc, &sdp, sizeof(sdp));
++
++	if (ret)
++		drm_dbg_kms(&dev_priv->drm, "Failed to unpack DP VSC SDP\n");
++}
++
++static void intel_read_dp_hdr_metadata_infoframe_sdp(struct intel_encoder *encoder,
++						     struct intel_crtc_state *crtc_state,
++						     struct hdmi_drm_infoframe *drm_infoframe)
++{
++	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
++	struct drm_i915_private *dev_priv = to_i915(encoder->base.dev);
++	unsigned int type = HDMI_PACKET_TYPE_GAMUT_METADATA;
++	struct dp_sdp sdp = {};
++	int ret;
++
++	if ((crtc_state->infoframes.enable &
++	    intel_hdmi_infoframe_enable(type)) = 0)
++		return;
++
++	intel_dig_port->read_infoframe(encoder, crtc_state, type, &sdp,
++				       sizeof(sdp));
++
++	ret = intel_dp_hdr_metadata_infoframe_sdp_unpack(drm_infoframe, &sdp,
++							 sizeof(sdp));
++
++	if (ret)
++		drm_dbg_kms(&dev_priv->drm,
++			    "Failed to unpack DP HDR Metadata Infoframe SDP\n");
++}
++
++void intel_read_dp_sdp(struct intel_encoder *encoder,
++		       struct intel_crtc_state *crtc_state,
++		       unsigned int type)
++{
++	switch (type) {
++	case DP_SDP_VSC:
++		intel_read_dp_vsc_sdp(encoder, crtc_state,
++				      &crtc_state->infoframes.vsc);
++		break;
++	case HDMI_PACKET_TYPE_GAMUT_METADATA:
++		intel_read_dp_hdr_metadata_infoframe_sdp(encoder, crtc_state,
++							 &crtc_state->infoframes.drm.drm);
++		break;
++	default:
++		MISSING_CASE(type);
++		break;
++	}
++}
++
+ static void
+ intel_dp_setup_vsc_sdp(struct intel_dp *intel_dp,
+ 		       const struct intel_crtc_state *crtc_state,
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915/display/intel_dp.h
+index 0dc09a463ee1..e8f9ba962d09 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.h
++++ b/drivers/gpu/drm/i915/display/intel_dp.h
+@@ -119,6 +119,9 @@ void intel_dp_hdr_metadata_enable(struct intel_dp *intel_dp,
+ void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
+ 			     const struct intel_crtc_state *crtc_state,
+ 			     const struct drm_connector_state *conn_state);
++void intel_read_dp_sdp(struct intel_encoder *encoder,
++		       struct intel_crtc_state *crtc_state,
++		       unsigned int type);
+ bool intel_digital_port_connected(struct intel_encoder *encoder);
  
- 	irq = platform_get_irq(pdev, 0);
- 
--	dma_free_wc(fbi->dev, PAGE_ALIGN(info->fix.smem_len),
-+	dma_free_wc(fbi->dev, info->fix.smem_len,
- 		    info->screen_base, info->fix.smem_start);
- 
- 	clk_disable_unprepare(fbi->clk);
+ static inline unsigned int intel_dp_unused_lane_mask(int lane_count)
 -- 
-2.20.1
+2.24.1

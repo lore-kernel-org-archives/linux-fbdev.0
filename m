@@ -1,147 +1,128 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Sun, 02 Feb 2020 15:49:26 +0000
-Subject: [PATCH v2 06/18] video/hdmi: Add Unpack only function for DRM infoframe
-Message-Id: <20200202154938.1129610-7-gwan-gyeong.mun@intel.com>
+Date: Wed, 05 Feb 2020 15:41:36 +0000
+Subject: [PATCH v4 16/17] drm/i915/dp: Add compute routine for DP PSR VSC SDP
+Message-Id: <20200205154137.1202389-17-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
+References: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-It adds an unpack only function for DRM infoframe for dynamic range and
-mastering infoframe readout.
-It unpacks the information data block contained in the binary buffer into
-a structured frame of the HDMI Dynamic Range and Mastering (DRM)
-information frame.
+In order to use a common VSC SDP Colorimetry calculating code on PSR,
+it adds a compute routine for PSR VSC SDP.
+As PSR routine can not use infoframes.vsc of crtc state, it also adds new
+writing of DP SDPs (Secondary Data Packet) for PSR.
+PSR routine has its own scenario and timings of writing a VSC SDP.
 
-In contrast to hdmi_drm_infoframe_unpack() function, it does not verify
-a checksum.
-
-It can be used for unpacking a DP HDR Metadata Infoframe SDP case.
-DP HDR Metadata Infoframe SDP uses the same Dynamic Range and Mastering
-(DRM) information (CTA-861-G spec.) such as HDMI DRM infoframe.
-But DP SDP header and payload structure are different from HDMI DRM
-Infoframe. Therefore unpacking DRM infoframe for DP requires skipping of
-a verifying checksum.
+v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+v4: Use struct drm_device logging macros
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/video/hdmi.c | 58 +++++++++++++++++++++++++++++++-------------
- include/linux/hdmi.h |  2 ++
- 2 files changed, 43 insertions(+), 17 deletions(-)
+ drivers/gpu/drm/i915/display/intel_dp.c | 54 +++++++++++++++++++++++++
+ drivers/gpu/drm/i915/display/intel_dp.h |  8 ++++
+ 2 files changed, 62 insertions(+)
 
-diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
-index 9c82e2a0a411..9818836d82b7 100644
---- a/drivers/video/hdmi.c
-+++ b/drivers/video/hdmi.c
-@@ -1775,20 +1775,18 @@ hdmi_vendor_any_infoframe_unpack(union hdmi_vendor_any_infoframe *frame,
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
+index acf943b9e1ec..b544f08202dc 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.c
++++ b/drivers/gpu/drm/i915/display/intel_dp.c
+@@ -2463,6 +2463,42 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
+ 					 &crtc_state->infoframes.vsc);
  }
  
- /**
-- * hdmi_drm_infoframe_unpack() - unpack binary buffer to a HDMI DRM infoframe
-+ * hdmi_drm_infoframe_unpack_only() - unpack binary buffer to a HDMI DRM infoframe
-  * @frame: HDMI DRM infoframe
-  * @buffer: source buffer
-  * @size: size of buffer
-  *
-- * Unpacks the information contained in binary @buffer into a structured
-+ * Unpacks the information data block contained in binary @buffer into a structured
-  * @frame of the HDMI Dynamic Range and Mastering (DRM) information frame.
-- * Also verifies the checksum as required by section 5.3.5 of the HDMI 1.4
-- * specification.
-  *
-  * Returns 0 on success or a negative error code on failure.
-  */
--static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
--				     const void *buffer, size_t size)
-+int hdmi_drm_infoframe_unpack_only(struct hdmi_drm_infoframe *frame,
-+				   const void *buffer, size_t size)
- {
- 	const u8 *ptr = buffer;
- 	const u8 *temp;
-@@ -1797,23 +1795,13 @@ static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
- 	int ret;
- 	int i;
- 
--	if (size < HDMI_INFOFRAME_SIZE(DRM))
--		return -EINVAL;
--
--	if (ptr[0] != HDMI_INFOFRAME_TYPE_DRM ||
--	    ptr[1] != 1 ||
--	    ptr[2] != HDMI_DRM_INFOFRAME_SIZE)
--		return -EINVAL;
--
--	if (hdmi_infoframe_checksum(buffer, HDMI_INFOFRAME_SIZE(DRM)) != 0)
-+	if (size < HDMI_DRM_INFOFRAME_SIZE)
- 		return -EINVAL;
- 
- 	ret = hdmi_drm_infoframe_init(frame);
- 	if (ret)
- 		return ret;
- 
--	ptr += HDMI_INFOFRAME_HEADER_SIZE;
--
- 	frame->eotf = ptr[0] & 0x7;
- 	frame->metadata_type = ptr[1] & 0x7;
- 
-@@ -1837,6 +1825,42 @@ static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(hdmi_drm_infoframe_unpack_only);
-+
-+/**
-+ * hdmi_drm_infoframe_unpack() - unpack binary buffer to a HDMI DRM infoframe
-+ * @frame: HDMI DRM infoframe
-+ * @buffer: source buffer
-+ * @size: size of buffer
-+ *
-+ * Unpacks the information contained in binary @buffer into a structured
-+ * @frame of the HDMI Dynamic Range and Mastering (DRM) information frame.
-+ * Also verifies the checksum as required by section 5.3.5 of the HDMI 1.4
-+ * specification.
-+ *
-+ * Returns 0 on success or a negative error code on failure.
-+ */
-+static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
-+				     const void *buffer, size_t size)
++void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
++				  const struct intel_crtc_state *crtc_state,
++				  const struct drm_connector_state *conn_state,
++				  struct drm_dp_vsc_sdp *vsc)
 +{
-+	const u8 *ptr = buffer;
-+	int ret;
++	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
 +
-+	if (size < HDMI_INFOFRAME_SIZE(DRM))
-+		return -EINVAL;
++	vsc->sdp_type = DP_SDP_VSC;
 +
-+	if (ptr[0] != HDMI_INFOFRAME_TYPE_DRM ||
-+	    ptr[1] != 1 ||
-+	    ptr[2] != HDMI_DRM_INFOFRAME_SIZE)
-+		return -EINVAL;
-+
-+	if (hdmi_infoframe_checksum(buffer, HDMI_INFOFRAME_SIZE(DRM)) != 0)
-+		return -EINVAL;
-+
-+	ret = hdmi_drm_infoframe_unpack_only(frame, ptr + HDMI_INFOFRAME_HEADER_SIZE,
-+					     size - HDMI_INFOFRAME_HEADER_SIZE);
-+	return ret;
++	if (dev_priv->psr.psr2_enabled) {
++		if (dev_priv->psr.colorimetry_support &&
++		    intel_dp_needs_vsc_sdp(crtc_state, conn_state)) {
++			/* [PSR2, +Colorimetry] */
++			intel_dp_compute_vsc_colorimetry(crtc_state, conn_state,
++							 vsc);
++		} else {
++			/*
++			 * [PSR2, -Colorimetry]
++			 * Prepare VSC Header for SU as per eDP 1.4 spec, Table 6-11
++			 * 3D stereo + PSR/PSR2 + Y-coordinate.
++			 */
++			vsc->revision = 0x4;
++			vsc->length = 0xe;
++		}
++	} else {
++		/*
++		 * [PSR1]
++		 * Prepare VSC Header for SU as per DP 1.4 spec, Table 2-118
++		 * VSC SDP supporting 3D stereo + PSR (applies to eDP v1.3 or
++		 * higher).
++		 */
++		vsc->revision = 0x2;
++		vsc->length = 0x8;
++	}
 +}
++
+ static void
+ intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_dp *intel_dp,
+ 					    struct intel_crtc_state *crtc_state,
+@@ -4892,6 +4928,24 @@ static void intel_write_dp_sdp(struct intel_encoder *encoder,
+ 	intel_dig_port->write_infoframe(encoder, crtc_state, type, &sdp, len);
+ }
  
- /**
-  * hdmi_infoframe_unpack() - unpack binary buffer to a HDMI infoframe
-diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
-index 9918a6c910c5..afb43efc03e0 100644
---- a/include/linux/hdmi.h
-+++ b/include/linux/hdmi.h
-@@ -219,6 +219,8 @@ ssize_t hdmi_drm_infoframe_pack(struct hdmi_drm_infoframe *frame, void *buffer,
- ssize_t hdmi_drm_infoframe_pack_only(const struct hdmi_drm_infoframe *frame,
- 				     void *buffer, size_t size);
- int hdmi_drm_infoframe_check(struct hdmi_drm_infoframe *frame);
-+int hdmi_drm_infoframe_unpack_only(struct hdmi_drm_infoframe *frame,
-+				   const void *buffer, size_t size);
- 
- enum hdmi_spd_sdi {
- 	HDMI_SPD_SDI_UNKNOWN,
++void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
++			    const struct intel_crtc_state *crtc_state,
++			    struct drm_dp_vsc_sdp *vsc)
++{
++	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
++	struct drm_i915_private *dev_priv = to_i915(encoder->base.dev);
++	struct dp_sdp sdp = {};
++	ssize_t len;
++
++	len = intel_dp_vsc_sdp_pack(vsc, &sdp, sizeof(sdp));
++
++	if (drm_WARN_ON(&dev_priv->drm, len < 0))
++		return;
++
++	intel_dig_port->write_infoframe(encoder, crtc_state, DP_SDP_VSC,
++					&sdp, len);
++}
++
+ void intel_dp_set_infoframes(struct intel_encoder *encoder,
+ 			     bool enable,
+ 			     const struct intel_crtc_state *crtc_state,
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915/display/intel_dp.h
+index 6562bb8edeba..5074e52722c0 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.h
++++ b/drivers/gpu/drm/i915/display/intel_dp.h
+@@ -18,6 +18,7 @@ struct drm_connector_state;
+ struct drm_encoder;
+ struct drm_i915_private;
+ struct drm_modeset_acquire_ctx;
++struct drm_dp_vsc_sdp;
+ struct intel_connector;
+ struct intel_crtc_state;
+ struct intel_digital_port;
+@@ -110,6 +111,13 @@ int intel_dp_link_required(int pixel_clock, int bpp);
+ int intel_dp_max_data_rate(int max_link_clock, int max_lanes);
+ bool intel_dp_needs_vsc_sdp(const struct intel_crtc_state *crtc_state,
+ 			    const struct drm_connector_state *conn_state);
++void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
++				  const struct intel_crtc_state *crtc_state,
++				  const struct drm_connector_state *conn_state,
++				  struct drm_dp_vsc_sdp *vsc);
++void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
++			    const struct intel_crtc_state *crtc_state,
++			    struct drm_dp_vsc_sdp *vsc);
+ void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
+ 			     const struct intel_crtc_state *crtc_state,
+ 			     const struct drm_connector_state *conn_state);
 -- 
 2.24.1

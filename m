@@ -1,179 +1,115 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Mon, 10 Feb 2020 17:10:04 +0000
-Subject: [PATCH v6 01/18] drm: Add DP1.4 VSC SDP Payload related Data Structures
-Message-Id: <20200210171021.109684-2-gwan-gyeong.mun@intel.com>
+Date: Wed, 05 Feb 2020 15:41:33 +0000
+Subject: [PATCH v4 13/17] drm/i915: Add state readout for DP VSC SDP
+Message-Id: <20200205154137.1202389-14-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
+References: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-It adds new enumeration definitions for VSC SDP Payload for Pixel
-Encoding/Colorimetry Format.
-And it adds a new drm data structure for DP VSC SDP.
+Added state readout for DP VSC SDP and enabled state validation
+for DP VSC SDP.
 
-enum dp_colorspace and enum dp_colorimetry correspond "Pixel Encoding and
-Colorimetry Formats". enum dp_dynamic_range corresponds "Dynamic Range".
-And enum dp_content_type corresponds "Content Type"
-All of them are based on DP 1.4 spec [Table 2-117: VSC SDP Payload for
-DB16 through DB18].
-
-v3: Add a new drm data structure for DP VSC SDP
-v5: Addressed review comments from Uma
-    - Add kernel docs for added data structures
-    - Rename enum dp_colorspace to dp_pixelformat
-    - Polish commit message
-    - Fix typos
-    - Drop self-explanatory comments
+v2: Minor style fix
+v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+v4: Use struct drm_device logging macros
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- include/drm/drm_dp_helper.h | 130 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 130 insertions(+)
+ drivers/gpu/drm/i915/display/intel_ddi.c     |  1 +
+ drivers/gpu/drm/i915/display/intel_display.c | 43 ++++++++++++++++++++
+ 2 files changed, 44 insertions(+)
 
-diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
-index 262faf9e5e94..e332f54013d7 100644
---- a/include/drm/drm_dp_helper.h
-+++ b/include/drm/drm_dp_helper.h
-@@ -1209,6 +1209,136 @@ struct dp_sdp {
- #define EDP_VSC_PSR_UPDATE_RFB		(1<<1)
- #define EDP_VSC_PSR_CRC_VALUES_VALID	(1<<2)
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
+index 55eacc4d75bb..7f29b08ea202 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -4367,6 +4367,7 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
+ 			     &pipe_config->infoframes.drm);
  
-+/**
-+ * enum dp_pixelformat - drm DP Pixel encoding formats
-+ *
-+ * This enum is used to indicate DP VSC SDP Pixel encoding formats.
-+ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
-+ * DB18]
-+ *
-+ * @DP_PIXELFORMAT_RGB: RGB pixel encoding format
-+ * @DP_PIXELFORMAT_YUV444: YCbCr 4:4:4 pixel encoding format
-+ * @DP_PIXELFORMAT_YUV422: YCbCr 4:2:2 pixel encoding format
-+ * @DP_PIXELFORMAT_YUV420: YCbCr 4:2:0 pixel encoding format
-+ * @DP_PIXELFORMAT_Y_ONLY: Y Only pixel encoding format
-+ * @DP_PIXELFORMAT_RAW: RAW pixel encoding format
-+ * @DP_PIXELFORMAT_RESERVED: Reserved pixel encoding format
-+ */
-+enum dp_pixelformat {
-+	DP_PIXELFORMAT_RGB = 0,
-+	DP_PIXELFORMAT_YUV444 = 0x1,
-+	DP_PIXELFORMAT_YUV422 = 0x2,
-+	DP_PIXELFORMAT_YUV420 = 0x3,
-+	DP_PIXELFORMAT_Y_ONLY = 0x4,
-+	DP_PIXELFORMAT_RAW = 0x5,
-+	DP_PIXELFORMAT_RESERVED = 0x6,
-+};
-+
-+/**
-+ * enum dp_colorimetry - drm DP Colorimetry formats
-+ *
-+ * This enum is used to indicate DP VSC SDP Colorimetry formats.
-+ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
-+ * DB18] and a name of enum member follows DRM_MODE_COLORIMETRY definition.
-+ *
-+ * @DP_COLORIMETRY_DEFAULT: sRGB (IEC 61966-2-1) or
-+ *                          ITU-R BT.601 colorimetry format
-+ * @DP_COLORIMETRY_RGB_WIDE_FIXED: RGB wide gamut fixed point colorimetry format
-+ * @DP_COLORIMETRY_BT709_YCC: ITU-R BT.709 colorimetry format
-+ * @DP_COLORIMETRY_RGB_WIDE_FLOAT: RGB wide gamut floating point
-+ *                                 (scRGB (IEC 61966-2-2)) colorimetry format
-+ * @DP_COLORIMETRY_XVYCC_601: xvYCC601 colorimetry format
-+ * @DP_COLORIMETRY_OPRGB: OpRGB colorimetry format
-+ * @DP_COLORIMETRY_XVYCC_709: xvYCC709 colorimetry format
-+ * @DP_COLORIMETRY_DCI_P3_RGB: DCI-P3 (SMPTE RP 431-2) colorimetry format
-+ * @DP_COLORIMETRY_SYCC_601: sYCC601 colorimetry format
-+ * @DP_COLORIMETRY_RGB_CUSTOM: RGB Custom Color Profile colorimetry format
-+ * @DP_COLORIMETRY_OPYCC_601: opYCC601 colorimetry format
-+ * @DP_COLORIMETRY_BT2020_RGB: ITU-R BT.2020 R' G' B' colorimetry format
-+ * @DP_COLORIMETRY_BT2020_CYCC: ITU-R BT.2020 Y'c C'bc C'rc colorimetry format
-+ * @DP_COLORIMETRY_BT2020_YCC: ITU-R BT.2020 Y' C'b C'r colorimetry format
-+ */
-+enum dp_colorimetry {
-+	DP_COLORIMETRY_DEFAULT = 0,
-+	DP_COLORIMETRY_RGB_WIDE_FIXED = 0x1,
-+	DP_COLORIMETRY_BT709_YCC = 0x1,
-+	DP_COLORIMETRY_RGB_WIDE_FLOAT = 0x2,
-+	DP_COLORIMETRY_XVYCC_601 = 0x2,
-+	DP_COLORIMETRY_OPRGB = 0x3,
-+	DP_COLORIMETRY_XVYCC_709 = 0x3,
-+	DP_COLORIMETRY_DCI_P3_RGB = 0x4,
-+	DP_COLORIMETRY_SYCC_601 = 0x4,
-+	DP_COLORIMETRY_RGB_CUSTOM = 0x5,
-+	DP_COLORIMETRY_OPYCC_601 = 0x5,
-+	DP_COLORIMETRY_BT2020_RGB = 0x6,
-+	DP_COLORIMETRY_BT2020_CYCC = 0x6,
-+	DP_COLORIMETRY_BT2020_YCC = 0x7,
-+};
-+
-+/**
-+ * enum dp_dynamic_range - drm DP Dynamic Range
-+ *
-+ * This enum is used to indicate DP VSC SDP Dynamic Range.
-+ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
-+ * DB18]
-+ *
-+ * @DP_DYNAMIC_RANGE_VESA: VESA range
-+ * @DP_DYNAMIC_RANGE_CTA: CTA range
-+ */
-+enum dp_dynamic_range {
-+	DP_DYNAMIC_RANGE_VESA = 0,
-+	DP_DYNAMIC_RANGE_CTA = 1,
-+};
-+
-+/**
-+ * enum dp_content_type - drm DP Content Type
-+ *
-+ * This enum is used to indicate DP VSC SDP Content Types.
-+ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
-+ * DB18]
-+ * CTA-861-G defines content types and expected processing by a sink device
-+ *
-+ * @DP_CONTENT_TYPE_NOT_DEFINED: Not defined type
-+ * @DP_CONTENT_TYPE_GRAPHICS: Graphics type
-+ * @DP_CONTENT_TYPE_PHOTO: Photo type
-+ * @DP_CONTENT_TYPE_VIDEO: Video type
-+ * @DP_CONTENT_TYPE_GAME: Game type
-+ */
-+enum dp_content_type {
-+	DP_CONTENT_TYPE_NOT_DEFINED = 0x00,
-+	DP_CONTENT_TYPE_GRAPHICS = 0x01,
-+	DP_CONTENT_TYPE_PHOTO = 0x02,
-+	DP_CONTENT_TYPE_VIDEO = 0x03,
-+	DP_CONTENT_TYPE_GAME = 0x04,
-+};
-+
-+/**
-+ * struct drm_dp_vsc_sdp - drm DP VSC SDP
-+ *
-+ * This structure represents a DP VSC SDP of drm
-+ * It is based on DP 1.4 spec [Table 2-116: VSC SDP Header Bytes] and
-+ * [Table 2-117: VSC SDP Payload for DB16 through DB18]
-+ *
-+ * @sdp_type: secondary-data packet type
-+ * @revision: revision number
-+ * @length: number of valid data bytes
-+ * @pixelformat: pixel encoding format
-+ * @colorimetry: colorimetry format
-+ * @bpc: bit per color
-+ * @dynamic_range: dynamic range information
-+ * @content_type: CTA-861-G defines content types and expected processing by a sink device
-+ */
-+struct drm_dp_vsc_sdp {
-+	unsigned char sdp_type;
-+	unsigned char revision;
-+	unsigned char length;
-+	enum dp_pixelformat pixelformat;
-+	enum dp_colorimetry colorimetry;
-+	int bpc;
-+	enum dp_dynamic_range dynamic_range;
-+	enum dp_content_type content_type;
-+};
-+
- int drm_dp_psr_setup_time(const u8 psr_cap[EDP_PSR_RECEIVER_CAP_SIZE]);
+ 	intel_read_dp_sdp(encoder, pipe_config, HDMI_PACKET_TYPE_GAMUT_METADATA);
++	intel_read_dp_sdp(encoder, pipe_config, DP_SDP_VSC);
+ }
  
- static inline int
+ static enum intel_output_type
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index e3694e499b28..c11898cc1b50 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -13634,6 +13634,13 @@ intel_compare_infoframe(const union hdmi_infoframe *a,
+ 	return memcmp(a, b, sizeof(*a)) = 0;
+ }
+ 
++static bool
++intel_compare_dp_vsc_sdp(const struct drm_dp_vsc_sdp *a,
++			 const struct drm_dp_vsc_sdp *b)
++{
++	return memcmp(a, b, sizeof(*a)) = 0;
++}
++
+ static void
+ pipe_config_infoframe_mismatch(struct drm_i915_private *dev_priv,
+ 			       bool fastset, const char *name,
+@@ -13659,6 +13666,31 @@ pipe_config_infoframe_mismatch(struct drm_i915_private *dev_priv,
+ 	}
+ }
+ 
++static void
++pipe_config_dp_vsc_sdp_mismatch(struct drm_i915_private *dev_priv,
++				bool fastset, const char *name,
++				const struct drm_dp_vsc_sdp *a,
++				const struct drm_dp_vsc_sdp *b)
++{
++	if (fastset) {
++		if (!drm_debug_enabled(DRM_UT_KMS))
++			return;
++
++		drm_dbg_kms(&dev_priv->drm,
++			    "fastset mismatch in %s dp sdp\n", name);
++		drm_dbg_kms(&dev_priv->drm, "expected:\n");
++		drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, a);
++		drm_dbg_kms(&dev_priv->drm, "found:\n");
++		drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, b);
++	} else {
++		drm_err(&dev_priv->drm, "mismatch in %s dp sdp\n", name);
++		drm_err(&dev_priv->drm, "expected:\n");
++		drm_dp_vsc_sdp_log(KERN_ERR, dev_priv->drm.dev, a);
++		drm_err(&dev_priv->drm, "found:\n");
++		drm_dp_vsc_sdp_log(KERN_ERR, dev_priv->drm.dev, b);
++	}
++}
++
+ static void __printf(4, 5)
+ pipe_config_mismatch(bool fastset, const struct intel_crtc *crtc,
+ 		     const char *name, const char *format, ...)
+@@ -13860,6 +13892,16 @@ intel_pipe_config_compare(const struct intel_crtc_state *current_config,
+ 	} \
+ } while (0)
+ 
++#define PIPE_CONF_CHECK_DP_VSC_SDP(name) do { \
++	if (!intel_compare_dp_vsc_sdp(&current_config->infoframes.name, \
++				      &pipe_config->infoframes.name)) { \
++		pipe_config_dp_vsc_sdp_mismatch(dev_priv, fastset, __stringify(name), \
++						&current_config->infoframes.name, \
++						&pipe_config->infoframes.name); \
++		ret = false; \
++	} \
++} while (0)
++
+ #define PIPE_CONF_CHECK_COLOR_LUT(name1, name2, bit_precision) do { \
+ 	if (current_config->name1 != pipe_config->name1) { \
+ 		pipe_config_mismatch(fastset, crtc, __stringify(name1), \
+@@ -14035,6 +14077,7 @@ intel_pipe_config_compare(const struct intel_crtc_state *current_config,
+ 	PIPE_CONF_CHECK_INFOFRAME(spd);
+ 	PIPE_CONF_CHECK_INFOFRAME(hdmi);
+ 	PIPE_CONF_CHECK_INFOFRAME(drm);
++	PIPE_CONF_CHECK_DP_VSC_SDP(vsc);
+ 
+ 	PIPE_CONF_CHECK_X(sync_mode_slaves_mask);
+ 	PIPE_CONF_CHECK_I(master_transcoder);
 -- 
-2.25.0
+2.24.1

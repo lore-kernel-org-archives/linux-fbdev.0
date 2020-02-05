@@ -1,116 +1,71 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Sun, 02 Feb 2020 15:49:37 +0000
-Subject: [PATCH v2 17/18] drm/i915/dp: Add compute routine for DP PSR VSC SDP
-Message-Id: <20200202154938.1129610-18-gwan-gyeong.mun@intel.com>
+Date: Wed, 05 Feb 2020 15:41:20 +0000
+Subject: [PATCH v4 00/17] In order to readout DP SDPs, refactors the handling of DP SDPs
+Message-Id: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
+In order to readout DP SDPs (Secondary Data Packet: DP HDR Metadata
+Infoframe SDP, DP VSC SDP), it refactors handling DP SDPs codes.
+It adds new compute routines for DP HDR Metadata Infoframe SDP
+and DP VSC SDP. 
+And new writing routines of DP SDPs (Secondary Data Packet) that uses
+computed configs.
+New reading routines of DP SDPs are added for readout.
+It adds a logging function for DP VSC SDP.
+When receiving video it is very useful to be able to log DP VSC SDP.
+This greatly simplifies debugging.
 In order to use a common VSC SDP Colorimetry calculating code on PSR,
-it adds a compute routine for PSR VSC SDP.
-As PSR routine can not use infoframes.vsc of crtc state, it also adds new
-writing of DP SDPs (Secondary Data Packet) for PSR.
-PSR routine has its own scenario and timings of writing a VSC SDP.
+it uses a new psr vsc sdp compute routine.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
----
- drivers/gpu/drm/i915/display/intel_dp.c | 53 +++++++++++++++++++++++++
- drivers/gpu/drm/i915/display/intel_dp.h |  7 ++++
- 2 files changed, 60 insertions(+)
+v2: Minor style fix
+v3: 
+  - Add a new drm data structure for DP VSC SDP
+  - Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+  - Move logging functions to drm core [Jani N]
+    And use drm core's DP VSC SDP logging function
+  - Explicitly disable unused DIPs (AVI, GCP, VS, SPD, DRM. They will be
+    used for HDMI), when intel_dp_set_infoframes() function will be called.
+v4:
+  - Use struct drm_device logging macros
+  - Rebased
 
-diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
-index 02a6d57e8f7f..02da6ce3cc25 100644
---- a/drivers/gpu/drm/i915/display/intel_dp.c
-+++ b/drivers/gpu/drm/i915/display/intel_dp.c
-@@ -2463,6 +2463,42 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
- 					 &crtc_state->infoframes.vsc);
- }
- 
-+void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
-+				  const struct intel_crtc_state *crtc_state,
-+				  const struct drm_connector_state *conn_state,
-+				  struct intel_dp_vsc_sdp *vsc)
-+{
-+	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
-+
-+	vsc->sdp_type = DP_SDP_VSC;
-+
-+	if (dev_priv->psr.psr2_enabled) {
-+		if (dev_priv->psr.colorimetry_support &&
-+		    intel_dp_needs_vsc_sdp(crtc_state, conn_state)) {
-+			/* [PSR2, +Colorimetry] */
-+			intel_dp_compute_vsc_colorimetry(crtc_state, conn_state,
-+							 vsc);
-+		} else {
-+			/*
-+			 * [PSR2, -Colorimetry]
-+			 * Prepare VSC Header for SU as per eDP 1.4 spec, Table 6-11
-+			 * 3D stereo + PSR/PSR2 + Y-coordinate.
-+			 */
-+			vsc->revision = 0x4;
-+			vsc->length = 0xe;
-+		}
-+	} else {
-+		/*
-+		 * [PSR1]
-+		 * Prepare VSC Header for SU as per DP 1.4 spec, Table 2-118
-+		 * VSC SDP supporting 3D stereo + PSR (applies to eDP v1.3 or
-+		 * higher).
-+		 */
-+		vsc->revision = 0x2;
-+		vsc->length = 0x8;
-+	}
-+}
-+
- static void
- intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_crtc_state *crtc_state,
- 					    const struct drm_connector_state *conn_state)
-@@ -4889,6 +4925,23 @@ static void intel_write_dp_sdp(struct intel_encoder *encoder,
- 	intel_dig_port->write_infoframe(encoder, crtc_state, type, &sdp, len);
- }
- 
-+void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
-+			    const struct intel_crtc_state *crtc_state,
-+			    struct intel_dp_vsc_sdp *vsc)
-+{
-+	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
-+	struct dp_sdp sdp = {};
-+	ssize_t len;
-+
-+	len = intel_dp_vsc_sdp_pack(vsc, &sdp, sizeof(sdp));
-+
-+	if (WARN_ON(len < 0))
-+		return;
-+
-+	intel_dig_port->write_infoframe(encoder, crtc_state, DP_SDP_VSC,
-+					&sdp, len);
-+}
-+
- void intel_dp_set_infoframes(struct intel_encoder *encoder,
- 			     bool enable,
- 			     const struct intel_crtc_state *crtc_state,
-diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915/display/intel_dp.h
-index 6d8003eb59f6..fb63e9a2ee78 100644
---- a/drivers/gpu/drm/i915/display/intel_dp.h
-+++ b/drivers/gpu/drm/i915/display/intel_dp.h
-@@ -112,6 +112,13 @@ int intel_dp_link_required(int pixel_clock, int bpp);
- int intel_dp_max_data_rate(int max_link_clock, int max_lanes);
- bool intel_dp_needs_vsc_sdp(const struct intel_crtc_state *crtc_state,
- 			    const struct drm_connector_state *conn_state);
-+void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
-+				  const struct intel_crtc_state *crtc_state,
-+				  const struct drm_connector_state *conn_state,
-+				  struct intel_dp_vsc_sdp *vsc);
-+void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
-+			    const struct intel_crtc_state *crtc_state,
-+			    struct intel_dp_vsc_sdp *vsc);
- void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
- 			     const struct intel_crtc_state *crtc_state,
- 			     const struct drm_connector_state *conn_state);
+Gwan-gyeong Mun (17):
+  drm: add DP 1.4 VSC SDP Payload related enums and a structure
+  drm/i915/dp: Add compute routine for DP VSC SDP
+  drm/i915/dp: Add compute routine for DP HDR Metadata Infoframe SDP
+  drm/i915/dp: Add writing of DP SDPs (Secondary Data Packet)
+  video/hdmi: Add Unpack only function for DRM infoframe
+  drm/i915/dp: Read out DP SDPs (Secondary Data Packet)
+  drm: Add logging function for DP VSC SDP
+  drm/i915: Include HDMI DRM infoframe in the crtc state dump
+  drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
+  drm/i915: Include DP VSC SDP in the crtc state dump
+  drm/i915: Program DP SDPs with computed configs
+  drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
+  drm/i915: Add state readout for DP VSC SDP
+  drm/i915: Program DP SDPs on pipe updates
+  drm/i915: Stop sending DP SDPs on intel_ddi_post_disable_dp()
+  drm/i915/dp: Add compute routine for DP PSR VSC SDP
+  drm/i915/psr: Use new DP VSC SDP compute routine on PSR
+
+ drivers/gpu/drm/drm_dp_helper.c               | 174 +++++
+ drivers/gpu/drm/i915/display/intel_ddi.c      |  19 +-
+ drivers/gpu/drm/i915/display/intel_display.c  |  62 ++
+ .../drm/i915/display/intel_display_types.h    |   1 +
+ drivers/gpu/drm/i915/display/intel_dp.c       | 614 +++++++++++++-----
+ drivers/gpu/drm/i915/display/intel_dp.h       |  18 +-
+ drivers/gpu/drm/i915/display/intel_psr.c      |  54 +-
+ drivers/gpu/drm/i915/display/intel_psr.h      |   6 +-
+ drivers/gpu/drm/i915/i915_drv.h               |   1 +
+ drivers/video/hdmi.c                          |  58 +-
+ include/drm/drm_dp_helper.h                   |  60 ++
+ include/linux/hdmi.h                          |   2 +
+ 12 files changed, 851 insertions(+), 218 deletions(-)
+
 -- 
 2.24.1

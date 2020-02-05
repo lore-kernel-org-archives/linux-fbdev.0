@@ -1,72 +1,53 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Mon, 10 Feb 2020 17:10:06 +0000
-Subject: [PATCH v6 03/18] drm/i915/dp: Add compute routine for DP HDR Metadata Infoframe SDP
-Message-Id: <20200210171021.109684-4-gwan-gyeong.mun@intel.com>
+Date: Wed, 05 Feb 2020 15:41:32 +0000
+Subject: [PATCH v4 12/17] drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
+Message-Id: <20200205154137.1202389-13-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
+References: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-It stores computed dp hdr metadata infoframe sdp to infoframes.drm of
-crtc state. It referenced intel_hdmi_compute_drm_infoframe().
-
-While computing, we'll also fill out the infoframes.enable bitmask
-appropriately.
-
-v2: Wrap a long line.
-v4: Use struct drm_device logging macros
-v5: Fix typo [Uma]
+Added state readout for DP HDR Metadata Infoframe SDP.
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_dp.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ drivers/gpu/drm/i915/display/intel_ddi.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
-index 499377bf2891..472ce3203a09 100644
---- a/drivers/gpu/drm/i915/display/intel_dp.c
-+++ b/drivers/gpu/drm/i915/display/intel_dp.c
-@@ -2469,6 +2469,29 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
- 					 &crtc_state->infoframes.vsc);
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
+index 857014fe5880..55eacc4d75bb 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -4298,6 +4298,9 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
+ 				      pipe_config->fec_enable);
+ 		}
+ 
++		pipe_config->infoframes.enable |+			intel_hdmi_infoframes_enabled(encoder, pipe_config);
++
+ 		break;
+ 	case TRANS_DDI_MODE_SELECT_DP_MST:
+ 		pipe_config->output_types |= BIT(INTEL_OUTPUT_DP_MST);
+@@ -4309,6 +4312,9 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
+ 					REG_FIELD_GET(TRANS_DDI_MST_TRANSPORT_SELECT_MASK, temp);
+ 
+ 		intel_dp_get_m_n(intel_crtc, pipe_config);
++
++		pipe_config->infoframes.enable |+			intel_hdmi_infoframes_enabled(encoder, pipe_config);
+ 		break;
+ 	default:
+ 		break;
+@@ -4359,6 +4365,8 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
+ 	intel_read_infoframe(encoder, pipe_config,
+ 			     HDMI_INFOFRAME_TYPE_DRM,
+ 			     &pipe_config->infoframes.drm);
++
++	intel_read_dp_sdp(encoder, pipe_config, HDMI_PACKET_TYPE_GAMUT_METADATA);
  }
  
-+static void
-+intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_dp *intel_dp,
-+					    struct intel_crtc_state *crtc_state,
-+					    const struct drm_connector_state *conn_state)
-+{
-+	int ret;
-+	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
-+	struct hdmi_drm_infoframe *drm_infoframe = &crtc_state->infoframes.drm.drm;
-+
-+	if (!conn_state->hdr_output_metadata)
-+		return;
-+
-+	ret = drm_hdmi_infoframe_set_hdr_metadata(drm_infoframe, conn_state);
-+
-+	if (ret) {
-+		drm_dbg_kms(&dev_priv->drm, "couldn't set HDR metadata in infoframe\n");
-+		return;
-+	}
-+
-+	crtc_state->infoframes.enable |+		intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA);
-+}
-+
- int
- intel_dp_compute_config(struct intel_encoder *encoder,
- 			struct intel_crtc_state *pipe_config,
-@@ -2575,6 +2598,7 @@ intel_dp_compute_config(struct intel_encoder *encoder,
- 
- 	intel_psr_compute_config(intel_dp, pipe_config);
- 	intel_dp_compute_vsc_sdp(intel_dp, pipe_config, conn_state);
-+	intel_dp_compute_hdr_metadata_infoframe_sdp(intel_dp, pipe_config, conn_state);
- 
- 	return 0;
- }
+ static enum intel_output_type
 -- 
-2.25.0
+2.24.1

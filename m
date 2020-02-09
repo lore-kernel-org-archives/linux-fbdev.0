@@ -1,40 +1,39 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Tue, 11 Feb 2020 07:46:48 +0000
-Subject: [PATCH v7 09/18] drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
-Message-Id: <20200211074657.231405-10-gwan-gyeong.mun@intel.com>
+Date: Sun, 09 Feb 2020 03:53:43 +0000
+Subject: [PATCH v5 16/18] drm/i915: Stop sending DP SDPs on ddi disable
+Message-Id: <20200209035345.357436-17-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
+References: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Dump out the DP HDR Metadata Infoframe SDP in the normal crtc state dump.
+Call intel_dp_set_infoframes(false) function on intel_ddi_post_disable_dp()
+to make sure not to send VSC SDP and HDR Metadata Infoframe SDP.
 
-HDMI Dynamic Range and Mastering (DRM) infoframe and DP HDR Metadata
-Infoframe SDP use the same member variable in infoframes of crtc state.
+v5: Polish commit message [Uma]
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_display.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/gpu/drm/i915/display/intel_ddi.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index 66dbaab5867e..440e2c1c855c 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -13161,6 +13161,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
- 	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
- 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
-+	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
-+		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
+index fce6e36feae1..a00433d9cdd1 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -3738,6 +3738,8 @@ static void intel_ddi_post_disable_dp(struct intel_encoder *encoder,
+ 					  INTEL_OUTPUT_DP_MST);
+ 	enum phy phy = intel_port_to_phy(dev_priv, encoder->port);
  
- 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
- 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
++	intel_dp_set_infoframes(encoder, false, old_crtc_state, old_conn_state);
++
+ 	/*
+ 	 * Power down sink before disabling the port, otherwise we end
+ 	 * up getting interrupts from the sink on detecting link loss.
 -- 
-2.25.0
+2.24.1

@@ -1,139 +1,100 @@
-From: "Shankar, Uma" <uma.shankar@intel.com>
-Date: Wed, 05 Feb 2020 14:42:21 +0000
-Subject: RE: [PATCH v3 01/17] drm: add DP 1.4 VSC SDP Payload related enums and a structure
-Message-Id: <E7C9878FBA1C6D42A1CA3F62AEB6945F823DCE00@BGSMSX104.gar.corp.intel.com>
+From: "Mun, Gwan-gyeong" <gwan-gyeong.mun@intel.com>
+Date: Sun, 09 Feb 2020 03:26:43 +0000
+Subject: Re: [PATCH v3 01/17] drm: add DP 1.4 VSC SDP Payload related enums and a structure
+Message-Id: <99dcd8e318627428c3a61b75204e1dfa05866863.camel@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200203232014.906651-1-gwan-gyeong.mun@intel.com>
  <20200203232014.906651-2-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200203232014.906651-2-gwan-gyeong.mun@intel.com>
+ <E7C9878FBA1C6D42A1CA3F62AEB6945F823DCE00@BGSMSX104.gar.corp.intel.com>
+In-Reply-To: <E7C9878FBA1C6D42A1CA3F62AEB6945F823DCE00@BGSMSX104.gar.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Mun, Gwan-gyeong" <gwan-gyeong.mun@intel.com>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>
+To: "Shankar, Uma" <uma.shankar@intel.com>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>
 Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
 
-
-
-> -----Original Message-----
-> From: dri-devel <dri-devel-bounces@lists.freedesktop.org> On Behalf Of Gwan-
-> gyeong Mun
-> Sent: Tuesday, February 4, 2020 4:50 AM
-> To: intel-gfx@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org; dri-devel@lists.freedesktop.org
-> Subject: [PATCH v3 01/17] drm: add DP 1.4 VSC SDP Payload related enums and a
-> structure
-
-%s/add/Add/
-Also you can rephrase this as " Add DP1.4 VSC SDP Payload related Data Structures"/
-
-> It adds new enumeration definitions for VSC SDP Payload for Pixel
-> Encoding/Colorimetry Format.
-> And it adds a new drm data structure for DP VSC SDP.
-> 
-> enum dp_colorspace and enum dp_colorimetry correspond "Pixel Encoding and
-> Colorimetry Formats". enum dp_dynamic_range corresponds "Dynamic Range".
-> And enum dp_content_type corresponds "Content Type"
-> All of them are based on DP 1.4 spec [Table 2-117: VSC SDP Payload for
-> DB16 through DB18].
-> 
-> v3: Add a new drm data structure for DP VSC SDP
-> 
-> Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-> ---
->  include/drm/drm_dp_helper.h | 57 +++++++++++++++++++++++++++++++++++++
->  1 file changed, 57 insertions(+)
-> 
-> diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h index
-> 262faf9e5e94..c098727681fa 100644
-> --- a/include/drm/drm_dp_helper.h
-> +++ b/include/drm/drm_dp_helper.h
-> @@ -1209,6 +1209,63 @@ struct dp_sdp {
->  #define EDP_VSC_PSR_UPDATE_RFB		(1<<1)
->  #define EDP_VSC_PSR_CRC_VALUES_VALID	(1<<2)
-> 
-> +/* Based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
-> +DB18] */ enum dp_colorspace {
-
-We should not call this colorspace, rather rename it to dp_pixelformat.
-These are not colorspaces.
-
-Also add these to kernel docs as they are standard definitions.
-
-> +	DP_COLORSPACE_RGB = 0,
-
-Make this as DP_PIXELFORMAT_RGB and rename all the below ones as well.
-
-> +	DP_COLORSPACE_YUV444 = 0x1,
-> +	DP_COLORSPACE_YUV422 = 0x2,
-> +	DP_COLORSPACE_YUV420 = 0x3,
-> +	DP_COLORSPACE_Y_ONLY = 0x4,
-> +	DP_COLORSPACE_RAW = 0x5,
-> +	DP_COLORSPACE_RESERVED = 0x6,
-> +};
-> +
-> +/**
-> + * Based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
-> +DB18]
-> + * and a name of enum member followes DRM_MODE_COLORIMETRY definition.
-
-Typo in follows
-
-> + */
-> +enum dp_colorimetry {
-
-You can call this as dp_colorspace (this is actual colorspace), you can stick with colorimetry as well.
-Will leave that to you.
-
-> +	DP_COLORIMETRY_DEFAULT = 0, /* sRGB (IEC 61966-2-1) / ITU-R BT.601 */
-> +	DP_COLORIMETRY_RGB_WIDE_FIXED = 0x1,
-> +	DP_COLORIMETRY_BT709_YCC = 0x1,
-> +	DP_COLORIMETRY_RGB_WIDE_FLOAT = 0x2,
-> +	DP_COLORIMETRY_XVYCC_601 = 0x2,
-> +	DP_COLORIMETRY_OPRGB = 0x3,
-> +	DP_COLORIMETRY_XVYCC_709 = 0x3,
-> +	DP_COLORIMETRY_DCI_P3_RGB = 0x4,
-> +	DP_COLORIMETRY_SYCC_601 = 0x4,
-> +	DP_COLORIMETRY_RGB_CUSTOM = 0x5,
-> +	DP_COLORIMETRY_OPYCC_601 = 0x5,
-> +	DP_COLORIMETRY_BT2020_RGB = 0x6,
-> +	DP_COLORIMETRY_BT2020_CYCC = 0x6,
-> +	DP_COLORIMETRY_BT2020_YCC = 0x7,
-> +};
-> +
-> +enum dp_dynamic_range {
-> +	DP_DYNAMIC_RANGE_VESA = 0,
-> +	DP_DYNAMIC_RANGE_CTA = 1,
-> +};
-> +
-> +enum dp_content_type {
-> +	DP_CONTENT_TYPE_NOT_DEFINED = 0x00,
-> +	DP_CONTENT_TYPE_GRAPHICS = 0x01,
-> +	DP_CONTENT_TYPE_PHOTO = 0x02,
-> +	DP_CONTENT_TYPE_VIDEO = 0x03,
-> +	DP_CONTENT_TYPE_GAME = 0x04,
-> +};
-> +
-> +/* DRM DP VSC SDP as per DP 1.4 spec */ struct drm_dp_vsc_sdp {
-> +	unsigned char sdp_type; /* Secondary-data Packet Type */
-> +	unsigned char revision; /* Revision Number */
-
-These comments seems self-explanatory, you can probably drop them.
-
-> +	unsigned char length; /* Number of Valid Data Bytes */
-> +	enum dp_colorspace colorspace;
-> +	enum dp_colorimetry colorimetry;
-> +	int bpc; /* bit per color */
-> +	enum dp_dynamic_range dynamic_range;
-> +	enum dp_content_type content_type;
-> +};
-> +
->  int drm_dp_psr_setup_time(const u8 psr_cap[EDP_PSR_RECEIVER_CAP_SIZE]);
-> 
->  static inline int
-> --
-> 2.24.1
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+T24gV2VkLCAyMDIwLTAyLTA1IGF0IDIwOjEyICswNTMwLCBTaGFua2FyLCBVbWEgd3JvdGU6DQo+
+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBkcmktZGV2ZWwgPGRyaS1k
+ZXZlbC1ib3VuY2VzQGxpc3RzLmZyZWVkZXNrdG9wLm9yZz4gT24gQmVoYWxmDQo+ID4gT2YgR3dh
+bi0NCj4gPiBneWVvbmcgTXVuDQo+ID4gU2VudDogVHVlc2RheSwgRmVicnVhcnkgNCwgMjAyMCA0
+OjUwIEFNDQo+ID4gVG86IGludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcNCj4gPiBDYzog
+bGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnOyBkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Au
+b3JnDQo+ID4gU3ViamVjdDogW1BBVENIIHYzIDAxLzE3XSBkcm06IGFkZCBEUCAxLjQgVlNDIFNE
+UCBQYXlsb2FkIHJlbGF0ZWQNCj4gPiBlbnVtcyBhbmQgYQ0KPiA+IHN0cnVjdHVyZQ0KPiANCj4g
+JXMvYWRkL0FkZC8NCj4gQWxzbyB5b3UgY2FuIHJlcGhyYXNlIHRoaXMgYXMgIiBBZGQgRFAxLjQg
+VlNDIFNEUCBQYXlsb2FkIHJlbGF0ZWQNCj4gRGF0YSBTdHJ1Y3R1cmVzIi8NCj4gDQpIaSBVbWEs
+DQpUaGFuayB5b3UgZm9yIHJldmlld2luZyBhIHBhdGNoIHNlcmllcy4NCg0KT2theSBJJ2xsIHJl
+cGhyYXNlIGNvbW1pdCBtZXNzYWdlIHdpdGggeW91ciBndWlkZS4NCg0KPiA+IEl0IGFkZHMgbmV3
+IGVudW1lcmF0aW9uIGRlZmluaXRpb25zIGZvciBWU0MgU0RQIFBheWxvYWQgZm9yIFBpeGVsDQo+
+ID4gRW5jb2RpbmcvQ29sb3JpbWV0cnkgRm9ybWF0Lg0KPiA+IEFuZCBpdCBhZGRzIGEgbmV3IGRy
+bSBkYXRhIHN0cnVjdHVyZSBmb3IgRFAgVlNDIFNEUC4NCj4gPiANCj4gPiBlbnVtIGRwX2NvbG9y
+c3BhY2UgYW5kIGVudW0gZHBfY29sb3JpbWV0cnkgY29ycmVzcG9uZCAiUGl4ZWwNCj4gPiBFbmNv
+ZGluZyBhbmQNCj4gPiBDb2xvcmltZXRyeSBGb3JtYXRzIi4gZW51bSBkcF9keW5hbWljX3Jhbmdl
+IGNvcnJlc3BvbmRzICJEeW5hbWljDQo+ID4gUmFuZ2UiLg0KPiA+IEFuZCBlbnVtIGRwX2NvbnRl
+bnRfdHlwZSBjb3JyZXNwb25kcyAiQ29udGVudCBUeXBlIg0KPiA+IEFsbCBvZiB0aGVtIGFyZSBi
+YXNlZCBvbiBEUCAxLjQgc3BlYyBbVGFibGUgMi0xMTc6IFZTQyBTRFAgUGF5bG9hZA0KPiA+IGZv
+cg0KPiA+IERCMTYgdGhyb3VnaCBEQjE4XS4NCj4gPiANCj4gPiB2MzogQWRkIGEgbmV3IGRybSBk
+YXRhIHN0cnVjdHVyZSBmb3IgRFAgVlNDIFNEUA0KPiA+IA0KPiA+IFNpZ25lZC1vZmYtYnk6IEd3
+YW4tZ3llb25nIE11biA8Z3dhbi1neWVvbmcubXVuQGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAg
+aW5jbHVkZS9kcm0vZHJtX2RwX2hlbHBlci5oIHwgNTcNCj4gPiArKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA1NyBpbnNlcnRpb25zKCsp
+DQo+ID4gDQo+ID4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvZHJtL2RybV9kcF9oZWxwZXIuaA0KPiA+
+IGIvaW5jbHVkZS9kcm0vZHJtX2RwX2hlbHBlci5oIGluZGV4DQo+ID4gMjYyZmFmOWU1ZTk0Li5j
+MDk4NzI3NjgxZmEgMTAwNjQ0DQo+ID4gLS0tIGEvaW5jbHVkZS9kcm0vZHJtX2RwX2hlbHBlci5o
+DQo+ID4gKysrIGIvaW5jbHVkZS9kcm0vZHJtX2RwX2hlbHBlci5oDQo+ID4gQEAgLTEyMDksNiAr
+MTIwOSw2MyBAQCBzdHJ1Y3QgZHBfc2RwIHsNCj4gPiAgI2RlZmluZSBFRFBfVlNDX1BTUl9VUERB
+VEVfUkZCCQkoMTw8MSkNCj4gPiAgI2RlZmluZSBFRFBfVlNDX1BTUl9DUkNfVkFMVUVTX1ZBTElE
+CSgxPDwyKQ0KPiA+IA0KPiA+ICsvKiBCYXNlZCBvbiBEUCAxLjQgc3BlYyBbVGFibGUgMi0xMTc6
+IFZTQyBTRFAgUGF5bG9hZCBmb3IgREIxNg0KPiA+IHRocm91Z2gNCj4gPiArREIxOF0gKi8gZW51
+bSBkcF9jb2xvcnNwYWNlIHsNCj4gDQo+IFdlIHNob3VsZCBub3QgY2FsbCB0aGlzIGNvbG9yc3Bh
+Y2UsIHJhdGhlciByZW5hbWUgaXQgdG8NCj4gZHBfcGl4ZWxmb3JtYXQuDQo+IFRoZXNlIGFyZSBu
+b3QgY29sb3JzcGFjZXMuDQo+IA0KPiBBbHNvIGFkZCB0aGVzZSB0byBrZXJuZWwgZG9jcyBhcyB0
+aGV5IGFyZSBzdGFuZGFyZCBkZWZpbml0aW9ucy4NCj4gDQo+ID4gKwlEUF9DT0xPUlNQQUNFX1JH
+QiA9IDAsDQo+IA0KPiBNYWtlIHRoaXMgYXMgRFBfUElYRUxGT1JNQVRfUkdCIGFuZCByZW5hbWUg
+YWxsIHRoZSBiZWxvdyBvbmVzIGFzDQo+IHdlbGwuDQo+IA0KPiA+ICsJRFBfQ09MT1JTUEFDRV9Z
+VVY0NDQgPSAweDEsDQo+ID4gKwlEUF9DT0xPUlNQQUNFX1lVVjQyMiA9IDB4MiwNCj4gPiArCURQ
+X0NPTE9SU1BBQ0VfWVVWNDIwID0gMHgzLA0KPiA+ICsJRFBfQ09MT1JTUEFDRV9ZX09OTFkgPSAw
+eDQsDQo+ID4gKwlEUF9DT0xPUlNQQUNFX1JBVyA9IDB4NSwNCj4gPiArCURQX0NPTE9SU1BBQ0Vf
+UkVTRVJWRUQgPSAweDYsDQo+ID4gK307DQo+ID4gKw0KPiA+ICsvKioNCj4gPiArICogQmFzZWQg
+b24gRFAgMS40IHNwZWMgW1RhYmxlIDItMTE3OiBWU0MgU0RQIFBheWxvYWQgZm9yIERCMTYNCj4g
+PiB0aHJvdWdoDQo+ID4gK0RCMThdDQo+ID4gKyAqIGFuZCBhIG5hbWUgb2YgZW51bSBtZW1iZXIg
+Zm9sbG93ZXMgRFJNX01PREVfQ09MT1JJTUVUUlkNCj4gPiBkZWZpbml0aW9uLg0KPiANCj4gVHlw
+byBpbiBmb2xsb3dzDQo+IA0KPiA+ICsgKi8NCj4gPiArZW51bSBkcF9jb2xvcmltZXRyeSB7DQo+
+IA0KPiBZb3UgY2FuIGNhbGwgdGhpcyBhcyBkcF9jb2xvcnNwYWNlICh0aGlzIGlzIGFjdHVhbCBj
+b2xvcnNwYWNlKSwgeW91DQo+IGNhbiBzdGljayB3aXRoIGNvbG9yaW1ldHJ5IGFzIHdlbGwuDQo+
+IFdpbGwgbGVhdmUgdGhhdCB0byB5b3UuDQpZZXMsIHRoZSBEUCBzcGVjIHVzZXMgY29sb3JpbWV0
+cnkgYXMgdGhlIHRlcm0sIEkgcHJlZmVyIGNvbG9yaW1ldHJ5Lg0KPiANCj4gPiArCURQX0NPTE9S
+SU1FVFJZX0RFRkFVTFQgPSAwLCAvKiBzUkdCIChJRUMgNjE5NjYtMi0xKSAvIElUVS1SDQo+ID4g
+QlQuNjAxICovDQo+ID4gKwlEUF9DT0xPUklNRVRSWV9SR0JfV0lERV9GSVhFRCA9IDB4MSwNCj4g
+PiArCURQX0NPTE9SSU1FVFJZX0JUNzA5X1lDQyA9IDB4MSwNCj4gPiArCURQX0NPTE9SSU1FVFJZ
+X1JHQl9XSURFX0ZMT0FUID0gMHgyLA0KPiA+ICsJRFBfQ09MT1JJTUVUUllfWFZZQ0NfNjAxID0g
+MHgyLA0KPiA+ICsJRFBfQ09MT1JJTUVUUllfT1BSR0IgPSAweDMsDQo+ID4gKwlEUF9DT0xPUklN
+RVRSWV9YVllDQ183MDkgPSAweDMsDQo+ID4gKwlEUF9DT0xPUklNRVRSWV9EQ0lfUDNfUkdCID0g
+MHg0LA0KPiA+ICsJRFBfQ09MT1JJTUVUUllfU1lDQ182MDEgPSAweDQsDQo+ID4gKwlEUF9DT0xP
+UklNRVRSWV9SR0JfQ1VTVE9NID0gMHg1LA0KPiA+ICsJRFBfQ09MT1JJTUVUUllfT1BZQ0NfNjAx
+ID0gMHg1LA0KPiA+ICsJRFBfQ09MT1JJTUVUUllfQlQyMDIwX1JHQiA9IDB4NiwNCj4gPiArCURQ
+X0NPTE9SSU1FVFJZX0JUMjAyMF9DWUNDID0gMHg2LA0KPiA+ICsJRFBfQ09MT1JJTUVUUllfQlQy
+MDIwX1lDQyA9IDB4NywNCj4gPiArfTsNCj4gPiArDQo+ID4gK2VudW0gZHBfZHluYW1pY19yYW5n
+ZSB7DQo+ID4gKwlEUF9EWU5BTUlDX1JBTkdFX1ZFU0EgPSAwLA0KPiA+ICsJRFBfRFlOQU1JQ19S
+QU5HRV9DVEEgPSAxLA0KPiA+ICt9Ow0KPiA+ICsNCj4gPiArZW51bSBkcF9jb250ZW50X3R5cGUg
+ew0KPiA+ICsJRFBfQ09OVEVOVF9UWVBFX05PVF9ERUZJTkVEID0gMHgwMCwNCj4gPiArCURQX0NP
+TlRFTlRfVFlQRV9HUkFQSElDUyA9IDB4MDEsDQo+ID4gKwlEUF9DT05URU5UX1RZUEVfUEhPVE8g
+PSAweDAyLA0KPiA+ICsJRFBfQ09OVEVOVF9UWVBFX1ZJREVPID0gMHgwMywNCj4gPiArCURQX0NP
+TlRFTlRfVFlQRV9HQU1FID0gMHgwNCwNCj4gPiArfTsNCj4gPiArDQo+ID4gKy8qIERSTSBEUCBW
+U0MgU0RQIGFzIHBlciBEUCAxLjQgc3BlYyAqLyBzdHJ1Y3QgZHJtX2RwX3ZzY19zZHAgew0KPiA+
+ICsJdW5zaWduZWQgY2hhciBzZHBfdHlwZTsgLyogU2Vjb25kYXJ5LWRhdGEgUGFja2V0IFR5cGUg
+Ki8NCj4gPiArCXVuc2lnbmVkIGNoYXIgcmV2aXNpb247IC8qIFJldmlzaW9uIE51bWJlciAqLw0K
+PiANCj4gVGhlc2UgY29tbWVudHMgc2VlbXMgc2VsZi1leHBsYW5hdG9yeSwgeW91IGNhbiBwcm9i
+YWJseSBkcm9wIHRoZW0uDQo+IA0KVGhhbmsgeW91IGZvciByZXZpZXcgaW4gZGV0YWlsLCBJJ2xs
+IHVwZGF0ZSBldmVyeXRoaW5nIHRoYXQgeW91IGNvbW1lbnRlZC4NCj4gPiArCXVuc2lnbmVkIGNo
+YXIgbGVuZ3RoOyAvKiBOdW1iZXIgb2YgVmFsaWQgRGF0YSBCeXRlcyAqLw0KPiA+ICsJZW51bSBk
+cF9jb2xvcnNwYWNlIGNvbG9yc3BhY2U7DQo+ID4gKwllbnVtIGRwX2NvbG9yaW1ldHJ5IGNvbG9y
+aW1ldHJ5Ow0KPiA+ICsJaW50IGJwYzsgLyogYml0IHBlciBjb2xvciAqLw0KPiA+ICsJZW51bSBk
+cF9keW5hbWljX3JhbmdlIGR5bmFtaWNfcmFuZ2U7DQo+ID4gKwllbnVtIGRwX2NvbnRlbnRfdHlw
+ZSBjb250ZW50X3R5cGU7DQo+ID4gK307DQo+ID4gKw0KPiA+ICBpbnQgZHJtX2RwX3Bzcl9zZXR1
+cF90aW1lKGNvbnN0IHU4DQo+ID4gcHNyX2NhcFtFRFBfUFNSX1JFQ0VJVkVSX0NBUF9TSVpFXSk7
+DQo+ID4gDQo+ID4gIHN0YXRpYyBpbmxpbmUgaW50DQo+ID4gLS0NCj4gPiAyLjI0LjENCj4gPiAN
+Cj4gPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KPiA+
+IGRyaS1kZXZlbCBtYWlsaW5nIGxpc3QNCj4gPiBkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Au
+b3JnDQo+ID4gaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9k
+cmktZGV2ZWwNCg=

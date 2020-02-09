@@ -1,210 +1,281 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Mon, 03 Feb 2020 23:20:14 +0000
-Subject: [PATCH v3 17/17] drm/i915/psr: Use new DP VSC SDP compute routine on PSR
-Message-Id: <20200203232014.906651-18-gwan-gyeong.mun@intel.com>
+Date: Sun, 09 Feb 2020 03:53:31 +0000
+Subject: [PATCH v5 04/18] drm/i915/dp: Add writing of DP SDPs
+Message-Id: <20200209035345.357436-5-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200203232014.906651-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200203232014.906651-1-gwan-gyeong.mun@intel.com>
+References: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-In order to use a common VSC SDP Colorimetry calculating code on PSR,
-it uses a new psr vsc sdp compute routine.
-Because PSR routine has its own scenario and timings of writing a VSC SDP,
-the current PSR routine needs to have its own drm_dp_vsc_sdp structure
-member variable on struct i915_psr.
+It adds routines that write DP VSC SDP and DP HDR Metadata Infoframe SDP.
+In order to pack DP VSC SDP, it adds intel_dp_vsc_sdp_pack() function.
+It follows DP 1.4a spec. [Table 2-116: VSC SDP Header Bytes] and
+[Table 2-117: VSC SDP Payload for DB16 through DB18]
 
-In order to calculate colorimetry information, intel_psr_update()
-function and intel_psr_enable() function extend a drm_connector_state
-argument.
+In order to pack DP HDR Metadata Infoframe SDP, it adds
+intel_dp_hdr_metadata_infoframe_sdp_pack() function.
+And it follows DP 1.4a spec.
+([Table 2-125: INFOFRAME SDP v1.2 Header Bytes] and
+[Table 2-126: INFOFRAME SDP v1.2 Payload Data Bytes - DB0 through DB31])
+and CTA-861-G spec. [Table-42 Dynamic Range and Mastering InfoFrame].
 
-There are no changes to PSR mechanism.
+A mechanism and a naming rule of intel_dp_set_infoframes() function
+references intel_encoder->set_infoframes() of intel_hdmi.c .
+VSC SDP is used for PSR and Pixel Encoding and Colorimetry Formats cases.
+Because PSR routine has its own routine of writing a VSC SDP, when the PSR
+is enabled, intel_dp_set_infoframes() does not write a VSC SDP.
 
-v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+v3:
+  - Explicitly disable unused DIPs (AVI, GCP, VS, SPD, DRM. They will be
+    used for HDMI), when intel_dp_set_infoframes() function will be called.
+  - Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp.
+v4: Use struct drm_device logging macros
+v5:
+  - use intel_de_*() functions for register access
+  - Addressed review comments from Uma
+    Polish commit message and comments
+    Add 6bpc to packing of VSC SDP
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_ddi.c |  4 +-
- drivers/gpu/drm/i915/display/intel_psr.c | 54 +++++++-----------------
- drivers/gpu/drm/i915/display/intel_psr.h |  6 ++-
- drivers/gpu/drm/i915/i915_drv.h          |  1 +
- 4 files changed, 22 insertions(+), 43 deletions(-)
+ drivers/gpu/drm/i915/display/intel_dp.c | 199 ++++++++++++++++++++++++
+ drivers/gpu/drm/i915/display/intel_dp.h |   3 +
+ 2 files changed, 202 insertions(+)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index 8509cd33569e..00b46c45f6a8 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -3901,7 +3901,7 @@ static void intel_enable_ddi_dp(struct intel_encoder *encoder,
- 		intel_dp_stop_link_train(intel_dp);
- 
- 	intel_edp_backlight_on(crtc_state, conn_state);
--	intel_psr_enable(intel_dp, crtc_state);
-+	intel_psr_enable(intel_dp, crtc_state, conn_state);
- 	intel_dp_set_infoframes(encoder, true, crtc_state, conn_state);
- 	intel_edp_drrs_enable(intel_dp, crtc_state);
- 
-@@ -4063,7 +4063,7 @@ static void intel_ddi_update_pipe_dp(struct intel_encoder *encoder,
- 
- 	intel_ddi_set_dp_msa(crtc_state, conn_state);
- 
--	intel_psr_update(intel_dp, crtc_state);
-+	intel_psr_update(intel_dp, crtc_state, conn_state);
- 	intel_dp_set_infoframes(encoder, true, crtc_state, conn_state);
- 	intel_edp_drrs_enable(intel_dp, crtc_state);
- 
-diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index e41ed962aa80..a4564607b6c5 100644
---- a/drivers/gpu/drm/i915/display/intel_psr.c
-+++ b/drivers/gpu/drm/i915/display/intel_psr.c
-@@ -330,39 +330,6 @@ void intel_psr_init_dpcd(struct intel_dp *intel_dp)
- 	}
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915=
+/display/intel_dp.c
+index 472ce3203a09..bc532cca125f 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.c
++++ b/drivers/gpu/drm/i915/display/intel_dp.c
+@@ -4739,6 +4739,205 @@ intel_dp_needs_vsc_sdp(const struct intel_crtc_stat=
+e *crtc_state,
+ 	return false;
  }
- 
--static void intel_psr_setup_vsc(struct intel_dp *intel_dp,
--				const struct intel_crtc_state *crtc_state)
--{
--	struct intel_digital_port *intel_dig_port = dp_to_dig_port(intel_dp);
--	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
--	struct dp_sdp psr_vsc;
--
--	if (dev_priv->psr.psr2_enabled) {
--		/* Prepare VSC Header for SU as per EDP 1.4 spec, Table 6.11 */
--		memset(&psr_vsc, 0, sizeof(psr_vsc));
--		psr_vsc.sdp_header.HB0 = 0;
--		psr_vsc.sdp_header.HB1 = 0x7;
--		if (dev_priv->psr.colorimetry_support) {
--			psr_vsc.sdp_header.HB2 = 0x5;
--			psr_vsc.sdp_header.HB3 = 0x13;
--		} else {
--			psr_vsc.sdp_header.HB2 = 0x4;
--			psr_vsc.sdp_header.HB3 = 0xe;
--		}
--	} else {
--		/* Prepare VSC packet as per EDP 1.3 spec, Table 3.10 */
--		memset(&psr_vsc, 0, sizeof(psr_vsc));
--		psr_vsc.sdp_header.HB0 = 0;
--		psr_vsc.sdp_header.HB1 = 0x7;
--		psr_vsc.sdp_header.HB2 = 0x2;
--		psr_vsc.sdp_header.HB3 = 0x8;
--	}
--
--	intel_dig_port->write_infoframe(&intel_dig_port->base,
--					crtc_state,
--					DP_SDP_VSC, &psr_vsc, sizeof(psr_vsc));
--}
--
- static void hsw_psr_setup_aux(struct intel_dp *intel_dp)
- {
- 	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
-@@ -841,9 +808,12 @@ static void intel_psr_enable_source(struct intel_dp *intel_dp,
- }
- 
- static void intel_psr_enable_locked(struct drm_i915_private *dev_priv,
--				    const struct intel_crtc_state *crtc_state)
-+				    const struct intel_crtc_state *crtc_state,
-+				    const struct drm_connector_state *conn_state)
- {
- 	struct intel_dp *intel_dp = dev_priv->psr.dp;
-+	struct intel_digital_port *intel_dig_port = dp_to_dig_port(intel_dp);
-+	struct intel_encoder *encoder = &intel_dig_port->base;
- 	u32 val;
- 
- 	WARN_ON(dev_priv->psr.enabled);
-@@ -881,7 +851,9 @@ static void intel_psr_enable_locked(struct drm_i915_private *dev_priv,
- 
- 	DRM_DEBUG_KMS("Enabling PSR%s\n",
- 		      dev_priv->psr.psr2_enabled ? "2" : "1");
--	intel_psr_setup_vsc(intel_dp, crtc_state);
-+	intel_dp_compute_psr_vsc_sdp(intel_dp, crtc_state, conn_state,
-+				     &dev_priv->psr.vsc);
-+	intel_write_dp_vsc_sdp(encoder, crtc_state, &dev_priv->psr.vsc);
- 	intel_psr_enable_sink(intel_dp);
- 	intel_psr_enable_source(intel_dp, crtc_state);
- 	dev_priv->psr.enabled = true;
-@@ -893,11 +865,13 @@ static void intel_psr_enable_locked(struct drm_i915_private *dev_priv,
-  * intel_psr_enable - Enable PSR
-  * @intel_dp: Intel DP
-  * @crtc_state: new CRTC state
-+ * @conn_state: new CONNECTOR state
-  *
-  * This function can only be called after the pipe is fully trained and enabled.
-  */
- void intel_psr_enable(struct intel_dp *intel_dp,
--		      const struct intel_crtc_state *crtc_state)
-+		      const struct intel_crtc_state *crtc_state,
-+		      const struct drm_connector_state *conn_state)
- {
- 	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
- 
-@@ -916,7 +890,7 @@ void intel_psr_enable(struct intel_dp *intel_dp,
- 		goto unlock;
- 	}
- 
--	intel_psr_enable_locked(dev_priv, crtc_state);
-+	intel_psr_enable_locked(dev_priv, crtc_state, conn_state);
- 
- unlock:
- 	mutex_unlock(&dev_priv->psr.lock);
-@@ -1049,13 +1023,15 @@ static void psr_force_hw_tracking_exit(struct drm_i915_private *dev_priv)
-  * intel_psr_update - Update PSR state
-  * @intel_dp: Intel DP
-  * @crtc_state: new CRTC state
-+ * @conn_state: new CONNECTOR state
-  *
-  * This functions will update PSR states, disabling, enabling or switching PSR
-  * version when executing fastsets. For full modeset, intel_psr_disable() and
-  * intel_psr_enable() should be called instead.
-  */
- void intel_psr_update(struct intel_dp *intel_dp,
--		      const struct intel_crtc_state *crtc_state)
-+		      const struct intel_crtc_state *crtc_state,
-+		      const struct drm_connector_state *conn_state)
- {
- 	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
- 	struct i915_psr *psr = &dev_priv->psr;
-@@ -1090,7 +1066,7 @@ void intel_psr_update(struct intel_dp *intel_dp,
- 		intel_psr_disable_locked(intel_dp);
- 
- 	if (enable)
--		intel_psr_enable_locked(dev_priv, crtc_state);
-+		intel_psr_enable_locked(dev_priv, crtc_state, conn_state);
- 
- unlock:
- 	mutex_unlock(&dev_priv->psr.lock);
-diff --git a/drivers/gpu/drm/i915/display/intel_psr.h b/drivers/gpu/drm/i915/display/intel_psr.h
-index c58a1d438808..a003fb18105a 100644
---- a/drivers/gpu/drm/i915/display/intel_psr.h
-+++ b/drivers/gpu/drm/i915/display/intel_psr.h
-@@ -17,11 +17,13 @@ struct intel_dp;
- #define CAN_PSR(dev_priv) (HAS_PSR(dev_priv) && dev_priv->psr.sink_support)
- void intel_psr_init_dpcd(struct intel_dp *intel_dp);
- void intel_psr_enable(struct intel_dp *intel_dp,
--		      const struct intel_crtc_state *crtc_state);
-+		      const struct intel_crtc_state *crtc_state,
-+		      const struct drm_connector_state *conn_state);
- void intel_psr_disable(struct intel_dp *intel_dp,
- 		       const struct intel_crtc_state *old_crtc_state);
- void intel_psr_update(struct intel_dp *intel_dp,
--		      const struct intel_crtc_state *crtc_state);
-+		      const struct intel_crtc_state *crtc_state,
-+		      const struct drm_connector_state *conn_state);
- int intel_psr_debug_set(struct drm_i915_private *dev_priv, u64 value);
- void intel_psr_invalidate(struct drm_i915_private *dev_priv,
- 			  unsigned frontbuffer_bits,
-diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
-index a8a08c63278e..fa2f1a18ffe0 100644
---- a/drivers/gpu/drm/i915/i915_drv.h
-+++ b/drivers/gpu/drm/i915/i915_drv.h
-@@ -504,6 +504,7 @@ struct i915_psr {
- 	u32 dc3co_exit_delay;
- 	struct delayed_work idle_work;
- 	bool initially_probed;
-+	struct drm_dp_vsc_sdp vsc;
- };
- 
- #define QUIRK_LVDS_SSC_DISABLE (1<<1)
--- 
+=20
++static ssize_t intel_dp_vsc_sdp_pack(const struct drm_dp_vsc_sdp *vsc,
++				     struct dp_sdp *sdp, size_t size)
++{
++	size_t length =3D sizeof(struct dp_sdp);
++
++	if (size < length)
++		return -ENOSPC;
++
++	memset(sdp, 0, size);
++
++	/*
++	 * Prepare VSC Header for SU as per DP 1.4a spec, Table 2-119
++	 * VSC SDP Header Bytes
++	 */
++	sdp->sdp_header.HB0 =3D 0; /* Secondary-Data Packet ID =3D 0 */
++	sdp->sdp_header.HB1 =3D vsc->sdp_type; /* Secondary-data Packet Type */
++	sdp->sdp_header.HB2 =3D vsc->revision; /* Revision Number */
++	sdp->sdp_header.HB3 =3D vsc->length; /* Number of Valid Data Bytes */
++
++	/* VSC SDP Payload for DB16 through DB18 */
++	/* Pixel Encoding and Colorimetry Formats  */
++	sdp->db[16] =3D (vsc->pixelformat & 0xf) << 4; /* DB16[7:4] */
++	sdp->db[16] |=3D vsc->colorimetry & 0xf; /* DB16[3:0] */
++
++	switch (vsc->bpc) {
++	case 6:
++		/* 6bpc: 0x0 */
++		break;
++	case 8:
++		sdp->db[17] =3D 0x1; /* DB17[3:0] */
++		break;
++	case 10:
++		sdp->db[17] =3D 0x2;
++		break;
++	case 12:
++		sdp->db[17] =3D 0x3;
++		break;
++	case 16:
++		sdp->db[17] =3D 0x4;
++		break;
++	default:
++		MISSING_CASE(vsc->bpc);
++		break;
++	}
++	/* Dynamic Range and Component Bit Depth */
++	if (vsc->dynamic_range =3D DP_DYNAMIC_RANGE_CTA)
++		sdp->db[17] |=3D 0x80;  /* DB17[7] */
++
++	/* Content Type */
++	sdp->db[18] =3D vsc->content_type & 0x7;
++
++	return length;
++}
++
++static ssize_t
++intel_dp_hdr_metadata_infoframe_sdp_pack(const struct hdmi_drm_infoframe *=
+drm_infoframe,
++					 struct dp_sdp *sdp,
++					 size_t size)
++{
++	size_t length =3D sizeof(struct dp_sdp);
++	const int infoframe_size =3D HDMI_INFOFRAME_HEADER_SIZE + HDMI_DRM_INFOFR=
+AME_SIZE;
++	unsigned char buf[HDMI_INFOFRAME_HEADER_SIZE + HDMI_DRM_INFOFRAME_SIZE];
++	ssize_t len;
++
++	if (size < length)
++		return -ENOSPC;
++
++	memset(sdp, 0, size);
++
++	len =3D hdmi_drm_infoframe_pack_only(drm_infoframe, buf, sizeof(buf));
++	if (len < 0) {
++		DRM_DEBUG_KMS("buffer size is smaller than hdr metadata infoframe\n");
++		return -ENOSPC;
++	}
++
++	if (len !=3D infoframe_size) {
++		DRM_DEBUG_KMS("wrong static hdr metadata size\n");
++		return -ENOSPC;
++	}
++
++	/*
++	 * Set up the infoframe sdp packet for HDR static metadata.
++	 * Prepare VSC Header for SU as per DP 1.4a spec,
++	 * Table 2-100 and Table 2-101
++	 */
++
++	/* Secondary-Data Packet ID, 00h for non-Audio INFOFRAME */
++	sdp->sdp_header.HB0 =3D 0;
++	/*
++	 * Packet Type 80h + Non-audio INFOFRAME Type value
++	 * HDMI_INFOFRAME_TYPE_DRM: 0x87
++	 * - 80h + Non-audio INFOFRAME Type value
++	 * - InfoFrame Type: 0x07
++	 *    [CTA-861-G Table-42 Dynamic Range and Mastering InfoFrame]
++	 */
++	sdp->sdp_header.HB1 =3D drm_infoframe->type;
++	/*
++	 * Least Significant Eight Bits of (Data Byte Count =E2=80=93 1)
++	 * infoframe_size - 1
++	 */
++	sdp->sdp_header.HB2 =3D 0x1D;
++	/* INFOFRAME SDP Version Number */
++	sdp->sdp_header.HB3 =3D (0x13 << 2);
++	/* CTA Header Byte 2 (INFOFRAME Version Number) */
++	sdp->db[0] =3D drm_infoframe->version;
++	/* CTA Header Byte 3 (Length of INFOFRAME): HDMI_DRM_INFOFRAME_SIZE */
++	sdp->db[1] =3D drm_infoframe->length;
++	/*
++	 * Copy HDMI_DRM_INFOFRAME_SIZE size from a buffer after
++	 * HDMI_INFOFRAME_HEADER_SIZE
++	 */
++	BUILD_BUG_ON(sizeof(sdp->db) < HDMI_DRM_INFOFRAME_SIZE + 2);
++	memcpy(&sdp->db[2], &buf[HDMI_INFOFRAME_HEADER_SIZE],
++	       HDMI_DRM_INFOFRAME_SIZE);
++
++	/*
++	 * Size of DP infoframe sdp packet for HDR static metadata consists of
++	 * - DP SDP Header(struct dp_sdp_header): 4 bytes
++	 * - Two Data Blocks: 2 bytes
++	 *    CTA Header Byte2 (INFOFRAME Version Number)
++	 *    CTA Header Byte3 (Length of INFOFRAME)
++	 * - HDMI_DRM_INFOFRAME_SIZE: 26 bytes
++	 *
++	 * Prior to GEN11's GMP register size is identical to DP HDR static metad=
+ata
++	 * infoframe size. But GEN11+ has larger than that size, write_infoframe
++	 * will pad rest of the size.
++	 */
++	return sizeof(struct dp_sdp_header) + 2 + HDMI_DRM_INFOFRAME_SIZE;
++}
++
++static void intel_write_dp_sdp(struct intel_encoder *encoder,
++			       const struct intel_crtc_state *crtc_state,
++			       unsigned int type)
++{
++	struct intel_digital_port *intel_dig_port =3D enc_to_dig_port(encoder);
++	struct drm_i915_private *dev_priv =3D to_i915(encoder->base.dev);
++	struct dp_sdp sdp =3D {};
++	ssize_t len;
++
++	if ((crtc_state->infoframes.enable &
++	     intel_hdmi_infoframe_enable(type)) =3D 0)
++		return;
++
++	switch (type) {
++	case DP_SDP_VSC:
++		len =3D intel_dp_vsc_sdp_pack(&crtc_state->infoframes.vsc, &sdp,
++					    sizeof(sdp));
++		break;
++	case HDMI_PACKET_TYPE_GAMUT_METADATA:
++		len =3D intel_dp_hdr_metadata_infoframe_sdp_pack(&crtc_state->infoframes=
+.drm.drm,
++							       &sdp, sizeof(sdp));
++		break;
++	default:
++		MISSING_CASE(type);
++		break;
++	}
++
++	if (drm_WARN_ON(&dev_priv->drm, len < 0))
++		return;
++
++	intel_dig_port->write_infoframe(encoder, crtc_state, type, &sdp, len);
++}
++
++void intel_dp_set_infoframes(struct intel_encoder *encoder,
++			     bool enable,
++			     const struct intel_crtc_state *crtc_state,
++			     const struct drm_connector_state *conn_state)
++{
++	struct drm_i915_private *dev_priv =3D to_i915(encoder->base.dev);
++	struct intel_dp *intel_dp =3D enc_to_intel_dp(encoder);
++	i915_reg_t reg =3D HSW_TVIDEO_DIP_CTL(crtc_state->cpu_transcoder);
++	u32 dip_enable =3D VIDEO_DIP_ENABLE_AVI_HSW | VIDEO_DIP_ENABLE_GCP_HSW |
++			 VIDEO_DIP_ENABLE_VS_HSW | VIDEO_DIP_ENABLE_GMP_HSW |
++			 VIDEO_DIP_ENABLE_SPD_HSW | VIDEO_DIP_ENABLE_DRM_GLK;
++	u32 val =3D intel_de_read(dev_priv, reg);
++
++	/* TODO: Add DSC case (DIP_ENABLE_PPS) */
++	/* When PSR is enabled, this routine doesn't disable VSC DIP */
++	if (intel_psr_enabled(intel_dp))
++		val &=3D ~dip_enable;
++	else
++		val &=3D ~(dip_enable | VIDEO_DIP_ENABLE_VSC_HSW);
++
++	if (!enable) {
++		intel_de_write(dev_priv, reg, val);
++		intel_de_posting_read(dev_priv, reg);
++		return;
++	}
++
++	intel_de_write(dev_priv, reg, val);
++	intel_de_posting_read(dev_priv, reg);
++
++	/* When PSR is enabled, VSC SDP is handled by PSR routine */
++	if (!intel_psr_enabled(intel_dp))
++		intel_write_dp_sdp(encoder, crtc_state, DP_SDP_VSC);
++
++	intel_write_dp_sdp(encoder, crtc_state, HDMI_PACKET_TYPE_GAMUT_METADATA);
++}
++
+ static void
+ intel_dp_setup_vsc_sdp(struct intel_dp *intel_dp,
+ 		       const struct intel_crtc_state *crtc_state,
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915=
+/display/intel_dp.h
+index 3da166054788..0dc09a463ee1 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.h
++++ b/drivers/gpu/drm/i915/display/intel_dp.h
+@@ -116,6 +116,9 @@ void intel_dp_vsc_enable(struct intel_dp *intel_dp,
+ void intel_dp_hdr_metadata_enable(struct intel_dp *intel_dp,
+ 				  const struct intel_crtc_state *crtc_state,
+ 				  const struct drm_connector_state *conn_state);
++void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
++			     const struct intel_crtc_state *crtc_state,
++			     const struct drm_connector_state *conn_state);
+ bool intel_digital_port_connected(struct intel_encoder *encoder);
+=20
+ static inline unsigned int intel_dp_unused_lane_mask(int lane_count)
+--=20
 2.24.1

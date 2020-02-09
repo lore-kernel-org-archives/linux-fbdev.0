@@ -1,71 +1,72 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Wed, 05 Feb 2020 15:41:20 +0000
-Subject: [PATCH v4 00/17] In order to readout DP SDPs, refactors the handling of DP SDPs
-Message-Id: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
+Date: Sun, 09 Feb 2020 03:53:30 +0000
+Subject: [PATCH v5 03/18] drm/i915/dp: Add compute routine for DP HDR Metadata Infoframe SDP
+Message-Id: <20200209035345.357436-4-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-In order to readout DP SDPs (Secondary Data Packet: DP HDR Metadata
-Infoframe SDP, DP VSC SDP), it refactors handling DP SDPs codes.
-It adds new compute routines for DP HDR Metadata Infoframe SDP
-and DP VSC SDP. 
-And new writing routines of DP SDPs (Secondary Data Packet) that uses
-computed configs.
-New reading routines of DP SDPs are added for readout.
-It adds a logging function for DP VSC SDP.
-When receiving video it is very useful to be able to log DP VSC SDP.
-This greatly simplifies debugging.
-In order to use a common VSC SDP Colorimetry calculating code on PSR,
-it uses a new psr vsc sdp compute routine.
+It stores computed dp hdr metadata infoframe sdp to infoframes.drm of
+crtc state. It referenced intel_hdmi_compute_drm_infoframe().
 
-v2: Minor style fix
-v3: 
-  - Add a new drm data structure for DP VSC SDP
-  - Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-  - Move logging functions to drm core [Jani N]
-    And use drm core's DP VSC SDP logging function
-  - Explicitly disable unused DIPs (AVI, GCP, VS, SPD, DRM. They will be
-    used for HDMI), when intel_dp_set_infoframes() function will be called.
-v4:
-  - Use struct drm_device logging macros
-  - Rebased
+While computing, we'll also fill out the infoframes.enable bitmask
+appropriately.
 
-Gwan-gyeong Mun (17):
-  drm: add DP 1.4 VSC SDP Payload related enums and a structure
-  drm/i915/dp: Add compute routine for DP VSC SDP
-  drm/i915/dp: Add compute routine for DP HDR Metadata Infoframe SDP
-  drm/i915/dp: Add writing of DP SDPs (Secondary Data Packet)
-  video/hdmi: Add Unpack only function for DRM infoframe
-  drm/i915/dp: Read out DP SDPs (Secondary Data Packet)
-  drm: Add logging function for DP VSC SDP
-  drm/i915: Include HDMI DRM infoframe in the crtc state dump
-  drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
-  drm/i915: Include DP VSC SDP in the crtc state dump
-  drm/i915: Program DP SDPs with computed configs
-  drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
-  drm/i915: Add state readout for DP VSC SDP
-  drm/i915: Program DP SDPs on pipe updates
-  drm/i915: Stop sending DP SDPs on intel_ddi_post_disable_dp()
-  drm/i915/dp: Add compute routine for DP PSR VSC SDP
-  drm/i915/psr: Use new DP VSC SDP compute routine on PSR
+v2: Wrap a long line.
+v4: Use struct drm_device logging macros
+v5: Fix typo [Uma]
 
- drivers/gpu/drm/drm_dp_helper.c               | 174 +++++
- drivers/gpu/drm/i915/display/intel_ddi.c      |  19 +-
- drivers/gpu/drm/i915/display/intel_display.c  |  62 ++
- .../drm/i915/display/intel_display_types.h    |   1 +
- drivers/gpu/drm/i915/display/intel_dp.c       | 614 +++++++++++++-----
- drivers/gpu/drm/i915/display/intel_dp.h       |  18 +-
- drivers/gpu/drm/i915/display/intel_psr.c      |  54 +-
- drivers/gpu/drm/i915/display/intel_psr.h      |   6 +-
- drivers/gpu/drm/i915/i915_drv.h               |   1 +
- drivers/video/hdmi.c                          |  58 +-
- include/drm/drm_dp_helper.h                   |  60 ++
- include/linux/hdmi.h                          |   2 +
- 12 files changed, 851 insertions(+), 218 deletions(-)
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_dp.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
+index 499377bf2891..472ce3203a09 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.c
++++ b/drivers/gpu/drm/i915/display/intel_dp.c
+@@ -2469,6 +2469,29 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
+ 					 &crtc_state->infoframes.vsc);
+ }
+ 
++static void
++intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_dp *intel_dp,
++					    struct intel_crtc_state *crtc_state,
++					    const struct drm_connector_state *conn_state)
++{
++	int ret;
++	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
++	struct hdmi_drm_infoframe *drm_infoframe = &crtc_state->infoframes.drm.drm;
++
++	if (!conn_state->hdr_output_metadata)
++		return;
++
++	ret = drm_hdmi_infoframe_set_hdr_metadata(drm_infoframe, conn_state);
++
++	if (ret) {
++		drm_dbg_kms(&dev_priv->drm, "couldn't set HDR metadata in infoframe\n");
++		return;
++	}
++
++	crtc_state->infoframes.enable |+		intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA);
++}
++
+ int
+ intel_dp_compute_config(struct intel_encoder *encoder,
+ 			struct intel_crtc_state *pipe_config,
+@@ -2575,6 +2598,7 @@ intel_dp_compute_config(struct intel_encoder *encoder,
+ 
+ 	intel_psr_compute_config(intel_dp, pipe_config);
+ 	intel_dp_compute_vsc_sdp(intel_dp, pipe_config, conn_state);
++	intel_dp_compute_hdr_metadata_infoframe_sdp(intel_dp, pipe_config, conn_state);
+ 
+ 	return 0;
+ }
 -- 
 2.24.1

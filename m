@@ -1,10 +1,10 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Wed, 05 Feb 2020 15:41:36 +0000
-Subject: [PATCH v4 16/17] drm/i915/dp: Add compute routine for DP PSR VSC SDP
-Message-Id: <20200205154137.1202389-17-gwan-gyeong.mun@intel.com>
+Date: Mon, 10 Feb 2020 17:10:20 +0000
+Subject: [PATCH v6 17/18] drm/i915/dp: Add compute routine for DP PSR VSC SDP
+Message-Id: <20200210171021.109684-18-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
+References: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,16 +21,17 @@ v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
 v4: Use struct drm_device logging macros
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
  drivers/gpu/drm/i915/display/intel_dp.c | 54 +++++++++++++++++++++++++
  drivers/gpu/drm/i915/display/intel_dp.h |  8 ++++
  2 files changed, 62 insertions(+)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
-index acf943b9e1ec..b544f08202dc 100644
+index 2d6001dd7975..bfc39fbc6534 100644
 --- a/drivers/gpu/drm/i915/display/intel_dp.c
 +++ b/drivers/gpu/drm/i915/display/intel_dp.c
-@@ -2463,6 +2463,42 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
+@@ -2469,6 +2469,42 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
  					 &crtc_state->infoframes.vsc);
  }
  
@@ -73,7 +74,7 @@ index acf943b9e1ec..b544f08202dc 100644
  static void
  intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_dp *intel_dp,
  					    struct intel_crtc_state *crtc_state,
-@@ -4892,6 +4928,24 @@ static void intel_write_dp_sdp(struct intel_encoder *encoder,
+@@ -4902,6 +4938,24 @@ static void intel_write_dp_sdp(struct intel_encoder *encoder,
  	intel_dig_port->write_infoframe(encoder, crtc_state, type, &sdp, len);
  }
  
@@ -125,4 +126,4 @@ index 6562bb8edeba..5074e52722c0 100644
  			     const struct intel_crtc_state *crtc_state,
  			     const struct drm_connector_state *conn_state);
 -- 
-2.24.1
+2.25.0

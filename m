@@ -1,272 +1,316 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Wed, 05 Feb 2020 15:41:24 +0000
-Subject: [PATCH v4 04/17] drm/i915/dp: Add writing of DP SDPs (Secondary Data Packet)
-Message-Id: <20200205154137.1202389-5-gwan-gyeong.mun@intel.com>
+Date: Mon, 10 Feb 2020 17:10:14 +0000
+Subject: [PATCH v6 11/18] drm/i915: Program DP SDPs with computed configs
+Message-Id: <20200210171021.109684-12-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
+References: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-It adds routines that write DP VSC SDP and DP HDR Metadata Infoframe SDP.
-In order to pack DP VSC SDP, it adds intel_dp_vsc_sdp_pack() function.
-It follows DP 1.4a spec. [Table 2-116: VSC SDP Header Bytes] and
-[Table 2-117: VSC SDP Payload for DB16 through DB18]
+In order to use computed config for DP SDPs (DP VSC SDP and DP HDR Metadata
+Infoframe SDP), it replaces intel_dp_vsc_enable() function and
+intel_dp_hdr_metadata_enable() function to intel_dp_set_infoframes()
+function.
+And it removes unused functions.
 
-In order to pack DP HDR Metadata Infoframe SDP, it adds
-intel_dp_hdr_metadata_infoframe_sdp_pack() function.
-And it follows DP 1.4a spec.
-([Table 2-125: INFOFRAME SDP v1.2 Header Bytes] and
-[Table 2-126: INFOFRAME SDP v1.2 Payload Data Bytes - DB0 through DB31])
-and CTA-861-G spec. [Table-42 Dynamic Range and Mastering InfoFrame].
+Before:
+ intel_dp_vsc_enable() and intel_dp_hdr_metadata_enable() compute sdp
+ configs and program sdp registers on enable callback of encoder.
 
-A machanism and a naming rule of intel_dp_set_infoframes() function
-references intel_encoder->set_infoframes() of intel_hdmi.c .
-VSC SDP is used for PSR and Pixel Encoding and Colorimetry Formats cases.
-Because PSR routine has its own routine of writing a VSC SDP, when the PSR
-is enabled, intel_dp_set_infoframes() does not write a VSC SDP.
+After:
+ It separates computing of sdp configs and programming of sdp register.
+ The compute config callback of encoder calls computing sdp configs.
+ The enable callback of encoder calls programming sdp register.
 
-v3:
-  - Explicitly disable unused DIPs (AVI, GCP, VS, SPD, DRM. They will be
-    used for HDMI), when intel_dp_set_infoframes() function will be called.
-  - Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp.
-v4: Use struct drm_device logging macros
+v3: Rebased
+v5: Polish commit message [Uma]
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_dp.c | 195 ++++++++++++++++++++++++
- drivers/gpu/drm/i915/display/intel_dp.h |   3 +
- 2 files changed, 198 insertions(+)
+ drivers/gpu/drm/i915/display/intel_ddi.c |   3 +-
+ drivers/gpu/drm/i915/display/intel_dp.c  | 226 -----------------------
+ drivers/gpu/drm/i915/display/intel_dp.h  |   6 -
+ 3 files changed, 1 insertion(+), 234 deletions(-)
 
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i91=
+5/display/intel_ddi.c
+index 1ab638e17046..857014fe5880 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -3902,8 +3902,7 @@ static void intel_enable_ddi_dp(struct intel_encoder =
+*encoder,
+=20
+ 	intel_edp_backlight_on(crtc_state, conn_state);
+ 	intel_psr_enable(intel_dp, crtc_state);
+-	intel_dp_vsc_enable(intel_dp, crtc_state, conn_state);
+-	intel_dp_hdr_metadata_enable(intel_dp, crtc_state, conn_state);
++	intel_dp_set_infoframes(encoder, true, crtc_state, conn_state);
+ 	intel_edp_drrs_enable(intel_dp, crtc_state);
+=20
+ 	if (crtc_state->has_audio)
 diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915=
 /display/intel_dp.c
-index 583a4a0d9114..f941bc261f6a 100644
+index 5a3ea3527fc3..2d6001dd7975 100644
 --- a/drivers/gpu/drm/i915/display/intel_dp.c
 +++ b/drivers/gpu/drm/i915/display/intel_dp.c
-@@ -4733,6 +4733,201 @@ intel_dp_needs_vsc_sdp(const struct intel_crtc_stat=
-e *crtc_state,
- 	return false;
+@@ -5125,232 +5125,6 @@ void intel_read_dp_sdp(struct intel_encoder *encode=
+r,
+ 	}
  }
 =20
-+static ssize_t intel_dp_vsc_sdp_pack(const struct drm_dp_vsc_sdp *vsc,
-+				     struct dp_sdp *sdp, size_t size)
-+{
-+	size_t length =3D sizeof(struct dp_sdp);
-+
-+	if (size < length)
-+		return -ENOSPC;
-+
-+	memset(sdp, 0, size);
-+
-+	/*
-+	 * Prepare VSC Header for SU as per DP 1.4a spec, Table 2-119
-+	 * VSC SDP Header Bytes
-+	 */
-+	sdp->sdp_header.HB0 =3D 0; /* Secondary-Data Packet ID =3D 0 */
-+	sdp->sdp_header.HB1 =3D vsc->sdp_type; /* Secondary-data Packet Type */
-+	sdp->sdp_header.HB2 =3D vsc->revision; /* Revision Number */
-+	sdp->sdp_header.HB3 =3D vsc->length; /* Number of Valid Data Bytes */
-+
-+	/* VSC SDP Payload for DB16 through DB18 */
-+	/* Pixel Encoding and Colorimetry Formats  */
-+	sdp->db[16] =3D (vsc->colorspace & 0xf) << 4; /* DB16[7:4] */
-+	sdp->db[16] |=3D vsc->colorimetry & 0xf; /* DB16[3:0] */
-+
-+	switch (vsc->bpc) {
-+	case 8:
-+		sdp->db[17] =3D 0x1; /* DB17[3:0] */
-+		break;
-+	case 10:
-+		sdp->db[17] =3D 0x2;
-+		break;
-+	case 12:
-+		sdp->db[17] =3D 0x3;
-+		break;
-+	case 16:
-+		sdp->db[17] =3D 0x4;
-+		break;
-+	default:
-+		MISSING_CASE(vsc->bpc);
-+		break;
-+	}
-+	/* Dynamic Range and Component Bit Depth */
-+	if (vsc->dynamic_range =3D DP_DYNAMIC_RANGE_CTA)
-+		sdp->db[17] |=3D 0x80;  /* DB17[7] */
-+
-+	/* Content Type */
-+	sdp->db[18] =3D vsc->content_type & 0x7;
-+
-+	return length;
-+}
-+
-+static ssize_t
-+intel_dp_hdr_metadata_infoframe_sdp_pack(const struct hdmi_drm_infoframe *=
-drm_infoframe,
-+					 struct dp_sdp *sdp,
-+					 size_t size)
-+{
-+	size_t length =3D sizeof(struct dp_sdp);
-+	const int infoframe_size =3D HDMI_INFOFRAME_HEADER_SIZE + HDMI_DRM_INFOFR=
+-static void
+-intel_dp_setup_vsc_sdp(struct intel_dp *intel_dp,
+-		       const struct intel_crtc_state *crtc_state,
+-		       const struct drm_connector_state *conn_state)
+-{
+-	struct intel_digital_port *intel_dig_port =3D dp_to_dig_port(intel_dp);
+-	struct dp_sdp vsc_sdp =3D {};
+-
+-	/* Prepare VSC Header for SU as per DP 1.4a spec, Table 2-119 */
+-	vsc_sdp.sdp_header.HB0 =3D 0;
+-	vsc_sdp.sdp_header.HB1 =3D 0x7;
+-
+-	/*
+-	 * VSC SDP supporting 3D stereo, PSR2, and Pixel Encoding/
+-	 * Colorimetry Format indication.
+-	 */
+-	vsc_sdp.sdp_header.HB2 =3D 0x5;
+-
+-	/*
+-	 * VSC SDP supporting 3D stereo, + PSR2, + Pixel Encoding/
+-	 * Colorimetry Format indication (HB2 =3D 05h).
+-	 */
+-	vsc_sdp.sdp_header.HB3 =3D 0x13;
+-
+-	/* DP 1.4a spec, Table 2-120 */
+-	switch (crtc_state->output_format) {
+-	case INTEL_OUTPUT_FORMAT_YCBCR444:
+-		vsc_sdp.db[16] =3D 0x1 << 4; /* YCbCr 444 : DB16[7:4] =3D 1h */
+-		break;
+-	case INTEL_OUTPUT_FORMAT_YCBCR420:
+-		vsc_sdp.db[16] =3D 0x3 << 4; /* YCbCr 420 : DB16[7:4] =3D 3h */
+-		break;
+-	case INTEL_OUTPUT_FORMAT_RGB:
+-	default:
+-		/* RGB: DB16[7:4] =3D 0h */
+-		break;
+-	}
+-
+-	switch (conn_state->colorspace) {
+-	case DRM_MODE_COLORIMETRY_BT709_YCC:
+-		vsc_sdp.db[16] |=3D 0x1;
+-		break;
+-	case DRM_MODE_COLORIMETRY_XVYCC_601:
+-		vsc_sdp.db[16] |=3D 0x2;
+-		break;
+-	case DRM_MODE_COLORIMETRY_XVYCC_709:
+-		vsc_sdp.db[16] |=3D 0x3;
+-		break;
+-	case DRM_MODE_COLORIMETRY_SYCC_601:
+-		vsc_sdp.db[16] |=3D 0x4;
+-		break;
+-	case DRM_MODE_COLORIMETRY_OPYCC_601:
+-		vsc_sdp.db[16] |=3D 0x5;
+-		break;
+-	case DRM_MODE_COLORIMETRY_BT2020_CYCC:
+-	case DRM_MODE_COLORIMETRY_BT2020_RGB:
+-		vsc_sdp.db[16] |=3D 0x6;
+-		break;
+-	case DRM_MODE_COLORIMETRY_BT2020_YCC:
+-		vsc_sdp.db[16] |=3D 0x7;
+-		break;
+-	case DRM_MODE_COLORIMETRY_DCI_P3_RGB_D65:
+-	case DRM_MODE_COLORIMETRY_DCI_P3_RGB_THEATER:
+-		vsc_sdp.db[16] |=3D 0x4; /* DCI-P3 (SMPTE RP 431-2) */
+-		break;
+-	default:
+-		/* sRGB (IEC 61966-2-1) / ITU-R BT.601: DB16[0:3] =3D 0h */
+-
+-		/* RGB->YCBCR color conversion uses the BT.709 color space. */
+-		if (crtc_state->output_format =3D INTEL_OUTPUT_FORMAT_YCBCR420)
+-			vsc_sdp.db[16] |=3D 0x1; /* 0x1, ITU-R BT.709 */
+-		break;
+-	}
+-
+-	/*
+-	 * For pixel encoding formats YCbCr444, YCbCr422, YCbCr420, and Y Only,
+-	 * the following Component Bit Depth values are defined:
+-	 * 001b =3D 8bpc.
+-	 * 010b =3D 10bpc.
+-	 * 011b =3D 12bpc.
+-	 * 100b =3D 16bpc.
+-	 */
+-	switch (crtc_state->pipe_bpp) {
+-	case 24: /* 8bpc */
+-		vsc_sdp.db[17] =3D 0x1;
+-		break;
+-	case 30: /* 10bpc */
+-		vsc_sdp.db[17] =3D 0x2;
+-		break;
+-	case 36: /* 12bpc */
+-		vsc_sdp.db[17] =3D 0x3;
+-		break;
+-	case 48: /* 16bpc */
+-		vsc_sdp.db[17] =3D 0x4;
+-		break;
+-	default:
+-		MISSING_CASE(crtc_state->pipe_bpp);
+-		break;
+-	}
+-
+-	/*
+-	 * Dynamic Range (Bit 7)
+-	 * 0 =3D VESA range, 1 =3D CTA range.
+-	 * all YCbCr are always limited range
+-	 */
+-	vsc_sdp.db[17] |=3D 0x80;
+-
+-	/*
+-	 * Content Type (Bits 2:0)
+-	 * 000b =3D Not defined.
+-	 * 001b =3D Graphics.
+-	 * 010b =3D Photo.
+-	 * 011b =3D Video.
+-	 * 100b =3D Game
+-	 * All other values are RESERVED.
+-	 * Note: See CTA-861-G for the definition and expected
+-	 * processing by a stream sink for the above contect types.
+-	 */
+-	vsc_sdp.db[18] =3D 0;
+-
+-	intel_dig_port->write_infoframe(&intel_dig_port->base,
+-			crtc_state, DP_SDP_VSC, &vsc_sdp, sizeof(vsc_sdp));
+-}
+-
+-static void
+-intel_dp_setup_hdr_metadata_infoframe_sdp(struct intel_dp *intel_dp,
+-					  const struct intel_crtc_state *crtc_state,
+-					  const struct drm_connector_state *conn_state)
+-{
+-	struct intel_digital_port *intel_dig_port =3D dp_to_dig_port(intel_dp);
+-	struct dp_sdp infoframe_sdp =3D {};
+-	struct hdmi_drm_infoframe drm_infoframe =3D {};
+-	const int infoframe_size =3D HDMI_INFOFRAME_HEADER_SIZE + HDMI_DRM_INFOFR=
 AME_SIZE;
-+	unsigned char buf[HDMI_INFOFRAME_HEADER_SIZE + HDMI_DRM_INFOFRAME_SIZE];
-+	ssize_t len;
-+
-+	if (size < length)
-+		return -ENOSPC;
-+
-+	memset(sdp, 0, size);
-+
-+	len =3D hdmi_drm_infoframe_pack_only(drm_infoframe, buf, sizeof(buf));
-+	if (len < 0) {
-+		DRM_DEBUG_KMS("buffer size is smaller than hdr metadata infoframe\n");
-+		return -ENOSPC;
-+	}
-+
-+	if (len !=3D infoframe_size) {
-+		DRM_DEBUG_KMS("wrong static hdr metadata size\n");
-+		return -ENOSPC;
-+	}
-+
-+	/*
-+	 * Set up the infoframe sdp packet for HDR static metadata.
-+	 * Prepare VSC Header for SU as per DP 1.4a spec,
-+	 * Table 2-100 and Table 2-101
-+	 */
-+
-+	/* Secondary-Data Packet ID, 00h for non-Audio INFOFRAME */
-+	sdp->sdp_header.HB0 =3D 0;
-+	/*
-+	 * Packet Type 80h + Non-audio INFOFRAME Type value
-+	 * HDMI_INFOFRAME_TYPE_DRM: 0x87
-+	 * - 80h + Non-audio INFOFRAME Type value
-+	 * - InfoFrame Type: 0x07
-+	 *    [CTA-861-G Table-42 Dynamic Range and Mastering InfoFrame]
-+	 */
-+	sdp->sdp_header.HB1 =3D drm_infoframe->type;
-+	/*
-+	 * Least Significant Eight Bits of (Data Byte Count =E2=80=93 1)
-+	 * infoframe_size - 1
-+	 */
-+	sdp->sdp_header.HB2 =3D 0x1D;
-+	/* INFOFRAME SDP Version Number */
-+	sdp->sdp_header.HB3 =3D (0x13 << 2);
-+	/* CTA Header Byte 2 (INFOFRAME Version Number) */
-+	sdp->db[0] =3D drm_infoframe->version;
-+	/* CTA Header Byte 3 (Length of INFOFRAME): HDMI_DRM_INFOFRAME_SIZE */
-+	sdp->db[1] =3D drm_infoframe->length;
-+	/*
-+	 * Copy HDMI_DRM_INFOFRAME_SIZE size from a buffer after
-+	 */
-+	BUILD_BUG_ON(sizeof(sdp->db) < HDMI_DRM_INFOFRAME_SIZE + 2);
-+	memcpy(&sdp->db[2], &buf[HDMI_INFOFRAME_HEADER_SIZE],
-+	       HDMI_DRM_INFOFRAME_SIZE);
-+
-+	/*
-+	 * Size of DP infoframe sdp packet for HDR static metadata is consist of
-+	 * - DP SDP Header(struct dp_sdp_header): 4 bytes
-+	 * - Two Data Blocks: 2 bytes
-+	 *    CTA Header Byte2 (INFOFRAME Version Number)
-+	 *    CTA Header Byte3 (Length of INFOFRAME)
-+	 * - HDMI_DRM_INFOFRAME_SIZE: 26 bytes
-+	 *
-+	 * Prior to GEN11's GMP register size is identical to DP HDR static metad=
+-	unsigned char buf[HDMI_INFOFRAME_HEADER_SIZE + HDMI_DRM_INFOFRAME_SIZE];
+-	ssize_t len;
+-	int ret;
+-
+-	ret =3D drm_hdmi_infoframe_set_hdr_metadata(&drm_infoframe, conn_state);
+-	if (ret) {
+-		DRM_DEBUG_KMS("couldn't set HDR metadata in infoframe\n");
+-		return;
+-	}
+-
+-	len =3D hdmi_drm_infoframe_pack_only(&drm_infoframe, buf, sizeof(buf));
+-	if (len < 0) {
+-		DRM_DEBUG_KMS("buffer size is smaller than hdr metadata infoframe\n");
+-		return;
+-	}
+-
+-	if (len !=3D infoframe_size) {
+-		DRM_DEBUG_KMS("wrong static hdr metadata size\n");
+-		return;
+-	}
+-
+-	/*
+-	 * Set up the infoframe sdp packet for HDR static metadata.
+-	 * Prepare VSC Header for SU as per DP 1.4a spec,
+-	 * Table 2-100 and Table 2-101
+-	 */
+-
+-	/* Packet ID, 00h for non-Audio INFOFRAME */
+-	infoframe_sdp.sdp_header.HB0 =3D 0;
+-	/*
+-	 * Packet Type 80h + Non-audio INFOFRAME Type value
+-	 * HDMI_INFOFRAME_TYPE_DRM: 0x87,
+-	 */
+-	infoframe_sdp.sdp_header.HB1 =3D drm_infoframe.type;
+-	/*
+-	 * Least Significant Eight Bits of (Data Byte Count =E2=80=93 1)
+-	 * infoframe_size - 1,
+-	 */
+-	infoframe_sdp.sdp_header.HB2 =3D 0x1D;
+-	/* INFOFRAME SDP Version Number */
+-	infoframe_sdp.sdp_header.HB3 =3D (0x13 << 2);
+-	/* CTA Header Byte 2 (INFOFRAME Version Number) */
+-	infoframe_sdp.db[0] =3D drm_infoframe.version;
+-	/* CTA Header Byte 3 (Length of INFOFRAME): HDMI_DRM_INFOFRAME_SIZE */
+-	infoframe_sdp.db[1] =3D drm_infoframe.length;
+-	/*
+-	 * Copy HDMI_DRM_INFOFRAME_SIZE size from a buffer after
+-	 * HDMI_INFOFRAME_HEADER_SIZE
+-	 */
+-	BUILD_BUG_ON(sizeof(infoframe_sdp.db) < HDMI_DRM_INFOFRAME_SIZE + 2);
+-	memcpy(&infoframe_sdp.db[2], &buf[HDMI_INFOFRAME_HEADER_SIZE],
+-	       HDMI_DRM_INFOFRAME_SIZE);
+-
+-	/*
+-	 * Size of DP infoframe sdp packet for HDR static metadata is consist of
+-	 * - DP SDP Header(struct dp_sdp_header): 4 bytes
+-	 * - Two Data Blocks: 2 bytes
+-	 *    CTA Header Byte2 (INFOFRAME Version Number)
+-	 *    CTA Header Byte3 (Length of INFOFRAME)
+-	 * - HDMI_DRM_INFOFRAME_SIZE: 26 bytes
+-	 *
+-	 * Prior to GEN11's GMP register size is identical to DP HDR static metad=
 ata
-+	 * infoframe size. But GEN11+ has larger than that size, write_infoframe
-+	 * will pad rest of the size.
-+	 */
-+	return sizeof(struct dp_sdp_header) + 2 + HDMI_DRM_INFOFRAME_SIZE;
-+}
-+
-+static void intel_write_dp_sdp(struct intel_encoder *encoder,
-+			       const struct intel_crtc_state *crtc_state,
-+			       unsigned int type)
-+{
-+	struct intel_digital_port *intel_dig_port =3D enc_to_dig_port(encoder);
-+	struct drm_i915_private *dev_priv =3D to_i915(encoder->base.dev);
-+	struct dp_sdp sdp =3D {};
-+	ssize_t len;
-+
-+	if ((crtc_state->infoframes.enable &
-+	     intel_hdmi_infoframe_enable(type)) =3D 0)
-+		return;
-+
-+	switch (type) {
-+	case DP_SDP_VSC:
-+		len =3D intel_dp_vsc_sdp_pack(&crtc_state->infoframes.vsc, &sdp,
-+					    sizeof(sdp));
-+		break;
-+	case HDMI_PACKET_TYPE_GAMUT_METADATA:
-+		len =3D intel_dp_hdr_metadata_infoframe_sdp_pack(&crtc_state->infoframes=
-.drm.drm,
-+							       &sdp, sizeof(sdp));
-+		break;
-+	default:
-+		MISSING_CASE(type);
-+		break;
-+	}
-+
-+	if (drm_WARN_ON(&dev_priv->drm, len < 0))
-+		return;
-+
-+	intel_dig_port->write_infoframe(encoder, crtc_state, type, &sdp, len);
-+}
-+
-+void intel_dp_set_infoframes(struct intel_encoder *encoder,
-+			     bool enable,
-+			     const struct intel_crtc_state *crtc_state,
-+			     const struct drm_connector_state *conn_state)
-+{
-+	struct drm_i915_private *dev_priv =3D to_i915(encoder->base.dev);
-+	struct intel_dp *intel_dp =3D enc_to_intel_dp(encoder);
-+	i915_reg_t reg =3D HSW_TVIDEO_DIP_CTL(crtc_state->cpu_transcoder);
-+	u32 dip_enable =3D VIDEO_DIP_ENABLE_AVI_HSW | VIDEO_DIP_ENABLE_GCP_HSW |
-+			 VIDEO_DIP_ENABLE_VS_HSW | VIDEO_DIP_ENABLE_GMP_HSW |
-+			 VIDEO_DIP_ENABLE_SPD_HSW | VIDEO_DIP_ENABLE_DRM_GLK;
-+	u32 val =3D I915_READ(reg);
-+
-+	/* TODO: Add DSC case (DIP_ENABLE_PPS) */
-+	/* When PSR is enabled, this routine doesn't disable VSC DIP */
-+	if (intel_psr_enabled(intel_dp))
-+		val &=3D ~dip_enable;
-+	else
-+		val &=3D ~(dip_enable | VIDEO_DIP_ENABLE_VSC_HSW);
-+
-+	if (!enable) {
-+		I915_WRITE(reg, val);
-+		POSTING_READ(reg);
-+		return;
-+	}
-+
-+	I915_WRITE(reg, val);
-+	POSTING_READ(reg);
-+
-+	/* When PSR is enabled, VSC SDP is handled by PSR routine */
-+	if (!intel_psr_enabled(intel_dp))
-+		intel_write_dp_sdp(encoder, crtc_state, DP_SDP_VSC);
-+
-+	intel_write_dp_sdp(encoder, crtc_state, HDMI_PACKET_TYPE_GAMUT_METADATA);
-+}
-+
- static void
- intel_dp_setup_vsc_sdp(struct intel_dp *intel_dp,
- 		       const struct intel_crtc_state *crtc_state,
+-	 * infoframe size. But GEN11+ has larger than that size, write_infoframe
+-	 * will pad rest of the size.
+-	 */
+-	intel_dig_port->write_infoframe(&intel_dig_port->base, crtc_state,
+-					HDMI_PACKET_TYPE_GAMUT_METADATA,
+-					&infoframe_sdp,
+-					sizeof(struct dp_sdp_header) + 2 + HDMI_DRM_INFOFRAME_SIZE);
+-}
+-
+-void intel_dp_vsc_enable(struct intel_dp *intel_dp,
+-			 const struct intel_crtc_state *crtc_state,
+-			 const struct drm_connector_state *conn_state)
+-{
+-	if (!intel_dp_needs_vsc_sdp(crtc_state, conn_state))
+-		return;
+-
+-	intel_dp_setup_vsc_sdp(intel_dp, crtc_state, conn_state);
+-}
+-
+-void intel_dp_hdr_metadata_enable(struct intel_dp *intel_dp,
+-				  const struct intel_crtc_state *crtc_state,
+-				  const struct drm_connector_state *conn_state)
+-{
+-	if (!conn_state->hdr_output_metadata)
+-		return;
+-
+-	intel_dp_setup_hdr_metadata_infoframe_sdp(intel_dp,
+-						  crtc_state,
+-						  conn_state);
+-}
+-
+ static u8 intel_dp_autotest_link_training(struct intel_dp *intel_dp)
+ {
+ 	int status =3D 0;
 diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915=
 /display/intel_dp.h
-index 3da166054788..0dc09a463ee1 100644
+index e8f9ba962d09..6562bb8edeba 100644
 --- a/drivers/gpu/drm/i915/display/intel_dp.h
 +++ b/drivers/gpu/drm/i915/display/intel_dp.h
-@@ -116,6 +116,9 @@ void intel_dp_vsc_enable(struct intel_dp *intel_dp,
- void intel_dp_hdr_metadata_enable(struct intel_dp *intel_dp,
- 				  const struct intel_crtc_state *crtc_state,
- 				  const struct drm_connector_state *conn_state);
-+void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
-+			     const struct intel_crtc_state *crtc_state,
-+			     const struct drm_connector_state *conn_state);
- bool intel_digital_port_connected(struct intel_encoder *encoder);
-=20
- static inline unsigned int intel_dp_unused_lane_mask(int lane_count)
+@@ -110,12 +110,6 @@ int intel_dp_link_required(int pixel_clock, int bpp);
+ int intel_dp_max_data_rate(int max_link_clock, int max_lanes);
+ bool intel_dp_needs_vsc_sdp(const struct intel_crtc_state *crtc_state,
+ 			    const struct drm_connector_state *conn_state);
+-void intel_dp_vsc_enable(struct intel_dp *intel_dp,
+-			 const struct intel_crtc_state *crtc_state,
+-			 const struct drm_connector_state *conn_state);
+-void intel_dp_hdr_metadata_enable(struct intel_dp *intel_dp,
+-				  const struct intel_crtc_state *crtc_state,
+-				  const struct drm_connector_state *conn_state);
+ void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
+ 			     const struct intel_crtc_state *crtc_state,
+ 			     const struct drm_connector_state *conn_state);
 --=20
-2.24.1
+2.25.0

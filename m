@@ -1,36 +1,72 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Sun, 02 Feb 2020 15:49:36 +0000
-Subject: [PATCH v2 16/18] drm/i915: Stop sending DP SDPs on intel_ddi_post_disable_dp()
-Message-Id: <20200202154938.1129610-17-gwan-gyeong.mun@intel.com>
+Date: Mon, 10 Feb 2020 17:10:06 +0000
+Subject: [PATCH v6 03/18] drm/i915/dp: Add compute routine for DP HDR Metadata Infoframe SDP
+Message-Id: <20200210171021.109684-4-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
+References: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Call intel_dp_set_infoframes(false) function on intel_ddi_post_disable_dp()
-to make sure not to send VSC SDP and HDR Metadata Infoframe SDP.
+It stores computed dp hdr metadata infoframe sdp to infoframes.drm of
+crtc state. It referenced intel_hdmi_compute_drm_infoframe().
+
+While computing, we'll also fill out the infoframes.enable bitmask
+appropriately.
+
+v2: Wrap a long line.
+v4: Use struct drm_device logging macros
+v5: Fix typo [Uma]
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_ddi.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/gpu/drm/i915/display/intel_dp.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index 69073a15edb8..8509cd33569e 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -3713,6 +3713,8 @@ static void intel_ddi_post_disable_dp(struct intel_encoder *encoder,
- 					  INTEL_OUTPUT_DP_MST);
- 	enum phy phy = intel_port_to_phy(dev_priv, encoder->port);
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
+index 499377bf2891..472ce3203a09 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.c
++++ b/drivers/gpu/drm/i915/display/intel_dp.c
+@@ -2469,6 +2469,29 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
+ 					 &crtc_state->infoframes.vsc);
+ }
  
-+	intel_dp_set_infoframes(encoder, false, old_crtc_state, old_conn_state);
++static void
++intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_dp *intel_dp,
++					    struct intel_crtc_state *crtc_state,
++					    const struct drm_connector_state *conn_state)
++{
++	int ret;
++	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
++	struct hdmi_drm_infoframe *drm_infoframe = &crtc_state->infoframes.drm.drm;
 +
- 	/*
- 	 * Power down sink before disabling the port, otherwise we end
- 	 * up getting interrupts from the sink on detecting link loss.
++	if (!conn_state->hdr_output_metadata)
++		return;
++
++	ret = drm_hdmi_infoframe_set_hdr_metadata(drm_infoframe, conn_state);
++
++	if (ret) {
++		drm_dbg_kms(&dev_priv->drm, "couldn't set HDR metadata in infoframe\n");
++		return;
++	}
++
++	crtc_state->infoframes.enable |+		intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA);
++}
++
+ int
+ intel_dp_compute_config(struct intel_encoder *encoder,
+ 			struct intel_crtc_state *pipe_config,
+@@ -2575,6 +2598,7 @@ intel_dp_compute_config(struct intel_encoder *encoder,
+ 
+ 	intel_psr_compute_config(intel_dp, pipe_config);
+ 	intel_dp_compute_vsc_sdp(intel_dp, pipe_config, conn_state);
++	intel_dp_compute_hdr_metadata_infoframe_sdp(intel_dp, pipe_config, conn_state);
+ 
+ 	return 0;
+ }
 -- 
-2.24.1
+2.25.0

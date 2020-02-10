@@ -1,87 +1,179 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Date: Fri, 21 Feb 2020 16:00:05 +0000
-Subject: [PATCH] video: Replace zero-length array with flexible-array member
-Message-Id: <20200221160005.GA13552@embeddedor>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Mon, 10 Feb 2020 17:10:04 +0000
+Subject: [PATCH v6 01/18] drm: Add DP1.4 VSC SDP Payload related Data Structures
+Message-Id: <20200210171021.109684-2-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-The current codebase makes use of the zero-length array language
-extension to the C90 standard, but the preferred mechanism to declare
-variable-length types such as these ones is a flexible array member[1][2],
-introduced in C99:
+It adds new enumeration definitions for VSC SDP Payload for Pixel
+Encoding/Colorimetry Format.
+And it adds a new drm data structure for DP VSC SDP.
 
-struct foo {
-        int stuff;
-        struct boo array[];
-};
+enum dp_colorspace and enum dp_colorimetry correspond "Pixel Encoding and
+Colorimetry Formats". enum dp_dynamic_range corresponds "Dynamic Range".
+And enum dp_content_type corresponds "Content Type"
+All of them are based on DP 1.4 spec [Table 2-117: VSC SDP Payload for
+DB16 through DB18].
 
-By making use of the mechanism above, we will get a compiler warning
-in case the flexible array does not occur last in the structure, which
-will help us prevent some kind of undefined behavior bugs from being
-inadvertently introduced[3] to the codebase from now on.
+v3: Add a new drm data structure for DP VSC SDP
+v5: Addressed review comments from Uma
+    - Add kernel docs for added data structures
+    - Rename enum dp_colorspace to dp_pixelformat
+    - Polish commit message
+    - Fix typos
+    - Drop self-explanatory comments
 
-Also, notice that, dynamic memory allocations won't be affected by
-this change:
-
-"Flexible array members have incomplete type, and so the sizeof operator
-may not be applied. As a quirk of the original implementation of
-zero-length arrays, sizeof evaluates to zero."[1]
-
-This issue was found with the help of Coccinelle.
-
-[1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
-[2] https://github.com/KSPP/linux/issues/21
-[3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
-
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/video/fbdev/mmp/hw/mmp_ctrl.h | 2 +-
- drivers/video/fbdev/ssd1307fb.c       | 2 +-
- include/video/mmp_disp.h              | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ include/drm/drm_dp_helper.h | 130 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 130 insertions(+)
 
-diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.h b/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
-index 335d4983dc52..167585a889d3 100644
---- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
-+++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
-@@ -1406,7 +1406,7 @@ struct mmphw_ctrl {
+diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
+index 262faf9e5e94..e332f54013d7 100644
+--- a/include/drm/drm_dp_helper.h
++++ b/include/drm/drm_dp_helper.h
+@@ -1209,6 +1209,136 @@ struct dp_sdp {
+ #define EDP_VSC_PSR_UPDATE_RFB		(1<<1)
+ #define EDP_VSC_PSR_CRC_VALUES_VALID	(1<<2)
  
- 	/*pathes*/
- 	int path_num;
--	struct mmphw_path_plat path_plats[0];
-+	struct mmphw_path_plat path_plats[];
- };
++/**
++ * enum dp_pixelformat - drm DP Pixel encoding formats
++ *
++ * This enum is used to indicate DP VSC SDP Pixel encoding formats.
++ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
++ * DB18]
++ *
++ * @DP_PIXELFORMAT_RGB: RGB pixel encoding format
++ * @DP_PIXELFORMAT_YUV444: YCbCr 4:4:4 pixel encoding format
++ * @DP_PIXELFORMAT_YUV422: YCbCr 4:2:2 pixel encoding format
++ * @DP_PIXELFORMAT_YUV420: YCbCr 4:2:0 pixel encoding format
++ * @DP_PIXELFORMAT_Y_ONLY: Y Only pixel encoding format
++ * @DP_PIXELFORMAT_RAW: RAW pixel encoding format
++ * @DP_PIXELFORMAT_RESERVED: Reserved pixel encoding format
++ */
++enum dp_pixelformat {
++	DP_PIXELFORMAT_RGB = 0,
++	DP_PIXELFORMAT_YUV444 = 0x1,
++	DP_PIXELFORMAT_YUV422 = 0x2,
++	DP_PIXELFORMAT_YUV420 = 0x3,
++	DP_PIXELFORMAT_Y_ONLY = 0x4,
++	DP_PIXELFORMAT_RAW = 0x5,
++	DP_PIXELFORMAT_RESERVED = 0x6,
++};
++
++/**
++ * enum dp_colorimetry - drm DP Colorimetry formats
++ *
++ * This enum is used to indicate DP VSC SDP Colorimetry formats.
++ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
++ * DB18] and a name of enum member follows DRM_MODE_COLORIMETRY definition.
++ *
++ * @DP_COLORIMETRY_DEFAULT: sRGB (IEC 61966-2-1) or
++ *                          ITU-R BT.601 colorimetry format
++ * @DP_COLORIMETRY_RGB_WIDE_FIXED: RGB wide gamut fixed point colorimetry format
++ * @DP_COLORIMETRY_BT709_YCC: ITU-R BT.709 colorimetry format
++ * @DP_COLORIMETRY_RGB_WIDE_FLOAT: RGB wide gamut floating point
++ *                                 (scRGB (IEC 61966-2-2)) colorimetry format
++ * @DP_COLORIMETRY_XVYCC_601: xvYCC601 colorimetry format
++ * @DP_COLORIMETRY_OPRGB: OpRGB colorimetry format
++ * @DP_COLORIMETRY_XVYCC_709: xvYCC709 colorimetry format
++ * @DP_COLORIMETRY_DCI_P3_RGB: DCI-P3 (SMPTE RP 431-2) colorimetry format
++ * @DP_COLORIMETRY_SYCC_601: sYCC601 colorimetry format
++ * @DP_COLORIMETRY_RGB_CUSTOM: RGB Custom Color Profile colorimetry format
++ * @DP_COLORIMETRY_OPYCC_601: opYCC601 colorimetry format
++ * @DP_COLORIMETRY_BT2020_RGB: ITU-R BT.2020 R' G' B' colorimetry format
++ * @DP_COLORIMETRY_BT2020_CYCC: ITU-R BT.2020 Y'c C'bc C'rc colorimetry format
++ * @DP_COLORIMETRY_BT2020_YCC: ITU-R BT.2020 Y' C'b C'r colorimetry format
++ */
++enum dp_colorimetry {
++	DP_COLORIMETRY_DEFAULT = 0,
++	DP_COLORIMETRY_RGB_WIDE_FIXED = 0x1,
++	DP_COLORIMETRY_BT709_YCC = 0x1,
++	DP_COLORIMETRY_RGB_WIDE_FLOAT = 0x2,
++	DP_COLORIMETRY_XVYCC_601 = 0x2,
++	DP_COLORIMETRY_OPRGB = 0x3,
++	DP_COLORIMETRY_XVYCC_709 = 0x3,
++	DP_COLORIMETRY_DCI_P3_RGB = 0x4,
++	DP_COLORIMETRY_SYCC_601 = 0x4,
++	DP_COLORIMETRY_RGB_CUSTOM = 0x5,
++	DP_COLORIMETRY_OPYCC_601 = 0x5,
++	DP_COLORIMETRY_BT2020_RGB = 0x6,
++	DP_COLORIMETRY_BT2020_CYCC = 0x6,
++	DP_COLORIMETRY_BT2020_YCC = 0x7,
++};
++
++/**
++ * enum dp_dynamic_range - drm DP Dynamic Range
++ *
++ * This enum is used to indicate DP VSC SDP Dynamic Range.
++ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
++ * DB18]
++ *
++ * @DP_DYNAMIC_RANGE_VESA: VESA range
++ * @DP_DYNAMIC_RANGE_CTA: CTA range
++ */
++enum dp_dynamic_range {
++	DP_DYNAMIC_RANGE_VESA = 0,
++	DP_DYNAMIC_RANGE_CTA = 1,
++};
++
++/**
++ * enum dp_content_type - drm DP Content Type
++ *
++ * This enum is used to indicate DP VSC SDP Content Types.
++ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
++ * DB18]
++ * CTA-861-G defines content types and expected processing by a sink device
++ *
++ * @DP_CONTENT_TYPE_NOT_DEFINED: Not defined type
++ * @DP_CONTENT_TYPE_GRAPHICS: Graphics type
++ * @DP_CONTENT_TYPE_PHOTO: Photo type
++ * @DP_CONTENT_TYPE_VIDEO: Video type
++ * @DP_CONTENT_TYPE_GAME: Game type
++ */
++enum dp_content_type {
++	DP_CONTENT_TYPE_NOT_DEFINED = 0x00,
++	DP_CONTENT_TYPE_GRAPHICS = 0x01,
++	DP_CONTENT_TYPE_PHOTO = 0x02,
++	DP_CONTENT_TYPE_VIDEO = 0x03,
++	DP_CONTENT_TYPE_GAME = 0x04,
++};
++
++/**
++ * struct drm_dp_vsc_sdp - drm DP VSC SDP
++ *
++ * This structure represents a DP VSC SDP of drm
++ * It is based on DP 1.4 spec [Table 2-116: VSC SDP Header Bytes] and
++ * [Table 2-117: VSC SDP Payload for DB16 through DB18]
++ *
++ * @sdp_type: secondary-data packet type
++ * @revision: revision number
++ * @length: number of valid data bytes
++ * @pixelformat: pixel encoding format
++ * @colorimetry: colorimetry format
++ * @bpc: bit per color
++ * @dynamic_range: dynamic range information
++ * @content_type: CTA-861-G defines content types and expected processing by a sink device
++ */
++struct drm_dp_vsc_sdp {
++	unsigned char sdp_type;
++	unsigned char revision;
++	unsigned char length;
++	enum dp_pixelformat pixelformat;
++	enum dp_colorimetry colorimetry;
++	int bpc;
++	enum dp_dynamic_range dynamic_range;
++	enum dp_content_type content_type;
++};
++
+ int drm_dp_psr_setup_time(const u8 psr_cap[EDP_PSR_RECEIVER_CAP_SIZE]);
  
- static inline int overlay_is_vid(struct mmp_overlay *overlay)
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 142535267fec..fb2640fe575a 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -89,7 +89,7 @@ struct ssd1307fb_par {
- 
- struct ssd1307fb_array {
- 	u8	type;
--	u8	data[0];
-+	u8	data[];
- };
- 
- static const struct fb_fix_screeninfo ssd1307fb_fix = {
-diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
-index 1f9bc133e230..77252cb46361 100644
---- a/include/video/mmp_disp.h
-+++ b/include/video/mmp_disp.h
-@@ -231,7 +231,7 @@ struct mmp_path {
- 
- 	/* layers */
- 	int overlay_num;
--	struct mmp_overlay overlays[0];
-+	struct mmp_overlay overlays[];
- };
- 
- extern struct mmp_path *mmp_get_path(const char *name);
+ static inline int
 -- 
 2.25.0

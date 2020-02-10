@@ -1,57 +1,39 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Tue, 11 Feb 2020 07:46:49 +0000
-Subject: [PATCH v7 10/18] drm/i915: Include DP VSC SDP in the crtc state dump
-Message-Id: <20200211074657.231405-11-gwan-gyeong.mun@intel.com>
+Date: Mon, 10 Feb 2020 17:10:19 +0000
+Subject: [PATCH v6 16/18] drm/i915: Stop sending DP SDPs on ddi disable
+Message-Id: <20200210171021.109684-17-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
+References: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Dump out the DP VSC SDP in the normal crtc state dump
+Call intel_dp_set_infoframes(false) function on intel_ddi_post_disable_dp()
+to make sure not to send VSC SDP and HDR Metadata Infoframe SDP.
 
-v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-    Use drm core's DP VSC SDP logging function
+v5: Polish commit message [Uma]
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_display.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/gpu/drm/i915/display/intel_ddi.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index 440e2c1c855c..e3694e499b28 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -13006,6 +13006,16 @@ intel_dump_infoframe(struct drm_i915_private *dev_priv,
- 	hdmi_infoframe_log(KERN_DEBUG, dev_priv->drm.dev, frame);
- }
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
+index 99d3f011ed96..e21dfc0d926b 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -3715,6 +3715,8 @@ static void intel_ddi_post_disable_dp(struct intel_encoder *encoder,
+ 					  INTEL_OUTPUT_DP_MST);
+ 	enum phy phy = intel_port_to_phy(dev_priv, encoder->port);
  
-+static void
-+intel_dump_dp_vsc_sdp(struct drm_i915_private *dev_priv,
-+		      const struct drm_dp_vsc_sdp *vsc)
-+{
-+	if (!drm_debug_enabled(DRM_UT_KMS))
-+		return;
++	intel_dp_set_infoframes(encoder, false, old_crtc_state, old_conn_state);
 +
-+	drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, vsc);
-+}
-+
- #define OUTPUT_TYPE(x) [INTEL_OUTPUT_ ## x] = #x
- 
- static const char * const output_type_str[] = {
-@@ -13164,6 +13174,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
- 	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
- 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
-+	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(DP_SDP_VSC))
-+		intel_dump_dp_vsc_sdp(dev_priv, &pipe_config->infoframes.vsc);
- 
- 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
- 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
+ 	/*
+ 	 * Power down sink before disabling the port, otherwise we end
+ 	 * up getting interrupts from the sink on detecting link loss.
 -- 
 2.25.0

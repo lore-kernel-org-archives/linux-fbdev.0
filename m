@@ -1,225 +1,40 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Sun, 09 Feb 2020 03:53:34 +0000
-Subject: [PATCH v5 07/18] drm: Add logging function for DP VSC SDP
-Message-Id: <20200209035345.357436-8-gwan-gyeong.mun@intel.com>
+Date: Tue, 11 Feb 2020 07:46:48 +0000
+Subject: [PATCH v7 09/18] drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
+Message-Id: <20200211074657.231405-10-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
+References: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-When receiving video it is very useful to be able to log DP VSC SDP.
-This greatly simplifies debugging.
+Dump out the DP HDR Metadata Infoframe SDP in the normal crtc state dump.
 
-v2: Minor style fix
-v3: Move logging functions to drm core [Jani N]
-v5: Rebased
+HDMI Dynamic Range and Mastering (DRM) infoframe and DP HDR Metadata
+Infoframe SDP use the same member variable in infoframes of crtc state.
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/gpu/drm/drm_dp_helper.c | 174 ++++++++++++++++++++++++++++++++
- include/drm/drm_dp_helper.h     |   3 +
- 2 files changed, 177 insertions(+)
+ drivers/gpu/drm/i915/display/intel_display.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/gpu/drm/drm_dp_helper.c b/drivers/gpu/drm/drm_dp_helper.c
-index 5a103e9b3c86..17059ed4763b 100644
---- a/drivers/gpu/drm/drm_dp_helper.c
-+++ b/drivers/gpu/drm/drm_dp_helper.c
-@@ -1395,3 +1395,177 @@ int drm_dp_dsc_sink_supported_input_bpcs(const u8 dsc_dpcd[DP_DSC_RECEIVER_CAP_S
- 	return num_bpc;
- }
- EXPORT_SYMBOL(drm_dp_dsc_sink_supported_input_bpcs);
-+
-+static const char *dp_pixelformat_get_name(enum dp_pixelformat pixelformat)
-+{
-+	if (pixelformat < 0 || pixelformat > DP_PIXELFORMAT_RESERVED)
-+		return "Invalid";
-+
-+	switch (pixelformat) {
-+	case DP_PIXELFORMAT_RGB:
-+		return "RGB";
-+	case DP_PIXELFORMAT_YUV444:
-+		return "YUV444";
-+	case DP_PIXELFORMAT_YUV422:
-+		return "YUV422";
-+	case DP_PIXELFORMAT_YUV420:
-+		return "YUV420";
-+	case DP_PIXELFORMAT_Y_ONLY:
-+		return "Y_ONLY";
-+	case DP_PIXELFORMAT_RAW:
-+		return "RAW";
-+	default:
-+		return "Reserved";
-+	}
-+}
-+
-+static const char *dp_colorimetry_get_name(enum dp_pixelformat pixelformat,
-+					   enum dp_colorimetry colorimetry)
-+{
-+	if (pixelformat < 0 || pixelformat > DP_PIXELFORMAT_RESERVED)
-+		return "Invalid";
-+
-+	switch (colorimetry) {
-+	case DP_COLORIMETRY_DEFAULT:
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "sRGB";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.601";
-+		case DP_PIXELFORMAT_Y_ONLY:
-+			return "DICOM PS3.14";
-+		case DP_PIXELFORMAT_RAW:
-+			return "Custom Color Profile";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_WIDE_FIXED: /* and DP_COLORIMETRY_BT709_YCC */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "Wide Fixed";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.709";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_WIDE_FLOAT: /* and DP_COLORIMETRY_XVYCC_601 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "Wide Float";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "xvYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_OPRGB: /* and DP_COLORIMETRY_XVYCC_709 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "OpRGB";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "xvYCC 709";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_DCI_P3_RGB: /* and DP_COLORIMETRY_SYCC_601 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "DCI-P3";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "sYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_CUSTOM: /* and DP_COLORIMETRY_OPYCC_601 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "Custom Profile";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "OpYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_BT2020_RGB: /* and DP_COLORIMETRY_BT2020_CYCC */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "BT.2020 RGB";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.2020 CYCC";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_BT2020_YCC:
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.2020 YCC";
-+		default:
-+			return "Reserved";
-+		}
-+	default:
-+		return "Invalid";
-+	}
-+}
-+
-+static const char *dp_dynamic_range_get_name(enum dp_dynamic_range dynamic_range)
-+{
-+	switch (dynamic_range) {
-+	case DP_DYNAMIC_RANGE_VESA:
-+		return "VESA range";
-+	case DP_DYNAMIC_RANGE_CTA:
-+		return "CTA range";
-+	default:
-+		return "Invalid";
-+	}
-+}
-+
-+static const char *dp_content_type_get_name(enum dp_content_type content_type)
-+{
-+	switch (content_type) {
-+	case DP_CONTENT_TYPE_NOT_DEFINED:
-+		return "Not defined";
-+	case DP_CONTENT_TYPE_GRAPHICS:
-+		return "Graphics";
-+	case DP_CONTENT_TYPE_PHOTO:
-+		return "Photo";
-+	case DP_CONTENT_TYPE_VIDEO:
-+		return "Video";
-+	case DP_CONTENT_TYPE_GAME:
-+		return "Game";
-+	default:
-+		return "Reserved";
-+	}
-+}
-+
-+void drm_dp_vsc_sdp_log(const char *level, struct device *dev,
-+			const struct drm_dp_vsc_sdp *vsc)
-+{
-+#define DP_SDP_LOG(fmt, ...) dev_printk(level, dev, fmt, ##__VA_ARGS__)
-+	DP_SDP_LOG("DP SDP: %s, revision %u, length %u\n", "VSC",
-+		   vsc->revision, vsc->length);
-+	DP_SDP_LOG("    pixelformat: %s\n",
-+		   dp_pixelformat_get_name(vsc->pixelformat));
-+	DP_SDP_LOG("    colorimetry: %s\n",
-+		   dp_colorimetry_get_name(vsc->pixelformat, vsc->colorimetry));
-+	DP_SDP_LOG("    bpc: %u\n", vsc->bpc);
-+	DP_SDP_LOG("    dynamic range: %s\n",
-+		   dp_dynamic_range_get_name(vsc->dynamic_range));
-+	DP_SDP_LOG("    content type: %s\n",
-+		   dp_content_type_get_name(vsc->content_type));
-+#undef DP_SDP_LOG
-+}
-+EXPORT_SYMBOL(drm_dp_vsc_sdp_log);
-diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
-index e332f54013d7..331bb0c2512e 100644
---- a/include/drm/drm_dp_helper.h
-+++ b/include/drm/drm_dp_helper.h
-@@ -1339,6 +1339,9 @@ struct drm_dp_vsc_sdp {
- 	enum dp_content_type content_type;
- };
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index 66dbaab5867e..440e2c1c855c 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -13161,6 +13161,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+ 	if (pipe_config->infoframes.enable &
+ 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
+ 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
++	if (pipe_config->infoframes.enable &
++	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
++		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
  
-+void drm_dp_vsc_sdp_log(const char *level, struct device *dev,
-+			const struct drm_dp_vsc_sdp *vsc);
-+
- int drm_dp_psr_setup_time(const u8 psr_cap[EDP_PSR_RECEIVER_CAP_SIZE]);
- 
- static inline int
+ 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
+ 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
 -- 
-2.24.1
+2.25.0

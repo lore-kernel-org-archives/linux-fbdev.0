@@ -1,223 +1,179 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Wed, 05 Feb 2020 15:41:27 +0000
-Subject: [PATCH v4 07/17] drm: Add logging function for DP VSC SDP
-Message-Id: <20200205154137.1202389-8-gwan-gyeong.mun@intel.com>
+Date: Tue, 11 Feb 2020 07:46:40 +0000
+Subject: [PATCH v7 01/18] drm: Add DP1.4 VSC SDP Payload related Data Structures
+Message-Id: <20200211074657.231405-2-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
+References: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-When receiving video it is very useful to be able to log DP VSC SDP.
-This greatly simplifies debugging.
+It adds new enumeration definitions for VSC SDP Payload for Pixel
+Encoding/Colorimetry Format.
+And it adds a new drm data structure for DP VSC SDP.
 
-v2: Minor style fix
-v3: Move logging functions to drm core [Jani N]
+enum dp_colorspace and enum dp_colorimetry correspond "Pixel Encoding and
+Colorimetry Formats". enum dp_dynamic_range corresponds "Dynamic Range".
+And enum dp_content_type corresponds "Content Type"
+All of them are based on DP 1.4 spec [Table 2-117: VSC SDP Payload for
+DB16 through DB18].
+
+v3: Add a new drm data structure for DP VSC SDP
+v5: Addressed review comments from Uma
+    - Add kernel docs for added data structures
+    - Rename enum dp_colorspace to dp_pixelformat
+    - Polish commit message
+    - Fix typos
+    - Drop self-explanatory comments
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 ---
- drivers/gpu/drm/drm_dp_helper.c | 174 ++++++++++++++++++++++++++++++++
- include/drm/drm_dp_helper.h     |   3 +
- 2 files changed, 177 insertions(+)
+ include/drm/drm_dp_helper.h | 130 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 130 insertions(+)
 
-diff --git a/drivers/gpu/drm/drm_dp_helper.c b/drivers/gpu/drm/drm_dp_helper.c
-index 5a103e9b3c86..5e3aef8c32e0 100644
---- a/drivers/gpu/drm/drm_dp_helper.c
-+++ b/drivers/gpu/drm/drm_dp_helper.c
-@@ -1395,3 +1395,177 @@ int drm_dp_dsc_sink_supported_input_bpcs(const u8 dsc_dpcd[DP_DSC_RECEIVER_CAP_S
- 	return num_bpc;
- }
- EXPORT_SYMBOL(drm_dp_dsc_sink_supported_input_bpcs);
-+
-+static const char *dp_colorspace_get_name(enum dp_colorspace colorspace)
-+{
-+	if (colorspace < 0 || colorspace > DP_COLORSPACE_RESERVED)
-+		return "Invalid";
-+
-+	switch (colorspace) {
-+	case DP_COLORSPACE_RGB:
-+		return "RGB";
-+	case DP_COLORSPACE_YUV444:
-+		return "YUV444";
-+	case DP_COLORSPACE_YUV422:
-+		return "YUV422";
-+	case DP_COLORSPACE_YUV420:
-+		return "YUV420";
-+	case DP_COLORSPACE_Y_ONLY:
-+		return "Y_ONLY";
-+	case DP_COLORSPACE_RAW:
-+		return "RAW";
-+	default:
-+		return "Reserved";
-+	}
-+}
-+
-+static const char *dp_colorimetry_get_name(enum dp_colorspace colorspace,
-+					   enum dp_colorimetry colorimetry)
-+{
-+	if (colorspace < 0 || colorspace > DP_COLORSPACE_RESERVED)
-+		return "Invalid";
-+
-+	switch (colorimetry) {
-+	case DP_COLORIMETRY_DEFAULT:
-+		switch (colorspace) {
-+		case DP_COLORSPACE_RGB:
-+			return "sRGB";
-+		case DP_COLORSPACE_YUV444:
-+		case DP_COLORSPACE_YUV422:
-+		case DP_COLORSPACE_YUV420:
-+			return "BT.601";
-+		case DP_COLORSPACE_Y_ONLY:
-+			return "DICOM PS3.14";
-+		case DP_COLORSPACE_RAW:
-+			return "Custom Color Profile";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_WIDE_FIXED: /* and DP_COLORIMETRY_BT709_YCC */
-+		switch (colorspace) {
-+		case DP_COLORSPACE_RGB:
-+			return "Wide Fixed";
-+		case DP_COLORSPACE_YUV444:
-+		case DP_COLORSPACE_YUV422:
-+		case DP_COLORSPACE_YUV420:
-+			return "BT.709";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_WIDE_FLOAT: /* and DP_COLORIMETRY_XVYCC_601 */
-+		switch (colorspace) {
-+		case DP_COLORSPACE_RGB:
-+			return "Wide Float";
-+		case DP_COLORSPACE_YUV444:
-+		case DP_COLORSPACE_YUV422:
-+		case DP_COLORSPACE_YUV420:
-+			return "xvYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_OPRGB: /* and DP_COLORIMETRY_XVYCC_709 */
-+		switch (colorspace) {
-+		case DP_COLORSPACE_RGB:
-+			return "OpRGB";
-+		case DP_COLORSPACE_YUV444:
-+		case DP_COLORSPACE_YUV422:
-+		case DP_COLORSPACE_YUV420:
-+			return "xvYCC 709";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_DCI_P3_RGB: /* and DP_COLORIMETRY_SYCC_601 */
-+		switch (colorspace) {
-+		case DP_COLORSPACE_RGB:
-+			return "DCI-P3";
-+		case DP_COLORSPACE_YUV444:
-+		case DP_COLORSPACE_YUV422:
-+		case DP_COLORSPACE_YUV420:
-+			return "sYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_CUSTOM: /* and DP_COLORIMETRY_OPYCC_601 */
-+		switch (colorspace) {
-+		case DP_COLORSPACE_RGB:
-+			return "Custom Profile";
-+		case DP_COLORSPACE_YUV444:
-+		case DP_COLORSPACE_YUV422:
-+		case DP_COLORSPACE_YUV420:
-+			return "OpYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_BT2020_RGB: /* and DP_COLORIMETRY_BT2020_CYCC */
-+		switch (colorspace) {
-+		case DP_COLORSPACE_RGB:
-+			return "BT.2020 RGB";
-+		case DP_COLORSPACE_YUV444:
-+		case DP_COLORSPACE_YUV422:
-+		case DP_COLORSPACE_YUV420:
-+			return "BT.2020 CYCC";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_BT2020_YCC:
-+		switch (colorspace) {
-+		case DP_COLORSPACE_YUV444:
-+		case DP_COLORSPACE_YUV422:
-+		case DP_COLORSPACE_YUV420:
-+			return "BT.2020 YCC";
-+		default:
-+			return "Reserved";
-+		}
-+	default:
-+		return "Invalid";
-+	}
-+}
-+
-+static const char *dp_dynamic_range_get_name(enum dp_dynamic_range dynamic_range)
-+{
-+	switch (dynamic_range) {
-+	case DP_DYNAMIC_RANGE_VESA:
-+		return "VESA range";
-+	case DP_DYNAMIC_RANGE_CTA:
-+		return "CTA range";
-+	default:
-+		return "Invalid";
-+	}
-+}
-+
-+static const char *dp_content_type_get_name(enum dp_content_type content_type)
-+{
-+	switch (content_type) {
-+	case DP_CONTENT_TYPE_NOT_DEFINED:
-+		return "Not defined";
-+	case DP_CONTENT_TYPE_GRAPHICS:
-+		return "Graphics";
-+	case DP_CONTENT_TYPE_PHOTO:
-+		return "Photo";
-+	case DP_CONTENT_TYPE_VIDEO:
-+		return "Video";
-+	case DP_CONTENT_TYPE_GAME:
-+		return "Game";
-+	default:
-+		return "Reserved";
-+	}
-+}
-+
-+void drm_dp_vsc_sdp_log(const char *level, struct device *dev,
-+			const struct drm_dp_vsc_sdp *vsc)
-+{
-+#define DP_SDP_LOG(fmt, ...) dev_printk(level, dev, fmt, ##__VA_ARGS__)
-+	DP_SDP_LOG("DP SDP: %s, revision %u, length %u\n", "VSC",
-+		   vsc->revision, vsc->length);
-+	DP_SDP_LOG("    colorspace: %s\n",
-+		   dp_colorspace_get_name(vsc->colorspace));
-+	DP_SDP_LOG("    colorimetry: %s\n",
-+		   dp_colorimetry_get_name(vsc->colorspace, vsc->colorimetry));
-+	DP_SDP_LOG("    bpc: %u\n", vsc->bpc);
-+	DP_SDP_LOG("    dynamic range: %s\n",
-+		   dp_dynamic_range_get_name(vsc->dynamic_range));
-+	DP_SDP_LOG("    content type: %s\n",
-+		   dp_content_type_get_name(vsc->content_type));
-+#undef DP_SDP_LOG
-+}
-+EXPORT_SYMBOL(drm_dp_vsc_sdp_log);
 diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
-index c098727681fa..00b775df6241 100644
+index 262faf9e5e94..e332f54013d7 100644
 --- a/include/drm/drm_dp_helper.h
 +++ b/include/drm/drm_dp_helper.h
-@@ -1266,6 +1266,9 @@ struct drm_dp_vsc_sdp {
- 	enum dp_content_type content_type;
- };
+@@ -1209,6 +1209,136 @@ struct dp_sdp {
+ #define EDP_VSC_PSR_UPDATE_RFB		(1<<1)
+ #define EDP_VSC_PSR_CRC_VALUES_VALID	(1<<2)
  
-+void drm_dp_vsc_sdp_log(const char *level, struct device *dev,
-+			const struct drm_dp_vsc_sdp *vsc);
++/**
++ * enum dp_pixelformat - drm DP Pixel encoding formats
++ *
++ * This enum is used to indicate DP VSC SDP Pixel encoding formats.
++ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
++ * DB18]
++ *
++ * @DP_PIXELFORMAT_RGB: RGB pixel encoding format
++ * @DP_PIXELFORMAT_YUV444: YCbCr 4:4:4 pixel encoding format
++ * @DP_PIXELFORMAT_YUV422: YCbCr 4:2:2 pixel encoding format
++ * @DP_PIXELFORMAT_YUV420: YCbCr 4:2:0 pixel encoding format
++ * @DP_PIXELFORMAT_Y_ONLY: Y Only pixel encoding format
++ * @DP_PIXELFORMAT_RAW: RAW pixel encoding format
++ * @DP_PIXELFORMAT_RESERVED: Reserved pixel encoding format
++ */
++enum dp_pixelformat {
++	DP_PIXELFORMAT_RGB = 0,
++	DP_PIXELFORMAT_YUV444 = 0x1,
++	DP_PIXELFORMAT_YUV422 = 0x2,
++	DP_PIXELFORMAT_YUV420 = 0x3,
++	DP_PIXELFORMAT_Y_ONLY = 0x4,
++	DP_PIXELFORMAT_RAW = 0x5,
++	DP_PIXELFORMAT_RESERVED = 0x6,
++};
++
++/**
++ * enum dp_colorimetry - drm DP Colorimetry formats
++ *
++ * This enum is used to indicate DP VSC SDP Colorimetry formats.
++ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
++ * DB18] and a name of enum member follows DRM_MODE_COLORIMETRY definition.
++ *
++ * @DP_COLORIMETRY_DEFAULT: sRGB (IEC 61966-2-1) or
++ *                          ITU-R BT.601 colorimetry format
++ * @DP_COLORIMETRY_RGB_WIDE_FIXED: RGB wide gamut fixed point colorimetry format
++ * @DP_COLORIMETRY_BT709_YCC: ITU-R BT.709 colorimetry format
++ * @DP_COLORIMETRY_RGB_WIDE_FLOAT: RGB wide gamut floating point
++ *                                 (scRGB (IEC 61966-2-2)) colorimetry format
++ * @DP_COLORIMETRY_XVYCC_601: xvYCC601 colorimetry format
++ * @DP_COLORIMETRY_OPRGB: OpRGB colorimetry format
++ * @DP_COLORIMETRY_XVYCC_709: xvYCC709 colorimetry format
++ * @DP_COLORIMETRY_DCI_P3_RGB: DCI-P3 (SMPTE RP 431-2) colorimetry format
++ * @DP_COLORIMETRY_SYCC_601: sYCC601 colorimetry format
++ * @DP_COLORIMETRY_RGB_CUSTOM: RGB Custom Color Profile colorimetry format
++ * @DP_COLORIMETRY_OPYCC_601: opYCC601 colorimetry format
++ * @DP_COLORIMETRY_BT2020_RGB: ITU-R BT.2020 R' G' B' colorimetry format
++ * @DP_COLORIMETRY_BT2020_CYCC: ITU-R BT.2020 Y'c C'bc C'rc colorimetry format
++ * @DP_COLORIMETRY_BT2020_YCC: ITU-R BT.2020 Y' C'b C'r colorimetry format
++ */
++enum dp_colorimetry {
++	DP_COLORIMETRY_DEFAULT = 0,
++	DP_COLORIMETRY_RGB_WIDE_FIXED = 0x1,
++	DP_COLORIMETRY_BT709_YCC = 0x1,
++	DP_COLORIMETRY_RGB_WIDE_FLOAT = 0x2,
++	DP_COLORIMETRY_XVYCC_601 = 0x2,
++	DP_COLORIMETRY_OPRGB = 0x3,
++	DP_COLORIMETRY_XVYCC_709 = 0x3,
++	DP_COLORIMETRY_DCI_P3_RGB = 0x4,
++	DP_COLORIMETRY_SYCC_601 = 0x4,
++	DP_COLORIMETRY_RGB_CUSTOM = 0x5,
++	DP_COLORIMETRY_OPYCC_601 = 0x5,
++	DP_COLORIMETRY_BT2020_RGB = 0x6,
++	DP_COLORIMETRY_BT2020_CYCC = 0x6,
++	DP_COLORIMETRY_BT2020_YCC = 0x7,
++};
++
++/**
++ * enum dp_dynamic_range - drm DP Dynamic Range
++ *
++ * This enum is used to indicate DP VSC SDP Dynamic Range.
++ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
++ * DB18]
++ *
++ * @DP_DYNAMIC_RANGE_VESA: VESA range
++ * @DP_DYNAMIC_RANGE_CTA: CTA range
++ */
++enum dp_dynamic_range {
++	DP_DYNAMIC_RANGE_VESA = 0,
++	DP_DYNAMIC_RANGE_CTA = 1,
++};
++
++/**
++ * enum dp_content_type - drm DP Content Type
++ *
++ * This enum is used to indicate DP VSC SDP Content Types.
++ * It is based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through
++ * DB18]
++ * CTA-861-G defines content types and expected processing by a sink device
++ *
++ * @DP_CONTENT_TYPE_NOT_DEFINED: Not defined type
++ * @DP_CONTENT_TYPE_GRAPHICS: Graphics type
++ * @DP_CONTENT_TYPE_PHOTO: Photo type
++ * @DP_CONTENT_TYPE_VIDEO: Video type
++ * @DP_CONTENT_TYPE_GAME: Game type
++ */
++enum dp_content_type {
++	DP_CONTENT_TYPE_NOT_DEFINED = 0x00,
++	DP_CONTENT_TYPE_GRAPHICS = 0x01,
++	DP_CONTENT_TYPE_PHOTO = 0x02,
++	DP_CONTENT_TYPE_VIDEO = 0x03,
++	DP_CONTENT_TYPE_GAME = 0x04,
++};
++
++/**
++ * struct drm_dp_vsc_sdp - drm DP VSC SDP
++ *
++ * This structure represents a DP VSC SDP of drm
++ * It is based on DP 1.4 spec [Table 2-116: VSC SDP Header Bytes] and
++ * [Table 2-117: VSC SDP Payload for DB16 through DB18]
++ *
++ * @sdp_type: secondary-data packet type
++ * @revision: revision number
++ * @length: number of valid data bytes
++ * @pixelformat: pixel encoding format
++ * @colorimetry: colorimetry format
++ * @bpc: bit per color
++ * @dynamic_range: dynamic range information
++ * @content_type: CTA-861-G defines content types and expected processing by a sink device
++ */
++struct drm_dp_vsc_sdp {
++	unsigned char sdp_type;
++	unsigned char revision;
++	unsigned char length;
++	enum dp_pixelformat pixelformat;
++	enum dp_colorimetry colorimetry;
++	int bpc;
++	enum dp_dynamic_range dynamic_range;
++	enum dp_content_type content_type;
++};
 +
  int drm_dp_psr_setup_time(const u8 psr_cap[EDP_PSR_RECEIVER_CAP_SIZE]);
  
  static inline int
 -- 
-2.24.1
+2.25.0

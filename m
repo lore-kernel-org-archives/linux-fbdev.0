@@ -1,46 +1,38 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Mon, 10 Feb 2020 17:10:17 +0000
-Subject: [PATCH v6 14/18] drm/i915: Fix enabled infoframe states of lspcon
-Message-Id: <20200210171021.109684-15-gwan-gyeong.mun@intel.com>
+Date: Tue, 11 Feb 2020 07:46:47 +0000
+Subject: [PATCH v7 08/18] drm/i915: Include HDMI DRM infoframe in the crtc state dump
+Message-Id: <20200211074657.231405-9-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
+References: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Compared to implementation of DP and HDMI's encoder->infoframes_enabled,
-the lspcon's implementation returns its active state. (we expect enabled
-infoframe states of HW.) It leads to pipe state mismatch error
-when ddi_get_config is called.
+Dump out the HDMI Dynamic Range and Mastering (DRM) infoframe in the
+normal crtc state dump.
 
-Because the current implementation of lspcon is not ready to support
-readout infoframes, we need to return 0 here.
-
-In order to support readout to lspcon, we need to implement read_infoframe
-and infoframes_enabled. And set_infoframes also have to set an appropriate
-bit on crtc_state->infoframes.enable
-
-Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_lspcon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/i915/display/intel_display.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_lspcon.c b/drivers/gpu/drm/i915/display/intel_lspcon.c
-index d807c5648c87..6ff7b226f0a1 100644
---- a/drivers/gpu/drm/i915/display/intel_lspcon.c
-+++ b/drivers/gpu/drm/i915/display/intel_lspcon.c
-@@ -522,7 +522,7 @@ u32 lspcon_infoframes_enabled(struct intel_encoder *encoder,
- 			      const struct intel_crtc_state *pipe_config)
- {
- 	/* FIXME actually read this from the hw */
--	return enc_to_intel_lspcon(encoder)->active;
-+	return 0;
- }
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index 368e481d45ee..66dbaab5867e 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -13158,6 +13158,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+ 	if (pipe_config->infoframes.enable &
+ 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_VENDOR))
+ 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.hdmi);
++	if (pipe_config->infoframes.enable &
++	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
++		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
  
- void lspcon_resume(struct intel_lspcon *lspcon)
+ 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
+ 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
 -- 
 2.25.0

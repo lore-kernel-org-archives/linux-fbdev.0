@@ -1,10 +1,10 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Wed, 05 Feb 2020 15:41:31 +0000
-Subject: [PATCH v4 11/17] drm/i915: Program DP SDPs with computed configs
-Message-Id: <20200205154137.1202389-12-gwan-gyeong.mun@intel.com>
+Date: Tue, 11 Feb 2020 07:46:50 +0000
+Subject: [PATCH v7 11/18] drm/i915: Program DP SDPs with computed configs
+Message-Id: <20200211074657.231405-12-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
+References: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
@@ -15,13 +15,22 @@ In order to use computed config for DP SDPs (DP VSC SDP and DP HDR Metadata
 Infoframe SDP), it replaces intel_dp_vsc_enable() function and
 intel_dp_hdr_metadata_enable() function to intel_dp_set_infoframes()
 function.
+And it removes unused functions.
 
-Before applying it, routines of program SDP always calculated configs when
-they called. And it removes unused functions.
+Before:
+ intel_dp_vsc_enable() and intel_dp_hdr_metadata_enable() compute sdp
+ configs and program sdp registers on enable callback of encoder.
+
+After:
+ It separates computing of sdp configs and programming of sdp register.
+ The compute config callback of encoder calls computing sdp configs.
+ The enable callback of encoder calls programming sdp register.
 
 v3: Rebased
+v5: Polish commit message [Uma]
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
  drivers/gpu/drm/i915/display/intel_ddi.c |   3 +-
  drivers/gpu/drm/i915/display/intel_dp.c  | 226 -----------------------
@@ -46,10 +55,10 @@ index 1ab638e17046..857014fe5880 100644
  	if (crtc_state->has_audio)
 diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915=
 /display/intel_dp.c
-index c30272e80dc7..acf943b9e1ec 100644
+index 3df3533a1768..a824408b6e2a 100644
 --- a/drivers/gpu/drm/i915/display/intel_dp.c
 +++ b/drivers/gpu/drm/i915/display/intel_dp.c
-@@ -5101,232 +5101,6 @@ void intel_read_dp_sdp(struct intel_encoder *encode=
+@@ -5127,232 +5127,6 @@ void intel_read_dp_sdp(struct intel_encoder *encode=
 r,
  	}
  }
@@ -304,4 +313,4 @@ index e8f9ba962d09..6562bb8edeba 100644
  			     const struct intel_crtc_state *crtc_state,
  			     const struct drm_connector_state *conn_state);
 --=20
-2.24.1
+2.25.0

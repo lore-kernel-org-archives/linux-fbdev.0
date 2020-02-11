@@ -1,10 +1,10 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Wed, 05 Feb 2020 15:41:34 +0000
-Subject: [PATCH v4 14/17] drm/i915: Program DP SDPs on pipe updates
-Message-Id: <20200205154137.1202389-15-gwan-gyeong.mun@intel.com>
+Date: Tue, 11 Feb 2020 07:46:54 +0000
+Subject: [PATCH v7 15/18] drm/i915: Program DP SDPs on pipe updates
+Message-Id: <20200211074657.231405-16-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
+References: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,6 +16,7 @@ that we send VSC SDP and HDR Metadata Infoframe SDP (when applicable)
 on fastsets.
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
  drivers/gpu/drm/i915/display/intel_ddi.c | 1 +
  1 file changed, 1 insertion(+)
@@ -33,4 +34,4 @@ index 7f29b08ea202..99d3f011ed96 100644
  
  	intel_panel_update_backlight(encoder, crtc_state, conn_state);
 -- 
-2.24.1
+2.25.0

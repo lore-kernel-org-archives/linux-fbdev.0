@@ -1,85 +1,63 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Sun, 02 Feb 2020 15:49:21 +0000
-Subject: [PATCH v2 01/18] drm: add DP 1.4 VSC SDP Payload related enums
-Message-Id: <20200202154938.1129610-2-gwan-gyeong.mun@intel.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Fri, 14 Feb 2020 16:07:49 +0000
+Subject: [PATCH AUTOSEL 4.19 014/252] pxa168fb: Fix the function used to release some memory in an error hand
+Message-Id: <20200214161147.15842-14-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200202154938.1129610-1-gwan-gyeong.mun@intel.com>
+References: <20200214161147.15842-1-sashal@kernel.org>
+In-Reply-To: <20200214161147.15842-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, YueHaibing <yuehaibing@huawei.com>, dri-devel@lists.freedesktop.org, Lubomir Rintel <lkundrak@v3.sk>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-It adds new enumeration definitions for VSC SDP Payload for Pixel
-Encoding/Colorimetry Format.
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-enum dp_colorspace and enum dp_colorimetry correspond "Pixel Encoding and
-Colorimetry Formats". enum dp_dynamic_range corresponds "Dynamic Range".
-And enum dp_content_type corresponds "Content Type"
-All of them are based on DP 1.4 spec [Table 2-117: VSC SDP Payload for
-DB16 through DB18].
+[ Upstream commit 3c911fe799d1c338d94b78e7182ad452c37af897 ]
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+In the probe function, some resources are allocated using 'dma_alloc_wc()',
+they should be released with 'dma_free_wc()', not 'dma_free_coherent()'.
+
+We already use 'dma_free_wc()' in the remove function, but not in the
+error handling path of the probe function.
+
+Also, remove a useless 'PAGE_ALIGN()'. 'info->fix.smem_len' is already
+PAGE_ALIGNed.
+
+Fixes: 638772c7553f ("fb: add support of LCD display controller on pxa168/910 (base layer)")
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Reviewed-by: Lubomir Rintel <lkundrak@v3.sk>
+CC: YueHaibing <yuehaibing@huawei.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20190831100024.3248-1-christophe.jaillet@wanadoo.fr
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- include/drm/drm_dp_helper.h | 45 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 45 insertions(+)
+ drivers/video/fbdev/pxa168fb.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
-index 262faf9e5e94..86b1be958a69 100644
---- a/include/drm/drm_dp_helper.h
-+++ b/include/drm/drm_dp_helper.h
-@@ -1209,6 +1209,51 @@ struct dp_sdp {
- #define EDP_VSC_PSR_UPDATE_RFB		(1<<1)
- #define EDP_VSC_PSR_CRC_VALUES_VALID	(1<<2)
+diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
+index d059d04c63acd..20195d3dbf088 100644
+--- a/drivers/video/fbdev/pxa168fb.c
++++ b/drivers/video/fbdev/pxa168fb.c
+@@ -769,8 +769,8 @@ static int pxa168fb_probe(struct platform_device *pdev)
+ failed_free_clk:
+ 	clk_disable_unprepare(fbi->clk);
+ failed_free_fbmem:
+-	dma_free_coherent(fbi->dev, info->fix.smem_len,
+-			info->screen_base, fbi->fb_start_dma);
++	dma_free_wc(fbi->dev, info->fix.smem_len,
++		    info->screen_base, fbi->fb_start_dma);
+ failed_free_info:
+ 	kfree(info);
  
-+/* Based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through DB18] */
-+enum dp_colorspace {
-+	DP_COLORSPACE_RGB = 0,
-+	DP_COLORSPACE_YUV444 = 0x1,
-+	DP_COLORSPACE_YUV422 = 0x2,
-+	DP_COLORSPACE_YUV420 = 0x3,
-+	DP_COLORSPACE_Y_ONLY = 0x4,
-+	DP_COLORSPACE_RAW = 0x5,
-+	DP_COLORSPACE_RESERVED = 0x6,
-+};
-+
-+/**
-+ * Based on DP 1.4 spec [Table 2-117: VSC SDP Payload for DB16 through DB18]
-+ * and a name of enum member followes DRM_MODE_COLORIMETRY definition.
-+ */
-+enum dp_colorimetry {
-+	DP_COLORIMETRY_DEFAULT = 0, /* sRGB (IEC 61966-2-1) / ITU-R BT.601 */
-+	DP_COLORIMETRY_RGB_WIDE_FIXED = 0x1,
-+	DP_COLORIMETRY_BT709_YCC = 0x1,
-+	DP_COLORIMETRY_RGB_WIDE_FLOAT = 0x2,
-+	DP_COLORIMETRY_XVYCC_601 = 0x2,
-+	DP_COLORIMETRY_OPRGB = 0x3,
-+	DP_COLORIMETRY_XVYCC_709 = 0x3,
-+	DP_COLORIMETRY_DCI_P3_RGB = 0x4,
-+	DP_COLORIMETRY_SYCC_601 = 0x4,
-+	DP_COLORIMETRY_RGB_CUSTOM = 0x5,
-+	DP_COLORIMETRY_OPYCC_601 = 0x5,
-+	DP_COLORIMETRY_BT2020_RGB = 0x6,
-+	DP_COLORIMETRY_BT2020_CYCC = 0x6,
-+	DP_COLORIMETRY_BT2020_YCC = 0x7,
-+};
-+
-+enum dp_dynamic_range {
-+	DP_DYNAMIC_RANGE_VESA = 0,
-+	DP_DYNAMIC_RANGE_CTA = 1,
-+};
-+
-+enum dp_content_type {
-+	DP_CONTENT_TYPE_NOT_DEFINED = 0x00,
-+	DP_CONTENT_TYPE_GRAPHICS = 0x01,
-+	DP_CONTENT_TYPE_PHOTO = 0x02,
-+	DP_CONTENT_TYPE_VIDEO = 0x03,
-+	DP_CONTENT_TYPE_GAME = 0x04,
-+};
-+
- int drm_dp_psr_setup_time(const u8 psr_cap[EDP_PSR_RECEIVER_CAP_SIZE]);
+@@ -804,7 +804,7 @@ static int pxa168fb_remove(struct platform_device *pdev)
  
- static inline int
+ 	irq = platform_get_irq(pdev, 0);
+ 
+-	dma_free_wc(fbi->dev, PAGE_ALIGN(info->fix.smem_len),
++	dma_free_wc(fbi->dev, info->fix.smem_len,
+ 		    info->screen_base, info->fix.smem_start);
+ 
+ 	clk_disable_unprepare(fbi->clk);
 -- 
-2.24.1
+2.20.1

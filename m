@@ -1,63 +1,87 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 14 Feb 2020 16:19:09 +0000
-Subject: [PATCH AUTOSEL 4.9 009/141] pxa168fb: Fix the function used to release some memory in an error handl
-Message-Id: <20200214162122.19794-9-sashal@kernel.org>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Fri, 21 Feb 2020 16:00:05 +0000
+Subject: [PATCH] video: Replace zero-length array with flexible-array member
+Message-Id: <20200221160005.GA13552@embeddedor>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200214162122.19794-1-sashal@kernel.org>
-In-Reply-To: <20200214162122.19794-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, YueHaibing <yuehaibing@huawei.com>, dri-devel@lists.freedesktop.org, Lubomir Rintel <lkundrak@v3.sk>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+The current codebase makes use of the zero-length array language
+extension to the C90 standard, but the preferred mechanism to declare
+variable-length types such as these ones is a flexible array member[1][2],
+introduced in C99:
 
-[ Upstream commit 3c911fe799d1c338d94b78e7182ad452c37af897 ]
+struct foo {
+        int stuff;
+        struct boo array[];
+};
 
-In the probe function, some resources are allocated using 'dma_alloc_wc()',
-they should be released with 'dma_free_wc()', not 'dma_free_coherent()'.
+By making use of the mechanism above, we will get a compiler warning
+in case the flexible array does not occur last in the structure, which
+will help us prevent some kind of undefined behavior bugs from being
+inadvertently introduced[3] to the codebase from now on.
 
-We already use 'dma_free_wc()' in the remove function, but not in the
-error handling path of the probe function.
+Also, notice that, dynamic memory allocations won't be affected by
+this change:
 
-Also, remove a useless 'PAGE_ALIGN()'. 'info->fix.smem_len' is already
-PAGE_ALIGNed.
+"Flexible array members have incomplete type, and so the sizeof operator
+may not be applied. As a quirk of the original implementation of
+zero-length arrays, sizeof evaluates to zero."[1]
 
-Fixes: 638772c7553f ("fb: add support of LCD display controller on pxa168/910 (base layer)")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Reviewed-by: Lubomir Rintel <lkundrak@v3.sk>
-CC: YueHaibing <yuehaibing@huawei.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20190831100024.3248-1-christophe.jaillet@wanadoo.fr
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+This issue was found with the help of Coccinelle.
+
+[1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
+[2] https://github.com/KSPP/linux/issues/21
+[3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
+
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 ---
- drivers/video/fbdev/pxa168fb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.h | 2 +-
+ drivers/video/fbdev/ssd1307fb.c       | 2 +-
+ include/video/mmp_disp.h              | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
-index d059d04c63acd..20195d3dbf088 100644
---- a/drivers/video/fbdev/pxa168fb.c
-+++ b/drivers/video/fbdev/pxa168fb.c
-@@ -769,8 +769,8 @@ static int pxa168fb_probe(struct platform_device *pdev)
- failed_free_clk:
- 	clk_disable_unprepare(fbi->clk);
- failed_free_fbmem:
--	dma_free_coherent(fbi->dev, info->fix.smem_len,
--			info->screen_base, fbi->fb_start_dma);
-+	dma_free_wc(fbi->dev, info->fix.smem_len,
-+		    info->screen_base, fbi->fb_start_dma);
- failed_free_info:
- 	kfree(info);
+diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.h b/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
+index 335d4983dc52..167585a889d3 100644
+--- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
++++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
+@@ -1406,7 +1406,7 @@ struct mmphw_ctrl {
  
-@@ -804,7 +804,7 @@ static int pxa168fb_remove(struct platform_device *pdev)
+ 	/*pathes*/
+ 	int path_num;
+-	struct mmphw_path_plat path_plats[0];
++	struct mmphw_path_plat path_plats[];
+ };
  
- 	irq = platform_get_irq(pdev, 0);
+ static inline int overlay_is_vid(struct mmp_overlay *overlay)
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 142535267fec..fb2640fe575a 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -89,7 +89,7 @@ struct ssd1307fb_par {
  
--	dma_free_wc(fbi->dev, PAGE_ALIGN(info->fix.smem_len),
-+	dma_free_wc(fbi->dev, info->fix.smem_len,
- 		    info->screen_base, info->fix.smem_start);
+ struct ssd1307fb_array {
+ 	u8	type;
+-	u8	data[0];
++	u8	data[];
+ };
  
- 	clk_disable_unprepare(fbi->clk);
+ static const struct fb_fix_screeninfo ssd1307fb_fix = {
+diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
+index 1f9bc133e230..77252cb46361 100644
+--- a/include/video/mmp_disp.h
++++ b/include/video/mmp_disp.h
+@@ -231,7 +231,7 @@ struct mmp_path {
+ 
+ 	/* layers */
+ 	int overlay_num;
+-	struct mmp_overlay overlays[0];
++	struct mmp_overlay overlays[];
+ };
+ 
+ extern struct mmp_path *mmp_get_path(const char *name);
 -- 
-2.20.1
+2.25.0

@@ -1,75 +1,43 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Tue, 25 Feb 2020 16:33:29 +0000
-Subject: Re: [PATCH] Initialize ATA before graphics
-Message-Id: <0da5bb70-2e55-0fa2-d950-3832f9ff7bcd@infradead.org>
+From: Colin King <colin.king@canonical.com>
+Date: Wed, 26 Feb 2020 19:58:26 +0000
+Subject: [PATCH][V2] backlight: sky81452: insure while loop does not allow negative array indexing
+Message-Id: <20200226195826.6567-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <041f4abd-f894-b990-b320-bf0aab4242f2@molgen.mpg.de>
-In-Reply-To: <041f4abd-f894-b990-b320-bf0aab4242f2@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Menzel <pmenzel@molgen.mpg.de>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Hans de Goede <hdegoede@redhat.com>, Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>, Keith Busch <kbusch@kernel.org>, Sagi Grimberg <sagi@grimberg.me>, LKML <linux-kernel@vger.kernel.org>
-Cc: linux-ide@vger.kernel.org, linux-fbdev@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, linux-nvme@lists.infradead.org, dri-devel@lists.freedesktop.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Gyungoh Yoo <jack.yoo@skyworksinc.com>, Bryan Wu <cooloney@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Paul,
-You should have also Cc-ed Arjan on this email. [done]
+From: Colin Ian King <colin.king@canonical.com>
 
+In the unlikely event that num_entry is zero, the while loop
+pre-decrements num_entry to cause negative array indexing into the
+array sources. Fix this by iterating only if num_entry >= 0.
 
-On 2/24/20 6:09 AM, Paul Menzel wrote:
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Thu, 2 Jun 2016 23:36:32 -0500
-> 
-> ATA init is the long pole in the boot process, and its asynchronous.
-> Move the graphics init after it, so that ATA and graphics initialize
-> in parallel.
-> 
-> Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
-> ---
-> 
-> 1.  Taken from Clear Linux: https://github.com/clearlinux-pkgs/linux/commits/master/0110-Initialize-ata-before-graphics.patch
-> 2.  Arjan, can you please add your Signed-off-by line?
-> 
->  drivers/Makefile | 15 ++++++++-------
->  1 file changed, 8 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/Makefile b/drivers/Makefile
-> index aaef17c..d08f3a3 100644
-> --- a/drivers/Makefile
-> +++ b/drivers/Makefile
-> @@ -58,15 +58,8 @@ obj-y                                += char/
->  # iommu/ comes before gpu as gpu are using iommu controllers
->  obj-y                          += iommu/
->  
-> -# gpu/ comes after char for AGP vs DRM startup and after iommu
-> -obj-y                          += gpu/
-> -
->  obj-$(CONFIG_CONNECTOR)                += connector/
->  
-> -# i810fb and intelfb depend on char/agp/
-> -obj-$(CONFIG_FB_I810)           += video/fbdev/i810/
-> -obj-$(CONFIG_FB_INTEL)          += video/fbdev/intelfb/
-> -
->  obj-$(CONFIG_PARPORT)          += parport/
->  obj-$(CONFIG_NVM)              += lightnvm/
->  obj-y                          += base/ block/ misc/ mfd/ nfc/
-> @@ -79,6 +72,14 @@ obj-$(CONFIG_IDE)            += ide/
->  obj-y                          += scsi/
->  obj-y                          += nvme/
->  obj-$(CONFIG_ATA)              += ata/
-> +
-> +# gpu/ comes after char for AGP vs DRM startup and after iommu
-> +obj-y                          += gpu/
-> +
-> +# i810fb and intelfb depend on char/agp/
-> +obj-$(CONFIG_FB_I810)           += video/fbdev/i810/
-> +obj-$(CONFIG_FB_INTEL)          += video/fbdev/intelfb/
-> +
->  obj-$(CONFIG_TARGET_CORE)      += target/
->  obj-$(CONFIG_MTD)              += mtd/
->  obj-$(CONFIG_SPI)              += spi/
-> 
+Addresses-Coverity: ("Out-of-bounds read")
+Fixes: f705806c9f35 ("backlight: Add support Skyworks SKY81452 backlight driver")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
 
+V2: fix typo in commit subject line
 
+---
+ drivers/video/backlight/sky81452-backlight.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/sky81452-backlight.c b/drivers/video/backlight/sky81452-backlight.c
+index 2355f00f5773..f456930ce78e 100644
+--- a/drivers/video/backlight/sky81452-backlight.c
++++ b/drivers/video/backlight/sky81452-backlight.c
+@@ -200,7 +200,7 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
+ 		}
+ 
+ 		pdata->enable = 0;
+-		while (--num_entry)
++		while (--num_entry >= 0)
+ 			pdata->enable |= (1 << sources[num_entry]);
+ 	}
+ 
 -- 
-~Randy
-Reported-by: Randy Dunlap <rdunlap@infradead.org>
+2.25.0

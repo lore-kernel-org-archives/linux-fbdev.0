@@ -1,39 +1,39 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Wed, 05 Feb 2020 15:41:29 +0000
-Subject: [PATCH v4 09/17] drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
-Message-Id: <20200205154137.1202389-10-gwan-gyeong.mun@intel.com>
+From: Colin King <colin.king@canonical.com>
+Date: Wed, 26 Feb 2020 19:57:39 +0000
+Subject: [PATCH] backlight: sky81452: unsure while loop does not allow negative array indexing
+Message-Id: <20200226195739.6462-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200205154137.1202389-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Gyungoh Yoo <jack.yoo@skyworksinc.com>, Bryan Wu <cooloney@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Dump out the DP HDR Metadata Infoframe SDP in the normal crtc state dump.
+From: Colin Ian King <colin.king@canonical.com>
 
-HDMI Dynamic Range and Mastering (DRM) infoframe and DP HDR Metadata
-Infoframe SDP use the same member variable in infoframes of crtc state.
+In the unlikely event that num_entry is zero, the while loop
+pre-decrements num_entry to cause negative array indexing into the
+array sources. Fix this by iterating only if num_entry >= 0.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Addresses-Coverity: ("Out-of-bounds read")
+Fixes: f705806c9f35 ("backlight: Add support Skyworks SKY81452 backlight driver")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/gpu/drm/i915/display/intel_display.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/video/backlight/sky81452-backlight.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index 66dbaab5867e..440e2c1c855c 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -13161,6 +13161,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
- 	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
- 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
-+	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
-+		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
+diff --git a/drivers/video/backlight/sky81452-backlight.c b/drivers/video/backlight/sky81452-backlight.c
+index 2355f00f5773..f456930ce78e 100644
+--- a/drivers/video/backlight/sky81452-backlight.c
++++ b/drivers/video/backlight/sky81452-backlight.c
+@@ -200,7 +200,7 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
+ 		}
  
- 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
- 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
+ 		pdata->enable = 0;
+-		while (--num_entry)
++		while (--num_entry >= 0)
+ 			pdata->enable |= (1 << sources[num_entry]);
+ 	}
+ 
 -- 
-2.24.1
+2.25.0

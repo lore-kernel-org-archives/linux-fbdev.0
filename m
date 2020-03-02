@@ -1,47 +1,62 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 27 Mar 2020 07:29:13 +0000
-Subject: [PATCH v8 10/14] drm/i915: Fix enabled infoframe states of lspcon
-Message-Id: <20200327072917.3676391-11-gwan-gyeong.mun@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 02 Mar 2020 15:42:15 +0000
+Subject: Re: [PATCH 1/4] video: fbdev: remove set but not used variable 'hSyncPol'
+Message-Id: <f05e964b-2a4c-1fc4-b0f4-16c3e6d1ec34@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
+References: <20200119121730.10701-1-yukuai3@huawei.com>
+ <CGME20200119121831eucas1p2da620aa87a0fdcc73e6a9db46a3e8243@eucas1p2.samsung.com>
+ <20200119121730.10701-2-yukuai3@huawei.com>
+In-Reply-To: <20200119121730.10701-2-yukuai3@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: intel-gfx@lists.freedesktop.org
-Cc: jani.nikula@intel.com, linux-fbdev@vger.kernel.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org
+To: yu kuai <yukuai3@huawei.com>
+Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhengbin13@huawei.com
 
-Compared to implementation of DP and HDMI's encoder->infoframes_enabled,
-the lspcon's implementation returns its active state. (we expect enabled
-infoframe states of HW.) It leads to pipe state mismatch error
-when ddi_get_config is called.
 
-Because the current implementation of lspcon is not ready to support
-readout infoframes, we need to return 0 here.
+On 1/19/20 1:17 PM, yu kuai wrote:
+> Fixes gcc '-Wunused-but-set-variable' warning:
+> 
+> drivers/video/fbdev/aty/radeon_base.c: In function
+> ‘radeonfb_set_par’:
+> drivers/video/fbdev/aty/radeon_base.c:1653:6: warning: variable
+> ‘hSyncPol’ set but not used [-Wunused-but-set-variable]
+> 
+> It is never used, and so can be removed.
+> 
+> Signed-off-by: yu kuai <yukuai3@huawei.com>
 
-In order to support readout to lspcon, we need to implement read_infoframe
-and infoframes_enabled. And set_infoframes also have to set an appropriate
-bit on crtc_state->infoframes.enable
-
-Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
----
- drivers/gpu/drm/i915/display/intel_lspcon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/gpu/drm/i915/display/intel_lspcon.c b/drivers/gpu/drm/i915/display/intel_lspcon.c
-index d807c5648c87..6ff7b226f0a1 100644
---- a/drivers/gpu/drm/i915/display/intel_lspcon.c
-+++ b/drivers/gpu/drm/i915/display/intel_lspcon.c
-@@ -522,7 +522,7 @@ u32 lspcon_infoframes_enabled(struct intel_encoder *encoder,
- 			      const struct intel_crtc_state *pipe_config)
- {
- 	/* FIXME actually read this from the hw */
--	return enc_to_intel_lspcon(encoder)->active;
-+	return 0;
- }
+Patch queued for v5.7, thanks.
  
- void lspcon_resume(struct intel_lspcon *lspcon)
--- 
-2.25.0
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> ---
+>  drivers/video/fbdev/aty/radeon_base.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+> index 3af00e3b965e..d2e68ec580c2 100644
+> --- a/drivers/video/fbdev/aty/radeon_base.c
+> +++ b/drivers/video/fbdev/aty/radeon_base.c
+> @@ -1650,7 +1650,7 @@ static int radeonfb_set_par(struct fb_info *info)
+>  	struct fb_var_screeninfo *mode = &info->var;
+>  	struct radeon_regs *newmode;
+>  	int hTotal, vTotal, hSyncStart, hSyncEnd,
+> -	    hSyncPol, vSyncStart, vSyncEnd, vSyncPol, cSync;
+> +	    vSyncStart, vSyncEnd, vSyncPol, cSync;
+>  	u8 hsync_adj_tab[] = {0, 0x12, 9, 9, 6, 5};
+>  	u8 hsync_fudge_fp[] = {2, 2, 0, 0, 5, 5};
+>  	u32 sync, h_sync_pol, v_sync_pol, dotClock, pixClock;
+> @@ -1730,7 +1730,6 @@ static int radeonfb_set_par(struct fb_info *info)
+>  	else if (vsync_wid > 0x1f)	/* max */
+>  		vsync_wid = 0x1f;
+>  
+> -	hSyncPol = mode->sync & FB_SYNC_HOR_HIGH_ACT ? 0 : 1;
+>  	vSyncPol = mode->sync & FB_SYNC_VERT_HIGH_ACT ? 0 : 1;
+>  
+>  	cSync = mode->sync & FB_SYNC_COMP_HIGH_ACT ? (1 << 4) : 0;
+> 

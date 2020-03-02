@@ -1,116 +1,63 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 27 Mar 2020 07:29:12 +0000
-Subject: [PATCH v8 09/14] drm/i915: Add state readout for DP VSC SDP
-Message-Id: <20200327072917.3676391-10-gwan-gyeong.mun@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 02 Mar 2020 15:42:38 +0000
+Subject: Re: [PATCH V2] video: remove set but not used variable 'mach64RefFreq'
+Message-Id: <d2c1eb0f-2129-a658-b0ab-5c7c1ba203c1@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
+References: <CGME20200120063426eucas1p278d9f947fad536a5af16356afddab0e4@eucas1p2.samsung.com>
+ <20200120063327.43548-1-yukuai3@huawei.com>
+In-Reply-To: <20200120063327.43548-1-yukuai3@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: jani.nikula@intel.com, linux-fbdev@vger.kernel.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: yu kuai <yukuai3@huawei.com>
+Cc: zhengbin13@huawei.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, yi.zhang@huawei.com
 
-Added state readout for DP VSC SDP and enabled state validation
-for DP VSC SDP.
 
-v2: Minor style fix
-v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-v4: Use struct drm_device logging macros
+On 1/20/20 7:33 AM, yu kuai wrote:
+> Fixes gcc '-Wunused-but-set-variable' warning:
+> 
+> drivers/video/fbdev/aty/mach64_gx.c: In function ‘aty_var_to_pll_8398’:
+> drivers/video/fbdev/aty/mach64_gx.c:621:36: warning: variable
+> ‘mach64RefFreq’ set but not used [-Wunused-but-set-variable]
+> 
+> It is never used, and so can be removed.
+> 
+> Signed-off-by: yu kuai <yukuai3@huawei.com>
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
----
- drivers/gpu/drm/i915/display/intel_ddi.c     |  1 +
- drivers/gpu/drm/i915/display/intel_display.c | 43 ++++++++++++++++++++
- 2 files changed, 44 insertions(+)
+Patch queued for v5.7, thanks.
+ 
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index c2c5feff46bf..f58a539d51c2 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -4014,6 +4014,7 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
- 			     &pipe_config->infoframes.drm);
- 
- 	intel_read_dp_sdp(encoder, pipe_config, HDMI_PACKET_TYPE_GAMUT_METADATA);
-+	intel_read_dp_sdp(encoder, pipe_config, DP_SDP_VSC);
- }
- 
- static enum intel_output_type
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index caa8fdeb9c33..0d40f76b844b 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -13539,6 +13539,13 @@ intel_compare_infoframe(const union hdmi_infoframe *a,
- 	return memcmp(a, b, sizeof(*a)) = 0;
- }
- 
-+static bool
-+intel_compare_dp_vsc_sdp(const struct drm_dp_vsc_sdp *a,
-+			 const struct drm_dp_vsc_sdp *b)
-+{
-+	return memcmp(a, b, sizeof(*a)) = 0;
-+}
-+
- static void
- pipe_config_infoframe_mismatch(struct drm_i915_private *dev_priv,
- 			       bool fastset, const char *name,
-@@ -13564,6 +13571,31 @@ pipe_config_infoframe_mismatch(struct drm_i915_private *dev_priv,
- 	}
- }
- 
-+static void
-+pipe_config_dp_vsc_sdp_mismatch(struct drm_i915_private *dev_priv,
-+				bool fastset, const char *name,
-+				const struct drm_dp_vsc_sdp *a,
-+				const struct drm_dp_vsc_sdp *b)
-+{
-+	if (fastset) {
-+		if (!drm_debug_enabled(DRM_UT_KMS))
-+			return;
-+
-+		drm_dbg_kms(&dev_priv->drm,
-+			    "fastset mismatch in %s dp sdp\n", name);
-+		drm_dbg_kms(&dev_priv->drm, "expected:\n");
-+		drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, a);
-+		drm_dbg_kms(&dev_priv->drm, "found:\n");
-+		drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, b);
-+	} else {
-+		drm_err(&dev_priv->drm, "mismatch in %s dp sdp\n", name);
-+		drm_err(&dev_priv->drm, "expected:\n");
-+		drm_dp_vsc_sdp_log(KERN_ERR, dev_priv->drm.dev, a);
-+		drm_err(&dev_priv->drm, "found:\n");
-+		drm_dp_vsc_sdp_log(KERN_ERR, dev_priv->drm.dev, b);
-+	}
-+}
-+
- static void __printf(4, 5)
- pipe_config_mismatch(bool fastset, const struct intel_crtc *crtc,
- 		     const char *name, const char *format, ...)
-@@ -13765,6 +13797,16 @@ intel_pipe_config_compare(const struct intel_crtc_state *current_config,
- 	} \
- } while (0)
- 
-+#define PIPE_CONF_CHECK_DP_VSC_SDP(name) do { \
-+	if (!intel_compare_dp_vsc_sdp(&current_config->infoframes.name, \
-+				      &pipe_config->infoframes.name)) { \
-+		pipe_config_dp_vsc_sdp_mismatch(dev_priv, fastset, __stringify(name), \
-+						&current_config->infoframes.name, \
-+						&pipe_config->infoframes.name); \
-+		ret = false; \
-+	} \
-+} while (0)
-+
- #define PIPE_CONF_CHECK_COLOR_LUT(name1, name2, bit_precision) do { \
- 	if (current_config->name1 != pipe_config->name1) { \
- 		pipe_config_mismatch(fastset, crtc, __stringify(name1), \
-@@ -13940,6 +13982,7 @@ intel_pipe_config_compare(const struct intel_crtc_state *current_config,
- 	PIPE_CONF_CHECK_INFOFRAME(spd);
- 	PIPE_CONF_CHECK_INFOFRAME(hdmi);
- 	PIPE_CONF_CHECK_INFOFRAME(drm);
-+	PIPE_CONF_CHECK_DP_VSC_SDP(vsc);
- 
- 	PIPE_CONF_CHECK_X(sync_mode_slaves_mask);
- 	PIPE_CONF_CHECK_I(master_transcoder);
--- 
-2.25.0
+> ---
+> changes in V2:
+>  Fix the mistake that definition of 'mach64MinFreq' and 'mach64MaxFreq'
+>  was removed.
+> 
+>  drivers/video/fbdev/aty/mach64_gx.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/aty/mach64_gx.c b/drivers/video/fbdev/aty/mach64_gx.c
+> index 27cb65fa2ba2..9c37e28fb78b 100644
+> --- a/drivers/video/fbdev/aty/mach64_gx.c
+> +++ b/drivers/video/fbdev/aty/mach64_gx.c
+> @@ -618,14 +618,13 @@ static int aty_var_to_pll_8398(const struct fb_info *info, u32 vclk_per,
+>  	u32 mhz100;		/* in 0.01 MHz */
+>  	u32 program_bits;
+>  	/* u32 post_divider; */
+> -	u32 mach64MinFreq, mach64MaxFreq, mach64RefFreq;
+> +	u32 mach64MinFreq, mach64MaxFreq;
+>  	u16 m, n, k = 0, save_m, save_n, twoToKth;
+>  
+>  	/* Calculate the programming word */
+>  	mhz100 = 100000000 / vclk_per;
+>  	mach64MinFreq = MIN_FREQ_2595;
+>  	mach64MaxFreq = MAX_FREQ_2595;
+> -	mach64RefFreq = REF_FREQ_2595;	/* 14.32 MHz */
+>  
+>  	save_m = 0;
+>  	save_n = 0;
+> 

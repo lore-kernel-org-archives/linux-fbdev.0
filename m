@@ -1,49 +1,31 @@
-From: "zhangxiaoxu (A)" <zhangxiaoxu5@huawei.com>
-Date: Wed, 04 Mar 2020 01:31:20 +0000
-Subject: Re: [PATCH] vgacon: Fix a UAF in vgacon_invert_region
-Message-Id: <5c63d51f-b396-f2a7-a7c2-3b8af0bb54b0@huawei.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 02 Mar 2020 15:42:09 +0000
+Subject: Re: [PATCH 2/2] video: fbdev: wm8505fb: add COMPILE_TEST support
+Message-Id: <ecf2d307-a8e4-fc9b-2a19-48585e347959@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200303032036.40560-1-zhangxiaoxu5@huawei.com>
- <20200303135940.GS13686@intel.com>
- <67073029-8477-5f5a-ed2a-bb5ad4896878@huawei.com>
- <20200303144649.GT13686@intel.com>
-In-Reply-To: <20200303144649.GT13686@intel.com>
+References: <CGME20200116145810eucas1p11937b8ef56638752cb2fe501833c63fa@eucas1p1.samsung.com>
+ <900c16b3-9306-7d17-f467-0f98bc95416a@samsung.com>
+ <20200117185903.GB24722@ravnborg.org>
+In-Reply-To: <20200117185903.GB24722@ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
-Cc: akpm@osdl.org, pmladek@suse.com, wangkefeng.wang@huawei.com, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, sergey.senozhatsky@gmail.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
 
+On 1/17/20 7:59 PM, Sam Ravnborg wrote:
+> On Thu, Jan 16, 2020 at 03:58:08PM +0100, Bartlomiej Zolnierkiewicz wrote:
+>> Add COMPILE_TEST support to wm8505fb driver for better compile
+>> testing coverage.
+>>
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-在 2020/3/3 22:46, Ville Syrjälä 写道:
-> On Tue, Mar 03, 2020 at 10:30:14PM +0800, zhangxiaoxu (A) wrote:
->>
->>
->> 在 2020/3/3 21:59, Ville Syrjälä 写道:
->>> That doesn't match how vc_screenbuf_size is computed elsewhere. Also
->>> a lot of places seem to assume that the screenbuf can be larger than
->>> vga_vram_size (eg. all the memcpy()s pick the smaller size of the
->>> two).
->> Yes, in the vga source code, we also pick the smaller size of two. But
->> in other place, eg: vc_do_resize, copy the old_origin to new_origin, we
->> not do that. It also make bad access happen. it maybe CVE-2020-8647.
->>
->> I think we should just assume the width/height maybe larger than the
->> default, not the screenbuf larger than vga_vram_size.
->>
->> If not, any useful of the larger screenbuf?
-> 
-> Maybe used for scrolling?
-The screenbuf just allocated with cols and rows, it can be save just one
-screen?
-vc_do_resize is the largest size which one screen can be shown?
+Thanks, patch queued for v5.7.
 
-If so, we can't set the screen to the resolution which more than it's
-capability?
-> 
->>
->>>
->>> And you're changing the behaviour of the code when
->>> 'width % 2 && user' is true
-> 
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

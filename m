@@ -1,133 +1,131 @@
-From: Zhang Xiaoxu <zhangxiaoxu5@huawei.com>
-Date: Wed, 04 Mar 2020 01:51:05 +0000
-Subject: [PATCH rh7.5] vgacon: Fix a UAF in vgacon_invert_region
-Message-Id: <20200304015105.33490-1-zhangxiaoxu5@huawei.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 02 Mar 2020 10:22:58 +0000
+Subject: [PATCH v2] ARM/fbdev: sa11x0: Switch to use GPIO descriptors
+Message-Id: <20200302102258.351197-1-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, zhangxiaoxu5@huawei.com, wangkefeng.wang@huawei.com, sergey.senozhatsky@gmail.com, pmladek@suse.com, akpm@osdl.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Russell King <linux@armlinux.org.uk>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org
+Cc: Linus Walleij <linus.walleij@linaro.org>, linux-arm-kernel@lists.infradead.org
 
-euler inclusion
-category: bugfix
-bugzilla: 31340
-DTS: NA
-CVE: CVE-2020-8649
+This converts the SA11x0 frame buffer driver to use
+GPIO descriptors. Get the GPIO optional and register
+a look-up table specifically for the Shannon machine.
 
----------------------------
-
-When syzkaller tests, there is a UAF:
-  BUG: KASan: use after free in vgacon_invert_region+0x9d/0x110 at addr
-    ffff880000100000
-  Read of size 2 by task syz-executor.1/16489
-  page:ffffea0000004000 count:0 mapcount:-127 mapping:          (null)
-  index:0x0
-  page flags: 0xfffff00000000()
-  page dumped because: kasan: bad access detected
-  CPU: 1 PID: 16489 Comm: syz-executor.1 Not tainted
-  Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS
-  rel-1.9.3-0-ge2fc41e-prebuilt.qemu-project.org 04/01/2014
-  Call Trace:
-    [<ffffffffb119f309>] dump_stack+0x1e/0x20
-    [<ffffffffb04af957>] kasan_report+0x577/0x950
-    [<ffffffffb04ae652>] __asan_load2+0x62/0x80
-    [<ffffffffb090f26d>] vgacon_invert_region+0x9d/0x110
-    [<ffffffffb0a39d95>] invert_screen+0xe5/0x470
-    [<ffffffffb0a21dcb>] set_selection+0x44b/0x12f0
-    [<ffffffffb0a3bfae>] tioclinux+0xee/0x490
-    [<ffffffffb0a1d114>] vt_ioctl+0xff4/0x2670
-    [<ffffffffb0a0089a>] tty_ioctl+0x46a/0x1a10
-    [<ffffffffb052db3d>] do_vfs_ioctl+0x5bd/0xc40
-    [<ffffffffb052e2f2>] SyS_ioctl+0x132/0x170
-    [<ffffffffb11c9b1b>] system_call_fastpath+0x22/0x27
-    Memory state around the buggy address:
-     ffff8800000fff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-     00 00
-     ffff8800000fff80: 00 00 00 00 00 00 00 00 00 00 00 00 00
-     00 00 00
-    >ffff880000100000: ff ff ff ff ff ff ff ff ff ff ff ff ff
-     ff ff ff
-
-It can be reproduce in the linux mainline by the program:
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <unistd.h>
-  #include <fcntl.h>
-  #include <sys/types.h>
-  #include <sys/stat.h>
-  #include <sys/ioctl.h>
-  #include <linux/vt.h>
-
-  struct tiocl_selection {
-    unsigned short xs;      /* X start */
-    unsigned short ys;      /* Y start */
-    unsigned short xe;      /* X end */
-    unsigned short ye;      /* Y end */
-    unsigned short sel_mode; /* selection mode */
-  };
-
-  #define TIOCL_SETSEL    2
-  struct tiocl {
-    unsigned char type;
-    unsigned char pad;
-    struct tiocl_selection sel;
-  };
-
-  int main()
-  {
-    int fd = 0;
-    const char *dev = "/dev/char/4:1";
-
-    struct vt_consize v = {0};
-    struct tiocl tioc = {0};
-
-    fd = open(dev, O_RDWR, 0);
-
-    v.v_rows = 3346;
-    ioctl(fd, VT_RESIZEX, &v);
-
-    tioc.type = TIOCL_SETSEL;
-    ioctl(fd, TIOCLINUX, &tioc);
-
-    return 0;
-  }
-
-When resize the screen, update the 'vc->vc_size_row' to the
-new_row_size,
-but when 'set_origin' in 'vgacon_set_origin', vgacon use 'vga_vram_base'
-for 'vc_origin' and 'vc_visible_origin', not 'vc_screenbuf'. It maybe
-smaller than 'vc_screenbuf'. When TIOCLINUX, use the new_row_size to
-calc
-the offset, it maybe larger than the vga_vram_base in vgacon driver,
-then
-bad access.
-
-So, If the screen size larger than vga_vram, resize screen should be
-failed. This alse fix CVE-2020-8649
-
-Fixes: 0aec4867dca14 ("[PATCH] SVGATextMode fix")
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Zhang Xiaoxu <zhangxiaoxu5@huawei.com>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/video/console/vgacon.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ChangeLog v1->v2:
+- Rename the GPIO line to "shannon-lcden" as this GPIO
+  line has semantics that are particular to the Shannon
+  platform.
+---
+ arch/arm/mach-sa1100/shannon.c |  9 +++++++++
+ drivers/video/fbdev/sa1100fb.c | 20 +++++++++-----------
+ drivers/video/fbdev/sa1100fb.h |  3 +++
+ 3 files changed, 21 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index e0de08df841b5..441e69c7e5182 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -1270,7 +1270,10 @@ static int vgacon_font_get(struct vc_data *c, struct console_font *font)
- static int vgacon_resize(struct vc_data *c, unsigned int width,
- 			 unsigned int height, unsigned int user)
- {
--	if (width % 2 || width > screen_info.orig_video_cols ||
-+	if (width % 2 || width * height > vga_vram_size)
-+		return -EINVAL;
+diff --git a/arch/arm/mach-sa1100/shannon.c b/arch/arm/mach-sa1100/shannon.c
+index 5bc82e2671c6..351f891b4842 100644
+--- a/arch/arm/mach-sa1100/shannon.c
++++ b/arch/arm/mach-sa1100/shannon.c
+@@ -104,6 +104,14 @@ static struct fixed_voltage_config shannon_cf_vcc_pdata __initdata = {
+ 	.enabled_at_boot = 1,
+ };
+ 
++static struct gpiod_lookup_table shannon_display_gpio_table = {
++	.dev_id = "sa11x0-fb",
++	.table = {
++		GPIO_LOOKUP("gpio", 22, "shannon-lcden", GPIO_ACTIVE_HIGH),
++		{ },
++	},
++};
 +
-+	if (width > screen_info.orig_video_cols ||
- 	    height > (screen_info.orig_video_lines * vga_default_font_height)/
- 	    c->vc_font.height)
- 		/* let svgatextmode tinker with video timings and
+ static void __init shannon_init(void)
+ {
+ 	sa11x0_register_fixed_regulator(0, &shannon_cf_vcc_pdata,
+@@ -113,6 +121,7 @@ static void __init shannon_init(void)
+ 	sa11x0_register_pcmcia(0, &shannon_pcmcia0_gpio_table);
+ 	sa11x0_register_pcmcia(1, &shannon_pcmcia1_gpio_table);
+ 	sa11x0_ppc_configure_mcp();
++	gpiod_add_lookup_table(&shannon_display_gpio_table);
+ 	sa11x0_register_lcd(&shannon_lcd_info);
+ 	sa11x0_register_mtd(&shannon_flash_data, &shannon_flash_resource, 1);
+ 	sa11x0_register_mcp(&shannon_mcp_data);
+diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
+index 5bb653db0cec..065cdbfa7aa4 100644
+--- a/drivers/video/fbdev/sa1100fb.c
++++ b/drivers/video/fbdev/sa1100fb.c
+@@ -173,7 +173,7 @@
+ #include <linux/init.h>
+ #include <linux/ioport.h>
+ #include <linux/cpufreq.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/platform_device.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/mutex.h>
+@@ -799,8 +799,8 @@ static void sa1100fb_enable_controller(struct sa1100fb_info *fbi)
+ 	writel_relaxed(fbi->dbar2, fbi->base + DBAR2);
+ 	writel_relaxed(fbi->reg_lccr0 | LCCR0_LEN, fbi->base + LCCR0);
+ 
+-	if (machine_is_shannon())
+-		gpio_set_value(SHANNON_GPIO_DISP_EN, 1);
++	if (fbi->shannon_lcden)
++		gpiod_set_value(fbi->shannon_lcden, 1);
+ 
+ 	dev_dbg(fbi->dev, "DBAR1: 0x%08x\n", readl_relaxed(fbi->base + DBAR1));
+ 	dev_dbg(fbi->dev, "DBAR2: 0x%08x\n", readl_relaxed(fbi->base + DBAR2));
+@@ -817,8 +817,8 @@ static void sa1100fb_disable_controller(struct sa1100fb_info *fbi)
+ 
+ 	dev_dbg(fbi->dev, "Disabling LCD controller\n");
+ 
+-	if (machine_is_shannon())
+-		gpio_set_value(SHANNON_GPIO_DISP_EN, 0);
++	if (fbi->shannon_lcden)
++		gpiod_set_value(fbi->shannon_lcden, 0);
+ 
+ 	set_current_state(TASK_UNINTERRUPTIBLE);
+ 	add_wait_queue(&fbi->ctrlr_wait, &wait);
+@@ -1173,12 +1173,10 @@ static int sa1100fb_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	if (machine_is_shannon()) {
+-		ret = devm_gpio_request_one(&pdev->dev, SHANNON_GPIO_DISP_EN,
+-			GPIOF_OUT_INIT_LOW, "display enable");
+-		if (ret)
+-			return ret;
+-	}
++	fbi->shannon_lcden = gpiod_get_optional(&pdev->dev, "shannon-lcden",
++						GPIOD_OUT_LOW);
++	if (IS_ERR(fbi->shannon_lcden))
++		return PTR_ERR(fbi->shannon_lcden);
+ 
+ 	/* Initialize video memory */
+ 	ret = sa1100fb_map_video_memory(fbi);
+diff --git a/drivers/video/fbdev/sa1100fb.h b/drivers/video/fbdev/sa1100fb.h
+index d0aa33b0b88a..b4363444fa5d 100644
+--- a/drivers/video/fbdev/sa1100fb.h
++++ b/drivers/video/fbdev/sa1100fb.h
+@@ -10,6 +10,8 @@
+  * for more details.
+  */
+ 
++struct gpio_desc;
++
+ #define LCCR0           0x0000          /* LCD Control Reg. 0 */
+ #define LCSR            0x0004          /* LCD Status Reg. */
+ #define DBAR1           0x0010          /* LCD DMA Base Address Reg. channel 1 */
+@@ -33,6 +35,7 @@ struct sa1100fb_info {
+ 	struct device		*dev;
+ 	const struct sa1100fb_rgb *rgb[NR_RGB];
+ 	void __iomem		*base;
++	struct gpio_desc	*shannon_lcden;
+ 
+ 	/*
+ 	 * These are the addresses we mapped
 -- 
-2.17.2
+2.24.1

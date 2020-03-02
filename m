@@ -1,23 +1,59 @@
-From: Wei Liu <wei.liu@kernel.org>
-Date: Wed, 11 Mar 2020 11:00:25 +0000
-Subject: Re: [PATCH -next 019/491] Hyper-V CORE AND DRIVERS: Use fallthrough;
-Message-Id: <20200311110025.lycn35o7zvvmohvu@debian>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 02 Mar 2020 15:42:49 +0000
+Subject: Re: [PATCH v1] fbdev: simplefb: Platform data shan't include kernel.h
+Message-Id: <8fe254ee-9dcc-d9d2-dbf5-703edd9da23b@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1583896344.git.joe@perches.com>
- <84677022b8ec4ad14bddab57d871dcbfc0b4a1bf.1583896348.git.joe@perches.com>
-In-Reply-To: <84677022b8ec4ad14bddab57d871dcbfc0b4a1bf.1583896348.git.joe@perches.com>
+References: <20200204162114.28937-1-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20200204162114.28937-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: Wei Liu <wei.liu@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Haiyang Zhang <haiyangz@microsoft.com>, linux-hyperv@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "K. Y. Srinivasan" <kys@microsoft.com>
+To: linux-fbdev@vger.kernel.org
 
-On Tue, Mar 10, 2020 at 09:51:33PM -0700, Joe Perches wrote:
-> Convert the various uses of fallthrough comments to fallthrough;
-> 
-> Done via script
-> Link: https://lore.kernel.org/lkml/b56602fcf79f849e733e7b521bb0e17895d390fa.1582230379.git.joe.com/
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
 
-Reviewed-by: Wei Liu <wei.liu@kernel.org>
+On 2/14/20 7:08 PM, Andy Shevchenko wrote:
+> On Fri, Feb 14, 2020 at 04:21:57PM +0100, Hans de Goede wrote:
+>> On 2/14/20 3:25 PM, Andy Shevchenko wrote:
+>>> On Tue, Feb 04, 2020 at 06:21:14PM +0200, Andy Shevchenko wrote:
+>>>> Replace with appropriate types.h.
+>>>
+>>> Hans, any comment on this?
+>>
+>> Not really, I've not touched that code in a while.
+>>
+>> But I see I'm still listed as the maintainer, the change looks sensible
+>> to me, so:
+>>
+>> Acked-by: Hans de Goede <hdegoede@redhat.com>
+> 
+> Thanks!
+> Seems get_maintainer does not list Bart, so, Cc him here.
+> 
+>>
+>>>> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+
+Patch queued for v5.7, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+>>>> ---
+>>>>   include/linux/platform_data/simplefb.h | 2 +-
+>>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/include/linux/platform_data/simplefb.h b/include/linux/platform_data/simplefb.h
+>>>> index 4f733a411d18..ca8337695c2a 100644
+>>>> --- a/include/linux/platform_data/simplefb.h
+>>>> +++ b/include/linux/platform_data/simplefb.h
+>>>> @@ -10,7 +10,7 @@
+>>>>   #include <drm/drm_fourcc.h>
+>>>>   #include <linux/fb.h>
+>>>> -#include <linux/kernel.h>
+>>>> +#include <linux/types.h>
+>>>>   /* format array, use it to initialize a "struct simplefb_format" array */
+>>>>   #define SIMPLEFB_FORMATS \
+>>>> -- 
+>>>> 2.24.1

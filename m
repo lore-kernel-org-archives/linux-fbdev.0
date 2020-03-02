@@ -1,75 +1,33 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Tue, 24 Mar 2020 14:43:07 +0000
-Subject: Re: [PATCH v11 10/12] backlight: pwm_bl: Use 64-bit division function
-Message-Id: <20200324144307.kxhqzyjj4evrouqa@pengutronix.de>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 02 Mar 2020 15:42:02 +0000
+Subject: Re: [PATCH 1/2] video: fbdev: wm8505fb: fix sparse warnings about using incorrect types
+Message-Id: <10a975e2-cd2a-24c1-b28d-12ea0808a0dd@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1584667964.git.gurus@codeaurora.org>
- <17fc1dcf8b9b392d1e37dc7e3e67409e3c502840.1584667964.git.gurus@codeaurora.org>
- <20200320133123.GD5477@dell> <20200324110710.GL5477@dell>
- <20200324125735.2mjuvbxt5bpon2ft@pengutronix.de>
- <20200324130410.dwlg767ku6kwequv@holly.lan>
- <20200324142441.GD442973@dell>
-In-Reply-To: <20200324142441.GD442973@dell>
+References: <CGME20200116145653eucas1p2222fb48dd6fe1023a4152e687ec577d5@eucas1p2.samsung.com>
+ <567cba81-5fec-4d91-f711-c0bdbfe5b513@samsung.com>
+ <20200117185851.GA24722@ravnborg.org>
+In-Reply-To: <20200117185851.GA24722@ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Guru Das Srinagesh <gurus@codeaurora.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-pwm@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, linux-fbdev@vger.kernel.org, Subbaraman Narayanamurthy <subbaram@codeaurora.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Tue, Mar 24, 2020 at 02:24:41PM +0000, Lee Jones wrote:
-> On Tue, 24 Mar 2020, Daniel Thompson wrote:
->=20
-> > On Tue, Mar 24, 2020 at 01:57:35PM +0100, Uwe Kleine-K=F6nig wrote:
-> > > Hello Lee,
-> > >=20
-> > > On Tue, Mar 24, 2020 at 11:07:10AM +0000, Lee Jones wrote:
-> > > > On Fri, 20 Mar 2020, Lee Jones wrote:
-> > > >=20
-> > > > > On Thu, 19 Mar 2020, Guru Das Srinagesh wrote:
-> > > > >=20
-> > > > > > Since the PWM framework is switching struct pwm_state.period's =
-datatype
-> > > > > > to u64, prepare for this transition by using div_u64 to handle =
-a 64-bit
-> > > > > > dividend instead of a straight division operation.
-> > > > > >=20
-> > > > > > Cc: Lee Jones <lee.jones@linaro.org>
-> > > > > > Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> > > > > > Cc: Jingoo Han <jingoohan1@gmail.com>
-> > > > > > Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > > > > > Cc: linux-pwm@vger.kernel.org
-> > > > > > Cc: dri-devel@lists.freedesktop.org
-> > > > > > Cc: linux-fbdev@vger.kernel.org
-> > > > > >=20
-> > > > > > Signed-off-by: Guru Das Srinagesh <gurus@codeaurora.org>
-> > > > > > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> > > > > > ---
-> > > > > >  drivers/video/backlight/pwm_bl.c | 3 ++-
-> > > > > >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > > > >=20
-> > > > > Can this patch be taken on its own?
-> > > >=20
-> > > > Hellooooo ...
-> > >=20
-> > > Conceptually it can. As the last patch depends on this one (and the
-> > > others) some coordination might be beneficial. But that's up to Thier=
-ry
-> > > to decide how (and if) he want this series to be applied.
-> >=20
-> > ... and on the backlight side we definitely need to know about the "if"
-> > otherwise there's no point in taking it.
->=20
-> Right.
->=20
-> I'm happy to wait for Thierry.  Although this isn't the only set he's
-> currently blocking.  Is he okay?  On holiday perhaps?
 
-The newest commit by him in next is from last week. My guess is he
-just didn't come around yet to care for the PWM duties.
+On 1/17/20 7:58 PM, Sam Ravnborg wrote:
+> On Thu, Jan 16, 2020 at 03:56:50PM +0100, Bartlomiej Zolnierkiewicz wrote:
+>> Use ->screen_buffer instead of ->screen_base to fix sparse warnings.
+>>
+>> [ Please see commit 17a7b0b4d974 ("fb.h: Provide alternate screen_base
+>>   pointer") for details. ]
+>>
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-Best regards
-Uwe
+Thanks, patch queued for v5.7.
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

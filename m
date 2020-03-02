@@ -1,84 +1,63 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 27 Mar 2020 07:29:03 +0000
-Subject: [PATCH v8 00/14] In order to readout DP SDPs, refactors the handling of DP SDPs
-Message-Id: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 02 Mar 2020 15:42:20 +0000
+Subject: Re: [PATCH 2/4] video: fbdev: remove set but not used variable 'vSyncPol'
+Message-Id: <b86b787d-c368-9e1f-d302-1ec0a7af34d1@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200119121730.10701-1-yukuai3@huawei.com>
+ <CGME20200119121831eucas1p1fd9ac9ab84b96d75545e63150c8f8e02@eucas1p1.samsung.com>
+ <20200119121730.10701-3-yukuai3@huawei.com>
+In-Reply-To: <20200119121730.10701-3-yukuai3@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: jani.nikula@intel.com, linux-fbdev@vger.kernel.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: yu kuai <yukuai3@huawei.com>
+Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhengbin13@huawei.com
 
-In order to readout DP SDPs (Secondary Data Packet: DP HDR Metadata
-Infoframe SDP, DP VSC SDP), it refactors handling DP SDPs codes.
-It adds new compute routines for DP HDR Metadata Infoframe SDP
-and DP VSC SDP. 
-And new writing routines of DP SDPs (Secondary Data Packet) that uses
-computed configs.
-New reading routines of DP SDPs are added for readout.
-It adds a logging function for DP VSC SDP.
-When receiving video it is very useful to be able to log DP VSC SDP.
-This greatly simplifies debugging.
-In order to use a common VSC SDP Colorimetry calculating code on PSR,
-it uses a new psr vsc sdp compute routine.
 
-v2: Minor style fix
-v3: 
-  - Add a new drm data structure for DP VSC SDP
-  - Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-  - Move logging functions to drm core [Jani N]
-    And use drm core's DP VSC SDP logging function
-  - Explicitly disable unused DIPs (AVI, GCP, VS, SPD, DRM. They will be
-    used for HDMI), when intel_dp_set_infoframes() function will be called.
-v4:
-  - Use struct drm_device logging macros
-  - Rebased
-v5:
-  - Use intel_de_*() functions for register access
-  - Add warning where a bpc is 6 and a pixel format is RGB.
-  - Addressed review comments from Uma
-    Add kernel docs for added data structures
-    Rename enum dp_colorspace to dp_pixelformat
-    Polish commit message and comments
-    Combine the if checks of sdp.HB2 and sdp.HB3
-    Add 6bpc to packining and unpacking of VSC SDP
-v6: Fix enabled infoframe states of lspcon
-v7: Fix the wrong check of combination bpc 6 and RGB pixelformat
-v8:
-  - Rebased
-  - Addressed review comments from Laurent Pinchart
-    Rename hdmi_drm_infoframe_unpack_only() to cta_drm_infoframe_unpack_databytes()
-    Add clear comments to cta_drm_infoframe_unpack_databytes()
+On 1/19/20 1:17 PM, yu kuai wrote:
+> Fixes gcc '-Wunused-but-set-variable' warning:
+> 
+> drivers/video/fbdev/aty/radeon_base.c: In function
+> ‘radeonfb_set_par’:
+> drivers/video/fbdev/aty/radeon_base.c:1653:38: warning: variable
+> ‘vSyncPol’ set but not used [-Wunused-but-set-variable]
+> 
+> It is never used, and so can be removed.
+> 
+> Signed-off-by: yu kuai <yukuai3@huawei.com>
 
-Gwan-gyeong Mun (14):
-  video/hdmi: Add Unpack function for CTA-861-G DRM infoframe DataBytes
-  drm/i915/dp: Read out DP SDPs
-  drm: Add logging function for DP VSC SDP
-  drm/i915: Include HDMI DRM infoframe in the crtc state dump
-  drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
-  drm/i915: Include DP VSC SDP in the crtc state dump
-  drm/i915: Program DP SDPs with computed configs
-  drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
-  drm/i915: Add state readout for DP VSC SDP
-  drm/i915: Fix enabled infoframe states of lspcon
-  drm/i915: Program DP SDPs on pipe updates
-  drm/i915: Stop sending DP SDPs on ddi disable
-  drm/i915/dp: Add compute routine for DP PSR VSC SDP
-  drm/i915/psr: Use new DP VSC SDP compute routine on PSR
+Patch queued for v5.7, thanks.
+ 
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
- drivers/gpu/drm/drm_dp_helper.c              | 174 ++++++++
- drivers/gpu/drm/i915/display/intel_ddi.c     |  19 +-
- drivers/gpu/drm/i915/display/intel_display.c |  62 +++
- drivers/gpu/drm/i915/display/intel_dp.c      | 395 ++++++++++---------
- drivers/gpu/drm/i915/display/intel_dp.h      |  15 +-
- drivers/gpu/drm/i915/display/intel_lspcon.c  |   2 +-
- drivers/gpu/drm/i915/display/intel_psr.c     |  54 +--
- drivers/gpu/drm/i915/display/intel_psr.h     |   6 +-
- drivers/gpu/drm/i915/i915_drv.h              |   1 +
- drivers/video/hdmi.c                         |  74 ++--
- include/drm/drm_dp_helper.h                  |   3 +
- include/linux/hdmi.h                         |   2 +
- 12 files changed, 544 insertions(+), 263 deletions(-)
-
--- 
-2.25.0
+> ---
+>  drivers/video/fbdev/aty/radeon_base.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+> index d2e68ec580c2..0666f848bf70 100644
+> --- a/drivers/video/fbdev/aty/radeon_base.c
+> +++ b/drivers/video/fbdev/aty/radeon_base.c
+> @@ -1650,7 +1650,7 @@ static int radeonfb_set_par(struct fb_info *info)
+>  	struct fb_var_screeninfo *mode = &info->var;
+>  	struct radeon_regs *newmode;
+>  	int hTotal, vTotal, hSyncStart, hSyncEnd,
+> -	    vSyncStart, vSyncEnd, vSyncPol, cSync;
+> +	    vSyncStart, vSyncEnd, cSync;
+>  	u8 hsync_adj_tab[] = {0, 0x12, 9, 9, 6, 5};
+>  	u8 hsync_fudge_fp[] = {2, 2, 0, 0, 5, 5};
+>  	u32 sync, h_sync_pol, v_sync_pol, dotClock, pixClock;
+> @@ -1730,8 +1730,6 @@ static int radeonfb_set_par(struct fb_info *info)
+>  	else if (vsync_wid > 0x1f)	/* max */
+>  		vsync_wid = 0x1f;
+>  
+> -	vSyncPol = mode->sync & FB_SYNC_VERT_HIGH_ACT ? 0 : 1;
+> -
+>  	cSync = mode->sync & FB_SYNC_COMP_HIGH_ACT ? (1 << 4) : 0;
+>  
+>  	format = radeon_get_dstbpp(depth);
+> 

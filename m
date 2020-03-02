@@ -1,69 +1,30 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Tue, 24 Mar 2020 20:45:21 +0000
-Subject: Re: [PATCH v2 1/6] video: fbdev: controlfb: fix sparse warning about using incorrect type
-Message-Id: <20200324204521.GL2363188@phenom.ffwll.local>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 02 Mar 2020 15:41:58 +0000
+Subject: Re: [PATCH 2/2] video: fbdev: w100fb: add COMPILE_TEST support
+Message-Id: <cb3cf021-30a9-7255-5e33-1d4cf0265a1d@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200324134508.25120-1-b.zolnierkie@samsung.com>
- <CGME20200324134518eucas1p16e1a39c14dfd101f5a6d86218a9e19af@eucas1p1.samsung.com>
- <20200324134508.25120-2-b.zolnierkie@samsung.com>
-In-Reply-To: <20200324134508.25120-2-b.zolnierkie@samsung.com>
+References: <CGME20200116145359eucas1p1350bf2b827aa7ffa3e6767739e9ba7ad@eucas1p1.samsung.com>
+ <a929db5e-d373-7b09-ae2b-efec227f7e85@samsung.com>
+ <20200117185755.GC24508@ravnborg.org>
+In-Reply-To: <20200117185755.GC24508@ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Andrzej Hajda <a.hajda@samsung.com>, linux-fbdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Tue, Mar 24, 2020 at 02:45:03PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> Use in_le32() instead of le32_to_cpup() to fix sparse warning about
-> improper type of the argument.
-> 
-> Also add missing inline keyword to control_par_to_var() definition
-> (to match function prototype).
-> 
+
+On 1/17/20 7:57 PM, Sam Ravnborg wrote:
+> On Thu, Jan 16, 2020 at 03:53:58PM +0100, Bartlomiej Zolnierkiewicz wrote:
+>> Add COMPILE_TEST support to w100fb driver for better compile
+>> testing coverage.
+>>
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 > Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
->  drivers/video/fbdev/controlfb.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
-> index 38b61cdb5ca4..9625792f4413 100644
-> --- a/drivers/video/fbdev/controlfb.c
-> +++ b/drivers/video/fbdev/controlfb.c
-> @@ -313,7 +313,7 @@ static int controlfb_blank(int blank_mode, struct fb_info *info)
->  		container_of(info, struct fb_info_control, info);
->  	unsigned ctrl;
->  
-> -	ctrl = le32_to_cpup(CNTRL_REG(p,ctrl));
-> +	ctrl = in_le32(CNTRL_REG(p, ctrl));
->  	if (blank_mode > 0)
->  		switch (blank_mode) {
->  		case FB_BLANK_VSYNC_SUSPEND:
-> @@ -952,7 +952,8 @@ static int control_var_to_par(struct fb_var_screeninfo *var,
->   * Convert hardware data in par to an fb_var_screeninfo
->   */
->  
-> -static void control_par_to_var(struct fb_par_control *par, struct fb_var_screeninfo *var)
-> +static inline void control_par_to_var(struct fb_par_control *par,
+Thanks, patch queued for v5.7.
 
-Just quick drive-by bikeshed, feel free to ignore: static inline within a
-.c file imo doesn't make sense anymore, compilers are smart enough
-nowadays. I'd just drop this.
--Daniel
-
-> +	struct fb_var_screeninfo *var)
->  {
->  	struct control_regints *rv;
->  	
-> -- 
-> 2.24.1
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
-
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

@@ -1,37 +1,22 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 27 Mar 2020 07:29:14 +0000
-Subject: [PATCH v8 11/14] drm/i915: Program DP SDPs on pipe updates
-Message-Id: <20200327072917.3676391-12-gwan-gyeong.mun@intel.com>
+From: DR CHALLY NOAH <mayorabrahamedge404@gmail.com>
+Date: Tue, 03 Mar 2020 18:09:00 +0000
+Subject: Hello Dear
+Message-Id: <CALqVJWdFx_aWTT4kkN0eD5b+-M5aPDZmP2kebmH9eN3yv-cVBg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: jani.nikula@intel.com, linux-fbdev@vger.kernel.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org
 
-Call intel_dp_set_infoframes() function on pipe updates to make sure
-that we send VSC SDP and HDR Metadata Infoframe SDP (when applicable)
-on fastsets.
-
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
----
- drivers/gpu/drm/i915/display/intel_ddi.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index f58a539d51c2..57def3ae53b4 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -3711,6 +3711,7 @@ static void intel_ddi_update_pipe_dp(struct intel_encoder *encoder,
- 	intel_ddi_set_dp_msa(crtc_state, conn_state);
- 
- 	intel_psr_update(intel_dp, crtc_state);
-+	intel_dp_set_infoframes(encoder, true, crtc_state, conn_state);
- 	intel_edp_drrs_enable(intel_dp, crtc_state);
- 
- 	intel_panel_update_backlight(encoder, crtc_state, conn_state);
--- 
-2.25.0
+Hello Dear,
+What Have Kept You Waiting To Claim Your $600,000.00 USD Compensation Award?
+This said fund was issued out by the UNITED NATIONS To compensate
+you.Please If You Have Not Claim Your Fund (Award),Kindly contact me
+at   DR.CHALLYNOAH@GMAIL.COM   for further details on how to proceed your
+fund (award)release to you or better still reply back Immediately You
+Receive This Information For An Urgent Confirmation And Release Of Your
+Fund To You Without Delays, as your email was listed among those to be
+compensated this year.Congratulations..
+Best Regards,
+Dr Chally Noah.
+Minister Of Finance On Foreign Remittance:

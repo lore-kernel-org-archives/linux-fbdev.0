@@ -1,79 +1,123 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Tue, 31 Mar 2020 08:01:23 +0000
-Subject: Re: [PATCH v2] fbcon: fix null-ptr-deref in fbcon_switch
-Message-Id: <20200331080123.GI2363188@phenom.ffwll.local>
+From: Zhang Xiaoxu <zhangxiaoxu5@huawei.com>
+Date: Wed, 04 Mar 2020 02:02:28 +0000
+Subject: [v2] vgacon: Fix a UAF in vgacon_invert_region
+Message-Id: <20200304020228.44484-1-zhangxiaoxu5@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200329085647.25133-1-hqjagain@gmail.com>
- <20200330191619.GF7594@ravnborg.org>
-In-Reply-To: <20200330191619.GF7594@ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: daniel.thompson@linaro.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, ghalat@redhat.com, Qiujun Huang <hqjagain@gmail.com>
+To: b.zolnierkie@samsung.com, zhangxiaoxu5@huawei.com, wangkefeng.wang@huawei.com, sergey.senozhatsky@gmail.com, pmladek@suse.com, akpm@osdl.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Mon, Mar 30, 2020 at 09:16:19PM +0200, Sam Ravnborg wrote:
-> Hi Qiujun
-> 
-> On Sun, Mar 29, 2020 at 04:56:47PM +0800, Qiujun Huang wrote:
-> > Set logo_shown to FBCON_LOGO_CANSHOW when the vc was deallocated.
-> > 
-> > syzkaller report: https://lkml.org/lkml/2020/3/27/403
-> > general protection fault, probably for non-canonical address
-> > 0xdffffc000000006c: 0000 [#1] SMP KASAN
-> > KASAN: null-ptr-deref in range [0x0000000000000360-0x0000000000000367]
-> > RIP: 0010:fbcon_switch+0x28f/0x1740
-> > drivers/video/fbdev/core/fbcon.c:2260
-> > 
-> > Call Trace:
-> > redraw_screen+0x2a8/0x770 drivers/tty/vt/vt.c:1008
-> > vc_do_resize+0xfe7/0x1360 drivers/tty/vt/vt.c:1295
-> > fbcon_init+0x1221/0x1ab0 drivers/video/fbdev/core/fbcon.c:1219
-> > visual_init+0x305/0x5c0 drivers/tty/vt/vt.c:1062
-> > do_bind_con_driver+0x536/0x890 drivers/tty/vt/vt.c:3542
-> > do_take_over_console+0x453/0x5b0 drivers/tty/vt/vt.c:4122
-> > do_fbcon_takeover+0x10b/0x210 drivers/video/fbdev/core/fbcon.c:588
-> > fbcon_fb_registered+0x26b/0x340 drivers/video/fbdev/core/fbcon.c:3259
-> > do_register_framebuffer drivers/video/fbdev/core/fbmem.c:1664 [inline]
-> > register_framebuffer+0x56e/0x980 drivers/video/fbdev/core/fbmem.c:1832
-> > dlfb_usb_probe.cold+0x1743/0x1ba3 drivers/video/fbdev/udlfb.c:1735
-> > usb_probe_interface+0x310/0x800 drivers/usb/core/driver.c:374
-> > 
-> > accessing vc_cons[logo_shown].d->vc_top causes the bug.
-> > 
-> > Reported-by: syzbot+732528bae351682f1f27@syzkaller.appspotmail.com
-> > Signed-off-by: Qiujun Huang <hqjagain@gmail.com>
-> > ---
-> >  drivers/video/fbdev/core/fbcon.c | 3 +++
-> >  1 file changed, 3 insertions(+)
-> > 
-> > diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> > index bb6ae995c2e5..5eb3fc90f9f6 100644
-> > --- a/drivers/video/fbdev/core/fbcon.c
-> > +++ b/drivers/video/fbdev/core/fbcon.c
-> > @@ -1283,6 +1283,9 @@ static void fbcon_deinit(struct vc_data *vc)
-> >  	if (!con_is_bound(&fb_con))
-> >  		fbcon_exit();
-> >  
-> > +	if (vc->vc_num = logo_shown)
-> > +		logo_shown = FBCON_LOGO_CANSHOW;
-> > +
-> >  	return;
-> >  }
-> 
-> Looks much better than the previous version.
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> 
-> I expect Bartlomiej to review/apply.
+When syzkaller tests, there is a UAF:
+  BUG: KASan: use after free in vgacon_invert_region+0x9d/0x110 at addr
+    ffff880000100000
+  Read of size 2 by task syz-executor.1/16489
+  page:ffffea0000004000 count:0 mapcount:-127 mapping:          (null)
+  index:0x0
+  page flags: 0xfffff00000000()
+  page dumped because: kasan: bad access detected
+  CPU: 1 PID: 16489 Comm: syz-executor.1 Not tainted
+  Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS
+  rel-1.9.3-0-ge2fc41e-prebuilt.qemu-project.org 04/01/2014
+  Call Trace:
+    [<ffffffffb119f309>] dump_stack+0x1e/0x20
+    [<ffffffffb04af957>] kasan_report+0x577/0x950
+    [<ffffffffb04ae652>] __asan_load2+0x62/0x80
+    [<ffffffffb090f26d>] vgacon_invert_region+0x9d/0x110
+    [<ffffffffb0a39d95>] invert_screen+0xe5/0x470
+    [<ffffffffb0a21dcb>] set_selection+0x44b/0x12f0
+    [<ffffffffb0a3bfae>] tioclinux+0xee/0x490
+    [<ffffffffb0a1d114>] vt_ioctl+0xff4/0x2670
+    [<ffffffffb0a0089a>] tty_ioctl+0x46a/0x1a10
+    [<ffffffffb052db3d>] do_vfs_ioctl+0x5bd/0xc40
+    [<ffffffffb052e2f2>] SyS_ioctl+0x132/0x170
+    [<ffffffffb11c9b1b>] system_call_fastpath+0x22/0x27
+    Memory state around the buggy address:
+     ffff8800000fff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+     00 00
+     ffff8800000fff80: 00 00 00 00 00 00 00 00 00 00 00 00 00
+     00 00 00
+    >ffff880000100000: ff ff ff ff ff ff ff ff ff ff ff ff ff
+     ff ff ff
 
-Especially for bugfixes I think better to push quicker than wait for
-others to ... the point with drm-misc is real group maintainership and
-benefitting from the flexibility, not reflecting the same strict hierarchy
-but in a flat tree to make it look like it doesn't exist :-)
+It can be reproduce in the linux mainline by the program:
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <unistd.h>
+  #include <fcntl.h>
+  #include <sys/types.h>
+  #include <sys/stat.h>
+  #include <sys/ioctl.h>
+  #include <linux/vt.h>
 
-Applied to drm-misc-next-fixes with a cc: stable.
--Daniel
+  struct tiocl_selection {
+    unsigned short xs;      /* X start */
+    unsigned short ys;      /* Y start */
+    unsigned short xe;      /* X end */
+    unsigned short ye;      /* Y end */
+    unsigned short sel_mode; /* selection mode */
+  };
+
+  #define TIOCL_SETSEL    2
+  struct tiocl {
+    unsigned char type;
+    unsigned char pad;
+    struct tiocl_selection sel;
+  };
+
+  int main()
+  {
+    int fd = 0;
+    const char *dev = "/dev/char/4:1";
+
+    struct vt_consize v = {0};
+    struct tiocl tioc = {0};
+
+    fd = open(dev, O_RDWR, 0);
+
+    v.v_rows = 3346;
+    ioctl(fd, VT_RESIZEX, &v);
+
+    tioc.type = TIOCL_SETSEL;
+    ioctl(fd, TIOCLINUX, &tioc);
+
+    return 0;
+  }
+
+When resize the screen, update the 'vc->vc_size_row' to the new_row_size,
+but when 'set_origin' in 'vgacon_set_origin', vgacon use 'vga_vram_base'
+for 'vc_origin' and 'vc_visible_origin', not 'vc_screenbuf'. It maybe
+smaller than 'vc_screenbuf'. When TIOCLINUX, use the new_row_size to calc
+the offset, it maybe larger than the vga_vram_size in vgacon driver, then
+bad access.
+Also, if set an larger screenbuf firstly, then set an more larger
+screenbuf, when copy old_origin to new_origin, a bad access may happen.
+
+So, If the screen size larger than vga_vram, resize screen should be
+failed. This alse fix CVE-2020-8649 and CVE-2020-8647.
+
+Fixes: 0aec4867dca14 ("[PATCH] SVGATextMode fix")
+Reference: CVE-2020-8647 and CVE-2020-8649
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Zhang Xiaoxu <zhangxiaoxu5@huawei.com>
+---
+ drivers/video/console/vgacon.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index de7b8382aba9..3188ce162f8b 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -1316,6 +1316,9 @@ static int vgacon_font_get(struct vc_data *c, struct console_font *font)
+ static int vgacon_resize(struct vc_data *c, unsigned int width,
+ 			 unsigned int height, unsigned int user)
+ {
++	if ((width > 1) * height > vga_vram_size)
++		return -EINVAL;
++
+ 	if (width % 2 || width > screen_info.orig_video_cols ||
+ 	    height > (screen_info.orig_video_lines * vga_default_font_height)/
+ 	    c->vc_font.height)
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.17.2

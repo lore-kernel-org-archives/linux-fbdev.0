@@ -1,44 +1,64 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 20 Mar 2020 13:42:56 +0000
-Subject: Re: fbdev: fix -Wextra build warnings
-Message-Id: <27499b12-9e21-a799-ca9b-0852d1c0de0e@samsung.com>
+From: Guru Das Srinagesh <gurus@codeaurora.org>
+Date: Mon, 09 Mar 2020 19:35:15 +0000
+Subject: [PATCH v7 12/13] backlight: pwm_bl: Use 64-bit division macros for period and duty cycle
+Message-Id: <bf6d8f6190d266f8992bd5451b12c9f3962fd18e.1583782035.git.gurus@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200315041009eucas1p14e087e86c18ceafe1644589a67de9499@eucas1p1.samsung.com>
- <20200315041002.24473-1-rdunlap@infradead.org>
-In-Reply-To: <20200315041002.24473-1-rdunlap@infradead.org>
+References: <cover.1583782035.git.gurus@codeaurora.org>
+In-Reply-To: <cover.1583782035.git.gurus@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-pwm@vger.kernel.org
+Cc: Guru Das Srinagesh <gurus@codeaurora.org>, Daniel Thompson <daniel.thompson@linaro.org>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, linux-fbdev@vger.kernel.org, Subbaraman Narayanamurthy <subbaram@codeaurora.org>, Lee Jones <lee.jones@linaro.org>
 
+Because period and duty cycle are defined in the PWM framework structs
+as ints with units of nanoseconds, the maximum time duration that can be
+set is limited to ~2.147 seconds. Redefining them as u64 values will
+enable larger time durations to be set.
 
-On 3/15/20 5:09 AM, Randy Dunlap wrote:
-> This patch series fixes warnings in fbdev that are found when
-> -Wextra is used. In fixing these, there were a few other build
-> errors discovered (mostly caused by bitrot) and fixed.
-> 
-> [PATCH 1/6] fbdev: fbmon: fix -Wextra build warnings
-> [PATCH 2/6] fbdev: aty: fix -Wextra build warning
-> [PATCH 3/6] fbdev: matrox: fix -Wextra build warnings
-> [PATCH 4/6] fbdev: savage: fix -Wextra build warning
-> [PATCH 5/6] fbdev: pm[23]fb.c: fix -Wextra build warnings and errors
-> [PATCH 6/6] fbdev: via: fix -Wextra build warning and format warning
-> 
->  drivers/video/fbdev/aty/atyfb_base.c       |    2 +-
->  drivers/video/fbdev/core/fbmon.c           |    2 +-
->  drivers/video/fbdev/matrox/matroxfb_base.h |    2 +-
->  drivers/video/fbdev/pm2fb.c                |    2 +-
->  drivers/video/fbdev/pm3fb.c                |    8 ++++----
->  drivers/video/fbdev/savage/savagefb.h      |    2 +-
->  drivers/video/fbdev/via/debug.h            |    6 ++++--
->  drivers/video/fbdev/via/viafbdev.c         |    2 +-
->  8 files changed, 14 insertions(+), 12 deletions(-)
+As a first step, prepare drivers to handle the switch to u64 period and
+duty_cycle by replacing division operations involving pwm period and duty cycle
+with their 64-bit equivalents as appropriate. The actual switch to u64 period
+and duty_cycle follows as a separate patch.
 
-Patches #1-6 queued for v5.7, thanks!
+Where the dividend is 64-bit but the divisor is 32-bit, use *_ULL
+macros:
+- DIV_ROUND_UP_ULL
+- DIV_ROUND_CLOSEST_ULL
+- div_u64
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Where the divisor is 64-bit (dividend may be 32-bit or 64-bit), use
+DIV64_* macros:
+- DIV64_U64_ROUND_CLOSEST
+- div64_u64
+
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-pwm@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+
+Signed-off-by: Guru Das Srinagesh <gurus@codeaurora.org>
+---
+ drivers/video/backlight/pwm_bl.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index efb4efc..3e5dbcf 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -625,7 +625,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->scale = data->max_brightness;
+ 	}
+ 
+-	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
++	pb->lth_brightness = data->lth_brightness * (div_u64(state.period,
++				pb->scale));
+ 
+ 	props.type = BACKLIGHT_RAW;
+ 	props.max_brightness = data->max_brightness;
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project

@@ -1,82 +1,59 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 20 Mar 2020 11:48:54 +0000
-Subject: Re: [PATCH v3] video: fbdev: arcfb: add missed free_irq and fix the order of request_irq
-Message-Id: <80493efb-cc29-73e2-da8e-72902c709f1a@samsung.com>
+From: Dominik 'disconnect3d' Czarnota <dominik.b.czarnota@gmail.com>
+Date: Mon, 09 Mar 2020 12:49:46 +0000
+Subject: [PATCH] Fix off by one in nvidia driver strncpy size arg
+Message-Id: <20200309124947.4502-1-dominik.b.czarnota@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200310143100eucas1p241418d286851099f545477b153d3fa0c@eucas1p2.samsung.com>
- <20200310143050.5154-1-hslester96@gmail.com>
-In-Reply-To: <20200310143050.5154-1-hslester96@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Chuhong Yuan <hslester96@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dominik.b.czarnota@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
+From: disconnect3d <dominik.b.czarnota@gmail.com>
 
-On 3/10/20 3:30 PM, Chuhong Yuan wrote:
-> The driver forgets to free irq in remove which is requested in
-> probe.
-> Add the missed call to fix it.
-> Also, the position of request_irq() in probe should be put before
-> register_framebuffer().
-> 
-> Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
-> ---
-> Changes in v3:
->   - Add missed variable par in remove.
-> 
->  drivers/video/fbdev/arcfb.c | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
-> index 314ab82e01c0..9a720c14056c 100644
-> --- a/drivers/video/fbdev/arcfb.c
-> +++ b/drivers/video/fbdev/arcfb.c
-> @@ -544,10 +544,6 @@ static int arcfb_probe(struct platform_device *dev)
->  	par->cslut[1] = 0x06;
->  	info->flags = FBINFO_FLAG_DEFAULT;
->  	spin_lock_init(&par->lock);
-> -	retval = register_framebuffer(info);
-> -	if (retval < 0)
-> -		goto err1;
-> -	platform_set_drvdata(dev, info);
->  	if (irq) {
->  		par->irq = irq;
->  		if (request_irq(par->irq, &arcfb_interrupt, IRQF_SHARED,
-> @@ -558,6 +554,10 @@ static int arcfb_probe(struct platform_device *dev)
->  			goto err1;
->  		}
->  	}
-> +	retval = register_framebuffer(info);
-> +	if (retval < 0)
-> +		goto err1;
-> +	platform_set_drvdata(dev, info);
->  	fb_info(info, "Arc frame buffer device, using %dK of video memory\n",
->  		videomemorysize >> 10);
->  
-> @@ -590,9 +590,12 @@ static int arcfb_probe(struct platform_device *dev)
->  static int arcfb_remove(struct platform_device *dev)
->  {
->  	struct fb_info *info = platform_get_drvdata(dev);
-> +	struct arcfb_par *par = info->par;
+This patch fixes an off-by-one error in strncpy size argument in
+drivers/video/fbdev/nvidia/nvidia.c. The issue is that in:
 
-Please look at the line below, 'info' is checked for being NULL so
-either 'par = info->par' can dereference NULL pointer or the check is
-superfluous and should be removed.
+        strncmp(this_opt, "noaccel", 6)
 
-Also there is no need for 'par' variable (it is used only once),
-why not simply use info->par->irq in free_irq() call below?
+the passed string literal: "noaccel" has 7 bytes (without the NULL byte)
+and the passed size argument is 6. As a result, the logic will also
+match/accept string "noacce" or "noacceX".
 
->  	if (info) {
->  		unregister_framebuffer(info);
-> +		if (irq)
-> +			free_irq(par->irq, info);
->  		vfree((void __force *)info->screen_base);
->  		framebuffer_release(info);
->  	}
+This bug doesn't seem to have any security impact since its present in
+the driver's setup and just accepts slighty changed string to enable the
+`noaccel` flag.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: disconnect3d <dominik.b.czarnota@gmail.com>
+---
+
+Notes:
+    The bug could also be fixed by changing the size argument to
+    `sizeof("string literal")-1` but I am not proposing this change as that
+    would have to be changed in other places.
+    
+    There are also more cases like this in kernel sources which I
+    reported/will report soon.
+    
+    This bug has been found by running a massive grep-like search using
+    Google's BigQuery on GitHub repositories data. I am also going to work
+    on a CodeQL/Semmle query to be able to find more sophisticated cases
+    like this that can't be found via grepping.
+
+ drivers/video/fbdev/nvidia/nvidia.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
+index c583c018304d..b77efeb33477 100644
+--- a/drivers/video/fbdev/nvidia/nvidia.c
++++ b/drivers/video/fbdev/nvidia/nvidia.c
+@@ -1470,7 +1470,7 @@ static int nvidiafb_setup(char *options)
+ 			flatpanel = 1;
+ 		} else if (!strncmp(this_opt, "hwcur", 5)) {
+ 			hwcur = 1;
+-		} else if (!strncmp(this_opt, "noaccel", 6)) {
++		} else if (!strncmp(this_opt, "noaccel", 7)) {
+ 			noaccel = 1;
+ 		} else if (!strncmp(this_opt, "noscale", 7)) {
+ 			noscale = 1;
+-- 
+2.25.1

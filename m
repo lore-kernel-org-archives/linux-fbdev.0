@@ -1,92 +1,392 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 31 Mar 2020 11:43:59 +0000
-Subject: Re: [PATCH v2 2/2] powerpc: Remove Xilinx PPC405/PPC440 support
-Message-Id: <f29415e1-5a77-2f26-914a-91bb5a4428cc@samsung.com>
+From: Kiran Gunda <kgunda@codeaurora.org>
+Date: Mon, 09 Mar 2020 13:38:00 +0000
+Subject: [PATCH V3 2/4] backlight: qcom-wled: Add callback functions
+Message-Id: <1583760362-26978-3-git-send-email-kgunda@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1585575111.git.michal.simek@xilinx.com>
- <CGME20200330133235eucas1p2293a8ec8af48231bf220959d21913d55@eucas1p2.samsung.com>
- <9c3e02ffa9812c6f046708b45932d40f33e8817a.1585575111.git.michal.simek@xilinx.com>
-In-Reply-To: <9c3e02ffa9812c6f046708b45932d40f33e8817a.1585575111.git.michal.simek@xilinx.com>
+References: <1583760362-26978-1-git-send-email-kgunda@codeaurora.org>
+In-Reply-To: <1583760362-26978-1-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michal Simek <michal.simek@xilinx.com>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, Mark Rutland <mark.rutland@arm.com>, "Desnes A. Nunes do Rosario" <desnesn@linux.ibm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>, Miquel Raynal <miquel.raynal@bootlin.com>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Sasha Levin <sashal@kernel.org>, sfr@canb.auug.org.au, Jonathan Corbet <corbet@lwn.net>, maz@kernel.org, Masahiro Yamada <masahiroy@kernel.org>, YueHaibing <yuehaibing@huawei.com>, Krzysztof Kozlowski <krzk@kernel.org>, Allison Randal <allison@lohutok.net>, Matt Porter <mporter@kernel.crashing.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, Alexios Zavras <alexios.zavras@intel.com>, Rob Herring <robh+dt@kernel.org>, git@xilinx.com, Jonathan Cameron <Jonathan.Cameron@huawei.com>, Thomas Gleixner <tglx@linutronix.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dmitry Vyukov <dvyukov@google.com>, Christophe Leroy <christophe.leroy@c-s.fr>, monstr@monstr.eu, Wei Hu <weh@microsoft.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Enrico Weigelt <info@metux.net>, "David S. Miller" <davem@davemloft.net>, Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Kiran Gunda <kgunda@codeaurora.org>
 
+Add cabc_config, sync_toggle, wled_ovp_fault_status and wled_ovp_delay
+callback functions to prepare the driver for adding WLED5 support.
 
-On 3/30/20 3:32 PM, Michal Simek wrote:
-> The latest Xilinx design tools called ISE and EDK has been released in
-> October 2013. New tool doesn't support any PPC405/PPC440 new designs.
-> These platforms are no longer supported and tested.
-> 
-> PowerPC 405/440 port is orphan from 2013 by
-> commit cdeb89943bfc ("MAINTAINERS: Fix incorrect status tag") and
-> commit 19624236cce1 ("MAINTAINERS: Update Grant's email address and maintainership")
-> that's why it is time to remove the support fot these platforms.
-> 
-> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+---
+ drivers/video/backlight/qcom-wled.c | 196 +++++++++++++++++++++++-------------
+ 1 file changed, 126 insertions(+), 70 deletions(-)
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> # for fbdev
-
-> ---
-> 
-> Changes in v2:
-> - Based on my chat with Arnd I removed arch/powerpc/xmon/ changes done in
->   v1 to keep them the same as before. (kbuild reported some issues with it
->   too)
-> 
->  Documentation/devicetree/bindings/xilinx.txt | 143 ------
->  Documentation/powerpc/bootwrapper.rst        |  28 +-
->  MAINTAINERS                                  |   6 -
->  arch/powerpc/Kconfig.debug                   |   2 +-
->  arch/powerpc/boot/Makefile                   |   7 +-
->  arch/powerpc/boot/dts/Makefile               |   1 -
->  arch/powerpc/boot/dts/virtex440-ml507.dts    | 406 ----------------
->  arch/powerpc/boot/dts/virtex440-ml510.dts    | 466 -------------------
->  arch/powerpc/boot/ops.h                      |   1 -
->  arch/powerpc/boot/serial.c                   |   5 -
->  arch/powerpc/boot/uartlite.c                 |  79 ----
->  arch/powerpc/boot/virtex.c                   |  97 ----
->  arch/powerpc/boot/virtex405-head.S           |  31 --
->  arch/powerpc/boot/wrapper                    |   8 -
->  arch/powerpc/configs/40x/virtex_defconfig    |  75 ---
->  arch/powerpc/configs/44x/virtex5_defconfig   |  74 ---
->  arch/powerpc/configs/ppc40x_defconfig        |   8 -
->  arch/powerpc/configs/ppc44x_defconfig        |   8 -
->  arch/powerpc/include/asm/xilinx_intc.h       |  16 -
->  arch/powerpc/include/asm/xilinx_pci.h        |  21 -
->  arch/powerpc/kernel/cputable.c               |  39 --
->  arch/powerpc/platforms/40x/Kconfig           |  31 --
->  arch/powerpc/platforms/40x/Makefile          |   1 -
->  arch/powerpc/platforms/40x/virtex.c          |  54 ---
->  arch/powerpc/platforms/44x/Kconfig           |  37 --
->  arch/powerpc/platforms/44x/Makefile          |   2 -
->  arch/powerpc/platforms/44x/virtex.c          |  60 ---
->  arch/powerpc/platforms/44x/virtex_ml510.c    |  30 --
->  arch/powerpc/platforms/Kconfig               |   4 -
->  arch/powerpc/sysdev/Makefile                 |   2 -
->  arch/powerpc/sysdev/xilinx_intc.c            |  88 ----
->  arch/powerpc/sysdev/xilinx_pci.c             | 132 ------
->  drivers/char/Kconfig                         |   2 +-
->  drivers/video/fbdev/Kconfig                  |   2 +-
->  34 files changed, 7 insertions(+), 1959 deletions(-)
->  delete mode 100644 arch/powerpc/boot/dts/virtex440-ml507.dts
->  delete mode 100644 arch/powerpc/boot/dts/virtex440-ml510.dts
->  delete mode 100644 arch/powerpc/boot/uartlite.c
->  delete mode 100644 arch/powerpc/boot/virtex.c
->  delete mode 100644 arch/powerpc/boot/virtex405-head.S
->  delete mode 100644 arch/powerpc/configs/40x/virtex_defconfig
->  delete mode 100644 arch/powerpc/configs/44x/virtex5_defconfig
->  delete mode 100644 arch/powerpc/include/asm/xilinx_intc.h
->  delete mode 100644 arch/powerpc/include/asm/xilinx_pci.h
->  delete mode 100644 arch/powerpc/platforms/40x/virtex.c
->  delete mode 100644 arch/powerpc/platforms/44x/virtex.c
->  delete mode 100644 arch/powerpc/platforms/44x/virtex_ml510.c
->  delete mode 100644 arch/powerpc/sysdev/xilinx_intc.c
->  delete mode 100644 arch/powerpc/sysdev/xilinx_pci.c
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 3d276b3..b73f273 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -128,6 +128,7 @@ struct wled_config {
+ 	bool cs_out_en;
+ 	bool ext_gen;
+ 	bool cabc;
++	bool en_cabc;
+ 	bool external_pfet;
+ 	bool auto_detection_enabled;
+ };
+@@ -147,14 +148,20 @@ struct wled {
+ 	u32 max_brightness;
+ 	u32 short_count;
+ 	u32 auto_detect_count;
++	u32 version;
+ 	bool disabled_by_short;
+ 	bool has_short_detect;
++	bool cabc_disabled;
+ 	int short_irq;
+ 	int ovp_irq;
+ 
+ 	struct wled_config cfg;
+ 	struct delayed_work ovp_work;
+ 	int (*wled_set_brightness)(struct wled *wled, u16 brightness);
++	int (*cabc_config)(struct wled *wled, bool enable);
++	int (*wled_sync_toggle)(struct wled *wled);
++	int (*wled_ovp_fault_status)(struct wled *wled, bool *fault_set);
++	int (*wled_ovp_delay)(struct wled *wled);
+ };
+ 
+ static int wled3_set_brightness(struct wled *wled, u16 brightness)
+@@ -237,7 +244,7 @@ static int wled_module_enable(struct wled *wled, int val)
+ 	return 0;
+ }
+ 
+-static int wled_sync_toggle(struct wled *wled)
++static int wled3_sync_toggle(struct wled *wled)
+ {
+ 	int rc;
+ 	unsigned int mask = GENMASK(wled->max_string_count - 1, 0);
+@@ -255,6 +262,46 @@ static int wled_sync_toggle(struct wled *wled)
+ 	return rc;
+ }
+ 
++static int wled4_ovp_fault_status(struct wled *wled, bool *fault_set)
++{
++	int rc;
++	u32 int_rt_sts, fault_sts;
++
++	*fault_set = false;
++	rc = regmap_read(wled->regmap,
++			wled->ctrl_addr + WLED3_CTRL_REG_INT_RT_STS,
++			&int_rt_sts);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to read INT_RT_STS rc=%d\n", rc);
++		return rc;
++	}
++
++	rc = regmap_read(wled->regmap,
++			wled->ctrl_addr + WLED3_CTRL_REG_FAULT_STATUS,
++			&fault_sts);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to read FAULT_STATUS rc=%d\n", rc);
++		return rc;
++	}
++
++	if (int_rt_sts & WLED3_CTRL_REG_OVP_FAULT_STATUS)
++		*fault_set = true;
++
++	if (fault_sts & WLED3_CTRL_REG_OVP_FAULT_BIT)
++		*fault_set = true;
++
++	if (*fault_set)
++		dev_dbg(wled->dev, "WLED OVP fault detected, int_rt_sts=0x%x fault_sts=0x%x\n",
++			int_rt_sts, fault_sts);
++
++	return rc;
++}
++
++static int wled4_ovp_delay(struct wled *wled)
++{
++	return WLED_SOFT_START_DLY_US;
++}
++
+ static int wled_update_status(struct backlight_device *bl)
+ {
+ 	struct wled *wled = bl_get_data(bl);
+@@ -275,7 +322,7 @@ static int wled_update_status(struct backlight_device *bl)
+ 			goto unlock_mutex;
+ 		}
+ 
+-		rc = wled_sync_toggle(wled);
++		rc = wled->wled_sync_toggle(wled);
+ 		if (rc < 0) {
+ 			dev_err(wled->dev, "wled sync failed rc:%d\n", rc);
+ 			goto unlock_mutex;
+@@ -298,6 +345,31 @@ static int wled_update_status(struct backlight_device *bl)
+ 	return rc;
+ }
+ 
++static int wled4_cabc_config(struct wled *wled, bool enable)
++{
++	int i, j, rc;
++	u8 val;
++
++	if (wled->cabc_disabled)
++		return 0;
++
++	for (i = 0; i < wled->cfg.num_strings; i++) {
++		j = wled->cfg.enabled_strings[i];
++
++		val = enable ? WLED4_SINK_REG_STR_CABC_MASK : 0;
++		rc = regmap_update_bits(wled->regmap, wled->sink_addr +
++					WLED4_SINK_REG_STR_CABC(j),
++					WLED4_SINK_REG_STR_CABC_MASK, val);
++		if (rc < 0)
++			return rc;
++	}
++
++	if (!wled->cfg.en_cabc)
++		wled->cabc_disabled = true;
++
++	return 0;
++}
++
+ #define WLED_SHORT_DLY_MS			20
+ #define WLED_SHORT_CNT_MAX			5
+ #define WLED_SHORT_RESET_CNT_DLY_US		USEC_PER_SEC
+@@ -345,9 +417,10 @@ static irqreturn_t wled_short_irq_handler(int irq, void *_wled)
+ 
+ static void wled_auto_string_detection(struct wled *wled)
+ {
+-	int rc = 0, i;
+-	u32 sink_config = 0, int_sts;
++	int rc = 0, i, delay_time_us;
++	u32 sink_config = 0;
+ 	u8 sink_test = 0, sink_valid = 0, val;
++	bool fault_set;
+ 
+ 	/* Read configured sink configuration */
+ 	rc = regmap_read(wled->regmap, wled->sink_addr +
+@@ -376,14 +449,9 @@ static void wled_auto_string_detection(struct wled *wled)
+ 	}
+ 
+ 	if (wled->cfg.cabc) {
+-		for (i = 0; i < wled->cfg.num_strings; i++) {
+-			rc = regmap_update_bits(wled->regmap, wled->sink_addr +
+-						WLED4_SINK_REG_STR_CABC(i),
+-						WLED4_SINK_REG_STR_CABC_MASK,
+-						0);
+-			if (rc < 0)
+-				goto failed_detect;
+-		}
++		rc = wled->cabc_config(wled, 0);
++		if (rc < 0)
++			goto failed_detect;
+ 	}
+ 
+ 	/* Disable all sinks */
+@@ -427,18 +495,17 @@ static void wled_auto_string_detection(struct wled *wled)
+ 			goto failed_detect;
+ 		}
+ 
+-		usleep_range(WLED_SOFT_START_DLY_US,
+-			     WLED_SOFT_START_DLY_US + 1000);
++		delay_time_us = wled->wled_ovp_delay(wled);
++		usleep_range(delay_time_us, delay_time_us + 1000);
+ 
+-		rc = regmap_read(wled->regmap, wled->ctrl_addr +
+-				 WLED3_CTRL_REG_INT_RT_STS, &int_sts);
++		rc = wled->wled_ovp_fault_status(wled, &fault_set);
+ 		if (rc < 0) {
+-			dev_err(wled->dev, "Error in reading WLED3_CTRL_INT_RT_STS rc=%d\n",
++			dev_err(wled->dev, "Error in getting OVP fault_sts, rc=%d\n",
+ 				rc);
+ 			goto failed_detect;
+ 		}
+ 
+-		if (int_sts & WLED3_CTRL_REG_OVP_FAULT_STATUS)
++		if (fault_set)
+ 			dev_dbg(wled->dev, "WLED OVP fault detected with SINK %d\n",
+ 				i + 1);
+ 		else
+@@ -478,30 +545,30 @@ static void wled_auto_string_detection(struct wled *wled)
+ 	}
+ 
+ 	/* Enable valid sinks */
+-	for (i = 0; i < wled->cfg.num_strings; i++) {
+-		if (wled->cfg.cabc) {
+-			rc = regmap_update_bits(wled->regmap, wled->sink_addr +
+-						WLED4_SINK_REG_STR_CABC(i),
+-						WLED4_SINK_REG_STR_CABC_MASK,
+-						WLED4_SINK_REG_STR_CABC_MASK);
+-			if (rc < 0)
++	if (wled->version = 4) {
++		for (i = 0; i < wled->cfg.num_strings; i++) {
++			if (sink_config &
++			    BIT(WLED4_SINK_REG_CURR_SINK_SHFT + i))
++				val = WLED4_SINK_REG_STR_MOD_MASK;
++			else
++				/* Disable modulator_en for unused sink */
++				val = 0x0;
++
++			rc = regmap_write(wled->regmap, wled->sink_addr +
++					  WLED4_SINK_REG_STR_MOD_EN(i), val);
++			if (rc < 0) {
++				dev_err(wled->dev, "Failed to configure MODULATOR_EN rc=%d\n",
++					rc);
+ 				goto failed_detect;
+-		}
+-
+-		if (sink_config & BIT(WLED4_SINK_REG_CURR_SINK_SHFT + i))
+-			val = WLED4_SINK_REG_STR_MOD_MASK;
+-		else
+-			val = 0x0; /* Disable modulator_en for unused sink */
+-
+-		rc = regmap_write(wled->regmap, wled->sink_addr +
+-				  WLED4_SINK_REG_STR_MOD_EN(i), val);
+-		if (rc < 0) {
+-			dev_err(wled->dev, "Failed to configure MODULATOR_EN rc=%d\n",
+-				rc);
+-			goto failed_detect;
++			}
+ 		}
+ 	}
+ 
++	/* Enable CABC if it needs to be enabled */
++	rc = wled->cabc_config(wled, true);
++	if (rc < 0)
++		goto failed_detect;
++
+ 	/* Restore the feedback setting */
+ 	rc = regmap_write(wled->regmap,
+ 			  wled->ctrl_addr + WLED3_CTRL_REG_FEEDBACK_CONTROL, 0);
+@@ -570,29 +637,19 @@ static bool wled_auto_detection_required(struct wled *wled)
+ static int wled_auto_detection_at_init(struct wled *wled)
+ {
+ 	int rc;
+-	u32 fault_status, rt_status;
++	bool fault_set;
+ 
+ 	if (!wled->cfg.auto_detection_enabled)
+ 		return 0;
+ 
+-	rc = regmap_read(wled->regmap,
+-			 wled->ctrl_addr + WLED3_CTRL_REG_INT_RT_STS,
+-			 &rt_status);
++	rc = wled->wled_ovp_fault_status(wled, &fault_set);
+ 	if (rc < 0) {
+-		dev_err(wled->dev, "Failed to read RT status rc=%d\n", rc);
+-		return rc;
+-	}
+-
+-	rc = regmap_read(wled->regmap,
+-			 wled->ctrl_addr + WLED3_CTRL_REG_FAULT_STATUS,
+-			 &fault_status);
+-	if (rc < 0) {
+-		dev_err(wled->dev, "Failed to read fault status rc=%d\n", rc);
++		dev_err(wled->dev, "Error in getting OVP fault_sts, rc=%d\n",
++			rc);
+ 		return rc;
+ 	}
+ 
+-	if ((rt_status & WLED3_CTRL_REG_OVP_FAULT_STATUS) ||
+-	    (fault_status & WLED3_CTRL_REG_OVP_FAULT_BIT)) {
++	if (fault_set) {
+ 		mutex_lock(&wled->lock);
+ 		wled_auto_string_detection(wled);
+ 		mutex_unlock(&wled->lock);
+@@ -811,17 +868,12 @@ static int wled4_setup(struct wled *wled)
+ 					wled->cfg.string_i_limit);
+ 		if (rc < 0)
+ 			return rc;
+-
+-		addr = wled->sink_addr +
+-				WLED4_SINK_REG_STR_CABC(j);
+-		rc = regmap_update_bits(wled->regmap, addr,
+-					WLED4_SINK_REG_STR_CABC_MASK,
+-					wled->cfg.cabc ?
+-					WLED4_SINK_REG_STR_CABC_MASK : 0);
+-		if (rc < 0)
+-			return rc;
+ 	}
+ 
++	rc = wled4_cabc_config(wled, wled->cfg.en_cabc);
++	if (rc < 0)
++		return rc;
++
+ 	rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
+ 				WLED3_CTRL_REG_MOD_EN,
+ 				WLED3_CTRL_REG_MOD_EN_MASK,
+@@ -835,7 +887,7 @@ static int wled4_setup(struct wled *wled)
+ 	if (rc < 0)
+ 		return rc;
+ 
+-	rc = wled_sync_toggle(wled);
++	rc = wled->wled_sync_toggle(wled);
+ 	if (rc < 0) {
+ 		dev_err(wled->dev, "Failed to toggle sync reg rc:%d\n", rc);
+ 		return rc;
+@@ -951,7 +1003,7 @@ static u32 wled_values(const struct wled_var_cfg *cfg, u32 idx)
+ 	return idx;
+ }
+ 
+-static int wled_configure(struct wled *wled, int version)
++static int wled_configure(struct wled *wled)
+ {
+ 	struct wled_config *cfg = &wled->cfg;
+ 	struct device *dev = wled->dev;
+@@ -1035,12 +1087,13 @@ static int wled_configure(struct wled *wled, int version)
+ 	if (rc)
+ 		wled->name = devm_kasprintf(dev, GFP_KERNEL, "%pOFn", dev->of_node);
+ 
+-	switch (version) {
++	switch (wled->version) {
+ 	case 3:
+ 		u32_opts = wled3_opts;
+ 		size = ARRAY_SIZE(wled3_opts);
+ 		*cfg = wled3_config_defaults;
+ 		wled->wled_set_brightness = wled3_set_brightness;
++		wled->wled_sync_toggle = wled3_sync_toggle;
+ 		wled->max_string_count = 3;
+ 		wled->sink_addr = wled->ctrl_addr;
+ 		break;
+@@ -1050,6 +1103,10 @@ static int wled_configure(struct wled *wled, int version)
+ 		size = ARRAY_SIZE(wled4_opts);
+ 		*cfg = wled4_config_defaults;
+ 		wled->wled_set_brightness = wled4_set_brightness;
++		wled->wled_sync_toggle = wled3_sync_toggle;
++		wled->cabc_config = wled4_cabc_config;
++		wled->wled_ovp_fault_status = wled4_ovp_fault_status;
++		wled->wled_ovp_delay = wled4_ovp_delay;
+ 		wled->max_string_count = 4;
+ 
+ 		prop_addr = of_get_address(dev->of_node, 1, NULL, NULL);
+@@ -1186,7 +1243,6 @@ static int wled_probe(struct platform_device *pdev)
+ 	struct backlight_device *bl;
+ 	struct wled *wled;
+ 	struct regmap *regmap;
+-	int version;
+ 	u32 val;
+ 	int rc;
+ 
+@@ -1203,18 +1259,18 @@ static int wled_probe(struct platform_device *pdev)
+ 	wled->regmap = regmap;
+ 	wled->dev = &pdev->dev;
+ 
+-	version = (uintptr_t)of_device_get_match_data(&pdev->dev);
+-	if (!version) {
++	wled->version = (uintptr_t)of_device_get_match_data(&pdev->dev);
++	if (!wled->version) {
+ 		dev_err(&pdev->dev, "Unknown device version\n");
+ 		return -ENODEV;
+ 	}
+ 
+ 	mutex_init(&wled->lock);
+-	rc = wled_configure(wled, version);
++	rc = wled_configure(wled);
+ 	if (rc)
+ 		return rc;
+ 
+-	switch (version) {
++	switch (wled->version) {
+ 	case 3:
+ 		wled->cfg.auto_detection_enabled = false;
+ 		rc = wled3_setup(wled);
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+ a Linux Foundation Collaborative Project

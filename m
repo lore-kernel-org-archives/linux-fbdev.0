@@ -1,130 +1,69 @@
-From: "zhangxiaoxu (A)" <zhangxiaoxu5@huawei.com>
-Date: Wed, 04 Mar 2020 02:26:17 +0000
-Subject: Re: [v2] vgacon: Fix a UAF in vgacon_invert_region
-Message-Id: <3e57400c-6632-4fae-d242-f839bfff8d46@huawei.com>
+From: Chuhong Yuan <hslester96@gmail.com>
+Date: Tue, 10 Mar 2020 14:30:33 +0000
+Subject: [PATCH v2] fbdev: s1d13xxxfb: add missed unregister_framebuffer in remove
+Message-Id: <20200310143033.5098-1-hslester96@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200304020228.44484-1-zhangxiaoxu5@huawei.com>
-In-Reply-To: <20200304020228.44484-1-zhangxiaoxu5@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: b.zolnierkie@samsung.com, wangkefeng.wang@huawei.com, sergey.senozhatsky@gmail.com, pmladek@suse.com, akpm@osdl.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chuhong Yuan <hslester96@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Kristoffer Ericson <kristoffer.ericson@gmail.com>
 
-Please ignore this patch.
-Thanks.
+The driver calls register_framebuffer() in probe but does not call
+unregister_framebuffer() in remove.
+Rename current remove to __s1d13xxxfb_remove() for error handler.
+Then add a new remove to call unregister_framebuffer().
 
-=D4=DA 2020/3/4 10:02, Zhang Xiaoxu =D0=B4=B5=C0:
-> When syzkaller tests, there is a UAF:
->    BUG: KASan: use after free in vgacon_invert_region+0x9d/0x110 at addr
->      ffff880000100000
->    Read of size 2 by task syz-executor.1/16489
->    page:ffffea0000004000 count:0 mapcount:-127 mapping:          (null)
->    index:0x0
->    page flags: 0xfffff00000000()
->    page dumped because: kasan: bad access detected
->    CPU: 1 PID: 16489 Comm: syz-executor.1 Not tainted
->    Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS
->    rel-1.9.3-0-ge2fc41e-prebuilt.qemu-project.org 04/01/2014
->    Call Trace:
->      [<ffffffffb119f309>] dump_stack+0x1e/0x20
->      [<ffffffffb04af957>] kasan_report+0x577/0x950
->      [<ffffffffb04ae652>] __asan_load2+0x62/0x80
->      [<ffffffffb090f26d>] vgacon_invert_region+0x9d/0x110
->      [<ffffffffb0a39d95>] invert_screen+0xe5/0x470
->      [<ffffffffb0a21dcb>] set_selection+0x44b/0x12f0
->      [<ffffffffb0a3bfae>] tioclinux+0xee/0x490
->      [<ffffffffb0a1d114>] vt_ioctl+0xff4/0x2670
->      [<ffffffffb0a0089a>] tty_ioctl+0x46a/0x1a10
->      [<ffffffffb052db3d>] do_vfs_ioctl+0x5bd/0xc40
->      [<ffffffffb052e2f2>] SyS_ioctl+0x132/0x170
->      [<ffffffffb11c9b1b>] system_call_fastpath+0x22/0x27
->      Memory state around the buggy address:
->       ffff8800000fff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->       00 00
->       ffff8800000fff80: 00 00 00 00 00 00 00 00 00 00 00 00 00
->       00 00 00
->      >ffff880000100000: ff ff ff ff ff ff ff ff ff ff ff ff ff
->       ff ff ff
->=20
-> It can be reproduce in the linux mainline by the program:
->    #include <stdio.h>
->    #include <stdlib.h>
->    #include <unistd.h>
->    #include <fcntl.h>
->    #include <sys/types.h>
->    #include <sys/stat.h>
->    #include <sys/ioctl.h>
->    #include <linux/vt.h>
->=20
->    struct tiocl_selection {
->      unsigned short xs;      /* X start */
->      unsigned short ys;      /* Y start */
->      unsigned short xe;      /* X end */
->      unsigned short ye;      /* Y end */
->      unsigned short sel_mode; /* selection mode */
->    };
->=20
->    #define TIOCL_SETSEL    2
->    struct tiocl {
->      unsigned char type;
->      unsigned char pad;
->      struct tiocl_selection sel;
->    };
->=20
->    int main()
->    {
->      int fd =3D 0;
->      const char *dev =3D "/dev/char/4:1";
->=20
->      struct vt_consize v =3D {0};
->      struct tiocl tioc =3D {0};
->=20
->      fd =3D open(dev, O_RDWR, 0);
->=20
->      v.v_rows =3D 3346;
->      ioctl(fd, VT_RESIZEX, &v);
->=20
->      tioc.type =3D TIOCL_SETSEL;
->      ioctl(fd, TIOCLINUX, &tioc);
->=20
->      return 0;
->    }
->=20
-> When resize the screen, update the 'vc->vc_size_row' to the new_row_size,
-> but when 'set_origin' in 'vgacon_set_origin', vgacon use 'vga_vram_base'
-> for 'vc_origin' and 'vc_visible_origin', not 'vc_screenbuf'. It maybe
-> smaller than 'vc_screenbuf'. When TIOCLINUX, use the new_row_size to calc
-> the offset, it maybe larger than the vga_vram_size in vgacon driver, then
-> bad access.
-> Also, if set an larger screenbuf firstly, then set an more larger
-> screenbuf, when copy old_origin to new_origin, a bad access may happen.
->=20
-> So, If the screen size larger than vga_vram, resize screen should be
-> failed. This alse fix CVE-2020-8649 and CVE-2020-8647.
->=20
-> Fixes: 0aec4867dca14 ("[PATCH] SVGATextMode fix")
-> Reference: CVE-2020-8647 and CVE-2020-8649
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Zhang Xiaoxu <zhangxiaoxu5@huawei.com>
-> ---
->   drivers/video/console/vgacon.c | 3 +++
->   1 file changed, 3 insertions(+)
->=20
-> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgaco=
-n.c
-> index de7b8382aba9..3188ce162f8b 100644
-> --- a/drivers/video/console/vgacon.c
-> +++ b/drivers/video/console/vgacon.c
-> @@ -1316,6 +1316,9 @@ static int vgacon_font_get(struct vc_data *c, struc=
-t console_font *font)
->   static int vgacon_resize(struct vc_data *c, unsigned int width,
->   			 unsigned int height, unsigned int user)
->   {
-> +	if ((width > 1) * height > vga_vram_size)
-> +		return -EINVAL;
-> +
->   	if (width % 2 || width > screen_info.orig_video_cols ||
->   	    height > (screen_info.orig_video_lines * vga_default_font_height)/
->   	    c->vc_font.height)
->=20
+Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
+---
+Changes in v2:
+  - Rename the existing remove and add a new one to ensure the correctness
+    of error handler in probe.
+
+ drivers/video/fbdev/s1d13xxxfb.c | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/s1d13xxxfb.c b/drivers/video/fbdev/s1d13xxxfb.c
+index 8048499e398d..bafea3d09bba 100644
+--- a/drivers/video/fbdev/s1d13xxxfb.c
++++ b/drivers/video/fbdev/s1d13xxxfb.c
+@@ -721,9 +721,8 @@ static void s1d13xxxfb_fetch_hw_state(struct fb_info *info)
+ 		xres, yres, xres_virtual, yres_virtual, is_color, is_dual, is_tft);
+ }
+ 
+-
+ static int
+-s1d13xxxfb_remove(struct platform_device *pdev)
++__s1d13xxxfb_remove(struct platform_device *pdev)
+ {
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+ 	struct s1d13xxxfb_par *par = NULL;
+@@ -752,6 +751,18 @@ s1d13xxxfb_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int
++s1d13xxxfb_remove(struct platform_device *pdev)
++{
++	struct fb_info *info = platform_get_drvdata(pdev);
++
++	if (info)
++		unregister_framebuffer(info);
++
++	return __s1d13xxxfb_remove(pdev);
++}
++
++
+ static int s1d13xxxfb_probe(struct platform_device *pdev)
+ {
+ 	struct s1d13xxxfb_par *default_par;
+@@ -895,7 +906,7 @@ static int s1d13xxxfb_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ bail:
+-	s1d13xxxfb_remove(pdev);
++	__s1d13xxxfb_remove(pdev);
+ 	return ret;
+ 
+ }
+-- 
+2.25.1

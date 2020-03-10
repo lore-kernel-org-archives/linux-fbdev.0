@@ -1,31 +1,67 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 02 Mar 2020 15:41:48 +0000
-Subject: Re: [PATCH] video: fbdev: arcfb: add COMPILE_TEST support
-Message-Id: <cb48242a-1125-ab99-2c94-6ea6037d9ac4@samsung.com>
+From: Chuhong Yuan <hslester96@gmail.com>
+Date: Tue, 10 Mar 2020 02:35:36 +0000
+Subject: [PATCH v3] video: fbdev: vesafb: add missed release_region
+Message-Id: <20200310023536.13622-1-hslester96@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200116144909eucas1p1b247368aded82dad3ca8da852deaca1a@eucas1p1.samsung.com>
- <acf2cc2e-614d-f0fb-ce40-cee62bfcde4c@samsung.com>
- <20200117185722.GA24508@ravnborg.org>
-In-Reply-To: <20200117185722.GA24508@ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
+The driver forgets to free the I/O region in remove and probe
+failure.
+Add the missed calls to fix it.
 
-On 1/17/20 7:57 PM, Sam Ravnborg wrote:
-> On Thu, Jan 16, 2020 at 03:49:07PM +0100, Bartlomiej Zolnierkiewicz wrote:
->> Add COMPILE_TEST support to arcfb driver for better compile
->> testing coverage.
->>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
+---
+Changes in v3:
+  - Revise the commit message.
+  - Add an error handler to suit the "goto error" before request_region().
+  - Revise the order of operations in remove.
+  
+ drivers/video/fbdev/vesafb.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Thanks, patch queued for v5.7.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
+index a1fe24ea869b..c7bc9ace47d4 100644
+--- a/drivers/video/fbdev/vesafb.c
++++ b/drivers/video/fbdev/vesafb.c
+@@ -439,7 +439,7 @@ static int vesafb_probe(struct platform_device *dev)
+ 		       "vesafb: abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
+ 			vesafb_fix.smem_len, vesafb_fix.smem_start);
+ 		err = -EIO;
+-		goto err;
++		goto err_release_region;
+ 	}
+ 
+ 	printk(KERN_INFO "vesafb: framebuffer at 0x%lx, mapped to 0x%p, "
+@@ -458,15 +458,17 @@ static int vesafb_probe(struct platform_device *dev)
+ 
+ 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
+ 		err = -ENOMEM;
+-		goto err;
++		goto err_release_region;
+ 	}
+ 	if (register_framebuffer(info)<0) {
+ 		err = -EINVAL;
+ 		fb_dealloc_cmap(&info->cmap);
+-		goto err;
++		goto err_release_region;
+ 	}
+ 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+ 	return 0;
++err_release_region:
++	release_region(0x3c0, 32);
+ err:
+ 	arch_phys_wc_del(par->wc_cookie);
+ 	if (info->screen_base)
+@@ -481,6 +483,7 @@ static int vesafb_remove(struct platform_device *pdev)
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+ 
+ 	unregister_framebuffer(info);
++	release_region(0x3c0, 32);
+ 	framebuffer_release(info);
+ 
+ 	return 0;
+-- 
+2.25.1

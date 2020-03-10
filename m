@@ -1,18 +1,62 @@
-From: postmaster@hokusetubad.sakura.ne.jp
-Date: Sun, 08 Mar 2020 15:51:24 +0000
-Subject: BUSINESS PROPOSAL
-Message-Id: <202003081551.028FpOOQ061609@www752.sakura.ne.jp>
+From: Chuhong Yuan <hslester96@gmail.com>
+Date: Tue, 10 Mar 2020 03:41:05 +0000
+Subject: [PATCH v2] video: fbdev: arcfb: add missed free_irq and fix the order of request_irq
+Message-Id: <20200310034105.14379-1-hslester96@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: nJreyes@midway.edu
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chuhong Yuan <hslester96@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Jaya Kumar <jayalk@intworks.biz>
 
-Dearest Friend
+The driver forgets to free irq in remove which is requested in
+probe.
+Add the missed call to fix it.
+Also, the position of request_irq() in probe should be put before
+register_framebuffer().
 
-I am Mr Abdul Kareem working with Emirate NBD Bank Dubai,United Arab Emirate as Finance Manager.
-I have a very profitable Business that concerns you and will benefit both of us after completion.
-Kindly get back to me for more details.
-Awaiting your response.
-Regards
-Abdul Kareem
+Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
+---
+Changes in v2:
+  - Modify the commit message.
+  - Adjust the order of operations in probe and remove.
+
+ drivers/video/fbdev/arcfb.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+index 314ab82e01c0..ab553f940f9f 100644
+--- a/drivers/video/fbdev/arcfb.c
++++ b/drivers/video/fbdev/arcfb.c
+@@ -544,10 +544,6 @@ static int arcfb_probe(struct platform_device *dev)
+ 	par->cslut[1] = 0x06;
+ 	info->flags = FBINFO_FLAG_DEFAULT;
+ 	spin_lock_init(&par->lock);
+-	retval = register_framebuffer(info);
+-	if (retval < 0)
+-		goto err1;
+-	platform_set_drvdata(dev, info);
+ 	if (irq) {
+ 		par->irq = irq;
+ 		if (request_irq(par->irq, &arcfb_interrupt, IRQF_SHARED,
+@@ -558,6 +554,10 @@ static int arcfb_probe(struct platform_device *dev)
+ 			goto err1;
+ 		}
+ 	}
++	retval = register_framebuffer(info);
++	if (retval < 0)
++		goto err1;
++	platform_set_drvdata(dev, info);
+ 	fb_info(info, "Arc frame buffer device, using %dK of video memory\n",
+ 		videomemorysize >> 10);
+ 
+@@ -593,6 +593,8 @@ static int arcfb_remove(struct platform_device *dev)
+ 
+ 	if (info) {
+ 		unregister_framebuffer(info);
++		if (irq)
++			free_irq(par->irq, info);
+ 		vfree((void __force *)info->screen_base);
+ 		framebuffer_release(info);
+ 	}
+-- 
+2.25.1

@@ -1,48 +1,66 @@
-From: Guru Das Srinagesh <gurus@codeaurora.org>
-Date: Tue, 17 Mar 2020 20:05:25 +0000
-Subject: [PATCH v9 10/11] backlight: pwm_bl: Use 64-bit division function
-Message-Id: <5868b4b6675121125f59fca5d9dfe375a165d4df.1584473399.git.gurus@codeaurora.org>
+From: "Jr Carreiro a.k.a Gordo" <jr@reversing.team>
+Date: Wed, 11 Mar 2020 01:07:30 +0000
+Subject: [PATCH] Staging: fbtft: Remove space prohibited before that close parenthesis ')'
+Message-Id: <BN6PR04MB090145E76716CBDCD1289656B4FC0@BN6PR04MB0901.namprd04.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1584473399.git.gurus@codeaurora.org>
-In-Reply-To: <cover.1584473399.git.gurus@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-pwm@vger.kernel.org
-Cc: Guru Das Srinagesh <gurus@codeaurora.org>, Daniel Thompson <daniel.thompson@linaro.org>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, linux-fbdev@vger.kernel.org, Subbaraman Narayanamurthy <subbaram@codeaurora.org>, Lee Jones <lee.jones@linaro.org>
+To: linux-fbdev@vger.kernel.org
 
-Since the PWM framework is switching struct pwm_state.period's datatype
-to u64, prepare for this transition by using div_u64 to handle a 64-bit
-dividend instead of a straight division operation.
+From: Gordo <jr@reversing.team>
 
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-pwm@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
+This patch fixes the checkpatch.pl error:
 
-Signed-off-by: Guru Das Srinagesh <gurus@codeaurora.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+FILE: drivers/staging/fbtft/fbtft-bus.c:65:
++define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
+
+ FILE: drivers/staging/fbtft/fbtft-bus.c:67:
+ +define_fbtft_write_reg(fbtft_write_reg8_bus8, u16, u16, )
 ---
- drivers/video/backlight/pwm_bl.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ README                            | 3 +++
+ drivers/staging/fbtft/fbtft-bus.c | 4 ++--
+ init/main.c                       | 1 +
+ 3 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index efb4efc..3e5dbcf 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -625,7 +625,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		pb->scale = data->max_brightness;
- 	}
+diff --git a/README b/README
+index 669ac7c32..700e2fba3 100644
+--- a/README
++++ b/README
+@@ -16,3 +16,6 @@ several of them using the Restructured Text markup notation.
+ Please read the Documentation/process/changes.rst file, as it contains the
+ requirements for building and running the kernel, and information about
+ the problems which may result by upgrading your kernel.
++
++Checking if send-email works
++
+diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+index 63c65dd67..847cbfbbd 100644
+--- a/drivers/staging/fbtft/fbtft-bus.c
++++ b/drivers/staging/fbtft/fbtft-bus.c
+@@ -62,9 +62,9 @@ out:									      \
+ }                                                                             \
+ EXPORT_SYMBOL(func);
  
--	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
-+	pb->lth_brightness = data->lth_brightness * (div_u64(state.period,
-+				pb->scale));
+-define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
++define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
+ define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+-define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
++define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
  
- 	props.type = BACKLIGHT_RAW;
- 	props.max_brightness = data->max_brightness;
+ void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
+ {
+diff --git a/init/main.c b/init/main.c
+index f95b014a5..f8a2f6cb9 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -1360,6 +1360,7 @@ static int __ref kernel_init(void *unused)
+ 	numa_default_policy();
+ 
+ 	rcu_end_inkernel_boot();
++   pr_err("\n========\nHello LKCAMP !!!\n========\n\n"); 
+ 
+ 	if (ramdisk_execute_command) {
+ 		ret = run_init_process(ramdisk_execute_command);
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.20.1

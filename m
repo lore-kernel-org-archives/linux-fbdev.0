@@ -1,75 +1,75 @@
-From: Stefano Brivio <sbrivio@redhat.com>
-Date: Mon, 30 Mar 2020 22:16:37 +0000
-Subject: Re: [Outreachy kernel] [PATCH] staging: fbtft: Replace udelay with preferred usleep_range
-Message-Id: <20200331001637.6bf108ed@elisabeth>
+From: Joe Perches <joe@perches.com>
+Date: Wed, 11 Mar 2020 04:51:33 +0000
+Subject: [PATCH -next 019/491] Hyper-V CORE AND DRIVERS: Use fallthrough;
+Message-Id: <84677022b8ec4ad14bddab57d871dcbfc0b4a1bf.1583896348.git.joe@perches.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200329092204.770405-1-jbwyatt4@gmail.com>
- <alpine.DEB.2.21.2003291127230.2990@hadrien>
- <2fccf96c3754e6319797a10856e438e023f734a7.camel@gmail.com>
- <alpine.DEB.2.21.2003291144460.2990@hadrien>
- <CAMS7mKBEhqFat8fWi=QiFwfLV9+skwi1hE-swg=XxU48zk=_tQ@mail.gmail.com>
- <alpine.DEB.2.21.2003291235590.2990@hadrien>
- <20200330194043.56c79bb8@elisabeth>
- <53befe00af657428b591200b31b5349a4a462eb1.camel@gmail.com>
-In-Reply-To: <53befe00af657428b591200b31b5349a4a462eb1.camel@gmail.com>
+References: <cover.1583896344.git.joe@perches.com>
+In-Reply-To: <cover.1583896344.git.joe@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: "John B. Wyatt IV" <jbwyatt4@gmail.com>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Julia Lawall <julia.lawall@inria.fr>, outreachy-kernel@googlegroups.com, Payal Kshirsagar <payal.s.kshirsagar.98@gmail.com>, Soumyajit Deb <debsoumyajit100@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, Wei Liu <wei.liu@kernel.org>
+Cc: linux-hyperv@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Mon, 30 Mar 2020 15:03:55 -0700
-"John B. Wyatt IV" <jbwyatt4@gmail.com> wrote:
+Convert the various uses of fallthrough comments to fallthrough;
 
-> On Mon, 2020-03-30 at 19:40 +0200, Stefano Brivio wrote:
-> > On Sun, 29 Mar 2020 12:37:18 +0200 (CEST)
-> > Julia Lawall <julia.lawall@inria.fr> wrote:
-> >  =20
-> > > On Sun, 29 Mar 2020, Soumyajit Deb wrote:
-> > >  =20
-> > > > I had the same doubt the other day about the replacement of
-> > > > udelay() with
-> > > > usleep_range(). The corresponding range for the single argument
-> > > > value of
-> > > > udelay() is quite confusing as I couldn't decide the range. But
-> > > > as much as I
-> > > > noticed checkpatch.pl gives warning for replacing udelay() with
-> > > > usleep_range() by checking the argument value of udelay(). In the
-> > > > documentation, it is written udelay() should be used for a sleep
-> > > > time of at
-> > > > most 10 microseconds but between 10 microseconds and 20
-> > > > milliseconds,
-> > > > usleep_range() should be used.=20
-> > > > I think the range is code specific and will depend on what range
-> > > > is
-> > > > acceptable and doesn't break the code.
-> > > >  Please correct me if I am wrong.   =20
-> > >=20
-> > > The range depends on the associated hardware. =20
-> >=20
-> > John, by the way, here you could have checked the datasheet of this
-> > LCD
-> > controller. It's a pair of those:
-> > 	https://www.sparkfun.com/datasheets/LCD/ks0108b.pdf
->=20
-> No I have not. This datasheet is a little over my head honestly.
->=20
-> What would you recommend to get familiar with datasheets like this?
+Done via script
+Link: https://lore.kernel.org/lkml/b56602fcf79f849e733e7b521bb0e17895d390fa.1582230379.git.joe.com/
 
-Well, you don't necessarily have to, there are many subsystems in the
-kernel which are almost completely abstracted away from hardware.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/hv/hv_kvp.c             | 4 +---
+ drivers/hv/vmbus_drv.c          | 2 +-
+ drivers/video/fbdev/hyperv_fb.c | 4 ++--
+ 3 files changed, 4 insertions(+), 6 deletions(-)
 
-If you're interested, look around yourself for something simple chip,
-or get something that you can easily plug on a "maker board", Raspberry
-Pi, something like that. Perhaps via I=C2=B2C or SPI.
-
-Some types of sensors (temperature, pressure) have very simple
-datasheets. If you are allergic to hardware, try:
-	$ ls -Ssl drivers/iio/*
-
-pick the smallest sensor driver in the category that is the most likely
-to spark your interest, and go through it, checking it against the
-datasheet, at some point it will make sense.
-
---=20
-Stefano
+diff --git a/drivers/hv/hv_kvp.c b/drivers/hv/hv_kvp.c
+index e74b144..da4686 100644
+--- a/drivers/hv/hv_kvp.c
++++ b/drivers/hv/hv_kvp.c
+@@ -353,9 +353,7 @@ static void process_ib_ipinfo(void *in_msg, void *out_msg, int op)
+ 				MAX_IP_ADDR_SIZE);
+ 
+ 		out->body.kvp_ip_val.dhcp_enabled = in->kvp_ip_val.dhcp_enabled;
+-
+-		/* fallthrough */
+-
++		fallthrough;
+ 	case KVP_OP_GET_IP_INFO:
+ 		utf16s_to_utf8s((wchar_t *)in->kvp_ip_val.adapter_id,
+ 				MAX_ADAPTER_ID_SIZE,
+diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
+index 029378..0befc0 100644
+--- a/drivers/hv/vmbus_drv.c
++++ b/drivers/hv/vmbus_drv.c
+@@ -1188,7 +1188,7 @@ static void vmbus_chan_sched(struct hv_per_cpu_context *hv_cpu)
+ 
+ 			case HV_CALL_BATCHED:
+ 				hv_begin_read(&channel->inbound);
+-				/* fallthrough */
++				fallthrough;
+ 			case HV_CALL_DIRECT:
+ 				tasklet_schedule(&channel->callback_event);
+ 			}
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index e4c3c8b..02411d 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -648,13 +648,13 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
+ 		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN10);
+ 		if (!ret)
+ 			break;
+-		/* Fallthrough */
++		fallthrough;
+ 	case VERSION_WIN8:
+ 	case VERSION_WIN8_1:
+ 		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN8);
+ 		if (!ret)
+ 			break;
+-		/* Fallthrough */
++		fallthrough;
+ 	case VERSION_WS2008:
+ 	case VERSION_WIN7:
+ 		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN7);
+-- 
+2.24.0

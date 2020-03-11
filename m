@@ -1,47 +1,53 @@
-From: Guru Das Srinagesh <gurus@codeaurora.org>
-Date: Wed, 11 Mar 2020 01:41:20 +0000
-Subject: [PATCH v8 11/12] backlight: pwm_bl: Use 64-bit division function
-Message-Id: <a9f914f92ee637c68e1d336e5b4894a565eb3cdc.1583889178.git.gurus@codeaurora.org>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Wed, 11 Mar 2020 10:05:51 +0000
+Subject: Re: [PATCH v8 11/12] backlight: pwm_bl: Use 64-bit division function
+Message-Id: <20200311100551.umvfqelrqzcfo7sa@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1583889178.git.gurus@codeaurora.org>
-In-Reply-To: <cover.1583889178.git.gurus@codeaurora.org>
+ <a9f914f92ee637c68e1d336e5b4894a565eb3cdc.1583889178.git.gurus@codeaurora.org>
+In-Reply-To: <a9f914f92ee637c68e1d336e5b4894a565eb3cdc.1583889178.git.gurus@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-pwm@vger.kernel.org
-Cc: Guru Das Srinagesh <gurus@codeaurora.org>, Daniel Thompson <daniel.thompson@linaro.org>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, linux-fbdev@vger.kernel.org, Subbaraman Narayanamurthy <subbaram@codeaurora.org>, Lee Jones <lee.jones@linaro.org>
+To: Guru Das Srinagesh <gurus@codeaurora.org>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, Subbaraman Narayanamurthy <subbaram@codeaurora.org>, Lee Jones <lee.jones@linaro.org>
 
-Since the PWM framework is switching struct pwm_state.period's datatype
-to u64, prepare for this transition by using div_u64 to handle a 64-bit
-dividend instead of a straight division operation.
+On Tue, Mar 10, 2020 at 06:41:20PM -0700, Guru Das Srinagesh wrote:
+> Since the PWM framework is switching struct pwm_state.period's datatype
+> to u64, prepare for this transition by using div_u64 to handle a 64-bit
+> dividend instead of a straight division operation.
+> 
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> Cc: Jingoo Han <jingoohan1@gmail.com>
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: linux-pwm@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-fbdev@vger.kernel.org
+> 
+> Signed-off-by: Guru Das Srinagesh <gurus@codeaurora.org>
 
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-pwm@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-Signed-off-by: Guru Das Srinagesh <gurus@codeaurora.org>
----
- drivers/video/backlight/pwm_bl.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index efb4efc..3e5dbcf 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -625,7 +625,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		pb->scale = data->max_brightness;
- 	}
- 
--	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
-+	pb->lth_brightness = data->lth_brightness * (div_u64(state.period,
-+				pb->scale));
- 
- 	props.type = BACKLIGHT_RAW;
- 	props.max_brightness = data->max_brightness;
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+> ---
+>  drivers/video/backlight/pwm_bl.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+> index efb4efc..3e5dbcf 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -625,7 +625,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+>  		pb->scale = data->max_brightness;
+>  	}
+>  
+> -	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
+> +	pb->lth_brightness = data->lth_brightness * (div_u64(state.period,
+> +				pb->scale));
+>  
+>  	props.type = BACKLIGHT_RAW;
+>  	props.max_brightness = data->max_brightness;
+> -- 
+> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+> a Linux Foundation Collaborative Project
+> 

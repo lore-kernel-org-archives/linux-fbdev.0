@@ -1,82 +1,69 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Sun, 15 Mar 2020 04:10:01 +0000
-Subject: [PATCH 5/6] fbdev: pm[23]fb.c: fix -Wextra build warnings and errors
-Message-Id: <20200315041002.24473-6-rdunlap@infradead.org>
+From: Takashi Iwai <tiwai@suse.de>
+Date: Wed, 11 Mar 2020 09:32:28 +0000
+Subject: [PATCH 1/3] video: omapfb: Use scnprintf() for avoiding potential buffer overflow
+Message-Id: <20200311093230.24900-2-tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200315041002.24473-1-rdunlap@infradead.org>
-In-Reply-To: <20200315041002.24473-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-When 'DEBUG' is not defined, modify the DPRINTK() macro to use the
-no_printk() macro instead of using <empty>.
-This fixes build warnings when -Wextra is used and provides
-printk format checking:
+Since snprintf() returns the would-be-output size instead of the
+actual output size, the succeeding calls may go beyond the given
+buffer limit.  Fix it by replacing with scnprintf().
 
-../drivers/video/fbdev/pm2fb.c:227:38: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
-../drivers/video/fbdev/pm3fb.c:1039:33: warning: suggest braces around empty body in an ‘else’ statement [-Wempty-body]
-
-Also drop one argument in two DPRINTK() macro uses to provide the
-correct number of arguments and use the correct field in one case
-to fix a build error:
-
-../drivers/video/fbdev/pm3fb.c:353:9: error: ‘struct fb_info’ has no member named ‘current_par’
-     info->current_par->depth);
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
-Alternative: use pr_debug() so that CONFIG_DYNAMIC_DEBUG can be used
-at these sites.
+ drivers/video/fbdev/omap/omapfb_main.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
- drivers/video/fbdev/pm2fb.c |    2 +-
- drivers/video/fbdev/pm3fb.c |    8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
---- linux-next-20200313.orig/drivers/video/fbdev/pm2fb.c
-+++ linux-next-20200313/drivers/video/fbdev/pm2fb.c
-@@ -54,7 +54,7 @@
- #define DPRINTK(a, b...)	\
- 	printk(KERN_DEBUG "pm2fb: %s: " a, __func__ , ## b)
- #else
--#define DPRINTK(a, b...)
-+#define DPRINTK(a, b...)	no_printk(a, ##b)
- #endif
- 
- #define PM2_PIXMAP_SIZE	(1600 * 4)
---- linux-next-20200313.orig/drivers/video/fbdev/pm3fb.c
-+++ linux-next-20200313/drivers/video/fbdev/pm3fb.c
-@@ -44,7 +44,7 @@
- #define DPRINTK(a, b...)	\
- 	printk(KERN_DEBUG "pm3fb: %s: " a, __func__ , ## b)
- #else
--#define DPRINTK(a, b...)
-+#define DPRINTK(a, b...)	no_printk(a, ##b)
- #endif
- 
- #define PM3_PIXMAP_SIZE	(2048 * 4)
-@@ -306,7 +306,7 @@ static void pm3fb_init_engine(struct fb_
- 					   PM3PixelSize_GLOBAL_32BIT);
- 			break;
- 		default:
--			DPRINTK(1, "Unsupported depth %d\n",
-+			DPRINTK("Unsupported depth %d\n",
- 				info->var.bits_per_pixel);
- 			break;
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index e8a304f84ea8..1a9d6242916e 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1247,7 +1247,7 @@ static ssize_t omapfb_show_caps_num(struct device *dev,
+ 	size = 0;
+ 	while (size < PAGE_SIZE && plane < OMAPFB_PLANE_NUM) {
+ 		omapfb_get_caps(fbdev, plane, &caps);
+-		size += snprintf(&buf[size], PAGE_SIZE - size,
++		size += scnprintf(&buf[size], PAGE_SIZE - size,
+ 			"plane#%d %#010x %#010x %#010x\n",
+ 			plane, caps.ctrl, caps.plane_color, caps.wnd_color);
+ 		plane++;
+@@ -1268,28 +1268,28 @@ static ssize_t omapfb_show_caps_text(struct device *dev,
+ 	size = 0;
+ 	while (size < PAGE_SIZE && plane < OMAPFB_PLANE_NUM) {
+ 		omapfb_get_caps(fbdev, plane, &caps);
+-		size += snprintf(&buf[size], PAGE_SIZE - size,
++		size += scnprintf(&buf[size], PAGE_SIZE - size,
+ 				 "plane#%d:\n", plane);
+ 		for (i = 0; i < ARRAY_SIZE(ctrl_caps) &&
+ 		     size < PAGE_SIZE; i++) {
+ 			if (ctrl_caps[i].flag & caps.ctrl)
+-				size += snprintf(&buf[size], PAGE_SIZE - size,
++				size += scnprintf(&buf[size], PAGE_SIZE - size,
+ 					" %s\n", ctrl_caps[i].name);
  		}
-@@ -349,8 +349,8 @@ static void pm3fb_init_engine(struct fb_
- 					   (1 << 10) | (0 << 3));
- 			break;
- 		default:
--			DPRINTK(1, "Unsupported depth %d\n",
--				info->current_par->depth);
-+			DPRINTK("Unsupported depth %d\n",
-+				info->var.bits_per_pixel);
- 			break;
+-		size += snprintf(&buf[size], PAGE_SIZE - size,
++		size += scnprintf(&buf[size], PAGE_SIZE - size,
+ 				 " plane colors:\n");
+ 		for (i = 0; i < ARRAY_SIZE(color_caps) &&
+ 		     size < PAGE_SIZE; i++) {
+ 			if (color_caps[i].flag & caps.plane_color)
+-				size += snprintf(&buf[size], PAGE_SIZE - size,
++				size += scnprintf(&buf[size], PAGE_SIZE - size,
+ 					"  %s\n", color_caps[i].name);
  		}
- 	}
+-		size += snprintf(&buf[size], PAGE_SIZE - size,
++		size += scnprintf(&buf[size], PAGE_SIZE - size,
+ 				 " window colors:\n");
+ 		for (i = 0; i < ARRAY_SIZE(color_caps) &&
+ 		     size < PAGE_SIZE; i++) {
+ 			if (color_caps[i].flag & caps.wnd_color)
+-				size += snprintf(&buf[size], PAGE_SIZE - size,
++				size += scnprintf(&buf[size], PAGE_SIZE - size,
+ 					"  %s\n", color_caps[i].name);
+ 		}
+ 
+-- 
+2.16.4

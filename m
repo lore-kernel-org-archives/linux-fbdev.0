@@ -1,50 +1,34 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 24 Mar 2020 13:45:02 +0000
-Subject: [PATCH v2 0/6] video: fbdev: controlfb: small cleanup
-Message-Id: <20200324134508.25120-1-b.zolnierkie@samsung.com>
+From: Takashi Iwai <tiwai@suse.de>
+Date: Wed, 11 Mar 2020 09:32:30 +0000
+Subject: [PATCH 3/3] video: uvesafb: Use scnprintf() for avoiding potential buffer overflow
+Message-Id: <20200311093230.24900-4-tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200324134518eucas1p1440c92398ddcbe5ea72d6db3703d3f97@eucas1p1.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: Andrzej Hajda <a.hajda@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, b.zolnierkie@samsung.com
+To: linux-fbdev@vger.kernel.org
 
-Hi,
+Since snprintf() returns the would-be-output size instead of the
+actual output size, the succeeding calls may go beyond the given
+buffer limit.  Fix it by replacing with scnprintf().
 
-Small cleanup for controlfb driver:
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+---
+ drivers/video/fbdev/uvesafb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-- fix sparse warnings
-- remove not working module support
-- add COMPILE_TEST support
-- remove redundant function prototypes
-
-Changes since v1
-(https://lore.kernel.org/lkml/20200116140900.26363-1-b.zolnierkie@samsung.com/):
-- use in_le32() instead of le32_to_cpup()
-- use eieio() and dcbf() helpers
-- add invalid_vram_cache() helper
-- add more dummy CONFIG_PPC_PMAC=n helpers to avoid ifdefs
-- add ACKs from Sam
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-Bartlomiej Zolnierkiewicz (6):
-  video: fbdev: controlfb: fix sparse warning about using incorrect type
-  video: fbdev: controlfb: add COMPILE_TEST support
-  video: fbdev: controlfb: remove obsolete module support
-  video: fbdev: controlfb: remove function prototypes part #1
-  video: fbdev: controlfb: remove function prototypes part #2
-  video: fbdev: controlfb: remove function prototypes part #3
-
- drivers/video/fbdev/Kconfig     |   2 +-
- drivers/video/fbdev/controlfb.c | 828 +++++++++++++++-----------------
- 2 files changed, 391 insertions(+), 439 deletions(-)
-
+diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+index 53d08d1b56f5..1b385cf76110 100644
+--- a/drivers/video/fbdev/uvesafb.c
++++ b/drivers/video/fbdev/uvesafb.c
+@@ -1560,7 +1560,7 @@ static ssize_t uvesafb_show_vbe_modes(struct device *dev,
+ 	int ret = 0, i;
+ 
+ 	for (i = 0; i < par->vbe_modes_cnt && ret < PAGE_SIZE; i++) {
+-		ret += snprintf(buf + ret, PAGE_SIZE - ret,
++		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+ 			"%dx%d-%d, 0x%.4x\n",
+ 			par->vbe_modes[i].x_res, par->vbe_modes[i].y_res,
+ 			par->vbe_modes[i].depth, par->vbe_modes[i].mode_id);
 -- 
-2.24.1
+2.16.4

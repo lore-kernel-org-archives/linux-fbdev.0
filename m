@@ -1,58 +1,38 @@
-From: kgunda@codeaurora.org
-Date: Mon, 23 Mar 2020 15:48:11 +0000
-Subject: Re: [PATCH V3 2/4] backlight: qcom-wled: Add callback functions
-Message-Id: <45964027ff388aec97d27f579d96c012@codeaurora.org>
+From: Marcio Albano <marcio.ahf@gmail.com>
+Date: Wed, 11 Mar 2020 01:25:33 +0000
+Subject: [PATCH] staging: fbtft: Remove prohibited spaces before ')'
+Message-Id: <20200311012533.26167-1-marcio.ahf@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1583760362-26978-1-git-send-email-kgunda@codeaurora.org>
- <1583760362-26978-3-git-send-email-kgunda@codeaurora.org>
- <20200310152719.5hpzh6osq22y4qbn@holly.lan>
- <05ab744dfbd83b6704bd394ce3c3dfc9@codeaurora.org>
- <20200311103047.v7rt5ii3saack22a@holly.lan>
-In-Reply-To: <20200311103047.v7rt5ii3saack22a@holly.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, jingoohan1@gmail.com, Andy Gross <agross@kernel.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, bjorn.andersson@linaro.org, robh+dt@kernel.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, linux-arm-msm@vger.kernel.org, lee.jones@linaro.org, linux-arm-msm-owner@vger.kernel.org, linux-leds@vger.kernel.org
+To: gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, lkcamp@lists.libreplanetbr.org
 
-On 2020-03-11 16:00, Daniel Thompson wrote:
-> On Wed, Mar 11, 2020 at 12:11:00PM +0530, kgunda@codeaurora.org wrote:
->> On 2020-03-10 20:57, Daniel Thompson wrote:
->> > On Mon, Mar 09, 2020 at 06:56:00PM +0530, Kiran Gunda wrote:
->> > > Add cabc_config, sync_toggle, wled_ovp_fault_status and wled_ovp_delay
->> > > callback functions to prepare the driver for adding WLED5 support.
->> > >
->> > > Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
->> >
->> > Overall this code would a lot easier to review if
->> > > ---
->> > >  drivers/video/backlight/qcom-wled.c | 196
->> > > +++++++++++++++++++++++-------------
->> > >  1 file changed, 126 insertions(+), 70 deletions(-)
->> > >
->> > > diff --git a/drivers/video/backlight/qcom-wled.c
->> > > b/drivers/video/backlight/qcom-wled.c
->> > > index 3d276b3..b73f273 100644
->> > > --- a/drivers/video/backlight/qcom-wled.c
->> > > +++ b/drivers/video/backlight/qcom-wled.c
->> > > @@ -128,6 +128,7 @@ struct wled_config {
->> > >  	bool cs_out_en;
->> > >  	bool ext_gen;
->> > >  	bool cabc;
->> > > +	bool en_cabc;
->> >
->> > Does this ever get set to true?
->> >
->> Yes. If user wants use the cabc pin to control the brightness and
->> use the "qcom,cabc" DT property in the device tree.
-> 
-> That sounds like what you intended the code to do!
-> 
-> Is the code that does this present in the patch? I could not find
-> it.
-> 
-okay... It's my bad. We already have the "cabc" for this. I will remove 
-the en_cabc in
-next series.
-> 
-> Daniel.
+Fix checkpatch errors:
+
+"ERROR: space prohibited before that close parenthesis ')'"
+in fbtft-bus.c:65 and fbtft-bus.c:67.
+
+Signed-off-by: Marcio Albano <marcio.ahf@gmail.com>
+---
+ drivers/staging/fbtft/fbtft-bus.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+index 63c65dd67..847cbfbbd 100644
+--- a/drivers/staging/fbtft/fbtft-bus.c
++++ b/drivers/staging/fbtft/fbtft-bus.c
+@@ -62,9 +62,9 @@ out:									      \
+ }                                                                             \
+ EXPORT_SYMBOL(func);
+ 
+-define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
++define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8)
+ define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+-define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
++define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16)
+ 
+ void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
+ {
+-- 
+2.20.1

@@ -1,116 +1,53 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Mon, 30 Mar 2020 16:23:51 +0000
-Subject: [PATCH v9 09/14] drm/i915: Add state readout for DP VSC SDP
-Message-Id: <20200330162356.162361-10-gwan-gyeong.mun@intel.com>
+From: Takashi Iwai <tiwai@suse.de>
+Date: Wed, 11 Mar 2020 09:32:29 +0000
+Subject: [PATCH 2/3] video: omap2: Use scnprintf() for avoiding potential buffer overflow
+Message-Id: <20200311093230.24900-3-tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
+To: linux-fbdev@vger.kernel.org
 
-Added state readout for DP VSC SDP and enabled state validation
-for DP VSC SDP.
+Since snprintf() returns the would-be-output size instead of the
+actual output size, the succeeding calls may go beyond the given
+buffer limit.  Fix it by replacing with scnprintf().
 
-v2: Minor style fix
-v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-v4: Use struct drm_device logging macros
-
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- drivers/gpu/drm/i915/display/intel_ddi.c     |  1 +
- drivers/gpu/drm/i915/display/intel_display.c | 43 ++++++++++++++++++++
- 2 files changed, 44 insertions(+)
+ drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index 710e2e42a12a..99b4944dfef2 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -4073,6 +4073,7 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
- 		icl_get_trans_port_sync_config(pipe_config);
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
+index 4a5db170ef59..2d39dbfa742e 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
+@@ -147,11 +147,11 @@ static ssize_t show_overlays(struct device *dev,
+ 			if (ovl = fbdev->overlays[ovlnum])
+ 				break;
  
- 	intel_read_dp_sdp(encoder, pipe_config, HDMI_PACKET_TYPE_GAMUT_METADATA);
-+	intel_read_dp_sdp(encoder, pipe_config, DP_SDP_VSC);
- }
- 
- static enum intel_output_type
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index 37c2c1338816..9576f2c44d06 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -13449,6 +13449,13 @@ intel_compare_infoframe(const union hdmi_infoframe *a,
- 	return memcmp(a, b, sizeof(*a)) = 0;
- }
- 
-+static bool
-+intel_compare_dp_vsc_sdp(const struct drm_dp_vsc_sdp *a,
-+			 const struct drm_dp_vsc_sdp *b)
-+{
-+	return memcmp(a, b, sizeof(*a)) = 0;
-+}
-+
- static void
- pipe_config_infoframe_mismatch(struct drm_i915_private *dev_priv,
- 			       bool fastset, const char *name,
-@@ -13474,6 +13481,31 @@ pipe_config_infoframe_mismatch(struct drm_i915_private *dev_priv,
+-		l += snprintf(buf + l, PAGE_SIZE - l, "%s%d",
++		l += scnprintf(buf + l, PAGE_SIZE - l, "%s%d",
+ 				t = 0 ? "" : ",", ovlnum);
  	}
- }
  
-+static void
-+pipe_config_dp_vsc_sdp_mismatch(struct drm_i915_private *dev_priv,
-+				bool fastset, const char *name,
-+				const struct drm_dp_vsc_sdp *a,
-+				const struct drm_dp_vsc_sdp *b)
-+{
-+	if (fastset) {
-+		if (!drm_debug_enabled(DRM_UT_KMS))
-+			return;
-+
-+		drm_dbg_kms(&dev_priv->drm,
-+			    "fastset mismatch in %s dp sdp\n", name);
-+		drm_dbg_kms(&dev_priv->drm, "expected:\n");
-+		drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, a);
-+		drm_dbg_kms(&dev_priv->drm, "found:\n");
-+		drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, b);
-+	} else {
-+		drm_err(&dev_priv->drm, "mismatch in %s dp sdp\n", name);
-+		drm_err(&dev_priv->drm, "expected:\n");
-+		drm_dp_vsc_sdp_log(KERN_ERR, dev_priv->drm.dev, a);
-+		drm_err(&dev_priv->drm, "found:\n");
-+		drm_dp_vsc_sdp_log(KERN_ERR, dev_priv->drm.dev, b);
-+	}
-+}
-+
- static void __printf(4, 5)
- pipe_config_mismatch(bool fastset, const struct intel_crtc *crtc,
- 		     const char *name, const char *format, ...)
-@@ -13675,6 +13707,16 @@ intel_pipe_config_compare(const struct intel_crtc_state *current_config,
- 	} \
- } while (0)
+-	l += snprintf(buf + l, PAGE_SIZE - l, "\n");
++	l += scnprintf(buf + l, PAGE_SIZE - l, "\n");
  
-+#define PIPE_CONF_CHECK_DP_VSC_SDP(name) do { \
-+	if (!intel_compare_dp_vsc_sdp(&current_config->infoframes.name, \
-+				      &pipe_config->infoframes.name)) { \
-+		pipe_config_dp_vsc_sdp_mismatch(dev_priv, fastset, __stringify(name), \
-+						&current_config->infoframes.name, \
-+						&pipe_config->infoframes.name); \
-+		ret = false; \
-+	} \
-+} while (0)
-+
- #define PIPE_CONF_CHECK_COLOR_LUT(name1, name2, bit_precision) do { \
- 	if (current_config->name1 != pipe_config->name1) { \
- 		pipe_config_mismatch(fastset, crtc, __stringify(name1), \
-@@ -13850,6 +13892,7 @@ intel_pipe_config_compare(const struct intel_crtc_state *current_config,
- 	PIPE_CONF_CHECK_INFOFRAME(spd);
- 	PIPE_CONF_CHECK_INFOFRAME(hdmi);
- 	PIPE_CONF_CHECK_INFOFRAME(drm);
-+	PIPE_CONF_CHECK_DP_VSC_SDP(vsc);
+ 	omapfb_unlock(fbdev);
+ 	unlock_fb_info(fbi);
+@@ -328,11 +328,11 @@ static ssize_t show_overlays_rotate(struct device *dev,
+ 	lock_fb_info(fbi);
  
- 	PIPE_CONF_CHECK_X(sync_mode_slaves_mask);
- 	PIPE_CONF_CHECK_I(master_transcoder);
+ 	for (t = 0; t < ofbi->num_overlays; t++) {
+-		l += snprintf(buf + l, PAGE_SIZE - l, "%s%d",
++		l += scnprintf(buf + l, PAGE_SIZE - l, "%s%d",
+ 				t = 0 ? "" : ",", ofbi->rotation[t]);
+ 	}
+ 
+-	l += snprintf(buf + l, PAGE_SIZE - l, "\n");
++	l += scnprintf(buf + l, PAGE_SIZE - l, "\n");
+ 
+ 	unlock_fb_info(fbi);
+ 
 -- 
-2.25.0
+2.16.4

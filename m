@@ -1,82 +1,44 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Mon, 30 Mar 2020 16:23:42 +0000
-Subject: [PATCH v9 00/14] In order to readout DP SDPs, refactors the handling of DP SDPs
-Message-Id: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sun, 15 Mar 2020 04:09:59 +0000
+Subject: [PATCH 3/6] fbdev: matrox: fix -Wextra build warnings
+Message-Id: <20200315041002.24473-4-rdunlap@infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200315041002.24473-1-rdunlap@infradead.org>
+In-Reply-To: <20200315041002.24473-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-In order to readout DP SDPs (Secondary Data Packet: DP HDR Metadata
-Infoframe SDP, DP VSC SDP), it refactors handling DP SDPs codes.
-It adds new compute routines for DP HDR Metadata Infoframe SDP
-and DP VSC SDP. 
-And new writing routines of DP SDPs (Secondary Data Packet) that uses
-computed configs.
-New reading routines of DP SDPs are added for readout.
-It adds a logging function for DP VSC SDP.
-When receiving video it is very useful to be able to log DP VSC SDP.
-This greatly simplifies debugging.
-In order to use a common VSC SDP Colorimetry calculating code on PSR,
-it uses a new psr vsc sdp compute routine.
+When 'DEBUG' is not defined, modify the dprintk() macro to use the
+no_printk() macro instead of using <empty>.
+This fixes build warnings when -Wextra is used and provides
+printk format checking:
 
-v2: Minor style fix
-v3: 
-  - Add a new drm data structure for DP VSC SDP
-  - Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-  - Move logging functions to drm core [Jani N]
-    And use drm core's DP VSC SDP logging function
-  - Explicitly disable unused DIPs (AVI, GCP, VS, SPD, DRM. They will be
-    used for HDMI), when intel_dp_set_infoframes() function will be called.
-v4:
-  - Use struct drm_device logging macros
-  - Rebased
-v5:
-  - Use intel_de_*() functions for register access
-  - Add warning where a bpc is 6 and a pixel format is RGB.
-  - Addressed review comments from Uma
-    Add kernel docs for added data structures
-    Rename enum dp_colorspace to dp_pixelformat
-    Polish commit message and comments
-    Combine the if checks of sdp.HB2 and sdp.HB3
-    Add 6bpc to packining and unpacking of VSC SDP
-v6: Fix enabled infoframe states of lspcon
-v7: Fix the wrong check of combination bpc 6 and RGB pixelformat
-v8: Rebased
-v9: Add clear comments to hdmi_drm_infoframe_unpack_only() and
-    hdmi_drm_infoframe_unpack() (Laurent Pinchart)
+../drivers/video/fbdev/matrox/matroxfb_base.c:635:77: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
+../drivers/video/fbdev/matrox/matroxfb_Ti3026.c:632:54: warning: suggest braces around empty body in an ‘else’ statement [-Wempty-body]
+../drivers/video/fbdev/matrox/matroxfb_Ti3026.c:654:53: warning: suggest braces around empty body in an ‘else’ statement [-Wempty-body]
 
-Gwan-gyeong Mun (14):
-  video/hdmi: Add Unpack only function for DRM infoframe
-  drm/i915/dp: Read out DP SDPs
-  drm: Add logging function for DP VSC SDP
-  drm/i915: Include HDMI DRM infoframe in the crtc state dump
-  drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
-  drm/i915: Include DP VSC SDP in the crtc state dump
-  drm/i915: Program DP SDPs with computed configs
-  drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
-  drm/i915: Add state readout for DP VSC SDP
-  drm/i915: Fix enabled infoframe states of lspcon
-  drm/i915: Program DP SDPs on pipe updates
-  drm/i915: Stop sending DP SDPs on ddi disable
-  drm/i915/dp: Add compute routine for DP PSR VSC SDP
-  drm/i915/psr: Use new DP VSC SDP compute routine on PSR
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+---
+Alternative: use pr_debug() so that CONFIG_DYNAMIC_DEBUG can be used
+at these sites.
 
- drivers/gpu/drm/drm_dp_helper.c              | 174 +++++++++
- drivers/gpu/drm/i915/display/intel_ddi.c     |  19 +-
- drivers/gpu/drm/i915/display/intel_display.c |  62 +++
- drivers/gpu/drm/i915/display/intel_dp.c      | 391 ++++++++++---------
- drivers/gpu/drm/i915/display/intel_dp.h      |  15 +-
- drivers/gpu/drm/i915/display/intel_lspcon.c  |   2 +-
- drivers/gpu/drm/i915/display/intel_psr.c     |  54 +--
- drivers/gpu/drm/i915/display/intel_psr.h     |   6 +-
- drivers/gpu/drm/i915/i915_drv.h              |   1 +
- drivers/video/hdmi.c                         |  65 ++-
- include/drm/drm_dp_helper.h                  |   3 +
- include/linux/hdmi.h                         |   2 +
- 12 files changed, 536 insertions(+), 258 deletions(-)
+ drivers/video/fbdev/matrox/matroxfb_base.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
--- 
-2.25.0
+--- linux-next-20200313.orig/drivers/video/fbdev/matrox/matroxfb_base.h
++++ linux-next-20200313/drivers/video/fbdev/matrox/matroxfb_base.h
+@@ -86,7 +86,7 @@
+ #ifdef DEBUG
+ #define dprintk(X...)	printk(X)
+ #else
+-#define dprintk(X...)
++#define dprintk(X...)	no_printk(X)
+ #endif
+ 
+ #ifndef PCI_SS_VENDOR_ID_SIEMENS_NIXDORF

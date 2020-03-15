@@ -1,54 +1,82 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 02 Mar 2020 15:41:33 +0000
-Subject: Re: [PATCH -next] video: fbdev: pxa168fb: remove unnecessary platform_get_irq
-Message-Id: <a5c01548-9d80-f586-7d74-bd80458446ce@samsung.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sun, 15 Mar 2020 04:10:01 +0000
+Subject: [PATCH 5/6] fbdev: pm[23]fb.c: fix -Wextra build warnings and errors
+Message-Id: <20200315041002.24473-6-rdunlap@infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200117032301eucas1p29817dfa06b4140d9e30634cf0052a5dd@eucas1p2.samsung.com>
- <20200117032241.59148-1-yuehaibing@huawei.com>
-In-Reply-To: <20200117032241.59148-1-yuehaibing@huawei.com>
+References: <20200315041002.24473-1-rdunlap@infradead.org>
+In-Reply-To: <20200315041002.24473-1-rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: YueHaibing <yuehaibing@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, arnd@arndb.de, jani.nikula@intel.com, daniel.vetter@ffwll.ch, hslester96@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, christophe.jaillet@wanadoo.fr
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
+When 'DEBUG' is not defined, modify the DPRINTK() macro to use the
+no_printk() macro instead of using <empty>.
+This fixes build warnings when -Wextra is used and provides
+printk format checking:
 
-On 1/17/20 4:22 AM, YueHaibing wrote:
-> commit 640ba2444fa9 ("drivers/video/pxa168fb.c: use devm_ functions")
-> left behind this, it can be removed.
-> 
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+../drivers/video/fbdev/pm2fb.c:227:38: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
+../drivers/video/fbdev/pm3fb.c:1039:33: warning: suggest braces around empty body in an ‘else’ statement [-Wempty-body]
 
-Patch queued for v5.7, thanks.
+Also drop one argument in two DPRINTK() macro uses to provide the
+correct number of arguments and use the correct field in one case
+to fix a build error:
+
+../drivers/video/fbdev/pm3fb.c:353:9: error: ‘struct fb_info’ has no member named ‘current_par’
+     info->current_par->depth);
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+---
+Alternative: use pr_debug() so that CONFIG_DYNAMIC_DEBUG can be used
+at these sites.
+
+ drivers/video/fbdev/pm2fb.c |    2 +-
+ drivers/video/fbdev/pm3fb.c |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+--- linux-next-20200313.orig/drivers/video/fbdev/pm2fb.c
++++ linux-next-20200313/drivers/video/fbdev/pm2fb.c
+@@ -54,7 +54,7 @@
+ #define DPRINTK(a, b...)	\
+ 	printk(KERN_DEBUG "pm2fb: %s: " a, __func__ , ## b)
+ #else
+-#define DPRINTK(a, b...)
++#define DPRINTK(a, b...)	no_printk(a, ##b)
+ #endif
  
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  drivers/video/fbdev/pxa168fb.c | 3 ---
->  1 file changed, 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
-> index 706c6943..aef8a30 100644
-> --- a/drivers/video/fbdev/pxa168fb.c
-> +++ b/drivers/video/fbdev/pxa168fb.c
-> @@ -779,7 +779,6 @@ static int pxa168fb_remove(struct platform_device *pdev)
->  {
->  	struct pxa168fb_info *fbi = platform_get_drvdata(pdev);
->  	struct fb_info *info;
-> -	int irq;
->  	unsigned int data;
->  
->  	if (!fbi)
-> @@ -799,8 +798,6 @@ static int pxa168fb_remove(struct platform_device *pdev)
->  	if (info->cmap.len)
->  		fb_dealloc_cmap(&info->cmap);
->  
-> -	irq = platform_get_irq(pdev, 0);
-> -
->  	dma_free_wc(fbi->dev, info->fix.smem_len,
->  		    info->screen_base, info->fix.smem_start);
->  
+ #define PM2_PIXMAP_SIZE	(1600 * 4)
+--- linux-next-20200313.orig/drivers/video/fbdev/pm3fb.c
++++ linux-next-20200313/drivers/video/fbdev/pm3fb.c
+@@ -44,7 +44,7 @@
+ #define DPRINTK(a, b...)	\
+ 	printk(KERN_DEBUG "pm3fb: %s: " a, __func__ , ## b)
+ #else
+-#define DPRINTK(a, b...)
++#define DPRINTK(a, b...)	no_printk(a, ##b)
+ #endif
+ 
+ #define PM3_PIXMAP_SIZE	(2048 * 4)
+@@ -306,7 +306,7 @@ static void pm3fb_init_engine(struct fb_
+ 					   PM3PixelSize_GLOBAL_32BIT);
+ 			break;
+ 		default:
+-			DPRINTK(1, "Unsupported depth %d\n",
++			DPRINTK("Unsupported depth %d\n",
+ 				info->var.bits_per_pixel);
+ 			break;
+ 		}
+@@ -349,8 +349,8 @@ static void pm3fb_init_engine(struct fb_
+ 					   (1 << 10) | (0 << 3));
+ 			break;
+ 		default:
+-			DPRINTK(1, "Unsupported depth %d\n",
+-				info->current_par->depth);
++			DPRINTK("Unsupported depth %d\n",
++				info->var.bits_per_pixel);
+ 			break;
+ 		}
+ 	}

@@ -1,39 +1,50 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 27 Mar 2020 07:29:15 +0000
-Subject: [PATCH v8 12/14] drm/i915: Stop sending DP SDPs on ddi disable
-Message-Id: <20200327072917.3676391-13-gwan-gyeong.mun@intel.com>
+From: "Shankar, Uma" <uma.shankar@intel.com>
+Date: Mon, 16 Mar 2020 05:22:13 +0000
+Subject: RE: [PATCH v7 14/18] drm/i915: Fix enabled infoframe states of lspcon
+Message-Id: <E7C9878FBA1C6D42A1CA3F62AEB6945F82432537@BGSMSX104.gar.corp.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
+References: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
+ <20200211074657.231405-15-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200211074657.231405-15-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: jani.nikula@intel.com, linux-fbdev@vger.kernel.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org
+To: "Mun, Gwan-gyeong" <gwan-gyeong.mun@intel.com>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
 
-Call intel_dp_set_infoframes(false) function on intel_ddi_post_disable_dp()
-to make sure not to send VSC SDP and HDR Metadata Infoframe SDP.
-
-v5: Polish commit message [Uma]
-
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
----
- drivers/gpu/drm/i915/display/intel_ddi.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index 57def3ae53b4..af66f3528a74 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -3351,6 +3351,8 @@ static void intel_ddi_post_disable_dp(struct intel_encoder *encoder,
- 					  INTEL_OUTPUT_DP_MST);
- 	enum phy phy = intel_port_to_phy(dev_priv, encoder->port);
- 
-+	intel_dp_set_infoframes(encoder, false, old_crtc_state, old_conn_state);
-+
- 	/*
- 	 * Power down sink before disabling the port, otherwise we end
- 	 * up getting interrupts from the sink on detecting link loss.
--- 
-2.25.0
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogZHJpLWRldmVsIDxkcmkt
+ZGV2ZWwtYm91bmNlc0BsaXN0cy5mcmVlZGVza3RvcC5vcmc+IE9uIEJlaGFsZiBPZiBHd2FuLQ0K
+PiBneWVvbmcgTXVuDQo+IFNlbnQ6IFR1ZXNkYXksIEZlYnJ1YXJ5IDExLCAyMDIwIDE6MTcgUE0N
+Cj4gVG86IGludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcNCj4gQ2M6IGxpbnV4LWZiZGV2
+QHZnZXIua2VybmVsLm9yZzsgZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZw0KPiBTdWJq
+ZWN0OiBbUEFUQ0ggdjcgMTQvMThdIGRybS9pOTE1OiBGaXggZW5hYmxlZCBpbmZvZnJhbWUgc3Rh
+dGVzIG9mIGxzcGNvbg0KPiANCj4gQ29tcGFyZWQgdG8gaW1wbGVtZW50YXRpb24gb2YgRFAgYW5k
+IEhETUkncyBlbmNvZGVyLT5pbmZvZnJhbWVzX2VuYWJsZWQsIHRoZQ0KPiBsc3Bjb24ncyBpbXBs
+ZW1lbnRhdGlvbiByZXR1cm5zIGl0cyBhY3RpdmUgc3RhdGUuICh3ZSBleHBlY3QgZW5hYmxlZCBp
+bmZvZnJhbWUNCj4gc3RhdGVzIG9mIEhXLikgSXQgbGVhZHMgdG8gcGlwZSBzdGF0ZSBtaXNtYXRj
+aCBlcnJvciB3aGVuIGRkaV9nZXRfY29uZmlnIGlzIGNhbGxlZC4NCj4gDQo+IEJlY2F1c2UgdGhl
+IGN1cnJlbnQgaW1wbGVtZW50YXRpb24gb2YgbHNwY29uIGlzIG5vdCByZWFkeSB0byBzdXBwb3J0
+IHJlYWRvdXQNCj4gaW5mb2ZyYW1lcywgd2UgbmVlZCB0byByZXR1cm4gMCBoZXJlLg0KPiANCj4g
+SW4gb3JkZXIgdG8gc3VwcG9ydCByZWFkb3V0IHRvIGxzcGNvbiwgd2UgbmVlZCB0byBpbXBsZW1l
+bnQgcmVhZF9pbmZvZnJhbWUgYW5kDQo+IGluZm9mcmFtZXNfZW5hYmxlZC4gQW5kIHNldF9pbmZv
+ZnJhbWVzIGFsc28gaGF2ZSB0byBzZXQgYW4gYXBwcm9wcmlhdGUgYml0IG9uDQo+IGNydGNfc3Rh
+dGUtPmluZm9mcmFtZXMuZW5hYmxlDQoNCkxvb2tzIGdvb2QuDQpSZXZpZXdlZC1ieTogVW1hIFNo
+YW5rYXIgPHVtYS5zaGFua2FyQGludGVsLmNvbT4NCg0KPiBDYzogVmlsbGUgU3lyasOkbMOkIDx2
+aWxsZS5zeXJqYWxhQGxpbnV4LmludGVsLmNvbT4NCj4gU2lnbmVkLW9mZi1ieTogR3dhbi1neWVv
+bmcgTXVuIDxnd2FuLWd5ZW9uZy5tdW5AaW50ZWwuY29tPg0KPiAtLS0NCj4gIGRyaXZlcnMvZ3B1
+L2RybS9pOTE1L2Rpc3BsYXkvaW50ZWxfbHNwY29uLmMgfCAyICstDQo+ICAxIGZpbGUgY2hhbmdl
+ZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2
+ZXJzL2dwdS9kcm0vaTkxNS9kaXNwbGF5L2ludGVsX2xzcGNvbi5jDQo+IGIvZHJpdmVycy9ncHUv
+ZHJtL2k5MTUvZGlzcGxheS9pbnRlbF9sc3Bjb24uYw0KPiBpbmRleCBkODA3YzU2NDhjODcuLjZm
+ZjdiMjI2ZjBhMSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL2k5MTUvZGlzcGxheS9p
+bnRlbF9sc3Bjb24uYw0KPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vaTkxNS9kaXNwbGF5L2ludGVs
+X2xzcGNvbi5jDQo+IEBAIC01MjIsNyArNTIyLDcgQEAgdTMyIGxzcGNvbl9pbmZvZnJhbWVzX2Vu
+YWJsZWQoc3RydWN0IGludGVsX2VuY29kZXINCj4gKmVuY29kZXIsDQo+ICAJCQkgICAgICBjb25z
+dCBzdHJ1Y3QgaW50ZWxfY3J0Y19zdGF0ZSAqcGlwZV9jb25maWcpICB7DQo+ICAJLyogRklYTUUg
+YWN0dWFsbHkgcmVhZCB0aGlzIGZyb20gdGhlIGh3ICovDQo+IC0JcmV0dXJuIGVuY190b19pbnRl
+bF9sc3Bjb24oZW5jb2RlciktPmFjdGl2ZTsNCj4gKwlyZXR1cm4gMDsNCj4gIH0NCj4gDQo+ICB2
+b2lkIGxzcGNvbl9yZXN1bWUoc3RydWN0IGludGVsX2xzcGNvbiAqbHNwY29uKQ0KPiAtLQ0KPiAy
+LjI1LjANCj4gDQo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fDQo+IGRyaS1kZXZlbCBtYWlsaW5nIGxpc3QNCj4gZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNr
+dG9wLm9yZw0KPiBodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZv
+L2RyaS1kZXZlbA0K

@@ -1,195 +1,328 @@
-From: "Shankar, Uma" <uma.shankar@intel.com>
-Date: Mon, 16 Mar 2020 05:06:25 +0000
+From: Jani Nikula <jani.nikula@linux.intel.com>
+Date: Fri, 20 Mar 2020 12:22:11 +0000
 Subject: RE: [PATCH v7 04/18] drm/i915/dp: Add writing of DP SDPs
-Message-Id: <E7C9878FBA1C6D42A1CA3F62AEB6945F824324D8@BGSMSX104.gar.corp.intel.com>
+Message-Id: <87eetncj2k.fsf@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200211074657.231405-1-gwan-gyeong.mun@intel.com>
  <20200211074657.231405-5-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200211074657.231405-5-gwan-gyeong.mun@intel.com>
+ <E7C9878FBA1C6D42A1CA3F62AEB6945F824324D8@BGSMSX104.gar.corp.intel.com>
+In-Reply-To: <E7C9878FBA1C6D42A1CA3F62AEB6945F824324D8@BGSMSX104.gar.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Mun, Gwan-gyeong" <gwan-gyeong.mun@intel.com>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: "Shankar, Uma" <uma.shankar@intel.com>, "Mun,
+ Gwan-gyeong" <gwan-gyeong.mun@intel.com>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>
 Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogZHJpLWRldmVsIDxkcmkt
-ZGV2ZWwtYm91bmNlc0BsaXN0cy5mcmVlZGVza3RvcC5vcmc+IE9uIEJlaGFsZiBPZiBHd2FuLQ0K
-PiBneWVvbmcgTXVuDQo+IFNlbnQ6IFR1ZXNkYXksIEZlYnJ1YXJ5IDExLCAyMDIwIDE6MTcgUE0N
-Cj4gVG86IGludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcNCj4gQ2M6IGxpbnV4LWZiZGV2
-QHZnZXIua2VybmVsLm9yZzsgZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZw0KPiBTdWJq
-ZWN0OiBbUEFUQ0ggdjcgMDQvMThdIGRybS9pOTE1L2RwOiBBZGQgd3JpdGluZyBvZiBEUCBTRFBz
-DQo+IA0KPiBJdCBhZGRzIHJvdXRpbmVzIHRoYXQgd3JpdGUgRFAgVlNDIFNEUCBhbmQgRFAgSERS
-IE1ldGFkYXRhIEluZm9mcmFtZSBTRFAuDQo+IEluIG9yZGVyIHRvIHBhY2sgRFAgVlNDIFNEUCwg
-aXQgYWRkcyBpbnRlbF9kcF92c2Nfc2RwX3BhY2soKSBmdW5jdGlvbi4NCj4gSXQgZm9sbG93cyBE
-UCAxLjRhIHNwZWMuIFtUYWJsZSAyLTExNjogVlNDIFNEUCBIZWFkZXIgQnl0ZXNdIGFuZCBbVGFi
-bGUgMi0xMTc6IFZTQw0KPiBTRFAgUGF5bG9hZCBmb3IgREIxNiB0aHJvdWdoIERCMThdDQo+IA0K
-PiBJbiBvcmRlciB0byBwYWNrIERQIEhEUiBNZXRhZGF0YSBJbmZvZnJhbWUgU0RQLCBpdCBhZGRz
-DQo+IGludGVsX2RwX2hkcl9tZXRhZGF0YV9pbmZvZnJhbWVfc2RwX3BhY2soKSBmdW5jdGlvbi4N
-Cj4gQW5kIGl0IGZvbGxvd3MgRFAgMS40YSBzcGVjLg0KPiAoW1RhYmxlIDItMTI1OiBJTkZPRlJB
-TUUgU0RQIHYxLjIgSGVhZGVyIEJ5dGVzXSBhbmQgW1RhYmxlIDItMTI2OiBJTkZPRlJBTUUNCj4g
-U0RQIHYxLjIgUGF5bG9hZCBEYXRhIEJ5dGVzIC0gREIwIHRocm91Z2ggREIzMV0pIGFuZCBDVEEt
-ODYxLUcgc3BlYy4gW1RhYmxlLTQyDQo+IER5bmFtaWMgUmFuZ2UgYW5kIE1hc3RlcmluZyBJbmZv
-RnJhbWVdLg0KPiANCj4gQSBtZWNoYW5pc20gYW5kIGEgbmFtaW5nIHJ1bGUgb2YgaW50ZWxfZHBf
-c2V0X2luZm9mcmFtZXMoKSBmdW5jdGlvbiByZWZlcmVuY2VzDQo+IGludGVsX2VuY29kZXItPnNl
-dF9pbmZvZnJhbWVzKCkgb2YgaW50ZWxfaGRtaS5jIC4NCj4gVlNDIFNEUCBpcyB1c2VkIGZvciBQ
-U1IgYW5kIFBpeGVsIEVuY29kaW5nIGFuZCBDb2xvcmltZXRyeSBGb3JtYXRzIGNhc2VzLg0KPiBC
-ZWNhdXNlIFBTUiByb3V0aW5lIGhhcyBpdHMgb3duIHJvdXRpbmUgb2Ygd3JpdGluZyBhIFZTQyBT
-RFAsIHdoZW4gdGhlIFBTUiBpcw0KPiBlbmFibGVkLCBpbnRlbF9kcF9zZXRfaW5mb2ZyYW1lcygp
-IGRvZXMgbm90IHdyaXRlIGEgVlNDIFNEUC4NCj4gDQo+IHYzOg0KPiAgIC0gRXhwbGljaXRseSBk
-aXNhYmxlIHVudXNlZCBESVBzIChBVkksIEdDUCwgVlMsIFNQRCwgRFJNLiBUaGV5IHdpbGwgYmUN
-Cj4gICAgIHVzZWQgZm9yIEhETUkpLCB3aGVuIGludGVsX2RwX3NldF9pbmZvZnJhbWVzKCkgZnVu
-Y3Rpb24gd2lsbCBiZSBjYWxsZWQuDQo+ICAgLSBSZXBsYWNlIGEgc3RydWN0dXJlIG5hbWUgdG8g
-ZHJtX2RwX3ZzY19zZHAgZnJvbSBpbnRlbF9kcF92c2Nfc2RwLg0KPiB2NDogVXNlIHN0cnVjdCBk
-cm1fZGV2aWNlIGxvZ2dpbmcgbWFjcm9zDQo+IHY1Og0KPiAgIC0gdXNlIGludGVsX2RlXyooKSBm
-dW5jdGlvbnMgZm9yIHJlZ2lzdGVyIGFjY2Vzcw0KPiAgIC0gQWRkcmVzc2VkIHJldmlldyBjb21t
-ZW50cyBmcm9tIFVtYQ0KPiAgICAgUG9saXNoIGNvbW1pdCBtZXNzYWdlIGFuZCBjb21tZW50cw0K
-PiAgICAgQWRkIDZicGMgdG8gcGFja2luZyBvZiBWU0MgU0RQDQoNCkxvb2tzIGdvb2QgdG8gbWUu
-DQpSZXZpZXdlZC1ieTogVW1hIFNoYW5rYXIgPHVtYS5zaGFua2FyQGludGVsLmNvbT4NCg0KPiBT
-aWduZWQtb2ZmLWJ5OiBHd2FuLWd5ZW9uZyBNdW4gPGd3YW4tZ3llb25nLm11bkBpbnRlbC5jb20+
-DQo+IC0tLQ0KPiAgZHJpdmVycy9ncHUvZHJtL2k5MTUvZGlzcGxheS9pbnRlbF9kcC5jIHwgMTk5
-ICsrKysrKysrKysrKysrKysrKysrKysrKw0KPiAgZHJpdmVycy9ncHUvZHJtL2k5MTUvZGlzcGxh
-eS9pbnRlbF9kcC5oIHwgICAzICsNCj4gIDIgZmlsZXMgY2hhbmdlZCwgMjAyIGluc2VydGlvbnMo
-KykNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vaTkxNS9kaXNwbGF5L2ludGVs
-X2RwLmMNCj4gYi9kcml2ZXJzL2dwdS9kcm0vaTkxNS9kaXNwbGF5L2ludGVsX2RwLmMNCj4gaW5k
-ZXggZmIwMDgxNjhjYTgzLi41YmJjNTUxMTMzMjUgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvZ3B1
-L2RybS9pOTE1L2Rpc3BsYXkvaW50ZWxfZHAuYw0KPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vaTkx
-NS9kaXNwbGF5L2ludGVsX2RwLmMNCj4gQEAgLTQ3NDEsNiArNDc0MSwyMDUgQEAgaW50ZWxfZHBf
-bmVlZHNfdnNjX3NkcChjb25zdCBzdHJ1Y3QgaW50ZWxfY3J0Y19zdGF0ZQ0KPiAqY3J0Y19zdGF0
-ZSwNCj4gIAlyZXR1cm4gZmFsc2U7DQo+ICB9DQo+IA0KPiArc3RhdGljIHNzaXplX3QgaW50ZWxf
-ZHBfdnNjX3NkcF9wYWNrKGNvbnN0IHN0cnVjdCBkcm1fZHBfdnNjX3NkcCAqdnNjLA0KPiArCQkJ
-CSAgICAgc3RydWN0IGRwX3NkcCAqc2RwLCBzaXplX3Qgc2l6ZSkgew0KPiArCXNpemVfdCBsZW5n
-dGggPSBzaXplb2Yoc3RydWN0IGRwX3NkcCk7DQo+ICsNCj4gKwlpZiAoc2l6ZSA8IGxlbmd0aCkN
-Cj4gKwkJcmV0dXJuIC1FTk9TUEM7DQo+ICsNCj4gKwltZW1zZXQoc2RwLCAwLCBzaXplKTsNCj4g
-Kw0KPiArCS8qDQo+ICsJICogUHJlcGFyZSBWU0MgSGVhZGVyIGZvciBTVSBhcyBwZXIgRFAgMS40
-YSBzcGVjLCBUYWJsZSAyLTExOQ0KPiArCSAqIFZTQyBTRFAgSGVhZGVyIEJ5dGVzDQo+ICsJICov
-DQo+ICsJc2RwLT5zZHBfaGVhZGVyLkhCMCA9IDA7IC8qIFNlY29uZGFyeS1EYXRhIFBhY2tldCBJ
-RCA9IDAgKi8NCj4gKwlzZHAtPnNkcF9oZWFkZXIuSEIxID0gdnNjLT5zZHBfdHlwZTsgLyogU2Vj
-b25kYXJ5LWRhdGEgUGFja2V0IFR5cGUgKi8NCj4gKwlzZHAtPnNkcF9oZWFkZXIuSEIyID0gdnNj
-LT5yZXZpc2lvbjsgLyogUmV2aXNpb24gTnVtYmVyICovDQo+ICsJc2RwLT5zZHBfaGVhZGVyLkhC
-MyA9IHZzYy0+bGVuZ3RoOyAvKiBOdW1iZXIgb2YgVmFsaWQgRGF0YSBCeXRlcyAqLw0KPiArDQo+
-ICsJLyogVlNDIFNEUCBQYXlsb2FkIGZvciBEQjE2IHRocm91Z2ggREIxOCAqLw0KPiArCS8qIFBp
-eGVsIEVuY29kaW5nIGFuZCBDb2xvcmltZXRyeSBGb3JtYXRzICAqLw0KPiArCXNkcC0+ZGJbMTZd
-ID0gKHZzYy0+cGl4ZWxmb3JtYXQgJiAweGYpIDw8IDQ7IC8qIERCMTZbNzo0XSAqLw0KPiArCXNk
-cC0+ZGJbMTZdIHw9IHZzYy0+Y29sb3JpbWV0cnkgJiAweGY7IC8qIERCMTZbMzowXSAqLw0KPiAr
-DQo+ICsJc3dpdGNoICh2c2MtPmJwYykgew0KPiArCWNhc2UgNjoNCj4gKwkJLyogNmJwYzogMHgw
-ICovDQo+ICsJCWJyZWFrOw0KPiArCWNhc2UgODoNCj4gKwkJc2RwLT5kYlsxN10gPSAweDE7IC8q
-IERCMTdbMzowXSAqLw0KPiArCQlicmVhazsNCj4gKwljYXNlIDEwOg0KPiArCQlzZHAtPmRiWzE3
-XSA9IDB4MjsNCj4gKwkJYnJlYWs7DQo+ICsJY2FzZSAxMjoNCj4gKwkJc2RwLT5kYlsxN10gPSAw
-eDM7DQo+ICsJCWJyZWFrOw0KPiArCWNhc2UgMTY6DQo+ICsJCXNkcC0+ZGJbMTddID0gMHg0Ow0K
-PiArCQlicmVhazsNCj4gKwlkZWZhdWx0Og0KPiArCQlNSVNTSU5HX0NBU0UodnNjLT5icGMpOw0K
-PiArCQlicmVhazsNCj4gKwl9DQo+ICsJLyogRHluYW1pYyBSYW5nZSBhbmQgQ29tcG9uZW50IEJp
-dCBEZXB0aCAqLw0KPiArCWlmICh2c2MtPmR5bmFtaWNfcmFuZ2UgPT0gRFBfRFlOQU1JQ19SQU5H
-RV9DVEEpDQo+ICsJCXNkcC0+ZGJbMTddIHw9IDB4ODA7ICAvKiBEQjE3WzddICovDQo+ICsNCj4g
-KwkvKiBDb250ZW50IFR5cGUgKi8NCj4gKwlzZHAtPmRiWzE4XSA9IHZzYy0+Y29udGVudF90eXBl
-ICYgMHg3Ow0KPiArDQo+ICsJcmV0dXJuIGxlbmd0aDsNCj4gK30NCj4gKw0KPiArc3RhdGljIHNz
-aXplX3QNCj4gK2ludGVsX2RwX2hkcl9tZXRhZGF0YV9pbmZvZnJhbWVfc2RwX3BhY2soY29uc3Qg
-c3RydWN0IGhkbWlfZHJtX2luZm9mcmFtZQ0KPiAqZHJtX2luZm9mcmFtZSwNCj4gKwkJCQkJIHN0
-cnVjdCBkcF9zZHAgKnNkcCwNCj4gKwkJCQkJIHNpemVfdCBzaXplKQ0KPiArew0KPiArCXNpemVf
-dCBsZW5ndGggPSBzaXplb2Yoc3RydWN0IGRwX3NkcCk7DQo+ICsJY29uc3QgaW50IGluZm9mcmFt
-ZV9zaXplID0gSERNSV9JTkZPRlJBTUVfSEVBREVSX1NJWkUgKw0KPiBIRE1JX0RSTV9JTkZPRlJB
-TUVfU0laRTsNCj4gKwl1bnNpZ25lZCBjaGFyIGJ1ZltIRE1JX0lORk9GUkFNRV9IRUFERVJfU0la
-RSArDQo+IEhETUlfRFJNX0lORk9GUkFNRV9TSVpFXTsNCj4gKwlzc2l6ZV90IGxlbjsNCj4gKw0K
-PiArCWlmIChzaXplIDwgbGVuZ3RoKQ0KPiArCQlyZXR1cm4gLUVOT1NQQzsNCj4gKw0KPiArCW1l
-bXNldChzZHAsIDAsIHNpemUpOw0KPiArDQo+ICsJbGVuID0gaGRtaV9kcm1faW5mb2ZyYW1lX3Bh
-Y2tfb25seShkcm1faW5mb2ZyYW1lLCBidWYsIHNpemVvZihidWYpKTsNCj4gKwlpZiAobGVuIDwg
-MCkgew0KPiArCQlEUk1fREVCVUdfS01TKCJidWZmZXIgc2l6ZSBpcyBzbWFsbGVyIHRoYW4gaGRy
-IG1ldGFkYXRhDQo+IGluZm9mcmFtZVxuIik7DQo+ICsJCXJldHVybiAtRU5PU1BDOw0KPiArCX0N
-Cj4gKw0KPiArCWlmIChsZW4gIT0gaW5mb2ZyYW1lX3NpemUpIHsNCj4gKwkJRFJNX0RFQlVHX0tN
-Uygid3Jvbmcgc3RhdGljIGhkciBtZXRhZGF0YSBzaXplXG4iKTsNCj4gKwkJcmV0dXJuIC1FTk9T
-UEM7DQo+ICsJfQ0KPiArDQo+ICsJLyoNCj4gKwkgKiBTZXQgdXAgdGhlIGluZm9mcmFtZSBzZHAg
-cGFja2V0IGZvciBIRFIgc3RhdGljIG1ldGFkYXRhLg0KPiArCSAqIFByZXBhcmUgVlNDIEhlYWRl
-ciBmb3IgU1UgYXMgcGVyIERQIDEuNGEgc3BlYywNCj4gKwkgKiBUYWJsZSAyLTEwMCBhbmQgVGFi
-bGUgMi0xMDENCj4gKwkgKi8NCj4gKw0KPiArCS8qIFNlY29uZGFyeS1EYXRhIFBhY2tldCBJRCwg
-MDBoIGZvciBub24tQXVkaW8gSU5GT0ZSQU1FICovDQo+ICsJc2RwLT5zZHBfaGVhZGVyLkhCMCA9
-IDA7DQo+ICsJLyoNCj4gKwkgKiBQYWNrZXQgVHlwZSA4MGggKyBOb24tYXVkaW8gSU5GT0ZSQU1F
-IFR5cGUgdmFsdWUNCj4gKwkgKiBIRE1JX0lORk9GUkFNRV9UWVBFX0RSTTogMHg4Nw0KPiArCSAq
-IC0gODBoICsgTm9uLWF1ZGlvIElORk9GUkFNRSBUeXBlIHZhbHVlDQo+ICsJICogLSBJbmZvRnJh
-bWUgVHlwZTogMHgwNw0KPiArCSAqICAgIFtDVEEtODYxLUcgVGFibGUtNDIgRHluYW1pYyBSYW5n
-ZSBhbmQgTWFzdGVyaW5nIEluZm9GcmFtZV0NCj4gKwkgKi8NCj4gKwlzZHAtPnNkcF9oZWFkZXIu
-SEIxID0gZHJtX2luZm9mcmFtZS0+dHlwZTsNCj4gKwkvKg0KPiArCSAqIExlYXN0IFNpZ25pZmlj
-YW50IEVpZ2h0IEJpdHMgb2YgKERhdGEgQnl0ZSBDb3VudCDigJMgMSkNCj4gKwkgKiBpbmZvZnJh
-bWVfc2l6ZSAtIDENCj4gKwkgKi8NCj4gKwlzZHAtPnNkcF9oZWFkZXIuSEIyID0gMHgxRDsNCj4g
-KwkvKiBJTkZPRlJBTUUgU0RQIFZlcnNpb24gTnVtYmVyICovDQo+ICsJc2RwLT5zZHBfaGVhZGVy
-LkhCMyA9ICgweDEzIDw8IDIpOw0KPiArCS8qIENUQSBIZWFkZXIgQnl0ZSAyIChJTkZPRlJBTUUg
-VmVyc2lvbiBOdW1iZXIpICovDQo+ICsJc2RwLT5kYlswXSA9IGRybV9pbmZvZnJhbWUtPnZlcnNp
-b247DQo+ICsJLyogQ1RBIEhlYWRlciBCeXRlIDMgKExlbmd0aCBvZiBJTkZPRlJBTUUpOg0KPiBI
-RE1JX0RSTV9JTkZPRlJBTUVfU0laRSAqLw0KPiArCXNkcC0+ZGJbMV0gPSBkcm1faW5mb2ZyYW1l
-LT5sZW5ndGg7DQo+ICsJLyoNCj4gKwkgKiBDb3B5IEhETUlfRFJNX0lORk9GUkFNRV9TSVpFIHNp
-emUgZnJvbSBhIGJ1ZmZlciBhZnRlcg0KPiArCSAqIEhETUlfSU5GT0ZSQU1FX0hFQURFUl9TSVpF
-DQo+ICsJICovDQo+ICsJQlVJTERfQlVHX09OKHNpemVvZihzZHAtPmRiKSA8IEhETUlfRFJNX0lO
-Rk9GUkFNRV9TSVpFICsgMik7DQo+ICsJbWVtY3B5KCZzZHAtPmRiWzJdLCAmYnVmW0hETUlfSU5G
-T0ZSQU1FX0hFQURFUl9TSVpFXSwNCj4gKwkgICAgICAgSERNSV9EUk1fSU5GT0ZSQU1FX1NJWkUp
-Ow0KPiArDQo+ICsJLyoNCj4gKwkgKiBTaXplIG9mIERQIGluZm9mcmFtZSBzZHAgcGFja2V0IGZv
-ciBIRFIgc3RhdGljIG1ldGFkYXRhIGNvbnNpc3RzIG9mDQo+ICsJICogLSBEUCBTRFAgSGVhZGVy
-KHN0cnVjdCBkcF9zZHBfaGVhZGVyKTogNCBieXRlcw0KPiArCSAqIC0gVHdvIERhdGEgQmxvY2tz
-OiAyIGJ5dGVzDQo+ICsJICogICAgQ1RBIEhlYWRlciBCeXRlMiAoSU5GT0ZSQU1FIFZlcnNpb24g
-TnVtYmVyKQ0KPiArCSAqICAgIENUQSBIZWFkZXIgQnl0ZTMgKExlbmd0aCBvZiBJTkZPRlJBTUUp
-DQo+ICsJICogLSBIRE1JX0RSTV9JTkZPRlJBTUVfU0laRTogMjYgYnl0ZXMNCj4gKwkgKg0KPiAr
-CSAqIFByaW9yIHRvIEdFTjExJ3MgR01QIHJlZ2lzdGVyIHNpemUgaXMgaWRlbnRpY2FsIHRvIERQ
-IEhEUiBzdGF0aWMgbWV0YWRhdGENCj4gKwkgKiBpbmZvZnJhbWUgc2l6ZS4gQnV0IEdFTjExKyBo
-YXMgbGFyZ2VyIHRoYW4gdGhhdCBzaXplLCB3cml0ZV9pbmZvZnJhbWUNCj4gKwkgKiB3aWxsIHBh
-ZCByZXN0IG9mIHRoZSBzaXplLg0KPiArCSAqLw0KPiArCXJldHVybiBzaXplb2Yoc3RydWN0IGRw
-X3NkcF9oZWFkZXIpICsgMiArIEhETUlfRFJNX0lORk9GUkFNRV9TSVpFOyB9DQo+ICsNCj4gK3N0
-YXRpYyB2b2lkIGludGVsX3dyaXRlX2RwX3NkcChzdHJ1Y3QgaW50ZWxfZW5jb2RlciAqZW5jb2Rl
-ciwNCj4gKwkJCSAgICAgICBjb25zdCBzdHJ1Y3QgaW50ZWxfY3J0Y19zdGF0ZSAqY3J0Y19zdGF0
-ZSwNCj4gKwkJCSAgICAgICB1bnNpZ25lZCBpbnQgdHlwZSkNCj4gK3sNCj4gKwlzdHJ1Y3QgaW50
-ZWxfZGlnaXRhbF9wb3J0ICppbnRlbF9kaWdfcG9ydCA9IGVuY190b19kaWdfcG9ydChlbmNvZGVy
-KTsNCj4gKwlzdHJ1Y3QgZHJtX2k5MTVfcHJpdmF0ZSAqZGV2X3ByaXYgPSB0b19pOTE1KGVuY29k
-ZXItPmJhc2UuZGV2KTsNCj4gKwlzdHJ1Y3QgZHBfc2RwIHNkcCA9IHt9Ow0KPiArCXNzaXplX3Qg
-bGVuOw0KPiArDQo+ICsJaWYgKChjcnRjX3N0YXRlLT5pbmZvZnJhbWVzLmVuYWJsZSAmDQo+ICsJ
-ICAgICBpbnRlbF9oZG1pX2luZm9mcmFtZV9lbmFibGUodHlwZSkpID09IDApDQo+ICsJCXJldHVy
-bjsNCj4gKw0KPiArCXN3aXRjaCAodHlwZSkgew0KPiArCWNhc2UgRFBfU0RQX1ZTQzoNCj4gKwkJ
-bGVuID0gaW50ZWxfZHBfdnNjX3NkcF9wYWNrKCZjcnRjX3N0YXRlLT5pbmZvZnJhbWVzLnZzYywg
-JnNkcCwNCj4gKwkJCQkJICAgIHNpemVvZihzZHApKTsNCj4gKwkJYnJlYWs7DQo+ICsJY2FzZSBI
-RE1JX1BBQ0tFVF9UWVBFX0dBTVVUX01FVEFEQVRBOg0KPiArCQlsZW4gPSBpbnRlbF9kcF9oZHJf
-bWV0YWRhdGFfaW5mb2ZyYW1lX3NkcF9wYWNrKCZjcnRjX3N0YXRlLQ0KPiA+aW5mb2ZyYW1lcy5k
-cm0uZHJtLA0KPiArCQkJCQkJCSAgICAgICAmc2RwLCBzaXplb2Yoc2RwKSk7DQo+ICsJCWJyZWFr
-Ow0KPiArCWRlZmF1bHQ6DQo+ICsJCU1JU1NJTkdfQ0FTRSh0eXBlKTsNCj4gKwkJYnJlYWs7DQo+
-ICsJfQ0KPiArDQo+ICsJaWYgKGRybV9XQVJOX09OKCZkZXZfcHJpdi0+ZHJtLCBsZW4gPCAwKSkN
-Cj4gKwkJcmV0dXJuOw0KPiArDQo+ICsJaW50ZWxfZGlnX3BvcnQtPndyaXRlX2luZm9mcmFtZShl
-bmNvZGVyLCBjcnRjX3N0YXRlLCB0eXBlLCAmc2RwLCBsZW4pOw0KPiArfQ0KPiArDQo+ICt2b2lk
-IGludGVsX2RwX3NldF9pbmZvZnJhbWVzKHN0cnVjdCBpbnRlbF9lbmNvZGVyICplbmNvZGVyLA0K
-PiArCQkJICAgICBib29sIGVuYWJsZSwNCj4gKwkJCSAgICAgY29uc3Qgc3RydWN0IGludGVsX2Ny
-dGNfc3RhdGUgKmNydGNfc3RhdGUsDQo+ICsJCQkgICAgIGNvbnN0IHN0cnVjdCBkcm1fY29ubmVj
-dG9yX3N0YXRlICpjb25uX3N0YXRlKSB7DQo+ICsJc3RydWN0IGRybV9pOTE1X3ByaXZhdGUgKmRl
-dl9wcml2ID0gdG9faTkxNShlbmNvZGVyLT5iYXNlLmRldik7DQo+ICsJc3RydWN0IGludGVsX2Rw
-ICppbnRlbF9kcCA9IGVuY190b19pbnRlbF9kcChlbmNvZGVyKTsNCj4gKwlpOTE1X3JlZ190IHJl
-ZyA9IEhTV19UVklERU9fRElQX0NUTChjcnRjX3N0YXRlLT5jcHVfdHJhbnNjb2Rlcik7DQo+ICsJ
-dTMyIGRpcF9lbmFibGUgPSBWSURFT19ESVBfRU5BQkxFX0FWSV9IU1cgfA0KPiBWSURFT19ESVBf
-RU5BQkxFX0dDUF9IU1cgfA0KPiArCQkJIFZJREVPX0RJUF9FTkFCTEVfVlNfSFNXIHwNCj4gVklE
-RU9fRElQX0VOQUJMRV9HTVBfSFNXIHwNCj4gKwkJCSBWSURFT19ESVBfRU5BQkxFX1NQRF9IU1cg
-fA0KPiBWSURFT19ESVBfRU5BQkxFX0RSTV9HTEs7DQo+ICsJdTMyIHZhbCA9IGludGVsX2RlX3Jl
-YWQoZGV2X3ByaXYsIHJlZyk7DQo+ICsNCj4gKwkvKiBUT0RPOiBBZGQgRFNDIGNhc2UgKERJUF9F
-TkFCTEVfUFBTKSAqLw0KPiArCS8qIFdoZW4gUFNSIGlzIGVuYWJsZWQsIHRoaXMgcm91dGluZSBk
-b2Vzbid0IGRpc2FibGUgVlNDIERJUCAqLw0KPiArCWlmIChpbnRlbF9wc3JfZW5hYmxlZChpbnRl
-bF9kcCkpDQo+ICsJCXZhbCAmPSB+ZGlwX2VuYWJsZTsNCj4gKwllbHNlDQo+ICsJCXZhbCAmPSB+
-KGRpcF9lbmFibGUgfCBWSURFT19ESVBfRU5BQkxFX1ZTQ19IU1cpOw0KPiArDQo+ICsJaWYgKCFl
-bmFibGUpIHsNCj4gKwkJaW50ZWxfZGVfd3JpdGUoZGV2X3ByaXYsIHJlZywgdmFsKTsNCj4gKwkJ
-aW50ZWxfZGVfcG9zdGluZ19yZWFkKGRldl9wcml2LCByZWcpOw0KPiArCQlyZXR1cm47DQo+ICsJ
-fQ0KPiArDQo+ICsJaW50ZWxfZGVfd3JpdGUoZGV2X3ByaXYsIHJlZywgdmFsKTsNCj4gKwlpbnRl
-bF9kZV9wb3N0aW5nX3JlYWQoZGV2X3ByaXYsIHJlZyk7DQo+ICsNCj4gKwkvKiBXaGVuIFBTUiBp
-cyBlbmFibGVkLCBWU0MgU0RQIGlzIGhhbmRsZWQgYnkgUFNSIHJvdXRpbmUgKi8NCj4gKwlpZiAo
-IWludGVsX3Bzcl9lbmFibGVkKGludGVsX2RwKSkNCj4gKwkJaW50ZWxfd3JpdGVfZHBfc2RwKGVu
-Y29kZXIsIGNydGNfc3RhdGUsIERQX1NEUF9WU0MpOw0KPiArDQo+ICsJaW50ZWxfd3JpdGVfZHBf
-c2RwKGVuY29kZXIsIGNydGNfc3RhdGUsDQo+ICtIRE1JX1BBQ0tFVF9UWVBFX0dBTVVUX01FVEFE
-QVRBKTsgfQ0KPiArDQo+ICBzdGF0aWMgdm9pZA0KPiAgaW50ZWxfZHBfc2V0dXBfdnNjX3NkcChz
-dHJ1Y3QgaW50ZWxfZHAgKmludGVsX2RwLA0KPiAgCQkgICAgICAgY29uc3Qgc3RydWN0IGludGVs
-X2NydGNfc3RhdGUgKmNydGNfc3RhdGUsIGRpZmYgLS1naXQNCj4gYS9kcml2ZXJzL2dwdS9kcm0v
-aTkxNS9kaXNwbGF5L2ludGVsX2RwLmgNCj4gYi9kcml2ZXJzL2dwdS9kcm0vaTkxNS9kaXNwbGF5
-L2ludGVsX2RwLmgNCj4gaW5kZXggM2RhMTY2MDU0Nzg4Li4wZGMwOWE0NjNlZTEgMTAwNjQ0DQo+
-IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2Rpc3BsYXkvaW50ZWxfZHAuaA0KPiArKysgYi9k
-cml2ZXJzL2dwdS9kcm0vaTkxNS9kaXNwbGF5L2ludGVsX2RwLmgNCj4gQEAgLTExNiw2ICsxMTYs
-OSBAQCB2b2lkIGludGVsX2RwX3ZzY19lbmFibGUoc3RydWN0IGludGVsX2RwICppbnRlbF9kcCwg
-IHZvaWQNCj4gaW50ZWxfZHBfaGRyX21ldGFkYXRhX2VuYWJsZShzdHJ1Y3QgaW50ZWxfZHAgKmlu
-dGVsX2RwLA0KPiAgCQkJCSAgY29uc3Qgc3RydWN0IGludGVsX2NydGNfc3RhdGUgKmNydGNfc3Rh
-dGUsDQo+ICAJCQkJICBjb25zdCBzdHJ1Y3QgZHJtX2Nvbm5lY3Rvcl9zdGF0ZSAqY29ubl9zdGF0
-ZSk7DQo+ICt2b2lkIGludGVsX2RwX3NldF9pbmZvZnJhbWVzKHN0cnVjdCBpbnRlbF9lbmNvZGVy
-ICplbmNvZGVyLCBib29sIGVuYWJsZSwNCj4gKwkJCSAgICAgY29uc3Qgc3RydWN0IGludGVsX2Ny
-dGNfc3RhdGUgKmNydGNfc3RhdGUsDQo+ICsJCQkgICAgIGNvbnN0IHN0cnVjdCBkcm1fY29ubmVj
-dG9yX3N0YXRlICpjb25uX3N0YXRlKTsNCj4gIGJvb2wgaW50ZWxfZGlnaXRhbF9wb3J0X2Nvbm5l
-Y3RlZChzdHJ1Y3QgaW50ZWxfZW5jb2RlciAqZW5jb2Rlcik7DQo+IA0KPiAgc3RhdGljIGlubGlu
-ZSB1bnNpZ25lZCBpbnQgaW50ZWxfZHBfdW51c2VkX2xhbmVfbWFzayhpbnQgbGFuZV9jb3VudCkN
-Cj4gLS0NCj4gMi4yNS4wDQo+IA0KPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXw0KPiBkcmktZGV2ZWwgbWFpbGluZyBsaXN0DQo+IGRyaS1kZXZlbEBsaXN0
-cy5mcmVlZGVza3RvcC5vcmcNCj4gaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1h
-bi9saXN0aW5mby9kcmktZGV2ZWwNCg=
+On Mon, 16 Mar 2020, "Shankar, Uma" <uma.shankar@intel.com> wrote:
+>> -----Original Message-----
+>> From: dri-devel <dri-devel-bounces@lists.freedesktop.org> On Behalf Of G=
+wan-
+>> gyeong Mun
+>> Sent: Tuesday, February 11, 2020 1:17 PM
+>> To: intel-gfx@lists.freedesktop.org
+>> Cc: linux-fbdev@vger.kernel.org; dri-devel@lists.freedesktop.org
+>> Subject: [PATCH v7 04/18] drm/i915/dp: Add writing of DP SDPs
+>>=20
+>> It adds routines that write DP VSC SDP and DP HDR Metadata Infoframe SDP.
+>> In order to pack DP VSC SDP, it adds intel_dp_vsc_sdp_pack() function.
+>> It follows DP 1.4a spec. [Table 2-116: VSC SDP Header Bytes] and [Table =
+2-117: VSC
+>> SDP Payload for DB16 through DB18]
+>>=20
+>> In order to pack DP HDR Metadata Infoframe SDP, it adds
+>> intel_dp_hdr_metadata_infoframe_sdp_pack() function.
+>> And it follows DP 1.4a spec.
+>> ([Table 2-125: INFOFRAME SDP v1.2 Header Bytes] and [Table 2-126: INFOFR=
+AME
+>> SDP v1.2 Payload Data Bytes - DB0 through DB31]) and CTA-861-G spec. [Ta=
+ble-42
+>> Dynamic Range and Mastering InfoFrame].
+>>=20
+>> A mechanism and a naming rule of intel_dp_set_infoframes() function refe=
+rences
+>> intel_encoder->set_infoframes() of intel_hdmi.c .
+>> VSC SDP is used for PSR and Pixel Encoding and Colorimetry Formats cases.
+>> Because PSR routine has its own routine of writing a VSC SDP, when the P=
+SR is
+>> enabled, intel_dp_set_infoframes() does not write a VSC SDP.
+>>=20
+>> v3:
+>>   - Explicitly disable unused DIPs (AVI, GCP, VS, SPD, DRM. They will be
+>>     used for HDMI), when intel_dp_set_infoframes() function will be call=
+ed.
+>>   - Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp.
+>> v4: Use struct drm_device logging macros
+>> v5:
+>>   - use intel_de_*() functions for register access
+>>   - Addressed review comments from Uma
+>>     Polish commit message and comments
+>>     Add 6bpc to packing of VSC SDP
+>
+> Looks good to me.
+> Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+
+Pushed up to and including this patch, thanks for the patches and
+review.
+
+BR,
+Jani.
+
+>
+>> Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+>> ---
+>>  drivers/gpu/drm/i915/display/intel_dp.c | 199 ++++++++++++++++++++++++
+>>  drivers/gpu/drm/i915/display/intel_dp.h |   3 +
+>>  2 files changed, 202 insertions(+)
+>>=20
+>> diff --git a/drivers/gpu/drm/i915/display/intel_dp.c
+>> b/drivers/gpu/drm/i915/display/intel_dp.c
+>> index fb008168ca83..5bbc55113325 100644
+>> --- a/drivers/gpu/drm/i915/display/intel_dp.c
+>> +++ b/drivers/gpu/drm/i915/display/intel_dp.c
+>> @@ -4741,6 +4741,205 @@ intel_dp_needs_vsc_sdp(const struct intel_crtc_s=
+tate
+>> *crtc_state,
+>>  	return false;
+>>  }
+>>=20
+>> +static ssize_t intel_dp_vsc_sdp_pack(const struct drm_dp_vsc_sdp *vsc,
+>> +				     struct dp_sdp *sdp, size_t size) {
+>> +	size_t length =3D sizeof(struct dp_sdp);
+>> +
+>> +	if (size < length)
+>> +		return -ENOSPC;
+>> +
+>> +	memset(sdp, 0, size);
+>> +
+>> +	/*
+>> +	 * Prepare VSC Header for SU as per DP 1.4a spec, Table 2-119
+>> +	 * VSC SDP Header Bytes
+>> +	 */
+>> +	sdp->sdp_header.HB0 =3D 0; /* Secondary-Data Packet ID =3D 0 */
+>> +	sdp->sdp_header.HB1 =3D vsc->sdp_type; /* Secondary-data Packet Type */
+>> +	sdp->sdp_header.HB2 =3D vsc->revision; /* Revision Number */
+>> +	sdp->sdp_header.HB3 =3D vsc->length; /* Number of Valid Data Bytes */
+>> +
+>> +	/* VSC SDP Payload for DB16 through DB18 */
+>> +	/* Pixel Encoding and Colorimetry Formats  */
+>> +	sdp->db[16] =3D (vsc->pixelformat & 0xf) << 4; /* DB16[7:4] */
+>> +	sdp->db[16] |=3D vsc->colorimetry & 0xf; /* DB16[3:0] */
+>> +
+>> +	switch (vsc->bpc) {
+>> +	case 6:
+>> +		/* 6bpc: 0x0 */
+>> +		break;
+>> +	case 8:
+>> +		sdp->db[17] =3D 0x1; /* DB17[3:0] */
+>> +		break;
+>> +	case 10:
+>> +		sdp->db[17] =3D 0x2;
+>> +		break;
+>> +	case 12:
+>> +		sdp->db[17] =3D 0x3;
+>> +		break;
+>> +	case 16:
+>> +		sdp->db[17] =3D 0x4;
+>> +		break;
+>> +	default:
+>> +		MISSING_CASE(vsc->bpc);
+>> +		break;
+>> +	}
+>> +	/* Dynamic Range and Component Bit Depth */
+>> +	if (vsc->dynamic_range =3D DP_DYNAMIC_RANGE_CTA)
+>> +		sdp->db[17] |=3D 0x80;  /* DB17[7] */
+>> +
+>> +	/* Content Type */
+>> +	sdp->db[18] =3D vsc->content_type & 0x7;
+>> +
+>> +	return length;
+>> +}
+>> +
+>> +static ssize_t
+>> +intel_dp_hdr_metadata_infoframe_sdp_pack(const struct hdmi_drm_infoframe
+>> *drm_infoframe,
+>> +					 struct dp_sdp *sdp,
+>> +					 size_t size)
+>> +{
+>> +	size_t length =3D sizeof(struct dp_sdp);
+>> +	const int infoframe_size =3D HDMI_INFOFRAME_HEADER_SIZE +
+>> HDMI_DRM_INFOFRAME_SIZE;
+>> +	unsigned char buf[HDMI_INFOFRAME_HEADER_SIZE +
+>> HDMI_DRM_INFOFRAME_SIZE];
+>> +	ssize_t len;
+>> +
+>> +	if (size < length)
+>> +		return -ENOSPC;
+>> +
+>> +	memset(sdp, 0, size);
+>> +
+>> +	len =3D hdmi_drm_infoframe_pack_only(drm_infoframe, buf, sizeof(buf));
+>> +	if (len < 0) {
+>> +		DRM_DEBUG_KMS("buffer size is smaller than hdr metadata
+>> infoframe\n");
+>> +		return -ENOSPC;
+>> +	}
+>> +
+>> +	if (len !=3D infoframe_size) {
+>> +		DRM_DEBUG_KMS("wrong static hdr metadata size\n");
+>> +		return -ENOSPC;
+>> +	}
+>> +
+>> +	/*
+>> +	 * Set up the infoframe sdp packet for HDR static metadata.
+>> +	 * Prepare VSC Header for SU as per DP 1.4a spec,
+>> +	 * Table 2-100 and Table 2-101
+>> +	 */
+>> +
+>> +	/* Secondary-Data Packet ID, 00h for non-Audio INFOFRAME */
+>> +	sdp->sdp_header.HB0 =3D 0;
+>> +	/*
+>> +	 * Packet Type 80h + Non-audio INFOFRAME Type value
+>> +	 * HDMI_INFOFRAME_TYPE_DRM: 0x87
+>> +	 * - 80h + Non-audio INFOFRAME Type value
+>> +	 * - InfoFrame Type: 0x07
+>> +	 *    [CTA-861-G Table-42 Dynamic Range and Mastering InfoFrame]
+>> +	 */
+>> +	sdp->sdp_header.HB1 =3D drm_infoframe->type;
+>> +	/*
+>> +	 * Least Significant Eight Bits of (Data Byte Count =E2=80=93 1)
+>> +	 * infoframe_size - 1
+>> +	 */
+>> +	sdp->sdp_header.HB2 =3D 0x1D;
+>> +	/* INFOFRAME SDP Version Number */
+>> +	sdp->sdp_header.HB3 =3D (0x13 << 2);
+>> +	/* CTA Header Byte 2 (INFOFRAME Version Number) */
+>> +	sdp->db[0] =3D drm_infoframe->version;
+>> +	/* CTA Header Byte 3 (Length of INFOFRAME):
+>> HDMI_DRM_INFOFRAME_SIZE */
+>> +	sdp->db[1] =3D drm_infoframe->length;
+>> +	/*
+>> +	 * Copy HDMI_DRM_INFOFRAME_SIZE size from a buffer after
+>> +	 * HDMI_INFOFRAME_HEADER_SIZE
+>> +	 */
+>> +	BUILD_BUG_ON(sizeof(sdp->db) < HDMI_DRM_INFOFRAME_SIZE + 2);
+>> +	memcpy(&sdp->db[2], &buf[HDMI_INFOFRAME_HEADER_SIZE],
+>> +	       HDMI_DRM_INFOFRAME_SIZE);
+>> +
+>> +	/*
+>> +	 * Size of DP infoframe sdp packet for HDR static metadata consists of
+>> +	 * - DP SDP Header(struct dp_sdp_header): 4 bytes
+>> +	 * - Two Data Blocks: 2 bytes
+>> +	 *    CTA Header Byte2 (INFOFRAME Version Number)
+>> +	 *    CTA Header Byte3 (Length of INFOFRAME)
+>> +	 * - HDMI_DRM_INFOFRAME_SIZE: 26 bytes
+>> +	 *
+>> +	 * Prior to GEN11's GMP register size is identical to DP HDR static me=
+tadata
+>> +	 * infoframe size. But GEN11+ has larger than that size, write_infofra=
+me
+>> +	 * will pad rest of the size.
+>> +	 */
+>> +	return sizeof(struct dp_sdp_header) + 2 + HDMI_DRM_INFOFRAME_SIZE; }
+>> +
+>> +static void intel_write_dp_sdp(struct intel_encoder *encoder,
+>> +			       const struct intel_crtc_state *crtc_state,
+>> +			       unsigned int type)
+>> +{
+>> +	struct intel_digital_port *intel_dig_port =3D enc_to_dig_port(encoder);
+>> +	struct drm_i915_private *dev_priv =3D to_i915(encoder->base.dev);
+>> +	struct dp_sdp sdp =3D {};
+>> +	ssize_t len;
+>> +
+>> +	if ((crtc_state->infoframes.enable &
+>> +	     intel_hdmi_infoframe_enable(type)) =3D 0)
+>> +		return;
+>> +
+>> +	switch (type) {
+>> +	case DP_SDP_VSC:
+>> +		len =3D intel_dp_vsc_sdp_pack(&crtc_state->infoframes.vsc, &sdp,
+>> +					    sizeof(sdp));
+>> +		break;
+>> +	case HDMI_PACKET_TYPE_GAMUT_METADATA:
+>> +		len =3D intel_dp_hdr_metadata_infoframe_sdp_pack(&crtc_state-
+>> >infoframes.drm.drm,
+>> +							       &sdp, sizeof(sdp));
+>> +		break;
+>> +	default:
+>> +		MISSING_CASE(type);
+>> +		break;
+>> +	}
+>> +
+>> +	if (drm_WARN_ON(&dev_priv->drm, len < 0))
+>> +		return;
+>> +
+>> +	intel_dig_port->write_infoframe(encoder, crtc_state, type, &sdp, len);
+>> +}
+>> +
+>> +void intel_dp_set_infoframes(struct intel_encoder *encoder,
+>> +			     bool enable,
+>> +			     const struct intel_crtc_state *crtc_state,
+>> +			     const struct drm_connector_state *conn_state) {
+>> +	struct drm_i915_private *dev_priv =3D to_i915(encoder->base.dev);
+>> +	struct intel_dp *intel_dp =3D enc_to_intel_dp(encoder);
+>> +	i915_reg_t reg =3D HSW_TVIDEO_DIP_CTL(crtc_state->cpu_transcoder);
+>> +	u32 dip_enable =3D VIDEO_DIP_ENABLE_AVI_HSW |
+>> VIDEO_DIP_ENABLE_GCP_HSW |
+>> +			 VIDEO_DIP_ENABLE_VS_HSW |
+>> VIDEO_DIP_ENABLE_GMP_HSW |
+>> +			 VIDEO_DIP_ENABLE_SPD_HSW |
+>> VIDEO_DIP_ENABLE_DRM_GLK;
+>> +	u32 val =3D intel_de_read(dev_priv, reg);
+>> +
+>> +	/* TODO: Add DSC case (DIP_ENABLE_PPS) */
+>> +	/* When PSR is enabled, this routine doesn't disable VSC DIP */
+>> +	if (intel_psr_enabled(intel_dp))
+>> +		val &=3D ~dip_enable;
+>> +	else
+>> +		val &=3D ~(dip_enable | VIDEO_DIP_ENABLE_VSC_HSW);
+>> +
+>> +	if (!enable) {
+>> +		intel_de_write(dev_priv, reg, val);
+>> +		intel_de_posting_read(dev_priv, reg);
+>> +		return;
+>> +	}
+>> +
+>> +	intel_de_write(dev_priv, reg, val);
+>> +	intel_de_posting_read(dev_priv, reg);
+>> +
+>> +	/* When PSR is enabled, VSC SDP is handled by PSR routine */
+>> +	if (!intel_psr_enabled(intel_dp))
+>> +		intel_write_dp_sdp(encoder, crtc_state, DP_SDP_VSC);
+>> +
+>> +	intel_write_dp_sdp(encoder, crtc_state,
+>> +HDMI_PACKET_TYPE_GAMUT_METADATA); }
+>> +
+>>  static void
+>>  intel_dp_setup_vsc_sdp(struct intel_dp *intel_dp,
+>>  		       const struct intel_crtc_state *crtc_state, diff --git
+>> a/drivers/gpu/drm/i915/display/intel_dp.h
+>> b/drivers/gpu/drm/i915/display/intel_dp.h
+>> index 3da166054788..0dc09a463ee1 100644
+>> --- a/drivers/gpu/drm/i915/display/intel_dp.h
+>> +++ b/drivers/gpu/drm/i915/display/intel_dp.h
+>> @@ -116,6 +116,9 @@ void intel_dp_vsc_enable(struct intel_dp *intel_dp, =
+ void
+>> intel_dp_hdr_metadata_enable(struct intel_dp *intel_dp,
+>>  				  const struct intel_crtc_state *crtc_state,
+>>  				  const struct drm_connector_state *conn_state);
+>> +void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
+>> +			     const struct intel_crtc_state *crtc_state,
+>> +			     const struct drm_connector_state *conn_state);
+>>  bool intel_digital_port_connected(struct intel_encoder *encoder);
+>>=20
+>>  static inline unsigned int intel_dp_unused_lane_mask(int lane_count)
+>> --
+>> 2.25.0
+>>=20
+>> _______________________________________________
+>> dri-devel mailing list
+>> dri-devel@lists.freedesktop.org
+>> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+
+--=20
+Jani Nikula, Intel Open Source Graphics Center

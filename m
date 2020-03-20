@@ -1,72 +1,34 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Sun, 09 Feb 2020 03:53:30 +0000
-Subject: [PATCH v5 03/18] drm/i915/dp: Add compute routine for DP HDR Metadata Infoframe SDP
-Message-Id: <20200209035345.357436-4-gwan-gyeong.mun@intel.com>
+From: syzbot <syzbot+3950016bd95c2ca0377b@syzkaller.appspotmail.com>
+Date: Fri, 20 Mar 2020 00:48:02 +0000
+Subject: Re: general protection fault in sctp_ulpevent_nofity_peer_addr_change
+Message-Id: <00000000000041ca9305a13ea3e0@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200209035345.357436-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <00000000000074219d05a139e082@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: a@unstable.cc, b.a.t.m.a.n@lists.open-mesh.org, b.zolnierkie@samsung.com, davem@davemloft.net, dri-devel@lists.freedesktop.org, kuba@kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sctp@vger.kernel.org, lkundrak@v3.sk, marcelo.leitner@gmail.com, mareklindner@neomailbox.ch, netdev@vger.kernel.org, nhorman@tuxdriver.com, sw@simonwunderlich.de, syzkaller-bugs@googlegroups.com, vyasevich@gmail.com
 
-It stores computed dp hdr metadata infoframe sdp to infoframes.drm of
-crtc state. It referenced intel_hdmi_compute_drm_infoframe().
+syzbot has bisected this bug to:
 
-While computing, we'll also fill out the infoframes.enable bitmask
-appropriately.
+commit da2648390ce3d409218b6bbbf2386d8ddeec2265
+Author: Lubomir Rintel <lkundrak@v3.sk>
+Date:   Thu Dec 20 18:13:09 2018 +0000
 
-v2: Wrap a long line.
-v4: Use struct drm_device logging macros
-v5: Fix typo [Uma]
+    pxa168fb: trivial typo fix
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
----
- drivers/gpu/drm/i915/display/intel_dp.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=1361e139e00000
+start commit:   5076190d mm: slub: be more careful about the double cmpxch..
+git tree:       upstream
+final crash:    https://syzkaller.appspot.com/x/report.txt?x=10e1e139e00000
+console output: https://syzkaller.appspot.com/x/log.txt?x=1761e139e00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=9F894bd92023de02
+dashboard link: https://syzkaller.appspot.com/bug?extid950016bd95c2ca0377b
+userspace arch: i386
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=1162bbe3e00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=13c93b45e00000
 
-diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
-index 499377bf2891..472ce3203a09 100644
---- a/drivers/gpu/drm/i915/display/intel_dp.c
-+++ b/drivers/gpu/drm/i915/display/intel_dp.c
-@@ -2469,6 +2469,29 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
- 					 &crtc_state->infoframes.vsc);
- }
- 
-+static void
-+intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_dp *intel_dp,
-+					    struct intel_crtc_state *crtc_state,
-+					    const struct drm_connector_state *conn_state)
-+{
-+	int ret;
-+	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
-+	struct hdmi_drm_infoframe *drm_infoframe = &crtc_state->infoframes.drm.drm;
-+
-+	if (!conn_state->hdr_output_metadata)
-+		return;
-+
-+	ret = drm_hdmi_infoframe_set_hdr_metadata(drm_infoframe, conn_state);
-+
-+	if (ret) {
-+		drm_dbg_kms(&dev_priv->drm, "couldn't set HDR metadata in infoframe\n");
-+		return;
-+	}
-+
-+	crtc_state->infoframes.enable |+		intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA);
-+}
-+
- int
- intel_dp_compute_config(struct intel_encoder *encoder,
- 			struct intel_crtc_state *pipe_config,
-@@ -2575,6 +2598,7 @@ intel_dp_compute_config(struct intel_encoder *encoder,
- 
- 	intel_psr_compute_config(intel_dp, pipe_config);
- 	intel_dp_compute_vsc_sdp(intel_dp, pipe_config, conn_state);
-+	intel_dp_compute_hdr_metadata_infoframe_sdp(intel_dp, pipe_config, conn_state);
- 
- 	return 0;
- }
--- 
-2.24.1
+Reported-by: syzbot+3950016bd95c2ca0377b@syzkaller.appspotmail.com
+Fixes: da2648390ce3 ("pxa168fb: trivial typo fix")
+
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection

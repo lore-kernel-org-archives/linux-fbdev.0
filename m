@@ -1,446 +1,626 @@
-From: Oleksandr Suvorov <oleksandr.suvorov@toradex.com>
-Date: Tue, 17 Mar 2020 12:32:29 +0000
-Subject: [RFC PATCH 5/7] pwm: replace polarity enum with macros
-Message-Id: <20200317123231.2843297-6-oleksandr.suvorov@toradex.com>
+From: Kiran Gunda <kgunda@codeaurora.org>
+Date: Mon, 23 Mar 2020 17:58:58 +0000
+Subject: [PATCH V4 4/4] backlight: qcom-wled: Add support for WLED5 peripheral in PM8150L
+Message-Id: <1584985618-25689-5-git-send-email-kgunda@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200317123231.2843297-1-oleksandr.suvorov@toradex.com>
-In-Reply-To: <20200317123231.2843297-1-oleksandr.suvorov@toradex.com>
+References: <1584985618-25689-1-git-send-email-kgunda@codeaurora.org>
+In-Reply-To: <1584985618-25689-1-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree@vger.kernel.org, linux-pwm@vger.kernel.org
-Cc: Milo Kim <milo.kim@ti.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Oleksandr Suvorov <oleksandr.suvorov@toradex.com>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>, linux-stm32@st-md-mailman.stormreply.com, devel@driverdev.osuosl.org, Daniel Thompson <daniel.thompson@linaro.org>, Florian Fainelli <f.fainelli@gmail.com>, Ludovic Desroches <ludovic.desroches@microchip.com>, Ingo Molnar <mingo@redhat.com>, bcm-kernel-feedback-list@broadcom.com, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Alexandre Torgue <alexandre.torgue@st.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ray Jui <rjui@broadcom.com>, Johan Hovold <johan@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Vladimir Zapolskiy <vz@mleia.com>, Philippe Schenker <philippe.schenker@toradex.com>, Paul Barker <pbarker@konsulko.com>, linux-rpi-kernel@lists.infradead.org, Fabrice Gasnier <fabrice.gasnier@st.com>, linux-arm-kernel@lists.infradead.org, Igor Opaniuk <igor.opaniuk@toradex.com>, Alex Elder <elder@kernel.org>, Scott Branden <sbranden@broadcom.com>, greybus-dev@lists.linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Tony Prisk <linux@prisktech.co.nz>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Jingoo Han <jingoohan1@gmail.com>, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Subbaraman Narayanamurthy <subbaram@codeaurora.org>, Kiran Gunda <kgunda@codeaurora.org>
 
-To avoid duplication of pwm polarity definitions,
-remove "enum pwm_polarity" and use macros instead.
+From: Subbaraman Narayanamurthy <subbaram@codeaurora.org>
 
-Prepare to use both polarity flags in DTs.
+Add support for WLED5 peripheral that is present on PM8150L PMICs.
 
-Signed-off-by: Oleksandr Suvorov <oleksandr.suvorov@toradex.com>
+PM8150L WLED supports the following:
+    - Two modulators and each sink can use any of the modulator
+    - Multiple CABC selection options from which one can be selected/enabled
+    - Multiple brightness width selection (12 bits to 15 bits)
+
+Signed-off-by: Subbaraman Narayanamurthy <subbaram@codeaurora.org>
+Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
 ---
+ drivers/video/backlight/qcom-wled.c | 427 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 424 insertions(+), 3 deletions(-)
 
- drivers/pwm/core.c                  |  2 +-
- drivers/pwm/pwm-atmel-tcb.c         |  8 ++++----
- drivers/pwm/pwm-bcm-kona.c          |  2 +-
- drivers/pwm/pwm-bcm2835.c           |  2 +-
- drivers/pwm/pwm-berlin.c            |  2 +-
- drivers/pwm/pwm-ep93xx.c            |  2 +-
- drivers/pwm/pwm-hibvt.c             |  2 +-
- drivers/pwm/pwm-lpc18xx-sct.c       |  2 +-
- drivers/pwm/pwm-omap-dmtimer.c      |  2 +-
- drivers/pwm/pwm-renesas-tpu.c       |  4 ++--
- drivers/pwm/pwm-samsung.c           |  2 +-
- drivers/pwm/pwm-stm32.c             |  2 +-
- drivers/pwm/pwm-tiecap.c            |  2 +-
- drivers/pwm/pwm-tiehrpwm.c          |  4 ++--
- drivers/pwm/pwm-vt8500.c            |  2 +-
- drivers/pwm/sysfs.c                 |  2 +-
- drivers/staging/greybus/pwm.c       |  2 +-
- drivers/video/backlight/lp8788_bl.c |  2 +-
- include/linux/mfd/lp8788.h          |  2 +-
- include/linux/pwm.h                 | 29 ++++++++---------------------
- include/trace/events/pwm.h          |  2 +-
- 21 files changed, 33 insertions(+), 46 deletions(-)
-
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index 08afbb5b98aa..2cb9db8d545b 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -257,7 +257,7 @@ static bool pwm_ops_check(const struct pwm_ops *ops)
-  * Returns: 0 on success or a negative error code on failure.
-  */
- int pwmchip_add_with_polarity(struct pwm_chip *chip,
--			      enum pwm_polarity polarity)
-+			      unsigned int polarity)
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index a3daf9e..5a347ef 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -19,12 +19,15 @@
+ #define WLED_DEFAULT_BRIGHTNESS				2048
+ #define WLED_SOFT_START_DLY_US				10000
+ #define WLED3_SINK_REG_BRIGHT_MAX			0xFFF
++#define WLED5_SINK_REG_BRIGHT_MAX_12B			0xFFF
++#define WLED5_SINK_REG_BRIGHT_MAX_15B			0x7FFF
+ 
+ /* WLED3/WLED4 control registers */
+ #define WLED3_CTRL_REG_FAULT_STATUS			0x08
+ #define  WLED3_CTRL_REG_ILIM_FAULT_BIT			BIT(0)
+ #define  WLED3_CTRL_REG_OVP_FAULT_BIT			BIT(1)
+ #define  WLED4_CTRL_REG_SC_FAULT_BIT			BIT(2)
++#define  WLED5_CTRL_REG_OVP_PRE_ALARM_BIT		BIT(4)
+ 
+ #define WLED3_CTRL_REG_INT_RT_STS			0x10
+ #define  WLED3_CTRL_REG_OVP_FAULT_STATUS		BIT(1)
+@@ -40,6 +43,7 @@
+ 
+ #define WLED3_CTRL_REG_OVP				0x4d
+ #define  WLED3_CTRL_REG_OVP_MASK			GENMASK(1, 0)
++#define  WLED5_CTRL_REG_OVP_MASK			GENMASK(3, 0)
+ 
+ #define WLED3_CTRL_REG_ILIMIT				0x4e
+ #define  WLED3_CTRL_REG_ILIMIT_MASK			GENMASK(2, 0)
+@@ -101,6 +105,44 @@
+ 
+ #define WLED4_SINK_REG_BRIGHT(n)			(0x57 + (n * 0x10))
+ 
++/* WLED5 specific control registers */
++#define WLED5_CTRL_REG_OVP_INT_CTL			0x5f
++#define  WLED5_CTRL_REG_OVP_INT_TIMER_MASK		GENMASK(2, 0)
++
++/* WLED5 specific sink registers */
++#define WLED5_SINK_REG_MOD_A_EN				0x50
++#define WLED5_SINK_REG_MOD_B_EN				0x60
++#define  WLED5_SINK_REG_MOD_EN_MASK			BIT(7)
++
++#define WLED5_SINK_REG_MOD_A_SRC_SEL			0x51
++#define WLED5_SINK_REG_MOD_B_SRC_SEL			0x61
++#define  WLED5_SINK_REG_MOD_SRC_SEL_HIGH		0
++#define  WLED5_SINK_REG_MOD_SRC_SEL_EXT			0x03
++#define  WLED5_SINK_REG_MOD_SRC_SEL_MASK		GENMASK(1, 0)
++
++#define WLED5_SINK_REG_MOD_A_BRIGHTNESS_WIDTH_SEL	0x52
++#define WLED5_SINK_REG_MOD_B_BRIGHTNESS_WIDTH_SEL	0x62
++#define  WLED5_SINK_REG_BRIGHTNESS_WIDTH_12B		0
++#define  WLED5_SINK_REG_BRIGHTNESS_WIDTH_15B		1
++
++#define WLED5_SINK_REG_MOD_A_BRIGHTNESS_LSB		0x53
++#define WLED5_SINK_REG_MOD_A_BRIGHTNESS_MSB		0x54
++#define WLED5_SINK_REG_MOD_B_BRIGHTNESS_LSB		0x63
++#define WLED5_SINK_REG_MOD_B_BRIGHTNESS_MSB		0x64
++
++#define WLED5_SINK_REG_MOD_SYNC_BIT			0x65
++#define  WLED5_SINK_REG_SYNC_MOD_A_BIT			BIT(0)
++#define  WLED5_SINK_REG_SYNC_MOD_B_BIT			BIT(1)
++#define  WLED5_SINK_REG_SYNC_MASK			GENMASK(1, 0)
++
++/* WLED5 specific per-'string' registers below */
++#define WLED5_SINK_REG_STR_FULL_SCALE_CURR(n)		(0x72 + (n * 0x10))
++
++#define WLED5_SINK_REG_STR_SRC_SEL(n)			(0x73 + (n * 0x10))
++#define  WLED5_SINK_REG_SRC_SEL_MOD_A			0
++#define  WLED5_SINK_REG_SRC_SEL_MOD_B			1
++#define  WLED5_SINK_REG_SRC_SEL_MASK			GENMASK(1, 0)
++
+ struct wled_var_cfg {
+ 	const u32 *values;
+ 	u32 (*fn)(u32);
+@@ -125,6 +167,8 @@ struct wled_config {
+ 	u32 num_strings;
+ 	u32 string_i_limit;
+ 	u32 enabled_strings[WLED_MAX_STRINGS];
++	u32 mod_sel;
++	u32 cabc_sel;
+ 	bool cs_out_en;
+ 	bool ext_gen;
+ 	bool cabc;
+@@ -150,6 +194,7 @@ struct wled {
+ 	u32 version;
+ 	bool disabled_by_short;
+ 	bool has_short_detect;
++	bool cabc_disabled;
+ 	int short_irq;
+ 	int ovp_irq;
+ 
+@@ -162,6 +207,27 @@ struct wled {
+ 	int (*wled_ovp_delay)(struct wled *wled);
+ };
+ 
++enum wled5_mod_sel {
++	MOD_A,
++	MOD_B,
++	MOD_MAX,
++};
++
++static const u8 wled5_brightness_reg[MOD_MAX] = {
++	[MOD_A] = WLED5_SINK_REG_MOD_A_BRIGHTNESS_LSB,
++	[MOD_B] = WLED5_SINK_REG_MOD_B_BRIGHTNESS_LSB,
++};
++
++static const u8 wled5_src_sel_reg[MOD_MAX] = {
++	[MOD_A] = WLED5_SINK_REG_MOD_A_SRC_SEL,
++	[MOD_B] = WLED5_SINK_REG_MOD_B_SRC_SEL,
++};
++
++static const u8 wled5_brt_wid_sel_reg[MOD_MAX] = {
++	[MOD_A] = WLED5_SINK_REG_MOD_A_BRIGHTNESS_WIDTH_SEL,
++	[MOD_B] = WLED5_SINK_REG_MOD_B_BRIGHTNESS_WIDTH_SEL,
++};
++
+ static int wled3_set_brightness(struct wled *wled, u16 brightness)
  {
- 	struct pwm_device *pwm;
- 	unsigned int i;
-diff --git a/drivers/pwm/pwm-atmel-tcb.c b/drivers/pwm/pwm-atmel-tcb.c
-index 98526a286347..9e8a0b4b1751 100644
---- a/drivers/pwm/pwm-atmel-tcb.c
-+++ b/drivers/pwm/pwm-atmel-tcb.c
-@@ -31,7 +31,7 @@
- 				 ATMEL_TC_BEEVT | ATMEL_TC_BSWTRG)
- 
- struct atmel_tcb_pwm_device {
--	enum pwm_polarity polarity;	/* PWM polarity */
-+	unsigned int polarity;		/* PWM polarity */
- 	unsigned div;			/* PWM clock divider */
- 	unsigned duty;			/* PWM duty expressed in clk cycles */
- 	unsigned period;		/* PWM period expressed in clk cycles */
-@@ -60,7 +60,7 @@ static inline struct atmel_tcb_pwm_chip *to_tcb_chip(struct pwm_chip *chip)
- 
- static int atmel_tcb_pwm_set_polarity(struct pwm_chip *chip,
- 				      struct pwm_device *pwm,
--				      enum pwm_polarity polarity)
-+				      unsigned int polarity)
- {
- 	struct atmel_tcb_pwm_device *tcbpwm = pwm_get_chip_data(pwm);
- 
-@@ -147,7 +147,7 @@ static void atmel_tcb_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
- 	unsigned group = pwm->hwpwm / 2;
- 	unsigned index = pwm->hwpwm % 2;
- 	unsigned cmr;
--	enum pwm_polarity polarity = tcbpwm->polarity;
-+	unsigned int polarity = tcbpwm->polarity;
- 
- 	/*
- 	 * If duty is 0 the timer will be stopped and we have to
-@@ -206,7 +206,7 @@ static int atmel_tcb_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
- 	unsigned group = pwm->hwpwm / 2;
- 	unsigned index = pwm->hwpwm % 2;
- 	u32 cmr;
--	enum pwm_polarity polarity = tcbpwm->polarity;
-+	unsigned int polarity = tcbpwm->polarity;
- 
- 	/*
- 	 * If duty is 0 the timer will be stopped and we have to
-diff --git a/drivers/pwm/pwm-bcm-kona.c b/drivers/pwm/pwm-bcm-kona.c
-index 02da511814f1..83eab0cc51ce 100644
---- a/drivers/pwm/pwm-bcm-kona.c
-+++ b/drivers/pwm/pwm-bcm-kona.c
-@@ -174,7 +174,7 @@ static int kona_pwmc_config(struct pwm_chip *chip, struct pwm_device *pwm,
- }
- 
- static int kona_pwmc_set_polarity(struct pwm_chip *chip, struct pwm_device *pwm,
--				  enum pwm_polarity polarity)
-+				  unsigned int polarity)
- {
- 	struct kona_pwmc *kp = to_kona_pwmc(chip);
- 	unsigned int chan = pwm->hwpwm;
-diff --git a/drivers/pwm/pwm-bcm2835.c b/drivers/pwm/pwm-bcm2835.c
-index 91e24f01b54e..2110aef85f19 100644
---- a/drivers/pwm/pwm-bcm2835.c
-+++ b/drivers/pwm/pwm-bcm2835.c
-@@ -107,7 +107,7 @@ static void bcm2835_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
- }
- 
- static int bcm2835_set_polarity(struct pwm_chip *chip, struct pwm_device *pwm,
--				enum pwm_polarity polarity)
-+				unsigned int polarity)
- {
- 	struct bcm2835_pwm *pc = to_bcm2835_pwm(chip);
- 	u32 value;
-diff --git a/drivers/pwm/pwm-berlin.c b/drivers/pwm/pwm-berlin.c
-index b91c477cc84b..1a080bf33047 100644
---- a/drivers/pwm/pwm-berlin.c
-+++ b/drivers/pwm/pwm-berlin.c
-@@ -127,7 +127,7 @@ static int berlin_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm_dev,
- 
- static int berlin_pwm_set_polarity(struct pwm_chip *chip,
- 				   struct pwm_device *pwm_dev,
--				   enum pwm_polarity polarity)
-+				   unsigned int polarity)
- {
- 	struct berlin_pwm_chip *pwm = to_berlin_pwm_chip(chip);
- 	u32 value;
-diff --git a/drivers/pwm/pwm-ep93xx.c b/drivers/pwm/pwm-ep93xx.c
-index 02345b6f9fe8..71897ad5f6a0 100644
---- a/drivers/pwm/pwm-ep93xx.c
-+++ b/drivers/pwm/pwm-ep93xx.c
-@@ -111,7 +111,7 @@ static int ep93xx_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
- }
- 
- static int ep93xx_pwm_polarity(struct pwm_chip *chip, struct pwm_device *pwm,
--			       enum pwm_polarity polarity)
-+			       unsigned int polarity)
- {
- 	struct ep93xx_pwm *ep93xx_pwm = to_ep93xx_pwm(chip);
- 	int ret;
-diff --git a/drivers/pwm/pwm-hibvt.c b/drivers/pwm/pwm-hibvt.c
-index c57a94e7da0f..7e39abce0c14 100644
---- a/drivers/pwm/pwm-hibvt.c
-+++ b/drivers/pwm/pwm-hibvt.c
-@@ -116,7 +116,7 @@ static void hibvt_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
- 
- static void hibvt_pwm_set_polarity(struct pwm_chip *chip,
- 					struct pwm_device *pwm,
--					enum pwm_polarity polarity)
-+					unsigned int polarity)
- {
- 	struct hibvt_pwm_chip *hi_pwm_chip = to_hibvt_pwm_chip(chip);
- 
-diff --git a/drivers/pwm/pwm-lpc18xx-sct.c b/drivers/pwm/pwm-lpc18xx-sct.c
-index 5ff11145c1a3..3ebb7cca0204 100644
---- a/drivers/pwm/pwm-lpc18xx-sct.c
-+++ b/drivers/pwm/pwm-lpc18xx-sct.c
-@@ -225,7 +225,7 @@ static int lpc18xx_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
- 
- static int lpc18xx_pwm_set_polarity(struct pwm_chip *chip,
- 				    struct pwm_device *pwm,
--				    enum pwm_polarity polarity)
-+				    unsigned int polarity)
- {
+ 	int rc, i;
+@@ -203,6 +269,25 @@ static int wled4_set_brightness(struct wled *wled, u16 brightness)
  	return 0;
  }
-diff --git a/drivers/pwm/pwm-omap-dmtimer.c b/drivers/pwm/pwm-omap-dmtimer.c
-index 082ccec93133..ebbd1fe57d57 100644
---- a/drivers/pwm/pwm-omap-dmtimer.c
-+++ b/drivers/pwm/pwm-omap-dmtimer.c
-@@ -210,7 +210,7 @@ static int pwm_omap_dmtimer_config(struct pwm_chip *chip,
  
- static int pwm_omap_dmtimer_set_polarity(struct pwm_chip *chip,
- 					 struct pwm_device *pwm,
--					 enum pwm_polarity polarity)
-+					 unsigned int polarity)
++static int wled5_set_brightness(struct wled *wled, u16 brightness)
++{
++	int rc, offset;
++	u16 low_limit = wled->max_brightness * 1 / 1000;
++	u8 v[2];
++
++	/* WLED5's lower limit is 0.1% */
++	if (brightness < low_limit)
++		brightness = low_limit;
++
++	v[0] = brightness & 0xff;
++	v[1] = (brightness >> 8) & 0x7f;
++
++	offset = wled5_brightness_reg[wled->cfg.mod_sel];
++	rc = regmap_bulk_write(wled->regmap, wled->sink_addr + offset,
++			       v, 2);
++	return rc;
++}
++
+ static void wled_ovp_work(struct work_struct *work)
  {
- 	struct pwm_omap_dmtimer_chip *omap = to_pwm_omap_dmtimer_chip(chip);
- 
-diff --git a/drivers/pwm/pwm-renesas-tpu.c b/drivers/pwm/pwm-renesas-tpu.c
-index 32beeb93ade1..3c594cef2d5a 100644
---- a/drivers/pwm/pwm-renesas-tpu.c
-+++ b/drivers/pwm/pwm-renesas-tpu.c
-@@ -72,7 +72,7 @@ struct tpu_pwm_device {
- 	struct tpu_device *tpu;
- 	unsigned int channel;		/* Channel number in the TPU */
- 
--	enum pwm_polarity polarity;
-+	unsigned int polarity;
- 	unsigned int prescaler;
- 	u16 period;
- 	u16 duty;
-@@ -325,7 +325,7 @@ static int tpu_pwm_config(struct pwm_chip *chip, struct pwm_device *_pwm,
+ 	struct wled *wled = container_of(work,
+@@ -260,6 +345,24 @@ static int wled3_sync_toggle(struct wled *wled)
+ 	return rc;
  }
  
- static int tpu_pwm_set_polarity(struct pwm_chip *chip, struct pwm_device *_pwm,
--				enum pwm_polarity polarity)
-+				unsigned int polarity)
++static int wled5_sync_toggle(struct wled *wled)
++{
++	int rc;
++	u8 val;
++
++	val = (wled->cfg.mod_sel = MOD_A) ? WLED5_SINK_REG_SYNC_MOD_A_BIT :
++					     WLED5_SINK_REG_SYNC_MOD_B_BIT;
++	rc = regmap_update_bits(wled->regmap,
++				wled->sink_addr + WLED5_SINK_REG_MOD_SYNC_BIT,
++				WLED5_SINK_REG_SYNC_MASK, val);
++	if (rc < 0)
++		return rc;
++
++	return regmap_update_bits(wled->regmap,
++				  wled->sink_addr + WLED5_SINK_REG_MOD_SYNC_BIT,
++				  WLED5_SINK_REG_SYNC_MASK, 0);
++}
++
+ static int wled4_ovp_fault_status(struct wled *wled, bool *fault_set)
  {
- 	struct tpu_pwm_device *pwm = pwm_get_chip_data(_pwm);
- 
-diff --git a/drivers/pwm/pwm-samsung.c b/drivers/pwm/pwm-samsung.c
-index 87a886f7dc2f..7bf4f76e25bc 100644
---- a/drivers/pwm/pwm-samsung.c
-+++ b/drivers/pwm/pwm-samsung.c
-@@ -413,7 +413,7 @@ static void pwm_samsung_set_invert(struct samsung_pwm_chip *chip,
- 
- static int pwm_samsung_set_polarity(struct pwm_chip *chip,
- 				    struct pwm_device *pwm,
--				    enum pwm_polarity polarity)
-+				    unsigned int polarity)
- {
- 	struct samsung_pwm_chip *our_chip = to_samsung_pwm_chip(chip);
- 	bool invert = (polarity = PWM_POLARITY_NORMAL);
-diff --git a/drivers/pwm/pwm-stm32.c b/drivers/pwm/pwm-stm32.c
-index d3be944f2ae9..a83ea66f36c9 100644
---- a/drivers/pwm/pwm-stm32.c
-+++ b/drivers/pwm/pwm-stm32.c
-@@ -383,7 +383,7 @@ static int stm32_pwm_config(struct stm32_pwm *priv, int ch,
+ 	int rc;
+@@ -295,11 +398,67 @@ static int wled4_ovp_fault_status(struct wled *wled, bool *fault_set)
+ 	return rc;
  }
  
- static int stm32_pwm_set_polarity(struct stm32_pwm *priv, int ch,
--				  enum pwm_polarity polarity)
-+				  unsigned int polarity)
++static int wled5_ovp_fault_status(struct wled *wled, bool *fault_set)
++{
++	int rc;
++	u32 int_rt_sts, fault_sts;
++
++	*fault_set = false;
++	rc = regmap_read(wled->regmap,
++			wled->ctrl_addr + WLED3_CTRL_REG_INT_RT_STS,
++			&int_rt_sts);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to read INT_RT_STS rc=%d\n", rc);
++		return rc;
++	}
++
++	rc = regmap_read(wled->regmap,
++			wled->ctrl_addr + WLED3_CTRL_REG_FAULT_STATUS,
++			&fault_sts);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to read FAULT_STATUS rc=%d\n", rc);
++		return rc;
++	}
++
++	if (int_rt_sts & WLED3_CTRL_REG_OVP_FAULT_STATUS)
++		*fault_set = true;
++
++	if (fault_sts & (WLED3_CTRL_REG_OVP_FAULT_BIT |
++			       WLED5_CTRL_REG_OVP_PRE_ALARM_BIT))
++		*fault_set = true;
++
++	if (*fault_set)
++		dev_dbg(wled->dev, "WLED OVP fault detected, int_rt_sts=0x%x fault_sts=0x%x\n",
++			int_rt_sts, fault_sts);
++
++	return rc;
++}
++
+ static int wled4_ovp_delay(struct wled *wled)
  {
- 	u32 mask;
- 
-diff --git a/drivers/pwm/pwm-tiecap.c b/drivers/pwm/pwm-tiecap.c
-index b96b388f0969..744144f83355 100644
---- a/drivers/pwm/pwm-tiecap.c
-+++ b/drivers/pwm/pwm-tiecap.c
-@@ -109,7 +109,7 @@ static int ecap_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
+ 	return WLED_SOFT_START_DLY_US;
  }
  
- static int ecap_pwm_set_polarity(struct pwm_chip *chip, struct pwm_device *pwm,
--				 enum pwm_polarity polarity)
-+				 unsigned int polarity)
++static int wled5_ovp_delay(struct wled *wled)
++{
++	int rc, delay_us;
++	u32 val;
++	u8 ovp_timer_ms[8] = {1, 2, 4, 8, 12, 16, 20, 24};
++
++	/* For WLED5, get the delay based on OVP timer */
++	rc = regmap_read(wled->regmap, wled->ctrl_addr +
++			 WLED5_CTRL_REG_OVP_INT_CTL, &val);
++	if (rc < 0)
++		delay_us +		ovp_timer_ms[val & WLED5_CTRL_REG_OVP_INT_TIMER_MASK] * 1000;
++	else
++		delay_us = 2 * WLED_SOFT_START_DLY_US;
++
++	dev_dbg(wled->dev, "delay_time_us: %d\n", delay_us);
++
++	return delay_us;
++}
++
+ static int wled_update_status(struct backlight_device *bl)
  {
- 	struct ecap_pwm_chip *pc = to_ecap_pwm_chip(chip);
- 	u16 value;
-diff --git a/drivers/pwm/pwm-tiehrpwm.c b/drivers/pwm/pwm-tiehrpwm.c
-index 71c337443dd5..cde0231e835a 100644
---- a/drivers/pwm/pwm-tiehrpwm.c
-+++ b/drivers/pwm/pwm-tiehrpwm.c
-@@ -109,7 +109,7 @@ struct ehrpwm_pwm_chip {
- 	unsigned long clk_rate;
- 	void __iomem *mmio_base;
- 	unsigned long period_cycles[NUM_PWM_CHANNEL];
--	enum pwm_polarity polarity[NUM_PWM_CHANNEL];
-+	unsigned int polarity[NUM_PWM_CHANNEL];
- 	struct clk *tbclk;
- 	struct ehrpwm_context ctx;
- };
-@@ -306,7 +306,7 @@ static int ehrpwm_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
- 
- static int ehrpwm_pwm_set_polarity(struct pwm_chip *chip,
- 				   struct pwm_device *pwm,
--				   enum pwm_polarity polarity)
-+				   unsigned int polarity)
- {
- 	struct ehrpwm_pwm_chip *pc = to_ehrpwm_pwm_chip(chip);
- 
-diff --git a/drivers/pwm/pwm-vt8500.c b/drivers/pwm/pwm-vt8500.c
-index fc434965c5ed..076c9f207d64 100644
---- a/drivers/pwm/pwm-vt8500.c
-+++ b/drivers/pwm/pwm-vt8500.c
-@@ -158,7 +158,7 @@ static void vt8500_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
- 
- static int vt8500_pwm_set_polarity(struct pwm_chip *chip,
- 				   struct pwm_device *pwm,
--				   enum pwm_polarity polarity)
-+				   unsigned int polarity)
- {
- 	struct vt8500_chip *vt8500 = to_vt8500_chip(chip);
- 	u32 val;
-diff --git a/drivers/pwm/sysfs.c b/drivers/pwm/sysfs.c
-index 769ac09c56c2..7cf787ac5e23 100644
---- a/drivers/pwm/sysfs.c
-+++ b/drivers/pwm/sysfs.c
-@@ -180,7 +180,7 @@ static ssize_t polarity_store(struct device *child,
- {
- 	struct pwm_export *export = child_to_pwm_export(child);
- 	struct pwm_device *pwm = export->pwm;
--	enum pwm_polarity polarity;
-+	unsigned int polarity;
- 	struct pwm_state state;
- 	int ret;
- 
-diff --git a/drivers/staging/greybus/pwm.c b/drivers/staging/greybus/pwm.c
-index 891a6a672378..338c76c4be9b 100644
---- a/drivers/staging/greybus/pwm.c
-+++ b/drivers/staging/greybus/pwm.c
-@@ -213,7 +213,7 @@ static int gb_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
- };
- 
- static int gb_pwm_set_polarity(struct pwm_chip *chip, struct pwm_device *pwm,
--			       enum pwm_polarity polarity)
-+			       unsigned int polarity)
- {
- 	struct gb_pwm_chip *pwmc = pwm_chip_to_gb_pwm_chip(chip);
- 
-diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backlight/lp8788_bl.c
-index ba42f3fe0c73..a589d5e51865 100644
---- a/drivers/video/backlight/lp8788_bl.c
-+++ b/drivers/video/backlight/lp8788_bl.c
-@@ -37,7 +37,7 @@ struct lp8788_bl_config {
- 	enum lp8788_bl_full_scale_current full_scale;
- 	enum lp8788_bl_ramp_step rise_time;
- 	enum lp8788_bl_ramp_step fall_time;
--	enum pwm_polarity pwm_pol;
-+	unsigned int pwm_pol;
- };
- 
- struct lp8788_bl {
-diff --git a/include/linux/mfd/lp8788.h b/include/linux/mfd/lp8788.h
-index 3d5c480d58ea..e0321aedf4c0 100644
---- a/include/linux/mfd/lp8788.h
-+++ b/include/linux/mfd/lp8788.h
-@@ -227,7 +227,7 @@ struct lp8788_backlight_platform_data {
- 	enum lp8788_bl_full_scale_current full_scale;
- 	enum lp8788_bl_ramp_step rise_time;
- 	enum lp8788_bl_ramp_step fall_time;
--	enum pwm_polarity pwm_pol;
-+	unsigned int pwm_pol;
- 	unsigned int period_ns;
- };
- 
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index 38b7ed8ef913..c7b35f0602fa 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -5,26 +5,13 @@
- #include <linux/err.h>
- #include <linux/mutex.h>
- #include <linux/of.h>
-+#include <dt-bindings/pwm/pwm.h>
- 
- struct pwm_capture;
- struct seq_file;
- 
- struct pwm_chip;
- 
--/**
-- * enum pwm_polarity - polarity of a PWM signal
-- * @PWM_POLARITY_NORMAL: a high signal for the duration of the duty-
-- * cycle, followed by a low signal for the remainder of the pulse
-- * period
-- * @PWM_POLARITY_INVERTED: a low signal for the duration of the duty-
-- * cycle, followed by a high signal for the remainder of the pulse
-- * period
-- */
--enum pwm_polarity {
--	PWM_POLARITY_NORMAL,
--	PWM_POLARITY_INVERTED,
--};
--
- /**
-  * struct pwm_args - board-dependent PWM arguments
-  * @period: reference period
-@@ -40,7 +27,7 @@ enum pwm_polarity {
-  */
- struct pwm_args {
- 	unsigned int period;
--	enum pwm_polarity polarity;
-+	unsigned int polarity;
- };
- 
- enum {
-@@ -58,7 +45,7 @@ enum {
- struct pwm_state {
- 	unsigned int period;
- 	unsigned int duty_cycle;
--	enum pwm_polarity polarity;
-+	unsigned int polarity;
- 	bool enabled;
- };
- 
-@@ -135,7 +122,7 @@ static inline unsigned int pwm_get_duty_cycle(const struct pwm_device *pwm)
- 	return state.duty_cycle;
+ 	struct wled *wled = bl_get_data(bl);
+@@ -362,6 +521,29 @@ static int wled4_cabc_config(struct wled *wled, bool enable)
+ 	return 0;
  }
  
--static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
-+static inline unsigned int pwm_get_polarity(const struct pwm_device *pwm)
- {
- 	struct pwm_state state;
++static int wled5_cabc_config(struct wled *wled, bool enable)
++{
++	int rc, offset;
++	u8 reg;
++
++	if (wled->cabc_disabled)
++		return 0;
++
++	reg = enable ? wled->cfg.cabc_sel : 0;
++	offset = wled5_src_sel_reg[wled->cfg.mod_sel];
++	rc = regmap_update_bits(wled->regmap, wled->sink_addr + offset,
++				WLED5_SINK_REG_MOD_SRC_SEL_MASK, reg);
++	if (rc < 0) {
++		pr_err("Error in configuring CABC rc=%d\n", rc);
++		return rc;
++	}
++
++	if (!wled->cfg.cabc_sel)
++		wled->cabc_disabled = true;
++
++	return 0;
++}
++
+ #define WLED_SHORT_DLY_MS			20
+ #define WLED_SHORT_CNT_MAX			5
+ #define WLED_SHORT_RESET_CNT_DLY_US		USEC_PER_SEC
+@@ -608,7 +790,30 @@ static bool wled_auto_detection_required(struct wled *wled)
+ 	if (!wled->auto_detection_ovp_count) {
+ 		wled->start_ovp_fault_time = ktime_get();
+ 		wled->auto_detection_ovp_count++;
+-	} else {
++		return false;
++	}
++
++	if (wled->version = 5) {
++		/*
++		 * WLED5 has OVP fault density interrupt configuration i.e. to
++		 * count the number of OVP alarms for a certain duration before
++		 * triggering OVP fault interrupt. By default, number of OVP
++		 * fault events counted before an interrupt is fired is 32 and
++		 * the time interval is 12 ms. If we see more than one OVP fault
++		 * interrupt, then that should qualify for a real OVP fault
++		 * condition to run auto calibration algorithm.
++		 */
++
++		if (wled->auto_detection_ovp_count > 1) {
++			elapsed_time_us = ktime_us_delta(ktime_get(),
++					wled->start_ovp_fault_time);
++			wled->auto_detection_ovp_count = 0;
++			dev_dbg(wled->dev, "Elapsed time: %lld us\n",
++				elapsed_time_us);
++			return true;
++		}
++		wled->auto_detection_ovp_count++;
++	} else if (wled->version = 4) {
+ 		elapsed_time_us = ktime_us_delta(ktime_get(),
+ 						 wled->start_ovp_fault_time);
+ 		if (elapsed_time_us > WLED_AUTO_DETECT_CNT_DLY_US)
+@@ -862,7 +1067,7 @@ static int wled4_setup(struct wled *wled)
+ 			return rc;
+ 	}
  
-@@ -268,7 +255,7 @@ struct pwm_ops {
- 	int (*config)(struct pwm_chip *chip, struct pwm_device *pwm,
- 		      int duty_ns, int period_ns);
- 	int (*set_polarity)(struct pwm_chip *chip, struct pwm_device *pwm,
--			    enum pwm_polarity polarity);
-+			    unsigned int polarity);
- 	int (*enable)(struct pwm_chip *chip, struct pwm_device *pwm);
- 	void (*disable)(struct pwm_chip *chip, struct pwm_device *pwm);
+-	rc = wled4_cabc_config(wled, wled->cfg.en_cabc);
++	rc = wled4_cabc_config(wled, wled->cfg.cabc);
+ 	if (rc < 0)
+ 		return rc;
+ 
+@@ -901,6 +1106,115 @@ static const struct wled_config wled4_config_defaults = {
+ 	.auto_detection_enabled = false,
  };
-@@ -391,7 +378,7 @@ int pwm_set_chip_data(struct pwm_device *pwm, void *data);
- void *pwm_get_chip_data(struct pwm_device *pwm);
  
- int pwmchip_add_with_polarity(struct pwm_chip *chip,
--			      enum pwm_polarity polarity);
-+			      unsigned int polarity);
- int pwmchip_add(struct pwm_chip *chip);
- int pwmchip_remove(struct pwm_chip *chip);
- struct pwm_device *pwm_request_from_chip(struct pwm_chip *chip,
-@@ -471,7 +458,7 @@ static inline int pwmchip_add(struct pwm_chip *chip)
- 	return -EINVAL;
- }
- 
--static inline int pwmchip_add_inversed(struct pwm_chip *chip)
-+static inline int pwmchip_add_inverted(struct pwm_chip *chip)
- {
- 	return -EINVAL;
- }
-@@ -569,7 +556,7 @@ struct pwm_lookup {
- 	const char *dev_id;
- 	const char *con_id;
- 	unsigned int period;
--	enum pwm_polarity polarity;
-+	unsigned int polarity;
- 	const char *module; /* optional, may be NULL */
++static int wled5_setup(struct wled *wled)
++{
++	int rc, temp, i, j;
++	u8 sink_en = 0;
++	u16 addr;
++	u32 val;
++
++	rc = regmap_update_bits(wled->regmap,
++				wled->ctrl_addr + WLED3_CTRL_REG_OVP,
++				WLED5_CTRL_REG_OVP_MASK, wled->cfg.ovp);
++	if (rc < 0)
++		return rc;
++
++	rc = regmap_update_bits(wled->regmap,
++				wled->ctrl_addr + WLED3_CTRL_REG_ILIMIT,
++				WLED3_CTRL_REG_ILIMIT_MASK,
++				wled->cfg.boost_i_limit);
++	if (rc < 0)
++		return rc;
++
++	rc = regmap_update_bits(wled->regmap,
++				wled->ctrl_addr + WLED3_CTRL_REG_FREQ,
++				WLED3_CTRL_REG_FREQ_MASK,
++				wled->cfg.switch_freq);
++	if (rc < 0)
++		return rc;
++
++	/* Per sink/string configuration */
++	for (i = 0; i < wled->cfg.num_strings; ++i) {
++		j = wled->cfg.enabled_strings[i];
++		addr = wled->sink_addr +
++				WLED4_SINK_REG_STR_FULL_SCALE_CURR(j);
++		rc = regmap_update_bits(wled->regmap, addr,
++					WLED4_SINK_REG_STR_FULL_SCALE_CURR_MASK,
++					wled->cfg.string_i_limit);
++		if (rc < 0)
++			return rc;
++
++		addr = wled->sink_addr + WLED5_SINK_REG_STR_SRC_SEL(j);
++		rc = regmap_update_bits(wled->regmap, addr,
++					WLED5_SINK_REG_SRC_SEL_MASK,
++					wled->cfg.mod_sel = MOD_A ?
++					WLED5_SINK_REG_SRC_SEL_MOD_A :
++					WLED5_SINK_REG_SRC_SEL_MOD_B);
++
++		temp = j + WLED4_SINK_REG_CURR_SINK_SHFT;
++		sink_en |= 1 << temp;
++	}
++
++	rc = wled5_cabc_config(wled, wled->cfg.cabc_sel ? true : false);
++	if (rc < 0)
++		return rc;
++
++	/* Enable one of the modulators A or B based on mod_sel */
++	addr = wled->sink_addr + WLED5_SINK_REG_MOD_A_EN;
++	val = (wled->cfg.mod_sel = MOD_A) ? WLED5_SINK_REG_MOD_EN_MASK : 0;
++	rc = regmap_update_bits(wled->regmap, addr,
++				WLED5_SINK_REG_MOD_EN_MASK, val);
++	if (rc < 0)
++		return rc;
++
++	addr = wled->sink_addr + WLED5_SINK_REG_MOD_B_EN;
++	val = (wled->cfg.mod_sel = MOD_B) ? WLED5_SINK_REG_MOD_EN_MASK : 0;
++	rc = regmap_update_bits(wled->regmap, addr,
++				WLED5_SINK_REG_MOD_EN_MASK, val);
++	if (rc < 0)
++		return rc;
++
++	addr = wled->sink_addr + wled5_brt_wid_sel_reg[wled->cfg.mod_sel];
++	val = (wled->max_brightness = WLED5_SINK_REG_BRIGHT_MAX_15B) ?
++		 WLED5_SINK_REG_BRIGHTNESS_WIDTH_15B :
++		 WLED5_SINK_REG_BRIGHTNESS_WIDTH_12B;
++	rc = regmap_write(wled->regmap, addr, val);
++	if (rc < 0)
++		return rc;
++
++	rc = regmap_update_bits(wled->regmap,
++				wled->sink_addr + WLED4_SINK_REG_CURR_SINK,
++				WLED4_SINK_REG_CURR_SINK_MASK, sink_en);
++	if (rc < 0)
++		return rc;
++
++	/* This updates only FSC configuration in WLED5 */
++	rc = wled->wled_sync_toggle(wled);
++	if (rc < 0) {
++		pr_err("Failed to toggle sync reg rc:%d\n", rc);
++		return rc;
++	}
++
++	rc = wled_auto_detection_at_init(wled);
++	if (rc < 0)
++		return rc;
++
++	return 0;
++}
++
++static const struct wled_config wled5_config_defaults = {
++	.boost_i_limit = 5,
++	.string_i_limit = 10,
++	.ovp = 4,
++	.num_strings = 4,
++	.switch_freq = 11,
++	.mod_sel = 0,
++	.cabc_sel = 0,
++	.cabc = false,
++	.external_pfet = false,
++	.auto_detection_enabled = false,
++};
++
+ static const u32 wled3_boost_i_limit_values[] = {
+ 	105, 385, 525, 805, 980, 1260, 1400, 1680,
+ };
+@@ -919,6 +1233,16 @@ static const struct wled_var_cfg wled4_boost_i_limit_cfg = {
+ 	.size = ARRAY_SIZE(wled4_boost_i_limit_values),
  };
  
-diff --git a/include/trace/events/pwm.h b/include/trace/events/pwm.h
-index cf243de41cc8..e3f40ba2ab9c 100644
---- a/include/trace/events/pwm.h
-+++ b/include/trace/events/pwm.h
-@@ -18,7 +18,7 @@ DECLARE_EVENT_CLASS(pwm,
- 		__field(struct pwm_device *, pwm)
- 		__field(u64, period)
- 		__field(u64, duty_cycle)
--		__field(enum pwm_polarity, polarity)
-+		__field(unsigned int, polarity)
- 		__field(bool, enabled)
- 	),
++static inline u32 wled5_boost_i_limit_values_fn(u32 idx)
++{
++	return 525 + (idx * 175);
++}
++
++static const struct wled_var_cfg wled5_boost_i_limit_cfg = {
++	.fn = wled5_boost_i_limit_values_fn,
++	.size = 8,
++};
++
+ static const u32 wled3_ovp_values[] = {
+ 	35, 32, 29, 27,
+ };
+@@ -937,6 +1261,21 @@ static const struct wled_var_cfg wled4_ovp_cfg = {
+ 	.size = ARRAY_SIZE(wled4_ovp_values),
+ };
  
++static inline u32 wled5_ovp_values_fn(u32 idx)
++{
++	/*
++	 * 0000 - 38.5 V
++	 * 0001 - 37 V ..
++	 * 1111 - 16 V
++	 */
++	return 38500 - (idx * 1500);
++}
++
++static const struct wled_var_cfg wled5_ovp_cfg = {
++	.fn = wled5_ovp_values_fn,
++	.size = 16,
++};
++
+ static u32 wled3_num_strings_values_fn(u32 idx)
+ {
+ 	return idx + 1;
+@@ -984,6 +1323,14 @@ static const struct wled_var_cfg wled4_string_cfg = {
+ 	.size = 16,
+ };
+ 
++static const struct wled_var_cfg wled5_mod_sel_cfg = {
++	.size = 2,
++};
++
++static const struct wled_var_cfg wled5_cabc_sel_cfg = {
++	.size = 4,
++};
++
+ static u32 wled_values(const struct wled_var_cfg *cfg, u32 idx)
+ {
+ 	if (idx >= cfg->size)
+@@ -1060,6 +1407,44 @@ static int wled_configure(struct wled *wled)
+ 		},
+ 	};
+ 
++	const struct wled_u32_opts wled5_opts[] = {
++		{
++			.name = "qcom,current-boost-limit",
++			.val_ptr = &cfg->boost_i_limit,
++			.cfg = &wled5_boost_i_limit_cfg,
++		},
++		{
++			.name = "qcom,current-limit-microamp",
++			.val_ptr = &cfg->string_i_limit,
++			.cfg = &wled4_string_i_limit_cfg,
++		},
++		{
++			.name = "qcom,ovp-millivolt",
++			.val_ptr = &cfg->ovp,
++			.cfg = &wled5_ovp_cfg,
++		},
++		{
++			.name = "qcom,switching-freq",
++			.val_ptr = &cfg->switch_freq,
++			.cfg = &wled3_switch_freq_cfg,
++		},
++		{
++			.name = "qcom,num-strings",
++			.val_ptr = &cfg->num_strings,
++			.cfg = &wled4_num_strings_cfg,
++		},
++		{
++			.name = "qcom,modulator-sel",
++			.val_ptr = &cfg->mod_sel,
++			.cfg = &wled5_mod_sel_cfg,
++		},
++		{
++			.name = "qcom,cabc-sel",
++			.val_ptr = &cfg->cabc_sel,
++			.cfg = &wled5_cabc_sel_cfg,
++		},
++	};
++
+ 	const struct wled_bool_opts bool_opts[] = {
+ 		{ "qcom,cs-out", &cfg->cs_out_en, },
+ 		{ "qcom,ext-gen", &cfg->ext_gen, },
+@@ -1109,6 +1494,25 @@ static int wled_configure(struct wled *wled)
+ 		wled->sink_addr = be32_to_cpu(*prop_addr);
+ 		break;
+ 
++	case 5:
++		u32_opts = wled5_opts;
++		size = ARRAY_SIZE(wled5_opts);
++		*cfg = wled5_config_defaults;
++		wled->wled_set_brightness = wled5_set_brightness;
++		wled->wled_sync_toggle = wled5_sync_toggle;
++		wled->wled_cabc_config = wled5_cabc_config;
++		wled->wled_ovp_fault_status = wled5_ovp_fault_status;
++		wled->wled_ovp_delay = wled5_ovp_delay;
++		wled->max_string_count = 4;
++
++		prop_addr = of_get_address(dev->of_node, 1, NULL, NULL);
++		if (!prop_addr) {
++			dev_err(wled->dev, "invalid IO resources\n");
++			return -EINVAL;
++		}
++		wled->sink_addr = be32_to_cpu(*prop_addr);
++		break;
++
+ 	default:
+ 		dev_err(wled->dev, "Invalid WLED version\n");
+ 		return -EINVAL;
+@@ -1262,6 +1666,10 @@ static int wled_probe(struct platform_device *pdev)
+ 	if (rc)
+ 		return rc;
+ 
++	val = WLED3_SINK_REG_BRIGHT_MAX;
++	of_property_read_u32(pdev->dev.of_node, "max-brightness", &val);
++	wled->max_brightness = val;
++
+ 	switch (wled->version) {
+ 	case 3:
+ 		wled->cfg.auto_detection_enabled = false;
+@@ -1281,6 +1689,18 @@ static int wled_probe(struct platform_device *pdev)
+ 		}
+ 		break;
+ 
++	case 5:
++		wled->has_short_detect = true;
++		if (wled->cfg.cabc_sel)
++			wled->max_brightness = WLED5_SINK_REG_BRIGHT_MAX_12B;
++
++		rc = wled5_setup(wled);
++		if (rc) {
++			dev_err(&pdev->dev, "wled5_setup failed\n");
++			return rc;
++		}
++		break;
++
+ 	default:
+ 		dev_err(wled->dev, "Invalid WLED version\n");
+ 		break;
+@@ -1302,7 +1722,7 @@ static int wled_probe(struct platform_device *pdev)
+ 	memset(&props, 0, sizeof(struct backlight_properties));
+ 	props.type = BACKLIGHT_RAW;
+ 	props.brightness = val;
+-	props.max_brightness = WLED3_SINK_REG_BRIGHT_MAX;
++	props.max_brightness = wled->max_brightness;
+ 	bl = devm_backlight_device_register(&pdev->dev, wled->name,
+ 					    &pdev->dev, wled,
+ 					    &wled_ops, &props);
+@@ -1325,6 +1745,7 @@ static const struct of_device_id wled_match_table[] = {
+ 	{ .compatible = "qcom,pm8941-wled", .data = (void *)3 },
+ 	{ .compatible = "qcom,pmi8998-wled", .data = (void *)4 },
+ 	{ .compatible = "qcom,pm660l-wled", .data = (void *)4 },
++	{ .compatible = "qcom,pm8150l-wled", .data = (void *)5 },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, wled_match_table);
 -- 
-2.24.1
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+ a Linux Foundation Collaborative Project

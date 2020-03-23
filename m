@@ -1,62 +1,82 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 02 Mar 2020 15:42:30 +0000
-Subject: Re: [PATCH 4/4] video: fbdev: remove set but not used variable 'bytpp'
-Message-Id: <e060e0a0-1861-20f0-d1ef-6a8137949659@samsung.com>
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Mon, 23 Mar 2020 21:16:26 +0000
+Subject: [PATCH] video: fbdev: imxfb: ensure balanced regulator usage
+Message-Id: <20200323211626.24812-1-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200119121730.10701-1-yukuai3@huawei.com>
- <CGME20200119121831eucas1p19d7d048f980db055edf2eb15d5e82253@eucas1p1.samsung.com>
- <20200119121730.10701-5-yukuai3@huawei.com>
-In-Reply-To: <20200119121730.10701-5-yukuai3@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: yu kuai <yukuai3@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhengbin13@huawei.com
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Sascha Hauer <s.hauer@pengutronix.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, dri-devel@lists.freedesktop.org, NXP Linux Team <linux-imx@nxp.com>, Pengutronix Kernel Team <kernel@pengutronix.de>, linux-arm-kernel@lists.infradead.org
 
+The fbdev framework doesn't care to call the .set_power callback only on
+changes. So the driver has to care for itself that the regulator doesn't
+get disabled more often than enabled.
 
-On 1/19/20 1:17 PM, yu kuai wrote:
-> Fixes gcc '-Wunused-but-set-variable' warning:
-> 
-> drivers/video/fbdev/aty/radeon_base.c: In function
-> ‘radeonfb_set_par’:
-> drivers/video/fbdev/aty/radeon_base.c:1660:32: warning:
-> variable ‘bytpp’ set but not used [-Wunused-but-set-variable]
-> 
-> It is never used, and so can be removed.
-> 
-> Signed-off-by: yu kuai <yukuai3@huawei.com>
+This fixes the regulator warning
 
-Patch queued for v5.7, thanks.
- 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+	unbalanced disables for lcd supply
 
-> ---
->  drivers/video/fbdev/aty/radeon_base.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-> index 7d2ee889ffcd..22b3ee4f2ffa 100644
-> --- a/drivers/video/fbdev/aty/radeon_base.c
-> +++ b/drivers/video/fbdev/aty/radeon_base.c
-> @@ -1657,7 +1657,7 @@ static int radeonfb_set_par(struct fb_info *info)
->  	int i, freq;
->  	int format = 0;
->  	int nopllcalc = 0;
-> -	int hsync_start, hsync_fudge, bytpp, hsync_wid, vsync_wid;
-> +	int hsync_start, hsync_fudge, hsync_wid, vsync_wid;
->  	int primary_mon = PRIMARY_MONITOR(rinfo);
->  	int depth = var_to_depth(mode);
->  	int use_rmx = 0;
-> @@ -1731,7 +1731,6 @@ static int radeonfb_set_par(struct fb_info *info)
->  		vsync_wid = 0x1f;
->  
->  	format = radeon_get_dstbpp(depth);
-> -	bytpp = mode->bits_per_pixel >> 3;
->  
->  	if ((primary_mon = MT_DFP) || (primary_mon = MT_LCD))
->  		hsync_fudge = hsync_fudge_fp[format-1];
-> 
+which can be triggered by doing
+
+	echo 4 > /sys/class/lcd/imxfb-lcd/lcd_power
+
+twice.
+
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+---
+ drivers/video/fbdev/imxfb.c | 27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+index 370bf2553d43..884b16efa7e8 100644
+--- a/drivers/video/fbdev/imxfb.c
++++ b/drivers/video/fbdev/imxfb.c
+@@ -172,6 +172,7 @@ struct imxfb_info {
+ 	int			num_modes;
+=20
+ 	struct regulator	*lcd_pwr;
++	int			lcd_pwr_enabled;
+ };
+=20
+ static const struct platform_device_id imxfb_devtype[] =3D {
+@@ -801,16 +802,30 @@ static int imxfb_lcd_get_power(struct lcd_device *lcd=
+dev)
+ 	return FB_BLANK_UNBLANK;
+ }
+=20
++static int imxfb_regulator_set(struct imxfb_info *fbi, int enable)
++{
++	int ret;
++
++	if (enable =3D fbi->lcd_pwr_enabled)
++		return 0;
++
++	if (enable)
++		ret =3D regulator_enable(fbi->lcd_pwr);
++	else
++		ret =3D regulator_disable(fbi->lcd_pwr);
++
++	if (ret =3D 0)
++		fbi->lcd_pwr_enabled =3D enable;
++
++	return ret;
++}
++
+ static int imxfb_lcd_set_power(struct lcd_device *lcddev, int power)
+ {
+ 	struct imxfb_info *fbi =3D dev_get_drvdata(&lcddev->dev);
+=20
+-	if (!IS_ERR(fbi->lcd_pwr)) {
+-		if (power =3D FB_BLANK_UNBLANK)
+-			return regulator_enable(fbi->lcd_pwr);
+-		else
+-			return regulator_disable(fbi->lcd_pwr);
+-	}
++	if (!IS_ERR(fbi->lcd_pwr))
++		return imxfb_regulator_set(fbi, power =3D FB_BLANK_UNBLANK);
+=20
+ 	return 0;
+ }
+--=20
+2.25.1

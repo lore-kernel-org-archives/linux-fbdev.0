@@ -1,61 +1,91 @@
-From: Chuhong Yuan <hslester96@gmail.com>
-Date: Tue, 24 Mar 2020 13:23:53 +0000
-Subject: [PATCH v4] video: fbdev: arcfb: add missed free_irq and fix the order of request_irq
-Message-Id: <20200324132353.21785-1-hslester96@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 24 Mar 2020 13:45:06 +0000
+Subject: [PATCH v2 4/6] video: fbdev: controlfb: remove function prototypes part #1
+Message-Id: <20200324134508.25120-5-b.zolnierkie@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200324134508.25120-1-b.zolnierkie@samsung.com>
+ <CGME20200324134519eucas1p1e9b54c01e452330425f49c442e4c1b4e@eucas1p1.samsung.com>
+In-Reply-To: <20200324134508.25120-1-b.zolnierkie@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: linux-fbdev@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Andrzej Hajda <a.hajda@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, b.zolnierkie@samsung.com
 
-The driver forgets to free irq in remove which is requested in
-probe.
-Add the missed call to fix it.
-Also, the position of request_irq() in probe should be put before
-register_framebuffer().
+Reorder code a bit and then remove no longer needed function
+prototypes.
 
-Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
-Changes in v4:
-  - Use info->par->irq instead of par->irq to avoid dereferencing NULL pointer.
+ drivers/video/fbdev/controlfb.c | 41 +++++++++++----------------------
+ 1 file changed, 13 insertions(+), 28 deletions(-)
 
- drivers/video/fbdev/arcfb.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
-index 314ab82e01c0..6f7838979f0a 100644
---- a/drivers/video/fbdev/arcfb.c
-+++ b/drivers/video/fbdev/arcfb.c
-@@ -544,10 +544,6 @@ static int arcfb_probe(struct platform_device *dev)
- 	par->cslut[1] = 0x06;
- 	info->flags = FBINFO_FLAG_DEFAULT;
- 	spin_lock_init(&par->lock);
--	retval = register_framebuffer(info);
--	if (retval < 0)
--		goto err1;
--	platform_set_drvdata(dev, info);
- 	if (irq) {
- 		par->irq = irq;
- 		if (request_irq(par->irq, &arcfb_interrupt, IRQF_SHARED,
-@@ -558,6 +554,10 @@ static int arcfb_probe(struct platform_device *dev)
- 			goto err1;
- 		}
- 	}
-+	retval = register_framebuffer(info);
-+	if (retval < 0)
-+		goto err1;
-+	platform_set_drvdata(dev, info);
- 	fb_info(info, "Arc frame buffer device, using %dK of video memory\n",
- 		videomemorysize >> 10);
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 92cffd2d0219..83b7a219f557 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -141,20 +141,6 @@ struct fb_info_control {
+ #define CNTRL_REG(INFO,REG) (&(((INFO)->control_regs->REG).r))
  
-@@ -593,6 +593,8 @@ static int arcfb_remove(struct platform_device *dev)
  
- 	if (info) {
- 		unregister_framebuffer(info);
-+		if (irq)
-+			free_irq(((struct arcfb_par *)(info->par))->irq, info);
- 		vfree((void __force *)info->screen_base);
- 		framebuffer_release(info);
- 	}
+-/******************** Prototypes for exported functions ********************/
+-/*
+- * struct fb_ops
+- */
+-static int controlfb_pan_display(struct fb_var_screeninfo *var,
+-	struct fb_info *info);
+-static int controlfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+-	u_int transp, struct fb_info *info);
+-static int controlfb_blank(int blank_mode, struct fb_info *info);
+-static int controlfb_mmap(struct fb_info *info,
+-	struct vm_area_struct *vma);
+-static int controlfb_set_par (struct fb_info *info);
+-static int controlfb_check_var (struct fb_var_screeninfo *var, struct fb_info *info);
+-
+ /******************** Prototypes for internal functions **********************/
+ 
+ static void set_control_clock(unsigned char *params);
+@@ -181,20 +167,6 @@ static int default_vmode __initdata = VMODE_NVRAM;
+ static int default_cmode __initdata = CMODE_NVRAM;
+ 
+ 
+-static const struct fb_ops controlfb_ops = {
+-	.owner		= THIS_MODULE,
+-	.fb_check_var	= controlfb_check_var,
+-	.fb_set_par	= controlfb_set_par,
+-	.fb_setcolreg	= controlfb_setcolreg,
+-	.fb_pan_display = controlfb_pan_display,
+-	.fb_blank	= controlfb_blank,
+-	.fb_mmap	= controlfb_mmap,
+-	.fb_fillrect	= cfb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,
+-};
+-
+-
+ /********************  The functions for controlfb_ops ********************/
+ 
+ /*
+@@ -1012,6 +984,19 @@ static inline void control_par_to_var(struct fb_par_control *par,
+ 	var->pixclock >>= par->regvals.clock_params[2];
+ }
+ 
++static const struct fb_ops controlfb_ops = {
++	.owner		= THIS_MODULE,
++	.fb_check_var	= controlfb_check_var,
++	.fb_set_par	= controlfb_set_par,
++	.fb_setcolreg	= controlfb_setcolreg,
++	.fb_pan_display = controlfb_pan_display,
++	.fb_blank	= controlfb_blank,
++	.fb_mmap	= controlfb_mmap,
++	.fb_fillrect	= cfb_fillrect,
++	.fb_copyarea	= cfb_copyarea,
++	.fb_imageblit	= cfb_imageblit,
++};
++
+ /*
+  * Set misc info vars for this driver
+  */
 -- 
-2.25.2
+2.24.1

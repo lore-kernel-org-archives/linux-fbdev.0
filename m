@@ -1,38 +1,353 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Mon, 30 Mar 2020 16:23:46 +0000
-Subject: [PATCH v9 04/14] drm/i915: Include HDMI DRM infoframe in the crtc state dump
-Message-Id: <20200330162356.162361-5-gwan-gyeong.mun@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 24 Mar 2020 13:45:08 +0000
+Subject: [PATCH v2 6/6] video: fbdev: controlfb: remove function prototypes part #3
+Message-Id: <20200324134508.25120-7-b.zolnierkie@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
+References: <20200324134508.25120-1-b.zolnierkie@samsung.com>
+ <CGME20200324134520eucas1p2d95faa6d58939b45765ebca40d137f71@eucas1p2.samsung.com>
+In-Reply-To: <20200324134508.25120-1-b.zolnierkie@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Andrzej Hajda <a.hajda@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, b.zolnierkie@samsung.com
 
-Dump out the HDMI Dynamic Range and Mastering (DRM) infoframe in the
-normal crtc state dump.
+Reorder code a bit and then remove no longer needed function
+prototypes.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/gpu/drm/i915/display/intel_display.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/video/fbdev/controlfb.c | 302 +++++++++++++++-----------------
+ 1 file changed, 145 insertions(+), 157 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index e09a11b1e509..7fb60312d262 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -12983,6 +12983,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
- 	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_VENDOR))
- 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.hdmi);
-+	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
-+		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index c67d37103705..7f8f0081396e 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -141,16 +141,6 @@ struct fb_info_control {
+ #define CNTRL_REG(INFO,REG) (&(((INFO)->control_regs->REG).r))
  
- 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
- 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
+ 
+-/******************** Prototypes for internal functions **********************/
+-
+-static void control_set_hardware(struct fb_info_control *p,
+-	struct fb_par_control *par);
+-static int control_var_to_par(struct fb_var_screeninfo *var,
+-	struct fb_par_control *par, const struct fb_info *fb_info);
+-static inline void control_par_to_var(struct fb_par_control *par,
+-	struct fb_var_screeninfo *var);
+-
+-
+ /************************** Internal variables *******************************/
+ 
+ static struct fb_info_control *control_fb;
+@@ -159,153 +149,6 @@ static int default_vmode __initdata = VMODE_NVRAM;
+ static int default_cmode __initdata = CMODE_NVRAM;
+ 
+ 
+-/********************  The functions for controlfb_ops ********************/
+-
+-/*
+- * Checks a var structure
+- */
+-static int controlfb_check_var (struct fb_var_screeninfo *var, struct fb_info *info)
+-{
+-	struct fb_par_control par;
+-	int err;
+-
+-	err = control_var_to_par(var, &par, info);
+-	if (err)
+-		return err;	
+-	control_par_to_var(&par, var);
+-
+-	return 0;
+-}
+-
+-/*
+- * Applies current var to display
+- */
+-static int controlfb_set_par (struct fb_info *info)
+-{
+-	struct fb_info_control *p -		container_of(info, struct fb_info_control, info);
+-	struct fb_par_control par;
+-	int err;
+-
+-	if((err = control_var_to_par(&info->var, &par, info))) {
+-		printk (KERN_ERR "controlfb_set_par: error calling"
+-				 " control_var_to_par: %d.\n", err);
+-		return err;
+-	}
+-	
+-	control_set_hardware(p, &par);
+-
+-	info->fix.visual = (p->par.cmode = CMODE_8) ?
+-		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
+-	info->fix.line_length = p->par.pitch;
+-	info->fix.xpanstep = 32 >> p->par.cmode;
+-	info->fix.ypanstep = 1;
+-
+-	return 0;
+-}
+-
+-/*
+- * Set screen start address according to var offset values
+- */
+-static inline void set_screen_start(int xoffset, int yoffset,
+-	struct fb_info_control *p)
+-{
+-	struct fb_par_control *par = &p->par;
+-
+-	par->xoffset = xoffset;
+-	par->yoffset = yoffset;
+-	out_le32(CNTRL_REG(p,start_addr),
+-		 par->yoffset * par->pitch + (par->xoffset << par->cmode));
+-}
+-
+-
+-static int controlfb_pan_display(struct fb_var_screeninfo *var,
+-				 struct fb_info *info)
+-{
+-	unsigned int xoffset, hstep;
+-	struct fb_info_control *p -		container_of(info, struct fb_info_control, info);
+-	struct fb_par_control *par = &p->par;
+-
+-	/*
+-	 * make sure start addr will be 32-byte aligned
+-	 */
+-	hstep = 0x1f >> par->cmode;
+-	xoffset = (var->xoffset + hstep) & ~hstep;
+-
+-	if (xoffset+par->xres > par->vxres ||
+-	    var->yoffset+par->yres > par->vyres)
+-		return -EINVAL;
+-
+-	set_screen_start(xoffset, var->yoffset, p);
+-
+-	return 0;
+-}
+-
+-
+-/*
+- * Private mmap since we want to have a different caching on the framebuffer
+- * for controlfb.
+- * Note there's no locking in here; it's done in fb_mmap() in fbmem.c.
+- */
+-static int controlfb_mmap(struct fb_info *info,
+-                       struct vm_area_struct *vma)
+-{
+-	unsigned long mmio_pgoff;
+-	unsigned long start;
+-	u32 len;
+-
+-	start = info->fix.smem_start;
+-	len = info->fix.smem_len;
+-	mmio_pgoff = PAGE_ALIGN((start & ~PAGE_MASK) + len) >> PAGE_SHIFT;
+-	if (vma->vm_pgoff >= mmio_pgoff) {
+-		if (info->var.accel_flags)
+-			return -EINVAL;
+-		vma->vm_pgoff -= mmio_pgoff;
+-		start = info->fix.mmio_start;
+-		len = info->fix.mmio_len;
+-		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+-	} else {
+-		/* framebuffer */
+-		vma->vm_page_prot = pgprot_cached_wthru(vma->vm_page_prot);
+-	}
+-
+-	return vm_iomap_memory(vma, start, len);
+-}
+-
+-static int controlfb_blank(int blank_mode, struct fb_info *info)
+-{
+-	struct fb_info_control __maybe_unused *p -		container_of(info, struct fb_info_control, info);
+-	unsigned ctrl;
+-
+-	ctrl = in_le32(CNTRL_REG(p, ctrl));
+-	if (blank_mode > 0)
+-		switch (blank_mode) {
+-		case FB_BLANK_VSYNC_SUSPEND:
+-			ctrl &= ~3;
+-			break;
+-		case FB_BLANK_HSYNC_SUSPEND:
+-			ctrl &= ~0x30;
+-			break;
+-		case FB_BLANK_POWERDOWN:
+-			ctrl &= ~0x33;
+-			/* fall through */
+-		case FB_BLANK_NORMAL:
+-			ctrl |= 0x400;
+-			break;
+-		default:
+-			break;
+-		}
+-	else {
+-		ctrl &= ~0x400;
+-		ctrl |= 0x33;
+-	}
+-	out_le32(CNTRL_REG(p,ctrl), ctrl);
+-
+-	return 0;
+-}
+-
+ static int controlfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 			     u_int transp, struct fb_info *info)
+ {
+@@ -362,6 +205,20 @@ static void set_control_clock(unsigned char *params)
+ #endif	
+ }
+ 
++/*
++ * Set screen start address according to var offset values
++ */
++static inline void set_screen_start(int xoffset, int yoffset,
++	struct fb_info_control *p)
++{
++	struct fb_par_control *par = &p->par;
++
++	par->xoffset = xoffset;
++	par->yoffset = yoffset;
++	out_le32(CNTRL_REG(p,start_addr),
++		 par->yoffset * par->pitch + (par->xoffset << par->cmode));
++}
++
+ #define RADACAL_WRITE(a,d) \
+ 	out_8(&p->cmap_regs->addr, (a)); \
+ 	out_8(&p->cmap_regs->dat,   (d))
+@@ -772,6 +629,137 @@ static inline void control_par_to_var(struct fb_par_control *par,
+ 	var->pixclock >>= par->regvals.clock_params[2];
+ }
+ 
++/********************  The functions for controlfb_ops ********************/
++
++/*
++ * Checks a var structure
++ */
++static int controlfb_check_var (struct fb_var_screeninfo *var, struct fb_info *info)
++{
++	struct fb_par_control par;
++	int err;
++
++	err = control_var_to_par(var, &par, info);
++	if (err)
++		return err;	
++	control_par_to_var(&par, var);
++
++	return 0;
++}
++
++/*
++ * Applies current var to display
++ */
++static int controlfb_set_par (struct fb_info *info)
++{
++	struct fb_info_control *p +		container_of(info, struct fb_info_control, info);
++	struct fb_par_control par;
++	int err;
++
++	if((err = control_var_to_par(&info->var, &par, info))) {
++		printk (KERN_ERR "controlfb_set_par: error calling"
++				 " control_var_to_par: %d.\n", err);
++		return err;
++	}
++	
++	control_set_hardware(p, &par);
++
++	info->fix.visual = (p->par.cmode = CMODE_8) ?
++		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
++	info->fix.line_length = p->par.pitch;
++	info->fix.xpanstep = 32 >> p->par.cmode;
++	info->fix.ypanstep = 1;
++
++	return 0;
++}
++
++static int controlfb_pan_display(struct fb_var_screeninfo *var,
++				 struct fb_info *info)
++{
++	unsigned int xoffset, hstep;
++	struct fb_info_control *p +		container_of(info, struct fb_info_control, info);
++	struct fb_par_control *par = &p->par;
++
++	/*
++	 * make sure start addr will be 32-byte aligned
++	 */
++	hstep = 0x1f >> par->cmode;
++	xoffset = (var->xoffset + hstep) & ~hstep;
++
++	if (xoffset+par->xres > par->vxres ||
++	    var->yoffset+par->yres > par->vyres)
++		return -EINVAL;
++
++	set_screen_start(xoffset, var->yoffset, p);
++
++	return 0;
++}
++
++static int controlfb_blank(int blank_mode, struct fb_info *info)
++{
++	struct fb_info_control __maybe_unused *p +		container_of(info, struct fb_info_control, info);
++	unsigned ctrl;
++
++	ctrl = in_le32(CNTRL_REG(p, ctrl));
++	if (blank_mode > 0)
++		switch (blank_mode) {
++		case FB_BLANK_VSYNC_SUSPEND:
++			ctrl &= ~3;
++			break;
++		case FB_BLANK_HSYNC_SUSPEND:
++			ctrl &= ~0x30;
++			break;
++		case FB_BLANK_POWERDOWN:
++			ctrl &= ~0x33;
++			/* fall through */
++		case FB_BLANK_NORMAL:
++			ctrl |= 0x400;
++			break;
++		default:
++			break;
++		}
++	else {
++		ctrl &= ~0x400;
++		ctrl |= 0x33;
++	}
++	out_le32(CNTRL_REG(p,ctrl), ctrl);
++
++	return 0;
++}
++
++/*
++ * Private mmap since we want to have a different caching on the framebuffer
++ * for controlfb.
++ * Note there's no locking in here; it's done in fb_mmap() in fbmem.c.
++ */
++static int controlfb_mmap(struct fb_info *info,
++                       struct vm_area_struct *vma)
++{
++	unsigned long mmio_pgoff;
++	unsigned long start;
++	u32 len;
++
++	start = info->fix.smem_start;
++	len = info->fix.smem_len;
++	mmio_pgoff = PAGE_ALIGN((start & ~PAGE_MASK) + len) >> PAGE_SHIFT;
++	if (vma->vm_pgoff >= mmio_pgoff) {
++		if (info->var.accel_flags)
++			return -EINVAL;
++		vma->vm_pgoff -= mmio_pgoff;
++		start = info->fix.mmio_start;
++		len = info->fix.mmio_len;
++		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++	} else {
++		/* framebuffer */
++		vma->vm_page_prot = pgprot_cached_wthru(vma->vm_page_prot);
++	}
++
++	return vm_iomap_memory(vma, start, len);
++}
++
+ static const struct fb_ops controlfb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_check_var	= controlfb_check_var,
 -- 
-2.25.0
+2.24.1

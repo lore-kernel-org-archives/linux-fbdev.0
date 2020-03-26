@@ -1,15 +1,23 @@
-From: "Manuel Franco" <luis.sanchez@11d01.mspz7.gob.ec>
-Date: Mon, 30 Mar 2020 09:47:34 +0000
-Subject: spende von 2.000.000,00 Euro
-Message-Id: <20200330091620.D35E72F6F59E@mail.11d01.mspz7.gob.ec>
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Date: Thu, 26 Mar 2020 21:09:58 +0000
+Subject: [PATCH 0/1] video: convert to use new I2C API
+Message-Id: <20200326210959.13111-1-wsa+renesas@sang-engineering.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-i2c@vger.kernel.org
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Ich bin Manuel Franco, ich spende Ihnen 2.000.000,00 Euro. Kontaktieren Sie=
- mich jetzt, damit wir fortfahren k=F6nnen.
+We are deprecating calls which return NULL in favor of new variants which
+return an ERR_PTR. Only build tested.
 
-I am Manuel Franco, I donate to you 2,000,000.00 euros. Contact me now so w=
-e can proceed.
+
+Wolfram Sang (1):
+  video: backlight: tosa_lcd: convert to use i2c_new_client_device()
+
+ drivers/video/backlight/tosa_lcd.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+-- 
+2.20.1

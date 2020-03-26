@@ -1,59 +1,45 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 02 Mar 2020 15:42:49 +0000
-Subject: Re: [PATCH v1] fbdev: simplefb: Platform data shan't include kernel.h
-Message-Id: <8fe254ee-9dcc-d9d2-dbf5-703edd9da23b@samsung.com>
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Date: Thu, 26 Mar 2020 21:09:59 +0000
+Subject: [PATCH 1/1] video: backlight: tosa_lcd: convert to use i2c_new_client_device()
+Message-Id: <20200326210959.13111-2-wsa+renesas@sang-engineering.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200204162114.28937-1-andriy.shevchenko@linux.intel.com>
-In-Reply-To: <20200204162114.28937-1-andriy.shevchenko@linux.intel.com>
+References: <20200326210959.13111-1-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20200326210959.13111-1-wsa+renesas@sang-engineering.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-i2c@vger.kernel.org
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Lee Jones <lee.jones@linaro.org>
 
+Move away from the deprecated API and return the shiny new ERRPTR where
+useful.
 
-On 2/14/20 7:08 PM, Andy Shevchenko wrote:
-> On Fri, Feb 14, 2020 at 04:21:57PM +0100, Hans de Goede wrote:
->> On 2/14/20 3:25 PM, Andy Shevchenko wrote:
->>> On Tue, Feb 04, 2020 at 06:21:14PM +0200, Andy Shevchenko wrote:
->>>> Replace with appropriate types.h.
->>>
->>> Hans, any comment on this?
->>
->> Not really, I've not touched that code in a while.
->>
->> But I see I'm still listed as the maintainer, the change looks sensible
->> to me, so:
->>
->> Acked-by: Hans de Goede <hdegoede@redhat.com>
-> 
-> Thanks!
-> Seems get_maintainer does not list Bart, so, Cc him here.
-> 
->>
->>>> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+---
+ drivers/video/backlight/tosa_lcd.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Patch queued for v5.7, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
->>>> ---
->>>>   include/linux/platform_data/simplefb.h | 2 +-
->>>>   1 file changed, 1 insertion(+), 1 deletion(-)
->>>>
->>>> diff --git a/include/linux/platform_data/simplefb.h b/include/linux/platform_data/simplefb.h
->>>> index 4f733a411d18..ca8337695c2a 100644
->>>> --- a/include/linux/platform_data/simplefb.h
->>>> +++ b/include/linux/platform_data/simplefb.h
->>>> @@ -10,7 +10,7 @@
->>>>   #include <drm/drm_fourcc.h>
->>>>   #include <linux/fb.h>
->>>> -#include <linux/kernel.h>
->>>> +#include <linux/types.h>
->>>>   /* format array, use it to initialize a "struct simplefb_format" array */
->>>>   #define SIMPLEFB_FORMATS \
->>>> -- 
->>>> 2.24.1
+diff --git a/drivers/video/backlight/tosa_lcd.c b/drivers/video/backlight/tosa_lcd.c
+index e8ab583e5098..113116d3585c 100644
+--- a/drivers/video/backlight/tosa_lcd.c
++++ b/drivers/video/backlight/tosa_lcd.c
+@@ -107,7 +107,7 @@ static void tosa_lcd_tg_on(struct tosa_lcd_data *data)
+ 	/* TG LCD GVSS */
+ 	tosa_tg_send(spi, TG_PINICTL, 0x0);
+ 
+-	if (!data->i2c) {
++	if (IS_ERR_OR_NULL(data->i2c)) {
+ 		/*
+ 		 * after the pannel is powered up the first time,
+ 		 * we can access the i2c bus so probe for the DAC
+@@ -119,7 +119,7 @@ static void tosa_lcd_tg_on(struct tosa_lcd_data *data)
+ 			.addr	= DAC_BASE,
+ 			.platform_data = data->spi,
+ 		};
+-		data->i2c = i2c_new_device(adap, &info);
++		data->i2c = i2c_new_client_device(adap, &info);
+ 	}
+ }
+ 
+-- 
+2.20.1

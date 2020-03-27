@@ -1,166 +1,108 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Mon, 30 Mar 2020 16:23:43 +0000
-Subject: [PATCH v9 01/14] video/hdmi: Add Unpack only function for DRM infoframe
-Message-Id: <20200330162356.162361-2-gwan-gyeong.mun@intel.com>
+From: syzbot <syzbot+732528bae351682f1f27@syzkaller.appspotmail.com>
+Date: Fri, 27 Mar 2020 13:30:15 +0000
+Subject: general protection fault in fbcon_switch
+Message-Id: <00000000000005ec9405a1d61aa0@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
+To: andreyknvl@google.com, b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, maarten.lankhorst@linux.intel.com, sam@ravnborg.org, syzkaller-bugs@googlegroups.com
 
-It adds an unpack only function for DRM infoframe for dynamic range and
-mastering infoframe readout.
-It unpacks the information data block contained in the binary buffer into
-a structured frame of the HDMI Dynamic Range and Mastering (DRM)
-information frame.
+Hello,
 
-In contrast to hdmi_drm_infoframe_unpack() function, it does not verify
-a checksum.
+syzbot found the following crash on:
 
-It can be used for unpacking a DP HDR Metadata Infoframe SDP case.
-DP HDR Metadata Infoframe SDP uses the same Dynamic Range and Mastering
-(DRM) information (CTA-861-G spec.) such as HDMI DRM infoframe.
-But DP SDP header and payload structure are different from HDMI DRM
-Infoframe. Therefore unpacking DRM infoframe for DP requires skipping of
-a verifying checksum.
+HEAD commit:    e17994d1 usb: core: kcov: collect coverage from usb comple..
+git tree:       https://github.com/google/kasan.git usb-fuzzer
+console output: https://syzkaller.appspot.com/x/log.txt?x28834be00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x]64370c438bc60
+dashboard link: https://syzkaller.appspot.com/bug?extids2528bae351682f1f27
+compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
 
-v9: Add clear comments to hdmi_drm_infoframe_unpack_only() and
-    hdmi_drm_infoframe_unpack() (Laurent Pinchart)
+Unfortunately, I don't have any reproducer for this crash yet.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ville Syrjala <ville.syrjala@linux.intel.com>
+IMPORTANT: if you fix the bug, please add the following tag to the commit:
+Reported-by: syzbot+732528bae351682f1f27@syzkaller.appspotmail.com
+
+general protection fault, probably for non-canonical address 0xdffffc000000006c: 0000 [#1] SMP KASAN
+KASAN: null-ptr-deref in range [0x0000000000000360-0x0000000000000367]
+CPU: 0 PID: 5 Comm: kworker/0:0 Not tainted 5.6.0-rc5-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Workqueue: usb_hub_wq hub_event
+RIP: 0010:fbcon_switch+0x28f/0x1740 drivers/video/fbdev/core/fbcon.c:2260
+Code: 0f 85 96 14 00 00 48 8d 04 db 48 8b 1c c5 00 91 ff 89 48 b8 00 00 00 00 00 fc ff df 48 8d bb 60 03 00 00 48 89 fa 48 c1 ea 03 <0f> b6 04 02 84 c0 74 08 3c 03 0f 8e de 11 00 00 44 8b b3 60 03 00
+RSP: 0018:ffff8881da1dead8 EFLAGS: 00010206
+RAX: dffffc0000000000 RBX: 0000000000000000 RCX: ffffc9000d9eb000
+RDX: 000000000000006c RSI: ffffffff81fe5b44 RDI: 0000000000000360
+RBP: ffff8881ab4f0000 R08: ffff8881da196200 R09: fffffbfff0fcc10e
+R10: fffffbfff0fcc10d R11: ffffffff87e6086f R12: ffff8881d6616000
+R13: ffff8881c6a4a000 R14: 00000000000000a3 R15: ffffffff85ff8520
+FS:  0000000000000000(0000) GS:ffff8881db200000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f676c8e2740 CR3: 00000001cfd06000 CR4: 00000000001406f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+ redraw_screen+0x2a8/0x770 drivers/tty/vt/vt.c:1008
+ vc_do_resize+0xfe7/0x1360 drivers/tty/vt/vt.c:1295
+ fbcon_init+0x1221/0x1ab0 drivers/video/fbdev/core/fbcon.c:1219
+ visual_init+0x305/0x5c0 drivers/tty/vt/vt.c:1062
+ do_bind_con_driver+0x536/0x890 drivers/tty/vt/vt.c:3542
+ do_take_over_console+0x453/0x5b0 drivers/tty/vt/vt.c:4122
+ do_fbcon_takeover+0x10b/0x210 drivers/video/fbdev/core/fbcon.c:588
+ fbcon_fb_registered+0x26b/0x340 drivers/video/fbdev/core/fbcon.c:3259
+ do_register_framebuffer drivers/video/fbdev/core/fbmem.c:1664 [inline]
+ register_framebuffer+0x56e/0x980 drivers/video/fbdev/core/fbmem.c:1832
+ dlfb_usb_probe.cold+0x1743/0x1ba3 drivers/video/fbdev/udlfb.c:1735
+ usb_probe_interface+0x310/0x800 drivers/usb/core/driver.c:374
+ really_probe+0x290/0xac0 drivers/base/dd.c:551
+ driver_probe_device+0x223/0x350 drivers/base/dd.c:724
+ __device_attach_driver+0x1d1/0x290 drivers/base/dd.c:831
+ bus_for_each_drv+0x162/0x1e0 drivers/base/bus.c:431
+ __device_attach+0x217/0x390 drivers/base/dd.c:897
+ bus_probe_device+0x1e4/0x290 drivers/base/bus.c:491
+ device_add+0x1459/0x1bf0 drivers/base/core.c:2500
+ usb_set_configuration+0xe47/0x17d0 drivers/usb/core/message.c:2023
+ usb_generic_driver_probe+0x9d/0xe0 drivers/usb/core/generic.c:241
+ usb_probe_device+0xd9/0x230 drivers/usb/core/driver.c:272
+ really_probe+0x290/0xac0 drivers/base/dd.c:551
+ driver_probe_device+0x223/0x350 drivers/base/dd.c:724
+ __device_attach_driver+0x1d1/0x290 drivers/base/dd.c:831
+ bus_for_each_drv+0x162/0x1e0 drivers/base/bus.c:431
+ __device_attach+0x217/0x390 drivers/base/dd.c:897
+ bus_probe_device+0x1e4/0x290 drivers/base/bus.c:491
+ device_add+0x1459/0x1bf0 drivers/base/core.c:2500
+ usb_new_device.cold+0x540/0xcd0 drivers/usb/core/hub.c:2548
+ hub_port_connect drivers/usb/core/hub.c:5195 [inline]
+ hub_port_connect_change drivers/usb/core/hub.c:5335 [inline]
+ port_event drivers/usb/core/hub.c:5481 [inline]
+ hub_event+0x21cb/0x4300 drivers/usb/core/hub.c:5563
+ process_one_work+0x94b/0x1620 kernel/workqueue.c:2264
+ process_scheduled_works kernel/workqueue.c:2326 [inline]
+ worker_thread+0x7ab/0xe20 kernel/workqueue.c:2412
+ kthread+0x318/0x420 kernel/kthread.c:255
+ ret_from_fork+0x24/0x30 arch/x86/entry/entry_64.S:352
+Modules linked in:
+---[ end trace bae4913bb3cd6c7d ]---
+RIP: 0010:fbcon_switch+0x28f/0x1740 drivers/video/fbdev/core/fbcon.c:2260
+Code: 0f 85 96 14 00 00 48 8d 04 db 48 8b 1c c5 00 91 ff 89 48 b8 00 00 00 00 00 fc ff df 48 8d bb 60 03 00 00 48 89 fa 48 c1 ea 03 <0f> b6 04 02 84 c0 74 08 3c 03 0f 8e de 11 00 00 44 8b b3 60 03 00
+RSP: 0018:ffff8881da1dead8 EFLAGS: 00010206
+RAX: dffffc0000000000 RBX: 0000000000000000 RCX: ffffc9000d9eb000
+RDX: 000000000000006c RSI: ffffffff81fe5b44 RDI: 0000000000000360
+RBP: ffff8881ab4f0000 R08: ffff8881da196200 R09: fffffbfff0fcc10e
+R10: fffffbfff0fcc10d R11: ffffffff87e6086f R12: ffff8881d6616000
+R13: ffff8881c6a4a000 R14: 00000000000000a3 R15: ffffffff85ff8520
+FS:  0000000000000000(0000) GS:ffff8881db200000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f676c8e2740 CR3: 0000000007021000 CR4: 00000000001406f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+
+
 ---
- drivers/video/hdmi.c | 65 +++++++++++++++++++++++++++++++-------------
- include/linux/hdmi.h |  2 ++
- 2 files changed, 48 insertions(+), 19 deletions(-)
+This bug is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
-index 856a8c4e84a2..e70792b3e367 100644
---- a/drivers/video/hdmi.c
-+++ b/drivers/video/hdmi.c
-@@ -1768,20 +1768,21 @@ hdmi_vendor_any_infoframe_unpack(union hdmi_vendor_any_infoframe *frame,
- }
- 
- /**
-- * hdmi_drm_infoframe_unpack() - unpack binary buffer to a HDMI DRM infoframe
-+ * hdmi_drm_infoframe_unpack_only() - unpack binary buffer of CTA-861-G DRM
-+ *                                    infoframe DataBytes to a HDMI DRM
-+ *                                    infoframe
-  * @frame: HDMI DRM infoframe
-  * @buffer: source buffer
-  * @size: size of buffer
-  *
-- * Unpacks the information contained in binary @buffer into a structured
-- * @frame of the HDMI Dynamic Range and Mastering (DRM) information frame.
-- * Also verifies the checksum as required by section 5.3.5 of the HDMI 1.4
-- * specification.
-+ * Unpacks CTA-861-G DRM infoframe DataBytes contained in the binary @buffer
-+ * into a structured @frame of the HDMI Dynamic Range and Mastering (DRM)
-+ * infoframe.
-  *
-  * Returns 0 on success or a negative error code on failure.
-  */
--static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
--				     const void *buffer, size_t size)
-+int hdmi_drm_infoframe_unpack_only(struct hdmi_drm_infoframe *frame,
-+				   const void *buffer, size_t size)
- {
- 	const u8 *ptr = buffer;
- 	const u8 *temp;
-@@ -1790,23 +1791,13 @@ static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
- 	int ret;
- 	int i;
- 
--	if (size < HDMI_INFOFRAME_SIZE(DRM))
--		return -EINVAL;
--
--	if (ptr[0] != HDMI_INFOFRAME_TYPE_DRM ||
--	    ptr[1] != 1 ||
--	    ptr[2] != HDMI_DRM_INFOFRAME_SIZE)
--		return -EINVAL;
--
--	if (hdmi_infoframe_checksum(buffer, HDMI_INFOFRAME_SIZE(DRM)) != 0)
-+	if (size < HDMI_DRM_INFOFRAME_SIZE)
- 		return -EINVAL;
- 
- 	ret = hdmi_drm_infoframe_init(frame);
- 	if (ret)
- 		return ret;
- 
--	ptr += HDMI_INFOFRAME_HEADER_SIZE;
--
- 	frame->eotf = ptr[0] & 0x7;
- 	frame->metadata_type = ptr[1] & 0x7;
- 
-@@ -1814,7 +1805,7 @@ static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
- 	for (i = 0; i < 3; i++) {
- 		x_lsb = *temp++;
- 		x_msb = *temp++;
--		frame->display_primaries[i].x =  (x_msb << 8) | x_lsb;
-+		frame->display_primaries[i].x = (x_msb << 8) | x_lsb;
- 		y_lsb = *temp++;
- 		y_msb = *temp++;
- 		frame->display_primaries[i].y = (y_msb << 8) | y_lsb;
-@@ -1830,6 +1821,42 @@ static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(hdmi_drm_infoframe_unpack_only);
-+
-+/**
-+ * hdmi_drm_infoframe_unpack() - unpack binary buffer to a HDMI DRM infoframe
-+ * @frame: HDMI DRM infoframe
-+ * @buffer: source buffer
-+ * @size: size of buffer
-+ *
-+ * Unpacks the CTA-861-G DRM infoframe contained in the binary @buffer into
-+ * a structured @frame of the HDMI Dynamic Range and Mastering (DRM)
-+ * infoframe. It also verifies the checksum as required by section 5.3.5 of
-+ * the HDMI 1.4 specification.
-+ *
-+ * Returns 0 on success or a negative error code on failure.
-+ */
-+static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
-+				     const void *buffer, size_t size)
-+{
-+	const u8 *ptr = buffer;
-+	int ret;
-+
-+	if (size < HDMI_INFOFRAME_SIZE(DRM))
-+		return -EINVAL;
-+
-+	if (ptr[0] != HDMI_INFOFRAME_TYPE_DRM ||
-+	    ptr[1] != 1 ||
-+	    ptr[2] != HDMI_DRM_INFOFRAME_SIZE)
-+		return -EINVAL;
-+
-+	if (hdmi_infoframe_checksum(buffer, HDMI_INFOFRAME_SIZE(DRM)) != 0)
-+		return -EINVAL;
-+
-+	ret = hdmi_drm_infoframe_unpack_only(frame, ptr + HDMI_INFOFRAME_HEADER_SIZE,
-+					     size - HDMI_INFOFRAME_HEADER_SIZE);
-+	return ret;
-+}
- 
- /**
-  * hdmi_infoframe_unpack() - unpack binary buffer to a HDMI infoframe
-diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
-index 9613d796cfb1..50c31f1a0a2d 100644
---- a/include/linux/hdmi.h
-+++ b/include/linux/hdmi.h
-@@ -219,6 +219,8 @@ ssize_t hdmi_drm_infoframe_pack(struct hdmi_drm_infoframe *frame, void *buffer,
- ssize_t hdmi_drm_infoframe_pack_only(const struct hdmi_drm_infoframe *frame,
- 				     void *buffer, size_t size);
- int hdmi_drm_infoframe_check(struct hdmi_drm_infoframe *frame);
-+int hdmi_drm_infoframe_unpack_only(struct hdmi_drm_infoframe *frame,
-+				   const void *buffer, size_t size);
- 
- enum hdmi_spd_sdi {
- 	HDMI_SPD_SDI_UNKNOWN,
--- 
-2.25.0
+syzbot will keep track of this bug report. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.

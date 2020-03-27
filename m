@@ -1,131 +1,84 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 02 Mar 2020 10:22:58 +0000
-Subject: [PATCH v2] ARM/fbdev: sa11x0: Switch to use GPIO descriptors
-Message-Id: <20200302102258.351197-1-linus.walleij@linaro.org>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 27 Mar 2020 07:29:03 +0000
+Subject: [PATCH v8 00/14] In order to readout DP SDPs, refactors the handling of DP SDPs
+Message-Id: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@armlinux.org.uk>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org
-Cc: Linus Walleij <linus.walleij@linaro.org>, linux-arm-kernel@lists.infradead.org
+To: intel-gfx@lists.freedesktop.org
+Cc: jani.nikula@intel.com, linux-fbdev@vger.kernel.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org
 
-This converts the SA11x0 frame buffer driver to use
-GPIO descriptors. Get the GPIO optional and register
-a look-up table specifically for the Shannon machine.
+In order to readout DP SDPs (Secondary Data Packet: DP HDR Metadata
+Infoframe SDP, DP VSC SDP), it refactors handling DP SDPs codes.
+It adds new compute routines for DP HDR Metadata Infoframe SDP
+and DP VSC SDP. 
+And new writing routines of DP SDPs (Secondary Data Packet) that uses
+computed configs.
+New reading routines of DP SDPs are added for readout.
+It adds a logging function for DP VSC SDP.
+When receiving video it is very useful to be able to log DP VSC SDP.
+This greatly simplifies debugging.
+In order to use a common VSC SDP Colorimetry calculating code on PSR,
+it uses a new psr vsc sdp compute routine.
 
-Cc: Russell King <linux@armlinux.org.uk>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
-ChangeLog v1->v2:
-- Rename the GPIO line to "shannon-lcden" as this GPIO
-  line has semantics that are particular to the Shannon
-  platform.
----
- arch/arm/mach-sa1100/shannon.c |  9 +++++++++
- drivers/video/fbdev/sa1100fb.c | 20 +++++++++-----------
- drivers/video/fbdev/sa1100fb.h |  3 +++
- 3 files changed, 21 insertions(+), 11 deletions(-)
+v2: Minor style fix
+v3: 
+  - Add a new drm data structure for DP VSC SDP
+  - Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+  - Move logging functions to drm core [Jani N]
+    And use drm core's DP VSC SDP logging function
+  - Explicitly disable unused DIPs (AVI, GCP, VS, SPD, DRM. They will be
+    used for HDMI), when intel_dp_set_infoframes() function will be called.
+v4:
+  - Use struct drm_device logging macros
+  - Rebased
+v5:
+  - Use intel_de_*() functions for register access
+  - Add warning where a bpc is 6 and a pixel format is RGB.
+  - Addressed review comments from Uma
+    Add kernel docs for added data structures
+    Rename enum dp_colorspace to dp_pixelformat
+    Polish commit message and comments
+    Combine the if checks of sdp.HB2 and sdp.HB3
+    Add 6bpc to packining and unpacking of VSC SDP
+v6: Fix enabled infoframe states of lspcon
+v7: Fix the wrong check of combination bpc 6 and RGB pixelformat
+v8:
+  - Rebased
+  - Addressed review comments from Laurent Pinchart
+    Rename hdmi_drm_infoframe_unpack_only() to cta_drm_infoframe_unpack_databytes()
+    Add clear comments to cta_drm_infoframe_unpack_databytes()
 
-diff --git a/arch/arm/mach-sa1100/shannon.c b/arch/arm/mach-sa1100/shannon.c
-index 5bc82e2671c6..351f891b4842 100644
---- a/arch/arm/mach-sa1100/shannon.c
-+++ b/arch/arm/mach-sa1100/shannon.c
-@@ -104,6 +104,14 @@ static struct fixed_voltage_config shannon_cf_vcc_pdata __initdata = {
- 	.enabled_at_boot = 1,
- };
- 
-+static struct gpiod_lookup_table shannon_display_gpio_table = {
-+	.dev_id = "sa11x0-fb",
-+	.table = {
-+		GPIO_LOOKUP("gpio", 22, "shannon-lcden", GPIO_ACTIVE_HIGH),
-+		{ },
-+	},
-+};
-+
- static void __init shannon_init(void)
- {
- 	sa11x0_register_fixed_regulator(0, &shannon_cf_vcc_pdata,
-@@ -113,6 +121,7 @@ static void __init shannon_init(void)
- 	sa11x0_register_pcmcia(0, &shannon_pcmcia0_gpio_table);
- 	sa11x0_register_pcmcia(1, &shannon_pcmcia1_gpio_table);
- 	sa11x0_ppc_configure_mcp();
-+	gpiod_add_lookup_table(&shannon_display_gpio_table);
- 	sa11x0_register_lcd(&shannon_lcd_info);
- 	sa11x0_register_mtd(&shannon_flash_data, &shannon_flash_resource, 1);
- 	sa11x0_register_mcp(&shannon_mcp_data);
-diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-index 5bb653db0cec..065cdbfa7aa4 100644
---- a/drivers/video/fbdev/sa1100fb.c
-+++ b/drivers/video/fbdev/sa1100fb.c
-@@ -173,7 +173,7 @@
- #include <linux/init.h>
- #include <linux/ioport.h>
- #include <linux/cpufreq.h>
--#include <linux/gpio.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/platform_device.h>
- #include <linux/dma-mapping.h>
- #include <linux/mutex.h>
-@@ -799,8 +799,8 @@ static void sa1100fb_enable_controller(struct sa1100fb_info *fbi)
- 	writel_relaxed(fbi->dbar2, fbi->base + DBAR2);
- 	writel_relaxed(fbi->reg_lccr0 | LCCR0_LEN, fbi->base + LCCR0);
- 
--	if (machine_is_shannon())
--		gpio_set_value(SHANNON_GPIO_DISP_EN, 1);
-+	if (fbi->shannon_lcden)
-+		gpiod_set_value(fbi->shannon_lcden, 1);
- 
- 	dev_dbg(fbi->dev, "DBAR1: 0x%08x\n", readl_relaxed(fbi->base + DBAR1));
- 	dev_dbg(fbi->dev, "DBAR2: 0x%08x\n", readl_relaxed(fbi->base + DBAR2));
-@@ -817,8 +817,8 @@ static void sa1100fb_disable_controller(struct sa1100fb_info *fbi)
- 
- 	dev_dbg(fbi->dev, "Disabling LCD controller\n");
- 
--	if (machine_is_shannon())
--		gpio_set_value(SHANNON_GPIO_DISP_EN, 0);
-+	if (fbi->shannon_lcden)
-+		gpiod_set_value(fbi->shannon_lcden, 0);
- 
- 	set_current_state(TASK_UNINTERRUPTIBLE);
- 	add_wait_queue(&fbi->ctrlr_wait, &wait);
-@@ -1173,12 +1173,10 @@ static int sa1100fb_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	if (machine_is_shannon()) {
--		ret = devm_gpio_request_one(&pdev->dev, SHANNON_GPIO_DISP_EN,
--			GPIOF_OUT_INIT_LOW, "display enable");
--		if (ret)
--			return ret;
--	}
-+	fbi->shannon_lcden = gpiod_get_optional(&pdev->dev, "shannon-lcden",
-+						GPIOD_OUT_LOW);
-+	if (IS_ERR(fbi->shannon_lcden))
-+		return PTR_ERR(fbi->shannon_lcden);
- 
- 	/* Initialize video memory */
- 	ret = sa1100fb_map_video_memory(fbi);
-diff --git a/drivers/video/fbdev/sa1100fb.h b/drivers/video/fbdev/sa1100fb.h
-index d0aa33b0b88a..b4363444fa5d 100644
---- a/drivers/video/fbdev/sa1100fb.h
-+++ b/drivers/video/fbdev/sa1100fb.h
-@@ -10,6 +10,8 @@
-  * for more details.
-  */
- 
-+struct gpio_desc;
-+
- #define LCCR0           0x0000          /* LCD Control Reg. 0 */
- #define LCSR            0x0004          /* LCD Status Reg. */
- #define DBAR1           0x0010          /* LCD DMA Base Address Reg. channel 1 */
-@@ -33,6 +35,7 @@ struct sa1100fb_info {
- 	struct device		*dev;
- 	const struct sa1100fb_rgb *rgb[NR_RGB];
- 	void __iomem		*base;
-+	struct gpio_desc	*shannon_lcden;
- 
- 	/*
- 	 * These are the addresses we mapped
+Gwan-gyeong Mun (14):
+  video/hdmi: Add Unpack function for CTA-861-G DRM infoframe DataBytes
+  drm/i915/dp: Read out DP SDPs
+  drm: Add logging function for DP VSC SDP
+  drm/i915: Include HDMI DRM infoframe in the crtc state dump
+  drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
+  drm/i915: Include DP VSC SDP in the crtc state dump
+  drm/i915: Program DP SDPs with computed configs
+  drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
+  drm/i915: Add state readout for DP VSC SDP
+  drm/i915: Fix enabled infoframe states of lspcon
+  drm/i915: Program DP SDPs on pipe updates
+  drm/i915: Stop sending DP SDPs on ddi disable
+  drm/i915/dp: Add compute routine for DP PSR VSC SDP
+  drm/i915/psr: Use new DP VSC SDP compute routine on PSR
+
+ drivers/gpu/drm/drm_dp_helper.c              | 174 ++++++++
+ drivers/gpu/drm/i915/display/intel_ddi.c     |  19 +-
+ drivers/gpu/drm/i915/display/intel_display.c |  62 +++
+ drivers/gpu/drm/i915/display/intel_dp.c      | 395 ++++++++++---------
+ drivers/gpu/drm/i915/display/intel_dp.h      |  15 +-
+ drivers/gpu/drm/i915/display/intel_lspcon.c  |   2 +-
+ drivers/gpu/drm/i915/display/intel_psr.c     |  54 +--
+ drivers/gpu/drm/i915/display/intel_psr.h     |   6 +-
+ drivers/gpu/drm/i915/i915_drv.h              |   1 +
+ drivers/video/hdmi.c                         |  74 ++--
+ include/drm/drm_dp_helper.h                  |   3 +
+ include/linux/hdmi.h                         |   2 +
+ 12 files changed, 544 insertions(+), 263 deletions(-)
+
 -- 
-2.24.1
+2.25.0

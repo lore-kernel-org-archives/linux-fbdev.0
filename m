@@ -1,62 +1,39 @@
-From: Chuhong Yuan <hslester96@gmail.com>
-Date: Tue, 10 Mar 2020 03:41:05 +0000
-Subject: [PATCH v2] video: fbdev: arcfb: add missed free_irq and fix the order of request_irq
-Message-Id: <20200310034105.14379-1-hslester96@gmail.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 27 Mar 2020 07:29:15 +0000
+Subject: [PATCH v8 12/14] drm/i915: Stop sending DP SDPs on ddi disable
+Message-Id: <20200327072917.3676391-13-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chuhong Yuan <hslester96@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Jaya Kumar <jayalk@intworks.biz>
+To: intel-gfx@lists.freedesktop.org
+Cc: jani.nikula@intel.com, linux-fbdev@vger.kernel.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org
 
-The driver forgets to free irq in remove which is requested in
-probe.
-Add the missed call to fix it.
-Also, the position of request_irq() in probe should be put before
-register_framebuffer().
+Call intel_dp_set_infoframes(false) function on intel_ddi_post_disable_dp()
+to make sure not to send VSC SDP and HDR Metadata Infoframe SDP.
 
-Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
+v5: Polish commit message [Uma]
+
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
-Changes in v2:
-  - Modify the commit message.
-  - Adjust the order of operations in probe and remove.
+ drivers/gpu/drm/i915/display/intel_ddi.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
- drivers/video/fbdev/arcfb.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
-index 314ab82e01c0..ab553f940f9f 100644
---- a/drivers/video/fbdev/arcfb.c
-+++ b/drivers/video/fbdev/arcfb.c
-@@ -544,10 +544,6 @@ static int arcfb_probe(struct platform_device *dev)
- 	par->cslut[1] = 0x06;
- 	info->flags = FBINFO_FLAG_DEFAULT;
- 	spin_lock_init(&par->lock);
--	retval = register_framebuffer(info);
--	if (retval < 0)
--		goto err1;
--	platform_set_drvdata(dev, info);
- 	if (irq) {
- 		par->irq = irq;
- 		if (request_irq(par->irq, &arcfb_interrupt, IRQF_SHARED,
-@@ -558,6 +554,10 @@ static int arcfb_probe(struct platform_device *dev)
- 			goto err1;
- 		}
- 	}
-+	retval = register_framebuffer(info);
-+	if (retval < 0)
-+		goto err1;
-+	platform_set_drvdata(dev, info);
- 	fb_info(info, "Arc frame buffer device, using %dK of video memory\n",
- 		videomemorysize >> 10);
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
+index 57def3ae53b4..af66f3528a74 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -3351,6 +3351,8 @@ static void intel_ddi_post_disable_dp(struct intel_encoder *encoder,
+ 					  INTEL_OUTPUT_DP_MST);
+ 	enum phy phy = intel_port_to_phy(dev_priv, encoder->port);
  
-@@ -593,6 +593,8 @@ static int arcfb_remove(struct platform_device *dev)
- 
- 	if (info) {
- 		unregister_framebuffer(info);
-+		if (irq)
-+			free_irq(par->irq, info);
- 		vfree((void __force *)info->screen_base);
- 		framebuffer_release(info);
- 	}
++	intel_dp_set_infoframes(encoder, false, old_crtc_state, old_conn_state);
++
+ 	/*
+ 	 * Power down sink before disabling the port, otherwise we end
+ 	 * up getting interrupts from the sink on detecting link loss.
 -- 
-2.25.1
+2.25.0

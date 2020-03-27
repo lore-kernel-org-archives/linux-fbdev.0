@@ -1,62 +1,40 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 02 Mar 2020 15:42:15 +0000
-Subject: Re: [PATCH 1/4] video: fbdev: remove set but not used variable 'hSyncPol'
-Message-Id: <f05e964b-2a4c-1fc4-b0f4-16c3e6d1ec34@samsung.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 27 Mar 2020 07:29:08 +0000
+Subject: [PATCH v8 05/14] drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
+Message-Id: <20200327072917.3676391-6-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200119121730.10701-1-yukuai3@huawei.com>
- <CGME20200119121831eucas1p2da620aa87a0fdcc73e6a9db46a3e8243@eucas1p2.samsung.com>
- <20200119121730.10701-2-yukuai3@huawei.com>
-In-Reply-To: <20200119121730.10701-2-yukuai3@huawei.com>
+References: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: yu kuai <yukuai3@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, yi.zhang@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhengbin13@huawei.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: intel-gfx@lists.freedesktop.org
+Cc: jani.nikula@intel.com, linux-fbdev@vger.kernel.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org
 
+Dump out the DP HDR Metadata Infoframe SDP in the normal crtc state dump.
 
-On 1/19/20 1:17 PM, yu kuai wrote:
-> Fixes gcc '-Wunused-but-set-variable' warning:
-> 
-> drivers/video/fbdev/aty/radeon_base.c: In function
-> ‘radeonfb_set_par’:
-> drivers/video/fbdev/aty/radeon_base.c:1653:6: warning: variable
-> ‘hSyncPol’ set but not used [-Wunused-but-set-variable]
-> 
-> It is never used, and so can be removed.
-> 
-> Signed-off-by: yu kuai <yukuai3@huawei.com>
+HDMI Dynamic Range and Mastering (DRM) infoframe and DP HDR Metadata
+Infoframe SDP use the same member variable in infoframes of crtc state.
 
-Patch queued for v5.7, thanks.
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_display.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index abe9425d815f..ed331f4b78ac 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -13076,6 +13076,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+ 	if (pipe_config->infoframes.enable &
+ 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
+ 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
++	if (pipe_config->infoframes.enable &
++	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
++		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
  
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  drivers/video/fbdev/aty/radeon_base.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-> index 3af00e3b965e..d2e68ec580c2 100644
-> --- a/drivers/video/fbdev/aty/radeon_base.c
-> +++ b/drivers/video/fbdev/aty/radeon_base.c
-> @@ -1650,7 +1650,7 @@ static int radeonfb_set_par(struct fb_info *info)
->  	struct fb_var_screeninfo *mode = &info->var;
->  	struct radeon_regs *newmode;
->  	int hTotal, vTotal, hSyncStart, hSyncEnd,
-> -	    hSyncPol, vSyncStart, vSyncEnd, vSyncPol, cSync;
-> +	    vSyncStart, vSyncEnd, vSyncPol, cSync;
->  	u8 hsync_adj_tab[] = {0, 0x12, 9, 9, 6, 5};
->  	u8 hsync_fudge_fp[] = {2, 2, 0, 0, 5, 5};
->  	u32 sync, h_sync_pol, v_sync_pol, dotClock, pixClock;
-> @@ -1730,7 +1730,6 @@ static int radeonfb_set_par(struct fb_info *info)
->  	else if (vsync_wid > 0x1f)	/* max */
->  		vsync_wid = 0x1f;
->  
-> -	hSyncPol = mode->sync & FB_SYNC_HOR_HIGH_ACT ? 0 : 1;
->  	vSyncPol = mode->sync & FB_SYNC_VERT_HIGH_ACT ? 0 : 1;
->  
->  	cSync = mode->sync & FB_SYNC_COMP_HIGH_ACT ? (1 << 4) : 0;
-> 
+ 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
+ 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
+-- 
+2.25.0

@@ -1,50 +1,37 @@
-From: "Shankar, Uma" <uma.shankar@intel.com>
-Date: Mon, 16 Mar 2020 05:19:47 +0000
-Subject: RE: [Intel-gfx] [PATCH v6 14/18] drm/i915: Fix enabled infoframe states of lspcon
-Message-Id: <E7C9878FBA1C6D42A1CA3F62AEB6945F82432511@BGSMSX104.gar.corp.intel.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 27 Mar 2020 07:29:14 +0000
+Subject: [PATCH v8 11/14] drm/i915: Program DP SDPs on pipe updates
+Message-Id: <20200327072917.3676391-12-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200210171021.109684-1-gwan-gyeong.mun@intel.com>
- <20200210171021.109684-15-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200210171021.109684-15-gwan-gyeong.mun@intel.com>
+References: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Mun, Gwan-gyeong" <gwan-gyeong.mun@intel.com>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+To: intel-gfx@lists.freedesktop.org
+Cc: jani.nikula@intel.com, linux-fbdev@vger.kernel.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogSW50ZWwtZ2Z4IDxpbnRl
-bC1nZngtYm91bmNlc0BsaXN0cy5mcmVlZGVza3RvcC5vcmc+IE9uIEJlaGFsZiBPZiBHd2FuLQ0K
-PiBneWVvbmcgTXVuDQo+IFNlbnQ6IE1vbmRheSwgRmVicnVhcnkgMTAsIDIwMjAgMTA6NDAgUE0N
-Cj4gVG86IGludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcNCj4gQ2M6IGxpbnV4LWZiZGV2
-QHZnZXIua2VybmVsLm9yZzsgZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZw0KPiBTdWJq
-ZWN0OiBbSW50ZWwtZ2Z4XSBbUEFUQ0ggdjYgMTQvMThdIGRybS9pOTE1OiBGaXggZW5hYmxlZCBp
-bmZvZnJhbWUgc3RhdGVzIG9mDQo+IGxzcGNvbg0KPiANCj4gQ29tcGFyZWQgdG8gaW1wbGVtZW50
-YXRpb24gb2YgRFAgYW5kIEhETUkncyBlbmNvZGVyLT5pbmZvZnJhbWVzX2VuYWJsZWQsIHRoZQ0K
-PiBsc3Bjb24ncyBpbXBsZW1lbnRhdGlvbiByZXR1cm5zIGl0cyBhY3RpdmUgc3RhdGUuICh3ZSBl
-eHBlY3QgZW5hYmxlZCBpbmZvZnJhbWUNCj4gc3RhdGVzIG9mIEhXLikgSXQgbGVhZHMgdG8gcGlw
-ZSBzdGF0ZSBtaXNtYXRjaCBlcnJvciB3aGVuIGRkaV9nZXRfY29uZmlnIGlzIGNhbGxlZC4NCj4g
-DQo+IEJlY2F1c2UgdGhlIGN1cnJlbnQgaW1wbGVtZW50YXRpb24gb2YgbHNwY29uIGlzIG5vdCBy
-ZWFkeSB0byBzdXBwb3J0IHJlYWRvdXQNCj4gaW5mb2ZyYW1lcywgd2UgbmVlZCB0byByZXR1cm4g
-MCBoZXJlLg0KPiANCj4gSW4gb3JkZXIgdG8gc3VwcG9ydCByZWFkb3V0IHRvIGxzcGNvbiwgd2Ug
-bmVlZCB0byBpbXBsZW1lbnQgcmVhZF9pbmZvZnJhbWUgYW5kDQo+IGluZm9mcmFtZXNfZW5hYmxl
-ZC4gQW5kIHNldF9pbmZvZnJhbWVzIGFsc28gaGF2ZSB0byBzZXQgYW4gYXBwcm9wcmlhdGUgYml0
-IG9uDQo+IGNydGNfc3RhdGUtPmluZm9mcmFtZXMuZW5hYmxlDQoNCkxvb2tzIGdvb2QgdG8gbWUu
-DQpSZXZpZXdlZC1ieTogVW1hIFNoYW5rYXIgPHVtYS5zaGFua2FyQGludGVsLmNvbT4NCg0KPiBD
-YzogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQGxpbnV4LmludGVsLmNvbT4NCj4gU2ln
-bmVkLW9mZi1ieTogR3dhbi1neWVvbmcgTXVuIDxnd2FuLWd5ZW9uZy5tdW5AaW50ZWwuY29tPg0K
-PiAtLS0NCj4gIGRyaXZlcnMvZ3B1L2RybS9pOTE1L2Rpc3BsYXkvaW50ZWxfbHNwY29uLmMgfCAy
-ICstDQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkNCj4g
-DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vaTkxNS9kaXNwbGF5L2ludGVsX2xzcGNv
-bi5jDQo+IGIvZHJpdmVycy9ncHUvZHJtL2k5MTUvZGlzcGxheS9pbnRlbF9sc3Bjb24uYw0KPiBp
-bmRleCBkODA3YzU2NDhjODcuLjZmZjdiMjI2ZjBhMSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9n
-cHUvZHJtL2k5MTUvZGlzcGxheS9pbnRlbF9sc3Bjb24uYw0KPiArKysgYi9kcml2ZXJzL2dwdS9k
-cm0vaTkxNS9kaXNwbGF5L2ludGVsX2xzcGNvbi5jDQo+IEBAIC01MjIsNyArNTIyLDcgQEAgdTMy
-IGxzcGNvbl9pbmZvZnJhbWVzX2VuYWJsZWQoc3RydWN0IGludGVsX2VuY29kZXINCj4gKmVuY29k
-ZXIsDQo+ICAJCQkgICAgICBjb25zdCBzdHJ1Y3QgaW50ZWxfY3J0Y19zdGF0ZSAqcGlwZV9jb25m
-aWcpICB7DQo+ICAJLyogRklYTUUgYWN0dWFsbHkgcmVhZCB0aGlzIGZyb20gdGhlIGh3ICovDQo+
-IC0JcmV0dXJuIGVuY190b19pbnRlbF9sc3Bjb24oZW5jb2RlciktPmFjdGl2ZTsNCj4gKwlyZXR1
-cm4gMDsNCj4gIH0NCj4gDQo+ICB2b2lkIGxzcGNvbl9yZXN1bWUoc3RydWN0IGludGVsX2xzcGNv
-biAqbHNwY29uKQ0KPiAtLQ0KPiAyLjI1LjANCj4gDQo+IF9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fDQo+IEludGVsLWdmeCBtYWlsaW5nIGxpc3QNCj4gSW50
-ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZw0KPiBodHRwczovL2xpc3RzLmZyZWVkZXNrdG9w
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeA0K
+Call intel_dp_set_infoframes() function on pipe updates to make sure
+that we send VSC SDP and HDR Metadata Infoframe SDP (when applicable)
+on fastsets.
+
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_ddi.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
+index f58a539d51c2..57def3ae53b4 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -3711,6 +3711,7 @@ static void intel_ddi_update_pipe_dp(struct intel_encoder *encoder,
+ 	intel_ddi_set_dp_msa(crtc_state, conn_state);
+ 
+ 	intel_psr_update(intel_dp, crtc_state);
++	intel_dp_set_infoframes(encoder, true, crtc_state, conn_state);
+ 	intel_edp_drrs_enable(intel_dp, crtc_state);
+ 
+ 	intel_panel_update_backlight(encoder, crtc_state, conn_state);
+-- 
+2.25.0

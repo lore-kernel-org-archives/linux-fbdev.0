@@ -1,22 +1,57 @@
-From: DR CHALLY NOAH <mayorabrahamedge404@gmail.com>
-Date: Tue, 03 Mar 2020 18:09:00 +0000
-Subject: Hello Dear
-Message-Id: <CALqVJWdFx_aWTT4kkN0eD5b+-M5aPDZmP2kebmH9eN3yv-cVBg@mail.gmail.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 27 Mar 2020 07:29:09 +0000
+Subject: [PATCH v8 06/14] drm/i915: Include DP VSC SDP in the crtc state dump
+Message-Id: <20200327072917.3676391-7-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: intel-gfx@lists.freedesktop.org
+Cc: jani.nikula@intel.com, linux-fbdev@vger.kernel.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org
 
-Hello Dear,
-What Have Kept You Waiting To Claim Your $600,000.00 USD Compensation Award?
-This said fund was issued out by the UNITED NATIONS To compensate
-you.Please If You Have Not Claim Your Fund (Award),Kindly contact me
-at   DR.CHALLYNOAH@GMAIL.COM   for further details on how to proceed your
-fund (award)release to you or better still reply back Immediately You
-Receive This Information For An Urgent Confirmation And Release Of Your
-Fund To You Without Delays, as your email was listed among those to be
-compensated this year.Congratulations..
-Best Regards,
-Dr Chally Noah.
-Minister Of Finance On Foreign Remittance:
+Dump out the DP VSC SDP in the normal crtc state dump
+
+v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+    Use drm core's DP VSC SDP logging function
+
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_display.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index ed331f4b78ac..caa8fdeb9c33 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -12921,6 +12921,16 @@ intel_dump_infoframe(struct drm_i915_private *dev_priv,
+ 	hdmi_infoframe_log(KERN_DEBUG, dev_priv->drm.dev, frame);
+ }
+ 
++static void
++intel_dump_dp_vsc_sdp(struct drm_i915_private *dev_priv,
++		      const struct drm_dp_vsc_sdp *vsc)
++{
++	if (!drm_debug_enabled(DRM_UT_KMS))
++		return;
++
++	drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, vsc);
++}
++
+ #define OUTPUT_TYPE(x) [INTEL_OUTPUT_ ## x] = #x
+ 
+ static const char * const output_type_str[] = {
+@@ -13079,6 +13089,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+ 	if (pipe_config->infoframes.enable &
+ 	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
+ 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
++	if (pipe_config->infoframes.enable &
++	    intel_hdmi_infoframe_enable(DP_SDP_VSC))
++		intel_dump_dp_vsc_sdp(dev_priv, &pipe_config->infoframes.vsc);
+ 
+ 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
+ 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
+-- 
+2.25.0

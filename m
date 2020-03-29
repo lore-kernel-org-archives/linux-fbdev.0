@@ -1,225 +1,96 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Mon, 30 Mar 2020 16:23:45 +0000
-Subject: [PATCH v9 03/14] drm: Add logging function for DP VSC SDP
-Message-Id: <20200330162356.162361-4-gwan-gyeong.mun@intel.com>
+From: Chuhong Yuan <hslester96@gmail.com>
+Date: Sun, 29 Mar 2020 14:58:39 +0000
+Subject: [PATCH v4] video: fbdev: vesafb: add missed release_region
+Message-Id: <20200329145839.20076-1-hslester96@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
+Cc: linux-fbdev@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-When receiving video it is very useful to be able to log DP VSC SDP.
-This greatly simplifies debugging.
+The driver forgets to free the I/O region in remove and probe
+failure.
+Add the missed calls to fix it.
 
-v2: Minor style fix
-v3: Move logging functions to drm core [Jani N]
-v5: Rebased
+Since the success of request_region() is optional, add the "region" field
+in vesafb_par to represent whether request_region() succeeds.
+Then only call release_region() when "region" is not null.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
 ---
- drivers/gpu/drm/drm_dp_helper.c | 174 ++++++++++++++++++++++++++++++++
- include/drm/drm_dp_helper.h     |   3 +
- 2 files changed, 177 insertions(+)
+Changes in v4:
+  - Add a field in vesafb_par to represent whether request_region() succeeds.
+  - Only call release_region() when request_region() succeeds.
+  - Adjust the order in the error handler of probe.
+  - Modify commit message.
 
-diff --git a/drivers/gpu/drm/drm_dp_helper.c b/drivers/gpu/drm/drm_dp_helper.c
-index 8ba4531e808d..e4f8e0ca44b7 100644
---- a/drivers/gpu/drm/drm_dp_helper.c
-+++ b/drivers/gpu/drm/drm_dp_helper.c
-@@ -1535,3 +1535,177 @@ int drm_dp_dsc_sink_supported_input_bpcs(const u8 dsc_dpcd[DP_DSC_RECEIVER_CAP_S
- 	return num_bpc;
- }
- EXPORT_SYMBOL(drm_dp_dsc_sink_supported_input_bpcs);
-+
-+static const char *dp_pixelformat_get_name(enum dp_pixelformat pixelformat)
-+{
-+	if (pixelformat < 0 || pixelformat > DP_PIXELFORMAT_RESERVED)
-+		return "Invalid";
-+
-+	switch (pixelformat) {
-+	case DP_PIXELFORMAT_RGB:
-+		return "RGB";
-+	case DP_PIXELFORMAT_YUV444:
-+		return "YUV444";
-+	case DP_PIXELFORMAT_YUV422:
-+		return "YUV422";
-+	case DP_PIXELFORMAT_YUV420:
-+		return "YUV420";
-+	case DP_PIXELFORMAT_Y_ONLY:
-+		return "Y_ONLY";
-+	case DP_PIXELFORMAT_RAW:
-+		return "RAW";
-+	default:
-+		return "Reserved";
-+	}
-+}
-+
-+static const char *dp_colorimetry_get_name(enum dp_pixelformat pixelformat,
-+					   enum dp_colorimetry colorimetry)
-+{
-+	if (pixelformat < 0 || pixelformat > DP_PIXELFORMAT_RESERVED)
-+		return "Invalid";
-+
-+	switch (colorimetry) {
-+	case DP_COLORIMETRY_DEFAULT:
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "sRGB";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.601";
-+		case DP_PIXELFORMAT_Y_ONLY:
-+			return "DICOM PS3.14";
-+		case DP_PIXELFORMAT_RAW:
-+			return "Custom Color Profile";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_WIDE_FIXED: /* and DP_COLORIMETRY_BT709_YCC */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "Wide Fixed";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.709";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_WIDE_FLOAT: /* and DP_COLORIMETRY_XVYCC_601 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "Wide Float";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "xvYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_OPRGB: /* and DP_COLORIMETRY_XVYCC_709 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "OpRGB";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "xvYCC 709";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_DCI_P3_RGB: /* and DP_COLORIMETRY_SYCC_601 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "DCI-P3";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "sYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_CUSTOM: /* and DP_COLORIMETRY_OPYCC_601 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "Custom Profile";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "OpYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_BT2020_RGB: /* and DP_COLORIMETRY_BT2020_CYCC */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "BT.2020 RGB";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.2020 CYCC";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_BT2020_YCC:
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.2020 YCC";
-+		default:
-+			return "Reserved";
-+		}
-+	default:
-+		return "Invalid";
-+	}
-+}
-+
-+static const char *dp_dynamic_range_get_name(enum dp_dynamic_range dynamic_range)
-+{
-+	switch (dynamic_range) {
-+	case DP_DYNAMIC_RANGE_VESA:
-+		return "VESA range";
-+	case DP_DYNAMIC_RANGE_CTA:
-+		return "CTA range";
-+	default:
-+		return "Invalid";
-+	}
-+}
-+
-+static const char *dp_content_type_get_name(enum dp_content_type content_type)
-+{
-+	switch (content_type) {
-+	case DP_CONTENT_TYPE_NOT_DEFINED:
-+		return "Not defined";
-+	case DP_CONTENT_TYPE_GRAPHICS:
-+		return "Graphics";
-+	case DP_CONTENT_TYPE_PHOTO:
-+		return "Photo";
-+	case DP_CONTENT_TYPE_VIDEO:
-+		return "Video";
-+	case DP_CONTENT_TYPE_GAME:
-+		return "Game";
-+	default:
-+		return "Reserved";
-+	}
-+}
-+
-+void drm_dp_vsc_sdp_log(const char *level, struct device *dev,
-+			const struct drm_dp_vsc_sdp *vsc)
-+{
-+#define DP_SDP_LOG(fmt, ...) dev_printk(level, dev, fmt, ##__VA_ARGS__)
-+	DP_SDP_LOG("DP SDP: %s, revision %u, length %u\n", "VSC",
-+		   vsc->revision, vsc->length);
-+	DP_SDP_LOG("    pixelformat: %s\n",
-+		   dp_pixelformat_get_name(vsc->pixelformat));
-+	DP_SDP_LOG("    colorimetry: %s\n",
-+		   dp_colorimetry_get_name(vsc->pixelformat, vsc->colorimetry));
-+	DP_SDP_LOG("    bpc: %u\n", vsc->bpc);
-+	DP_SDP_LOG("    dynamic range: %s\n",
-+		   dp_dynamic_range_get_name(vsc->dynamic_range));
-+	DP_SDP_LOG("    content type: %s\n",
-+		   dp_content_type_get_name(vsc->content_type));
-+#undef DP_SDP_LOG
-+}
-+EXPORT_SYMBOL(drm_dp_vsc_sdp_log);
-diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
-index 305533da13ad..d23b7286ac42 100644
---- a/include/drm/drm_dp_helper.h
-+++ b/include/drm/drm_dp_helper.h
-@@ -1339,6 +1339,9 @@ struct drm_dp_vsc_sdp {
- 	enum dp_content_type content_type;
+ drivers/video/fbdev/vesafb.c | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/fbdev/vesafb.c b/drivers/video/fbdev/vesafb.c
+index a1fe24ea869b..df6de5a9dd4c 100644
+--- a/drivers/video/fbdev/vesafb.c
++++ b/drivers/video/fbdev/vesafb.c
+@@ -32,6 +32,7 @@
+ struct vesafb_par {
+ 	u32 pseudo_palette[256];
+ 	int wc_cookie;
++	struct resource *region;
  };
  
-+void drm_dp_vsc_sdp_log(const char *level, struct device *dev,
-+			const struct drm_dp_vsc_sdp *vsc);
-+
- int drm_dp_psr_setup_time(const u8 psr_cap[EDP_PSR_RECEIVER_CAP_SIZE]);
+ static struct fb_var_screeninfo vesafb_defined = {
+@@ -411,7 +412,7 @@ static int vesafb_probe(struct platform_device *dev)
  
- static inline int
+ 	/* request failure does not faze us, as vgacon probably has this
+ 	 * region already (FIXME) */
+-	request_region(0x3c0, 32, "vesafb");
++	par->region = request_region(0x3c0, 32, "vesafb");
+ 
+ 	if (mtrr = 3) {
+ 		unsigned int temp_size = size_total;
+@@ -439,7 +440,7 @@ static int vesafb_probe(struct platform_device *dev)
+ 		       "vesafb: abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
+ 			vesafb_fix.smem_len, vesafb_fix.smem_start);
+ 		err = -EIO;
+-		goto err;
++		goto err_release_region;
+ 	}
+ 
+ 	printk(KERN_INFO "vesafb: framebuffer at 0x%lx, mapped to 0x%p, "
+@@ -458,19 +459,22 @@ static int vesafb_probe(struct platform_device *dev)
+ 
+ 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
+ 		err = -ENOMEM;
+-		goto err;
++		goto err_release_region;
+ 	}
+ 	if (register_framebuffer(info)<0) {
+ 		err = -EINVAL;
+ 		fb_dealloc_cmap(&info->cmap);
+-		goto err;
++		goto err_release_region;
+ 	}
+ 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+ 	return 0;
+-err:
++err_release_region:
+ 	arch_phys_wc_del(par->wc_cookie);
+ 	if (info->screen_base)
+ 		iounmap(info->screen_base);
++	if (par->region)
++		release_region(0x3c0, 32);
++err:
+ 	framebuffer_release(info);
+ 	release_mem_region(vesafb_fix.smem_start, size_total);
+ 	return err;
+@@ -481,6 +485,8 @@ static int vesafb_remove(struct platform_device *pdev)
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+ 
+ 	unregister_framebuffer(info);
++	if (((struct vesafb_par *)(info->par))->region)
++		release_region(0x3c0, 32);
+ 	framebuffer_release(info);
+ 
+ 	return 0;
 -- 
-2.25.0
+2.26.0

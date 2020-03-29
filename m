@@ -1,35 +1,63 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 02 Mar 2020 15:41:39 +0000
-Subject: Re: [PATCH 1/2] video: fbdev: sh_mobile_lcdcfb: fix sparse warnings about using incorrect types
-Message-Id: <25ce3896-7f70-7638-8c53-1b1c984ff2cd@samsung.com>
+From: Julia Lawall <julia.lawall@inria.fr>
+Date: Sun, 29 Mar 2020 09:28:33 +0000
+Subject: Re: [Outreachy kernel] [PATCH] staging: fbtft: Replace udelay with preferred usleep_range
+Message-Id: <alpine.DEB.2.21.2003291127230.2990@hadrien>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200116145116eucas1p2d512db3f05f01d87bc9039af5bf70af3@eucas1p2.samsung.com>
- <c687dbc5-cf5a-9508-2a61-e757a1a14568@samsung.com>
- <CAMuHMdW0qSAn3S+bpFieP=xukK5SapAq1oRC8XouuMJ6fgqOBA@mail.gmail.com>
-In-Reply-To: <CAMuHMdW0qSAn3S+bpFieP=xukK5SapAq1oRC8XouuMJ6fgqOBA@mail.gmail.com>
+References: <20200329092204.770405-1-jbwyatt4@gmail.com>
+In-Reply-To: <20200329092204.770405-1-jbwyatt4@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrzej Hajda <a.hajda@samsung.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>
+To: "John B. Wyatt IV" <jbwyatt4@gmail.com>
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, outreachy-kernel@googlegroups.com, Payal Kshirsagar <payal.s.kshirsagar.98@gmail.com>
 
 
-On 1/17/20 3:08 PM, Geert Uytterhoeven wrote:
-> On Thu, Jan 16, 2020 at 3:51 PM Bartlomiej Zolnierkiewicz
-> <b.zolnierkie@samsung.com> wrote:
->> Use ->screen_buffer instead of ->screen_base to fix sparse warnings.
->>
->> [ Please see commit 17a7b0b4d974 ("fb.h: Provide alternate screen_base
->>   pointer") for details. ]
->>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> 
-> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Thanks, patch queued for v5.7.
+On Sun, 29 Mar 2020, John B. Wyatt IV wrote:
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+> Fix style issue with usleep_range being reported as preferred over
+> udelay.
+>
+> Issue reported by checkpatch.
+>
+> Please review.
+>
+> As written in Documentation/timers/timers-howto.rst udelay is the
+> generally preferred API. hrtimers, as noted in the docs, may be too
+> expensive for this short timer.
+>
+> Are the docs out of date, or, is this a checkpatch issue?
+>
+> Signed-off-by: John B. Wyatt IV <jbwyatt4@gmail.com>
+> ---
+>  drivers/staging/fbtft/fb_agm1264k-fl.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/staging/fbtft/fb_agm1264k-fl.c b/drivers/staging/fbtft/fb_agm1264k-fl.c
+> index eeeeec97ad27..019c8cce6bab 100644
+> --- a/drivers/staging/fbtft/fb_agm1264k-fl.c
+> +++ b/drivers/staging/fbtft/fb_agm1264k-fl.c
+> @@ -85,7 +85,7 @@ static void reset(struct fbtft_par *par)
+>  	dev_dbg(par->info->device, "%s()\n", __func__);
+>
+>  	gpiod_set_value(par->gpio.reset, 0);
+> -	udelay(20);
+> +	usleep_range(20, 20);
+
+usleep_range should have a range, eg usleep_range(50, 100);.  But it is
+hard to know a priori what the range should be.  So it is probably better
+to leave the code alone.
+
+julia
+
+>  	gpiod_set_value(par->gpio.reset, 1);
+>  	mdelay(120);
+>  }
+> --
+> 2.25.1
+>
+> --
+> You received this message because you are subscribed to the Google Groups "outreachy-kernel" group.
+> To unsubscribe from this group and stop receiving emails from it, send an email to outreachy-kernel+unsubscribe@googlegroups.com.
+> To view this discussion on the web visit https://groups.google.com/d/msgid/outreachy-kernel/20200329092204.770405-1-jbwyatt4%40gmail.com.
+>

@@ -1,57 +1,44 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 27 Mar 2020 07:29:09 +0000
-Subject: [PATCH v8 06/14] drm/i915: Include DP VSC SDP in the crtc state dump
-Message-Id: <20200327072917.3676391-7-gwan-gyeong.mun@intel.com>
+From: "John B. Wyatt IV" <jbwyatt4@gmail.com>
+Date: Sun, 29 Mar 2020 09:22:04 +0000
+Subject: [PATCH] staging: fbtft: Replace udelay with preferred usleep_range
+Message-Id: <20200329092204.770405-1-jbwyatt4@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200327072917.3676391-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: jani.nikula@intel.com, linux-fbdev@vger.kernel.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org
+To: outreachy-kernel@googlegroups.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Payal Kshirsagar <payal.s.kshirsagar.98@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Cc: "John B. Wyatt IV" <jbwyatt4@gmail.com>
 
-Dump out the DP VSC SDP in the normal crtc state dump
+Fix style issue with usleep_range being reported as preferred over
+udelay.
 
-v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-    Use drm core's DP VSC SDP logging function
+Issue reported by checkpatch.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Please review.
+
+As written in Documentation/timers/timers-howto.rst udelay is the
+generally preferred API. hrtimers, as noted in the docs, may be too
+expensive for this short timer.
+
+Are the docs out of date, or, is this a checkpatch issue?
+
+Signed-off-by: John B. Wyatt IV <jbwyatt4@gmail.com>
 ---
- drivers/gpu/drm/i915/display/intel_display.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/staging/fbtft/fb_agm1264k-fl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index ed331f4b78ac..caa8fdeb9c33 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -12921,6 +12921,16 @@ intel_dump_infoframe(struct drm_i915_private *dev_priv,
- 	hdmi_infoframe_log(KERN_DEBUG, dev_priv->drm.dev, frame);
+diff --git a/drivers/staging/fbtft/fb_agm1264k-fl.c b/drivers/staging/fbtft/fb_agm1264k-fl.c
+index eeeeec97ad27..019c8cce6bab 100644
+--- a/drivers/staging/fbtft/fb_agm1264k-fl.c
++++ b/drivers/staging/fbtft/fb_agm1264k-fl.c
+@@ -85,7 +85,7 @@ static void reset(struct fbtft_par *par)
+ 	dev_dbg(par->info->device, "%s()\n", __func__);
+ 
+ 	gpiod_set_value(par->gpio.reset, 0);
+-	udelay(20);
++	usleep_range(20, 20);
+ 	gpiod_set_value(par->gpio.reset, 1);
+ 	mdelay(120);
  }
- 
-+static void
-+intel_dump_dp_vsc_sdp(struct drm_i915_private *dev_priv,
-+		      const struct drm_dp_vsc_sdp *vsc)
-+{
-+	if (!drm_debug_enabled(DRM_UT_KMS))
-+		return;
-+
-+	drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, vsc);
-+}
-+
- #define OUTPUT_TYPE(x) [INTEL_OUTPUT_ ## x] = #x
- 
- static const char * const output_type_str[] = {
-@@ -13079,6 +13089,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
- 	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
- 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
-+	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(DP_SDP_VSC))
-+		intel_dump_dp_vsc_sdp(dev_priv, &pipe_config->infoframes.vsc);
- 
- 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
- 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
 -- 
-2.25.0
+2.25.1

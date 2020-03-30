@@ -1,162 +1,82 @@
-From: Kiran Gunda <kgunda@codeaurora.org>
-Date: Mon, 09 Mar 2020 13:38:02 +0000
-Subject: [PATCH V3 4/4] backlight: qcom-wled: Update auto calibration support for WLED5
-Message-Id: <1583760362-26978-5-git-send-email-kgunda@codeaurora.org>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Mon, 30 Mar 2020 16:23:42 +0000
+Subject: [PATCH v9 00/14] In order to readout DP SDPs, refactors the handling of DP SDPs
+Message-Id: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1583760362-26978-1-git-send-email-kgunda@codeaurora.org>
-In-Reply-To: <1583760362-26978-1-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Kiran Gunda <kgunda@codeaurora.org>
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
 
-Currently, auto calibration logic checks only for OVP_FAULT bit
-to be set in FAULT_STATUS register to detect OVP fault. This works
-well for WLED4 type. However, WLED5 type has OVP_PRE_ALARM bit
-which can indicate a potential OVP fault. Use that as well for
-detecting OVP fault and run auto calibration to fix the sink
-configuration.
+In order to readout DP SDPs (Secondary Data Packet: DP HDR Metadata
+Infoframe SDP, DP VSC SDP), it refactors handling DP SDPs codes.
+It adds new compute routines for DP HDR Metadata Infoframe SDP
+and DP VSC SDP. 
+And new writing routines of DP SDPs (Secondary Data Packet) that uses
+computed configs.
+New reading routines of DP SDPs are added for readout.
+It adds a logging function for DP VSC SDP.
+When receiving video it is very useful to be able to log DP VSC SDP.
+This greatly simplifies debugging.
+In order to use a common VSC SDP Colorimetry calculating code on PSR,
+it uses a new psr vsc sdp compute routine.
 
-Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
----
- drivers/video/backlight/qcom-wled.c | 90 ++++++++++++++++++++++++++++++++++++-
- 1 file changed, 88 insertions(+), 2 deletions(-)
+v2: Minor style fix
+v3: 
+  - Add a new drm data structure for DP VSC SDP
+  - Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+  - Move logging functions to drm core [Jani N]
+    And use drm core's DP VSC SDP logging function
+  - Explicitly disable unused DIPs (AVI, GCP, VS, SPD, DRM. They will be
+    used for HDMI), when intel_dp_set_infoframes() function will be called.
+v4:
+  - Use struct drm_device logging macros
+  - Rebased
+v5:
+  - Use intel_de_*() functions for register access
+  - Add warning where a bpc is 6 and a pixel format is RGB.
+  - Addressed review comments from Uma
+    Add kernel docs for added data structures
+    Rename enum dp_colorspace to dp_pixelformat
+    Polish commit message and comments
+    Combine the if checks of sdp.HB2 and sdp.HB3
+    Add 6bpc to packining and unpacking of VSC SDP
+v6: Fix enabled infoframe states of lspcon
+v7: Fix the wrong check of combination bpc 6 and RGB pixelformat
+v8: Rebased
+v9: Add clear comments to hdmi_drm_infoframe_unpack_only() and
+    hdmi_drm_infoframe_unpack() (Laurent Pinchart)
 
-diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-index edbbcb2..5079f1f 100644
---- a/drivers/video/backlight/qcom-wled.c
-+++ b/drivers/video/backlight/qcom-wled.c
-@@ -27,6 +27,7 @@
- #define  WLED3_CTRL_REG_ILIM_FAULT_BIT			BIT(0)
- #define  WLED3_CTRL_REG_OVP_FAULT_BIT			BIT(1)
- #define  WLED4_CTRL_REG_SC_FAULT_BIT			BIT(2)
-+#define  WLED5_CTRL_REG_OVP_PRE_ALARM_BIT		BIT(4)
- 
- #define WLED3_CTRL_REG_INT_RT_STS			0x10
- #define  WLED3_CTRL_REG_OVP_FAULT_STATUS		BIT(1)
-@@ -104,6 +105,10 @@
- 
- #define WLED4_SINK_REG_BRIGHT(n)			(0x57 + (n * 0x10))
- 
-+/* WLED5 specific control registers */
-+#define WLED5_CTRL_REG_OVP_INT_CTL			0x5f
-+#define  WLED5_CTRL_REG_OVP_INT_TIMER_MASK		GENMASK(2, 0)
-+
- /* WLED5 specific sink registers */
- #define WLED5_SINK_REG_MOD_A_EN				0x50
- #define WLED5_SINK_REG_MOD_B_EN				0x60
-@@ -394,11 +399,67 @@ static int wled4_ovp_fault_status(struct wled *wled, bool *fault_set)
- 	return rc;
- }
- 
-+static int wled5_ovp_fault_status(struct wled *wled, bool *fault_set)
-+{
-+	int rc;
-+	u32 int_rt_sts, fault_sts;
-+
-+	*fault_set = false;
-+	rc = regmap_read(wled->regmap,
-+			wled->ctrl_addr + WLED3_CTRL_REG_INT_RT_STS,
-+			&int_rt_sts);
-+	if (rc < 0) {
-+		dev_err(wled->dev, "Failed to read INT_RT_STS rc=%d\n", rc);
-+		return rc;
-+	}
-+
-+	rc = regmap_read(wled->regmap,
-+			wled->ctrl_addr + WLED3_CTRL_REG_FAULT_STATUS,
-+			&fault_sts);
-+	if (rc < 0) {
-+		dev_err(wled->dev, "Failed to read FAULT_STATUS rc=%d\n", rc);
-+		return rc;
-+	}
-+
-+	if (int_rt_sts & WLED3_CTRL_REG_OVP_FAULT_STATUS)
-+		*fault_set = true;
-+
-+	if (fault_sts & (WLED3_CTRL_REG_OVP_FAULT_BIT |
-+			       WLED5_CTRL_REG_OVP_PRE_ALARM_BIT))
-+		*fault_set = true;
-+
-+	if (*fault_set)
-+		dev_dbg(wled->dev, "WLED OVP fault detected, int_rt_sts=0x%x fault_sts=0x%x\n",
-+			int_rt_sts, fault_sts);
-+
-+	return rc;
-+}
-+
- static int wled4_ovp_delay(struct wled *wled)
- {
- 	return WLED_SOFT_START_DLY_US;
- }
- 
-+static int wled5_ovp_delay(struct wled *wled)
-+{
-+	int rc, delay_us;
-+	u32 val;
-+	u8 ovp_timer_ms[8] = {1, 2, 4, 8, 12, 16, 20, 24};
-+
-+	/* For WLED5, get the delay based on OVP timer */
-+	rc = regmap_read(wled->regmap, wled->ctrl_addr +
-+			 WLED5_CTRL_REG_OVP_INT_CTL, &val);
-+	if (rc < 0)
-+		delay_us +		ovp_timer_ms[val & WLED5_CTRL_REG_OVP_INT_TIMER_MASK] * 1000;
-+	else
-+		delay_us = 2 * WLED_SOFT_START_DLY_US;
-+
-+	dev_dbg(wled->dev, "delay_time_us: %d\n", *delay_us);
-+
-+	return delay_us;
-+}
-+
- static int wled_update_status(struct backlight_device *bl)
- {
- 	struct wled *wled = bl_get_data(bl);
-@@ -736,9 +797,32 @@ static bool wled_auto_detection_required(struct wled *wled)
- 	if (!wled->auto_detection_ovp_count) {
- 		wled->start_ovp_fault_time = ktime_get();
- 		wled->auto_detection_ovp_count++;
--	} else {
-+		return false;
-+	}
-+
-+	if (wled->version = 5) {
-+		/*
-+		 * WLED5 has OVP fault density interrupt configuration i.e. to
-+		 * count the number of OVP alarms for a certain duration before
-+		 * triggering OVP fault interrupt. By default, number of OVP
-+		 * fault events counted before an interrupt is fired is 32 and
-+		 * the time interval is 12 ms. If we see more than one OVP fault
-+		 * interrupt, then that should qualify for a real OVP fault
-+		 * condition to run auto calibration algorithm.
-+		 */
-+
-+		if (wled->auto_detection_ovp_count > 1) {
-+			elapsed_time_us = ktime_us_delta(ktime_get(),
-+					wled->start_ovp_fault_time);
-+			wled->auto_detection_ovp_count = 0;
-+			dev_dbg(wled->dev, "Elapsed time: %lld us\n",
-+				elapsed_time_us);
-+			return true;
-+		}
-+		wled->auto_detection_ovp_count++;
-+	} else if (wled->version = 4) {
- 		elapsed_time_us = ktime_us_delta(ktime_get(),
--						 wled->start_ovp_fault_time);
-+					 wled->start_ovp_fault_time);
- 		if (elapsed_time_us > WLED_AUTO_DETECT_CNT_DLY_US)
- 			wled->auto_detection_ovp_count = 0;
- 		else
-@@ -1424,6 +1508,8 @@ static int wled_configure(struct wled *wled)
- 		wled->wled_set_brightness = wled5_set_brightness;
- 		wled->wled_sync_toggle = wled5_sync_toggle;
- 		wled->cabc_config = wled5_cabc_config;
-+		wled->wled_ovp_fault_status = wled5_ovp_fault_status;
-+		wled->wled_ovp_delay = wled5_ovp_delay;
- 		wled->max_string_count = 4;
- 
- 		prop_addr = of_get_address(dev->of_node, 1, NULL, NULL);
+Gwan-gyeong Mun (14):
+  video/hdmi: Add Unpack only function for DRM infoframe
+  drm/i915/dp: Read out DP SDPs
+  drm: Add logging function for DP VSC SDP
+  drm/i915: Include HDMI DRM infoframe in the crtc state dump
+  drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
+  drm/i915: Include DP VSC SDP in the crtc state dump
+  drm/i915: Program DP SDPs with computed configs
+  drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
+  drm/i915: Add state readout for DP VSC SDP
+  drm/i915: Fix enabled infoframe states of lspcon
+  drm/i915: Program DP SDPs on pipe updates
+  drm/i915: Stop sending DP SDPs on ddi disable
+  drm/i915/dp: Add compute routine for DP PSR VSC SDP
+  drm/i915/psr: Use new DP VSC SDP compute routine on PSR
+
+ drivers/gpu/drm/drm_dp_helper.c              | 174 +++++++++
+ drivers/gpu/drm/i915/display/intel_ddi.c     |  19 +-
+ drivers/gpu/drm/i915/display/intel_display.c |  62 +++
+ drivers/gpu/drm/i915/display/intel_dp.c      | 391 ++++++++++---------
+ drivers/gpu/drm/i915/display/intel_dp.h      |  15 +-
+ drivers/gpu/drm/i915/display/intel_lspcon.c  |   2 +-
+ drivers/gpu/drm/i915/display/intel_psr.c     |  54 +--
+ drivers/gpu/drm/i915/display/intel_psr.h     |   6 +-
+ drivers/gpu/drm/i915/i915_drv.h              |   1 +
+ drivers/video/hdmi.c                         |  65 ++-
+ include/drm/drm_dp_helper.h                  |   3 +
+ include/linux/hdmi.h                         |   2 +
+ 12 files changed, 536 insertions(+), 258 deletions(-)
+
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
- a Linux Foundation Collaborative Project
+2.25.0

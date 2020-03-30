@@ -1,43 +1,38 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Sun, 15 Mar 2020 04:10:00 +0000
-Subject: [PATCH 4/6] fbdev: savage: fix -Wextra build warning
-Message-Id: <20200315041002.24473-5-rdunlap@infradead.org>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Mon, 30 Mar 2020 16:23:46 +0000
+Subject: [PATCH v9 04/14] drm/i915: Include HDMI DRM infoframe in the crtc state dump
+Message-Id: <20200330162356.162361-5-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200315041002.24473-1-rdunlap@infradead.org>
-In-Reply-To: <20200315041002.24473-1-rdunlap@infradead.org>
+References: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
 
-When 'SAVAGEFB_DEBUG' is not defined, modify the DBG() macro to use the
-no_printk() macro instead of using <empty>.
-This fixes a build warning when -Wextra is used and provides
-printk format checking:
+Dump out the HDMI Dynamic Range and Mastering (DRM) infoframe in the
+normal crtc state dump.
 
-../drivers/video/fbdev/savage/savagefb_driver.c:2411:13: warning: suggest braces around empty body in an ‘if’ statement [-Wempty-body]
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
-Alternative: use pr_debug() so that CONFIG_DYNAMIC_DEBUG can be used
-at these sites.
+ drivers/gpu/drm/i915/display/intel_display.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
- drivers/video/fbdev/savage/savagefb.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-next-20200313.orig/drivers/video/fbdev/savage/savagefb.h
-+++ linux-next-20200313/drivers/video/fbdev/savage/savagefb.h
-@@ -21,7 +21,7 @@
- #ifdef SAVAGEFB_DEBUG
- # define DBG(x)		printk (KERN_DEBUG "savagefb: %s\n", (x));
- #else
--# define DBG(x)
-+# define DBG(x)		no_printk(x)
- # define SavagePrintRegs(...)
- #endif
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index e09a11b1e509..7fb60312d262 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -12983,6 +12983,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+ 	if (pipe_config->infoframes.enable &
+ 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_VENDOR))
+ 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.hdmi);
++	if (pipe_config->infoframes.enable &
++	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
++		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
  
+ 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
+ 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
+-- 
+2.25.0

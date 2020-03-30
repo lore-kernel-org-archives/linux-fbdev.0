@@ -1,80 +1,57 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Sun, 15 Mar 2020 04:10:02 +0000
-Subject: [PATCH 6/6] fbdev: via: fix -Wextra build warning and format warning
-Message-Id: <20200315041002.24473-7-rdunlap@infradead.org>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Mon, 30 Mar 2020 16:23:48 +0000
+Subject: [PATCH v9 06/14] drm/i915: Include DP VSC SDP in the crtc state dump
+Message-Id: <20200330162356.162361-7-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200315041002.24473-1-rdunlap@infradead.org>
-In-Reply-To: <20200315041002.24473-1-rdunlap@infradead.org>
+References: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
 
-When 'VIAFB_DEBUG' and 'VIAFB_WARN' are not defined, modify the
-DEBUG_MSG() &WARN_MSG() macros to use the no_printk() macro instead of
-using <empty>.
-This fixes a build warning when -Wextra is used and provides
-printk format checking:
+Dump out the DP VSC SDP in the normal crtc state dump
 
-../drivers/video/fbdev/via/ioctl.c:88:47: warning: suggest braces around empty body in an ‘else’ statement [-Wempty-body]
+v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+    Use drm core's DP VSC SDP logging function
 
-Also use %lu to print an unsigned long instead of just %l, to fix
-a printk format warning:
-
-../drivers/video/fbdev/via/viafbdev.c: In function ‘viafb_dvp0_proc_write’:
-../drivers/video/fbdev/via/viafbdev.c:1148:14: warning: unknown conversion type character ‘]’ in format [-Wformat=]
-    DEBUG_MSG("DVP0:reg_val[%l]=:%x\n", i,
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
-Alternative: use pr_debug() so that CONFIG_DYNAMIC_DEBUG can be used
-at these sites.
+ drivers/gpu/drm/i915/display/intel_display.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
- drivers/video/fbdev/via/debug.h    |    6 ++++--
- drivers/video/fbdev/via/viafbdev.c |    2 +-
- 2 files changed, 5 insertions(+), 3 deletions(-)
-
---- linux-next-20200313.orig/drivers/video/fbdev/via/debug.h
-+++ linux-next-20200313/drivers/video/fbdev/via/debug.h
-@@ -7,6 +7,8 @@
- #ifndef __DEBUG_H__
- #define __DEBUG_H__
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index 6f4f17a2ec1f..37c2c1338816 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -12826,6 +12826,16 @@ intel_dump_infoframe(struct drm_i915_private *dev_priv,
+ 	hdmi_infoframe_log(KERN_DEBUG, dev_priv->drm.dev, frame);
+ }
  
-+#include <linux/printk.h>
++static void
++intel_dump_dp_vsc_sdp(struct drm_i915_private *dev_priv,
++		      const struct drm_dp_vsc_sdp *vsc)
++{
++	if (!drm_debug_enabled(DRM_UT_KMS))
++		return;
 +
- #ifndef VIAFB_DEBUG
- #define VIAFB_DEBUG 0
- #endif
-@@ -14,14 +16,14 @@
- #if VIAFB_DEBUG
- #define DEBUG_MSG(f, a...)   printk(f, ## a)
- #else
--#define DEBUG_MSG(f, a...)
-+#define DEBUG_MSG(f, a...)   no_printk(f, ## a)
- #endif
++	drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, vsc);
++}
++
+ #define OUTPUT_TYPE(x) [INTEL_OUTPUT_ ## x] = #x
  
- #define VIAFB_WARN 0
- #if VIAFB_WARN
- #define WARN_MSG(f, a...)   printk(f, ## a)
- #else
--#define WARN_MSG(f, a...)
-+#define WARN_MSG(f, a...)   no_printk(f, ## a)
- #endif
+ static const char * const output_type_str[] = {
+@@ -12989,6 +12999,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+ 	if (pipe_config->infoframes.enable &
+ 	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
+ 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
++	if (pipe_config->infoframes.enable &
++	    intel_hdmi_infoframe_enable(DP_SDP_VSC))
++		intel_dump_dp_vsc_sdp(dev_priv, &pipe_config->infoframes.vsc);
  
- #endif /* __DEBUG_H__ */
---- linux-next-20200313.orig/drivers/video/fbdev/via/viafbdev.c
-+++ linux-next-20200313/drivers/video/fbdev/via/viafbdev.c
-@@ -1144,7 +1144,7 @@ static ssize_t viafb_dvp0_proc_write(str
- 		if (value != NULL) {
- 			if (kstrtou8(value, 0, &reg_val) < 0)
- 				return -EINVAL;
--			DEBUG_MSG(KERN_INFO "DVP0:reg_val[%l]=:%x\n", i,
-+			DEBUG_MSG(KERN_INFO "DVP0:reg_val[%lu]=:%x\n", i,
- 				  reg_val);
- 			switch (i) {
- 			case 0:
+ 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
+ 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
+-- 
+2.25.0

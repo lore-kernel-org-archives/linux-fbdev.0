@@ -1,44 +1,40 @@
-From: "John B. Wyatt IV" <jbwyatt4@gmail.com>
-Date: Sun, 29 Mar 2020 09:22:04 +0000
-Subject: [PATCH] staging: fbtft: Replace udelay with preferred usleep_range
-Message-Id: <20200329092204.770405-1-jbwyatt4@gmail.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Mon, 30 Mar 2020 16:23:47 +0000
+Subject: [PATCH v9 05/14] drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
+Message-Id: <20200330162356.162361-6-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: outreachy-kernel@googlegroups.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Payal Kshirsagar <payal.s.kshirsagar.98@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Cc: "John B. Wyatt IV" <jbwyatt4@gmail.com>
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
 
-Fix style issue with usleep_range being reported as preferred over
-udelay.
+Dump out the DP HDR Metadata Infoframe SDP in the normal crtc state dump.
 
-Issue reported by checkpatch.
+HDMI Dynamic Range and Mastering (DRM) infoframe and DP HDR Metadata
+Infoframe SDP use the same member variable in infoframes of crtc state.
 
-Please review.
-
-As written in Documentation/timers/timers-howto.rst udelay is the
-generally preferred API. hrtimers, as noted in the docs, may be too
-expensive for this short timer.
-
-Are the docs out of date, or, is this a checkpatch issue?
-
-Signed-off-by: John B. Wyatt IV <jbwyatt4@gmail.com>
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/staging/fbtft/fb_agm1264k-fl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/i915/display/intel_display.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/staging/fbtft/fb_agm1264k-fl.c b/drivers/staging/fbtft/fb_agm1264k-fl.c
-index eeeeec97ad27..019c8cce6bab 100644
---- a/drivers/staging/fbtft/fb_agm1264k-fl.c
-+++ b/drivers/staging/fbtft/fb_agm1264k-fl.c
-@@ -85,7 +85,7 @@ static void reset(struct fbtft_par *par)
- 	dev_dbg(par->info->device, "%s()\n", __func__);
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index 7fb60312d262..6f4f17a2ec1f 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -12986,6 +12986,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+ 	if (pipe_config->infoframes.enable &
+ 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
+ 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
++	if (pipe_config->infoframes.enable &
++	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
++		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
  
- 	gpiod_set_value(par->gpio.reset, 0);
--	udelay(20);
-+	usleep_range(20, 20);
- 	gpiod_set_value(par->gpio.reset, 1);
- 	mdelay(120);
- }
+ 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
+ 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
 -- 
-2.25.1
+2.25.0

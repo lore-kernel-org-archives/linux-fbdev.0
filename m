@@ -1,73 +1,37 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Tue, 24 Mar 2020 17:05:31 +0000
-Subject: [PATCH v1 4/5] video: ssd1307fb: Convert to atomic PWM API
-Message-Id: <20200324170532.44384-4-andriy.shevchenko@linux.intel.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Mon, 30 Mar 2020 16:23:53 +0000
+Subject: [PATCH v9 11/14] drm/i915: Program DP SDPs on pipe updates
+Message-Id: <20200330162356.162361-12-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
 
-Use the atomic API wherever appropriate and get rid of pwm_apply_args()
-call (the reference period and polarity are now explicitly set when
-calling pwm_apply_state()).
+Call intel_dp_set_infoframes() function on pipe updates to make sure
+that we send VSC SDP and HDR Metadata Infoframe SDP (when applicable)
+on fastsets.
 
-We also make use of the pwm_set_relative_duty_cycle() helper to ease
-relative to absolute duty_cycle conversion.
-
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+ drivers/gpu/drm/i915/display/intel_ddi.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 7a6a44a0b7a6..6e543396002a 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -79,7 +79,6 @@ struct ssd1307fb_par {
- 	u32 prechargep1;
- 	u32 prechargep2;
- 	struct pwm_device *pwm;
--	u32 pwm_period;
- 	struct gpio_desc *reset;
- 	struct regulator *vbat_reg;
- 	u32 vcomh;
-@@ -297,9 +296,9 @@ static void ssd1307fb_deferred_io(struct fb_info *info,
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
+index 99b4944dfef2..cee3d2b5caf5 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -3716,6 +3716,7 @@ static void intel_ddi_update_pipe_dp(struct intel_encoder *encoder,
+ 	intel_ddi_set_dp_msa(crtc_state, conn_state);
  
- static int ssd1307fb_init(struct ssd1307fb_par *par)
- {
-+	struct pwm_state pwmstate;
- 	int ret;
- 	u32 precharge, dclk, com_invdir, compins;
--	struct pwm_args pargs;
+ 	intel_psr_update(intel_dp, crtc_state);
++	intel_dp_set_infoframes(encoder, true, crtc_state, conn_state);
+ 	intel_edp_drrs_enable(intel_dp, crtc_state);
  
- 	if (par->device_info->need_pwm) {
- 		par->pwm = pwm_get(&par->client->dev, NULL);
-@@ -308,21 +307,15 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 			return PTR_ERR(par->pwm);
- 		}
- 
--		/*
--		 * FIXME: pwm_apply_args() should be removed when switching to
--		 * the atomic PWM API.
--		 */
--		pwm_apply_args(par->pwm);
-+		pwm_init_state(par->pwm, &pwmstate);
-+		pwm_set_relative_duty_cycle(&pwmstate, 50, 100);
-+		pwm_apply_state(par->pwm, &pwmstate);
- 
--		pwm_get_args(par->pwm, &pargs);
--
--		par->pwm_period = pargs.period;
- 		/* Enable the PWM */
--		pwm_config(par->pwm, par->pwm_period / 2, par->pwm_period);
- 		pwm_enable(par->pwm);
- 
- 		dev_dbg(&par->client->dev, "Using PWM%d with a %dns period.\n",
--			par->pwm->pwm, par->pwm_period);
-+			par->pwm->pwm, pwm_get_period(par->pwm));
- 	}
- 
- 	/* Set initial contrast */
+ 	intel_panel_update_backlight(encoder, crtc_state, conn_state);
 -- 
-2.25.1
+2.25.0

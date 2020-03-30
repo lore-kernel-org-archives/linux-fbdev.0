@@ -1,33 +1,47 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Tue, 24 Mar 2020 17:05:32 +0000
-Subject: [PATCH v1 5/5] video: ssd1307fb: Remove redundant forward declaration
-Message-Id: <20200324170532.44384-5-andriy.shevchenko@linux.intel.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Mon, 30 Mar 2020 16:23:52 +0000
+Subject: [PATCH v9 10/14] drm/i915: Fix enabled infoframe states of lspcon
+Message-Id: <20200330162356.162361-11-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200330162356.162361-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
 
-There is no need to have forward declaration of struct ssd1307fb_par.
-Drop it for good.
+Compared to implementation of DP and HDMI's encoder->infoframes_enabled,
+the lspcon's implementation returns its active state. (we expect enabled
+infoframe states of HW.) It leads to pipe state mismatch error
+when ddi_get_config is called.
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Because the current implementation of lspcon is not ready to support
+readout infoframes, we need to return 0 here.
+
+In order to support readout to lspcon, we need to implement read_infoframe
+and infoframes_enabled. And set_infoframes also have to set an appropriate
+bit on crtc_state->infoframes.enable
+
+Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/gpu/drm/i915/display/intel_lspcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 6e543396002a..509cab2c8b6c 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -48,8 +48,6 @@
- static u_int refreshrate = REFRESHRATE;
- module_param(refreshrate, uint, 0);
+diff --git a/drivers/gpu/drm/i915/display/intel_lspcon.c b/drivers/gpu/drm/i915/display/intel_lspcon.c
+index d807c5648c87..6ff7b226f0a1 100644
+--- a/drivers/gpu/drm/i915/display/intel_lspcon.c
++++ b/drivers/gpu/drm/i915/display/intel_lspcon.c
+@@ -522,7 +522,7 @@ u32 lspcon_infoframes_enabled(struct intel_encoder *encoder,
+ 			      const struct intel_crtc_state *pipe_config)
+ {
+ 	/* FIXME actually read this from the hw */
+-	return enc_to_intel_lspcon(encoder)->active;
++	return 0;
+ }
  
--struct ssd1307fb_par;
--
- struct ssd1307fb_deviceinfo {
- 	u32 default_vcomh;
- 	u32 default_dclk_div;
+ void lspcon_resume(struct intel_lspcon *lspcon)
 -- 
-2.25.1
+2.25.0

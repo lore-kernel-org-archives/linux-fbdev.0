@@ -1,412 +1,188 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 21 Apr 2020 01:04:33 +0000
-Subject: Re: [PATCH 3/5] powerpc: Replace _ALIGN_UP() by ALIGN()
-Message-Id: <CACPK8XcK9_m3mz+sCVhgAfPYQ6yG4sPfF18w=8wBdFa1aSC5MA@mail.gmail.com>
+From: Dmitry Vyukov <dvyukov@google.com>
+Date: Wed, 01 Apr 2020 08:46:48 +0000
+Subject: Re: INFO: trying to register non-static key in try_to_wake_up
+Message-Id: <CACT4Y+Y_i86-MPG_3jo-+_5WTLvcNi6HTR=mQkVdwJb5ATqDsQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <a5945463f86c984151962a475a3ee56a2893e85d.1587407777.git.christophe.leroy@c-s.fr>
- <8a6d7e45f7904c73a0af539642d3962e2a3c7268.1587407777.git.christophe.leroy@c-s.fr>
-In-Reply-To: <8a6d7e45f7904c73a0af539642d3962e2a3c7268.1587407777.git.christophe.leroy@c-s.fr>
+References: <000000000000ec257905a21f7415@google.com>
+ <20200331095737.GO20730@hirez.programming.kicks-ass.net>
+ <CGME20200331101907eucas1p1ce5d3f7c49c2c724c4e85f5c19c7108d@eucas1p1.samsung.com>
+ <CACT4Y+bqBCqDPQZ1Nk8G+8y2vu8aaT2S54J4UqRPaFNUcusbYw@mail.gmail.com>
+ <7641fb29-20ec-0963-d04c-bfbf49fd3ebc@samsung.com>
+ <CAKMK7uF5zZH3CaHueWsLR96-AzT==wP8=MpymTqx-T+SRsXWHA@mail.gmail.com>
+In-Reply-To: <CAKMK7uF5zZH3CaHueWsLR96-AzT==wP8=MpymTqx-T+SRsXWHA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Daniel Vetter <daniel@ffwll.ch>, syzkaller <syzkaller@googlegroups.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Peter Zijlstra <peterz@infradead.org>, syzbot <syzbot+e84d7ebd1361da13c356@syzkaller.appspotmail.com>, the arch/x86 maintainers <x86@kernel.org>, syzkaller-bugs <syzkaller-bugs@googlegroups.com>, LKML <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 
-On Mon, 20 Apr 2020 at 18:39, Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+On Tue, Mar 31, 2020 at 2:50 PM Daniel Vetter <daniel@ffwll.ch> wrote:
 >
-> _ALIGN_UP() is specific to powerpc
-> ALIGN() is generic and does the same
+> On Tue, Mar 31, 2020 at 2:18 PM Bartlomiej Zolnierkiewicz
+> <b.zolnierkie@samsung.com> wrote:
+> >
+> >
+> > On 3/31/20 12:18 PM, Dmitry Vyukov wrote:
+> > > On Tue, Mar 31, 2020 at 11:57 AM Peter Zijlstra <peterz@infradead.org=
+> wrote:
+> > >>
+> > >> On Mon, Mar 30, 2020 at 10:01:12PM -0700, syzbot wrote:
+> > >>> Hello,
+> > >>>
+> > >>> syzbot found the following crash on:
+> > >>>
+> > >>> HEAD commit:    9420e8ad Merge tag 'for-linus' of git://git.kernel.=
+org/pub..
+> > >>> git tree:       upstream
+> > >>> console output: https://protect2.fireeye.com/url?k=0756a78d-5a9a6c4=
+9-07572cc2-0cc47a314e9a-e4dc8b657d340686&u=3Dhttps://syzkaller.appspot.com/=
+x/log.txt?x=1206ed4be00000
+> > >>> kernel config:  https://protect2.fireeye.com/url?kC211072-1eeddbb6-=
+43209b3d-0cc47a314e9a-3bd45a19932c37c8&u=3Dhttps://syzkaller.appspot.com/x/=
+.config?x'392dd2975fd692
+> > >>> dashboard link: https://protect2.fireeye.com/url?k=BF7a6153-e2b6aa9=
+7-bf7bea1c-0cc47a314e9a-c64073ee605efb7b&u=3Dhttps://syzkaller.appspot.com/=
+bug?extid=E84d7ebd1361da13c356
+> > >>> compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+> > >>>
+> > >>> Unfortunately, I don't have any reproducer for this crash yet.
+> > >>>
+> > >>> IMPORTANT: if you fix the bug, please add the following tag to the =
+commit:
+> > >>> Reported-by: syzbot+e84d7ebd1361da13c356@syzkaller.appspotmail.com
+> > >>>
+> > >>> INFO: trying to register non-static key.
+> > >>> the code is fine but needs lockdep annotation.
+> > >>> turning off the locking correctness validator.
+> > >>> CPU: 1 PID: 1014 Comm: syz-executor.0 Not tainted 5.6.0-rc7-syzkall=
+er #0
+> > >>> Hardware name: Google Google Compute Engine/Google Compute Engine, =
+BIOS Google 01/01/2011
+> > >>> Call Trace:
+> > >>>  <IRQ>
+> > >>>  __dump_stack lib/dump_stack.c:77 [inline]
+> > >>>  dump_stack+0x188/0x20d lib/dump_stack.c:118
+> > >>>  assign_lock_key kernel/locking/lockdep.c:880 [inline]
+> > >>>  register_lock_class+0x14c4/0x1540 kernel/locking/lockdep.c:1189
+> > >>>  __lock_acquire+0xfc/0x3ca0 kernel/locking/lockdep.c:3836
+> > >>>  lock_acquire+0x197/0x420 kernel/locking/lockdep.c:4484
+> > >>>  __raw_spin_lock_irqsave include/linux/spinlock_api_smp.h:110 [inli=
+ne]
+> > >>>  _raw_spin_lock_irqsave+0x8c/0xbf kernel/locking/spinlock.c:159
+> > >>>  try_to_wake_up+0x9f/0x17c0 kernel/sched/core.c:2547
+> > >>
+> > >> That's p->pi_lock, which gets initialized in rt_mutex_init_task() in
+> > >> copy_process(). This should be impossible. Very odd.
+> > >
+> > > The stack mentions fbdev, which is a red flag at the moment. There are
+> > > a dozen of bad bugs in fbdev and around. Just few days ago Andy
+> > > pointed to another "impossible" crash "general protection fault in
+> > > do_syscall_64" which is related to dri:
+> > > https://protect2.fireeye.com/url?k=0Cb8ad06-517466c2-0cb92649-0cc47a3=
+14e9a-a20c11191483c65b&u=3Dhttps://syzkaller.appspot.com/bug?id=0Ec7b2602b1=
+ff40f0d34f38baa4ba1640727c3d9
+> > > https://protect2.fireeye.com/url?ka4292e3-3c8e5927-614319ac-0cc47a314=
+e9a-aeda6d72c01a7b0e&u=3Dhttps://groups.google.com/forum/#!msg/syzkaller-bu=
+gs/ePqhfYx0-8M/Q_Urt97iAAAJ
+> > >
+> > > There are probably more random manifestations of these bugs already,
+> > > and I guess we will be getting more.
+> > >
+> > > +fbdev maintainers
+> >
+> > Thank you for the report.
+> >
+> > fbdev is in the maintenance mode and no new features or drivers are
+> > being added so syzbot reports are not for a new bugs (regressions) and
+> > are not a priority (at least to me).
 >
-> Replace _ALIGN_UP() by ALIGN()
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Yup same here, I've seen a pile of syzbot reports for fbdev (and also
+> vt, or combinations of them since fbdev is linked to vt through fbcon)
+> fly by. But I really don't have to deal with these, my recommendation
+> to anyone who cares about security are:
+> - Don't enable vt
+> - Don't enable fbdev
 
-Reviewed-by: Joel Stanley <joel@jms.id.au>
+1. How do we deliver this message to relevant people?
 
-> ---
->  arch/powerpc/include/asm/iommu.h             |  4 ++--
->  arch/powerpc/kernel/head_booke.h             |  2 +-
->  arch/powerpc/kernel/nvram_64.c               |  4 ++--
->  arch/powerpc/kernel/pci_64.c                 |  2 +-
->  arch/powerpc/kernel/prom.c                   |  4 ++--
->  arch/powerpc/kernel/prom_init.c              |  8 ++++----
->  arch/powerpc/kvm/book3s_64_vio_hv.c          |  2 +-
->  arch/powerpc/mm/book3s64/hash_tlb.c          |  2 +-
->  arch/powerpc/mm/book3s64/radix_pgtable.c     |  2 +-
->  arch/powerpc/mm/slice.c                      |  2 +-
->  arch/powerpc/platforms/cell/iommu.c          |  6 +++---
->  arch/powerpc/platforms/powermac/bootx_init.c | 10 +++++-----
->  arch/powerpc/platforms/powernv/pci-ioda.c    |  8 ++++----
->  arch/powerpc/platforms/ps3/mm.c              | 16 ++++++++--------
->  arch/powerpc/platforms/ps3/setup.c           |  2 +-
->  15 files changed, 37 insertions(+), 37 deletions(-)
+Because:
+
+$ grep FBDEV syzkaller/dashboard/config/upstream-kasan.config
+CONFIG_DRM_FBDEV_EMULATION=3Dy
+CONFIG_DRM_FBDEV_OVERALLOC=100
+# CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM is not set
+CONFIG_XEN_FBDEV_FRONTEND=3Dy
+
+and my current work machine:
+
+$ grep FBDEV /boot/config-5.2.17-1-amd64
+CONFIG_DRM_FBDEV_EMULATION=3Dy
+CONFIG_DRM_FBDEV_OVERALLOC=100
+# CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM is not set
+CONFIG_XEN_FBDEV_FRONTEND=3Dy
+
+
+2. What do we do with fbdev testing on syzbot? Is there a way to
+disable all of the unsupported stuff? But if we disable it, we don't
+find any regressions as well. And in the end that's what is in the
+mainline kernel and is still enabled in distros (at least in the 2
+real configs I can grep now).
+
+
+
+> All that code has been developed long ago, in a much more innocent
+> time. If someone wants to fix this you'd not just need to fix all the
+> syzbot stuff, but also ramp up a full testsuite for all the ioctl, and
+> all the corner-cases. Plus also fix some of the horrendous locking in
+> there, probably.
 >
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> index 350101e11ddb..5032f1593299 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -22,11 +22,11 @@
->  #define IOMMU_PAGE_SHIFT_4K      12
->  #define IOMMU_PAGE_SIZE_4K       (ASM_CONST(1) << IOMMU_PAGE_SHIFT_4K)
->  #define IOMMU_PAGE_MASK_4K       (~((1 << IOMMU_PAGE_SHIFT_4K) - 1))
-> -#define IOMMU_PAGE_ALIGN_4K(addr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE_4K)
-> +#define IOMMU_PAGE_ALIGN_4K(addr) ALIGN(addr, IOMMU_PAGE_SIZE_4K)
+> Multi-year effort, easily.
 >
->  #define IOMMU_PAGE_SIZE(tblptr) (ASM_CONST(1) << (tblptr)->it_page_shift)
->  #define IOMMU_PAGE_MASK(tblptr) (~((1 << (tblptr)->it_page_shift) - 1))
-> -#define IOMMU_PAGE_ALIGN(addr, tblptr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE(tblptr))
-> +#define IOMMU_PAGE_ALIGN(addr, tblptr) ALIGN(addr, IOMMU_PAGE_SIZE(tblptr))
+> Regressions I'll obviously try to handle, but none of these are. It's
+> just syzbot has become smarter at hitting bugs in fbdev and vt
+> subsystems (or maybe the hw the virtual machines emulate has become
+> more varied, some of the reports are for fun stuff like vgacon ...).
 >
->  /* Boot time flags */
->  extern int iommu_is_off;
-> diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
-> index bd2e5ed8dd50..18f87bf9e32b 100644
-> --- a/arch/powerpc/kernel/head_booke.h
-> +++ b/arch/powerpc/kernel/head_booke.h
-> @@ -534,7 +534,7 @@ struct exception_regs {
->  };
+> Cheers, Daniel
 >
->  /* ensure this structure is always sized to a multiple of the stack alignment */
-> -#define STACK_EXC_LVL_FRAME_SIZE       _ALIGN_UP(sizeof (struct exception_regs), 16)
-> +#define STACK_EXC_LVL_FRAME_SIZE       ALIGN(sizeof (struct exception_regs), 16)
+> > I have only resources to review/merge pending fbdev patches from time
+> > to time so any help in fixing these syzbot reports is welcomed (there
+> > have been a few fbdev related syzbot reports recently).
+> >
+> > Also please note that fbdev is maintained through drm-misc tree so
+> > patches can also be handled by other drm-misc maintainers in case I'm
+> > not available / busy with other things.
+> >
+> > Best regards,
+> > --
+> > Bartlomiej Zolnierkiewicz
+> > Samsung R&D Institute Poland
+> > Samsung Electronics
+> >
+> > >>>  wake_up_worker kernel/workqueue.c:836 [inline]
+> > >>>  insert_work+0x2ad/0x3a0 kernel/workqueue.c:1337
+> > >>>  __queue_work+0x50d/0x1280 kernel/workqueue.c:1488
+> > >>>  call_timer_fn+0x195/0x760 kernel/time/timer.c:1404
+> > >>>  expire_timers kernel/time/timer.c:1444 [inline]
+> > >>>  __run_timers kernel/time/timer.c:1773 [inline]
+> > >>>  __run_timers kernel/time/timer.c:1740 [inline]
+> > >>>  run_timer_softirq+0x412/0x1600 kernel/time/timer.c:1786
+> > >>>  __do_softirq+0x26c/0x99d kernel/softirq.c:292
+> > >>>  invoke_softirq kernel/softirq.c:373 [inline]
+> > >>>  irq_exit+0x192/0x1d0 kernel/softirq.c:413
+> > >>>  exiting_irq arch/x86/include/asm/apic.h:546 [inline]
+> > >>>  smp_apic_timer_interrupt+0x19e/0x600 arch/x86/kernel/apic/apic.c:1=
+146
+> > >>>  apic_timer_interrupt+0xf/0x20 arch/x86/entry/entry_64.S:829
+> > >>>  </IRQ>
+> > _______________________________________________
+> > dri-devel mailing list
+> > dri-devel@lists.freedesktop.org
+> > https://lists.freedesktop.org/mailman/listinfo/dri-devel
 >
->  #endif /* __ASSEMBLY__ */
->  #endif /* __HEAD_BOOKE_H__ */
-> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-> index fb4f61096613..314780e8ef78 100644
-> --- a/arch/powerpc/kernel/nvram_64.c
-> +++ b/arch/powerpc/kernel/nvram_64.c
-> @@ -854,8 +854,8 @@ loff_t __init nvram_create_partition(const char *name, int sig,
->         BUILD_BUG_ON(NVRAM_BLOCK_LEN != 16);
 >
->         /* Convert sizes from bytes to blocks */
-> -       req_size = _ALIGN_UP(req_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
-> -       min_size = _ALIGN_UP(min_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
-> +       req_size = ALIGN(req_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
-> +       min_size = ALIGN(min_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
 >
->         /* If no minimum size specified, make it the same as the
->          * requested size
-> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-> index e5d05af5a9af..ff8e3fbdf663 100644
-> --- a/arch/powerpc/kernel/pci_64.c
-> +++ b/arch/powerpc/kernel/pci_64.c
-> @@ -131,7 +131,7 @@ static int pcibios_map_phb_io_space(struct pci_controller *hose)
->         unsigned long io_virt_offset;
->
->         phys_page = ALIGN_DOWN(hose->io_base_phys, PAGE_SIZE);
-> -       size_page = _ALIGN_UP(hose->pci_io_size, PAGE_SIZE);
-> +       size_page = ALIGN(hose->pci_io_size, PAGE_SIZE);
->
->         /* Make sure IO area address is clear */
->         hose->io_base_alloc = NULL;
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 10b5d5eafd34..1dcf0e214a22 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -97,7 +97,7 @@ static inline int overlaps_initrd(unsigned long start, unsigned long size)
->                 return 0;
->
->         return  (start + size) > ALIGN_DOWN(initrd_start, PAGE_SIZE) &&
-> -                       start <= _ALIGN_UP(initrd_end, PAGE_SIZE);
-> +                       start <= ALIGN(initrd_end, PAGE_SIZE);
->  #else
->         return 0;
->  #endif
-> @@ -624,7 +624,7 @@ static void __init early_reserve_mem(void)
->         /* Then reserve the initrd, if any */
->         if (initrd_start && (initrd_end > initrd_start)) {
->                 memblock_reserve(ALIGN_DOWN(__pa(initrd_start), PAGE_SIZE),
-> -                       _ALIGN_UP(initrd_end, PAGE_SIZE) -
-> +                       ALIGN(initrd_end, PAGE_SIZE) -
->                         ALIGN_DOWN(initrd_start, PAGE_SIZE));
->         }
->  #endif /* CONFIG_BLK_DEV_INITRD */
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index 4cf5958eebd4..3a5a7db4564f 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -1449,18 +1449,18 @@ static unsigned long __init alloc_up(unsigned long size, unsigned long align)
->         unsigned long addr = 0;
->
->         if (align)
-> -               base = _ALIGN_UP(base, align);
-> +               base = ALIGN(base, align);
->         prom_debug("%s(%lx, %lx)\n", __func__, size, align);
->         if (ram_top = 0)
->                 prom_panic("alloc_up() called with mem not initialized\n");
->
->         if (align)
-> -               base = _ALIGN_UP(alloc_bottom, align);
-> +               base = ALIGN(alloc_bottom, align);
->         else
->                 base = alloc_bottom;
->
->         for(; (base + size) <= alloc_top;
-> -           base = _ALIGN_UP(base + 0x100000, align)) {
-> +           base = ALIGN(base + 0x100000, align)) {
->                 prom_debug("    trying: 0x%lx\n\r", base);
->                 addr = (unsigned long)prom_claim(base, size, 0);
->                 if (addr != PROM_ERROR && addr != 0)
-> @@ -1587,7 +1587,7 @@ static void __init reserve_mem(u64 base, u64 size)
->          * dumb and just copy this entire array to the boot params
->          */
->         base = ALIGN_DOWN(base, PAGE_SIZE);
-> -       top = _ALIGN_UP(top, PAGE_SIZE);
-> +       top = ALIGN(top, PAGE_SIZE);
->         size = top - base;
->
->         if (cnt >= (MEM_RESERVE_MAP_SIZE - 1))
-> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> index 6fcaf1fa8e02..2d231eb5884a 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> @@ -208,7 +208,7 @@ static long kvmppc_rm_ioba_validate(struct kvmppc_spapr_tce_table *stt,
->
->         idx = (ioba >> stt->page_shift) - stt->offset;
->         sttpage = idx / TCES_PER_PAGE;
-> -       sttpages = _ALIGN_UP(idx % TCES_PER_PAGE + npages, TCES_PER_PAGE) /
-> +       sttpages = ALIGN(idx % TCES_PER_PAGE + npages, TCES_PER_PAGE) /
->                         TCES_PER_PAGE;
->         for (i = sttpage; i < sttpage + sttpages; ++i)
->                 if (!stt->pages[i])
-> diff --git a/arch/powerpc/mm/book3s64/hash_tlb.c b/arch/powerpc/mm/book3s64/hash_tlb.c
-> index 2242d022b620..081940b85e24 100644
-> --- a/arch/powerpc/mm/book3s64/hash_tlb.c
-> +++ b/arch/powerpc/mm/book3s64/hash_tlb.c
-> @@ -197,7 +197,7 @@ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
->         unsigned long flags;
->
->         start = ALIGN_DOWN(start, PAGE_SIZE);
-> -       end = _ALIGN_UP(end, PAGE_SIZE);
-> +       end = ALIGN(end, PAGE_SIZE);
->
->         BUG_ON(!mm->pgd);
->
-> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-> index 8f9edf07063a..4bdfc8dff87d 100644
-> --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-> +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-> @@ -261,7 +261,7 @@ static int __meminit create_physical_mapping(unsigned long start,
->         pgprot_t prot;
->         int psize;
->
-> -       start = _ALIGN_UP(start, PAGE_SIZE);
-> +       start = ALIGN(start, PAGE_SIZE);
->         for (addr = start; addr < end; addr += mapping_size) {
->                 unsigned long gap, previous_size;
->                 int rc;
-> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-> index dffe1a45b6ed..82b45b1cb973 100644
-> --- a/arch/powerpc/mm/slice.c
-> +++ b/arch/powerpc/mm/slice.c
-> @@ -478,7 +478,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
->
->         /* If hint, make sure it matches our alignment restrictions */
->         if (!fixed && addr) {
-> -               addr = _ALIGN_UP(addr, page_size);
-> +               addr = ALIGN(addr, page_size);
->                 slice_dbg(" aligned addr=%lx\n", addr);
->                 /* Ignore hint if it's too large or overlaps a VMA */
->                 if (addr > high_limit - len || addr < mmap_min_addr ||
-> diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-> index ca9ffc1c8685..2124831cf57c 100644
-> --- a/arch/powerpc/platforms/cell/iommu.c
-> +++ b/arch/powerpc/platforms/cell/iommu.c
-> @@ -943,7 +943,7 @@ static int __init cell_iommu_fixed_mapping_init(void)
->                 fbase = max(fbase, dbase + dsize);
->         }
->
-> -       fbase = _ALIGN_UP(fbase, 1 << IO_SEGMENT_SHIFT);
-> +       fbase = ALIGN(fbase, 1 << IO_SEGMENT_SHIFT);
->         fsize = memblock_phys_mem_size();
->
->         if ((fbase + fsize) <= 0x800000000ul)
-> @@ -963,8 +963,8 @@ static int __init cell_iommu_fixed_mapping_init(void)
->                 hend  = hbase + htab_size_bytes;
->
->                 /* The window must start and end on a segment boundary */
-> -               if ((hbase != _ALIGN_UP(hbase, 1 << IO_SEGMENT_SHIFT)) ||
-> -                   (hend != _ALIGN_UP(hend, 1 << IO_SEGMENT_SHIFT))) {
-> +               if ((hbase != ALIGN(hbase, 1 << IO_SEGMENT_SHIFT)) ||
-> +                   (hend != ALIGN(hend, 1 << IO_SEGMENT_SHIFT))) {
->                         pr_debug("iommu: hash window not segment aligned\n");
->                         return -1;
->                 }
-> diff --git a/arch/powerpc/platforms/powermac/bootx_init.c b/arch/powerpc/platforms/powermac/bootx_init.c
-> index af309ee99114..c3374a90952f 100644
-> --- a/arch/powerpc/platforms/powermac/bootx_init.c
-> +++ b/arch/powerpc/platforms/powermac/bootx_init.c
-> @@ -108,7 +108,7 @@ static void * __init bootx_early_getprop(unsigned long base,
->
->  #define dt_push_token(token, mem) \
->         do { \
-> -               *(mem) = _ALIGN_UP(*(mem),4); \
-> +               *(mem) = ALIGN(*(mem),4); \
->                 *((u32 *)*(mem)) = token; \
->                 *(mem) += 4; \
->         } while(0)
-> @@ -150,7 +150,7 @@ static void __init bootx_dt_add_prop(char *name, void *data, int size,
->         /* push property content */
->         if (size && data) {
->                 memcpy((void *)*mem_end, data, size);
-> -               *mem_end = _ALIGN_UP(*mem_end + size, 4);
-> +               *mem_end = ALIGN(*mem_end + size, 4);
->         }
->  }
->
-> @@ -303,7 +303,7 @@ static void __init bootx_scan_dt_build_struct(unsigned long base,
->                         *lp++ = *p;
->         }
->         *lp = 0;
-> -       *mem_end = _ALIGN_UP((unsigned long)lp + 1, 4);
-> +       *mem_end = ALIGN((unsigned long)lp + 1, 4);
->
->         /* get and store all properties */
->         while (*ppp) {
-> @@ -356,11 +356,11 @@ static unsigned long __init bootx_flatten_dt(unsigned long start)
->         /* Start using memory after the big blob passed by BootX, get
->          * some space for the header
->          */
-> -       mem_start = mem_end = _ALIGN_UP(((unsigned long)bi) + start, 4);
-> +       mem_start = mem_end = ALIGN(((unsigned long)bi) + start, 4);
->         DBG("Boot params header at: %x\n", mem_start);
->         hdr = (struct boot_param_header *)mem_start;
->         mem_end += sizeof(struct boot_param_header);
-> -       rsvmap = (u64 *)(_ALIGN_UP(mem_end, 8));
-> +       rsvmap = (u64 *)(ALIGN(mem_end, 8));
->         hdr->off_mem_rsvmap = ((unsigned long)rsvmap) - mem_start;
->         mem_end = ((unsigned long)rsvmap) + 8 * sizeof(u64);
->
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 276b011cd45d..d1a16ebc31bb 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -265,7 +265,7 @@ static void pnv_ioda_reserve_dev_m64_pe(struct pci_dev *pdev,
->                         continue;
->
->                 start = ALIGN_DOWN(r->start - base, sgsz);
-> -               end = _ALIGN_UP(r->end - base, sgsz);
-> +               end = ALIGN(r->end - base, sgsz);
->                 for (segno = start / sgsz; segno < end / sgsz; segno++) {
->                         if (pe_bitmap)
->                                 set_bit(segno, pe_bitmap);
-> @@ -361,7 +361,7 @@ static struct pnv_ioda_pe *pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->                 return NULL;
->
->         /* Allocate bitmap */
-> -       size = _ALIGN_UP(phb->ioda.total_pe_num / 8, sizeof(unsigned long));
-> +       size = ALIGN(phb->ioda.total_pe_num / 8, sizeof(unsigned long));
->         pe_alloc = kzalloc(size, GFP_KERNEL);
->         if (!pe_alloc) {
->                 pr_warn("%s: Out of memory !\n",
-> @@ -2537,7 +2537,7 @@ unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
->         direct_table_size =  1UL << table_shift;
->
->         for ( ; levels; --levels) {
-> -               bytes += _ALIGN_UP(tce_table_size, direct_table_size);
-> +               bytes += ALIGN(tce_table_size, direct_table_size);
->
->                 tce_table_size /= direct_table_size;
->                 tce_table_size <<= 3;
-> @@ -3863,7 +3863,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
->                                 PNV_IODA1_DMA32_SEGSIZE;
->
->         /* Allocate aux data & arrays. We don't have IO ports on PHB3 */
-> -       size = _ALIGN_UP(max_t(unsigned, phb->ioda.total_pe_num, 8) / 8,
-> +       size = ALIGN(max_t(unsigned, phb->ioda.total_pe_num, 8) / 8,
->                         sizeof(unsigned long));
->         m64map_off = size;
->         size += phb->ioda.total_pe_num * sizeof(phb->ioda.m64_segmap[0]);
-> diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
-> index 71ed37f7f475..b83f2c851b40 100644
-> --- a/arch/powerpc/platforms/ps3/mm.c
-> +++ b/arch/powerpc/platforms/ps3/mm.c
-> @@ -395,7 +395,7 @@ static struct dma_chunk * dma_find_chunk(struct ps3_dma_region *r,
->  {
->         struct dma_chunk *c;
->         unsigned long aligned_bus = ALIGN_DOWN(bus_addr, 1 << r->page_size);
-> -       unsigned long aligned_len = _ALIGN_UP(len+bus_addr-aligned_bus,
-> +       unsigned long aligned_len = ALIGN(len+bus_addr-aligned_bus,
->                                               1 << r->page_size);
->
->         list_for_each_entry(c, &r->chunk_list.head, link) {
-> @@ -424,7 +424,7 @@ static struct dma_chunk *dma_find_chunk_lpar(struct ps3_dma_region *r,
->  {
->         struct dma_chunk *c;
->         unsigned long aligned_lpar = ALIGN_DOWN(lpar_addr, 1 << r->page_size);
-> -       unsigned long aligned_len = _ALIGN_UP(len + lpar_addr - aligned_lpar,
-> +       unsigned long aligned_len = ALIGN(len + lpar_addr - aligned_lpar,
->                                               1 << r->page_size);
->
->         list_for_each_entry(c, &r->chunk_list.head, link) {
-> @@ -776,7 +776,7 @@ static int dma_sb_map_area(struct ps3_dma_region *r, unsigned long virt_addr,
->         unsigned long phys_addr = is_kernel_addr(virt_addr) ? __pa(virt_addr)
->                 : virt_addr;
->         unsigned long aligned_phys = ALIGN_DOWN(phys_addr, 1 << r->page_size);
-> -       unsigned long aligned_len = _ALIGN_UP(len + phys_addr - aligned_phys,
-> +       unsigned long aligned_len = ALIGN(len + phys_addr - aligned_phys,
->                                               1 << r->page_size);
->         *bus_addr = dma_sb_lpar_to_bus(r, ps3_mm_phys_to_lpar(phys_addr));
->
-> @@ -831,7 +831,7 @@ static int dma_ioc0_map_area(struct ps3_dma_region *r, unsigned long virt_addr,
->         unsigned long phys_addr = is_kernel_addr(virt_addr) ? __pa(virt_addr)
->                 : virt_addr;
->         unsigned long aligned_phys = ALIGN_DOWN(phys_addr, 1 << r->page_size);
-> -       unsigned long aligned_len = _ALIGN_UP(len + phys_addr - aligned_phys,
-> +       unsigned long aligned_len = ALIGN(len + phys_addr - aligned_phys,
->                                               1 << r->page_size);
->
->         DBG(KERN_ERR "%s: vaddr=%#lx, len=%#lx\n", __func__,
-> @@ -891,7 +891,7 @@ static int dma_sb_unmap_area(struct ps3_dma_region *r, dma_addr_t bus_addr,
->         if (!c) {
->                 unsigned long aligned_bus = ALIGN_DOWN(bus_addr,
->                         1 << r->page_size);
-> -               unsigned long aligned_len = _ALIGN_UP(len + bus_addr
-> +               unsigned long aligned_len = ALIGN(len + bus_addr
->                         - aligned_bus, 1 << r->page_size);
->                 DBG("%s:%d: not found: bus_addr %llxh\n",
->                         __func__, __LINE__, bus_addr);
-> @@ -928,7 +928,7 @@ static int dma_ioc0_unmap_area(struct ps3_dma_region *r,
->         if (!c) {
->                 unsigned long aligned_bus = ALIGN_DOWN(bus_addr,
->                                                         1 << r->page_size);
-> -               unsigned long aligned_len = _ALIGN_UP(len + bus_addr
-> +               unsigned long aligned_len = ALIGN(len + bus_addr
->                                                       - aligned_bus,
->                                                       1 << r->page_size);
->                 DBG("%s:%d: not found: bus_addr %llxh\n",
-> @@ -974,7 +974,7 @@ static int dma_sb_region_create_linear(struct ps3_dma_region *r)
->                         pr_info("%s:%d: forcing 16M pages for linear map\n",
->                                 __func__, __LINE__);
->                         r->page_size = PS3_DMA_16M;
-> -                       r->len = _ALIGN_UP(r->len, 1 << r->page_size);
-> +                       r->len = ALIGN(r->len, 1 << r->page_size);
->                 }
->         }
->
-> @@ -1125,7 +1125,7 @@ int ps3_dma_region_init(struct ps3_system_bus_device *dev,
->         r->offset = lpar_addr;
->         if (r->offset >= map.rm.size)
->                 r->offset -= map.r1.offset;
-> -       r->len = len ? len : _ALIGN_UP(map.total, 1 << r->page_size);
-> +       r->len = len ? len : ALIGN(map.total, 1 << r->page_size);
->
->         switch (dev->dev_type) {
->         case PS3_DEVICE_TYPE_SB:
-> diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
-> index b29368931c56..e9ae5dd03593 100644
-> --- a/arch/powerpc/platforms/ps3/setup.c
-> +++ b/arch/powerpc/platforms/ps3/setup.c
-> @@ -138,7 +138,7 @@ static int __init early_parse_ps3fb(char *p)
->         if (!p)
->                 return 1;
->
-> -       ps3fb_videomemory.size = _ALIGN_UP(memparse(p, &p),
-> +       ps3fb_videomemory.size = ALIGN(memparse(p, &p),
->                                            ps3fb_videomemory.align);
->         return 0;
->  }
 > --
-> 2.25.0
->
+> Daniel Vetter
+> Software Engineer, Intel Corporation
+> +41 (0) 79 365 57 48 - http://blog.ffwll.ch

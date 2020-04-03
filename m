@@ -1,33 +1,55 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 22 Apr 2020 07:51:37 +0000
-Subject: Re: [PATCH] omapfb/dss: fix comparison to bool warning
-Message-Id: <fecc5f43-d1a2-f29f-da3a-79c297bff462@ti.com>
+From: Jules Irenge <jbi.octave@gmail.com>
+Date: Fri, 03 Apr 2020 16:05:02 +0000
+Subject: [PATCH 2/5] video: Add missing annotation for cyber2000fb_enable_ddc() and cyber2000fb_disable_ddc()
+Message-Id: <20200403160505.2832-3-jbi.octave@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200422071903.637-1-yanaijie@huawei.com>
-In-Reply-To: <20200422071903.637-1-yanaijie@huawei.com>
+References: <0/5>
+ <20200403160505.2832-1-jbi.octave@gmail.com>
+In-Reply-To: <20200403160505.2832-1-jbi.octave@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jason Yan <yanaijie@huawei.com>, b.zolnierkie@samsung.com, afd@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, boqun.feng@gmail.com, Russell King <linux@armlinux.org.uk>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, "moderated list:CYBERPRO FB DRIVER" <linux-arm-kernel@lists.infradead.org>
 
-On 22/04/2020 10:19, Jason Yan wrote:
-> Fix the following coccicheck warning:
-> 
-> drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c:461:15-32: WARNING:
-> Comparison to bool
-> drivers/video/fbdev/omap2/omapfb/dss/dispc.c:891:5-35: WARNING:
-> Comparison of 0/1 to bool variable
-> 
-> Signed-off-by: Jason Yan <yanaijie@huawei.com>
-> ---
->   drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 2 +-
->   drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 4 +---
->   2 files changed, 2 insertions(+), 4 deletions(-)
+Sparse reports warnings at cyber2000fb_enable_ddc()
+	and cyber2000fb_disable_ddc()
 
-Reviewed-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+warning: context imbalance in cyber2000fb_enable_ddc()
+	- wrong count at exit
 
-  Tomi
+warning: context imbalance in cyber2000fb_disable_ddc()
+	- unexpected unlock
 
+The root cause is the missing annotation at cyber2000fb_enable_ddc()
+	and cyber2000fb_disable_ddc()
+
+Add the missing __acquires(&cfb->reg_b0_lock) annotation
+Add the missing __releases(&cfb->reg_b0_lock) annotation
+
+Signed-off-by: Jules Irenge <jbi.octave@gmail.com>
+---
+ drivers/video/fbdev/cyber2000fb.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
+index 460826a7ad55..513f58f28b0f 100644
+--- a/drivers/video/fbdev/cyber2000fb.c
++++ b/drivers/video/fbdev/cyber2000fb.c
+@@ -1160,12 +1160,14 @@ EXPORT_SYMBOL(cyber2000fb_detach);
+ #define DDC_SDA_IN	(1 << 6)
+ 
+ static void cyber2000fb_enable_ddc(struct cfb_info *cfb)
++	__acquires(&cfb->reg_b0_lock)
+ {
+ 	spin_lock(&cfb->reg_b0_lock);
+ 	cyber2000fb_writew(0x1bf, 0x3ce, cfb);
+ }
+ 
+ static void cyber2000fb_disable_ddc(struct cfb_info *cfb)
++	__releases(&cfb->reg_b0_lock)
+ {
+ 	cyber2000fb_writew(0x0bf, 0x3ce, cfb);
+ 	spin_unlock(&cfb->reg_b0_lock);
 -- 
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+2.24.1

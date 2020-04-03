@@ -1,57 +1,76 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Apr 2020 05:57:01 +0000
-Subject: Re: [PATCH 4/5] backlight: led_bl: fix led -> backlight brightness mapping
-Message-Id: <f1d217f3-96bf-d24c-43b0-cc98115eae8e@ti.com>
+From: Jason Yan <yanaijie@huawei.com>
+Date: Fri, 03 Apr 2020 02:16:09 +0000
+Subject: [PATCH] video: fbdev: matroxfb: remove dead code and set but not used variable
+Message-Id: <20200403021609.20968-1-yanaijie@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200417113312.24340-1-tomi.valkeinen@ti.com>
- <20200417113312.24340-4-tomi.valkeinen@ti.com>
- <20200420155514.lyb73ujf5fzgpvp4@holly.lan>
-In-Reply-To: <20200420155514.lyb73ujf5fzgpvp4@holly.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Jason Yan <yanaijie@huawei.com>
 
-On 20/04/2020 18:55, Daniel Thompson wrote:
-> On Fri, Apr 17, 2020 at 02:33:11PM +0300, Tomi Valkeinen wrote:
->> The code that maps the LED default brightness to backlight levels has
->> two issues: 1) if the default brightness is the first backlight level
->> (usually 0), the code fails to find it, and 2) when the code fails to
->> find a backlight level, it ends up using max_brightness + 1 as the
->> default brightness.
->>
->> Fix these two issues.
->>
->> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> ---
->>   drivers/video/backlight/led_bl.c | 5 +++--
->>   1 file changed, 3 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
->> index 63693c4f0883..021b5edd895c 100644
->> --- a/drivers/video/backlight/led_bl.c
->> +++ b/drivers/video/backlight/led_bl.c
->> @@ -159,10 +159,11 @@ static int led_bl_parse_levels(struct device *dev,
->>   		 */
->>   		db = priv->default_brightness;
->>   		for (i = 0 ; i < num_levels; i++) {
->> -			if ((i && db > levels[i - 1]) && db <= levels[i])
->> +			if ((i = 0 || db > levels[i - 1]) && db <= levels[i])
->>   				break;
->>   		}
->> -		priv->default_brightness = i;
->> +
->> +		priv->default_brightness = i < num_levels ? i : 0;
-> 
-> This seems a bit odd. If the LED is currently set to brighter than the
-> maximum brightness level why would we choose a default brightness of
-> zero?
+Fix the following gcc warning:
 
-Indeed, better to set it to max.
+drivers/video/fbdev/matrox/g450_pll.c:336:15: warning: variable
+‘pixel_vco’ set but not used [-Wunused-but-set-variable]
+  unsigned int pixel_vco;
+               ^~~~~~~~~
 
-  Tomi
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
+---
+ drivers/video/fbdev/matrox/g450_pll.c | 22 ----------------------
+ 1 file changed, 22 deletions(-)
 
+diff --git a/drivers/video/fbdev/matrox/g450_pll.c b/drivers/video/fbdev/matrox/g450_pll.c
+index c15f8a57498e..ff8e321a22ce 100644
+--- a/drivers/video/fbdev/matrox/g450_pll.c
++++ b/drivers/video/fbdev/matrox/g450_pll.c
+@@ -333,11 +333,9 @@ static int __g450_setclk(struct matrox_fb_info *minfo, unsigned int fout,
+ 			 unsigned int *deltaarray)
+ {
+ 	unsigned int mnpcount;
+-	unsigned int pixel_vco;
+ 	const struct matrox_pll_limits* pi;
+ 	struct matrox_pll_cache* ci;
+ 
+-	pixel_vco = 0;
+ 	switch (pll) {
+ 		case M_PIXEL_PLL_A:
+ 		case M_PIXEL_PLL_B:
+@@ -420,7 +418,6 @@ static int __g450_setclk(struct matrox_fb_info *minfo, unsigned int fout,
+ 				
+ 				mnp = matroxfb_DAC_in(minfo, M1064_XPIXPLLCM) << 16;
+ 				mnp |= matroxfb_DAC_in(minfo, M1064_XPIXPLLCN) << 8;
+-				pixel_vco = g450_mnp2vco(minfo, mnp);
+ 				matroxfb_DAC_unlock_irqrestore(flags);
+ 			}
+ 			pi = &minfo->limits.video;
+@@ -441,25 +438,6 @@ static int __g450_setclk(struct matrox_fb_info *minfo, unsigned int fout,
+ 			unsigned int delta;
+ 
+ 			vco = g450_mnp2vco(minfo, mnp);
+-#if 0			
+-			if (pll = M_VIDEO_PLL) {
+-				unsigned int big, small;
+-
+-				if (vco < pixel_vco) {
+-					small = vco;
+-					big = pixel_vco;
+-				} else {
+-					small = pixel_vco;
+-					big = vco;
+-				}
+-				while (big > small) {
+-					big >>= 1;
+-				}
+-				if (big = small) {
+-					continue;
+-				}
+-			}
+-#endif			
+ 			delta = pll_freq_delta(fout, g450_vco2f(mnp, vco));
+ 			for (idx = mnpcount; idx > 0; idx--) {
+ 				/* = is important; due to nextpll algorithm we get
 -- 
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+2.17.2

@@ -1,78 +1,79 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 15 Apr 2020 09:26:38 +0000
-Subject: Re: [PATCH v11 10/12] backlight: pwm_bl: Use 64-bit division function
-Message-Id: <20200415092638.GG2167633@dell>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 08 Apr 2020 16:25:38 +0000
+Subject: [PATCH] fbdev: mx3fb: avoid warning about psABI change
+Message-Id: <20200408162551.3928330-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1584667964.git.gurus@codeaurora.org>
- <17fc1dcf8b9b392d1e37dc7e3e67409e3c502840.1584667964.git.gurus@codeaurora.org>
- <20200320133123.GD5477@dell> <20200324110710.GL5477@dell>
- <20200324125735.2mjuvbxt5bpon2ft@pengutronix.de>
- <20200324130410.dwlg767ku6kwequv@holly.lan>
- <20200324142441.GD442973@dell>
- <20200324144307.kxhqzyjj4evrouqa@pengutronix.de>
-In-Reply-To: <20200324144307.kxhqzyjj4evrouqa@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Guru Das Srinagesh <gurus@codeaurora.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-pwm@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, linux-fbdev@vger.kernel.org, Subbaraman Narayanamurthy <subbaram@codeaurora.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Enrico Weigelt <info@metux.net>
 
-On Tue, 24 Mar 2020, Uwe Kleine-König wrote:
+The arm64 gcc-9 release warns about a change in the calling
+conventions:
 
-> On Tue, Mar 24, 2020 at 02:24:41PM +0000, Lee Jones wrote:
-> > On Tue, 24 Mar 2020, Daniel Thompson wrote:
-> > 
-> > > On Tue, Mar 24, 2020 at 01:57:35PM +0100, Uwe Kleine-König wrote:
-> > > > Hello Lee,
-> > > > 
-> > > > On Tue, Mar 24, 2020 at 11:07:10AM +0000, Lee Jones wrote:
-> > > > > On Fri, 20 Mar 2020, Lee Jones wrote:
-> > > > > 
-> > > > > > On Thu, 19 Mar 2020, Guru Das Srinagesh wrote:
-> > > > > > 
-> > > > > > > Since the PWM framework is switching struct pwm_state.period's datatype
-> > > > > > > to u64, prepare for this transition by using div_u64 to handle a 64-bit
-> > > > > > > dividend instead of a straight division operation.
-> > > > > > > 
-> > > > > > > Cc: Lee Jones <lee.jones@linaro.org>
-> > > > > > > Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> > > > > > > Cc: Jingoo Han <jingoohan1@gmail.com>
-> > > > > > > Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > > > > > > Cc: linux-pwm@vger.kernel.org
-> > > > > > > Cc: dri-devel@lists.freedesktop.org
-> > > > > > > Cc: linux-fbdev@vger.kernel.org
-> > > > > > > 
-> > > > > > > Signed-off-by: Guru Das Srinagesh <gurus@codeaurora.org>
-> > > > > > > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> > > > > > > ---
-> > > > > > >  drivers/video/backlight/pwm_bl.c | 3 ++-
-> > > > > > >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > > > > > 
-> > > > > > Can this patch be taken on its own?
-> > > > > 
-> > > > > Hellooooo ...
-> > > > 
-> > > > Conceptually it can. As the last patch depends on this one (and the
-> > > > others) some coordination might be beneficial. But that's up to Thierry
-> > > > to decide how (and if) he want this series to be applied.
-> > > 
-> > > ... and on the backlight side we definitely need to know about the "if"
-> > > otherwise there's no point in taking it.
-> > 
-> > Right.
-> > 
-> > I'm happy to wait for Thierry.  Although this isn't the only set he's
-> > currently blocking.  Is he okay?  On holiday perhaps?
-> 
-> The newest commit by him in next is from last week. My guess is he
-> just didn't come around yet to care for the PWM duties.
+drivers/video/fbdev/mx3fb.c: In function 'sdc_init_panel':
+drivers/video/fbdev/mx3fb.c:506:12: note: parameter passing for argument of type 'struct ipu_di_signal_cfg' changed in GCC 9.1
+  506 | static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
+      |            ^~~~~~~~~~~~~~
+drivers/video/fbdev/mx3fb.c: In function '__set_par':
+drivers/video/fbdev/mx3fb.c:848:7: note: parameter passing for argument of type 'struct ipu_di_signal_cfg' changed in GCC 9.1
 
-Looks like we missed the last release.
+Change the file to just pass the struct by reference, which is
+unambiguous and avoids the warning.
 
-Let's hope we don't miss the next one also.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/mx3fb.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
+diff --git a/drivers/video/fbdev/mx3fb.c b/drivers/video/fbdev/mx3fb.c
+index 4af28e4421e5..e13fea3a292f 100644
+--- a/drivers/video/fbdev/mx3fb.c
++++ b/drivers/video/fbdev/mx3fb.c
+@@ -509,7 +509,7 @@ static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
+ 			  uint16_t h_start_width, uint16_t h_sync_width,
+ 			  uint16_t h_end_width, uint16_t v_start_width,
+ 			  uint16_t v_sync_width, uint16_t v_end_width,
+-			  struct ipu_di_signal_cfg sig)
++			  struct ipu_di_signal_cfg *sig)
+ {
+ 	unsigned long lock_flags;
+ 	uint32_t reg;
+@@ -591,17 +591,17 @@ static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
+ 
+ 	/* DI settings */
+ 	old_conf = mx3fb_read_reg(mx3fb, DI_DISP_IF_CONF) & 0x78FFFFFF;
+-	old_conf |= sig.datamask_en << DI_D3_DATAMSK_SHIFT |
+-		sig.clksel_en << DI_D3_CLK_SEL_SHIFT |
+-		sig.clkidle_en << DI_D3_CLK_IDLE_SHIFT;
++	old_conf |= sig->datamask_en << DI_D3_DATAMSK_SHIFT |
++		sig->clksel_en << DI_D3_CLK_SEL_SHIFT |
++		sig->clkidle_en << DI_D3_CLK_IDLE_SHIFT;
+ 	mx3fb_write_reg(mx3fb, old_conf, DI_DISP_IF_CONF);
+ 
+ 	old_conf = mx3fb_read_reg(mx3fb, DI_DISP_SIG_POL) & 0xE0FFFFFF;
+-	old_conf |= sig.data_pol << DI_D3_DATA_POL_SHIFT |
+-		sig.clk_pol << DI_D3_CLK_POL_SHIFT |
+-		sig.enable_pol << DI_D3_DRDY_SHARP_POL_SHIFT |
+-		sig.Hsync_pol << DI_D3_HSYNC_POL_SHIFT |
+-		sig.Vsync_pol << DI_D3_VSYNC_POL_SHIFT;
++	old_conf |= sig->data_pol << DI_D3_DATA_POL_SHIFT |
++		sig->clk_pol << DI_D3_CLK_POL_SHIFT |
++		sig->enable_pol << DI_D3_DRDY_SHARP_POL_SHIFT |
++		sig->Hsync_pol << DI_D3_HSYNC_POL_SHIFT |
++		sig->Vsync_pol << DI_D3_VSYNC_POL_SHIFT;
+ 	mx3fb_write_reg(mx3fb, old_conf, DI_DISP_SIG_POL);
+ 
+ 	map = &di_mappings[mx3fb->disp_data_fmt];
+@@ -855,7 +855,7 @@ static int __set_par(struct fb_info *fbi, bool lock)
+ 				   fbi->var.upper_margin,
+ 				   fbi->var.vsync_len,
+ 				   fbi->var.lower_margin +
+-				   fbi->var.vsync_len, sig_cfg) != 0) {
++				   fbi->var.vsync_len, &sig_cfg) != 0) {
+ 			dev_err(fbi->device,
+ 				"mx3fb: Error initializing panel.\n");
+ 			return -EINVAL;
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.26.0

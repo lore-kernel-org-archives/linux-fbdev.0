@@ -1,45 +1,37 @@
-From: Dejin Zheng <zhengdejin5@gmail.com>
-Date: Sun, 26 Apr 2020 02:55:34 +0000
-Subject: Re: [PATCH v3] console: newport_con: fix an issue about leak related system resources
-Message-Id: <20200426025534.GA19252@nuc8i5>
+From: Oliver Graute <oliver.graute@gmail.com>
+Date: Thu, 09 Apr 2020 09:24:05 +0000
+Subject: [PATCH v1] staging: fbtft: fb_st7789v: enabled inversion
+Message-Id: <1586424250-25897-1-git-send-email-oliver.graute@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20f37865-5af3-5fb9-8b8f-91f9464e4af3@web.de>
-In-Reply-To: <20f37865-5af3-5fb9-8b8f-91f9464e4af3@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Markus Elfring <Markus.Elfring@web.de>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Andy Shevchenko <andy.shevchenko@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
+To: gregkh@linuxfoundation.org
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Oliver Graute <oliver.graute@kococonnector.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, oliver.graute@gmail.com
 
-On Fri, Apr 24, 2020 at 06:54:41PM +0200, Markus Elfring wrote:
-> > The corresponding system resources were not released then.
-> 
-> How do you think about a wording variant like the following?
->
-Markus, I think my commit comments is a sufficiently clear description
-for this patch. Someone has told me not to send commit comments again
-and again when it is enough clear. Because it only wastes the precious
-time of the maintainer and very very little help for patch improvement.
+From: Oliver Graute <oliver.graute@kococonnector.com>
 
-BTW, In the past week, you asked me to change the commit comments in my
-6 patches like this one. Let me return to the essence of patch, point
-out the code problems and better solutions will be more popular.
+Enable inversion mode
 
->    Subject:
->    [PATCH v4] console: newport_con: Fix incomplete releasing of system resources
-> 
->    Change description:
->    * A call of the function do_take_over_console() can fail here.
->      The corresponding system resources were not released then.
->      Thus add a call of iounmap() and release_mem_region()
->      together with the check of a failure predicate.
-> 
->    * Add also a call of release_mem_region() for the completion
->      of resource clean-up on device removal.
-> 
-> 
-> It can be nicer if all patch reviewers (including me) will be explicitly specified
-> as recipients for such messages, can't it?
-> 
-> Regards,
-> Markus
+Signed-off-by: Oliver Graute <oliver.graute@kococonnector.com>
+---
+ drivers/staging/fbtft/fb_st7789v.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
+index 3c3f387936e8..84c5af2dc9a0 100644
+--- a/drivers/staging/fbtft/fb_st7789v.c
++++ b/drivers/staging/fbtft/fb_st7789v.c
+@@ -120,6 +120,10 @@ static int init_display(struct fbtft_par *par)
+ 	write_reg(par, PWCTRL1, 0xA4, 0xA1);
+ 
+ 	write_reg(par, MIPI_DCS_SET_DISPLAY_ON);
++
++	/* enable inversion mode */
++	write_reg(par, 0x21);
++
+ 	return 0;
+ }
+ 
+-- 
+2.17.1

@@ -1,139 +1,57 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 17 Apr 2020 15:55:48 +0000
-Subject: [PATCH 3/8] fbdev: rework FB_DDC dependencies
-Message-Id: <20200417155553.675905-4-arnd@arndb.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Sat, 11 Apr 2020 23:06:05 +0000
+Subject: [PATCH AUTOSEL 5.5 060/121] fbdev: potential information leak in do_fb_ioctl()
+Message-Id: <20200411230706.23855-60-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200417155553.675905-1-arnd@arndb.de>
-In-Reply-To: <20200417155553.675905-1-arnd@arndb.de>
+References: <20200411230706.23855-1-sashal@kernel.org>
+In-Reply-To: <20200411230706.23855-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: dri-devel@lists.freedesktop.org, Jani Nikula <jani.nikula@linux.intel.com>, linux-fbdev@vger.kernel.org
-Cc: marex@denx.de, dsd@laptop.org, Arnd Bergmann <arnd@arndb.de>, Andrzej Hajda <a.hajda@samsung.com>, airlied@linux.ie, masahiroy@kernel.org, Nicolas Pitre <nico@fluxnic.net>, Saeed Mahameed <saeedm@mellanox.com>, thellstrom@vmware.com, haojian.zhuang@gmail.com, geert@linux-m68k.org, linux-renesas-soc@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>, kieran.bingham+renesas@ideasonboard.com, linux-graphics-maintainer@vmware.com, Laurent.pinchart@ideasonboard.com, jfrederich@gmail.com, robert.jarzmik@free.fr, daniel@zonque.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Gerd Hoffmann <kraxel@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>, Peter Rosin <peda@axentia.se>, Dan Carpenter <dan.carpenter@oracle.com>, Andrea Righi <righi.andrea@gmail.com>
 
-Selecting FB_DDC currently turns on CONFIG_I2C implicitly,
-which is often not desired and can lead to circular dependencies.
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-Change this to a 'depends on' and change all drivers that
-rely on FB_DDC to have an appropriate I2C dependency as well.
+[ Upstream commit d3d19d6fc5736a798b118971935ce274f7deaa82 ]
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+The "fix" struct has a 2 byte hole after ->ywrapstep and the
+"fix = info->fix;" assignment doesn't necessarily clear it.  It depends
+on the compiler.  The solution is just to replace the assignment with an
+memcpy().
+
+Fixes: 1f5e31d7e55a ("fbmem: don't call copy_from/to_user() with mutex held")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrea Righi <righi.andrea@gmail.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Peter Rosin <peda@axentia.se>
+Cc: Jani Nikula <jani.nikula@intel.com>
+Cc: Gerd Hoffmann <kraxel@redhat.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200113100132.ixpaymordi24n3av@kili.mountain
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/Kconfig | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/core/fbmem.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 91b0a719d221..bcf7834dbdbf 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -62,9 +62,8 @@ config FIRMWARE_EDID
-=20
- config FB_DDC
- 	tristate
--	depends on FB
-+	depends on FB && I2C
- 	select I2C_ALGOBIT
--	select I2C
-=20
- config FB_BOOT_VESA_SUPPORT
- 	bool
-@@ -356,6 +355,7 @@ config FB_CYBER2000
- config FB_CYBER2000_DDC
- 	bool "DDC for CyberPro support"
- 	depends on FB_CYBER2000
-+	depends on I2C=3Dy || I2C=FB_CYBER2000
- 	select FB_DDC
- 	default y
- 	help
-@@ -892,6 +892,7 @@ config FB_NVIDIA
- config FB_NVIDIA_I2C
- 	bool "Enable DDC Support"
- 	depends on FB_NVIDIA
-+	depends on I2C=3Dy || I2C=FB_NVIDIA
- 	select FB_DDC
- 	help
- 	  This enables I2C support for nVidia Chipsets.  This is used
-@@ -938,6 +939,7 @@ config FB_RIVA
- config FB_RIVA_I2C
- 	bool "Enable DDC Support"
- 	depends on FB_RIVA
-+	depends on I2C=3Dy || I2C=FB_RIVA
- 	select FB_DDC
- 	help
- 	  This enables I2C support for nVidia Chipsets.  This is used
-@@ -965,7 +967,7 @@ config FB_RIVA_BACKLIGHT
-=20
- config FB_I740
- 	tristate "Intel740 support"
--	depends on FB && PCI
-+	depends on FB && PCI && I2C
- 	select FB_MODE_HELPERS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
-@@ -1019,6 +1021,7 @@ config FB_I810_GTF
- config FB_I810_I2C
- 	bool "Enable DDC Support"
- 	depends on FB_I810 && FB_I810_GTF
-+	depends on I2C=3Dy || I2C=FB_I810
- 	select FB_DDC
- 	help
- 	  Add DDC/I2C support for i810fb.  This will allow the driver to get
-@@ -1074,6 +1077,7 @@ config FB_INTEL_DEBUG
- config FB_INTEL_I2C
- 	bool "DDC/I2C for Intel framebuffer support"
- 	depends on FB_INTEL
-+	depends on I2C=3Dy || I2C=FB_INTEL
- 	select FB_DDC
- 	default y
- 	help
-@@ -1153,6 +1157,7 @@ config FB_MATROX_G
- config FB_MATROX_I2C
- 	tristate "Matrox I2C support"
- 	depends on FB_MATROX
-+	depends on I2C=3Dy || I2C=FB_MATROX
- 	select FB_DDC
- 	---help---
- 	  This drivers creates I2C buses which are needed for accessing the
-@@ -1218,6 +1223,7 @@ config FB_RADEON
- config FB_RADEON_I2C
- 	bool "DDC/I2C for ATI Radeon support"
- 	depends on FB_RADEON
-+	depends on I2C=3Dy || I2C=FB_RADEON
- 	select FB_DDC
- 	default y
- 	help
-@@ -1327,6 +1333,7 @@ config FB_S3
- config FB_S3_DDC
- 	bool "DDC for S3 support"
- 	depends on FB_S3
-+	depends on I2C=3Dy || I2C=FB_S3
- 	select FB_DDC
- 	default y
- 	help
-@@ -1352,6 +1359,7 @@ config FB_SAVAGE
- config FB_SAVAGE_I2C
- 	bool "Enable DDC2 Support"
- 	depends on FB_SAVAGE
-+	depends on I2C=3Dy || I2C=FB_SAVAGE
- 	select FB_DDC
- 	help
- 	  This enables I2C support for S3 Savage Chipsets.  This is used
-@@ -1491,6 +1499,7 @@ config FB_3DFX_ACCEL
- config FB_3DFX_I2C
- 	bool "Enable DDC/I2C support"
- 	depends on FB_3DFX
-+	depends on I2C=3Dy || I2C=FB_3DFX
- 	select FB_DDC
- 	default y
- 	help
-@@ -1530,7 +1539,7 @@ config FB_VT8623
-=20
- config FB_TRIDENT
- 	tristate "Trident/CyberXXX/CyberBlade support"
--	depends on FB && PCI
-+	depends on FB && PCI && I2C
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
---=20
-2.26.0
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 6f6fc785b5453..28158e21672ad 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1110,7 +1110,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		break;
+ 	case FBIOGET_FSCREENINFO:
+ 		lock_fb_info(info);
+-		fix = info->fix;
++		memcpy(&fix, &info->fix, sizeof(fix));
+ 		if (info->flags & FBINFO_HIDE_SMEM_START)
+ 			fix.smem_start = 0;
+ 		unlock_fb_info(info);
+-- 
+2.20.1

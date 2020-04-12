@@ -1,23 +1,50 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 20 Apr 2020 16:17:20 +0000
-Subject: Re: [PATCH V5 2/4] backlight: qcom-wled: Add callback functions
-Message-Id: <20200420161720.cuxponga4vxitrwi@holly.lan>
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Sun, 12 Apr 2020 20:21:43 +0000
+Subject: [PATCH] video: vt8500lcdfb: fix fallthrough warning
+Message-Id: <20200412202143.GA26948@ravnborg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1586274430-28402-1-git-send-email-kgunda@codeaurora.org>
- <1586274430-28402-3-git-send-email-kgunda@codeaurora.org>
-In-Reply-To: <1586274430-28402-3-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kiran Gunda <kgunda@codeaurora.org>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, jingoohan1@gmail.com, Andy Gross <agross@kernel.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, bjorn.andersson@linaro.org, robh+dt@kernel.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, linux-arm-msm@vger.kernel.org, Subbaraman Narayanamurthy <subbaram@codeaurora.org>, lee.jones@linaro.org, linux-leds@vger.kernel.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Paul Mundt <lethal@linux-sh.org>, Alexey Charkov <alchark@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Tue, Apr 07, 2020 at 09:17:08PM +0530, Kiran Gunda wrote:
-> Add wled_cabc_config, wled_sync_toggle, wled_ovp_fault_status
-> and wled_ovp_delay and wled_auto_detection_required callback
-> functions to prepare the driver for adding WLED5 support.
-> 
-> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
-> Signed-off-by: Subbaraman Narayanamurthy <subbaram@codeaurora.org>
+Fix following warning:
+vt8500lcdfb.c: In function 'vt8500lcd_blank':
+vt8500lcdfb.c:229:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
+      if (info->fix.visual = FB_VISUAL_PSEUDOCOLOR ||
+         ^
+vt8500lcdfb.c:233:2: note: here
+     case FB_BLANK_UNBLANK:
+     ^~~~
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Adding a simple "fallthrough;" fixed the warning.
+The fix was build tested.
+
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Reported-by: kbuild test robot <lkp@intel.com>
+Fixes: e41f1a989408 ("fbdev: Implement simple blanking in pseudocolor modes for vt8500lcdfb")
+Cc: Alexey Charkov <alchark@gmail.com>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: <stable@vger.kernel.org> # v2.6.38+
+---
+ drivers/video/fbdev/vt8500lcdfb.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/video/fbdev/vt8500lcdfb.c b/drivers/video/fbdev/vt8500lcdfb.c
+index f744479dc7df..c61476247ba8 100644
+--- a/drivers/video/fbdev/vt8500lcdfb.c
++++ b/drivers/video/fbdev/vt8500lcdfb.c
+@@ -230,6 +230,7 @@ static int vt8500lcd_blank(int blank, struct fb_info *info)
+ 		    info->fix.visual = FB_VISUAL_STATIC_PSEUDOCOLOR)
+ 			for (i = 0; i < 256; i++)
+ 				vt8500lcd_setcolreg(i, 0, 0, 0, 0, info);
++		fallthrough;
+ 	case FB_BLANK_UNBLANK:
+ 		if (info->fix.visual = FB_VISUAL_PSEUDOCOLOR ||
+ 		    info->fix.visual = FB_VISUAL_STATIC_PSEUDOCOLOR)
+-- 
+2.20.1

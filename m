@@ -1,37 +1,69 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 17 Apr 2020 11:58:33 +0000
-Subject: [PATCH v10 11/14] drm/i915: Program DP SDPs on pipe updates
-Message-Id: <20200417120040.3432332-12-gwan-gyeong.mun@intel.com>
+From: R Veera Kumar <vkor@vkten.in>
+Date: Mon, 13 Apr 2020 16:19:53 +0000
+Subject: [PATCH] staging: sm750fb: Make function arguments alignment match open parenthesis
+Message-Id: <20200413160753.3787-1-vkor@vkten.in>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: devel@driverdev.osuosl.org, R Veera Kumar <vkor@vkten.in>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-Call intel_dp_set_infoframes() function on pipe updates to make sure
-that we send VSC SDP and HDR Metadata Infoframe SDP (when applicable)
-on fastsets.
+Make function arguments alignment match open parenthesis.
+Found using checkpatch.pl.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Signed-off-by: R Veera Kumar <vkor@vkten.in>
 ---
- drivers/gpu/drm/i915/display/intel_ddi.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/staging/sm750fb/sm750.h    | 23 +++++++++++++----------
+ drivers/staging/sm750fb/sm750_hw.c |  2 +-
+ 2 files changed, 14 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index bb26ea665540..4334f516ba54 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -3849,6 +3849,7 @@ static void intel_ddi_update_pipe_dp(struct intel_atomic_state *state,
- 	intel_ddi_set_dp_msa(crtc_state, conn_state);
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index ce90adcb449d..55fe5a28a174 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -59,16 +59,19 @@ struct lynx_accel {
  
- 	intel_psr_update(intel_dp, crtc_state);
-+	intel_dp_set_infoframes(encoder, true, crtc_state, conn_state);
- 	intel_edp_drrs_enable(intel_dp, crtc_state);
+ 	int (*de_wait)(void);/* see if hardware ready to work */
  
- 	intel_panel_update_backlight(state, encoder, crtc_state, conn_state);
+-	int (*de_fillrect)(struct lynx_accel *, u32, u32, u32, u32,
+-						u32, u32, u32, u32, u32);
+-
+-	int (*de_copyarea)(struct lynx_accel *, u32, u32, u32, u32,
+-						u32, u32, u32, u32,
+-						u32, u32, u32, u32);
+-
+-	int (*de_imageblit)(struct lynx_accel *, const char *, u32, u32, u32, u32,
+-							       u32, u32, u32, u32,
+-							       u32, u32, u32, u32);
++	int (*de_fillrect)(struct lynx_accel *,
++			   u32, u32, u32, u32,
++			   u32, u32, u32, u32, u32);
++
++	int (*de_copyarea)(struct lynx_accel *,
++			   u32, u32, u32, u32,
++			   u32, u32, u32, u32,
++			   u32, u32, u32, u32);
++
++	int (*de_imageblit)(struct lynx_accel *, const char *,
++			    u32, u32, u32, u32,
++			    u32, u32, u32, u32,
++			    u32, u32, u32, u32);
+ 
+ };
+ 
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index b8d60701f898..7136d751cff5 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -51,7 +51,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 
+ 	/* now map mmio and vidmem */
+ 	sm750_dev->pvReg = ioremap(sm750_dev->vidreg_start,
+-					   sm750_dev->vidreg_size);
++				   sm750_dev->vidreg_size);
+ 	if (!sm750_dev->pvReg) {
+ 		pr_err("mmio failed\n");
+ 		ret = -EFAULT;
 -- 
-2.25.0
+2.20.1

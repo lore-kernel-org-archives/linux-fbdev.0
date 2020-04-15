@@ -1,71 +1,131 @@
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 10 Apr 2020 17:33:24 +0000
-Subject: Re: [PATCH v2 2/2] powerpc: Remove Xilinx PPC405/PPC440 support
-Message-Id: <20200410173324.GA28512@bogus>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 15 Apr 2020 16:50:55 +0000
+Subject: [PATCH v2 RESEND] ARM/fbdev: sa11x0: Switch to use GPIO descriptors
+Message-Id: <20200415165055.193113-1-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1585575111.git.michal.simek@xilinx.com>
- <9c3e02ffa9812c6f046708b45932d40f33e8817a.1585575111.git.michal.simek@xilinx.com>
-In-Reply-To: <9c3e02ffa9812c6f046708b45932d40f33e8817a.1585575111.git.michal.simek@xilinx.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michal Simek <michal.simek@xilinx.com>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>, Mark Rutland <mark.rutland@arm.com>, "Desnes A. Nunes do Rosario" <desnesn@linux.ibm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>, Miquel Raynal <miquel.raynal@bootlin.com>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Sasha Levin <sashal@kernel.org>, sfr@canb.auug.org.au, Jonathan Corbet <corbet@lwn.net>, maz@kernel.org, Masahiro Yamada <masahiroy@kernel.org>, YueHaibing <yuehaibing@huawei.com>, Krzysztof Kozlowski <krzk@kernel.org>, Allison Randal <allison@lohutok.net>, Matt Porter <mporter@kernel.crashing.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, Alexios Zavras <alexios.zavras@intel.com>, git@xilinx.com, Jonathan Cameron <Jonathan.Cameron@huawei.com>, Thomas Gleixner <tglx@linutronix.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Dmitry Vyukov <dvyukov@google.com>, Christophe Leroy <christophe.leroy@c-s.fr>, monstr@monstr.eu, Wei Hu <weh@microsoft.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Enrico Weigelt <info@metux.net>, "David S. Miller" <davem@davemloft.net>, Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: Russell King <linux@armlinux.org.uk>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org
+Cc: Linus Walleij <linus.walleij@linaro.org>, linux-arm-kernel@lists.infradead.org
 
-On Mon, Mar 30, 2020 at 03:32:17PM +0200, Michal Simek wrote:
-> The latest Xilinx design tools called ISE and EDK has been released in
-> October 2013. New tool doesn't support any PPC405/PPC440 new designs.
-> These platforms are no longer supported and tested.
-> 
-> PowerPC 405/440 port is orphan from 2013 by
-> commit cdeb89943bfc ("MAINTAINERS: Fix incorrect status tag") and
-> commit 19624236cce1 ("MAINTAINERS: Update Grant's email address and maintainership")
-> that's why it is time to remove the support fot these platforms.
-> 
-> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> ---
-> 
-> Changes in v2:
-> - Based on my chat with Arnd I removed arch/powerpc/xmon/ changes done in
->   v1 to keep them the same as before. (kbuild reported some issues with it
->   too)
-> 
->  Documentation/devicetree/bindings/xilinx.txt | 143 ------
+This converts the SA11x0 frame buffer driver to use
+GPIO descriptors. Get the GPIO optional and register
+a look-up table specifically for the Shannon machine.
 
-Acked-by: Rob Herring <robh@kernel.org>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ChangeLog v1->v2:
+- Rename the GPIO line to "shannon-lcden" as this GPIO
+  line has semantics that are particular to the Shannon
+  platform.
+---
+ arch/arm/mach-sa1100/shannon.c |  9 +++++++++
+ drivers/video/fbdev/sa1100fb.c | 20 +++++++++-----------
+ drivers/video/fbdev/sa1100fb.h |  3 +++
+ 3 files changed, 21 insertions(+), 11 deletions(-)
 
->  Documentation/powerpc/bootwrapper.rst        |  28 +-
->  MAINTAINERS                                  |   6 -
->  arch/powerpc/Kconfig.debug                   |   2 +-
->  arch/powerpc/boot/Makefile                   |   7 +-
->  arch/powerpc/boot/dts/Makefile               |   1 -
->  arch/powerpc/boot/dts/virtex440-ml507.dts    | 406 ----------------
->  arch/powerpc/boot/dts/virtex440-ml510.dts    | 466 -------------------
->  arch/powerpc/boot/ops.h                      |   1 -
->  arch/powerpc/boot/serial.c                   |   5 -
->  arch/powerpc/boot/uartlite.c                 |  79 ----
->  arch/powerpc/boot/virtex.c                   |  97 ----
->  arch/powerpc/boot/virtex405-head.S           |  31 --
->  arch/powerpc/boot/wrapper                    |   8 -
->  arch/powerpc/configs/40x/virtex_defconfig    |  75 ---
->  arch/powerpc/configs/44x/virtex5_defconfig   |  74 ---
->  arch/powerpc/configs/ppc40x_defconfig        |   8 -
->  arch/powerpc/configs/ppc44x_defconfig        |   8 -
->  arch/powerpc/include/asm/xilinx_intc.h       |  16 -
->  arch/powerpc/include/asm/xilinx_pci.h        |  21 -
->  arch/powerpc/kernel/cputable.c               |  39 --
->  arch/powerpc/platforms/40x/Kconfig           |  31 --
->  arch/powerpc/platforms/40x/Makefile          |   1 -
->  arch/powerpc/platforms/40x/virtex.c          |  54 ---
->  arch/powerpc/platforms/44x/Kconfig           |  37 --
->  arch/powerpc/platforms/44x/Makefile          |   2 -
->  arch/powerpc/platforms/44x/virtex.c          |  60 ---
->  arch/powerpc/platforms/44x/virtex_ml510.c    |  30 --
->  arch/powerpc/platforms/Kconfig               |   4 -
->  arch/powerpc/sysdev/Makefile                 |   2 -
->  arch/powerpc/sysdev/xilinx_intc.c            |  88 ----
->  arch/powerpc/sysdev/xilinx_pci.c             | 132 ------
->  drivers/char/Kconfig                         |   2 +-
->  drivers/video/fbdev/Kconfig                  |   2 +-
->  34 files changed, 7 insertions(+), 1959 deletions(-)
+diff --git a/arch/arm/mach-sa1100/shannon.c b/arch/arm/mach-sa1100/shannon.c
+index 5bc82e2671c6..351f891b4842 100644
+--- a/arch/arm/mach-sa1100/shannon.c
++++ b/arch/arm/mach-sa1100/shannon.c
+@@ -104,6 +104,14 @@ static struct fixed_voltage_config shannon_cf_vcc_pdata __initdata = {
+ 	.enabled_at_boot = 1,
+ };
+ 
++static struct gpiod_lookup_table shannon_display_gpio_table = {
++	.dev_id = "sa11x0-fb",
++	.table = {
++		GPIO_LOOKUP("gpio", 22, "shannon-lcden", GPIO_ACTIVE_HIGH),
++		{ },
++	},
++};
++
+ static void __init shannon_init(void)
+ {
+ 	sa11x0_register_fixed_regulator(0, &shannon_cf_vcc_pdata,
+@@ -113,6 +121,7 @@ static void __init shannon_init(void)
+ 	sa11x0_register_pcmcia(0, &shannon_pcmcia0_gpio_table);
+ 	sa11x0_register_pcmcia(1, &shannon_pcmcia1_gpio_table);
+ 	sa11x0_ppc_configure_mcp();
++	gpiod_add_lookup_table(&shannon_display_gpio_table);
+ 	sa11x0_register_lcd(&shannon_lcd_info);
+ 	sa11x0_register_mtd(&shannon_flash_data, &shannon_flash_resource, 1);
+ 	sa11x0_register_mcp(&shannon_mcp_data);
+diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
+index 2d285cc384cf..3e6e13f7a831 100644
+--- a/drivers/video/fbdev/sa1100fb.c
++++ b/drivers/video/fbdev/sa1100fb.c
+@@ -173,7 +173,7 @@
+ #include <linux/init.h>
+ #include <linux/ioport.h>
+ #include <linux/cpufreq.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/platform_device.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/mutex.h>
+@@ -799,8 +799,8 @@ static void sa1100fb_enable_controller(struct sa1100fb_info *fbi)
+ 	writel_relaxed(fbi->dbar2, fbi->base + DBAR2);
+ 	writel_relaxed(fbi->reg_lccr0 | LCCR0_LEN, fbi->base + LCCR0);
+ 
+-	if (machine_is_shannon())
+-		gpio_set_value(SHANNON_GPIO_DISP_EN, 1);
++	if (fbi->shannon_lcden)
++		gpiod_set_value(fbi->shannon_lcden, 1);
+ 
+ 	dev_dbg(fbi->dev, "DBAR1: 0x%08x\n", readl_relaxed(fbi->base + DBAR1));
+ 	dev_dbg(fbi->dev, "DBAR2: 0x%08x\n", readl_relaxed(fbi->base + DBAR2));
+@@ -817,8 +817,8 @@ static void sa1100fb_disable_controller(struct sa1100fb_info *fbi)
+ 
+ 	dev_dbg(fbi->dev, "Disabling LCD controller\n");
+ 
+-	if (machine_is_shannon())
+-		gpio_set_value(SHANNON_GPIO_DISP_EN, 0);
++	if (fbi->shannon_lcden)
++		gpiod_set_value(fbi->shannon_lcden, 0);
+ 
+ 	set_current_state(TASK_UNINTERRUPTIBLE);
+ 	add_wait_queue(&fbi->ctrlr_wait, &wait);
+@@ -1173,12 +1173,10 @@ static int sa1100fb_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	if (machine_is_shannon()) {
+-		ret = devm_gpio_request_one(&pdev->dev, SHANNON_GPIO_DISP_EN,
+-			GPIOF_OUT_INIT_LOW, "display enable");
+-		if (ret)
+-			return ret;
+-	}
++	fbi->shannon_lcden = gpiod_get_optional(&pdev->dev, "shannon-lcden",
++						GPIOD_OUT_LOW);
++	if (IS_ERR(fbi->shannon_lcden))
++		return PTR_ERR(fbi->shannon_lcden);
+ 
+ 	/* Initialize video memory */
+ 	ret = sa1100fb_map_video_memory(fbi);
+diff --git a/drivers/video/fbdev/sa1100fb.h b/drivers/video/fbdev/sa1100fb.h
+index d0aa33b0b88a..b4363444fa5d 100644
+--- a/drivers/video/fbdev/sa1100fb.h
++++ b/drivers/video/fbdev/sa1100fb.h
+@@ -10,6 +10,8 @@
+  * for more details.
+  */
+ 
++struct gpio_desc;
++
+ #define LCCR0           0x0000          /* LCD Control Reg. 0 */
+ #define LCSR            0x0004          /* LCD Status Reg. */
+ #define DBAR1           0x0010          /* LCD DMA Base Address Reg. channel 1 */
+@@ -33,6 +35,7 @@ struct sa1100fb_info {
+ 	struct device		*dev;
+ 	const struct sa1100fb_rgb *rgb[NR_RGB];
+ 	void __iomem		*base;
++	struct gpio_desc	*shannon_lcden;
+ 
+ 	/*
+ 	 * These are the addresses we mapped
+-- 
+2.25.2

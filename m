@@ -1,39 +1,82 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 28 Apr 2020 18:58:54 +0000
-Subject: Re: [PATCH v1] staging: fbtft: fb_st7789v: enabled inversion
-Message-Id: <20200428185854.GK2014@kadam>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Wed, 15 Apr 2020 14:20:18 +0000
+Subject: Re: [PATCH v1 1/5] video: ssd1307fb: Convert driver to use ->probe_new()
+Message-Id: <20200415142018.GH185537@smile.fi.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1586424250-25897-1-git-send-email-oliver.graute@gmail.com>
- <20200409101517.GO2001@kadam> <20200427082939.GB18436@portage>
-In-Reply-To: <20200427082939.GB18436@portage>
+References: <20200324170532.44384-1-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20200324170532.44384-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Oliver Graute <oliver.graute@gmail.com>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, Oliver Graute <oliver.graute@kococonnector.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Apr 27, 2020 at 10:29:39AM +0200, Oliver Graute wrote:
-> On 09/04/20, Dan Carpenter wrote:
-> > On Thu, Apr 09, 2020 at 11:24:05AM +0200, Oliver Graute wrote:
-> > > From: Oliver Graute <oliver.graute@kococonnector.com>
-> > > 
-> > > Enable inversion mode
-> > 
-> > What the heck is an inversion mode and why would you want it?
-> 
-> 
-> Should I name it:
-> 
-> Enable MIPI_DCS_ENTER_INVERT_MODE
-> 
+On Mon, Mar 30, 2020 at 12:51:44PM +0300, Andy Shevchenko wrote:
+> On Tue, Mar 24, 2020 at 07:05:28PM +0200, Andy Shevchenko wrote:
+> > Use the ->probe_new() callback.
+> >=20
+> > The driver does not use const struct i2c_device_id * argument,
+> > so convert it to utilise the simplified I=B2C driver registration.
+> >=20
+>=20
+> Bartlomiej, any comments on the series?
 
-What I'm saying is the changelog should explain why would want to apply
-the patch.  What does the inversion mode do?  Is it inverting the color
-or flipping something upside down?
+Do I need to do something with the series?
 
-Probably if I had a background in graphics I would know what "Enable
-inversion mode" means...  But three words is not a proper and complete
-commit message normally.
+> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > ---
+> >  drivers/video/fbdev/ssd1307fb.c | 10 ++--------
+> >  1 file changed, 2 insertions(+), 8 deletions(-)
+> >=20
+> > diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1=
+307fb.c
+> > index 142535267fec..397eae246c2c 100644
+> > --- a/drivers/video/fbdev/ssd1307fb.c
+> > +++ b/drivers/video/fbdev/ssd1307fb.c
+> > @@ -586,8 +586,7 @@ static const struct of_device_id ssd1307fb_of_match=
+[] =3D {
+> >  };
+> >  MODULE_DEVICE_TABLE(of, ssd1307fb_of_match);
+> > =20
+> > -static int ssd1307fb_probe(struct i2c_client *client,
+> > -			   const struct i2c_device_id *id)
+> > +static int ssd1307fb_probe(struct i2c_client *client)
+> >  {
+> >  	struct backlight_device *bl;
+> >  	char bl_name[12];
+> > @@ -599,11 +598,6 @@ static int ssd1307fb_probe(struct i2c_client *clie=
+nt,
+> >  	void *vmem;
+> >  	int ret;
+> > =20
+> > -	if (!node) {
+> > -		dev_err(&client->dev, "No device tree data found!\n");
+> > -		return -EINVAL;
+> > -	}
+> > -
+> >  	info =3D framebuffer_alloc(sizeof(struct ssd1307fb_par), &client->dev=
+);
+> >  	if (!info)
+> >  		return -ENOMEM;
+> > @@ -808,7 +802,7 @@ static const struct i2c_device_id ssd1307fb_i2c_id[=
+] =3D {
+> >  MODULE_DEVICE_TABLE(i2c, ssd1307fb_i2c_id);
+> > =20
+> >  static struct i2c_driver ssd1307fb_driver =3D {
+> > -	.probe =3D ssd1307fb_probe,
+> > +	.probe_new =3D ssd1307fb_probe,
+> >  	.remove =3D ssd1307fb_remove,
+> >  	.id_table =3D ssd1307fb_i2c_id,
+> >  	.driver =3D {
+> > --=20
+> > 2.25.1
+> >=20
+>=20
+> --=20
+> With Best Regards,
+> Andy Shevchenko
+>=20
+>=20
 
-regards,
-dan carpenter
+--=20
+With Best Regards,
+Andy Shevchenko

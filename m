@@ -1,72 +1,52 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Tue, 07 Apr 2020 19:48:24 +0000
-Subject: Re: [PATCH 2/5] video: Add missing annotation for cyber2000fb_enable_ddc() and cyber2000fb_disable_d
-Message-Id: <20200407194824.GA28801@ravnborg.org>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Wed, 15 Apr 2020 10:38:44 +0000
+Subject: Re: [PATCH 1/1] video: backlight: tosa_lcd: convert to use i2c_new_client_device()
+Message-Id: <20200415103844.vnjccybvy5wtnrq6@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <0/5> <20200403160505.2832-1-jbi.octave@gmail.com>
- <20200403160505.2832-3-jbi.octave@gmail.com>
-In-Reply-To: <20200403160505.2832-3-jbi.octave@gmail.com>
+References: <20200326210959.13111-1-wsa+renesas@sang-engineering.com>
+ <20200326210959.13111-2-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20200326210959.13111-2-wsa+renesas@sang-engineering.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jules Irenge <jbi.octave@gmail.com>
-Cc: "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, boqun.feng@gmail.com, Russell King <linux@armlinux.org.uk>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, linux-kernel@vger.kernel.org, "moderated list:CYBERPRO FB DRIVER" <linux-arm-kernel@lists.infradead.org>
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 
-Hi Jules.
+On Thu, Mar 26, 2020 at 10:09:59PM +0100, Wolfram Sang wrote:
+> Move away from the deprecated API and return the shiny new ERRPTR where
+> useful.
+> 
+> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-On Fri, Apr 03, 2020 at 05:05:02PM +0100, Jules Irenge wrote:
-> Sparse reports warnings at cyber2000fb_enable_ddc()
-> 	and cyber2000fb_disable_ddc()
-> 
-> warning: context imbalance in cyber2000fb_enable_ddc()
-> 	- wrong count at exit
-> 
-> warning: context imbalance in cyber2000fb_disable_ddc()
-> 	- unexpected unlock
-> 
-> The root cause is the missing annotation at cyber2000fb_enable_ddc()
-> 	and cyber2000fb_disable_ddc()
-> 
-> Add the missing __acquires(&cfb->reg_b0_lock) annotation
-> Add the missing __releases(&cfb->reg_b0_lock) annotation
-> 
-> Signed-off-by: Jules Irenge <jbi.octave@gmail.com>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-Thanks, added to drm-misc-next, so the patch will hit the kernel
-when the merge windows opens the next time.
-
-Was this the only locking relevant warning in fbdev?
-I would expect a few more.
-
-	Sam
 
 > ---
->  drivers/video/fbdev/cyber2000fb.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  drivers/video/backlight/tosa_lcd.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
-> index 460826a7ad55..513f58f28b0f 100644
-> --- a/drivers/video/fbdev/cyber2000fb.c
-> +++ b/drivers/video/fbdev/cyber2000fb.c
-> @@ -1160,12 +1160,14 @@ EXPORT_SYMBOL(cyber2000fb_detach);
->  #define DDC_SDA_IN	(1 << 6)
+> diff --git a/drivers/video/backlight/tosa_lcd.c b/drivers/video/backlight/tosa_lcd.c
+> index e8ab583e5098..113116d3585c 100644
+> --- a/drivers/video/backlight/tosa_lcd.c
+> +++ b/drivers/video/backlight/tosa_lcd.c
+> @@ -107,7 +107,7 @@ static void tosa_lcd_tg_on(struct tosa_lcd_data *data)
+>  	/* TG LCD GVSS */
+>  	tosa_tg_send(spi, TG_PINICTL, 0x0);
 >  
->  static void cyber2000fb_enable_ddc(struct cfb_info *cfb)
-> +	__acquires(&cfb->reg_b0_lock)
->  {
->  	spin_lock(&cfb->reg_b0_lock);
->  	cyber2000fb_writew(0x1bf, 0x3ce, cfb);
+> -	if (!data->i2c) {
+> +	if (IS_ERR_OR_NULL(data->i2c)) {
+>  		/*
+>  		 * after the pannel is powered up the first time,
+>  		 * we can access the i2c bus so probe for the DAC
+> @@ -119,7 +119,7 @@ static void tosa_lcd_tg_on(struct tosa_lcd_data *data)
+>  			.addr	= DAC_BASE,
+>  			.platform_data = data->spi,
+>  		};
+> -		data->i2c = i2c_new_device(adap, &info);
+> +		data->i2c = i2c_new_client_device(adap, &info);
+>  	}
 >  }
 >  
->  static void cyber2000fb_disable_ddc(struct cfb_info *cfb)
-> +	__releases(&cfb->reg_b0_lock)
->  {
->  	cyber2000fb_writew(0x0bf, 0x3ce, cfb);
->  	spin_unlock(&cfb->reg_b0_lock);
 > -- 
-> 2.24.1
+> 2.20.1
 > 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel

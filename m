@@ -1,61 +1,181 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Fri, 17 Apr 2020 20:29:07 +0000
-Subject: Re: [PATCH 6/8] drm: decouple from CONFIG_FB
-Message-Id: <20200417202907.GA5617@ravnborg.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 17 Apr 2020 15:55:52 +0000
+Subject: [PATCH 7/8] fbdev: rework backlight dependencies
+Message-Id: <20200417155553.675905-8-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200417155553.675905-1-arnd@arndb.de>
- <20200417155553.675905-7-arnd@arndb.de>
- <20200417165041.GA30483@ravnborg.org>
- <CAK8P3a14G=Mv3jpZRciTgsSDf4Bd3ZOAqFRN1cc2FLYbwZZcbw@mail.gmail.com>
-In-Reply-To: <CAK8P3a14G=Mv3jpZRciTgsSDf4Bd3ZOAqFRN1cc2FLYbwZZcbw@mail.gmail.com>
+In-Reply-To: <20200417155553.675905-1-arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>, Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Marek Vasut <marex@denx.de>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dsd@laptop.org, Nicolas Pitre <nico@fluxnic.net>, David Airlie <airlied@linux.ie>, Masahiro Yamada <masahiroy@kernel.org>, jfrederich@gmail.com, Saeed Mahameed <saeedm@mellanox.com>, Thomas Hellstrom <thellstrom@vmware.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Andrzej Hajda <a.hajda@samsung.com>, Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, dri-devel <dri-devel@lists.freedesktop.org>, VMware Graphics <linux-graphics-maintainer@vmware.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Jason Gunthorpe <jgg@ziepe.ca>, Daniel Mack <daniel@zonque.org>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: dri-devel@lists.freedesktop.org, Jani Nikula <jani.nikula@linux.intel.com>, linux-fbdev@vger.kernel.org
+Cc: marex@denx.de, dsd@laptop.org, Arnd Bergmann <arnd@arndb.de>, Andrzej Hajda <a.hajda@samsung.com>, airlied@linux.ie, masahiroy@kernel.org, Nicolas Pitre <nico@fluxnic.net>, Saeed Mahameed <saeedm@mellanox.com>, thellstrom@vmware.com, haojian.zhuang@gmail.com, geert@linux-m68k.org, linux-renesas-soc@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>, kieran.bingham+renesas@ideasonboard.com, linux-graphics-maintainer@vmware.com, Laurent.pinchart@ideasonboard.com, jfrederich@gmail.com, robert.jarzmik@free.fr, daniel@zonque.org
 
-Hi Arnd.
+Rather than having CONFIG_FB_BACKLIGHT select CONFIG_BACKLIGHT_CLASS_DEVICE,
+make any driver that needs it have a dependency on the class device
+being available, to prevent circular dependencies.
 
-On Fri, Apr 17, 2020 at 10:03:23PM +0200, Arnd Bergmann wrote:
-> On Fri, Apr 17, 2020 at 6:50 PM Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> >
-> > So what this try to say is that we cannot have FB a module while DRM is
-> > built-in (marked N in the above).
-> 
-> Correct
-> 
-> >
-> > Could you explain in the changelog why this combination is not good.
-> > (Or tell me if my analysis was flawed).
-> 
-> I agree in hindsight this was less obvious than I thought ;-)
-> 
-> Added this text to the changelog:
-> 
-> |  When CONFIG_FB is a loadable module, DRM_KMS_FB_HELPER cannot be
-> | part of the built-in subsystem, so add dependency to ensure this
-> | can only be enabled if the DRM module can successfully be linked.
-> 
-> and this comment in the Kconfig file:
-> 
-> @@ -112,7 +112,7 @@ config DRM_DEBUG_DP_MST_TOPOLOGY_REFS
->  config DRM_FBDEV_EMULATION
->         bool "Enable legacy fbdev support for your modesetting driver"
->         depends on DRM && FB
-> -       depends on FB=y || DRM=m
-> +       depends on FB=y || DRM=m # DRM_KMS_FB_HELPER links against FB
->         select DRM_KMS_HELPER
->         select DRM_KMS_FB_HELPER
->         default y
-> 
-> Let me know if you think those changes are sufficient
-> 
-> > With this fixed (assuming I am right):
-> > Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+This is the same way that the backlight is already treated for the DRM
+subsystem.
 
-Yes, that explains it nicely - thanks.
-But unless Daniel decides otherwise we do not get it applied.
-He was not too happy with it.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/auxdisplay/Kconfig        |  1 +
+ drivers/macintosh/Kconfig         |  1 +
+ drivers/staging/fbtft/Kconfig     |  1 +
+ drivers/staging/olpc_dcon/Kconfig |  2 +-
+ drivers/video/fbdev/Kconfig       | 14 +++++++++++---
+ 5 files changed, 15 insertions(+), 4 deletions(-)
 
-	Sam
+diff --git a/drivers/auxdisplay/Kconfig b/drivers/auxdisplay/Kconfig
+index 48efa7a047f3..f5751b5b0e88 100644
+--- a/drivers/auxdisplay/Kconfig
++++ b/drivers/auxdisplay/Kconfig
+@@ -144,6 +144,7 @@ config IMG_ASCII_LCD
+ config HT16K33
+ 	tristate "Holtek Ht16K33 LED controller with keyscan"
+ 	depends on FB && OF && I2C && INPUT
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	select FB_SYS_FOPS
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+index cbd46c1c5bf7..a1c6677c7043 100644
+--- a/drivers/macintosh/Kconfig
++++ b/drivers/macintosh/Kconfig
+@@ -113,6 +113,7 @@ config PMAC_MEDIABAY
+ config PMAC_BACKLIGHT
+ 	bool "Backlight control for LCD screens"
+ 	depends on PPC_PMAC && ADB_PMU && FB =3D y && (BROKEN || !PPC64)
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	select FB_BACKLIGHT
+ 	help
+ 	  Say Y here to enable Macintosh specific extensions of the generic
+diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
+index dad1ddcd7b0c..c4f2f01cd798 100644
+--- a/drivers/staging/fbtft/Kconfig
++++ b/drivers/staging/fbtft/Kconfig
+@@ -3,6 +3,7 @@ menuconfig FB_TFT
+ 	tristate "Support for small TFT LCD display modules"
+ 	depends on FB && SPI
+ 	depends on GPIOLIB || COMPILE_TEST
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+ 	select FB_SYS_IMAGEBLIT
+diff --git a/drivers/staging/olpc_dcon/Kconfig b/drivers/staging/olpc_dcon/=
+Kconfig
+index d1a0dea09ef0..a9f36538d7ab 100644
+--- a/drivers/staging/olpc_dcon/Kconfig
++++ b/drivers/staging/olpc_dcon/Kconfig
+@@ -4,7 +4,7 @@ config FB_OLPC_DCON
+ 	depends on OLPC && FB
+ 	depends on I2C
+ 	depends on GPIO_CS5535 && ACPI
+-	select BACKLIGHT_CLASS_DEVICE
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	help
+ 	  In order to support very low power operation, the XO laptop uses a
+ 	  secondary Display CONtroller, or DCON.  This secondary controller
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index bcf7834dbdbf..47e1b65276f4 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -186,7 +186,7 @@ config FB_MACMODES
+ config FB_BACKLIGHT
+ 	tristate
+ 	depends on FB
+-	select BACKLIGHT_CLASS_DEVICE
++	depends on BACKLIGHT_CLASS_DEVICE
+=20
+ config FB_MODE_HELPERS
+ 	bool "Enable Video Mode Handling Helpers"
+@@ -275,12 +275,12 @@ config FB_ARMCLCD
+ 	tristate "ARM PrimeCell PL110 support"
+ 	depends on ARM || ARM64 || COMPILE_TEST
+ 	depends on FB && ARM_AMBA && HAS_IOMEM
++	depends on BACKLIGHT_CLASS_DEVICE || !OF
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB_MODE_HELPERS if OF
+ 	select VIDEOMODE_HELPERS if OF
+-	select BACKLIGHT_CLASS_DEVICE if OF
+ 	help
+ 	  This framebuffer device driver is for the ARM PrimeCell PL110
+ 	  Colour LCD controller.  ARM PrimeCells provide the building
+@@ -861,6 +861,7 @@ config FB_ATMEL
+ 	tristate "AT91 LCD Controller support"
+ 	depends on FB && OF && HAVE_CLK && HAS_IOMEM
+ 	depends on HAVE_FB_ATMEL || COMPILE_TEST
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	select FB_BACKLIGHT
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -914,6 +915,7 @@ config FB_NVIDIA_DEBUG
+ config FB_NVIDIA_BACKLIGHT
+ 	bool "Support for backlight control"
+ 	depends on FB_NVIDIA
++	depends on BACKLIGHT_CLASS_DEVICE=3Dy || BACKLIGHT_CLASS_DEVICE=FB_NVIDIA
+ 	default y
+ 	help
+ 	  Say Y here if you want to control the backlight of your display.
+@@ -961,6 +963,7 @@ config FB_RIVA_DEBUG
+ config FB_RIVA_BACKLIGHT
+ 	bool "Support for backlight control"
+ 	depends on FB_RIVA
++	depends on BACKLIGHT_CLASS_DEVICE=3Dy || BACKLIGHT_CLASS_DEVICE=FB_RIVA
+ 	default y
+ 	help
+ 	  Say Y here if you want to control the backlight of your display.
+@@ -1232,6 +1235,7 @@ config FB_RADEON_I2C
+ config FB_RADEON_BACKLIGHT
+ 	bool "Support for backlight control"
+ 	depends on FB_RADEON
++	depends on BACKLIGHT_CLASS_DEVICE=3Dy || BACKLIGHT_CLASS_DEVICE=FB_RADEON
+ 	default y
+ 	help
+ 	  Say Y here if you want to control the backlight of your display.
+@@ -1263,6 +1267,7 @@ config FB_ATY128
+ config FB_ATY128_BACKLIGHT
+ 	bool "Support for backlight control"
+ 	depends on FB_ATY128
++	depends on BACKLIGHT_CLASS_DEVICE=3Dy || BACKLIGHT_CLASS_DEVICE=FB_ATY128
+ 	default y
+ 	help
+ 	  Say Y here if you want to control the backlight of your display.
+@@ -1312,6 +1317,7 @@ config FB_ATY_GX
+=20
+ config FB_ATY_BACKLIGHT
+ 	bool "Support for backlight control"
++	depends on BACKLIGHT_CLASS_DEVICE=3Dy || BACKLIGHT_CLASS_DEVICE=FB_ATY
+ 	depends on FB_ATY
+ 	default y
+ 	help
+@@ -1855,6 +1861,7 @@ config FB_SH_MOBILE_LCDC
+ 	tristate "SuperH Mobile LCDC framebuffer support"
+ 	depends on FB && HAVE_CLK && HAS_IOMEM
+ 	depends on SUPERH || ARCH_RENESAS || COMPILE_TEST
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+ 	select FB_SYS_IMAGEBLIT
+@@ -2183,7 +2190,7 @@ config FB_PRE_INIT_FB
+ config FB_MX3
+ 	tristate "MX3 Framebuffer support"
+ 	depends on FB && MX3_IPU
+-	select BACKLIGHT_CLASS_DEVICE
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -2250,6 +2257,7 @@ config FB_SSD1307
+ 	depends on FB && I2C
+ 	depends on OF
+ 	depends on GPIOLIB || COMPILE_TEST
++	depends on BACKLIGHT_CLASS_DEVICE
+ 	select FB_SYS_FOPS
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+--=20
+2.26.0

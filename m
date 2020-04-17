@@ -1,165 +1,88 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 17 Apr 2020 11:58:53 +0000
-Subject: [PATCH v10 13/14] drm/i915/dp: Add compute routine for DP PSR VSC SDP
-Message-Id: <20200417120040.3432332-14-gwan-gyeong.mun@intel.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 17 Apr 2020 15:55:49 +0000
+Subject: [PATCH 4/8] drm/rcar: stop using 'imply' for dependencies
+Message-Id: <20200417155553.675905-5-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
+References: <20200417155553.675905-1-arnd@arndb.de>
+In-Reply-To: <20200417155553.675905-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
+To: dri-devel@lists.freedesktop.org, Jani Nikula <jani.nikula@linux.intel.com>, linux-fbdev@vger.kernel.org
+Cc: marex@denx.de, dsd@laptop.org, Arnd Bergmann <arnd@arndb.de>, Andrzej Hajda <a.hajda@samsung.com>, airlied@linux.ie, masahiroy@kernel.org, Nicolas Pitre <nico@fluxnic.net>, Saeed Mahameed <saeedm@mellanox.com>, thellstrom@vmware.com, haojian.zhuang@gmail.com, geert@linux-m68k.org, linux-renesas-soc@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>, kieran.bingham+renesas@ideasonboard.com, linux-graphics-maintainer@vmware.com, Laurent.pinchart@ideasonboard.com, jfrederich@gmail.com, robert.jarzmik@free.fr, daniel@zonque.org
 
-In order to use a common VSC SDP Colorimetry calculating code on PSR,
-it adds a compute routine for PSR VSC SDP.
-As PSR routine can not use infoframes.vsc of crtc state, it also adds new
-writing of DP SDPs (Secondary Data Packet) for PSR.
-PSR routine has its own scenario and timings of writing a VSC SDP.
+The meaning of the 'imply' keyword has changed recently, and neither the
+old meaning (select the symbol if its dependencies are met) nor the new
+meaning (enable it by default, but let the user set any other setting)
+is what we want here.
 
-v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-v4: Use struct drm_device logging macros
-v10: 1) Fix packing of VSC SDP where Pixel Encoding/Colorimetry Format is
-        not supported.
-     2) Change a checking of PSR state.
+Work around this by adding two more Kconfig options that lead to
+the correct behavior: if DRM_RCAR_USE_CMM and DRM_RCAR_USE_LVDS
+are enabled, that portion of the driver becomes usable, and no
+configuration results in a link error.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/gpu/drm/i915/display/intel_dp.c | 66 ++++++++++++++++++++++++-
- drivers/gpu/drm/i915/display/intel_dp.h |  8 +++
- 2 files changed, 72 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/rcar-du/Kconfig | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
-index 2e8efe7aa776..91699efdb2f3 100644
---- a/drivers/gpu/drm/i915/display/intel_dp.c
-+++ b/drivers/gpu/drm/i915/display/intel_dp.c
-@@ -2499,8 +2499,8 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
- {
- 	struct drm_dp_vsc_sdp *vsc = &crtc_state->infoframes.vsc;
+diff --git a/drivers/gpu/drm/rcar-du/Kconfig b/drivers/gpu/drm/rcar-du/Kconfig
+index 0919f1f159a4..d2fcec807dfa 100644
+--- a/drivers/gpu/drm/rcar-du/Kconfig
++++ b/drivers/gpu/drm/rcar-du/Kconfig
+@@ -4,8 +4,6 @@ config DRM_RCAR_DU
+ 	depends on DRM && OF
+ 	depends on ARM || ARM64
+ 	depends on ARCH_RENESAS || COMPILE_TEST
+-	imply DRM_RCAR_CMM
+-	imply DRM_RCAR_LVDS
+ 	select DRM_KMS_HELPER
+ 	select DRM_KMS_CMA_HELPER
+ 	select DRM_GEM_CMA_HELPER
+@@ -14,13 +12,17 @@ config DRM_RCAR_DU
+ 	  Choose this option if you have an R-Car chipset.
+ 	  If M is selected the module will be called rcar-du-drm.
  
--	/* When PSR is enabled, VSC SDP is handled by PSR routine */
--	if (intel_psr_enabled(intel_dp))
-+	/* When a crtc state has PSR, VSC SDP will be handled by PSR routine */
-+	if (crtc_state->has_psr)
- 		return;
+-config DRM_RCAR_CMM
+-	tristate "R-Car DU Color Management Module (CMM) Support"
+-	depends on DRM && OF
++config DRM_RCAR_USE_CMM
++	bool "R-Car DU Color Management Module (CMM) Support"
+ 	depends on DRM_RCAR_DU
++	default DRM_RCAR_DU
+ 	help
+ 	  Enable support for R-Car Color Management Module (CMM).
  
- 	if (!intel_dp_needs_vsc_sdp(crtc_state, conn_state))
-@@ -2512,6 +2512,42 @@ static void intel_dp_compute_vsc_sdp(struct intel_dp *intel_dp,
- 					 &crtc_state->infoframes.vsc);
- }
++config DRM_RCAR_CMM
++	def_tristate DRM_RCAR_DU
++	depends on DRM_RCAR_USE_CMM
++
+ config DRM_RCAR_DW_HDMI
+ 	tristate "R-Car DU Gen3 HDMI Encoder Support"
+ 	depends on DRM && OF
+@@ -28,15 +30,20 @@ config DRM_RCAR_DW_HDMI
+ 	help
+ 	  Enable support for R-Car Gen3 internal HDMI encoder.
  
-+void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
-+				  const struct intel_crtc_state *crtc_state,
-+				  const struct drm_connector_state *conn_state,
-+				  struct drm_dp_vsc_sdp *vsc)
-+{
-+	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
-+
-+	vsc->sdp_type = DP_SDP_VSC;
-+
-+	if (dev_priv->psr.psr2_enabled) {
-+		if (dev_priv->psr.colorimetry_support &&
-+		    intel_dp_needs_vsc_sdp(crtc_state, conn_state)) {
-+			/* [PSR2, +Colorimetry] */
-+			intel_dp_compute_vsc_colorimetry(crtc_state, conn_state,
-+							 vsc);
-+		} else {
-+			/*
-+			 * [PSR2, -Colorimetry]
-+			 * Prepare VSC Header for SU as per eDP 1.4 spec, Table 6-11
-+			 * 3D stereo + PSR/PSR2 + Y-coordinate.
-+			 */
-+			vsc->revision = 0x4;
-+			vsc->length = 0xe;
-+		}
-+	} else {
-+		/*
-+		 * [PSR1]
-+		 * Prepare VSC Header for SU as per DP 1.4 spec, Table 2-118
-+		 * VSC SDP supporting 3D stereo + PSR (applies to eDP v1.3 or
-+		 * higher).
-+		 */
-+		vsc->revision = 0x2;
-+		vsc->length = 0x8;
-+	}
-+}
-+
- static void
- intel_dp_compute_hdr_metadata_infoframe_sdp(struct intel_dp *intel_dp,
- 					    struct intel_crtc_state *crtc_state,
-@@ -4844,6 +4880,13 @@ static ssize_t intel_dp_vsc_sdp_pack(const struct drm_dp_vsc_sdp *vsc,
- 	sdp->sdp_header.HB2 = vsc->revision; /* Revision Number */
- 	sdp->sdp_header.HB3 = vsc->length; /* Number of Valid Data Bytes */
+-config DRM_RCAR_LVDS
+-	tristate "R-Car DU LVDS Encoder Support"
+-	depends on DRM && DRM_BRIDGE && OF
++config DRM_RCAR_USE_LVDS
++	bool "R-Car DU LVDS Encoder Support"
++	depends on DRM_BRIDGE && OF
++	default DRM_RCAR_DU
+ 	select DRM_PANEL
+ 	select OF_FLATTREE
+ 	select OF_OVERLAY
+ 	help
+ 	  Enable support for the R-Car Display Unit embedded LVDS encoders.
  
-+	/*
-+	 * Only revision 0x5 supports Pixel Encoding/Colorimetry Format as
-+	 * per DP 1.4a spec.
-+	 */
-+	if (vsc->revision != 0x5)
-+		goto out;
++config DRM_RCAR_LVDS
++	def_tristate DRM_RCAR_DU
++	depends on DRM_RCAR_USE_LVDS
 +
- 	/* VSC SDP Payload for DB16 through DB18 */
- 	/* Pixel Encoding and Colorimetry Formats  */
- 	sdp->db[16] = (vsc->pixelformat & 0xf) << 4; /* DB16[7:4] */
-@@ -4876,6 +4919,7 @@ static ssize_t intel_dp_vsc_sdp_pack(const struct drm_dp_vsc_sdp *vsc,
- 	/* Content Type */
- 	sdp->db[18] = vsc->content_type & 0x7;
- 
-+out:
- 	return length;
- }
- 
-@@ -4988,6 +5032,24 @@ static void intel_write_dp_sdp(struct intel_encoder *encoder,
- 	intel_dig_port->write_infoframe(encoder, crtc_state, type, &sdp, len);
- }
- 
-+void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
-+			    const struct intel_crtc_state *crtc_state,
-+			    struct drm_dp_vsc_sdp *vsc)
-+{
-+	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
-+	struct drm_i915_private *dev_priv = to_i915(encoder->base.dev);
-+	struct dp_sdp sdp = {};
-+	ssize_t len;
-+
-+	len = intel_dp_vsc_sdp_pack(vsc, &sdp, sizeof(sdp));
-+
-+	if (drm_WARN_ON(&dev_priv->drm, len < 0))
-+		return;
-+
-+	intel_dig_port->write_infoframe(encoder, crtc_state, DP_SDP_VSC,
-+					&sdp, len);
-+}
-+
- void intel_dp_set_infoframes(struct intel_encoder *encoder,
- 			     bool enable,
- 			     const struct intel_crtc_state *crtc_state,
-diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915/display/intel_dp.h
-index 0d2de15703c3..1702959ca079 100644
---- a/drivers/gpu/drm/i915/display/intel_dp.h
-+++ b/drivers/gpu/drm/i915/display/intel_dp.h
-@@ -16,6 +16,7 @@ struct drm_connector_state;
- struct drm_encoder;
- struct drm_i915_private;
- struct drm_modeset_acquire_ctx;
-+struct drm_dp_vsc_sdp;
- struct intel_connector;
- struct intel_crtc_state;
- struct intel_digital_port;
-@@ -108,6 +109,13 @@ int intel_dp_link_required(int pixel_clock, int bpp);
- int intel_dp_max_data_rate(int max_link_clock, int max_lanes);
- bool intel_dp_needs_vsc_sdp(const struct intel_crtc_state *crtc_state,
- 			    const struct drm_connector_state *conn_state);
-+void intel_dp_compute_psr_vsc_sdp(struct intel_dp *intel_dp,
-+				  const struct intel_crtc_state *crtc_state,
-+				  const struct drm_connector_state *conn_state,
-+				  struct drm_dp_vsc_sdp *vsc);
-+void intel_write_dp_vsc_sdp(struct intel_encoder *encoder,
-+			    const struct intel_crtc_state *crtc_state,
-+			    struct drm_dp_vsc_sdp *vsc);
- void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
- 			     const struct intel_crtc_state *crtc_state,
- 			     const struct drm_connector_state *conn_state);
+ config DRM_RCAR_VSP
+ 	bool "R-Car DU VSP Compositor Support" if ARM
+ 	default y if ARM64
 -- 
-2.25.0
+2.26.0

@@ -1,37 +1,40 @@
-From: Dejin Zheng <zhengdejin5@gmail.com>
-Date: Wed, 22 Apr 2020 16:07:19 +0000
-Subject: [PATCH v1] video: fbdev: sm712fb: fix an issue about iounmap for a wrong address
-Message-Id: <20200422160719.27763-1-zhengdejin5@gmail.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 17 Apr 2020 11:58:19 +0000
+Subject: [PATCH v10 05/14] drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
+Message-Id: <20200417120040.3432332-6-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, b.zolnierkie@samsung.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Dejin Zheng <zhengdejin5@gmail.com>, Andy Shevchenko <andy.shevchenko@gmail.com>, linux-kernel@vger.kernel.org
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
 
-the sfb->fb->screen_base is not save the value get by iounmap() when
-the chip id is 0x720. so iounmap() for address sfb->fb->screen_base
-is not right.
+Dump out the DP HDR Metadata Infoframe SDP in the normal crtc state dump.
 
-Fixes: 1461d6672864854 ("staging: sm7xxfb: merge sm712fb with fbdev")
-CC: Andy Shevchenko <andy.shevchenko@gmail.com>
-Signed-off-by: Dejin Zheng <zhengdejin5@gmail.com>
+HDMI Dynamic Range and Mastering (DRM) infoframe and DP HDR Metadata
+Infoframe SDP use the same member variable in infoframes of crtc state.
+
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/video/fbdev/sm712fb.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/gpu/drm/i915/display/intel_display.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
-index 6a1b4a853d9e..8cd655d6d628 100644
---- a/drivers/video/fbdev/sm712fb.c
-+++ b/drivers/video/fbdev/sm712fb.c
-@@ -1429,6 +1429,8 @@ static int smtc_map_smem(struct smtcfb_info *sfb,
- static void smtc_unmap_smem(struct smtcfb_info *sfb)
- {
- 	if (sfb && sfb->fb->screen_base) {
-+		if (sfb->chip_id = 0x720)
-+			sfb->fb->screen_base -= 0x00200000;
- 		iounmap(sfb->fb->screen_base);
- 		sfb->fb->screen_base = NULL;
- 	}
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index b9bf9bce49d6..1c2814f753f6 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -13004,6 +13004,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+ 	if (pipe_config->infoframes.enable &
+ 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
+ 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
++	if (pipe_config->infoframes.enable &
++	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
++		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
+ 
+ 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
+ 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
 -- 
 2.25.0

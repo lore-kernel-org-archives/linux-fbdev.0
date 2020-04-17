@@ -1,76 +1,50 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 22 Apr 2020 06:51:11 +0000
-Subject: [PATCHv3 1/4] backlight: led_bl: fix cosmetic issues
-Message-Id: <20200422065114.22164-2-tomi.valkeinen@ti.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 17 Apr 2020 14:07:46 +0000
+Subject: Re: [PATCH v1 5/5] video: ssd1307fb: Remove redundant forward declaration
+Message-Id: <cb6b7219-e9df-3f1a-dc25-67b0c52ed720@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200422065114.22164-1-tomi.valkeinen@ti.com>
-In-Reply-To: <20200422065114.22164-1-tomi.valkeinen@ti.com>
+References: <20200324170532.44384-1-andriy.shevchenko@linux.intel.com>
+ <CGME20200324170539eucas1p19f81f8c31975734ab56e19d15033be77@eucas1p1.samsung.com>
+ <20200324170532.44384-5-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20200324170532.44384-5-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-fbdev@vger.kernel.org, xllacyx@gmail.com, dri-devel@lists.freedesktop.org
 
-Fix issues reported by checkpatch. No functional changes.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
----
- drivers/video/backlight/led_bl.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+[ added dri-devel ML to Cc: ]
 
-diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
-index 3f66549997c8..d4e1ce684366 100644
---- a/drivers/video/backlight/led_bl.c
-+++ b/drivers/video/backlight/led_bl.c
-@@ -126,7 +126,7 @@ static int led_bl_get_leds(struct device *dev,
- }
- 
- static int led_bl_parse_levels(struct device *dev,
--			   struct led_bl_data *priv)
-+			       struct led_bl_data *priv)
- {
- 	struct device_node *node = dev->of_node;
- 	int num_levels;
-@@ -148,8 +148,8 @@ static int led_bl_parse_levels(struct device *dev,
- 			return -ENOMEM;
- 
- 		ret = of_property_read_u32_array(node, "brightness-levels",
--						levels,
--						num_levels);
-+						 levels,
-+						 num_levels);
- 		if (ret < 0)
- 			return ret;
- 
-@@ -159,14 +159,15 @@ static int led_bl_parse_levels(struct device *dev,
- 		 */
- 		db = priv->default_brightness;
- 		for (i = 0 ; i < num_levels; i++) {
--			if ((i && db > levels[i-1]) && db <= levels[i])
-+			if ((i && db > levels[i - 1]) && db <= levels[i])
- 				break;
- 		}
- 		priv->default_brightness = i;
- 		priv->max_brightness = num_levels - 1;
- 		priv->levels = levels;
--	} else if (num_levels >= 0)
-+	} else if (num_levels >= 0) {
- 		dev_warn(dev, "Not enough levels defined\n");
-+	}
- 
- 	ret = of_property_read_u32(node, "default-brightness-level", &value);
- 	if (!ret && value <= priv->max_brightness)
-@@ -208,7 +209,8 @@ static int led_bl_probe(struct platform_device *pdev)
- 	props.power = (priv->default_brightness > 0) ? FB_BLANK_POWERDOWN :
- 		      FB_BLANK_UNBLANK;
- 	priv->bl_dev = backlight_device_register(dev_name(&pdev->dev),
--			&pdev->dev, priv, &led_bl_ops, &props);
-+						 &pdev->dev, priv, &led_bl_ops,
-+						 &props);
- 	if (IS_ERR(priv->bl_dev)) {
- 		dev_err(&pdev->dev, "Failed to register backlight\n");
- 		return PTR_ERR(priv->bl_dev);
--- 
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+On 3/24/20 6:05 PM, Andy Shevchenko wrote:
+> There is no need to have forward declaration of struct ssd1307fb_par.
+> Drop it for good.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+
+Patch queued for v5.8, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> ---
+>  drivers/video/fbdev/ssd1307fb.c | 2 --
+>  1 file changed, 2 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+> index 6e543396002a..509cab2c8b6c 100644
+> --- a/drivers/video/fbdev/ssd1307fb.c
+> +++ b/drivers/video/fbdev/ssd1307fb.c
+> @@ -48,8 +48,6 @@
+>  static u_int refreshrate = REFRESHRATE;
+>  module_param(refreshrate, uint, 0);
+>  
+> -struct ssd1307fb_par;
+> -
+>  struct ssd1307fb_deviceinfo {
+>  	u32 default_vcomh;
+>  	u32 default_dclk_div;
+> 

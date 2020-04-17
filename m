@@ -1,74 +1,56 @@
-From: Dejin Zheng <zhengdejin5@gmail.com>
-Date: Thu, 23 Apr 2020 14:52:40 +0000
-Subject: Re: [PATCH v1] fbdev: sm712fb: fix an issue about iounmap for a wrong address
-Message-Id: <20200423145239.GC1562@nuc8i5>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 17 Apr 2020 11:33:10 +0000
+Subject: [PATCH 3/5] backlight: led_bl: add led_access locking
+Message-Id: <20200417113312.24340-3-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <bb6ba7c9-ad92-9c54-e1c4-91d2f7d0f5f8@web.de>
-In-Reply-To: <bb6ba7c9-ad92-9c54-e1c4-91d2f7d0f5f8@web.de>
+References: <20200417113312.24340-1-tomi.valkeinen@ti.com>
+In-Reply-To: <20200417113312.24340-1-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Markus Elfring <Markus.Elfring@web.de>
-Cc: linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Andy Shevchenko <andy.shevchenko@gmail.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Thu, Apr 23, 2020 at 02:14:48PM +0200, Markus Elfring wrote:
-> > the sfb->fb->screen_base is not save the value get by iounmap() when
-> > the chip id is 0x720.
-> 
-> I suggest to improve this change description.
-> How did you determine relevant differences for the mentioned chip model?
->
-Read and check its codes。
+led_bl does not lock 'led_access' when calling led_sysfs_disable and
+led_sysfs_enable, causing the below WARN. Add the locking.
 
-smtcfb_pci_probe() --> smtc_map_smem()
+WARNING: CPU: 0 PID: 223 at drivers/leds/led-core.c:353 led_sysfs_disable+0x4c/0x5c
 
-smtcfb_pci_probe()
-switch (sfb->chip_id) {
-        case 0x710:
-        case 0x712:
-		sfb->lfb = ioremap(mmio_base, mmio_addr);
-	case 0x720:
-		sfb->dp_regs = ioremap(mmio_base, 0x00200000 + smem_size);
-                sfb->lfb = sfb->dp_regs + 0x00200000;
-	}
-smtc_map_smem()
-	sfb->fb->screen_base = sfb->lfb;
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/backlight/led_bl.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-
-smtcfb_pci_remove() --> smtc_unmap_smem()
-
-smtc_unmap_smem()
-	iounmap(sfb->fb->screen_base);
-
-> 
-> > so iounmap() for address sfb->fb->screen_base is not right.
-> 
-> Will another imperative wording become helpful here?
-> 
-yes, this is why need to change this code.
-
-> 
-> …
-> > +++ b/drivers/video/fbdev/sm712fb.c
-> > @@ -1429,6 +1429,8 @@  static int smtc_map_smem(struct smtcfb_info *sfb,
-> >  static void smtc_unmap_smem(struct smtcfb_info *sfb)
-> >  {
-> >  	if (sfb && sfb->fb->screen_base) {
-> > +		if (sfb->chip_id = 0x720)
-> > +			sfb->fb->screen_base -= 0x00200000;
-> >  		iounmap(sfb->fb->screen_base);
-> 
-> How do you think about to use descriptive identifiers for
-> the shown constants?
->
-These two constants are originally in the driver, I don't know enough
-about its meaning, There are a lot of constants in this driver. If I
-replace it with the macro, I worry that the name of the macro may not
-be accurate.
-
-> Would you like to clarify any related software analysis approaches?
->
-just read coedes and check it.
-
-> Regards,
-> Markus
+diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
+index c46ecdfe8b0a..63693c4f0883 100644
+--- a/drivers/video/backlight/led_bl.c
++++ b/drivers/video/backlight/led_bl.c
+@@ -216,8 +216,11 @@ static int led_bl_probe(struct platform_device *pdev)
+ 		return PTR_ERR(priv->bl_dev);
+ 	}
+ 
+-	for (i = 0; i < priv->nb_leds; i++)
++	for (i = 0; i < priv->nb_leds; i++) {
++		mutex_lock(&priv->leds[i]->led_access);
+ 		led_sysfs_disable(priv->leds[i]);
++		mutex_unlock(&priv->leds[i]->led_access);
++	}
+ 
+ 	backlight_update_status(priv->bl_dev);
+ 
+@@ -233,8 +236,11 @@ static int led_bl_remove(struct platform_device *pdev)
+ 	backlight_device_unregister(bl);
+ 
+ 	led_bl_power_off(priv);
+-	for (i = 0; i < priv->nb_leds; i++)
++	for (i = 0; i < priv->nb_leds; i++) {
++		mutex_lock(&priv->leds[i]->led_access);
+ 		led_sysfs_enable(priv->leds[i]);
++		mutex_unlock(&priv->leds[i]->led_access);
++	}
+ 
+ 	return 0;
+ }
+-- 
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

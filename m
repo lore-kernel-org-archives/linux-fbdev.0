@@ -1,186 +1,82 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 20 Apr 2020 16:37:44 +0000
-Subject: Re: [PATCH V5 4/4] backlight: qcom-wled: Add support for WLED5 peripheral that is present on PM8150L
-Message-Id: <20200420163744.3qbeqwv7myzmam3d@holly.lan>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 17 Apr 2020 15:55:51 +0000
+Subject: [PATCH 6/8] drm: decouple from CONFIG_FB
+Message-Id: <20200417155553.675905-7-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1586274430-28402-1-git-send-email-kgunda@codeaurora.org>
- <1586274430-28402-5-git-send-email-kgunda@codeaurora.org>
-In-Reply-To: <1586274430-28402-5-git-send-email-kgunda@codeaurora.org>
+References: <20200417155553.675905-1-arnd@arndb.de>
+In-Reply-To: <20200417155553.675905-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kiran Gunda <kgunda@codeaurora.org>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, jingoohan1@gmail.com, Andy Gross <agross@kernel.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, bjorn.andersson@linaro.org, robh+dt@kernel.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, linux-arm-msm@vger.kernel.org, Subbaraman Narayanamurthy <subbaram@codeaurora.org>, lee.jones@linaro.org, linux-leds@vger.kernel.org
+To: dri-devel@lists.freedesktop.org, Jani Nikula <jani.nikula@linux.intel.com>, linux-fbdev@vger.kernel.org
+Cc: marex@denx.de, dsd@laptop.org, Arnd Bergmann <arnd@arndb.de>, Andrzej Hajda <a.hajda@samsung.com>, airlied@linux.ie, masahiroy@kernel.org, Nicolas Pitre <nico@fluxnic.net>, Saeed Mahameed <saeedm@mellanox.com>, thellstrom@vmware.com, haojian.zhuang@gmail.com, geert@linux-m68k.org, linux-renesas-soc@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>, kieran.bingham+renesas@ideasonboard.com, linux-graphics-maintainer@vmware.com, Laurent.pinchart@ideasonboard.com, jfrederich@gmail.com, robert.jarzmik@free.fr, daniel@zonque.org
 
-On Tue, Apr 07, 2020 at 09:17:10PM +0530, Kiran Gunda wrote:
-> From: Subbaraman Narayanamurthy <subbaram@codeaurora.org>
-> 
-> PM8150L WLED supports the following:
->     - Two modulators and each sink can use any of the modulator
->     - Multiple CABC selection options from which one can be selected/enabled
->     - Multiple brightness width selection (12 bits to 15 bits)
-> 
-> Signed-off-by: Subbaraman Narayanamurthy <subbaram@codeaurora.org>
-> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
-> ---
->  drivers/video/backlight/qcom-wled.c | 443 +++++++++++++++++++++++++++++++++++-
->  1 file changed, 442 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-> index a6ddaa9..3a57011 100644
-> --- a/drivers/video/backlight/qcom-wled.c
-> +++ b/drivers/video/backlight/qcom-wled.c
-> ...
-> +static const u8 wled5_brightness_reg[MOD_MAX] = {
-> +	[MOD_A] = WLED5_SINK_REG_MOD_A_BRIGHTNESS_LSB,
-> +	[MOD_B] = WLED5_SINK_REG_MOD_B_BRIGHTNESS_LSB,
-> +};
-> +
-> +static const u8 wled5_src_sel_reg[MOD_MAX] = {
-> +	[MOD_A] = WLED5_SINK_REG_MOD_A_SRC_SEL,
-> +	[MOD_B] = WLED5_SINK_REG_MOD_B_SRC_SEL,
-> +};
-> +
-> +static const u8 wled5_brt_wid_sel_reg[MOD_MAX] = {
-> +	[MOD_A] = WLED5_SINK_REG_MOD_A_BRIGHTNESS_WIDTH_SEL,
-> +	[MOD_B] = WLED5_SINK_REG_MOD_B_BRIGHTNESS_WIDTH_SEL,
-> +};
-> +
+CONFIG_DRM_KMS_FB_HELPER selects CONFIG_FB, which is something it
+really should not, to avoid circular dependencies and accidentally
+including potentially dangerous user interfaces in the kernel,
+so change this into a 'depends on' check.
 
-Each of these lookup tables are used exactly once... and half the time
-when this code chooses between MOD_A and MOD_B a ternary is used and
-half the time these lookup tables.
+Two device drivers currently select CONFIG_DRM_KMS_FB_HELPER, but
+as far as I can tell, they do not really need to any more, so those
+selects can be removed.
 
-I suggest these be removed.
+This leaves DRM_FBDEV_EMULATION as the only thing that rightfully
+selects CONFIG_DRM_KMS_FB_HELPER, and this now has to depend on
+CONFIG_FB and its dependencies.
 
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/gpu/drm/Kconfig       | 5 +++--
+ drivers/gpu/drm/mxsfb/Kconfig | 1 -
+ drivers/gpu/drm/zte/Kconfig   | 1 -
+ 3 files changed, 3 insertions(+), 4 deletions(-)
 
->  static int wled3_set_brightness(struct wled *wled, u16 brightness)
->  {
->  	int rc, i;
-> @@ -225,6 +291,25 @@ static int wled4_set_brightness(struct wled *wled, u16 brightness)
->  	return 0;
->  }
->  
-> +static int wled5_set_brightness(struct wled *wled, u16 brightness)
-> +{
-> +	int rc, offset;
-> +	u16 low_limit = wled->max_brightness * 1 / 1000;
-
-Multiplying by 1 is redundant.
-
-
-> +	u8 v[2];
-> +
-> +	/* WLED5's lower limit is 0.1% */
-> +	if (brightness < low_limit)
-> +		brightness = low_limit;
-> +
-> +	v[0] = brightness & 0xff;
-> +	v[1] = (brightness >> 8) & 0x7f;
-> +
-> +	offset = wled5_brightness_reg[wled->cfg.mod_sel];
-> +	rc = regmap_bulk_write(wled->regmap, wled->sink_addr + offset,
-> +			       v, 2);
-> +	return rc;
-> +}
-> +
->  static void wled_ovp_work(struct work_struct *work)
->  {
->  	struct wled *wled = container_of(work,
-> @@ -317,11 +420,67 @@ static int wled4_ovp_fault_status(struct wled *wled, bool *fault_set)
->  	return rc;
->  }
->  
-> +static int wled5_ovp_fault_status(struct wled *wled, bool *fault_set)
-> +{
-> +	int rc;
-> +	u32 int_rt_sts, fault_sts;
-> +
-> +	*fault_set = false;
-> +	rc = regmap_read(wled->regmap,
-> +			wled->ctrl_addr + WLED3_CTRL_REG_INT_RT_STS,
-> +			&int_rt_sts);
-> +	if (rc < 0) {
-> +		dev_err(wled->dev, "Failed to read INT_RT_STS rc=%d\n", rc);
-> +		return rc;
-> +	}
-> +
-> +	rc = regmap_read(wled->regmap,
-> +			wled->ctrl_addr + WLED3_CTRL_REG_FAULT_STATUS,
-> +			&fault_sts);
-> +	if (rc < 0) {
-> +		dev_err(wled->dev, "Failed to read FAULT_STATUS rc=%d\n", rc);
-> +		return rc;
-> +	}
-> +
-> +	if (int_rt_sts & WLED3_CTRL_REG_OVP_FAULT_STATUS)
-> +		*fault_set = true;
-> +
-> +	if (fault_sts & (WLED3_CTRL_REG_OVP_FAULT_BIT |
-> +			       WLED5_CTRL_REG_OVP_PRE_ALARM_BIT))
-
-Correct me if I'm wrong but isn't the only difference between the WLED4
-and WLED5 code that the wled5 code also checks the
-WLED5_CTRL_REG_OVP_PRE_ALARM_BIT ?
-
-If so why do we need to pull out (and duplicate) this code code using
-the function pointers?
-
-> +		*fault_set = true;
-> +
-> +	if (*fault_set)
-> +		dev_dbg(wled->dev, "WLED OVP fault detected, int_rt_sts=0x%x fault_sts=0x%x\n",
-> +			int_rt_sts, fault_sts);
-> +
-> +	return rc;
-> +}
-> +
-> @@ -615,6 +797,7 @@ static void wled_auto_string_detection(struct wled *wled)
->  
->  #define WLED_AUTO_DETECT_OVP_COUNT		5
->  #define WLED_AUTO_DETECT_CNT_DLY_US		USEC_PER_SEC
-> +
-
-Nit picking but this additional line is in the wrong patch ;-)
-
-
->  static bool wled4_auto_detection_required(struct wled *wled)
->  {
->  	s64 elapsed_time_us;
-> @@ -648,6 +831,46 @@ static bool wled4_auto_detection_required(struct wled *wled)
->  	return false;
->  }
->  
-> +static bool wled5_auto_detection_required(struct wled *wled)
-> +{
-> +	s64 elapsed_time_us;
-> +
-> +	if (!wled->cfg.auto_detection_enabled)
-> +		return false;
-> +
-> +	/*
-> +	 * Check if the OVP fault was an occasional one
-> +	 * or if it's firing continuously, the latter qualifies
-> +	 * for an auto-detection check.
-> +	 */
-> +	if (!wled->auto_detection_ovp_count) {
-> +		wled->start_ovp_fault_time = ktime_get();
-> +		wled->auto_detection_ovp_count++;
-> +	} else {
-> +		/*
-> +		 * WLED5 has OVP fault density interrupt configuration i.e. to
-> +		 * count the number of OVP alarms for a certain duration before
-> +		 * triggering OVP fault interrupt. By default, number of OVP
-> +		 * fault events counted before an interrupt is fired is 32 and
-> +		 * the time interval is 12 ms. If we see more than one OVP fault
-> +		 * interrupt, then that should qualify for a real OVP fault
-> +		 * condition to run auto calibration algorithm.
-> +		 */
-
-Given the above why do we have a software mechanism to wait until the
-second time the interrupt fires? I'm a bit rusty on this driver but
-wasn't there already some mechanism to slightly delay turning on the
-fault detection?
-
-
-Daniel.
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index 43594978958e..7c3109133685 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -80,7 +80,7 @@ config DRM_KMS_HELPER
+ config DRM_KMS_FB_HELPER
+ 	bool
+ 	depends on DRM_KMS_HELPER
+-	select FB
++	depends on FB
+ 	select FRAMEBUFFER_CONSOLE if !EXPERT
+ 	select FRAMEBUFFER_CONSOLE_DETECT_PRIMARY if FRAMEBUFFER_CONSOLE
+ 	select FB_SYS_FOPS
+@@ -111,7 +111,8 @@ config DRM_DEBUG_DP_MST_TOPOLOGY_REFS
+ 
+ config DRM_FBDEV_EMULATION
+ 	bool "Enable legacy fbdev support for your modesetting driver"
+-	depends on DRM
++	depends on DRM && FB
++	depends on FB=y || DRM=m
+ 	select DRM_KMS_HELPER
+ 	select DRM_KMS_FB_HELPER
+ 	default y
+diff --git a/drivers/gpu/drm/mxsfb/Kconfig b/drivers/gpu/drm/mxsfb/Kconfig
+index 0dca8f27169e..33916b7b2c50 100644
+--- a/drivers/gpu/drm/mxsfb/Kconfig
++++ b/drivers/gpu/drm/mxsfb/Kconfig
+@@ -10,7 +10,6 @@ config DRM_MXSFB
+ 	depends on COMMON_CLK
+ 	select DRM_MXS
+ 	select DRM_KMS_HELPER
+-	select DRM_KMS_FB_HELPER
+ 	select DRM_KMS_CMA_HELPER
+ 	select DRM_PANEL
+ 	help
+diff --git a/drivers/gpu/drm/zte/Kconfig b/drivers/gpu/drm/zte/Kconfig
+index 90ebaedc11fd..aa8594190b50 100644
+--- a/drivers/gpu/drm/zte/Kconfig
++++ b/drivers/gpu/drm/zte/Kconfig
+@@ -3,7 +3,6 @@ config DRM_ZTE
+ 	tristate "DRM Support for ZTE SoCs"
+ 	depends on DRM && ARCH_ZX
+ 	select DRM_KMS_CMA_HELPER
+-	select DRM_KMS_FB_HELPER
+ 	select DRM_KMS_HELPER
+ 	select SND_SOC_HDMI_CODEC if SND_SOC
+ 	select VIDEOMODE_HELPERS
+-- 
+2.26.0

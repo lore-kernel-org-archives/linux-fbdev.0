@@ -1,88 +1,89 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 17 Apr 2020 15:55:49 +0000
-Subject: [PATCH 4/8] drm/rcar: stop using 'imply' for dependencies
-Message-Id: <20200417155553.675905-5-arnd@arndb.de>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 17 Apr 2020 11:58:09 +0000
+Subject: [PATCH v10 00/14] In order to readout DP SDPs, refactors the handling of DP SDPs
+Message-Id: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200417155553.675905-1-arnd@arndb.de>
-In-Reply-To: <20200417155553.675905-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, Jani Nikula <jani.nikula@linux.intel.com>, linux-fbdev@vger.kernel.org
-Cc: marex@denx.de, dsd@laptop.org, Arnd Bergmann <arnd@arndb.de>, Andrzej Hajda <a.hajda@samsung.com>, airlied@linux.ie, masahiroy@kernel.org, Nicolas Pitre <nico@fluxnic.net>, Saeed Mahameed <saeedm@mellanox.com>, thellstrom@vmware.com, haojian.zhuang@gmail.com, geert@linux-m68k.org, linux-renesas-soc@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>, kieran.bingham+renesas@ideasonboard.com, linux-graphics-maintainer@vmware.com, Laurent.pinchart@ideasonboard.com, jfrederich@gmail.com, robert.jarzmik@free.fr, daniel@zonque.org
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
 
-The meaning of the 'imply' keyword has changed recently, and neither the
-old meaning (select the symbol if its dependencies are met) nor the new
-meaning (enable it by default, but let the user set any other setting)
-is what we want here.
+In order to readout DP SDPs (Secondary Data Packet: DP HDR Metadata
+Infoframe SDP, DP VSC SDP), it refactors handling DP SDPs codes.
+It adds new compute routines for DP HDR Metadata Infoframe SDP
+and DP VSC SDP. 
+And new writing routines of DP SDPs (Secondary Data Packet) that uses
+computed configs.
+New reading routines of DP SDPs are added for readout.
+It adds a logging function for DP VSC SDP.
+When receiving video it is very useful to be able to log DP VSC SDP.
+This greatly simplifies debugging.
+In order to use a common VSC SDP Colorimetry calculating code on PSR,
+it uses a new psr vsc sdp compute routine.
 
-Work around this by adding two more Kconfig options that lead to
-the correct behavior: if DRM_RCAR_USE_CMM and DRM_RCAR_USE_LVDS
-are enabled, that portion of the driver becomes usable, and no
-configuration results in a link error.
+v2: Minor style fix
+v3: 
+  - Add a new drm data structure for DP VSC SDP
+  - Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+  - Move logging functions to drm core [Jani N]
+    And use drm core's DP VSC SDP logging function
+  - Explicitly disable unused DIPs (AVI, GCP, VS, SPD, DRM. They will be
+    used for HDMI), when intel_dp_set_infoframes() function will be called.
+v4:
+  - Use struct drm_device logging macros
+  - Rebased
+v5:
+  - Use intel_de_*() functions for register access
+  - Add warning where a bpc is 6 and a pixel format is RGB.
+  - Addressed review comments from Uma
+    Add kernel docs for added data structures
+    Rename enum dp_colorspace to dp_pixelformat
+    Polish commit message and comments
+    Combine the if checks of sdp.HB2 and sdp.HB3
+    Add 6bpc to packining and unpacking of VSC SDP
+v6: Fix enabled infoframe states of lspcon
+v7: Fix the wrong check of combination bpc 6 and RGB pixelformat
+v8: Rebased
+v9: Add clear comments to hdmi_drm_infoframe_unpack_only() and
+    hdmi_drm_infoframe_unpack() (Laurent Pinchart)
+v10:
+  - Fix packing of VSC SDP where Pixel Encoding/Colorimetry Format is not
+    supported
+  - When a PSR is enabled, it needs to add DP_SDP_VSC to infoframes.enable.
+  - Change a checking of PSR state.
+  - Skip checking of VSC SDP when a crtc config has psr.
+  - Rebased
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/gpu/drm/rcar-du/Kconfig | 23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+Gwan-gyeong Mun (14):
+  video/hdmi: Add Unpack only function for DRM infoframe
+  drm/i915/dp: Read out DP SDPs
+  drm: Add logging function for DP VSC SDP
+  drm/i915: Include HDMI DRM infoframe in the crtc state dump
+  drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
+  drm/i915: Include DP VSC SDP in the crtc state dump
+  drm/i915: Program DP SDPs with computed configs
+  drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
+  drm/i915: Add state readout for DP VSC SDP
+  drm/i915: Fix enabled infoframe states of lspcon
+  drm/i915: Program DP SDPs on pipe updates
+  drm/i915: Stop sending DP SDPs on ddi disable
+  drm/i915/dp: Add compute routine for DP PSR VSC SDP
+  drm/i915/psr: Use new DP VSC SDP compute routine on PSR
 
-diff --git a/drivers/gpu/drm/rcar-du/Kconfig b/drivers/gpu/drm/rcar-du/Kconfig
-index 0919f1f159a4..d2fcec807dfa 100644
---- a/drivers/gpu/drm/rcar-du/Kconfig
-+++ b/drivers/gpu/drm/rcar-du/Kconfig
-@@ -4,8 +4,6 @@ config DRM_RCAR_DU
- 	depends on DRM && OF
- 	depends on ARM || ARM64
- 	depends on ARCH_RENESAS || COMPILE_TEST
--	imply DRM_RCAR_CMM
--	imply DRM_RCAR_LVDS
- 	select DRM_KMS_HELPER
- 	select DRM_KMS_CMA_HELPER
- 	select DRM_GEM_CMA_HELPER
-@@ -14,13 +12,17 @@ config DRM_RCAR_DU
- 	  Choose this option if you have an R-Car chipset.
- 	  If M is selected the module will be called rcar-du-drm.
- 
--config DRM_RCAR_CMM
--	tristate "R-Car DU Color Management Module (CMM) Support"
--	depends on DRM && OF
-+config DRM_RCAR_USE_CMM
-+	bool "R-Car DU Color Management Module (CMM) Support"
- 	depends on DRM_RCAR_DU
-+	default DRM_RCAR_DU
- 	help
- 	  Enable support for R-Car Color Management Module (CMM).
- 
-+config DRM_RCAR_CMM
-+	def_tristate DRM_RCAR_DU
-+	depends on DRM_RCAR_USE_CMM
-+
- config DRM_RCAR_DW_HDMI
- 	tristate "R-Car DU Gen3 HDMI Encoder Support"
- 	depends on DRM && OF
-@@ -28,15 +30,20 @@ config DRM_RCAR_DW_HDMI
- 	help
- 	  Enable support for R-Car Gen3 internal HDMI encoder.
- 
--config DRM_RCAR_LVDS
--	tristate "R-Car DU LVDS Encoder Support"
--	depends on DRM && DRM_BRIDGE && OF
-+config DRM_RCAR_USE_LVDS
-+	bool "R-Car DU LVDS Encoder Support"
-+	depends on DRM_BRIDGE && OF
-+	default DRM_RCAR_DU
- 	select DRM_PANEL
- 	select OF_FLATTREE
- 	select OF_OVERLAY
- 	help
- 	  Enable support for the R-Car Display Unit embedded LVDS encoders.
- 
-+config DRM_RCAR_LVDS
-+	def_tristate DRM_RCAR_DU
-+	depends on DRM_RCAR_USE_LVDS
-+
- config DRM_RCAR_VSP
- 	bool "R-Car DU VSP Compositor Support" if ARM
- 	default y if ARM64
+ drivers/gpu/drm/drm_dp_helper.c              | 174 ++++++++
+ drivers/gpu/drm/i915/display/intel_ddi.c     |  19 +-
+ drivers/gpu/drm/i915/display/intel_display.c |  63 +++
+ drivers/gpu/drm/i915/display/intel_dp.c      | 406 ++++++++++---------
+ drivers/gpu/drm/i915/display/intel_dp.h      |  15 +-
+ drivers/gpu/drm/i915/display/intel_lspcon.c  |   2 +-
+ drivers/gpu/drm/i915/display/intel_psr.c     |  56 +--
+ drivers/gpu/drm/i915/display/intel_psr.h     |   6 +-
+ drivers/gpu/drm/i915/i915_drv.h              |   1 +
+ drivers/video/hdmi.c                         |  65 ++-
+ include/drm/drm_dp_helper.h                  |   3 +
+ include/linux/hdmi.h                         |   2 +
+ 12 files changed, 549 insertions(+), 263 deletions(-)
+
 -- 
-2.26.0
+2.25.0

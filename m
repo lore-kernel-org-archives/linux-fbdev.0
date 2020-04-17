@@ -1,13 +1,47 @@
-From: "Tom Crist Spende." <helmybp@cirebonkota.go.id>
-Date: Mon, 06 Apr 2020 01:59:21 +0000
-Subject: =?utf-8?Q?Ich_habe_Spendengelder_im_Wert?= =?utf-8?Q?_von_4.800.000,00_Euro_f=C3=BCr_Sie.?=
-Message-Id: <871439037.186859.1586138361071.JavaMail.zimbra@cirebonkota.go.id>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 17 Apr 2020 11:58:31 +0000
+Subject: [PATCH v10 10/14] drm/i915: Fix enabled infoframe states of lspcon
+Message-Id: <20200417120040.3432332-11-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
 
+Compared to implementation of DP and HDMI's encoder->infoframes_enabled,
+the lspcon's implementation returns its active state. (we expect enabled
+infoframe states of HW.) It leads to pipe state mismatch error
+when ddi_get_config is called.
 
+Because the current implementation of lspcon is not ready to support
+readout infoframes, we need to return 0 here.
 
-Hallo, ich habe eine Spende im Wert von 4.800.000,00 EURO für Sie. Ich habe die America-Lotterie im Wert von 40 Millionen USD gewonnen und spende einen Teil davon an Wohltätigkeitsorganisationen in Erinnerung an meine verstorbene Frau, die an Krebs gestorben ist. Sie können mich für weitere Informationen über (tomcristdonation34@yahoo.com) für weitere Informationen kontaktieren.
+In order to support readout to lspcon, we need to implement read_infoframe
+and infoframes_enabled. And set_infoframes also have to set an appropriate
+bit on crtc_state->infoframes.enable
+
+Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_lspcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/i915/display/intel_lspcon.c b/drivers/gpu/drm/i915/display/intel_lspcon.c
+index d807c5648c87..6ff7b226f0a1 100644
+--- a/drivers/gpu/drm/i915/display/intel_lspcon.c
++++ b/drivers/gpu/drm/i915/display/intel_lspcon.c
+@@ -522,7 +522,7 @@ u32 lspcon_infoframes_enabled(struct intel_encoder *encoder,
+ 			      const struct intel_crtc_state *pipe_config)
+ {
+ 	/* FIXME actually read this from the hw */
+-	return enc_to_intel_lspcon(encoder)->active;
++	return 0;
+ }
+ 
+ void lspcon_resume(struct intel_lspcon *lspcon)
+-- 
+2.25.0

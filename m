@@ -1,105 +1,247 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Wed, 08 Apr 2020 18:02:16 +0000
-Subject: Re: [PATCH] fbdev: mx3fb: avoid warning about psABI change
-Message-Id: <20200408180216.GC24828@ravnborg.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 17 Apr 2020 15:55:46 +0000
+Subject: [PATCH 1/8] fbdev: w100fb: clean up mach-pxa compile-time dependency
+Message-Id: <20200417155553.675905-2-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200408162551.3928330-1-arnd@arndb.de> <87pnchhp2s.fsf@intel.com>
-In-Reply-To: <87pnchhp2s.fsf@intel.com>
+References: <20200417155553.675905-1-arnd@arndb.de>
+In-Reply-To: <20200417155553.675905-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jani Nikula <jani.nikula@intel.com>
-Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Enrico Weigelt <info@metux.net>
+To: dri-devel@lists.freedesktop.org, Jani Nikula <jani.nikula@linux.intel.com>, linux-fbdev@vger.kernel.org
+Cc: marex@denx.de, dsd@laptop.org, Arnd Bergmann <arnd@arndb.de>, Andrzej Hajda <a.hajda@samsung.com>, airlied@linux.ie, masahiroy@kernel.org, Nicolas Pitre <nico@fluxnic.net>, Saeed Mahameed <saeedm@mellanox.com>, thellstrom@vmware.com, haojian.zhuang@gmail.com, geert@linux-m68k.org, linux-renesas-soc@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>, kieran.bingham+renesas@ideasonboard.com, linux-graphics-maintainer@vmware.com, Laurent.pinchart@ideasonboard.com, jfrederich@gmail.com, robert.jarzmik@free.fr, daniel@zonque.org
 
-Hi Jani & Laurent.
+In order to get rid of the 'select FB' line in Kconfig for all platforms,
+change the w100fb driver to handle the gpio lines itself rather than
+using an indirect function call.
 
-On Wed, Apr 08, 2020 at 08:20:11PM +0300, Jani Nikula wrote:
-> On Wed, 08 Apr 2020, Arnd Bergmann <arnd@arndb.de> wrote:
-> > The arm64 gcc-9 release warns about a change in the calling
-> > conventions:
-> >
-> > drivers/video/fbdev/mx3fb.c: In function 'sdc_init_panel':
-> > drivers/video/fbdev/mx3fb.c:506:12: note: parameter passing for argument of type 'struct ipu_di_signal_cfg' changed in GCC 9.1
-> >   506 | static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
-> >       |            ^~~~~~~~~~~~~~
-> > drivers/video/fbdev/mx3fb.c: In function '__set_par':
-> > drivers/video/fbdev/mx3fb.c:848:7: note: parameter passing for argument of type 'struct ipu_di_signal_cfg' changed in GCC 9.1
-> >
-> > Change the file to just pass the struct by reference, which is
-> > unambiguous and avoids the warning.
-> >
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >  drivers/video/fbdev/mx3fb.c | 20 ++++++++++----------
-> >  1 file changed, 10 insertions(+), 10 deletions(-)
-> >
-> > diff --git a/drivers/video/fbdev/mx3fb.c b/drivers/video/fbdev/mx3fb.c
-> > index 4af28e4421e5..e13fea3a292f 100644
-> > --- a/drivers/video/fbdev/mx3fb.c
-> > +++ b/drivers/video/fbdev/mx3fb.c
-> > @@ -509,7 +509,7 @@ static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
-> >  			  uint16_t h_start_width, uint16_t h_sync_width,
-> >  			  uint16_t h_end_width, uint16_t v_start_width,
-> >  			  uint16_t v_sync_width, uint16_t v_end_width,
-> > -			  struct ipu_di_signal_cfg sig)
-> > +			  struct ipu_di_signal_cfg *sig)
-> 
-> I have no idea why get_maintainer.pl (I presume) is Cc'ing me... but
-> since it is, I'll note that the pointer could be const, while the patch
-> is
-> 
-> Reviewed-by: Jani Nikula <jani.nikula@intel.com>
+This also allows removing the remaining exported interfaces from the
+driver, the only other symbol has been unused for a long time.
 
-I was too quick to apply this - sorry.
-I will follow-up with a const fix.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/arm/configs/pxa_defconfig |  2 +
+ arch/arm/mach-pxa/Kconfig      |  3 --
+ arch/arm/mach-pxa/eseries.c    | 14 +-----
+ drivers/video/fbdev/w100fb.c   | 84 +++++-----------------------------
+ include/video/w100fb.h         |  6 +--
+ 5 files changed, 16 insertions(+), 93 deletions(-)
 
-	Sam
-
-> 
-> either way.
-> 
-> >  {
-> >  	unsigned long lock_flags;
-> >  	uint32_t reg;
-> > @@ -591,17 +591,17 @@ static int sdc_init_panel(struct mx3fb_data *mx3fb, enum ipu_panel panel,
-> >  
-> >  	/* DI settings */
-> >  	old_conf = mx3fb_read_reg(mx3fb, DI_DISP_IF_CONF) & 0x78FFFFFF;
-> > -	old_conf |= sig.datamask_en << DI_D3_DATAMSK_SHIFT |
-> > -		sig.clksel_en << DI_D3_CLK_SEL_SHIFT |
-> > -		sig.clkidle_en << DI_D3_CLK_IDLE_SHIFT;
-> > +	old_conf |= sig->datamask_en << DI_D3_DATAMSK_SHIFT |
-> > +		sig->clksel_en << DI_D3_CLK_SEL_SHIFT |
-> > +		sig->clkidle_en << DI_D3_CLK_IDLE_SHIFT;
-> >  	mx3fb_write_reg(mx3fb, old_conf, DI_DISP_IF_CONF);
-> >  
-> >  	old_conf = mx3fb_read_reg(mx3fb, DI_DISP_SIG_POL) & 0xE0FFFFFF;
-> > -	old_conf |= sig.data_pol << DI_D3_DATA_POL_SHIFT |
-> > -		sig.clk_pol << DI_D3_CLK_POL_SHIFT |
-> > -		sig.enable_pol << DI_D3_DRDY_SHARP_POL_SHIFT |
-> > -		sig.Hsync_pol << DI_D3_HSYNC_POL_SHIFT |
-> > -		sig.Vsync_pol << DI_D3_VSYNC_POL_SHIFT;
-> > +	old_conf |= sig->data_pol << DI_D3_DATA_POL_SHIFT |
-> > +		sig->clk_pol << DI_D3_CLK_POL_SHIFT |
-> > +		sig->enable_pol << DI_D3_DRDY_SHARP_POL_SHIFT |
-> > +		sig->Hsync_pol << DI_D3_HSYNC_POL_SHIFT |
-> > +		sig->Vsync_pol << DI_D3_VSYNC_POL_SHIFT;
-> >  	mx3fb_write_reg(mx3fb, old_conf, DI_DISP_SIG_POL);
-> >  
-> >  	map = &di_mappings[mx3fb->disp_data_fmt];
-> > @@ -855,7 +855,7 @@ static int __set_par(struct fb_info *fbi, bool lock)
-> >  				   fbi->var.upper_margin,
-> >  				   fbi->var.vsync_len,
-> >  				   fbi->var.lower_margin +
-> > -				   fbi->var.vsync_len, sig_cfg) != 0) {
-> > +				   fbi->var.vsync_len, &sig_cfg) != 0) {
-> >  			dev_err(fbi->device,
-> >  				"mx3fb: Error initializing panel.\n");
-> >  			return -EINVAL;
-> 
-> -- 
-> Jani Nikula, Intel Open Source Graphics Center
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+diff --git a/arch/arm/configs/pxa_defconfig b/arch/arm/configs/pxa_defconfig
+index b817c57f05f1..8df88e8a3048 100644
+--- a/arch/arm/configs/pxa_defconfig
++++ b/arch/arm/configs/pxa_defconfig
+@@ -454,6 +454,8 @@ CONFIG_V4L_MEM2MEM_DRIVERS=y
+ CONFIG_SOC_CAMERA_MT9M111=m
+ CONFIG_DRM=m
+ CONFIG_FIRMWARE_EDID=y
++CONFIG_FB=y
++CONFIG_FB_W100=y
+ CONFIG_FB_TILEBLITTING=y
+ CONFIG_FB_PXA_OVERLAY=y
+ CONFIG_FB_PXA_PARAMETERS=y
+diff --git a/arch/arm/mach-pxa/Kconfig b/arch/arm/mach-pxa/Kconfig
+index f60bc29aef68..8444d40df1b3 100644
+--- a/arch/arm/mach-pxa/Kconfig
++++ b/arch/arm/mach-pxa/Kconfig
+@@ -549,9 +549,6 @@ config MACH_ICONTROL
+ 
+ config ARCH_PXA_ESERIES
+ 	bool "PXA based Toshiba e-series PDAs"
+-	select FB_W100
+-	select FB
+-	select PXA25x
+ 
+ config MACH_E330
+ 	bool "Toshiba e330"
+diff --git a/arch/arm/mach-pxa/eseries.c b/arch/arm/mach-pxa/eseries.c
+index f37c44b6139d..023ee901a7eb 100644
+--- a/arch/arm/mach-pxa/eseries.c
++++ b/arch/arm/mach-pxa/eseries.c
+@@ -849,20 +849,8 @@ static struct w100_mem_info e800_w100_mem_info = {
+ 	.size            = 0x1fffff,
+ };
+ 
+-static void e800_tg_change(struct w100fb_par *par)
+-{
+-	unsigned long tmp;
+-
+-	tmp = w100fb_gpio_read(W100_GPIO_PORT_A);
+-	if (par->mode->xres = 480)
+-		tmp |= 0x100;
+-	else
+-		tmp &= ~0x100;
+-	w100fb_gpio_write(W100_GPIO_PORT_A, tmp);
+-}
+-
+ static struct w100_tg_info e800_tg_info = {
+-	.change = e800_tg_change,
++	.change_e800 = true,
+ };
+ 
+ static struct w100fb_mach_info e800_fb_info = {
+diff --git a/drivers/video/fbdev/w100fb.c b/drivers/video/fbdev/w100fb.c
+index 2d6e2738b792..512c4d5a73a3 100644
+--- a/drivers/video/fbdev/w100fb.c
++++ b/drivers/video/fbdev/w100fb.c
+@@ -48,7 +48,6 @@ static void w100_init_lcd(struct w100fb_par*);
+ static void w100_set_dispregs(struct w100fb_par*);
+ static void w100_update_enable(void);
+ static void w100_update_disable(void);
+-static void calc_hsync(struct w100fb_par *par);
+ static void w100_init_graphic_engine(struct w100fb_par *par);
+ struct w100_pll_info *w100_get_xtal_table(unsigned int freq);
+ 
+@@ -101,8 +100,6 @@ static ssize_t flip_store(struct device *dev, struct device_attribute *attr, con
+ 	w100_set_dispregs(par);
+ 	w100_update_enable();
+ 
+-	calc_hsync(par);
+-
+ 	return count;
+ }
+ 
+@@ -157,7 +154,6 @@ static ssize_t fastpllclk_store(struct device *dev, struct device_attribute *att
+ 	}
+ 
+ 	w100_init_clocks(par);
+-	calc_hsync(par);
+ 
+ 	return count;
+ }
+@@ -173,23 +169,6 @@ static struct attribute *w100fb_attrs[] = {
+ };
+ ATTRIBUTE_GROUPS(w100fb);
+ 
+-/*
+- * Some touchscreens need hsync information from the video driver to
+- * function correctly. We export it here.
+- */
+-unsigned long w100fb_get_hsynclen(struct device *dev)
+-{
+-	struct fb_info *info = dev_get_drvdata(dev);
+-	struct w100fb_par *par=info->par;
+-
+-	/* If display is blanked/suspended, hsync isn't active */
+-	if (par->blanked)
+-		return 0;
+-	else
+-		return par->hsync_len;
+-}
+-EXPORT_SYMBOL(w100fb_get_hsynclen);
+-
+ static void w100fb_clear_screen(struct w100fb_par *par)
+ {
+ 	memset_io(remapped_fbuf + (W100_FB_BASE-MEM_WINDOW_BASE), 0, (par->xres * par->yres * BITS_PER_PIXEL/8));
+@@ -405,6 +384,15 @@ static void w100fb_copyarea(struct fb_info *info,
+ 	writel((w << 16) | (h & 0xffff), remapped_regs + mmDST_WIDTH_HEIGHT);
+ }
+ 
++static void w100fb_e800_tg_change(struct w100fb_par *par)
++{
++	u32 tmp = readl(remapped_regs + mmGPIO_DATA);
++	if (par->mode->xres = 480)
++		tmp |= 0x100;
++	else
++		tmp &= ~0x100;
++	writel(tmp, remapped_regs + mmGPIO_DATA);
++}
+ 
+ /*
+  *  Change the resolution by calling the appropriate hardware functions
+@@ -425,10 +413,9 @@ static void w100fb_activate_var(struct w100fb_par *par)
+ 	w100_update_enable();
+ 	w100_init_graphic_engine(par);
+ 
+-	calc_hsync(par);
+-
+-	if (!par->blanked && tg && tg->change)
+-		tg->change(par);
++	if (IS_ENABLED(CONFIG_ARCH_PXA_ESERIES) &&
++	    !par->blanked && tg && tg->change_e800)
++		w100fb_e800_tg_change(par);
+ }
+ 
+ 
+@@ -837,28 +824,6 @@ static void w100_update_enable(void)
+ 	writel((u32) (disp_db_buf_wr_cntl.val), remapped_regs + mmDISP_DB_BUF_CNTL);
+ }
+ 
+-unsigned long w100fb_gpio_read(int port)
+-{
+-	unsigned long value;
+-
+-	if (port=W100_GPIO_PORT_A)
+-		value = readl(remapped_regs + mmGPIO_DATA);
+-	else
+-		value = readl(remapped_regs + mmGPIO_DATA2);
+-
+-	return value;
+-}
+-
+-void w100fb_gpio_write(int port, unsigned long value)
+-{
+-	if (port=W100_GPIO_PORT_A)
+-		writel(value, remapped_regs + mmGPIO_DATA);
+-	else
+-		writel(value, remapped_regs + mmGPIO_DATA2);
+-}
+-EXPORT_SYMBOL(w100fb_gpio_read);
+-EXPORT_SYMBOL(w100fb_gpio_write);
+-
+ /*
+  * Initialization of critical w100 hardware
+  */
+@@ -1497,31 +1462,6 @@ static void w100_set_dispregs(struct w100fb_par *par)
+ 	writel((par->xres*BITS_PER_PIXEL/8), remapped_regs + mmGRAPHIC_PITCH);
+ }
+ 
+-
+-/*
+- * Work out how long the sync pulse lasts
+- * Value is 1/(time in seconds)
+- */
+-static void calc_hsync(struct w100fb_par *par)
+-{
+-	unsigned long hsync;
+-	struct w100_mode *mode = par->mode;
+-	union crtc_ss_u crtc_ss;
+-
+-	if (mode->pixclk_src = CLK_SRC_XTAL)
+-		hsync=par->mach->xtal_freq;
+-	else
+-		hsync=((par->fastpll_mode && mode->fast_pll_freq) ? mode->fast_pll_freq : mode->pll_freq)*100000;
+-
+-	hsync /= (w100_pwr_state.pclk_cntl.f.pclk_post_div + 1);
+-
+-	crtc_ss.val = readl(remapped_regs + mmCRTC_SS);
+-	if (crtc_ss.val)
+-		par->hsync_len = hsync / (crtc_ss.f.ss_end-crtc_ss.f.ss_start);
+-	else
+-		par->hsync_len = 0;
+-}
+-
+ static void w100_suspend(u32 mode)
+ {
+ 	u32 val;
+diff --git a/include/video/w100fb.h b/include/video/w100fb.h
+index a614654d8598..8f260ba4fcac 100644
+--- a/include/video/w100fb.h
++++ b/include/video/w100fb.h
+@@ -14,13 +14,9 @@
+ 
+ struct w100fb_par;
+ 
+-unsigned long w100fb_gpio_read(int port);
+-void w100fb_gpio_write(int port, unsigned long value);
+-unsigned long w100fb_get_hsynclen(struct device *dev);
+-
+ /* LCD Specific Routines and Config */
+ struct w100_tg_info {
+-	void (*change)(struct w100fb_par*);
++	bool change_e800;
+ 	void (*suspend)(struct w100fb_par*);
+ 	void (*resume)(struct w100fb_par*);
+ };
+-- 
+2.26.0

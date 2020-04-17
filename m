@@ -1,57 +1,75 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 17 Apr 2020 11:58:26 +0000
-Subject: [PATCH v10 08/14] drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
-Message-Id: <20200417120040.3432332-9-gwan-gyeong.mun@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 17 Apr 2020 14:08:20 +0000
+Subject: Re: [PATCH v4] video: fbdev: arcfb: add missed free_irq and fix the order of request_irq
+Message-Id: <7f86f442-814c-be94-d387-5448f8260ca6@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
+References: <CGME20200324132405eucas1p210aa8eaf8240ce1951514450e701179a@eucas1p2.samsung.com>
+ <20200324132353.21785-1-hslester96@gmail.com>
+In-Reply-To: <20200324132353.21785-1-hslester96@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
+To: Chuhong Yuan <hslester96@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Added state readout for DP HDR Metadata Infoframe SDP.
 
-v9: Rebased
-v10: Rebased
+On 3/24/20 2:23 PM, Chuhong Yuan wrote:
+> The driver forgets to free irq in remove which is requested in
+> probe.
+> Add the missed call to fix it.
+> Also, the position of request_irq() in probe should be put before
+> register_framebuffer().
+> 
+> Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
----
- drivers/gpu/drm/i915/display/intel_ddi.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Patch queued for v5.8, thanks.
 
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index d9278d7553ee..5dbb54b88d0e 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -4145,6 +4145,9 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
- 				    pipe_config->fec_enable);
- 		}
- 
-+		pipe_config->infoframes.enable |+			intel_hdmi_infoframes_enabled(encoder, pipe_config);
-+
- 		break;
- 	case TRANS_DDI_MODE_SELECT_DP_MST:
- 		pipe_config->output_types |= BIT(INTEL_OUTPUT_DP_MST);
-@@ -4156,6 +4159,9 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
- 					REG_FIELD_GET(TRANS_DDI_MST_TRANSPORT_SELECT_MASK, temp);
- 
- 		intel_dp_get_m_n(intel_crtc, pipe_config);
-+
-+		pipe_config->infoframes.enable |+			intel_hdmi_infoframes_enabled(encoder, pipe_config);
- 		break;
- 	default:
- 		break;
-@@ -4210,6 +4216,8 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
- 
- 	if (INTEL_GEN(dev_priv) >= 8)
- 		bdw_get_trans_port_sync_config(pipe_config);
-+
-+	intel_read_dp_sdp(encoder, pipe_config, HDMI_PACKET_TYPE_GAMUT_METADATA);
- }
- 
- static enum intel_output_type
--- 
-2.25.0
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> ---
+> Changes in v4:
+>   - Use info->par->irq instead of par->irq to avoid dereferencing NULL pointer.
+> 
+>  drivers/video/fbdev/arcfb.c | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+> index 314ab82e01c0..6f7838979f0a 100644
+> --- a/drivers/video/fbdev/arcfb.c
+> +++ b/drivers/video/fbdev/arcfb.c
+> @@ -544,10 +544,6 @@ static int arcfb_probe(struct platform_device *dev)
+>  	par->cslut[1] = 0x06;
+>  	info->flags = FBINFO_FLAG_DEFAULT;
+>  	spin_lock_init(&par->lock);
+> -	retval = register_framebuffer(info);
+> -	if (retval < 0)
+> -		goto err1;
+> -	platform_set_drvdata(dev, info);
+>  	if (irq) {
+>  		par->irq = irq;
+>  		if (request_irq(par->irq, &arcfb_interrupt, IRQF_SHARED,
+> @@ -558,6 +554,10 @@ static int arcfb_probe(struct platform_device *dev)
+>  			goto err1;
+>  		}
+>  	}
+> +	retval = register_framebuffer(info);
+> +	if (retval < 0)
+> +		goto err1;
+> +	platform_set_drvdata(dev, info);
+>  	fb_info(info, "Arc frame buffer device, using %dK of video memory\n",
+>  		videomemorysize >> 10);
+>  
+> @@ -593,6 +593,8 @@ static int arcfb_remove(struct platform_device *dev)
+>  
+>  	if (info) {
+>  		unregister_framebuffer(info);
+> +		if (irq)
+> +			free_irq(((struct arcfb_par *)(info->par))->irq, info);
+>  		vfree((void __force *)info->screen_base);
+>  		framebuffer_release(info);
+>  	}
+> 

@@ -1,59 +1,47 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 21 Apr 2020 01:04:48 +0000
-Subject: Re: [PATCH 5/5] powerpc: Remove _ALIGN_UP(), _ALIGN_DOWN() and _ALIGN()
-Message-Id: <CACPK8Xf+h378ddF_YakTT++gv_Zx-raBqg54VkKPS3=qe6193Q@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 17 Apr 2020 11:33:11 +0000
+Subject: [PATCH 4/5] backlight: led_bl: fix led -> backlight brightness mapping
+Message-Id: <20200417113312.24340-4-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <a5945463f86c984151962a475a3ee56a2893e85d.1587407777.git.christophe.leroy@c-s.fr>
- <bb0a6081f7b95ee64ca20f92483e5b9661cbacb2.1587407777.git.christophe.leroy@c-s.fr>
-In-Reply-To: <bb0a6081f7b95ee64ca20f92483e5b9661cbacb2.1587407777.git.christophe.leroy@c-s.fr>
+References: <20200417113312.24340-1-tomi.valkeinen@ti.com>
+In-Reply-To: <20200417113312.24340-1-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Mon, 20 Apr 2020 at 18:39, Christophe Leroy <christophe.leroy@c-s.fr> wrote:
->
-> These three powerpc macros have been replaced by
-> equivalent generic macros and are not used anymore.
->
-> Remove them.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+The code that maps the LED default brightness to backlight levels has
+two issues: 1) if the default brightness is the first backlight level
+(usually 0), the code fails to find it, and 2) when the code fails to
+find a backlight level, it ends up using max_brightness + 1 as the
+default brightness.
 
-Reviewed-By: Joel Stanley <joel@jms.id.au>
+Fix these two issues.
 
-riscv has a copy of these too that could probably be removed:
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/backlight/led_bl.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-arch/riscv/include/asm/page.h:#define _ALIGN_UP(addr, size)
-(((addr)+((size)-1))&(~((size)-1)))
-arch/riscv/include/asm/page.h:#define _ALIGN(addr, size)
-_ALIGN_UP(addr, size)
-
-
-
-> ---
->  arch/powerpc/include/asm/page.h | 7 -------
->  1 file changed, 7 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-> index 3ee8df0f66e0..a63fe6f3a0ff 100644
-> --- a/arch/powerpc/include/asm/page.h
-> +++ b/arch/powerpc/include/asm/page.h
-> @@ -249,13 +249,6 @@ static inline bool pfn_valid(unsigned long pfn)
->  #include <asm/page_32.h>
->  #endif
->
-> -/* align addr on a size boundary - adjust address up/down if needed */
-> -#define _ALIGN_UP(addr, size)   __ALIGN_KERNEL(addr, size)
-> -#define _ALIGN_DOWN(addr, size)        ((addr)&(~((typeof(addr))(size)-1)))
-> -
-> -/* align addr on a size boundary - adjust address up if needed */
-> -#define _ALIGN(addr,size)     _ALIGN_UP(addr,size)
-> -
->  /*
->   * Don't compare things with KERNELBASE or PAGE_OFFSET to test for
->   * "kernelness", use is_kernel_addr() - it should do what you want.
-> --
-> 2.25.0
->
+diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
+index 63693c4f0883..021b5edd895c 100644
+--- a/drivers/video/backlight/led_bl.c
++++ b/drivers/video/backlight/led_bl.c
+@@ -159,10 +159,11 @@ static int led_bl_parse_levels(struct device *dev,
+ 		 */
+ 		db = priv->default_brightness;
+ 		for (i = 0 ; i < num_levels; i++) {
+-			if ((i && db > levels[i - 1]) && db <= levels[i])
++			if ((i = 0 || db > levels[i - 1]) && db <= levels[i])
+ 				break;
+ 		}
+-		priv->default_brightness = i;
++
++		priv->default_brightness = i < num_levels ? i : 0;
+ 		priv->max_brightness = num_levels - 1;
+ 		priv->levels = levels;
+ 	} else if (num_levels >= 0) {
+-- 
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

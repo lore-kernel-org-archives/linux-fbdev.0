@@ -1,61 +1,73 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 28 Apr 2020 18:59:57 +0000
-Subject: Re: [PATCH v1] staging: fbtft: fb_st7789v: Initialize the Display
-Message-Id: <20200428185957.GL2014@kadam>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 17 Apr 2020 11:33:08 +0000
+Subject: [PATCH 1/5] backlight: led_bl: fix cosmetic issues
+Message-Id: <20200417113312.24340-1-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1586424337-26602-1-git-send-email-oliver.graute@gmail.com>
- <20200409102013.GP2001@kadam> <20200427083642.GD18436@portage>
- <20200427093306.GU2682@kadam> <20200427123625.GE18436@portage>
-In-Reply-To: <20200427123625.GE18436@portage>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Oliver Graute <oliver.graute@gmail.com>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, Oliver Graute <oliver.graute@kococonnector.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Mon, Apr 27, 2020 at 02:36:25PM +0200, Oliver Graute wrote:
-> On 27/04/20, Dan Carpenter wrote:
-> > On Mon, Apr 27, 2020 at 10:36:42AM +0200, Oliver Graute wrote:
-> > > On 09/04/20, Dan Carpenter wrote:
-> > > > On Thu, Apr 09, 2020 at 11:25:32AM +0200, Oliver Graute wrote:
-> > > > > From: Oliver Graute <oliver.graute@kococonnector.com>
-> > > > > 
-> > > > > Set Gamma Values and Register Values for the HSD20_IPS
-> > > > > 
-> > > > > Signed-off-by: Oliver Graute <oliver.graute@kococonnector.com>
-> > > > > ---
-> > > > >  drivers/staging/fbtft/fb_st7789v.c | 12 ++++++------
-> > > > >  1 file changed, 6 insertions(+), 6 deletions(-)
-> > > > > 
-> > > > > diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
-> > > > > index 84c5af2dc9a0..b0aa96b703a8 100644
-> > > > > --- a/drivers/staging/fbtft/fb_st7789v.c
-> > > > > +++ b/drivers/staging/fbtft/fb_st7789v.c
-> > > > > @@ -17,8 +17,8 @@
-> > > > >  #define DRVNAME "fb_st7789v"
-> > > > >  
-> > > > >  #define DEFAULT_GAMMA \
-> > > > > -	"70 2C 2E 15 10 09 48 33 53 0B 19 18 20 25\n" \
-> > > > > -	"70 2C 2E 15 10 09 48 33 53 0B 19 18 20 25"
-> > > > > +	"D0 05 0A 09 08 05 2E 44 45 0F 17 16 2B 33\n" \
-> > > > > +	"D0 05 0A 09 08 05 2E 43 45 0F 16 16 2B 33"
-> > > > 
-> > > > How do you know this won't break someone else's setup?
-> > > 
-> > > Should I declare an extra define for my values?
-> > > 
-> > > +#define HSD20_IPS_GAMMA \
-> > > +	"D0 05 0A 09 08 05 2E 44 45 0F 17 16 2B 33\n" \
-> > > +	"D0 05 0A 09 08 05 2E 43 45 0F 16 16 2B 33"
-> > > 
-> > 
-> > That's fine, but it can't be a compile time thing.  Both types of
-> > hardware have to be working/available at run time.
-> 
-> ok, what is the proper way to handover the gamma values during run time?
+Fix issues reported by checkpatch. No functional changes.
 
-Can you detect which are appropriate and set that in the probe()
-function?
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/backlight/led_bl.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-regards,
-dan carpenter
+diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
+index 3f66549997c8..d4e1ce684366 100644
+--- a/drivers/video/backlight/led_bl.c
++++ b/drivers/video/backlight/led_bl.c
+@@ -126,7 +126,7 @@ static int led_bl_get_leds(struct device *dev,
+ }
+ 
+ static int led_bl_parse_levels(struct device *dev,
+-			   struct led_bl_data *priv)
++			       struct led_bl_data *priv)
+ {
+ 	struct device_node *node = dev->of_node;
+ 	int num_levels;
+@@ -148,8 +148,8 @@ static int led_bl_parse_levels(struct device *dev,
+ 			return -ENOMEM;
+ 
+ 		ret = of_property_read_u32_array(node, "brightness-levels",
+-						levels,
+-						num_levels);
++						 levels,
++						 num_levels);
+ 		if (ret < 0)
+ 			return ret;
+ 
+@@ -159,14 +159,15 @@ static int led_bl_parse_levels(struct device *dev,
+ 		 */
+ 		db = priv->default_brightness;
+ 		for (i = 0 ; i < num_levels; i++) {
+-			if ((i && db > levels[i-1]) && db <= levels[i])
++			if ((i && db > levels[i - 1]) && db <= levels[i])
+ 				break;
+ 		}
+ 		priv->default_brightness = i;
+ 		priv->max_brightness = num_levels - 1;
+ 		priv->levels = levels;
+-	} else if (num_levels >= 0)
++	} else if (num_levels >= 0) {
+ 		dev_warn(dev, "Not enough levels defined\n");
++	}
+ 
+ 	ret = of_property_read_u32(node, "default-brightness-level", &value);
+ 	if (!ret && value <= priv->max_brightness)
+@@ -208,7 +209,8 @@ static int led_bl_probe(struct platform_device *pdev)
+ 	props.power = (priv->default_brightness > 0) ? FB_BLANK_POWERDOWN :
+ 		      FB_BLANK_UNBLANK;
+ 	priv->bl_dev = backlight_device_register(dev_name(&pdev->dev),
+-			&pdev->dev, priv, &led_bl_ops, &props);
++						 &pdev->dev, priv, &led_bl_ops,
++						 &props);
+ 	if (IS_ERR(priv->bl_dev)) {
+ 		dev_err(&pdev->dev, "Failed to register backlight\n");
+ 		return PTR_ERR(priv->bl_dev);
+-- 
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

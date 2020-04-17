@@ -1,61 +1,37 @@
-From: Jason Yan <yanaijie@huawei.com>
-Date: Wed, 22 Apr 2020 07:18:26 +0000
-Subject: [PATCH] video: fbdev: i810: use true,false for bool variables
-Message-Id: <20200422071826.49038-1-yanaijie@huawei.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Fri, 17 Apr 2020 11:58:33 +0000
+Subject: [PATCH v10 11/14] drm/i915: Program DP SDPs on pipe updates
+Message-Id: <20200417120040.3432332-12-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@gmail.com, b.zolnierkie@samsung.com, yanaijie@huawei.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
 
-Fix the following coccicheck warning:
+Call intel_dp_set_infoframes() function on pipe updates to make sure
+that we send VSC SDP and HDR Metadata Infoframe SDP (when applicable)
+on fastsets.
 
-drivers/video/fbdev/i810/i810_main.c:1969:3-7: WARNING: Assignment of
-0/1 to bool variable
-drivers/video/fbdev/i810/i810_main.c:1971:3-8: WARNING: Assignment of
-0/1 to bool variable
-drivers/video/fbdev/i810/i810_main.c:1973:3-9: WARNING: Assignment of
-0/1 to bool variable
-drivers/video/fbdev/i810/i810_main.c:1975:3-7: WARNING: Assignment of
-0/1 to bool variable
-drivers/video/fbdev/i810/i810_main.c:2001:3-9: WARNING: Assignment of
-0/1 to bool variable
-
-Signed-off-by: Jason Yan <yanaijie@huawei.com>
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/video/fbdev/i810/i810_main.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/gpu/drm/i915/display/intel_ddi.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
-index aa7583d963ac..13bbf7fe13bf 100644
---- a/drivers/video/fbdev/i810/i810_main.c
-+++ b/drivers/video/fbdev/i810/i810_main.c
-@@ -1966,13 +1966,13 @@ static int i810fb_setup(char *options)
- 	
- 	while ((this_opt = strsep(&options, ",")) != NULL) {
- 		if (!strncmp(this_opt, "mtrr", 4))
--			mtrr = 1;
-+			mtrr = true;
- 		else if (!strncmp(this_opt, "accel", 5))
--			accel = 1;
-+			accel = true;
- 		else if (!strncmp(this_opt, "extvga", 6))
--			extvga = 1;
-+			extvga = true;
- 		else if (!strncmp(this_opt, "sync", 4))
--			sync = 1;
-+			sync = true;
- 		else if (!strncmp(this_opt, "vram:", 5))
- 			vram = (simple_strtoul(this_opt+5, NULL, 0));
- 		else if (!strncmp(this_opt, "voffset:", 8))
-@@ -1998,7 +1998,7 @@ static int i810fb_setup(char *options)
- 		else if (!strncmp(this_opt, "vsync2:", 7))
- 			vsync2 = simple_strtoul(this_opt+7, NULL, 0);
- 		else if (!strncmp(this_opt, "dcolor", 6))
--			dcolor = 1;
-+			dcolor = true;
- 		else if (!strncmp(this_opt, "ddc3", 4))
- 			ddc3 = true;
- 		else
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
+index bb26ea665540..4334f516ba54 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -3849,6 +3849,7 @@ static void intel_ddi_update_pipe_dp(struct intel_atomic_state *state,
+ 	intel_ddi_set_dp_msa(crtc_state, conn_state);
+ 
+ 	intel_psr_update(intel_dp, crtc_state);
++	intel_dp_set_infoframes(encoder, true, crtc_state, conn_state);
+ 	intel_edp_drrs_enable(intel_dp, crtc_state);
+ 
+ 	intel_panel_update_backlight(state, encoder, crtc_state, conn_state);
 -- 
-2.21.1
+2.25.0

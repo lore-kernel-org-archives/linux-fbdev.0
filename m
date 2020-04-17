@@ -1,52 +1,31 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Wed, 15 Apr 2020 10:38:44 +0000
+From: Lee Jones <lee.jones@linaro.org>
+Date: Fri, 17 Apr 2020 10:14:46 +0000
 Subject: Re: [PATCH 1/1] video: backlight: tosa_lcd: convert to use i2c_new_client_device()
-Message-Id: <20200415103844.vnjccybvy5wtnrq6@holly.lan>
+Message-Id: <20200417101446.GB3737@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200326210959.13111-1-wsa+renesas@sang-engineering.com>
  <20200326210959.13111-2-wsa+renesas@sang-engineering.com>
 In-Reply-To: <20200326210959.13111-2-wsa+renesas@sang-engineering.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
 
-On Thu, Mar 26, 2020 at 10:09:59PM +0100, Wolfram Sang wrote:
+On Thu, 26 Mar 2020, Wolfram Sang wrote:
+
 > Move away from the deprecated API and return the shiny new ERRPTR where
 > useful.
 > 
 > Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-
-
 > ---
 >  drivers/video/backlight/tosa_lcd.c | 4 ++--
 >  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/tosa_lcd.c b/drivers/video/backlight/tosa_lcd.c
-> index e8ab583e5098..113116d3585c 100644
-> --- a/drivers/video/backlight/tosa_lcd.c
-> +++ b/drivers/video/backlight/tosa_lcd.c
-> @@ -107,7 +107,7 @@ static void tosa_lcd_tg_on(struct tosa_lcd_data *data)
->  	/* TG LCD GVSS */
->  	tosa_tg_send(spi, TG_PINICTL, 0x0);
->  
-> -	if (!data->i2c) {
-> +	if (IS_ERR_OR_NULL(data->i2c)) {
->  		/*
->  		 * after the pannel is powered up the first time,
->  		 * we can access the i2c bus so probe for the DAC
-> @@ -119,7 +119,7 @@ static void tosa_lcd_tg_on(struct tosa_lcd_data *data)
->  			.addr	= DAC_BASE,
->  			.platform_data = data->spi,
->  		};
-> -		data->i2c = i2c_new_device(adap, &info);
-> +		data->i2c = i2c_new_client_device(adap, &info);
->  	}
->  }
->  
-> -- 
-> 2.20.1
-> 
+
+Applied, thanks.
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

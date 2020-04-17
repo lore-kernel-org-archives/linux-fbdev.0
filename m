@@ -1,57 +1,94 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Sat, 11 Apr 2020 23:06:05 +0000
-Subject: [PATCH AUTOSEL 5.5 060/121] fbdev: potential information leak in do_fb_ioctl()
-Message-Id: <20200411230706.23855-60-sashal@kernel.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 17 Apr 2020 14:07:58 +0000
+Subject: Re: [PATCH] video: fbdev: imxfb: ensure balanced regulator usage
+Message-Id: <1dcf1273-ae01-02c6-d9a4-5eef744ab764@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200411230706.23855-1-sashal@kernel.org>
-In-Reply-To: <20200411230706.23855-1-sashal@kernel.org>
+References: <CGME20200323211646eucas1p270ab02024c326adba5a50b908ef8ba8a@eucas1p2.samsung.com>
+ <20200323211626.24812-1-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20200323211626.24812-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Gerd Hoffmann <kraxel@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>, Peter Rosin <peda@axentia.se>, Dan Carpenter <dan.carpenter@oracle.com>, Andrea Righi <righi.andrea@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: linux-fbdev@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, dri-devel@lists.freedesktop.org, NXP Linux Team <linux-imx@nxp.com>, Pengutronix Kernel Team <kernel@pengutronix.de>, linux-arm-kernel@lists.infradead.org
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
 
-[ Upstream commit d3d19d6fc5736a798b118971935ce274f7deaa82 ]
+On 3/23/20 10:16 PM, Uwe Kleine-König wrote:
+> The fbdev framework doesn't care to call the .set_power callback only on
+> changes. So the driver has to care for itself that the regulator doesn't
+> get disabled more often than enabled.
+> 
+> This fixes the regulator warning
+> 
+> 	unbalanced disables for lcd supply
+> 
+> which can be triggered by doing
+> 
+> 	echo 4 > /sys/class/lcd/imxfb-lcd/lcd_power
+> 
+> twice.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-The "fix" struct has a 2 byte hole after ->ywrapstep and the
-"fix = info->fix;" assignment doesn't necessarily clear it.  It depends
-on the compiler.  The solution is just to replace the assignment with an
-memcpy().
+Patch queued for v5.8, thanks.
 
-Fixes: 1f5e31d7e55a ("fbmem: don't call copy_from/to_user() with mutex held")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrea Righi <righi.andrea@gmail.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Peter Rosin <peda@axentia.se>
-Cc: Jani Nikula <jani.nikula@intel.com>
-Cc: Gerd Hoffmann <kraxel@redhat.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20200113100132.ixpaymordi24n3av@kili.mountain
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/core/fbmem.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 6f6fc785b5453..28158e21672ad 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1110,7 +1110,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		break;
- 	case FBIOGET_FSCREENINFO:
- 		lock_fb_info(info);
--		fix = info->fix;
-+		memcpy(&fix, &info->fix, sizeof(fix));
- 		if (info->flags & FBINFO_HIDE_SMEM_START)
- 			fix.smem_start = 0;
- 		unlock_fb_info(info);
--- 
-2.20.1
+> ---
+>  drivers/video/fbdev/imxfb.c | 27 +++++++++++++++++++++------
+>  1 file changed, 21 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+> index 370bf2553d43..884b16efa7e8 100644
+> --- a/drivers/video/fbdev/imxfb.c
+> +++ b/drivers/video/fbdev/imxfb.c
+> @@ -172,6 +172,7 @@ struct imxfb_info {
+>  	int			num_modes;
+>  
+>  	struct regulator	*lcd_pwr;
+> +	int			lcd_pwr_enabled;
+>  };
+>  
+>  static const struct platform_device_id imxfb_devtype[] = {
+> @@ -801,16 +802,30 @@ static int imxfb_lcd_get_power(struct lcd_device *lcddev)
+>  	return FB_BLANK_UNBLANK;
+>  }
+>  
+> +static int imxfb_regulator_set(struct imxfb_info *fbi, int enable)
+> +{
+> +	int ret;
+> +
+> +	if (enable = fbi->lcd_pwr_enabled)
+> +		return 0;
+> +
+> +	if (enable)
+> +		ret = regulator_enable(fbi->lcd_pwr);
+> +	else
+> +		ret = regulator_disable(fbi->lcd_pwr);
+> +
+> +	if (ret = 0)
+> +		fbi->lcd_pwr_enabled = enable;
+> +
+> +	return ret;
+> +}
+> +
+>  static int imxfb_lcd_set_power(struct lcd_device *lcddev, int power)
+>  {
+>  	struct imxfb_info *fbi = dev_get_drvdata(&lcddev->dev);
+>  
+> -	if (!IS_ERR(fbi->lcd_pwr)) {
+> -		if (power = FB_BLANK_UNBLANK)
+> -			return regulator_enable(fbi->lcd_pwr);
+> -		else
+> -			return regulator_disable(fbi->lcd_pwr);
+> -	}
+> +	if (!IS_ERR(fbi->lcd_pwr))
+> +		return imxfb_regulator_set(fbi, power = FB_BLANK_UNBLANK);
+>  
+>  	return 0;
+>  }
+> 

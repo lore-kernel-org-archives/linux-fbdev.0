@@ -1,62 +1,92 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Wed, 29 Apr 2020 17:42:40 +0000
-Subject: Re: [PATCH] video: fbdev: pxa3xx_gcu: Fix some resource leak in an error handling path in 'pxa3xx_gc
-Message-Id: <0db91149-fa85-6ec3-1787-d5effd41a1b9@wanadoo.fr>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 17 Apr 2020 15:55:47 +0000
+Subject: [PATCH 2/8] fbdev/ARM: pxa: avoid selecting CONFIG_FB
+Message-Id: <20200417155553.675905-3-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200429043438.96212-1-christophe.jaillet@wanadoo.fr>
- <20200429122538.GO2014@kadam>
-In-Reply-To: <20200429122538.GO2014@kadam>
+References: <20200417155553.675905-1-arnd@arndb.de>
+In-Reply-To: <20200417155553.675905-1-arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linux-fbdev@vger.kernel.org, eric.y.miao@gmail.com, arnd@arndb.de, b.zolnierkie@samsung.com, gregkh@linuxfoundation.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, zhenzhong.duan@gmail.com, daniel@caiaq.de, mpe@ellerman.id.au, tglx@linutronix.de
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org, Jani Nikula <jani.nikula@linux.intel.com>, linux-fbdev@vger.kernel.org
+Cc: marex@denx.de, dsd@laptop.org, Arnd Bergmann <arnd@arndb.de>, Andrzej Hajda <a.hajda@samsung.com>, airlied@linux.ie, masahiroy@kernel.org, Nicolas Pitre <nico@fluxnic.net>, Saeed Mahameed <saeedm@mellanox.com>, thellstrom@vmware.com, haojian.zhuang@gmail.com, geert@linux-m68k.org, linux-renesas-soc@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>, kieran.bingham+renesas@ideasonboard.com, linux-graphics-maintainer@vmware.com, Laurent.pinchart@ideasonboard.com, jfrederich@gmail.com, robert.jarzmik@free.fr, daniel@zonque.org
 
-Le 29/04/2020 à 14:25, Dan Carpenter a écrit :
-> On Wed, Apr 29, 2020 at 06:34:38AM +0200, Christophe JAILLET wrote:
->> If an error occurs in the loop where we call 'pxa3xx_gcu_add_buffer()',
->> any resource already allocated should be freed.
->>
->> In order to fix it, add a call to 'pxa3xx_gcu_free_buffers()' in the error
->> handling path, as already done in the remove function.
->>
->> Fixes: 364dbdf3b6c3 ("video: add driver for PXA3xx 2D graphics accelerator")
->> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
->> ---
->>   drivers/video/fbdev/pxa3xx-gcu.c | 1 +
->>   1 file changed, 1 insertion(+)
->>
->> diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
->> index 4279e13a3b58..68d9c7a681d4 100644
->> --- a/drivers/video/fbdev/pxa3xx-gcu.c
->> +++ b/drivers/video/fbdev/pxa3xx-gcu.c
->> @@ -675,6 +675,7 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
->>   
->>   err_disable_clk:
->>   	clk_disable_unprepare(priv->clk);
->> +	pxa3xx_gcu_free_buffers(dev, priv);
-> The error handling in this function makes no sense and is buggy.  It
-> should be that it unwinds in the reverse order from the allocation.  The
-> goto should be "goto free_most_recently_allocated_resource;".  Since the
-> unwind is done in the wrong order it causes a couple bugs.
->
-> These buffers are the last thing which we allocated so they should be
-> the first thing which we free.  In this case, calling
-> pxa3xx_gcu_free_buffers() before the buffers are allocated is confusing
-> but harmless.  The clk_disable_unprepare() is done on some paths where
-> the clock was not enabled and that will trigger a WARN() so that's a
-> bug.  Syzcaller will complain and if you have reboot on WARN then it's
-> annoying.
->
-> The second bug is that we don't deregister the misc device or release
-> the DMA memory on failure when we allocate the buffers in the loop.
->
-> regards,
-> dan carpenter
->
-Agreed. I've been a little too fast on this one.
-I'll update it.
+In order to add more compile-time dependencies to CONFIG_FB, remove the
+last few instances of selecting it from platform code.
 
-Thx for the review.
+This was originally written to allow a modular driver, but that never
+worked because vmlinux cannot call exported functions from a loadable
+module.
 
-CJ
+Just change the #ifdef check to what it should have been and remove
+the 'select' statement.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/arm/configs/pxa_defconfig | 1 +
+ arch/arm/mach-pxa/Kconfig      | 4 ----
+ arch/arm/mach-pxa/saar.c       | 2 +-
+ arch/arm/mach-pxa/tavorevb.c   | 2 +-
+ 4 files changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm/configs/pxa_defconfig b/arch/arm/configs/pxa_defconfig
+index 8df88e8a3048..3931184e2eb1 100644
+--- a/arch/arm/configs/pxa_defconfig
++++ b/arch/arm/configs/pxa_defconfig
+@@ -455,6 +455,7 @@ CONFIG_SOC_CAMERA_MT9M111=m
+ CONFIG_DRM=m
+ CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB=y
++CONFIG_FB_PXA=y
+ CONFIG_FB_W100=y
+ CONFIG_FB_TILEBLITTING=y
+ CONFIG_FB_PXA_OVERLAY=y
+diff --git a/arch/arm/mach-pxa/Kconfig b/arch/arm/mach-pxa/Kconfig
+index 8444d40df1b3..bea8ce447ed3 100644
+--- a/arch/arm/mach-pxa/Kconfig
++++ b/arch/arm/mach-pxa/Kconfig
+@@ -76,16 +76,12 @@ config MACH_TAVOREVB
+ 	select CPU_PXA930
+ 	select CPU_PXA935
+ 	select PXA3xx
+-	select FB
+-	select FB_PXA
+ 
+ config MACH_SAAR
+ 	bool "PXA930 Handheld Platform (aka SAAR)"
+ 	select CPU_PXA930
+ 	select CPU_PXA935
+ 	select PXA3xx
+-	select FB
+-	select FB_PXA
+ 
+ comment "Third Party Dev Platforms (sorted by vendor name)"
+ 
+diff --git a/arch/arm/mach-pxa/saar.c b/arch/arm/mach-pxa/saar.c
+index 3275b679792b..e35d6c57f73e 100644
+--- a/arch/arm/mach-pxa/saar.c
++++ b/arch/arm/mach-pxa/saar.c
+@@ -113,7 +113,7 @@ static struct platform_device smc91x_device = {
+ 	},
+ };
+ 
+-#if defined(CONFIG_FB_PXA) || defined(CONFIG_FB_PXA_MODULE)
++#if defined(CONFIG_FB_PXA)
+ static uint16_t lcd_power_on[] = {
+ 	/* single frame */
+ 	SMART_CMD_NOOP,
+diff --git a/arch/arm/mach-pxa/tavorevb.c b/arch/arm/mach-pxa/tavorevb.c
+index a15eb3b9484d..dda5f10b1883 100644
+--- a/arch/arm/mach-pxa/tavorevb.c
++++ b/arch/arm/mach-pxa/tavorevb.c
+@@ -165,7 +165,7 @@ static void __init tavorevb_init_keypad(void)
+ static inline void tavorevb_init_keypad(void) {}
+ #endif /* CONFIG_KEYBOARD_PXA27x || CONFIG_KEYBOARD_PXA27x_MODULE */
+ 
+-#if defined(CONFIG_FB_PXA) || defined(CONFIG_FB_PXA_MODULE)
++#if defined(CONFIG_FB_PXA)
+ static struct pwm_lookup tavorevb_pwm_lookup[] = {
+ 	PWM_LOOKUP("pxa27x-pwm.0", 1, "pwm-backlight.0", NULL, 100000,
+ 		   PWM_POLARITY_NORMAL),
+-- 
+2.26.0

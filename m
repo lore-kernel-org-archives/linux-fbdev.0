@@ -1,7 +1,7 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 17 Apr 2020 11:58:35 +0000
-Subject: [PATCH v10 12/14] drm/i915: Stop sending DP SDPs on ddi disable
-Message-Id: <20200417120040.3432332-13-gwan-gyeong.mun@intel.com>
+Date: Fri, 17 Apr 2020 11:58:17 +0000
+Subject: [PATCH v10 04/14] drm/i915: Include HDMI DRM infoframe in the crtc state dump
+Message-Id: <20200417120040.3432332-5-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
 In-Reply-To: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
@@ -11,29 +11,28 @@ Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
 
-Call intel_dp_set_infoframes(false) function on intel_ddi_post_disable_dp()
-to make sure not to send VSC SDP and HDR Metadata Infoframe SDP.
-
-v5: Polish commit message [Uma]
+Dump out the HDMI Dynamic Range and Mastering (DRM) infoframe in the
+normal crtc state dump.
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 Reviewed-by: Uma Shankar <uma.shankar@intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_ddi.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/gpu/drm/i915/display/intel_display.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index 4334f516ba54..2d6ed59bf04b 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -3459,6 +3459,8 @@ static void intel_ddi_post_disable_dp(struct intel_atomic_state *state,
- 					  INTEL_OUTPUT_DP_MST);
- 	enum phy phy = intel_port_to_phy(dev_priv, encoder->port);
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index af5b4055b38a..b9bf9bce49d6 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -13001,6 +13001,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+ 	if (pipe_config->infoframes.enable &
+ 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_VENDOR))
+ 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.hdmi);
++	if (pipe_config->infoframes.enable &
++	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
++		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
  
-+	intel_dp_set_infoframes(encoder, false, old_crtc_state, old_conn_state);
-+
- 	/*
- 	 * Power down sink before disabling the port, otherwise we end
- 	 * up getting interrupts from the sink on detecting link loss.
+ 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
+ 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
 -- 
 2.25.0

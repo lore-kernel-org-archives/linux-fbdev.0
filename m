@@ -1,40 +1,49 @@
-From: Jani Nikula <jani.nikula@linux.intel.com>
-Date: Tue, 21 Apr 2020 13:25:09 +0000
-Subject: Re: [PATCH 0/8] drm, fbdev: rework dependencies
-Message-Id: <877dy9ynre.fsf@intel.com>
+From: Jason Yan <yanaijie@huawei.com>
+Date: Fri, 17 Apr 2020 08:59:12 +0000
+Subject: [PATCH] backlight: qcom-wled: remove 'wled4_string_cfg' and 'wled3_string_cfg'
+Message-Id: <20200417092335.14163-1-yanaijie@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200417155553.675905-1-arnd@arndb.de>
- <20200417171453.GS3456981@phenom.ffwll.local>
- <20200417190854.GI26002@ziepe.ca> <87y2qq1smt.fsf@intel.com>
- <CAK8P3a0eSHg6Hx-FqpEF-N4LhZjv4o3PooK2eKw7KTntoKKckQ@mail.gmail.com>
- <20200421122726.GW3456981@phenom.ffwll.local> <87a735yp0f.fsf@intel.com>
- <CAMuHMdXRwRe5p65+YM69HDM4BhW+ZuHUju9B9083+=HdCotsqw@mail.gmail.com>
- <CAKMK7uE7y8TVbZ8ExpDEA2MuvhSDxKQ6y=eDXSbwgjUzsbm44A@mail.gmail.com>
-In-Reply-To: <CAKMK7uE7y8TVbZ8ExpDEA2MuvhSDxKQ6y=eDXSbwgjUzsbm44A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel@ffwll.ch>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Marek Vasut <marex@denx.de>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Daniel Drake <dsd@laptop.org>, Arnd Bergmann <arnd@arndb.de>, Jason Gunthorpe <jgg@ziepe.ca>, David Airlie <airlied@linux.ie>, Masahiro Yamada <masahiroy@kernel.org>, Nicolas Pitre <nico@fluxnic.net>, Saeed Mahameed <saeedm@mellanox.com>, Thomas Hellstrom <thellstrom@vmware.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Andrzej Hajda <a.hajda@samsung.com>, Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, VMware Graphics <linux-graphics-maintainer@vmware.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Jens Frederich <jfrederich@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Daniel Mack <daniel@zonque.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: agross@kernel.org, bjorn.andersson@linaro.org, lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, kgunda@codeaurora.org, linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Hulk Robot <hulkci@huawei.com>, Jason Yan <yanaijie@huawei.com>
 
-On Tue, 21 Apr 2020, Daniel Vetter <daniel@ffwll.ch> wrote:
-> To clarify what I was aiming for with my mail: I'm not worried about
-> fbdev here, I'm just worried that this will come back, and we'll grow
-> select somewhere else until it's become a big & totally horrible mess.
-> I think a lot of the backlight selects have also grown because of
-> this, so this isn't just a one-off I think.
->
-> If Arnd is happy to play "Kconfig select" whack-a-mole ever once in a
-> while (and deal with the intermediate compile horrors while everyone
-> upgrades) I'm ok with this landing. Just not terribly happy if the
-> underlying issue isn't fixed.
+Fix the following gcc warning:
 
-And I'll keep ignoring the IS_REACHABLE() patches that make i915 build
-with a config that should not exist. ;)
+drivers/video/backlight/qcom-wled.c:939:34: warning: ‘wled4_string_cfg’
+defined but not used [-Wunused-const-variable=]
+ static const struct wled_var_cfg wled4_string_cfg = {
+                                  ^~~~~~~~~~~~~~~~
+drivers/video/backlight/qcom-wled.c:935:34: warning: ‘wled3_string_cfg’
+defined but not used [-Wunused-const-variable=]
+ static const struct wled_var_cfg wled3_string_cfg = {
+                                  ^~~~~~~~~~~~~~~~
 
-BR,
-Jani.
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
+---
+ drivers/video/backlight/qcom-wled.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 3d276b30a78c..df53fbd5cd03 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -932,14 +932,6 @@ static const struct wled_var_cfg wled4_string_i_limit_cfg = {
+ 	.size = ARRAY_SIZE(wled4_string_i_limit_values),
+ };
+ 
+-static const struct wled_var_cfg wled3_string_cfg = {
+-	.size = 8,
+-};
+-
+-static const struct wled_var_cfg wled4_string_cfg = {
+-	.size = 16,
+-};
+-
+ static u32 wled_values(const struct wled_var_cfg *cfg, u32 idx)
+ {
+ 	if (idx >= cfg->size)
 -- 
-Jani Nikula, Intel Open Source Graphics Center
+2.21.1

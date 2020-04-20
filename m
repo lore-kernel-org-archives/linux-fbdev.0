@@ -1,62 +1,98 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Wed, 29 Apr 2020 19:28:40 +0000
-Subject: Re: [PATCH v2] video: fbdev: controlfb: fix build for COMPILE_TEST=y && PPC_PMAC=y && PPC32=n
-Message-Id: <20200429192840.GA1022@ravnborg.org>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Mon, 20 Apr 2020 18:36:34 +0000
+Subject: [PATCH 1/5] drivers/powerpc: Replace _ALIGN_UP() by ALIGN()
+Message-Id: <a5945463f86c984151962a475a3ee56a2893e85d.1587407777.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200429104825eucas1p16bf37b71a3ab3a768d1eff6c48eb61dd@eucas1p1.samsung.com>
- <fe520316-3863-e6c4-9581-5d709f49e906@samsung.com>
-In-Reply-To: <fe520316-3863-e6c4-9581-5d709f49e906@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-fbdev@vger.kernel.org, kbuild test robot <lkp@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: alsa-devel@alsa-project.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-Hi Bartlomiej
+_ALIGN_UP() is specific to powerpc
+ALIGN() is generic and does the same
 
-On Wed, Apr 29, 2020 at 12:48:24PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 
-> powerpc allyesconfig fails like this:
-> 
-> drivers/video/fbdev/controlfb.c: In function 'controlfb_mmap':
-> drivers/video/fbdev/controlfb.c:756:23: error: implicit declaration of function 'pgprot_cached_wthru'; did you mean 'pgprot_cached'? [-Werror=implicit-function-declaration]
->   756 |   vma->vm_page_prot = pgprot_cached_wthru(vma->vm_page_prot);
->       |                       ^~~~~~~~~~~~~~~~~~~
->       |                       pgprot_cached
-> drivers/video/fbdev/controlfb.c:756:23: error: incompatible types when assigning to type 'pgprot_t' {aka 'struct <anonymous>'} from type 'int'
-> 
-> Fix it by adding missing PPC32 dependency.
-> 
-> Fixes: a07a63b0e24d ("video: fbdev: controlfb: add COMPILE_TEST support")
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Reported-by: kbuild test robot <lkp@intel.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Replace _ALIGN_UP() by ALIGN()
 
-I've updated my build script to include a few popwerpc 32 bit configs.
-Patch looked correct, and my builds was OK.
-So applied to drm-misc-next and pushed out.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/ps3/ps3-lpm.c               | 6 +++---
+ drivers/vfio/pci/vfio_pci_nvlink2.c | 2 +-
+ drivers/video/fbdev/ps3fb.c         | 4 ++--
+ sound/ppc/snd_ps3.c                 | 2 +-
+ 4 files changed, 7 insertions(+), 7 deletions(-)
 
-If my prodding of Christoph will result in anything only time will tell.
-
-	Sam
-
-> ---
-> v2: fix implicit btext_update_display() function declaration error
-> 
->  drivers/video/fbdev/controlfb.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: b/drivers/video/fbdev/controlfb.c
-> =================================> --- a/drivers/video/fbdev/controlfb.c
-> +++ b/drivers/video/fbdev/controlfb.c
-> @@ -55,7 +55,7 @@
->  #include "macmodes.h"
->  #include "controlfb.h"
->  
-> -#ifndef CONFIG_PPC_PMAC
-> +#if !defined(CONFIG_PPC_PMAC) || !defined(CONFIG_PPC32)
->  #define invalid_vram_cache(addr)
->  #undef in_8
->  #undef out_8
+diff --git a/drivers/ps3/ps3-lpm.c b/drivers/ps3/ps3-lpm.c
+index 83c45659bc9d..064b5884ba13 100644
+--- a/drivers/ps3/ps3-lpm.c
++++ b/drivers/ps3/ps3-lpm.c
+@@ -1096,8 +1096,8 @@ int ps3_lpm_open(enum ps3_lpm_tb_type tb_type, void *tb_cache,
+ 		lpm_priv->tb_cache_internal = NULL;
+ 		lpm_priv->tb_cache = NULL;
+ 	} else if (tb_cache) {
+-		if (tb_cache != (void *)_ALIGN_UP((unsigned long)tb_cache, 128)
+-			|| tb_cache_size != _ALIGN_UP(tb_cache_size, 128)) {
++		if (tb_cache != (void *)ALIGN((unsigned long)tb_cache, 128)
++			|| tb_cache_size != ALIGN(tb_cache_size, 128)) {
+ 			dev_err(sbd_core(), "%s:%u: unaligned tb_cache\n",
+ 				__func__, __LINE__);
+ 			result = -EINVAL;
+@@ -1116,7 +1116,7 @@ int ps3_lpm_open(enum ps3_lpm_tb_type tb_type, void *tb_cache,
+ 			result = -ENOMEM;
+ 			goto fail_malloc;
+ 		}
+-		lpm_priv->tb_cache = (void *)_ALIGN_UP(
++		lpm_priv->tb_cache = (void *)ALIGN(
+ 			(unsigned long)lpm_priv->tb_cache_internal, 128);
+ 	}
+ 
+diff --git a/drivers/vfio/pci/vfio_pci_nvlink2.c b/drivers/vfio/pci/vfio_pci_nvlink2.c
+index ed20d73cc27c..65c61710c0e9 100644
+--- a/drivers/vfio/pci/vfio_pci_nvlink2.c
++++ b/drivers/vfio/pci/vfio_pci_nvlink2.c
+@@ -67,7 +67,7 @@ static size_t vfio_pci_nvgpu_rw(struct vfio_pci_device *vdev,
+ 	 *
+ 	 * This is not fast path anyway.
+ 	 */
+-	sizealigned = _ALIGN_UP(posoff + count, PAGE_SIZE);
++	sizealigned = ALIGN(posoff + count, PAGE_SIZE);
+ 	ptr = ioremap_cache(data->gpu_hpa + posaligned, sizealigned);
+ 	if (!ptr)
+ 		return -EFAULT;
+diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+index 834f63edf700..9df78fb77267 100644
+--- a/drivers/video/fbdev/ps3fb.c
++++ b/drivers/video/fbdev/ps3fb.c
+@@ -44,7 +44,7 @@
+ #define GPU_CMD_BUF_SIZE			(2 * 1024 * 1024)
+ #define GPU_FB_START				(64 * 1024)
+ #define GPU_IOIF				(0x0d000000UL)
+-#define GPU_ALIGN_UP(x)				_ALIGN_UP((x), 64)
++#define GPU_ALIGN_UP(x)				ALIGN((x), 64)
+ #define GPU_MAX_LINE_LENGTH			(65536 - 64)
+ 
+ #define GPU_INTR_STATUS_VSYNC_0			0	/* vsync on head A */
+@@ -1015,7 +1015,7 @@ static int ps3fb_probe(struct ps3_system_bus_device *dev)
+ 	}
+ #endif
+ 
+-	max_ps3fb_size = _ALIGN_UP(GPU_IOIF, 256*1024*1024) - GPU_IOIF;
++	max_ps3fb_size = ALIGN(GPU_IOIF, 256*1024*1024) - GPU_IOIF;
+ 	if (ps3fb_videomemory.size > max_ps3fb_size) {
+ 		dev_info(&dev->core, "Limiting ps3fb mem size to %lu bytes\n",
+ 			 max_ps3fb_size);
+diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
+index 6d2a33b8faa0..b8161a08f2ca 100644
+--- a/sound/ppc/snd_ps3.c
++++ b/sound/ppc/snd_ps3.c
+@@ -926,7 +926,7 @@ static int snd_ps3_driver_probe(struct ps3_system_bus_device *dev)
+ 			    PAGE_SHIFT, /* use system page size */
+ 			    0, /* dma type; not used */
+ 			    NULL,
+-			    _ALIGN_UP(SND_PS3_DMA_REGION_SIZE, PAGE_SIZE));
++			    ALIGN(SND_PS3_DMA_REGION_SIZE, PAGE_SIZE));
+ 	dev->d_region->ioid = PS3_AUDIO_IOID;
+ 
+ 	ret = ps3_dma_region_create(dev->d_region);
+-- 
+2.25.0

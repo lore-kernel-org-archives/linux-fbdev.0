@@ -1,69 +1,67 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 17 Apr 2020 19:55:43 +0000
+From: Jani Nikula <jani.nikula@linux.intel.com>
+Date: Mon, 20 Apr 2020 08:02:33 +0000
 Subject: Re: [PATCH 7/8] fbdev: rework backlight dependencies
-Message-Id: <CAK8P3a31OMHOycpGv5tjQXS=NBGw+OoFRGQ0Za7QWw9=EcwgZg@mail.gmail.com>
+Message-Id: <871roi37qe.fsf@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200417155553.675905-1-arnd@arndb.de>
- <20200417155553.675905-8-arnd@arndb.de>
- <20200417170444.GB30483@ravnborg.org>
+ <20200417155553.675905-8-arnd@arndb.de> <20200417170444.GB30483@ravnborg.org>
 In-Reply-To: <20200417170444.GB30483@ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Marek Vasut <marex@denx.de>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dsd@laptop.org, Nicolas Pitre <nico@fluxnic.net>, David Airlie <airlied@linux.ie>, Masahiro Yamada <masahiroy@kernel.org>, jfrederich@gmail.com, Saeed Mahameed <saeedm@mellanox.com>, Thomas Hellstrom <thellstrom@vmware.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Andrzej Hajda <a.hajda@samsung.com>, Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, dri-devel <dri-devel@lists.freedesktop.org>, VMware Graphics <linux-graphics-maintainer@vmware.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Jason Gunthorpe <jgg@ziepe.ca>, Daniel Mack <daniel@zonque.org>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>
+To: Sam Ravnborg <sam@ravnborg.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: marex@denx.de, Jason Gunthorpe <jgg@ziepe.ca>, linux-fbdev@vger.kernel.org, dsd@laptop.org, Nicolas Pitre <nico@fluxnic.net>, airlied@linux.ie, masahiroy@kernel.org, jfrederich@gmail.com, Saeed Mahameed <saeedm@mellanox.com>, thellstrom@vmware.com, dri-devel@lists.freedesktop.org, linux-renesas-soc@vger.kernel.org, Andrzej Hajda <a.hajda@samsung.com>, kieran.bingham+renesas@ideasonboard.com, geert@linux-m68k.org, haojian.zhuang@gmail.com, linux-graphics-maintainer@vmware.com, robert.jarzmik@free.fr, daniel@zonque.org, Laurent.pinchart@ideasonboard.com
 
-On Fri, Apr 17, 2020 at 7:04 PM Sam Ravnborg <sam@ravnborg.org> wrote:
->
+On Fri, 17 Apr 2020, Sam Ravnborg <sam@ravnborg.org> wrote:
 > Hi Arnd.
 >
 > On Fri, Apr 17, 2020 at 05:55:52PM +0200, Arnd Bergmann wrote:
-> > Rather than having CONFIG_FB_BACKLIGHT select CONFIG_BACKLIGHT_CLASS_DEVICE,
-> > make any driver that needs it have a dependency on the class device
-> > being available, to prevent circular dependencies.
-> >
-> > This is the same way that the backlight is already treated for the DRM
-> > subsystem.
+>> Rather than having CONFIG_FB_BACKLIGHT select CONFIG_BACKLIGHT_CLASS_DEVICE,
+>> make any driver that needs it have a dependency on the class device
+>> being available, to prevent circular dependencies.
+>> 
+>> This is the same way that the backlight is already treated for the DRM
+>> subsystem.
 >
 > I am not happy with the direction of this patch.
 > It is not easy to understand that one has to enable backlight to
 > be allowed to select a display or an fbdev driver.
->
->
+
+Arguably that is a problem in Kconfig, and that applies to *all*
+dependencies everywhere. It isn't something new to this patch.
+
+For example, in the context of this patch you have:
+
+  config HT16K33
+	 tristate "Holtek Ht16K33 LED controller with keyscan"
+	 depends on FB && OF && I2C && INPUT
+ +	depends on BACKLIGHT_CLASS_DEVICE
+
+The same thing could be said about FB and OF and IC2 and INPUT for
+HT16K33, right? Why would *backlight* be the tipping point that makes
+this difficult to understand?
+
+Yeah, I agree it's not straightforward, but I think depends is the right
+choice, not select.
+
+The effort for making this easier to understand should be directed at
+the various menuconfig tools to better highlight the dependencies that
+should be enabled to let you enable other options.
+
 > How about somthing like this:
->
-> config BACKLIGHT_CLASS_DEVICE
->         tristate
->         # Will enable backlight module
->         # Has no dependencies
->
-> config  BACKLIGHT
->         bool "Backlight drivers"
->         # Will make the backlight drivers visible - a visibility option
->         # only
->
-> All drivers outside video/backlight/ can then select
-> BACKLIGHT_CLASS_DEVICE to get the backlight core
-> module.
-> Or in other words BACKLIGHT_CLASS_DEVICE is used as a sort
-> of library symbol that gices us access to backlight functionality.
 
-Right, this could work as long as nobody puts back any "depends on
-BACKLIGHT_CLASS_DEVICE, but it does cause another problem: There
-are a couple of drivers that can optionally use backlight support
-or just leave it out depending on CONFIG_BACKLIGHT_CLASS_DEVICE.
+I think this is a hack in Kconfig files that should really be fixed in
+the Kconfig tooling instead. IMHO Kconfig should be as simple a
+description of the dependencies as possible, not so much a UI language.
 
-Changing them to select the class device support unconditionally
-would make it impossible to build those drivers without it.
-Instead we could all need an individual Kconfig symbol, or use
-have "select BACKLIGHT_CLASS_DEVICE if BACKLIGHT"
-in each case, but I'm not sure if that's still a win over having a
-simple 'depends on BACKLIGHT_CLASS_DEVICE'.
+FWIW the patch is
 
-On a related note, the NEW_LEDS/LEDS_CLASS option probably
-falls into the same category, and could also be done as you suggest.
-At the moment, this has the problem that both symbols are user
-visible and also frequently selected by device drivers (but not others),
-which is causing another set of dependency issues.
+Acked-by: Jani Nikula <jani.nikula@intel.com>
 
-      Arnd
+BR,
+Jani.
+
+
+
+-- 
+Jani Nikula, Intel Open Source Graphics Center

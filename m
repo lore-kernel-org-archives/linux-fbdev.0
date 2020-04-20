@@ -1,91 +1,78 @@
-From: Jani Nikula <jani.nikula@linux.intel.com>
-Date: Mon, 20 Apr 2020 08:14:02 +0000
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 20 Apr 2020 14:03:23 +0000
 Subject: Re: [PATCH 0/8] drm, fbdev: rework dependencies
-Message-Id: <87y2qq1smt.fsf@intel.com>
+Message-Id: <CAK8P3a0eSHg6Hx-FqpEF-N4LhZjv4o3PooK2eKw7KTntoKKckQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200417155553.675905-1-arnd@arndb.de>
  <20200417171453.GS3456981@phenom.ffwll.local>
- <20200417190854.GI26002@ziepe.ca>
-In-Reply-To: <20200417190854.GI26002@ziepe.ca>
+ <20200417190854.GI26002@ziepe.ca> <87y2qq1smt.fsf@intel.com>
+In-Reply-To: <87y2qq1smt.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jason Gunthorpe <jgg@ziepe.ca>, Daniel Vetter <daniel@ffwll.ch>
-Cc: marex@denx.de, linux-fbdev@vger.kernel.org, dsd@laptop.org, Arnd Bergmann <arnd@arndb.de>, Saeed Mahameed <saeedm@mellanox.com>, airlied@linux.ie, masahiroy@kernel.org, Nicolas Pitre <nico@fluxnic.net>, thellstrom@vmware.com, dri-devel@lists.freedesktop.org, geert@linux-m68k.org, linux-renesas-soc@vger.kernel.org, Andrzej Hajda <a.hajda@samsung.com>, kieran.bingham+renesas@ideasonboard.com, linux-graphics-maintainer@vmware.com, Laurent.pinchart@ideasonboard.com, haojian.zhuang@gmail.com, jfrederich@gmail.com, robert.jarzmik@free.fr, daniel@zonque.org
+To: Jani Nikula <jani.nikula@linux.intel.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, David Airlie <airlied@linux.ie>, dri-devel <dri-devel@lists.freedesktop.org>, Andrzej Hajda <a.hajda@samsung.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Marek Vasut <marex@denx.de>, Thomas Hellstrom <thellstrom@vmware.com>, dsd@laptop.org, Saeed Mahameed <saeedm@mellanox.com>, Masahiro Yamada <masahiroy@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>, Geert Uytterhoeven <geert@linux-m68k.org>, VMware Graphics <linux-graphics-maintainer@vmware.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Nicolas Pitre <nico@fluxnic.net>, jfrederich@gmail.com, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>, Daniel Mack <daniel@zonque.org>
 
-On Fri, 17 Apr 2020, Jason Gunthorpe <jgg@ziepe.ca> wrote:
-> On Fri, Apr 17, 2020 at 07:14:53PM +0200, Daniel Vetter wrote:
->> On Fri, Apr 17, 2020 at 05:55:45PM +0200, Arnd Bergmann wrote:
->> > I tried to fix up some dependencies after the sii8620 "imply EXTCON"
->> > statementn broke, trying a few things but in the backing out a
->> > change that would completely reverse the LEDS_CLASS selects into
->> > a 'depends on'. 
->> > 
->> > However, what I got now are multiple changes that remove gratious
->> > "selects" that lead to circular dependencies for sii8620 and others:
->> > 
->> > - Anything doing "select FB" is now gone, or becomes "depends on FB",
->> > 
->> > - DDC support depends on I2C instead of selecting it
->> > 
->> > - backlight class device support is never selected by framebuffer
->> >   drivers but has proper dependencies
->> > 
->> > I have done thousands of randconfig build tests on this, but no
->> > runtime tests.
->> > 
->> > Some of the 'depends on FOO || !FOO' statements could be simplified
->> > into a new 'uses FOO' syntax based on a patch from Saeed Mahameed,
->> > but I would for the moment treat that as a cleanup that can be done
->> > later.
->> > 
->> > If we can agree on these changes, maybe someone can merge them
->> > through the drm-misc tree.
->> > 
->> > Please review
->> 
->> Biggest concern I have is that usability of make menuconfig is horrible,
->> and it's very hard to find options that are hidden by depends on. You can
->> use the search interface, if you happen to know the option.
->> 
->> Once you've surmounted that bar, the next one is trying to find what
->> exactly you need to enable. Which again means endless of recursive
->> screaming at Kconfig files, since make menuconfig doesn't help you at all.
+On Mon, Apr 20, 2020 at 10:14 AM Jani Nikula
+<jani.nikula@linux.intel.com> wrote:
+> On Fri, 17 Apr 2020, Jason Gunthorpe <jgg@ziepe.ca> wrote:
+> > On Fri, Apr 17, 2020 at 07:14:53PM +0200, Daniel Vetter wrote:
+> >> On Fri, Apr 17, 2020 at 05:55:45PM +0200, Arnd Bergmann wrote:
+> >> >
+> >> > If we can agree on these changes, maybe someone can merge them
+> >> > through the drm-misc tree.
+> >> >
+> >> > Please review
+> >>
+> >> Biggest concern I have is that usability of make menuconfig is horrible,
+
+No doubt about that, but that seems to be unrelated to the cleanup.
+
+> >> and it's very hard to find options that are hidden by depends on. You can
+> >> use the search interface, if you happen to know the option.
+> >>
+> >> Once you've surmounted that bar, the next one is trying to find what
+> >> exactly you need to enable. Which again means endless of recursive
+> >> screaming at Kconfig files, since make menuconfig doesn't help you at all.
+
+The changes I'm doing are mostly for fbdev, which is currently the
+odd one out. Most kernel subsystems today follow the documented
+recommendations and only use 'depends on' for things they
+depend on.
+
+Having fbdev be the exception causes two problems:
+
+- It does not make kconfig any easier to use overall, just less consistent
+  when it is the only thing that implicitly turns on dependencies and
+  for everything else one still has to look up what the dependencies are.
+
+- Most of the problems with circular dependencies come from mixing
+  the two methods, and most of the cases where they have caused
+  problems in the past involve fbdev in some way.
+
+I also doubt switching lots of 'depends on' to 'select' all over Kconfig
+would improve the situation on a global level. It would simplify the
+problem of turning something on without understanding the what it
+does, but in turn it makes it harder to turn off something else.
+
+E.g. today it is hard to turn off fbdev because that is selected by a
+number of (partly unrelated) options, but there was a recent discussion
+about getting distros to stop enabling fbdev out of security concerns.
+
+> I'm really all for switching to using depends when that is the
+> semantically right thing to do. In many places using select is a hack to
+> make the UI simpler, and that's just plain wrong. We'll be doomed to
+> perpetual randconfig build failures and duct tape fixes.
 >
-> +1 on this. But this is a general kconfig problem, and not unique to
-> DRM, I've done this screaming for many different things now.. eg to
-> turn on every single RDMA driver.
+> I'm pretty tired of this, and I regularly ignore those duct tape fixes
+> to i915 backlight build issues on some bizarre configs that nobody will
+> ever use, and would not exist if depends were used throughout.
 >
-> I hackily delt with it by creating this rather insane script based on
-> the python kconfiglib to try and sort things out mostly automatically:
->
-> https://github.com/jgunthorpe/Kernel-Maintainer-Tools/blob/master/gj_tools/cmd_kconfig.py
->
-> It would be great if menuconfig had a key to say 'hey, really, turn
-> this on and everything it depends on, recursively'
+> I'm fine with select but only when it's restricted to symbols that have
+> no dependencies of their own and have no UI. This is in line with
+> Documentation/kbuild/kconfig-language.rst. Not enforcing this is another
+> Kconfig tool shortcoming.
 
-I'm really all for switching to using depends when that is the
-semantically right thing to do. In many places using select is a hack to
-make the UI simpler, and that's just plain wrong. We'll be doomed to
-perpetual randconfig build failures and duct tape fixes.
+Agreed, that is generally a good rule.
 
-I'm pretty tired of this, and I regularly ignore those duct tape fixes
-to i915 backlight build issues on some bizarre configs that nobody will
-ever use, and would not exist if depends were used throughout.
-
-I'm fine with select but only when it's restricted to symbols that have
-no dependencies of their own and have no UI. This is in line with
-Documentation/kbuild/kconfig-language.rst. Not enforcing this is another
-Kconfig tool shortcoming.
-
-See also my reply to Sam [1].
-
-BR,
-Jani.
-
-
-[1] https://lore.kernel.org/dri-devel/871roi37qe.fsf@intel.com/
-
-
--- 
-Jani Nikula, Intel Open Source Graphics Center
+      Arnd

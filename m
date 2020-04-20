@@ -1,57 +1,171 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Sat, 11 Apr 2020 23:08:47 +0000
-Subject: [PATCH AUTOSEL 5.4 052/108] fbdev: potential information leak in do_fb_ioctl()
-Message-Id: <20200411230943.24951-52-sashal@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 20 Apr 2020 13:12:51 +0000
+Subject: [PATCH fbtest] Fix small pixel drawing on little endian systems
+Message-Id: <20200420131251.8172-1-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200411230943.24951-1-sashal@kernel.org>
-In-Reply-To: <20200411230943.24951-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Gerd Hoffmann <kraxel@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>, Peter Rosin <peda@axentia.se>, Dan Carpenter <dan.carpenter@oracle.com>, Andrea Righi <righi.andrea@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+If the pixel size (bpp) is smaller than the word size (long) on a little
+endian system, pixel data is written to the wrong part of the word.
 
-[ Upstream commit d3d19d6fc5736a798b118971935ce274f7deaa82 ]
+Fix this by reversing the shifts on little endian systems.
 
-The "fix" struct has a 2 byte hole after ->ywrapstep and the
-"fix = info->fix;" assignment doesn't necessarily clear it.  It depends
-on the compiler.  The solution is just to replace the assignment with an
-memcpy().
-
-Fixes: 1f5e31d7e55a ("fbmem: don't call copy_from/to_user() with mutex held")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrea Righi <righi.andrea@gmail.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Peter Rosin <peda@axentia.se>
-Cc: Jani Nikula <jani.nikula@intel.com>
-Cc: Gerd Hoffmann <kraxel@redhat.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20200113100132.ixpaymordi24n3av@kili.mountain
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/fbdev/core/fbmem.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Seen on 16-bpp displays when drawing horizontal line segments that start
+or end an odd pixel boundary.
+---
+ drawops/bitstream.c | 28 ++++++++++++++++++----------
+ drawops/cfb.c       | 25 +++++++++++++++++++------
+ include/types.h     |  2 ++
+ 3 files changed, 39 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index e6a1c805064f0..36469943795a8 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1110,7 +1110,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		break;
- 	case FBIOGET_FSCREENINFO:
- 		lock_fb_info(info);
--		fix = info->fix;
-+		memcpy(&fix, &info->fix, sizeof(fix));
- 		if (info->flags & FBINFO_HIDE_SMEM_START)
- 			fix.smem_start = 0;
- 		unlock_fb_info(info);
+diff --git a/drawops/bitstream.c b/drawops/bitstream.c
+index b3e09336cc477baa..06c74043b091846b 100644
+--- a/drawops/bitstream.c
++++ b/drawops/bitstream.c
+@@ -13,6 +13,14 @@
+ #include "bitstream.h"
+ #include "fb.h"
+ 
++#if __BYTE_ORDER = __LITTLE_ENDIAN
++#define FIRST_MASK(idx)		(~0UL << (idx))
++#define LAST_MASK(idx, n)	(~(~0UL << (((idx)+(n)) % BITS_PER_LONG)))
++#else
++#define FIRST_MASK(idx)		(~0UL >> (idx))
++#define LAST_MASK(idx, n)	(~(~0UL >> (((idx)+(n)) % BITS_PER_LONG)))
++#endif
++
+ 
+     /*
+      *  Compose two values, using a bitmask as decision value
+@@ -42,8 +50,8 @@ void bitcpy(unsigned long *dst, int dst_idx, const unsigned long *src,
+ 	return;
+ 
+     shift = dst_idx-src_idx;
+-    first = ~0UL >> dst_idx;
+-    last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
++    first = FIRST_MASK(dst_idx);
++    last = LAST_MASK(dst_idx, n);
+ 
+     if (!shift) {
+ 	// Same alignment for source and dest
+@@ -190,8 +198,8 @@ void bitcpy_rev(unsigned long *dst, int dst_idx, const unsigned long *src,
+     }
+ 
+     shift = dst_idx-src_idx;
+-    first = ~0UL << (BITS_PER_LONG-1-dst_idx);
+-    last = ~(~0UL << (BITS_PER_LONG-1-((dst_idx-n) % BITS_PER_LONG)));
++    first = FIRST_MASK(BITS_PER_LONG-1-dst_idx);
++    last = LAST_MASK(BITS_PER_LONG-1-dst_idx, n);
+ 
+     if (!shift) {
+ 	// Same alignment for source and dest
+@@ -328,8 +336,8 @@ void bitcpy_not(unsigned long *dst, int dst_idx, const unsigned long *src,
+ 	return;
+ 
+     shift = dst_idx-src_idx;
+-    first = ~0UL >> dst_idx;
+-    last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
++    first = FIRST_MASK(dst_idx);
++    last = LAST_MASK(dst_idx, n);
+ 
+     if (!shift) {
+ 	// Same alignment for source and dest
+@@ -465,8 +473,8 @@ void bitfill32(unsigned long *dst, int dst_idx, u32 pat, u32 n)
+     val |= val << 32;
+ #endif
+ 
+-    first = ~0UL >> dst_idx;
+-    last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
++    first = FIRST_MASK(dst_idx);
++    last = LAST_MASK(dst_idx, n);
+ 
+     if (dst_idx+n <= BITS_PER_LONG) {
+ 	// Single word
+@@ -520,8 +528,8 @@ void bitfill(unsigned long *dst, int dst_idx, unsigned long pat, int left,
+     if (!n)
+ 	return;
+ 
+-    first = ~0UL >> dst_idx;
+-    last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
++    first = FIRST_MASK(dst_idx);
++    last = LAST_MASK(dst_idx, n);
+ 
+     if (dst_idx+n <= BITS_PER_LONG) {
+ 	// Single word
+diff --git a/drawops/cfb.c b/drawops/cfb.c
+index 1d8c88e7f23e983e..4a5a1ab654d75310 100644
+--- a/drawops/cfb.c
++++ b/drawops/cfb.c
+@@ -104,7 +104,7 @@ static inline unsigned long pixel_to_pat(pixel_t pixel, int left)
+ void cfb_draw_hline(u32 x, u32 y, u32 length, pixel_t pixel)
+ {
+     unsigned long *dst;
+-    int dst_idx, left;
++    int dst_idx, left, right;
+     u32 bpp = fb_var.bits_per_pixel;
+ 
+     dst = (unsigned long *)((unsigned long)fb & ~(BYTES_PER_LONG-1));
+@@ -118,15 +118,22 @@ void cfb_draw_hline(u32 x, u32 y, u32 length, pixel_t pixel)
+ 	u32 pat = pixel_to_pat32(pixel);
+ 	bitfill32(dst, dst_idx, pat, length*bpp);
+     } else {
+-	unsigned long pat = pixel_to_pat(pixel, (left-dst_idx) % bpp);
+-	bitfill(dst, dst_idx, pat, left, bpp-left, length*bpp);
++	unsigned long pat;
++#if __BYTE_ORDER = __LITTLE_ENDIAN
++	right = left;
++	left = bpp-left;
++#else
++	right = bpp-left;
++#endif
++	pat = pixel_to_pat(pixel, (left-dst_idx) % bpp);
++	bitfill(dst, dst_idx, pat, left, right, length*bpp);
+     }
+ }
+ 
+ void cfb_fill_rect(u32 x, u32 y, u32 width, u32 height, pixel_t pixel)
+ {
+     unsigned long *dst;
+-    int dst_idx, left;
++    int dst_idx, left, right;
+     u32 bpp = fb_var.bits_per_pixel;
+ 
+     dst = (unsigned long *)((unsigned long)fb & ~(BYTES_PER_LONG-1));
+@@ -143,9 +150,15 @@ void cfb_fill_rect(u32 x, u32 y, u32 width, u32 height, pixel_t pixel)
+ 	    dst_idx += next_line*8;
+ 	}
+     } else {
+-	unsigned long pat = pixel_to_pat(pixel, (left-dst_idx) % bpp);
+-	int right = bpp-left;
++	unsigned long pat;
+ 	int r;
++#if __BYTE_ORDER = __LITTLE_ENDIAN
++	right = left;
++	left = bpp-left;
++#else
++	right = bpp-left;
++#endif
++	pat = pixel_to_pat(pixel, (left-dst_idx) % bpp);
+ 	while (height--) {
+ 	    dst += dst_idx >> SHIFT_PER_LONG;
+ 	    dst_idx &= (BITS_PER_LONG-1);
+diff --git a/include/types.h b/include/types.h
+index 8b11ee1b1b63ede6..33066fd299be79eb 100644
+--- a/include/types.h
++++ b/include/types.h
+@@ -9,6 +9,8 @@
+  *  more details.
+  */
+ 
++#include <endian.h>
++
+ 
+     /*
+      *  Fixed size quantities
 -- 
-2.20.1
+2.17.1

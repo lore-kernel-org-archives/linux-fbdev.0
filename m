@@ -1,26 +1,39 @@
-From: Matej Dujava <mdujava@kocurkovo.cz>
-Date: Thu, 30 Apr 2020 20:09:23 +0000
-Subject: [PATCH 0/3] Refactor reused code for updating fb_info
-Message-Id: <1588277366-19354-1-git-send-email-mdujava@kocurkovo.cz>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Apr 2020 12:46:25 +0000
+Subject: [PATCHv2 0/4] led-backlight cleanups & fixes
+Message-Id: <20200421124629.20977-1-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch set will unify reused switch statement updating fb_info by
-creating inline functions.
+Hi,
 
-Tested only by compilation.
+Changes in v2:
 
-Matej Dujava (3):
-  staging: sm750fb: add missing case while setting FB_VISUAL
-  staging: sm750fb: add common function to set color offsets and visual
-    mode
-  staging: sm750fb: print error message with actual value
+- Drop "backlight: led_bl: rewrite led_bl_parse_levels()". The patch
+  changed the behavior, and the new behavior may not be wanted. So lets
+  drop this for now.
 
- drivers/staging/sm750fb/sm750.c | 150 +++++++++++++++-----------------
- 1 file changed, 68 insertions(+), 82 deletions(-)
+- "backlight: led_bl: fix led -> backlight brightness mapping" will now
+  use max brightness if LED's brightness is higher than highest
+  backlight brightness level.
+
+- Added reviewed-bys.
+
+ Tomi
+
+Tomi Valkeinen (4):
+  backlight: led_bl: fix cosmetic issues
+  backlight: led_bl: drop useless NULL initialization
+  backlight: led_bl: add led_access locking
+  backlight: led_bl: fix led -> backlight brightness mapping
+
+ drivers/video/backlight/led_bl.c | 29 +++++++++++++++++++----------
+ 1 file changed, 19 insertions(+), 10 deletions(-)
 
 -- 
-2.26.2
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

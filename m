@@ -1,64 +1,61 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 17 Apr 2020 14:08:09 +0000
-Subject: Re: [PATCH] video: fbdev: aty128fb: remove unused 'sdr_64'
-Message-Id: <aec78fff-4a5b-1222-7758-99e9ea892a0c@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 22 Apr 2020 06:51:14 +0000
+Subject: [PATCHv3 4/4] backlight: led_bl: fix led -> backlight brightness mapping
+Message-Id: <20200422065114.22164-5-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200417085705eucas1p12357601660992a5fbef90358cc7aa219@eucas1p1.samsung.com>
- <20200417092318.13978-1-yanaijie@huawei.com>
-In-Reply-To: <20200417092318.13978-1-yanaijie@huawei.com>
+References: <20200422065114.22164-1-tomi.valkeinen@ti.com>
+In-Reply-To: <20200422065114.22164-1-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jason Yan <yanaijie@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, daniel.vetter@ffwll.ch, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Hulk Robot <hulkci@huawei.com>, paulus@samba.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+The code that maps the LED default brightness to backlight levels has
+two issues: 1) if the default brightness is the first backlight level
+(usually 0), the code fails to find it, and 2) when the code fails to
+find a backlight level, it ends up using max_brightness + 1 as the
+default brightness.
 
-On 4/17/20 11:23 AM, Jason Yan wrote:
-> Fix the following gcc warning:
-> 
-> drivers/video/fbdev/aty/aty128fb.c:337:36: warning: ‘sdr_64’ defined but
-> not used [-Wunused-const-variable=]
->  static const struct aty128_meminfo sdr_64 = {
->                                     ^~~~~~
-> 
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Jason Yan <yanaijie@huawei.com>
+Fix these two issues.
 
-Patch queued for v5.8, thanks.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/backlight/led_bl.c | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  drivers/video/fbdev/aty/aty128fb.c | 14 --------------
->  1 file changed, 14 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-> index d7e41c8dd533..d05d4195acad 100644
-> --- a/drivers/video/fbdev/aty/aty128fb.c
-> +++ b/drivers/video/fbdev/aty/aty128fb.c
-> @@ -334,20 +334,6 @@ static const struct aty128_meminfo sdr_128 = {
->  	.name = "128-bit SDR SGRAM (1:1)",
->  };
->  
-> -static const struct aty128_meminfo sdr_64 = {
-> -	.ML = 4,
-> -	.MB = 8,
-> -	.Trcd = 3,
-> -	.Trp = 3,
-> -	.Twr = 1,
-> -	.CL = 3,
-> -	.Tr2w = 1,
-> -	.LoopLatency = 17,
-> -	.DspOn = 46,
-> -	.Rloop = 17,
-> -	.name = "64-bit SDR SGRAM (1:1)",
-> -};
-> -
->  static const struct aty128_meminfo sdr_sgram = {
->  	.ML = 4,
->  	.MB = 4,
-> 
+diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
+index 63693c4f0883..699424b111ec 100644
+--- a/drivers/video/backlight/led_bl.c
++++ b/drivers/video/backlight/led_bl.c
+@@ -139,7 +139,6 @@ static int led_bl_parse_levels(struct device *dev,
+ 	num_levels = of_property_count_u32_elems(node, "brightness-levels");
+ 	if (num_levels > 1) {
+ 		int i;
+-		unsigned int db;
+ 		u32 *levels;
+ 
+ 		levels = devm_kzalloc(dev, sizeof(u32) * num_levels,
+@@ -153,15 +152,11 @@ static int led_bl_parse_levels(struct device *dev,
+ 		if (ret < 0)
+ 			return ret;
+ 
+-		/*
+-		 * Try to map actual LED brightness to backlight brightness
+-		 * level
+-		 */
+-		db = priv->default_brightness;
+-		for (i = 0 ; i < num_levels; i++) {
+-			if ((i && db > levels[i - 1]) && db <= levels[i])
++		/* Map LED brightness to backlight brightness level */
++		for (i = 0; i < num_levels - 1; i++)
++			if (levels[i] >= priv->default_brightness)
+ 				break;
+-		}
++
+ 		priv->default_brightness = i;
+ 		priv->max_brightness = num_levels - 1;
+ 		priv->levels = levels;
+-- 
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

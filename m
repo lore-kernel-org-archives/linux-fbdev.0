@@ -1,39 +1,57 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Apr 2020 12:46:25 +0000
-Subject: [PATCHv2 0/4] led-backlight cleanups & fixes
-Message-Id: <20200421124629.20977-1-tomi.valkeinen@ti.com>
+Date: Wed, 22 Apr 2020 06:51:13 +0000
+Subject: [PATCHv3 3/4] backlight: led_bl: add led_access locking
+Message-Id: <20200422065114.22164-4-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200422065114.22164-1-tomi.valkeinen@ti.com>
+In-Reply-To: <20200422065114.22164-1-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi,
+led_bl does not lock 'led_access' when calling led_sysfs_disable and
+led_sysfs_enable, causing the below WARN. Add the locking.
 
-Changes in v2:
+WARNING: CPU: 0 PID: 223 at drivers/leds/led-core.c:353 led_sysfs_disable+0x4c/0x5c
 
-- Drop "backlight: led_bl: rewrite led_bl_parse_levels()". The patch
-  changed the behavior, and the new behavior may not be wanted. So lets
-  drop this for now.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+---
+ drivers/video/backlight/led_bl.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-- "backlight: led_bl: fix led -> backlight brightness mapping" will now
-  use max brightness if LED's brightness is higher than highest
-  backlight brightness level.
-
-- Added reviewed-bys.
-
- Tomi
-
-Tomi Valkeinen (4):
-  backlight: led_bl: fix cosmetic issues
-  backlight: led_bl: drop useless NULL initialization
-  backlight: led_bl: add led_access locking
-  backlight: led_bl: fix led -> backlight brightness mapping
-
- drivers/video/backlight/led_bl.c | 29 +++++++++++++++++++----------
- 1 file changed, 19 insertions(+), 10 deletions(-)
-
+diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
+index c46ecdfe8b0a..63693c4f0883 100644
+--- a/drivers/video/backlight/led_bl.c
++++ b/drivers/video/backlight/led_bl.c
+@@ -216,8 +216,11 @@ static int led_bl_probe(struct platform_device *pdev)
+ 		return PTR_ERR(priv->bl_dev);
+ 	}
+ 
+-	for (i = 0; i < priv->nb_leds; i++)
++	for (i = 0; i < priv->nb_leds; i++) {
++		mutex_lock(&priv->leds[i]->led_access);
+ 		led_sysfs_disable(priv->leds[i]);
++		mutex_unlock(&priv->leds[i]->led_access);
++	}
+ 
+ 	backlight_update_status(priv->bl_dev);
+ 
+@@ -233,8 +236,11 @@ static int led_bl_remove(struct platform_device *pdev)
+ 	backlight_device_unregister(bl);
+ 
+ 	led_bl_power_off(priv);
+-	for (i = 0; i < priv->nb_leds; i++)
++	for (i = 0; i < priv->nb_leds; i++) {
++		mutex_lock(&priv->leds[i]->led_access);
+ 		led_sysfs_enable(priv->leds[i]);
++		mutex_unlock(&priv->leds[i]->led_access);
++	}
+ 
+ 	return 0;
+ }
 -- 
 Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
 Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

@@ -1,43 +1,71 @@
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Tue, 21 Apr 2020 15:55:16 +0000
-Subject: Re: [PATCH 2/5] powerpc: Replace _ALIGN_DOWN() by ALIGN_DOWN()
-Message-Id: <20200421155516.GT26902@gate.crashing.org>
+From: Jason Yan <yanaijie@huawei.com>
+Date: Wed, 22 Apr 2020 07:18:45 +0000
+Subject: [PATCH] video: uvesafb: use true,false for bool variables
+Message-Id: <20200422071845.403-1-yanaijie@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <a5945463f86c984151962a475a3ee56a2893e85d.1587407777.git.christophe.leroy@c-s.fr>
- <3911a86d6b5bfa7ad88cd7c82416fbe6bb47e793.1587407777.git.christophe.leroy@c-s.fr>
- <CACPK8XfqnqgkXcBzp=nqd=AJX1MK05eTNiyOdaEuRu3_6RsXSQ@mail.gmail.com>
-In-Reply-To: <CACPK8XfqnqgkXcBzp=nqd=AJX1MK05eTNiyOdaEuRu3_6RsXSQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joel Stanley <joel@jms.id.au>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>, linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
+To: spock@gentoo.org, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Jason Yan <yanaijie@huawei.com>
 
-Hi!
+Fix the following coccicheck warning:
 
-On Tue, Apr 21, 2020 at 01:04:05AM +0000, Joel Stanley wrote:
-> On Mon, 20 Apr 2020 at 18:38, Christophe Leroy <christophe.leroy@c-s.fr> wrote:
-> > _ALIGN_DOWN() is specific to powerpc
-> > ALIGN_DOWN() is generic and does the same
-> >
-> > Replace _ALIGN_DOWN() by ALIGN_DOWN()
-> 
-> This one is a bit less obvious. It becomes (leaving the typeof's alone
-> for clarity):
-> 
-> -((addr)&(~((typeof(addr))(size)-1)))
-> +((((addr) - ((size) - 1)) + ((typeof(addr))(size) - 1)) &
-> ~((typeof(addr))(size)-1))
-> 
-> Which I assume the compiler will sort out?
+drivers/video/fbdev/uvesafb.c:48:12-17: WARNING: Assignment of 0/1 to
+bool variable
+drivers/video/fbdev/uvesafb.c:1827:3-13: WARNING: Assignment of 0/1 to
+bool variable
+drivers/video/fbdev/uvesafb.c:1829:3-13: WARNING: Assignment of 0/1 to
+bool variable
+drivers/video/fbdev/uvesafb.c:1835:3-9: WARNING: Assignment of 0/1 to
+bool variable
+drivers/video/fbdev/uvesafb.c:1837:3-9: WARNING: Assignment of 0/1 to
+bool variable
+drivers/video/fbdev/uvesafb.c:1839:3-8: WARNING: Assignment of 0/1 to
+bool variable
 
-[ This is line-wrapped, something in your mailer?  Took me a bit to figure
-  out the - and + are diff -u things :-) ]
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
+---
+ drivers/video/fbdev/uvesafb.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-In the common case where size is a constant integer power of two, the
-compiler will have no problem with this.  But why do so complicated?
-
-Why are the casts there, btw?
-
-
-Segher
+diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+index 1b385cf76110..bee29aadc646 100644
+--- a/drivers/video/fbdev/uvesafb.c
++++ b/drivers/video/fbdev/uvesafb.c
+@@ -45,7 +45,7 @@ static const struct fb_fix_screeninfo uvesafb_fix = {
+ };
+ 
+ static int mtrr		= 3;	/* enable mtrr by default */
+-static bool blank	= 1;	/* enable blanking by default */
++static bool blank	= true;	/* enable blanking by default */
+ static int ypan		= 1;	/* 0: scroll, 1: ypan, 2: ywrap */
+ static bool pmi_setpal	= true; /* use PMI for palette changes */
+ static bool nocrtc;		/* ignore CRTC settings */
+@@ -1824,19 +1824,19 @@ static int uvesafb_setup(char *options)
+ 		else if (!strcmp(this_opt, "ywrap"))
+ 			ypan = 2;
+ 		else if (!strcmp(this_opt, "vgapal"))
+-			pmi_setpal = 0;
++			pmi_setpal = false;
+ 		else if (!strcmp(this_opt, "pmipal"))
+-			pmi_setpal = 1;
++			pmi_setpal = true;
+ 		else if (!strncmp(this_opt, "mtrr:", 5))
+ 			mtrr = simple_strtoul(this_opt+5, NULL, 0);
+ 		else if (!strcmp(this_opt, "nomtrr"))
+ 			mtrr = 0;
+ 		else if (!strcmp(this_opt, "nocrtc"))
+-			nocrtc = 1;
++			nocrtc = true;
+ 		else if (!strcmp(this_opt, "noedid"))
+-			noedid = 1;
++			noedid = true;
+ 		else if (!strcmp(this_opt, "noblank"))
+-			blank = 0;
++			blank = true;
+ 		else if (!strncmp(this_opt, "vtotal:", 7))
+ 			vram_total = simple_strtoul(this_opt + 7, NULL, 0);
+ 		else if (!strncmp(this_opt, "vremap:", 7))
+-- 
+2.21.1

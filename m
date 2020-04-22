@@ -1,88 +1,48 @@
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Date: Fri, 24 Apr 2020 13:19:02 +0000
-Subject: Re: INFO: task hung in vcs_open
-Message-Id: <1cb243b7-e767-3bf3-5303-ab69c58c81b3@I-love.SAKURA.ne.jp>
+From: Guru Das Srinagesh <gurus@codeaurora.org>
+Date: Wed, 22 Apr 2020 02:57:21 +0000
+Subject: [PATCH v13 09/11] backlight: pwm_bl: Use 64-bit division function
+Message-Id: <429c18e1e1461d7cd3ccb93f9093a6719744f6b0.1587523702.git.gurus@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <000000000000e23c2805a4027606@google.com>
-In-Reply-To: <000000000000e23c2805a4027606@google.com>
+References: <cover.1587523702.git.gurus@codeaurora.org>
+In-Reply-To: <cover.1587523702.git.gurus@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: syzbot <syzbot+975c6b229a82b59591c0@syzkaller.appspotmail.com>, nico@fluxnic.net, gregkh@linuxfoundation.org, syzkaller-bugs@googlegroups.com, linux-kernel@vger.kernel.org, jslaby@suse.com
+To: linux-pwm@vger.kernel.org
+Cc: Guru Das Srinagesh <gurus@codeaurora.org>, Daniel Thompson <daniel.thompson@linaro.org>, David Collins <collinsd@codeaurora.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, linux-fbdev@vger.kernel.org, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Subbaraman Narayanamurthy <subbaram@codeaurora.org>, Lee Jones <lee.jones@linaro.org>
 
-An unkillable task report
+Since the PWM framework is switching struct pwm_state.period's datatype
+to u64, prepare for this transition by using div_u64 to handle a 64-bit
+dividend instead of a straight division operation.
 
-INFO: task syz-executor.2:10292 can't die for more than 143 seconds.
-syz-executor.2  R  running task    26216 10292   7415 0x00004006
-Call Trace:
- preempt_schedule_irq+0xb0/0x150 kernel/sched/core.c:4346
- retint_kernel+0x1b/0x2b
-RIP: 0010:bitfill_aligned+0x12/0x200 drivers/video/fbdev/core/cfbfillrect.c:37
-(...snipped...)
- cfb_fillrect+0x418/0x7a0 drivers/video/fbdev/core/cfbfillrect.c:327
- vga16fb_fillrect+0x68f/0x1960 drivers/video/fbdev/vga16fb.c:951
- bit_clear_margins+0x2d5/0x4a0 drivers/video/fbdev/core/bitblit.c:232
- fbcon_clear_margins+0x1de/0x240 drivers/video/fbdev/core/fbcon.c:1381
- fbcon_switch+0xd21/0x1740 drivers/video/fbdev/core/fbcon.c:2363
- redraw_screen+0x2ae/0x770 drivers/tty/vt/vt.c:1009
- fbcon_modechanged+0x5c3/0x790 drivers/video/fbdev/core/fbcon.c:3000
- fbcon_update_vcs+0x3a/0x50 drivers/video/fbdev/core/fbcon.c:3047
- fb_set_var+0xad0/0xd40 drivers/video/fbdev/core/fbmem.c:1056
- do_fb_ioctl+0x390/0x6e0 drivers/video/fbdev/core/fbmem.c:1109
- fb_ioctl+0xdd/0x130 drivers/video/fbdev/core/fbmem.c:1185
- vfs_ioctl fs/ioctl.c:47 [inline]
- ksys_ioctl+0x11a/0x180 fs/ioctl.c:763
- __do_sys_ioctl fs/ioctl.c:772 [inline]
- __se_sys_ioctl fs/ioctl.c:770 [inline]
- __x64_sys_ioctl+0x6f/0xb0 fs/ioctl.c:770
- do_syscall_64+0xf6/0x7d0 arch/x86/entry/common.c:295
- entry_SYSCALL_64_after_hwframe+0x49/0xb3
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-pwm@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
 
-suggests that a killed thread is stalling at
+Signed-off-by: Guru Das Srinagesh <gurus@codeaurora.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+---
+ drivers/video/backlight/pwm_bl.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-                while (height--) {
-                        dst += dst_idx >> (ffs(bits) - 1);
-                        dst_idx &= (bits - 1);
-                        fill_op32(p, dst, dst_idx, pat, width*bpp, bits,
-                                  bswapmask);
-                        dst_idx += p->fix.line_length*8;
-                }
-
-loop where "(unsigned long) height" became unexpectedly large.
-
-This value seems to be determined as "(unsigned int) bh" at
-bit_clear_margins(). I guess that bh became a value near UINT_MAX
-due to hitting info->var.yres < (vc->vc_rows*ch) case.
-Can this legally happen? If yes, we need overflow check here.
-
-static void bit_clear_margins(struct vc_data *vc, struct fb_info *info,
-                              int color, int bottom_only)
-{
-        unsigned int cw = vc->vc_font.width;
-        unsigned int ch = vc->vc_font.height;
-        unsigned int rw = info->var.xres - (vc->vc_cols*cw);
-        unsigned int bh = info->var.yres - (vc->vc_rows*ch);
-        unsigned int rs = info->var.xres - rw;
-        unsigned int bs = info->var.yres - bh;
-        struct fb_fillrect region;
-
-        region.color = color;
-        region.rop = ROP_COPY;
-
-        if (rw && !bottom_only) {
-                region.dx = info->var.xoffset + rs;
-                region.dy = 0;
-                region.width = rw;
-                region.height = info->var.yres_virtual;
-                info->fbops->fb_fillrect(info, &region);
-        }
-
-        if (bh) {
-                region.dx = info->var.xoffset;
-                region.dy = info->var.yoffset + bs;
-                region.width = rs;
-                region.height = bh;
-                info->fbops->fb_fillrect(info, &region);
-        }
-}
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 82b8d75..464baad 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -606,7 +606,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->scale = data->max_brightness;
+ 	}
+ 
+-	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
++	pb->lth_brightness = data->lth_brightness * (div_u64(state.period,
++				pb->scale));
+ 
+ 	props.type = BACKLIGHT_RAW;
+ 	props.max_brightness = data->max_brightness;
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project

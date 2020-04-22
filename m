@@ -1,56 +1,33 @@
-From: Jason Yan <yanaijie@huawei.com>
-Date: Wed, 22 Apr 2020 07:19:03 +0000
-Subject: [PATCH] omapfb/dss: fix comparison to bool warning
-Message-Id: <20200422071903.637-1-yanaijie@huawei.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 22 Apr 2020 07:51:37 +0000
+Subject: Re: [PATCH] omapfb/dss: fix comparison to bool warning
+Message-Id: <fecc5f43-d1a2-f29f-da3a-79c297bff462@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200422071903.637-1-yanaijie@huawei.com>
+In-Reply-To: <20200422071903.637-1-yanaijie@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, afd@ti.com, tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: Jason Yan <yanaijie@huawei.com>
+To: Jason Yan <yanaijie@huawei.com>, b.zolnierkie@samsung.com, afd@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Fix the following coccicheck warning:
+On 22/04/2020 10:19, Jason Yan wrote:
+> Fix the following coccicheck warning:
+> 
+> drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c:461:15-32: WARNING:
+> Comparison to bool
+> drivers/video/fbdev/omap2/omapfb/dss/dispc.c:891:5-35: WARNING:
+> Comparison of 0/1 to bool variable
+> 
+> Signed-off-by: Jason Yan <yanaijie@huawei.com>
+> ---
+>   drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 2 +-
+>   drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 4 +---
+>   2 files changed, 2 insertions(+), 4 deletions(-)
 
-drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c:461:15-32: WARNING:
-Comparison to bool
-drivers/video/fbdev/omap2/omapfb/dss/dispc.c:891:5-35: WARNING:
-Comparison of 0/1 to bool variable
+Reviewed-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Signed-off-by: Jason Yan <yanaijie@huawei.com>
----
- drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 2 +-
- drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 4 +---
- 2 files changed, 2 insertions(+), 4 deletions(-)
+  Tomi
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-index 4a16798b2ecd..3bb951eb29c7 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-@@ -888,7 +888,7 @@ static void dispc_ovl_set_color_mode(enum omap_plane plane,
- static void dispc_ovl_configure_burst_type(enum omap_plane plane,
- 		enum omap_dss_rotation_type rotation_type)
- {
--	if (dss_has_feature(FEAT_BURST_2D) = 0)
-+	if (!dss_has_feature(FEAT_BURST_2D))
- 		return;
- 
- 	if (rotation_type = OMAP_DSS_ROT_TILER)
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-index 7060ae56c062..ef659c89ba58 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-@@ -455,11 +455,9 @@ static void hdmi_disconnect(struct omap_dss_device *dssdev,
- static int hdmi_read_edid(struct omap_dss_device *dssdev,
- 		u8 *edid, int len)
- {
--	bool need_enable;
-+	bool need_enable = !hdmi.core_enabled;
- 	int r;
- 
--	need_enable = hdmi.core_enabled = false;
--
- 	if (need_enable) {
- 		r = hdmi_core_enable(dssdev);
- 		if (r)
 -- 
-2.21.1
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

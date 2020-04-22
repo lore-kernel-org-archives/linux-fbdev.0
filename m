@@ -1,93 +1,56 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Wed, 08 Apr 2020 10:18:52 +0000
-Subject: Re: [PATCH] video: fbdev: matroxfb: remove dead code and set but not used variable
-Message-Id: <20200408101852.GC20795@ravnborg.org>
+From: Jason Yan <yanaijie@huawei.com>
+Date: Wed, 22 Apr 2020 07:19:03 +0000
+Subject: [PATCH] omapfb/dss: fix comparison to bool warning
+Message-Id: <20200422071903.637-1-yanaijie@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200403021609.20968-1-yanaijie@huawei.com>
-In-Reply-To: <20200403021609.20968-1-yanaijie@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jason Yan <yanaijie@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, b.zolnierkie@samsung.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: b.zolnierkie@samsung.com, afd@ti.com, tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Jason Yan <yanaijie@huawei.com>
 
-Hi Jason.
+Fix the following coccicheck warning:
 
-On Fri, Apr 03, 2020 at 10:16:09AM +0800, Jason Yan wrote:
-> Fix the following gcc warning:
-> 
-> drivers/video/fbdev/matrox/g450_pll.c:336:15: warning: variable
-> ‘pixel_vco’ set but not used [-Wunused-but-set-variable]
->   unsigned int pixel_vco;
->                ^~~~~~~~~
-> 
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Jason Yan <yanaijie@huawei.com>
+drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c:461:15-32: WARNING:
+Comparison to bool
+drivers/video/fbdev/omap2/omapfb/dss/dispc.c:891:5-35: WARNING:
+Comparison of 0/1 to bool variable
 
-Thanks, committed and pushed to drm-misc-next.
-The fix will show up in upstream kernel at the next
-merge window.
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 4 +---
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-	Sam
-
-> ---
->  drivers/video/fbdev/matrox/g450_pll.c | 22 ----------------------
->  1 file changed, 22 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/matrox/g450_pll.c b/drivers/video/fbdev/matrox/g450_pll.c
-> index c15f8a57498e..ff8e321a22ce 100644
-> --- a/drivers/video/fbdev/matrox/g450_pll.c
-> +++ b/drivers/video/fbdev/matrox/g450_pll.c
-> @@ -333,11 +333,9 @@ static int __g450_setclk(struct matrox_fb_info *minfo, unsigned int fout,
->  			 unsigned int *deltaarray)
->  {
->  	unsigned int mnpcount;
-> -	unsigned int pixel_vco;
->  	const struct matrox_pll_limits* pi;
->  	struct matrox_pll_cache* ci;
->  
-> -	pixel_vco = 0;
->  	switch (pll) {
->  		case M_PIXEL_PLL_A:
->  		case M_PIXEL_PLL_B:
-> @@ -420,7 +418,6 @@ static int __g450_setclk(struct matrox_fb_info *minfo, unsigned int fout,
->  				
->  				mnp = matroxfb_DAC_in(minfo, M1064_XPIXPLLCM) << 16;
->  				mnp |= matroxfb_DAC_in(minfo, M1064_XPIXPLLCN) << 8;
-> -				pixel_vco = g450_mnp2vco(minfo, mnp);
->  				matroxfb_DAC_unlock_irqrestore(flags);
->  			}
->  			pi = &minfo->limits.video;
-> @@ -441,25 +438,6 @@ static int __g450_setclk(struct matrox_fb_info *minfo, unsigned int fout,
->  			unsigned int delta;
->  
->  			vco = g450_mnp2vco(minfo, mnp);
-> -#if 0			
-> -			if (pll = M_VIDEO_PLL) {
-> -				unsigned int big, small;
-> -
-> -				if (vco < pixel_vco) {
-> -					small = vco;
-> -					big = pixel_vco;
-> -				} else {
-> -					small = pixel_vco;
-> -					big = vco;
-> -				}
-> -				while (big > small) {
-> -					big >>= 1;
-> -				}
-> -				if (big = small) {
-> -					continue;
-> -				}
-> -			}
-> -#endif			
->  			delta = pll_freq_delta(fout, g450_vco2f(mnp, vco));
->  			for (idx = mnpcount; idx > 0; idx--) {
->  				/* = is important; due to nextpll algorithm we get
-> -- 
-> 2.17.2
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+index 4a16798b2ecd..3bb951eb29c7 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+@@ -888,7 +888,7 @@ static void dispc_ovl_set_color_mode(enum omap_plane plane,
+ static void dispc_ovl_configure_burst_type(enum omap_plane plane,
+ 		enum omap_dss_rotation_type rotation_type)
+ {
+-	if (dss_has_feature(FEAT_BURST_2D) = 0)
++	if (!dss_has_feature(FEAT_BURST_2D))
+ 		return;
+ 
+ 	if (rotation_type = OMAP_DSS_ROT_TILER)
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+index 7060ae56c062..ef659c89ba58 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+@@ -455,11 +455,9 @@ static void hdmi_disconnect(struct omap_dss_device *dssdev,
+ static int hdmi_read_edid(struct omap_dss_device *dssdev,
+ 		u8 *edid, int len)
+ {
+-	bool need_enable;
++	bool need_enable = !hdmi.core_enabled;
+ 	int r;
+ 
+-	need_enable = hdmi.core_enabled = false;
+-
+ 	if (need_enable) {
+ 		r = hdmi_core_enable(dssdev);
+ 		if (r)
+-- 
+2.21.1

@@ -1,20 +1,37 @@
-From: Richard Martins <richard.martins@list.ru>
-Date: Sun, 26 Apr 2020 23:44:27 +0000
-Subject: Purchase Order
-Message-Id: <20200426235545.D8AA812EE8@mail.bengiamein.cf>
+From: Dejin Zheng <zhengdejin5@gmail.com>
+Date: Wed, 22 Apr 2020 16:07:19 +0000
+Subject: [PATCH v1] video: fbdev: sm712fb: fix an issue about iounmap for a wrong address
+Message-Id: <20200422160719.27763-1-zhengdejin5@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, b.zolnierkie@samsung.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Dejin Zheng <zhengdejin5@gmail.com>, Andy Shevchenko <andy.shevchenko@gmail.com>, linux-kernel@vger.kernel.org
 
-Hi, friend,
+the sfb->fb->screen_base is not save the value get by iounmap() when
+the chip id is 0x720. so iounmap() for address sfb->fb->screen_base
+is not right.
 
-This is Richard Martins and i am purchasing manager from BANTEX INTERNATIONAL INC. in the US.
-We are glad to know about your company from the web and we are interested in your products.
-Could you kindly send us your Latest catalog and price list for our trial order.
+Fixes: 1461d6672864854 ("staging: sm7xxfb: merge sm712fb with fbdev")
+CC: Andy Shevchenko <andy.shevchenko@gmail.com>
+Signed-off-by: Dejin Zheng <zhengdejin5@gmail.com>
+---
+ drivers/video/fbdev/sm712fb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Thanks and Best Regards,
-Mr.Richard Martins
-Purchasing Manager
-BANTEX INTERNATIONAL INC.
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index 6a1b4a853d9e..8cd655d6d628 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -1429,6 +1429,8 @@ static int smtc_map_smem(struct smtcfb_info *sfb,
+ static void smtc_unmap_smem(struct smtcfb_info *sfb)
+ {
+ 	if (sfb && sfb->fb->screen_base) {
++		if (sfb->chip_id = 0x720)
++			sfb->fb->screen_base -= 0x00200000;
+ 		iounmap(sfb->fb->screen_base);
+ 		sfb->fb->screen_base = NULL;
+ 	}
+-- 
+2.25.0

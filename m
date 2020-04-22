@@ -1,57 +1,41 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 17 Apr 2020 11:58:23 +0000
-Subject: [PATCH v10 06/14] drm/i915: Include DP VSC SDP in the crtc state dump
-Message-Id: <20200417120040.3432332-7-gwan-gyeong.mun@intel.com>
+From: Jason Yan <yanaijie@huawei.com>
+Date: Wed, 22 Apr 2020 07:18:54 +0000
+Subject: [PATCH] fbdev: aty: use true,false for bool variables in atyfb_base.c
+Message-Id: <20200422071854.513-1-yanaijie@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
+To: b.zolnierkie@samsung.com, arnd@arndb.de, jrdr.linux@gmail.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Jason Yan <yanaijie@huawei.com>
 
-Dump out the DP VSC SDP in the normal crtc state dump
+Fix the following coccicheck warning:
 
-v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-    Use drm core's DP VSC SDP logging function
+drivers/video/fbdev/aty/atyfb_base.c:3822:3-10: WARNING: Assignment of
+0/1 to bool variable
+drivers/video/fbdev/aty/atyfb_base.c:3824:3-9: WARNING: Assignment of
+0/1 to bool variable
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Signed-off-by: Jason Yan <yanaijie@huawei.com>
 ---
- drivers/gpu/drm/i915/display/intel_display.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/video/fbdev/aty/atyfb_base.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index 1c2814f753f6..332d857ad455 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -12844,6 +12844,16 @@ intel_dump_infoframe(struct drm_i915_private *dev_priv,
- 	hdmi_infoframe_log(KERN_DEBUG, dev_priv->drm.dev, frame);
- }
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 49d192869cf5..b0ac895e5ac9 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3819,9 +3819,9 @@ static int __init atyfb_setup(char *options)
  
-+static void
-+intel_dump_dp_vsc_sdp(struct drm_i915_private *dev_priv,
-+		      const struct drm_dp_vsc_sdp *vsc)
-+{
-+	if (!drm_debug_enabled(DRM_UT_KMS))
-+		return;
-+
-+	drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, vsc);
-+}
-+
- #define OUTPUT_TYPE(x) [INTEL_OUTPUT_ ## x] = #x
- 
- static const char * const output_type_str[] = {
-@@ -13007,6 +13017,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
- 	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
- 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
-+	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(DP_SDP_VSC))
-+		intel_dump_dp_vsc_sdp(dev_priv, &pipe_config->infoframes.vsc);
- 
- 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
- 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
+ 	while ((this_opt = strsep(&options, ",")) != NULL) {
+ 		if (!strncmp(this_opt, "noaccel", 7)) {
+-			noaccel = 1;
++			noaccel = true;
+ 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
+-			nomtrr = 1;
++			nomtrr = true;
+ 		} else if (!strncmp(this_opt, "vram:", 5))
+ 			vram = simple_strtoul(this_opt + 5, NULL, 0);
+ 		else if (!strncmp(this_opt, "pll:", 4))
 -- 
-2.25.0
+2.21.1

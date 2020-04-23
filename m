@@ -1,43 +1,104 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 20 Apr 2020 15:29:50 +0000
-Subject: Re: [PATCH 2/5] backlight: led_bl: drop useless NULL initialization
-Message-Id: <20200420152950.hbc54fzxta7lq5ug@holly.lan>
+From: Dejin Zheng <zhengdejin5@gmail.com>
+Date: Thu, 23 Apr 2020 16:42:51 +0000
+Subject: [PATCH v3] console: newport_con: fix an issue about leak related system resources
+Message-Id: <20200423164251.3349-1-zhengdejin5@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200417113312.24340-1-tomi.valkeinen@ti.com>
- <20200417113312.24340-2-tomi.valkeinen@ti.com>
-In-Reply-To: <20200417113312.24340-2-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: b.zolnierkie@samsung.com, gregkh@linuxfoundation.org, tglx@linutronix.de, akpm@osdl.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Dejin Zheng <zhengdejin5@gmail.com>, Andy Shevchenko <andy.shevchenko@gmail.com>, linux-kernel@vger.kernel.org
 
-On Fri, Apr 17, 2020 at 02:33:09PM +0300, Tomi Valkeinen wrote:
-> There's no need to set 'levels' to NULL.
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+A call of the function do_take_over_console() can fail here.
+The corresponding system resources were not released then.
+Thus add a call of iounmap() and release_mem_region()
+together with the check of a failure predicate. and also
+add release_mem_region() on device removal.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Fixes: e86bb8acc0fdc ("[PATCH] VT binding: Make newport_con support binding")
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>
+Suggested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Dejin Zheng <zhengdejin5@gmail.com>
+---
+v2 -> v3:
+	- modify commit tag CC to Cc by Andy's suggestion.
+	- modify Subject 'console: console:' to 'console: newport_con:'
+	  by Bartlomiej's suggestion.
+	- add missing release_mem_region() on error and on device removal
+	  by Bartlomiej's suggestion.
+	- add correct fixes commit, before this patch, add a wrong 'Fixes:
+	  e84de0c6190503 ("MIPS: GIO bus support for SGI IP22/28")'
+	  thanks Bartlomiej again!
 
+v1 -> v2:
+	- modify the commit comments. The commit comments have some more
+	  appropriate instructions by Markus'suggestion. here is my first
+	  version commit comments:
 
-> ---
->  drivers/video/backlight/led_bl.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
-> index d4e1ce684366..c46ecdfe8b0a 100644
-> --- a/drivers/video/backlight/led_bl.c
-> +++ b/drivers/video/backlight/led_bl.c
-> @@ -140,7 +140,7 @@ static int led_bl_parse_levels(struct device *dev,
->  	if (num_levels > 1) {
->  		int i;
->  		unsigned int db;
-> -		u32 *levels = NULL;
-> +		u32 *levels;
->  
->  		levels = devm_kzalloc(dev, sizeof(u32) * num_levels,
->  				      GFP_KERNEL);
-> -- 
-> Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-> Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
-> 
+	  if do_take_over_console() return an error in the newport_probe(),
+	  due to the io virtual address is not released, it will cause a
+	  leak.
+	 
+ drivers/video/console/newport_con.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
+index 00dddf6e08b0..2d2ee17052e8 100644
+--- a/drivers/video/console/newport_con.c
++++ b/drivers/video/console/newport_con.c
+@@ -32,6 +32,8 @@
+ #include <linux/linux_logo.h>
+ #include <linux/font.h>
+ 
++#define NEWPORT_LEN	0x10000
++
+ #define FONT_DATA ((unsigned char *)font_vga_8x16.data)
+ 
+ /* borrowed from fbcon.c */
+@@ -43,6 +45,7 @@
+ static unsigned char *font_data[MAX_NR_CONSOLES];
+ 
+ static struct newport_regs *npregs;
++static unsigned long newport_addr;
+ 
+ static int logo_active;
+ static int topscan;
+@@ -702,7 +705,6 @@ const struct consw newport_con = {
+ static int newport_probe(struct gio_device *dev,
+ 			 const struct gio_device_id *id)
+ {
+-	unsigned long newport_addr;
+ 	int err;
+ 
+ 	if (!dev->resource.start)
+@@ -712,7 +714,7 @@ static int newport_probe(struct gio_device *dev,
+ 		return -EBUSY; /* we only support one Newport as console */
+ 
+ 	newport_addr = dev->resource.start + 0xF0000;
+-	if (!request_mem_region(newport_addr, 0x10000, "Newport"))
++	if (!request_mem_region(newport_addr, NEWPORT_LEN, "Newport"))
+ 		return -ENODEV;
+ 
+ 	npregs = (struct newport_regs *)/* ioremap cannot fail */
+@@ -720,6 +722,11 @@ static int newport_probe(struct gio_device *dev,
+ 	console_lock();
+ 	err = do_take_over_console(&newport_con, 0, MAX_NR_CONSOLES - 1, 1);
+ 	console_unlock();
++
++	if (err) {
++		iounmap((void *)npregs);
++		release_mem_region(newport_addr, NEWPORT_LEN);
++	}
+ 	return err;
+ }
+ 
+@@ -727,6 +734,7 @@ static void newport_remove(struct gio_device *dev)
+ {
+ 	give_up_console(&newport_con);
+ 	iounmap((void *)npregs);
++	release_mem_region(newport_addr, NEWPORT_LEN);
+ }
+ 
+ static struct gio_device_id newport_ids[] = {
+-- 
+2.25.0

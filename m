@@ -1,40 +1,42 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Tue, 07 Apr 2020 18:18:05 +0000
-Subject: Re: [PATCH] video: fbdev: don't print error message on platform_get_irq() failure
-Message-Id: <20200407181805.GC6356@ravnborg.org>
+From: Dejin Zheng <zhengdejin5@gmail.com>
+Date: Thu, 23 Apr 2020 14:26:27 +0000
+Subject: [PATCH v2] console: console: Complete exception handling in newport_probe()
+Message-Id: <20200423142627.1820-1-zhengdejin5@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200406053450.8380-1-tangbin@cmss.chinamobile.com>
-In-Reply-To: <20200406053450.8380-1-tangbin@cmss.chinamobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tang Bin <tangbin@cmss.chinamobile.com>
-Cc: alexandre.belloni@bootlin.com, b.zolnierkie@samsung.com, nicolas.ferre@microchip.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, ludovic.desroches@microchip.com, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: gregkh@linuxfoundation.org, tglx@linutronix.de, FlorianSchandinat@gmx.de, b.zolnierkie@samsung.com, ralf@linux-mips.org, tsbogend@alpha.franken.de, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Dejin Zheng <zhengdejin5@gmail.com>, Andy Shevchenko <andy.shevchenko@gmail.com>, linux-kernel@vger.kernel.org
 
-Hi Tang Bin
+A call of the function ¡°do_take_over_console¡± can fail here.
+The corresponding system resources were not released then.
+Thus add a call of the function ¡°iounmap¡± together with the check
+of a failure predicate.
 
-On Mon, Apr 06, 2020 at 01:34:50PM +0800, Tang Bin wrote:
-> The platform_get_irq() can print error message,so remove the redundant
-> dev_err() here.
-> 
-> Signed-off-by: Tang Bin <tangbin@cmss.chinamobile.com>
-> ---
->  drivers/video/fbdev/atmel_lcdfb.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-> index d567f5d56..1e2521925 100644
-> --- a/drivers/video/fbdev/atmel_lcdfb.c
-> +++ b/drivers/video/fbdev/atmel_lcdfb.c
-> @@ -1114,7 +1114,6 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
->  
->  	sinfo->irq_base = platform_get_irq(pdev, 0);
->  	if (sinfo->irq_base < 0) {
-> -		dev_err(dev, "unable to get irq\n");
->  		ret = sinfo->irq_base;
->  		goto stop_clk;
->  	}
+Fixes: e84de0c6190503 ("MIPS: GIO bus support for SGI IP22/28")
+CC: Andy Shevchenko <andy.shevchenko@gmail.com>
+Signed-off-by: Dejin Zheng <zhengdejin5@gmail.com>
+---
+v1 -> v2:
+	- modify the commit comments by Markus'suggestion.
 
-Thanks, applied to drm-misc-next. The fix will appear in kernel 5.8
+ drivers/video/console/newport_con.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-	Sam
+diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
+index 00dddf6e08b0..6bfc8e3ffd4a 100644
+--- a/drivers/video/console/newport_con.c
++++ b/drivers/video/console/newport_con.c
+@@ -720,6 +720,9 @@ static int newport_probe(struct gio_device *dev,
+ 	console_lock();
+ 	err = do_take_over_console(&newport_con, 0, MAX_NR_CONSOLES - 1, 1);
+ 	console_unlock();
++
++	if (err)
++		iounmap((void *)npregs);
+ 	return err;
+ }
+ 
+-- 
+2.25.0

@@ -1,226 +1,39 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Fri, 17 Apr 2020 11:58:15 +0000
-Subject: [PATCH v10 03/14] drm: Add logging function for DP VSC SDP
-Message-Id: <20200417120040.3432332-4-gwan-gyeong.mun@intel.com>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Wed, 29 Apr 2020 08:45:05 +0000
+Subject: [PATCH] video: pxafb: Fix the function used to balance a 'dma_alloc_coherent()' call
+Message-Id: <20200429084505.108897-1-christophe.jaillet@wanadoo.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200417120040.3432332-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, uma.shankar@intel.com, laurent.pinchart@ideasonboard.com
+To: b.zolnierkie@samsung.com, sumit.semwal@linaro.org, rafael.j.wysocki@intel.com, corbet@lwn.net, viresh.kumar@linaro.org, jani.nikula@intel.com, mchehab+samsung@kernel.org, eric.miao@marvell.com
+Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-When receiving video it is very useful to be able to log DP VSC SDP.
-This greatly simplifies debugging.
+'dma_alloc_coherent()' must be balanced by a call to 'dma_free_coherent()'
+not 'dma_free_wc()'.
+The correct dma_free_ function is already used in the error handling path
+of the probe function.
 
-v2: Minor style fix
-v3: Move logging functions to drm core [Jani N]
-v5: Rebased
-v10: Rebased
-
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Fixes: 77e196752bdd ("[ARM] pxafb: allow video memory size to be configurable")
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- drivers/gpu/drm/drm_dp_helper.c | 174 ++++++++++++++++++++++++++++++++
- include/drm/drm_dp_helper.h     |   3 +
- 2 files changed, 177 insertions(+)
+ drivers/video/fbdev/pxafb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_dp_helper.c b/drivers/gpu/drm/drm_dp_helper.c
-index 612a59ec8116..43e57632b00a 100644
---- a/drivers/gpu/drm/drm_dp_helper.c
-+++ b/drivers/gpu/drm/drm_dp_helper.c
-@@ -1629,3 +1629,177 @@ int drm_dp_set_phy_test_pattern(struct drm_dp_aux *aux,
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index 00b96a78676e..6f972bed410a 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -2417,8 +2417,8 @@ static int pxafb_remove(struct platform_device *dev)
+ 
+ 	free_pages_exact(fbi->video_mem, fbi->video_mem_size);
+ 
+-	dma_free_wc(&dev->dev, fbi->dma_buff_size, fbi->dma_buff,
+-		    fbi->dma_buff_phys);
++	dma_free_coherent(&dev->dev, fbi->dma_buff_size, fbi->dma_buff,
++			  fbi->dma_buff_phys);
+ 
  	return 0;
  }
- EXPORT_SYMBOL(drm_dp_set_phy_test_pattern);
-+
-+static const char *dp_pixelformat_get_name(enum dp_pixelformat pixelformat)
-+{
-+	if (pixelformat < 0 || pixelformat > DP_PIXELFORMAT_RESERVED)
-+		return "Invalid";
-+
-+	switch (pixelformat) {
-+	case DP_PIXELFORMAT_RGB:
-+		return "RGB";
-+	case DP_PIXELFORMAT_YUV444:
-+		return "YUV444";
-+	case DP_PIXELFORMAT_YUV422:
-+		return "YUV422";
-+	case DP_PIXELFORMAT_YUV420:
-+		return "YUV420";
-+	case DP_PIXELFORMAT_Y_ONLY:
-+		return "Y_ONLY";
-+	case DP_PIXELFORMAT_RAW:
-+		return "RAW";
-+	default:
-+		return "Reserved";
-+	}
-+}
-+
-+static const char *dp_colorimetry_get_name(enum dp_pixelformat pixelformat,
-+					   enum dp_colorimetry colorimetry)
-+{
-+	if (pixelformat < 0 || pixelformat > DP_PIXELFORMAT_RESERVED)
-+		return "Invalid";
-+
-+	switch (colorimetry) {
-+	case DP_COLORIMETRY_DEFAULT:
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "sRGB";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.601";
-+		case DP_PIXELFORMAT_Y_ONLY:
-+			return "DICOM PS3.14";
-+		case DP_PIXELFORMAT_RAW:
-+			return "Custom Color Profile";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_WIDE_FIXED: /* and DP_COLORIMETRY_BT709_YCC */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "Wide Fixed";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.709";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_WIDE_FLOAT: /* and DP_COLORIMETRY_XVYCC_601 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "Wide Float";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "xvYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_OPRGB: /* and DP_COLORIMETRY_XVYCC_709 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "OpRGB";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "xvYCC 709";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_DCI_P3_RGB: /* and DP_COLORIMETRY_SYCC_601 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "DCI-P3";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "sYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_RGB_CUSTOM: /* and DP_COLORIMETRY_OPYCC_601 */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "Custom Profile";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "OpYCC 601";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_BT2020_RGB: /* and DP_COLORIMETRY_BT2020_CYCC */
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_RGB:
-+			return "BT.2020 RGB";
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.2020 CYCC";
-+		default:
-+			return "Reserved";
-+		}
-+	case DP_COLORIMETRY_BT2020_YCC:
-+		switch (pixelformat) {
-+		case DP_PIXELFORMAT_YUV444:
-+		case DP_PIXELFORMAT_YUV422:
-+		case DP_PIXELFORMAT_YUV420:
-+			return "BT.2020 YCC";
-+		default:
-+			return "Reserved";
-+		}
-+	default:
-+		return "Invalid";
-+	}
-+}
-+
-+static const char *dp_dynamic_range_get_name(enum dp_dynamic_range dynamic_range)
-+{
-+	switch (dynamic_range) {
-+	case DP_DYNAMIC_RANGE_VESA:
-+		return "VESA range";
-+	case DP_DYNAMIC_RANGE_CTA:
-+		return "CTA range";
-+	default:
-+		return "Invalid";
-+	}
-+}
-+
-+static const char *dp_content_type_get_name(enum dp_content_type content_type)
-+{
-+	switch (content_type) {
-+	case DP_CONTENT_TYPE_NOT_DEFINED:
-+		return "Not defined";
-+	case DP_CONTENT_TYPE_GRAPHICS:
-+		return "Graphics";
-+	case DP_CONTENT_TYPE_PHOTO:
-+		return "Photo";
-+	case DP_CONTENT_TYPE_VIDEO:
-+		return "Video";
-+	case DP_CONTENT_TYPE_GAME:
-+		return "Game";
-+	default:
-+		return "Reserved";
-+	}
-+}
-+
-+void drm_dp_vsc_sdp_log(const char *level, struct device *dev,
-+			const struct drm_dp_vsc_sdp *vsc)
-+{
-+#define DP_SDP_LOG(fmt, ...) dev_printk(level, dev, fmt, ##__VA_ARGS__)
-+	DP_SDP_LOG("DP SDP: %s, revision %u, length %u\n", "VSC",
-+		   vsc->revision, vsc->length);
-+	DP_SDP_LOG("    pixelformat: %s\n",
-+		   dp_pixelformat_get_name(vsc->pixelformat));
-+	DP_SDP_LOG("    colorimetry: %s\n",
-+		   dp_colorimetry_get_name(vsc->pixelformat, vsc->colorimetry));
-+	DP_SDP_LOG("    bpc: %u\n", vsc->bpc);
-+	DP_SDP_LOG("    dynamic range: %s\n",
-+		   dp_dynamic_range_get_name(vsc->dynamic_range));
-+	DP_SDP_LOG("    content type: %s\n",
-+		   dp_content_type_get_name(vsc->content_type));
-+#undef DP_SDP_LOG
-+}
-+EXPORT_SYMBOL(drm_dp_vsc_sdp_log);
-diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
-index 3beb2aac8c4c..cd44509772cb 100644
---- a/include/drm/drm_dp_helper.h
-+++ b/include/drm/drm_dp_helper.h
-@@ -1348,6 +1348,9 @@ struct drm_dp_vsc_sdp {
- 	enum dp_content_type content_type;
- };
- 
-+void drm_dp_vsc_sdp_log(const char *level, struct device *dev,
-+			const struct drm_dp_vsc_sdp *vsc);
-+
- int drm_dp_psr_setup_time(const u8 psr_cap[EDP_PSR_RECEIVER_CAP_SIZE]);
- 
- static inline int
 -- 
-2.25.0
+2.25.1

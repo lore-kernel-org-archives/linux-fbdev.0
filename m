@@ -1,57 +1,35 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Apr 2020 12:46:28 +0000
-Subject: [PATCHv2 3/4] backlight: led_bl: add led_access locking
-Message-Id: <20200421124629.20977-4-tomi.valkeinen@ti.com>
+From: Matej Dujava <mdujava@kocurkovo.cz>
+Date: Thu, 30 Apr 2020 20:09:26 +0000
+Subject: [PATCH 3/3] staging: sm750fb: print error message with actual value
+Message-Id: <1588277366-19354-4-git-send-email-mdujava@kocurkovo.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200421124629.20977-1-tomi.valkeinen@ti.com>
-In-Reply-To: <20200421124629.20977-1-tomi.valkeinen@ti.com>
+References: <1588277366-19354-1-git-send-email-mdujava@kocurkovo.cz>
+In-Reply-To: <1588277366-19354-1-git-send-email-mdujava@kocurkovo.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-led_bl does not lock 'led_access' when calling led_sysfs_disable and
-led_sysfs_enable, causing the below WARN. Add the locking.
+This patch will update error message, so it is same as error message in
+another function.
 
-WARNING: CPU: 0 PID: 223 at drivers/leds/led-core.c:353 led_sysfs_disable+0x4c/0x5c
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
 ---
- drivers/video/backlight/led_bl.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
-index c46ecdfe8b0a..63693c4f0883 100644
---- a/drivers/video/backlight/led_bl.c
-+++ b/drivers/video/backlight/led_bl.c
-@@ -216,8 +216,11 @@ static int led_bl_probe(struct platform_device *pdev)
- 		return PTR_ERR(priv->bl_dev);
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index c3ce7e653c7f..a1a82e59dfee 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -390,7 +390,7 @@ static int lynxfb_ops_set_par(struct fb_info *info)
+ 	var->accel_flags = 0;/*FB_ACCELF_TEXT;*/
+ 
+ 	if (ret) {
+-		pr_err("pixel bpp format not satisfied\n.");
++		pr_err("bpp %d not supported\n", var->bits_per_pixel);
+ 		return ret;
  	}
- 
--	for (i = 0; i < priv->nb_leds; i++)
-+	for (i = 0; i < priv->nb_leds; i++) {
-+		mutex_lock(&priv->leds[i]->led_access);
- 		led_sysfs_disable(priv->leds[i]);
-+		mutex_unlock(&priv->leds[i]->led_access);
-+	}
- 
- 	backlight_update_status(priv->bl_dev);
- 
-@@ -233,8 +236,11 @@ static int led_bl_remove(struct platform_device *pdev)
- 	backlight_device_unregister(bl);
- 
- 	led_bl_power_off(priv);
--	for (i = 0; i < priv->nb_leds; i++)
-+	for (i = 0; i < priv->nb_leds; i++) {
-+		mutex_lock(&priv->leds[i]->led_access);
- 		led_sysfs_enable(priv->leds[i]);
-+		mutex_unlock(&priv->leds[i]->led_access);
-+	}
- 
- 	return 0;
- }
+ 	ret = hw_sm750_crtc_setMode(crtc, var, fix);
 -- 
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+2.26.2

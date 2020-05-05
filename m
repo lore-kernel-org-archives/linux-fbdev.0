@@ -1,40 +1,34 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Thu, 14 May 2020 06:07:23 +0000
-Subject: [PATCH v12 05/14] drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
-Message-Id: <20200514060732.3378396-6-gwan-gyeong.mun@intel.com>
+From: AISHA GADDAFI <aishagaddafi569@gmail.com>
+Date: Tue, 05 May 2020 10:50:15 +0000
+Subject: Hello Dear Very Confidential,
+Message-Id: <CA+AMV-3M3MVLEOfnkxs4S=SaKH-Jena0KpVGOdT+GwNg8rP=nw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, laurent.pinchart@ideasonboard.com
+To: linux-fbdev@vger.kernel.org
 
-Dump out the DP HDR Metadata Infoframe SDP in the normal crtc state dump.
+Hello Dear Very Confidential,
 
-HDMI Dynamic Range and Mastering (DRM) infoframe and DP HDR Metadata
-Infoframe SDP use the same member variable in infoframes of crtc state.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
----
- drivers/gpu/drm/i915/display/intel_display.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index 80b1439c0d88..eb3ab77bc559 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -13026,6 +13026,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
- 	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
- 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
-+	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
-+		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
- 
- 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
- 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
--- 
-2.25.0
+I am Aisha Gadhafi, Daughter of the former Libyan leader, Col. Muammar
+Gadhafi. I am offering you a partnership proposal in a classified
+monetary transaction, which involves the need to secretly relocate and
+secures some of our family funds concealed in a special escrow dormant
+holding with a financial services company in Africa. I am in a very
+difficult situation and I must immediately relocate this fund for
+safety and investments purposes.
+
+More so, this must be done in such a way that it must not be tied to
+me as a result of my father's death and politics circumstances. More
+details of the transaction will be disclosed to you once you can
+assure me that you can be trusted to handle this. Honesty and trust is
+what I am in quest of, so therefore your assurance of confidentiality
+and trust will be highly appreciated. For further clarification.
+
+I look forward to your earliest response,
+
+Thank you
+
+Aisha  Gadhafi

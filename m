@@ -1,39 +1,78 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Thu, 07 May 2020 13:27:04 +0000
-Subject: [PATCH v11 12/14] drm/i915: Stop sending DP SDPs on ddi disable
-Message-Id: <20200507132706.2058969-13-gwan-gyeong.mun@intel.com>
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Wed, 06 May 2020 17:40:52 +0000
+Subject: Re: [PATCH] video: fbdev: i810: use true,false for bool variables
+Message-Id: <20200506174052.GF19296@ravnborg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200507132706.2058969-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200507132706.2058969-1-gwan-gyeong.mun@intel.com>
+References: <20200422071826.49038-1-yanaijie@huawei.com>
+In-Reply-To: <20200422071826.49038-1-yanaijie@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Jason Yan <yanaijie@huawei.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, b.zolnierkie@samsung.com
 
-Call intel_dp_set_infoframes(false) function on intel_ddi_post_disable_dp()
-to make sure not to send VSC SDP and HDR Metadata Infoframe SDP.
+On Wed, Apr 22, 2020 at 03:18:26PM +0800, Jason Yan wrote:
+> Fix the following coccicheck warning:
+> 
+> drivers/video/fbdev/i810/i810_main.c:1969:3-7: WARNING: Assignment of
+> 0/1 to bool variable
+> drivers/video/fbdev/i810/i810_main.c:1971:3-8: WARNING: Assignment of
+> 0/1 to bool variable
+> drivers/video/fbdev/i810/i810_main.c:1973:3-9: WARNING: Assignment of
+> 0/1 to bool variable
+> drivers/video/fbdev/i810/i810_main.c:1975:3-7: WARNING: Assignment of
+> 0/1 to bool variable
+> drivers/video/fbdev/i810/i810_main.c:2001:3-9: WARNING: Assignment of
+> 0/1 to bool variable
+> 
+> Signed-off-by: Jason Yan <yanaijie@huawei.com>
 
-v5: Polish commit message [Uma]
+Thanks.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
----
- drivers/gpu/drm/i915/display/intel_ddi.c | 2 ++
- 1 file changed, 2 insertions(+)
+I have pushed this and your other three patches to drm-misc-next.
+They will show up in the mainline kernel in the next merge window.
 
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index e0862b899f1b..d88431ebb34e 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -3472,6 +3472,8 @@ static void intel_ddi_post_disable_dp(struct intel_atomic_state *state,
- 					  INTEL_OUTPUT_DP_MST);
- 	enum phy phy = intel_port_to_phy(dev_priv, encoder->port);
- 
-+	intel_dp_set_infoframes(encoder, false, old_crtc_state, old_conn_state);
-+
- 	/*
- 	 * Power down sink before disabling the port, otherwise we end
- 	 * up getting interrupts from the sink on detecting link loss.
--- 
-2.25.0
+	Sam
+
+> ---
+>  drivers/video/fbdev/i810/i810_main.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
+> index aa7583d963ac..13bbf7fe13bf 100644
+> --- a/drivers/video/fbdev/i810/i810_main.c
+> +++ b/drivers/video/fbdev/i810/i810_main.c
+> @@ -1966,13 +1966,13 @@ static int i810fb_setup(char *options)
+>  	
+>  	while ((this_opt = strsep(&options, ",")) != NULL) {
+>  		if (!strncmp(this_opt, "mtrr", 4))
+> -			mtrr = 1;
+> +			mtrr = true;
+>  		else if (!strncmp(this_opt, "accel", 5))
+> -			accel = 1;
+> +			accel = true;
+>  		else if (!strncmp(this_opt, "extvga", 6))
+> -			extvga = 1;
+> +			extvga = true;
+>  		else if (!strncmp(this_opt, "sync", 4))
+> -			sync = 1;
+> +			sync = true;
+>  		else if (!strncmp(this_opt, "vram:", 5))
+>  			vram = (simple_strtoul(this_opt+5, NULL, 0));
+>  		else if (!strncmp(this_opt, "voffset:", 8))
+> @@ -1998,7 +1998,7 @@ static int i810fb_setup(char *options)
+>  		else if (!strncmp(this_opt, "vsync2:", 7))
+>  			vsync2 = simple_strtoul(this_opt+7, NULL, 0);
+>  		else if (!strncmp(this_opt, "dcolor", 6))
+> -			dcolor = 1;
+> +			dcolor = true;
+>  		else if (!strncmp(this_opt, "ddc3", 4))
+>  			ddc3 = true;
+>  		else
+> -- 
+> 2.21.1
+> 
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel

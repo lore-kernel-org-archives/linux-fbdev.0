@@ -1,31 +1,39 @@
-From: Changming Liu <liu.changm@northeastern.edu>
-Date: Thu, 21 May 2020 01:15:00 +0000
-Subject: [Bug Report] drivers/video/fbdev/kyro/fbdev.c: unsigned integer wrap-around might cause unexpected b
-Message-Id: <BL0PR06MB45489A53C61DF15BF2F95B9CE5B70@BL0PR06MB4548.namprd06.prod.outlook.com>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Thu, 07 May 2020 13:27:04 +0000
+Subject: [PATCH v11 12/14] drm/i915: Stop sending DP SDPs on ddi disable
+Message-Id: <20200507132706.2058969-13-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200507132706.2058969-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200507132706.2058969-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Lu,
- Long" <l.lu@northeastern.edu>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "yaohway@gmail.com" <yaohway@gmail.com>
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Hi Bartlomiej,
-Greetings, I'm a first-year PhD student who is interested in the usage of UBSan for linux. 
-And after some experiments, I found that in drivers/video/fbdev/kyro/fbdev.c
-function kyro_dev_overlay_viewport_set, there is an unsigned integer overflow that might cause unexpected behavior.
+Call intel_dp_set_infoframes(false) function on intel_ddi_post_disable_dp()
+to make sure not to send VSC SDP and HDR Metadata Infoframe SDP.
 
-More specifically, first at its caller, kyrofb_ioctl, after execution of copy_from_user at line 599, struct ol_viewport_set is filled with data from user space. 
-And the 4 32bit unsigned integers from it are passed into kyro_dev_overlay_viewport_set. In function kyro_dev_overlay_viewport_set, 
-x is added with ulWidth, y is added with ulHeight to transfer the length to the coordinate. 
-And the result coordinate might overflow and wrap around. And it is passed into function SetOverlayViewPort.
+v5: Polish commit message [Uma]
 
-It appears that in function SetOverlayViewPort, these values are treated as the coordinate of the bottom-right point and the wrap-around is not checked.(I might miss something).
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_ddi.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Due to the lack of knowledge of the interaction between this module and the user space, I'm not able to assess if this is a benign wrap-around or whether the wrap-around could happen at all. 
-I'd appreciate for you comment on this issue, this could help me understand linux and unsigned wrap around a lot.
-
-Looking forward to your valuable response!
-
-Best,
-Changming Liu
+diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
+index e0862b899f1b..d88431ebb34e 100644
+--- a/drivers/gpu/drm/i915/display/intel_ddi.c
++++ b/drivers/gpu/drm/i915/display/intel_ddi.c
+@@ -3472,6 +3472,8 @@ static void intel_ddi_post_disable_dp(struct intel_atomic_state *state,
+ 					  INTEL_OUTPUT_DP_MST);
+ 	enum phy phy = intel_port_to_phy(dev_priv, encoder->port);
+ 
++	intel_dp_set_infoframes(encoder, false, old_crtc_state, old_conn_state);
++
+ 	/*
+ 	 * Power down sink before disabling the port, otherwise we end
+ 	 * up getting interrupts from the sink on detecting link loss.
+-- 
+2.25.0

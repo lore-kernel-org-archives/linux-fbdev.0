@@ -1,30 +1,42 @@
-From: Changming Liu <liu.changm@northeastern.edu>
-Date: Fri, 22 May 2020 03:01:25 +0000
-Subject: [Bug Report] drivers/video/fbdev/da8xx-fb.c: undefined behavior when left shifting
-Message-Id: <BL0PR06MB45486287654FC3C2045A5655E5B40@BL0PR06MB4548.namprd06.prod.outlook.com>
+From: Bernard <bernard@vivo.com>
+Date: Fri, 08 May 2020 01:53:07 +0000
+Subject: =?UTF-8?B?UmU6W1BBVENIXSBkcml2ZXJzL3ZpZGVvOiBjbGVhbnVwIGNvZGluZyBzdHlsZSBpbiB2aWRlbyBhIGJpdA==?=
+Message-Id: <AKEA*wCFCDjDmtJ1Hlm3L4pz.3.1588902787737.Hmail.bernard@vivo.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+In-Reply-To: <20200427080530.3234-1-bernard@vivo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Lu,
- Long" <l.lu@northeastern.edu>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "yaohway@gmail.com" <yaohway@gmail.com>
+To: Bernard Zhao <bernard@vivo.com>
+Cc: opensource.kernel@vivo.com, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Uma Shankar <uma.shankar@intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Shashank Sharma <shashank.sharma@intel.com>
 
-Hi Bartlomiej,
-Greetings, it's me again, I sent you a bug report yesterday, I hope that find you well.
-
-This time I found that in /drivers/video/fbdev/da8xx-fb.c
-function lcd_cfg_vertical_sync, there might be an undefined result by left shifting.
-
-More specifically, in function lcd_cfg_vertical_sync, line 437. back_porch is a signed integer 
-which might come from user space. And it's logic AND with string literal 0xff. The result is then left shifted by 24 bits.
-
-The problem is, since the logic AND produce a signed integer and the result of left shifting this signed integer
-(whose lowest 8 bits not cleared) by 24 bits is undefined when its 8th bit is 1. Similar patterns can be found in line 410 as well.
-
-I wonder if this bug is worth fixing? This can help me understand linux and UB a lot.
-
-Looking forward to you valuable response.
-
-Best regards,
-Changming Liu
+CkZyb206IEJlcm5hcmQgWmhhbyA8YmVybmFyZEB2aXZvLmNvbT4KRGF0ZTogMjAyMC0wNC0yNyAx
+NjowNToyMwpUbzogIEJhcnRsb21pZWogWm9sbmllcmtpZXdpY3ogPGIuem9sbmllcmtpZUBzYW1z
+dW5nLmNvbT4sVW1hIFNoYW5rYXIgPHVtYS5zaGFua2FyQGludGVsLmNvbT4sIlZpbGxlIFN5cmrD
+pGzDpCIgPHZpbGxlLnN5cmphbGFAbGludXguaW50ZWwuY29tPixTaGFzaGFuayBTaGFybWEgPHNo
+YXNoYW5rLnNoYXJtYUBpbnRlbC5jb20+LExhdXJlbnQgUGluY2hhcnQgPGxhdXJlbnQucGluY2hh
+cnRAaWRlYXNvbmJvYXJkLmNvbT4sRGFuaWVsIFZldHRlciA8ZGFuaWVsLnZldHRlckBmZndsbC5j
+aD4sQmVybmFyZCBaaGFvIDxiZXJuYXJkQHZpdm8uY29tPixkcmktZGV2ZWxAbGlzdHMuZnJlZWRl
+c2t0b3Aub3JnLGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZyxsaW51eC1rZXJuZWxAdmdlci5r
+ZXJuZWwub3JnCkNjOiAgb3BlbnNvdXJjZS5rZXJuZWxAdml2by5jb20KU3ViamVjdDogW1BBVENI
+XSBkcml2ZXJzL3ZpZGVvOiBjbGVhbnVwIGNvZGluZyBzdHlsZSBpbiB2aWRlbyBhIGJpdD5FbGlt
+aW5hdGUgdGhlIG1hZ2ljIG51bWJlcnMsIGFkZCB2ZW5kZXIgaW5mb2ZyYW1lIHNpemUgbWFjcm8K
+Pmxpa2Ugb3RoZXIgaGRtaSBtb2R1bGVzLgo+Cj5TaWduZWQtb2ZmLWJ5OiBCZXJuYXJkIFpoYW8g
+PGJlcm5hcmRAdml2by5jb20+Cj4tLS0KPiBkcml2ZXJzL3ZpZGVvL2hkbWkuYyB8IDIgKy0KPiBp
+bmNsdWRlL2xpbnV4L2hkbWkuaCB8IDEgKwo+IDIgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRpb25z
+KCspLCAxIGRlbGV0aW9uKC0pCj4KPmRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2hkbWkuYyBi
+L2RyaXZlcnMvdmlkZW8vaGRtaS5jCj5pbmRleCA4NTZhOGM0ZTg0YTIuLmY2OTMwNzZmMmU1ZiAx
+MDA2NDQKPi0tLSBhL2RyaXZlcnMvdmlkZW8vaGRtaS5jCj4rKysgYi9kcml2ZXJzL3ZpZGVvL2hk
+bWkuYwo+QEAgLTQ5NSw3ICs0OTUsNyBAQCBpbnQgaGRtaV92ZW5kb3JfaW5mb2ZyYW1lX2luaXQo
+c3RydWN0IGhkbWlfdmVuZG9yX2luZm9mcmFtZSAqZnJhbWUpCj4gCSAqIHZhbHVlCj4gCSAqLwo+
+IAlmcmFtZS0+czNkX3N0cnVjdCA9IEhETUlfM0RfU1RSVUNUVVJFX0lOVkFMSUQ7Cj4tCWZyYW1l
+LT5sZW5ndGggPSA0Owo+KwlmcmFtZS0+bGVuZ3RoID0gSERNSV9WRU5ET1JfSU5GT0ZSQU1FX1NJ
+WkU7Cj4gCj4gCXJldHVybiAwOwo+IH0KPmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2hkbWku
+aCBiL2luY2x1ZGUvbGludXgvaGRtaS5oCj5pbmRleCA5NjEzZDc5NmNmYjEuLmZmMjVhZWI5NWVl
+NCAxMDA2NDQKPi0tLSBhL2luY2x1ZGUvbGludXgvaGRtaS5oCj4rKysgYi9pbmNsdWRlL2xpbnV4
+L2hkbWkuaAo+QEAgLTU3LDYgKzU3LDcgQEAgZW51bSBoZG1pX2luZm9mcmFtZV90eXBlIHsKPiAj
+ZGVmaW5lIEhETUlfU1BEX0lORk9GUkFNRV9TSVpFICAgIDI1Cj4gI2RlZmluZSBIRE1JX0FVRElP
+X0lORk9GUkFNRV9TSVpFICAxMAo+ICNkZWZpbmUgSERNSV9EUk1fSU5GT0ZSQU1FX1NJWkUgICAg
+MjYKPisjZGVmaW5lIEhETUlfVkVORE9SX0lORk9GUkFNRV9TSVpFICA0Cj4gCj4gI2RlZmluZSBI
+RE1JX0lORk9GUkFNRV9TSVpFKHR5cGUpCVwKPiAJKEhETUlfSU5GT0ZSQU1FX0hFQURFUl9TSVpF
+ICsgSERNSV8gIyMgdHlwZSAjIyBfSU5GT0ZSQU1FX1NJWkUpCj4tLSAKPjIuMjYuMgo+Cg0KDQo

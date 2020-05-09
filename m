@@ -1,7 +1,7 @@
 From: Sam Ravnborg <sam@ravnborg.org>
-Date: Sat, 09 May 2020 21:09:24 +0000
+Date: Sat, 09 May 2020 21:11:04 +0000
 Subject: Re: [PATCH] video: fbdev: pxa168fb: make pxa168fb_init_mode() return void
-Message-Id: <20200509210924.GB12666@ravnborg.org>
+Message-Id: <20200509211104.GC12666@ravnborg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200506061745.19451-1-yanaijie@huawei.com>
 In-Reply-To: <20200506061745.19451-1-yanaijie@huawei.com>
@@ -22,11 +22,6 @@ On Wed, May 06, 2020 at 02:17:45PM +0800, Jason Yan wrote:
 > "0" on line 597
 > 
 > Signed-off-by: Jason Yan <yanaijie@huawei.com>
-
-Thanks, applied to drm-misc-next.
-
-	Sam
-
 > ---
 >  drivers/video/fbdev/pxa168fb.c | 5 +----
 >  1 file changed, 1 insertion(+), 4 deletions(-)
@@ -42,6 +37,12 @@ Thanks, applied to drm-misc-next.
 > -static int pxa168fb_init_mode(struct fb_info *info,
 > +static void pxa168fb_init_mode(struct fb_info *info,
 >  			      struct pxa168fb_mach_info *mi)
+I fixed indent while applying.
+For patches in drivers/gpu/ please use --strict when you verify with
+checkpatch so you catch similar issues yourself.
+
+	Sam
+
 >  {
 >  	struct pxa168fb_info *fbi = info->par;
 >  	struct fb_var_screeninfo *var = &info->var;

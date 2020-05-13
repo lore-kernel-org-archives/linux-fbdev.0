@@ -1,83 +1,73 @@
-From: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Sun, 03 May 2020 20:11:47 +0000
-Subject: Re: [PATCH] video/fbdev/matroxfb: Remove dead code
-Message-Id: <CAFqt6zb94Wj_dkSb2NJ6TOJczxJErvFRB7OSzZieOTot-EL+qw@mail.gmail.com>
+From: Rodrigo Alencar <455.rodrigo.alencar@gmail.com>
+Date: Wed, 13 May 2020 18:48:11 +0000
+Subject: [PATCH v3] video: fbdev: ssd1307fb: Added support to Column offset
+Message-Id: <1589395691-8762-1-git-send-email-alencar.fmce@imbel.gov.br>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1588370291-7746-1-git-send-email-jrdr.linux@gmail.com>
- <20200503174040.GA27362@ravnborg.org>
-In-Reply-To: <20200503174040.GA27362@ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, Greg KH <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Thomas Gleixner <tglx@linutronix.de>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, andy.shevchenko@gmail.com, devicetree@vger.kernel.org, Rodrigo Rolim Mendes de Alencar <alencar.fmce@imbel.gov.br>, Rodrigo Alencar <455.rodrigo.alencar@gmail.com>
 
-On Sun, May 3, 2020 at 11:10 PM Sam Ravnborg <sam@ravnborg.org> wrote:
->
-> Hi Souptick
->
-> On Sat, May 02, 2020 at 03:28:11AM +0530, Souptick Joarder wrote:
-> > These are dead code since 3.15. If there is no plan to use it further
-> > it can be removed forever.
-> Could you explain why you conclude this is dead code sine 3.15 -
-> and maybe point to the commit that made it dead.
-> I failed to look it up.
-> And I would assume I did not have to look it up, but that you have
-> provided enough background to evaluate the patch.
+From: Rodrigo Rolim Mendes de Alencar <alencar.fmce@imbel.gov.br>
 
-I trace this back till linux version 2.3.9 & 2.4.0 in
-drivers/video/matrox/matroxfb_DAC1064.c
-(3.15 was the version when this is moved to
-drivers/video/fbdev/matrox/matroxfb_DAC1064.c)
-and I think this driver support was added mostly in 2.4.0, but as it
-is pre git era, unable to provide
-commit id. Code commented with *#if 0* in discussion existed since 2.4.0.
+This patch provides support for displays like VGM128064B0W10,
+which requires a column offset of 2, i.e., its segments starts
+in SEG2 and ends in SEG129.
 
-First two *#if 0* can be removed as these are just declaration of
-variables, never used.
+Signed-off-by: Rodrigo Alencar <455.rodrigo.alencar@gmail.com>
+---
+ Documentation/devicetree/bindings/display/ssd1307fb.txt | 1 +
+ drivers/video/fbdev/ssd1307fb.c                         | 8 ++++++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
--#if 0
--static int def50 = 0;  /* reg50, & 0x0F, & 0x3000 (only 0x0000,
-0x1000, 0x2000 (0x3000 disallowed and treated as 0) */
--#endif
-
- static void MGAG100_progPixClock(const struct matrox_fb_info *minfo, int flags,
-                                 int m, int n, int p)
-@@ -843,9 +840,6 @@ static int MGAG100_preinit(struct matrox_fb_info *minfo)
-        struct matrox_hw_state *hw = &minfo->hw;
-
-         u_int32_t reg50;
--#if 0
--       u_int32_t q;
--#endif
-
-In my opinion 3rd *#if 0 is not for documentation purpose and can be
-removed as well.
-
--#if 0
--               if (mga_readb(minfo->video.vbase, 0x0000) != 0xAA) {
--                       hw->MXoptionReg &= ~0x1000;
--               }
--#endif
-
-There is a 4th *#if 0 in this file. But it wasn't removed as there are
-some documentation
-comment exists for it.
-
-#if 0
-/* HELP! If we boot without DFP connected to DVI, we can
-  poweroff TMDS. But if we boot with DFP connected,
-  TMDS generated clocks are used instead of ALL pixclocks
-  available... If someone knows which register
-  handles it, please reveal this secret to me... */
-hw->DACreg[POS1064_XPWRCTRL] &= ~0x04; /* Poweroff TMDS */
-#endif
-
-
-
->
-> Sometimes dead code are kept becasue it documents something etc.
-> So it is not always a simple removal.
->
-Yes, I agree there are some dead code kept tree wide for documentation purpose,
-but many of them are truly dead code as well and it differ from case to case.
+diff --git a/Documentation/devicetree/bindings/display/ssd1307fb.txt b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+index 27333b9551b3..2dcb6d12d137 100644
+--- a/Documentation/devicetree/bindings/display/ssd1307fb.txt
++++ b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+@@ -19,6 +19,7 @@ Optional properties:
+   - vbat-supply: The supply for VBAT
+   - solomon,segment-no-remap: Display needs normal (non-inverted) data column
+                               to segment mapping
++  - solomon,col-offset: Offset of columns (COL/SEG) that the screen is mapped to.
+   - solomon,com-seq: Display uses sequential COM pin configuration
+   - solomon,com-lrremap: Display uses left-right COM pin remap
+   - solomon,com-invdir: Display uses inverted COM pin scan direction
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 8e06ba912d60..102f941104c0 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -74,6 +74,7 @@ struct ssd1307fb_par {
+ 	struct fb_info *info;
+ 	u8 lookup_table[4];
+ 	u32 page_offset;
++	u32 col_offset;
+ 	u32 prechargep1;
+ 	u32 prechargep2;
+ 	struct pwm_device *pwm;
+@@ -458,11 +459,11 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	ret = ssd1307fb_write_cmd(par->client, 0x0);
++	ret = ssd1307fb_write_cmd(par->client, par->col_offset);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	ret = ssd1307fb_write_cmd(par->client, par->width - 1);
++	ret = ssd1307fb_write_cmd(par->client, par->col_offset + par->width - 1);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -626,6 +627,9 @@ static int ssd1307fb_probe(struct i2c_client *client)
+ 	if (device_property_read_u32(dev, "solomon,page-offset", &par->page_offset))
+ 		par->page_offset = 1;
+ 
++	if (device_property_read_u32(dev, "solomon,col-offset", &par->col_offset))
++		par->col_offset = 0;
++
+ 	if (device_property_read_u32(dev, "solomon,com-offset", &par->com_offset))
+ 		par->com_offset = 0;
+ 
+-- 
+2.23.0.rc1

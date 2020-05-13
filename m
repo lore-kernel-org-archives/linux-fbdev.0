@@ -1,105 +1,79 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 08 May 2020 02:20:09 +0000
-Subject: Re: [PATCH v11 14/14] drm/i915/psr: Use new DP VSC SDP compute routine on PSR
-Message-Id: <202005081038.ctmtcNFX%lkp@intel.com>
+From: Emil Velikov <emil.l.velikov@gmail.com>
+Date: Wed, 13 May 2020 22:18:15 +0000
+Subject: Re: [PATCH v2 00/10] drivers, provide a way to add sysfs groups easily
+Message-Id: <CACvgo52+Uqx4GJFwadJoFzzt5EMc69HcW-+K9uxv9t25TtSDBg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200507132706.2058969-15-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200507132706.2058969-15-gwan-gyeong.mun@intel.com>
+References: <20190731124349.4474-1-gregkh@linuxfoundation.org>
+ <20190731131045.GB147138@dtor-ws> <20190802104633.GA14823@kroah.com>
+In-Reply-To: <20190802104633.GA14823@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>, intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, kbuild-all@lists.01.org, dri-devel@lists.freedesktop.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: platform-driver-x86@vger.kernel.org, linux-fbdev <linux-fbdev@vger.kernel.org>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, ML dri-devel <dri-devel@lists.freedesktop.org>, Sudeep Holla <sudeep.holla@arm.com>, Tony Prisk <linux@prisktech.co.nz>, Andy Shevchenko <andy.shevchenko@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Borislav Petkov <bp@alien8.de>, linux-input@vger.kernel.org, Darren Hart <dvhart@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, LAKML <linux-arm-kernel@lists.infradead.org>, Richard Gong <richard.gong@linux.intel.com>
 
-Hi Gwan-gyeong,
+Hi Greg,
 
-Thank you for the patch! Perhaps something to improve:
+On Fri, 2 Aug 2019 at 11:46, Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
 
-[auto build test WARNING on drm-intel/for-linux-next]
-[also build test WARNING on drm-tip/drm-tip drm-exynos/exynos-drm-next next-20200507]
-[cannot apply to tegra-drm/drm/tegra/for-next linus/master v5.7-rc4]
-[if your patch is applied to the wrong git tree, please drop us a note to help
-improve the system. BTW, we also suggest to use '--base' option to specify the
-base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
+>
+> I have now done this with patch 1/10.  Here's the pull info if any
+> subsystem maintainer wants to suck this into their tree to provide the
+> ability for drivers to add/remove attribute groups easily.
+>
+> This is part of my driver-core tree now, and will go to Linus for
+> 5.4-rc1, along with a few platform drivers that have been acked by their
+> various subsystem maintainers that convert them to use this new
+> functionality.
+>
+> If anyone has any questions about this, please let me know.
+>
+> thanks,
+>
+> greg k-h
+>
+> -------------------
+>
+> The following changes since commit 5f9e832c137075045d15cd6899ab0505cfb2ca4b:
+>
+>   Linus 5.3-rc1 (2019-07-21 14:05:38 -0700)
+>
+> are available in the Git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git tags/dev_groups_all_drivers
+>
+> for you to fetch changes up to 23b6904442d08b7dbed7622ed33b236d41a3aa8b:
+>
+>   driver core: add dev_groups to all drivers (2019-08-02 12:37:53 +0200)
+>
+> ----------------------------------------------------------------
+> dev_groups added to struct driver
+>
+> Persistent tag for others to pull this branch from
+>
+> This is the first patch in a longer series that adds the ability for the
+> driver core to create and remove a list of attribute groups
+> automatically when the device is bound/unbound from a specific driver.
+>
+> See:
+>         https://lore.kernel.org/r/20190731124349.4474-2-gregkh@linuxfoundation.org
+> for details on this patch, and examples of how to use it in other
+> drivers.
+>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>
+> ----------------------------------------------------------------
+> Dmitry Torokhov (1):
+>       driver core: add dev_groups to all drivers
+>
+>  drivers/base/dd.c      | 14 ++++++++++++++
+>  include/linux/device.h |  3 +++
+>  2 files changed, 17 insertions(+)
+> _______________________________________________
 
-url:    https://github.com/0day-ci/linux/commits/Gwan-gyeong-Mun/In-order-to-readout-DP-SDPs-refactors-the-handling-of-DP-SDPs/20200508-034404
-base:   git://anongit.freedesktop.org/drm-intel for-linux-next
+Was planning to re-spin DRM a series which uses .dev_groups, although
+I cannot see the core patch.
+Did the it get reverted or simply fell though the cracks?
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kbuild test robot <lkp@intel.com>
-
-New smatch warnings:
-drivers/gpu/drm/i915/display/intel_psr.c:727 intel_psr_compute_config() warn: inconsistent indenting
-
-Old smatch warnings:
-drivers/gpu/drm/i915/display/intel_psr.c:1564 intel_psr_short_pulse() error: uninitialized symbol 'error_status'.
-drivers/gpu/drm/i915/display/intel_psr.c:1569 intel_psr_short_pulse() error: uninitialized symbol 'error_status'.
-
-vim +727 drivers/gpu/drm/i915/display/intel_psr.c
-
-   711	
-   712	void intel_psr_compute_config(struct intel_dp *intel_dp,
-   713				      struct intel_crtc_state *crtc_state)
-   714	{
-   715		struct intel_digital_port *dig_port = dp_to_dig_port(intel_dp);
-   716		struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
-   717		const struct drm_display_mode *adjusted_mode    718			&crtc_state->hw.adjusted_mode;
-   719		int psr_setup_time;
-   720	
-   721		if (!CAN_PSR(dev_priv))
-   722			return;
-   723	
-   724		if (intel_dp != dev_priv->psr.dp)
-   725			return;
-   726	
- > 727		 if (!psr_global_enabled(dev_priv))
-   728			return;
-   729		/*
-   730		 * HSW spec explicitly says PSR is tied to port A.
-   731		 * BDW+ platforms have a instance of PSR registers per transcoder but
-   732		 * for now it only supports one instance of PSR, so lets keep it
-   733		 * hardcoded to PORT_A
-   734		 */
-   735		if (dig_port->base.port != PORT_A) {
-   736			drm_dbg_kms(&dev_priv->drm,
-   737				    "PSR condition failed: Port not supported\n");
-   738			return;
-   739		}
-   740	
-   741		if (dev_priv->psr.sink_not_reliable) {
-   742			drm_dbg_kms(&dev_priv->drm,
-   743				    "PSR sink implementation is not reliable\n");
-   744			return;
-   745		}
-   746	
-   747		if (adjusted_mode->flags & DRM_MODE_FLAG_INTERLACE) {
-   748			drm_dbg_kms(&dev_priv->drm,
-   749				    "PSR condition failed: Interlaced mode enabled\n");
-   750			return;
-   751		}
-   752	
-   753		psr_setup_time = drm_dp_psr_setup_time(intel_dp->psr_dpcd);
-   754		if (psr_setup_time < 0) {
-   755			drm_dbg_kms(&dev_priv->drm,
-   756				    "PSR condition failed: Invalid PSR setup time (0x%02x)\n",
-   757				    intel_dp->psr_dpcd[1]);
-   758			return;
-   759		}
-   760	
-   761		if (intel_usecs_to_scanlines(adjusted_mode, psr_setup_time) >
-   762		    adjusted_mode->crtc_vtotal - adjusted_mode->crtc_vdisplay - 1) {
-   763			drm_dbg_kms(&dev_priv->drm,
-   764				    "PSR condition failed: PSR setup time (%d us) too long\n",
-   765				    psr_setup_time);
-   766			return;
-   767		}
-   768	
-   769		crtc_state->has_psr = true;
-   770		crtc_state->has_psr2 = intel_psr2_config_valid(intel_dp, crtc_state);
-   771		crtc_state->infoframes.enable |= intel_hdmi_infoframe_enable(DP_SDP_VSC);
-   772	}
-   773	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+-Emil

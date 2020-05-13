@@ -1,68 +1,71 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Sat, 09 May 2020 21:11:04 +0000
-Subject: Re: [PATCH] video: fbdev: pxa168fb: make pxa168fb_init_mode() return void
-Message-Id: <20200509211104.GC12666@ravnborg.org>
+From: Rodrigo Rolim Mendes de Alencar <455.rodrigo.alencar@gmail.com>
+Date: Wed, 13 May 2020 11:51:34 +0000
+Subject: [PATCH] video: fbdev: ssd1307fb: Added support to Column offset
+Message-Id: <1589370694-14327-1-git-send-email-alencar.fmce@imbel.gov.br>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200506061745.19451-1-yanaijie@huawei.com>
-In-Reply-To: <20200506061745.19451-1-yanaijie@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jason Yan <yanaijie@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, b.zolnierkie@samsung.com
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, alencar.fmce@imbel.gov.br, andy.shevchenko@gmail.com, Rodrigo Alencar <455.rodrigo.alencar@gmail.com>
 
-Hi Jason.
+This patch provides support for displays like VGM128064B0W10,
+which requires a column offset of 2, i.e., its segments starts
+in SEG2 and ends in SEG129.
 
-On Wed, May 06, 2020 at 02:17:45PM +0800, Jason Yan wrote:
-> No other functions use the return value of pxa168fb_init_mode() and the
-> return value is always 0 now. Make it return void. This fixes the
-> following coccicheck warning:
-> 
-> drivers/video/fbdev/pxa168fb.c:565:5-8: Unneeded variable: "ret". Return
-> "0" on line 597
-> 
-> Signed-off-by: Jason Yan <yanaijie@huawei.com>
-> ---
->  drivers/video/fbdev/pxa168fb.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
-> index aef8a3042590..eedfbd3572a8 100644
-> --- a/drivers/video/fbdev/pxa168fb.c
-> +++ b/drivers/video/fbdev/pxa168fb.c
-> @@ -557,12 +557,11 @@ static const struct fb_ops pxa168fb_ops = {
->  	.fb_imageblit	= cfb_imageblit,
->  };
->  
-> -static int pxa168fb_init_mode(struct fb_info *info,
-> +static void pxa168fb_init_mode(struct fb_info *info,
->  			      struct pxa168fb_mach_info *mi)
-I fixed indent while applying.
-For patches in drivers/gpu/ please use --strict when you verify with
-checkpatch so you catch similar issues yourself.
+Signed-off-by: Rodrigo Alencar <455.rodrigo.alencar@gmail.com>
+---
+ Documentation/devicetree/bindings/display/ssd1307fb.txt | 1 +
+ drivers/video/fbdev/ssd1307fb.c                         | 8 ++++++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
-	Sam
-
->  {
->  	struct pxa168fb_info *fbi = info->par;
->  	struct fb_var_screeninfo *var = &info->var;
-> -	int ret = 0;
->  	u32 total_w, total_h, refresh;
->  	u64 div_result;
->  	const struct fb_videomode *m;
-> @@ -593,8 +592,6 @@ static int pxa168fb_init_mode(struct fb_info *info,
->  	div_result = 1000000000000ll;
->  	do_div(div_result, total_w * total_h * refresh);
->  	var->pixclock = (u32)div_result;
-> -
-> -	return ret;
->  }
->  
->  static int pxa168fb_probe(struct platform_device *pdev)
-> -- 
-> 2.21.1
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+diff --git a/Documentation/devicetree/bindings/display/ssd1307fb.txt b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+index 27333b9551b3..a9b51fd724a9 100644
+--- a/Documentation/devicetree/bindings/display/ssd1307fb.txt
++++ b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+@@ -19,6 +19,7 @@ Optional properties:
+   - vbat-supply: The supply for VBAT
+   - solomon,segment-no-remap: Display needs normal (non-inverted) data column
+                               to segment mapping
++  - solomon,col-offset: Offset of columns (SEG) that the screen is mapped to.
+   - solomon,com-seq: Display uses sequential COM pin configuration
+   - solomon,com-lrremap: Display uses left-right COM pin remap
+   - solomon,com-invdir: Display uses inverted COM pin scan direction
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 8e06ba912d60..0241585bfbcc 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -74,6 +74,7 @@ struct ssd1307fb_par {
+ 	struct fb_info *info;
+ 	u8 lookup_table[4];
+ 	u32 page_offset;
++	u32 col_offset;
+ 	u32 prechargep1;
+ 	u32 prechargep2;
+ 	struct pwm_device *pwm;
+@@ -458,11 +459,11 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	ret = ssd1307fb_write_cmd(par->client, 0x0);
++	ret = ssd1307fb_write_cmd(par->client, par->col_offset);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	ret = ssd1307fb_write_cmd(par->client, par->width - 1);
++	ret = ssd1307fb_write_cmd(par->client, par->col_offset + par->width - 1);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -626,6 +627,9 @@ static int ssd1307fb_probe(struct i2c_client *client)
+ 	if (device_property_read_u32(dev, "solomon,page-offset", &par->page_offset))
+ 		par->page_offset = 1;
+ 
++	if (of_property_read_u32(node, "solomon,col-offset", &par->col_offset))
++		par->col_offset = 0;
++
+ 	if (device_property_read_u32(dev, "solomon,com-offset", &par->com_offset))
+ 		par->com_offset = 0;
+ 
+-- 
+2.23.0.rc1

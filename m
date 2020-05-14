@@ -1,90 +1,259 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Thu, 07 May 2020 13:26:52 +0000
-Subject: [PATCH v11 00/14] In order to readout DP SDPs, refactors the handling of DP SDPs
-Message-Id: <20200507132706.2058969-1-gwan-gyeong.mun@intel.com>
+Date: Thu, 14 May 2020 06:07:20 +0000
+Subject: [PATCH v12 02/14] drm/i915/dp: Read out DP SDPs
+Message-Id: <20200514060732.3378396-3-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, laurent.pinchart@ideasonboard.com
 
-In order to readout DP SDPs (Secondary Data Packet: DP HDR Metadata
-Infoframe SDP, DP VSC SDP), it refactors handling DP SDPs codes.
-It adds new compute routines for DP HDR Metadata Infoframe SDP
-and DP VSC SDP. 
-And new writing routines of DP SDPs (Secondary Data Packet) that uses
-computed configs.
-New reading routines of DP SDPs are added for readout.
-It adds a logging function for DP VSC SDP.
-When receiving video it is very useful to be able to log DP VSC SDP.
-This greatly simplifies debugging.
-In order to use a common VSC SDP Colorimetry calculating code on PSR,
-it uses a new psr vsc sdp compute routine.
+It adds code to read the DP SDPs from the video DIP and unpack them into
+the crtc state.
+
+It adds routines that read out DP VSC SDP and DP HDR Metadata Infoframe SDP
+In order to unpack DP VSC SDP, it adds intel_dp_vsc_sdp_unpack() function.
+It follows DP 1.4a spec. [Table 2-116: VSC SDP Header Bytes] and
+[Table 2-117: VSC SDP Payload for DB16 through DB18]
+
+In order to unpack DP HDR Metadata Infoframe SDP, it adds
+intel_dp_hdr_metadata_infoframe_sdp_unpack(). And it follows DP 1.4a spec.
+([Table 2-125: INFOFRAME SDP v1.2 Header Bytes] and
+[Table 2-126: INFOFRAME SDP v1.2 Payload Data Bytes - DB0 through DB31])
+and CTA-861-G spec. [Table-42 Dynamic Range and Mastering InfoFrame].
+
+A naming rule and style of intel_read_dp_sdp() function references
+intel_read_infoframe() function of intel_hdmi.c
 
 v2: Minor style fix
-v3: 
-  - Add a new drm data structure for DP VSC SDP
-  - Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-  - Move logging functions to drm core [Jani N]
-    And use drm core's DP VSC SDP logging function
-  - Explicitly disable unused DIPs (AVI, GCP, VS, SPD, DRM. They will be
-    used for HDMI), when intel_dp_set_infoframes() function will be called.
-v4:
-  - Use struct drm_device logging macros
-  - Rebased
-v5:
-  - Use intel_de_*() functions for register access
-  - Add warning where a bpc is 6 and a pixel format is RGB.
-  - Addressed review comments from Uma
-    Add kernel docs for added data structures
-    Rename enum dp_colorspace to dp_pixelformat
-    Polish commit message and comments
-    Combine the if checks of sdp.HB2 and sdp.HB3
-    Add 6bpc to packining and unpacking of VSC SDP
-v6: Fix enabled infoframe states of lspcon
-v7: Fix the wrong check of combination bpc 6 and RGB pixelformat
-v8: Rebased
-v9: Add clear comments to hdmi_drm_infoframe_unpack_only() and
-    hdmi_drm_infoframe_unpack() (Laurent Pinchart)
-v10:
-  - Fix packing of VSC SDP where Pixel Encoding/Colorimetry Format is not
-    supported
-  - When a PSR is enabled, it needs to add DP_SDP_VSC to infoframes.enable.
-  - Change a checking of PSR state.
-  - Skip checking of VSC SDP when a crtc config has psr.
-  - Rebased
-V11: If PSR is disabled by flag, it don't enable psr on pipe compute
+v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+v4: Use struct drm_device logging macros
+v5: Addressed review comments from Uma
+  - Polish commit message and comments
+  - Combine the if checks of sdp.HB2 and sdp.HB3
+  - Add 6bpc to unpacking of VSC SDP
 
-Gwan-gyeong Mun (14):
-  video/hdmi: Add Unpack only function for DRM infoframe
-  drm/i915/dp: Read out DP SDPs
-  drm: Add logging function for DP VSC SDP
-  drm/i915: Include HDMI DRM infoframe in the crtc state dump
-  drm/i915: Include DP HDR Metadata Infoframe SDP in the crtc state dump
-  drm/i915: Include DP VSC SDP in the crtc state dump
-  drm/i915: Program DP SDPs with computed configs
-  drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
-  drm/i915: Add state readout for DP VSC SDP
-  drm/i915: Fix enabled infoframe states of lspcon
-  drm/i915: Program DP SDPs on pipe updates
-  drm/i915: Stop sending DP SDPs on ddi disable
-  drm/i915/dp: Add compute routine for DP PSR VSC SDP
-  drm/i915/psr: Use new DP VSC SDP compute routine on PSR
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_dp.c | 187 ++++++++++++++++++++++++
+ drivers/gpu/drm/i915/display/intel_dp.h |   3 +
+ 2 files changed, 190 insertions(+)
 
- drivers/gpu/drm/drm_dp_helper.c              | 174 ++++++++
- drivers/gpu/drm/i915/display/intel_ddi.c     |  19 +-
- drivers/gpu/drm/i915/display/intel_display.c |  63 +++
- drivers/gpu/drm/i915/display/intel_dp.c      | 406 ++++++++++---------
- drivers/gpu/drm/i915/display/intel_dp.h      |  15 +-
- drivers/gpu/drm/i915/display/intel_lspcon.c  |   2 +-
- drivers/gpu/drm/i915/display/intel_psr.c     |  58 +--
- drivers/gpu/drm/i915/display/intel_psr.h     |   6 +-
- drivers/gpu/drm/i915/i915_drv.h              |   1 +
- drivers/video/hdmi.c                         |  65 ++-
- include/drm/drm_dp_helper.h                  |   3 +
- include/linux/hdmi.h                         |   2 +
- 12 files changed, 551 insertions(+), 263 deletions(-)
-
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
+index 67723dede1d1..84c0105be61b 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.c
++++ b/drivers/gpu/drm/i915/display/intel_dp.c
+@@ -4971,6 +4971,193 @@ void intel_dp_set_infoframes(struct intel_encoder *encoder,
+ 	intel_write_dp_sdp(encoder, crtc_state, HDMI_PACKET_TYPE_GAMUT_METADATA);
+ }
+ 
++static int intel_dp_vsc_sdp_unpack(struct drm_dp_vsc_sdp *vsc,
++				   const void *buffer, size_t size)
++{
++	const struct dp_sdp *sdp = buffer;
++
++	if (size < sizeof(struct dp_sdp))
++		return -EINVAL;
++
++	memset(vsc, 0, size);
++
++	if (sdp->sdp_header.HB0 != 0)
++		return -EINVAL;
++
++	if (sdp->sdp_header.HB1 != DP_SDP_VSC)
++		return -EINVAL;
++
++	vsc->sdp_type = sdp->sdp_header.HB1;
++	vsc->revision = sdp->sdp_header.HB2;
++	vsc->length = sdp->sdp_header.HB3;
++
++	if ((sdp->sdp_header.HB2 = 0x2 && sdp->sdp_header.HB3 = 0x8) ||
++	    (sdp->sdp_header.HB2 = 0x4 && sdp->sdp_header.HB3 = 0xe)) {
++		/*
++		 * - HB2 = 0x2, HB3 = 0x8
++		 *   VSC SDP supporting 3D stereo + PSR
++		 * - HB2 = 0x4, HB3 = 0xe
++		 *   VSC SDP supporting 3D stereo + PSR2 with Y-coordinate of
++		 *   first scan line of the SU region (applies to eDP v1.4b
++		 *   and higher).
++		 */
++		return 0;
++	} else if (sdp->sdp_header.HB2 = 0x5 && sdp->sdp_header.HB3 = 0x13) {
++		/*
++		 * - HB2 = 0x5, HB3 = 0x13
++		 *   VSC SDP supporting 3D stereo + PSR2 + Pixel Encoding/Colorimetry
++		 *   Format.
++		 */
++		vsc->pixelformat = (sdp->db[16] >> 4) & 0xf;
++		vsc->colorimetry = sdp->db[16] & 0xf;
++		vsc->dynamic_range = (sdp->db[17] >> 7) & 0x1;
++
++		switch (sdp->db[17] & 0x7) {
++		case 0x0:
++			vsc->bpc = 6;
++			break;
++		case 0x1:
++			vsc->bpc = 8;
++			break;
++		case 0x2:
++			vsc->bpc = 10;
++			break;
++		case 0x3:
++			vsc->bpc = 12;
++			break;
++		case 0x4:
++			vsc->bpc = 16;
++			break;
++		default:
++			MISSING_CASE(sdp->db[17] & 0x7);
++			return -EINVAL;
++		}
++
++		vsc->content_type = sdp->db[18] & 0x7;
++	} else {
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int
++intel_dp_hdr_metadata_infoframe_sdp_unpack(struct hdmi_drm_infoframe *drm_infoframe,
++					   const void *buffer, size_t size)
++{
++	int ret;
++
++	const struct dp_sdp *sdp = buffer;
++
++	if (size < sizeof(struct dp_sdp))
++		return -EINVAL;
++
++	if (sdp->sdp_header.HB0 != 0)
++		return -EINVAL;
++
++	if (sdp->sdp_header.HB1 != HDMI_INFOFRAME_TYPE_DRM)
++		return -EINVAL;
++
++	/*
++	 * Least Significant Eight Bits of (Data Byte Count – 1)
++	 * 1Dh (i.e., Data Byte Count = 30 bytes).
++	 */
++	if (sdp->sdp_header.HB2 != 0x1D)
++		return -EINVAL;
++
++	/* Most Significant Two Bits of (Data Byte Count – 1), Clear to 00b. */
++	if ((sdp->sdp_header.HB3 & 0x3) != 0)
++		return -EINVAL;
++
++	/* INFOFRAME SDP Version Number */
++	if (((sdp->sdp_header.HB3 >> 2) & 0x3f) != 0x13)
++		return -EINVAL;
++
++	/* CTA Header Byte 2 (INFOFRAME Version Number) */
++	if (sdp->db[0] != 1)
++		return -EINVAL;
++
++	/* CTA Header Byte 3 (Length of INFOFRAME): HDMI_DRM_INFOFRAME_SIZE */
++	if (sdp->db[1] != HDMI_DRM_INFOFRAME_SIZE)
++		return -EINVAL;
++
++	ret = hdmi_drm_infoframe_unpack_only(drm_infoframe, &sdp->db[2],
++					     HDMI_DRM_INFOFRAME_SIZE);
++
++	return ret;
++}
++
++static void intel_read_dp_vsc_sdp(struct intel_encoder *encoder,
++				  struct intel_crtc_state *crtc_state,
++				  struct drm_dp_vsc_sdp *vsc)
++{
++	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
++	struct intel_dp *intel_dp = enc_to_intel_dp(encoder);
++	struct drm_i915_private *dev_priv = to_i915(encoder->base.dev);
++	unsigned int type = DP_SDP_VSC;
++	struct dp_sdp sdp = {};
++	int ret;
++
++	/* When PSR is enabled, VSC SDP is handled by PSR routine */
++	if (intel_psr_enabled(intel_dp))
++		return;
++
++	if ((crtc_state->infoframes.enable &
++	     intel_hdmi_infoframe_enable(type)) = 0)
++		return;
++
++	intel_dig_port->read_infoframe(encoder, crtc_state, type, &sdp, sizeof(sdp));
++
++	ret = intel_dp_vsc_sdp_unpack(vsc, &sdp, sizeof(sdp));
++
++	if (ret)
++		drm_dbg_kms(&dev_priv->drm, "Failed to unpack DP VSC SDP\n");
++}
++
++static void intel_read_dp_hdr_metadata_infoframe_sdp(struct intel_encoder *encoder,
++						     struct intel_crtc_state *crtc_state,
++						     struct hdmi_drm_infoframe *drm_infoframe)
++{
++	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
++	struct drm_i915_private *dev_priv = to_i915(encoder->base.dev);
++	unsigned int type = HDMI_PACKET_TYPE_GAMUT_METADATA;
++	struct dp_sdp sdp = {};
++	int ret;
++
++	if ((crtc_state->infoframes.enable &
++	    intel_hdmi_infoframe_enable(type)) = 0)
++		return;
++
++	intel_dig_port->read_infoframe(encoder, crtc_state, type, &sdp,
++				       sizeof(sdp));
++
++	ret = intel_dp_hdr_metadata_infoframe_sdp_unpack(drm_infoframe, &sdp,
++							 sizeof(sdp));
++
++	if (ret)
++		drm_dbg_kms(&dev_priv->drm,
++			    "Failed to unpack DP HDR Metadata Infoframe SDP\n");
++}
++
++void intel_read_dp_sdp(struct intel_encoder *encoder,
++		       struct intel_crtc_state *crtc_state,
++		       unsigned int type)
++{
++	switch (type) {
++	case DP_SDP_VSC:
++		intel_read_dp_vsc_sdp(encoder, crtc_state,
++				      &crtc_state->infoframes.vsc);
++		break;
++	case HDMI_PACKET_TYPE_GAMUT_METADATA:
++		intel_read_dp_hdr_metadata_infoframe_sdp(encoder, crtc_state,
++							 &crtc_state->infoframes.drm.drm);
++		break;
++	default:
++		MISSING_CASE(type);
++		break;
++	}
++}
++
+ static void
+ intel_dp_setup_vsc_sdp(struct intel_dp *intel_dp,
+ 		       const struct intel_crtc_state *crtc_state,
+diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915/display/intel_dp.h
+index 6659ce15a693..faa2a3c5ee4e 100644
+--- a/drivers/gpu/drm/i915/display/intel_dp.h
++++ b/drivers/gpu/drm/i915/display/intel_dp.h
+@@ -117,6 +117,9 @@ void intel_dp_hdr_metadata_enable(struct intel_dp *intel_dp,
+ void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
+ 			     const struct intel_crtc_state *crtc_state,
+ 			     const struct drm_connector_state *conn_state);
++void intel_read_dp_sdp(struct intel_encoder *encoder,
++		       struct intel_crtc_state *crtc_state,
++		       unsigned int type);
+ bool intel_digital_port_connected(struct intel_encoder *encoder);
+ void intel_dp_process_phy_request(struct intel_dp *intel_dp);
+ 
 -- 
 2.25.0

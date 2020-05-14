@@ -1,17 +1,21 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Thu, 14 May 2020 12:37:38 +0000
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 14 May 2020 13:28:07 +0000
 Subject: Re: [PATCH] fbdev: annotate rivafb/nvidiafb as obsolete
-Message-Id: <20200514123738.GU206103@phenom.ffwll.local>
+Message-Id: <178a203a-fc3e-0027-60c9-786c3e907407@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200513215342.2145495-1-emil.l.velikov@gmail.com>
+References: <CGME20200513215627eucas1p1c919a6175b210c13fe7b920c455ebb62@eucas1p1.samsung.com>
+ <20200513215342.2145495-1-emil.l.velikov@gmail.com>
 In-Reply-To: <20200513215342.2145495-1-emil.l.velikov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Emil Velikov <emil.l.velikov@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Wed, May 13, 2020 at 10:53:42PM +0100, Emil Velikov wrote:
+
+Hi!
+
+On 5/13/20 11:53 PM, Emil Velikov wrote:
 > Drivers have not seen any love for years.
 > 
 > Be that fixes or improvements, or cosmetics like introducing symbolic
@@ -27,10 +31,6 @@ On Wed, May 13, 2020 at 10:53:42PM +0100, Emil Velikov wrote:
 > Cc: linux-fbdev@vger.kernel.org
 > Cc: dri-devel@lists.freedesktop.org
 > Signed-off-by: Emil Velikov <emil.l.velikov@gmail.com>
-
-Makes sense
-
-Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 > ---
 >  MAINTAINERS                           | 3 +--
 >  arch/powerpc/configs/g5_defconfig     | 2 --
@@ -108,6 +108,10 @@ Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 >  CONFIG_FB_MATROX=y
 >  CONFIG_FB_MATROX_MILLENIUM=y
 >  CONFIG_FB_MATROX_MYSTIQUE=y
+
+defconfigs should be converted to use the nouveau driver
+(in a separate patch please).
+
 > diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
 > index 1b2f5f31fb6f..cad3e4bc5e52 100644
 > --- a/drivers/video/fbdev/Kconfig
@@ -117,6 +121,13 @@ Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 >  config FB_NVIDIA
 >  	tristate "nVidia Framebuffer Support"
 > +	depends on BROKEN
+
+Please don't add new users of BROKEN config option.
+
+Either it is broken and should be removed right now (BROKEN config option
+predates git and with git nothing is ever lost), or it still works and
+should be left alone.
+
 >  	depends on FB && PCI
 >  	select FB_BACKLIGHT if FB_NVIDIA_BACKLIGHT
 >  	select FB_MODE_HELPERS
@@ -125,6 +136,15 @@ Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 >  	select VGASTATE
 >  	help
 > +	  Obsolete, use nouveau instead.
+
+"nouveau" -> "nouveau DRM driver"
+
+Please also add a runtime warning in the driver probe function with a fixed
+date for removal, i.e.:
+
+	pr_warn("Legacy nvidiafb framebuffer driver will be removed in 2022\n
+		"Please switch to nouveau DRM driver\n");
+
 > +
 >  	  This driver supports graphics boards with the nVidia chips, TNT
 >  	  and newer. For very old chipsets, such as the RIVA128, then use
@@ -143,18 +163,16 @@ Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 >  	help
 > +	  Obsolete, use nouveau instead.
 > +
+
+ditto
+
 >  	  This driver supports graphics boards with the nVidia Riva/Geforce
 >  	  chips.
 >  	  Say Y if you have such a graphics board.
-> -- 
-> 2.25.1
 > 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

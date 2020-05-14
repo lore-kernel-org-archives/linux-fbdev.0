@@ -1,34 +1,57 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 06 May 2020 10:08:08 +0000
-Subject: Re: [PATCH V6 2/4] backlight: qcom-wled: Add callback functions
-Message-Id: <20200506100808.GE823950@dell>
+From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Date: Thu, 14 May 2020 06:07:24 +0000
+Subject: [PATCH v12 06/14] drm/i915: Include DP VSC SDP in the crtc state dump
+Message-Id: <20200514060732.3378396-7-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1587656017-27911-1-git-send-email-kgunda@codeaurora.org>
- <1587656017-27911-3-git-send-email-kgunda@codeaurora.org>
-In-Reply-To: <1587656017-27911-3-git-send-email-kgunda@codeaurora.org>
+References: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Kiran Gunda <kgunda@codeaurora.org>
-Cc: mark.rutland@arm.com, daniel.thompson@linaro.org, b.zolnierkie@samsung.com, jingoohan1@gmail.com, Andy Gross <agross@kernel.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, bjorn.andersson@linaro.org, devicetree@vger.kernel.org, robh+dt@kernel.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, linux-arm-msm@vger.kernel.org, Subbaraman Narayanamurthy <subbaram@codeaurora.org>, linux-fbdev@vger.kernel.org, linux-leds@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: intel-gfx@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, laurent.pinchart@ideasonboard.com
 
-On Thu, 23 Apr 2020, Kiran Gunda wrote:
+Dump out the DP VSC SDP in the normal crtc state dump
 
-> Add wled_cabc_config, wled_sync_toggle, wled_ovp_fault_status
-> and wled_ovp_delay and wled_auto_detection_required callback
-> functions to prepare the driver for adding WLED5 support.
-> 
-> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
-> Signed-off-by: Subbaraman Narayanamurthy <subbaram@codeaurora.org>
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> ---
->  drivers/video/backlight/qcom-wled.c | 213 ++++++++++++++++++++++++------------
->  1 file changed, 141 insertions(+), 72 deletions(-)
+v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
+    Use drm core's DP VSC SDP logging function
 
-Applied, thanks.
+Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+---
+ drivers/gpu/drm/i915/display/intel_display.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index eb3ab77bc559..5484c8f3f8ff 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -12866,6 +12866,16 @@ intel_dump_infoframe(struct drm_i915_private *dev_priv,
+ 	hdmi_infoframe_log(KERN_DEBUG, dev_priv->drm.dev, frame);
+ }
+ 
++static void
++intel_dump_dp_vsc_sdp(struct drm_i915_private *dev_priv,
++		      const struct drm_dp_vsc_sdp *vsc)
++{
++	if (!drm_debug_enabled(DRM_UT_KMS))
++		return;
++
++	drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, vsc);
++}
++
+ #define OUTPUT_TYPE(x) [INTEL_OUTPUT_ ## x] = #x
+ 
+ static const char * const output_type_str[] = {
+@@ -13029,6 +13039,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
+ 	if (pipe_config->infoframes.enable &
+ 	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
+ 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
++	if (pipe_config->infoframes.enable &
++	    intel_hdmi_infoframe_enable(DP_SDP_VSC))
++		intel_dump_dp_vsc_sdp(dev_priv, &pipe_config->infoframes.vsc);
+ 
+ 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
+ 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.25.0

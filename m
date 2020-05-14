@@ -1,57 +1,166 @@
 From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Thu, 07 May 2020 13:26:58 +0000
-Subject: [PATCH v11 06/14] drm/i915: Include DP VSC SDP in the crtc state dump
-Message-Id: <20200507132706.2058969-7-gwan-gyeong.mun@intel.com>
+Date: Thu, 14 May 2020 06:07:19 +0000
+Subject: [PATCH v12 01/14] video/hdmi: Add Unpack only function for DRM infoframe
+Message-Id: <20200514060732.3378396-2-gwan-gyeong.mun@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200507132706.2058969-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200507132706.2058969-1-gwan-gyeong.mun@intel.com>
+References: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
+In-Reply-To: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, laurent.pinchart@ideasonboard.com
 
-Dump out the DP VSC SDP in the normal crtc state dump
+It adds an unpack only function for DRM infoframe for dynamic range and
+mastering infoframe readout.
+It unpacks the information data block contained in the binary buffer into
+a structured frame of the HDMI Dynamic Range and Mastering (DRM)
+information frame.
 
-v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-    Use drm core's DP VSC SDP logging function
+In contrast to hdmi_drm_infoframe_unpack() function, it does not verify
+a checksum.
+
+It can be used for unpacking a DP HDR Metadata Infoframe SDP case.
+DP HDR Metadata Infoframe SDP uses the same Dynamic Range and Mastering
+(DRM) information (CTA-861-G spec.) such as HDMI DRM infoframe.
+But DP SDP header and payload structure are different from HDMI DRM
+Infoframe. Therefore unpacking DRM infoframe for DP requires skipping of
+a verifying checksum.
+
+v9: Add clear comments to hdmi_drm_infoframe_unpack_only() and
+    hdmi_drm_infoframe_unpack() (Laurent Pinchart)
 
 Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
 Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Ville Syrjala <ville.syrjala@linux.intel.com>
 ---
- drivers/gpu/drm/i915/display/intel_display.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/video/hdmi.c | 65 +++++++++++++++++++++++++++++++-------------
+ include/linux/hdmi.h |  2 ++
+ 2 files changed, 48 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index 172574a60ddd..d1c722dde77a 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -12866,6 +12866,16 @@ intel_dump_infoframe(struct drm_i915_private *dev_priv,
- 	hdmi_infoframe_log(KERN_DEBUG, dev_priv->drm.dev, frame);
+diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+index 856a8c4e84a2..e70792b3e367 100644
+--- a/drivers/video/hdmi.c
++++ b/drivers/video/hdmi.c
+@@ -1768,20 +1768,21 @@ hdmi_vendor_any_infoframe_unpack(union hdmi_vendor_any_infoframe *frame,
  }
  
-+static void
-+intel_dump_dp_vsc_sdp(struct drm_i915_private *dev_priv,
-+		      const struct drm_dp_vsc_sdp *vsc)
+ /**
+- * hdmi_drm_infoframe_unpack() - unpack binary buffer to a HDMI DRM infoframe
++ * hdmi_drm_infoframe_unpack_only() - unpack binary buffer of CTA-861-G DRM
++ *                                    infoframe DataBytes to a HDMI DRM
++ *                                    infoframe
+  * @frame: HDMI DRM infoframe
+  * @buffer: source buffer
+  * @size: size of buffer
+  *
+- * Unpacks the information contained in binary @buffer into a structured
+- * @frame of the HDMI Dynamic Range and Mastering (DRM) information frame.
+- * Also verifies the checksum as required by section 5.3.5 of the HDMI 1.4
+- * specification.
++ * Unpacks CTA-861-G DRM infoframe DataBytes contained in the binary @buffer
++ * into a structured @frame of the HDMI Dynamic Range and Mastering (DRM)
++ * infoframe.
+  *
+  * Returns 0 on success or a negative error code on failure.
+  */
+-static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
+-				     const void *buffer, size_t size)
++int hdmi_drm_infoframe_unpack_only(struct hdmi_drm_infoframe *frame,
++				   const void *buffer, size_t size)
+ {
+ 	const u8 *ptr = buffer;
+ 	const u8 *temp;
+@@ -1790,23 +1791,13 @@ static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
+ 	int ret;
+ 	int i;
+ 
+-	if (size < HDMI_INFOFRAME_SIZE(DRM))
+-		return -EINVAL;
+-
+-	if (ptr[0] != HDMI_INFOFRAME_TYPE_DRM ||
+-	    ptr[1] != 1 ||
+-	    ptr[2] != HDMI_DRM_INFOFRAME_SIZE)
+-		return -EINVAL;
+-
+-	if (hdmi_infoframe_checksum(buffer, HDMI_INFOFRAME_SIZE(DRM)) != 0)
++	if (size < HDMI_DRM_INFOFRAME_SIZE)
+ 		return -EINVAL;
+ 
+ 	ret = hdmi_drm_infoframe_init(frame);
+ 	if (ret)
+ 		return ret;
+ 
+-	ptr += HDMI_INFOFRAME_HEADER_SIZE;
+-
+ 	frame->eotf = ptr[0] & 0x7;
+ 	frame->metadata_type = ptr[1] & 0x7;
+ 
+@@ -1814,7 +1805,7 @@ static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
+ 	for (i = 0; i < 3; i++) {
+ 		x_lsb = *temp++;
+ 		x_msb = *temp++;
+-		frame->display_primaries[i].x =  (x_msb << 8) | x_lsb;
++		frame->display_primaries[i].x = (x_msb << 8) | x_lsb;
+ 		y_lsb = *temp++;
+ 		y_msb = *temp++;
+ 		frame->display_primaries[i].y = (y_msb << 8) | y_lsb;
+@@ -1830,6 +1821,42 @@ static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(hdmi_drm_infoframe_unpack_only);
++
++/**
++ * hdmi_drm_infoframe_unpack() - unpack binary buffer to a HDMI DRM infoframe
++ * @frame: HDMI DRM infoframe
++ * @buffer: source buffer
++ * @size: size of buffer
++ *
++ * Unpacks the CTA-861-G DRM infoframe contained in the binary @buffer into
++ * a structured @frame of the HDMI Dynamic Range and Mastering (DRM)
++ * infoframe. It also verifies the checksum as required by section 5.3.5 of
++ * the HDMI 1.4 specification.
++ *
++ * Returns 0 on success or a negative error code on failure.
++ */
++static int hdmi_drm_infoframe_unpack(struct hdmi_drm_infoframe *frame,
++				     const void *buffer, size_t size)
 +{
-+	if (!drm_debug_enabled(DRM_UT_KMS))
-+		return;
++	const u8 *ptr = buffer;
++	int ret;
 +
-+	drm_dp_vsc_sdp_log(KERN_DEBUG, dev_priv->drm.dev, vsc);
++	if (size < HDMI_INFOFRAME_SIZE(DRM))
++		return -EINVAL;
++
++	if (ptr[0] != HDMI_INFOFRAME_TYPE_DRM ||
++	    ptr[1] != 1 ||
++	    ptr[2] != HDMI_DRM_INFOFRAME_SIZE)
++		return -EINVAL;
++
++	if (hdmi_infoframe_checksum(buffer, HDMI_INFOFRAME_SIZE(DRM)) != 0)
++		return -EINVAL;
++
++	ret = hdmi_drm_infoframe_unpack_only(frame, ptr + HDMI_INFOFRAME_HEADER_SIZE,
++					     size - HDMI_INFOFRAME_HEADER_SIZE);
++	return ret;
 +}
-+
- #define OUTPUT_TYPE(x) [INTEL_OUTPUT_ ## x] = #x
  
- static const char * const output_type_str[] = {
-@@ -13029,6 +13039,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
- 	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_PACKET_TYPE_GAMUT_METADATA))
- 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
-+	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(DP_SDP_VSC))
-+		intel_dump_dp_vsc_sdp(dev_priv, &pipe_config->infoframes.vsc);
+ /**
+  * hdmi_infoframe_unpack() - unpack binary buffer to a HDMI infoframe
+diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
+index 9613d796cfb1..50c31f1a0a2d 100644
+--- a/include/linux/hdmi.h
++++ b/include/linux/hdmi.h
+@@ -219,6 +219,8 @@ ssize_t hdmi_drm_infoframe_pack(struct hdmi_drm_infoframe *frame, void *buffer,
+ ssize_t hdmi_drm_infoframe_pack_only(const struct hdmi_drm_infoframe *frame,
+ 				     void *buffer, size_t size);
+ int hdmi_drm_infoframe_check(struct hdmi_drm_infoframe *frame);
++int hdmi_drm_infoframe_unpack_only(struct hdmi_drm_infoframe *frame,
++				   const void *buffer, size_t size);
  
- 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
- 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
+ enum hdmi_spd_sdi {
+ 	HDMI_SPD_SDI_UNKNOWN,
 -- 
 2.25.0

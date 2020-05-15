@@ -1,259 +1,94 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Thu, 14 May 2020 06:07:20 +0000
-Subject: [PATCH v12 02/14] drm/i915/dp: Read out DP SDPs
-Message-Id: <20200514060732.3378396-3-gwan-gyeong.mun@intel.com>
+From: "Saarinen, Jani" <jani.saarinen@intel.com>
+Date: Fri, 15 May 2020 14:25:41 +0000
+Subject: RE: [Intel-gfx] [PATCH v12 00/14] In order to readout DP SDPs, refactors the handling of DP SDPs
+Message-Id: <e82f172de7a04c0589f4f7c551475535@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
+ <87eerm4vd0.fsf@intel.com> <20200515130612.GI6112@intel.com>
+ <87zha92vf5.fsf@intel.com>
+In-Reply-To: <87zha92vf5.fsf@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, laurent.pinchart@ideasonboard.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jani Nikula <jani.nikula@linux.intel.com>, =?utf-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
+Cc: "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "laurent.pinchart@ideasonboard.com" <laurent.pinchart@ideasonboard.com>
 
-It adds code to read the DP SDPs from the video DIP and unpack them into
-the crtc state.
-
-It adds routines that read out DP VSC SDP and DP HDR Metadata Infoframe SDP
-In order to unpack DP VSC SDP, it adds intel_dp_vsc_sdp_unpack() function.
-It follows DP 1.4a spec. [Table 2-116: VSC SDP Header Bytes] and
-[Table 2-117: VSC SDP Payload for DB16 through DB18]
-
-In order to unpack DP HDR Metadata Infoframe SDP, it adds
-intel_dp_hdr_metadata_infoframe_sdp_unpack(). And it follows DP 1.4a spec.
-([Table 2-125: INFOFRAME SDP v1.2 Header Bytes] and
-[Table 2-126: INFOFRAME SDP v1.2 Payload Data Bytes - DB0 through DB31])
-and CTA-861-G spec. [Table-42 Dynamic Range and Mastering InfoFrame].
-
-A naming rule and style of intel_read_dp_sdp() function references
-intel_read_infoframe() function of intel_hdmi.c
-
-v2: Minor style fix
-v3: Replace a structure name to drm_dp_vsc_sdp from intel_dp_vsc_sdp
-v4: Use struct drm_device logging macros
-v5: Addressed review comments from Uma
-  - Polish commit message and comments
-  - Combine the if checks of sdp.HB2 and sdp.HB3
-  - Add 6bpc to unpacking of VSC SDP
-
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
----
- drivers/gpu/drm/i915/display/intel_dp.c | 187 ++++++++++++++++++++++++
- drivers/gpu/drm/i915/display/intel_dp.h |   3 +
- 2 files changed, 190 insertions(+)
-
-diff --git a/drivers/gpu/drm/i915/display/intel_dp.c b/drivers/gpu/drm/i915/display/intel_dp.c
-index 67723dede1d1..84c0105be61b 100644
---- a/drivers/gpu/drm/i915/display/intel_dp.c
-+++ b/drivers/gpu/drm/i915/display/intel_dp.c
-@@ -4971,6 +4971,193 @@ void intel_dp_set_infoframes(struct intel_encoder *encoder,
- 	intel_write_dp_sdp(encoder, crtc_state, HDMI_PACKET_TYPE_GAMUT_METADATA);
- }
- 
-+static int intel_dp_vsc_sdp_unpack(struct drm_dp_vsc_sdp *vsc,
-+				   const void *buffer, size_t size)
-+{
-+	const struct dp_sdp *sdp = buffer;
-+
-+	if (size < sizeof(struct dp_sdp))
-+		return -EINVAL;
-+
-+	memset(vsc, 0, size);
-+
-+	if (sdp->sdp_header.HB0 != 0)
-+		return -EINVAL;
-+
-+	if (sdp->sdp_header.HB1 != DP_SDP_VSC)
-+		return -EINVAL;
-+
-+	vsc->sdp_type = sdp->sdp_header.HB1;
-+	vsc->revision = sdp->sdp_header.HB2;
-+	vsc->length = sdp->sdp_header.HB3;
-+
-+	if ((sdp->sdp_header.HB2 = 0x2 && sdp->sdp_header.HB3 = 0x8) ||
-+	    (sdp->sdp_header.HB2 = 0x4 && sdp->sdp_header.HB3 = 0xe)) {
-+		/*
-+		 * - HB2 = 0x2, HB3 = 0x8
-+		 *   VSC SDP supporting 3D stereo + PSR
-+		 * - HB2 = 0x4, HB3 = 0xe
-+		 *   VSC SDP supporting 3D stereo + PSR2 with Y-coordinate of
-+		 *   first scan line of the SU region (applies to eDP v1.4b
-+		 *   and higher).
-+		 */
-+		return 0;
-+	} else if (sdp->sdp_header.HB2 = 0x5 && sdp->sdp_header.HB3 = 0x13) {
-+		/*
-+		 * - HB2 = 0x5, HB3 = 0x13
-+		 *   VSC SDP supporting 3D stereo + PSR2 + Pixel Encoding/Colorimetry
-+		 *   Format.
-+		 */
-+		vsc->pixelformat = (sdp->db[16] >> 4) & 0xf;
-+		vsc->colorimetry = sdp->db[16] & 0xf;
-+		vsc->dynamic_range = (sdp->db[17] >> 7) & 0x1;
-+
-+		switch (sdp->db[17] & 0x7) {
-+		case 0x0:
-+			vsc->bpc = 6;
-+			break;
-+		case 0x1:
-+			vsc->bpc = 8;
-+			break;
-+		case 0x2:
-+			vsc->bpc = 10;
-+			break;
-+		case 0x3:
-+			vsc->bpc = 12;
-+			break;
-+		case 0x4:
-+			vsc->bpc = 16;
-+			break;
-+		default:
-+			MISSING_CASE(sdp->db[17] & 0x7);
-+			return -EINVAL;
-+		}
-+
-+		vsc->content_type = sdp->db[18] & 0x7;
-+	} else {
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int
-+intel_dp_hdr_metadata_infoframe_sdp_unpack(struct hdmi_drm_infoframe *drm_infoframe,
-+					   const void *buffer, size_t size)
-+{
-+	int ret;
-+
-+	const struct dp_sdp *sdp = buffer;
-+
-+	if (size < sizeof(struct dp_sdp))
-+		return -EINVAL;
-+
-+	if (sdp->sdp_header.HB0 != 0)
-+		return -EINVAL;
-+
-+	if (sdp->sdp_header.HB1 != HDMI_INFOFRAME_TYPE_DRM)
-+		return -EINVAL;
-+
-+	/*
-+	 * Least Significant Eight Bits of (Data Byte Count – 1)
-+	 * 1Dh (i.e., Data Byte Count = 30 bytes).
-+	 */
-+	if (sdp->sdp_header.HB2 != 0x1D)
-+		return -EINVAL;
-+
-+	/* Most Significant Two Bits of (Data Byte Count – 1), Clear to 00b. */
-+	if ((sdp->sdp_header.HB3 & 0x3) != 0)
-+		return -EINVAL;
-+
-+	/* INFOFRAME SDP Version Number */
-+	if (((sdp->sdp_header.HB3 >> 2) & 0x3f) != 0x13)
-+		return -EINVAL;
-+
-+	/* CTA Header Byte 2 (INFOFRAME Version Number) */
-+	if (sdp->db[0] != 1)
-+		return -EINVAL;
-+
-+	/* CTA Header Byte 3 (Length of INFOFRAME): HDMI_DRM_INFOFRAME_SIZE */
-+	if (sdp->db[1] != HDMI_DRM_INFOFRAME_SIZE)
-+		return -EINVAL;
-+
-+	ret = hdmi_drm_infoframe_unpack_only(drm_infoframe, &sdp->db[2],
-+					     HDMI_DRM_INFOFRAME_SIZE);
-+
-+	return ret;
-+}
-+
-+static void intel_read_dp_vsc_sdp(struct intel_encoder *encoder,
-+				  struct intel_crtc_state *crtc_state,
-+				  struct drm_dp_vsc_sdp *vsc)
-+{
-+	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
-+	struct intel_dp *intel_dp = enc_to_intel_dp(encoder);
-+	struct drm_i915_private *dev_priv = to_i915(encoder->base.dev);
-+	unsigned int type = DP_SDP_VSC;
-+	struct dp_sdp sdp = {};
-+	int ret;
-+
-+	/* When PSR is enabled, VSC SDP is handled by PSR routine */
-+	if (intel_psr_enabled(intel_dp))
-+		return;
-+
-+	if ((crtc_state->infoframes.enable &
-+	     intel_hdmi_infoframe_enable(type)) = 0)
-+		return;
-+
-+	intel_dig_port->read_infoframe(encoder, crtc_state, type, &sdp, sizeof(sdp));
-+
-+	ret = intel_dp_vsc_sdp_unpack(vsc, &sdp, sizeof(sdp));
-+
-+	if (ret)
-+		drm_dbg_kms(&dev_priv->drm, "Failed to unpack DP VSC SDP\n");
-+}
-+
-+static void intel_read_dp_hdr_metadata_infoframe_sdp(struct intel_encoder *encoder,
-+						     struct intel_crtc_state *crtc_state,
-+						     struct hdmi_drm_infoframe *drm_infoframe)
-+{
-+	struct intel_digital_port *intel_dig_port = enc_to_dig_port(encoder);
-+	struct drm_i915_private *dev_priv = to_i915(encoder->base.dev);
-+	unsigned int type = HDMI_PACKET_TYPE_GAMUT_METADATA;
-+	struct dp_sdp sdp = {};
-+	int ret;
-+
-+	if ((crtc_state->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(type)) = 0)
-+		return;
-+
-+	intel_dig_port->read_infoframe(encoder, crtc_state, type, &sdp,
-+				       sizeof(sdp));
-+
-+	ret = intel_dp_hdr_metadata_infoframe_sdp_unpack(drm_infoframe, &sdp,
-+							 sizeof(sdp));
-+
-+	if (ret)
-+		drm_dbg_kms(&dev_priv->drm,
-+			    "Failed to unpack DP HDR Metadata Infoframe SDP\n");
-+}
-+
-+void intel_read_dp_sdp(struct intel_encoder *encoder,
-+		       struct intel_crtc_state *crtc_state,
-+		       unsigned int type)
-+{
-+	switch (type) {
-+	case DP_SDP_VSC:
-+		intel_read_dp_vsc_sdp(encoder, crtc_state,
-+				      &crtc_state->infoframes.vsc);
-+		break;
-+	case HDMI_PACKET_TYPE_GAMUT_METADATA:
-+		intel_read_dp_hdr_metadata_infoframe_sdp(encoder, crtc_state,
-+							 &crtc_state->infoframes.drm.drm);
-+		break;
-+	default:
-+		MISSING_CASE(type);
-+		break;
-+	}
-+}
-+
- static void
- intel_dp_setup_vsc_sdp(struct intel_dp *intel_dp,
- 		       const struct intel_crtc_state *crtc_state,
-diff --git a/drivers/gpu/drm/i915/display/intel_dp.h b/drivers/gpu/drm/i915/display/intel_dp.h
-index 6659ce15a693..faa2a3c5ee4e 100644
---- a/drivers/gpu/drm/i915/display/intel_dp.h
-+++ b/drivers/gpu/drm/i915/display/intel_dp.h
-@@ -117,6 +117,9 @@ void intel_dp_hdr_metadata_enable(struct intel_dp *intel_dp,
- void intel_dp_set_infoframes(struct intel_encoder *encoder, bool enable,
- 			     const struct intel_crtc_state *crtc_state,
- 			     const struct drm_connector_state *conn_state);
-+void intel_read_dp_sdp(struct intel_encoder *encoder,
-+		       struct intel_crtc_state *crtc_state,
-+		       unsigned int type);
- bool intel_digital_port_connected(struct intel_encoder *encoder);
- void intel_dp_process_phy_request(struct intel_dp *intel_dp);
- 
--- 
-2.25.0
+SGksDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogSW50ZWwtZ2Z4IDxp
+bnRlbC1nZngtYm91bmNlc0BsaXN0cy5mcmVlZGVza3RvcC5vcmc+IE9uIEJlaGFsZiBPZiBKYW5p
+IE5pa3VsYQ0KPiBTZW50OiBwZXJqYW50YWkgMTUuIHRvdWtva3V1dGEgMjAyMCAxNi4xMw0KPiBU
+bzogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQGxpbnV4LmludGVsLmNvbT4NCj4gQ2M6
+IGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZzsgZGFuaWVsLnZldHRlckBmZndsbC5jaDsgaW50
+ZWwtDQo+IGdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmc7IGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVz
+a3RvcC5vcmc7DQo+IGxhdXJlbnQucGluY2hhcnRAaWRlYXNvbmJvYXJkLmNvbQ0KPiBTdWJqZWN0
+OiBSZTogW0ludGVsLWdmeF0gW1BBVENIIHYxMiAwMC8xNF0gSW4gb3JkZXIgdG8gcmVhZG91dCBE
+UCBTRFBzLCByZWZhY3RvcnMgdGhlDQo+IGhhbmRsaW5nIG9mIERQIFNEUHMNCj4gDQo+IE9uIEZy
+aSwgMTUgTWF5IDIwMjAsIFZpbGxlIFN5cmrDpGzDpCA8dmlsbGUuc3lyamFsYUBsaW51eC5pbnRl
+bC5jb20+IHdyb3RlOg0KPiA+IE9uIFRodSwgTWF5IDE0LCAyMDIwIGF0IDAyOjE5OjIzUE0gKzAz
+MDAsIEphbmkgTmlrdWxhIHdyb3RlOg0KPiA+PiBPbiBUaHUsIDE0IE1heSAyMDIwLCBHd2FuLWd5
+ZW9uZyBNdW4gPGd3YW4tZ3llb25nLm11bkBpbnRlbC5jb20+DQo+IHdyb3RlOg0KPiA+PiA+IElu
+IG9yZGVyIHRvIHJlYWRvdXQgRFAgU0RQcyAoU2Vjb25kYXJ5IERhdGEgUGFja2V0OiBEUCBIRFIg
+TWV0YWRhdGENCj4gPj4gPiBJbmZvZnJhbWUgU0RQLCBEUCBWU0MgU0RQKSwgaXQgcmVmYWN0b3Jz
+IGhhbmRsaW5nIERQIFNEUHMgY29kZXMuDQo+ID4+ID4gSXQgYWRkcyBuZXcgY29tcHV0ZSByb3V0
+aW5lcyBmb3IgRFAgSERSIE1ldGFkYXRhIEluZm9mcmFtZSBTRFAgYW5kDQo+ID4+ID4gRFAgVlND
+IFNEUC4NCj4gPj4gPiBBbmQgbmV3IHdyaXRpbmcgcm91dGluZXMgb2YgRFAgU0RQcyAoU2Vjb25k
+YXJ5IERhdGEgUGFja2V0KSB0aGF0DQo+ID4+ID4gdXNlcyBjb21wdXRlZCBjb25maWdzLg0KPiA+
+PiA+IE5ldyByZWFkaW5nIHJvdXRpbmVzIG9mIERQIFNEUHMgYXJlIGFkZGVkIGZvciByZWFkb3V0
+Lg0KPiA+PiA+IEl0IGFkZHMgYSBsb2dnaW5nIGZ1bmN0aW9uIGZvciBEUCBWU0MgU0RQLg0KPiA+
+PiA+IFdoZW4gcmVjZWl2aW5nIHZpZGVvIGl0IGlzIHZlcnkgdXNlZnVsIHRvIGJlIGFibGUgdG8g
+bG9nIERQIFZTQyBTRFAuDQo+ID4+ID4gVGhpcyBncmVhdGx5IHNpbXBsaWZpZXMgZGVidWdnaW5n
+Lg0KPiA+PiA+IEluIG9yZGVyIHRvIHVzZSBhIGNvbW1vbiBWU0MgU0RQIENvbG9yaW1ldHJ5IGNh
+bGN1bGF0aW5nIGNvZGUgb24NCj4gPj4gPiBQU1IsIGl0IHVzZXMgYSBuZXcgcHNyIHZzYyBzZHAg
+Y29tcHV0ZSByb3V0aW5lLg0KPiA+Pg0KPiA+PiBQdXNoZWQgdGhlIHNlcmllcyB0byBkcm0taW50
+ZWwtbmV4dC1xdWV1ZWQgd2l0aCBEYW5pZWwncyBpcmMgYWNrIGZvcg0KPiA+PiBtZXJnaW5nIHRo
+ZSB0d28gbm9uLWk5MTUgcGF0Y2hlcyB0aGF0IHJvdXRlIHRvby4NCj4gPg0KPiA+IGZpLWhzdy00
+NzcwIG5vdyBvb3BzZXMgYXQgYm9vdDoNCj4gDQo+IC9vXA0KPiANCj4gV2hhdCBkaWQgSSBtaXNz
+PyBXaGF0IHBhcnQgYWJvdXQgdGhlIENJIHJlcG9ydCBkaWQgSSBvdmVybG9vaz8NCkRhbW4sIGlu
+ZGVlZDoNCmh0dHBzOi8vcGF0Y2h3b3JrLmZyZWVkZXNrdG9wLm9yZy9zZXJpZXMvNzI4NTMvDQpD
+aSByZXN1bHRzIGlzIHN1Y2Nlc3MgYnV0IGl0IGhhczoNCktub3duIGlzc3Vlcw0KLS0tLS0tLS0t
+LS0tDQoNCiAgSGVyZSBhcmUgdGhlIGNoYW5nZXMgZm91bmQgaW4gUGF0Y2h3b3JrXzE3NjU0IHRo
+YXQgY29tZSBmcm9tIGtub3duIGlzc3VlczoNCg0KIyMjIENJIGNoYW5nZXMgIyMjDQoNCiMjIyMg
+SXNzdWVzIGhpdCAjIyMjDQoNCiAgKiBib290Og0KICAgIC0gZmktaHN3LTQ3NzA6ICAgICAgICBb
+UEFTU11bMV0gLT4gW0ZBSUxdWzJdIChbQ0kjODBdKQ0KICAgWzFdOiBodHRwczovL2ludGVsLWdm
+eC1jaS4wMS5vcmcvdHJlZS9kcm0tdGlwL0NJX0RSTV84NDgxL2ZpLWhzdy00NzcwL2Jvb3QuaHRt
+bA0KICAgWzJdOiBodHRwczovL2ludGVsLWdmeC1jaS4wMS5vcmcvdHJlZS9kcm0tdGlwL1BhdGNo
+d29ya18xNzY1NC9maS1oc3ctNDc3MC9ib290Lmh0bWwNCg0KPiANCj4gQlIsDQo+IEphbmkuDQo+
+IA0KPiANCj4gPg0KPiA+IDwxPlsgICAgMy43MzY5MDNdIEJVRzoga2VybmVsIE5VTEwgcG9pbnRl
+ciBkZXJlZmVyZW5jZSwgYWRkcmVzczoNCj4gMDAwMDAwMDAwMDAwMDAwMA0KPiA+IDwxPlsgICAg
+My43MzY5MTZdICNQRjogc3VwZXJ2aXNvciByZWFkIGFjY2VzcyBpbiBrZXJuZWwgbW9kZQ0KPiA+
+IDwxPlsgICAgMy43MzY5MTZdICNQRjogZXJyb3JfY29kZSgweDAwMDApIC0gbm90LXByZXNlbnQg
+cGFnZQ0KPiA+IDw2PlsgICAgMy43MzY5MTddIFBHRCAwIFA0RCAwDQo+ID4gPDQ+WyAgICAzLjcz
+NjkxOV0gT29wczogMDAwMCBbIzFdIFBSRUVNUFQgU01QIFBUSQ0KPiA+IDw0PlsgICAgMy43MzY5
+MjFdIENQVTogMCBQSUQ6IDM2MyBDb21tOiBzeXN0ZW1kLXVkZXZkIE5vdCB0YWludGVkIDUuNy4w
+LXJjNS1DSS0NCj4gQ0lfRFJNXzg0ODUrICMxDQo+ID4gPDQ+WyAgICAzLjczNjkyMl0gSGFyZHdh
+cmUgbmFtZTogTEVOT1ZPIDEwQUdTMDA2MDEvU0hBUktCQVksIEJJT1MNCj4gRkJLVDM0QVVTIDA0
+LzI0LzIwMTMNCj4gPiA8ND5bICAgIDMuNzM2OTg2XSBSSVA6IDAwMTA6aW50ZWxfcHNyX2VuYWJs
+ZWQrMHg4LzB4NzAgW2k5MTVdDQo+ID4gPDQ+WyAgICAzLjczNjk4OF0gQ29kZTogMTggNDggYzcg
+YzYgNDAgMDkgNzkgYTAgZTggZTMgZTIgMDQgZTEgMGYgYjYgNDQgMjQgMDMgZTkgZjQNCj4gZmQg
+ZmYgZmYgOTAgNjYgMmUgMGYgMWYgODQgMDAgMDAgMDAgMDAgMDAgNDEgNTQgNTUgNTMgNDggODMg
+ZWMgMDggPDQ4PiA4YiA5ZiBkOCBmZSBmZiBmZg0KPiBmNiA4MyA1ZSAwZCAwMCAwMCAyMCA3NCAw
+OSA4MCBiYiA2YyBiNiAwMCAwMA0KPiA+IDw0PlsgICAgMy43MzcwMzZdIFJTUDogMDAxODpmZmZm
+YzkwMDAwNDdmOGEwIEVGTEFHUzogMDAwMTAyODYNCj4gPiA8ND5bICAgIDMuNzM3MDQyXSBSQVg6
+IDAwMDAwMDAwMDAwMDAwMDIgUkJYOiBmZmZmODg4M2ZmZDA0MDAwIFJDWDoNCj4gMDAwMDAwMDAw
+MDAwMDAwMQ0KPiA+IDw0PlsgICAgMy43MzcwNDhdIFJEWDogMDAwMDAwMDAwMDAwMDAwNyBSU0k6
+IGZmZmY4ODgzZmZkMDQwMDAgUkRJOg0KPiAwMDAwMDAwMDAwMDAwMTI4DQo+ID4gPDQ+WyAgICAz
+LjczNzA1NV0gUkJQOiBmZmZmODg4NDA2YWZlMjAwIFIwODogMDAwMDAwMDAwMDAwMDAwZiBSMDk6
+DQo+IDAwMDAwMDAwMDAwMDAwMDENCj4gPiA8ND5bICAgIDMuNzM3MDYxXSBSMTA6IDAwMDAwMDAw
+MDAwMDAwMDAgUjExOiAwMDAwMDAwMDAwMDAwMDAwIFIxMjoNCj4gMDAwMDAwMDAwMDAwMDAwMA0K
+PiA+IDw0PlsgICAgMy43MzcwNjhdIFIxMzogZmZmZjg4ODNmNzVkMDAwMCBSMTQ6IGZmZmY4ODg0
+MDZhZmUyMDAgUjE1Og0KPiBmZmZmODg4M2Y3NWQwODcwDQo+ID4gPDQ+WyAgICAzLjczNzA3NV0g
+RlM6ICAwMDAwN2Y3MTYxOGY5NjgwKDAwMDApIEdTOmZmZmY4ODg0MGVjMDAwMDAoMDAwMCkNCj4g
+a25sR1M6MDAwMDAwMDAwMDAwMDAwMA0KPiA+IDw0PlsgICAgMy43MzcwODJdIENTOiAgMDAxMCBE
+UzogMDAwMCBFUzogMDAwMCBDUjA6IDAwMDAwMDAwODAwNTAwMzMNCj4gPiA8ND5bICAgIDMuNzM3
+MDg4XSBDUjI6IDAwMDAwMDAwMDAwMDAwMDAgQ1IzOiAwMDAwMDAwNDAyNTEwMDAyIENSNDoNCj4g
+MDAwMDAwMDAwMDE2MDZmMA0KPiA+IDw0PlsgICAgMy43MzcwOTRdIERSMDogMDAwMDAwMDAwMDAw
+MDAwMCBEUjE6IDAwMDAwMDAwMDAwMDAwMDAgRFIyOg0KPiAwMDAwMDAwMDAwMDAwMDAwDQo+ID4g
+PDQ+WyAgICAzLjczNzEwMV0gRFIzOiAwMDAwMDAwMDAwMDAwMDAwIERSNjogMDAwMDAwMDBmZmZl
+MGZmMCBEUjc6DQo+IDAwMDAwMDAwMDAwMDA0MDANCj4gPiA8ND5bICAgIDMuNzM3MTA3XSBDYWxs
+IFRyYWNlOg0KPiA+IDw0PlsgICAgMy43MzcxNzVdICBpbnRlbF9yZWFkX2RwX3NkcCsweDFhNC8w
+eDM4MCBbaTkxNV0NCj4gPiA8ND5bICAgIDMuNzM3MjQ2XSAgaHN3X2NydF9nZXRfY29uZmlnKzB4
+MTIvMHg0MCBbaTkxNV0NCj4gPiA8ND5bICAgIDMuNzM3MzE3XSAgaW50ZWxfbW9kZXNldF9zZXR1
+cF9od19zdGF0ZSsweDNiMy8weDE2YTAgW2k5MTVdDQo+ID4gLi4uDQo+IA0KPiAtLQ0KPiBKYW5p
+IE5pa3VsYSwgSW50ZWwgT3BlbiBTb3VyY2UgR3JhcGhpY3MgQ2VudGVyDQo+IF9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+IEludGVsLWdmeCBtYWlsaW5n
+IGxpc3QNCj4gSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZw0KPiBodHRwczovL2xpc3Rz
+LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeA0K

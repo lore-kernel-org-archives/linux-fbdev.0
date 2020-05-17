@@ -1,124 +1,147 @@
-From: "Mun, Gwan-gyeong" <gwan-gyeong.mun@intel.com>
-Date: Thu, 14 May 2020 06:23:03 +0000
-Subject: Re: [Intel-gfx] [PATCH v12 01/14] video/hdmi: Add Unpack only function for DRM infoframe
-Message-Id: <f817b755bbdc20955cddb5b2cddb9a2246570d0e.camel@intel.com>
+From: Emil Velikov <emil.l.velikov@gmail.com>
+Date: Sun, 17 May 2020 22:05:24 +0000
+Subject: [PATCH v2 2/2] powerpc/configs: replace deprecated riva/nvidia with nouveau
+Message-Id: <20200517220524.4036334-2-emil.l.velikov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
- <20200514060732.3378396-2-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200514060732.3378396-2-gwan-gyeong.mun@intel.com>
+References: <20200517220524.4036334-1-emil.l.velikov@gmail.com>
+In-Reply-To: <20200517220524.4036334-1-emil.l.velikov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, "laurent.pinchart@ideasonboard.com" <laurent.pinchart@ideasonboard.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Ellerman <mpe@ellerman.id.au>, emil.l.velikov@gmail.com, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 
-SGkgQmFydGxvbWllaiBhbmQgTGF1cmVudCBQaW5jaGFydCwgY2FuIEkgaGF2ZSB5b3VyIGFjayBm
-b3IgbWVyZ2luZw0KdGhpcyB2aWEgZHJtLWludGVsIGFsb25nDQp3aXRoIHRoZSByZXN0IG9mIHRo
-ZSBzZXJpZXMsIHBsZWFzZT8NCg0KQlIsDQpHLkcuIA0KDQpPbiBUaHUsIDIwMjAtMDUtMTQgYXQg
-MDk6MDcgKzAzMDAsIEd3YW4tZ3llb25nIE11biB3cm90ZToNCj4gSXQgYWRkcyBhbiB1bnBhY2sg
-b25seSBmdW5jdGlvbiBmb3IgRFJNIGluZm9mcmFtZSBmb3IgZHluYW1pYyByYW5nZQ0KPiBhbmQN
-Cj4gbWFzdGVyaW5nIGluZm9mcmFtZSByZWFkb3V0Lg0KPiBJdCB1bnBhY2tzIHRoZSBpbmZvcm1h
-dGlvbiBkYXRhIGJsb2NrIGNvbnRhaW5lZCBpbiB0aGUgYmluYXJ5IGJ1ZmZlcg0KPiBpbnRvDQo+
-IGEgc3RydWN0dXJlZCBmcmFtZSBvZiB0aGUgSERNSSBEeW5hbWljIFJhbmdlIGFuZCBNYXN0ZXJp
-bmcgKERSTSkNCj4gaW5mb3JtYXRpb24gZnJhbWUuDQo+IA0KPiBJbiBjb250cmFzdCB0byBoZG1p
-X2RybV9pbmZvZnJhbWVfdW5wYWNrKCkgZnVuY3Rpb24sIGl0IGRvZXMgbm90DQo+IHZlcmlmeQ0K
-PiBhIGNoZWNrc3VtLg0KPiANCj4gSXQgY2FuIGJlIHVzZWQgZm9yIHVucGFja2luZyBhIERQIEhE
-UiBNZXRhZGF0YSBJbmZvZnJhbWUgU0RQIGNhc2UuDQo+IERQIEhEUiBNZXRhZGF0YSBJbmZvZnJh
-bWUgU0RQIHVzZXMgdGhlIHNhbWUgRHluYW1pYyBSYW5nZSBhbmQNCj4gTWFzdGVyaW5nDQo+IChE
-Uk0pIGluZm9ybWF0aW9uIChDVEEtODYxLUcgc3BlYy4pIHN1Y2ggYXMgSERNSSBEUk0gaW5mb2Zy
-YW1lLg0KPiBCdXQgRFAgU0RQIGhlYWRlciBhbmQgcGF5bG9hZCBzdHJ1Y3R1cmUgYXJlIGRpZmZl
-cmVudCBmcm9tIEhETUkgRFJNDQo+IEluZm9mcmFtZS4gVGhlcmVmb3JlIHVucGFja2luZyBEUk0g
-aW5mb2ZyYW1lIGZvciBEUCByZXF1aXJlcyBza2lwcGluZw0KPiBvZg0KPiBhIHZlcmlmeWluZyBj
-aGVja3N1bS4NCj4gDQo+IHY5OiBBZGQgY2xlYXIgY29tbWVudHMgdG8gaGRtaV9kcm1faW5mb2Zy
-YW1lX3VucGFja19vbmx5KCkgYW5kDQo+ICAgICBoZG1pX2RybV9pbmZvZnJhbWVfdW5wYWNrKCkg
-KExhdXJlbnQgUGluY2hhcnQpDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBHd2FuLWd5ZW9uZyBNdW4g
-PGd3YW4tZ3llb25nLm11bkBpbnRlbC5jb20+DQo+IFJldmlld2VkLWJ5OiBVbWEgU2hhbmthciA8
-dW1hLnNoYW5rYXJAaW50ZWwuY29tPg0KPiBDYzogTGF1cmVudCBQaW5jaGFydCA8bGF1cmVudC5w
-aW5jaGFydEBpZGVhc29uYm9hcmQuY29tPg0KPiBDYzogVmlsbGUgU3lyamFsYSA8dmlsbGUuc3ly
-amFsYUBsaW51eC5pbnRlbC5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy92aWRlby9oZG1pLmMgfCA2
-NSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0NCj4gLS0NCj4gIGlu
-Y2x1ZGUvbGludXgvaGRtaS5oIHwgIDIgKysNCj4gIDIgZmlsZXMgY2hhbmdlZCwgNDggaW5zZXJ0
-aW9ucygrKSwgMTkgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRl
-by9oZG1pLmMgYi9kcml2ZXJzL3ZpZGVvL2hkbWkuYw0KPiBpbmRleCA4NTZhOGM0ZTg0YTIuLmU3
-MDc5MmIzZTM2NyAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9oZG1pLmMNCj4gKysrIGIv
-ZHJpdmVycy92aWRlby9oZG1pLmMNCj4gQEAgLTE3NjgsMjAgKzE3NjgsMjEgQEAgaGRtaV92ZW5k
-b3JfYW55X2luZm9mcmFtZV91bnBhY2sodW5pb24NCj4gaGRtaV92ZW5kb3JfYW55X2luZm9mcmFt
-ZSAqZnJhbWUsDQo+ICB9DQo+ICANCj4gIC8qKg0KPiAtICogaGRtaV9kcm1faW5mb2ZyYW1lX3Vu
-cGFjaygpIC0gdW5wYWNrIGJpbmFyeSBidWZmZXIgdG8gYSBIRE1JIERSTQ0KPiBpbmZvZnJhbWUN
-Cj4gKyAqIGhkbWlfZHJtX2luZm9mcmFtZV91bnBhY2tfb25seSgpIC0gdW5wYWNrIGJpbmFyeSBi
-dWZmZXIgb2YgQ1RBLQ0KPiA4NjEtRyBEUk0NCj4gKyAqICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgaW5mb2ZyYW1lIERhdGFCeXRlcyB0byBhIEhETUkNCj4gRFJNDQo+ICsgKiAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZm9mcmFtZQ0KPiAgICogQGZyYW1l
-OiBIRE1JIERSTSBpbmZvZnJhbWUNCj4gICAqIEBidWZmZXI6IHNvdXJjZSBidWZmZXINCj4gICAq
-IEBzaXplOiBzaXplIG9mIGJ1ZmZlcg0KPiAgICoNCj4gLSAqIFVucGFja3MgdGhlIGluZm9ybWF0
-aW9uIGNvbnRhaW5lZCBpbiBiaW5hcnkgQGJ1ZmZlciBpbnRvIGENCj4gc3RydWN0dXJlZA0KPiAt
-ICogQGZyYW1lIG9mIHRoZSBIRE1JIER5bmFtaWMgUmFuZ2UgYW5kIE1hc3RlcmluZyAoRFJNKSBp
-bmZvcm1hdGlvbg0KPiBmcmFtZS4NCj4gLSAqIEFsc28gdmVyaWZpZXMgdGhlIGNoZWNrc3VtIGFz
-IHJlcXVpcmVkIGJ5IHNlY3Rpb24gNS4zLjUgb2YgdGhlDQo+IEhETUkgMS40DQo+IC0gKiBzcGVj
-aWZpY2F0aW9uLg0KPiArICogVW5wYWNrcyBDVEEtODYxLUcgRFJNIGluZm9mcmFtZSBEYXRhQnl0
-ZXMgY29udGFpbmVkIGluIHRoZSBiaW5hcnkNCj4gQGJ1ZmZlcg0KPiArICogaW50byBhIHN0cnVj
-dHVyZWQgQGZyYW1lIG9mIHRoZSBIRE1JIER5bmFtaWMgUmFuZ2UgYW5kIE1hc3RlcmluZw0KPiAo
-RFJNKQ0KPiArICogaW5mb2ZyYW1lLg0KPiAgICoNCj4gICAqIFJldHVybnMgMCBvbiBzdWNjZXNz
-IG9yIGEgbmVnYXRpdmUgZXJyb3IgY29kZSBvbiBmYWlsdXJlLg0KPiAgICovDQo+IC1zdGF0aWMg
-aW50IGhkbWlfZHJtX2luZm9mcmFtZV91bnBhY2soc3RydWN0IGhkbWlfZHJtX2luZm9mcmFtZQ0K
-PiAqZnJhbWUsDQo+IC0JCQkJICAgICBjb25zdCB2b2lkICpidWZmZXIsIHNpemVfdCBzaXplKQ0K
-PiAraW50IGhkbWlfZHJtX2luZm9mcmFtZV91bnBhY2tfb25seShzdHJ1Y3QgaGRtaV9kcm1faW5m
-b2ZyYW1lICpmcmFtZSwNCj4gKwkJCQkgICBjb25zdCB2b2lkICpidWZmZXIsIHNpemVfdCBzaXpl
-KQ0KPiAgew0KPiAgCWNvbnN0IHU4ICpwdHIgPSBidWZmZXI7DQo+ICAJY29uc3QgdTggKnRlbXA7
-DQo+IEBAIC0xNzkwLDIzICsxNzkxLDEzIEBAIHN0YXRpYyBpbnQgaGRtaV9kcm1faW5mb2ZyYW1l
-X3VucGFjayhzdHJ1Y3QNCj4gaGRtaV9kcm1faW5mb2ZyYW1lICpmcmFtZSwNCj4gIAlpbnQgcmV0
-Ow0KPiAgCWludCBpOw0KPiAgDQo+IC0JaWYgKHNpemUgPCBIRE1JX0lORk9GUkFNRV9TSVpFKERS
-TSkpDQo+IC0JCXJldHVybiAtRUlOVkFMOw0KPiAtDQo+IC0JaWYgKHB0clswXSAhPSBIRE1JX0lO
-Rk9GUkFNRV9UWVBFX0RSTSB8fA0KPiAtCSAgICBwdHJbMV0gIT0gMSB8fA0KPiAtCSAgICBwdHJb
-Ml0gIT0gSERNSV9EUk1fSU5GT0ZSQU1FX1NJWkUpDQo+IC0JCXJldHVybiAtRUlOVkFMOw0KPiAt
-DQo+IC0JaWYgKGhkbWlfaW5mb2ZyYW1lX2NoZWNrc3VtKGJ1ZmZlciwgSERNSV9JTkZPRlJBTUVf
-U0laRShEUk0pKQ0KPiAhPSAwKQ0KPiArCWlmIChzaXplIDwgSERNSV9EUk1fSU5GT0ZSQU1FX1NJ
-WkUpDQo+ICAJCXJldHVybiAtRUlOVkFMOw0KPiAgDQo+ICAJcmV0ID0gaGRtaV9kcm1faW5mb2Zy
-YW1lX2luaXQoZnJhbWUpOw0KPiAgCWlmIChyZXQpDQo+ICAJCXJldHVybiByZXQ7DQo+ICANCj4g
-LQlwdHIgKz0gSERNSV9JTkZPRlJBTUVfSEVBREVSX1NJWkU7DQo+IC0NCj4gIAlmcmFtZS0+ZW90
-ZiA9IHB0clswXSAmIDB4NzsNCj4gIAlmcmFtZS0+bWV0YWRhdGFfdHlwZSA9IHB0clsxXSAmIDB4
-NzsNCj4gIA0KPiBAQCAtMTgxNCw3ICsxODA1LDcgQEAgc3RhdGljIGludCBoZG1pX2RybV9pbmZv
-ZnJhbWVfdW5wYWNrKHN0cnVjdA0KPiBoZG1pX2RybV9pbmZvZnJhbWUgKmZyYW1lLA0KPiAgCWZv
-ciAoaSA9IDA7IGkgPCAzOyBpKyspIHsNCj4gIAkJeF9sc2IgPSAqdGVtcCsrOw0KPiAgCQl4X21z
-YiA9ICp0ZW1wKys7DQo+IC0JCWZyYW1lLT5kaXNwbGF5X3ByaW1hcmllc1tpXS54ID0gICh4X21z
-YiA8PCA4KSB8IHhfbHNiOw0KPiArCQlmcmFtZS0+ZGlzcGxheV9wcmltYXJpZXNbaV0ueCA9ICh4
-X21zYiA8PCA4KSB8IHhfbHNiOw0KPiAgCQl5X2xzYiA9ICp0ZW1wKys7DQo+ICAJCXlfbXNiID0g
-KnRlbXArKzsNCj4gIAkJZnJhbWUtPmRpc3BsYXlfcHJpbWFyaWVzW2ldLnkgPSAoeV9tc2IgPDwg
-OCkgfCB5X2xzYjsNCj4gQEAgLTE4MzAsNiArMTgyMSw0MiBAQCBzdGF0aWMgaW50IGhkbWlfZHJt
-X2luZm9mcmFtZV91bnBhY2soc3RydWN0DQo+IGhkbWlfZHJtX2luZm9mcmFtZSAqZnJhbWUsDQo+
-ICANCj4gIAlyZXR1cm4gMDsNCj4gIH0NCj4gK0VYUE9SVF9TWU1CT0woaGRtaV9kcm1faW5mb2Zy
-YW1lX3VucGFja19vbmx5KTsNCj4gKw0KPiArLyoqDQo+ICsgKiBoZG1pX2RybV9pbmZvZnJhbWVf
-dW5wYWNrKCkgLSB1bnBhY2sgYmluYXJ5IGJ1ZmZlciB0byBhIEhETUkgRFJNDQo+IGluZm9mcmFt
-ZQ0KPiArICogQGZyYW1lOiBIRE1JIERSTSBpbmZvZnJhbWUNCj4gKyAqIEBidWZmZXI6IHNvdXJj
-ZSBidWZmZXINCj4gKyAqIEBzaXplOiBzaXplIG9mIGJ1ZmZlcg0KPiArICoNCj4gKyAqIFVucGFj
-a3MgdGhlIENUQS04NjEtRyBEUk0gaW5mb2ZyYW1lIGNvbnRhaW5lZCBpbiB0aGUgYmluYXJ5DQo+
-IEBidWZmZXIgaW50bw0KPiArICogYSBzdHJ1Y3R1cmVkIEBmcmFtZSBvZiB0aGUgSERNSSBEeW5h
-bWljIFJhbmdlIGFuZCBNYXN0ZXJpbmcgKERSTSkNCj4gKyAqIGluZm9mcmFtZS4gSXQgYWxzbyB2
-ZXJpZmllcyB0aGUgY2hlY2tzdW0gYXMgcmVxdWlyZWQgYnkgc2VjdGlvbg0KPiA1LjMuNSBvZg0K
-PiArICogdGhlIEhETUkgMS40IHNwZWNpZmljYXRpb24uDQo+ICsgKg0KPiArICogUmV0dXJucyAw
-IG9uIHN1Y2Nlc3Mgb3IgYSBuZWdhdGl2ZSBlcnJvciBjb2RlIG9uIGZhaWx1cmUuDQo+ICsgKi8N
-Cj4gK3N0YXRpYyBpbnQgaGRtaV9kcm1faW5mb2ZyYW1lX3VucGFjayhzdHJ1Y3QgaGRtaV9kcm1f
-aW5mb2ZyYW1lDQo+ICpmcmFtZSwNCj4gKwkJCQkgICAgIGNvbnN0IHZvaWQgKmJ1ZmZlciwgc2l6
-ZV90IHNpemUpDQo+ICt7DQo+ICsJY29uc3QgdTggKnB0ciA9IGJ1ZmZlcjsNCj4gKwlpbnQgcmV0
-Ow0KPiArDQo+ICsJaWYgKHNpemUgPCBIRE1JX0lORk9GUkFNRV9TSVpFKERSTSkpDQo+ICsJCXJl
-dHVybiAtRUlOVkFMOw0KPiArDQo+ICsJaWYgKHB0clswXSAhPSBIRE1JX0lORk9GUkFNRV9UWVBF
-X0RSTSB8fA0KPiArCSAgICBwdHJbMV0gIT0gMSB8fA0KPiArCSAgICBwdHJbMl0gIT0gSERNSV9E
-Uk1fSU5GT0ZSQU1FX1NJWkUpDQo+ICsJCXJldHVybiAtRUlOVkFMOw0KPiArDQo+ICsJaWYgKGhk
-bWlfaW5mb2ZyYW1lX2NoZWNrc3VtKGJ1ZmZlciwgSERNSV9JTkZPRlJBTUVfU0laRShEUk0pKQ0K
-PiAhPSAwKQ0KPiArCQlyZXR1cm4gLUVJTlZBTDsNCj4gKw0KPiArCXJldCA9IGhkbWlfZHJtX2lu
-Zm9mcmFtZV91bnBhY2tfb25seShmcmFtZSwgcHRyICsNCj4gSERNSV9JTkZPRlJBTUVfSEVBREVS
-X1NJWkUsDQo+ICsJCQkJCSAgICAgc2l6ZSAtDQo+IEhETUlfSU5GT0ZSQU1FX0hFQURFUl9TSVpF
-KTsNCj4gKwlyZXR1cm4gcmV0Ow0KPiArfQ0KPiAgDQo+ICAvKioNCj4gICAqIGhkbWlfaW5mb2Zy
-YW1lX3VucGFjaygpIC0gdW5wYWNrIGJpbmFyeSBidWZmZXIgdG8gYSBIRE1JDQo+IGluZm9mcmFt
-ZQ0KPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9oZG1pLmggYi9pbmNsdWRlL2xpbnV4L2hk
-bWkuaA0KPiBpbmRleCA5NjEzZDc5NmNmYjEuLjUwYzMxZjFhMGEyZCAxMDA2NDQNCj4gLS0tIGEv
-aW5jbHVkZS9saW51eC9oZG1pLmgNCj4gKysrIGIvaW5jbHVkZS9saW51eC9oZG1pLmgNCj4gQEAg
-LTIxOSw2ICsyMTksOCBAQCBzc2l6ZV90IGhkbWlfZHJtX2luZm9mcmFtZV9wYWNrKHN0cnVjdA0K
-PiBoZG1pX2RybV9pbmZvZnJhbWUgKmZyYW1lLCB2b2lkICpidWZmZXIsDQo+ICBzc2l6ZV90IGhk
-bWlfZHJtX2luZm9mcmFtZV9wYWNrX29ubHkoY29uc3Qgc3RydWN0IGhkbWlfZHJtX2luZm9mcmFt
-ZQ0KPiAqZnJhbWUsDQo+ICAJCQkJICAgICB2b2lkICpidWZmZXIsIHNpemVfdCBzaXplKTsNCj4g
-IGludCBoZG1pX2RybV9pbmZvZnJhbWVfY2hlY2soc3RydWN0IGhkbWlfZHJtX2luZm9mcmFtZSAq
-ZnJhbWUpOw0KPiAraW50IGhkbWlfZHJtX2luZm9mcmFtZV91bnBhY2tfb25seShzdHJ1Y3QgaGRt
-aV9kcm1faW5mb2ZyYW1lICpmcmFtZSwNCj4gKwkJCQkgICBjb25zdCB2b2lkICpidWZmZXIsIHNp
-emVfdCBzaXplKTsNCj4gIA0KPiAgZW51bSBoZG1pX3NwZF9zZGkgew0KPiAgCUhETUlfU1BEX1NE
-SV9VTktOT1dOLA0K
+As mentioned in earlier commit, the riva and nvidia fbdev drivers have
+seen no love over the years, are short on features and overall below par
+
+Users are encouraged to switch to the nouveau drm driver instead.
+
+v2: Split configs to separate patch, enable nouveau (Bartlomiej)
+
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Emil Velikov <emil.l.velikov@gmail.com>
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch> (v1)
+---
+Hi all unless, there are objections I would prefer to merge this via
+the drm tree.
+
+Thanks
+Emil
+---
+ arch/powerpc/configs/g5_defconfig     | 10 ++++++++--
+ arch/powerpc/configs/pasemi_defconfig |  9 +++++++--
+ arch/powerpc/configs/pmac32_defconfig |  9 +++++++--
+ arch/powerpc/configs/ppc6xx_defconfig | 10 +++++++---
+ 4 files changed, 29 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
+index a68c7f3af10e..213472f373b3 100644
+--- a/arch/powerpc/configs/g5_defconfig
++++ b/arch/powerpc/configs/g5_defconfig
+@@ -124,12 +124,18 @@ CONFIG_RAW_DRIVER=y
+ CONFIG_I2C_CHARDEV=y
+ CONFIG_AGP=m
+ CONFIG_AGP_UNINORTH=m
++CONFIG_DRM=y
++CONFIG_DRM_NOUVEAU=m
++# CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT is not set
++CONFIG_NOUVEAU_DEBUG=5
++CONFIG_NOUVEAU_DEBUG_DEFAULT=3
++# CONFIG_NOUVEAU_DEBUG_MMU is not set
++CONFIG_DRM_NOUVEAU_BACKLIGHT=y
++# CONFIG_DRM_NOUVEAU_SVM is not set
+ CONFIG_FB=y
+ CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_TILEBLITTING=y
+ CONFIG_FB_OF=y
+-CONFIG_FB_NVIDIA=y
+-CONFIG_FB_NVIDIA_I2C=y
+ CONFIG_FB_RADEON=y
+ # CONFIG_VGA_CONSOLE is not set
+ CONFIG_FRAMEBUFFER_CONSOLE=y
+diff --git a/arch/powerpc/configs/pasemi_defconfig b/arch/powerpc/configs/pasemi_defconfig
+index 08b7f4cef243..ccb3ab5e01da 100644
+--- a/arch/powerpc/configs/pasemi_defconfig
++++ b/arch/powerpc/configs/pasemi_defconfig
+@@ -102,11 +102,16 @@ CONFIG_SENSORS_LM85=y
+ CONFIG_SENSORS_LM90=y
+ CONFIG_DRM=y
+ CONFIG_DRM_RADEON=y
++CONFIG_DRM_NOUVEAU=m
++# CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT is not set
++CONFIG_NOUVEAU_DEBUG=5
++CONFIG_NOUVEAU_DEBUG_DEFAULT=3
++# CONFIG_NOUVEAU_DEBUG_MMU is not set
++CONFIG_DRM_NOUVEAU_BACKLIGHT=y
++# CONFIG_DRM_NOUVEAU_SVM is not set
+ CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_TILEBLITTING=y
+ CONFIG_FB_VGA16=y
+-CONFIG_FB_NVIDIA=y
+-CONFIG_FB_NVIDIA_I2C=y
+ CONFIG_FB_RADEON=y
+ # CONFIG_LCD_CLASS_DEVICE is not set
+ CONFIG_VGACON_SOFT_SCROLLBACK=y
+diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
+index 05e325ca3fbd..f858627385c8 100644
+--- a/arch/powerpc/configs/pmac32_defconfig
++++ b/arch/powerpc/configs/pmac32_defconfig
+@@ -199,6 +199,13 @@ CONFIG_DRM=m
+ CONFIG_DRM_RADEON=m
+ CONFIG_DRM_LEGACY=y
+ CONFIG_DRM_R128=m
++CONFIG_DRM_NOUVEAU=m
++# CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT is not set
++CONFIG_NOUVEAU_DEBUG=5
++CONFIG_NOUVEAU_DEBUG_DEFAULT=3
++# CONFIG_NOUVEAU_DEBUG_MMU is not set
++CONFIG_DRM_NOUVEAU_BACKLIGHT=y
++# CONFIG_DRM_NOUVEAU_SVM is not set
+ CONFIG_FB=y
+ CONFIG_FB_OF=y
+ CONFIG_FB_CONTROL=y
+@@ -206,8 +213,6 @@ CONFIG_FB_PLATINUM=y
+ CONFIG_FB_VALKYRIE=y
+ CONFIG_FB_CT65550=y
+ CONFIG_FB_IMSTT=y
+-CONFIG_FB_NVIDIA=y
+-CONFIG_FB_NVIDIA_I2C=y
+ CONFIG_FB_MATROX=y
+ CONFIG_FB_MATROX_MILLENIUM=y
+ CONFIG_FB_MATROX_MYSTIQUE=y
+diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
+index feb5d47d8d1e..48421f5007ed 100644
+--- a/arch/powerpc/configs/ppc6xx_defconfig
++++ b/arch/powerpc/configs/ppc6xx_defconfig
+@@ -738,15 +738,19 @@ CONFIG_DRM_MGA=m
+ CONFIG_DRM_SIS=m
+ CONFIG_DRM_VIA=m
+ CONFIG_DRM_SAVAGE=m
++CONFIG_DRM_NOUVEAU=m
++# CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT is not set
++CONFIG_NOUVEAU_DEBUG=5
++CONFIG_NOUVEAU_DEBUG_DEFAULT=3
++# CONFIG_NOUVEAU_DEBUG_MMU is not set
++CONFIG_DRM_NOUVEAU_BACKLIGHT=y
++# CONFIG_DRM_NOUVEAU_SVM is not set
+ CONFIG_FB=y
+ CONFIG_FB_CIRRUS=m
+ CONFIG_FB_OF=y
+ CONFIG_FB_PLATINUM=y
+ CONFIG_FB_VALKYRIE=y
+ CONFIG_FB_CT65550=y
+-CONFIG_FB_NVIDIA=y
+-CONFIG_FB_NVIDIA_I2C=y
+-CONFIG_FB_RIVA=m
+ CONFIG_FB_MATROX=y
+ CONFIG_FB_MATROX_MILLENIUM=y
+ CONFIG_FB_MATROX_MYSTIQUE=y
+-- 
+2.25.1

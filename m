@@ -1,33 +1,210 @@
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Date: Wed, 20 May 2020 10:59:52 +0000
-Subject: Re: [PATCH 1/5] drivers/powerpc: Replace _ALIGN_UP() by ALIGN()
-Message-Id: <158997212813.943180.8258248178215435632.b4-ty@ellerman.id.au>
+From: Sasha Levin <sashal@kernel.org>
+Date: Tue, 19 May 2020 16:32:30 +0000
+Subject: [RFC PATCH 0/4] DirectX on Linux
+Message-Id: <20200519163234.226513-1-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <a5945463f86c984151962a475a3ee56a2893e85d.1587407777.git.christophe.leroy@c-s.fr>
-In-Reply-To: <a5945463f86c984151962a475a3ee56a2893e85d.1587407777.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@c-s.fr>, Paul Mackerras <paulus@samba.org>
-Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: alexander.deucher@amd.com, chris@chris-wilson.co.uk, ville.syrjala@linux.intel.com, Hawking.Zhang@amd.com, tvrtko.ursulin@intel.com
+Cc: Sasha Levin <sashal@kernel.org>, linux-hyperv@vger.kernel.org, sthemmin@microsoft.com, gregkh@linuxfoundation.org, haiyangz@microsoft.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, spronovo@microsoft.com, wei.liu@kernel.org, linux-fbdev@vger.kernel.org, iourit@microsoft.com, kys@microsoft.com
 
-On Mon, 20 Apr 2020 18:36:34 +0000 (UTC), Christophe Leroy wrote:
-> _ALIGN_UP() is specific to powerpc
-> ALIGN() is generic and does the same
-> 
-> Replace _ALIGN_UP() by ALIGN()
+There is a blog post that goes into more detail about the bigger
+picture, and walks through all the required pieces to make this work. It
+is available here:
+https://devblogs.microsoft.com/directx/directx-heart-linux . The rest of
+this cover letter will focus on the Linux Kernel bits.
 
-Applied to powerpc/next.
+Overview
+====
 
-[1/5] drivers/powerpc: Replace _ALIGN_UP() by ALIGN()
-      https://git.kernel.org/powerpc/c/7bfc3c84cbf5167d943cff9b3d2619dab0b7894c
-[2/5] powerpc: Replace _ALIGN_DOWN() by ALIGN_DOWN()
-      https://git.kernel.org/powerpc/c/e96d904ede6756641563d27daa746875b478a6c8
-[3/5] powerpc: Replace _ALIGN_UP() by ALIGN()
-      https://git.kernel.org/powerpc/c/b711531641038f3ff3723914f3d5ba79848d347e
-[4/5] powerpc: Replace _ALIGN() by ALIGN()
-      https://git.kernel.org/powerpc/c/d3f3d3bf76cfb04e73436a15e3987d3573e7523a
-[5/5] powerpc: Remove _ALIGN_UP(), _ALIGN_DOWN() and _ALIGN()
-      https://git.kernel.org/powerpc/c/4cdb2da654033d76e1b1cb4ac427d9193dce816b
+This is the first draft of the Microsoft Virtual GPU (vGPU) driver. The
+driver exposes a paravirtualized GPU to user mode applications running
+in a virtual machine on a Windows host. This enables hardware
+acceleration in environment such as WSL (Windows Subsystem for Linux)
+where the Linux virtual machine is able to share the GPU with the
+Windows host.
 
-cheers
+The projection is accomplished by exposing the WDDM (Windows Display
+Driver Model) interface as a set of IOCTL. This allows APIs and user
+mode driver written against the WDDM GPU abstraction on Windows to be
+ported to run within a Linux environment. This enables the port of the
+D3D12 and DirectML APIs as well as their associated user mode driver to
+Linux. This also enables third party APIs, such as the popular NVIDIA
+Cuda compute API, to be hardware accelerated within a WSL environment.
+
+Only the rendering/compute aspect of the GPU are projected to the
+virtual machine, no display functionality is exposed. Further, at this
+time there are no presentation integration. So although the D3D12 API
+can be use to render graphics offscreen, there is no path (yet) for
+pixel to flow from the Linux environment back onto the Windows host
+desktop. This GPU stack is effectively side-by-side with the native
+Linux graphics stack.
+
+The driver creates the /dev/dxg device, which can be opened by user mode
+application and handles their ioctls. The IOCTL interface to the driver
+is defined in dxgkmthk.h (Dxgkrnl Graphics Port Driver ioctl
+definitions). The interface matches the D3DKMT interface on Windows.
+Ioctls are implemented in ioctl.c.
+
+When a VM starts, hyper-v on the host adds virtual GPU devices to the VM
+via the hyper-v driver. The host offers several VM bus channels to the
+VM: the global channel and one channel per virtual GPU, assigned to the
+VM.
+
+The driver registers with the hyper-v driver (hv_driver) for the arrival
+of VM bus channels. dxg_probe_device recognizes the vGPU channels and
+creates the corresponding objects (dxgadapter for vGPUs and dxgglobal
+for the global channel).
+
+The driver uses the hyper-V VM bus interface to communicate with the
+host. dxgvmbus.c implements the communication interface.
+
+The global channel has 8GB of IO space assigned by the host. This space
+is managed by the host and used to give the guest direct CPU access to
+some allocations. Video memory is allocated on the host except in the
+case of existing_sysmem allocations. The Windows host allocates memory
+for the GPU on behalf of the guest. The Linux guest can access that
+memory by mapping GPU virtual address to allocations and then
+referencing those GPU virtual address from within GPU command buffers
+submitted to the GPU. For allocations which require CPU access, the
+allocation is mapped by the host into a location in the 8GB of IO space
+reserved in the guest for that purpose. The Windows host uses the nested
+CPU page table to ensure that this guest IO space always map to the
+correct location for the allocation as it may migrate between dedicated
+GPU memory (e.g. VRAM, firmware reserved DDR) and shared system memory
+(regular DDR) over its lifetime. The Linux guest maps a user mode CPU
+virtual address to an allocation IO space range for direct access by
+user mode APIs and drivers.
+
+ 
+
+Implementation of LX_DXLOCK2 ioctl
+=================
+
+We would appreciate your feedback on the implementation of the
+LX_DXLOCK2 ioctl.
+
+This ioctl is used to get a CPU address to an allocation, which is
+resident in video/system memory on the host. The way it works:
+
+1. The driver sends the Lock message to the host
+
+2. The host allocates space in the VM IO space and maps it to the
+allocation memory
+
+3. The host returns the address in IO space for the mapped allocation
+
+4. The driver (in dxg_map_iospace) allocates a user mode virtual address
+range using vm_mmap and maps it to the IO space using
+io_remap_ofn_range)
+
+5. The VA is returned to the application
+
+ 
+
+Internal objects
+========
+
+The following objects are created by the driver (defined in dxgkrnl.h):
+
+- dxgadapter - represents a virtual GPU
+
+- dxgprocess - tracks per process state (handle table of created
+  objects, list of objects, etc.)
+
+- dxgdevice - a container for other objects (contexts, paging queues,
+  allocations, GPU synchronization objects)
+
+- dxgcontext - represents thread of GPU execution for packet
+  scheduling.
+
+- dxghwqueue - represents thread of GPU execution of hardware scheduling
+
+- dxgallocation - represents a GPU accessible allocation
+
+- dxgsyncobject - represents a GPU synchronization object
+
+- dxgresource - collection of dxgalloction objects
+
+- dxgsharedresource, dxgsharedsyncobj - helper objects to share objects
+  between different dxgdevice objects, which can belong to different
+processes
+
+
+ 
+Object handles
+=======
+
+All GPU objects, created by the driver, are accessible by a handle
+(d3dkmt_handle). Each process has its own handle table, which is
+implemented in hmgr.c. For each API visible object, created by the
+driver, there is an object, created on the host. For example, the is a
+dxgprocess object on the host for each dxgprocess object in the VM, etc.
+The object handles have the same value in the host and the VM, which is
+done to avoid translation from the guest handles to the host handles.
+ 
+
+
+Signaling CPU events by the host
+================
+
+The WDDM interface provides a way to signal CPU event objects when
+execution of a context reached certain point. The way it is implemented:
+
+- application sends an event_fd via ioctl to the driver
+
+- eventfd_ctx_get is used to get a pointer to the file object
+  (eventfd_ctx)
+
+- the pointer to sent the host via a VM bus message
+
+- when GPU execution reaches a certain point, the host sends a message
+  to the VM with the event pointer
+
+- signal_guest_event() handles the messages and eventually
+  eventfd_signal() is called.
+
+
+Sasha Levin (4):
+  gpu: dxgkrnl: core code
+  gpu: dxgkrnl: hook up dxgkrnl
+  Drivers: hv: vmbus: hook up dxgkrnl
+  gpu: dxgkrnl: create a MAINTAINERS entry
+
+ MAINTAINERS                      |    7 +
+ drivers/gpu/Makefile             |    2 +-
+ drivers/gpu/dxgkrnl/Kconfig      |   10 +
+ drivers/gpu/dxgkrnl/Makefile     |   12 +
+ drivers/gpu/dxgkrnl/d3dkmthk.h   | 1635 +++++++++
+ drivers/gpu/dxgkrnl/dxgadapter.c | 1399 ++++++++
+ drivers/gpu/dxgkrnl/dxgkrnl.h    |  913 ++++++
+ drivers/gpu/dxgkrnl/dxgmodule.c  |  692 ++++
+ drivers/gpu/dxgkrnl/dxgprocess.c |  355 ++
+ drivers/gpu/dxgkrnl/dxgvmbus.c   | 2955 +++++++++++++++++
+ drivers/gpu/dxgkrnl/dxgvmbus.h   |  859 +++++
+ drivers/gpu/dxgkrnl/hmgr.c       |  593 ++++
+ drivers/gpu/dxgkrnl/hmgr.h       |  107 +
+ drivers/gpu/dxgkrnl/ioctl.c      | 5269 ++++++++++++++++++++++++++++++
+ drivers/gpu/dxgkrnl/misc.c       |  280 ++
+ drivers/gpu/dxgkrnl/misc.h       |  288 ++
+ drivers/video/Kconfig            |    2 +
+ include/linux/hyperv.h           |   16 +
+ 18 files changed, 15393 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/gpu/dxgkrnl/Kconfig
+ create mode 100644 drivers/gpu/dxgkrnl/Makefile
+ create mode 100644 drivers/gpu/dxgkrnl/d3dkmthk.h
+ create mode 100644 drivers/gpu/dxgkrnl/dxgadapter.c
+ create mode 100644 drivers/gpu/dxgkrnl/dxgkrnl.h
+ create mode 100644 drivers/gpu/dxgkrnl/dxgmodule.c
+ create mode 100644 drivers/gpu/dxgkrnl/dxgprocess.c
+ create mode 100644 drivers/gpu/dxgkrnl/dxgvmbus.c
+ create mode 100644 drivers/gpu/dxgkrnl/dxgvmbus.h
+ create mode 100644 drivers/gpu/dxgkrnl/hmgr.c
+ create mode 100644 drivers/gpu/dxgkrnl/hmgr.h
+ create mode 100644 drivers/gpu/dxgkrnl/ioctl.c
+ create mode 100644 drivers/gpu/dxgkrnl/misc.c
+ create mode 100644 drivers/gpu/dxgkrnl/misc.h
+
+-- 
+2.25.1

@@ -1,38 +1,48 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Thu, 07 May 2020 13:26:56 +0000
-Subject: [PATCH v11 04/14] drm/i915: Include HDMI DRM infoframe in the crtc state dump
-Message-Id: <20200507132706.2058969-5-gwan-gyeong.mun@intel.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Tue, 19 May 2020 16:32:32 +0000
+Subject: [RFC PATCH 2/4] gpu: dxgkrnl: hook up dxgkrnl
+Message-Id: <20200519163234.226513-3-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200507132706.2058969-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200507132706.2058969-1-gwan-gyeong.mun@intel.com>
+References: <20200519163234.226513-1-sashal@kernel.org>
+In-Reply-To: <20200519163234.226513-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: alexander.deucher@amd.com, chris@chris-wilson.co.uk, ville.syrjala@linux.intel.com, Hawking.Zhang@amd.com, tvrtko.ursulin@intel.com
+Cc: Sasha Levin <sashal@kernel.org>, linux-hyperv@vger.kernel.org, sthemmin@microsoft.com, gregkh@linuxfoundation.org, haiyangz@microsoft.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, spronovo@microsoft.com, wei.liu@kernel.org, linux-fbdev@vger.kernel.org, iourit@microsoft.com, kys@microsoft.com
 
-Dump out the HDMI Dynamic Range and Mastering (DRM) infoframe in the
-normal crtc state dump.
+Connect the dxgkrnl module to the drivers/gpu/ makefile and Kconfig.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/gpu/drm/i915/display/intel_display.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/gpu/Makefile  | 2 +-
+ drivers/video/Kconfig | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index fd6d63b03489..93f8ae9471e7 100644
---- a/drivers/gpu/drm/i915/display/intel_display.c
-+++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -13023,6 +13023,9 @@ static void intel_dump_pipe_config(const struct intel_crtc_state *pipe_config,
- 	if (pipe_config->infoframes.enable &
- 	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_VENDOR))
- 		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.hdmi);
-+	if (pipe_config->infoframes.enable &
-+	    intel_hdmi_infoframe_enable(HDMI_INFOFRAME_TYPE_DRM))
-+		intel_dump_infoframe(dev_priv, &pipe_config->infoframes.drm);
+diff --git a/drivers/gpu/Makefile b/drivers/gpu/Makefile
+index 835c88318cec..28c22c814494 100644
+--- a/drivers/gpu/Makefile
++++ b/drivers/gpu/Makefile
+@@ -3,6 +3,6 @@
+ # taken to initialize them in the correct order. Link order is the only way
+ # to ensure this currently.
+ obj-$(CONFIG_TEGRA_HOST1X)	+= host1x/
+-obj-y			+= drm/ vga/
++obj-y			+= drm/ vga/ dxgkrnl/
+ obj-$(CONFIG_IMX_IPUV3_CORE)	+= ipu-v3/
+ obj-$(CONFIG_TRACE_GPU_MEM)		+= trace/
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 427a993c7f57..362c08778a54 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -19,6 +19,8 @@ source "drivers/gpu/ipu-v3/Kconfig"
  
- 	drm_dbg_kms(&dev_priv->drm, "requested mode:\n");
- 	drm_mode_debug_printmodeline(&pipe_config->hw.mode);
+ source "drivers/gpu/drm/Kconfig"
+ 
++source "drivers/gpu/dxgkrnl/Kconfig"
++
+ menu "Frame buffer Devices"
+ source "drivers/video/fbdev/Kconfig"
+ endmenu
 -- 
-2.25.0
+2.25.1

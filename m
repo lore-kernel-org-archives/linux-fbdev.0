@@ -1,7 +1,7 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Tue, 19 May 2020 23:01:16 +0000
+From: Dave Airlie <airlied@gmail.com>
+Date: Tue, 19 May 2020 23:12:25 +0000
 Subject: Re: [RFC PATCH 0/4] DirectX on Linux
-Message-Id: <CAKMK7uEa0FH5_AyopVH+wpAXOOxoeo8Acck2qwzzyVnq0UuSZA@mail.gmail.com>
+Message-Id: <CAPM=9tx4wh-Lk6Dffsdh-7mYvXx+GX2AxhrGqFgyN8-AWJvP6A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200519163234.226513-1-sashal@kernel.org>
  <CAPM=9txZpiCGkv3jiBC1F8pTe4A2pqWpQDyjRBXk2roFqw+0+Q@mail.gmail.com>
@@ -9,11 +9,11 @@ In-Reply-To: <CAPM=9txZpiCGkv3jiBC1F8pTe4A2pqWpQDyjRBXk2roFqw+0+Q@mail.gmail.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@gmail.com>
-Cc: Sasha Levin <sashal@kernel.org>, linux-hyperv@vger.kernel.org, Stephen Hemminger <sthemmin@microsoft.com>, "Ursulin,
- Tvrtko" <tvrtko.ursulin@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Haiyang Zhang <haiyangz@microsoft.com>, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Chris Wilson <chris@chris-wilson.co.uk>, spronovo@microsoft.com, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, iourit@microsoft.com, "Deucher, Alexander" <alexander.deucher@amd.com>, "K. Y. Srinivasan" <kys@microsoft.com>, Wei Liu <wei.liu@kernel.org>, Hawking Zhang <Hawking.Zhang@amd.com>
+To: Sasha Levin <sashal@kernel.org>
+Cc: linux-hyperv@vger.kernel.org, sthemmin@microsoft.com, "Ursulin,
+ Tvrtko" <tvrtko.ursulin@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, haiyangz@microsoft.com, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Chris Wilson <chris@chris-wilson.co.uk>, spronovo@microsoft.com, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, iourit@microsoft.com, "Deucher, Alexander" <alexander.deucher@amd.com>, kys@microsoft.com, wei.liu@kernel.org, Hawking Zhang <Hawking.Zhang@amd.com>
 
-On Wed, May 20, 2020 at 12:42 AM Dave Airlie <airlied@gmail.com> wrote:
+On Wed, 20 May 2020 at 08:42, Dave Airlie <airlied@gmail.com> wrote:
 >
 > On Wed, 20 May 2020 at 02:33, Sasha Levin <sashal@kernel.org> wrote:
 > >
@@ -60,10 +60,7 @@ On Wed, May 20, 2020 at 12:42 AM Dave Airlie <airlied@gmail.com> wrote:
 > saying I'd be happy to see this in the tree, since I don't see the
 > value of maintaining it upstream, but it probably should just exists
 > in a drivers/hyperv type area.
-
-Yup as-is (especially with the goal of this being aimed at ml/compute
-only) drivers/hyperv sounds a bunch more reasonable than drivers/gpu.
-
+>
 > Having said that, I hit one stumbling block:
 > "Further, at this time there are no presentation integration. "
 >
@@ -72,43 +69,29 @@ only) drivers/hyperv sounds a bunch more reasonable than drivers/gpu.
 > going to mean you will want to interact with dma-bufs and dma-fences.
 > If the driver is hidden away in a hyperv place it's likely we won't
 > even notice that feature landing until it's too late.
-
-I've recently added regex matches to MAINTAINERS so we'll see
-dma_buf/fence/anything show up on dri-devel. So that part is solved
-hopefully.
-
+>
 > I would like to see a coherent plan for presentation support (not
 > code, just an architectural diagram), because I think when you
 > contemplate how that works it will change the picture of how this
 > driver looks and intergrates into the rest of the Linux graphics
 > ecosystem.
-
-Yeah once we have the feature-creep to presentation support all the
-integration fun starts, with all the questions about "why does this
-not look like any other linux gpu driver". We have that already with
-nvidia insisting they just can't implement any of the upstream gpu
-uapi we have, but at least they're not in-tree, so not our problem
-from an upstream maintainership pov.
-
-But once this dx12 pipe is landed and then we want to extend it it's
-still going to have all the "we can't ever release the sources to any
-of the parts we usually expect to be open for gpu drivers in upstream"
-problems. Then we're stuck at a rather awkward point of why one vendor
-gets an exception and all the others dont.
-
+>
 > As-is I'd rather this didn't land under my purview, since I don't see
 > the value this adds to the Linux ecosystem at all, and I think it's
 > important when putting a burden on upstream that you provide some
 > value.
 
-Well there is some in the form of "more hw/platform support". But
-given that gpus evolved rather fast, including the entire integration
-ecosystem (it's by far not just the hw drivers that move quickly). So
-that value deprecates a lot faster than for other kernel subsystems.
-And all that's left is the pain of not breaking anything without
-actually being able to evolve the overall stack in any meaningful way.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+I also have another concern from a legal standpoint I'd rather not
+review the ioctl part of this. I'd probably request under DRI
+developers abstain as well.
+
+This is a Windows kernel API being smashed into a Linux driver. I
+don't want to be tainted by knowledge of an API that I've no idea of
+the legal status of derived works. (it this all covered patent wise
+under OIN?)
+
+I don't want to ever be accused of designing a Linux kernel API with
+illgotten D3DKMT knowledge, I feel tainting myself with knowledge of a
+properietary API might cause derived work issues.
+
+Dave.

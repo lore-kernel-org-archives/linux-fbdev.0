@@ -1,140 +1,81 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 19 May 2020 20:36:08 +0000
+From: Dave Airlie <airlied@gmail.com>
+Date: Tue, 19 May 2020 22:42:43 +0000
 Subject: Re: [RFC PATCH 0/4] DirectX on Linux
-Message-Id: <20200519203608.GG33628@sasha-vm>
+Message-Id: <CAPM=9txZpiCGkv3jiBC1F8pTe4A2pqWpQDyjRBXk2roFqw+0+Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200519163234.226513-1-sashal@kernel.org>
- <CAKMK7uGnSDHdZha-=dZN5ns0sJ2CEnK2693uix4tzqyZb9MXCQ@mail.gmail.com>
-In-Reply-To: <CAKMK7uGnSDHdZha-=dZN5ns0sJ2CEnK2693uix4tzqyZb9MXCQ@mail.gmail.com>
+In-Reply-To: <20200519163234.226513-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: linux-hyperv@vger.kernel.org, Olof Johansson <olof.johansson@gmail.com>, Tvrtko Ursulin <tvrtko.ursulin@intel.com>, Greg KH <gregkh@linuxfoundation.org>, Haiyang Zhang <haiyangz@microsoft.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "Wilson,
- Chris" <chris@chris-wilson.co.uk>, Jerome Glisse <jglisse@redhat.com>, spronovo@microsoft.com, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Jason Ekstrand <jason@jlekstrand.net>, iourit@microsoft.com, Alex Deucher <alexander.deucher@amd.com>, Stephen Hemminger <sthemmin@microsoft.com>, "K. Y. Srinivasan" <kys@microsoft.com>, Wei Liu <wei.liu@kernel.org>, Hawking Zhang <Hawking.Zhang@amd.com>
+To: Sasha Levin <sashal@kernel.org>
+Cc: linux-hyperv@vger.kernel.org, sthemmin@microsoft.com, "Ursulin,
+ Tvrtko" <tvrtko.ursulin@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, haiyangz@microsoft.com, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Chris Wilson <chris@chris-wilson.co.uk>, spronovo@microsoft.com, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, iourit@microsoft.com, "Deucher, Alexander" <alexander.deucher@amd.com>, kys@microsoft.com, wei.liu@kernel.org, Hawking Zhang <Hawking.Zhang@amd.com>
 
-Hi Daniel,
-
-On Tue, May 19, 2020 at 09:21:15PM +0200, Daniel Vetter wrote:
->Hi Sasha
+On Wed, 20 May 2020 at 02:33, Sasha Levin <sashal@kernel.org> wrote:
 >
->So obviously great that Microsoft is trying to upstream all this, and
->very much welcome and all that.
+> There is a blog post that goes into more detail about the bigger
+> picture, and walks through all the required pieces to make this work. It
+> is available here:
+> https://devblogs.microsoft.com/directx/directx-heart-linux . The rest of
+> this cover letter will focus on the Linux Kernel bits.
 >
->But I guess there's a bunch of rather fundamental issues before we
->look into any kind of code details. And that might make this quite a
->hard sell for upstream to drivers/gpu subsystem:
-
-Let me preface my answers by saying that speaking personally I very much
-dislike that the userspace is closed and wish I could do something about
-it.
-
->- From the blog it sounds like the userspace is all closed. That
->includes the hw specific part and compiler chunks, all stuff we've
->generally expected to be able to look in the past for any kind of
->other driver. It's event documented here:
+> Overview
+> ====
 >
->https://dri.freedesktop.org/docs/drm/gpu/drm-uapi.html#open-source-userspace-requirements
+> This is the first draft of the Microsoft Virtual GPU (vGPU) driver. The
+> driver exposes a paravirtualized GPU to user mode applications running
+> in a virtual machine on a Windows host. This enables hardware
+> acceleration in environment such as WSL (Windows Subsystem for Linux)
+> where the Linux virtual machine is able to share the GPU with the
+> Windows host.
 >
->What's your plan here?
-
-Let me answer with a (genuine) question: does this driver have anything
-to do with DRM even after we enable graphics on it? I'm still trying to
-figure it out.
-
-There is an open source DX12 Galluim driver (that lives here:
-https://gitlab.freedesktop.org/kusma/mesa/-/tree/msclc-d3d12) with open
-source compiler and so on.
-
-The plan is for Microsoft to provide shims to allow the existing Linux
-userspace interact with DX12; I'll explain below why we had to pipe DX12
-all the way into the Linux guest, but this is *not* to introduce DX12
-into the Linux world as competition. There is no intent for anyone in
-the Linux world to start coding for the DX12 API.
-
-This is why I'm not sure whether this touches DRM on the Linux side of
-things. Nothing is actually rendered on Linux but rather piped to
-Windows to be done there.
-
->btw since the main goal here (at least at first) seems to be get
->compute and ML going the official work-around here is to relabel your
->driver as an accelerator driver (just sed -e s/vGPU/vaccel/ over the
->entire thing or so) and then Olof and Greg will take it into
->drivers/accel ...
-
-This submission is not a case of "we want it upstream NOW" but rather
-"let's work together to figure out how to do it right" :)
-
-I thought about placing this driver in drivers/hyper-v/ given that it's
-basically just a pipe between the host and the guest. There is no fancy
-logic in this drivers. Maybe the right place is indeed drivers/accel or
-drivers/hyper-v but I'd love if we agree on that rather than doing that
-as a workaround and 6 months down the road enabling graphics.
-
->- Next up (but that's not really a surprise for a fresh vendor driver)
->at a more technical level, this seems to reinvent the world, from
->device enumeration (why is this not exposed as /dev/dri/card0 so it
->better integrates with existing linux desktop stuff, in case that
->becomes a goal ever) down to reinvented kref_put_mutex (and please
->look at drm_device->struct_mutex for an example of how bad of a
->nightmare that locking pattern is and how many years it took us to
->untangle that one.
-
-I'd maybe note that neither of us here at Microsoft is an expert in the
-Linux DRM world. Stuff might have been done in a certain way because we
-didn't know better.
-
->- Why DX12 on linux? Looking at this feels like classic divide and
-
-There is a single usecase for this: WSL2 developer who wants to run
-machine learning on his GPU. The developer is working on his laptop,
-which is running Windows and that laptop has a single GPU that Windows
-is using.
-
-Since the GPU is being used by Windows, we can't assign it directly to
-the Linux guest, but instead we can use GPU Partitioning to give the
-guest access to the GPU. This means that the guest needs to be able to
-"speak" DX12, which is why we pulled DX12 into Linux.
-
->conquer (or well triple E from the 90s), we have vk, we have
->drm_syncobj, we have an entire ecosystem of winsys layers that work
->across vendors. Is the plan here that we get a dx12 driver for other
->hw mesa drivers from you guys, so this is all consistent and we have a
->nice linux platform? How does this integrate everywhere else with
->linux winsys standards, like dma-buf for passing stuff around,
->dma-fence/sync_file/drm_syncobj for syncing, drm_fourcc/modifiers for
->some idea how it all meshes together?
-
-Let me point you to this blog post that has more information about the
-graphics side of things:
-https://www.collabora.com/news-and-blog/news-and-events/introducing-opencl-and-opengl-on-directx.html
-.
-
-The intent is to wrap DX12 with shims to work with the existing
-ecosystem; DX12 isn't a new player on it's own and thus isn't trying to
-divide/conquer anything.
-
->- There's been a pile of hallway track/private discussions about
->moving on from the buffer-based memory managed model to something more
->modern. That relates to your DXLOCK2 question, but there's a lot more
->to userspace managed gpu memory residency than just that. monitored
->fences are another part. Also, to avoid a platform split we need to
->figure out how to tie this back into the dma-buf and dma-fence
->(including various uapi flavours) or it'll be made of fail. dx12 has
->all that in some form, except 0 integration with the linux stuff we
->have (no surprise, since linux isn't windows). Finally if we go to the
->trouble of a completely revamped I think ioctls aren't a great idea,
->something like iouring (the gossip name is drm_uring) would be a lot
->better. Also for easier paravirt we'd need 0 cpu pointers in any such
->new interface. Adding a few people who've been involved in these
->discussions thus far, mostly under a drm/hmm.ko heading iirc.
+> The projection is accomplished by exposing the WDDM (Windows Display
+> Driver Model) interface as a set of IOCTL. This allows APIs and user
+> mode driver written against the WDDM GPU abstraction on Windows to be
+> ported to run within a Linux environment. This enables the port of the
+> D3D12 and DirectML APIs as well as their associated user mode driver to
+> Linux. This also enables third party APIs, such as the popular NVIDIA
+> Cuda compute API, to be hardware accelerated within a WSL environment.
 >
->I think the above are the really big ticket items around what's the
->plan here and are we solving even the right problem.
+> Only the rendering/compute aspect of the GPU are projected to the
+> virtual machine, no display functionality is exposed. Further, at this
+> time there are no presentation integration. So although the D3D12 API
+> can be use to render graphics offscreen, there is no path (yet) for
+> pixel to flow from the Linux environment back onto the Windows host
+> desktop. This GPU stack is effectively side-by-side with the native
+> Linux graphics stack.
 
-Part of the reason behind this implementation is simplicity. Again, no
-objections around moving to uring and doing other improvements.
+Okay I've had some caffiene and absorbed some more of this.
 
--- 
-Thanks,
-Sasha
+This is a driver that connects a binary blob interface in the Windows
+kernel drivers to a binary blob that you run inside a Linux guest.
+It's a binary transport between two binary pieces. Personally this
+holds little of interest to me, I can see why it might be nice to have
+this upstream, but I don't forsee any other Linux distributor ever
+enabling it or having to ship it, it's purely a WSL2 pipe. I'm not
+saying I'd be happy to see this in the tree, since I don't see the
+value of maintaining it upstream, but it probably should just exists
+in a drivers/hyperv type area.
+
+Having said that, I hit one stumbling block:
+"Further, at this time there are no presentation integration. "
+
+If we upstream this driver as-is into some hyperv specific place, and
+you decide to add presentation integration this is more than likely
+going to mean you will want to interact with dma-bufs and dma-fences.
+If the driver is hidden away in a hyperv place it's likely we won't
+even notice that feature landing until it's too late.
+
+I would like to see a coherent plan for presentation support (not
+code, just an architectural diagram), because I think when you
+contemplate how that works it will change the picture of how this
+driver looks and intergrates into the rest of the Linux graphics
+ecosystem.
+
+As-is I'd rather this didn't land under my purview, since I don't see
+the value this adds to the Linux ecosystem at all, and I think it's
+important when putting a burden on upstream that you provide some
+value.
+
+Dave.

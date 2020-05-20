@@ -1,219 +1,386 @@
-From: Steve Pronovost <spronovo@microsoft.com>
-Date: Wed, 20 May 2020 07:42:49 +0000
-Subject: RE: [EXTERNAL] Re: [RFC PATCH 0/4] DirectX on Linux
-Message-Id: <MWHPR21MB02878FA5BB259F307082B735C7B60@MWHPR21MB0287.namprd21.prod.outlook.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Wed, 20 May 2020 11:06:38 +0000
+Subject: Re: [EXTERNAL] Re: [RFC PATCH 0/4] DirectX on Linux
+Message-Id: <8e33f381-6d03-4192-b324-a2f7a05d2d46@suse.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="CdQi8KpebZFte3Zhz351eearRDfuhsOt4"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200519163234.226513-1-sashal@kernel.org>
  <55c57049-1869-7421-aa0f-3ce0b6a133cf@suse.de>
-In-Reply-To: <55c57049-1869-7421-aa0f-3ce0b6a133cf@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thomas Zimmermann <tzimmermann@suse.de>, Sasha Levin <sashal@kernel.org>, "alexander.deucher@amd.com" <alexander.deucher@amd.com>, "chris@chris-wilson.co.uk" <chris@chris-wilson.co.uk>, "ville.syrjala@linux.intel.com" <ville.syrjala@linux.intel.com>, "Hawking.Zhang@amd.com" <Hawking.Zhang@amd.com>, "tvrtko.ursulin@intel.com" <tvrtko.ursulin@intel.com>
+ <MWHPR21MB02878FA5BB259F307082B735C7B60@MWHPR21MB0287.namprd21.prod.outlook.com>
+In-Reply-To: <MWHPR21MB02878FA5BB259F307082B735C7B60@MWHPR21MB0287.namprd21.prod.outlook.com>
+To: Steve Pronovost <spronovo@microsoft.com>, Sasha Levin <sashal@kernel.org>, "alexander.deucher@amd.com" <alexander.deucher@amd.com>, "chris@chris-wilson.co.uk" <chris@chris-wilson.co.uk>, "ville.syrjala@linux.intel.com" <ville.syrjala@linux.intel.com>, "Hawking.Zhang@amd.com" <Hawking.Zhang@amd.com>, "tvrtko.ursulin@intel.com" <tvrtko.ursulin@intel.com>
 Cc: "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Haiyang Zhang <haiyangz@microsoft.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Max McMullen <Max.McMullen@microsoft.com>, "wei.liu@kernel.org" <wei.liu@kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Iouri Tarassov <iourit@microsoft.com>, KY Srinivasan <kys@microsoft.com>
 
-PkVjaG9pbmcgd2hhdCBvdGhlcnMgc2FpZCwgeW91J3JlIG5vdCBtYWtpbmcgYSBEUk0gZHJpdmVy
-LiBUaGUgZHJpdmVyIHNob3VsZCBsaXZlIG91dHNpZGUgb2YgdGhlIERSTSBjb2RlLg0KDQpBZ3Jl
-ZWQsIHBsZWFzZSBzZWUgbXkgZWFybGllciByZXBseS4gV2UnbGwgYmUgbW92aW5nIHRoZSBkcml2
-ZXIgdG8gZHJpdmVycy9oeXBlcnYgbm9kZSBvciBzb21ldGhpbmcgc2ltaWxhci4gQXBvbG9neSBm
-b3IgdGhlIGNvbmZ1c2lvbiBoZXJlLg0KDQo+IEkgaGF2ZSBvbmUgcXVlc3Rpb24gYWJvdXQgdGhl
-IGRyaXZlciBBUEk6IG9uIFdpbmRvd3MsIERpcmVjdFggdmVyc2lvbnMgYXJlIGxvb3NseSB0aWVk
-IHRvIFdpbmRvd3MgcmVsZWFzZXMuIFNvIEkgZ3Vlc3MgeW91IGNhbiBjaGFuZ2UgdGhlIGtlcm5l
-bCBpbnRlcmZhY2UgYW1vbmcgRGlyZWN0WCB2ZXJzaW9ucz8NCj4gSWYgc28sIGhvdyB3b3VsZCB0
-aGlzIHdvcmsgb24gTGludXggaW4gdGhlIGxvbmcgdGVybT8gSWYgdGhlcmUgZXZlciBpcyBhIERp
-cmVjdFggMTMgb3IgMTQgd2l0aCBpbmNvbXBhdGlibGUga2VybmVsIGludGVyZmFjZXMsIGhvdyB3
-b3VsZCB5b3UgcGxhbiB0byB1cGRhdGUgdGhlIExpbnV4IGRyaXZlcj8NCg0KWW91IHNob3VsZCB0
-aGluayBvZiB0aGUgY29tbXVuaWNhdGlvbiBvdmVyIHRoZSBWTSBCdXMgZm9yIHRoZSB2R1BVIHBy
-b2plY3Rpb24gYXMgYSBzdHJvbmdseSB2ZXJzaW9uZWQgaW50ZXJmYWNlLiBXZSB3aWxsIGJlIGtl
-ZXBpbmcgY29tcGF0aWJpbGl0eSB3aXRoIG9sZGVyIHZlcnNpb24gb2YgdGhhdCBpbnRlcmZhY2Ug
-YXMgaXQgZXZvbHZlcyBvdmVyIHRpbWUgc28gd2UgY2FuIGNvbnRpbnVlIHRvIHJ1biBvbGRlciBn
-dWVzdCAod2UgYWxyZWFkeSBkbykuIFRoaXMgcHJvdG9jb2wgaXNuJ3QgYWN0dWFsbHkgdGllZCB0
-byB0aGUgRFggQVBJLiBJdCBpcyBhIGdlbmVyaWMgYWJzdHJhY3Rpb24gZm9yIHRoZSBHUFUgdGhh
-dCBjYW4gYmUgdXNlZCBmb3IgYW55IEFQSXMgKGZvciBleGFtcGxlIHRoZSBOVklESUEgQ1VEQSBk
-cml2ZXIgdGhhdCB3ZSBhbm5vdW5jZWQgaXMgZ29pbmcgb3ZlciB0aGUgc2FtZSBwcm90b2NvbCB0
-byBhY2Nlc3MgdGhlIEdQVSkuIA0KDQpOZXcgdmVyc2lvbiBvZiB1c2VyIG1vZGUgRFggY2FuIGVp
-dGhlciB0YWtlIGFkdmFudGFnZSBvciBzb21ldGltZSByZXF1aXJlIG5ldyBzZXJ2aWNlcyBmcm9t
-IHRoaXMga2VybmVsIGFic3RyYWN0aW9uLiBUaGlzIG1lYW4gdGhhdCBwdWxsaW5nIGEgbmV3IHZl
-cnNpb24gb2YgdXNlciBtb2RlIERYIGNhbiBtZWFuIGhhdmluZyB0byBhbHNvIHB1bGwgYSBuZXcg
-dmVyc2lvbiBvZiB0aGlzIHZHUFUga2VybmVsIGRyaXZlci4gRm9yIFdTTCwgdGhlc2UgZXNzZW50
-aWFsbHkgc2hpcHMgdG9nZXRoZXIuIFRoZSBrZXJuZWwgZHJpdmVyIHNoaXBzIGFzIHBhcnQgb2Yg
-b3VyIFdTTDIgTGludXggS2VybmVsIGludGVncmF0aW9uLiBVc2VyIG1vZGUgRFggYml0cyBzaGlw
-cyB3aXRoIFdpbmRvd3MuIA0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogVGhv
-bWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+IA0KU2VudDogV2VkbmVzZGF5LCBN
-YXkgMjAsIDIwMjAgMTI6MTEgQU0NClRvOiBTYXNoYSBMZXZpbiA8c2FzaGFsQGtlcm5lbC5vcmc+
-OyBhbGV4YW5kZXIuZGV1Y2hlckBhbWQuY29tOyBjaHJpc0BjaHJpcy13aWxzb24uY28udWs7IHZp
-bGxlLnN5cmphbGFAbGludXguaW50ZWwuY29tOyBIYXdraW5nLlpoYW5nQGFtZC5jb207IHR2cnRr
-by51cnN1bGluQGludGVsLmNvbQ0KQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxp
-bnV4LWh5cGVydkB2Z2VyLmtlcm5lbC5vcmc7IEtZIFNyaW5pdmFzYW4gPGt5c0BtaWNyb3NvZnQu
-Y29tPjsgSGFpeWFuZyBaaGFuZyA8aGFpeWFuZ3pAbWljcm9zb2Z0LmNvbT47IFN0ZXBoZW4gSGVt
-bWluZ2VyIDxzdGhlbW1pbkBtaWNyb3NvZnQuY29tPjsgd2VpLmxpdUBrZXJuZWwub3JnOyBTdGV2
-ZSBQcm9ub3Zvc3QgPHNwcm9ub3ZvQG1pY3Jvc29mdC5jb20+OyBJb3VyaSBUYXJhc3NvdiA8aW91
-cml0QG1pY3Jvc29mdC5jb20+OyBkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnOyBsaW51
-eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmc7IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnDQpTdWJq
-ZWN0OiBbRVhURVJOQUxdIFJlOiBbUkZDIFBBVENIIDAvNF0gRGlyZWN0WCBvbiBMaW51eA0KDQpI
-aQ0KDQpBbSAxOS4wNS4yMCB1bSAxODozMiBzY2hyaWViIFNhc2hhIExldmluOg0KPiBUaGVyZSBp
-cyBhIGJsb2cgcG9zdCB0aGF0IGdvZXMgaW50byBtb3JlIGRldGFpbCBhYm91dCB0aGUgYmlnZ2Vy
-IA0KPiBwaWN0dXJlLCBhbmQgd2Fsa3MgdGhyb3VnaCBhbGwgdGhlIHJlcXVpcmVkIHBpZWNlcyB0
-byBtYWtlIHRoaXMgd29yay4gDQo+IEl0IGlzIGF2YWlsYWJsZSBoZXJlOg0KPiBodHRwczovL2Rl
-dmJsb2dzLm1pY3Jvc29mdC5jb20vZGlyZWN0eC9kaXJlY3R4LWhlYXJ0LWxpbnV4IC4gVGhlIHJl
-c3QgDQo+IG9mIHRoaXMgY292ZXIgbGV0dGVyIHdpbGwgZm9jdXMgb24gdGhlIExpbnV4IEtlcm5l
-bCBiaXRzLg0KDQpUaGF0J3MgcXVpdGUgYSBzdXJwcmlzZS4gVGhhbmtzIGZvciB5b3VyIGVmZm9y
-dHMgdG8gY29udHJpYnV0ZS4NCg0KPiANCj4gT3ZlcnZpZXcNCj4gPT09PT09PT0NCj4gDQo+IFRo
-aXMgaXMgdGhlIGZpcnN0IGRyYWZ0IG9mIHRoZSBNaWNyb3NvZnQgVmlydHVhbCBHUFUgKHZHUFUp
-IGRyaXZlci4gDQo+IFRoZSBkcml2ZXIgZXhwb3NlcyBhIHBhcmF2aXJ0dWFsaXplZCBHUFUgdG8g
-dXNlciBtb2RlIGFwcGxpY2F0aW9ucyANCj4gcnVubmluZyBpbiBhIHZpcnR1YWwgbWFjaGluZSBv
-biBhIFdpbmRvd3MgaG9zdC4gVGhpcyBlbmFibGVzIGhhcmR3YXJlIA0KPiBhY2NlbGVyYXRpb24g
-aW4gZW52aXJvbm1lbnQgc3VjaCBhcyBXU0wgKFdpbmRvd3MgU3Vic3lzdGVtIGZvciBMaW51eCkg
-DQo+IHdoZXJlIHRoZSBMaW51eCB2aXJ0dWFsIG1hY2hpbmUgaXMgYWJsZSB0byBzaGFyZSB0aGUg
-R1BVIHdpdGggdGhlIA0KPiBXaW5kb3dzIGhvc3QuDQo+IA0KPiBUaGUgcHJvamVjdGlvbiBpcyBh
-Y2NvbXBsaXNoZWQgYnkgZXhwb3NpbmcgdGhlIFdERE0gKFdpbmRvd3MgRGlzcGxheSANCj4gRHJp
-dmVyIE1vZGVsKSBpbnRlcmZhY2UgYXMgYSBzZXQgb2YgSU9DVEwuIFRoaXMgYWxsb3dzIEFQSXMg
-YW5kIHVzZXIgDQo+IG1vZGUgZHJpdmVyIHdyaXR0ZW4gYWdhaW5zdCB0aGUgV0RETSBHUFUgYWJz
-dHJhY3Rpb24gb24gV2luZG93cyB0byBiZSANCj4gcG9ydGVkIHRvIHJ1biB3aXRoaW4gYSBMaW51
-eCBlbnZpcm9ubWVudC4gVGhpcyBlbmFibGVzIHRoZSBwb3J0IG9mIHRoZQ0KPiBEM0QxMiBhbmQg
-RGlyZWN0TUwgQVBJcyBhcyB3ZWxsIGFzIHRoZWlyIGFzc29jaWF0ZWQgdXNlciBtb2RlIGRyaXZl
-ciANCj4gdG8gTGludXguIFRoaXMgYWxzbyBlbmFibGVzIHRoaXJkIHBhcnR5IEFQSXMsIHN1Y2gg
-YXMgdGhlIHBvcHVsYXIgDQo+IE5WSURJQSBDdWRhIGNvbXB1dGUgQVBJLCB0byBiZSBoYXJkd2Fy
-ZSBhY2NlbGVyYXRlZCB3aXRoaW4gYSBXU0wgZW52aXJvbm1lbnQuDQo+IA0KPiBPbmx5IHRoZSBy
-ZW5kZXJpbmcvY29tcHV0ZSBhc3BlY3Qgb2YgdGhlIEdQVSBhcmUgcHJvamVjdGVkIHRvIHRoZSAN
-Cj4gdmlydHVhbCBtYWNoaW5lLCBubyBkaXNwbGF5IGZ1bmN0aW9uYWxpdHkgaXMgZXhwb3NlZC4g
-RnVydGhlciwgYXQgdGhpcyANCj4gdGltZSB0aGVyZSBhcmUgbm8gcHJlc2VudGF0aW9uIGludGVn
-cmF0aW9uLiBTbyBhbHRob3VnaCB0aGUgRDNEMTIgQVBJIA0KPiBjYW4gYmUgdXNlIHRvIHJlbmRl
-ciBncmFwaGljcyBvZmZzY3JlZW4sIHRoZXJlIGlzIG5vIHBhdGggKHlldCkgZm9yIA0KPiBwaXhl
-bCB0byBmbG93IGZyb20gdGhlIExpbnV4IGVudmlyb25tZW50IGJhY2sgb250byB0aGUgV2luZG93
-cyBob3N0IA0KPiBkZXNrdG9wLiBUaGlzIEdQVSBzdGFjayBpcyBlZmZlY3RpdmVseSBzaWRlLWJ5
-LXNpZGUgd2l0aCB0aGUgbmF0aXZlIA0KPiBMaW51eCBncmFwaGljcyBzdGFjay4NCj4gDQo+IFRo
-ZSBkcml2ZXIgY3JlYXRlcyB0aGUgL2Rldi9keGcgZGV2aWNlLCB3aGljaCBjYW4gYmUgb3BlbmVk
-IGJ5IHVzZXIgDQo+IG1vZGUgYXBwbGljYXRpb24gYW5kIGhhbmRsZXMgdGhlaXIgaW9jdGxzLiBU
-aGUgSU9DVEwgaW50ZXJmYWNlIHRvIHRoZSANCj4gZHJpdmVyIGlzIGRlZmluZWQgaW4gZHhna210
-aGsuaCAoRHhna3JubCBHcmFwaGljcyBQb3J0IERyaXZlciBpb2N0bCANCj4gZGVmaW5pdGlvbnMp
-LiBUaGUgaW50ZXJmYWNlIG1hdGNoZXMgdGhlIEQzREtNVCBpbnRlcmZhY2Ugb24gV2luZG93cy4N
-Cj4gSW9jdGxzIGFyZSBpbXBsZW1lbnRlZCBpbiBpb2N0bC5jLg0KDQpFY2hvaW5nIHdoYXQgb3Ro
-ZXJzIHNhaWQsIHlvdSdyZSBub3QgbWFraW5nIGEgRFJNIGRyaXZlci4gVGhlIGRyaXZlciBzaG91
-bGQgbGl2ZSBvdXRzaWRlIG9mIHRoZSBEUk0gY29kZS4NCg0KSSBoYXZlIG9uZSBxdWVzdGlvbiBh
-Ym91dCB0aGUgZHJpdmVyIEFQSTogb24gV2luZG93cywgRGlyZWN0WCB2ZXJzaW9ucyBhcmUgbG9v
-c2x5IHRpZWQgdG8gV2luZG93cyByZWxlYXNlcy4gU28gSSBndWVzcyB5b3UgY2FuIGNoYW5nZSB0
-aGUga2VybmVsIGludGVyZmFjZSBhbW9uZyBEaXJlY3RYIHZlcnNpb25zPw0KDQpJZiBzbywgaG93
-IHdvdWxkIHRoaXMgd29yayBvbiBMaW51eCBpbiB0aGUgbG9uZyB0ZXJtPyBJZiB0aGVyZSBldmVy
-IGlzIGEgRGlyZWN0WCAxMyBvciAxNCB3aXRoIGluY29tcGF0aWJsZSBrZXJuZWwgaW50ZXJmYWNl
-cywgaG93IHdvdWxkIHlvdSBwbGFuIHRvIHVwZGF0ZSB0aGUgTGludXggZHJpdmVyPw0KDQpCZXN0
-IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiBXaGVuIGEgVk0gc3RhcnRzLCBoeXBlci12IG9uIHRo
-ZSBob3N0IGFkZHMgdmlydHVhbCBHUFUgZGV2aWNlcyB0byB0aGUgDQo+IFZNIHZpYSB0aGUgaHlw
-ZXItdiBkcml2ZXIuIFRoZSBob3N0IG9mZmVycyBzZXZlcmFsIFZNIGJ1cyBjaGFubmVscyB0byAN
-Cj4gdGhlDQo+IFZNOiB0aGUgZ2xvYmFsIGNoYW5uZWwgYW5kIG9uZSBjaGFubmVsIHBlciB2aXJ0
-dWFsIEdQVSwgYXNzaWduZWQgdG8gDQo+IHRoZSBWTS4NCj4gDQo+IFRoZSBkcml2ZXIgcmVnaXN0
-ZXJzIHdpdGggdGhlIGh5cGVyLXYgZHJpdmVyIChodl9kcml2ZXIpIGZvciB0aGUgDQo+IGFycml2
-YWwgb2YgVk0gYnVzIGNoYW5uZWxzLiBkeGdfcHJvYmVfZGV2aWNlIHJlY29nbml6ZXMgdGhlIHZH
-UFUgDQo+IGNoYW5uZWxzIGFuZCBjcmVhdGVzIHRoZSBjb3JyZXNwb25kaW5nIG9iamVjdHMgKGR4
-Z2FkYXB0ZXIgZm9yIHZHUFVzIA0KPiBhbmQgZHhnZ2xvYmFsIGZvciB0aGUgZ2xvYmFsIGNoYW5u
-ZWwpLg0KPiANCj4gVGhlIGRyaXZlciB1c2VzIHRoZSBoeXBlci1WIFZNIGJ1cyBpbnRlcmZhY2Ug
-dG8gY29tbXVuaWNhdGUgd2l0aCB0aGUgDQo+IGhvc3QuIGR4Z3ZtYnVzLmMgaW1wbGVtZW50cyB0
-aGUgY29tbXVuaWNhdGlvbiBpbnRlcmZhY2UuDQo+IA0KPiBUaGUgZ2xvYmFsIGNoYW5uZWwgaGFz
-IDhHQiBvZiBJTyBzcGFjZSBhc3NpZ25lZCBieSB0aGUgaG9zdC4gVGhpcyANCj4gc3BhY2UgaXMg
-bWFuYWdlZCBieSB0aGUgaG9zdCBhbmQgdXNlZCB0byBnaXZlIHRoZSBndWVzdCBkaXJlY3QgQ1BV
-IA0KPiBhY2Nlc3MgdG8gc29tZSBhbGxvY2F0aW9ucy4gVmlkZW8gbWVtb3J5IGlzIGFsbG9jYXRl
-ZCBvbiB0aGUgaG9zdCANCj4gZXhjZXB0IGluIHRoZSBjYXNlIG9mIGV4aXN0aW5nX3N5c21lbSBh
-bGxvY2F0aW9ucy4gVGhlIFdpbmRvd3MgaG9zdCANCj4gYWxsb2NhdGVzIG1lbW9yeSBmb3IgdGhl
-IEdQVSBvbiBiZWhhbGYgb2YgdGhlIGd1ZXN0LiBUaGUgTGludXggZ3Vlc3QgDQo+IGNhbiBhY2Nl
-c3MgdGhhdCBtZW1vcnkgYnkgbWFwcGluZyBHUFUgdmlydHVhbCBhZGRyZXNzIHRvIGFsbG9jYXRp
-b25zIA0KPiBhbmQgdGhlbiByZWZlcmVuY2luZyB0aG9zZSBHUFUgdmlydHVhbCBhZGRyZXNzIGZy
-b20gd2l0aGluIEdQVSBjb21tYW5kIA0KPiBidWZmZXJzIHN1Ym1pdHRlZCB0byB0aGUgR1BVLiBG
-b3IgYWxsb2NhdGlvbnMgd2hpY2ggcmVxdWlyZSBDUFUgDQo+IGFjY2VzcywgdGhlIGFsbG9jYXRp
-b24gaXMgbWFwcGVkIGJ5IHRoZSBob3N0IGludG8gYSBsb2NhdGlvbiBpbiB0aGUgDQo+IDhHQiBv
-ZiBJTyBzcGFjZSByZXNlcnZlZCBpbiB0aGUgZ3Vlc3QgZm9yIHRoYXQgcHVycG9zZS4gVGhlIFdp
-bmRvd3MgDQo+IGhvc3QgdXNlcyB0aGUgbmVzdGVkIENQVSBwYWdlIHRhYmxlIHRvIGVuc3VyZSB0
-aGF0IHRoaXMgZ3Vlc3QgSU8gc3BhY2UgDQo+IGFsd2F5cyBtYXAgdG8gdGhlIGNvcnJlY3QgbG9j
-YXRpb24gZm9yIHRoZSBhbGxvY2F0aW9uIGFzIGl0IG1heSANCj4gbWlncmF0ZSBiZXR3ZWVuIGRl
-ZGljYXRlZCBHUFUgbWVtb3J5IChlLmcuIFZSQU0sIGZpcm13YXJlIHJlc2VydmVkIA0KPiBERFIp
-IGFuZCBzaGFyZWQgc3lzdGVtIG1lbW9yeSAocmVndWxhciBERFIpIG92ZXIgaXRzIGxpZmV0aW1l
-LiBUaGUgDQo+IExpbnV4IGd1ZXN0IG1hcHMgYSB1c2VyIG1vZGUgQ1BVIHZpcnR1YWwgYWRkcmVz
-cyB0byBhbiBhbGxvY2F0aW9uIElPIA0KPiBzcGFjZSByYW5nZSBmb3IgZGlyZWN0IGFjY2VzcyBi
-eSB1c2VyIG1vZGUgQVBJcyBhbmQgZHJpdmVycy4NCj4gDQo+ICANCj4gDQo+IEltcGxlbWVudGF0
-aW9uIG9mIExYX0RYTE9DSzIgaW9jdGwNCj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PQ0KPiANCj4gV2Ugd291bGQgYXBwcmVjaWF0ZSB5b3VyIGZlZWRiYWNrIG9uIHRoZSBpbXBs
-ZW1lbnRhdGlvbiBvZiB0aGUNCj4gTFhfRFhMT0NLMiBpb2N0bC4NCj4gDQo+IFRoaXMgaW9jdGwg
-aXMgdXNlZCB0byBnZXQgYSBDUFUgYWRkcmVzcyB0byBhbiBhbGxvY2F0aW9uLCB3aGljaCBpcyAN
-Cj4gcmVzaWRlbnQgaW4gdmlkZW8vc3lzdGVtIG1lbW9yeSBvbiB0aGUgaG9zdC4gVGhlIHdheSBp
-dCB3b3JrczoNCj4gDQo+IDEuIFRoZSBkcml2ZXIgc2VuZHMgdGhlIExvY2sgbWVzc2FnZSB0byB0
-aGUgaG9zdA0KPiANCj4gMi4gVGhlIGhvc3QgYWxsb2NhdGVzIHNwYWNlIGluIHRoZSBWTSBJTyBz
-cGFjZSBhbmQgbWFwcyBpdCB0byB0aGUgDQo+IGFsbG9jYXRpb24gbWVtb3J5DQo+IA0KPiAzLiBU
-aGUgaG9zdCByZXR1cm5zIHRoZSBhZGRyZXNzIGluIElPIHNwYWNlIGZvciB0aGUgbWFwcGVkIGFs
-bG9jYXRpb24NCj4gDQo+IDQuIFRoZSBkcml2ZXIgKGluIGR4Z19tYXBfaW9zcGFjZSkgYWxsb2Nh
-dGVzIGEgdXNlciBtb2RlIHZpcnR1YWwgDQo+IGFkZHJlc3MgcmFuZ2UgdXNpbmcgdm1fbW1hcCBh
-bmQgbWFwcyBpdCB0byB0aGUgSU8gc3BhY2UgdXNpbmcNCj4gaW9fcmVtYXBfb2ZuX3JhbmdlKQ0K
-PiANCj4gNS4gVGhlIFZBIGlzIHJldHVybmVkIHRvIHRoZSBhcHBsaWNhdGlvbg0KPiANCj4gIA0K
-PiANCj4gSW50ZXJuYWwgb2JqZWN0cw0KPiA9PT09PT09PT09PT09PT09DQo+IA0KPiBUaGUgZm9s
-bG93aW5nIG9iamVjdHMgYXJlIGNyZWF0ZWQgYnkgdGhlIGRyaXZlciAoZGVmaW5lZCBpbiBkeGdr
-cm5sLmgpOg0KPiANCj4gLSBkeGdhZGFwdGVyIC0gcmVwcmVzZW50cyBhIHZpcnR1YWwgR1BVDQo+
-IA0KPiAtIGR4Z3Byb2Nlc3MgLSB0cmFja3MgcGVyIHByb2Nlc3Mgc3RhdGUgKGhhbmRsZSB0YWJs
-ZSBvZiBjcmVhdGVkDQo+ICAgb2JqZWN0cywgbGlzdCBvZiBvYmplY3RzLCBldGMuKQ0KPiANCj4g
-LSBkeGdkZXZpY2UgLSBhIGNvbnRhaW5lciBmb3Igb3RoZXIgb2JqZWN0cyAoY29udGV4dHMsIHBh
-Z2luZyBxdWV1ZXMsDQo+ICAgYWxsb2NhdGlvbnMsIEdQVSBzeW5jaHJvbml6YXRpb24gb2JqZWN0
-cykNCj4gDQo+IC0gZHhnY29udGV4dCAtIHJlcHJlc2VudHMgdGhyZWFkIG9mIEdQVSBleGVjdXRp
-b24gZm9yIHBhY2tldA0KPiAgIHNjaGVkdWxpbmcuDQo+IA0KPiAtIGR4Z2h3cXVldWUgLSByZXBy
-ZXNlbnRzIHRocmVhZCBvZiBHUFUgZXhlY3V0aW9uIG9mIGhhcmR3YXJlIA0KPiBzY2hlZHVsaW5n
-DQo+IA0KPiAtIGR4Z2FsbG9jYXRpb24gLSByZXByZXNlbnRzIGEgR1BVIGFjY2Vzc2libGUgYWxs
-b2NhdGlvbg0KPiANCj4gLSBkeGdzeW5jb2JqZWN0IC0gcmVwcmVzZW50cyBhIEdQVSBzeW5jaHJv
-bml6YXRpb24gb2JqZWN0DQo+IA0KPiAtIGR4Z3Jlc291cmNlIC0gY29sbGVjdGlvbiBvZiBkeGdh
-bGxvY3Rpb24gb2JqZWN0cw0KPiANCj4gLSBkeGdzaGFyZWRyZXNvdXJjZSwgZHhnc2hhcmVkc3lu
-Y29iaiAtIGhlbHBlciBvYmplY3RzIHRvIHNoYXJlIG9iamVjdHMNCj4gICBiZXR3ZWVuIGRpZmZl
-cmVudCBkeGdkZXZpY2Ugb2JqZWN0cywgd2hpY2ggY2FuIGJlbG9uZyB0byBkaWZmZXJlbnQgDQo+
-IHByb2Nlc3Nlcw0KPiANCj4gDQo+ICANCj4gT2JqZWN0IGhhbmRsZXMNCj4gPT09PT09PT09PT09
-PT0NCj4gDQo+IEFsbCBHUFUgb2JqZWN0cywgY3JlYXRlZCBieSB0aGUgZHJpdmVyLCBhcmUgYWNj
-ZXNzaWJsZSBieSBhIGhhbmRsZSANCj4gKGQzZGttdF9oYW5kbGUpLiBFYWNoIHByb2Nlc3MgaGFz
-IGl0cyBvd24gaGFuZGxlIHRhYmxlLCB3aGljaCBpcyANCj4gaW1wbGVtZW50ZWQgaW4gaG1nci5j
-LiBGb3IgZWFjaCBBUEkgdmlzaWJsZSBvYmplY3QsIGNyZWF0ZWQgYnkgdGhlIA0KPiBkcml2ZXIs
-IHRoZXJlIGlzIGFuIG9iamVjdCwgY3JlYXRlZCBvbiB0aGUgaG9zdC4gRm9yIGV4YW1wbGUsIHRo
-ZSBpcyBhIA0KPiBkeGdwcm9jZXNzIG9iamVjdCBvbiB0aGUgaG9zdCBmb3IgZWFjaCBkeGdwcm9j
-ZXNzIG9iamVjdCBpbiB0aGUgVk0sIGV0Yy4NCj4gVGhlIG9iamVjdCBoYW5kbGVzIGhhdmUgdGhl
-IHNhbWUgdmFsdWUgaW4gdGhlIGhvc3QgYW5kIHRoZSBWTSwgd2hpY2ggDQo+IGlzIGRvbmUgdG8g
-YXZvaWQgdHJhbnNsYXRpb24gZnJvbSB0aGUgZ3Vlc3QgaGFuZGxlcyB0byB0aGUgaG9zdCBoYW5k
-bGVzLg0KPiAgDQo+IA0KPiANCj4gU2lnbmFsaW5nIENQVSBldmVudHMgYnkgdGhlIGhvc3QNCj4g
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCj4gDQo+IFRoZSBXRERNIGludGVyZmFj
-ZSBwcm92aWRlcyBhIHdheSB0byBzaWduYWwgQ1BVIGV2ZW50IG9iamVjdHMgd2hlbiANCj4gZXhl
-Y3V0aW9uIG9mIGEgY29udGV4dCByZWFjaGVkIGNlcnRhaW4gcG9pbnQuIFRoZSB3YXkgaXQgaXMg
-aW1wbGVtZW50ZWQ6DQo+IA0KPiAtIGFwcGxpY2F0aW9uIHNlbmRzIGFuIGV2ZW50X2ZkIHZpYSBp
-b2N0bCB0byB0aGUgZHJpdmVyDQo+IA0KPiAtIGV2ZW50ZmRfY3R4X2dldCBpcyB1c2VkIHRvIGdl
-dCBhIHBvaW50ZXIgdG8gdGhlIGZpbGUgb2JqZWN0DQo+ICAgKGV2ZW50ZmRfY3R4KQ0KPiANCj4g
-LSB0aGUgcG9pbnRlciB0byBzZW50IHRoZSBob3N0IHZpYSBhIFZNIGJ1cyBtZXNzYWdlDQo+IA0K
-PiAtIHdoZW4gR1BVIGV4ZWN1dGlvbiByZWFjaGVzIGEgY2VydGFpbiBwb2ludCwgdGhlIGhvc3Qg
-c2VuZHMgYSBtZXNzYWdlDQo+ICAgdG8gdGhlIFZNIHdpdGggdGhlIGV2ZW50IHBvaW50ZXINCj4g
-DQo+IC0gc2lnbmFsX2d1ZXN0X2V2ZW50KCkgaGFuZGxlcyB0aGUgbWVzc2FnZXMgYW5kIGV2ZW50
-dWFsbHkNCj4gICBldmVudGZkX3NpZ25hbCgpIGlzIGNhbGxlZC4NCj4gDQo+IA0KPiBTYXNoYSBM
-ZXZpbiAoNCk6DQo+ICAgZ3B1OiBkeGdrcm5sOiBjb3JlIGNvZGUNCj4gICBncHU6IGR4Z2tybmw6
-IGhvb2sgdXAgZHhna3JubA0KPiAgIERyaXZlcnM6IGh2OiB2bWJ1czogaG9vayB1cCBkeGdrcm5s
-DQo+ICAgZ3B1OiBkeGdrcm5sOiBjcmVhdGUgYSBNQUlOVEFJTkVSUyBlbnRyeQ0KPiANCj4gIE1B
-SU5UQUlORVJTICAgICAgICAgICAgICAgICAgICAgIHwgICAgNyArDQo+ICBkcml2ZXJzL2dwdS9N
-YWtlZmlsZSAgICAgICAgICAgICB8ICAgIDIgKy0NCj4gIGRyaXZlcnMvZ3B1L2R4Z2tybmwvS2Nv
-bmZpZyAgICAgIHwgICAxMCArDQo+ICBkcml2ZXJzL2dwdS9keGdrcm5sL01ha2VmaWxlICAgICB8
-ICAgMTIgKw0KPiAgZHJpdmVycy9ncHUvZHhna3JubC9kM2RrbXRoay5oICAgfCAxNjM1ICsrKysr
-KysrKw0KPiAgZHJpdmVycy9ncHUvZHhna3JubC9keGdhZGFwdGVyLmMgfCAxMzk5ICsrKysrKysr
-DQo+ICBkcml2ZXJzL2dwdS9keGdrcm5sL2R4Z2tybmwuaCAgICB8ICA5MTMgKysrKysrDQo+ICBk
-cml2ZXJzL2dwdS9keGdrcm5sL2R4Z21vZHVsZS5jICB8ICA2OTIgKysrKyAgDQo+IGRyaXZlcnMv
-Z3B1L2R4Z2tybmwvZHhncHJvY2Vzcy5jIHwgIDM1NSArKw0KPiAgZHJpdmVycy9ncHUvZHhna3Ju
-bC9keGd2bWJ1cy5jICAgfCAyOTU1ICsrKysrKysrKysrKysrKysrDQo+ICBkcml2ZXJzL2dwdS9k
-eGdrcm5sL2R4Z3ZtYnVzLmggICB8ICA4NTkgKysrKysNCj4gIGRyaXZlcnMvZ3B1L2R4Z2tybmwv
-aG1nci5jICAgICAgIHwgIDU5MyArKysrDQo+ICBkcml2ZXJzL2dwdS9keGdrcm5sL2htZ3IuaCAg
-ICAgICB8ICAxMDcgKw0KPiAgZHJpdmVycy9ncHUvZHhna3JubC9pb2N0bC5jICAgICAgfCA1MjY5
-ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiAgZHJpdmVycy9ncHUvZHhna3JubC9t
-aXNjLmMgICAgICAgfCAgMjgwICsrDQo+ICBkcml2ZXJzL2dwdS9keGdrcm5sL21pc2MuaCAgICAg
-ICB8ICAyODggKysNCj4gIGRyaXZlcnMvdmlkZW8vS2NvbmZpZyAgICAgICAgICAgIHwgICAgMiAr
-DQo+ICBpbmNsdWRlL2xpbnV4L2h5cGVydi5oICAgICAgICAgICB8ICAgMTYgKw0KPiAgMTggZmls
-ZXMgY2hhbmdlZCwgMTUzOTMgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKSAgY3JlYXRlIG1v
-ZGUgDQo+IDEwMDY0NCBkcml2ZXJzL2dwdS9keGdrcm5sL0tjb25maWcgIGNyZWF0ZSBtb2RlIDEw
-MDY0NCANCj4gZHJpdmVycy9ncHUvZHhna3JubC9NYWtlZmlsZSAgY3JlYXRlIG1vZGUgMTAwNjQ0
-IA0KPiBkcml2ZXJzL2dwdS9keGdrcm5sL2QzZGttdGhrLmggIGNyZWF0ZSBtb2RlIDEwMDY0NCAN
-Cj4gZHJpdmVycy9ncHUvZHhna3JubC9keGdhZGFwdGVyLmMgIGNyZWF0ZSBtb2RlIDEwMDY0NCAN
-Cj4gZHJpdmVycy9ncHUvZHhna3JubC9keGdrcm5sLmggIGNyZWF0ZSBtb2RlIDEwMDY0NCANCj4g
-ZHJpdmVycy9ncHUvZHhna3JubC9keGdtb2R1bGUuYyAgY3JlYXRlIG1vZGUgMTAwNjQ0IA0KPiBk
-cml2ZXJzL2dwdS9keGdrcm5sL2R4Z3Byb2Nlc3MuYyAgY3JlYXRlIG1vZGUgMTAwNjQ0IA0KPiBk
-cml2ZXJzL2dwdS9keGdrcm5sL2R4Z3ZtYnVzLmMgIGNyZWF0ZSBtb2RlIDEwMDY0NCANCj4gZHJp
-dmVycy9ncHUvZHhna3JubC9keGd2bWJ1cy5oICBjcmVhdGUgbW9kZSAxMDA2NDQgDQo+IGRyaXZl
-cnMvZ3B1L2R4Z2tybmwvaG1nci5jICBjcmVhdGUgbW9kZSAxMDA2NDQgDQo+IGRyaXZlcnMvZ3B1
-L2R4Z2tybmwvaG1nci5oICBjcmVhdGUgbW9kZSAxMDA2NDQgDQo+IGRyaXZlcnMvZ3B1L2R4Z2ty
-bmwvaW9jdGwuYyAgY3JlYXRlIG1vZGUgMTAwNjQ0IA0KPiBkcml2ZXJzL2dwdS9keGdrcm5sL21p
-c2MuYyAgY3JlYXRlIG1vZGUgMTAwNjQ0IA0KPiBkcml2ZXJzL2dwdS9keGdrcm5sL21pc2MuaA0K
-PiANCg0KLS0NClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpT
-VVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5
-IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0
-c2bDvGhyZXI6IEZlbGl4IEltZW5kw7ZyZmZlcg0KDQo
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--CdQi8KpebZFte3Zhz351eearRDfuhsOt4
+Content-Type: multipart/mixed; boundary="Hsf9r5mKZGeedj4ZmFS55Q6iKzl0tx6zo";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Steve Pronovost <spronovo@microsoft.com>, Sasha Levin
+ <sashal@kernel.org>, "alexander.deucher@amd.com"
+ <alexander.deucher@amd.com>,
+ "chris@chris-wilson.co.uk" <chris@chris-wilson.co.uk>,
+ "ville.syrjala@linux.intel.com" <ville.syrjala@linux.intel.com>,
+ "Hawking.Zhang@amd.com" <Hawking.Zhang@amd.com>,
+ "tvrtko.ursulin@intel.com" <tvrtko.ursulin@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
+ KY Srinivasan <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ "wei.liu@kernel.org" <wei.liu@kernel.org>,
+ Iouri Tarassov <iourit@microsoft.com>,
+ "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+ "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ Max McMullen <Max.McMullen@microsoft.com>
+Message-ID: <8e33f381-6d03-4192-b324-a2f7a05d2d46@suse.de>
+Subject: Re: [EXTERNAL] Re: [RFC PATCH 0/4] DirectX on Linux
+References: <20200519163234.226513-1-sashal@kernel.org>
+ <55c57049-1869-7421-aa0f-3ce0b6a133cf@suse.de>
+ <MWHPR21MB02878FA5BB259F307082B735C7B60@MWHPR21MB0287.namprd21.prod.outlook.com>
+In-Reply-To: <MWHPR21MB02878FA5BB259F307082B735C7B60@MWHPR21MB0287.namprd21.prod.outlook.com>
+
+--Hsf9r5mKZGeedj4ZmFS55Q6iKzl0tx6zo
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
+
+Hi Steve,
+
+thank you for the fast reply.
+
+Am 20.05.20 um 09:42 schrieb Steve Pronovost:
+>> Echoing what others said, you're not making a DRM driver. The driver s=
+hould live outside of the DRM code.
+>=20
+> Agreed, please see my earlier reply. We'll be moving the driver to driv=
+ers/hyperv node or something similar. Apology for the confusion here.
+>=20
+>> I have one question about the driver API: on Windows, DirectX versions=
+ are loosly tied to Windows releases. So I guess you can change the kerne=
+l interface among DirectX versions?
+>> If so, how would this work on Linux in the long term? If there ever is=
+ a DirectX 13 or 14 with incompatible kernel interfaces, how would you pl=
+an to update the Linux driver?
+>=20
+> You should think of the communication over the VM Bus for the vGPU proj=
+ection as a strongly versioned interface. We will be keeping compatibilit=
+y with older version of that interface as it evolves over time so we can =
+continue to run older guest (we already do). This protocol isn't actually=
+ tied to the DX API. It is a generic abstraction for the GPU that can be =
+used for any APIs (for example the NVIDIA CUDA driver that we announced i=
+s going over the same protocol to access the GPU).=20
+>=20
+> New version of user mode DX can either take advantage or sometime requi=
+re new services from this kernel abstraction. This mean that pulling a ne=
+w version of user mode DX can mean having to also pull a new version of t=
+his vGPU kernel driver. For WSL, these essentially ships together. The ke=
+rnel driver ships as part of our WSL2 Linux Kernel integration. User mode=
+ DX bits ships with Windows.=20
+
+Just a friendly advise: maintaining a proprietary component within a
+Linux environment is tough. You will need a good plan for long-term
+interface stability and compatibility with the other components.
+
+Best regards
+Thomas
+
+>=20
+> -----Original Message-----
+> From: Thomas Zimmermann <tzimmermann@suse.de>=20
+> Sent: Wednesday, May 20, 2020 12:11 AM
+> To: Sasha Levin <sashal@kernel.org>; alexander.deucher@amd.com; chris@c=
+hris-wilson.co.uk; ville.syrjala@linux.intel.com; Hawking.Zhang@amd.com; =
+tvrtko.ursulin@intel.com
+> Cc: linux-kernel@vger.kernel.org; linux-hyperv@vger.kernel.org; KY Srin=
+ivasan <kys@microsoft.com>; Haiyang Zhang <haiyangz@microsoft.com>; Steph=
+en Hemminger <sthemmin@microsoft.com>; wei.liu@kernel.org; Steve Pronovos=
+t <spronovo@microsoft.com>; Iouri Tarassov <iourit@microsoft.com>; dri-de=
+vel@lists.freedesktop.org; linux-fbdev@vger.kernel.org; gregkh@linuxfound=
+ation.org
+> Subject: [EXTERNAL] Re: [RFC PATCH 0/4] DirectX on Linux
+>=20
+> Hi
+>=20
+> Am 19.05.20 um 18:32 schrieb Sasha Levin:
+>> There is a blog post that goes into more detail about the bigger=20
+>> picture, and walks through all the required pieces to make this work. =
+
+>> It is available here:
+>> https://devblogs.microsoft.com/directx/directx-heart-linux . The rest =
+
+>> of this cover letter will focus on the Linux Kernel bits.
+>=20
+> That's quite a surprise. Thanks for your efforts to contribute.
+>=20
+>>
+>> Overview
+>> =3D=3D=3D=3D=3D=3D=3D=3D
+>>
+>> This is the first draft of the Microsoft Virtual GPU (vGPU) driver.=20
+>> The driver exposes a paravirtualized GPU to user mode applications=20
+>> running in a virtual machine on a Windows host. This enables hardware =
+
+>> acceleration in environment such as WSL (Windows Subsystem for Linux) =
+
+>> where the Linux virtual machine is able to share the GPU with the=20
+>> Windows host.
+>>
+>> The projection is accomplished by exposing the WDDM (Windows Display=20
+>> Driver Model) interface as a set of IOCTL. This allows APIs and user=20
+>> mode driver written against the WDDM GPU abstraction on Windows to be =
+
+>> ported to run within a Linux environment. This enables the port of the=
+
+>> D3D12 and DirectML APIs as well as their associated user mode driver=20
+>> to Linux. This also enables third party APIs, such as the popular=20
+>> NVIDIA Cuda compute API, to be hardware accelerated within a WSL envir=
+onment.
+>>
+>> Only the rendering/compute aspect of the GPU are projected to the=20
+>> virtual machine, no display functionality is exposed. Further, at this=
+=20
+>> time there are no presentation integration. So although the D3D12 API =
+
+>> can be use to render graphics offscreen, there is no path (yet) for=20
+>> pixel to flow from the Linux environment back onto the Windows host=20
+>> desktop. This GPU stack is effectively side-by-side with the native=20
+>> Linux graphics stack.
+>>
+>> The driver creates the /dev/dxg device, which can be opened by user=20
+>> mode application and handles their ioctls. The IOCTL interface to the =
+
+>> driver is defined in dxgkmthk.h (Dxgkrnl Graphics Port Driver ioctl=20
+>> definitions). The interface matches the D3DKMT interface on Windows.
+>> Ioctls are implemented in ioctl.c.
+>=20
+> Echoing what others said, you're not making a DRM driver. The driver sh=
+ould live outside of the DRM code.
+>=20
+> I have one question about the driver API: on Windows, DirectX versions =
+are loosly tied to Windows releases. So I guess you can change the kernel=
+ interface among DirectX versions?
+>=20
+> If so, how would this work on Linux in the long term? If there ever is =
+a DirectX 13 or 14 with incompatible kernel interfaces, how would you pla=
+n to update the Linux driver?
+>=20
+> Best regards
+> Thomas
+>=20
+>>
+>> When a VM starts, hyper-v on the host adds virtual GPU devices to the =
+
+>> VM via the hyper-v driver. The host offers several VM bus channels to =
+
+>> the
+>> VM: the global channel and one channel per virtual GPU, assigned to=20
+>> the VM.
+>>
+>> The driver registers with the hyper-v driver (hv_driver) for the=20
+>> arrival of VM bus channels. dxg_probe_device recognizes the vGPU=20
+>> channels and creates the corresponding objects (dxgadapter for vGPUs=20
+>> and dxgglobal for the global channel).
+>>
+>> The driver uses the hyper-V VM bus interface to communicate with the=20
+>> host. dxgvmbus.c implements the communication interface.
+>>
+>> The global channel has 8GB of IO space assigned by the host. This=20
+>> space is managed by the host and used to give the guest direct CPU=20
+>> access to some allocations. Video memory is allocated on the host=20
+>> except in the case of existing_sysmem allocations. The Windows host=20
+>> allocates memory for the GPU on behalf of the guest. The Linux guest=20
+>> can access that memory by mapping GPU virtual address to allocations=20
+>> and then referencing those GPU virtual address from within GPU command=
+=20
+>> buffers submitted to the GPU. For allocations which require CPU=20
+>> access, the allocation is mapped by the host into a location in the=20
+>> 8GB of IO space reserved in the guest for that purpose. The Windows=20
+>> host uses the nested CPU page table to ensure that this guest IO space=
+=20
+>> always map to the correct location for the allocation as it may=20
+>> migrate between dedicated GPU memory (e.g. VRAM, firmware reserved=20
+>> DDR) and shared system memory (regular DDR) over its lifetime. The=20
+>> Linux guest maps a user mode CPU virtual address to an allocation IO=20
+>> space range for direct access by user mode APIs and drivers.
+>>
+>> =20
+>>
+>> Implementation of LX_DXLOCK2 ioctl
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>>
+>> We would appreciate your feedback on the implementation of the
+>> LX_DXLOCK2 ioctl.
+>>
+>> This ioctl is used to get a CPU address to an allocation, which is=20
+>> resident in video/system memory on the host. The way it works:
+>>
+>> 1. The driver sends the Lock message to the host
+>>
+>> 2. The host allocates space in the VM IO space and maps it to the=20
+>> allocation memory
+>>
+>> 3. The host returns the address in IO space for the mapped allocation
+>>
+>> 4. The driver (in dxg_map_iospace) allocates a user mode virtual=20
+>> address range using vm_mmap and maps it to the IO space using
+>> io_remap_ofn_range)
+>>
+>> 5. The VA is returned to the application
+>>
+>> =20
+>>
+>> Internal objects
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>>
+>> The following objects are created by the driver (defined in dxgkrnl.h)=
+:
+>>
+>> - dxgadapter - represents a virtual GPU
+>>
+>> - dxgprocess - tracks per process state (handle table of created
+>>   objects, list of objects, etc.)
+>>
+>> - dxgdevice - a container for other objects (contexts, paging queues,
+>>   allocations, GPU synchronization objects)
+>>
+>> - dxgcontext - represents thread of GPU execution for packet
+>>   scheduling.
+>>
+>> - dxghwqueue - represents thread of GPU execution of hardware=20
+>> scheduling
+>>
+>> - dxgallocation - represents a GPU accessible allocation
+>>
+>> - dxgsyncobject - represents a GPU synchronization object
+>>
+>> - dxgresource - collection of dxgalloction objects
+>>
+>> - dxgsharedresource, dxgsharedsyncobj - helper objects to share object=
+s
+>>   between different dxgdevice objects, which can belong to different=20
+>> processes
+>>
+>>
+>> =20
+>> Object handles
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>>
+>> All GPU objects, created by the driver, are accessible by a handle=20
+>> (d3dkmt_handle). Each process has its own handle table, which is=20
+>> implemented in hmgr.c. For each API visible object, created by the=20
+>> driver, there is an object, created on the host. For example, the is a=
+=20
+>> dxgprocess object on the host for each dxgprocess object in the VM, et=
+c.
+>> The object handles have the same value in the host and the VM, which=20
+>> is done to avoid translation from the guest handles to the host handle=
+s.
+>> =20
+>>
+>>
+>> Signaling CPU events by the host
+>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+>>
+>> The WDDM interface provides a way to signal CPU event objects when=20
+>> execution of a context reached certain point. The way it is implemente=
+d:
+>>
+>> - application sends an event_fd via ioctl to the driver
+>>
+>> - eventfd_ctx_get is used to get a pointer to the file object
+>>   (eventfd_ctx)
+>>
+>> - the pointer to sent the host via a VM bus message
+>>
+>> - when GPU execution reaches a certain point, the host sends a message=
+
+>>   to the VM with the event pointer
+>>
+>> - signal_guest_event() handles the messages and eventually
+>>   eventfd_signal() is called.
+>>
+>>
+>> Sasha Levin (4):
+>>   gpu: dxgkrnl: core code
+>>   gpu: dxgkrnl: hook up dxgkrnl
+>>   Drivers: hv: vmbus: hook up dxgkrnl
+>>   gpu: dxgkrnl: create a MAINTAINERS entry
+>>
+>>  MAINTAINERS                      |    7 +
+>>  drivers/gpu/Makefile             |    2 +-
+>>  drivers/gpu/dxgkrnl/Kconfig      |   10 +
+>>  drivers/gpu/dxgkrnl/Makefile     |   12 +
+>>  drivers/gpu/dxgkrnl/d3dkmthk.h   | 1635 +++++++++
+>>  drivers/gpu/dxgkrnl/dxgadapter.c | 1399 ++++++++
+>>  drivers/gpu/dxgkrnl/dxgkrnl.h    |  913 ++++++
+>>  drivers/gpu/dxgkrnl/dxgmodule.c  |  692 ++++ =20
+>> drivers/gpu/dxgkrnl/dxgprocess.c |  355 ++
+>>  drivers/gpu/dxgkrnl/dxgvmbus.c   | 2955 +++++++++++++++++
+>>  drivers/gpu/dxgkrnl/dxgvmbus.h   |  859 +++++
+>>  drivers/gpu/dxgkrnl/hmgr.c       |  593 ++++
+>>  drivers/gpu/dxgkrnl/hmgr.h       |  107 +
+>>  drivers/gpu/dxgkrnl/ioctl.c      | 5269 +++++++++++++++++++++++++++++=
++
+>>  drivers/gpu/dxgkrnl/misc.c       |  280 ++
+>>  drivers/gpu/dxgkrnl/misc.h       |  288 ++
+>>  drivers/video/Kconfig            |    2 +
+>>  include/linux/hyperv.h           |   16 +
+>>  18 files changed, 15393 insertions(+), 1 deletion(-)  create mode=20
+>> 100644 drivers/gpu/dxgkrnl/Kconfig  create mode 100644=20
+>> drivers/gpu/dxgkrnl/Makefile  create mode 100644=20
+>> drivers/gpu/dxgkrnl/d3dkmthk.h  create mode 100644=20
+>> drivers/gpu/dxgkrnl/dxgadapter.c  create mode 100644=20
+>> drivers/gpu/dxgkrnl/dxgkrnl.h  create mode 100644=20
+>> drivers/gpu/dxgkrnl/dxgmodule.c  create mode 100644=20
+>> drivers/gpu/dxgkrnl/dxgprocess.c  create mode 100644=20
+>> drivers/gpu/dxgkrnl/dxgvmbus.c  create mode 100644=20
+>> drivers/gpu/dxgkrnl/dxgvmbus.h  create mode 100644=20
+>> drivers/gpu/dxgkrnl/hmgr.c  create mode 100644=20
+>> drivers/gpu/dxgkrnl/hmgr.h  create mode 100644=20
+>> drivers/gpu/dxgkrnl/ioctl.c  create mode 100644=20
+>> drivers/gpu/dxgkrnl/misc.c  create mode 100644=20
+>> drivers/gpu/dxgkrnl/misc.h
+>>
+>=20
+> --
+> Thomas Zimmermann
+> Graphics Driver Developer
+> SUSE Software Solutions Germany GmbH
+> Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
+> (HRB 36809, AG N=C3=BCrnberg)
+> Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
+>=20
+
+--=20
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
+(HRB 36809, AG N=C3=BCrnberg)
+Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
+
+
+--Hsf9r5mKZGeedj4ZmFS55Q6iKzl0tx6zo--
+
+--CdQi8KpebZFte3Zhz351eearRDfuhsOt4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEEchf7rIzpz2NEoWjlaA3BHVMLeiMFAl7FDz4ACgkQaA3BHVML
+eiOACggAhhK0IpNNw4pzJPQyPIF/VcC71ymVG5etEdwVXJ1otDDkzw6wG2AZUoSB
+PQ49SEWYi8vm0K+fT3BpsM5KkndBDdg6ziktnGU2xpKw941vRlgYoyYo4oOtbJvB
+7eRoNtsUc4zrUgMX+JPP22RKdq3c1iJu4DC8SHmEMARxhdxpB2cDLyxd+y46gJLl
+q+34Vv/69v2vrWMBAhpMy6eo8OVMo8D4gBWFoKBapyC8bEsULlzX1dErQeM0tDkp
+2xa2j3jsC2dTFTqPOOw0l3CbHentBiXUUjLzPjfXk7R16erB7UZ9WKi/JN0XBBGd
+Sp3wGCAyLxoWZaYrXC9sU8GIes4HRA==
+=zNU1
+-----END PGP SIGNATURE-----
+
+--CdQi8KpebZFte3Zhz351eearRDfuhsOt4--

@@ -1,97 +1,306 @@
-From: Dave Airlie <airlied@gmail.com>
-Date: Tue, 19 May 2020 23:12:25 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Wed, 20 May 2020 07:10:46 +0000
 Subject: Re: [RFC PATCH 0/4] DirectX on Linux
-Message-Id: <CAPM=9tx4wh-Lk6Dffsdh-7mYvXx+GX2AxhrGqFgyN8-AWJvP6A@mail.gmail.com>
+Message-Id: <55c57049-1869-7421-aa0f-3ce0b6a133cf@suse.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="vAo58w8SHWXRVnNzumKnOmUo9dwSAv3J1"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200519163234.226513-1-sashal@kernel.org>
- <CAPM=9txZpiCGkv3jiBC1F8pTe4A2pqWpQDyjRBXk2roFqw+0+Q@mail.gmail.com>
-In-Reply-To: <CAPM=9txZpiCGkv3jiBC1F8pTe4A2pqWpQDyjRBXk2roFqw+0+Q@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sasha Levin <sashal@kernel.org>
-Cc: linux-hyperv@vger.kernel.org, sthemmin@microsoft.com, "Ursulin,
- Tvrtko" <tvrtko.ursulin@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, haiyangz@microsoft.com, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Chris Wilson <chris@chris-wilson.co.uk>, spronovo@microsoft.com, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, iourit@microsoft.com, "Deucher, Alexander" <alexander.deucher@amd.com>, kys@microsoft.com, wei.liu@kernel.org, Hawking Zhang <Hawking.Zhang@amd.com>
+In-Reply-To: <20200519163234.226513-1-sashal@kernel.org>
+To: Sasha Levin <sashal@kernel.org>, alexander.deucher@amd.com, chris@chris-wilson.co.uk, ville.syrjala@linux.intel.com, Hawking.Zhang@amd.com, tvrtko.ursulin@intel.com
+Cc: linux-hyperv@vger.kernel.org, sthemmin@microsoft.com, gregkh@linuxfoundation.org, haiyangz@microsoft.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, spronovo@microsoft.com, wei.liu@kernel.org, linux-fbdev@vger.kernel.org, iourit@microsoft.com, kys@microsoft.com
 
-On Wed, 20 May 2020 at 08:42, Dave Airlie <airlied@gmail.com> wrote:
->
-> On Wed, 20 May 2020 at 02:33, Sasha Levin <sashal@kernel.org> wrote:
-> >
-> > There is a blog post that goes into more detail about the bigger
-> > picture, and walks through all the required pieces to make this work. It
-> > is available here:
-> > https://devblogs.microsoft.com/directx/directx-heart-linux . The rest of
-> > this cover letter will focus on the Linux Kernel bits.
-> >
-> > Overview
-> > ====
-> >
-> > This is the first draft of the Microsoft Virtual GPU (vGPU) driver. The
-> > driver exposes a paravirtualized GPU to user mode applications running
-> > in a virtual machine on a Windows host. This enables hardware
-> > acceleration in environment such as WSL (Windows Subsystem for Linux)
-> > where the Linux virtual machine is able to share the GPU with the
-> > Windows host.
-> >
-> > The projection is accomplished by exposing the WDDM (Windows Display
-> > Driver Model) interface as a set of IOCTL. This allows APIs and user
-> > mode driver written against the WDDM GPU abstraction on Windows to be
-> > ported to run within a Linux environment. This enables the port of the
-> > D3D12 and DirectML APIs as well as their associated user mode driver to
-> > Linux. This also enables third party APIs, such as the popular NVIDIA
-> > Cuda compute API, to be hardware accelerated within a WSL environment.
-> >
-> > Only the rendering/compute aspect of the GPU are projected to the
-> > virtual machine, no display functionality is exposed. Further, at this
-> > time there are no presentation integration. So although the D3D12 API
-> > can be use to render graphics offscreen, there is no path (yet) for
-> > pixel to flow from the Linux environment back onto the Windows host
-> > desktop. This GPU stack is effectively side-by-side with the native
-> > Linux graphics stack.
->
-> Okay I've had some caffiene and absorbed some more of this.
->
-> This is a driver that connects a binary blob interface in the Windows
-> kernel drivers to a binary blob that you run inside a Linux guest.
-> It's a binary transport between two binary pieces. Personally this
-> holds little of interest to me, I can see why it might be nice to have
-> this upstream, but I don't forsee any other Linux distributor ever
-> enabling it or having to ship it, it's purely a WSL2 pipe. I'm not
-> saying I'd be happy to see this in the tree, since I don't see the
-> value of maintaining it upstream, but it probably should just exists
-> in a drivers/hyperv type area.
->
-> Having said that, I hit one stumbling block:
-> "Further, at this time there are no presentation integration. "
->
-> If we upstream this driver as-is into some hyperv specific place, and
-> you decide to add presentation integration this is more than likely
-> going to mean you will want to interact with dma-bufs and dma-fences.
-> If the driver is hidden away in a hyperv place it's likely we won't
-> even notice that feature landing until it's too late.
->
-> I would like to see a coherent plan for presentation support (not
-> code, just an architectural diagram), because I think when you
-> contemplate how that works it will change the picture of how this
-> driver looks and intergrates into the rest of the Linux graphics
-> ecosystem.
->
-> As-is I'd rather this didn't land under my purview, since I don't see
-> the value this adds to the Linux ecosystem at all, and I think it's
-> important when putting a burden on upstream that you provide some
-> value.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--vAo58w8SHWXRVnNzumKnOmUo9dwSAv3J1
+Content-Type: multipart/mixed; boundary="hJMvAsFc04AoVDJM7zxnUbCWTttHUlTAT";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sasha Levin <sashal@kernel.org>, alexander.deucher@amd.com,
+ chris@chris-wilson.co.uk, ville.syrjala@linux.intel.com,
+ Hawking.Zhang@amd.com, tvrtko.ursulin@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-hyperv@vger.kernel.org,
+ kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com,
+ wei.liu@kernel.org, spronovo@microsoft.com, iourit@microsoft.com,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ gregkh@linuxfoundation.org
+Message-ID: <55c57049-1869-7421-aa0f-3ce0b6a133cf@suse.de>
+Subject: Re: [RFC PATCH 0/4] DirectX on Linux
+References: <20200519163234.226513-1-sashal@kernel.org>
+In-Reply-To: <20200519163234.226513-1-sashal@kernel.org>
 
-I also have another concern from a legal standpoint I'd rather not
-review the ioctl part of this. I'd probably request under DRI
-developers abstain as well.
+--hJMvAsFc04AoVDJM7zxnUbCWTttHUlTAT
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-This is a Windows kernel API being smashed into a Linux driver. I
-don't want to be tainted by knowledge of an API that I've no idea of
-the legal status of derived works. (it this all covered patent wise
-under OIN?)
+Hi
 
-I don't want to ever be accused of designing a Linux kernel API with
-illgotten D3DKMT knowledge, I feel tainting myself with knowledge of a
-properietary API might cause derived work issues.
+Am 19.05.20 um 18:32 schrieb Sasha Levin:
+> There is a blog post that goes into more detail about the bigger
+> picture, and walks through all the required pieces to make this work. I=
+t
+> is available here:
+> https://devblogs.microsoft.com/directx/directx-heart-linux . The rest o=
+f
+> this cover letter will focus on the Linux Kernel bits.
 
-Dave.
+That's quite a surprise. Thanks for your efforts to contribute.
+
+>=20
+> Overview
+> =3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> This is the first draft of the Microsoft Virtual GPU (vGPU) driver. The=
+
+> driver exposes a paravirtualized GPU to user mode applications running
+> in a virtual machine on a Windows host. This enables hardware
+> acceleration in environment such as WSL (Windows Subsystem for Linux)
+> where the Linux virtual machine is able to share the GPU with the
+> Windows host.
+>=20
+> The projection is accomplished by exposing the WDDM (Windows Display
+> Driver Model) interface as a set of IOCTL. This allows APIs and user
+> mode driver written against the WDDM GPU abstraction on Windows to be
+> ported to run within a Linux environment. This enables the port of the
+> D3D12 and DirectML APIs as well as their associated user mode driver to=
+
+> Linux. This also enables third party APIs, such as the popular NVIDIA
+> Cuda compute API, to be hardware accelerated within a WSL environment.
+>=20
+> Only the rendering/compute aspect of the GPU are projected to the
+> virtual machine, no display functionality is exposed. Further, at this
+> time there are no presentation integration. So although the D3D12 API
+> can be use to render graphics offscreen, there is no path (yet) for
+> pixel to flow from the Linux environment back onto the Windows host
+> desktop. This GPU stack is effectively side-by-side with the native
+> Linux graphics stack.
+>=20
+> The driver creates the /dev/dxg device, which can be opened by user mod=
+e
+> application and handles their ioctls. The IOCTL interface to the driver=
+
+> is defined in dxgkmthk.h (Dxgkrnl Graphics Port Driver ioctl
+> definitions). The interface matches the D3DKMT interface on Windows.
+> Ioctls are implemented in ioctl.c.
+
+Echoing what others said, you're not making a DRM driver. The driver
+should live outside of the DRM code.
+
+I have one question about the driver API: on Windows, DirectX versions
+are loosly tied to Windows releases. So I guess you can change the
+kernel interface among DirectX versions?
+
+If so, how would this work on Linux in the long term? If there ever is a
+DirectX 13 or 14 with incompatible kernel interfaces, how would you plan
+to update the Linux driver?
+
+Best regards
+Thomas
+
+>=20
+> When a VM starts, hyper-v on the host adds virtual GPU devices to the V=
+M
+> via the hyper-v driver. The host offers several VM bus channels to the
+> VM: the global channel and one channel per virtual GPU, assigned to the=
+
+> VM.
+>=20
+> The driver registers with the hyper-v driver (hv_driver) for the arriva=
+l
+> of VM bus channels. dxg_probe_device recognizes the vGPU channels and
+> creates the corresponding objects (dxgadapter for vGPUs and dxgglobal
+> for the global channel).
+>=20
+> The driver uses the hyper-V VM bus interface to communicate with the
+> host. dxgvmbus.c implements the communication interface.
+>=20
+> The global channel has 8GB of IO space assigned by the host. This space=
+
+> is managed by the host and used to give the guest direct CPU access to
+> some allocations. Video memory is allocated on the host except in the
+> case of existing_sysmem allocations. The Windows host allocates memory
+> for the GPU on behalf of the guest. The Linux guest can access that
+> memory by mapping GPU virtual address to allocations and then
+> referencing those GPU virtual address from within GPU command buffers
+> submitted to the GPU. For allocations which require CPU access, the
+> allocation is mapped by the host into a location in the 8GB of IO space=
+
+> reserved in the guest for that purpose. The Windows host uses the neste=
+d
+> CPU page table to ensure that this guest IO space always map to the
+> correct location for the allocation as it may migrate between dedicated=
+
+> GPU memory (e.g. VRAM, firmware reserved DDR) and shared system memory
+> (regular DDR) over its lifetime. The Linux guest maps a user mode CPU
+> virtual address to an allocation IO space range for direct access by
+> user mode APIs and drivers.
+>=20
+> =20
+>=20
+> Implementation of LX_DXLOCK2 ioctl
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> We would appreciate your feedback on the implementation of the
+> LX_DXLOCK2 ioctl.
+>=20
+> This ioctl is used to get a CPU address to an allocation, which is
+> resident in video/system memory on the host. The way it works:
+>=20
+> 1. The driver sends the Lock message to the host
+>=20
+> 2. The host allocates space in the VM IO space and maps it to the
+> allocation memory
+>=20
+> 3. The host returns the address in IO space for the mapped allocation
+>=20
+> 4. The driver (in dxg_map_iospace) allocates a user mode virtual addres=
+s
+> range using vm_mmap and maps it to the IO space using
+> io_remap_ofn_range)
+>=20
+> 5. The VA is returned to the application
+>=20
+> =20
+>=20
+> Internal objects
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> The following objects are created by the driver (defined in dxgkrnl.h):=
+
+>=20
+> - dxgadapter - represents a virtual GPU
+>=20
+> - dxgprocess - tracks per process state (handle table of created
+>   objects, list of objects, etc.)
+>=20
+> - dxgdevice - a container for other objects (contexts, paging queues,
+>   allocations, GPU synchronization objects)
+>=20
+> - dxgcontext - represents thread of GPU execution for packet
+>   scheduling.
+>=20
+> - dxghwqueue - represents thread of GPU execution of hardware schedulin=
+g
+>=20
+> - dxgallocation - represents a GPU accessible allocation
+>=20
+> - dxgsyncobject - represents a GPU synchronization object
+>=20
+> - dxgresource - collection of dxgalloction objects
+>=20
+> - dxgsharedresource, dxgsharedsyncobj - helper objects to share objects=
+
+>   between different dxgdevice objects, which can belong to different
+> processes
+>=20
+>=20
+> =20
+> Object handles
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> All GPU objects, created by the driver, are accessible by a handle
+> (d3dkmt_handle). Each process has its own handle table, which is
+> implemented in hmgr.c. For each API visible object, created by the
+> driver, there is an object, created on the host. For example, the is a
+> dxgprocess object on the host for each dxgprocess object in the VM, etc=
+=2E
+> The object handles have the same value in the host and the VM, which is=
+
+> done to avoid translation from the guest handles to the host handles.
+> =20
+>=20
+>=20
+> Signaling CPU events by the host
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> The WDDM interface provides a way to signal CPU event objects when
+> execution of a context reached certain point. The way it is implemented=
+:
+>=20
+> - application sends an event_fd via ioctl to the driver
+>=20
+> - eventfd_ctx_get is used to get a pointer to the file object
+>   (eventfd_ctx)
+>=20
+> - the pointer to sent the host via a VM bus message
+>=20
+> - when GPU execution reaches a certain point, the host sends a message
+>   to the VM with the event pointer
+>=20
+> - signal_guest_event() handles the messages and eventually
+>   eventfd_signal() is called.
+>=20
+>=20
+> Sasha Levin (4):
+>   gpu: dxgkrnl: core code
+>   gpu: dxgkrnl: hook up dxgkrnl
+>   Drivers: hv: vmbus: hook up dxgkrnl
+>   gpu: dxgkrnl: create a MAINTAINERS entry
+>=20
+>  MAINTAINERS                      |    7 +
+>  drivers/gpu/Makefile             |    2 +-
+>  drivers/gpu/dxgkrnl/Kconfig      |   10 +
+>  drivers/gpu/dxgkrnl/Makefile     |   12 +
+>  drivers/gpu/dxgkrnl/d3dkmthk.h   | 1635 +++++++++
+>  drivers/gpu/dxgkrnl/dxgadapter.c | 1399 ++++++++
+>  drivers/gpu/dxgkrnl/dxgkrnl.h    |  913 ++++++
+>  drivers/gpu/dxgkrnl/dxgmodule.c  |  692 ++++
+>  drivers/gpu/dxgkrnl/dxgprocess.c |  355 ++
+>  drivers/gpu/dxgkrnl/dxgvmbus.c   | 2955 +++++++++++++++++
+>  drivers/gpu/dxgkrnl/dxgvmbus.h   |  859 +++++
+>  drivers/gpu/dxgkrnl/hmgr.c       |  593 ++++
+>  drivers/gpu/dxgkrnl/hmgr.h       |  107 +
+>  drivers/gpu/dxgkrnl/ioctl.c      | 5269 ++++++++++++++++++++++++++++++=
+
+>  drivers/gpu/dxgkrnl/misc.c       |  280 ++
+>  drivers/gpu/dxgkrnl/misc.h       |  288 ++
+>  drivers/video/Kconfig            |    2 +
+>  include/linux/hyperv.h           |   16 +
+>  18 files changed, 15393 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/gpu/dxgkrnl/Kconfig
+>  create mode 100644 drivers/gpu/dxgkrnl/Makefile
+>  create mode 100644 drivers/gpu/dxgkrnl/d3dkmthk.h
+>  create mode 100644 drivers/gpu/dxgkrnl/dxgadapter.c
+>  create mode 100644 drivers/gpu/dxgkrnl/dxgkrnl.h
+>  create mode 100644 drivers/gpu/dxgkrnl/dxgmodule.c
+>  create mode 100644 drivers/gpu/dxgkrnl/dxgprocess.c
+>  create mode 100644 drivers/gpu/dxgkrnl/dxgvmbus.c
+>  create mode 100644 drivers/gpu/dxgkrnl/dxgvmbus.h
+>  create mode 100644 drivers/gpu/dxgkrnl/hmgr.c
+>  create mode 100644 drivers/gpu/dxgkrnl/hmgr.h
+>  create mode 100644 drivers/gpu/dxgkrnl/ioctl.c
+>  create mode 100644 drivers/gpu/dxgkrnl/misc.c
+>  create mode 100644 drivers/gpu/dxgkrnl/misc.h
+>=20
+
+--=20
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
+(HRB 36809, AG N=C3=BCrnberg)
+Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
+
+
+--hJMvAsFc04AoVDJM7zxnUbCWTttHUlTAT--
+
+--vAo58w8SHWXRVnNzumKnOmUo9dwSAv3J1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEEchf7rIzpz2NEoWjlaA3BHVMLeiMFAl7E1/kACgkQaA3BHVML
+eiNeVgf/bJ3sJkCimINIWeNBYqvEJN0ujoHxTiwIS/f38u215qfggRR0JNbPrUOP
+gagN5nkrDxi7Gx66VP2LpdL1o96JYhmk3ANUQoR8DmMA3viCjSVouK3QH0E8tpFn
+LppCLnGyS1pa8hOd5fk5zZJvrruQ1PFnATdkSr329FpzqjKxzadf6eCeBMa0gsuK
+V7tQlURGY/OnXG2jrlEhUPsXgJdP9bZPZT0gu2mSf/88TZ7tkz6xylWYdxuCX16q
+MCGawoK8wqbeIcO5nczSEWYvxn0OFpWFWLPaYXaxQIGgdAZL/AG7bACmuW401rzM
+dTXKSDqGUQkwKv/DG5JuYvhxHO/J9Q==
+=BFgr
+-----END PGP SIGNATURE-----
+
+--vAo58w8SHWXRVnNzumKnOmUo9dwSAv3J1--

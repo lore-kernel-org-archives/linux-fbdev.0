@@ -1,67 +1,42 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Wed, 06 May 2020 18:23:18 +0000
-Subject: Re: [PATCH V2] video: fbdev: w100fb: Fix a potential double free.
-Message-Id: <20200506182318.GA8712@ravnborg.org>
+From: John Hubbard <jhubbard@nvidia.com>
+Date: Fri, 22 May 2020 04:15:04 +0000
+Subject: [PATCH 0/2] video: fbdev: fix error handling, convert to pin_user_pages*()
+Message-Id: <20200522041506.39638-1-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200506181902.193290-1-christophe.jaillet@wanadoo.fr>
-In-Reply-To: <20200506181902.193290-1-christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, rpurdie@rpsys.net, stable@vger.kernel.org, adaplas@pol.net
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, "Gustavo A . R . Silva" <gustavo@embeddedor.com>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, John Hubbard <jhubbard@nvidia.com>
 
-Hi Christophe
-On Wed, May 06, 2020 at 08:19:02PM +0200, Christophe JAILLET wrote:
-> Some memory is vmalloc'ed in the 'w100fb_save_vidmem' function and freed in
-> the 'w100fb_restore_vidmem' function. (these functions are called
-> respectively from the 'suspend' and the 'resume' functions)
-> 
-> However, it is also freed in the 'remove' function.
-> 
-> In order to avoid a potential double free, set the corresponding pointer
-> to NULL once freed in the 'w100fb_restore_vidmem' function.
-> 
-> Fixes: aac51f09d96a ("[PATCH] w100fb: Rewrite for platform independence")
-> Cc: Richard Purdie <rpurdie@rpsys.net>
-> Cc: Antonino Daplas <adaplas@pol.net>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: <stable@vger.kernel.org> # v2.6.14+
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Hi,
 
-Thanks for the quick v2.
-Applied to drm-misc-next.
+Note that I have only compile-tested this series, although that does
+also include cross-compiling for a few other arches. I'm hoping that
+this posting will lead to some run-time testing.
 
-	Sam
+Also: the proposed fix does not have a "Fixes:" tag, nor does it
+Cc stable. That's because the issue has been there since the dawn of
+git history for the kernel. If it's gone unnoticed this long, then
+there is clearly no need for the relatively fast track of putting it
+into stable, IMHO. But please correct me if that's wrong.
 
-> ---
-> v2: - Add Cc: tags
->     - Reword the commit message to give the names of the functions that
->       allocate and free the memory. These functions are called from the
->       suspend and resume function.
-> ---
->  drivers/video/fbdev/w100fb.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/w100fb.c b/drivers/video/fbdev/w100fb.c
-> index 2d6e2738b792..d96ab28f8ce4 100644
-> --- a/drivers/video/fbdev/w100fb.c
-> +++ b/drivers/video/fbdev/w100fb.c
-> @@ -588,6 +588,7 @@ static void w100fb_restore_vidmem(struct w100fb_par *par)
->  		memsize=par->mach->mem->size;
->  		memcpy_toio(remapped_fbuf + (W100_FB_BASE-MEM_WINDOW_BASE), par->saved_extmem, memsize);
->  		vfree(par->saved_extmem);
-> +		par->saved_extmem = NULL;
->  	}
->  	if (par->saved_intmem) {
->  		memsize=MEM_INT_SIZE;
-> @@ -596,6 +597,7 @@ static void w100fb_restore_vidmem(struct w100fb_par *par)
->  		else
->  			memcpy_toio(remapped_fbuf + (W100_FB_BASE-MEM_WINDOW_BASE), par->saved_intmem, memsize);
->  		vfree(par->saved_intmem);
-> +		par->saved_intmem = NULL;
->  	}
->  }
->  
-> -- 
-> 2.25.1
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Cc: Jani Nikula <jani.nikula@intel.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+
+John Hubbard (2):
+  video: fbdev: fix error handling for get_user_pages_fast()
+  video: fbdev: convert get_user_pages() --> pin_user_pages()
+
+ drivers/video/fbdev/pvr2fb.c | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
+
+
+base-commit: 051143e1602d90ea71887d92363edd539d411de5
+-- 
+2.26.2

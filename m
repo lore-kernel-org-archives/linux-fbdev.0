@@ -1,54 +1,75 @@
-From: Brian D Goldberg <bdg215@nyu.edu>
-Date: Thu, 28 May 2020 19:32:01 +0000
-Subject: modedb and CVT
-Message-Id: <CAFRjJ8zpbD9iuJ2ofF1abJf_fAuDVDU7OzjDFhLRFpyBiu3dEA@mail.gmail.com>
+From: John Hubbard <jhubbard@nvidia.com>
+Date: Fri, 22 May 2020 04:15:05 +0000
+Subject: [PATCH 1/2] video: fbdev: fix error handling for get_user_pages_fast()
+Message-Id: <20200522041506.39638-2-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200522041506.39638-1-jhubbard@nvidia.com>
+In-Reply-To: <20200522041506.39638-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, "Gustavo A . R . Silva" <gustavo@embeddedor.com>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, John Hubbard <jhubbard@nvidia.com>
 
-Hello:
+Dealing with the return value of get_user_pages*() variants has a few
+classic pitfalls, and this driver found one of them: the return value
+might be zero, positive, or -errno. And if positive, it might be fewer
+pages than were requested. And if fewer pages than requested, then
+the caller should return (via put_page()) the pages that *were*
+pinned.
 
-I am attempting to get modedb to output a 15kHz Horizontal
-320x240@60Hz signal. The standard VESA CEA mode 1,8 represents the
-digital implementation of SD resolution re: BT.601
-https://en.wikipedia.org/wiki/Rec._601
+This driver was doing that *except* that it had a problem with the
+-errno case, which was being stored in an unsigned int, and which
+would case an interesting mess if it ever happened: nr_pages would be
+interpreted as a spectacularly huge unsigned value, rather than a
+small negative value. Also, it was unnecessarily overriding a
+potentially informative -errno, with -EINVAL, in some cases.
 
- Based on this information:
+Instead: clamp the nr_pages to zero or positive, so that the error
+handling works. And return the -errno value from get_user_pages*(),
+unchanged, if we get one. And explain this with comments, seeing as
+how it is error-prone.
 
-https://www.kernel.org/doc/html/v5.4/fb/modedb.html
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Cc: Jani Nikula <jani.nikula@intel.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ drivers/video/fbdev/pvr2fb.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-It appears that modedb will pass my modeline set in the kernel to some
-CVT timing calculator and lets that derive the timings. I have found
-that this internal calculator doesn’t work, and using standard CVT
-timing selections produces incorrect results in the following manner:
-
-When selecting VESA Mode CEA 8, setting this mode in the kernel works
-perfectly, as evidenced by correctly displayed boot screen and initial
-pre-cmdline boot dialog. When cmdline parses and modedb sets the
-framebuffer, display goes blank.
-
-Modedb reports in /proc/cmdline video=HDMI-A-1:720x240M@60 but it does
-not output a usable signal.
-
-Since this signal is a standard VESA CEA mode, CVT should create the
-mode correctly, but there is clearly something wrong going on with the
-timings. Perhaps the CVT calculator is trying to produce a
-line-doubled or line-quadrupled mode with 31kHz horizontal?
-
-In any case, it’s not usable in the defined setup. Is this normal? Is
-there a workaround such as defining a custom video mode for the modedb
-pool with custom timings, etc?
-
-I found this old document:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/EDID/HOWTO.txt?id=be53bfdb8088e9d1924199cc1a96e113756b1075
-
-Which mentions a method to insert a custom EDID, but I don't follow
-the method exactly. Is this something that could address the issue I
-am having?
-
-
-Thanks,
-Brian Goldberg
+diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+index f18d457175d9..ceb6ef590597 100644
+--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -654,8 +654,22 @@ static ssize_t pvr2fb_write(struct fb_info *info, const char *buf,
+ 
+ 	ret = get_user_pages_fast((unsigned long)buf, nr_pages, FOLL_WRITE, pages);
+ 	if (ret < nr_pages) {
+-		nr_pages = ret;
+-		ret = -EINVAL;
++		if (ret < 0) {
++			/*
++			 *  Clamp the unsigned nr_pages to zero so that the
++			 *  error handling works. And leave ret at whatever
++			 *  -errno value was returned from GUP.
++			 */
++			nr_pages = 0;
++		} else {
++			nr_pages = ret;
++			/*
++			 * Use -EINVAL to represent a mildly desperate guess at
++			 * why we got fewer pages (maybe even zero pages) than
++			 * requested.
++			 */
++			ret = -EINVAL;
++		}
+ 		goto out_unmap;
+ 	}
+ 
+-- 
+2.26.2

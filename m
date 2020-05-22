@@ -1,112 +1,30 @@
-From: Oliver Graute <oliver.graute@gmail.com>
-Date: Wed, 13 May 2020 14:30:46 +0000
-Subject: [PATCH v2] staging: fbtft: fb_st7789v: Initialize the Display
-Message-Id: <1589380299-21871-1-git-send-email-oliver.graute@gmail.com>
+From: Changming Liu <liu.changm@northeastern.edu>
+Date: Fri, 22 May 2020 03:01:25 +0000
+Subject: [Bug Report] drivers/video/fbdev/da8xx-fb.c: undefined behavior when left shifting
+Message-Id: <BL0PR06MB45486287654FC3C2045A5655E5B40@BL0PR06MB4548.namprd06.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: gregkh@linuxfoundation.org
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Oliver Graute <oliver.graute@kococonnector.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, oliver.graute@gmail.com, dan.carpenter@oracle.com
+To: "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Lu,
+ Long" <l.lu@northeastern.edu>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "yaohway@gmail.com" <yaohway@gmail.com>
 
-From: Oliver Graute <oliver.graute@kococonnector.com>
+Hi Bartlomiej,
+Greetings, it's me again, I sent you a bug report yesterday, I hope that find you well.
 
-Set Gamma Values and Register Values for the HSD20_IPS Panel
+This time I found that in /drivers/video/fbdev/da8xx-fb.c
+function lcd_cfg_vertical_sync, there might be an undefined result by left shifting.
 
-Signed-off-by: Oliver Graute <oliver.graute@kococonnector.com>
----
+More specifically, in function lcd_cfg_vertical_sync, line 437. back_porch is a signed integer 
+which might come from user space. And it's logic AND with string literal 0xff. The result is then left shifted by 24 bits.
 
-need information howto set HSD20_IPS Panel at run time and not at compile time
+The problem is, since the logic AND produce a signed integer and the result of left shifting this signed integer
+(whose lowest 8 bits not cleared) by 24 bits is undefined when its 8th bit is 1. Similar patterns can be found in line 410 as well.
 
-Changes for v2:
- - added define for HSD20_IPS_GAMMA values
- - check for HSD20_IPS define
- - enabled MIPI_DCS_ENTER_INVERT_MODE
+I wonder if this bug is worth fixing? This can help me understand linux and UB a lot.
 
- drivers/staging/fbtft/fb_st7789v.c | 32 +++++++++++++++++++++++++-----
- 1 file changed, 27 insertions(+), 5 deletions(-)
+Looking forward to you valuable response.
 
-diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
-index 3c3f387936e8..ebc17e05ecd0 100644
---- a/drivers/staging/fbtft/fb_st7789v.c
-+++ b/drivers/staging/fbtft/fb_st7789v.c
-@@ -20,6 +20,12 @@
- 	"70 2C 2E 15 10 09 48 33 53 0B 19 18 20 25\n" \
- 	"70 2C 2E 15 10 09 48 33 53 0B 19 18 20 25"
- 
-+#define HSD20_IPS_GAMMA \
-+	"D0 05 0A 09 08 05 2E 44 45 0F 17 16 2B 33\n" \
-+	"D0 05 0A 09 08 05 2E 43 45 0F 16 16 2B 33"
-+
-+#define HSD20_IPS "true"
-+
- /**
-  * enum st7789v_command - ST7789V display controller commands
-  *
-@@ -82,14 +88,20 @@ static int init_display(struct fbtft_par *par)
- 
- 	/* set pixel format to RGB-565 */
- 	write_reg(par, MIPI_DCS_SET_PIXEL_FORMAT, MIPI_DCS_PIXEL_FMT_16BIT);
-+	if (HSD20_IPS)
-+		write_reg(par, PORCTRL, 0x05, 0x05, 0x00, 0x33, 0x33);
- 
--	write_reg(par, PORCTRL, 0x08, 0x08, 0x00, 0x22, 0x22);
-+	else
-+		write_reg(par, PORCTRL, 0x08, 0x08, 0x00, 0x22, 0x22);
- 
- 	/*
- 	 * VGH = 13.26V
- 	 * VGL = -10.43V
- 	 */
--	write_reg(par, GCTRL, 0x35);
-+	if (HSD20_IPS)
-+		write_reg(par, GCTRL, 0x75);
-+	else
-+		write_reg(par, GCTRL, 0x35);
- 
- 	/*
- 	 * VDV and VRH register values come from command write
-@@ -101,13 +113,19 @@ static int init_display(struct fbtft_par *par)
- 	 * VAP =  4.1V + (VCOM + VCOM offset + 0.5 * VDV)
- 	 * VAN = -4.1V + (VCOM + VCOM offset + 0.5 * VDV)
- 	 */
--	write_reg(par, VRHS, 0x0B);
-+	if (HSD20_IPS)
-+		write_reg(par, VRHS, 0x13);
-+	else
-+		write_reg(par, VRHS, 0x0B);
- 
- 	/* VDV = 0V */
- 	write_reg(par, VDVS, 0x20);
- 
- 	/* VCOM = 0.9V */
--	write_reg(par, VCOMS, 0x20);
-+	if (HSD20_IPS)
-+		write_reg(par, VCOMS, 0x22);
-+	else
-+		write_reg(par, VCOMS, 0x20);
- 
- 	/* VCOM offset = 0V */
- 	write_reg(par, VCMOFSET, 0x20);
-@@ -120,6 +138,10 @@ static int init_display(struct fbtft_par *par)
- 	write_reg(par, PWCTRL1, 0xA4, 0xA1);
- 
- 	write_reg(par, MIPI_DCS_SET_DISPLAY_ON);
-+
-+	if (HSD20_IPS)
-+		write_reg(par, MIPI_DCS_ENTER_INVERT_MODE);
-+
- 	return 0;
- }
- 
-@@ -234,7 +256,7 @@ static struct fbtft_display display = {
- 	.height = 320,
- 	.gamma_num = 2,
- 	.gamma_len = 14,
--	.gamma = DEFAULT_GAMMA,
-+	.gamma = HSD20_IPS_GAMMA,
- 	.fbtftops = {
- 		.init_display = init_display,
- 		.set_var = set_var,
--- 
-2.17.1
+Best regards,
+Changming Liu

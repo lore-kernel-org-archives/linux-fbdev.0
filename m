@@ -1,37 +1,65 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Thu, 07 May 2020 13:27:03 +0000
-Subject: [PATCH v11 11/14] drm/i915: Program DP SDPs on pipe updates
-Message-Id: <20200507132706.2058969-12-gwan-gyeong.mun@intel.com>
+From: John Hubbard <jhubbard@nvidia.com>
+Date: Fri, 22 May 2020 04:15:06 +0000
+Subject: [PATCH 2/2] video: fbdev: convert get_user_pages() --> pin_user_pages()
+Message-Id: <20200522041506.39638-3-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200507132706.2058969-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200507132706.2058969-1-gwan-gyeong.mun@intel.com>
+References: <20200522041506.39638-1-jhubbard@nvidia.com>
+In-Reply-To: <20200522041506.39638-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, "Gustavo A . R . Silva" <gustavo@embeddedor.com>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, John Hubbard <jhubbard@nvidia.com>
 
-Call intel_dp_set_infoframes() function on pipe updates to make sure
-that we send VSC SDP and HDR Metadata Infoframe SDP (when applicable)
-on fastsets.
+This code was using get_user_pages*(), in a "Case 2" scenario
+(DMA/RDMA), using the categorization from [1]. That means that it's
+time to convert the get_user_pages*() + put_page() calls to
+pin_user_pages*() + unpin_user_pages() calls.
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+There is some helpful background in [2]: basically, this is a small
+part of fixing a long-standing disconnect between pinning pages, and
+file systems' use of those pages.
+
+[1] Documentation/core-api/pin_user_pages.rst
+
+[2] "Explicit pinning of user-space pages":
+    https://lwn.net/Articles/807108/
+
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Cc: Jani Nikula <jani.nikula@intel.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- drivers/gpu/drm/i915/display/intel_ddi.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/pvr2fb.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index dc232cef867f..e0862b899f1b 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -3864,6 +3864,7 @@ static void intel_ddi_update_pipe_dp(struct intel_atomic_state *state,
- 	intel_ddi_set_dp_msa(crtc_state, conn_state);
+diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+index ceb6ef590597..2d9f69b93392 100644
+--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -652,7 +652,7 @@ static ssize_t pvr2fb_write(struct fb_info *info, const char *buf,
+ 	if (!pages)
+ 		return -ENOMEM;
  
- 	intel_psr_update(intel_dp, crtc_state);
-+	intel_dp_set_infoframes(encoder, true, crtc_state, conn_state);
- 	intel_edp_drrs_enable(intel_dp, crtc_state);
+-	ret = get_user_pages_fast((unsigned long)buf, nr_pages, FOLL_WRITE, pages);
++	ret = pin_user_pages_fast((unsigned long)buf, nr_pages, FOLL_WRITE, pages);
+ 	if (ret < nr_pages) {
+ 		if (ret < 0) {
+ 			/*
+@@ -712,9 +712,7 @@ static ssize_t pvr2fb_write(struct fb_info *info, const char *buf,
+ 	ret = count;
  
- 	intel_panel_update_backlight(state, encoder, crtc_state, conn_state);
+ out_unmap:
+-	for (i = 0; i < nr_pages; i++)
+-		put_page(pages[i]);
+-
++	unpin_user_pages(pages, nr_pages);
+ 	kfree(pages);
+ 
+ 	return ret;
 -- 
-2.25.0
+2.26.2

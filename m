@@ -1,45 +1,40 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 22 Apr 2020 06:51:10 +0000
-Subject: [PATCHv3 0/4] led-backlight cleanups & fixes
-Message-Id: <20200422065114.22164-1-tomi.valkeinen@ti.com>
+From: wu000273@umn.edu
+Date: Thu, 28 May 2020 19:44:23 +0000
+Subject: [PATCH] omapfb: Fix reference count leak in display_init_sysfs.
+Message-Id: <20200528194424.11596-1-wu000273@umn.edu>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: kjlu@umn.edu
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Alexios Zavras <alexios.zavras@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, wu000273@umn.edu, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Enrico Weigelt <info@metux.net>, Allison Randal <allison@lohutok.net>
 
-Hi,
+From: Qiushi Wu <wu000273@umn.edu>
 
-Changes in v3:
+kobject_init_and_add() takes reference even when it fails.
+If this function returns an error, kobject_put() must be called to
+properly clean up the memory associated with the object.
+Because function omap_dss_put_device() doesn't handle dssdev->kobj,
+thus we need insert kobject_put() to clean up the kobject,
+when kobject_init_and_add() fails.
 
-- "backlight: led_bl: fix led -> backlight brightness mapping": Simplify
-  the for loop as suggested by Daniel
+Fixes: f76ee892a99e ("omapfb: copy omapdss & displays for omapfb")
+Signed-off-by: Qiushi Wu <wu000273@umn.edu>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Changes in v2:
-
-- Drop "backlight: led_bl: rewrite led_bl_parse_levels()". The patch
-  changed the behavior, and the new behavior may not be wanted. So lets
-  drop this for now.
-
-- "backlight: led_bl: fix led -> backlight brightness mapping" will now
-  use max brightness if LED's brightness is higher than highest
-  backlight brightness level.
-
-- Added reviewed-bys.
-
- Tomi
-
-
-Tomi Valkeinen (4):
-  backlight: led_bl: fix cosmetic issues
-  backlight: led_bl: drop useless NULL initialization
-  backlight: led_bl: add led_access locking
-  backlight: led_bl: fix led -> backlight brightness mapping
-
- drivers/video/backlight/led_bl.c | 37 +++++++++++++++++---------------
- 1 file changed, 20 insertions(+), 17 deletions(-)
-
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
+index 6dbe265b312d..51322ac7df07 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
+@@ -316,6 +316,7 @@ int display_init_sysfs(struct platform_device *pdev)
+ 			&pdev->dev.kobj, "%s", dssdev->alias);
+ 		if (r) {
+ 			DSSERR("failed to create sysfs files\n");
++			kobject_put(&dssdev->kobj);
+ 			omap_dss_put_device(dssdev);
+ 			goto err;
+ 		}
 -- 
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+2.17.1

@@ -1,7 +1,7 @@
-From: Oliver Graute <oliver.graute@gmail.com>
-Date: Mon, 25 May 2020 10:53:32 +0000
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Sun, 31 May 2020 21:01:27 +0000
 Subject: Re: [PATCH] staging: fbtft: fb_st7789v: make HSD20_IPS numeric and not a string
-Message-Id: <20200525105332.GB12301@archlinux.localdomain>
+Message-Id: <20200531210127.GD138722@ravnborg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200521135038.345878-1-colin.king@canonical.com>
 In-Reply-To: <20200521135038.345878-1-colin.king@canonical.com>
@@ -9,9 +9,11 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Colin King <colin.king@canonical.com>
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Oliver Graute <oliver.graute@kococonnector.com>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On 21/05/20, Colin King wrote:
+Hi Colin/Greg.
+
+On Thu, May 21, 2020 at 02:50:38PM +0100, Colin King wrote:
 > From: Colin Ian King <colin.king@canonical.com>
 > 
 > Currently HSD20_IPS is defined as "true" and will always result in a
@@ -40,4 +42,15 @@ On 21/05/20, Colin King wrote:
 >  /**
 >   * enum st7789v_command - ST7789V display controller commands
 
-Acked-by: Oliver Graute <oliver.graute@kococonnector.com>
+Patch does not apply to drm-misc-next, seems to be a staging thing.
+So do not expext the DRM people to pick it up.
+
+	Sam
+
+> -- 
+> 2.25.1
+> 
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel

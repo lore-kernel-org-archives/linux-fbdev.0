@@ -1,133 +1,60 @@
-From: Aditya Pakki <pakki001@umn.edu>
-Date: Sun, 14 Jun 2020 03:05:18 +0000
-Subject: [PATCH] omapfb: fix multiple reference count leaks due to pm_runtime_get_sync
-Message-Id: <20200614030528.128064-1-pakki001@umn.edu>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 01 Jun 2020 13:25:17 +0000
+Subject: Re: [PATCH] drivers/video: cleanup coding style in video a bit
+Message-Id: <dacf902f-12c1-44ff-b214-b05446f07829@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20200427080542eucas1p172bdcfd22affc288ec1ceaadf0dad2b0@eucas1p1.samsung.com>
+ <20200427080530.3234-1-bernard@vivo.com>
+In-Reply-To: <20200427080530.3234-1-bernard@vivo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: pakki001@umn.edu
-Cc: linux-fbdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kjlu@umn.edu, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Andrew F. Davis" <afd@ti.com>, Alexios Zavras <alexios.zavras@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, wu000273@umn.edu, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Enrico Weigelt <info@metux.net>, Allison Randal <allison@lohutok.net>
+To: Bernard Zhao <bernard@vivo.com>
+Cc: opensource.kernel@vivo.com, linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Uma Shankar <uma.shankar@intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Shashank Sharma <shashank.sharma@intel.com>
 
-On calling pm_runtime_get_sync() the reference count of the device
-is incremented. In case of failure, decrement the
-reference count before returning the error.
 
-Signed-off-by: Aditya Pakki <pakki001@umn.edu>
----
- drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c   | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/dss.c   | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 5 +++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c | 5 +++--
- drivers/video/fbdev/omap2/omapfb/dss/venc.c  | 7 +++++--
- 6 files changed, 26 insertions(+), 12 deletions(-)
+On 4/27/20 10:05 AM, Bernard Zhao wrote:
+> Eliminate the magic numbers, add vender infoframe size macro
+> like other hdmi modules.
+> 
+> Signed-off-by: Bernard Zhao <bernard@vivo.com>
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-index 4a16798b2ecd..e2b572761bf6 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-@@ -520,8 +520,11 @@ int dispc_runtime_get(void)
- 	DSSDBG("dispc_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&dispc.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dispc.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- EXPORT_SYMBOL(dispc_runtime_get);
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-index d620376216e1..6f9c25fec994 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-@@ -1137,8 +1137,11 @@ static int dsi_runtime_get(struct platform_device *dsidev)
- 	DSSDBG("dsi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&dsi->pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dsi->pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- static void dsi_runtime_put(struct platform_device *dsidev)
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-index 7252d22dd117..3586579c838f 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-@@ -768,8 +768,11 @@ int dss_runtime_get(void)
- 	DSSDBG("dss_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&dss.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dss.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- void dss_runtime_put(void)
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-index 7060ae56c062..4804aab34298 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-@@ -39,9 +39,10 @@ static int hdmi_runtime_get(void)
- 	DSSDBG("hdmi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
--	if (r < 0)
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&hdmi.pdev->dev);
- 		return r;
-+	}
- 
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-index ac49531e4732..a06b6f1355bd 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-@@ -43,9 +43,10 @@ static int hdmi_runtime_get(void)
- 	DSSDBG("hdmi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
--	if (r < 0)
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&hdmi.pdev->dev);
- 		return r;
-+	}
- 
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-index d5404d56c922..0b0ad20afd63 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-@@ -348,8 +348,11 @@ static int venc_runtime_get(void)
- 	DSSDBG("venc_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&venc.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&venc.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- static void venc_runtime_put(void)
--- 
-2.25.1
+Applied to drm-misc-next tree (patch should show up in v5.9), thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> ---
+>  drivers/video/hdmi.c | 2 +-
+>  include/linux/hdmi.h | 1 +
+>  2 files changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+> index 856a8c4e84a2..f693076f2e5f 100644
+> --- a/drivers/video/hdmi.c
+> +++ b/drivers/video/hdmi.c
+> @@ -495,7 +495,7 @@ int hdmi_vendor_infoframe_init(struct hdmi_vendor_infoframe *frame)
+>  	 * value
+>  	 */
+>  	frame->s3d_struct = HDMI_3D_STRUCTURE_INVALID;
+> -	frame->length = 4;
+> +	frame->length = HDMI_VENDOR_INFOFRAME_SIZE;
+>  
+>  	return 0;
+>  }
+> diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
+> index 9613d796cfb1..ff25aeb95ee4 100644
+> --- a/include/linux/hdmi.h
+> +++ b/include/linux/hdmi.h
+> @@ -57,6 +57,7 @@ enum hdmi_infoframe_type {
+>  #define HDMI_SPD_INFOFRAME_SIZE    25
+>  #define HDMI_AUDIO_INFOFRAME_SIZE  10
+>  #define HDMI_DRM_INFOFRAME_SIZE    26
+> +#define HDMI_VENDOR_INFOFRAME_SIZE  4
+>  
+>  #define HDMI_INFOFRAME_SIZE(type)	\
+>  	(HDMI_INFOFRAME_HEADER_SIZE + HDMI_ ## type ## _INFOFRAME_SIZE)
+> 

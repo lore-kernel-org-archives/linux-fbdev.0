@@ -1,60 +1,47 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Thu, 25 Jun 2020 09:24:34 +0000
-Subject: Re: [PATCH 1/8] backlight: lms501kf03: Remove unused const variables
-Message-Id: <20200625092434.szrdyt3sxmxmfajg@holly.lan>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 01 Jun 2020 13:25:25 +0000
+Subject: Re: [PATCH] video: fbdev: pxafb: Use correct return value for pxafb_probe()
+Message-Id: <be2f65ba-e26c-fe3f-82d9-d9532db496eb@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200624145721.2590327-1-lee.jones@linaro.org>
- <20200624145721.2590327-2-lee.jones@linaro.org>
-In-Reply-To: <20200624145721.2590327-2-lee.jones@linaro.org>
+References: <CGME20200525071149eucas1p271b0c64a9d44429978e2099257681b70@eucas1p2.samsung.com>
+ <1590390705-22898-1-git-send-email-yangtiezhu@loongson.cn>
+In-Reply-To: <1590390705-22898-1-git-send-email-yangtiezhu@loongson.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, jingoohan1@gmail.com, linux-kernel@vger.kernel.org, stable@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tiezhu Yang <yangtiezhu@loongson.cn>
+Cc: linux-fbdev@vger.kernel.org, Xuefeng Li <lixuefeng@loongson.cn>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Wed, Jun 24, 2020 at 03:57:14PM +0100, Lee Jones wrote:
-> W=1 kernel build reports:
-> 
->  drivers/video/backlight/lms501kf03.c:96:28: warning: ‘seq_sleep_in’ defined but not used [-Wunused-const-variable=]
->  96 | static const unsigned char seq_sleep_in[] = {
->  | ^~~~~~~~~~~~
->  drivers/video/backlight/lms501kf03.c:92:28: warning: ‘seq_up_dn’ defined but not used [-Wunused-const-variable=]
->  92 | static const unsigned char seq_up_dn[] = {
->  | ^~~~~~~~~
-> 
-> Either 'seq_sleep_in' nor 'seq_up_dn' have been used since the
-> driver first landed in 2013.
-> 
-> Cc: <stable@vger.kernel.org>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Lee Jones <lee.jones@linaro.org>
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+On 5/25/20 9:11 AM, Tiezhu Yang wrote:
+> When call function devm_platform_ioremap_resource(), we should use IS_ERR()
+> to check the return value and return PTR_ERR() if failed.
+> 
+> Signed-off-by: Tiezhu Yang <yangtiezhu@loongson.cn>
 
+Applied to drm-misc-next tree (patch should show up in v5.9), thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
 > ---
->  drivers/video/backlight/lms501kf03.c | 8 --------
->  1 file changed, 8 deletions(-)
+>  drivers/video/fbdev/pxafb.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/video/backlight/lms501kf03.c b/drivers/video/backlight/lms501kf03.c
-> index 8ae32e3573c1a..c1bd02bb8b2ee 100644
-> --- a/drivers/video/backlight/lms501kf03.c
-> +++ b/drivers/video/backlight/lms501kf03.c
-> @@ -89,14 +89,6 @@ static const unsigned char seq_rgb_gamma[] = {
->  	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
->  };
+> diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+> index 00b96a7..423331c 100644
+> --- a/drivers/video/fbdev/pxafb.c
+> +++ b/drivers/video/fbdev/pxafb.c
+> @@ -2305,7 +2305,7 @@ static int pxafb_probe(struct platform_device *dev)
+>  	fbi->mmio_base = devm_platform_ioremap_resource(dev, 0);
+>  	if (IS_ERR(fbi->mmio_base)) {
+>  		dev_err(&dev->dev, "failed to get I/O memory\n");
+> -		ret = -EBUSY;
+> +		ret = PTR_ERR(fbi->mmio_base);
+>  		goto failed;
+>  	}
 >  
-> -static const unsigned char seq_up_dn[] = {
-> -	0x36, 0x10,
-> -};
-> -
-> -static const unsigned char seq_sleep_in[] = {
-> -	0x10,
-> -};
-> -
->  static const unsigned char seq_sleep_out[] = {
->  	0x11,
->  };
-> -- 
-> 2.25.1
 > 

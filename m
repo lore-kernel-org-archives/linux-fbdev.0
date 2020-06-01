@@ -1,32 +1,50 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Mon, 15 Jun 2020 14:16:04 +0000
-Subject: [PATCH 0/2] pwm: Miscellaneous fixes for 64-bit support
-Message-Id: <20200615141606.2814208-1-thierry.reding@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 01 Jun 2020 13:25:09 +0000
+Subject: Re: [PATCH v1] video: fbdev: sm712fb: fix an issue about iounmap for a wrong address
+Message-Id: <cdc18f39-b4e2-a8cb-6816-4de3888aeb48@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20200422160730eucas1p179849adadf1cb41dfe54d7e5f8b61c8e@eucas1p1.samsung.com>
+ <20200422160719.27763-1-zhengdejin5@gmail.com>
+In-Reply-To: <20200422160719.27763-1-zhengdejin5@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>, Guru Das Srinagesh <gurus@codeaurora.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Dejin Zheng <zhengdejin5@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Andy Shevchenko <andy.shevchenko@gmail.com>, sudipm.mukherjee@gmail.com
 
-Hi,
 
-this contains a couple of fixes for issues that I ran into after
-applying Guru's series to convert PWM period and duty-cycle to 64-bit.
+On 4/22/20 6:07 PM, Dejin Zheng wrote:
+> the sfb->fb->screen_base is not save the value get by iounmap() when
+> the chip id is 0x720. so iounmap() for address sfb->fb->screen_base
+> is not right.
+> 
+> Fixes: 1461d6672864854 ("staging: sm7xxfb: merge sm712fb with fbdev")
+> CC: Andy Shevchenko <andy.shevchenko@gmail.com>
+> Signed-off-by: Dejin Zheng <zhengdejin5@gmail.com>
 
-Bartlomiej, can you provide an Acked-by on the first patch so that I can
-take it through the PWM tree along with the rest of Guru's series?
+Applied to drm-misc-next tree (patch should show up in v5.9), thanks.
 
-Thanks,
-Thierry
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-Thierry Reding (2):
-  video: ssd1307fb: Print PWM period using 64-bit format specifier
-  pwm: iqs620a: Use 64-bit division
-
- drivers/pwm/pwm-iqs620a.c       | 7 ++++---
- drivers/video/fbdev/ssd1307fb.c | 2 +-
- 2 files changed, 5 insertions(+), 4 deletions(-)
-
--- 
-2.24.1
+> ---
+>  drivers/video/fbdev/sm712fb.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+> index 6a1b4a853d9e..8cd655d6d628 100644
+> --- a/drivers/video/fbdev/sm712fb.c
+> +++ b/drivers/video/fbdev/sm712fb.c
+> @@ -1429,6 +1429,8 @@ static int smtc_map_smem(struct smtcfb_info *sfb,
+>  static void smtc_unmap_smem(struct smtcfb_info *sfb)
+>  {
+>  	if (sfb && sfb->fb->screen_base) {
+> +		if (sfb->chip_id = 0x720)
+> +			sfb->fb->screen_base -= 0x00200000;
+>  		iounmap(sfb->fb->screen_base);
+>  		sfb->fb->screen_base = NULL;
+>  	}
+> 

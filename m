@@ -1,95 +1,117 @@
-From: "Alexander A. Klimov" <grandmaster@al2klimov.de>
-Date: Tue, 30 Jun 2020 06:31:40 +0000
-Subject: Re: [PATCH] Remove handhelds.org links and email addresses
-Message-Id: <09c27ac7-f5bc-064b-6751-9edc04de1679@al2klimov.de>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 01 Jun 2020 13:25:14 +0000
+Subject: Re: [PATCH v3] console: newport_con: fix an issue about leak related system resources
+Message-Id: <f1533c61-d112-35a2-a5f3-d6fae596b335@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200629203121.7892-1-grandmaster@al2klimov.de>
- <20200629211027.GA1481@kunai>
-In-Reply-To: <20200629211027.GA1481@kunai>
+References: <CGME20200423164300eucas1p286ebc9584639c8e8b6311dbf10355808@eucas1p2.samsung.com>
+ <20200423164251.3349-1-zhengdejin5@gmail.com>
+In-Reply-To: <20200423164251.3349-1-zhengdejin5@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: ulf.hansson@linaro.org, gustavo@embeddedor.com, tony@atomide.com, daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, mchehab+samsung@kernel.org, lee.jones@linaro.org, corbet@lwn.net, linux-samsung-soc@vger.kernel.org, aaro.koskinen@iki.fi, robert.jarzmik@free.fr, rafael.j.wysocki@intel.com, yuehaibing@huawei.com, linux@armlinux.org.uk, krzk@kernel.org, kgene@kernel.org, viresh.kumar@linaro.org, kuba@kernel.org, arnd@arndb.de, b.zolnierkie@samsung.com, jani.nikula@intel.com, linux-mmc@vger.kernel.org, linux-input@vger.kernel.org, j.neuschaefer@gmx.net, haojian.zhuang@gmail.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, yanaijie@huawei.com, gregkh@linuxfoundation.org, dmitry.torokhov@gmail.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Julia.Lawall@inria.fr, netdev@vger.kernel.org, davem@davemloft.net, daniel@zonque.org
+To: Dejin Zheng <zhengdejin5@gmail.com>
+Cc: akpm@osdl.org, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Andy Shevchenko <andy.shevchenko@gmail.com>, tglx@linutronix.de
 
 
+On 4/23/20 6:42 PM, Dejin Zheng wrote:
+> A call of the function do_take_over_console() can fail here.
+> The corresponding system resources were not released then.
+> Thus add a call of iounmap() and release_mem_region()
+> together with the check of a failure predicate. and also
+> add release_mem_region() on device removal.
+> 
+> Fixes: e86bb8acc0fdc ("[PATCH] VT binding: Make newport_con support binding")
+> Cc: Andy Shevchenko <andy.shevchenko@gmail.com>
+> Suggested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Signed-off-by: Dejin Zheng <zhengdejin5@gmail.com>
 
-Am 29.06.20 um 23:10 schrieb Wolfram Sang:
-> Hi Alexander,
-> 
-> thanks for trying to fix this, yet I have some doubts.
-> 
-> On Mon, Jun 29, 2020 at 10:31:21PM +0200, Alexander A. Klimov wrote:
->> Rationale:
->> https://lore.kernel.org/linux-doc/20200626110706.7b5d4a38@lwn.net/
-> 
-> I think we need some text here. Clicking on a link to understand what a
-> patch is about is not comfortable. You can add the link with a Link: tag
-> for additional information.
-Fine. I can easily make a v2 patch, but first...
+Applied to drm-misc-next tree (patch should show up in v5.9), thanks.
 
-> 
-> Removing stale email addresses may have some value, but removing...
-> 
->>   Compaq's Bootldr + John Dorsey's patch for Assabet support
->> -(http://www.handhelds.org/Compaq/bootldr.html)
-> 
-> ... information like this is not good. 'Wayback machine' still has
-> copies in case someone wants to look at where the infos came from.
-If we shall not remove *this link*, maybe we shall not remove *all links*?
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-@Jon You've kinda initiated the patch, what's your opinion? Bad 
-squatters or good Wayback machine?
-
+> ---
+> v2 -> v3:
+> 	- modify commit tag CC to Cc by Andy's suggestion.
+> 	- modify Subject 'console: console:' to 'console: newport_con:'
+> 	  by Bartlomiej's suggestion.
+> 	- add missing release_mem_region() on error and on device removal
+> 	  by Bartlomiej's suggestion.
+> 	- add correct fixes commit, before this patch, add a wrong 'Fixes:
+> 	  e84de0c6190503 ("MIPS: GIO bus support for SGI IP22/28")'
+> 	  thanks Bartlomiej again!
 > 
->> - * Copyright 2004-2005  Phil Blundell <pb@handhelds.org>
->> + * Copyright 2004-2005  Phil Blundell
+> v1 -> v2:
+> 	- modify the commit comments. The commit comments have some more
+> 	  appropriate instructions by Markus'suggestion. here is my first
+> 	  version commit comments:
 > 
-> This is an OK case in my book...
+> 	  if do_take_over_console() return an error in the newport_probe(),
+> 	  due to the io virtual address is not released, it will cause a
+> 	  leak.
+> 	 
+>  drivers/video/console/newport_con.c | 12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
 > 
-> 
->> -MODULE_AUTHOR("Phil Blundell <pb@handhelds.org>");
->> +MODULE_AUTHOR("Phil Blundell");
-> 
-> ... same here ...
-> 
->> @@ -435,7 +435,6 @@
->>                              case a PCI bridge (DEC chip 21152). The value of
->>                              'pb' is now only initialized if a de4x5 chip is
->>                              present.
->> -                           <france@handhelds.org>
-> 
-> This is kind of a signature and should be kept IMO.
-What for? An email address is for someone who'd like to send an email to 
-it. At the moment handhelds.org doesn't even have an MX record.
-
-> 
->>    * 2001/07/23: <rmk@arm.linux.org.uk>
->> - *	- Hand merge version from handhelds.org CVS tree.  See patch
->> + *	- Hand merge version from CVS tree.  See patch
-> 
-> That information may be useful.
-Again: What for? For visiting it and thinking like damn, it's gone?
-
-> 
-> 
->>   /* SPDX-License-Identifier: GPL-2.0-only */
->>   /* -*- linux-c -*-
->> - *
->> - * (C) 2003 zecke@handhelds.org
-> 
-> Removing copyright is a bad idea.
-IMAO the CREDITS file is for (c) headers.
-If you didn't submit a patch for that - your problem.
-
-If you disagree, I can look up git blame.
-
-> 
-> Probably some comment blocks are cruft meanwhile and can be removed as a
-> whole. That can be discussed. But removing only the handhelds.org part
-> makes most parts worse IMHO.
-> 
-> Thanks and happy hacking,
-> 
->     Wolfram
+> diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
+> index 00dddf6e08b0..2d2ee17052e8 100644
+> --- a/drivers/video/console/newport_con.c
+> +++ b/drivers/video/console/newport_con.c
+> @@ -32,6 +32,8 @@
+>  #include <linux/linux_logo.h>
+>  #include <linux/font.h>
+>  
+> +#define NEWPORT_LEN	0x10000
+> +
+>  #define FONT_DATA ((unsigned char *)font_vga_8x16.data)
+>  
+>  /* borrowed from fbcon.c */
+> @@ -43,6 +45,7 @@
+>  static unsigned char *font_data[MAX_NR_CONSOLES];
+>  
+>  static struct newport_regs *npregs;
+> +static unsigned long newport_addr;
+>  
+>  static int logo_active;
+>  static int topscan;
+> @@ -702,7 +705,6 @@ const struct consw newport_con = {
+>  static int newport_probe(struct gio_device *dev,
+>  			 const struct gio_device_id *id)
+>  {
+> -	unsigned long newport_addr;
+>  	int err;
+>  
+>  	if (!dev->resource.start)
+> @@ -712,7 +714,7 @@ static int newport_probe(struct gio_device *dev,
+>  		return -EBUSY; /* we only support one Newport as console */
+>  
+>  	newport_addr = dev->resource.start + 0xF0000;
+> -	if (!request_mem_region(newport_addr, 0x10000, "Newport"))
+> +	if (!request_mem_region(newport_addr, NEWPORT_LEN, "Newport"))
+>  		return -ENODEV;
+>  
+>  	npregs = (struct newport_regs *)/* ioremap cannot fail */
+> @@ -720,6 +722,11 @@ static int newport_probe(struct gio_device *dev,
+>  	console_lock();
+>  	err = do_take_over_console(&newport_con, 0, MAX_NR_CONSOLES - 1, 1);
+>  	console_unlock();
+> +
+> +	if (err) {
+> +		iounmap((void *)npregs);
+> +		release_mem_region(newport_addr, NEWPORT_LEN);
+> +	}
+>  	return err;
+>  }
+>  
+> @@ -727,6 +734,7 @@ static void newport_remove(struct gio_device *dev)
+>  {
+>  	give_up_console(&newport_con);
+>  	iounmap((void *)npregs);
+> +	release_mem_region(newport_addr, NEWPORT_LEN);
+>  }
+>  
+>  static struct gio_device_id newport_ids[] = {
 > 

@@ -1,58 +1,50 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Thu, 25 Jun 2020 09:43:43 +0000
-Subject: Re: [PATCH 6/8] backlight: backlight: Supply description for function args in existing Kerneldocs
-Message-Id: <20200625094343.koh2ln4fy6v6h7mo@holly.lan>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 02 Jun 2020 11:50:50 +0000
+Subject: [PATCH v2 1/2] video: fbdev: amifb: add FIXME about dead APUS support
+Message-Id: <767d36ff-22ec-8136-7ebc-1d9d0d3ac98d@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200624145721.2590327-1-lee.jones@linaro.org>
- <20200624145721.2590327-7-lee.jones@linaro.org>
-In-Reply-To: <20200624145721.2590327-7-lee.jones@linaro.org>
+References: <CGME20200504232908eucas1p296927bc7c736ad924cefaea9a546459d@eucas1p2.samsung.com>
+ <b1cf967015c5beafa475aaa30d8e21a58caff870.camel@perches.com>
+In-Reply-To: <b1cf967015c5beafa475aaa30d8e21a58caff870.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-fbdev@vger.kernel.org, Andrew Zabolotny <zap@homelink.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, jingoohan1@gmail.com, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Jamey Hicks <jamey.hicks@hp.com>, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
-
-On Wed, Jun 24, 2020 at 03:57:19PM +0100, Lee Jones wrote:
-> Kerneldoc syntax is used, but not complete.  Descriptions required.
-> 
-> Prevents warnings like:
-> 
->  drivers/video/backlight/backlight.c:329: warning: Function parameter or member 'reason' not described in 'backlight_force_update'
->  drivers/video/backlight/backlight.c:354: warning: Function parameter or member 'props' not described in 'backlight_device_register'
-> 
-> Cc: <stable@vger.kernel.org>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: Jamey Hicks <jamey.hicks@hp.com>
-> Cc: Andrew Zabolotny <zap@homelink.ru>
-> Signed-off-by: Lee Jones <lee.jones@linaro.org>
-
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: linux-m68k <linux-m68k@lists.linux-m68k.org>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
 
 
-> ---
->  drivers/video/backlight/backlight.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-> index 92d80aa0c0ef1..744ba58488e01 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -320,6 +320,7 @@ ATTRIBUTE_GROUPS(bl_device);
->   * backlight_force_update - tell the backlight subsystem that hardware state
->   *   has changed
->   * @bd: the backlight device to update
-> + * @reason: reason for update
->   *
->   * Updates the internal state of the backlight in response to a hardware event,
->   * and generate a uevent to notify userspace
-> @@ -344,6 +345,7 @@ EXPORT_SYMBOL(backlight_force_update);
->   * @devdata: an optional pointer to be stored for private driver use. The
->   *   methods may retrieve it by using bl_get_data(bd).
->   * @ops: the backlight operations structure.
-> + * @props: pointer to backlight's properties structure.
->   *
->   * Creates and registers new backlight device. Returns either an
->   * ERR_PTR() or a pointer to the newly allocated device.
-> -- 
-> 2.25.1
-> 
+On 5/14/20 10:21 PM, Geert Uytterhoeven wrote:
+
+> These #ifdefs are relics from APUS (Amiga Power-Up System), which
+> added a PPC board.  APUS support was killed off a long time ago,
+> when arch/ppc/ was still king, but these #ifdefs were missed, because
+> they didn't test for CONFIG_APUS.
+
+Add FIXME about using the C code variants (APUS ones) in the future.
+
+Reported-by: Al Viro <viro@zeniv.linux.org.uk>
+Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+v2:
+- added FIXME comment instead of removing the C code variants
+
+ drivers/video/fbdev/amifb.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+Index: b/drivers/video/fbdev/amifb.c
+=================================--- a/drivers/video/fbdev/amifb.c
++++ b/drivers/video/fbdev/amifb.c
+@@ -575,6 +575,12 @@ static u_short maxfmode, chipset;
+ #define downx(x, v)	((v) & -(x))
+ #define modx(x, v)	((v) & ((x) - 1))
+ 
++/*
++ * FIXME: Use C variants of the code marked with #ifdef __mc68000__
++ * in the driver. It shouldn't negatively affect the performance and
++ * is required for APUS support (once it is re-added to the kernel).
++ * Needs to be tested on the hardware though..
++ */
+ /* if x1 is not a constant, this macro won't make real sense :-) */
+ #ifdef __mc68000__
+ #define DIVUL(x1, x2) ({int res; asm("divul %1,%2,%3": "=d" (res): \

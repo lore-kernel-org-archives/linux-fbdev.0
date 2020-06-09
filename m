@@ -1,28 +1,55 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Wed, 03 Jun 2020 00:20:21 +0000
-Subject: Re: [PATCH v2 1/2] video: fbdev: amifb: add FIXME about dead APUS support
-Message-Id: <alpine.LNX.2.22.394.2006031002550.8@nippy.intranet>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 09 Jun 2020 10:44:24 +0000
+Subject: Re: [Bug Report] drivers/video/fbdev/kyro/fbdev.c: unsigned integer wrap-around might cause unexpect
+Message-Id: <c20a2141-1586-aeb3-abf8-385bb6e498b6@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200504232908eucas1p296927bc7c736ad924cefaea9a546459d@eucas1p2.samsung.com>
- <b1cf967015c5beafa475aaa30d8e21a58caff870.camel@perches.com>
- <767d36ff-22ec-8136-7ebc-1d9d0d3ac98d@samsung.com>
- <CAMuHMdWac+YE3qr0CTepn5K24tGZq0VHuQDGg-yUOHW1rJDbbg@mail.gmail.com>
- <20200602161225.GJ23230@ZenIV.linux.org.uk>
-In-Reply-To: <20200602161225.GJ23230@ZenIV.linux.org.uk>
+References: <CGME20200521011509eucas1p240099e1e51780beeee80257bfc361e33@eucas1p2.samsung.com>
+ <BL0PR06MB45489A53C61DF15BF2F95B9CE5B70@BL0PR06MB4548.namprd06.prod.outlook.com>
+In-Reply-To: <BL0PR06MB45489A53C61DF15BF2F95B9CE5B70@BL0PR06MB4548.namprd06.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, linux-m68k <linux-m68k@lists.linux-m68k.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Changming Liu <liu.changm@northeastern.edu>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Lu,
+ Long" <l.lu@northeastern.edu>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "yaohway@gmail.com" <yaohway@gmail.com>
 
-On Tue, 2 Jun 2020, Al Viro wrote:
 
-> I have done that on aranym (which is how I'd been doing all testing for 
-> e.g. signal-related m68k patches) and I've seen references to some 
-> out-of-tree qemu variant doing quadra, but nothing for amiga 
-> emulators...
+Hi,
+
+On 5/21/20 3:15 AM, Changming Liu wrote:
+> Hi Bartlomiej,
+> Greetings, I'm a first-year PhD student who is interested in the usage of UBSan for linux. 
+> And after some experiments, I found that in drivers/video/fbdev/kyro/fbdev.c
+> function kyro_dev_overlay_viewport_set, there is an unsigned integer overflow that might cause unexpected behavior.
 > 
+> More specifically, first at its caller, kyrofb_ioctl, after execution of copy_from_user at line 599, struct ol_viewport_set is filled with data from user space. 
+> And the 4 32bit unsigned integers from it are passed into kyro_dev_overlay_viewport_set. In function kyro_dev_overlay_viewport_set, 
+> x is added with ulWidth, y is added with ulHeight to transfer the length to the coordinate. 
+> And the result coordinate might overflow and wrap around. And it is passed into function SetOverlayViewPort.
+> 
+> It appears that in function SetOverlayViewPort, these values are treated as the coordinate of the bottom-right point and the wrap-around is not checked.(I might miss something).
+> 
+> Due to the lack of knowledge of the interaction between this module and the user space, I'm not able to assess if this is a benign wrap-around or whether the wrap-around could happen at all. 
+> I'd appreciate for you comment on this issue, this could help me understand linux and unsigned wrap around a lot.
+> 
+> Looking forward to your valuable response!
 
-Laurent Vivier's Quadra 800 emulation is no longer out of tree. It 
-appeared in QEMU v4.2.0 and ethernet support was stabilized in QEMU 
-v5.0.0.
+It seems that wrap-around can indeed happen but I'm not sure
+what are the exact consequences of it (SetOverlayViewPort() is
+quite complicated and I also don't know how hardware would
+react to improper settings).
+
+kyrofb driver is for legacy devices and is not actively
+maintained so I worry that without somebody with the access
+to hardware and time to investigate it further I cannot do
+much about the problem.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> Best,
+> Changming Liu
+> 

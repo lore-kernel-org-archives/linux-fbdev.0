@@ -1,55 +1,67 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 09 Jun 2020 10:44:24 +0000
-Subject: Re: [Bug Report] drivers/video/fbdev/kyro/fbdev.c: unsigned integer wrap-around might cause unexpect
-Message-Id: <c20a2141-1586-aeb3-abf8-385bb6e498b6@samsung.com>
+From: Changming Liu <liu.changm@northeastern.edu>
+Date: Tue, 09 Jun 2020 16:09:05 +0000
+Subject: RE: [Bug Report] drivers/video/fbdev/kyro/fbdev.c: unsigned integer wrap-around might cause unexpect
+Message-Id: <BN6PR06MB2532740233C9CC536EF1F182E5820@BN6PR06MB2532.namprd06.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CGME20200521011509eucas1p240099e1e51780beeee80257bfc361e33@eucas1p2.samsung.com>
  <BL0PR06MB45489A53C61DF15BF2F95B9CE5B70@BL0PR06MB4548.namprd06.prod.outlook.com>
-In-Reply-To: <BL0PR06MB45489A53C61DF15BF2F95B9CE5B70@BL0PR06MB4548.namprd06.prod.outlook.com>
+ <c20a2141-1586-aeb3-abf8-385bb6e498b6@samsung.com>
+In-Reply-To: <c20a2141-1586-aeb3-abf8-385bb6e498b6@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Changming Liu <liu.changm@northeastern.edu>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Lu,
  Long" <l.lu@northeastern.edu>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "yaohway@gmail.com" <yaohway@gmail.com>
 
-
-Hi,
-
-On 5/21/20 3:15 AM, Changming Liu wrote:
-> Hi Bartlomiej,
-> Greetings, I'm a first-year PhD student who is interested in the usage of UBSan for linux. 
-> And after some experiments, I found that in drivers/video/fbdev/kyro/fbdev.c
-> function kyro_dev_overlay_viewport_set, there is an unsigned integer overflow that might cause unexpected behavior.
-> 
-> More specifically, first at its caller, kyrofb_ioctl, after execution of copy_from_user at line 599, struct ol_viewport_set is filled with data from user space. 
-> And the 4 32bit unsigned integers from it are passed into kyro_dev_overlay_viewport_set. In function kyro_dev_overlay_viewport_set, 
-> x is added with ulWidth, y is added with ulHeight to transfer the length to the coordinate. 
-> And the result coordinate might overflow and wrap around. And it is passed into function SetOverlayViewPort.
-> 
-> It appears that in function SetOverlayViewPort, these values are treated as the coordinate of the bottom-right point and the wrap-around is not checked.(I might miss something).
-> 
-> Due to the lack of knowledge of the interaction between this module and the user space, I'm not able to assess if this is a benign wrap-around or whether the wrap-around could happen at all. 
-> I'd appreciate for you comment on this issue, this could help me understand linux and unsigned wrap around a lot.
-> 
-> Looking forward to your valuable response!
-
-It seems that wrap-around can indeed happen but I'm not sure
-what are the exact consequences of it (SetOverlayViewPort() is
-quite complicated and I also don't know how hardware would
-react to improper settings).
-
-kyrofb driver is for legacy devices and is not actively
-maintained so I worry that without somebody with the access
-to hardware and time to investigate it further I cannot do
-much about the problem.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> Best,
-> Changming Liu
-> 
+PiBGcm9tOiBCYXJ0bG9taWVqIFpvbG5pZXJraWV3aWN6IDxiLnpvbG5pZXJraWVAc2Ftc3VuZy5j
+b20+DQo+IFNlbnQ6IFR1ZXNkYXksIEp1bmUgOSwgMjAyMCA2OjQ0IEFNDQo+IFRvOiBDaGFuZ21p
+bmcgTGl1IDxsaXUuY2hhbmdtQG5vcnRoZWFzdGVybi5lZHU+DQo+IENjOiBsaW51eC1mYmRldkB2
+Z2VyLmtlcm5lbC5vcmc7IGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmc7IEx1LCBMb25n
+DQo+IDxsLmx1QG5vcnRoZWFzdGVybi5lZHU+OyB5YW9od2F5QGdtYWlsLmNvbQ0KPiBTdWJqZWN0
+OiBSZTogW0J1ZyBSZXBvcnRdIGRyaXZlcnMvdmlkZW8vZmJkZXYva3lyby9mYmRldi5jOiB1bnNp
+Z25lZA0KPiBpbnRlZ2VyIHdyYXAtYXJvdW5kIG1pZ2h0IGNhdXNlIHVuZXhwZWN0ZWQgYmVoYXZp
+b3INCj4gDQo+IA0KPiBIaSwNCj4gDQo+IE9uIDUvMjEvMjAgMzoxNSBBTSwgQ2hhbmdtaW5nIExp
+dSB3cm90ZToNCj4gPiBIaSBCYXJ0bG9taWVqLA0KPiA+IEdyZWV0aW5ncywgSSdtIGEgZmlyc3Qt
+eWVhciBQaEQgc3R1ZGVudCB3aG8gaXMgaW50ZXJlc3RlZCBpbiB0aGUgdXNhZ2Ugb2YNCj4gVUJT
+YW4gZm9yIGxpbnV4Lg0KPiA+IEFuZCBhZnRlciBzb21lIGV4cGVyaW1lbnRzLCBJIGZvdW5kIHRo
+YXQgaW4NCj4gPiBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2t5cm8vZmJkZXYuYyBmdW5jdGlvbg0KPiBr
+eXJvX2Rldl9vdmVybGF5X3ZpZXdwb3J0X3NldCwgdGhlcmUgaXMgYW4gdW5zaWduZWQgaW50ZWdl
+ciBvdmVyZmxvdyB0aGF0DQo+IG1pZ2h0IGNhdXNlIHVuZXhwZWN0ZWQgYmVoYXZpb3IuDQo+ID4N
+Cj4gPiBNb3JlIHNwZWNpZmljYWxseSwgZmlyc3QgYXQgaXRzIGNhbGxlciwga3lyb2ZiX2lvY3Rs
+LCBhZnRlciBleGVjdXRpb24gb2YNCj4gY29weV9mcm9tX3VzZXIgYXQgbGluZSA1OTksIHN0cnVj
+dCBvbF92aWV3cG9ydF9zZXQgaXMgZmlsbGVkIHdpdGggZGF0YSBmcm9tDQo+IHVzZXIgc3BhY2Uu
+DQo+ID4gQW5kIHRoZSA0IDMyYml0IHVuc2lnbmVkIGludGVnZXJzIGZyb20gaXQgYXJlIHBhc3Nl
+ZCBpbnRvDQo+ID4ga3lyb19kZXZfb3ZlcmxheV92aWV3cG9ydF9zZXQuIEluIGZ1bmN0aW9uDQo+
+IGt5cm9fZGV2X292ZXJsYXlfdmlld3BvcnRfc2V0LCB4IGlzIGFkZGVkIHdpdGggdWxXaWR0aCwg
+eSBpcyBhZGRlZCB3aXRoDQo+IHVsSGVpZ2h0IHRvIHRyYW5zZmVyIHRoZSBsZW5ndGggdG8gdGhl
+IGNvb3JkaW5hdGUuDQo+ID4gQW5kIHRoZSByZXN1bHQgY29vcmRpbmF0ZSBtaWdodCBvdmVyZmxv
+dyBhbmQgd3JhcCBhcm91bmQuIEFuZCBpdCBpcw0KPiBwYXNzZWQgaW50byBmdW5jdGlvbiBTZXRP
+dmVybGF5Vmlld1BvcnQuDQo+ID4NCj4gPiBJdCBhcHBlYXJzIHRoYXQgaW4gZnVuY3Rpb24gU2V0
+T3ZlcmxheVZpZXdQb3J0LCB0aGVzZSB2YWx1ZXMgYXJlIHRyZWF0ZWQgYXMNCj4gdGhlIGNvb3Jk
+aW5hdGUgb2YgdGhlIGJvdHRvbS1yaWdodCBwb2ludCBhbmQgdGhlIHdyYXAtYXJvdW5kIGlzIG5v
+dA0KPiBjaGVja2VkLihJIG1pZ2h0IG1pc3Mgc29tZXRoaW5nKS4NCj4gPg0KPiA+IER1ZSB0byB0
+aGUgbGFjayBvZiBrbm93bGVkZ2Ugb2YgdGhlIGludGVyYWN0aW9uIGJldHdlZW4gdGhpcyBtb2R1
+bGUgYW5kDQo+IHRoZSB1c2VyIHNwYWNlLCBJJ20gbm90IGFibGUgdG8gYXNzZXNzIGlmIHRoaXMg
+aXMgYSBiZW5pZ24gd3JhcC1hcm91bmQgb3INCj4gd2hldGhlciB0aGUgd3JhcC1hcm91bmQgY291
+bGQgaGFwcGVuIGF0IGFsbC4NCj4gPiBJJ2QgYXBwcmVjaWF0ZSBmb3IgeW91IGNvbW1lbnQgb24g
+dGhpcyBpc3N1ZSwgdGhpcyBjb3VsZCBoZWxwIG1lDQo+IHVuZGVyc3RhbmQgbGludXggYW5kIHVu
+c2lnbmVkIHdyYXAgYXJvdW5kIGEgbG90Lg0KPiA+DQo+ID4gTG9va2luZyBmb3J3YXJkIHRvIHlv
+dXIgdmFsdWFibGUgcmVzcG9uc2UhDQo+IA0KPiBJdCBzZWVtcyB0aGF0IHdyYXAtYXJvdW5kIGNh
+biBpbmRlZWQgaGFwcGVuIGJ1dCBJJ20gbm90IHN1cmUgd2hhdCBhcmUgdGhlDQo+IGV4YWN0IGNv
+bnNlcXVlbmNlcyBvZiBpdCAoU2V0T3ZlcmxheVZpZXdQb3J0KCkgaXMgcXVpdGUgY29tcGxpY2F0
+ZWQgYW5kIEkNCj4gYWxzbyBkb24ndCBrbm93IGhvdyBoYXJkd2FyZSB3b3VsZCByZWFjdCB0byBp
+bXByb3BlciBzZXR0aW5ncykuDQo+IA0KPiBreXJvZmIgZHJpdmVyIGlzIGZvciBsZWdhY3kgZGV2
+aWNlcyBhbmQgaXMgbm90IGFjdGl2ZWx5IG1haW50YWluZWQgc28gSSB3b3JyeQ0KPiB0aGF0IHdp
+dGhvdXQgc29tZWJvZHkgd2l0aCB0aGUgYWNjZXNzIHRvIGhhcmR3YXJlIGFuZCB0aW1lIHRvIGlu
+dmVzdGlnYXRlDQo+IGl0IGZ1cnRoZXIgSSBjYW5ub3QgZG8gbXVjaCBhYm91dCB0aGUgcHJvYmxl
+bS4NCj4gDQpUaGFua3MgZm9yIHRoZSBjb21tZW50cyEgVGhlc2UgYXJlIHZhbHVhYmxlIG9ic2Vy
+dmF0aW9ucyB3aGljaCBzaG93IHRoYXQNCmhhcmR3YXJlLWRyaXZlciBpbnRlcmFjdGlvbiBjYW4g
+cGxheSBhIHJvbGUgaW4gdW5zaWduZWQgd3JhcC1hcm91bmQgaGVyZS4NCkluZGVlZCwgdGhlcmUg
+aXMgbm8gZXZpZGVuY2UgdG8gZGV0ZXJtaW5lIHRoZSB3cmFwIGFyb3VuZCBpcyBiZW5pZ24gb3Ig
+bm90Lg0KU2luY2UgdGhlc2UgYXJlIGp1c3QgZm9yIGxlZ2FjeSBkZXZpY2VzLCBJIHRvbyB3b3Vs
+ZCBub3QgdGFrZSB0aGUgcmlzayB0byBmaXggc3RoDQp3aGljaCBpcyBub3QgYnJva2VuLg0KDQpU
+aGFua3MgYWdhaW4gZm9yIHlvdXIgZmVlZGJhY2ssIEkgbGVhcm5lZCBhIGxvdC4NCg0KQmVzdCwN
+CkNoYW5nbWluZw0KDQo+IEJlc3QgcmVnYXJkcywNCj4gLS0NCj4gQmFydGxvbWllaiBab2xuaWVy
+a2lld2ljeg0KPiBTYW1zdW5nIFImRCBJbnN0aXR1dGUgUG9sYW5kDQo+IFNhbXN1bmcgRWxlY3Ry
+b25pY3MNCj4gDQo+ID4gQmVzdCwNCj4gPiBDaGFuZ21pbmcgTGl1DQo+ID4NCg=

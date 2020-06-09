@@ -1,67 +1,96 @@
-From: Changming Liu <liu.changm@northeastern.edu>
-Date: Tue, 09 Jun 2020 16:09:05 +0000
-Subject: RE: [Bug Report] drivers/video/fbdev/kyro/fbdev.c: unsigned integer wrap-around might cause unexpect
-Message-Id: <BN6PR06MB2532740233C9CC536EF1F182E5820@BN6PR06MB2532.namprd06.prod.outlook.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 09 Jun 2020 11:58:01 +0000
+Subject: Re: [Bug Report] drivers/video/fbdev/da8xx-fb.c: undefined behavior when left shifting
+Message-Id: <7f7946f8-eb27-0745-6298-bd8099e43969@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200521011509eucas1p240099e1e51780beeee80257bfc361e33@eucas1p2.samsung.com>
- <BL0PR06MB45489A53C61DF15BF2F95B9CE5B70@BL0PR06MB4548.namprd06.prod.outlook.com>
- <c20a2141-1586-aeb3-abf8-385bb6e498b6@samsung.com>
-In-Reply-To: <c20a2141-1586-aeb3-abf8-385bb6e498b6@samsung.com>
+References: <CGME20200522030138eucas1p2555438440fee702f55c52980aa6111f3@eucas1p2.samsung.com>
+ <BL0PR06MB45486287654FC3C2045A5655E5B40@BL0PR06MB4548.namprd06.prod.outlook.com>
+In-Reply-To: <BL0PR06MB45486287654FC3C2045A5655E5B40@BL0PR06MB4548.namprd06.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Lu,
- Long" <l.lu@northeastern.edu>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "yaohway@gmail.com" <yaohway@gmail.com>
+To: Changming Liu <liu.changm@northeastern.edu>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Sekhar Nori <nsekhar@ti.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, "yaohway@gmail.com" <yaohway@gmail.com>, "Lu, Long" <l.lu@northeastern.edu>
 
-PiBGcm9tOiBCYXJ0bG9taWVqIFpvbG5pZXJraWV3aWN6IDxiLnpvbG5pZXJraWVAc2Ftc3VuZy5j
-b20+DQo+IFNlbnQ6IFR1ZXNkYXksIEp1bmUgOSwgMjAyMCA2OjQ0IEFNDQo+IFRvOiBDaGFuZ21p
-bmcgTGl1IDxsaXUuY2hhbmdtQG5vcnRoZWFzdGVybi5lZHU+DQo+IENjOiBsaW51eC1mYmRldkB2
-Z2VyLmtlcm5lbC5vcmc7IGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmc7IEx1LCBMb25n
-DQo+IDxsLmx1QG5vcnRoZWFzdGVybi5lZHU+OyB5YW9od2F5QGdtYWlsLmNvbQ0KPiBTdWJqZWN0
-OiBSZTogW0J1ZyBSZXBvcnRdIGRyaXZlcnMvdmlkZW8vZmJkZXYva3lyby9mYmRldi5jOiB1bnNp
-Z25lZA0KPiBpbnRlZ2VyIHdyYXAtYXJvdW5kIG1pZ2h0IGNhdXNlIHVuZXhwZWN0ZWQgYmVoYXZp
-b3INCj4gDQo+IA0KPiBIaSwNCj4gDQo+IE9uIDUvMjEvMjAgMzoxNSBBTSwgQ2hhbmdtaW5nIExp
-dSB3cm90ZToNCj4gPiBIaSBCYXJ0bG9taWVqLA0KPiA+IEdyZWV0aW5ncywgSSdtIGEgZmlyc3Qt
-eWVhciBQaEQgc3R1ZGVudCB3aG8gaXMgaW50ZXJlc3RlZCBpbiB0aGUgdXNhZ2Ugb2YNCj4gVUJT
-YW4gZm9yIGxpbnV4Lg0KPiA+IEFuZCBhZnRlciBzb21lIGV4cGVyaW1lbnRzLCBJIGZvdW5kIHRo
-YXQgaW4NCj4gPiBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2t5cm8vZmJkZXYuYyBmdW5jdGlvbg0KPiBr
-eXJvX2Rldl9vdmVybGF5X3ZpZXdwb3J0X3NldCwgdGhlcmUgaXMgYW4gdW5zaWduZWQgaW50ZWdl
-ciBvdmVyZmxvdyB0aGF0DQo+IG1pZ2h0IGNhdXNlIHVuZXhwZWN0ZWQgYmVoYXZpb3IuDQo+ID4N
-Cj4gPiBNb3JlIHNwZWNpZmljYWxseSwgZmlyc3QgYXQgaXRzIGNhbGxlciwga3lyb2ZiX2lvY3Rs
-LCBhZnRlciBleGVjdXRpb24gb2YNCj4gY29weV9mcm9tX3VzZXIgYXQgbGluZSA1OTksIHN0cnVj
-dCBvbF92aWV3cG9ydF9zZXQgaXMgZmlsbGVkIHdpdGggZGF0YSBmcm9tDQo+IHVzZXIgc3BhY2Uu
-DQo+ID4gQW5kIHRoZSA0IDMyYml0IHVuc2lnbmVkIGludGVnZXJzIGZyb20gaXQgYXJlIHBhc3Nl
-ZCBpbnRvDQo+ID4ga3lyb19kZXZfb3ZlcmxheV92aWV3cG9ydF9zZXQuIEluIGZ1bmN0aW9uDQo+
-IGt5cm9fZGV2X292ZXJsYXlfdmlld3BvcnRfc2V0LCB4IGlzIGFkZGVkIHdpdGggdWxXaWR0aCwg
-eSBpcyBhZGRlZCB3aXRoDQo+IHVsSGVpZ2h0IHRvIHRyYW5zZmVyIHRoZSBsZW5ndGggdG8gdGhl
-IGNvb3JkaW5hdGUuDQo+ID4gQW5kIHRoZSByZXN1bHQgY29vcmRpbmF0ZSBtaWdodCBvdmVyZmxv
-dyBhbmQgd3JhcCBhcm91bmQuIEFuZCBpdCBpcw0KPiBwYXNzZWQgaW50byBmdW5jdGlvbiBTZXRP
-dmVybGF5Vmlld1BvcnQuDQo+ID4NCj4gPiBJdCBhcHBlYXJzIHRoYXQgaW4gZnVuY3Rpb24gU2V0
-T3ZlcmxheVZpZXdQb3J0LCB0aGVzZSB2YWx1ZXMgYXJlIHRyZWF0ZWQgYXMNCj4gdGhlIGNvb3Jk
-aW5hdGUgb2YgdGhlIGJvdHRvbS1yaWdodCBwb2ludCBhbmQgdGhlIHdyYXAtYXJvdW5kIGlzIG5v
-dA0KPiBjaGVja2VkLihJIG1pZ2h0IG1pc3Mgc29tZXRoaW5nKS4NCj4gPg0KPiA+IER1ZSB0byB0
-aGUgbGFjayBvZiBrbm93bGVkZ2Ugb2YgdGhlIGludGVyYWN0aW9uIGJldHdlZW4gdGhpcyBtb2R1
-bGUgYW5kDQo+IHRoZSB1c2VyIHNwYWNlLCBJJ20gbm90IGFibGUgdG8gYXNzZXNzIGlmIHRoaXMg
-aXMgYSBiZW5pZ24gd3JhcC1hcm91bmQgb3INCj4gd2hldGhlciB0aGUgd3JhcC1hcm91bmQgY291
-bGQgaGFwcGVuIGF0IGFsbC4NCj4gPiBJJ2QgYXBwcmVjaWF0ZSBmb3IgeW91IGNvbW1lbnQgb24g
-dGhpcyBpc3N1ZSwgdGhpcyBjb3VsZCBoZWxwIG1lDQo+IHVuZGVyc3RhbmQgbGludXggYW5kIHVu
-c2lnbmVkIHdyYXAgYXJvdW5kIGEgbG90Lg0KPiA+DQo+ID4gTG9va2luZyBmb3J3YXJkIHRvIHlv
-dXIgdmFsdWFibGUgcmVzcG9uc2UhDQo+IA0KPiBJdCBzZWVtcyB0aGF0IHdyYXAtYXJvdW5kIGNh
-biBpbmRlZWQgaGFwcGVuIGJ1dCBJJ20gbm90IHN1cmUgd2hhdCBhcmUgdGhlDQo+IGV4YWN0IGNv
-bnNlcXVlbmNlcyBvZiBpdCAoU2V0T3ZlcmxheVZpZXdQb3J0KCkgaXMgcXVpdGUgY29tcGxpY2F0
-ZWQgYW5kIEkNCj4gYWxzbyBkb24ndCBrbm93IGhvdyBoYXJkd2FyZSB3b3VsZCByZWFjdCB0byBp
-bXByb3BlciBzZXR0aW5ncykuDQo+IA0KPiBreXJvZmIgZHJpdmVyIGlzIGZvciBsZWdhY3kgZGV2
-aWNlcyBhbmQgaXMgbm90IGFjdGl2ZWx5IG1haW50YWluZWQgc28gSSB3b3JyeQ0KPiB0aGF0IHdp
-dGhvdXQgc29tZWJvZHkgd2l0aCB0aGUgYWNjZXNzIHRvIGhhcmR3YXJlIGFuZCB0aW1lIHRvIGlu
-dmVzdGlnYXRlDQo+IGl0IGZ1cnRoZXIgSSBjYW5ub3QgZG8gbXVjaCBhYm91dCB0aGUgcHJvYmxl
-bS4NCj4gDQpUaGFua3MgZm9yIHRoZSBjb21tZW50cyEgVGhlc2UgYXJlIHZhbHVhYmxlIG9ic2Vy
-dmF0aW9ucyB3aGljaCBzaG93IHRoYXQNCmhhcmR3YXJlLWRyaXZlciBpbnRlcmFjdGlvbiBjYW4g
-cGxheSBhIHJvbGUgaW4gdW5zaWduZWQgd3JhcC1hcm91bmQgaGVyZS4NCkluZGVlZCwgdGhlcmUg
-aXMgbm8gZXZpZGVuY2UgdG8gZGV0ZXJtaW5lIHRoZSB3cmFwIGFyb3VuZCBpcyBiZW5pZ24gb3Ig
-bm90Lg0KU2luY2UgdGhlc2UgYXJlIGp1c3QgZm9yIGxlZ2FjeSBkZXZpY2VzLCBJIHRvbyB3b3Vs
-ZCBub3QgdGFrZSB0aGUgcmlzayB0byBmaXggc3RoDQp3aGljaCBpcyBub3QgYnJva2VuLg0KDQpU
-aGFua3MgYWdhaW4gZm9yIHlvdXIgZmVlZGJhY2ssIEkgbGVhcm5lZCBhIGxvdC4NCg0KQmVzdCwN
-CkNoYW5nbWluZw0KDQo+IEJlc3QgcmVnYXJkcywNCj4gLS0NCj4gQmFydGxvbWllaiBab2xuaWVy
-a2lld2ljeg0KPiBTYW1zdW5nIFImRCBJbnN0aXR1dGUgUG9sYW5kDQo+IFNhbXN1bmcgRWxlY3Ry
-b25pY3MNCj4gDQo+ID4gQmVzdCwNCj4gPiBDaGFuZ21pbmcgTGl1DQo+ID4NCg=
+
+[ added TI DaVinci platform Maintainers to Cc: ]
+
+Hi,
+
+On 5/22/20 5:01 AM, Changming Liu wrote:
+> Hi Bartlomiej,
+> Greetings, it's me again, I sent you a bug report yesterday, I hope that find you well.
+> 
+> This time I found that in /drivers/video/fbdev/da8xx-fb.c
+> function lcd_cfg_vertical_sync, there might be an undefined result by left shifting.
+> 
+> More specifically, in function lcd_cfg_vertical_sync, line 437. back_porch is a signed integer 
+> which might come from user space. And it's logic AND with string literal 0xff. The result is then left shifted by 24 bits.
+> 
+> The problem is, since the logic AND produce a signed integer and the result of left shifting this signed integer
+> (whose lowest 8 bits not cleared) by 24 bits is undefined when its 8th bit is 1. Similar patterns can be found in line 410 as well.
+> 
+> I wonder if this bug is worth fixing? This can help me understand linux and UB a lot.
+> 
+> Looking forward to you valuable response.
+
+I assume that lcd_cfg_{horizontal,vertical}_sync() take parameters as
+signed integers (and not unsigned ones) in order to special case "0"
+value (I suppose that hardware expects all bits sets to represent
+the "0" value). Sekhar/Bartosz: could you verify this?
+
+If the above is true to get rid of undefined behaviors in the code
+(BTW gcc seems to produce correct results currently, I don't know
+about clang) we should add type casts in proper places, i.e:
+
+static void lcd_cfg_horizontal_sync(int back_porch, int pulse_width,
+		int front_porch)
+{
+	u32 reg;
+
+	reg = lcdc_read(LCD_RASTER_TIMING_0_REG) & 0x3ff;
+	reg |= (((u32)(back_porch - 1) & 0xff) << 24)
+	    | (((u32)(front_porch - 1) & 0xff) << 16)
+	    | (((u32)(pulse_width - 1) & 0x3f) << 10);
+	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
+
+	/*
+	 * LCDC Version 2 adds some extra bits that increase the allowable
+	 * size of the horizontal timing registers.
+	 * remember that the registers use 0 to represent 1 so all values
+	 * that get set into register need to be decremented by 1
+	 */
+	if (lcd_revision = LCD_VERSION_2) {
+		/* Mask off the bits we want to change */
+		reg = lcdc_read(LCD_RASTER_TIMING_2_REG) & ~0x780000ff;
+		reg |= ((u32)(front_porch - 1) & 0x300) >> 8;
+		reg |= ((u32)(back_porch - 1) & 0x300) >> 4;
+		reg |= ((u32)(pulse_width - 1) & 0x3c0) << 21;
+		lcdc_write(reg, LCD_RASTER_TIMING_2_REG);
+	}
+}
+
+static void lcd_cfg_vertical_sync(int back_porch, int pulse_width,
+		int front_porch)
+{
+	u32 reg;
+
+	reg = lcdc_read(LCD_RASTER_TIMING_1_REG) & 0x3ff;
+	reg |= (((u32)back_porch & 0xff) << 24)
+	    | (((u32)front_porch & 0xff) << 16)
+	    | (((u32)(pulse_width - 1) & 0x3f) << 10);
+	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
+}
+
+Also it would be helpful to disallow negative values being passed
+from user-space in fb_ioctl().
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> Best regards,
+> Changming Liu
+> 

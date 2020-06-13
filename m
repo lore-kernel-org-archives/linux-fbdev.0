@@ -1,58 +1,32 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Sat, 20 Jun 2020 11:27:19 +0000
-Subject: Re: [PATCH][next] fbdev/fb.h: Use struct_size() helper in kzalloc()
-Message-Id: <20200620112719.GC16901@ravnborg.org>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Sat, 13 Jun 2020 08:13:46 +0000
+Subject: [PATCH] efifb: BGRT: Fix typo in *deferred* in comment
+Message-Id: <20200613081346.4532-1-pmenzel@molgen.mpg.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200617175647.GA26370@embeddedor>
-In-Reply-To: <20200617175647.GA26370@embeddedor>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-Hi Gustavo.
+Cc: linux-fbdev@vger.kernel.org
+Cc: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
+---
+ drivers/video/fbdev/efifb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Wed, Jun 17, 2020 at 12:56:47PM -0500, Gustavo A. R. Silva wrote:
-> Make use of the struct_size() helper instead of an open-coded version
-> in order to avoid any potential type mistakes.
-> 
-> This code was detected with the help of Coccinelle and, audited and
-> fixed manually.
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
-
-struct_size is defined in overflow.h - which is not included by fs.h.
-So we rely on overflow.h being pulled in by some other header - maybe
-slab.h in this case.
-Seems fragile, should this patch add an include of overflow.h?
-
-	Sam
-
-> ---
->  include/linux/fb.h | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index 3b4b2f0c6994..2b530e6d86e4 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -506,8 +506,9 @@ struct fb_info {
->  };
->  
->  static inline struct apertures_struct *alloc_apertures(unsigned int max_num) {
-> -	struct apertures_struct *a = kzalloc(sizeof(struct apertures_struct)
-> -			+ max_num * sizeof(struct aperture), GFP_KERNEL);
-> +	struct apertures_struct *a;
-> +
-> +	a = kzalloc(struct_size(a, ranges, max_num), GFP_KERNEL);
->  	if (!a)
->  		return NULL;
->  	a->count = max_num;
-> -- 
-> 2.27.0
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 65491ae74808..42b4facc5e2b 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -91,7 +91,7 @@ static int efifb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ }
+ 
+ /*
+- * If fbcon deffered console takeover is configured, the intent is for the
++ * If fbcon deferred console takeover is configured, the intent is for the
+  * framebuffer to show the boot graphics (e.g. vendor logo) until there is some
+  * (error) message to display. But the boot graphics may have been destroyed by
+  * e.g. option ROM output, detect this and restore the boot graphics.
+-- 
+2.27.0

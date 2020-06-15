@@ -1,213 +1,56 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Date: Wed, 24 Jun 2020 14:28:14 +0000
-Subject: Re: [PATCH] drm/fb-helper: Fix vt restore
-Message-Id: <CADnq5_Nm==8UFsuGd0BxKixajdb0-J_D7TucrEE8AxzeXYLbDA@mail.gmail.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 15 Jun 2020 14:16:06 +0000
+Subject: [PATCH 2/2] pwm: iqs620a: Use 64-bit division
+Message-Id: <20200615141606.2814208-3-thierry.reding@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200623155456.3092836-1-daniel.vetter@ffwll.ch>
- <20200624092910.3280448-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20200624092910.3280448-1-daniel.vetter@ffwll.ch>
+References: <20200615141606.2814208-1-thierry.reding@gmail.com>
+In-Reply-To: <20200615141606.2814208-1-thierry.reding@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>, DRI Development <dri-devel@lists.freedesktop.org>, shlomo@fastmail.com, Geert Uytterhoeven <geert@linux-m68k.org>, "for 3.8" <stable@vger.kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, Daniel Vetter <daniel.vetter@intel.com>, Nathan Chancellor <natechancellor@gmail.com>, Peter Rosin <peda@axentia.se>, Qiujun Huang <hqjagain@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>, Guru Das Srinagesh <gurus@codeaurora.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2020 at 5:29 AM Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
->
-> In the past we had a pile of hacks to orchestrate access between fbdev
-> emulation and native kms clients. We've tried to streamline this, by
-> always preferring the kms side above fbdev calls when a drm master
-> exists, because drm master controls access to the display resources.
->
-> Unfortunately this breaks existing userspace, specifically Xorg. When
-> exiting Xorg first restores the console to text mode using the KDSET
-> ioctl on the vt. This does nothing, because a drm master is still
-> around. Then it drops the drm master status, which again does nothing,
-> because logind is keeping additional drm fd open to be able to
-> orchestrate vt switches. In the past this is the point where fbdev was
-> restored, as part of the ->lastclose hook on the drm side.
->
-> Now to fix this regression we don't want to go back to letting fbdev
-> restore things whenever it feels like, or to the pile of hacks we've
-> had before. Instead try and go with a minimal exception to make the
-> KDSET case work again, and nothing else.
->
-> This means that if userspace does a KDSET call when switching between
-> graphical compositors, there will be some flickering with fbcon
-> showing up for a bit. But a) that's not a regression and b) userspace
-> can fix it by improving the vt switching dance - logind should have
-> all the information it needs.
->
-> While pondering all this I'm also wondering wheter we should have a
-> SWITCH_MASTER ioctl to allow race-free master status handover. But
-> that's for another day.
->
-> v2: Somehow forgot to cc all the fbdev people.
->
-> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=208179
-> Cc: shlomo@fastmail.com
-> Reported-and-Tested-by: shlomo@fastmail.com
-> Cc: Michel Dänzer <michel@daenzer.net>
-> Fixes: 64914da24ea9 ("drm/fbdev-helper: don't force restores")
-> Cc: Noralf Trønnes <noralf@tronnes.org>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Daniel Vetter <daniel.vetter@intel.com>
-> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> Cc: Maxime Ripard <mripard@kernel.org>
-> Cc: David Airlie <airlied@linux.ie>
-> Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: <stable@vger.kernel.org> # v5.7+
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Nathan Chancellor <natechancellor@gmail.com>
-> Cc: Qiujun Huang <hqjagain@gmail.com>
-> Cc: Peter Rosin <peda@axentia.se>
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> ---
->  drivers/gpu/drm/drm_fb_helper.c  | 63 +++++++++++++++++++++++++-------
->  drivers/video/fbdev/core/fbcon.c |  3 +-
->  include/uapi/linux/fb.h          |  1 +
->  3 files changed, 52 insertions(+), 15 deletions(-)
->
-> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-> index 170aa7689110..ae69bf8e9bcc 100644
-> --- a/drivers/gpu/drm/drm_fb_helper.c
-> +++ b/drivers/gpu/drm/drm_fb_helper.c
-> @@ -227,18 +227,9 @@ int drm_fb_helper_debug_leave(struct fb_info *info)
->  }
->  EXPORT_SYMBOL(drm_fb_helper_debug_leave);
->
-> -/**
-> - * drm_fb_helper_restore_fbdev_mode_unlocked - restore fbdev configuration
-> - * @fb_helper: driver-allocated fbdev helper, can be NULL
-> - *
-> - * This should be called from driver's drm &drm_driver.lastclose callback
-> - * when implementing an fbcon on top of kms using this helper. This ensures that
-> - * the user isn't greeted with a black screen when e.g. X dies.
-> - *
-> - * RETURNS:
-> - * Zero if everything went ok, negative error code otherwise.
-> - */
-> -int drm_fb_helper_restore_fbdev_mode_unlocked(struct drm_fb_helper *fb_helper)
-> +static int
-> +__drm_fb_helper_restore_fbdev_mode_unlocked(struct drm_fb_helper *fb_helper,
-> +                                           bool force)
->  {
->         bool do_delayed;
->         int ret;
-> @@ -250,7 +241,16 @@ int drm_fb_helper_restore_fbdev_mode_unlocked(struct drm_fb_helper *fb_helper)
->                 return 0;
->
->         mutex_lock(&fb_helper->lock);
-> -       ret = drm_client_modeset_commit(&fb_helper->client);
-> +       if (force) {
-> +               /*
-> +                * Yes this is the _locked version which expects the master lock
-> +                * to be held. But for forced restores we're intentionally
-> +                * racing here, see drm_fb_helper_set_par().
-> +                */
-> +               ret = drm_client_modeset_commit_locked(&fb_helper->client);
-> +       } else {
-> +               ret = drm_client_modeset_commit(&fb_helper->client);
-> +       }
->
->         do_delayed = fb_helper->delayed_hotplug;
->         if (do_delayed)
-> @@ -262,6 +262,22 @@ int drm_fb_helper_restore_fbdev_mode_unlocked(struct drm_fb_helper *fb_helper)
->
->         return ret;
->  }
-> +
-> +/**
-> + * drm_fb_helper_restore_fbdev_mode_unlocked - restore fbdev configuration
-> + * @fb_helper: driver-allocated fbdev helper, can be NULL
-> + *
-> + * This should be called from driver's drm &drm_driver.lastclose callback
-> + * when implementing an fbcon on top of kms using this helper. This ensures that
-> + * the user isn't greeted with a black screen when e.g. X dies.
-> + *
-> + * RETURNS:
-> + * Zero if everything went ok, negative error code otherwise.
-> + */
-> +int drm_fb_helper_restore_fbdev_mode_unlocked(struct drm_fb_helper *fb_helper)
-> +{
-> +       return __drm_fb_helper_restore_fbdev_mode_unlocked(fb_helper, false);
-> +}
->  EXPORT_SYMBOL(drm_fb_helper_restore_fbdev_mode_unlocked);
->
->  #ifdef CONFIG_MAGIC_SYSRQ
-> @@ -1318,6 +1334,7 @@ int drm_fb_helper_set_par(struct fb_info *info)
->  {
->         struct drm_fb_helper *fb_helper = info->par;
->         struct fb_var_screeninfo *var = &info->var;
-> +       bool force;
->
->         if (oops_in_progress)
->                 return -EBUSY;
-> @@ -1327,7 +1344,25 @@ int drm_fb_helper_set_par(struct fb_info *info)
->                 return -EINVAL;
->         }
->
-> -       drm_fb_helper_restore_fbdev_mode_unlocked(fb_helper);
-> +       /*
-> +        * Normally we want to make sure that a kms master takes
-> +        * precedence over fbdev, to avoid fbdev flickering and
-> +        * occasionally stealing the display status. But Xorg first sets
-> +        * the vt back to text mode using the KDSET IOCTL with KD_TEXT,
-> +        * and only after that drops the master status when exiting.
-> +        *
-> +        * In the past this was caught by drm_fb_helper_lastclose(), but
-> +        * on modern systems where logind always keeps a drm fd open to
-> +        * orchestrate the vt switching, this doesn't work.
-> +        *
-> +        * To no break the userspace ABI we have this special case here,
+The PWM framework is going to change the PWM period and duty cycles to
+be 64-bit unsigned integers. To avoid build errors on platforms that do
+not natively support 64-bit division, use explicity 64-bit division.
 
-"To not break"
-With that fixed:
-Reviewed-by: Alex Deucher <alexander.deucher@amd.com>
+Signed-off-by: Thierry Reding <thierry.reding@gmail.com>
+---
+ drivers/pwm/pwm-iqs620a.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-> +        * which is only used for the above case. Everything else uses
-> +        * the normal commit function, which ensures that we never steal
-> +        * the display from an active drm master.
-> +        */
-> +       force = var->activate & FB_ACTIVATE_KD_TEXT;
-> +
-> +       __drm_fb_helper_restore_fbdev_mode_unlocked(fb_helper, force);
->
->         return 0;
->  }
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index 9d28a8e3328f..e2a490c5ae08 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -2402,7 +2402,8 @@ static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
->                 ops->graphics = 1;
->
->                 if (!blank) {
-> -                       var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE;
-> +                       var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE |
-> +                               FB_ACTIVATE_KD_TEXT;
->                         fb_set_var(info, &var);
->                         ops->graphics = 0;
->                         ops->var = info->var;
-> diff --git a/include/uapi/linux/fb.h b/include/uapi/linux/fb.h
-> index b6aac7ee1f67..4c14e8be7267 100644
-> --- a/include/uapi/linux/fb.h
-> +++ b/include/uapi/linux/fb.h
-> @@ -205,6 +205,7 @@ struct fb_bitfield {
->  #define FB_ACTIVATE_ALL               64       /* change all VCs on this fb    */
->  #define FB_ACTIVATE_FORCE     128      /* force apply even when no change*/
->  #define FB_ACTIVATE_INV_MODE  256       /* invalidate videomode */
-> +#define FB_ACTIVATE_KD_TEXT   512       /* for KDSET vt ioctl */
->
->  #define FB_ACCELF_TEXT         1       /* (OBSOLETE) see fb_info.flags and vc_mode */
->
-> --
-> 2.27.0
->
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+diff --git a/drivers/pwm/pwm-iqs620a.c b/drivers/pwm/pwm-iqs620a.c
+index 674f0e238ba0..b2bb27eff623 100644
+--- a/drivers/pwm/pwm-iqs620a.c
++++ b/drivers/pwm/pwm-iqs620a.c
+@@ -46,7 +46,8 @@ static int iqs620_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+ {
+ 	struct iqs620_pwm_private *iqs620_pwm;
+ 	struct iqs62x_core *iqs62x;
+-	int duty_scale, ret;
++	u64 duty_scale;
++	int ret;
+ 
+ 	if (state->polarity != PWM_POLARITY_NORMAL)
+ 		return -ENOTSUPP;
+@@ -69,7 +70,7 @@ static int iqs620_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+ 	 * For lower duty cycles (e.g. 0), the PWM output is simply disabled to
+ 	 * allow an external pull-down resistor to hold the GPIO3/LTX pin low.
+ 	 */
+-	duty_scale = state->duty_cycle * 256 / IQS620_PWM_PERIOD_NS;
++	duty_scale = div_u64(state->duty_cycle * 256, IQS620_PWM_PERIOD_NS);
+ 
+ 	mutex_lock(&iqs620_pwm->lock);
+ 
+@@ -81,7 +82,7 @@ static int iqs620_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+ 	}
+ 
+ 	if (duty_scale) {
+-		u8 duty_val = min(duty_scale - 1, 0xFF);
++		u8 duty_val = min_t(u64, duty_scale - 1, 0xff);
+ 
+ 		ret = regmap_write(iqs62x->regmap, IQS620_PWM_DUTY_CYCLE,
+ 				   duty_val);
+-- 
+2.24.1

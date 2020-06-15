@@ -1,43 +1,32 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 18 Jun 2020 01:20:39 +0000
-Subject: [PATCH AUTOSEL 4.19 073/172] staging: sm750fb: add missing case while setting FB_VISUAL
-Message-Id: <20200618012218.607130-73-sashal@kernel.org>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 15 Jun 2020 14:16:04 +0000
+Subject: [PATCH 0/2] pwm: Miscellaneous fixes for 64-bit support
+Message-Id: <20200615141606.2814208-1-thierry.reding@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200618012218.607130-1-sashal@kernel.org>
-In-Reply-To: <20200618012218.607130-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Sasha Levin <sashal@kernel.org>
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>, Guru Das Srinagesh <gurus@codeaurora.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Matej Dujava <mdujava@kocurkovo.cz>
+Hi,
 
-[ Upstream commit fa90133377f4a7f15a937df6ad55133bb57c5665 ]
+this contains a couple of fixes for issues that I ran into after
+applying Guru's series to convert PWM period and duty-cycle to 64-bit.
 
-Switch statement does not contain all cases: 8, 16, 24, 32.
-This patch will add missing one (24)
+Bartlomiej, can you provide an Acked-by on the first patch so that I can
+take it through the PWM tree along with the rest of Guru's series?
 
-Fixes: 81dee67e215b ("staging: sm750fb: add sm750 to staging")
-Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
-Link: https://lore.kernel.org/r/1588277366-19354-2-git-send-email-mdujava@kocurkovo.cz
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/staging/sm750fb/sm750.c | 1 +
- 1 file changed, 1 insertion(+)
+Thanks,
+Thierry
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 846d7d243994..3972e215128e 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -897,6 +897,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 		fix->visual = FB_VISUAL_PSEUDOCOLOR;
- 		break;
- 	case 16:
-+	case 24:
- 	case 32:
- 		fix->visual = FB_VISUAL_TRUECOLOR;
- 		break;
+Thierry Reding (2):
+  video: ssd1307fb: Print PWM period using 64-bit format specifier
+  pwm: iqs620a: Use 64-bit division
+
+ drivers/pwm/pwm-iqs620a.c       | 7 ++++---
+ drivers/video/fbdev/ssd1307fb.c | 2 +-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
 -- 
-2.25.1
+2.24.1

@@ -1,46 +1,49 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Sat, 13 Jun 2020 08:52:03 +0000
-Subject: Re: [PATCH] efifb: BGRT: Fix typo in *deferred* in comment
-Message-Id: <56370257-9259-22c4-572f-13ce086157d2@redhat.com>
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Date: Mon, 15 Jun 2020 07:58:09 +0000
+Subject: [PATCH 0/6] remove deprecated i2c_new_device API
+Message-Id: <20200615075816.2848-1-wsa+renesas@sang-engineering.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200613081346.4532-1-pmenzel@molgen.mpg.de>
-In-Reply-To: <20200613081346.4532-1-pmenzel@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-i2c@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, platform-driver-x86@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-media@vger.kernel.org
 
-Hi,
+I want to remove the above API this cycle, and just a few patches have
+not made it into 5.8-rc1. They have been reviewed and most had been
+promised to get into linux-next, but well, things happen. So, I hope it
+is okay for everyone to collect them like this and push them via I2C for
+5.8-rc2.
 
-On 6/13/20 10:13 AM, Paul Menzel wrote:
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Hans de Goede <hdegoede@redhat.com>
-> Signed-off-by: Paul Menzel <pmenzel@molgen.mpg.de>
+One minor exception is the media documentation patch which I simply have
+missed so far, but it is trivial.
 
-LGTM:
+And then, finally, there is the removal of the old API as the final
+patch. Phew, that's been a long ride.
 
-Acked-by: Hans de Goede <hdegoede@redhat.com>
+I am open for comments, of course.
 
-Regards,
+Happy hacking,
 
-Hans
+   Wolfram
 
 
-> ---
->   drivers/video/fbdev/efifb.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-> index 65491ae74808..42b4facc5e2b 100644
-> --- a/drivers/video/fbdev/efifb.c
-> +++ b/drivers/video/fbdev/efifb.c
-> @@ -91,7 +91,7 @@ static int efifb_setcolreg(unsigned regno, unsigned red, unsigned green,
->   }
->   
->   /*
-> - * If fbcon deffered console takeover is configured, the intent is for the
-> + * If fbcon deferred console takeover is configured, the intent is for the
->    * framebuffer to show the boot graphics (e.g. vendor logo) until there is some
->    * (error) message to display. But the boot graphics may have been destroyed by
->    * e.g. option ROM output, detect this and restore the boot graphics.
-> 
+Wolfram Sang (6):
+  drm: encoder_slave: fix refcouting error for modules
+  drm: encoder_slave: use new I2C API
+  x86/platform/intel-mid: convert to use i2c_new_client_device()
+  video: backlight: tosa_lcd: convert to use i2c_new_client_device()
+  Documentation: media: convert to use i2c_new_client_device()
+  i2c: remove deprecated i2c_new_device API
+
+ .../driver-api/media/v4l2-subdev.rst          |  2 +-
+ .../userspace-api/media/conf_nitpick.py       |  2 +-
+ arch/x86/platform/intel-mid/sfi.c             |  4 +--
+ drivers/gpu/drm/drm_encoder_slave.c           | 15 ++++-------
+ drivers/i2c/i2c-core-base.c                   | 25 -------------------
+ drivers/video/backlight/tosa_lcd.c            |  4 +--
+ include/linux/i2c.h                           |  8 +++---
+ 7 files changed, 14 insertions(+), 46 deletions(-)
+
+-- 
+2.27.0

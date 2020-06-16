@@ -1,37 +1,38 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 02 Jun 2020 12:03:38 +0000
-Subject: Re: [PATCH v2 2/2] video: fbdev: amifb: add FIXMEs about {put,get}_user() failures
-Message-Id: <CAMuHMdVYuk9+=3OTufOo98Dd3ijXS6JBH9RqK2v+9mwogxbnXA@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Tue, 16 Jun 2020 10:51:13 +0000
+Subject: Re: [RFC PATCH 0/4] DirectX on Linux
+Message-Id: <20200616105112.GC1718@bug>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200504232908eucas1p296927bc7c736ad924cefaea9a546459d@eucas1p2.samsung.com>
- <b1cf967015c5beafa475aaa30d8e21a58caff870.camel@perches.com>
- <380c0494-ed02-b2be-65b0-d385627fb894@samsung.com>
-In-Reply-To: <380c0494-ed02-b2be-65b0-d385627fb894@samsung.com>
+References: <20200519163234.226513-1-sashal@kernel.org>
+ <55c57049-1869-7421-aa0f-3ce0b6a133cf@suse.de>
+In-Reply-To: <55c57049-1869-7421-aa0f-3ce0b6a133cf@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-m68k <linux-m68k@lists.linux-m68k.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Al Viro <viro@zeniv.linux.org.uk>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Sasha Levin <sashal@kernel.org>, linux-hyperv@vger.kernel.org, sthemmin@microsoft.com, tvrtko.ursulin@intel.com, gregkh@linuxfoundation.org, haiyangz@microsoft.com, spronovo@microsoft.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, chris@chris-wilson.co.uk, wei.liu@kernel.org, linux-fbdev@vger.kernel.org, iourit@microsoft.com, alexander.deucher@amd.com, kys@microsoft.com, Hawking.Zhang@amd.com
 
-On Tue, Jun 2, 2020 at 1:52 PM Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
-> Since we lack the hardware (or proper emulator setup) for
-> testing needed changes add FIXMEs to document the issues
-> (so at least they are not forgotten).
->
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Hi!
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> > The driver creates the /dev/dxg device, which can be opened by user mode
+> > application and handles their ioctls. The IOCTL interface to the driver
+> > is defined in dxgkmthk.h (Dxgkrnl Graphics Port Driver ioctl
+> > definitions). The interface matches the D3DKMT interface on Windows.
+> > Ioctls are implemented in ioctl.c.
+> 
+> Echoing what others said, you're not making a DRM driver. The driver should live outside 
+> of the DRM code.
+> 
 
-Gr{oetje,eeting}s,
+Actually, this sounds to me like "this should not be merged into linux kernel". I mean,
+we already have DRM API on Linux. We don't want another one, do we?
 
-                        Geert
+And at the very least... this misses API docs for /dev/dxg. Code can't really 
+be reviewed without that.
+
+Best regards,
+										Pavel
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

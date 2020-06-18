@@ -1,56 +1,130 @@
-From: Sarah Koffi <paulwiliam782@gmail.com>
-Date: Tue, 23 Jun 2020 11:16:36 +0000
-Subject: Greetings From Mrs. Sarah Koffi
-Message-Id: <CAHqcnY1H2iupBAz=FJNyXEV5G9HGjx-S86dp5pfwpHq27rjDWw@mail.gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 18 Jun 2020 01:01:51 +0000
+Subject: [PATCH AUTOSEL 5.7 014/388] backlight: lp855x: Ensure regulators are disabled on probe failure
+Message-Id: <20200618010805.600873-14-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200618010805.600873-1-sashal@kernel.org>
+In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Jon Hunter <jonathanh@nvidia.com>, Lee Jones <lee.jones@linaro.org>
 
-Greetings From Mrs. Sarah Koffi
+From: Jon Hunter <jonathanh@nvidia.com>
 
-I'm contacting you based on your good profiles I read and for a good
-reasons, I am in search of a property to buy in your country as I
-intended to come over to your
-country for investment, Though I have not meet with you before but I
-believe that one has to risk confiding in someone to succeed sometimes
-in life.
+[ Upstream commit d8207c155a7c6015eb7f43739baa7dfb1fa638af ]
 
-My name is Mrs. Sarah Koffi. My late husband deals on Crude Oil with
-Federal Government of Sudan and he has a personal Oil firm in Bentiu
-Oil zone town and Upper
-Nile city. What I have experience physically, I don't wish to
-experience it again in my life due to the recent civil Ethnic war
-cause by our President Mr. Salva Kiir
-and the rebel leader Mr Riek Machar, I have been Under United Nation
-refuge camp in chad to save my life and that of my little daughter.
+If probing the LP885x backlight fails after the regulators have been
+enabled, then the following warning is seen when releasing the
+regulators ...
 
-Though, I do not know how you will feel to my proposal, but the truth
-is that I sneaked into Chad our neighboring country where I am living
-now as a refugee.
-I escaped with my little daughter when the rebels bust into our house
-and killed my husband as one of the big oil dealers in the country,
-ever since then, I have being on the run.
+ WARNING: CPU: 1 PID: 289 at drivers/regulator/core.c:2051 _regulator_put.part.28+0x158/0x160
+ Modules linked in: tegra_xudc lp855x_bl(+) host1x pwm_tegra ip_tables x_tables ipv6 nf_defrag_ipv6
+ CPU: 1 PID: 289 Comm: systemd-udevd Not tainted 5.6.0-rc2-next-20200224 #1
+ Hardware name: NVIDIA Jetson TX1 Developer Kit (DT)
 
-I left my country and move to Chad our neighboring country with the
-little ceasefire we had, due to the face to face peace meeting accord
-coordinated by the US Secretary of State, Mr John Kerry and United
-Nations in Ethiopia (Addis Ababa) between our President Mr Salva Kiir
-and the rebel leader Mr Riek Machar to stop this war.
+ ...
 
-I want to solicit for your partnership with trust to invest the $8
-million dollars deposited by my late husband in Bank because my life
-is no longer safe in our country, since the rebels are looking for the
-families of all the oil business men in the country to kill, saying
-that they are they one that is milking the country dry.
+ Call trace:
+  _regulator_put.part.28+0x158/0x160
+  regulator_put+0x34/0x50
+  devm_regulator_release+0x10/0x18
+  release_nodes+0x12c/0x230
+  devres_release_all+0x34/0x50
+  really_probe+0x1c0/0x370
+  driver_probe_device+0x58/0x100
+  device_driver_attach+0x6c/0x78
+  __driver_attach+0xb0/0xf0
+  bus_for_each_dev+0x68/0xc8
+  driver_attach+0x20/0x28
+  bus_add_driver+0x160/0x1f0
+  driver_register+0x60/0x110
+  i2c_register_driver+0x40/0x80
+  lp855x_driver_init+0x20/0x1000 [lp855x_bl]
+  do_one_initcall+0x58/0x1a0
+  do_init_module+0x54/0x1d0
+  load_module+0x1d80/0x21c8
+  __do_sys_finit_module+0xe8/0x100
+  __arm64_sys_finit_module+0x18/0x20
+  el0_svc_common.constprop.3+0xb0/0x168
+  do_el0_svc+0x20/0x98
+  el0_sync_handler+0xf4/0x1b0
+  el0_sync+0x140/0x180
 
-I will offer you 20% of the total fund for your help while I will
-partner with you for the investment in your country.
-If I get your reply.
+Fix this by ensuring that the regulators are disabled, if enabled, on
+probe failure.
 
-I will wait to hear from you so as to give you details.With love from
+Finally, ensure that the vddio regulator is disabled in the driver
+remove handler.
 
- i need you to contact me here sarahkoffi389@yahoo.co.jp
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/backlight/lp855x_bl.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-Mrs. Sarah Koffi
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
+index f68920131a4a..e94932c69f54 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -456,7 +456,7 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 		ret = regulator_enable(lp->enable);
+ 		if (ret < 0) {
+ 			dev_err(lp->dev, "failed to enable vddio: %d\n", ret);
+-			return ret;
++			goto disable_supply;
+ 		}
+ 
+ 		/*
+@@ -471,24 +471,34 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 	ret = lp855x_configure(lp);
+ 	if (ret) {
+ 		dev_err(lp->dev, "device config err: %d", ret);
+-		return ret;
++		goto disable_vddio;
+ 	}
+ 
+ 	ret = lp855x_backlight_register(lp);
+ 	if (ret) {
+ 		dev_err(lp->dev,
+ 			"failed to register backlight. err: %d\n", ret);
+-		return ret;
++		goto disable_vddio;
+ 	}
+ 
+ 	ret = sysfs_create_group(&lp->dev->kobj, &lp855x_attr_group);
+ 	if (ret) {
+ 		dev_err(lp->dev, "failed to register sysfs. err: %d\n", ret);
+-		return ret;
++		goto disable_vddio;
+ 	}
+ 
+ 	backlight_update_status(lp->bl);
++
+ 	return 0;
++
++disable_vddio:
++	if (lp->enable)
++		regulator_disable(lp->enable);
++disable_supply:
++	if (lp->supply)
++		regulator_disable(lp->supply);
++
++	return ret;
+ }
+ 
+ static int lp855x_remove(struct i2c_client *cl)
+@@ -497,6 +507,8 @@ static int lp855x_remove(struct i2c_client *cl)
+ 
+ 	lp->bl->props.brightness = 0;
+ 	backlight_update_status(lp->bl);
++	if (lp->enable)
++		regulator_disable(lp->enable);
+ 	if (lp->supply)
+ 		regulator_disable(lp->supply);
+ 	sysfs_remove_group(&lp->dev->kobj, &lp855x_attr_group);
+-- 
+2.25.1

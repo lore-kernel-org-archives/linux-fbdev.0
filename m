@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 18 Jun 2020 01:04:28 +0000
-Subject: [PATCH AUTOSEL 5.7 171/388] staging: sm750fb: add missing case while setting FB_VISUAL
-Message-Id: <20200618010805.600873-171-sashal@kernel.org>
+Date: Thu, 18 Jun 2020 01:24:57 +0000
+Subject: [PATCH AUTOSEL 4.14 045/108] staging: sm750fb: add missing case while setting FB_VISUAL
+Message-Id: <20200618012600.608744-45-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200618010805.600873-1-sashal@kernel.org>
-In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
+References: <20200618012600.608744-1-sashal@kernel.org>
+In-Reply-To: <20200618012600.608744-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -28,10 +28,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 59568d18ce23..5b72aa81d94c 100644
+index 67207b0554cd..5d6f3686c0de 100644
 --- a/drivers/staging/sm750fb/sm750.c
 +++ b/drivers/staging/sm750fb/sm750.c
-@@ -898,6 +898,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+@@ -899,6 +899,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
  		fix->visual = FB_VISUAL_PSEUDOCOLOR;
  		break;
  	case 16:

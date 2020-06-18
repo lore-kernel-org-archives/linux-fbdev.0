@@ -1,7 +1,7 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 18 Jun 2020 01:01:51 +0000
-Subject: [PATCH AUTOSEL 5.7 014/388] backlight: lp855x: Ensure regulators are disabled on probe failure
-Message-Id: <20200618010805.600873-14-sashal@kernel.org>
+Date: Thu, 18 Jun 2020 01:04:28 +0000
+Subject: [PATCH AUTOSEL 5.7 171/388] staging: sm750fb: add missing case while setting FB_VISUAL
+Message-Id: <20200618010805.600873-171-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200618010805.600873-1-sashal@kernel.org>
 In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
@@ -9,122 +9,35 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Jon Hunter <jonathanh@nvidia.com>, Lee Jones <lee.jones@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Sasha Levin <sashal@kernel.org>
 
-From: Jon Hunter <jonathanh@nvidia.com>
+From: Matej Dujava <mdujava@kocurkovo.cz>
 
-[ Upstream commit d8207c155a7c6015eb7f43739baa7dfb1fa638af ]
+[ Upstream commit fa90133377f4a7f15a937df6ad55133bb57c5665 ]
 
-If probing the LP885x backlight fails after the regulators have been
-enabled, then the following warning is seen when releasing the
-regulators ...
+Switch statement does not contain all cases: 8, 16, 24, 32.
+This patch will add missing one (24)
 
- WARNING: CPU: 1 PID: 289 at drivers/regulator/core.c:2051 _regulator_put.part.28+0x158/0x160
- Modules linked in: tegra_xudc lp855x_bl(+) host1x pwm_tegra ip_tables x_tables ipv6 nf_defrag_ipv6
- CPU: 1 PID: 289 Comm: systemd-udevd Not tainted 5.6.0-rc2-next-20200224 #1
- Hardware name: NVIDIA Jetson TX1 Developer Kit (DT)
-
- ...
-
- Call trace:
-  _regulator_put.part.28+0x158/0x160
-  regulator_put+0x34/0x50
-  devm_regulator_release+0x10/0x18
-  release_nodes+0x12c/0x230
-  devres_release_all+0x34/0x50
-  really_probe+0x1c0/0x370
-  driver_probe_device+0x58/0x100
-  device_driver_attach+0x6c/0x78
-  __driver_attach+0xb0/0xf0
-  bus_for_each_dev+0x68/0xc8
-  driver_attach+0x20/0x28
-  bus_add_driver+0x160/0x1f0
-  driver_register+0x60/0x110
-  i2c_register_driver+0x40/0x80
-  lp855x_driver_init+0x20/0x1000 [lp855x_bl]
-  do_one_initcall+0x58/0x1a0
-  do_init_module+0x54/0x1d0
-  load_module+0x1d80/0x21c8
-  __do_sys_finit_module+0xe8/0x100
-  __arm64_sys_finit_module+0x18/0x20
-  el0_svc_common.constprop.3+0xb0/0x168
-  do_el0_svc+0x20/0x98
-  el0_sync_handler+0xf4/0x1b0
-  el0_sync+0x140/0x180
-
-Fix this by ensuring that the regulators are disabled, if enabled, on
-probe failure.
-
-Finally, ensure that the vddio regulator is disabled in the driver
-remove handler.
-
-Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Fixes: 81dee67e215b ("staging: sm750fb: add sm750 to staging")
+Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
+Link: https://lore.kernel.org/r/1588277366-19354-2-git-send-email-mdujava@kocurkovo.cz
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/backlight/lp855x_bl.c | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index f68920131a4a..e94932c69f54 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -456,7 +456,7 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 		ret = regulator_enable(lp->enable);
- 		if (ret < 0) {
- 			dev_err(lp->dev, "failed to enable vddio: %d\n", ret);
--			return ret;
-+			goto disable_supply;
- 		}
- 
- 		/*
-@@ -471,24 +471,34 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 	ret = lp855x_configure(lp);
- 	if (ret) {
- 		dev_err(lp->dev, "device config err: %d", ret);
--		return ret;
-+		goto disable_vddio;
- 	}
- 
- 	ret = lp855x_backlight_register(lp);
- 	if (ret) {
- 		dev_err(lp->dev,
- 			"failed to register backlight. err: %d\n", ret);
--		return ret;
-+		goto disable_vddio;
- 	}
- 
- 	ret = sysfs_create_group(&lp->dev->kobj, &lp855x_attr_group);
- 	if (ret) {
- 		dev_err(lp->dev, "failed to register sysfs. err: %d\n", ret);
--		return ret;
-+		goto disable_vddio;
- 	}
- 
- 	backlight_update_status(lp->bl);
-+
- 	return 0;
-+
-+disable_vddio:
-+	if (lp->enable)
-+		regulator_disable(lp->enable);
-+disable_supply:
-+	if (lp->supply)
-+		regulator_disable(lp->supply);
-+
-+	return ret;
- }
- 
- static int lp855x_remove(struct i2c_client *cl)
-@@ -497,6 +507,8 @@ static int lp855x_remove(struct i2c_client *cl)
- 
- 	lp->bl->props.brightness = 0;
- 	backlight_update_status(lp->bl);
-+	if (lp->enable)
-+		regulator_disable(lp->enable);
- 	if (lp->supply)
- 		regulator_disable(lp->supply);
- 	sysfs_remove_group(&lp->dev->kobj, &lp855x_attr_group);
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 59568d18ce23..5b72aa81d94c 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -898,6 +898,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 		fix->visual = FB_VISUAL_PSEUDOCOLOR;
+ 		break;
+ 	case 16:
++	case 24:
+ 	case 32:
+ 		fix->visual = FB_VISUAL_TRUECOLOR;
+ 		break;
 -- 
 2.25.1

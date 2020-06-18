@@ -1,40 +1,43 @@
-From: Evgeny Novikov <novikov@ispras.ru>
-Date: Tue, 30 Jun 2020 19:54:51 +0000
-Subject: [PATCH] video: fbdev: neofb: fix memory leak in neo_scan_monitor()
-Message-Id: <20200630195451.18675-1-novikov@ispras.ru>
+From: Sasha Levin <sashal@kernel.org>
+Date: Thu, 18 Jun 2020 01:14:04 +0000
+Subject: [PATCH AUTOSEL 5.4 119/266] staging: sm750fb: add missing case while setting FB_VISUAL
+Message-Id: <20200618011631.604574-119-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200618011631.604574-1-sashal@kernel.org>
+In-Reply-To: <20200618011631.604574-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: ldv-project@linuxtesting.org, linux-fbdev@vger.kernel.org, Evgeny Novikov <novikov@ispras.ru>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Mike Rapoport <rppt@linux.ibm.com>, Jani Nikula <jani.nikula@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Sasha Levin <sashal@kernel.org>
 
-neofb_probe() calls neo_scan_monitor() that can successfully allocate a
-memory for info->monspecs.modedb and proceed to case 0x03. There it does
-not free the memory and returns -1. neofb_probe() goes to label
-err_scan_monitor, thus, it does not free this memory through calling
-fb_destroy_modedb() as well. We can not go to label err_init_hw since
-neo_scan_monitor() can fail during memory allocation. So, the patch frees
-the memory directly for case 0x03.
+From: Matej Dujava <mdujava@kocurkovo.cz>
 
-Found by Linux Driver Verification project (linuxtesting.org).
+[ Upstream commit fa90133377f4a7f15a937df6ad55133bb57c5665 ]
 
-Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
+Switch statement does not contain all cases: 8, 16, 24, 32.
+This patch will add missing one (24)
+
+Fixes: 81dee67e215b ("staging: sm750fb: add sm750 to staging")
+Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
+Link: https://lore.kernel.org/r/1588277366-19354-2-git-send-email-mdujava@kocurkovo.cz
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/neofb.c | 1 +
+ drivers/staging/sm750fb/sm750.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
-index f5a676bfd67a..09a20d4ab35f 100644
---- a/drivers/video/fbdev/neofb.c
-+++ b/drivers/video/fbdev/neofb.c
-@@ -1819,6 +1819,7 @@ static int neo_scan_monitor(struct fb_info *info)
- #else
- 		printk(KERN_ERR
- 		       "neofb: Only 640x480, 800x600/480 and 1024x768 panels are currently supported\n");
-+		kfree(info->monspecs.modedb);
- 		return -1;
- #endif
- 	default:
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 59568d18ce23..5b72aa81d94c 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -898,6 +898,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 		fix->visual = FB_VISUAL_PSEUDOCOLOR;
+ 		break;
+ 	case 16:
++	case 24:
+ 	case 32:
+ 		fix->visual = FB_VISUAL_TRUECOLOR;
+ 		break;
 -- 
-2.16.4
+2.25.1

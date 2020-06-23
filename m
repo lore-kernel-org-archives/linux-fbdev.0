@@ -1,43 +1,56 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 18 Jun 2020 01:14:04 +0000
-Subject: [PATCH AUTOSEL 5.4 119/266] staging: sm750fb: add missing case while setting FB_VISUAL
-Message-Id: <20200618011631.604574-119-sashal@kernel.org>
+From: Sarah Koffi <paulwiliam782@gmail.com>
+Date: Tue, 23 Jun 2020 11:16:36 +0000
+Subject: Greetings From Mrs. Sarah Koffi
+Message-Id: <CAHqcnY1H2iupBAz=FJNyXEV5G9HGjx-S86dp5pfwpHq27rjDWw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200618011631.604574-1-sashal@kernel.org>
-In-Reply-To: <20200618011631.604574-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Sasha Levin <sashal@kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-From: Matej Dujava <mdujava@kocurkovo.cz>
+Greetings From Mrs. Sarah Koffi
 
-[ Upstream commit fa90133377f4a7f15a937df6ad55133bb57c5665 ]
+I'm contacting you based on your good profiles I read and for a good
+reasons, I am in search of a property to buy in your country as I
+intended to come over to your
+country for investment, Though I have not meet with you before but I
+believe that one has to risk confiding in someone to succeed sometimes
+in life.
 
-Switch statement does not contain all cases: 8, 16, 24, 32.
-This patch will add missing one (24)
+My name is Mrs. Sarah Koffi. My late husband deals on Crude Oil with
+Federal Government of Sudan and he has a personal Oil firm in Bentiu
+Oil zone town and Upper
+Nile city. What I have experience physically, I don't wish to
+experience it again in my life due to the recent civil Ethnic war
+cause by our President Mr. Salva Kiir
+and the rebel leader Mr Riek Machar, I have been Under United Nation
+refuge camp in chad to save my life and that of my little daughter.
 
-Fixes: 81dee67e215b ("staging: sm750fb: add sm750 to staging")
-Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
-Link: https://lore.kernel.org/r/1588277366-19354-2-git-send-email-mdujava@kocurkovo.cz
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/staging/sm750fb/sm750.c | 1 +
- 1 file changed, 1 insertion(+)
+Though, I do not know how you will feel to my proposal, but the truth
+is that I sneaked into Chad our neighboring country where I am living
+now as a refugee.
+I escaped with my little daughter when the rebels bust into our house
+and killed my husband as one of the big oil dealers in the country,
+ever since then, I have being on the run.
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 59568d18ce23..5b72aa81d94c 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -898,6 +898,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 		fix->visual = FB_VISUAL_PSEUDOCOLOR;
- 		break;
- 	case 16:
-+	case 24:
- 	case 32:
- 		fix->visual = FB_VISUAL_TRUECOLOR;
- 		break;
--- 
-2.25.1
+I left my country and move to Chad our neighboring country with the
+little ceasefire we had, due to the face to face peace meeting accord
+coordinated by the US Secretary of State, Mr John Kerry and United
+Nations in Ethiopia (Addis Ababa) between our President Mr Salva Kiir
+and the rebel leader Mr Riek Machar to stop this war.
+
+I want to solicit for your partnership with trust to invest the $8
+million dollars deposited by my late husband in Bank because my life
+is no longer safe in our country, since the rebels are looking for the
+families of all the oil business men in the country to kill, saying
+that they are they one that is milking the country dry.
+
+I will offer you 20% of the total fund for your help while I will
+partner with you for the investment in your country.
+If I get your reply.
+
+I will wait to hear from you so as to give you details.With love from
+
+ i need you to contact me here sarahkoffi389@yahoo.co.jp
+
+Mrs. Sarah Koffi

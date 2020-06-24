@@ -1,45 +1,37 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Thu, 25 Jun 2020 09:28:28 +0000
-Subject: Re: [PATCH 2/8] backlight: lcd: Add missing kerneldoc entry for 'struct device parent'
-Message-Id: <20200625092828.2cpdofvor6ehhbwh@holly.lan>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 24 Jun 2020 14:57:13 +0000
+Subject: [PATCH 0/8] Fix a bunch of W=1 warnings in Backlight
+Message-Id: <20200624145721.2590327-1-lee.jones@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200624145721.2590327-1-lee.jones@linaro.org>
- <20200624145721.2590327-3-lee.jones@linaro.org>
-In-Reply-To: <20200624145721.2590327-3-lee.jones@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-fbdev@vger.kernel.org, Andrew Zabolotny <zap@homelink.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, jingoohan1@gmail.com, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Jamey Hicks <jamey.hicks@hp.com>, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
+To: daniel.thompson@linaro.org, jingoohan1@gmail.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Wed, Jun 24, 2020 at 03:57:15PM +0100, Lee Jones wrote:
-> This has been missing since the conversion to 'struct device' in 2007.
-> 
-> Cc: <stable@vger.kernel.org>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: Jamey Hicks <jamey.hicks@hp.com>
-> Cc: Andrew Zabolotny <zap@homelink.ru>
-> Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Attempting to clean-up W=1 kernel builds, which are currently
+overwhelmingly riddled with niggly little warnings.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Lee Jones (8):
+  backlight: lms501kf03: Remove unused const variables
+  backlight: lcd: Add missing kerneldoc entry for 'struct device parent'
+  backlight: ili922x: Add missing kerneldoc descriptions for
+    CHECK_FREQ_REG() args
+  backlight: ili922x: Remove invalid use of kerneldoc syntax
+  backlight: ili922x: Add missing kerneldoc description for
+    ili922x_reg_dump()'s arg
+  backlight: backlight: Supply description for function args in existing
+    Kerneldocs
+  backlight: lm3630a_bl: Remove invalid checks for unsigned int < 0
+  backlight: qcom-wled: Remove unused configs for LED3 and LED4
 
+ drivers/video/backlight/backlight.c  | 2 ++
+ drivers/video/backlight/ili922x.c    | 8 ++++++--
+ drivers/video/backlight/lcd.c        | 1 +
+ drivers/video/backlight/lm3630a_bl.c | 4 ++--
+ drivers/video/backlight/lms501kf03.c | 8 --------
+ drivers/video/backlight/qcom-wled.c  | 8 --------
+ 6 files changed, 11 insertions(+), 20 deletions(-)
 
-> ---
->  drivers/video/backlight/lcd.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-> index 78b0333586258..db56e465aaff3 100644
-> --- a/drivers/video/backlight/lcd.c
-> +++ b/drivers/video/backlight/lcd.c
-> @@ -179,6 +179,7 @@ ATTRIBUTE_GROUPS(lcd_device);
->   * lcd_device_register - register a new object of lcd_device class.
->   * @name: the name of the new object(must be the same as the name of the
->   *   respective framebuffer device).
-> + * @parent: pointer to the parent's struct device .
->   * @devdata: an optional pointer to be stored in the device. The
->   *   methods may retrieve it by using lcd_get_data(ld).
->   * @ops: the lcd operations structure.
-> -- 
-> 2.25.1
-> 
+-- 
+2.25.1

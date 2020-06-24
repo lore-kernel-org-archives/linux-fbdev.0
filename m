@@ -1,31 +1,43 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Tue, 16 Jun 2020 10:51:33 +0000
-Subject: Re: [EXTERNAL] Re: [RFC PATCH 0/4] DirectX on Linux
-Message-Id: <20200616105133.GD1718@bug>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 24 Jun 2020 14:57:16 +0000
+Subject: [PATCH 3/8] backlight: ili922x: Add missing kerneldoc descriptions for CHECK_FREQ_REG() args
+Message-Id: <20200624145721.2590327-4-lee.jones@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200519163234.226513-1-sashal@kernel.org>
- <CAPM=9txZpiCGkv3jiBC1F8pTe4A2pqWpQDyjRBXk2roFqw+0+Q@mail.gmail.com>
- <CAKMK7uEa0FH5_AyopVH+wpAXOOxoeo8Acck2qwzzyVnq0UuSZA@mail.gmail.com>
- <MWHPR21MB0287145CD511A2FF6DA502A9C7B60@MWHPR21MB0287.namprd21.prod.outlook.com>
-In-Reply-To: <MWHPR21MB0287145CD511A2FF6DA502A9C7B60@MWHPR21MB0287.namprd21.prod.outlook.com>
+References: <20200624145721.2590327-1-lee.jones@linaro.org>
+In-Reply-To: <20200624145721.2590327-1-lee.jones@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steve Pronovost <spronovo@microsoft.com>
-Cc: Sasha Levin <sashal@kernel.org>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, "Ursulin,
- Tvrtko" <tvrtko.ursulin@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Haiyang Zhang <haiyangz@microsoft.com>, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Chris Wilson <chris@chris-wilson.co.uk>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Wei Liu <wei.liu@kernel.org>, Iouri Tarassov <iourit@microsoft.com>, "Deucher,
- Alexander" <alexander.deucher@amd.com>, KY Srinivasan <kys@microsoft.com>, Hawking Zhang <Hawking.Zhang@amd.com>
+To: daniel.thompson@linaro.org, jingoohan1@gmail.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, stable@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Lee Jones <lee.jones@linaro.org>, Software Engineering <sbabic@denx.de>
 
-Hi!
+Kerneldoc syntax is used, but not complete.  Descriptions required.
 
-> Thanks for the discussion. I may not be able to immediately answer all of your questions, but I'll do my best ????.
-> 
+Prevents warnings like:
 
-Could you do something with your email settings? Because this is not how you should use
-email on lkml. "[EXTERNAL]" in the subject, top-posting, unwrapped lines...
+ drivers/video/backlight/ili922x.c:116: warning: Function parameter or member 's' not described in 'CHECK_FREQ_REG'
+ drivers/video/backlight/ili922x.c:116: warning: Function parameter or member 'x' not described in 'CHECK_FREQ_REG'
 
-Thank you,
-									Pavel
+Cc: <stable@vger.kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Software Engineering <sbabic@denx.de>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+---
+ drivers/video/backlight/ili922x.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/video/backlight/ili922x.c b/drivers/video/backlight/ili922x.c
+index 9c5aa3fbb2842..8cb4b9d3c3bba 100644
+--- a/drivers/video/backlight/ili922x.c
++++ b/drivers/video/backlight/ili922x.c
+@@ -107,6 +107,8 @@
+  *	lower frequency when the registers are read/written.
+  *	The macro sets the frequency in the spi_transfer structure if
+  *	the frequency exceeds the maximum value.
++ * @s: pointer to controller side proxy for an SPI slave device
++ * @x: pointer to the read/write buffer pair
+  */
+ #define CHECK_FREQ_REG(s, x)	\
+ 	do {			\
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.25.1

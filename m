@@ -1,57 +1,53 @@
-From: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Date: Thu, 14 May 2020 06:07:26 +0000
-Subject: [PATCH v12 08/14] drm/i915: Add state readout for DP HDR Metadata Infoframe SDP
-Message-Id: <20200514060732.3378396-9-gwan-gyeong.mun@intel.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 24 Jun 2020 14:57:21 +0000
+Subject: [PATCH 8/8] backlight: qcom-wled: Remove unused configs for LED3 and LED4
+Message-Id: <20200624145721.2590327-9-lee.jones@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
-In-Reply-To: <20200514060732.3378396-1-gwan-gyeong.mun@intel.com>
+References: <20200624145721.2590327-1-lee.jones@linaro.org>
+In-Reply-To: <20200624145721.2590327-1-lee.jones@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, laurent.pinchart@ideasonboard.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: daniel.thompson@linaro.org, jingoohan1@gmail.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Bjorn Andersson <bjorn.andersson@linaro.org>, Andy Gross <agross@kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
 
-Added state readout for DP HDR Metadata Infoframe SDP.
+Fixes W=1 warnings:
 
-v9: Rebased
-v10: Rebased
+ drivers/video/backlight/qcom-wled.c:1294:34: warning: ‘wled4_string_cfg’ defined but not used [-Wunused-const-variable=]
+ 1294 | static const struct wled_var_cfg wled4_string_cfg = {
+ | ^~~~~~~~~~~~~~~~
+ drivers/video/backlight/qcom-wled.c:1290:34: warning: ‘wled3_string_cfg’ defined but not used [-Wunused-const-variable=]
+ 1290 | static const struct wled_var_cfg wled3_string_cfg = {
+ | ^~~~~~~~~~~~~~~~
 
-Signed-off-by: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
-Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Cc: <stable@vger.kernel.org>
+Cc: Andy Gross <agross@kernel.org>
+Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-arm-msm@vger.kernel.org
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/gpu/drm/i915/display/intel_ddi.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/video/backlight/qcom-wled.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/display/intel_ddi.c b/drivers/gpu/drm/i915/display/intel_ddi.c
-index 75c7ffb1874c..f2bb7527ba0c 100644
---- a/drivers/gpu/drm/i915/display/intel_ddi.c
-+++ b/drivers/gpu/drm/i915/display/intel_ddi.c
-@@ -4234,6 +4234,9 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
- 				    pipe_config->fec_enable);
- 		}
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 4c8c34b994414..c25c31199952c 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -1287,14 +1287,6 @@ static const struct wled_var_cfg wled4_string_i_limit_cfg = {
+ 	.size = ARRAY_SIZE(wled4_string_i_limit_values),
+ };
  
-+		pipe_config->infoframes.enable |+			intel_hdmi_infoframes_enabled(encoder, pipe_config);
-+
- 		break;
- 	case TRANS_DDI_MODE_SELECT_DP_MST:
- 		pipe_config->output_types |= BIT(INTEL_OUTPUT_DP_MST);
-@@ -4245,6 +4248,9 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
- 					REG_FIELD_GET(TRANS_DDI_MST_TRANSPORT_SELECT_MASK, temp);
- 
- 		intel_dp_get_m_n(intel_crtc, pipe_config);
-+
-+		pipe_config->infoframes.enable |+			intel_hdmi_infoframes_enabled(encoder, pipe_config);
- 		break;
- 	default:
- 		break;
-@@ -4299,6 +4305,8 @@ void intel_ddi_get_config(struct intel_encoder *encoder,
- 
- 	if (INTEL_GEN(dev_priv) >= 8)
- 		bdw_get_trans_port_sync_config(pipe_config);
-+
-+	intel_read_dp_sdp(encoder, pipe_config, HDMI_PACKET_TYPE_GAMUT_METADATA);
- }
- 
- static enum intel_output_type
+-static const struct wled_var_cfg wled3_string_cfg = {
+-	.size = 8,
+-};
+-
+-static const struct wled_var_cfg wled4_string_cfg = {
+-	.size = 16,
+-};
+-
+ static const struct wled_var_cfg wled5_mod_sel_cfg = {
+ 	.size = 2,
+ };
 -- 
-2.25.0
+2.25.1

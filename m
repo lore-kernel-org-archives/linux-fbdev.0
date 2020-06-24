@@ -1,117 +1,61 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 01 Jun 2020 13:25:14 +0000
-Subject: Re: [PATCH v3] console: newport_con: fix an issue about leak related system resources
-Message-Id: <f1533c61-d112-35a2-a5f3-d6fae596b335@samsung.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 24 Jun 2020 14:57:20 +0000
+Subject: [PATCH 7/8] backlight: lm3630a_bl: Remove invalid checks for unsigned int < 0
+Message-Id: <20200624145721.2590327-8-lee.jones@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200423164300eucas1p286ebc9584639c8e8b6311dbf10355808@eucas1p2.samsung.com>
- <20200423164251.3349-1-zhengdejin5@gmail.com>
-In-Reply-To: <20200423164251.3349-1-zhengdejin5@gmail.com>
+References: <20200624145721.2590327-1-lee.jones@linaro.org>
+In-Reply-To: <20200624145721.2590327-1-lee.jones@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dejin Zheng <zhengdejin5@gmail.com>
-Cc: akpm@osdl.org, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Andy Shevchenko <andy.shevchenko@gmail.com>, tglx@linutronix.de
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: daniel.thompson@linaro.org, jingoohan1@gmail.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, Daniel Jeong <gshark.jeong@gmail.com>, LDD MLP <ldd-mlp@list.ti.com>, stable@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
 
+unsigned ints 'sources' and 'bank' cannot be less than LM3630A_SINK_0 (0)
+and LM3630A_BANK_0 (0) respecitively, so change the logic to only check
+for thier two possible valid values.
 
-On 4/23/20 6:42 PM, Dejin Zheng wrote:
-> A call of the function do_take_over_console() can fail here.
-> The corresponding system resources were not released then.
-> Thus add a call of iounmap() and release_mem_region()
-> together with the check of a failure predicate. and also
-> add release_mem_region() on device removal.
-> 
-> Fixes: e86bb8acc0fdc ("[PATCH] VT binding: Make newport_con support binding")
-> Cc: Andy Shevchenko <andy.shevchenko@gmail.com>
-> Suggested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Dejin Zheng <zhengdejin5@gmail.com>
+Fixes W=1 warnings:
 
-Applied to drm-misc-next tree (patch should show up in v5.9), thanks.
+ drivers/video/backlight/lm3630a_bl.c: In function ‘lm3630a_parse_led_sources’:
+ drivers/video/backlight/lm3630a_bl.c:394:18: warning: comparison of unsigned expression < 0 is always false [-Wtype-limits]
+ 394 | if (sources[i] < LM3630A_SINK_0 || sources[i] > LM3630A_SINK_1)
+ | ^
+ drivers/video/backlight/lm3630a_bl.c: In function ‘lm3630a_parse_bank’:
+ drivers/video/backlight/lm3630a_bl.c:415:11: warning: comparison of unsigned expression < 0 is always false [-Wtype-limits]
+ 415 | if (bank < LM3630A_BANK_0 || bank > LM3630A_BANK_1)
+ | ^
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Cc: <stable@vger.kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Daniel Jeong <gshark.jeong@gmail.com>
+Cc: LDD MLP <ldd-mlp@list.ti.com>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+---
+ drivers/video/backlight/lm3630a_bl.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> ---
-> v2 -> v3:
-> 	- modify commit tag CC to Cc by Andy's suggestion.
-> 	- modify Subject 'console: console:' to 'console: newport_con:'
-> 	  by Bartlomiej's suggestion.
-> 	- add missing release_mem_region() on error and on device removal
-> 	  by Bartlomiej's suggestion.
-> 	- add correct fixes commit, before this patch, add a wrong 'Fixes:
-> 	  e84de0c6190503 ("MIPS: GIO bus support for SGI IP22/28")'
-> 	  thanks Bartlomiej again!
-> 
-> v1 -> v2:
-> 	- modify the commit comments. The commit comments have some more
-> 	  appropriate instructions by Markus'suggestion. here is my first
-> 	  version commit comments:
-> 
-> 	  if do_take_over_console() return an error in the newport_probe(),
-> 	  due to the io virtual address is not released, it will cause a
-> 	  leak.
-> 	 
->  drivers/video/console/newport_con.c | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
-> index 00dddf6e08b0..2d2ee17052e8 100644
-> --- a/drivers/video/console/newport_con.c
-> +++ b/drivers/video/console/newport_con.c
-> @@ -32,6 +32,8 @@
->  #include <linux/linux_logo.h>
->  #include <linux/font.h>
->  
-> +#define NEWPORT_LEN	0x10000
-> +
->  #define FONT_DATA ((unsigned char *)font_vga_8x16.data)
->  
->  /* borrowed from fbcon.c */
-> @@ -43,6 +45,7 @@
->  static unsigned char *font_data[MAX_NR_CONSOLES];
->  
->  static struct newport_regs *npregs;
-> +static unsigned long newport_addr;
->  
->  static int logo_active;
->  static int topscan;
-> @@ -702,7 +705,6 @@ const struct consw newport_con = {
->  static int newport_probe(struct gio_device *dev,
->  			 const struct gio_device_id *id)
->  {
-> -	unsigned long newport_addr;
->  	int err;
->  
->  	if (!dev->resource.start)
-> @@ -712,7 +714,7 @@ static int newport_probe(struct gio_device *dev,
->  		return -EBUSY; /* we only support one Newport as console */
->  
->  	newport_addr = dev->resource.start + 0xF0000;
-> -	if (!request_mem_region(newport_addr, 0x10000, "Newport"))
-> +	if (!request_mem_region(newport_addr, NEWPORT_LEN, "Newport"))
->  		return -ENODEV;
->  
->  	npregs = (struct newport_regs *)/* ioremap cannot fail */
-> @@ -720,6 +722,11 @@ static int newport_probe(struct gio_device *dev,
->  	console_lock();
->  	err = do_take_over_console(&newport_con, 0, MAX_NR_CONSOLES - 1, 1);
->  	console_unlock();
-> +
-> +	if (err) {
-> +		iounmap((void *)npregs);
-> +		release_mem_region(newport_addr, NEWPORT_LEN);
-> +	}
->  	return err;
->  }
->  
-> @@ -727,6 +734,7 @@ static void newport_remove(struct gio_device *dev)
->  {
->  	give_up_console(&newport_con);
->  	iounmap((void *)npregs);
-> +	release_mem_region(newport_addr, NEWPORT_LEN);
->  }
->  
->  static struct gio_device_id newport_ids[] = {
-> 
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index ee320883b7108..e88a2b0e59046 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -391,7 +391,7 @@ static int lm3630a_parse_led_sources(struct fwnode_handle *node,
+ 		return ret;
+ 
+ 	for (i = 0; i < num_sources; i++) {
+-		if (sources[i] < LM3630A_SINK_0 || sources[i] > LM3630A_SINK_1)
++		if (sources[i] != LM3630A_SINK_0 && sources[i] != LM3630A_SINK_1)
+ 			return -EINVAL;
+ 
+ 		ret |= BIT(sources[i]);
+@@ -412,7 +412,7 @@ static int lm3630a_parse_bank(struct lm3630a_platform_data *pdata,
+ 	if (ret)
+ 		return ret;
+ 
+-	if (bank < LM3630A_BANK_0 || bank > LM3630A_BANK_1)
++	if (bank != LM3630A_BANK_0 && bank != LM3630A_BANK_1)
+ 		return -EINVAL;
+ 
+ 	led_sources = lm3630a_parse_led_sources(node, BIT(bank));
+-- 
+2.25.1

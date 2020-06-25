@@ -1,42 +1,53 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 24 Jun 2020 14:57:18 +0000
-Subject: [PATCH 5/8] backlight: ili922x: Add missing kerneldoc description for ili922x_reg_dump()'s arg
-Message-Id: <20200624145721.2590327-6-lee.jones@linaro.org>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Thu, 25 Jun 2020 09:43:18 +0000
+Subject: Re: [PATCH 5/8] backlight: ili922x: Add missing kerneldoc description for ili922x_reg_dump()'s arg
+Message-Id: <20200625094318.h6t22gkgi5d7wbv4@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200624145721.2590327-1-lee.jones@linaro.org>
-In-Reply-To: <20200624145721.2590327-1-lee.jones@linaro.org>
+ <20200624145721.2590327-6-lee.jones@linaro.org>
+In-Reply-To: <20200624145721.2590327-6-lee.jones@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: daniel.thompson@linaro.org, jingoohan1@gmail.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, stable@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Lee Jones <lee.jones@linaro.org>, Software Engineering <sbabic@denx.de>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, jingoohan1@gmail.com, linux-kernel@vger.kernel.org, stable@vger.kernel.org, dri-devel@lists.freedesktop.org, Software Engineering <sbabic@denx.de>, linux-arm-kernel@lists.infradead.org
 
-Kerneldoc syntax is used, but not complete.  Descriptions required.
+On Wed, Jun 24, 2020 at 03:57:18PM +0100, Lee Jones wrote:
+> Kerneldoc syntax is used, but not complete.  Descriptions required.
+> 
+> Prevents warnings like:
+> 
+>  drivers/video/backlight/ili922x.c:298: warning: Function parameter or member 'spi' not described in 'ili922x_reg_dump'
+> 
+> Cc: <stable@vger.kernel.org>
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: Software Engineering <sbabic@denx.de>
+> Signed-off-by: Lee Jones <lee.jones@linaro.org>
+> ---
+>  drivers/video/backlight/ili922x.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/video/backlight/ili922x.c b/drivers/video/backlight/ili922x.c
+> index cd41433b87aeb..26193f38234e7 100644
+> --- a/drivers/video/backlight/ili922x.c
+> +++ b/drivers/video/backlight/ili922x.c
+> @@ -295,6 +295,8 @@ static int ili922x_write(struct spi_device *spi, u8 reg, u16 value)
+>  #ifdef DEBUG
+>  /**
+>   * ili922x_reg_dump - dump all registers
+> + *
+> + * @spi: pointer to the controller side proxy for an SPI slave device
 
-Prevents warnings like:
+Similar to previous... and I also noticed that there are several other
+existing @spi descriptions in this file and it would be good to make
+them consistent.
 
- drivers/video/backlight/ili922x.c:298: warning: Function parameter or member 'spi' not described in 'ili922x_reg_dump'
 
-Cc: <stable@vger.kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Software Engineering <sbabic@denx.de>
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/video/backlight/ili922x.c | 2 ++
- 1 file changed, 2 insertions(+)
+Daniel.
 
-diff --git a/drivers/video/backlight/ili922x.c b/drivers/video/backlight/ili922x.c
-index cd41433b87aeb..26193f38234e7 100644
---- a/drivers/video/backlight/ili922x.c
-+++ b/drivers/video/backlight/ili922x.c
-@@ -295,6 +295,8 @@ static int ili922x_write(struct spi_device *spi, u8 reg, u16 value)
- #ifdef DEBUG
- /**
-  * ili922x_reg_dump - dump all registers
-+ *
-+ * @spi: pointer to the controller side proxy for an SPI slave device
-  */
- static void ili922x_reg_dump(struct spi_device *spi)
- {
--- 
-2.25.1
+>   */
+>  static void ili922x_reg_dump(struct spi_device *spi)
+>  {
+> -- 
+> 2.25.1
+> 

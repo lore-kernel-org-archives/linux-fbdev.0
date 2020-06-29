@@ -1,130 +1,209 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 18 Jun 2020 01:19:36 +0000
-Subject: [PATCH AUTOSEL 4.19 010/172] backlight: lp855x: Ensure regulators are disabled on probe failure
-Message-Id: <20200618012218.607130-10-sashal@kernel.org>
+Date: Mon, 29 Jun 2020 15:18:01 +0000
+Subject: [PATCH 5.7 248/265] drm/fb-helper: Fix vt restore
+Message-Id: <20200629151818.2493727-249-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200618012218.607130-1-sashal@kernel.org>
-In-Reply-To: <20200618012218.607130-1-sashal@kernel.org>
+References: <20200629151818.2493727-1-sashal@kernel.org>
+In-Reply-To: <20200629151818.2493727-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Jon Hunter <jonathanh@nvidia.com>, Lee Jones <lee.jones@linaro.org>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel.vetter@ffwll.ch>, =?UTF-8?q?Michel=20D=C3=A4nzer?= <michel@daenzer.net>, shlomo@fastmail.com, Geert Uytterhoeven <geert@linux-m68k.org>, dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alex Deucher <alexander.deucher@amd.com>, Daniel Vetter <daniel.vetter@intel.com>, Nathan Chancellor <natechancellor@gmail.com>, Peter Rosin <peda@axentia.se>, Qiujun Huang <hqjagain@gmail.com>
 
-From: Jon Hunter <jonathanh@nvidia.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-[ Upstream commit d8207c155a7c6015eb7f43739baa7dfb1fa638af ]
+commit dc5bdb68b5b369d5bc7d1de96fa64cc1737a6320 upstream.
 
-If probing the LP885x backlight fails after the regulators have been
-enabled, then the following warning is seen when releasing the
-regulators ...
+In the past we had a pile of hacks to orchestrate access between fbdev
+emulation and native kms clients. We've tried to streamline this, by
+always preferring the kms side above fbdev calls when a drm master
+exists, because drm master controls access to the display resources.
 
- WARNING: CPU: 1 PID: 289 at drivers/regulator/core.c:2051 _regulator_put.part.28+0x158/0x160
- Modules linked in: tegra_xudc lp855x_bl(+) host1x pwm_tegra ip_tables x_tables ipv6 nf_defrag_ipv6
- CPU: 1 PID: 289 Comm: systemd-udevd Not tainted 5.6.0-rc2-next-20200224 #1
- Hardware name: NVIDIA Jetson TX1 Developer Kit (DT)
+Unfortunately this breaks existing userspace, specifically Xorg. When
+exiting Xorg first restores the console to text mode using the KDSET
+ioctl on the vt. This does nothing, because a drm master is still
+around. Then it drops the drm master status, which again does nothing,
+because logind is keeping additional drm fd open to be able to
+orchestrate vt switches. In the past this is the point where fbdev was
+restored, as part of the ->lastclose hook on the drm side.
 
- ...
+Now to fix this regression we don't want to go back to letting fbdev
+restore things whenever it feels like, or to the pile of hacks we've
+had before. Instead try and go with a minimal exception to make the
+KDSET case work again, and nothing else.
 
- Call trace:
-  _regulator_put.part.28+0x158/0x160
-  regulator_put+0x34/0x50
-  devm_regulator_release+0x10/0x18
-  release_nodes+0x12c/0x230
-  devres_release_all+0x34/0x50
-  really_probe+0x1c0/0x370
-  driver_probe_device+0x58/0x100
-  device_driver_attach+0x6c/0x78
-  __driver_attach+0xb0/0xf0
-  bus_for_each_dev+0x68/0xc8
-  driver_attach+0x20/0x28
-  bus_add_driver+0x160/0x1f0
-  driver_register+0x60/0x110
-  i2c_register_driver+0x40/0x80
-  lp855x_driver_init+0x20/0x1000 [lp855x_bl]
-  do_one_initcall+0x58/0x1a0
-  do_init_module+0x54/0x1d0
-  load_module+0x1d80/0x21c8
-  __do_sys_finit_module+0xe8/0x100
-  __arm64_sys_finit_module+0x18/0x20
-  el0_svc_common.constprop.3+0xb0/0x168
-  do_el0_svc+0x20/0x98
-  el0_sync_handler+0xf4/0x1b0
-  el0_sync+0x140/0x180
+This means that if userspace does a KDSET call when switching between
+graphical compositors, there will be some flickering with fbcon
+showing up for a bit. But a) that's not a regression and b) userspace
+can fix it by improving the vt switching dance - logind should have
+all the information it needs.
 
-Fix this by ensuring that the regulators are disabled, if enabled, on
-probe failure.
+While pondering all this I'm also wondering wheter we should have a
+SWITCH_MASTER ioctl to allow race-free master status handover. But
+that's for another day.
 
-Finally, ensure that the vddio regulator is disabled in the driver
-remove handler.
+v2: Somehow forgot to cc all the fbdev people.
 
-Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+v3: Fix typo Alex spotted.
+
+Reviewed-by: Alex Deucher <alexander.deucher@amd.com>
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id 8179
+Cc: shlomo@fastmail.com
+Reported-and-Tested-by: shlomo@fastmail.com
+Cc: Michel Dänzer <michel@daenzer.net>
+Fixes: 64914da24ea9 ("drm/fbdev-helper: don't force restores")
+Cc: Noralf Trønnes <noralf@tronnes.org>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Daniel Vetter <daniel.vetter@intel.com>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: dri-devel@lists.freedesktop.org
+Cc: <stable@vger.kernel.org> # v5.7+
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Nathan Chancellor <natechancellor@gmail.com>
+Cc: Qiujun Huang <hqjagain@gmail.com>
+Cc: Peter Rosin <peda@axentia.se>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200624092910.3280448-1-daniel.vetter@ffwll.ch
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/video/backlight/lp855x_bl.c | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+ drivers/gpu/drm/drm_fb_helper.c  | 63 +++++++++++++++++++++++++-------
+ drivers/video/fbdev/core/fbcon.c |  3 +-
+ include/uapi/linux/fb.h          |  1 +
+ 3 files changed, 52 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index 73612485ed07..bd43d8cff389 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -460,7 +460,7 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 		ret = regulator_enable(lp->enable);
- 		if (ret < 0) {
- 			dev_err(lp->dev, "failed to enable vddio: %d\n", ret);
--			return ret;
-+			goto disable_supply;
- 		}
- 
- 		/*
-@@ -475,24 +475,34 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 	ret = lp855x_configure(lp);
- 	if (ret) {
- 		dev_err(lp->dev, "device config err: %d", ret);
--		return ret;
-+		goto disable_vddio;
- 	}
- 
- 	ret = lp855x_backlight_register(lp);
- 	if (ret) {
- 		dev_err(lp->dev,
- 			"failed to register backlight. err: %d\n", ret);
--		return ret;
-+		goto disable_vddio;
- 	}
- 
- 	ret = sysfs_create_group(&lp->dev->kobj, &lp855x_attr_group);
- 	if (ret) {
- 		dev_err(lp->dev, "failed to register sysfs. err: %d\n", ret);
--		return ret;
-+		goto disable_vddio;
- 	}
- 
- 	backlight_update_status(lp->bl);
-+
- 	return 0;
-+
-+disable_vddio:
-+	if (lp->enable)
-+		regulator_disable(lp->enable);
-+disable_supply:
-+	if (lp->supply)
-+		regulator_disable(lp->supply);
-+
-+	return ret;
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index a9771de4d17e6..c7be39a00d437 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -227,18 +227,9 @@ int drm_fb_helper_debug_leave(struct fb_info *info)
  }
+ EXPORT_SYMBOL(drm_fb_helper_debug_leave);
  
- static int lp855x_remove(struct i2c_client *cl)
-@@ -501,6 +511,8 @@ static int lp855x_remove(struct i2c_client *cl)
+-/**
+- * drm_fb_helper_restore_fbdev_mode_unlocked - restore fbdev configuration
+- * @fb_helper: driver-allocated fbdev helper, can be NULL
+- *
+- * This should be called from driver's drm &drm_driver.lastclose callback
+- * when implementing an fbcon on top of kms using this helper. This ensures that
+- * the user isn't greeted with a black screen when e.g. X dies.
+- *
+- * RETURNS:
+- * Zero if everything went ok, negative error code otherwise.
+- */
+-int drm_fb_helper_restore_fbdev_mode_unlocked(struct drm_fb_helper *fb_helper)
++static int
++__drm_fb_helper_restore_fbdev_mode_unlocked(struct drm_fb_helper *fb_helper,
++					    bool force)
+ {
+ 	bool do_delayed;
+ 	int ret;
+@@ -250,7 +241,16 @@ int drm_fb_helper_restore_fbdev_mode_unlocked(struct drm_fb_helper *fb_helper)
+ 		return 0;
  
- 	lp->bl->props.brightness = 0;
- 	backlight_update_status(lp->bl);
-+	if (lp->enable)
-+		regulator_disable(lp->enable);
- 	if (lp->supply)
- 		regulator_disable(lp->supply);
- 	sysfs_remove_group(&lp->dev->kobj, &lp855x_attr_group);
+ 	mutex_lock(&fb_helper->lock);
+-	ret = drm_client_modeset_commit(&fb_helper->client);
++	if (force) {
++		/*
++		 * Yes this is the _locked version which expects the master lock
++		 * to be held. But for forced restores we're intentionally
++		 * racing here, see drm_fb_helper_set_par().
++		 */
++		ret = drm_client_modeset_commit_locked(&fb_helper->client);
++	} else {
++		ret = drm_client_modeset_commit(&fb_helper->client);
++	}
+ 
+ 	do_delayed = fb_helper->delayed_hotplug;
+ 	if (do_delayed)
+@@ -262,6 +262,22 @@ int drm_fb_helper_restore_fbdev_mode_unlocked(struct drm_fb_helper *fb_helper)
+ 
+ 	return ret;
+ }
++
++/**
++ * drm_fb_helper_restore_fbdev_mode_unlocked - restore fbdev configuration
++ * @fb_helper: driver-allocated fbdev helper, can be NULL
++ *
++ * This should be called from driver's drm &drm_driver.lastclose callback
++ * when implementing an fbcon on top of kms using this helper. This ensures that
++ * the user isn't greeted with a black screen when e.g. X dies.
++ *
++ * RETURNS:
++ * Zero if everything went ok, negative error code otherwise.
++ */
++int drm_fb_helper_restore_fbdev_mode_unlocked(struct drm_fb_helper *fb_helper)
++{
++	return __drm_fb_helper_restore_fbdev_mode_unlocked(fb_helper, false);
++}
+ EXPORT_SYMBOL(drm_fb_helper_restore_fbdev_mode_unlocked);
+ 
+ #ifdef CONFIG_MAGIC_SYSRQ
+@@ -1310,6 +1326,7 @@ int drm_fb_helper_set_par(struct fb_info *info)
+ {
+ 	struct drm_fb_helper *fb_helper = info->par;
+ 	struct fb_var_screeninfo *var = &info->var;
++	bool force;
+ 
+ 	if (oops_in_progress)
+ 		return -EBUSY;
+@@ -1319,7 +1336,25 @@ int drm_fb_helper_set_par(struct fb_info *info)
+ 		return -EINVAL;
+ 	}
+ 
+-	drm_fb_helper_restore_fbdev_mode_unlocked(fb_helper);
++	/*
++	 * Normally we want to make sure that a kms master takes precedence over
++	 * fbdev, to avoid fbdev flickering and occasionally stealing the
++	 * display status. But Xorg first sets the vt back to text mode using
++	 * the KDSET IOCTL with KD_TEXT, and only after that drops the master
++	 * status when exiting.
++	 *
++	 * In the past this was caught by drm_fb_helper_lastclose(), but on
++	 * modern systems where logind always keeps a drm fd open to orchestrate
++	 * the vt switching, this doesn't work.
++	 *
++	 * To not break the userspace ABI we have this special case here, which
++	 * is only used for the above case. Everything else uses the normal
++	 * commit function, which ensures that we never steal the display from
++	 * an active drm master.
++	 */
++	force = var->activate & FB_ACTIVATE_KD_TEXT;
++
++	__drm_fb_helper_restore_fbdev_mode_unlocked(fb_helper, force);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 9d28a8e3328fb..e2a490c5ae08f 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2402,7 +2402,8 @@ static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
+ 		ops->graphics = 1;
+ 
+ 		if (!blank) {
+-			var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE;
++			var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE |
++				FB_ACTIVATE_KD_TEXT;
+ 			fb_set_var(info, &var);
+ 			ops->graphics = 0;
+ 			ops->var = info->var;
+diff --git a/include/uapi/linux/fb.h b/include/uapi/linux/fb.h
+index b6aac7ee1f670..4c14e8be72677 100644
+--- a/include/uapi/linux/fb.h
++++ b/include/uapi/linux/fb.h
+@@ -205,6 +205,7 @@ struct fb_bitfield {
+ #define FB_ACTIVATE_ALL	       64	/* change all VCs on this fb	*/
+ #define FB_ACTIVATE_FORCE     128	/* force apply even when no change*/
+ #define FB_ACTIVATE_INV_MODE  256       /* invalidate videomode */
++#define FB_ACTIVATE_KD_TEXT   512       /* for KDSET vt ioctl */
+ 
+ #define FB_ACCELF_TEXT		1	/* (OBSOLETE) see fb_info.flags and vc_mode */
+ 
 -- 
 2.25.1

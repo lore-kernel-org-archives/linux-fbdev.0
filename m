@@ -1,54 +1,47 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 21 Jul 2020 14:47:11 +0000
-Subject: Re: [PATCH -next] backlight: cr_bllcd: Remove unused variable 'intensity'
-Message-Id: <20200721144711.GF621928@dell>
+From: Evgeny Novikov <novikov@ispras.ru>
+Date: Thu, 02 Jul 2020 16:05:40 +0000
+Subject: [PATCH] fbdev: da8xx-fb: go to proper label on error handling paths in probe
+Message-Id: <20200702160540.24546-1-novikov@ispras.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200721134841.33893-1-weiyongjun1@huawei.com>
-In-Reply-To: <20200721134841.33893-1-weiyongjun1@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Wei Yongjun <weiyongjun1@huawei.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Hulk Robot <hulkci@huawei.com>, Sam Ravnborg <sam@ravnborg.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: ldv-project@linuxtesting.org, Jani Nikula <jani.nikula@intel.com>, Evgeny Novikov <novikov@ispras.ru>, Daniel Vetter <daniel.vetter@ffwll.ch>, Sekhar Nori <nsekhar@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On Tue, 21 Jul 2020, Wei Yongjun wrote:
+fb_probe() can successfully allocate a new frame buffer, but then fail
+to perform some operations with regulator. In these cases fb_probe()
+goes to label err_pm_runtime_disable where the frame buffer is not
+released. The patch makes fb_probe() to go to label err_release_fb on
+corresponding error handling paths.
 
-> Gcc report unused-variable warning as follows:
-> 
-> drivers/video/backlight/cr_bllcd.c:62:6: warning:
->  unused variable 'intensity' [-Wunused-variable]
->    62 |  int intensity = bd->props.brightness;
->       |      ^~~~~~~~~
-> 
-> After commit 24d34617c24f ("backlight: cr_bllcd: Introduce
-> gpio-backlight semantics"), this variable is never used, this
-> commit removing it.
-> 
-> Fixes: 24d34617c24f ("backlight: cr_bllcd: Introduce gpio-backlight semantics")
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
-> ---
->  drivers/video/backlight/cr_bllcd.c | 1 -
->  1 file changed, 1 deletion(-)
+Found by Linux Driver Verification project (linuxtesting.org).
 
-Thanks for the patch, but this has already been fixed.
+Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
+---
+ drivers/video/fbdev/da8xx-fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> diff --git a/drivers/video/backlight/cr_bllcd.c b/drivers/video/backlight/cr_bllcd.c
-> index a24d42e1ea3c..4ad0a72531fe 100644
-> --- a/drivers/video/backlight/cr_bllcd.c
-> +++ b/drivers/video/backlight/cr_bllcd.c
-> @@ -59,7 +59,6 @@ struct cr_panel {
->  
->  static int cr_backlight_set_intensity(struct backlight_device *bd)
->  {
-> -	int intensity = bd->props.brightness;
->  	u32 addr = gpio_bar + CRVML_PANEL_PORT;
->  	u32 cur = inl(addr);
->  
-> 
-
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index 73c3c4c8cc12..e38c0e3f9c61 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -1402,14 +1402,14 @@ static int fb_probe(struct platform_device *device)
+ 	if (IS_ERR(par->lcd_supply)) {
+ 		if (PTR_ERR(par->lcd_supply) = -EPROBE_DEFER) {
+ 			ret = -EPROBE_DEFER;
+-			goto err_pm_runtime_disable;
++			goto err_release_fb;
+ 		}
+ 
+ 		par->lcd_supply = NULL;
+ 	} else {
+ 		ret = regulator_enable(par->lcd_supply);
+ 		if (ret)
+-			goto err_pm_runtime_disable;
++			goto err_release_fb;
+ 	}
+ 
+ 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
 -- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.16.4

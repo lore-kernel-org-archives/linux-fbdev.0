@@ -1,96 +1,71 @@
-From: syzbot <syzbot+ba5bd977df7bb87862c4@syzkaller.appspotmail.com>
-Date: Tue, 21 Jul 2020 04:42:19 +0000
-Subject: KASAN: stack-out-of-bounds Write in sys_imageblit
-Message-Id: <00000000000090cd5905aaec3f2c@google.com>
+From: =?UTF-8?B?RnLDqWTDqXJpYyBQaWVycmV0?=  <frederic.pierret@qubes-os.org>
+Date: Fri, 03 Jul 2020 14:24:31 +0000
+Subject: dummy-backlight
+Message-Id: <903f7645-5062-00a9-8d7c-b30ef5f54951@qubes-os.org>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="4fGmdG7NnKFN1M86H79xV4JfD01yLcbyk"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, dri-devel <dri-devel@lists.freedesktop.org>, linux-fbdev@vger.kernel.org
+Cc: =?UTF-8?Q?Marek_Marczykowski-G=c3=b3recki?= <marmarek@invisiblethingslab.com>
+
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--4fGmdG7NnKFN1M86H79xV4JfD01yLcbyk
+Content-Type: multipart/mixed; boundary="Q7nSMCZKXlHpZb2Yy992XltX3EiXUZfr7"
+
+--Q7nSMCZKXlHpZb2Yy992XltX3EiXUZfr7
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
-To: b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
 
-Hello,
+Dear all,
 
-syzbot found the following issue on:
+I'm working on a simple kernel module currently called "dummy-backlight" =
+(https://github.com/fepitre/dummy-backlight) which creates a testing back=
+light. After loaded, this driver allows to modify integer values of the v=
+irtual backlight created through its sysfs attributes directly.
 
-HEAD commit:    4fa640dc Merge tag 'vfio-v5.8-rc7' of git://github.com/awi..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=17ec2d58900000
-kernel config:  https://syzkaller.appspot.com/x/.config?xW5b381064b1cba2
-dashboard link: https://syzkaller.appspot.com/bug?extid=BA5bd977df7bb87862c4
-compiler:       gcc (GCC) 10.1.0-syz 20200507
-userspace arch: i386
+In the context of the Qubes OS project, it allows to setup into a VM, a v=
+irtual backlight and managing the hardware backlight into the VM directly=
+ thanks to a communication channel with the host system.
 
-Unfortunately, I don't have any reproducer for this issue yet.
+I'm writing to you to know if you would be interested to have such module=
+ into kernel. Another name could be "virtual-backlight".
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+ba5bd977df7bb87862c4@syzkaller.appspotmail.com
+I've written a similar module for PSU too (https://lore.kernel.org/linux-=
+pm/a8223cce-636f-578b-7304-eb0e4868e018@qubes-os.org/) where a nice sugge=
+stion of improvement has been made to use a misc device for controlling a=
+ttributes instead of sysfs directly. Indeed, it's appropriated in case of=
+ multiple PSU but maybe for a (only one?) "dummy-backligh", using two sys=
+fs attributes is enough.
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D
-BUG: KASAN: stack-out-of-bounds in fast_imageblit drivers/video/fbdev/core/=
-sysimgblt.c:229 [inline]
-BUG: KASAN: stack-out-of-bounds in sys_imageblit+0x117f/0x1290 drivers/vide=
-o/fbdev/core/sysimgblt.c:275
-Write of size 4 at addr ffffc900097d7d90 by task syz-executor.1/11925
+Any kind of improvements are very welcomed. Thank you.
 
-CPU: 1 PID: 11925 Comm: syz-executor.1 Not tainted 5.8.0-rc6-syzkaller #0
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.12.0-59-gc9b=
-a5276e321-prebuilt.qemu.org 04/01/2014
-Call Trace:
- __dump_stack lib/dump_stack.c:77 [inline]
- dump_stack+0x18f/0x20d lib/dump_stack.c:118
- print_address_description.constprop.0.cold+0x5/0x436 mm/kasan/report.c:383
- __kasan_report mm/kasan/report.c:513 [inline]
- kasan_report.cold+0x1f/0x37 mm/kasan/report.c:530
- fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
- sys_imageblit+0x117f/0x1290 drivers/video/fbdev/core/sysimgblt.c:275
- drm_fb_helper_sys_imageblit+0x1c/0x180 drivers/gpu/drm/drm_fb_helper.c:763
- bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:139 [inline]
- bit_putcs+0x6e1/0xd20 drivers/video/fbdev/core/bitblit.c:188
- fbcon_putcs+0x33c/0x3f0 drivers/video/fbdev/core/fbcon.c:1362
- do_update_region+0x399/0x630 drivers/tty/vt/vt.c:683
- invert_screen+0x1d4/0x600 drivers/tty/vt/vt.c:800
- highlight drivers/tty/vt/selection.c:57 [inline]
- clear_selection drivers/tty/vt/selection.c:84 [inline]
- clear_selection+0x55/0x70 drivers/tty/vt/selection.c:80
- vc_do_resize+0x1099/0x13f0 drivers/tty/vt/vt.c:1230
- fbcon_do_set_font+0x4ad/0x950 drivers/video/fbdev/core/fbcon.c:2609
- fbcon_set_font+0x767/0x8b0 drivers/video/fbdev/core/fbcon.c:2706
- con_font_set drivers/tty/vt/vt.c:4571 [inline]
- con_font_op+0xd25/0x1110 drivers/tty/vt/vt.c:4636
- vt_ioctl+0x1180/0x2670 drivers/tty/vt/vt_ioctl.c:928
- vt_compat_ioctl+0x168/0x6b0 drivers/tty/vt/vt_ioctl.c:1249
- tty_compat_ioctl+0x19c/0x410 drivers/tty/tty_io.c:2847
- __do_compat_sys_ioctl+0x1d3/0x230 fs/ioctl.c:847
- do_syscall_32_irqs_on+0x3f/0x60 arch/x86/entry/common.c:428
- __do_fast_syscall_32 arch/x86/entry/common.c:475 [inline]
- do_fast_syscall_32+0x7f/0x120 arch/x86/entry/common.c:503
- entry_SYSENTER_compat_after_hwframe+0x4d/0x5c
-RIP: 0023:0xf7f48569
-Code: Bad RIP value.
-RSP: 002b:00000000f5d430bc EFLAGS: 00000296 ORIG_RAX: 0000000000000036
-RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 0000000000004b61
-RDX: 0000000020000080 RSI: 0000000000000000 RDI: 0000000000000000
-RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
-R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+Best regards,
+Fr=C3=A9d=C3=A9ric Pierret
 
 
-Memory state around the buggy address:
- ffffc900097d7c80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- ffffc900097d7d00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->ffffc900097d7d80: 00 00 f1 f1 f1 f1 00 00 f3 f3 00 00 00 00 00 00
-                         ^
- ffffc900097d7e00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- ffffc900097d7e80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D
+--Q7nSMCZKXlHpZb2Yy992XltX3EiXUZfr7--
 
+--4fGmdG7NnKFN1M86H79xV4JfD01yLcbyk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+-----BEGIN PGP SIGNATURE-----
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+iQIzBAEBCAAdFiEEn6ZLkvlecGvyjiymSEAQtc3FduIFAl7/P58ACgkQSEAQtc3F
+duIIehAAop77snM7y/Bd9ln0IS+FiUw6eZcj5mp+0oKi1xjKbiCui/6WfVFwYzki
+Q500M5gH/6r3jXf1wBOiZIkRVgj9TKkKiOlPJDCqTSBMKEYV3n7P4yrq0Lr+dTlf
+qvXBOnzQlG2GuTDvGz3UOOmHLaa/NV4P7wQusNVkj2dCBBMoC4QJsuwnA2jVZHdI
+4Va19Yijrfpx+8pWgb5/yTHuo/yjxCiobTRsFQI+qas15KbJ0r+wHHESD4qZ+T8M
+FIrDLUIcUAV3orMjLkx1b6KxG/1aMtXwYH+bIpswFbhJ9iw/jhuemEtiJnM+Zbf2
+1iviZSzlICZB3hsEmzqcFPGdAXZj+O6cdm30wl7kMQeZiPzkGg9WMaQ/c7/AUcPb
+hwBI7KteyvkGahM7nkooIaJnu29+Yc9KS8r5RhedPA1fJycxSsZniPudRLwh186G
+9TqTqTDyYkTbnhsjQQTOosUqlwYG1sgk9Xs64glgiAl6WAbWTYOrj4W2bNyw/jDx
+RYbGBV0PwpCASCOyZhMk++oPeloQytLN17y1AQO+tM+t/UjK1FHWlSZ1fD3BlZVg
+m6qItivxR+I6kvrOM4AhTZrR5h6nS0R0WHaVyvoxSnrcdO/t0K4m2T+MZxD8If8P
+4g31Uk6bcm3kOQ29ifCnnkJXPwoJWPrksG88/sKxe7nmdPyQdag=
+=NWRT
+-----END PGP SIGNATURE-----
+
+--4fGmdG7NnKFN1M86H79xV4JfD01yLcbyk--

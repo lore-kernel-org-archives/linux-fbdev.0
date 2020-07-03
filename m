@@ -1,60 +1,54 @@
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 09 Jul 2020 16:43:53 +0000
-Subject: Re: [PATCH v1 1/1] dt-bindings: fix simple-framebuffer example
-Message-Id: <CAL_Jsq+T8QZmH3RSx-mj_HPE0qW0pemRE6rYV9-QEbooa-oiVg@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 03 Jul 2020 07:17:29 +0000
+Subject: Re: [PATCH] omapfb: dss: Fix max fclk divider for omap36xx
+Message-Id: <b9052a12-af5a-c1b9-5b86-907eac470cf8@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200704143544.789345-1-sam@ravnborg.org>
- <20200704143544.789345-2-sam@ravnborg.org>
- <CAMuHMdXWXk=QUbpFeX6bjwp+JWKgHqiQALTdQJgSgwBRkyvkRA@mail.gmail.com>
- <20200704212615.GA1693435@ravnborg.org>
-In-Reply-To: <20200704212615.GA1693435@ravnborg.org>
+References: <20200630182636.439015-1-aford173@gmail.com>
+In-Reply-To: <20200630182636.439015-1-aford173@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, DRI Development <dri-devel@lists.freedesktop.org>, Hans de Goede <hdegoede@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Adam Ford <aford173@gmail.com>, linux-fbdev@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, stable@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Sat, Jul 4, 2020 at 3:26 PM Sam Ravnborg <sam@ravnborg.org> wrote:
->
-> On Sat, Jul 04, 2020 at 11:03:21PM +0200, Geert Uytterhoeven wrote:
-> > Hi Sam,
-> >
-> > Thanks for your patch!
-> >
-> > On Sat, Jul 4, 2020 at 4:37 PM Sam Ravnborg <sam@ravnborg.org> wrote:
-> > > Now that dt-extract-example gained support for using root nodes
-> > > in examples, update the example for the simple-frambuffer binding to use it.
-> >
-> > simple-framebuffer
-> Thanks, will fix.
->
-> >
-> > > This gives us a better example and kill a long standing warning:
-> > >
-> > > simple-framebuffer.example.dts:23.16-39.11:
-> > > Warning (chosen_node_is_root): /example-0/chosen: chosen node must be at root node
-> > >
-> > > Note: To get the update dt-extract-example execute:
-> > > pip3 install git+https://github.com/devicetree-org/dt-schema.git@master --upgrade
-> > >
-> > > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> >
-> > > --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
-> > > +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
-> > > @@ -152,28 +152,29 @@ additionalProperties: false
-> > >
-> > >  examples:
-> > >    - |
-> > > -    aliases {
-> > > -      display0 = &lcdc0;
-> >
-> > Why drop the aliases example?
-> I did not see it had any value for the binding that the example shall
-> demonstrate. But it was not somthing I have given much thought of.
+On 30/06/2020 21:26, Adam Ford wrote:
+> The drm/omap driver was fixed to correct an issue where using a
+> divider of 32 breaks the DSS despite the TRM stating 32 is a valid
+> number.  Through experimentation, it appears that 31 works, and
+> it is consistent with the value used by the drm/omap driver.
+> 
+> This patch fixes the divider for fbdev driver instead of the drm.
+> 
+> Fixes: f76ee892a99e ("omapfb: copy omapdss & displays for omapfb")
+> 
+> Cc: <stable@vger.kernel.org> #4.9+
+> Signed-off-by: Adam Ford <aford173@gmail.com>
+> ---
+> Linux 4.4 will need a similar patch, but it doesn't apply cleanly.
+> 
+> The DRM version of this same fix is:
+> e2c4ed148cf3 ("drm/omap: fix max fclk divider for omap36xx")
+> 
+> 
+> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+> index 7252d22dd117..bfc5c4c5a26a 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+> @@ -833,7 +833,7 @@ static const struct dss_features omap34xx_dss_feats = {
+>   };
+>   
+>   static const struct dss_features omap3630_dss_feats = {
+> -	.fck_div_max		=	32,
+> +	.fck_div_max		=	31,
+>   	.dss_fck_multiplier	=	1,
+>   	.parent_clk_name	=	"dpll4_ck",
+>   	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
+> 
 
-I don't think anything actually supports 'display' aliases and it is
-beyond the scope of this binding, so I'd drop.
+Reviewed-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-stdout-path should be dropped too as it points to this.
+  Tomi
 
-Rob
+-- 
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

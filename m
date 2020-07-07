@@ -1,131 +1,563 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 29 Jul 2020 08:18:12 +0000
-Subject: Re: [PATCH] vt: Handle recursion in vc_do_resize().
-Message-Id: <CAKMK7uHeteS2+rKrZKrAM+zQO==hAX0XaVc9JfHPsdLTCtzKOw@mail.gmail.com>
+From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Date: Tue, 07 Jul 2020 21:05:39 +0000
+Subject: [PATCH][next] fbdev: Use fallthrough pseudo-keyword
+Message-Id: <20200707210539.GA12530@embeddedor>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1596000620-4075-1-git-send-email-penguin-kernel@I-love.SAKURA.ne.jp>
-In-Reply-To: <1596000620-4075-1-git-send-email-penguin-kernel@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Jiri Slaby <jslaby@suse.com>, syzbot <syzbot+c37a14770d51a085a520@syzkaller.appspotmail.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jaya Kumar <jayalk@intworks.biz>, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <ludovic.desroches@microchip.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Timur Tabi <timur@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Wed, Jul 29, 2020 at 8:58 AM Tetsuo Handa
-<penguin-kernel@i-love.sakura.ne.jp> wrote:
->
-> syzbot is reporting OOB read bug in vc_do_resize() [1] caused by memcpy()
-> based on outdated old_{rows,row_size} values, for resize_screen() can
-> recurse into vc_do_resize() which changes vc->vc_{cols,rows} that outdates
-> old_{rows,row_size} values which were read before calling resize_screen().
->
-> Minimal fix might be to read vc->vc_{rows,size_row} after resize_screen().
-> A different fix might be to forbid recursive vc_do_resize() request.
-> I can't tell which fix is the better.
->
-> But since I guess that new_cols =3D vc->vc_cols && new_rows =3D vc->vc_ro=
-ws
-> check could become true after returning from resize_screen(), and I assume
-> that not calling clear_selection() when resize_screen() will return error
-> is harmless, let's redo the check by moving resize_screen() earlier.
->
-> [1] https://syzkaller.appspot.com/bug?id=C70c88cfd16dcf6e1d3c7f0ab8648b31=
-44b5b25e
->
-> Reported-by: syzbot <syzbot+c37a14770d51a085a520@syzkaller.appspotmail.co=
-m>
-> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Replace the existing /* fall through */ comments and its variants with
+the new pseudo-keyword macro fallthrough[1]. Also, remove unnecessary
+fall-through markings when it is the case.
 
-Ok, I have actual insight on this one here, and I'm pretty sure this
-isn't the fix. Looking at the syzkaller splat we have a recursion of
-the form
+[1] https://www.kernel.org/doc/html/latest/process/deprecated.html?highligh=
+t=FAllthrough#implicit-switch-case-fall-through
 
-fb_ioctl -> fb_set_var -> fbcon_update_vcs -> fbcon_resize -> fb_set_var
+Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+---
+ drivers/video/fbdev/acornfb.c                 |  2 +-
+ drivers/video/fbdev/arcfb.c                   |  2 +-
+ drivers/video/fbdev/atmel_lcdfb.c             |  4 ++--
+ drivers/video/fbdev/aty/radeon_pm.c           |  6 +++---
+ drivers/video/fbdev/cirrusfb.c                |  4 ++--
+ drivers/video/fbdev/controlfb.c               |  2 +-
+ drivers/video/fbdev/core/fbmem.c              |  2 +-
+ drivers/video/fbdev/fsl-diu-fb.c              |  4 ++--
+ drivers/video/fbdev/gxt4500.c                 |  2 +-
+ drivers/video/fbdev/i740fb.c                  |  2 +-
+ drivers/video/fbdev/offb.c                    |  4 ++--
+ drivers/video/fbdev/omap/lcdc.c               |  4 ++--
+ drivers/video/fbdev/omap/omapfb_main.c        | 20 +++++++++----------
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c  |  4 ++--
+ .../video/fbdev/omap2/omapfb/omapfb-ioctl.c   |  2 +-
+ .../video/fbdev/omap2/omapfb/omapfb-main.c    |  2 +-
+ drivers/video/fbdev/pm2fb.c                   |  4 ++--
+ drivers/video/fbdev/pxafb.c                   |  2 +-
+ drivers/video/fbdev/s3c-fb.c                  |  6 +++---
+ drivers/video/fbdev/sa1100fb.c                |  2 +-
+ drivers/video/fbdev/savage/savagefb_driver.c  |  3 +--
+ drivers/video/fbdev/sh_mobile_lcdcfb.c        |  4 ++--
+ drivers/video/fbdev/sm501fb.c                 |  2 +-
+ drivers/video/fbdev/tdfxfb.c                  |  2 +-
+ drivers/video/fbdev/xen-fbfront.c             |  2 +-
+ 25 files changed, 46 insertions(+), 47 deletions(-)
 
-Which isn't supposed to be happening. I've dug around recently in
-fbcon code, and this is a fairly common issue: You can update fbcon
-state both from fb_ioctl, but also from the vc side. To avoid the
-above recursion problems the code is using FBINFO_MISC_USEREVENT, and
-should only set that from fb_ioctl entry points. That's all fairly
-fragile, so I've done a bit of reworking, e.g.
-
-commit de29ae5c092bd9a5360cfabf174b0f783248d278
-Author: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date:   Tue May 28 11:02:56 2019 +0200
-
-    fbmem: pull fbcon_fb_blanked out of fb_blank
-
-as an example.
-
-I think doing the same for fb_set_var, i.e. only calling
-fbcon_update_vcs for the 3 callers that want it, should fix this
-recursion. I think that's the much more robust fix instead of trying
-to paper over the fallout of this recursion here and everywhere else.
-
-Can you look into reworking your patch like that?
-
-Cheers, Daniel
-
-> ---
->  drivers/tty/vt/vt.c | 24 +++++++++++++++++-------
->  1 file changed, 17 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-> index 42d8c67..952a067 100644
-> --- a/drivers/tty/vt/vt.c
-> +++ b/drivers/tty/vt/vt.c
-> @@ -1217,7 +1217,24 @@ static int vc_do_resize(struct tty_struct *tty, st=
-ruct vc_data *vc,
->
->         if (new_cols =3D vc->vc_cols && new_rows =3D vc->vc_rows)
->                 return 0;
-> +       if (new_screen_size > KMALLOC_MAX_SIZE || !new_screen_size)
-> +               return -EINVAL;
->
-> +       /*
-> +        * Since fbcon_resize() from resize_screen() can recurse into
-> +        * this function via fb_set_var(), handle recursion now.
-> +        */
-> +       err =3D resize_screen(vc, new_cols, new_rows, user);
-> +       if (err)
-> +               return err;
-> +       /* Reload values in case recursion changed vc->vc_{cols,rows}. */
-> +       new_cols =3D (cols ? cols : vc->vc_cols);
-> +       new_rows =3D (lines ? lines : vc->vc_rows);
-> +       new_row_size =3D new_cols << 1;
-> +       new_screen_size =3D new_row_size * new_rows;
-> +
-> +       if (new_cols =3D vc->vc_cols && new_rows =3D vc->vc_rows)
-> +               return 0;
->         if (new_screen_size > KMALLOC_MAX_SIZE || !new_screen_size)
->                 return -EINVAL;
->         newscreen =3D kzalloc(new_screen_size, GFP_USER);
-> @@ -1238,13 +1255,6 @@ static int vc_do_resize(struct tty_struct *tty, st=
-ruct vc_data *vc,
->         old_rows =3D vc->vc_rows;
->         old_row_size =3D vc->vc_size_row;
->
-> -       err =3D resize_screen(vc, new_cols, new_rows, user);
-> -       if (err) {
-> -               kfree(newscreen);
-> -               vc_uniscr_free(new_uniscr);
-> -               return err;
-> -       }
-> -
->         vc->vc_rows =3D new_rows;
->         vc->vc_cols =3D new_cols;
->         vc->vc_size_row =3D new_row_size;
-> --
-> 1.8.3.1
->
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
-
-
-
+diff --git a/drivers/video/fbdev/acornfb.c b/drivers/video/fbdev/acornfb.c
+index 09a9ad901dad..bcc92aecf666 100644
+--- a/drivers/video/fbdev/acornfb.c
++++ b/drivers/video/fbdev/acornfb.c
+@@ -857,7 +857,7 @@ static void acornfb_parse_dram(char *opt)
+ 		case 'M':
+ 		case 'm':
+ 			size *=3D 1024;
+-			/* Fall through */
++			fallthrough;
+ 		case 'K':
+ 		case 'k':
+ 			size *=3D 1024;
+diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+index 6f7838979f0a..ae3d8e8b8d33 100644
+--- a/drivers/video/fbdev/arcfb.c
++++ b/drivers/video/fbdev/arcfb.c
+@@ -419,7 +419,7 @@ static int arcfb_ioctl(struct fb_info *info,
+ 			schedule();
+ 			finish_wait(&arcfb_waitq, &wait);
+ 		}
+-		/* fall through */
++			fallthrough;
+=20
+ 		case FBIO_GETCONTROL2:
+ 		{
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_=
+lcdfb.c
+index 1e252192569a..8c1d47e52b1a 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -508,7 +508,7 @@ static int atmel_lcdfb_check_var(struct fb_var_screenin=
+fo *var,
+ 	case 32:
+ 		var->transp.offset =3D 24;
+ 		var->transp.length =3D 8;
+-		/* fall through */
++		fallthrough;
+ 	case 24:
+ 		if (pdata->lcd_wiring_mode =3D ATMEL_LCDC_WIRING_RGB) {
+ 			/* RGB:888 mode */
+@@ -633,7 +633,7 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
+ 		case 2: value |=3D ATMEL_LCDC_PIXELSIZE_2; break;
+ 		case 4: value |=3D ATMEL_LCDC_PIXELSIZE_4; break;
+ 		case 8: value |=3D ATMEL_LCDC_PIXELSIZE_8; break;
+-		case 15: /* fall through */
++		case 15: fallthrough;
+ 		case 16: value |=3D ATMEL_LCDC_PIXELSIZE_16; break;
+ 		case 24: value |=3D ATMEL_LCDC_PIXELSIZE_24; break;
+ 		case 32: value |=3D ATMEL_LCDC_PIXELSIZE_32; break;
+diff --git a/drivers/video/fbdev/aty/radeon_pm.c b/drivers/video/fbdev/aty/=
+radeon_pm.c
+index 7c4483c7f313..f3d8123d7f36 100644
+--- a/drivers/video/fbdev/aty/radeon_pm.c
++++ b/drivers/video/fbdev/aty/radeon_pm.c
+@@ -1208,11 +1208,11 @@ static void radeon_pm_enable_dll_m10(struct radeonf=
+b_info *rinfo)
+ 	case 1:
+ 		if (mc & 0x4)
+ 			break;
+-		/* fall through */
++		fallthrough;
+ 	case 2:
+ 		dll_sleep_mask |=3D MDLL_R300_RDCK__MRDCKB_SLEEP;
+ 		dll_reset_mask |=3D MDLL_R300_RDCK__MRDCKB_RESET;
+-		/* fall through */
++		fallthrough;
+ 	case 0:
+ 		dll_sleep_mask |=3D MDLL_R300_RDCK__MRDCKA_SLEEP;
+ 		dll_reset_mask |=3D MDLL_R300_RDCK__MRDCKA_RESET;
+@@ -1221,7 +1221,7 @@ static void radeon_pm_enable_dll_m10(struct radeonfb_=
+info *rinfo)
+ 	case 1:
+ 		if (!(mc & 0x4))
+ 			break;
+-		/* fall through */
++		fallthrough;
+ 	case 2:
+ 		dll_sleep_mask |=3D MDLL_R300_RDCK__MRDCKD_SLEEP;
+ 		dll_reset_mask |=3D MDLL_R300_RDCK__MRDCKD_RESET;
+diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
+index 3df64a973194..15a9ee7cd734 100644
+--- a/drivers/video/fbdev/cirrusfb.c
++++ b/drivers/video/fbdev/cirrusfb.c
+@@ -1476,11 +1476,11 @@ static void init_vgachip(struct fb_info *info)
+ 		mdelay(100);
+ 		/* mode */
+ 		vga_wgfx(cinfo->regbase, CL_GR31, 0x00);
+-		/* fall through */
++		fallthrough;
+ 	case BT_GD5480:
+ 		/* from Klaus' NetBSD driver: */
+ 		vga_wgfx(cinfo->regbase, CL_GR2F, 0x00);
+-		/* fall through */
++		fallthrough;
+ 	case BT_ALPINE:
+ 		/* put blitter into 542x compat */
+ 		vga_wgfx(cinfo->regbase, CL_GR33, 0x00);
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlf=
+b.c
+index 9c4f1be856ec..a88dcb63eeb4 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -713,7 +713,7 @@ static int controlfb_blank(int blank_mode, struct fb_in=
+fo *info)
+ 			break;
+ 		case FB_BLANK_POWERDOWN:
+ 			ctrl &=3D ~0x33;
+-			/* fall through */
++			fallthrough;
+ 		case FB_BLANK_NORMAL:
+ 			ctrl |=3D 0x400;
+ 			break;
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fb=
+mem.c
+index 30e73ec4ad5c..66f07c391e55 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1310,7 +1310,7 @@ static long fb_compat_ioctl(struct file *file, unsign=
+ed int cmd,
+ 	case FBIOGET_CON2FBMAP:
+ 	case FBIOPUT_CON2FBMAP:
+ 		arg =3D (unsigned long) compat_ptr(arg);
+-		/* fall through */
++		fallthrough;
+ 	case FBIOBLANK:
+ 		ret =3D do_fb_ioctl(info, cmd, arg);
+ 		break;
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu=
+-fb.c
+index 67ebfe5c9f1d..a547c21c7e92 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -1287,7 +1287,7 @@ static int fsl_diu_ioctl(struct fb_info *info, unsign=
+ed int cmd,
+ 		dev_warn(info->dev,
+ 			 "MFB_SET_PIXFMT value of 0x%08x is deprecated.\n",
+ 			 MFB_SET_PIXFMT_OLD);
+-		/* fall through */
++		fallthrough;
+ 	case MFB_SET_PIXFMT:
+ 		if (copy_from_user(&pix_fmt, buf, sizeof(pix_fmt)))
+ 			return -EFAULT;
+@@ -1297,7 +1297,7 @@ static int fsl_diu_ioctl(struct fb_info *info, unsign=
+ed int cmd,
+ 		dev_warn(info->dev,
+ 			 "MFB_GET_PIXFMT value of 0x%08x is deprecated.\n",
+ 			 MFB_GET_PIXFMT_OLD);
+-		/* fall through */
++		fallthrough;
+ 	case MFB_GET_PIXFMT:
+ 		pix_fmt =3D ad->pix_fmt;
+ 		if (copy_to_user(buf, &pix_fmt, sizeof(pix_fmt)))
+diff --git a/drivers/video/fbdev/gxt4500.c b/drivers/video/fbdev/gxt4500.c
+index 13ded3a10708..e5475ae1e158 100644
+--- a/drivers/video/fbdev/gxt4500.c
++++ b/drivers/video/fbdev/gxt4500.c
+@@ -534,7 +534,7 @@ static int gxt4500_setcolreg(unsigned int reg, unsigned=
+ int red,
+ 			break;
+ 		case DFA_PIX_32BIT:
+ 			val |=3D (reg << 24);
+-			/* fall through */
++			fallthrough;
+ 		case DFA_PIX_24BIT:
+ 			val |=3D (reg << 16) | (reg << 8);
+ 			break;
+diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
+index c65ec7386e87..e6f35f8feefc 100644
+--- a/drivers/video/fbdev/i740fb.c
++++ b/drivers/video/fbdev/i740fb.c
+@@ -430,7 +430,7 @@ static int i740fb_decode_var(const struct fb_var_screen=
+info *var,
+ 		break;
+ 	case 9 ... 15:
+ 		bpp =3D 15;
+-		/* fall through */
++		fallthrough;
+ 	case 16:
+ 		if ((1000000 / var->pixclock) > DACSPEED16) {
+ 			dev_err(info->device, "requested pixclock %i MHz out of range (max. %i =
+MHz at 15/16bpp)\n",
+diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+index 5cd0f5f6a4ae..4501e848a36f 100644
+--- a/drivers/video/fbdev/offb.c
++++ b/drivers/video/fbdev/offb.c
+@@ -141,7 +141,7 @@ static int offb_setcolreg(u_int regno, u_int red, u_int=
+ green, u_int blue,
+ 		/* Clear PALETTE_ACCESS_CNTL in DAC_CNTL */
+ 		out_le32(par->cmap_adr + 0x58,
+ 			 in_le32(par->cmap_adr + 0x58) & ~0x20);
+-		/* fall through */
++		fallthrough;
+ 	case cmap_r128:
+ 		/* Set palette index & data */
+ 		out_8(par->cmap_adr + 0xb0, regno);
+@@ -211,7 +211,7 @@ static int offb_blank(int blank, struct fb_info *info)
+ 				/* Clear PALETTE_ACCESS_CNTL in DAC_CNTL */
+ 				out_le32(par->cmap_adr + 0x58,
+ 					 in_le32(par->cmap_adr + 0x58) & ~0x20);
+-				/* fall through */
++				fallthrough;
+ 			case cmap_r128:
+ 				/* Set palette index & data */
+ 				out_8(par->cmap_adr + 0xb0, i);
+diff --git a/drivers/video/fbdev/omap/lcdc.c b/drivers/video/fbdev/omap/lcd=
+c.c
+index fa73acfc1371..7317c9aad677 100644
+--- a/drivers/video/fbdev/omap/lcdc.c
++++ b/drivers/video/fbdev/omap/lcdc.c
+@@ -328,13 +328,13 @@ static int omap_lcdc_setup_plane(int plane, int chann=
+el_out,
+ 			lcdc.bpp =3D 12;
+ 			break;
+ 		}
+-		/* fallthrough */
++		fallthrough;
+ 	case OMAPFB_COLOR_YUV422:
+ 		if (lcdc.ext_mode) {
+ 			lcdc.bpp =3D 16;
+ 			break;
+ 		}
+-		/* fallthrough */
++		fallthrough;
+ 	default:
+ 		/* FIXME: other BPPs.
+ 		 * bpp1: code  0,     size 256
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/o=
+map/omapfb_main.c
+index 0cbcc74fa943..3d090d2d9ed9 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -253,7 +253,7 @@ static int _setcolreg(struct fb_info *info, u_int regno=
+, u_int red, u_int green,
+ 		if (fbdev->ctrl->setcolreg)
+ 			r =3D fbdev->ctrl->setcolreg(regno, red, green, blue,
+ 							transp, update_hw_pal);
+-		/* Fallthrough */
++		fallthrough;
+ 	case OMAPFB_COLOR_RGB565:
+ 	case OMAPFB_COLOR_RGB444:
+ 		if (r !=3D 0)
+@@ -443,7 +443,7 @@ static int set_color_mode(struct omapfb_plane_struct *p=
+lane,
+ 		return 0;
+ 	case 12:
+ 		var->bits_per_pixel =3D 16;
+-		/* fall through */
++		fallthrough;
+ 	case 16:
+ 		if (plane->fbdev->panel->bpp =3D 12)
+ 			plane->color_mode =3D OMAPFB_COLOR_RGB444;
+@@ -1531,27 +1531,27 @@ static void omapfb_free_resources(struct omapfb_dev=
+ice *fbdev, int state)
+ 	case OMAPFB_ACTIVE:
+ 		for (i =3D 0; i < fbdev->mem_desc.region_cnt; i++)
+ 			unregister_framebuffer(fbdev->fb_info[i]);
+-		/* fall through */
++		fallthrough;
+ 	case 7:
+ 		omapfb_unregister_sysfs(fbdev);
+-		/* fall through */
++		fallthrough;
+ 	case 6:
+ 		if (fbdev->panel->disable)
+ 			fbdev->panel->disable(fbdev->panel);
+-		/* fall through */
++		fallthrough;
+ 	case 5:
+ 		omapfb_set_update_mode(fbdev, OMAPFB_UPDATE_DISABLED);
+-		/* fall through */
++		fallthrough;
+ 	case 4:
+ 		planes_cleanup(fbdev);
+-		/* fall through */
++		fallthrough;
+ 	case 3:
+ 		ctrl_cleanup(fbdev);
+-		/* fall through */
++		fallthrough;
+ 	case 2:
+ 		if (fbdev->panel->cleanup)
+ 			fbdev->panel->cleanup(fbdev->panel);
+-		/* fall through */
++		fallthrough;
+ 	case 1:
+ 		dev_set_drvdata(fbdev->dev, NULL);
+ 		kfree(fbdev);
+@@ -1854,7 +1854,7 @@ static int __init omapfb_setup(char *options)
+ 			case 'm':
+ 			case 'M':
+ 				vram *=3D 1024;
+-				/* Fall through */
++				fallthrough;
+ 			case 'k':
+ 			case 'K':
+ 				vram *=3D 1024;
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/f=
+bdev/omap2/omapfb/dss/dispc.c
+index 3bb951eb29c7..285d33ce1e11 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+@@ -1858,7 +1858,7 @@ static void calc_vrfb_rotation_offset(u8 rotation, bo=
+ol mirror,
+ 		if (color_mode =3D OMAP_DSS_COLOR_YUV2 ||
+ 			color_mode =3D OMAP_DSS_COLOR_UYVY)
+ 			width =3D width >> 1;
+-		/* fall through */
++		fallthrough;
+ 	case OMAP_DSS_ROT_90:
+ 	case OMAP_DSS_ROT_270:
+ 		*offset1 =3D 0;
+@@ -1881,7 +1881,7 @@ static void calc_vrfb_rotation_offset(u8 rotation, bo=
+ol mirror,
+ 		if (color_mode =3D OMAP_DSS_COLOR_YUV2 ||
+ 			color_mode =3D OMAP_DSS_COLOR_UYVY)
+ 			width =3D width >> 1;
+-		/* fall through */
++		fallthrough;
+ 	case OMAP_DSS_ROT_90 + 4:
+ 	case OMAP_DSS_ROT_270 + 4:
+ 		*offset1 =3D 0;
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c b/drivers/vide=
+o/fbdev/omap2/omapfb/omapfb-ioctl.c
+index f40be68d5aac..ea8c88aa4477 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
+@@ -760,7 +760,7 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd,=
+ unsigned long arg)
+ 			r =3D -ENODEV;
+ 			break;
+ 		}
+-		/* FALLTHROUGH */
++		fallthrough;
+=20
+ 	case OMAPFB_WAITFORVSYNC:
+ 		DBG("ioctl WAITFORVSYNC\n");
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video=
+/fbdev/omap2/omapfb/omapfb-main.c
+index 836e7b1639ce..a3decc7fadde 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -882,7 +882,7 @@ int omapfb_setup_overlay(struct fb_info *fbi, struct om=
+ap_overlay *ovl,
+ 				/ (var->bits_per_pixel >> 2);
+ 			break;
+ 		}
+-		/* fall through */
++		fallthrough;
+ 	default:
+ 		screen_width =3D fix->line_length / (var->bits_per_pixel >> 3);
+ 		break;
+diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
+index c7c98d8e2359..0642555289e0 100644
+--- a/drivers/video/fbdev/pm2fb.c
++++ b/drivers/video/fbdev/pm2fb.c
+@@ -233,10 +233,10 @@ static u32 to3264(u32 timing, int bpp, int is64)
+ 	switch (bpp) {
+ 	case 24:
+ 		timing *=3D 3;
+-		/* fall through */
++		fallthrough;
+ 	case 8:
+ 		timing >>=3D 1;
+-		/* fall through */
++		fallthrough;
+ 	case 16:
+ 		timing >>=3D 1;
+ 	case 32:
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index a53d24fb7183..f1551e00eb12 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -1614,7 +1614,7 @@ static void set_ctrlr_state(struct pxafb_info *fbi, u=
+_int state)
+ 		 */
+ 		if (old_state !=3D C_DISABLE_PM)
+ 			break;
+-		/* fall through */
++		fallthrough;
+=20
+ 	case C_ENABLE:
+ 		/*
+diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
+index 9dc925054930..ba316bd56efd 100644
+--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -284,7 +284,7 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *v=
+ar,
+ 		/* 666 with one bit alpha/transparency */
+ 		var->transp.offset	=3D 18;
+ 		var->transp.length	=3D 1;
+-		/* fall through */
++		fallthrough;
+ 	case 18:
+ 		var->bits_per_pixel	=3D 32;
+=20
+@@ -312,7 +312,7 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *v=
+ar,
+ 	case 25:
+ 		var->transp.length	=3D var->bits_per_pixel - 24;
+ 		var->transp.offset	=3D 24;
+-		/* fall through */
++		fallthrough;
+ 	case 24:
+ 		/* our 24bpp is unpacked, so 32bpp */
+ 		var->bits_per_pixel	=3D 32;
+@@ -809,7 +809,7 @@ static int s3c_fb_blank(int blank_mode, struct fb_info =
+*info)
+ 	case FB_BLANK_POWERDOWN:
+ 		wincon &=3D ~WINCONx_ENWIN;
+ 		sfb->enabled &=3D ~(1 << index);
+-		/* fall through - to FB_BLANK_NORMAL */
++		fallthrough;	/* to FB_BLANK_NORMAL */
+=20
+ 	case FB_BLANK_NORMAL:
+ 		/* disable the DMA and display 0x0 (black) */
+diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
+index 3e6e13f7a831..a3f0a66b3471 100644
+--- a/drivers/video/fbdev/sa1100fb.c
++++ b/drivers/video/fbdev/sa1100fb.c
+@@ -935,7 +935,7 @@ static void set_ctrlr_state(struct sa1100fb_info *fbi, =
+u_int state)
+ 		 */
+ 		if (old_state !=3D C_DISABLE_PM)
+ 			break;
+-		/* fall through */
++		fallthrough;
+=20
+ 	case C_ENABLE:
+ 		/*
+diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/f=
+bdev/savage/savagefb_driver.c
+index 3c8ae87f0ea7..2a0b156019b9 100644
+--- a/drivers/video/fbdev/savage/savagefb_driver.c
++++ b/drivers/video/fbdev/savage/savagefb_driver.c
+@@ -1859,8 +1859,7 @@ static int savage_init_hw(struct savagefb_par *par)
+ 		vga_out8(0x3d4, 0x68, par);	/* memory control 1 */
+ 		if ((vga_in8(0x3d5, par) & 0xC0) =3D (0x01 << 6))
+ 			RamSavage4[1] =3D 8;
+-
+-		/*FALLTHROUGH*/
++		fallthrough;
+=20
+ 	case S3_SAVAGE2000:
+ 		videoRam =3D RamSavage4[(config1 & 0xE0) >> 5] * 1024;
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/s=
+h_mobile_lcdcfb.c
+index 8a27d12e6ea8..c1043420dbd3 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -1594,7 +1594,7 @@ sh_mobile_lcdc_overlay_fb_init(struct sh_mobile_lcdc_=
+overlay *ovl)
+ 	case V4L2_PIX_FMT_NV12:
+ 	case V4L2_PIX_FMT_NV21:
+ 		info->fix.ypanstep =3D 2;
+-		/* Fall through */
++		fallthrough;
+ 	case V4L2_PIX_FMT_NV16:
+ 	case V4L2_PIX_FMT_NV61:
+ 		info->fix.xpanstep =3D 2;
+@@ -2085,7 +2085,7 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_=
+chan *ch,
+ 	case V4L2_PIX_FMT_NV12:
+ 	case V4L2_PIX_FMT_NV21:
+ 		info->fix.ypanstep =3D 2;
+-		/* Fall through */
++		fallthrough;
+ 	case V4L2_PIX_FMT_NV16:
+ 	case V4L2_PIX_FMT_NV61:
+ 		info->fix.xpanstep =3D 2;
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index 3dd1b1d76e98..6a52eba64559 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -1005,7 +1005,7 @@ static int sm501fb_blank_crt(int blank_mode, struct f=
+b_info *info)
+ 	case FB_BLANK_POWERDOWN:
+ 		ctrl &=3D ~SM501_DC_CRT_CONTROL_ENABLE;
+ 		sm501_misc_control(fbi->dev->parent, SM501_MISC_DAC_POWER, 0);
+-		/* fall through */
++		fallthrough;
+=20
+ 	case FB_BLANK_NORMAL:
+ 		ctrl |=3D SM501_DC_CRT_CONTROL_BLANK;
+diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
+index f73e26c18c09..f056d80f6359 100644
+--- a/drivers/video/fbdev/tdfxfb.c
++++ b/drivers/video/fbdev/tdfxfb.c
+@@ -523,7 +523,7 @@ static int tdfxfb_check_var(struct fb_var_screeninfo *v=
+ar, struct fb_info *info)
+ 	case 32:
+ 		var->transp.offset =3D 24;
+ 		var->transp.length =3D 8;
+-		/* fall through */
++		fallthrough;
+ 	case 24:
+ 		var->red.offset =3D 16;
+ 		var->green.offset =3D 8;
+diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fb=
+front.c
+index 00307b8693bf..5ec51445bee8 100644
+--- a/drivers/video/fbdev/xen-fbfront.c
++++ b/drivers/video/fbdev/xen-fbfront.c
+@@ -677,7 +677,7 @@ static void xenfb_backend_changed(struct xenbus_device =
+*dev,
+ 	case XenbusStateClosed:
+ 		if (dev->state =3D XenbusStateClosed)
+ 			break;
+-		/* fall through - Missed the backend's CLOSING state. */
++		fallthrough;	/* Missed the backend's CLOSING state */
+ 	case XenbusStateClosing:
+ 		xenbus_frontend_closed(dev);
+ 		break;
 --=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.27.0

@@ -1,27 +1,43 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Sun, 26 Jul 2020 08:58:20 +0000
-Subject: Re: [PATCH] [video/fbdev] fb_flashcursor: Remove redundant null check
-Message-Id: <CAHp75Vf0F+vtgg_NB0dL5Ck9m4_7fEHyH84mWrhTOXrEoL5SGA@mail.gmail.com>
+From: George Kennedy <george.kennedy@oracle.com>
+Date: Tue, 07 Jul 2020 19:26:03 +0000
+Subject: [PATCH 1/1] fbmem: add margin check to fb_check_caps()
+Message-Id: <1594149963-13801-1-git-send-email-george.kennedy@oracle.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200726050713.9461-1-gaurav1086@gmail.com>
-In-Reply-To: <20200726050713.9461-1-gaurav1086@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Gaurav Singh <gaurav1086@gmail.com>
-Cc: "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, open list <linux-kernel@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Nathan Chancellor <natechancellor@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Peter Rosin <peda@axentia.se>, Qiujun Huang <hqjagain@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-On Sun, Jul 26, 2020 at 8:17 AM Gaurav Singh <gaurav1086@gmail.com> wrote:
->
-> ops cannot be NULL as its being accessed later without
+A fb_ioctl() FBIOPUT_VSCREENINFO call with invalid xres setting
+or yres setting in struct fb_var_screeninfo will result in a
+KASAN: vmalloc-out-of-bounds failure in bitfill_aligned() as
+the margins are being cleared. The margins are cleared in
+chunks and if the xres setting or yres setting is a value of
+zero upto the chunk size, the failure will occur.
 
-it's
+Add a margin check to validate xres and yres settings.
 
-> checks. Remove the redundant NULL check.
+Signed-off-by: George Kennedy <george.kennedy@oracle.com>
+Suggested-by: Dan Carpenter <dan.carpenter@oracle.com>
+Reported-by: syzbot+e5fd3e65515b48c02a30@syzkaller.appspotmail.com
+---
+ drivers/video/fbdev/core/fbmem.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Commit message doesn't clarify why your fix is the correct one.
-Maybe it's the other way around, missed check in the rest of the code there?
-
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 30e73ec..cd50302 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1007,6 +1007,10 @@ static int fb_check_caps(struct fb_info *info, struct fb_var_screeninfo *var,
+ 		return 0;
+ 	}
+ 
++	/* bitfill_aligned() assumes that it's at least 8x8 */
++	if (var->xres < 8 || var->yres < 8)
++		return -EINVAL;
++
+ 	ret = info->fbops->fb_check_var(var, info);
+ 
+ 	if (ret)
 -- 
-With Best Regards,
-Andy Shevchenko
+1.8.3.1

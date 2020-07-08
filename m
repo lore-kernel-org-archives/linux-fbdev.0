@@ -1,36 +1,59 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Wed, 08 Jul 2020 13:06:34 +0000
-Subject: Re: [PATCH 1/1] video: backlight: sky81452-backlight: Fix some kerneldoc issues
-Message-Id: <20200708130634.5tttrzlq2zfx7uho@holly.lan>
+From: "Alexander A. Klimov" <grandmaster@al2klimov.de>
+Date: Wed, 08 Jul 2020 16:38:47 +0000
+Subject: [PATCH] Replace HTTP links with HTTPS ones: BACKLIGHT CLASS/SUBSYSTEM
+Message-Id: <20200708163847.15250-1-grandmaster@al2klimov.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200708130419.3445042-1-lee.jones@linaro.org>
-In-Reply-To: <20200708130419.3445042-1-lee.jones@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Gyungoh Yoo <jack.yoo@skyworksinc.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Alexander A. Klimov" <grandmaster@al2klimov.de>
 
-On Wed, Jul 08, 2020 at 02:04:19PM +0100, Lee Jones wrote:
-> Firstly, all lines must begin with a '*'.  Secondly, arg descriptions
-> must be spelt correctly, so fix misspelling of 'gpioD_enable' and
-> 'short_detecTion_threshold'
-> 
-> Fixes the following W=1 kernel build warning(s):
-> 
->  drivers/video/backlight/sky81452-backlight.c:46: warning: bad line:                 If it is not defined, default name is lcd-backlight.
->  drivers/video/backlight/sky81452-backlight.c:64: warning: Function parameter or member 'gpiod_enable' not described in 'sky81452_bl_platform_data'
->  drivers/video/backlight/sky81452-backlight.c:64: warning: Function parameter or member 'short_detection_threshold' not described in 'sky81452_bl_platform_data'
-> 
-> Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> Cc: Jingoo Han <jingoohan1@gmail.com>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: Gyungoh Yoo <jack.yoo@skyworksinc.com>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Rationale:
+Reduces attack surface on kernel devs opening the links for MITM
+as HTTPS traffic is much harder to manipulate.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Deterministic algorithm:
+For each file:
+  If not .svg:
+    For each line:
+      If doesn't contain `\bxmlns\b`:
+        For each link, `\bhttp://[^# \t\r\n]*(?:\w|/)`:
+	  If neither `\bgnu\.org/license`, nor `\bmozilla\.org/MPL\b`:
+            If both the HTTP and HTTPS versions
+            return 200 OK and serve the same content:
+              Replace HTTP with HTTPS.
+
+Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
+---
+ Continuing my work started at 93431e0607e5.
+ See also: git log --oneline '--author=Alexander A. Klimov <grandmaster@al2klimov.de>' v5.7..master
+ (Actually letting a shell for loop submit all this stuff for me.)
+
+ If there are any URLs to be removed completely or at least not HTTPSified:
+ Just clearly say so and I'll *undo my change*.
+ See also: https://lkml.org/lkml/2020/6/27/64
+
+ If there are any valid, but yet not changed URLs:
+ See: https://lkml.org/lkml/2020/6/26/837
+
+ If you apply the patch, please let me know.
 
 
-Daniel.
+ drivers/video/backlight/led_bl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
+index 3f66549997c8..2c48957e9b60 100644
+--- a/drivers/video/backlight/led_bl.c
++++ b/drivers/video/backlight/led_bl.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * Copyright (C) 2015-2019 Texas Instruments Incorporated -  http://www.ti.com/
++ * Copyright (C) 2015-2019 Texas Instruments Incorporated -  https://www.ti.com/
+  * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
+  *
+  * Based on pwm_bl.c
+-- 
+2.27.0

@@ -1,339 +1,192 @@
-From: daniel@ffwll.ch
-Date: Fri, 31 Jul 2020 09:22:54 +0000
-Subject: Re: [PATCH 3/5] drm: Add infrastructure for vmap operations of I/O memory
-Message-Id: <20200731092254.GW6419@phenom.ffwll.local>
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Date: Fri, 10 Jul 2020 05:56:58 +0000
+Subject: fbconsole needs more parameter validations.
+Message-Id: <b1e7dd6a-fc22-bba8-0abb-d3e779329bce@i-love.sakura.ne.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200729134148.6855-1-tzimmermann@suse.de>
- <20200729134148.6855-4-tzimmermann@suse.de>
- <20200729135744.GQ6419@phenom.ffwll.local>
- <79a17df5-5654-ccf7-e3aa-5c74894b436f@suse.de>
-In-Reply-To: <79a17df5-5654-ccf7-e3aa-5c74894b436f@suse.de>
+References: <20200710055329.3759-1-penguin-kernel@I-love.SAKURA.ne.jp>
+In-Reply-To: <20200710055329.3759-1-penguin-kernel@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-Cc: linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, kraxel@redhat.com, airlied@redhat.com, natechancellor@gmail.com, sam@ravnborg.org, peda@axentia.se, dan.carpenter@oracle.com
+To: DRI <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, syzbot <syzbot+017265e8553724e514e8@syzkaller.appspotmail.com>, linux-kernel@vger.kernel.org, Dmitry Vyukov <dvyukov@google.com>, Jiri Slaby <jslaby@suse.com>
 
-On Thu, Jul 30, 2020 at 10:14:43AM +0200, Thomas Zimmermann wrote:
-> Hi
->=20
-> Am 29.07.20 um 15:57 schrieb daniel@ffwll.ch:
-> > On Wed, Jul 29, 2020 at 03:41:46PM +0200, Thomas Zimmermann wrote:
-> >> Most platforms allow for accessing framebuffer I/O memory with regular
-> >> load and store operations. Some platforms, such as sparc64, require
-> >> the use of special instructions instead.
-> >>
-> >> This patch adds vmap_iomem to struct drm_gem_object_funcs. The new
-> >> interface drm_client_buffer_vmap_iomem() gives DRM clients access to t=
-he
-> >> I/O memory buffer. The semantics of struct drm_gem_objcet_funcs.vmap
-> >> change slightly. It used to return system or I/O memory. Now it is
-> >> expected to return memory addresses that can be accessed with regular
-> >> load and store operations. So nothing changes for existing implementat=
-ions
-> >> of GEM objects. If the GEM object also implements vmap_iomem, a call
-> >> to vmap shall only return system memory, even if I/O memory could be
-> >> accessed with loads and stores.
-> >>
-> >> The existing interface drm_client_buffer_vmap() shall only return memo=
-ry
-> >> as given by drm_gem_vmap ((i.e., that is accessible via regular load a=
-nd
-> >> store). The new interface drm_client_buffer_vmap_iomem() shall only
-> >> return I/O memory.
-> >>
-> >> DRM clients must map buffers by calling drm_client_buffer_vmap_iomem()
-> >> and drm_client_buffer_vmap() to get the buffer in I/O or system memory.
-> >> Each function returns NULL if the buffer is in the other memory area.
-> >> Depending on the type of the returned memory, clients must access the
-> >> framebuffer with the appropriate operations.
-> >>
-> >> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> >=20
-> > Hm I don't think this works, since for more dynamic framebuffers (like
-> > real big gpu ttm drivers) this is a dynamic thing, which can change eve=
-ry
-> > time we do an mmap. So I think the ttm approach of having an is_iomem f=
-lag
-> > is a lot better.
-> >=20
-> > The trouble with that is that you don't have correct checking of sparse
-> > mappings, but oh well :-/ The one idea I've had to address that is using
-> > something like this
-> >=20
-> > typedef dma_buf_addr_t {
-> > 	bool is_iomem;
-> > 	union {
-> > 		void __iomem *vaddr_iomem;
-> > 		void vaddr;
-> > 	};
-> > };
-> >=20
-> > And then having a wrapper for memcpy_from_dma_buf_addr and
-> > memcpy_to_dma_buf_addr, which switches between memcpy and memcpy_from/t=
-oio
-> > depending upon the is_iomem flag.
-> >=20
-> > But it's a lot more invasive unfortunately :-/
->=20
-> What do you think about introducing read and write callbacks for GEM
-> objects? Like this:
->=20
->   int drm_gem_read(struct drm_gem_object *gbo, size_t off, size_t len,
-> void *buf);
->=20
->   int drm_gem_write(struct drm_gem_object *gbo, size_t off, size_t len,
-> const void *buf);
->=20
-> The common case would by memcpy, but GEM implementations could provide
-> their own thing. The fbdev blit function would look like
->=20
->   vaddr =3D drm_gem_vmap(gbo)
->   if (IS_ERR(vaddr))
->     return
->=20
->   for (each line) {
->     drm_gem_write(gbo, gbo_line_offset, line_size, src)
->     gbo_line_offset =3D /* next line */
->     src =3D /* next line */
->   }
->=20
->   drm_gem_vunmap(gbo);
->=20
-> The whole mess about I/O access would be self-contained.
+Hello.
 
-Copying the irc discussion over: We've had that idea floating around years
-ago, i915-gem even implemented in the form of pwrite/pread for usersapce.
-But now all userspace moved over to mmap, so read/write has fallen out of
-favour.
+While trying to debug https://syzkaller.appspot.com/bug?extid=017265e855372=
+4e514e8 ,
+I noticed that a crash can happen without opening /dev/ttyXX .
 
-I'm also not sure whether we really need to fix more than just fbcon on
-fbdev on drm emulation, and it feels a bit silly to add read/write just
-for that. Also the is_iomem flag on the vmap (and maybe eventually on
-mmap, no idea) might be able to let us fix this at least for real
-eventually.
+For example, while a driver which syzbot is reporting accepts screen with
+var.xres =3D var.yres =3D 0 (and a crash is not visible until trying to wri=
+te to
+/dev/ttyXX ), a driver for VMware environment which I'm using (dmesg says "=
+fbcon:
+svgadrmfb (fb0) is primary device") rejects screen with var.xres =3D var.yr=
+es =3D 0.
+However, specifying var.xres =3D var.yres =3D 1 like below reproducer cause=
+s a crash
+in my VMware environment.
 
-Cheers, Daniel
+----------
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/fb.h>
 
->=20
-> Best regards
-> Thomas
->=20
-> > -Daniel
-> >=20
-> >> ---
-> >>  drivers/gpu/drm/drm_client.c   | 52 ++++++++++++++++++++++++++++++++--
-> >>  drivers/gpu/drm/drm_gem.c      | 19 +++++++++++++
-> >>  drivers/gpu/drm/drm_internal.h |  1 +
-> >>  include/drm/drm_client.h       |  8 +++++-
-> >>  include/drm/drm_gem.h          | 17 +++++++++--
-> >>  5 files changed, 91 insertions(+), 6 deletions(-)
-> >>
-> >> diff --git a/drivers/gpu/drm/drm_client.c b/drivers/gpu/drm/drm_client=
-.c
-> >> index 495f47d23d87..b5bbe089a41e 100644
-> >> --- a/drivers/gpu/drm/drm_client.c
-> >> +++ b/drivers/gpu/drm/drm_client.c
-> >> @@ -327,6 +327,46 @@ void *drm_client_buffer_vmap(struct drm_client_bu=
-ffer *buffer)
-> >>  }
-> >>  EXPORT_SYMBOL(drm_client_buffer_vmap);
-> >> =20
-> >> +/**
-> >> + * drm_client_buffer_vmap_iomem - Map DRM client buffer into address =
-space
-> >> + * @buffer: DRM client buffer
-> >> + *
-> >> + * This function maps a client buffer into kernel address space. If t=
-he
-> >> + * buffer is already mapped, it returns the mapping's address.
-> >> + *
-> >> + * Client buffer mappings are not ref'counted. Each call to
-> >> + * drm_client_buffer_vmap() should be followed by a call to
-> >> + * drm_client_buffer_vunmap(); or the client buffer should be mapped
-> >> + * throughout its lifetime.
-> >> + *
-> >> + * Returns:
-> >> + *	The mapped memory's address
-> >> + */
-> >> +void __iomem *drm_client_buffer_vmap_iomem(struct drm_client_buffer *=
-buffer)
-> >> +{
-> >> +	void __iomem *vaddr_iomem;
-> >> +
-> >> +	if (buffer->vaddr_iomem)
-> >> +		return buffer->vaddr_iomem;
-> >> +
-> >> +	/*
-> >> +	 * FIXME: The dependency on GEM here isn't required, we could
-> >> +	 * convert the driver handle to a dma-buf instead and use the
-> >> +	 * backend-agnostic dma-buf vmap support instead. This would
-> >> +	 * require that the handle2fd prime ioctl is reworked to pull the
-> >> +	 * fd_install step out of the driver backend hooks, to make that
-> >> +	 * final step optional for internal users.
-> >> +	 */
-> >> +	vaddr_iomem =3D drm_gem_vmap_iomem(buffer->gem);
-> >> +	if (IS_ERR(vaddr_iomem))
-> >> +		return vaddr_iomem;
-> >> +
-> >> +	buffer->vaddr_iomem =3D vaddr_iomem;
-> >> +
-> >> +	return vaddr_iomem;
-> >> +}
-> >> +EXPORT_SYMBOL(drm_client_buffer_vmap_iomem);
-> >> +
-> >>  /**
-> >>   * drm_client_buffer_vunmap - Unmap DRM client buffer
-> >>   * @buffer: DRM client buffer
-> >> @@ -337,8 +377,16 @@ EXPORT_SYMBOL(drm_client_buffer_vmap);
-> >>   */
-> >>  void drm_client_buffer_vunmap(struct drm_client_buffer *buffer)
-> >>  {
-> >> -	drm_gem_vunmap(buffer->gem, buffer->vaddr);
-> >> -	buffer->vaddr =3D NULL;
-> >> +	drm_WARN_ON(buffer->client->dev, buffer->vaddr && buffer->vaddr_iome=
-m);
-> >> +
-> >> +	if (buffer->vaddr) {
-> >> +		drm_gem_vunmap(buffer->gem, buffer->vaddr);
-> >> +		buffer->vaddr =3D NULL;
-> >> +	}
-> >> +	if (buffer->vaddr_iomem) {
-> >> +		drm_gem_vunmap(buffer->gem, (void *)buffer->vaddr_iomem);
-> >> +		buffer->vaddr_iomem =3D NULL;
-> >> +	}
-> >>  }
-> >>  EXPORT_SYMBOL(drm_client_buffer_vunmap);
-> >> =20
-> >> diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
-> >> index a57f5379fc08..a001be8c0965 100644
-> >> --- a/drivers/gpu/drm/drm_gem.c
-> >> +++ b/drivers/gpu/drm/drm_gem.c
-> >> @@ -1227,6 +1227,25 @@ void *drm_gem_vmap(struct drm_gem_object *obj)
-> >>  		vaddr =3D obj->funcs->vmap(obj);
-> >>  	else if (obj->dev->driver->gem_prime_vmap)
-> >>  		vaddr =3D obj->dev->driver->gem_prime_vmap(obj);
-> >> +	else if (obj->funcs && obj->funcs->vmap_iomem)
-> >> +		vaddr =3D NULL; /* requires mapping as I/O memory */
-> >> +	else
-> >> +		vaddr =3D ERR_PTR(-EOPNOTSUPP);
-> >> +
-> >> +	if (!vaddr)
-> >> +		vaddr =3D ERR_PTR(-ENOMEM);
-> >> +
-> >> +	return vaddr;
-> >> +}
-> >> +
-> >> +void __iomem *drm_gem_vmap_iomem(struct drm_gem_object *obj)
-> >> +{
-> >> +	void __iomem *vaddr;
-> >> +
-> >> +	if (obj->funcs && obj->funcs->vmap_iomem)
-> >> +		vaddr =3D obj->funcs->vmap_iomem(obj);
-> >> +	else if (obj->funcs && obj->funcs->vmap)
-> >> +		vaddr =3D NULL; /* requires mapping as system memory */
-> >>  	else
-> >>  		vaddr =3D ERR_PTR(-EOPNOTSUPP);
-> >> =20
-> >> diff --git a/drivers/gpu/drm/drm_internal.h b/drivers/gpu/drm/drm_inte=
-rnal.h
-> >> index 8e01caaf95cc..aa1a3d4f9223 100644
-> >> --- a/drivers/gpu/drm/drm_internal.h
-> >> +++ b/drivers/gpu/drm/drm_internal.h
-> >> @@ -187,6 +187,7 @@ void drm_gem_print_info(struct drm_printer *p, uns=
-igned int indent,
-> >>  int drm_gem_pin(struct drm_gem_object *obj);
-> >>  void drm_gem_unpin(struct drm_gem_object *obj);
-> >>  void *drm_gem_vmap(struct drm_gem_object *obj);
-> >> +void __iomem *drm_gem_vmap_iomem(struct drm_gem_object *obj);
-> >>  void drm_gem_vunmap(struct drm_gem_object *obj, void *vaddr);
-> >> =20
-> >>  /* drm_debugfs.c drm_debugfs_crc.c */
-> >> diff --git a/include/drm/drm_client.h b/include/drm/drm_client.h
-> >> index 7aaea665bfc2..94aa075ee4b6 100644
-> >> --- a/include/drm/drm_client.h
-> >> +++ b/include/drm/drm_client.h
-> >> @@ -141,10 +141,15 @@ struct drm_client_buffer {
-> >>  	struct drm_gem_object *gem;
-> >> =20
-> >>  	/**
-> >> -	 * @vaddr: Virtual address for the buffer
-> >> +	 * @vaddr: Virtual address for the buffer in system memory
-> >>  	 */
-> >>  	void *vaddr;
-> >> =20
-> >> +	/**
-> >> +	 * @vaddr: Virtual address for the buffer in I/O memory
-> >> +	 */
-> >> +	void *vaddr_iomem;
-> >> +
-> >>  	/**
-> >>  	 * @fb: DRM framebuffer
-> >>  	 */
-> >> @@ -156,6 +161,7 @@ drm_client_framebuffer_create(struct drm_client_de=
-v *client, u32 width, u32 heig
-> >>  void drm_client_framebuffer_delete(struct drm_client_buffer *buffer);
-> >>  int drm_client_framebuffer_flush(struct drm_client_buffer *buffer, st=
-ruct drm_rect *rect);
-> >>  void *drm_client_buffer_vmap(struct drm_client_buffer *buffer);
-> >> +void __iomem *drm_client_buffer_vmap_iomem(struct drm_client_buffer *=
-buffer);
-> >>  void drm_client_buffer_vunmap(struct drm_client_buffer *buffer);
-> >> =20
-> >>  int drm_client_modeset_create(struct drm_client_dev *client);
-> >> diff --git a/include/drm/drm_gem.h b/include/drm/drm_gem.h
-> >> index 337a48321705..bc735ff522a8 100644
-> >> --- a/include/drm/drm_gem.h
-> >> +++ b/include/drm/drm_gem.h
-> >> @@ -134,17 +134,28 @@ struct drm_gem_object_funcs {
-> >>  	 * @vmap:
-> >>  	 *
-> >>  	 * Returns a virtual address for the buffer. Used by the
-> >> -	 * drm_gem_dmabuf_vmap() helper.
-> >> +	 * drm_gem_dmabuf_vmap() helper. If the buffer is not
-> >> +	 * located in system memory, the function returns NULL.
-> >>  	 *
-> >>  	 * This callback is optional.
-> >>  	 */
-> >>  	void *(*vmap)(struct drm_gem_object *obj);
-> >> =20
-> >> +	/**
-> >> +	 * @vmap_iomem:
-> >> +	 *
-> >> +	 * Returns a virtual address for the buffer. If the buffer is not
-> >> +	 * located in I/O memory, the function returns NULL.
-> >> +	 *
-> >> +	 * This callback is optional.
-> >> +	 */
-> >> +	void __iomem *(*vmap_iomem)(struct drm_gem_object *obj);
-> >> +
-> >>  	/**
-> >>  	 * @vunmap:
-> >>  	 *
-> >> -	 * Releases the address previously returned by @vmap. Used by the
-> >> -	 * drm_gem_dmabuf_vunmap() helper.
-> >> +	 * Releases the address previously returned by @vmap or @vmap_iomem.
-> >> +	 * Used by the drm_gem_dmabuf_vunmap() helper.
-> >>  	 *
-> >>  	 * This callback is optional.
-> >>  	 */
-> >> --=20
-> >> 2.27.0
-> >>
-> >=20
->=20
-> --=20
-> Thomas Zimmermann
-> Graphics Driver Developer
-> SUSE Software Solutions Germany GmbH
-> Maxfeldstr. 5, 90409 N=FCrnberg, Germany
-> (HRB 36809, AG N=FCrnberg)
-> Gesch=E4ftsf=FChrer: Felix Imend=F6rffer
->=20
+int main(int argc, char *argv[])
+{
+        const int fd =3D open("/dev/fb0", O_ACCMODE);
+        struct fb_var_screeninfo var =3D { };
+        ioctl(fd, FBIOGET_VSCREENINFO, &var);
+        var.xres =3D var.yres =3D 1;
+        ioctl(fd, FBIOPUT_VSCREENINFO, &var);
+        return 0;
+}
+----------
 
+----------
+[   20.102222] BUG: unable to handle page fault for address: ffffb80500d7b0=
+00
+[   20.102225] #PF: supervisor write access in kernel mode
+[   20.102226] #PF: error_code(0x0002) - not-present page
+[   20.102227] PGD 13a48c067 P4D 13a48c067 PUD 13a48d067 PMD 132525067 PTE 0
+[   20.102230] Oops: 0002 [#1] SMP
+[   20.102232] CPU: 3 PID: 2786 Comm: a.out Not tainted 5.8.0-rc4+ #749
+[   20.102233] Hardware name: VMware, Inc. VMware Virtual Platform/440BX De=
+sktop Reference Platform, BIOS 6.00 02/27/2020
+[   20.102237] RIP: 0010:bitfill_aligned+0x87/0x120 [cfbfillrect]
+[   20.102238] Code: c3 45 85 db 0f 85 85 00 00 00 44 89 c0 31 d2 41 f7 f1 =
+89 c2 83 f8 07 76 41 8d 48 f8 c1 e9 03 48 83 c1 01 48 c1 e1 06 48 01 f1 <48=
+> 89 3e 48 89 7e 08 48 89 7e 10 48 89 7e 18 48 89 7e 20 48 89 7e
+[   20.102239] RSP: 0018:ffffb805012939a8 EFLAGS: 00010206
+[   20.102240] RAX: 0000000003fffe70 RBX: 00000000ffff9c20 RCX: ffffb805209=
+82000
+[   20.102241] RDX: 0000000003fffe70 RSI: ffffb80500d7b000 RDI: 00000000000=
+00000
+[   20.102242] RBP: ffffb805012939b8 R08: 00000000ffff9c20 R09: ffffb80500d=
+7aff8
+[   20.102242] R10: 00000000ffffffff R11: 0000000000000000 R12: fffffffffff=
+fffff
+[   20.102243] R13: ffff976734c0c000 R14: 0000000000000000 R15: ffffb805009=
+82c80
+[   20.102244] FS:  00007f0c9589e740(0000) GS:ffff97673aec0000(0000) knlGS:=
+0000000000000000
+[   20.102265] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[   20.102265] CR2: ffffb80500d7b000 CR3: 0000000136cdf004 CR4: 00000000001=
+606e0
+[   20.102277] Call Trace:
+[   20.102281]  cfb_fillrect+0x159/0x340 [cfbfillrect]
+[   20.102385]  ? __mutex_unlock_slowpath+0x158/0x2d0
+[   20.102493]  ? cfb_fillrect+0x340/0x340 [cfbfillrect]
+[   20.102747]  vmw_fb_fillrect+0x12/0x30 [vmwgfx]
+[   20.102755]  bit_clear_margins+0x92/0xf0 [fb]
+[   20.102760]  fbcon_clear_margins+0x4c/0x50 [fb]
+[   20.102763]  fbcon_switch+0x321/0x570 [fb]
+[   20.102771]  redraw_screen+0xe0/0x250
+[   20.102775]  fbcon_modechanged+0x164/0x1b0 [fb]
+[   20.102779]  fbcon_update_vcs+0x15/0x20 [fb]
+[   20.102781]  fb_set_var+0x364/0x3c0 [fb]
+[   20.102817]  do_fb_ioctl+0x2ff/0x3f0 [fb]
+[   20.102894]  ? find_held_lock+0x35/0xa0
+[   20.103126]  ? __audit_syscall_entry+0xd8/0x120
+[   20.103135]  ? kfree+0x25a/0x2b0
+[   20.103139]  fb_ioctl+0x2e/0x40 [fb]
+[   20.103141]  ksys_ioctl+0x86/0xc0
+[   20.103144]  ? do_syscall_64+0x20/0xa0
+[   20.103146]  __x64_sys_ioctl+0x15/0x20
+[   20.103148]  do_syscall_64+0x54/0xa0
+[   20.103151]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+[   20.103152] RIP: 0033:0x7f0c953b8307
+[   20.103153] Code: Bad RIP value.
+[   20.103154] RSP: 002b:00007ffecbdce0f8 EFLAGS: 00000246 ORIG_RAX: 000000=
+0000000010
+[   20.103155] RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 00007f0c953=
+b8307
+[   20.103156] RDX: 00007ffecbdce100 RSI: 0000000000004601 RDI: 00000000000=
+00003
+[   20.103156] RBP: 0000000000000000 R08: 00007f0c9568be80 R09: 00000000000=
+00000
+[   20.103157] R10: 00007ffecbdcdb60 R11: 0000000000000246 R12: 00000000004=
+004f2
+[   20.103158] R13: 00007ffecbdce280 R14: 0000000000000000 R15: 00000000000=
+00000
+[   20.103162] Modules linked in: mousedev rapl evdev input_leds led_class =
+mac_hid psmouse pcspkr xt_tcpudp ip6t_rpfilter ip6t_REJECT nf_reject_ipv6 i=
+pt_REJECT nf_reject_ipv4 xt_conntrack sg ebtable_nat af_packet ip6table_nat=
+ ip6table_mangle ip6table_raw iptable_nat nf_nat iptable_mangle iptable_raw=
+ nf_conntrack rtc_cmos nf_defrag_ipv4 ip_set nfnetlink ebtable_filter ebtab=
+les ip6table_filter ip6_tables iptable_filter bpfilter i2c_piix4 vmw_vmci a=
+c intel_agp button intel_gtt ip_tables x_tables ata_generic pata_acpi serio=
+_raw atkbd libps2 vmwgfx drm_kms_helper cfbfillrect syscopyarea cfbimgblt s=
+ysfillrect sysimgblt fb_sys_fops cfbcopyarea fb fbdev ttm drm i2c_core ahci=
+ drm_panel_orientation_quirks libahci backlight e1000 agpgart ata_piix liba=
+ta i8042 serio unix ipv6 nf_defrag_ipv6
+[   20.103194] CR2: ffffb80500d7b000
+[   20.103196] ---[ end trace b2348f839f6524f9 ]---
+[   20.103198] RIP: 0010:bitfill_aligned+0x87/0x120 [cfbfillrect]
+[   20.103200] Code: c3 45 85 db 0f 85 85 00 00 00 44 89 c0 31 d2 41 f7 f1 =
+89 c2 83 f8 07 76 41 8d 48 f8 c1 e9 03 48 83 c1 01 48 c1 e1 06 48 01 f1 <48=
+> 89 3e 48 89 7e 08 48 89 7e 10 48 89 7e 18 48 89 7e 20 48 89 7e
+[   20.103201] RSP: 0018:ffffb805012939a8 EFLAGS: 00010206
+[   20.103202] RAX: 0000000003fffe70 RBX: 00000000ffff9c20 RCX: ffffb805209=
+82000
+[   20.103202] RDX: 0000000003fffe70 RSI: ffffb80500d7b000 RDI: 00000000000=
+00000
+[   20.103203] RBP: ffffb805012939b8 R08: 00000000ffff9c20 R09: ffffb80500d=
+7aff8
+[   20.103204] R10: 00000000ffffffff R11: 0000000000000000 R12: fffffffffff=
+fffff
+[   20.103204] R13: ffff976734c0c000 R14: 0000000000000000 R15: ffffb805009=
+82c80
+[   20.103205] FS:  00007f0c9589e740(0000) GS:ffff97673aec0000(0000) knlGS:=
+0000000000000000
+[   20.103213] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[   20.103214] CR2: ffffb80500d7b000 CR3: 0000000136cdf004 CR4: 00000000001=
+606e0
+----------
 
+A debug printk() patch
 
+----------
+diff --git a/drivers/video/fbdev/core/cfbfillrect.c b/drivers/video/fbdev/c=
+ore/cfbfillrect.c
+index ba9f58b2a5e8..57e4c2d1bcc0 100644
+--- a/drivers/video/fbdev/core/cfbfillrect.c
++++ b/drivers/video/fbdev/core/cfbfillrect.c
+@@ -321,6 +321,9 @@ void cfb_fillrect(struct fb_info *p, const struct fb_fi=
+llrect *rect)
+ 			fill_op32 =3D bitfill_aligned;
+ 			break;
+ 		}
++		if (fill_op32 =3D bitfill_aligned)
++			printk(KERN_DEBUG "height=3D%lu width=3D%lu bpp=3D%u bits=3D%u bytes=3D=
+%u dst=3D%px dst_idx=3D%u p->fix.line_length=3D%u\n",
++			       height, width, bpp, bits, bytes, dst, dst_idx, p->fix.line_lengt=
+h);
+ 		while (height--) {
+ 			dst +=3D dst_idx >> (ffs(bits) - 1);
+ 			dst_idx &=3D (bits - 1);
+----------
 
---=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+says that width * bpp was a sane value for normal boot
+
+  [    9.993434] height=16 width=800 bpp2 bitsd bytes=3D8 dst=FFff9864409c2=
+000 dst_idx!676032 p->fix.line_lengthG04
+  [   15.494941] height=3D8 width=800 bpp2 bitsd bytes=3D8 dst=FFff9864409c=
+2000 dst_idx"278144 p->fix.line_lengthG04
+
+but width * bpp was overflowing when the reproducer shown above was execute=
+d.
+
+  [   28.164111] height=885 widthB94966497 bpp2 bitsd bytes=3D8 dst=FFff986=
+4409c2000 dst_idx%600 p->fix.line_lengthG04
+
+syzbot has several bug reports which are stalling inside filling functions.=
+ I guess
+that these reports are unexpectedly longer loops caused by integer overflow=
+/underflow.
+
+Thus, I consider that we need more sanity/constraints checks.
+I don't have other devices to test. Please check your drivers.

@@ -1,28 +1,30 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 10 Jul 2020 14:23:39 +0000
-Subject: Re: [PATCH][next] fbcon: Use array3_size() helper in scr_memcpyw()
-Message-Id: <01ccc599-28a3-d6f0-40ca-7f1983211ce2@samsung.com>
+Date: Fri, 10 Jul 2020 14:23:48 +0000
+Subject: Re: [PATCH] video: fbdev: neofb: fix memory leak in neo_scan_monitor()
+Message-Id: <c07a27c2-3171-3f3a-6029-ef523cf889c4@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200615231029eucas1p1875c2cab0363a12afd0c5dea7ab0cb8b@eucas1p1.samsung.com>
- <20200615231542.GA20470@embeddedor>
-In-Reply-To: <20200615231542.GA20470@embeddedor>
+References: <CGME20200630195458eucas1p2fc508a96f648c8af44d5ed5ff906a103@eucas1p2.samsung.com>
+ <20200630195451.18675-1-novikov@ispras.ru>
+In-Reply-To: <20200630195451.18675-1-novikov@ispras.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+To: Evgeny Novikov <novikov@ispras.ru>
+Cc: ldv-project@linuxtesting.org, linux-fbdev@vger.kernel.org, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Mike Rapoport <rppt@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>
 
 
-On 6/16/20 1:15 AM, Gustavo A. R. Silva wrote:
-> Use array3_size() helper instead of the open-coded version in scr_memcpyw()
-> and scr_memsetw(). These sorts of multiplication factors need to be wrapped
-> in array3_size().
+On 6/30/20 9:54 PM, Evgeny Novikov wrote:
+> neofb_probe() calls neo_scan_monitor() that can successfully allocate a
+> memory for info->monspecs.modedb and proceed to case 0x03. There it does
+> not free the memory and returns -1. neofb_probe() goes to label
+> err_scan_monitor, thus, it does not free this memory through calling
+> fb_destroy_modedb() as well. We can not go to label err_init_hw since
+> neo_scan_monitor() can fail during memory allocation. So, the patch frees
+> the memory directly for case 0x03.
 > 
-> This issue was found with the help of Coccinelle and, audited and fixed
-> manually.
+> Found by Linux Driver Verification project (linuxtesting.org).
 > 
-> Addresses-KSPP-ID: https://github.com/KSPP/linux/issues/83
-> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
 
 Applied to drm-misc-next tree, thanks.
 
@@ -33,29 +35,19 @@ Samsung R&D Institute Poland
 Samsung Electronics
 
 > ---
->  drivers/video/fbdev/core/fbcon.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/video/fbdev/neofb.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index 9d28a8e3328f..6af2734f2a7b 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -639,7 +639,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
->  			       GFP_KERNEL);
->  		if (save) {
->  			int i = cols < new_cols ? cols : new_cols;
-> -			scr_memsetw(save, erase, logo_lines * new_cols * 2);
-> +			scr_memsetw(save, erase, array3_size(logo_lines, new_cols, 2));
->  			r = q - step;
->  			for (cnt = 0; cnt < logo_lines; cnt++, r += i)
->  				scr_memcpyw(save + cnt * new_cols, r, 2 * i);
-> @@ -676,7 +676,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
->  		q = (unsigned short *) (vc->vc_origin +
->  					vc->vc_size_row *
->  					rows);
-> -		scr_memcpyw(q, save, logo_lines * new_cols * 2);
-> +		scr_memcpyw(q, save, array3_size(logo_lines, new_cols, 2));
->  		vc->vc_y += logo_lines;
->  		vc->vc_pos += logo_lines * vc->vc_size_row;
->  		kfree(save);
+> diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
+> index f5a676bfd67a..09a20d4ab35f 100644
+> --- a/drivers/video/fbdev/neofb.c
+> +++ b/drivers/video/fbdev/neofb.c
+> @@ -1819,6 +1819,7 @@ static int neo_scan_monitor(struct fb_info *info)
+>  #else
+>  		printk(KERN_ERR
+>  		       "neofb: Only 640x480, 800x600/480 and 1024x768 panels are currently supported\n");
+> +		kfree(info->monspecs.modedb);
+>  		return -1;
+>  #endif
+>  	default:
 > 

@@ -1,192 +1,206 @@
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Date: Fri, 10 Jul 2020 05:56:58 +0000
-Subject: fbconsole needs more parameter validations.
-Message-Id: <b1e7dd6a-fc22-bba8-0abb-d3e779329bce@i-love.sakura.ne.jp>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Fri, 10 Jul 2020 10:56:37 +0000
+Subject: Re: fbconsole needs more parameter validations.
+Message-Id: <20200710105637.GB1232395@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200710055329.3759-1-penguin-kernel@I-love.SAKURA.ne.jp>
-In-Reply-To: <20200710055329.3759-1-penguin-kernel@I-love.SAKURA.ne.jp>
+ <b1e7dd6a-fc22-bba8-0abb-d3e779329bce@i-love.sakura.ne.jp>
+In-Reply-To: <b1e7dd6a-fc22-bba8-0abb-d3e779329bce@i-love.sakura.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-To: DRI <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, syzbot <syzbot+017265e8553724e514e8@syzkaller.appspotmail.com>, linux-kernel@vger.kernel.org, Dmitry Vyukov <dvyukov@google.com>, Jiri Slaby <jslaby@suse.com>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-kernel@vger.kernel.org, DRI <dri-devel@lists.freedesktop.org>, Jiri Slaby <jslaby@suse.com>, syzbot <syzbot+017265e8553724e514e8@syzkaller.appspotmail.com>, Dmitry Vyukov <dvyukov@google.com>
 
-Hello.
+On Fri, Jul 10, 2020 at 02:56:58PM +0900, Tetsuo Handa wrote:
+> Hello.
+>=20
+> While trying to debug https://syzkaller.appspot.com/bug?extid=017265e8553=
+724e514e8 ,
+> I noticed that a crash can happen without opening /dev/ttyXX .
+>=20
+> For example, while a driver which syzbot is reporting accepts screen with
+> var.xres =3D var.yres =3D 0 (and a crash is not visible until trying to w=
+rite to
+> /dev/ttyXX ), a driver for VMware environment which I'm using (dmesg says=
+ "fbcon:
+> svgadrmfb (fb0) is primary device") rejects screen with var.xres =3D var.=
+yres =3D 0.
+> However, specifying var.xres =3D var.yres =3D 1 like below reproducer cau=
+ses a crash
+> in my VMware environment.
+>=20
+> ----------
+> #include <sys/types.h>
+> #include <sys/stat.h>
+> #include <fcntl.h>
+> #include <sys/ioctl.h>
+> #include <linux/fb.h>
+>=20
+> int main(int argc, char *argv[])
+> {
+>         const int fd =3D open("/dev/fb0", O_ACCMODE);
+>         struct fb_var_screeninfo var =3D { };
+>         ioctl(fd, FBIOGET_VSCREENINFO, &var);
+>         var.xres =3D var.yres =3D 1;
+>         ioctl(fd, FBIOPUT_VSCREENINFO, &var);
+>         return 0;
+> }
+> ----------
+>=20
+> ----------
+> [   20.102222] BUG: unable to handle page fault for address: ffffb80500d7=
+b000
+> [   20.102225] #PF: supervisor write access in kernel mode
+> [   20.102226] #PF: error_code(0x0002) - not-present page
+> [   20.102227] PGD 13a48c067 P4D 13a48c067 PUD 13a48d067 PMD 132525067 PT=
+E 0
+> [   20.102230] Oops: 0002 [#1] SMP
+> [   20.102232] CPU: 3 PID: 2786 Comm: a.out Not tainted 5.8.0-rc4+ #749
+> [   20.102233] Hardware name: VMware, Inc. VMware Virtual Platform/440BX =
+Desktop Reference Platform, BIOS 6.00 02/27/2020
+> [   20.102237] RIP: 0010:bitfill_aligned+0x87/0x120 [cfbfillrect]
+> [   20.102238] Code: c3 45 85 db 0f 85 85 00 00 00 44 89 c0 31 d2 41 f7 f=
+1 89 c2 83 f8 07 76 41 8d 48 f8 c1 e9 03 48 83 c1 01 48 c1 e1 06 48 01 f1 <=
+48> 89 3e 48 89 7e 08 48 89 7e 10 48 89 7e 18 48 89 7e 20 48 89 7e
+> [   20.102239] RSP: 0018:ffffb805012939a8 EFLAGS: 00010206
+> [   20.102240] RAX: 0000000003fffe70 RBX: 00000000ffff9c20 RCX: ffffb8052=
+0982000
+> [   20.102241] RDX: 0000000003fffe70 RSI: ffffb80500d7b000 RDI: 000000000=
+0000000
+> [   20.102242] RBP: ffffb805012939b8 R08: 00000000ffff9c20 R09: ffffb8050=
+0d7aff8
+> [   20.102242] R10: 00000000ffffffff R11: 0000000000000000 R12: fffffffff=
+fffffff
+> [   20.102243] R13: ffff976734c0c000 R14: 0000000000000000 R15: ffffb8050=
+0982c80
+> [   20.102244] FS:  00007f0c9589e740(0000) GS:ffff97673aec0000(0000) knlG=
+S:0000000000000000
+> [   20.102265] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> [   20.102265] CR2: ffffb80500d7b000 CR3: 0000000136cdf004 CR4: 000000000=
+01606e0
+> [   20.102277] Call Trace:
+> [   20.102281]  cfb_fillrect+0x159/0x340 [cfbfillrect]
+> [   20.102385]  ? __mutex_unlock_slowpath+0x158/0x2d0
+> [   20.102493]  ? cfb_fillrect+0x340/0x340 [cfbfillrect]
+> [   20.102747]  vmw_fb_fillrect+0x12/0x30 [vmwgfx]
+> [   20.102755]  bit_clear_margins+0x92/0xf0 [fb]
+> [   20.102760]  fbcon_clear_margins+0x4c/0x50 [fb]
+> [   20.102763]  fbcon_switch+0x321/0x570 [fb]
+> [   20.102771]  redraw_screen+0xe0/0x250
+> [   20.102775]  fbcon_modechanged+0x164/0x1b0 [fb]
+> [   20.102779]  fbcon_update_vcs+0x15/0x20 [fb]
+> [   20.102781]  fb_set_var+0x364/0x3c0 [fb]
+> [   20.102817]  do_fb_ioctl+0x2ff/0x3f0 [fb]
+> [   20.102894]  ? find_held_lock+0x35/0xa0
+> [   20.103126]  ? __audit_syscall_entry+0xd8/0x120
+> [   20.103135]  ? kfree+0x25a/0x2b0
+> [   20.103139]  fb_ioctl+0x2e/0x40 [fb]
+> [   20.103141]  ksys_ioctl+0x86/0xc0
+> [   20.103144]  ? do_syscall_64+0x20/0xa0
+> [   20.103146]  __x64_sys_ioctl+0x15/0x20
+> [   20.103148]  do_syscall_64+0x54/0xa0
+> [   20.103151]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+> [   20.103152] RIP: 0033:0x7f0c953b8307
+> [   20.103153] Code: Bad RIP value.
+> [   20.103154] RSP: 002b:00007ffecbdce0f8 EFLAGS: 00000246 ORIG_RAX: 0000=
+000000000010
+> [   20.103155] RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 00007f0c9=
+53b8307
+> [   20.103156] RDX: 00007ffecbdce100 RSI: 0000000000004601 RDI: 000000000=
+0000003
+> [   20.103156] RBP: 0000000000000000 R08: 00007f0c9568be80 R09: 000000000=
+0000000
+> [   20.103157] R10: 00007ffecbdcdb60 R11: 0000000000000246 R12: 000000000=
+04004f2
+> [   20.103158] R13: 00007ffecbdce280 R14: 0000000000000000 R15: 000000000=
+0000000
+> [   20.103162] Modules linked in: mousedev rapl evdev input_leds led_clas=
+s mac_hid psmouse pcspkr xt_tcpudp ip6t_rpfilter ip6t_REJECT nf_reject_ipv6=
+ ipt_REJECT nf_reject_ipv4 xt_conntrack sg ebtable_nat af_packet ip6table_n=
+at ip6table_mangle ip6table_raw iptable_nat nf_nat iptable_mangle iptable_r=
+aw nf_conntrack rtc_cmos nf_defrag_ipv4 ip_set nfnetlink ebtable_filter ebt=
+ables ip6table_filter ip6_tables iptable_filter bpfilter i2c_piix4 vmw_vmci=
+ ac intel_agp button intel_gtt ip_tables x_tables ata_generic pata_acpi ser=
+io_raw atkbd libps2 vmwgfx drm_kms_helper cfbfillrect syscopyarea cfbimgblt=
+ sysfillrect sysimgblt fb_sys_fops cfbcopyarea fb fbdev ttm drm i2c_core ah=
+ci drm_panel_orientation_quirks libahci backlight e1000 agpgart ata_piix li=
+bata i8042 serio unix ipv6 nf_defrag_ipv6
+> [   20.103194] CR2: ffffb80500d7b000
+> [   20.103196] ---[ end trace b2348f839f6524f9 ]---
+> [   20.103198] RIP: 0010:bitfill_aligned+0x87/0x120 [cfbfillrect]
+> [   20.103200] Code: c3 45 85 db 0f 85 85 00 00 00 44 89 c0 31 d2 41 f7 f=
+1 89 c2 83 f8 07 76 41 8d 48 f8 c1 e9 03 48 83 c1 01 48 c1 e1 06 48 01 f1 <=
+48> 89 3e 48 89 7e 08 48 89 7e 10 48 89 7e 18 48 89 7e 20 48 89 7e
+> [   20.103201] RSP: 0018:ffffb805012939a8 EFLAGS: 00010206
+> [   20.103202] RAX: 0000000003fffe70 RBX: 00000000ffff9c20 RCX: ffffb8052=
+0982000
+> [   20.103202] RDX: 0000000003fffe70 RSI: ffffb80500d7b000 RDI: 000000000=
+0000000
+> [   20.103203] RBP: ffffb805012939b8 R08: 00000000ffff9c20 R09: ffffb8050=
+0d7aff8
+> [   20.103204] R10: 00000000ffffffff R11: 0000000000000000 R12: fffffffff=
+fffffff
+> [   20.103204] R13: ffff976734c0c000 R14: 0000000000000000 R15: ffffb8050=
+0982c80
+> [   20.103205] FS:  00007f0c9589e740(0000) GS:ffff97673aec0000(0000) knlG=
+S:0000000000000000
+> [   20.103213] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> [   20.103214] CR2: ffffb80500d7b000 CR3: 0000000136cdf004 CR4: 000000000=
+01606e0
+> ----------
+>=20
+> A debug printk() patch
+>=20
+> ----------
+> diff --git a/drivers/video/fbdev/core/cfbfillrect.c b/drivers/video/fbdev=
+/core/cfbfillrect.c
+> index ba9f58b2a5e8..57e4c2d1bcc0 100644
+> --- a/drivers/video/fbdev/core/cfbfillrect.c
+> +++ b/drivers/video/fbdev/core/cfbfillrect.c
+> @@ -321,6 +321,9 @@ void cfb_fillrect(struct fb_info *p, const struct fb_=
+fillrect *rect)
+>  			fill_op32 =3D bitfill_aligned;
+>  			break;
+>  		}
+> +		if (fill_op32 =3D bitfill_aligned)
+> +			printk(KERN_DEBUG "height=3D%lu width=3D%lu bpp=3D%u bits=3D%u bytes=
+=3D%u dst=3D%px dst_idx=3D%u p->fix.line_length=3D%u\n",
+> +			       height, width, bpp, bits, bytes, dst, dst_idx, p->fix.line_len=
+gth);
+>  		while (height--) {
+>  			dst +=3D dst_idx >> (ffs(bits) - 1);
+>  			dst_idx &=3D (bits - 1);
+> ----------
+>=20
+> says that width * bpp was a sane value for normal boot
+>=20
+>   [    9.993434] height=16 width=800 bpp2 bitsd bytes=3D8 dst=FFff9864409=
+c2000 dst_idx!676032 p->fix.line_lengthG04
+>   [   15.494941] height=3D8 width=800 bpp2 bitsd bytes=3D8 dst=FFff986440=
+9c2000 dst_idx"278144 p->fix.line_lengthG04
+>=20
+> but width * bpp was overflowing when the reproducer shown above was execu=
+ted.
+>=20
+>   [   28.164111] height=885 widthB94966497 bpp2 bitsd bytes=3D8 dst=FFff9=
+864409c2000 dst_idx%600 p->fix.line_lengthG04
+>=20
+> syzbot has several bug reports which are stalling inside filling function=
+s. I guess
+> that these reports are unexpectedly longer loops caused by integer overfl=
+ow/underflow.
+>=20
+> Thus, I consider that we need more sanity/constraints checks.
+> I don't have other devices to test. Please check your drivers.
 
-While trying to debug https://syzkaller.appspot.com/bug?extid=017265e855372=
-4e514e8 ,
-I noticed that a crash can happen without opening /dev/ttyXX .
 
-For example, while a driver which syzbot is reporting accepts screen with
-var.xres =3D var.yres =3D 0 (and a crash is not visible until trying to wri=
-te to
-/dev/ttyXX ), a driver for VMware environment which I'm using (dmesg says "=
-fbcon:
-svgadrmfb (fb0) is primary device") rejects screen with var.xres =3D var.yr=
-es =3D 0.
-However, specifying var.xres =3D var.yres =3D 1 like below reproducer cause=
-s a crash
-in my VMware environment.
+What drivers?
 
-----------
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <linux/fb.h>
+Where is the over/underflow happening here when we set a size to be so
+small?  We should bound the size somewhere, and as you show, that's not
+really working properly, right?
 
-int main(int argc, char *argv[])
-{
-        const int fd =3D open("/dev/fb0", O_ACCMODE);
-        struct fb_var_screeninfo var =3D { };
-        ioctl(fd, FBIOGET_VSCREENINFO, &var);
-        var.xres =3D var.yres =3D 1;
-        ioctl(fd, FBIOPUT_VSCREENINFO, &var);
-        return 0;
-}
-----------
+thanks,
 
-----------
-[   20.102222] BUG: unable to handle page fault for address: ffffb80500d7b0=
-00
-[   20.102225] #PF: supervisor write access in kernel mode
-[   20.102226] #PF: error_code(0x0002) - not-present page
-[   20.102227] PGD 13a48c067 P4D 13a48c067 PUD 13a48d067 PMD 132525067 PTE 0
-[   20.102230] Oops: 0002 [#1] SMP
-[   20.102232] CPU: 3 PID: 2786 Comm: a.out Not tainted 5.8.0-rc4+ #749
-[   20.102233] Hardware name: VMware, Inc. VMware Virtual Platform/440BX De=
-sktop Reference Platform, BIOS 6.00 02/27/2020
-[   20.102237] RIP: 0010:bitfill_aligned+0x87/0x120 [cfbfillrect]
-[   20.102238] Code: c3 45 85 db 0f 85 85 00 00 00 44 89 c0 31 d2 41 f7 f1 =
-89 c2 83 f8 07 76 41 8d 48 f8 c1 e9 03 48 83 c1 01 48 c1 e1 06 48 01 f1 <48=
-> 89 3e 48 89 7e 08 48 89 7e 10 48 89 7e 18 48 89 7e 20 48 89 7e
-[   20.102239] RSP: 0018:ffffb805012939a8 EFLAGS: 00010206
-[   20.102240] RAX: 0000000003fffe70 RBX: 00000000ffff9c20 RCX: ffffb805209=
-82000
-[   20.102241] RDX: 0000000003fffe70 RSI: ffffb80500d7b000 RDI: 00000000000=
-00000
-[   20.102242] RBP: ffffb805012939b8 R08: 00000000ffff9c20 R09: ffffb80500d=
-7aff8
-[   20.102242] R10: 00000000ffffffff R11: 0000000000000000 R12: fffffffffff=
-fffff
-[   20.102243] R13: ffff976734c0c000 R14: 0000000000000000 R15: ffffb805009=
-82c80
-[   20.102244] FS:  00007f0c9589e740(0000) GS:ffff97673aec0000(0000) knlGS:=
-0000000000000000
-[   20.102265] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[   20.102265] CR2: ffffb80500d7b000 CR3: 0000000136cdf004 CR4: 00000000001=
-606e0
-[   20.102277] Call Trace:
-[   20.102281]  cfb_fillrect+0x159/0x340 [cfbfillrect]
-[   20.102385]  ? __mutex_unlock_slowpath+0x158/0x2d0
-[   20.102493]  ? cfb_fillrect+0x340/0x340 [cfbfillrect]
-[   20.102747]  vmw_fb_fillrect+0x12/0x30 [vmwgfx]
-[   20.102755]  bit_clear_margins+0x92/0xf0 [fb]
-[   20.102760]  fbcon_clear_margins+0x4c/0x50 [fb]
-[   20.102763]  fbcon_switch+0x321/0x570 [fb]
-[   20.102771]  redraw_screen+0xe0/0x250
-[   20.102775]  fbcon_modechanged+0x164/0x1b0 [fb]
-[   20.102779]  fbcon_update_vcs+0x15/0x20 [fb]
-[   20.102781]  fb_set_var+0x364/0x3c0 [fb]
-[   20.102817]  do_fb_ioctl+0x2ff/0x3f0 [fb]
-[   20.102894]  ? find_held_lock+0x35/0xa0
-[   20.103126]  ? __audit_syscall_entry+0xd8/0x120
-[   20.103135]  ? kfree+0x25a/0x2b0
-[   20.103139]  fb_ioctl+0x2e/0x40 [fb]
-[   20.103141]  ksys_ioctl+0x86/0xc0
-[   20.103144]  ? do_syscall_64+0x20/0xa0
-[   20.103146]  __x64_sys_ioctl+0x15/0x20
-[   20.103148]  do_syscall_64+0x54/0xa0
-[   20.103151]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
-[   20.103152] RIP: 0033:0x7f0c953b8307
-[   20.103153] Code: Bad RIP value.
-[   20.103154] RSP: 002b:00007ffecbdce0f8 EFLAGS: 00000246 ORIG_RAX: 000000=
-0000000010
-[   20.103155] RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 00007f0c953=
-b8307
-[   20.103156] RDX: 00007ffecbdce100 RSI: 0000000000004601 RDI: 00000000000=
-00003
-[   20.103156] RBP: 0000000000000000 R08: 00007f0c9568be80 R09: 00000000000=
-00000
-[   20.103157] R10: 00007ffecbdcdb60 R11: 0000000000000246 R12: 00000000004=
-004f2
-[   20.103158] R13: 00007ffecbdce280 R14: 0000000000000000 R15: 00000000000=
-00000
-[   20.103162] Modules linked in: mousedev rapl evdev input_leds led_class =
-mac_hid psmouse pcspkr xt_tcpudp ip6t_rpfilter ip6t_REJECT nf_reject_ipv6 i=
-pt_REJECT nf_reject_ipv4 xt_conntrack sg ebtable_nat af_packet ip6table_nat=
- ip6table_mangle ip6table_raw iptable_nat nf_nat iptable_mangle iptable_raw=
- nf_conntrack rtc_cmos nf_defrag_ipv4 ip_set nfnetlink ebtable_filter ebtab=
-les ip6table_filter ip6_tables iptable_filter bpfilter i2c_piix4 vmw_vmci a=
-c intel_agp button intel_gtt ip_tables x_tables ata_generic pata_acpi serio=
-_raw atkbd libps2 vmwgfx drm_kms_helper cfbfillrect syscopyarea cfbimgblt s=
-ysfillrect sysimgblt fb_sys_fops cfbcopyarea fb fbdev ttm drm i2c_core ahci=
- drm_panel_orientation_quirks libahci backlight e1000 agpgart ata_piix liba=
-ta i8042 serio unix ipv6 nf_defrag_ipv6
-[   20.103194] CR2: ffffb80500d7b000
-[   20.103196] ---[ end trace b2348f839f6524f9 ]---
-[   20.103198] RIP: 0010:bitfill_aligned+0x87/0x120 [cfbfillrect]
-[   20.103200] Code: c3 45 85 db 0f 85 85 00 00 00 44 89 c0 31 d2 41 f7 f1 =
-89 c2 83 f8 07 76 41 8d 48 f8 c1 e9 03 48 83 c1 01 48 c1 e1 06 48 01 f1 <48=
-> 89 3e 48 89 7e 08 48 89 7e 10 48 89 7e 18 48 89 7e 20 48 89 7e
-[   20.103201] RSP: 0018:ffffb805012939a8 EFLAGS: 00010206
-[   20.103202] RAX: 0000000003fffe70 RBX: 00000000ffff9c20 RCX: ffffb805209=
-82000
-[   20.103202] RDX: 0000000003fffe70 RSI: ffffb80500d7b000 RDI: 00000000000=
-00000
-[   20.103203] RBP: ffffb805012939b8 R08: 00000000ffff9c20 R09: ffffb80500d=
-7aff8
-[   20.103204] R10: 00000000ffffffff R11: 0000000000000000 R12: fffffffffff=
-fffff
-[   20.103204] R13: ffff976734c0c000 R14: 0000000000000000 R15: ffffb805009=
-82c80
-[   20.103205] FS:  00007f0c9589e740(0000) GS:ffff97673aec0000(0000) knlGS:=
-0000000000000000
-[   20.103213] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[   20.103214] CR2: ffffb80500d7b000 CR3: 0000000136cdf004 CR4: 00000000001=
-606e0
-----------
-
-A debug printk() patch
-
-----------
-diff --git a/drivers/video/fbdev/core/cfbfillrect.c b/drivers/video/fbdev/c=
-ore/cfbfillrect.c
-index ba9f58b2a5e8..57e4c2d1bcc0 100644
---- a/drivers/video/fbdev/core/cfbfillrect.c
-+++ b/drivers/video/fbdev/core/cfbfillrect.c
-@@ -321,6 +321,9 @@ void cfb_fillrect(struct fb_info *p, const struct fb_fi=
-llrect *rect)
- 			fill_op32 =3D bitfill_aligned;
- 			break;
- 		}
-+		if (fill_op32 =3D bitfill_aligned)
-+			printk(KERN_DEBUG "height=3D%lu width=3D%lu bpp=3D%u bits=3D%u bytes=3D=
-%u dst=3D%px dst_idx=3D%u p->fix.line_length=3D%u\n",
-+			       height, width, bpp, bits, bytes, dst, dst_idx, p->fix.line_lengt=
-h);
- 		while (height--) {
- 			dst +=3D dst_idx >> (ffs(bits) - 1);
- 			dst_idx &=3D (bits - 1);
-----------
-
-says that width * bpp was a sane value for normal boot
-
-  [    9.993434] height=16 width=800 bpp2 bitsd bytes=3D8 dst=FFff9864409c2=
-000 dst_idx!676032 p->fix.line_lengthG04
-  [   15.494941] height=3D8 width=800 bpp2 bitsd bytes=3D8 dst=FFff9864409c=
-2000 dst_idx"278144 p->fix.line_lengthG04
-
-but width * bpp was overflowing when the reproducer shown above was execute=
-d.
-
-  [   28.164111] height=885 widthB94966497 bpp2 bitsd bytes=3D8 dst=FFff986=
-4409c2000 dst_idx%600 p->fix.line_lengthG04
-
-syzbot has several bug reports which are stalling inside filling functions.=
- I guess
-that these reports are unexpectedly longer loops caused by integer overflow=
-/underflow.
-
-Thus, I consider that we need more sanity/constraints checks.
-I don't have other devices to test. Please check your drivers.
+greg k-h

@@ -1,53 +1,149 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 10 Jul 2020 14:23:48 +0000
-Subject: Re: [PATCH] video: fbdev: neofb: fix memory leak in neo_scan_monitor()
-Message-Id: <c07a27c2-3171-3f3a-6029-ef523cf889c4@samsung.com>
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Date: Sun, 12 Jul 2020 11:10:12 +0000
+Subject: [PATCH v3] vt: Reject zero-sized screen buffer size.
+Message-Id: <20200712111013.11881-1-penguin-kernel@I-love.SAKURA.ne.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200630195458eucas1p2fc508a96f648c8af44d5ed5ff906a103@eucas1p2.samsung.com>
- <20200630195451.18675-1-novikov@ispras.ru>
-In-Reply-To: <20200630195451.18675-1-novikov@ispras.ru>
+References: <189fc902-db7c-9886-cc31-c0348435303a@i-love.sakura.ne.jp>
+In-Reply-To: <189fc902-db7c-9886-cc31-c0348435303a@i-love.sakura.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Evgeny Novikov <novikov@ispras.ru>
-Cc: ldv-project@linuxtesting.org, linux-fbdev@vger.kernel.org, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Mike Rapoport <rppt@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>
+Cc: linux-fbdev@vger.kernel.org, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, syzbot <syzbot+017265e8553724e514e8@syzkaller.appspotmail.com>, Dmitry Vyukov <dvyukov@google.com>
 
+syzbot is reporting general protection fault in do_con_write() [1] caused
+by vc->vc_screenbuf = ZERO_SIZE_PTR caused by vc->vc_screenbuf_size = 0
+caused by vc->vc_cols = vc->vc_rows = vc->vc_size_row = 0 caused by
+fb_set_var() from ioctl(FBIOPUT_VSCREENINFO) on /dev/fb0 , for
+gotoxy(vc, 0, 0) from reset_terminal() from vc_init() from vc_allocate()
+ from con_install() from tty_init_dev() from tty_open() on such console
+causes vc->vc_pos = 0x10000000e due to
+((unsigned long) ZERO_SIZE_PTR) + -1U * 0 + (-1U << 1).
 
-On 6/30/20 9:54 PM, Evgeny Novikov wrote:
-> neofb_probe() calls neo_scan_monitor() that can successfully allocate a
-> memory for info->monspecs.modedb and proceed to case 0x03. There it does
-> not free the memory and returns -1. neofb_probe() goes to label
-> err_scan_monitor, thus, it does not free this memory through calling
-> fb_destroy_modedb() as well. We can not go to label err_init_hw since
-> neo_scan_monitor() can fail during memory allocation. So, the patch frees
-> the memory directly for case 0x03.
-> 
-> Found by Linux Driver Verification project (linuxtesting.org).
-> 
-> Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
+I don't think that a console with 0 column or 0 row makes sense. And it
+seems that vc_do_resize() does not intend to allow resizing a console to
+0 column or 0 row due to
 
-Applied to drm-misc-next tree, thanks.
+  new_cols = (cols ? cols : vc->vc_cols);
+  new_rows = (lines ? lines : vc->vc_rows);
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+exception.
 
-> ---
->  drivers/video/fbdev/neofb.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
-> index f5a676bfd67a..09a20d4ab35f 100644
-> --- a/drivers/video/fbdev/neofb.c
-> +++ b/drivers/video/fbdev/neofb.c
-> @@ -1819,6 +1819,7 @@ static int neo_scan_monitor(struct fb_info *info)
->  #else
->  		printk(KERN_ERR
->  		       "neofb: Only 640x480, 800x600/480 and 1024x768 panels are currently supported\n");
-> +		kfree(info->monspecs.modedb);
->  		return -1;
->  #endif
->  	default:
-> 
+Theoretically, cols and rows can be any range as long as
+0 < cols * rows * 2 <= KMALLOC_MAX_SIZE is satisfied (e.g.
+cols = 1048576 && rows = 2 is possible) because of
+
+  vc->vc_size_row = vc->vc_cols << 1;
+  vc->vc_screenbuf_size = vc->vc_rows * vc->vc_size_row;
+
+in visual_init() and kzalloc(vc->vc_screenbuf_size) in vc_allocate().
+
+Since we can detect cols = 0 or rows = 0 via screenbuf_size = 0 in
+visual_init(), we can reject kzalloc(0). Then, vc_allocate() will return
+an error, and con_write() will not be called on a console with 0 column
+or 0 row.
+
+We need to make sure that integer overflow in visual_init() won't happen.
+Since vc_do_resize() restricts cols <= 32767 and rows <= 32767, applying
+1 <= cols <= 32767 and 1 <= rows <= 32767 restrictions to vc_allocate()
+will be practically fine.
+
+This patch does not touch con_init(), for returning -EINVAL there
+does not help when we are not returning -ENOMEM.
+
+[1] https://syzkaller.appspot.com/bug?extid7265e8553724e514e8
+
+Reported-and-tested-by: syzbot <syzbot+017265e8553724e514e8@syzkaller.appspotmail.com>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ drivers/tty/vt/vt.c | 29 ++++++++++++++++++-----------
+ 1 file changed, 18 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 48a8199f7845..42d8c67a481f 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -1092,10 +1092,19 @@ static const struct tty_port_operations vc_port_ops = {
+ 	.destruct = vc_port_destruct,
+ };
+ 
++/*
++ * Change # of rows and columns (0 means unchanged/the size of fg_console)
++ * [this is to be used together with some user program
++ * like resize that changes the hardware videomode]
++ */
++#define VC_MAXCOL (32767)
++#define VC_MAXROW (32767)
++
+ int vc_allocate(unsigned int currcons)	/* return 0 on success */
+ {
+ 	struct vt_notifier_param param;
+ 	struct vc_data *vc;
++	int err;
+ 
+ 	WARN_CONSOLE_UNLOCKED();
+ 
+@@ -1125,6 +1134,11 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
+ 	if (!*vc->vc_uni_pagedir_loc)
+ 		con_set_default_unimap(vc);
+ 
++	err = -EINVAL;
++	if (vc->vc_cols > VC_MAXCOL || vc->vc_rows > VC_MAXROW ||
++	    vc->vc_screenbuf_size > KMALLOC_MAX_SIZE || !vc->vc_screenbuf_size)
++		goto err_free;
++	err = -ENOMEM;
+ 	vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_KERNEL);
+ 	if (!vc->vc_screenbuf)
+ 		goto err_free;
+@@ -1143,7 +1157,7 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
+ 	visual_deinit(vc);
+ 	kfree(vc);
+ 	vc_cons[currcons].d = NULL;
+-	return -ENOMEM;
++	return err;
+ }
+ 
+ static inline int resize_screen(struct vc_data *vc, int width, int height,
+@@ -1158,14 +1172,6 @@ static inline int resize_screen(struct vc_data *vc, int width, int height,
+ 	return err;
+ }
+ 
+-/*
+- * Change # of rows and columns (0 means unchanged/the size of fg_console)
+- * [this is to be used together with some user program
+- * like resize that changes the hardware videomode]
+- */
+-#define VC_RESIZE_MAXCOL (32767)
+-#define VC_RESIZE_MAXROW (32767)
+-
+ /**
+  *	vc_do_resize	-	resizing method for the tty
+  *	@tty: tty being resized
+@@ -1201,7 +1207,7 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
+ 	user = vc->vc_resize_user;
+ 	vc->vc_resize_user = 0;
+ 
+-	if (cols > VC_RESIZE_MAXCOL || lines > VC_RESIZE_MAXROW)
++	if (cols > VC_MAXCOL || lines > VC_MAXROW)
+ 		return -EINVAL;
+ 
+ 	new_cols = (cols ? cols : vc->vc_cols);
+@@ -1212,7 +1218,7 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
+ 	if (new_cols = vc->vc_cols && new_rows = vc->vc_rows)
+ 		return 0;
+ 
+-	if (new_screen_size > KMALLOC_MAX_SIZE)
++	if (new_screen_size > KMALLOC_MAX_SIZE || !new_screen_size)
+ 		return -EINVAL;
+ 	newscreen = kzalloc(new_screen_size, GFP_USER);
+ 	if (!newscreen)
+@@ -3393,6 +3399,7 @@ static int __init con_init(void)
+ 		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+ 		tty_port_init(&vc->port);
+ 		visual_init(vc, currcons, 1);
++		/* Assuming vc->vc_{cols,rows,screenbuf_size} are sane here. */
+ 		vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
+ 		vc_init(vc, vc->vc_rows, vc->vc_cols,
+ 			currcons || !vc->vc_sw->con_save_screen);
+-- 
+2.18.4

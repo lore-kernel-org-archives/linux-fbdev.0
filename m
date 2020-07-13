@@ -1,144 +1,41 @@
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Date: Thu, 30 Jul 2020 10:47:14 +0000
-Subject: [PATCH v2] fbmem: pull fbcon_update_vcs() out of fb_set_var()
-Message-Id: <075b7e37-3278-cd7d-31ab-c5073cfa8e92@i-love.sakura.ne.jp>
+From: Evgeny Novikov <novikov@ispras.ru>
+Date: Mon, 13 Jul 2020 08:05:32 +0000
+Subject: [PATCH] fbdev: sm712fb: handle ioremap() errors in probe
+Message-Id: <20200713080532.15504-1-novikov@ispras.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1596000620-4075-1-git-send-email-penguin-kernel@I-love.SAKURA.ne.jp>
- <CAKMK7uHeteS2+rKrZKrAM+zQO==hAX0XaVc9JfHPsdLTCtzKOw@mail.gmail.com>
- <a3bb6544-064d-54a1-1215-d92188cb4209@i-love.sakura.ne.jp>
-In-Reply-To: <a3bb6544-064d-54a1-1215-d92188cb4209@i-love.sakura.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Jiri Slaby <jslaby@suse.com>, syzbot <syzbot+c37a14770d51a085a520@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: ldv-project@linuxtesting.org, linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Evgeny Novikov <novikov@ispras.ru>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-syzbot is reporting OOB read bug in vc_do_resize() [1] caused by memcpy()
-based on outdated old_{rows,row_size} values, for resize_screen() can
-recurse into vc_do_resize() which changes vc->vc_{cols,rows} that outdates
-old_{rows,row_size} values which were saved before calling resize_screen().
+smtcfb_pci_probe() does not handle ioremap() errors for case 0x720. The
+patch fixes that exactly like for case 0x710/2.
 
-Daniel Vetter explained that resize_screen() should not recurse into
-fbcon_update_vcs() path due to FBINFO_MISC_USEREVENT being still set
-when calling resize_screen().
+Found by Linux Driver Verification project (linuxtesting.org).
 
-Instead of masking FBINFO_MISC_USEREVENT before calling fbcon_update_vcs(),
-we can remove FBINFO_MISC_USEREVENT by calling fbcon_update_vcs() only if
-fb_set_var() returned 0. This change assumes that it is harmless to call
-fbcon_update_vcs() when fb_set_var() returned 0 without reaching
-fb_notifier_call_chain().
-
-[1] https://syzkaller.appspot.com/bug?id=C70c88cfd16dcf6e1d3c7f0ab8648b3144=
-b5b25e
-
-Reported-and-tested-by: syzbot <syzbot+c37a14770d51a085a520@syzkaller.appsp=
-otmail.com>
-Suggested-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Reported-by: kernel test robot <lkp@intel.com> for missing #include
+Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
 ---
- drivers/video/fbdev/core/fbmem.c   | 8 ++------
- drivers/video/fbdev/core/fbsysfs.c | 4 ++--
- drivers/video/fbdev/ps3fb.c        | 5 +++--
- include/linux/fb.h                 | 2 --
- 4 files changed, 7 insertions(+), 12 deletions(-)
+ drivers/video/fbdev/sm712fb.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fb=
-mem.c
-index 30e73ec..da7c88f 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -957,7 +957,6 @@ static int fb_check_caps(struct fb_info *info, struct f=
-b_var_screeninfo *var,
- int
- fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
- {
--	int flags =3D info->flags;
- 	int ret =3D 0;
- 	u32 activate;
- 	struct fb_var_screeninfo old_var;
-@@ -1052,9 +1051,6 @@ static int fb_check_caps(struct fb_info *info, struct=
- fb_var_screeninfo *var,
- 	event.data =3D &mode;
- 	fb_notifier_call_chain(FB_EVENT_MODE_CHANGE, &event);
-=20
--	if (flags & FBINFO_MISC_USEREVENT)
--		fbcon_update_vcs(info, activate & FB_ACTIVATE_ALL);
--
- 	return 0;
- }
- EXPORT_SYMBOL(fb_set_var);
-@@ -1105,9 +1101,9 @@ static long do_fb_ioctl(struct fb_info *info, unsigne=
-d int cmd,
- 			return -EFAULT;
- 		console_lock();
- 		lock_fb_info(info);
--		info->flags |=3D FBINFO_MISC_USEREVENT;
- 		ret =3D fb_set_var(info, &var);
--		info->flags &=3D ~FBINFO_MISC_USEREVENT;
-+		if (!ret)
-+			fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
- 		unlock_fb_info(info);
- 		console_unlock();
- 		if (!ret && copy_to_user(argp, &var, sizeof(var)))
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/=
-fbsysfs.c
-index d54c88f..65dae05 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -91,9 +91,9 @@ static int activate(struct fb_info *fb_info, struct fb_va=
-r_screeninfo *var)
-=20
- 	var->activate |=3D FB_ACTIVATE_FORCE;
- 	console_lock();
--	fb_info->flags |=3D FBINFO_MISC_USEREVENT;
- 	err =3D fb_set_var(fb_info, var);
--	fb_info->flags &=3D ~FBINFO_MISC_USEREVENT;
-+	if (!err)
-+		fbcon_update_vcs(fb_info, var->activate & FB_ACTIVATE_ALL);
- 	console_unlock();
- 	if (err)
- 		return err;
-diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
-index 9df78fb..203c254 100644
---- a/drivers/video/fbdev/ps3fb.c
-+++ b/drivers/video/fbdev/ps3fb.c
-@@ -29,6 +29,7 @@
- #include <linux/freezer.h>
- #include <linux/uaccess.h>
- #include <linux/fb.h>
-+#include <linux/fbcon.h>
- #include <linux/init.h>
-=20
- #include <asm/cell-regs.h>
-@@ -824,12 +825,12 @@ static int ps3fb_ioctl(struct fb_info *info, unsigned=
- int cmd,
- 				var =3D info->var;
- 				fb_videomode_to_var(&var, vmode);
- 				console_lock();
--				info->flags |=3D FBINFO_MISC_USEREVENT;
- 				/* Force, in case only special bits changed */
- 				var.activate |=3D FB_ACTIVATE_FORCE;
- 				par->new_mode_id =3D val;
- 				retval =3D fb_set_var(info, &var);
--				info->flags &=3D ~FBINFO_MISC_USEREVENT;
-+				if (!retval)
-+					fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
- 				console_unlock();
- 			}
- 			break;
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 3b4b2f0..b11eb02 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -400,8 +400,6 @@ struct fb_tile_ops {
- #define FBINFO_HWACCEL_YPAN		0x2000 /* optional */
- #define FBINFO_HWACCEL_YWRAP		0x4000 /* optional */
-=20
--#define FBINFO_MISC_USEREVENT          0x10000 /* event request
--						  from userspace */
- #define FBINFO_MISC_TILEBLITTING       0x20000 /* use tile blitting */
-=20
- /* A driver may set this flag to indicate that it does want a set_par to be
---=20
-1.8.3.1
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index 6a1b4a853d9e..0171b23fa211 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -1602,6 +1602,14 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 		sfb->fb->fix.mmio_start = mmio_base;
+ 		sfb->fb->fix.mmio_len = 0x00200000;
+ 		sfb->dp_regs = ioremap(mmio_base, 0x00200000 + smem_size);
++		if (!sfb->dp_regs) {
++			dev_err(&pdev->dev,
++				"%s: unable to map memory mapped IO!\n",
++				sfb->fb->fix.id);
++			err = -ENOMEM;
++			goto failed_fb;
++		}
++
+ 		sfb->lfb = sfb->dp_regs + 0x00200000;
+ 		sfb->mmio = (smtc_regbaseaddress  		    sfb->dp_regs + 0x000c0000);
+-- 
+2.16.4

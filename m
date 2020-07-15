@@ -1,7 +1,7 @@
 From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Date: Tue, 14 Jul 2020 13:37:27 +0000
+Date: Wed, 15 Jul 2020 00:24:06 +0000
 Subject: Re: [PATCH] fbdev: Detect integer underflow at "struct fbcon_ops"->clear_margins.
-Message-Id: <adff5d10-fe35-62d4-74c5-182958c5ada7@i-love.sakura.ne.jp>
+Message-Id: <a2433659-4f95-d508-11de-8273fd2b6632@i-love.sakura.ne.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <189fc902-db7c-9886-cc31-c0348435303a@i-love.sakura.ne.jp>
  <20200712111013.11881-1-penguin-kernel@I-love.SAKURA.ne.jp>
@@ -9,36 +9,25 @@ References: <189fc902-db7c-9886-cc31-c0348435303a@i-love.sakura.ne.jp>
  <CGME20200714072231eucas1p17c53f0a661346ebfd316ebd5796ca346@eucas1p1.samsung.com>
  <db4b3346-b9f8-a428-1445-1fcbd8521e1d@samsung.com>
  <e00078d1-e5fb-a019-3036-cb182ed2e40b@i-love.sakura.ne.jp>
-In-Reply-To: <e00078d1-e5fb-a019-3036-cb182ed2e40b@i-love.sakura.ne.jp>
+ <c5bf6d5c-8d0a-8df5-2a11-38bf37a11d67@oracle.com>
+In-Reply-To: <c5bf6d5c-8d0a-8df5-2a11-38bf37a11d67@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, George Kennedy <george.kennedy@oracle.com>, Dan Carpenter <dan.carpenter@oracle.com>, Jiri Slaby <jslaby@suse.com>, Dmitry Vyukov <dvyukov@google.com>
+To: George Kennedy <george.kennedy@oracle.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Dan Carpenter <dan.carpenter@oracle.com>, Jiri Slaby <jslaby@suse.com>, Dmitry Vyukov <dvyukov@google.com>
 
-On 2020/07/14 19:27, Tetsuo Handa wrote:
-> On 2020/07/14 16:22, Bartlomiej Zolnierkiewicz wrote:
->> How does this patch relate to:
->>
->> 	https://marc.info/?l=linux-fbdev&m9415024816722&w=2
->>
->> ?
->>
->> It seems to address the same issue, I've added George and Dan to Cc:.
-> 
-> George Kennedy's patch does not help for my case.
-> 
+On 2020/07/15 2:15, George Kennedy wrote:
+> Can you try the a.out built from the original Syzkaller modified repro C program? It walks 0-7 through xres and yres of the fb_var_screeninfo struct.
 
-OK. You can add
+I'm not familiar with exploit code. What do you want to explain via this program?
 
-Reported-and-tested-by: syzbot <syzbot+e5fd3e65515b48c02a30@syzkaller.appspotmail.com>
+>   struct fb_var_screeninfo *varp = (struct fb_var_screeninfo *)0x200001c0;
+>   struct fb_var_screeninfo *starting_varp = malloc(sizeof(struct fb_var_screeninfo *));
 
-to my patch.
+>     memcpy(starting_varp, varp, sizeof(struct fb_var_screeninfo));
 
-By the way, if
+>             memcpy(varp, starting_varp, sizeof(struct fb_var_screeninfo));
 
-  /* bitfill_aligned() assumes that it's at least 8x8 */
-
-is true, don't we need to also check that the rect to fill is at least
-8x8 in bit_clear_margins() ? (Well, I feel did it mean multiple of 8x8 ?
-Then, what is bitfill_unaligned() for ?)
+At least, I suspect there is a memory corruption bug in this program
+because of malloc()ing only sizeof(struct fb_var_screeninfo *) bytes.

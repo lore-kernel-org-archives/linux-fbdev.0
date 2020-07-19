@@ -1,49 +1,134 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 14 Jul 2020 07:43:55 +0000
-Subject: Re: [PATCH v2] efi: avoid error message when booting under Xen
-Message-Id: <0a5494ff-431d-5667-680f-77987cff2984@samsung.com>
+From: "Alexander A. Klimov" <grandmaster@al2klimov.de>
+Date: Sun, 19 Jul 2020 10:10:08 +0000
+Subject: [PATCH for v5.9] ARM: dts: mxs: Replace HTTP links with HTTPS ones
+Message-Id: <20200719101008.57623-1-grandmaster@al2klimov.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200710142443eucas1p120b3d15e1f7be8bb95ffb9d83875fa70@eucas1p1.samsung.com>
- <20200710142253.28070-1-jgross@suse.com>
-In-Reply-To: <20200710142253.28070-1-jgross@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Juergen Gross <jgross@suse.com>
-Cc: linux-fbdev@vger.kernel.org, linux-efi@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Peter Jones <pjones@redhat.com>, xen-devel@lists.xenproject.org, Ard Biesheuvel <ardb@kernel.org>
+To: robh+dt@kernel.org, shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, linux-imx@nxp.com, b.zolnierkie@samsung.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: "Alexander A. Klimov" <grandmaster@al2klimov.de>
+
+Rationale:
+Reduces attack surface on kernel devs opening the links for MITM
+as HTTPS traffic is much harder to manipulate.
+
+Deterministic algorithm:
+For each file:
+  If not .svg:
+    For each line:
+      If doesn't contain `\bxmlns\b`:
+        For each link, `\bhttp://[^# \t\r\n]*(?:\w|/)`:
+	  If neither `\bgnu\.org/license`, nor `\bmozilla\.org/MPL\b`:
+            If both the HTTP and HTTPS versions
+            return 200 OK and serve the same content:
+              Replace HTTP with HTTPS.
+
+Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
+---
+ Continuing my work started at 93431e0607e5.
+ See also: git log --oneline '--author=Alexander A. Klimov <grandmaster@al2klimov.de>' v5.7..master
+ (Actually letting a shell for loop submit all this stuff for me.)
+
+ If there are any URLs to be removed completely
+ or at least not (just) HTTPSified:
+ Just clearly say so and I'll *undo my change*.
+ See also: https://lkml.org/lkml/2020/6/27/64
+
+ If there are any valid, but yet not changed URLs:
+ See: https://lkml.org/lkml/2020/6/26/837
+
+ If you apply the patch, please let me know.
+
+ Sorry again to all maintainers who complained about subject lines.
+ Now I realized that you want an actually perfect prefixes,
+ not just subsystem ones.
+ I tried my best...
+ And yes, *I could* (at least half-)automate it.
+ Impossible is nothing! :)
 
 
-On 7/10/20 4:22 PM, Juergen Gross wrote:
-> efifb_probe() will issue an error message in case the kernel is booted
-> as Xen dom0 from UEFI as EFI_MEMMAP won't be set in this case. Avoid
-> that message by calling efi_mem_desc_lookup() only if EFI_MEMMAP is set.
-> 
-> Fixes: 38ac0287b7f4 ("fbdev/efifb: Honour UEFI memory map attributes when mapping the FB")
-> Signed-off-by: Juergen Gross <jgross@suse.com>
+ arch/arm/boot/dts/imx23-pinfunc.h     | 4 ++--
+ arch/arm/boot/dts/imx28-pinfunc.h     | 4 ++--
+ arch/arm/boot/dts/imx53-tx53-x13x.dts | 4 ++--
+ arch/arm/boot/dts/mxs-pinfunc.h       | 4 ++--
+ include/video/imx-ipu-v3.h            | 4 ++--
+ 5 files changed, 10 insertions(+), 10 deletions(-)
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  drivers/video/fbdev/efifb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-> index 65491ae74808..e57c00824965 100644
-> --- a/drivers/video/fbdev/efifb.c
-> +++ b/drivers/video/fbdev/efifb.c
-> @@ -453,7 +453,7 @@ static int efifb_probe(struct platform_device *dev)
->  	info->apertures->ranges[0].base = efifb_fix.smem_start;
->  	info->apertures->ranges[0].size = size_remap;
->  
-> -	if (efi_enabled(EFI_BOOT) &&
-> +	if (efi_enabled(EFI_MEMMAP) &&
->  	    !efi_mem_desc_lookup(efifb_fix.smem_start, &md)) {
->  		if ((efifb_fix.smem_start + efifb_fix.smem_len) >
->  		    (md.phys_addr + (md.num_pages << EFI_PAGE_SHIFT))) {
-> 
+diff --git a/arch/arm/boot/dts/imx23-pinfunc.h b/arch/arm/boot/dts/imx23-pinfunc.h
+index 5c0f32ca3a93..f9d7eb6679de 100644
+--- a/arch/arm/boot/dts/imx23-pinfunc.h
++++ b/arch/arm/boot/dts/imx23-pinfunc.h
+@@ -7,8 +7,8 @@
+  * License. You may obtain a copy of the GNU General Public License
+  * Version 2 at the following locations:
+  *
+- * http://www.opensource.org/licenses/gpl-license.html
+- * http://www.gnu.org/copyleft/gpl.html
++ * https://www.opensource.org/licenses/gpl-license.html
++ * https://www.gnu.org/copyleft/gpl.html
+  */
+ 
+ #ifndef __DT_BINDINGS_MX23_PINCTRL_H__
+diff --git a/arch/arm/boot/dts/imx28-pinfunc.h b/arch/arm/boot/dts/imx28-pinfunc.h
+index e11f69ba0fe4..ffd5412b70ae 100644
+--- a/arch/arm/boot/dts/imx28-pinfunc.h
++++ b/arch/arm/boot/dts/imx28-pinfunc.h
+@@ -7,8 +7,8 @@
+  * License. You may obtain a copy of the GNU General Public License
+  * Version 2 at the following locations:
+  *
+- * http://www.opensource.org/licenses/gpl-license.html
+- * http://www.gnu.org/copyleft/gpl.html
++ * https://www.opensource.org/licenses/gpl-license.html
++ * https://www.gnu.org/copyleft/gpl.html
+  */
+ 
+ #ifndef __DT_BINDINGS_MX28_PINCTRL_H__
+diff --git a/arch/arm/boot/dts/imx53-tx53-x13x.dts b/arch/arm/boot/dts/imx53-tx53-x13x.dts
+index 6cdf2082c742..a34d98cf6ed4 100644
+--- a/arch/arm/boot/dts/imx53-tx53-x13x.dts
++++ b/arch/arm/boot/dts/imx53-tx53-x13x.dts
+@@ -41,8 +41,8 @@
+  * License. You may obtain a copy of the GNU General Public License
+  * Version 2 at the following locations:
+  *
+- * http://www.opensource.org/licenses/gpl-license.html
+- * http://www.gnu.org/copyleft/gpl.html
++ * https://www.opensource.org/licenses/gpl-license.html
++ * https://www.gnu.org/copyleft/gpl.html
+  */
+ 
+ /dts-v1/;
+diff --git a/arch/arm/boot/dts/mxs-pinfunc.h b/arch/arm/boot/dts/mxs-pinfunc.h
+index c6da987b20cb..6766292eee30 100644
+--- a/arch/arm/boot/dts/mxs-pinfunc.h
++++ b/arch/arm/boot/dts/mxs-pinfunc.h
+@@ -7,8 +7,8 @@
+  * License. You may obtain a copy of the GNU General Public License
+  * Version 2 at the following locations:
+  *
+- * http://www.opensource.org/licenses/gpl-license.html
+- * http://www.gnu.org/copyleft/gpl.html
++ * https://www.opensource.org/licenses/gpl-license.html
++ * https://www.gnu.org/copyleft/gpl.html
+  */
+ 
+ #ifndef __DT_BINDINGS_MXS_PINCTRL_H__
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index 06b0b57e996c..749490e3c66e 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -5,8 +5,8 @@
+  * Public License.  You may obtain a copy of the GNU Lesser General
+  * Public License Version 2.1 or later at the following locations:
+  *
+- * http://www.opensource.org/licenses/lgpl-license.html
+- * http://www.gnu.org/copyleft/lgpl.html
++ * https://www.opensource.org/licenses/lgpl-license.html
++ * https://www.gnu.org/copyleft/lgpl.html
+  */
+ 
+ #ifndef __DRM_IPU_H__
+-- 
+2.27.0

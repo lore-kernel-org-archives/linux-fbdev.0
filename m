@@ -1,169 +1,52 @@
-From: Alexandru Stan <amstan@chromium.org>
-Date: Tue, 21 Jul 2020 04:25:20 +0000
-Subject: [PATCH 1/3] backlight: pwm_bl: Fix interpolation
-Message-Id: <20200720212502.1.I4dcea1c90e9da3902d466033aa73351e19e49c49@changeid>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Mon, 20 Jul 2020 09:35:24 +0000
+Subject: Re: SM750 : from which driver should I start to add a new transmitter ?
+Message-Id: <CADVatmOmhA5E6Qi23YtdZjtoS=dKKCk1bujw9dEY-sKrGAt30A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200721042522.2403410-1-amstan@chromium.org>
-In-Reply-To: <20200721042522.2403410-1-amstan@chromium.org>
+References: <36f3542011c34c4a9509f00c666a514a@kontron.com>
+In-Reply-To: <36f3542011c34c4a9509f00c666a514a@kontron.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Alexandru Stan <amstan@chromium.org>, Douglas Anderson <dianders@chromium.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Matthias Kaehlcke <mka@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+To: Gilles Buloz <Gilles.Buloz@kontron.com>
+Cc: "greg@kroah.com" <greg@kroah.com>, LFBDEV <linux-fbdev@vger.kernel.org>, "teddy.wang@siliconmotion.com" <teddy.wang@siliconmotion.com>, dri-devel <dri-devel@lists.freedesktop.org>
 
-Whenever num-interpolated-steps was larger than the distance
-between 2 consecutive brightness levels the table would get really
-discontinuous. The slope of the interpolation would stick with
-integers only and if it was 0 the whole line segment would get skipped.
+HI Gilles, (Added fbdev and dri list)
 
-Example settings:
-	brightness-levels = <0 1 2 4 8 16 32 64 128 256>;
-	num-interpolated-steps = <16>;
+On Mon, Jul 20, 2020 at 10:18 AM Gilles Buloz <Gilles.Buloz@kontron.com> wrote:
+>
+> Dear developers,
+>
+>
+> My company is manufacturing M2 graphics modules based on SM750. and I need to add support for an ANX9404 transmitter (for DP). I'm wondering which driver you would recommend to start my development :
+>
+> - your SM750 framebuffer driver is available in the kernel under drivers/staging/sm750fb/. It is clean and maintained.
 
-The distances between 1 2 4 and 8 would be 1, and only starting with 16
-it would start to interpolate properly.
+Yes, and I know many companies who are using SM750 uses this driver,
+but the fact remains that it can be removed from staging any time as
+it can never migrate out of staging,
 
-Let's change it so there's always interpolation happening, even if
-there's no enough points available (read: values in the table would
-appear more than once). This should match the expected behavior much
-more closely.
+>
+> - I'm currently using another driver from SiliconMotion I got through Innodisk (another modules manufacturer) supporting SM750/SM768 and labelled "SiliconMotion GPU DRM Driver". But the code is not very clean and produces lots of warning when building, and seems no more maintained. I even don't have the name nor the email of the developer. However it already works fine with our current HDMI transmitter.
+>
+>
+> Having a look to the sm750fb kernel driver, the TODO file says : "must be ported to the atomic kms framework in the drm subsystem (which will give you a basic fbdev driver for free)".
 
-Reviewed-by: Douglas Anderson <dianders@chromium.org>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-Signed-off-by: Alexandru Stan <amstan@chromium.org>
----
+Yes.
 
- drivers/video/backlight/pwm_bl.c | 70 ++++++++++++++------------------
- 1 file changed, 31 insertions(+), 39 deletions(-)
+>
+> It seems my current driver is already of this kind (DRM driver using modesetting Xorg module). I can send you the source code of this driver as it is open source If you want to see which driver I mean.
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 82b8d7594701..5193a72305a2 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -235,8 +235,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 				  struct platform_pwm_backlight_data *data)
- {
- 	struct device_node *node = dev->of_node;
--	unsigned int num_levels = 0;
--	unsigned int levels_count;
-+	unsigned int num_levels;
- 	unsigned int num_steps = 0;
- 	struct property *prop;
- 	unsigned int *table;
-@@ -265,12 +264,11 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 	if (!prop)
- 		return 0;
- 
--	data->max_brightness = length / sizeof(u32);
-+	num_levels = length / sizeof(u32);
- 
- 	/* read brightness levels from DT property */
--	if (data->max_brightness > 0) {
--		size_t size = sizeof(*data->levels) * data->max_brightness;
--		unsigned int i, j, n = 0;
-+	if (num_levels > 0) {
-+		size_t size = sizeof(*data->levels) * num_levels;
- 
- 		data->levels = devm_kzalloc(dev, size, GFP_KERNEL);
- 		if (!data->levels)
-@@ -278,7 +276,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 
- 		ret = of_property_read_u32_array(node, "brightness-levels",
- 						 data->levels,
--						 data->max_brightness);
-+						 num_levels);
- 		if (ret < 0)
- 			return ret;
- 
-@@ -303,7 +301,13 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 		 * between two points.
- 		 */
- 		if (num_steps) {
--			if (data->max_brightness < 2) {
-+			unsigned int num_input_levels = num_levels;
-+			unsigned int i;
-+			u32 x1, x2, x;
-+			u32 y1, y2;
-+			s64 dx, dy;
-+
-+			if (num_input_levels < 2) {
- 				dev_err(dev, "can't interpolate\n");
- 				return -EINVAL;
- 			}
-@@ -313,14 +317,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 			 * taking in consideration the number of interpolated
- 			 * steps between two levels.
- 			 */
--			for (i = 0; i < data->max_brightness - 1; i++) {
--				if ((data->levels[i + 1] - data->levels[i]) /
--				   num_steps)
--					num_levels += num_steps;
--				else
--					num_levels++;
--			}
--			num_levels++;
-+			num_levels = (num_input_levels - 1) * num_steps + 1;
- 			dev_dbg(dev, "new number of brightness levels: %d\n",
- 				num_levels);
- 
-@@ -332,24 +329,25 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 			table = devm_kzalloc(dev, size, GFP_KERNEL);
- 			if (!table)
- 				return -ENOMEM;
--
--			/* Fill the interpolated table. */
--			levels_count = 0;
--			for (i = 0; i < data->max_brightness - 1; i++) {
--				value = data->levels[i];
--				n = (data->levels[i + 1] - value) / num_steps;
--				if (n > 0) {
--					for (j = 0; j < num_steps; j++) {
--						table[levels_count] = value;
--						value += n;
--						levels_count++;
--					}
--				} else {
--					table[levels_count] = data->levels[i];
--					levels_count++;
-+			/*
-+			 * Fill the interpolated table[x] = y
-+			 * by draw lines between each (x1, y1) to (x2, y2).
-+			 */
-+			dx = num_steps;
-+			for (i = 0; i < num_input_levels - 1; i++) {
-+				x1 = i * dx;
-+				x2 = x1 + dx;
-+				y1 = data->levels[i];
-+				y2 = data->levels[i + 1];
-+				dy = y2 - y1;
-+
-+				for (x = x1; x < x2; x++) {
-+					table[x] = y1 +
-+						div_s64(dy * (x - x1), dx);
- 				}
- 			}
--			table[levels_count] = data->levels[i];
-+			/* Fill in the last point, since no line starts here. */
-+			table[x2] = y2;
- 
- 			/*
- 			 * As we use interpolation lets remove current
-@@ -358,15 +356,9 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 			 */
- 			devm_kfree(dev, data->levels);
- 			data->levels = table;
--
--			/*
--			 * Reassign max_brightness value to the new total number
--			 * of brightness levels.
--			 */
--			data->max_brightness = num_levels;
- 		}
- 
--		data->max_brightness--;
-+		data->max_brightness = num_levels - 1;
- 	}
- 
- 	return 0;
--- 
-2.27.0
+Is it the same as the one I have at gitlab
+(https://gitlab.com/sudipm/sm750/tree/sm750) ? If it is same then it
+will not be accepted in drm subsystem as it needs to be cleaned and I
+will need to add "atomic" to it. Well, atomic was the main blocker.
+But, if the driver that you have has been already converted to be an
+atomic driver then please send it to me and I can clean it up and
+submit.
+
+
+
+--
+Regards
+Sudip

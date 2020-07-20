@@ -1,27 +1,48 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Date: Fri, 24 Jul 2020 10:30:58 +0000
-Subject: Re: [PATCH] newport_con: vc_color is now in state
-Message-Id: <92c429c6-5cce-b5cc-877e-d4784651e31f@suse.cz>
+From: trix@redhat.com
+Date: Mon, 20 Jul 2020 19:18:45 +0000
+Subject: [PATCH] video: fbdev: pvr2fb: initialize variables
+Message-Id: <20200720191845.20115-1-trix@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <202007241318.wXYkumEO%lkp@intel.com>
- <20200724062735.18229-1-jslaby@suse.cz>
- <b1b9d90a-5fe3-947a-dc4e-8576cd143869@gmail.com>
-In-Reply-To: <b1b9d90a-5fe3-947a-dc4e-8576cd143869@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Sergei Shtylyov <sergei.shtylyov@gmail.com>, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-mips@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: b.zolnierkie@samsung.com, jhubbard@nvidia.com, sam@ravnborg.org, daniel.vetter@ffwll.ch, gustavo@embeddedor.com, arnd@arndb.de, jani.nikula@intel.com
+Cc: Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On 24. 07. 20, 11:30, Sergei Shtylyov wrote:
-> On 24.07.2020 9:27, Jiri Slaby wrote:
-> 
->> Since commit 28bc24fc46f9 (vc: separate state), vc->vc_color is known as
-> 
->    Cgit says "Bad object id: 28bc24fc46f9" (in Linus' repo).
+From: Tom Rix <trix@redhat.com>
 
-That's because it's not in Linus' repo yet.
+clang static analysis reports this repesentative error
 
+pvr2fb.c:1049:2: warning: 1st function call argument
+  is an uninitialized value [core.CallAndMessage]
+        if (*cable_arg)
+        ^~~~~~~~~~~~~~~
+
+Problem is that cable_arg depends on the input loop to
+set the cable_arg[0].  If it does not, then some random
+value from the stack is used.
+
+A similar problem exists for output_arg.
+
+So initialize cable_arg and output_arg.
+
+Signed-off-by: Tom Rix <trix@redhat.com>
+---
+ drivers/video/fbdev/pvr2fb.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+index 2d9f69b93392..f4add36cb5f4 100644
+--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -1028,6 +1028,8 @@ static int __init pvr2fb_setup(char *options)
+ 	if (!options || !*options)
+ 		return 0;
+ 
++	cable_arg[0] = output_arg[0] = 0;
++
+ 	while ((this_opt = strsep(&options, ","))) {
+ 		if (!*this_opt)
+ 			continue;
 -- 
-js
-suse labs
+2.18.1

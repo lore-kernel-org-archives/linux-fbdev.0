@@ -1,7 +1,7 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Date: Mon, 20 Jul 2020 02:41:45 +0000
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 21 Jul 2020 16:07:13 +0000
 Subject: Re: [PATCH for v5.9] ARM: dts: mxs: Replace HTTP links with HTTPS ones
-Message-Id: <20200720024145.GI11560@dragon>
+Message-Id: <20200721160713.GA382903@bogus>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200719101008.57623-1-grandmaster@al2klimov.de>
 In-Reply-To: <20200719101008.57623-1-grandmaster@al2klimov.de>
@@ -9,7 +9,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Alexander A. Klimov" <grandmaster@al2klimov.de>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, s.hauer@pengutronix.de, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, robh+dt@kernel.org, linux-imx@nxp.com, kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, shawnguo@kernel.org, s.hauer@pengutronix.de, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-imx@nxp.com, kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org
 
 On Sun, Jul 19, 2020 at 12:10:08PM +0200, Alexander A. Klimov wrote:
 > Rationale:
@@ -28,11 +28,6 @@ On Sun, Jul 19, 2020 at 12:10:08PM +0200, Alexander A. Klimov wrote:
 >               Replace HTTP with HTTPS.
 > 
 > Signed-off-by: Alexander A. Klimov <grandmaster@al2klimov.de>
-
-s/mxs/imx in the subject.  Otherwise:
-
-Acked-by: Shawn Guo <shawnguo@kernel.org>
-
 > ---
 >  Continuing my work started at 93431e0607e5.
 >  See also: git log --oneline '--author=Alexander A. Klimov <grandmaster@al2klimov.de>' v5.7..master
@@ -75,6 +70,9 @@ Acked-by: Shawn Guo <shawnguo@kernel.org>
 > - * http://www.gnu.org/copyleft/gpl.html
 > + * https://www.opensource.org/licenses/gpl-license.html
 > + * https://www.gnu.org/copyleft/gpl.html
+
+Replace the license text with SPDX tags instead.
+
 >   */
 >  
 >  #ifndef __DT_BINDINGS_MX23_PINCTRL_H__

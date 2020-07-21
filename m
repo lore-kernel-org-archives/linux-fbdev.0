@@ -1,38 +1,96 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 10 Jul 2020 14:23:31 +0000
-Subject: Re: [PATCH v2 2/2] video: fbdev: amifb: add FIXMEs about {put,get}_user() failures
-Message-Id: <cab5be13-a7df-7765-bb6e-b6302253c1fb@samsung.com>
+From: syzbot <syzbot+ba5bd977df7bb87862c4@syzkaller.appspotmail.com>
+Date: Tue, 21 Jul 2020 04:42:19 +0000
+Subject: KASAN: stack-out-of-bounds Write in sys_imageblit
+Message-Id: <00000000000090cd5905aaec3f2c@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200504232908eucas1p296927bc7c736ad924cefaea9a546459d@eucas1p2.samsung.com>
- <b1cf967015c5beafa475aaa30d8e21a58caff870.camel@perches.com>
- <380c0494-ed02-b2be-65b0-d385627fb894@samsung.com>
- <CAMuHMdVYuk9+=3OTufOo98Dd3ijXS6JBH9RqK2v+9mwogxbnXA@mail.gmail.com>
-In-Reply-To: <CAMuHMdVYuk9+=3OTufOo98Dd3ijXS6JBH9RqK2v+9mwogxbnXA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-m68k <linux-m68k@lists.linux-m68k.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
+
+Hello,
+
+syzbot found the following issue on:
+
+HEAD commit:    4fa640dc Merge tag 'vfio-v5.8-rc7' of git://github.com/awi..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=17ec2d58900000
+kernel config:  https://syzkaller.appspot.com/x/.config?xW5b381064b1cba2
+dashboard link: https://syzkaller.appspot.com/bug?extid=BA5bd977df7bb87862c4
+compiler:       gcc (GCC) 10.1.0-syz 20200507
+userspace arch: i386
+
+Unfortunately, I don't have any reproducer for this issue yet.
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+ba5bd977df7bb87862c4@syzkaller.appspotmail.com
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+BUG: KASAN: stack-out-of-bounds in fast_imageblit drivers/video/fbdev/core/=
+sysimgblt.c:229 [inline]
+BUG: KASAN: stack-out-of-bounds in sys_imageblit+0x117f/0x1290 drivers/vide=
+o/fbdev/core/sysimgblt.c:275
+Write of size 4 at addr ffffc900097d7d90 by task syz-executor.1/11925
+
+CPU: 1 PID: 11925 Comm: syz-executor.1 Not tainted 5.8.0-rc6-syzkaller #0
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.12.0-59-gc9b=
+a5276e321-prebuilt.qemu.org 04/01/2014
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x18f/0x20d lib/dump_stack.c:118
+ print_address_description.constprop.0.cold+0x5/0x436 mm/kasan/report.c:383
+ __kasan_report mm/kasan/report.c:513 [inline]
+ kasan_report.cold+0x1f/0x37 mm/kasan/report.c:530
+ fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
+ sys_imageblit+0x117f/0x1290 drivers/video/fbdev/core/sysimgblt.c:275
+ drm_fb_helper_sys_imageblit+0x1c/0x180 drivers/gpu/drm/drm_fb_helper.c:763
+ bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:139 [inline]
+ bit_putcs+0x6e1/0xd20 drivers/video/fbdev/core/bitblit.c:188
+ fbcon_putcs+0x33c/0x3f0 drivers/video/fbdev/core/fbcon.c:1362
+ do_update_region+0x399/0x630 drivers/tty/vt/vt.c:683
+ invert_screen+0x1d4/0x600 drivers/tty/vt/vt.c:800
+ highlight drivers/tty/vt/selection.c:57 [inline]
+ clear_selection drivers/tty/vt/selection.c:84 [inline]
+ clear_selection+0x55/0x70 drivers/tty/vt/selection.c:80
+ vc_do_resize+0x1099/0x13f0 drivers/tty/vt/vt.c:1230
+ fbcon_do_set_font+0x4ad/0x950 drivers/video/fbdev/core/fbcon.c:2609
+ fbcon_set_font+0x767/0x8b0 drivers/video/fbdev/core/fbcon.c:2706
+ con_font_set drivers/tty/vt/vt.c:4571 [inline]
+ con_font_op+0xd25/0x1110 drivers/tty/vt/vt.c:4636
+ vt_ioctl+0x1180/0x2670 drivers/tty/vt/vt_ioctl.c:928
+ vt_compat_ioctl+0x168/0x6b0 drivers/tty/vt/vt_ioctl.c:1249
+ tty_compat_ioctl+0x19c/0x410 drivers/tty/tty_io.c:2847
+ __do_compat_sys_ioctl+0x1d3/0x230 fs/ioctl.c:847
+ do_syscall_32_irqs_on+0x3f/0x60 arch/x86/entry/common.c:428
+ __do_fast_syscall_32 arch/x86/entry/common.c:475 [inline]
+ do_fast_syscall_32+0x7f/0x120 arch/x86/entry/common.c:503
+ entry_SYSENTER_compat_after_hwframe+0x4d/0x5c
+RIP: 0023:0xf7f48569
+Code: Bad RIP value.
+RSP: 002b:00000000f5d430bc EFLAGS: 00000296 ORIG_RAX: 0000000000000036
+RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 0000000000004b61
+RDX: 0000000020000080 RSI: 0000000000000000 RDI: 0000000000000000
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
 
 
+Memory state around the buggy address:
+ ffffc900097d7c80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ ffffc900097d7d00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>ffffc900097d7d80: 00 00 f1 f1 f1 f1 00 00 f3 f3 00 00 00 00 00 00
+                         ^
+ ffffc900097d7e00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ ffffc900097d7e80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
 
-On 6/2/20 2:03 PM, Geert Uytterhoeven wrote:
-> On Tue, Jun 2, 2020 at 1:52 PM Bartlomiej Zolnierkiewicz
-> <b.zolnierkie@samsung.com> wrote:
->> Since we lack the hardware (or proper emulator setup) for
->> testing needed changes add FIXMEs to document the issues
->> (so at least they are not forgotten).
->>
->> Cc: Al Viro <viro@zeniv.linux.org.uk>
->> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> 
-> Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Applied to drm-misc-next tree.
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.

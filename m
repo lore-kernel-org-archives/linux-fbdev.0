@@ -1,50 +1,44 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 10 Jul 2020 14:24:05 +0000
-Subject: Re: [PATCH] fbdev: sm712fb: set error code in probe
-Message-Id: <6f500a1e-96d8-2238-ad26-99a39dca61ec@samsung.com>
+From: Alexandru Stan <amstan@chromium.org>
+Date: Tue, 21 Jul 2020 04:25:21 +0000
+Subject: [PATCH 2/3] backlight: pwm_bl: Artificially add 0% during interpolation
+Message-Id: <20200720212502.2.Iab4d2192e4cf50226e0a58d58df7d90ef92713ce@changeid>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200706155341eucas1p2081ccd8bd81c097272e13e7fe84244ee@eucas1p2.samsung.com>
- <20200706155328.8396-1-novikov@ispras.ru>
-In-Reply-To: <20200706155328.8396-1-novikov@ispras.ru>
+References: <20200721042522.2403410-1-amstan@chromium.org>
+In-Reply-To: <20200721042522.2403410-1-amstan@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Evgeny Novikov <novikov@ispras.ru>
-Cc: ldv-project@linuxtesting.org, linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Alexandru Stan <amstan@chromium.org>, Douglas Anderson <dianders@chromium.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Matthias Kaehlcke <mka@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
+Some displays need the low end of the curve cropped in order to make
+them happy. In that case we still want to have the 0% point, even though
+anything between 0% and 5%(example) would be skipped.
 
-On 7/6/20 5:53 PM, Evgeny Novikov wrote:
-> If smtcfb_pci_probe() does not detect a valid chip it cleans up
-> everything and returns 0. This can result in various bad things later.
-> The patch sets the error code on the corresponding path.
-> 
-> Found by Linux Driver Verification project (linuxtesting.org).
-> 
-> Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
+Signed-off-by: Alexandru Stan <amstan@chromium.org>
+---
 
-Applied to drm-misc-next tree, thanks.
+ drivers/video/backlight/pwm_bl.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  drivers/video/fbdev/sm712fb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
-> index 6a1b4a853d9e..fbe97340b8e0 100644
-> --- a/drivers/video/fbdev/sm712fb.c
-> +++ b/drivers/video/fbdev/sm712fb.c
-> @@ -1614,7 +1614,7 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
->  	default:
->  		dev_err(&pdev->dev,
->  			"No valid Silicon Motion display chip was detected!\n");
-> -
-> +		err = -ENODEV;
->  		goto failed_fb;
->  	}
->  
-> 
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 5193a72305a2..b24711ddf504 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -349,6 +349,14 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 			/* Fill in the last point, since no line starts here. */
+ 			table[x2] = y2;
+ 
++			/*
++			 * If we don't start at 0 yet we're increasing, assume
++			 * the dts wanted to crop the low end of the range, so
++			 * insert a 0 to provide a display off mode.
++			 */
++			if (table[0] > 0 && table[0] < table[num_levels - 1])
++				table[0] = 0;
++
+ 			/*
+ 			 * As we use interpolation lets remove current
+ 			 * brightness levels table and replace for the
+-- 
+2.27.0

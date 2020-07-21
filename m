@@ -1,80 +1,169 @@
-From: George Kennedy <george.kennedy@oracle.com>
-Date: Fri, 31 Jul 2020 16:33:11 +0000
-Subject: [PATCH 1/2] fbcon: prevent user font height or width change from causing potential out-of-bounds acc
-Message-Id: <1596213192-6635-1-git-send-email-george.kennedy@oracle.com>
+From: Alexandru Stan <amstan@chromium.org>
+Date: Tue, 21 Jul 2020 04:25:20 +0000
+Subject: [PATCH 1/3] backlight: pwm_bl: Fix interpolation
+Message-Id: <20200720212502.1.I4dcea1c90e9da3902d466033aa73351e19e49c49@changeid>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200721042522.2403410-1-amstan@chromium.org>
+In-Reply-To: <20200721042522.2403410-1-amstan@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: george.kennedy@oracle.com, gregkh@linuxfoundation.org, jirislaby@kernel.org, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com, dhaval.giani@oracle.com
+To: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Alexandru Stan <amstan@chromium.org>, Douglas Anderson <dianders@chromium.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Matthias Kaehlcke <mka@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
-Add a check to fbcon_resize() to ensure that a possible change to user font
-height or user font width will not allow a font data out-of-bounds access.
-NOTE: must use original charcount in calculation as font charcount can
-change and cannot be used to determine the font data allocated size.
+Whenever num-interpolated-steps was larger than the distance
+between 2 consecutive brightness levels the table would get really
+discontinuous. The slope of the interpolation would stick with
+integers only and if it was 0 the whole line segment would get skipped.
 
-Signed-off-by: George Kennedy <george.kennedy@oracle.com>
-Reported-by: syzbot+38a3699c7eaf165b97a6@syzkaller.appspotmail.com
+Example settings:
+	brightness-levels = <0 1 2 4 8 16 32 64 128 256>;
+	num-interpolated-steps = <16>;
+
+The distances between 1 2 4 and 8 would be 1, and only starting with 16
+it would start to interpolate properly.
+
+Let's change it so there's always interpolation happening, even if
+there's no enough points available (read: values in the table would
+appear more than once). This should match the expected behavior much
+more closely.
+
+Reviewed-by: Douglas Anderson <dianders@chromium.org>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Signed-off-by: Alexandru Stan <amstan@chromium.org>
 ---
- drivers/video/fbdev/core/fbcon.c | 25 +++++++++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 8a31fc2..6616783 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2191,6 +2191,9 @@ static void updatescrollmode(struct fbcon_display *p,
- 	}
- }
- 
-+#define PITCH(w) (((w) + 7) >> 3)
-+#define CALC_FONTSZ(h, p, c) ((h) * (p) * (c)) /* size = height * pitch * charcount */
-+
- static int fbcon_resize(struct vc_data *vc, unsigned int width, 
- 			unsigned int height, unsigned int user)
+ drivers/video/backlight/pwm_bl.c | 70 ++++++++++++++------------------
+ 1 file changed, 31 insertions(+), 39 deletions(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 82b8d7594701..5193a72305a2 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -235,8 +235,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 				  struct platform_pwm_backlight_data *data)
  {
-@@ -2200,6 +2203,24 @@ static int fbcon_resize(struct vc_data *vc, unsigned int width,
- 	struct fb_var_screeninfo var = info->var;
- 	int x_diff, y_diff, virt_w, virt_h, virt_fw, virt_fh;
+ 	struct device_node *node = dev->of_node;
+-	unsigned int num_levels = 0;
+-	unsigned int levels_count;
++	unsigned int num_levels;
+ 	unsigned int num_steps = 0;
+ 	struct property *prop;
+ 	unsigned int *table;
+@@ -265,12 +264,11 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 	if (!prop)
+ 		return 0;
  
-+	if (ops->p && ops->p->userfont && FNTSIZE(vc->vc_font.data)) {
-+		int size;
-+		int pitch = PITCH(vc->vc_font.width);
+-	data->max_brightness = length / sizeof(u32);
++	num_levels = length / sizeof(u32);
+ 
+ 	/* read brightness levels from DT property */
+-	if (data->max_brightness > 0) {
+-		size_t size = sizeof(*data->levels) * data->max_brightness;
+-		unsigned int i, j, n = 0;
++	if (num_levels > 0) {
++		size_t size = sizeof(*data->levels) * num_levels;
+ 
+ 		data->levels = devm_kzalloc(dev, size, GFP_KERNEL);
+ 		if (!data->levels)
+@@ -278,7 +276,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 
+ 		ret = of_property_read_u32_array(node, "brightness-levels",
+ 						 data->levels,
+-						 data->max_brightness);
++						 num_levels);
+ 		if (ret < 0)
+ 			return ret;
+ 
+@@ -303,7 +301,13 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 		 * between two points.
+ 		 */
+ 		if (num_steps) {
+-			if (data->max_brightness < 2) {
++			unsigned int num_input_levels = num_levels;
++			unsigned int i;
++			u32 x1, x2, x;
++			u32 y1, y2;
++			s64 dx, dy;
 +
-+		/*
-+		 * If user font, ensure that a possible change to user font
-+		 * height or width will not allow a font data out-of-bounds access.
-+		 * NOTE: must use original charcount in calculation as font
-+		 * charcount can change and cannot be used to determine the
-+		 * font data allocated size.
-+		 */
-+		if (pitch <= 0)
-+			return -EINVAL;
-+		size = CALC_FONTSZ(vc->vc_font.height, pitch, FNTCHARCNT(vc->vc_font.data));
-+		if (size > FNTSIZE(vc->vc_font.data))
-+			return -EINVAL;
-+	}
++			if (num_input_levels < 2) {
+ 				dev_err(dev, "can't interpolate\n");
+ 				return -EINVAL;
+ 			}
+@@ -313,14 +317,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 			 * taking in consideration the number of interpolated
+ 			 * steps between two levels.
+ 			 */
+-			for (i = 0; i < data->max_brightness - 1; i++) {
+-				if ((data->levels[i + 1] - data->levels[i]) /
+-				   num_steps)
+-					num_levels += num_steps;
+-				else
+-					num_levels++;
+-			}
+-			num_levels++;
++			num_levels = (num_input_levels - 1) * num_steps + 1;
+ 			dev_dbg(dev, "new number of brightness levels: %d\n",
+ 				num_levels);
+ 
+@@ -332,24 +329,25 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 			table = devm_kzalloc(dev, size, GFP_KERNEL);
+ 			if (!table)
+ 				return -ENOMEM;
+-
+-			/* Fill the interpolated table. */
+-			levels_count = 0;
+-			for (i = 0; i < data->max_brightness - 1; i++) {
+-				value = data->levels[i];
+-				n = (data->levels[i + 1] - value) / num_steps;
+-				if (n > 0) {
+-					for (j = 0; j < num_steps; j++) {
+-						table[levels_count] = value;
+-						value += n;
+-						levels_count++;
+-					}
+-				} else {
+-					table[levels_count] = data->levels[i];
+-					levels_count++;
++			/*
++			 * Fill the interpolated table[x] = y
++			 * by draw lines between each (x1, y1) to (x2, y2).
++			 */
++			dx = num_steps;
++			for (i = 0; i < num_input_levels - 1; i++) {
++				x1 = i * dx;
++				x2 = x1 + dx;
++				y1 = data->levels[i];
++				y2 = data->levels[i + 1];
++				dy = y2 - y1;
 +
- 	virt_w = FBCON_SWAP(ops->rotate, width, height);
- 	virt_h = FBCON_SWAP(ops->rotate, height, width);
- 	virt_fw = FBCON_SWAP(ops->rotate, vc->vc_font.width,
-@@ -2652,7 +2673,7 @@ static int fbcon_set_font(struct vc_data *vc, struct console_font *font,
- 	int size;
- 	int i, csum;
- 	u8 *new_data, *data = font->data;
--	int pitch = (font->width+7) >> 3;
-+	int pitch = PITCH(font->width);
++				for (x = x1; x < x2; x++) {
++					table[x] = y1 +
++						div_s64(dy * (x - x1), dx);
+ 				}
+ 			}
+-			table[levels_count] = data->levels[i];
++			/* Fill in the last point, since no line starts here. */
++			table[x2] = y2;
  
- 	/* Is there a reason why fbconsole couldn't handle any charcount >256?
- 	 * If not this check should be changed to charcount < 256 */
-@@ -2668,7 +2689,7 @@ static int fbcon_set_font(struct vc_data *vc, struct console_font *font,
- 	if (fbcon_invalid_charcount(info, charcount))
- 		return -EINVAL;
+ 			/*
+ 			 * As we use interpolation lets remove current
+@@ -358,15 +356,9 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 			 */
+ 			devm_kfree(dev, data->levels);
+ 			data->levels = table;
+-
+-			/*
+-			 * Reassign max_brightness value to the new total number
+-			 * of brightness levels.
+-			 */
+-			data->max_brightness = num_levels;
+ 		}
  
--	size = h * pitch * charcount;
-+	size = CALC_FONTSZ(h, pitch, charcount);
+-		data->max_brightness--;
++		data->max_brightness = num_levels - 1;
+ 	}
  
- 	new_data = kmalloc(FONT_EXTRA_WORDS * sizeof(int) + size, GFP_USER);
- 
+ 	return 0;
 -- 
-1.8.3.1
+2.27.0

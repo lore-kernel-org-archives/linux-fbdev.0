@@ -1,54 +1,48 @@
-From: George Kennedy <george.kennedy@oracle.com>
-Date: Fri, 31 Jul 2020 16:33:12 +0000
-Subject: [PATCH 2/2] vt_ioctl: change VT_RESIZEX ioctl to check for error return from vc_resize()
-Message-Id: <1596213192-6635-2-git-send-email-george.kennedy@oracle.com>
+From: Alexandru Stan <amstan@chromium.org>
+Date: Tue, 21 Jul 2020 04:25:19 +0000
+Subject: [PATCH 0/3] PWM backlight interpolation adjustments
+Message-Id: <20200721042522.2403410-1-amstan@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1596213192-6635-1-git-send-email-george.kennedy@oracle.com>
-In-Reply-To: <1596213192-6635-1-git-send-email-george.kennedy@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: george.kennedy@oracle.com, gregkh@linuxfoundation.org, jirislaby@kernel.org, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dan.carpenter@oracle.com, dhaval.giani@oracle.com
+To: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Alexandru Stan <amstan@chromium.org>, linux-pwm@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, Matthias Kaehlcke <mka@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-arm-kernel@lists.infradead.org
 
-vc_resize() can return with an error after failure. Change VT_RESIZEX ioctl
-to save struct vc_data values that are modified and restore the original
-values in case of error.
+I was trying to adjust the brightness for a new chromebook:
+https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/2291209
+Like a lot of panels, the low end needs to be cropped,
+and now that we have the interpolation stuff I wanted to make use of it
+and bake in even the curve.
 
-Signed-off-by: George Kennedy <george.kennedy@oracle.com>
-Reported-by: syzbot+38a3699c7eaf165b97a6@syzkaller.appspotmail.com
----
-Version of patch available for Mainline also.
+I found the behavior a little unintuitive and non-linear. See patch 1
+for a suggested fix for this.
 
- drivers/tty/vt/vt_ioctl.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+Unfortunatelly a few veyron dts files were relying on this
+(perhaps weird) behavior. Those devices also want a minimum brightness.
+The issue is that they also want the 0% point for turning off the
+display.
+https://github.com/torvalds/linux/commit/6233269bce47bd450196a671ab28eb1ec5eb88d9#diff-e401ae20091bbfb311a062c464f4f47fL23
 
-diff --git a/drivers/tty/vt/vt_ioctl.c b/drivers/tty/vt/vt_ioctl.c
-index 91c3017..a4e520b 100644
---- a/drivers/tty/vt/vt_ioctl.c
-+++ b/drivers/tty/vt/vt_ioctl.c
-@@ -806,12 +806,22 @@ static int vt_resizex(struct vc_data *vc, struct vt_consize __user *cs)
- 		console_lock();
- 		vcp = vc_cons[i].d;
- 		if (vcp) {
-+			int ret;
-+			int save_scan_lines = vcp->vc_scan_lines;
-+			int save_font_height = vcp->vc_font.height;
-+
- 			if (v.v_vlin)
- 				vcp->vc_scan_lines = v.v_vlin;
- 			if (v.v_clin)
- 				vcp->vc_font.height = v.v_clin;
- 			vcp->vc_resize_user = 1;
--			vc_resize(vcp, v.v_cols, v.v_rows);
-+			ret = vc_resize(vcp, v.v_cols, v.v_rows);
-+			if (ret) {
-+				vcp->vc_scan_lines = save_scan_lines;
-+				vcp->vc_font.height = save_font_height;
-+				console_unlock();
-+				return ret;
-+			}
- 		}
- 		console_unlock();
- 	}
+So the idea here is to change those dts files to only say <3 255> (patch
+3), and add in a virtual 0% point at the bottom of the scale (patch 2).
+
+We have to do this conditionally because it seems some devices like to
+have the scale inverted:
+  % git grep "brightness-levels\s*=\s*<\s*[1-9]"|cat
+  arch/arm/boot/dts/tegra124-apalis-eval.dts:             brightness-levels = <255 231 223 207 191 159 127 0>;
+
+
+Alexandru Stan (3):
+  backlight: pwm_bl: Fix interpolation
+  backlight: pwm_bl: Artificially add 0% during interpolation
+  ARM: dts: rockchip: Remove 0 point in backlight
+
+ arch/arm/boot/dts/rk3288-veyron-jaq.dts    |  2 +-
+ arch/arm/boot/dts/rk3288-veyron-minnie.dts |  2 +-
+ arch/arm/boot/dts/rk3288-veyron-tiger.dts  |  2 +-
+ drivers/video/backlight/pwm_bl.c           | 78 +++++++++++-----------
+ 4 files changed, 42 insertions(+), 42 deletions(-)
+
 -- 
-1.8.3.1
+2.27.0

@@ -1,13 +1,83 @@
-From: Darlehen Bedienung <aemartinez@utu.edu.uy>
-Date: Wed, 22 Jul 2020 05:32:10 +0000
-Subject: 
-Message-Id: <754360867.138094.1595395930510.JavaMail.zimbra@utu.edu.uy>
+From: Colin King <colin.king@canonical.com>
+Date: Thu, 23 Jul 2020 17:02:27 +0000
+Subject: [PATCH] video: fbdev: fix setting of pixclock because a pass-by-value error
+Message-Id: <20200723170227.996229-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Jani Nikula <jani.nikula@intel.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
+From: Colin Ian King <colin.king@canonical.com>
 
+The pixclock is being set locally because it is being passed as a
+pass-by-value argument rather than pass-by-reference, so the computed
+pixclock is never being set in var->pixclock. Fix this by passing
+by reference.
 
-Schönen Tag,Wir sind zuverlässige, vertrauenswürdige Kreditgeber, Wir bieten Darlehen an Unternehmen und Privatpersonen zu niedrigen und günstigen Zinssatz von 2%. Sind Sie auf der Suche nach einem Business-Darlehen, persönliche Darlehen, Schuldenkonsolidierung, unbesicherte Darlehen, Venture Capital. Kontaktieren Sie uns mit Name, Land, Darlehensbetrag, Dauer und Telefonnummer.GrüßeHerr DA COSTA DARREN FAY
+[This dates back to 2002, I found the offending commit from the git
+history git://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git ]
+
+Addresses-Coverity: ("Unused value")
+Fixes: 115f4504a64a ("Removed currcon and other console related code. Very little is now left.")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/video/fbdev/vga16fb.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
+index a20eeb8308ff..52f273af6cae 100644
+--- a/drivers/video/fbdev/vga16fb.c
++++ b/drivers/video/fbdev/vga16fb.c
+@@ -243,7 +243,7 @@ static void vga16fb_update_fix(struct fb_info *info)
+ }
+ 
+ static void vga16fb_clock_chip(struct vga16fb_par *par,
+-			       unsigned int pixclock,
++			       unsigned int *pixclock,
+ 			       const struct fb_info *info,
+ 			       int mul, int div)
+ {
+@@ -259,14 +259,14 @@ static void vga16fb_clock_chip(struct vga16fb_par *par,
+ 		{     0 /* bad */,    0x00, 0x00}};
+ 	int err;
+ 
+-	pixclock = (pixclock * mul) / div;
++	*pixclock = (*pixclock * mul) / div;
+ 	best = vgaclocks;
+-	err = pixclock - best->pixclock;
++	err = *pixclock - best->pixclock;
+ 	if (err < 0) err = -err;
+ 	for (ptr = vgaclocks + 1; ptr->pixclock; ptr++) {
+ 		int tmp;
+ 
+-		tmp = pixclock - ptr->pixclock;
++		tmp = *pixclock - ptr->pixclock;
+ 		if (tmp < 0) tmp = -tmp;
+ 		if (tmp < err) {
+ 			err = tmp;
+@@ -275,7 +275,7 @@ static void vga16fb_clock_chip(struct vga16fb_par *par,
+ 	}
+ 	par->misc |= best->misc;
+ 	par->clkdiv = best->seq_clock_mode;
+-	pixclock = (best->pixclock * div) / mul;		
++	*pixclock = (best->pixclock * div) / mul;
+ }
+ 			       
+ #define FAIL(X) return -EINVAL
+@@ -497,10 +497,10 @@ static int vga16fb_check_var(struct fb_var_screeninfo *var,
+ 
+ 	if (mode & MODE_8BPP)
+ 		/* pixel clock = vga clock / 2 */
+-		vga16fb_clock_chip(par, var->pixclock, info, 1, 2);
++		vga16fb_clock_chip(par, &var->pixclock, info, 1, 2);
+ 	else
+ 		/* pixel clock = vga clock */
+-		vga16fb_clock_chip(par, var->pixclock, info, 1, 1);
++		vga16fb_clock_chip(par, &var->pixclock, info, 1, 1);
+ 	
+ 	var->red.offset = var->green.offset = var->blue.offset = 
+ 	var->transp.offset = 0;
+-- 
+2.27.0

@@ -1,41 +1,33 @@
-From: AISHA GADDAFI <mahasaliou112233@gmail.com>
-Date: Fri, 31 Jul 2020 13:22:39 +0000
-Subject: Lieber Freund (Assalamu Alaikum),?
-Message-Id: <CAMvEq_3Ud_Q34_mYm8Wmi4ouCCNzTU07q-AKThhPB-eDggXE5w@mail.gmail.com>
+From: syzbot <syzbot+13013adc4a234406c29e@syzkaller.appspotmail.com>
+Date: Mon, 27 Jul 2020 16:45:08 +0000
+Subject: Re: divide error in fbcon_switch
+Message-Id: <0000000000009c18f005ab6f0bc0@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+In-Reply-To: <00000000000072cb4c0598d25a69@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: b.zolnierkie@samsung.com, daniel.thompson@linaro.org, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, ghalat@redhat.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, maarten.lankhorst@linux.intel.com, penguin-kernel@I-love.SAKURA.ne.jp, penguin-kernel@i-love.sakura.ne.jp, sam@ravnborg.org, syzkaller-bugs@googlegroups.com
 
--- 
-Lieber Freund (Assalamu Alaikum),
+syzbot suspects this issue was fixed by commit:
 
-Ich bin vor einer privaten Suche auf Ihren E-Mail-Kontakt gestoßen
-Ihre Hilfe. Mein Name ist Aisha Al-Qaddafi, eine alleinerziehende
-Mutter und eine Witwe
-mit drei Kindern. Ich bin die einzige leibliche Tochter des Spätlibyschen
-Präsident (verstorbener Oberst Muammar Gaddafi).
+commit ce684552a266cb1c7cc2f7e623f38567adec6653
+Author: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Date:   Sun Jul 12 11:10:12 2020 +0000
 
-Ich habe Investmentfonds im Wert von siebenundzwanzig Millionen
-fünfhunderttausend
-United State Dollar ($ 27.500.000.00) und ich brauche eine
-vertrauenswürdige Investition
-Manager / Partner aufgrund meines aktuellen Flüchtlingsstatus bin ich jedoch
-Möglicherweise interessieren Sie sich für die Unterstützung von
-Investitionsprojekten in Ihrem Land
-Von dort aus können wir in naher Zukunft Geschäftsbeziehungen aufbauen.
+    vt: Reject zero-sized screen buffer size.
 
-Ich bin bereit, mit Ihnen über das Verhältnis zwischen Investition und
-Unternehmensgewinn zu verhandeln
-Basis für die zukünftige Investition Gewinne zu erzielen.
+bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=155549c4900000
+start commit:   76bb8b05 Merge tag 'kbuild-v5.5' of git://git.kernel.org/p..
+git tree:       upstream
+kernel config:  https://syzkaller.appspot.com/x/.config?x=DD226651cb0f364b
+dashboard link: https://syzkaller.appspot.com/bug?extid=13013adc4a234406c29e
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=17d69aeae00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=13fdcc2ae00000
 
-Wenn Sie bereit sind, dieses Projekt in meinem Namen zu bearbeiten,
-antworten Sie bitte dringend
-Damit ich Ihnen mehr Informationen über die Investmentfonds geben kann.
+If the result looks correct, please mark the issue as fixed by replying wit=
+h:
 
-Ihre dringende Antwort wird geschätzt. schreibe mir an diese email adresse (
-ayishagddafio@mail.ru ) zur weiteren Diskussion.
+#syz fix: vt: Reject zero-sized screen buffer size.
 
-Freundliche Grüße
-Frau Aisha Al-Qaddafi
+For information about bisection process see: https://goo.gl/tpsmEJ#bisection

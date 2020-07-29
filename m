@@ -1,149 +1,225 @@
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Date: Sun, 12 Jul 2020 11:10:12 +0000
-Subject: [PATCH v3] vt: Reject zero-sized screen buffer size.
-Message-Id: <20200712111013.11881-1-penguin-kernel@I-love.SAKURA.ne.jp>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Wed, 29 Jul 2020 13:41:47 +0000
+Subject: [PATCH 4/5] drm/fb_helper: Use I/O-memory mappings if available
+Message-Id: <20200729134148.6855-5-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <189fc902-db7c-9886-cc31-c0348435303a@i-love.sakura.ne.jp>
-In-Reply-To: <189fc902-db7c-9886-cc31-c0348435303a@i-love.sakura.ne.jp>
+References: <20200729134148.6855-1-tzimmermann@suse.de>
+In-Reply-To: <20200729134148.6855-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>
-Cc: linux-fbdev@vger.kernel.org, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, syzbot <syzbot+017265e8553724e514e8@syzkaller.appspotmail.com>, Dmitry Vyukov <dvyukov@google.com>
+To: airlied@redhat.com, daniel@ffwll.ch, sam@ravnborg.org, kraxel@redhat.com, b.zolnierkie@samsung.com, maarten.lankhorst@linux.intel.com, mripard@kernel.org, jani.nikula@intel.com, peda@axentia.se, dan.carpenter@oracle.com, natechancellor@gmail.com
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
 
-syzbot is reporting general protection fault in do_con_write() [1] caused
-by vc->vc_screenbuf = ZERO_SIZE_PTR caused by vc->vc_screenbuf_size = 0
-caused by vc->vc_cols = vc->vc_rows = vc->vc_size_row = 0 caused by
-fb_set_var() from ioctl(FBIOPUT_VSCREENINFO) on /dev/fb0 , for
-gotoxy(vc, 0, 0) from reset_terminal() from vc_init() from vc_allocate()
- from con_install() from tty_init_dev() from tty_open() on such console
-causes vc->vc_pos = 0x10000000e due to
-((unsigned long) ZERO_SIZE_PTR) + -1U * 0 + (-1U << 1).
+At least sparc64 requires I/O-specific access to framebuffers. This
+patch prepares the fbdev console accordingly.
 
-I don't think that a console with 0 column or 0 row makes sense. And it
-seems that vc_do_resize() does not intend to allow resizing a console to
-0 column or 0 row due to
+For drivers with direct access to the framebuffer memory, the callback
+functions test for the type of memory and call the rsp fb_sys_ of fb_cfb_
+functions. For drivers that employ a shadow buffer, fbdev's blit function
+maps the framebuffer as either I/O or system memory, and uses the correct
+memcpy function.
 
-  new_cols = (cols ? cols : vc->vc_cols);
-  new_rows = (lines ? lines : vc->vc_rows);
-
-exception.
-
-Theoretically, cols and rows can be any range as long as
-0 < cols * rows * 2 <= KMALLOC_MAX_SIZE is satisfied (e.g.
-cols = 1048576 && rows = 2 is possible) because of
-
-  vc->vc_size_row = vc->vc_cols << 1;
-  vc->vc_screenbuf_size = vc->vc_rows * vc->vc_size_row;
-
-in visual_init() and kzalloc(vc->vc_screenbuf_size) in vc_allocate().
-
-Since we can detect cols = 0 or rows = 0 via screenbuf_size = 0 in
-visual_init(), we can reject kzalloc(0). Then, vc_allocate() will return
-an error, and con_write() will not be called on a console with 0 column
-or 0 row.
-
-We need to make sure that integer overflow in visual_init() won't happen.
-Since vc_do_resize() restricts cols <= 32767 and rows <= 32767, applying
-1 <= cols <= 32767 and 1 <= rows <= 32767 restrictions to vc_allocate()
-will be practically fine.
-
-This patch does not touch con_init(), for returning -EINVAL there
-does not help when we are not returning -ENOMEM.
-
-[1] https://syzkaller.appspot.com/bug?extid7265e8553724e514e8
-
-Reported-and-tested-by: syzbot <syzbot+017265e8553724e514e8@syzkaller.appspotmail.com>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/tty/vt/vt.c | 29 ++++++++++++++++++-----------
- 1 file changed, 18 insertions(+), 11 deletions(-)
+ drivers/gpu/drm/drm_fb_helper.c | 132 ++++++++++++++++++++++++++++----
+ 1 file changed, 116 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 48a8199f7845..42d8c67a481f 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -1092,10 +1092,19 @@ static const struct tty_port_operations vc_port_ops = {
- 	.destruct = vc_port_destruct,
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index 88146f7245c5..7d928f92cba7 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -394,14 +394,25 @@ static void drm_fb_helper_dirty_blit_real(struct drm_fb_helper *fb_helper,
+ 	unsigned int cpp = fb->format->cpp[0];
+ 	size_t offset = clip->y1 * fb->pitches[0] + clip->x1 * cpp;
+ 	void *src = fb_helper->fbdev->screen_buffer + offset;
+-	void *dst = fb_helper->buffer->vaddr + offset;
+ 	size_t len = (clip->x2 - clip->x1) * cpp;
+ 	unsigned int y;
+ 
+-	for (y = clip->y1; y < clip->y2; y++) {
+-		memcpy(dst, src, len);
+-		src += fb->pitches[0];
+-		dst += fb->pitches[0];
++	if (fb_helper->buffer->vaddr_iomem) {
++		void __iomem *dst = fb_helper->buffer->vaddr_iomem + offset;
++
++		for (y = clip->y1; y < clip->y2; y++) {
++			memcpy_toio(dst, src, len);
++			src += fb->pitches[0];
++			dst += fb->pitches[0];
++		}
++	} else {
++		void *dst = fb_helper->buffer->vaddr + offset;
++
++		for (y = clip->y1; y < clip->y2; y++) {
++			memcpy(dst, src, len);
++			src += fb->pitches[0];
++			dst += fb->pitches[0];
++		}
+ 	}
+ }
+ 
+@@ -412,6 +423,7 @@ static void drm_fb_helper_dirty_work(struct work_struct *work)
+ 	struct drm_clip_rect *clip = &helper->dirty_clip;
+ 	struct drm_clip_rect clip_copy;
+ 	unsigned long flags;
++	void __iomem *vaddr_iomem;
+ 	void *vaddr;
+ 
+ 	spin_lock_irqsave(&helper->dirty_lock, flags);
+@@ -425,9 +437,15 @@ static void drm_fb_helper_dirty_work(struct work_struct *work)
+ 
+ 		/* Generic fbdev uses a shadow buffer */
+ 		if (helper->buffer) {
+-			vaddr = drm_client_buffer_vmap(helper->buffer);
+-			if (IS_ERR(vaddr))
++			vaddr_iomem +				drm_client_buffer_vmap_iomem(helper->buffer);
++			if (IS_ERR(vaddr_iomem)) {
+ 				return;
++			} else if (!vaddr_iomem) {
++				vaddr = drm_client_buffer_vmap(helper->buffer);
++				if (IS_ERR(vaddr))
++					return;
++			}
+ 			drm_fb_helper_dirty_blit_real(helper, &clip_copy);
+ 		}
+ 		if (helper->fb->funcs->dirty)
+@@ -766,6 +784,25 @@ void drm_fb_helper_sys_imageblit(struct fb_info *info,
+ }
+ EXPORT_SYMBOL(drm_fb_helper_sys_imageblit);
+ 
++static ssize_t drm_fb_helper_cfb_read(struct fb_info *info, char __user *buf,
++				      size_t count, loff_t *ppos)
++{
++	return fb_cfb_read(info, buf, count, ppos);
++}
++
++static ssize_t drm_fb_helper_cfb_write(struct fb_info *info, const char __user *buf,
++				       size_t count, loff_t *ppos)
++{
++	ssize_t ret;
++
++	ret = fb_cfb_write(info, buf, count, ppos);
++	if (ret > 0)
++		drm_fb_helper_dirty(info, 0, 0, info->var.xres,
++				    info->var.yres);
++
++	return ret;
++}
++
+ /**
+  * drm_fb_helper_cfb_fillrect - wrapper around cfb_fillrect
+  * @info: fbdev registered by the helper
+@@ -2038,6 +2075,61 @@ static int drm_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 		return -ENODEV;
+ }
+ 
++static ssize_t drm_fbdev_fb_read(struct fb_info *info, char __user *buf,
++				 size_t count, loff_t *ppos)
++{
++	struct drm_fb_helper *fb_helper = info->par;
++
++	if (fb_helper->buffer->vaddr_iomem)
++		return drm_fb_helper_cfb_read(info, buf, count, ppos);
++	else
++		return drm_fb_helper_sys_read(info, buf, count, ppos);
++}
++
++static ssize_t drm_fbdev_fb_write(struct fb_info *info, const char __user *buf,
++				  size_t count, loff_t *ppos)
++{
++	struct drm_fb_helper *fb_helper = info->par;
++
++	if (fb_helper->buffer->vaddr_iomem)
++		return drm_fb_helper_cfb_write(info, buf, count, ppos);
++	else
++		return drm_fb_helper_sys_write(info, buf, count, ppos);
++}
++
++static void drm_fbdev_fb_fillrect(struct fb_info *info,
++				  const struct fb_fillrect *rect)
++{
++	struct drm_fb_helper *fb_helper = info->par;
++
++	if (fb_helper->buffer->vaddr_iomem)
++		drm_fb_helper_cfb_fillrect(info, rect);
++	else
++		drm_fb_helper_sys_fillrect(info, rect);
++}
++
++static void drm_fbdev_fb_copyarea(struct fb_info *info,
++				  const struct fb_copyarea *area)
++{
++	struct drm_fb_helper *fb_helper = info->par;
++
++	if (fb_helper->buffer->vaddr_iomem)
++		drm_fb_helper_cfb_copyarea(info, area);
++	else
++		drm_fb_helper_sys_copyarea(info, area);
++}
++
++static void drm_fbdev_fb_imageblit(struct fb_info *info,
++				   const struct fb_image *image)
++{
++	struct drm_fb_helper *fb_helper = info->par;
++
++	if (fb_helper->buffer->vaddr_iomem)
++		drm_fb_helper_cfb_imageblit(info, image);
++	else
++		drm_fb_helper_sys_imageblit(info, image);
++}
++
+ static const struct fb_ops drm_fbdev_fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	DRM_FB_HELPER_DEFAULT_OPS,
+@@ -2045,11 +2137,11 @@ static const struct fb_ops drm_fbdev_fb_ops = {
+ 	.fb_release	= drm_fbdev_fb_release,
+ 	.fb_destroy	= drm_fbdev_fb_destroy,
+ 	.fb_mmap	= drm_fbdev_fb_mmap,
+-	.fb_read	= drm_fb_helper_sys_read,
+-	.fb_write	= drm_fb_helper_sys_write,
+-	.fb_fillrect	= drm_fb_helper_sys_fillrect,
+-	.fb_copyarea	= drm_fb_helper_sys_copyarea,
+-	.fb_imageblit	= drm_fb_helper_sys_imageblit,
++	.fb_read	= drm_fbdev_fb_read,
++	.fb_write	= drm_fbdev_fb_write,
++	.fb_fillrect	= drm_fbdev_fb_fillrect,
++	.fb_copyarea	= drm_fbdev_fb_copyarea,
++	.fb_imageblit	= drm_fbdev_fb_imageblit,
  };
  
-+/*
-+ * Change # of rows and columns (0 means unchanged/the size of fg_console)
-+ * [this is to be used together with some user program
-+ * like resize that changes the hardware videomode]
-+ */
-+#define VC_MAXCOL (32767)
-+#define VC_MAXROW (32767)
-+
- int vc_allocate(unsigned int currcons)	/* return 0 on success */
- {
- 	struct vt_notifier_param param;
- 	struct vc_data *vc;
-+	int err;
+ static struct fb_deferred_io drm_fbdev_defio = {
+@@ -2072,6 +2164,7 @@ static int drm_fb_helper_generic_probe(struct drm_fb_helper *fb_helper,
+ 	struct drm_framebuffer *fb;
+ 	struct fb_info *fbi;
+ 	u32 format;
++	void __iomem *vaddr_iomem;
+ 	void *vaddr;
  
- 	WARN_CONSOLE_UNLOCKED();
+ 	drm_dbg_kms(dev, "surface width(%d), height(%d) and bpp(%d)\n",
+@@ -2108,11 +2201,18 @@ static int drm_fb_helper_generic_probe(struct drm_fb_helper *fb_helper,
+ 		fb_deferred_io_init(fbi);
+ 	} else {
+ 		/* buffer is mapped for HW framebuffer */
+-		vaddr = drm_client_buffer_vmap(fb_helper->buffer);
+-		if (IS_ERR(vaddr))
+-			return PTR_ERR(vaddr);
++		vaddr_iomem = drm_client_buffer_vmap_iomem(fb_helper->buffer);
++		if (IS_ERR(vaddr_iomem)) {
++			return PTR_ERR(vaddr_iomem);
++		} else if (!vaddr_iomem) {
++			vaddr = drm_client_buffer_vmap(fb_helper->buffer);
++			if (IS_ERR(vaddr))
++				return PTR_ERR(vaddr);
++			fbi->screen_buffer = vaddr;
++		} else {
++			fbi->screen_buffer = vaddr_iomem;
++		}
  
-@@ -1125,6 +1134,11 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
- 	if (!*vc->vc_uni_pagedir_loc)
- 		con_set_default_unimap(vc);
- 
-+	err = -EINVAL;
-+	if (vc->vc_cols > VC_MAXCOL || vc->vc_rows > VC_MAXROW ||
-+	    vc->vc_screenbuf_size > KMALLOC_MAX_SIZE || !vc->vc_screenbuf_size)
-+		goto err_free;
-+	err = -ENOMEM;
- 	vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_KERNEL);
- 	if (!vc->vc_screenbuf)
- 		goto err_free;
-@@ -1143,7 +1157,7 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
- 	visual_deinit(vc);
- 	kfree(vc);
- 	vc_cons[currcons].d = NULL;
--	return -ENOMEM;
-+	return err;
- }
- 
- static inline int resize_screen(struct vc_data *vc, int width, int height,
-@@ -1158,14 +1172,6 @@ static inline int resize_screen(struct vc_data *vc, int width, int height,
- 	return err;
- }
- 
--/*
-- * Change # of rows and columns (0 means unchanged/the size of fg_console)
-- * [this is to be used together with some user program
-- * like resize that changes the hardware videomode]
-- */
--#define VC_RESIZE_MAXCOL (32767)
--#define VC_RESIZE_MAXROW (32767)
--
- /**
-  *	vc_do_resize	-	resizing method for the tty
-  *	@tty: tty being resized
-@@ -1201,7 +1207,7 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
- 	user = vc->vc_resize_user;
- 	vc->vc_resize_user = 0;
- 
--	if (cols > VC_RESIZE_MAXCOL || lines > VC_RESIZE_MAXROW)
-+	if (cols > VC_MAXCOL || lines > VC_MAXROW)
- 		return -EINVAL;
- 
- 	new_cols = (cols ? cols : vc->vc_cols);
-@@ -1212,7 +1218,7 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
- 	if (new_cols = vc->vc_cols && new_rows = vc->vc_rows)
- 		return 0;
- 
--	if (new_screen_size > KMALLOC_MAX_SIZE)
-+	if (new_screen_size > KMALLOC_MAX_SIZE || !new_screen_size)
- 		return -EINVAL;
- 	newscreen = kzalloc(new_screen_size, GFP_USER);
- 	if (!newscreen)
-@@ -3393,6 +3399,7 @@ static int __init con_init(void)
- 		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
- 		tty_port_init(&vc->port);
- 		visual_init(vc, currcons, 1);
-+		/* Assuming vc->vc_{cols,rows,screenbuf_size} are sane here. */
- 		vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
- 		vc_init(vc, vc->vc_rows, vc->vc_cols,
- 			currcons || !vc->vc_sw->con_save_screen);
+-		fbi->screen_buffer = vaddr;
+ 		/* Shamelessly leak the physical address to user-space */
+ #if IS_ENABLED(CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM)
+ 		if (drm_leak_fbdev_smem && fbi->fix.smem_start = 0)
 -- 
-2.18.4
+2.27.0

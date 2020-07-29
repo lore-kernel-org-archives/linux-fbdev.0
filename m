@@ -1,52 +1,45 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Mon, 20 Jul 2020 09:35:24 +0000
-Subject: Re: SM750 : from which driver should I start to add a new transmitter ?
-Message-Id: <CADVatmOmhA5E6Qi23YtdZjtoS=dKKCk1bujw9dEY-sKrGAt30A@mail.gmail.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Wed, 29 Jul 2020 13:41:43 +0000
+Subject: [RFC][PATCH 0/5] Support GEM object mappings from I/O memory
+Message-Id: <20200729134148.6855-1-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <36f3542011c34c4a9509f00c666a514a@kontron.com>
-In-Reply-To: <36f3542011c34c4a9509f00c666a514a@kontron.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Gilles Buloz <Gilles.Buloz@kontron.com>
-Cc: "greg@kroah.com" <greg@kroah.com>, LFBDEV <linux-fbdev@vger.kernel.org>, "teddy.wang@siliconmotion.com" <teddy.wang@siliconmotion.com>, dri-devel <dri-devel@lists.freedesktop.org>
+To: airlied@redhat.com, daniel@ffwll.ch, sam@ravnborg.org, kraxel@redhat.com, b.zolnierkie@samsung.com, maarten.lankhorst@linux.intel.com, mripard@kernel.org, jani.nikula@intel.com, peda@axentia.se, dan.carpenter@oracle.com, natechancellor@gmail.com
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
 
-HI Gilles, (Added fbdev and dri list)
+DRM's fbdev console uses regular load and store operations to update
+framebuffer memory. The bochs driver on sparc64 requires the use of
+I/O-specific load and store operations. We have a workaround, but need
+a long-term sulotion tothe problem.
 
-On Mon, Jul 20, 2020 at 10:18 AM Gilles Buloz <Gilles.Buloz@kontron.com> wrote:
->
-> Dear developers,
->
->
-> My company is manufacturing M2 graphics modules based on SM750. and I need to add support for an ANX9404 transmitter (for DP). I'm wondering which driver you would recommend to start my development :
->
-> - your SM750 framebuffer driver is available in the kernel under drivers/staging/sm750fb/. It is clean and maintained.
+This patchset adds a GEM object function that returns framebuffers as
+I/O memory. It further updates fbdev to use the new functionality and
+implements vmap_iomem for VRAM helpers.
 
-Yes, and I know many companies who are using SM750 uses this driver,
-but the fact remains that it can be removed from staging any time as
-it can never migrate out of staging,
+This is an RFC patchset to discuss the approach. It still needs testing
+and polish. Patch #4 has to be rebased onto the recent workaround.
 
->
-> - I'm currently using another driver from SiliconMotion I got through Innodisk (another modules manufacturer) supporting SM750/SM768 and labelled "SiliconMotion GPU DRM Driver". But the code is not very clean and produces lots of warning when building, and seems no more maintained. I even don't have the name nor the email of the developer. However it already works fine with our current HDMI transmitter.
->
->
-> Having a look to the sm750fb kernel driver, the TODO file says : "must be ported to the atomic kms framework in the drm subsystem (which will give you a basic fbdev driver for free)".
+Thomas Zimmermann (5):
+  fbdev: Remove trailing whitespace
+  fbdev/core: Export framebuffer read and write code as cfb_ function
+  drm: Add infrastructure for vmap operations of I/O memory
+  drm/fb_helper: Use I/O-memory mappings if available
+  drm/vram_helper: Implement struct drm_gem_object_funcs.vmap_iomem
 
-Yes.
-
->
-> It seems my current driver is already of this kind (DRM driver using modesetting Xorg module). I can send you the source code of this driver as it is open source If you want to see which driver I mean.
-
-Is it the same as the one I have at gitlab
-(https://gitlab.com/sudipm/sm750/tree/sm750) ? If it is same then it
-will not be accepted in drm subsystem as it needs to be cleaned and I
-will need to add "atomic" to it. Well, atomic was the main blocker.
-But, if the driver that you have has been already converted to be an
-atomic driver then please send it to me and I can clean it up and
-submit.
-
-
+ drivers/gpu/drm/ast/ast_cursor.c      |  12 ++-
+ drivers/gpu/drm/drm_client.c          |  52 +++++++++-
+ drivers/gpu/drm/drm_fb_helper.c       | 132 ++++++++++++++++++++++----
+ drivers/gpu/drm/drm_gem.c             |  19 ++++
+ drivers/gpu/drm/drm_gem_vram_helper.c | 106 +++++++++++++++++++--
+ drivers/gpu/drm/drm_internal.h        |   1 +
+ drivers/video/fbdev/core/fbmem.c      |  61 ++++++++----
+ include/drm/drm_client.h              |   8 +-
+ include/drm/drm_gem.h                 |  17 +++-
+ include/drm/drm_gem_vram_helper.h     |   1 +
+ include/linux/fb.h                    |  23 +++--
+ 11 files changed, 369 insertions(+), 63 deletions(-)
 
 --
-Regards
-Sudip
+2.27.0

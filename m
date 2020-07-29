@@ -1,146 +1,127 @@
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Date: Sat, 11 Jul 2020 11:08:00 +0000
-Subject: Re: fbconsole needs more parameter validations.
-Message-Id: <189fc902-db7c-9886-cc31-c0348435303a@i-love.sakura.ne.jp>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Wed, 29 Jul 2020 13:41:44 +0000
+Subject: [PATCH 1/5] fbdev: Remove trailing whitespace
+Message-Id: <20200729134148.6855-2-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200710055329.3759-1-penguin-kernel@I-love.SAKURA.ne.jp>
- <b1e7dd6a-fc22-bba8-0abb-d3e779329bce@i-love.sakura.ne.jp>
- <20200710105637.GB1232395@kroah.com>
- <f80527f4-ffb2-69ef-ebd4-3de92cacfa17@i-love.sakura.ne.jp>
-In-Reply-To: <f80527f4-ffb2-69ef-ebd4-3de92cacfa17@i-love.sakura.ne.jp>
+References: <20200729134148.6855-1-tzimmermann@suse.de>
+In-Reply-To: <20200729134148.6855-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-kernel@vger.kernel.org, DRI <dri-devel@lists.freedesktop.org>, Jiri Slaby <jslaby@suse.com>, syzbot <syzbot+017265e8553724e514e8@syzkaller.appspotmail.com>, Dmitry Vyukov <dvyukov@google.com>
+To: airlied@redhat.com, daniel@ffwll.ch, sam@ravnborg.org, kraxel@redhat.com, b.zolnierkie@samsung.com, maarten.lankhorst@linux.intel.com, mripard@kernel.org, jani.nikula@intel.com, peda@axentia.se, dan.carpenter@oracle.com, natechancellor@gmail.com
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
 
-On 2020/07/11 15:16, Tetsuo Handa wrote:
-> On 2020/07/10 19:56, Greg Kroah-Hartman wrote:
->> Where is the over/underflow happening here when we set a size to be so
->> small?  We should bound the size somewhere, and as you show, that's not
->> really working properly, right?
-> 
-> It is bit_clear_margins() where integer underflow is happening (4294966497 = 1 - 100 * 8),
-> but the cause of this problem seems to be fbcon_startup() or vc_do_resize().
-> 
+Removes trailing whitespaces in several places.
 
-A possible cause is that vc_resize(vc, 0, 0) fails to set vc->vc_cols = vc->vc_rows = 0
-because of
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/video/fbdev/core/fbmem.c | 10 +++++-----
+ include/linux/fb.h               | 18 +++++++++---------
+ 2 files changed, 14 insertions(+), 14 deletions(-)
 
-  new_cols = (cols ? cols : vc->vc_cols);
-  new_rows = (lines ? lines : vc->vc_rows);
-
-exception. I don't know how user program referenced as
-
-  /*
-   * Change # of rows and columns (0 means unchanged/the size of fg_console)
-   * [this is to be used together with some user program
-   * like resize that changes the hardware videomode]
-   */
-  #define VC_RESIZE_MAXCOL (32767)
-  #define VC_RESIZE_MAXROW (32767)
-
-is utilizing this exception (this code predates the git repository). But since I
-don't think that a console with 0 column and/or 0 row makes sense, the real root
-cause might be that fb_set_var() fails to reject too small var.xres value for
-keeping cols > 0 and too small var.yres value for keeping lines > 0.
-
-Regardless, making "struct fbcon_ops"->clear_margins no-op when integer underflow
-is detected (like below diff) helps avoiding crash. Can we apply this handy
-protection assuming that vc->vc_cols * vc->vc_font.width and
-vc->vc_rows * vc->vc_font.heigh do not cause integer overflow?
-
- drivers/video/fbdev/core/bitblit.c   |    4 ++--
- drivers/video/fbdev/core/fbcon_ccw.c |    4 ++--
- drivers/video/fbdev/core/fbcon_cw.c  |    4 ++--
- drivers/video/fbdev/core/fbcon_ud.c  |    4 ++--
- 4 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/bitblit.c b/drivers/video/fbdev/core/bitblit.c
-index ca935c09a261..35ebeeccde4d 100644
---- a/drivers/video/fbdev/core/bitblit.c
-+++ b/drivers/video/fbdev/core/bitblit.c
-@@ -216,7 +216,7 @@ static void bit_clear_margins(struct vc_data *vc, struct fb_info *info,
- 	region.color = color;
- 	region.rop = ROP_COPY;
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 30e73ec4ad5c..dd0ccf35f7b7 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -777,7 +777,7 @@ fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
  
--	if (rw && !bottom_only) {
-+	if ((int) rw > 0 && !bottom_only) {
- 		region.dx = info->var.xoffset + rs;
- 		region.dy = 0;
- 		region.width = rw;
-@@ -224,7 +224,7 @@ static void bit_clear_margins(struct vc_data *vc, struct fb_info *info,
- 		info->fbops->fb_fillrect(info, &region);
- 	}
+ 	if (info->fbops->fb_read)
+ 		return info->fbops->fb_read(info, buf, count, ppos);
+-	
++
+ 	total_size = info->screen_size;
  
--	if (bh) {
-+	if ((int) bh > 0) {
- 		region.dx = info->var.xoffset;
- 		region.dy = info->var.yoffset + bs;
- 		region.width = rs;
-diff --git a/drivers/video/fbdev/core/fbcon_ccw.c b/drivers/video/fbdev/core/fbcon_ccw.c
-index dfa9a8aa4509..78f3a5621478 100644
---- a/drivers/video/fbdev/core/fbcon_ccw.c
-+++ b/drivers/video/fbdev/core/fbcon_ccw.c
-@@ -201,7 +201,7 @@ static void ccw_clear_margins(struct vc_data *vc, struct fb_info *info,
- 	region.color = color;
- 	region.rop = ROP_COPY;
+ 	if (total_size = 0)
+@@ -842,7 +842,7 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
  
--	if (rw && !bottom_only) {
-+	if ((int) rw > 0 && !bottom_only) {
- 		region.dx = 0;
- 		region.dy = info->var.yoffset;
- 		region.height = rw;
-@@ -209,7 +209,7 @@ static void ccw_clear_margins(struct vc_data *vc, struct fb_info *info,
- 		info->fbops->fb_fillrect(info, &region);
- 	}
+ 	if (info->fbops->fb_write)
+ 		return info->fbops->fb_write(info, buf, count, ppos);
+-	
++
+ 	total_size = info->screen_size;
  
--	if (bh) {
-+	if ((int) bh > 0) {
- 		region.dx = info->var.xoffset + bs;
- 		region.dy = 0;
-                 region.height = info->var.yres_virtual;
-diff --git a/drivers/video/fbdev/core/fbcon_cw.c b/drivers/video/fbdev/core/fbcon_cw.c
-index ce08251bfd38..fd098ff17574 100644
---- a/drivers/video/fbdev/core/fbcon_cw.c
-+++ b/drivers/video/fbdev/core/fbcon_cw.c
-@@ -184,7 +184,7 @@ static void cw_clear_margins(struct vc_data *vc, struct fb_info *info,
- 	region.color = color;
- 	region.rop = ROP_COPY;
+ 	if (total_size = 0)
+@@ -1061,7 +1061,7 @@ EXPORT_SYMBOL(fb_set_var);
  
--	if (rw && !bottom_only) {
-+	if ((int) rw > 0 && !bottom_only) {
- 		region.dx = 0;
- 		region.dy = info->var.yoffset + rs;
- 		region.height = rw;
-@@ -192,7 +192,7 @@ static void cw_clear_margins(struct vc_data *vc, struct fb_info *info,
- 		info->fbops->fb_fillrect(info, &region);
- 	}
+ int
+ fb_blank(struct fb_info *info, int blank)
+-{	
++{
+ 	struct fb_event event;
+ 	int ret = -EINVAL;
  
--	if (bh) {
-+	if ((int) bh > 0) {
- 		region.dx = info->var.xoffset;
- 		region.dy = info->var.yoffset;
-                 region.height = info->var.yres;
-diff --git a/drivers/video/fbdev/core/fbcon_ud.c b/drivers/video/fbdev/core/fbcon_ud.c
-index 1936afc78fec..e165a3fad29a 100644
---- a/drivers/video/fbdev/core/fbcon_ud.c
-+++ b/drivers/video/fbdev/core/fbcon_ud.c
-@@ -231,7 +231,7 @@ static void ud_clear_margins(struct vc_data *vc, struct fb_info *info,
- 	region.color = color;
- 	region.rop = ROP_COPY;
+@@ -1437,7 +1437,7 @@ __releases(&info->lock)
+ 	return res;
+ }
  
--	if (rw && !bottom_only) {
-+	if ((int) rw > 0 && !bottom_only) {
- 		region.dy = 0;
- 		region.dx = info->var.xoffset;
- 		region.width  = rw;
-@@ -239,7 +239,7 @@ static void ud_clear_margins(struct vc_data *vc, struct fb_info *info,
- 		info->fbops->fb_fillrect(info, &region);
- 	}
+-static int 
++static int
+ fb_release(struct inode *inode, struct file *file)
+ __acquires(&info->lock)
+ __releases(&info->lock)
+@@ -1627,7 +1627,7 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 			fb_info->pixmap.access_align = 32;
+ 			fb_info->pixmap.flags = FB_PIXMAP_DEFAULT;
+ 		}
+-	}	
++	}
+ 	fb_info->pixmap.offset = 0;
  
--	if (bh) {
-+	if ((int) bh > 0) {
- 		region.dy = info->var.yoffset;
- 		region.dx = info->var.xoffset;
-                 region.height  = bh;
+ 	if (!fb_info->pixmap.blit_x)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 2b530e6d86e4..714187bc13ac 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -124,7 +124,7 @@ struct fb_cursor_user {
+  * Register/unregister for framebuffer events
+  */
+ 
+-/*	The resolution of the passed in fb_info about to change */ 
++/*	The resolution of the passed in fb_info about to change */
+ #define FB_EVENT_MODE_CHANGE		0x01
+ 
+ #ifdef CONFIG_GUMSTIX_AM200EPD
+@@ -459,12 +459,12 @@ struct fb_info {
+ 
+ #if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+ 	/* assigned backlight device */
+-	/* set before framebuffer registration, 
++	/* set before framebuffer registration,
+ 	   remove after unregister */
+ 	struct backlight_device *bl_dev;
+ 
+ 	/* Backlight level curve */
+-	struct mutex bl_curve_mutex;	
++	struct mutex bl_curve_mutex;
+ 	u8 bl_curve[FB_BACKLIGHT_LEVELS];
+ #endif
+ #ifdef CONFIG_FB_DEFERRED_IO
+@@ -483,8 +483,8 @@ struct fb_info {
+ 		char __iomem *screen_base;	/* Virtual address */
+ 		char *screen_buffer;
+ 	};
+-	unsigned long screen_size;	/* Amount of ioremapped VRAM or 0 */ 
+-	void *pseudo_palette;		/* Fake palette of 16 colors */ 
++	unsigned long screen_size;	/* Amount of ioremapped VRAM or 0 */
++	void *pseudo_palette;		/* Fake palette of 16 colors */
+ #define FBINFO_STATE_RUNNING	0
+ #define FBINFO_STATE_SUSPENDED	1
+ 	u32 state;			/* Hardware state i.e suspend */
+@@ -587,11 +587,11 @@ static inline struct apertures_struct *alloc_apertures(unsigned int max_num) {
+      *  `Generic' versions of the frame buffer device operations
+      */
+ 
+-extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var); 
+-extern int fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var); 
++extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var);
++extern int fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var);
+ extern int fb_blank(struct fb_info *info, int blank);
+-extern void cfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect); 
+-extern void cfb_copyarea(struct fb_info *info, const struct fb_copyarea *area); 
++extern void cfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
++extern void cfb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
+ extern void cfb_imageblit(struct fb_info *info, const struct fb_image *image);
+ /*
+  * Drawing operations where framebuffer is in system RAM
+-- 
+2.27.0

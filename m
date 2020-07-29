@@ -1,64 +1,128 @@
-From: Jiri Slaby <jirislaby@kernel.org>
-Date: Wed, 29 Jul 2020 11:20:00 +0000
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 29 Jul 2020 13:37:42 +0000
 Subject: Re: [PATCH] vgacon: fix out of bounds write to the scrollback buffer
-Message-Id: <d0cc1f99-1ef0-c7a2-6b42-d25d8fa49f1e@kernel.org>
+Message-Id: <7a5fc007-f0dc-bc11-3d04-b987cc98e2bd@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <c1f267aa-dfb3-91fa-3111-30c1676f1a91@kernel.org>
- <c5a73038-f441-602b-584b-3d84622b1fb1@nsfocus.com>
-In-Reply-To: <c5a73038-f441-602b-584b-3d84622b1fb1@nsfocus.com>
+References: <CGME20200729070257eucas1p1f5841756104301e67907136e45d6e9f5@eucas1p1.samsung.com>
+ <20200729070249.20892-1-jslaby@suse.cz>
+In-Reply-To: <20200729070249.20892-1-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: =?UTF-8?B?5byg5LqR5rW3?= <zhangyunhai@nsfocus.com>, b.zolnierkie@samsung.com
-Cc: Security Officers <security@kernel.org>, Kyungtae Kim <kt0755@gmail.com>, Anthony Liguori <aliguori@amazon.com>, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-distros@vs.openwall.org, Solar Designer <solar@openwall.com>, Yang Yingliang <yangyingliang@huawei.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Security Officers <security@kernel.org>, Kyungtae Kim <kt0755@gmail.com>, Anthony Liguori <aliguori@amazon.com>, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>, linux-distros@vs.openwall.org, linux-fbdev@vger.kernel.org, Solar Designer <solar@openwall.com>, Yang Yingliang <yangyingliang@huawei.com>, Linus Torvalds <torvalds@linux-foundation.org>, =?UTF-8?B?5byg5LqR5rW3?= <zhangyunhai@nsfocus.com>
 
-On 29. 07. 20, 10:19, 张云海 wrote:
-> On 2020/7/29 16:11, Jiri Slaby wrote:
->> But the loop checks for the overflow:
->>   if (vgacon_scrollback_cur->tail >= vgacon_scrollback_cur->size)
->>         vgacon_scrollback_cur->tail = 0;
->>
->> So the first 2 iterations would write to the end of the buffer and this
->> 3rd one should have zeroed ->tail.
+
+Hi Jiri,
+
+On 7/29/20 9:02 AM, Jiri Slaby wrote:
+> The current vgacon's scroll up implementation uses a circural buffer
+> in vgacon_scrollback_cur. It always advances tail to prepare it for the
+> next write and caps it to zero if the next ->vc_size_row bytes won't fit.
 > 
-> In the 2nd  iteration before the check:
-> vgacon_scrollback_cur->tail is 65360 which is still less then
-> vgacon_scrollback_cur->size(65440), so the ->tail won't be zeroed.
+> But when we change the VT size (e.g. by VT_RESIZE) in the meantime, the new
+> line might not fit to the end of the scrollback buffer in the next
+> attempt to scroll. This leads to various crashes as
+> vgacon_scrollback_update writes out of the buffer:
+>  BUG: unable to handle page fault for address: ffffc900001752a0
+>  #PF: supervisor write access in kernel mode
+>  #PF: error_code(0x0002) - not-present page
+>  RIP: 0010:mutex_unlock+0x13/0x30
+> ...
+>  Call Trace:
+>   n_tty_write+0x1a0/0x4d0
+>   tty_write+0x1a0/0x2e0
 > 
-> Then it gose to the 3rd  iteration, overflow occurs.
+> Or to KASAN reports:
+> BUG: KASAN: slab-out-of-bounds in vgacon_scroll+0x57a/0x8ed
+> 
+> So check whether the line fits in the buffer and wrap if needed. Do it
+> before the loop as console_sem is held and ->vc_size_row cannot change
+> during the execution of vgacon_scrollback_cur. If it does change, we
+> need to ensure it does not change elsewhere, not here.
+> 
+> Also, we do not split the write of a line into chunks as that would
+> break the consumers of the buffer. They expect ->cnt, ->tail and ->size
+> to be in harmony and advanced by ->vc_size_row.
+> 
+> I found few reports of this in the past, some with patches included,
+> some even 2 years old:
+> https://lore.kernel.org/lkml/CAEAjamsJnG-=TSOwgRbbb3B9Z-PA63oWmNPoKYWQ=Z=+X49akg@mail.gmail.com/
 
-Ahh, I see now! So it must be triggered by CSI M instead. It allows for
-more than 1 in count. So this is PoC for this case:
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
+Sorry but I don't work on fixing fbdev/console KASAN/syzbot/etc.
+reports (-ENORESOURCES).  This has been made official in the past.
 
-int main(int argc, char** argv)
-{
-        int fd = open("/dev/tty1", O_RDWR);
-        unsigned short size[3] = {25, 200, 0};
-        ioctl(fd, 0x5609, size); // VT_RESIZE
+I'm happy to review/apply patches though.
 
-        write(fd, "\e[1;1H", 6);
-        for (int i = 0; i < 30; i++)
-                write(fd, "\e[10M", 5);
-}
+> https://lore.kernel.org/lkml/1589336932-35508-1-git-send-email-yangyingliang@huawei.com/
 
-It corrupts memory, so it crashes the kernel randomly. Even with my
-before-loop patch.
+This was the first time the patch for issue was submitted.
 
-So now: could you resend your patch with improved commit message, add
-all those Ccs etc.? You can copy most of the Ccs from my patch verbatim.
+I tried to apply it to drm-misc but then I have noticed that
+it has not been posted to linux-fbdev / dri-devel MLs (so it
+was not possible to merge it using dim tool) and thus I've
+requested the author to resend it:
 
-I am also not sure the test I was pointing out on the top of this
-message would be of any use after the change. But maybe leave the code
-rest in peace.
+https://lore.kernel.org/lkml/62544bd9-e47d-e7f9-92f2-49b8dbb132c1@samsung.com/
 
-thanks,
--- 
-js
-suse labs
+which he did:
+
+https://lore.kernel.org/lkml/20200713105730.550334-1-yangyingliang@huawei.com/
+
+and the patch is currently under review period (to give people
+chance to comment on it) and in my "to apply if no objections"
+folder.
+
+I see that your/Yunhai patch addresses the root source of
+the issue so I'll be happy to apply/ACK it instead of Yang's
+patch once the final version is posted.
+
+Thank you for working on this.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> This fixes CVE-2020-14331.
+> 
+> Big thanks to guys mentioned in the Reported-and-debugged-by lines below
+> who actually found the root cause.
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Reported-and-debugged-by: 张云海 <zhangyunhai@nsfocus.com>
+> Reported-and-debugged-by: Yang Yingliang <yangyingliang@huawei.com>
+> Reported-by: Kyungtae Kim <kt0755@gmail.com>
+> Fixes: 15bdab959c9b ([PATCH] vgacon: Add support for soft scrollback)
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Greg KH <greg@kroah.com>
+> Cc: Solar Designer <solar@openwall.com>
+> Cc: "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
+> Cc: Anthony Liguori <aliguori@amazon.com>
+> Cc: Security Officers <security@kernel.org>
+> Cc: linux-distros@vs.openwall.org
+> Cc: Yang Yingliang <yangyingliang@huawei.com>
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-fbdev@vger.kernel.org
+> ---
+>  drivers/video/console/vgacon.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+> index f0f3d573f848..13194bb246f8 100644
+> --- a/drivers/video/console/vgacon.c
+> +++ b/drivers/video/console/vgacon.c
+> @@ -250,6 +250,11 @@ static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
+>  
+>  	p = (void *) (c->vc_origin + t * c->vc_size_row);
+>  
+> +	/* vc_size_row might have changed by VT_RESIZE in the meantime */
+> +	if ((vgacon_scrollback_cur->tail + c->vc_size_row) >> +			vgacon_scrollback_cur->size)
+> +		vgacon_scrollback_cur->tail = 0;
+> +
+>  	while (count--) {
+>  		scr_memcpyw(vgacon_scrollback_cur->data +
+>  			    vgacon_scrollback_cur->tail,
+> 

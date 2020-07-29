@@ -1,93 +1,59 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 10 Jul 2020 14:23:14 +0000
-Subject: Re: [PATCH v3] video: fbdev: ssd1307fb: Added support to Column offset
-Message-Id: <64d46ff6-a16f-1cf6-4bb9-84524ce43207@samsung.com>
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Date: Wed, 29 Jul 2020 14:57:01 +0000
+Subject: [PATCH] vt: defer kfree() of vc_screenbuf in vc_do_resize()
+Message-Id: <1596034621-4714-1-git-send-email-penguin-kernel@I-love.SAKURA.ne.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200513184838eucas1p1df4f9229dca2094694e4b16d82a95418@eucas1p1.samsung.com>
- <1589395691-8762-1-git-send-email-alencar.fmce@imbel.gov.br>
-In-Reply-To: <1589395691-8762-1-git-send-email-alencar.fmce@imbel.gov.br>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rodrigo Alencar <455.rodrigo.alencar@gmail.com>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, andy.shevchenko@gmail.com, Rodrigo Rolim Mendes de Alencar <alencar.fmce@imbel.gov.br>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, syzbot <syzbot+9116ecc1978ca3a12f43@syzkaller.appspotmail.com>
 
+syzbot is reporting UAF bug in set_origin() from vc_do_resize() [1], for
+vc_do_resize() calls kfree(vc->vc_screenbuf) before calling set_origin().
 
-[ added dri-devel ML to Cc: ]
+Unfortunately, in set_origin(), vc->vc_sw->con_set_origin() might access
+vc->vc_pos when scroll is involved in order to manipulate cursor, but
+vc->vc_pos refers already released vc->vc_screenbuf until vc->vc_pos gets
+updated based on the result of vc->vc_sw->con_set_origin().
 
-Hi,
+Preserving old buffer and tolerating outdated vc members until set_origin()
+completes would be easier than preventing vc->vc_sw->con_set_origin() from
+accessing outdated vc members.
 
-Sorry for the delay.
+[1] https://syzkaller.appspot.com/bug?idf49da2081e2ebdc65c0642c214b27fe91099db3
 
-On 5/13/20 8:48 PM, Rodrigo Alencar wrote:
-> From: Rodrigo Rolim Mendes de Alencar <alencar.fmce@imbel.gov.br>
-> 
-> This patch provides support for displays like VGM128064B0W10,
-> which requires a column offset of 2, i.e., its segments starts
-> in SEG2 and ends in SEG129.
-> 
-> Signed-off-by: Rodrigo Alencar <455.rodrigo.alencar@gmail.com>
+Reported-by: syzbot <syzbot+9116ecc1978ca3a12f43@syzkaller.appspotmail.com>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ drivers/tty/vt/vt.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Please resend with "From:" & "Signed-off-by:" tags fixed to match so
-I can merge the patch.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  Documentation/devicetree/bindings/display/ssd1307fb.txt | 1 +
->  drivers/video/fbdev/ssd1307fb.c                         | 8 ++++++--
->  2 files changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/display/ssd1307fb.txt b/Documentation/devicetree/bindings/display/ssd1307fb.txt
-> index 27333b9551b3..2dcb6d12d137 100644
-> --- a/Documentation/devicetree/bindings/display/ssd1307fb.txt
-> +++ b/Documentation/devicetree/bindings/display/ssd1307fb.txt
-> @@ -19,6 +19,7 @@ Optional properties:
->    - vbat-supply: The supply for VBAT
->    - solomon,segment-no-remap: Display needs normal (non-inverted) data column
->                                to segment mapping
-> +  - solomon,col-offset: Offset of columns (COL/SEG) that the screen is mapped to.
->    - solomon,com-seq: Display uses sequential COM pin configuration
->    - solomon,com-lrremap: Display uses left-right COM pin remap
->    - solomon,com-invdir: Display uses inverted COM pin scan direction
-> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-> index 8e06ba912d60..102f941104c0 100644
-> --- a/drivers/video/fbdev/ssd1307fb.c
-> +++ b/drivers/video/fbdev/ssd1307fb.c
-> @@ -74,6 +74,7 @@ struct ssd1307fb_par {
->  	struct fb_info *info;
->  	u8 lookup_table[4];
->  	u32 page_offset;
-> +	u32 col_offset;
->  	u32 prechargep1;
->  	u32 prechargep2;
->  	struct pwm_device *pwm;
-> @@ -458,11 +459,11 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
->  	if (ret < 0)
->  		return ret;
->  
-> -	ret = ssd1307fb_write_cmd(par->client, 0x0);
-> +	ret = ssd1307fb_write_cmd(par->client, par->col_offset);
->  	if (ret < 0)
->  		return ret;
->  
-> -	ret = ssd1307fb_write_cmd(par->client, par->width - 1);
-> +	ret = ssd1307fb_write_cmd(par->client, par->col_offset + par->width - 1);
->  	if (ret < 0)
->  		return ret;
->  
-> @@ -626,6 +627,9 @@ static int ssd1307fb_probe(struct i2c_client *client)
->  	if (device_property_read_u32(dev, "solomon,page-offset", &par->page_offset))
->  		par->page_offset = 1;
->  
-> +	if (device_property_read_u32(dev, "solomon,col-offset", &par->col_offset))
-> +		par->col_offset = 0;
-> +
->  	if (device_property_read_u32(dev, "solomon,com-offset", &par->com_offset))
->  		par->com_offset = 0;
->  
-> 
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 42d8c67..c9ee8e9 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -1196,7 +1196,7 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
+ 	unsigned int old_rows, old_row_size, first_copied_row;
+ 	unsigned int new_cols, new_rows, new_row_size, new_screen_size;
+ 	unsigned int user;
+-	unsigned short *newscreen;
++	unsigned short *oldscreen, *newscreen;
+ 	struct uni_screen *new_uniscr = NULL;
+ 
+ 	WARN_CONSOLE_UNLOCKED();
+@@ -1294,10 +1294,11 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
+ 	if (new_scr_end > new_origin)
+ 		scr_memsetw((void *)new_origin, vc->vc_video_erase_char,
+ 			    new_scr_end - new_origin);
+-	kfree(vc->vc_screenbuf);
++	oldscreen = vc->vc_screenbuf;
+ 	vc->vc_screenbuf = newscreen;
+ 	vc->vc_screenbuf_size = new_screen_size;
+ 	set_origin(vc);
++	kfree(oldscreen);
+ 
+ 	/* do part of a reset_terminal() */
+ 	vc->vc_top = 0;
+-- 
+1.8.3.1

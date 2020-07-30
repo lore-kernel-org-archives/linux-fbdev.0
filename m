@@ -1,71 +1,144 @@
-From: =?UTF-8?B?RnLDqWTDqXJpYyBQaWVycmV0?=  <frederic.pierret@qubes-os.org>
-Date: Fri, 03 Jul 2020 14:24:31 +0000
-Subject: dummy-backlight
-Message-Id: <903f7645-5062-00a9-8d7c-b30ef5f54951@qubes-os.org>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="4fGmdG7NnKFN1M86H79xV4JfD01yLcbyk"
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Date: Thu, 30 Jul 2020 10:47:14 +0000
+Subject: [PATCH v2] fbmem: pull fbcon_update_vcs() out of fb_set_var()
+Message-Id: <075b7e37-3278-cd7d-31ab-c5073cfa8e92@i-love.sakura.ne.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, dri-devel <dri-devel@lists.freedesktop.org>, linux-fbdev@vger.kernel.org
-Cc: =?UTF-8?Q?Marek_Marczykowski-G=c3=b3recki?= <marmarek@invisiblethingslab.com>
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---4fGmdG7NnKFN1M86H79xV4JfD01yLcbyk
-Content-Type: multipart/mixed; boundary="Q7nSMCZKXlHpZb2Yy992XltX3EiXUZfr7"
-
---Q7nSMCZKXlHpZb2Yy992XltX3EiXUZfr7
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+References: <1596000620-4075-1-git-send-email-penguin-kernel@I-love.SAKURA.ne.jp>
+ <CAKMK7uHeteS2+rKrZKrAM+zQO==hAX0XaVc9JfHPsdLTCtzKOw@mail.gmail.com>
+ <a3bb6544-064d-54a1-1215-d92188cb4209@i-love.sakura.ne.jp>
+In-Reply-To: <a3bb6544-064d-54a1-1215-d92188cb4209@i-love.sakura.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Jiri Slaby <jslaby@suse.com>, syzbot <syzbot+c37a14770d51a085a520@syzkaller.appspotmail.com>
 
-Dear all,
+syzbot is reporting OOB read bug in vc_do_resize() [1] caused by memcpy()
+based on outdated old_{rows,row_size} values, for resize_screen() can
+recurse into vc_do_resize() which changes vc->vc_{cols,rows} that outdates
+old_{rows,row_size} values which were saved before calling resize_screen().
 
-I'm working on a simple kernel module currently called "dummy-backlight" =
-(https://github.com/fepitre/dummy-backlight) which creates a testing back=
-light. After loaded, this driver allows to modify integer values of the v=
-irtual backlight created through its sysfs attributes directly.
+Daniel Vetter explained that resize_screen() should not recurse into
+fbcon_update_vcs() path due to FBINFO_MISC_USEREVENT being still set
+when calling resize_screen().
 
-In the context of the Qubes OS project, it allows to setup into a VM, a v=
-irtual backlight and managing the hardware backlight into the VM directly=
- thanks to a communication channel with the host system.
+Instead of masking FBINFO_MISC_USEREVENT before calling fbcon_update_vcs(),
+we can remove FBINFO_MISC_USEREVENT by calling fbcon_update_vcs() only if
+fb_set_var() returned 0. This change assumes that it is harmless to call
+fbcon_update_vcs() when fb_set_var() returned 0 without reaching
+fb_notifier_call_chain().
 
-I'm writing to you to know if you would be interested to have such module=
- into kernel. Another name could be "virtual-backlight".
+[1] https://syzkaller.appspot.com/bug?id=C70c88cfd16dcf6e1d3c7f0ab8648b3144=
+b5b25e
 
-I've written a similar module for PSU too (https://lore.kernel.org/linux-=
-pm/a8223cce-636f-578b-7304-eb0e4868e018@qubes-os.org/) where a nice sugge=
-stion of improvement has been made to use a misc device for controlling a=
-ttributes instead of sysfs directly. Indeed, it's appropriated in case of=
- multiple PSU but maybe for a (only one?) "dummy-backligh", using two sys=
-fs attributes is enough.
+Reported-and-tested-by: syzbot <syzbot+c37a14770d51a085a520@syzkaller.appsp=
+otmail.com>
+Suggested-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Reported-by: kernel test robot <lkp@intel.com> for missing #include
+---
+ drivers/video/fbdev/core/fbmem.c   | 8 ++------
+ drivers/video/fbdev/core/fbsysfs.c | 4 ++--
+ drivers/video/fbdev/ps3fb.c        | 5 +++--
+ include/linux/fb.h                 | 2 --
+ 4 files changed, 7 insertions(+), 12 deletions(-)
 
-Any kind of improvements are very welcomed. Thank you.
-
-Best regards,
-Fr=C3=A9d=C3=A9ric Pierret
-
-
---Q7nSMCZKXlHpZb2Yy992XltX3EiXUZfr7--
-
---4fGmdG7NnKFN1M86H79xV4JfD01yLcbyk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEn6ZLkvlecGvyjiymSEAQtc3FduIFAl7/P58ACgkQSEAQtc3F
-duIIehAAop77snM7y/Bd9ln0IS+FiUw6eZcj5mp+0oKi1xjKbiCui/6WfVFwYzki
-Q500M5gH/6r3jXf1wBOiZIkRVgj9TKkKiOlPJDCqTSBMKEYV3n7P4yrq0Lr+dTlf
-qvXBOnzQlG2GuTDvGz3UOOmHLaa/NV4P7wQusNVkj2dCBBMoC4QJsuwnA2jVZHdI
-4Va19Yijrfpx+8pWgb5/yTHuo/yjxCiobTRsFQI+qas15KbJ0r+wHHESD4qZ+T8M
-FIrDLUIcUAV3orMjLkx1b6KxG/1aMtXwYH+bIpswFbhJ9iw/jhuemEtiJnM+Zbf2
-1iviZSzlICZB3hsEmzqcFPGdAXZj+O6cdm30wl7kMQeZiPzkGg9WMaQ/c7/AUcPb
-hwBI7KteyvkGahM7nkooIaJnu29+Yc9KS8r5RhedPA1fJycxSsZniPudRLwh186G
-9TqTqTDyYkTbnhsjQQTOosUqlwYG1sgk9Xs64glgiAl6WAbWTYOrj4W2bNyw/jDx
-RYbGBV0PwpCASCOyZhMk++oPeloQytLN17y1AQO+tM+t/UjK1FHWlSZ1fD3BlZVg
-m6qItivxR+I6kvrOM4AhTZrR5h6nS0R0WHaVyvoxSnrcdO/t0K4m2T+MZxD8If8P
-4g31Uk6bcm3kOQ29ifCnnkJXPwoJWPrksG88/sKxe7nmdPyQdag=
-=NWRT
------END PGP SIGNATURE-----
-
---4fGmdG7NnKFN1M86H79xV4JfD01yLcbyk--
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fb=
+mem.c
+index 30e73ec..da7c88f 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -957,7 +957,6 @@ static int fb_check_caps(struct fb_info *info, struct f=
+b_var_screeninfo *var,
+ int
+ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ {
+-	int flags =3D info->flags;
+ 	int ret =3D 0;
+ 	u32 activate;
+ 	struct fb_var_screeninfo old_var;
+@@ -1052,9 +1051,6 @@ static int fb_check_caps(struct fb_info *info, struct=
+ fb_var_screeninfo *var,
+ 	event.data =3D &mode;
+ 	fb_notifier_call_chain(FB_EVENT_MODE_CHANGE, &event);
+=20
+-	if (flags & FBINFO_MISC_USEREVENT)
+-		fbcon_update_vcs(info, activate & FB_ACTIVATE_ALL);
+-
+ 	return 0;
+ }
+ EXPORT_SYMBOL(fb_set_var);
+@@ -1105,9 +1101,9 @@ static long do_fb_ioctl(struct fb_info *info, unsigne=
+d int cmd,
+ 			return -EFAULT;
+ 		console_lock();
+ 		lock_fb_info(info);
+-		info->flags |=3D FBINFO_MISC_USEREVENT;
+ 		ret =3D fb_set_var(info, &var);
+-		info->flags &=3D ~FBINFO_MISC_USEREVENT;
++		if (!ret)
++			fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
+ 		unlock_fb_info(info);
+ 		console_unlock();
+ 		if (!ret && copy_to_user(argp, &var, sizeof(var)))
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/=
+fbsysfs.c
+index d54c88f..65dae05 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -91,9 +91,9 @@ static int activate(struct fb_info *fb_info, struct fb_va=
+r_screeninfo *var)
+=20
+ 	var->activate |=3D FB_ACTIVATE_FORCE;
+ 	console_lock();
+-	fb_info->flags |=3D FBINFO_MISC_USEREVENT;
+ 	err =3D fb_set_var(fb_info, var);
+-	fb_info->flags &=3D ~FBINFO_MISC_USEREVENT;
++	if (!err)
++		fbcon_update_vcs(fb_info, var->activate & FB_ACTIVATE_ALL);
+ 	console_unlock();
+ 	if (err)
+ 		return err;
+diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+index 9df78fb..203c254 100644
+--- a/drivers/video/fbdev/ps3fb.c
++++ b/drivers/video/fbdev/ps3fb.c
+@@ -29,6 +29,7 @@
+ #include <linux/freezer.h>
+ #include <linux/uaccess.h>
+ #include <linux/fb.h>
++#include <linux/fbcon.h>
+ #include <linux/init.h>
+=20
+ #include <asm/cell-regs.h>
+@@ -824,12 +825,12 @@ static int ps3fb_ioctl(struct fb_info *info, unsigned=
+ int cmd,
+ 				var =3D info->var;
+ 				fb_videomode_to_var(&var, vmode);
+ 				console_lock();
+-				info->flags |=3D FBINFO_MISC_USEREVENT;
+ 				/* Force, in case only special bits changed */
+ 				var.activate |=3D FB_ACTIVATE_FORCE;
+ 				par->new_mode_id =3D val;
+ 				retval =3D fb_set_var(info, &var);
+-				info->flags &=3D ~FBINFO_MISC_USEREVENT;
++				if (!retval)
++					fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
+ 				console_unlock();
+ 			}
+ 			break;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 3b4b2f0..b11eb02 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -400,8 +400,6 @@ struct fb_tile_ops {
+ #define FBINFO_HWACCEL_YPAN		0x2000 /* optional */
+ #define FBINFO_HWACCEL_YWRAP		0x4000 /* optional */
+=20
+-#define FBINFO_MISC_USEREVENT          0x10000 /* event request
+-						  from userspace */
+ #define FBINFO_MISC_TILEBLITTING       0x20000 /* use tile blitting */
+=20
+ /* A driver may set this flag to indicate that it does want a set_par to be
+--=20
+1.8.3.1

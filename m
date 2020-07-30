@@ -1,128 +1,89 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 29 Jul 2020 13:37:42 +0000
+From: Jiri Slaby <jirislaby@kernel.org>
+Date: Thu, 30 Jul 2020 06:46:31 +0000
 Subject: Re: [PATCH] vgacon: fix out of bounds write to the scrollback buffer
-Message-Id: <7a5fc007-f0dc-bc11-3d04-b987cc98e2bd@samsung.com>
+Message-Id: <659f8dcf-7802-1ca1-1372-eb7fefd4d8f4@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200729070257eucas1p1f5841756104301e67907136e45d6e9f5@eucas1p1.samsung.com>
- <20200729070249.20892-1-jslaby@suse.cz>
-In-Reply-To: <20200729070249.20892-1-jslaby@suse.cz>
+References: <20200729130710.GA13262@openwall.com>
+ <b764c575-70be-80dd-6718-e84370a7b2b3@nsfocus.com>
+In-Reply-To: <b764c575-70be-80dd-6718-e84370a7b2b3@nsfocus.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: Security Officers <security@kernel.org>, Kyungtae Kim <kt0755@gmail.com>, Anthony Liguori <aliguori@amazon.com>, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>, linux-distros@vs.openwall.org, linux-fbdev@vger.kernel.org, Solar Designer <solar@openwall.com>, Yang Yingliang <yangyingliang@huawei.com>, Linus Torvalds <torvalds@linux-foundation.org>, =?UTF-8?B?5byg5LqR5rW3?= <zhangyunhai@nsfocus.com>
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+To: =?UTF-8?B?5byg5LqR5rW3?= <zhangyunhai@nsfocus.com>, Solar Designer <solar@openwall.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Kyungtae Kim <kt0755@gmail.com>, b.zolnierkie@samsung.com, Greg KH <greg@kroah.com>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, DRI devel <dri-devel@lists.freedesktop.org>, Anthony Liguori <aliguori@amazon.com>, Yang Yingliang <yangyingliang@huawei.com>, xiao.zhang@windriver.com, Linus Torvalds <torvalds@linux-foundation.org>, "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
 
-
-Hi Jiri,
-
-On 7/29/20 9:02 AM, Jiri Slaby wrote:
-> The current vgacon's scroll up implementation uses a circural buffer
-> in vgacon_scrollback_cur. It always advances tail to prepare it for the
-> next write and caps it to zero if the next ->vc_size_row bytes won't fit.
-> 
-> But when we change the VT size (e.g. by VT_RESIZE) in the meantime, the new
-> line might not fit to the end of the scrollback buffer in the next
-> attempt to scroll. This leads to various crashes as
-> vgacon_scrollback_update writes out of the buffer:
->  BUG: unable to handle page fault for address: ffffc900001752a0
->  #PF: supervisor write access in kernel mode
->  #PF: error_code(0x0002) - not-present page
->  RIP: 0010:mutex_unlock+0x13/0x30
-> ...
->  Call Trace:
->   n_tty_write+0x1a0/0x4d0
->   tty_write+0x1a0/0x2e0
-> 
-> Or to KASAN reports:
-> BUG: KASAN: slab-out-of-bounds in vgacon_scroll+0x57a/0x8ed
-> 
-> So check whether the line fits in the buffer and wrap if needed. Do it
-> before the loop as console_sem is held and ->vc_size_row cannot change
-> during the execution of vgacon_scrollback_cur. If it does change, we
-> need to ensure it does not change elsewhere, not here.
-> 
-> Also, we do not split the write of a line into chunks as that would
-> break the consumers of the buffer. They expect ->cnt, ->tail and ->size
-> to be in harmony and advanced by ->vc_size_row.
-> 
-> I found few reports of this in the past, some with patches included,
-> some even 2 years old:
-> https://lore.kernel.org/lkml/CAEAjamsJnG-=TSOwgRbbb3B9Z-PA63oWmNPoKYWQ=Z=+X49akg@mail.gmail.com/
-
-Sorry but I don't work on fixing fbdev/console KASAN/syzbot/etc.
-reports (-ENORESOURCES).  This has been made official in the past.
-
-I'm happy to review/apply patches though.
-
-> https://lore.kernel.org/lkml/1589336932-35508-1-git-send-email-yangyingliang@huawei.com/
-
-This was the first time the patch for issue was submitted.
-
-I tried to apply it to drm-misc but then I have noticed that
-it has not been posted to linux-fbdev / dri-devel MLs (so it
-was not possible to merge it using dim tool) and thus I've
-requested the author to resend it:
-
-https://lore.kernel.org/lkml/62544bd9-e47d-e7f9-92f2-49b8dbb132c1@samsung.com/
-
-which he did:
-
-https://lore.kernel.org/lkml/20200713105730.550334-1-yangyingliang@huawei.com/
-
-and the patch is currently under review period (to give people
-chance to comment on it) and in my "to apply if no objections"
-folder.
-
-I see that your/Yunhai patch addresses the root source of
-the issue so I'll be happy to apply/ACK it instead of Yang's
-patch once the final version is posted.
-
-Thank you for working on this.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> This fixes CVE-2020-14331.
-> 
-> Big thanks to guys mentioned in the Reported-and-debugged-by lines below
-> who actually found the root cause.
-> 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Reported-and-debugged-by: 张云海 <zhangyunhai@nsfocus.com>
-> Reported-and-debugged-by: Yang Yingliang <yangyingliang@huawei.com>
-> Reported-by: Kyungtae Kim <kt0755@gmail.com>
-> Fixes: 15bdab959c9b ([PATCH] vgacon: Add support for soft scrollback)
-> Cc: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: Greg KH <greg@kroah.com>
-> Cc: Solar Designer <solar@openwall.com>
-> Cc: "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
-> Cc: Anthony Liguori <aliguori@amazon.com>
-> Cc: Security Officers <security@kernel.org>
-> Cc: linux-distros@vs.openwall.org
-> Cc: Yang Yingliang <yangyingliang@huawei.com>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> ---
->  drivers/video/console/vgacon.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-> index f0f3d573f848..13194bb246f8 100644
-> --- a/drivers/video/console/vgacon.c
-> +++ b/drivers/video/console/vgacon.c
-> @@ -250,6 +250,11 @@ static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
->  
->  	p = (void *) (c->vc_origin + t * c->vc_size_row);
->  
-> +	/* vc_size_row might have changed by VT_RESIZE in the meantime */
-> +	if ((vgacon_scrollback_cur->tail + c->vc_size_row) >> +			vgacon_scrollback_cur->size)
-> +		vgacon_scrollback_cur->tail = 0;
-> +
->  	while (count--) {
->  		scr_memcpyw(vgacon_scrollback_cur->data +
->  			    vgacon_scrollback_cur->tail,
-> 
+SGksIE9UT0gsIHlvdSBzaG91bGQgaGF2ZSBDQ2VkIGFsbCB0aGUgKHB1YmxpYykgbGlzdHMuCgpP
+biAzMC4gMDcuIDIwLCA0OjUwLCDVxdTGuqMgd3JvdGU6Cj4gWmhhbmcgWGlhbyBwb2ludHMgb3V0
+IHRoYXQgdGhlIGNoZWNrIHNob3VsZCB1c2UgPiBpbnN0ZWFkIG9mID49LAo+IG90aGVyd2lzZSB0
+aGUgbGFzdCBsaW5lIHdpbGwgYmUgc2tpcC4KPiBJIGFncmVlIHdpdGggdGhhdCwgc28gSSBtb2Rp
+ZnkgdGhlIHBhdGNoLgo+IENvdWxkIHlvdSBwbGVhc2UgdmVyaWZ5IHRoYXQgaXQgaXMgc3RpbGwg
+Y29ycmVjdCBhbmQgc3VmZmljaWVudD8KCklNTywgeWVzLCBjb3JyZWN0IC0tIEkgd2FzIHRoaW5r
+aW5nIGFib3V0IHRoaXMgeWVzdGVyZGF5IHRvby4gSnVzdCBhbgpleGFtcGxlOiBoeXBvdGhldGlj
+YWxseSwgaWYgd2UgaGFkOgpzaXplX3JvdyA9IDEKdGFpbCA9IDI5CnNpemUgPSAzMAoKZGF0YVsy
+OV0gd291bGQgYmUgdGhlIGxhc3QgYWNjZXNzaWJsZSBtZW1iZXIuIFdyaXRpbmcgdG8gZGF0YSAr
+IHRhaWwgKGFzCiIyOSArIDEgPiAzMCIgZG9lc24ndCBob2xkLCBzbyB0aGUgbW9kaWZpZWQgY2hl
+Y2sgd291bGQgcGFzcyksIGkuZS4KZGF0YVsyOV0gaXMgc3RpbGwgT0suIFNvIHllcywgPiBpcyBP
+SywgPj0gd291bGQgd2FzdGUgc3BhY2UgYW5kIHdvdWxkIGJlCmFjdHVhbGx5IGluY29ycmVjdC4K
+Cj4gQlRXLCBaaGFuZyBYaWFvIGFsc28gcG9pbnRzIG91dCB0aGF0IHRoZSBjaGVjayBhZnRlciB0
+aGUgbWVtY3B5IGNhbiBiZQo+IHJlbW92ZS4KPiBJIGFsc28gdGhpbmsgdGhhdCB3YXMgcmlnaHQs
+IGJ1dCB2Z2Fjb25fc2Nyb2xsYmFja19jdXItPnRhaWwgbWF5IGtlZXAKPiB0aGUgdmFsdWUgdmdh
+Y29uX3Njcm9sbGJhY2tfY3VyLT5zaXplIGluIHNvbWUgY2FzZS4gVGhhdCBpcyBub3QgYQo+IHBy
+b2JsZW0gaW4gdmdhY29uX3Njcm9sbGJhY2tfdXBkYXRlIGJlY2F1c2Ugb2YgdGhlIGNoZWNrIGJl
+Zm9yZSB0aGUKPiBtZW1jcHkuIEhvd2V2ZXIsIHRoYXQgbWF5IGJyZWFrIHNvbWUgb3RoZXIgY29k
+ZSB3aGljaCBhc3N1bWVzIHRoYXQKPiB2Z2Fjb25fc2Nyb2xsYmFja19jdXItPnRhaWwgd29uJ3Qg
+YmUgdmdhY29uX3Njcm9sbGJhY2tfY3VyLT5zaXplLiBJIGRvCj4gbm90IGtub3cgaWYgdGhlcmUg
+YXJlIHN1Y2ggY29kZSwgYW5kIGlmIGl0IGlzIHRoZSBjb2RlIGFjdHVhbGx5ICBzaG91bGQKPiBj
+aGVjayBpdCB0b28uIEJ1dCBJIHN0aWxsIG5vdCByZW1vdmUgdGhlIGNoZWNrIGluIHRoZSBwYXRj
+aCB0byBtYWtlIHN1cmUKPiBpdCB3b24ndCBicmVha3Mgb3RoZXIgY29kZS4KCkFzIEkgd3JvdGUg
+YWJvdXQgdGhpcyB5ZXN0ZXJkYXk6Cj1JIGFtIGFsc28gbm90IHN1cmUgdGhlIHRlc3QgSSB3YXMg
+cG9pbnRpbmcgb3V0IG9uIHRoZSB0b3Agb2YgdGhpcwptZXNzYWdlIHdvdWxkIGJlIG9mIGFueSB1
+c2UgYWZ0ZXIgdGhlIGNoYW5nZS4gQnV0IG1heWJlIGxlYXZlIHRoZSBjb2RlCnJlc3QgaW4gcGVh
+Y2UuCj0KSSB3b3VsZCBsZXQgaXQgYXMgaXMgaW4gdGhpcyBwYXJ0aWN1bGFyIGNvZGUuIEVzcGVj
+aWFsbHkgYmVjYXVzZQp2Z2Fjb25fc2Nyb2xsZGVsdGEgdGFrZXMgLT50YWlsIGludG8gY29uc2lk
+ZXJhdGlvbiBhbmQgSSB3YXMgdG9vIGxhenkgdG8Kc3R1ZHkgdGhlIGNvZGUgdGhlcmUuIEJ1dCBp
+ZiB5b3UgYXJlIHdpbGxpbmcgdG8gc3R1ZHkgdGhlIGNvZGUgdGhlcmUgYW5kCmNvbmZpcm0gdGhl
+IGNoZWNrIGlzIHN1cGVyZmx1b3VzLCBmZWVsIGZyZWUgdG8gcmVtb3ZlIGl0LiBQZXJoYXBzIGlu
+IGEKc2VwYXJhdGUgcGF0Y2guIEkgd2FzIGFjdHVhbGx5IHRlc3Rpbmcgd2l0aCB0aGUgY2hlY2sg
+cmVtb3ZlZCBhbmQgZGlkbid0CmhpdCBhbnkgaXNzdWUgKHdoaWNoIG1lYW5zLCBpbiBmYWN0LCBl
+eGFjdGx5IG5vdGhpbmcpLgoKPiBGcm9tIGFkMTQzZWRlMjRmZjRlNjEyOTJjYzljOTYwMDAxMDBh
+YWNkOTcyNTkgTW9uIFNlcCAxNyAwMDowMDowMCAyMDAxCj4gRnJvbTogWXVuaGFpIFpoYW5nIDx6
+aGFuZ3l1bmhhaUBuc2ZvY3VzLmNvbT4KPiBEYXRlOiBUdWUsIDI4IEp1bCAyMDIwIDA5OjU4OjAz
+ICswODAwCj4gU3ViamVjdDogW1BBVENIXSBGaXggZm9yIG1pc3NpbmcgY2hlY2sgaW4gdmdhY29u
+IHNjcm9sbGJhY2sgaGFuZGxpbmcKPiAKPiB2Z2Fjb25fc2Nyb2xsYmFja191cGRhdGUoKSBhbHdh
+eXMgbGVmdCBlbmJvdWdoIHJvb20gaW4gdGhlIHNjcm9sbGJhY2sKCiJsZWF2ZXMgZW5vdWdoIgoK
+PiBidWZmZXIgZm9yIHRoZSBuZXh0IGNhbGwsIGJ1dCBpZiB0aGUgY29uc29sZSBzaXplIGNoYW5n
+ZWQgdGhhdCByb29tCj4gbWlnaHQgbm90IGFjdHVhbGx5IGJlIGVub3VnaCwgYW5kIHNvIHdlIG5l
+ZWQgdG8gcmUtY2hlY2suCgpBbHNvLCBjb3VsZCB5b3UgYWRkIHJlYXNvbmluZyB3aHkgeW91IGFy
+ZSBhZGRpbmcgdGhlIGNoZWNrIHRvIHRoZSBsb29wCmFuZCBub3Qgb3V0c2lkZSAoZm9yIGluc3Rh
+bmNlLCB1c2UgeW91ciByZWFzb25pbmcgd2l0aCBudW1iZXJzIG9yIENTSSBNCmFzIGFuIGV4YW1w
+bGUpLgoKQ291bGQgeW91IGFkZCBhIHNhbXBsZSBvdXRwdXQgaGVyZSwgc29tZXRoaW5nIGxpa2Ug
+SSBoYWQ6Cj0gICAgVGhpcyBsZWFkcyB0byByYW5kb20gY3Jhc2hlcyBvciBLQVNBTiByZXBvcnRz
+IGxpa2U6CiAgICBCVUc6IEtBU0FOOiBzbGFiLW91dC1vZi1ib3VuZHMgaW4gdmdhY29uX3Njcm9s
+bCsweDU3YS8weDhlZAo9Ckl0J3MgdGhlbiBlYXNpZXIgdG8gZ29vZ2xlIGZvciB3aGVuIHRoaXMg
+aGFwcGVucyB0byBzb21lb25lIHdobyBydW5zCm5vbi1wYXRjaGVkIGtlcm5lbHMuCgo+IFRoaXMg
+Zml4ZXMgQ1ZFLTIwMjAtMTQzMzEuCj4gCj4gUmVwb3J0ZWQtYW5kLWRlYnVnZ2VkLWJ5OiDVxdTG
+uqMgPHpoYW5neXVuaGFpQG5zZm9jdXMuY29tPgo+IFJlcG9ydGVkLWFuZC1kZWJ1Z2dlZC1ieTog
+WWFuZyBZaW5nbGlhbmcgPHlhbmd5aW5nbGlhbmdAaHVhd2VpLmNvbT4KPiBSZXBvcnRlZC1ieTog
+S3l1bmd0YWUgS2ltIDxrdDA3NTVAZ21haWwuY29tPgo+IEZpeGVzOiAxNWJkYWI5NTljOWIgKFtQ
+QVRDSF0gdmdhY29uOiBBZGQgc3VwcG9ydCBmb3Igc29mdCBzY3JvbGxiYWNrKQo+IENjOiBMaW51
+cyBUb3J2YWxkcyA8dG9ydmFsZHNAbGludXgtZm91bmRhdGlvbi5vcmc+Cj4gQ2M6IEdyZWcgS0gg
+PGdyZWdAa3JvYWguY29tPgo+IENjOiBTb2xhciBEZXNpZ25lciA8c29sYXJAb3BlbndhbGwuY29t
+Pgo+IENjOiAiU3JpdmF0c2EgUy4gQmhhdCIgPHNyaXZhdHNhQGNzYWlsLm1pdC5lZHU+Cj4gQ2M6
+IEFudGhvbnkgTGlndW9yaSA8YWxpZ3VvcmlAYW1hem9uLmNvbT4KPiBDYzogWWFuZyBZaW5nbGlh
+bmcgPHlhbmd5aW5nbGlhbmdAaHVhd2VpLmNvbT4KPiBDYzogQmFydGxvbWllaiBab2xuaWVya2ll
+d2ljeiA8Yi56b2xuaWVya2llQHNhbXN1bmcuY29tPgoKT2gsIGFuZCB3ZSBzaG91bGQ6CkNjOiBz
+dGFibGVAdmdlci5rZXJuZWwub3JnCgo+IFNpZ25lZC1vZmYtYnk6IFl1bmhhaSBaaGFuZyA8emhh
+bmd5dW5oYWlAbnNmb2N1cy5jb20+Cj4gLS0tCj4gIGRyaXZlcnMvdmlkZW8vY29uc29sZS92Z2Fj
+b24uYyB8IDQgKysrKwo+ICAxIGZpbGUgY2hhbmdlZCwgNCBpbnNlcnRpb25zKCspCj4gCj4gZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vY29uc29sZS92Z2Fjb24uYyBiL2RyaXZlcnMvdmlkZW8v
+Y29uc29sZS92Z2Fjb24uYwo+IGluZGV4IDk5OGIwZGUxODEyZi4uMzdiNTcxMWNkOTU4IDEwMDY0
+NAo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vY29uc29sZS92Z2Fjb24uYwo+ICsrKyBiL2RyaXZlcnMv
+dmlkZW8vY29uc29sZS92Z2Fjb24uYwo+IEBAIC0yNTEsNiArMjUxLDEwIEBAIHN0YXRpYyB2b2lk
+IHZnYWNvbl9zY3JvbGxiYWNrX3VwZGF0ZShzdHJ1Y3QgdmNfZGF0YSAqYywgaW50IHQsIGludCBj
+b3VudCkKPiAgCXAgPSAodm9pZCAqKSAoYy0+dmNfb3JpZ2luICsgdCAqIGMtPnZjX3NpemVfcm93
+KTsKPiAgCj4gIAl3aGlsZSAoY291bnQtLSkgewo+ICsJCWlmICgodmdhY29uX3Njcm9sbGJhY2tf
+Y3VyLT50YWlsICsgYy0+dmNfc2l6ZV9yb3cpID4gCj4gKwkJICAgIHZnYWNvbl9zY3JvbGxiYWNr
+X2N1ci0+c2l6ZSkKPiArCQkJdmdhY29uX3Njcm9sbGJhY2tfY3VyLT50YWlsID0gMDsKPiArCj4g
+IAkJc2NyX21lbWNweXcodmdhY29uX3Njcm9sbGJhY2tfY3VyLT5kYXRhICsKPiAgCQkJICAgIHZn
+YWNvbl9zY3JvbGxiYWNrX2N1ci0+dGFpbCwKPiAgCQkJICAgIHAsIGMtPnZjX3NpemVfcm93KTsK
+CnRoYW5rcywKLS0gCmpzCnN1c2UgbGFicw==

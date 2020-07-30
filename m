@@ -1,97 +1,114 @@
-From: Jiri Slaby <jirislaby@kernel.org>
-Date: Thu, 30 Jul 2020 07:38:24 +0000
+From: =?UTF-8?B?5byg5LqR5rW3?= <zhangyunhai@nsfocus.com>
+Date: Thu, 30 Jul 2020 10:39:06 +0000
 Subject: Re: [PATCH] vgacon: fix out of bounds write to the scrollback buffer
-Message-Id: <008a3a1d-1908-6aea-0fae-e15b4eddff02@kernel.org>
+Message-Id: <dbcf2841-7718-2ba7-11e0-efa4b9de8de1@nsfocus.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------360FA215ABC3E00392C9DB2C"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200729130710.GA13262@openwall.com>
- <b764c575-70be-80dd-6718-e84370a7b2b3@nsfocus.com>
- <659f8dcf-7802-1ca1-1372-eb7fefd4d8f4@kernel.org>
+References: <659f8dcf-7802-1ca1-1372-eb7fefd4d8f4@kernel.org>
 In-Reply-To: <659f8dcf-7802-1ca1-1372-eb7fefd4d8f4@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-To: =?UTF-8?B?5byg5LqR5rW3?= <zhangyunhai@nsfocus.com>, Solar Designer <solar@openwall.com>
+To: Jiri Slaby <jirislaby@kernel.org>, Solar Designer <solar@openwall.com>
 Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Kyungtae Kim <kt0755@gmail.com>, b.zolnierkie@samsung.com, Greg KH <greg@kroah.com>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, DRI devel <dri-devel@lists.freedesktop.org>, Anthony Liguori <aliguori@amazon.com>, Yang Yingliang <yangyingliang@huawei.com>, xiao.zhang@windriver.com, Linus Torvalds <torvalds@linux-foundation.org>, "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
 
-T24gMzAuIDA3LiAyMCwgODo0NiwgSmlyaSBTbGFieSB3cm90ZToKPiBIaSwgT1RPSCwgeW91IHNo
-b3VsZCBoYXZlIENDZWQgYWxsIHRoZSAocHVibGljKSBsaXN0cy4KPiAKPiBPbiAzMC4gMDcuIDIw
-LCA0OjUwLCDVxdTGuqMgd3JvdGU6Cj4+IFpoYW5nIFhpYW8gcG9pbnRzIG91dCB0aGF0IHRoZSBj
-aGVjayBzaG91bGQgdXNlID4gaW5zdGVhZCBvZiA+PSwKPj4gb3RoZXJ3aXNlIHRoZSBsYXN0IGxp
-bmUgd2lsbCBiZSBza2lwLgo+PiBJIGFncmVlIHdpdGggdGhhdCwgc28gSSBtb2RpZnkgdGhlIHBh
-dGNoLgo+PiBDb3VsZCB5b3UgcGxlYXNlIHZlcmlmeSB0aGF0IGl0IGlzIHN0aWxsIGNvcnJlY3Qg
-YW5kIHN1ZmZpY2llbnQ/Cj4gCj4gSU1PLCB5ZXMsIGNvcnJlY3QgLS0gSSB3YXMgdGhpbmtpbmcg
-YWJvdXQgdGhpcyB5ZXN0ZXJkYXkgdG9vLiBKdXN0IGFuCj4gZXhhbXBsZTogaHlwb3RoZXRpY2Fs
-bHksIGlmIHdlIGhhZDoKPiBzaXplX3JvdyA9IDEKPiB0YWlsID0gMjkKPiBzaXplID0gMzAKPiAK
-PiBkYXRhWzI5XSB3b3VsZCBiZSB0aGUgbGFzdCBhY2Nlc3NpYmxlIG1lbWJlci4gV3JpdGluZyB0
-byBkYXRhICsgdGFpbCAoYXMKPiAiMjkgKyAxID4gMzAiIGRvZXNuJ3QgaG9sZCwgc28gdGhlIG1v
-ZGlmaWVkIGNoZWNrIHdvdWxkIHBhc3MpLCBpLmUuCj4gZGF0YVsyOV0gaXMgc3RpbGwgT0suIFNv
-IHllcywgPiBpcyBPSywgPj0gd291bGQgd2FzdGUgc3BhY2UgYW5kIHdvdWxkIGJlCj4gYWN0dWFs
-bHkgaW5jb3JyZWN0Lgo+IAo+PiBCVFcsIFpoYW5nIFhpYW8gYWxzbyBwb2ludHMgb3V0IHRoYXQg
-dGhlIGNoZWNrIGFmdGVyIHRoZSBtZW1jcHkgY2FuIGJlCj4+IHJlbW92ZS4KPj4gSSBhbHNvIHRo
-aW5rIHRoYXQgd2FzIHJpZ2h0LCBidXQgdmdhY29uX3Njcm9sbGJhY2tfY3VyLT50YWlsIG1heSBr
-ZWVwCj4+IHRoZSB2YWx1ZSB2Z2Fjb25fc2Nyb2xsYmFja19jdXItPnNpemUgaW4gc29tZSBjYXNl
-LiBUaGF0IGlzIG5vdCBhCj4+IHByb2JsZW0gaW4gdmdhY29uX3Njcm9sbGJhY2tfdXBkYXRlIGJl
-Y2F1c2Ugb2YgdGhlIGNoZWNrIGJlZm9yZSB0aGUKPj4gbWVtY3B5LiBIb3dldmVyLCB0aGF0IG1h
-eSBicmVhayBzb21lIG90aGVyIGNvZGUgd2hpY2ggYXNzdW1lcyB0aGF0Cj4+IHZnYWNvbl9zY3Jv
-bGxiYWNrX2N1ci0+dGFpbCB3b24ndCBiZSB2Z2Fjb25fc2Nyb2xsYmFja19jdXItPnNpemUuIEkg
-ZG8KPj4gbm90IGtub3cgaWYgdGhlcmUgYXJlIHN1Y2ggY29kZSwgYW5kIGlmIGl0IGlzIHRoZSBj
-b2RlIGFjdHVhbGx5ICBzaG91bGQKPj4gY2hlY2sgaXQgdG9vLiBCdXQgSSBzdGlsbCBub3QgcmVt
-b3ZlIHRoZSBjaGVjayBpbiB0aGUgcGF0Y2ggdG8gbWFrZSBzdXJlCj4+IGl0IHdvbid0IGJyZWFr
-cyBvdGhlciBjb2RlLgo+IAo+IEFzIEkgd3JvdGUgYWJvdXQgdGhpcyB5ZXN0ZXJkYXk6Cj4gPT4g
-SSBhbSBhbHNvIG5vdCBzdXJlIHRoZSB0ZXN0IEkgd2FzIHBvaW50aW5nIG91dCBvbiB0aGUgdG9w
-IG9mIHRoaXMKPiBtZXNzYWdlIHdvdWxkIGJlIG9mIGFueSB1c2UgYWZ0ZXIgdGhlIGNoYW5nZS4g
-QnV0IG1heWJlIGxlYXZlIHRoZSBjb2RlCj4gcmVzdCBpbiBwZWFjZS4KPiA9PiAKPiBJIHdvdWxk
-IGxldCBpdCBhcyBpcyBpbiB0aGlzIHBhcnRpY3VsYXIgY29kZS4gRXNwZWNpYWxseSBiZWNhdXNl
-Cj4gdmdhY29uX3Njcm9sbGRlbHRhIHRha2VzIC0+dGFpbCBpbnRvIGNvbnNpZGVyYXRpb24gYW5k
-IEkgd2FzIHRvbyBsYXp5IHRvCj4gc3R1ZHkgdGhlIGNvZGUgdGhlcmUuIEJ1dCBpZiB5b3UgYXJl
-IHdpbGxpbmcgdG8gc3R1ZHkgdGhlIGNvZGUgdGhlcmUgYW5kCj4gY29uZmlybSB0aGUgY2hlY2sg
-aXMgc3VwZXJmbHVvdXMsIGZlZWwgZnJlZSB0byByZW1vdmUgaXQuIFBlcmhhcHMgaW4gYQo+IHNl
-cGFyYXRlIHBhdGNoLiBJIHdhcyBhY3R1YWxseSB0ZXN0aW5nIHdpdGggdGhlIGNoZWNrIHJlbW92
-ZWQgYW5kIGRpZG4ndAo+IGhpdCBhbnkgaXNzdWUgKHdoaWNoIG1lYW5zLCBpbiBmYWN0LCBleGFj
-dGx5IG5vdGhpbmcpLgo+IAo+PiBGcm9tIGFkMTQzZWRlMjRmZjRlNjEyOTJjYzljOTYwMDAxMDBh
-YWNkOTcyNTkgTW9uIFNlcCAxNyAwMDowMDowMCAyMDAxCj4+IEZyb206IFl1bmhhaSBaaGFuZyA8
-emhhbmd5dW5oYWlAbnNmb2N1cy5jb20+Cj4+IERhdGU6IFR1ZSwgMjggSnVsIDIwMjAgMDk6NTg6
-MDMgKzA4MDAKPj4gU3ViamVjdDogW1BBVENIXSBGaXggZm9yIG1pc3NpbmcgY2hlY2sgaW4gdmdh
-Y29uIHNjcm9sbGJhY2sgaGFuZGxpbmcKPj4KPj4gdmdhY29uX3Njcm9sbGJhY2tfdXBkYXRlKCkg
-YWx3YXlzIGxlZnQgZW5ib3VnaCByb29tIGluIHRoZSBzY3JvbGxiYWNrCj4gCj4gImxlYXZlcyBl
-bm91Z2giCj4gCj4+IGJ1ZmZlciBmb3IgdGhlIG5leHQgY2FsbCwgYnV0IGlmIHRoZSBjb25zb2xl
-IHNpemUgY2hhbmdlZCB0aGF0IHJvb20KPj4gbWlnaHQgbm90IGFjdHVhbGx5IGJlIGVub3VnaCwg
-YW5kIHNvIHdlIG5lZWQgdG8gcmUtY2hlY2suCj4gCj4gQWxzbywgY291bGQgeW91IGFkZCByZWFz
-b25pbmcgd2h5IHlvdSBhcmUgYWRkaW5nIHRoZSBjaGVjayB0byB0aGUgbG9vcAo+IGFuZCBub3Qg
-b3V0c2lkZSAoZm9yIGluc3RhbmNlLCB1c2UgeW91ciByZWFzb25pbmcgd2l0aCBudW1iZXJzIG9y
-IENTSSBNCj4gYXMgYW4gZXhhbXBsZSkuCj4gCj4gQ291bGQgeW91IGFkZCBhIHNhbXBsZSBvdXRw
-dXQgaGVyZSwgc29tZXRoaW5nIGxpa2UgSSBoYWQ6Cj4gPT4gICAgIFRoaXMgbGVhZHMgdG8gcmFu
-ZG9tIGNyYXNoZXMgb3IgS0FTQU4gcmVwb3J0cyBsaWtlOgo+ICAgICBCVUc6IEtBU0FOOiBzbGFi
-LW91dC1vZi1ib3VuZHMgaW4gdmdhY29uX3Njcm9sbCsweDU3YS8weDhlZAo+ID0+IAo+IEl0J3Mg
-dGhlbiBlYXNpZXIgdG8gZ29vZ2xlIGZvciB3aGVuIHRoaXMgaGFwcGVucyB0byBzb21lb25lIHdo
-byBydW5zCj4gbm9uLXBhdGNoZWQga2VybmVscy4KPiAKPj4gVGhpcyBmaXhlcyBDVkUtMjAyMC0x
-NDMzMS4KPj4KPj4gUmVwb3J0ZWQtYW5kLWRlYnVnZ2VkLWJ5OiDVxdTGuqMgPHpoYW5neXVuaGFp
-QG5zZm9jdXMuY29tPgo+PiBSZXBvcnRlZC1hbmQtZGVidWdnZWQtYnk6IFlhbmcgWWluZ2xpYW5n
-IDx5YW5neWluZ2xpYW5nQGh1YXdlaS5jb20+Cj4+IFJlcG9ydGVkLWJ5OiBLeXVuZ3RhZSBLaW0g
-PGt0MDc1NUBnbWFpbC5jb20+Cj4+IEZpeGVzOiAxNWJkYWI5NTljOWIgKFtQQVRDSF0gdmdhY29u
-OiBBZGQgc3VwcG9ydCBmb3Igc29mdCBzY3JvbGxiYWNrKQo+PiBDYzogTGludXMgVG9ydmFsZHMg
-PHRvcnZhbGRzQGxpbnV4LWZvdW5kYXRpb24ub3JnPgo+PiBDYzogR3JlZyBLSCA8Z3JlZ0Brcm9h
-aC5jb20+Cj4+IENjOiBTb2xhciBEZXNpZ25lciA8c29sYXJAb3BlbndhbGwuY29tPgo+PiBDYzog
-IlNyaXZhdHNhIFMuIEJoYXQiIDxzcml2YXRzYUBjc2FpbC5taXQuZWR1Pgo+PiBDYzogQW50aG9u
-eSBMaWd1b3JpIDxhbGlndW9yaUBhbWF6b24uY29tPgo+PiBDYzogWWFuZyBZaW5nbGlhbmcgPHlh
-bmd5aW5nbGlhbmdAaHVhd2VpLmNvbT4KPj4gQ2M6IEJhcnRsb21pZWogWm9sbmllcmtpZXdpY3og
-PGIuem9sbmllcmtpZUBzYW1zdW5nLmNvbT4KPiAKPiBPaCwgYW5kIHdlIHNob3VsZDoKPiBDYzog
-c3RhYmxlQHZnZXIua2VybmVsLm9yZwo+IAo+PiBTaWduZWQtb2ZmLWJ5OiBZdW5oYWkgWmhhbmcg
-PHpoYW5neXVuaGFpQG5zZm9jdXMuY29tPgo+PiAtLS0KPj4gIGRyaXZlcnMvdmlkZW8vY29uc29s
-ZS92Z2Fjb24uYyB8IDQgKysrKwo+PiAgMSBmaWxlIGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKQo+
-Pgo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9jb25zb2xlL3ZnYWNvbi5jIGIvZHJpdmVy
-cy92aWRlby9jb25zb2xlL3ZnYWNvbi5jCj4+IGluZGV4IDk5OGIwZGUxODEyZi4uMzdiNTcxMWNk
-OTU4IDEwMDY0NAo+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2NvbnNvbGUvdmdhY29uLmMKPj4gKysr
-IGIvZHJpdmVycy92aWRlby9jb25zb2xlL3ZnYWNvbi5jCj4+IEBAIC0yNTEsNiArMjUxLDEwIEBA
-IHN0YXRpYyB2b2lkIHZnYWNvbl9zY3JvbGxiYWNrX3VwZGF0ZShzdHJ1Y3QgdmNfZGF0YSAqYywg
-aW50IHQsIGludCBjb3VudCkKPj4gIAlwID0gKHZvaWQgKikgKGMtPnZjX29yaWdpbiArIHQgKiBj
-LT52Y19zaXplX3Jvdyk7Cj4+ICAKPj4gIAl3aGlsZSAoY291bnQtLSkgewo+PiArCQlpZiAoKHZn
-YWNvbl9zY3JvbGxiYWNrX2N1ci0+dGFpbCArIGMtPnZjX3NpemVfcm93KSA+IAoKQW5kIGdpdCBj
-b21wbGFpbnMgaGVyZToKLmdpdC9yZWJhc2UtYXBwbHkvcGF0Y2g6MTM6IHRyYWlsaW5nIHdoaXRl
-c3BhY2UuCiAgICAgICAgICAgICAgICBpZiAoKHZnYWNvbl9zY3JvbGxiYWNrX2N1ci0+dGFpbCAr
-IGMtPnZjX3NpemVfcm93KSA+Cndhcm5pbmc6IDEgbGluZSBhZGRzIHdoaXRlc3BhY2UgZXJyb3Jz
-LgoKVGhlcmUgaXMgYSBzcGFjZSBhdCB0aGUgRU9MLgoKPj4gKwkJICAgIHZnYWNvbl9zY3JvbGxi
-YWNrX2N1ci0+c2l6ZSkKPj4gKwkJCXZnYWNvbl9zY3JvbGxiYWNrX2N1ci0+dGFpbCA9IDA7Cj4+
-ICsKPj4gIAkJc2NyX21lbWNweXcodmdhY29uX3Njcm9sbGJhY2tfY3VyLT5kYXRhICsKPj4gIAkJ
-CSAgICB2Z2Fjb25fc2Nyb2xsYmFja19jdXItPnRhaWwsCj4+ICAJCQkgICAgcCwgYy0+dmNfc2l6
-ZV9yb3cpOwo+IAo+IHRoYW5rcywKPiAKCgotLSAKanM=
+This is a multi-part message in MIME format.
+--------------360FA215ABC3E00392C9DB2C
+Content-Type: text/plain; charset=gbk
+Content-Transfer-Encoding: 7bit
+
+Update the patch, add CC list, sample output, and Jiri's PoC.
+
+On 2020/7/30 14:46, Jiri Slaby wrote:
+> Hi, OTOH, you should have CCed all the (public) lists.
+
+
+--------------360FA215ABC3E00392C9DB2C
+Content-Type: text/plain; charset="utf-8"; name="0001-Fix-for-missing-check-in-vgacon-scrollback-handling.patch"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment;
+ filename*0="0001-Fix-for-missing-check-in-vgacon-scrollback-handling.pat";
+ filename*1="ch"
+
+From ad143ede24ff4e61292cc9c96000100aacd97259 Mon Sep 17 00:00:00 2001
+From: Yunhai Zhang <zhangyunhai@nsfocus.com>
+Date: Tue, 28 Jul 2020 09:58:03 +0800
+Subject: [PATCH] Fix for missing check in vgacon scrollback handling
+
+vgacon_scrollback_update() always leaves enbough room in the scrollback
+buffer for the next call, but if the console size changed that room
+might not actually be enough, and so we need to re-check.
+
+The check should be in the loop since vgacon_scrollback_cur->tail is
+updated in the loop and count may be more than 1 when triggered by CSI M,
+as Jiri's PoC:
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+
+int main(int argc, char** argv)
+{
+        int fd = open("/dev/tty1", O_RDWR);
+        unsigned short size[3] = {25, 200, 0};
+        ioctl(fd, 0x5609, size); // VT_RESIZE
+
+        write(fd, "\e[1;1H", 6);
+        for (int i = 0; i < 30; i++)
+                write(fd, "\e[10M", 5);
+}
+
+It leads to various crashes as vgacon_scrollback_update writes out of
+the buffer:
+ BUG: unable to handle page fault for address: ffffc900001752a0
+ #PF: supervisor write access in kernel mode
+ #PF: error_code(0x0002) - not-present page
+ RIP: 0010:mutex_unlock+0x13/0x30
+...
+ Call Trace:
+  n_tty_write+0x1a0/0x4d0
+  tty_write+0x1a0/0x2e0
+
+Or to KASAN reports:
+BUG: KASAN: slab-out-of-bounds in vgacon_scroll+0x57a/0x8ed
+
+This fixes CVE-2020-14331.
+
+Reported-and-debugged-by: 张云海 <zhangyunhai@nsfocus.com>
+Reported-and-debugged-by: Yang Yingliang <yangyingliang@huawei.com>
+Reported-by: Kyungtae Kim <kt0755@gmail.com>
+Fixes: 15bdab959c9b ([PATCH] vgacon: Add support for soft scrollback)
+Cc: stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>
+Cc: Solar Designer <solar@openwall.com>
+Cc: "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
+Cc: Anthony Liguori <aliguori@amazon.com>
+Cc: Yang Yingliang <yangyingliang@huawei.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Yunhai Zhang <zhangyunhai@nsfocus.com>
+---
+ drivers/video/console/vgacon.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 998b0de1812f..37b5711cd958 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -251,6 +251,10 @@ static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
+ 	p = (void *) (c->vc_origin + t * c->vc_size_row);
+ 
+ 	while (count--) {
++		if ((vgacon_scrollback_cur->tail + c->vc_size_row) > 
++		    vgacon_scrollback_cur->size)
++			vgacon_scrollback_cur->tail = 0;
++
+ 		scr_memcpyw(vgacon_scrollback_cur->data +
+ 			    vgacon_scrollback_cur->tail,
+ 			    p, c->vc_size_row);
+-- 
+2.25.1
+
+--------------360FA215ABC3E00392C9DB2C--

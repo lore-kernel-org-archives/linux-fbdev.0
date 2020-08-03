@@ -1,32 +1,63 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 11 Aug 2020 15:10:12 +0000
-Subject: Re: [PATCH] vt: defer kfree() of vc_screenbuf in vc_do_resize()
-Message-Id: <20200811151012.GA427920@kroah.com>
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Mon, 03 Aug 2020 19:44:51 +0000
+Subject: Re: [PATCH] video: fbdev: pvr2fb: initialize variables
+Message-Id: <20200803194451.GB525506@ravnborg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1596034621-4714-1-git-send-email-penguin-kernel@I-love.SAKURA.ne.jp>
- <0c9d8003-ba3f-8f2d-7c5a-56c5ca7db750@i-love.sakura.ne.jp>
- <20200804125831.GA221149@kroah.com>
- <6053bc22-0876-f503-c1b6-3181a70d97de@i-love.sakura.ne.jp>
-In-Reply-To: <6053bc22-0876-f503-c1b6-3181a70d97de@i-love.sakura.ne.jp>
+References: <20200720191845.20115-1-trix@redhat.com>
+In-Reply-To: <20200720191845.20115-1-trix@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, syzbot <syzbot+9116ecc1978ca3a12f43@syzkaller.appspotmail.com>, Jiri Slaby <jslaby@suse.com>
+To: trix@redhat.com
+Cc: linux-fbdev@vger.kernel.org, arnd@arndb.de, gustavo@embeddedor.com, jani.nikula@intel.com, daniel.vetter@ffwll.ch, b.zolnierkie@samsung.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, jhubbard@nvidia.com
 
-On Wed, Aug 12, 2020 at 12:02:03AM +0900, Tetsuo Handa wrote:
-> On 2020/08/04 21:58, Greg Kroah-Hartman wrote:
-> > On Tue, Aug 04, 2020 at 08:15:43PM +0900, Tetsuo Handa wrote:
-> >> Do you think this approach is acceptable? Or, do we need to modify set_origin() ?
-> >>
-> > I think what you have here is fine, as cleaning up set_orgin() might be
-> > hard to do at this point in time.
-> > 
+Hi Tom,
+
+On Mon, Jul 20, 2020 at 12:18:45PM -0700, trix@redhat.com wrote:
+> From: Tom Rix <trix@redhat.com>
 > 
-> Seems that there is no comment. Greg, will you pick up this patch?
+> clang static analysis reports this repesentative error
+> 
+> pvr2fb.c:1049:2: warning: 1st function call argument
+>   is an uninitialized value [core.CallAndMessage]
+>         if (*cable_arg)
+>         ^~~~~~~~~~~~~~~
+> 
+> Problem is that cable_arg depends on the input loop to
+> set the cable_arg[0].  If it does not, then some random
+> value from the stack is used.
+> 
+> A similar problem exists for output_arg.
+> 
+> So initialize cable_arg and output_arg.
+> 
+> Signed-off-by: Tom Rix <trix@redhat.com>
 
-Yes, will do after -rc1 is out.
+Thanks, applied to drm-misc-next.
 
-thanks,
+	Sam
 
-greg k-h
+> ---
+>  drivers/video/fbdev/pvr2fb.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+> index 2d9f69b93392..f4add36cb5f4 100644
+> --- a/drivers/video/fbdev/pvr2fb.c
+> +++ b/drivers/video/fbdev/pvr2fb.c
+> @@ -1028,6 +1028,8 @@ static int __init pvr2fb_setup(char *options)
+>  	if (!options || !*options)
+>  		return 0;
+>  
+> +	cable_arg[0] = output_arg[0] = 0;
+> +
+>  	while ((this_opt = strsep(&options, ","))) {
+>  		if (!*this_opt)
+>  			continue;
+> -- 
+> 2.18.1
+> 
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel

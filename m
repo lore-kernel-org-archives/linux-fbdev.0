@@ -1,139 +1,160 @@
-From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Wed, 19 Aug 2020 19:08:54 +0000
-Subject: [PATCH v3 12/12] fbdev: arkfb: use generic power management
-Message-Id: <20200819185654.151170-13-vaibhavgupta40@gmail.com>
+From: daniel@ffwll.ch
+Date: Tue, 04 Aug 2020 05:38:14 +0000
+Subject: Re: [PATCH v2] fbmem: pull fbcon_update_vcs() out of fb_set_var()
+Message-Id: <20200804053814.GG6419@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
+References: <1596000620-4075-1-git-send-email-penguin-kernel@I-love.SAKURA.ne.jp>
+ <CAKMK7uHeteS2+rKrZKrAM+zQO==hAX0XaVc9JfHPsdLTCtzKOw@mail.gmail.com>
+ <a3bb6544-064d-54a1-1215-d92188cb4209@i-love.sakura.ne.jp>
+ <075b7e37-3278-cd7d-31ab-c5073cfa8e92@i-love.sakura.ne.jp>
+In-Reply-To: <075b7e37-3278-cd7d-31ab-c5073cfa8e92@i-love.sakura.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Jiri Slaby <jslaby@suse.com>, syzbot <syzbot+c37a14770d51a085a520@syzkaller.appspotmail.com>
 
-Drivers should do only device-specific jobs. But in general, drivers using
-legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
-PM-related tasks themselves which can be done by PCI Core itself. This
-brings extra load on the driver and it directly calls PCI helper functions
-to handle them.
+On Thu, Jul 30, 2020 at 07:47:14PM +0900, Tetsuo Handa wrote:
+> syzbot is reporting OOB read bug in vc_do_resize() [1] caused by memcpy()
+> based on outdated old_{rows,row_size} values, for resize_screen() can
+> recurse into vc_do_resize() which changes vc->vc_{cols,rows} that outdates
+> old_{rows,row_size} values which were saved before calling resize_screen(=
+).
+>=20
+> Daniel Vetter explained that resize_screen() should not recurse into
+> fbcon_update_vcs() path due to FBINFO_MISC_USEREVENT being still set
+> when calling resize_screen().
+>=20
+> Instead of masking FBINFO_MISC_USEREVENT before calling fbcon_update_vcs(=
+),
+> we can remove FBINFO_MISC_USEREVENT by calling fbcon_update_vcs() only if
+> fb_set_var() returned 0. This change assumes that it is harmless to call
+> fbcon_update_vcs() when fb_set_var() returned 0 without reaching
+> fb_notifier_call_chain().
+>=20
+> [1] https://syzkaller.appspot.com/bug?id=C70c88cfd16dcf6e1d3c7f0ab8648b31=
+44b5b25e
+>=20
+> Reported-and-tested-by: syzbot <syzbot+c37a14770d51a085a520@syzkaller.app=
+spotmail.com>
+> Suggested-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Reported-by: kernel test robot <lkp@intel.com> for missing #include
 
-Switch to the new generic framework by updating function signatures and
-define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
-unnecessary calls to the PCI Helper functions along with the legacy
-.suspend & .resume bindings.
+Thanks a lot for your patch, queued up to hopefully still make it for
+5.9-rc1.
 
-The ark_pci_suspend() is not designed to function in the case of Freeze.
-Thus, the code checked for "if (state.event = PM_EVENT_FREEZE....)". This
-is because, in the legacy framework, this callback was invoked even in the
-event of Freeze. Hence, added the load of unnecessary function-call.
+Cheers, Daniel
 
-The goal can be achieved by binding the callback with only ".suspend" and
-".poweroff" in the "ark_pci_pm_ops" const variable. This also avoids the
-step of checking "state.event = PM_EVENT_FREEZE" every time the callback
-is invoked.
+> ---
+>  drivers/video/fbdev/core/fbmem.c   | 8 ++------
+>  drivers/video/fbdev/core/fbsysfs.c | 4 ++--
+>  drivers/video/fbdev/ps3fb.c        | 5 +++--
+>  include/linux/fb.h                 | 2 --
+>  4 files changed, 7 insertions(+), 12 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/=
+fbmem.c
+> index 30e73ec..da7c88f 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -957,7 +957,6 @@ static int fb_check_caps(struct fb_info *info, struct=
+ fb_var_screeninfo *var,
+>  int
+>  fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+>  {
+> -	int flags =3D info->flags;
+>  	int ret =3D 0;
+>  	u32 activate;
+>  	struct fb_var_screeninfo old_var;
+> @@ -1052,9 +1051,6 @@ static int fb_check_caps(struct fb_info *info, stru=
+ct fb_var_screeninfo *var,
+>  	event.data =3D &mode;
+>  	fb_notifier_call_chain(FB_EVENT_MODE_CHANGE, &event);
+> =20
+> -	if (flags & FBINFO_MISC_USEREVENT)
+> -		fbcon_update_vcs(info, activate & FB_ACTIVATE_ALL);
+> -
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL(fb_set_var);
+> @@ -1105,9 +1101,9 @@ static long do_fb_ioctl(struct fb_info *info, unsig=
+ned int cmd,
+>  			return -EFAULT;
+>  		console_lock();
+>  		lock_fb_info(info);
+> -		info->flags |=3D FBINFO_MISC_USEREVENT;
+>  		ret =3D fb_set_var(info, &var);
+> -		info->flags &=3D ~FBINFO_MISC_USEREVENT;
+> +		if (!ret)
+> +			fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
+>  		unlock_fb_info(info);
+>  		console_unlock();
+>  		if (!ret && copy_to_user(argp, &var, sizeof(var)))
+> diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/cor=
+e/fbsysfs.c
+> index d54c88f..65dae05 100644
+> --- a/drivers/video/fbdev/core/fbsysfs.c
+> +++ b/drivers/video/fbdev/core/fbsysfs.c
+> @@ -91,9 +91,9 @@ static int activate(struct fb_info *fb_info, struct fb_=
+var_screeninfo *var)
+> =20
+>  	var->activate |=3D FB_ACTIVATE_FORCE;
+>  	console_lock();
+> -	fb_info->flags |=3D FBINFO_MISC_USEREVENT;
+>  	err =3D fb_set_var(fb_info, var);
+> -	fb_info->flags &=3D ~FBINFO_MISC_USEREVENT;
+> +	if (!err)
+> +		fbcon_update_vcs(fb_info, var->activate & FB_ACTIVATE_ALL);
+>  	console_unlock();
+>  	if (err)
+>  		return err;
+> diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
+> index 9df78fb..203c254 100644
+> --- a/drivers/video/fbdev/ps3fb.c
+> +++ b/drivers/video/fbdev/ps3fb.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/freezer.h>
+>  #include <linux/uaccess.h>
+>  #include <linux/fb.h>
+> +#include <linux/fbcon.h>
+>  #include <linux/init.h>
+> =20
+>  #include <asm/cell-regs.h>
+> @@ -824,12 +825,12 @@ static int ps3fb_ioctl(struct fb_info *info, unsign=
+ed int cmd,
+>  				var =3D info->var;
+>  				fb_videomode_to_var(&var, vmode);
+>  				console_lock();
+> -				info->flags |=3D FBINFO_MISC_USEREVENT;
+>  				/* Force, in case only special bits changed */
+>  				var.activate |=3D FB_ACTIVATE_FORCE;
+>  				par->new_mode_id =3D val;
+>  				retval =3D fb_set_var(info, &var);
+> -				info->flags &=3D ~FBINFO_MISC_USEREVENT;
+> +				if (!retval)
+> +					fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
+>  				console_unlock();
+>  			}
+>  			break;
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index 3b4b2f0..b11eb02 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -400,8 +400,6 @@ struct fb_tile_ops {
+>  #define FBINFO_HWACCEL_YPAN		0x2000 /* optional */
+>  #define FBINFO_HWACCEL_YWRAP		0x4000 /* optional */
+> =20
+> -#define FBINFO_MISC_USEREVENT          0x10000 /* event request
+> -						  from userspace */
+>  #define FBINFO_MISC_TILEBLITTING       0x20000 /* use tile blitting */
+> =20
+>  /* A driver may set this flag to indicate that it does want a set_par to=
+ be
+> --=20
+> 1.8.3.1
+>=20
 
-Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
----
- drivers/video/fbdev/arkfb.c | 41 +++++++++++++++----------------------
- 1 file changed, 17 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-index 11ab9a153860..edf169d0816e 100644
---- a/drivers/video/fbdev/arkfb.c
-+++ b/drivers/video/fbdev/arkfb.c
-@@ -1085,12 +1085,11 @@ static void ark_pci_remove(struct pci_dev *dev)
- }
- 
- 
--#ifdef CONFIG_PM
- /* PCI suspend */
- 
--static int ark_pci_suspend (struct pci_dev* dev, pm_message_t state)
-+static int __maybe_unused ark_pci_suspend(struct device *dev)
- {
--	struct fb_info *info = pci_get_drvdata(dev);
-+	struct fb_info *info = dev_get_drvdata(dev);
- 	struct arkfb_info *par = info->par;
- 
- 	dev_info(info->device, "suspend\n");
-@@ -1098,7 +1097,7 @@ static int ark_pci_suspend (struct pci_dev* dev, pm_message_t state)
- 	console_lock();
- 	mutex_lock(&(par->open_lock));
- 
--	if ((state.event = PM_EVENT_FREEZE) || (par->ref_count = 0)) {
-+	if (par->ref_count = 0) {
- 		mutex_unlock(&(par->open_lock));
- 		console_unlock();
- 		return 0;
-@@ -1106,10 +1105,6 @@ static int ark_pci_suspend (struct pci_dev* dev, pm_message_t state)
- 
- 	fb_set_suspend(info, 1);
- 
--	pci_save_state(dev);
--	pci_disable_device(dev);
--	pci_set_power_state(dev, pci_choose_state(dev, state));
--
- 	mutex_unlock(&(par->open_lock));
- 	console_unlock();
- 
-@@ -1119,9 +1114,9 @@ static int ark_pci_suspend (struct pci_dev* dev, pm_message_t state)
- 
- /* PCI resume */
- 
--static int ark_pci_resume (struct pci_dev* dev)
-+static int __maybe_unused ark_pci_resume(struct device *dev)
- {
--	struct fb_info *info = pci_get_drvdata(dev);
-+	struct fb_info *info = dev_get_drvdata(dev);
- 	struct arkfb_info *par = info->par;
- 
- 	dev_info(info->device, "resume\n");
-@@ -1132,14 +1127,6 @@ static int ark_pci_resume (struct pci_dev* dev)
- 	if (par->ref_count = 0)
- 		goto fail;
- 
--	pci_set_power_state(dev, PCI_D0);
--	pci_restore_state(dev);
--
--	if (pci_enable_device(dev))
--		goto fail;
--
--	pci_set_master(dev);
--
- 	arkfb_set_par(info);
- 	fb_set_suspend(info, 0);
- 
-@@ -1148,10 +1135,17 @@ static int ark_pci_resume (struct pci_dev* dev)
- 	console_unlock();
- 	return 0;
- }
--#else
--#define ark_pci_suspend NULL
--#define ark_pci_resume NULL
--#endif /* CONFIG_PM */
-+
-+static const struct dev_pm_ops ark_pci_pm_ops = {
-+#ifdef CONFIG_PM_SLEEP
-+	.suspend	= ark_pci_suspend,
-+	.resume		= ark_pci_resume,
-+	.freeze		= NULL,
-+	.thaw		= ark_pci_resume,
-+	.poweroff	= ark_pci_suspend,
-+	.restore	= ark_pci_resume,
-+#endif
-+};
- 
- /* List of boards that we are trying to support */
- 
-@@ -1168,8 +1162,7 @@ static struct pci_driver arkfb_pci_driver = {
- 	.id_table	= ark_devices,
- 	.probe		= ark_pci_probe,
- 	.remove		= ark_pci_remove,
--	.suspend	= ark_pci_suspend,
--	.resume		= ark_pci_resume,
-+	.driver.pm	= &ark_pci_pm_ops,
- };
- 
- /* Cleanup */
--- 
-2.28.0
+--=20
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

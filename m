@@ -1,7 +1,7 @@
 From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Wed, 05 Aug 2020 18:19:18 +0000
-Subject: [PATCH v1 08/12] fbdev: cyber2000fb: use generic power management
-Message-Id: <20200805180722.244008-9-vaibhavgupta40@gmail.com>
+Date: Wed, 05 Aug 2020 18:19:15 +0000
+Subject: [PATCH v1 05/12] fbdev: aty128fb: use generic power management
+Message-Id: <20200805180722.244008-6-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
 In-Reply-To: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
@@ -24,51 +24,118 @@ and drivers are required to do only device-specific jobs.
 
 Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
- drivers/video/fbdev/cyber2000fb.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/aty/aty128fb.c | 51 ++++++++++++++++++++----------
+ 1 file changed, 34 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
-index 42d37bed518a..d45355b9a58c 100644
---- a/drivers/video/fbdev/cyber2000fb.c
-+++ b/drivers/video/fbdev/cyber2000fb.c
-@@ -1810,7 +1810,7 @@ static void cyberpro_pci_remove(struct pci_dev *dev)
+diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
+index d05d4195acad..dd7762fea058 100644
+--- a/drivers/video/fbdev/aty/aty128fb.c
++++ b/drivers/video/fbdev/aty/aty128fb.c
+@@ -162,10 +162,22 @@ static char * const r128_family[] = {
+ static int aty128_probe(struct pci_dev *pdev,
+                                const struct pci_device_id *ent);
+ static void aty128_remove(struct pci_dev *pdev);
+-static int aty128_pci_suspend(struct pci_dev *pdev, pm_message_t state);
+-static int aty128_pci_resume(struct pci_dev *pdev);
++static int aty128_pci_suspend_late(struct device *dev, pm_message_t state);
++static int __maybe_unused aty128_pci_suspend(struct device *dev);
++static int __maybe_unused aty128_pci_hibernate(struct device *dev);
++static int __maybe_unused aty128_pci_freeze(struct device *dev);
++static int __maybe_unused aty128_pci_resume(struct device *dev);
+ static int aty128_do_resume(struct pci_dev *pdev);
+ 
++static const struct dev_pm_ops aty128_pci_pm_ops = {
++	.suspend	= aty128_pci_suspend,
++	.resume		= aty128_pci_resume,
++	.freeze		= aty128_pci_freeze,
++	.thaw		= aty128_pci_resume,
++	.poweroff	= aty128_pci_hibernate,
++	.restore	= aty128_pci_resume,
++};
++
+ /* supported Rage128 chipsets */
+ static const struct pci_device_id aty128_pci_tbl[] = {
+ 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RAGE128_LE,
+@@ -272,8 +284,7 @@ static struct pci_driver aty128fb_driver = {
+ 	.id_table	= aty128_pci_tbl,
+ 	.probe		= aty128_probe,
+ 	.remove		= aty128_remove,
+-	.suspend	= aty128_pci_suspend,
+-	.resume		= aty128_pci_resume,
++	.driver.pm	= &aty128_pci_pm_ops,
+ };
+ 
+ /* packed BIOS settings */
+@@ -2320,7 +2331,6 @@ static int aty128fb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ static void aty128_set_suspend(struct aty128fb_par *par, int suspend)
+ {
+ 	u32	pmgt;
+-	struct pci_dev *pdev = par->pdev;
+ 
+ 	if (!par->pdev->pm_cap)
+ 		return;
+@@ -2347,23 +2357,15 @@ static void aty128_set_suspend(struct aty128fb_par *par, int suspend)
+ 		aty_st_le32(BUS_CNTL1, 0x00000010);
+ 		aty_st_le32(MEM_POWER_MISC, 0x0c830000);
+ 		msleep(100);
+-
+-		/* Switch PCI power management to D2 */
+-		pci_set_power_state(pdev, PCI_D2);
  	}
  }
  
--static int cyberpro_pci_suspend(struct pci_dev *dev, pm_message_t state)
-+static int __maybe_unused cyberpro_pci_suspend(struct device *dev)
+-static int aty128_pci_suspend(struct pci_dev *pdev, pm_message_t state)
++static int aty128_pci_suspend_late(struct device *dev, pm_message_t state)
  {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+ 	struct aty128fb_par *par = info->par;
+ 
+-	/* Because we may change PCI D state ourselves, we need to
+-	 * first save the config space content so the core can
+-	 * restore it properly on resume.
+-	 */
+-	pci_save_state(pdev);
+-
+ 	/* We don't do anything but D2, for now we return 0, but
+ 	 * we may want to change that. How do we know if the BIOS
+ 	 * can properly take care of D3 ? Also, with swsusp, we
+@@ -2422,6 +2424,21 @@ static int aty128_pci_suspend(struct pci_dev *pdev, pm_message_t state)
  	return 0;
  }
-@@ -1818,9 +1818,9 @@ static int cyberpro_pci_suspend(struct pci_dev *dev, pm_message_t state)
- /*
-  * Re-initialise the CyberPro hardware
-  */
--static int cyberpro_pci_resume(struct pci_dev *dev)
-+static int __maybe_unused cyberpro_pci_resume(struct device *dev)
- {
--	struct cfb_info *cfb = pci_get_drvdata(dev);
-+	struct cfb_info *cfb = dev_get_drvdata(dev);
  
- 	if (cfb) {
- 		cyberpro_pci_enable_mmio(cfb);
-@@ -1846,12 +1846,15 @@ static struct pci_device_id cyberpro_pci_table[] = {
- 
- MODULE_DEVICE_TABLE(pci, cyberpro_pci_table);
- 
-+static SIMPLE_DEV_PM_OPS(cyberpro_pci_pm_ops,
-+			 cyberpro_pci_suspend,
-+			 cyberpro_pci_resume);
++static int __maybe_unused aty128_pci_suspend(struct device *dev)
++{
++	return aty128_pci_suspend_late(dev, PMSG_SUSPEND);
++}
 +
- static struct pci_driver cyberpro_driver = {
- 	.name		= "CyberPro",
- 	.probe		= cyberpro_pci_probe,
- 	.remove		= cyberpro_pci_remove,
--	.suspend	= cyberpro_pci_suspend,
--	.resume		= cyberpro_pci_resume,
-+	.driver.pm	= &cyberpro_pci_pm_ops,
- 	.id_table	= cyberpro_pci_table
- };
++static int __maybe_unused aty128_pci_hibernate(struct device *dev)
++{
++	return aty128_pci_suspend_late(dev, PMSG_HIBERNATE);
++}
++
++static int __maybe_unused aty128_pci_freeze(struct device *dev)
++{
++	return aty128_pci_suspend_late(dev, PMSG_FREEZE);
++}
++
+ static int aty128_do_resume(struct pci_dev *pdev)
+ {
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+@@ -2468,12 +2485,12 @@ static int aty128_do_resume(struct pci_dev *pdev)
+ 	return 0;
+ }
  
+-static int aty128_pci_resume(struct pci_dev *pdev)
++static int __maybe_unused aty128_pci_resume(struct device *dev)
+ {
+ 	int rc;
+ 
+ 	console_lock();
+-	rc = aty128_do_resume(pdev);
++	rc = aty128_do_resume(to_pci_dev(dev));
+ 	console_unlock();
+ 
+ 	return rc;
 -- 
 2.27.0

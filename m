@@ -1,43 +1,141 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Wed, 19 Aug 2020 22:07:46 +0000
-Subject: Re: [PATCH v3] vt: Reject zero-sized screen buffer size.
-Message-Id: <202008191452.0278B57D43@keescook>
+From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Date: Wed, 05 Aug 2020 18:19:16 +0000
+Subject: [PATCH v1 06/12] fbdev: nvidia: use generic power management
+Message-Id: <20200805180722.244008-7-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <189fc902-db7c-9886-cc31-c0348435303a@i-love.sakura.ne.jp>
- <20200712111013.11881-1-penguin-kernel@I-love.SAKURA.ne.jp>
-In-Reply-To: <20200712111013.11881-1-penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Jiri Slaby <jslaby@suse.com>, syzbot <syzbot+017265e8553724e514e8@syzkaller.appspotmail.com>, Dmitry Vyukov <dvyukov@google.com>
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-On Sun, Jul 12, 2020 at 08:10:12PM +0900, Tetsuo Handa wrote:
-> [...]
-> @@ -1125,6 +1134,11 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
->  	if (!*vc->vc_uni_pagedir_loc)
->  		con_set_default_unimap(vc);
->  
-> +	err = -EINVAL;
-> +	if (vc->vc_cols > VC_MAXCOL || vc->vc_rows > VC_MAXROW ||
-> +	    vc->vc_screenbuf_size > KMALLOC_MAX_SIZE || !vc->vc_screenbuf_size)
-> +		goto err_free;
-> +	err = -ENOMEM;
->  	vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_KERNEL);
->  	if (!vc->vc_screenbuf)
->  		goto err_free;
+Drivers using legacy power management .suspen()/.resume() callbacks
+have to manage PCI states and device's PM states themselves. They also
+need to take care of standard configuration registers.
 
-I realize this patch already landed, but I wanted to remind folks to
-use the check_*_overflow() helpers, which can make a lot of this kind
-of stuff easier to deal with.
+Switch to generic power management framework using a single
+"struct dev_pm_ops" variable to take the unnecessary load from the driver.
+This also avoids the need for the driver to directly call most of the PCI
+helper functions and device power state control functions, as through
+the generic framework PCI Core takes care of the necessary operations,
+and drivers are required to do only device-specific jobs.
 
-For example, in this case, I think visual_init() could likely be changed
-to return success/failure and do all the sanity checking:
+Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+---
+ drivers/video/fbdev/nvidia/nvidia.c | 64 ++++++++++++++++-------------
+ 1 file changed, 35 insertions(+), 29 deletions(-)
 
-	if (check_shl_overflow(vc->vc_cols, 1, &vc->vc_size_row) ||
-	    check_mul_overflow(vc->vc_rows, vc->vc_size_row, &vc->vc_screenbuf_size))
-		return -EINVAL;
-
-
+diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
+index c24de9107958..3a1a4330e0d3 100644
+--- a/drivers/video/fbdev/nvidia/nvidia.c
++++ b/drivers/video/fbdev/nvidia/nvidia.c
+@@ -1041,10 +1041,9 @@ static struct fb_ops nvidia_fb_ops = {
+ 	.fb_sync        = nvidiafb_sync,
+ };
+ 
+-#ifdef CONFIG_PM
+-static int nvidiafb_suspend(struct pci_dev *dev, pm_message_t mesg)
++static int nvidiafb_suspend_late(struct device *dev, pm_message_t mesg)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct nvidia_par *par = info->par;
+ 
+ 	if (mesg.event = PM_EVENT_PRETHAW)
+@@ -1056,46 +1055,54 @@ static int nvidiafb_suspend(struct pci_dev *dev, pm_message_t mesg)
+ 		fb_set_suspend(info, 1);
+ 		nvidiafb_blank(FB_BLANK_POWERDOWN, info);
+ 		nvidia_write_regs(par, &par->SavedReg);
+-		pci_save_state(dev);
+-		pci_disable_device(dev);
+-		pci_set_power_state(dev, pci_choose_state(dev, mesg));
+ 	}
+-	dev->dev.power.power_state = mesg;
++	dev->power.power_state = mesg;
+ 
+ 	console_unlock();
+ 	return 0;
+ }
+ 
+-static int nvidiafb_resume(struct pci_dev *dev)
++static int __maybe_unused nvidiafb_suspend(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
+-	struct nvidia_par *par = info->par;
++	return nvidiafb_suspend_late(dev, PMSG_SUSPEND);
++}
+ 
+-	console_lock();
+-	pci_set_power_state(dev, PCI_D0);
++static int __maybe_unused nvidiafb_hibernate(struct device *dev)
++{
++	return nvidiafb_suspend_late(dev, PMSG_HIBERNATE);
++}
+ 
+-	if (par->pm_state != PM_EVENT_FREEZE) {
+-		pci_restore_state(dev);
++static int __maybe_unused nvidiafb_freeze(struct device *dev)
++{
++	return nvidiafb_suspend_late(dev, PMSG_FREEZE);
++}
+ 
+-		if (pci_enable_device(dev))
+-			goto fail;
++static int __maybe_unused nvidiafb_resume(struct device *dev)
++{
++	struct fb_info *info = dev_get_drvdata(dev);
++	struct nvidia_par *par = info->par;
+ 
+-		pci_set_master(dev);
+-	}
++	console_lock();
+ 
+ 	par->pm_state = PM_EVENT_ON;
+ 	nvidiafb_set_par(info);
+ 	fb_set_suspend (info, 0);
+ 	nvidiafb_blank(FB_BLANK_UNBLANK, info);
+ 
+-fail:
+ 	console_unlock();
+ 	return 0;
+ }
+-#else
+-#define nvidiafb_suspend NULL
+-#define nvidiafb_resume NULL
+-#endif
++
++static const struct dev_pm_ops nvidiafb_pm_ops = {
++#ifdef CONFIG_PM_SLEEP
++	.suspend	= nvidiafb_suspend,
++	.resume		= nvidiafb_resume,
++	.freeze		= nvidiafb_freeze,
++	.thaw		= nvidiafb_resume,
++	.poweroff	= nvidiafb_hibernate,
++	.restore	= nvidiafb_resume,
++#endif /* CONFIG_PM_SLEEP */
++};
+ 
+ static int nvidia_set_fbinfo(struct fb_info *info)
+ {
+@@ -1496,12 +1503,11 @@ static int nvidiafb_setup(char *options)
+ #endif				/* !MODULE */
+ 
+ static struct pci_driver nvidiafb_driver = {
+-	.name = "nvidiafb",
+-	.id_table = nvidiafb_pci_tbl,
+-	.probe    = nvidiafb_probe,
+-	.suspend  = nvidiafb_suspend,
+-	.resume   = nvidiafb_resume,
+-	.remove   = nvidiafb_remove,
++	.name      = "nvidiafb",
++	.id_table  = nvidiafb_pci_tbl,
++	.probe     = nvidiafb_probe,
++	.driver.pm = &nvidiafb_pm_ops,
++	.remove    = nvidiafb_remove,
+ };
+ 
+ /* ------------------------------------------------------------------------- *
 -- 
-Kees Cook
+2.27.0

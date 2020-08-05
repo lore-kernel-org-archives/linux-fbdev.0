@@ -1,7 +1,7 @@
 From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Wed, 05 Aug 2020 18:19:17 +0000
-Subject: [PATCH v1 07/12] fbdev: savagefb: use generic power management
-Message-Id: <20200805180722.244008-8-vaibhavgupta40@gmail.com>
+Date: Wed, 05 Aug 2020 18:19:14 +0000
+Subject: [PATCH v1 04/12] fbdev: aty: use generic power management
+Message-Id: <20200805180722.244008-5-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
 In-Reply-To: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
@@ -24,117 +24,134 @@ and drivers are required to do only device-specific jobs.
 
 Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
- drivers/video/fbdev/savage/savagefb_driver.c | 52 ++++++++++++--------
- 1 file changed, 32 insertions(+), 20 deletions(-)
+ drivers/video/fbdev/aty/atyfb_base.c | 50 ++++++++++++++++++++--------
+ 1 file changed, 36 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
-index 3c8ae87f0ea7..d6aae759e90f 100644
---- a/drivers/video/fbdev/savage/savagefb_driver.c
-+++ b/drivers/video/fbdev/savage/savagefb_driver.c
-@@ -2346,9 +2346,9 @@ static void savagefb_remove(struct pci_dev *dev)
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index b0ac895e5ac9..a24d5bf6ade1 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -132,8 +132,8 @@
+ #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## args)
+ #define PRINTKE(fmt, args...)	printk(KERN_ERR "atyfb: " fmt, ## args)
+ 
+-#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
+-defined (CONFIG_FB_ATY_GENERIC_LCD) || defined(CONFIG_FB_ATY_BACKLIGHT)
++#if defined(CONFIG_PMAC_BACKLIGHT) || defined(CONFIG_FB_ATY_GENERIC_LCD) || \
++defined(CONFIG_FB_ATY_BACKLIGHT)
+ static const u32 lt_lcd_regs[] = {
+ 	CNFG_PANEL_LG,
+ 	LCD_GEN_CNTL_LG,
+@@ -175,7 +175,7 @@ u32 aty_ld_lcd(int index, const struct atyfb_par *par)
+ 		return aty_ld_le32(LCD_DATA, par);
  	}
  }
+-#endif /* defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
++#endif /* defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
  
--static int savagefb_suspend(struct pci_dev *dev, pm_message_t mesg)
-+static int savagefb_suspend_late(struct device *dev, pm_message_t mesg)
- {
--	struct fb_info *info = pci_get_drvdata(dev);
-+	struct fb_info *info = dev_get_drvdata(dev);
- 	struct savagefb_par *par = info->par;
+ #ifdef CONFIG_FB_ATY_GENERIC_LCD
+ /*
+@@ -1994,7 +1994,7 @@ static int atyfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
  
- 	DBG("savagefb_suspend");
-@@ -2356,7 +2356,7 @@ static int savagefb_suspend(struct pci_dev *dev, pm_message_t mesg)
- 	if (mesg.event = PM_EVENT_PRETHAW)
- 		mesg.event = PM_EVENT_FREEZE;
- 	par->pm_state = mesg.event;
--	dev->dev.power.power_state = mesg;
-+	dev->power.power_state = mesg;
  
- 	/*
- 	 * For PM_EVENT_FREEZE, do not power down so the console
-@@ -2374,17 +2374,29 @@ static int savagefb_suspend(struct pci_dev *dev, pm_message_t mesg)
- 	savagefb_blank(FB_BLANK_POWERDOWN, info);
- 	savage_set_default_par(par, &par->save);
- 	savage_disable_mmio(par);
--	pci_save_state(dev);
--	pci_disable_device(dev);
--	pci_set_power_state(dev, pci_choose_state(dev, mesg));
- 	console_unlock();
  
- 	return 0;
+-#if defined(CONFIG_PM) && defined(CONFIG_PCI)
++#if defined(CONFIG_PCI)
+ 
+ #ifdef CONFIG_PPC_PMAC
+ /* Power management routines. Those are used for PowerBook sleep.
+@@ -2055,8 +2055,9 @@ static int aty_power_mgmt(int sleep, struct atyfb_par *par)
  }
+ #endif /* CONFIG_PPC_PMAC */
  
--static int savagefb_resume(struct pci_dev* dev)
-+static int __maybe_unused savagefb_suspend(struct device *dev)
+-static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
++static int atyfb_pci_suspend_late(struct device *dev, pm_message_t state)
  {
--	struct fb_info *info = pci_get_drvdata(dev);
-+	return savagefb_suspend_late(dev, PMSG_SUSPEND);
-+}
-+
-+static int __maybe_unused savagefb_hibernate(struct device *dev)
-+{
-+	return savagefb_suspend_late(dev, PMSG_HIBERNATE);
-+}
-+
-+static int __maybe_unused savagefb_freeze(struct device *dev)
-+{
-+	return savagefb_suspend_late(dev, PMSG_FREEZE);
-+}
-+
-+static int __maybe_unused savagefb_resume(struct device *dev)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
- 	struct savagefb_par *par = info->par;
- 	int cur_state = par->pm_state;
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
  
-@@ -2396,20 +2408,11 @@ static int savagefb_resume(struct pci_dev* dev)
- 	 * The adapter was not powered down coming back from a
- 	 * PM_EVENT_FREEZE.
+@@ -2082,7 +2083,6 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 	 * first save the config space content so the core can
+ 	 * restore it properly on resume.
  	 */
--	if (cur_state = PM_EVENT_FREEZE) {
--		pci_set_power_state(dev, PCI_D0);
-+	if (cur_state = PM_EVENT_FREEZE)
- 		return 0;
--	}
+-	pci_save_state(pdev);
  
- 	console_lock();
+ #ifdef CONFIG_PPC_PMAC
+ 	/* Set chip to "suspend" mode */
+@@ -2094,8 +2094,6 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 		console_unlock();
+ 		return -EIO;
+ 	}
+-#else
+-	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+ #endif
  
--	pci_set_power_state(dev, PCI_D0);
--	pci_restore_state(dev);
--
--	if (pci_enable_device(dev))
--		DBG("err");
--
--	pci_set_master(dev);
- 	savage_enable_mmio(par);
- 	savage_init_hw(par);
- 	savagefb_set_par(info);
-@@ -2420,6 +2423,16 @@ static int savagefb_resume(struct pci_dev* dev)
+ 	console_unlock();
+@@ -2105,6 +2103,21 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
  	return 0;
  }
  
-+static const struct dev_pm_ops savagefb_pm_ops = {
-+#ifdef CONFIG_PM_SLEEP
-+	.suspend	= savagefb_suspend,
-+	.resume		= savagefb_resume,
-+	.freeze		= savagefb_freeze,
-+	.thaw		= savagefb_resume,
-+	.poweroff	= savagefb_hibernate,
-+	.restore	= savagefb_resume,
-+#endif
-+};
++static int __maybe_unused atyfb_pci_suspend(struct device *dev)
++{
++	return atyfb_pci_suspend_late(dev, PMSG_SUSPEND);
++}
++
++static int __maybe_unused atyfb_pci_hibernate(struct device *dev)
++{
++	return atyfb_pci_suspend_late(dev, PMSG_HIBERNATE);
++}
++
++static int __maybe_unused atyfb_pci_freeze(struct device *dev)
++{
++	return atyfb_pci_suspend_late(dev, PMSG_FREEZE);
++}
++
+ static void aty_resume_chip(struct fb_info *info)
+ {
+ 	struct atyfb_par *par = info->par;
+@@ -2119,8 +2132,9 @@ static void aty_resume_chip(struct fb_info *info)
+ 			aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
+ }
  
- static const struct pci_device_id savagefb_devices[] = {
- 	{PCI_VENDOR_ID_S3, PCI_CHIP_SUPSAV_MX128,
-@@ -2500,8 +2513,7 @@ static struct pci_driver savagefb_driver = {
- 	.name =     "savagefb",
- 	.id_table = savagefb_devices,
- 	.probe =    savagefb_probe,
--	.suspend =  savagefb_suspend,
--	.resume =   savagefb_resume,
-+	.driver.pm = &savagefb_pm_ops,
- 	.remove =   savagefb_remove,
+-static int atyfb_pci_resume(struct pci_dev *pdev)
++static int __maybe_unused atyfb_pci_resume(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 
+@@ -2162,7 +2176,18 @@ static int atyfb_pci_resume(struct pci_dev *pdev)
+ 	return 0;
+ }
+ 
+-#endif /*  defined(CONFIG_PM) && defined(CONFIG_PCI) */
++static const struct dev_pm_ops atyfb_pci_pm_ops = {
++#ifdef CONFIG_PM_SLEEP
++	.suspend	= atyfb_pci_suspend,
++	.resume		= atyfb_pci_resume,
++	.freeze		= atyfb_pci_freeze,
++	.thaw		= atyfb_pci_resume,
++	.poweroff	= atyfb_pci_hibernate,
++	.restore	= atyfb_pci_resume,
++#endif /* CONFIG_PM_SLEEP */
++};
++
++#endif /*  defined(CONFIG_PCI) */
+ 
+ /* Backlight */
+ #ifdef CONFIG_FB_ATY_BACKLIGHT
+@@ -3801,10 +3826,7 @@ static struct pci_driver atyfb_driver = {
+ 	.id_table	= atyfb_pci_tbl,
+ 	.probe		= atyfb_pci_probe,
+ 	.remove		= atyfb_pci_remove,
+-#ifdef CONFIG_PM
+-	.suspend	= atyfb_pci_suspend,
+-	.resume		= atyfb_pci_resume,
+-#endif /* CONFIG_PM */
++	.driver.pm	= &atyfb_pci_pm_ops,
  };
  
+ #endif /* CONFIG_PCI */
 -- 
 2.27.0

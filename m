@@ -1,87 +1,77 @@
-From: syzbot <syzbot+b38b1ef6edf0c74a8d97@syzkaller.appspotmail.com>
-Date: Thu, 20 Aug 2020 05:35:15 +0000
-Subject: KASAN: global-out-of-bounds Read in fbcon_resize
-Message-Id: <00000000000024be1505ad487cbb@google.com>
+From: trix@redhat.com
+Date: Wed, 05 Aug 2020 14:52:08 +0000
+Subject: [PATCH] video: fbdev: sis: fix null ptr dereference
+Message-Id: <20200805145208.17727-1-trix@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, george.kennedy@oracle.com, gregkh@linuxfoundation.org, jirislaby@kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, natechancellor@gmail.com, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: thomas@winischhofer.net, b.zolnierkie@samsung.com, akpm@osdl.org
+Cc: Tom Rix <trix@redhat.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Hello,
+From: Tom Rix <trix@redhat.com>
 
-syzbot found the following issue on:
+Clang static analysis reports this representative error
 
-HEAD commit:    8eb858df Add linux-next specific files for 20200819
-git tree:       linux-next
-console output: https://syzkaller.appspot.com/x/log.txt?x=1158a00e900000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=CD187ef624ef7f02
-dashboard link: https://syzkaller.appspot.com/bug?extid=B38b1ef6edf0c74a8d97
-compiler:       gcc (GCC) 10.1.0-syz 20200507
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=146a5589900000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=165aa636900000
+init.c:2501:18: warning: Array access (from variable 'queuedata') results
+  in a null pointer dereference
+      templ |= ((queuedata[i] & 0xc0) << 3);
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+b38b1ef6edf0c74a8d97@syzkaller.appspotmail.com
+This is the problem block of code
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D
-BUG: KASAN: global-out-of-bounds in fbcon_resize+0x781/0x810 drivers/video/=
-fbdev/core/fbcon.c:2206
-Read of size 4 at addr ffffffff8896d418 by task syz-executor732/6868
+   if(ModeNo > 0x13) {
+      ...
+      if(SiS_Pr->ChipType = SIS_730) {
+	 queuedata = &FQBQData730[0];
+      } else {
+	 queuedata = &FQBQData[0];
+      }
+   } else {
 
-CPU: 0 PID: 6868 Comm: syz-executor732 Not tainted 5.9.0-rc1-next-20200819-=
-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Goo=
-gle 01/01/2011
-Call Trace:
- __dump_stack lib/dump_stack.c:77 [inline]
- dump_stack+0x18f/0x20d lib/dump_stack.c:118
- print_address_description.constprop.0.cold+0x5/0x497 mm/kasan/report.c:383
- __kasan_report mm/kasan/report.c:513 [inline]
- kasan_report.cold+0x1f/0x37 mm/kasan/report.c:530
- fbcon_resize+0x781/0x810 drivers/video/fbdev/core/fbcon.c:2206
- resize_screen drivers/tty/vt/vt.c:1175 [inline]
- vc_do_resize+0x535/0x1150 drivers/tty/vt/vt.c:1246
- vt_ioctl+0x11d2/0x2cc0 drivers/tty/vt/vt_ioctl.c:1025
- tty_ioctl+0x1019/0x15f0 drivers/tty/tty_io.c:2656
- vfs_ioctl fs/ioctl.c:48 [inline]
- __do_sys_ioctl fs/ioctl.c:753 [inline]
- __se_sys_ioctl fs/ioctl.c:739 [inline]
- __x64_sys_ioctl+0x193/0x200 fs/ioctl.c:739
- do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
- entry_SYSCALL_64_after_hwframe+0x44/0xa9
-RIP: 0033:0x440329
-Code: 18 89 d0 c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 48 89 f8 48 89 f7 =
-48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff f=
-f 0f 83 db 13 fc ff c3 66 2e 0f 1f 84 00 00 00 00
-RSP: 002b:00007ffc8ff997d8 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 00000000004002c8 RCX: 0000000000440329
-RDX: 0000000020000040 RSI: 0000000000005609 RDI: 0000000000000004
-RBP: 00000000006ca018 R08: 000000000000000d R09: 00000000004002c8
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000401b90
-R13: 0000000000401c20 R14: 0000000000000000 R15: 0000000000000000
+   }
 
-The buggy address belongs to the variable:
- font_vga_8x16+0x58/0x60
+queuedata is not set in the else block
 
-Memory state around the buggy address:
- ffffffff8896d300: 00 00 00 00 00 00 00 00 00 00 00 00 f9 f9 f9 f9
- ffffffff8896d380: 00 f9 f9 f9 f9 f9 f9 f9 00 00 00 00 00 f9 f9 f9
->ffffffff8896d400: f9 f9 f9 f9 00 00 00 00 00 00 00 00 00 00 00 00
-                            ^
- ffffffff8896d480: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- ffffffff8896d500: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D
+Reviewing the old code, the arrays FQBQData730 and FQBQData were
+used directly.
 
+So hoist the setting of queuedata out of the if-else block.
 
+Fixes: 544393fe584d ("[PATCH] sisfb update")
+
+Signed-off-by: Tom Rix <trix@redhat.com>
 ---
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ drivers/video/fbdev/sis/init.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-syzbot can test patches for this issue, for details see:
-https://goo.gl/tpsmEJ#testing-patches
+diff --git a/drivers/video/fbdev/sis/init.c b/drivers/video/fbdev/sis/init.c
+index dfe3eb769638..fde27feae5d0 100644
+--- a/drivers/video/fbdev/sis/init.c
++++ b/drivers/video/fbdev/sis/init.c
+@@ -2428,6 +2428,11 @@ SiS_SetCRT1FIFO_630(struct SiS_Private *SiS_Pr, unsigned short ModeNo,
+ 
+    i = 0;
+ 
++	if (SiS_Pr->ChipType = SIS_730)
++		queuedata = &FQBQData730[0];
++	else
++		queuedata = &FQBQData[0];
++
+    if(ModeNo > 0x13) {
+ 
+       /* Get VCLK  */
+@@ -2445,12 +2450,6 @@ SiS_SetCRT1FIFO_630(struct SiS_Private *SiS_Pr, unsigned short ModeNo,
+       /* Get half colordepth */
+       colorth = colortharray[(SiS_Pr->SiS_ModeType - ModeEGA)];
+ 
+-      if(SiS_Pr->ChipType = SIS_730) {
+-	 queuedata = &FQBQData730[0];
+-      } else {
+-	 queuedata = &FQBQData[0];
+-      }
+-
+       do {
+ 	 templ = SiS_CalcDelay2(SiS_Pr, queuedata[i]) * VCLK * colorth;
+ 
+-- 
+2.18.1

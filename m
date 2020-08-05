@@ -1,101 +1,35 @@
-From: syzbot <syzbot+2741e4d93bff16ad8d4d@syzkaller.appspotmail.com>
-Date: Thu, 20 Aug 2020 04:56:14 +0000
-Subject: KMSAN: uninit-value in soft_cursor
-Message-Id: <00000000000094c57905ad47f05e@google.com>
+From: Colin King <colin.king@canonical.com>
+Date: Wed, 05 Aug 2020 10:28:05 +0000
+Subject: [PATCH] omapfb: fix spelling mistake "propert" -> "property"
+Message-Id: <20200805102805.15353-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, glider@google.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hello,
+From: Colin Ian King <colin.king@canonical.com>
 
-syzbot found the following issue on:
+There is a spelling mistake in a pr_err message. Fix it.
 
-HEAD commit:    ce8056d1 wip: changed copy_from_user where instrumented
-git tree:       https://github.com/google/kmsan.git master
-console output: https://syzkaller.appspot.com/x/log.txt?xdcd116900000
-kernel config:  https://syzkaller.appspot.com/x/.config?x:fe005fb99591f
-dashboard link: https://syzkaller.appspot.com/bug?extid'41e4d93bff16ad8d4d
-compiler:       clang version 10.0.0 (https://github.com/llvm/llvm-project/ c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x3f7891900000
-
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+2741e4d93bff16ad8d4d@syzkaller.appspotmail.com
-
-==========================BUG: KMSAN: uninit-value in soft_cursor+0xa89/0x13f0 drivers/video/fbdev/core/softcursor.c:61
-CPU: 0 PID: 12272 Comm: syz-executor.2 Not tainted 5.8.0-rc5-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-Call Trace:
- __dump_stack lib/dump_stack.c:77 [inline]
- dump_stack+0x21c/0x280 lib/dump_stack.c:118
- kmsan_report+0xf7/0x1e0 mm/kmsan/kmsan_report.c:121
- __msan_warning+0x58/0xa0 mm/kmsan/kmsan_instr.c:215
- soft_cursor+0xa89/0x13f0 drivers/video/fbdev/core/softcursor.c:61
- bit_cursor+0x38c6/0x3a40 drivers/video/fbdev/core/bitblit.c:386
- fbcon_cursor+0x195e/0x1a60 drivers/video/fbdev/core/fbcon.c:1411
- set_cursor drivers/tty/vt/vt.c:915 [inline]
- redraw_screen+0x28ee/0x2980 drivers/tty/vt/vt.c:1031
- vc_do_resize+0x36a8/0x38f0 drivers/tty/vt/vt.c:1314
- vc_resize+0xc3/0xe0 drivers/tty/vt/vt.c:1334
- fbcon_modechanged+0xdc1/0x1320 drivers/video/fbdev/core/fbcon.c:2990
- fbcon_update_vcs+0x86/0xa0 drivers/video/fbdev/core/fbcon.c:3048
- fb_set_var+0x1420/0x1850 drivers/video/fbdev/core/fbmem.c:1056
- do_fb_ioctl+0xc00/0x1150 drivers/video/fbdev/core/fbmem.c:1109
- fb_ioctl+0x1e4/0x210 drivers/video/fbdev/core/fbmem.c:1185
- vfs_ioctl fs/ioctl.c:48 [inline]
- ksys_ioctl fs/ioctl.c:753 [inline]
- __do_sys_ioctl fs/ioctl.c:762 [inline]
- __se_sys_ioctl+0x319/0x4d0 fs/ioctl.c:760
- __x64_sys_ioctl+0x4a/0x70 fs/ioctl.c:760
- do_syscall_64+0xad/0x160 arch/x86/entry/common.c:386
- entry_SYSCALL_64_after_hwframe+0x44/0xa9
-RIP: 0033:0x45d239
-Code: Bad RIP value.
-RSP: 002b:00007ff9aafacc78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 000000000000d580 RCX: 000000000045d239
-RDX: 0000000020000000 RSI: 0000000000004601 RDI: 0000000000000003
-RBP: 000000000118cf80 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 000000000118cf4c
-R13: 000000000169fb6f R14: 00007ff9aafad9c0 R15: 000000000118cf4c
-
-Uninit was stored to memory at:
- kmsan_save_stack_with_flags mm/kmsan/kmsan.c:144 [inline]
- kmsan_internal_chain_origin+0xad/0x130 mm/kmsan/kmsan.c:310
- kmsan_memcpy_memmove_metadata+0x272/0x2e0 mm/kmsan/kmsan.c:247
- kmsan_memcpy_metadata+0xb/0x10 mm/kmsan/kmsan.c:267
- __msan_memcpy+0x43/0x50 mm/kmsan/kmsan_instr.c:116
- soft_cursor+0x44d/0x13f0 drivers/video/fbdev/core/softcursor.c:50
- bit_cursor+0x38c6/0x3a40 drivers/video/fbdev/core/bitblit.c:386
- fbcon_cursor+0x195e/0x1a60 drivers/video/fbdev/core/fbcon.c:1411
- set_cursor drivers/tty/vt/vt.c:915 [inline]
- redraw_screen+0x28ee/0x2980 drivers/tty/vt/vt.c:1031
- vc_do_resize+0x36a8/0x38f0 drivers/tty/vt/vt.c:1314
- vc_resize+0xc3/0xe0 drivers/tty/vt/vt.c:1334
- fbcon_modechanged+0xdc1/0x1320 drivers/video/fbdev/core/fbcon.c:2990
- fbcon_update_vcs+0x86/0xa0 drivers/video/fbdev/core/fbcon.c:3048
- fb_set_var+0x1420/0x1850 drivers/video/fbdev/core/fbmem.c:1056
- do_fb_ioctl+0xc00/0x1150 drivers/video/fbdev/core/fbmem.c:1109
- fb_ioctl+0x1e4/0x210 drivers/video/fbdev/core/fbmem.c:1185
- vfs_ioctl fs/ioctl.c:48 [inline]
- ksys_ioctl fs/ioctl.c:753 [inline]
- __do_sys_ioctl fs/ioctl.c:762 [inline]
- __se_sys_ioctl+0x319/0x4d0 fs/ioctl.c:760
- __x64_sys_ioctl+0x4a/0x70 fs/ioctl.c:760
- do_syscall_64+0xad/0x160 arch/x86/entry/common.c:386
- entry_SYSCALL_64_after_hwframe+0x44/0xa9
-
-Local variable ----cursor@bit_cursor created at:
- bit_cursor+0xe3/0x3a40 drivers/video/fbdev/core/bitblit.c:239
- bit_cursor+0xe3/0x3a40 drivers/video/fbdev/core/bitblit.c:239
-==========================
-
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ drivers/video/fbdev/omap2/omapfb/dss/venc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
-syzbot can test patches for this issue, for details see:
-https://goo.gl/tpsmEJ#testing-patches
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
+index 0b0ad20afd63..f560fa4d7786 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
+@@ -787,7 +787,7 @@ static int venc_probe_of(struct platform_device *pdev)
+ 		venc.type = OMAP_DSS_VENC_TYPE_SVIDEO;
+ 		break;
+ 	default:
+-		dev_err(&pdev->dev, "bad channel propert '%d'\n", channels);
++		dev_err(&pdev->dev, "bad channel property '%d'\n", channels);
+ 		r = -EINVAL;
+ 		goto err;
+ 	}
+-- 
+2.27.0

@@ -1,93 +1,144 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 10 Aug 2020 15:21:35 +0000
-Subject: [PATCH 4.19 13/48] vgacon: Fix for missing check in scrollback handling
-Message-Id: <20200810151804.862471898@linuxfoundation.org>
+From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Date: Wed, 05 Aug 2020 18:19:13 +0000
+Subject: [PATCH v1 03/12] fbdev: via-core: use generic power management
+Message-Id: <20200805180722.244008-4-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200810151804.199494191@linuxfoundation.org>
-In-Reply-To: <20200810151804.199494191@linuxfoundation.org>
+References: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, =?UTF-8?q?=E5=BC=A0=E4=BA=91=E6=B5=B7?= <zhangyunhai@nsfocus.com>, Yang Yingliang <yangyingliang@huawei.com>, Kyungtae Kim <kt0755@gmail.com>, linux-fbdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Solar Designer <solar@openwall.com>, "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>, Anthony Liguori <aliguori@amazon.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jiri Slaby <jirislaby@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-From: Yunhai Zhang <zhangyunhai@nsfocus.com>
+Drivers using legacy power management .suspen()/.resume() callbacks
+have to manage PCI states and device's PM states themselves. They also
+need to take care of standard configuration registers.
 
-commit ebfdfeeae8c01fcb2b3b74ffaf03876e20835d2d upstream.
+Switch to generic power management framework using a single
+"struct dev_pm_ops" variable to take the unnecessary load from the driver.
+This also avoids the need for the driver to directly call most of the PCI
+helper functions and device power state control functions, as through
+the generic framework PCI Core takes care of the necessary operations,
+and drivers are required to do only device-specific jobs.
 
-vgacon_scrollback_update() always leaves enbough room in the scrollback
-buffer for the next call, but if the console size changed that room
-might not actually be enough, and so we need to re-check.
-
-The check should be in the loop since vgacon_scrollback_cur->tail is
-updated in the loop and count may be more than 1 when triggered by CSI M,
-as Jiri's PoC:
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-
-int main(int argc, char** argv)
-{
-        int fd = open("/dev/tty1", O_RDWR);
-        unsigned short size[3] = {25, 200, 0};
-        ioctl(fd, 0x5609, size); // VT_RESIZE
-
-        write(fd, "\e[1;1H", 6);
-        for (int i = 0; i < 30; i++)
-                write(fd, "\e[10M", 5);
-}
-
-It leads to various crashes as vgacon_scrollback_update writes out of
-the buffer:
- BUG: unable to handle page fault for address: ffffc900001752a0
- #PF: supervisor write access in kernel mode
- #PF: error_code(0x0002) - not-present page
- RIP: 0010:mutex_unlock+0x13/0x30
-...
- Call Trace:
-  n_tty_write+0x1a0/0x4d0
-  tty_write+0x1a0/0x2e0
-
-Or to KASAN reports:
-BUG: KASAN: slab-out-of-bounds in vgacon_scroll+0x57a/0x8ed
-
-This fixes CVE-2020-14331.
-
-Reported-by: 张云海 <zhangyunhai@nsfocus.com>
-Reported-by: Yang Yingliang <yangyingliang@huawei.com>
-Reported-by: Kyungtae Kim <kt0755@gmail.com>
-Fixes: 15bdab959c9b ([PATCH] vgacon: Add support for soft scrollback)
-Cc: stable@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Solar Designer <solar@openwall.com>
-Cc: "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
-Cc: Anthony Liguori <aliguori@amazon.com>
-Cc: Yang Yingliang <yangyingliang@huawei.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Jiri Slaby <jirislaby@kernel.org>
-Signed-off-by: Yunhai Zhang <zhangyunhai@nsfocus.com>
-Link: https://lore.kernel.org/r/9fb43895-ca91-9b07-ebfd-808cf854ca95@nsfocus.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
+Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
- drivers/video/console/vgacon.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/video/fbdev/via/via-core.c | 39 ++++++++++++------------------
+ include/linux/via-core.h           |  2 --
+ 2 files changed, 16 insertions(+), 25 deletions(-)
 
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -251,6 +251,10 @@ static void vgacon_scrollback_update(str
- 	p = (void *) (c->vc_origin + t * c->vc_size_row);
+diff --git a/drivers/video/fbdev/via/via-core.c b/drivers/video/fbdev/via/via-core.c
+index 703ddee9a244..89d75079b730 100644
+--- a/drivers/video/fbdev/via/via-core.c
++++ b/drivers/video/fbdev/via/via-core.c
+@@ -558,9 +558,8 @@ static void via_teardown_subdevs(void)
+ /*
+  * Power management functions
+  */
+-#ifdef CONFIG_PM
+-static LIST_HEAD(viafb_pm_hooks);
+-static DEFINE_MUTEX(viafb_pm_hooks_lock);
++static __maybe_unused LIST_HEAD(viafb_pm_hooks);
++static __maybe_unused DEFINE_MUTEX(viafb_pm_hooks_lock);
  
- 	while (count--) {
-+		if ((vgacon_scrollback_cur->tail + c->vc_size_row) >
-+		    vgacon_scrollback_cur->size)
-+			vgacon_scrollback_cur->tail = 0;
+ void viafb_pm_register(struct viafb_pm_hooks *hooks)
+ {
+@@ -580,12 +579,10 @@ void viafb_pm_unregister(struct viafb_pm_hooks *hooks)
+ }
+ EXPORT_SYMBOL_GPL(viafb_pm_unregister);
+ 
+-static int via_suspend(struct pci_dev *pdev, pm_message_t state)
++static int __maybe_unused via_suspend(struct device *dev)
+ {
+ 	struct viafb_pm_hooks *hooks;
+ 
+-	if (state.event != PM_EVENT_SUSPEND)
+-		return 0;
+ 	/*
+ 	 * "I've occasionally hit a few drivers that caused suspend
+ 	 * failures, and each and every time it was a driver bug, and
+@@ -600,24 +597,13 @@ static int via_suspend(struct pci_dev *pdev, pm_message_t state)
+ 		hooks->suspend(hooks->private);
+ 	mutex_unlock(&viafb_pm_hooks_lock);
+ 
+-	pci_save_state(pdev);
+-	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+ 	return 0;
+ }
+ 
+-static int via_resume(struct pci_dev *pdev)
++static int __maybe_unused via_resume(struct device *dev)
+ {
+ 	struct viafb_pm_hooks *hooks;
+ 
+-	/* Get the bus side powered up */
+-	pci_set_power_state(pdev, PCI_D0);
+-	pci_restore_state(pdev);
+-	if (pci_enable_device(pdev))
+-		return 0;
+-
+-	pci_set_master(pdev);
+-
+ 	/* Now bring back any subdevs */
+ 	mutex_lock(&viafb_pm_hooks_lock);
+ 	list_for_each_entry(hooks, &viafb_pm_hooks, list)
+@@ -626,7 +612,6 @@ static int via_resume(struct pci_dev *pdev)
+ 
+ 	return 0;
+ }
+-#endif /* CONFIG_PM */
+ 
+ static int via_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ {
+@@ -712,15 +697,23 @@ static const struct pci_device_id via_pci_table[] = {
+ };
+ MODULE_DEVICE_TABLE(pci, via_pci_table);
+ 
++static const struct dev_pm_ops via_pm_ops = {
++#ifdef CONFIG_PM_SLEEP
++	.suspend	= via_suspend,
++	.resume		= via_resume,
++	.freeze		= NULL,
++	.thaw		= via_resume,
++	.poweroff	= NULL,
++	.restore	= via_resume,
++#endif
++};
 +
- 		scr_memcpyw(vgacon_scrollback_cur->data +
- 			    vgacon_scrollback_cur->tail,
- 			    p, c->vc_size_row);
+ static struct pci_driver via_driver = {
+ 	.name		= "viafb",
+ 	.id_table	= via_pci_table,
+ 	.probe		= via_pci_probe,
+ 	.remove		= via_pci_remove,
+-#ifdef CONFIG_PM
+-	.suspend	= via_suspend,
+-	.resume		= via_resume,
+-#endif
++	.driver.pm	= &via_pm_ops,
+ };
+ 
+ static int __init via_core_init(void)
+diff --git a/include/linux/via-core.h b/include/linux/via-core.h
+index 9e802deedb2d..8737599b9148 100644
+--- a/include/linux/via-core.h
++++ b/include/linux/via-core.h
+@@ -47,7 +47,6 @@ struct via_port_cfg {
+ /*
+  * Allow subdevs to register suspend/resume hooks.
+  */
+-#ifdef CONFIG_PM
+ struct viafb_pm_hooks {
+ 	struct list_head list;
+ 	int (*suspend)(void *private);
+@@ -57,7 +56,6 @@ struct viafb_pm_hooks {
+ 
+ void viafb_pm_register(struct viafb_pm_hooks *hooks);
+ void viafb_pm_unregister(struct viafb_pm_hooks *hooks);
+-#endif /* CONFIG_PM */
+ 
+ /*
+  * This is the global viafb "device" containing stuff needed by
+-- 
+2.27.0

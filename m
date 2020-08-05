@@ -1,130 +1,140 @@
 From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Mon, 10 Aug 2020 19:09:23 +0000
-Subject: [PATCH v2 12/12] fbdev: arkfb: use generic power management
-Message-Id: <20200810185723.15540-13-vaibhavgupta40@gmail.com>
+Date: Wed, 05 Aug 2020 18:19:17 +0000
+Subject: [PATCH v1 07/12] fbdev: savagefb: use generic power management
+Message-Id: <20200805180722.244008-8-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200810165458.GA292825@ravnborg.org>
- <20200810185723.15540-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+References: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-Drivers should do only device-specific jobs. But in general, drivers using
-legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
-PM-related tasks themselves which can be done by PCI Core itself. This
-brings extra load on the driver and it directly calls PCI helper functions
-to handle them.
+Drivers using legacy power management .suspen()/.resume() callbacks
+have to manage PCI states and device's PM states themselves. They also
+need to take care of standard configuration registers.
 
-Switch to the new generic framework by updating function signatures and
-define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
-unnecessary calls to the PCI Helper functions along with the legacy
-.suspend & .resume bindings.
+Switch to generic power management framework using a single
+"struct dev_pm_ops" variable to take the unnecessary load from the driver.
+This also avoids the need for the driver to directly call most of the PCI
+helper functions and device power state control functions, as through
+the generic framework PCI Core takes care of the necessary operations,
+and drivers are required to do only device-specific jobs.
 
 Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
- drivers/video/fbdev/arkfb.c | 41 +++++++++++++++----------------------
- 1 file changed, 17 insertions(+), 24 deletions(-)
+ drivers/video/fbdev/savage/savagefb_driver.c | 52 ++++++++++++--------
+ 1 file changed, 32 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-index 11ab9a153860..6a4114db0dfd 100644
---- a/drivers/video/fbdev/arkfb.c
-+++ b/drivers/video/fbdev/arkfb.c
-@@ -1085,12 +1085,11 @@ static void ark_pci_remove(struct pci_dev *dev)
+diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
+index 3c8ae87f0ea7..d6aae759e90f 100644
+--- a/drivers/video/fbdev/savage/savagefb_driver.c
++++ b/drivers/video/fbdev/savage/savagefb_driver.c
+@@ -2346,9 +2346,9 @@ static void savagefb_remove(struct pci_dev *dev)
+ 	}
  }
  
- 
--#ifdef CONFIG_PM
- /* PCI suspend */
- 
--static int ark_pci_suspend (struct pci_dev* dev, pm_message_t state)
-+static int __maybe_unused ark_pci_suspend(struct device *dev)
+-static int savagefb_suspend(struct pci_dev *dev, pm_message_t mesg)
++static int savagefb_suspend_late(struct device *dev, pm_message_t mesg)
  {
 -	struct fb_info *info = pci_get_drvdata(dev);
 +	struct fb_info *info = dev_get_drvdata(dev);
- 	struct arkfb_info *par = info->par;
+ 	struct savagefb_par *par = info->par;
  
- 	dev_info(info->device, "suspend\n");
-@@ -1098,7 +1097,7 @@ static int ark_pci_suspend (struct pci_dev* dev, pm_message_t state)
- 	console_lock();
- 	mutex_lock(&(par->open_lock));
+ 	DBG("savagefb_suspend");
+@@ -2356,7 +2356,7 @@ static int savagefb_suspend(struct pci_dev *dev, pm_message_t mesg)
+ 	if (mesg.event = PM_EVENT_PRETHAW)
+ 		mesg.event = PM_EVENT_FREEZE;
+ 	par->pm_state = mesg.event;
+-	dev->dev.power.power_state = mesg;
++	dev->power.power_state = mesg;
  
--	if ((state.event = PM_EVENT_FREEZE) || (par->ref_count = 0)) {
-+	if (par->ref_count = 0) {
- 		mutex_unlock(&(par->open_lock));
- 		console_unlock();
- 		return 0;
-@@ -1106,10 +1105,6 @@ static int ark_pci_suspend (struct pci_dev* dev, pm_message_t state)
- 
- 	fb_set_suspend(info, 1);
- 
+ 	/*
+ 	 * For PM_EVENT_FREEZE, do not power down so the console
+@@ -2374,17 +2374,29 @@ static int savagefb_suspend(struct pci_dev *dev, pm_message_t mesg)
+ 	savagefb_blank(FB_BLANK_POWERDOWN, info);
+ 	savage_set_default_par(par, &par->save);
+ 	savage_disable_mmio(par);
 -	pci_save_state(dev);
 -	pci_disable_device(dev);
--	pci_set_power_state(dev, pci_choose_state(dev, state));
--
- 	mutex_unlock(&(par->open_lock));
+-	pci_set_power_state(dev, pci_choose_state(dev, mesg));
  	console_unlock();
  
-@@ -1119,9 +1114,9 @@ static int ark_pci_suspend (struct pci_dev* dev, pm_message_t state)
+ 	return 0;
+ }
  
- /* PCI resume */
- 
--static int ark_pci_resume (struct pci_dev* dev)
-+static int __maybe_unused ark_pci_resume(struct device *dev)
+-static int savagefb_resume(struct pci_dev* dev)
++static int __maybe_unused savagefb_suspend(struct device *dev)
  {
 -	struct fb_info *info = pci_get_drvdata(dev);
++	return savagefb_suspend_late(dev, PMSG_SUSPEND);
++}
++
++static int __maybe_unused savagefb_hibernate(struct device *dev)
++{
++	return savagefb_suspend_late(dev, PMSG_HIBERNATE);
++}
++
++static int __maybe_unused savagefb_freeze(struct device *dev)
++{
++	return savagefb_suspend_late(dev, PMSG_FREEZE);
++}
++
++static int __maybe_unused savagefb_resume(struct device *dev)
++{
 +	struct fb_info *info = dev_get_drvdata(dev);
- 	struct arkfb_info *par = info->par;
+ 	struct savagefb_par *par = info->par;
+ 	int cur_state = par->pm_state;
  
- 	dev_info(info->device, "resume\n");
-@@ -1132,14 +1127,6 @@ static int ark_pci_resume (struct pci_dev* dev)
- 	if (par->ref_count = 0)
- 		goto fail;
+@@ -2396,20 +2408,11 @@ static int savagefb_resume(struct pci_dev* dev)
+ 	 * The adapter was not powered down coming back from a
+ 	 * PM_EVENT_FREEZE.
+ 	 */
+-	if (cur_state = PM_EVENT_FREEZE) {
+-		pci_set_power_state(dev, PCI_D0);
++	if (cur_state = PM_EVENT_FREEZE)
+ 		return 0;
+-	}
+ 
+ 	console_lock();
  
 -	pci_set_power_state(dev, PCI_D0);
 -	pci_restore_state(dev);
 -
 -	if (pci_enable_device(dev))
--		goto fail;
+-		DBG("err");
 -
 -	pci_set_master(dev);
--
- 	arkfb_set_par(info);
- 	fb_set_suspend(info, 0);
- 
-@@ -1148,10 +1135,17 @@ static int ark_pci_resume (struct pci_dev* dev)
- 	console_unlock();
+ 	savage_enable_mmio(par);
+ 	savage_init_hw(par);
+ 	savagefb_set_par(info);
+@@ -2420,6 +2423,16 @@ static int savagefb_resume(struct pci_dev* dev)
  	return 0;
  }
--#else
--#define ark_pci_suspend NULL
--#define ark_pci_resume NULL
--#endif /* CONFIG_PM */
-+
-+static const struct dev_pm_ops ark_pci_pm_ops = {
+ 
++static const struct dev_pm_ops savagefb_pm_ops = {
 +#ifdef CONFIG_PM_SLEEP
-+	.suspend	= ark_pci_suspend,
-+	.resume		= ark_pci_resume,
-+	.freeze		= ark_pci_suspend,
-+	.thaw		= ark_pci_resume,
-+	.poweroff	= ark_pci_suspend,
-+	.restore	= ark_pci_resume,
++	.suspend	= savagefb_suspend,
++	.resume		= savagefb_resume,
++	.freeze		= savagefb_freeze,
++	.thaw		= savagefb_resume,
++	.poweroff	= savagefb_hibernate,
++	.restore	= savagefb_resume,
 +#endif
 +};
  
- /* List of boards that we are trying to support */
- 
-@@ -1168,8 +1162,7 @@ static struct pci_driver arkfb_pci_driver = {
- 	.id_table	= ark_devices,
- 	.probe		= ark_pci_probe,
- 	.remove		= ark_pci_remove,
--	.suspend	= ark_pci_suspend,
--	.resume		= ark_pci_resume,
-+	.driver.pm	= &ark_pci_pm_ops,
+ static const struct pci_device_id savagefb_devices[] = {
+ 	{PCI_VENDOR_ID_S3, PCI_CHIP_SUPSAV_MX128,
+@@ -2500,8 +2513,7 @@ static struct pci_driver savagefb_driver = {
+ 	.name =     "savagefb",
+ 	.id_table = savagefb_devices,
+ 	.probe =    savagefb_probe,
+-	.suspend =  savagefb_suspend,
+-	.resume =   savagefb_resume,
++	.driver.pm = &savagefb_pm_ops,
+ 	.remove =   savagefb_remove,
  };
  
- /* Cleanup */
 -- 
 2.27.0

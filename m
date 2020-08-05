@@ -1,93 +1,68 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 10 Aug 2020 15:20:42 +0000
-Subject: [PATCH 5.7 23/79] vgacon: Fix for missing check in scrollback handling
-Message-Id: <20200810151813.332203643@linuxfoundation.org>
+From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Date: Wed, 05 Aug 2020 18:19:10 +0000
+Subject: [PATCH v1 00/12] video: fbdev: use generic power management
+Message-Id: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200810151812.114485777@linuxfoundation.org>
-In-Reply-To: <20200810151812.114485777@linuxfoundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, =?UTF-8?q?=E5=BC=A0=E4=BA=91=E6=B5=B7?= <zhangyunhai@nsfocus.com>, Yang Yingliang <yangyingliang@huawei.com>, Kyungtae Kim <kt0755@gmail.com>, linux-fbdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Solar Designer <solar@openwall.com>, "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>, Anthony Liguori <aliguori@amazon.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jiri Slaby <jirislaby@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-From: Yunhai Zhang <zhangyunhai@nsfocus.com>
+Linux Kernel Mentee: Remove Legacy Power Management.
 
-commit ebfdfeeae8c01fcb2b3b74ffaf03876e20835d2d upstream.
+The purpose of this patch series is to upgrade power management in video fbdev
+drivers. This has been done by upgrading .suspend() and .resume() callbacks.
 
-vgacon_scrollback_update() always leaves enbough room in the scrollback
-buffer for the next call, but if the console size changed that room
-might not actually be enough, and so we need to re-check.
+The upgrade makes sure that the involvement of PCI Core does not change the
+order of operations executed in a driver. Thus, does not change its behavior.
 
-The check should be in the loop since vgacon_scrollback_cur->tail is
-updated in the loop and count may be more than 1 when triggered by CSI M,
-as Jiri's PoC:
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
+In general, drivers with legacy PM, .suspend() and .resume() make use of PCI
+helper functions like pci_enable/disable_device_mem(), pci_set_power_state(),
+pci_save/restore_state(), pci_enable/disable_device(), etc. to complete
+their job.
 
-int main(int argc, char** argv)
-{
-        int fd = open("/dev/tty1", O_RDWR);
-        unsigned short size[3] = {25, 200, 0};
-        ioctl(fd, 0x5609, size); // VT_RESIZE
+The conversion requires the removal of those function calls, change the
+callbacks' definition accordingly and make use of dev_pm_ops structure.
 
-        write(fd, "\e[1;1H", 6);
-        for (int i = 0; i < 30; i++)
-                write(fd, "\e[10M", 5);
-}
+All patches are compile-tested only.
 
-It leads to various crashes as vgacon_scrollback_update writes out of
-the buffer:
- BUG: unable to handle page fault for address: ffffc900001752a0
- #PF: supervisor write access in kernel mode
- #PF: error_code(0x0002) - not-present page
- RIP: 0010:mutex_unlock+0x13/0x30
-...
- Call Trace:
-  n_tty_write+0x1a0/0x4d0
-  tty_write+0x1a0/0x2e0
+Test tools:
+    - Compiler: gcc (GCC) 10.1.0
+    - allmodconfig build: make -j$(nproc) W=1 all
 
-Or to KASAN reports:
-BUG: KASAN: slab-out-of-bounds in vgacon_scroll+0x57a/0x8ed
+Vaibhav Gupta (12):
+  fbdev: gxfb: use generic power management
+  fbdev: lxfb: use generic power management
+  fbdev: via-core: use generic power management
+  fbdev: aty: use generic power management
+  fbdev: aty128fb: use generic power management
+  fbdev: nvidia: use generic power management
+  fbdev: savagefb: use generic power management
+  fbdev: cyber2000fb: use generic power management
+  fbdev: i740fb: use generic power management
+  fbdev: vt8623fb: use generic power management
+  fbdev: s3fb: use generic power management
+  fbdev: arkfb: use generic power management
 
-This fixes CVE-2020-14331.
+ drivers/video/fbdev/arkfb.c                  | 41 ++++++-------
+ drivers/video/fbdev/aty/aty128fb.c           | 51 ++++++++++------
+ drivers/video/fbdev/aty/atyfb_base.c         | 50 ++++++++++-----
+ drivers/video/fbdev/cyber2000fb.c            | 13 ++--
+ drivers/video/fbdev/geode/gxfb.h             |  5 --
+ drivers/video/fbdev/geode/gxfb_core.c        | 36 ++++++-----
+ drivers/video/fbdev/geode/lxfb.h             |  5 --
+ drivers/video/fbdev/geode/lxfb_core.c        | 37 +++++------
+ drivers/video/fbdev/geode/lxfb_ops.c         |  4 --
+ drivers/video/fbdev/geode/suspend_gx.c       |  4 --
+ drivers/video/fbdev/i740fb.c                 | 40 +++++-------
+ drivers/video/fbdev/nvidia/nvidia.c          | 64 +++++++++++---------
+ drivers/video/fbdev/s3fb.c                   | 39 +++++-------
+ drivers/video/fbdev/savage/savagefb_driver.c | 52 ++++++++++------
+ drivers/video/fbdev/via/via-core.c           | 39 +++++-------
+ drivers/video/fbdev/vt8623fb.c               | 41 ++++++-------
+ include/linux/via-core.h                     |  2 -
+ 17 files changed, 267 insertions(+), 256 deletions(-)
 
-Reported-by: 张云海 <zhangyunhai@nsfocus.com>
-Reported-by: Yang Yingliang <yangyingliang@huawei.com>
-Reported-by: Kyungtae Kim <kt0755@gmail.com>
-Fixes: 15bdab959c9b ([PATCH] vgacon: Add support for soft scrollback)
-Cc: stable@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Solar Designer <solar@openwall.com>
-Cc: "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
-Cc: Anthony Liguori <aliguori@amazon.com>
-Cc: Yang Yingliang <yangyingliang@huawei.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Jiri Slaby <jirislaby@kernel.org>
-Signed-off-by: Yunhai Zhang <zhangyunhai@nsfocus.com>
-Link: https://lore.kernel.org/r/9fb43895-ca91-9b07-ebfd-808cf854ca95@nsfocus.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
----
- drivers/video/console/vgacon.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -251,6 +251,10 @@ static void vgacon_scrollback_update(str
- 	p = (void *) (c->vc_origin + t * c->vc_size_row);
- 
- 	while (count--) {
-+		if ((vgacon_scrollback_cur->tail + c->vc_size_row) >
-+		    vgacon_scrollback_cur->size)
-+			vgacon_scrollback_cur->tail = 0;
-+
- 		scr_memcpyw(vgacon_scrollback_cur->data +
- 			    vgacon_scrollback_cur->tail,
- 			    p, c->vc_size_row);
+-- 
+2.27.0

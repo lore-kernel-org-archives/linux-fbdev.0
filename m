@@ -1,158 +1,126 @@
 From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Mon, 10 Aug 2020 18:59:54 +0000
-Subject: [PATCH v2 04/12] fbdev: aty: use generic power management
-Message-Id: <20200810185723.15540-5-vaibhavgupta40@gmail.com>
+Date: Wed, 05 Aug 2020 18:19:21 +0000
+Subject: [PATCH v1 11/12] fbdev: s3fb: use generic power management
+Message-Id: <20200805180722.244008-12-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200810165458.GA292825@ravnborg.org>
- <20200810185723.15540-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+References: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-Drivers should do only device-specific jobs. But in general, drivers using
-legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
-PM-related tasks themselves which can be done by PCI Core itself. This
-brings extra load on the driver and it directly calls PCI helper functions
-to handle them.
+Drivers using legacy power management .suspen()/.resume() callbacks
+have to manage PCI states and device's PM states themselves. They also
+need to take care of standard configuration registers.
 
-Switch to the new generic framework by updating function signatures and
-define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
-unnecessary calls to the PCI Helper functions along with the legacy
-.suspend & .resume bindings.
+Switch to generic power management framework using a single
+"struct dev_pm_ops" variable to take the unnecessary load from the driver.
+This also avoids the need for the driver to directly call most of the PCI
+helper functions and device power state control functions, as through
+the generic framework PCI Core takes care of the necessary operations,
+and drivers are required to do only device-specific jobs.
 
 Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
- drivers/video/fbdev/aty/atyfb_base.c | 50 ++++++++++++++++++++--------
- 1 file changed, 36 insertions(+), 14 deletions(-)
+ drivers/video/fbdev/s3fb.c | 39 ++++++++++++++++----------------------
+ 1 file changed, 16 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index b0ac895e5ac9..a24d5bf6ade1 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -132,8 +132,8 @@
- #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## args)
- #define PRINTKE(fmt, args...)	printk(KERN_ERR "atyfb: " fmt, ## args)
+diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
+index 60c424fae988..5c74253e7b2c 100644
+--- a/drivers/video/fbdev/s3fb.c
++++ b/drivers/video/fbdev/s3fb.c
+@@ -1410,9 +1410,9 @@ static void s3_pci_remove(struct pci_dev *dev)
  
--#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
--defined (CONFIG_FB_ATY_GENERIC_LCD) || defined(CONFIG_FB_ATY_BACKLIGHT)
-+#if defined(CONFIG_PMAC_BACKLIGHT) || defined(CONFIG_FB_ATY_GENERIC_LCD) || \
-+defined(CONFIG_FB_ATY_BACKLIGHT)
- static const u32 lt_lcd_regs[] = {
- 	CNFG_PANEL_LG,
- 	LCD_GEN_CNTL_LG,
-@@ -175,7 +175,7 @@ u32 aty_ld_lcd(int index, const struct atyfb_par *par)
- 		return aty_ld_le32(LCD_DATA, par);
- 	}
- }
--#endif /* defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
-+#endif /* defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
+ /* PCI suspend */
  
- #ifdef CONFIG_FB_ATY_GENERIC_LCD
- /*
-@@ -1994,7 +1994,7 @@ static int atyfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
- 
- 
- 
--#if defined(CONFIG_PM) && defined(CONFIG_PCI)
-+#if defined(CONFIG_PCI)
- 
- #ifdef CONFIG_PPC_PMAC
- /* Power management routines. Those are used for PowerBook sleep.
-@@ -2055,8 +2055,9 @@ static int aty_power_mgmt(int sleep, struct atyfb_par *par)
- }
- #endif /* CONFIG_PPC_PMAC */
- 
--static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int atyfb_pci_suspend_late(struct device *dev, pm_message_t state)
+-static int s3_pci_suspend(struct pci_dev* dev, pm_message_t state)
++static int __maybe_unused s3_pci_suspend(struct device *dev)
  {
-+	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct fb_info *info = pci_get_drvdata(pdev);
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct s3fb_info *par = info->par;
  
-@@ -2082,7 +2083,6 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
- 	 * first save the config space content so the core can
- 	 * restore it properly on resume.
- 	 */
--	pci_save_state(pdev);
+ 	dev_info(info->device, "suspend\n");
+@@ -1420,7 +1420,7 @@ static int s3_pci_suspend(struct pci_dev* dev, pm_message_t state)
+ 	console_lock();
+ 	mutex_lock(&(par->open_lock));
  
- #ifdef CONFIG_PPC_PMAC
- 	/* Set chip to "suspend" mode */
-@@ -2094,8 +2094,6 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+-	if ((state.event = PM_EVENT_FREEZE) || (par->ref_count = 0)) {
++	if (par->ref_count = 0) {
+ 		mutex_unlock(&(par->open_lock));
  		console_unlock();
- 		return -EIO;
- 	}
--#else
--	pci_set_power_state(pdev, pci_choose_state(pdev, state));
- #endif
+ 		return 0;
+@@ -1428,10 +1428,6 @@ static int s3_pci_suspend(struct pci_dev* dev, pm_message_t state)
  
+ 	fb_set_suspend(info, 1);
+ 
+-	pci_save_state(dev);
+-	pci_disable_device(dev);
+-	pci_set_power_state(dev, pci_choose_state(dev, state));
+-
+ 	mutex_unlock(&(par->open_lock));
  	console_unlock();
-@@ -2105,6 +2103,21 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 
+@@ -1441,11 +1437,10 @@ static int s3_pci_suspend(struct pci_dev* dev, pm_message_t state)
+ 
+ /* PCI resume */
+ 
+-static int s3_pci_resume(struct pci_dev* dev)
++static int __maybe_unused s3_pci_resume(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct s3fb_info *par = info->par;
+-	int err;
+ 
+ 	dev_info(info->device, "resume\n");
+ 
+@@ -1458,17 +1453,6 @@ static int s3_pci_resume(struct pci_dev* dev)
+ 		return 0;
+ 	}
+ 
+-	pci_set_power_state(dev, PCI_D0);
+-	pci_restore_state(dev);
+-	err = pci_enable_device(dev);
+-	if (err) {
+-		mutex_unlock(&(par->open_lock));
+-		console_unlock();
+-		dev_err(info->device, "error %d enabling device for resume\n", err);
+-		return err;
+-	}
+-	pci_set_master(dev);
+-
+ 	s3fb_set_par(info);
+ 	fb_set_suspend(info, 0);
+ 
+@@ -1478,6 +1462,16 @@ static int s3_pci_resume(struct pci_dev* dev)
  	return 0;
  }
  
-+static int __maybe_unused atyfb_pci_suspend(struct device *dev)
-+{
-+	return atyfb_pci_suspend_late(dev, PMSG_SUSPEND);
-+}
-+
-+static int __maybe_unused atyfb_pci_hibernate(struct device *dev)
-+{
-+	return atyfb_pci_suspend_late(dev, PMSG_HIBERNATE);
-+}
-+
-+static int __maybe_unused atyfb_pci_freeze(struct device *dev)
-+{
-+	return atyfb_pci_suspend_late(dev, PMSG_FREEZE);
-+}
-+
- static void aty_resume_chip(struct fb_info *info)
- {
- 	struct atyfb_par *par = info->par;
-@@ -2119,8 +2132,9 @@ static void aty_resume_chip(struct fb_info *info)
- 			aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
- }
- 
--static int atyfb_pci_resume(struct pci_dev *pdev)
-+static int __maybe_unused atyfb_pci_resume(struct device *dev)
- {
-+	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct fb_info *info = pci_get_drvdata(pdev);
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
- 
-@@ -2162,7 +2176,18 @@ static int atyfb_pci_resume(struct pci_dev *pdev)
- 	return 0;
- }
- 
--#endif /*  defined(CONFIG_PM) && defined(CONFIG_PCI) */
-+static const struct dev_pm_ops atyfb_pci_pm_ops = {
++static const struct dev_pm_ops s3_pci_pm_ops = {
 +#ifdef CONFIG_PM_SLEEP
-+	.suspend	= atyfb_pci_suspend,
-+	.resume		= atyfb_pci_resume,
-+	.freeze		= atyfb_pci_freeze,
-+	.thaw		= atyfb_pci_resume,
-+	.poweroff	= atyfb_pci_hibernate,
-+	.restore	= atyfb_pci_resume,
-+#endif /* CONFIG_PM_SLEEP */
++	.suspend	= s3_pci_suspend,
++	.resume		= s3_pci_resume,
++	.freeze		= NULL,
++	.thaw		= s3_pci_resume,
++	.poweroff	= s3_pci_suspend,
++	.restore	= s3_pci_resume,
++#endif
 +};
-+
-+#endif /*  defined(CONFIG_PCI) */
  
- /* Backlight */
- #ifdef CONFIG_FB_ATY_BACKLIGHT
-@@ -3801,10 +3826,7 @@ static struct pci_driver atyfb_driver = {
- 	.id_table	= atyfb_pci_tbl,
- 	.probe		= atyfb_pci_probe,
- 	.remove		= atyfb_pci_remove,
--#ifdef CONFIG_PM
--	.suspend	= atyfb_pci_suspend,
--	.resume		= atyfb_pci_resume,
--#endif /* CONFIG_PM */
-+	.driver.pm	= &atyfb_pci_pm_ops,
+ /* List of boards that we are trying to support */
+ 
+@@ -1510,8 +1504,7 @@ static struct pci_driver s3fb_pci_driver = {
+ 	.id_table	= s3_devices,
+ 	.probe		= s3_pci_probe,
+ 	.remove		= s3_pci_remove,
+-	.suspend	= s3_pci_suspend,
+-	.resume		= s3_pci_resume,
++	.driver.pm	= &s3_pci_pm_ops,
  };
  
- #endif /* CONFIG_PCI */
+ /* Parse user specified options */
 -- 
 2.27.0

@@ -1,8 +1,10 @@
 From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Thu, 06 Aug 2020 07:34:54 +0000
+Date: Thu, 06 Aug 2020 07:38:56 +0000
 Subject: [PATCH v1 0/2] video: fbdev: radeonfb: PCI PM framework upgrade and fix-ups.
-Message-Id: <20200806072256.585705-1-vaibhavgupta40@gmail.com>
+Message-Id: <20200806072658.592444-1-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200806072256.585705-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200806072256.585705-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

@@ -1,10 +1,11 @@
 From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Wed, 19 Aug 2020 18:59:34 +0000
-Subject: [PATCH v3 03/12] fbdev: via-core: use generic power management
-Message-Id: <20200819185654.151170-4-vaibhavgupta40@gmail.com>
+Date: Mon, 10 Aug 2020 18:59:54 +0000
+Subject: [PATCH v2 04/12] fbdev: aty: use generic power management
+Message-Id: <20200810185723.15540-5-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
+References: <20200810165458.GA292825@ravnborg.org>
+ <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,136 +19,140 @@ brings extra load on the driver and it directly calls PCI helper functions
 to handle them.
 
 Switch to the new generic framework by updating function signatures and
-define a "struct dev_pm_ops" variable to bind PM callbacks.
-
-The via_suspend() is designed to function only in the case of Suspend.
-Thus, the code checked for "if (state.event != PM_EVENT_SUSPEND)". This is
-because, in the legacy framework, this callback was invoked even in the
-event of Freeze and Hibernate. Hence, added the load of unnecessary
-function-calls.
-
-The goal can be achieved by binding the callback with only
-"via_pm_ops.suspend" in the new framework. This also avoids the step of
-checking "if (state.event != PM_EVENT_SUSPEND)" every time the callback is
-invoked.
+define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
+unnecessary calls to the PCI Helper functions along with the legacy
+.suspend & .resume bindings.
 
 Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
- drivers/video/fbdev/via/via-core.c | 39 ++++++++++++------------------
- include/linux/via-core.h           |  2 --
- 2 files changed, 16 insertions(+), 25 deletions(-)
+ drivers/video/fbdev/aty/atyfb_base.c | 50 ++++++++++++++++++++--------
+ 1 file changed, 36 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/fbdev/via/via-core.c b/drivers/video/fbdev/via/via-core.c
-index 703ddee9a244..89d75079b730 100644
---- a/drivers/video/fbdev/via/via-core.c
-+++ b/drivers/video/fbdev/via/via-core.c
-@@ -558,9 +558,8 @@ static void via_teardown_subdevs(void)
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index b0ac895e5ac9..a24d5bf6ade1 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -132,8 +132,8 @@
+ #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## args)
+ #define PRINTKE(fmt, args...)	printk(KERN_ERR "atyfb: " fmt, ## args)
+ 
+-#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
+-defined (CONFIG_FB_ATY_GENERIC_LCD) || defined(CONFIG_FB_ATY_BACKLIGHT)
++#if defined(CONFIG_PMAC_BACKLIGHT) || defined(CONFIG_FB_ATY_GENERIC_LCD) || \
++defined(CONFIG_FB_ATY_BACKLIGHT)
+ static const u32 lt_lcd_regs[] = {
+ 	CNFG_PANEL_LG,
+ 	LCD_GEN_CNTL_LG,
+@@ -175,7 +175,7 @@ u32 aty_ld_lcd(int index, const struct atyfb_par *par)
+ 		return aty_ld_le32(LCD_DATA, par);
+ 	}
+ }
+-#endif /* defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
++#endif /* defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
+ 
+ #ifdef CONFIG_FB_ATY_GENERIC_LCD
  /*
-  * Power management functions
-  */
--#ifdef CONFIG_PM
--static LIST_HEAD(viafb_pm_hooks);
--static DEFINE_MUTEX(viafb_pm_hooks_lock);
-+static __maybe_unused LIST_HEAD(viafb_pm_hooks);
-+static __maybe_unused DEFINE_MUTEX(viafb_pm_hooks_lock);
+@@ -1994,7 +1994,7 @@ static int atyfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
  
- void viafb_pm_register(struct viafb_pm_hooks *hooks)
- {
-@@ -580,12 +579,10 @@ void viafb_pm_unregister(struct viafb_pm_hooks *hooks)
+ 
+ 
+-#if defined(CONFIG_PM) && defined(CONFIG_PCI)
++#if defined(CONFIG_PCI)
+ 
+ #ifdef CONFIG_PPC_PMAC
+ /* Power management routines. Those are used for PowerBook sleep.
+@@ -2055,8 +2055,9 @@ static int aty_power_mgmt(int sleep, struct atyfb_par *par)
  }
- EXPORT_SYMBOL_GPL(viafb_pm_unregister);
+ #endif /* CONFIG_PPC_PMAC */
  
--static int via_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int __maybe_unused via_suspend(struct device *dev)
+-static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
++static int atyfb_pci_suspend_late(struct device *dev, pm_message_t state)
  {
- 	struct viafb_pm_hooks *hooks;
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
  
--	if (state.event != PM_EVENT_SUSPEND)
--		return 0;
- 	/*
- 	 * "I've occasionally hit a few drivers that caused suspend
- 	 * failures, and each and every time it was a driver bug, and
-@@ -600,24 +597,13 @@ static int via_suspend(struct pci_dev *pdev, pm_message_t state)
- 		hooks->suspend(hooks->private);
- 	mutex_unlock(&viafb_pm_hooks_lock);
- 
+@@ -2082,7 +2083,6 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 	 * first save the config space content so the core can
+ 	 * restore it properly on resume.
+ 	 */
 -	pci_save_state(pdev);
--	pci_disable_device(pdev);
+ 
+ #ifdef CONFIG_PPC_PMAC
+ 	/* Set chip to "suspend" mode */
+@@ -2094,8 +2094,6 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 		console_unlock();
+ 		return -EIO;
+ 	}
+-#else
 -	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+ #endif
+ 
+ 	console_unlock();
+@@ -2105,6 +2103,21 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
  	return 0;
  }
  
--static int via_resume(struct pci_dev *pdev)
-+static int __maybe_unused via_resume(struct device *dev)
++static int __maybe_unused atyfb_pci_suspend(struct device *dev)
++{
++	return atyfb_pci_suspend_late(dev, PMSG_SUSPEND);
++}
++
++static int __maybe_unused atyfb_pci_hibernate(struct device *dev)
++{
++	return atyfb_pci_suspend_late(dev, PMSG_HIBERNATE);
++}
++
++static int __maybe_unused atyfb_pci_freeze(struct device *dev)
++{
++	return atyfb_pci_suspend_late(dev, PMSG_FREEZE);
++}
++
+ static void aty_resume_chip(struct fb_info *info)
  {
- 	struct viafb_pm_hooks *hooks;
+ 	struct atyfb_par *par = info->par;
+@@ -2119,8 +2132,9 @@ static void aty_resume_chip(struct fb_info *info)
+ 			aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
+ }
  
--	/* Get the bus side powered up */
--	pci_set_power_state(pdev, PCI_D0);
--	pci_restore_state(pdev);
--	if (pci_enable_device(pdev))
--		return 0;
--
--	pci_set_master(pdev);
--
- 	/* Now bring back any subdevs */
- 	mutex_lock(&viafb_pm_hooks_lock);
- 	list_for_each_entry(hooks, &viafb_pm_hooks, list)
-@@ -626,7 +612,6 @@ static int via_resume(struct pci_dev *pdev)
+-static int atyfb_pci_resume(struct pci_dev *pdev)
++static int __maybe_unused atyfb_pci_resume(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
  
+@@ -2162,7 +2176,18 @@ static int atyfb_pci_resume(struct pci_dev *pdev)
  	return 0;
  }
--#endif /* CONFIG_PM */
  
- static int via_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
-@@ -712,15 +697,23 @@ static const struct pci_device_id via_pci_table[] = {
- };
- MODULE_DEVICE_TABLE(pci, via_pci_table);
- 
-+static const struct dev_pm_ops via_pm_ops = {
+-#endif /*  defined(CONFIG_PM) && defined(CONFIG_PCI) */
++static const struct dev_pm_ops atyfb_pci_pm_ops = {
 +#ifdef CONFIG_PM_SLEEP
-+	.suspend	= via_suspend,
-+	.resume		= via_resume,
-+	.freeze		= NULL,
-+	.thaw		= via_resume,
-+	.poweroff	= NULL,
-+	.restore	= via_resume,
-+#endif
++	.suspend	= atyfb_pci_suspend,
++	.resume		= atyfb_pci_resume,
++	.freeze		= atyfb_pci_freeze,
++	.thaw		= atyfb_pci_resume,
++	.poweroff	= atyfb_pci_hibernate,
++	.restore	= atyfb_pci_resume,
++#endif /* CONFIG_PM_SLEEP */
 +};
 +
- static struct pci_driver via_driver = {
- 	.name		= "viafb",
- 	.id_table	= via_pci_table,
- 	.probe		= via_pci_probe,
- 	.remove		= via_pci_remove,
++#endif /*  defined(CONFIG_PCI) */
+ 
+ /* Backlight */
+ #ifdef CONFIG_FB_ATY_BACKLIGHT
+@@ -3801,10 +3826,7 @@ static struct pci_driver atyfb_driver = {
+ 	.id_table	= atyfb_pci_tbl,
+ 	.probe		= atyfb_pci_probe,
+ 	.remove		= atyfb_pci_remove,
 -#ifdef CONFIG_PM
--	.suspend	= via_suspend,
--	.resume		= via_resume,
--#endif
-+	.driver.pm	= &via_pm_ops,
+-	.suspend	= atyfb_pci_suspend,
+-	.resume		= atyfb_pci_resume,
+-#endif /* CONFIG_PM */
++	.driver.pm	= &atyfb_pci_pm_ops,
  };
  
- static int __init via_core_init(void)
-diff --git a/include/linux/via-core.h b/include/linux/via-core.h
-index 9e802deedb2d..8737599b9148 100644
---- a/include/linux/via-core.h
-+++ b/include/linux/via-core.h
-@@ -47,7 +47,6 @@ struct via_port_cfg {
- /*
-  * Allow subdevs to register suspend/resume hooks.
-  */
--#ifdef CONFIG_PM
- struct viafb_pm_hooks {
- 	struct list_head list;
- 	int (*suspend)(void *private);
-@@ -57,7 +56,6 @@ struct viafb_pm_hooks {
- 
- void viafb_pm_register(struct viafb_pm_hooks *hooks);
- void viafb_pm_unregister(struct viafb_pm_hooks *hooks);
--#endif /* CONFIG_PM */
- 
- /*
-  * This is the global viafb "device" containing stuff needed by
+ #endif /* CONFIG_PCI */
 -- 
-2.28.0
+2.27.0

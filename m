@@ -1,52 +1,51 @@
-From: Joe Perches <joe@perches.com>
-Date: Tue, 25 Aug 2020 04:56:19 +0000
-Subject: [PATCH 22/29] video: fbdev: Avoid comma separated statements
-Message-Id: <3e56046e67e583ac93030297ff6d58c08ca54086.1598331149.git.joe@perches.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 10 Aug 2020 19:11:17 +0000
+Subject: [PATCH AUTOSEL 5.4 09/45] video: fbdev: savage: fix memory leak on error handling path in probe
+Message-Id: <20200810191153.3794446-9-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1598331148.git.joe@perches.com>
-In-Reply-To: <cover.1598331148.git.joe@perches.com>
+References: <20200810191153.3794446-1-sashal@kernel.org>
+In-Reply-To: <20200810191153.3794446-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jiri Kosina <trivial@kernel.org>, linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Evgeny Novikov <novikov@ispras.ru>, dri-devel@lists.freedesktop.org
 
-Use semicolons and braces.
+From: Evgeny Novikov <novikov@ispras.ru>
 
-Signed-off-by: Joe Perches <joe@perches.com>
+[ Upstream commit e8d35898a78e34fc854ed9680bc3f9caedab08cd ]
+
+savagefb_probe() calls savage_init_fb_info() that can successfully
+allocate memory for info->pixmap.addr but then fail when
+fb_alloc_cmap() fails. savagefb_probe() goes to label failed_init and
+does not free allocated memory. It is not valid to go to label
+failed_mmio since savage_init_fb_info() can fail during memory
+allocation as well. So, the patch free allocated memory on the error
+handling path in savage_init_fb_info() itself.
+
+Found by Linux Driver Verification project (linuxtesting.org).
+
+Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200619162136.9010-1-novikov@ispras.ru
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/tgafb.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/savage/savagefb_driver.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/tgafb.c b/drivers/video/fbdev/tgafb.c
-index e9869135d833..666fbe2f671c 100644
---- a/drivers/video/fbdev/tgafb.c
-+++ b/drivers/video/fbdev/tgafb.c
-@@ -989,8 +989,10 @@ tgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- 	/* We can fill 2k pixels per operation.  Notice blocks that fit
- 	   the width of the screen so that we can take advantage of this
- 	   and fill more than one line per write.  */
--	if (width = line_length)
--		width *= height, height = 1;
-+	if (width = line_length) {
-+		width *= height;
-+		height = 1;
-+	}
- 
- 	/* The write into the frame buffer must be aligned to 4 bytes,
- 	   but we are allowed to encode the offset within the word in
-@@ -1171,8 +1173,10 @@ copyarea_8bpp(struct fb_info *info, u32 dx, u32 dy, u32 sx, u32 sy,
- 	   More than anything else, these control how we do copies.  */
- 	depos = dy * line_length + dx;
- 	sepos = sy * line_length + sx;
--	if (backward)
--		depos += width, sepos += width;
-+	if (backward) {
-+		depos += width;
-+		sepos += width;
-+	}
- 
- 	/* Next copy full words at a time.  */
- 	n32 = width / 32;
+diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
+index 512789f5f8848..d5d22d9c0f562 100644
+--- a/drivers/video/fbdev/savage/savagefb_driver.c
++++ b/drivers/video/fbdev/savage/savagefb_driver.c
+@@ -2158,6 +2158,8 @@ static int savage_init_fb_info(struct fb_info *info, struct pci_dev *dev,
+ 			info->flags |= FBINFO_HWACCEL_COPYAREA |
+ 				       FBINFO_HWACCEL_FILLRECT |
+ 				       FBINFO_HWACCEL_IMAGEBLIT;
++		else
++			kfree(info->pixmap.addr);
+ 	}
+ #endif
+ 	return err;
 -- 
-2.26.0
+2.25.1

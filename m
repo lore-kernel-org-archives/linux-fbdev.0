@@ -1,53 +1,141 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 10 Aug 2020 19:14:06 +0000
-Subject: [PATCH AUTOSEL 4.9 05/17] video: fbdev: neofb: fix memory leak in neo_scan_monitor()
-Message-Id: <20200810191418.3795394-5-sashal@kernel.org>
+From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Date: Mon, 10 Aug 2020 19:09:18 +0000
+Subject: [PATCH v2 07/12] fbdev: savagefb: use generic power management
+Message-Id: <20200810185723.15540-8-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200810191418.3795394-1-sashal@kernel.org>
-In-Reply-To: <20200810191418.3795394-1-sashal@kernel.org>
+References: <20200810165458.GA292825@ravnborg.org>
+ <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Evgeny Novikov <novikov@ispras.ru>, Daniel Vetter <daniel.vetter@ffwll.ch>, dri-devel@lists.freedesktop.org, Mike Rapoport <rppt@linux.ibm.com>, Jani Nikula <jani.nikula@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-From: Evgeny Novikov <novikov@ispras.ru>
+Drivers should do only device-specific jobs. But in general, drivers using
+legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
+PM-related tasks themselves which can be done by PCI Core itself. This
+brings extra load on the driver and it directly calls PCI helper functions
+to handle them.
 
-[ Upstream commit edcb3895a751c762a18d25c8d9846ce9759ed7e1 ]
+Switch to the new generic framework by updating function signatures and
+define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
+unnecessary calls to the PCI Helper functions along with the legacy
+.suspend & .resume bindings.
 
-neofb_probe() calls neo_scan_monitor() that can successfully allocate a
-memory for info->monspecs.modedb and proceed to case 0x03. There it does
-not free the memory and returns -1. neofb_probe() goes to label
-err_scan_monitor, thus, it does not free this memory through calling
-fb_destroy_modedb() as well. We can not go to label err_init_hw since
-neo_scan_monitor() can fail during memory allocation. So, the patch frees
-the memory directly for case 0x03.
-
-Found by Linux Driver Verification project (linuxtesting.org).
-
-Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
-Cc: Jani Nikula <jani.nikula@intel.com>
-Cc: Mike Rapoport <rppt@linux.ibm.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20200630195451.18675-1-novikov@ispras.ru
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
- drivers/video/fbdev/neofb.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/savage/savagefb_driver.c | 52 ++++++++++++--------
+ 1 file changed, 32 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
-index db023a97d1eae..e243254a57214 100644
---- a/drivers/video/fbdev/neofb.c
-+++ b/drivers/video/fbdev/neofb.c
-@@ -1820,6 +1820,7 @@ static int neo_scan_monitor(struct fb_info *info)
- #else
- 		printk(KERN_ERR
- 		       "neofb: Only 640x480, 800x600/480 and 1024x768 panels are currently supported\n");
-+		kfree(info->monspecs.modedb);
- 		return -1;
- #endif
- 	default:
+diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
+index 3c8ae87f0ea7..d6aae759e90f 100644
+--- a/drivers/video/fbdev/savage/savagefb_driver.c
++++ b/drivers/video/fbdev/savage/savagefb_driver.c
+@@ -2346,9 +2346,9 @@ static void savagefb_remove(struct pci_dev *dev)
+ 	}
+ }
+ 
+-static int savagefb_suspend(struct pci_dev *dev, pm_message_t mesg)
++static int savagefb_suspend_late(struct device *dev, pm_message_t mesg)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct savagefb_par *par = info->par;
+ 
+ 	DBG("savagefb_suspend");
+@@ -2356,7 +2356,7 @@ static int savagefb_suspend(struct pci_dev *dev, pm_message_t mesg)
+ 	if (mesg.event = PM_EVENT_PRETHAW)
+ 		mesg.event = PM_EVENT_FREEZE;
+ 	par->pm_state = mesg.event;
+-	dev->dev.power.power_state = mesg;
++	dev->power.power_state = mesg;
+ 
+ 	/*
+ 	 * For PM_EVENT_FREEZE, do not power down so the console
+@@ -2374,17 +2374,29 @@ static int savagefb_suspend(struct pci_dev *dev, pm_message_t mesg)
+ 	savagefb_blank(FB_BLANK_POWERDOWN, info);
+ 	savage_set_default_par(par, &par->save);
+ 	savage_disable_mmio(par);
+-	pci_save_state(dev);
+-	pci_disable_device(dev);
+-	pci_set_power_state(dev, pci_choose_state(dev, mesg));
+ 	console_unlock();
+ 
+ 	return 0;
+ }
+ 
+-static int savagefb_resume(struct pci_dev* dev)
++static int __maybe_unused savagefb_suspend(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	return savagefb_suspend_late(dev, PMSG_SUSPEND);
++}
++
++static int __maybe_unused savagefb_hibernate(struct device *dev)
++{
++	return savagefb_suspend_late(dev, PMSG_HIBERNATE);
++}
++
++static int __maybe_unused savagefb_freeze(struct device *dev)
++{
++	return savagefb_suspend_late(dev, PMSG_FREEZE);
++}
++
++static int __maybe_unused savagefb_resume(struct device *dev)
++{
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct savagefb_par *par = info->par;
+ 	int cur_state = par->pm_state;
+ 
+@@ -2396,20 +2408,11 @@ static int savagefb_resume(struct pci_dev* dev)
+ 	 * The adapter was not powered down coming back from a
+ 	 * PM_EVENT_FREEZE.
+ 	 */
+-	if (cur_state = PM_EVENT_FREEZE) {
+-		pci_set_power_state(dev, PCI_D0);
++	if (cur_state = PM_EVENT_FREEZE)
+ 		return 0;
+-	}
+ 
+ 	console_lock();
+ 
+-	pci_set_power_state(dev, PCI_D0);
+-	pci_restore_state(dev);
+-
+-	if (pci_enable_device(dev))
+-		DBG("err");
+-
+-	pci_set_master(dev);
+ 	savage_enable_mmio(par);
+ 	savage_init_hw(par);
+ 	savagefb_set_par(info);
+@@ -2420,6 +2423,16 @@ static int savagefb_resume(struct pci_dev* dev)
+ 	return 0;
+ }
+ 
++static const struct dev_pm_ops savagefb_pm_ops = {
++#ifdef CONFIG_PM_SLEEP
++	.suspend	= savagefb_suspend,
++	.resume		= savagefb_resume,
++	.freeze		= savagefb_freeze,
++	.thaw		= savagefb_resume,
++	.poweroff	= savagefb_hibernate,
++	.restore	= savagefb_resume,
++#endif
++};
+ 
+ static const struct pci_device_id savagefb_devices[] = {
+ 	{PCI_VENDOR_ID_S3, PCI_CHIP_SUPSAV_MX128,
+@@ -2500,8 +2513,7 @@ static struct pci_driver savagefb_driver = {
+ 	.name =     "savagefb",
+ 	.id_table = savagefb_devices,
+ 	.probe =    savagefb_probe,
+-	.suspend =  savagefb_suspend,
+-	.resume =   savagefb_resume,
++	.driver.pm = &savagefb_pm_ops,
+ 	.remove =   savagefb_remove,
+ };
+ 
 -- 
-2.25.1
+2.27.0

@@ -1,160 +1,53 @@
-From: daniel@ffwll.ch
-Date: Tue, 04 Aug 2020 05:38:14 +0000
-Subject: Re: [PATCH v2] fbmem: pull fbcon_update_vcs() out of fb_set_var()
-Message-Id: <20200804053814.GG6419@phenom.ffwll.local>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 10 Aug 2020 19:12:37 +0000
+Subject: [PATCH AUTOSEL 4.19 09/31] video: fbdev: neofb: fix memory leak in neo_scan_monitor()
+Message-Id: <20200810191259.3794858-9-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1596000620-4075-1-git-send-email-penguin-kernel@I-love.SAKURA.ne.jp>
- <CAKMK7uHeteS2+rKrZKrAM+zQO==hAX0XaVc9JfHPsdLTCtzKOw@mail.gmail.com>
- <a3bb6544-064d-54a1-1215-d92188cb4209@i-love.sakura.ne.jp>
- <075b7e37-3278-cd7d-31ab-c5073cfa8e92@i-love.sakura.ne.jp>
-In-Reply-To: <075b7e37-3278-cd7d-31ab-c5073cfa8e92@i-love.sakura.ne.jp>
+References: <20200810191259.3794858-1-sashal@kernel.org>
+In-Reply-To: <20200810191259.3794858-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Jiri Slaby <jslaby@suse.com>, syzbot <syzbot+c37a14770d51a085a520@syzkaller.appspotmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Evgeny Novikov <novikov@ispras.ru>, Daniel Vetter <daniel.vetter@ffwll.ch>, dri-devel@lists.freedesktop.org, Mike Rapoport <rppt@linux.ibm.com>, Jani Nikula <jani.nikula@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 
-On Thu, Jul 30, 2020 at 07:47:14PM +0900, Tetsuo Handa wrote:
-> syzbot is reporting OOB read bug in vc_do_resize() [1] caused by memcpy()
-> based on outdated old_{rows,row_size} values, for resize_screen() can
-> recurse into vc_do_resize() which changes vc->vc_{cols,rows} that outdates
-> old_{rows,row_size} values which were saved before calling resize_screen(=
-).
->=20
-> Daniel Vetter explained that resize_screen() should not recurse into
-> fbcon_update_vcs() path due to FBINFO_MISC_USEREVENT being still set
-> when calling resize_screen().
->=20
-> Instead of masking FBINFO_MISC_USEREVENT before calling fbcon_update_vcs(=
-),
-> we can remove FBINFO_MISC_USEREVENT by calling fbcon_update_vcs() only if
-> fb_set_var() returned 0. This change assumes that it is harmless to call
-> fbcon_update_vcs() when fb_set_var() returned 0 without reaching
-> fb_notifier_call_chain().
->=20
-> [1] https://syzkaller.appspot.com/bug?id=C70c88cfd16dcf6e1d3c7f0ab8648b31=
-44b5b25e
->=20
-> Reported-and-tested-by: syzbot <syzbot+c37a14770d51a085a520@syzkaller.app=
-spotmail.com>
-> Suggested-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> Reported-by: kernel test robot <lkp@intel.com> for missing #include
+From: Evgeny Novikov <novikov@ispras.ru>
 
-Thanks a lot for your patch, queued up to hopefully still make it for
-5.9-rc1.
+[ Upstream commit edcb3895a751c762a18d25c8d9846ce9759ed7e1 ]
 
-Cheers, Daniel
+neofb_probe() calls neo_scan_monitor() that can successfully allocate a
+memory for info->monspecs.modedb and proceed to case 0x03. There it does
+not free the memory and returns -1. neofb_probe() goes to label
+err_scan_monitor, thus, it does not free this memory through calling
+fb_destroy_modedb() as well. We can not go to label err_init_hw since
+neo_scan_monitor() can fail during memory allocation. So, the patch frees
+the memory directly for case 0x03.
 
-> ---
->  drivers/video/fbdev/core/fbmem.c   | 8 ++------
->  drivers/video/fbdev/core/fbsysfs.c | 4 ++--
->  drivers/video/fbdev/ps3fb.c        | 5 +++--
->  include/linux/fb.h                 | 2 --
->  4 files changed, 7 insertions(+), 12 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/=
-fbmem.c
-> index 30e73ec..da7c88f 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -957,7 +957,6 @@ static int fb_check_caps(struct fb_info *info, struct=
- fb_var_screeninfo *var,
->  int
->  fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
->  {
-> -	int flags =3D info->flags;
->  	int ret =3D 0;
->  	u32 activate;
->  	struct fb_var_screeninfo old_var;
-> @@ -1052,9 +1051,6 @@ static int fb_check_caps(struct fb_info *info, stru=
-ct fb_var_screeninfo *var,
->  	event.data =3D &mode;
->  	fb_notifier_call_chain(FB_EVENT_MODE_CHANGE, &event);
-> =20
-> -	if (flags & FBINFO_MISC_USEREVENT)
-> -		fbcon_update_vcs(info, activate & FB_ACTIVATE_ALL);
-> -
->  	return 0;
->  }
->  EXPORT_SYMBOL(fb_set_var);
-> @@ -1105,9 +1101,9 @@ static long do_fb_ioctl(struct fb_info *info, unsig=
-ned int cmd,
->  			return -EFAULT;
->  		console_lock();
->  		lock_fb_info(info);
-> -		info->flags |=3D FBINFO_MISC_USEREVENT;
->  		ret =3D fb_set_var(info, &var);
-> -		info->flags &=3D ~FBINFO_MISC_USEREVENT;
-> +		if (!ret)
-> +			fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
->  		unlock_fb_info(info);
->  		console_unlock();
->  		if (!ret && copy_to_user(argp, &var, sizeof(var)))
-> diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/cor=
-e/fbsysfs.c
-> index d54c88f..65dae05 100644
-> --- a/drivers/video/fbdev/core/fbsysfs.c
-> +++ b/drivers/video/fbdev/core/fbsysfs.c
-> @@ -91,9 +91,9 @@ static int activate(struct fb_info *fb_info, struct fb_=
-var_screeninfo *var)
-> =20
->  	var->activate |=3D FB_ACTIVATE_FORCE;
->  	console_lock();
-> -	fb_info->flags |=3D FBINFO_MISC_USEREVENT;
->  	err =3D fb_set_var(fb_info, var);
-> -	fb_info->flags &=3D ~FBINFO_MISC_USEREVENT;
-> +	if (!err)
-> +		fbcon_update_vcs(fb_info, var->activate & FB_ACTIVATE_ALL);
->  	console_unlock();
->  	if (err)
->  		return err;
-> diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
-> index 9df78fb..203c254 100644
-> --- a/drivers/video/fbdev/ps3fb.c
-> +++ b/drivers/video/fbdev/ps3fb.c
-> @@ -29,6 +29,7 @@
->  #include <linux/freezer.h>
->  #include <linux/uaccess.h>
->  #include <linux/fb.h>
-> +#include <linux/fbcon.h>
->  #include <linux/init.h>
-> =20
->  #include <asm/cell-regs.h>
-> @@ -824,12 +825,12 @@ static int ps3fb_ioctl(struct fb_info *info, unsign=
-ed int cmd,
->  				var =3D info->var;
->  				fb_videomode_to_var(&var, vmode);
->  				console_lock();
-> -				info->flags |=3D FBINFO_MISC_USEREVENT;
->  				/* Force, in case only special bits changed */
->  				var.activate |=3D FB_ACTIVATE_FORCE;
->  				par->new_mode_id =3D val;
->  				retval =3D fb_set_var(info, &var);
-> -				info->flags &=3D ~FBINFO_MISC_USEREVENT;
-> +				if (!retval)
-> +					fbcon_update_vcs(info, var.activate & FB_ACTIVATE_ALL);
->  				console_unlock();
->  			}
->  			break;
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index 3b4b2f0..b11eb02 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -400,8 +400,6 @@ struct fb_tile_ops {
->  #define FBINFO_HWACCEL_YPAN		0x2000 /* optional */
->  #define FBINFO_HWACCEL_YWRAP		0x4000 /* optional */
-> =20
-> -#define FBINFO_MISC_USEREVENT          0x10000 /* event request
-> -						  from userspace */
->  #define FBINFO_MISC_TILEBLITTING       0x20000 /* use tile blitting */
-> =20
->  /* A driver may set this flag to indicate that it does want a set_par to=
- be
-> --=20
-> 1.8.3.1
->=20
+Found by Linux Driver Verification project (linuxtesting.org).
 
---=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
+Cc: Jani Nikula <jani.nikula@intel.com>
+Cc: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200630195451.18675-1-novikov@ispras.ru
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/neofb.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
+index 5d3a444083f74..2018e1ca33eb6 100644
+--- a/drivers/video/fbdev/neofb.c
++++ b/drivers/video/fbdev/neofb.c
+@@ -1820,6 +1820,7 @@ static int neo_scan_monitor(struct fb_info *info)
+ #else
+ 		printk(KERN_ERR
+ 		       "neofb: Only 640x480, 800x600/480 and 1024x768 panels are currently supported\n");
++		kfree(info->monspecs.modedb);
+ 		return -1;
+ #endif
+ 	default:
+-- 
+2.25.1

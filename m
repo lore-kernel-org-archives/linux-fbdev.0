@@ -1,129 +1,93 @@
-From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Wed, 05 Aug 2020 18:19:20 +0000
-Subject: [PATCH v1 10/12] fbdev: vt8623fb: use generic power management
-Message-Id: <20200805180722.244008-11-vaibhavgupta40@gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 10 Aug 2020 15:20:42 +0000
+Subject: [PATCH 5.7 23/79] vgacon: Fix for missing check in scrollback handling
+Message-Id: <20200810151813.332203643@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
+References: <20200810151812.114485777@linuxfoundation.org>
+In-Reply-To: <20200810151812.114485777@linuxfoundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, =?UTF-8?q?=E5=BC=A0=E4=BA=91=E6=B5=B7?= <zhangyunhai@nsfocus.com>, Yang Yingliang <yangyingliang@huawei.com>, Kyungtae Kim <kt0755@gmail.com>, linux-fbdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Solar Designer <solar@openwall.com>, "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>, Anthony Liguori <aliguori@amazon.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jiri Slaby <jirislaby@kernel.org>
 
-Drivers using legacy power management .suspen()/.resume() callbacks
-have to manage PCI states and device's PM states themselves. They also
-need to take care of standard configuration registers.
+From: Yunhai Zhang <zhangyunhai@nsfocus.com>
 
-Switch to generic power management framework using a single
-"struct dev_pm_ops" variable to take the unnecessary load from the driver.
-This also avoids the need for the driver to directly call most of the PCI
-helper functions and device power state control functions, as through
-the generic framework PCI Core takes care of the necessary operations,
-and drivers are required to do only device-specific jobs.
+commit ebfdfeeae8c01fcb2b3b74ffaf03876e20835d2d upstream.
 
-Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+vgacon_scrollback_update() always leaves enbough room in the scrollback
+buffer for the next call, but if the console size changed that room
+might not actually be enough, and so we need to re-check.
+
+The check should be in the loop since vgacon_scrollback_cur->tail is
+updated in the loop and count may be more than 1 when triggered by CSI M,
+as Jiri's PoC:
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+
+int main(int argc, char** argv)
+{
+        int fd = open("/dev/tty1", O_RDWR);
+        unsigned short size[3] = {25, 200, 0};
+        ioctl(fd, 0x5609, size); // VT_RESIZE
+
+        write(fd, "\e[1;1H", 6);
+        for (int i = 0; i < 30; i++)
+                write(fd, "\e[10M", 5);
+}
+
+It leads to various crashes as vgacon_scrollback_update writes out of
+the buffer:
+ BUG: unable to handle page fault for address: ffffc900001752a0
+ #PF: supervisor write access in kernel mode
+ #PF: error_code(0x0002) - not-present page
+ RIP: 0010:mutex_unlock+0x13/0x30
+...
+ Call Trace:
+  n_tty_write+0x1a0/0x4d0
+  tty_write+0x1a0/0x2e0
+
+Or to KASAN reports:
+BUG: KASAN: slab-out-of-bounds in vgacon_scroll+0x57a/0x8ed
+
+This fixes CVE-2020-14331.
+
+Reported-by: 张云海 <zhangyunhai@nsfocus.com>
+Reported-by: Yang Yingliang <yangyingliang@huawei.com>
+Reported-by: Kyungtae Kim <kt0755@gmail.com>
+Fixes: 15bdab959c9b ([PATCH] vgacon: Add support for soft scrollback)
+Cc: stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Solar Designer <solar@openwall.com>
+Cc: "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
+Cc: Anthony Liguori <aliguori@amazon.com>
+Cc: Yang Yingliang <yangyingliang@huawei.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Jiri Slaby <jirislaby@kernel.org>
+Signed-off-by: Yunhai Zhang <zhangyunhai@nsfocus.com>
+Link: https://lore.kernel.org/r/9fb43895-ca91-9b07-ebfd-808cf854ca95@nsfocus.com
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
 ---
- drivers/video/fbdev/vt8623fb.c | 41 ++++++++++++++--------------------
- 1 file changed, 17 insertions(+), 24 deletions(-)
+ drivers/video/console/vgacon.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
-index 7b3eef1b893f..c488e0117758 100644
---- a/drivers/video/fbdev/vt8623fb.c
-+++ b/drivers/video/fbdev/vt8623fb.c
-@@ -815,12 +815,11 @@ static void vt8623_pci_remove(struct pci_dev *dev)
- }
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -251,6 +251,10 @@ static void vgacon_scrollback_update(str
+ 	p = (void *) (c->vc_origin + t * c->vc_size_row);
  
- 
--#ifdef CONFIG_PM
- /* PCI suspend */
- 
--static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
-+static int __maybe_unused vt8623_pci_suspend(struct device *dev)
- {
--	struct fb_info *info = pci_get_drvdata(dev);
-+	struct fb_info *info = dev_get_drvdata(dev);
- 	struct vt8623fb_info *par = info->par;
- 
- 	dev_info(info->device, "suspend\n");
-@@ -828,7 +827,7 @@ static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
- 	console_lock();
- 	mutex_lock(&(par->open_lock));
- 
--	if ((state.event = PM_EVENT_FREEZE) || (par->ref_count = 0)) {
-+	if (par->ref_count = 0) {
- 		mutex_unlock(&(par->open_lock));
- 		console_unlock();
- 		return 0;
-@@ -836,10 +835,6 @@ static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
- 
- 	fb_set_suspend(info, 1);
- 
--	pci_save_state(dev);
--	pci_disable_device(dev);
--	pci_set_power_state(dev, pci_choose_state(dev, state));
--
- 	mutex_unlock(&(par->open_lock));
- 	console_unlock();
- 
-@@ -849,9 +844,9 @@ static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
- 
- /* PCI resume */
- 
--static int vt8623_pci_resume(struct pci_dev* dev)
-+static int __maybe_unused vt8623_pci_resume(struct device *dev)
- {
--	struct fb_info *info = pci_get_drvdata(dev);
-+	struct fb_info *info = dev_get_drvdata(dev);
- 	struct vt8623fb_info *par = info->par;
- 
- 	dev_info(info->device, "resume\n");
-@@ -862,14 +857,6 @@ static int vt8623_pci_resume(struct pci_dev* dev)
- 	if (par->ref_count = 0)
- 		goto fail;
- 
--	pci_set_power_state(dev, PCI_D0);
--	pci_restore_state(dev);
--
--	if (pci_enable_device(dev))
--		goto fail;
--
--	pci_set_master(dev);
--
- 	vt8623fb_set_par(info);
- 	fb_set_suspend(info, 0);
- 
-@@ -879,10 +866,17 @@ static int vt8623_pci_resume(struct pci_dev* dev)
- 
- 	return 0;
- }
--#else
--#define vt8623_pci_suspend NULL
--#define vt8623_pci_resume NULL
--#endif /* CONFIG_PM */
+ 	while (count--) {
++		if ((vgacon_scrollback_cur->tail + c->vc_size_row) >
++		    vgacon_scrollback_cur->size)
++			vgacon_scrollback_cur->tail = 0;
 +
-+static const struct dev_pm_ops vt8623_pci_pm_ops = {
-+#ifdef CONFIG_PM_SLEEP
-+	.suspend	= vt8623_pci_suspend,
-+	.resume		= vt8623_pci_resume,
-+	.freeze		= NULL,
-+	.thaw		= vt8623_pci_resume,
-+	.poweroff	= vt8623_pci_suspend,
-+	.restore	= vt8623_pci_resume,
-+#endif /* CONFIG_PM_SLEEP */
-+};
- 
- /* List of boards that we are trying to support */
- 
-@@ -898,8 +892,7 @@ static struct pci_driver vt8623fb_pci_driver = {
- 	.id_table	= vt8623_devices,
- 	.probe		= vt8623_pci_probe,
- 	.remove		= vt8623_pci_remove,
--	.suspend	= vt8623_pci_suspend,
--	.resume		= vt8623_pci_resume,
-+	.driver.pm	= &vt8623_pci_pm_ops,
- };
- 
- /* Cleanup */
--- 
-2.27.0
+ 		scr_memcpyw(vgacon_scrollback_cur->data +
+ 			    vgacon_scrollback_cur->tail,
+ 			    p, c->vc_size_row);

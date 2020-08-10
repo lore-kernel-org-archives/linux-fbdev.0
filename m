@@ -1,134 +1,121 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Mon, 03 Aug 2020 20:12:09 +0000
-Subject: Re: [PATCH][next] fbdev: Use fallthrough pseudo-keyword
-Message-Id: <20200803201209.GA579791@ravnborg.org>
+From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Date: Mon, 10 Aug 2020 19:09:20 +0000
+Subject: [PATCH v2 09/12] fbdev: i740fb: use generic power management
+Message-Id: <20200810185723.15540-10-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200707210539.GA12530@embeddedor>
- <20200803194024.GA525506@ravnborg.org>
- <101585b1d3c2a9db8fe394c51f64115e8bfc1754.camel@perches.com>
-In-Reply-To: <101585b1d3c2a9db8fe394c51f64115e8bfc1754.camel@perches.com>
+References: <20200810165458.GA292825@ravnborg.org>
+ <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Joe Perches <joe@perches.com>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Timur Tabi <timur@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, dri-devel@lists.freedesktop.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-On Mon, Aug 03, 2020 at 12:52:40PM -0700, Joe Perches wrote:
-> On Mon, 2020-08-03 at 21:41 +0200, Sam Ravnborg wrote:
-> > On Tue, Jul 07, 2020 at 04:05:39PM -0500, Gustavo A. R. Silva wrote:
-> > > Replace the existing /* fall through */ comments and its variants with
-> > > the new pseudo-keyword macro fallthrough[1]. Also, remove unnecessary
-> > > fall-through markings when it is the case.
-> > >=20
-> > > [1] https://www.kernel.org/doc/html/latest/process/deprecated.html?hi=
-ghlight=FAllthrough#implicit-switch-case-fall-through
-> > >=20
-> > > Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
-> >=20
-> > Thanks.
-> >=20
-> > Fixed indent in arcfb.c while applying.
-> > Applied to drm-misc-next and it will appear in 5.10
->=20
-> Perhaps better would be to fix all the switch / case
-> brace uses so that it looks more typical kernel style.
+Drivers should do only device-specific jobs. But in general, drivers using
+legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
+PM-related tasks themselves which can be done by PCI Core itself. This
+brings extra load on the driver and it directly calls PCI helper functions
+to handle them.
 
-falltrhough seems like an OK thing to do even if fbdev is in pure
-maintenance mode. Mostly so tools do not stumble upon this and
-we continue to see patches.
+Switch to the new generic framework by updating function signatures and
+define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
+unnecessary calls to the PCI Helper functions along with the legacy
+.suspend & .resume bindings.
 
-But larger refactorings seems a little pointless.
+Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+---
+ drivers/video/fbdev/i740fb.c | 40 +++++++++++++++---------------------
+ 1 file changed, 16 insertions(+), 24 deletions(-)
 
-If we do this change, should we then also start to accept indent fixes
-for the other switch () cases in the fbdev drivers.
-
-My initial reaction is therefore thanks, but no thanks.
-
-	Sam
-
->=20
-> > > diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
-> > > index 6f7838979f0a..ae3d8e8b8d33 100644
-> > > --- a/drivers/video/fbdev/arcfb.c
-> > > +++ b/drivers/video/fbdev/arcfb.c
-> > > @@ -419,7 +419,7 @@ static int arcfb_ioctl(struct fb_info *info,
-> > >  			schedule();
-> > >  			finish_wait(&arcfb_waitq, &wait);
-> > >  		}
-> > > -		/* fall through */
-> > > +			fallthrough;
-> > > =20
-> > >  		case FBIO_GETCONTROL2:
-> > >  		{
->=20
-> ---
->  drivers/video/fbdev/arcfb.c | 52 ++++++++++++++++++++++-----------------=
-------
->  1 file changed, 25 insertions(+), 27 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
-> index 6f7838979f0a..4419655e3e58 100644
-> --- a/drivers/video/fbdev/arcfb.c
-> +++ b/drivers/video/fbdev/arcfb.c
-> @@ -403,35 +403,33 @@ static int arcfb_ioctl(struct fb_info *info,
->  	unsigned long flags;
-> =20
->  	switch (cmd) {
-> -		case FBIO_WAITEVENT:
-> -		{
-> -			DEFINE_WAIT(wait);
-> -			/* illegal to wait on arc if no irq will occur */
-> -			if (!par->irq)
-> -				return -EINVAL;
-> -
-> -			/* wait until the Arc has generated an interrupt
-> -			 * which will wake us up */
-> -			spin_lock_irqsave(&par->lock, flags);
-> -			prepare_to_wait(&arcfb_waitq, &wait,
-> -					TASK_INTERRUPTIBLE);
-> -			spin_unlock_irqrestore(&par->lock, flags);
-> -			schedule();
-> -			finish_wait(&arcfb_waitq, &wait);
-> -		}
-> -		/* fall through */
-> +	case FBIO_WAITEVENT: {
-> +		DEFINE_WAIT(wait);
-> +		/* illegal to wait on arc if no irq will occur */
-> +		if (!par->irq)
-> +			return -EINVAL;
-> =20
-> -		case FBIO_GETCONTROL2:
-> -		{
-> -			unsigned char ctl2;
-> +		/* wait until the Arc has generated an interrupt
-> +		 * which will wake us up */
-> +		spin_lock_irqsave(&par->lock, flags);
-> +		prepare_to_wait(&arcfb_waitq, &wait, TASK_INTERRUPTIBLE);
-> +		spin_unlock_irqrestore(&par->lock, flags);
-> +		schedule();
-> +		finish_wait(&arcfb_waitq, &wait);
-> +		fallthrough;
-> +	}
-> =20
-> -			ctl2 =3D ks108_readb_ctl2(info->par);
-> -			if (copy_to_user(argp, &ctl2, sizeof(ctl2)))
-> -				return -EFAULT;
-> -			return 0;
-> -		}
-> -		default:
-> -			return -EINVAL;
-> +	case FBIO_GETCONTROL2: {
-> +		unsigned char ctl2;
-> +
-> +		ctl2 =3D ks108_readb_ctl2(info->par);
-> +		if (copy_to_user(argp, &ctl2, sizeof(ctl2)))
-> +			return -EFAULT;
-> +		return 0;
-> +	}
-> +
-> +	default:
-> +		return -EINVAL;
->  	}
->  }
-> =20
->=20
+diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
+index c65ec7386e87..8d7f06fc8a5a 100644
+--- a/drivers/video/fbdev/i740fb.c
++++ b/drivers/video/fbdev/i740fb.c
+@@ -1175,16 +1175,11 @@ static void i740fb_remove(struct pci_dev *dev)
+ 	}
+ }
+ 
+-#ifdef CONFIG_PM
+-static int i740fb_suspend(struct pci_dev *dev, pm_message_t state)
++static int __maybe_unused i740fb_suspend(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct i740fb_par *par = info->par;
+ 
+-	/* don't disable console during hibernation and wakeup from it */
+-	if (state.event = PM_EVENT_FREEZE || state.event = PM_EVENT_PRETHAW)
+-		return 0;
+-
+ 	console_lock();
+ 	mutex_lock(&(par->open_lock));
+ 
+@@ -1197,19 +1192,15 @@ static int i740fb_suspend(struct pci_dev *dev, pm_message_t state)
+ 
+ 	fb_set_suspend(info, 1);
+ 
+-	pci_save_state(dev);
+-	pci_disable_device(dev);
+-	pci_set_power_state(dev, pci_choose_state(dev, state));
+-
+ 	mutex_unlock(&(par->open_lock));
+ 	console_unlock();
+ 
+ 	return 0;
+ }
+ 
+-static int i740fb_resume(struct pci_dev *dev)
++static int __maybe_unused i740fb_resume(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct i740fb_par *par = info->par;
+ 
+ 	console_lock();
+@@ -1218,11 +1209,6 @@ static int i740fb_resume(struct pci_dev *dev)
+ 	if (par->ref_count = 0)
+ 		goto fail;
+ 
+-	pci_set_power_state(dev, PCI_D0);
+-	pci_restore_state(dev);
+-	if (pci_enable_device(dev))
+-		goto fail;
+-
+ 	i740fb_set_par(info);
+ 	fb_set_suspend(info, 0);
+ 
+@@ -1231,10 +1217,17 @@ static int i740fb_resume(struct pci_dev *dev)
+ 	console_unlock();
+ 	return 0;
+ }
+-#else
+-#define i740fb_suspend NULL
+-#define i740fb_resume NULL
+-#endif /* CONFIG_PM */
++
++static const struct dev_pm_ops i740fb_pm_ops = {
++#ifdef CONFIG_PM_SLEEP
++	.suspend	= i740fb_suspend,
++	.resume		= i740fb_resume,
++	.freeze		= NULL,
++	.thaw		= i740fb_resume,
++	.poweroff	= i740fb_suspend,
++	.restore	= i740fb_resume,
++#endif /* CONFIG_PM_SLEEP */
++};
+ 
+ #define I740_ID_PCI 0x00d1
+ #define I740_ID_AGP 0x7800
+@@ -1251,8 +1244,7 @@ static struct pci_driver i740fb_driver = {
+ 	.id_table	= i740fb_id_table,
+ 	.probe		= i740fb_probe,
+ 	.remove		= i740fb_remove,
+-	.suspend	= i740fb_suspend,
+-	.resume		= i740fb_resume,
++	.driver.pm	= &i740fb_pm_ops,
+ };
+ 
+ #ifndef MODULE
+-- 
+2.27.0

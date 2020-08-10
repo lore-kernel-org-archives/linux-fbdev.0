@@ -1,56 +1,130 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Date: Tue, 18 Aug 2020 08:56:50 +0000
-Subject: [PATCH 3/8] newport_con: make module's init & exit static using module_driver
-Message-Id: <20200818085655.12071-3-jslaby@suse.cz>
+From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Date: Mon, 10 Aug 2020 19:09:21 +0000
+Subject: [PATCH v2 10/12] fbdev: vt8623fb: use generic power management
+Message-Id: <20200810185723.15540-11-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200818085655.12071-1-jslaby@suse.cz>
-In-Reply-To: <20200818085655.12071-1-jslaby@suse.cz>
+References: <20200810165458.GA292825@ravnborg.org>
+ <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-The compiler complains that newport_console_init and
-newport_console_exit are not declared:
-   drivers/video/console/newport_con.c:745:12: warning: no previous prototype for 'newport_console_init'
-   drivers/video/console/newport_con.c:750:13: warning: no previous prototype for 'newport_console_exit'
+Drivers should do only device-specific jobs. But in general, drivers using
+legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
+PM-related tasks themselves which can be done by PCI Core itself. This
+brings extra load on the driver and it directly calls PCI helper functions
+to handle them.
 
-Here, it translates into: they should be marked static. Do so by
-converting the simple un/registration to module_driver().
+Switch to the new generic framework by updating function signatures and
+define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
+unnecessary calls to the PCI Helper functions along with the legacy
+.suspend & .resume bindings.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-mips@vger.kernel.org
+Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
- drivers/video/console/newport_con.c | 14 +-------------
- 1 file changed, 1 insertion(+), 13 deletions(-)
+ drivers/video/fbdev/vt8623fb.c | 41 ++++++++++++++--------------------
+ 1 file changed, 17 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
-index 4d9110393479..0d0989040c58 100644
---- a/drivers/video/console/newport_con.c
-+++ b/drivers/video/console/newport_con.c
-@@ -751,18 +751,6 @@ static struct gio_driver newport_driver = {
- 	.probe = newport_probe,
- 	.remove = newport_remove,
- };
--
--int __init newport_console_init(void)
--{
--	return gio_register_driver(&newport_driver);
--}
--
--void __exit newport_console_exit(void)
--{
--	gio_unregister_driver(&newport_driver);
--}
--
--module_init(newport_console_init);
--module_exit(newport_console_exit);
-+module_driver(newport_driver, gio_register_driver, gio_unregister_driver);
+diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
+index 7b3eef1b893f..c488e0117758 100644
+--- a/drivers/video/fbdev/vt8623fb.c
++++ b/drivers/video/fbdev/vt8623fb.c
+@@ -815,12 +815,11 @@ static void vt8623_pci_remove(struct pci_dev *dev)
+ }
  
- MODULE_LICENSE("GPL");
+ 
+-#ifdef CONFIG_PM
+ /* PCI suspend */
+ 
+-static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
++static int __maybe_unused vt8623_pci_suspend(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct vt8623fb_info *par = info->par;
+ 
+ 	dev_info(info->device, "suspend\n");
+@@ -828,7 +827,7 @@ static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
+ 	console_lock();
+ 	mutex_lock(&(par->open_lock));
+ 
+-	if ((state.event = PM_EVENT_FREEZE) || (par->ref_count = 0)) {
++	if (par->ref_count = 0) {
+ 		mutex_unlock(&(par->open_lock));
+ 		console_unlock();
+ 		return 0;
+@@ -836,10 +835,6 @@ static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
+ 
+ 	fb_set_suspend(info, 1);
+ 
+-	pci_save_state(dev);
+-	pci_disable_device(dev);
+-	pci_set_power_state(dev, pci_choose_state(dev, state));
+-
+ 	mutex_unlock(&(par->open_lock));
+ 	console_unlock();
+ 
+@@ -849,9 +844,9 @@ static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
+ 
+ /* PCI resume */
+ 
+-static int vt8623_pci_resume(struct pci_dev* dev)
++static int __maybe_unused vt8623_pci_resume(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct vt8623fb_info *par = info->par;
+ 
+ 	dev_info(info->device, "resume\n");
+@@ -862,14 +857,6 @@ static int vt8623_pci_resume(struct pci_dev* dev)
+ 	if (par->ref_count = 0)
+ 		goto fail;
+ 
+-	pci_set_power_state(dev, PCI_D0);
+-	pci_restore_state(dev);
+-
+-	if (pci_enable_device(dev))
+-		goto fail;
+-
+-	pci_set_master(dev);
+-
+ 	vt8623fb_set_par(info);
+ 	fb_set_suspend(info, 0);
+ 
+@@ -879,10 +866,17 @@ static int vt8623_pci_resume(struct pci_dev* dev)
+ 
+ 	return 0;
+ }
+-#else
+-#define vt8623_pci_suspend NULL
+-#define vt8623_pci_resume NULL
+-#endif /* CONFIG_PM */
++
++static const struct dev_pm_ops vt8623_pci_pm_ops = {
++#ifdef CONFIG_PM_SLEEP
++	.suspend	= vt8623_pci_suspend,
++	.resume		= vt8623_pci_resume,
++	.freeze		= NULL,
++	.thaw		= vt8623_pci_resume,
++	.poweroff	= vt8623_pci_suspend,
++	.restore	= vt8623_pci_resume,
++#endif /* CONFIG_PM_SLEEP */
++};
+ 
+ /* List of boards that we are trying to support */
+ 
+@@ -898,8 +892,7 @@ static struct pci_driver vt8623fb_pci_driver = {
+ 	.id_table	= vt8623_devices,
+ 	.probe		= vt8623_pci_probe,
+ 	.remove		= vt8623_pci_remove,
+-	.suspend	= vt8623_pci_suspend,
+-	.resume		= vt8623_pci_resume,
++	.driver.pm	= &vt8623_pci_pm_ops,
+ };
+ 
+ /* Cleanup */
 -- 
-2.28.0
+2.27.0

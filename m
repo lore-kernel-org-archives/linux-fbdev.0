@@ -1,130 +1,53 @@
-From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Mon, 10 Aug 2020 19:09:21 +0000
-Subject: [PATCH v2 10/12] fbdev: vt8623fb: use generic power management
-Message-Id: <20200810185723.15540-11-vaibhavgupta40@gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 10 Aug 2020 19:13:27 +0000
+Subject: [PATCH AUTOSEL 4.14 05/22] video: fbdev: neofb: fix memory leak in neo_scan_monitor()
+Message-Id: <20200810191345.3795166-5-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200810165458.GA292825@ravnborg.org>
- <20200810185723.15540-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+References: <20200810191345.3795166-1-sashal@kernel.org>
+In-Reply-To: <20200810191345.3795166-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Evgeny Novikov <novikov@ispras.ru>, Daniel Vetter <daniel.vetter@ffwll.ch>, dri-devel@lists.freedesktop.org, Mike Rapoport <rppt@linux.ibm.com>, Jani Nikula <jani.nikula@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 
-Drivers should do only device-specific jobs. But in general, drivers using
-legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
-PM-related tasks themselves which can be done by PCI Core itself. This
-brings extra load on the driver and it directly calls PCI helper functions
-to handle them.
+From: Evgeny Novikov <novikov@ispras.ru>
 
-Switch to the new generic framework by updating function signatures and
-define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
-unnecessary calls to the PCI Helper functions along with the legacy
-.suspend & .resume bindings.
+[ Upstream commit edcb3895a751c762a18d25c8d9846ce9759ed7e1 ]
 
-Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+neofb_probe() calls neo_scan_monitor() that can successfully allocate a
+memory for info->monspecs.modedb and proceed to case 0x03. There it does
+not free the memory and returns -1. neofb_probe() goes to label
+err_scan_monitor, thus, it does not free this memory through calling
+fb_destroy_modedb() as well. We can not go to label err_init_hw since
+neo_scan_monitor() can fail during memory allocation. So, the patch frees
+the memory directly for case 0x03.
+
+Found by Linux Driver Verification project (linuxtesting.org).
+
+Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
+Cc: Jani Nikula <jani.nikula@intel.com>
+Cc: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200630195451.18675-1-novikov@ispras.ru
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/vt8623fb.c | 41 ++++++++++++++--------------------
- 1 file changed, 17 insertions(+), 24 deletions(-)
+ drivers/video/fbdev/neofb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
-index 7b3eef1b893f..c488e0117758 100644
---- a/drivers/video/fbdev/vt8623fb.c
-+++ b/drivers/video/fbdev/vt8623fb.c
-@@ -815,12 +815,11 @@ static void vt8623_pci_remove(struct pci_dev *dev)
- }
- 
- 
--#ifdef CONFIG_PM
- /* PCI suspend */
- 
--static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
-+static int __maybe_unused vt8623_pci_suspend(struct device *dev)
- {
--	struct fb_info *info = pci_get_drvdata(dev);
-+	struct fb_info *info = dev_get_drvdata(dev);
- 	struct vt8623fb_info *par = info->par;
- 
- 	dev_info(info->device, "suspend\n");
-@@ -828,7 +827,7 @@ static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
- 	console_lock();
- 	mutex_lock(&(par->open_lock));
- 
--	if ((state.event = PM_EVENT_FREEZE) || (par->ref_count = 0)) {
-+	if (par->ref_count = 0) {
- 		mutex_unlock(&(par->open_lock));
- 		console_unlock();
- 		return 0;
-@@ -836,10 +835,6 @@ static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
- 
- 	fb_set_suspend(info, 1);
- 
--	pci_save_state(dev);
--	pci_disable_device(dev);
--	pci_set_power_state(dev, pci_choose_state(dev, state));
--
- 	mutex_unlock(&(par->open_lock));
- 	console_unlock();
- 
-@@ -849,9 +844,9 @@ static int vt8623_pci_suspend(struct pci_dev* dev, pm_message_t state)
- 
- /* PCI resume */
- 
--static int vt8623_pci_resume(struct pci_dev* dev)
-+static int __maybe_unused vt8623_pci_resume(struct device *dev)
- {
--	struct fb_info *info = pci_get_drvdata(dev);
-+	struct fb_info *info = dev_get_drvdata(dev);
- 	struct vt8623fb_info *par = info->par;
- 
- 	dev_info(info->device, "resume\n");
-@@ -862,14 +857,6 @@ static int vt8623_pci_resume(struct pci_dev* dev)
- 	if (par->ref_count = 0)
- 		goto fail;
- 
--	pci_set_power_state(dev, PCI_D0);
--	pci_restore_state(dev);
--
--	if (pci_enable_device(dev))
--		goto fail;
--
--	pci_set_master(dev);
--
- 	vt8623fb_set_par(info);
- 	fb_set_suspend(info, 0);
- 
-@@ -879,10 +866,17 @@ static int vt8623_pci_resume(struct pci_dev* dev)
- 
- 	return 0;
- }
--#else
--#define vt8623_pci_suspend NULL
--#define vt8623_pci_resume NULL
--#endif /* CONFIG_PM */
-+
-+static const struct dev_pm_ops vt8623_pci_pm_ops = {
-+#ifdef CONFIG_PM_SLEEP
-+	.suspend	= vt8623_pci_suspend,
-+	.resume		= vt8623_pci_resume,
-+	.freeze		= NULL,
-+	.thaw		= vt8623_pci_resume,
-+	.poweroff	= vt8623_pci_suspend,
-+	.restore	= vt8623_pci_resume,
-+#endif /* CONFIG_PM_SLEEP */
-+};
- 
- /* List of boards that we are trying to support */
- 
-@@ -898,8 +892,7 @@ static struct pci_driver vt8623fb_pci_driver = {
- 	.id_table	= vt8623_devices,
- 	.probe		= vt8623_pci_probe,
- 	.remove		= vt8623_pci_remove,
--	.suspend	= vt8623_pci_suspend,
--	.resume		= vt8623_pci_resume,
-+	.driver.pm	= &vt8623_pci_pm_ops,
- };
- 
- /* Cleanup */
+diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
+index 5d3a444083f74..2018e1ca33eb6 100644
+--- a/drivers/video/fbdev/neofb.c
++++ b/drivers/video/fbdev/neofb.c
+@@ -1820,6 +1820,7 @@ static int neo_scan_monitor(struct fb_info *info)
+ #else
+ 		printk(KERN_ERR
+ 		       "neofb: Only 640x480, 800x600/480 and 1024x768 panels are currently supported\n");
++		kfree(info->monspecs.modedb);
+ 		return -1;
+ #endif
+ 	default:
 -- 
-2.27.0
+2.25.1

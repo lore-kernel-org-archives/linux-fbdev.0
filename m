@@ -1,10 +1,10 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Thu, 20 Aug 2020 09:21:55 +0000
-Subject: [PATCH 4.4 038/149] vgacon: Fix for missing check in scrollback handling
-Message-Id: <20200820092127.580348981@linuxfoundation.org>
+Date: Mon, 10 Aug 2020 15:19:13 +0000
+Subject: [PATCH 5.8 23/38] vgacon: Fix for missing check in scrollback handling
+Message-Id: <20200810151805.039678187@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200820092125.688850368@linuxfoundation.org>
-In-Reply-To: <20200820092125.688850368@linuxfoundation.org>
+References: <20200810151803.920113428@linuxfoundation.org>
+In-Reply-To: <20200810151803.920113428@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -73,7 +73,6 @@ Cc: Jiri Slaby <jirislaby@kernel.org>
 Signed-off-by: Yunhai Zhang <zhangyunhai@nsfocus.com>
 Link: https://lore.kernel.org/r/9fb43895-ca91-9b07-ebfd-808cf854ca95@nsfocus.com
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 ---
  drivers/video/console/vgacon.c |    4 ++++
@@ -81,14 +80,14 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/drivers/video/console/vgacon.c
 +++ b/drivers/video/console/vgacon.c
-@@ -220,6 +220,10 @@ static void vgacon_scrollback_update(str
+@@ -251,6 +251,10 @@ static void vgacon_scrollback_update(str
  	p = (void *) (c->vc_origin + t * c->vc_size_row);
  
  	while (count--) {
-+		if ((vgacon_scrollback_tail + c->vc_size_row) >
-+		    vgacon_scrollback_size)
-+			vgacon_scrollback_tail = 0;
++		if ((vgacon_scrollback_cur->tail + c->vc_size_row) >
++		    vgacon_scrollback_cur->size)
++			vgacon_scrollback_cur->tail = 0;
 +
- 		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
+ 		scr_memcpyw(vgacon_scrollback_cur->data +
+ 			    vgacon_scrollback_cur->tail,
  			    p, c->vc_size_row);
- 		vgacon_scrollback_cnt++;

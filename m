@@ -1,157 +1,53 @@
-From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Wed, 05 Aug 2020 18:19:14 +0000
-Subject: [PATCH v1 04/12] fbdev: aty: use generic power management
-Message-Id: <20200805180722.244008-5-vaibhavgupta40@gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 10 Aug 2020 19:14:32 +0000
+Subject: [PATCH AUTOSEL 4.4 05/16] video: fbdev: neofb: fix memory leak in neo_scan_monitor()
+Message-Id: <20200810191443.3795581-5-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200805180722.244008-1-vaibhavgupta40@gmail.com>
+References: <20200810191443.3795581-1-sashal@kernel.org>
+In-Reply-To: <20200810191443.3795581-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Evgeny Novikov <novikov@ispras.ru>, Daniel Vetter <daniel.vetter@ffwll.ch>, dri-devel@lists.freedesktop.org, Mike Rapoport <rppt@linux.ibm.com>, Jani Nikula <jani.nikula@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 
-Drivers using legacy power management .suspen()/.resume() callbacks
-have to manage PCI states and device's PM states themselves. They also
-need to take care of standard configuration registers.
+From: Evgeny Novikov <novikov@ispras.ru>
 
-Switch to generic power management framework using a single
-"struct dev_pm_ops" variable to take the unnecessary load from the driver.
-This also avoids the need for the driver to directly call most of the PCI
-helper functions and device power state control functions, as through
-the generic framework PCI Core takes care of the necessary operations,
-and drivers are required to do only device-specific jobs.
+[ Upstream commit edcb3895a751c762a18d25c8d9846ce9759ed7e1 ]
 
-Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+neofb_probe() calls neo_scan_monitor() that can successfully allocate a
+memory for info->monspecs.modedb and proceed to case 0x03. There it does
+not free the memory and returns -1. neofb_probe() goes to label
+err_scan_monitor, thus, it does not free this memory through calling
+fb_destroy_modedb() as well. We can not go to label err_init_hw since
+neo_scan_monitor() can fail during memory allocation. So, the patch frees
+the memory directly for case 0x03.
+
+Found by Linux Driver Verification project (linuxtesting.org).
+
+Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
+Cc: Jani Nikula <jani.nikula@intel.com>
+Cc: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200630195451.18675-1-novikov@ispras.ru
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/aty/atyfb_base.c | 50 ++++++++++++++++++++--------
- 1 file changed, 36 insertions(+), 14 deletions(-)
+ drivers/video/fbdev/neofb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index b0ac895e5ac9..a24d5bf6ade1 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -132,8 +132,8 @@
- #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## args)
- #define PRINTKE(fmt, args...)	printk(KERN_ERR "atyfb: " fmt, ## args)
- 
--#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
--defined (CONFIG_FB_ATY_GENERIC_LCD) || defined(CONFIG_FB_ATY_BACKLIGHT)
-+#if defined(CONFIG_PMAC_BACKLIGHT) || defined(CONFIG_FB_ATY_GENERIC_LCD) || \
-+defined(CONFIG_FB_ATY_BACKLIGHT)
- static const u32 lt_lcd_regs[] = {
- 	CNFG_PANEL_LG,
- 	LCD_GEN_CNTL_LG,
-@@ -175,7 +175,7 @@ u32 aty_ld_lcd(int index, const struct atyfb_par *par)
- 		return aty_ld_le32(LCD_DATA, par);
- 	}
- }
--#endif /* defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
-+#endif /* defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
- 
- #ifdef CONFIG_FB_ATY_GENERIC_LCD
- /*
-@@ -1994,7 +1994,7 @@ static int atyfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
- 
- 
- 
--#if defined(CONFIG_PM) && defined(CONFIG_PCI)
-+#if defined(CONFIG_PCI)
- 
- #ifdef CONFIG_PPC_PMAC
- /* Power management routines. Those are used for PowerBook sleep.
-@@ -2055,8 +2055,9 @@ static int aty_power_mgmt(int sleep, struct atyfb_par *par)
- }
- #endif /* CONFIG_PPC_PMAC */
- 
--static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int atyfb_pci_suspend_late(struct device *dev, pm_message_t state)
- {
-+	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct fb_info *info = pci_get_drvdata(pdev);
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
- 
-@@ -2082,7 +2083,6 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
- 	 * first save the config space content so the core can
- 	 * restore it properly on resume.
- 	 */
--	pci_save_state(pdev);
- 
- #ifdef CONFIG_PPC_PMAC
- 	/* Set chip to "suspend" mode */
-@@ -2094,8 +2094,6 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
- 		console_unlock();
- 		return -EIO;
- 	}
--#else
--	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
+index db023a97d1eae..e243254a57214 100644
+--- a/drivers/video/fbdev/neofb.c
++++ b/drivers/video/fbdev/neofb.c
+@@ -1820,6 +1820,7 @@ static int neo_scan_monitor(struct fb_info *info)
+ #else
+ 		printk(KERN_ERR
+ 		       "neofb: Only 640x480, 800x600/480 and 1024x768 panels are currently supported\n");
++		kfree(info->monspecs.modedb);
+ 		return -1;
  #endif
- 
- 	console_unlock();
-@@ -2105,6 +2103,21 @@ static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
- 	return 0;
- }
- 
-+static int __maybe_unused atyfb_pci_suspend(struct device *dev)
-+{
-+	return atyfb_pci_suspend_late(dev, PMSG_SUSPEND);
-+}
-+
-+static int __maybe_unused atyfb_pci_hibernate(struct device *dev)
-+{
-+	return atyfb_pci_suspend_late(dev, PMSG_HIBERNATE);
-+}
-+
-+static int __maybe_unused atyfb_pci_freeze(struct device *dev)
-+{
-+	return atyfb_pci_suspend_late(dev, PMSG_FREEZE);
-+}
-+
- static void aty_resume_chip(struct fb_info *info)
- {
- 	struct atyfb_par *par = info->par;
-@@ -2119,8 +2132,9 @@ static void aty_resume_chip(struct fb_info *info)
- 			aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
- }
- 
--static int atyfb_pci_resume(struct pci_dev *pdev)
-+static int __maybe_unused atyfb_pci_resume(struct device *dev)
- {
-+	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct fb_info *info = pci_get_drvdata(pdev);
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
- 
-@@ -2162,7 +2176,18 @@ static int atyfb_pci_resume(struct pci_dev *pdev)
- 	return 0;
- }
- 
--#endif /*  defined(CONFIG_PM) && defined(CONFIG_PCI) */
-+static const struct dev_pm_ops atyfb_pci_pm_ops = {
-+#ifdef CONFIG_PM_SLEEP
-+	.suspend	= atyfb_pci_suspend,
-+	.resume		= atyfb_pci_resume,
-+	.freeze		= atyfb_pci_freeze,
-+	.thaw		= atyfb_pci_resume,
-+	.poweroff	= atyfb_pci_hibernate,
-+	.restore	= atyfb_pci_resume,
-+#endif /* CONFIG_PM_SLEEP */
-+};
-+
-+#endif /*  defined(CONFIG_PCI) */
- 
- /* Backlight */
- #ifdef CONFIG_FB_ATY_BACKLIGHT
-@@ -3801,10 +3826,7 @@ static struct pci_driver atyfb_driver = {
- 	.id_table	= atyfb_pci_tbl,
- 	.probe		= atyfb_pci_probe,
- 	.remove		= atyfb_pci_remove,
--#ifdef CONFIG_PM
--	.suspend	= atyfb_pci_suspend,
--	.resume		= atyfb_pci_resume,
--#endif /* CONFIG_PM */
-+	.driver.pm	= &atyfb_pci_pm_ops,
- };
- 
- #endif /* CONFIG_PCI */
+ 	default:
 -- 
-2.27.0
+2.25.1

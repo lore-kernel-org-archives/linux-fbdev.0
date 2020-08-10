@@ -1,103 +1,163 @@
 From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Thu, 06 Aug 2020 07:38:56 +0000
-Subject: [PATCH v1 0/2] video: fbdev: radeonfb: PCI PM framework upgrade and fix-ups.
-Message-Id: <20200806072658.592444-1-vaibhavgupta40@gmail.com>
+Date: Mon, 10 Aug 2020 18:59:29 +0000
+Subject: [PATCH v2 01/12] fbdev: gxfb: use generic power management
+Message-Id: <20200810185723.15540-2-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200806072256.585705-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200806072256.585705-1-vaibhavgupta40@gmail.com>
+References: <20200810165458.GA292825@ravnborg.org>
+ <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Thierry Reding <treding@nvidia.com>
-Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-Linux Kernel Mentee: Remove Legacy Power Management. 
+Drivers should do only device-specific jobs. But in general, drivers using
+legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
+PM-related tasks themselves which can be done by PCI Core itself. This
+brings extra load on the driver and it directly calls PCI helper functions
+to handle them.
 
-The original goal of the patch series is to upgrade the power management
-framework of radeonfb fbdev driver. This has been done by upgrading .suspend()
-and .resume() callbacks.
+Although the gxfb driver does not have that extra load, we should switch to
+the new generic framework by updating function signatures and define a
+"struct dev_pm_ops" variable to bind PM callbacks so that we can remove
+the legacy .suspend & .resume bindings. Additionally, this helps us to
+remove the unnecessary call to gxfb_suspend() in the event of Freeze and
+Hibernate, as the function does nothing in their case.
 
-The upgrade makes sure that the involvement of PCI Core does not change the
-order of operations executed in a driver. Thus, does not change its behavior.
+Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+---
+ drivers/video/fbdev/geode/gxfb.h       |  5 ----
+ drivers/video/fbdev/geode/gxfb_core.c  | 36 ++++++++++++++------------
+ drivers/video/fbdev/geode/suspend_gx.c |  4 ---
+ 3 files changed, 20 insertions(+), 25 deletions(-)
 
-During this process, it was found that "#if defined(CONFIG_PM)" at line 1434 is
-redundant. This was introduced in the commit
-42ddb453a0cd ("radeon: Conditionally compile PM code").
-
-------------
-
-Before 42ddb453a0cd:
-$ git show 65122f7e80b5:drivers/video/aty/radeon_pm.c | grep -n "#ifdef\|#if\|#else\|#endif\|#elif\|#ifndef"
-
-Based on output in terminal:
-
-547:#ifdef CONFIG_PM
-       |-- 959:#ifdef CONFIG_PPC_PMAC
-       |-- 972:#endif
-       |-- 1291:#ifdef CONFIG_PPC_OF
-       |-- 1301:#endif /* CONFIG_PPC_OF */
-       |-- 1943:#ifdef CONFIG_PPC_OF
-                   |-- 2206:#if 0 /* Not ready yet */
-                   |-- 2508:#endif /* 0 */
-       |-- 2510:#endif /* CONFIG_PPC_OF */
-       |-- 2648:#ifdef CONFIG_PPC_PMAC
-       |-- 2654:#endif /* CONFIG_PPC_PMAC */
-       |-- 2768:#ifdef CONFIG_PPC_PMAC
-       |-- 2774:#endif /* CONFIG_PPC_PMAC */
-       |-- 2791:#ifdef CONFIG_PPC_OF__disabled
-       |-- 2801:#endif /* CONFIG_PPC_OF */
-2803:#endif /* CONFIG_PM */
-
-------------
-
-After 42ddb453a0cd:
-$ git show 42ddb453a0cd:drivers/video/aty/radeon_pm.c | grep -n "#ifdef\|#if\|#else\|#endif\|#elif\|#ifndef"
-
-Based on output in terminal:
-
-547:#ifdef CONFIG_PM
-       |-- 959:#ifdef CONFIG_PPC_PMAC
-       |-- 972:#endif
-       |-- 1291:#ifdef CONFIG_PPC_OF
-       |-- 1301:#endif /* CONFIG_PPC_OF */
-       |-- 1430:#if defined(CONFIG_PM)
-                   |-- 1431:#if defined(CONFIG_X86) || defined(CONFIG_PPC_PMAC)
-                   |-- 1944:#endif
-                   |-- 1946:#ifdef CONFIG_PPC_OF
-                               |-- 1947:#ifdef CONFIG_PPC_PMAC
-                               |-- 2208:#endif
-                   |-- 2209:#endif
-                   |-- 2211:#if 0 /* Not ready yet */
-                   |-- 2513:#endif /* 0 */
-       |-- 2515:#endif /* CONFIG_PPC_OF */
-       |-- 2653:#ifdef CONFIG_PPC_PMAC
-       |-- 2659:#endif /* CONFIG_PPC_PMAC */
-       |-- 2773:#ifdef CONFIG_PPC_PMAC
-       |-- 2779:#endif /* CONFIG_PPC_PMAC */
-       |-- 2796:#ifdef CONFIG_PPC_OF__disabled
-       |-- 2806:#endif /* CONFIG_PPC_OF */
-2808:#endif /* CONFIG_PM */
-
-------------
-
-This also affected the CONFIG_PPC_OF container (line 1943 at commit 65122f7e80b5)
-
-The patch-series fixes it along with PM upgrade.
-
-All patches are compile-tested only.
-
-Test tools:
-    - Compiler: gcc (GCC) 10.1.0
-    - allmodconfig build: make -j$(nproc) W=1 all
-
-Vaibhav Gupta (2):
-  video: fbdev: aty: radeon_pm: remove redundant CONFIG_PM container
-  fbdev: radeonfb:use generic power management
-
- drivers/video/fbdev/aty/radeon_base.c | 10 ++++---
- drivers/video/fbdev/aty/radeon_pm.c   | 38 ++++++++++++++++++++-------
- drivers/video/fbdev/aty/radeonfb.h    |  3 +--
- 3 files changed, 35 insertions(+), 16 deletions(-)
-
+diff --git a/drivers/video/fbdev/geode/gxfb.h b/drivers/video/fbdev/geode/gxfb.h
+index d2e9c5c8e294..792c111c21e4 100644
+--- a/drivers/video/fbdev/geode/gxfb.h
++++ b/drivers/video/fbdev/geode/gxfb.h
+@@ -21,7 +21,6 @@ struct gxfb_par {
+ 	void __iomem *dc_regs;
+ 	void __iomem *vid_regs;
+ 	void __iomem *gp_regs;
+-#ifdef CONFIG_PM
+ 	int powered_down;
+ 
+ 	/* register state, for power management functionality */
+@@ -36,7 +35,6 @@ struct gxfb_par {
+ 	uint64_t fp[FP_REG_COUNT];
+ 
+ 	uint32_t pal[DC_PAL_COUNT];
+-#endif
+ };
+ 
+ unsigned int gx_frame_buffer_size(void);
+@@ -49,11 +47,8 @@ void gx_set_dclk_frequency(struct fb_info *info);
+ void gx_configure_display(struct fb_info *info);
+ int gx_blank_display(struct fb_info *info, int blank_mode);
+ 
+-#ifdef CONFIG_PM
+ int gx_powerdown(struct fb_info *info);
+ int gx_powerup(struct fb_info *info);
+-#endif
+-
+ 
+ /* Graphics Processor registers (table 6-23 from the data book) */
+ enum gp_registers {
+diff --git a/drivers/video/fbdev/geode/gxfb_core.c b/drivers/video/fbdev/geode/gxfb_core.c
+index d38a148d4746..44089b331f91 100644
+--- a/drivers/video/fbdev/geode/gxfb_core.c
++++ b/drivers/video/fbdev/geode/gxfb_core.c
+@@ -322,17 +322,14 @@ static struct fb_info *gxfb_init_fbinfo(struct device *dev)
+ 	return info;
+ }
+ 
+-#ifdef CONFIG_PM
+-static int gxfb_suspend(struct pci_dev *pdev, pm_message_t state)
++static int __maybe_unused gxfb_suspend(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(pdev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 
+-	if (state.event = PM_EVENT_SUSPEND) {
+-		console_lock();
+-		gx_powerdown(info);
+-		fb_set_suspend(info, 1);
+-		console_unlock();
+-	}
++	console_lock();
++	gx_powerdown(info);
++	fb_set_suspend(info, 1);
++	console_unlock();
+ 
+ 	/* there's no point in setting PCI states; we emulate PCI, so
+ 	 * we don't end up getting power savings anyways */
+@@ -340,9 +337,9 @@ static int gxfb_suspend(struct pci_dev *pdev, pm_message_t state)
+ 	return 0;
+ }
+ 
+-static int gxfb_resume(struct pci_dev *pdev)
++static int __maybe_unused gxfb_resume(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(pdev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	int ret;
+ 
+ 	console_lock();
+@@ -356,7 +353,6 @@ static int gxfb_resume(struct pci_dev *pdev)
+ 	console_unlock();
+ 	return 0;
+ }
+-#endif
+ 
+ static int gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ {
+@@ -467,15 +463,23 @@ static const struct pci_device_id gxfb_id_table[] = {
+ 
+ MODULE_DEVICE_TABLE(pci, gxfb_id_table);
+ 
++static const struct dev_pm_ops gxfb_pm_ops = {
++#ifdef CONFIG_PM_SLEEP
++	.suspend	= gxfb_suspend,
++	.resume		= gxfb_resume,
++	.freeze		= NULL,
++	.thaw		= gxfb_resume,
++	.poweroff	= NULL,
++	.restore	= gxfb_resume,
++#endif
++};
++
+ static struct pci_driver gxfb_driver = {
+ 	.name		= "gxfb",
+ 	.id_table	= gxfb_id_table,
+ 	.probe		= gxfb_probe,
+ 	.remove		= gxfb_remove,
+-#ifdef CONFIG_PM
+-	.suspend	= gxfb_suspend,
+-	.resume		= gxfb_resume,
+-#endif
++	.driver.pm	= &gxfb_pm_ops,
+ };
+ 
+ #ifndef MODULE
+diff --git a/drivers/video/fbdev/geode/suspend_gx.c b/drivers/video/fbdev/geode/suspend_gx.c
+index 1110a527c35c..8c49d4e98772 100644
+--- a/drivers/video/fbdev/geode/suspend_gx.c
++++ b/drivers/video/fbdev/geode/suspend_gx.c
+@@ -11,8 +11,6 @@
+ 
+ #include "gxfb.h"
+ 
+-#ifdef CONFIG_PM
+-
+ static void gx_save_regs(struct gxfb_par *par)
+ {
+ 	int i;
+@@ -259,5 +257,3 @@ int gx_powerup(struct fb_info *info)
+ 	par->powered_down  = 0;
+ 	return 0;
+ }
+-
+-#endif
 -- 
 2.27.0

@@ -1,61 +1,142 @@
-From: Alexandru M Stan <amstan@chromium.org>
-Date: Wed, 05 Aug 2020 21:04:09 +0000
-Subject: Re: [PATCH 0/3] PWM backlight interpolation adjustments
-Message-Id: <CAHNYxRzwQ2jx99M0oyNv8CDE4h051jcdAdYFjRd8mhNjB19FgA@mail.gmail.com>
+From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Date: Mon, 10 Aug 2020 18:59:59 +0000
+Subject: [PATCH v2 05/12] fbdev: aty128fb: use generic power management
+Message-Id: <20200810185723.15540-6-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200721042522.2403410-1-amstan@chromium.org>
-In-Reply-To: <20200721042522.2403410-1-amstan@chromium.org>
+References: <20200810165458.GA292825@ravnborg.org>
+ <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, dri-devel@lists.freedesktop.org, linux-kernel <linux-kernel@vger.kernel.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Matthias Kaehlcke <mka@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-arm-kernel@lists.infradead.org
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-On Mon, Jul 20, 2020 at 9:27 PM Alexandru Stan <amstan@chromium.org> wrote:
->
-> I was trying to adjust the brightness for a new chromebook:
-> https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/2291209
-> Like a lot of panels, the low end needs to be cropped,
-> and now that we have the interpolation stuff I wanted to make use of it
-> and bake in even the curve.
->
-> I found the behavior a little unintuitive and non-linear. See patch 1
-> for a suggested fix for this.
->
-> Unfortunatelly a few veyron dts files were relying on this
-> (perhaps weird) behavior. Those devices also want a minimum brightness.
-> The issue is that they also want the 0% point for turning off the
-> display.
-> https://github.com/torvalds/linux/commit/6233269bce47bd450196a671ab28eb1ec5eb88d9#diff-e401ae20091bbfb311a062c464f4f47fL23
->
-> So the idea here is to change those dts files to only say <3 255> (patch
-> 3), and add in a virtual 0% point at the bottom of the scale (patch 2).
->
-> We have to do this conditionally because it seems some devices like to
-> have the scale inverted:
->   % git grep "brightness-levels\s*=\s*<\s*[1-9]"|cat
->   arch/arm/boot/dts/tegra124-apalis-eval.dts:             brightness-levels = <255 231 223 207 191 159 127 0>;
->
->
-> Alexandru Stan (3):
->   backlight: pwm_bl: Fix interpolation
->   backlight: pwm_bl: Artificially add 0% during interpolation
->   ARM: dts: rockchip: Remove 0 point in backlight
->
->  arch/arm/boot/dts/rk3288-veyron-jaq.dts    |  2 +-
->  arch/arm/boot/dts/rk3288-veyron-minnie.dts |  2 +-
->  arch/arm/boot/dts/rk3288-veyron-tiger.dts  |  2 +-
->  drivers/video/backlight/pwm_bl.c           | 78 +++++++++++-----------
->  4 files changed, 42 insertions(+), 42 deletions(-)
->
-> --
-> 2.27.0
->
+Drivers should do only device-specific jobs. But in general, drivers using
+legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
+PM-related tasks themselves which can be done by PCI Core itself. This
+brings extra load on the driver and it directly calls PCI helper functions
+to handle them.
 
-Hello,
+Switch to the new generic framework by updating function signatures and
+define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
+unnecessary calls to the PCI Helper functions along with the legacy
+.suspend & .resume bindings.
 
-Friendly ping.
-Let me know if you would like me to make any changes to my patches.
+Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+---
+ drivers/video/fbdev/aty/aty128fb.c | 51 ++++++++++++++++++++----------
+ 1 file changed, 34 insertions(+), 17 deletions(-)
 
-Thanks,
-Alexandru M Stan
+diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
+index d05d4195acad..dd7762fea058 100644
+--- a/drivers/video/fbdev/aty/aty128fb.c
++++ b/drivers/video/fbdev/aty/aty128fb.c
+@@ -162,10 +162,22 @@ static char * const r128_family[] = {
+ static int aty128_probe(struct pci_dev *pdev,
+                                const struct pci_device_id *ent);
+ static void aty128_remove(struct pci_dev *pdev);
+-static int aty128_pci_suspend(struct pci_dev *pdev, pm_message_t state);
+-static int aty128_pci_resume(struct pci_dev *pdev);
++static int aty128_pci_suspend_late(struct device *dev, pm_message_t state);
++static int __maybe_unused aty128_pci_suspend(struct device *dev);
++static int __maybe_unused aty128_pci_hibernate(struct device *dev);
++static int __maybe_unused aty128_pci_freeze(struct device *dev);
++static int __maybe_unused aty128_pci_resume(struct device *dev);
+ static int aty128_do_resume(struct pci_dev *pdev);
+ 
++static const struct dev_pm_ops aty128_pci_pm_ops = {
++	.suspend	= aty128_pci_suspend,
++	.resume		= aty128_pci_resume,
++	.freeze		= aty128_pci_freeze,
++	.thaw		= aty128_pci_resume,
++	.poweroff	= aty128_pci_hibernate,
++	.restore	= aty128_pci_resume,
++};
++
+ /* supported Rage128 chipsets */
+ static const struct pci_device_id aty128_pci_tbl[] = {
+ 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RAGE128_LE,
+@@ -272,8 +284,7 @@ static struct pci_driver aty128fb_driver = {
+ 	.id_table	= aty128_pci_tbl,
+ 	.probe		= aty128_probe,
+ 	.remove		= aty128_remove,
+-	.suspend	= aty128_pci_suspend,
+-	.resume		= aty128_pci_resume,
++	.driver.pm	= &aty128_pci_pm_ops,
+ };
+ 
+ /* packed BIOS settings */
+@@ -2320,7 +2331,6 @@ static int aty128fb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ static void aty128_set_suspend(struct aty128fb_par *par, int suspend)
+ {
+ 	u32	pmgt;
+-	struct pci_dev *pdev = par->pdev;
+ 
+ 	if (!par->pdev->pm_cap)
+ 		return;
+@@ -2347,23 +2357,15 @@ static void aty128_set_suspend(struct aty128fb_par *par, int suspend)
+ 		aty_st_le32(BUS_CNTL1, 0x00000010);
+ 		aty_st_le32(MEM_POWER_MISC, 0x0c830000);
+ 		msleep(100);
+-
+-		/* Switch PCI power management to D2 */
+-		pci_set_power_state(pdev, PCI_D2);
+ 	}
+ }
+ 
+-static int aty128_pci_suspend(struct pci_dev *pdev, pm_message_t state)
++static int aty128_pci_suspend_late(struct device *dev, pm_message_t state)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+ 	struct aty128fb_par *par = info->par;
+ 
+-	/* Because we may change PCI D state ourselves, we need to
+-	 * first save the config space content so the core can
+-	 * restore it properly on resume.
+-	 */
+-	pci_save_state(pdev);
+-
+ 	/* We don't do anything but D2, for now we return 0, but
+ 	 * we may want to change that. How do we know if the BIOS
+ 	 * can properly take care of D3 ? Also, with swsusp, we
+@@ -2422,6 +2424,21 @@ static int aty128_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 	return 0;
+ }
+ 
++static int __maybe_unused aty128_pci_suspend(struct device *dev)
++{
++	return aty128_pci_suspend_late(dev, PMSG_SUSPEND);
++}
++
++static int __maybe_unused aty128_pci_hibernate(struct device *dev)
++{
++	return aty128_pci_suspend_late(dev, PMSG_HIBERNATE);
++}
++
++static int __maybe_unused aty128_pci_freeze(struct device *dev)
++{
++	return aty128_pci_suspend_late(dev, PMSG_FREEZE);
++}
++
+ static int aty128_do_resume(struct pci_dev *pdev)
+ {
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+@@ -2468,12 +2485,12 @@ static int aty128_do_resume(struct pci_dev *pdev)
+ 	return 0;
+ }
+ 
+-static int aty128_pci_resume(struct pci_dev *pdev)
++static int __maybe_unused aty128_pci_resume(struct device *dev)
+ {
+ 	int rc;
+ 
+ 	console_lock();
+-	rc = aty128_do_resume(pdev);
++	rc = aty128_do_resume(to_pci_dev(dev));
+ 	console_unlock();
+ 
+ 	return rc;
+-- 
+2.27.0

@@ -1,152 +1,53 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 21 Aug 2020 16:17:51 +0000
-Subject: [PATCH AUTOSEL 4.19 22/38] omapfb: fix multiple reference count leaks due to pm_runtime_get_sync
-Message-Id: <20200821161807.348600-22-sashal@kernel.org>
+Date: Mon, 10 Aug 2020 19:09:41 +0000
+Subject: [PATCH AUTOSEL 5.7 13/60] video: fbdev: neofb: fix memory leak in neo_scan_monitor()
+Message-Id: <20200810191028.3793884-13-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200821161807.348600-1-sashal@kernel.org>
-In-Reply-To: <20200821161807.348600-1-sashal@kernel.org>
+References: <20200810191028.3793884-1-sashal@kernel.org>
+In-Reply-To: <20200810191028.3793884-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kjlu@umn.edu, dri-devel@lists.freedesktop.org, "Andrew F. Davis" <afd@ti.com>, Alexios Zavras <alexios.zavras@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, wu000273@umn.edu, Aditya Pakki <pakki001@umn.edu>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Enrico Weigelt <info@metux.net>, Allison Randal <allison@lohutok.net>
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Evgeny Novikov <novikov@ispras.ru>, Daniel Vetter <daniel.vetter@ffwll.ch>, dri-devel@lists.freedesktop.org, Mike Rapoport <rppt@linux.ibm.com>, Jani Nikula <jani.nikula@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 
-From: Aditya Pakki <pakki001@umn.edu>
+From: Evgeny Novikov <novikov@ispras.ru>
 
-[ Upstream commit 78c2ce9bde70be5be7e3615a2ae7024ed8173087 ]
+[ Upstream commit edcb3895a751c762a18d25c8d9846ce9759ed7e1 ]
 
-On calling pm_runtime_get_sync() the reference count of the device
-is incremented. In case of failure, decrement the
-reference count before returning the error.
+neofb_probe() calls neo_scan_monitor() that can successfully allocate a
+memory for info->monspecs.modedb and proceed to case 0x03. There it does
+not free the memory and returns -1. neofb_probe() goes to label
+err_scan_monitor, thus, it does not free this memory through calling
+fb_destroy_modedb() as well. We can not go to label err_init_hw since
+neo_scan_monitor() can fail during memory allocation. So, the patch frees
+the memory directly for case 0x03.
 
-Signed-off-by: Aditya Pakki <pakki001@umn.edu>
-Cc: kjlu@umn.edu
-Cc: wu000273@umn.edu
-Cc: Allison Randal <allison@lohutok.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Enrico Weigelt <info@metux.net>
-cc: "Andrew F. Davis" <afd@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Alexios Zavras <alexios.zavras@intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: YueHaibing <yuehaibing@huawei.com>
+Found by Linux Driver Verification project (linuxtesting.org).
+
+Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
+Cc: Jani Nikula <jani.nikula@intel.com>
+Cc: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20200614030528.128064-1-pakki001@umn.edu
+Link: https://patchwork.freedesktop.org/patch/msgid/20200630195451.18675-1-novikov@ispras.ru
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c   | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/dss.c   | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 5 +++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c | 5 +++--
- drivers/video/fbdev/omap2/omapfb/dss/venc.c  | 7 +++++--
- 6 files changed, 26 insertions(+), 12 deletions(-)
+ drivers/video/fbdev/neofb.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-index a06d9c25765c5..0bd582e845f31 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-@@ -531,8 +531,11 @@ int dispc_runtime_get(void)
- 	DSSDBG("dispc_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&dispc.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dispc.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- EXPORT_SYMBOL(dispc_runtime_get);
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-index 8e1d60d48dbb0..50792d31533bf 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-@@ -1148,8 +1148,11 @@ static int dsi_runtime_get(struct platform_device *dsidev)
- 	DSSDBG("dsi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&dsi->pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dsi->pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- static void dsi_runtime_put(struct platform_device *dsidev)
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-index b6c6c24979dd6..faebf9a773ba5 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-@@ -779,8 +779,11 @@ int dss_runtime_get(void)
- 	DSSDBG("dss_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&dss.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dss.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- void dss_runtime_put(void)
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-index 28de56e21c74b..9fd9a02bb871d 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-@@ -50,9 +50,10 @@ static int hdmi_runtime_get(void)
- 	DSSDBG("hdmi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
--	if (r < 0)
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&hdmi.pdev->dev);
- 		return r;
-+	}
- 
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-index 2e2fcc3d6d4f7..13f3a5ce55294 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-@@ -54,9 +54,10 @@ static int hdmi_runtime_get(void)
- 	DSSDBG("hdmi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
--	if (r < 0)
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&hdmi.pdev->dev);
- 		return r;
-+	}
- 
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-index 392464da12e41..96714b4596d2d 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-@@ -402,8 +402,11 @@ static int venc_runtime_get(void)
- 	DSSDBG("venc_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&venc.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&venc.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- static void venc_runtime_put(void)
+diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
+index e6ea853c17238..5a363ce9b4cbe 100644
+--- a/drivers/video/fbdev/neofb.c
++++ b/drivers/video/fbdev/neofb.c
+@@ -1820,6 +1820,7 @@ static int neo_scan_monitor(struct fb_info *info)
+ #else
+ 		printk(KERN_ERR
+ 		       "neofb: Only 640x480, 800x600/480 and 1024x768 panels are currently supported\n");
++		kfree(info->monspecs.modedb);
+ 		return -1;
+ #endif
+ 	default:
 -- 
 2.25.1

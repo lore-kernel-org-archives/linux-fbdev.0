@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 10 Aug 2020 19:13:27 +0000
-Subject: [PATCH AUTOSEL 4.14 05/22] video: fbdev: neofb: fix memory leak in neo_scan_monitor()
-Message-Id: <20200810191345.3795166-5-sashal@kernel.org>
+Date: Mon, 10 Aug 2020 19:14:06 +0000
+Subject: [PATCH AUTOSEL 4.9 05/17] video: fbdev: neofb: fix memory leak in neo_scan_monitor()
+Message-Id: <20200810191418.3795394-5-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200810191345.3795166-1-sashal@kernel.org>
-In-Reply-To: <20200810191345.3795166-1-sashal@kernel.org>
+References: <20200810191418.3795394-1-sashal@kernel.org>
+In-Reply-To: <20200810191418.3795394-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -38,7 +38,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
-index 5d3a444083f74..2018e1ca33eb6 100644
+index db023a97d1eae..e243254a57214 100644
 --- a/drivers/video/fbdev/neofb.c
 +++ b/drivers/video/fbdev/neofb.c
 @@ -1820,6 +1820,7 @@ static int neo_scan_monitor(struct fb_info *info)

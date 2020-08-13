@@ -1,59 +1,94 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 13 Aug 2020 07:50:55 +0000
+From: Luca Ceresoli <luca@lucaceresoli.net>
+Date: Thu, 13 Aug 2020 10:31:28 +0000
 Subject: Re: [PATCH] dt-bindings: Whitespace clean-ups in schema files
-Message-Id: <CAMuHMdVXvSRF-G_TYu4P+Bqa2FZJWsUCyzqFur3Rb-tBExfbsw@mail.gmail.com>
+Message-Id: <d5808e9c-07fe-1c28-b9a6-a16abe9df458@lucaceresoli.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20200812203618.2656699-1-robh@kernel.org>
 In-Reply-To: <20200812203618.2656699-1-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh@kernel.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-iio@vger.kernel.org, "open list:REMOTE PROCESSOR (REMOTEPROC) SUBSYSTEM" <linux-remoteproc@vger.kernel.org>, ALSA Development Mailing List <alsa-devel@alsa-project.org>, DRI Development <dri-devel@lists.freedesktop.org>, MTD Maling List <linux-mtd@lists.infradead.org>, Linux I2C <linux-i2c@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, linux-rtc@vger.kernel.org, "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>, linux-input@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-hwmon@vger.kernel.org, netdev <netdev@vger.kernel.org>, USB list <linux-usb@vger.kernel.org>, Linux MMC List <linux-mmc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-spi <linux-spi@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org
+Cc: linux-hwmon@vger.kernel.org, linux-rtc@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-mmc@vger.kernel.org, linux-usb@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-spi@vger.kernel.org, linux-gpio@vger.kernel.org, netdev@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 
 Hi Rob,
 
-On Wed, Aug 12, 2020 at 10:36 PM Rob Herring <robh@kernel.org> wrote:
+On 12/08/20 22:36, Rob Herring wrote:
 > Clean-up incorrect indentation, extra spaces, long lines, and missing
 > EOF newline in schema files. Most of the clean-ups are for list
 > indentation which should always be 2 spaces more than the preceding
 > keyword.
->
+> 
 > Found with yamllint (which I plan to integrate into the checks).
 
-> Signed-off-by: Rob Herring <robh@kernel.org>
+[...]
 
-Thanks for your patch!
+> diff --git a/Documentation/devicetree/bindings/clock/idt,versaclock5.yaml b/Documentation/devicetree/bindings/clock/idt,versaclock5.yaml
+> index 3d4e1685cc55..28c6461b9a9a 100644
+> --- a/Documentation/devicetree/bindings/clock/idt,versaclock5.yaml
+> +++ b/Documentation/devicetree/bindings/clock/idt,versaclock5.yaml
+> @@ -95,10 +95,10 @@ allOf:
+>        # Devices without builtin crystal
+>        properties:
+>          clock-names:
+> -            minItems: 1
+> -            maxItems: 2
+> -            items:
+> -              enum: [ xin, clkin ]
+> +          minItems: 1
+> +          maxItems: 2
+> +          items:
+> +            enum: [ xin, clkin ]
+>          clocks:
+>            minItems: 1
+>            maxItems: 2
 
-> --- a/Documentation/devicetree/bindings/clock/renesas,cpg-clocks.yaml
-> +++ b/Documentation/devicetree/bindings/clock/renesas,cpg-clocks.yaml
-> @@ -24,9 +24,9 @@ properties:
->        - const: renesas,r8a7778-cpg-clocks # R-Car M1
->        - const: renesas,r8a7779-cpg-clocks # R-Car H1
->        - items:
-> -        - enum:
-> -            - renesas,r7s72100-cpg-clocks # RZ/A1H
-> -        - const: renesas,rz-cpg-clocks    # RZ/A1
-> +          - enum:
-> +              - renesas,r7s72100-cpg-clocks # RZ/A1H
-> +          - const: renesas,rz-cpg-clocks    # RZ/A1
+Thanks for noticing, LGTM.
 
-This change breaks alignment of the comments at the end of each line.
+[...]
 
->        - const: renesas,sh73a0-cpg-clocks  # SH-Mobile AG5
+> diff --git a/Documentation/devicetree/bindings/input/touchscreen/touchscreen.yaml b/Documentation/devicetree/bindings/input/touchscreen/touchscreen.yaml
+> index d7dac16a3960..36dc7b56a453 100644
+> --- a/Documentation/devicetree/bindings/input/touchscreen/touchscreen.yaml
+> +++ b/Documentation/devicetree/bindings/input/touchscreen/touchscreen.yaml
+> @@ -33,8 +33,8 @@ properties:
+>      $ref: /schemas/types.yaml#/definitions/uint32
+>  
+>    touchscreen-min-pressure:
+> -    description: minimum pressure on the touchscreen to be achieved in order for the
+> -                 touchscreen driver to report a touch event.
+> +    description: minimum pressure on the touchscreen to be achieved in order
+> +      for the touchscreen driver to report a touch event.
 
-(I only checked the files I care about)
+Out of personal taste, I find the original layout more pleasant and
+readable. This third option is also good, especially for long descriptions:
 
-If you don't update commit  e0fe7fc6f2ca0781 ("dt-bindings: Whitespace
-clean-ups in schema files"), I can send a patch after v5.9-rc1.
+  description:
+    minimum pressure on the touchscreen to be achieved in order for the
+    touchscreen driver to report a touch event.
 
-Gr{oetje,eeting}s,
+At first glance yamllint seems to support exactly these two by default:
 
-                        Geert
+> With indentation: {spaces: 4, check-multi-line-strings: true}
+> 
+> the following code snippet would PASS:
+> 
+> Blaise Pascal:
+>     Je vous écris une longue lettre parce que
+>     je n'ai pas le temps d'en écrire une courte.
+> 
+> the following code snippet would PASS:
+> 
+> Blaise Pascal: Je vous écris une longue lettre parce que
+>                je n'ai pas le temps d'en écrire une courte.
+> 
+> the following code snippet would FAIL:
+> 
+> Blaise Pascal: Je vous écris une longue lettre parce que
+>   je n'ai pas le temps d'en écrire une courte.
+> 
+(https://yamllint.readthedocs.io/en/stable/rules.html#module-yamllint.rules.indentation)
+
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Luca

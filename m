@@ -1,152 +1,56 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 21 Aug 2020 16:16:43 +0000
-Subject: [PATCH AUTOSEL 5.4 27/48] omapfb: fix multiple reference count leaks due to pm_runtime_get_sync
-Message-Id: <20200821161704.348164-27-sashal@kernel.org>
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Tue, 18 Aug 2020 08:56:50 +0000
+Subject: [PATCH 3/8] newport_con: make module's init & exit static using module_driver
+Message-Id: <20200818085655.12071-3-jslaby@suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200821161704.348164-1-sashal@kernel.org>
-In-Reply-To: <20200821161704.348164-1-sashal@kernel.org>
+References: <20200818085655.12071-1-jslaby@suse.cz>
+In-Reply-To: <20200818085655.12071-1-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kjlu@umn.edu, dri-devel@lists.freedesktop.org, "Andrew F. Davis" <afd@ti.com>, Alexios Zavras <alexios.zavras@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, wu000273@umn.edu, Aditya Pakki <pakki001@umn.edu>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Enrico Weigelt <info@metux.net>, Allison Randal <allison@lohutok.net>
+To: gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
 
-From: Aditya Pakki <pakki001@umn.edu>
+The compiler complains that newport_console_init and
+newport_console_exit are not declared:
+   drivers/video/console/newport_con.c:745:12: warning: no previous prototype for 'newport_console_init'
+   drivers/video/console/newport_con.c:750:13: warning: no previous prototype for 'newport_console_exit'
 
-[ Upstream commit 78c2ce9bde70be5be7e3615a2ae7024ed8173087 ]
+Here, it translates into: they should be marked static. Do so by
+converting the simple un/registration to module_driver().
 
-On calling pm_runtime_get_sync() the reference count of the device
-is incremented. In case of failure, decrement the
-reference count before returning the error.
-
-Signed-off-by: Aditya Pakki <pakki001@umn.edu>
-Cc: kjlu@umn.edu
-Cc: wu000273@umn.edu
-Cc: Allison Randal <allison@lohutok.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Enrico Weigelt <info@metux.net>
-cc: "Andrew F. Davis" <afd@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Alexios Zavras <alexios.zavras@intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: YueHaibing <yuehaibing@huawei.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20200614030528.128064-1-pakki001@umn.edu
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-mips@vger.kernel.org
 ---
- drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c   | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/dss.c   | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 5 +++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c | 5 +++--
- drivers/video/fbdev/omap2/omapfb/dss/venc.c  | 7 +++++--
- 6 files changed, 26 insertions(+), 12 deletions(-)
+ drivers/video/console/newport_con.c | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-index 376ee5bc3ddc9..34e8171856e95 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-@@ -520,8 +520,11 @@ int dispc_runtime_get(void)
- 	DSSDBG("dispc_runtime_get\n");
+diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
+index 4d9110393479..0d0989040c58 100644
+--- a/drivers/video/console/newport_con.c
++++ b/drivers/video/console/newport_con.c
+@@ -751,18 +751,6 @@ static struct gio_driver newport_driver = {
+ 	.probe = newport_probe,
+ 	.remove = newport_remove,
+ };
+-
+-int __init newport_console_init(void)
+-{
+-	return gio_register_driver(&newport_driver);
+-}
+-
+-void __exit newport_console_exit(void)
+-{
+-	gio_unregister_driver(&newport_driver);
+-}
+-
+-module_init(newport_console_init);
+-module_exit(newport_console_exit);
++module_driver(newport_driver, gio_register_driver, gio_unregister_driver);
  
- 	r = pm_runtime_get_sync(&dispc.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dispc.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- EXPORT_SYMBOL(dispc_runtime_get);
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-index d620376216e1d..6f9c25fec9946 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-@@ -1137,8 +1137,11 @@ static int dsi_runtime_get(struct platform_device *dsidev)
- 	DSSDBG("dsi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&dsi->pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dsi->pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- static void dsi_runtime_put(struct platform_device *dsidev)
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-index bfc5c4c5a26ad..a6b1c1598040d 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-@@ -768,8 +768,11 @@ int dss_runtime_get(void)
- 	DSSDBG("dss_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&dss.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dss.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- void dss_runtime_put(void)
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-index 7060ae56c062c..4804aab342981 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-@@ -39,9 +39,10 @@ static int hdmi_runtime_get(void)
- 	DSSDBG("hdmi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
--	if (r < 0)
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&hdmi.pdev->dev);
- 		return r;
-+	}
- 
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-index ac49531e47327..a06b6f1355bdb 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-@@ -43,9 +43,10 @@ static int hdmi_runtime_get(void)
- 	DSSDBG("hdmi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
--	if (r < 0)
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&hdmi.pdev->dev);
- 		return r;
-+	}
- 
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-index f81e2a46366dd..3717dac3dcc83 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-@@ -391,8 +391,11 @@ static int venc_runtime_get(void)
- 	DSSDBG("venc_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&venc.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&venc.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- static void venc_runtime_put(void)
+ MODULE_LICENSE("GPL");
 -- 
-2.25.1
+2.28.0

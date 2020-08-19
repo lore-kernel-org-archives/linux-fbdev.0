@@ -1,34 +1,130 @@
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Date: Tue, 25 Aug 2020 10:21:16 +0000
-Subject: [PATCH] video: fbdev: fix potential OOB read in vga_8planes_imageblit()
-Message-Id: <20200825102116.6703-1-penguin-kernel@I-love.SAKURA.ne.jp>
+From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Date: Wed, 19 Aug 2020 19:08:51 +0000
+Subject: [PATCH v3 09/12] fbdev: i740fb: use generic power management
+Message-Id: <20200819185654.151170-10-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-Since transl_l[16] is accessed via cdat[y] >> 4, cdat[y] needs to be
-evaluated as an "unsigned char" value in order to fit 0...15 range.
+Drivers should do only device-specific jobs. But in general, drivers using
+legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
+PM-related tasks themselves which can be done by PCI Core itself. This
+brings extra load on the driver and it directly calls PCI helper functions
+to handle them.
 
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Switch to the new generic framework by updating function signatures and
+define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
+unnecessary calls to the PCI Helper functions along with the legacy
+.suspend & .resume bindings.
+
+The i740fb_suspend() is not designed to function in the case of Freeze.
+Thus, the code checked for "if (state.event = PM_EVENT_FREEZE....)". This
+is because, in the legacy framework, this callback was invoked even in the
+event of Freeze. Hence, added the load of unnecessary function-call.
+
+The goal can be achieved by binding the callback with only ".suspend" and
+".poweroff" in the "i740fb_pm_ops" const variable. This also avoids the
+step of checking "if (state.event = PM_EVENT_FREEZE....)" every time the
+callback is invoked.
+
+Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
- drivers/video/fbdev/vga16fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/i740fb.c | 40 +++++++++++++++---------------------
+ 1 file changed, 16 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index a20eeb8308ff..578d3541e3d6 100644
---- a/drivers/video/fbdev/vga16fb.c
-+++ b/drivers/video/fbdev/vga16fb.c
-@@ -1121,7 +1121,7 @@ static void vga_8planes_imageblit(struct fb_info *info, const struct fb_image *i
-         char oldop = setop(0);
-         char oldsr = setsr(0);
-         char oldmask = selectmask();
--        const char *cdat = image->data;
-+	const unsigned char *cdat = image->data;
- 	u32 dx = image->dx;
-         char __iomem *where;
-         int y;
+diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
+index c65ec7386e87..8d7f06fc8a5a 100644
+--- a/drivers/video/fbdev/i740fb.c
++++ b/drivers/video/fbdev/i740fb.c
+@@ -1175,16 +1175,11 @@ static void i740fb_remove(struct pci_dev *dev)
+ 	}
+ }
+ 
+-#ifdef CONFIG_PM
+-static int i740fb_suspend(struct pci_dev *dev, pm_message_t state)
++static int __maybe_unused i740fb_suspend(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct i740fb_par *par = info->par;
+ 
+-	/* don't disable console during hibernation and wakeup from it */
+-	if (state.event = PM_EVENT_FREEZE || state.event = PM_EVENT_PRETHAW)
+-		return 0;
+-
+ 	console_lock();
+ 	mutex_lock(&(par->open_lock));
+ 
+@@ -1197,19 +1192,15 @@ static int i740fb_suspend(struct pci_dev *dev, pm_message_t state)
+ 
+ 	fb_set_suspend(info, 1);
+ 
+-	pci_save_state(dev);
+-	pci_disable_device(dev);
+-	pci_set_power_state(dev, pci_choose_state(dev, state));
+-
+ 	mutex_unlock(&(par->open_lock));
+ 	console_unlock();
+ 
+ 	return 0;
+ }
+ 
+-static int i740fb_resume(struct pci_dev *dev)
++static int __maybe_unused i740fb_resume(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct i740fb_par *par = info->par;
+ 
+ 	console_lock();
+@@ -1218,11 +1209,6 @@ static int i740fb_resume(struct pci_dev *dev)
+ 	if (par->ref_count = 0)
+ 		goto fail;
+ 
+-	pci_set_power_state(dev, PCI_D0);
+-	pci_restore_state(dev);
+-	if (pci_enable_device(dev))
+-		goto fail;
+-
+ 	i740fb_set_par(info);
+ 	fb_set_suspend(info, 0);
+ 
+@@ -1231,10 +1217,17 @@ static int i740fb_resume(struct pci_dev *dev)
+ 	console_unlock();
+ 	return 0;
+ }
+-#else
+-#define i740fb_suspend NULL
+-#define i740fb_resume NULL
+-#endif /* CONFIG_PM */
++
++static const struct dev_pm_ops i740fb_pm_ops = {
++#ifdef CONFIG_PM_SLEEP
++	.suspend	= i740fb_suspend,
++	.resume		= i740fb_resume,
++	.freeze		= NULL,
++	.thaw		= i740fb_resume,
++	.poweroff	= i740fb_suspend,
++	.restore	= i740fb_resume,
++#endif /* CONFIG_PM_SLEEP */
++};
+ 
+ #define I740_ID_PCI 0x00d1
+ #define I740_ID_AGP 0x7800
+@@ -1251,8 +1244,7 @@ static struct pci_driver i740fb_driver = {
+ 	.id_table	= i740fb_id_table,
+ 	.probe		= i740fb_probe,
+ 	.remove		= i740fb_remove,
+-	.suspend	= i740fb_suspend,
+-	.resume		= i740fb_resume,
++	.driver.pm	= &i740fb_pm_ops,
+ };
+ 
+ #ifndef MODULE
 -- 
-2.18.4
+2.28.0

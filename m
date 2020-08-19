@@ -1,152 +1,136 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 21 Aug 2020 16:13:58 +0000
-Subject: [PATCH AUTOSEL 5.8 37/62] omapfb: fix multiple reference count leaks due to pm_runtime_get_sync
-Message-Id: <20200821161423.347071-37-sashal@kernel.org>
+From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Date: Wed, 19 Aug 2020 19:08:53 +0000
+Subject: [PATCH v3 11/12] fbdev: s3fb: use generic power management
+Message-Id: <20200819185654.151170-12-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200821161423.347071-1-sashal@kernel.org>
-In-Reply-To: <20200821161423.347071-1-sashal@kernel.org>
+References: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kjlu@umn.edu, dri-devel@lists.freedesktop.org, "Andrew F. Davis" <afd@ti.com>, Alexios Zavras <alexios.zavras@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, wu000273@umn.edu, Aditya Pakki <pakki001@umn.edu>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Enrico Weigelt <info@metux.net>, Allison Randal <allison@lohutok.net>
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-From: Aditya Pakki <pakki001@umn.edu>
+Drivers should do only device-specific jobs. But in general, drivers using
+legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
+PM-related tasks themselves which can be done by PCI Core itself. This
+brings extra load on the driver and it directly calls PCI helper functions
+to handle them.
 
-[ Upstream commit 78c2ce9bde70be5be7e3615a2ae7024ed8173087 ]
+Switch to the new generic framework by updating function signatures and
+define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
+unnecessary calls to the PCI Helper functions along with the legacy
+.suspend & .resume bindings.
 
-On calling pm_runtime_get_sync() the reference count of the device
-is incremented. In case of failure, decrement the
-reference count before returning the error.
+The s3_pci_suspend() is not designed to function in the case of Freeze.
+Thus, the code checked for "if (state.event = PM_EVENT_FREEZE....)". This
+is because, in the legacy framework, this callback was invoked even in the
+event of Freeze. Hence, added the load of unnecessary function-call.
 
-Signed-off-by: Aditya Pakki <pakki001@umn.edu>
-Cc: kjlu@umn.edu
-Cc: wu000273@umn.edu
-Cc: Allison Randal <allison@lohutok.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Enrico Weigelt <info@metux.net>
-cc: "Andrew F. Davis" <afd@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Alexios Zavras <alexios.zavras@intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: YueHaibing <yuehaibing@huawei.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20200614030528.128064-1-pakki001@umn.edu
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+The goal can be achieved by binding the callback with only ".suspend" and
+".poweroff" in the "s3_pci_pm_ops" const variable. This also avoids the
+step of checking "state.event = PM_EVENT_FREEZE" every time the callback
+is invoked.
+
+Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
- drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c   | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/dss.c   | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 5 +++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c | 5 +++--
- drivers/video/fbdev/omap2/omapfb/dss/venc.c  | 7 +++++--
- 6 files changed, 26 insertions(+), 12 deletions(-)
+ drivers/video/fbdev/s3fb.c | 39 ++++++++++++++++----------------------
+ 1 file changed, 16 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-index 4a16798b2ecd8..e2b572761bf61 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-@@ -520,8 +520,11 @@ int dispc_runtime_get(void)
- 	DSSDBG("dispc_runtime_get\n");
+diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
+index 60c424fae988..5c74253e7b2c 100644
+--- a/drivers/video/fbdev/s3fb.c
++++ b/drivers/video/fbdev/s3fb.c
+@@ -1410,9 +1410,9 @@ static void s3_pci_remove(struct pci_dev *dev)
  
- 	r = pm_runtime_get_sync(&dispc.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dispc.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- EXPORT_SYMBOL(dispc_runtime_get);
+ /* PCI suspend */
  
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-index d620376216e1d..6f9c25fec9946 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-@@ -1137,8 +1137,11 @@ static int dsi_runtime_get(struct platform_device *dsidev)
- 	DSSDBG("dsi_runtime_get\n");
+-static int s3_pci_suspend(struct pci_dev* dev, pm_message_t state)
++static int __maybe_unused s3_pci_suspend(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct s3fb_info *par = info->par;
  
- 	r = pm_runtime_get_sync(&dsi->pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dsi->pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
+ 	dev_info(info->device, "suspend\n");
+@@ -1420,7 +1420,7 @@ static int s3_pci_suspend(struct pci_dev* dev, pm_message_t state)
+ 	console_lock();
+ 	mutex_lock(&(par->open_lock));
  
- static void dsi_runtime_put(struct platform_device *dsidev)
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-index bfc5c4c5a26ad..a6b1c1598040d 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-@@ -768,8 +768,11 @@ int dss_runtime_get(void)
- 	DSSDBG("dss_runtime_get\n");
+-	if ((state.event = PM_EVENT_FREEZE) || (par->ref_count = 0)) {
++	if (par->ref_count = 0) {
+ 		mutex_unlock(&(par->open_lock));
+ 		console_unlock();
+ 		return 0;
+@@ -1428,10 +1428,6 @@ static int s3_pci_suspend(struct pci_dev* dev, pm_message_t state)
  
- 	r = pm_runtime_get_sync(&dss.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dss.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
+ 	fb_set_suspend(info, 1);
  
- void dss_runtime_put(void)
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-index 7060ae56c062c..4804aab342981 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-@@ -39,9 +39,10 @@ static int hdmi_runtime_get(void)
- 	DSSDBG("hdmi_runtime_get\n");
+-	pci_save_state(dev);
+-	pci_disable_device(dev);
+-	pci_set_power_state(dev, pci_choose_state(dev, state));
+-
+ 	mutex_unlock(&(par->open_lock));
+ 	console_unlock();
  
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
--	if (r < 0)
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&hdmi.pdev->dev);
- 		return r;
-+	}
+@@ -1441,11 +1437,10 @@ static int s3_pci_suspend(struct pci_dev* dev, pm_message_t state)
  
+ /* PCI resume */
+ 
+-static int s3_pci_resume(struct pci_dev* dev)
++static int __maybe_unused s3_pci_resume(struct device *dev)
+ {
+-	struct fb_info *info = pci_get_drvdata(dev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct s3fb_info *par = info->par;
+-	int err;
+ 
+ 	dev_info(info->device, "resume\n");
+ 
+@@ -1458,17 +1453,6 @@ static int s3_pci_resume(struct pci_dev* dev)
+ 		return 0;
+ 	}
+ 
+-	pci_set_power_state(dev, PCI_D0);
+-	pci_restore_state(dev);
+-	err = pci_enable_device(dev);
+-	if (err) {
+-		mutex_unlock(&(par->open_lock));
+-		console_unlock();
+-		dev_err(info->device, "error %d enabling device for resume\n", err);
+-		return err;
+-	}
+-	pci_set_master(dev);
+-
+ 	s3fb_set_par(info);
+ 	fb_set_suspend(info, 0);
+ 
+@@ -1478,6 +1462,16 @@ static int s3_pci_resume(struct pci_dev* dev)
  	return 0;
  }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-index ac49531e47327..a06b6f1355bdb 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-@@ -43,9 +43,10 @@ static int hdmi_runtime_get(void)
- 	DSSDBG("hdmi_runtime_get\n");
  
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
--	if (r < 0)
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&hdmi.pdev->dev);
- 		return r;
-+	}
++static const struct dev_pm_ops s3_pci_pm_ops = {
++#ifdef CONFIG_PM_SLEEP
++	.suspend	= s3_pci_suspend,
++	.resume		= s3_pci_resume,
++	.freeze		= NULL,
++	.thaw		= s3_pci_resume,
++	.poweroff	= s3_pci_suspend,
++	.restore	= s3_pci_resume,
++#endif
++};
  
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-index d5404d56c922f..0b0ad20afd630 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-@@ -348,8 +348,11 @@ static int venc_runtime_get(void)
- 	DSSDBG("venc_runtime_get\n");
+ /* List of boards that we are trying to support */
  
- 	r = pm_runtime_get_sync(&venc.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&venc.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
+@@ -1510,8 +1504,7 @@ static struct pci_driver s3fb_pci_driver = {
+ 	.id_table	= s3_devices,
+ 	.probe		= s3_pci_probe,
+ 	.remove		= s3_pci_remove,
+-	.suspend	= s3_pci_suspend,
+-	.resume		= s3_pci_resume,
++	.driver.pm	= &s3_pci_pm_ops,
+ };
  
- static void venc_runtime_put(void)
+ /* Parse user specified options */
 -- 
-2.25.1
+2.28.0

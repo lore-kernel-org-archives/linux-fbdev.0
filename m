@@ -1,11 +1,10 @@
 From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Mon, 10 Aug 2020 19:09:18 +0000
-Subject: [PATCH v2 07/12] fbdev: savagefb: use generic power management
-Message-Id: <20200810185723.15540-8-vaibhavgupta40@gmail.com>
+Date: Wed, 19 Aug 2020 18:59:55 +0000
+Subject: [PATCH v3 07/12] fbdev: savagefb: use generic power management
+Message-Id: <20200819185654.151170-8-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200810165458.GA292825@ravnborg.org>
- <20200810185723.15540-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+References: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,6 +21,20 @@ Switch to the new generic framework by updating function signatures and
 define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
 unnecessary calls to the PCI Helper functions along with the legacy
 .suspend & .resume bindings.
+
+Now,
+- savagefb_suspend() had a "pm_message_t" type parameter as per legacy
+  PCI PM framework that got deprecated in generic.
+- Rename the callback as savagefb_suspend_late() and preserve the
+  parameter.
+- Define 3 new callbacks as:
+        * savagefb_suspend()
+        * savagefb_freeze()
+        * savagefb_hibernate()
+  which in turn call savagefb_suspend_late() by passing appropriate value
+  for "pm_message_t" type parameter.
+- Bind the callbacks in "struct dev_pm_ops" type variable
+  "savagefb_pm_ops".
 
 Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
 ---
@@ -138,4 +151,4 @@ index 3c8ae87f0ea7..d6aae759e90f 100644
  };
  
 -- 
-2.27.0
+2.28.0

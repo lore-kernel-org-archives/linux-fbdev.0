@@ -1,75 +1,93 @@
-From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Mon, 10 Aug 2020 19:09:19 +0000
-Subject: [PATCH v2 08/12] fbdev: cyber2000fb: use generic power management
-Message-Id: <20200810185723.15540-9-vaibhavgupta40@gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Thu, 20 Aug 2020 09:19:48 +0000
+Subject: [PATCH 4.14 013/228] vgacon: Fix for missing check in scrollback handling
+Message-Id: <20200820091608.192283912@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200810165458.GA292825@ravnborg.org>
- <20200810185723.15540-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+References: <20200820091607.532711107@linuxfoundation.org>
+In-Reply-To: <20200820091607.532711107@linuxfoundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, =?UTF-8?q?=E5=BC=A0=E4=BA=91=E6=B5=B7?= <zhangyunhai@nsfocus.com>, Yang Yingliang <yangyingliang@huawei.com>, Kyungtae Kim <kt0755@gmail.com>, linux-fbdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Solar Designer <solar@openwall.com>, "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>, Anthony Liguori <aliguori@amazon.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jiri Slaby <jirislaby@kernel.org>
 
-Drivers should do only device-specific jobs. But in general, drivers using
-legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
-PM-related tasks themselves which can be done by PCI Core itself. This
-brings extra load on the driver and it directly calls PCI helper functions
-to handle them.
+From: Yunhai Zhang <zhangyunhai@nsfocus.com>
 
-Although the cyber2000fb driver does not have that extra load, we should
-switch to the new generic framework by updating function signatures and
-define a "struct dev_pm_ops" variable to bind PM callbacks so that we can
-remove the legacy .suspend & .resume bindings.
+commit ebfdfeeae8c01fcb2b3b74ffaf03876e20835d2d upstream.
 
-Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+vgacon_scrollback_update() always leaves enbough room in the scrollback
+buffer for the next call, but if the console size changed that room
+might not actually be enough, and so we need to re-check.
+
+The check should be in the loop since vgacon_scrollback_cur->tail is
+updated in the loop and count may be more than 1 when triggered by CSI M,
+as Jiri's PoC:
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+
+int main(int argc, char** argv)
+{
+        int fd = open("/dev/tty1", O_RDWR);
+        unsigned short size[3] = {25, 200, 0};
+        ioctl(fd, 0x5609, size); // VT_RESIZE
+
+        write(fd, "\e[1;1H", 6);
+        for (int i = 0; i < 30; i++)
+                write(fd, "\e[10M", 5);
+}
+
+It leads to various crashes as vgacon_scrollback_update writes out of
+the buffer:
+ BUG: unable to handle page fault for address: ffffc900001752a0
+ #PF: supervisor write access in kernel mode
+ #PF: error_code(0x0002) - not-present page
+ RIP: 0010:mutex_unlock+0x13/0x30
+...
+ Call Trace:
+  n_tty_write+0x1a0/0x4d0
+  tty_write+0x1a0/0x2e0
+
+Or to KASAN reports:
+BUG: KASAN: slab-out-of-bounds in vgacon_scroll+0x57a/0x8ed
+
+This fixes CVE-2020-14331.
+
+Reported-by: 张云海 <zhangyunhai@nsfocus.com>
+Reported-by: Yang Yingliang <yangyingliang@huawei.com>
+Reported-by: Kyungtae Kim <kt0755@gmail.com>
+Fixes: 15bdab959c9b ([PATCH] vgacon: Add support for soft scrollback)
+Cc: stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Solar Designer <solar@openwall.com>
+Cc: "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
+Cc: Anthony Liguori <aliguori@amazon.com>
+Cc: Yang Yingliang <yangyingliang@huawei.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Jiri Slaby <jirislaby@kernel.org>
+Signed-off-by: Yunhai Zhang <zhangyunhai@nsfocus.com>
+Link: https://lore.kernel.org/r/9fb43895-ca91-9b07-ebfd-808cf854ca95@nsfocus.com
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
 ---
- drivers/video/fbdev/cyber2000fb.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/video/console/vgacon.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
-index 42d37bed518a..d45355b9a58c 100644
---- a/drivers/video/fbdev/cyber2000fb.c
-+++ b/drivers/video/fbdev/cyber2000fb.c
-@@ -1810,7 +1810,7 @@ static void cyberpro_pci_remove(struct pci_dev *dev)
- 	}
- }
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -246,6 +246,10 @@ static void vgacon_scrollback_update(str
+ 	p = (void *) (c->vc_origin + t * c->vc_size_row);
  
--static int cyberpro_pci_suspend(struct pci_dev *dev, pm_message_t state)
-+static int __maybe_unused cyberpro_pci_suspend(struct device *dev)
- {
- 	return 0;
- }
-@@ -1818,9 +1818,9 @@ static int cyberpro_pci_suspend(struct pci_dev *dev, pm_message_t state)
- /*
-  * Re-initialise the CyberPro hardware
-  */
--static int cyberpro_pci_resume(struct pci_dev *dev)
-+static int __maybe_unused cyberpro_pci_resume(struct device *dev)
- {
--	struct cfb_info *cfb = pci_get_drvdata(dev);
-+	struct cfb_info *cfb = dev_get_drvdata(dev);
- 
- 	if (cfb) {
- 		cyberpro_pci_enable_mmio(cfb);
-@@ -1846,12 +1846,15 @@ static struct pci_device_id cyberpro_pci_table[] = {
- 
- MODULE_DEVICE_TABLE(pci, cyberpro_pci_table);
- 
-+static SIMPLE_DEV_PM_OPS(cyberpro_pci_pm_ops,
-+			 cyberpro_pci_suspend,
-+			 cyberpro_pci_resume);
+ 	while (count--) {
++		if ((vgacon_scrollback_cur->tail + c->vc_size_row) >
++		    vgacon_scrollback_cur->size)
++			vgacon_scrollback_cur->tail = 0;
 +
- static struct pci_driver cyberpro_driver = {
- 	.name		= "CyberPro",
- 	.probe		= cyberpro_pci_probe,
- 	.remove		= cyberpro_pci_remove,
--	.suspend	= cyberpro_pci_suspend,
--	.resume		= cyberpro_pci_resume,
-+	.driver.pm	= &cyberpro_pci_pm_ops,
- 	.id_table	= cyberpro_pci_table
- };
- 
--- 
-2.27.0
+ 		scr_memcpyw(vgacon_scrollback_cur->data +
+ 			    vgacon_scrollback_cur->tail,
+ 			    p, c->vc_size_row);

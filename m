@@ -1,51 +1,41 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 19 Aug 2020 16:57:02 +0000
-Subject: Re: [PATCH] video: backlight: sky81452-backlight: Fix reference count imbalance on error
-Message-Id: <20200819165702.GC3248864@dell>
+From: dinghao.liu@zju.edu.cn
+Date: Thu, 20 Aug 2020 03:50:39 +0000
+Subject: Re: Re: [PATCH] video: backlight: sky81452-backlight: Fix reference count imbalance on error
+Message-Id: <217e3c0c.b58c.17409fd7496.Coremail.dinghao.liu@zju.edu.cn>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <321fb03d-2307-7f60-f437-cfb99184dfd6@web.de>
-In-Reply-To: <321fb03d-2307-7f60-f437-cfb99184dfd6@web.de>
+ <20200819165702.GC3248864@dell>
+In-Reply-To: <20200819165702.GC3248864@dell>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Markus Elfring <Markus.Elfring@web.de>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Gyungoh Yoo <jack.yoo@skyworksinc.com>, Bryan Wu <cooloney@gmail.com>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Dinghao Liu <dinghao.liu@zju.edu.cn>, Jingoo Han <jingoohan1@gmail.com>, Kangjie Lu <kjlu@umn.edu>, Daniel Thompson <daniel.thompson@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lee Jones <lee.jones@linaro.org>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Gyungoh Yoo <jack.yoo@skyworksinc.com>, Bryan Wu <cooloney@gmail.com>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Markus Elfring <Markus.Elfring@web.de>, Jingoo Han <jingoohan1@gmail.com>, Kangjie Lu <kjlu@umn.edu>, Daniel Thompson <daniel.thompson@linaro.org>
 
-On Wed, 19 Aug 2020, Markus Elfring wrote:
-
-> > When of_property_read_u32_array() returns an error code,
-> > a pairing refcount decrement is needed to keep np's refcount balanced.
-> 
-> Can another imperative wording be helpful for the change description?
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst?id445bf405cb331117bc98427b1ba6f12418ad17#n151
-> 
-> Would an other commit message be a bit nicer?
-> 
-> 
-> …
-> > +++ b/drivers/video/backlight/sky81452-backlight.c
-> > @@ -217,6 +217,7 @@ static struct sky81452_bl_platform_data *sky81452_bl_parse_dt(
-> >  					num_entry);
-> >  		if (ret < 0) {
-> >  			dev_err(dev, "led-sources node is invalid.\n");
-> > +			of_node_put(np);
-> >  			return ERR_PTR(-EINVAL);
-> >  		}
-> 
-> I propose to add the jump target “put_node” so that a bit of common exception
-> handling code can be better reused at the end of this function implementation.
-> 
-> Regards,
-> Markus
-
-You can safely ignore any review comments from Markus!
-
-However, this patch doesn't appear to be in my inbox.
-
-Any ideas as to why?
-
--- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+PiBPbiBXZWQsIDE5IEF1ZyAyMDIwLCBNYXJrdXMgRWxmcmluZyB3cm90ZToKPiAKPiA+ID4gV2hl
+biBvZl9wcm9wZXJ0eV9yZWFkX3UzMl9hcnJheSgpIHJldHVybnMgYW4gZXJyb3IgY29kZSwKPiA+
+ID4gYSBwYWlyaW5nIHJlZmNvdW50IGRlY3JlbWVudCBpcyBuZWVkZWQgdG8ga2VlcCBucCdzIHJl
+ZmNvdW50IGJhbGFuY2VkLgo+ID4gCj4gPiBDYW4gYW5vdGhlciBpbXBlcmF0aXZlIHdvcmRpbmcg
+YmUgaGVscGZ1bCBmb3IgdGhlIGNoYW5nZSBkZXNjcmlwdGlvbj8KPiA+IGh0dHBzOi8vZ2l0Lmtl
+cm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LmdpdC90cmVl
+L0RvY3VtZW50YXRpb24vcHJvY2Vzcy9zdWJtaXR0aW5nLXBhdGNoZXMucnN0P2lkPTE4NDQ1YmY0
+MDVjYjMzMTExN2JjOTg0MjdiMWJhNmYxMjQxOGFkMTcjbjE1MQo+ID4gCj4gPiBXb3VsZCBhbiBv
+dGhlciBjb21taXQgbWVzc2FnZSBiZSBhIGJpdCBuaWNlcj8KPiA+IAo+ID4gCj4gPiDigKYKPiA+
+ID4gKysrIGIvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvc2t5ODE0NTItYmFja2xpZ2h0LmMKPiA+
+ID4gQEAgLTIxNyw2ICsyMTcsNyBAQCBzdGF0aWMgc3RydWN0IHNreTgxNDUyX2JsX3BsYXRmb3Jt
+X2RhdGEgKnNreTgxNDUyX2JsX3BhcnNlX2R0KAo+ID4gPiAgCQkJCQludW1fZW50cnkpOwo+ID4g
+PiAgCQlpZiAocmV0IDwgMCkgewo+ID4gPiAgCQkJZGV2X2VycihkZXYsICJsZWQtc291cmNlcyBu
+b2RlIGlzIGludmFsaWQuXG4iKTsKPiA+ID4gKwkJCW9mX25vZGVfcHV0KG5wKTsKPiA+ID4gIAkJ
+CXJldHVybiBFUlJfUFRSKC1FSU5WQUwpOwo+ID4gPiAgCQl9Cj4gPiAKPiA+IEkgcHJvcG9zZSB0
+byBhZGQgdGhlIGp1bXAgdGFyZ2V0IOKAnHB1dF9ub2Rl4oCdIHNvIHRoYXQgYSBiaXQgb2YgY29t
+bW9uIGV4Y2VwdGlvbgo+ID4gaGFuZGxpbmcgY29kZSBjYW4gYmUgYmV0dGVyIHJldXNlZCBhdCB0
+aGUgZW5kIG9mIHRoaXMgZnVuY3Rpb24gaW1wbGVtZW50YXRpb24uCj4gPiAKPiA+IFJlZ2FyZHMs
+Cj4gPiBNYXJrdXMKPiAKPiBZb3UgY2FuIHNhZmVseSBpZ25vcmUgYW55IHJldmlldyBjb21tZW50
+cyBmcm9tIE1hcmt1cyEKPiAKPiBIb3dldmVyLCB0aGlzIHBhdGNoIGRvZXNuJ3QgYXBwZWFyIHRv
+IGJlIGluIG15IGluYm94Lgo+IAo+IEFueSBpZGVhcyBhcyB0byB3aHk/Cj4gCj4gLS0gCj4gTGVl
+IEpvbmVzIFvmnY7nkLzmlq9dCj4gU2VuaW9yIFRlY2huaWNhbCBMZWFkIC0gRGV2ZWxvcGVyIFNl
+cnZpY2VzCj4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFybSBTb0Nz
+Cj4gRm9sbG93IExpbmFybzogRmFjZWJvb2sgfCBUd2l0dGVyIHwgQmxvZwoKVGhhbmsgeW91IGZv
+ciB5b3VyIGFkdmljZS4gTXkgb3V0Ym94IHNob3dzIHRoYXQgdGhpcyBwYXRjaApoYXMgcmVhY2hl
+ZCB5b3VyIGVtYWlsIHNlcnZlciBzdWNjZXNzZnVsbHkuIE1heWJlIHRoaXMKZW5kZWQgdXAgaW4g
+eW91ciBqdW5rIG1haWwgZmlsZT8KClJlZ2FyZHMsCkRpbmdoYW8

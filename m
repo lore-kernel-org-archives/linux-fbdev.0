@@ -1,101 +1,101 @@
-From: Joe Perches <joe@perches.com>
-Date: Tue, 25 Aug 2020 04:55:57 +0000
-Subject: [PATCH 00/29] treewide: Convert comma separated statements
-Message-Id: <cover.1598331148.git.joe@perches.com>
+From: syzbot <syzbot+2741e4d93bff16ad8d4d@syzkaller.appspotmail.com>
+Date: Thu, 20 Aug 2020 04:56:14 +0000
+Subject: KMSAN: uninit-value in soft_cursor
+Message-Id: <00000000000094c57905ad47f05e@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jiri Kosina <trivial@kernel.org>, oprofile-list@lists.sf.net, linux-ide@vger.kernel.org, drbd-dev@lists.linbit.com, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, intel-gfx@lists.freedesktop.org, linux-hwmon@vger.kernel.org, linux-input@vger.kernel.org, linux-bcache@vger.kernel.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org, linux-nfs@vger.kernel.org
-Cc: devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org, linux-scsi@vger.kernel.org, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, linux-mtd@lists.infradead.org, linux-kselftest@vger.kernel.org, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org
+To: b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, glider@google.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
 
-There are many comma separated statements in the kernel.
-See:https://lore.kernel.org/lkml/alpine.DEB.2.22.394.2008201856110.2524@hadrien/
+Hello,
 
-Convert the comma separated statements that are in if/do/while blocks
-to use braces and semicolons.
+syzbot found the following issue on:
 
-Many comma separated statements still exist but those are changes for
-another day.
+HEAD commit:    ce8056d1 wip: changed copy_from_user where instrumented
+git tree:       https://github.com/google/kmsan.git master
+console output: https://syzkaller.appspot.com/x/log.txt?xdcd116900000
+kernel config:  https://syzkaller.appspot.com/x/.config?x:fe005fb99591f
+dashboard link: https://syzkaller.appspot.com/bug?extid'41e4d93bff16ad8d4d
+compiler:       clang version 10.0.0 (https://github.com/llvm/llvm-project/ c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x3f7891900000
 
-Joe Perches (29):
-  coding-style.rst: Avoid comma statements
-  alpha: Avoid comma separated statements
-  ia64: Avoid comma separated statements
-  sparc: Avoid comma separated statements
-  ata: Avoid comma separated statements
-  drbd: Avoid comma separated statements
-  lp: Avoid comma separated statements
-  dma-buf: Avoid comma separated statements
-  drm/gma500: Avoid comma separated statements
-  drm/i915: Avoid comma separated statements
-  hwmon: (scmi-hwmon): Avoid comma separated statements
-  Input: MT - Avoid comma separated statements
-  bcache: Avoid comma separated statements
-  media: Avoid comma separated statements
-  mtd: Avoid comma separated statements
-  8390: Avoid comma separated statements
-  fs_enet: Avoid comma separated statements
-  wan: sbni: Avoid comma separated statements
-  s390/tty3270: Avoid comma separated statements
-  scai/arm: Avoid comma separated statements
-  media: atomisp: Avoid comma separated statements
-  video: fbdev: Avoid comma separated statements
-  fuse: Avoid comma separated statements
-  reiserfs: Avoid comma separated statements
-  lib/zlib: Avoid comma separated statements
-  lib: zstd: Avoid comma separated statements
-  ipv6: fib6: Avoid comma separated statements
-  sunrpc: Avoid comma separated statements
-  tools: Avoid comma separated statements
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+2741e4d93bff16ad8d4d@syzkaller.appspotmail.com
 
- Documentation/process/coding-style.rst        |  17 +
- arch/alpha/kernel/pci_iommu.c                 |   8 +-
- arch/alpha/oprofile/op_model_ev4.c            |  22 +-
- arch/alpha/oprofile/op_model_ev5.c            |   8 +-
- arch/ia64/kernel/smpboot.c                    |   7 +-
- arch/sparc/kernel/smp_64.c                    |   7 +-
- drivers/ata/pata_icside.c                     |  21 +-
- drivers/block/drbd/drbd_receiver.c            |   6 +-
- drivers/char/lp.c                             |   6 +-
- drivers/dma-buf/st-dma-fence.c                |   7 +-
- drivers/gpu/drm/gma500/mdfld_intel_display.c  |  44 ++-
- drivers/gpu/drm/i915/gt/gen8_ppgtt.c          |   8 +-
- drivers/gpu/drm/i915/gt/intel_gt_requests.c   |   6 +-
- .../gpu/drm/i915/gt/selftest_workarounds.c    |   6 +-
- drivers/gpu/drm/i915/intel_runtime_pm.c       |   6 +-
- drivers/hwmon/scmi-hwmon.c                    |   6 +-
- drivers/input/input-mt.c                      |  11 +-
- drivers/md/bcache/bset.c                      |  12 +-
- drivers/md/bcache/sysfs.c                     |   6 +-
- drivers/media/i2c/msp3400-kthreads.c          |  12 +-
- drivers/media/pci/bt8xx/bttv-cards.c          |   6 +-
- drivers/media/pci/saa7134/saa7134-video.c     |   7 +-
- drivers/mtd/devices/lart.c                    |  10 +-
- drivers/net/ethernet/8390/axnet_cs.c          |  19 +-
- drivers/net/ethernet/8390/lib8390.c           |  14 +-
- drivers/net/ethernet/8390/pcnet_cs.c          |   6 +-
- .../ethernet/freescale/fs_enet/fs_enet-main.c |  11 +-
- drivers/net/wan/sbni.c                        | 101 +++---
- drivers/s390/char/tty3270.c                   |   6 +-
- drivers/scsi/arm/cumana_2.c                   |  19 +-
- drivers/scsi/arm/eesox.c                      |   9 +-
- drivers/scsi/arm/powertec.c                   |   9 +-
- .../media/atomisp/pci/atomisp_subdev.c        |   6 +-
- drivers/video/fbdev/tgafb.c                   |  12 +-
- fs/fuse/dir.c                                 |  24 +-
- fs/reiserfs/fix_node.c                        |  36 ++-
- lib/zlib_deflate/deftree.c                    |  49 ++-
- lib/zstd/compress.c                           | 120 ++++---
- lib/zstd/fse_compress.c                       |  24 +-
- lib/zstd/huf_compress.c                       |   6 +-
- net/ipv6/ip6_fib.c                            |  12 +-
- net/sunrpc/sysctl.c                           |   6 +-
- tools/lib/subcmd/help.c                       |  10 +-
- tools/power/cpupower/utils/cpufreq-set.c      |  14 +-
- tools/testing/selftests/vm/gup_benchmark.c    |  18 +-
- tools/testing/selftests/vm/userfaultfd.c      | 296 +++++++++++-------
- 46 files changed, 694 insertions(+), 382 deletions(-)
+==========================BUG: KMSAN: uninit-value in soft_cursor+0xa89/0x13f0 drivers/video/fbdev/core/softcursor.c:61
+CPU: 0 PID: 12272 Comm: syz-executor.2 Not tainted 5.8.0-rc5-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x21c/0x280 lib/dump_stack.c:118
+ kmsan_report+0xf7/0x1e0 mm/kmsan/kmsan_report.c:121
+ __msan_warning+0x58/0xa0 mm/kmsan/kmsan_instr.c:215
+ soft_cursor+0xa89/0x13f0 drivers/video/fbdev/core/softcursor.c:61
+ bit_cursor+0x38c6/0x3a40 drivers/video/fbdev/core/bitblit.c:386
+ fbcon_cursor+0x195e/0x1a60 drivers/video/fbdev/core/fbcon.c:1411
+ set_cursor drivers/tty/vt/vt.c:915 [inline]
+ redraw_screen+0x28ee/0x2980 drivers/tty/vt/vt.c:1031
+ vc_do_resize+0x36a8/0x38f0 drivers/tty/vt/vt.c:1314
+ vc_resize+0xc3/0xe0 drivers/tty/vt/vt.c:1334
+ fbcon_modechanged+0xdc1/0x1320 drivers/video/fbdev/core/fbcon.c:2990
+ fbcon_update_vcs+0x86/0xa0 drivers/video/fbdev/core/fbcon.c:3048
+ fb_set_var+0x1420/0x1850 drivers/video/fbdev/core/fbmem.c:1056
+ do_fb_ioctl+0xc00/0x1150 drivers/video/fbdev/core/fbmem.c:1109
+ fb_ioctl+0x1e4/0x210 drivers/video/fbdev/core/fbmem.c:1185
+ vfs_ioctl fs/ioctl.c:48 [inline]
+ ksys_ioctl fs/ioctl.c:753 [inline]
+ __do_sys_ioctl fs/ioctl.c:762 [inline]
+ __se_sys_ioctl+0x319/0x4d0 fs/ioctl.c:760
+ __x64_sys_ioctl+0x4a/0x70 fs/ioctl.c:760
+ do_syscall_64+0xad/0x160 arch/x86/entry/common.c:386
+ entry_SYSCALL_64_after_hwframe+0x44/0xa9
+RIP: 0033:0x45d239
+Code: Bad RIP value.
+RSP: 002b:00007ff9aafacc78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 000000000000d580 RCX: 000000000045d239
+RDX: 0000000020000000 RSI: 0000000000004601 RDI: 0000000000000003
+RBP: 000000000118cf80 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 000000000118cf4c
+R13: 000000000169fb6f R14: 00007ff9aafad9c0 R15: 000000000118cf4c
 
--- 
-2.26.0
+Uninit was stored to memory at:
+ kmsan_save_stack_with_flags mm/kmsan/kmsan.c:144 [inline]
+ kmsan_internal_chain_origin+0xad/0x130 mm/kmsan/kmsan.c:310
+ kmsan_memcpy_memmove_metadata+0x272/0x2e0 mm/kmsan/kmsan.c:247
+ kmsan_memcpy_metadata+0xb/0x10 mm/kmsan/kmsan.c:267
+ __msan_memcpy+0x43/0x50 mm/kmsan/kmsan_instr.c:116
+ soft_cursor+0x44d/0x13f0 drivers/video/fbdev/core/softcursor.c:50
+ bit_cursor+0x38c6/0x3a40 drivers/video/fbdev/core/bitblit.c:386
+ fbcon_cursor+0x195e/0x1a60 drivers/video/fbdev/core/fbcon.c:1411
+ set_cursor drivers/tty/vt/vt.c:915 [inline]
+ redraw_screen+0x28ee/0x2980 drivers/tty/vt/vt.c:1031
+ vc_do_resize+0x36a8/0x38f0 drivers/tty/vt/vt.c:1314
+ vc_resize+0xc3/0xe0 drivers/tty/vt/vt.c:1334
+ fbcon_modechanged+0xdc1/0x1320 drivers/video/fbdev/core/fbcon.c:2990
+ fbcon_update_vcs+0x86/0xa0 drivers/video/fbdev/core/fbcon.c:3048
+ fb_set_var+0x1420/0x1850 drivers/video/fbdev/core/fbmem.c:1056
+ do_fb_ioctl+0xc00/0x1150 drivers/video/fbdev/core/fbmem.c:1109
+ fb_ioctl+0x1e4/0x210 drivers/video/fbdev/core/fbmem.c:1185
+ vfs_ioctl fs/ioctl.c:48 [inline]
+ ksys_ioctl fs/ioctl.c:753 [inline]
+ __do_sys_ioctl fs/ioctl.c:762 [inline]
+ __se_sys_ioctl+0x319/0x4d0 fs/ioctl.c:760
+ __x64_sys_ioctl+0x4a/0x70 fs/ioctl.c:760
+ do_syscall_64+0xad/0x160 arch/x86/entry/common.c:386
+ entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+Local variable ----cursor@bit_cursor created at:
+ bit_cursor+0xe3/0x3a40 drivers/video/fbdev/core/bitblit.c:239
+ bit_cursor+0xe3/0x3a40 drivers/video/fbdev/core/bitblit.c:239
+==========================
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+syzbot can test patches for this issue, for details see:
+https://goo.gl/tpsmEJ#testing-patches

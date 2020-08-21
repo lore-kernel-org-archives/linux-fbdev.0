@@ -1,148 +1,152 @@
-From: syzbot <syzbot+370e5ded96ace049ac26@syzkaller.appspotmail.com>
-Date: Sun, 23 Aug 2020 06:58:27 +0000
-Subject: KMSAN: uninit-value in vga16fb_imageblit
-Message-Id: <0000000000002e0c2505ad85ffcd@google.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Fri, 21 Aug 2020 16:18:45 +0000
+Subject: [PATCH AUTOSEL 4.14 18/30] omapfb: fix multiple reference count leaks due to pm_runtime_get_sync
+Message-Id: <20200821161857.348955-18-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200821161857.348955-1-sashal@kernel.org>
+In-Reply-To: <20200821161857.348955-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, glider@google.com, jani.nikula@intel.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kjlu@umn.edu, dri-devel@lists.freedesktop.org, "Andrew F. Davis" <afd@ti.com>, Alexios Zavras <alexios.zavras@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, wu000273@umn.edu, Aditya Pakki <pakki001@umn.edu>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Enrico Weigelt <info@metux.net>, Allison Randal <allison@lohutok.net>
 
-Hello,
+From: Aditya Pakki <pakki001@umn.edu>
 
-syzbot found the following issue on:
+[ Upstream commit 78c2ce9bde70be5be7e3615a2ae7024ed8173087 ]
 
-HEAD commit:    ce8056d1 wip: changed copy_from_user where instrumented
-git tree:       https://github.com/google/kmsan.git master
-console output: https://syzkaller.appspot.com/x/log.txt?xfb4061900000
-kernel config:  https://syzkaller.appspot.com/x/.config?x:fe005fb99591f
-dashboard link: https://syzkaller.appspot.com/bug?extid70e5ded96ace049ac26
-compiler:       clang version 10.0.0 (https://github.com/llvm/llvm-project/ c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
-userspace arch: i386
+On calling pm_runtime_get_sync() the reference count of the device
+is incremented. In case of failure, decrement the
+reference count before returning the error.
 
-Unfortunately, I don't have any reproducer for this issue yet.
-
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+370e5ded96ace049ac26@syzkaller.appspotmail.com
-
-==========================BUG: KMSAN: uninit-value in writeb arch/x86/include/asm/io.h:65 [inline]
-BUG: KMSAN: uninit-value in vga_imageblit_expand drivers/video/fbdev/vga16fb.c:1176 [inline]
-BUG: KMSAN: uninit-value in vga16fb_imageblit+0x125e/0x20c0 drivers/video/fbdev/vga16fb.c:1260
-CPU: 0 PID: 20360 Comm: syz-executor.5 Not tainted 5.8.0-rc5-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-Call Trace:
- __dump_stack lib/dump_stack.c:77 [inline]
- dump_stack+0x21c/0x280 lib/dump_stack.c:118
- kmsan_report+0xf7/0x1e0 mm/kmsan/kmsan_report.c:121
- __msan_warning+0x58/0xa0 mm/kmsan/kmsan_instr.c:215
- writeb arch/x86/include/asm/io.h:65 [inline]
- vga_imageblit_expand drivers/video/fbdev/vga16fb.c:1176 [inline]
- vga16fb_imageblit+0x125e/0x20c0 drivers/video/fbdev/vga16fb.c:1260
- soft_cursor+0x12bc/0x13f0 drivers/video/fbdev/core/softcursor.c:74
- bit_cursor+0x38c6/0x3a40 drivers/video/fbdev/core/bitblit.c:386
- fbcon_cursor+0x195e/0x1a60 drivers/video/fbdev/core/fbcon.c:1411
- hide_cursor+0xdd/0x560 drivers/tty/vt/vt.c:902
- redraw_screen+0x2b1/0x2980 drivers/tty/vt/vt.c:1006
- vc_do_resize+0x36a8/0x38f0 drivers/tty/vt/vt.c:1314
- vc_resize+0xc3/0xe0 drivers/tty/vt/vt.c:1334
- vt_ioctl+0x6651/0x67c0 drivers/tty/vt/vt_ioctl.c:901
- vt_compat_ioctl+0x59b/0x1040 drivers/tty/vt/vt_ioctl.c:1242
- tty_compat_ioctl+0x74b/0x1660 drivers/tty/tty_io.c:2847
- __do_compat_sys_ioctl fs/ioctl.c:847 [inline]
- __se_compat_sys_ioctl+0x55f/0x1100 fs/ioctl.c:798
- __ia32_compat_sys_ioctl+0x4a/0x70 fs/ioctl.c:798
- do_syscall_32_irqs_on arch/x86/entry/common.c:430 [inline]
- __do_fast_syscall_32+0x2af/0x480 arch/x86/entry/common.c:477
- do_fast_syscall_32+0x6b/0xd0 arch/x86/entry/common.c:505
- do_SYSENTER_32+0x73/0x90 arch/x86/entry/common.c:554
- entry_SYSENTER_compat_after_hwframe+0x4d/0x5c
-RIP: 0023:0xf7f70549
-Code: Bad RIP value.
-RSP: 002b:00000000f556a0cc EFLAGS: 00000296 ORIG_RAX: 0000000000000036
-RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 000000000000560a
-RDX: 0000000020000240 RSI: 0000000000000000 RDI: 0000000000000000
-RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
-R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
-
-Uninit was stored to memory at:
- kmsan_save_stack_with_flags mm/kmsan/kmsan.c:144 [inline]
- kmsan_internal_chain_origin+0xad/0x130 mm/kmsan/kmsan.c:310
- __msan_chain_origin+0x50/0x90 mm/kmsan/kmsan_instr.c:165
- __fb_pad_aligned_buffer include/linux/fb.h:655 [inline]
- fb_pad_aligned_buffer+0x7c4/0x8e0 drivers/video/fbdev/core/fbmem.c:116
- soft_cursor+0x1224/0x13f0 drivers/video/fbdev/core/softcursor.c:72
- bit_cursor+0x38c6/0x3a40 drivers/video/fbdev/core/bitblit.c:386
- fbcon_cursor+0x195e/0x1a60 drivers/video/fbdev/core/fbcon.c:1411
- hide_cursor+0xdd/0x560 drivers/tty/vt/vt.c:902
- redraw_screen+0x2b1/0x2980 drivers/tty/vt/vt.c:1006
- vc_do_resize+0x36a8/0x38f0 drivers/tty/vt/vt.c:1314
- vc_resize+0xc3/0xe0 drivers/tty/vt/vt.c:1334
- vt_ioctl+0x6651/0x67c0 drivers/tty/vt/vt_ioctl.c:901
- vt_compat_ioctl+0x59b/0x1040 drivers/tty/vt/vt_ioctl.c:1242
- tty_compat_ioctl+0x74b/0x1660 drivers/tty/tty_io.c:2847
- __do_compat_sys_ioctl fs/ioctl.c:847 [inline]
- __se_compat_sys_ioctl+0x55f/0x1100 fs/ioctl.c:798
- __ia32_compat_sys_ioctl+0x4a/0x70 fs/ioctl.c:798
- do_syscall_32_irqs_on arch/x86/entry/common.c:430 [inline]
- __do_fast_syscall_32+0x2af/0x480 arch/x86/entry/common.c:477
- do_fast_syscall_32+0x6b/0xd0 arch/x86/entry/common.c:505
- do_SYSENTER_32+0x73/0x90 arch/x86/entry/common.c:554
- entry_SYSENTER_compat_after_hwframe+0x4d/0x5c
-
-Uninit was stored to memory at:
- kmsan_save_stack_with_flags mm/kmsan/kmsan.c:144 [inline]
- kmsan_internal_chain_origin+0xad/0x130 mm/kmsan/kmsan.c:310
- kmsan_memcpy_memmove_metadata+0x272/0x2e0 mm/kmsan/kmsan.c:247
- kmsan_memcpy_metadata+0xb/0x10 mm/kmsan/kmsan.c:267
- __msan_memcpy+0x43/0x50 mm/kmsan/kmsan_instr.c:116
- soft_cursor+0x7d7/0x13f0 drivers/video/fbdev/core/softcursor.c:70
- bit_cursor+0x38c6/0x3a40 drivers/video/fbdev/core/bitblit.c:386
- fbcon_cursor+0x195e/0x1a60 drivers/video/fbdev/core/fbcon.c:1411
- hide_cursor+0xdd/0x560 drivers/tty/vt/vt.c:902
- redraw_screen+0x2b1/0x2980 drivers/tty/vt/vt.c:1006
- vc_do_resize+0x36a8/0x38f0 drivers/tty/vt/vt.c:1314
- vc_resize+0xc3/0xe0 drivers/tty/vt/vt.c:1334
- vt_ioctl+0x6651/0x67c0 drivers/tty/vt/vt_ioctl.c:901
- vt_compat_ioctl+0x59b/0x1040 drivers/tty/vt/vt_ioctl.c:1242
- tty_compat_ioctl+0x74b/0x1660 drivers/tty/tty_io.c:2847
- __do_compat_sys_ioctl fs/ioctl.c:847 [inline]
- __se_compat_sys_ioctl+0x55f/0x1100 fs/ioctl.c:798
- __ia32_compat_sys_ioctl+0x4a/0x70 fs/ioctl.c:798
- do_syscall_32_irqs_on arch/x86/entry/common.c:430 [inline]
- __do_fast_syscall_32+0x2af/0x480 arch/x86/entry/common.c:477
- do_fast_syscall_32+0x6b/0xd0 arch/x86/entry/common.c:505
- do_SYSENTER_32+0x73/0x90 arch/x86/entry/common.c:554
- entry_SYSENTER_compat_after_hwframe+0x4d/0x5c
-
-Uninit was created at:
- kmsan_save_stack_with_flags mm/kmsan/kmsan.c:144 [inline]
- kmsan_internal_poison_shadow+0x66/0xd0 mm/kmsan/kmsan.c:127
- kmsan_slab_alloc+0x8a/0xe0 mm/kmsan/kmsan_hooks.c:80
- slab_alloc_node mm/slub.c:2839 [inline]
- slab_alloc mm/slub.c:2848 [inline]
- __kmalloc+0x312/0x410 mm/slub.c:3911
- kmalloc include/linux/slab.h:560 [inline]
- fbcon_set_font+0x5ad/0xfb0 drivers/video/fbdev/core/fbcon.c:2673
- con_font_set drivers/tty/vt/vt.c:4571 [inline]
- con_font_op+0x1e59/0x2290 drivers/tty/vt/vt.c:4636
- vt_ioctl+0x99e/0x67c0 drivers/tty/vt/vt_ioctl.c:917
- vt_compat_ioctl+0x59b/0x1040 drivers/tty/vt/vt_ioctl.c:1242
- tty_compat_ioctl+0x74b/0x1660 drivers/tty/tty_io.c:2847
- __do_compat_sys_ioctl fs/ioctl.c:847 [inline]
- __se_compat_sys_ioctl+0x55f/0x1100 fs/ioctl.c:798
- __ia32_compat_sys_ioctl+0x4a/0x70 fs/ioctl.c:798
- do_syscall_32_irqs_on arch/x86/entry/common.c:430 [inline]
- __do_fast_syscall_32+0x2af/0x480 arch/x86/entry/common.c:477
- do_fast_syscall_32+0x6b/0xd0 arch/x86/entry/common.c:505
- do_SYSENTER_32+0x73/0x90 arch/x86/entry/common.c:554
- entry_SYSENTER_compat_after_hwframe+0x4d/0x5c
-==========================
-
+Signed-off-by: Aditya Pakki <pakki001@umn.edu>
+Cc: kjlu@umn.edu
+Cc: wu000273@umn.edu
+Cc: Allison Randal <allison@lohutok.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Enrico Weigelt <info@metux.net>
+cc: "Andrew F. Davis" <afd@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Alexios Zavras <alexios.zavras@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: YueHaibing <yuehaibing@huawei.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200614030528.128064-1-pakki001@umn.edu
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 7 +++++--
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c   | 7 +++++--
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c   | 7 +++++--
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 5 +++--
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c | 5 +++--
+ drivers/video/fbdev/omap2/omapfb/dss/venc.c  | 7 +++++--
+ 6 files changed, 26 insertions(+), 12 deletions(-)
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+index 7a75dfda98457..00f5a54aaf9b7 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+@@ -531,8 +531,11 @@ int dispc_runtime_get(void)
+ 	DSSDBG("dispc_runtime_get\n");
+ 
+ 	r = pm_runtime_get_sync(&dispc.pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&dispc.pdev->dev);
++		return r;
++	}
++	return 0;
+ }
+ EXPORT_SYMBOL(dispc_runtime_get);
+ 
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+index 30d49f3800b33..2bfd9063cdfc3 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+@@ -1148,8 +1148,11 @@ static int dsi_runtime_get(struct platform_device *dsidev)
+ 	DSSDBG("dsi_runtime_get\n");
+ 
+ 	r = pm_runtime_get_sync(&dsi->pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&dsi->pdev->dev);
++		return r;
++	}
++	return 0;
+ }
+ 
+ static void dsi_runtime_put(struct platform_device *dsidev)
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+index 48c6500c24e1f..91879f9d38a7f 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+@@ -778,8 +778,11 @@ int dss_runtime_get(void)
+ 	DSSDBG("dss_runtime_get\n");
+ 
+ 	r = pm_runtime_get_sync(&dss.pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&dss.pdev->dev);
++		return r;
++	}
++	return 0;
+ }
+ 
+ void dss_runtime_put(void)
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+index ec78d61bc5512..e2d571ca8590a 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+@@ -50,9 +50,10 @@ static int hdmi_runtime_get(void)
+ 	DSSDBG("hdmi_runtime_get\n");
+ 
+ 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
+-	WARN_ON(r < 0);
+-	if (r < 0)
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&hdmi.pdev->dev);
+ 		return r;
++	}
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
+index 2e2fcc3d6d4f7..13f3a5ce55294 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
+@@ -54,9 +54,10 @@ static int hdmi_runtime_get(void)
+ 	DSSDBG("hdmi_runtime_get\n");
+ 
+ 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
+-	WARN_ON(r < 0);
+-	if (r < 0)
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&hdmi.pdev->dev);
+ 		return r;
++	}
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
+index 392464da12e41..96714b4596d2d 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
+@@ -402,8 +402,11 @@ static int venc_runtime_get(void)
+ 	DSSDBG("venc_runtime_get\n");
+ 
+ 	r = pm_runtime_get_sync(&venc.pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&venc.pdev->dev);
++		return r;
++	}
++	return 0;
+ }
+ 
+ static void venc_runtime_put(void)
+-- 
+2.25.1

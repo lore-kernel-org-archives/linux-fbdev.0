@@ -1,164 +1,152 @@
-From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Wed, 19 Aug 2020 18:59:06 +0000
-Subject: [PATCH v3 01/12] fbdev: gxfb: use generic power management
-Message-Id: <20200819185654.151170-2-vaibhavgupta40@gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Fri, 21 Aug 2020 16:15:20 +0000
+Subject: [PATCH AUTOSEL 5.7 36/61] omapfb: fix multiple reference count leaks due to pm_runtime_get_sync
+Message-Id: <20200821161545.347622-36-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200819185654.151170-1-vaibhavgupta40@gmail.com>
+References: <20200821161545.347622-1-sashal@kernel.org>
+In-Reply-To: <20200821161545.347622-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kjlu@umn.edu, dri-devel@lists.freedesktop.org, "Andrew F. Davis" <afd@ti.com>, Alexios Zavras <alexios.zavras@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, wu000273@umn.edu, Aditya Pakki <pakki001@umn.edu>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Enrico Weigelt <info@metux.net>, Allison Randal <allison@lohutok.net>
 
-Switch to the new generic framework by updating function signatures and
-define a "struct dev_pm_ops" variable to bind PM callbacks. This way we can
-remove the legacy .suspend & .resume bindings from "gxfb_driver".
+From: Aditya Pakki <pakki001@umn.edu>
 
-The gxfb_suspend() is designed to function only in the case of Suspend.
-Thus, the code was kept inside "if (state.event = PM_EVENT_SUSPEND)"
-container. This is because, in the legacy framework, this callback was
-invoked even in the event of Freeze and Hibernate. Hence, added the load of
-unnecessary function-calls.
+[ Upstream commit 78c2ce9bde70be5be7e3615a2ae7024ed8173087 ]
 
-The goal can be achieved by binding the callback with only
-"gxfb_pm_ops.suspend" in the new framework. This also avoids the step of
-checking "if (state.event = PM_EVENT_SUSPEND)" every time the callback is
-invoked.
+On calling pm_runtime_get_sync() the reference count of the device
+is incremented. In case of failure, decrement the
+reference count before returning the error.
 
-Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Signed-off-by: Aditya Pakki <pakki001@umn.edu>
+Cc: kjlu@umn.edu
+Cc: wu000273@umn.edu
+Cc: Allison Randal <allison@lohutok.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Enrico Weigelt <info@metux.net>
+cc: "Andrew F. Davis" <afd@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Alexios Zavras <alexios.zavras@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: YueHaibing <yuehaibing@huawei.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200614030528.128064-1-pakki001@umn.edu
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/geode/gxfb.h       |  5 ----
- drivers/video/fbdev/geode/gxfb_core.c  | 36 ++++++++++++++------------
- drivers/video/fbdev/geode/suspend_gx.c |  4 ---
- 3 files changed, 20 insertions(+), 25 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 7 +++++--
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c   | 7 +++++--
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c   | 7 +++++--
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 5 +++--
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c | 5 +++--
+ drivers/video/fbdev/omap2/omapfb/dss/venc.c  | 7 +++++--
+ 6 files changed, 26 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/fbdev/geode/gxfb.h b/drivers/video/fbdev/geode/gxfb.h
-index d2e9c5c8e294..792c111c21e4 100644
---- a/drivers/video/fbdev/geode/gxfb.h
-+++ b/drivers/video/fbdev/geode/gxfb.h
-@@ -21,7 +21,6 @@ struct gxfb_par {
- 	void __iomem *dc_regs;
- 	void __iomem *vid_regs;
- 	void __iomem *gp_regs;
--#ifdef CONFIG_PM
- 	int powered_down;
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+index ce37da85cc458..5d7daec9b1e72 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+@@ -520,8 +520,11 @@ int dispc_runtime_get(void)
+ 	DSSDBG("dispc_runtime_get\n");
  
- 	/* register state, for power management functionality */
-@@ -36,7 +35,6 @@ struct gxfb_par {
- 	uint64_t fp[FP_REG_COUNT];
+ 	r = pm_runtime_get_sync(&dispc.pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&dispc.pdev->dev);
++		return r;
++	}
++	return 0;
+ }
+ EXPORT_SYMBOL(dispc_runtime_get);
  
- 	uint32_t pal[DC_PAL_COUNT];
--#endif
- };
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+index d620376216e1d..6f9c25fec9946 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+@@ -1137,8 +1137,11 @@ static int dsi_runtime_get(struct platform_device *dsidev)
+ 	DSSDBG("dsi_runtime_get\n");
  
- unsigned int gx_frame_buffer_size(void);
-@@ -49,11 +47,8 @@ void gx_set_dclk_frequency(struct fb_info *info);
- void gx_configure_display(struct fb_info *info);
- int gx_blank_display(struct fb_info *info, int blank_mode);
- 
--#ifdef CONFIG_PM
- int gx_powerdown(struct fb_info *info);
- int gx_powerup(struct fb_info *info);
--#endif
--
- 
- /* Graphics Processor registers (table 6-23 from the data book) */
- enum gp_registers {
-diff --git a/drivers/video/fbdev/geode/gxfb_core.c b/drivers/video/fbdev/geode/gxfb_core.c
-index d38a148d4746..44089b331f91 100644
---- a/drivers/video/fbdev/geode/gxfb_core.c
-+++ b/drivers/video/fbdev/geode/gxfb_core.c
-@@ -322,17 +322,14 @@ static struct fb_info *gxfb_init_fbinfo(struct device *dev)
- 	return info;
+ 	r = pm_runtime_get_sync(&dsi->pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&dsi->pdev->dev);
++		return r;
++	}
++	return 0;
  }
  
--#ifdef CONFIG_PM
--static int gxfb_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int __maybe_unused gxfb_suspend(struct device *dev)
- {
--	struct fb_info *info = pci_get_drvdata(pdev);
-+	struct fb_info *info = dev_get_drvdata(dev);
+ static void dsi_runtime_put(struct platform_device *dsidev)
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+index bfc5c4c5a26ad..a6b1c1598040d 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+@@ -768,8 +768,11 @@ int dss_runtime_get(void)
+ 	DSSDBG("dss_runtime_get\n");
  
--	if (state.event = PM_EVENT_SUSPEND) {
--		console_lock();
--		gx_powerdown(info);
--		fb_set_suspend(info, 1);
--		console_unlock();
--	}
-+	console_lock();
-+	gx_powerdown(info);
-+	fb_set_suspend(info, 1);
-+	console_unlock();
+ 	r = pm_runtime_get_sync(&dss.pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&dss.pdev->dev);
++		return r;
++	}
++	return 0;
+ }
  
- 	/* there's no point in setting PCI states; we emulate PCI, so
- 	 * we don't end up getting power savings anyways */
-@@ -340,9 +337,9 @@ static int gxfb_suspend(struct pci_dev *pdev, pm_message_t state)
+ void dss_runtime_put(void)
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+index 7060ae56c062c..4804aab342981 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+@@ -39,9 +39,10 @@ static int hdmi_runtime_get(void)
+ 	DSSDBG("hdmi_runtime_get\n");
+ 
+ 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
+-	WARN_ON(r < 0);
+-	if (r < 0)
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&hdmi.pdev->dev);
+ 		return r;
++	}
+ 
  	return 0;
  }
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
+index ac49531e47327..a06b6f1355bdb 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
+@@ -43,9 +43,10 @@ static int hdmi_runtime_get(void)
+ 	DSSDBG("hdmi_runtime_get\n");
  
--static int gxfb_resume(struct pci_dev *pdev)
-+static int __maybe_unused gxfb_resume(struct device *dev)
- {
--	struct fb_info *info = pci_get_drvdata(pdev);
-+	struct fb_info *info = dev_get_drvdata(dev);
- 	int ret;
+ 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
+-	WARN_ON(r < 0);
+-	if (r < 0)
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&hdmi.pdev->dev);
+ 		return r;
++	}
  
- 	console_lock();
-@@ -356,7 +353,6 @@ static int gxfb_resume(struct pci_dev *pdev)
- 	console_unlock();
  	return 0;
  }
--#endif
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
+index f81e2a46366dd..3717dac3dcc83 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
+@@ -391,8 +391,11 @@ static int venc_runtime_get(void)
+ 	DSSDBG("venc_runtime_get\n");
  
- static int gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- {
-@@ -467,15 +463,23 @@ static const struct pci_device_id gxfb_id_table[] = {
- 
- MODULE_DEVICE_TABLE(pci, gxfb_id_table);
- 
-+static const struct dev_pm_ops gxfb_pm_ops = {
-+#ifdef CONFIG_PM_SLEEP
-+	.suspend	= gxfb_suspend,
-+	.resume		= gxfb_resume,
-+	.freeze		= NULL,
-+	.thaw		= gxfb_resume,
-+	.poweroff	= NULL,
-+	.restore	= gxfb_resume,
-+#endif
-+};
-+
- static struct pci_driver gxfb_driver = {
- 	.name		= "gxfb",
- 	.id_table	= gxfb_id_table,
- 	.probe		= gxfb_probe,
- 	.remove		= gxfb_remove,
--#ifdef CONFIG_PM
--	.suspend	= gxfb_suspend,
--	.resume		= gxfb_resume,
--#endif
-+	.driver.pm	= &gxfb_pm_ops,
- };
- 
- #ifndef MODULE
-diff --git a/drivers/video/fbdev/geode/suspend_gx.c b/drivers/video/fbdev/geode/suspend_gx.c
-index 1110a527c35c..8c49d4e98772 100644
---- a/drivers/video/fbdev/geode/suspend_gx.c
-+++ b/drivers/video/fbdev/geode/suspend_gx.c
-@@ -11,8 +11,6 @@
- 
- #include "gxfb.h"
- 
--#ifdef CONFIG_PM
--
- static void gx_save_regs(struct gxfb_par *par)
- {
- 	int i;
-@@ -259,5 +257,3 @@ int gx_powerup(struct fb_info *info)
- 	par->powered_down  = 0;
- 	return 0;
+ 	r = pm_runtime_get_sync(&venc.pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&venc.pdev->dev);
++		return r;
++	}
++	return 0;
  }
--
--#endif
+ 
+ static void venc_runtime_put(void)
 -- 
-2.28.0
+2.25.1

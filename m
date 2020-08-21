@@ -1,142 +1,152 @@
-From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Mon, 10 Aug 2020 18:59:59 +0000
-Subject: [PATCH v2 05/12] fbdev: aty128fb: use generic power management
-Message-Id: <20200810185723.15540-6-vaibhavgupta40@gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Fri, 21 Aug 2020 16:19:26 +0000
+Subject: [PATCH AUTOSEL 4.9 15/26] omapfb: fix multiple reference count leaks due to pm_runtime_get_sync
+Message-Id: <20200821161938.349246-15-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200810165458.GA292825@ravnborg.org>
- <20200810185723.15540-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
+References: <20200821161938.349246-1-sashal@kernel.org>
+In-Reply-To: <20200821161938.349246-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kjlu@umn.edu, dri-devel@lists.freedesktop.org, "Andrew F. Davis" <afd@ti.com>, Alexios Zavras <alexios.zavras@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, wu000273@umn.edu, Aditya Pakki <pakki001@umn.edu>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Enrico Weigelt <info@metux.net>, Allison Randal <allison@lohutok.net>
 
-Drivers should do only device-specific jobs. But in general, drivers using
-legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
-PM-related tasks themselves which can be done by PCI Core itself. This
-brings extra load on the driver and it directly calls PCI helper functions
-to handle them.
+From: Aditya Pakki <pakki001@umn.edu>
 
-Switch to the new generic framework by updating function signatures and
-define a "struct dev_pm_ops" variable to bind PM callbacks. Also, remove
-unnecessary calls to the PCI Helper functions along with the legacy
-.suspend & .resume bindings.
+[ Upstream commit 78c2ce9bde70be5be7e3615a2ae7024ed8173087 ]
 
-Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+On calling pm_runtime_get_sync() the reference count of the device
+is incremented. In case of failure, decrement the
+reference count before returning the error.
+
+Signed-off-by: Aditya Pakki <pakki001@umn.edu>
+Cc: kjlu@umn.edu
+Cc: wu000273@umn.edu
+Cc: Allison Randal <allison@lohutok.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Enrico Weigelt <info@metux.net>
+cc: "Andrew F. Davis" <afd@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Alexios Zavras <alexios.zavras@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: YueHaibing <yuehaibing@huawei.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200614030528.128064-1-pakki001@umn.edu
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/aty/aty128fb.c | 51 ++++++++++++++++++++----------
- 1 file changed, 34 insertions(+), 17 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 7 +++++--
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c   | 7 +++++--
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c   | 7 +++++--
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 5 +++--
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c | 5 +++--
+ drivers/video/fbdev/omap2/omapfb/dss/venc.c  | 7 +++++--
+ 6 files changed, 26 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index d05d4195acad..dd7762fea058 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -162,10 +162,22 @@ static char * const r128_family[] = {
- static int aty128_probe(struct pci_dev *pdev,
-                                const struct pci_device_id *ent);
- static void aty128_remove(struct pci_dev *pdev);
--static int aty128_pci_suspend(struct pci_dev *pdev, pm_message_t state);
--static int aty128_pci_resume(struct pci_dev *pdev);
-+static int aty128_pci_suspend_late(struct device *dev, pm_message_t state);
-+static int __maybe_unused aty128_pci_suspend(struct device *dev);
-+static int __maybe_unused aty128_pci_hibernate(struct device *dev);
-+static int __maybe_unused aty128_pci_freeze(struct device *dev);
-+static int __maybe_unused aty128_pci_resume(struct device *dev);
- static int aty128_do_resume(struct pci_dev *pdev);
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+index 7a75dfda98457..00f5a54aaf9b7 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+@@ -531,8 +531,11 @@ int dispc_runtime_get(void)
+ 	DSSDBG("dispc_runtime_get\n");
  
-+static const struct dev_pm_ops aty128_pci_pm_ops = {
-+	.suspend	= aty128_pci_suspend,
-+	.resume		= aty128_pci_resume,
-+	.freeze		= aty128_pci_freeze,
-+	.thaw		= aty128_pci_resume,
-+	.poweroff	= aty128_pci_hibernate,
-+	.restore	= aty128_pci_resume,
-+};
-+
- /* supported Rage128 chipsets */
- static const struct pci_device_id aty128_pci_tbl[] = {
- 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RAGE128_LE,
-@@ -272,8 +284,7 @@ static struct pci_driver aty128fb_driver = {
- 	.id_table	= aty128_pci_tbl,
- 	.probe		= aty128_probe,
- 	.remove		= aty128_remove,
--	.suspend	= aty128_pci_suspend,
--	.resume		= aty128_pci_resume,
-+	.driver.pm	= &aty128_pci_pm_ops,
- };
+ 	r = pm_runtime_get_sync(&dispc.pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&dispc.pdev->dev);
++		return r;
++	}
++	return 0;
+ }
+ EXPORT_SYMBOL(dispc_runtime_get);
  
- /* packed BIOS settings */
-@@ -2320,7 +2331,6 @@ static int aty128fb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
- static void aty128_set_suspend(struct aty128fb_par *par, int suspend)
- {
- 	u32	pmgt;
--	struct pci_dev *pdev = par->pdev;
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+index 30d49f3800b33..2bfd9063cdfc3 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+@@ -1148,8 +1148,11 @@ static int dsi_runtime_get(struct platform_device *dsidev)
+ 	DSSDBG("dsi_runtime_get\n");
  
- 	if (!par->pdev->pm_cap)
- 		return;
-@@ -2347,23 +2357,15 @@ static void aty128_set_suspend(struct aty128fb_par *par, int suspend)
- 		aty_st_le32(BUS_CNTL1, 0x00000010);
- 		aty_st_le32(MEM_POWER_MISC, 0x0c830000);
- 		msleep(100);
--
--		/* Switch PCI power management to D2 */
--		pci_set_power_state(pdev, PCI_D2);
- 	}
+ 	r = pm_runtime_get_sync(&dsi->pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&dsi->pdev->dev);
++		return r;
++	}
++	return 0;
  }
  
--static int aty128_pci_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int aty128_pci_suspend_late(struct device *dev, pm_message_t state)
- {
-+	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct fb_info *info = pci_get_drvdata(pdev);
- 	struct aty128fb_par *par = info->par;
+ static void dsi_runtime_put(struct platform_device *dsidev)
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+index 48c6500c24e1f..91879f9d38a7f 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+@@ -778,8 +778,11 @@ int dss_runtime_get(void)
+ 	DSSDBG("dss_runtime_get\n");
  
--	/* Because we may change PCI D state ourselves, we need to
--	 * first save the config space content so the core can
--	 * restore it properly on resume.
--	 */
--	pci_save_state(pdev);
--
- 	/* We don't do anything but D2, for now we return 0, but
- 	 * we may want to change that. How do we know if the BIOS
- 	 * can properly take care of D3 ? Also, with swsusp, we
-@@ -2422,6 +2424,21 @@ static int aty128_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 	r = pm_runtime_get_sync(&dss.pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&dss.pdev->dev);
++		return r;
++	}
++	return 0;
+ }
+ 
+ void dss_runtime_put(void)
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+index 156a254705ea5..ab64bf0215e82 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+@@ -50,9 +50,10 @@ static int hdmi_runtime_get(void)
+ 	DSSDBG("hdmi_runtime_get\n");
+ 
+ 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
+-	WARN_ON(r < 0);
+-	if (r < 0)
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&hdmi.pdev->dev);
+ 		return r;
++	}
+ 
  	return 0;
  }
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
+index 4da36bcab9779..c6efaca3235a8 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
+@@ -54,9 +54,10 @@ static int hdmi_runtime_get(void)
+ 	DSSDBG("hdmi_runtime_get\n");
  
-+static int __maybe_unused aty128_pci_suspend(struct device *dev)
-+{
-+	return aty128_pci_suspend_late(dev, PMSG_SUSPEND);
-+}
-+
-+static int __maybe_unused aty128_pci_hibernate(struct device *dev)
-+{
-+	return aty128_pci_suspend_late(dev, PMSG_HIBERNATE);
-+}
-+
-+static int __maybe_unused aty128_pci_freeze(struct device *dev)
-+{
-+	return aty128_pci_suspend_late(dev, PMSG_FREEZE);
-+}
-+
- static int aty128_do_resume(struct pci_dev *pdev)
- {
- 	struct fb_info *info = pci_get_drvdata(pdev);
-@@ -2468,12 +2485,12 @@ static int aty128_do_resume(struct pci_dev *pdev)
+ 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
+-	WARN_ON(r < 0);
+-	if (r < 0)
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&hdmi.pdev->dev);
+ 		return r;
++	}
+ 
  	return 0;
  }
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
+index 392464da12e41..96714b4596d2d 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
+@@ -402,8 +402,11 @@ static int venc_runtime_get(void)
+ 	DSSDBG("venc_runtime_get\n");
  
--static int aty128_pci_resume(struct pci_dev *pdev)
-+static int __maybe_unused aty128_pci_resume(struct device *dev)
- {
- 	int rc;
+ 	r = pm_runtime_get_sync(&venc.pdev->dev);
+-	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (WARN_ON(r < 0)) {
++		pm_runtime_put_sync(&venc.pdev->dev);
++		return r;
++	}
++	return 0;
+ }
  
- 	console_lock();
--	rc = aty128_do_resume(pdev);
-+	rc = aty128_do_resume(to_pci_dev(dev));
- 	console_unlock();
- 
- 	return rc;
+ static void venc_runtime_put(void)
 -- 
-2.27.0
+2.25.1

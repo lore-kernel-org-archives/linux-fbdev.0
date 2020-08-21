@@ -1,152 +1,60 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Fri, 21 Aug 2020 16:15:20 +0000
-Subject: [PATCH AUTOSEL 5.7 36/61] omapfb: fix multiple reference count leaks due to pm_runtime_get_sync
-Message-Id: <20200821161545.347622-36-sashal@kernel.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 21 Aug 2020 13:52:01 +0000
+Subject: Re: [PATCH v2 00/41] spi / fbdev / cpufreq / usb / mmc / hwmon / ARM: Prepare for multiplatform S3C
+Message-Id: <7caa287e-5e02-95d1-0397-5ae74e3138a1@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200821161545.347622-1-sashal@kernel.org>
-In-Reply-To: <20200821161545.347622-1-sashal@kernel.org>
+References: <20200806181932.2253-1-krzk@kernel.org>
+ <CGME20200820155923eucas1p2f73e16e6321e3592bd702ea657ff0709@eucas1p2.samsung.com>
+ <20200820155913.GA21395@kozik-lap>
+In-Reply-To: <20200820155913.GA21395@kozik-lap>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kjlu@umn.edu, dri-devel@lists.freedesktop.org, "Andrew F. Davis" <afd@ti.com>, Alexios Zavras <alexios.zavras@intel.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, wu000273@umn.edu, Aditya Pakki <pakki001@umn.edu>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Enrico Weigelt <info@metux.net>, Allison Randal <allison@lohutok.net>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org
 
-From: Aditya Pakki <pakki001@umn.edu>
 
-[ Upstream commit 78c2ce9bde70be5be7e3615a2ae7024ed8173087 ]
+[ trimmed Cc: list ]
 
-On calling pm_runtime_get_sync() the reference count of the device
-is incremented. In case of failure, decrement the
-reference count before returning the error.
+On 8/20/20 5:59 PM, Krzysztof Kozlowski wrote:
+> On Thu, Aug 06, 2020 at 08:19:32PM +0200, Krzysztof Kozlowski wrote:
+>> Hi All,
+>>
+>> Shortly
+>> ===>> This is a continuation of Arnd's work from 2019 [1].  The goal is to
+>> cleanup, merge and finally make the Samsung S3C24xx and S3C64xx
+>> architectures multiplatform.  The multiplatform did not happen yet
+>> here... just cleaning up and merging into one mach-s3c.
+>>
+>> I intend to take it through Samsung SoC tree so all Acks are welcomed.
+>>
+>> Changes since v1
+>> ========
+>> 1. Rebased,
+>> 2. Addressed comments (including mine),
+>> 3. Few new patches.
+>>
+>> Please see individual changelogs (per patch).
+>>
+>> [1] https://patchwork.kernel.org/project/linux-samsung-soc/list/?series5855&state=*
+>>
+> 
+> Hi All,
 
-Signed-off-by: Aditya Pakki <pakki001@umn.edu>
-Cc: kjlu@umn.edu
-Cc: wu000273@umn.edu
-Cc: Allison Randal <allison@lohutok.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Enrico Weigelt <info@metux.net>
-cc: "Andrew F. Davis" <afd@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Alexios Zavras <alexios.zavras@intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: YueHaibing <yuehaibing@huawei.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20200614030528.128064-1-pakki001@umn.edu
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c   | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/dss.c   | 7 +++++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 5 +++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c | 5 +++--
- drivers/video/fbdev/omap2/omapfb/dss/venc.c  | 7 +++++--
- 6 files changed, 26 insertions(+), 12 deletions(-)
+Hi Krzysztof,
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-index ce37da85cc458..5d7daec9b1e72 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
-@@ -520,8 +520,11 @@ int dispc_runtime_get(void)
- 	DSSDBG("dispc_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&dispc.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dispc.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- EXPORT_SYMBOL(dispc_runtime_get);
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-index d620376216e1d..6f9c25fec9946 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-@@ -1137,8 +1137,11 @@ static int dsi_runtime_get(struct platform_device *dsidev)
- 	DSSDBG("dsi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&dsi->pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dsi->pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- static void dsi_runtime_put(struct platform_device *dsidev)
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-index bfc5c4c5a26ad..a6b1c1598040d 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-@@ -768,8 +768,11 @@ int dss_runtime_get(void)
- 	DSSDBG("dss_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&dss.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&dss.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- void dss_runtime_put(void)
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-index 7060ae56c062c..4804aab342981 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-@@ -39,9 +39,10 @@ static int hdmi_runtime_get(void)
- 	DSSDBG("hdmi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
--	if (r < 0)
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&hdmi.pdev->dev);
- 		return r;
-+	}
- 
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-index ac49531e47327..a06b6f1355bdb 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-@@ -43,9 +43,10 @@ static int hdmi_runtime_get(void)
- 	DSSDBG("hdmi_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
--	if (r < 0)
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&hdmi.pdev->dev);
- 		return r;
-+	}
- 
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-index f81e2a46366dd..3717dac3dcc83 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-@@ -391,8 +391,11 @@ static int venc_runtime_get(void)
- 	DSSDBG("venc_runtime_get\n");
- 
- 	r = pm_runtime_get_sync(&venc.pdev->dev);
--	WARN_ON(r < 0);
--	return r < 0 ? r : 0;
-+	if (WARN_ON(r < 0)) {
-+		pm_runtime_put_sync(&venc.pdev->dev);
-+		return r;
-+	}
-+	return 0;
- }
- 
- static void venc_runtime_put(void)
--- 
-2.25.1
+> I applied second part of the set which finishes this step of S3C
+> cleanup. Thanks to Arnd for the work!
+
+Thank you (& Arnd) for working on this!
+
+PS I've checked fbdev related changes now and they all look good to me.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> Best regards,
+> Krzysztof

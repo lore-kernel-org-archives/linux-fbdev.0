@@ -1,23 +1,39 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Thu, 20 Aug 2020 08:42:39 +0000
-Subject: Re: [PATCH v2] lib/fonts: add font 6x8 for OLED display
-Message-Id: <20200820084239.GB1001857@kroah.com>
+From: Timo Aranjo <timo.aranjo@aol.com>
+Date: Mon, 24 Aug 2020 23:02:26 +0000
+Subject: [PATCH] Staging: sm750fb: Fixed a coding style issue
+Message-Id: <1b596369-7c83-73ff-fd4e-ed0d7a714219@aol.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200820082137.5907-1-s.hauer@pengutronix.de>
-In-Reply-To: <20200820082137.5907-1-s.hauer@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, kernel@pengutronix.de, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sven Schneider <s.schneider@arkona-technologies.de>
+To: linux-fbdev@vger.kernel.org
 
-On Thu, Aug 20, 2020 at 10:21:37AM +0200, Sascha Hauer wrote:
-> From: Sven Schneider <s.schneider@arkona-technologies.de>
-> 
-> This font is derived from lib/fonts/font_6x10.c and is useful for small
-> OLED displays
-> 
-> Signed-off-by: Sven Schneider <s.schneider@arkona-technologies.de>
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+ From 56c5eed5b0a3d299530264509a6a81594c4fb791 Mon Sep 17 00:00:00 2001
+From: "Timo A. Aranjo" <timo.aranjo@aol.com>
+Date: Mon, 24 Aug 2020 17:24:16 -0500
+Subject: [PATCH] Staging: sm750fb: Fixed a coding style issue
 
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+I added a new-line because checkpatch gave a warning about there not being
+a new line after declarations.
+
+Signed-off-by: Timo Alejandro Aranjo <timo.aranjo@aol.com>
+---
+  drivers/staging/sm750fb/sm750.c | 1 +
+  1 file changed, 1 insertion(+)
+
+diff --git a/drivers/staging/sm750fb/sm750.c 
+b/drivers/staging/sm750fb/sm750.c
+index 84fb585a5739..3da87387867e 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -411,6 +411,7 @@ static int __maybe_unused lynxfb_suspend(struct 
+device *dev)
+  {
+  	struct fb_info *info;
+  	struct sm750_dev *sm750_dev;
++
+  	sm750_dev = dev_get_drvdata(dev);
+
+  	console_lock();
+-- 
+2.25.1

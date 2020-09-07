@@ -1,45 +1,11 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Wed, 16 Sep 2020 12:35:19 +0000
-Subject: Re: [PATCH] fbcon: Fix user font detection test at fbcon_resize().
-Message-Id: <20200916123519.GB2808885@kroah.com>
+From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Date: Mon, 07 Sep 2020 06:46:14 +0000
+Subject: Re: [PATCH v1 2/2] fbdev: radeonfb:use generic power management
+Message-Id: <20200907063414.GC29062@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <00000000000024be1505ad487cbb@google.com>
- <f6e3e611-8704-1263-d163-f52c906a4f06@I-love.SAKURA.ne.jp>
- <7c52e8cd-e4cb-cd0b-40d5-b9654aec09f3@I-love.SAKURA.ne.jp>
- <20200916082624.GC509119@kroah.com>
- <3233dcc2-31d5-42e7-3d9d-b36a65b660ea@i-love.sakura.ne.jp>
-In-Reply-To: <3233dcc2-31d5-42e7-3d9d-b36a65b660ea@i-love.sakura.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: linux-fbdev@vger.kernel.org, syzbot <syzbot+b38b1ef6edf0c74a8d97@syzkaller.appspotmail.com>, b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, syzkaller-bugs@googlegroups.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, george.kennedy@oracle.com, natechancellor@gmail.com, jirislaby@kernel.org
-
-On Wed, Sep 16, 2020 at 07:06:31PM +0900, Tetsuo Handa wrote:
-> On 2020/09/16 17:26, Greg KH wrote:
-> > On Wed, Sep 16, 2020 at 09:01:06AM +0900, Tetsuo Handa wrote:
-> >> Greg, will you pick up this patch?
-> >>
-> >> It seems that finding the real cause of [3] and actually fixing [3] will be difficult.
-> >> Since I can't reproduce [3] locally, I will have to try flood of "#syz test" requests
-> >> for debug printk() patches.
-> > 
-> > I agree with Daniel here, can you retest these against Linus's latest
-> > tree please?
-> > 
-> 
-> syzbot already reproduced these bugs using the latest commit. ;-)
-> 
-> You can find
-> 
->   ci-upstream-kasan-gce-root 	2020/09/15 15:18 	upstream 	fc4f28bb 
-> 
-> record for "KASAN: global-out-of-bounds Read in bit_putcs" and
-> 
->   ci-upstream-kasan-gce-root 	2020/09/16 09:54 	upstream 	fc4f28bb
-> 
-> record for "KASAN: global-out-of-bounds Read in fbcon_resize".
-
-Ok, will pick it up now, thanks.
-
-greg k-h
+References: <20200806072256.585705-1-vaibhavgupta40@gmail.com>
+ <20200806072658.592444-1-vaibhavgupta40@gmail.com>
+ <20200806072658.592444-3-vaibhavgupta40@gmail.com>
+In-Reply-To: <20200806072658.592444-3-vaibhavgupta40@gmail.com>
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Thierry Reding <treding@nvidia.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel-mentees@lists.linuxfoundation.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Shuah Khan <skhan@linuxfoundation.org>

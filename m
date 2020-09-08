@@ -1,41 +1,54 @@
-From: Bhaskar Chowdhury <unixbhaskar@gmail.com>
-Date: Thu, 17 Sep 2020 10:38:15 +0000
-Subject: [PATCH 4/4] docs: fb: Remove vesafb scrollback boot option
-Message-Id: <799e4d6ecca9aab53e823fc0001887d728be0aa5.1600333774.git.unixbhaskar@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 08 Sep 2020 11:36:36 +0000
+Subject: Re: [PATCH] fbdev: sm712fb: handle ioremap() errors in probe
+Message-Id: <1b60fc78-41bd-b967-bb9a-86f2812fc413@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1600333774.git.unixbhaskar@gmail.com>
-In-Reply-To: <cover.1600333774.git.unixbhaskar@gmail.com>
+References: <CGME20200713080538eucas1p15f1739af7b66fbb88987aeb6bdaca4f4@eucas1p1.samsung.com>
+ <20200713080532.15504-1-novikov@ispras.ru>
+In-Reply-To: <20200713080532.15504-1-novikov@ispras.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: corbet@lwn.net, rdunlap@infradead.org, gregkh@linuxfoundation.org, daniel@ffwll.ch, yuanmingbuaa@gmail.com, w@1wt.eu, nopitydays@gmail.com, zhangyunhai@nsfocus.com, luto@amacapital.net, torvalds@linux-foundation.org, Bhaskar Chowdhury <unixbhaskar@gmail.com>
+To: Evgeny Novikov <novikov@ispras.ru>
+Cc: ldv-project@linuxtesting.org, linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-In commit 50145474f6ef ("fbcon: remove soft scrollback code"), the
-framebuffer scrollback mode was removed, but the documentation was not
-updated.  Properly update the documentation by removing the option that
-is no longer present,remove the scrollback option.
 
-Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
----
-Changes since V3:
-Following Willy's and Greg's suggestion,get rid of not relevant commit 
-hash and message from changelog and put a correct one.
- Documentation/fb/vesafb.rst | 2 --
- 1 file changed, 2 deletions(-)
+On 7/13/20 10:05 AM, Evgeny Novikov wrote:
+> smtcfb_pci_probe() does not handle ioremap() errors for case 0x720. The
+> patch fixes that exactly like for case 0x710/2.
+> 
+> Found by Linux Driver Verification project (linuxtesting.org).
+> 
+> Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
 
-diff --git a/Documentation/fb/vesafb.rst b/Documentation/fb/vesafb.rst
-index 6821c87b7893..f890a4f5623b 100644
---- a/Documentation/fb/vesafb.rst
-+++ b/Documentation/fb/vesafb.rst
-@@ -135,8 +135,6 @@ ypan	  enable display panning using the VESA protected mode
- 
-                 * scrolling (fullscreen) is fast, because there is
- 		  no need to copy around data.
--		* You'll get scrollback (the Shift-PgUp thing),
--		  the video memory can be used as scrollback buffer
- 
-           kontra:
- 
--- 
-2.28.0
+Applied to drm-misc-next tree, thanks and sorry for the delay.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> ---
+>  drivers/video/fbdev/sm712fb.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+> index 6a1b4a853d9e..0171b23fa211 100644
+> --- a/drivers/video/fbdev/sm712fb.c
+> +++ b/drivers/video/fbdev/sm712fb.c
+> @@ -1602,6 +1602,14 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+>  		sfb->fb->fix.mmio_start = mmio_base;
+>  		sfb->fb->fix.mmio_len = 0x00200000;
+>  		sfb->dp_regs = ioremap(mmio_base, 0x00200000 + smem_size);
+> +		if (!sfb->dp_regs) {
+> +			dev_err(&pdev->dev,
+> +				"%s: unable to map memory mapped IO!\n",
+> +				sfb->fb->fix.id);
+> +			err = -ENOMEM;
+> +			goto failed_fb;
+> +		}
+> +
+>  		sfb->lfb = sfb->dp_regs + 0x00200000;
+>  		sfb->mmio = (smtc_regbaseaddress >  		    sfb->dp_regs + 0x000c0000);
+> 

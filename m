@@ -1,76 +1,70 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Tue, 29 Sep 2020 17:10:40 +0000
-Subject: Re: [PATCH] vt_ioctl: make VT_RESIZEX behave like VT_RESIZE
-Message-Id: <20200929171040.GB1351851@kroah.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 08 Sep 2020 11:37:46 +0000
+Subject: Re: [PATCH] video: fbdev: remove set but not used 'ulBestVCO'
+Message-Id: <8b15618f-eaf5-e646-2655-939d8b456b27@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <000000000000226d3f05b02dd607@google.com>
- <bbcef674-4ac6-c933-b55d-8961ada97f4c@i-love.sakura.ne.jp>
- <47907f77-b14b-b433-45c6-a315193f0c1a@i-love.sakura.ne.jp>
- <494395bc-a7dd-fdb1-8196-a236a266ef54@i-love.sakura.ne.jp>
- <20200927092701.GA1037755@PWN>
- <4933b81b-9b1a-355b-df0e-9b31e8280ab9@i-love.sakura.ne.jp>
- <20200928175956.GF24673@neutronstar.dyndns.org>
- <100dfd3f-3415-80ae-a6cf-30d15f7ca49f@i-love.sakura.ne.jp>
- <20200929105203.GG24673@neutronstar.dyndns.org>
- <20200929165657.GS438822@phenom.ffwll.local>
-In-Reply-To: <20200929165657.GS438822@phenom.ffwll.local>
+References: <CGME20200827130039eucas1p124a0c2d9912f55281386c9318013a17a@eucas1p1.samsung.com>
+ <20200827130008.428706-1-yanaijie@huawei.com>
+In-Reply-To: <20200827130008.428706-1-yanaijie@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Martin Hostettler <textshell@uchuujin.de>, Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, jirislaby@kernel.org, Peilin Ye <yepeilin.cs@gmail.com>, syzbot <syzbot+b308f5fd049fbbc6e74f@syzkaller.appspotmail.com>, b.zolnierkie@samsung.com, deller@gmx.de, syzkaller-bugs@googlegroups.com, Linus Torvalds <torvalds@linux-foundation.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, George Kennedy <george.kennedy@oracle.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Jason Yan <yanaijie@huawei.com>
+Cc: Hulk Robot <hulkci@huawei.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Tue, Sep 29, 2020 at 06:56:57PM +0200, Daniel Vetter wrote:
-> On Tue, Sep 29, 2020 at 12:52:03PM +0200, Martin Hostettler wrote:
-> > On Tue, Sep 29, 2020 at 10:12:46AM +0900, Tetsuo Handa wrote:
-> > > On 2020/09/29 2:59, Martin Hostettler wrote:
-> > > > On Sun, Sep 27, 2020 at 08:46:30PM +0900, Tetsuo Handa wrote:
-> > > >> VT_RESIZEX was introduced in Linux 1.3.3, but it is unclear that what
-> > > >> comes to the "+ more" part, and I couldn't find a user of VT_RESIZEX.
-> > > >>
-> > > > 
-> > > > It seems this is/was used by "svgatextmode" which seems to be at
-> > > > http://www.ibiblio.org/pub/Linux/utils/console/
-> > > > 
-> > > > Not sure if that kind of software still has a chance to work nowadays.
-> > > > 
-> > > 
-> > > Thanks for the information.
-> > > 
-> > > It seems that v.v_vlin = curr_textmode->VDisplay / (MOFLG_ISSET(curr_textmode, ATTR_DOUBLESCAN) ? 2 : 1)
-> > > and v.v_clin = curr_textmode->FontHeight . Thus, v.v_clin is font's height and seems to be non-zero.
-> > > But according to https://bugs.gentoo.org/19485 , people are using kernel framebuffer instead.
-> > > 
-> > 
-> > Yes, this seems to be from pre framebuffer times.
-> > 
-> > Back in the days "svga" was the wording you got for "pokes svga card
-> > hardware registers from userspace drivers". And textmode means font
-> > rendering is done via (fixed function in those times) hardware scanout
-> > engine. Of course having only to update 2 bytes per character was a huge
-> > saving early on. Likely this is also before vesa VBE was reliable.
-> > 
-> > So i guess the point where this all starts going wrong allowing the X parts
-> > of the api to be combined with FB based rendering at all? Sounds the only
-> > user didn't use that combination and so it was never tested?
-> > 
-> > Then again, this all relates to hardware from 20 years ago...
+
+On 8/27/20 3:00 PM, Jason Yan wrote:
+> This addresses the following gcc warning with "make W=1":
 > 
-> Imo userspace modesetting should be burned down anywhere we can. We've
-> gotten away with this in drivers/gpu by just seamlessly transitioning to
-> kernel drivers.
+> drivers/video/fbdev/kyro/STG4000InitDevice.c: In function
+> ‘ProgramClock’:
+> drivers/video/fbdev/kyro/STG4000InitDevice.c:123:6: warning: variable
+> ‘ulBestVCO’ set but not used [-Wunused-but-set-variable]
+>   123 |  u32 ulBestVCO = 0, ulBestClk = 0, ulBestScore = 0;
+>       |      ^~~~~~~~~
 > 
-> Since th only userspace we've found seems to be able to cope if this ioctl
-> doesn't do anything, my vote goes towards ripping it out completely and
-> doing nothing in there. Only question is whether we should error or fail
-> with a silent success: Former is safer, latter can avoid a few regression
-> reports since the userspace tools keep "working", and usually people don't
-> notice for stuff this old. It worked in drivers/gpu :-)
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Signed-off-by: Jason Yan <yanaijie@huawei.com>
 
-This patch just ignores the ioctl and keeps on going, so userspace
-"shouldn't" notice it :)
+Applied to drm-misc-next tree, thanks.
 
-And it's in linux-next now, so all should be good.
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-thanks,
-
-greg k-h
+> ---
+>  drivers/video/fbdev/kyro/STG4000InitDevice.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/kyro/STG4000InitDevice.c b/drivers/video/fbdev/kyro/STG4000InitDevice.c
+> index edaeec2d9590..21875d3c2dc2 100644
+> --- a/drivers/video/fbdev/kyro/STG4000InitDevice.c
+> +++ b/drivers/video/fbdev/kyro/STG4000InitDevice.c
+> @@ -120,7 +120,7 @@ u32 ProgramClock(u32 refClock,
+>  {
+>  	u32 R = 0, F = 0, OD = 0, ODIndex = 0;
+>  	u32 ulBestR = 0, ulBestF = 0, ulBestOD = 0;
+> -	u32 ulBestVCO = 0, ulBestClk = 0, ulBestScore = 0;
+> +	u32 ulBestClk = 0, ulBestScore = 0;
+>  	u32 ulScore, ulPhaseScore, ulVcoScore;
+>  	u32 ulTmp = 0, ulVCO;
+>  	u32 ulScaleClockReq, ulMinClock, ulMaxClock;
+> @@ -189,7 +189,6 @@ u32 ProgramClock(u32 refClock,
+>  						ulScore = ulPhaseScore + ulVcoScore;
+>  
+>  						if (!ulBestScore) {
+> -							ulBestVCO = ulVCO;
+>  							ulBestOD = OD;
+>  							ulBestF = F;
+>  							ulBestR = R;
+> @@ -206,7 +205,6 @@ u32 ProgramClock(u32 refClock,
+>                            but we shall keep this code in case new restrictions come into play
+>                            --------------------------------------------------------------------------*/
+>  						if ((ulScore >= ulBestScore) && (OD > 0)) {
+> -							ulBestVCO = ulVCO;
+>  							ulBestOD = OD;
+>  							ulBestF = F;
+>  							ulBestR = R;
+> 

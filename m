@@ -1,86 +1,90 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 18 Sep 2020 10:09:04 +0000
-Subject: [PATCH 1/3] fbdev: simplify fb_getput_cmap()
-Message-Id: <20200918100926.1447563-1-arnd@arndb.de>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 08 Sep 2020 11:37:02 +0000
+Subject: Re: [PATCH] video: fbdev: sis: fix null ptr dereference
+Message-Id: <2b8139d8-12c9-3685-9160-fc92ae08aac0@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200918100812.1447443-1-arnd@arndb.de>
-In-Reply-To: <20200918100812.1447443-1-arnd@arndb.de>
+References: <CGME20200805145226eucas1p1e0e6d9fa3c05f7e247365f0db17cbe38@eucas1p1.samsung.com>
+ <20200805145208.17727-1-trix@redhat.com>
+In-Reply-To: <20200805145208.17727-1-trix@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, hch@lst.de, Geert Uytterhoeven <geert@linux-m68k.org>, "David S . Miller" <davem@davemloft.net>
+To: trix@redhat.com
+Cc: akpm@osdl.org, linux-fbdev@vger.kernel.org, thomas@winischhofer.net, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-This function is one of the remaining users of compat_alloc_user_space()
-and copy_in_user().
 
-Clean it up by copying to a local data structure copy instead,
-which also leads to more readable code.
+On 8/5/20 4:52 PM, trix@redhat.com wrote:
+> From: Tom Rix <trix@redhat.com>
+> 
+> Clang static analysis reports this representative error
+> 
+> init.c:2501:18: warning: Array access (from variable 'queuedata') results
+>   in a null pointer dereference
+>       templ |= ((queuedata[i] & 0xc0) << 3);
+> 
+> This is the problem block of code
+> 
+>    if(ModeNo > 0x13) {
+>       ...
+>       if(SiS_Pr->ChipType = SIS_730) {
+> 	 queuedata = &FQBQData730[0];
+>       } else {
+> 	 queuedata = &FQBQData[0];
+>       }
+>    } else {
+> 
+>    }
+> 
+> queuedata is not set in the else block
+> 
+> Reviewing the old code, the arrays FQBQData730 and FQBQData were
+> used directly.
+> 
+> So hoist the setting of queuedata out of the if-else block.
+> 
+> Fixes: 544393fe584d ("[PATCH] sisfb update")
+> 
+> Signed-off-by: Tom Rix <trix@redhat.com>
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/video/fbdev/core/fbmem.c | 44 ++++++++++++++------------------
- 1 file changed, 19 insertions(+), 25 deletions(-)
+Applied to drm-misc-next tree, thanks.
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index da7c88ffaa6a..4e162e3d3538 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1211,36 +1211,30 @@ struct fb_cmap32 {
- static int fb_getput_cmap(struct fb_info *info, unsigned int cmd,
- 			  unsigned long arg)
- {
--	struct fb_cmap_user __user *cmap;
--	struct fb_cmap32 __user *cmap32;
--	__u32 data;
--	int err;
--
--	cmap = compat_alloc_user_space(sizeof(*cmap));
--	cmap32 = compat_ptr(arg);
-+	struct fb_cmap32 cmap32;
-+	struct fb_cmap cmap_from;
-+	struct fb_cmap_user cmap;
- 
--	if (copy_in_user(&cmap->start, &cmap32->start, 2 * sizeof(__u32)))
-+	if (copy_from_user(&cmap32, compat_ptr(arg), sizeof(cmap32)))
- 		return -EFAULT;
- 
--	if (get_user(data, &cmap32->red) ||
--	    put_user(compat_ptr(data), &cmap->red) ||
--	    get_user(data, &cmap32->green) ||
--	    put_user(compat_ptr(data), &cmap->green) ||
--	    get_user(data, &cmap32->blue) ||
--	    put_user(compat_ptr(data), &cmap->blue) ||
--	    get_user(data, &cmap32->transp) ||
--	    put_user(compat_ptr(data), &cmap->transp))
--		return -EFAULT;
-+	cmap = (struct fb_cmap_user) {
-+		.start	= cmap32.start,
-+		.len	= cmap32.len,
-+		.red	= compat_ptr(cmap32.red),
-+		.green	= compat_ptr(cmap32.green),
-+		.blue	= compat_ptr(cmap32.blue),
-+		.transp	= compat_ptr(cmap32.transp),
-+	};
- 
--	err = do_fb_ioctl(info, cmd, (unsigned long) cmap);
-+	if (cmd = FBIOPUTCMAP)
-+		return fb_set_user_cmap(&cmap, info);
- 
--	if (!err) {
--		if (copy_in_user(&cmap32->start,
--				 &cmap->start,
--				 2 * sizeof(__u32)))
--			err = -EFAULT;
--	}
--	return err;
-+	lock_fb_info(info);
-+	cmap_from = info->cmap;
-+	unlock_fb_info(info);
-+
-+	return fb_cmap_to_user(&cmap_from, &cmap);
- }
- 
- static int do_fscreeninfo_to_user(struct fb_fix_screeninfo *fix,
--- 
-2.27.0
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> ---
+>  drivers/video/fbdev/sis/init.c | 11 +++++------
+>  1 file changed, 5 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/sis/init.c b/drivers/video/fbdev/sis/init.c
+> index dfe3eb769638..fde27feae5d0 100644
+> --- a/drivers/video/fbdev/sis/init.c
+> +++ b/drivers/video/fbdev/sis/init.c
+> @@ -2428,6 +2428,11 @@ SiS_SetCRT1FIFO_630(struct SiS_Private *SiS_Pr, unsigned short ModeNo,
+>  
+>     i = 0;
+>  
+> +	if (SiS_Pr->ChipType = SIS_730)
+> +		queuedata = &FQBQData730[0];
+> +	else
+> +		queuedata = &FQBQData[0];
+> +
+>     if(ModeNo > 0x13) {
+>  
+>        /* Get VCLK  */
+> @@ -2445,12 +2450,6 @@ SiS_SetCRT1FIFO_630(struct SiS_Private *SiS_Pr, unsigned short ModeNo,
+>        /* Get half colordepth */
+>        colorth = colortharray[(SiS_Pr->SiS_ModeType - ModeEGA)];
+>  
+> -      if(SiS_Pr->ChipType = SIS_730) {
+> -	 queuedata = &FQBQData730[0];
+> -      } else {
+> -	 queuedata = &FQBQData[0];
+> -      }
+> -
+>        do {
+>  	 templ = SiS_CalcDelay2(SiS_Pr, queuedata[i]) * VCLK * colorth;
+>  
+> 

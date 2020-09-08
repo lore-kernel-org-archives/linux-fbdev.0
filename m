@@ -1,38 +1,47 @@
-From: Jani Nikula <jani.nikula@linux.intel.com>
-Date: Tue, 15 Sep 2020 09:06:21 +0000
-Subject: Re: [Intel-gfx] [trivial PATCH] treewide: Convert switch/case fallthrough; to break;
-Message-Id: <87d02nxvci.fsf@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 08 Sep 2020 11:37:29 +0000
+Subject: Re: [PATCH] video: fbdev: replace spurious snprintf() with sprintf()
+Message-Id: <8a486558-08cb-b8fa-5a33-77d73482b1ea@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
-In-Reply-To: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
+References: <CGME20200824174423eucas1p25ee511479ffce613260a49d415e5733f@eucas1p2.samsung.com>
+ <20200824174407.429817-1-alex.dewar90@gmail.com>
+In-Reply-To: <20200824174407.429817-1-alex.dewar90@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <trivial@kernel.org>
-Cc: linux-wireless@vger.kernel.org, linux-fbdev@vger.kernel.org, oss-drivers@netronome.com, nouveau@lists.freedesktop.org, alsa-devel <alsa-devel@alsa-project.org>, dri-devel@lists.freedesktop.org, linux-ide@vger.kernel.org, dm-devel@redhat.com, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, sparclinux@vger.kernel.org, kvmarm@lists.cs.columbia.edu, linux-rtc@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, dccp@vger.kernel.org, linux-rdma@vger.kernel.org, linux-atm-general@lists.sourceforge.net, linux-afs@lists.infradead.org, coreteam@netfilter.org, intel-wired-lan@lists.osuosl.org, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, linux-mmc@vger.kernel.org, Kees Cook <kees.cook@canonical.com>, linux-media@vger.kernel.org, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, linux-sctp@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-nvme@lists.infradead.org, storagedev@microchip.com, ceph-devel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>, linux-mips@vger.kernel.org, iommu@lists.linux-foundation.org, netfilter-devel@vger.kernel.org, linux-crypto@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-
-On Wed, 09 Sep 2020, Joe Perches <joe@perches.com> wrote:
-> diff --git a/drivers/gpu/drm/i915/display/intel_sprite.c b/drivers/gpu/drm/i915/display/intel_sprite.c
-> index 5ac0dbf0e03d..35ac539cc2b1 100644
-> --- a/drivers/gpu/drm/i915/display/intel_sprite.c
-> +++ b/drivers/gpu/drm/i915/display/intel_sprite.c
-> @@ -2861,7 +2861,7 @@ static bool gen12_plane_format_mod_supported(struct drm_plane *_plane,
->  	case I915_FORMAT_MOD_Y_TILED_GEN12_MC_CCS:
->  		if (!gen12_plane_supports_mc_ccs(dev_priv, plane->id))
->  			return false;
-> -		fallthrough;
-> +		break;
->  	case DRM_FORMAT_MOD_LINEAR:
->  	case I915_FORMAT_MOD_X_TILED:
->  	case I915_FORMAT_MOD_Y_TILED:
-
-Acked-by: Jani Nikula <jani.nikula@intel.com>
-
-for merging via whichever tree seems best.
-
-BR,
-Jani.
+To: Alex Dewar <alex.dewar90@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
 
--- 
-Jani Nikula, Intel Open Source Graphics Center
+On 8/24/20 7:44 PM, Alex Dewar wrote:
+> par->vgapass is a u8, so if we are assuming that buf is at least
+> PAGE_SIZE then the extra checking is pointless.
+> 
+> Signed-off-by: Alex Dewar <alex.dewar90@gmail.com>
+
+Applied to drm-misc-next tree, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> ---
+>  drivers/video/fbdev/sstfb.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
+> index afe6d1b7c3a0..c05cdabeb11c 100644
+> --- a/drivers/video/fbdev/sstfb.c
+> +++ b/drivers/video/fbdev/sstfb.c
+> @@ -733,7 +733,7 @@ static ssize_t show_vgapass(struct device *device, struct device_attribute *attr
+>  {
+>  	struct fb_info *info = dev_get_drvdata(device);
+>  	struct sstfb_par *par = info->par;
+> -	return snprintf(buf, PAGE_SIZE, "%d\n", par->vgapass);
+> +	return sprintf(buf, "%d\n", par->vgapass);
+>  }
+>  
+>  static struct device_attribute device_attrs[] = {
+> 

@@ -1,162 +1,55 @@
-From: Qilong Zhang <zhangqilong3@huawei.com>
-Date: Wed, 16 Sep 2020 11:13:53 +0000
-Subject: [PATCH -next] dss:use devm_platform_ioremap_resource_byname
-Message-Id: <20200916111353.105914-1-zhangqilong3@huawei.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 08 Sep 2020 11:37:25 +0000
+Subject: Re: [PATCH] docs: fb: Correcting the location of FRAMEBUFFER_CONSOLE option.
+Message-Id: <35fef2e8-dafd-c1dc-711d-fdbdf80c36a8@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20200824145242eucas1p1ed74d79e952a573a80d43864b500e0ca@eucas1p1.samsung.com>
+ <20200824145155.42502-1-bilalwasim676@gmail.com>
+In-Reply-To: <20200824145155.42502-1-bilalwasim676@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Bilal Wasim <bilalwasim676@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, corbet@lwn.net
 
-Use the devm_platform_ioremap_resource_byname() helper instead of
-calling platform_get_resource_byname() and devm_ioremap_resource()
-separately.
 
-Signed-off-by: Zhang Qilong <zhangqilong3@huawei.com>
----
- .../video/fbdev/omap2/omapfb/dss/hdmi4_core.c | 10 +--------
- .../video/fbdev/omap2/omapfb/dss/hdmi5_core.c | 10 +--------
- .../video/fbdev/omap2/omapfb/dss/hdmi_phy.c   | 10 +--------
- .../video/fbdev/omap2/omapfb/dss/hdmi_pll.c   |  9 +-------
- .../video/fbdev/omap2/omapfb/dss/video-pll.c  | 21 +++----------------
- 5 files changed, 7 insertions(+), 53 deletions(-)
+[ added linux-fbdev ML to Cc: ]
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
-index 7ca1803bf161..726c190862d4 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
-@@ -875,15 +875,7 @@ void hdmi4_audio_stop(struct hdmi_core_data *core, struct hdmi_wp_data *wp)
- 
- int hdmi4_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
- {
--	struct resource *res;
--
--	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "core");
--	if (!res) {
--		DSSERR("can't get CORE mem resource\n");
--		return -EINVAL;
--	}
--
--	core->base = devm_ioremap_resource(&pdev->dev, res);
-+	core->base = devm_platform_ioremap_resource_byname(pdev, "core");
- 	if (IS_ERR(core->base)) {
- 		DSSERR("can't ioremap CORE\n");
- 		return PTR_ERR(core->base);
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
-index 2f6ff14a48d9..eda29d3032e1 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
-@@ -887,15 +887,7 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 
- int hdmi5_core_init(struct platform_device *pdev, struct hdmi_core_data *core)
- {
--	struct resource *res;
--
--	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "core");
--	if (!res) {
--		DSSERR("can't get CORE IORESOURCE_MEM HDMI\n");
--		return -EINVAL;
--	}
--
--	core->base = devm_ioremap_resource(&pdev->dev, res);
-+	core->base = devm_platform_ioremap_resource_byname(pdev, "core");
- 	if (IS_ERR(core->base)) {
- 		DSSERR("can't ioremap HDMI core\n");
- 		return PTR_ERR(core->base);
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
-index 9c645adba9e2..6fbfeb01b315 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
-@@ -207,19 +207,11 @@ static const struct hdmi_phy_features *hdmi_phy_get_features(void)
- 
- int hdmi_phy_init(struct platform_device *pdev, struct hdmi_phy_data *phy)
- {
--	struct resource *res;
--
- 	phy_feat = hdmi_phy_get_features();
- 	if (!phy_feat)
- 		return -ENODEV;
- 
--	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "phy");
--	if (!res) {
--		DSSERR("can't get PHY mem resource\n");
--		return -EINVAL;
--	}
--
--	phy->base = devm_ioremap_resource(&pdev->dev, res);
-+	phy->base = devm_platform_ioremap_resource_byname(pdev, "phy");
- 	if (IS_ERR(phy->base)) {
- 		DSSERR("can't ioremap TX PHY\n");
- 		return PTR_ERR(phy->base);
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
-index 4991be031b0b..eb984d9999fe 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
-@@ -220,17 +220,10 @@ int hdmi_pll_init(struct platform_device *pdev, struct hdmi_pll_data *pll,
- 	struct hdmi_wp_data *wp)
- {
- 	int r;
--	struct resource *res;
- 
- 	pll->wp = wp;
- 
--	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pll");
--	if (!res) {
--		DSSERR("can't get PLL mem resource\n");
--		return -EINVAL;
--	}
--
--	pll->base = devm_ioremap_resource(&pdev->dev, res);
-+	pll->base = devm_platform_ioremap_resource_byname(pdev, "pll");
- 	if (IS_ERR(pll->base)) {
- 		DSSERR("can't ioremap PLLCTRL\n");
- 		return PTR_ERR(pll->base);
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/video-pll.c b/drivers/video/fbdev/omap2/omapfb/dss/video-pll.c
-index f45fe60b9e7d..bff03d920722 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/video-pll.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/video-pll.c
-@@ -129,7 +129,6 @@ struct dss_pll *dss_video_pll_init(struct platform_device *pdev, int id,
- 	const char * const clkctrl_name[] = { "pll1_clkctrl", "pll2_clkctrl" };
- 	const char * const clkin_name[] = { "video1_clk", "video2_clk" };
- 
--	struct resource *res;
- 	struct dss_video_pll *vpll;
- 	void __iomem *pll_base, *clkctrl_base;
- 	struct clk *clk;
-@@ -138,14 +137,7 @@ struct dss_pll *dss_video_pll_init(struct platform_device *pdev, int id,
- 
- 	/* PLL CONTROL */
- 
--	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, reg_name[id]);
--	if (!res) {
--		dev_err(&pdev->dev,
--			"missing platform resource data for pll%d\n", id);
--		return ERR_PTR(-ENODEV);
--	}
--
--	pll_base = devm_ioremap_resource(&pdev->dev, res);
-+	pll_base = devm_platform_ioremap_resource_byname(pdev, reg_name[id]);
- 	if (IS_ERR(pll_base)) {
- 		dev_err(&pdev->dev, "failed to ioremap pll%d reg_name\n", id);
- 		return ERR_CAST(pll_base);
-@@ -153,15 +145,8 @@ struct dss_pll *dss_video_pll_init(struct platform_device *pdev, int id,
- 
- 	/* CLOCK CONTROL */
- 
--	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
--		clkctrl_name[id]);
--	if (!res) {
--		dev_err(&pdev->dev,
--			"missing platform resource data for pll%d\n", id);
--		return ERR_PTR(-ENODEV);
--	}
--
--	clkctrl_base = devm_ioremap_resource(&pdev->dev, res);
-+	clkctrl_base = devm_platform_ioremap_resource_byname(pdev,
-+					clkctrl_name[id]);
- 	if (IS_ERR(clkctrl_base)) {
- 		dev_err(&pdev->dev, "failed to ioremap pll%d clkctrl\n", id);
- 		return ERR_CAST(clkctrl_base);
--- 
-2.17.1
+On 8/24/20 4:51 PM, Bilal Wasim wrote:
+> fbcon doc mentions FRAMEBUFFER_CONSOLE option to be under
+> Device Drivers->Graphics Support->Frame buffer Devices->
+> Console display driver support->Framebuffer Console Support,
+> while its under Device Drivers->Graphics Support->
+> Console display driver support->Framebuffer Console Support.
+> 
+> Correcting it in the docs.
+> 
+> Signed-off-by: Bilal Wasim <bilalwasim676@gmail.com>
+
+Applied to drm-misc-next tree, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> ---
+>  Documentation/fb/fbcon.rst | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
+> index e57a3d1d085a..a7b487cba307 100644
+> --- a/Documentation/fb/fbcon.rst
+> +++ b/Documentation/fb/fbcon.rst
+> @@ -20,8 +20,8 @@ A. Configuration
+>  ========
+>  
+>  The framebuffer console can be enabled by using your favorite kernel
+> -configuration tool.  It is under Device Drivers->Graphics Support->Frame
+> -buffer Devices->Console display driver support->Framebuffer Console Support.
+> +configuration tool.  It is under Device Drivers->Graphics Support->
+> +Console display driver support->Framebuffer Console Support.
+>  Select 'y' to compile support statically or 'm' for module support.  The
+>  module will be fbcon.
+>  

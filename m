@@ -1,16 +1,57 @@
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Date: Mon, 14 Sep 2020 23:09:45 +0000
-Subject: Re: KASAN: slab-out-of-bounds Read in fbcon_scrolldelta
-Message-Id: <6488cad8-cb86-90c2-c696-e498b7b5836e@I-love.SAKURA.ne.jp>
+Date: Thu, 10 Sep 2020 22:57:06 +0000
+Subject: [PATCH] fbcon: Fix user font detection test at fbcon_resize().
+Message-Id: <f6e3e611-8704-1263-d163-f52c906a4f06@I-love.SAKURA.ne.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <0000000000002e90d405af42bd38@google.com>
-In-Reply-To: <0000000000002e90d405af42bd38@google.com>
+References: <00000000000024be1505ad487cbb@google.com>
+In-Reply-To: <00000000000024be1505ad487cbb@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: syzbot <syzbot+9381e25e04a6ea4f2a20@syzkaller.appspotmail.com>, syzkaller-bugs@googlegroups.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: syzbot <syzbot+b38b1ef6edf0c74a8d97@syzkaller.appspotmail.com>, george.kennedy@oracle.com, gregkh@linuxfoundation.org, jirislaby@kernel.org, syzkaller-bugs@googlegroups.com
+Cc: linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, natechancellor@gmail.com
 
-fbcon_scrolldelta() was removed by commit 50145474f6ef4a9c ("fbcon: remove soft scrollback code").
+syzbot is reporting OOB read at fbcon_resize() [1], for
+commit 39b3cffb8cf31117 ("fbcon: prevent user font height or width change
+ from causing potential out-of-bounds access") is by error using
+registered_fb[con2fb_map[vc->vc_num]]->fbcon_par->p->userfont (which was
+set to non-zero) instead of fb_display[vc->vc_num].userfont (which remains
+zero for that display).
 
-#syz fix: fbcon: remove soft scrollback code
+We could remove tricky userfont flag [2], for we can determine it by
+comparing address of the font data and addresses of built-in font data.
+But since that commit is failing to fix the original OOB read [3], this
+patch keeps the change minimal in case we decide to revert altogether.
+
+[1] https://syzkaller.appspot.com/bug?id=EBcbbb6576958a496500fee9cf7aa83ea0=
+0b5920
+[2] https://syzkaller.appspot.com/text?tag=3DPatch&x=14030853900000
+[3] https://syzkaller.appspot.com/bug?idoba8c186d97cf1011ab17660e633b1cc4e0=
+80c9
+
+Reported-by: syzbot <syzbot+b38b1ef6edf0c74a8d97@syzkaller.appspotmail.com>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Fixes: 39b3cffb8cf31117 ("fbcon: prevent user font height or width change f=
+rom causing potential out-of-bounds access")
+Cc: George Kennedy <george.kennedy@oracle.com>
+---
+ drivers/video/fbdev/core/fbcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fb=
+con.c
+index 66167830fefd..dae7ae7f225a 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2203,7 +2203,7 @@ static int fbcon_resize(struct vc_data *vc, unsigned =
+int width,
+ 	struct fb_var_screeninfo var =3D info->var;
+ 	int x_diff, y_diff, virt_w, virt_h, virt_fw, virt_fh;
+=20
+-	if (ops->p && ops->p->userfont && FNTSIZE(vc->vc_font.data)) {
++	if (p->userfont && FNTSIZE(vc->vc_font.data)) {
+ 		int size;
+ 		int pitch =3D PITCH(vc->vc_font.width);
+=20
+--=20
+2.18.4

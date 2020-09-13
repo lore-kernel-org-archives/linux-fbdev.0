@@ -1,42 +1,16 @@
-From: Qinglang Miao <miaoqinglang@huawei.com>
-Date: Mon, 21 Sep 2020 13:10:52 +0000
-Subject: [PATCH -next] omapfb: panel-sony-acx565akm: simplify the return expression of acx565akm_connect()
-Message-Id: <20200921131052.92707-1-miaoqinglang@huawei.com>
+From: "manuel franco" <manuelfranco@info.com>
+Date: Sun, 13 Sep 2020 23:14:20 +0000
+Subject: Spende von 2.000.000,00 Euro.
+Message-Id: <20200913231429.7C15434A4217@correo.bnv.gob.ve>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Qinglang Miao <miaoqinglang@huawei.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-Simplify the return expression.
+ Sie haben eine Spende von 2.000.000,00 Euro.
 
-Signed-off-by: Qinglang Miao <miaoqinglang@huawei.com>
----
- .../fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c     | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
-
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-index 1293515e4..8d8b5ff7d 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-@@ -506,16 +506,11 @@ static int acx565akm_connect(struct omap_dss_device *dssdev)
- {
- 	struct panel_drv_data *ddata = to_panel_data(dssdev);
- 	struct omap_dss_device *in = ddata->in;
--	int r;
- 
- 	if (omapdss_device_is_connected(dssdev))
- 		return 0;
- 
--	r = in->ops.sdi->connect(in, dssdev);
--	if (r)
--		return r;
--
--	return 0;
-+	return in->ops.sdi->connect(in, dssdev);
- }
- 
- static void acx565akm_disconnect(struct omap_dss_device *dssdev)
--- 
-2.23.0
+Mein Name ist Manuel Franco aus den USA.
+Ich habe die America-Lotterie im Wert von 768 Millionen US-Dollar gewonnen =
+und spende einen Teil davon an nur 5 gl=FCckliche Menschen und einige Waise=
+nh=E4user als Wohlwollen f=FCr die Menschheit.

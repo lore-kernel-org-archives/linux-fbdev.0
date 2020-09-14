@@ -1,98 +1,119 @@
-From: Bhaskar Chowdhury <unixbhaskar@gmail.com>
-Date: Tue, 15 Sep 2020 03:52:17 +0000
-Subject: [PATCH] docs:fb:fbcon.rst:Remove the stale boot option for framebuffer i.e scrollback
-Message-Id: <20200915034857.21384-1-unixbhaskar@gmail.com>
+From: syzbot <syzbot+9381e25e04a6ea4f2a20@syzkaller.appspotmail.com>
+Date: Mon, 14 Sep 2020 09:34:20 +0000
+Subject: KASAN: slab-out-of-bounds Read in fbcon_scrolldelta
+Message-Id: <0000000000002e90d405af42bd38@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: corbet@lwn.net, rdunlap@infradead.org, gregkh@linuxfoundation.org, daniel@ffwll.ch, yuanmingbuaa@gmail.com, w@1wt.eu, nopitydays@gmail.com, zhangyunhai@nsfocus.com, luto@amacapital.net, torvalds@linux-foundation.org, Bhaskar Chowdhury <unixbhaskar@gmail.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, george.kennedy@oracle.com, gregkh@linuxfoundation.org, jirislaby@kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, natechancellor@gmail.com, syzkaller-bugs@googlegroups.com
 
-This patch is the effect of commit hashes: 50145474f6ef4a9c19205b173da6264a644c7489 and
-973c096f6a85e5b5f2a295126ba6928d9a6afd45 
+Hello,
 
-fbcon: remove soft scrollback code 
+syzbot found the following issue on:
 
-And adjusted the numbering for boot options too.
+HEAD commit:    e4c26faa Merge tag 'usb-5.9-rc5' of git://git.kernel.org/p..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=14d155f9900000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=C61610091f4ca8c4
+dashboard link: https://syzkaller.appspot.com/bug?extid=9381e25e04a6ea4f2a20
+compiler:       gcc (GCC) 10.1.0-syz 20200507
 
-Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+Unfortunately, I don't have any reproducer for this issue yet.
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+9381e25e04a6ea4f2a20@syzkaller.appspotmail.com
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+BUG: KASAN: slab-out-of-bounds in fbcon_redraw_softback drivers/video/fbdev=
+/core/fbcon.c:1676 [inline]
+BUG: KASAN: slab-out-of-bounds in fbcon_scrolldelta+0x10da/0x1230 drivers/v=
+ideo/fbdev/core/fbcon.c:2909
+Read of size 2 at addr ffff8881e9ae68c0 by task syz-executor.1/20692
+
+CPU: 0 PID: 20692 Comm: syz-executor.1 Not tainted 5.9.0-rc4-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Goo=
+gle 01/01/2011
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x198/0x1fd lib/dump_stack.c:118
+ print_address_description.constprop.0.cold+0xae/0x497 mm/kasan/report.c:383
+ __kasan_report mm/kasan/report.c:513 [inline]
+ kasan_report.cold+0x1f/0x37 mm/kasan/report.c:530
+ fbcon_redraw_softback drivers/video/fbdev/core/fbcon.c:1676 [inline]
+ fbcon_scrolldelta+0x10da/0x1230 drivers/video/fbdev/core/fbcon.c:2909
+ fbcon_set_origin+0x3c/0x50 drivers/video/fbdev/core/fbcon.c:2959
+ set_origin+0xe7/0x3e0 drivers/tty/vt/vt.c:930
+ vc_do_resize+0xb0f/0x1150 drivers/tty/vt/vt.c:1305
+ fbcon_modechanged+0x36c/0x710 drivers/video/fbdev/core/fbcon.c:3011
+ fbcon_update_vcs+0x3a/0x50 drivers/video/fbdev/core/fbcon.c:3069
+ do_fb_ioctl+0x62e/0x690 drivers/video/fbdev/core/fbmem.c:1106
+ fb_ioctl+0xdd/0x130 drivers/video/fbdev/core/fbmem.c:1181
+ vfs_ioctl fs/ioctl.c:48 [inline]
+ __do_sys_ioctl fs/ioctl.c:753 [inline]
+ __se_sys_ioctl fs/ioctl.c:739 [inline]
+ __x64_sys_ioctl+0x193/0x200 fs/ioctl.c:739
+ do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+ entry_SYSCALL_64_after_hwframe+0x44/0xa9
+RIP: 0033:0x45d5f9
+Code: 5d b4 fb ff c3 66 2e 0f 1f 84 00 00 00 00 00 66 90 48 89 f8 48 89 f7 =
+48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff f=
+f 0f 83 2b b4 fb ff c3 66 2e 0f 1f 84 00 00 00 00
+RSP: 002b:00007f51ee9c6c78 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 000000000000e0c0 RCX: 000000000045d5f9
+RDX: 0000000020001180 RSI: 0000000000004601 RDI: 0000000000000003
+RBP: 000000000118cf80 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 000000000118cf4c
+R13: 00007fffb40f07cf R14: 00007f51ee9c79c0 R15: 000000000118cf4c
+
+Allocated by task 3837:
+ kasan_save_stack+0x1b/0x40 mm/kasan/common.c:48
+ kasan_set_track mm/kasan/common.c:56 [inline]
+ __kasan_kmalloc.constprop.0+0xbf/0xd0 mm/kasan/common.c:461
+ __do_kmalloc mm/slab.c:3655 [inline]
+ __kmalloc+0x1b0/0x310 mm/slab.c:3664
+ kmalloc include/linux/slab.h:559 [inline]
+ kzalloc include/linux/slab.h:666 [inline]
+ vc_do_resize+0x2f6/0x1150 drivers/tty/vt/vt.c:1228
+ vt_resizex drivers/tty/vt/vt_ioctl.c:818 [inline]
+ vt_ioctl+0xef0/0x2cc0 drivers/tty/vt/vt_ioctl.c:1036
+ tty_ioctl+0x1019/0x15f0 drivers/tty/tty_io.c:2656
+ vfs_ioctl fs/ioctl.c:48 [inline]
+ __do_sys_ioctl fs/ioctl.c:753 [inline]
+ __se_sys_ioctl fs/ioctl.c:739 [inline]
+ __x64_sys_ioctl+0x193/0x200 fs/ioctl.c:739
+ do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+ entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+The buggy address belongs to the object at ffff8881e9ae6000
+ which belongs to the cache kmalloc-4k of size 4096
+The buggy address is located 2240 bytes inside of
+ 4096-byte region [ffff8881e9ae6000, ffff8881e9ae7000)
+The buggy address belongs to the page:
+page:00000000761e5aa4 refcount:1 mapcount:0 mapping:0000000000000000 index:=
+0x0 pfn:0x1e9ae6
+head:00000000761e5aa4 order:1 compound_mapcount:0
+flags: 0x57ffe0000010200(slab|head)
+raw: 057ffe0000010200 ffffea0007bbe508 ffffea0007bc1288 ffff8880aa040900
+raw: 0000000000000000 ffff8881e9ae6000 0000000100000001 0000000000000000
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+ ffff8881e9ae6780: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ ffff8881e9ae6800: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>ffff8881e9ae6880: 00 00 00 00 00 00 00 00 fc fc fc fc fc fc fc fc
+                                           ^
+ ffff8881e9ae6900: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+ ffff8881e9ae6980: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+
+
 ---
- Documentation/fb/fbcon.rst | 21 +++++++--------------
- 1 file changed, 7 insertions(+), 14 deletions(-)
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
-index e57a3d1d085a..328f6980698c 100644
---- a/Documentation/fb/fbcon.rst
-+++ b/Documentation/fb/fbcon.rst
-@@ -87,15 +87,8 @@ C. Boot options
- 	Note, not all drivers can handle font with widths not divisible by 8,
- 	such as vga16fb.
- 
--2. fbcon=scrollback:<value>[k]
- 
--	The scrollback buffer is memory that is used to preserve display
--	contents that has already scrolled past your view.  This is accessed
--	by using the Shift-PageUp key combination.  The value 'value' is any
--	integer. It defaults to 32KB.  The 'k' suffix is optional, and will
--	multiply the 'value' by 1024.
--
--3. fbcon=map:<0123>
-+2. fbcon=map:<0123>
- 
- 	This is an interesting option. It tells which driver gets mapped to
- 	which console. The value '0123' is a sequence that gets repeated until
-@@ -116,7 +109,7 @@ C. Boot options
- 	Later on, when you want to map the console the to the framebuffer
- 	device, you can use the con2fbmap utility.
- 
--4. fbcon=vc:<n1>-<n2>
-+3. fbcon=vc:<n1>-<n2>
- 
- 	This option tells fbcon to take over only a range of consoles as
- 	specified by the values 'n1' and 'n2'. The rest of the consoles
-@@ -127,7 +120,7 @@ C. Boot options
- 	is typically located on the same video card.  Thus, the consoles that
- 	are controlled by the VGA console will be garbled.
- 
--5. fbcon=rotate:<n>
-+4. fbcon=rotate:<n>
- 
- 	This option changes the orientation angle of the console display. The
- 	value 'n' accepts the following:
-@@ -152,21 +145,21 @@ C. Boot options
- 	Actually, the underlying fb driver is totally ignorant of console
- 	rotation.
- 
--6. fbcon=margin:<color>
-+5. fbcon=margin:<color>
- 
- 	This option specifies the color of the margins. The margins are the
- 	leftover area at the right and the bottom of the screen that are not
- 	used by text. By default, this area will be black. The 'color' value
- 	is an integer number that depends on the framebuffer driver being used.
- 
--7. fbcon=nodefer
-+6. fbcon=nodefer
- 
- 	If the kernel is compiled with deferred fbcon takeover support, normally
- 	the framebuffer contents, left in place by the firmware/bootloader, will
- 	be preserved until there actually is some text is output to the console.
- 	This option causes fbcon to bind immediately to the fbdev device.
- 
--8. fbcon=logo-pos:<location>
-+7. fbcon=logo-pos:<location>
- 
- 	The only possible 'location' is 'center' (without quotes), and when
- 	given, the bootup logo is moved from the default top-left corner
-@@ -174,7 +167,7 @@ C. Boot options
- 	displayed due to multiple CPUs, the collected line of logos is moved
- 	as a whole.
- 
--9. fbcon=logo-count:<n>
-+8. fbcon=logo-count:<n>
- 
- 	The value 'n' overrides the number of bootup logos. 0 disables the
- 	logo, and -1 gives the default which is the number of online CPUs.
--- 
-2.26.2
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.

@@ -1,164 +1,95 @@
-From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-Date: Mon, 10 Aug 2020 18:59:36 +0000
-Subject: [PATCH v2 02/12] fbdev: lxfb: use generic power management
-Message-Id: <20200810185723.15540-3-vaibhavgupta40@gmail.com>
+From: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+Date: Tue, 15 Sep 2020 06:49:21 +0000
+Subject: [PATCH v2] docs: fb: Remove the stale boot option for framebuffer i.e scrollback
+Message-Id: <20200915063721.30065-1-unixbhaskar@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200810165458.GA292825@ravnborg.org>
- <20200810185723.15540-1-vaibhavgupta40@gmail.com>
-In-Reply-To: <20200810185723.15540-1-vaibhavgupta40@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: corbet@lwn.net, rdunlap@infradead.org, gregkh@linuxfoundation.org, daniel@ffwll.ch, yuanmingbuaa@gmail.com, w@1wt.eu, nopitydays@gmail.com, zhangyunhai@nsfocus.com, luto@amacapital.net, torvalds@linux-foundation.org, Bhaskar Chowdhury <unixbhaskar@gmail.com>
 
-Drivers should do only device-specific jobs. But in general, drivers using
-legacy PCI PM framework for .suspend()/.resume() have to manage many PCI
-PM-related tasks themselves which can be done by PCI Core itself. This
-brings extra load on the driver and it directly calls PCI helper functions
-to handle them.
+And adjusted the numbering for boot options too.
 
-Although the lxfb driver does not have that extra load, we should switch to
-the new generic framework by updating function signatures and define a
-"struct dev_pm_ops" variable to bind PM callbacks so that we can remove
-the legacy .suspend & .resume bindings. Additionally, this helps us to
-remove the unnecessary call to lxfb_suspend() in the event of Freeze and
-Hibernate, as the function does nothing in their case.
-
-Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
 ---
- drivers/video/fbdev/geode/lxfb.h      |  5 ----
- drivers/video/fbdev/geode/lxfb_core.c | 37 +++++++++++++++------------
- drivers/video/fbdev/geode/lxfb_ops.c  |  4 ---
- 3 files changed, 20 insertions(+), 26 deletions(-)
+This version corrected the previous version's mistake,subject line fix,more
+changelog information.
+ Documentation/fb/fbcon.rst | 21 +++++++--------------
+ 1 file changed, 7 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/fbdev/geode/lxfb.h b/drivers/video/fbdev/geode/lxfb.h
-index ef24bf6d49dc..d37b32dbcd68 100644
---- a/drivers/video/fbdev/geode/lxfb.h
-+++ b/drivers/video/fbdev/geode/lxfb.h
-@@ -29,7 +29,6 @@ struct lxfb_par {
- 	void __iomem *gp_regs;
- 	void __iomem *dc_regs;
- 	void __iomem *vp_regs;
--#ifdef CONFIG_PM
- 	int powered_down;
+diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
+index e57a3d1d085a..328f6980698c 100644
+--- a/Documentation/fb/fbcon.rst
++++ b/Documentation/fb/fbcon.rst
+@@ -87,15 +87,8 @@ C. Boot options
+ 	Note, not all drivers can handle font with widths not divisible by 8,
+ 	such as vga16fb.
  
- 	/* register state, for power mgmt functionality */
-@@ -50,7 +49,6 @@ struct lxfb_par {
- 	uint32_t hcoeff[DC_HFILT_COUNT * 2];
- 	uint32_t vcoeff[DC_VFILT_COUNT];
- 	uint32_t vp_coeff[VP_COEFF_SIZE / 4];
--#endif
- };
+-2. fbcon=scrollback:<value>[k]
  
- static inline unsigned int lx_get_pitch(unsigned int xres, int bpp)
-@@ -64,11 +62,8 @@ int lx_blank_display(struct fb_info *, int);
- void lx_set_palette_reg(struct fb_info *, unsigned int, unsigned int,
- 			unsigned int, unsigned int);
- 
--#ifdef CONFIG_PM
- int lx_powerdown(struct fb_info *info);
- int lx_powerup(struct fb_info *info);
--#endif
+-	The scrollback buffer is memory that is used to preserve display
+-	contents that has already scrolled past your view.  This is accessed
+-	by using the Shift-PageUp key combination.  The value 'value' is any
+-	integer. It defaults to 32KB.  The 'k' suffix is optional, and will
+-	multiply the 'value' by 1024.
 -
+-3. fbcon=map:<0123>
++2. fbcon=map:<0123>
  
- /* Graphics Processor registers (table 6-29 from the data book) */
- enum gp_registers {
-diff --git a/drivers/video/fbdev/geode/lxfb_core.c b/drivers/video/fbdev/geode/lxfb_core.c
-index adc2d9c2395e..66c81262d18f 100644
---- a/drivers/video/fbdev/geode/lxfb_core.c
-+++ b/drivers/video/fbdev/geode/lxfb_core.c
-@@ -443,17 +443,14 @@ static struct fb_info *lxfb_init_fbinfo(struct device *dev)
- 	return info;
- }
+ 	This is an interesting option. It tells which driver gets mapped to
+ 	which console. The value '0123' is a sequence that gets repeated until
+@@ -116,7 +109,7 @@ C. Boot options
+ 	Later on, when you want to map the console the to the framebuffer
+ 	device, you can use the con2fbmap utility.
  
--#ifdef CONFIG_PM
--static int lxfb_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int __maybe_unused lxfb_suspend(struct device *dev)
- {
--	struct fb_info *info = pci_get_drvdata(pdev);
-+	struct fb_info *info = dev_get_drvdata(dev);
+-4. fbcon=vc:<n1>-<n2>
++3. fbcon=vc:<n1>-<n2>
  
--	if (state.event = PM_EVENT_SUSPEND) {
--		console_lock();
--		lx_powerdown(info);
--		fb_set_suspend(info, 1);
--		console_unlock();
--	}
-+	console_lock();
-+	lx_powerdown(info);
-+	fb_set_suspend(info, 1);
-+	console_unlock();
+ 	This option tells fbcon to take over only a range of consoles as
+ 	specified by the values 'n1' and 'n2'. The rest of the consoles
+@@ -127,7 +120,7 @@ C. Boot options
+ 	is typically located on the same video card.  Thus, the consoles that
+ 	are controlled by the VGA console will be garbled.
  
- 	/* there's no point in setting PCI states; we emulate PCI, so
- 	 * we don't end up getting power savings anyways */
-@@ -461,9 +458,9 @@ static int lxfb_suspend(struct pci_dev *pdev, pm_message_t state)
- 	return 0;
- }
+-5. fbcon=rotate:<n>
++4. fbcon=rotate:<n>
  
--static int lxfb_resume(struct pci_dev *pdev)
-+static int __maybe_unused lxfb_resume(struct device *dev)
- {
--	struct fb_info *info = pci_get_drvdata(pdev);
-+	struct fb_info *info = dev_get_drvdata(dev);
- 	int ret;
+ 	This option changes the orientation angle of the console display. The
+ 	value 'n' accepts the following:
+@@ -152,21 +145,21 @@ C. Boot options
+ 	Actually, the underlying fb driver is totally ignorant of console
+ 	rotation.
  
- 	console_lock();
-@@ -477,10 +474,6 @@ static int lxfb_resume(struct pci_dev *pdev)
- 	console_unlock();
- 	return 0;
- }
--#else
--#define lxfb_suspend NULL
--#define lxfb_resume NULL
--#endif
+-6. fbcon=margin:<color>
++5. fbcon=margin:<color>
  
- static int lxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- {
-@@ -600,13 +593,23 @@ static struct pci_device_id lxfb_id_table[] = {
+ 	This option specifies the color of the margins. The margins are the
+ 	leftover area at the right and the bottom of the screen that are not
+ 	used by text. By default, this area will be black. The 'color' value
+ 	is an integer number that depends on the framebuffer driver being used.
  
- MODULE_DEVICE_TABLE(pci, lxfb_id_table);
+-7. fbcon=nodefer
++6. fbcon=nodefer
  
-+static const struct dev_pm_ops lxfb_pm_ops = {
-+#ifdef CONFIG_PM_SLEEP
-+	.suspend	= lxfb_suspend,
-+	.resume		= lxfb_resume,
-+	.freeze		= NULL,
-+	.thaw		= lxfb_resume,
-+	.poweroff	= NULL,
-+	.restore	= lxfb_resume,
-+#endif
-+};
-+
- static struct pci_driver lxfb_driver = {
- 	.name		= "lxfb",
- 	.id_table	= lxfb_id_table,
- 	.probe		= lxfb_probe,
- 	.remove		= lxfb_remove,
--	.suspend	= lxfb_suspend,
--	.resume		= lxfb_resume,
-+	.driver.pm	= &lxfb_pm_ops,
- };
+ 	If the kernel is compiled with deferred fbcon takeover support, normally
+ 	the framebuffer contents, left in place by the firmware/bootloader, will
+ 	be preserved until there actually is some text is output to the console.
+ 	This option causes fbcon to bind immediately to the fbdev device.
  
- #ifndef MODULE
-diff --git a/drivers/video/fbdev/geode/lxfb_ops.c b/drivers/video/fbdev/geode/lxfb_ops.c
-index 5be8bc62844c..b3a041fce570 100644
---- a/drivers/video/fbdev/geode/lxfb_ops.c
-+++ b/drivers/video/fbdev/geode/lxfb_ops.c
-@@ -580,8 +580,6 @@ int lx_blank_display(struct fb_info *info, int blank_mode)
- 	return 0;
- }
+-8. fbcon=logo-pos:<location>
++7. fbcon=logo-pos:<location>
  
--#ifdef CONFIG_PM
--
- static void lx_save_regs(struct lxfb_par *par)
- {
- 	uint32_t filt;
-@@ -837,5 +835,3 @@ int lx_powerup(struct fb_info *info)
- 	par->powered_down = 0;
- 	return 0;
- }
--
--#endif
+ 	The only possible 'location' is 'center' (without quotes), and when
+ 	given, the bootup logo is moved from the default top-left corner
+@@ -174,7 +167,7 @@ C. Boot options
+ 	displayed due to multiple CPUs, the collected line of logos is moved
+ 	as a whole.
+ 
+-9. fbcon=logo-count:<n>
++8. fbcon=logo-count:<n>
+ 
+ 	The value 'n' overrides the number of bootup logos. 0 disables the
+ 	logo, and -1 gives the default which is the number of online CPUs.
 -- 
-2.27.0
+2.26.2

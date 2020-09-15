@@ -1,48 +1,37 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Thu, 24 Sep 2020 20:12:46 +0000
-Subject: Re: [PATCH] fbdev: mx3fb: remove unused variable 'irq'
-Message-Id: <20200924201246.GH1223313@ravnborg.org>
+From: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+Date: Tue, 15 Sep 2020 05:59:48 +0000
+Subject: [PATCH v2] docs: fb: Remove scrollback related lines
+Message-Id: <20200915055712.968-1-unixbhaskar@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1600334360-4214-1-git-send-email-tanxiaofei@huawei.com>
-In-Reply-To: <1600334360-4214-1-git-send-email-tanxiaofei@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Xiaofei Tan <tanxiaofei@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, arnd@arndb.de, b.zolnierkie@samsung.com, jani.nikula@intel.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linuxarm@huawei.com, laurent.pinchart@ideasonboard.com
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: corbet@lwn.net, rdunlap@infradead.org, gregkh@linuxfoundation.org, daniel@ffwll.ch, yuanmingbuaa@gmail.com, w@1wt.eu, nopitydays@gmail.com, zhangyunhai@nsfocus.com, luto@amacapital.net, torvalds@linux-foundation.org, Bhaskar Chowdhury <unixbhaskar@gmail.com>
 
-On Thu, Sep 17, 2020 at 05:19:20PM +0800, Xiaofei Tan wrote:
-> Remove the variable 'irq' that is set but never used.
-> 
-> Signed-off-by: Xiaofei Tan <tanxiaofei@huawei.com>
+This patch removed the framebuffer scrollback related lines.
 
-Thanks, applied to drm-misc-next.
+This is the effect of this commmit  50145474f6ef ("fbcon: remove soft scrollback code")
 
-	Sam
+Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+---
+Following Greg's suggestions,fix the subject line and include the commit Subject
 
-> ---
->  drivers/video/fbdev/mx3fb.c | 2 --
->  1 file changed, 2 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/mx3fb.c b/drivers/video/fbdev/mx3fb.c
-> index 603731a..894617d 100644
-> --- a/drivers/video/fbdev/mx3fb.c
-> +++ b/drivers/video/fbdev/mx3fb.c
-> @@ -1428,7 +1428,6 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, struct idmac_channel *ichan)
->  	struct device *dev = mx3fb->dev;
->  	struct mx3fb_platform_data *mx3fb_pdata = dev_get_platdata(dev);
->  	const char *name = mx3fb_pdata->name;
-> -	unsigned int irq;
->  	struct fb_info *fbi;
->  	struct mx3fb_info *mx3fbi;
->  	const struct fb_videomode *mode;
-> @@ -1441,7 +1440,6 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, struct idmac_channel *ichan)
->  	}
->  
->  	ichan->client = mx3fb;
-> -	irq = ichan->eof_irq;
->  
->  	if (ichan->dma_chan.chan_id != IDMAC_SDC_0)
->  		return -EINVAL;
-> -- 
-> 2.8.1
+ Documentation/fb/vesafb.rst | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/Documentation/fb/vesafb.rst b/Documentation/fb/vesafb.rst
+index 6821c87b7893..f890a4f5623b 100644
+--- a/Documentation/fb/vesafb.rst
++++ b/Documentation/fb/vesafb.rst
+@@ -135,8 +135,6 @@ ypan	  enable display panning using the VESA protected mode
+ 
+                 * scrolling (fullscreen) is fast, because there is
+ 		  no need to copy around data.
+-		* You'll get scrollback (the Shift-PgUp thing),
+-		  the video memory can be used as scrollback buffer
+ 
+           kontra:
+ 
+-- 
+2.26.2

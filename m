@@ -1,62 +1,97 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Thu, 24 Sep 2020 20:34:46 +0000
-Subject: Re: [PATCH] MAINTAINERS: mark FRAMEBUFFER LAYER as Orphan
-Message-Id: <20200924203446.GL1223313@ravnborg.org>
+From: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+Date: Tue, 15 Sep 2020 22:37:11 +0000
+Subject: [PATCH] docs: fb: Remove framebuffer scrollback option for boot
+Message-Id: <20200915222511.17140-1-unixbhaskar@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200924112530eucas1p13af17d649767ed51c619d303392fa1e1@eucas1p1.samsung.com>
- <7b709254-9412-8473-250c-0c4e006259b3@samsung.com>
-In-Reply-To: <7b709254-9412-8473-250c-0c4e006259b3@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: corbet@lwn.net, rdunlap@infradead.org, gregkh@linuxfoundation.org, daniel@ffwll.ch, yuanmingbuaa@gmail.com, w@1wt.eu, nopitydays@gmail.com, zhangyunhai@nsfocus.com, luto@amacapital.net, torvalds@linux-foundation.org, Bhaskar Chowdhury <unixbhaskar@gmail.com>
 
-Hi Bartlomiej
+This patch remove the scrollback option under boot options.
+Plus readjust the numbers for the options in that section.
 
-On Thu, Sep 24, 2020 at 01:25:30PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> It has been a fun ride since 2017 but unfortunately I don't have
-> enough time to look after it properly anymore.
+Commit 973c096f6a85(vgacon: remove software scrollback support)
+Commit 50145474f6ef(fbcon: remove soft scrollback code)
 
-Thanks for all your work on fbdev, and other stuff.
+Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+---
+ Documentation/fb/fbcon.rst | 21 +++++++--------------
+ 1 file changed, 7 insertions(+), 14 deletions(-)
 
-I hope you have fun in the current job with whatever you do or
-even better manage to find something else so we can get you back.
-
-I could see that Daniel thinks we shall keep fbdev in drm-misc
-but we shall no longer rely on you sweeping the mailing list
-for all the pending patches :-( So I will likely start breaking
-fbdev some more (read: applying a few more fbdev patches).
-
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-
-Please consider a proper entry in CREDITS too!
-
-	Sam
-
-> ---
->  MAINTAINERS |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> Index: b/MAINTAINERS
-> =================================> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6894,10 +6894,9 @@ F:	drivers/net/wan/dlci.c
->  F:	drivers/net/wan/sdla.c
->  
->  FRAMEBUFFER LAYER
-> -M:	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->  L:	dri-devel@lists.freedesktop.org
->  L:	linux-fbdev@vger.kernel.org
-> -S:	Maintained
-> +S:	Orphan
->  Q:	http://patchwork.kernel.org/project/linux-fbdev/list/
->  T:	git git://anongit.freedesktop.org/drm/drm-misc
->  F:	Documentation/fb/
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
+index e57a3d1d085a..328f6980698c 100644
+--- a/Documentation/fb/fbcon.rst
++++ b/Documentation/fb/fbcon.rst
+@@ -87,15 +87,8 @@ C. Boot options
+ 	Note, not all drivers can handle font with widths not divisible by 8,
+ 	such as vga16fb.
+ 
+-2. fbcon=scrollback:<value>[k]
+ 
+-	The scrollback buffer is memory that is used to preserve display
+-	contents that has already scrolled past your view.  This is accessed
+-	by using the Shift-PageUp key combination.  The value 'value' is any
+-	integer. It defaults to 32KB.  The 'k' suffix is optional, and will
+-	multiply the 'value' by 1024.
+-
+-3. fbcon=map:<0123>
++2. fbcon=map:<0123>
+ 
+ 	This is an interesting option. It tells which driver gets mapped to
+ 	which console. The value '0123' is a sequence that gets repeated until
+@@ -116,7 +109,7 @@ C. Boot options
+ 	Later on, when you want to map the console the to the framebuffer
+ 	device, you can use the con2fbmap utility.
+ 
+-4. fbcon=vc:<n1>-<n2>
++3. fbcon=vc:<n1>-<n2>
+ 
+ 	This option tells fbcon to take over only a range of consoles as
+ 	specified by the values 'n1' and 'n2'. The rest of the consoles
+@@ -127,7 +120,7 @@ C. Boot options
+ 	is typically located on the same video card.  Thus, the consoles that
+ 	are controlled by the VGA console will be garbled.
+ 
+-5. fbcon=rotate:<n>
++4. fbcon=rotate:<n>
+ 
+ 	This option changes the orientation angle of the console display. The
+ 	value 'n' accepts the following:
+@@ -152,21 +145,21 @@ C. Boot options
+ 	Actually, the underlying fb driver is totally ignorant of console
+ 	rotation.
+ 
+-6. fbcon=margin:<color>
++5. fbcon=margin:<color>
+ 
+ 	This option specifies the color of the margins. The margins are the
+ 	leftover area at the right and the bottom of the screen that are not
+ 	used by text. By default, this area will be black. The 'color' value
+ 	is an integer number that depends on the framebuffer driver being used.
+ 
+-7. fbcon=nodefer
++6. fbcon=nodefer
+ 
+ 	If the kernel is compiled with deferred fbcon takeover support, normally
+ 	the framebuffer contents, left in place by the firmware/bootloader, will
+ 	be preserved until there actually is some text is output to the console.
+ 	This option causes fbcon to bind immediately to the fbdev device.
+ 
+-8. fbcon=logo-pos:<location>
++7. fbcon=logo-pos:<location>
+ 
+ 	The only possible 'location' is 'center' (without quotes), and when
+ 	given, the bootup logo is moved from the default top-left corner
+@@ -174,7 +167,7 @@ C. Boot options
+ 	displayed due to multiple CPUs, the collected line of logos is moved
+ 	as a whole.
+ 
+-9. fbcon=logo-count:<n>
++8. fbcon=logo-count:<n>
+ 
+ 	The value 'n' overrides the number of bootup logos. 0 disables the
+ 	logo, and -1 gives the default which is the number of online CPUs.
+-- 
+2.26.2

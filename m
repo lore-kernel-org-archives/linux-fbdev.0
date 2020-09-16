@@ -1,42 +1,41 @@
-From: Liu Shixin <liushixin2@huawei.com>
-Date: Tue, 15 Sep 2020 03:26:27 +0000
-Subject: [PATCH -next] omapfb: connector-dvi: simplify the return expression of dvic_connect()
-Message-Id: <20200915032627.1772517-1-liushixin2@huawei.com>
+From: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+Date: Wed, 16 Sep 2020 23:25:01 +0000
+Subject: [PATCH v3] docs: fb: Remove matroxfb scrollback boot option
+Message-Id: <20200916231301.32066-1-unixbhaskar@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Liu Shixin <liushixin2@huawei.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: corbet@lwn.net, rdunlap@infradead.org, gregkh@linuxfoundation.org, daniel@ffwll.ch, yuanmingbuaa@gmail.com, w@1wt.eu, nopitydays@gmail.com, zhangyunhai@nsfocus.com, luto@amacapital.net, torvalds@linux-foundation.org, Bhaskar Chowdhury <unixbhaskar@gmail.com>
 
-Simplify the return expression.
 
-Signed-off-by: Liu Shixin <liushixin2@huawei.com>
+This patch remove the reference of scrollback option from this file. This
+is related to the below commits.
+
+Commit 973c096f6a85(vgacon: remove software scrollback support)
+Commit 50145474f6ef(fbcon: remove soft scrollback code)
+
+Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
 ---
- drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+Correcting the previous versions errors. Proper changelog, subject text.
+Trying to incorporate Willy's and Greg's suggestions.
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c b/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-index b4a1aefff766..2fa436475b40 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-@@ -51,16 +51,11 @@ static int dvic_connect(struct omap_dss_device *dssdev)
- {
- 	struct panel_drv_data *ddata = to_panel_data(dssdev);
- 	struct omap_dss_device *in = ddata->in;
--	int r;
+ Documentation/fb/matroxfb.rst | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/Documentation/fb/matroxfb.rst b/Documentation/fb/matroxfb.rst
+index f1859d98606e..6158c49c8571 100644
+--- a/Documentation/fb/matroxfb.rst
++++ b/Documentation/fb/matroxfb.rst
+@@ -317,8 +317,6 @@ Currently there are following known bugs:
+  - interlaced text mode is not supported; it looks like hardware limitation,
+    but I'm not sure.
+  - Gxx0 SGRAM/SDRAM is not autodetected.
+- - If you are using more than one framebuffer device, you must boot kernel
+-   with 'video=scrollback:0'.
+  - maybe more...
  
- 	if (omapdss_device_is_connected(dssdev))
- 		return 0;
- 
--	r = in->ops.dvi->connect(in, dssdev);
--	if (r)
--		return r;
--
--	return 0;
-+	return in->ops.dvi->connect(in, dssdev);
- }
- 
- static void dvic_disconnect(struct omap_dss_device *dssdev)
+ And following misfeatures:
 -- 
-2.25.1
+2.28.0

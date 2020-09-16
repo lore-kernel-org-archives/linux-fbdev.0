@@ -1,64 +1,34 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 08 Sep 2020 11:37:32 +0000
-Subject: Re: [PATCH 22/29] video: fbdev: Avoid comma separated statements
-Message-Id: <736b1915-b6dc-3cdb-2bff-a307406ce354@samsung.com>
+From: Qinglang Miao <miaoqinglang@huawei.com>
+Date: Wed, 16 Sep 2020 06:21:23 +0000
+Subject: [PATCH -next] fbdev: nvidia: use for_each_child_of_node() macro
+Message-Id: <20200916062123.190636-1-miaoqinglang@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1598331148.git.joe@perches.com>
- <CGME20200825045729eucas1p2a05e6a670152b105f1b4cf31d6e2090c@eucas1p2.samsung.com>
- <3e56046e67e583ac93030297ff6d58c08ca54086.1598331149.git.joe@perches.com>
-In-Reply-To: <3e56046e67e583ac93030297ff6d58c08ca54086.1598331149.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: linux-fbdev@vger.kernel.org, Jiri Kosina <trivial@kernel.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Antonino Daplas <adaplas@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Qinglang Miao <miaoqinglang@huawei.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
+Use for_each_child_of_node() macro instead of open coding it.
 
-On 8/25/20 6:56 AM, Joe Perches wrote:
-> Use semicolons and braces.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Qinglang Miao <miaoqinglang@huawei.com>
+---
+ drivers/video/fbdev/nvidia/nv_of.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Applied to drm-misc-next tree, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  drivers/video/fbdev/tgafb.c | 12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/tgafb.c b/drivers/video/fbdev/tgafb.c
-> index e9869135d833..666fbe2f671c 100644
-> --- a/drivers/video/fbdev/tgafb.c
-> +++ b/drivers/video/fbdev/tgafb.c
-> @@ -989,8 +989,10 @@ tgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
->  	/* We can fill 2k pixels per operation.  Notice blocks that fit
->  	   the width of the screen so that we can take advantage of this
->  	   and fill more than one line per write.  */
-> -	if (width = line_length)
-> -		width *= height, height = 1;
-> +	if (width = line_length) {
-> +		width *= height;
-> +		height = 1;
-> +	}
->  
->  	/* The write into the frame buffer must be aligned to 4 bytes,
->  	   but we are allowed to encode the offset within the word in
-> @@ -1171,8 +1173,10 @@ copyarea_8bpp(struct fb_info *info, u32 dx, u32 dy, u32 sx, u32 sy,
->  	   More than anything else, these control how we do copies.  */
->  	depos = dy * line_length + dx;
->  	sepos = sy * line_length + sx;
-> -	if (backward)
-> -		depos += width, sepos += width;
-> +	if (backward) {
-> +		depos += width;
-> +		sepos += width;
-> +	}
->  
->  	/* Next copy full words at a time.  */
->  	n32 = width / 32;
-> 
+diff --git a/drivers/video/fbdev/nvidia/nv_of.c b/drivers/video/fbdev/nvidia/nv_of.c
+index 5f3e5179c..d20b8779b 100644
+--- a/drivers/video/fbdev/nvidia/nv_of.c
++++ b/drivers/video/fbdev/nvidia/nv_of.c
+@@ -42,8 +42,7 @@ int nvidia_probe_of_connector(struct fb_info *info, int conn, u8 **out_edid)
+ 		const char *pname;
+ 		int len;
+ 
+-		for (dp = NULL;
+-		     (dp = of_get_next_child(parent, dp)) != NULL;) {
++		for_each_child_of_node(parent, dp) {
+ 			pname = of_get_property(dp, "name", NULL);
+ 			if (!pname)
+ 				continue;
+-- 
+2.23.0

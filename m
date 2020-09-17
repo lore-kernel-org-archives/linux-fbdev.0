@@ -1,76 +1,42 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Fri, 18 Sep 2020 12:43:46 +0000
-Subject: Re: [PATCH] fbcon: Remove the superfluous break
-Message-Id: <20200918124346.GZ438822@phenom.ffwll.local>
+From: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Date: Thu, 17 Sep 2020 11:56:45 +0000
+Subject: [PATCH v1] fbdev: aty: remove CONFIG_PM container
+Message-Id: <20200917115313.725622-1-vaibhavgupta40@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200917131515.147029-1-jingxiangfeng@huawei.com>
- <86015b42-1f87-9f0c-cb34-9d30e8da98a4@embeddedor.com>
- <5F6404B2.3080602@huawei.com>
-In-Reply-To: <5F6404B2.3080602@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jing Xiangfeng <jingxiangfeng@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, ndesaulniers@google.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, george.kennedy@oracle.com, gregkh@linuxfoundation.org, natechancellor@gmail.com, jirislaby@kernel.org, peda@axentia.se
+To: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <bjorn@helgaas.com>, Vaibhav Gupta <vaibhav.varodek@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>, Russell King <linux@armlinux.org.uk>, Andres Salomon <dilinger@queued.net>, Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, kernel test robot <lkp@intel.com>, Vaibhav Gupta <vaibhavgupta40@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-geode@lists.infradead.org, linux-kernel-mentees@lists.linuxfoundation.org, linux-arm-kernel@lists.infradead.org
 
-On Fri, Sep 18, 2020 at 08:52:02AM +0800, Jing Xiangfeng wrote:
-> 
-> 
-> On 2020/9/18 2:52, Gustavo A. R. Silva wrote:
-> > 
-> > 
-> > On 9/17/20 08:15, Jing Xiangfeng wrote:
-> > > Remove the superfuous break, as there is a 'return' before it.
-> > > 
-> > > Signed-off-by: Jing Xiangfeng <jingxiangfeng@huawei.com>
-> > 
-> > Reviewed-by: Gustavo A. R. Silva <gustavoars@kernel.org>
-> > 
-> > Also, the following Fixes tag should be included in the changelog text:
-> > 
-> > Fixes: bad07ff74c32 ("fbcon: smart blitter usage for scrolling")
-> 
-> OK, I'll send a v2 with this tag.
+The changes made in below mentioned commit removed CONFIG_PM containers
+from drivers/video/fbdev/aty/atyfb_base.c but not from
+drivers/video/fbdev/aty/atyfb.h for respective callbacks.
 
-Please also collect all the r-b tags you received so I can just apply
-everything.
--Daniel
+This resulted in error for implicit declaration for those callbacks.
 
-> 
-> > 
-> > Thanks
-> > --
-> > Gustavo
-> > 
-> > > ---
-> > >   drivers/video/fbdev/core/fbcon.c | 2 --
-> > >   1 file changed, 2 deletions(-)
-> > > 
-> > > diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> > > index 0b49b0f44edf..623359aadd1e 100644
-> > > --- a/drivers/video/fbdev/core/fbcon.c
-> > > +++ b/drivers/video/fbdev/core/fbcon.c
-> > > @@ -1727,7 +1727,6 @@ static bool fbcon_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
-> > >   				    vc->vc_video_erase_char,
-> > >   				    vc->vc_size_row * count);
-> > >   			return true;
-> > > -			break;
-> > > 
-> > >   		case SCROLL_WRAP_MOVE:
-> > >   			if (b - t - count > 3 * vc->vc_rows >> 2) {
-> > > @@ -1818,7 +1817,6 @@ static bool fbcon_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
-> > >   				    vc->vc_video_erase_char,
-> > >   				    vc->vc_size_row * count);
-> > >   			return true;
-> > > -			break;
-> > > 
-> > >   		case SCROLL_WRAP_MOVE:
-> > >   			if (b - t - count > 3 * vc->vc_rows >> 2) {
-> > > 
-> > .
-> > 
+Fixes: 348b2956d5e6 ("fbdev: aty: use generic power management")
 
+Signed-off-by: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Reported-by: kernel test robot <lkp@intel.com>
+---
+ drivers/video/fbdev/aty/atyfb.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/aty/atyfb.h b/drivers/video/fbdev/aty/atyfb.h
+index a7833bc98225..551372f9b9aa 100644
+--- a/drivers/video/fbdev/aty/atyfb.h
++++ b/drivers/video/fbdev/aty/atyfb.h
+@@ -287,8 +287,8 @@ static inline void aty_st_8(int regindex, u8 val, const struct atyfb_par *par)
+ #endif
+ }
+ 
+-#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
+-defined (CONFIG_FB_ATY_GENERIC_LCD) || defined (CONFIG_FB_ATY_BACKLIGHT)
++#if defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) || \
++defined (CONFIG_FB_ATY_BACKLIGHT)
+ extern void aty_st_lcd(int index, u32 val, const struct atyfb_par *par);
+ extern u32 aty_ld_lcd(int index, const struct atyfb_par *par);
+ #endif
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.28.0

@@ -1,34 +1,79 @@
-From: Blue Oak Mortgage and Loans <em@rusoil.net>
-Date: Mon, 21 Sep 2020 23:08:09 +0000
-Subject: Wir finanzieren Projekte und Unternehmen
-Message-Id: <2020026523.907101.1600729689731.JavaMail.zimbra@rusoil.net>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 18 Sep 2020 10:09:05 +0000
+Subject: [PATCH 2/3] fbdev: sbuslib: remove unused FBIOSCURSOR32 helper
+Message-Id: <20200918100926.1447563-2-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200918100812.1447443-1-arnd@arndb.de>
+In-Reply-To: <20200918100812.1447443-1-arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: "David S . Miller" <davem@davemloft.net>, Arnd Bergmann <arnd@arndb.de>, hch@lst.de, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
+No driver implements FBIOSCURSOR, so this function has no purpose
+and can be removed. Apparently it was added in linux-2.1.44 to handle
+compatibility for drivers/sbus/char/sunfb.c but lost its purpose when
+that driver got rewritten in linux-2.5.63.
 
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/sbuslib.c | 29 +----------------------------
+ 1 file changed, 1 insertion(+), 28 deletions(-)
 
-Dies ist ein Newsletter von Blue Oak Mortgage and Loans. Bitte melden Sie sich ab, wenn Sie keine E-Mail mehr von uns erhalten möchten.
-
-
-Eine kurze Einführung.
-
-Wir sind ein führendes Finanzierungsunternehmen in Europa. Wir finanzieren Startups / etablierte Unternehmen, finanzieren Großprojekte (Bau, Landwirtschaft, Immobilien und dergleichen) zu einem niedrigen Zinssatz von 2% pro Jahr.
-
-
-Darlehensverfahren
-
-1. Sie müssen das Online-Bewerbungsformular ausfüllen und eine ordnungsgemäß unterschriebene Kopie an uns zurücksenden.
-
-2. Möglicherweise müssen Sie Finanzdokumente als unterstützenden Nachweis für die Fähigkeit zur Rückzahlung von Krediten vorlegen.
-
-3. Wenn Ihr Darlehen genehmigt wurde, müssen Sie eine Versicherungsgarantie für die Darlehenssicherheit vorlegen. Wir empfehlen eine Versicherungsgesellschaft. Sie sind allein verantwortlich für die Zahlung und den Erwerb der Anleihe, die als Sicherheit dienen. Die Höhe der Anleihe hängt von Ihrem Darlehensbetrag ab. Die Versicherungsgesellschaft wird Sie durch den Prozess führen. (Für Großprojekte)
-
-4. Ihr Überweisungsprozess wird eingeleitet, sobald die Versicherungsanleihe überprüft wurde. Ihr Darlehensrückzahlungsplan wird im NC-Darlehensvertragsformular aufgeführt.
-
-Wenn die Bedingungen Sie beruhigen, können Sie uns über die WhatsApp-Nummer / E-Mail kontaktieren und auch unsere Website besuchen, um weitere Informationen zu erhalten. Wir freuen uns darauf, von Ihnen zu hören.
-
-WhatsApp: + 90-552-365-3483
-E-Mail: info@bluelmtg.net
+diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+index 01a7110e61a7..f728db9bcff8 100644
+--- a/drivers/video/fbdev/sbuslib.c
++++ b/drivers/video/fbdev/sbuslib.c
+@@ -214,32 +214,6 @@ static int fbiogetputcmap(struct fb_info *info, unsigned int cmd, unsigned long
+ 			(unsigned long)p);
+ }
+ 
+-static int fbiogscursor(struct fb_info *info, unsigned long arg)
+-{
+-	struct fbcursor __user *p = compat_alloc_user_space(sizeof(*p));
+-	struct fbcursor32 __user *argp =  (void __user *)arg;
+-	compat_uptr_t addr;
+-	int ret;
+-
+-	ret = copy_in_user(p, argp,
+-			      2 * sizeof (short) + 2 * sizeof(struct fbcurpos));
+-	ret |= copy_in_user(&p->size, &argp->size, sizeof(struct fbcurpos));
+-	ret |= copy_in_user(&p->cmap, &argp->cmap, 2 * sizeof(int));
+-	ret |= get_user(addr, &argp->cmap.red);
+-	ret |= put_user(compat_ptr(addr), &p->cmap.red);
+-	ret |= get_user(addr, &argp->cmap.green);
+-	ret |= put_user(compat_ptr(addr), &p->cmap.green);
+-	ret |= get_user(addr, &argp->cmap.blue);
+-	ret |= put_user(compat_ptr(addr), &p->cmap.blue);
+-	ret |= get_user(addr, &argp->mask);
+-	ret |= put_user(compat_ptr(addr), &p->mask);
+-	ret |= get_user(addr, &argp->image);
+-	ret |= put_user(compat_ptr(addr), &p->image);
+-	if (ret)
+-		return -EFAULT;
+-	return info->fbops->fb_ioctl(info, FBIOSCURSOR, (unsigned long)p);
+-}
+-
+ int sbusfb_compat_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ {
+ 	switch (cmd) {
+@@ -248,6 +222,7 @@ int sbusfb_compat_ioctl(struct fb_info *info, unsigned int cmd, unsigned long ar
+ 	case FBIOGATTR:
+ 	case FBIOSVIDEO:
+ 	case FBIOGVIDEO:
++	case FBIOSCURSOR32:
+ 	case FBIOGCURSOR32:	/* This is not implemented yet.
+ 				   Later it should be converted... */
+ 	case FBIOSCURPOS:
+@@ -258,8 +233,6 @@ int sbusfb_compat_ioctl(struct fb_info *info, unsigned int cmd, unsigned long ar
+ 		return fbiogetputcmap(info, cmd, arg);
+ 	case FBIOGETCMAP32:
+ 		return fbiogetputcmap(info, cmd, arg);
+-	case FBIOSCURSOR32:
+-		return fbiogscursor(info, arg);
+ 	default:
+ 		return -ENOIOCTLCMD;
+ 	}
+-- 
+2.27.0

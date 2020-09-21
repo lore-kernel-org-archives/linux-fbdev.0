@@ -1,7 +1,7 @@
 From: Qinglang Miao <miaoqinglang@huawei.com>
-Date: Mon, 21 Sep 2020 13:10:48 +0000
-Subject: [PATCH -next] omapdrm: panel: td028ttec1: simplify the return expression of td028ttec1_panel_connect
-Message-Id: <20200921131048.92571-1-miaoqinglang@huawei.com>
+Date: Mon, 21 Sep 2020 13:10:52 +0000
+Subject: [PATCH -next] omapfb: panel-sony-acx565akm: simplify the return expression of acx565akm_connect()
+Message-Id: <20200921131052.92707-1-miaoqinglang@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,14 +13,14 @@ Simplify the return expression.
 
 Signed-off-by: Qinglang Miao <miaoqinglang@huawei.com>
 ---
- .../fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c     | 7 +------
+ .../fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c     | 7 +------
  1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
-index 595ebd8bd..3939fe8d5 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
-@@ -159,16 +159,11 @@ static int td028ttec1_panel_connect(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
+index 1293515e4..8d8b5ff7d 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
+@@ -506,16 +506,11 @@ static int acx565akm_connect(struct omap_dss_device *dssdev)
  {
  	struct panel_drv_data *ddata = to_panel_data(dssdev);
  	struct omap_dss_device *in = ddata->in;
@@ -29,14 +29,14 @@ index 595ebd8bd..3939fe8d5 100644
  	if (omapdss_device_is_connected(dssdev))
  		return 0;
  
--	r = in->ops.dpi->connect(in, dssdev);
+-	r = in->ops.sdi->connect(in, dssdev);
 -	if (r)
 -		return r;
 -
 -	return 0;
-+	return in->ops.dpi->connect(in, dssdev);
++	return in->ops.sdi->connect(in, dssdev);
  }
  
- static void td028ttec1_panel_disconnect(struct omap_dss_device *dssdev)
+ static void acx565akm_disconnect(struct omap_dss_device *dssdev)
 -- 
 2.23.0

@@ -1,79 +1,37 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 18 Sep 2020 10:09:05 +0000
-Subject: [PATCH 2/3] fbdev: sbuslib: remove unused FBIOSCURSOR32 helper
-Message-Id: <20200918100926.1447563-2-arnd@arndb.de>
+From: Qinglang Miao <miaoqinglang@huawei.com>
+Date: Mon, 21 Sep 2020 13:11:12 +0000
+Subject: [PATCH -next] video: omapfb: simplify the return expression of hdmi_pll_enable
+Message-Id: <20200921131112.93411-1-miaoqinglang@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200918100812.1447443-1-arnd@arndb.de>
-In-Reply-To: <20200918100812.1447443-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: "David S . Miller" <davem@davemloft.net>, Arnd Bergmann <arnd@arndb.de>, hch@lst.de, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Qinglang Miao <miaoqinglang@huawei.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-No driver implements FBIOSCURSOR, so this function has no purpose
-and can be removed. Apparently it was added in linux-2.1.44 to handle
-compatibility for drivers/sbus/char/sunfb.c but lost its purpose when
-that driver got rewritten in linux-2.5.63.
+Simplify the return expression.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Qinglang Miao <miaoqinglang@huawei.com>
 ---
- drivers/video/fbdev/sbuslib.c | 29 +----------------------------
- 1 file changed, 1 insertion(+), 28 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
-index 01a7110e61a7..f728db9bcff8 100644
---- a/drivers/video/fbdev/sbuslib.c
-+++ b/drivers/video/fbdev/sbuslib.c
-@@ -214,32 +214,6 @@ static int fbiogetputcmap(struct fb_info *info, unsigned int cmd, unsigned long
- 			(unsigned long)p);
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
+index 4991be031..a36e92155 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
+@@ -104,11 +104,7 @@ static int hdmi_pll_enable(struct dss_pll *dsspll)
+ 
+ 	dss_ctrl_pll_enable(DSS_PLL_HDMI, true);
+ 
+-	r = hdmi_wp_set_pll_pwr(wp, HDMI_PLLPWRCMD_BOTHON_ALLCLKS);
+-	if (r)
+-		return r;
+-
+-	return 0;
++	return hdmi_wp_set_pll_pwr(wp, HDMI_PLLPWRCMD_BOTHON_ALLCLKS);
  }
  
--static int fbiogscursor(struct fb_info *info, unsigned long arg)
--{
--	struct fbcursor __user *p = compat_alloc_user_space(sizeof(*p));
--	struct fbcursor32 __user *argp =  (void __user *)arg;
--	compat_uptr_t addr;
--	int ret;
--
--	ret = copy_in_user(p, argp,
--			      2 * sizeof (short) + 2 * sizeof(struct fbcurpos));
--	ret |= copy_in_user(&p->size, &argp->size, sizeof(struct fbcurpos));
--	ret |= copy_in_user(&p->cmap, &argp->cmap, 2 * sizeof(int));
--	ret |= get_user(addr, &argp->cmap.red);
--	ret |= put_user(compat_ptr(addr), &p->cmap.red);
--	ret |= get_user(addr, &argp->cmap.green);
--	ret |= put_user(compat_ptr(addr), &p->cmap.green);
--	ret |= get_user(addr, &argp->cmap.blue);
--	ret |= put_user(compat_ptr(addr), &p->cmap.blue);
--	ret |= get_user(addr, &argp->mask);
--	ret |= put_user(compat_ptr(addr), &p->mask);
--	ret |= get_user(addr, &argp->image);
--	ret |= put_user(compat_ptr(addr), &p->image);
--	if (ret)
--		return -EFAULT;
--	return info->fbops->fb_ioctl(info, FBIOSCURSOR, (unsigned long)p);
--}
--
- int sbusfb_compat_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
- {
- 	switch (cmd) {
-@@ -248,6 +222,7 @@ int sbusfb_compat_ioctl(struct fb_info *info, unsigned int cmd, unsigned long ar
- 	case FBIOGATTR:
- 	case FBIOSVIDEO:
- 	case FBIOGVIDEO:
-+	case FBIOSCURSOR32:
- 	case FBIOGCURSOR32:	/* This is not implemented yet.
- 				   Later it should be converted... */
- 	case FBIOSCURPOS:
-@@ -258,8 +233,6 @@ int sbusfb_compat_ioctl(struct fb_info *info, unsigned int cmd, unsigned long ar
- 		return fbiogetputcmap(info, cmd, arg);
- 	case FBIOGETCMAP32:
- 		return fbiogetputcmap(info, cmd, arg);
--	case FBIOSCURSOR32:
--		return fbiogscursor(info, arg);
- 	default:
- 		return -ENOIOCTLCMD;
- 	}
+ static void hdmi_pll_disable(struct dss_pll *dsspll)
 -- 
-2.27.0
+2.23.0

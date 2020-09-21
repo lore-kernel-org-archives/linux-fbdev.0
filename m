@@ -1,90 +1,63 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 08 Sep 2020 11:37:02 +0000
-Subject: Re: [PATCH] video: fbdev: sis: fix null ptr dereference
-Message-Id: <2b8139d8-12c9-3685-9160-fc92ae08aac0@samsung.com>
+From: Qinglang Miao <miaoqinglang@huawei.com>
+Date: Mon, 21 Sep 2020 13:10:51 +0000
+Subject: [PATCH -next] omapfb: connector-hdmi: simplify the return expression of hdmic_connect
+Message-Id: <20200921131051.92661-1-miaoqinglang@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200805145226eucas1p1e0e6d9fa3c05f7e247365f0db17cbe38@eucas1p1.samsung.com>
- <20200805145208.17727-1-trix@redhat.com>
-In-Reply-To: <20200805145208.17727-1-trix@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: trix@redhat.com
-Cc: akpm@osdl.org, linux-fbdev@vger.kernel.org, thomas@winischhofer.net, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Qinglang Miao <miaoqinglang@huawei.com>, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-omap@vger.kernel.org
 
+Simplify the return expression.
 
-On 8/5/20 4:52 PM, trix@redhat.com wrote:
-> From: Tom Rix <trix@redhat.com>
-> 
-> Clang static analysis reports this representative error
-> 
-> init.c:2501:18: warning: Array access (from variable 'queuedata') results
->   in a null pointer dereference
->       templ |= ((queuedata[i] & 0xc0) << 3);
-> 
-> This is the problem block of code
-> 
->    if(ModeNo > 0x13) {
->       ...
->       if(SiS_Pr->ChipType = SIS_730) {
-> 	 queuedata = &FQBQData730[0];
->       } else {
-> 	 queuedata = &FQBQData[0];
->       }
->    } else {
-> 
->    }
-> 
-> queuedata is not set in the else block
-> 
-> Reviewing the old code, the arrays FQBQData730 and FQBQData were
-> used directly.
-> 
-> So hoist the setting of queuedata out of the if-else block.
-> 
-> Fixes: 544393fe584d ("[PATCH] sisfb update")
-> 
-> Signed-off-by: Tom Rix <trix@redhat.com>
+Signed-off-by: Qinglang Miao <miaoqinglang@huawei.com>
+---
+ drivers/gpio/gpio-cs5535.c                                 | 6 +-----
+ drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c | 7 +------
+ 2 files changed, 2 insertions(+), 11 deletions(-)
 
-Applied to drm-misc-next tree, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  drivers/video/fbdev/sis/init.c | 11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/sis/init.c b/drivers/video/fbdev/sis/init.c
-> index dfe3eb769638..fde27feae5d0 100644
-> --- a/drivers/video/fbdev/sis/init.c
-> +++ b/drivers/video/fbdev/sis/init.c
-> @@ -2428,6 +2428,11 @@ SiS_SetCRT1FIFO_630(struct SiS_Private *SiS_Pr, unsigned short ModeNo,
->  
->     i = 0;
->  
-> +	if (SiS_Pr->ChipType = SIS_730)
-> +		queuedata = &FQBQData730[0];
-> +	else
-> +		queuedata = &FQBQData[0];
-> +
->     if(ModeNo > 0x13) {
->  
->        /* Get VCLK  */
-> @@ -2445,12 +2450,6 @@ SiS_SetCRT1FIFO_630(struct SiS_Private *SiS_Pr, unsigned short ModeNo,
->        /* Get half colordepth */
->        colorth = colortharray[(SiS_Pr->SiS_ModeType - ModeEGA)];
->  
-> -      if(SiS_Pr->ChipType = SIS_730) {
-> -	 queuedata = &FQBQData730[0];
-> -      } else {
-> -	 queuedata = &FQBQData[0];
-> -      }
-> -
->        do {
->  	 templ = SiS_CalcDelay2(SiS_Pr, queuedata[i]) * VCLK * colorth;
->  
-> 
+diff --git a/drivers/gpio/gpio-cs5535.c b/drivers/gpio/gpio-cs5535.c
+index 53b24e3ae..57b9ddffd 100644
+--- a/drivers/gpio/gpio-cs5535.c
++++ b/drivers/gpio/gpio-cs5535.c
+@@ -345,12 +345,8 @@ static int cs5535_gpio_probe(struct platform_device *pdev)
+ 				mask_orig, mask);
+ 
+ 	/* finally, register with the generic GPIO API */
+-	err = devm_gpiochip_add_data(&pdev->dev, &cs5535_gpio_chip.chip,
++	return devm_gpiochip_add_data(&pdev->dev, &cs5535_gpio_chip.chip,
+ 				     &cs5535_gpio_chip);
+-	if (err)
+-		return err;
+-
+-	return 0;
+ }
+ 
+ static struct platform_driver cs5535_gpio_driver = {
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c b/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
+index 49551afbd..670b9c6eb 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
+@@ -50,18 +50,13 @@ static int hdmic_connect(struct omap_dss_device *dssdev)
+ {
+ 	struct panel_drv_data *ddata = to_panel_data(dssdev);
+ 	struct omap_dss_device *in = ddata->in;
+-	int r;
+ 
+ 	dev_dbg(ddata->dev, "connect\n");
+ 
+ 	if (omapdss_device_is_connected(dssdev))
+ 		return 0;
+ 
+-	r = in->ops.hdmi->connect(in, dssdev);
+-	if (r)
+-		return r;
+-
+-	return 0;
++	return in->ops.hdmi->connect(in, dssdev);
+ }
+ 
+ static void hdmic_disconnect(struct omap_dss_device *dssdev)
+-- 
+2.23.0

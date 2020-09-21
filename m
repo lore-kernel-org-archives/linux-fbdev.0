@@ -1,65 +1,34 @@
-From: Wang Qing <wangqing@vivo.com>
-Date: Tue, 22 Sep 2020 12:14:24 +0000
-Subject: [PATCH] video: use kobj_to_dev()
-Message-Id: <1600776867-24226-1-git-send-email-wangqing@vivo.com>
+From: Blue Oak Mortgage and Loans <em@rusoil.net>
+Date: Mon, 21 Sep 2020 23:08:09 +0000
+Subject: Wir finanzieren Projekte und Unternehmen
+Message-Id: <2020026523.907101.1600729689731.JavaMail.zimbra@rusoil.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: Wang Qing <wangqing@vivo.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
 
-Use kobj_to_dev() instead of container_of()
 
-Signed-off-by: Wang Qing <wangqing@vivo.com>
----
- drivers/video/fbdev/aty/radeon_base.c | 4 ++--
- drivers/video/fbdev/udlfb.c           | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index 3fe509c..878c39a
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -2200,7 +2200,7 @@ static ssize_t radeon_show_edid1(struct file *filp, struct kobject *kobj,
- 				 struct bin_attribute *bin_attr,
- 				 char *buf, loff_t off, size_t count)
- {
--	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct device *dev = kobj_to_dev(kobj);
- 	struct fb_info *info = dev_get_drvdata(dev);
-         struct radeonfb_info *rinfo = info->par;
- 
-@@ -2212,7 +2212,7 @@ static ssize_t radeon_show_edid2(struct file *filp, struct kobject *kobj,
- 				 struct bin_attribute *bin_attr,
- 				 char *buf, loff_t off, size_t count)
- {
--	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct device *dev = kobj_to_dev(kobj);
- 	struct fb_info *info = dev_get_drvdata(dev);
-         struct radeonfb_info *rinfo = info->par;
- 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index 5b014b4..f9b3c1c
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -1457,7 +1457,7 @@ static ssize_t edid_show(
- 			struct file *filp,
- 			struct kobject *kobj, struct bin_attribute *a,
- 			 char *buf, loff_t off, size_t count) {
--	struct device *fbdev = container_of(kobj, struct device, kobj);
-+	struct device *fbdev = kobj_to_dev(kobj);
- 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
- 	struct dlfb_data *dlfb = fb_info->par;
- 
-@@ -1479,7 +1479,7 @@ static ssize_t edid_store(
- 			struct file *filp,
- 			struct kobject *kobj, struct bin_attribute *a,
- 			char *src, loff_t src_off, size_t src_size) {
--	struct device *fbdev = container_of(kobj, struct device, kobj);
-+	struct device *fbdev = kobj_to_dev(kobj);
- 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
- 	struct dlfb_data *dlfb = fb_info->par;
- 	int ret;
--- 
-2.7.4
+Dies ist ein Newsletter von Blue Oak Mortgage and Loans. Bitte melden Sie sich ab, wenn Sie keine E-Mail mehr von uns erhalten möchten.
+
+
+Eine kurze Einführung.
+
+Wir sind ein führendes Finanzierungsunternehmen in Europa. Wir finanzieren Startups / etablierte Unternehmen, finanzieren Großprojekte (Bau, Landwirtschaft, Immobilien und dergleichen) zu einem niedrigen Zinssatz von 2% pro Jahr.
+
+
+Darlehensverfahren
+
+1. Sie müssen das Online-Bewerbungsformular ausfüllen und eine ordnungsgemäß unterschriebene Kopie an uns zurücksenden.
+
+2. Möglicherweise müssen Sie Finanzdokumente als unterstützenden Nachweis für die Fähigkeit zur Rückzahlung von Krediten vorlegen.
+
+3. Wenn Ihr Darlehen genehmigt wurde, müssen Sie eine Versicherungsgarantie für die Darlehenssicherheit vorlegen. Wir empfehlen eine Versicherungsgesellschaft. Sie sind allein verantwortlich für die Zahlung und den Erwerb der Anleihe, die als Sicherheit dienen. Die Höhe der Anleihe hängt von Ihrem Darlehensbetrag ab. Die Versicherungsgesellschaft wird Sie durch den Prozess führen. (Für Großprojekte)
+
+4. Ihr Überweisungsprozess wird eingeleitet, sobald die Versicherungsanleihe überprüft wurde. Ihr Darlehensrückzahlungsplan wird im NC-Darlehensvertragsformular aufgeführt.
+
+Wenn die Bedingungen Sie beruhigen, können Sie uns über die WhatsApp-Nummer / E-Mail kontaktieren und auch unsere Website besuchen, um weitere Informationen zu erhalten. Wir freuen uns darauf, von Ihnen zu hören.
+
+WhatsApp: + 90-552-365-3483
+E-Mail: info@bluelmtg.net

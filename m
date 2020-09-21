@@ -1,21 +1,42 @@
-From: "Mrs. Susan Carter" <test@mail.bless.gov.my>
-Date: Wed, 30 Sep 2020 10:46:09 +0000
-Subject: Good day,
-Message-Id: <20200930104549.3992868525BE@mail.bless.gov.my>
+From: Qinglang Miao <miaoqinglang@huawei.com>
+Date: Mon, 21 Sep 2020 13:10:48 +0000
+Subject: [PATCH -next] omapdrm: panel: td028ttec1: simplify the return expression of td028ttec1_panel_connect
+Message-Id: <20200921131048.92571-1-miaoqinglang@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Qinglang Miao <miaoqinglang@huawei.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Good day,
+Simplify the return expression.
 
-My name are Mrs. Susan Carter an America but a United Kingdom Citizen, I???m 57 years old, widow, married to late Eng Martins Carter who is a British, who until his death worked with Dutch Filtration for Twenty-Six years before he died in the year 2015 after a brief illness that lasted only five days.
+Signed-off-by: Qinglang Miao <miaoqinglang@huawei.com>
+---
+ .../fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c     | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-When my late husband was alive he deposited the sum of US$50 Million in bank USA through his Financial Lawyer in the United State of America and we all agreed as a couple to donate all of that to charity. Following my health (Lung Cancer), my Doctor told me that I may not live longer than required due to my health condition.
-
-Looking forward to seeing someone who can use the money for charitable work.
-
-Best Regards
-Yours sincerely
-Mrs. Susan Carter
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
+index 595ebd8bd..3939fe8d5 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
+@@ -159,16 +159,11 @@ static int td028ttec1_panel_connect(struct omap_dss_device *dssdev)
+ {
+ 	struct panel_drv_data *ddata = to_panel_data(dssdev);
+ 	struct omap_dss_device *in = ddata->in;
+-	int r;
+ 
+ 	if (omapdss_device_is_connected(dssdev))
+ 		return 0;
+ 
+-	r = in->ops.dpi->connect(in, dssdev);
+-	if (r)
+-		return r;
+-
+-	return 0;
++	return in->ops.dpi->connect(in, dssdev);
+ }
+ 
+ static void td028ttec1_panel_disconnect(struct omap_dss_device *dssdev)
+-- 
+2.23.0

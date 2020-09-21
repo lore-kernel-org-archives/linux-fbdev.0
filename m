@@ -1,78 +1,42 @@
-From: Peilin Ye <yepeilin.cs@gmail.com>
-Date: Sun, 27 Sep 2020 09:27:01 +0000
-Subject: Re: KASAN: use-after-free Read in bit_putcs
-Message-Id: <20200927092701.GA1037755@PWN>
+From: Liu Shixin <liushixin2@huawei.com>
+Date: Mon, 21 Sep 2020 08:24:43 +0000
+Subject: [PATCH -next] omapfb: simplify the return expression of panel_dpi_connect
+Message-Id: <20200921082443.2591721-1-liushixin2@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <000000000000226d3f05b02dd607@google.com>
- <bbcef674-4ac6-c933-b55d-8961ada97f4c@i-love.sakura.ne.jp>
- <47907f77-b14b-b433-45c6-a315193f0c1a@i-love.sakura.ne.jp>
- <494395bc-a7dd-fdb1-8196-a236a266ef54@i-love.sakura.ne.jp>
-In-Reply-To: <494395bc-a7dd-fdb1-8196-a236a266ef54@i-love.sakura.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: syzbot <syzbot+b308f5fd049fbbc6e74f@syzkaller.appspotmail.com>, linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, deller@gmx.de, syzkaller-bugs@googlegroups.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Linus Torvalds <torvalds@linux-foundation.org>, gregkh@linuxfoundation.org, jirislaby@kernel.org, Peilin Ye <yepeilin.cs@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Liu Shixin <liushixin2@huawei.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-T24gU3VuLCBTZXAgMjcsIDIwMjAgYXQgMDU6Mjg6MTJQTSArMDkwMCwgVGV0c3VvIEhhbmRhIHdy
-b3RlOgo+IFdlbGwsIHZ0X2lvX2lvY3RsKFBJT19GT05UKSBpbml0aWFsaXplcyAic3RydWN0IGNv
-bnNvbGVfZm9udF9vcCBvcDsiIHdpdGgKPiAKPiAgIG9wLndpZHRoID0gODsKPiAgIG9wLmhlaWdo
-dCA9IDA7Cj4gICBvcC5jaGFyY291bnQgPSAyNTY7Cj4gCj4gYW5kIGNhbGxzIGNvbl9mb250X3Nl
-dCgpIGZyb20gY29uX2ZvbnRfb3AoKS4gQnV0IHRoZSAiLyogTmVlZCB0byBndWVzcyBmb250IGhl
-aWdodCBbY29tcGF0XSAqLyIKPiBjaHVuayBpbiBjb25fZm9udF9zZXQoKSBndWVzc2VzIGZvbnQn
-cyBoZWlnaHQgZHVlIHRvIGJlaW5nIGluaXRpYWxpemVkIHdpdGggb3AuaGVpZ2h0ID0gMC4KPiBU
-aGVuLCBjb25fZm9udF9zZXQoKSBjYWxscyBmYmNvbl9zZXRfZm9udCgpIHZpYSB2Yy0+dmNfc3ct
-PmNvbl9mb250X3NldCgpLCBhbmQgZmJjb25fc2V0X2ZvbnQoKQo+IGFsbG9jYXRlcyBtaW5pbWFs
-IGFtb3VudCBvZiBtZW1vcnkgZm9yIGZvbnQgZGF0YSBiYXNlZCBvbiBmb250J3MgaGVpZ2h0IGNh
-bGNsbGF0ZWQgYnkgY29uX2ZvbnRfc2V0KCkuCj4gCj4gVGhlcmVmb3JlLCBhbnkgYXR0ZW1wdCB0
-byBjaGFuZ2UgZm9udCdzIGhlaWdodCAobGlrZSB2dF9yZXNpemV4KCkpIGxhcmdlciB0aGFuIGZv
-bnQncyBoZWlnaHQKPiBjYWxjdWxhdGVkIGJ5IGNvbl9mb250X3NldCgpIGNhbiBjYXVzZSBPT0Ig
-cmVhZCBvZiBtZW1vcnkgYmxvY2sgZm9yIGZvbnQgZGF0YS4gSWYgd2UgYWxsb2NhdGUKPiBtYXhp
-bWFsIGFtb3VudCBvZiBtZW1vcnkgZm9yIGFueSBmb250LCBPT0IgcmVhZCBvZiBtZW1vcnkgYmxv
-Y2sgZm9yIGZvbnQgZGF0YSBzaG91bGQgbm90IGhhcHBlbi4KPiAKPiAtLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCj4gCj4gc3RhdGljIGNoYXIgZm9udGRhdGFbODE5Ml0g
-PSB7IDIgfTsKPiAKPiBbICAyMjcuMDY1MzY5XSBiaXRfcHV0Y3M6IHdpZHRoPTEgY2VsbHNpemU9
-MSBjb3VudIAgbWF4Y250gTkyIHNjYW5fYWxpZ249MCBidWZfYWxpZ249MCBpbWFnZS5oZWlnaHQ9
-MQo+IFsgIDIyNy4wNjYyNTRdIGJpdF9wdXRjczogd2lkdGg9MSBjZWxsc2l6ZT0xIGNvdW50gCBt
-YXhjbnSBOTIgc2Nhbl9hbGlnbj0wIGJ1Zl9hbGlnbj0wIGltYWdlLmhlaWdodD0xCj4gWyAgMjI3
-LjA2NzY0Ml0gdmP/ZmY4ODgwZDY5YjQwMDAgdi52X3Jvd3M9MCB2LnZfY29scz0wIHYudl92bGlu
-PTEgdi52X2NsaW49OSB2LnZfdmNvbD0wIHYudl9jY29sPTAgcmV0PTAKPiBbICAyMjcuMDY3Njk5
-XSB2Y3D/ZmY4ODgwZDY5YjQwMDAgYmVmb3JlOiAtPnZjX3Jvd3NIMCAtPnZjX2NvbHOAIC0+dmNf
-c2Nhbl9saW5lcz0xIHNhdmVfc2Nhbl9saW5lc0AwIC0+dmNfZm9udC5oZWlnaHQ9OSBzYXZlX2Zv
-bnRfaGVpZ2h0PTEKPiBbICAyMjcuMDY3Nzc0XSB2Y3D/ZmY4ODgwZDY5YjQwMDAgYWZ0ZXI6IC0+
-dmNfcm93c0gwIC0+dmNfY29sc4AgLT52Y19zY2FuX2xpbmVzPTEgc2F2ZV9zY2FuX2xpbmVzQDAg
-LT52Y19mb250LmhlaWdodD05IHNhdmVfZm9udF9oZWlnaHQ9MSByZXQ9MAo+IFsgIDIyNy4wNjc4
-MzFdIHZjcP9mZjg4ODBjYWM0YjAwMCBiZWZvcmU6IC0+dmNfcm93czAgLT52Y19jb2xzgCAtPnZj
-X3NjYW5fbGluZXM9MSBzYXZlX3NjYW5fbGluZXM9MCAtPnZjX2ZvbnQuaGVpZ2h0PTkgc2F2ZV9m
-b250X2hlaWdodBYKPiBbICAyMjcuMDY3ODkxXSB2Y3D/ZmY4ODgwY2FjNGIwMDAgYWZ0ZXI6IC0+
-dmNfcm93czAgLT52Y19jb2xzgCAtPnZjX3NjYW5fbGluZXM9MSBzYXZlX3NjYW5fbGluZXM9MCAt
-PnZjX2ZvbnQuaGVpZ2h0PTkgc2F2ZV9mb250X2hlaWdodBYgcmV0PTAKPiBbICAyMjcuMDY3OTQ3
-XSB2Y3D/ZmY4ODgwYzYxODAwMDAgYmVmb3JlOiAtPnZjX3Jvd3MwIC0+dmNfY29sc4AgLT52Y19z
-Y2FuX2xpbmVzPTEgc2F2ZV9zY2FuX2xpbmVzPTAgLT52Y19mb250LmhlaWdodD05IHNhdmVfZm9u
-dF9oZWlnaHQWCj4gWyAgMjI3LjA2ODAwN10gdmNw/2ZmODg4MGM2MTgwMDAwIGFmdGVyOiAtPnZj
-X3Jvd3MwIC0+dmNfY29sc4AgLT52Y19zY2FuX2xpbmVzPTEgc2F2ZV9zY2FuX2xpbmVzPTAgLT52
-Y19mb250LmhlaWdodD05IHNhdmVfZm9udF9oZWlnaHQWIHJldD0wCj4gWyAgMjI3LjA2ODA2M10g
-dmNw/2ZmODg4MGQ2Yjg0MDAwIGJlZm9yZTogLT52Y19yb3dzMCAtPnZjX2NvbHOAIC0+dmNfc2Nh
-bl9saW5lcz0xIHNhdmVfc2Nhbl9saW5lcz0wIC0+dmNfZm9udC5oZWlnaHQ9OSBzYXZlX2ZvbnRf
-aGVpZ2h0Fgo+IFsgIDIyNy4wNjgxMjNdIHZjcP9mZjg4ODBkNmI4NDAwMCBhZnRlcjogLT52Y19y
-b3dzMCAtPnZjX2NvbHOAIC0+dmNfc2Nhbl9saW5lcz0xIHNhdmVfc2Nhbl9saW5lcz0wIC0+dmNf
-Zm9udC5oZWlnaHQ9OSBzYXZlX2ZvbnRfaGVpZ2h0FiByZXQ9MAo+IFsgIDIyNy4wNjgxNzldIHZj
-cP9mZjg4ODBjYThjMDAwMCBiZWZvcmU6IC0+dmNfcm93czAgLT52Y19jb2xzgCAtPnZjX3NjYW5f
-bGluZXM9MSBzYXZlX3NjYW5fbGluZXM9MCAtPnZjX2ZvbnQuaGVpZ2h0PTkgc2F2ZV9mb250X2hl
-aWdodBYKPiBbICAyMjcuMDY4MjU1XSB2Y3D/ZmY4ODgwY2E4YzAwMDAgYWZ0ZXI6IC0+dmNfcm93
-czAgLT52Y19jb2xzgCAtPnZjX3NjYW5fbGluZXM9MSBzYXZlX3NjYW5fbGluZXM9MCAtPnZjX2Zv
-bnQuaGVpZ2h0PTkgc2F2ZV9mb250X2hlaWdodBYgcmV0PTAKPiBbICAyMjcuMDY4NDU1XSB2Y3D/
-ZmY4ODgwY2JkNWQwMDAgYmVmb3JlOiAtPnZjX3Jvd3MwIC0+dmNfY29sc4AgLT52Y19zY2FuX2xp
-bmVzPTEgc2F2ZV9zY2FuX2xpbmVzPTAgLT52Y19mb250LmhlaWdodD05IHNhdmVfZm9udF9oZWln
-aHQWCj4gWyAgMjI3LjA2ODUxNV0gdmNw/2ZmODg4MGNiZDVkMDAwIGFmdGVyOiAtPnZjX3Jvd3Mw
-IC0+dmNfY29sc4AgLT52Y19zY2FuX2xpbmVzPTEgc2F2ZV9zY2FuX2xpbmVzPTAgLT52Y19mb250
-LmhlaWdodD05IHNhdmVfZm9udF9oZWlnaHQWIHJldD0wCj4gWyAgMjI3LjA4NDcwOV0gPT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4gWyAgMjI3LjA4NDcyOV0gQlVHOiBLQVNBTjog
-c2xhYi1vdXQtb2YtYm91bmRzIGluIHNvZnRfY3Vyc29yKzB4MzRlLzB4NGEwCj4gWyAgMjI3LjA4
-NDc0OF0gUmVhZCBvZiBzaXplIDkgYXQgYWRkciBmZmZmODg4MGM5OGQ1OTMwIGJ5IHRhc2sgYS5v
-dXQvMTY2MgoKVmVyeSBpbnRlcmVzdGluZywgSSByZW1lbWJlciBzZWVpbmcgdGhpcyBvbiB0aGUg
-c3l6Ym90IGRhc2hib2FyZC4uLgoKWWVzLCBJIGd1ZXNzIGl0IGlzIHRoaXMgb25lOgoJS0FTQU46
-IHNsYWItb3V0LW9mLWJvdW5kcyBSZWFkIGluIHNvZnRfY3Vyc29yCglodHRwczovL3N5emthbGxl
-ci5hcHBzcG90LmNvbS9idWc/aWRrODM1NWQyN2IyYjk0ZmI1Y2VkZjQ2NTVlM2E1OTE2MmQ5ZTQ4
-ZTMKClRoZXJlIGlzIGEgYDB4NTYwYXVsYCBpb2N0bCgpIGluIHRoZSByZXByb2R1Y2VyLCB3aGlj
-aCBpcyBgVlRfUkVTSVpFWGAuCgpUaGFuayB5b3UsClBlaWxpbiBZZQo=
+Simplify the return expression.
+
+Signed-off-by: Liu Shixin <liushixin2@huawei.com>
+---
+ drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c
+index 37c9f5bfaefe..ff3d1e8e1e7b 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c
+@@ -37,16 +37,11 @@ static int panel_dpi_connect(struct omap_dss_device *dssdev)
+ {
+ 	struct panel_drv_data *ddata = to_panel_data(dssdev);
+ 	struct omap_dss_device *in = ddata->in;
+-	int r;
+ 
+ 	if (omapdss_device_is_connected(dssdev))
+ 		return 0;
+ 
+-	r = in->ops.dpi->connect(in, dssdev);
+-	if (r)
+-		return r;
+-
+-	return 0;
++	return in->ops.dpi->connect(in, dssdev);
+ }
+ 
+ static void panel_dpi_disconnect(struct omap_dss_device *dssdev)
+-- 
+2.25.1

@@ -1,52 +1,81 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 29 Sep 2020 11:00:47 +0000
-Subject: [PATCH 4.4 80/85] tty: vt, consw->con_scrolldelta cleanup
-Message-Id: <20200929105932.191358795@linuxfoundation.org>
+From: Peilin Ye <yepeilin.cs@gmail.com>
+Date: Thu, 24 Sep 2020 13:43:48 +0000
+Subject: [PATCH 3/3] fbcon: Fix global-out-of-bounds read in fbcon_get_font()
+Message-Id: <b34544687a1a09d6de630659eb7a773f4953238b.1600953813.git.yepeilin.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20200929105928.198942536@linuxfoundation.org>
-In-Reply-To: <20200929105928.198942536@linuxfoundation.org>
+References: <cover.1600953813.git.yepeilin.cs@gmail.com>
+ <7fb8bc9b0abc676ada6b7ac0e0bd443499357267.1600953813.git.yepeilin.cs@gmail.com>
+ <ef18af00c35fb3cc826048a5f70924ed6ddce95b.1600953813.git.yepeilin.cs@gmail.com>
+In-Reply-To: <ef18af00c35fb3cc826048a5f70924ed6ddce95b.1600953813.git.yepeilin.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, Thomas Winischhofer <thomas@winischhofer.net>, linux-usb@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org, Ajay Kaher <akaher@vmware.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, syzkaller-bugs@googlegroups.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Jiri Slaby <jirislaby@kernel.org>, Peilin Ye <yepeilin.cs@gmail.com>, linux-kernel-mentees@lists.linuxfoundation.org
 
-From: Jiri Slaby <jslaby@suse.cz>
+fbcon_get_font() is reading out-of-bounds. A malicious user may resize
+`vc->vc_font.height` to a large value, causing fbcon_get_font() to
+read out of `fontdata`.
 
-commit 97293de977365fe672daec2523e66ef457104921 upstream.
+fbcon_get_font() handles both built-in and user-provided fonts.
+Fortunately, recently we have added FONT_EXTRA_WORDS support for built-in
+fonts, so fix it by adding range checks using FNTSIZE(). 
 
-* allow NULL consw->con_scrolldelta (some consoles define an empty
-  hook)
-* => remove empty hooks now
-* return value of consw->con_scrolldelta is never checked => make the
-  function void
-* document consw->con_scrolldelta a bit
+This patch depends on patch "fbdev, newport_con: Move FONT_EXTRA_WORDS
+macros into linux/font.h", and patch "Fonts: Support FONT_EXTRA_WORDS
+macros for built-in fonts".
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: linux-usb@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org
-Cc: Ajay Kaher <akaher@vmware.com>
-[ for 4.4.y backport, only do the first change above, to prevent
-.con_scrolldelta from being called if not present - gregkh]
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: stable@vger.kernel.org
+Reported-and-tested-by: syzbot+29d4ed7f3bdedf2aa2fd@syzkaller.appspotmail.com
+Link: https://syzkaller.appspot.com/bug?idb8be45afea11888776f897895aef9ad1c3ecfd
+Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
 ---
- drivers/tty/vt/vt.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/core/fbcon.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -2484,7 +2484,7 @@ static void console_callback(struct work
- 	if (scrollback_delta) {
- 		struct vc_data *vc = vc_cons[fg_console].d;
- 		clear_selection();
--		if (vc->vc_mode = KD_TEXT)
-+		if (vc->vc_mode = KD_TEXT && vc->vc_sw->con_scrolldelta)
- 			vc->vc_sw->con_scrolldelta(vc, scrollback_delta);
- 		scrollback_delta = 0;
- 	}
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 66167830fefd..bda24c64e646 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2492,6 +2492,9 @@ static int fbcon_get_font(struct vc_data *vc, struct console_font *font)
+ 
+ 	if (font->width <= 8) {
+ 		j = vc->vc_font.height;
++		if (font->charcount * j > FNTSIZE(fontdata))
++			return -EINVAL;
++
+ 		for (i = 0; i < font->charcount; i++) {
+ 			memcpy(data, fontdata, j);
+ 			memset(data + j, 0, 32 - j);
+@@ -2500,6 +2503,9 @@ static int fbcon_get_font(struct vc_data *vc, struct console_font *font)
+ 		}
+ 	} else if (font->width <= 16) {
+ 		j = vc->vc_font.height * 2;
++		if (font->charcount * j > FNTSIZE(fontdata))
++			return -EINVAL;
++
+ 		for (i = 0; i < font->charcount; i++) {
+ 			memcpy(data, fontdata, j);
+ 			memset(data + j, 0, 64 - j);
+@@ -2507,6 +2513,9 @@ static int fbcon_get_font(struct vc_data *vc, struct console_font *font)
+ 			fontdata += j;
+ 		}
+ 	} else if (font->width <= 24) {
++		if (font->charcount * (vc->vc_font.height * sizeof(u32)) > FNTSIZE(fontdata))
++			return -EINVAL;
++
+ 		for (i = 0; i < font->charcount; i++) {
+ 			for (j = 0; j < vc->vc_font.height; j++) {
+ 				*data++ = fontdata[0];
+@@ -2519,6 +2528,9 @@ static int fbcon_get_font(struct vc_data *vc, struct console_font *font)
+ 		}
+ 	} else {
+ 		j = vc->vc_font.height * 4;
++		if (font->charcount * j > FNTSIZE(fontdata))
++			return -EINVAL;
++
+ 		for (i = 0; i < font->charcount; i++) {
+ 			memcpy(data, fontdata, j);
+ 			memset(data + j, 0, 128 - j);
+-- 
+2.25.1

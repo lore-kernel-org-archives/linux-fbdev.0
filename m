@@ -1,41 +1,116 @@
-From: Bhaskar Chowdhury <unixbhaskar@gmail.com>
-Date: Wed, 16 Sep 2020 23:41:00 +0000
-Subject: [PATCH v3] docs: fb: Remove vesafb scrollback boot option
-Message-Id: <20200916232900.23502-1-unixbhaskar@gmail.com>
+From: Peilin Ye <yepeilin.cs@gmail.com>
+Date: Thu, 24 Sep 2020 13:40:53 +0000
+Subject: [PATCH 1/3] fbdev, newport_con: Move FONT_EXTRA_WORDS macros into linux/font.h
+Message-Id: <7fb8bc9b0abc676ada6b7ac0e0bd443499357267.1600953813.git.yepeilin.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1600953813.git.yepeilin.cs@gmail.com>
+In-Reply-To: <cover.1600953813.git.yepeilin.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: corbet@lwn.net, rdunlap@infradead.org, gregkh@linuxfoundation.org, daniel@ffwll.ch, yuanmingbuaa@gmail.com, w@1wt.eu, nopitydays@gmail.com, zhangyunhai@nsfocus.com, luto@amacapital.net, torvalds@linux-foundation.org, Bhaskar Chowdhury <unixbhaskar@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, syzkaller-bugs@googlegroups.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Jiri Slaby <jirislaby@kernel.org>, Peilin Ye <yepeilin.cs@gmail.com>, linux-kernel-mentees@lists.linuxfoundation.org
 
+drivers/video/console/newport_con.c is borrowing FONT_EXTRA_WORDS macros
+from drivers/video/fbdev/core/fbcon.h. To keep things simple, move all
+definitions into <linux/font.h>.
 
-This patch remove the reference of scrollback from this file. This is 
-related to these below commits.
+Since newport_con now uses four extra words, initialize the fourth word in
+newport_set_font() properly.
 
-Commit 973c096f6a85(vgacon: remove software scrollback support)
-Commit 50145474f6ef(fbcon: remove soft scrollback code)
-
-Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+Cc: stable@vger.kernel.org
+Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
 ---
-Correcting the previous versions errors. Proper changelog and subject text.
-Trying to incorporate Willy's and Greg's suggestions.
+ drivers/video/console/newport_con.c     | 7 +------
+ drivers/video/fbdev/core/fbcon.h        | 7 -------
+ drivers/video/fbdev/core/fbcon_rotate.c | 1 +
+ drivers/video/fbdev/core/tileblit.c     | 1 +
+ include/linux/font.h                    | 8 ++++++++
+ 5 files changed, 11 insertions(+), 13 deletions(-)
 
- Documentation/fb/vesafb.rst | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/Documentation/fb/vesafb.rst b/Documentation/fb/vesafb.rst
-index 6821c87b7893..f890a4f5623b 100644
---- a/Documentation/fb/vesafb.rst
-+++ b/Documentation/fb/vesafb.rst
-@@ -135,8 +135,6 @@ ypan	  enable display panning using the VESA protected mode
+diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
+index 72f146d047d9..cd51b7a17a21 100644
+--- a/drivers/video/console/newport_con.c
++++ b/drivers/video/console/newport_con.c
+@@ -35,12 +35,6 @@
  
-                 * scrolling (fullscreen) is fast, because there is
- 		  no need to copy around data.
--		* You'll get scrollback (the Shift-PgUp thing),
--		  the video memory can be used as scrollback buffer
+ #define FONT_DATA ((unsigned char *)font_vga_8x16.data)
  
-           kontra:
+-/* borrowed from fbcon.c */
+-#define REFCOUNT(fd)	(((int *)(fd))[-1])
+-#define FNTSIZE(fd)	(((int *)(fd))[-2])
+-#define FNTCHARCNT(fd)	(((int *)(fd))[-3])
+-#define FONT_EXTRA_WORDS 3
+-
+ static unsigned char *font_data[MAX_NR_CONSOLES];
  
+ static struct newport_regs *npregs;
+@@ -522,6 +516,7 @@ static int newport_set_font(int unit, struct console_font *op)
+ 	FNTSIZE(new_data) = size;
+ 	FNTCHARCNT(new_data) = op->charcount;
+ 	REFCOUNT(new_data) = 0;	/* usage counter */
++	FNTSUM(new_data) = 0;
+ 
+ 	p = new_data;
+ 	for (i = 0; i < op->charcount; i++) {
+diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
+index 20dea853765f..5ee153ba977e 100644
+--- a/drivers/video/fbdev/core/fbcon.h
++++ b/drivers/video/fbdev/core/fbcon.h
+@@ -152,13 +152,6 @@ static inline int attr_col_ec(int shift, struct vc_data *vc,
+ #define attr_bgcol_ec(bgshift, vc, info) attr_col_ec(bgshift, vc, info, 0)
+ #define attr_fgcol_ec(fgshift, vc, info) attr_col_ec(fgshift, vc, info, 1)
+ 
+-/* Font */
+-#define REFCOUNT(fd)	(((int *)(fd))[-1])
+-#define FNTSIZE(fd)	(((int *)(fd))[-2])
+-#define FNTCHARCNT(fd)	(((int *)(fd))[-3])
+-#define FNTSUM(fd)	(((int *)(fd))[-4])
+-#define FONT_EXTRA_WORDS 4
+-
+     /*
+      *  Scroll Method
+      */
+diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
+index c0d445294aa7..ac72d4f85f7d 100644
+--- a/drivers/video/fbdev/core/fbcon_rotate.c
++++ b/drivers/video/fbdev/core/fbcon_rotate.c
+@@ -14,6 +14,7 @@
+ #include <linux/fb.h>
+ #include <linux/vt_kern.h>
+ #include <linux/console.h>
++#include <linux/font.h>
+ #include <asm/types.h>
+ #include "fbcon.h"
+ #include "fbcon_rotate.h"
+diff --git a/drivers/video/fbdev/core/tileblit.c b/drivers/video/fbdev/core/tileblit.c
+index 1dfaff0881fb..257e94feeeb6 100644
+--- a/drivers/video/fbdev/core/tileblit.c
++++ b/drivers/video/fbdev/core/tileblit.c
+@@ -13,6 +13,7 @@
+ #include <linux/fb.h>
+ #include <linux/vt_kern.h>
+ #include <linux/console.h>
++#include <linux/font.h>
+ #include <asm/types.h>
+ #include "fbcon.h"
+ 
+diff --git a/include/linux/font.h b/include/linux/font.h
+index 51b91c8b69d5..40ed008d7dad 100644
+--- a/include/linux/font.h
++++ b/include/linux/font.h
+@@ -59,4 +59,12 @@ extern const struct font_desc *get_default_font(int xres, int yres,
+ /* Max. length for the name of a predefined font */
+ #define MAX_FONT_NAME	32
+ 
++/* Extra word getters */
++#define REFCOUNT(fd)	(((int *)(fd))[-1])
++#define FNTSIZE(fd)	(((int *)(fd))[-2])
++#define FNTCHARCNT(fd)	(((int *)(fd))[-3])
++#define FNTSUM(fd)	(((int *)(fd))[-4])
++
++#define FONT_EXTRA_WORDS 4
++
+ #endif /* _VIDEO_FONT_H */
 -- 
-2.28.0
+2.25.1

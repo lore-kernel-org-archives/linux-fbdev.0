@@ -1,74 +1,92 @@
-From: Peilin Ye <yepeilin.cs@gmail.com>
-Date: Thu, 24 Sep 2020 16:59:19 +0000
+From: Jiri Slaby <jirislaby@kernel.org>
+Date: Fri, 25 Sep 2020 06:46:04 +0000
 Subject: Re: [PATCH 0/3] Prevent out-of-bounds access for built-in font data buffers
-Message-Id: <20200924165919.GA880812@PWN>
+Message-Id: <3f754d60-1d35-899c-4418-147d922e29af@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <0000000000006b9e8d059952095e@google.com>
  <cover.1600953813.git.yepeilin.cs@gmail.com>
- <20200924140937.GA749208@kroah.com>
- <394733ab6fae47488d078cb22f22a85b@AcuMS.aculab.com>
- <20200924153035.GA879703@PWN> <20200924154516.GL4282@kadam>
-In-Reply-To: <20200924154516.GL4282@kadam>
+In-Reply-To: <cover.1600953813.git.yepeilin.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, syzkaller-bugs@googlegroups.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, David Laight <David.Laight@aculab.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, linux-kernel-mentees@lists.linuxfoundation.org
+To: Peilin Ye <yepeilin.cs@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, syzkaller-bugs@googlegroups.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel-mentees@lists.linuxfoundation.org
 
-On Thu, Sep 24, 2020 at 06:45:16PM +0300, Dan Carpenter wrote:
-> Smatch has a tool to show where struct members are set.
+On 24. 09. 20, 15:38, Peilin Ye wrote:
+> Hi all,
 > 
-> `~/smatch/smatch_data/db/smdb.py where console_font height`
+> syzbot has reported [1] a global out-of-bounds read issue in
+> fbcon_get_font(). A malicious user may resize `vc_font.height` to a large
+> value in vt_ioctl(), causing fbcon_get_font() to overflow our built-in
+> font data buffers, declared in lib/fonts/font_*.c:
 > 
-> It's not perfect and this output comes from allmodconfig on yesterday's
-> linux-next.
+> (e.g. lib/fonts/font_8x8.c)
+> #define FONTDATAMAX 2048
 > 
-> regards,
-> dan carpenter
+> static const unsigned char fontdata_8x8[FONTDATAMAX] = {
+> 
+>         /* 0 0x00 '^@' */
+>         0x00, /* 00000000 */
+>         0x00, /* 00000000 */
+>         0x00, /* 00000000 */
+>         0x00, /* 00000000 */
+>         0x00, /* 00000000 */
+>         0x00, /* 00000000 */
+>         0x00, /* 00000000 */
+>         0x00, /* 00000000 */
+>         [...]
+> 
+> In order to perform a reliable range check, fbcon_get_font() needs to know
+> `FONTDATAMAX` for each built-in font under lib/fonts/. Unfortunately, we
+> do not keep that information in our font descriptor,
+> `struct console_font`:
+> 
+> (include/uapi/linux/kd.h)
+> struct console_font {
+> 	unsigned int width, height;	/* font size */
+> 	unsigned int charcount;
+> 	unsigned char *data;	/* font data with height fixed to 32 */
+> };
+> 
+> To make things worse, `struct console_font` is part of the UAPI, so we
+> cannot add a new field to keep track of `FONTDATAMAX`.
 
-Wow, thank you for the really interesting information!
+Hi,
 
-> drivers/video/console/vgacon.c | vgacon_init                    | (struct console_font)->height | 0-32
-> drivers/video/console/vgacon.c | vgacon_adjust_height           | (struct console_font)->height | 1-32
-> drivers/video/fbdev/core/fbcon.c | fbcon_startup                  | (struct console_font)->height | 6,8,10-11,14,16,18,22,32
-> drivers/video/fbdev/core/fbcon.c | fbcon_init                     | (struct console_font)->height | 6,8,10-11,14,16,18,22,32
-> drivers/video/fbdev/core/fbcon.c | fbcon_do_set_font              | (struct console_font)->height | 0-u32max
-> drivers/video/fbdev/core/fbcon.c | fbcon_set_def_font             | (struct console_font)->height | 6,8,10-11,14,16,18,22,32
-> drivers/usb/misc/sisusbvga/sisusb_con.c | sisusbcon_init                 | (struct console_font)->height | 0-u32max
+but you still can define struct kernel_console_font containing struct
+console_font and the 4 more members you need in the kernel. See below.
 
-In looking at this one,
-	c->vc_font.height = sisusb->current_font_height;
+> Fortunately, the framebuffer layer itself gives us a hint of how to
+> resolve this issue without changing UAPI. When allocating a buffer for a
+> user-provided font, fbcon_set_font() reserves four "extra words" at the
+> beginning of the buffer:
+> 
+> (drivers/video/fbdev/core/fbcon.c)
+> 	new_data = kmalloc(FONT_EXTRA_WORDS * sizeof(int) + size, GFP_USER);
 
-`sisusb->current_font_height` is only set in sisusbcon_do_font_op():
-		sisusb->current_font_height = fh;
+I might be missing something (like coffee in the morning), but why don't
+you just:
+1) declare struct font_data as
+{
+  unsigned sum, char_count, size, refcnt;
+  const unsigned char data[];
+}
 
-and...
+Or maybe "struct console_font font" instead of "const unsigned char
+data[]", if need be.
 
-> drivers/usb/misc/sisusbvga/sisusb_con.c | sisusbcon_do_font_op           | (struct console_font)->height | 1-32
+2) allocate by:
+  kmalloc(struct_size(struct font_data, data, size));
 
-...sisusbcon_do_font_op() is called in four places, with an `fh` of either
-16, `sisusb->font_backup_height`, or `font->height`. The latter two cases
-all come from sisusbcon_font_set(), whose dispatcher, con_font_set()
-gurantees that `font->height` is less than or equal to 32, as shown by
-Smatch here.
+3) use container_of wherever needed
 
-> drivers/tty/vt/vt_ioctl.c      | vt_k_ioctl                     | (struct console_font)->height | ignore
-> drivers/tty/vt/vt_ioctl.c      | vt_resizex                     | (struct console_font)->height | 0-u32max
-> drivers/tty/vt/vt_ioctl.c      | vt_ioctl                       | (struct console_font)->height | ignore
-> drivers/tty/vt/vt_ioctl.c      | vt_compat_ioctl                | (struct console_font)->height | ignore
-> drivers/tty/vt/vt.c            | vc_allocate                    | (struct console_font)->height | 0
-> drivers/tty/vt/vt.c            | vt_resize                      | (struct console_font)->height | ignore
-> drivers/tty/vt/vt.c            | do_con_write                   | (struct console_font)->height | ignore
-> drivers/tty/vt/vt.c            | con_unthrottle                 | (struct console_font)->height | ignore
-> drivers/tty/vt/vt.c            | con_flush_chars                | (struct console_font)->height | ignore
-> drivers/tty/vt/vt.c            | con_shutdown                   | (struct console_font)->height | ignore
-> drivers/tty/vt/vt.c            | con_cleanup                    | (struct console_font)->height | ignore
-> drivers/tty/vt/vt.c            | con_init                       | (struct console_font)->height | 0
-> drivers/tty/vt/vt.c            | con_font_set                   | (struct console_font)->height | 1-32
-> drivers/tty/vt/vt.c            | con_font_default               | (struct console_font)->height | 0-u32max
-> drivers/tty/vt/selection.c     | paste_selection                | (struct console_font)->height | ignore
+That is you name the data on negative indexes using struct as you
+already have to define one.
 
-I will go through the list starting from these "0-u32max" cases. Thanks
-again!
+Then you don't need the ugly macros with negative indexes. And you can
+pass this structure down e.g. to fbcon_do_set_font, avoiding potential
+mistakes in accessing data[-1] and similar.
 
-Peilin Ye
+thanks,
+-- 
+js

@@ -1,47 +1,21 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 08 Sep 2020 11:37:29 +0000
-Subject: Re: [PATCH] video: fbdev: replace spurious snprintf() with sprintf()
-Message-Id: <8a486558-08cb-b8fa-5a33-77d73482b1ea@samsung.com>
+From: "Mrs. Susan Carter" <test@mail.bless.gov.my>
+Date: Wed, 30 Sep 2020 10:46:09 +0000
+Subject: Good day,
+Message-Id: <20200930104549.3992868525BE@mail.bless.gov.my>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20200824174423eucas1p25ee511479ffce613260a49d415e5733f@eucas1p2.samsung.com>
- <20200824174407.429817-1-alex.dewar90@gmail.com>
-In-Reply-To: <20200824174407.429817-1-alex.dewar90@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Dewar <alex.dewar90@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org
 
+Good day,
 
-On 8/24/20 7:44 PM, Alex Dewar wrote:
-> par->vgapass is a u8, so if we are assuming that buf is at least
-> PAGE_SIZE then the extra checking is pointless.
-> 
-> Signed-off-by: Alex Dewar <alex.dewar90@gmail.com>
+My name are Mrs. Susan Carter an America but a United Kingdom Citizen, I???m 57 years old, widow, married to late Eng Martins Carter who is a British, who until his death worked with Dutch Filtration for Twenty-Six years before he died in the year 2015 after a brief illness that lasted only five days.
 
-Applied to drm-misc-next tree, thanks.
+When my late husband was alive he deposited the sum of US$50 Million in bank USA through his Financial Lawyer in the United State of America and we all agreed as a couple to donate all of that to charity. Following my health (Lung Cancer), my Doctor told me that I may not live longer than required due to my health condition.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Looking forward to seeing someone who can use the money for charitable work.
 
-> ---
->  drivers/video/fbdev/sstfb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
-> index afe6d1b7c3a0..c05cdabeb11c 100644
-> --- a/drivers/video/fbdev/sstfb.c
-> +++ b/drivers/video/fbdev/sstfb.c
-> @@ -733,7 +733,7 @@ static ssize_t show_vgapass(struct device *device, struct device_attribute *attr
->  {
->  	struct fb_info *info = dev_get_drvdata(device);
->  	struct sstfb_par *par = info->par;
-> -	return snprintf(buf, PAGE_SIZE, "%d\n", par->vgapass);
-> +	return sprintf(buf, "%d\n", par->vgapass);
->  }
->  
->  static struct device_attribute device_attrs[] = {
-> 
+Best Regards
+Yours sincerely
+Mrs. Susan Carter

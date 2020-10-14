@@ -1,71 +1,48 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Fri, 16 Oct 2020 09:53:56 +0000
-Subject: Re: [PATCH] omapfb/dss: Remove redundant null check before clk_prepare_enable/clk_disable_unprepare
-Message-Id: <20201016115356.34c1620b@linux-uq9g>
+From: Xu Wang <vulab@iscas.ac.cn>
+Date: Wed, 14 Oct 2020 08:57:22 +0000
+Subject: [PATCH] video: fbdev: sh_mobile_lcdcfb: Remove redundant null check before clk_prepare_enable/clk_di
+Message-Id: <20201014085722.26069-1-vulab@iscas.ac.cn>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20201014084920.25813-1-vulab@iscas.ac.cn>
- <20201015100827.1115fa9b@linux-uq9g>
-In-Reply-To: <20201015100827.1115fa9b@linux-uq9g>
+References: <20161217010203.GA140420@beast>
+In-Reply-To: <20161217010203.GA140420@beast>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Xu Wang <vulab@iscas.ac.cn>
-Cc: linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, yuehaibing@huawei.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, pakki001@umn.edu, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: b.zolnierkie@samsung.com, gustavoars@kernel.org, arnd@arndb.de, daniel.vetter@ffwll.ch, jani.nikula@intel.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-On Thu, 15 Oct 2020 10:08:27 +0200 Thomas Zimmermann <tzimmermann@suse.de>
-wrote:
+Because clk_prepare_enable() and clk_disable_unprepare() already checked
+NULL clock parameter, so the additional checks are unnecessary, just
+remove them.
 
-> On Wed, 14 Oct 2020 08:49:20 +0000 Xu Wang <vulab@iscas.ac.cn> wrote:
-> 
-> > Because clk_prepare_enable() and clk_disable_unprepare() already checked
-> > NULL clock parameter, so the additional checks are unnecessary, just
-> > remove them.
-> > 
-> > Signed-off-by: Xu Wang <vulab@iscas.ac.cn>
-> 
-> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-> 
+Signed-off-by: Xu Wang <vulab@iscas.ac.cn>
+---
+ drivers/video/fbdev/sh_mobile_lcdcfb.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Merged into drm-misc-next. Thanks!
-
-> > ---
-> >  drivers/video/fbdev/omap2/omapfb/dss/venc.c | 6 ++----
-> >  1 file changed, 2 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/drivers/video/fbdev/omap2/omapfb/dss/venc.c
-> > b/drivers/video/fbdev/omap2/omapfb/dss/venc.c index
-> > 0b0ad20afd63..8895fb8493d8 100644 ---
-> > a/drivers/video/fbdev/omap2/omapfb/dss/venc.c +++
-> > b/drivers/video/fbdev/omap2/omapfb/dss/venc.c @@ -890,8 +890,7 @@ static
-> > int venc_remove(struct platform_device *pdev) 
-> >  static int venc_runtime_suspend(struct device *dev)
-> >  {
-> > -	if (venc.tv_dac_clk)
-> > -		clk_disable_unprepare(venc.tv_dac_clk);
-> > +	clk_disable_unprepare(venc.tv_dac_clk);
-> >  
-> >  	dispc_runtime_put();
-> >  
-> > @@ -906,8 +905,7 @@ static int venc_runtime_resume(struct device *dev)
-> >  	if (r < 0)
-> >  		return r;
-> >  
-> > -	if (venc.tv_dac_clk)
-> > -		clk_prepare_enable(venc.tv_dac_clk);
-> > +	clk_prepare_enable(venc.tv_dac_clk);
-> >  
-> >  	return 0;
-> >  }
-> 
-> 
-> 
-
-
-
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index c1043420dbd3..c0952cc96bdb 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -341,8 +341,7 @@ static void lcdc_wait_bit(struct sh_mobile_lcdc_priv *priv,
+ static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
+ {
+ 	if (atomic_inc_and_test(&priv->hw_usecnt)) {
+-		if (priv->dot_clk)
+-			clk_prepare_enable(priv->dot_clk);
++		clk_prepare_enable(priv->dot_clk);
+ 		pm_runtime_get_sync(priv->dev);
+ 	}
+ }
+@@ -351,8 +350,7 @@ static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
+ {
+ 	if (atomic_sub_return(1, &priv->hw_usecnt) = -1) {
+ 		pm_runtime_put(priv->dev);
+-		if (priv->dot_clk)
+-			clk_disable_unprepare(priv->dot_clk);
++		clk_disable_unprepare(priv->dot_clk);
+ 	}
+ }
+ 
 -- 
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Maxfeldstr. 5, 90409 Nürnberg, Germany
-(HRB 36809, AG Nürnberg)
-Geschäftsführer: Felix Imendörffer
+2.17.1

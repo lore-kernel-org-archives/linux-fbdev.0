@@ -1,54 +1,56 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Sun, 18 Oct 2020 19:17:44 +0000
-Subject: [PATCH AUTOSEL 5.9 088/111] fbmem: add margin check to fb_check_caps()
-Message-Id: <20201018191807.4052726-88-sashal@kernel.org>
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Fri, 16 Oct 2020 21:18:31 +0000
+Subject: Re: [PATCH -next] omapfb: connector-analog-tv: simplify the return expression of tvc_connect()
+Message-Id: <20201016211831.GF1496366@ravnborg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20201018191807.4052726-1-sashal@kernel.org>
-In-Reply-To: <20201018191807.4052726-1-sashal@kernel.org>
+References: <20200921131049.92616-1-miaoqinglang@huawei.com>
+In-Reply-To: <20200921131049.92616-1-miaoqinglang@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: George Kennedy <george.kennedy@oracle.com>, syzbot+e5fd3e65515b48c02a30@syzkaller.appspotmail.com, Dan Carpenter <dan.carpenter@oracle.com>, Dhaval Giani <dhaval.giani@oracle.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org
+To: Qinglang Miao <miaoqinglang@huawei.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-From: George Kennedy <george.kennedy@oracle.com>
+On Mon, Sep 21, 2020 at 09:10:49PM +0800, Qinglang Miao wrote:
+> Simplify the return expression.
+> 
+> Signed-off-by: Qinglang Miao <miaoqinglang@huawei.com>
 
-[ Upstream commit a49145acfb975d921464b84fe00279f99827d816 ]
+Thanks, applied to drm-misc-next.
 
-A fb_ioctl() FBIOPUT_VSCREENINFO call with invalid xres setting
-or yres setting in struct fb_var_screeninfo will result in a
-KASAN: vmalloc-out-of-bounds failure in bitfill_aligned() as
-the margins are being cleared. The margins are cleared in
-chunks and if the xres setting or yres setting is a value of
-zero upto the chunk size, the failure will occur.
-
-Add a margin check to validate xres and yres settings.
-
-Signed-off-by: George Kennedy <george.kennedy@oracle.com>
-Reported-by: syzbot+e5fd3e65515b48c02a30@syzkaller.appspotmail.com
-Reviewed-by: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Dhaval Giani <dhaval.giani@oracle.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/1594149963-13801-1-git-send-email-george.kennedy@oracle.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/core/fbmem.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 6815bfb7f5724..e33bf1c386926 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1006,6 +1006,10 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
- 		return 0;
- 	}
- 
-+	/* bitfill_aligned() assumes that it's at least 8x8 */
-+	if (var->xres < 8 || var->yres < 8)
-+		return -EINVAL;
-+
- 	ret = info->fbops->fb_check_var(var, info);
- 
- 	if (ret)
--- 
-2.25.1
+	Sam
+> ---
+>  .../fbdev/omap2/omapfb/displays/connector-analog-tv.c      | 7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c b/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c
+> index 63bd13ba4..a9fd732f8 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c
+> @@ -47,18 +47,13 @@ static int tvc_connect(struct omap_dss_device *dssdev)
+>  {
+>  	struct panel_drv_data *ddata = to_panel_data(dssdev);
+>  	struct omap_dss_device *in = ddata->in;
+> -	int r;
+>  
+>  	dev_dbg(ddata->dev, "connect\n");
+>  
+>  	if (omapdss_device_is_connected(dssdev))
+>  		return 0;
+>  
+> -	r = in->ops.atv->connect(in, dssdev);
+> -	if (r)
+> -		return r;
+> -
+> -	return 0;
+> +	return in->ops.atv->connect(in, dssdev);
+>  }
+>  
+>  static void tvc_disconnect(struct omap_dss_device *dssdev)
+> -- 
+> 2.23.0
+> 
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel

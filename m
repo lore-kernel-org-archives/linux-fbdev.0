@@ -7,81 +7,112 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05866C433E7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 20:58:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B58BC433E7
+	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 21:01:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 94B49205CB
-	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 20:58:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 095AC205CB
+	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 21:01:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389479AbgJPU6l (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 16 Oct 2020 16:58:41 -0400
-Received: from asavdk3.altibox.net ([109.247.116.14]:33680 "EHLO
+        id S2410559AbgJPVBV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 16 Oct 2020 17:01:21 -0400
+Received: from asavdk3.altibox.net ([109.247.116.14]:34142 "EHLO
         asavdk3.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388086AbgJPU6l (ORCPT
+        with ESMTP id S2410553AbgJPVBV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 16 Oct 2020 16:58:41 -0400
+        Fri, 16 Oct 2020 17:01:21 -0400
 Received: from ravnborg.org (unknown [188.228.123.71])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by asavdk3.altibox.net (Postfix) with ESMTPS id 3528520030;
-        Fri, 16 Oct 2020 22:58:37 +0200 (CEST)
-Date:   Fri, 16 Oct 2020 22:58:36 +0200
+        by asavdk3.altibox.net (Postfix) with ESMTPS id 10B9C20030;
+        Fri, 16 Oct 2020 23:01:17 +0200 (CEST)
+Date:   Fri, 16 Oct 2020 23:01:16 +0200
 From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Li Heng <liheng40@huawei.com>
-Cc:     tomi.valkeinen@ti.com, b.zolnierkie@samsung.com,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH -next] video: Remove set but not used variable
-Message-ID: <20201016205836.GB1496366@ravnborg.org>
-References: <1600957106-13741-1-git-send-email-liheng40@huawei.com>
+To:     Wang Qing <wangqing@vivo.com>
+Cc:     Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Bernie Thompson <bernie@plugable.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] video: use kobj_to_dev()
+Message-ID: <20201016210116.GC1496366@ravnborg.org>
+References: <1600776867-24226-1-git-send-email-wangqing@vivo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1600957106-13741-1-git-send-email-liheng40@huawei.com>
+In-Reply-To: <1600776867-24226-1-git-send-email-wangqing@vivo.com>
 X-CMAE-Score: 0
 X-CMAE-Analysis: v=2.3 cv=S433PrkP c=1 sm=1 tr=0
         a=S6zTFyMACwkrwXSdXUNehg==:117 a=S6zTFyMACwkrwXSdXUNehg==:17
-        a=IkcTkHD0fZMA:10 a=i0EeH86SAAAA:8 a=e5mUnYsNAAAA:8
-        a=ta2fmmrRsy9J0w49oKkA:9 a=QEXdDO2ut3YA:10 a=Vxmtnl_E_bksehYqCbjh:22
+        a=kj9zAlcOel0A:10 a=1WtWmnkvAAAA:8 a=e5mUnYsNAAAA:8
+        a=S625N62x_EdrrIXL-UUA:9 a=4VdfB5lweFc2GgQk:21 a=SvyDWAbSgJdgMsRO:21
+        a=CjuIK1q_8ugA:10 a=-_UHfarfsM-RsASml2Jt:22 a=Vxmtnl_E_bksehYqCbjh:22
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
-Message-ID: <20201016205836.5fF8No5V5LX5Ks9Es9CaV2bjfVx7NGnVxd520LBovfc@z>
+Message-ID: <20201016210116.vSmF9R0sDOf7uMEpzuXaERAidJ999ZxV8wdk5M0m4cU@z>
 
-Hi Li Heng
+Hi Wang Qing
 
-On Thu, Sep 24, 2020 at 10:18:26PM +0800, Li Heng wrote:
-> Fixes gcc '-Wunused-but-set-variable' warning:
+On Tue, Sep 22, 2020 at 08:14:24PM +0800, Wang Qing wrote:
+> Use kobj_to_dev() instead of container_of()
 > 
-> drivers/video/fbdev/sis/300vtbl.h:1064:28: warning:
-> ‘SiS300_CHTVVCLKSONTSC’ defined but not used [-Wunused-const-variable=]
-> 
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Li Heng <liheng40@huawei.com>
+> Signed-off-by: Wang Qing <wangqing@vivo.com>
 
-Thanks, now applied to drm-misc-next.
+Thanks, applied to drm-misc-next. Patch will appear in -next in a few
+weeks.
 
 	Sam
 
 > ---
->  drivers/video/fbdev/sis/300vtbl.h | 2 --
->  1 file changed, 2 deletions(-)
+>  drivers/video/fbdev/aty/radeon_base.c | 4 ++--
+>  drivers/video/fbdev/udlfb.c           | 4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/video/fbdev/sis/300vtbl.h b/drivers/video/fbdev/sis/300vtbl.h
-> index e4b4a26..26b19f7 100644
-> --- a/drivers/video/fbdev/sis/300vtbl.h
-> +++ b/drivers/video/fbdev/sis/300vtbl.h
-> @@ -1061,8 +1061,6 @@ static const unsigned char SiS300_CHTVVCLKUNTSC[]  = { 0x29,0x29,0x29,0x29,0x2a,
-> 
->  static const unsigned char SiS300_CHTVVCLKONTSC[]  = { 0x2c,0x2c,0x2c,0x2c,0x2d,0x2b };
-> 
-> -static const unsigned char SiS300_CHTVVCLKSONTSC[] = { 0x2c,0x2c,0x2c,0x2c,0x2d,0x2b };
-> -
->  static const unsigned char SiS300_CHTVVCLKUPAL[]   = { 0x2f,0x2f,0x2f,0x2f,0x2f,0x31 };
-> 
->  static const unsigned char SiS300_CHTVVCLKOPAL[]   = { 0x2f,0x2f,0x2f,0x2f,0x30,0x32 };
-> --
+> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+> index 3fe509c..878c39a
+> --- a/drivers/video/fbdev/aty/radeon_base.c
+> +++ b/drivers/video/fbdev/aty/radeon_base.c
+> @@ -2200,7 +2200,7 @@ static ssize_t radeon_show_edid1(struct file *filp, struct kobject *kobj,
+>  				 struct bin_attribute *bin_attr,
+>  				 char *buf, loff_t off, size_t count)
+>  {
+> -	struct device *dev = container_of(kobj, struct device, kobj);
+> +	struct device *dev = kobj_to_dev(kobj);
+>  	struct fb_info *info = dev_get_drvdata(dev);
+>          struct radeonfb_info *rinfo = info->par;
+>  
+> @@ -2212,7 +2212,7 @@ static ssize_t radeon_show_edid2(struct file *filp, struct kobject *kobj,
+>  				 struct bin_attribute *bin_attr,
+>  				 char *buf, loff_t off, size_t count)
+>  {
+> -	struct device *dev = container_of(kobj, struct device, kobj);
+> +	struct device *dev = kobj_to_dev(kobj);
+>  	struct fb_info *info = dev_get_drvdata(dev);
+>          struct radeonfb_info *rinfo = info->par;
+>  
+> diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+> index 5b014b4..f9b3c1c
+> --- a/drivers/video/fbdev/udlfb.c
+> +++ b/drivers/video/fbdev/udlfb.c
+> @@ -1457,7 +1457,7 @@ static ssize_t edid_show(
+>  			struct file *filp,
+>  			struct kobject *kobj, struct bin_attribute *a,
+>  			 char *buf, loff_t off, size_t count) {
+> -	struct device *fbdev = container_of(kobj, struct device, kobj);
+> +	struct device *fbdev = kobj_to_dev(kobj);
+>  	struct fb_info *fb_info = dev_get_drvdata(fbdev);
+>  	struct dlfb_data *dlfb = fb_info->par;
+>  
+> @@ -1479,7 +1479,7 @@ static ssize_t edid_store(
+>  			struct file *filp,
+>  			struct kobject *kobj, struct bin_attribute *a,
+>  			char *src, loff_t src_off, size_t src_size) {
+> -	struct device *fbdev = container_of(kobj, struct device, kobj);
+> +	struct device *fbdev = kobj_to_dev(kobj);
+>  	struct fb_info *fb_info = dev_get_drvdata(fbdev);
+>  	struct dlfb_data *dlfb = fb_info->par;
+>  	int ret;
+> -- 
 > 2.7.4
 > 
 > _______________________________________________

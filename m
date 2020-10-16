@@ -7,113 +7,89 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B58BC433E7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 21:01:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6ABC7C433E7
+	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 21:18:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 095AC205CB
-	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 21:01:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 22F13214DB
+	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 21:18:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2410559AbgJPVBV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 16 Oct 2020 17:01:21 -0400
-Received: from asavdk3.altibox.net ([109.247.116.14]:34142 "EHLO
-        asavdk3.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2410553AbgJPVBV (ORCPT
+        id S2411010AbgJPVSM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 16 Oct 2020 17:18:12 -0400
+Received: from asavdk4.altibox.net ([109.247.116.15]:36362 "EHLO
+        asavdk4.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2410993AbgJPVSM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 16 Oct 2020 17:01:21 -0400
+        Fri, 16 Oct 2020 17:18:12 -0400
 Received: from ravnborg.org (unknown [188.228.123.71])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by asavdk3.altibox.net (Postfix) with ESMTPS id 10B9C20030;
-        Fri, 16 Oct 2020 23:01:17 +0200 (CEST)
-Date:   Fri, 16 Oct 2020 23:01:16 +0200
+        by asavdk4.altibox.net (Postfix) with ESMTPS id B450780627;
+        Fri, 16 Oct 2020 23:18:08 +0200 (CEST)
+Date:   Fri, 16 Oct 2020 23:18:07 +0200
 From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Wang Qing <wangqing@vivo.com>
-Cc:     Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Bernie Thompson <bernie@plugable.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] video: use kobj_to_dev()
-Message-ID: <20201016210116.GC1496366@ravnborg.org>
-References: <1600776867-24226-1-git-send-email-wangqing@vivo.com>
+To:     Liu Shixin <liushixin2@huawei.com>
+Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH -next] omapfb: simplify the return expression of
+ panel_dpi_connect
+Message-ID: <20201016211807.GE1496366@ravnborg.org>
+References: <20200921082443.2591721-1-liushixin2@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1600776867-24226-1-git-send-email-wangqing@vivo.com>
+In-Reply-To: <20200921082443.2591721-1-liushixin2@huawei.com>
 X-CMAE-Score: 0
-X-CMAE-Analysis: v=2.3 cv=S433PrkP c=1 sm=1 tr=0
+X-CMAE-Analysis: v=2.3 cv=fu7ymmwf c=1 sm=1 tr=0
         a=S6zTFyMACwkrwXSdXUNehg==:117 a=S6zTFyMACwkrwXSdXUNehg==:17
-        a=kj9zAlcOel0A:10 a=1WtWmnkvAAAA:8 a=e5mUnYsNAAAA:8
-        a=S625N62x_EdrrIXL-UUA:9 a=4VdfB5lweFc2GgQk:21 a=SvyDWAbSgJdgMsRO:21
-        a=CjuIK1q_8ugA:10 a=-_UHfarfsM-RsASml2Jt:22 a=Vxmtnl_E_bksehYqCbjh:22
+        a=kj9zAlcOel0A:10 a=i0EeH86SAAAA:8 a=e5mUnYsNAAAA:8
+        a=aI8o0Y8hUY2JQlYkRfwA:9 a=CjuIK1q_8ugA:10 a=Vxmtnl_E_bksehYqCbjh:22
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
-Message-ID: <20201016210116.vSmF9R0sDOf7uMEpzuXaERAidJ999ZxV8wdk5M0m4cU@z>
+Message-ID: <20201016211807.zh4kK2ka4zZuy1hsnIPiIWYwCz_ZdOza5FnyCNlyGOA@z>
 
-Hi Wang Qing
+Hi Liu Shixin
 
-On Tue, Sep 22, 2020 at 08:14:24PM +0800, Wang Qing wrote:
-> Use kobj_to_dev() instead of container_of()
+On Mon, Sep 21, 2020 at 04:24:43PM +0800, Liu Shixin wrote:
+> Simplify the return expression.
 > 
-> Signed-off-by: Wang Qing <wangqing@vivo.com>
+> Signed-off-by: Liu Shixin <liushixin2@huawei.com>
 
-Thanks, applied to drm-misc-next. Patch will appear in -next in a few
-weeks.
+Thanks.
+Applied this and the following two patches to drm-misc-next.
+They will appear in -next in a few weeks.
 
 	Sam
 
 > ---
->  drivers/video/fbdev/aty/radeon_base.c | 4 ++--
->  drivers/video/fbdev/udlfb.c           | 4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
+>  drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c | 7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
 > 
-> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-> index 3fe509c..878c39a
-> --- a/drivers/video/fbdev/aty/radeon_base.c
-> +++ b/drivers/video/fbdev/aty/radeon_base.c
-> @@ -2200,7 +2200,7 @@ static ssize_t radeon_show_edid1(struct file *filp, struct kobject *kobj,
->  				 struct bin_attribute *bin_attr,
->  				 char *buf, loff_t off, size_t count)
+> diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c
+> index 37c9f5bfaefe..ff3d1e8e1e7b 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c
+> @@ -37,16 +37,11 @@ static int panel_dpi_connect(struct omap_dss_device *dssdev)
 >  {
-> -	struct device *dev = container_of(kobj, struct device, kobj);
-> +	struct device *dev = kobj_to_dev(kobj);
->  	struct fb_info *info = dev_get_drvdata(dev);
->          struct radeonfb_info *rinfo = info->par;
+>  	struct panel_drv_data *ddata = to_panel_data(dssdev);
+>  	struct omap_dss_device *in = ddata->in;
+> -	int r;
 >  
-> @@ -2212,7 +2212,7 @@ static ssize_t radeon_show_edid2(struct file *filp, struct kobject *kobj,
->  				 struct bin_attribute *bin_attr,
->  				 char *buf, loff_t off, size_t count)
->  {
-> -	struct device *dev = container_of(kobj, struct device, kobj);
-> +	struct device *dev = kobj_to_dev(kobj);
->  	struct fb_info *info = dev_get_drvdata(dev);
->          struct radeonfb_info *rinfo = info->par;
+>  	if (omapdss_device_is_connected(dssdev))
+>  		return 0;
 >  
-> diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-> index 5b014b4..f9b3c1c
-> --- a/drivers/video/fbdev/udlfb.c
-> +++ b/drivers/video/fbdev/udlfb.c
-> @@ -1457,7 +1457,7 @@ static ssize_t edid_show(
->  			struct file *filp,
->  			struct kobject *kobj, struct bin_attribute *a,
->  			 char *buf, loff_t off, size_t count) {
-> -	struct device *fbdev = container_of(kobj, struct device, kobj);
-> +	struct device *fbdev = kobj_to_dev(kobj);
->  	struct fb_info *fb_info = dev_get_drvdata(fbdev);
->  	struct dlfb_data *dlfb = fb_info->par;
+> -	r = in->ops.dpi->connect(in, dssdev);
+> -	if (r)
+> -		return r;
+> -
+> -	return 0;
+> +	return in->ops.dpi->connect(in, dssdev);
+>  }
 >  
-> @@ -1479,7 +1479,7 @@ static ssize_t edid_store(
->  			struct file *filp,
->  			struct kobject *kobj, struct bin_attribute *a,
->  			char *src, loff_t src_off, size_t src_size) {
-> -	struct device *fbdev = container_of(kobj, struct device, kobj);
-> +	struct device *fbdev = kobj_to_dev(kobj);
->  	struct fb_info *fb_info = dev_get_drvdata(fbdev);
->  	struct dlfb_data *dlfb = fb_info->par;
->  	int ret;
+>  static void panel_dpi_disconnect(struct omap_dss_device *dssdev)
 > -- 
-> 2.7.4
+> 2.25.1
 > 
 > _______________________________________________
 > dri-devel mailing list

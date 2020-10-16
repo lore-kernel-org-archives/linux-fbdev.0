@@ -7,110 +7,87 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE3F2C43457
-	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 21:19:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEF00C433DF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 21:25:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6F9BC218AC
-	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 21:19:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 67F03216C4
+	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Oct 2020 21:25:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2409961AbgJPVTt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 16 Oct 2020 17:19:49 -0400
-Received: from asavdk4.altibox.net ([109.247.116.15]:36714 "EHLO
+        id S2393327AbgJPVZM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 16 Oct 2020 17:25:12 -0400
+Received: from asavdk4.altibox.net ([109.247.116.15]:36916 "EHLO
         asavdk4.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2409798AbgJPVTt (ORCPT
+        with ESMTP id S2411176AbgJPVUx (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 16 Oct 2020 17:19:49 -0400
+        Fri, 16 Oct 2020 17:20:53 -0400
 Received: from ravnborg.org (unknown [188.228.123.71])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by asavdk4.altibox.net (Postfix) with ESMTPS id 428CE8062D;
-        Fri, 16 Oct 2020 23:19:45 +0200 (CEST)
-Date:   Fri, 16 Oct 2020 23:19:43 +0200
+        by asavdk4.altibox.net (Postfix) with ESMTPS id 2EDF380632;
+        Fri, 16 Oct 2020 23:20:51 +0200 (CEST)
+Date:   Fri, 16 Oct 2020 23:20:49 +0200
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     Qinglang Miao <miaoqinglang@huawei.com>
-Cc:     Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-omap@vger.kernel.org
-Subject: Re: [PATCH -next] omapfb: connector-hdmi: simplify the return
- expression of hdmic_connect
-Message-ID: <20201016211943.GG1496366@ravnborg.org>
-References: <20200921131051.92661-1-miaoqinglang@huawei.com>
+Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH -next] omapfb: panel-sony-acx565akm: simplify the return
+ expression of acx565akm_connect()
+Message-ID: <20201016212049.GH1496366@ravnborg.org>
+References: <20200921131052.92707-1-miaoqinglang@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200921131051.92661-1-miaoqinglang@huawei.com>
+In-Reply-To: <20200921131052.92707-1-miaoqinglang@huawei.com>
 X-CMAE-Score: 0
 X-CMAE-Analysis: v=2.3 cv=fu7ymmwf c=1 sm=1 tr=0
         a=S6zTFyMACwkrwXSdXUNehg==:117 a=S6zTFyMACwkrwXSdXUNehg==:17
         a=kj9zAlcOel0A:10 a=i0EeH86SAAAA:8 a=e5mUnYsNAAAA:8
-        a=no2T8IuB39rNVZpCtwQA:9 a=CjuIK1q_8ugA:10 a=Vxmtnl_E_bksehYqCbjh:22
+        a=Y4obQtN_itIPxvlVp1MA:9 a=CjuIK1q_8ugA:10 a=Vxmtnl_E_bksehYqCbjh:22
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
-Message-ID: <20201016211943._CKqmSp5wrOiBmh5oOrRzd-RvD5GlM0o_oREaWND4gI@z>
+Message-ID: <20201016212049.Wtg-VkHaRWvQWe33D-EDAuZ02WcO3NCSlxnGsxb17Rs@z>
 
 Hi Qinglang Miao
 
-On Mon, Sep 21, 2020 at 09:10:51PM +0800, Qinglang Miao wrote:
+On Mon, Sep 21, 2020 at 09:10:52PM +0800, Qinglang Miao wrote:
 > Simplify the return expression.
 > 
 > Signed-off-by: Qinglang Miao <miaoqinglang@huawei.com>
 
-I dropped the changes to gpio-cs5535.c when I applied this patch to
-drm-misc-next. It looks like an accident that it was included here.
+Applied this and the following patch to drm-misc-next.
+Note: I did not touch the drm/* patches, I expect someone else to pick
+them up. As they are quite old maybe try to resend them.
 
 	Sam
 
 > ---
->  drivers/gpio/gpio-cs5535.c                                 | 6 +-----
->  drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c | 7 +------
->  2 files changed, 2 insertions(+), 11 deletions(-)
+>  .../fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c     | 7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
 > 
-> diff --git a/drivers/gpio/gpio-cs5535.c b/drivers/gpio/gpio-cs5535.c
-> index 53b24e3ae..57b9ddffd 100644
-> --- a/drivers/gpio/gpio-cs5535.c
-> +++ b/drivers/gpio/gpio-cs5535.c
-> @@ -345,12 +345,8 @@ static int cs5535_gpio_probe(struct platform_device *pdev)
->  				mask_orig, mask);
->  
->  	/* finally, register with the generic GPIO API */
-> -	err = devm_gpiochip_add_data(&pdev->dev, &cs5535_gpio_chip.chip,
-> +	return devm_gpiochip_add_data(&pdev->dev, &cs5535_gpio_chip.chip,
->  				     &cs5535_gpio_chip);
-> -	if (err)
-> -		return err;
-> -
-> -	return 0;
->  }
->  
->  static struct platform_driver cs5535_gpio_driver = {
-> diff --git a/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c b/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
-> index 49551afbd..670b9c6eb 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
-> @@ -50,18 +50,13 @@ static int hdmic_connect(struct omap_dss_device *dssdev)
+> diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
+> index 1293515e4..8d8b5ff7d 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
+> @@ -506,16 +506,11 @@ static int acx565akm_connect(struct omap_dss_device *dssdev)
 >  {
 >  	struct panel_drv_data *ddata = to_panel_data(dssdev);
 >  	struct omap_dss_device *in = ddata->in;
 > -	int r;
 >  
->  	dev_dbg(ddata->dev, "connect\n");
->  
 >  	if (omapdss_device_is_connected(dssdev))
 >  		return 0;
 >  
-> -	r = in->ops.hdmi->connect(in, dssdev);
+> -	r = in->ops.sdi->connect(in, dssdev);
 > -	if (r)
 > -		return r;
 > -
 > -	return 0;
-> +	return in->ops.hdmi->connect(in, dssdev);
+> +	return in->ops.sdi->connect(in, dssdev);
 >  }
 >  
->  static void hdmic_disconnect(struct omap_dss_device *dssdev)
+>  static void acx565akm_disconnect(struct omap_dss_device *dssdev)
 > -- 
 > 2.23.0
 > 

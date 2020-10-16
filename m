@@ -1,7 +1,7 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Fri, 16 Oct 2020 09:53:31 +0000
+Date: Fri, 16 Oct 2020 09:53:56 +0000
 Subject: Re: [PATCH] omapfb/dss: Remove redundant null check before clk_prepare_enable/clk_disable_unprepare
-Message-Id: <20201016115331.0dd4341e@linux-uq9g>
+Message-Id: <20201016115356.34c1620b@linux-uq9g>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20201014084920.25813-1-vulab@iscas.ac.cn>
  <20201015100827.1115fa9b@linux-uq9g>

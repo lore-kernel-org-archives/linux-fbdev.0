@@ -1,24 +1,32 @@
-From: "William Jones" <william.jones@fastestway24.com>
-Date: Tue, 13 Oct 2020 08:11:18 +0000
-Subject: Disinfectant
-Message-Id: <20201013074502-0.1.4d.9kz0.0.wpnhbhyph2@fastestway24.com>
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Sat, 17 Oct 2020 06:28:08 +0000
+Subject: Re: [PATCH] video: fbdev: sis: remove unneeded semicolon
+Message-Id: <20201017062808.GG2242298@ravnborg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200910140536.1191150-1-yanaijie@huawei.com>
+In-Reply-To: <20200910140536.1191150-1-yanaijie@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Jason Yan <yanaijie@huawei.com>
+Cc: linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com, thomas@winischhofer.net, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Hulk Robot <hulkci@huawei.com>
 
-Good morning,
+On Thu, Sep 10, 2020 at 10:05:36PM +0800, Jason Yan wrote:
+> Eliminate the following coccicheck warning:
+> 
+> drivers/video/fbdev/sis/sis_accel.h:143:72-73: Unneeded semicolon
+> drivers/video/fbdev/sis/sis_accel.h:144:72-73: Unneeded semicolon
+> drivers/video/fbdev/sis/sis_accel.h:145:72-73: Unneeded semicolon
+> drivers/video/fbdev/sis/sis_accel.h:273:75-76: Unneeded semicolon
+> drivers/video/fbdev/sis/sis_accel.h:274:75-76: Unneeded semicolon
+> drivers/video/fbdev/sis/sis_accel.h:275:73-74: Unneeded semicolon
+> drivers/video/fbdev/sis/sis_accel.h:276:75-76: Unneeded semicolon
+> 
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Signed-off-by: Jason Yan <yanaijie@huawei.com>
 
-looking for companies interested in raising additional capital by diversifying their offer in soaps, liquids and gels for hand disinfection and cosmetics for body and hair care.
+Applied to drm-misc-next.
+checkpatch was not happy with the patch - but I ignored these warnings
+as this is an old code base.
 
-The distribution of innovative products corresponding to the current preferences of customers in the field of hygiene and preventive healthcare allows our partners to gain new markets and achieve better economic results.
-
-In addition to products with bactericidal action, our range includes shower gels, shampoos and hair conditioners, as well as efficient, concentrated detergents.
-
-The versatility (suitable for all skin types) combined with an affordable price means that customers make an informed choice of a product among others available on the market.
-
-Are you interested in cooperation?
-
-
-William Jones
+	Sam

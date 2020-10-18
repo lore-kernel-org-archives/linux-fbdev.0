@@ -8,134 +8,102 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B48BCC433DF
-	for <linux-fbdev@archiver.kernel.org>; Sun, 18 Oct 2020 18:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6D16C433DF
+	for <linux-fbdev@archiver.kernel.org>; Sun, 18 Oct 2020 18:15:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 763DE22261
-	for <linux-fbdev@archiver.kernel.org>; Sun, 18 Oct 2020 18:13:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6008922261
+	for <linux-fbdev@archiver.kernel.org>; Sun, 18 Oct 2020 18:15:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="R8N2yrsi"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QjCP1EX3"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726613AbgJRSNq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 18 Oct 2020 14:13:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50684 "EHLO
+        id S1727049AbgJRSPB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 18 Oct 2020 14:15:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50880 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725776AbgJRSNp (ORCPT
+        with ESMTP id S1727042AbgJRSPA (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 18 Oct 2020 14:13:45 -0400
-Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com [IPv6:2607:f8b0:4864:20::1041])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 98DE9C061755;
-        Sun, 18 Oct 2020 11:13:45 -0700 (PDT)
-Received: by mail-pj1-x1041.google.com with SMTP id az3so4068088pjb.4;
-        Sun, 18 Oct 2020 11:13:45 -0700 (PDT)
+        Sun, 18 Oct 2020 14:15:00 -0400
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com [IPv6:2607:f8b0:4864:20::642])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95DC9C061755;
+        Sun, 18 Oct 2020 11:15:00 -0700 (PDT)
+Received: by mail-pl1-x642.google.com with SMTP id t22so879799plr.9;
+        Sun, 18 Oct 2020 11:15:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=vDtrylS/RN/X5MfRBvgpYbyAlRSg7CP7eSTbD6n1oCk=;
-        b=R8N2yrsi/4FgJn1aT/zEzfuuimbi0iHQMrlYFVxTgxngsQUZrsfpszzkQRCNb3i8Xu
-         n/SQc+RlIP+oFXu4KRPFSPlBQKRQhnFpc1vhOvDHvvnKDgFOe1R+veHAjuLrbhhQMspS
-         /8dfaqardAtvM+LIcKRTi/WG9MpqYKO8rSZgrkFLwmZYwDDP5mjZpSoDJ8i2bNC6DNUy
-         Y/bJDL5I86HA0erTJVjtQmn5Sm2M1wKqSDn3bVg1d70jd5SCHek1UVF2qrfnnb3VatiO
-         EAJJnLMYwZ6CypDzSURAuDcmaRRqnwDDon1xhHtcX+14a/F6hCl4T7IGhVdII47GVMbB
-         0e5Q==
+        bh=m6FHgeh68XrW5HEPqio+CAfOtISNqMru1HN9CgXSmBM=;
+        b=QjCP1EX34ML3REAsHj1Tuktcn2Qgs9vEAzg++SANXEotQatxk6cJ78+W/luVFvsA3f
+         nZNkGM2go1F8nkwh6yEUQxVkyIZOSgSO3THq+0gpiY9p60SUuVvKhDWBbHi94riAC158
+         JDorjfMHTqFwVLz0lpon1zH2WyRinDTgAZqYzF5ngx3ClF81QhYn6cp4wIPpq813dIHK
+         s7GRgyT580BXrnwrATopGB49vaMilA8vdkf2slNeGdl9j549H3kzxrpyicj+1Et8ki3p
+         9ODKdJhrDhod8Zt2o3IZRnrNOqE1O08i1zPH79d/5aAdF4rk6sX2svj7btVZGfC3j9ov
+         5k2g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=vDtrylS/RN/X5MfRBvgpYbyAlRSg7CP7eSTbD6n1oCk=;
-        b=dryTVmdYeFx/7GOkO5DDmjmbRGXz4AnjjgsPZ6M5a3rk/CmCslukix54xdUhtul3Tr
-         yUmH3Z6USOzqVjO75a0cG9uuRQ/ZndjO7iIz6np+49kI7AP/00sRNz5v7CCHkYa7QPAb
-         84sR2ZijNdg+ncZdAMT0AtMXUjWXHyWRedbRNM4qu59+kEVOc/SvdY60YKvOsLZjvpQx
-         dOiqErkA2otWZZeMrzsusHdLc+6XZaBlEtR8sWPUgy4X24AiqYS4k7Qe58BUE7VAzdl1
-         NS287DMMIJ7tM0SoEZI64CXOn30bIvOH5mi6PRNumzrd9LaLp5LuerGpJV3TaFba78Xv
-         r2xg==
-X-Gm-Message-State: AOAM53226g2V6WbqwHnPR0kpbvv+56UYm+J3A7elXalimx+ErYKj/gRC
-        ZUqWGRVUahIAXqG8aCHFoQ==
-X-Google-Smtp-Source: ABdhPJxPwJ9YnepNpAc8VVNUt38pK54xtZo++0IDAYsyFQexI7qLah9BoTxyqh/feu646qJFMxVfeQ==
-X-Received: by 2002:a17:90a:a111:: with SMTP id s17mr14271776pjp.28.1603044825029;
-        Sun, 18 Oct 2020 11:13:45 -0700 (PDT)
+        bh=m6FHgeh68XrW5HEPqio+CAfOtISNqMru1HN9CgXSmBM=;
+        b=j4+bSgWeA1DDsCPVpHOUCfKesxlYxnEa0AO7FwYk9Mn2eXcMeH/pYj8UuiIN00r44B
+         ik9v0pQp4kdZsDwEDAY5GNdhobw5OLwM8nrXD68CCCN8du9UfNIzdpi1Rc/aCPEuEeQP
+         l/W7rJevnTB1Jlpoe8Sg3bv2rKkF/hEgD2PEMFE2LA5OaV/gXcVlZDECRFJuWIOCTVcm
+         Xf1ATDNCPGwXdAmDNvizGwhiEU9iSYDSqnqwrSHxeVf8GdyvkMqm7yYYQ6BGeoJ1glol
+         QVhhSuBRTudB8Wsr/L8hKJPISl9DDmkn+3BRCwcHpAfO52zhUWNFKUofaBbXe+8JG4cO
+         RLaw==
+X-Gm-Message-State: AOAM5336zbMIGgDrVUgUa5vpPLdR+laAhxMTFLjQZ32qGUiLoiPVBzA1
+        kup/P34X1JW7+VFmmS5tXg==
+X-Google-Smtp-Source: ABdhPJyD/RAMVd1M8vP32mGD/W3N7UjeH/8THUOCAjyc/6MDKMhug8g9/itU+OYPPf0q61CKLJRo6g==
+X-Received: by 2002:a17:902:8a8a:b029:d5:ab9e:1d5d with SMTP id p10-20020a1709028a8ab02900d5ab9e1d5dmr14061857plo.32.1603044900146;
+        Sun, 18 Oct 2020 11:15:00 -0700 (PDT)
 Received: from localhost.localdomain ([161.117.41.183])
-        by smtp.gmail.com with ESMTPSA id hi22sm9783054pjb.21.2020.10.18.11.13.41
+        by smtp.gmail.com with ESMTPSA id u65sm9511516pfc.11.2020.10.18.11.14.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 18 Oct 2020 11:13:44 -0700 (PDT)
+        Sun, 18 Oct 2020 11:14:59 -0700 (PDT)
 From:   Peilin Ye <yepeilin.cs@gmail.com>
-To:     Daniel Vetter <daniel@ffwll.ch>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+To:     Jonathan Corbet <corbet@lwn.net>
+Cc:     Daniel Vetter <daniel@ffwll.ch>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
         Sascha Hauer <s.hauer@pengutronix.de>,
         Sven Schneider <s.schneider@arkona-technologies.de>,
         Pengutronix Kernel Team <kernel@pengutronix.de>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Peilin Ye <yepeilin.cs@gmail.com>
-Subject: [PATCH 1/2] Fonts: Support FONT_EXTRA_WORDS macros for font_6x8
-Date:   Sun, 18 Oct 2020 14:12:04 -0400
-Message-ID: <926453876c92caac34cba8545716a491754d04d5.1603037079.git.yepeilin.cs@gmail.com>
+        linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Peilin Ye <yepeilin.cs@gmail.com>
+Subject: [PATCH 2/2] docs: fb: Add font_6x8 to available built-in fonts
+Date:   Sun, 18 Oct 2020 14:14:10 -0400
+Message-ID: <717bb41dda8e2ed615f3faadfbc3e215de726d38.1603037079.git.yepeilin.cs@gmail.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200820082137.5907-1-s.hauer@pengutronix.de>
-References: <20200820082137.5907-1-s.hauer@pengutronix.de>
+In-Reply-To: <926453876c92caac34cba8545716a491754d04d5.1603037079.git.yepeilin.cs@gmail.com>
+References: <926453876c92caac34cba8545716a491754d04d5.1603037079.git.yepeilin.cs@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
-Message-ID: <20201018181204.PUKZ1WDsV8ccuOPJ46c_WUj7gg3SmTUMrCROiezsRa8@z>
+Message-ID: <20201018181410.mlra2zaWuYTZgld6rsM32812_8udwOf04eJF92aZeG0@z>
 
-Recently, in commit 6735b4632def ("Fonts: Support FONT_EXTRA_WORDS macros
-for built-in fonts"), we wrapped each of our built-in data buffers in a
-`font_data` structure, in order to use the following macros on them, see
-include/linux/font.h:
-
-	#define REFCOUNT(fd)	(((int *)(fd))[-1])
-	#define FNTSIZE(fd)	(((int *)(fd))[-2])
-	#define FNTCHARCNT(fd)	(((int *)(fd))[-3])
-	#define FNTSUM(fd)	(((int *)(fd))[-4])
-
-	#define FONT_EXTRA_WORDS 4
-
-Do the same thing to our new 6x8 font. For built-in fonts, currently we
-only use FNTSIZE(). Since this is only a temporary solution for an
-out-of-bounds issue in the framebuffer layer (see commit 5af08640795b
-("fbcon: Fix global-out-of-bounds read in fbcon_get_font()")), all the
-three other fields are intentionally set to zero in order to discourage
-using these negative-indexing macros.
+Recently we added a new 6x8 font in commit e2028c8e6bf9 ("lib/fonts: add
+font 6x8 for OLED display"). Add its name to the "compiled-in fonts"
+list.
 
 Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
 ---
- lib/fonts/font_6x8.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ Documentation/fb/fbcon.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/lib/fonts/font_6x8.c b/lib/fonts/font_6x8.c
-index e06447788418..700039a9ceae 100644
---- a/lib/fonts/font_6x8.c
-+++ b/lib/fonts/font_6x8.c
-@@ -3,8 +3,8 @@
+diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
+index 9aad964b767c..57f66de2f7e1 100644
+--- a/Documentation/fb/fbcon.rst
++++ b/Documentation/fb/fbcon.rst
+@@ -81,7 +81,7 @@ C. Boot options
+ 1. fbcon=font:<name>
  
- #define FONTDATAMAX 2048
+ 	Select the initial font to use. The value 'name' can be any of the
+-	compiled-in fonts: 10x18, 6x10, 7x14, Acorn8x8, MINI4x6,
++	compiled-in fonts: 10x18, 6x10, 6x8, 7x14, Acorn8x8, MINI4x6,
+ 	PEARL8x8, ProFont6x11, SUN12x22, SUN8x16, TER16x32, VGA8x16, VGA8x8.
  
--static const unsigned char fontdata_6x8[FONTDATAMAX] = {
--
-+static struct font_data fontdata_6x8 = {
-+	{ 0, 0, FONTDATAMAX, 0 }, {
- 	/* 0 0x00 '^@' */
- 	0x00, /* 000000 */
- 	0x00, /* 000000 */
-@@ -2564,13 +2564,13 @@ static const unsigned char fontdata_6x8[FONTDATAMAX] = {
- 	0x00, /* 000000 */
- 	0x00, /* 000000 */
- 	0x00, /* 000000 */
--};
-+} };
- 
- const struct font_desc font_6x8 = {
- 	.idx	= FONT6x8_IDX,
- 	.name	= "6x8",
- 	.width	= 6,
- 	.height	= 8,
--	.data	= fontdata_6x8,
-+	.data	= fontdata_6x8.data,
- 	.pref	= 0,
- };
+ 	Note, not all drivers can handle font with widths not divisible by 8,
 -- 
 2.25.1
 

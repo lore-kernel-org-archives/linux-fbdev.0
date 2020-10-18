@@ -1,25 +1,54 @@
-From: Mrs Maria Abdullah <admin@huclangia.tk>
-Date: Sat, 03 Oct 2020 08:36:17 +0000
-Subject: Hello!
-Message-Id: <20201003043617.CE4DBE9F435E7555@huclangia.tk>
+From: Sasha Levin <sashal@kernel.org>
+Date: Sun, 18 Oct 2020 19:22:16 +0000
+Subject: [PATCH AUTOSEL 5.4 65/80] fbmem: add margin check to fb_check_caps()
+Message-Id: <20201018192231.4054535-65-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20201018192231.4054535-1-sashal@kernel.org>
+In-Reply-To: <20201018192231.4054535-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: George Kennedy <george.kennedy@oracle.com>, syzbot+e5fd3e65515b48c02a30@syzkaller.appspotmail.com, Dan Carpenter <dan.carpenter@oracle.com>, Dhaval Giani <dhaval.giani@oracle.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org
 
-Hello,
+From: George Kennedy <george.kennedy@oracle.com>
 
-My Name is Mrs.Maria Abdullah from Wales United Kingdom,
+[ Upstream commit a49145acfb975d921464b84fe00279f99827d816 ]
 
-I would like to work with you to carry out a promise i made to 
-God by willing all that i have to the charity because i am very 
-sick now (Covid-19 Virus Infection)
+A fb_ioctl() FBIOPUT_VSCREENINFO call with invalid xres setting
+or yres setting in struct fb_var_screeninfo will result in a
+KASAN: vmalloc-out-of-bounds failure in bitfill_aligned() as
+the margins are being cleared. The margins are cleared in
+chunks and if the xres setting or yres setting is a value of
+zero upto the chunk size, the failure will occur.
 
-Get back to me for more details via my private email.
+Add a margin check to validate xres and yres settings.
 
-Email: mariabdullah101@taxrag.com
+Signed-off-by: George Kennedy <george.kennedy@oracle.com>
+Reported-by: syzbot+e5fd3e65515b48c02a30@syzkaller.appspotmail.com
+Reviewed-by: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Dhaval Giani <dhaval.giani@oracle.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/1594149963-13801-1-git-send-email-george.kennedy@oracle.com
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/fbmem.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Thanks and God bless you.
-
-Maria
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 97abcd497c7e0..bf76dadbed87f 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1001,6 +1001,10 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ 		return 0;
+ 	}
+ 
++	/* bitfill_aligned() assumes that it's at least 8x8 */
++	if (var->xres < 8 || var->yres < 8)
++		return -EINVAL;
++
+ 	ret = info->fbops->fb_check_var(var, info);
+ 
+ 	if (ret)
+-- 
+2.25.1

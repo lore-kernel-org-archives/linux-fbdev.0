@@ -1,28 +1,39 @@
-From: stsp <stsp2@yandex.ru>
-Date: Fri, 09 Oct 2020 14:14:42 +0000
-Subject: Re: drmfb console switching problems/questions
-Message-Id: <e3f40930-6927-042f-7857-e843e1e24236@yandex.ru>
+From: Peilin Ye <yepeilin.cs@gmail.com>
+Date: Sun, 18 Oct 2020 20:54:01 +0000
+Subject: [PATCH 2/2 RESEND] docs: fb: Add font_6x8 to available built-in fonts
+Message-Id: <20201018205401.698242-1-yepeilin.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <17980f58-c2d2-ac58-88ce-e21b5a56da39@yandex.ru>
- <df4d1918-dcb1-4951-6280-f178ecbbfc2f@suse.de>
- <70ce31ca-5922-584c-8631-3853c488f3c7@yandex.ru>
- <e2118f89-2c55-ec12-1e33-f2ba418af914@suse.de>
- <cacba527-fe32-e80c-4659-799452741791@yandex.ru>
- <050632f0-6440-1254-2aed-931dd515ff37@suse.de>
-In-Reply-To: <050632f0-6440-1254-2aed-931dd515ff37@suse.de>
+References: <717bb41dda8e2ed615f3faadfbc3e215de726d38.1603037079.git.yepeilin.cs@gmail.com>
+In-Reply-To: <717bb41dda8e2ed615f3faadfbc3e215de726d38.1603037079.git.yepeilin.cs@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Thomas Zimmermann <tzimmermann@suse.de>, linux-fbdev@vger.kernel.org, Linux kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jonathan Corbet <corbet@lwn.net>, Daniel Vetter <daniel@ffwll.ch>
+Cc: linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sascha Hauer <s.hauer@pengutronix.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Sven Schneider <s.schneider@arkona-technologies.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, Peilin Ye <yepeilin.cs@gmail.com>
 
-09.10.2020 16:31, Thomas Zimmermann пишет:
-> I can't say for sure. IIRC SDL2 can use DRM directly.
-Yes, that was a great hint indeed,
-thanks. It didn't work for me in the past
-(a year ago or so), so I added SDL1
-support. But now I re-tried, and it indeed
-works!
-And, as far as I can tell, the hanging
-behaviour does not happen, at least
-not that simple.
-Thank you.
+Recently we added a new 6x8 font in commit e2028c8e6bf9 ("lib/fonts: add
+font 6x8 for OLED display"). Add its name to the "compiled-in fonts"
+list.
+
+Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
+---
+Resending +Cc: dri-devel, sorry if I spammed.
+
+ Documentation/fb/fbcon.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
+index 9aad964b767c..57f66de2f7e1 100644
+--- a/Documentation/fb/fbcon.rst
++++ b/Documentation/fb/fbcon.rst
+@@ -81,7 +81,7 @@ C. Boot options
+ 1. fbcon=font:<name>
+ 
+ 	Select the initial font to use. The value 'name' can be any of the
+-	compiled-in fonts: 10x18, 6x10, 7x14, Acorn8x8, MINI4x6,
++	compiled-in fonts: 10x18, 6x10, 6x8, 7x14, Acorn8x8, MINI4x6,
+ 	PEARL8x8, ProFont6x11, SUN12x22, SUN8x16, TER16x32, VGA8x16, VGA8x8.
+ 
+ 	Note, not all drivers can handle font with widths not divisible by 8,
+-- 
+2.25.1

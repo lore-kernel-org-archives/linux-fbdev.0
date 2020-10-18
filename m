@@ -1,50 +1,54 @@
-From: Alexandru Stan <amstan@chromium.org>
-Date: Tue, 13 Oct 2020 08:01:00 +0000
-Subject: [PATCH v2 0/3] PWM backlight interpolation adjustments
-Message-Id: <20201013080103.410133-1-amstan@chromium.org>
+From: Sasha Levin <sashal@kernel.org>
+Date: Sun, 18 Oct 2020 19:17:44 +0000
+Subject: [PATCH AUTOSEL 5.9 088/111] fbmem: add margin check to fb_check_caps()
+Message-Id: <20201018191807.4052726-88-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20201018191807.4052726-1-sashal@kernel.org>
+In-Reply-To: <20201018191807.4052726-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>, Andy Gross <agross@kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Alexandru Stan <amstan@chromium.org>, linux-pwm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, Matthias Kaehlcke <mka@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: George Kennedy <george.kennedy@oracle.com>, syzbot+e5fd3e65515b48c02a30@syzkaller.appspotmail.com, Dan Carpenter <dan.carpenter@oracle.com>, Dhaval Giani <dhaval.giani@oracle.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org
 
-I was trying to adjust the brightness-levels for the trogdor boards:
-https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/2291209
-Like on a lot of panels, trogdor's low end needs to be cropped,
-and now that we have the interpolation stuff I wanted to make use of it
-and bake in even the curve that's customary to have on chromebooks.
+From: George Kennedy <george.kennedy@oracle.com>
 
-I found the current behavior of the pwm_bl driver a little unintuitive
-and non-linear. See patch 1 for a suggested fix for this.
+[ Upstream commit a49145acfb975d921464b84fe00279f99827d816 ]
 
-A few veyron dts files were relying on this (perhaps weird) behavior.
-Those devices also want a minimum brightness like trogdor, so changed
-them to use the new way.
+A fb_ioctl() FBIOPUT_VSCREENINFO call with invalid xres setting
+or yres setting in struct fb_var_screeninfo will result in a
+KASAN: vmalloc-out-of-bounds failure in bitfill_aligned() as
+the margins are being cleared. The margins are cleared in
+chunks and if the xres setting or yres setting is a value of
+zero upto the chunk size, the failure will occur.
 
-Finally, given that trogdor's dts is part of linux-next now, add the
-brightness-levels to it, since that's the original reason I was looking at
-this.
+Add a margin check to validate xres and yres settings.
 
-Changes in v2:
-- Fixed type promotion in the driver
-- Removed "backlight: pwm_bl: Artificially add 0% during interpolation",
-userspace works just fine without it because it already knows how to use
-bl_power for turning off the display.
-- Added brightness-levels to trogdor as well, now the dts is upstream.
+Signed-off-by: George Kennedy <george.kennedy@oracle.com>
+Reported-by: syzbot+e5fd3e65515b48c02a30@syzkaller.appspotmail.com
+Reviewed-by: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Dhaval Giani <dhaval.giani@oracle.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/1594149963-13801-1-git-send-email-george.kennedy@oracle.com
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/fbmem.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-
-Alexandru Stan (3):
-  backlight: pwm_bl: Fix interpolation
-  ARM: dts: rockchip: veyron: Remove 0 point from brightness-levels
-  arm64: dts: qcom: trogdor: Add brightness-levels
-
- arch/arm/boot/dts/rk3288-veyron-jaq.dts      |  2 +-
- arch/arm/boot/dts/rk3288-veyron-minnie.dts   |  2 +-
- arch/arm/boot/dts/rk3288-veyron-tiger.dts    |  2 +-
- arch/arm64/boot/dts/qcom/sc7180-trogdor.dtsi |  9 +++
- drivers/video/backlight/pwm_bl.c             | 70 +++++++++-----------
- 5 files changed, 43 insertions(+), 42 deletions(-)
-
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 6815bfb7f5724..e33bf1c386926 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1006,6 +1006,10 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ 		return 0;
+ 	}
+ 
++	/* bitfill_aligned() assumes that it's at least 8x8 */
++	if (var->xres < 8 || var->yres < 8)
++		return -EINVAL;
++
+ 	ret = info->fbops->fb_check_var(var, info);
+ 
+ 	if (ret)
 -- 
-2.28.0
+2.25.1

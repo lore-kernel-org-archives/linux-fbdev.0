@@ -1,141 +1,141 @@
-Return-Path: <SRS0=BHHc=DY=vger.kernel.org=linux-fbdev-owner@kernel.org>
+Return-Path: <SRS0=OfnY=DZ=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8547BC433E7
-	for <linux-fbdev@archiver.kernel.org>; Sat, 17 Oct 2020 12:25:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B48BCC433DF
+	for <linux-fbdev@archiver.kernel.org>; Sun, 18 Oct 2020 18:13:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3BA572075E
-	for <linux-fbdev@archiver.kernel.org>; Sat, 17 Oct 2020 12:25:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 763DE22261
+	for <linux-fbdev@archiver.kernel.org>; Sun, 18 Oct 2020 18:13:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="R8N2yrsi"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2437923AbgJQMZM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 17 Oct 2020 08:25:12 -0400
-Received: from asavdk4.altibox.net ([109.247.116.15]:50578 "EHLO
-        asavdk4.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2437813AbgJQMZL (ORCPT
+        id S1726613AbgJRSNq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 18 Oct 2020 14:13:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50684 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725776AbgJRSNp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 17 Oct 2020 08:25:11 -0400
-Received: from ravnborg.org (unknown [188.228.123.71])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by asavdk4.altibox.net (Postfix) with ESMTPS id DEA978055B;
-        Sat, 17 Oct 2020 14:25:07 +0200 (CEST)
-Date:   Sat, 17 Oct 2020 14:25:06 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Yang Yingliang <yangyingliang@huawei.com>,
+        Sun, 18 Oct 2020 14:13:45 -0400
+Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com [IPv6:2607:f8b0:4864:20::1041])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 98DE9C061755;
+        Sun, 18 Oct 2020 11:13:45 -0700 (PDT)
+Received: by mail-pj1-x1041.google.com with SMTP id az3so4068088pjb.4;
+        Sun, 18 Oct 2020 11:13:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=vDtrylS/RN/X5MfRBvgpYbyAlRSg7CP7eSTbD6n1oCk=;
+        b=R8N2yrsi/4FgJn1aT/zEzfuuimbi0iHQMrlYFVxTgxngsQUZrsfpszzkQRCNb3i8Xu
+         n/SQc+RlIP+oFXu4KRPFSPlBQKRQhnFpc1vhOvDHvvnKDgFOe1R+veHAjuLrbhhQMspS
+         /8dfaqardAtvM+LIcKRTi/WG9MpqYKO8rSZgrkFLwmZYwDDP5mjZpSoDJ8i2bNC6DNUy
+         Y/bJDL5I86HA0erTJVjtQmn5Sm2M1wKqSDn3bVg1d70jd5SCHek1UVF2qrfnnb3VatiO
+         EAJJnLMYwZ6CypDzSURAuDcmaRRqnwDDon1xhHtcX+14a/F6hCl4T7IGhVdII47GVMbB
+         0e5Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=vDtrylS/RN/X5MfRBvgpYbyAlRSg7CP7eSTbD6n1oCk=;
+        b=dryTVmdYeFx/7GOkO5DDmjmbRGXz4AnjjgsPZ6M5a3rk/CmCslukix54xdUhtul3Tr
+         yUmH3Z6USOzqVjO75a0cG9uuRQ/ZndjO7iIz6np+49kI7AP/00sRNz5v7CCHkYa7QPAb
+         84sR2ZijNdg+ncZdAMT0AtMXUjWXHyWRedbRNM4qu59+kEVOc/SvdY60YKvOsLZjvpQx
+         dOiqErkA2otWZZeMrzsusHdLc+6XZaBlEtR8sWPUgy4X24AiqYS4k7Qe58BUE7VAzdl1
+         NS287DMMIJ7tM0SoEZI64CXOn30bIvOH5mi6PRNumzrd9LaLp5LuerGpJV3TaFba78Xv
+         r2xg==
+X-Gm-Message-State: AOAM53226g2V6WbqwHnPR0kpbvv+56UYm+J3A7elXalimx+ErYKj/gRC
+        ZUqWGRVUahIAXqG8aCHFoQ==
+X-Google-Smtp-Source: ABdhPJxPwJ9YnepNpAc8VVNUt38pK54xtZo++0IDAYsyFQexI7qLah9BoTxyqh/feu646qJFMxVfeQ==
+X-Received: by 2002:a17:90a:a111:: with SMTP id s17mr14271776pjp.28.1603044825029;
+        Sun, 18 Oct 2020 11:13:45 -0700 (PDT)
+Received: from localhost.localdomain ([161.117.41.183])
+        by smtp.gmail.com with ESMTPSA id hi22sm9783054pjb.21.2020.10.18.11.13.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 18 Oct 2020 11:13:44 -0700 (PDT)
+From:   Peilin Ye <yepeilin.cs@gmail.com>
+To:     Daniel Vetter <daniel@ffwll.ch>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH] vgacon: fix a UAF in do_update_region()
-Message-ID: <20201017122506.GA2838103@ravnborg.org>
-References: <20200713110445.553974-1-yangyingliang@huawei.com>
+Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Sven Schneider <s.schneider@arkona-technologies.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Peilin Ye <yepeilin.cs@gmail.com>
+Subject: [PATCH 1/2] Fonts: Support FONT_EXTRA_WORDS macros for font_6x8
+Date:   Sun, 18 Oct 2020 14:12:04 -0400
+Message-ID: <926453876c92caac34cba8545716a491754d04d5.1603037079.git.yepeilin.cs@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200820082137.5907-1-s.hauer@pengutronix.de>
+References: <20200820082137.5907-1-s.hauer@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200713110445.553974-1-yangyingliang@huawei.com>
-X-CMAE-Score: 0
-X-CMAE-Analysis: v=2.3 cv=fu7ymmwf c=1 sm=1 tr=0
-        a=S6zTFyMACwkrwXSdXUNehg==:117 a=S6zTFyMACwkrwXSdXUNehg==:17
-        a=kj9zAlcOel0A:10 a=ID6ng7r3AAAA:8 a=i0EeH86SAAAA:8 a=e5mUnYsNAAAA:8
-        a=PHTwHYtFXg1mRD0ZxZcA:9 a=CjuIK1q_8ugA:10 a=-RoEEKskQ1sA:10
-        a=AkheI1RvQwOzcTXhi5f4:22 a=Vxmtnl_E_bksehYqCbjh:22
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
-Message-ID: <20201017122506.hidRKiHQqXHyBelCETawRK9e43WAZOPe4iiQVCft6uU@z>
+Message-ID: <20201018181204.PUKZ1WDsV8ccuOPJ46c_WUj7gg3SmTUMrCROiezsRa8@z>
 
-Hi Yang.
+Recently, in commit 6735b4632def ("Fonts: Support FONT_EXTRA_WORDS macros
+for built-in fonts"), we wrapped each of our built-in data buffers in a
+`font_data` structure, in order to use the following macros on them, see
+include/linux/font.h:
 
-Can you please resend and include Greg in the recipient list.
-Greg is maintainer of the console subsystem these days.
+	#define REFCOUNT(fd)	(((int *)(fd))[-1])
+	#define FNTSIZE(fd)	(((int *)(fd))[-2])
+	#define FNTCHARCNT(fd)	(((int *)(fd))[-3])
+	#define FNTSUM(fd)	(((int *)(fd))[-4])
 
-	Sam
+	#define FONT_EXTRA_WORDS 4
 
-On Mon, Jul 13, 2020 at 11:04:45AM +0000, Yang Yingliang wrote:
-> I got a UAF report in do_update_region() when I doing fuzz test.
-> 
-> [   51.161905] BUG: KASAN: use-after-free in do_update_region+0x579/0x600
-> [   51.161918] Read of size 2 at addr ffff888000100000 by task test/295
-> 
-> [   51.161957] CPU: 2 PID: 295 Comm: test Not tainted 5.7.0+ #975
-> [   51.161969] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.13.0-0-gf21b5a4aeb02-prebuilt.qemu.org 04/01/2014
-> [   51.161976] Call Trace:
-> [   51.162001]  dump_stack+0xc6/0x11e
-> [   51.162019]  ? do_update_region+0x579/0x600
-> [   51.162047]  print_address_description.constprop.6+0x1a/0x220
-> [   51.162083]  ? vprintk_func+0x66/0xed
-> [   51.162100]  ? do_update_region+0x579/0x600
-> [   51.162112]  ? do_update_region+0x579/0x600
-> [   51.162128]  kasan_report.cold.9+0x37/0x7c
-> [   51.162151]  ? do_update_region+0x579/0x600
-> [   51.162173]  do_update_region+0x579/0x600
-> [   51.162207]  ? con_get_trans_old+0x230/0x230
-> [   51.162229]  ? retint_kernel+0x10/0x10
-> [   51.162278]  csi_J+0x557/0xa00
-> [   51.162307]  do_con_trol+0x49af/0x5cc0
-> [   51.162330]  ? lock_downgrade+0x720/0x720
-> [   51.162347]  ? reset_palette+0x1b0/0x1b0
-> [   51.162369]  ? lockdep_hardirqs_on_prepare+0x379/0x540
-> [   51.162393]  ? notifier_call_chain+0x11b/0x160
-> [   51.162438]  do_con_write.part.24+0xb0a/0x1a30
-> [   51.162501]  ? do_con_trol+0x5cc0/0x5cc0
-> [   51.162522]  ? console_unlock+0x7b8/0xb00
-> [   51.162555]  ? __mutex_unlock_slowpath+0xd4/0x670
-> [   51.162574]  ? this_tty+0xe0/0xe0
-> [   51.162589]  ? console_unlock+0x559/0xb00
-> [   51.162605]  ? wait_for_completion+0x260/0x260
-> [   51.162638]  con_write+0x31/0xb0
-> [   51.162658]  n_tty_write+0x4fa/0xd40
-> [   51.162710]  ? n_tty_read+0x1800/0x1800
-> [   51.162730]  ? prepare_to_wait_exclusive+0x270/0x270
-> [   51.162754]  ? __might_fault+0x175/0x1b0
-> [   51.162783]  tty_write+0x42b/0x8d0
-> [   51.162795]  ? n_tty_read+0x1800/0x1800
-> [   51.162825]  ? tty_lookup_driver+0x450/0x450
-> [   51.162848]  __vfs_write+0x7c/0x100
-> [   51.162875]  vfs_write+0x1c9/0x510
-> [   51.162901]  ksys_write+0xff/0x200
-> [   51.162918]  ? __ia32_sys_read+0xb0/0xb0
-> [   51.162940]  ? do_syscall_64+0x1a/0x520
-> [   51.162957]  ? lockdep_hardirqs_on_prepare+0x379/0x540
-> [   51.162984]  do_syscall_64+0xa1/0x520
-> [   51.163008]  entry_SYSCALL_64_after_hwframe+0x49/0xb3
-> 
-> After vgacon_set_origin() is called in set_origin(), the vc_origin is
-> set to vga_vram_base, the vc_pos should between vga_vram_base and
-> vga_vram_end. But we still use vc_screenbuf_size, if the vga_vram_size
-> is smaller than vc_screenbuf_size, vc_pos may be out of bound, using it
-> will cause a use-after-free(or out-of-bounds). Fix this by calling
-> vc_resize() if vga_vram_size is smaller than vc_screenbuf_size.
-> 
-> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
-> ---
->  drivers/video/console/vgacon.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-> index b51ffb9a208d..2eabb86bb0dd 100644
-> --- a/drivers/video/console/vgacon.c
-> +++ b/drivers/video/console/vgacon.c
-> @@ -1341,6 +1341,9 @@ static int vgacon_set_origin(struct vc_data *c)
->  	if (vga_is_gfx ||	/* We don't play origin tricks in graphic modes */
->  	    (console_blanked && !vga_palette_blanked))	/* Nor we write to blanked screens */
->  		return 0;
-> +
-> +	if (c->vc_screenbuf_size > vga_vram_size)
-> +		vc_resize(c, screen_info.orig_video_cols, screen_info.orig_video_lines);
->  	c->vc_origin = c->vc_visible_origin = vga_vram_base;
->  	vga_set_mem_top(c);
->  	vga_rolled_over = 0;
-> -- 
-> 2.25.1
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+Do the same thing to our new 6x8 font. For built-in fonts, currently we
+only use FNTSIZE(). Since this is only a temporary solution for an
+out-of-bounds issue in the framebuffer layer (see commit 5af08640795b
+("fbcon: Fix global-out-of-bounds read in fbcon_get_font()")), all the
+three other fields are intentionally set to zero in order to discourage
+using these negative-indexing macros.
+
+Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
+---
+ lib/fonts/font_6x8.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/lib/fonts/font_6x8.c b/lib/fonts/font_6x8.c
+index e06447788418..700039a9ceae 100644
+--- a/lib/fonts/font_6x8.c
++++ b/lib/fonts/font_6x8.c
+@@ -3,8 +3,8 @@
+ 
+ #define FONTDATAMAX 2048
+ 
+-static const unsigned char fontdata_6x8[FONTDATAMAX] = {
+-
++static struct font_data fontdata_6x8 = {
++	{ 0, 0, FONTDATAMAX, 0 }, {
+ 	/* 0 0x00 '^@' */
+ 	0x00, /* 000000 */
+ 	0x00, /* 000000 */
+@@ -2564,13 +2564,13 @@ static const unsigned char fontdata_6x8[FONTDATAMAX] = {
+ 	0x00, /* 000000 */
+ 	0x00, /* 000000 */
+ 	0x00, /* 000000 */
+-};
++} };
+ 
+ const struct font_desc font_6x8 = {
+ 	.idx	= FONT6x8_IDX,
+ 	.name	= "6x8",
+ 	.width	= 6,
+ 	.height	= 8,
+-	.data	= fontdata_6x8,
++	.data	= fontdata_6x8.data,
+ 	.pref	= 0,
+ };
+-- 
+2.25.1
+

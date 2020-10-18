@@ -1,39 +1,70 @@
-From: Marilyn Robert <fredodinga22@gmail.com>
-Date: Wed, 07 Oct 2020 16:30:01 +0000
-Subject: =?UTF-8?B?0J3QsNGY0LzQuNC70LAg0LrQsNGYINCz0L7RgdC/0L7QtNCw0YDQvtGC?=
-Message-Id: <1346318531.150693.1602088201295@mail.yahoo.com>
+From: Peilin Ye <yepeilin.cs@gmail.com>
+Date: Sun, 18 Oct 2020 18:12:04 +0000
+Subject: [PATCH 1/2] Fonts: Support FONT_EXTRA_WORDS macros for font_6x8
+Message-Id: <926453876c92caac34cba8545716a491754d04d5.1603037079.git.yepeilin.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20200820082137.5907-1-s.hauer@pengutronix.de>
+In-Reply-To: <20200820082137.5907-1-s.hauer@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Daniel Vetter <daniel@ffwll.ch>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sven Schneider <s.schneider@arkona-technologies.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Peilin Ye <yepeilin.cs@gmail.com>
 
-DQoNCtCd0LDRmNC80LjQu9CwINC60LDRmCDQs9C+0YHQv9C+0LTQsNGA0L7Rgg0KDQrQiNCw0YEg
-0YHRg9C8IDY4LdCz0L7QtNC40YjQvdCwINC20LXQvdCwLCDQutC+0ZjQsCDRgdGC0YDQsNC00LAg
-0L7QtCDQv9GA0L7QtNC+0LvQttC10L0g0LrQsNGA0YbQuNC90L7QvCDQvdCwINC00L7RmNC60LAs
-INC+0LQg0YHQuNGC0LUg0LzQtdC00LjRhtC40L3RgdC60Lgg0LjQvdC00LjQutCw0YbQuNC4LCDQ
-vNC+0ZjQsNGC0LAg0YHQvtGB0YLQvtGY0LHQsCDQvdCw0LLQuNGB0YLQuNC90LAg0YHQtSDQstC7
-0L7RiNC4INC4INC+0YfQuNCz0LvQtdC00L3QviDQtSDQtNC10LrQsCDQvNC+0LbQtdCx0Lgg0L3Q
-tdC80LAg0LTQsCDQttC40LLQtdCw0Lwg0L/QvtCy0LXRnNC1INC+0LQg0YjQtdGB0YIg0LzQtdGB
-0LXRhtC4INC60LDQutC+INGA0LXQt9GD0LvRgtCw0YIg0L3QsCDQsdGA0LfQuNC+0YIg0YDQsNGB
-0YIg0Lgg0LHQvtC70LrQsNGC0LAg0YjRgtC+INGB0LUg0ZjQsNCy0YPQstCwINC60LDRmCDQvdC1
-0LAuINCc0L7RmNC+0YIg0YHQvtC/0YDRg9CzINC/0L7Rh9C40L3QsCDQvdC10LrQvtC70LrRgyDQ
-s9C+0LTQuNC90Lgg0L3QsNC90LDQt9Cw0LQg0Lgg0L3QsNGI0LjRgtC1INC00L7Qu9Cz0Lgg0LPQ
-vtC00LjQvdC4INCx0YDQsNC6INC90LUg0LHQtdCwINCx0LvQsNCz0L7RgdC70L7QstC10L3QuCDR
-gdC+INC90LjRgtGDINC10LTQvdC+INC00LXRgtC1LCDQv9C+INC90LXQs9C+0LLQsNGC0LAg0YHQ
-vNGA0YIg0LPQviDQvdCw0YHQu9C10LTQuNCyINGG0LXQu9C+0YLQviDQvdC10LPQvtCy0L4g0LHQ
-vtCz0LDRgtGB0YLQstC+Lg0KDQrQlNC+0LDRk9Cw0Lwg0LrQsNGYINCy0LDRgSDQvtGC0LrQsNC6
-0L4g0YHQtSDQv9C+0LzQvtC70LjQsiDQt9CwINGC0L7QsCwg0L/QvtC00LPQvtGC0LLQtdC9INGB
-0YPQvCDQtNCwINC00L7QvdC40YDQsNC8INGB0YPQvNCwINC+0LQgMiwgMzAwLCAwMDAg0LXQstGA
-0LAg0LfQsCDQv9C+0LzQvtGIINC90LAg0YHQuNGA0L7QvNCw0YjQvdC40YLQtSwg0YHQuNGA0L7Q
-vNCw0YjQvdC40YLQtSDQuCDQv9C+0LzQsNC70LrRgyDQv9GA0LjQstC40LvQtdCz0LjRgNCw0L3Q
-uNGC0LUg0LzQtdGT0YMg0LLQsNGI0LjRgtC1INGB0L7QsdGA0LDQvdC40ZjQsCAvINC+0L/RiNGC
-0LXRgdGC0LLQvi4g0JfQsNCx0LXQu9C10LbQtdGC0LUg0LTQtdC60LAg0L7QstC+0Zgg0YTQvtC9
-0LQg0LUg0LTQtdC/0L7QvdC40YDQsNC9INCy0L4g0LHQsNC90LrQsCDQutCw0LTQtSDRiNGC0L4g
-0YDQsNCx0L7RgtC10YjQtSDQvNC+0ZjQvtGCINGB0L7Qv9GA0YPQsy4gQXBwcmVjaWF0ZdC1INGG
-0LXQvdCw0Lwg0LDQutC+INC+0LHRgNC90LXRgtC1INCy0L3QuNC80LDQvdC40LUg0L3QsCDQvNC+
-0LXRgtC+INCx0LDRgNCw0ZrQtSDQt9CwINC/0YDQvtC/0LDQs9C40YDQsNGa0LUg0L3QsCDQvNCw
-0YHQsNC20LDRgtCwINC90LAg0LrRgNCw0LvRgdGC0LLQvtGC0L4sINGc0LUg0LLQuCDQtNCw0LTQ
-sNC8INC/0L7QstC10ZzQtSDQtNC10YLQsNC70Lgg0LfQsCDRgtC+0LAg0LrQsNC60L4g0LTQsCDQ
-v9C+0YHRgtCw0L/QuNGC0LUuDQoNCtCR0LvQsNCz0L7QtNCw0YDQsNC8DQrQky3Rk9CwINCc0LXR
-gNC40LvQuNC9INCg0L7QsdC10YDRgg=
+Recently, in commit 6735b4632def ("Fonts: Support FONT_EXTRA_WORDS macros
+for built-in fonts"), we wrapped each of our built-in data buffers in a
+`font_data` structure, in order to use the following macros on them, see
+include/linux/font.h:
+
+	#define REFCOUNT(fd)	(((int *)(fd))[-1])
+	#define FNTSIZE(fd)	(((int *)(fd))[-2])
+	#define FNTCHARCNT(fd)	(((int *)(fd))[-3])
+	#define FNTSUM(fd)	(((int *)(fd))[-4])
+
+	#define FONT_EXTRA_WORDS 4
+
+Do the same thing to our new 6x8 font. For built-in fonts, currently we
+only use FNTSIZE(). Since this is only a temporary solution for an
+out-of-bounds issue in the framebuffer layer (see commit 5af08640795b
+("fbcon: Fix global-out-of-bounds read in fbcon_get_font()")), all the
+three other fields are intentionally set to zero in order to discourage
+using these negative-indexing macros.
+
+Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
+---
+ lib/fonts/font_6x8.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/lib/fonts/font_6x8.c b/lib/fonts/font_6x8.c
+index e06447788418..700039a9ceae 100644
+--- a/lib/fonts/font_6x8.c
++++ b/lib/fonts/font_6x8.c
+@@ -3,8 +3,8 @@
+ 
+ #define FONTDATAMAX 2048
+ 
+-static const unsigned char fontdata_6x8[FONTDATAMAX] = {
+-
++static struct font_data fontdata_6x8 = {
++	{ 0, 0, FONTDATAMAX, 0 }, {
+ 	/* 0 0x00 '^@' */
+ 	0x00, /* 000000 */
+ 	0x00, /* 000000 */
+@@ -2564,13 +2564,13 @@ static const unsigned char fontdata_6x8[FONTDATAMAX] = {
+ 	0x00, /* 000000 */
+ 	0x00, /* 000000 */
+ 	0x00, /* 000000 */
+-};
++} };
+ 
+ const struct font_desc font_6x8 = {
+ 	.idx	= FONT6x8_IDX,
+ 	.name	= "6x8",
+ 	.width	= 6,
+ 	.height	= 8,
+-	.data	= fontdata_6x8,
++	.data	= fontdata_6x8.data,
+ 	.pref	= 0,
+ };
+-- 
+2.25.1

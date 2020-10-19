@@ -2,101 +2,132 @@ Return-Path: <SRS0=r1i4=D2=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9449EC433E7
-	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Oct 2020 09:56:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B9EFC433E7
+	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Oct 2020 15:56:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 382522224D
-	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Oct 2020 09:56:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1B5BB222B9
+	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Oct 2020 15:56:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aP7DWCBS"
+	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="LauR/Atw"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727533AbgJSJ4F (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 19 Oct 2020 05:56:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55368 "EHLO
+        id S1730379AbgJSP4Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 19 Oct 2020 11:56:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55606 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726249AbgJSJ4F (ORCPT
+        with ESMTP id S1730150AbgJSP4Z (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 19 Oct 2020 05:56:05 -0400
-Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com [IPv6:2607:f8b0:4864:20::1041])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C462C0613CE;
-        Mon, 19 Oct 2020 02:56:05 -0700 (PDT)
-Received: by mail-pj1-x1041.google.com with SMTP id p21so5050437pju.0;
-        Mon, 19 Oct 2020 02:56:05 -0700 (PDT)
+        Mon, 19 Oct 2020 11:56:25 -0400
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4DEBC0613D0
+        for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2020 08:56:23 -0700 (PDT)
+Received: by mail-wr1-x444.google.com with SMTP id n15so334027wrq.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2020 08:56:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=DQpTimuAzlDszY/84TRziF9dlZoz9pu8dPHqAyzWiC0=;
-        b=aP7DWCBSkCGEQpiV7lINj+OlwLMXmBFhs/Wk/5sbR3y/Hjg2LVFGUZbHZiC30JdoaY
-         CwCNSwBEpHUBJJT3/aYOT2iKuByfg9gMrMnJWxmSlGKhJJ3+HXfGV07D1bK6j9jyQxFt
-         Y2EhO4037v/3glXJcDPGiDeLRBk7mz695vGQVtTGVslJSuNVFe4ggZHbS9I12tFRNmdL
-         Tzg6oNZURMD0aueG2V9CC/vB9l8zV0GW4rAfM8GJYV2Tn9/gM5PSb26RbzGK1Od6na1M
-         q7uR5vxPbn61CSJHwY2EvoSco/wv2vgGWkeeDqmBxMA2efvnE3GqAfGZuWmGHti2my7Z
-         9giA==
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=ExyTIzaV0pr3Eai44qIOEkkWvYQoFZOO2NPesnlxaJg=;
+        b=LauR/Atww+62lrIAoI0S2aXFYC3jXL8fwHGmpYG11gT0kpCJSlFHUFXzKtkFAV4O0P
+         HgNhi4Xzc7LNZ86YW6xp2qpqxF9fUjmU3Sww/YmAaNfW8lzaxOhMfDssyPcFYnBMQloE
+         zTbV1d/w/3aqdvChRUejuygCo/WdvsgMuPWKw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=DQpTimuAzlDszY/84TRziF9dlZoz9pu8dPHqAyzWiC0=;
-        b=txZmIWKju+LIgsJl2v2MSj1TESYF4tVTHyfzDaLLT4ohUNrWB0mA7yr/7zi2oRRc+q
-         UA8jJ0H+oRleiiN/F+pbAuO7cJtm9pRxZW2ZqiSW3Q2ASe8ljVClAgy/C4YO04TjFPBJ
-         VEsABeKVELvdwICfgV/hkYAxxZPv5BOwNzj2iBzevy6qoQ9FvlrtnpuSsX/1cZOLrNIc
-         oZDEuVfDVq8H46aCdNu4zbs8fRksy831MZBzTrrelTJ/pevOEb2i0fJMyHNVxUWjQP4M
-         cFd8FMFUEIwwgO1vw3Afzo/oU7lz17KAC1V88C68RFL2YVH4gJmNNVfqJLwIkWhrlHIi
-         0KXg==
-X-Gm-Message-State: AOAM531V0GDw1jqkvQRYYE5nvDZxywZwzyvAL7bYLcmbB5bw6buuoKUT
-        CiggvK071my0VnCXbHT1Fw==
-X-Google-Smtp-Source: ABdhPJyGyYH9MTCeR5rG3OoYXSgt0G+X5ge3qXoDmm42aLzcfzs8qR32UB2f4T0EJpvvUr5jV9mn8Q==
-X-Received: by 2002:a17:90a:f685:: with SMTP id cl5mr16490738pjb.210.1603101365246;
-        Mon, 19 Oct 2020 02:56:05 -0700 (PDT)
-Received: from PWN ([161.117.41.183])
-        by smtp.gmail.com with ESMTPSA id t19sm1111202pji.18.2020.10.19.02.56.00
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :in-reply-to;
+        bh=ExyTIzaV0pr3Eai44qIOEkkWvYQoFZOO2NPesnlxaJg=;
+        b=mSSqmTCtohbY/H9Uvrbu2ecJH7nHFYXmWhtsWG2o/mdwCMa+b42rJ9Dx3JFUga7Slg
+         Ipdqrcq8ShAzkfA/iCQH/KcJe7XitVkAtkq9eBU43/rcATNy3qi9VybBfY1J6dKWpKU6
+         X+YFmh3gMMOtxMm3hV/RMx8MO2fRN6/evHrtfAfRUxHF9/Na5ABx74gVeWp6faN4bm35
+         nVch/7Z3T/z5Cx2wsuYmZ6IA7ObGNuZE+YrBEXKcCHaQxuiSQg+bUy+G/j1EX+y+2l6n
+         /RHlt5FUcbhwp9sxmFc8Z0HkSnp7WLw+N+Gu6/xI+MERC/gc+NGySbAbohBnpT0eJvB+
+         0gsQ==
+X-Gm-Message-State: AOAM5322RY0qeFEFRy5PmLCGKZQ5HSF7bq2WMFjer0VjCgfJvrh9afCb
+        i+89js/zzPcwG9u7vH5owYG4Tg==
+X-Google-Smtp-Source: ABdhPJwXRObsL8ejRw2Heh5XRu+rRn4ydix5fTKFeZYFLvSwm2ojMD2la1MO54JxNhao+Rk9S4EHZg==
+X-Received: by 2002:adf:deca:: with SMTP id i10mr257359wrn.96.1603122982550;
+        Mon, 19 Oct 2020 08:56:22 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id w11sm191745wrs.26.2020.10.19.08.56.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Oct 2020 02:56:04 -0700 (PDT)
-Date:   Mon, 19 Oct 2020 05:55:56 -0400
-From:   Peilin Ye <yepeilin.cs@gmail.com>
-To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     dri-devel <dri-devel@lists.freedesktop.org>,
+        Mon, 19 Oct 2020 08:56:21 -0700 (PDT)
+Date:   Mon, 19 Oct 2020 17:56:19 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Peilin Ye <yepeilin.cs@gmail.com>
+Cc:     Jonathan Corbet <corbet@lwn.net>, Daniel Vetter <daniel@ffwll.ch>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
         Sascha Hauer <s.hauer@pengutronix.de>,
         Sven Schneider <s.schneider@arkona-technologies.de>,
         Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] Fonts: Support FONT_EXTRA_WORDS macros for font_6x8
-Message-ID: <20201019095556.GA702017@PWN>
-References: <20200820082137.5907-1-s.hauer@pengutronix.de>
- <926453876c92caac34cba8545716a491754d04d5.1603037079.git.yepeilin.cs@gmail.com>
- <CAKMK7uF9E24P=vzKt28=1_iaFTYD7obHs+tEPwwZPNMhh7DBrg@mail.gmail.com>
- <20201018201811.GA697615@PWN>
- <CAKMK7uFEmNnBdpoHYqvCUYS=nxh99gKs6P1-1pgp-ouvTSioGw@mail.gmail.com>
- <20201018204456.GA697766@PWN>
- <CAKMK7uEoCqaPifM7CiaNwtSe8uZ9V-7joJfXSYLjy5pedAcjOg@mail.gmail.com>
+        linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2 RESEND] docs: fb: Add font_6x8 to available built-in
+ fonts
+Message-ID: <20201019155619.GH401619@phenom.ffwll.local>
+Mail-Followup-To: Peilin Ye <yepeilin.cs@gmail.com>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Sven Schneider <s.schneider@arkona-technologies.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <717bb41dda8e2ed615f3faadfbc3e215de726d38.1603037079.git.yepeilin.cs@gmail.com>
+ <20201018205401.698242-1-yepeilin.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAKMK7uEoCqaPifM7CiaNwtSe8uZ9V-7joJfXSYLjy5pedAcjOg@mail.gmail.com>
+In-Reply-To: <20201018205401.698242-1-yepeilin.cs@gmail.com>
+X-Operating-System: Linux phenom 5.7.0-1-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
-Message-ID: <20201019095556.M1U2kLLJ6A8MA5S6xCmGsCQry8Nv2NQ7Nd87uRyVrIE@z>
+Message-ID: <20201019155619.msqKKD0b-WuAbYC57BsB1Z7ioYnCQCaC4Qlh-6Vwl3U@z>
 
-On Sun, Oct 18, 2020 at 11:51:19PM +0200, Daniel Vetter wrote:
-> On Sun, Oct 18, 2020 at 10:45 PM Peilin Ye <yepeilin.cs@gmail.com> wrote:
-> > I'm confused, I see it on LKML in the link above. Sure I'll resend soon.
+On Sun, Oct 18, 2020 at 04:54:01PM -0400, Peilin Ye wrote:
+> Recently we added a new 6x8 font in commit e2028c8e6bf9 ("lib/fonts: add
+> font 6x8 for OLED display"). Add its name to the "compiled-in fonts"
+> list.
 > 
-> My brain didn't work, sorry about the confusion.
+> Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
+> ---
+> Resending +Cc: dri-devel, sorry if I spammed.
+
+Both this and patch 1/2 with the actual bugfix merged to
+drm-misc-next-fixes, should still make it into the merge window before
+-rc1.
+
+Thanks, Daniel
+
 > 
-> I'll pick up the patches tomorrow, probably not a good idea I do
-> anything more today :-)
+>  Documentation/fb/fbcon.rst | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
+> index 9aad964b767c..57f66de2f7e1 100644
+> --- a/Documentation/fb/fbcon.rst
+> +++ b/Documentation/fb/fbcon.rst
+> @@ -81,7 +81,7 @@ C. Boot options
+>  1. fbcon=font:<name>
+>  
+>  	Select the initial font to use. The value 'name' can be any of the
+> -	compiled-in fonts: 10x18, 6x10, 7x14, Acorn8x8, MINI4x6,
+> +	compiled-in fonts: 10x18, 6x10, 6x8, 7x14, Acorn8x8, MINI4x6,
+>  	PEARL8x8, ProFont6x11, SUN12x22, SUN8x16, TER16x32, VGA8x16, VGA8x8.
+>  
+>  	Note, not all drivers can handle font with widths not divisible by 8,
+> -- 
+> 2.25.1
+> 
 
-Ah, no worries, thanks!
-
-Peilin Ye
-
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

@@ -1,133 +1,128 @@
-Return-Path: <SRS0=r1i4=D2=vger.kernel.org=linux-fbdev-owner@kernel.org>
+Return-Path: <SRS0=Ytv2=D3=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B9EFC433E7
-	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Oct 2020 15:56:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C87DDC433DF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Oct 2020 09:02:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1B5BB222B9
-	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Oct 2020 15:56:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="LauR/Atw"
+	by mail.kernel.org (Postfix) with ESMTP id 7316C2224D
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Oct 2020 09:02:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730379AbgJSP4Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 19 Oct 2020 11:56:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55606 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730150AbgJSP4Z (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 19 Oct 2020 11:56:25 -0400
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4DEBC0613D0
-        for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2020 08:56:23 -0700 (PDT)
-Received: by mail-wr1-x444.google.com with SMTP id n15so334027wrq.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 19 Oct 2020 08:56:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=ExyTIzaV0pr3Eai44qIOEkkWvYQoFZOO2NPesnlxaJg=;
-        b=LauR/Atww+62lrIAoI0S2aXFYC3jXL8fwHGmpYG11gT0kpCJSlFHUFXzKtkFAV4O0P
-         HgNhi4Xzc7LNZ86YW6xp2qpqxF9fUjmU3Sww/YmAaNfW8lzaxOhMfDssyPcFYnBMQloE
-         zTbV1d/w/3aqdvChRUejuygCo/WdvsgMuPWKw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to;
-        bh=ExyTIzaV0pr3Eai44qIOEkkWvYQoFZOO2NPesnlxaJg=;
-        b=mSSqmTCtohbY/H9Uvrbu2ecJH7nHFYXmWhtsWG2o/mdwCMa+b42rJ9Dx3JFUga7Slg
-         Ipdqrcq8ShAzkfA/iCQH/KcJe7XitVkAtkq9eBU43/rcATNy3qi9VybBfY1J6dKWpKU6
-         X+YFmh3gMMOtxMm3hV/RMx8MO2fRN6/evHrtfAfRUxHF9/Na5ABx74gVeWp6faN4bm35
-         nVch/7Z3T/z5Cx2wsuYmZ6IA7ObGNuZE+YrBEXKcCHaQxuiSQg+bUy+G/j1EX+y+2l6n
-         /RHlt5FUcbhwp9sxmFc8Z0HkSnp7WLw+N+Gu6/xI+MERC/gc+NGySbAbohBnpT0eJvB+
-         0gsQ==
-X-Gm-Message-State: AOAM5322RY0qeFEFRy5PmLCGKZQ5HSF7bq2WMFjer0VjCgfJvrh9afCb
-        i+89js/zzPcwG9u7vH5owYG4Tg==
-X-Google-Smtp-Source: ABdhPJwXRObsL8ejRw2Heh5XRu+rRn4ydix5fTKFeZYFLvSwm2ojMD2la1MO54JxNhao+Rk9S4EHZg==
-X-Received: by 2002:adf:deca:: with SMTP id i10mr257359wrn.96.1603122982550;
-        Mon, 19 Oct 2020 08:56:22 -0700 (PDT)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id w11sm191745wrs.26.2020.10.19.08.56.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Oct 2020 08:56:21 -0700 (PDT)
-Date:   Mon, 19 Oct 2020 17:56:19 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Peilin Ye <yepeilin.cs@gmail.com>
-Cc:     Jonathan Corbet <corbet@lwn.net>, Daniel Vetter <daniel@ffwll.ch>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Sven Schneider <s.schneider@arkona-technologies.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2 RESEND] docs: fb: Add font_6x8 to available built-in
- fonts
-Message-ID: <20201019155619.GH401619@phenom.ffwll.local>
-Mail-Followup-To: Peilin Ye <yepeilin.cs@gmail.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Sven Schneider <s.schneider@arkona-technologies.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <717bb41dda8e2ed615f3faadfbc3e215de726d38.1603037079.git.yepeilin.cs@gmail.com>
- <20201018205401.698242-1-yepeilin.cs@gmail.com>
+        id S2392341AbgJTJCp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 20 Oct 2020 05:02:45 -0400
+Received: from szxga05-in.huawei.com ([45.249.212.191]:15237 "EHLO huawei.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S2390264AbgJTJCo (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 20 Oct 2020 05:02:44 -0400
+Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.59])
+        by Forcepoint Email with ESMTP id 04FD0A8AF70E46EE5E23;
+        Tue, 20 Oct 2020 17:02:42 +0800 (CST)
+Received: from [10.174.178.174] (10.174.178.174) by
+ DGGEMS407-HUB.china.huawei.com (10.3.19.207) with Microsoft SMTP Server id
+ 14.3.487.0; Tue, 20 Oct 2020 17:02:35 +0800
+Subject: [PATCH resend] vgacon: fix a UAF in do_update_region()
+To:     Sam Ravnborg <sam@ravnborg.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+CC:     <b.zolnierkie@samsung.com>, <linux-fbdev@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+        <yangyingliang@huawei.com>
+References: <20200713110445.553974-1-yangyingliang@huawei.com>
+ <20201017122506.GA2838103@ravnborg.org>
+From:   Yang Yingliang <yangyingliang@huawei.com>
+Message-ID: <60b42c70-0166-747d-2063-7ecce463a933@huawei.com>
+Date:   Tue, 20 Oct 2020 17:02:34 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201018205401.698242-1-yepeilin.cs@gmail.com>
-X-Operating-System: Linux phenom 5.7.0-1-amd64 
+In-Reply-To: <20201017122506.GA2838103@ravnborg.org>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-Originating-IP: [10.174.178.174]
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
-Message-ID: <20201019155619.msqKKD0b-WuAbYC57BsB1Z7ioYnCQCaC4Qlh-6Vwl3U@z>
+Message-ID: <20201020090234.sl9BgyzSq3JDvzGIvTekpSkVEcq7N6DFZ99oD-0XCpk@z>
 
-On Sun, Oct 18, 2020 at 04:54:01PM -0400, Peilin Ye wrote:
-> Recently we added a new 6x8 font in commit e2028c8e6bf9 ("lib/fonts: add
-> font 6x8 for OLED display"). Add its name to the "compiled-in fonts"
-> list.
-> 
-> Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
-> ---
-> Resending +Cc: dri-devel, sorry if I spammed.
+I got a UAF report in do_update_region() when I doing fuzz test.
 
-Both this and patch 1/2 with the actual bugfix merged to
-drm-misc-next-fixes, should still make it into the merge window before
--rc1.
+[   51.161905] BUG: KASAN: use-after-free in do_update_region+0x579/0x600
+[   51.161918] Read of size 2 at addr ffff888000100000 by task test/295
 
-Thanks, Daniel
+[   51.161957] CPU: 2 PID: 295 Comm: test Not tainted 5.7.0+ #975
+[   51.161969] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.13.0-0-gf21b5a4aeb02-prebuilt.qemu.org 04/01/2014
+[   51.161976] Call Trace:
+[   51.162001]  dump_stack+0xc6/0x11e
+[   51.162019]  ? do_update_region+0x579/0x600
+[   51.162047]  print_address_description.constprop.6+0x1a/0x220
+[   51.162083]  ? vprintk_func+0x66/0xed
+[   51.162100]  ? do_update_region+0x579/0x600
+[   51.162112]  ? do_update_region+0x579/0x600
+[   51.162128]  kasan_report.cold.9+0x37/0x7c
+[   51.162151]  ? do_update_region+0x579/0x600
+[   51.162173]  do_update_region+0x579/0x600
+[   51.162207]  ? con_get_trans_old+0x230/0x230
+[   51.162229]  ? retint_kernel+0x10/0x10
+[   51.162278]  csi_J+0x557/0xa00
+[   51.162307]  do_con_trol+0x49af/0x5cc0
+[   51.162330]  ? lock_downgrade+0x720/0x720
+[   51.162347]  ? reset_palette+0x1b0/0x1b0
+[   51.162369]  ? lockdep_hardirqs_on_prepare+0x379/0x540
+[   51.162393]  ? notifier_call_chain+0x11b/0x160
+[   51.162438]  do_con_write.part.24+0xb0a/0x1a30
+[   51.162501]  ? do_con_trol+0x5cc0/0x5cc0
+[   51.162522]  ? console_unlock+0x7b8/0xb00
+[   51.162555]  ? __mutex_unlock_slowpath+0xd4/0x670
+[   51.162574]  ? this_tty+0xe0/0xe0
+[   51.162589]  ? console_unlock+0x559/0xb00
+[   51.162605]  ? wait_for_completion+0x260/0x260
+[   51.162638]  con_write+0x31/0xb0
+[   51.162658]  n_tty_write+0x4fa/0xd40
+[   51.162710]  ? n_tty_read+0x1800/0x1800
+[   51.162730]  ? prepare_to_wait_exclusive+0x270/0x270
+[   51.162754]  ? __might_fault+0x175/0x1b0
+[   51.162783]  tty_write+0x42b/0x8d0
+[   51.162795]  ? n_tty_read+0x1800/0x1800
+[   51.162825]  ? tty_lookup_driver+0x450/0x450
+[   51.162848]  __vfs_write+0x7c/0x100
+[   51.162875]  vfs_write+0x1c9/0x510
+[   51.162901]  ksys_write+0xff/0x200
+[   51.162918]  ? __ia32_sys_read+0xb0/0xb0
+[   51.162940]  ? do_syscall_64+0x1a/0x520
+[   51.162957]  ? lockdep_hardirqs_on_prepare+0x379/0x540
+[   51.162984]  do_syscall_64+0xa1/0x520
+[   51.163008]  entry_SYSCALL_64_after_hwframe+0x49/0xb3
 
-> 
->  Documentation/fb/fbcon.rst | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
-> index 9aad964b767c..57f66de2f7e1 100644
-> --- a/Documentation/fb/fbcon.rst
-> +++ b/Documentation/fb/fbcon.rst
-> @@ -81,7 +81,7 @@ C. Boot options
->  1. fbcon=font:<name>
->  
->  	Select the initial font to use. The value 'name' can be any of the
-> -	compiled-in fonts: 10x18, 6x10, 7x14, Acorn8x8, MINI4x6,
-> +	compiled-in fonts: 10x18, 6x10, 6x8, 7x14, Acorn8x8, MINI4x6,
->  	PEARL8x8, ProFont6x11, SUN12x22, SUN8x16, TER16x32, VGA8x16, VGA8x8.
->  
->  	Note, not all drivers can handle font with widths not divisible by 8,
-> -- 
-> 2.25.1
-> 
+After vgacon_set_origin() is called in set_origin(), the vc_origin is
+set to vga_vram_base, the vc_pos should between vga_vram_base and
+vga_vram_end. But we still use vc_screenbuf_size, if the vga_vram_size
+is smaller than vc_screenbuf_size, vc_pos may be out of bound, using it
+will cause a use-after-free(or out-of-bounds). Fix this by calling
+vc_resize() if vga_vram_size is smaller than vc_screenbuf_size.
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Signed-off-by: Yang Yingliang<yangyingliang@huawei.com>
+---
+  drivers/video/console/vgacon.c | 3 +++
+  1 file changed, 3 insertions(+)
+
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 998b0de..2ee3d62 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -1336,6 +1336,9 @@ static int vgacon_set_origin(struct vc_data *c)
+  	if (vga_is_gfx ||	/* We don't play origin tricks in graphic modes */
+  	    (console_blanked && !vga_palette_blanked))	/* Nor we write to blanked screens */
+  		return 0;
++
++	if (c->vc_screenbuf_size > vga_vram_size)
++		vc_resize(c, screen_info.orig_video_cols, screen_info.orig_video_lines);
+  	c->vc_origin = c->vc_visible_origin = vga_vram_base;
+  	vga_set_mem_top(c);
+  	vga_rolled_over = 0;
+

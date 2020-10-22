@@ -4,196 +4,130 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE46EC388F2
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Oct 2020 03:51:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14A07C5517A
+	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Oct 2020 05:05:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5D43A2237B
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Oct 2020 03:51:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C15AF223FB
+	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Oct 2020 05:05:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="jfgSPQOr"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="f48hBtEY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2895549AbgJVDv2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 21 Oct 2020 23:51:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47806 "EHLO
+        id S2443800AbgJVFFS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 22 Oct 2020 01:05:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59158 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2895545AbgJVDv1 (ORCPT
+        with ESMTP id S2502096AbgJVFFP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 21 Oct 2020 23:51:27 -0400
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 607C9C0613CE
-        for <linux-fbdev@vger.kernel.org>; Wed, 21 Oct 2020 20:51:27 -0700 (PDT)
-Received: by mail-lj1-x244.google.com with SMTP id y16so421320ljk.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 21 Oct 2020 20:51:27 -0700 (PDT)
+        Thu, 22 Oct 2020 01:05:15 -0400
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com [IPv6:2607:f8b0:4864:20::644])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04575C0613D2
+        for <linux-fbdev@vger.kernel.org>; Wed, 21 Oct 2020 22:05:13 -0700 (PDT)
+Received: by mail-pl1-x644.google.com with SMTP id t4so307166plq.13
+        for <linux-fbdev@vger.kernel.org>; Wed, 21 Oct 2020 22:05:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=OD2SvaRXRa5aFA9Su8qEUKHMqaQeb26WVVxFKHUZW3o=;
-        b=jfgSPQOr4A8ebu6KBlDk6MVbrQROb/hEns797rAciUFVjjjM1+dq5LVdJCXy3WghwY
-         9gS9spxOQBcQHGuSZ2cyV8hC/P5UUyKbnNkcbmoR9mgY4VjuMWbqcSU+8FxV0dtbmNbu
-         YEhi1JNjHbsoy/LEP916piSbHkl85J5z38ud8=
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=br1VG/AftR5rvhAmwlJkFmu6wT77im0wqYMY63lXCPc=;
+        b=f48hBtEYiQ9cumyN91pZln9WRYzYGIagC8IaqGZt02+O2MHl6eQhg0BtJ9+cg1Lz5h
+         o78FtZXmTE3jBKH3YGJw6UO0d0jZFwtKCoYPkexfnY1SZ/dfXt7VslCJZM/bN6IMdzvi
+         1GjVCtofogBD1D5SMd8g0By60jOJ/X9Pviva4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=OD2SvaRXRa5aFA9Su8qEUKHMqaQeb26WVVxFKHUZW3o=;
-        b=ZuIMPMU/OcaM0x/bxYSponW5AbgTNgMh8Iy0bjjG5xC+u391hfDjF/V4mToreM4Xbc
-         vgA0/hXTqIMKzkaSmcdiUOmLhBVsEPoBSnyyKMRY+WMWl7iG1TGxDUFUb8MVe9kk+AiR
-         BAl14qYHSg+454IWkZkL+8PXp/RxlKWbds7hPPwoRrx11kTERvfTJHsCpFSR98q0TCUt
-         DVSbhTDyrvBPoEwO6WyLhGadRC0AyWEw27qpnU0L6ECoJqeWc7EevcpIMb3jSc3FCnFs
-         TdiursSoBOHssCoy4oKpCGS4Fs0qXMAoSL9MVfO5fIJ315BrhOYgJjZdEzD5yt39z9f6
-         7JVw==
-X-Gm-Message-State: AOAM533lwGMraGa9RpQlz/CEWzxYMkgWNoq8YXVyi73sv26IKi5GTwrk
-        skjKNzm7qWV7JVfRx4hbGf35uEOnTxiIJWRhLy1js1PQZctDzw==
-X-Google-Smtp-Source: ABdhPJzI3iojCVEEsrR4EWPLL1+OUZ0aJmGz6MfnAFQAPlQ8DvOjyxFr8weFl2uvrryY5VT3YyjqrgUwXOyKCwzJIVY=
-X-Received: by 2002:a2e:8108:: with SMTP id d8mr254498ljg.96.1603338685764;
- Wed, 21 Oct 2020 20:51:25 -0700 (PDT)
-MIME-Version: 1.0
-References: <20201013080103.410133-1-amstan@chromium.org> <20201013010056.v2.1.I4dcea1c90e9da3902d466033aa73351e19e49c49@changeid>
- <CAMuHMdUSWWSVQCxX-rv3MCvw59q+dscQ3bC4yysVCPyxdaEi6w@mail.gmail.com>
-In-Reply-To: <CAMuHMdUSWWSVQCxX-rv3MCvw59q+dscQ3bC4yysVCPyxdaEi6w@mail.gmail.com>
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=br1VG/AftR5rvhAmwlJkFmu6wT77im0wqYMY63lXCPc=;
+        b=tkyaGVYpmrP778uMXjDUu6k98DKbh+zUkjg8a7tN1EYbeV3CAALROnH/MybxtIH0Lz
+         Wbk+JpEabI1KMsSskPI1sc1PnfI5YSjw/c+9ChdqmbS9D4V1cdZuh4u+KIb2dgOpj7ga
+         WnHCygSOzu0GRFMIiIIsYw/7wnARGqy7kUQ98KupkZSRXHBYqSWQEvY7x9FbcMl1IB0i
+         kSzIwNvGaKSEq2XsrguzYwI8rAamaltxNFKtNhr26sJoUuwM41wsbnvNnuCz5tYhpa+V
+         itnp96YwBHl3XO6qoZkCoJ4ItF2Rq2Y1ZKdJQ5ddxizKgUCC4cjoG5YOmyTWK9jAQI7y
+         gdZg==
+X-Gm-Message-State: AOAM5316mnhD3WxwnWTcBp4cwFU7vRGZ5D1PD6PIND8Ql2DUUBfILujY
+        UIwL1hS7od4Y2poXEr5NiwTFrQ==
+X-Google-Smtp-Source: ABdhPJymcPyyQm+Vwkk6bRyWkhQZdrrKBm+8kHDpsoJwQTQghvs0I0e+UpqN3Vxv1JCNbjDoQlFwsw==
+X-Received: by 2002:a17:902:ab89:b029:d5:b297:2cc1 with SMTP id f9-20020a170902ab89b02900d5b2972cc1mr765458plr.7.1603343113453;
+        Wed, 21 Oct 2020 22:05:13 -0700 (PDT)
+Received: from alex-desktop.lan (c-73-63-253-164.hsd1.ca.comcast.net. [73.63.253.164])
+        by smtp.gmail.com with ESMTPSA id q16sm394954pfu.206.2020.10.21.22.05.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 21 Oct 2020 22:05:12 -0700 (PDT)
 From:   Alexandru Stan <amstan@chromium.org>
-Date:   Wed, 21 Oct 2020 20:51:15 -0700
-Message-ID: <CAGF9J3t4_Ru10=x3awb7MeueC3JGhjE4=EfTv7CfU_7tZVFFkA@mail.gmail.com>
-Subject: Re: [PATCH v2 1/3] backlight: pwm_bl: Fix interpolation
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
+To:     Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
         <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>,
         Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Rob Herring <robh+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Douglas Anderson <dianders@chromium.org>,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc:     Douglas Anderson <dianders@chromium.org>,
         Matthias Kaehlcke <mka@chromium.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PWM List <linux-pwm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
+        Alexandru Stan <amstan@chromium.org>,
+        devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org,
+        linux-rockchip@lists.infradead.org
+Subject: [PATCH v3 0/3] PWM backlight interpolation adjustments
+Date:   Wed, 21 Oct 2020 22:04:42 -0700
+Message-Id: <20201022050445.930403-1-amstan@chromium.org>
+X-Mailer: git-send-email 2.28.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 14 Oct 2020 at 23:55, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> Hi Alexandru,
->
-> On Tue, Oct 13, 2020 at 1:57 PM Alexandru Stan <amstan@chromium.org> wrote:
-> > Whenever num-interpolated-steps was larger than the distance
-> > between 2 consecutive brightness levels the table would get really
-> > discontinuous. The slope of the interpolation would stick with
-> > integers only and if it was 0 the whole line segment would get skipped.
-> >
-> > Example settings:
-> >         brightness-levels = <0 1 2 4 8 16 32 64 128 256>;
-> >         num-interpolated-steps = <16>;
-> >
-> > The distances between 1 2 4 and 8 would be 1, and only starting with 16
-> > it would start to interpolate properly.
-> >
-> > Let's change it so there's always interpolation happening, even if
-> > there's no enough points available (read: values in the table would
-> > appear more than once). This should match the expected behavior much
-> > more closely.
-> >
-> > Signed-off-by: Alexandru Stan <amstan@chromium.org>
->
-> Thanks for your patch!
+I was trying to adjust the brightness-levels for the trogdor boards:
+https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/2291209
+Like on a lot of panels, trogdor's low end needs to be cropped,
+and now that we have the interpolation stuff I wanted to make use of it
+and bake in even the curve that's customary to have on chromebooks.
 
-Thanks for your reply!
+I found the current behavior of the pwm_bl driver a little unintuitive
+and non-linear. See patch 1 for a suggested fix for this.
 
-I'm sorry I haven't replied earlier. Looks like your reply was marked as spam.
-Rest be assured my spam filter has been disciplined! :D
+A few veyron dts files were relying on this (perhaps weird) behavior.
+Those devices also want a minimum brightness like trogdor, so changed
+them to use the new way.
 
->
-> > --- a/drivers/video/backlight/pwm_bl.c
-> > +++ b/drivers/video/backlight/pwm_bl.c
-> > @@ -327,24 +324,25 @@ static int pwm_backlight_parse_dt(struct device *dev,
-> >                         table = devm_kzalloc(dev, size, GFP_KERNEL);
-> >                         if (!table)
-> >                                 return -ENOMEM;
-> > -
-> > -                       /* Fill the interpolated table. */
-> > -                       levels_count = 0;
-> > -                       for (i = 0; i < data->max_brightness - 1; i++) {
-> > -                               value = data->levels[i];
-> > -                               n = (data->levels[i + 1] - value) / num_steps;
-> > -                               if (n > 0) {
-> > -                                       for (j = 0; j < num_steps; j++) {
-> > -                                               table[levels_count] = value;
-> > -                                               value += n;
-> > -                                               levels_count++;
-> > -                                       }
-> > -                               } else {
-> > -                                       table[levels_count] = data->levels[i];
-> > -                                       levels_count++;
-> > +                       /*
-> > +                        * Fill the interpolated table[x] = y
-> > +                        * by draw lines between each (x1, y1) to (x2, y2).
-> > +                        */
-> > +                       dx = num_steps;
-> > +                       for (i = 0; i < num_input_levels - 1; i++) {
-> > +                               x1 = i * dx;
-> > +                               x2 = x1 + dx;
-> > +                               y1 = data->levels[i];
-> > +                               y2 = data->levels[i + 1];
-> > +                               dy = (s64)y2 - y1;
-> > +
-> > +                               for (x = x1; x < x2; x++) {
-> > +                                       table[x] = y1 +
-> > +                                               div_s64(dy * ((s64)x - x1), dx);
->
-> Yummy, 64-by-32 divisions.
-> Shouldn't this use a rounded division?
+Finally, given that trogdor's dts is part of linux-next now, add the
+brightness-levels to it, since that's the original reason I was looking at
+this.
 
-It won't hurt. But it really doesn't make much of a difference either way.
+Changes in v3:
+- Reordered patches, since both dts changes will work just fine
+  even before the driver change.
+- Rewrote a bit of the commit message to describe the new policy,
+  as Daniel suggested.
+- Removed redundant s64 for something that's always positive
 
->
-> Nevertheless, I think it would be worthwhile to implement this using
-> a (modified) Bresenham algorithm, avoiding multiplications and
-> divisions, and possibly increasing accuracy as well.
->
-> https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+Changes in v2:
+- Fixed type promotion in the driver
+- Removed "backlight: pwm_bl: Artificially add 0% during interpolation",
+  userspace works just fine without it because it already knows how to use
+  bl_power for turning off the display.
+- Added brightness-levels to trogdor as well, now the dts is upstream.
 
-Sure, it might be a little faster to use Bresenham's line algorithm.
-Looks like to implement it I would have to deal with some fixed point
-math and still have to do divisions occasionally.
-I don't think performance is critical here, the values get calculated
-only once when the driver loads, and the algorithm's accuracy
-improvements might be at most 1 LSB.
 
-Meanwhile the formula I already implemented is almost the same as the
-formulas found at
-https://en.wikipedia.org/wiki/Linear_interpolation#:~:text=gives
-I would like to keep it as is, as straightforward as possible.
+Alexandru Stan (3):
+  ARM: dts: rockchip: veyron: Remove 0 point from brightness-levels
+  arm64: dts: qcom: trogdor: Add brightness-levels
+  backlight: pwm_bl: Fix interpolation
 
->
-> >                                 }
-> >                         }
-> > -                       table[levels_count] = data->levels[i];
-> > +                       /* Fill in the last point, since no line starts here. */
-> > +                       table[x2] = y2;
-> >
-> >                         /*
-> >                          * As we use interpolation lets remove current
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+ arch/arm/boot/dts/rk3288-veyron-jaq.dts      |  2 +-
+ arch/arm/boot/dts/rk3288-veyron-minnie.dts   |  2 +-
+ arch/arm/boot/dts/rk3288-veyron-tiger.dts    |  2 +-
+ arch/arm64/boot/dts/qcom/sc7180-trogdor.dtsi |  9 +++
+ drivers/video/backlight/pwm_bl.c             | 70 +++++++++-----------
+ 5 files changed, 43 insertions(+), 42 deletions(-)
 
-Alexandru Stan (amstan)
+-- 
+2.28.0
+

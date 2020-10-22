@@ -7,36 +7,36 @@ X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DE63C4363A
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Oct 2020 07:01:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E533DC388F7
+	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Oct 2020 07:28:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3753C20FC3
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Oct 2020 07:01:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 97B9220848
+	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Oct 2020 07:28:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2504811AbgJVHBy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 22 Oct 2020 03:01:54 -0400
-Received: from mx2.suse.de ([195.135.220.15]:36590 "EHLO mx2.suse.de"
+        id S2508388AbgJVH2j (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 22 Oct 2020 03:28:39 -0400
+Received: from mx2.suse.de ([195.135.220.15]:55882 "EHLO mx2.suse.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2504809AbgJVHBy (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 22 Oct 2020 03:01:54 -0400
+        id S2506488AbgJVH2j (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 22 Oct 2020 03:28:39 -0400
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 16A7EAD4A;
-        Thu, 22 Oct 2020 07:01:53 +0000 (UTC)
-To:     Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc:     b.zolnierkie@samsung.com, gwan-gyeong.mun@intel.com,
-        sam@ravnborg.org, daniel.vetter@ffwll.ch, bernard@vivo.com,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20201021121241.17623-1-tzimmermann@suse.de>
- <20201021230654.GS3942@pendragon.ideasonboard.com>
+        by mx2.suse.de (Postfix) with ESMTP id 4EEC6ABB2;
+        Thu, 22 Oct 2020 07:28:37 +0000 (UTC)
+Subject: Re: [PATCH 1/1] video: fbdev: fix divide error in fbcon_switch
+To:     saeed.mirzamohammadi@oracle.com, linux-kernel@vger.kernel.org
+Cc:     b.zolnierkie@samsung.com, akpm@linux-foundation.org,
+        rppt@kernel.org, daniel.vetter@ffwll.ch, jani.nikula@intel.com,
+        gustavoars@kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+References: <20201021235758.59993-1-saeed.mirzamohammadi@oracle.com>
 From:   Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH] drivers/video: Fix -Wstringop-truncation in hdmi.c
-Message-ID: <a07dff58-a6fa-8b3d-453a-a75bf47b5405@suse.de>
-Date:   Thu, 22 Oct 2020 09:01:52 +0200
+Message-ID: <59d0aaeb-f3d0-b386-a3a1-4f5f71fb68aa@suse.de>
+Date:   Thu, 22 Oct 2020 09:28:36 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.3.2
 MIME-Version: 1.0
-In-Reply-To: <20201021230654.GS3942@pendragon.ideasonboard.com>
+In-Reply-To: <20201021235758.59993-1-saeed.mirzamohammadi@oracle.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -46,72 +46,56 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi
 
-On 22.10.20 01:06, Laurent Pinchart wrote:
-> Hi Thomas,
+On 22.10.20 01:57, saeed.mirzamohammadi@oracle.com wrote:
+> From: Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>
 > 
-> Thank you for the patch.
+> This patch fixes the issue due to:
 > 
-> On Wed, Oct 21, 2020 at 02:12:41PM +0200, Thomas Zimmermann wrote:
->> Trying to copy into the string fields with strncpy() gives a warning from
->> gcc. Both fields are part of a packed HDMI header and do not require a
->> terminating \0 character.
->>
->> ../drivers/video/hdmi.c: In function 'hdmi_spd_infoframe_init':
->> ../drivers/video/hdmi.c:230:2: warning: 'strncpy' specified bound 8 equals destination size [-Wstringop-truncation]
->>   230 |  strncpy(frame->vendor, vendor, sizeof(frame->vendor));
->>       |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> ../drivers/video/hdmi.c:231:2: warning: 'strncpy' specified bound 16 equals destination size [-Wstringop-truncation]
->>   231 |  strncpy(frame->product, product, sizeof(frame->product));
->>       |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>
->> Just use memcpy() instead.
->>
->> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->> ---
->>  drivers/video/hdmi.c | 8 ++++++--
->>  1 file changed, 6 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
->> index b7a1d6fae90d..1e4cb63d0d11 100644
->> --- a/drivers/video/hdmi.c
->> +++ b/drivers/video/hdmi.c
->> @@ -221,14 +221,18 @@ EXPORT_SYMBOL(hdmi_avi_infoframe_pack);
->>  int hdmi_spd_infoframe_init(struct hdmi_spd_infoframe *frame,
->>  			    const char *vendor, const char *product)
->>  {
->> +	size_t len;
->> +
->>  	memset(frame, 0, sizeof(*frame));
->>  
->>  	frame->type = HDMI_INFOFRAME_TYPE_SPD;
->>  	frame->version = 1;
->>  	frame->length = HDMI_SPD_INFOFRAME_SIZE;
->>  
->> -	strncpy(frame->vendor, vendor, sizeof(frame->vendor));
->> -	strncpy(frame->product, product, sizeof(frame->product));
->> +	len = strlen(vendor);
->> +	memcpy(frame->vendor, vendor, min(len, sizeof(frame->vendor)));
->> +	len = strlen(product);
->> +	memcpy(frame->product, product, min(len, sizeof(frame->product)));
+> [   89.572883] divide_error: 0000 [#1] SMP KASAN PTI
+> [   89.572897] CPU: 3 PID: 16083 Comm: repro Not tainted 5.9.0-rc7.20200930.rc1.allarch-19-g3e32d0d.syzk #5
+> [   89.572902] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 0.5.1 01/01/2011
+> [   89.572934] RIP: 0010:cirrusfb_check_var+0x84/0x1260
 > 
-> As this seems to be a legitimate use of strncpy(), isn't there a way to
-> silence the warning without requiring this additional runtime complexity
-> ?
+> The error happens when the pixels value is calculated before performing the sanity checks on bits_per_pixel.
+> A bits_per_pixel set to zero causes divide by zero error.
+> 
+> This patch moves the calculation after the sanity check.
+> 
+> Signed-off-by: Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>
+> Tested-by: Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>
 
-Yes, the original code this correct. I looked through include/string.h
-if there's better string function, but none fits. Most of them
-0-terminate the output string.
+Looks good, thanks a lot. I'll add the patch to drm-misc-next
 
-The only simple fix seems to be to set gcc's -Wno-stringop-truncation
-here. I'd expect that would be an even less preferable change.
+Reviewed-by: Thomas Zimemrmann <tzimmermann@suse.de>
 
 Best regards
 Thomas
 
+> ---
+>  drivers/video/fbdev/cirrusfb.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
->>  
->>  	return 0;
->>  }
+> diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
+> index 15a9ee7cd734..a7749101b094 100644
+> --- a/drivers/video/fbdev/cirrusfb.c
+> +++ b/drivers/video/fbdev/cirrusfb.c
+> @@ -531,7 +531,7 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
+>  {
+>  	int yres;
+>  	/* memory size in pixels */
+> -	unsigned pixels = info->screen_size * 8 / var->bits_per_pixel;
+> +	unsigned int pixels;
+>  	struct cirrusfb_info *cinfo = info->par;
+>  
+>  	switch (var->bits_per_pixel) {
+> @@ -573,6 +573,7 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
+>  		return -EINVAL;
+>  	}
+>  
+> +	pixels = info->screen_size * 8 / var->bits_per_pixel;
+>  	if (var->xres_virtual < var->xres)
+>  		var->xres_virtual = var->xres;
+>  	/* use highest possible virtual resolution */
 > 
 
 -- 

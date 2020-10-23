@@ -1,111 +1,102 @@
-Return-Path: <SRS0=EkD8=D5=vger.kernel.org=linux-fbdev-owner@kernel.org>
+Return-Path: <SRS0=FwRe=D6=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98D5BC4363A
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Oct 2020 07:34:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3789C4363A
+	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Oct 2020 16:36:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 42D9B20BED
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Oct 2020 07:34:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 985C8208C3
+	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Oct 2020 16:36:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1603470997;
+	bh=QtoGRTSylDJqRgGFl+2IEK4wws+paYf2E8QEhkhHbdI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=2hlIS5TpxFq7bwxAa5czRy044hI+voxyDpTeS/R4nlL5hNba0oX/hsMMIyBJG51in
+	 iZ+B5c4scWba3bAYEqffo8xGHzf3Pjo+g529zhOiQWoZQm3xNqxkr3II3GRgWtPsoc
+	 7FTMDYBhjnNZ9WE7sluIuuplAbU3EiJ+rh8b4mZs=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2508580AbgJVHeP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 22 Oct 2020 03:34:15 -0400
-Received: from mx2.suse.de ([195.135.220.15]:59490 "EHLO mx2.suse.de"
+        id S1751700AbgJWQgg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 23 Oct 2020 12:36:36 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33226 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2506555AbgJVHeO (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 22 Oct 2020 03:34:14 -0400
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id B6DC5B195;
-        Thu, 22 Oct 2020 07:34:12 +0000 (UTC)
-Subject: Re: [PATCH 1/1] video: fbdev: fix divide error in fbcon_switch
-To:     saeed.mirzamohammadi@oracle.com, linux-kernel@vger.kernel.org
-Cc:     linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com,
-        jani.nikula@intel.com, daniel.vetter@ffwll.ch,
-        gustavoars@kernel.org, dri-devel@lists.freedesktop.org,
-        akpm@linux-foundation.org, rppt@kernel.org
-References: <20201021235758.59993-1-saeed.mirzamohammadi@oracle.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-Message-ID: <ad87c5c1-061d-8a81-7b2c-43a8687a464f@suse.de>
-Date:   Thu, 22 Oct 2020 09:34:11 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.3.2
+        id S1751840AbgJWQdu (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 23 Oct 2020 12:33:50 -0400
+Received: from mail.kernel.org (ip5f5ad5a3.dynamic.kabel-deutschland.de [95.90.213.163])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 2C45C24641;
+        Fri, 23 Oct 2020 16:33:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1603470828;
+        bh=QtoGRTSylDJqRgGFl+2IEK4wws+paYf2E8QEhkhHbdI=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=hEIB+q2tWBVixEjqnwpiMbiJeCp/19tHBnF+K+4L7lCcqpnSY2d5cQDUHnRqq8E3B
+         GYXKY5Gvf1/QwKaYsYY0ExUq9v7xK7WjiVF4T6LX4K4Z3LiIZ+S5lJI4DFIwSoyPBY
+         yDd8aKrlBhPYRJ0nItAd61UlPvnIkM5HOjgvwudA=
+Received: from mchehab by mail.kernel.org with local (Exim 4.94)
+        (envelope-from <mchehab@kernel.org>)
+        id 1kW00g-002Awn-4Z; Fri, 23 Oct 2020 18:33:46 +0200
+From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+        "Jonathan Corbet" <corbet@lwn.net>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v3 32/56] video: fix some kernel-doc markups
+Date:   Fri, 23 Oct 2020 18:33:19 +0200
+Message-Id: <8078dde13eac44d5361abb606e098abd724b2ccd.1603469755.git.mchehab+huawei@kernel.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <cover.1603469755.git.mchehab+huawei@kernel.org>
+References: <cover.1603469755.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20201021235758.59993-1-saeed.mirzamohammadi@oracle.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+Sender: Mauro Carvalho Chehab <mchehab@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi
+Some identifiers have different names between their prototypes
+and the kernel-doc markup.
 
-On 22.10.20 01:57, saeed.mirzamohammadi@oracle.com wrote:
-> From: Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>
-> 
-> This patch fixes the issue due to:
-> 
-> [   89.572883] divide_error: 0000 [#1] SMP KASAN PTI
-> [   89.572897] CPU: 3 PID: 16083 Comm: repro Not tainted 5.9.0-rc7.20200930.rc1.allarch-19-g3e32d0d.syzk #5
-> [   89.572902] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 0.5.1 01/01/2011
-> [   89.572934] RIP: 0010:cirrusfb_check_var+0x84/0x1260
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+---
+ drivers/video/fbdev/core/fbcmap.c | 2 +-
+ drivers/video/hdmi.c              | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-BTW, if you run qemu with cirrus, there's also a DRM driver named
-cirrus.ko. Might be a better choice than the old fbdev driver. If you
-just care about qemu, but not the actual graphics device, take a look at
-
-  https://www.kraxel.org/blog/2014/10/qemu-using-cirrus-considered-harmful/
-
-Anyway, thanks for your patch.
-
-Best regards
-Thomas
-
-> 
-> The error happens when the pixels value is calculated before performing the sanity checks on bits_per_pixel.
-> A bits_per_pixel set to zero causes divide by zero error.
-> 
-> This patch moves the calculation after the sanity check.
-> 
-> Signed-off-by: Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>
-> Tested-by: Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>
-> ---
->  drivers/video/fbdev/cirrusfb.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
-> index 15a9ee7cd734..a7749101b094 100644
-> --- a/drivers/video/fbdev/cirrusfb.c
-> +++ b/drivers/video/fbdev/cirrusfb.c
-> @@ -531,7 +531,7 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
->  {
->  	int yres;
->  	/* memory size in pixels */
-> -	unsigned pixels = info->screen_size * 8 / var->bits_per_pixel;
-> +	unsigned int pixels;
->  	struct cirrusfb_info *cinfo = info->par;
->  
->  	switch (var->bits_per_pixel) {
-> @@ -573,6 +573,7 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
->  		return -EINVAL;
->  	}
->  
-> +	pixels = info->screen_size * 8 / var->bits_per_pixel;
->  	if (var->xres_virtual < var->xres)
->  		var->xres_virtual = var->xres;
->  	/* use highest possible virtual resolution */
-> 
-
+diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
+index e5ae33c1a8e8..757d5c3f620b 100644
+--- a/drivers/video/fbdev/core/fbcmap.c
++++ b/drivers/video/fbdev/core/fbcmap.c
+@@ -76,7 +76,7 @@ static const struct fb_cmap default_16_colors = {
+ 
+ 
+ /**
+- *	fb_alloc_cmap - allocate a colormap
++ *	fb_alloc_cmap_gfp - allocate a colormap
+  *	@cmap: frame buffer colormap structure
+  *	@len: length of @cmap
+  *	@transp: boolean, 1 if there is transparency, 0 otherwise
+diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+index b7a1d6fae90d..e44b7cec95fd 100644
+--- a/drivers/video/hdmi.c
++++ b/drivers/video/hdmi.c
+@@ -1688,7 +1688,8 @@ static int hdmi_audio_infoframe_unpack(struct hdmi_audio_infoframe *frame,
+ }
+ 
+ /**
+- * hdmi_vendor_infoframe_unpack() - unpack binary buffer to a HDMI vendor infoframe
++ * hdmi_vendor_any_infoframe_unpack() - unpack binary buffer to a HDMI
++ * 	vendor infoframe
+  * @frame: HDMI Vendor infoframe
+  * @buffer: source buffer
+  * @size: size of buffer
 -- 
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Maxfeldstr. 5, 90409 Nürnberg, Germany
-(HRB 36809, AG Nürnberg)
-Geschäftsführer: Felix Imendörffer
+2.26.2
+

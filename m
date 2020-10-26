@@ -5,94 +5,101 @@ X-Spam-Level:
 X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 801F4C2D0A3
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Oct 2020 19:40:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1BBAC4363A
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Oct 2020 23:52:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 402CB20872
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Oct 2020 19:40:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B863F221FA
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Oct 2020 23:52:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603741223;
-	bh=nGR/itPh0jz6AbVxRkpFGc/DrAZq4nbxrqWJE5Gzyb0=;
-	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=LX/hXfcu87JhnskvPrRlh1WS4NS14c3PVCIm0spppnqaNwxq76hnSJZ+AfIlT8zH5
-	 ign5m+wCYw1p3m6bRaQXPYGF/NmgM+VM0uETfWLsvBx3WJU6DAVz4siH+M/Ak3CWkX
-	 si40K7DRB++VXB/CgoOM7xfI/xL3MnRfggY35Wh4=
+	s=default; t=1603756364;
+	bh=LuDTJvUP42aUFHwVP4Gapde+YuW1PFjyYZnDoPLU+kM=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=wrjkhc9XtSF2RdLkEoysUpLpfZS11k4YizzX7o8zr2Rcr6ARsqHQz3UBXXtJ9KXT4
+	 I4PPuTinAT7jUv0MRF6hMhPB/Kwr0XtcUeTdbKYGfcCaMrPwMe/PMpTE1f9gowk/5n
+	 Utsh72FS55a7KXnTkq0ukYyr8Hgz1AawJdgTXZrQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2437999AbgJZTkX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 26 Oct 2020 15:40:23 -0400
-Received: from mail.kernel.org ([198.145.29.99]:42182 "EHLO mail.kernel.org"
+        id S2409832AbgJZXwm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 26 Oct 2020 19:52:42 -0400
+Received: from mail.kernel.org ([198.145.29.99]:55592 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2437922AbgJZTkW (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 26 Oct 2020 15:40:22 -0400
-Received: from localhost.localdomain (unknown [192.30.34.233])
+        id S2409828AbgJZXwl (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 26 Oct 2020 19:52:41 -0400
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 8D57220760;
-        Mon, 26 Oct 2020 19:40:20 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 8B48720B1F;
+        Mon, 26 Oct 2020 23:52:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1603741222;
-        bh=nGR/itPh0jz6AbVxRkpFGc/DrAZq4nbxrqWJE5Gzyb0=;
-        h=From:To:Cc:Subject:Date:From;
-        b=0IfrEwAww116p9n62jgFdrxDrcJfSr3FN0QwP3khTPqJkzGE3ME/FMtgQOPBQBS2T
-         spYjXpTIVLHz1Em0QaHed7uYCzl8seSsArlUP18ei/XuCj1thrBV+1bKq+vodby961
-         TMzcY/KXq/xW7pUD3f0WY5q6Mzb7D4NaoFK+T354=
-From:   Arnd Bergmann <arnd@kernel.org>
-To:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc:     Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] matroxfb: avoid -Warray-bounds warning
-Date:   Mon, 26 Oct 2020 20:39:55 +0100
-Message-Id: <20201026194010.3817166-1-arnd@kernel.org>
-X-Mailer: git-send-email 2.27.0
+        s=default; t=1603756361;
+        bh=LuDTJvUP42aUFHwVP4Gapde+YuW1PFjyYZnDoPLU+kM=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=VODbBcDoN0bA6dtQr4NkGKbmf946VRY/Z/YDtgA5WgB1TwMz3IamLKS3FYTQe+hKi
+         VbfBCCVJJ+vSZMgnc5EYA3QCF3xFfUm0RQPZ6VUYOT9tjUTDOh19RVbmUsndhHuDch
+         5VFQ63DcHaxbIy7KdOJE8iLE7KJsy1jUAzur2AaY=
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Tom Rix <trix@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Sasha Levin <sashal@kernel.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        clang-built-linux@googlegroups.com
+Subject: [PATCH AUTOSEL 5.8 030/132] video: fbdev: pvr2fb: initialize variables
+Date:   Mon, 26 Oct 2020 19:50:22 -0400
+Message-Id: <20201026235205.1023962-30-sashal@kernel.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20201026235205.1023962-1-sashal@kernel.org>
+References: <20201026235205.1023962-1-sashal@kernel.org>
 MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+From: Tom Rix <trix@redhat.com>
 
-The open-coded list_for_each_entry() causes a harmless warning:
+[ Upstream commit 8e1ba47c60bcd325fdd097cd76054639155e5d2e ]
 
-drivers/video/fbdev/matrox/matroxfb_base.c: In function 'matroxfb_register_driver':
-include/linux/kernel.h:856:3: warning: array subscript -98 is outside array bounds of 'struct list_head[1]' [-Warray-bounds]
+clang static analysis reports this repesentative error
 
-Use the normal list_for_each_entry instead.
+pvr2fb.c:1049:2: warning: 1st function call argument
+  is an uninitialized value [core.CallAndMessage]
+        if (*cable_arg)
+        ^~~~~~~~~~~~~~~
 
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Problem is that cable_arg depends on the input loop to
+set the cable_arg[0].  If it does not, then some random
+value from the stack is used.
+
+A similar problem exists for output_arg.
+
+So initialize cable_arg and output_arg.
+
+Signed-off-by: Tom Rix <trix@redhat.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Link: https://patchwork.freedesktop.org/patch/msgid/20200720191845.20115-1-trix@redhat.com
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/matrox/matroxfb_base.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/pvr2fb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
-index 570439b32655..a3853421b263 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -1970,9 +1970,7 @@ int matroxfb_register_driver(struct matroxfb_driver* drv) {
- 	struct matrox_fb_info* minfo;
+diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+index f18d457175d90..2f045c356882a 100644
+--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -1016,6 +1016,8 @@ static int __init pvr2fb_setup(char *options)
+ 	if (!options || !*options)
+ 		return 0;
  
- 	list_add(&drv->node, &matroxfb_driver_list);
--	for (minfo = matroxfb_l(matroxfb_list.next);
--	     minfo != matroxfb_l(&matroxfb_list);
--	     minfo = matroxfb_l(minfo->next_fb.next)) {
-+	list_for_each_entry(minfo, &matroxfb_list, next_fb) {
- 		void* p;
- 
- 		if (minfo->drivers_count == MATROXFB_MAX_FB_DRIVERS)
-@@ -1990,9 +1988,7 @@ void matroxfb_unregister_driver(struct matroxfb_driver* drv) {
- 	struct matrox_fb_info* minfo;
- 
- 	list_del(&drv->node);
--	for (minfo = matroxfb_l(matroxfb_list.next);
--	     minfo != matroxfb_l(&matroxfb_list);
--	     minfo = matroxfb_l(minfo->next_fb.next)) {
-+	list_for_each_entry(minfo, &matroxfb_list, next_fb) {
- 		int i;
- 
- 		for (i = 0; i < minfo->drivers_count; ) {
++	cable_arg[0] = output_arg[0] = 0;
++
+ 	while ((this_opt = strsep(&options, ","))) {
+ 		if (!*this_opt)
+ 			continue;
 -- 
-2.27.0
+2.25.1
 

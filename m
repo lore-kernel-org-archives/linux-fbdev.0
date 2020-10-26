@@ -1,102 +1,170 @@
-Return-Path: <SRS0=FwRe=D6=vger.kernel.org=linux-fbdev-owner@kernel.org>
+Return-Path: <SRS0=7VUZ=EB=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3789C4363A
-	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Oct 2020 16:36:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8505C4363A
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Oct 2020 17:02:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 985C8208C3
-	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Oct 2020 16:36:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603470997;
-	bh=QtoGRTSylDJqRgGFl+2IEK4wws+paYf2E8QEhkhHbdI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=2hlIS5TpxFq7bwxAa5czRy044hI+voxyDpTeS/R4nlL5hNba0oX/hsMMIyBJG51in
-	 iZ+B5c4scWba3bAYEqffo8xGHzf3Pjo+g529zhOiQWoZQm3xNqxkr3II3GRgWtPsoc
-	 7FTMDYBhjnNZ9WE7sluIuuplAbU3EiJ+rh8b4mZs=
+	by mail.kernel.org (Postfix) with ESMTP id 9DBF82067B
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Oct 2020 17:02:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="giUG0iJN"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1751700AbgJWQgg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 23 Oct 2020 12:36:36 -0400
-Received: from mail.kernel.org ([198.145.29.99]:33226 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751840AbgJWQdu (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 23 Oct 2020 12:33:50 -0400
-Received: from mail.kernel.org (ip5f5ad5a3.dynamic.kabel-deutschland.de [95.90.213.163])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 2C45C24641;
-        Fri, 23 Oct 2020 16:33:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1603470828;
-        bh=QtoGRTSylDJqRgGFl+2IEK4wws+paYf2E8QEhkhHbdI=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=hEIB+q2tWBVixEjqnwpiMbiJeCp/19tHBnF+K+4L7lCcqpnSY2d5cQDUHnRqq8E3B
-         GYXKY5Gvf1/QwKaYsYY0ExUq9v7xK7WjiVF4T6LX4K4Z3LiIZ+S5lJI4DFIwSoyPBY
-         yDd8aKrlBhPYRJ0nItAd61UlPvnIkM5HOjgvwudA=
-Received: from mchehab by mail.kernel.org with local (Exim 4.94)
-        (envelope-from <mchehab@kernel.org>)
-        id 1kW00g-002Awn-4Z; Fri, 23 Oct 2020 18:33:46 +0200
-From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
-        "Jonathan Corbet" <corbet@lwn.net>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v3 32/56] video: fix some kernel-doc markups
-Date:   Fri, 23 Oct 2020 18:33:19 +0200
-Message-Id: <8078dde13eac44d5361abb606e098abd724b2ccd.1603469755.git.mchehab+huawei@kernel.org>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <cover.1603469755.git.mchehab+huawei@kernel.org>
-References: <cover.1603469755.git.mchehab+huawei@kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Sender: Mauro Carvalho Chehab <mchehab@kernel.org>
+        id S1775700AbgJZRCl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 26 Oct 2020 13:02:41 -0400
+Received: from aserp2120.oracle.com ([141.146.126.78]:34406 "EHLO
+        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1775678AbgJZRCf (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 26 Oct 2020 13:02:35 -0400
+Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
+        by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 09QGt29M030539;
+        Mon, 26 Oct 2020 17:02:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=content-type :
+ mime-version : subject : from : in-reply-to : date : cc :
+ content-transfer-encoding : message-id : references : to;
+ s=corp-2020-01-29; bh=44GDkLc6kJbDFvAd8EZbxYxwh8jmuWu+PJUUda+TNTU=;
+ b=giUG0iJNhnf6C0MouW+Nny0iMj9i6GXMDm7rfyFf5LXLBN15gAS0uN/jBIJB51NCHeh5
+ OGqO19z/4FXL/Wz64DcoBfY6wgpT0wPUIproBzKw8j4ULOFoyJgt5owROirY2TY6OAXr
+ 5ycrH/jtf11k58BBo7b85WopU43xtkEd5/nVWYUF5OUBBKZrNzhZg5ZySi6TgdeZ8SKm
+ jYUW9OjD1TiR8lBbXQ3Dfp3ygCu+IiQnn0Bg0NHki1Q2wd9z7SkAeArwTokRUSF8Cdy0
+ 4pAvWoeSJg+6/4kBGwsgThWDBlnBLX3ncrpkFHLjJzRi1ZBFB9ftob6URKuhknKgE6Vv 4Q== 
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
+        by aserp2120.oracle.com with ESMTP id 34cc7knr76-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Mon, 26 Oct 2020 17:02:22 +0000
+Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
+        by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 09QGuLq1186614;
+        Mon, 26 Oct 2020 17:00:22 GMT
+Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
+        by aserp3030.oracle.com with ESMTP id 34cwuke7by-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 26 Oct 2020 17:00:22 +0000
+Received: from abhmp0004.oracle.com (abhmp0004.oracle.com [141.146.116.10])
+        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 09QH0CI3009581;
+        Mon, 26 Oct 2020 17:00:13 GMT
+Received: from dhcp-10-159-254-24.vpn.oracle.com (/10.159.254.24)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Mon, 26 Oct 2020 10:00:12 -0700
+Content-Type: text/plain;
+        charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 13.4 \(3608.120.23.2.1\))
+Subject: Re: [PATCH 1/1] video: fbdev: fix divide error in fbcon_switch
+From:   Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>
+In-Reply-To: <ad87c5c1-061d-8a81-7b2c-43a8687a464f@suse.de>
+Date:   Mon, 26 Oct 2020 10:00:11 -0700
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        b.zolnierkie@samsung.com, jani.nikula@intel.com,
+        daniel.vetter@ffwll.ch, gustavoars@kernel.org,
+        dri-devel@lists.freedesktop.org, akpm@linux-foundation.org,
+        rppt@kernel.org
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <3294C797-1BBB-4410-812B-4A4BB813F002@oracle.com>
+References: <20201021235758.59993-1-saeed.mirzamohammadi@oracle.com>
+ <ad87c5c1-061d-8a81-7b2c-43a8687a464f@suse.de>
+To:     stable@vger.kernel.org
+X-Mailer: Apple Mail (2.3608.120.23.2.1)
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9786 signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 mlxscore=0 bulkscore=0
+ spamscore=0 adultscore=0 malwarescore=0 mlxlogscore=999 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2010260114
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9786 signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 lowpriorityscore=0 adultscore=0
+ malwarescore=0 spamscore=0 clxscore=1015 mlxscore=0 suspectscore=0
+ priorityscore=1501 impostorscore=0 bulkscore=0 phishscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2010260114
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Some identifiers have different names between their prototypes
-and the kernel-doc markup.
+Thanks, adding stable.
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
----
- drivers/video/fbdev/core/fbcmap.c | 2 +-
- drivers/video/hdmi.c              | 3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+Saeed
 
-diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
-index e5ae33c1a8e8..757d5c3f620b 100644
---- a/drivers/video/fbdev/core/fbcmap.c
-+++ b/drivers/video/fbdev/core/fbcmap.c
-@@ -76,7 +76,7 @@ static const struct fb_cmap default_16_colors = {
- 
- 
- /**
-- *	fb_alloc_cmap - allocate a colormap
-+ *	fb_alloc_cmap_gfp - allocate a colormap
-  *	@cmap: frame buffer colormap structure
-  *	@len: length of @cmap
-  *	@transp: boolean, 1 if there is transparency, 0 otherwise
-diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
-index b7a1d6fae90d..e44b7cec95fd 100644
---- a/drivers/video/hdmi.c
-+++ b/drivers/video/hdmi.c
-@@ -1688,7 +1688,8 @@ static int hdmi_audio_infoframe_unpack(struct hdmi_audio_infoframe *frame,
- }
- 
- /**
-- * hdmi_vendor_infoframe_unpack() - unpack binary buffer to a HDMI vendor infoframe
-+ * hdmi_vendor_any_infoframe_unpack() - unpack binary buffer to a HDMI
-+ * 	vendor infoframe
-  * @frame: HDMI Vendor infoframe
-  * @buffer: source buffer
-  * @size: size of buffer
--- 
-2.26.2
+> On Oct 22, 2020, at 12:34 AM, Thomas Zimmermann <tzimmermann@suse.de> =
+wrote:
+>=20
+> Hi
+>=20
+> On 22.10.20 01:57, saeed.mirzamohammadi@oracle.com wrote:
+>> From: Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>
+>>=20
+>> This patch fixes the issue due to:
+>>=20
+>> [   89.572883] divide_error: 0000 [#1] SMP KASAN PTI
+>> [   89.572897] CPU: 3 PID: 16083 Comm: repro Not tainted =
+5.9.0-rc7.20200930.rc1.allarch-19-g3e32d0d.syzk #5
+>> [   89.572902] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), =
+BIOS 0.5.1 01/01/2011
+>> [   89.572934] RIP: 0010:cirrusfb_check_var+0x84/0x1260
+>=20
+> BTW, if you run qemu with cirrus, there's also a DRM driver named
+> cirrus.ko. Might be a better choice than the old fbdev driver. If you
+> just care about qemu, but not the actual graphics device, take a look =
+at
+>=20
+>  =
+https://urldefense.com/v3/__https://www.kraxel.org/blog/2014/10/qemu-using=
+-cirrus-considered-harmful/__;!!GqivPVa7Brio!LmgeM-pVBVH80uVELF1P1nBGAbAlh=
+vnxKKE_ZrEc9d76AznvAAgP1FAp3_zNa2frKaIUZteK$=20
+>=20
+> Anyway, thanks for your patch.
+>=20
+> Best regards
+> Thomas
+>=20
+>>=20
+>> The error happens when the pixels value is calculated before =
+performing the sanity checks on bits_per_pixel.
+>> A bits_per_pixel set to zero causes divide by zero error.
+>>=20
+>> This patch moves the calculation after the sanity check.
+>>=20
+>> Signed-off-by: Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>
+>> Tested-by: Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>
+>> ---
+>> drivers/video/fbdev/cirrusfb.c | 3 ++-
+>> 1 file changed, 2 insertions(+), 1 deletion(-)
+>>=20
+>> diff --git a/drivers/video/fbdev/cirrusfb.c =
+b/drivers/video/fbdev/cirrusfb.c
+>> index 15a9ee7cd734..a7749101b094 100644
+>> --- a/drivers/video/fbdev/cirrusfb.c
+>> +++ b/drivers/video/fbdev/cirrusfb.c
+>> @@ -531,7 +531,7 @@ static int cirrusfb_check_var(struct =
+fb_var_screeninfo *var,
+>> {
+>> 	int yres;
+>> 	/* memory size in pixels */
+>> -	unsigned pixels =3D info->screen_size * 8 / var->bits_per_pixel;
+>> +	unsigned int pixels;
+>> 	struct cirrusfb_info *cinfo =3D info->par;
+>>=20
+>> 	switch (var->bits_per_pixel) {
+>> @@ -573,6 +573,7 @@ static int cirrusfb_check_var(struct =
+fb_var_screeninfo *var,
+>> 		return -EINVAL;
+>> 	}
+>>=20
+>> +	pixels =3D info->screen_size * 8 / var->bits_per_pixel;
+>> 	if (var->xres_virtual < var->xres)
+>> 		var->xres_virtual =3D var->xres;
+>> 	/* use highest possible virtual resolution */
+>>=20
+>=20
+> --=20
+> Thomas Zimmermann
+> Graphics Driver Developer
+> SUSE Software Solutions Germany GmbH
+> Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
+> (HRB 36809, AG N=C3=BCrnberg)
+> Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
 

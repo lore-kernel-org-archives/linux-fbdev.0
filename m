@@ -2,167 +2,115 @@ Return-Path: <SRS0=EV96=EC=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FE0FC5DF9D
-	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Oct 2020 16:30:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D13D1C5517A
+	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Oct 2020 16:32:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4A76B21707
-	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Oct 2020 16:30:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7BFA920757
+	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Oct 2020 16:32:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JGGtiwD2"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eJd5hFTo"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2902188AbgJ0Qa1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 27 Oct 2020 12:30:27 -0400
-Received: from mail-pg1-f194.google.com ([209.85.215.194]:35632 "EHLO
-        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1760746AbgJ0Qa0 (ORCPT
+        id S1767624AbgJ0Qbw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 27 Oct 2020 12:31:52 -0400
+Received: from mail-pg1-f196.google.com ([209.85.215.196]:41085 "EHLO
+        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1766281AbgJ0Qbv (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 27 Oct 2020 12:30:26 -0400
-Received: by mail-pg1-f194.google.com with SMTP id f38so1098621pgm.2;
-        Tue, 27 Oct 2020 09:30:26 -0700 (PDT)
+        Tue, 27 Oct 2020 12:31:51 -0400
+Received: by mail-pg1-f196.google.com with SMTP id g12so1085531pgm.8;
+        Tue, 27 Oct 2020 09:31:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=mYpVVa2HzoWSN3SBz42ImmD/sC2oukyTEj/vYph3n2U=;
-        b=JGGtiwD26RZLnpx6yWtGjSdavx4m1/lbKn4+xZtXTR+oITifCFyWksbePNwPRLAo/K
-         OuSem10v8zs01o5RNoD+4DIOB088wIP1aI49EGK+RwqFfaxrK9hGEAy7NPjTyPi1/gdu
-         lZI+jjZt9yHOrOF7KYdNWzBa15UO87BPiEG+PilCwBVqmav9TWSGzeWd3Hd2FOBx6blq
-         IM8kUIcF/MRnJkDsa6Hu66w6w5ZWVi1dJGct8syt5hOl1co2CHOEnBzQ4AwfuYHRK/1I
-         lD6plgXtirHy9lyijxWmzciSgQrPffGU0bbf/xRJ1Fmq+i7HoJLtXlrn3Yu1Z1lCB78e
-         P0Mg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=nUeg+KxMLxDKpdFvHBE7A01n74AzfVei6UlOMkqKwCo=;
+        b=eJd5hFTofb9nO3xoRiSpfTlcid9glOapJOgmYsVfMyHHvMSOJrs4pSTEHyGbbow16A
+         ylY6G8NsY4Rp2W3YRR23uTBIjPOT6NLyB31lgklY3LxgRJ/jXQHmWYolJMwNMykAU31L
+         omCPGFyX2TlmPysrnXjSmUBT8KEmMLUW+VC7XCS+IyXKHgQxUeuMo1eHvIeFGwJm1BcP
+         vk75vFLvPAzsd9ZmvJaT58BJu7ihx6Ek0p7WWMCQA59LU+F79ktZMZugsSsvx14EMtQ7
+         0mfZo1CtrJq1SA460eQflL/mteTWCpWJlAEewb/I7nJcuLWBv8+OdRm8fXsBjW5Y/XB4
+         qKww==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=mYpVVa2HzoWSN3SBz42ImmD/sC2oukyTEj/vYph3n2U=;
-        b=HPy0BcGxgFLZsIFW2hWuT0KoTd2Ss1BcmEU/VO1L2099kyU4/F78cdTgIb5Ed7Izdx
-         AwT3d8waMk0YCZ+Jz1xp6xjpMvXxG2AZBWl/n5SMM6PXiduOH4yte0KC78bFn9oyjK++
-         tl/D8XlK7G2egeBQPz+fPLFyo/Ml/obL7GSXqUZ6Pe342x0BQnZ+aaxihBggYeaDIbZ9
-         PJ/K6wO0jTq9jpflgmb82tlNOZ+TfcORdArFQKzsDDKU4K7CJVu0VRMmaLtA2435ECPv
-         K+y4fbMbOqPW8qL/sJIN377edcblaGDam0V4y+Rh1mhRid2UtGacCqYbFK0mBd6Mf7WL
-         A5Uw==
-X-Gm-Message-State: AOAM5320p9Q2wlLX1oF5FrV1jzn4BctHmTnjtKrXN8Ozjnp4oVJq1WW0
-        vtrn8I1RUlBTmTs2RAF5g6QqYTXZ4jt2
-X-Google-Smtp-Source: ABdhPJxeA+021hwLATilKLFtU3OwkB+EWBm1+Dk6H+nqoB1yaSG1CZvZPmQrqiRgmGwnQJ99kemqtw==
-X-Received: by 2002:a63:354c:: with SMTP id c73mr2722208pga.315.1603816226234;
-        Tue, 27 Oct 2020 09:30:26 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=nUeg+KxMLxDKpdFvHBE7A01n74AzfVei6UlOMkqKwCo=;
+        b=ZYBj0jIG+DPVuSTGjX9nNjkdkH9imtgOXwSEUPwyS0BP+MRFMNj6TjqX15Cts6Yrx0
+         BdPSQ4pdIFKYcPVxjV/gks+8RNwuzslqTb4dYIJpzuCkcnR1r/k4/oW67o8z+xcNPnaF
+         Dc/byPEylVjYCA4//Ji+7LrG3O7P95W9aE+Z5YhsYMv9YGlQis48W0J652q8Due+Fvhd
+         pFWs1fLF/gh8ot6sNwec4/zullb8lH5GWeeMS/BNasTWbe/EZSM7JcTYHI8MFVNN+AJz
+         kgSsOvmgkndELPugrocBhidwXiaoyU6gDHHH4Zsbs2bx9RQTIHDMUqwiX9q88c3gUTHw
+         9BBg==
+X-Gm-Message-State: AOAM531XOsFph0vlfNuk0qaJc2fhU8AXa5bYibK9tcKxzFirg1mk54+O
+        WygJ6R4jNBvqM5Tm5vBgJsMeoF82zELG
+X-Google-Smtp-Source: ABdhPJzXlpA9p0YQjtHIKX03TX1A/bHiqf2YTkdJxUi2MkxnIAQILYuosDzjXEQDPdnA50zJo6DPEA==
+X-Received: by 2002:a63:fe49:: with SMTP id x9mr2496134pgj.192.1603816310574;
+        Tue, 27 Oct 2020 09:31:50 -0700 (PDT)
 Received: from localhost.localdomain (n11212042025.netvigator.com. [112.120.42.25])
-        by smtp.gmail.com with ESMTPSA id e23sm2773147pfi.191.2020.10.27.09.30.22
+        by smtp.gmail.com with ESMTPSA id y8sm2771710pfg.104.2020.10.27.09.31.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Oct 2020 09:30:25 -0700 (PDT)
+        Tue, 27 Oct 2020 09:31:49 -0700 (PDT)
 From:   Peilin Ye <yepeilin.cs@gmail.com>
 To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
+        Mike Rapoport <rppt@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org, Peilin Ye <yepeilin.cs@gmail.com>
-Subject: [PATCH 0/5] Preparation work for using font_desc in vc_data
-Date:   Tue, 27 Oct 2020 12:27:35 -0400
-Message-Id: <cover.1603788511.git.yepeilin.cs@gmail.com>
+Subject: [PATCH 1/5] fbdev/atafb: Remove unused extern variables
+Date:   Tue, 27 Oct 2020 12:31:08 -0400
+Message-Id: <cb5bb49a33ff54fef41e719ee9d301a6a73c5f9c.1603788512.git.yepeilin.cs@gmail.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <cover.1603788511.git.yepeilin.cs@gmail.com>
+References: <cover.1603788511.git.yepeilin.cs@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel, Hi Greg, Hi all,
+Remove 6 unused extern variables to reduce confusion. It is worth
+mentioning that lib/fonts/font_8x8.c and lib/fonts/font_8x16.c also
+declare `fontdata_8x8` and `fontdata_8x16` respectively, and this file
+has nothing to do with them.
 
-We are planning to use `font_desc` instead of `console_font` in `vc_data`,
-and this is just some prep work for it. It doesn't do much, but at least
-it removes two "FIXME"s in fbcon.c :)
+Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
+---
+$ # Build-tested (Ubuntu 20.04)
+$ sudo apt install gcc-m68k-linux-gnu
+$ cp arch/m68k/configs/atari_defconfig .config
+$ make ARCH=m68k menuconfig
+$ make ARCH=m68k CROSS_COMPILE=m68k-linux-gnu- -j`nproc` all
 
-Peilin Ye (5):
-[1/5] fbdev/atafb: Remove unused extern variables
+ drivers/video/fbdev/atafb.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-  Searching for `fontdata` gave me this in fbdev/atafb.c:
-
-  extern unsigned char fontdata_8x8[];
-  extern unsigned char fontdata_8x16[];
-
-  ...which freaked me out, since in 6735b4632def ("Fonts: Support
-  FONT_EXTRA_WORDS macros for built-in fonts") I changed them from char
-  arrays to structures, in lib/fonts/. Fortunately it turns out these
-  extern variables have nothing to do with lib/fonts/, and are not being
-  used anywhere, so remove them for less confusion.
-
-  m68k cross-compiled.
-
-[2/5] Fonts: Make font size unsigned in font_desc
-
-  Our goal is to use `font_desc` "everywhere" in the kernel, and signed
-  `width` and `height` is inappropriate.
-
-  Also, change some printk() format identifiers in console/sticore.c from
-  `%d` to `%u`. parisc cross-compiled.
-
-[3/5] Fonts: Add charcount field to font_desc
-
-  Add `unsigned int charcount` to `font_desc`, and update each of our 13
-  built-in fonts.
-
-[4/5] fbcon: Avoid hard-coding built-in font charcount
-[5/5] parisc/sticore: Avoid hard-coding built-in font charcount
-
-  Everyone (tty, fbcon, sticore, etc.) is assuming that all built-in fonts
-  have 256 characters, and is using hard-coded 256 or 255 everywhere.
-  These two patches removes some of them. [5/5] is parisc cross-compiled.
-
-  Now is a good time to review all find_font() and get_default_font()
-  callers:
-
-  drivers/media/pci/solo6x10/solo6x10-enc.c      133 const struct font_desc *vga = find_font("VGA8x16");
-  drivers/media/test-drivers/vimc/vimc-core.c    268 const struct font_desc *font = find_font("VGA8x16");
-  drivers/media/test-drivers/vivid/vivid-core.c 1928 const struct font_desc *font = find_font("VGA8x16");
-  drivers/usb/misc/sisusbvga/sisusb.c           2285 myfont = find_font("VGA8x16");
-    * These 4 only care about font VGA8x16, so let them be for now;
-
-  drivers/video/console/sticore.c                499 fbfont = find_font(fbfont_name);
-  drivers/video/console/sticore.c                501 fbfont = get_default_font(1024,768, ~(u32)0, ~(u32)0);
-    * Uses 255 and 256, (hopefully) cleaned up by [5/5];
-
-  drivers/video/fbdev/core/fbcon.c               999 if (!fontname[0] || !(font = find_font(fontname)))
-  drivers/video/fbdev/core/fbcon.c              1000 font = get_default_font(info->var.xres,
-  drivers/video/fbdev/core/fbcon.c              1078 if (!fontname[0] || !(font = find_font(fontname)))
-  drivers/video/fbdev/core/fbcon.c              1079 font = get_default_font(info->var.xres,
-    * Use 256, cleaned up by [4/5];
-
-  drivers/video/fbdev/core/fbcon.c              2548 else if (!(f = find_font(name)))
-  drivers/video/fbdev/core/fbcon.c              2546 f = get_default_font(info->var.xres, info->var.yres,
-    * Uses 256 but no easy fix. I'll clean this up after making
-      fbcon_do_set_font() pass a `font_desc` as parameter;
-
-  drivers/firmware/efi/earlycon.c               234 font = get_default_font(xres, yres, -1, -1);
-    * Does not care about charcount.
-
-Thank you!
-Peilin Ye
-
- drivers/video/console/sticore.c  | 10 +++++-----
- drivers/video/fbdev/atafb.c      |  8 --------
- drivers/video/fbdev/core/fbcon.c |  5 ++---
- include/linux/font.h             |  3 ++-
- lib/fonts/font_10x18.c           |  1 +
- lib/fonts/font_6x10.c            |  1 +
- lib/fonts/font_6x11.c            |  1 +
- lib/fonts/font_6x8.c             |  1 +
- lib/fonts/font_7x14.c            |  1 +
- lib/fonts/font_8x16.c            |  1 +
- lib/fonts/font_8x8.c             |  1 +
- lib/fonts/font_acorn_8x8.c       |  1 +
- lib/fonts/font_mini_4x6.c        |  1 +
- lib/fonts/font_pearl_8x8.c       |  1 +
- lib/fonts/font_sun12x22.c        |  1 +
- lib/fonts/font_sun8x16.c         |  1 +
- lib/fonts/font_ter16x32.c        |  1 +
- 17 files changed, 22 insertions(+), 17 deletions(-)
-
+diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+index f253daa05d9d..e3812a8ff55a 100644
+--- a/drivers/video/fbdev/atafb.c
++++ b/drivers/video/fbdev/atafb.c
+@@ -240,14 +240,6 @@ static int *MV300_reg = MV300_reg_8bit;
+ 
+ static int inverse;
+ 
+-extern int fontheight_8x8;
+-extern int fontwidth_8x8;
+-extern unsigned char fontdata_8x8[];
+-
+-extern int fontheight_8x16;
+-extern int fontwidth_8x16;
+-extern unsigned char fontdata_8x16[];
+-
+ /*
+  * struct fb_ops {
+  *	* open/release and usage marking
 -- 
 2.25.1
 

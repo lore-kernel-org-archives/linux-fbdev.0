@@ -8,109 +8,114 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D13D1C5517A
-	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Oct 2020 16:32:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 036DEC55179
+	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Oct 2020 16:34:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7BFA920757
-	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Oct 2020 16:32:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A56D421707
+	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Oct 2020 16:34:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eJd5hFTo"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qV2cOWA0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1767624AbgJ0Qbw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 27 Oct 2020 12:31:52 -0400
-Received: from mail-pg1-f196.google.com ([209.85.215.196]:41085 "EHLO
-        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1766281AbgJ0Qbv (ORCPT
+        id S1810143AbgJ0QeH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 27 Oct 2020 12:34:07 -0400
+Received: from mail-pj1-f65.google.com ([209.85.216.65]:50270 "EHLO
+        mail-pj1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1810136AbgJ0QeE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 27 Oct 2020 12:31:51 -0400
-Received: by mail-pg1-f196.google.com with SMTP id g12so1085531pgm.8;
-        Tue, 27 Oct 2020 09:31:50 -0700 (PDT)
+        Tue, 27 Oct 2020 12:34:04 -0400
+Received: by mail-pj1-f65.google.com with SMTP id p21so1066783pju.0;
+        Tue, 27 Oct 2020 09:34:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=nUeg+KxMLxDKpdFvHBE7A01n74AzfVei6UlOMkqKwCo=;
-        b=eJd5hFTofb9nO3xoRiSpfTlcid9glOapJOgmYsVfMyHHvMSOJrs4pSTEHyGbbow16A
-         ylY6G8NsY4Rp2W3YRR23uTBIjPOT6NLyB31lgklY3LxgRJ/jXQHmWYolJMwNMykAU31L
-         omCPGFyX2TlmPysrnXjSmUBT8KEmMLUW+VC7XCS+IyXKHgQxUeuMo1eHvIeFGwJm1BcP
-         vk75vFLvPAzsd9ZmvJaT58BJu7ihx6Ek0p7WWMCQA59LU+F79ktZMZugsSsvx14EMtQ7
-         0mfZo1CtrJq1SA460eQflL/mteTWCpWJlAEewb/I7nJcuLWBv8+OdRm8fXsBjW5Y/XB4
-         qKww==
+        bh=In/51AAXPn5EUWnx/UEYdjmTkRcrDAtPtyplaFeQ5lU=;
+        b=qV2cOWA0GuqXDv+sBSouYZakOv5oFD4hgNf87hpEXF15Qq6sizcGpXNOD74WCXRcyv
+         sO/6Tj/7iiwM9RpQdAbqqnNzT2YptHVUx8aGi2nb/wOnMB2L6hTcG+fENUtGC704OQeB
+         OIvg9/sjXLRUzNEoS6cfGm0CB1cK6CwxiVYKkIeqQXO2O7pBxdEYIdTl09rtvVfPTYl6
+         DTWd8dOPZ2RAKadUbZ7lyRyJiFl+OilJWGQkEXvWKnG+EEIGEwVIDviHyTbWkf0bBPF3
+         C1qztcCFxeaUH9057nGg+r2mVwEQhOkgHxDdjZWQLSRvxcgn2sjn51v8dLGTej9Zl7rS
+         X/uA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=nUeg+KxMLxDKpdFvHBE7A01n74AzfVei6UlOMkqKwCo=;
-        b=ZYBj0jIG+DPVuSTGjX9nNjkdkH9imtgOXwSEUPwyS0BP+MRFMNj6TjqX15Cts6Yrx0
-         BdPSQ4pdIFKYcPVxjV/gks+8RNwuzslqTb4dYIJpzuCkcnR1r/k4/oW67o8z+xcNPnaF
-         Dc/byPEylVjYCA4//Ji+7LrG3O7P95W9aE+Z5YhsYMv9YGlQis48W0J652q8Due+Fvhd
-         pFWs1fLF/gh8ot6sNwec4/zullb8lH5GWeeMS/BNasTWbe/EZSM7JcTYHI8MFVNN+AJz
-         kgSsOvmgkndELPugrocBhidwXiaoyU6gDHHH4Zsbs2bx9RQTIHDMUqwiX9q88c3gUTHw
-         9BBg==
-X-Gm-Message-State: AOAM531XOsFph0vlfNuk0qaJc2fhU8AXa5bYibK9tcKxzFirg1mk54+O
-        WygJ6R4jNBvqM5Tm5vBgJsMeoF82zELG
-X-Google-Smtp-Source: ABdhPJzXlpA9p0YQjtHIKX03TX1A/bHiqf2YTkdJxUi2MkxnIAQILYuosDzjXEQDPdnA50zJo6DPEA==
-X-Received: by 2002:a63:fe49:: with SMTP id x9mr2496134pgj.192.1603816310574;
-        Tue, 27 Oct 2020 09:31:50 -0700 (PDT)
+        bh=In/51AAXPn5EUWnx/UEYdjmTkRcrDAtPtyplaFeQ5lU=;
+        b=rXm4Kzi4qigM5vAMX7JPZXfomnBaMxmfoiM6j3rAw7i/xN7bHOHPHbOk4ZzMhDRoqq
+         hmEF6sQ3XhZ3b1pVhQsmPbuvAtELn05xXGb/cUyBZvIADc73n2tvmpdhFghVWNSL9/dS
+         hzjoxFNjtzjJQKnyMwQkiknwD+7fVgbC3Gibb5p0+069OL/XvJS+90u3GRzi+qii/k5t
+         8EdObfYsileYEpu1q23fbE0I/JS4551xZQzUXzAfIsMbmGkzt2WWNE1sewppO4uHaGm/
+         uEUDEPV49bQUuR7l/K1OAAHtaEY2SL/KmYBCCPZ91m329wKuPNL+v9U1YoCiqKdI6qln
+         Ux7A==
+X-Gm-Message-State: AOAM532nB41HOusf7r2OeJTmqazxQUsiQVl6rbtojIJQrcEqMioQ/Rb2
+        2uOkjV0ZeTWx3ORM22QYEf7aQxHk6Pv6
+X-Google-Smtp-Source: ABdhPJyfbezIzRHApDWXipuccB2NB1//aO/tcW0Oq+NmOzFSnqmlIn40ZQ4T6DNDnbAh/dzCFxWw0Q==
+X-Received: by 2002:a17:90b:3501:: with SMTP id ls1mr880626pjb.26.1603816442913;
+        Tue, 27 Oct 2020 09:34:02 -0700 (PDT)
 Received: from localhost.localdomain (n11212042025.netvigator.com. [112.120.42.25])
-        by smtp.gmail.com with ESMTPSA id y8sm2771710pfg.104.2020.10.27.09.31.47
+        by smtp.gmail.com with ESMTPSA id n16sm2854465pfo.150.2020.10.27.09.33.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Oct 2020 09:31:49 -0700 (PDT)
+        Tue, 27 Oct 2020 09:34:02 -0700 (PDT)
 From:   Peilin Ye <yepeilin.cs@gmail.com>
 To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
+        Helge Deller <deller@gmx.de>
 Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Mike Rapoport <rppt@kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Peilin Ye <yepeilin.cs@gmail.com>
-Subject: [PATCH 1/5] fbdev/atafb: Remove unused extern variables
-Date:   Tue, 27 Oct 2020 12:31:08 -0400
-Message-Id: <cb5bb49a33ff54fef41e719ee9d301a6a73c5f9c.1603788512.git.yepeilin.cs@gmail.com>
+        Jiri Slaby <jirislaby@kernel.org>,
+        linux-parisc@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Peilin Ye <yepeilin.cs@gmail.com>
+Subject: [PATCH 2/5] Fonts: Make font size unsigned in font_desc
+Date:   Tue, 27 Oct 2020 12:33:05 -0400
+Message-Id: <54f7d42e07eca2a2f13669575a9de88023ebc1ac.1603788512.git.yepeilin.cs@gmail.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <cover.1603788511.git.yepeilin.cs@gmail.com>
-References: <cover.1603788511.git.yepeilin.cs@gmail.com>
+In-Reply-To: <cb5bb49a33ff54fef41e719ee9d301a6a73c5f9c.1603788512.git.yepeilin.cs@gmail.com>
+References: <cover.1603788511.git.yepeilin.cs@gmail.com> <cb5bb49a33ff54fef41e719ee9d301a6a73c5f9c.1603788512.git.yepeilin.cs@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Remove 6 unused extern variables to reduce confusion. It is worth
-mentioning that lib/fonts/font_8x8.c and lib/fonts/font_8x16.c also
-declare `fontdata_8x8` and `fontdata_8x16` respectively, and this file
-has nothing to do with them.
+It is improper to define `width` and `height` as signed in `struct
+font_desc`. Make them unsigned. Also, change the corresponding printk()
+format identifiers from `%d` to `%u`, in sti_select_fbfont().
 
 Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
 ---
-$ # Build-tested (Ubuntu 20.04)
-$ sudo apt install gcc-m68k-linux-gnu
-$ cp arch/m68k/configs/atari_defconfig .config
-$ make ARCH=m68k menuconfig
-$ make ARCH=m68k CROSS_COMPILE=m68k-linux-gnu- -j`nproc` all
+Build-tested.
 
- drivers/video/fbdev/atafb.c | 8 --------
- 1 file changed, 8 deletions(-)
+ drivers/video/console/sticore.c | 2 +-
+ include/linux/font.h            | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-index f253daa05d9d..e3812a8ff55a 100644
---- a/drivers/video/fbdev/atafb.c
-+++ b/drivers/video/fbdev/atafb.c
-@@ -240,14 +240,6 @@ static int *MV300_reg = MV300_reg_8bit;
+diff --git a/drivers/video/console/sticore.c b/drivers/video/console/sticore.c
+index 6a26a364f9bd..d1bb5915082b 100644
+--- a/drivers/video/console/sticore.c
++++ b/drivers/video/console/sticore.c
+@@ -502,7 +502,7 @@ sti_select_fbfont(struct sti_cooked_rom *cooked_rom, const char *fbfont_name)
+ 	if (!fbfont)
+ 		return NULL;
  
- static int inverse;
- 
--extern int fontheight_8x8;
--extern int fontwidth_8x8;
--extern unsigned char fontdata_8x8[];
--
--extern int fontheight_8x16;
--extern int fontwidth_8x16;
--extern unsigned char fontdata_8x16[];
--
- /*
-  * struct fb_ops {
-  *	* open/release and usage marking
+-	pr_info("STI selected %dx%d framebuffer font %s for sticon\n",
++	pr_info("STI selected %ux%u framebuffer font %s for sticon\n",
+ 			fbfont->width, fbfont->height, fbfont->name);
+ 			
+ 	bpc = ((fbfont->width+7)/8) * fbfont->height; 
+diff --git a/include/linux/font.h b/include/linux/font.h
+index b5b312c19e46..4f50d736ea72 100644
+--- a/include/linux/font.h
++++ b/include/linux/font.h
+@@ -16,7 +16,7 @@
+ struct font_desc {
+     int idx;
+     const char *name;
+-    int width, height;
++    unsigned int width, height;
+     const void *data;
+     int pref;
+ };
 -- 
 2.25.1
 

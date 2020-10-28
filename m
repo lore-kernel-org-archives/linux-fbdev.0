@@ -1,279 +1,360 @@
-Return-Path: <SRS0=wnYw=ED=vger.kernel.org=linux-fbdev-owner@kernel.org>
+Return-Path: <SRS0=thug=EE=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27CB2C4363A
-	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Oct 2020 23:56:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D1D8C4363A
+	for <linux-fbdev@archiver.kernel.org>; Thu, 29 Oct 2020 00:21:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C8FCB20725
-	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Oct 2020 23:56:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F0CA220780
+	for <linux-fbdev@archiver.kernel.org>; Thu, 29 Oct 2020 00:21:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dmrKOPgj"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ogP5IRiX"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730098AbgJ1X4E (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 28 Oct 2020 19:56:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41628 "EHLO
+        id S2388962AbgJ1Wim (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:38:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57108 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389299AbgJ1Xzw (ORCPT
+        with ESMTP id S2388949AbgJ1WiT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 28 Oct 2020 19:55:52 -0400
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1DA17C0613CF;
-        Wed, 28 Oct 2020 16:55:52 -0700 (PDT)
-Received: by mail-pl1-x631.google.com with SMTP id b12so433335plr.4;
-        Wed, 28 Oct 2020 16:55:52 -0700 (PDT)
+        Wed, 28 Oct 2020 18:38:19 -0400
+Received: from mail-oi1-x241.google.com (mail-oi1-x241.google.com [IPv6:2607:f8b0:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 29BF9C0613CF;
+        Wed, 28 Oct 2020 15:38:19 -0700 (PDT)
+Received: by mail-oi1-x241.google.com with SMTP id y186so1276721oia.3;
+        Wed, 28 Oct 2020 15:38:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=CnlZYxkwJJLo9grLc9JR4ofLfA3mMxlZOcb0oXJV6X8=;
-        b=dmrKOPgjnpuio2WPYe9adMQ5Fu8pVE3k4Wi/w03k/0u6JF+2rd0CiH+0Bioi2yJkcC
-         S0deV5TasPlwPkn0cQ4MyyEsBtFUV/qXm3YWEqeGjPMze4Y1UezS34Xjk3nTyRSEmRaB
-         4ZPAsRflprWHhwz59G/UPag11Tt5MfNKVvXNQ3Md89Dt+bciLRUmTwNXF710LuduiIj0
-         GfAhD+R42h0mpcHdPG1QIdwpalnkLuTvghNpsRVxlJPerJI0ClVKrLxU2mDPYwD5t5Bd
-         VI1jYEUq6axZxTzfqZjeCeRHg8AsI51n6n7wbUK0L/rJuJUxviZmt8VM0oQlZB77Dbaf
-         ASRQ==
+        bh=yKx0INo9eFW/IC3DVHie0KFpjS6/2uNoBFxnnJe8nMs=;
+        b=ogP5IRiXwDEE94NW0k7l4k3E4vInnyCRSxzMprrmeyf2QRvuTVDJdZM0e+uJ8PfaXb
+         QYz+7yJBo4C92YVkNMWQhQg9iXVTRd7pj4ZqK4UaFOaxfobE6MTfyx6XVHaIvStYzO0r
+         h1qk2+8salmDV6CLRnzZhAkZWWjAgumAea8Q7IkoWK+xJ7Qh8idAmxvr96ODx1I9KUwT
+         xKcWYvdRKEqVb2JdmvelDtFLTspZRRZphQMhtyCIIeWsaZSoTwG9X0YInUeOOnGWgvM6
+         yojq67JYx7/OY+x7MEEzuTNxc5YAKr++/nblHnDFzVaA548/AwVFpOrbpPmxULDHCWPY
+         fu+g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=CnlZYxkwJJLo9grLc9JR4ofLfA3mMxlZOcb0oXJV6X8=;
-        b=a1iLuOcUw/X2Tb7xcp75OxMUl3alzsOPL9sXuEzAsiYbDCxH3+pO1QSJh8VLNy6esC
-         Y1VX6vF8kD+gFgn23ov0g+CHwTJYmuZMUX2Alx9D9w5plMGFGSUBBchmd+w3wo/8yEKX
-         7ENcjg9AYBbiBQw9IMaD6Dxvqju+7Xr9fKTcklqVYXjt3qHrRYg7uhmL/VFn2q7VIkxV
-         XpfsfWOI36wZt82heQHEd0H0EnPxZc9zk87DH9yVQF8Tv4jOFiM0gJm7OouUlfK8R7qC
-         heug422PVIO7MVwarEbtB28sOTGkK7qSkNdAyaNbN940N6Ja+jlwbsDMA/XNzSl1iy9f
-         roeA==
-X-Gm-Message-State: AOAM533K5dT5EHWyaHDPN1ujgk4xqeumoxh5SedHkZXy59D9RH9ERgv6
-        +OB68LOHrmzfyjGskxe3o7hURclKojwB
-X-Google-Smtp-Source: ABdhPJwN9pWc6SgNrQdHQVoHdTi/4KewCbxwqHjDs5apNgsRBCqiaB/UFtHbcNuOSzCUB8UzBnLflA==
-X-Received: by 2002:a17:902:bf43:b029:d6:19b1:7942 with SMTP id u3-20020a170902bf43b02900d619b17942mr5920732pls.61.1603865166424;
-        Tue, 27 Oct 2020 23:06:06 -0700 (PDT)
+        bh=yKx0INo9eFW/IC3DVHie0KFpjS6/2uNoBFxnnJe8nMs=;
+        b=j+AlK0OWqVplUTGDShn/WEO566mdnoEhAVLykyJX2TQUlXlt2gU+p2/+1sW6+YcZwy
+         TfQZuyt5tWD1PXzC1DCtEJcYBKZlyQ6did4ywljKKtvrKqB6/YgFQ3teDzQnKC98yB3a
+         z3WTUOw8sSyyvvjbNuSv1XV5SSmGlhSo7vj7xDE6tBdVDhRhAx49N7N0hRnMoS1XI/D8
+         IfFIzKFxE672y80nxuWJ7DhT9NYbrNNe7mKZC/anNVIno8b9i8Mur+CkRR2ghN/hnOVU
+         xUECPgAS3r6cm0J6lTGcBDcnHFMsQB+645OexSYQIXU3+aTj5C2PBtTMhu4PaArS8bwe
+         S8LQ==
+X-Gm-Message-State: AOAM533/jEgvLFtH3DpG30/1l8N+kntRoYRana8OFT7jDL8FSERVSM5L
+        fHleGeNoMy9M6/z5aAexjNoC6z/kpxP8
+X-Google-Smtp-Source: ABdhPJxacFtEfby4PIEPkQeo4aUBLQnXY9UlFuVa2mfO5ot0DOmPjf+6pfcS3yUY1K7NhG/Zffuo1g==
+X-Received: by 2002:a17:90a:d489:: with SMTP id s9mr46478pju.50.1603900530445;
+        Wed, 28 Oct 2020 08:55:30 -0700 (PDT)
 Received: from localhost.localdomain (n11212042025.netvigator.com. [112.120.42.25])
-        by smtp.gmail.com with ESMTPSA id o22sm4021658pgb.83.2020.10.27.23.06.02
+        by smtp.gmail.com with ESMTPSA id b7sm9952pfr.171.2020.10.28.08.55.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Oct 2020 23:06:05 -0700 (PDT)
+        Wed, 28 Oct 2020 08:55:29 -0700 (PDT)
 From:   Peilin Ye <yepeilin.cs@gmail.com>
 To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
         Jiri Slaby <jirislaby@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Sven Schneider <s.schneider@arkona-technologies.de>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org, Peilin Ye <yepeilin.cs@gmail.com>
-Subject: [PATCH 3/5 v2] Fonts: Add charcount field to font_desc
-Date:   Wed, 28 Oct 2020 02:05:33 -0400
-Message-Id: <20201028060533.1206307-1-yepeilin.cs@gmail.com>
+Subject: [PATCH RFC v2 4/5] fbdev: Avoid using FNTCHARCNT() and hard-coded font charcount
+Date:   Wed, 28 Oct 2020 11:51:39 -0400
+Message-Id: <20201028155139.1220549-1-yepeilin.cs@gmail.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <6c28279a10dbe7a7e5ac3e3a8dd7c67f8d63a9f2.1603788512.git.yepeilin.cs@gmail.com>
-References: <6c28279a10dbe7a7e5ac3e3a8dd7c67f8d63a9f2.1603788512.git.yepeilin.cs@gmail.com>
+In-Reply-To: <a3b1b3cdc160fb9aef389c366f387fb27f0aef38.1603788512.git.yepeilin.cs@gmail.com>
+References: <a3b1b3cdc160fb9aef389c366f387fb27f0aef38.1603788512.git.yepeilin.cs@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Subsystems are assuming the number of characters of our built-in fonts.
-Include that information in our kernel font descriptor, `struct
-font_desc`.
+For user-provided fonts, the framebuffer layer is using a
+negative-indexing macro, FNTCHARCNT(), to keep track of their number of
+characters. For built-in fonts, it is using hard-coded values (256). This
+results in something like the following:
+
+		map.length = (ops->p->userfont) ?
+			FNTCHARCNT(ops->p->fontdata) : 256;
+
+Recently we added a `charcount` field to `struct font_desc`. Use it, and
+set `vc->vc_font.charcount` properly whenever `vc->vc_font.data` is set,
+so that we can use `vc->vc_font.charcount` instead of an if-else between
+FNTCHARCNT() and 256.
+
+This patch depends on patch "Fonts: Add charcount field to font_desc".
 
 Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
-Change in v2:
-  - Rebase onto 5.10-rc1.
+FNTCHARCNT() now disappeared from drivers/video/fbdev/core/. There is one
+more in drivers/video/console/newport_con.c, but I think that file needs
+to be handled separately.
 
- include/linux/font.h       | 1 +
- lib/fonts/font_10x18.c     | 1 +
- lib/fonts/font_6x10.c      | 1 +
- lib/fonts/font_6x11.c      | 1 +
- lib/fonts/font_6x8.c       | 1 +
- lib/fonts/font_7x14.c      | 1 +
- lib/fonts/font_8x16.c      | 1 +
- lib/fonts/font_8x8.c       | 1 +
- lib/fonts/font_acorn_8x8.c | 1 +
- lib/fonts/font_mini_4x6.c  | 1 +
- lib/fonts/font_pearl_8x8.c | 1 +
- lib/fonts/font_sun12x22.c  | 1 +
- lib/fonts/font_sun8x16.c   | 1 +
- lib/fonts/font_ter16x32.c  | 1 +
- 14 files changed, 14 insertions(+)
+Changes in v2:
+  - Try avoid using FNTCHARCNT() altogether, instead of only changing a
+    little bit (Suggested by Daniel Vetter <daniel.vetter@ffwll.ch>)
+  - Change the title, since we are now removing FNTCHARCNT()
+  - Set `vc->vc_font.charcount` properly, in fbcon_startup(),
+    fbcon_init(), fbcon_set_disp() and fbcon_do_set_font()
+  - Replace hard-coded 256 whenever possible
 
-diff --git a/include/linux/font.h b/include/linux/font.h
-index b5b312c19e46..54e60ad2252b 100644
---- a/include/linux/font.h
-+++ b/include/linux/font.h
-@@ -17,6 +17,7 @@ struct font_desc {
-     int idx;
-     const char *name;
-     int width, height;
-+    unsigned int charcount;
-     const void *data;
-     int pref;
- };
-diff --git a/lib/fonts/font_10x18.c b/lib/fonts/font_10x18.c
-index 0e2deac97da0..4096c6562494 100644
---- a/lib/fonts/font_10x18.c
-+++ b/lib/fonts/font_10x18.c
-@@ -5137,6 +5137,7 @@ const struct font_desc font_10x18 = {
- 	.name	= "10x18",
- 	.width	= 10,
- 	.height	= 18,
-+	.charcount = 256,
- 	.data	= fontdata_10x18.data,
- #ifdef __sparc__
- 	.pref	= 5,
-diff --git a/lib/fonts/font_6x10.c b/lib/fonts/font_6x10.c
-index 87da8acd07db..32786674cf65 100644
---- a/lib/fonts/font_6x10.c
-+++ b/lib/fonts/font_6x10.c
-@@ -3083,6 +3083,7 @@ const struct font_desc font_6x10 = {
- 	.name	= "6x10",
- 	.width	= 6,
- 	.height	= 10,
-+	.charcount = 256,
- 	.data	= fontdata_6x10.data,
- 	.pref	= 0,
- };
-diff --git a/lib/fonts/font_6x11.c b/lib/fonts/font_6x11.c
-index 5e975dfa10a5..81e4a3aed44a 100644
---- a/lib/fonts/font_6x11.c
-+++ b/lib/fonts/font_6x11.c
-@@ -3346,6 +3346,7 @@ const struct font_desc font_vga_6x11 = {
- 	.name	= "ProFont6x11",
- 	.width	= 6,
- 	.height	= 11,
-+	.charcount = 256,
- 	.data	= fontdata_6x11.data,
- 	/* Try avoiding this font if possible unless on MAC */
- 	.pref	= -2000,
-diff --git a/lib/fonts/font_6x8.c b/lib/fonts/font_6x8.c
-index 700039a9ceae..5618ae7ef9fa 100644
---- a/lib/fonts/font_6x8.c
-+++ b/lib/fonts/font_6x8.c
-@@ -2571,6 +2571,7 @@ const struct font_desc font_6x8 = {
- 	.name	= "6x8",
- 	.width	= 6,
- 	.height	= 8,
-+	.charcount = 256,
- 	.data	= fontdata_6x8.data,
- 	.pref	= 0,
- };
-diff --git a/lib/fonts/font_7x14.c b/lib/fonts/font_7x14.c
-index 86d298f38505..7708e73d491f 100644
---- a/lib/fonts/font_7x14.c
-+++ b/lib/fonts/font_7x14.c
-@@ -4113,6 +4113,7 @@ const struct font_desc font_7x14 = {
- 	.name	= "7x14",
- 	.width	= 7,
- 	.height	= 14,
-+	.charcount = 256,
- 	.data	= fontdata_7x14.data,
- 	.pref	= 0,
- };
-diff --git a/lib/fonts/font_8x16.c b/lib/fonts/font_8x16.c
-index 37cedd36ca5e..74125d3570cf 100644
---- a/lib/fonts/font_8x16.c
-+++ b/lib/fonts/font_8x16.c
-@@ -4627,6 +4627,7 @@ const struct font_desc font_vga_8x16 = {
- 	.name	= "VGA8x16",
- 	.width	= 8,
- 	.height	= 16,
-+	.charcount = 256,
- 	.data	= fontdata_8x16.data,
- 	.pref	= 0,
- };
-diff --git a/lib/fonts/font_8x8.c b/lib/fonts/font_8x8.c
-index 8ab695538395..96da4bb31ae4 100644
---- a/lib/fonts/font_8x8.c
-+++ b/lib/fonts/font_8x8.c
-@@ -2578,6 +2578,7 @@ const struct font_desc font_vga_8x8 = {
- 	.name	= "VGA8x8",
- 	.width	= 8,
- 	.height	= 8,
-+	.charcount = 256,
- 	.data	= fontdata_8x8.data,
- 	.pref	= 0,
- };
-diff --git a/lib/fonts/font_acorn_8x8.c b/lib/fonts/font_acorn_8x8.c
-index 069b3e80c434..ba74053fec7b 100644
---- a/lib/fonts/font_acorn_8x8.c
-+++ b/lib/fonts/font_acorn_8x8.c
-@@ -270,6 +270,7 @@ const struct font_desc font_acorn_8x8 = {
- 	.name	= "Acorn8x8",
- 	.width	= 8,
- 	.height	= 8,
-+	.charcount = 256,
- 	.data	= acorndata_8x8.data,
- #ifdef CONFIG_ARCH_ACORN
- 	.pref	= 20,
-diff --git a/lib/fonts/font_mini_4x6.c b/lib/fonts/font_mini_4x6.c
-index 1449876c6a27..637708e8c67e 100644
---- a/lib/fonts/font_mini_4x6.c
-+++ b/lib/fonts/font_mini_4x6.c
-@@ -2152,6 +2152,7 @@ const struct font_desc font_mini_4x6 = {
- 	.name	= "MINI4x6",
- 	.width	= 4,
- 	.height	= 6,
-+	.charcount = 256,
- 	.data	= fontdata_mini_4x6.data,
- 	.pref	= 3,
- };
-diff --git a/lib/fonts/font_pearl_8x8.c b/lib/fonts/font_pearl_8x8.c
-index 32d65551e7ed..06cde43c7bd2 100644
---- a/lib/fonts/font_pearl_8x8.c
-+++ b/lib/fonts/font_pearl_8x8.c
-@@ -2582,6 +2582,7 @@ const struct font_desc font_pearl_8x8 = {
- 	.name	= "PEARL8x8",
- 	.width	= 8,
- 	.height	= 8,
-+	.charcount = 256,
- 	.data	= fontdata_pearl8x8.data,
- 	.pref	= 2,
- };
-diff --git a/lib/fonts/font_sun12x22.c b/lib/fonts/font_sun12x22.c
-index 641a6b4dca42..d0290d79df2c 100644
---- a/lib/fonts/font_sun12x22.c
-+++ b/lib/fonts/font_sun12x22.c
-@@ -6156,6 +6156,7 @@ const struct font_desc font_sun_12x22 = {
- 	.name	= "SUN12x22",
- 	.width	= 12,
- 	.height	= 22,
-+	.charcount = 256,
- 	.data	= fontdata_sun12x22.data,
- #ifdef __sparc__
- 	.pref	= 5,
-diff --git a/lib/fonts/font_sun8x16.c b/lib/fonts/font_sun8x16.c
-index 193fe6d988e0..7d83760354a6 100644
---- a/lib/fonts/font_sun8x16.c
-+++ b/lib/fonts/font_sun8x16.c
-@@ -268,6 +268,7 @@ const struct font_desc font_sun_8x16 = {
- 	.name	= "SUN8x16",
- 	.width	= 8,
- 	.height	= 16,
-+	.charcount = 256,
- 	.data	= fontdata_sun8x16.data,
- #ifdef __sparc__
- 	.pref	= 10,
-diff --git a/lib/fonts/font_ter16x32.c b/lib/fonts/font_ter16x32.c
-index 91b9c283bd9c..a2cc25b9f8e3 100644
---- a/lib/fonts/font_ter16x32.c
-+++ b/lib/fonts/font_ter16x32.c
-@@ -2062,6 +2062,7 @@ const struct font_desc font_ter_16x32 = {
- 	.name	= "TER16x32",
- 	.width	= 16,
- 	.height = 32,
-+	.charcount = 256,
- 	.data	= fontdata_ter16x32.data,
- #ifdef __sparc__
- 	.pref	= 5,
+ drivers/video/fbdev/core/fbcon.c        | 58 ++++++++++---------------
+ drivers/video/fbdev/core/fbcon_rotate.c |  2 +-
+ drivers/video/fbdev/core/tileblit.c     |  3 +-
+ 3 files changed, 25 insertions(+), 38 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index cef437817b0d..253eb9bcff25 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -1004,7 +1004,7 @@ static const char *fbcon_startup(void)
+ 		vc->vc_font.width = font->width;
+ 		vc->vc_font.height = font->height;
+ 		vc->vc_font.data = (void *)(p->fontdata = font->data);
+-		vc->vc_font.charcount = 256; /* FIXME  Need to support more fonts */
++		vc->vc_font.charcount = font->charcount;
+ 	} else {
+ 		p->fontdata = vc->vc_font.data;
+ 	}
+@@ -1032,7 +1032,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 	struct vc_data **default_mode = vc->vc_display_fg;
+ 	struct vc_data *svc = *default_mode;
+ 	struct fbcon_display *t, *p = &fb_display[vc->vc_num];
+-	int logo = 1, new_rows, new_cols, rows, cols, charcnt = 256;
++	int logo = 1, new_rows, new_cols, rows, cols;
+ 	int cap, ret;
+ 
+ 	if (WARN_ON(info_idx == -1))
+@@ -1068,6 +1068,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 						    fvc->vc_font.data);
+ 			vc->vc_font.width = fvc->vc_font.width;
+ 			vc->vc_font.height = fvc->vc_font.height;
++			vc->vc_font.charcount = fvc->vc_font.charcount;
+ 			p->userfont = t->userfont;
+ 
+ 			if (p->userfont)
+@@ -1083,17 +1084,13 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 			vc->vc_font.width = font->width;
+ 			vc->vc_font.height = font->height;
+ 			vc->vc_font.data = (void *)(p->fontdata = font->data);
+-			vc->vc_font.charcount = 256; /* FIXME  Need to
+-							support more fonts */
++			vc->vc_font.charcount = font->charcount;
+ 		}
+ 	}
+ 
+-	if (p->userfont)
+-		charcnt = FNTCHARCNT(p->fontdata);
+-
+ 	vc->vc_can_do_color = (fb_get_color_depth(&info->var, &info->fix)!=1);
+ 	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
+-	if (charcnt == 256) {
++	if (vc->vc_font.charcount == 256) {
+ 		vc->vc_hi_font_mask = 0;
+ 	} else {
+ 		vc->vc_hi_font_mask = 0x100;
+@@ -1358,7 +1355,7 @@ static void fbcon_set_disp(struct fb_info *info, struct fb_var_screeninfo *var,
+ 	struct vc_data **default_mode, *vc;
+ 	struct vc_data *svc;
+ 	struct fbcon_ops *ops = info->fbcon_par;
+-	int rows, cols, charcnt = 256;
++	int rows, cols;
+ 
+ 	p = &fb_display[unit];
+ 
+@@ -1378,12 +1375,11 @@ static void fbcon_set_disp(struct fb_info *info, struct fb_var_screeninfo *var,
+ 		vc->vc_font.data = (void *)(p->fontdata = t->fontdata);
+ 		vc->vc_font.width = (*default_mode)->vc_font.width;
+ 		vc->vc_font.height = (*default_mode)->vc_font.height;
++		vc->vc_font.charcount = (*default_mode)->vc_font.charcount;
+ 		p->userfont = t->userfont;
+ 		if (p->userfont)
+ 			REFCOUNT(p->fontdata)++;
+ 	}
+-	if (p->userfont)
+-		charcnt = FNTCHARCNT(p->fontdata);
+ 
+ 	var->activate = FB_ACTIVATE_NOW;
+ 	info->var.activate = var->activate;
+@@ -1393,7 +1389,7 @@ static void fbcon_set_disp(struct fb_info *info, struct fb_var_screeninfo *var,
+ 	ops->var = info->var;
+ 	vc->vc_can_do_color = (fb_get_color_depth(&info->var, &info->fix)!=1);
+ 	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
+-	if (charcnt == 256) {
++	if (vc->vc_font.charcount == 256) {
+ 		vc->vc_hi_font_mask = 0;
+ 	} else {
+ 		vc->vc_hi_font_mask = 0x100;
+@@ -2027,7 +2023,7 @@ static int fbcon_resize(struct vc_data *vc, unsigned int width,
+ 		 */
+ 		if (pitch <= 0)
+ 			return -EINVAL;
+-		size = CALC_FONTSZ(vc->vc_font.height, pitch, FNTCHARCNT(vc->vc_font.data));
++		size = CALC_FONTSZ(vc->vc_font.height, pitch, vc->vc_font.charcount);
+ 		if (size > FNTSIZE(vc->vc_font.data))
+ 			return -EINVAL;
+ 	}
+@@ -2075,7 +2071,7 @@ static int fbcon_switch(struct vc_data *vc)
+ 	struct fbcon_ops *ops;
+ 	struct fbcon_display *p = &fb_display[vc->vc_num];
+ 	struct fb_var_screeninfo var;
+-	int i, ret, prev_console, charcnt = 256;
++	int i, ret, prev_console;
+ 
+ 	info = registered_fb[con2fb_map[vc->vc_num]];
+ 	ops = info->fbcon_par;
+@@ -2152,10 +2148,7 @@ static int fbcon_switch(struct vc_data *vc)
+ 	vc->vc_can_do_color = (fb_get_color_depth(&info->var, &info->fix)!=1);
+ 	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
+ 
+-	if (p->userfont)
+-		charcnt = FNTCHARCNT(vc->vc_font.data);
+-
+-	if (charcnt > 256)
++	if (vc->vc_font.charcount > 256)
+ 		vc->vc_complement_mask <<= 1;
+ 
+ 	updatescrollmode(p, info, vc);
+@@ -2289,7 +2282,7 @@ static int fbcon_get_font(struct vc_data *vc, struct console_font *font)
+ 
+ 	font->width = vc->vc_font.width;
+ 	font->height = vc->vc_font.height;
+-	font->charcount = vc->vc_hi_font_mask ? 512 : 256;
++	font->charcount = vc->vc_font.charcount;
+ 	if (!font->data)
+ 		return 0;
+ 
+@@ -2405,31 +2398,27 @@ static void set_vc_hi_font(struct vc_data *vc, bool set)
+ 	}
+ }
+ 
+-static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
++static int fbcon_do_set_font(struct vc_data *vc, int w, int h, int charcount,
+ 			     const u8 * data, int userfont)
+ {
+ 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 	struct fbcon_display *p = &fb_display[vc->vc_num];
+ 	int resize;
+-	int cnt;
+ 	char *old_data = NULL;
+ 
+ 	resize = (w != vc->vc_font.width) || (h != vc->vc_font.height);
+ 	if (p->userfont)
+ 		old_data = vc->vc_font.data;
+-	if (userfont)
+-		cnt = FNTCHARCNT(data);
+-	else
+-		cnt = 256;
+ 	vc->vc_font.data = (void *)(p->fontdata = data);
+ 	if ((p->userfont = userfont))
+ 		REFCOUNT(data)++;
+ 	vc->vc_font.width = w;
+ 	vc->vc_font.height = h;
+-	if (vc->vc_hi_font_mask && cnt == 256)
++	vc->vc_font.charcount = charcount;
++	if (vc->vc_hi_font_mask && charcount == 256)
+ 		set_vc_hi_font(vc, false);
+-	else if (!vc->vc_hi_font_mask && cnt == 512)
++	else if (!vc->vc_hi_font_mask && charcount == 512)
+ 		set_vc_hi_font(vc, true);
+ 
+ 	if (resize) {
+@@ -2458,7 +2447,7 @@ static int fbcon_copy_font(struct vc_data *vc, int con)
+ 
+ 	if (od->fontdata == f->data)
+ 		return 0;	/* already the same font... */
+-	return fbcon_do_set_font(vc, f->width, f->height, od->fontdata, od->userfont);
++	return fbcon_do_set_font(vc, f->width, f->height, f->charcount, od->fontdata, od->userfont);
+ }
+ 
+ /*
+@@ -2506,9 +2495,10 @@ static int fbcon_set_font(struct vc_data *vc, struct console_font *font,
+ 	if (!new_data)
+ 		return -ENOMEM;
+ 
++	memset(new_data, 0, FONT_EXTRA_WORDS * sizeof(int));
++
+ 	new_data += FONT_EXTRA_WORDS * sizeof(int);
+ 	FNTSIZE(new_data) = size;
+-	FNTCHARCNT(new_data) = charcount;
+ 	REFCOUNT(new_data) = 0;	/* usage counter */
+ 	for (i=0; i< charcount; i++) {
+ 		memcpy(new_data + i*h*pitch, data +  i*32*pitch, h*pitch);
+@@ -2534,7 +2524,7 @@ static int fbcon_set_font(struct vc_data *vc, struct console_font *font,
+ 			break;
+ 		}
+ 	}
+-	return fbcon_do_set_font(vc, font->width, font->height, new_data, 1);
++	return fbcon_do_set_font(vc, font->width, font->height, charcount, new_data, 1);
+ }
+ 
+ static int fbcon_set_def_font(struct vc_data *vc, struct console_font *font, char *name)
+@@ -2550,7 +2540,7 @@ static int fbcon_set_def_font(struct vc_data *vc, struct console_font *font, cha
+ 
+ 	font->width = f->width;
+ 	font->height = f->height;
+-	return fbcon_do_set_font(vc, f->width, f->height, f->data, 0);
++	return fbcon_do_set_font(vc, f->width, f->height, f->charcount, f->data, 0);
+ }
+ 
+ static u16 palette_red[16];
+@@ -3031,8 +3021,7 @@ void fbcon_get_requirement(struct fb_info *info,
+ 				p = &fb_display[i];
+ 				caps->x |= 1 << (vc->vc_font.width - 1);
+ 				caps->y |= 1 << (vc->vc_font.height - 1);
+-				charcnt = (p->userfont) ?
+-					FNTCHARCNT(p->fontdata) : 256;
++				charcnt = vc->vc_font.charcount;
+ 				if (caps->len < charcnt)
+ 					caps->len = charcnt;
+ 			}
+@@ -3045,8 +3034,7 @@ void fbcon_get_requirement(struct fb_info *info,
+ 			p = &fb_display[fg_console];
+ 			caps->x = 1 << (vc->vc_font.width - 1);
+ 			caps->y = 1 << (vc->vc_font.height - 1);
+-			caps->len = (p->userfont) ?
+-				FNTCHARCNT(p->fontdata) : 256;
++			caps->len = vc->vc_font.charcount;
+ 		}
+ 	}
+ }
+diff --git a/drivers/video/fbdev/core/fbcon_rotate.c b/drivers/video/fbdev/core/fbcon_rotate.c
+index ac72d4f85f7d..9072d5947d16 100644
+--- a/drivers/video/fbdev/core/fbcon_rotate.c
++++ b/drivers/video/fbdev/core/fbcon_rotate.c
+@@ -33,7 +33,7 @@ static int fbcon_rotate_font(struct fb_info *info, struct vc_data *vc)
+ 
+ 	src = ops->fontdata = vc->vc_font.data;
+ 	ops->cur_rotate = ops->p->con_rotate;
+-	len = (!ops->p->userfont) ? 256 : FNTCHARCNT(src);
++	len = vc->vc_font.charcount;
+ 	s_cellsize = ((vc->vc_font.width + 7)/8) *
+ 		vc->vc_font.height;
+ 	d_cellsize = s_cellsize;
+diff --git a/drivers/video/fbdev/core/tileblit.c b/drivers/video/fbdev/core/tileblit.c
+index 628fe5e010c0..e9ab90d1b67c 100644
+--- a/drivers/video/fbdev/core/tileblit.c
++++ b/drivers/video/fbdev/core/tileblit.c
+@@ -145,8 +145,7 @@ void fbcon_set_tileops(struct vc_data *vc, struct fb_info *info)
+ 		map.width = vc->vc_font.width;
+ 		map.height = vc->vc_font.height;
+ 		map.depth = 1;
+-		map.length = (ops->p->userfont) ?
+-			FNTCHARCNT(ops->p->fontdata) : 256;
++		map.length = vc->vc_font.charcount;
+ 		map.data = ops->p->fontdata;
+ 		info->tileops->fb_settile(info, &map);
+ 	}
 -- 
 2.25.1
 

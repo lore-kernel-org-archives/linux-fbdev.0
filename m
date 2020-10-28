@@ -1,159 +1,100 @@
-Return-Path: <SRS0=EV96=EC=vger.kernel.org=linux-fbdev-owner@kernel.org>
+Return-Path: <SRS0=wnYw=ED=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DC2FC56201
-	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Oct 2020 19:20:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36CE9C4363A
+	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Oct 2020 21:53:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AFF3721556
-	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Oct 2020 19:20:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="jZmcXQX1"
+	by mail.kernel.org (Postfix) with ESMTP id E63572470E
+	for <linux-fbdev@archiver.kernel.org>; Wed, 28 Oct 2020 21:53:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1829617AbgJ0TT3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 27 Oct 2020 15:19:29 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:36788 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1829601AbgJ0TST (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 27 Oct 2020 15:18:19 -0400
-Received: by mail-wr1-f66.google.com with SMTP id x7so3184327wrl.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 27 Oct 2020 12:18:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=UcIHLAfMrGIWb94gFQbYez2rtiLYhxYGzbhepgOEqhg=;
-        b=jZmcXQX1A2S40vjJo/nTH0aljwKjJuAPXb+B36lbyLEdT9egc+lxtWdJnMB+OCR1q/
-         z8JXGeDZMMgDs7eEoLuZcbtLb4W4PRiKB7xEFyfMBTPNVjvHVRgf0wKWDBhLE7BeF3Ee
-         HdUsFRjxEA01mA8iefIMZVO+toudXuG7t7vSE=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to;
-        bh=UcIHLAfMrGIWb94gFQbYez2rtiLYhxYGzbhepgOEqhg=;
-        b=mGSQkIsVDA6Mlq0Cj2j5/Y+FRYdQ1SvUJPuTP0QkaE+0yTy7fsNABm+BxKLQ6MpHhR
-         AQagof5Sts71XT1h1KCfVxB1QIXE77K8obRNh18k+K7grdY0qn6stIkuLSGDFCrrJcNb
-         3H4jZf2GGWrbzc/TeHvk/8yjmT4aqm85iP27+Ch4vZ6ldadwcR+uvh9fUtVoNf+3T2RA
-         fPr8lPL1MfICLT9QN4ucaBQzHCa8NApmqN96p+wMVPl0QGUslJlEIPYBO7i86+yEgHHI
-         IPv7gEg1lK1LlqqPrOhJlcXa5ZGxaPWYawCXfUC1KN79Ba7Gxn5XvRy4SqpIaK2EWDoj
-         qzJA==
-X-Gm-Message-State: AOAM531tGoZOaXLYA90oyRIdIY3fkCw0oFKX+Bagnqoy5airhcIfZCHq
-        WSySgpx1vxpFFA29QaGTWWAR1g==
-X-Google-Smtp-Source: ABdhPJwcdYcb/+YbSAqoFdbmEhcuESXU1vQTf/whNx4Mk55hbq+3g75bW6OZn0DeRMXMMRK+am3X9g==
-X-Received: by 2002:adf:dd50:: with SMTP id u16mr4781710wrm.419.1603826296987;
-        Tue, 27 Oct 2020 12:18:16 -0700 (PDT)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id b7sm3280521wrp.16.2020.10.27.12.18.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Oct 2020 12:18:16 -0700 (PDT)
-Date:   Tue, 27 Oct 2020 20:18:14 +0100
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Peilin Ye <yepeilin.cs@gmail.com>
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
-        Helge Deller <deller@gmx.de>,
+        id S1728247AbgJ1Vxq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 28 Oct 2020 17:53:46 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43402 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728524AbgJ1Vxn (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 28 Oct 2020 17:53:43 -0400
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id 67912AEC4;
+        Wed, 28 Oct 2020 19:25:56 +0000 (UTC)
+Subject: Re: [PATCH 1/5] fbdev/atafb: Remove unused extern variables
+To:     Peilin Ye <yepeilin.cs@gmail.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     linux-fbdev@vger.kernel.org,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        linux-parisc@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] parisc/sticore: Avoid hard-coding built-in font
- charcount
-Message-ID: <20201027191814.GP401619@phenom.ffwll.local>
-Mail-Followup-To: Peilin Ye <yepeilin.cs@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
-        Helge Deller <deller@gmx.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        linux-parisc@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Mike Rapoport <rppt@kernel.org>
 References: <cover.1603788511.git.yepeilin.cs@gmail.com>
  <cb5bb49a33ff54fef41e719ee9d301a6a73c5f9c.1603788512.git.yepeilin.cs@gmail.com>
- <54f7d42e07eca2a2f13669575a9de88023ebc1ac.1603788512.git.yepeilin.cs@gmail.com>
- <6c28279a10dbe7a7e5ac3e3a8dd7c67f8d63a9f2.1603788512.git.yepeilin.cs@gmail.com>
- <a3b1b3cdc160fb9aef389c366f387fb27f0aef38.1603788512.git.yepeilin.cs@gmail.com>
- <c38042bbf5c9777c84900d56c09f3c156b32af48.1603788512.git.yepeilin.cs@gmail.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+Message-ID: <4c15a505-9704-9639-aeaa-e865d264c120@suse.de>
+Date:   Wed, 28 Oct 2020 20:25:55 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.3.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c38042bbf5c9777c84900d56c09f3c156b32af48.1603788512.git.yepeilin.cs@gmail.com>
-X-Operating-System: Linux phenom 5.7.0-1-amd64 
+In-Reply-To: <cb5bb49a33ff54fef41e719ee9d301a6a73c5f9c.1603788512.git.yepeilin.cs@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Oct 27, 2020 at 12:41:02PM -0400, Peilin Ye wrote:
-> sti_select_fbfont() and sti_cook_fonts() are hard-coding the number of
-> characters of our built-in fonts as 256. Recently, we included that
-> information in our kernel font descriptor `struct font_desc`, so use
-> `fbfont->charcount` instead of hard-coded values.
-> 
-> This patch depends on patch "Fonts: Add charcount field to font_desc".
+
+
+Am 27.10.20 um 17:31 schrieb Peilin Ye:
+> Remove 6 unused extern variables to reduce confusion. It is worth
+> mentioning that lib/fonts/font_8x8.c and lib/fonts/font_8x16.c also
+> declare `fontdata_8x8` and `fontdata_8x16` respectively, and this file
+> has nothing to do with them.
 > 
 > Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
 
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
 
 > ---
 > $ # Build-tested (Ubuntu 20.04)
-> $ sudo apt-get install binutils-hppa64-linux-gnu gcc-7-hppa64-linux-gnu
-> $ cp arch/parisc/configs/generic-64bit_defconfig .config
-> $ make -j`nproc` ARCH=parisc CROSS_COMPILE=hppa64-linux-gnu- all
+> $ sudo apt install gcc-m68k-linux-gnu
+> $ cp arch/m68k/configs/atari_defconfig .config
+> $ make ARCH=m68k menuconfig
+> $ make ARCH=m68k CROSS_COMPILE=m68k-linux-gnu- -j`nproc` all
 > 
->  drivers/video/console/sticore.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  drivers/video/fbdev/atafb.c | 8 --------
+>  1 file changed, 8 deletions(-)
 > 
-> diff --git a/drivers/video/console/sticore.c b/drivers/video/console/sticore.c
-> index d1bb5915082b..f869b723494f 100644
-> --- a/drivers/video/console/sticore.c
-> +++ b/drivers/video/console/sticore.c
-> @@ -506,7 +506,7 @@ sti_select_fbfont(struct sti_cooked_rom *cooked_rom, const char *fbfont_name)
->  			fbfont->width, fbfont->height, fbfont->name);
->  			
->  	bpc = ((fbfont->width+7)/8) * fbfont->height; 
-> -	size = bpc * 256;
-> +	size = bpc * fbfont->charcount;
->  	size += sizeof(struct sti_rom_font);
+> diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+> index f253daa05d9d..e3812a8ff55a 100644
+> --- a/drivers/video/fbdev/atafb.c
+> +++ b/drivers/video/fbdev/atafb.c
+> @@ -240,14 +240,6 @@ static int *MV300_reg = MV300_reg_8bit;
 >  
->  	nf = kzalloc(size, STI_LOWMEM);
-> @@ -514,7 +514,7 @@ sti_select_fbfont(struct sti_cooked_rom *cooked_rom, const char *fbfont_name)
->  		return NULL;
+>  static int inverse;
 >  
->  	nf->first_char = 0;
-> -	nf->last_char = 255;
-> +	nf->last_char = fbfont->charcount - 1;
->  	nf->width = fbfont->width;
->  	nf->height = fbfont->height;
->  	nf->font_type = STI_FONT_HPROMAN8;
-> @@ -525,7 +525,7 @@ sti_select_fbfont(struct sti_cooked_rom *cooked_rom, const char *fbfont_name)
->  
->  	dest = nf;
->  	dest += sizeof(struct sti_rom_font);
-> -	memcpy(dest, fbfont->data, bpc*256);
-> +	memcpy(dest, fbfont->data, bpc * fbfont->charcount);
->  
->  	cooked_font = kzalloc(sizeof(*cooked_font), GFP_KERNEL);
->  	if (!cooked_font) {
-> @@ -660,7 +660,7 @@ static int sti_cook_fonts(struct sti_cooked_rom *cooked_rom,
->  void sti_font_convert_bytemode(struct sti_struct *sti, struct sti_cooked_font *f)
->  {
->  	unsigned char *n, *p, *q;
-> -	int size = f->raw->bytes_per_char * 256 + sizeof(struct sti_rom_font);
-> +	int size = f->raw->bytes_per_char * (f->raw->last_char + 1) + sizeof(struct sti_rom_font);
->  	struct sti_rom_font *old_font;
->  
->  	if (sti->wordmode)
-> -- 
-> 2.25.1
+> -extern int fontheight_8x8;
+> -extern int fontwidth_8x8;
+> -extern unsigned char fontdata_8x8[];
+> -
+> -extern int fontheight_8x16;
+> -extern int fontwidth_8x16;
+> -extern unsigned char fontdata_8x16[];
+> -
+>  /*
+>   * struct fb_ops {
+>   *	* open/release and usage marking
 > 
 
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 Nürnberg, Germany
+(HRB 36809, AG Nürnberg)
+Geschäftsführer: Felix Imendörffer

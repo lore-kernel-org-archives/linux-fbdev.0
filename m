@@ -2,102 +2,79 @@ Return-Path: <SRS0=zOMX=EF=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4197DC4742C
-	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Oct 2020 00:30:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 138B3C4741F
+	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Oct 2020 07:48:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DB66D20756
-	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Oct 2020 00:30:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="leJqdVBa"
+	by mail.kernel.org (Postfix) with ESMTP id B4EE12220B
+	for <linux-fbdev@archiver.kernel.org>; Fri, 30 Oct 2020 07:48:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726099AbgJ3Aaz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 29 Oct 2020 20:30:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46012 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725811AbgJ3Aay (ORCPT
+        id S1725993AbgJ3HsN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 30 Oct 2020 03:48:13 -0400
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:35572 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725784AbgJ3HsN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 29 Oct 2020 20:30:54 -0400
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AF11C0613CF
-        for <linux-fbdev@vger.kernel.org>; Thu, 29 Oct 2020 17:30:54 -0700 (PDT)
-Received: by mail-lj1-x244.google.com with SMTP id c21so5125020ljj.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 29 Oct 2020 17:30:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=WcU6T4hccd5cIgxH69lq3LU3dv7XKAqa7a9Wy3kb2Dc=;
-        b=leJqdVBahsfYuyVGnp9yBWGadv/E8WB9Ig4JGQiNyu3DnPfed0IwIVmf2uEAdtpuMB
-         ICLXiiowdZVfibEEsDMCqRbfIl91S6AvQAV/+A5ydpcsVu+2/dl4vtIzGJRXDePNuGHU
-         JPR7fquhT3lhSKFh61nxSr9dt9pBUBgf8JFbGPQkM4bGwd7ibRTpTjm9lhZvGS0HglWz
-         qF8HP0VrVTBR8H0UY4K23h2f9qLhZe2BArWsOgoXQviCEeNcpqnmracXw+EZnSOGbP8t
-         sa+c265v/OqRU1CmqKElqEBP86I09lB4vcMkMTblkYkyRH9ZwJkQPaJWCrbniyFLXYIz
-         Uz+g==
+        Fri, 30 Oct 2020 03:48:13 -0400
+Received: by mail-oi1-f193.google.com with SMTP id w191so5856835oif.2;
+        Fri, 30 Oct 2020 00:48:12 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=WcU6T4hccd5cIgxH69lq3LU3dv7XKAqa7a9Wy3kb2Dc=;
-        b=Qb3g43g40UD22o4fncj6Q9KsXBdoIrRV5To0n76oZ2CxemSR99FI4Lkpaq98qITHUm
-         NmTC4rHuXP2Vjoc5B72C1arY7vto3She6O0lNr5UF5TJMANc0l29sHgFx2IZ+Y0NkNT8
-         ehiIiqMYbaFbzyLdIGwwbSDxjU6FkSreEvELdQduqGy3gbmpZ6yR0I4NZKxpAg/21UMD
-         Qdyhe79k/Q127uuntKTsuQuS0Ef27P5wSarRyWOahKoYlZvD1vacUFIiOhWdG9iRbb3Q
-         kJw1Kcqjd3KY3YrfA1Lna1fMYavKr4LdkUceetIkjQQ88qv6e/Vmu2MSgR43Tw4Xl+sH
-         y/xA==
-X-Gm-Message-State: AOAM533d4Bz8FMm7gwoKA+0HURfiFr+7N+TSS1COkBnjiFEXlpZeYC0y
-        DOU1BF7j2yBT+ywQ3DW2DXbqKh9ugUKMLhIA
-X-Google-Smtp-Source: ABdhPJysATEz/+0sEJLgj3DA4+hz7bygNlLwNnEkTdEngOO0I/TIZuUL4RDZe3S4Qiv5MhxkgBI03A==
-X-Received: by 2002:a2e:8049:: with SMTP id p9mr3121422ljg.9.1604017852754;
-        Thu, 29 Oct 2020 17:30:52 -0700 (PDT)
-Received: from localhost.localdomain (c-92d7225c.014-348-6c756e10.bbcust.telenor.se. [92.34.215.146])
-        by smtp.gmail.com with ESMTPSA id j10sm497336ljb.93.2020.10.29.17.30.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Oct 2020 17:30:52 -0700 (PDT)
-From:   Linus Walleij <linus.walleij@linaro.org>
-To:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc:     Linus Walleij <linus.walleij@linaro.org>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        linux-renesas-soc@vger.kernel.org
-Subject: [PATCH] fbdev/sh_mobile: Drop unused include
-Date:   Fri, 30 Oct 2020 01:28:50 +0100
-Message-Id: <20201030002850.6495-1-linus.walleij@linaro.org>
-X-Mailer: git-send-email 2.26.2
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=aUqZb88Q/0ufWYeJ+IWRUs61LFgtSnTkf63Dv6bu7V8=;
+        b=lHCwP4GwwBnJ5+s5JZiF+dKCbpSaOJYzEjyh2FpIp7dwbs1fhyhkIJqokA+airao0/
+         yLLeHMfBsXl7Qo7+/NMC/df/fWiUDvKDoCvjAAGKgSYYvn4m3ubYBdFRbTuz4qyU+rG4
+         PTO9h1UvJ65EBQTTWApKS4WC85sOwf1fnXqsUrtCFZn+L2dXAhA1upk3mElLpRcnI23H
+         l3V8o6SQ8lZdbcIb/M0SKXlWSmrkTmYAe6VNmogAQX7HwGdq19TutcRNgbKwhvf9tEUN
+         hY7OrhbQpnt1Cn/3zn4FPEfMyQP/eT4Ryn0AUh4k+ZpcAhEF//6JXTk449mBPMT0Fryq
+         oGuA==
+X-Gm-Message-State: AOAM5304GdtbpRsL11muXoKM6UjQzOVu81gWn1kNUh2rScKBvufAesSQ
+        o/AV8f3CMSqGkKWzc7oyKl8oFP9B9/fu4j7T601R3kdrk0O2VQ==
+X-Google-Smtp-Source: ABdhPJyM4/0ApYw24j7hJhvVORFY3r9UAsjCRQf9AbmQ++DpOBDdsns9JiBEZ14reWsk+RiL97ai+YaxCmHoLPd7gYc=
+X-Received: by 2002:aca:f203:: with SMTP id q3mr694400oih.148.1604043704014;
+ Fri, 30 Oct 2020 00:41:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20201030002850.6495-1-linus.walleij@linaro.org>
+In-Reply-To: <20201030002850.6495-1-linus.walleij@linaro.org>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Fri, 30 Oct 2020 08:41:32 +0100
+Message-ID: <CAMuHMdUS_xZS8nvWiVG9BPit26kvgeYeB2tL3NbLZ6ru5ujD4A@mail.gmail.com>
+Subject: Re: [PATCH] fbdev/sh_mobile: Drop unused include
+To:     Linus Walleij <linus.walleij@linaro.org>
+Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Magnus Damm <magnus.damm@gmail.com>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The driver includes <linux/gpio.h> but doesn't use any symbols
-from this file.
+On Fri, Oct 30, 2020 at 1:30 AM Linus Walleij <linus.walleij@linaro.org> wrote:
+> The driver includes <linux/gpio.h> but doesn't use any symbols
+> from this file.
+>
+> Cc: Magnus Damm <magnus.damm@gmail.com>
+> Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+> Cc: linux-renesas-soc@vger.kernel.org
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 
-Cc: Magnus Damm <magnus.damm@gmail.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: linux-renesas-soc@vger.kernel.org
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 1 -
- 1 file changed, 1 deletion(-)
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+on r8a77440/armadillo, where this is the last piece of non-DT support.
 
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index c1043420dbd3..027c74d7c010 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -16,7 +16,6 @@
- #include <linux/dma-mapping.h>
- #include <linux/delay.h>
- #include <linux/fbcon.h>
--#include <linux/gpio.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/ioctl.h>
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.26.2
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -5,60 +5,60 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EE95C388F7
-	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Oct 2020 07:27:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B109C55179
+	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Oct 2020 07:28:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 65247206B5
-	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Oct 2020 07:27:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 30E6F20756
+	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Oct 2020 07:28:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SrX3hCDZ"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YIwfpdRp"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726073AbgJaH1D (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 31 Oct 2020 03:27:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50752 "EHLO
+        id S1726353AbgJaH2V (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 31 Oct 2020 03:28:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50950 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725800AbgJaH1D (ORCPT
+        with ESMTP id S1725800AbgJaH2V (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 31 Oct 2020 03:27:03 -0400
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85141C0613D5;
-        Sat, 31 Oct 2020 00:27:03 -0700 (PDT)
-Received: by mail-pj1-x1032.google.com with SMTP id gi3so519060pjb.3;
-        Sat, 31 Oct 2020 00:27:03 -0700 (PDT)
+        Sat, 31 Oct 2020 03:28:21 -0400
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com [IPv6:2607:f8b0:4864:20::642])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A33AEC0613D5;
+        Sat, 31 Oct 2020 00:28:21 -0700 (PDT)
+Received: by mail-pl1-x642.google.com with SMTP id f21so4135597plr.5;
+        Sat, 31 Oct 2020 00:28:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=iuNBtGDh3GuSA2eKznKy/F5TkdS26fRroHOEG3pO17c=;
-        b=SrX3hCDZ7xS4x9fg991BD6OjiIncp3p82vByYKuRBgT7s5flaA6HxV+Yco2lJP7h0x
-         6fFtzs4G22KyoEnjI37FAZP8KzfLPKJiMTbCDnfCmk17M9TWjbRJ6h3wBedLqhB8pjb4
-         /uJXGDW4Uxae41ztHOcM4h1YY8tefGlGItVDnfABg/QgjYUd9FUva8kGwRbhgyrxYo6H
-         CImYd62zdikkr8M8FttgEvV6L3ohv6rMjNfvZfu3hX3Tj6DCXcntC/tVMJ66PiCx/97W
-         iDrNWt9RmjG+ePFSJsjvrOhfD3jDIsZO5co59yypK9r+2FoMsvfs+uH3NpCDg5IQwatE
-         RUDg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=xZxHTpIUuYgNndqXicmDLiO1m0V+5tn5buT9cLfB+9g=;
+        b=YIwfpdRpUfnBUn8ZhV34T6cgdKpAXXJ7obKnN1EQWRpkZZQKkbbpdpiYSAAM97xXi/
+         ZLTOd10tIBffO/9Lyvf8uUxypxNUO/HCXfblHWq/kMfJMJozExNih4MfwDDpPSXIrAej
+         6jWp0gJNmJcEpLIgRRW39ET3UIFBMpmPj+deK2P7NtFIel5Xl7wo8ArWhhXtiVFLgaTD
+         HswhO2mCRy/ABF/eQ20D04Ks7kSHPg0TbxaTn9hiVIQEsdUav21Jn/xKuUJSgNZzxnPp
+         7voi2K1WU6VECoAhBDamYpZ4y2BecgTw8X4IHoyAKMr7IUxGTbaADH621aDoreOI5R79
+         VdOQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=iuNBtGDh3GuSA2eKznKy/F5TkdS26fRroHOEG3pO17c=;
-        b=HBDBznv+pZFDPiKBuN6U4vYqTxaVrzEkI6kQdx7vZsL52OlB5P2KRTaPF+gC0Z8N6G
-         PKoVseskA1OSb/Sc6fOeE34BW0jRxBYAdMhuntN0JUwz+j9VvrayLrLJhvBAT+rvuP8H
-         +Dv8bV55XOC4nyrgbgI1c5xuwEnzgQI8MfDfQNlUWpP3j1faHCIrmew9Fao3KUbbRlbR
-         rjt7ku0zyOttaI2/UTXyLc/9qxqRBySB9S47i3CmU8udl03kJZnrxuM8fO7q5e0H3czR
-         0Kk4jhxPWknr0ms3wxKPhjsUAbntSIgK3uo/7A4NTatgwMCP3RJx/qQNufFMFydIDZgi
-         Si/g==
-X-Gm-Message-State: AOAM532u4BtGmjRe7tEPvk2kzBPPqozfrZdNb3EHHgAMVRN+VXow0GgY
-        ZKwLFkyb236HjhVM0MBBnw==
-X-Google-Smtp-Source: ABdhPJyqBDEZ+Cnvw1QGEXJk9kInS+eaEDpbOK8w0OyGN/ZJAG4L+UEsgPxEBNlZPDkCjgsrVkcsVQ==
-X-Received: by 2002:a17:902:b7c4:b029:d6:855a:df2c with SMTP id v4-20020a170902b7c4b02900d6855adf2cmr12579781plz.26.1604129222649;
-        Sat, 31 Oct 2020 00:27:02 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=xZxHTpIUuYgNndqXicmDLiO1m0V+5tn5buT9cLfB+9g=;
+        b=fKTRbA7SkGnXlZ8bFL3iokDnteGErvUxEvJN7ON0Hi6g+94bEGwApeLMsVTr1HtxF5
+         7G9psSnlCsmNm8Mm9mpXCTPNtiw9wLcKP7HtA8IS3BakzEphsaRkPhQvazaT4moGRhSH
+         0WJf+uzfDQFUo9wEIOtB39II0pBoz/SpaqEVvZx01xhViUuTRp7WGFAGTE7plrUdnZ2q
+         NPNpmHR6S5TrrPBeheOhbB9W7Whtsx6kWrTurrXs3UM3lYvEkjQJrp0LoFBWWNgTUg7U
+         iXDbuZjejCliQUrlmM4KdhiryIOGbkBKZ/vJcDPGrsAVisdBmqCOIfGFl36aZpRI78kh
+         ahOA==
+X-Gm-Message-State: AOAM532b2a3e1nnp3BjxU5wwYe8jPkTjI4JFRJ2jB3xkKPE4SvddzGE0
+        4FgI4WHuptrBh/Kr7FmWlQ==
+X-Google-Smtp-Source: ABdhPJztMHxNfWf3xsujrHApl5xwOCW+fbxMgEuv4wshNZPyBEJrBtKtrxhbOqgnAJCUsQbk4qML8A==
+X-Received: by 2002:a17:902:b582:b029:d6:6008:264d with SMTP id a2-20020a170902b582b02900d66008264dmr12179232pls.80.1604129301244;
+        Sat, 31 Oct 2020 00:28:21 -0700 (PDT)
 Received: from localhost.localdomain (59-125-13-244.HINET-IP.hinet.net. [59.125.13.244])
-        by smtp.gmail.com with ESMTPSA id x10sm7460005pfc.88.2020.10.31.00.26.57
+        by smtp.gmail.com with ESMTPSA id z21sm688157pfa.158.2020.10.31.00.28.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 31 Oct 2020 00:27:01 -0700 (PDT)
+        Sat, 31 Oct 2020 00:28:20 -0700 (PDT)
 From:   Peilin Ye <yepeilin.cs@gmail.com>
 To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -73,110 +73,99 @@ Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
         Peter Rosin <peda@axentia.se>, linux-kernel@vger.kernel.org,
         linux-usb@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org, Peilin Ye <yepeilin.cs@gmail.com>
-Subject: [PATCH 1/2] console: Remove dummy con_font_op() callback implementations
-Date:   Sat, 31 Oct 2020 03:24:41 -0400
-Message-Id: <c5563eeea36aae7bd72ea2e985bc610d585ece40.1604128639.git.yepeilin.cs@gmail.com>
+Subject: [PATCH 2/2] fbcon: Prevent global-out-of-bounds read in fbcon_copy_font()
+Date:   Sat, 31 Oct 2020 03:27:23 -0400
+Message-Id: <64b792b83119b0ec6caed9cb62087453b675c690.1604128640.git.yepeilin.cs@gmail.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <c5563eeea36aae7bd72ea2e985bc610d585ece40.1604128639.git.yepeilin.cs@gmail.com>
+References: <c5563eeea36aae7bd72ea2e985bc610d585ece40.1604128639.git.yepeilin.cs@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-`struct console_font` is a UAPI structure, thus ideally should not be
-used for kernel internal abstraction. Remove some dummy .con_font_set,
-.con_font_default and .con_font_copy `struct consw` callback
-implementations, to make it cleaner.
+fbcon_copy_font() is using a signed int, `con`, as an index into
+`fb_display[MAX_NR_CONSOLES]`, without bounds checking. In
+con_font_copy(), `con` is being silently casted from the unsigned
+`op->height`.
 
-Patch "fbcon: Prevent global-out-of-bounds read in fbcon_copy_font()"
-depends on this patch, so Cc: stable.
+Let con_font_copy() and fbcon_copy_font() pass `op->height` directly, and
+add a range check in fbcon_copy_font(). Also, add a comment in
+con_font_op() for less confusion, since ideally `op->height` should not be
+used as a console index, as the field name suggests.
+
+This patch depends on patch "console: Remove dummy con_font_op callback
+implementations".
 
 Cc: stable@vger.kernel.org
-Suggested-by: Daniel Vetter <daniel@ffwll.ch>
 Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
 ---
-Context: https://lore.kernel.org/lkml/CAKMK7uFY2zv0adjKJ_ORVFT7Zzwn075MaU0rEU7_FuqENLR=UA@mail.gmail.com/
+ drivers/tty/vt/vt.c              | 6 +++---
+ drivers/video/fbdev/core/fbcon.c | 8 ++++++--
+ include/linux/console.h          | 2 +-
+ 3 files changed, 10 insertions(+), 6 deletions(-)
 
- drivers/usb/misc/sisusbvga/sisusb_con.c | 21 ---------------------
- drivers/video/console/dummycon.c        | 20 --------------------
- 2 files changed, 41 deletions(-)
-
-diff --git a/drivers/usb/misc/sisusbvga/sisusb_con.c b/drivers/usb/misc/sisusbvga/sisusb_con.c
-index c63e545fb105..dfa0d5ce6012 100644
---- a/drivers/usb/misc/sisusbvga/sisusb_con.c
-+++ b/drivers/usb/misc/sisusbvga/sisusb_con.c
-@@ -1345,24 +1345,6 @@ static int sisusbdummycon_blank(struct vc_data *vc, int blank, int mode_switch)
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 9506a76f3ab6..ff8ea1654a69 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -4704,9 +4704,8 @@ static int con_font_default(struct vc_data *vc, struct console_font_op *op)
+ 	return rc;
+ }
+ 
+-static int con_font_copy(struct vc_data *vc, struct console_font_op *op)
++static int con_font_copy(struct vc_data *vc, unsigned int con)
+ {
+-	int con = op->height;
+ 	int rc;
+ 
+ 
+@@ -4735,7 +4734,8 @@ int con_font_op(struct vc_data *vc, struct console_font_op *op)
+ 	case KD_FONT_OP_SET_DEFAULT:
+ 		return con_font_default(vc, op);
+ 	case KD_FONT_OP_COPY:
+-		return con_font_copy(vc, op);
++		/* uses op->height as a console index */
++		return con_font_copy(vc, op->height);
+ 	}
+ 	return -ENOSYS;
+ }
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index cef437817b0d..1caa98146712 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2451,11 +2451,15 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
  	return 0;
  }
  
--static int sisusbdummycon_font_set(struct vc_data *vc,
--				   struct console_font *font,
--				   unsigned int flags)
--{
--	return 0;
--}
--
--static int sisusbdummycon_font_default(struct vc_data *vc,
--				       struct console_font *font, char *name)
--{
--	return 0;
--}
--
--static int sisusbdummycon_font_copy(struct vc_data *vc, int con)
--{
--	return 0;
--}
--
- static const struct consw sisusb_dummy_con = {
- 	.owner =		THIS_MODULE,
- 	.con_startup =		sisusbdummycon_startup,
-@@ -1375,9 +1357,6 @@ static const struct consw sisusb_dummy_con = {
- 	.con_scroll =		sisusbdummycon_scroll,
- 	.con_switch =		sisusbdummycon_switch,
- 	.con_blank =		sisusbdummycon_blank,
--	.con_font_set =		sisusbdummycon_font_set,
--	.con_font_default =	sisusbdummycon_font_default,
--	.con_font_copy =	sisusbdummycon_font_copy,
- };
+-static int fbcon_copy_font(struct vc_data *vc, int con)
++static int fbcon_copy_font(struct vc_data *vc, unsigned int con)
+ {
+-	struct fbcon_display *od = &fb_display[con];
++	struct fbcon_display *od;
+ 	struct console_font *f = &vc->vc_font;
  
- int
-diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
-index 2a0d0bda7faa..f1711b2f9ff0 100644
---- a/drivers/video/console/dummycon.c
-+++ b/drivers/video/console/dummycon.c
-@@ -124,23 +124,6 @@ static int dummycon_switch(struct vc_data *vc)
- 	return 0;
- }
- 
--static int dummycon_font_set(struct vc_data *vc, struct console_font *font,
--			     unsigned int flags)
--{
--	return 0;
--}
--
--static int dummycon_font_default(struct vc_data *vc,
--				 struct console_font *font, char *name)
--{
--	return 0;
--}
--
--static int dummycon_font_copy(struct vc_data *vc, int con)
--{
--	return 0;
--}
--
- /*
-  *  The console `switch' structure for the dummy console
-  *
-@@ -159,8 +142,5 @@ const struct consw dummy_con = {
- 	.con_scroll =	dummycon_scroll,
- 	.con_switch =	dummycon_switch,
- 	.con_blank =	dummycon_blank,
--	.con_font_set =	dummycon_font_set,
--	.con_font_default =	dummycon_font_default,
--	.con_font_copy =	dummycon_font_copy,
- };
- EXPORT_SYMBOL_GPL(dummy_con);
++	if (con >= MAX_NR_CONSOLES)
++		return -EINVAL;
++
++	od = &fb_display[con];
+ 	if (od->fontdata == f->data)
+ 		return 0;	/* already the same font... */
+ 	return fbcon_do_set_font(vc, f->width, f->height, od->fontdata, od->userfont);
+diff --git a/include/linux/console.h b/include/linux/console.h
+index 4b1e26c4cb42..34855d3f2afd 100644
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -62,7 +62,7 @@ struct consw {
+ 	int	(*con_font_get)(struct vc_data *vc, struct console_font *font);
+ 	int	(*con_font_default)(struct vc_data *vc,
+ 			struct console_font *font, char *name);
+-	int	(*con_font_copy)(struct vc_data *vc, int con);
++	int	(*con_font_copy)(struct vc_data *vc, unsigned int con);
+ 	int     (*con_resize)(struct vc_data *vc, unsigned int width,
+ 			unsigned int height, unsigned int user);
+ 	void	(*con_set_palette)(struct vc_data *vc,
 -- 
 2.25.1
 

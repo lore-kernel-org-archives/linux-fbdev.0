@@ -2,170 +2,281 @@ Return-Path: <SRS0=P75A=EG=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B109C55179
-	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Oct 2020 07:28:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D639C388F9
+	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Oct 2020 10:28:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 30E6F20756
-	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Oct 2020 07:28:25 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YIwfpdRp"
+	by mail.kernel.org (Postfix) with ESMTP id 2FBC220729
+	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Oct 2020 10:28:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726353AbgJaH2V (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 31 Oct 2020 03:28:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50950 "EHLO
+        id S1726722AbgJaK2L (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 31 Oct 2020 06:28:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50100 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725800AbgJaH2V (ORCPT
+        with ESMTP id S1726697AbgJaK2L (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 31 Oct 2020 03:28:21 -0400
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com [IPv6:2607:f8b0:4864:20::642])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A33AEC0613D5;
-        Sat, 31 Oct 2020 00:28:21 -0700 (PDT)
-Received: by mail-pl1-x642.google.com with SMTP id f21so4135597plr.5;
-        Sat, 31 Oct 2020 00:28:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=xZxHTpIUuYgNndqXicmDLiO1m0V+5tn5buT9cLfB+9g=;
-        b=YIwfpdRpUfnBUn8ZhV34T6cgdKpAXXJ7obKnN1EQWRpkZZQKkbbpdpiYSAAM97xXi/
-         ZLTOd10tIBffO/9Lyvf8uUxypxNUO/HCXfblHWq/kMfJMJozExNih4MfwDDpPSXIrAej
-         6jWp0gJNmJcEpLIgRRW39ET3UIFBMpmPj+deK2P7NtFIel5Xl7wo8ArWhhXtiVFLgaTD
-         HswhO2mCRy/ABF/eQ20D04Ks7kSHPg0TbxaTn9hiVIQEsdUav21Jn/xKuUJSgNZzxnPp
-         7voi2K1WU6VECoAhBDamYpZ4y2BecgTw8X4IHoyAKMr7IUxGTbaADH621aDoreOI5R79
-         VdOQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=xZxHTpIUuYgNndqXicmDLiO1m0V+5tn5buT9cLfB+9g=;
-        b=fKTRbA7SkGnXlZ8bFL3iokDnteGErvUxEvJN7ON0Hi6g+94bEGwApeLMsVTr1HtxF5
-         7G9psSnlCsmNm8Mm9mpXCTPNtiw9wLcKP7HtA8IS3BakzEphsaRkPhQvazaT4moGRhSH
-         0WJf+uzfDQFUo9wEIOtB39II0pBoz/SpaqEVvZx01xhViUuTRp7WGFAGTE7plrUdnZ2q
-         NPNpmHR6S5TrrPBeheOhbB9W7Whtsx6kWrTurrXs3UM3lYvEkjQJrp0LoFBWWNgTUg7U
-         iXDbuZjejCliQUrlmM4KdhiryIOGbkBKZ/vJcDPGrsAVisdBmqCOIfGFl36aZpRI78kh
-         ahOA==
-X-Gm-Message-State: AOAM532b2a3e1nnp3BjxU5wwYe8jPkTjI4JFRJ2jB3xkKPE4SvddzGE0
-        4FgI4WHuptrBh/Kr7FmWlQ==
-X-Google-Smtp-Source: ABdhPJztMHxNfWf3xsujrHApl5xwOCW+fbxMgEuv4wshNZPyBEJrBtKtrxhbOqgnAJCUsQbk4qML8A==
-X-Received: by 2002:a17:902:b582:b029:d6:6008:264d with SMTP id a2-20020a170902b582b02900d66008264dmr12179232pls.80.1604129301244;
-        Sat, 31 Oct 2020 00:28:21 -0700 (PDT)
-Received: from localhost.localdomain (59-125-13-244.HINET-IP.hinet.net. [59.125.13.244])
-        by smtp.gmail.com with ESMTPSA id z21sm688157pfa.158.2020.10.31.00.28.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 31 Oct 2020 00:28:20 -0700 (PDT)
-From:   Peilin Ye <yepeilin.cs@gmail.com>
-To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Thomas Winischhofer <thomas@winischhofer.net>
-Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Nicolas Pitre <nico@fluxnic.net>,
-        "Gustavo A . R . Silva" <gustavoars@kernel.org>,
-        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+        Sat, 31 Oct 2020 06:28:11 -0400
+Received: from andre.telenet-ops.be (andre.telenet-ops.be [IPv6:2a02:1800:120:4::f00:15])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DFB04C0613D5
+        for <linux-fbdev@vger.kernel.org>; Sat, 31 Oct 2020 03:28:10 -0700 (PDT)
+Received: from ramsan.of.borg ([84.195.186.194])
+        by andre.telenet-ops.be with bizsmtp
+        id maTw2300K4C55Sk01aTwST; Sat, 31 Oct 2020 11:28:07 +0100
+Received: from geert (helo=localhost)
+        by ramsan.of.borg with local-esmtp (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1kYo72-001aqJ-33; Sat, 31 Oct 2020 11:27:56 +0100
+Date:   Sat, 31 Oct 2020 11:27:56 +0100 (CET)
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>
+cc:     DRI Development <dri-devel@lists.freedesktop.org>,
         George Kennedy <george.kennedy@oracle.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        Peter Rosin <peda@axentia.se>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        Ben Skeggs <bskeggs@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        nouveau@lists.freedesktop.org,
+        Daniel Vetter <daniel.vetter@intel.com>,
         Nathan Chancellor <natechancellor@gmail.com>,
-        Peter Rosin <peda@axentia.se>, linux-kernel@vger.kernel.org,
-        linux-usb@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, Peilin Ye <yepeilin.cs@gmail.com>
-Subject: [PATCH 2/2] fbcon: Prevent global-out-of-bounds read in fbcon_copy_font()
-Date:   Sat, 31 Oct 2020 03:27:23 -0400
-Message-Id: <64b792b83119b0ec6caed9cb62087453b675c690.1604128640.git.yepeilin.cs@gmail.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <c5563eeea36aae7bd72ea2e985bc610d585ece40.1604128639.git.yepeilin.cs@gmail.com>
-References: <c5563eeea36aae7bd72ea2e985bc610d585ece40.1604128639.git.yepeilin.cs@gmail.com>
+        Jiri Slaby <jirislaby@kernel.org>,
+        Peilin Ye <yepeilin.cs@gmail.com>, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH] fbcon: Disable accelerated scrolling
+In-Reply-To: <20201029132229.4068359-1-daniel.vetter@ffwll.ch>
+Message-ID: <alpine.DEB.2.22.394.2010311116530.379363@ramsan.of.borg>
+References: <20201029101428.4058311-1-daniel.vetter@ffwll.ch> <20201029132229.4068359-1-daniel.vetter@ffwll.ch>
+User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-fbcon_copy_font() is using a signed int, `con`, as an index into
-`fb_display[MAX_NR_CONSOLES]`, without bounds checking. In
-con_font_copy(), `con` is being silently casted from the unsigned
-`op->height`.
+ 	Hi Daniel,
 
-Let con_font_copy() and fbcon_copy_font() pass `op->height` directly, and
-add a range check in fbcon_copy_font(). Also, add a comment in
-con_font_op() for less confusion, since ideally `op->height` should not be
-used as a console index, as the field name suggests.
+CC linux-fbdev
 
-This patch depends on patch "console: Remove dummy con_font_op callback
-implementations".
+Thanks for your patch!
 
-Cc: stable@vger.kernel.org
-Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
----
- drivers/tty/vt/vt.c              | 6 +++---
- drivers/video/fbdev/core/fbcon.c | 8 ++++++--
- include/linux/console.h          | 2 +-
- 3 files changed, 10 insertions(+), 6 deletions(-)
+On Thu, 29 Oct 2020, Daniel Vetter wrote:
+> So ever since syzbot discovered fbcon, we have solid proof that it's
+> full of bugs. And often the solution is to just delete code and remove
+> features, e.g.  50145474f6ef ("fbcon: remove soft scrollback code").
+>
+> Now the problem is that most modern-ish drivers really only treat
+> fbcon as an dumb kernel console until userspace takes over, and Oops
+> printer for some emergencies. Looking at drm drivers and the basic
+> vesa/efi fbdev drivers shows that only 3 drivers support any kind of
+> acceleration:
+>
+> - nouveau, seems to be enabled by default
+> - omapdrm, when a DMM remapper exists using remapper rewriting for
+>  y/xpanning
+> - gma500, but that is getting deleted now for the GTT remapper trick,
+>  and the accelerated copyarea never set the FBINFO_HWACCEL_COPYAREA
+>  flag, so unused (and could be deleted already I think).
+>
+> No other driver supportes accelerated fbcon. And fbcon is the only
+> user of this accel code (it's not exposed as uapi through ioctls),
+> which means we could garbage collect fairly enormous amounts of code
+> if we kill this.
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 9506a76f3ab6..ff8ea1654a69 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -4704,9 +4704,8 @@ static int con_font_default(struct vc_data *vc, struct console_font_op *op)
- 	return rc;
- }
- 
--static int con_font_copy(struct vc_data *vc, struct console_font_op *op)
-+static int con_font_copy(struct vc_data *vc, unsigned int con)
- {
--	int con = op->height;
- 	int rc;
- 
- 
-@@ -4735,7 +4734,8 @@ int con_font_op(struct vc_data *vc, struct console_font_op *op)
- 	case KD_FONT_OP_SET_DEFAULT:
- 		return con_font_default(vc, op);
- 	case KD_FONT_OP_COPY:
--		return con_font_copy(vc, op);
-+		/* uses op->height as a console index */
-+		return con_font_copy(vc, op->height);
- 	}
- 	return -ENOSYS;
- }
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index cef437817b0d..1caa98146712 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2451,11 +2451,15 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
- 	return 0;
- }
- 
--static int fbcon_copy_font(struct vc_data *vc, int con)
-+static int fbcon_copy_font(struct vc_data *vc, unsigned int con)
- {
--	struct fbcon_display *od = &fb_display[con];
-+	struct fbcon_display *od;
- 	struct console_font *f = &vc->vc_font;
- 
-+	if (con >= MAX_NR_CONSOLES)
-+		return -EINVAL;
-+
-+	od = &fb_display[con];
- 	if (od->fontdata == f->data)
- 		return 0;	/* already the same font... */
- 	return fbcon_do_set_font(vc, f->width, f->height, od->fontdata, od->userfont);
-diff --git a/include/linux/console.h b/include/linux/console.h
-index 4b1e26c4cb42..34855d3f2afd 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -62,7 +62,7 @@ struct consw {
- 	int	(*con_font_get)(struct vc_data *vc, struct console_font *font);
- 	int	(*con_font_default)(struct vc_data *vc,
- 			struct console_font *font, char *name);
--	int	(*con_font_copy)(struct vc_data *vc, int con);
-+	int	(*con_font_copy)(struct vc_data *vc, unsigned int con);
- 	int     (*con_resize)(struct vc_data *vc, unsigned int width,
- 			unsigned int height, unsigned int user);
- 	void	(*con_set_palette)(struct vc_data *vc,
--- 
-2.25.1
+"git grep FBINFO_HWACCEL_COPYAREA" shows me there are 32 more drivers
+using acceleration under drivers/video/fbdev/.
 
+> Plus because syzbot only runs on virtual hardware, and none of the
+> drivers for that have acceleration, we'd remove a huge gap in testing.
+> And there's no other even remotely comprehensive testing aside from
+> syzbot.
+
+That sounds like a great argument to remove all hardware drivers from
+the kernel ;-)
+Seriously, how hard can it be to add "software-accelerated" acceleration
+hooks to drivers/video/fbdev/vfb.c, to enable syzbot to exercise the
+core acceleration code paths?
+
+> This patch here just disables the acceleration code by always
+> redrawing when scrolling. The plan is that once this has been merged
+> for well over a year in released kernels, we can start to go around
+> and delete a lot of code.
+
+Have you benchmarked the performance impact on traditional fbdev
+drivers?
+
+Thanks!
+
+> v2:
+> - Drop a few more unused local variables, somehow I missed the
+> compiler warnings (Sam)
+> - Fix typo in comment (Jiri)
+> - add a todo entry for the cleanup (Thomas)
+>
+> v3: Remove more unused variables (0day)
+>
+> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Jiri Slaby <jirislaby@kernel.org>
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Ben Skeggs <bskeggs@redhat.com>
+> Cc: nouveau@lists.freedesktop.org
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Cc: Jiri Slaby <jirislaby@kernel.org>
+> Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+> Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Cc: Peilin Ye <yepeilin.cs@gmail.com>
+> Cc: George Kennedy <george.kennedy@oracle.com>
+> Cc: Nathan Chancellor <natechancellor@gmail.com>
+> Cc: Peter Rosin <peda@axentia.se>
+> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+> ---
+> Documentation/gpu/todo.rst       | 18 +++++++++++++
+> drivers/video/fbdev/core/fbcon.c | 45 ++++++--------------------------
+> 2 files changed, 26 insertions(+), 37 deletions(-)
+>
+> diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
+> index 6b224ef14455..bec99341a904 100644
+> --- a/Documentation/gpu/todo.rst
+> +++ b/Documentation/gpu/todo.rst
+> @@ -277,6 +277,24 @@ Contact: Daniel Vetter, Noralf Tronnes
+>
+> Level: Advanced
+>
+> +Garbage collect fbdev scrolling acceleration
+> +--------------------------------------------
+> +
+> +Scroll acceleration is disabled in fbcon by hard-wiring p->scrollmode =
+> +SCROLL_REDRAW. There's a ton of code this will allow us to remove:
+> +- lots of code in fbcon.c
+> +- a bunch of the hooks in fbcon_ops, maybe the remaining hooks could be called
+> +  directly instead of the function table (with a switch on p->rotate)
+> +- fb_copyarea is unused after this, and can be deleted from all drivers
+> +
+> +Note that not all acceleration code can be deleted, since clearing and cursor
+> +support is still accelerated, which might be good candidates for further
+> +deletion projects.
+> +
+> +Contact: Daniel Vetter
+> +
+> +Level: Intermediate
+> +
+> idr_init_base()
+> ---------------
+>
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index cef437817b0d..8d1ae973041a 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -1033,7 +1033,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+> 	struct vc_data *svc = *default_mode;
+> 	struct fbcon_display *t, *p = &fb_display[vc->vc_num];
+> 	int logo = 1, new_rows, new_cols, rows, cols, charcnt = 256;
+> -	int cap, ret;
+> +	int ret;
+>
+> 	if (WARN_ON(info_idx == -1))
+> 	    return;
+> @@ -1042,7 +1042,6 @@ static void fbcon_init(struct vc_data *vc, int init)
+> 		con2fb_map[vc->vc_num] = info_idx;
+>
+> 	info = registered_fb[con2fb_map[vc->vc_num]];
+> -	cap = info->flags;
+>
+> 	if (logo_shown < 0 && console_loglevel <= CONSOLE_LOGLEVEL_QUIET)
+> 		logo_shown = FBCON_LOGO_DONTSHOW;
+> @@ -1147,11 +1146,13 @@ static void fbcon_init(struct vc_data *vc, int init)
+>
+> 	ops->graphics = 0;
+>
+> -	if ((cap & FBINFO_HWACCEL_COPYAREA) &&
+> -	    !(cap & FBINFO_HWACCEL_DISABLED))
+> -		p->scrollmode = SCROLL_MOVE;
+> -	else /* default to something safe */
+> -		p->scrollmode = SCROLL_REDRAW;
+> +	/*
+> +	 * No more hw acceleration for fbcon.
+> +	 *
+> +	 * FIXME: Garbage collect all the now dead code after sufficient time
+> +	 * has passed.
+> +	 */
+> +	p->scrollmode = SCROLL_REDRAW;
+>
+> 	/*
+> 	 *  ++guenther: console.c:vc_allocate() relies on initializing
+> @@ -1961,45 +1962,15 @@ static void updatescrollmode(struct fbcon_display *p,
+> {
+> 	struct fbcon_ops *ops = info->fbcon_par;
+> 	int fh = vc->vc_font.height;
+> -	int cap = info->flags;
+> -	u16 t = 0;
+> -	int ypan = FBCON_SWAP(ops->rotate, info->fix.ypanstep,
+> -				  info->fix.xpanstep);
+> -	int ywrap = FBCON_SWAP(ops->rotate, info->fix.ywrapstep, t);
+> 	int yres = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
+> 	int vyres = FBCON_SWAP(ops->rotate, info->var.yres_virtual,
+> 				   info->var.xres_virtual);
+> -	int good_pan = (cap & FBINFO_HWACCEL_YPAN) &&
+> -		divides(ypan, vc->vc_font.height) && vyres > yres;
+> -	int good_wrap = (cap & FBINFO_HWACCEL_YWRAP) &&
+> -		divides(ywrap, vc->vc_font.height) &&
+> -		divides(vc->vc_font.height, vyres) &&
+> -		divides(vc->vc_font.height, yres);
+> -	int reading_fast = cap & FBINFO_READS_FAST;
+> -	int fast_copyarea = (cap & FBINFO_HWACCEL_COPYAREA) &&
+> -		!(cap & FBINFO_HWACCEL_DISABLED);
+> -	int fast_imageblit = (cap & FBINFO_HWACCEL_IMAGEBLIT) &&
+> -		!(cap & FBINFO_HWACCEL_DISABLED);
+>
+> 	p->vrows = vyres/fh;
+> 	if (yres > (fh * (vc->vc_rows + 1)))
+> 		p->vrows -= (yres - (fh * vc->vc_rows)) / fh;
+> 	if ((yres % fh) && (vyres % fh < yres % fh))
+> 		p->vrows--;
+> -
+> -	if (good_wrap || good_pan) {
+> -		if (reading_fast || fast_copyarea)
+> -			p->scrollmode = good_wrap ?
+> -				SCROLL_WRAP_MOVE : SCROLL_PAN_MOVE;
+> -		else
+> -			p->scrollmode = good_wrap ? SCROLL_REDRAW :
+> -				SCROLL_PAN_REDRAW;
+> -	} else {
+> -		if (reading_fast || (fast_copyarea && !fast_imageblit))
+> -			p->scrollmode = SCROLL_MOVE;
+> -		else
+> -			p->scrollmode = SCROLL_REDRAW;
+> -	}
+> }
+>
+> #define PITCH(w) (((w) + 7) >> 3)
+> -- 
+> 2.28.0
+>
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+
+Gr{oetje,eeting}s,
+
+ 						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+ 							    -- Linus Torvalds

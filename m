@@ -2,76 +2,97 @@ Return-Path: <SRS0=n/V2=EH=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 503F8C4741F
-	for <linux-fbdev@archiver.kernel.org>; Sun,  1 Nov 2020 15:33:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B892BC4741F
+	for <linux-fbdev@archiver.kernel.org>; Sun,  1 Nov 2020 15:40:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1B256206D8
-	for <linux-fbdev@archiver.kernel.org>; Sun,  1 Nov 2020 15:33:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 653FD2224E
+	for <linux-fbdev@archiver.kernel.org>; Sun,  1 Nov 2020 15:40:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1604245219;
+	bh=cfBWIZ6CSRsNUZTv6d9OMPWdYjslQzWKE4+ZI+yCBMA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=twdy2Z0Ac+98cDJgCGRrKg8HWCmxRuIQ8i4BMH6Zt8cSICUl57IQWeYSdEELu3aLT
+	 2NXl5TE8EI55TlBkuTBMV2PGqcdy/mPSmMYV/JNBKEndY6gvepIqjSbfIQ6dMmTiag
+	 gAqUgM6wXOp+84O5ruFTd8NmHfvlRP5/wGGIvzQk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726938AbgKAPd6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 1 Nov 2020 10:33:58 -0500
-Received: from gloria.sntech.de ([185.11.138.130]:47662 "EHLO gloria.sntech.de"
+        id S1726499AbgKAPkT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 1 Nov 2020 10:40:19 -0500
+Received: from mail.kernel.org ([198.145.29.99]:53838 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726637AbgKAPd6 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 1 Nov 2020 10:33:58 -0500
-Received: from p57b773f8.dip0.t-ipconnect.de ([87.183.115.248] helo=phil.fritz.box)
-        by gloria.sntech.de with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <heiko@sntech.de>)
-        id 1kZFMY-0003rS-Uf; Sun, 01 Nov 2020 16:33:47 +0100
-From:   Heiko Stuebner <heiko@sntech.de>
-To:     Alexandru Stan <amstan@chromium.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc:     Heiko Stuebner <heiko@sntech.de>, linux-pwm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
-        Douglas Anderson <dianders@chromium.org>,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-rockchip@lists.infradead.org,
-        Matthias Kaehlcke <mka@chromium.org>,
-        linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v3 0/3] PWM backlight interpolation adjustments
-Date:   Sun,  1 Nov 2020 16:33:41 +0100
-Message-Id: <160424139256.1224767.4744407641354846090.b4-ty@sntech.de>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20201022050445.930403-1-amstan@chromium.org>
-References: <20201022050445.930403-1-amstan@chromium.org>
+        id S1726529AbgKAPkS (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Sun, 1 Nov 2020 10:40:18 -0500
+Received: from localhost (83-86-74-64.cable.dynamic.v4.ziggo.nl [83.86.74.64])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id C1CFE20870;
+        Sun,  1 Nov 2020 15:40:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1604245216;
+        bh=cfBWIZ6CSRsNUZTv6d9OMPWdYjslQzWKE4+ZI+yCBMA=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=lkww5ZLVtaw4/LQXlV8GY7HSiy4WHoOmiaDerVB0QCScFd5yX7m0HJ+h74Wonvjeb
+         gxw7KdZ2sSTaH7QhpPwlY8RWMDN7WHkY0iP/jPme8lWkpE+Ep7M8+JiEH86ntHL8eb
+         iIJ0AyJMZIFxghCxMw4dVMlaK7h7y1g5D8ySQz1o=
+Date:   Sun, 1 Nov 2020 16:41:13 +0100
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Peilin Ye <yepeilin.cs@gmail.com>
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fbcon: Replace printk() with pr_*()
+Message-ID: <20201101154113.GA41883@kroah.com>
+References: <20201101094718.GD1166694@ravnborg.org>
+ <20201101144904.1522611-1-yepeilin.cs@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201101144904.1522611-1-yepeilin.cs@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 21 Oct 2020 22:04:42 -0700, Alexandru Stan wrote:
-> I was trying to adjust the brightness-levels for the trogdor boards:
-> https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/2291209
-> Like on a lot of panels, trogdor's low end needs to be cropped,
-> and now that we have the interpolation stuff I wanted to make use of it
-> and bake in even the curve that's customary to have on chromebooks.
+On Sun, Nov 01, 2020 at 09:49:04AM -0500, Peilin Ye wrote:
+> Replace printk() with pr_err(), pr_warn() and pr_info(). Do not split long
+> strings, for easier grepping. Use `__func__` whenever applicable.
 > 
-> I found the current behavior of the pwm_bl driver a little unintuitive
-> and non-linear. See patch 1 for a suggested fix for this.
+> fbcon_prepare_logo() has more than one callers, use "fbcon_prepare_logo:"
+> instead of "fbcon_init:", for less confusion.
 > 
-> [...]
+> Suggested-by: Sam Ravnborg <sam@ravnborg.org>
+> Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
+> ---
+>  drivers/video/fbdev/core/fbcon.c | 42 +++++++++++++-------------------
+>  1 file changed, 17 insertions(+), 25 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index cef437817b0d..a3e87ab0e523 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -659,8 +659,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+>  
+>  	if (logo_lines > vc->vc_bottom) {
+>  		logo_shown = FBCON_LOGO_CANSHOW;
+> -		printk(KERN_INFO
+> -		       "fbcon_init: disable boot-logo (boot-logo bigger than screen).\n");
+> +		pr_info("%s: disable boot-logo (boot-logo bigger than screen).\n", __func__);
 
-Applied, thanks!
+Shouldn't this be:
+		dev_info(info->dev, "...");
+instead?
 
-[1/1] ARM: dts: rockchip: Remove 0 point from brightness-levels on rk3288-veyron
-      commit: 225c59b9235a421cdb219be5fbc13126a49714a6
+It's a driver, and you have access to the struct device that is being
+worked on, so always try to use the dev_* versions of these calls
+instead when ever possible.
 
-Best regards,
--- 
-Heiko Stuebner <heiko@sntech.de>
+thanks,
+
+greg k-h

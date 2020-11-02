@@ -2,161 +2,154 @@ Return-Path: <SRS0=+7Ut=EI=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEA1CC00A89
-	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Nov 2020 18:52:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D303C00A89
+	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Nov 2020 18:53:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6D91E22268
-	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Nov 2020 18:52:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 14EEE22268
+	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Nov 2020 18:53:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aFwIY8EW"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="dIaNxAcc"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725846AbgKBSwk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 2 Nov 2020 13:52:40 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33882 "EHLO
+        id S1725846AbgKBSxc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 2 Nov 2020 13:53:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34018 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725801AbgKBSwj (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 2 Nov 2020 13:52:39 -0500
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com [IPv6:2607:f8b0:4864:20::544])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE88BC0617A6;
-        Mon,  2 Nov 2020 10:52:39 -0800 (PST)
-Received: by mail-pg1-x544.google.com with SMTP id x13so11557607pgp.7;
-        Mon, 02 Nov 2020 10:52:39 -0800 (PST)
+        with ESMTP id S1726531AbgKBSx3 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 2 Nov 2020 13:53:29 -0500
+Received: from mail-ej1-x642.google.com (mail-ej1-x642.google.com [IPv6:2a00:1450:4864:20::642])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA01EC061A47
+        for <linux-fbdev@vger.kernel.org>; Mon,  2 Nov 2020 10:53:28 -0800 (PST)
+Received: by mail-ej1-x642.google.com with SMTP id cw8so6751652ejb.8
+        for <linux-fbdev@vger.kernel.org>; Mon, 02 Nov 2020 10:53:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-transfer-encoding:content-language;
-        bh=HK3WmJW6u7M5Vx/m49h+Vsg1q0S7SYUSgOeAa79ZZJk=;
-        b=aFwIY8EW04InPVpjr7nipH18G4FAvswDmuqXCLLvRJjfVAYOc7qSxRnzhEC2rjfdc7
-         xJWHaMe0AYzP6PUFnRMr7E0DVDwNN9l9YuIygAuViSk9uOzcoJybD3wYAmsnMlYhgKWV
-         FTYNjgdhdw3VBoLrZhgl1rhLzi8TrQ5cEXIWic3oZ/bSWbeuHdonVlWSkBW/GUpizCN8
-         ONphXj05E2sTYjX/NawxS/mtdKGBKrDsGtvN4tgUjwrWo8PJbZV9AyN4Oai1nU/9az1k
-         DXLfiw811jl5BAOzvT4w7EqrLaStaH/ww0+oOhwMNNSLpQsrtH9L/jg0lSvwFSRUTxdt
-         xmCg==
+        d=chromium.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=GlGtTyawZz1U+foaHuQJleVoISpzv2DwJ6xp8D1Hwk4=;
+        b=dIaNxAccndYlWhHDapF/MDgfnKgAGECRY/zIOGm650eR7riKJDY+LJNCZbF3ThLlRr
+         +jEuZq6zopeOu3FTISuAv02VhSA429Uhgs7h9o100X+Jy67bARpU0p7k6SJahy6TgPZQ
+         vl8C5qfffPSjxCQ+Z0E5TUGJki8xexMTou9E0=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding
-         :content-language;
-        bh=HK3WmJW6u7M5Vx/m49h+Vsg1q0S7SYUSgOeAa79ZZJk=;
-        b=jfoPBkgIahV1CGjiNRwv/kbr+IurPB1bAZiYW6kcFVq1GQncRKsToe4oABz/Ldzaa1
-         DRhwgmp9FvAWLPLOSJL99JAHNme1sDQpeQZkjLyXI7Urj8kWD4I4gq2pSofzfjfAGDpB
-         XEP5Dm+pJ7JEW1bsz4k6OlBYO2wJOfdyfUz3fOsTahkVD2jdR8h4bjS1hhbWIgabJ1GN
-         6P7iCJwsvM5jPM/XZINPSDHzE5HPp4HL7w//ckJ5GgyeMj/aGfVdPjyBKOTgvtPjLaab
-         z7LLz35tDv6uzJEBrIrIuSqtDU1SLfZxqP0QFfSWduRz4p0Xn2xdYAZNNr/VLWW0Jv/M
-         jNug==
-X-Gm-Message-State: AOAM530EU2UUEi/vC1AI4eBJFjqotgFi4PP/8QHIs4SYsIML0uZ4KYhn
-        WPP61+Om4AxLid6KIWUl2t8=
-X-Google-Smtp-Source: ABdhPJxZFZg9a0x6Bf+IQte8IWMpeNM5Kh+wMkhnG24E8lYn1AFwZwa988kzNa4zMg3YHRzGP/ldnA==
-X-Received: by 2002:a17:90a:a505:: with SMTP id a5mr18272328pjq.76.1604343159258;
-        Mon, 02 Nov 2020 10:52:39 -0800 (PST)
-Received: from ?IPv6:2001:df0:0:200c:bd11:f10f:c2c8:538d? ([2001:df0:0:200c:bd11:f10f:c2c8:538d])
-        by smtp.gmail.com with ESMTPSA id e2sm210215pjw.13.2020.11.02.10.52.36
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 02 Nov 2020 10:52:38 -0800 (PST)
-Subject: Re: [PATCH/RFC v2] video: fbdev: atari: Fix TT High video mode
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Andreas Schwab <schwab@linux-m68k.org>
-Cc:     Sam Ravnborg <sam@ravnborg.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux/m68k <linux-m68k@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>
-References: <20201101102941.2891076-1-geert@linux-m68k.org>
- <20201101112915.GB1263673@ravnborg.org> <874km91by4.fsf@igel.home>
- <CAMuHMdUMF4R91Nt6mv9Tqz0zSaNh7AV8mghUoKL+uO-_PUH2aQ@mail.gmail.com>
-From:   Michael Schmitz <schmitzmic@gmail.com>
-Message-ID: <609bf047-2c4a-393e-75f6-c86f748682dc@gmail.com>
-Date:   Tue, 3 Nov 2020 07:52:34 +1300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=GlGtTyawZz1U+foaHuQJleVoISpzv2DwJ6xp8D1Hwk4=;
+        b=LATooNaAE/0MSLVUtX7lPLLnMnsPoyK9lpukKX8wcMwnlcGWMkt7qys2rCFegy46cB
+         LcRJ0sytCqHdSM6Kn/pXsvKUWeqjT4hzfyb1PzrlxKZniro8mIBL/aX3LAbprkYw1OnB
+         n6T5Ekp1GfePq0u/wmkqj6ZvoGyA0adnBIVk8x1Iw7ki0LPKpkQoFki6Anyo4DcxGpiW
+         XnoE74NjRWLzFPBX/8B1DhGk/AqHoCXYDTIedly5iioux03qGECmWg9Lq5WS8TJV/n5v
+         j/soYZ0oXiCkU8CqA7GoEAsnOc3Qm+lA3037386iME+ikyNMdJQIaKWYW+WAQp07IDzh
+         dGxQ==
+X-Gm-Message-State: AOAM530S2wC1WL2RmK4AJmBld+99B9y3vap7+tehwW2kkpNcsO4Es3U0
+        RArTPihS7T8u2Hsuwa+t64PXykJONI5Rrw==
+X-Google-Smtp-Source: ABdhPJybwQFWUVnE1UiGBJ9EihbrqAWZrwZC4XqEJiRn6LJokOAsBv4J7s4HHbXIYF+l+KFzgkStOg==
+X-Received: by 2002:a17:906:2818:: with SMTP id r24mr9441267ejc.100.1604343207201;
+        Mon, 02 Nov 2020 10:53:27 -0800 (PST)
+Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com. [209.85.208.41])
+        by smtp.gmail.com with ESMTPSA id i14sm9886245ejp.2.2020.11.02.10.53.25
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 02 Nov 2020 10:53:25 -0800 (PST)
+Received: by mail-ed1-f41.google.com with SMTP id ay21so2043420edb.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 02 Nov 2020 10:53:25 -0800 (PST)
+X-Received: by 2002:a05:6402:a57:: with SMTP id bt23mr6977135edb.62.1604343204920;
+ Mon, 02 Nov 2020 10:53:24 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <CAMuHMdUMF4R91Nt6mv9Tqz0zSaNh7AV8mghUoKL+uO-_PUH2aQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
+References: <20201022050445.930403-1-amstan@chromium.org> <20201021220404.v3.3.I4dcea1c90e9da3902d466033aa73351e19e49c49@changeid>
+ <20201028151210.7e765hbq2k7i3url@holly.lan>
+In-Reply-To: <20201028151210.7e765hbq2k7i3url@holly.lan>
+From:   Alexandru M Stan <amstan@chromium.org>
+Date:   Mon, 2 Nov 2020 10:52:49 -0800
+X-Gmail-Original-Message-ID: <CAHNYxRy4hg4rZsc-xi3MzK+RapMq76+=hGj0_E-aGcFUPB1wMA@mail.gmail.com>
+Message-ID: <CAHNYxRy4hg4rZsc-xi3MzK+RapMq76+=hGj0_E-aGcFUPB1wMA@mail.gmail.com>
+Subject: Re: [PATCH v3 3/3] backlight: pwm_bl: Fix interpolation
+To:     Daniel Thompson <daniel.thompson@linaro.org>
+Cc:     Heiko Stuebner <heiko@sntech.de>, Rob Herring <robh+dt@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Douglas Anderson <dianders@chromium.org>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        linux-pwm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Geert,
-
-On 2/11/20 9:39 PM, Geert Uytterhoeven wrote:
-> Hi Andreas,
+On Wed, Oct 28, 2020 at 8:12 AM Daniel Thompson
+<daniel.thompson@linaro.org> wrote:
 >
-> On Sun, Nov 1, 2020 at 1:47 PM Andreas Schwab <schwab@linux-m68k.org> wrote:
->> On Nov 01 2020, Sam Ravnborg wrote:
->>> On Sun, Nov 01, 2020 at 11:29:41AM +0100, Geert Uytterhoeven wrote:
->>>> The horizontal resolution (640) for the TT High video mode (1280x960) is
->>>> definitely bogus.  While fixing that, correct the timings to match the
->>>> TTM195 service manual.
->>>>
->>>> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->>>> ---
->>>> Untested on actual hardware, hence the RFC.
->>>>
->>>> v2:
->>>>    - Use correct base.
->>>> ---
->>>>   drivers/video/fbdev/atafb.c | 4 ++--
->>>>   1 file changed, 2 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
->>>> index f253daa05d9d3872..5ecf3ec9f94cb720 100644
->>>> --- a/drivers/video/fbdev/atafb.c
->>>> +++ b/drivers/video/fbdev/atafb.c
->>>> @@ -495,8 +495,8 @@ static struct fb_videomode atafb_modedb[] __initdata = {
->>>>               "tt-mid", 60, 640, 480, 31041, 120, 100, 8, 16, 140, 30,
->>>>               0, FB_VMODE_NONINTERLACED | FB_VMODE_YWRAP
->>>>       }, {
->>>> -            /* 1280x960, 29 kHz, 60 Hz (TT high) */
->>>> -            "tt-high", 57, 640, 960, 31041, 120, 100, 8, 16, 140, 30,
->>>> +            /* 1280x960, 72 kHz, 72 Hz (TT high) */
->>>> +            "tt-high", 57, 1280, 960, 7761, 260, 60, 36, 4, 192, 4,
->>>>               0, FB_VMODE_NONINTERLACED | FB_VMODE_YWRAP
->>> Well-spotted. The change of 640 => 1280 is surely right.
-> TBH, I spotted that 7 years ago, but never got to looking up and calculating
-> the other values...
+> On Wed, Oct 21, 2020 at 10:04:45PM -0700, Alexandru Stan wrote:
+> > The previous behavior was a little unexpected, its properties/problems:
+> > 1. It was designed to generate strictly increasing values (no repeats)
+> > 2. It had quantization errors when calculating step size. Resulting in
+> > unexpected jumps near the end of some segments.
+> >
+> > Example settings:
+> >       brightness-levels = <0 1 2 4 8 16 32 64 128 256>;
+> >       num-interpolated-steps = <16>;
+> >
+> > Whenever num-interpolated-steps was larger than the distance
+> > between 2 consecutive brightness levels the table would get really
+> > discontinuous. The slope of the interpolation would stick with
+> > integers only and if it was 0 the whole line segment would get skipped.
+> >
+> > The distances between 1 2 4 and 8 would be 1 (property #1 fighting us),
+> > and only starting with 16 it would start to interpolate properly.
+> >
+> > Property #1 is not enough. The goal here is more than just monotonically
+> > increasing. We should still care about the shape of the curve. Repeated
+> > points might be desired if we're in the part of the curve where we want
+> > to go slow (aka slope near 0).
+> >
+> > Problem #2 is plainly a bug. Imagine if the 64 entry was 63 instead,
+> > the calculated slope on the 32-63 segment will be almost half as it
+> > should be.
+> >
+> > The most expected and simplest algorithm for interpolation is linear
+> > interpolation, which would handle both problems.
+> > Let's just implement that!
+> >
+> > Take pairs of points from the brightness-levels array and linearly
+> > interpolate between them. On the X axis (what userspace sees) we'll
+> > now have equally sized intervals (num-interpolated-steps sized,
+> > as opposed to before where we were at the mercy of quantization).
+> >
+> > END
+>
+> INTERESTING.
+>
+> I guess this a copy 'n paste error from some internal log book?
+> Better removed... but I won't lose sleep over it.
 
-Looks like one of my copy&paste errors that went undetected for too long...
-I seem to have copied the tt-mid values above in that case.
-
-Need to go back to the old driver to see what had been used there. A quick diff didn't show anything useful.
-
->>> I have a harder time understanding why the change of pixclock from 31041
->>> to 7761 is correct. All other modes have a pixclock close to or equal
->>> to 32000 - so it looks strange this one is off.
-> 32000 ps is 31.25 MHz. Looks like these are bogus, too, and only
-> the VGA and Falcon video modes are correct?
-
-These were the only ones I could test (haven't seen a TT in 20 years). 
-At the time I worked on the Atari FB driver, I didn't have access to the 
-Profibuch either.
-
-As Andreas mentioned, the Falcon (or external) hardware is the only one 
-that can be programmed freely, so we need to work from the 95 MHz 
-pixclock Andreas found. That's 10.5 ns approx.
-
-10.5 ns * 1280 * 960 (omitting HBL and VBL timing) gives 77 Hz refresh 
-so I don't think 95 MHz for 72 Hz refresh are unreasonable.
-
-Need to look up what all the other numbers in the mode entry mean now ...
-
-Cheers,
-
-     Michael
-
+Sorry! Yeah, I mistakenly duplicated the "END" line in patman.
 
 >
->> According to the Profibuch the pixclock should be about 95000.
-> 95 ns? That's a 10.5 MHz pixel clock? Definitely too low.
-> The TTM195 manual says 128.85 MHz.
 >
-> Gr{oetje,eeting}s,
+> > Signed-off-by: Alexandru Stan <amstan@chromium.org>
 >
->                          Geert
+> I've waited a bit to see how strong the feelings were w.r.t. getting rid
+> of the division from the table initialization. It was something I was
+> aware of during an earlier review but it was below my personal nitpicking
+> threshold (which could be badly calibrated... hence waiting). However
+> it's all been quiet so:
 >
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+>
+>
+> Daniel.
+
+
+Alexandru Stan (amstan)

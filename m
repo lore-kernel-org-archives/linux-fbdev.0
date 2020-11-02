@@ -1,294 +1,118 @@
-Return-Path: <SRS0=n/V2=EH=vger.kernel.org=linux-fbdev-owner@kernel.org>
+Return-Path: <SRS0=+7Ut=EI=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 617F4C2D0A3
-	for <linux-fbdev@archiver.kernel.org>; Sun,  1 Nov 2020 16:44:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F32CBC388F9
+	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Nov 2020 08:40:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2FBE92224E
-	for <linux-fbdev@archiver.kernel.org>; Sun,  1 Nov 2020 16:44:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B3B3E222E8
+	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Nov 2020 08:40:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726790AbgKAQoB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 1 Nov 2020 11:44:01 -0500
-Received: from mx2.suse.de ([195.135.220.15]:55304 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726730AbgKAQoA (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 1 Nov 2020 11:44:00 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 7AA09ACE5;
-        Sun,  1 Nov 2020 16:43:58 +0000 (UTC)
-Subject: Re: [PATCH] drivers/video: Fix -Wstringop-truncation in hdmi.c
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     b.zolnierkie@samsung.com, gwan-gyeong.mun@intel.com,
-        daniel.vetter@ffwll.ch, bernard@vivo.com,
-        laurent.pinchart@ideasonboard.com, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-References: <20201021121241.17623-1-tzimmermann@suse.de>
- <20201101095021.GE1166694@ravnborg.org>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-Message-ID: <acbbfe44-4fdb-2c9f-2583-aebf5941d83b@suse.de>
-Date:   Sun, 1 Nov 2020 17:43:55 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.3.3
+        id S1728288AbgKBIkA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 2 Nov 2020 03:40:00 -0500
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:34605 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728204AbgKBIj7 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 2 Nov 2020 03:39:59 -0500
+Received: by mail-ot1-f65.google.com with SMTP id j14so1691548ots.1;
+        Mon, 02 Nov 2020 00:39:59 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=edOywJaljR8HIGA2ZPpwBj7Ix9fGqxtdv2rXnAS0A2I=;
+        b=akoY9Ibvd4qAnWIZMSHxmBQ8qctfhauuLPRb4i9th9zDmm1A/a63PXCoF/uf78bVNJ
+         4mWiMDZCyf6GBNnzBN2o2ghJiwq9RTcwt/ExuHBOi9NlOIY9lSRwEWrj8TKcZiitCH0L
+         vdMM6J3XNK+wu+8aN4oPSPfIdBKGHTRFa0BvpLlv/4cmwWZSCQ+YbNDXmuWSahUr+267
+         hm7zXLqwYcmYOC7EcCoejRly1rX5kX1fsWYZ46wd6rqK+5l9s5QTnTg5Zio/OhkqtBo0
+         6ZRC3k7TOuLNSHs1YCnZ5JeWRfOx8x5+WbuQ3Kd4rep2NIly4WorY5i+QVAQ4jioHQ9E
+         3Juw==
+X-Gm-Message-State: AOAM531L9NP7QD2YqKbr/avtpFQ8yMJ9+jVcmhBjf1VGwvTBBWNRrwSV
+        TRwGiIc3fkb8IhDDuw7BmJm1U96RXoYUUXsWEVo=
+X-Google-Smtp-Source: ABdhPJxixL/W9coUjK0WIKR7AyvX0X5bfFMwaljlbBusyYNayvFnYK30bPFzgnwupFzPGT6nUtUDX1d2XURjFNnZMWY=
+X-Received: by 2002:a9d:3b76:: with SMTP id z109mr11345222otb.250.1604306398694;
+ Mon, 02 Nov 2020 00:39:58 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20201101095021.GE1166694@ravnborg.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="xj7DkDuyrO3oFqongjZ5nXabRlCMjkA3W"
+References: <20201101102941.2891076-1-geert@linux-m68k.org>
+ <20201101112915.GB1263673@ravnborg.org> <874km91by4.fsf@igel.home>
+In-Reply-To: <874km91by4.fsf@igel.home>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 2 Nov 2020 09:39:47 +0100
+Message-ID: <CAMuHMdUMF4R91Nt6mv9Tqz0zSaNh7AV8mghUoKL+uO-_PUH2aQ@mail.gmail.com>
+Subject: Re: [PATCH/RFC v2] video: fbdev: atari: Fix TT High video mode
+To:     Andreas Schwab <schwab@linux-m68k.org>
+Cc:     Sam Ravnborg <sam@ravnborg.org>,
+        Michael Schmitz <schmitzmic@gmail.com>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        "Linux/m68k" <linux-m68k@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---xj7DkDuyrO3oFqongjZ5nXabRlCMjkA3W
-Content-Type: multipart/mixed; boundary="7yHDug7DDMqJ57mEmv1yW2ZsS1Vqwx7l3";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: b.zolnierkie@samsung.com, gwan-gyeong.mun@intel.com,
- daniel.vetter@ffwll.ch, bernard@vivo.com, laurent.pinchart@ideasonboard.com,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Message-ID: <acbbfe44-4fdb-2c9f-2583-aebf5941d83b@suse.de>
-Subject: Re: [PATCH] drivers/video: Fix -Wstringop-truncation in hdmi.c
-References: <20201021121241.17623-1-tzimmermann@suse.de>
- <20201101095021.GE1166694@ravnborg.org>
-In-Reply-To: <20201101095021.GE1166694@ravnborg.org>
+Hi Andreas,
 
---7yHDug7DDMqJ57mEmv1yW2ZsS1Vqwx7l3
-Content-Type: multipart/mixed;
- boundary="------------7B7D2D7D42A63E5F101E899B"
-Content-Language: en-US
+On Sun, Nov 1, 2020 at 1:47 PM Andreas Schwab <schwab@linux-m68k.org> wrote:
+> On Nov 01 2020, Sam Ravnborg wrote:
+> > On Sun, Nov 01, 2020 at 11:29:41AM +0100, Geert Uytterhoeven wrote:
+> >> The horizontal resolution (640) for the TT High video mode (1280x960) is
+> >> definitely bogus.  While fixing that, correct the timings to match the
+> >> TTM195 service manual.
+> >>
+> >> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> >> ---
+> >> Untested on actual hardware, hence the RFC.
+> >>
+> >> v2:
+> >>   - Use correct base.
+> >> ---
+> >>  drivers/video/fbdev/atafb.c | 4 ++--
+> >>  1 file changed, 2 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+> >> index f253daa05d9d3872..5ecf3ec9f94cb720 100644
+> >> --- a/drivers/video/fbdev/atafb.c
+> >> +++ b/drivers/video/fbdev/atafb.c
+> >> @@ -495,8 +495,8 @@ static struct fb_videomode atafb_modedb[] __initdata = {
+> >>              "tt-mid", 60, 640, 480, 31041, 120, 100, 8, 16, 140, 30,
+> >>              0, FB_VMODE_NONINTERLACED | FB_VMODE_YWRAP
+> >>      }, {
+> >> -            /* 1280x960, 29 kHz, 60 Hz (TT high) */
+> >> -            "tt-high", 57, 640, 960, 31041, 120, 100, 8, 16, 140, 30,
+> >> +            /* 1280x960, 72 kHz, 72 Hz (TT high) */
+> >> +            "tt-high", 57, 1280, 960, 7761, 260, 60, 36, 4, 192, 4,
+> >>              0, FB_VMODE_NONINTERLACED | FB_VMODE_YWRAP
+> >
+> > Well-spotted. The change of 640 => 1280 is surely right.
 
-This is a multi-part message in MIME format.
---------------7B7D2D7D42A63E5F101E899B
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+TBH, I spotted that 7 years ago, but never got to looking up and calculating
+the other values...
 
-Hi
+> > I have a harder time understanding why the change of pixclock from 31041
+> > to 7761 is correct. All other modes have a pixclock close to or equal
+> > to 32000 - so it looks strange this one is off.
 
-Am 01.11.20 um 10:50 schrieb Sam Ravnborg:
-> On Wed, Oct 21, 2020 at 02:12:41PM +0200, Thomas Zimmermann wrote:
->> Trying to copy into the string fields with strncpy() gives a warning f=
-rom
->> gcc. Both fields are part of a packed HDMI header and do not require a=
+32000 ps is 31.25 MHz. Looks like these are bogus, too, and only
+the VGA and Falcon video modes are correct?
 
->> terminating \0 character.
->>
->> ../drivers/video/hdmi.c: In function 'hdmi_spd_infoframe_init':
->> ../drivers/video/hdmi.c:230:2: warning: 'strncpy' specified bound 8 eq=
-uals destination size [-Wstringop-truncation]
->>   230 |  strncpy(frame->vendor, vendor, sizeof(frame->vendor));
->>       |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> ../drivers/video/hdmi.c:231:2: warning: 'strncpy' specified bound 16 e=
-quals destination size [-Wstringop-truncation]
->>   231 |  strncpy(frame->product, product, sizeof(frame->product));
->>       |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>
->> Just use memcpy() instead.
->>
->> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> I assume vendor is guaranteed to be 0-termindated.
+> According to the Profibuch the pixclock should be about 95000.
 
-It's a fixed-length field in the protocol. There's similar code in
-radeon IIRC. So it would be nice to disable the warning in these cases.
-But that's probably to much fiddling.
+95 ns? That's a 10.5 MHz pixel clock? Definitely too low.
+The TTM195 manual says 128.85 MHz.
 
-> Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Gr{oetje,eeting}s,
 
-Thanks.
+                        Geert
 
-Best regards
-Thomas
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
->=20
->> ---
->>  drivers/video/hdmi.c | 8 ++++++--
->>  1 file changed, 6 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
->> index b7a1d6fae90d..1e4cb63d0d11 100644
->> --- a/drivers/video/hdmi.c
->> +++ b/drivers/video/hdmi.c
->> @@ -221,14 +221,18 @@ EXPORT_SYMBOL(hdmi_avi_infoframe_pack);
->>  int hdmi_spd_infoframe_init(struct hdmi_spd_infoframe *frame,
->>  			    const char *vendor, const char *product)
->>  {
->> +	size_t len;
->> +
->>  	memset(frame, 0, sizeof(*frame));
->> =20
->>  	frame->type =3D HDMI_INFOFRAME_TYPE_SPD;
->>  	frame->version =3D 1;
->>  	frame->length =3D HDMI_SPD_INFOFRAME_SIZE;
->> =20
->> -	strncpy(frame->vendor, vendor, sizeof(frame->vendor));
->> -	strncpy(frame->product, product, sizeof(frame->product));
->> +	len =3D strlen(vendor);
->> +	memcpy(frame->vendor, vendor, min(len, sizeof(frame->vendor)));
->> +	len =3D strlen(product);
->> +	memcpy(frame->product, product, min(len, sizeof(frame->product)));
->> =20
->>  	return 0;
->>  }
->> --=20
->> 2.28.0
->>
->> _______________________________________________
->> dri-devel mailing list
->> dri-devel@lists.freedesktop.org
->> https://lists.freedesktop.org/mailman/listinfo/dri-devel
-
---=20
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
-(HRB 36809, AG N=C3=BCrnberg)
-Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
-
---------------7B7D2D7D42A63E5F101E899B
-Content-Type: application/pgp-keys;
- name="OpenPGP_0x680DC11D530B7A23.asc"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="OpenPGP_0x680DC11D530B7A23.asc"
-
------BEGIN PGP PUBLIC KEY BLOCK-----
-
-xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdgX=
-H47
-fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0BeB5B=
-bqP
-5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4YchdHm3bkPj=
-z9E
-ErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB9GluwvIhSezPg=
-nEm
-imZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEBAAHNKFRob21hcyBaa=
-W1t
-ZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmNvbT7CwI4EEwEIADgCGwMFCwkIBwIGFQoJCAsCB=
-BYC
-AwECHgECF4AWIQRyF/usjOnPY0ShaOVoDcEdUwt6IwUCXvxIWAAKCRBoDcEdUwt6I+aZB/9ih=
-Onf
-G4Lgf1L87cvoXh95/bnaJ6aQhP6/ZeRleuCXflnyDajlm3c9loQr0r2bQUi7JeYwUKbBab2QS=
-GJm
-DMRGlLMnmzWB8mHmZ6bHAu+2Sth8SraE42p6BB9d8dlYEID+dl/D/xUBeulfkck5rloGtYqDi=
-+1Q
-DfkEZJaxVSZ6FFkXuQi/G9qcI4iklN2nv02iQ7mZe8WYAysix6s/6vIobhirEBreclSNxXqis=
-p8n
-91+v855JC11EgRdUXMRK81IAaCKXP8zLx3ixku7mvP9Om61yerHSbeU2HZbIggZYQlFh6llJm=
-zF1
-CjCWgPTJyk4t4kMTcNOw5ykD47vU/KW+wl0EEBECAB0WIQQn6OOmnzvP/7ktjmoud6EwEfXTw=
-gUC
-WzodVwAKCRAud6EwEfXTwidvAKDkOADDHfI0QNXqAZcg6i1kOndAYACeLXHBwpjnumkPSyoab=
-IiL
-+he8r3zCwHMEEAEIAB0WIQQeXZghmQijlU7YzFiqUDvJrg9HpwUCWznxsQAKCRCqUDvJrg9Hp=
-42f
-CADIvsZcAd04PDFclRltHr2huy6s7+ZZA6PgYlMblEBh4bJA+dNPBTvzpJ7FJv/bmHOa+phWy=
-Urj
-EpfFGuOKGuWAfzgVAEu52fMrW3/mm+O26z1AKIu8hiZ/x9OAe4AM71ZO2lZrV1/53ZdzWnRuO=
-45N
-GQcotU8oeVfT9okAfmozmWMmIMq7Q0K6bV8W3qiD5XfDNxjr2caxc/9WX1bZPUo3n0H23MNaA=
-Tpy
-Oz732UtDh6sKUAB1RfzBBd/REbjHD7+quwJGAdRScyDRncX1vNb2+wihy0ipA69XY3bkhR5iD=
-u5r
-A9enuiMe6J1IBMI1PZh+vOufB/M6cd2D9RULIJaJwsBzBBABCAAdFiEEuyNtt7Ge78bIRx1op=
-/N8
-GYw5MYEFAls6MrsACgkQp/N8GYw5MYEnLQf/dwqlDJVQL2q+i8FFaqTMAm0n9jLRV6pN8JxFH=
-j0g
-voyWUOnQuNdAFgtKd26ZhN8NkLoSMO8E19eBPfLoBIFK5yNNVmRHAZm07MzGbA0uNWINJhmdR=
-bZM
-RMh0nneXjcEU/IvUmd8TPFTAd24X2mbzHgcaHMLJSVx1ohd4alRJXHIqDobKmiVwekyPnInJn=
-zWw
-iuZUkIotTkQple1PT/dF3S+KtPXBL6ldQ4NkAeCjsz4wnzSa9+VKOxEhiHM0PMzXSbkCMP+4m=
-Xy9
-RMplBw9Dm9hN2PSouBPifIrSodiiSWZYXOEkzLiBAB0frCKR63Dnx9kvjCD9Pz5wLd/70rjqI=
-c0n
-VGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+wsCOBBMBCAA4AhsDBQsJC=
-AcC
-BhUKCQgLAgQWAgMBAh4BAheAFiEEchf7rIzpz2NEoWjlaA3BHVMLeiMFAl78SF4ACgkQaA3BH=
-VML
-eiOpGAgAih6C1OnWms/N8eBMC4Q93y/nyywe5vCL22Dr1rwgn6Iw2jOGziJSi7zhY4sEk2NKJ=
-5cd
-lFrx8mP//b+xO4AGffwBD0Vwpf38Hj2Gt0KjpzRYccqqU+tJPO5c0pjI52ZIV3+kOEFvYGfkN=
-PHE
-flE+b81T8L2dSXCLtj4WAGUM1rmHn3bCYl+/RwkB+8XnoL5AvrmMcU4Uhb3FJpM4DHExccYkd=
-eSL
-ojBppOCztBCUpBx3le+8QPVvAvJDuur4wRmjk3sjKClAwzeqoYyUKcN3JDdb3mt3QcJal9rSh=
-VEI
-7B25IvfmEbs42oGm8GPzPkaNJu3gcska+l5PSTfurNETGsJdBBARAgAdFiEEJ+jjpp87z/+5L=
-Y5q
-LnehMBH108IFAls6HVcACgkQLnehMBH108LTkACgjLQdDYMENi6BDjY/gd/LF9lMi8oAnR+o0=
-FwE
-Vb1K1tEMQ/1x+k1U6/xgwsBzBBABCAAdFiEEHl2YIZkIo5VO2MxYqlA7ya4PR6cFAls58bMAC=
-gkQ
-qlA7ya4PR6cvTAgAzY1N5QMKh8ECRtYcZNmilyV59uHTEY9hAR+203JqWnSGfUKtU7s6xfl5O=
-NGq
-DI5rULk4Cw2CEIzg9Sat+/lxn36w2f1tEznS5Vb0gVGWrzDAFjj7tB6MnmCzsNb/S1kgxnqJM=
-Yor
-RYQ7uB3Yr2Fdp08FJxN0ipd5YfzaZ6KoSWcRAv4r1R4ZQGuS77URAg7HDOIrBMOVO+HIn7GYQ=
-qPS
-5ZFw5yXbvEtL1c5Y8Zdw1AG2VmEXx78TWQVG3kI8/lQF1QI3yrJ1Rp2x5eK9I0OJihv13IlIW=
-3sb
-QGrj9pxF63kA20ZFaynzFglBGiyxExYvTD0/xKIhzYhj8mtCunPb2cLAcwQQAQgAHRYhBLsjb=
-bex
-nu/GyEcdaKfzfBmMOTGBBQJbOjLAAAoJEKfzfBmMOTGBBoMIALIW4EtBY28tPwZMOpN/+ARPO=
-a2g
-Qzpivw7iNtiDTnGIXMCoxly1CybfMdqTHYmuKbEO9AlFAlDOnkgInsn8E65IvgUTVI95Ah+Ob=
-iPI
-FkYc/9a+AexPl7f5kI9489k77eKtqtMpWFpo/vROmRroSw4JnM7ovwPq1QOSHExfTKbLunzD1=
-i3V
-4PShSZ6bGsp1LW6Wk0lRMHDuAk3xsyjBWfJwSbrCe3E6OsLG7BuQqEUt2fR6NxdDRSR9tQUp9=
-Tri
-AYG5LndmUzxeU6FAQjD8Wt1ezOFH5ODcCDXfRyYmE6uCGA4EvO8l9R3o68NPlUjPRAZsCbxJa=
-UAg
-iazX1nyQGwvOwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHU=
-E9e
-osYbT6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+q=
-bU6
-3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWWG=
-KdD
-egUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lvhFXod=
-NFM
-AgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsAEQEAAcLAf=
-AQY
-AQgAJhYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJbOdLgAhsMBQkDwmcAAAoJEGgNwR1TC3ojp=
-fcI
-AInwP5OlcEKokTnHCiDTz4Ony4GnHRP2fXATQZCKxmu4AJY2h9ifw9Nf2TjCZ6AMvC3thAN0r=
-FDj
-55N9l4s1CpaDo4J+0fkrHuyNacnT206CeJV1E7NYntxUn+LSiRrOdywn6erjxRi9EYTVLCHcD=
-hBE
-jKmFZfg4AM4GZMWX1lg0+eHbd5oL1as28WvvI/uIaMyV8RbyXot1r/8QLlWldU3NrTF5p7TMU=
-2y3
-ZH2mf5suSKHAMtbE4jKJ8ZHFOo3GhLgjVrBWHE9JXO08xKkgD+w6v83+nomsEuf6C6LYrqY/t=
-sZv
-yEX6zN8CtirPdPWu/VXNRYAl/lat7lSI3H26qrE=3D
-=3DmxFq
------END PGP PUBLIC KEY BLOCK-----
-
---------------7B7D2D7D42A63E5F101E899B--
-
---7yHDug7DDMqJ57mEmv1yW2ZsS1Vqwx7l3--
-
---xj7DkDuyrO3oFqongjZ5nXabRlCMjkA3W
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsB5BAABCAAjFiEEchf7rIzpz2NEoWjlaA3BHVMLeiMFAl+e5csFAwAAAAAACgkQaA3BHVMLeiN7
-4gf/a6SFvTFnxPXPRtvgeQ+bSDsAhskO3o7R25E+P/yVWgZnCWzleVhbL5F+IXhN5nUsE1hkgZ2z
-VhWgPkQ7LpCpBo0+w++H9vBYlEhrk+8agSDPU4DHL8RA1DWlizftPwhQkl0UJiciKF6HY44VXQF5
-VF4qP4pZPRHuuFTM4M2rFWuh6ZxW/KbqAApoCojEoXIvBU5koRBRl2w6mUzp3tFBQ49t3t5fcfAG
-bsV3x+i+7fbJoBgTdQP7YokPAGYlqyxyIewBWvwcYub42W5/TkW4mD9d06kxWleXmkPpRMMubeqH
-4ZkGaUPQVVPuHEQ5gMWUlLWXAl5XyC4z72P05NgxCw==
-=lrcK
------END PGP SIGNATURE-----
-
---xj7DkDuyrO3oFqongjZ5nXabRlCMjkA3W--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

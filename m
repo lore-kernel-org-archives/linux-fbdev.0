@@ -2,149 +2,156 @@ Return-Path: <SRS0=iaJD=EL=vger.kernel.org=linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2F28C4741F
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Nov 2020 17:00:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C675C4741F
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Nov 2020 19:17:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6FA9F20759
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Nov 2020 17:00:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 872532087D
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 Nov 2020 19:17:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="YqXgb/cA"
+	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="dO5hEZcM"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726996AbgKERAi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 5 Nov 2020 12:00:38 -0500
-Received: from nat-hk.nvidia.com ([203.18.50.4]:40574 "EHLO nat-hk.nvidia.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727836AbgKERAh (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 5 Nov 2020 12:00:37 -0500
-Received: from HKMAIL103.nvidia.com (Not Verified[10.18.92.9]) by nat-hk.nvidia.com (using TLS: TLSv1.2, AES256-SHA)
-        id <B5fa42fb40000>; Fri, 06 Nov 2020 01:00:36 +0800
-Received: from HKMAIL103.nvidia.com (10.18.16.12) by HKMAIL103.nvidia.com
- (10.18.16.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 5 Nov
- 2020 17:00:22 +0000
-Received: from NAM12-MW2-obe.outbound.protection.outlook.com (104.47.66.46) by
- HKMAIL103.nvidia.com (10.18.16.12) with Microsoft SMTP Server (TLS) id
- 15.0.1473.3 via Frontend Transport; Thu, 5 Nov 2020 17:00:22 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=By1NsUN5b8RRGFc32yc5YsFMj3fIx6ZNQ9bY8yJu7mvKtdSFtDX+7KiJ/14WaYJgJF0ybYS6zJM5oVa/xGm8VCDtGntVrpzIJCZMs8wb5ep/QLN9rBwQ+9g16QHZWsbaWojsqhbS4pSx534iXaG5GIee+vqXlQEQG1WF+J1PFTNGYvcLlE/Hz+WSN/s3/bEpCVqKWKQAGwGnUb+T283zWpHk1F4aty4IM9FB9xbejApxOuLwQVto7DiGrhBtzXxAJpZUPKGvDr23+GZllCfIb3fHWbkEkngYcymYcHK+Vt9X6Adc+joKcgy2gk/nJ65ADLjOj6SPV7f7nio4Apm3rA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ePLhMY+6UZh7oR8TYEZJUyFahB2BR04H5E0isD4v2Z8=;
- b=G9eCiRhICPH7umqAca4X+TeSjhGcMcNVcXnBhaCbYPc6FMY+Dd6sQ1zWDcFcpLGvXGTqiCPQauxN+hSjIVujulEiJMtqn9c6wYTLTr8VBKDi4ABvsTqkevx1s1TYYHomhIw//PNpLAexgQ1/5b/vsEk6YtUP26dxBlZL2JerB81ihq5HmGdixfs6DkvpHuOx/j3QEfPepa64bdlvKG0HGhX5PpmRAdotCFmiX94lPDR5eoH+ezuRlbz9Y5Fu4PnZgiFGAUSWpq8SIyWtjUDj/c74oRzNDYGDmyFsqF15kQecyHLiAN12mDfK+L0KfunaoFg3LyZyUOe5IDZM58l4+g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-Received: from DM6PR12MB3834.namprd12.prod.outlook.com (2603:10b6:5:14a::12)
- by DM6PR12MB2779.namprd12.prod.outlook.com (2603:10b6:5:4f::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3499.18; Thu, 5 Nov
- 2020 17:00:20 +0000
-Received: from DM6PR12MB3834.namprd12.prod.outlook.com
- ([fe80::cdbe:f274:ad65:9a78]) by DM6PR12MB3834.namprd12.prod.outlook.com
- ([fe80::cdbe:f274:ad65:9a78%7]) with mapi id 15.20.3499.032; Thu, 5 Nov 2020
- 17:00:20 +0000
-From:   Jason Gunthorpe <jgg@nvidia.com>
-To:     David Airlie <airlied@linux.ie>,
+        id S1727017AbgKETRv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 Nov 2020 14:17:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33528 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731983AbgKETRv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 Nov 2020 14:17:51 -0500
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C807AC0613CF
+        for <linux-fbdev@vger.kernel.org>; Thu,  5 Nov 2020 11:17:50 -0800 (PST)
+Received: by mail-wr1-x444.google.com with SMTP id c17so3049889wrc.11
+        for <linux-fbdev@vger.kernel.org>; Thu, 05 Nov 2020 11:17:50 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=j+IQhvhw435u8nsN2WVFpAWIcN2hwG2s/J5+3AR6JLc=;
+        b=dO5hEZcM51v6mQ3PmBzyEbxtmZxlwbEDZZXHYYythrbeVAQ3pRx9dWvRn84UhXi2Em
+         ml/Q+jOVtk0eafTV+uu6z5YtDw2je+0ICuFu6hxIOvwENdZpe2TT3d0M9/gMxuHLSBsf
+         EUsh9D6ANi8inHlFA1zxxMAs0K/AN0s09AUMA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=j+IQhvhw435u8nsN2WVFpAWIcN2hwG2s/J5+3AR6JLc=;
+        b=BUDqSP4D72jMVkUCiWy4UjsMyM7i7B7u5MJQEMO9YOJH2tTDc4l+SASSkcRlc/SSx5
+         uT7LGYixLnKVKshCq1PErIaMIelYKXqIOOS2R9w5gH1cLYUQoZynZvrz07lbpFzPQkqm
+         In5d+GfR05REJU3aOAaz9YzPJf7xFuJ95nlptpbTBBKfcq42AbsyE2PlWOQT+7AfOtBm
+         4oOSaDYMGK7KK30z/eimI/ZQ5y2anGa+I23bpMAtpljEwJ+lEKB0Snt2Ogi8p7Urh7s4
+         KTHotJaEBw/tKxF3LNKBCKaNyrrQpEjhbLUe5LjCxS/S2V3zB7raLy41JlnFQTB8C3iu
+         So0g==
+X-Gm-Message-State: AOAM532DdSToyUX92MzhUyVZyYp7nE5XoM4rRRRDBymfJYVlCjBDys06
+        u9MzCfJQH7xtA34xpnvWCFZ4uQ==
+X-Google-Smtp-Source: ABdhPJw3DaNV5PFRS17QOGMcfKkxrIGmNbzqbv20Aa+JsHn+j7B2uPUnnJigwpP3joAKyTGDhLSqZA==
+X-Received: by 2002:adf:e412:: with SMTP id g18mr4702345wrm.211.1604603869511;
+        Thu, 05 Nov 2020 11:17:49 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id b14sm2102468wrq.47.2020.11.05.11.17.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 05 Nov 2020 11:17:48 -0800 (PST)
+Date:   Thu, 5 Nov 2020 20:17:46 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Jason Gunthorpe <jgg@nvidia.com>
+Cc:     David Airlie <airlied@linux.ie>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
         Daniel Vetter <daniel@ffwll.ch>,
-        <dri-devel@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>,
-        "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Tom Lendacky <thomas.lendacky@amd.com>
-Subject: [PATCH] drm: remove pgprot_decrypted() before calls to io_remap_pfn_range()
-Date:   Thu, 5 Nov 2020 13:00:19 -0400
-Message-ID: <0-v1-2e6a0db57868+166-drm_sme_clean_jgg@nvidia.com>
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain
-X-ClientProxiedBy: MN2PR12CA0032.namprd12.prod.outlook.com
- (2603:10b6:208:a8::45) To DM6PR12MB3834.namprd12.prod.outlook.com
- (2603:10b6:5:14a::12)
+Subject: Re: [PATCH] drm: remove pgprot_decrypted() before calls to
+ io_remap_pfn_range()
+Message-ID: <20201105191746.GC401619@phenom.ffwll.local>
+References: <0-v1-2e6a0db57868+166-drm_sme_clean_jgg@nvidia.com>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from mlx.ziepe.ca (156.34.48.30) by MN2PR12CA0032.namprd12.prod.outlook.com (2603:10b6:208:a8::45) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3541.21 via Frontend Transport; Thu, 5 Nov 2020 17:00:20 +0000
-Received: from jgg by mlx with local (Exim 4.94)        (envelope-from <jgg@nvidia.com>)        id 1kaicV-0007zk-EK; Thu, 05 Nov 2020 13:00:19 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1604595636; bh=+uVsIBtcv3Vj55p/qtJ1U+7ugqR2N/ieF+31UaiTgWk=;
-        h=ARC-Seal:ARC-Message-Signature:ARC-Authentication-Results:From:To:
-         Subject:Date:Message-ID:Content-Transfer-Encoding:Content-Type:
-         X-ClientProxiedBy:MIME-Version:
-         X-MS-Exchange-MessageSentRepresentingType;
-        b=YqXgb/cA5GsY6Hi0glSZTJoZdtJJMHyzqSmaTKmlo9qSg++fpAJrWzFeyfMAu8gQb
-         HH8EvM9n8oWymguDSufcfnZIMBuc0eQYzfWQjygmT7r9lbhOM2IJ6Si+OXjrYfkOD1
-         bQJZAOghb1O6Pg13ne5A7bdo461kx9O9MTbv+iyP3RUbac9UsSDfimkifr1H5mJUK6
-         eVtUKNVea3OFLnLa7BAY+pAX1lP+Oyb08KUs6gGdT0/oYrBPe0gxw3n0iP/ChOE42z
-         9DxqmHZqUO+VKdGIVo+SRK/eF7LgF2QU7khCM1RCwrmUEjaSwiLz8N3FNxJqmFyusg
-         H+0McX8V1biDg==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0-v1-2e6a0db57868+166-drm_sme_clean_jgg@nvidia.com>
+X-Operating-System: Linux phenom 5.7.0-1-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-commit f8f6ae5d077a ("mm: always have io_remap_pfn_range() set
-pgprot_decrypted()") moves the pgprot_decrypted() into
-io_remap_pfn_range(). Delete any, now confusing, open coded calls that
-directly precede io_remap_pfn_range():
+On Thu, Nov 05, 2020 at 01:00:19PM -0400, Jason Gunthorpe wrote:
+> commit f8f6ae5d077a ("mm: always have io_remap_pfn_range() set
+> pgprot_decrypted()") moves the pgprot_decrypted() into
+> io_remap_pfn_range(). Delete any, now confusing, open coded calls that
+> directly precede io_remap_pfn_range():
+> 
+> - drm_io_prot() is only in drm_mmap_locked() to call io_remap_pfn_range()
+> 
+> - fb_mmap() immediately calls vm_iomap_memory() which is a convenience
+>   wrapper for io_remap_pfn_range()
+> 
+> Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
+> ---
+>  drivers/gpu/drm/drm_vm.c         | 3 ---
+>  drivers/video/fbdev/core/fbmem.c | 5 -----
+>  2 files changed, 8 deletions(-)
+> 
+> rc3 will have the dependent patch, this should not be merged to DRM until it
+> has the rc3 commits.
+> 
+> There are three other pgprot_decrypted() calls in DRM, I could not figure out
+> what was what there, but other than very special cases I would expect code to
+> use io_remap_pfn_range() instead.
 
-- drm_io_prot() is only in drm_mmap_locked() to call io_remap_pfn_range()
+There's 4 now, I think linux-next added one. It's another io_remap_pfn
 
-- fb_mmap() immediately calls vm_iomap_memory() which is a convenience
-  wrapper for io_remap_pfn_range()
+Of the three you mentioned we have:
+- ttm and i915 use vm_insert_pfn (and ttm also can do also do pud_mkhuge
+  entries)
+- drm_gem is for all other drivers, some also use vm_insert_pfn, the
+  others I think use dma_mmap_* and friends, which I think underneath
+  boild down to io_remap_pfn. Or at least should be taking care of this
+  already.
 
-Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
----
- drivers/gpu/drm/drm_vm.c         | 3 ---
- drivers/video/fbdev/core/fbmem.c | 5 -----
- 2 files changed, 8 deletions(-)
+I'll try and remember to merge this after -rc3. Yell if it's not in by
+-rc4 please.
+-Daniel
 
-rc3 will have the dependent patch, this should not be merged to DRM until i=
-t
-has the rc3 commits.
+> 
+> diff --git a/drivers/gpu/drm/drm_vm.c b/drivers/gpu/drm/drm_vm.c
+> index 1a636963378947..6d5a03b3223800 100644
+> --- a/drivers/gpu/drm/drm_vm.c
+> +++ b/drivers/gpu/drm/drm_vm.c
+> @@ -70,9 +70,6 @@ static pgprot_t drm_io_prot(struct drm_local_map *map,
+>  {
+>  	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
+>  
+> -	/* We don't want graphics memory to be mapped encrypted */
+> -	tmp = pgprot_decrypted(tmp);
+> -
+>  #if defined(__i386__) || defined(__x86_64__) || defined(__powerpc__) || \
+>      defined(__mips__)
+>  	if (map->type == _DRM_REGISTERS && !(map->flags & _DRM_WRITE_COMBINING))
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> index 8268bbee8cae11..63a27a67a05cfa 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -1386,11 +1386,6 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
+>  	mutex_unlock(&info->mm_lock);
+>  
+>  	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+> -	/*
+> -	 * The framebuffer needs to be accessed decrypted, be sure
+> -	 * SME protection is removed
+> -	 */
+> -	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
+>  	fb_pgprotect(file, vma, start);
+>  
+>  	return vm_iomap_memory(vma, start, len);
+> -- 
+> 2.29.2
+> 
 
-There are three other pgprot_decrypted() calls in DRM, I could not figure o=
-ut
-what was what there, but other than very special cases I would expect code =
-to
-use io_remap_pfn_range() instead.
-
-diff --git a/drivers/gpu/drm/drm_vm.c b/drivers/gpu/drm/drm_vm.c
-index 1a636963378947..6d5a03b3223800 100644
---- a/drivers/gpu/drm/drm_vm.c
-+++ b/drivers/gpu/drm/drm_vm.c
-@@ -70,9 +70,6 @@ static pgprot_t drm_io_prot(struct drm_local_map *map,
- {
- 	pgprot_t tmp =3D vm_get_page_prot(vma->vm_flags);
-=20
--	/* We don't want graphics memory to be mapped encrypted */
--	tmp =3D pgprot_decrypted(tmp);
--
- #if defined(__i386__) || defined(__x86_64__) || defined(__powerpc__) || \
-     defined(__mips__)
- 	if (map->type =3D=3D _DRM_REGISTERS && !(map->flags & _DRM_WRITE_COMBININ=
-G))
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fb=
-mem.c
-index 8268bbee8cae11..63a27a67a05cfa 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1386,11 +1386,6 @@ fb_mmap(struct file *file, struct vm_area_struct * v=
-ma)
- 	mutex_unlock(&info->mm_lock);
-=20
- 	vma->vm_page_prot =3D vm_get_page_prot(vma->vm_flags);
--	/*
--	 * The framebuffer needs to be accessed decrypted, be sure
--	 * SME protection is removed
--	 */
--	vma->vm_page_prot =3D pgprot_decrypted(vma->vm_page_prot);
- 	fb_pgprotect(file, vma, start);
-=20
- 	return vm_iomap_memory(vma, start, len);
---=20
-2.29.2
-
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

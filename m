@@ -1,101 +1,136 @@
-Return-Path: <SRS0=iTl0=EP=vger.kernel.org=linux-fbdev-owner@kernel.org>
+Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D64CBC55ABD
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Nov 2020 08:38:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C9BDC388F7
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Nov 2020 12:49:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 802C120719
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 Nov 2020 08:38:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C80D320797
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Nov 2020 12:49:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="Af/MIMAK"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729514AbgKIIi3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 Nov 2020 03:38:29 -0500
-Received: from mail-ot1-f65.google.com ([209.85.210.65]:44783 "EHLO
-        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726127AbgKIIi3 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 Nov 2020 03:38:29 -0500
-Received: by mail-ot1-f65.google.com with SMTP id f16so8160014otl.11;
-        Mon, 09 Nov 2020 00:38:28 -0800 (PST)
+        id S1730193AbgKJMtv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 10 Nov 2020 07:49:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44892 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726462AbgKJMtv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 10 Nov 2020 07:49:51 -0500
+Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A0FBC0613CF
+        for <linux-fbdev@vger.kernel.org>; Tue, 10 Nov 2020 04:49:50 -0800 (PST)
+Received: by mail-wm1-x343.google.com with SMTP id 19so1336559wmf.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 10 Nov 2020 04:49:50 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=Fd0rvLSxv3w0DGSQl7/MR8nNwRxQn2EkK7Jf55cFZrE=;
+        b=Af/MIMAKTQFyxeHZZ16ClAESfRN5kB3gwq1ekyEsJw9VWZtvXazxaHfDBudJlv5Yfe
+         sG+w67uZ1tV0fV0JuRrShzclzjjo1v5Hk4cDXOlThxui7dlxO690C+LdlsHAN7Go4jz4
+         9QN0p1pD7iRWnebbIfEOspzjTobQjXBHaVga8=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Mpl5z7jYy7tt5Nnzqwz9YOe8OadxKMgEiQDFvQkXiUc=;
-        b=mOMCcwLxVLgtCaitpVPT20Ns61Pt+PDaZ8juYLHg2psFWqwGqInmBojNLO5U5XdJ7A
-         qddGIdZRSLHBm64cVvR3vZV7pZ7HJu235ZSh8J1vd/YC4oXU8dIzX8w4z7aEY26AFTs0
-         J47s/fPX3rLyxkw7AWqUWRrIT5te/eMRdpqghyik6tD6hqaTZR0B8BDOSDzYRnR4dHpO
-         458fZ38JKAS4/++1x1NK/HbLfdvrwOxcoLfSsAZ0UkBd+i4hT3tmA7tjGxeFZwsRkkjt
-         CWglcqM3t0zii/90gJLxjaf8Izit+zwcHOB695fZbmytd079wtfyKwSGopkbFIB6a+hm
-         Buhw==
-X-Gm-Message-State: AOAM532LYycG2sfKPevujvuXk4I2d48ySJDewm9s/f8cQeBlGA+Uz1vM
-        Y8DQCjpZ0A261i/3hi9/iL5MpDYJu8cYwfqqt1ONFux2PQ5GJQ==
-X-Google-Smtp-Source: ABdhPJztzqSlL0WXA+McVa1c5WLjfnlry5X7OjJ9ynRD1lUtJ8E5/oZWsMSMvuAqBoLB9pps/iYyuiC8KGSadZDVsVM=
-X-Received: by 2002:a9d:5e14:: with SMTP id d20mr8991741oti.107.1604911108098;
- Mon, 09 Nov 2020 00:38:28 -0800 (PST)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :in-reply-to;
+        bh=Fd0rvLSxv3w0DGSQl7/MR8nNwRxQn2EkK7Jf55cFZrE=;
+        b=E/VTjO152/W1iK8Utm43cp1Lh91pGvhrMn0tNt/KVOfC/rKa+j48U6TbxR/DHGfaFf
+         5ellWOSNPPp0NZ5PNohbd9MdMNNpZFOZzH16WSg/JQl8EWEDsFMfgT+Rhvwq2vEJRWk1
+         mMYO24Ehxvcp42V+3YuiUX771pE7EfitZx5JEslzwVkqI8lOanLB7qiVQBS2SzArp7tR
+         OUf1I4Ti6qMp2CkoPKz660ekJmJlR7VjoAaSLrvY3KN/fPNiBml/1I4GGP8WHRCQszsV
+         pCRH6O9AAizpTm7LwPpFivJ7lHOJyXQJd9Yd3MOK+wTh/+KNeSZ+vZo9Tkh7biWZTCgM
+         2Y+w==
+X-Gm-Message-State: AOAM530bKbFpBm/CjAWWsMKT0VSQs+4FjljWH4hBBViWzm+ci0YN7JOj
+        7/ahiDLUFNKiL9qIij3bR5mQig==
+X-Google-Smtp-Source: ABdhPJzPchZV3CYprZV/WF3ChAiYPcWT+V/aERZoo0KWm+pFd7h/KOdwCODP/u/gnKrwWH9ItChKBw==
+X-Received: by 2002:a1c:1b43:: with SMTP id b64mr4458160wmb.64.1605012589235;
+        Tue, 10 Nov 2020 04:49:49 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id h81sm2905596wmf.44.2020.11.10.04.49.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Nov 2020 04:49:48 -0800 (PST)
+Date:   Tue, 10 Nov 2020 13:49:46 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Peilin Ye <yepeilin.cs@gmail.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Thomas Winischhofer <thomas@winischhofer.net>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Nicolas Pitre <nico@fluxnic.net>,
+        "Gustavo A . R . Silva" <gustavoars@kernel.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        George Kennedy <george.kennedy@oracle.com>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Peter Rosin <peda@axentia.se>, linux-kernel@vger.kernel.org,
+        linux-usb@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] console: Remove dummy con_font_op() callback
+ implementations
+Message-ID: <20201110124946.GF401619@phenom.ffwll.local>
+Mail-Followup-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Peilin Ye <yepeilin.cs@gmail.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Thomas Winischhofer <thomas@winischhofer.net>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Nicolas Pitre <nico@fluxnic.net>,
+        "Gustavo A . R . Silva" <gustavoars@kernel.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        George Kennedy <george.kennedy@oracle.com>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Peter Rosin <peda@axentia.se>, linux-kernel@vger.kernel.org,
+        linux-usb@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+References: <c5563eeea36aae7bd72ea2e985bc610d585ece40.1604128639.git.yepeilin.cs@gmail.com>
+ <20201106105058.GA2801856@kroah.com>
 MIME-Version: 1.0
-References: <20201101102941.2891076-1-geert@linux-m68k.org>
- <20201101112915.GB1263673@ravnborg.org> <874km91by4.fsf@igel.home>
-In-Reply-To: <874km91by4.fsf@igel.home>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 9 Nov 2020 09:38:16 +0100
-Message-ID: <CAMuHMdWEJwd4mGUm4ycUx5dBg5Lbb3cG+X5QsJ-icwuvoLxx5w@mail.gmail.com>
-Subject: Re: [PATCH/RFC v2] video: fbdev: atari: Fix TT High video mode
-To:     Andreas Schwab <schwab@linux-m68k.org>
-Cc:     Sam Ravnborg <sam@ravnborg.org>,
-        Michael Schmitz <schmitzmic@gmail.com>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        "Linux/m68k" <linux-m68k@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201106105058.GA2801856@kroah.com>
+X-Operating-System: Linux phenom 5.7.0-1-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Andreas,
+On Fri, Nov 06, 2020 at 11:50:58AM +0100, Greg Kroah-Hartman wrote:
+> On Sat, Oct 31, 2020 at 03:24:41AM -0400, Peilin Ye wrote:
+> > `struct console_font` is a UAPI structure, thus ideally should not be
+> > used for kernel internal abstraction. Remove some dummy .con_font_set,
+> > .con_font_default and .con_font_copy `struct consw` callback
+> > implementations, to make it cleaner.
+> > 
+> > Patch "fbcon: Prevent global-out-of-bounds read in fbcon_copy_font()"
+> > depends on this patch, so Cc: stable.
+> > 
+> > Cc: stable@vger.kernel.org
+> > Suggested-by: Daniel Vetter <daniel@ffwll.ch>
+> > Signed-off-by: Peilin Ye <yepeilin.cs@gmail.com>
+> > ---
+> > Context: https://lore.kernel.org/lkml/CAKMK7uFY2zv0adjKJ_ORVFT7Zzwn075MaU0rEU7_FuqENLR=UA@mail.gmail.com/
+> > 
+> >  drivers/usb/misc/sisusbvga/sisusb_con.c | 21 ---------------------
+> >  drivers/video/console/dummycon.c        | 20 --------------------
+> >  2 files changed, 41 deletions(-)
+> 
+> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Sun, Nov 1, 2020 at 1:47 PM Andreas Schwab <schwab@linux-m68k.org> wrote:
-> On Nov 01 2020, Sam Ravnborg wrote:
-> > On Sun, Nov 01, 2020 at 11:29:41AM +0100, Geert Uytterhoeven wrote:
-> >> The horizontal resolution (640) for the TT High video mode (1280x960) is
-> >> definitely bogus.  While fixing that, correct the timings to match the
-> >> TTM195 service manual.
-> >>
-> >> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Peilin, can you pls resend this together with all the other pending
+patches from you? I think that's better than me trying to cherry-pick the
+bits we decided to keep from random places.
 
-> >> --- a/drivers/video/fbdev/atafb.c
-> >> +++ b/drivers/video/fbdev/atafb.c
-> >> @@ -495,8 +495,8 @@ static struct fb_videomode atafb_modedb[] __initdata = {
-> >>              "tt-mid", 60, 640, 480, 31041, 120, 100, 8, 16, 140, 30,
-> >>              0, FB_VMODE_NONINTERLACED | FB_VMODE_YWRAP
-> >>      }, {
-> >> -            /* 1280x960, 29 kHz, 60 Hz (TT high) */
-> >> -            "tt-high", 57, 640, 960, 31041, 120, 100, 8, 16, 140, 30,
-> >> +            /* 1280x960, 72 kHz, 72 Hz (TT high) */
-> >> +            "tt-high", 57, 1280, 960, 7761, 260, 60, 36, 4, 192, 4,
-> >>              0, FB_VMODE_NONINTERLACED | FB_VMODE_YWRAP
-> >
-> > Well-spotted. The change of 640 => 1280 is surely right.
-> > I have a harder time understanding why the change of pixclock from 31041
-> > to 7761 is correct. All other modes have a pixclock close to or equal
-> > to 32000 - so it looks strange this one is off.
->
-> According to the Profibuch the pixclock should be about 95000.
-
-Please have a look at the paragraph on p. 1052, and realize that it
-fails to take into account horizontal black/sync (the actual scan line
-length is 1792 not 1280 pixels) (thanks, Michael!).
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+Greg, ok if I just pull these in through drm-misc-next? It's a pretty bad
+hairball anyway and that avoids the tree coordination issues. Only thing
+that might get in the way is the vt font_copy removal, but that's in -rc3
+so easy to backmerge.
+-Daniel
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

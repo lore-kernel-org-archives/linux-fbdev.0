@@ -2,121 +2,109 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 868AFC388F7
-	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Nov 2020 12:54:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3259C388F7
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Nov 2020 13:24:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2AA522065E
-	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Nov 2020 12:54:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 30F8B207BB
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 Nov 2020 13:24:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="E4HkumvR"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="k+zWxG1u"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730391AbgKJMy6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 10 Nov 2020 07:54:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45676 "EHLO
+        id S1729832AbgKJNY4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 10 Nov 2020 08:24:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50342 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726721AbgKJMy6 (ORCPT
+        with ESMTP id S1726721AbgKJNY4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 10 Nov 2020 07:54:58 -0500
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDFF1C0613CF
-        for <linux-fbdev@vger.kernel.org>; Tue, 10 Nov 2020 04:54:56 -0800 (PST)
-Received: by mail-wr1-x443.google.com with SMTP id b6so1212125wrt.4
-        for <linux-fbdev@vger.kernel.org>; Tue, 10 Nov 2020 04:54:56 -0800 (PST)
+        Tue, 10 Nov 2020 08:24:56 -0500
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com [IPv6:2607:f8b0:4864:20::544])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4DEBC0613CF;
+        Tue, 10 Nov 2020 05:24:54 -0800 (PST)
+Received: by mail-pg1-x544.google.com with SMTP id m13so1992198pgl.7;
+        Tue, 10 Nov 2020 05:24:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
+        d=gmail.com; s=20161025;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=21NUxsor7hHh3PxftuxZky4lFBsZ7ois+WrBZ+IPnLY=;
-        b=E4HkumvRbwuhozffvJJYhcXQ+VtG4Q5s+Lzoafw7cM2EbsdrTNVYk1kPivb8pbY7c+
-         I3kjvimorLUFRT9npgGtOPRUW7SmX6WyqftC9yyMCGkX+bhVlGtQOJkJpmTW1UQKJfWV
-         ARuzsuE6jBqPKwT7KHW/FpzfKGO1l7WHVK6XU=
+        bh=S+QrV5GbdFaGhruHIUGFYEWHi77tyozQEbntZ4ud6Fo=;
+        b=k+zWxG1uer0ohn+xFxeIJ/v6PRprgpVH7sP4/vCcDZiVHY0DRsZE88ksmsbgx/AFAm
+         GBB9oNMYJebK7UfbCk638xXbMbs8VclMcOHJpe+1I30eXa2co9zrHBfmkOt0HqX1ijBn
+         YMJQsO8b40szqlwuGm0jDszq6ZkjVZuG4bqgj3id1hVqQbA5IAKPn/VomPV9CEnRR/l5
+         Af9kYOTZ7/2ilBcD5BQiPLtHJzrS9xlGEiCRNoryk3Ie4iKs3bP+pZRWFI1ZGNeYjtNF
+         pUIc4hdZ5NuWm6v35CoJ4jrRNvX2cUlm7elN7sw7iPa3Fmy4uH0LBsLaBidK73W6Hk6r
+         63/Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=21NUxsor7hHh3PxftuxZky4lFBsZ7ois+WrBZ+IPnLY=;
-        b=hGwNqlfdQXofClrAru8FdFsGdWFfJQqZyU1FnJwWIINeDkKFjUPbdgb6sULCtD5Ahy
-         gz8CXEkmdu25hJMczNkNaLdbpLMEszSs08x7oFhwU43LU1skB4G9uH9ayCNKrT7Zgd2+
-         tIxp+wT2HAZHjmfn9ToKfpcB+si3qZeZp17P+bNF7M3wiAHJaGgbE135yD+FQbKTH403
-         s6XUMo0jBdXBDZT0X2CS4dAaZ4AGLiNvnUsFEkb5VhTbVwZM7LNyQCKtJb5WCQHp2pva
-         LIyuqa9p0/WWUP4femdkdyPnzGBetPLMht97i51WP8H5ltq5odcs4ORetphktEbkjG8C
-         qc3g==
-X-Gm-Message-State: AOAM533y0Yq/6iNT2KPzXQhcUOb/TreUkJimEHrDCQNCsFWQ2bQVO6gB
-        918EZyBjm+Zt/c3zcjMvil3BjQ==
-X-Google-Smtp-Source: ABdhPJzT5dC6ywnGl2kTD3cDLIqcnE5q/gaqRflUh5l8yTN1U1ZZN6jf0KEM1LgGEsdInku+ZwePhw==
-X-Received: by 2002:adf:f546:: with SMTP id j6mr10751487wrp.219.1605012895642;
-        Tue, 10 Nov 2020 04:54:55 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id 71sm17578577wrm.20.2020.11.10.04.54.54
+        bh=S+QrV5GbdFaGhruHIUGFYEWHi77tyozQEbntZ4ud6Fo=;
+        b=MlwEh6ClGra03u4ow8EwxneEwCZ/jkAL0ZJd0hTS/sJLVvTxTlzbUWva0rbP0nCwCY
+         YmSjQd1LwA+3faSbVQUIXKNb82Xtx0rTgRsvKzjzaADWCbYXiUQpMrN/9O7RzBHQmdu4
+         M9IPBc3soP42p/Q2rKfr+V7Z4w0qI5jRE6VNLZAqCXOsBOA2YMk5d3NxoWrW1haz8P6L
+         X7P14JmM/VuQolqd+DTBvdM/66bg3Zf/+ZKqLfOFGbB1ESNOgeTOQEFs5H/Q1wiV4etd
+         mv+t34WJeYQFn4rqGhKed8yEcHV/lDdM6qkCpBA8wiLq/Y8+WqRgWJ+FbvoI8KsJTtTU
+         FzFg==
+X-Gm-Message-State: AOAM533kxuKHiduwmyxFF51RGjPyfWCDpZ9yR/XLhM76WeZRz8xly651
+        qvj1XbxTUQ9YdkCgVcj80g==
+X-Google-Smtp-Source: ABdhPJwolrm32K/4m+gVTu/aqACBTH40DteoL2hIeqoeqD/xwkyyaUXnbYbOTqSNWFOpNaBr+S6VKQ==
+X-Received: by 2002:a17:90b:e8c:: with SMTP id fv12mr5145898pjb.196.1605014694293;
+        Tue, 10 Nov 2020 05:24:54 -0800 (PST)
+Received: from PWN (59-125-13-244.HINET-IP.hinet.net. [59.125.13.244])
+        by smtp.gmail.com with ESMTPSA id z12sm14816996pfg.123.2020.11.10.05.24.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Nov 2020 04:54:54 -0800 (PST)
-Date:   Tue, 10 Nov 2020 13:54:52 +0100
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Jason Gunthorpe <jgg@nvidia.com>
-Cc:     Daniel Vetter <daniel@ffwll.ch>, David Airlie <airlied@linux.ie>,
+        Tue, 10 Nov 2020 05:24:53 -0800 (PST)
+Date:   Tue, 10 Nov 2020 08:24:45 -0500
+From:   Peilin Ye <yepeilin.cs@gmail.com>
+To:     Daniel Vetter <daniel@ffwll.ch>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Thomas Winischhofer <thomas@winischhofer.net>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Tom Lendacky <thomas.lendacky@amd.com>
-Subject: Re: [PATCH] drm: remove pgprot_decrypted() before calls to
- io_remap_pfn_range()
-Message-ID: <20201110125452.GG401619@phenom.ffwll.local>
-References: <0-v1-2e6a0db57868+166-drm_sme_clean_jgg@nvidia.com>
- <20201105191746.GC401619@phenom.ffwll.local>
- <20201105193554.GP2620339@nvidia.com>
+        Nicolas Pitre <nico@fluxnic.net>,
+        "Gustavo A . R . Silva" <gustavoars@kernel.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        George Kennedy <george.kennedy@oracle.com>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Peter Rosin <peda@axentia.se>, linux-kernel@vger.kernel.org,
+        linux-usb@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] console: Remove dummy con_font_op() callback
+ implementations
+Message-ID: <20201110132445.GA2483842@PWN>
+References: <c5563eeea36aae7bd72ea2e985bc610d585ece40.1604128639.git.yepeilin.cs@gmail.com>
+ <20201106105058.GA2801856@kroah.com>
+ <20201110124946.GF401619@phenom.ffwll.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20201105193554.GP2620339@nvidia.com>
-X-Operating-System: Linux phenom 5.7.0-1-amd64 
+In-Reply-To: <20201110124946.GF401619@phenom.ffwll.local>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Nov 05, 2020 at 03:35:54PM -0400, Jason Gunthorpe wrote:
-> On Thu, Nov 05, 2020 at 08:17:46PM +0100, Daniel Vetter wrote:
-> > On Thu, Nov 05, 2020 at 01:00:19PM -0400, Jason Gunthorpe wrote:
-> > > commit f8f6ae5d077a ("mm: always have io_remap_pfn_range() set
-> > > pgprot_decrypted()") moves the pgprot_decrypted() into
-> > > io_remap_pfn_range(). Delete any, now confusing, open coded calls that
-> > > directly precede io_remap_pfn_range():
-> > > 
-> > > - drm_io_prot() is only in drm_mmap_locked() to call io_remap_pfn_range()
-> > > 
-> > > - fb_mmap() immediately calls vm_iomap_memory() which is a convenience
-> > >   wrapper for io_remap_pfn_range()
-> > > 
-> > > Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
-> > >  drivers/gpu/drm/drm_vm.c         | 3 ---
-> > >  drivers/video/fbdev/core/fbmem.c | 5 -----
-> > >  2 files changed, 8 deletions(-)
-> > > 
-> > > rc3 will have the dependent patch, this should not be merged to DRM until it
-> > > has the rc3 commits.
-> > > 
-> > > There are three other pgprot_decrypted() calls in DRM, I could not figure out
-> > > what was what there, but other than very special cases I would expect code to
-> > > use io_remap_pfn_range() instead.
-> > 
-> > There's 4 now, I think linux-next added one. It's another io_remap_pfn
-> > 
-> > Of the three you mentioned we have:
-> > - ttm and i915 use vm_insert_pfn (and ttm also can do also do pud_mkhuge
-> >   entries)
-> 
-> You can't insert IO memory with vmf_insert_pfn_pmd_prot() (it
-> doesn't set the special flag) so why does it need decrypted?
+On Tue, Nov 10, 2020 at 01:49:46PM +0100, Daniel Vetter wrote:
+> Peilin, can you pls resend this together with all the other pending
+> patches from you? I think that's better than me trying to cherry-pick the
+> bits we decided to keep from random places.
 
-Well, see the other thread, we do ... :-/
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Oh, are we doing an -rc3 backmerge soon? At the moment I can base these
+patches on neither drm-misc (due to the font_copy removal), nor mainline
+(due to the signedness issue in font_desc we've talked about), so I'm
+waiting for a backmerge to rebase everything properly. Sorry that I
+didn't mention earlier.
+
+> Greg, ok if I just pull these in through drm-misc-next? It's a pretty bad
+> hairball anyway and that avoids the tree coordination issues. Only thing
+> that might get in the way is the vt font_copy removal, but that's in -rc3
+> so easy to backmerge.
+
+I will rebase and send everything (including the font_copy
+garbage-collecting) in a v3 series after the backmerge. Thanks,
+
+Peilin Ye
+

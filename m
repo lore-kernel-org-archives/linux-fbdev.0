@@ -2,164 +2,104 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7360C55ABD
-	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Nov 2020 21:16:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EF7EC4742C
+	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Nov 2020 22:46:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9AFB72224D
-	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Nov 2020 21:16:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 18ADE2222F
+	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Nov 2020 22:46:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="Hs2/WAl/"
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="NYryAWT6"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726092AbgKMVQn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 13 Nov 2020 16:16:43 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38824 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726070AbgKMVQi (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 13 Nov 2020 16:16:38 -0500
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8FCB6C0617A6
-        for <linux-fbdev@vger.kernel.org>; Fri, 13 Nov 2020 13:16:37 -0800 (PST)
-Received: by mail-wm1-x343.google.com with SMTP id c16so11470356wmd.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 13 Nov 2020 13:16:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=Q6kjYbgKJcp03AAAsASkHgYE4dtYS5rkSqZBjH66POE=;
-        b=Hs2/WAl/6nZID7yAvDh2H4mY+z2Lmu3VAdpuIoceIWU5YRZM95mUCkWugom5d2eZ8+
-         fWCgab7nhig+gnERUVjIseX8uZ4AfFZp2Fl2gdUR+N6kRTOBrUPZd1fWJuoFAC88c0Ry
-         wEVgLwijyjFrPMUP/lQCi7HFT/V1KaOVX0Ai4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to;
-        bh=Q6kjYbgKJcp03AAAsASkHgYE4dtYS5rkSqZBjH66POE=;
-        b=QycbDmBqToNhg9VArEd7DWcvjnHU9OrOSqORakVEnn6kgJo3XrsPIN2ycqMeVNiz7w
-         ST9ka4HrjeIy/LurffGFjpI/FdmE8AycvzmCLTGO+lisYRczRI6WZuN5BkaEjEOqOnVe
-         Hr4gIXpDQqB44i/Yc4WTuE8KvhKb8/O2P8eMD6tL+a9XPt2cfGelPeg3moVCoSoowBj/
-         dnLF2UJ8Dpeyj3tNXVAzdQDNzsLaend/x5oMxbQH0CdYbzQPJddNWgHAuRNcAudfI0IV
-         fjyfAlDmjjT/Ur83bmab7dcoynmbotQIHl2zx61Er6Jx5mbHhUV8aw52FI5mDRjIRZG+
-         3UTA==
-X-Gm-Message-State: AOAM5331A41k3PdWxjE67n6nkvTDGluAD75rQn1ddM+yq2ZpcCP03Tzk
-        eQrvN+2lBPKvWzxcKQWLi0NRoQ==
-X-Google-Smtp-Source: ABdhPJx+SYVMOuL6LoOwhFnjptjOKNpAGoEAEWAxuJYZeg/O2xYMiWs31OtHTx1woOxKZxaZ5KRq/A==
-X-Received: by 2002:a1c:bc08:: with SMTP id m8mr4603342wmf.137.1605302196203;
-        Fri, 13 Nov 2020 13:16:36 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id l3sm12960816wmf.0.2020.11.13.13.16.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Nov 2020 13:16:35 -0800 (PST)
-Date:   Fri, 13 Nov 2020 22:16:33 +0100
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Peilin Ye <yepeilin.cs@gmail.com>
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        id S1726087AbgKMWqz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 13 Nov 2020 17:46:55 -0500
+Received: from mail.kernel.org ([198.145.29.99]:38386 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725981AbgKMWqz (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 13 Nov 2020 17:46:55 -0500
+Received: from localhost (83-86-74-64.cable.dynamic.v4.ziggo.nl [83.86.74.64])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 5AC852222F;
+        Fri, 13 Nov 2020 22:46:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1605307614;
+        bh=mrL0p+Bsz9/fxM2HbgiWUgT1fPwu1dJyQ2h/5u3OJNk=;
+        h=Date:From:To:Subject:References:In-Reply-To:From;
+        b=NYryAWT6CwWzB1rPlCYpRNJsYOJjneOQ3BeqQ+F/7LBwWIzlj9y6vK7yK0Lw7JCDQ
+         5C3PKfustD80DXUx38QvAHi7mtwK5Sbpszv1XDpSUIRqZjJLv38IclNxTHFqA1K+do
+         XKIj8zbvM5EUHLzGnJZ9XyKa65Fk3N85HDbjw48Y=
+Date:   Fri, 13 Nov 2020 23:47:51 +0100
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Peilin Ye <yepeilin.cs@gmail.com>,
         Jiri Slaby <jirislaby@kernel.org>,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org
 Subject: Re: [PATCH v3 0/5] console: Miscellaneous clean-ups, do not use
  FNTCHARCNT() in fbcon.c
-Message-ID: <20201113211633.GY401619@phenom.ffwll.local>
-Mail-Followup-To: Peilin Ye <yepeilin.cs@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Message-ID: <X68NFzaAuImemnqh@kroah.com>
 References: <cover.1605169912.git.yepeilin.cs@gmail.com>
+ <20201113211633.GY401619@phenom.ffwll.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cover.1605169912.git.yepeilin.cs@gmail.com>
-X-Operating-System: Linux phenom 5.7.0-1-amd64 
+In-Reply-To: <20201113211633.GY401619@phenom.ffwll.local>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Nov 12, 2020 at 07:02:21AM -0500, Peilin Ye wrote:
-> Hi all,
+On Fri, Nov 13, 2020 at 10:16:33PM +0100, Daniel Vetter wrote:
+> On Thu, Nov 12, 2020 at 07:02:21AM -0500, Peilin Ye wrote:
+> > Hi all,
+> > 
+> > This is a collection of some miscellaneous clean-ups for fbcon and some
+> > console drivers. Since v2, I rebased them on linux-next, added some
+> > Reviewed-by: tags from Daniel and Greg, and rewrote the commit messages as
+> > suggested by Jiri. See [1] for v2 links.
+> > 
+> > It does the following:
+> > 
+> >   - Garbage collect KD_FONT_OP_COPY callbacks since we disabled it
+> >     recently. Mark it as obsolete.
+> >   - Delete dummy con_font_op() callbacks. (Reviewed by Greg)
+> > 
+> >   - Add a charcount field to our new font descriptor, `struct font_desc`.
+> >     (Reviewed by Daniel)
+> >   - Do not use a hard-coded 256 for built-in font charcount in
+> >     console/sticore.c, use the new charcount field of `struct font_desc`
+> >     instead. (Reviewed by Daniel)
+> >   - Similarly, in fbcon.c, avoid using the magic negative-indexing macro,
+> >     FNTCHARCNT(). Set `vc->vc_font.charcount` properly and always use that
+> >     instead.
+> > 
+> > Daniel, hopefully [5/5] removes FNTCHARCNT() for ever, but I have not
+> > tested it sufficiently yet. I remember you mentioned elsewhere that
+> > "fbtest.c" is insufficient for framebuffer testing, then how should we
+> > test it? The first 4 patches should be fine.
+> > 
+> > Please reference commit messages for more information. Thank you!
+> > 
+> > [1] v2 links:
+> > 
+> > 2/5: https://lore.kernel.org/lkml/c5563eeea36aae7bd72ea2e985bc610d585ece40.1604306433.git.yepeilin.cs@gmail.com/
+> > 3/5: https://lore.kernel.org/lkml/20201028060533.1206307-1-yepeilin.cs@gmail.com/
+> > 4/5: https://lore.kernel.org/lkml/c38042bbf5c9777c84900d56c09f3c156b32af48.1603788512.git.yepeilin.cs@gmail.com/
+> > 5/5: https://lore.kernel.org/lkml/20201028155139.1220549-1-yepeilin.cs@gmail.com/
+> > 
+> > Peilin Ye (5):
+> >   console: Delete unused con_font_copy() callback implementations
+> >   console: Delete dummy con_font_set() and con_font_default() callback implementations
+> >   Fonts: Add charcount field to font_desc
+> >   parisc/sticore: Avoid hard-coding built-in font charcount
+> >   fbcon: Avoid using FNTCHARCNT() and hard-coded built-in font charcount
 > 
-> This is a collection of some miscellaneous clean-ups for fbcon and some
-> console drivers. Since v2, I rebased them on linux-next, added some
-> Reviewed-by: tags from Daniel and Greg, and rewrote the commit messages as
-> suggested by Jiri. See [1] for v2 links.
-> 
-> It does the following:
-> 
->   - Garbage collect KD_FONT_OP_COPY callbacks since we disabled it
->     recently. Mark it as obsolete.
->   - Delete dummy con_font_op() callbacks. (Reviewed by Greg)
-> 
->   - Add a charcount field to our new font descriptor, `struct font_desc`.
->     (Reviewed by Daniel)
->   - Do not use a hard-coded 256 for built-in font charcount in
->     console/sticore.c, use the new charcount field of `struct font_desc`
->     instead. (Reviewed by Daniel)
->   - Similarly, in fbcon.c, avoid using the magic negative-indexing macro,
->     FNTCHARCNT(). Set `vc->vc_font.charcount` properly and always use that
->     instead.
-> 
-> Daniel, hopefully [5/5] removes FNTCHARCNT() for ever, but I have not
-> tested it sufficiently yet. I remember you mentioned elsewhere that
-> "fbtest.c" is insufficient for framebuffer testing, then how should we
-> test it? The first 4 patches should be fine.
-> 
-> Please reference commit messages for more information. Thank you!
-> 
-> [1] v2 links:
-> 
-> 2/5: https://lore.kernel.org/lkml/c5563eeea36aae7bd72ea2e985bc610d585ece40.1604306433.git.yepeilin.cs@gmail.com/
-> 3/5: https://lore.kernel.org/lkml/20201028060533.1206307-1-yepeilin.cs@gmail.com/
-> 4/5: https://lore.kernel.org/lkml/c38042bbf5c9777c84900d56c09f3c156b32af48.1603788512.git.yepeilin.cs@gmail.com/
-> 5/5: https://lore.kernel.org/lkml/20201028155139.1220549-1-yepeilin.cs@gmail.com/
-> 
-> Peilin Ye (5):
->   console: Delete unused con_font_copy() callback implementations
->   console: Delete dummy con_font_set() and con_font_default() callback implementations
->   Fonts: Add charcount field to font_desc
->   parisc/sticore: Avoid hard-coding built-in font charcount
->   fbcon: Avoid using FNTCHARCNT() and hard-coded built-in font charcount
+> Patches all look good to me, if Greg is ok with me applying the entire
+> pile to drm-misc-next I'll do that next week.
 
-Patches all look good to me, if Greg is ok with me applying the entire
-pile to drm-misc-next I'll do that next week.
+Yes, please do!
 
-Thanks, Daniel
-
-> 
->  drivers/usb/misc/sisusbvga/sisusb_con.c | 21 --------
->  drivers/video/console/dummycon.c        | 20 --------
->  drivers/video/console/sticore.c         |  8 +--
->  drivers/video/fbdev/core/fbcon.c        | 68 ++++++++-----------------
->  drivers/video/fbdev/core/fbcon_rotate.c |  3 +-
->  drivers/video/fbdev/core/tileblit.c     |  4 +-
->  include/linux/console.h                 |  1 -
->  include/linux/font.h                    |  1 +
->  include/uapi/linux/kd.h                 |  2 +-
->  lib/fonts/font_10x18.c                  |  1 +
->  lib/fonts/font_6x10.c                   |  1 +
->  lib/fonts/font_6x11.c                   |  1 +
->  lib/fonts/font_6x8.c                    |  1 +
->  lib/fonts/font_7x14.c                   |  1 +
->  lib/fonts/font_8x16.c                   |  1 +
->  lib/fonts/font_8x8.c                    |  1 +
->  lib/fonts/font_acorn_8x8.c              |  1 +
->  lib/fonts/font_mini_4x6.c               |  1 +
->  lib/fonts/font_pearl_8x8.c              |  1 +
->  lib/fonts/font_sun12x22.c               |  1 +
->  lib/fonts/font_sun8x16.c                |  1 +
->  lib/fonts/font_ter16x32.c               |  1 +
->  22 files changed, 42 insertions(+), 99 deletions(-)
-> 
-> -- 
-> 2.25.1
-> 
-
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>

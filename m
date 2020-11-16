@@ -2,163 +2,281 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75C4DC5519F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Nov 2020 10:49:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EBF4EC4742C
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Nov 2020 11:08:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1F2772068D
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Nov 2020 10:49:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 853BA20853
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Nov 2020 11:08:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="a6i4D5Y+"
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="nOYrZpl4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728540AbgKPKJy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 16 Nov 2020 05:09:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60582 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726611AbgKPKJy (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 16 Nov 2020 05:09:54 -0500
-Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE906C0613CF
-        for <linux-fbdev@vger.kernel.org>; Mon, 16 Nov 2020 02:09:53 -0800 (PST)
-Received: by mail-wm1-x344.google.com with SMTP id a65so23080875wme.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 16 Nov 2020 02:09:53 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=4MLjK6J0k3buFVe3tEUAsMN0q98BNbXOGLlBrDEbH84=;
-        b=a6i4D5Y+4nk3y2ls3YB96MU9fUh3mrXTMUe7VWAWUO3gFEHiRJQkOBB1u+DeDeRvx1
-         eHxFOkkp52v2pmkNR/GLFPHURXZW/zkqIWmLE4cb76mndPZDbjTiwpngE6kr21lARrEO
-         GxzLEG61dbv150CtbZBkFr0qmeEUf0PnoJx+c=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to;
-        bh=4MLjK6J0k3buFVe3tEUAsMN0q98BNbXOGLlBrDEbH84=;
-        b=G5iOF42YzkRbIl9zCRI1yVtJ5Uu87SZKy6puhLi3oXGb41upTzqxBaaKvhce+iaxfx
-         4S3nOVfO8wALFg5WJKOxG38BUiaae60EYhiG6Uy8Sz95UC1pwrU2mUWOJmla13LrhBXp
-         QJxmj9Wkhsz7Bz29Sl3bd5y4aJuVXhucNJnZm/D9aRs9xBJORdUAZEu8mbAALmVLYXPa
-         If9Ry2i6ScmQREj+TgTGekVr7FASVDuq0xU8s/35P052FJnDcgldA1xP+1+ezzpq5yV6
-         nNpfH8Z1VLF1a9WgjE4ujnXhFj1b6UKDf9R+0aWIZeL6nDRGgZLArPfPehnfq5ozxgV+
-         Lehw==
-X-Gm-Message-State: AOAM5336sOghb4vuAHE/ryvvh1/yn0PdZk9FeRo3Kr4Bghm6MqwoeJtC
-        PcTbs+VkecSn9o9qXWnLJzhVjw==
-X-Google-Smtp-Source: ABdhPJwONcExmyTYHidHN0GxV7kDjejfxFlk6aedYSxZdK1kyQtA0Gq67bmGzc2T92ICVkGj4qFCXw==
-X-Received: by 2002:a1c:df04:: with SMTP id w4mr14508609wmg.3.1605521392276;
-        Mon, 16 Nov 2020 02:09:52 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id u23sm20369149wmc.32.2020.11.16.02.09.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Nov 2020 02:09:51 -0800 (PST)
-Date:   Mon, 16 Nov 2020 11:09:49 +0100
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Peilin Ye <yepeilin.cs@gmail.com>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        id S1728970AbgKPKS7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Nov 2020 05:18:59 -0500
+Received: from mail.kernel.org ([198.145.29.99]:53204 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728867AbgKPKSc (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 16 Nov 2020 05:18:32 -0500
+Received: from mail.kernel.org (ip5f5ad5de.dynamic.kabel-deutschland.de [95.90.213.222])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 6C48B2467D;
+        Mon, 16 Nov 2020 10:18:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1605521909;
+        bh=hrYDFejIWKc2Sc1kJcaDxBLFYaPls+fhDdb9MsI3AZg=;
+        h=From:To:Cc:Subject:Date:From;
+        b=nOYrZpl4mWNo4VChMm50rhlZZFPHrNl2Md99UAjXUoT1Rv4ai6qEtKNY48QQHHDZ9
+         HHi0C1trk4izVD71hsF3fVqJ+98gWWf5nNLgENrcQfgxQXQZ2k1Gs3wz9z2aw/LySR
+         l+js1iuF3inRwlmH2DVzaLCAfu7AYgHEXvSB+IiI=
+Received: from mchehab by mail.kernel.org with local (Exim 4.94)
+        (envelope-from <mchehab@kernel.org>)
+        id 1kebab-00FwDo-Pf; Mon, 16 Nov 2020 11:18:25 +0100
+From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        "David S. Miller" <davem@davemloft.net>,
+        "Theodore Ts'o" <tytso@mit.edu>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        Alexandre Bounine <alex.bou9@gmail.com>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Andy Lutomirski <luto@amacapital.net>,
+        Anna Schumaker <anna.schumaker@netapp.com>,
+        Anton Vorontsov <anton@enomsg.org>,
+        Ben Segall <bsegall@google.com>,
+        Colin Cross <ccross@android.com>,
+        Daniel Bristot de Oliveira <bristot@redhat.com>,
         Daniel Vetter <daniel@ffwll.ch>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 0/5] console: Miscellaneous clean-ups, do not use
- FNTCHARCNT() in fbcon.c
-Message-ID: <20201116100949.GA401619@phenom.ffwll.local>
-Mail-Followup-To: Peilin Ye <yepeilin.cs@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <cover.1605169912.git.yepeilin.cs@gmail.com>
- <20201113211633.GY401619@phenom.ffwll.local>
- <X68NFzaAuImemnqh@kroah.com>
- <20201114081021.GA11811@PWN>
- <X6/K/S9V7rj2hI5p@kroah.com>
- <X6/L/lE2pA7csBwd@kroah.com>
- <20201114124716.GA12895@PWN>
+        David Airlie <airlied@linux.ie>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Evgeniy Polyakov <zbr@ioremap.net>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Ingo Molnar <mingo@redhat.com>,
+        Jakub Kicinski <kuba@kernel.org>, Jan Kara <jack@suse.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Kees Cook <keescook@chromium.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Matt Porter <mporter@kernel.crashing.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Mel Gorman <mgorman@suse.de>, Mike Rapoport <rppt@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Richard Gong <richard.gong@linux.intel.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Sebastian Reichel <sre@kernel.org>,
+        Shuah Khan <shuah@kernel.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Tony Luck <tony.luck@intel.com>,
+        Trond Myklebust <trond.myklebust@hammerspace.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Will Drewry <wad@chromium.org>,
+        dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
+        linux-ext4@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, linux-kselftest@vger.kernel.org,
+        linux-mm@kvack.org, linux-nfs@vger.kernel.org,
+        linux-rdma@vger.kernel.org, linux-s390@vger.kernel.org,
+        netdev@vger.kernel.org, target-devel@vger.kernel.org
+Subject: [PATCH v4 00/27]Fix several bad kernel-doc markups
+Date:   Mon, 16 Nov 2020 11:17:56 +0100
+Message-Id: <cover.1605521731.git.mchehab+huawei@kernel.org>
+X-Mailer: git-send-email 2.28.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201114124716.GA12895@PWN>
-X-Operating-System: Linux phenom 5.7.0-1-amd64 
+Content-Transfer-Encoding: 8bit
+Sender: Mauro Carvalho Chehab <mchehab@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Nov 14, 2020 at 07:47:16AM -0500, Peilin Ye wrote:
-> On Sat, Nov 14, 2020 at 01:22:22PM +0100, Greg Kroah-Hartman wrote:
-> > On Sat, Nov 14, 2020 at 01:18:06PM +0100, Greg Kroah-Hartman wrote:
-> > > On Sat, Nov 14, 2020 at 03:10:21AM -0500, Peilin Ye wrote:
-> > > > Thanks for reviewing!  Questions about the last patch [5/5] though, it
-> > > > depends on the following assumption:
-> > > > 
-> > > > """
-> > > > For each console `idx`, `vc_cons[idx].d->vc_font.data` and
-> > > > `fb_display[idx].fontdata` always point to the same buffer.
-> > > > """
-> > > > 
-> > > > Is this true?  I think it is true by grepping for `fontdata`.  I also
-> > > > noticed that fbcon.c is using `vc->vc_font.data` and `p->fontdata`
-> > > > interchangeably, see fbcon_get_requirement():
-> > > > 
-> > > > 		vc = vc_cons[fg_console].d;
-> > > > 		[...]
-> > > > 			p = &fb_display[fg_console];
-> > > > 			caps->x = 1 << (vc->vc_font.width - 1);
-> > > > 					^^^^^^^^^^^
-> > > > 			caps->y = 1 << (vc->vc_font.height - 1);
-> > > > 					^^^^^^^^^^^
-> > > > 			caps->len = (p->userfont) ?
-> > > > 				FNTCHARCNT(p->fontdata) : 256;
-> > > > 					   ^^^^^^^^^^^
-> > > > 
-> > > > If it is true, then what is the point of using `fontdata` in `struct
-> > > > fbcon_display`?  Just for the `userfont` flag?  Should we delete
-> > > > `fontdata`, when we no longer need the `userfont` flag?
-> > > 
-> > > Yes, after a quick look, I think your analysis here is correct.  So if
-> > > you can delete that, it would be nice if possible.
-> 
-> I see, at the moment we still need `userfont` for refcount handling, I
-> will try to delete both `fontdata` and `userfont` after refcount is
-> taken care of.
+Kernel-doc has always be limited to a probably bad documented
+rule:
 
-+1 on sunsetting fondata. I think there's a bunch of these in fbcon code,
-because the console subsystem is older than the standard "allow drivers to
-embed the subsystem struct into their own private struct" subclassing
-model. So lots of global arrays indexed by the console id :-/
+The kernel-doc markups should appear *imediatelly before* the
+function or data structure that it documents.
 
-> > > > In this sense I think [5/5] needs more testing.  Do we have test files
-> > > > for fbcon, or should I try to write some tests from scratch?
-> > > 
-> > > I don't know of any direct tests, I usually just booted into that mode
-> > > and saw if everything looked like it did before.  There must be some
-> > > tool that you can use to change the current font, as it seems to happen
-> > > at boot time on some distros.  I can't remember what it's called at the
-> > > moment...
-> > 
-> > Ah, here's a hint:
-> > 	https://wiki.archlinux.org/index.php/Linux_console#Fonts
-> > 
-> > The setfont tool should help you out here.
-> 
-> Oh, I didn't know about this one.  I'll go experimenting with it,
-> thank you!
+On other words, if a C file would contain something like this:
 
-We're also trying to start some kind of test suite for fbdev chardev ioctl
-interface in the gpu test suite. fbcon tests are maybe more related to
-tty/vt, and I have no idea whether anything exists there already.
+	/**
+	 * foo - function foo
+	 * @args: foo args
+	 */
+	static inline void bar(int args);
 
-But if you want to do some automated testcases for fbcon and there's
-absolutely no other home for them, the gpu test suite might be an option
-of last resort too:
+	/**
+	 * bar - function bar
+	 * @args: foo args
+	 */
+	static inline void foo(void *args);
 
-https://dri.freedesktop.org/docs/drm/gpu/drm-uapi.html#testing-and-validation
 
-Cheers, Daniel
+The output (in ReST format) will be:
+
+	.. c:function:: void bar (int args)
+
+	   function foo
+
+	**Parameters**
+
+	``int args``
+	  foo args
+
+
+	.. c:function:: void foo (void *args)
+
+	   function bar
+
+	**Parameters**
+
+	``void *args``
+	  foo args
+
+Which is clearly a wrong result.  Before this changeset, 
+not even a warning is produced on such cases.
+
+As placing such markups just before the documented
+data is a common practice, on most cases this is fine.
+
+However, as patches touch things, identifiers may be
+renamed, and people may forget to update the kernel-doc
+markups to follow such changes.
+
+This has been happening for quite a while, as there are
+lots of files with kernel-doc problems.
+
+This series address those issues and add a file at the
+end that will enforce that the identifier will match the
+kernel-doc markup, avoiding this problem from
+keep happening as time goes by.
+
+This series is based on current upstream tree.
+
+@maintainers: feel free to pick the patches and
+apply them directly on your trees, as all patches on 
+this series are independent from the other ones.
+
+--
+
+v4:
+
+  - Patches got rebased and got some acks.
+
+Mauro Carvalho Chehab (27):
+  net: phy: fix kernel-doc markups
+  net: datagram: fix some kernel-doc markups
+  net: core: fix some kernel-doc markups
+  s390: fix kernel-doc markups
+  drm: fix some kernel-doc markups
+  HSI: fix a kernel-doc markup
+  IB: fix kernel-doc markups
+  parport: fix a kernel-doc markup
+  rapidio: fix kernel-doc a markup
+  video: fix some kernel-doc markups
+  fs: fix kernel-doc markups
+  jbd2: fix kernel-doc markups
+  pstore/zone: fix a kernel-doc markup
+  completion: fix kernel-doc markups
+  firmware: stratix10-svc: fix kernel-doc markups
+  connector: fix a kernel-doc markup
+  lib/crc7: fix a kernel-doc markup
+  hrtimer: fix kernel-doc markups
+  genirq: fix kernel-doc markups
+  list: fix a typo at the kernel-doc markup
+  memblock: fix kernel-doc markups
+  w1: fix a kernel-doc markup
+  resource: fix kernel-doc markups
+  shed: fix kernel-doc markup
+  mm: fix kernel-doc markups
+  selftests: kselftest_harness.h: partially fix kernel-doc markups
+  scripts: kernel-doc: validate kernel-doc markup with the actual names
+
+ arch/s390/include/asm/ccwdev.h                |  2 +-
+ arch/s390/include/asm/cio.h                   |  2 +-
+ drivers/gpu/drm/drm_atomic_state_helper.c     |  2 +-
+ drivers/gpu/drm/drm_connector.c               |  3 +-
+ drivers/gpu/drm/drm_dp_helper.c               |  2 +-
+ drivers/gpu/drm/drm_framebuffer.c             |  2 +-
+ drivers/gpu/drm/drm_gem.c                     |  4 +-
+ drivers/gpu/drm/drm_gem_vram_helper.c         |  2 +-
+ drivers/gpu/drm/drm_mode_object.c             |  2 +-
+ drivers/gpu/drm/drm_modes.c                   |  4 +-
+ drivers/gpu/drm/drm_scdc_helper.c             |  2 +-
+ drivers/gpu/drm/i915/display/intel_dpll_mgr.c |  2 +-
+ drivers/gpu/drm/i915/i915_gem_evict.c         |  2 +-
+ drivers/gpu/drm/i915/i915_perf.c              |  8 ++-
+ drivers/gpu/drm/scheduler/sched_main.c        |  2 +-
+ drivers/gpu/drm/v3d/v3d_sched.c               |  2 +-
+ drivers/gpu/drm/vc4/vc4_bo.c                  |  2 +-
+ drivers/hsi/hsi_core.c                        |  2 +-
+ drivers/infiniband/core/cm.c                  |  5 +-
+ drivers/infiniband/core/cq.c                  |  4 +-
+ drivers/infiniband/core/iwpm_util.h           |  2 +-
+ drivers/infiniband/core/sa_query.c            |  3 +-
+ drivers/infiniband/core/verbs.c               |  4 +-
+ drivers/infiniband/sw/rdmavt/ah.c             |  2 +-
+ drivers/infiniband/sw/rdmavt/mcast.c          | 12 ++--
+ drivers/infiniband/sw/rdmavt/qp.c             |  8 +--
+ drivers/infiniband/ulp/iser/iscsi_iser.c      |  2 +-
+ .../infiniband/ulp/opa_vnic/opa_vnic_encap.h  |  2 +-
+ .../ulp/opa_vnic/opa_vnic_vema_iface.c        |  2 +-
+ drivers/infiniband/ulp/srpt/ib_srpt.h         |  2 +-
+ drivers/net/phy/mdio_bus.c                    |  2 +-
+ drivers/net/phy/phy-c45.c                     |  2 +-
+ drivers/net/phy/phy.c                         |  2 +-
+ drivers/net/phy/phy_device.c                  |  2 +-
+ drivers/net/phy/phylink.c                     |  2 +-
+ drivers/parport/share.c                       |  2 +-
+ drivers/rapidio/rio.c                         |  2 +-
+ drivers/video/fbdev/core/fbcmap.c             |  2 +-
+ drivers/video/hdmi.c                          |  3 +-
+ fs/dcache.c                                   | 72 +++++++++----------
+ fs/inode.c                                    |  4 +-
+ fs/jbd2/journal.c                             | 34 ++++-----
+ fs/jbd2/transaction.c                         | 31 ++++----
+ fs/pstore/zone.c                              |  2 +-
+ fs/seq_file.c                                 |  5 +-
+ fs/super.c                                    | 12 ++--
+ include/drm/drm_atomic_helper.h               |  4 +-
+ include/drm/drm_connector.h                   |  2 +-
+ include/drm/drm_device.h                      |  2 +-
+ include/drm/drm_dsc.h                         |  3 +-
+ include/drm/drm_gem_vram_helper.h             |  8 +--
+ include/linux/completion.h                    | 10 ++-
+ include/linux/connector.h                     |  2 +-
+ .../firmware/intel/stratix10-svc-client.h     | 10 +--
+ include/linux/hrtimer.h                       |  6 +-
+ include/linux/jbd2.h                          |  2 +-
+ include/linux/list.h                          |  2 +-
+ include/linux/memblock.h                      |  4 +-
+ include/linux/netdevice.h                     | 11 ++-
+ include/linux/parport.h                       | 31 ++++++++
+ include/linux/w1.h                            |  2 +-
+ include/rdma/ib_verbs.h                       | 11 +++
+ kernel/irq/chip.c                             |  2 +-
+ kernel/irq/generic-chip.c                     |  2 +-
+ kernel/resource.c                             | 24 ++++---
+ kernel/sched/core.c                           | 16 ++---
+ kernel/sched/fair.c                           |  2 +-
+ kernel/time/hrtimer.c                         |  2 +-
+ lib/crc7.c                                    |  2 +-
+ mm/gup.c                                      | 24 ++++---
+ mm/page_alloc.c                               | 16 ++---
+ mm/truncate.c                                 | 10 ++-
+ net/core/datagram.c                           |  2 +-
+ net/core/dev.c                                |  4 +-
+ net/core/skbuff.c                             |  2 +-
+ net/ethernet/eth.c                            |  6 +-
+ net/sunrpc/rpc_pipe.c                         |  3 +-
+ scripts/kernel-doc                            | 62 +++++++++++-----
+ tools/testing/selftests/kselftest_harness.h   | 22 +++---
+ 79 files changed, 350 insertions(+), 235 deletions(-)
+
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.28.0
+
+

@@ -2,91 +2,61 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBF4EC4742C
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Nov 2020 11:08:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8937C5519F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Nov 2020 11:21:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 853BA20853
-	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Nov 2020 11:08:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 54E89204EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 16 Nov 2020 11:21:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="nOYrZpl4"
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="EQghPL1J"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728970AbgKPKS7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 16 Nov 2020 05:18:59 -0500
-Received: from mail.kernel.org ([198.145.29.99]:53204 "EHLO mail.kernel.org"
+        id S1729072AbgKPKTp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 16 Nov 2020 05:19:45 -0500
+Received: from mail.kernel.org ([198.145.29.99]:53210 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728867AbgKPKSc (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 16 Nov 2020 05:18:32 -0500
+        id S1728839AbgKPKSa (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 16 Nov 2020 05:18:30 -0500
 Received: from mail.kernel.org (ip5f5ad5de.dynamic.kabel-deutschland.de [95.90.213.222])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 6C48B2467D;
-        Mon, 16 Nov 2020 10:18:29 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 6A14422447;
+        Mon, 16 Nov 2020 10:18:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1605521909;
-        bh=hrYDFejIWKc2Sc1kJcaDxBLFYaPls+fhDdb9MsI3AZg=;
-        h=From:To:Cc:Subject:Date:From;
-        b=nOYrZpl4mWNo4VChMm50rhlZZFPHrNl2Md99UAjXUoT1Rv4ai6qEtKNY48QQHHDZ9
-         HHi0C1trk4izVD71hsF3fVqJ+98gWWf5nNLgENrcQfgxQXQZ2k1Gs3wz9z2aw/LySR
-         l+js1iuF3inRwlmH2DVzaLCAfu7AYgHEXvSB+IiI=
+        s=default; t=1605521908;
+        bh=O4qZGNDBJFOujXhRHfmeXCL9QARjpkuE22vOQsuBA08=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=EQghPL1JaNZUao4JPdg4jceD1QVGAYBBDS6veO8IxitRQk52FkcKOgc1eyFN/ggqV
+         d9BHNJDJHXudwIl3LEQTKo6ckL828g0daV2hvADdh770o2a+JDzEfwQUfTO6lFAyCy
+         mFQDw5EhMJr6ht4gvrmjcNlVP5zkNOv2As+WmGUM=
 Received: from mchehab by mail.kernel.org with local (Exim 4.94)
         (envelope-from <mchehab@kernel.org>)
-        id 1kebab-00FwDo-Pf; Mon, 16 Nov 2020 11:18:25 +0100
+        id 1kebac-00FwEB-6h; Mon, 16 Nov 2020 11:18:26 +0100
 From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
-        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        "David S. Miller" <davem@davemloft.net>,
-        "Theodore Ts'o" <tytso@mit.edu>,
-        Alexander Viro <viro@zeniv.linux.org.uk>,
-        Alexandre Bounine <alex.bou9@gmail.com>,
-        Andrew Lunn <andrew@lunn.ch>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Andy Lutomirski <luto@amacapital.net>,
-        Anna Schumaker <anna.schumaker@netapp.com>,
-        Anton Vorontsov <anton@enomsg.org>,
-        Ben Segall <bsegall@google.com>,
-        Colin Cross <ccross@android.com>,
-        Daniel Bristot de Oliveira <bristot@redhat.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Evgeniy Polyakov <zbr@ioremap.net>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Ingo Molnar <mingo@redhat.com>,
-        Jakub Kicinski <kuba@kernel.org>, Jan Kara <jack@suse.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Kees Cook <keescook@chromium.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Matt Porter <mporter@kernel.crashing.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Mel Gorman <mgorman@suse.de>, Mike Rapoport <rppt@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Richard Gong <richard.gong@linux.intel.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Sebastian Reichel <sre@kernel.org>,
-        Shuah Khan <shuah@kernel.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
+        "Jonathan Corbet" <corbet@lwn.net>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Bernard Zhao <bernard@vivo.com>,
+        Boris Brezillon <boris.brezillon@collabora.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Tony Luck <tony.luck@intel.com>,
-        Trond Myklebust <trond.myklebust@hammerspace.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Will Drewry <wad@chromium.org>,
-        dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-        linux-ext4@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-fsdevel@vger.kernel.org, linux-kselftest@vger.kernel.org,
-        linux-mm@kvack.org, linux-nfs@vger.kernel.org,
-        linux-rdma@vger.kernel.org, linux-s390@vger.kernel.org,
-        netdev@vger.kernel.org, target-devel@vger.kernel.org
-Subject: [PATCH v4 00/27]Fix several bad kernel-doc markups
-Date:   Mon, 16 Nov 2020 11:17:56 +0100
-Message-Id: <cover.1605521731.git.mchehab+huawei@kernel.org>
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v4 10/27] video: fix some kernel-doc markups
+Date:   Mon, 16 Nov 2020 11:18:06 +0100
+Message-Id: <21661aed9892a1bacc7ef76a5dc9f5c7b37f5d8f.1605521731.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.28.0
+In-Reply-To: <cover.1605521731.git.mchehab+huawei@kernel.org>
+References: <cover.1605521731.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Mauro Carvalho Chehab <mchehab@kernel.org>
@@ -94,189 +64,110 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Kernel-doc has always be limited to a probably bad documented
-rule:
+Some identifiers have different names between their prototypes
+and the kernel-doc markup.
 
-The kernel-doc markups should appear *imediatelly before* the
-function or data structure that it documents.
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+---
+ drivers/video/fbdev/core/fbcmap.c | 2 +-
+ drivers/video/hdmi.c              | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-On other words, if a C file would contain something like this:
-
-	/**
-	 * foo - function foo
-	 * @args: foo args
-	 */
-	static inline void bar(int args);
-
-	/**
-	 * bar - function bar
-	 * @args: foo args
-	 */
-	static inline void foo(void *args);
-
-
-The output (in ReST format) will be:
-
-	.. c:function:: void bar (int args)
-
-	   function foo
-
-	**Parameters**
-
-	``int args``
-	  foo args
-
-
-	.. c:function:: void foo (void *args)
-
-	   function bar
-
-	**Parameters**
-
-	``void *args``
-	  foo args
-
-Which is clearly a wrong result.  Before this changeset, 
-not even a warning is produced on such cases.
-
-As placing such markups just before the documented
-data is a common practice, on most cases this is fine.
-
-However, as patches touch things, identifiers may be
-renamed, and people may forget to update the kernel-doc
-markups to follow such changes.
-
-This has been happening for quite a while, as there are
-lots of files with kernel-doc problems.
-
-This series address those issues and add a file at the
-end that will enforce that the identifier will match the
-kernel-doc markup, avoiding this problem from
-keep happening as time goes by.
-
-This series is based on current upstream tree.
-
-@maintainers: feel free to pick the patches and
-apply them directly on your trees, as all patches on 
-this series are independent from the other ones.
-
---
-
-v4:
-
-  - Patches got rebased and got some acks.
-
-Mauro Carvalho Chehab (27):
-  net: phy: fix kernel-doc markups
-  net: datagram: fix some kernel-doc markups
-  net: core: fix some kernel-doc markups
-  s390: fix kernel-doc markups
-  drm: fix some kernel-doc markups
-  HSI: fix a kernel-doc markup
-  IB: fix kernel-doc markups
-  parport: fix a kernel-doc markup
-  rapidio: fix kernel-doc a markup
-  video: fix some kernel-doc markups
-  fs: fix kernel-doc markups
-  jbd2: fix kernel-doc markups
-  pstore/zone: fix a kernel-doc markup
-  completion: fix kernel-doc markups
-  firmware: stratix10-svc: fix kernel-doc markups
-  connector: fix a kernel-doc markup
-  lib/crc7: fix a kernel-doc markup
-  hrtimer: fix kernel-doc markups
-  genirq: fix kernel-doc markups
-  list: fix a typo at the kernel-doc markup
-  memblock: fix kernel-doc markups
-  w1: fix a kernel-doc markup
-  resource: fix kernel-doc markups
-  shed: fix kernel-doc markup
-  mm: fix kernel-doc markups
-  selftests: kselftest_harness.h: partially fix kernel-doc markups
-  scripts: kernel-doc: validate kernel-doc markup with the actual names
-
- arch/s390/include/asm/ccwdev.h                |  2 +-
- arch/s390/include/asm/cio.h                   |  2 +-
- drivers/gpu/drm/drm_atomic_state_helper.c     |  2 +-
- drivers/gpu/drm/drm_connector.c               |  3 +-
- drivers/gpu/drm/drm_dp_helper.c               |  2 +-
- drivers/gpu/drm/drm_framebuffer.c             |  2 +-
- drivers/gpu/drm/drm_gem.c                     |  4 +-
- drivers/gpu/drm/drm_gem_vram_helper.c         |  2 +-
- drivers/gpu/drm/drm_mode_object.c             |  2 +-
- drivers/gpu/drm/drm_modes.c                   |  4 +-
- drivers/gpu/drm/drm_scdc_helper.c             |  2 +-
- drivers/gpu/drm/i915/display/intel_dpll_mgr.c |  2 +-
- drivers/gpu/drm/i915/i915_gem_evict.c         |  2 +-
- drivers/gpu/drm/i915/i915_perf.c              |  8 ++-
- drivers/gpu/drm/scheduler/sched_main.c        |  2 +-
- drivers/gpu/drm/v3d/v3d_sched.c               |  2 +-
- drivers/gpu/drm/vc4/vc4_bo.c                  |  2 +-
- drivers/hsi/hsi_core.c                        |  2 +-
- drivers/infiniband/core/cm.c                  |  5 +-
- drivers/infiniband/core/cq.c                  |  4 +-
- drivers/infiniband/core/iwpm_util.h           |  2 +-
- drivers/infiniband/core/sa_query.c            |  3 +-
- drivers/infiniband/core/verbs.c               |  4 +-
- drivers/infiniband/sw/rdmavt/ah.c             |  2 +-
- drivers/infiniband/sw/rdmavt/mcast.c          | 12 ++--
- drivers/infiniband/sw/rdmavt/qp.c             |  8 +--
- drivers/infiniband/ulp/iser/iscsi_iser.c      |  2 +-
- .../infiniband/ulp/opa_vnic/opa_vnic_encap.h  |  2 +-
- .../ulp/opa_vnic/opa_vnic_vema_iface.c        |  2 +-
- drivers/infiniband/ulp/srpt/ib_srpt.h         |  2 +-
- drivers/net/phy/mdio_bus.c                    |  2 +-
- drivers/net/phy/phy-c45.c                     |  2 +-
- drivers/net/phy/phy.c                         |  2 +-
- drivers/net/phy/phy_device.c                  |  2 +-
- drivers/net/phy/phylink.c                     |  2 +-
- drivers/parport/share.c                       |  2 +-
- drivers/rapidio/rio.c                         |  2 +-
- drivers/video/fbdev/core/fbcmap.c             |  2 +-
- drivers/video/hdmi.c                          |  3 +-
- fs/dcache.c                                   | 72 +++++++++----------
- fs/inode.c                                    |  4 +-
- fs/jbd2/journal.c                             | 34 ++++-----
- fs/jbd2/transaction.c                         | 31 ++++----
- fs/pstore/zone.c                              |  2 +-
- fs/seq_file.c                                 |  5 +-
- fs/super.c                                    | 12 ++--
- include/drm/drm_atomic_helper.h               |  4 +-
- include/drm/drm_connector.h                   |  2 +-
- include/drm/drm_device.h                      |  2 +-
- include/drm/drm_dsc.h                         |  3 +-
- include/drm/drm_gem_vram_helper.h             |  8 +--
- include/linux/completion.h                    | 10 ++-
- include/linux/connector.h                     |  2 +-
- .../firmware/intel/stratix10-svc-client.h     | 10 +--
- include/linux/hrtimer.h                       |  6 +-
- include/linux/jbd2.h                          |  2 +-
- include/linux/list.h                          |  2 +-
- include/linux/memblock.h                      |  4 +-
- include/linux/netdevice.h                     | 11 ++-
- include/linux/parport.h                       | 31 ++++++++
- include/linux/w1.h                            |  2 +-
- include/rdma/ib_verbs.h                       | 11 +++
- kernel/irq/chip.c                             |  2 +-
- kernel/irq/generic-chip.c                     |  2 +-
- kernel/resource.c                             | 24 ++++---
- kernel/sched/core.c                           | 16 ++---
- kernel/sched/fair.c                           |  2 +-
- kernel/time/hrtimer.c                         |  2 +-
- lib/crc7.c                                    |  2 +-
- mm/gup.c                                      | 24 ++++---
- mm/page_alloc.c                               | 16 ++---
- mm/truncate.c                                 | 10 ++-
- net/core/datagram.c                           |  2 +-
- net/core/dev.c                                |  4 +-
- net/core/skbuff.c                             |  2 +-
- net/ethernet/eth.c                            |  6 +-
- net/sunrpc/rpc_pipe.c                         |  3 +-
- scripts/kernel-doc                            | 62 +++++++++++-----
- tools/testing/selftests/kselftest_harness.h   | 22 +++---
- 79 files changed, 350 insertions(+), 235 deletions(-)
-
+diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
+index e5ae33c1a8e8..757d5c3f620b 100644
+--- a/drivers/video/fbdev/core/fbcmap.c
++++ b/drivers/video/fbdev/core/fbcmap.c
+@@ -59,41 +59,41 @@ static u16 blue16[] __read_mostly = {
+     0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa,
+     0x5555, 0xffff, 0x5555, 0xffff, 0x5555, 0xffff, 0x5555, 0xffff
+ };
+ 
+ static const struct fb_cmap default_2_colors = {
+     .len=2, .red=red2, .green=green2, .blue=blue2
+ };
+ static const struct fb_cmap default_8_colors = {
+     .len=8, .red=red8, .green=green8, .blue=blue8
+ };
+ static const struct fb_cmap default_4_colors = {
+     .len=4, .red=red4, .green=green4, .blue=blue4
+ };
+ static const struct fb_cmap default_16_colors = {
+     .len=16, .red=red16, .green=green16, .blue=blue16
+ };
+ 
+ 
+ 
+ /**
+- *	fb_alloc_cmap - allocate a colormap
++ *	fb_alloc_cmap_gfp - allocate a colormap
+  *	@cmap: frame buffer colormap structure
+  *	@len: length of @cmap
+  *	@transp: boolean, 1 if there is transparency, 0 otherwise
+  *	@flags: flags for kmalloc memory allocation
+  *
+  *	Allocates memory for a colormap @cmap.  @len is the
+  *	number of entries in the palette.
+  *
+  *	Returns negative errno on error, or zero on success.
+  *
+  */
+ 
+ int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags)
+ {
+ 	int size = len * sizeof(u16);
+ 	int ret = -ENOMEM;
+ 
+ 	flags |= __GFP_NOWARN;
+ 
+ 	if (cmap->len != len) {
+diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+index 1e4cb63d0d11..947be761dfa4 100644
+--- a/drivers/video/hdmi.c
++++ b/drivers/video/hdmi.c
+@@ -1675,41 +1675,42 @@ static int hdmi_audio_infoframe_unpack(struct hdmi_audio_infoframe *frame,
+ 
+ 	ret = hdmi_audio_infoframe_init(frame);
+ 	if (ret)
+ 		return ret;
+ 
+ 	ptr += HDMI_INFOFRAME_HEADER_SIZE;
+ 
+ 	frame->channels = ptr[0] & 0x7;
+ 	frame->coding_type = (ptr[0] >> 4) & 0xf;
+ 	frame->sample_size = ptr[1] & 0x3;
+ 	frame->sample_frequency = (ptr[1] >> 2) & 0x7;
+ 	frame->coding_type_ext = ptr[2] & 0x1f;
+ 	frame->channel_allocation = ptr[3];
+ 	frame->level_shift_value = (ptr[4] >> 3) & 0xf;
+ 	frame->downmix_inhibit = ptr[4] & 0x80 ? true : false;
+ 
+ 	return 0;
+ }
+ 
+ /**
+- * hdmi_vendor_infoframe_unpack() - unpack binary buffer to a HDMI vendor infoframe
++ * hdmi_vendor_any_infoframe_unpack() - unpack binary buffer to a HDMI
++ * 	vendor infoframe
+  * @frame: HDMI Vendor infoframe
+  * @buffer: source buffer
+  * @size: size of buffer
+  *
+  * Unpacks the information contained in binary @buffer into a structured
+  * @frame of the HDMI Vendor information frame.
+  * Also verifies the checksum as required by section 5.3.5 of the HDMI 1.4
+  * specification.
+  *
+  * Returns 0 on success or a negative error code on failure.
+  */
+ static int
+ hdmi_vendor_any_infoframe_unpack(union hdmi_vendor_any_infoframe *frame,
+ 				 const void *buffer, size_t size)
+ {
+ 	const u8 *ptr = buffer;
+ 	size_t length;
+ 	int ret;
+ 	u8 hdmi_video_format;
+ 	struct hdmi_vendor_infoframe *hvf = &frame->hdmi;
 -- 
 2.28.0
-
 

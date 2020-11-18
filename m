@@ -2,177 +2,181 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E15E1C6379D
-	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Nov 2020 00:20:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40106C5519F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Nov 2020 09:21:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 853352463F
-	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Nov 2020 00:20:27 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=microsoft.com header.i=@microsoft.com header.b="MG6rpoH8"
+	by mail.kernel.org (Postfix) with ESMTP id E124A2463B
+	for <linux-fbdev@archiver.kernel.org>; Wed, 18 Nov 2020 09:21:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725943AbgKRAUQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 17 Nov 2020 19:20:16 -0500
-Received: from mail-bn7nam10on2129.outbound.protection.outlook.com ([40.107.92.129]:16449
-        "EHLO NAM10-BN7-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1725767AbgKRAUP (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 17 Nov 2020 19:20:15 -0500
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=FloEF17SQVxkGzis9jj+bNW9RxfotjDZA+CChFhnIABsSW+SnzZep33Y29PdhIn4FMlEcZZIP2XN/IjXdhEeiYD/oY2Ob3+913FGIwtwIJq4jfH2XdoxMdz5B2Q6zWLZzADFBG/zcwxVG7V2B91g2+22qKEFGxNRiX6pdvFiWy+p1kxjcDSDTpPwHrN8NmOxu1cFtOmTYm+WWFcTOcPQ/flcfZ5vzdeBKhY4mR9l/EK1Fdlpn1KNUPEmt71FwgI42mT3WJb+w/PBZGcxz53JzUUza+U3nE2ofJFWKq5Fqd08ercBj7Pz3mZaqFrMsVgKjfKsOmPIrFK0ZOmpwqjChQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=I0p8bBET6I/lJFcCbDC2/2PI7+/RSDigUYD2YRqIwgo=;
- b=DnsWDW7aotkWRcX/rx5U/SETJI2XRxeHYYB5EdfGFj418Lpy35SBTELQePR3omMpnNtJF/wKAbgLLs9o932fxdRwWce0ENkLzjiVE/I7XQIxQDwZp3gSM8lX7Jg9G4lPOCRSly1QJhZTXBiKqKETKAaPOZI4OKH1Wrt8Kikic8lu4okDZEbfqQqxUSSmhdIBf/aq3mn6M4I8d6/+cghv7BvANyajhaq8WL2myA2RmOT3VDZImXA44jfWSmMWmNix18slVZDlFdZxBc9Ihd3307Guq9N5VRB+M5oCoLCMJV6i1UIPy/ZW+4mymgjLRFPX86SivoOxgtiobwUCsZ41gg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=microsoft.com; dmarc=pass action=none
- header.from=microsoft.com; dkim=pass header.d=microsoft.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=I0p8bBET6I/lJFcCbDC2/2PI7+/RSDigUYD2YRqIwgo=;
- b=MG6rpoH8f+ZtXGpunaM+kWYmbl5HSgTFNPE04RagU0M5Vn6quIk/1Qw40MQj0SjQkb/oNQDuqdm9B1HGwMAP+6krZ6eIWvgrYoe5uFENqqVQoJsDPT9UxMg8cD97CVcfIYEzv09KGws3HDZzPoXMmgosy4y2DOqUrYLa8YkCZrc=
-Received: from MW2PR2101MB1052.namprd21.prod.outlook.com (2603:10b6:302:a::16)
- by MW4PR21MB1891.namprd21.prod.outlook.com (2603:10b6:303:79::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3611.4; Wed, 18 Nov
- 2020 00:20:11 +0000
-Received: from MW2PR2101MB1052.namprd21.prod.outlook.com
- ([fe80::b8f6:e748:cdf2:1922]) by MW2PR2101MB1052.namprd21.prod.outlook.com
- ([fe80::b8f6:e748:cdf2:1922%9]) with mapi id 15.20.3564.033; Wed, 18 Nov 2020
- 00:20:11 +0000
-From:   Michael Kelley <mikelley@microsoft.com>
-To:     Dexuan Cui <decui@microsoft.com>,
-        KY Srinivasan <kys@microsoft.com>,
-        Haiyang Zhang <haiyangz@microsoft.com>,
-        Stephen Hemminger <sthemmin@microsoft.com>,
-        "wei.liu@kernel.org" <wei.liu@kernel.org>,
-        "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>,
-        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC:     Wei Hu <weh@microsoft.com>
-Subject: RE: [PATCH] video: hyperv_fb: Fix the cache type when mapping the
- VRAM
-Thread-Topic: [PATCH] video: hyperv_fb: Fix the cache type when mapping the
- VRAM
-Thread-Index: AQHWvT5LrMWTzMjad0qzQTxNmF/vRanNBgtg
-Date:   Wed, 18 Nov 2020 00:20:11 +0000
-Message-ID: <MW2PR2101MB105243C3AD5106B2ABEDBAB5D7E10@MW2PR2101MB1052.namprd21.prod.outlook.com>
-References: <20201118000305.24797-1-decui@microsoft.com>
-In-Reply-To: <20201118000305.24797-1-decui@microsoft.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-msip_labels: MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Enabled=true;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_SetDate=2020-11-18T00:20:09Z;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Method=Standard;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Name=Internal;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_SiteId=72f988bf-86f1-41af-91ab-2d7cd011db47;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_ActionId=de31e602-f6bc-4895-98ef-7ba20096348c;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_ContentBits=0
-authentication-results: microsoft.com; dkim=none (message not signed)
- header.d=none;microsoft.com; dmarc=none action=none
- header.from=microsoft.com;
-x-originating-ip: [24.22.167.197]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-ht: Tenant
-x-ms-office365-filtering-correlation-id: e30d2e1c-e0f8-4fa4-e08a-08d88b57b6c5
-x-ms-traffictypediagnostic: MW4PR21MB1891:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <MW4PR21MB1891B170E78EF11DD106C9DDD7E10@MW4PR21MB1891.namprd21.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:10000;
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: 31A4akYy/NvTFierrRX6u1IBYNC6+s8FxaCVt5u8Mz3uwaTmNp+oEOHLiSX0TKg9YQO5MSQqcZhnFs2W7gEJd+jwYVdLPqdT7zVsmOQSFenSaZIm3m0vQTsHaKAJVUsiXLagW99WQh3C+npZPlT2Y0+pY7XC22ggaWedyVp9y/in7aw4Umz3XMMQcBsxjoZLm2DIbj//3+udDiIYZ+oaGIoPYySIacH7M8qlYrnFGYSRrzrxfc4jqL4rH/yZ6wQHyiKANFLvvweyVIEuiMVm98lYn7rT/QE/wsxUKYLdDJgppIxyiSw2e4M5PBRnaq1ji6zR/3iWqR2GZZm2UdLdPh32xwd86OpiynEo0a3fnRY13OV/EwerXGFnUWOwm1MP67SVIyyvCMPp7NcTXQyIfyoe86xpj75nvOBZAd853fBwweCzjKcFjl0vH2/Um2hq
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MW2PR2101MB1052.namprd21.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(396003)(136003)(39860400002)(376002)(346002)(366004)(316002)(8990500004)(82950400001)(2906002)(186003)(966005)(33656002)(7696005)(921005)(110136005)(26005)(6506007)(82960400001)(71200400001)(8676002)(8936002)(5660300002)(66556008)(86362001)(4326008)(52536014)(66476007)(66446008)(83380400001)(10290500003)(55016002)(66946007)(64756008)(107886003)(478600001)(76116006)(9686003);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata: AY8Kg4BTIQc8/CkGpo+qI2KCTqFqIGl9+fjyAEY6aq5JRFnRMJGTEOoDpdhRcY378eCuBWBczyD9SnM3QQNIkC+hEgkHukdM9QBlzdW16Ncgdwmdkw5QzRCH3vx/0qbia+X8nW/m4FJ0QEvEmIHA0PbhJ24M4r+ut5Gkhb3vIRutUXRCmlmBL018arbnJ0mi8C08+1lBR0Yo4X4uis65eY+/c6aV1Ut0wFwDERv/mJfu6dhmc0kabtW5PC/ECYn3JRhYf80VblhBiDCINVvlKCRoooz/kJCL0E61oNWkLKSvta4kBl4f/M7Lro5AOeo4tT2mNmGiyihRPmFdTThmHSxdf58OdmMRHxPFv8CfomMDNybsfhx7ijRvU4js/CSHavzdpbowx1GuQAuK4sVnAP8Bigne1kVPF1yg+XvNwq0SSODNCUzvz1WOzi8l6AGMkcif8YROW4fp0tB5SgjCp/kv6nwMiZ7sI4ixB7hJHDmQKfuzDQW6BYfbFR/mQaBQv9rdfjueDMrv2vq/AmmVr4dgb35Glx9EzH5sQ0yxnrqWVFSa1gTizF8INzR++x8j73mQoc/qv6TLAhkM8TbAfyZ0Yps8Pw8AOX6K6kBerr/nmBC9ZtlgFJEJi57lmRopK2GNYmde+gBTmSip7yWw3oLhYQKMQgDFv88wA4kZ/Wq7mmeqmrFj7Rtkk1zGev1o3vu4Yo+tizH6vZKI35bvLItxrZZ8AUqFQOJMWW7Xb8KHbXlSyTtTRzCkAvKhvAkaMmqHgzgvLz/JSCHQothk9mLNwBwPxcA/CiEurvfZDPgol4/q9Wu9+sl3G4Ow31JBRWE8dfMBICM+Q9BsfLSaP+ac6a1a1MX8eepPSF/9SCfN//kq3Iw86pxlmIzliETH0g69y3o3Wa27RpFKvOHQ1w==
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+        id S1726172AbgKRJVX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 18 Nov 2020 04:21:23 -0500
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:47079 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725772AbgKRJVX (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 18 Nov 2020 04:21:23 -0500
+Received: by mail-oi1-f193.google.com with SMTP id q206so1424886oif.13
+        for <linux-fbdev@vger.kernel.org>; Wed, 18 Nov 2020 01:21:22 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=rkMlGhBddK4CWlIkq4VYwxC7ANjZVCeqrUa0zy6WU0I=;
+        b=PuCy+PAgLr7AeifuTw/Q5w8iRwsvU0WH3HXc6V3tFF6KwfMAkNlDggKL/YCnjh7zL2
+         8o8P6eKE7ldeAW9KhcNXXiDQ5iOKyXKN4OTUQnPKgnqa+CClg3nVYuzVCQrG1QGE1mkZ
+         2hueFC8vUzm1OnCFRvMcOCB9MHvQWfIgeIiq6ENxT8wayjaydFmc8A9AnEpop3dR3sYt
+         WTgdoOAba17p2NLIPlBFvxsgRBJkYDRfANcwKXTF5loxcfhwMw0GjYS760YPn+dfxDGE
+         3l+NOMD0rE2tGpJVXzamj9aDM6mLAcdUTjAut9+RGbShyUWH2GaQQ5Jot7LMozKs42Tl
+         gSFw==
+X-Gm-Message-State: AOAM531o69J0WfZNE2QWhMSz2XsPSLVCEIeDUU4CGraNPncDK6nDimOq
+        i2UNybLGmlDpEHKzEVdTIVSumh7HzPrPJdYAdDg=
+X-Google-Smtp-Source: ABdhPJyqvIcxUrbL0AaN6gSRNz2wjNs4QkYGhaUKzlP3J9lx3udNRytqjWUm4S6ui6wFImY2T0gEVeBnLueaghIYvhM=
+X-Received: by 2002:aca:4bc3:: with SMTP id y186mr1952687oia.153.1605691281629;
+ Wed, 18 Nov 2020 01:21:21 -0800 (PST)
 MIME-Version: 1.0
-X-OriginatorOrg: microsoft.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: MW2PR2101MB1052.namprd21.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e30d2e1c-e0f8-4fa4-e08a-08d88b57b6c5
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Nov 2020 00:20:11.5283
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: UmCqKdtQsMi1o5xYrQLes12XTRwg/dGOaqL6zFZMz9IbmYlb6ipZuJ4+aGBs4U/tsyIwdzqo4dFAFOVKSbexAuxFh1x46z3hhJEZseiwBLI=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR21MB1891
+References: <20201029101428.4058311-1-daniel.vetter@ffwll.ch>
+ <20201029132229.4068359-1-daniel.vetter@ffwll.ch> <alpine.DEB.2.22.394.2010311116530.379363@ramsan.of.borg>
+ <CAKMK7uH3SQEjhJkcMcZSW6foiDsMKS91StLYcKoyH+h1obKPCA@mail.gmail.com>
+In-Reply-To: <CAKMK7uH3SQEjhJkcMcZSW6foiDsMKS91StLYcKoyH+h1obKPCA@mail.gmail.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed, 18 Nov 2020 10:21:10 +0100
+Message-ID: <CAMuHMdWOHgysOYNXWxo6YoqjJRaqAyFrHjDEm7ARLyP=xmnN5g@mail.gmail.com>
+Subject: Re: [PATCH] fbcon: Disable accelerated scrolling
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
+        George Kennedy <george.kennedy@oracle.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        Peter Rosin <peda@axentia.se>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        Ben Skeggs <bskeggs@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Nouveau Dev <nouveau@lists.freedesktop.org>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Peilin Ye <yepeilin.cs@gmail.com>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Dexuan Cui <decui@microsoft.com> Sent: Tuesday, November 17, 2020 4:0=
-3 PM
->=20
-> x86 Hyper-V used to essentially always overwrite the effective cache type
-> of guest memory accesses to WB. This was problematic in cases where there
-> is a physical device assigned to the VM, since that often requires that
-> the VM should have control over cache types. Thus, on newer Hyper-V since
-> 2018, Hyper-V always honors the VM's cache type, but unexpectedly Linux V=
-M
-> users start to complain that Linux VM's VRAM becomes very slow, and it
-> turns out that Linux VM should not map the VRAM uncacheable by ioremap().
-> Fix this slowness issue by using ioremap_cache().
->=20
-> On ARM64, ioremap_cache() is also required as the host also maps the VRAM
-> cacheable, otherwise VM Connect can't display properly with ioremap() or
-> ioremap_wc().
->=20
-> With this change, the VRAM on new Hyper-V is as fast as regular RAM, so
-> it's no longer necessary to use the hacks we added to mitigate the
-> slowness, i.e. we no longer need to allocate physical memory and use
-> it to back up the VRAM in Generation-1 VM, and we also no longer need to
-> allocate physical memory to back up the framebuffer in a Generation-2 VM
-> and copy the framebuffer to the real VRAM. A further big change will
-> address these for v5.11.
->=20
-> Fixes: 68a2d20b79b1 ("drivers/video: add Hyper-V Synthetic Video Frame Bu=
-ffer Driver")
-> Tested-by: Boqun Feng <boqun.feng@gmail.com>
-> Signed-off-by: Dexuan Cui <decui@microsoft.com>
-> ---
->=20
-> Hi Wei Liu, can you please pick this up into the hyperv/linux.git tree's
-> hyperv-fixes branch? I really hope this patch can be in v5.10 since it
-> fixes a longstanding issue: https://github.com/LIS/lis-next/issues/655
->=20
->  drivers/video/fbdev/hyperv_fb.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv=
-_fb.c
-> index 5bc86f481a78..c8b0ae676809 100644
-> --- a/drivers/video/fbdev/hyperv_fb.c
-> +++ b/drivers/video/fbdev/hyperv_fb.c
-> @@ -1093,7 +1093,12 @@ static int hvfb_getmem(struct hv_device *hdev, str=
-uct fb_info
-> *info)
->  		goto err1;
->  	}
->=20
-> -	fb_virt =3D ioremap(par->mem->start, screen_fb_size);
-> +	/*
-> +	 * Map the VRAM cacheable for performance. This is also required for
-> +	 * VM Connect to display properly for ARM64 Linux VM, as the host also
-> +	 * maps the VRAM cacheable.
-> +	 */
-> +	fb_virt =3D ioremap_cache(par->mem->start, screen_fb_size);
->  	if (!fb_virt)
->  		goto err2;
->=20
-> --
-> 2.19.1
+Hi Daniel,
 
-Reviewed-by: Michael Kelley <mikelley@microsoft.com>
+Replying "early" (see below), as this was applied to
+drm-misc/for-linux-next.
 
+On Sat, Oct 31, 2020 at 3:17 PM Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
+> On Sat, Oct 31, 2020 at 11:28 AM Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+> > On Thu, 29 Oct 2020, Daniel Vetter wrote:
+> > > So ever since syzbot discovered fbcon, we have solid proof that it's
+> > > full of bugs. And often the solution is to just delete code and remove
+> > > features, e.g.  50145474f6ef ("fbcon: remove soft scrollback code").
+> > >
+> > > Now the problem is that most modern-ish drivers really only treat
+> > > fbcon as an dumb kernel console until userspace takes over, and Oops
+> > > printer for some emergencies. Looking at drm drivers and the basic
+> > > vesa/efi fbdev drivers shows that only 3 drivers support any kind of
+> > > acceleration:
+> > >
+> > > - nouveau, seems to be enabled by default
+> > > - omapdrm, when a DMM remapper exists using remapper rewriting for
+> > >  y/xpanning
+> > > - gma500, but that is getting deleted now for the GTT remapper trick,
+> > >  and the accelerated copyarea never set the FBINFO_HWACCEL_COPYAREA
+> > >  flag, so unused (and could be deleted already I think).
+> > >
+> > > No other driver supportes accelerated fbcon. And fbcon is the only
+> > > user of this accel code (it's not exposed as uapi through ioctls),
+> > > which means we could garbage collect fairly enormous amounts of code
+> > > if we kill this.
+> >
+> > "git grep FBINFO_HWACCEL_COPYAREA" shows me there are 32 more drivers
+> > using acceleration under drivers/video/fbdev/.
+> >
+> > > Plus because syzbot only runs on virtual hardware, and none of the
+> > > drivers for that have acceleration, we'd remove a huge gap in testing.
+> > > And there's no other even remotely comprehensive testing aside from
+> > > syzbot.
+> >
+> > That sounds like a great argument to remove all hardware drivers from
+> > the kernel ;-)
+>
+> fbdev is unmaintained, has no one volunteering to put in the work (and
+> there's huge amounts of work needed), and there's no test suite. No,
+> fbtest.c doesn't can't, that's not even close. We're not going to
+> delete everything in the kernel, but slowly sunsetting stuff that's
+> just costing and not bringing in up is a good idea.
+
+The fbcon acceleration code is indeed not tested by fbset, and it is
+purely in-kernel acceleration for the console.
+
+> > Seriously, how hard can it be to add "software-accelerated" acceleration
+> > hooks to drivers/video/fbdev/vfb.c, to enable syzbot to exercise the
+> > core acceleration code paths?
+>
+> Just this one is 5 combinations, which means I'd need to convince
+> syzbot to test 5 different machine setups.
+
+Why 5 combinations?
+Enable vfb (which can be a module) and be done with it?
+
+> Plus we're still lacking a test suite, and judging from how much time
+> it took to get something basic going for kms, that's about 2 engineer
+> years of effort that no one is even close to willing to spend.
+
+Sure, writing test suites is hard, and takes time.
+
+> > > This patch here just disables the acceleration code by always
+> > > redrawing when scrolling. The plan is that once this has been merged
+> > > for well over a year in released kernels, we can start to go around
+> > > and delete a lot of code.
+> >
+> > Have you benchmarked the performance impact on traditional fbdev
+> > drivers?
+>
+> There's still some acceleration if you have an image blit engine for
+> redrawing the screen. But the complexity is contained in the old
+> drivers that no one cares about.
+>
+> For anything I have access to the difference is 0.
+
+Sure, you're doing DRM drivers ;-)
+
+> Reality is that fbdev is just there nowadays for Oops printing and
+> emergency usage, and it's plenty good enough for that. If there's
+
+That's true for systems that are supported by a DRM driver.
+
+> anyone who cares beyond that, they're most definitely not able to put
+> in time for upstream work.
+
+There exist actual products using out-of-tree fbdev drivers that never
+got the chance of being merged upstream due to the moratorium on new
+fbdev drivers.
+
+BTW, I'm trying to convert an old fbdev driver to DRM, but don't have it
+working yet. I had hoped to get something working before replying to
+this email, so I could provide more detailed feedback.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

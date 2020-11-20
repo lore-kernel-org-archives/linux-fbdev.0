@@ -2,115 +2,79 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EAFFC6369E
-	for <linux-fbdev@archiver.kernel.org>; Thu, 19 Nov 2020 15:11:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6C87C63798
+	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Nov 2020 08:29:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A83E322264
-	for <linux-fbdev@archiver.kernel.org>; Thu, 19 Nov 2020 15:11:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="KrpNjX0W"
+	by mail.kernel.org (Postfix) with ESMTP id 46E8722252
+	for <linux-fbdev@archiver.kernel.org>; Fri, 20 Nov 2020 08:29:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726712AbgKSPLL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 19 Nov 2020 10:11:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42084 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726575AbgKSPLL (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 19 Nov 2020 10:11:11 -0500
-Received: from mail-oi1-x242.google.com (mail-oi1-x242.google.com [IPv6:2607:f8b0:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CD3CC0613CF
-        for <linux-fbdev@vger.kernel.org>; Thu, 19 Nov 2020 07:11:09 -0800 (PST)
-Received: by mail-oi1-x242.google.com with SMTP id m13so6631774oih.8
-        for <linux-fbdev@vger.kernel.org>; Thu, 19 Nov 2020 07:11:09 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=JdqkWSW9a1z1SVdGoG8hy8zdS0knZMDZmMXxm1Wmdt8=;
-        b=KrpNjX0WODmJF84y1iHPQX2qZzuES2LX2P221m9sJNTfwuwxu6hpK4JWFdrL2/H5lY
-         Pu2WuXCypBceXoEf03QRJdC7ZJdypKeOjpID7SvyV9Kp8PqELasCnGMV2vabViZccRXg
-         Z3lf1rvu/Q6tKBeVdO3AFO9IamwuuvldZgG68=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=JdqkWSW9a1z1SVdGoG8hy8zdS0knZMDZmMXxm1Wmdt8=;
-        b=Dmw92cMIL73P7x9atg2UKlfGF8xePmxxYbR+p1XPAjrEAcbwisKpsx+z/hBs04FwIz
-         sLqp6ReLot2VOfsUK3GV7BcEBBS7+GNNnQu8S0sjGoqbOmgxGqqgqpvpChLKLgrgmMCW
-         M33CILCVc2ZHCERvwN63MhKQ5hVLztfzAB14KQ78hAMckapq8WdYdBujvWGhDOn6HgJi
-         cTEDPTFIQX+hor7DgwITwcDEJitpCa/1Aq1jy+wwuVe2TYLkKmINjOLAaOlfRx2zsOpS
-         hknueL/DWac5ahJ+xxcmre9TiS3Vm97+RZaCHq7n+IoZ8CwKqtleNgZ7LCIeFukg0Q3B
-         jjmg==
-X-Gm-Message-State: AOAM532Kg5ePELjMwa3tFOYnou7MkQgf/wYxVPtk2j4D4tmTGtxwhqQz
-        3RwtsN/QPDJ52HfOgQtXhXXD5LJnOuLo4nirphab1Q==
-X-Google-Smtp-Source: ABdhPJyc3DHapCPUR/HHhc1a36YrqgEuXr50FTsLT0tmaXXDtJYaO8t+L+SGEMGffyuWBGHKy8w0p+PMlAMqkU19f0Q=
-X-Received: by 2002:aca:7506:: with SMTP id q6mr3200770oic.128.1605798668916;
- Thu, 19 Nov 2020 07:11:08 -0800 (PST)
-MIME-Version: 1.0
-References: <cover.1605169912.git.yepeilin.cs@gmail.com> <20201113211633.GY401619@phenom.ffwll.local>
- <X68NFzaAuImemnqh@kroah.com> <20201114081021.GA11811@PWN> <X6/K/S9V7rj2hI5p@kroah.com>
- <X6/L/lE2pA7csBwd@kroah.com> <20201119083257.GA9468@PWN>
-In-Reply-To: <20201119083257.GA9468@PWN>
-From:   Daniel Vetter <daniel@ffwll.ch>
-Date:   Thu, 19 Nov 2020 16:10:57 +0100
-Message-ID: <CAKMK7uF_AOrfTDVZwmxn_C-5sTBDu_v9KGH07wO5hTa98Z8Ucg@mail.gmail.com>
-Subject: Re: [PATCH v3 0/5] console: Miscellaneous clean-ups, do not use
- FNTCHARCNT() in fbcon.c
-To:     Peilin Ye <yepeilin.cs@gmail.com>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        id S1725809AbgKTI33 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 20 Nov 2020 03:29:29 -0500
+Received: from smtp25.cstnet.cn ([159.226.251.25]:35898 "EHLO cstnet.cn"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1725801AbgKTI33 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 20 Nov 2020 03:29:29 -0500
+X-Greylist: delayed 328 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Nov 2020 03:29:28 EST
+Received: from localhost.localdomain (unknown [124.16.141.242])
+        by APP-05 (Coremail) with SMTP id zQCowABnepwTfbdfzxRbAQ--.19873S2;
+        Fri, 20 Nov 2020 16:23:48 +0800 (CST)
+From:   Xu Wang <vulab@iscas.ac.cn>
+To:     b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch,
+        jani.nikula@intel.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org
+Subject: [PATCH] video: goldfishfb: remove casting dma_alloc_coherent
+Date:   Fri, 20 Nov 2020 08:23:44 +0000
+Message-Id: <20201120082344.8623-1-vulab@iscas.ac.cn>
+X-Mailer: git-send-email 2.17.1
+X-CM-TRANSID: zQCowABnepwTfbdfzxRbAQ--.19873S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7Xw15CFW5tw43Kw1DWw1UGFg_yoWfWrbEkF
+        WkuF97W348Jrs5Wrn7t3y5Cryqkr95Z3Z7uFnrKrWaq347ur15Way7Zrn5G3yUWw4jgFZ8
+        Kr90krW7Aw1fujkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+        9fnUUIcSsGvfJTRUUUb28YjsxI4VW3JwAYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I
+        6I8E6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AEw4v_Jr0_Jr4l8cAvFVAK0II2c7xJM2
+        8CjxkF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVW8JVW5JwA2z4x0Y4vE2Ix0
+        cI8IcVCY1x0267AKxVWxJVW8Jr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I
+        8E87Iv6xkF7I0E14v26rxl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
+        64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r106r15McIj6I8E87Iv67AKxVW8JVWxJw
+        Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lc2xSY4AK67AK6r43MxAIw28I
+        cxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2
+        IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUAVWUtwCIc40Y0x0EwIxGrwCI
+        42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42
+        IY6xAIw20EY4v20xvaj40_WFyUJVCq3wCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E
+        87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x07j4yxiUUUUU=
+X-Originating-IP: [124.16.141.242]
+X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiCQYGA102ZuqQ7AAAsR
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Nov 19, 2020 at 9:33 AM Peilin Ye <yepeilin.cs@gmail.com> wrote:
->
-> On Sat, Nov 14, 2020 at 01:22:22PM +0100, Greg Kroah-Hartman wrote:
-> > Ah, here's a hint:
-> >       https://wiki.archlinux.org/index.php/Linux_console#Fonts
-> >
-> > The setfont tool should help you out here.
->
-> setfont seems to work fine, I tried Georgian-Fixed16 (256 chars) and
-> Uni2-VGA16 (512 chars) under /usr/share/consolefonts/ in my Ubuntu box,
-> including setting all consoles to the same font:
->
-> for i in {1..6}; do
->         sudo setfont -C /dev/tty${i} /usr/share/consolefonts/Georgian-Fixed16.psf.gz
-> done
->
-> Font rotation also seems to work fine:
->
-> for i in {1..4}; do
->         echo $i | sudo tee /sys/class/graphics/fbcon/rotate
->         sleep 1
-> done
+Remove casting the values returned by dma_alloc_coherent.
 
-Thanks a lot for checking all this.
+Signed-off-by: Xu Wang <vulab@iscas.ac.cn>
+---
+ drivers/video/fbdev/goldfishfb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-> One last thing I can think of is tile blitting, but I don't have the
-> hardware (e.g. a Matrox G400 card, see FB_TILEBLITTING in
-> drivers/video/fbdev/Kconfig) at hand, nor did I figure out how to
-> simulate it after searching for a while.  However based on the other
-> tests above I believe vc->vc_font.charcount is set properly.
-
-tbh I'll just go ahead and delete it if it's broken :-)
-
-Userspace we have to keep working (and there's actually people
-creating new products on top of drm display drivers using fbdev
-emulation and /dev/fb/0 interface!), but kernel internal stuff like
-fbcon acceleration we can trim pretty aggressively I think.
--Daniel
+diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
+index 9c83ec3f8e1f..c2f386b35617 100644
+--- a/drivers/video/fbdev/goldfishfb.c
++++ b/drivers/video/fbdev/goldfishfb.c
+@@ -238,8 +238,7 @@ static int goldfish_fb_probe(struct platform_device *pdev)
+ 	fb->fb.var.blue.length = 5;
+ 
+ 	framesize = width * height * 2 * 2;
+-	fb->fb.screen_base = (char __force __iomem *)dma_alloc_coherent(
+-						&pdev->dev, framesize,
++	fb->fb.screen_base = dma_alloc_coherent(&pdev->dev, framesize,
+ 						&fbpaddr, GFP_KERNEL);
+ 	pr_debug("allocating frame buffer %d * %d, got %p\n",
+ 					width, height, fb->fb.screen_base);
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.17.1
+

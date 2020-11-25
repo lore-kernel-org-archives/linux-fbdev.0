@@ -2,168 +2,184 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1CCBC63777
-	for <linux-fbdev@archiver.kernel.org>; Wed, 25 Nov 2020 06:37:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1054C5519F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 25 Nov 2020 07:06:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9163320B1F
-	for <linux-fbdev@archiver.kernel.org>; Wed, 25 Nov 2020 06:37:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6DA712075A
+	for <linux-fbdev@archiver.kernel.org>; Wed, 25 Nov 2020 07:06:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b="DUjk2u5m";
+	dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.b="DUjk2u5m"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725868AbgKYGgz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 25 Nov 2020 01:36:55 -0500
-Received: from pegase1.c-s.fr ([93.17.236.30]:50942 "EHLO pegase1.c-s.fr"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725562AbgKYGgz (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 25 Nov 2020 01:36:55 -0500
-Received: from localhost (mailhub1-int [192.168.12.234])
-        by localhost (Postfix) with ESMTP id 4CgrlQ4mv8z9v4Wm;
-        Wed, 25 Nov 2020 07:36:50 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-        by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
-        with ESMTP id 9WOu8jrGC870; Wed, 25 Nov 2020 07:36:50 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-        by pegase1.c-s.fr (Postfix) with ESMTP id 4CgrlQ2P6pz9v1VN;
-        Wed, 25 Nov 2020 07:36:50 +0100 (CET)
+        id S1726930AbgKYHFn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 25 Nov 2020 02:05:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55828 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726032AbgKYHFm (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 25 Nov 2020 02:05:42 -0500
+Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com [IPv6:2607:fcd0:100:8a00::2])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 571CDC0613D6;
+        Tue, 24 Nov 2020 23:05:42 -0800 (PST)
 Received: from localhost (localhost [127.0.0.1])
-        by messagerie.si.c-s.fr (Postfix) with ESMTP id 0A3DF8B7C1;
-        Wed, 25 Nov 2020 07:36:51 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-        by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-        with ESMTP id NyjcLbCJ2q3z; Wed, 25 Nov 2020 07:36:50 +0100 (CET)
-Received: from [192.168.4.90] (unknown [192.168.4.90])
-        by messagerie.si.c-s.fr (Postfix) with ESMTP id 710BA8B7B7;
-        Wed, 25 Nov 2020 07:36:48 +0100 (CET)
-Subject: Re: [PATCH 0/2] powerpc: Remove support for ppc405/440 Xilinx
- platforms
-From:   Christophe Leroy <christophe.leroy@csgroup.eu>
-To:     Michael Ellerman <mpe@ellerman.id.au>,
-        Arnd Bergmann <arnd@arndb.de>
-Cc:     Kate Stewart <kstewart@linuxfoundation.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        "Desnes A. Nunes do Rosario" <desnesn@linux.ibm.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
-        ALSA Development Mailing List <alsa-devel@alsa-project.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Richard Fontana <rfontana@redhat.com>,
-        Paul Mackerras <paulus@samba.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Fabio Estevam <festevam@gmail.com>,
-        Sasha Levin <sashal@kernel.org>,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Masahiro Yamada <masahiroy@kernel.org>,
-        Takashi Iwai <tiwai@suse.com>,
-        YueHaibing <yuehaibing@huawei.com>,
-        Michal Simek <michal.simek@xilinx.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Leonardo Bras <leonardo@linux.ibm.com>,
-        DTML <devicetree@vger.kernel.org>,
-        Andrew Donnellan <ajd@linux.ibm.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Marc Zyngier <marc.zyngier@arm.com>,
-        Alistair Popple <alistair@popple.id.au>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Alexios Zavras <alexios.zavras@intel.com>,
-        Mark Brown <broonie@kernel.org>, git@xilinx.com,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Allison Randal <allison@lohutok.net>,
-        Christophe Leroy <christophe.leroy@c-s.fr>,
-        Michal Simek <monstr@monstr.eu>, Wei Hu <weh@microsoft.com>,
-        Christian Lamparter <chunkeey@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        by bedivere.hansenpartnership.com (Postfix) with ESMTP id 2D9901280404;
+        Tue, 24 Nov 2020 23:05:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+        d=hansenpartnership.com; s=20151216; t=1606287940;
+        bh=PpyvloC8ztllb7q8ndtGKJRs78ChiB3jg6tteM0zYL0=;
+        h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
+        b=DUjk2u5mMxkvusJZ7TUknDmT+9jEkjAK5Du54VYrLnX3ZVAsqbXKInJF3+bjbWxe1
+         sPTOm9Jo8O4FiM37EcbSbGJ09Z6i3toRLj70BanOqmx/doOouqQw1ofRfirJ315HKN
+         ACp6UaCD/rMf1rqLOvr/v7W+FqOYQZREI5LkhaoU=
+Received: from bedivere.hansenpartnership.com ([127.0.0.1])
+        by localhost (bedivere.hansenpartnership.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id 8h4rTuJEi-3j; Tue, 24 Nov 2020 23:05:40 -0800 (PST)
+Received: from jarvis.int.hansenpartnership.com (unknown [IPv6:2601:600:8280:66d1::527])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by bedivere.hansenpartnership.com (Postfix) with ESMTPSA id A873112803EC;
+        Tue, 24 Nov 2020 23:05:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+        d=hansenpartnership.com; s=20151216; t=1606287940;
+        bh=PpyvloC8ztllb7q8ndtGKJRs78ChiB3jg6tteM0zYL0=;
+        h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
+        b=DUjk2u5mMxkvusJZ7TUknDmT+9jEkjAK5Du54VYrLnX3ZVAsqbXKInJF3+bjbWxe1
+         sPTOm9Jo8O4FiM37EcbSbGJ09Z6i3toRLj70BanOqmx/doOouqQw1ofRfirJ315HKN
+         ACp6UaCD/rMf1rqLOvr/v7W+FqOYQZREI5LkhaoU=
+Message-ID: <a841536fe65bb33f1c72ce2455a6eb47a0107565.camel@HansenPartnership.com>
+Subject: Re: [Intel-wired-lan] [PATCH 000/141] Fix fall-through warnings for
+ Clang
+From:   James Bottomley <James.Bottomley@HansenPartnership.com>
+To:     Kees Cook <keescook@chromium.org>
+Cc:     "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        Joe Perches <joe@perches.com>,
+        Jakub Kicinski <kuba@kernel.org>, alsa-devel@alsa-project.org,
+        linux-atm-general@lists.sourceforge.net,
+        reiserfs-devel@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-wireless@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        linux-ide@vger.kernel.org, dm-devel@redhat.com,
+        keyrings@vger.kernel.org, linux-mtd@lists.infradead.org,
+        GR-everest-linux-l2@marvell.com, wcn36xx@lists.infradead.org,
+        samba-technical@lists.samba.org, linux-i3c@lists.infradead.org,
+        linux1394-devel@lists.sourceforge.net,
+        linux-afs@lists.infradead.org,
+        usb-storage@lists.one-eyed-alien.net, drbd-dev@lists.linbit.com,
+        devel@driverdev.osuosl.org, linux-cifs@vger.kernel.org,
+        rds-devel@oss.oracle.com,
         Nick Desaulniers <ndesaulniers@google.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Armijn Hemel <armijn@tjaldur.nl>,
-        Rob Herring <robh+dt@kernel.org>,
-        Enrico Weigelt <info@metux.net>,
-        "David S. Miller" <davem@davemloft.net>,
-        Thiago Jung Bauermann <bauerman@linux.ibm.com>
-References: <cover.1585311091.git.michal.simek@xilinx.com>
- <CAK8P3a2mKPRFbRE3MWScr9GSiL4cpLg0wqv1Q28XDCZVPWgHfg@mail.gmail.com>
- <20200327131026.GT1922688@smile.fi.intel.com>
- <20200327131531.GU1922688@smile.fi.intel.com>
- <CAK8P3a1Z+ZPTDzgAjdz0a7d85R62BhUqkdEWgrwXh-OnYe6rog@mail.gmail.com>
- <20200327141434.GA1922688@smile.fi.intel.com>
- <b5adcc7a-9d10-d75f-50e3-9c150a7b4989@c-s.fr>
- <87mu7xum41.fsf@mpe.ellerman.id.au>
- <bac9af641140cf6df04e3532589a11c2f3bccd2f.camel@kernel.crashing.org>
- <87pncprwp9.fsf@mpe.ellerman.id.au>
- <5782f9a42ad8acd8b234fa9c15a09db93552dc6b.camel@kernel.crashing.org>
- <871roykwu6.fsf@mpe.ellerman.id.au>
- <CAK8P3a1XmeeP7FKfNwXZO8cXyJ_U_Jr0kjOaGZ6F=7OcoZ+0nw@mail.gmail.com>
- <87zha17otl.fsf@mpe.ellerman.id.au>
- <33b873a8-ded2-4866-fb70-c336fb325923@csgroup.eu>
-Message-ID: <02a27887-55ce-2101-efce-b1236e164f15@csgroup.eu>
-Date:   Wed, 25 Nov 2020 07:36:49 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.5.0
+        linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org,
+        oss-drivers@netronome.com, bridge@lists.linux-foundation.org,
+        linux-security-module@vger.kernel.org,
+        amd-gfx@lists.freedesktop.org,
+        linux-stm32@st-md-mailman.stormreply.com, cluster-devel@redhat.com,
+        linux-acpi@vger.kernel.org, coreteam@netfilter.org,
+        intel-wired-lan@lists.osuosl.org, linux-input@vger.kernel.org,
+        Miguel Ojeda <ojeda@kernel.org>,
+        tipc-discussion@lists.sourceforge.net, linux-ext4@vger.kernel.org,
+        linux-media@vger.kernel.org, linux-watchdog@vger.kernel.org,
+        selinux@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        intel-gfx@lists.freedesktop.org, linux-geode@lists.infradead.org,
+        linux-can@vger.kernel.org, linux-block@vger.kernel.org,
+        linux-gpio@vger.kernel.org, op-tee@lists.trustedfirmware.org,
+        linux-mediatek@lists.infradead.org, xen-devel@lists.xenproject.org,
+        nouveau@lists.freedesktop.org, linux-hams@vger.kernel.org,
+        ceph-devel@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org,
+        x86@kernel.org, linux-nfs@vger.kernel.org,
+        GR-Linux-NIC-Dev@marvell.com, linux-mm@kvack.org,
+        netdev@vger.kernel.org, linux-decnet-user@lists.sourceforge.net,
+        linux-mmc@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+        linux-sctp@vger.kernel.org, linux-usb@vger.kernel.org,
+        netfilter-devel@vger.kernel.org, linux-crypto@vger.kernel.org,
+        patches@opensource.cirrus.com, linux-integrity@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-hardening@vger.kernel.org,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        Greg KH <gregkh@linuxfoundation.org>
+Date:   Tue, 24 Nov 2020 23:05:35 -0800
+In-Reply-To: <202011241327.BB28F12F6@keescook>
+References: <202011201129.B13FDB3C@keescook>
+         <20201120115142.292999b2@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
+         <202011220816.8B6591A@keescook>
+         <9b57fd4914b46f38d54087d75e072d6e947cb56d.camel@HansenPartnership.com>
+         <ca071decb87cc7e905411423c05a48f9fd2f58d7.camel@perches.com>
+         <0147972a72bc13f3629de8a32dee6f1f308994b5.camel@HansenPartnership.com>
+         <d8d1e9add08cdd4158405e77762d4946037208f8.camel@perches.com>
+         <dbd2cb703ed9eefa7dde9281ea26ab0f7acc8afe.camel@HansenPartnership.com>
+         <20201123130348.GA3119@embeddedor>
+         <8f5611bb015e044fa1c0a48147293923c2d904e4.camel@HansenPartnership.com>
+         <202011241327.BB28F12F6@keescook>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.34.4 
 MIME-Version: 1.0
-In-Reply-To: <33b873a8-ded2-4866-fb70-c336fb325923@csgroup.eu>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On Tue, 2020-11-24 at 13:32 -0800, Kees Cook wrote:
+> On Mon, Nov 23, 2020 at 08:31:30AM -0800, James Bottomley wrote:
+> > Really, no ... something which produces no improvement has no value
+> > at all ... we really shouldn't be wasting maintainer time with it
+> > because it has a cost to merge.  I'm not sure we understand where
+> > the balance lies in value vs cost to merge but I am confident in
+> > the zero value case.
+> 
+> What? We can't measure how many future bugs aren't introduced because
+> the kernel requires explicit case flow-control statements for all new
+> code.
+
+No but we can measure how vulnerable our current coding habits are to
+the mistake this warning would potentially prevent.  I don't think it's
+wrong to extrapolate that if we had no instances at all of prior coding
+problems we likely wouldn't have any in future either making adopting
+the changes needed to enable the warning valueless ... that's the zero
+value case I was referring to above.
+
+Now, what we have seems to be about 6 cases (at least what's been shown
+in this thread) where a missing break would cause potentially user
+visible issues.  That means the value of this isn't zero, but it's not
+a no-brainer massive win either.  That's why I think asking what we've
+invested vs the return isn't a useless exercise.
+
+> We already enable -Wimplicit-fallthrough globally, so that's not the
+> discussion. The issue is that Clang is (correctly) even more strict
+> than GCC for this, so these are the remaining ones to fix for full
+> Clang coverage too.
+> 
+> People have spent more time debating this already than it would have
+> taken to apply the patches. :)
+
+You mean we've already spent 90% of the effort to come this far so we
+might as well go the remaining 10% because then at least we get some
+return? It's certainly a clinching argument in defence procurement ...
+
+> This is about robustness and language wrangling. It's a big code-
+> base, and this is the price of our managing technical debt for
+> permanent robustness improvements. (The numbers I ran from Gustavo's
+> earlier patches were that about 10% of the places adjusted were
+> identified as legitimate bugs being fixed. This final series may be
+> lower, but there are still bugs being found from it -- we need to
+> finish this and shut the door on it for good.)
+
+I got my six patches by analyzing the lwn.net report of the fixes that
+was cited which had 21 of which 50% didn't actually change the emitted
+code, and 25% didn't have a user visible effect.
+
+But the broader point I'm making is just because the compiler people
+come up with a shiny new warning doesn't necessarily mean the problem
+it's detecting is one that causes us actual problems in the code base. 
+I'd really be happier if we had a theory about what classes of CVE or
+bug we could eliminate before we embrace the next new warning.
+
+James
 
 
-Le 21/05/2020 à 12:38, Christophe Leroy a écrit :
-> 
-> 
-> Le 21/05/2020 à 09:02, Michael Ellerman a écrit :
->> Arnd Bergmann <arnd@arndb.de> writes:
->>> +On Wed, Apr 8, 2020 at 2:04 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->>>> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->>>>> On Fri, 2020-04-03 at 15:59 +1100, Michael Ellerman wrote:
->>>>>> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->>>>> IBM still put 40x cores inside POWER chips no ?
->>>>
->>>> Oh yeah that's true. I guess most folks don't know that, or that they
->>>> run RHEL on them.
->>>
->>> Is there a reason for not having those dts files in mainline then?
->>> If nothing else, it would document what machines are still being
->>> used with future kernels.
->>
->> Sorry that part was a joke :D  Those chips don't run Linux.
->>
-> 
-> Nice to know :)
-> 
-> What's the plan then, do we still want to keep 40x in the kernel ?
-> 
-> If yes, is it ok to drop the oldies anyway as done in my series 
-> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=172630 ?
-> 
-> (Note that this series will conflict with my series on hugepages on 8xx due to the 
-> PTE_ATOMIC_UPDATES stuff. I can rebase the 40x modernisation series on top of the 8xx hugepages 
-> series if it is worth it)
-> 
 
-Do we still want to keep 40x in the kernel ? We don't even have a running 40x QEMU machine as far as 
-I know.
-
-I'm asking because I'd like to drop the non CONFIG_VMAP_STACK code to simplify and ease stuff (code 
-that works with vmalloc'ed stacks also works with stacks in linear memory), but I can't do it 
-because 40x doesn't have VMAP_STACK and should I implement it for 40x, I have to means to test it.
-
-So it would ease things if we could drop 40x completely, unless someone there has a 40x platform to 
-test stuff.
-
-Thanks
-Christophe

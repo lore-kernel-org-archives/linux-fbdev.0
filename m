@@ -2,104 +2,184 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BB41C63777
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Nov 2020 08:30:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68256C56202
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Nov 2020 11:02:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0DB5B20872
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Nov 2020 08:30:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 19C4721D1A
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Nov 2020 11:02:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730293AbgKZI35 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 26 Nov 2020 03:29:57 -0500
-Received: from mail-oo1-f65.google.com ([209.85.161.65]:34970 "EHLO
-        mail-oo1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727039AbgKZI35 (ORCPT
+        id S1729740AbgKZLCE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 26 Nov 2020 06:02:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33756 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729663AbgKZLCD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 26 Nov 2020 03:29:57 -0500
-Received: by mail-oo1-f65.google.com with SMTP id y3so237662ooq.2;
-        Thu, 26 Nov 2020 00:29:55 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=j/vBBElAksTvt4HjurCYnxT73LNYVZ5qmRqRKKnCoNw=;
-        b=SBDUNm3+NYqZ7dOowcbPhy3YJbjDU+cyirOt7w0EkG8uBm4EpeOwLx/6g7IdT76HT0
-         vGFFqRKqms2cKwRLwHd5uzLNP4mzV6WLf4rohuyuim1JFyeOQQet2unlWEdUPsK02Xh8
-         g3XAEiVBLtqtVxHLj1NC5AgacpAh5BHW2wmP82wmdomvdAJ3g4sA289up8s2Eze0mg8m
-         6HCRQ/rt3HNoI/vYmY+krIBPRPNSf37oKQue4ClAalsHB854gmh8OyGSFRfSCbVjTA3A
-         /VGfTT45V9/9uCFAQlD+TuJ8b5CS/2o3gcRUzO83dE9PbFzuy6ZbiflOZSC/lKnwYQ3T
-         n0xA==
-X-Gm-Message-State: AOAM530RJn4uQXQSH6k4fMXhz3ZUWJlrA33IK36tMnm7iUbYASEHWisG
-        J81WCjcMfHYbuY6IpcHYmoPi3lmEi/Sy8sRfCHA=
-X-Google-Smtp-Source: ABdhPJwPulrHQWSHcYoomf4Z7RDCXvKABZRXcws/8ZD9MXQyBQxa3HrEjaME+FqCdHcKa4kGkfEeLCOXS4eDYfiorh4=
-X-Received: by 2002:a4a:abc9:: with SMTP id o9mr1291425oon.1.1606379394915;
- Thu, 26 Nov 2020 00:29:54 -0800 (PST)
-MIME-Version: 1.0
-References: <20201126003957.19604-1-rdunlap@infradead.org>
-In-Reply-To: <20201126003957.19604-1-rdunlap@infradead.org>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 26 Nov 2020 09:29:43 +0100
-Message-ID: <CAMuHMdVpcLc9enskSBJobmHXy3GU5ULdt78ArAr522VXRmty5w@mail.gmail.com>
-Subject: Re: [PATCH] fbdev: aty: SPARC64 requires FB_ATY_CT
-To:     Randy Dunlap <rdunlap@infradead.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        sparclinux <sparclinux@vger.kernel.org>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
+        Thu, 26 Nov 2020 06:02:03 -0500
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC41BC0613D4
+        for <linux-fbdev@vger.kernel.org>; Thu, 26 Nov 2020 03:02:03 -0800 (PST)
+Received: from pty.hi.pengutronix.de ([2001:67c:670:100:1d::c5])
+        by metis.ext.pengutronix.de with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1kiF25-0000P7-N2; Thu, 26 Nov 2020 12:01:49 +0100
+Received: from ukl by pty.hi.pengutronix.de with local (Exim 4.89)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1kiF23-00052Z-Ke; Thu, 26 Nov 2020 12:01:47 +0100
+From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+To:     Russell King <linux@armlinux.org.uk>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Content-Type: text/plain; charset="UTF-8"
+Cc:     linux-arm-kernel@lists.infradead.org, linux-input@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        kernel@pengutronix.de
+Subject: [PATCH] ARM: locomo: make locomo bus's remove callback return void
+Date:   Thu, 26 Nov 2020 12:01:40 +0100
+Message-Id: <20201126110140.2021758-1-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.29.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c5
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Randy,
+The driver core ignores the return value of struct bus_type::remove
+because there is only little that can be done. To simplify the quest to
+make this function return void, let struct locomo_driver::remove return
+void, too. All users already unconditionally return 0, this commit makes
+it obvious that returning an error code is a bad idea and ensures future
+users behave accordingly.
 
-On Thu, Nov 26, 2020 at 1:40 AM Randy Dunlap <rdunlap@infradead.org> wrote:
-> It looks like SPARC64 requires FB_ATY_CT to build without errors,
-> so adjust the Kconfig entry of FB_ATY_CT so that it is always 'y'
-> for SPARC64 && PCI by disabling the prompt for SPARC64 && PCI.
->
-> As it currently is, FB_ATY_CT can be disabled, resulting in build
-> errors:
->
-> ERROR: modpost: "aty_postdividers" [drivers/video/fbdev/aty/atyfb.ko] undefined!
-> ERROR: modpost: "aty_ld_pll_ct" [drivers/video/fbdev/aty/atyfb.ko] undefined!
->
-> Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+Hello,
 
-Thanks for your patch!
+if desired the change to arch/arm/mach-sa1100/collie.c can be split out
+of this patch. The change of prototype then doesn't affect this driver
+any more. There is one locomo-driver that is already now unaffected:
+drivers/leds/leds-locomo.c. This driver doesn't have a remove callback.
 
-> --- linux-next-20201124.orig/drivers/video/fbdev/Kconfig
-> +++ linux-next-20201124/drivers/video/fbdev/Kconfig
-> @@ -1277,7 +1277,7 @@ config FB_ATY
->           module will be called atyfb.
->
->  config FB_ATY_CT
-> -       bool "Mach64 CT/VT/GT/LT (incl. 3D RAGE) support"
-> +       bool "Mach64 CT/VT/GT/LT (incl. 3D RAGE) support" if !(SPARC64 && PCI)
->         depends on PCI && FB_ATY
->         default y if SPARC64 && PCI
->         help
+Best regards
+Uwe
 
-What about letting FB_ATY select FB_ATY_CT if SPARC64 && PCI, and
-dropping the "default y"-line, instead?
+ arch/arm/common/locomo.c               | 5 ++---
+ arch/arm/include/asm/hardware/locomo.h | 2 +-
+ arch/arm/mach-sa1100/collie.c          | 6 ------
+ drivers/input/keyboard/locomokbd.c     | 4 +---
+ drivers/video/backlight/locomolcd.c    | 3 +--
+ 5 files changed, 5 insertions(+), 15 deletions(-)
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/arch/arm/common/locomo.c b/arch/arm/common/locomo.c
+index 62f241b09fe3..e45f4e4e06b6 100644
+--- a/arch/arm/common/locomo.c
++++ b/arch/arm/common/locomo.c
+@@ -838,11 +838,10 @@ static int locomo_bus_remove(struct device *dev)
+ {
+ 	struct locomo_dev *ldev = LOCOMO_DEV(dev);
+ 	struct locomo_driver *drv = LOCOMO_DRV(dev->driver);
+-	int ret = 0;
+ 
+ 	if (drv->remove)
+-		ret = drv->remove(ldev);
+-	return ret;
++		drv->remove(ldev);
++	return 0;
+ }
+ 
+ struct bus_type locomo_bus_type = {
+diff --git a/arch/arm/include/asm/hardware/locomo.h b/arch/arm/include/asm/hardware/locomo.h
+index f8712e3c29cf..246a3de25931 100644
+--- a/arch/arm/include/asm/hardware/locomo.h
++++ b/arch/arm/include/asm/hardware/locomo.h
+@@ -188,7 +188,7 @@ struct locomo_driver {
+ 	struct device_driver	drv;
+ 	unsigned int		devid;
+ 	int (*probe)(struct locomo_dev *);
+-	int (*remove)(struct locomo_dev *);
++	void (*remove)(struct locomo_dev *);
+ };
+ 
+ #define LOCOMO_DRV(_d)	container_of((_d), struct locomo_driver, drv)
+diff --git a/arch/arm/mach-sa1100/collie.c b/arch/arm/mach-sa1100/collie.c
+index bd3a52fd09ce..f43beb7b25c7 100644
+--- a/arch/arm/mach-sa1100/collie.c
++++ b/arch/arm/mach-sa1100/collie.c
+@@ -204,18 +204,12 @@ static int collie_uart_probe(struct locomo_dev *dev)
+ 	return 0;
+ }
+ 
+-static int collie_uart_remove(struct locomo_dev *dev)
+-{
+-	return 0;
+-}
+-
+ static struct locomo_driver collie_uart_driver = {
+ 	.drv = {
+ 		.name = "collie_uart",
+ 	},
+ 	.devid	= LOCOMO_DEVID_UART,
+ 	.probe	= collie_uart_probe,
+-	.remove	= collie_uart_remove,
+ };
+ 
+ static int __init collie_uart_init(void)
+diff --git a/drivers/input/keyboard/locomokbd.c b/drivers/input/keyboard/locomokbd.c
+index daf6a753ca61..dae053596572 100644
+--- a/drivers/input/keyboard/locomokbd.c
++++ b/drivers/input/keyboard/locomokbd.c
+@@ -304,7 +304,7 @@ static int locomokbd_probe(struct locomo_dev *dev)
+ 	return err;
+ }
+ 
+-static int locomokbd_remove(struct locomo_dev *dev)
++static void locomokbd_remove(struct locomo_dev *dev)
+ {
+ 	struct locomokbd *locomokbd = locomo_get_drvdata(dev);
+ 
+@@ -318,8 +318,6 @@ static int locomokbd_remove(struct locomo_dev *dev)
+ 	release_mem_region((unsigned long) dev->mapbase, dev->length);
+ 
+ 	kfree(locomokbd);
+-
+-	return 0;
+ }
+ 
+ static struct locomo_driver keyboard_driver = {
+diff --git a/drivers/video/backlight/locomolcd.c b/drivers/video/backlight/locomolcd.c
+index 297ee2e1ab0b..0468ea82159f 100644
+--- a/drivers/video/backlight/locomolcd.c
++++ b/drivers/video/backlight/locomolcd.c
+@@ -208,7 +208,7 @@ static int locomolcd_probe(struct locomo_dev *ldev)
+ 	return 0;
+ }
+ 
+-static int locomolcd_remove(struct locomo_dev *dev)
++static void locomolcd_remove(struct locomo_dev *dev)
+ {
+ 	unsigned long flags;
+ 
+@@ -220,7 +220,6 @@ static int locomolcd_remove(struct locomo_dev *dev)
+ 	local_irq_save(flags);
+ 	locomolcd_dev = NULL;
+ 	local_irq_restore(flags);
+-	return 0;
+ }
+ 
+ static struct locomo_driver poodle_lcd_driver = {
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.29.2
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

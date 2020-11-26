@@ -2,106 +2,94 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C093FC56202
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Nov 2020 16:33:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 455C8C64E7A
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Nov 2020 17:01:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8125A20B80
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Nov 2020 16:33:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="bVomFdoZ"
+	by mail.kernel.org (Postfix) with ESMTP id F0E1C2068D
+	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Nov 2020 17:01:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390599AbgKZQdj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 26 Nov 2020 11:33:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57212 "EHLO
+        id S2404107AbgKZRBj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 26 Nov 2020 12:01:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33336 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730181AbgKZQdj (ORCPT
+        with ESMTP id S2404064AbgKZRBi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 26 Nov 2020 11:33:39 -0500
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33D43C0613D4;
-        Thu, 26 Nov 2020 08:33:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
-        :Reply-To:Content-ID:Content-Description;
-        bh=bqLeJ7tQgtWVqUanZNK/be2k3nwImihYsEZ6qm1//Jc=; b=bVomFdoZyMjCyp39m/+hI2Cwp+
-        tB/4WCBZR50jHXKiCbmayUPoNDYFTz3eaYscv63cEpljzSt3bgj10aFLmLi9q/bV+6Lf8MCarhByy
-        IqLCyoxLP4RjRInuZScNQ7WlWRaCJLoppv6mSYHkmuUGPmcGeBA3yUMdOsw44vHX7prAhVgmVc28m
-        wTZBQzA4ZMerKTLED4JtJHpuXnhmFuoZTxTLwI7BuoyQrx5EgKb93P9H/24K4JirvjCpCVeSv1wh4
-        3bXfigxXx+9TTJ7WRwvq1r8koyjXVmn06BUMv7X6Pdlx+UzrAO6U5yEZD+dtjZy8cVCntw0YdrBYy
-        uZq6CsaQ==;
-Received: from [2601:1c0:6280:3f0::cc1f]
-        by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1kiKD7-0001TC-NC; Thu, 26 Nov 2020 16:33:34 +0000
-Subject: Re: [PATCH] fbdev: aty: SPARC64 requires FB_ATY_CT
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Thu, 26 Nov 2020 12:01:38 -0500
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31A3BC0613D4
+        for <linux-fbdev@vger.kernel.org>; Thu, 26 Nov 2020 09:01:38 -0800 (PST)
+Received: from pty.hi.pengutronix.de ([2001:67c:670:100:1d::c5])
+        by metis.ext.pengutronix.de with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1kiKcr-0001Kj-AC; Thu, 26 Nov 2020 18:00:09 +0100
+Received: from ukl by pty.hi.pengutronix.de with local (Exim 4.89)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1kiKch-0002rx-1n; Thu, 26 Nov 2020 17:59:59 +0100
+From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+To:     Geoff Levand <geoff@infradead.org>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Takashi Iwai <tiwai@suse.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Jens Axboe <axboe@kernel.dk>, Jim Paris <jim@jtan.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         "David S. Miller" <davem@davemloft.net>,
-        sparclinux <sparclinux@vger.kernel.org>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
+        Jakub Kicinski <kuba@kernel.org>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Alan Stern <stern@rowland.harvard.edu>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-References: <20201126003957.19604-1-rdunlap@infradead.org>
- <CAMuHMdVpcLc9enskSBJobmHXy3GU5ULdt78ArAr522VXRmty5w@mail.gmail.com>
-From:   Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <d0f1daa5-8d3f-4eb9-ad00-29eb344016b7@infradead.org>
-Date:   Thu, 26 Nov 2020 08:33:28 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.0
+Cc:     Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
+        linux-block@vger.kernel.org, netdev@vger.kernel.org,
+        linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH 1/2] ALSA: ppc: drop if block with always false condition
+Date:   Thu, 26 Nov 2020 17:59:49 +0100
+Message-Id: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
-In-Reply-To: <CAMuHMdVpcLc9enskSBJobmHXy3GU5ULdt78ArAr522VXRmty5w@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c5
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 11/26/20 12:29 AM, Geert Uytterhoeven wrote:
-> Hi Randy,
-> 
-> On Thu, Nov 26, 2020 at 1:40 AM Randy Dunlap <rdunlap@infradead.org> wrote:
->> It looks like SPARC64 requires FB_ATY_CT to build without errors,
->> so adjust the Kconfig entry of FB_ATY_CT so that it is always 'y'
->> for SPARC64 && PCI by disabling the prompt for SPARC64 && PCI.
->>
->> As it currently is, FB_ATY_CT can be disabled, resulting in build
->> errors:
->>
->> ERROR: modpost: "aty_postdividers" [drivers/video/fbdev/aty/atyfb.ko] undefined!
->> ERROR: modpost: "aty_ld_pll_ct" [drivers/video/fbdev/aty/atyfb.ko] undefined!
->>
->> Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
->> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> 
-> Thanks for your patch!
-> 
->> --- linux-next-20201124.orig/drivers/video/fbdev/Kconfig
->> +++ linux-next-20201124/drivers/video/fbdev/Kconfig
->> @@ -1277,7 +1277,7 @@ config FB_ATY
->>           module will be called atyfb.
->>
->>  config FB_ATY_CT
->> -       bool "Mach64 CT/VT/GT/LT (incl. 3D RAGE) support"
->> +       bool "Mach64 CT/VT/GT/LT (incl. 3D RAGE) support" if !(SPARC64 && PCI)
->>         depends on PCI && FB_ATY
->>         default y if SPARC64 && PCI
->>         help
-> 
-> What about letting FB_ATY select FB_ATY_CT if SPARC64 && PCI, and
-> dropping the "default y"-line, instead?
+The remove callback is only called for devices that were probed
+successfully before. As the matching probe function cannot complete
+without error if dev->match_id != PS3_MATCH_ID_SOUND, we don't have to
+check this here.
 
-Sure, I'll try it that way and repost.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ sound/ppc/snd_ps3.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-thanks.
+diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
+index 58bb49fff184..6ab796a5d936 100644
+--- a/sound/ppc/snd_ps3.c
++++ b/sound/ppc/snd_ps3.c
+@@ -1053,8 +1053,6 @@ static int snd_ps3_driver_remove(struct ps3_system_bus_device *dev)
+ {
+ 	int ret;
+ 	pr_info("%s:start id=%d\n", __func__,  dev->match_id);
+-	if (dev->match_id != PS3_MATCH_ID_SOUND)
+-		return -ENXIO;
+ 
+ 	/*
+ 	 * ctl and preallocate buffer will be freed in
 -- 
-~Randy
+2.29.2
 

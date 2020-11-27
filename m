@@ -2,130 +2,110 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAA6FC2D0E4
-	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 15:14:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E86E5C3E8C5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 19:31:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 50A8422244
-	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 15:14:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AE2E024101
+	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 19:31:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="iNafPJ5y"
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="GagEkA9r"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730422AbgK0POo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 27 Nov 2020 10:14:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40340 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729113AbgK0POn (ORCPT
+        id S1729086AbgK0TaW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 27 Nov 2020 14:30:22 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:44895 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1730080AbgK0TFi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 27 Nov 2020 10:14:43 -0500
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C2C73C0613D1
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 07:14:41 -0800 (PST)
-Received: by mail-wr1-x443.google.com with SMTP id m6so5920714wrg.7
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 07:14:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=ZMzwoE0Dd6fGdbZptz4gO2+Eta2edZWtpfnfREQIYBk=;
-        b=iNafPJ5ywOWSDkzoa418mygS+Pu6j0+b0FZhr6dG9lb3JOScnAd3oHUlc0LVjAmD3g
-         exwlJ3BhHTSl3vuBryhe7Kgc56fC1N5rj6jJWeqihvbS3H0kM3HY57LQzY/0PqTshM70
-         wHuQWaqK5Fxc12etXg9s39a4GbCEOsotO/7GU=
+        Fri, 27 Nov 2020 14:05:38 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1606503919;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc; bh=P4J8EBWPnBVFoHBHwgQRXiVw93w2If7dqdzr9ZCw24E=;
+        b=GagEkA9rSJUY+3Kk0NLoDk6fGvYMhc2QV78uZlpYFqu72+prMISH7hclQFyAyziHOwOANW
+        sgCwtqvoqfbBPdT4ekzKjMIBZAd8kv96PkQGRXveuqRvEGwSoZBgTpmmk7DBOLVbt/LSJK
+        00AoW7LeGp3gA1i/kvlcVFzXZNASaLM=
+Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com
+ [209.85.219.70]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-300-61uD7kApMs2hE6iAc43DVw-1; Fri, 27 Nov 2020 14:05:17 -0500
+X-MC-Unique: 61uD7kApMs2hE6iAc43DVw-1
+Received: by mail-qv1-f70.google.com with SMTP id ca17so3556336qvb.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:05:17 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to;
-        bh=ZMzwoE0Dd6fGdbZptz4gO2+Eta2edZWtpfnfREQIYBk=;
-        b=dslThzOCD/P69D/iLwYrY36Su8zu7kaFvSmctmk5eN1kkwW3T8QJuVpd2cOueuGJ7Y
-         N7gUcWY8zb/X+1mW+wZXko0z+r3bI8/iia/WebIFqBZsHngEeD39d0QifQnIgFEmGh8q
-         yK6ll2yhQYsPES3x5UL4p3KVxCqxCKvla6kYJDDbu5dSHJCfRKcLWPVkbmBj4F1T0VA3
-         /F+tLL+SuHQ5bt4dF+t0ZI7Wy/oZTmFmmtK+xQcq2a+cAkWqXMt4UF/Z3nygH79PV8l3
-         4fEZBnzq/U2TnlSw1OskLEZqDfc/EVdDk2ttByDls831N0gD8JsSklPwgdpXl7glJv11
-         kJrw==
-X-Gm-Message-State: AOAM531CvHttqKWyPrtlqBAkCrx1Q1xn4HVnDcbI7CwdEoay/Om71jei
-        uzHtndOSnJsH24B0BSdk1fUoOQ==
-X-Google-Smtp-Source: ABdhPJzeFZUg0q2fzZp1cBShV/TYpSR++GJRHPfRmFTBFUpON/ZCauJL86rwWuavStjri4mOLdoRew==
-X-Received: by 2002:adf:e444:: with SMTP id t4mr11341858wrm.152.1606490080594;
-        Fri, 27 Nov 2020 07:14:40 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id j13sm8370481wrp.70.2020.11.27.07.14.39
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=P4J8EBWPnBVFoHBHwgQRXiVw93w2If7dqdzr9ZCw24E=;
+        b=ns5A594Cs+eBVE6ti5XrTTrrKnIP/ZWYZ7+s74yxm/FO73+nDqVHRhYfHq6MOLfhm1
+         /U0Pp1xC9pAe1J4MxkYyH3S5CX4/4MS0PbqUrHRPqeuWQXwZaKunBNUY/3rbfr0CyV3K
+         piCaeiQjmNruL+fprhrbu38W6fq52zRom/7Gz+7aPjrf6uXEKE988rUVUup0XmRSIuTD
+         Jz2+cDKra0bsxP5DQa+lediX+yZfT/Nq4LQ6F1hzoVfGEbagULop7lRvu4StnBzFN/w1
+         IW0cErPvKfPmRNJLpnJ/O/SzhePg/DhvELY+5DxqsfMwK3NQZfPR8rZyWgkFUvsth0T4
+         A8zQ==
+X-Gm-Message-State: AOAM533pdPrkM+mAontoLtkpmutfHhXrLCORPn5Q7Kd1PIzkl8xEP6Dd
+        fBrb34loN5RWB4Dvg2VMdcKjyg/hR+jQ5xP02MzxOlcNU7n3/wXTV4AwYqFjoBeSyPEGXEcSD8K
+        eMy4qFZ1/nKpt2/xlPlGlrKQ=
+X-Received: by 2002:a05:620a:22eb:: with SMTP id p11mr10254697qki.224.1606503916860;
+        Fri, 27 Nov 2020 11:05:16 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJzlHMd5iGgdFcDE7TXlKessUY1X4ETN8EOl5uRxiIteKlzhnCF61nP8e6tAtR4EIGlPYbb+vw==
+X-Received: by 2002:a05:620a:22eb:: with SMTP id p11mr10254684qki.224.1606503916681;
+        Fri, 27 Nov 2020 11:05:16 -0800 (PST)
+Received: from trix.remote.csb (075-142-250-213.res.spectrum.com. [75.142.250.213])
+        by smtp.gmail.com with ESMTPSA id k128sm6806898qkd.48.2020.11.27.11.05.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Nov 2020 07:14:39 -0800 (PST)
-Date:   Fri, 27 Nov 2020 16:14:37 +0100
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        sparclinux <sparclinux@vger.kernel.org>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v2] fbdev: aty: SPARC64 requires FB_ATY_CT
-Message-ID: <20201127151437.GH401619@phenom.ffwll.local>
-Mail-Followup-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        sparclinux <sparclinux@vger.kernel.org>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        David Airlie <airlied@linux.ie>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-References: <20201127031752.10371-1-rdunlap@infradead.org>
- <CAMuHMdWup4D9A-giF9xDEhva8PPH4Yhg2NHYx3+0q_=Uoi+iRA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdWup4D9A-giF9xDEhva8PPH4Yhg2NHYx3+0q_=Uoi+iRA@mail.gmail.com>
-X-Operating-System: Linux phenom 5.7.0-1-amd64 
+        Fri, 27 Nov 2020 11:05:16 -0800 (PST)
+From:   trix@redhat.com
+To:     b.zolnierkie@samsung.com, pakki001@umn.edu
+Cc:     linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Tom Rix <trix@redhat.com>
+Subject: [PATCH] omapfb: fbcon: remove trailing semicolon in macro definition
+Date:   Fri, 27 Nov 2020 11:05:08 -0800
+Message-Id: <20201127190508.2842786-1-trix@redhat.com>
+X-Mailer: git-send-email 2.18.4
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Nov 27, 2020 at 10:15:49AM +0100, Geert Uytterhoeven wrote:
-> On Fri, Nov 27, 2020 at 4:18 AM Randy Dunlap <rdunlap@infradead.org> wrote:
-> > It looks like SPARC64 requires FB_ATY_CT to build without errors,
-> > so have FB_ATY select FB_ATY_CT if both SPARC64 and PCI are enabled
-> > instead of using "default y if SPARC64 && PCI", which is not strong
-> > enough to prevent build errors.
-> >
-> > As it currently is, FB_ATY_CT can be disabled, resulting in build
-> > errors:
-> >
-> > ERROR: modpost: "aty_postdividers" [drivers/video/fbdev/aty/atyfb.ko] undefined!
-> > ERROR: modpost: "aty_ld_pll_ct" [drivers/video/fbdev/aty/atyfb.ko] undefined!
-> >
-> > Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
-> > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> 
-> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+From: Tom Rix <trix@redhat.com>
 
-Applied to drm-misc-next, thanks for the patch&review.
--Daniel
+The macro use will already have a semicolon.
 
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> -- 
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+Signed-off-by: Tom Rix <trix@redhat.com>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c | 2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c          | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c
+index 3417618310ff..cc2ad787d493 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c
+@@ -75,7 +75,7 @@ static void dispc_dump_irqs(struct seq_file *s)
+ 
+ 	seq_printf(s, "irqs %d\n", stats.irq_count);
+ #define PIS(x) \
+-	seq_printf(s, "%-20s %10d\n", #x, stats.irqs[ffs(DISPC_IRQ_##x)-1]);
++	seq_printf(s, "%-20s %10d\n", #x, stats.irqs[ffs(DISPC_IRQ_##x)-1])
+ 
+ 	PIS(FRAMEDONE);
+ 	PIS(VSYNC);
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+index 6f9c25fec994..101fa66f9b58 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+@@ -1554,7 +1554,7 @@ static void dsi_dump_dsidev_irqs(struct platform_device *dsidev,
+ 
+ 	seq_printf(s, "irqs %d\n", stats.irq_count);
+ #define PIS(x) \
+-	seq_printf(s, "%-20s %10d\n", #x, stats.dsi_irqs[ffs(DSI_IRQ_##x)-1]);
++	seq_printf(s, "%-20s %10d\n", #x, stats.dsi_irqs[ffs(DSI_IRQ_##x)-1])
+ 
+ 	seq_printf(s, "-- DSI%d interrupts --\n", dsi->module_id + 1);
+ 	PIS(VC0);
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.18.4
+

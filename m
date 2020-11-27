@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 409D6C3E8C5
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 01:21:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67B8CC3E8C5
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 01:23:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EF18422255
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 01:21:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2203822255
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 01:23:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TCBYH4Mo"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YVPokDiH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729604AbgK1BVV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 27 Nov 2020 20:21:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56608 "EHLO
+        id S1729425AbgK1BWx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 27 Nov 2020 20:22:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56594 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731162AbgK0UBR (ORCPT
+        with ESMTP id S1731324AbgK0UBR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Fri, 27 Nov 2020 15:01:17 -0500
 Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF97DC08E860
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:59:33 -0800 (PST)
-Received: by mail-lf1-x144.google.com with SMTP id z21so8531261lfe.12
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:59:33 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16F0CC08E862
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:59:39 -0800 (PST)
+Received: by mail-lf1-x144.google.com with SMTP id d8so8586998lfa.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:59:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=rJy8+vjkzYcV3XZ9Y+7Fhqd4Ih76XwRBzaJbmXxDMAw=;
-        b=TCBYH4MoDC4EkijExZlsZmuW7pCHINO8ItDGIOhZpNfusWNsUwsPFSjpOj3DV1FYfq
-         U7rEdu3HkuAAtAPqhoC9k9YNFAdbYPSWUHxs8zNG6Wkd4BfEwYRxYzZReMO8HsrT96UA
-         TIXsjv6vxzOlkQK8X4r168/DpCnKzqBaLxYag3qdIwFpLzGNDSbDNTaLjNT/RS9MFNzK
-         GuxEHrhefBzz4opGqJsXeV1LE28StIAkEBTZLqF1vfe4UXaI2cKfqOE8wPRCw2IqU+Jh
-         9sVtCEx725p2FYiEAlCLIfbbYsklFvoCjAbnmD8RbDnN6lKr7NGHecqvHhfsCCr6+2ho
-         p2xA==
+        bh=b0Ju2b6VwP0rGTkHcCSaLjeBzsLdorcbkSm8ycWNFi8=;
+        b=YVPokDiHGMOA9sbLmSAHlS5XU0a5XJHcHYLM/96x34Sb9JnoZklVkiVZFvgVRY2O8D
+         aA1OqTdOfDklYRW9I7wUVCqlQ0/4GrkcCf41U9FMlKD+xy7gbgDYUUwIGVWxtsqFrhG2
+         nqbnO9ryw5FC3dTTqfjBrXCQcB0EgzrMJeljIt3r87SKtBfGvrDaMrj40u65HM3CCX8j
+         i4msTSZCAF2DtP7W/gqypD+z93w+e7DmqQjndJmsNb9jx5jYr/NLrkVBVTCi1VByfytN
+         9j44D4ggrk7zVgtZVCnPZVhSh+72mRIGxciTQnYfHWKKajkkcxnTW/evGXe33n1hYGDi
+         //sg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
          :in-reply-to:references:mime-version:content-transfer-encoding;
-        bh=rJy8+vjkzYcV3XZ9Y+7Fhqd4Ih76XwRBzaJbmXxDMAw=;
-        b=bZFP1jRQGtxtt7sTURw95haJbR9QzhHdai2a0OIN65C79HY5p/sYmkYXK4mMu+TMZN
-         DeknhtPLUbFJABUrzS8stsxezwSqII85sE5+zI54WMForfSWqwvFSNqUb5cYRGAt1zR4
-         sJlEOplWz5xUg6nBxL7bak/u2ix+grPUmY4KfxnvwVG5hv8rcrxxFQE6S8FMnGV3YFyh
-         87SEXBNdgtynNsGt0eYYudesyxRb0ICG8l5bU+lVFwBXu5eUgMEVYEI6BkhH/BStzJZs
-         R3f0eH39qU35eQd8R80xycX//Dujrpdso6owXbL3pWbCcyg776ZtZF25UlSqCA/Gs1xV
-         6Vng==
-X-Gm-Message-State: AOAM5316NbLVTHX/eRRGAy/W2CIWJWk8Id6gPSA3vLgKo+aEOCSmCfcr
-        zQ+GwFxwv4V60mjexwSmCv5CwwCctJi0135i
-X-Google-Smtp-Source: ABdhPJyOgA2kVm8O0iBLEqcMx9FEwMgL+93MG+gzwXYrmJwqzkMgjoJP3OWnlBdNp/YB6uBjS4Hc3g==
-X-Received: by 2002:ac2:562a:: with SMTP id b10mr4250758lff.227.1606507172012;
-        Fri, 27 Nov 2020 11:59:32 -0800 (PST)
+        bh=b0Ju2b6VwP0rGTkHcCSaLjeBzsLdorcbkSm8ycWNFi8=;
+        b=fJH2UDI/s4fkpjTAShU/vIHVyXfARarLVHst19C/cjoSlpSk/BaTlxYnAt+FydheAe
+         /rJoAKAxqMjhm9Bbwwh0OmFpmm+WwTBR9lHBzjNUf+aN6S9ovYNWCbC182D2zzV9+yn2
+         SL6QJeDD1drwg4wSjeofr9UsrC2h8gADfSQLTzic6cJlqZrRn550st4E9IJgbbtTnlmh
+         LP9EkfVTqrJdPS237fFCU+PVuPKQwPUOaE3hx53bMf44+a/OKVQXiZo2sYX0ecZ9cJp7
+         15MDn9MN12Ym+/KXYf4K9W1qSM+IkrL2pN/goRgmuh0SJHuvSaEvOJSmyQmAAGUWSoEF
+         O/8A==
+X-Gm-Message-State: AOAM530erehX5/JnUJMq0Mq9cPd+ta2KP49uavAns1y/XgcOQvwU06Og
+        I1tufyTCKKje56dbni7MhfcdhpVgryFSZwEU
+X-Google-Smtp-Source: ABdhPJw6mJwSIHR8X58y/nVsjR7+pYbL7xkqTpsYLQAhnaUTmtEaj/ktaFglnB3Ot6ORxhYINSCP/Q==
+X-Received: by 2002:a19:5602:: with SMTP id k2mr3959293lfb.359.1606507177274;
+        Fri, 27 Nov 2020 11:59:37 -0800 (PST)
 Received: from saturn.localdomain ([2a00:fd00:8060:1c00:9d62:990:4557:451])
-        by smtp.gmail.com with ESMTPSA id c6sm1070415ljj.140.2020.11.27.11.59.29
+        by smtp.gmail.com with ESMTPSA id c6sm1070415ljj.140.2020.11.27.11.59.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Nov 2020 11:59:31 -0800 (PST)
+        Fri, 27 Nov 2020 11:59:36 -0800 (PST)
 Sender: Sam Ravnborg <sam.ravnborg@gmail.com>
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -98,9 +98,9 @@ Cc:     Aditya Pakki <pakki001@umn.edu>,
         Thomas Zimemrmann <tzimmermann@suse.de>,
         Vaibhav Gupta <vaibhavgupta40@gmail.com>,
         Xiaofei Tan <tanxiaofei@huawei.com>
-Subject: [PATCH v1 22/28] video: fbdev: omapfb: Fix W=1 warnings in dsi
-Date:   Fri, 27 Nov 2020 20:58:19 +0100
-Message-Id: <20201127195825.858960-23-sam@ravnborg.org>
+Subject: [PATCH v1 24/28] video: fbdev: s3c-fb: Fix W=1 warnings
+Date:   Fri, 27 Nov 2020 20:58:21 +0100
+Message-Id: <20201127195825.858960-25-sam@ravnborg.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201127195825.858960-1-sam@ravnborg.org>
 References: <20201127195825.858960-1-sam@ravnborg.org>
@@ -110,75 +110,88 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix several W=1 warnings.
-This removes a little unused code and avoids an assignment by moving
-the use inside the conditional block.
+Fix several W=1 warnings
+- Updated kernel-doc as needed
+- Deleted unused local variable, it was assigned but never used
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Aditya Pakki <pakki001@umn.edu>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ drivers/video/fbdev/s3c-fb.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-index 6f9c25fec994..72d45a02c3ac 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-@@ -1178,13 +1178,12 @@ static int dsi_regulator_init(struct platform_device *dsidev)
+diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
+index ba316bd56efd..3b134e1bbc38 100644
+--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -75,6 +75,7 @@ struct s3c_fb;
+  * @buf_size: Offset of buffer size registers.
+  * @buf_end: Offset of buffer end registers.
+  * @osd: The base for the OSD registers.
++ * @osd_stride: stride of osd
+  * @palette: Address of palette memory, or 0 if none.
+  * @has_prtcon: Set if has PRTCON register.
+  * @has_shadowcon: Set if has SHADOWCON register.
+@@ -155,7 +156,7 @@ struct s3c_fb_palette {
+  * @windata: The platform data supplied for the window configuration.
+  * @parent: The hardware that this window is part of.
+  * @fbinfo: Pointer pack to the framebuffer info for this window.
+- * @varint: The variant information for this window.
++ * @variant: The variant information for this window.
+  * @palette_buffer: Buffer/cache to hold palette entries.
+  * @pseudo_palette: For use in TRUECOLOUR modes for entries 0..15/
+  * @index: The window number of this window.
+@@ -336,7 +337,7 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
+ /**
+  * s3c_fb_calc_pixclk() - calculate the divider to create the pixel clock.
+  * @sfb: The hardware state.
+- * @pixclock: The pixel clock wanted, in picoseconds.
++ * @pixclk: The pixel clock wanted, in picoseconds.
+  *
+  * Given the specified pixel clock, work out the necessary divider to get
+  * close to the output frequency.
+@@ -733,7 +734,7 @@ static inline unsigned int chan_to_field(unsigned int chan,
+  * @red: The red field for the palette data.
+  * @green: The green field for the palette data.
+  * @blue: The blue field for the palette data.
+- * @trans: The transparency (alpha) field for the palette data.
++ * @transp: The transparency (alpha) field for the palette data.
+  * @info: The framebuffer being changed.
+  */
+ static int s3c_fb_setcolreg(unsigned regno,
+@@ -1133,6 +1134,7 @@ static void s3c_fb_free_memory(struct s3c_fb *sfb, struct s3c_fb_win *win)
  
- static void _dsi_print_reset_status(struct platform_device *dsidev)
+ /**
+  * s3c_fb_release_win() - release resources for a framebuffer window.
++ * @sfb: The base resources for the hardware.
+  * @win: The window to cleanup the resources for.
+  *
+  * Release the resources that where claimed for the hardware window,
+@@ -1160,6 +1162,7 @@ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
+ /**
+  * s3c_fb_probe_win() - register an hardware window
+  * @sfb: The base resources for the hardware
++ * @win_no: The window number
+  * @variant: The variant information for this window.
+  * @res: Pointer to where to place the resultant window.
+  *
+@@ -1170,7 +1173,6 @@ static int s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 			    struct s3c_fb_win_variant *variant,
+ 			    struct s3c_fb_win **res)
  {
--	u32 l;
- 	int b0, b1, b2;
+-	struct fb_var_screeninfo *var;
+ 	struct fb_videomode initmode;
+ 	struct s3c_fb_pd_win *windata;
+ 	struct s3c_fb_win *win;
+@@ -1198,7 +1200,6 @@ static int s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
  
- 	/* A dummy read using the SCP interface to any DSIPHY register is
- 	 * required after DSIPHY reset to complete the reset of the DSI complex
- 	 * I/O. */
--	l = dsi_read_reg(dsidev, DSI_DSIPHY_CFG5);
-+	dsi_read_reg(dsidev, DSI_DSIPHY_CFG5);
- 
- 	if (dss_has_feature(FEAT_DSI_REVERSE_TXCLKESC)) {
- 		b0 = 28;
-@@ -3627,7 +3626,7 @@ static int dsi_proto_config(struct platform_device *dsidev)
- static void dsi_proto_timings(struct platform_device *dsidev)
- {
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
--	unsigned tlpx, tclk_zero, tclk_prepare, tclk_trail;
-+	unsigned tlpx, tclk_zero, tclk_prepare;
- 	unsigned tclk_pre, tclk_post;
- 	unsigned ths_prepare, ths_prepare_ths_zero, ths_zero;
- 	unsigned ths_trail, ths_exit;
-@@ -3646,7 +3645,6 @@ static void dsi_proto_timings(struct platform_device *dsidev)
- 
- 	r = dsi_read_reg(dsidev, DSI_DSIPHY_CFG1);
- 	tlpx = FLD_GET(r, 20, 16) * 2;
--	tclk_trail = FLD_GET(r, 15, 8);
- 	tclk_zero = FLD_GET(r, 7, 0);
- 
- 	r = dsi_read_reg(dsidev, DSI_DSIPHY_CFG2);
-@@ -4040,7 +4038,6 @@ static int dsi_update(struct omap_dss_device *dssdev, int channel,
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
--	u16 dw, dh;
- 
- 	dsi_perf_mark_setup(dsidev);
- 
-@@ -4049,11 +4046,8 @@ static int dsi_update(struct omap_dss_device *dssdev, int channel,
- 	dsi->framedone_callback = callback;
- 	dsi->framedone_data = data;
- 
--	dw = dsi->timings.x_res;
--	dh = dsi->timings.y_res;
--
- #ifdef DSI_PERF_MEASURE
--	dsi->update_bytes = dw * dh *
-+	dsi->update_bytes = dsi->timings.x_res * dsi->timings.y_res *
- 		dsi_get_pixel_size(dsi->pix_fmt) / 8;
- #endif
- 	dsi_update_screen_dispc(dsidev);
+ 	win = fbinfo->par;
+ 	*res = win;
+-	var = &fbinfo->var;
+ 	win->variant = *variant;
+ 	win->fbinfo = fbinfo;
+ 	win->parent = sfb;
 -- 
 2.27.0
 

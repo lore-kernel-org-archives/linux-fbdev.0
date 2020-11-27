@@ -2,137 +2,130 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75EA9C64E75
-	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 09:47:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAA6FC2D0E4
+	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 15:14:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 28F4B221F7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 09:47:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 50A8422244
+	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 15:14:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="iNafPJ5y"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728161AbgK0JrQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 27 Nov 2020 04:47:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46142 "EHLO
+        id S1730422AbgK0POo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 27 Nov 2020 10:14:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40340 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726802AbgK0JrQ (ORCPT
+        with ESMTP id S1729113AbgK0POn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 27 Nov 2020 04:47:16 -0500
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2D556C0613D1
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 01:47:15 -0800 (PST)
-Received: from pty.hi.pengutronix.de ([2001:67c:670:100:1d::c5])
-        by metis.ext.pengutronix.de with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1kiaKC-0005UC-C7; Fri, 27 Nov 2020 10:45:56 +0100
-Received: from ukl by pty.hi.pengutronix.de with local (Exim 4.89)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1kiaK4-0002Ad-OH; Fri, 27 Nov 2020 10:45:48 +0100
-Date:   Fri, 27 Nov 2020 10:45:47 +0100
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+        Fri, 27 Nov 2020 10:14:43 -0500
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C2C73C0613D1
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 07:14:41 -0800 (PST)
+Received: by mail-wr1-x443.google.com with SMTP id m6so5920714wrg.7
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 07:14:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=ZMzwoE0Dd6fGdbZptz4gO2+Eta2edZWtpfnfREQIYBk=;
+        b=iNafPJ5ywOWSDkzoa418mygS+Pu6j0+b0FZhr6dG9lb3JOScnAd3oHUlc0LVjAmD3g
+         exwlJ3BhHTSl3vuBryhe7Kgc56fC1N5rj6jJWeqihvbS3H0kM3HY57LQzY/0PqTshM70
+         wHuQWaqK5Fxc12etXg9s39a4GbCEOsotO/7GU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :in-reply-to;
+        bh=ZMzwoE0Dd6fGdbZptz4gO2+Eta2edZWtpfnfREQIYBk=;
+        b=dslThzOCD/P69D/iLwYrY36Su8zu7kaFvSmctmk5eN1kkwW3T8QJuVpd2cOueuGJ7Y
+         N7gUcWY8zb/X+1mW+wZXko0z+r3bI8/iia/WebIFqBZsHngEeD39d0QifQnIgFEmGh8q
+         yK6ll2yhQYsPES3x5UL4p3KVxCqxCKvla6kYJDDbu5dSHJCfRKcLWPVkbmBj4F1T0VA3
+         /F+tLL+SuHQ5bt4dF+t0ZI7Wy/oZTmFmmtK+xQcq2a+cAkWqXMt4UF/Z3nygH79PV8l3
+         4fEZBnzq/U2TnlSw1OskLEZqDfc/EVdDk2ttByDls831N0gD8JsSklPwgdpXl7glJv11
+         kJrw==
+X-Gm-Message-State: AOAM531CvHttqKWyPrtlqBAkCrx1Q1xn4HVnDcbI7CwdEoay/Om71jei
+        uzHtndOSnJsH24B0BSdk1fUoOQ==
+X-Google-Smtp-Source: ABdhPJzeFZUg0q2fzZp1cBShV/TYpSR++GJRHPfRmFTBFUpON/ZCauJL86rwWuavStjri4mOLdoRew==
+X-Received: by 2002:adf:e444:: with SMTP id t4mr11341858wrm.152.1606490080594;
+        Fri, 27 Nov 2020 07:14:40 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id j13sm8370481wrp.70.2020.11.27.07.14.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 27 Nov 2020 07:14:39 -0800 (PST)
+Date:   Fri, 27 Nov 2020 16:14:37 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
 To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Geoff Levand <geoff@infradead.org>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Takashi Iwai <tiwai@suse.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Jens Axboe <axboe@kernel.dk>, Jim Paris <jim@jtan.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+Cc:     Randy Dunlap <rdunlap@infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         "David S. Miller" <davem@davemloft.net>,
-        Jakub Kicinski <kuba@kernel.org>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        ALSA Development Mailing List <alsa-devel@alsa-project.org>,
-        linux-block@vger.kernel.org, netdev <netdev@vger.kernel.org>,
-        scsi <linux-scsi@vger.kernel.org>,
-        USB list <linux-usb@vger.kernel.org>,
+        sparclinux <sparclinux@vger.kernel.org>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
         DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH 1/2] ALSA: ppc: drop if block with always false condition
-Message-ID: <20201127094547.4zcyeycfrriitkqx@pengutronix.de>
-References: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
- <CAMuHMdUbfT7ax4BhjMT_DBweab8TDm5e=xMv5f61t9QpQJt1mw@mail.gmail.com>
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2] fbdev: aty: SPARC64 requires FB_ATY_CT
+Message-ID: <20201127151437.GH401619@phenom.ffwll.local>
+Mail-Followup-To: Geert Uytterhoeven <geert@linux-m68k.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        sparclinux <sparclinux@vger.kernel.org>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        David Airlie <airlied@linux.ie>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+References: <20201127031752.10371-1-rdunlap@infradead.org>
+ <CAMuHMdWup4D9A-giF9xDEhva8PPH4Yhg2NHYx3+0q_=Uoi+iRA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="taccm5e5wyznne4d"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdUbfT7ax4BhjMT_DBweab8TDm5e=xMv5f61t9QpQJt1mw@mail.gmail.com>
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c5
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+In-Reply-To: <CAMuHMdWup4D9A-giF9xDEhva8PPH4Yhg2NHYx3+0q_=Uoi+iRA@mail.gmail.com>
+X-Operating-System: Linux phenom 5.7.0-1-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-
---taccm5e5wyznne4d
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Nov 27, 2020 at 09:35:39AM +0100, Geert Uytterhoeven wrote:
-> Hi Uwe,
->=20
-> On Thu, Nov 26, 2020 at 6:03 PM Uwe Kleine-K=F6nig
-> <u.kleine-koenig@pengutronix.de> wrote:
-> > The remove callback is only called for devices that were probed
-> > successfully before. As the matching probe function cannot complete
-> > without error if dev->match_id !=3D PS3_MATCH_ID_SOUND, we don't have to
-> > check this here.
+On Fri, Nov 27, 2020 at 10:15:49AM +0100, Geert Uytterhoeven wrote:
+> On Fri, Nov 27, 2020 at 4:18 AM Randy Dunlap <rdunlap@infradead.org> wrote:
+> > It looks like SPARC64 requires FB_ATY_CT to build without errors,
+> > so have FB_ATY select FB_ATY_CT if both SPARC64 and PCI are enabled
+> > instead of using "default y if SPARC64 && PCI", which is not strong
+> > enough to prevent build errors.
 > >
-> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
->=20
-> Thanks for your patch!
->=20
-> Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
->=20
-> Note that there are similar checks in snd_ps3_driver_probe(), which
-> can be removed, too:
->=20
->         if (WARN_ON(!firmware_has_feature(FW_FEATURE_PS3_LV1)))
->                 return -ENODEV;
->         if (WARN_ON(dev->match_id !=3D PS3_MATCH_ID_SOUND))
->                 return -ENODEV;
+> > As it currently is, FB_ATY_CT can be disabled, resulting in build
+> > errors:
+> >
+> > ERROR: modpost: "aty_postdividers" [drivers/video/fbdev/aty/atyfb.ko] undefined!
+> > ERROR: modpost: "aty_ld_pll_ct" [drivers/video/fbdev/aty/atyfb.ko] undefined!
+> >
+> > Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
+> > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> 
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-I had to invest some brain cycles here. For the first:
+Applied to drm-misc-next, thanks for the patch&review.
+-Daniel
 
-Assuming firmware_has_feature(FW_FEATURE_PS3_LV1) always returns the
-same value, snd_ps3_driver_probe is only used after this check succeeds
-because the driver is registered only after this check in
-snd_ps3_init().
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> -- 
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
 
-The second is superflous because ps3_system_bus_match() yields false if
-this doesn't match the driver's match_id.
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---taccm5e5wyznne4d
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAl/AyscACgkQwfwUeK3K
-7AmVbAf/fRHKZiIEMqPckqCjNor4UCILZvO1NJYHzctpPGBT8dETRjBW1ZmWu6MS
-qxv4y7aGSfc8pP5G0LU1rJJYOf7x8PpHEbm5uNM1UOIxzSIniALG7VIeoFIBrGoQ
-QuMcTv73n6ypzsNu87ynqrILEVYNrubD+Sb6B2xZEfPbIcvvwKfUvr8+lBEkabHX
-LbBbYbLL/ivRvUFm/YKvY3vcnTTAj88lURLp6V8EPT+8/TDr7Bfuy5LyjFsKAYsq
-QXNTBRLT8unlG99XvN4urWFVs9NMPKKWgV/e14LGumeL+mM8EQi+UPCnMTPOErWb
-F4a+SZgp6g00Syvd8mJVlWUKEkQUOg==
-=P7Le
------END PGP SIGNATURE-----
-
---taccm5e5wyznne4d--
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

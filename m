@@ -2,120 +2,105 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A36B1C63777
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Nov 2020 21:31:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0224AC63697
+	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 03:18:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3F979204FD
-	for <linux-fbdev@archiver.kernel.org>; Thu, 26 Nov 2020 21:31:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 91B762222A
+	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 03:18:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="D8RjchmY"
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="U7nqK/EK"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732543AbgKZVbb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 26 Nov 2020 16:31:31 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46588 "EHLO
+        id S2392294AbgK0DSI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 26 Nov 2020 22:18:08 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43068 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726178AbgKZVba (ORCPT
+        with ESMTP id S2388759AbgK0DSI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 26 Nov 2020 16:31:30 -0500
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com [IPv6:2607:f8b0:4864:20::643])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 60349C0613D4;
-        Thu, 26 Nov 2020 13:31:29 -0800 (PST)
-Received: by mail-pl1-x643.google.com with SMTP id f5so1675975plj.13;
-        Thu, 26 Nov 2020 13:31:29 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=a/Yr17tyVZOzPtpOMI6fU0OKHLM5WkCR0ljB5tvI8jA=;
-        b=D8RjchmY2vqGT3P9AVhnqgY6EZOeq5cUgZpsHcPFeUzhReI1umerghInJIQ7fsZX7y
-         jpcgvmy9kxP+ovXVLd6vlQcb7tBfZcmRSNhQcdDZyMFDsEvpOKhvDR/VVDMAMRFwKDgx
-         Z/x5PB3DT65GTn10vW1G27KSi7ZjSQE9HQ5UqpZ78W7roIMluo5XD1smqy1kT72lEVih
-         QoNP6BRnQVftg6p8tfQf+twOMTJWGBeVgjSDebHhMaAoZ85Wwt2MTOGQctjQOfcj3gS8
-         jpLDxChoIVIZWoTQHdk/gzeeOeqjLlVmuVmtiZKhXN0VViCaBc754mBSpelZv9Bt35SG
-         qyeQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=a/Yr17tyVZOzPtpOMI6fU0OKHLM5WkCR0ljB5tvI8jA=;
-        b=XSrsG3KEwPacKmEpJWqNtpuRQ90l6rh0Drd0Z/rpFMWn82Xt9th7J5n+7h/EM3sPtL
-         QGQWUlGEWxJqwssG28kwiwvXYGA/jQytVxoGj/o3kp5MqIrH49BpEG5MODOVUVGgW29e
-         sjyCOhTBhdfEKBTIlmsBgy1T0sgRuPbQeQoT7ARhM5PL+5VMsr8uuGUHsiEYvzv5Cv78
-         vBD2vYIHPJx0hJ1yFM81/SZbX3wkO6XwQqDVIJXDfXbwbKx+UFahgYYKoWVvh6M+UcdU
-         RAcSan+yXH/UarhNtWjpwaIRBLkXMq9V3btk+1hgVsvhznLsVZc5Tr6rMtNfeJ9x+0lD
-         P2fw==
-X-Gm-Message-State: AOAM533snmFHP+6xEzLQVJgZ79L4C8KRqmpQN8iz2HA7JD2QdhaIDe0s
-        oSTEZ6EeSsE0DMxk0KAYln8=
-X-Google-Smtp-Source: ABdhPJwuTomeS7EFZhxZjn+m3VhPp+c1DdvHAF7qsX3/hB+phfqkRw3jbd2Tx7pvOzhRY+UkbU64mA==
-X-Received: by 2002:a17:902:7606:b029:da:246c:5bd8 with SMTP id k6-20020a1709027606b02900da246c5bd8mr4236748pll.27.1606426288824;
-        Thu, 26 Nov 2020 13:31:28 -0800 (PST)
-Received: from dtor-ws ([2620:15c:202:201:a6ae:11ff:fe11:fcc3])
-        by smtp.gmail.com with ESMTPSA id o133sm5409402pfg.97.2020.11.26.13.31.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Nov 2020 13:31:27 -0800 (PST)
-Date:   Thu, 26 Nov 2020 13:31:25 -0800
-From:   Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-Cc:     Russell King <linux@armlinux.org.uk>,
-        Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        linux-arm-kernel@lists.infradead.org, linux-input@vger.kernel.org,
+        Thu, 26 Nov 2020 22:18:08 -0500
+Received: from merlin.infradead.org (merlin.infradead.org [IPv6:2001:8b0:10b:1231::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7BA0EC0613D1;
+        Thu, 26 Nov 2020 19:18:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=merlin.20170209; h=Content-Transfer-Encoding:MIME-Version:
+        Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+        Content-Description:In-Reply-To:References;
+        bh=k5Qw/Urbgsr4b6oxTUWbMQah+Hz+m37ybtc8zTvtg3E=; b=U7nqK/EKDdovDwzz55RcS0ppju
+        I1Rf9vNOYrwUmXr4t5Y3j/ZD7P5gRokg7C/e31NQNhaYAODXPDsPVBwXKf0Wsb5HywMzv0c3eBYjH
+        ydfys6t3XpMJaNN3kTzteOasEn8Ylw857262ixWIXz8kJkjCF33eaYR8Z2mDCnbdnle/ekPQ6xhxM
+        8f8hntimMkj5vEbURPgsjywjdujWzqghuYDx4sgL3YNzIuVmaF8nEbnzMfiPBpVvUC7wPz87iyRK2
+        gMGci9WnsIPYsoWQeM3Wr3ADWKij5lq68ujDD4W0f/8dH93sPWQBpudP+TOtf/dN0piJpeptb6KOi
+        xCCuNI6A==;
+Received: from [2601:1c0:6280:3f0::cc1f] (helo=smtpauth.infradead.org)
+        by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1kiUGm-0007TW-8s; Fri, 27 Nov 2020 03:18:00 +0000
+From:   Randy Dunlap <rdunlap@infradead.org>
+To:     linux-kernel@vger.kernel.org
+Cc:     Randy Dunlap <rdunlap@infradead.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        sparclinux@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        kernel@pengutronix.de
-Subject: Re: [PATCH] ARM: locomo: make locomo bus's remove callback return
- void
-Message-ID: <20201126213125.GG2034289@dtor-ws>
-References: <20201126110140.2021758-1-u.kleine-koenig@pengutronix.de>
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH v2] fbdev: aty: SPARC64 requires FB_ATY_CT
+Date:   Thu, 26 Nov 2020 19:17:52 -0800
+Message-Id: <20201127031752.10371-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20201126110140.2021758-1-u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Nov 26, 2020 at 12:01:40PM +0100, Uwe Kleine-König wrote:
-> The driver core ignores the return value of struct bus_type::remove
-> because there is only little that can be done. To simplify the quest to
-> make this function return void, let struct locomo_driver::remove return
-> void, too. All users already unconditionally return 0, this commit makes
-> it obvious that returning an error code is a bad idea and ensures future
-> users behave accordingly.
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> ---
-> Hello,
-> 
-> if desired the change to arch/arm/mach-sa1100/collie.c can be split out
-> of this patch. The change of prototype then doesn't affect this driver
-> any more. There is one locomo-driver that is already now unaffected:
-> drivers/leds/leds-locomo.c. This driver doesn't have a remove callback.
-> 
-> Best regards
-> Uwe
-> 
->  arch/arm/common/locomo.c               | 5 ++---
->  arch/arm/include/asm/hardware/locomo.h | 2 +-
->  arch/arm/mach-sa1100/collie.c          | 6 ------
->  drivers/input/keyboard/locomokbd.c     | 4 +---
+It looks like SPARC64 requires FB_ATY_CT to build without errors,
+so have FB_ATY select FB_ATY_CT if both SPARC64 and PCI are enabled
+instead of using "default y if SPARC64 && PCI", which is not strong
+enough to prevent build errors.
 
-Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+As it currently is, FB_ATY_CT can be disabled, resulting in build
+errors:
 
->  drivers/video/backlight/locomolcd.c    | 3 +--
->  5 files changed, 5 insertions(+), 15 deletions(-)
+ERROR: modpost: "aty_postdividers" [drivers/video/fbdev/aty/atyfb.ko] undefined!
+ERROR: modpost: "aty_ld_pll_ct" [drivers/video/fbdev/aty/atyfb.ko] undefined!
 
-Thanks.
+Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+v2: use select (suggested by Geert)
 
--- 
-Dmitry
+ drivers/video/fbdev/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-next-20201124.orig/drivers/video/fbdev/Kconfig
++++ linux-next-20201124/drivers/video/fbdev/Kconfig
+@@ -1269,6 +1269,7 @@ config FB_ATY
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB_BACKLIGHT if FB_ATY_BACKLIGHT
+ 	select FB_MACMODES if PPC
++	select FB_ATY_CT if SPARC64 && PCI
+ 	help
+ 	  This driver supports graphics boards with the ATI Mach64 chips.
+ 	  Say Y if you have such a graphics board.
+@@ -1279,7 +1280,6 @@ config FB_ATY
+ config FB_ATY_CT
+ 	bool "Mach64 CT/VT/GT/LT (incl. 3D RAGE) support"
+ 	depends on PCI && FB_ATY
+-	default y if SPARC64 && PCI
+ 	help
+ 	  Say Y here to support use of ATI's 64-bit Rage boards (or other
+ 	  boards based on the Mach64 CT, VT, GT, and LT chipsets) as a

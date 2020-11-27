@@ -2,103 +2,93 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74BA4C71156
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:12:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAF43C83A4B
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:12:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 49F042222C
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:12:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 98951221FF
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:12:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Kxodjbz5"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730045AbgK1VuA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S1729806AbgK1VuA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Sat, 28 Nov 2020 16:50:00 -0500
-Received: from asavdk4.altibox.net ([109.247.116.15]:40072 "EHLO
-        asavdk4.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731455AbgK1SyZ (ORCPT
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55554 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730619AbgK0TwS (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 28 Nov 2020 13:54:25 -0500
-Received: from ravnborg.org (unknown [188.228.123.71])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by asavdk4.altibox.net (Postfix) with ESMTPS id 6BB9380540;
-        Sat, 28 Nov 2020 16:15:36 +0100 (CET)
-Date:   Sat, 28 Nov 2020 16:15:34 +0100
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Lee Jones <lee.jones@linaro.org>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Aditya Pakki <pakki001@umn.edu>,
-        Alexander Klimov <grandmaster@al2klimov.de>,
-        Alex Dewar <alex.dewar90@gmail.com>,
-        Antonino Daplas <adaplas@gmail.com>,
+        Fri, 27 Nov 2020 14:52:18 -0500
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 902C7C08ED7E;
+        Fri, 27 Nov 2020 11:39:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+        In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
+        :Reply-To:Content-ID:Content-Description;
+        bh=zh33VXt2kD9yseJRxvL3v4GkB6ZavkT8ap7D2dRM1n8=; b=Kxodjbz5/uSV3yCNi49zqnvc9d
+        3raTqFO3DiDczmMVk1/JjntTXeZ/X77jY563rcj7pjhEu1BJGTUKoPczByUNK/PIs51HKBFkx07ZX
+        9CTkD5y1ChxR2ODhz1KXEEeJQWSeUrD5ourjvkNfwGkX8dNq2AC94Qtp1eaBSfdM8+dJJ5QyXu9t0
+        HO1kFuDTP3fu+Swwwy3nCaiSC8J0IrbHiExcFLV2Vvdp3CYFs0c3WAfl8Tg6TdkNt0mfJwcUmYy0u
+        jKfb7/97qOSSdbg8dXfAD0KGuolv1NIuONfs7jvm5+ypn+Wq94EbneCCQgBNsNe85jUvdbRspjEpk
+        aZWL6cMw==;
+Received: from [2602:306:c5a2:a380:9e7b:efff:fe40:2b26]
+        by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1kijaQ-0005cI-6b; Fri, 27 Nov 2020 19:39:18 +0000
+Subject: Re: [PATCH 2/2] powerpc/ps3: make system bus's remove and shutdown
+ callbacks return void
+To:     =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Takashi Iwai <tiwai@suse.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Jens Axboe <axboe@kernel.dk>, Jim Paris <jim@jtan.com>,
         Arnd Bergmann <arnd@arndb.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Evgeny Novikov <novikov@ispras.ru>,
-        Ferenc Bakonyi <fero@drama.obuda.kando.hu>,
-        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-        George Kennedy <george.kennedy@oracle.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Gustavo Silva <gustavoars@kernel.org>,
-        Jani Nikula <jani.nikula@intel.com>,
-        Jason Yan <yanaijie@huawei.com>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Joe Perches <joe@perches.com>,
-        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        linux-nvidia@lists.surfsouth.com,
-        Michal Januszewski <spock@gentoo.org>,
-        Mike Rapoport <rppt@kernel.org>,
-        Nathan Chancellor <natechancellor@gmail.com>,
-        Peilin Ye <yepeilin.cs@gmail.com>,
-        Peter Rosin <peda@axentia.se>,
-        Qilong Zhang <zhangqilong3@huawei.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Thomas Winischhofer <thomas@winischhofer.net>,
-        Thomas Zimemrmann <tzimmermann@suse.de>,
-        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        Xiaofei Tan <tanxiaofei@huawei.com>
-Subject: Re: [PATCH v1 01/28] video: Fix W=1 warnings in of_videomode +
- of_display_timing
-Message-ID: <20201128151534.GA981314@ravnborg.org>
-References: <20201127195825.858960-1-sam@ravnborg.org>
- <20201127195825.858960-2-sam@ravnborg.org>
- <20201128082820.GX2455276@dell>
+        "David S. Miller" <davem@davemloft.net>,
+        Jakub Kicinski <kuba@kernel.org>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc:     Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
+        linux-block@vger.kernel.org, netdev@vger.kernel.org,
+        linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
+ <20201126165950.2554997-2-u.kleine-koenig@pengutronix.de>
+From:   Geoff Levand <geoff@infradead.org>
+Message-ID: <d3705daf-f48c-20a8-e3a8-a2f121099a16@infradead.org>
+Date:   Fri, 27 Nov 2020 11:39:12 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201128082820.GX2455276@dell>
-X-CMAE-Score: 0
-X-CMAE-Analysis: v=2.3 cv=Itgwjo3g c=1 sm=1 tr=0
-        a=S6zTFyMACwkrwXSdXUNehg==:117 a=S6zTFyMACwkrwXSdXUNehg==:17
-        a=kj9zAlcOel0A:10 a=PMmVyNwjNFpPq2a28g8A:9 a=CjuIK1q_8ugA:10
+In-Reply-To: <20201126165950.2554997-2-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Lee,
-On Sat, Nov 28, 2020 at 08:28:20AM +0000, Lee Jones wrote:
-> On Fri, 27 Nov 2020, Sam Ravnborg wrote:
+On 11/26/20 8:59 AM, Uwe Kleine-König wrote:
+> The driver core ignores the return value of struct device_driver::remove
+> because there is only little that can be done. For the shutdown callback
+> it's ps3_system_bus_shutdown() which ignores the return value.
 > 
-> > Fix trivial W=1 warnings.
-> > Update kernel-doc to avoid the warnings.
+> To simplify the quest to make struct device_driver::remove return void,
+> let struct ps3_system_bus_driver::remove return void, too. All users
+> already unconditionally return 0, this commit makes it obvious that
+> returning an error code is a bad idea and ensures future users behave
+> accordingly.
 > 
-> Can you put what's being fixed in the subject line please?
-> 
-> "fix w=1 warnings" is very bland and this it is unlikely to be the
-> only w=1 warning that gets fixed in these files, so has a high likely
-> hood of having an identical subject-line as a previous/future patch.
-> 
-> With regards to the latter point; I have personally found subject
-> lines to be a pretty reliable way of maintaining/backporting older
-> kernels.  The nomenclature here would taint that pretty readily.
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-Thanks for the feedback and the background for your comment.
-Will fix them all for v2,
+Seems OK with v5.9 on PS3.
 
-	Sam
+Tested by: Geoff Levand <geoff@infradead.org>
+

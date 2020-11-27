@@ -2,62 +2,62 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-13.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 378DEC63798
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 01:37:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 049F4C3E8C5
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 01:37:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EF08F22245
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 01:37:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B0EA822245
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 01:37:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LoQV/HRo"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="doK4lBFv"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729708AbgK1BgY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 27 Nov 2020 20:36:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56594 "EHLO
+        id S1730018AbgK1BhG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 27 Nov 2020 20:37:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731069AbgK0T71 (ORCPT
+        with ESMTP id S1731057AbgK0T71 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Fri, 27 Nov 2020 14:59:27 -0500
-Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31767C061A49
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:58:54 -0800 (PST)
-Received: by mail-lj1-x243.google.com with SMTP id o24so7122012ljj.6
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:58:54 -0800 (PST)
+Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com [IPv6:2a00:1450:4864:20::141])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 23646C061A51
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:59:02 -0800 (PST)
+Received: by mail-lf1-x141.google.com with SMTP id d20so8514756lfe.11
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:59:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=hlmg0QXcyBXkSQsSrsHccJseYumWnCfsbqf3yovwsZQ=;
-        b=LoQV/HRoqkupk060ExH+xj6uc2BOYCLe+/fhhXr+djyJrScexTnQiICqX2SijJ5CUX
-         sx5Ye76d3HMLlLvA7Kf1y7OzeABMF+DUkMOcrgoS28hcPIaCWKe7M40Eeq/FXGxh82+n
-         pHihwnrBdOe8HURp8U9Xy1lh6JW2MeWSw9XBOSAy190vGHjdAuYb0pw7WR6hoxKLdFCj
-         O42Rf9Cq4OpSxJejPEixC4sl0teW/2CrwQor6MQUWalB2M5js/5w0L6rPgPz/qLgL04O
-         iK9jeSH9y4e9ZE1JFRAQB5Qr5nFOSxiGwLmV9h6wxY5714YuWeAd3KS8GSyO+db1Ud9c
-         aCKw==
+        bh=tAy2L6+yHjKuwgbD1GtBSbwZUtZR3+FgaFh+jK71xjw=;
+        b=doK4lBFvnmTZcgYL/PjjUuQB8ZoUk+PEo0qU+uLpJMsr2En+IwyOb047noqpqiE4E7
+         ns0ENbBkflLflMCTngF9seeipp8CMx1/WoAsTEf3iihARCetdENCniJzzfGCZplRbTtO
+         UhusRpw2RGQLTMQ6zQuwpyeGjMzQz8ujlGRIKZJUiPT4+fRc8pQOWenhI6DaMxh3fTbM
+         LPN+7GLLpoK+QEDfotRTyJ926oA0If7zdHpHKjTZXY3GKaDo3G8cfFpeRQQQmTQAZaZo
+         OJUHeRPgDRH4JFWSYvBdCxT3x5oX5bfIRaMQJCUGx1Goh9AVJhbvcsTWq7YpDC6CW3iv
+         b8gg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
          :in-reply-to:references:mime-version:content-transfer-encoding;
-        bh=hlmg0QXcyBXkSQsSrsHccJseYumWnCfsbqf3yovwsZQ=;
-        b=XTUx58uxLea0TekE5NGLxT6kTOziaMOMm/X8Rl04nhkiHagkKFAslLv91QGywg84gv
-         hExZdch+/Vniw3JlwFmHZsOQL6LLgPJY1N87rYyy2K43lYh0BJOGtbRu0/dqgnWgxXfC
-         SHbmNjbGKGVqqiKEWcwHcrg72YQq2zf/eMsIDB5KsrnYblpl8aGOrCIwLTN/KLB2Tqw4
-         UiD/1hdkALlZUDv5g9AEtkoamCiSV3CCS/lfxIXGeGaDhp9769QKSTwifXyIW9gPPYoh
-         /r8LvPHmueUTVCHWI+BXPt0GNyYlhzeTGsgjlX0doVqpWvS9kDCMalX6lDMSl7A/Kxq6
-         O72A==
-X-Gm-Message-State: AOAM531Dra3BcmdvIxtQ1vtp7wo+TEgfHG1bEjONErMPigKBlzXebF78
-        n1Fum5D9B3sQsY/rD9X3aXhl5YIkRgr8VuVw
-X-Google-Smtp-Source: ABdhPJzRLomTEf1vvIm/1TdbxkZYDb34ZllLyKUDbE4zhUrgFXPDrbjJCxhX1h0uR2r7RcekIwtaLg==
-X-Received: by 2002:a2e:9cd4:: with SMTP id g20mr4110075ljj.174.1606507132537;
-        Fri, 27 Nov 2020 11:58:52 -0800 (PST)
+        bh=tAy2L6+yHjKuwgbD1GtBSbwZUtZR3+FgaFh+jK71xjw=;
+        b=JS2zxaR7K7Cnk6RfOSiRznqahf7JQRlErRQ5yPq71XIylT0DwP7Co1wKXAxuNq7tKl
+         9lxCY3jP2Vb0qJqTUBhvEXhD1XKZ0xTrcFZ3xGnQRFQBNLxb80XSv2jO6LlFbj31lRa/
+         RGkAsR8AnkStbKhmhD6x3F8B1rlQc1TbOkTgrQtfi/Nlf9C3izCf5rRHN691IBGKKOQ+
+         ayPoi/OkR/rSC6y/QiPjql60rN3DgwyTgK1KMoNmmt3aMxsBaHOIvsJoIS6LRiNPl/kT
+         pdhCB8fTraBGlVqmIW8jkCuhQwOcNsH5cUH75WjernD24CkXaGY4lZKERjxxl3leHb+p
+         Kemg==
+X-Gm-Message-State: AOAM53359jSbDTX0mZUn/FfCK23BcfmKm7b3jqjfccz2zvFTdFb6WzQW
+        8OETCOLmw2DweeaeZN+KT1JBIBej3vN23Zuq
+X-Google-Smtp-Source: ABdhPJzA9tlt5/v8JE6nDmhPGEGXRsyRJmv4B2nwWuL72K6hMPQ+4HMvJ4sQQ3zrl6l0SjVCnZ1fkg==
+X-Received: by 2002:a19:ec07:: with SMTP id b7mr4326715lfa.114.1606507140403;
+        Fri, 27 Nov 2020 11:59:00 -0800 (PST)
 Received: from saturn.localdomain ([2a00:fd00:8060:1c00:9d62:990:4557:451])
-        by smtp.gmail.com with ESMTPSA id c6sm1070415ljj.140.2020.11.27.11.58.50
+        by smtp.gmail.com with ESMTPSA id c6sm1070415ljj.140.2020.11.27.11.58.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Nov 2020 11:58:52 -0800 (PST)
+        Fri, 27 Nov 2020 11:58:59 -0800 (PST)
 Sender: Sam Ravnborg <sam.ravnborg@gmail.com>
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -98,9 +98,9 @@ Cc:     Aditya Pakki <pakki001@umn.edu>,
         Thomas Zimemrmann <tzimmermann@suse.de>,
         Vaibhav Gupta <vaibhavgupta40@gmail.com>,
         Xiaofei Tan <tanxiaofei@huawei.com>
-Subject: [PATCH v1 07/28] video: fbdev: sis: Fix W=1 warnings about static symbols
-Date:   Fri, 27 Nov 2020 20:58:04 +0100
-Message-Id: <20201127195825.858960-8-sam@ravnborg.org>
+Subject: [PATCH v1 10/28] video: fbdev: sis: Fix W=1 warnings in sis_main
+Date:   Fri, 27 Nov 2020 20:58:07 +0100
+Message-Id: <20201127195825.858960-11-sam@ravnborg.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201127195825.858960-1-sam@ravnborg.org>
 References: <20201127195825.858960-1-sam@ravnborg.org>
@@ -110,28 +110,50 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-init.h define static symbols, so should only be included
-once. Drop the include from sis.h as it is not needed.
-This fixes a lot of warnings seen with a W=1 build.
+Fix W=1 warning by dropping unused variable
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Cc: Thomas Winischhofer <thomas@winischhofer.net>
 ---
- drivers/video/fbdev/sis/sis.h | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/fbdev/sis/sis_main.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/sis/sis.h b/drivers/video/fbdev/sis/sis.h
-index 9f4c3093ccb3..d632f096083b 100644
---- a/drivers/video/fbdev/sis/sis.h
-+++ b/drivers/video/fbdev/sis/sis.h
-@@ -15,7 +15,6 @@
- 
- #include "vgatypes.h"
- #include "vstruct.h"
--#include "init.h"
- 
- #define VER_MAJOR		1
- #define VER_MINOR		8
+diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
+index 03c736f6f3d0..266a5582f94d 100644
+--- a/drivers/video/fbdev/sis/sis_main.c
++++ b/drivers/video/fbdev/sis/sis_main.c
+@@ -5029,7 +5029,6 @@ static void sisfb_post_xgi_ddr2(struct sis_video_info *ivideo, u8 regb)
+ 	static const u8 cs168[8] = {
+ 		0x48, 0x78, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00
+ 	};
+-	u8 reg;
+ 	u8 v1;
+ 	u8 v2;
+ 	u8 v3;
+@@ -5037,9 +5036,9 @@ static void sisfb_post_xgi_ddr2(struct sis_video_info *ivideo, u8 regb)
+ 	SiS_SetReg(SISCR, 0xb0, 0x80); /* DDR2 dual frequency mode */
+ 	SiS_SetReg(SISCR, 0x82, 0x77);
+ 	SiS_SetReg(SISCR, 0x86, 0x00);
+-	reg = SiS_GetReg(SISCR, 0x86);
++	SiS_GetReg(SISCR, 0x86);
+ 	SiS_SetReg(SISCR, 0x86, 0x88);
+-	reg = SiS_GetReg(SISCR, 0x86);
++	SiS_GetReg(SISCR, 0x86);
+ 	v1 = cs168[regb]; v2 = cs160[regb]; v3 = cs158[regb];
+ 	if (ivideo->haveXGIROM) {
+ 		v1 = bios[regb + 0x168];
+@@ -5049,9 +5048,9 @@ static void sisfb_post_xgi_ddr2(struct sis_video_info *ivideo, u8 regb)
+ 	SiS_SetReg(SISCR, 0x86, v1);
+ 	SiS_SetReg(SISCR, 0x82, 0x77);
+ 	SiS_SetReg(SISCR, 0x85, 0x00);
+-	reg = SiS_GetReg(SISCR, 0x85);
++	SiS_GetReg(SISCR, 0x85);
+ 	SiS_SetReg(SISCR, 0x85, 0x88);
+-	reg = SiS_GetReg(SISCR, 0x85);
++	SiS_GetReg(SISCR, 0x85);
+ 	SiS_SetReg(SISCR, 0x85, v2);
+ 	SiS_SetReg(SISCR, 0x82, v3);
+ 	SiS_SetReg(SISCR, 0x98, 0x01);
 -- 
 2.27.0
 

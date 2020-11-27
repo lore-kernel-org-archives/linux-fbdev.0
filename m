@@ -4,100 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D56DC64E7A
-	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 08:40:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67EA3C2D0E4
+	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 09:16:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 556DB22248
-	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 08:40:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1FDD5208CA
+	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Nov 2020 09:16:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729250AbgK0IkS convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 27 Nov 2020 03:40:18 -0500
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:46372 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728285AbgK0IkQ (ORCPT
+        id S1726248AbgK0JQB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 27 Nov 2020 04:16:01 -0500
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:45744 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725875AbgK0JQB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 27 Nov 2020 03:40:16 -0500
-Received: by mail-ot1-f67.google.com with SMTP id z23so365706oti.13;
-        Fri, 27 Nov 2020 00:40:15 -0800 (PST)
+        Fri, 27 Nov 2020 04:16:01 -0500
+Received: by mail-oi1-f195.google.com with SMTP id l206so5124487oif.12;
+        Fri, 27 Nov 2020 01:16:00 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=/D+lVsFpiig9p8Mfv+F/WnI4wKF69UpUHln9lDG06g4=;
-        b=OvGI2LLkQRzeWnjXwcv4a9BF3RX71atfnHf/Y5PY6fvbrzqqEX7jcrwCldbQv9GLpy
-         D8zvGJGvQkfVFIk5XZZL9N94Cp6BH74eATxdOFbkuFKEWK5MO2m1bbD8Bx/fA1oKbu0s
-         YxNyj4Nc0HH/UMiLlq+7Zb0jlNPKltRbw5EVUXX+KWwtvy7bX2HfLLUegeqtGhAy5BMB
-         uhMFch4Mt8DBUbE8QdRRnOqFJurxqXlEFvwNCleXo6mv+FoAv0R7tEppFQTRBrBAuu7Z
-         GrkK3JfGSBgSfVkYuWbCEag4jO9Lo3QQLVN9o4D/mEfP22YxAussd4m460Shl8n1PwqJ
-         qwYA==
-X-Gm-Message-State: AOAM530sxVPmbTv/r6BVfnK9waIhzZDBNLhgE8HwNbMHY41PfivqOp4e
-        m3r+YB4S/MLDqydQ9bbxBwEI8Qe59Y0sqHqM0Y4=
-X-Google-Smtp-Source: ABdhPJy2I/IdfAm6V2ydZbwLB9NPNLYo9PucEpxX/NL/qzuCx8bfpYwJU7BhpITpgvBGwlFRBVNr8EmnqamS0CIYUsg=
-X-Received: by 2002:a9d:686:: with SMTP id 6mr4709371otx.107.1606466415531;
- Fri, 27 Nov 2020 00:40:15 -0800 (PST)
+         :message-id:subject:to:cc;
+        bh=2bL4nt/v+u8bthLLcwo5vWoSSDUj230GtxR+dbDyinE=;
+        b=HdoQSg9+qYm9kBcD3ZXaFQpGTqrY0knhT2pE3Rd28f5yPsaHrGTgJsLotyx9YrvHCP
+         ziG/kd7YB+EVkWvewlrq6Bk67qXZUC7Ap+i8fixt2WRA5ErmcRCjY9Yug7tlfTjyQuA3
+         kilPsSKUpvrBmus+O1uQ89upnHRaQR2bw+q+sjVIH7Q1X5waexMbQA1ogJLQzCDqzugx
+         ZmTMc9bMNPZgMVD1pm3vyaItWwcZ2tonvIwytP677otkOWeyX0chP3lIpv9H2NXLqOm5
+         eKxgMcrD2Pqjhmdf1i1On5zzzqSyqbv+bF7C25ahP0Qxa7GG8z6/kQjSrybg/dJkR2HP
+         LlXA==
+X-Gm-Message-State: AOAM530rqAY+ru/C2OPzOeikNeVbpBPfp9H4+GftGvDYEBiKTNTnUBQX
+        NR801ei8LEUIWj7DDS5z0J4njNmArVOjcE1muWJFbPKTwAg=
+X-Google-Smtp-Source: ABdhPJwwc735j9DU3CQVssDzFK9RFomMYj2kdWdhsc0uJGwQtM3XHiZQkdCwKodyr/1M4ebapYD/57MTPsklQvOavoQ=
+X-Received: by 2002:aca:1c0f:: with SMTP id c15mr4721709oic.54.1606468560125;
+ Fri, 27 Nov 2020 01:16:00 -0800 (PST)
 MIME-Version: 1.0
-References: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de> <20201126165950.2554997-2-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20201126165950.2554997-2-u.kleine-koenig@pengutronix.de>
+References: <20201127031752.10371-1-rdunlap@infradead.org>
+In-Reply-To: <20201127031752.10371-1-rdunlap@infradead.org>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Fri, 27 Nov 2020 09:40:04 +0100
-Message-ID: <CAMuHMdW4J0xA6T4AWqZdo1go1kxWqVSSo5JXQpUAM4yWEpDdOw@mail.gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/ps3: make system bus's remove and shutdown
- callbacks return void
-To:     =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-Cc:     Geoff Levand <geoff@infradead.org>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Takashi Iwai <tiwai@suse.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Jens Axboe <axboe@kernel.dk>, Jim Paris <jim@jtan.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+Date:   Fri, 27 Nov 2020 10:15:49 +0100
+Message-ID: <CAMuHMdWup4D9A-giF9xDEhva8PPH4Yhg2NHYx3+0q_=Uoi+iRA@mail.gmail.com>
+Subject: Re: [PATCH v2] fbdev: aty: SPARC64 requires FB_ATY_CT
+To:     Randy Dunlap <rdunlap@infradead.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         "David S. Miller" <davem@davemloft.net>,
-        Jakub Kicinski <kuba@kernel.org>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        ALSA Development Mailing List <alsa-devel@alsa-project.org>,
-        linux-block@vger.kernel.org, netdev <netdev@vger.kernel.org>,
-        scsi <linux-scsi@vger.kernel.org>,
-        USB list <linux-usb@vger.kernel.org>,
+        sparclinux <sparclinux@vger.kernel.org>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
         DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Uwe,
-
-On Thu, Nov 26, 2020 at 6:03 PM Uwe Kleine-König
-<u.kleine-koenig@pengutronix.de> wrote:
-> The driver core ignores the return value of struct device_driver::remove
-> because there is only little that can be done. For the shutdown callback
-> it's ps3_system_bus_shutdown() which ignores the return value.
+On Fri, Nov 27, 2020 at 4:18 AM Randy Dunlap <rdunlap@infradead.org> wrote:
+> It looks like SPARC64 requires FB_ATY_CT to build without errors,
+> so have FB_ATY select FB_ATY_CT if both SPARC64 and PCI are enabled
+> instead of using "default y if SPARC64 && PCI", which is not strong
+> enough to prevent build errors.
 >
-> To simplify the quest to make struct device_driver::remove return void,
-> let struct ps3_system_bus_driver::remove return void, too. All users
-> already unconditionally return 0, this commit makes it obvious that
-> returning an error code is a bad idea and ensures future users behave
-> accordingly.
+> As it currently is, FB_ATY_CT can be disabled, resulting in build
+> errors:
 >
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> ERROR: modpost: "aty_postdividers" [drivers/video/fbdev/aty/atyfb.ko] undefined!
+> ERROR: modpost: "aty_ld_pll_ct" [drivers/video/fbdev/aty/atyfb.ko] undefined!
+>
+> Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 
-Thanks for your patch!
-
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-Note that the same can be done for ps3_vuart_port_driver.remove().
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
 Gr{oetje,eeting}s,
 

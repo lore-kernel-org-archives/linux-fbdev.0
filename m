@@ -5,59 +5,59 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E62D5C3E8C5
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 00:30:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 161C0C63777
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 00:31:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8B1AF22242
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 00:30:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CB5842223F
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 00:31:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ctjpvSvX"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dRT/DaQu"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730858AbgK0UDF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 27 Nov 2020 15:03:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56628 "EHLO
+        id S1731213AbgK0UCS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 27 Nov 2020 15:02:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56570 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731305AbgK0UBR (ORCPT
+        with ESMTP id S1731293AbgK0UBR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Fri, 27 Nov 2020 15:01:17 -0500
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 614A8C08E861
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:59:36 -0800 (PST)
-Received: by mail-lf1-x143.google.com with SMTP id l11so8590692lfg.0
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:59:36 -0800 (PST)
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31A79C08E864
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:59:44 -0800 (PST)
+Received: by mail-lj1-x241.google.com with SMTP id y16so7156225ljk.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 27 Nov 2020 11:59:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=MQ7x12uggS1hOxK6f7aoLRuOChXNZlZXJg/tbIyd2NE=;
-        b=ctjpvSvXytDB/DKOBAaGeJq6N+6ajZhDwwURDOm1a77ewn2epdHf91lKJmKsmV9Ntc
-         Wk7XOINOThuZoiwWZIwCNjvbaF28djxwFm9wYet8glHpvm53BKYrCKMwJYauCUMjmOmq
-         NxdjwfIK2Jnz4h/ah7pTKLyOLkSBMEdvoU3ifR3hRUcWGd/975WKCDBtdInczsSnIEg+
-         JeWR62v/ubFBf3s/ap4vXK2Ta0ZR6TBHKp7ez3oY7QFQLKm5WH6wK479iEQq3KwVKZU2
-         uw7IyT5qTtjFrWVxADiTkvkAYzbAuJ4tla5i6bd5kK5ffGxj2H1VYYZQbAFYeabjtXdB
-         jSsQ==
+        bh=cTz8UNZSB2sQnZVOY7U0wdeJbPp7ZoKiq9hM9XyTjD8=;
+        b=dRT/DaQuxup56pjO/gXvCOHAFRuO1qWDIs0CBnqhSXDTtr/bSWQu2Ap+yUyq+B44+A
+         neG0M7I0sJitoqxpbq2Yv0USUFFjoo6QhS/EEYu4HvbE8XHA+xb3ABCMI55iyfqUQdna
+         yb0QgRDle+80a4z1OJrF3nyORqFTCGwJYztA3HK+rMcLIgnrNrLdcU0rtjUdmKBHKuLb
+         vvInFX+bp4OkZ/2EEZ9lwNd07cypaYMY/o49aMZTVQQMGBaNI3fiK4OyR8I9tos2WUp6
+         PnMnXcVo9CxblX4AV3NR0hsMeaf5lyqTZPMM24rlzSTWJHH3vMFitAk61/zxQnCnCFQr
+         tJOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
          :in-reply-to:references:mime-version:content-transfer-encoding;
-        bh=MQ7x12uggS1hOxK6f7aoLRuOChXNZlZXJg/tbIyd2NE=;
-        b=sgJprSN1OkR3HEgXfiwUK89KDGD8W4RDlT4BOqhQmcNWZ1a7FzeNaqt+x6JGDuBS8z
-         dJph10djgC/LRQ8CBuR/w94ydd/5NyNaUJ9PhPZ82Qs0xd0dRCdWHKdaOiGyVq+YSm+y
-         jW0I97ahDrtPlHdLjLmGW0kGHR/G/Iz+1YRaT/ILrlwe37wu+464H5S43coVnP0z6Z8I
-         YYh4GqQp0Lc1lh9GvvmdB3IQP4bOv90fxpUyrGRcz/eesM3xNkcdq0pySgIrxYUmZvhr
-         E3GZCOSw0rJCvAFXmKiPsH3RSM/FT60da4a4ysCnqhEuXZPhsd3kpRL92u3A3i7sIHov
-         C3qQ==
-X-Gm-Message-State: AOAM53116fL61Us4dZPutvdDJbd0ENUjFB/dSgWSnAYeaD1gdiZFp2p3
-        hgpbpd0HaoleQuyAOf+V0UrI2hM/uZ3LtyGF
-X-Google-Smtp-Source: ABdhPJwsswLBNRVwQvuTIB+FN9iriKOhhkmrAHLnDO+ZnWN0hmlyW5YbmkqfB7BJvDh/ZXx/oMQYeg==
-X-Received: by 2002:a05:6512:481:: with SMTP id v1mr4168850lfq.132.1606507174690;
-        Fri, 27 Nov 2020 11:59:34 -0800 (PST)
+        bh=cTz8UNZSB2sQnZVOY7U0wdeJbPp7ZoKiq9hM9XyTjD8=;
+        b=RuCaH+NpY3iucQfhC3cq14w37paSNqejw2OUBS9p1/rTnD2UeG+JIWACZzzrurq86O
+         Fm6voDdyojWw2SZ3IAlthY7xjqJwtDIJcG7RyDJtpqW80RWqjhH7DddR+3Y1F1yjEVk7
+         +ebdbp2beI0g6T/4HIfV2SjQFZcwSkJ3yRZvS9MXxsvRazLXFMKr5sZQnIpSBYGQR/25
+         bEqtXcdS4Knw2z0W1HxlgjExkQOFm2Manls8YOhDp6YqhJ8uRfbCa2q8oiLlakBJP6r9
+         bwf84GsHOog5bt9qt0lhnc7uVMRFNwqsFNTauVzjVhh++2Sf2Ct27Q5WPmZXD0rRk0Wq
+         aqEQ==
+X-Gm-Message-State: AOAM530KarX48OWkfhqNGr/7rTf32DOvmtwXAyly54On3H72u3OM4cFt
+        wiBPK1bSGQGHI5xxndNv59Zfso9izcY1SyCz
+X-Google-Smtp-Source: ABdhPJw+juNp86cxlqMgAnqmJUMMNTIlemg5zHcEmGRNGhL2jyUtf2DC8PEqnsNHMepTLTQNwgzflA==
+X-Received: by 2002:a2e:9951:: with SMTP id r17mr602111ljj.113.1606507182492;
+        Fri, 27 Nov 2020 11:59:42 -0800 (PST)
 Received: from saturn.localdomain ([2a00:fd00:8060:1c00:9d62:990:4557:451])
-        by smtp.gmail.com with ESMTPSA id c6sm1070415ljj.140.2020.11.27.11.59.32
+        by smtp.gmail.com with ESMTPSA id c6sm1070415ljj.140.2020.11.27.11.59.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Nov 2020 11:59:34 -0800 (PST)
+        Fri, 27 Nov 2020 11:59:42 -0800 (PST)
 Sender: Sam Ravnborg <sam.ravnborg@gmail.com>
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -98,9 +98,9 @@ Cc:     Aditya Pakki <pakki001@umn.edu>,
         Thomas Zimemrmann <tzimmermann@suse.de>,
         Vaibhav Gupta <vaibhavgupta40@gmail.com>,
         Xiaofei Tan <tanxiaofei@huawei.com>
-Subject: [PATCH v1 23/28] video: fbdev: omapfb: Fix W=1 warnings in hdmi*_core
-Date:   Fri, 27 Nov 2020 20:58:20 +0100
-Message-Id: <20201127195825.858960-24-sam@ravnborg.org>
+Subject: [PATCH v1 26/28] video: fbdev: uvesafb: Fix W=1 string related warnings
+Date:   Fri, 27 Nov 2020 20:58:23 +0100
+Message-Id: <20201127195825.858960-27-sam@ravnborg.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201127195825.858960-1-sam@ravnborg.org>
 References: <20201127195825.858960-1-sam@ravnborg.org>
@@ -110,63 +110,42 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix a few W=1 warnings about unused assignments.
-Drop the unused error code.
+Two W=1 string related warnings.
+- Using strncpy to copy string wihtout null-termination is not good.
+  Use memcpy to copy only the relevant chars
+
+- Fix a potential bug with a very long string, subtract one from the
+  length to make room for the termination null.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Qilong Zhang <zhangqilong3@huawei.com>
-Cc: "Alexander A. Klimov" <grandmaster@al2klimov.de>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Michal Januszewski <spock@gentoo.org>
+Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c | 4 ++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/uvesafb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
-index 726c190862d4..e6363a420933 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
-@@ -679,7 +679,7 @@ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 	struct hdmi_audio_format audio_format;
- 	struct hdmi_audio_dma audio_dma;
- 	struct hdmi_core_audio_config acore;
--	int err, n, cts, channel_count;
-+	int n, cts, channel_count;
- 	unsigned int fs_nr;
- 	bool word_length_16b = false;
+diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+index 8ee0fc9c63cf..45dc8da191e4 100644
+--- a/drivers/video/fbdev/uvesafb.c
++++ b/drivers/video/fbdev/uvesafb.c
+@@ -423,7 +423,7 @@ static int uvesafb_vbe_getinfo(struct uvesafb_ktask *task,
+ 	task->t.flags = TF_VBEIB;
+ 	task->t.buf_len = sizeof(struct vbe_ib);
+ 	task->buf = &par->vbe_ib;
+-	strncpy(par->vbe_ib.vbe_signature, "VBE2", 4);
++	memcpy(par->vbe_ib.vbe_signature, "VBE2", 4);
  
-@@ -741,7 +741,7 @@ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 		return -EINVAL;
- 	}
- 
--	err = hdmi_compute_acr(pclk, fs_nr, &n, &cts);
-+	hdmi_compute_acr(pclk, fs_nr, &n, &cts);
- 
- 	/* Audio clock regeneration settings */
- 	acore.n = n;
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
-index eda29d3032e1..cb63bc0e92ca 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
-@@ -790,7 +790,7 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 	struct hdmi_audio_format audio_format;
- 	struct hdmi_audio_dma audio_dma;
- 	struct hdmi_core_audio_config core_cfg;
--	int err, n, cts, channel_count;
-+	int n, cts, channel_count;
- 	unsigned int fs_nr;
- 	bool word_length_16b = false;
- 
-@@ -833,7 +833,7 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
- 		return -EINVAL;
- 	}
- 
--	err = hdmi_compute_acr(pclk, fs_nr, &n, &cts);
-+	hdmi_compute_acr(pclk, fs_nr, &n, &cts);
- 	core_cfg.n = n;
- 	core_cfg.cts = cts;
- 
+ 	err = uvesafb_exec(task);
+ 	if (err || (task->t.regs.eax & 0xffff) != 0x004f) {
+@@ -1871,7 +1871,7 @@ static ssize_t v86d_show(struct device_driver *dev, char *buf)
+ static ssize_t v86d_store(struct device_driver *dev, const char *buf,
+ 		size_t count)
+ {
+-	strncpy(v86d_path, buf, PATH_MAX);
++	strncpy(v86d_path, buf, PATH_MAX - 1);
+ 	return count;
+ }
+ static DRIVER_ATTR_RW(v86d);
 -- 
 2.27.0
 

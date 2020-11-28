@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9228C63798
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:43:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99FEBC63777
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:43:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A1B9E20702
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:43:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6490E20702
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:43:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XdE+tpdR"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="db0u5+lE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387814AbgK1WnG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 28 Nov 2020 17:43:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49304 "EHLO
+        id S2388318AbgK1WnJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 28 Nov 2020 17:43:09 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49320 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388241AbgK1WnE (ORCPT
+        with ESMTP id S2388271AbgK1WnJ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 28 Nov 2020 17:43:04 -0500
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6F98C08C5F2
-        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:59 -0800 (PST)
-Received: by mail-lj1-x242.google.com with SMTP id s9so10557821ljo.11
-        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:59 -0800 (PST)
+        Sat, 28 Nov 2020 17:43:09 -0500
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E7B9C08E860
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:42:07 -0800 (PST)
+Received: by mail-lj1-x243.google.com with SMTP id z1so10598742ljn.4
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:42:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=6ly/Z1yYuSnGcVTY2GvWV0FTJyRU84GpNxZ//3QWCM8=;
-        b=XdE+tpdRtCE6buzA19hei71zINn4l4fFqUFVe6IoD1/xcVmv3ktBz40TsQO/8S+Y5M
-         KloOnjhUZh9VgpR+4eQIYrWDVFO8UbYu+nhrLggsPyJjRJXkiGlqREHjn4Xr/My8Gzj3
-         yXsc07B+W64ChsaDNIxi0waUEMK9W3NJMvPP8XLizVCXXGYr2wFU5XiKXgKgmn6cJ+yc
-         gaeT2zwHv/QLpbRyyUvcOVyeVIQu7fK3B7QU8ZUy8Jxb2l2dhdnCXo5t/wBry3pNXSPO
-         YuN7G8+aKJj+KHnzSlscrc1hclR9raQgczphM2tw2h6Xx7tyTgQZajeYvbQ3R6Sf2O0o
-         6ffw==
+        bh=tdC3cUaEksOqJq+sL/p6xZwzgeMpzcgI0nIv+Qg+xyQ=;
+        b=db0u5+lExLWY4Gcbn8xuBCD7WyKO6XHbkpd5i1lVs5fIGDjOE7f0rpUc+FMjmqXEvY
+         oTKMaJ76x5pp5L0cRp9DinMl03rqVZzTwy/wQbxQOulOdsU/OT+hugE3Ay3GARU2/Ey7
+         bpcTSl+DWpzTJsPEGmFjcNTGfmSL+C25VfjOi7TwjbUq9J/ZRdPLce5mJKrs4Br5TBjS
+         Ro/DeNhpUC5x+Dne7yQG4Y2CnnEzBp0ACn3lptugY42ovFlK8e/qXx/Hcoxd+7qgOdbj
+         21uQOll3f6Qwj6mOAm2uyQGZEWKBc9QGcaKz6PzMRPeBvFLaBaL4Wpnsi46LTikdD1rm
+         94JA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
          :in-reply-to:references:mime-version:content-transfer-encoding;
-        bh=6ly/Z1yYuSnGcVTY2GvWV0FTJyRU84GpNxZ//3QWCM8=;
-        b=md58JwC9cQp5vHqEZlYZQl8zx6Gn69OLP7ASyiyjb4hgMhkOD9AFR6oq3nvXSfCgbM
-         AaWhe8pfg/3wLbqKrd6gm0PDjZSfDK02raqJ4KFc+C7Ustc23mMJ2XzSPqyfC5i2yRBa
-         Ju7BtyM1Nwe+cjX15rlaYQQkDzDLXL2LgoMAXu/bEbQwoHQzmWw72yE78zfpSdS2ZwGY
-         1+aE2qIpqiv4OcBEoD+boWXghTQ5SexaKRJ5L0Keb1MlVFG+O5Fe99tieJ+PNtecRc6l
-         7GA03LYnlnA+VDX9YC9Nqesa0hbKv6YyHnwPeL8B3nT2ECs0PrFSWnK9lOjp3g2Bk3kJ
-         CnOA==
-X-Gm-Message-State: AOAM530/wvXrtvfelLKvKMZX1Lned2GOi6jvD5c5sUQ1Fy76iDCdYeTh
-        mOvtk5uIkrghuTvuHC5YzGJ4CJpMpN+dXw==
-X-Google-Smtp-Source: ABdhPJzxpWU9gC8X+uyFS5KiJHbVQ53c0gnB+Hw2Pp+j5BbMcnz5pe+A0pF19jy6LZS7IWaJHxicpw==
-X-Received: by 2002:a2e:9652:: with SMTP id z18mr6752831ljh.106.1606603318096;
-        Sat, 28 Nov 2020 14:41:58 -0800 (PST)
+        bh=tdC3cUaEksOqJq+sL/p6xZwzgeMpzcgI0nIv+Qg+xyQ=;
+        b=VL61BrDzRDwzFp2BYMLo69Qh365P4VM59qAtGvaC5Ie63xDwAUb5nLv2RdRHe5iThp
+         +VUujn9SHoNU0dU2VJm5XeMTp+8BK3xrrvU0f238CJMW5xlKOWB2TRE9uliBiHTM5B7p
+         wKGQAH+rlWJLGpZDfpLBzdYWyRGYTutxnbTYV644ex1FVmxYC1YLRobXdohCdbZpkQyy
+         ++d9GomCLD6SsLZWPnqjFi16k+e4Py+q4Tsl6A1uu1q6f5qQdqQF2wZF0DyigzXsENsX
+         5NIuub/PnntCO0jrmRfs4K7wYS6axfYkJ4gpF1VTPNc0OOE1COIEtlPPlgP2yAnAnFVr
+         lvfw==
+X-Gm-Message-State: AOAM531Mh33fIfF7H44sAKMuRqWV3xgQ7mJp/tDKeW1ud5NDKG1JOwf3
+        1vyIRTAtiDuhdoFIOHw39Fpwcxi6xVarcw==
+X-Google-Smtp-Source: ABdhPJx/J0hfsr/rR0D6AcWR9QDUgP6LXUVbit09Oa3JEO3/0y2BPi8pZg+WoICFuvvaeWhd3bZjMA==
+X-Received: by 2002:a2e:6f04:: with SMTP id k4mr6716005ljc.220.1606603325686;
+        Sat, 28 Nov 2020 14:42:05 -0800 (PST)
 Received: from saturn.localdomain ([2a00:fd00:8060:1c00:a4c7:9ff9:a160:aad0])
-        by smtp.gmail.com with ESMTPSA id w21sm1236857lff.280.2020.11.28.14.41.56
+        by smtp.gmail.com with ESMTPSA id w21sm1236857lff.280.2020.11.28.14.42.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Nov 2020 14:41:57 -0800 (PST)
+        Sat, 28 Nov 2020 14:42:05 -0800 (PST)
 Sender: Sam Ravnborg <sam.ravnborg@gmail.com>
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -95,9 +95,9 @@ Cc:     Aditya Pakki <pakki001@umn.edu>,
         Thomas Zimemrmann <tzimmermann@suse.de>,
         Vaibhav Gupta <vaibhavgupta40@gmail.com>,
         Xiaofei Tan <tanxiaofei@huawei.com>
-Subject: [PATCH v2 19/28] video: fbdev: sstfb: Updated logging to fix set but not used warnings
-Date:   Sat, 28 Nov 2020 23:41:05 +0100
-Message-Id: <20201128224114.1033617-20-sam@ravnborg.org>
+Subject: [PATCH v2 23/28] video: fbdev: omapfb: Fix set but not used warnings in hdmi*_core
+Date:   Sat, 28 Nov 2020 23:41:09 +0100
+Message-Id: <20201128224114.1033617-24-sam@ravnborg.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201128224114.1033617-1-sam@ravnborg.org>
 References: <20201128224114.1033617-1-sam@ravnborg.org>
@@ -107,67 +107,67 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix set but not used warnings by introducing no_printk variants
-for the internal logging system for this driver.
-
-Fix a new warning that popped up now that logging was checked for
-correct printf format strings.
-
-A more invasive fix had been to replace all the internal logging with
-standard logging primitives - thats for another day.
+Fix a few W=1 warnings about unused assignments.
+Drop the unused error code.
 
 v2:
-  - Update subject (Lee)
+  - Subject updated (Lee)
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Qilong Zhang <zhangqilong3@huawei.com>
+Cc: "Alexander A. Klimov" <grandmaster@al2klimov.de>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Alex Dewar <alex.dewar90@gmail.com>
-Cc: Jani Nikula <jani.nikula@intel.com>
-Cc: linux-fbdev@vger.kernel.org
 Cc: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/video/fbdev/sstfb.c | 2 +-
- include/video/sstfb.h       | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c | 4 ++--
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/sstfb.c b/drivers/video/fbdev/sstfb.c
-index c05cdabeb11c..27d4b0ace2d6 100644
---- a/drivers/video/fbdev/sstfb.c
-+++ b/drivers/video/fbdev/sstfb.c
-@@ -1390,7 +1390,7 @@ static int sstfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 	        fix->smem_start, info->screen_base,
- 	        fix->smem_len >> 20);
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
+index 726c190862d4..e6363a420933 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
+@@ -679,7 +679,7 @@ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 	struct hdmi_audio_format audio_format;
+ 	struct hdmi_audio_dma audio_dma;
+ 	struct hdmi_core_audio_config acore;
+-	int err, n, cts, channel_count;
++	int n, cts, channel_count;
+ 	unsigned int fs_nr;
+ 	bool word_length_16b = false;
  
--	f_ddprintk("regbase_virt: %#lx\n", par->mmio_vbase);
-+	f_ddprintk("regbase_virt: %p\n", par->mmio_vbase);
- 	f_ddprintk("membase_phys: %#lx\n", fix->smem_start);
- 	f_ddprintk("fbbase_virt: %p\n", info->screen_base);
+@@ -741,7 +741,7 @@ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 		return -EINVAL;
+ 	}
  
-diff --git a/include/video/sstfb.h b/include/video/sstfb.h
-index 28384f354773..d4a5e41d1173 100644
---- a/include/video/sstfb.h
-+++ b/include/video/sstfb.h
-@@ -23,7 +23,7 @@
- #  define SST_DEBUG_FUNC 1
- #  define SST_DEBUG_VAR  1
- #else
--#  define dprintk(X...)
-+#  define dprintk(X...)		no_printk(X)
- #  define SST_DEBUG_REG  0
- #  define SST_DEBUG_FUNC 0
- #  define SST_DEBUG_VAR  0
-@@ -48,7 +48,7 @@
- #if (SST_DEBUG_FUNC > 1)
- #  define f_ddprintk(X...)	dprintk(" " X)
- #else
--#  define f_ddprintk(X...)
-+#  define f_ddprintk(X...)	no_printk(X)
- #endif
- #if (SST_DEBUG_FUNC > 2)
- #  define f_dddprintk(X...)	dprintk(" " X)
+-	err = hdmi_compute_acr(pclk, fs_nr, &n, &cts);
++	hdmi_compute_acr(pclk, fs_nr, &n, &cts);
+ 
+ 	/* Audio clock regeneration settings */
+ 	acore.n = n;
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
+index eda29d3032e1..cb63bc0e92ca 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
+@@ -790,7 +790,7 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 	struct hdmi_audio_format audio_format;
+ 	struct hdmi_audio_dma audio_dma;
+ 	struct hdmi_core_audio_config core_cfg;
+-	int err, n, cts, channel_count;
++	int n, cts, channel_count;
+ 	unsigned int fs_nr;
+ 	bool word_length_16b = false;
+ 
+@@ -833,7 +833,7 @@ int hdmi5_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 		return -EINVAL;
+ 	}
+ 
+-	err = hdmi_compute_acr(pclk, fs_nr, &n, &cts);
++	hdmi_compute_acr(pclk, fs_nr, &n, &cts);
+ 	core_cfg.n = n;
+ 	core_cfg.cts = cts;
+ 
 -- 
 2.27.0
 

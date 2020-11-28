@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43C2EC64E7B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D4FBC64E8A
 	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:43:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0D72020702
+	by mail.kernel.org (Postfix) with ESMTP id 33B0120771
 	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:43:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rr082/bf"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="myfU0/b/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731555AbgK1Wmt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 28 Nov 2020 17:42:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49304 "EHLO
+        id S1726014AbgK1Wmu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 28 Nov 2020 17:42:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49306 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726014AbgK1Wmt (ORCPT
+        with ESMTP id S1732694AbgK1Wmt (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Sat, 28 Nov 2020 17:42:49 -0500
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A01BEC061A48
-        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:37 -0800 (PST)
-Received: by mail-lj1-x244.google.com with SMTP id 142so10557904ljj.10
-        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:37 -0800 (PST)
+Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com [IPv6:2a00:1450:4864:20::141])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63464C061A49
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:39 -0800 (PST)
+Received: by mail-lf1-x141.google.com with SMTP id j205so12743849lfj.6
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=vo4cr0mfLt51Py8FoFo5ySrp+3Uu+WbwThawmdg5uCQ=;
-        b=rr082/bfmcgQVh1oGNkvsycPHb7jgLYqu/HTlitaos9mo8dFk+MxNnQcAMKYhTOz1G
-         nj1LrdF1YUNQ9IAMe2k6I+uAp+9pySXOyogw/6aYwtvF0oj11SXGTjG+hDZOVwfUW4Vh
-         9LbkkP5yNUVSUdx21hrIgKOLXf+4I11SveX5JuUtwoT3jlqF5CiaXb9QZLtnQY8nZoW7
-         qS7J1V4thgMvocrZcf/rGKX4zsMr7A3kx9KfFseFz/dT2giLnxQUxWawESs4WL+NuwP/
-         6XE0j4Lm9xbpiCeaHhQgEO9SE8T9yzD83V6/YvBVED/MIr9LPm4A7pawwrUFNAhv83yN
-         3ang==
+        bh=CkkKBlbXcP/dpbOfp8AnQrPHxu0MxowQOk9O/jfPEvM=;
+        b=myfU0/b/5BFYwWjwwEIJ580+u3RvEPUA2rg/ubozChfVxxDlaoKNZhuFfnDH0A5lrG
+         Tkjm6VvYHDbp+kfHTtLsrR5IB4+2ywduPgh/R6Lia2iz/HVW2S/38gl+oCUAbTF588SD
+         pnYfdcRPs/vK8bODBe3Mi+MI9yGQSUya1bejxklUrGBtk1OmDAKhiYGGl3P+djpopBhr
+         xGRQSWwMN4hU6eGB7OibLrx26ww6spt5XEdh/kEjzKPS4LzNmTmqv4Ud8s7leX6vmfsN
+         BcwrEHhPrxkT7U6CrheID/979KvzyHVQUz9rayaWEtR4xuYTrMohfC9rgMyNx4iwnc1k
+         0kIw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
          :in-reply-to:references:mime-version:content-transfer-encoding;
-        bh=vo4cr0mfLt51Py8FoFo5ySrp+3Uu+WbwThawmdg5uCQ=;
-        b=MlwnJVVwRJ1ayf39U/6Ca5eU6olUP2mTnakYtJ3p4IiaMJeGFLHI9Qf+8dG+fDo2Zv
-         SDKmhLJqJYhhmA1olFgMwOdbsvegjNEZzyJsmRpicFgaFnG77i7nQTB2LYLUf8VoAVA1
-         m4S8Ynlz+fa+A5/7lruErXdnay+EBG2mEB24jVr4XfS5IFjBJuomZBW4h7ypn6epDkaz
-         YEnfYaGhLgKqPDBmGtYAnWY3HYRsUPQckCUFJny7OdcTecdwh/W4iMyzftk5IALJqKFg
-         BaiDY6bSE+e58nvD9Nv7eCz9FFmcL1/c7oMVe80nhtE3q/DVmbiKdE7Y9KS75j2yjbPu
-         tfbQ==
-X-Gm-Message-State: AOAM530l+l+bBJ91IbBnzhKpjgr63hCuTvA24o2LYdLtYOEUh3T49hgS
-        EIYNT6WyKCTJeMvpo3V/ImGI9Wzk9mHkTg==
-X-Google-Smtp-Source: ABdhPJztBDdAKHiSNBdw1ZXYn1VBf8Peg+KZ0RY/iaTzhAAH+LYmPfiKXZsj0Hc9jhgaMObrsDNovA==
-X-Received: by 2002:a2e:580d:: with SMTP id m13mr6673046ljb.141.1606603295928;
-        Sat, 28 Nov 2020 14:41:35 -0800 (PST)
+        bh=CkkKBlbXcP/dpbOfp8AnQrPHxu0MxowQOk9O/jfPEvM=;
+        b=sTPCVKsvIxbBiXFntKWHCKHiOHPTobeX65EfQwZ2pFUaNUv2I0gM4IBmMJv2fQTUyp
+         gfpB4u67oS9OBelDA7XtVU0qUvypVSoh892Th2g9/TYzmvclt9u9aH9rIVJo5J69xgtp
+         XYHa7ShUZR//A54ozc4T1aNlQJMOdU+QvpaYP3amcqGCMmlHnazDpMtpi4Y2hW0Se50c
+         gg0TJ47pubXLh8p+V3erlncm4y9XPmrBo1yCQ8SZN//vC9bZkRjwf055DJgTF697f3d3
+         CFuihJCA+gaVNVhzBiXDxeVKin7rdE41YYmJgdtUiWfKf71HD4JXlX5CchCWrZz7kpb5
+         JaNw==
+X-Gm-Message-State: AOAM533RYRBCaFWlPxEY1JlLX1VRi8OOHiiCIyQxyC6rGm2o0CIbLHmm
+        9i+gsC3iuoeOR5ULX/cTv4nrmK5awwSqbA==
+X-Google-Smtp-Source: ABdhPJw3xPU1N65OeV/W6wReXcoA9gIj8j2aMYlOo4jhEeadsqD44d7njz7QpKk4AOXAGGCfHn7uYg==
+X-Received: by 2002:ac2:5486:: with SMTP id t6mr6432455lfk.138.1606603297672;
+        Sat, 28 Nov 2020 14:41:37 -0800 (PST)
 Received: from saturn.localdomain ([2a00:fd00:8060:1c00:a4c7:9ff9:a160:aad0])
-        by smtp.gmail.com with ESMTPSA id w21sm1236857lff.280.2020.11.28.14.41.34
+        by smtp.gmail.com with ESMTPSA id w21sm1236857lff.280.2020.11.28.14.41.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Nov 2020 14:41:35 -0800 (PST)
+        Sat, 28 Nov 2020 14:41:37 -0800 (PST)
 Sender: Sam Ravnborg <sam.ravnborg@gmail.com>
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -95,9 +95,9 @@ Cc:     Aditya Pakki <pakki001@umn.edu>,
         Thomas Zimemrmann <tzimmermann@suse.de>,
         Vaibhav Gupta <vaibhavgupta40@gmail.com>,
         Xiaofei Tan <tanxiaofei@huawei.com>
-Subject: [PATCH v2 07/28] video: fbdev: sis: Fix defined but not used warnings
-Date:   Sat, 28 Nov 2020 23:40:53 +0100
-Message-Id: <20201128224114.1033617-8-sam@ravnborg.org>
+Subject: [PATCH v2 08/28] video: fbdev: sis: Fix defined but not used warning of SiS_TVDelay
+Date:   Sat, 28 Nov 2020 23:40:54 +0100
+Message-Id: <20201128224114.1033617-9-sam@ravnborg.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201128224114.1033617-1-sam@ravnborg.org>
 References: <20201128224114.1033617-1-sam@ravnborg.org>
@@ -107,9 +107,10 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-init.h define static symbols, so should only be included
-once. Drop the include from sis.h as it is not needed.
-This fixes a lot of warnings seen with a W=1 build.
+Fix W=1 warning by commenting unused SiS_TVDelay* variables.
+
+The SiS_TVDelay* variables seem to contain some magic numbers
+so looks like data worth keeping around but not as code we build.
 
 v2:
   - Update subject (Lee)
@@ -118,21 +119,29 @@ Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Cc: Thomas Winischhofer <thomas@winischhofer.net>
 Cc: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/video/fbdev/sis/sis.h | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/fbdev/sis/oem310.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/sis/sis.h b/drivers/video/fbdev/sis/sis.h
-index 9f4c3093ccb3..d632f096083b 100644
---- a/drivers/video/fbdev/sis/sis.h
-+++ b/drivers/video/fbdev/sis/sis.h
-@@ -15,7 +15,6 @@
+diff --git a/drivers/video/fbdev/sis/oem310.h b/drivers/video/fbdev/sis/oem310.h
+index 8fce56e4482c..ed28755715ce 100644
+--- a/drivers/video/fbdev/sis/oem310.h
++++ b/drivers/video/fbdev/sis/oem310.h
+@@ -200,6 +200,7 @@ static const unsigned char SiS310_TVDelayCompensation_651302LV[] =	/* M650, 651,
+ 	0x33,0x33
+ };
  
- #include "vgatypes.h"
- #include "vstruct.h"
--#include "init.h"
++#if 0 /* Not used */
+ static const unsigned char SiS_TVDelay661_301[] =			/* 661, 301 */
+ {
+ 	0x44,0x44,
+@@ -219,6 +220,7 @@ static const unsigned char SiS_TVDelay661_301B[] =			/* 661, 301B et al */
+ 	0x44,0x44,
+ 	0x44,0x44
+ };
++#endif
  
- #define VER_MAJOR		1
- #define VER_MINOR		8
+ static const unsigned char SiS310_TVDelayCompensation_LVDS[] =		/* LVDS */
+ {
 -- 
 2.27.0
 

@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA20EC64E90
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7AD9C71155
 	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:43:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7F96A20771
+	by mail.kernel.org (Postfix) with ESMTP id A322720702
 	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:43:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZusRrASF"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="I6GqQD3f"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387760AbgK1Wmy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S2387803AbgK1Wmy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Sat, 28 Nov 2020 17:42:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49322 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49326 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387803AbgK1Wmx (ORCPT
+        with ESMTP id S2387804AbgK1Wmx (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Sat, 28 Nov 2020 17:42:53 -0500
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0E9CBC061A4B
-        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:43 -0800 (PST)
-Received: by mail-lj1-x244.google.com with SMTP id i17so10604397ljd.3
-        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:42 -0800 (PST)
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECB0FC061A4C
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:44 -0800 (PST)
+Received: by mail-lj1-x241.google.com with SMTP id y10so10588735ljc.7
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=y9DoNLVD1VJdMvYkN8JAl3I/nCqyKUSn3u0XqPwML4w=;
-        b=ZusRrASFECptUJSOveiHQvYDfWj66YcjXLdZqrYufzMQ6FYHpk5mUHtLtBasEaUMUE
-         tw3OASadraNE+yTe0bzr7mJKOWcf8M0zyAc1AlYdy0g7uPnVc9LW2d2WYn3wNezvsPyB
-         QmEwQkrcj+KR5Z5icz8mpns2eXNK1CM52JsAjkKg/uKNR3/BWr36Od2ITt2t23gaOKyx
-         VR1X1oQFdNr0IqP9Omdsohq2d9SNWuvQbbm4GyVW+6+ADBlK6tb34hqdr1bczhPftGkR
-         qlPSqQEseT3oYOQhcHciGAoFju1VPmS0k6OC5FuRRI/em0Z40+ynbJjbok+mAg1J5z4H
-         a4LA==
+        bh=qQbdoMGfp7HI6Wmt4IR8iWJeCZkxPlinkDvEVc1r82A=;
+        b=I6GqQD3fz1EqGD498t1GsLkIHDFsRv7/o3xRXWseWPdVQCKrCv2QN8njbKtX7/+cz+
+         smvA7q0jnFm1q/Dd7pQ2F/L2yCX1fFZPKJj0Kw043RE5OWX9f2eAIn3tkU+6HpN70Cji
+         AyBSZBvy9qs/unaX+yF8BwNQrOkMG/ffP2VFFu/g7pVCSjL9G+x7Q+Vup9KCo38ZNOIy
+         VG2zGt8jy6PeULtQMpE8KtRVaMPR7wrdMa45Aho5tLl8Ai/h9m7nCT0zjkFDzxwxXw45
+         bsU1QTW0NdlWDMGK4uCZL+WLbgDejqM9XOPK5RqZfGE7Vq/eMRQT9z11o0frnevy8AyM
+         pZ4g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
          :in-reply-to:references:mime-version:content-transfer-encoding;
-        bh=y9DoNLVD1VJdMvYkN8JAl3I/nCqyKUSn3u0XqPwML4w=;
-        b=aPu6hPshhKXZpqa2u4n8Dn3yopB8JTA7lUVxj4FH5ApO/UGgmYH6OzLEsu6SmyZwIb
-         mkcSboLd/qVDUs3+3/dtvretRkq4Y6vpzqRh7U49Ff9MCX+70iQGgKCO1nw/5MgBUayP
-         bad2VpRf9K1fo5I7J0DANknPa85V5kxpjMqT7xeq589gQwO/+t0giOfxAKb4ZoY+B/Xn
-         vcGORcfgJ5ShTfZWMz0jH1gqY8HlDyQ96Ch3TfdTCtqKIIEOZo5N0U72VPHc99bZewuP
-         cJ+seTVnI7fGTobZZ8D//9d/7drKEbdfyvQP4Mk0bmSmdvIy27Zn5VlX2727eQJqhdJe
-         eYqQ==
-X-Gm-Message-State: AOAM531Q1nLHokTJqEMHEBT3AvxEGLpD+BSlhF4GcxsQoMcO+9f9DEiL
-        J2bZcviVuIz2DE30Ww/IVWc56hcUW23yvg==
-X-Google-Smtp-Source: ABdhPJxKPuOqOji6HCC4m60UbiB34g5mjv+rMTRpJMjPkv/jqh0DDmlaT45tvr7TU3Qydah7YP0J+g==
-X-Received: by 2002:a2e:894b:: with SMTP id b11mr6467359ljk.439.1606603301363;
-        Sat, 28 Nov 2020 14:41:41 -0800 (PST)
+        bh=qQbdoMGfp7HI6Wmt4IR8iWJeCZkxPlinkDvEVc1r82A=;
+        b=YKunubawUV7yE9Uwk3E21x9H0vz7aToArXGbqx8i4U6ahWQDeZ6ELsX914dKtcsEw8
+         AzzX1vcPp+ReesYoV84WB6B5DMhyADDxTP3uOsfvgzct2O/FfFa+qpLAd9AT09xxffkS
+         2dGQcfvWPosSVqwXgmYqw9V3DeX2WrQG1BjtW0D+pVmxJbSKuu1iV8gjfoigrUyLLSfe
+         f3hgZD/8uiy9wz5WPyPUdhKvUQUQHTDeGaYeXxVJ2W+z+4qfxGe7q66SNtuaA/AIh9YF
+         qWhMzLsims1afljq0wiQGpYtWod1QE+3O6BkI8qGQjbL4eAl3p3uYCEeyfuFext7dvDH
+         Ch7A==
+X-Gm-Message-State: AOAM530VzWa+1Rv1HjFuoAlbhwzu29TmfNPBuQx/nz/RiUoDaU32bwKz
+        GM1ahTO6Gg2X7OiTYBjOrntIqpWux/7sgA==
+X-Google-Smtp-Source: ABdhPJzFyXGSucNfx9yncv1e42W9SVj8LPo5R/vJS1rgbRNBov9ReHwMEZgrMKy4kizi21GFlNwCQA==
+X-Received: by 2002:a2e:535a:: with SMTP id t26mr6393928ljd.87.1606603303293;
+        Sat, 28 Nov 2020 14:41:43 -0800 (PST)
 Received: from saturn.localdomain ([2a00:fd00:8060:1c00:a4c7:9ff9:a160:aad0])
-        by smtp.gmail.com with ESMTPSA id w21sm1236857lff.280.2020.11.28.14.41.39
+        by smtp.gmail.com with ESMTPSA id w21sm1236857lff.280.2020.11.28.14.41.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Nov 2020 14:41:40 -0800 (PST)
+        Sat, 28 Nov 2020 14:41:42 -0800 (PST)
 Sender: Sam Ravnborg <sam.ravnborg@gmail.com>
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -95,9 +95,9 @@ Cc:     Aditya Pakki <pakki001@umn.edu>,
         Thomas Zimemrmann <tzimmermann@suse.de>,
         Vaibhav Gupta <vaibhavgupta40@gmail.com>,
         Xiaofei Tan <tanxiaofei@huawei.com>
-Subject: [PATCH v2 10/28] video: fbdev: sis: Fix set but not used warnings in sis_main
-Date:   Sat, 28 Nov 2020 23:40:56 +0100
-Message-Id: <20201128224114.1033617-11-sam@ravnborg.org>
+Subject: [PATCH v2 11/28] video: fbdev: via: Fix set but not used warning for mode_crt_table
+Date:   Sat, 28 Nov 2020 23:40:57 +0100
+Message-Id: <20201128224114.1033617-12-sam@ravnborg.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201128224114.1033617-1-sam@ravnborg.org>
 References: <20201128224114.1033617-1-sam@ravnborg.org>
@@ -107,55 +107,38 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix warnings by dropping unused variable and the
-unused assignments.
+Fix warning by deleting the variable. The function call
+viafb_get_best_mode() were verified to have no side-effects,
+and thus could be dropped too.
 
 v2:
   - Update subject (Lee)
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
 Cc: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/video/fbdev/sis/sis_main.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/via/lcd.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index 03c736f6f3d0..266a5582f94d 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -5029,7 +5029,6 @@ static void sisfb_post_xgi_ddr2(struct sis_video_info *ivideo, u8 regb)
- 	static const u8 cs168[8] = {
- 		0x48, 0x78, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00
- 	};
--	u8 reg;
- 	u8 v1;
- 	u8 v2;
- 	u8 v3;
-@@ -5037,9 +5036,9 @@ static void sisfb_post_xgi_ddr2(struct sis_video_info *ivideo, u8 regb)
- 	SiS_SetReg(SISCR, 0xb0, 0x80); /* DDR2 dual frequency mode */
- 	SiS_SetReg(SISCR, 0x82, 0x77);
- 	SiS_SetReg(SISCR, 0x86, 0x00);
--	reg = SiS_GetReg(SISCR, 0x86);
-+	SiS_GetReg(SISCR, 0x86);
- 	SiS_SetReg(SISCR, 0x86, 0x88);
--	reg = SiS_GetReg(SISCR, 0x86);
-+	SiS_GetReg(SISCR, 0x86);
- 	v1 = cs168[regb]; v2 = cs160[regb]; v3 = cs158[regb];
- 	if (ivideo->haveXGIROM) {
- 		v1 = bios[regb + 0x168];
-@@ -5049,9 +5048,9 @@ static void sisfb_post_xgi_ddr2(struct sis_video_info *ivideo, u8 regb)
- 	SiS_SetReg(SISCR, 0x86, v1);
- 	SiS_SetReg(SISCR, 0x82, 0x77);
- 	SiS_SetReg(SISCR, 0x85, 0x00);
--	reg = SiS_GetReg(SISCR, 0x85);
-+	SiS_GetReg(SISCR, 0x85);
- 	SiS_SetReg(SISCR, 0x85, 0x88);
--	reg = SiS_GetReg(SISCR, 0x85);
-+	SiS_GetReg(SISCR, 0x85);
- 	SiS_SetReg(SISCR, 0x85, v2);
- 	SiS_SetReg(SISCR, 0x82, v3);
- 	SiS_SetReg(SISCR, 0x98, 0x01);
+diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd.c
+index 4a869402d120..088b962076b5 100644
+--- a/drivers/video/fbdev/via/lcd.c
++++ b/drivers/video/fbdev/via/lcd.c
+@@ -537,11 +537,9 @@ void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
+ 	u32 clock;
+ 	struct via_display_timing timing;
+ 	struct fb_var_screeninfo panel_var;
+-	const struct fb_videomode *mode_crt_table, *panel_crt_table;
++	const struct fb_videomode *panel_crt_table;
+ 
+ 	DEBUG_MSG(KERN_INFO "viafb_lcd_set_mode!!\n");
+-	/* Get mode table */
+-	mode_crt_table = viafb_get_best_mode(set_hres, set_vres, 60);
+ 	/* Get panel table Pointer */
+ 	panel_crt_table = viafb_get_best_mode(panel_hres, panel_vres, 60);
+ 	viafb_fill_var_timing_info(&panel_var, panel_crt_table);
 -- 
 2.27.0
 

@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 041B8C63777
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 446ACC63798
 	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:43:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C3DBD20702
-	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:43:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0C8ED20702
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Nov 2020 22:43:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="tvzCFnaK"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ceUf4brj"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732698AbgK1Wnb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S1730785AbgK1Wnb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Sat, 28 Nov 2020 17:43:31 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49426 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49408 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730785AbgK1Wn3 (ORCPT
+        with ESMTP id S1729806AbgK1Wn3 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Sat, 28 Nov 2020 17:43:29 -0500
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9DF0FC0613D1
-        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:42:03 -0800 (PST)
-Received: by mail-lf1-x142.google.com with SMTP id s27so12750239lfp.5
-        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:42:03 -0800 (PST)
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F999C061A54
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:54 -0800 (PST)
+Received: by mail-lf1-x144.google.com with SMTP id a9so12761086lfh.2
+        for <linux-fbdev@vger.kernel.org>; Sat, 28 Nov 2020 14:41:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=5MJlaKcTS845wbNZGaIoS2kPxxU74n2R9tKR7IOQIuA=;
-        b=tvzCFnaKarri4MrMt/OOBX4UYabnmocLUjuejQpGNQHUbU1DV6B8ZgY3G77V3kezjS
-         TjZKXyvlQ9iCHDG6ntv/X/orBmg0DjjdkGE6hTXPdAuSBP2EYE1V8VsonslrBQw9+mGb
-         FD854fbfMhhp0lNLk880C3CTN4ruQLvxeqY3O4+fCM8IRdEhz5qLr15AO69rFVOYqyzZ
-         svz4z+Qz8nd4wmxP3lb28IIk1+Bl24bS8CGDh5JSpkdhBS0ouH65+e0hekQ5q/QfxGFC
-         DNnmoyu4ginXvCr6uQdvL6yx9/fXSAVcuv+WiZz0VrA8PRDNzTrGcFt5rkgJYY29QCr7
-         8upA==
+        bh=4zXtp5JJ5kL9W0YA7a9u1oFQEkf6mUNDsE89w8XSjbA=;
+        b=ceUf4brj/n0hkaGfOYFJBYiH9gMwfM6dVxGXtjLzBxWUBrKdOiBcNBiwjbk6I+CgJ3
+         gI3ZS4XqlBZrmis/msFG4cYvku2FAl7iT+pZd7mTwUN+sAvY3OKBBRI8R9jT3nIJnz7G
+         Y/FXeJA1VgtIpovJ8bC2XO8Vnlg0CPuD4ZM9l35PmOSYNB1bQXK9UEHN4L7N79HhrjOP
+         rIKTYGJ55Bze+4fEzcwZgzXaNWenxz1Ag47/z9ITXQIM1e9Jzek+YaNUqrBh9XmKyPAV
+         QgbY8AzXHQZKAokd0sXKMHIrdzNHIcCwnfAp7pKAiG0Qss+kun1A28cwelQfUQqbkl8O
+         dwSQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
          :in-reply-to:references:mime-version:content-transfer-encoding;
-        bh=5MJlaKcTS845wbNZGaIoS2kPxxU74n2R9tKR7IOQIuA=;
-        b=mcekx80I/4T1FzhBXkkyIHM+v9XyiueGqwKxDKKQMgwMdih4v3AoW82yRt3+is8e7E
-         Jp5VebJMEwlPzJy9fb9sfkL2OlbogjHpTBBjw7wT2eoX+Wse2u4pO/Ei8adU2UKXZSoE
-         7Y3xjyTASsUr+PpQ/kb96R1g90xDcCydAoj15NgB/MnmdPQAPhu9HBZ6Q4KILHncB3pn
-         uHVf5gwtXecB/y9+Mo+qTsqFKE19HTO5emZ1Jp2YXoXSTN8dktZ8KJa0yOgN0ok9W/jc
-         yvcuJpeN3PZlq2y4CPqdRdfofdEZ8BXSBSukzqIA8DxoaDW0SOwWwxWF3h/S13kzuVGf
-         /CyA==
-X-Gm-Message-State: AOAM533SHNc4HvmMjV8LvzH8CYy85Nb/vhd1zcCkv0YFzNGuOyUr139m
-        Iet10FasApQf1wxb7aWbi4+GBu48VCfSTA==
-X-Google-Smtp-Source: ABdhPJxedjLhnAr5B6nJvt/A/46S2ueviNNylSrgyAirvdAVc5ST23a882taVbnarg8qv8rIuZvs4g==
-X-Received: by 2002:ac2:446f:: with SMTP id y15mr6344891lfl.415.1606603321907;
-        Sat, 28 Nov 2020 14:42:01 -0800 (PST)
+        bh=4zXtp5JJ5kL9W0YA7a9u1oFQEkf6mUNDsE89w8XSjbA=;
+        b=hIhm5Oi1sqal/pvJutdLPIJx95PIL/H26Tx+mdJmZoXk+o9u9rJU9A9eI+bEns3sIG
+         ieiECImAUAn/eBnXWrs49PD026J1jMZpRUOq6fyG9o1OzJy6HQ26QhCDATjsDsQuFK6r
+         arxAjKKPVCpEM8FhJ6qEd7NRbOfbrU/hFyqdtsIstaNIdCZvzKXnofzksVapFycxdSb/
+         6KMhQcw+ku4H1uLfXUW6z7ZJQt8A7mRimqBYFTcoaKpV97df+X1EmWs70vyIxr31BUqU
+         0aUiNO4q9NcJcd4PJ8ThH6DjY5t3IBUXr7VKuuBTZ6bt68xgC5k5Zu5wztVm3qaVrAXe
+         J3yA==
+X-Gm-Message-State: AOAM531tt0oC8uL/S7sW2OVlJWlBG6T/kLn8EvaYOn7KHzS+cQCQ5CNM
+        iucn4bQ/L2OeKSzmlbfEppa4/KQikeq0rtQu
+X-Google-Smtp-Source: ABdhPJxss28jpDvSr/X/2726RDiBKWZyfMpYr3Grt4ZkKPwJPMW1Lii9D2KCP4lz4rLxgbgJM2IM8g==
+X-Received: by 2002:a19:8001:: with SMTP id b1mr6321877lfd.353.1606603312476;
+        Sat, 28 Nov 2020 14:41:52 -0800 (PST)
 Received: from saturn.localdomain ([2a00:fd00:8060:1c00:a4c7:9ff9:a160:aad0])
-        by smtp.gmail.com with ESMTPSA id w21sm1236857lff.280.2020.11.28.14.42.00
+        by smtp.gmail.com with ESMTPSA id w21sm1236857lff.280.2020.11.28.14.41.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Nov 2020 14:42:01 -0800 (PST)
+        Sat, 28 Nov 2020 14:41:52 -0800 (PST)
 Sender: Sam Ravnborg <sam.ravnborg@gmail.com>
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -94,10 +94,12 @@ Cc:     Aditya Pakki <pakki001@umn.edu>,
         Thomas Winischhofer <thomas@winischhofer.net>,
         Thomas Zimemrmann <tzimmermann@suse.de>,
         Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        Xiaofei Tan <tanxiaofei@huawei.com>
-Subject: [PATCH v2 21/28] video: fbdev: tmiofb: Fix set but not used warnings
-Date:   Sat, 28 Nov 2020 23:41:07 +0100
-Message-Id: <20201128224114.1033617-22-sam@ravnborg.org>
+        Xiaofei Tan <tanxiaofei@huawei.com>,
+        Ferenc Bakonyi <fero@drama.obuda.kando.hu>,
+        linux-nvidia@lists.surfsouth.com
+Subject: [PATCH v2 16/28] video: fbdev: hgafb: Fix kernel-doc warnings
+Date:   Sat, 28 Nov 2020 23:41:02 +0100
+Message-Id: <20201128224114.1033617-17-sam@ravnborg.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201128224114.1033617-1-sam@ravnborg.org>
 References: <20201128224114.1033617-1-sam@ravnborg.org>
@@ -107,46 +109,41 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix W=1 warnings by avoiding local variables and use direct references.
+Fix kernel-doc comments.
 
 v2:
   - Updated subject (Lee)
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jani Nikula <jani.nikula@intel.com>
+Cc: Ferenc Bakonyi <fero@drama.obuda.kando.hu>
+Cc: linux-nvidia@lists.surfsouth.com
 Cc: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/video/fbdev/tmiofb.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/hgafb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/tmiofb.c b/drivers/video/fbdev/tmiofb.c
-index 50111966c981..b70faa3850f2 100644
---- a/drivers/video/fbdev/tmiofb.c
-+++ b/drivers/video/fbdev/tmiofb.c
-@@ -802,10 +802,8 @@ static int tmiofb_remove(struct platform_device *dev)
- 	const struct mfd_cell *cell = mfd_get_cell(dev);
- 	struct fb_info *info = platform_get_drvdata(dev);
- 	int irq = platform_get_irq(dev, 0);
--	struct tmiofb_par *par;
+diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
+index a45fcff1461f..69af72937844 100644
+--- a/drivers/video/fbdev/hgafb.c
++++ b/drivers/video/fbdev/hgafb.c
+@@ -358,7 +358,7 @@ static int hga_card_detect(void)
+ /**
+  *	hgafb_open - open the framebuffer device
+  *	@info:pointer to fb_info object containing info for current hga board
+- *	@int:open by console system or userland.
++ *	@init:open by console system or userland.
+  */
  
- 	if (info) {
--		par = info->par;
- 		unregister_framebuffer(info);
+ static int hgafb_open(struct fb_info *info, int init)
+@@ -372,7 +372,7 @@ static int hgafb_open(struct fb_info *info, int init)
+ /**
+  *	hgafb_open - open the framebuffer device
+  *	@info:pointer to fb_info object containing info for current hga board
+- *	@int:open by console system or userland.
++ *	@init:open by console system or userland.
+  */
  
- 		tmiofb_hw_stop(dev);
-@@ -816,8 +814,8 @@ static int tmiofb_remove(struct platform_device *dev)
- 		free_irq(irq, info);
- 
- 		iounmap(info->screen_base);
--		iounmap(par->lcr);
--		iounmap(par->ccr);
-+		iounmap(((struct tmiofb_par *)info->par)->lcr);
-+		iounmap(((struct tmiofb_par *)info->par)->ccr);
- 
- 		framebuffer_release(info);
- 	}
+ static int hgafb_release(struct fb_info *info, int init)
 -- 
 2.27.0
 

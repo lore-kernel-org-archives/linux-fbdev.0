@@ -4,124 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C8AFC64E7B
-	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Nov 2020 17:34:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CEECBC3E8C5
+	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Nov 2020 21:44:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0C1D52085B
-	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Nov 2020 17:34:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8CBE72078D
+	for <linux-fbdev@archiver.kernel.org>; Sun, 29 Nov 2020 21:44:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728463AbgK2Reh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 29 Nov 2020 12:34:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52512 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728462AbgK2Reh (ORCPT
+        id S1725882AbgK2Vos (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 29 Nov 2020 16:44:48 -0500
+Received: from asavdk3.altibox.net ([109.247.116.14]:39410 "EHLO
+        asavdk3.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725950AbgK2Vos (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 29 Nov 2020 12:34:37 -0500
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6239C061A04
-        for <linux-fbdev@vger.kernel.org>; Sun, 29 Nov 2020 09:33:31 -0800 (PST)
-Received: from pty.hi.pengutronix.de ([2001:67c:670:100:1d::c5])
-        by metis.ext.pengutronix.de with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1kjQYS-0006zE-4U; Sun, 29 Nov 2020 18:32:08 +0100
-Received: from ukl by pty.hi.pengutronix.de with local (Exim 4.89)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1kjQYH-0003Mg-0E; Sun, 29 Nov 2020 18:31:57 +0100
-Date:   Sun, 29 Nov 2020 18:31:53 +0100
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Takashi Iwai <tiwai@suse.de>, Michael Ellerman <mpe@ellerman.id.au>
-Cc:     Geoff Levand <geoff@infradead.org>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Takashi Iwai <tiwai@suse.com>, Jens Axboe <axboe@kernel.dk>,
-        Jim Paris <jim@jtan.com>, Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Jakub Kicinski <kuba@kernel.org>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Alan Stern <stern@rowland.harvard.edu>,
+        Sun, 29 Nov 2020 16:44:48 -0500
+Received: from ravnborg.org (unknown [188.228.123.71])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by asavdk3.altibox.net (Postfix) with ESMTPS id 9BE1B20034;
+        Sun, 29 Nov 2020 22:43:56 +0100 (CET)
+Date:   Sun, 29 Nov 2020 22:43:55 +0100
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Lee Jones <lee.jones@linaro.org>
+Cc:     Aditya Pakki <pakki001@umn.edu>,
+        Alexander Klimov <grandmaster@al2klimov.de>,
+        Alex Dewar <alex.dewar90@gmail.com>,
+        Antonino Daplas <adaplas@gmail.com>,
+        Arnd Bergmann <arnd@arndb.de>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
         Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
-        linux-block@vger.kernel.org, netdev@vger.kernel.org,
-        linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] powerpc/ps3: make system bus's remove and shutdown
- callbacks return void
-Message-ID: <20201129173153.jbt3epcxnasbemir@pengutronix.de>
-References: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
- <20201126165950.2554997-2-u.kleine-koenig@pengutronix.de>
- <s5hv9dphnoh.wl-tiwai@suse.de>
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Evgeny Novikov <novikov@ispras.ru>,
+        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+        George Kennedy <george.kennedy@oracle.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Gustavo Silva <gustavoars@kernel.org>,
+        Jani Nikula <jani.nikula@intel.com>,
+        Jason Yan <yanaijie@huawei.com>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Joe Perches <joe@perches.com>,
+        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Mike Rapoport <rppt@kernel.org>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Peilin Ye <yepeilin.cs@gmail.com>,
+        Peter Rosin <peda@axentia.se>,
+        Qilong Zhang <zhangqilong3@huawei.com>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Thomas Winischhofer <thomas@winischhofer.net>,
+        Thomas Zimemrmann <tzimmermann@suse.de>,
+        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
+        Xiaofei Tan <tanxiaofei@huawei.com>
+Subject: Re: [PATCH v2 01/28] video: Fix kernel-doc warnings in
+ of_display_timing + of_videomode
+Message-ID: <20201129214355.GB1162850@ravnborg.org>
+References: <20201128224114.1033617-1-sam@ravnborg.org>
+ <20201128224114.1033617-2-sam@ravnborg.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="q5fwi2prasbljs5f"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <s5hv9dphnoh.wl-tiwai@suse.de>
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c5
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+In-Reply-To: <20201128224114.1033617-2-sam@ravnborg.org>
+X-CMAE-Score: 0
+X-CMAE-Analysis: v=2.3 cv=Ibmpp1ia c=1 sm=1 tr=0
+        a=S6zTFyMACwkrwXSdXUNehg==:117 a=S6zTFyMACwkrwXSdXUNehg==:17
+        a=kj9zAlcOel0A:10 a=7gkXJVJtAAAA:8 a=KKAkSRfTAAAA:8 a=VwQbUJbxAAAA:8
+        a=s8I4p5Juq2V10JmXBBwA:9 a=CjuIK1q_8ugA:10 a=E9Po1WZjFZOl8hwRPBS3:22
+        a=cvBusfyB2V15izCimMoJ:22 a=AjGcO6oz07-iQ99wixmX:22
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On Sat, Nov 28, 2020 at 11:40:47PM +0100, Sam Ravnborg wrote:
+> Fix kernel-doc warnings reported when using W=1.
+> 
+> v2:
+>   - Improve subject (Lee)
+> 
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: linux-fbdev@vger.kernel.org
 
---q5fwi2prasbljs5f
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Applied to drm-misc-next after fixing nit that Thomas pointed out.
 
-Hello Michael,
-
-On Sat, Nov 28, 2020 at 09:48:30AM +0100, Takashi Iwai wrote:
-> On Thu, 26 Nov 2020 17:59:50 +0100,
-> Uwe Kleine-K=F6nig wrote:
-> >=20
-> > The driver core ignores the return value of struct device_driver::remove
-> > because there is only little that can be done. For the shutdown callback
-> > it's ps3_system_bus_shutdown() which ignores the return value.
-> >=20
-> > To simplify the quest to make struct device_driver::remove return void,
-> > let struct ps3_system_bus_driver::remove return void, too. All users
-> > already unconditionally return 0, this commit makes it obvious that
-> > returning an error code is a bad idea and ensures future users behave
-> > accordingly.
-> >=20
-> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
->=20
-> For the sound bit:
-> Acked-by: Takashi Iwai <tiwai@suse.de>
-
-assuming that you are the one who will apply this patch: Note that it
-depends on patch 1 that Takashi already applied to his tree. So you
-either have to wait untils patch 1 appears in some tree that you merge
-before applying, or you have to take patch 1, too. (With Takashi
-optinally dropping it then.)
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---q5fwi2prasbljs5f
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAl/D2wYACgkQwfwUeK3K
-7AmmxQf+IiMtqhw/kONuYhwVAdprYhlgZyY9iZSe5xHA/6/1zNmBbfhPRm6PfStb
-RRMTewx97J4joVbCv7OhlZBsoA7lnpUKJD05Qt7eXIEMdnuscbTx8YZr/z94s9/Y
-/ElFT8e2Wx6crnEbjWeFcYVTLkGgf1pnUhpFmTq4LwQqqV5lQWUu6JMnS8THMhay
-RCwTJR+P84Nw4wv39uvWN4LFmuDeM5hjnPjoEFBbnAeUtQr62AAh7itX8pTNEyZp
-t6M09QdoxpJWDPe/vRxYZSZdsuE+vXsCuMWH5Kyo0hodOX9m6JpOhsPm/YiaCK5B
-IW1LSeEeHe9uPQSACw7mkNft9x6Zfg==
-=TO3P
------END PGP SIGNATURE-----
-
---q5fwi2prasbljs5f--
+	Sam

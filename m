@@ -2,99 +2,151 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F22EC64E7B
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 18:40:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8379DC63777
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 18:47:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CD31820725
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 18:40:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Et3EO0eE"
+	by mail.kernel.org (Postfix) with ESMTP id 44DDA20705
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 18:47:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727451AbgK3Skz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 30 Nov 2020 13:40:55 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:31024 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727182AbgK3Skz (ORCPT
+        id S1727451AbgK3Srk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 Nov 2020 13:47:40 -0500
+Received: from asavdk3.altibox.net ([109.247.116.14]:38086 "EHLO
+        asavdk3.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725870AbgK3Srk (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 30 Nov 2020 13:40:55 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1606761569;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=j9ZQqaEJyTXtTPwKAIvc6yiwpWOFXj2Tjc6b0XQMCrc=;
-        b=Et3EO0eEjXiynGtMn0Qgq8K//oppd9h/omL7uco+PSXfkkoiH/aDy7ie7lI09Vp6/zRN8k
-        zzTdEEyIdFgSTe4KtDYFZLmA1CeXHbRKmgMZZYd3d2QhTNLVJoZFwhUznZkrQ3347fPotp
-        mRAAIUTWyE1h6YaTLkX71opdq5gzt2U=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-168-DwSjZxLyOi6Zl2POdMrKqw-1; Mon, 30 Nov 2020 13:39:21 -0500
-X-MC-Unique: DwSjZxLyOi6Zl2POdMrKqw-1
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        Mon, 30 Nov 2020 13:47:40 -0500
+Received: from ravnborg.org (unknown [188.228.123.71])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id E6A8F180A08A;
-        Mon, 30 Nov 2020 18:39:19 +0000 (UTC)
-Received: from file01.intranet.prod.int.rdu2.redhat.com (file01.intranet.prod.int.rdu2.redhat.com [10.11.5.7])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id 82A965D9C0;
-        Mon, 30 Nov 2020 18:39:19 +0000 (UTC)
-Received: from file01.intranet.prod.int.rdu2.redhat.com (localhost [127.0.0.1])
-        by file01.intranet.prod.int.rdu2.redhat.com (8.14.4/8.14.4) with ESMTP id 0AUIdIPn027142;
-        Mon, 30 Nov 2020 13:39:18 -0500
-Received: from localhost (mpatocka@localhost)
-        by file01.intranet.prod.int.rdu2.redhat.com (8.14.4/8.14.4/Submit) with ESMTP id 0AUIdH6j027138;
-        Mon, 30 Nov 2020 13:39:18 -0500
-X-Authentication-Warning: file01.intranet.prod.int.rdu2.redhat.com: mpatocka owned process doing -bs
-Date:   Mon, 30 Nov 2020 13:39:17 -0500 (EST)
-From:   Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@file01.intranet.prod.int.rdu2.redhat.com
-To:     Daniel Vetter <daniel@ffwll.ch>
-cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org, geert+renesas@glider.be,
-        corbet@lwn.net, daniel.vetter@ffwll.ch, linux-doc@vger.kernel.org,
-        bernie@plugable.com, dri-devel@lists.freedesktop.org,
-        sam@ravnborg.org
-Subject: Re: [PATCH] fbdev: Remove udlfb driver
-In-Reply-To: <20201130154147.GT401619@phenom.ffwll.local>
-Message-ID: <alpine.LRH.2.02.2011301241470.21432@file01.intranet.prod.int.rdu2.redhat.com>
-References: <20201130125200.10416-1-tzimmermann@suse.de> <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com> <20201130154147.GT401619@phenom.ffwll.local>
-User-Agent: Alpine 2.02 (LRH 1266 2009-07-14)
+        by asavdk3.altibox.net (Postfix) with ESMTPS id BC0D72002C;
+        Mon, 30 Nov 2020 19:46:49 +0100 (CET)
+Date:   Mon, 30 Nov 2020 19:46:48 +0100
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Lee Jones <lee.jones@linaro.org>,
+        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+        Evgeny Novikov <novikov@ispras.ru>,
+        Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Thomas Winischhofer <thomas@winischhofer.net>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Jani Nikula <jani.nikula@intel.com>,
+        Aditya Pakki <pakki001@umn.edu>,
+        Xiaofei Tan <tanxiaofei@huawei.com>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Alex Dewar <alex.dewar90@gmail.com>,
+        Jason Yan <yanaijie@huawei.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Qilong Zhang <zhangqilong3@huawei.com>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Gustavo Silva <gustavoars@kernel.org>,
+        Peter Rosin <peda@axentia.se>,
+        George Kennedy <george.kennedy@oracle.com>,
+        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+        Alexander Klimov <grandmaster@al2klimov.de>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Joe Perches <joe@perches.com>,
+        Peilin Ye <yepeilin.cs@gmail.com>,
+        Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH v2 21/28] video: fbdev: tmiofb: Fix set but not used
+ warnings
+Message-ID: <20201130184648.GA1502362@ravnborg.org>
+References: <20201128224114.1033617-1-sam@ravnborg.org>
+ <20201128224114.1033617-22-sam@ravnborg.org>
+ <e2300be8-525f-f289-5e78-d4fd488c90d4@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e2300be8-525f-f289-5e78-d4fd488c90d4@suse.de>
+X-CMAE-Score: 0
+X-CMAE-Analysis: v=2.3 cv=Ibmpp1ia c=1 sm=1 tr=0
+        a=S6zTFyMACwkrwXSdXUNehg==:117 a=S6zTFyMACwkrwXSdXUNehg==:17
+        a=8nJEP1OIZ-IA:10 a=7gkXJVJtAAAA:8 a=QyXUC8HyAAAA:8 a=KKAkSRfTAAAA:8
+        a=kG_Li1YSC5bgHzEcAboA:9 a=wPNLvfGTeEIA:10 a=E9Po1WZjFZOl8hwRPBS3:22
+        a=cvBusfyB2V15izCimMoJ:22
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Hi Thomas,
 
-
-On Mon, 30 Nov 2020, Daniel Vetter wrote:
-
-> On Mon, Nov 30, 2020 at 09:31:15AM -0500, Mikulas Patocka wrote:
-> > 
-> > The framebuffer driver supports programs running full-screen directly on 
-> > the framebuffer console, such as web browser "links -g", image viewer 
-> > "fbi", postscript+pdf viewer "fbgs", ZX Spectrum emulator "fuse-sdl", 
-> > movie player "mplayer -vo fbdev". The DRM driver doesn't run them.
+On Mon, Nov 30, 2020 at 03:36:44PM +0100, Thomas Zimmermann wrote:
 > 
-> Hm this should in general work on drm drivers. Without that it's clear the
-> switch-over isn't really ready yet.
+> 
+> Am 28.11.20 um 23:41 schrieb Sam Ravnborg:
+> > Fix W=1 warnings by avoiding local variables and use direct references.
+> 
+> What's the bug here?
 
-I fixed it with this patch two years ago: 
-https://lists.freedesktop.org/archives/dri-devel/2018-June/179023.html
+sh define iounmap like this:
+#define iounmap(addr)		do { } while (0)
 
-But the patch never went through and the fb_defio feature was removed in 
-the kernel 5.6 (commit d0c4fc5a4814e431c15272935c8dc973c18073aa).
+So par is not used resulting in a warning.
+
+My patch just papers over the real issue.
+The right fix is to fix sh so we reference addr.
+Will give that a shot.
+
+	Sam
+
+> 
+> > 
+> > v2:
+> >    - Updated subject (Lee)
+> > 
+> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> > Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+> > Cc: Sam Ravnborg <sam@ravnborg.org>
+> > Cc: Jani Nikula <jani.nikula@intel.com>
+> > Cc: Lee Jones <lee.jones@linaro.org>
+> > ---
+> >   drivers/video/fbdev/tmiofb.c | 6 ++----
+> >   1 file changed, 2 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/drivers/video/fbdev/tmiofb.c b/drivers/video/fbdev/tmiofb.c
+> > index 50111966c981..b70faa3850f2 100644
+> > --- a/drivers/video/fbdev/tmiofb.c
+> > +++ b/drivers/video/fbdev/tmiofb.c
+> > @@ -802,10 +802,8 @@ static int tmiofb_remove(struct platform_device *dev)
+> >   	const struct mfd_cell *cell = mfd_get_cell(dev);
+> >   	struct fb_info *info = platform_get_drvdata(dev);
+> >   	int irq = platform_get_irq(dev, 0);
+> > -	struct tmiofb_par *par;
+> >   	if (info) {
+> > -		par = info->par;
+> >   		unregister_framebuffer(info);
+> >   		tmiofb_hw_stop(dev);
+> > @@ -816,8 +814,8 @@ static int tmiofb_remove(struct platform_device *dev)
+> >   		free_irq(irq, info);
+> >   		iounmap(info->screen_base);
+> > -		iounmap(par->lcr);
+> > -		iounmap(par->ccr);
+> > +		iounmap(((struct tmiofb_par *)info->par)->lcr);
+> > +		iounmap(((struct tmiofb_par *)info->par)->ccr);
+> >   		framebuffer_release(info);
+> >   	}
+> > 
+> 
+> -- 
+> Thomas Zimmermann
+> Graphics Driver Developer
+> SUSE Software Solutions Germany GmbH
+> Maxfeldstr. 5, 90409 Nürnberg, Germany
+> (HRB 36809, AG Nürnberg)
+> Geschäftsführer: Felix Imendörffer
+> 
 
 
-Without fb_defio, the only other possibility how to update the screen is 
-the ioctl DRM_IOCTL_MODE_DIRTYFB. But this ioctl requires master mode, so 
-user programs like "links -g" can't issue it.
-
-Mikulas
 

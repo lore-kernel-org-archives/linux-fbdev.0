@@ -2,199 +2,143 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F30EC64E7B
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 14:37:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD500C64E8A
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 15:42:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 51AD920684
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 14:37:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 70CFA2076E
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 15:42:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="VwQzQyaa"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726001AbgK3Oh2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 30 Nov 2020 09:37:28 -0500
-Received: from mx2.suse.de ([195.135.220.15]:54968 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725875AbgK3Oh2 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 30 Nov 2020 09:37:28 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 79297AB63;
-        Mon, 30 Nov 2020 14:36:46 +0000 (UTC)
-Subject: Re: [PATCH v2 21/28] video: fbdev: tmiofb: Fix set but not used
- warnings
-To:     Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, Lee Jones <lee.jones@linaro.org>
-Cc:     Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-        Evgeny Novikov <novikov@ispras.ru>,
-        Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Thomas Winischhofer <thomas@winischhofer.net>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Jani Nikula <jani.nikula@intel.com>,
-        Aditya Pakki <pakki001@umn.edu>,
-        Xiaofei Tan <tanxiaofei@huawei.com>,
-        Nathan Chancellor <natechancellor@gmail.com>,
-        Alex Dewar <alex.dewar90@gmail.com>,
-        Jason Yan <yanaijie@huawei.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Qilong Zhang <zhangqilong3@huawei.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Gustavo Silva <gustavoars@kernel.org>,
-        Peter Rosin <peda@axentia.se>,
-        George Kennedy <george.kennedy@oracle.com>,
-        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-        Alexander Klimov <grandmaster@al2klimov.de>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Joe Perches <joe@perches.com>,
-        Peilin Ye <yepeilin.cs@gmail.com>,
-        Mike Rapoport <rppt@kernel.org>
-References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-22-sam@ravnborg.org>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-Message-ID: <e2300be8-525f-f289-5e78-d4fd488c90d4@suse.de>
-Date:   Mon, 30 Nov 2020 15:36:44 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.5.0
+        id S1726754AbgK3Pmi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 Nov 2020 10:42:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58794 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725933AbgK3Pmh (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 30 Nov 2020 10:42:37 -0500
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5EB8C0613CF
+        for <linux-fbdev@vger.kernel.org>; Mon, 30 Nov 2020 07:41:51 -0800 (PST)
+Received: by mail-wr1-x444.google.com with SMTP id k14so16821083wrn.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 30 Nov 2020 07:41:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=5uwbd32nMoGasvv4Rb1SYFn9FAHpSeMQI2GqF7/ClB8=;
+        b=VwQzQyaaaEAkhG0uP6JstBj0Ne46sEfpbP0AFJ3lWiA++4MlZwdX9VmPAP/xVurdUF
+         qX4WHN6t+fCPaRR5ufvVvHLQKuKNE081OxBIgwTEwj5VvwIYDSzQKKh5FsGvpPpWEmKw
+         0A++XINBdb/kUTZnGevAnk66MzpDarVS0veEA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=5uwbd32nMoGasvv4Rb1SYFn9FAHpSeMQI2GqF7/ClB8=;
+        b=I3/9jEmvm8TplpPJqWECmv5aZuvVIbpePjpi/aKYiZMEKUWCdVlZG8s6+qvNW0HUSU
+         JG9pJBguo9V/IW28HcSBChuGUOlJLt2I4HPN7Bs8aTO9P/R5GH6o6Bn+YxptuSszpVeX
+         l3C3OyI9EpKBApsvQM0LEv3n/DrR1LyrjvRzqDObaI5XttuvVEG303vPd42E8v2acppN
+         85kUQes1QMJzygH7xjgT2vKUCNMLtuPXfPFpQw8OmQ/NcCcRmK1j+x+DvGkbvMlBDrqq
+         uaBWs8rL7ix0bTvYIf9jvkOlzQmQMLtxwp8oi9BDXgKp/yj1v740WYdqtS0lMFRjaXbV
+         DxWQ==
+X-Gm-Message-State: AOAM532oXTttSSOcx42gaZRdBCpxA7c/1xQs1wATZpYzbtlKQF2ou9iL
+        ciXrA6WR/JDD46qzNTtfIN0aSA==
+X-Google-Smtp-Source: ABdhPJzbQ7wIr8vjKUp/Fu7xmk4z5hzYG4AZXWX3oC/JPVbzbr6768nAjbVpzfmu5NcRVdZ7xSbXYA==
+X-Received: by 2002:a5d:560e:: with SMTP id l14mr28887320wrv.191.1606750910237;
+        Mon, 30 Nov 2020 07:41:50 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id k11sm18921870wmj.42.2020.11.30.07.41.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 30 Nov 2020 07:41:49 -0800 (PST)
+Date:   Mon, 30 Nov 2020 16:41:47 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Mikulas Patocka <mpatocka@redhat.com>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        linux-fbdev@vger.kernel.org, geert+renesas@glider.be,
+        corbet@lwn.net, daniel.vetter@ffwll.ch, linux-doc@vger.kernel.org,
+        bernie@plugable.com, dri-devel@lists.freedesktop.org,
+        sam@ravnborg.org
+Subject: Re: [PATCH] fbdev: Remove udlfb driver
+Message-ID: <20201130154147.GT401619@phenom.ffwll.local>
+References: <20201130125200.10416-1-tzimmermann@suse.de>
+ <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20201128224114.1033617-22-sam@ravnborg.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="QUsycVs42ZsdUMJRsopGrV3rUmjtQxy7P"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
+X-Operating-System: Linux phenom 5.7.0-1-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---QUsycVs42ZsdUMJRsopGrV3rUmjtQxy7P
-Content-Type: multipart/mixed; boundary="RlufnoLl5dw7XZkBLvZDTR2SAvzElte5l";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Lee Jones <lee.jones@linaro.org>
-Cc: Vaibhav Gupta <vaibhavgupta40@gmail.com>,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Jiri Slaby <jirislaby@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
- Evgeny Novikov <novikov@ispras.ru>,
- Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
- Daniel Vetter <daniel.vetter@ffwll.ch>,
- Thomas Winischhofer <thomas@winischhofer.net>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Jani Nikula <jani.nikula@intel.com>, Aditya Pakki <pakki001@umn.edu>,
- Xiaofei Tan <tanxiaofei@huawei.com>,
- Nathan Chancellor <natechancellor@gmail.com>,
- Alex Dewar <alex.dewar90@gmail.com>, Jason Yan <yanaijie@huawei.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Qilong Zhang <zhangqilong3@huawei.com>, Randy Dunlap
- <rdunlap@infradead.org>, Gustavo Silva <gustavoars@kernel.org>,
- Peter Rosin <peda@axentia.se>, George Kennedy <george.kennedy@oracle.com>,
- Kristoffer Ericson <kristoffer.ericson@gmail.com>,
- Alexander Klimov <grandmaster@al2klimov.de>,
- Jingoo Han <jingoohan1@gmail.com>, Joe Perches <joe@perches.com>,
- Peilin Ye <yepeilin.cs@gmail.com>, Mike Rapoport <rppt@kernel.org>
-Message-ID: <e2300be8-525f-f289-5e78-d4fd488c90d4@suse.de>
-Subject: Re: [PATCH v2 21/28] video: fbdev: tmiofb: Fix set but not used
- warnings
-References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-22-sam@ravnborg.org>
-In-Reply-To: <20201128224114.1033617-22-sam@ravnborg.org>
+On Mon, Nov 30, 2020 at 09:31:15AM -0500, Mikulas Patocka wrote:
+> 
+> 
+> On Mon, 30 Nov 2020, Thomas Zimmermann wrote:
+> 
+> > Udlfb has been superseded by DRM's udl. The DRM driver is better by
+> > any means and actively maintained. Remove udlfb.
+> 
+> Hi
+> 
+> I am using udlfb and it's definitely better than the DRM driver. The DRM 
+> driver will crash the kernel if you unplug the device while Xorg is 
+> running. The framebuffer driver doesn't crash in this case. (I have a cat 
+> and the cat sometimes unplugs cables and I don't want to reboot the system 
+> because of it :-)
 
---RlufnoLl5dw7XZkBLvZDTR2SAvzElte5l
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+This should be a lot better in recent kernels, there's been tons of fixes
+for drm hotunplug. Might be there's still bugs in the drm/udl driver.
 
+> The framebuffer driver is faster, it keeps back buffer and updates only 
+> data that differ between the front and back buffer. The DRM driver doesn't 
+> have such optimization, it will update everything in a given rectangle - 
+> this increases USB traffic and makes video playback more jerky.
+> 
+> The framebuffer driver supports programs running full-screen directly on 
+> the framebuffer console, such as web browser "links -g", image viewer 
+> "fbi", postscript+pdf viewer "fbgs", ZX Spectrum emulator "fuse-sdl", 
+> movie player "mplayer -vo fbdev". The DRM driver doesn't run them.
 
+Hm this should in general work on drm drivers. Without that it's clear the
+switch-over isn't really ready yet.
 
-Am 28.11.20 um 23:41 schrieb Sam Ravnborg:
-> Fix W=3D1 warnings by avoiding local variables and use direct reference=
-s.
+> If you seach for someone to maintain the framebuffer driver, I can do it.
 
-What's the bug here?
+We're looking for people to port the missing features over to the drm
+drivers. The problem is that fbdev is full of security bugs, and we're
+fixing them by removing the features. So that's why there's some push to
+sunset at much as possible.
+-Daniel
 
->=20
-> v2:
->    - Updated subject (Lee)
->=20
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Jani Nikula <jani.nikula@intel.com>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> ---
->   drivers/video/fbdev/tmiofb.c | 6 ++----
->   1 file changed, 2 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/tmiofb.c b/drivers/video/fbdev/tmiofb.=
-c
-> index 50111966c981..b70faa3850f2 100644
-> --- a/drivers/video/fbdev/tmiofb.c
-> +++ b/drivers/video/fbdev/tmiofb.c
-> @@ -802,10 +802,8 @@ static int tmiofb_remove(struct platform_device *d=
-ev)
->   	const struct mfd_cell *cell =3D mfd_get_cell(dev);
->   	struct fb_info *info =3D platform_get_drvdata(dev);
->   	int irq =3D platform_get_irq(dev, 0);
-> -	struct tmiofb_par *par;
->  =20
->   	if (info) {
-> -		par =3D info->par;
->   		unregister_framebuffer(info);
->  =20
->   		tmiofb_hw_stop(dev);
-> @@ -816,8 +814,8 @@ static int tmiofb_remove(struct platform_device *de=
-v)
->   		free_irq(irq, info);
->  =20
->   		iounmap(info->screen_base);
-> -		iounmap(par->lcr);
-> -		iounmap(par->ccr);
-> +		iounmap(((struct tmiofb_par *)info->par)->lcr);
-> +		iounmap(((struct tmiofb_par *)info->par)->ccr);
->  =20
->   		framebuffer_release(info);
->   	}
->=20
+> 
+> Mikulas
+> 
+> 
+> > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> > ---
+> >  CREDITS                      |    5 +
+> >  Documentation/fb/index.rst   |    1 -
+> >  Documentation/fb/udlfb.rst   |  162 ---
+> >  MAINTAINERS                  |    9 -
+> >  drivers/video/fbdev/Kconfig  |   17 +-
+> >  drivers/video/fbdev/Makefile |    1 -
+> >  drivers/video/fbdev/udlfb.c  | 1994 ----------------------------------
+> >  7 files changed, 6 insertions(+), 2183 deletions(-)
+> >  delete mode 100644 Documentation/fb/udlfb.rst
+> >  delete mode 100644 drivers/video/fbdev/udlfb.c
+> 
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
---=20
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
-(HRB 36809, AG N=C3=BCrnberg)
-Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
-
-
---RlufnoLl5dw7XZkBLvZDTR2SAvzElte5l--
-
---QUsycVs42ZsdUMJRsopGrV3rUmjtQxy7P
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/FA3wFAwAAAAAACgkQlh/E3EQov+DM
-iA/+JgdFZnsq9XfA9+2juS/nvCSr+KP1c6p5lvq7E1zAAqKijVAWvyHrioVbJzja2cvpTf/DRHRp
-PSReRllIA9PcampHYNUm4ZNGw3fVwpEoeSpiAtytDWiqmk/D8fmJW421ujLUjHrDER4OuNMsTxFW
-zgiFHdixRLSNYISvKLKqrToLfLs8fZByOHKkY9G/gIcg7r2mNaIRJfpmRyc7VA2fDFu5gp21D64F
-UJLbSBu8/f9hgbE95CZqIhX5l2kj2/a+ErR71PpGEb0A5U4Q0uo4pUHer4gRoMOhHRED4+DTrOeW
-T64MlPPzYqqfsbbL1Knk+eIwKi8o6lBC51T0hVjAW4niPFmfb7tQvVRGi5zPB5c0A9aikEqfenuw
-Q2fM6nbRAfNSE22qO00RkqzA84oE2rTu0ondBOOOLKV3OII9EzIz6IeSbEtCiyweqegse1nZtHm7
-VOfwEjX14nhL1lzQgy0xgP5R+jZm5/iymoLx1Az8toMzHDCwKqrYoEXdtg29rEsF3JU4gkxw7zZq
-pgAqdH+fwtPY/iyaeGLc0K9epbPLqBCtXXysQUtYVli1c8P2pHTHlpXz8gcD7cz0IETZB8bvN7XE
-slERm6AxAeQEEJuMxtNKW12wJG4nD0Z7Ov/IBmalRnErhMymsXUp/Dr1J/Mb/DGcEySEX1xXiAWA
-j2A=
-=hmCa
------END PGP SIGNATURE-----
-
---QUsycVs42ZsdUMJRsopGrV3rUmjtQxy7P--
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

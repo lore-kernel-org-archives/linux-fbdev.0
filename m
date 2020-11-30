@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 064DAC64E7B
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 12:13:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DAB3C64E90
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 12:15:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B37D42074A
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 12:13:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 09EAF206D8
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 12:15:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725965AbgK3MNE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 30 Nov 2020 07:13:04 -0500
-Received: from mx2.suse.de ([195.135.220.15]:36554 "EHLO mx2.suse.de"
+        id S1728293AbgK3MPj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 Nov 2020 07:15:39 -0500
+Received: from mx2.suse.de ([195.135.220.15]:40360 "EHLO mx2.suse.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726137AbgK3MND (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 30 Nov 2020 07:13:03 -0500
+        id S1726385AbgK3MPj (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 30 Nov 2020 07:15:39 -0500
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 1D02AAF78;
-        Mon, 30 Nov 2020 12:12:20 +0000 (UTC)
-Subject: Re: [PATCH v2 12/28] video: fbdev: tdfx: Fix set but not used warning
- in att_outb()
+        by mx2.suse.de (Postfix) with ESMTP id 7B2F2AEA2;
+        Mon, 30 Nov 2020 12:14:55 +0000 (UTC)
+Subject: Re: [PATCH v2 13/28] video: fbdev: riva: Fix kernel-doc and set but
+ not used warnings
 To:     Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org, Lee Jones <lee.jones@linaro.org>
 Cc:     Aditya Pakki <pakki001@umn.edu>,
@@ -59,24 +59,24 @@ Cc:     Aditya Pakki <pakki001@umn.edu>,
         Vaibhav Gupta <vaibhavgupta40@gmail.com>,
         Xiaofei Tan <tanxiaofei@huawei.com>
 References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-13-sam@ravnborg.org>
+ <20201128224114.1033617-14-sam@ravnborg.org>
 From:   Thomas Zimmermann <tzimmermann@suse.de>
-Message-ID: <5e7d4fe6-f122-b3c3-5153-f7a043fac252@suse.de>
-Date:   Mon, 30 Nov 2020 13:12:13 +0100
+Message-ID: <53f3e91e-d8da-bce6-878c-7842250a7a7c@suse.de>
+Date:   Mon, 30 Nov 2020 13:14:52 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.5.0
 MIME-Version: 1.0
-In-Reply-To: <20201128224114.1033617-13-sam@ravnborg.org>
+In-Reply-To: <20201128224114.1033617-14-sam@ravnborg.org>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="H1pNz1Elz7LVf4Sn0jD1Ry5loFKxl2a9x"
+ boundary="S2pNcfcZ3GGrQ5cKIHJm8IqQeYYaccSsi"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---H1pNz1Elz7LVf4Sn0jD1Ry5loFKxl2a9x
-Content-Type: multipart/mixed; boundary="MLWjn68f199HTOUtQqnGmFli3oa1czEK3";
+--S2pNcfcZ3GGrQ5cKIHJm8IqQeYYaccSsi
+Content-Type: multipart/mixed; boundary="ftXxSfXXKggPABuUVP3ifS9B34Be2m2kr";
  protected-headers="v1"
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
@@ -104,14 +104,14 @@ Cc: Aditya Pakki <pakki001@umn.edu>,
  Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
  Thomas Winischhofer <thomas@winischhofer.net>,
  Vaibhav Gupta <vaibhavgupta40@gmail.com>, Xiaofei Tan <tanxiaofei@huawei.com>
-Message-ID: <5e7d4fe6-f122-b3c3-5153-f7a043fac252@suse.de>
-Subject: Re: [PATCH v2 12/28] video: fbdev: tdfx: Fix set but not used warning
- in att_outb()
+Message-ID: <53f3e91e-d8da-bce6-878c-7842250a7a7c@suse.de>
+Subject: Re: [PATCH v2 13/28] video: fbdev: riva: Fix kernel-doc and set but
+ not used warnings
 References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-13-sam@ravnborg.org>
-In-Reply-To: <20201128224114.1033617-13-sam@ravnborg.org>
+ <20201128224114.1033617-14-sam@ravnborg.org>
+In-Reply-To: <20201128224114.1033617-14-sam@ravnborg.org>
 
---MLWjn68f199HTOUtQqnGmFli3oa1czEK3
+--ftXxSfXXKggPABuUVP3ifS9B34Be2m2kr
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
@@ -119,50 +119,161 @@ Content-Transfer-Encoding: quoted-printable
 
 
 Am 28.11.20 um 23:40 schrieb Sam Ravnborg:
-> The tmp variable were assigned but the result was never used,
-
-s/were/was
-
-> so delete the tmp variable.
+> Fix W=3D1 warnings:
+> - Fix kernel-doc
+> - Drop unused variables/code
 >=20
 > v2:
->    - Update subject (Lee)
+>    - Updated subject (Lee)
 >=20
 > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Jani Nikula <jani.nikula@intel.com>
-> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Antonino Daplas <adaplas@gmail.com>
+> Cc: linux-fbdev@vger.kernel.org
 > Cc: Lee Jones <lee.jones@linaro.org>
+> ---
+>   drivers/video/fbdev/riva/fbdev.c   |  9 ++++-----
+>   drivers/video/fbdev/riva/riva_hw.c | 28 ++++++++--------------------
+>   2 files changed, 12 insertions(+), 25 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/riva/fbdev.c b/drivers/video/fbdev/riv=
+a/fbdev.c
+> index ce55b9d2e862..55554b0433cb 100644
+> --- a/drivers/video/fbdev/riva/fbdev.c
+> +++ b/drivers/video/fbdev/riva/fbdev.c
+> @@ -464,7 +464,7 @@ static inline void reverse_order(u32 *l)
+>  =20
+>   /**
+>    * rivafb_load_cursor_image - load cursor image to hardware
+> - * @data: address to monochrome bitmap (1 =3D foreground color, 0 =3D =
+background)
+> + * @data8: address to monochrome bitmap (1 =3D foreground color, 0 =3D=
+ background)
+>    * @par:  pointer to private data
+>    * @w:    width of cursor image in pixels
+>    * @h:    height of cursor image in scanlines
+> @@ -843,9 +843,9 @@ static void riva_update_var(struct fb_var_screeninf=
+o *var,
+>   /**
+>    * rivafb_do_maximize -
+>    * @info: pointer to fb_info object containing info for current riva =
+board
+> - * @var:
+> - * @nom:
+> - * @den:
+> + * @var: standard kernel fb changeable data
+> + * @nom: nom
+> + * @den: den
+
+Well, it fixes the warning ;)
 
 Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-> ---
->   drivers/video/fbdev/tdfxfb.c | 4 +---
->   1 file changed, 1 insertion(+), 3 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.=
-c
-> index f056d80f6359..67e37a62b07c 100644
-> --- a/drivers/video/fbdev/tdfxfb.c
-> +++ b/drivers/video/fbdev/tdfxfb.c
-> @@ -206,9 +206,7 @@ static inline u8 crt_inb(struct tdfx_par *par, u32 =
-idx)
->  =20
->   static inline void att_outb(struct tdfx_par *par, u32 idx, u8 val)
+>    *
+>    * DESCRIPTION:
+>    * .
+> @@ -1214,7 +1214,6 @@ static int rivafb_set_par(struct fb_info *info)
+>   /**
+>    * rivafb_pan_display
+>    * @var: standard kernel fb changeable data
+> - * @con: TODO
+>    * @info: pointer to fb_info object containing info for current riva =
+board
+>    *
+>    * DESCRIPTION:
+> diff --git a/drivers/video/fbdev/riva/riva_hw.c b/drivers/video/fbdev/r=
+iva/riva_hw.c
+> index bcf9c4b4de31..8b829b720064 100644
+> --- a/drivers/video/fbdev/riva/riva_hw.c
+> +++ b/drivers/video/fbdev/riva/riva_hw.c
+> @@ -836,17 +836,17 @@ static void nv10CalcArbitration
+>       nv10_sim_state *arb
+>   )
 >   {
-> -	unsigned char tmp;
-> -
-> -	tmp =3D vga_inb(par, IS1_R);
-> +	vga_inb(par, IS1_R);
+> -    int data, pagemiss, cas,width, video_enable, bpp;
+> -    int nvclks, mclks, pclks, vpagemiss, crtpagemiss, vbs;
+> -    int nvclk_fill, us_extra;
+> +    int data, pagemiss, width, video_enable, bpp;
+> +    int nvclks, mclks, pclks, vpagemiss, crtpagemiss;
+> +    int nvclk_fill;
+>       int found, mclk_extra, mclk_loop, cbs, m1;
+>       int mclk_freq, pclk_freq, nvclk_freq, mp_enable;
+> -    int us_m, us_m_min, us_n, us_p, video_drain_rate, crtc_drain_rate;=
 
-It resets the attribute register's state. Hopefully, this doesn't get=20
-optimized away.
-
->   	vga_outb(par, ATT_IW, idx);
->   	vga_outb(par, ATT_IW, val);
->   }
+> -    int vus_m, vus_n, vus_p;
+> -    int vpm_us, us_video, vlwm, cpm_us, us_crt,clwm;
+> +    int us_m, us_m_min, us_n, us_p, crtc_drain_rate;
+> +    int vus_m;
+> +    int vpm_us, us_video, cpm_us, us_crt,clwm;
+>       int clwm_rnd_down;
+> -    int craw, m2us, us_pipe, us_pipe_min, vus_pipe, p1clk, p2;
+> -    int pclks_2_top_fifo, min_mclk_extra;
+> +    int m2us, us_pipe_min, p1clk, p2;
+> +    int min_mclk_extra;
+>       int us_min_mclk_extra;
+>  =20
+>       fifo->valid =3D 1;
+> @@ -854,16 +854,13 @@ static void nv10CalcArbitration
+>       mclk_freq =3D arb->mclk_khz;
+>       nvclk_freq =3D arb->nvclk_khz;
+>       pagemiss =3D arb->mem_page_miss;
+> -    cas =3D arb->mem_latency;
+>       width =3D arb->memory_width/64;
+>       video_enable =3D arb->enable_video;
+>       bpp =3D arb->pix_bpp;
+>       mp_enable =3D arb->enable_mp;
+>       clwm =3D 0;
+> -    vlwm =3D 1024;
+>  =20
+>       cbs =3D 512;
+> -    vbs =3D 512;
+>  =20
+>       pclks =3D 4; /* lwm detect. */
+>  =20
+> @@ -924,17 +921,11 @@ static void nv10CalcArbitration
+>         us_min_mclk_extra =3D min_mclk_extra *1000*1000 / mclk_freq;
+>         us_n =3D nvclks*1000*1000 / nvclk_freq;/* nvclk latency in us *=
+/
+>         us_p =3D pclks*1000*1000 / pclk_freq;/* nvclk latency in us */
+> -      us_pipe =3D us_m + us_n + us_p;
+>         us_pipe_min =3D us_m_min + us_n + us_p;
+> -      us_extra =3D 0;
+>  =20
+>         vus_m =3D mclk_loop *1000*1000 / mclk_freq; /* Mclk latency in =
+us */
+> -      vus_n =3D (4)*1000*1000 / nvclk_freq;/* nvclk latency in us */
+> -      vus_p =3D 0*1000*1000 / pclk_freq;/* pclk latency in us */
+> -      vus_pipe =3D vus_m + vus_n + vus_p;
+>  =20
+>         if(video_enable) {
+> -        video_drain_rate =3D pclk_freq * 4; /* MB/s */
+>           crtc_drain_rate =3D pclk_freq * bpp/8; /* MB/s */
+>  =20
+>           vpagemiss =3D 1; /* self generating page miss */
+> @@ -993,7 +984,6 @@ static void nv10CalcArbitration
+>                 else if(crtc_drain_rate * 100  >=3D nvclk_fill * 98) {
+>                     clwm =3D 1024;
+>                     cbs =3D 512;
+> -                  us_extra =3D (cbs * 1000 * 1000)/ (8*width)/mclk_fre=
+q ;
+>                 }
+>             }
+>         }
+> @@ -1010,7 +1000,6 @@ static void nv10CalcArbitration
+>  =20
+>         m1 =3D clwm + cbs -  1024; /* Amount of overfill */
+>         m2us =3D us_pipe_min + us_min_mclk_extra;
+> -      pclks_2_top_fifo =3D (1024-clwm)/(8*width);
+>  =20
+>         /* pclk cycles to drain */
+>         p1clk =3D m2us * pclk_freq/(1000*1000);
+> @@ -1038,7 +1027,6 @@ static void nv10CalcArbitration
+>                 min_mclk_extra--;
+>           }
+>         }
+> -      craw =3D clwm;
+>  =20
+>         if(clwm < (1024-cbs+8)) clwm =3D 1024-cbs+8;
+>         data =3D (int)(clwm);
 >=20
 
 --=20
@@ -174,27 +285,27 @@ Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
 Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
 
 
---MLWjn68f199HTOUtQqnGmFli3oa1czEK3--
+--ftXxSfXXKggPABuUVP3ifS9B34Be2m2kr--
 
---H1pNz1Elz7LVf4Sn0jD1Ry5loFKxl2a9x
+--S2pNcfcZ3GGrQ5cKIHJm8IqQeYYaccSsi
 Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="OpenPGP_signature"
 
 -----BEGIN PGP SIGNATURE-----
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/E4Z0FAwAAAAAACgkQlh/E3EQov+Cs
-tA//S8QSJ0is79uDuav9im2IRaELRa0n+5yT+H8IV36E5mnl5scFbpT2IZwPToO1Rr2UG1b+yIGf
-70ZM3CwrnFS4XsILGZ4bWzKL+NGYr+SMeCL1qfCkYXymz2MYpcSp2pmRKanbFH6NALwrTCATe/Zt
-kwVB1cDQj5+4wqQq6y6eexbO0EWckd9zqMrGPHs+S7mKVh5vd0na0TzASwaPK0X57bqE4vbbBKLV
-htCvD+eZGvUKCXXcp9JxEmj8BrHPEymDxBbk8pWN6EB1pXPf9l5NAt77nRT/E4YPeBbFN9xTAOhC
-yzCW42sS5ViaGWged9t/ad9vNTLIjAyDyYiNaSDxfcebbLh9G96OPkLhJRSUhCfKyz3bK186xm+u
-Qm++5hoGBDs9HUV8MTqeRD7W2vVCqK+mqXob0xYDwJ1Gz4LoAZNfzTuxLvT1/6gKtas6ARBwwi5j
-MZllzY1I/5WxVFchcTiH1mkRtM/TKfHDbNCnRTKkC2gXAjJ7nXSUO1rmGxxIf2yo429TSFMB44oU
-tfvqYkVGF30HWoDu1eLH9l6sBANvxcU4u0fIR9W7lOcYkQFDjVfeAp00X4xEhdAGux5XyOFVvJpM
-rQhPDGWRZ+mnvokGPEtjr8+/FlYwgVyp7cLiWdWMvDy2kM/iBNJ9s8B8zY7OZhaWQskvsyRD+At1
-5V0=
-=lzhd
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/E4jwFAwAAAAAACgkQlh/E3EQov+AU
+jRAAt7DQe7XZIqnIEGkcuBFgImgL5YawQc37rF7y2SrFfqDzMLFrevXxE1AZQ5emzXCj25dcfLJf
+N8TZaIySTys0ZEHOl8Vqc5HtBP1VeNwB7iNqYqv6GHhpNK/dsE0TM1F0Uo6TbDWe2tOPo8o22dKS
+mawABsk+8tT4t+ID5qatw+CBa7iuPoxdBRSOLjvB6ARJKszxBi8ij30YWgF2vxzE2/4qcGy9C38j
+39TSBRuzAekg7qTENyo2htLIQtz5f24UjcZe67JwaM12z+2z+mj8C1EB9izV0hWvE4Mg6FTbyHSu
+qZ6WRwaVUEp5XGo2y2oYcJB0Eq1/TICdTty3mU+6TjZePzNXCMaP7yxcfsr6dNAkY/tEcAY7ndJC
+xQEfENV6w3ZPytFoyie5WOWKt5MR/foEcpeTsUv95lj396HjjIR6/n0jm/4iWpw1czGF+z53MylP
+CAww4HDA5dFKC4zS1NzunSKzNLWo6Qm40/IAUel5p2JW1FsDHlDwuyhdeOXxkm1dIXf61Ka08pss
+7UrGoPz1Uv3UyNlvF2zQvMc4gf8Y+Pzr+cwRmhdKPggCoPXkXOF7BgckUH5U3qhXvdg0c43VMOrc
+YMTDiwnrTdkmAVSo95dDUG6Q3YNtjKR2k+pfDLdhI4W45r6+CTdFfPFO0i6cuwZPyYBRnunwJRdm
+mcY=
+=QPe1
 -----END PGP SIGNATURE-----
 
---H1pNz1Elz7LVf4Sn0jD1Ry5loFKxl2a9x--
+--S2pNcfcZ3GGrQ5cKIHJm8IqQeYYaccSsi--

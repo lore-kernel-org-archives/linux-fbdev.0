@@ -7,23 +7,24 @@ X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFDB9C64E8A
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 12:16:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D9BAC64E7B
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 12:17:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 863DB20643
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 12:16:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F25D720643
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 12:17:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726463AbgK3MQa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 30 Nov 2020 07:16:30 -0500
-Received: from mx2.suse.de ([195.135.220.15]:44812 "EHLO mx2.suse.de"
+        id S1728295AbgK3MRb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 Nov 2020 07:17:31 -0500
+Received: from mx2.suse.de ([195.135.220.15]:49782 "EHLO mx2.suse.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726197AbgK3MQ3 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 30 Nov 2020 07:16:29 -0500
+        id S1725902AbgK3MRb (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 30 Nov 2020 07:17:31 -0500
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 6D32FABD2;
-        Mon, 30 Nov 2020 12:15:48 +0000 (UTC)
-Subject: Re: [PATCH v2 14/28] video: fbdev: pm2fb: Fix kernel-doc warnings
+        by mx2.suse.de (Postfix) with ESMTP id A3D34AE6D;
+        Mon, 30 Nov 2020 12:16:48 +0000 (UTC)
+Subject: Re: [PATCH v2 15/28] video: fbdev: neofb: Fix set but not used
+ warning for CursorMem
 To:     Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org, Lee Jones <lee.jones@linaro.org>
 Cc:     Aditya Pakki <pakki001@umn.edu>,
@@ -56,26 +57,27 @@ Cc:     Aditya Pakki <pakki001@umn.edu>,
         Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
         Thomas Winischhofer <thomas@winischhofer.net>,
         Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        Xiaofei Tan <tanxiaofei@huawei.com>
+        Xiaofei Tan <tanxiaofei@huawei.com>,
+        Andrew Morton <akpm@linux-foundation.org>
 References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-15-sam@ravnborg.org>
+ <20201128224114.1033617-16-sam@ravnborg.org>
 From:   Thomas Zimmermann <tzimmermann@suse.de>
-Message-ID: <c20689bd-1d50-0b73-391e-23517d4f280e@suse.de>
-Date:   Mon, 30 Nov 2020 13:15:46 +0100
+Message-ID: <b27a7dc1-7f09-57e2-7356-bb2a3f3e8204@suse.de>
+Date:   Mon, 30 Nov 2020 13:16:45 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.5.0
 MIME-Version: 1.0
-In-Reply-To: <20201128224114.1033617-15-sam@ravnborg.org>
+In-Reply-To: <20201128224114.1033617-16-sam@ravnborg.org>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="rXV1tR4t5jcxNikGkjWXe7xPSIfubEDwM"
+ boundary="4Y7UxgMc6TgXteUKbdi0lV678loDCJ9Ly"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---rXV1tR4t5jcxNikGkjWXe7xPSIfubEDwM
-Content-Type: multipart/mixed; boundary="djqdHyhfJTlFCJrYXDWGppmkRhXNkS1uF";
+--4Y7UxgMc6TgXteUKbdi0lV678loDCJ9Ly
+Content-Type: multipart/mixed; boundary="QXEs9MxKdZRg0Mhi10RjBI97xuRMPvrUm";
  protected-headers="v1"
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
@@ -102,14 +104,16 @@ Cc: Aditya Pakki <pakki001@umn.edu>,
  Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
  Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
  Thomas Winischhofer <thomas@winischhofer.net>,
- Vaibhav Gupta <vaibhavgupta40@gmail.com>, Xiaofei Tan <tanxiaofei@huawei.com>
-Message-ID: <c20689bd-1d50-0b73-391e-23517d4f280e@suse.de>
-Subject: Re: [PATCH v2 14/28] video: fbdev: pm2fb: Fix kernel-doc warnings
+ Vaibhav Gupta <vaibhavgupta40@gmail.com>, Xiaofei Tan
+ <tanxiaofei@huawei.com>, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <b27a7dc1-7f09-57e2-7356-bb2a3f3e8204@suse.de>
+Subject: Re: [PATCH v2 15/28] video: fbdev: neofb: Fix set but not used
+ warning for CursorMem
 References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-15-sam@ravnborg.org>
-In-Reply-To: <20201128224114.1033617-15-sam@ravnborg.org>
+ <20201128224114.1033617-16-sam@ravnborg.org>
+In-Reply-To: <20201128224114.1033617-16-sam@ravnborg.org>
 
---djqdHyhfJTlFCJrYXDWGppmkRhXNkS1uF
+--QXEs9MxKdZRg0Mhi10RjBI97xuRMPvrUm
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
@@ -117,61 +121,58 @@ Content-Transfer-Encoding: quoted-printable
 
 
 Am 28.11.20 um 23:41 schrieb Sam Ravnborg:
-> Fixed a few kernel-doc issues to fix the warnings.
+> Fix W=3D1 warnings by removing unused code
 >=20
 > v2:
 >    - Updated subject (Lee)
 >=20
 > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-> Cc: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
 > Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Evgeny Novikov <novikov@ispras.ru>
 > Cc: Jani Nikula <jani.nikula@intel.com>
+> Cc: Mike Rapoport <rppt@kernel.org>
 > Cc: Lee Jones <lee.jones@linaro.org>
 
 Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
 
 > ---
->   drivers/video/fbdev/pm2fb.c | 8 ++++----
->   1 file changed, 4 insertions(+), 4 deletions(-)
+>   drivers/video/fbdev/neofb.c | 4 ----
+>   1 file changed, 4 deletions(-)
 >=20
-> diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
-> index 27893fa139b0..c68725eebee3 100644
-> --- a/drivers/video/fbdev/pm2fb.c
-> +++ b/drivers/video/fbdev/pm2fb.c
-> @@ -1508,8 +1508,8 @@ static const struct fb_ops pm2fb_ops =3D {
->    *
->    * Initialise and allocate resource for PCI device.
->    *
-> - * @param	pdev	PCI device.
-> - * @param	id	PCI device ID.
-> + * @pdev:	PCI device.
-> + * @id:		PCI device ID.
->    */
->   static int pm2fb_probe(struct pci_dev *pdev, const struct pci_device_=
-id *id)
->   {
-> @@ -1715,7 +1715,7 @@ static int pm2fb_probe(struct pci_dev *pdev, cons=
-t struct pci_device_id *id)
->    *
->    * Release all device resources.
->    *
-> - * @param	pdev	PCI device to clean up.
-> + * @pdev:	PCI device to clean up.
->    */
->   static void pm2fb_remove(struct pci_dev *pdev)
->   {
-> @@ -1756,7 +1756,7 @@ MODULE_DEVICE_TABLE(pci, pm2fb_id_table);
+> diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
+> index 09a20d4ab35f..c0f4f402da3f 100644
+> --- a/drivers/video/fbdev/neofb.c
+> +++ b/drivers/video/fbdev/neofb.c
+> @@ -1843,7 +1843,6 @@ static int neo_init_hw(struct fb_info *info)
+>   	struct neofb_par *par =3D info->par;
+>   	int videoRam =3D 896;
+>   	int maxClock =3D 65000;
+> -	int CursorMem =3D 1024;
+>   	int CursorOff =3D 0x100;
 >  =20
+>   	DBG("neo_init_hw");
+> @@ -1895,19 +1894,16 @@ static int neo_init_hw(struct fb_info *info)
+>   	case FB_ACCEL_NEOMAGIC_NM2070:
+>   	case FB_ACCEL_NEOMAGIC_NM2090:
+>   	case FB_ACCEL_NEOMAGIC_NM2093:
+> -		CursorMem =3D 2048;
+>   		CursorOff =3D 0x100;
+>   		break;
+>   	case FB_ACCEL_NEOMAGIC_NM2097:
+>   	case FB_ACCEL_NEOMAGIC_NM2160:
+> -		CursorMem =3D 1024;
+>   		CursorOff =3D 0x100;
+>   		break;
+>   	case FB_ACCEL_NEOMAGIC_NM2200:
+>   	case FB_ACCEL_NEOMAGIC_NM2230:
+>   	case FB_ACCEL_NEOMAGIC_NM2360:
+>   	case FB_ACCEL_NEOMAGIC_NM2380:
+> -		CursorMem =3D 1024;
+>   		CursorOff =3D 0x1000;
 >  =20
->   #ifndef MODULE
-> -/**
-> +/*
->    * Parse user specified options.
->    *
->    * This is, comma-separated options following `video=3Dpm2fb:'.
+>   		par->neo2200 =3D (Neo2200 __iomem *) par->mmio_vbase;
 >=20
 
 --=20
@@ -183,27 +184,27 @@ Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
 Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
 
 
---djqdHyhfJTlFCJrYXDWGppmkRhXNkS1uF--
+--QXEs9MxKdZRg0Mhi10RjBI97xuRMPvrUm--
 
---rXV1tR4t5jcxNikGkjWXe7xPSIfubEDwM
+--4Y7UxgMc6TgXteUKbdi0lV678loDCJ9Ly
 Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="OpenPGP_signature"
 
 -----BEGIN PGP SIGNATURE-----
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/E4nIFAwAAAAAACgkQlh/E3EQov+Da
-xQ//bG5OLZ0L9wVGogQBOOCf0f8OB2Yue9GKDtXxfHaUyfcbr8GDC2sJQ+fx+WLG4tColsVO/z0q
-xHij0Y/sSiQA+Yumeg9qyMHZlnU/33VP3+9gD+0439s1lG24338fjuZaGXyhf/v2+vhHWGVgTSuN
-PFV/bdgwG4fgFiWg2JTublif/5e+51lcl/KNltzUkFXwn04i5yrMLGe79h4/jJWVKY0aBzzhmtOZ
-2KEY4/ffBbkJk6JS/jSbdALo0NH0lC2rtOUXHjK7XMMDSmuT6Zn96cdVPwWVfy/9pdPzZf9gjq6U
-cVTFOU9TPaTOnlDXJGPDo0vxESbnvQv7deVtqAWsHQdL6ocWYsm5zYi3WmtVK2YI4FOq4FRQCEdO
-iD70I40Nq/I5sFr/Twk52eVQ1lcemP13gAY2+IjQVdj4lyo/NsVRh3hK/nJA2N69LIuwhPXcG2Tn
-vKS3dg00aA0RCxegoOy+gfMvLRZWiAPc9EIsUA0o+9f3VQhGT6KwRGhCsOBdUV9/MaQvOOjApt+F
-vBK0WybdvL9y1+spvDIXCMedXask1wkfjXhJICFDpSYReReFdbnbxX+hXbTkEVqpOXpZfX0KT9Tv
-P7L6lP4+oSWeUE95UWz7NyOsB1oxWLtFbIFwQMTSfIyoYpJrzsSl9+dL1YS9e3CgLF2L3T8MlF6d
-JoY=
-=IOD4
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/E4q4FAwAAAAAACgkQlh/E3EQov+CH
+SBAAopMN3BkNPFw4VASPIZ5g5VSwuH7EpRYKe43piUrNT5IzRdQdltP4f2vuJzBsyNoPE/VmUPYx
+oqZN1IsalduqcB+4/i/tAV+ysBK1Jrb/BjCRY/x7jIRFLDLHcUVU5VHE5n1D3LClLjWwgkDxJWMJ
+SusXAzflbY+R/fO4Ji4w//614GRw1jPB6flapbGM33x6LSGeMwGHOkSMnVC0+ajXRmDz0idbhlOE
+NaatIZmFIBEpHCsWMxSsQAKCD4ZacSC7cVnn1E60PbYiSDIaYK8GqJQ2f4Mw94tn+Yt3uv/G+TXN
+EOVPvZ4c5N+D95ydtX0iu8Yz3EwmYCvYsCwZTS2XN8zBbH8ZiWJxx2AX/0Jq8EyqgLMZeIgD14Ak
+sdBOzX0Kqlmh3iTl+E7G0b+VpsL7JfGIcYlHzMZUUHLWv9gM8O1wBC4FJ0EoME6ecz7Zk8clGOI+
+BQB+O2CPqSTJbRhF0UhsuTNYLc/JNlZ+zzInbPfQV8j5bGHdyqKDvb+d716nXISFO3fIlun8AY8A
+/EusZBo4ZUf8yx1l4XSFON9l6k1xD7RfBFs64JQWyTdyU8cFIA8hp6GEekXTPgkiHerWt1ToLB09
+6h1wIPtRMbFcNG8WrSltVQnVQrFO/ITTW+M/2ff4oSPIKOn9rpGaaJhwIX8HfDItbJhXy0WOiYo2
+7r0=
+=5w5w
 -----END PGP SIGNATURE-----
 
---rXV1tR4t5jcxNikGkjWXe7xPSIfubEDwM--
+--4Y7UxgMc6TgXteUKbdi0lV678loDCJ9Ly--

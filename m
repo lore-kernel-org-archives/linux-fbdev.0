@@ -2,28 +2,29 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77854C64E8A
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 08:54:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50697C5519F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 08:58:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1FCF120809
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 08:54:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F1A532074A
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Nov 2020 08:58:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727764AbgK3Iyl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 30 Nov 2020 03:54:41 -0500
-Received: from mx2.suse.de ([195.135.220.15]:36580 "EHLO mx2.suse.de"
+        id S1725972AbgK3I6P (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 Nov 2020 03:58:15 -0500
+Received: from mx2.suse.de ([195.135.220.15]:39080 "EHLO mx2.suse.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727620AbgK3Iyk (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 30 Nov 2020 03:54:40 -0500
+        id S1725902AbgK3I6P (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 30 Nov 2020 03:58:15 -0500
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 77609AD89;
-        Mon, 30 Nov 2020 08:53:58 +0000 (UTC)
-Subject: Re: [PATCH v2 05/28] video: fbdev: aty: Fix set but not used warnings
+        by mx2.suse.de (Postfix) with ESMTP id 81C1AAC95;
+        Mon, 30 Nov 2020 08:57:33 +0000 (UTC)
+Subject: Re: [PATCH v2 06/28] video: fbdev: aty: Fix set but not used warnings
+ in mach64_ct
 To:     Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org, Lee Jones <lee.jones@linaro.org>
 Cc:     Aditya Pakki <pakki001@umn.edu>,
@@ -56,27 +57,26 @@ Cc:     Aditya Pakki <pakki001@umn.edu>,
         Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
         Thomas Winischhofer <thomas@winischhofer.net>,
         Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        Xiaofei Tan <tanxiaofei@huawei.com>,
-        kernel test robot <lkp@intel.com>
+        Xiaofei Tan <tanxiaofei@huawei.com>
 References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-6-sam@ravnborg.org>
+ <20201128224114.1033617-7-sam@ravnborg.org>
 From:   Thomas Zimmermann <tzimmermann@suse.de>
-Message-ID: <1dfb3ff0-3a78-32ab-185a-9fa153fef509@suse.de>
-Date:   Mon, 30 Nov 2020 09:53:55 +0100
+Message-ID: <60268a74-49b2-dfd9-a825-a2d5b0e3efaf@suse.de>
+Date:   Mon, 30 Nov 2020 09:57:30 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.5.0
 MIME-Version: 1.0
-In-Reply-To: <20201128224114.1033617-6-sam@ravnborg.org>
+In-Reply-To: <20201128224114.1033617-7-sam@ravnborg.org>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="Fc6bhJP3OHLBzHkoOdKAuBMQpG9hcfr0l"
+ boundary="yPglhTkNJaTwijK6h0ApyjMXcs9tfATAo"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---Fc6bhJP3OHLBzHkoOdKAuBMQpG9hcfr0l
-Content-Type: multipart/mixed; boundary="wtG298FvjFZRgnu8HzOqcXQuPOKirkm31";
+--yPglhTkNJaTwijK6h0ApyjMXcs9tfATAo
+Content-Type: multipart/mixed; boundary="cIXnXtnfQFLjyTeh9Ow78NA8fx5wXR4oQ";
  protected-headers="v1"
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
@@ -103,15 +103,15 @@ Cc: Aditya Pakki <pakki001@umn.edu>,
  Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
  Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
  Thomas Winischhofer <thomas@winischhofer.net>,
- Vaibhav Gupta <vaibhavgupta40@gmail.com>, Xiaofei Tan
- <tanxiaofei@huawei.com>, kernel test robot <lkp@intel.com>
-Message-ID: <1dfb3ff0-3a78-32ab-185a-9fa153fef509@suse.de>
-Subject: Re: [PATCH v2 05/28] video: fbdev: aty: Fix set but not used warnings
+ Vaibhav Gupta <vaibhavgupta40@gmail.com>, Xiaofei Tan <tanxiaofei@huawei.com>
+Message-ID: <60268a74-49b2-dfd9-a825-a2d5b0e3efaf@suse.de>
+Subject: Re: [PATCH v2 06/28] video: fbdev: aty: Fix set but not used warnings
+ in mach64_ct
 References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-6-sam@ravnborg.org>
-In-Reply-To: <20201128224114.1033617-6-sam@ravnborg.org>
+ <20201128224114.1033617-7-sam@ravnborg.org>
+In-Reply-To: <20201128224114.1033617-7-sam@ravnborg.org>
 
---wtG298FvjFZRgnu8HzOqcXQuPOKirkm31
+--cIXnXtnfQFLjyTeh9Ow78NA8fx5wXR4oQ
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
@@ -120,99 +120,73 @@ Content-Transfer-Encoding: quoted-printable
 
 Am 28.11.20 um 23:40 schrieb Sam Ravnborg:
 > Fix W=3D1 warnings about variables assigned but never used.
->=20
-> - Drop variables that was set but never used
-
-s/that was/that were
-
-> - Make variable definition conditional om ATARI
-
-s/om/on
-
+> - One variable is only used when CONFIG_FB_ATY_GENERIC_LCD is defined
+>    Fix so variable is only defined with CONFIG_FB_ATY_GENERIC_LCD
+> - Several variables was only assigned by a call to aty_ld_le32().
+>    Drop the variables but keep the call to aty_ld_le32() as it may
+>    have unexpected side-effects.
 >=20
 > v2:
->    - Fix m68k build error (kernel test robot)
->    - Improve subject (Lee Jones)
+>    - Updated subject (Lee)
 >=20
 > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Reported-by: kernel test robot <lkp@intel.com> # m68k build fix
 > Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Cc: Joe Perches <joe@perches.com>
-> Cc: Vaibhav Gupta <vaibhavgupta40@gmail.com>
-> Cc: Jason Yan <yanaijie@huawei.com>
-> Cc: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Jani Nikula <jani.nikula@intel.com>
 
 Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
 
 > ---
->   drivers/video/fbdev/aty/atyfb_base.c | 11 ++++-------
->   1 file changed, 4 insertions(+), 7 deletions(-)
+>   drivers/video/fbdev/aty/mach64_ct.c | 15 +++++++++------
+>   1 file changed, 9 insertions(+), 6 deletions(-)
 >=20
-> diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev=
-/aty/atyfb_base.c
-> index c8feff0ee8da..83c8e809955a 100644
-> --- a/drivers/video/fbdev/aty/atyfb_base.c
-> +++ b/drivers/video/fbdev/aty/atyfb_base.c
-> @@ -2353,6 +2353,9 @@ static int aty_init(struct fb_info *info)
->   	int gtb_memsize, has_var =3D 0;
->   	struct fb_var_screeninfo var;
->   	int ret;
-> +#ifdef CONFIG_ATARI
-> +	u8 dac_type;
+> diff --git a/drivers/video/fbdev/aty/mach64_ct.c b/drivers/video/fbdev/=
+aty/mach64_ct.c
+> index f87cc81f4fa2..011b07e44e0d 100644
+> --- a/drivers/video/fbdev/aty/mach64_ct.c
+> +++ b/drivers/video/fbdev/aty/mach64_ct.c
+> @@ -281,10 +281,13 @@ static u32 aty_pll_to_var_ct(const struct fb_info=
+ *info, const union aty_pll *pl
+>   void aty_set_pll_ct(const struct fb_info *info, const union aty_pll *=
+pll)
+>   {
+>   	struct atyfb_par *par =3D (struct atyfb_par *) info->par;
+> -	u32 crtc_gen_cntl, lcd_gen_cntrl;
+> +	u32 crtc_gen_cntl;
+>   	u8 tmp, tmp2;
+>  =20
+> -	lcd_gen_cntrl =3D 0;
+> +#ifdef CONFIG_FB_ATY_GENERIC_LCD
+> +	u32 lcd_gen_cntrl =3D 0;
 > +#endif
->  =20
->   	init_waitqueue_head(&par->vblank.wait);
->   	spin_lock_init(&par->int_lock);
-> @@ -2360,13 +2363,12 @@ static int aty_init(struct fb_info *info)
->   #ifdef CONFIG_FB_ATY_GX
->   	if (!M64_HAS(INTEGRATED)) {
->   		u32 stat0;
-> -		u8 dac_type, dac_subtype, clk_type;
-> +		u8 dac_subtype, clk_type;
->   		stat0 =3D aty_ld_le32(CNFG_STAT0, par);
->   		par->bus_type =3D (stat0 >> 0) & 0x07;
->   		par->ram_type =3D (stat0 >> 3) & 0x07;
->   		ramname =3D aty_gx_ram[par->ram_type];
->   		/* FIXME: clockchip/RAMDAC probing? */
-> -		dac_type =3D (aty_ld_le32(DAC_CNTL, par) >> 16) & 0x07;
->   #ifdef CONFIG_ATARI
->   		clk_type =3D CLK_ATI18818_1;
->   		dac_type =3D (stat0 >> 9) & 0x07;
-> @@ -2375,7 +2377,6 @@ static int aty_init(struct fb_info *info)
->   		else
->   			dac_subtype =3D (aty_ld_8(SCRATCH_REG1 + 1, par) & 0xF0) | dac_typ=
-e;
->   #else
-> -		dac_type =3D DAC_IBMRGB514;
->   		dac_subtype =3D DAC_IBMRGB514;
->   		clk_type =3D CLK_IBMRGB514;
+> +
+>   #ifdef DEBUG
+>   	printk("atyfb(%s): about to program:\n"
+>   		"pll_ext_cntl=3D0x%02x pll_gen_cntl=3D0x%02x pll_vclk_cntl=3D0x%02x=
+\n",
+> @@ -402,7 +405,7 @@ static int aty_init_pll_ct(const struct fb_info *in=
+fo, union aty_pll *pll)
+>   	struct atyfb_par *par =3D (struct atyfb_par *) info->par;
+>   	u8 mpost_div, xpost_div, sclk_post_div_real;
+>   	u32 q, memcntl, trp;
+> -	u32 dsp_config, dsp_on_off, vga_dsp_config, vga_dsp_on_off;
+> +	u32 dsp_config;
+>   #ifdef DEBUG
+>   	int pllmclk, pllsclk;
 >   #endif
-> @@ -3062,7 +3063,6 @@ static int atyfb_setup_sparc(struct pci_dev *pdev=
-, struct fb_info *info,
->   	if (dp =3D=3D of_console_device) {
->   		struct fb_var_screeninfo *var =3D &default_var;
->   		unsigned int N, P, Q, M, T, R;
-> -		u32 v_total, h_total;
->   		struct crtc crtc;
->   		u8 pll_regs[16];
->   		u8 clock_cntl;
-> @@ -3078,9 +3078,6 @@ static int atyfb_setup_sparc(struct pci_dev *pdev=
-, struct fb_info *info,
->   		crtc.gen_cntl =3D aty_ld_le32(CRTC_GEN_CNTL, par);
->   		aty_crtc_to_var(&crtc, var);
+> @@ -488,9 +491,9 @@ static int aty_init_pll_ct(const struct fb_info *in=
+fo, union aty_pll *pll)
 >  =20
-> -		h_total =3D var->xres + var->right_margin + var->hsync_len + var->le=
-ft_margin;
-> -		v_total =3D var->yres + var->lower_margin + var->vsync_len + var->up=
-per_margin;
-> -
->   		/*
->   		 * Read the PLL to figure actual Refresh Rate.
->   		 */
+>   	/* Allow BIOS to override */
+>   	dsp_config =3D aty_ld_le32(DSP_CONFIG, par);
+> -	dsp_on_off =3D aty_ld_le32(DSP_ON_OFF, par);
+> -	vga_dsp_config =3D aty_ld_le32(VGA_DSP_CONFIG, par);
+> -	vga_dsp_on_off =3D aty_ld_le32(VGA_DSP_ON_OFF, par);
+> +	aty_ld_le32(DSP_ON_OFF, par);
+> +	aty_ld_le32(VGA_DSP_CONFIG, par);
+> +	aty_ld_le32(VGA_DSP_ON_OFF, par);
+>  =20
+>   	if (dsp_config)
+>   		pll->ct.dsp_loop_latency =3D (dsp_config & DSP_LOOP_LATENCY) >> 16;=
+
 >=20
 
 --=20
@@ -224,27 +198,27 @@ Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
 Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
 
 
---wtG298FvjFZRgnu8HzOqcXQuPOKirkm31--
+--cIXnXtnfQFLjyTeh9Ow78NA8fx5wXR4oQ--
 
---Fc6bhJP3OHLBzHkoOdKAuBMQpG9hcfr0l
+--yPglhTkNJaTwijK6h0ApyjMXcs9tfATAo
 Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="OpenPGP_signature"
 
 -----BEGIN PGP SIGNATURE-----
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/EsyMFAwAAAAAACgkQlh/E3EQov+Bm
-MBAAkkT7OShMpStu3R/a5IsU2f/FhH0jPewXG+mIf6WoBzYYJbazVKC6bgsPNRpK8j+e5in747SS
-UP2q/xiR8gD/mFnXmFVpQjO36o4kk9UAMjiTWPOR6cBR+RttIHMG407vcWYi5AZxHgxH+wDbh9Gp
-KwG1av0uk5bwH6n/2ErH/T1Ua8asM1yaN5rDKbpO3CK1QTw1OP/6sQEBWou4j3oJ31tpffuCQHuw
-zM/PpWIWKVdpNWr5w7SDkYYzmUROftIyH9QrpbzeDIToMiCcOFC/TcdoNw9ZKnFlPzOhQBF2FJ3i
-axIPzyrrmQsIDMwjTETtTCa3fIVoJ9tQGrn4nRiBrWe6VLLVlV9aorAwGXeg/FcJoTMKAB8Fd4tT
-UPdPQvo+/jeB2E4ZDziIms+s360ytncp847tPTEnMRmSSA5+RD3XH1rxmSEIPjoxU9J48sUD9qCw
-W/cWF07f6IfpYI4ArzKVUJavv8EU5AgkTfC+D5e1tULTDLbzmChKUxcvrX8wWwgV20ODubXSi5Er
-ztHb8AZ/Lkk9Cjyu+EspQyhv7ciMIZLaA3HJiphttXFrNMJaYqNkIoU3DwPsT/q4+4mMO8wvL63E
-UasanLTF51jLGuInzkdfCaWIPVIEpZ2jHaH8WjEKzOKUqTLYrcsW71keE2TvFgwpol4mmMu2/bs9
-dd4=
-=WF05
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/Es/oFAwAAAAAACgkQlh/E3EQov+B8
+eRAAkongme7Uw+O3g+OwLLKxgx98fSv2+lDtoMOsA2KvKh3Cun/3TsJbt6zyscSCqVPHdhxAvpNB
+UA+zcXz6P6LA5axD84JlxlP6BiIcdkJ+tSuE8MAZz9FAbqn6WDc7hEn0U0xj4rKi3lICUIjKeEiq
+V5jI+38E1XBOOxZaqM59UiJayvWHXdI73bKvm6SnDKNoxbFmhmylY1o9iOvXqjKgIe2+2TadChkT
+GzAL1GoBiTz/1XojJLiwmcXaPtHH5ouvPond+TcAUxzDIXggk2v1nQOkUWwCE8TrruYeGzCk5uh/
+2PH3aMfprXQz6qehnuXVAj6ofFbj1cBweQzEm+DMztbnEhkPxo7mQgRmYTNeWiFtY9llEdBp+6JU
+v56iCKrp0fQiwc+5ZRGCmd4s7KupiYMbbW/SVxdot7Rdjdf/ljwYpLDwbHuDUj6jvTgDiHNsRaO2
+CvymjRGuxQN5r2kUOba6pzd31BPe3HOPdgUrLNYv23KaWaOYgaOGUeuyBELHbmAtcVntUUBLaN3r
+zyW/O5yjX5QIS28El/d77qfB+k+B53aWwpb5Xjcpa7hiJAkc2h296lLvdsU/P5xb2MP5GIhK2OGT
+0527Si0+7F03Iw8kgIhxOjdPORJbbWiXq6xacN76EpPsC3i4khS/CG/9wI+JY+aGNWrJXHN3PpIZ
+3KY=
+=I+a3
 -----END PGP SIGNATURE-----
 
---Fc6bhJP3OHLBzHkoOdKAuBMQpG9hcfr0l--
+--yPglhTkNJaTwijK6h0ApyjMXcs9tfATAo--

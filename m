@@ -2,193 +2,84 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C0D5C64E90
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 14:24:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7534C64E7A
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 20:11:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A3A7220757
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 14:24:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5CB1E2151B
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 20:11:09 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="CEJ+cbUW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730808AbgLAOYQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Dec 2020 09:24:16 -0500
-Received: from mx2.suse.de ([195.135.220.15]:47818 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729083AbgLAOYQ (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Dec 2020 09:24:16 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id B1D85ACF9;
-        Tue,  1 Dec 2020 14:23:34 +0000 (UTC)
-Subject: Re: [PATCH v2 28/28] video: fbdev: s1d13xxxfb: Fix kernel-doc and set
- but not used warnings
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     linux-fbdev@vger.kernel.org,
-        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        dri-devel@lists.freedesktop.org,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-        Evgeny Novikov <novikov@ispras.ru>,
-        Lee Jones <lee.jones@linaro.org>,
-        Jani Nikula <jani.nikula@intel.com>,
-        Aditya Pakki <pakki001@umn.edu>, Arnd Bergmann <arnd@arndb.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
-        Thomas Winischhofer <thomas@winischhofer.net>,
-        Xiaofei Tan <tanxiaofei@huawei.com>,
-        Nathan Chancellor <natechancellor@gmail.com>,
-        Alex Dewar <alex.dewar90@gmail.com>,
-        Jason Yan <yanaijie@huawei.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Qilong Zhang <zhangqilong3@huawei.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Gustavo Silva <gustavoars@kernel.org>,
-        Peilin Ye <yepeilin.cs@gmail.com>,
-        George Kennedy <george.kennedy@oracle.com>,
-        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-        Alexander Klimov <grandmaster@al2klimov.de>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Joe Perches <joe@perches.com>, Peter Rosin <peda@axentia.se>,
-        Mike Rapoport <rppt@kernel.org>
-References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-29-sam@ravnborg.org>
- <18caca15-a6e7-cb4b-3028-c010922bda80@suse.de>
- <20201129215257.GD1162850@ravnborg.org>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-Message-ID: <a32b8eee-320c-41d1-0dbc-da808a8013bb@suse.de>
-Date:   Tue, 1 Dec 2020 15:23:32 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.5.0
+        id S1729009AbgLAUKx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Dec 2020 15:10:53 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:41471 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1727450AbgLAUKw (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Dec 2020 15:10:52 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1606853365;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=z9xBuIwvHlgEYVcinhRR/M3/VaorTrBcdWGpGOVdNeU=;
+        b=CEJ+cbUWyPqUH8iWkyuCTy2Zpn/ioLdZS4htguBzLtI/tXMkCNd4oADUo0W7xW8W7KDWWI
+        3FIn24pSs5V9XuIbImyEQa5s71H59Z1hyw2WBjKiOiQJnqdxA4Y4oWl4AeThTLGcE0WJaL
+        G3r5nOJJ4bWqzEFcofH2wgXsMlvHkVU=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-486-iuFG615qMPK1Fc5-5Lrjvw-1; Tue, 01 Dec 2020 15:09:22 -0500
+X-MC-Unique: iuFG615qMPK1Fc5-5Lrjvw-1
+Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com [10.5.11.11])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 4E08A158220;
+        Tue,  1 Dec 2020 20:09:20 +0000 (UTC)
+Received: from file01.intranet.prod.int.rdu2.redhat.com (file01.intranet.prod.int.rdu2.redhat.com [10.11.5.7])
+        by smtp.corp.redhat.com (Postfix) with ESMTPS id C3077189A4;
+        Tue,  1 Dec 2020 20:09:19 +0000 (UTC)
+Received: from file01.intranet.prod.int.rdu2.redhat.com (localhost [127.0.0.1])
+        by file01.intranet.prod.int.rdu2.redhat.com (8.14.4/8.14.4) with ESMTP id 0B1K9JVF025796;
+        Tue, 1 Dec 2020 15:09:19 -0500
+Received: from localhost (mpatocka@localhost)
+        by file01.intranet.prod.int.rdu2.redhat.com (8.14.4/8.14.4/Submit) with ESMTP id 0B1K9I7G025792;
+        Tue, 1 Dec 2020 15:09:18 -0500
+X-Authentication-Warning: file01.intranet.prod.int.rdu2.redhat.com: mpatocka owned process doing -bs
+Date:   Tue, 1 Dec 2020 15:09:18 -0500 (EST)
+From:   Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@file01.intranet.prod.int.rdu2.redhat.com
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+cc:     daniel.vetter@ffwll.ch, sam@ravnborg.org, geert+renesas@glider.be,
+        bernie@plugable.com, corbet@lwn.net,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-doc@vger.kernel.org
+Subject: Re: [PATCH] fbdev: Remove udlfb driver
+In-Reply-To: <alpine.LRH.2.02.2012010500310.27495@file01.intranet.prod.int.rdu2.redhat.com>
+Message-ID: <alpine.LRH.2.02.2012011505060.25490@file01.intranet.prod.int.rdu2.redhat.com>
+References: <20201130125200.10416-1-tzimmermann@suse.de> <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com> <336a41ef-1e49-6799-1bfd-06fb42419fb8@suse.de>
+ <alpine.LRH.2.02.2012010500310.27495@file01.intranet.prod.int.rdu2.redhat.com>
+User-Agent: Alpine 2.02 (LRH 1266 2009-07-14)
 MIME-Version: 1.0
-In-Reply-To: <20201129215257.GD1162850@ravnborg.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="uC4n5puZvzGbl5J1Nts9KjlVbVlSY3yhK"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---uC4n5puZvzGbl5J1Nts9KjlVbVlSY3yhK
-Content-Type: multipart/mixed; boundary="i13jButsR3WrwqSFoHvTEMrYN0qQqZ16D";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-fbdev@vger.kernel.org, Vaibhav Gupta <vaibhavgupta40@gmail.com>,
- Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
- Daniel Vetter <daniel.vetter@ffwll.ch>, dri-devel@lists.freedesktop.org,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Jiri Slaby <jirislaby@kernel.org>,
- Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
- Evgeny Novikov <novikov@ispras.ru>, Lee Jones <lee.jones@linaro.org>,
- Jani Nikula <jani.nikula@intel.com>, Aditya Pakki <pakki001@umn.edu>,
- Arnd Bergmann <arnd@arndb.de>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
- Thomas Winischhofer <thomas@winischhofer.net>,
- Xiaofei Tan <tanxiaofei@huawei.com>,
- Nathan Chancellor <natechancellor@gmail.com>,
- Alex Dewar <alex.dewar90@gmail.com>, Jason Yan <yanaijie@huawei.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Qilong Zhang <zhangqilong3@huawei.com>, Randy Dunlap
- <rdunlap@infradead.org>, Gustavo Silva <gustavoars@kernel.org>,
- Peilin Ye <yepeilin.cs@gmail.com>, George Kennedy
- <george.kennedy@oracle.com>,
- Kristoffer Ericson <kristoffer.ericson@gmail.com>,
- Alexander Klimov <grandmaster@al2klimov.de>,
- Jingoo Han <jingoohan1@gmail.com>, Joe Perches <joe@perches.com>,
- Peter Rosin <peda@axentia.se>, Mike Rapoport <rppt@kernel.org>
-Message-ID: <a32b8eee-320c-41d1-0dbc-da808a8013bb@suse.de>
-Subject: Re: [PATCH v2 28/28] video: fbdev: s1d13xxxfb: Fix kernel-doc and set
- but not used warnings
-References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-29-sam@ravnborg.org>
- <18caca15-a6e7-cb4b-3028-c010922bda80@suse.de>
- <20201129215257.GD1162850@ravnborg.org>
-In-Reply-To: <20201129215257.GD1162850@ravnborg.org>
-
---i13jButsR3WrwqSFoHvTEMrYN0qQqZ16D
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
-
-Hi Sam
-
-Am 29.11.20 um 22:52 schrieb Sam Ravnborg:
-> Hi Thomas.
->=20
-> On Sun, Nov 29, 2020 at 10:59:22AM +0100, Thomas Zimmermann wrote:
->>
->>
->> Am 28.11.20 um 23:41 schrieb Sam Ravnborg:
->>> Fix following W=3D1 warnings:
->>> - Fix set but not nused variables which was used only for logging.
->>
->> s/nused/used
->>
->> s/which was/that were
->>
->> Otherwise
->>
->> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
->=20
-> Fixed and applied to drm-misc-next.
->=20
-> Thanks for the a-b's and r-b. Are you up to take a look at the remainin=
-g
-> 24 patches? It is all simple patches so should be doable in limited tim=
-e.
-
-I think I had a question on one or two of them. If I forgot a patch,=20
-just put it into the next iteration and I'll take a look.
-
-Best regards
-Thomas
-
->=20
-> 	Sam
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
->=20
-
---=20
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
-(HRB 36809, AG N=C3=BCrnberg)
-Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
 
 
---i13jButsR3WrwqSFoHvTEMrYN0qQqZ16D--
+On Tue, 1 Dec 2020, Mikulas Patocka wrote:
 
---uC4n5puZvzGbl5J1Nts9KjlVbVlSY3yhK
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+> When I try to run Xorg (from Debian 9) with the kernel 5.10-rc6, it 
+> doesn't work at all, I get this crash:
 
------BEGIN PGP SIGNATURE-----
+I tried to rux Xorg on another machine (with up-to-date Debian ports) and 
+it didn't crash on unplug.
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/GUeQFAwAAAAAACgkQlh/E3EQov+C8
-mRAAgKTI4hQAij/Gj2k3EHUj64BVkyckIi1SeSKAJuebffndhajDKU2Vg5pXdJ2pG7f/tfn8e1a/
-WVZNpky4fFhl4xfIjBqZ3wQFk5lsT+1BYN4MDMd9MA9LG+8QrxyBXdr5pqi99Uh43YYtvNfc4E/X
-C0J8BbU2HkqHwZ0sfmgkT/Z4kjpHn8sD1S3uN3FJHzYsgXpxxKhtfOsugvoC8I6IAVRG8I01Tcqf
-xkU/SneEO0sP8+sE+AHpNV3Ad4hkV0nsctf2FqAy9ouxBGxxa6edTyd9m6IRNjD7jMp0d6bnBjC7
-On6YRPWHs77v+oXkgvJZdl5FONG2JZFc3wpRbjz8Ujwg2KBUWfMwscDaSmvIS+eZE5ce368LHkmn
-RAw2ZblrCgjMQvK5yi9Q9wkmmAIidof20kxMoGRShUiFGpW7VSweb7Grl6e2F6hw+6sHI1G0a01L
-wny40TdLfQnQyNo7ZjhcBx+6OToK65qk9zGwbDkEiwSDdykch4X3Py6Y3/lwAdYBvDLxfpuuOjyh
-DsgnWy/UC6stb4j9vQjE3liWxJ3AdsX0FX40rzYOUYxGL8COIE9YBBg+bojXCbflmwGmopXXy70h
-C9F9hU0p2mpuWXSjyJey1+42FTTHYtICph9NWdBVKUKqNASV/nOSh0bKbkXh4twTQrPNCTHvqfJD
-A6c=
-=Cck6
------END PGP SIGNATURE-----
+Mikulas
 
---uC4n5puZvzGbl5J1Nts9KjlVbVlSY3yhK--

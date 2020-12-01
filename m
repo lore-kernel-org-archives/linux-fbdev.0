@@ -2,156 +2,228 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97B71C83013
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 10:05:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01461C83012
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 10:07:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E9987206C0
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 10:05:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="G0+nZemJ"
+	by mail.kernel.org (Postfix) with ESMTP id B53F220770
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 10:07:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728990AbgLAKFC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Dec 2020 05:05:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60684 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727590AbgLAKFC (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Dec 2020 05:05:02 -0500
-Received: from mail-ot1-x344.google.com (mail-ot1-x344.google.com [IPv6:2607:f8b0:4864:20::344])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C38EBC0613D3
-        for <linux-fbdev@vger.kernel.org>; Tue,  1 Dec 2020 02:04:12 -0800 (PST)
-Received: by mail-ot1-x344.google.com with SMTP id 79so1101489otc.7
-        for <linux-fbdev@vger.kernel.org>; Tue, 01 Dec 2020 02:04:12 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=33/zkU0aBUbm6IWtg6RLVv0ESfiR5fSbnSusLdV9U28=;
-        b=G0+nZemJpfABRr8a7b1eByhc6uhcVo6zsElrKMWHFxlZD+pLmEtjR2R59L01CQTmgO
-         11NQOeiE3lZpqrLRN0KMSN6XGUyuxMo6oXInOnpnVf+0eN+M4aItZqOBobKdmDBPfGWL
-         g9XvkWlzK3sCOIQew6TAJ/TLLTZXRaDqP9Zy0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=33/zkU0aBUbm6IWtg6RLVv0ESfiR5fSbnSusLdV9U28=;
-        b=sMPR1EHfVzJ+SDaKCaSfp+4+IzgvLc3vK0GN2IMpzWcDThuCsZCqQV/y2NqhUH2fgr
-         X88q6WitPvh/K9treh5E8FRz9+F4ozq80klVYhSUnmpYfhQf7JSysciYfE8vINlZMA4n
-         oyP+rl7iJBTg6gvcDTEcgSYfCo22HVl1thU2hSutgw2Vnlm84WGWwz37tldWSHf2039U
-         2UnBJYnTgx+Uf0oEA3pyHRDp8IMPmnNCBCXz9vCyJrs6epu6Y8g+pPLdGKVXCBPg/MRX
-         XY0m3AS1hNIEnvrad7/4rbJlRGA7YWWtpaWQ+yIcE+TS2faTYzgS3/iUl+NVQYadeiXJ
-         9eng==
-X-Gm-Message-State: AOAM533w4yTh2+z3stKvq7g8EqKVF+v+x+a41oS1ip7Xa0j90SsFYpOU
-        kMBIXxcQwIgx1k6pLdWlGKbDJ5r0qtKTR+ndCq/T0w==
-X-Google-Smtp-Source: ABdhPJzqOqsKVD+FVmIaGGSHLAUt8mchKo3H7Mm8FVT7YBHYWw6zIst2LgZAOvDrbg95Sm8xGEWCTlx1bkkp+TClhn8=
-X-Received: by 2002:a9d:4e08:: with SMTP id p8mr1325493otf.188.1606817052174;
- Tue, 01 Dec 2020 02:04:12 -0800 (PST)
-MIME-Version: 1.0
-References: <20201128224114.1033617-1-sam@ravnborg.org> <20201128224114.1033617-14-sam@ravnborg.org>
- <53f3e91e-d8da-bce6-878c-7842250a7a7c@suse.de> <20201130183549.GA1498572@ravnborg.org>
- <20201201084718.GF4801@dell> <20201201090745.GA1980788@ravnborg.org> <20201201094629.GG4801@dell>
-In-Reply-To: <20201201094629.GG4801@dell>
-From:   Daniel Vetter <daniel.vetter@ffwll.ch>
-Date:   Tue, 1 Dec 2020 11:04:01 +0100
-Message-ID: <CAKMK7uGUJbVRVTO8xL8Kc8BbYMXzqS2KAVYL8bgex3Zz=aF9EQ@mail.gmail.com>
-Subject: Re: [PATCH v2 13/28] video: fbdev: riva: Fix kernel-doc and set but
- not used warnings
-To:     Lee Jones <lee.jones@linaro.org>
-Cc:     Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-        Evgeny Novikov <novikov@ispras.ru>,
-        Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
-        Thomas Winischhofer <thomas@winischhofer.net>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Jani Nikula <jani.nikula@intel.com>,
-        Aditya Pakki <pakki001@umn.edu>,
-        Xiaofei Tan <tanxiaofei@huawei.com>,
-        Nathan Chancellor <natechancellor@gmail.com>,
+        id S1729139AbgLAKHB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Dec 2020 05:07:01 -0500
+Received: from mx2.suse.de ([195.135.220.15]:44264 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729678AbgLAKHB (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Dec 2020 05:07:01 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id 8AD51ADAA;
+        Tue,  1 Dec 2020 10:06:19 +0000 (UTC)
+Subject: Re: [PATCH v2 23/28] video: fbdev: omapfb: Fix set but not used
+ warnings in hdmi*_core
+To:     Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, Lee Jones <lee.jones@linaro.org>
+Cc:     Aditya Pakki <pakki001@umn.edu>,
+        Alexander Klimov <grandmaster@al2klimov.de>,
         Alex Dewar <alex.dewar90@gmail.com>,
-        Jason Yan <yanaijie@huawei.com>,
+        Antonino Daplas <adaplas@gmail.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Evgeny Novikov <novikov@ispras.ru>,
+        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+        George Kennedy <george.kennedy@oracle.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Gustavo Silva <gustavoars@kernel.org>,
+        Jani Nikula <jani.nikula@intel.com>,
+        Jason Yan <yanaijie@huawei.com>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Joe Perches <joe@perches.com>,
+        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Mike Rapoport <rppt@kernel.org>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Peilin Ye <yepeilin.cs@gmail.com>,
+        Peter Rosin <peda@axentia.se>,
         Qilong Zhang <zhangqilong3@huawei.com>,
         Randy Dunlap <rdunlap@infradead.org>,
-        Gustavo Silva <gustavoars@kernel.org>,
-        Peter Rosin <peda@axentia.se>,
-        George Kennedy <george.kennedy@oracle.com>,
-        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-        Alexander Klimov <grandmaster@al2klimov.de>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Joe Perches <joe@perches.com>,
-        Peilin Ye <yepeilin.cs@gmail.com>,
-        Mike Rapoport <rppt@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
+        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+        Thomas Winischhofer <thomas@winischhofer.net>,
+        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
+        Xiaofei Tan <tanxiaofei@huawei.com>
+References: <20201128224114.1033617-1-sam@ravnborg.org>
+ <20201128224114.1033617-24-sam@ravnborg.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+Message-ID: <e6664921-cc89-6814-8d63-33f43df63ed4@suse.de>
+Date:   Tue, 1 Dec 2020 11:06:15 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.0
+MIME-Version: 1.0
+In-Reply-To: <20201128224114.1033617-24-sam@ravnborg.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="9Iq9PZI8r9vCcI3bZAplE2EAZEouGYt1R"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Dec 1, 2020 at 10:46 AM Lee Jones <lee.jones@linaro.org> wrote:
->
-> On Tue, 01 Dec 2020, Sam Ravnborg wrote:
->
-> > Hi Lee,
-> >
-> > >
-> > > Cop-out!
-> > >
-> > > Do what I do and make something up (joke)! :'D
-> >
-> > If I thought anyone would actually read the comments then maybe yes.
-> > But I assume that apart from this thread no-one will read it.
-> >
-> > >
-> > > > > Well, it fixes the warning ;)
-> > > >
-> > > > Yeah, I could not dig up anything useful to say here.
-> > > > Was tempted to just drop all the kernel-doc syntax but that
-> > > > was a larger change.
-> > >
-> > > Did you trace it from it's origin down to it's final use?
-> > Yeah, but not something that seemed useful.
-> > I could have added "translating from pixels->bytes" as they
-> > are described somewhere else. But I could not convince myself
-> > this was right so I just silenced the warning.
-> >
-> > The only reason I kept the kernel-doc in the first place is
-> > that I am told some editors use it.
-> >
-> > The only effect the kernel-doc in fbdev has right now is burning
-> > effort that could have been spent (better?) somewhere else, and
-> > I would personally prefer to drop the kernel-doc annotations.
-> >
-> > But I already discussed this in another thread (not fbdev related)
-> > and I was told it was useful for some, so it is kept.
->
-> I personally think they should be kept.  Despite not being referenced
-> by any kernel-doc:: key-words.  As you say, it can be helpful as an
-> in-code reference for driver writers, people debugging code, et al.
->
-> Not sure I would just repeat the variable name just to silence the
-> warning though - that is definitely a hack.  In the thousands
-> (literally!) of these that I've fixed thus far, I haven't needed to do
-> that.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--9Iq9PZI8r9vCcI3bZAplE2EAZEouGYt1R
+Content-Type: multipart/mixed; boundary="LBbpu34wRRGGfp4TDcdp58GW5uCyI4FtV";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Lee Jones <lee.jones@linaro.org>
+Cc: Aditya Pakki <pakki001@umn.edu>,
+ Alexander Klimov <grandmaster@al2klimov.de>,
+ Alex Dewar <alex.dewar90@gmail.com>, Antonino Daplas <adaplas@gmail.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>, Evgeny Novikov <novikov@ispras.ru>,
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+ George Kennedy <george.kennedy@oracle.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Gustavo Silva <gustavoars@kernel.org>, Jani Nikula <jani.nikula@intel.com>,
+ Jason Yan <yanaijie@huawei.com>, Jingoo Han <jingoohan1@gmail.com>,
+ Jiri Slaby <jirislaby@kernel.org>, Joe Perches <joe@perches.com>,
+ Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+ Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Mike Rapoport <rppt@kernel.org>, Nathan Chancellor
+ <natechancellor@gmail.com>, Peilin Ye <yepeilin.cs@gmail.com>,
+ Peter Rosin <peda@axentia.se>, Qilong Zhang <zhangqilong3@huawei.com>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ Thomas Winischhofer <thomas@winischhofer.net>,
+ Vaibhav Gupta <vaibhavgupta40@gmail.com>, Xiaofei Tan <tanxiaofei@huawei.com>
+Message-ID: <e6664921-cc89-6814-8d63-33f43df63ed4@suse.de>
+Subject: Re: [PATCH v2 23/28] video: fbdev: omapfb: Fix set but not used
+ warnings in hdmi*_core
+References: <20201128224114.1033617-1-sam@ravnborg.org>
+ <20201128224114.1033617-24-sam@ravnborg.org>
+In-Reply-To: <20201128224114.1033617-24-sam@ravnborg.org>
 
-Personally what I've done is to just remove the kerneldoc marker (and
-anything else that's obviously wrong) and leave plain comments behind.
-At least for old outdated code that no one actively maintains anymore.
-Keeps the comment as maybe something useful, and avoids pointless busy
-work of inventing kerneldoc which might or might not actually be
-correctly describing what's going on.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+--LBbpu34wRRGGfp4TDcdp58GW5uCyI4FtV
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
+
+Hi
+
+Am 28.11.20 um 23:41 schrieb Sam Ravnborg:
+> Fix a few W=3D1 warnings about unused assignments.
+> Drop the unused error code.
+>=20
+> v2:
+>    - Subject updated (Lee)
+>=20
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Qilong Zhang <zhangqilong3@huawei.com>
+> Cc: "Alexander A. Klimov" <grandmaster@al2klimov.de>
+> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> ---
+>   drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c | 4 ++--
+>   drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c | 4 ++--
+>   2 files changed, 4 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c b/driver=
+s/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
+> index 726c190862d4..e6363a420933 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
+> @@ -679,7 +679,7 @@ int hdmi4_audio_config(struct hdmi_core_data *core,=
+ struct hdmi_wp_data *wp,
+>   	struct hdmi_audio_format audio_format;
+>   	struct hdmi_audio_dma audio_dma;
+>   	struct hdmi_core_audio_config acore;
+> -	int err, n, cts, channel_count;
+> +	int n, cts, channel_count;
+>   	unsigned int fs_nr;
+>   	bool word_length_16b =3D false;
+>  =20
+> @@ -741,7 +741,7 @@ int hdmi4_audio_config(struct hdmi_core_data *core,=
+ struct hdmi_wp_data *wp,
+>   		return -EINVAL;
+>   	}
+>  =20
+> -	err =3D hdmi_compute_acr(pclk, fs_nr, &n, &cts);
+> +	hdmi_compute_acr(pclk, fs_nr, &n, &cts);
+
+I'd rather return the error reported by hdmi_compute_acr()
+
+Best regards
+Thomas
+
+>  =20
+>   	/* Audio clock regeneration settings */
+>   	acore.n =3D n;
+> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c b/driver=
+s/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
+> index eda29d3032e1..cb63bc0e92ca 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
+> @@ -790,7 +790,7 @@ int hdmi5_audio_config(struct hdmi_core_data *core,=
+ struct hdmi_wp_data *wp,
+>   	struct hdmi_audio_format audio_format;
+>   	struct hdmi_audio_dma audio_dma;
+>   	struct hdmi_core_audio_config core_cfg;
+> -	int err, n, cts, channel_count;
+> +	int n, cts, channel_count;
+>   	unsigned int fs_nr;
+>   	bool word_length_16b =3D false;
+>  =20
+> @@ -833,7 +833,7 @@ int hdmi5_audio_config(struct hdmi_core_data *core,=
+ struct hdmi_wp_data *wp,
+>   		return -EINVAL;
+>   	}
+>  =20
+> -	err =3D hdmi_compute_acr(pclk, fs_nr, &n, &cts);
+> +	hdmi_compute_acr(pclk, fs_nr, &n, &cts);
+>   	core_cfg.n =3D n;
+>   	core_cfg.cts =3D cts;
+>  =20
+>=20
+
+--=20
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
+(HRB 36809, AG N=C3=BCrnberg)
+Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
+
+
+--LBbpu34wRRGGfp4TDcdp58GW5uCyI4FtV--
+
+--9Iq9PZI8r9vCcI3bZAplE2EAZEouGYt1R
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/GFZgFAwAAAAAACgkQlh/E3EQov+CP
+TxAAnqerj89VsWhx3ZO0QuFg21eiLyPsIqrAChBffFa3mjNRb7HdwiTbBFrNYYr/Z01w/mACAWQG
+DHGX8XRttG0ovfRqw/EZnKQUtbXYXbZ8nh0m5fmVgSFKyqIcDkMy4hXPYLDiVP0xSln7CIgadalm
+dY+ISxjTMA4l2D2RkTWZLk1r/Zq2Bq+PyE/zkeGpR/IGykLSv6V9DEr8xg3q+IeaDsSPVtrI8EV4
+tLsQR9t02qZsBQ2T00D3NnHSXHMh8qEiKZnpFIRqTowwniho7Yilv6dhLf13+PwLD0rIKc7K128o
+u16EgRh6VOu681FxPyghLQ2C5qy9d4Dg9Arij/pZsY1XLSDbrYglRnbThi5TDHc//GIgIOEXHmnz
+Pk3wFqi484et59nMdS1s+OKguNKpphFQcHWzauLfBf5UHhg9DyYDAMYe3coEXx6j/nWfujAHsyAQ
+g5ANk4QpiRVvFbssnFU/lf21cr2ILarOftHd2k8c9ZJznCw9I3u2shTOTmFo2o/9PB1I78tNP67g
+0nDZgQKmHaljSH9VnJbYvXeoEbDwsqKkXeBq1Y67W1ZAkJkk3fhvLO5MuIpH+jgBpmIeNSONSPbj
+iNV47/5Lp0sfoGP3Ug0u6AW3n2ES6uocXSi74rOVsFO5wnawjZkfokplMFXgLyi7MQcY3/Id2zgm
+2jU=
+=MIFN
+-----END PGP SIGNATURE-----
+
+--9Iq9PZI8r9vCcI3bZAplE2EAZEouGYt1R--

@@ -2,120 +2,87 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADF14C71155
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 11:27:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EBD61C64E7B
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 12:25:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 467E020809
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 11:27:52 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="CjQWD4De"
+	by mail.kernel.org (Postfix) with ESMTP id 9082720679
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 12:25:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730556AbgLAL1t (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Dec 2020 06:27:49 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:32379 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1730537AbgLAL1s (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Dec 2020 06:27:48 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1606821981;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=FmX+0EgNk69VrCAc4gBk8rq/Vqs5TSfgvcUMIDfLNnU=;
-        b=CjQWD4De3eTtPiqB7uTN496MHhSbtZplBkwXKWAA0VWIX1l0z5seMA1iQLadFiNBz/Gl0K
-        V0CrNEhjdbztDPHx4DAeljfxD9X5AbAtVjreCVncYBkAYf1BgFXGc0K3APZoF7anUUTMD6
-        OSEYhum7PFkjYSV366UuDkN7+kC1zYE=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-35-YqU-KFLGOSeI5RJcYEyVeA-1; Tue, 01 Dec 2020 06:26:17 -0500
-X-MC-Unique: YqU-KFLGOSeI5RJcYEyVeA-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com [10.5.11.23])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id E383C1084423;
-        Tue,  1 Dec 2020 11:26:15 +0000 (UTC)
-Received: from file01.intranet.prod.int.rdu2.redhat.com (file01.intranet.prod.int.rdu2.redhat.com [10.11.5.7])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id BDD6519C44;
-        Tue,  1 Dec 2020 11:26:15 +0000 (UTC)
-Received: from file01.intranet.prod.int.rdu2.redhat.com (localhost [127.0.0.1])
-        by file01.intranet.prod.int.rdu2.redhat.com (8.14.4/8.14.4) with ESMTP id 0B1BQFtW003694;
-        Tue, 1 Dec 2020 06:26:15 -0500
-Received: from localhost (mpatocka@localhost)
-        by file01.intranet.prod.int.rdu2.redhat.com (8.14.4/8.14.4/Submit) with ESMTP id 0B1BQFHb003683;
-        Tue, 1 Dec 2020 06:26:15 -0500
-X-Authentication-Warning: file01.intranet.prod.int.rdu2.redhat.com: mpatocka owned process doing -bs
-Date:   Tue, 1 Dec 2020 06:26:15 -0500 (EST)
-From:   Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@file01.intranet.prod.int.rdu2.redhat.com
-To:     Daniel Vetter <daniel@ffwll.ch>
-cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org, geert+renesas@glider.be,
-        corbet@lwn.net, daniel.vetter@ffwll.ch, linux-doc@vger.kernel.org,
-        bernie@plugable.com, dri-devel@lists.freedesktop.org,
-        sam@ravnborg.org
-Subject: Re: [PATCH] fbdev: Remove udlfb driver
-In-Reply-To: <20201130210629.GY401619@phenom.ffwll.local>
-Message-ID: <alpine.LRH.2.02.2012010621100.1371@file01.intranet.prod.int.rdu2.redhat.com>
-References: <20201130125200.10416-1-tzimmermann@suse.de> <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com> <20201130154147.GT401619@phenom.ffwll.local> <alpine.LRH.2.02.2011301241470.21432@file01.intranet.prod.int.rdu2.redhat.com>
- <20201130210629.GY401619@phenom.ffwll.local>
-User-Agent: Alpine 2.02 (LRH 1266 2009-07-14)
+        id S1728651AbgLAMZU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Dec 2020 07:25:20 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:55831 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727374AbgLAMZT (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Dec 2020 07:25:19 -0500
+Received: from 1.general.cking.uk.vpn ([10.172.193.212])
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <colin.king@canonical.com>)
+        id 1kk4hy-0001m8-EW; Tue, 01 Dec 2020 12:24:38 +0000
+To:     Sam Ravnborg <sam@ravnborg.org>
+From:   Colin Ian King <colin.king@canonical.com>
+Subject: re: video: fbdev: sis: Fix set but not used warnings in init.c
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Lee Jones <lee.jones@linaro.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Message-ID: <575ea853-5a18-0a7c-a84b-0136ecf2cc90@canonical.com>
+Date:   Tue, 1 Dec 2020 12:24:37 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Hi,
+
+Static analysis on linux-next with Coverity had detected a minor issue
+in the following commit:
+
+commit 2a74e8682a39d00e04ca278459ae7d7ecbdfb394
+Author: Sam Ravnborg <sam@ravnborg.org>
+Date:   Sat Nov 28 23:40:55 2020 +0100
+
+    video: fbdev: sis: Fix set but not used warnings in init.c
 
 
-On Mon, 30 Nov 2020, Daniel Vetter wrote:
+The analysis is as follows:
 
-> On Mon, Nov 30, 2020 at 01:39:17PM -0500, Mikulas Patocka wrote:
-> > 
-> > 
-> > On Mon, 30 Nov 2020, Daniel Vetter wrote:
-> > 
-> > > On Mon, Nov 30, 2020 at 09:31:15AM -0500, Mikulas Patocka wrote:
-> > > > 
-> > > > The framebuffer driver supports programs running full-screen directly on 
-> > > > the framebuffer console, such as web browser "links -g", image viewer 
-> > > > "fbi", postscript+pdf viewer "fbgs", ZX Spectrum emulator "fuse-sdl", 
-> > > > movie player "mplayer -vo fbdev". The DRM driver doesn't run them.
-> > > 
-> > > Hm this should in general work on drm drivers. Without that it's clear the
-> > > switch-over isn't really ready yet.
-> > 
-> > I fixed it with this patch two years ago: 
-> > https://lists.freedesktop.org/archives/dri-devel/2018-June/179023.html
-> > 
-> > But the patch never went through and the fb_defio feature was removed in 
-> > the kernel 5.6 (commit d0c4fc5a4814e431c15272935c8dc973c18073aa).
-> 
-> The generic fbdev emulation still has a defio implementation. We could try
-> to make it more efficient maybe, but it should be all there. The module
-> option disappeared since you now should always get it by default.
+2659   if(SiS_Pr->UseCustomMode) {
+2660      infoflag = SiS_Pr->CInfoFlag;
+2661   } else {
 
-Yes, it's there. I've tried to run links on the current DRM UDL driver and 
-it displays correctly - except, that the page list gets sometimes 
-corrupted and a crash happens.
+Useless call (USELESS_CALL) side_effect_free: Calling
+ SiS_GetResInfo(SiS_Pr, ModeNo, ModeIdIndex) is only useful for its
+return value, which is ignored.
 
-> > Without fb_defio, the only other possibility how to update the screen is 
-> > the ioctl DRM_IOCTL_MODE_DIRTYFB. But this ioctl requires master mode, so 
-> > user programs like "links -g" can't issue it.
-> 
-> Now I'm confused, I thought you wanted to use fbdev /dev/fb* nodes? Those
-> should support defio. And if you want your applications to use drm
-> modesetting natively, they have to be drm master anyway. You can't use the
-> DIRTYFB ioctl to upload fbdev contents. So I'm a bit confused.
-> -Daniel
+2662      SiS_GetResInfo(SiS_Pr, ModeNo, ModeIdIndex);
+2663      if(ModeNo > 0x13) {
+2664         infoflag = SiS_Pr->SiS_RefIndex[RRTI].Ext_InfoFlag;
+2665      }
+2666   }
 
-Yes. I was confused about it too. You can't use DRM ioctls on /dev/fb.
+.. SiSGetResInfo() just returns an unsigned short and this returns a
+values is not being used. The function does not side effect anything, so
+it does look like a redundant call. Is this intentional?
 
-Mikulas
+3044 unsigned short
+3045 SiS_GetResInfo(struct SiS_Private *SiS_Pr, unsigned short ModeNo,
+unsigned short ModeIdIndex)
+3046 {
+3047   if(ModeNo <= 0x13)
+3048      return ((unsigned
+short)SiS_Pr->SiS_SModeIDTable[ModeIdIndex].St_ResInfo);
+3049   else
+3050      return ((unsigned
+short)SiS_Pr->SiS_EModeIDTable[ModeIdIndex].Ext_RESINFO);
+3051 }
 
+Colin

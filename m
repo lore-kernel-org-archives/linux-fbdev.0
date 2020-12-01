@@ -2,152 +2,109 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8029C64E7A
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 08:07:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D690C64E7A
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 08:22:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 66E26206CB
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 08:07:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AE7A1206E3
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 08:22:49 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="0ugfFVtm"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726283AbgLAIHw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Dec 2020 03:07:52 -0500
-Received: from mx2.suse.de ([195.135.220.15]:46730 "EHLO mx2.suse.de"
+        id S1728670AbgLAIWI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Dec 2020 03:22:08 -0500
+Received: from mail.kernel.org ([198.145.29.99]:47644 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726120AbgLAIHw (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Dec 2020 03:07:52 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 72398AD21;
-        Tue,  1 Dec 2020 08:07:09 +0000 (UTC)
-Subject: Re: [PATCH] fbdev: Remove udlfb driver
-To:     Mikulas Patocka <mpatocka@redhat.com>,
-        Daniel Vetter <daniel@ffwll.ch>
-Cc:     linux-fbdev@vger.kernel.org, geert+renesas@glider.be,
-        corbet@lwn.net, daniel.vetter@ffwll.ch, linux-doc@vger.kernel.org,
-        bernie@plugable.com, dri-devel@lists.freedesktop.org,
-        sam@ravnborg.org
-References: <20201130125200.10416-1-tzimmermann@suse.de>
- <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
- <20201130154147.GT401619@phenom.ffwll.local>
- <alpine.LRH.2.02.2011301241470.21432@file01.intranet.prod.int.rdu2.redhat.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-Message-ID: <ac639546-d97e-b197-8998-180b0535fae2@suse.de>
-Date:   Tue, 1 Dec 2020 09:07:08 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.5.0
+        id S1727192AbgLAIWH (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Dec 2020 03:22:07 -0500
+Received: from embeddedor (187-162-31-110.static.axtel.net [187.162.31.110])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 94ECB20659;
+        Tue,  1 Dec 2020 08:21:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1606810884;
+        bh=xHTFstOj6O/KMLPWIJ9livXkeh5E3cNJZoMEX1ICbl0=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=0ugfFVtmDEFz3qweRxNJGIbdlhHbJEbe+SPrGbc9I44gM+O6I2rVgrcZagGiPQlJe
+         qDa/e9cJY/n7rREFFqWQI6CYR7sTmaWJfiub5J4ReXH3L76qQfPF0XWoTZ+/KCqBa1
+         43uSa/AsDxhQJOFTJrlenu8ULt+S2HlexiyIiZjk=
+Date:   Tue, 1 Dec 2020 02:20:47 -0600
+From:   "Gustavo A. R. Silva" <gustavoars@kernel.org>
+To:     "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc:     linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+        amd-gfx@lists.freedesktop.org, bridge@lists.linux-foundation.org,
+        ceph-devel@vger.kernel.org, cluster-devel@redhat.com,
+        coreteam@netfilter.org, devel@driverdev.osuosl.org,
+        dm-devel@redhat.com, drbd-dev@tron.linbit.com,
+        dri-devel@lists.freedesktop.org, GR-everest-linux-l2@marvell.com,
+        GR-Linux-NIC-Dev@marvell.com, intel-gfx@lists.freedesktop.org,
+        intel-wired-lan@lists.osuosl.org, keyrings@vger.kernel.org,
+        linux1394-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org,
+        linux-afs@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-arm-msm@vger.kernel.org,
+        linux-atm-general@lists.sourceforge.net,
+        linux-block@vger.kernel.org, linux-can@vger.kernel.org,
+        linux-cifs@vger.kernel.org, linux-crypto@vger.kernel.org,
+        linux-decnet-user@lists.sourceforge.net,
+        linux-ext4@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-geode@lists.infradead.org, linux-gpio@vger.kernel.org,
+        linux-hams@vger.kernel.org, linux-hwmon@vger.kernel.org,
+        linux-i3c@lists.infradead.org, linux-ide@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-integrity@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, linux-media@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-mm@kvack.org,
+        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
+        linux-rdma@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+        linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org,
+        linux-security-module@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-usb@vger.kernel.org, linux-watchdog@vger.kernel.org,
+        linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+        netfilter-devel@vger.kernel.org, nouveau@lists.freedesktop.org,
+        op-tee@lists.trustedfirmware.org, oss-drivers@netronome.com,
+        patches@opensource.cirrus.com, rds-devel@oss.oracle.com,
+        reiserfs-devel@vger.kernel.org, samba-technical@lists.samba.org,
+        selinux@vger.kernel.org, target-devel@vger.kernel.org,
+        tipc-discussion@lists.sourceforge.net,
+        usb-storage@lists.one-eyed-alien.net,
+        virtualization@lists.linux-foundation.org,
+        wcn36xx@lists.infradead.org, x86@kernel.org,
+        xen-devel@lists.xenproject.org, linux-hardening@vger.kernel.org,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Miguel Ojeda <ojeda@kernel.org>, Joe Perches <joe@perches.com>,
+        Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
+Message-ID: <20201201082047.GA11832@embeddedor>
+References: <cover.1605896059.git.gustavoars@kernel.org>
+ <yq1h7p6gjkk.fsf@ca-mkp.ca.oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LRH.2.02.2011301241470.21432@file01.intranet.prod.int.rdu2.redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="m0nXX7s2opZ6pPGdpseWFGDKjZHKL2cuI"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq1h7p6gjkk.fsf@ca-mkp.ca.oracle.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---m0nXX7s2opZ6pPGdpseWFGDKjZHKL2cuI
-Content-Type: multipart/mixed; boundary="vbXNiItjELcPrKi8yrF0Zi8IoCE0p07NW";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Mikulas Patocka <mpatocka@redhat.com>, Daniel Vetter <daniel@ffwll.ch>
-Cc: linux-fbdev@vger.kernel.org, geert+renesas@glider.be, corbet@lwn.net,
- daniel.vetter@ffwll.ch, linux-doc@vger.kernel.org, bernie@plugable.com,
- dri-devel@lists.freedesktop.org, sam@ravnborg.org
-Message-ID: <ac639546-d97e-b197-8998-180b0535fae2@suse.de>
-Subject: Re: [PATCH] fbdev: Remove udlfb driver
-References: <20201130125200.10416-1-tzimmermann@suse.de>
- <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
- <20201130154147.GT401619@phenom.ffwll.local>
- <alpine.LRH.2.02.2011301241470.21432@file01.intranet.prod.int.rdu2.redhat.com>
-In-Reply-To: <alpine.LRH.2.02.2011301241470.21432@file01.intranet.prod.int.rdu2.redhat.com>
+On Tue, Dec 01, 2020 at 12:52:27AM -0500, Martin K. Petersen wrote:
+> 
+> Gustavo,
+> 
+> > This series aims to fix almost all remaining fall-through warnings in
+> > order to enable -Wimplicit-fallthrough for Clang.
+> 
+> Applied 20-22,54,120-124 to 5.11/scsi-staging, thanks.
 
---vbXNiItjELcPrKi8yrF0Zi8IoCE0p07NW
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+Awesome! :)
 
-Hi
-
-Am 30.11.20 um 19:39 schrieb Mikulas Patocka:
->=20
->=20
-> On Mon, 30 Nov 2020, Daniel Vetter wrote:
->=20
->> On Mon, Nov 30, 2020 at 09:31:15AM -0500, Mikulas Patocka wrote:
->>>
->>> The framebuffer driver supports programs running full-screen directly=
- on
->>> the framebuffer console, such as web browser "links -g", image viewer=
-
->>> "fbi", postscript+pdf viewer "fbgs", ZX Spectrum emulator "fuse-sdl",=
-
->>> movie player "mplayer -vo fbdev". The DRM driver doesn't run them.
->>
->> Hm this should in general work on drm drivers. Without that it's clear=
- the
->> switch-over isn't really ready yet.
->=20
-> I fixed it with this patch two years ago:
-> https://lists.freedesktop.org/archives/dri-devel/2018-June/179023.html
->=20
-> But the patch never went through and the fb_defio feature was removed i=
-n
-> the kernel 5.6 (commit d0c4fc5a4814e431c15272935c8dc973c18073aa).
->=20
->=20
-> Without fb_defio, the only other possibility how to update the screen i=
-s
-> the ioctl DRM_IOCTL_MODE_DIRTYFB. But this ioctl requires master mode, =
-so
-> user programs like "links -g" can't issue it.
-
-That's confusing. DIRTYFB is only for DRM.
-
-And why can links not run as DRM master mode? If it renders to the=20
-terminal, it should act like a composer. In that case it almost=20
-certainly wants master status.
-
-Best regards
-Thomas
-
->=20
-> Mikulas
->=20
-
---=20
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
-(HRB 36809, AG N=C3=BCrnberg)
-Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
-
-
---vbXNiItjELcPrKi8yrF0Zi8IoCE0p07NW--
-
---m0nXX7s2opZ6pPGdpseWFGDKjZHKL2cuI
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/F+awFAwAAAAAACgkQlh/E3EQov+DY
-bxAAnFIkL+UQXf+grnqvgtdwrOpkbY+Qq3tjYHo3YwzUhMNVBRIZLLg2O8fWtKtYlNXFV6K9FQso
-umaZoSfS0S8SldWnM8KoyZzFgpWGNJZuPVeLulMAPEHgDMMRzsLBOofFhS2T04KowRPq3RpKgtKK
-dwjuRQmnJArS3n3TQB4WyAfxpjNo/rkeWrk2MRJUPzVNSzMFgO4VLgFGFF5tcJ1+MEwKWvI1+QVb
-LiWhTwQugcxDI0kU6x0ud71/SrHog2mfK8Dm1kwbZyLV+PusC/Dkr3lXefLnULHcDF5+haohQFPs
-uSllb8H0TOhGT2VIisukXjf3yZoQ4wP+EIbIS5zXhO/BzyxvE/aeATzii9bmnv5dxqap4OSKoZpI
-uXhwPP4XRTdCwfMrEJgFodMgh0p+THhHYS75BhyyLmFogXpsWP+tx7db6x6qwOMNuK7YgwNJkVB7
-oNmvjwloZQ3pm0FlP9tG7peKj7ulW4PDPp9IYpaSCp2FF3PDXWeq5Bz3ahnhY6YXeG/OGMMYcfb+
-ydw/DWgD2TqfH/rvCCG6Ly6Pe3+Rw6lgjNZuWfwfw6qkf5Rn4PhOe7YtdgxvCdv6/+7gJhPSWyzf
-UyemQG86/QeGbXaXL0wp8dbBaGrd+GsFpWYZ4GYNw3IdAqF5c6TcQfRGgOtodhAFKMrxNkkxmKeI
-SY0=
-=B23t
------END PGP SIGNATURE-----
-
---m0nXX7s2opZ6pPGdpseWFGDKjZHKL2cuI--
+Thanks, Martin.
+--
+Gustavo

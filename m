@@ -2,134 +2,175 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6880C83017
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 05:56:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BBB3C64E8A
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 08:03:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 878FC2168B
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 05:56:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="emDPbOhP"
+	by mail.kernel.org (Postfix) with ESMTP id 4E7242087D
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 08:03:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726791AbgLAFyu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Dec 2020 00:54:50 -0500
-Received: from aserp2130.oracle.com ([141.146.126.79]:58724 "EHLO
-        aserp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725859AbgLAFyt (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Dec 2020 00:54:49 -0500
-Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
-        by aserp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B15n67q107471;
-        Tue, 1 Dec 2020 05:53:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=to : cc : subject :
- from : message-id : references : date : in-reply-to : mime-version :
- content-type; s=corp-2020-01-29;
- bh=l9ihS9O8ty7fvCGsyg6t+FL2UWzq+Pp7wI7g9M3fu94=;
- b=emDPbOhPomsDJ0NVhkgalKaWcDmTVt43uxmasZhRdsIKDAK5SyUn3ZBbDT0tfjc2Ub+G
- pwnVB+2L6jYArSQUwoKsFjxw+gIeAIQd1agInCI9m5zu6sstYek99cFlGrF83pfAMoYp
- 7h3VW08t/kH06cHx+UsVCvNai9zlonapT50haza8ExqU3V0ifCJ/7nW0lmA/qRSavM+P
- eE0d7ezZdfPLepa71ISDd/u3VXj3GbiZhoaxq0dsKdiEuu46H687kMfk2k9ooRtVL0+n
- yN1cC747fo++ObKGg9Es3E0DMkXRjQCXCIESHdIfuri0sdDNQNO6hiI2IHC3bOw+gche Nw== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
-        by aserp2130.oracle.com with ESMTP id 353c2aru96-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 01 Dec 2020 05:53:05 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
-        by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 0B15oGDF104852;
-        Tue, 1 Dec 2020 05:53:04 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-        by userp3020.oracle.com with ESMTP id 3540arqfy6-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 01 Dec 2020 05:53:04 +0000
-Received: from userp3020.oracle.com (userp3020.oracle.com [127.0.0.1])
-        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 0B15r2KY111063;
-        Tue, 1 Dec 2020 05:53:02 GMT
-Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
-        by userp3020.oracle.com with ESMTP id 3540arqfwj-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 01 Dec 2020 05:53:02 +0000
-Received: from abhmp0003.oracle.com (abhmp0003.oracle.com [141.146.116.9])
-        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 0B15qbsa005213;
-        Tue, 1 Dec 2020 05:52:40 GMT
-Received: from ca-mkp.ca.oracle.com (/10.159.214.123)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Mon, 30 Nov 2020 21:52:37 -0800
-To:     "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Cc:     linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
-        amd-gfx@lists.freedesktop.org, bridge@lists.linux-foundation.org,
-        ceph-devel@vger.kernel.org, cluster-devel@redhat.com,
-        coreteam@netfilter.org, devel@driverdev.osuosl.org,
-        dm-devel@redhat.com, drbd-dev@tron.linbit.com,
-        dri-devel@lists.freedesktop.org, GR-everest-linux-l2@marvell.com,
-        GR-Linux-NIC-Dev@marvell.com, intel-gfx@lists.freedesktop.org,
-        intel-wired-lan@lists.osuosl.org, keyrings@vger.kernel.org,
-        linux1394-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org,
-        linux-afs@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org,
-        linux-atm-general@lists.sourceforge.net,
-        linux-block@vger.kernel.org, linux-can@vger.kernel.org,
-        linux-cifs@vger.kernel.org, linux-crypto@vger.kernel.org,
-        linux-decnet-user@lists.sourceforge.net,
-        linux-ext4@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-geode@lists.infradead.org, linux-gpio@vger.kernel.org,
-        linux-hams@vger.kernel.org, linux-hwmon@vger.kernel.org,
-        linux-i3c@lists.infradead.org, linux-ide@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-integrity@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-media@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-mm@kvack.org,
-        linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
-        linux-rdma@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-        linux-scsi@vger.kernel.org, linux-sctp@vger.kernel.org,
-        linux-security-module@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-usb@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-        netfilter-devel@vger.kernel.org, nouveau@lists.freedesktop.org,
-        op-tee@lists.trustedfirmware.org, oss-drivers@netronome.com,
-        patches@opensource.cirrus.com, rds-devel@oss.oracle.com,
-        reiserfs-devel@vger.kernel.org, samba-technical@lists.samba.org,
-        selinux@vger.kernel.org, target-devel@vger.kernel.org,
-        tipc-discussion@lists.sourceforge.net,
-        usb-storage@lists.one-eyed-alien.net,
-        virtualization@lists.linux-foundation.org,
-        wcn36xx@lists.infradead.org, x86@kernel.org,
-        xen-devel@lists.xenproject.org, linux-hardening@vger.kernel.org,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Nathan Chancellor <natechancellor@gmail.com>,
-        Miguel Ojeda <ojeda@kernel.org>, Joe Perches <joe@perches.com>,
-        Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 000/141] Fix fall-through warnings for Clang
-From:   "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle Corporation
-Message-ID: <yq1h7p6gjkk.fsf@ca-mkp.ca.oracle.com>
-References: <cover.1605896059.git.gustavoars@kernel.org>
-Date:   Tue, 01 Dec 2020 00:52:27 -0500
-In-Reply-To: <cover.1605896059.git.gustavoars@kernel.org> (Gustavo
-        A. R. Silva's message of "Fri, 20 Nov 2020 12:21:39 -0600")
+        id S1726477AbgLAIDQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Dec 2020 03:03:16 -0500
+Received: from mx2.suse.de ([195.135.220.15]:44200 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726120AbgLAIDQ (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Dec 2020 03:03:16 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id B06C5AC2F;
+        Tue,  1 Dec 2020 08:02:33 +0000 (UTC)
+To:     Mikulas Patocka <mpatocka@redhat.com>
+Cc:     daniel.vetter@ffwll.ch, sam@ravnborg.org, geert+renesas@glider.be,
+        bernie@plugable.com, corbet@lwn.net,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-doc@vger.kernel.org
+References: <20201130125200.10416-1-tzimmermann@suse.de>
+ <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH] fbdev: Remove udlfb driver
+Message-ID: <336a41ef-1e49-6799-1bfd-06fb42419fb8@suse.de>
+Date:   Tue, 1 Dec 2020 09:02:32 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9821 signatures=668682
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=1 lowpriorityscore=0
- clxscore=1011 bulkscore=0 mlxlogscore=289 phishscore=0 malwarescore=0
- spamscore=0 adultscore=0 mlxscore=0 priorityscore=1501 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2012010039
+In-Reply-To: <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="jETQjiqHPQ4ssdDqzOpb6mlFH3OMj7CrU"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--jETQjiqHPQ4ssdDqzOpb6mlFH3OMj7CrU
+Content-Type: multipart/mixed; boundary="MZI83QV9cxoq5fqjHDyDJ9hsnk2pJTnp6";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: daniel.vetter@ffwll.ch, sam@ravnborg.org, geert+renesas@glider.be,
+ bernie@plugable.com, corbet@lwn.net, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org
+Message-ID: <336a41ef-1e49-6799-1bfd-06fb42419fb8@suse.de>
+Subject: Re: [PATCH] fbdev: Remove udlfb driver
+References: <20201130125200.10416-1-tzimmermann@suse.de>
+ <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
 
-Gustavo,
+--MZI83QV9cxoq5fqjHDyDJ9hsnk2pJTnp6
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-> This series aims to fix almost all remaining fall-through warnings in
-> order to enable -Wimplicit-fallthrough for Clang.
+Hi
 
-Applied 20-22,54,120-124 to 5.11/scsi-staging, thanks.
+Am 30.11.20 um 15:31 schrieb Mikulas Patocka:
+>=20
+>=20
+> On Mon, 30 Nov 2020, Thomas Zimmermann wrote:
+>=20
+>> Udlfb has been superseded by DRM's udl. The DRM driver is better by
+>> any means and actively maintained. Remove udlfb.
+>=20
+> Hi
+>=20
+> I am using udlfb and it's definitely better than the DRM driver. The DR=
+M
+> driver will crash the kernel if you unplug the device while Xorg is
+> running. The framebuffer driver doesn't crash in this case. (I have a c=
+at
+> and the cat sometimes unplugs cables and I don't want to reboot the sys=
+tem
+> because of it :-)
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+What's the exact STR here? Just open the /dev/fb* and pull the cable.
+
+Do I need a cat? :)
+
+> The framebuffer driver is faster, it keeps back buffer and updates only=
+
+> data that differ between the front and back buffer. The DRM driver does=
+n't
+> have such optimization, it will update everything in a given rectangle =
+-
+> this increases USB traffic and makes video playback more jerky.
+
+That's not quite true, but not false either. I think we could optimize=20
+what we have.
+
+>=20
+> The framebuffer driver supports programs running full-screen directly o=
+n
+> the framebuffer console, such as web browser "links -g", image viewer
+> "fbi", postscript+pdf viewer "fbgs", ZX Spectrum emulator "fuse-sdl",
+> movie player "mplayer -vo fbdev". The DRM driver doesn't run them.
+
+I would expect that most programs have an SDL2 backend. (?) IIRC SDL2=20
+has support for DRI interfaces.
+
+>=20
+> If you seach for someone to maintain the framebuffer driver, I can do i=
+t.
+
+I'm looking for reasons why udlfb is still around. What I got from this=20
+thread is the possible crash and a lack of DRM's fbdev performance.=20
+Thanks for the feedback.
+
+Best regards
+Thomas
+
+>=20
+> Mikulas
+>=20
+>=20
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+>> ---
+>>   CREDITS                      |    5 +
+>>   Documentation/fb/index.rst   |    1 -
+>>   Documentation/fb/udlfb.rst   |  162 ---
+>>   MAINTAINERS                  |    9 -
+>>   drivers/video/fbdev/Kconfig  |   17 +-
+>>   drivers/video/fbdev/Makefile |    1 -
+>>   drivers/video/fbdev/udlfb.c  | 1994 --------------------------------=
+--
+>>   7 files changed, 6 insertions(+), 2183 deletions(-)
+>>   delete mode 100644 Documentation/fb/udlfb.rst
+>>   delete mode 100644 drivers/video/fbdev/udlfb.c
+>=20
+
+--=20
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
+(HRB 36809, AG N=C3=BCrnberg)
+Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
+
+
+--MZI83QV9cxoq5fqjHDyDJ9hsnk2pJTnp6--
+
+--jETQjiqHPQ4ssdDqzOpb6mlFH3OMj7CrU
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/F+JgFAwAAAAAACgkQlh/E3EQov+BM
+LQ//Vg6mZxBQkKGfk81NgT+i4Xu2RchOn+gnnNMFhpIvLKmvbOtIntaqSJu0Iqy7xWTqarZW3Qrr
+pzGxGfnBvIb6YcrEXLY+pwnJsVHy8sTSMYjX2sFCcBjsur9IT1mXyNOUyI6KY/4RvdSSFXZkiBBX
+HWUuFwCqfdKh314jzLKMO/yy7THc0SwX5JUGzm7KSqg+wZjelDMUu1ztO5QfQ5HpoSxgHX93MkNI
+LarMTG53CD3F7fV8pJpDWit2LOxhGOwHHUCNOPGyKMpO5Fr1p1grrqc9D6w/IDdyyLonaRNCJoHt
+BZc/aKRUIJ17yJsBU1N63Tm9Qwcps8lT3OmOw9qXCzVZf/AQSj3nKpV6iMVlErHtRc8n5CaTmUB9
+2uulKUxYyaGS9mOpNJhF4g6CdmJc0DrUIaIRtdr9cdspC0oufYtAdSnDQhB5mVD+dGZSvHjMurNA
+Fiy9KnWAWiJWT2vHgVv8YE1JRGrt4DxTtL9TjWhxKcS6WCHzPBKW26p86jrPamw91ub/PsK3/Xzs
+juQAmNdYZpwg/1r1dwmWztORHgiqyl+SHjAo4s9RBT7dCCz2N9pb4EGIj0XNjYTeyifYyhrHMIxc
+rxkEotDoYh28s8MvB2zaEgY5QEDguGNt1kZkImsy2WCQCRG68rc42SUkzSpj7dBX68287w2gQfrQ
+kKo=
+=42KM
+-----END PGP SIGNATURE-----
+
+--jETQjiqHPQ4ssdDqzOpb6mlFH3OMj7CrU--

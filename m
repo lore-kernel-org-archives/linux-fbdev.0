@@ -2,158 +2,210 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D592C64E7A
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 09:59:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5193BC64E8A
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 10:04:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EEDB1204FD
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 09:59:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 00566206C0
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 10:04:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725912AbgLAJ64 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Dec 2020 04:58:56 -0500
-Received: from mx2.suse.de ([195.135.220.15]:36582 "EHLO mx2.suse.de"
+        id S1729600AbgLAKE3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Dec 2020 05:04:29 -0500
+Received: from mx2.suse.de ([195.135.220.15]:42544 "EHLO mx2.suse.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726828AbgLAJ6z (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Dec 2020 04:58:55 -0500
+        id S1725912AbgLAKE3 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Dec 2020 05:04:29 -0500
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 2F6E3AC65;
-        Tue,  1 Dec 2020 09:58:14 +0000 (UTC)
-Subject: Re: [PATCH v2 08/28] video: fbdev: sis: Fix defined but not used
- warning of SiS_TVDelay
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Lee Jones <lee.jones@linaro.org>,
-        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-        Evgeny Novikov <novikov@ispras.ru>,
-        Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Thomas Winischhofer <thomas@winischhofer.net>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Jani Nikula <jani.nikula@intel.com>,
-        Aditya Pakki <pakki001@umn.edu>,
-        Xiaofei Tan <tanxiaofei@huawei.com>,
-        Nathan Chancellor <natechancellor@gmail.com>,
+        by mx2.suse.de (Postfix) with ESMTP id B583DAE92;
+        Tue,  1 Dec 2020 10:03:46 +0000 (UTC)
+Subject: Re: [PATCH v2 22/28] video: fbdev: omapfb: Fix set but not used
+ warnings in dsi
+To:     Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, Lee Jones <lee.jones@linaro.org>
+Cc:     Aditya Pakki <pakki001@umn.edu>,
+        Alexander Klimov <grandmaster@al2klimov.de>,
         Alex Dewar <alex.dewar90@gmail.com>,
-        Jason Yan <yanaijie@huawei.com>,
+        Antonino Daplas <adaplas@gmail.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Evgeny Novikov <novikov@ispras.ru>,
+        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+        George Kennedy <george.kennedy@oracle.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Gustavo Silva <gustavoars@kernel.org>,
+        Jani Nikula <jani.nikula@intel.com>,
+        Jason Yan <yanaijie@huawei.com>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Joe Perches <joe@perches.com>,
+        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Mike Rapoport <rppt@kernel.org>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Peilin Ye <yepeilin.cs@gmail.com>,
+        Peter Rosin <peda@axentia.se>,
         Qilong Zhang <zhangqilong3@huawei.com>,
         Randy Dunlap <rdunlap@infradead.org>,
-        Gustavo Silva <gustavoars@kernel.org>,
-        Peter Rosin <peda@axentia.se>,
-        George Kennedy <george.kennedy@oracle.com>,
-        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-        Alexander Klimov <grandmaster@al2klimov.de>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Joe Perches <joe@perches.com>,
-        Peilin Ye <yepeilin.cs@gmail.com>,
-        Mike Rapoport <rppt@kernel.org>
+        Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
+        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+        Thomas Winischhofer <thomas@winischhofer.net>,
+        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
+        Xiaofei Tan <tanxiaofei@huawei.com>
 References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-9-sam@ravnborg.org>
- <2b2809ab-a9ab-cf6d-248d-828ca584bdee@suse.de>
- <20201130190132.GB1502362@ravnborg.org>
+ <20201128224114.1033617-23-sam@ravnborg.org>
 From:   Thomas Zimmermann <tzimmermann@suse.de>
-Message-ID: <ebca0264-00e3-676d-c1f1-40e9fbbbae81@suse.de>
-Date:   Tue, 1 Dec 2020 10:58:09 +0100
+Message-ID: <8f39b00f-3ec7-0712-0eaa-07156c1cdc37@suse.de>
+Date:   Tue, 1 Dec 2020 11:03:42 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
  Thunderbird/78.5.0
 MIME-Version: 1.0
-In-Reply-To: <20201130190132.GB1502362@ravnborg.org>
+In-Reply-To: <20201128224114.1033617-23-sam@ravnborg.org>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="NRbffqMogAfFUElMvRsOiHmPs9btjWeEX"
+ boundary="gbtftWKlf8hPTKh2UACUiG6ElqufM5tpM"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---NRbffqMogAfFUElMvRsOiHmPs9btjWeEX
-Content-Type: multipart/mixed; boundary="yNgj5c9ZvHxjjDrhmXedYdfhnGovl1hBl";
+--gbtftWKlf8hPTKh2UACUiG6ElqufM5tpM
+Content-Type: multipart/mixed; boundary="L0aI5e3MNH4UvuZs6UsyBSWhoQVbBdFxd";
  protected-headers="v1"
 From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- Lee Jones <lee.jones@linaro.org>, Vaibhav Gupta <vaibhavgupta40@gmail.com>,
- Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- Jiri Slaby <jirislaby@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
- Evgeny Novikov <novikov@ispras.ru>,
- Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
- Daniel Vetter <daniel.vetter@ffwll.ch>,
- Thomas Winischhofer <thomas@winischhofer.net>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Jani Nikula <jani.nikula@intel.com>, Aditya Pakki <pakki001@umn.edu>,
- Xiaofei Tan <tanxiaofei@huawei.com>,
- Nathan Chancellor <natechancellor@gmail.com>,
- Alex Dewar <alex.dewar90@gmail.com>, Jason Yan <yanaijie@huawei.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Qilong Zhang <zhangqilong3@huawei.com>, Randy Dunlap
- <rdunlap@infradead.org>, Gustavo Silva <gustavoars@kernel.org>,
- Peter Rosin <peda@axentia.se>, George Kennedy <george.kennedy@oracle.com>,
- Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+To: Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, Lee Jones <lee.jones@linaro.org>
+Cc: Aditya Pakki <pakki001@umn.edu>,
  Alexander Klimov <grandmaster@al2klimov.de>,
- Jingoo Han <jingoohan1@gmail.com>, Joe Perches <joe@perches.com>,
- Peilin Ye <yepeilin.cs@gmail.com>, Mike Rapoport <rppt@kernel.org>
-Message-ID: <ebca0264-00e3-676d-c1f1-40e9fbbbae81@suse.de>
-Subject: Re: [PATCH v2 08/28] video: fbdev: sis: Fix defined but not used
- warning of SiS_TVDelay
+ Alex Dewar <alex.dewar90@gmail.com>, Antonino Daplas <adaplas@gmail.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>, Evgeny Novikov <novikov@ispras.ru>,
+ Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+ George Kennedy <george.kennedy@oracle.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Gustavo Silva <gustavoars@kernel.org>, Jani Nikula <jani.nikula@intel.com>,
+ Jason Yan <yanaijie@huawei.com>, Jingoo Han <jingoohan1@gmail.com>,
+ Jiri Slaby <jirislaby@kernel.org>, Joe Perches <joe@perches.com>,
+ Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+ Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Mike Rapoport <rppt@kernel.org>, Nathan Chancellor
+ <natechancellor@gmail.com>, Peilin Ye <yepeilin.cs@gmail.com>,
+ Peter Rosin <peda@axentia.se>, Qilong Zhang <zhangqilong3@huawei.com>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ Saeed Mirzamohammadi <saeed.mirzamohammadi@oracle.com>,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ Thomas Winischhofer <thomas@winischhofer.net>,
+ Vaibhav Gupta <vaibhavgupta40@gmail.com>, Xiaofei Tan <tanxiaofei@huawei.com>
+Message-ID: <8f39b00f-3ec7-0712-0eaa-07156c1cdc37@suse.de>
+Subject: Re: [PATCH v2 22/28] video: fbdev: omapfb: Fix set but not used
+ warnings in dsi
 References: <20201128224114.1033617-1-sam@ravnborg.org>
- <20201128224114.1033617-9-sam@ravnborg.org>
- <2b2809ab-a9ab-cf6d-248d-828ca584bdee@suse.de>
- <20201130190132.GB1502362@ravnborg.org>
-In-Reply-To: <20201130190132.GB1502362@ravnborg.org>
+ <20201128224114.1033617-23-sam@ravnborg.org>
+In-Reply-To: <20201128224114.1033617-23-sam@ravnborg.org>
 
---yNgj5c9ZvHxjjDrhmXedYdfhnGovl1hBl
+--L0aI5e3MNH4UvuZs6UsyBSWhoQVbBdFxd
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
 
-Hi
 
-Am 30.11.20 um 20:01 schrieb Sam Ravnborg:
-> Hi Thomas.
->=20
-> On Mon, Nov 30, 2020 at 10:13:05AM +0100, Thomas Zimmermann wrote:
->>
->>
->> Am 28.11.20 um 23:40 schrieb Sam Ravnborg:
->>> Fix W=3D1 warning by commenting unused SiS_TVDelay* variables.
->>>
->>> The SiS_TVDelay* variables seem to contain some magic numbers
->>> so looks like data worth keeping around but not as code we build.
->>
->> I would remove it. sisfb is broken beyond repair and no one's going to=
- try
->> to use it anyway. In any case
->>
->> Acked-by: Thomas Zimemrmann <tzimmermann@suse.de>
->=20
-> Thanks for your patience pointing out all my spelling and grammar error=
-s.
-> I once had codespell set up to catch some of this, will need to do so
-> again.
->=20
-> Ironically I copied the above "Acked-by:" line to most of the commits
-> and just noticed it had a spelling error :-)
 
-Perfect! :D
+Am 28.11.20 um 23:41 schrieb Sam Ravnborg:
+> Fix several W=3D1 warnings.
+> This removes unused code and avoids an assignment by moving
+> the use inside the conditional block.
+>=20
+> The register read FLD_GET(r, 15, 8) could be dropped as it was done a
+> few lines before too.
+>=20
+> v2:
+>    - Updated subject (Lee)
+>=20
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Aditya Pakki <pakki001@umn.edu>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: Lee Jones <lee.jones@linaro.org>
 
+Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+
+> ---
+>   drivers/video/fbdev/omap2/omapfb/dss/dsi.c | 12 +++---------
+>   1 file changed, 3 insertions(+), 9 deletions(-)
 >=20
-> I have applied everything that you acked and will push when
-> I have fixed the above and verified I did not break anything.
-> Will post a v3 with the remaining patches later.
->=20
-> 	Sam
+> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video=
+/fbdev/omap2/omapfb/dss/dsi.c
+> index 6f9c25fec994..72d45a02c3ac 100644
+> --- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+> +++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+> @@ -1178,13 +1178,12 @@ static int dsi_regulator_init(struct platform_d=
+evice *dsidev)
+>  =20
+>   static void _dsi_print_reset_status(struct platform_device *dsidev)
+>   {
+> -	u32 l;
+>   	int b0, b1, b2;
+>  =20
+>   	/* A dummy read using the SCP interface to any DSIPHY register is
+>   	 * required after DSIPHY reset to complete the reset of the DSI comp=
+lex
+>   	 * I/O. */
+> -	l =3D dsi_read_reg(dsidev, DSI_DSIPHY_CFG5);
+> +	dsi_read_reg(dsidev, DSI_DSIPHY_CFG5);
+>  =20
+>   	if (dss_has_feature(FEAT_DSI_REVERSE_TXCLKESC)) {
+>   		b0 =3D 28;
+> @@ -3627,7 +3626,7 @@ static int dsi_proto_config(struct platform_devic=
+e *dsidev)
+>   static void dsi_proto_timings(struct platform_device *dsidev)
+>   {
+>   	struct dsi_data *dsi =3D dsi_get_dsidrv_data(dsidev);
+> -	unsigned tlpx, tclk_zero, tclk_prepare, tclk_trail;
+> +	unsigned tlpx, tclk_zero, tclk_prepare;
+>   	unsigned tclk_pre, tclk_post;
+>   	unsigned ths_prepare, ths_prepare_ths_zero, ths_zero;
+>   	unsigned ths_trail, ths_exit;
+> @@ -3646,7 +3645,6 @@ static void dsi_proto_timings(struct platform_dev=
+ice *dsidev)
+>  =20
+>   	r =3D dsi_read_reg(dsidev, DSI_DSIPHY_CFG1);
+>   	tlpx =3D FLD_GET(r, 20, 16) * 2;
+> -	tclk_trail =3D FLD_GET(r, 15, 8);
+>   	tclk_zero =3D FLD_GET(r, 7, 0);
+>  =20
+>   	r =3D dsi_read_reg(dsidev, DSI_DSIPHY_CFG2);
+> @@ -4040,7 +4038,6 @@ static int dsi_update(struct omap_dss_device *dss=
+dev, int channel,
+>   {
+>   	struct platform_device *dsidev =3D dsi_get_dsidev_from_dssdev(dssdev=
+);
+>   	struct dsi_data *dsi =3D dsi_get_dsidrv_data(dsidev);
+> -	u16 dw, dh;
+>  =20
+>   	dsi_perf_mark_setup(dsidev);
+>  =20
+> @@ -4049,11 +4046,8 @@ static int dsi_update(struct omap_dss_device *ds=
+sdev, int channel,
+>   	dsi->framedone_callback =3D callback;
+>   	dsi->framedone_data =3D data;
+>  =20
+> -	dw =3D dsi->timings.x_res;
+> -	dh =3D dsi->timings.y_res;
+> -
+>   #ifdef DSI_PERF_MEASURE
+> -	dsi->update_bytes =3D dw * dh *
+> +	dsi->update_bytes =3D dsi->timings.x_res * dsi->timings.y_res *
+>   		dsi_get_pixel_size(dsi->pix_fmt) / 8;
+>   #endif
+>   	dsi_update_screen_dispc(dsidev);
 >=20
 
 --=20
@@ -165,27 +217,27 @@ Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
 Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
 
 
---yNgj5c9ZvHxjjDrhmXedYdfhnGovl1hBl--
+--L0aI5e3MNH4UvuZs6UsyBSWhoQVbBdFxd--
 
---NRbffqMogAfFUElMvRsOiHmPs9btjWeEX
+--gbtftWKlf8hPTKh2UACUiG6ElqufM5tpM
 Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="OpenPGP_signature"
 
 -----BEGIN PGP SIGNATURE-----
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/GE7EFAwAAAAAACgkQlh/E3EQov+CR
-1RAA0V5kqLWnj1ANMrgxvARswJ5AYSx9jeJOPzR3UMQhaA+6wJ1/SYfStHdN4JstreNKFZpf0zUe
-WRtjdJYebkaMZMQzEs0qyXDmZGiHCClvCLDcrRmfuEweAWarTGNRu6gpFK9n0HDq3KK4qIgvqHdl
-Tcl60sTCiHnxODp253q/DN7ZWndOiQSJ9VL5zu+YvA2DFXVZ0ad2p0ZQpdu9FHQU6yaszhkSRkMS
-Jx16Gq82JpRtmadmzA9Gq2j/q2CY/sxeAeFNLgPmJhTX/xxxFmZlfQs3DQ/N8/G1EsZSrxKXgNRd
-g2O3EmhoLLwU9VlJ9WJR12yaNZR9/gGaKPZnxHxkAylJUxvSkqmmfk+/fB5p3F31IlBN/d4iMLhV
-vl+HjqHFs2svim53diCUoqJ9cZdi42o0t4Tt1AiTC7+9H8AHhhWFo8k2Q369XF6+dCq9AI182+bk
-LqtwOXckyyIddJeS106sgoJ6S9KFRZ1qtMRVxLEAj/Jh6mCKUcJAy68OMWeWY8zv0WUQYK6ejstq
-10ZOSwh19SUalA+R12fuNZVpUP7hsVgjrdtBOAl8JKZ80QdZyFDSx66X911mPGHvpYCBiGVE0B0Q
-5QOjhj4aNWWPuP5zW6GA9l9xLr0aLZnXAxceemK0c4EzQ36SZ3Al0T+H5qvFRe6z3VIcj5KMxWJ1
-pfs=
-=oZNT
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/GFP4FAwAAAAAACgkQlh/E3EQov+D5
+oRAAnxSZWMgSnK1vLVAsX2otsN26JRpcBwx3J9hLRSndz6Zrhu0VLniFsxYmjxfDyeAhPJBS1V+5
+JX3M9LrB1AeYf8hxdoADyNHYTkS8OBWjCg5AmV8+f1F0uwvJ1sMMHK/cjHeMOBKDpW1Qj7X/l2Iw
+zkO9OhwTIQCEFWYNwp4z/XKUp5vg8E63YC7J1G02G5IIWOG2Z+2AKZYlciWPomlqQBICWO/evqkh
+snCilsUxqu4fizFoZH1bZqXaRnRKFxDyYS2NtEys6Q1DavPDvIZg9vEpYUCLE6otuRwjJfohuNp0
+HiSjPBOrdNYEAloFWbuA+2TmzJ293Stizcl5yK6zlMLMY+hnjkXO9f+xAs4K7yuDqg1QeHAgAyta
+5jEVBwulBKOrQBcA7gWia8BJDefb4c1M4Dqrnzipn7IIpMOg2QDjcSGjevHoHbxIlR9bx0nF2zPC
+nT3Fk0IQ7xd82SNedpi07zOFkFPfdLY4sI9MwQ/nQpNonyerVyrcsKTYymeWQbjcRhp+sH5Xp1PR
+YVeUxUfXPXPV1VCUHV5QxMpd8lovbSKw8ayoV0deDIIdiNhvxD5CejnXpy5qVW0W/5gqblohw6eN
+xYpOZSlb+kyRkwiEwfLiRJ+B7dqXdOhdUs4KsfQeJ4Ugg/sLEnTqEJP9eqerOCyq2uFeBQXc0mvj
+FMQ=
+=XJ0p
 -----END PGP SIGNATURE-----
 
---NRbffqMogAfFUElMvRsOiHmPs9btjWeEX--
+--gbtftWKlf8hPTKh2UACUiG6ElqufM5tpM--

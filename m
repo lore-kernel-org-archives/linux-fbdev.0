@@ -2,84 +2,188 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7534C64E7A
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 20:11:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AAE8C64E7C
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Dec 2020 07:56:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5CB1E2151B
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Dec 2020 20:11:09 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="CEJ+cbUW"
+	by mail.kernel.org (Postfix) with ESMTP id 401EB2065C
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Dec 2020 07:56:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729009AbgLAUKx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Dec 2020 15:10:53 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:41471 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727450AbgLAUKw (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Dec 2020 15:10:52 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1606853365;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=z9xBuIwvHlgEYVcinhRR/M3/VaorTrBcdWGpGOVdNeU=;
-        b=CEJ+cbUWyPqUH8iWkyuCTy2Zpn/ioLdZS4htguBzLtI/tXMkCNd4oADUo0W7xW8W7KDWWI
-        3FIn24pSs5V9XuIbImyEQa5s71H59Z1hyw2WBjKiOiQJnqdxA4Y4oWl4AeThTLGcE0WJaL
-        G3r5nOJJ4bWqzEFcofH2wgXsMlvHkVU=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-486-iuFG615qMPK1Fc5-5Lrjvw-1; Tue, 01 Dec 2020 15:09:22 -0500
-X-MC-Unique: iuFG615qMPK1Fc5-5Lrjvw-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com [10.5.11.11])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 4E08A158220;
-        Tue,  1 Dec 2020 20:09:20 +0000 (UTC)
-Received: from file01.intranet.prod.int.rdu2.redhat.com (file01.intranet.prod.int.rdu2.redhat.com [10.11.5.7])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id C3077189A4;
-        Tue,  1 Dec 2020 20:09:19 +0000 (UTC)
-Received: from file01.intranet.prod.int.rdu2.redhat.com (localhost [127.0.0.1])
-        by file01.intranet.prod.int.rdu2.redhat.com (8.14.4/8.14.4) with ESMTP id 0B1K9JVF025796;
-        Tue, 1 Dec 2020 15:09:19 -0500
-Received: from localhost (mpatocka@localhost)
-        by file01.intranet.prod.int.rdu2.redhat.com (8.14.4/8.14.4/Submit) with ESMTP id 0B1K9I7G025792;
-        Tue, 1 Dec 2020 15:09:18 -0500
-X-Authentication-Warning: file01.intranet.prod.int.rdu2.redhat.com: mpatocka owned process doing -bs
-Date:   Tue, 1 Dec 2020 15:09:18 -0500 (EST)
-From:   Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@file01.intranet.prod.int.rdu2.redhat.com
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-cc:     daniel.vetter@ffwll.ch, sam@ravnborg.org, geert+renesas@glider.be,
-        bernie@plugable.com, corbet@lwn.net,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-doc@vger.kernel.org
+        id S1727041AbgLBH4f (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Dec 2020 02:56:35 -0500
+Received: from mx2.suse.de ([195.135.220.15]:50358 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726148AbgLBH4f (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 2 Dec 2020 02:56:35 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id B3654AC2D;
+        Wed,  2 Dec 2020 07:55:53 +0000 (UTC)
+To:     Mikulas Patocka <mpatocka@redhat.com>
+Cc:     Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
+        geert+renesas@glider.be, corbet@lwn.net, daniel.vetter@ffwll.ch,
+        linux-doc@vger.kernel.org, bernie@plugable.com,
+        dri-devel@lists.freedesktop.org, sam@ravnborg.org
+References: <20201130125200.10416-1-tzimmermann@suse.de>
+ <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
+ <20201130154147.GT401619@phenom.ffwll.local>
+ <alpine.LRH.2.02.2011301241470.21432@file01.intranet.prod.int.rdu2.redhat.com>
+ <ac639546-d97e-b197-8998-180b0535fae2@suse.de>
+ <alpine.LRH.2.02.2012010615080.1371@file01.intranet.prod.int.rdu2.redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
 Subject: Re: [PATCH] fbdev: Remove udlfb driver
-In-Reply-To: <alpine.LRH.2.02.2012010500310.27495@file01.intranet.prod.int.rdu2.redhat.com>
-Message-ID: <alpine.LRH.2.02.2012011505060.25490@file01.intranet.prod.int.rdu2.redhat.com>
-References: <20201130125200.10416-1-tzimmermann@suse.de> <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com> <336a41ef-1e49-6799-1bfd-06fb42419fb8@suse.de>
- <alpine.LRH.2.02.2012010500310.27495@file01.intranet.prod.int.rdu2.redhat.com>
-User-Agent: Alpine 2.02 (LRH 1266 2009-07-14)
+Message-ID: <9e7cad29-a9c0-2e02-04a9-3149d7e15838@suse.de>
+Date:   Wed, 2 Dec 2020 08:55:52 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
+In-Reply-To: <alpine.LRH.2.02.2012010615080.1371@file01.intranet.prod.int.rdu2.redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="DyF5ErOOQxZapjJT3Ag8XB7gJoy8VMU4t"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--DyF5ErOOQxZapjJT3Ag8XB7gJoy8VMU4t
+Content-Type: multipart/mixed; boundary="PCdFIN2iawhSKjj8GO2dskStC23JJYou5";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
+ geert+renesas@glider.be, corbet@lwn.net, daniel.vetter@ffwll.ch,
+ linux-doc@vger.kernel.org, bernie@plugable.com,
+ dri-devel@lists.freedesktop.org, sam@ravnborg.org
+Message-ID: <9e7cad29-a9c0-2e02-04a9-3149d7e15838@suse.de>
+Subject: Re: [PATCH] fbdev: Remove udlfb driver
+References: <20201130125200.10416-1-tzimmermann@suse.de>
+ <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
+ <20201130154147.GT401619@phenom.ffwll.local>
+ <alpine.LRH.2.02.2011301241470.21432@file01.intranet.prod.int.rdu2.redhat.com>
+ <ac639546-d97e-b197-8998-180b0535fae2@suse.de>
+ <alpine.LRH.2.02.2012010615080.1371@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.2012010615080.1371@file01.intranet.prod.int.rdu2.redhat.com>
+
+--PCdFIN2iawhSKjj8GO2dskStC23JJYou5
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
+
+Hi
+
+Am 01.12.20 um 12:20 schrieb Mikulas Patocka:
+>=20
+>=20
+> On Tue, 1 Dec 2020, Thomas Zimmermann wrote:
+>=20
+>> Hi
+>>
+>> Am 30.11.20 um 19:39 schrieb Mikulas Patocka:
+>>>
+>>>
+>>> On Mon, 30 Nov 2020, Daniel Vetter wrote:
+>>>
+>>>> On Mon, Nov 30, 2020 at 09:31:15AM -0500, Mikulas Patocka wrote:
+>>>>>
+>>>>> The framebuffer driver supports programs running full-screen direct=
+ly on
+>>>>> the framebuffer console, such as web browser "links -g", image view=
+er
+>>>>> "fbi", postscript+pdf viewer "fbgs", ZX Spectrum emulator "fuse-sdl=
+",
+>>>>> movie player "mplayer -vo fbdev". The DRM driver doesn't run them.
+>>>>
+>>>> Hm this should in general work on drm drivers. Without that it's cle=
+ar the
+>>>> switch-over isn't really ready yet.
+>>>
+>>> I fixed it with this patch two years ago:
+>>> https://lists.freedesktop.org/archives/dri-devel/2018-June/179023.htm=
+l
+>>>
+>>> But the patch never went through and the fb_defio feature was removed=
+ in
+>>> the kernel 5.6 (commit d0c4fc5a4814e431c15272935c8dc973c18073aa).
+>>>
+>>>
+>>> Without fb_defio, the only other possibility how to update the screen=
+ is
+>>> the ioctl DRM_IOCTL_MODE_DIRTYFB. But this ioctl requires master mode=
+, so
+>>> user programs like "links -g" can't issue it.
+>>
+>> That's confusing. DIRTYFB is only for DRM.
+>=20
+> Yes, you're right.
+>=20
+>> And why can links not run as DRM master mode? If it renders to the ter=
+minal,
+>> it should act like a composer. In that case it almost certainly wants =
+master
+>> status.
+>>
+>> Best regards
+>> Thomas
+>=20
+> How can a userspace program acquire master mode without being suid?
+
+For my understanding, there's no easy solution to that. :/
+
+I guess we (DRM devs) have to treat fbdev as the solution for use cases=20
+such as ours.
+
+For the unplug issue, I'll try to reproduce and fix it.
+
+For the performance problems, we might be able to squeeze a few more=20
+cycles out of it.
+
+Best regards
+Thomas
+
+>=20
+> Is there some "Hello World!" program that shows how to use DRM? I'm not=
+ an
+> expert in DRM, but if there were some tutorial+documentation, I could
+> consider porting "links" to it.
+>=20
+> Mikulas
+>=20
+
+--=20
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
+(HRB 36809, AG N=C3=BCrnberg)
+Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
 
 
-On Tue, 1 Dec 2020, Mikulas Patocka wrote:
+--PCdFIN2iawhSKjj8GO2dskStC23JJYou5--
 
-> When I try to run Xorg (from Debian 9) with the kernel 5.10-rc6, it 
-> doesn't work at all, I get this crash:
+--DyF5ErOOQxZapjJT3Ag8XB7gJoy8VMU4t
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-I tried to rux Xorg on another machine (with up-to-date Debian ports) and 
-it didn't crash on unplug.
+-----BEGIN PGP SIGNATURE-----
 
-Mikulas
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/HSIgFAwAAAAAACgkQlh/E3EQov+De
+rRAAuiguOHT9X8o4OXxwH/edemSGzFmzaNQmrA/4rW8QIuym1UdDLWsCuHA1lwJzRCPmHMeYnACK
+77jE/lKogeZtRMgfWh4UlN5o09oVZjRzHbX42vFxwgJBOu5cmB8bkKj20eC0JFZZ62evLT6SLla/
+eRWqv0OFjZXM6Q/Qv6a5DDoEa56slbdE56sadbex7lGWNQ3VdYy+fx19UhsDtbkaxY4XkWlkGFvH
+N5RtYgIPPOTGaCeVC5G3sTs9fymf1P4K7C9v3tNyFgQ+mBDGen80XAkpxzglH1TVc1ewidhZ/zmJ
+M4HppnegjC6xYIvpV3ATk1Ec9HeOn/3lsuYri42Xe2sPVIJPtu53z/a2ph3kp+zajdnYCGqS5FFX
+N/UE84LrSvrtBskNBO97RDKNaQ4v4JVVeRqZQ3UqD6saiZZenO1KMJYZNeJZewLBbZIcJK3V4I4K
+bMkcyKBLvZg7HNgXDLikLfhyB5FHyng2GXWC/NlzSDGqqQRagi80xX1V9YM0LRd9/SgPuBBYUGoa
+dQe1adAUP12eL3u69JB2b6sKEB3/dUPAsyQWAEsv0xplkBuTp5/AJh8iC61qmta6JQVJWqadBtR/
+ja5aymitqclPi5cm5cztVi+FRZyj5xr2TmtdMzOnlOupIO3ICCinOy7EB406QvmMXMdDHez9b44g
+vcE=
+=46Cv
+-----END PGP SIGNATURE-----
 
+--DyF5ErOOQxZapjJT3Ag8XB7gJoy8VMU4t--

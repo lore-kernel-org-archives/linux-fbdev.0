@@ -2,200 +2,164 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25ABBC71155
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Dec 2020 08:02:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E966C64E8A
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Dec 2020 08:30:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D1FAC20C56
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Dec 2020 08:02:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BC27522203
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Dec 2020 08:30:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728879AbgLBICl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Dec 2020 03:02:41 -0500
-Received: from mx2.suse.de ([195.135.220.15]:53128 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726493AbgLBICl (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 2 Dec 2020 03:02:41 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 53EA6ABD2;
-        Wed,  2 Dec 2020 08:01:59 +0000 (UTC)
-Subject: Re: [PATCH] fbdev: Remove udlfb driver
-From:   Thomas Zimmermann <tzimmermann@suse.de>
+        id S1729015AbgLBIaG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Dec 2020 03:30:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43458 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728972AbgLBIaG (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Dec 2020 03:30:06 -0500
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7855C0613D4;
+        Wed,  2 Dec 2020 00:29:25 -0800 (PST)
+Received: by mail-lf1-x144.google.com with SMTP id j205so2872241lfj.6;
+        Wed, 02 Dec 2020 00:29:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :mime-version;
+        bh=biK7JJVrreau9v60BgcXO3v9ensQ2L5LMNNBA6JmLGw=;
+        b=vJsHOZE1VGNGGjXjAMFMN2aYZJwJR+ZOuokoECcXK5H/ZFVBbjSZGdLT57a+9H/CpW
+         IWrmh8mJ9xAHDaTGBDjDoO2lJs0ihc+dvgLh07ra1kVbsDNDVv6hLRg3Hq6yBJkIEGFH
+         Pd4bRalZQ/mJ91nkKmhULTLLPzWZvgVH4xByoIo82lBuS6WH9btpULOhvLgMHqOM/RWA
+         MFo1UyjRMWSEDA+htq4ftjm5Zq8cflN9VQEjAmu0ASQA15pOuK4Tt4gFVrlLLroOtmpt
+         wwyzp0wsSZD7WQi2PmnH2ZrJvjpom9090eexqyKynWWcanuC/lBp/cPi2bf/mqzA5Rn2
+         sMkQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:mime-version;
+        bh=biK7JJVrreau9v60BgcXO3v9ensQ2L5LMNNBA6JmLGw=;
+        b=MH37Fsm0PBPExsdxurvB6aXNzkP3Jn540d1HJn5vrU/vhoYyMuM+7PoMrbf0yNk1Md
+         QDVXEcXrCTKm0dKZ8jzjRZUC+N7rvdvmPVV2Mmt2x9uicL0iE49qnaJZ29QY96D7SFKD
+         dYoY0WV2UUvVWsvkAE3KHWsBIeDq4ven49eE/jjlm3Wv5IydWfsXdaSQbEbEOqqZs49u
+         Txj2V+9FwYu/AveRfdxq+AwODCiPNmAFAT0RYgg69yisI6t3TM8hSowdQdeWbZdwxW33
+         bXw13gWiwQROUMpnIdpFAqdIJBrIl3Aie0KcK28h1cADUvLGADL8PA/6m5c1FZ8BM3g6
+         Pb2g==
+X-Gm-Message-State: AOAM532oMpLRiYqvj0WVxa1V9PM6zVK/El9lYk3kjRPlZBHyVlyUb97G
+        Fsj8fZwYIIk2rdWW1+yezvw=
+X-Google-Smtp-Source: ABdhPJz4+SJ0A3xVoyju4k3W66QVlnXZ9Z0cwsNeOmZftsdzyArYcaYS75SUI9RkA6V2MLnCefXsvg==
+X-Received: by 2002:a19:c191:: with SMTP id r139mr783336lff.258.1606897764254;
+        Wed, 02 Dec 2020 00:29:24 -0800 (PST)
+Received: from eldfell ([194.136.85.206])
+        by smtp.gmail.com with ESMTPSA id y14sm269379ljy.29.2020.12.02.00.29.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 02 Dec 2020 00:29:23 -0800 (PST)
+Date:   Wed, 2 Dec 2020 10:29:13 +0200
+From:   Pekka Paalanen <ppaalanen@gmail.com>
 To:     Mikulas Patocka <mpatocka@redhat.com>
-Cc:     Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
-        geert+renesas@glider.be, corbet@lwn.net, daniel.vetter@ffwll.ch,
-        linux-doc@vger.kernel.org, bernie@plugable.com,
-        dri-devel@lists.freedesktop.org, sam@ravnborg.org
-References: <20201130125200.10416-1-tzimmermann@suse.de>
- <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
- <20201130154147.GT401619@phenom.ffwll.local>
- <alpine.LRH.2.02.2011301241470.21432@file01.intranet.prod.int.rdu2.redhat.com>
- <ac639546-d97e-b197-8998-180b0535fae2@suse.de>
- <alpine.LRH.2.02.2012010615080.1371@file01.intranet.prod.int.rdu2.redhat.com>
- <9e7cad29-a9c0-2e02-04a9-3149d7e15838@suse.de>
-Message-ID: <d3dbe8bf-d5a3-dc6e-b98a-778d942ee7fa@suse.de>
-Date:   Wed, 2 Dec 2020 09:01:58 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.5.0
-MIME-Version: 1.0
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        linux-fbdev@vger.kernel.org, geert+renesas@glider.be,
+        linux-doc@vger.kernel.org, daniel.vetter@ffwll.ch, corbet@lwn.net,
+        bernie@plugable.com, dri-devel@lists.freedesktop.org,
+        sam@ravnborg.org
+Subject: Re: [PATCH] fbdev: Remove udlfb driver
+Message-ID: <20201202102913.56baa457@eldfell>
 In-Reply-To: <9e7cad29-a9c0-2e02-04a9-3149d7e15838@suse.de>
+References: <20201130125200.10416-1-tzimmermann@suse.de>
+        <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
+        <20201130154147.GT401619@phenom.ffwll.local>
+        <alpine.LRH.2.02.2011301241470.21432@file01.intranet.prod.int.rdu2.redhat.com>
+        <ac639546-d97e-b197-8998-180b0535fae2@suse.de>
+        <alpine.LRH.2.02.2012010615080.1371@file01.intranet.prod.int.rdu2.redhat.com>
+        <9e7cad29-a9c0-2e02-04a9-3149d7e15838@suse.de>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="4QEmHYAmn97ipMvLKAVzidpTp0CzotVig"
+ boundary="Sig_/Ub9bu0HMJ.BX_LoHkrBsRqE"; protocol="application/pgp-signature"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---4QEmHYAmn97ipMvLKAVzidpTp0CzotVig
-Content-Type: multipart/mixed; boundary="g2nXcqKmfiVdxBUkyf25Q6uypK25c8Smd";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
- geert+renesas@glider.be, corbet@lwn.net, daniel.vetter@ffwll.ch,
- linux-doc@vger.kernel.org, bernie@plugable.com,
- dri-devel@lists.freedesktop.org, sam@ravnborg.org
-Message-ID: <d3dbe8bf-d5a3-dc6e-b98a-778d942ee7fa@suse.de>
-Subject: Re: [PATCH] fbdev: Remove udlfb driver
-References: <20201130125200.10416-1-tzimmermann@suse.de>
- <alpine.LRH.2.02.2011300843270.29199@file01.intranet.prod.int.rdu2.redhat.com>
- <20201130154147.GT401619@phenom.ffwll.local>
- <alpine.LRH.2.02.2011301241470.21432@file01.intranet.prod.int.rdu2.redhat.com>
- <ac639546-d97e-b197-8998-180b0535fae2@suse.de>
- <alpine.LRH.2.02.2012010615080.1371@file01.intranet.prod.int.rdu2.redhat.com>
- <9e7cad29-a9c0-2e02-04a9-3149d7e15838@suse.de>
-In-Reply-To: <9e7cad29-a9c0-2e02-04a9-3149d7e15838@suse.de>
-
---g2nXcqKmfiVdxBUkyf25Q6uypK25c8Smd
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
+--Sig_/Ub9bu0HMJ.BX_LoHkrBsRqE
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
+On Wed, 2 Dec 2020 08:55:52 +0100
+Thomas Zimmermann <tzimmermann@suse.de> wrote:
 
-
-Am 02.12.20 um 08:55 schrieb Thomas Zimmermann:
 > Hi
 >=20
 > Am 01.12.20 um 12:20 schrieb Mikulas Patocka:
->>
->>
->> On Tue, 1 Dec 2020, Thomas Zimmermann wrote:
->>
->>> Hi
->>>
->>> Am 30.11.20 um 19:39 schrieb Mikulas Patocka:
->>>>
->>>>
->>>> On Mon, 30 Nov 2020, Daniel Vetter wrote:
->>>>
->>>>> On Mon, Nov 30, 2020 at 09:31:15AM -0500, Mikulas Patocka wrote:
->>>>>>
->>>>>> The framebuffer driver supports programs running full-screen=20
->>>>>> directly on
->>>>>> the framebuffer console, such as web browser "links -g", image vie=
-wer
->>>>>> "fbi", postscript+pdf viewer "fbgs", ZX Spectrum emulator "fuse-sd=
-l",
->>>>>> movie player "mplayer -vo fbdev". The DRM driver doesn't run them.=
+> >=20
+> >=20
+> > On Tue, 1 Dec 2020, Thomas Zimmermann wrote:
+> >  =20
 
->>>>>
->>>>> Hm this should in general work on drm drivers. Without that it's=20
->>>>> clear the
->>>>> switch-over isn't really ready yet.
->>>>
->>>> I fixed it with this patch two years ago:
->>>> https://lists.freedesktop.org/archives/dri-devel/2018-June/179023.ht=
-ml
->>>>
->>>> But the patch never went through and the fb_defio feature was=20
->>>> removed in
->>>> the kernel 5.6 (commit d0c4fc5a4814e431c15272935c8dc973c18073aa).
->>>>
->>>>
->>>> Without fb_defio, the only other possibility how to update the=20
->>>> screen is
->>>> the ioctl DRM_IOCTL_MODE_DIRTYFB. But this ioctl requires master=20
->>>> mode, so
->>>> user programs like "links -g" can't issue it.
->>>
->>> That's confusing. DIRTYFB is only for DRM.
->>
->> Yes, you're right.
->>
->>> And why can links not run as DRM master mode? If it renders to the=20
->>> terminal,
->>> it should act like a composer. In that case it almost certainly wants=
-=20
->>> master
->>> status.
->>>
->>> Best regards
->>> Thomas
->>
->> How can a userspace program acquire master mode without being suid?
+...
+
+> >> And why can links not run as DRM master mode? If it renders to the ter=
+minal,
+> >> it should act like a composer. In that case it almost certainly wants =
+master
+> >> status.
+> >>
+> >> Best regards
+> >> Thomas =20
+> >=20
+> > How can a userspace program acquire master mode without being suid? =20
 >=20
 > For my understanding, there's no easy solution to that. :/
->=20
-> I guess we (DRM devs) have to treat fbdev as the solution for use cases=
-=20
-> such as ours.
 
-s/ours/yours
+Hi,
 
->=20
-> For the unplug issue, I'll try to reproduce and fix it.
->=20
-> For the performance problems, we might be able to squeeze a few more=20
-> cycles out of it.
->=20
-> Best regards
-> Thomas
->=20
->>
->> Is there some "Hello World!" program that shows how to use DRM? I'm=20
->> not an
->> expert in DRM, but if there were some tutorial+documentation, I could
->> consider porting "links" to it.
->>
->> Mikulas
->>
->=20
+there are several ways, though whether they are "easy" depends on your
+mindset.
 
---=20
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
-(HRB 36809, AG N=C3=BCrnberg)
-Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
+The best thing is to connect to logind D-Bus API and ask that for
+session control, set up your session, and logind will open all input
+and DRM devices for you, and logind will even handle most of the
+complicated setup, DRM master and VT-switching for you.
+
+Or, if no-one else has the DRM device open and you open it, you
+automatically become DRM master. AFAIU, after recent kernel changes, it
+is even possible to use dropMaster and setMaster after this without
+being root, as long as you once in the file description lifetime had
+DRM master.
+
+Since this is about switching from fbdev to KMS API, you already have
+all the tricky, complicated, arcane code to deal with tty setup and
+VT-switching.
+
+However, doing all that patching to all apps you want to use is such an
+effort, that I'd ask if it would not be easier to just run a
+light-weight Wayland compositor and run your apps in Wayland mode. Of
+course, that requires choosing apps that run on Wayland to begin with,
+so maybe it's not for you.
 
 
---g2nXcqKmfiVdxBUkyf25Q6uypK25c8Smd--
+Thanks,
+pq
 
---4QEmHYAmn97ipMvLKAVzidpTp0CzotVig
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+--Sig_/Ub9bu0HMJ.BX_LoHkrBsRqE
+Content-Type: application/pgp-signature
 Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
 
 -----BEGIN PGP SIGNATURE-----
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAl/HSfYFAwAAAAAACgkQlh/E3EQov+A4
-pA/9GS90vDzxsEuokb7l3rmAoNSPBWVxht2CUEgFRopOrQZZOh2rB6tgE32ODTnwpXTsvw+b4ABb
-X3Nt0YCUAecSvDo0Vb2Tvf+dgidnT2HPtc8G6Lq7Y+QgYJTYmBq/xAxjbqjHoBLqMf2VBxCETyDl
-ARepztWJkNE1ZIa2nkwIQdJZPid4GU99BXVT/eRUZyY5L9gtMPdYNe0mmyHm1JSgjgTf58gN6Pae
-RCFK2lLY0rPmQH0vXj7Ery1kJFnB+/jBjSvVdJXhoqDuMJuaLf4e8otAc4KQqiLINgyTxAKFOk75
-VMa2L3uRFG3wU00b6OPeujEKa5FSgOeJk4aSiWvCFhX0eLLk9EJIhnziyJewP6ZgWonTbXwPRM4S
-a/IvZqnZmnf+a46nUel5UNca1xUW9EvSrkDUSVd5nUZYXPEnTk+fjpKvmE28YIgOJfRxb5jFVtWA
-revA/u6Ar5SHPpmazbcdzKYIyji8cAIoE/ASvKE5JZVgvyPzOfET0Fw/RmqWQc4OKBXLBtwbkULh
-N+siqkDxADGwiVvIyBB3WDyhFfM/jy3fh70jHAbo3FqHw8Qt3dluUu7P0mw1xrwE9sPTTSV9uoZE
-7TrPsyaeQL57GHO1An+TkFb79UwgDWqex/1xhqV+GDLmQFFTPlHRU+gQ9iA9rU/5xa6PtyVZfGId
-e4E=
-=mSnb
+iQIzBAEBCAAdFiEEJQjwWQChkWOYOIONI1/ltBGqqqcFAl/HUFkACgkQI1/ltBGq
+qqddsw/+KxYidO3CAHQE+G+VtuSREAtDTVDUxAGMOzOlIue7rYw8Ldf+YJnbQ/VT
+vH7ssslBy3mfYEjAPlYPQW2MbFAFjiFyIcJ/qk42QmOagrdBsFJBIK19tT7nJobb
+4E7MuLo2EYZNAyAaVg+qtRUFuZ/Cy5HedAVb9f8Nvka7exEXOW+UMaUPvTxz2ai5
+SQBvZXU6rgmudc1Yo1BRvBPBg1dRzixgS43jAMV3TnrJ4y9lASlpfntYjugsELln
+h0sA6RYgW7H6WsdiAwaRnMgq3UU4L1dM0QoOGViI9cM3tXgveQ++EYebRZ0dDd4B
+ByTp1fl+ULY0STvWRx02Beddz1b4FvpoU5p2WABCD6yDKzEzIlNwnNejFeDtMBME
+9FUBZoFPXSUuj1J/ol4dOW6zK4ua/8g2Fxmltvg4+MB0+LCZLR0N95gB9iyAtX8U
+bAzbrY2vHxxLVjrYXHY+pieTrhAku76CPlBtpZuKdlbJT0ZdEiz8FuHupSI8qm2C
+WFFzEXSIweA/6KX4W7j4WSP6cr8u/Uxy3Q6PExUkV7hBDy3mZqjDwiGnnB0uLKrn
+Z0GKiUt9ATq1B2XiSq40qs0xxroJgsRaeApI6AttFLQFxa4AumrWRWiAsqIxpbkB
+cekof+u1hUPt6UlKpuRE4fAW1ILO8I3ekb7oqcKiR64cCHGm96M=
+=L5KJ
 -----END PGP SIGNATURE-----
 
---4QEmHYAmn97ipMvLKAVzidpTp0CzotVig--
+--Sig_/Ub9bu0HMJ.BX_LoHkrBsRqE--

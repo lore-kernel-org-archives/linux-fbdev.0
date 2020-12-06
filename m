@@ -7,54 +7,54 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB6A6C2BB3F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9320FC1B0D8
 	for <linux-fbdev@archiver.kernel.org>; Sun,  6 Dec 2020 19:04:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8E71E2310B
+	by mail.kernel.org (Postfix) with ESMTP id 706462333D
 	for <linux-fbdev@archiver.kernel.org>; Sun,  6 Dec 2020 19:04:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727828AbgLFTEg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 6 Dec 2020 14:04:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58764 "EHLO
+        id S1727819AbgLFTEe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 6 Dec 2020 14:04:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58778 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727617AbgLFTEg (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 6 Dec 2020 14:04:36 -0500
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A57D5C061A56
-        for <linux-fbdev@vger.kernel.org>; Sun,  6 Dec 2020 11:03:17 -0800 (PST)
-Received: by mail-lf1-x144.google.com with SMTP id w13so2185765lfd.5
-        for <linux-fbdev@vger.kernel.org>; Sun, 06 Dec 2020 11:03:17 -0800 (PST)
+        with ESMTP id S1727617AbgLFTEd (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 6 Dec 2020 14:04:33 -0500
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C8B0BC08E85E
+        for <linux-fbdev@vger.kernel.org>; Sun,  6 Dec 2020 11:03:20 -0800 (PST)
+Received: by mail-lj1-x244.google.com with SMTP id i15so5315803ljg.9
+        for <linux-fbdev@vger.kernel.org>; Sun, 06 Dec 2020 11:03:20 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=/SfLL6p8Oi2QG40QnuZputxs/YKRkVGSLvwvUqAWetc=;
-        b=dzhegX2f5Ql3PjQBuil9z4sEYgr3337KW2qQckQ6pQGqbvHHs3CVckmYm5Un20ZhkN
-         wdkTRTeoGd4YUyQFFb9U0U8n93rtfAEylUq//N9tgc51Uj0heyF4pNIBSnYX3+NsBMg3
-         VlU4KJFbgS+nYglZ1sGrjauXI4h68vGNSOgCJRgtnTxfmkIhYAinfPZNDvHX3dZZVEpJ
-         D8Uhz593GGEn0bnW/ZX+fvM/7cLfUcJ5KPkfia0Y4F+7Jzk8Drd3lORKZBfzTHoV+FZS
-         vBppZ4WLbjFRLdfxltCmYT0j7Y1+AMNgraJP+91Ox1B9CubxR0yjYf9zDFUhIyR8iYzU
-         sulA==
+        bh=GScDic0SzMOywiRur8mCpGJMaQJv67n1BqEnfhPYONM=;
+        b=QMkRY6iR3O19IMJtlN+m8w86Axp8od1Z+Rd3idr23N4rt0HINNoZzNcNrb4mNMjjZu
+         LtfD2LRDhh3DEyGEelRH+81cqqoQz6u2EGfaFSAaEV4zQVEQ7bdTSmG3CvppgGL4RgWj
+         c7Oi5iOg63ZkdJPZC4t0TXvm2CwtDUzgfeudGj2JxAKG2JJV00RNILCmcFohVVoB5GRw
+         Lc5MCgm2iKKHIevinvY7+ABLUGJ+6Wgt5evU5xN9dWXBW3BVnKhDDYg5UYkpaodDe+J6
+         ppuuuQbWocz5KRVehMqi41+JufRzKHoQeL7FAeA3rqybqK6fKDkrVw+NwXOkDRqusUpM
+         lMjQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
          :in-reply-to:references:mime-version:content-transfer-encoding;
-        bh=/SfLL6p8Oi2QG40QnuZputxs/YKRkVGSLvwvUqAWetc=;
-        b=qbjuPUrG/AEwVxm82nAidkinMSql6dBFg7gPPdUA0Hrsryb1l9NTCQg/V0IlONyOZd
-         2RwU/oARZJKtJyZuxJTmbw8LIGnsNre7lm4zkx2SlS10iLj5PhCNRjMOF0rcG4+3GYLX
-         VZyTJVOm/MCIS+8M7y40Lt35cFqsXqKMc1ohVlXzj7FllItU5YZ9o3wZww34Rk0g52Hs
-         Gopgner+6k5UF6GxubmU38esgRr0JnRXsGJxMiPAlgzmRuwwLSiXUfsr0j9pEMz7RU4Y
-         /aYZN5usvH4piGHYAGogtjdNLErvGIX4bwqUmcATdMp1mq6DaSApsc+bXSTXaFnHSLDc
-         RsPQ==
-X-Gm-Message-State: AOAM532vydpoj4FOJv4evKT+X3/YTyVFGmsZe9tuUODqX4TitjpSuREU
-        +8aPzIsfW5Bi/teXDCzl1wfrLm7t5nTo6g==
-X-Google-Smtp-Source: ABdhPJwxko1cTuuCkRnEsGsx7KovNmq7vPKRcW8CEJXVJu5saQZRJ120DnppqSpeigQFs93cZ9Bi5g==
-X-Received: by 2002:ac2:46f3:: with SMTP id q19mr7197990lfo.76.1607281396030;
-        Sun, 06 Dec 2020 11:03:16 -0800 (PST)
+        bh=GScDic0SzMOywiRur8mCpGJMaQJv67n1BqEnfhPYONM=;
+        b=g1Vp2RkcP2qjd/dH0Pwfw3XTuRgVflFre8ws4Kk2gb2SFhpy4VnoAi6PpdAW7Ciqxu
+         J/3HNF0I/JAtV5ocfqwFfgdi82PlHIJ+SlfxR04bI6Hb2viems4oToWpKVkuUckxMn66
+         AnnP/bnzQvYloYRo1XWXCUVrEyCJ/p86C1eh+ZLVf1qwQ/PgO2aCpXRyvMRqHSQCvOXO
+         quY8mnV2CWF1RnOhnar0F5yQn2MlJQEDRUFf9sTq92qjdWZZO7Q3ph7AjyOeIDNH26Br
+         fPjnAKK4bZIKgUozCvID5xZn1tPQ2MF8O1SNXB5yo2W3ZYgi+M60NicbobzrOQmnwBUY
+         LG5Q==
+X-Gm-Message-State: AOAM530A+XdCFhSTbey44gz28VjnFDbCKDfg6qg2wZYly1SxkzMUR2zK
+        T3zcvow1XnS9dDRvgpOsDK9ZecBfNJrvZA==
+X-Google-Smtp-Source: ABdhPJxrMN/xtNgSlDAS8lye01CuFJ2naATPUBdhH/2vk8CwJU1fz9TzgghOkMOTq4Zk9C0n+Dp+gA==
+X-Received: by 2002:a2e:b0d4:: with SMTP id g20mr7193569ljl.281.1607281399117;
+        Sun, 06 Dec 2020 11:03:19 -0800 (PST)
 Received: from saturn.localdomain ([2a00:fd00:8060:1c00:c1c3:bbc6:3ac5:732d])
-        by smtp.gmail.com with ESMTPSA id v28sm2483865ljv.29.2020.12.06.11.03.14
+        by smtp.gmail.com with ESMTPSA id v28sm2483865ljv.29.2020.12.06.11.03.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 06 Dec 2020 11:03:15 -0800 (PST)
+        Sun, 06 Dec 2020 11:03:18 -0800 (PST)
 Sender: Sam Ravnborg <sam.ravnborg@gmail.com>
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -82,9 +82,9 @@ Cc:     Alexander Klimov <grandmaster@al2klimov.de>,
         Thomas Winischhofer <thomas@winischhofer.net>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Tony Prisk <linux@prisktech.co.nz>
-Subject: [PATCH v3 11/13] video: fbdev: efifb: Fix set but not used warning for screen_pitch
-Date:   Sun,  6 Dec 2020 20:02:45 +0100
-Message-Id: <20201206190247.1861316-12-sam@ravnborg.org>
+Subject: [PATCH v3 13/13] video: fbdev: sis: Drop useless call to SiS_GetResInfo()
+Date:   Sun,  6 Dec 2020 20:02:47 +0100
+Message-Id: <20201206190247.1861316-14-sam@ravnborg.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201206190247.1861316-1-sam@ravnborg.org>
 References: <20201206190247.1861316-1-sam@ravnborg.org>
@@ -94,37 +94,35 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-screen_pitch was asssigned a value which was never used.
-Drop it to fix the warning
+Coverity reported:
+
+    Useless call (USELESS_CALL) side_effect_free: Calling
+     SiS_GetResInfo(SiS_Pr, ModeNo, ModeIdIndex) is only useful for its
+    return value, which is ignored.
+
+And this is correct - so drop the call.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Peter Jones <pjones@redhat.com>
-Cc: linux-fbdev@vger.kernel.org
+Reported-by: Colin Ian King <colin.king@canonical.com>
+Addresses-Coverity: ("Useless call")
+Cc: Colin Ian King <colin.king@canonical.com>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>
 ---
- drivers/video/fbdev/efifb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/sis/init.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index e57c00824965..b80ba3d2a9b8 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -139,7 +139,7 @@ static bool efifb_bgrt_sanity_check(struct screen_info *si, u32 bmp_width)
- 
- static void efifb_show_boot_graphics(struct fb_info *info)
- {
--	u32 bmp_width, bmp_height, bmp_pitch, screen_pitch, dst_x, y, src_y;
-+	u32 bmp_width, bmp_height, bmp_pitch, dst_x, y, src_y;
- 	struct screen_info *si = &screen_info;
- 	struct bmp_file_header *file_header;
- 	struct bmp_dib_header *dib_header;
-@@ -193,7 +193,6 @@ static void efifb_show_boot_graphics(struct fb_info *info)
- 	bmp_width = dib_header->width;
- 	bmp_height = abs(dib_header->height);
- 	bmp_pitch = round_up(3 * bmp_width, 4);
--	screen_pitch = si->lfb_linelength;
- 
- 	if ((file_header->bitmap_offset + bmp_pitch * bmp_height) >
- 				bgrt_image_size)
+diff --git a/drivers/video/fbdev/sis/init.c b/drivers/video/fbdev/sis/init.c
+index b77ea1a8825a..b568c646a76c 100644
+--- a/drivers/video/fbdev/sis/init.c
++++ b/drivers/video/fbdev/sis/init.c
+@@ -2659,7 +2659,6 @@ SiS_SetCRT1ModeRegs(struct SiS_Private *SiS_Pr, unsigned short ModeNo,
+    if(SiS_Pr->UseCustomMode) {
+       infoflag = SiS_Pr->CInfoFlag;
+    } else {
+-      SiS_GetResInfo(SiS_Pr, ModeNo, ModeIdIndex);
+       if(ModeNo > 0x13) {
+ 	 infoflag = SiS_Pr->SiS_RefIndex[RRTI].Ext_InfoFlag;
+       }
 -- 
 2.27.0
 

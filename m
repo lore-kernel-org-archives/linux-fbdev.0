@@ -7,54 +7,54 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74739C1B0D9
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C9CEC197BF
 	for <linux-fbdev@archiver.kernel.org>; Sun,  6 Dec 2020 19:04:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 392402310B
+	by mail.kernel.org (Postfix) with ESMTP id 1F3BB2310E
 	for <linux-fbdev@archiver.kernel.org>; Sun,  6 Dec 2020 19:04:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727719AbgLFTEa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 6 Dec 2020 14:04:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58766 "EHLO
+        id S1727375AbgLFTE3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 6 Dec 2020 14:04:29 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58740 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727617AbgLFTEa (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 6 Dec 2020 14:04:30 -0500
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58129C08C5F2
-        for <linux-fbdev@vger.kernel.org>; Sun,  6 Dec 2020 11:03:19 -0800 (PST)
-Received: by mail-lj1-x244.google.com with SMTP id x23so5656132lji.7
-        for <linux-fbdev@vger.kernel.org>; Sun, 06 Dec 2020 11:03:19 -0800 (PST)
+        with ESMTP id S1727617AbgLFTE3 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 6 Dec 2020 14:04:29 -0500
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0F36BC061A53
+        for <linux-fbdev@vger.kernel.org>; Sun,  6 Dec 2020 11:03:13 -0800 (PST)
+Received: by mail-lj1-x242.google.com with SMTP id y16so12712701ljk.1
+        for <linux-fbdev@vger.kernel.org>; Sun, 06 Dec 2020 11:03:12 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=sXUs3Mthn2WNxe9bljzB5KJJxtMgTykEfGBU86F6xiE=;
-        b=Q4dR21nP1jZzsA/PsBN5qV0FqAKg4TkCjUyfsDCiyitQByJY5pO5fmgCAt3HViK+Vu
-         XRUL2l0cD9wsZRjDwcbB0ZkNdr2Ir8Z7fcIEcrCiLQ53YeGHkSqqOUbj4eNSOg27SQ2e
-         VuiJFCYExB03CZXF1PU6lkLv//+TmUU088Jb20M90SzVM9CX147uj+6nsdoHGclTz2ug
-         h7Enp9lKWI4SeKqcS7nXNJbi6m28/YpB2nLY/XwFy9XMEryms6GgsPuePANX6hSoCvmW
-         db092ppYA0YCdY9Z8mQQsgWKkITED7TNoaGGzceIxon6WPvVxvSHD/htfnVZo8eKukOP
-         QYaQ==
+        bh=9YJ8hNiC7fcBnhr6W4yRKfHMapnKQoLUJY6svzs3To0=;
+        b=LaLHUm1Z4gGqnGZ3KZ7SHqaALYkoq/yZxYDzkQbZYV0PMY0w52MBCPt//V8+5dKQSB
+         g+UgMgIcXOB/tO/E/S/ZOeqmDZyduyPkSz6vCyBp1j0j0R/blDyXa5ncboNUSyWNMmMF
+         7z4bu82pAwrOMfKemks/fqOWwajOskvq7e+ffV9CjCxa+f0cR7uOpNMx1E+RO/dH8/pA
+         8ku81TvvuYNVjpeSAv5GkdkAwNrotvjHD2EbOid95GXlW7DZFpHvs5+mNU86MN3GadvI
+         RKAzjz2ik6cq7BN/9mn2RHD6G9PdUsn7mATzpH4xmVpu2xIiZ3Uf98S7duMImpKVvfVl
+         +15g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
          :in-reply-to:references:mime-version:content-transfer-encoding;
-        bh=sXUs3Mthn2WNxe9bljzB5KJJxtMgTykEfGBU86F6xiE=;
-        b=I2aruokWXu5jzT/515+vDqvY7XsPYVHHEgntazDCobUXikiCP7UrciIAJ3XcyFwE6Q
-         dbj8ekfwF3X4ee7oE2v8ZRs/Mx/ILQfQzNYS2JEcNfIQkTraI5kKoSDuJfVIP/RBUgUT
-         ps78HIpZFHm6k92/gquuUmA2RRyDQm6z06gXMYa/6W/innhsZ7dtIU8vcOmk/qGo7DdM
-         LqF1+A21yyubpeNMK5LZddJnv4BRanL5WrKrsH6ljuCfrOgGsC/AFmXTr2BvftADNIu5
-         VFo5cfRJikJdMDQp9AgMWjp7dgDhPFPY6UQ8B1rnxkXcilj4r4uIvsEKvUlI3aP6petd
-         iNHA==
-X-Gm-Message-State: AOAM531ETIOLINTs0I7bnRqIXi+vUFbVl2Ht5N6IuWeFHpmv1dQ4NfzG
-        WTNfPBCOTEpCk++kGjxgR0s8L0XBtC2HAQ==
-X-Google-Smtp-Source: ABdhPJzb0KQuWgqAs1QxpFLIbzjo0hp3iVTcDNFOfPyUb7EI83W2N6g7hHXWSCKUuYPdd+iJRhnYvw==
-X-Received: by 2002:a05:651c:10d4:: with SMTP id l20mr6957942ljn.389.1607281397682;
-        Sun, 06 Dec 2020 11:03:17 -0800 (PST)
+        bh=9YJ8hNiC7fcBnhr6W4yRKfHMapnKQoLUJY6svzs3To0=;
+        b=OplR5t5/Fro9OT3+vK2IjUikfsmXDN+CxDGm01+UhNk5jvwi3FUE43i9yk83H3iFnt
+         bVdhZ/J52IdifGqUw9+YCGdrd6L6efWidkoIFcXOM8yhG27ywEH7E4kEPS3AuhQukpb2
+         j69BHcGNziZ9MJearzFEUWSr6kOZOP9UxHJ1Uyk+Z2VwiO+k7QXaCHHPJnEnw007D+k8
+         /CdfTRqoq4kpUDUVgo5OSFAZ3MljsEUTIynQurvs9SZI/YCFzIaWdxNoJxsDQEv4ozyB
+         Lce0pDugNQYbVWC8LFOU4x2fK6ozlWJj757+NzpaQQrEQaeyS/y5UZDR6ziN/xhpXKuJ
+         DnzA==
+X-Gm-Message-State: AOAM533XRKE8vqA8Zy9qqJqgOhuUfHkic+XQ3gWEe3/KtDf0BBCpMBEC
+        y9RkECx3EkuClDv0DjUOrGGCqdeHV5lzfA==
+X-Google-Smtp-Source: ABdhPJziPsnplTe7NiMrRGdNc3o7SXo2FpWEV9XqodakF7dSDg151GPsQjMackM7Ag3jGTKj591jlg==
+X-Received: by 2002:a2e:894b:: with SMTP id b11mr7761708ljk.439.1607281391398;
+        Sun, 06 Dec 2020 11:03:11 -0800 (PST)
 Received: from saturn.localdomain ([2a00:fd00:8060:1c00:c1c3:bbc6:3ac5:732d])
-        by smtp.gmail.com with ESMTPSA id v28sm2483865ljv.29.2020.12.06.11.03.16
+        by smtp.gmail.com with ESMTPSA id v28sm2483865ljv.29.2020.12.06.11.03.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 06 Dec 2020 11:03:17 -0800 (PST)
+        Sun, 06 Dec 2020 11:03:10 -0800 (PST)
 Sender: Sam Ravnborg <sam.ravnborg@gmail.com>
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -82,9 +82,9 @@ Cc:     Alexander Klimov <grandmaster@al2klimov.de>,
         Thomas Winischhofer <thomas@winischhofer.net>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Tony Prisk <linux@prisktech.co.nz>
-Subject: [PATCH v3 12/13] video: fbdev: controlfb: Fix set but not used warnings
-Date:   Sun,  6 Dec 2020 20:02:46 +0100
-Message-Id: <20201206190247.1861316-13-sam@ravnborg.org>
+Subject: [PATCH v3 08/13] video: fbdev: wmt_ge_rops: Fix function not declared warnings
+Date:   Sun,  6 Dec 2020 20:02:42 +0100
+Message-Id: <20201206190247.1861316-9-sam@ravnborg.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201206190247.1861316-1-sam@ravnborg.org>
 References: <20201206190247.1861316-1-sam@ravnborg.org>
@@ -94,39 +94,27 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The controlfb driver has a number of dummy defines for IO operations.
-They were introduced in commit a07a63b0e24d
-("video: fbdev: controlfb: add COMPILE_TEST support").
-
-The write variants did not use their value parameter in the
-dummy versions, resulting in set but not used warnings.
-Fix this by adding "(void)val" to silence the compiler.
+Include own header to fix "function not declared" warnings.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Tony Prisk <linux@prisktech.co.nz>
+Cc: linux-arm-kernel@lists.infradead.org
 ---
- drivers/video/fbdev/controlfb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/wmt_ge_rops.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
-index 2df56bd303d2..509311471d51 100644
---- a/drivers/video/fbdev/controlfb.c
-+++ b/drivers/video/fbdev/controlfb.c
-@@ -64,9 +64,9 @@
- #undef in_le32
- #undef out_le32
- #define in_8(addr)		0
--#define out_8(addr, val)
-+#define out_8(addr, val)	(void)(val)
- #define in_le32(addr)		0
--#define out_le32(addr, val)
-+#define out_le32(addr, val)	(void)(val)
- #define pgprot_cached_wthru(prot) (prot)
- #else
- static void invalid_vram_cache(void __force *addr)
+diff --git a/drivers/video/fbdev/wmt_ge_rops.c b/drivers/video/fbdev/wmt_ge_rops.c
+index 2445cfe617a9..42255d27a1db 100644
+--- a/drivers/video/fbdev/wmt_ge_rops.c
++++ b/drivers/video/fbdev/wmt_ge_rops.c
+@@ -11,6 +11,7 @@
+ #include <linux/fb.h>
+ #include <linux/platform_device.h>
+ #include "core/fb_draw.h"
++#include "wmt_ge_rops.h"
+ 
+ #define GE_COMMAND_OFF		0x00
+ #define GE_DEPTH_OFF		0x04
 -- 
 2.27.0
 

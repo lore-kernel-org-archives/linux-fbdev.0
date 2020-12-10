@@ -2,70 +2,77 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3344C4167B
-	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Dec 2020 11:31:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70F9BC4361B
+	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Dec 2020 14:51:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6350F23D58
-	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Dec 2020 11:31:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2037C2310D
+	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Dec 2020 14:51:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389518AbgLJLbG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 10 Dec 2020 06:31:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33016 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389512AbgLJLaw (ORCPT
+        id S2389440AbgLJOul (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 10 Dec 2020 09:50:41 -0500
+Received: from smtp08.smtpout.orange.fr ([80.12.242.130]:24003 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389634AbgLJOud (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 10 Dec 2020 06:30:52 -0500
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
-        by lindbergh.monkeyblade.net (Postfix) with UTF8SMTPS id 77BE5C0613CF;
-        Thu, 10 Dec 2020 03:30:37 -0800 (PST)
-Received: by ozlabs.org (Postfix, from userid 1034)
-        id 4CsBYJ2d3xz9shn; Thu, 10 Dec 2020 22:30:28 +1100 (AEDT)
-From:   Michael Ellerman <patch-notifications@ellerman.id.au>
-To:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Geoff Levand <geoff@infradead.org>,
-        Jakub Kicinski <kuba@kernel.org>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Jens Axboe <axboe@kernel.dk>, Jim Paris <jim@jtan.com>,
-        Takashi Iwai <tiwai@suse.com>,
-        Uwe =?ISO-8859-1?Q?=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        "David S. Miller" <davem@davemloft.net>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        dri-devel@lists.freedesktop.org, linuxppc-dev@lists.ozlabs.org,
-        linux-scsi@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-        alsa-devel@alsa-project.org, linux-block@vger.kernel.org,
-        netdev@vger.kernel.org
-In-Reply-To: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
-References: <20201126165950.2554997-1-u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH 1/2] ALSA: ppc: drop if block with always false condition
-Message-Id: <160756606231.1313423.17458520968397977116.b4-ty@ellerman.id.au>
-Date:   Thu, 10 Dec 2020 22:30:28 +1100 (AEDT)
+        Thu, 10 Dec 2020 09:50:33 -0500
+Received: from localhost.localdomain ([92.131.12.169])
+        by mwinf5d15 with ME
+        id 2eoj2400H3eqQsk03eokPw; Thu, 10 Dec 2020 15:48:48 +0100
+X-ME-Helo: localhost.localdomain
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Thu, 10 Dec 2020 15:48:48 +0100
+X-ME-IP: 92.131.12.169
+From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To:     daniel.vetter@ffwll.ch, grandmaster@al2klimov.de
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: [PATCH 1/2] video: fbdev: Use framebuffer_release instead of kfree to free a frame buffer
+Date:   Thu, 10 Dec 2020 15:48:08 +0100
+Message-Id: <20201210144808.64384-1-christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.27.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 26 Nov 2020 17:59:49 +0100, Uwe Kleine-König wrote:
-> The remove callback is only called for devices that were probed
-> successfully before. As the matching probe function cannot complete
-> without error if dev->match_id != PS3_MATCH_ID_SOUND, we don't have to
-> check this here.
+Use 'framebuffer_release()' instead of 'kfree()' to undo a
+'framebuffer_alloc()' call, both in the error handling path of the probe
+function and in remove function.
 
-Applied to powerpc/next.
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+ drivers/video/fbdev/ep93xx-fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-[1/2] ALSA: ppc: drop if block with always false condition
-      https://git.kernel.org/powerpc/c/7ff94669e7d8e50756cd57947283381ae9665759
-[2/2] powerpc/ps3: make system bus's remove and shutdown callbacks return void
-      https://git.kernel.org/powerpc/c/6d247e4d264961aa3b871290f9b11a48d5a567f2
+diff --git a/drivers/video/fbdev/ep93xx-fb.c b/drivers/video/fbdev/ep93xx-fb.c
+index ba33b4dce0df..80a70e5796b8 100644
+--- a/drivers/video/fbdev/ep93xx-fb.c
++++ b/drivers/video/fbdev/ep93xx-fb.c
+@@ -566,7 +566,7 @@ static int ep93xxfb_probe(struct platform_device *pdev)
+ failed_videomem:
+ 	fb_dealloc_cmap(&info->cmap);
+ failed_cmap:
+-	kfree(info);
++	framebuffer_release(info);
+ 
+ 	return err;
+ }
+@@ -584,7 +584,7 @@ static int ep93xxfb_remove(struct platform_device *pdev)
+ 	if (fbi->mach_info->teardown)
+ 		fbi->mach_info->teardown(pdev);
+ 
+-	kfree(info);
++	framebuffer_release(info);
+ 
+ 	return 0;
+ }
+-- 
+2.27.0
 
-cheers

@@ -2,107 +2,72 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCD57C4361B
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Dec 2020 14:37:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80AE3C4361B
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Dec 2020 16:04:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8A392222BB
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Dec 2020 14:37:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 56FE82253D
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Dec 2020 16:04:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2408153AbgLNOhR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Dec 2020 09:37:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46166 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2392859AbgLNOhR (ORCPT
+        id S1728154AbgLNQEQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Dec 2020 11:04:16 -0500
+Received: from mail-ed1-f44.google.com ([209.85.208.44]:42195 "EHLO
+        mail-ed1-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728209AbgLNQEP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Dec 2020 09:37:17 -0500
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93B4BC0613D3
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Dec 2020 06:36:36 -0800 (PST)
-Received: by mail-wm1-x341.google.com with SMTP id y23so15496823wmi.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Dec 2020 06:36:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=8/m/yG9nmWATf2pwpEbnHeaYaYLTTFSZowBrAhqsvOw=;
-        b=NDcqoZd96wzFTaRwe+9H+XLXhCCJcYOv5EVsUhYk8m1j/nS/oVvP7qz4XCpnp4qD41
-         i7DlLOUDaoOzBc6o96g2UfD9MjlfuJJUHNAKzjO2xhe/Odg/q7Aj41nKXQmISvvUKny5
-         FWc/R+K1Jx/91m6Uxadrnjg6pitrNqb3/rwH+o7d7YST26CoJRSjiTS128/ZCGfl5ri2
-         a+YbW0NOvF9bvKzw/d+gBhaOrCX+VwjogxOc+VHEhSvRY6M4yiPIaXrJfAK384VNSuA+
-         CTB38q3FNFLC47BbxhAJCQHXre9jd65GZHKhv+DwMJ4tOaJRsbdd+u3umwxmgZQrhOqM
-         p5zg==
+        Mon, 14 Dec 2020 11:04:15 -0500
+Received: by mail-ed1-f44.google.com with SMTP id v22so17663504edt.9;
+        Mon, 14 Dec 2020 08:03:59 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=8/m/yG9nmWATf2pwpEbnHeaYaYLTTFSZowBrAhqsvOw=;
-        b=D08L8vOAd+MQQvS0hBkfwsNAhYmLZviLeHGQofYrzGlSSaLbyybnnpWmOrheaReIQe
-         JANRRhEhmcSTbvm/8noLbmA3Ka4qcMmh0pK1vErIdzDEEmg2tLwgESOCsjlp/Dtcxyqr
-         rnxSQUaF8z/If73m5vT79v8AQGODRluVHRzc6EPeHvbXXOKQD5seziurDw3LF+G1GLJ9
-         Cg0DNoRQaG9VMiUlltNyBXUTWirwuQnOdjZGb7hA6W52KMLTqDI8B1NzlHQRLV/nWl2W
-         i65vjwix08i2CWE4WBedDbRbj8y8dGJH4AsuxOE8f8Dp2KE0ygpt2ebObr1O3jfnedXY
-         tGRg==
-X-Gm-Message-State: AOAM533ukA++DfEhoyeRN6MGsJFi/UT4l/VlhkzDvCS540QlKtce9i3p
-        ccmeXd7lQcYEajf7Eaoz9h25Pg==
-X-Google-Smtp-Source: ABdhPJwu+cElapZXFY4A8uSyJOR+TrTmuMMBMIKgd17hiIKGGfvZB23aZNn8UqcZ7iK9v1o9eV2+wA==
-X-Received: by 2002:a1c:4843:: with SMTP id v64mr28276897wma.186.1607956595296;
-        Mon, 14 Dec 2020 06:36:35 -0800 (PST)
-Received: from holly.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id w189sm19701366wmg.31.2020.12.14.06.36.33
+        bh=1R4GDxWiInTOSiMoQjKp8/x2VzpM54rp3XHLP51YQwI=;
+        b=P2B2HFCf/Pr/voP7CqYiDGHeitRT+zhl9e7MoR9NxrDScm7wj7os+v3yNCQbLNK1d2
+         qu64k6l41tZrJGj5fMxwuKFHnseHFPNkB1DFHKglgV+m/S5o37F61hXjzygYsjy+cPnt
+         UEDXodoHUgFAE1tq5b2gD18x9iJ+VYA8o/6LCuTcyACMv8N57FHXFQCZ+8AGLKUOWLbg
+         YTfGU4FfW4qdYCUymlJajuXg2fZYW5u4DAGSSKwOv697Eu2YDrJkVd0qRGj4KxisCA5v
+         WWE0CFVOAGwOYN4FBOXXrOhNmWRcrjAzYTCJgUyScQKfT6JvTet5umXFn9+mklDrtdNA
+         XX5w==
+X-Gm-Message-State: AOAM532Oodlab53wxX7HY+kDCakYJVW3VHZtfr/DZODGI1l7fDL79xM7
+        WQbowBUmNS5smI4QcSymxu8=
+X-Google-Smtp-Source: ABdhPJzHHpwR8U0nzeJSHKtRQNJXEPTkA0gNm/3ZDzH5g+76QEADqu0ZfPZUY/ikA7431T6AhNY6JA==
+X-Received: by 2002:a50:9dc9:: with SMTP id l9mr25315986edk.377.1607961813452;
+        Mon, 14 Dec 2020 08:03:33 -0800 (PST)
+Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
+        by smtp.googlemail.com with ESMTPSA id f18sm15784210edt.60.2020.12.14.08.03.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Dec 2020 06:36:34 -0800 (PST)
-Date:   Mon, 14 Dec 2020 14:36:32 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
+        Mon, 14 Dec 2020 08:03:30 -0800 (PST)
+Date:   Mon, 14 Dec 2020 17:03:26 +0100
+From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Zheng Yongjun <zhengyongjun3@huawei.com>
-Cc:     lee.jones@linaro.org, jingoohan1@gmail.com,
-        b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -next] backlight: sky81452-backlight: convert comma to
- semicolon
-Message-ID: <20201214143632.oiqmvpkai7kurc2d@holly.lan>
-References: <20201214133458.3729-1-zhengyongjun3@huawei.com>
+Cc:     b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] fbdev: s3c2410fb: convert comma to semicolon
+Message-ID: <20201214160326.GE2493@kozik-lap>
+References: <20201214133317.3622-1-zhengyongjun3@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20201214133458.3729-1-zhengyongjun3@huawei.com>
+In-Reply-To: <20201214133317.3622-1-zhengyongjun3@huawei.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Dec 14, 2020 at 09:34:58PM +0800, Zheng Yongjun wrote:
+On Mon, Dec 14, 2020 at 09:33:17PM +0800, Zheng Yongjun wrote:
 > Replace a comma between expression statements by a semicolon.
 > 
 > Signed-off-by: Zheng Yongjun <zhengyongjun3@huawei.com>
-
-Weird! I guess it was harmless but still seriously weird ;-)
-
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-
-Thanks!
-
-
 > ---
->  drivers/video/backlight/sky81452-backlight.c | 2 +-
+>  drivers/video/fbdev/s3c2410fb.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/video/backlight/sky81452-backlight.c b/drivers/video/backlight/sky81452-backlight.c
-> index 8268ac43d54f..c95e0de7f4e7 100644
-> --- a/drivers/video/backlight/sky81452-backlight.c
-> +++ b/drivers/video/backlight/sky81452-backlight.c
-> @@ -291,7 +291,7 @@ static int sky81452_bl_probe(struct platform_device *pdev)
->  	}
->  
->  	memset(&props, 0, sizeof(props));
-> -	props.max_brightness = SKY81452_MAX_BRIGHTNESS,
-> +	props.max_brightness = SKY81452_MAX_BRIGHTNESS;
->  	name = pdata->name ? pdata->name : SKY81452_DEFAULT_NAME;
->  	bd = devm_backlight_device_register(dev, name, dev, regmap,
->  						&sky81452_bl_ops, &props);
-> -- 
-> 2.22.0
-> 
+
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+
+Best regards,
+Krzysztof

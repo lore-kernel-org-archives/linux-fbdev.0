@@ -2,160 +2,124 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDFEAC2BBCA
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Dec 2020 06:31:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 918A8C4361B
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Dec 2020 08:06:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9938122262
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Dec 2020 06:31:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 321D32228A
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Dec 2020 08:06:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726287AbgLOGbb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 15 Dec 2020 01:31:31 -0500
-Received: from mail-bn7nam10on2041.outbound.protection.outlook.com ([40.107.92.41]:55564
-        "EHLO NAM10-BN7-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1725865AbgLOGb1 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 15 Dec 2020 01:31:27 -0500
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Tk15uduuC35kn2GeV1SFwu2JMLO5TiUnGxNzvcTsl1Cp1Jvd78Rn/9CZ2qn3k5Rln30SDu9dMB/1SLLd9eSZ2kdANCoos+nOqUFP1xhTWlNJJ/ENVnQMOBJfBcQUq7FLcZcDNfd803in0NVLNX6Un6dJDPPMQsARh00qw7alAZSjAwy1UG3tINXFLH/03pMGdB85XIuNpNX2yfjB+ykXeEomfP298+ao5psg/AtCX7oXpatQNi62eiAUjDEtFTc9UwcTP5s2vBMyBKCJEmKydwhDpcYyd04Bd/m9hrGUEqxgXzqI3jqEgF6GMMavRoz6Nq1KqfSS8Ire5KutQ3/FQw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=VReHqTbmu11ldRC7J0cleeD3SNqlSuwvqh1RcpX4UBY=;
- b=EU9amwoPHeHH4+G26wal7Rhhnj/+0Qwd1z+ofDsqWvtS2nnH8RDwcdaoMEcWDI2yFAv+unJO4TkAH+PAZNbg1Zu7SikcXY00dUY7cqFshyBypiJAd6+kMU2ZKRmGuQkhF1lDh0M0pFxD0Mh29SFrABrn3fSTJPyMMOx7yoIoT5QU5Y6ZxzXkaCXQs0M5TobHGybt7UslA+ZSj3UvE/nhtovncg9A7Uru0Tm8ZHMNWWSRUWguTCJ4N/cfplOeOCZd22IV3jfID0u52jV0SW5orWTrMPoPrWPRYgl6MRn8/8LTYqSBRCYJY76DyH/icMygxxeWCk9OBkVDT/Vyrm1fkA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=windriver.com; dmarc=pass action=none
- header.from=windriver.com; dkim=pass header.d=windriver.com; arc=none
+        id S1726736AbgLOIFq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 15 Dec 2020 03:05:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39472 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726661AbgLOIFo (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 15 Dec 2020 03:05:44 -0500
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63873C06179C
+        for <linux-fbdev@vger.kernel.org>; Tue, 15 Dec 2020 00:04:48 -0800 (PST)
+Received: by mail-wr1-x444.google.com with SMTP id d13so618456wrc.13
+        for <linux-fbdev@vger.kernel.org>; Tue, 15 Dec 2020 00:04:48 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=windriversystems.onmicrosoft.com;
- s=selector2-windriversystems-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=VReHqTbmu11ldRC7J0cleeD3SNqlSuwvqh1RcpX4UBY=;
- b=Q6hNXdIssRYhgMG7NVavyfOQVVjwxykhNPwEWXUuSmoKkmnXNnISLIFo1QdTrNXOudRAZID/oF5G0PJgIJNgGwXHfeapwHqLG0xWO1uK7O+4itHMn2FP3GHeOrXke/03DdJL2mE1WTHdENyGLTSXCyQp7qRvT2OYyDA0ypYTT34=
-Authentication-Results: samsung.com; dkim=none (message not signed)
- header.d=none;samsung.com; dmarc=none action=none header.from=windriver.com;
-Received: from BYAPR11MB2632.namprd11.prod.outlook.com (2603:10b6:a02:c4::17)
- by SJ0PR11MB4877.namprd11.prod.outlook.com (2603:10b6:a03:2d9::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3654.12; Tue, 15 Dec
- 2020 06:30:38 +0000
-Received: from BYAPR11MB2632.namprd11.prod.outlook.com
- ([fe80::94a4:4e15:ab64:5006]) by BYAPR11MB2632.namprd11.prod.outlook.com
- ([fe80::94a4:4e15:ab64:5006%5]) with mapi id 15.20.3654.020; Tue, 15 Dec 2020
- 06:30:37 +0000
-From:   qiang.zhang@windriver.com
-To:     b.zolnierkie@samsung.com
-Cc:     mpatocka@redhat.com, bernie@plugable.com,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] udlfb: Fix memory leak in dlfb_usb_probe
-Date:   Tue, 15 Dec 2020 14:30:22 +0800
-Message-Id: <20201215063022.16746-1-qiang.zhang@windriver.com>
-X-Mailer: git-send-email 2.17.1
-Content-Type: text/plain
-X-Originating-IP: [60.247.85.82]
-X-ClientProxiedBy: YT1PR01CA0059.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:2e::28) To BYAPR11MB2632.namprd11.prod.outlook.com
- (2603:10b6:a02:c4::17)
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=MbW/aNPnMI3Tt8o0eStb7kmZYcIkeHTT/zhJDBmp9Po=;
+        b=ERAzFdv3OQLUww5ou7XtAG/8q6kqp/p8+AfwT2MaTB2yzEEM0sYuWSkXTVOI6wIxla
+         Z1Yjv2l6iA3MYW0nu0cUyrHGFWKb99pxy9srXvvZ1M3iX2xkYT7r3sNnHhxiC1weYjA9
+         wvYgYaIqA7mu88/BRCrDTSyeJKNL466afdLNdIx6FR4CN6bQfTer0bIJXg9T8+y52EbB
+         DSRqiVD0IzrCDqB7hzHC/THJaYeVIDSdjXuwXskAdvI3eXrBjrOaZ6Yl+Lur19glBDkl
+         GACBOOLJ/OX4ZJ3NUBwYU90XTveFA8aiPEvlfURB3O83mTnSqhsRlUK7C+8LJOwyrlPc
+         G0eA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=MbW/aNPnMI3Tt8o0eStb7kmZYcIkeHTT/zhJDBmp9Po=;
+        b=DutzvucnxnUHyTX+TPFlfKlczxrOP4MCMrCPWM0KOotYZnGOMdmtUURqW7hbuLzTk0
+         FsaL6kuYezlHYnBAaTeTj+Zy6X8ZSmCg1bVof1+zVfKIa0N38BTLHK+TG43BgU/5552k
+         BGrqzSK80f+X3tW8mffc1psrwOUNSzCym2j5seRT5srrvGlxDNKmLpG6Dfs3PwVKNTZy
+         1MgP9LoGvZyNeUR5EkWJY7QUQTWx40Ilo9H/VwHHtM6YbnBcYIggdacC5pIPOT/iJuhz
+         GOOiy0U65rpE/LXrKOtgH/Xjvg35VAV4cdwcqK9Z0AMVaWKO3s4ayqXNR+seY2P8tVHV
+         E2qA==
+X-Gm-Message-State: AOAM532Fua7l0edSa+AJRFzl2SEGdLelsgLyM0WbzYUMqzfmcO9zmbzH
+        6JVOyJx3+abwBQDVcnTEcsSsLA==
+X-Google-Smtp-Source: ABdhPJyBaJVZxusL4+NkX5M1cL9XgJuSWZPi9uRydM6u2Zpl6/+bh4iwRS1pELsgP/ST1fktxMTHnw==
+X-Received: by 2002:adf:fd41:: with SMTP id h1mr32200972wrs.284.1608019487058;
+        Tue, 15 Dec 2020 00:04:47 -0800 (PST)
+Received: from dell ([91.110.221.168])
+        by smtp.gmail.com with ESMTPSA id n12sm38986631wrg.76.2020.12.15.00.04.45
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Dec 2020 00:04:46 -0800 (PST)
+Date:   Tue, 15 Dec 2020 08:04:44 +0000
+From:   Lee Jones <lee.jones@linaro.org>
+To:     Daniel Thompson <daniel.thompson@linaro.org>
+Cc:     Zheng Yongjun <zhengyongjun3@huawei.com>, jingoohan1@gmail.com,
+        b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] backlight: sky81452-backlight: convert comma to
+ semicolon
+Message-ID: <20201215080444.GK5029@dell>
+References: <20201214133458.3729-1-zhengyongjun3@huawei.com>
+ <20201214143632.oiqmvpkai7kurc2d@holly.lan>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from pek-qzhang2-d1.wrs.com (60.247.85.82) by YT1PR01CA0059.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b01:2e::28) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3654.12 via Frontend Transport; Tue, 15 Dec 2020 06:30:33 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: a7322126-73a4-49d7-6c85-08d8a0c2efb5
-X-MS-TrafficTypeDiagnostic: SJ0PR11MB4877:
-X-Microsoft-Antispam-PRVS: <SJ0PR11MB487736055E6C84E89BD3D1FAFFC60@SJ0PR11MB4877.namprd11.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:1751;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: fsw4ddmWOGeLnVoE44YOnvpUQZwNKI8q/eRM7crf9aG0EbgRuhb5YUapqMoejnVfDfKq42xt2u/pGNNgvW+Kg3XY+qTwfXun7j+EKn+FNWv9lPmMhV0nJ3MzZmFRABm4FZf8otUcvzedgym7nP9x3reNmVdInW+HGR2wzuZjjjSYYQ5THsdeg4mHsHC6tAJ9tUH9ZP5FOBkVQJDTPfVPPL6S2LMCGuykvTiIuFJnN78p20lQiuqfN4FYh+YesE1C6SWufdd71GN5Q7hHnfrM1BZ4MaqJQBg00koFwH7gArqg2TLubYlBEKR06t+3JwD8zN88/N/cHqEz38vkX5EBQgWH45/nlW0jG/wcaYYVEgywMy+Ly6k6sj/e4POFrlyl
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR11MB2632.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(376002)(366004)(346002)(136003)(86362001)(508600001)(66556008)(66946007)(8676002)(66476007)(83380400001)(6916009)(5660300002)(52116002)(8936002)(4326008)(956004)(6512007)(2906002)(26005)(6666004)(6506007)(2616005)(186003)(6486002)(1076003)(36756003)(16526019)(9686003)(34490700003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?i0J0QdyCQWNxQVMo/qkQ7dTyZgHhVh4LhYq5vViVL1SNya27TkU2aCB0COI1?=
- =?us-ascii?Q?6CMUTFGMMRDk6oQOHKmh3e74gvDx6whxDLIhkOm03tM7eFmxf2LkqW/9IUXT?=
- =?us-ascii?Q?KY6zaKkDJHhznhqChIIsI3bxU0eg90YnKTAgx+e4IDyVh2t2EZmGJGGtnxMu?=
- =?us-ascii?Q?m6zMy8EhyLkU7JGtp7sQPoIjXNYlGn4fu3IMwNbqHSFBsduwWgnSrNF1G3gS?=
- =?us-ascii?Q?7unUtjp+PTdGcWGPQ3GzROViqNuHkFQbDFdIwvtRBdjr6kr/OkcgzewcTHz7?=
- =?us-ascii?Q?i0GJsd6EUOoUTQwWLc0BOVaEWwIGFv3i4k7z2bYcY0WUfJFqTxss0OXL6MoQ?=
- =?us-ascii?Q?1sxkj/OL+xHp15iT+vvmkrTjk4t3M/he7e0RSt7Aqdsngmli49KKY+ku1YFy?=
- =?us-ascii?Q?6n/AATezIMBob4xvyaEwP9KDtsRNxsTSU4v/BlZapYQCN+FPcjpnfQ4y0bMB?=
- =?us-ascii?Q?4UaU4jmqoBdSTAmpSXW54QwFYJfDd53qPZPPw9iUeBxxjb63xyOQtA80mX+e?=
- =?us-ascii?Q?cnQ9qC9M/roeoxLHH4DA/58//T4lxPJt4P+Ye4mgiYq/eD+t8VnCjDZsgMi0?=
- =?us-ascii?Q?ULgtddkSq1EU8fn20luedPgS5/t4UPK/Z+IsaME0V7ucfazNCpx90Vvuu+Hi?=
- =?us-ascii?Q?PHp1KwxdDTWPUTZ8zWfdp7ODlARHtcvwNJYoy9MZlaFGxx/0fvNxZOZmiqti?=
- =?us-ascii?Q?zhESsQbyrTpS40aU/3bBhthy1ukCx5bT6/bIXdinDuHF7BN+AmQ8IXUgyXPs?=
- =?us-ascii?Q?fzL5y7cjOdRn1Rg5BkzwLLfPA1z2V8VqIDYlRsIlK2SJXkVlENonzR07qhGY?=
- =?us-ascii?Q?BYOPpARXgiv0m7uvUGt+K9yE2miZUwFjdBKxkgycA0o/6QFvD+8LBYNVo+pA?=
- =?us-ascii?Q?JjRiZXWgUkgr7uWZaHYjyQdtPhOT9DCJ0ukvTL3tgvxoljEb+I/d1QOJdVzZ?=
- =?us-ascii?Q?Prc071dIJ28jgszYOdcuW20CH2oI2r6sFzeQDnmrn6s=3D?=
-X-OriginatorOrg: windriver.com
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR11MB2632.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Dec 2020 06:30:37.6410
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 8ddb2873-a1ad-4a18-ae4e-4644631433be
-X-MS-Exchange-CrossTenant-Network-Message-Id: a7322126-73a4-49d7-6c85-08d8a0c2efb5
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: a6vSLZGU7PGYZkaUR/CbkBghohhI687RmiFhnmi0Glz1EIt2VclpzMx9ji342Sf62mUN2h0fMOEUW0PzmpACK27hqgNn0mTy4yWf0HqP8O8=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB4877
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20201214143632.oiqmvpkai7kurc2d@holly.lan>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Zqiang <qiang.zhang@windriver.com>
+On Mon, 14 Dec 2020, Daniel Thompson wrote:
 
-The dlfb_alloc_urb_list function is called in dlfb_usb_probe function,
-after that if an error occurs, the dlfb_free_urb_list function need to
-be called.
+> On Mon, Dec 14, 2020 at 09:34:58PM +0800, Zheng Yongjun wrote:
+> > Replace a comma between expression statements by a semicolon.
+> > 
+> > Signed-off-by: Zheng Yongjun <zhengyongjun3@huawei.com>
+> 
+> Weird! I guess it was harmless but still seriously weird ;-)
 
-BUG: memory leak
-unreferenced object 0xffff88810adde100 (size 32):
-  comm "kworker/1:0", pid 17, jiffies 4294947788 (age 19.520s)
-  hex dump (first 32 bytes):
-    10 30 c3 0d 81 88 ff ff c0 fa 63 12 81 88 ff ff  .0........c.....
-    00 30 c3 0d 81 88 ff ff 80 d1 3a 08 81 88 ff ff  .0........:.....
-  backtrace:
-    [<0000000019512953>] kmalloc include/linux/slab.h:552 [inline]
-    [<0000000019512953>] kzalloc include/linux/slab.h:664 [inline]
-    [<0000000019512953>] dlfb_alloc_urb_list drivers/video/fbdev/udlfb.c:1892 [inline]
-    [<0000000019512953>] dlfb_usb_probe.cold+0x289/0x988 drivers/video/fbdev/udlfb.c:1704
-    [<0000000072160152>] usb_probe_interface+0x177/0x370 drivers/usb/core/driver.c:396
-    [<00000000a8d6726f>] really_probe+0x159/0x480 drivers/base/dd.c:554
-    [<00000000c3ce4b0e>] driver_probe_device+0x84/0x100 drivers/base/dd.c:738
-    [<00000000e942e01c>] __device_attach_driver+0xee/0x110 drivers/base/dd.c:844
-    [<00000000de0a5a5c>] bus_for_each_drv+0xb7/0x100 drivers/base/bus.c:431
-    [<00000000463fbcb4>] __device_attach+0x122/0x250 drivers/base/dd.c:912
-    [<00000000b881a711>] bus_probe_device+0xc6/0xe0 drivers/base/bus.c:491
-    [<00000000364bbda5>] device_add+0x5ac/0xc30 drivers/base/core.c:2936
-    [<00000000eecca418>] usb_set_configuration+0x9de/0xb90 drivers/usb/core/message.c:2159
-    [<00000000edfeca2d>] usb_generic_driver_probe+0x8c/0xc0 drivers/usb/core/generic.c:238
-    [<000000001830872b>] usb_probe_device+0x5c/0x140 drivers/usb/core/driver.c:293
-    [<00000000a8d6726f>] really_probe+0x159/0x480 drivers/base/dd.c:554
-    [<00000000c3ce4b0e>] driver_probe_device+0x84/0x100 drivers/base/dd.c:738
-    [<00000000e942e01c>] __device_attach_driver+0xee/0x110 drivers/base/dd.c:844
-    [<00000000de0a5a5c>] bus_for_each_drv+0xb7/0x100 drivers/base/bus.c:431
+One of these was found in MFD a couple of weeks ago.
 
-Reported-by: syzbot+c9e365d7f450e8aa615d@syzkaller.appspotmail.com
-Signed-off-by: Zqiang <qiang.zhang@windriver.com>
----
- drivers/video/fbdev/udlfb.c | 1 +
- 1 file changed, 1 insertion(+)
+Yours was exactly my train of thought!
 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index f9b3c1cb9530..b9cdd02c1000 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -1017,6 +1017,7 @@ static void dlfb_ops_destroy(struct fb_info *info)
- 	}
- 	vfree(dlfb->backing_buffer);
- 	kfree(dlfb->edid);
-+	dlfb_free_urb_list(dlfb);
- 	usb_put_dev(dlfb->udev);
- 	kfree(dlfb);
- 
+One suggestion was to convert all semi-colons to commas and do away
+with all the curly braces encapsulating if()s, for()s and while()s.
+
+Who knew that was even possible?
+
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> 
+> Thanks!
+> 
+> 
+> > ---
+> >  drivers/video/backlight/sky81452-backlight.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/video/backlight/sky81452-backlight.c b/drivers/video/backlight/sky81452-backlight.c
+> > index 8268ac43d54f..c95e0de7f4e7 100644
+> > --- a/drivers/video/backlight/sky81452-backlight.c
+> > +++ b/drivers/video/backlight/sky81452-backlight.c
+> > @@ -291,7 +291,7 @@ static int sky81452_bl_probe(struct platform_device *pdev)
+> >  	}
+> >  
+> >  	memset(&props, 0, sizeof(props));
+> > -	props.max_brightness = SKY81452_MAX_BRIGHTNESS,
+> > +	props.max_brightness = SKY81452_MAX_BRIGHTNESS;
+> >  	name = pdata->name ? pdata->name : SKY81452_DEFAULT_NAME;
+> >  	bd = devm_backlight_device_register(dev, name, dev, regmap,
+> >  						&sky81452_bl_ops, &props);
+
 -- 
-2.17.1
-
+Lee Jones [李琼斯]
+Senior Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog

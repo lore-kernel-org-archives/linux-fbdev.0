@@ -5,121 +5,142 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 918A8C4361B
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Dec 2020 08:06:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6FE0C4361B
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Dec 2020 09:56:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 321D32228A
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Dec 2020 08:06:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7E39B207CC
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Dec 2020 09:56:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726736AbgLOIFq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 15 Dec 2020 03:05:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39472 "EHLO
+        id S1726754AbgLOJ4V (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 15 Dec 2020 04:56:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56472 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726661AbgLOIFo (ORCPT
+        with ESMTP id S1725890AbgLOJ4L (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 15 Dec 2020 03:05:44 -0500
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63873C06179C
-        for <linux-fbdev@vger.kernel.org>; Tue, 15 Dec 2020 00:04:48 -0800 (PST)
-Received: by mail-wr1-x444.google.com with SMTP id d13so618456wrc.13
-        for <linux-fbdev@vger.kernel.org>; Tue, 15 Dec 2020 00:04:48 -0800 (PST)
+        Tue, 15 Dec 2020 04:56:11 -0500
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5DB2C0617A6
+        for <linux-fbdev@vger.kernel.org>; Tue, 15 Dec 2020 01:55:23 -0800 (PST)
+Received: by mail-wr1-x441.google.com with SMTP id m5so19182414wrx.9
+        for <linux-fbdev@vger.kernel.org>; Tue, 15 Dec 2020 01:55:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=MbW/aNPnMI3Tt8o0eStb7kmZYcIkeHTT/zhJDBmp9Po=;
-        b=ERAzFdv3OQLUww5ou7XtAG/8q6kqp/p8+AfwT2MaTB2yzEEM0sYuWSkXTVOI6wIxla
-         Z1Yjv2l6iA3MYW0nu0cUyrHGFWKb99pxy9srXvvZ1M3iX2xkYT7r3sNnHhxiC1weYjA9
-         wvYgYaIqA7mu88/BRCrDTSyeJKNL466afdLNdIx6FR4CN6bQfTer0bIJXg9T8+y52EbB
-         DSRqiVD0IzrCDqB7hzHC/THJaYeVIDSdjXuwXskAdvI3eXrBjrOaZ6Yl+Lur19glBDkl
-         GACBOOLJ/OX4ZJ3NUBwYU90XTveFA8aiPEvlfURB3O83mTnSqhsRlUK7C+8LJOwyrlPc
-         G0eA==
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=wzp3he7Ldny5qGk+iBqbQJSYyDnKTWBE9sD2zWexFDQ=;
+        b=i64SMDpxEEYAZao4CPsxjLKjN7RssgNCUSuu5waKnYgHLhBnbHShnKX/Q9LEcxS8kV
+         bhBcbYio180Tsw5l8YAkUTXDY+U/xBsXx/aMBla6MCkY+t+xdXTdWHbG12BGVFNxLYOh
+         zUhH1B036Nouv10Kn5vkzZK9bbO5//MM/9ZDY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
          :in-reply-to;
-        bh=MbW/aNPnMI3Tt8o0eStb7kmZYcIkeHTT/zhJDBmp9Po=;
-        b=DutzvucnxnUHyTX+TPFlfKlczxrOP4MCMrCPWM0KOotYZnGOMdmtUURqW7hbuLzTk0
-         FsaL6kuYezlHYnBAaTeTj+Zy6X8ZSmCg1bVof1+zVfKIa0N38BTLHK+TG43BgU/5552k
-         BGrqzSK80f+X3tW8mffc1psrwOUNSzCym2j5seRT5srrvGlxDNKmLpG6Dfs3PwVKNTZy
-         1MgP9LoGvZyNeUR5EkWJY7QUQTWx40Ilo9H/VwHHtM6YbnBcYIggdacC5pIPOT/iJuhz
-         GOOiy0U65rpE/LXrKOtgH/Xjvg35VAV4cdwcqK9Z0AMVaWKO3s4ayqXNR+seY2P8tVHV
-         E2qA==
-X-Gm-Message-State: AOAM532Fua7l0edSa+AJRFzl2SEGdLelsgLyM0WbzYUMqzfmcO9zmbzH
-        6JVOyJx3+abwBQDVcnTEcsSsLA==
-X-Google-Smtp-Source: ABdhPJyBaJVZxusL4+NkX5M1cL9XgJuSWZPi9uRydM6u2Zpl6/+bh4iwRS1pELsgP/ST1fktxMTHnw==
-X-Received: by 2002:adf:fd41:: with SMTP id h1mr32200972wrs.284.1608019487058;
-        Tue, 15 Dec 2020 00:04:47 -0800 (PST)
-Received: from dell ([91.110.221.168])
-        by smtp.gmail.com with ESMTPSA id n12sm38986631wrg.76.2020.12.15.00.04.45
+        bh=wzp3he7Ldny5qGk+iBqbQJSYyDnKTWBE9sD2zWexFDQ=;
+        b=iABGzHgLPT/dAQj7eEJZu303xS/PC0+q2p5r7NTTS6ueDZOeU3aaH0ACgU/jgcGOkD
+         rHSVuG54FI22XyV243AtRH3bgZEDcAAW7vVsXL03V7IsUcGrvrv1a32orH9p7uGJ/Rld
+         ILxgHiIo8u7F+x+ATQw50adbxN/SK8IoYqQQQ/VRYszwEqj2RLOezD50KSGh+EpcX4Y4
+         apMDRSW+B0Wx1uVVdTLRbNLOHocnTjrAnwOpSmPYEHmj6fG1F/HD3hSZU4XPIU2Wvh1S
+         vaK/cgIkHnLrF1CCgx03J6fzVFMY1ff/9NBmAq1Nu4pNDohWmofEQYfTrOWnfxq68juA
+         R1Iw==
+X-Gm-Message-State: AOAM533TTqEIpiaqQMa9V9VQmo3irNE3FspumoJTvD6TUqHc+triHxu2
+        j/IcuFCHZKqCgAFn1t/gbhsY2w==
+X-Google-Smtp-Source: ABdhPJz6KDBEAbW3w8wUgDzwxnuw5x1wOy9//Vfnp/AzdlTA/tnX2btyV0/7hxnvpTcmHuPMK7/TTg==
+X-Received: by 2002:a5d:5604:: with SMTP id l4mr32732419wrv.127.1608026122572;
+        Tue, 15 Dec 2020 01:55:22 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id o13sm34024033wmc.44.2020.12.15.01.55.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Dec 2020 00:04:46 -0800 (PST)
-Date:   Tue, 15 Dec 2020 08:04:44 +0000
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     Zheng Yongjun <zhengyongjun3@huawei.com>, jingoohan1@gmail.com,
-        b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -next] backlight: sky81452-backlight: convert comma to
- semicolon
-Message-ID: <20201215080444.GK5029@dell>
-References: <20201214133458.3729-1-zhengyongjun3@huawei.com>
- <20201214143632.oiqmvpkai7kurc2d@holly.lan>
+        Tue, 15 Dec 2020 01:55:21 -0800 (PST)
+Date:   Tue, 15 Dec 2020 10:55:20 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     qiang.zhang@windriver.com
+Cc:     b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org,
+        mpatocka@redhat.com, bernie@plugable.com,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] udlfb: Fix memory leak in dlfb_usb_probe
+Message-ID: <X9iICN/VX0whV8Es@phenom.ffwll.local>
+Mail-Followup-To: qiang.zhang@windriver.com, b.zolnierkie@samsung.com,
+        linux-fbdev@vger.kernel.org, mpatocka@redhat.com,
+        bernie@plugable.com, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20201215063022.16746-1-qiang.zhang@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20201214143632.oiqmvpkai7kurc2d@holly.lan>
+In-Reply-To: <20201215063022.16746-1-qiang.zhang@windriver.com>
+X-Operating-System: Linux phenom 5.7.0-1-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 14 Dec 2020, Daniel Thompson wrote:
-
-> On Mon, Dec 14, 2020 at 09:34:58PM +0800, Zheng Yongjun wrote:
-> > Replace a comma between expression statements by a semicolon.
-> > 
-> > Signed-off-by: Zheng Yongjun <zhengyongjun3@huawei.com>
+On Tue, Dec 15, 2020 at 02:30:22PM +0800, qiang.zhang@windriver.com wrote:
+> From: Zqiang <qiang.zhang@windriver.com>
 > 
-> Weird! I guess it was harmless but still seriously weird ;-)
-
-One of these was found in MFD a couple of weeks ago.
-
-Yours was exactly my train of thought!
-
-One suggestion was to convert all semi-colons to commas and do away
-with all the curly braces encapsulating if()s, for()s and while()s.
-
-Who knew that was even possible?
-
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> The dlfb_alloc_urb_list function is called in dlfb_usb_probe function,
+> after that if an error occurs, the dlfb_free_urb_list function need to
+> be called.
 > 
-> Thanks!
+> BUG: memory leak
+> unreferenced object 0xffff88810adde100 (size 32):
+>   comm "kworker/1:0", pid 17, jiffies 4294947788 (age 19.520s)
+>   hex dump (first 32 bytes):
+>     10 30 c3 0d 81 88 ff ff c0 fa 63 12 81 88 ff ff  .0........c.....
+>     00 30 c3 0d 81 88 ff ff 80 d1 3a 08 81 88 ff ff  .0........:.....
+>   backtrace:
+>     [<0000000019512953>] kmalloc include/linux/slab.h:552 [inline]
+>     [<0000000019512953>] kzalloc include/linux/slab.h:664 [inline]
+>     [<0000000019512953>] dlfb_alloc_urb_list drivers/video/fbdev/udlfb.c:1892 [inline]
+>     [<0000000019512953>] dlfb_usb_probe.cold+0x289/0x988 drivers/video/fbdev/udlfb.c:1704
+>     [<0000000072160152>] usb_probe_interface+0x177/0x370 drivers/usb/core/driver.c:396
+>     [<00000000a8d6726f>] really_probe+0x159/0x480 drivers/base/dd.c:554
+>     [<00000000c3ce4b0e>] driver_probe_device+0x84/0x100 drivers/base/dd.c:738
+>     [<00000000e942e01c>] __device_attach_driver+0xee/0x110 drivers/base/dd.c:844
+>     [<00000000de0a5a5c>] bus_for_each_drv+0xb7/0x100 drivers/base/bus.c:431
+>     [<00000000463fbcb4>] __device_attach+0x122/0x250 drivers/base/dd.c:912
+>     [<00000000b881a711>] bus_probe_device+0xc6/0xe0 drivers/base/bus.c:491
+>     [<00000000364bbda5>] device_add+0x5ac/0xc30 drivers/base/core.c:2936
+>     [<00000000eecca418>] usb_set_configuration+0x9de/0xb90 drivers/usb/core/message.c:2159
+>     [<00000000edfeca2d>] usb_generic_driver_probe+0x8c/0xc0 drivers/usb/core/generic.c:238
+>     [<000000001830872b>] usb_probe_device+0x5c/0x140 drivers/usb/core/driver.c:293
+>     [<00000000a8d6726f>] really_probe+0x159/0x480 drivers/base/dd.c:554
+>     [<00000000c3ce4b0e>] driver_probe_device+0x84/0x100 drivers/base/dd.c:738
+>     [<00000000e942e01c>] __device_attach_driver+0xee/0x110 drivers/base/dd.c:844
+>     [<00000000de0a5a5c>] bus_for_each_drv+0xb7/0x100 drivers/base/bus.c:431
 > 
+> Reported-by: syzbot+c9e365d7f450e8aa615d@syzkaller.appspotmail.com
+> Signed-off-by: Zqiang <qiang.zhang@windriver.com>
+
+Queued up in drm-misc-next, thanks for your patch.
+-Daniel
+
+> ---
+>  drivers/video/fbdev/udlfb.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> > ---
-> >  drivers/video/backlight/sky81452-backlight.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/video/backlight/sky81452-backlight.c b/drivers/video/backlight/sky81452-backlight.c
-> > index 8268ac43d54f..c95e0de7f4e7 100644
-> > --- a/drivers/video/backlight/sky81452-backlight.c
-> > +++ b/drivers/video/backlight/sky81452-backlight.c
-> > @@ -291,7 +291,7 @@ static int sky81452_bl_probe(struct platform_device *pdev)
-> >  	}
-> >  
-> >  	memset(&props, 0, sizeof(props));
-> > -	props.max_brightness = SKY81452_MAX_BRIGHTNESS,
-> > +	props.max_brightness = SKY81452_MAX_BRIGHTNESS;
-> >  	name = pdata->name ? pdata->name : SKY81452_DEFAULT_NAME;
-> >  	bd = devm_backlight_device_register(dev, name, dev, regmap,
-> >  						&sky81452_bl_ops, &props);
+> diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+> index f9b3c1cb9530..b9cdd02c1000 100644
+> --- a/drivers/video/fbdev/udlfb.c
+> +++ b/drivers/video/fbdev/udlfb.c
+> @@ -1017,6 +1017,7 @@ static void dlfb_ops_destroy(struct fb_info *info)
+>  	}
+>  	vfree(dlfb->backing_buffer);
+>  	kfree(dlfb->edid);
+> +	dlfb_free_urb_list(dlfb);
+>  	usb_put_dev(dlfb->udev);
+>  	kfree(dlfb);
+>  
+> -- 
+> 2.17.1
+> 
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
 -- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

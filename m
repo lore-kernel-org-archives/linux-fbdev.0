@@ -2,69 +2,63 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.2 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5955FC2BBCA
-	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Dec 2020 08:29:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3339FC4361B
+	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Dec 2020 10:04:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1A4B9233FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Dec 2020 08:29:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E385323715
+	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Dec 2020 10:04:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727531AbgLQI3d (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 17 Dec 2020 03:29:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37238 "EHLO
+        id S1725871AbgLQKEO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 17 Dec 2020 05:04:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51776 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727518AbgLQI3d (ORCPT
+        with ESMTP id S1726160AbgLQKEN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 17 Dec 2020 03:29:33 -0500
-Received: from mail-qt1-x834.google.com (mail-qt1-x834.google.com [IPv6:2607:f8b0:4864:20::834])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B59C3C0617A7
-        for <linux-fbdev@vger.kernel.org>; Thu, 17 Dec 2020 00:28:52 -0800 (PST)
-Received: by mail-qt1-x834.google.com with SMTP id v5so10323641qtv.7
-        for <linux-fbdev@vger.kernel.org>; Thu, 17 Dec 2020 00:28:52 -0800 (PST)
+        Thu, 17 Dec 2020 05:04:13 -0500
+Received: from mail-oo1-xc2d.google.com (mail-oo1-xc2d.google.com [IPv6:2607:f8b0:4864:20::c2d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2FACEC0617A7
+        for <linux-fbdev@vger.kernel.org>; Thu, 17 Dec 2020 02:03:33 -0800 (PST)
+Received: by mail-oo1-xc2d.google.com with SMTP id x203so6663539ooa.9
+        for <linux-fbdev@vger.kernel.org>; Thu, 17 Dec 2020 02:03:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
+        d=ffwll.ch; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=CsVAueeXj8ac4FEysIBmoE/5UC3DLYLDLVv7MpYAfsY=;
-        b=lrtCWtebJhRyBEnvqhAKBWJjkYlCDj9Wa+OmmQZ7pLzpr6GVtZ9HxmUlPX36ujGq00
-         8xpZWSUywbnVVXTvV9OcjlZJ/vctiDLJKQKuPj0z+z36BG1/AOsXQlhqnBWX6Me2eBek
-         Uex2+D37iSdoW0jlwNoC7vtRqxNLltHtlGqHVbAjywuDituTFp48GWKL02J4raQw9odE
-         YpMvWg5UTuVV3HJXQjQb824qhaJK0IyYCHIgTDcCjVFRL7zoWVJBKGoZdR0k1x5pTkiP
-         7ePsoNx5XlNQOJS3wd7DKPmRK+9C75gm6fjzXujoH7W2ToB5eozxjpyXwqQorTlYi6H0
-         Vzdg==
+        bh=QovU7n4TipZBHahKpVmuX6ckuC6desZlmOmZDqTqu3M=;
+        b=JRI+pp7dnV1oOaSedDD0zjdx02ivklV8ckbZfiPHBcKgcdLi7zY+gS227LevsvZ0qt
+         IDh8C0GVZpETDBWL96aYpOOsWjVr/wm7Yg2mPbqvPEzwoBK/acGCdB7H2Bm46SbXlMY9
+         LI9prf+HrkxZcJ73yGyH50UGC7W7uAfLxSK2w=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=CsVAueeXj8ac4FEysIBmoE/5UC3DLYLDLVv7MpYAfsY=;
-        b=iK2nvZsgfy0Hn6aeCW/CjB1qT88/ePPVKLipdL3Te6U+2spK1wnnG64Wwml1YRMdyf
-         2cpGeNOz6cuaRFVSbd2Wabn7v0tw5o6fgEg85RWezpTF6xRt6OJsTXQLsCGARuespSkV
-         IEVlD/4UA58UEzlWCc5ilq38o9SoBpM6lkFTwOM2kIoPjFGI02WN0YDVlbdY5yZFMOA6
-         HsZlc9Tf/YVv/Xd/l3n7tRDWgW4y2weuU/TEaQZaB4Lx9ua0OdxSB0kDgXV1bE4q74XJ
-         +6ROjqrhyXOXN6SxP4LMwSOEbsT+ht/xSWieyL1rQvtGs10n2OI5n+XmOY6d8UBGz8NV
-         NVDQ==
-X-Gm-Message-State: AOAM533rEx/wLPP0RUsQjWN5keO9r+A0AoVVwxvq0iy2kapI7yEecVM9
-        3gFizz4fGb0ro5FS50s2sSKZNjN0FQABSoMl/hfs/w==
-X-Google-Smtp-Source: ABdhPJyL42ijAI2pbo8QbK4c5g3rkG2w3VdIj4dHWraqoD+WwDhV5nkWDxRgxwHqLEeb7uNWwWpDpXWuf0An0cVTSL4=
-X-Received: by 2002:ac8:4e1c:: with SMTP id c28mr47105022qtw.67.1608193731597;
- Thu, 17 Dec 2020 00:28:51 -0800 (PST)
+        bh=QovU7n4TipZBHahKpVmuX6ckuC6desZlmOmZDqTqu3M=;
+        b=Oe7yPWOBayWeHLvJO63Y0WzgfAiGcdiJ4rU7d7FlWioYSgow/iPVjY1YgcJ0VpwYon
+         qxa+sMfew6h33Z29NsOYY5s3Qm2tnJkRL0EltbyOhYTuhOAno/GJbYMEExIJs/KHA9Bn
+         FwdsQUbSkJzCkDSdeURBN5yQ8ByZvALJbYQpVBEciLwHC8WOyVx8lYTZ1ZDzgaZMBPI3
+         VkG8WU8Cy0Z/ACqm21wSG05CbMDe9Eq3qq+GpGW95UiUlDb19JSZrg16JUxs1EltKs+3
+         yO2+UbknrZFFMqsoG8AhXiKWN7a9f1NPZQ4Ne4FDEGMjNkbGv/DAlqfa14Q4BMMXh5Tg
+         pj4w==
+X-Gm-Message-State: AOAM533qf6vdlHRLBWDNLj8u0blmTZM75Q2tjgcM/mc6GQvb3tRpqcx/
+        jJy4wP5iXZd2y5tUytvVTU95nGuGxVpAvQFyIeyAZA==
+X-Google-Smtp-Source: ABdhPJy5FyP1RpGPHptqgvfzTl40RI28lCDVHE2WDMhIPwjXe0oeZjeKTXrjIAMh+Ju7p0whj3OsI4bRHTUe7q/o58A=
+X-Received: by 2002:a4a:c387:: with SMTP id u7mr23255908oop.89.1608199412424;
+ Thu, 17 Dec 2020 02:03:32 -0800 (PST)
 MIME-Version: 1.0
 References: <000000000000cb6db205b68a971c@google.com> <CAKMK7uEiS5SrBYv-2w2wWL=9G4ByoHvtiWVsPqekswZzOGmzjg@mail.gmail.com>
  <20201216161621.GH2657@paulmck-ThinkPad-P72>
 In-Reply-To: <20201216161621.GH2657@paulmck-ThinkPad-P72>
-From:   Dmitry Vyukov <dvyukov@google.com>
-Date:   Thu, 17 Dec 2020 09:28:40 +0100
-Message-ID: <CACT4Y+ZAuZ2PQaQz7GpeCFfbhdDi2hpOYm_xnMR4ANBC7sht3A@mail.gmail.com>
+From:   Daniel Vetter <daniel.vetter@ffwll.ch>
+Date:   Thu, 17 Dec 2020 11:03:20 +0100
+Message-ID: <CAKMK7uH1agVS=e245b=25Lv9Q+u5c7=KL-_NF8Hte10nKTqAXw@mail.gmail.com>
 Subject: Re: WARNING: suspicious RCU usage in modeset_lock
-To:     "Paul E. McKenney" <paulmck@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Ingo Molnar <mingo@redhat.com>, Will Deacon <will@kernel.org>
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        syzbot <syzbot+972b924c988834e868b2@syzkaller.appspotmail.com>,
+To:     "Paul E. McKenney" <paulmck@kernel.org>
+Cc:     syzbot <syzbot+972b924c988834e868b2@syzkaller.appspotmail.com>,
         Steven Rostedt <rostedt@goodmis.org>,
         Josh Triplett <josh@joshtriplett.org>, rcu@vger.kernel.org,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
@@ -186,14 +180,23 @@ On Wed, Dec 16, 2020 at 5:16 PM Paul E. McKenney <paulmck@kernel.org> wrote:
 > acquired occasionally, these RCU_LOCKDEP_WARN() calls can be used to
 > check assumptions about state.
 
+I think we're tripping over the might_sleep() all the mutexes have,
+and that's not as good as yours, but good enough to catch a missing
+rcu_read_unlock(). That's kinda why I'm baffled, since like almost
+every 2nd function in the backtrace grabbed a mutex and it was all
+fine until the very last.
 
-There is another recent claim of a false "suspicious RCU usage":
-https://lore.kernel.org/lkml/20201216205536.GX2443@casper.infradead.org/
+I think it would be really nice if the rcu checks could retain (in
+debugging only) the backtrace of the outermost rcu_read_lock, so we
+could print that when something goes wrong in cases where it's leaked.
+For normal locks lockdep does that already (well not full backtrace I
+think, just the function that acquired the lock, but that's often
+enough). I guess that doesn't exist yet?
 
-Can this be wrong accounting by lock debugging?
+Also yes without reproducer this is kinda tough nut to crack.
+-Daniel
 
-
-
+>
 >                                                         Thanx, Paul
 >
 > > >  modeset_lock+0x392/0x650 drivers/gpu/drm/drm_modeset_lock.c:263
@@ -231,3 +234,17 @@ Can this be wrong accounting by lock debugging?
 > > >
 > > > syzbot will keep track of this issue. See:
 > > > https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+> >
+> >
+> >
+> > --
+> > Daniel Vetter
+> > Software Engineer, Intel Corporation
+> > http://blog.ffwll.ch
+
+
+
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

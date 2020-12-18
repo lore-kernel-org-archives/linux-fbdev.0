@@ -2,99 +2,83 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C754C4361B
-	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Dec 2020 15:28:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6C16C2BBD5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Dec 2020 16:11:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B1E6323B45
-	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Dec 2020 15:28:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7154C23B70
+	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Dec 2020 16:11:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726321AbgLRP2r (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 18 Dec 2020 10:28:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40862 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725878AbgLRP2r (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 18 Dec 2020 10:28:47 -0500
-Received: from mail-qt1-x832.google.com (mail-qt1-x832.google.com [IPv6:2607:f8b0:4864:20::832])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5C19C0617A7
-        for <linux-fbdev@vger.kernel.org>; Fri, 18 Dec 2020 07:28:06 -0800 (PST)
-Received: by mail-qt1-x832.google.com with SMTP id 2so1484845qtt.10
-        for <linux-fbdev@vger.kernel.org>; Fri, 18 Dec 2020 07:28:06 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=j3vBoddoAjf0IFyLATEzp2b+bWulu7D90uXUHegOXUg=;
-        b=Si3oD44qeMyvjKcsH1+EDZWe5MQCPYs0WMqv6g7C6ZiGuj/z/vCP+x3cm/dPnUF2gw
-         xz6pzCYoLKvC5uJBGAdDenkv029H1YsBVHcb4wDJVVQLlDYGrUPrciWoo/pb6jF22IN3
-         v3hPs4FMysZym/YA71fhD38dRDVOJL7opsh2hIEIV2Qk5qGZyv/SP8+8065Ah230mK61
-         T7RI1yQORhwXjgbifG0VISdHByeo6z1aW2vbFcFQZMufqjDPe4QHbRlEZExb0BbzaaEO
-         2ncCXZgk2KfCkwTk9CuE5nTxRwKHDobAsHeb+XkBpCLb8BWEtmBZ7x4CbjTNQKC5Cz3+
-         f//w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=j3vBoddoAjf0IFyLATEzp2b+bWulu7D90uXUHegOXUg=;
-        b=HpAk0P9o88xYVNbZIeVtYEV+5mGUVi2Yz4FXriBgr37cK1tfzn5tjiFv4Zgwb1vJnk
-         r6VD2VSv+Zusccwvqq4n78Myk89tCeYQdqYWIYMJkHUluLFSa/YiEY4givimwI1zv8TZ
-         pSO+/+KVuFJQsXK1lkMdffY4KlmPCwsitYZZPVrcsdDN3YPNYe6pT++ol+bsPeVLyH+B
-         uSITZTacLN2LQnx/n0KXdU9DbhV+8E1cYQQiCch294LJa+DJ+1oPsbnrwXaeGUQcYLs/
-         Sqw3HnC+LF9Ax/QrDp+FP7OpH/WlW1Ur9w2HZ5DjjIwUjzHUnnHvbJVSOIOvKbs2pB24
-         sNXg==
-X-Gm-Message-State: AOAM532Xv6ybR14UZGiYowZZRDk7b2w+zH0OMxmEyM9KBqOsrBYz7+Ae
-        YthfmNM/r0bznXo2WPbxyYtcKoXUyQkbdnI6YqaPTQ==
-X-Google-Smtp-Source: ABdhPJwW7m310B422NM+6uj5jd7lHxdtuQKuwhcqifNW0uu9yiOzNdR5vQRKoj3vZDABn1uaGcu1OlzjycvZ6jx9qzg=
-X-Received: by 2002:ac8:4e1c:: with SMTP id c28mr4466988qtw.67.1608305285772;
- Fri, 18 Dec 2020 07:28:05 -0800 (PST)
-MIME-Version: 1.0
-References: <000000000000b30cad05b0fc3d74@google.com> <000000000000fbf57305b6beb939@google.com>
-In-Reply-To: <000000000000fbf57305b6beb939@google.com>
-From:   Dmitry Vyukov <dvyukov@google.com>
-Date:   Fri, 18 Dec 2020 16:27:53 +0100
-Message-ID: <CACT4Y+bgROPPaiah0S0N8Ju9cpj9xkeQ9FrMCfQeAuRdJy1Qqg@mail.gmail.com>
-Subject: Re: BUG: unable to handle kernel paging request in cfb_imageblit
-To:     syzbot <syzbot+dfd0b1c6705301cc4847@syzkaller.appspotmail.com>
-Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Dan Carpenter <dan.carpenter@oracle.com>,
-        DRI <dri-devel@lists.freedesktop.org>,
-        George Kennedy <george.kennedy@oracle.com>,
+        id S1730989AbgLRQLP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 18 Dec 2020 11:11:15 -0500
+Received: from mail.kernel.org ([198.145.29.99]:40668 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1730940AbgLRQLO (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 18 Dec 2020 11:11:14 -0500
+Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com [66.24.58.225])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id E453C23B6C;
+        Fri, 18 Dec 2020 16:10:32 +0000 (UTC)
+Date:   Fri, 18 Dec 2020 11:10:31 -0500
+From:   Steven Rostedt <rostedt@goodmis.org>
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc:     "Paul E. McKenney" <paulmck@kernel.org>,
+        syzbot <syzbot+972b924c988834e868b2@syzkaller.appspotmail.com>,
+        Josh Triplett <josh@joshtriplett.org>, rcu@vger.kernel.org,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Nathan Chancellor <natechancellor@gmail.com>,
+        Peter Rosin <peda@axentia.se>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
         syzkaller-bugs <syzkaller-bugs@googlegroups.com>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: WARNING: suspicious RCU usage in modeset_lock
+Message-ID: <20201218111031.226f8b59@gandalf.local.home>
+In-Reply-To: <CAKMK7uH1agVS=e245b=25Lv9Q+u5c7=KL-_NF8Hte10nKTqAXw@mail.gmail.com>
+References: <000000000000cb6db205b68a971c@google.com>
+        <CAKMK7uEiS5SrBYv-2w2wWL=9G4ByoHvtiWVsPqekswZzOGmzjg@mail.gmail.com>
+        <20201216161621.GH2657@paulmck-ThinkPad-P72>
+        <CAKMK7uH1agVS=e245b=25Lv9Q+u5c7=KL-_NF8Hte10nKTqAXw@mail.gmail.com>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Dec 18, 2020 at 4:26 PM syzbot
-<syzbot+dfd0b1c6705301cc4847@syzkaller.appspotmail.com> wrote:
->
-> syzbot suspects this issue was fixed by commit:
->
-> commit a49145acfb975d921464b84fe00279f99827d816
-> Author: George Kennedy <george.kennedy@oracle.com>
-> Date:   Tue Jul 7 19:26:03 2020 +0000
->
->     fbmem: add margin check to fb_check_caps()
->
-> bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=1149f30f500000
-> start commit:   22fbc037 Merge tag 'for-linus' of git://git.kernel.org/pub..
-> git tree:       upstream
-> kernel config:  https://syzkaller.appspot.com/x/.config?x=4e672827d2ffab1f
-> dashboard link: https://syzkaller.appspot.com/bug?extid=dfd0b1c6705301cc4847
-> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=11ba9a5d900000
-> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=17cfd4af900000
->
-> If the result looks correct, please mark the issue as fixed by replying with:
->
-> #syz fix: fbmem: add margin check to fb_check_caps()
->
-> For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+On Thu, 17 Dec 2020 11:03:20 +0100
+Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
 
-#syz fix: fbmem: add margin check to fb_check_caps()
+> I think we're tripping over the might_sleep() all the mutexes have,
+> and that's not as good as yours, but good enough to catch a missing
+> rcu_read_unlock(). That's kinda why I'm baffled, since like almost
+> every 2nd function in the backtrace grabbed a mutex and it was all
+> fine until the very last.
+> 
+> I think it would be really nice if the rcu checks could retain (in
+> debugging only) the backtrace of the outermost rcu_read_lock, so we
+> could print that when something goes wrong in cases where it's leaked.
+> For normal locks lockdep does that already (well not full backtrace I
+> think, just the function that acquired the lock, but that's often
+> enough). I guess that doesn't exist yet?
+> 
+> Also yes without reproducer this is kinda tough nut to crack.
+
+I'm looking at drm_client_modeset_commit_atomic(), where it triggered after
+the "retry:" label, which to get to, does a bit of goto spaghetti, with
+a -EDEADLK detected and a goto backoff, which calls goto retry, and then
+the next mutex taken is the one that triggers the bug.
+
+As this is hard to reproduce, but reproducible by a fuzzer, I'm guessing
+there's some error return path somewhere in there that doesn't release an
+rcu_read_lock().
+
+-- Steve

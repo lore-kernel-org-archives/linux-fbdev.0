@@ -2,116 +2,110 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80F28C433E6
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jan 2021 10:47:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2320C433E0
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jan 2021 13:46:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 497AF221F9
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jan 2021 10:47:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 97D3621BE5
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jan 2021 13:46:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726636AbhADKr0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 4 Jan 2021 05:47:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53260 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726308AbhADKrZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Jan 2021 05:47:25 -0500
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DB24C061793
-        for <linux-fbdev@vger.kernel.org>; Mon,  4 Jan 2021 02:46:44 -0800 (PST)
-Received: by mail-wr1-x42d.google.com with SMTP id d26so31629919wrb.12
-        for <linux-fbdev@vger.kernel.org>; Mon, 04 Jan 2021 02:46:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=5cnKwGKMAW2uD7Mf320R7/SnXF3WX1LG6Qh3O1drZ/Q=;
-        b=hmCCGppBxS67+7BXqQG7Lw+tVho3R1OcBqp3hz5toxuy0QJeDKHzxhOHn/OPB9LuaB
-         TyRcrHvXbhdEl/+7VTeQDe1BX1fDZqTBfmYqeTSRNKfY8Iel4EnMnLHyDDkN8fNQTZtv
-         qoS7n7uPI/VlCfls/vUHdmk8+niCQIE8MyIRw9AQTPN4XlxsFdX3SEVmmoWUZ6B2JsXX
-         oPUpO1OI7PdcZphmKDlODxsyJmOXS6kmQx8Un4U4NBdwvlb7DtInP/gWNfpmZ3GTCCyu
-         yR1UNiR2nUC8UDLCULzVX+XQX/zN9uGPjEAuBM07HcHQbZ/gd9AtQbYGnTUXxCHq7nqR
-         zvew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=5cnKwGKMAW2uD7Mf320R7/SnXF3WX1LG6Qh3O1drZ/Q=;
-        b=YtcDzXlfTU46ZTunMjoEX3wqcijZ31sSuS/3EIIS2ZX6RGB+rBr9SrlToaiAVloTFA
-         3UkIng4il56Vt+xtsaKMoeDx25vhdrdBInXFdx2IuYIJ4h8/DHIeeeNwpKdhb10dlb4z
-         1UzmLq7Z3E8JA9soMsvtuMnOV2eIdy5oDpW903p2YwxaLPdikJkIT/r9xi3ldRTVhBXY
-         g8Iuxi3XHuexdj2KOtCsh52aCtobjPO+Ayq7OF+SF8aan8dUhb0CQ1oUBag71cwwZKto
-         DTekKhmW0r5SsdwEk7K/1bB/q7IDoTmK2TO3fTVq7Yu3BC+Ihwg5jtnV0xtZz2khffMe
-         TvTA==
-X-Gm-Message-State: AOAM531nfwsq01YX59nGsqw/GXecRF9MmSA+UCSXF5B0Gl81uTX2x75h
-        Pmdhp2WBINOJTFExp611IU4y/w==
-X-Google-Smtp-Source: ABdhPJxLg9y2ii+HtYdwO5mHHkoRyLpzpRo5RBXbyYGGjZWmmsW9YQQWIhm9fV2y95zhm1wlI5iR0Q==
-X-Received: by 2002:adf:e452:: with SMTP id t18mr76358986wrm.177.1609757203325;
-        Mon, 04 Jan 2021 02:46:43 -0800 (PST)
-Received: from holly.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id o23sm95805633wro.57.2021.01.04.02.46.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Jan 2021 02:46:42 -0800 (PST)
-Date:   Mon, 4 Jan 2021 10:46:40 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Zheng Yongjun <zhengyongjun3@huawei.com>
-Cc:     lee.jones@linaro.org, jingoohan1@gmail.com,
-        b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 -next] video: backlight: use DEFINE_MUTEX() for mutex
- lock
-Message-ID: <20210104104640.2fe5lmi6hljb6rgr@holly.lan>
-References: <20201224132601.31791-1-zhengyongjun3@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201224132601.31791-1-zhengyongjun3@huawei.com>
+        id S1726509AbhADNqO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 4 Jan 2021 08:46:14 -0500
+Received: from mout.gmx.net ([212.227.15.19]:33459 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725921AbhADNqO (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 4 Jan 2021 08:46:14 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1609767881;
+        bh=eIQR0/N3yU5g3Ck+QxO7wW/o9Eq3Bvh+w1VitRCoW7Q=;
+        h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
+        b=QYgftcepcw0rVG1d+G0KTaj5YuZId3nihP2xlRAhIqILlfL1ruHIUlkgU4w4Xs27e
+         EZwMXt3EEo8vHBsmJkLu5aC8pAiCF5gRJanUveOtE9t1X/7ELPvwJoye60bnXZaBk8
+         HoWqVAHA+vyZibAmu4DqhjPhv1BQkGegFkrjmnNc=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from Valinor ([82.128.181.212]) by mail.gmx.com (mrgmx004
+ [212.227.17.184]) with ESMTPSA (Nemesis) id 1MbRk3-1kPH8L3gWv-00bpB1; Mon, 04
+ Jan 2021 14:44:41 +0100
+Date:   Mon, 4 Jan 2021 15:46:18 +0200
+From:   Lauri Kasanen <cand@gmx.com>
+To:     linux-mips@vger.kernel.org
+Cc:     tsbogend@alpha.franken.de, hdegoede@redhat.com,
+        linux-fbdev@vger.kernel.org
+Subject: [PATCH 3/6] fbdev/simplefb: Add the N64's mode
+Message-Id: <20210104154618.06e1df16b234498bf9145223@gmx.com>
+X-Mailer: Sylpheed 3.5.0 (GTK+ 2.18.6; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:visL/lvIkrIc9DmTqd2atVUszYVVQmgl5wMOW8XIE9PuySJzy0f
+ bPvCR2pzMUii0hkJ3bX0Zziv+jWjmjLALp5jQdPYpJ0RhJmMwqEqHOnsrq8m8MhzWIkViPo
+ ens4stMxGba11x+kbVJkDw4mjw3A7i2u9e4EDHk1qXV3L2LevnRLB+/DVFwwQMjSBbq2urU
+ EtB7P2QR2hhIKiyQP2+nA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:ryceb86etHc=:p7kEia0It8kqPjswEqchNR
+ mRwhNaDUH3tariPmg4eGY90zSjmuwXLP7fU5CY98piOIWYQfhq4FZTz7i2jBlDmmPoa9lqC4X
+ pUBzfMb5yHlqgPA6LAKN+NZOLKqU39e6eyk0NUBZOOaxZv0E3pkJQEQhOokL4UMzsJEzln7Ql
+ OIM0KhyuY1nwaFbknbK9mkJPM3dIcOAK+lwCi0OTTC5zEXy1+25O+PAuIH9mmpWJ+5gqpHDv8
+ AkvL5C1V5gX4gztyVaK34dTUo3BtTEJY7ZOGvsvsdFXVshFLlaYr3zgyXUwau1GQivfCrO8jZ
+ Q/yxmxeHfusX7h+gHIDbObAi0ggZhteFzPbe1L3fAmOoUxjSr9m+nskpw+uksCb6GaLbnr5Kv
+ c9AVLhdE3lDhTodDN1W3VWfI9Iy3jMZP0M/VQBrgdl/dJ7XqYxCZ5wVnHAdL91AH4sCa5EZqC
+ bCKoqMqGI3fG2xKljrvA5bAh0ZGSevFZR7BrOE0ugNESnI9R+kedqkR+BdLoO0rYMemF7Mmjl
+ 8aZu3wgdYeuIJgtm1PZ1uZ538lorMQyOPWKWgTwBwH3divylLJMOBHpNng98uG4y+LIrFNnL9
+ voFbsmU3Bg+WhQIqcHUGCW1PU97U8HCaOBFVVQkTe1hRj5CFFw7ACNjmghwqegKqdg0o0N6I/
+ ambySFLqekZ1fr7mcM9TJuZcKLIzi78RCLY6sGEyJ6dCWM0JAZ450o22uW2A4LqOnym4BrqEx
+ xi33YifojXf9ou3BW2sxwGvudWa9+Vh4p0cwGh86cjrczqBIBtzk61RRHwIfDHOzeBPPHz3ap
+ YKp+7CS8sjfGIHXIhdLmrGbYkMJT3I8GSiHbDlodxhmoBjx8458vLbCUE6GouFJkbQYHY0Jp8
+ 6KeUWnPHPDaxlNwyMARQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Dec 24, 2020 at 09:26:01PM +0800, Zheng Yongjun wrote:
-> mutex lock can be initialized automatically with DEFINE_MUTEX()
-> rather than explicitly calling mutex_init().
-> 
-> Signed-off-by: Zheng Yongjun <zhengyongjun3@huawei.com>
-> ---
->  drivers/video/backlight/backlight.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-> index 537fe1b376ad..d7a09c422547 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -64,7 +64,7 @@
->   */
->  
->  static struct list_head backlight_dev_list;
-> -static struct mutex backlight_dev_list_mutex;
-> +static DEFINE_MUTEX(backlight_dev_list_mutex);
->  static struct blocking_notifier_head backlight_notifier;
+By keeping it separate for the platform, we save 748 bytes.
+This brings simplefb to 2.5kb from 3.2kb, when a native fb driver
+was 1.5kb.
 
-Why do we want to convert one of these variables to use a
-static initializers but leave the other two unchanged? Surely they
-should all be changed.
+Signed-off-by: Lauri Kasanen <cand@gmx.com>
+=2D--
+ include/linux/platform_data/simplefb.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
+fb folks: the rest of the series is on linux-mips. I'm not sure which tree=
+ what
+goes through.
 
-Daniel.
+diff --git a/include/linux/platform_data/simplefb.h b/include/linux/platfo=
+rm_data/simplefb.h
+index ca83376..c9d4f2c 100644
+=2D-- a/include/linux/platform_data/simplefb.h
++++ b/include/linux/platform_data/simplefb.h
+@@ -13,6 +13,12 @@
+ #include <linux/types.h>
 
+ /* format array, use it to initialize a "struct simplefb_format" array */
++#ifdef CONFIG_MACH_NINTENDO64
++#define SIMPLEFB_FORMATS \
++{ \
++	{ "r5g5b5a1", 16, {11, 5}, {6, 5}, {1, 5}, {0, 1}, DRM_FORMAT_RGBA5551 }=
+, \
++}
++#else
+ #define SIMPLEFB_FORMATS \
+ { \
+ 	{ "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0}, DRM_FORMAT_RGB565 }, \
+@@ -25,6 +31,7 @@
+ 	{ "x2r10g10b10", 32, {20, 10}, {10, 10}, {0, 10}, {0, 0}, DRM_FORMAT_XRG=
+B2101010 }, \
+ 	{ "a2r10g10b10", 32, {20, 10}, {10, 10}, {0, 10}, {30, 2}, DRM_FORMAT_AR=
+GB2101010 }, \
+ }
++#endif
 
->  
->  static const char *const backlight_types[] = {
-> @@ -757,7 +757,6 @@ static int __init backlight_class_init(void)
->  	backlight_class->dev_groups = bl_device_groups;
->  	backlight_class->pm = &backlight_class_dev_pm_ops;
->  	INIT_LIST_HEAD(&backlight_dev_list);
-> -	mutex_init(&backlight_dev_list_mutex);
->  	BLOCKING_INIT_NOTIFIER_HEAD(&backlight_notifier);
->  
->  	return 0;
-> -- 
-> 2.22.0
-> 
+ /*
+  * Data-Format for Simple-Framebuffers
+=2D-
+2.6.2
+

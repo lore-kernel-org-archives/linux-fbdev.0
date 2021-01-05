@@ -2,110 +2,128 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2320C433E0
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jan 2021 13:46:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07DA7C4332E
+	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Jan 2021 12:04:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 97D3621BE5
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Jan 2021 13:46:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C482422AAE
+	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Jan 2021 12:04:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726509AbhADNqO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 4 Jan 2021 08:46:14 -0500
-Received: from mout.gmx.net ([212.227.15.19]:33459 "EHLO mout.gmx.net"
+        id S1729979AbhAEMED (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 5 Jan 2021 07:04:03 -0500
+Received: from mx2.suse.de ([195.135.220.15]:39244 "EHLO mx2.suse.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725921AbhADNqO (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 4 Jan 2021 08:46:14 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1609767881;
-        bh=eIQR0/N3yU5g3Ck+QxO7wW/o9Eq3Bvh+w1VitRCoW7Q=;
-        h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
-        b=QYgftcepcw0rVG1d+G0KTaj5YuZId3nihP2xlRAhIqILlfL1ruHIUlkgU4w4Xs27e
-         EZwMXt3EEo8vHBsmJkLu5aC8pAiCF5gRJanUveOtE9t1X/7ELPvwJoye60bnXZaBk8
-         HoWqVAHA+vyZibAmu4DqhjPhv1BQkGegFkrjmnNc=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from Valinor ([82.128.181.212]) by mail.gmx.com (mrgmx004
- [212.227.17.184]) with ESMTPSA (Nemesis) id 1MbRk3-1kPH8L3gWv-00bpB1; Mon, 04
- Jan 2021 14:44:41 +0100
-Date:   Mon, 4 Jan 2021 15:46:18 +0200
-From:   Lauri Kasanen <cand@gmx.com>
-To:     linux-mips@vger.kernel.org
-Cc:     tsbogend@alpha.franken.de, hdegoede@redhat.com,
+        id S1729975AbhAEMED (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 5 Jan 2021 07:04:03 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id B64D0ADD9;
+        Tue,  5 Jan 2021 12:02:41 +0000 (UTC)
+From:   Jiri Slaby <jslaby@suse.cz>
+To:     gregkh@linuxfoundation.org
+Cc:     linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Jiri Slaby <jslaby@suse.cz>, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org
-Subject: [PATCH 3/6] fbdev/simplefb: Add the N64's mode
-Message-Id: <20210104154618.06e1df16b234498bf9145223@gmx.com>
-X-Mailer: Sylpheed 3.5.0 (GTK+ 2.18.6; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:visL/lvIkrIc9DmTqd2atVUszYVVQmgl5wMOW8XIE9PuySJzy0f
- bPvCR2pzMUii0hkJ3bX0Zziv+jWjmjLALp5jQdPYpJ0RhJmMwqEqHOnsrq8m8MhzWIkViPo
- ens4stMxGba11x+kbVJkDw4mjw3A7i2u9e4EDHk1qXV3L2LevnRLB+/DVFwwQMjSBbq2urU
- EtB7P2QR2hhIKiyQP2+nA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:ryceb86etHc=:p7kEia0It8kqPjswEqchNR
- mRwhNaDUH3tariPmg4eGY90zSjmuwXLP7fU5CY98piOIWYQfhq4FZTz7i2jBlDmmPoa9lqC4X
- pUBzfMb5yHlqgPA6LAKN+NZOLKqU39e6eyk0NUBZOOaxZv0E3pkJQEQhOokL4UMzsJEzln7Ql
- OIM0KhyuY1nwaFbknbK9mkJPM3dIcOAK+lwCi0OTTC5zEXy1+25O+PAuIH9mmpWJ+5gqpHDv8
- AkvL5C1V5gX4gztyVaK34dTUo3BtTEJY7ZOGvsvsdFXVshFLlaYr3zgyXUwau1GQivfCrO8jZ
- Q/yxmxeHfusX7h+gHIDbObAi0ggZhteFzPbe1L3fAmOoUxjSr9m+nskpw+uksCb6GaLbnr5Kv
- c9AVLhdE3lDhTodDN1W3VWfI9Iy3jMZP0M/VQBrgdl/dJ7XqYxCZ5wVnHAdL91AH4sCa5EZqC
- bCKoqMqGI3fG2xKljrvA5bAh0ZGSevFZR7BrOE0ugNESnI9R+kedqkR+BdLoO0rYMemF7Mmjl
- 8aZu3wgdYeuIJgtm1PZ1uZ538lorMQyOPWKWgTwBwH3divylLJMOBHpNng98uG4y+LIrFNnL9
- voFbsmU3Bg+WhQIqcHUGCW1PU97U8HCaOBFVVQkTe1hRj5CFFw7ACNjmghwqegKqdg0o0N6I/
- ambySFLqekZ1fr7mcM9TJuZcKLIzi78RCLY6sGEyJ6dCWM0JAZ450o22uW2A4LqOnym4BrqEx
- xi33YifojXf9ou3BW2sxwGvudWa9+Vh4p0cwGh86cjrczqBIBtzk61RRHwIfDHOzeBPPHz3ap
- YKp+7CS8sjfGIHXIhdLmrGbYkMJT3I8GSiHbDlodxhmoBjx8458vLbCUE6GouFJkbQYHY0Jp8
- 6KeUWnPHPDaxlNwyMARQ==
+Subject: [PATCH 09/12] vgacon: drop BROKEN_GRAPHICS_PROGRAMS
+Date:   Tue,  5 Jan 2021 13:02:36 +0100
+Message-Id: <20210105120239.28031-9-jslaby@suse.cz>
+X-Mailer: git-send-email 2.30.0
+In-Reply-To: <20210105120239.28031-1-jslaby@suse.cz>
+References: <20210105120239.28031-1-jslaby@suse.cz>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-By keeping it separate for the platform, we save 748 bytes.
-This brings simplefb to 2.5kb from 3.2kb, when a native fb driver
-was 1.5kb.
+BROKEN_GRAPHICS_PROGRAMS is defined when CONFIG_VGA_CONSOLE=y. And
+vgacon.c is built exclusively in that case too. So the check for
+BROKEN_GRAPHICS_PROGRAMS is pointless in vgacon.c as it is always true.
+So remove the test and BROKEN_GRAPHICS_PROGRAMS completely.
 
-Signed-off-by: Lauri Kasanen <cand@gmx.com>
-=2D--
- include/linux/platform_data/simplefb.h | 7 +++++++
- 1 file changed, 7 insertions(+)
+This also eliminates the need for vga_font_is_default global as it is
+only set and never read.
 
-fb folks: the rest of the series is on linux-mips. I'm not sure which tree=
- what
-goes through.
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/console/vgacon.c | 19 -------------------
+ include/linux/vt_kern.h        | 12 ------------
+ 2 files changed, 31 deletions(-)
 
-diff --git a/include/linux/platform_data/simplefb.h b/include/linux/platfo=
-rm_data/simplefb.h
-index ca83376..c9d4f2c 100644
-=2D-- a/include/linux/platform_data/simplefb.h
-+++ b/include/linux/platform_data/simplefb.h
-@@ -13,6 +13,12 @@
- #include <linux/types.h>
-
- /* format array, use it to initialize a "struct simplefb_format" array */
-+#ifdef CONFIG_MACH_NINTENDO64
-+#define SIMPLEFB_FORMATS \
-+{ \
-+	{ "r5g5b5a1", 16, {11, 5}, {6, 5}, {1, 5}, {0, 1}, DRM_FORMAT_RGBA5551 }=
-, \
-+}
-+#else
- #define SIMPLEFB_FORMATS \
- { \
- 	{ "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0}, DRM_FORMAT_RGB565 }, \
-@@ -25,6 +31,7 @@
- 	{ "x2r10g10b10", 32, {20, 10}, {10, 10}, {0, 10}, {0, 0}, DRM_FORMAT_XRG=
-B2101010 }, \
- 	{ "a2r10g10b10", 32, {20, 10}, {10, 10}, {0, 10}, {30, 2}, DRM_FORMAT_AR=
-GB2101010 }, \
- }
-+#endif
-
- /*
-  * Data-Format for Simple-Framebuffers
-=2D-
-2.6.2
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 17876f0179b5..962c12be9774 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -90,7 +90,6 @@ static unsigned int	vga_video_num_lines;			/* Number of text lines */
+ static bool		vga_can_do_color;			/* Do we support colors? */
+ static unsigned int	vga_default_font_height __read_mostly;	/* Height of default screen font */
+ static unsigned char	vga_video_type		__read_mostly;	/* Card type */
+-static bool		vga_font_is_default = true;
+ static int		vga_vesa_blanked;
+ static bool 		vga_palette_blanked;
+ static bool 		vga_is_gfx;
+@@ -878,7 +877,6 @@ static int vgacon_do_font_op(struct vgastate *state, char *arg, int set,
+ 		beg = 0x0a;
+ 	}
+ 
+-#ifdef BROKEN_GRAPHICS_PROGRAMS
+ 	/*
+ 	 * All fonts are loaded in slot 0 (0:1 for 512 ch)
+ 	 */
+@@ -886,24 +884,7 @@ static int vgacon_do_font_op(struct vgastate *state, char *arg, int set,
+ 	if (!arg)
+ 		return -EINVAL;	/* Return to default font not supported */
+ 
+-	vga_font_is_default = false;
+ 	font_select = ch512 ? 0x04 : 0x00;
+-#else
+-	/*
+-	 * The default font is kept in slot 0 and is never touched.
+-	 * A custom font is loaded in slot 2 (256 ch) or 2:3 (512 ch)
+-	 */
+-
+-	if (set) {
+-		vga_font_is_default = !arg;
+-		if (!arg)
+-			ch512 = false;	/* Default font is always 256 */
+-		font_select = arg ? (ch512 ? 0x0e : 0x0a) : 0x00;
+-	}
+-
+-	if (!vga_font_is_default)
+-		charmap += 4 * cmapsz;
+-#endif
+ 
+ 	raw_spin_lock_irq(&vga_lock);
+ 	/* First, the Sequencer */
+diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
+index 349e39c3ab60..94e7a315479c 100644
+--- a/include/linux/vt_kern.h
++++ b/include/linux/vt_kern.h
+@@ -16,18 +16,6 @@
+ #include <linux/consolemap.h>
+ #include <linux/notifier.h>
+ 
+-/*
+- * Presently, a lot of graphics programs do not restore the contents of
+- * the higher font pages.  Defining this flag will avoid use of them, but
+- * will lose support for PIO_FONTRESET.  Note that many font operations are
+- * not likely to work with these programs anyway; they need to be
+- * fixed.  The linux/Documentation directory includes a code snippet
+- * to save and restore the text font.
+- */
+-#ifdef CONFIG_VGA_CONSOLE
+-#define BROKEN_GRAPHICS_PROGRAMS 1
+-#endif
+-
+ void kd_mksound(unsigned int hz, unsigned int ticks);
+ int kbd_rate(struct kbd_repeat *rep);
+ 
+-- 
+2.30.0
 

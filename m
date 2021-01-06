@@ -2,128 +2,125 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,FROM_LOCAL_HEX,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SHORT_SHORTNER,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07DA7C4332E
-	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Jan 2021 12:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DD3DC433DB
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Jan 2021 10:07:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C482422AAE
-	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Jan 2021 12:04:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 47BF62310D
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Jan 2021 10:07:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729979AbhAEMED (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 5 Jan 2021 07:04:03 -0500
-Received: from mx2.suse.de ([195.135.220.15]:39244 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729975AbhAEMED (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 5 Jan 2021 07:04:03 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id B64D0ADD9;
-        Tue,  5 Jan 2021 12:02:41 +0000 (UTC)
-From:   Jiri Slaby <jslaby@suse.cz>
-To:     gregkh@linuxfoundation.org
-Cc:     linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Jiri Slaby <jslaby@suse.cz>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-Subject: [PATCH 09/12] vgacon: drop BROKEN_GRAPHICS_PROGRAMS
-Date:   Tue,  5 Jan 2021 13:02:36 +0100
-Message-Id: <20210105120239.28031-9-jslaby@suse.cz>
-X-Mailer: git-send-email 2.30.0
-In-Reply-To: <20210105120239.28031-1-jslaby@suse.cz>
-References: <20210105120239.28031-1-jslaby@suse.cz>
+        id S1726725AbhAFKHC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Jan 2021 05:07:02 -0500
+Received: from mail-io1-f71.google.com ([209.85.166.71]:43336 "EHLO
+        mail-io1-f71.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726206AbhAFKHC (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Jan 2021 05:07:02 -0500
+Received: by mail-io1-f71.google.com with SMTP id c7so1434513iob.10
+        for <linux-fbdev@vger.kernel.org>; Wed, 06 Jan 2021 02:06:46 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:date:message-id:subject:from:to;
+        bh=5pDa3vIbxqJdV1lVZT6U5h+gjd7CuxHz3mCEuppmKfw=;
+        b=Eobfc0IeCkVFxCBoQffiUNoZJ8iAHybDRF9BgxiYZukrceEJnNz7Ckz1Pb69r5iC8T
+         f62ikKEI3S824tsO4RUzYCMrCBzf8YxUInkcf8QAHCe6V8hvC+n2g/JCs8DacS1WxpKD
+         Lk5xVS3cU4IJnhQAR8+4qrCsOrWVJwUicCnL+YgxWV5JmpTniTyn8dStqjZeredmIed3
+         TKDAIpswtSRL3/o97IXMcDpMX3YeT9GxeytUg5K+h+ooRSPAT892uZTTVLZobyN6FAfy
+         CyIM90xv++M24uGZNpAT71JWGd8eT9zRkPVI4pDxtJMCCClIw0kLNH148W14qwflzYNd
+         NwlQ==
+X-Gm-Message-State: AOAM532FEH15zr//SXH1h1iqGsMDI5H4ONIa+MQZIYi7fpUSc8ftC1TT
+        ZaGT7wExUnAigeGy3c3M9rbCDw01iggORxZrDIj00MBTFGVa
+X-Google-Smtp-Source: ABdhPJyz6jj8T7s4aF16nIkkLT5KgvVMzFdbAHECyRyJmG8ADNp4NjZXcTUBcaS5O7RAqYbBehOeBdkefR9g9FqXeTo5U1zu4XOM
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Received: by 2002:a05:6638:3a3:: with SMTP id z3mr3024750jap.67.1609927581149;
+ Wed, 06 Jan 2021 02:06:21 -0800 (PST)
+Date:   Wed, 06 Jan 2021 02:06:21 -0800
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <00000000000096ae3b05b838799c@google.com>
+Subject: KASAN: vmalloc-out-of-bounds Write in imageblit
+From:   syzbot <syzbot+858dc7a2f7ef07c2c219@syzkaller.appspotmail.com>
+To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-BROKEN_GRAPHICS_PROGRAMS is defined when CONFIG_VGA_CONSOLE=y. And
-vgacon.c is built exclusively in that case too. So the check for
-BROKEN_GRAPHICS_PROGRAMS is pointless in vgacon.c as it is always true.
-So remove the test and BROKEN_GRAPHICS_PROGRAMS completely.
+Hello,
 
-This also eliminates the need for vga_font_is_default global as it is
-only set and never read.
+syzbot found the following issue on:
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
+HEAD commit:    6207214a Merge tag 'afs-fixes-04012021' of git://git.kerne..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=17d0c7a8d00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=104b0cac547b2149
+dashboard link: https://syzkaller.appspot.com/bug?extid=858dc7a2f7ef07c2c219
+compiler:       gcc (GCC) 10.1.0-syz 20200507
+userspace arch: i386
+
+Unfortunately, I don't have any reproducer for this issue yet.
+
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+858dc7a2f7ef07c2c219@syzkaller.appspotmail.com
+
+BUG: KASAN: vmalloc-out-of-bounds in fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
+BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x117f/0x1290 drivers/video/fbdev/core/sysimgblt.c:275
+Write of size 4 at addr ffffc9000bc11000 by task syz-executor.1/10779
+
+CPU: 0 PID: 10779 Comm: syz-executor.1 Not tainted 5.11.0-rc2-syzkaller #0
+Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
+Call Trace:
+ __dump_stack lib/dump_stack.c:79 [inline]
+ dump_stack+0x107/0x163 lib/dump_stack.c:120
+ print_address_description.constprop.0.cold+0x5/0x2f8 mm/kasan/report.c:230
+ __kasan_report mm/kasan/report.c:396 [inline]
+ kasan_report.cold+0x79/0xd5 mm/kasan/report.c:413
+ fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
+ sys_imageblit+0x117f/0x1290 drivers/video/fbdev/core/sysimgblt.c:275
+ drm_fb_helper_sys_imageblit drivers/gpu/drm/drm_fb_helper.c:794 [inline]
+ drm_fbdev_fb_imageblit+0x15c/0x350 drivers/gpu/drm/drm_fb_helper.c:2266
+ bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:139 [inline]
+ bit_putcs+0x6e1/0xd20 drivers/video/fbdev/core/bitblit.c:188
+ fbcon_putcs+0x35a/0x450 drivers/video/fbdev/core/fbcon.c:1304
+ do_update_region+0x399/0x630 drivers/tty/vt/vt.c:676
+ redraw_screen+0x658/0x790 drivers/tty/vt/vt.c:1035
+ fbcon_modechanged+0x593/0x6d0 drivers/video/fbdev/core/fbcon.c:2656
+ fbcon_update_vcs+0x3a/0x50 drivers/video/fbdev/core/fbcon.c:2701
+ do_fb_ioctl+0x62e/0x690 drivers/video/fbdev/core/fbmem.c:1110
+ fb_compat_ioctl+0x17e/0x610 drivers/video/fbdev/core/fbmem.c:1309
+ __do_compat_sys_ioctl+0x1d3/0x230 fs/ioctl.c:842
+ do_syscall_32_irqs_on arch/x86/entry/common.c:78 [inline]
+ __do_fast_syscall_32+0x56/0x80 arch/x86/entry/common.c:137
+ do_fast_syscall_32+0x2f/0x70 arch/x86/entry/common.c:160
+ entry_SYSENTER_compat_after_hwframe+0x4d/0x5c
+RIP: 0023:0xf7f12549
+Code: 03 74 c0 01 10 05 03 74 b8 01 10 06 03 74 b4 01 10 07 03 74 b0 01 10 08 03 74 d8 01 00 00 00 00 00 51 52 55 89 e5 0f 34 cd 80 <5d> 5a 59 c3 90 90 90 90 eb 0d 90 90 90 90 90 90 90 90 90 90 90 90
+RSP: 002b:00000000f550c0bc EFLAGS: 00000296 ORIG_RAX: 0000000000000036
+RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 0000000000004601
+RDX: 0000000020000100 RSI: 0000000000000000 RDI: 0000000000000000
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+
+
+Memory state around the buggy address:
+ ffffc9000bc10f00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ ffffc9000bc10f80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>ffffc9000bc11000: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+                   ^
+ ffffc9000bc11080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+ ffffc9000bc11100: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
+==================================================================
+
+
 ---
- drivers/video/console/vgacon.c | 19 -------------------
- include/linux/vt_kern.h        | 12 ------------
- 2 files changed, 31 deletions(-)
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 17876f0179b5..962c12be9774 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -90,7 +90,6 @@ static unsigned int	vga_video_num_lines;			/* Number of text lines */
- static bool		vga_can_do_color;			/* Do we support colors? */
- static unsigned int	vga_default_font_height __read_mostly;	/* Height of default screen font */
- static unsigned char	vga_video_type		__read_mostly;	/* Card type */
--static bool		vga_font_is_default = true;
- static int		vga_vesa_blanked;
- static bool 		vga_palette_blanked;
- static bool 		vga_is_gfx;
-@@ -878,7 +877,6 @@ static int vgacon_do_font_op(struct vgastate *state, char *arg, int set,
- 		beg = 0x0a;
- 	}
- 
--#ifdef BROKEN_GRAPHICS_PROGRAMS
- 	/*
- 	 * All fonts are loaded in slot 0 (0:1 for 512 ch)
- 	 */
-@@ -886,24 +884,7 @@ static int vgacon_do_font_op(struct vgastate *state, char *arg, int set,
- 	if (!arg)
- 		return -EINVAL;	/* Return to default font not supported */
- 
--	vga_font_is_default = false;
- 	font_select = ch512 ? 0x04 : 0x00;
--#else
--	/*
--	 * The default font is kept in slot 0 and is never touched.
--	 * A custom font is loaded in slot 2 (256 ch) or 2:3 (512 ch)
--	 */
--
--	if (set) {
--		vga_font_is_default = !arg;
--		if (!arg)
--			ch512 = false;	/* Default font is always 256 */
--		font_select = arg ? (ch512 ? 0x0e : 0x0a) : 0x00;
--	}
--
--	if (!vga_font_is_default)
--		charmap += 4 * cmapsz;
--#endif
- 
- 	raw_spin_lock_irq(&vga_lock);
- 	/* First, the Sequencer */
-diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
-index 349e39c3ab60..94e7a315479c 100644
---- a/include/linux/vt_kern.h
-+++ b/include/linux/vt_kern.h
-@@ -16,18 +16,6 @@
- #include <linux/consolemap.h>
- #include <linux/notifier.h>
- 
--/*
-- * Presently, a lot of graphics programs do not restore the contents of
-- * the higher font pages.  Defining this flag will avoid use of them, but
-- * will lose support for PIO_FONTRESET.  Note that many font operations are
-- * not likely to work with these programs anyway; they need to be
-- * fixed.  The linux/Documentation directory includes a code snippet
-- * to save and restore the text font.
-- */
--#ifdef CONFIG_VGA_CONSOLE
--#define BROKEN_GRAPHICS_PROGRAMS 1
--#endif
--
- void kd_mksound(unsigned int hz, unsigned int ticks);
- int kbd_rate(struct kbd_repeat *rep);
- 
--- 
-2.30.0
-
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.

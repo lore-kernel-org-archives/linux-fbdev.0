@@ -2,65 +2,108 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DE30C433DB
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jan 2021 22:57:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B2B3C433E6
+	for <linux-fbdev@archiver.kernel.org>; Fri,  8 Jan 2021 08:32:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 03157235FA
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Jan 2021 22:57:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D90E723435
+	for <linux-fbdev@archiver.kernel.org>; Fri,  8 Jan 2021 08:32:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726989AbhAGW5a (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 7 Jan 2021 17:57:30 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:61944 "EHLO
-        www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725944AbhAGW5a (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Jan 2021 17:57:30 -0500
-Received: from fsav303.sakura.ne.jp (fsav303.sakura.ne.jp [153.120.85.134])
-        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTP id 107Mumtu091038;
-        Fri, 8 Jan 2021 07:56:48 +0900 (JST)
-        (envelope-from penguin-kernel@i-love.sakura.ne.jp)
-Received: from www262.sakura.ne.jp (202.181.97.72)
- by fsav303.sakura.ne.jp (F-Secure/fsigk_smtp/550/fsav303.sakura.ne.jp);
- Fri, 08 Jan 2021 07:56:48 +0900 (JST)
-X-Virus-Status: clean(F-Secure/fsigk_smtp/550/fsav303.sakura.ne.jp)
-Received: from [192.168.1.9] (M106072142033.v4.enabler.ne.jp [106.72.142.33])
-        (authenticated bits=0)
-        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTPSA id 107MumS6091031
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NO);
-        Fri, 8 Jan 2021 07:56:48 +0900 (JST)
-        (envelope-from penguin-kernel@i-love.sakura.ne.jp)
-Subject: Re: [Patch] fbcon: i want fbcon soft scrollback feature come back
-To:     xuhuijie <huijiexu295@gmail.com>, gregkh@linuxfoundation.org,
-        daniel.vetter@ffwll.ch, jirislaby@kernel.org,
-        yepeilin.cs@gmail.com, b.zolnierkie@samsung.com,
-        george.kennedy@oracle.com, natechancellor@gmail.com
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20210107154801.1997-1-huijiexu295@gmail.com>
-From:   Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Message-ID: <0994b84e-4370-1065-c0ed-87c8b946a741@i-love.sakura.ne.jp>
-Date:   Fri, 8 Jan 2021 07:56:45 +0900
-User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.0
-MIME-Version: 1.0
-In-Reply-To: <20210107154801.1997-1-huijiexu295@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+        id S1725869AbhAHIcq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 8 Jan 2021 03:32:46 -0500
+Received: from mout.gmx.net ([212.227.15.18]:35019 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725791AbhAHIcq (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 8 Jan 2021 03:32:46 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1610094672;
+        bh=jPxErSARzOQpeDIOGpyn/6sc7W8I2LOu26u5r24It3k=;
+        h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
+        b=RjXGCMsveKS7TIXHmU9U29o+hd+onCm/golLxpxoJTAbt+UUcjBaAJQ36aWCBFWjw
+         ruvCJ1SFJE5/TUzk0DDJVd/dFkkVNO8c7Aw8BNCoiqdKx+XWgI5C9aSe23uAgvklSr
+         sXEyDCvI/aJXgZSNN9x6oOTWvGfKj5o+MXhqxZWo=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from Valinor ([82.128.181.212]) by mail.gmx.com (mrgmx004
+ [212.227.17.184]) with ESMTPSA (Nemesis) id 1MUowV-1kXlyo35l3-00QmZA; Fri, 08
+ Jan 2021 09:31:11 +0100
+Date:   Fri, 8 Jan 2021 10:32:50 +0200
+From:   Lauri Kasanen <cand@gmx.com>
+To:     linux-mips@vger.kernel.org
+Cc:     tsbogend@alpha.franken.de, hdegoede@redhat.com,
+        linux-fbdev@vger.kernel.org
+Subject: [PATCH 3/6] fbdev/simplefb: Add the N64's mode
+Message-Id: <20210108103250.43e293897f80ae175629b3e5@gmx.com>
+X-Mailer: Sylpheed 3.5.0 (GTK+ 2.18.6; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:bApoqVzbVU0mtX64Q9PoqtXUCH8phwiGJq2Pww/PWVXpBD3YUyD
+ Z9v8QWbhhxNq+2acMcb26jEqNJi9V9S78i0uHeyBNdrXibomhWw9pvVLzegtUhs06R09vXd
+ K8CPcoibffQGz97VQr0BGnX1/1lci1CLU1dJSqJnApW7ZOIhFm6rAGo1Ff7TZyWKwxWlURD
+ PAiefH1+/uh3BST6KxLKg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:QMSv8irzne0=:67h5VWDrIbAKtrxMipt5KZ
+ RFYiYTQAKBC1QdNSd9cdpn6MElpMCqxQiIAzsc/VnFL/lTpapX70IzvxJKSxMOlSXUafGxBxx
+ FbM6eq7JaIA+NjuRzUrc2bGrIhDicxIkksppv01ofM7JoGqZCZ8659ul7V1cB46TTPx2cQE1O
+ RHpXaGyPDTVx7WN1XUt0VGCY0TnZEoYAv3EwRCALVMH61b+ffrzLAEzeu33BB3q3y2IpsKBCz
+ FCbrm/aH5BfrOgsdkWKNstkDKZNASMh8wAPd4+Z/Brw5xvjbhGnY4pJpuEWG74oQuXB94S+9z
+ tF51N1Fr+HCp/WOysbIbspHod+J9tSsIsajrTB/3TK60qByMnmgKg8XcWzpsORcoFNK8XMwPN
+ 3hWldXh+kRMBLmuKSpoda0wUHx0lWC81eQ2NdFoFpRhK07yQ1W4tZymRAjDIlFtNxkrKcsqbR
+ tNLgdCCy9BaNPsf68vqgoxOfVkaf5GRBcpJJ1SwXu/WGxOBtxG+fqbf8nblmYppXmFta3/aDb
+ 0IhCpDXFJ7MBzk4glXr3p5pjfsgKyiwQXoS4YBio8d0DoOTWkcOumyXm7TjzkRBjLqu48ZWVa
+ tBGzcH7JtF0+KhlhYAakiGdR837w5vu06e4nqAc5nK+tLuEW2kS2VKfYj3nWI2LQFOiDPDo8/
+ zVvo7P2DZVTzifUnuecGNSRRKxAGc2i5W2EcJ9u2E+10WxswBRIIYgScXw76Mej9/cvRyzPU+
+ BCHhLCwQTLwIU8DsHGQVPf+LXX1Rtt9o6o7Cp2sivYIH5nYTqpr+iOlCKBC05o38/KSzVHnAE
+ PO9m9xV9CoSBlStATYPP9/ivbqcyKEvZgs3NDdtQrB1ZKvuAxSdZVAf+BJ/HoEFqP4ig+2D11
+ KbHqK6DsjE8N7C3Qp1PA==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2021/01/08 0:48, xuhuijie wrote:
-> This commit 50145474f6ef(fbcon: remove soft scrollback code) remove soft scrollback in
-> fbcon. So the shift+PageDown and shift+PageUp is missing. But PageUp is a vary important
-> feature when system panic or reset. I can get log by PageUp before, but now there is no
-> way to get. Especially on the server system, we always use bmc to control computer.
-> So I hope the community can add this feature back.
-> 
+By keeping it separate for the platform, we save 748 bytes.
+This brings simplefb to 2.5kb from 3.2kb, when a native fb driver
+was 1.5kb.
 
-You can configure kdump for panic, and netconsole for reset.
-(I don't know whether PageUp key works after panic...)
+Signed-off-by: Lauri Kasanen <cand@gmx.com>
+=2D--
+ include/linux/platform_data/simplefb.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+No changes for this patch, just refreshing as part of the series.
+
+diff --git a/include/linux/platform_data/simplefb.h b/include/linux/platfo=
+rm_data/simplefb.h
+index ca83376..c9d4f2c 100644
+=2D-- a/include/linux/platform_data/simplefb.h
++++ b/include/linux/platform_data/simplefb.h
+@@ -13,6 +13,12 @@
+ #include <linux/types.h>
+
+ /* format array, use it to initialize a "struct simplefb_format" array */
++#ifdef CONFIG_MACH_NINTENDO64
++#define SIMPLEFB_FORMATS \
++{ \
++	{ "r5g5b5a1", 16, {11, 5}, {6, 5}, {1, 5}, {0, 1}, DRM_FORMAT_RGBA5551 }=
+, \
++}
++#else
+ #define SIMPLEFB_FORMATS \
+ { \
+ 	{ "r5g6b5", 16, {11, 5}, {5, 6}, {0, 5}, {0, 0}, DRM_FORMAT_RGB565 }, \
+@@ -25,6 +31,7 @@
+ 	{ "x2r10g10b10", 32, {20, 10}, {10, 10}, {0, 10}, {0, 0}, DRM_FORMAT_XRG=
+B2101010 }, \
+ 	{ "a2r10g10b10", 32, {20, 10}, {10, 10}, {0, 10}, {30, 2}, DRM_FORMAT_AR=
+GB2101010 }, \
+ }
++#endif
+
+ /*
+  * Data-Format for Simple-Framebuffers
+=2D-
+2.6.2
+

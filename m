@@ -2,122 +2,135 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05162C4360C
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jan 2021 13:12:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC13CC43381
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jan 2021 16:25:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BEA2D2311E
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jan 2021 13:12:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A3B0422CE3
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jan 2021 16:25:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726003AbhALNMg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Jan 2021 08:12:36 -0500
-Received: from mail.kernel.org ([198.145.29.99]:34888 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726386AbhALNMf (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Jan 2021 08:12:35 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 6E76E2311D;
-        Tue, 12 Jan 2021 13:11:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1610457114;
-        bh=vP2DCagVtAMu9x56EKZAmURKgDbYatteSbiEwLNkbDc=;
-        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
-        b=VtmmSSY2umtEYzqFZ97n8qo1zKpm2Q/ov5UyeApaJAOCFKVKtbv6QoOwErR68J5i8
-         J0TcbtmwpjzN13nNYzNrXmUH5G4ZCyHhYYeFhhlgW46WKYqEwA/+l7SYi1CDGS8Z5l
-         QcJ7wYW3hDLfJTB0qIokccmUbQjNTkt0C6KFc1hbF42t2CeiD+AfVEBXk1HNkqYXg/
-         PQYYRyoKFnMz9qW23cbQtFYM6DzdGlbWizGUDrqxN8R2G9YxnElWzrefWvtRD79qQq
-         lmnBBRKN0lv80UzGCREXpvTL2+XmFo/4GZxyx9MBszv4ihPIhctyG/I/cB0jCgzECM
-         kn8y3tXwiRuag==
-Subject: Re: [PATCHv1] video: omapfb2: Make standard and custom DSI command
- mode panel driver mutually exclusive
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sam Ravnborg <sam@ravnborg.org>
-Cc:     Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+        id S2406184AbhALQZj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Jan 2021 11:25:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33700 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406170AbhALQZj (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 12 Jan 2021 11:25:39 -0500
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E666DC061794;
+        Tue, 12 Jan 2021 08:24:58 -0800 (PST)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: sre)
+        with ESMTPSA id 4AFFF1F45463
+Received: by earth.universe (Postfix, from userid 1000)
+        id DE9713C0C94; Tue, 12 Jan 2021 17:24:54 +0100 (CET)
+Date:   Tue, 12 Jan 2021 17:24:54 +0100
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Tomi Valkeinen <tomba@kernel.org>
+Cc:     Sam Ravnborg <sam@ravnborg.org>, linux-fbdev@vger.kernel.org,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
         kernel@collabora.com
+Subject: omapfb removal (was: Re: [PATCHv1] video: omapfb2: Make standard and
+ custom DSI command mode panel driver mutually exclusive)
+Message-ID: <20210112162454.hfzj5bxy7e6zlccl@earth.universe>
 References: <20210108122540.657501b2@canb.auug.org.au>
  <20210108112441.14609-1-sebastian.reichel@collabora.com>
  <20210108195839.GA1429715@ravnborg.org>
  <20210112120246.ujhjyylrlgfrfvig@earth.universe>
-From:   Tomi Valkeinen <tomba@kernel.org>
-Message-ID: <4b39c036-fb70-4a5b-ddda-08ce2f0a6db5@kernel.org>
-Date:   Tue, 12 Jan 2021 15:10:56 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ <4b39c036-fb70-4a5b-ddda-08ce2f0a6db5@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20210112120246.ujhjyylrlgfrfvig@earth.universe>
-Content-Type: text/plain; charset=windows-1252
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="ogcdqsrw7fdsgqmh"
+Content-Disposition: inline
+In-Reply-To: <4b39c036-fb70-4a5b-ddda-08ce2f0a6db5@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+
+--ogcdqsrw7fdsgqmh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+[dropped linux-next from Cc]
+
 Hi,
 
-On 12/01/2021 14:02, Sebastian Reichel wrote:
-> [replace Tomi's TI mail address with something working]
-> 
-> Hi,
-> 
-> On Fri, Jan 08, 2021 at 08:58:39PM +0100, Sam Ravnborg wrote:
->> Hi Sebastian,
->>
->> On Fri, Jan 08, 2021 at 12:24:41PM +0100, Sebastian Reichel wrote:
->>> Standard DRM panel driver for DSI command mode panel used by omapfb2 is also
->>> available now. Just like the other panels its module name clashes with the
->>> module from drivers/video/fbdev/omap2/omapfb/displays, part of the deprecated
->>> omapfb2 fbdev driver. As omapfb2 can only be compiled when the omapdrm driver
->>> is disabled, and the DRM panel drivers are useless in that case, make the
->>> omapfb2 panel depend on the standard DRM panels being disabled to fix
->>> the name clash.
->>>
->>> Fixes: cf64148abcfd ("drm/panel: Move OMAP's DSI command mode panel driver")
->>> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
->>> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
->>
->> For a backport this looks good:
->> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> 
-> Thanks.
+On Tue, Jan 12, 2021 at 03:10:56PM +0200, Tomi Valkeinen wrote:
+> >> But why is it it we need omapfb at all when we have omapdrm?
+> >=20
+> > I think there are two reasons omapfb has not been killed yet. One
+> > reason was missing support for manually updated DSI panels, which
+> > have been working since 1 or 2 kernel releases now. The other reason
+> > is some people using it in combination with an out-of-tree PowerVR
+> > kernel driver. There is currently work going on to use a more recent
+> > PowerVR driver based on omapdrm driven by Maemo Leste people.
+>=20
+> omapfb also has a custom sysfs API, so applications that depend on it
+> would not work anymore. I don't know if there are such applications, thou=
+gh.
+>=20
+> >> Can we sunset all or some parts of omap support in video/?
+> >> If not, what is missing to do so.
+> >=20
+> > IDK the exact status of the PowerVR work and have not been using
+> > omapfb myself for years. I don't think there is a reason to rush
+> > this, so my suggestion is removing it in 3 steps giving people
+> > the chance to complain:
+> >=20
+> > 1. Add 'depends on EXPERT' to 'FB_OMAP2' and add deprecation notice
+> >    referencing omapdrm in help text in 5.12
+> > 2. Add 'depends on BROKEN' in 5.13
+> > 3. Drop drivers/video/fbdev/omap2 afterwards
+>=20
+> I'd love to remove omapfb, but I also fear that there are still people
+> using it. We can try the above sequence, but it's probably better to go
+> slower, as people may not be using the latest kernels.
 
-Thanks. I'll push to drm-misc-next, as that's where the commit that
-breaks this is.
+I thought about this again and I think the best option is to rename
+CONFIG_FB_OMAP2 to something like CONFIG_FB_OMAP2_DEPRECATED and
+update the help text. That way anyone with CONFIG_FB_OMAP2 in
+their .config will definitely notice the change when upgrading to
+a newer kernel, but can easily fix it temporarily. Help text could
+be
 
->> But why is it it we need omapfb at all when we have omapdrm?
-> 
-> I think there are two reasons omapfb has not been killed yet. One
-> reason was missing support for manually updated DSI panels, which
-> have been working since 1 or 2 kernel releases now. The other reason
-> is some people using it in combination with an out-of-tree PowerVR
-> kernel driver. There is currently work going on to use a more recent
-> PowerVR driver based on omapdrm driven by Maemo Leste people.
+"This driver will be removed in 2022, please switch to omapdrm."
 
-omapfb also has a custom sysfw API, so applications that depend on it
-would not work anymore. I don't know if there are such applications, though.
+and no other intermediate steps are required that way :)
 
->> Can we sunset all or some parts of omap support in video/?
->> If not, what is missing to do so.
-> 
-> IDK the exact status of the PowerVR work and have not been using
-> omapfb myself for years. I don't think there is a reason to rush
-> this, so my suggestion is removing it in 3 steps giving people
-> the chance to complain:
-> 
-> 1. Add 'depends on EXPERT' to 'FB_OMAP2' and add deprecation notice
->    referencing omapdrm in help text in 5.12
-> 2. Add 'depends on BROKEN' in 5.13
-> 3. Drop drivers/video/fbdev/omap2 afterwards
+But while looking through CONFIG_FB_OMAP2 references I noticed there
+is also a V4L2 driver (CONFIG_VIDEO_OMAP2_VOUT), which seems to
+only work with omapfb. IIUIC that driver provides display overlays
+to V4L. I guess on omapdrm V4L can use DRM planes instead and no
+driver is needed (i.e. this driver could just go away with omapfb)?
 
-I'd love to remove omapfb, but I also fear that there are still people
-using it. We can try the above sequence, but it's probably better to go
-slower, as people may not be using the latest kernels.
+-- Sebastian
 
- Tomi
+--ogcdqsrw7fdsgqmh
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl/9zU8ACgkQ2O7X88g7
++pr9vQ//Wurb5B8uHiEeZ7CYL8PnEnfSM/2qv06cU38Yqn0Ci4kZGvcZtyfWaKHn
+XZ918kT3MzG8Y5qI8VH67fLF8LbUct0mqNm4sKsTdGy72C8Tw4iaQaWkBLWW7yVc
+Cjti9FbljkYfBI36x1Kj6AMQBAkb0Zfi5vBmCFv0OQs7HnsEO4uD6yeD4b4rXRvl
+4mm8naWndQCKD0yP+YDRfENg1guZuOinGIJBBfMpX4hf6WM31zjclLTBoC5hcY7G
+ZPWjnqFZO0D0gP9opnmfnn3OlQKWO07Cu2CVmD1jikF6eD1KXjMl+eP1vTYdxH/x
+TFrFEcTnNCPqrm0CILZr3xBEG1qeetAnaf16QcqWHMusZFvNLL+f2ltKnhiQ8CUI
+JwjnxVADyCg2185R++ByYfDidGDxW+2Fdx1Ylg17XlSObIX0cMxk+O9v6vBz2K9c
+GAVMWRrE8q+OO5brhPvY9VtqAdyKuGpRrcpFWlVAJK44xo4P0Q8L7+pquANe+PVw
+wINsAPNHp52AewrnCZjnM8QxpTtq+n4gL6c0UhWFrZdyQLxpfTVfNr0dOfTRn6xs
+Aj5wvJ6bSe90PH1XvXzOPIWZdY3G92XoY6op2eZHIewEarlimifMrjFRGgXUww2c
+mjyrTqqhzdRU5UwmtiR4E84Lpdha4nHZ16WgPdZZFDcj/h5FdI0=
+=mgmT
+-----END PGP SIGNATURE-----
+
+--ogcdqsrw7fdsgqmh--

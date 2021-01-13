@@ -2,124 +2,226 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,FROM_LOCAL_HEX,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FBD2C433E9
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jan 2021 16:30:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 027E1C433DB
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 10:38:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CC26E2312E
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Jan 2021 16:30:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A455A233A2
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 10:38:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2392697AbhALQaV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Jan 2021 11:30:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34696 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2392698AbhALQaV (ORCPT
+        id S1726692AbhAMKi5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 13 Jan 2021 05:38:57 -0500
+Received: from mail-io1-f69.google.com ([209.85.166.69]:40906 "EHLO
+        mail-io1-f69.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726995AbhAMKi4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Jan 2021 11:30:21 -0500
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [IPv6:2001:4b98:dc2:55:216:3eff:fef7:d647])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E88AFC061786;
-        Tue, 12 Jan 2021 08:30:05 -0800 (PST)
-Received: from pendragon.ideasonboard.com (62-78-145-57.bb.dnainternet.fi [62.78.145.57])
-        by perceval.ideasonboard.com (Postfix) with ESMTPSA id 33C6958B;
-        Tue, 12 Jan 2021 17:30:03 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-        s=mail; t=1610469003;
-        bh=VG6IMjHKwXDLQBfQ9biHJXOjwpA2yRoHq+B9kTZZDPY=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=tqOYACBfPcmWFdfKNXYyM8sTthKsHFXY21pJfNAVsq2zur+56smXzfnlEOQJaXr5V
-         IOtTS3W+f1oIbyY5Kz2sJ4aUeSXYdCUA3yx9bjAbyQK+T+znK5qzP5Pv1GYhd8M72G
-         T7t0LSa51j39nSEGQ/RL1S+FKEoViP4d1L8KxdKs=
-Date:   Tue, 12 Jan 2021 18:29:47 +0200
-From:   Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc:     Tomi Valkeinen <tomba@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-        linux-fbdev@vger.kernel.org,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        kernel@collabora.com
-Subject: Re: omapfb removal (was: Re: [PATCHv1] video: omapfb2: Make standard
- and custom DSI command mode panel driver mutually exclusive)
-Message-ID: <X/3Oe9HwKe9UFnS1@pendragon.ideasonboard.com>
-References: <20210108122540.657501b2@canb.auug.org.au>
- <20210108112441.14609-1-sebastian.reichel@collabora.com>
- <20210108195839.GA1429715@ravnborg.org>
- <20210112120246.ujhjyylrlgfrfvig@earth.universe>
- <4b39c036-fb70-4a5b-ddda-08ce2f0a6db5@kernel.org>
- <20210112162454.hfzj5bxy7e6zlccl@earth.universe>
+        Wed, 13 Jan 2021 05:38:56 -0500
+Received: by mail-io1-f69.google.com with SMTP id l18so2140949iok.7
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 02:38:40 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:date:message-id:subject:from:to;
+        bh=Rf0qkGcLKZcXOCwuSoJ3U1uuRWEpE0nNPdXTF3l2hL4=;
+        b=aXmWEUzhLOkV3xRz2y2C7xs2h3JXOH7vUJNDL542WenAsOAACSVZcMli77IoHr95js
+         X3H9j8siXSz28STjMk4x1ic2L4hZPyB0ZbDuyZM0R5vgsq5SFOfrGvzoWk3jZTZbDXEx
+         MwJPWuTGpHGK5P7vbQb1i/j39vac3eIQRJ6iT0iD4ymyuxjt6MvAwo38D1wBpllDMyob
+         ghYl5KBXEtGZF4xzlbXoMDr3LOiW7M5ON3KbVR12PEp9M0tkCRIXiSnG6+R6EbnVwEMK
+         fvjNe7+vSsnibPAmOBURSJreKsdEHdw+DekNXf7wUIq04KI+LcVz+vNs0Ec3JDNaC2Il
+         V91w==
+X-Gm-Message-State: AOAM530QNyl3lsF3eUAzCX9fMEd9NGKDmOX7DjMputO/bjTOx5uF8gFT
+        U3dwkgD91HHpg3vDzDG6EqsROGFfaFvdo4rrpHJOXVMzSi8r
+X-Google-Smtp-Source: ABdhPJxIhbMxWbqH09VI31IeFE5tniINNYJsm+xRvLC1RO/aVt96bC7M+rTNvvoBEMKrvWy0erLgmcwV3LR6kmS2XHxJrP6DxWSC
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20210112162454.hfzj5bxy7e6zlccl@earth.universe>
+X-Received: by 2002:a92:b008:: with SMTP id x8mr1773225ilh.297.1610534295232;
+ Wed, 13 Jan 2021 02:38:15 -0800 (PST)
+Date:   Wed, 13 Jan 2021 02:38:15 -0800
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <00000000000090e80805b8c5bc59@google.com>
+Subject: memory leak in fbcon_set_font
+From:   syzbot <syzbot+2f2c18881a450f22d1bf@syzkaller.appspotmail.com>
+To:     b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch,
+        dri-devel@lists.freedesktop.org, george.kennedy@oracle.com,
+        gregkh@linuxfoundation.org, jirislaby@kernel.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        syzkaller-bugs@googlegroups.com, yepeilin.cs@gmail.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Sebastian,
+Hello,
 
-On Tue, Jan 12, 2021 at 05:24:54PM +0100, Sebastian Reichel wrote:
-> [dropped linux-next from Cc]
-> 
-> Hi,
-> 
-> On Tue, Jan 12, 2021 at 03:10:56PM +0200, Tomi Valkeinen wrote:
-> > >> But why is it it we need omapfb at all when we have omapdrm?
-> > > 
-> > > I think there are two reasons omapfb has not been killed yet. One
-> > > reason was missing support for manually updated DSI panels, which
-> > > have been working since 1 or 2 kernel releases now. The other reason
-> > > is some people using it in combination with an out-of-tree PowerVR
-> > > kernel driver. There is currently work going on to use a more recent
-> > > PowerVR driver based on omapdrm driven by Maemo Leste people.
-> > 
-> > omapfb also has a custom sysfs API, so applications that depend on it
-> > would not work anymore. I don't know if there are such applications, though.
-> > 
-> > >> Can we sunset all or some parts of omap support in video/?
-> > >> If not, what is missing to do so.
-> > > 
-> > > IDK the exact status of the PowerVR work and have not been using
-> > > omapfb myself for years. I don't think there is a reason to rush
-> > > this, so my suggestion is removing it in 3 steps giving people
-> > > the chance to complain:
-> > > 
-> > > 1. Add 'depends on EXPERT' to 'FB_OMAP2' and add deprecation notice
-> > >    referencing omapdrm in help text in 5.12
-> > > 2. Add 'depends on BROKEN' in 5.13
-> > > 3. Drop drivers/video/fbdev/omap2 afterwards
-> > 
-> > I'd love to remove omapfb, but I also fear that there are still people
-> > using it. We can try the above sequence, but it's probably better to go
-> > slower, as people may not be using the latest kernels.
-> 
-> I thought about this again and I think the best option is to rename
-> CONFIG_FB_OMAP2 to something like CONFIG_FB_OMAP2_DEPRECATED and
-> update the help text. That way anyone with CONFIG_FB_OMAP2 in
-> their .config will definitely notice the change when upgrading to
-> a newer kernel, but can easily fix it temporarily. Help text could
-> be
-> 
-> "This driver will be removed in 2022, please switch to omapdrm."
-> 
-> and no other intermediate steps are required that way :)
+syzbot found the following issue on:
 
-The plan looks good to me.
+HEAD commit:    e609571b Merge tag 'nfs-for-5.11-2' of git://git.linux-nfs..
+git tree:       upstream
+console output: https://syzkaller.appspot.com/x/log.txt?x=165261e0d00000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=850b6de5f8959443
+dashboard link: https://syzkaller.appspot.com/bug?extid=2f2c18881a450f22d1bf
+compiler:       gcc (GCC) 10.1.0-syz 20200507
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16ab20c7500000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=1008b770d00000
 
-> But while looking through CONFIG_FB_OMAP2 references I noticed there
-> is also a V4L2 driver (CONFIG_VIDEO_OMAP2_VOUT), which seems to
-> only work with omapfb. IIUIC that driver provides display overlays
-> to V4L. I guess on omapdrm V4L can use DRM planes instead and no
-> driver is needed (i.e. this driver could just go away with omapfb)?
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+2f2c18881a450f22d1bf@syzkaller.appspotmail.com
 
-One feature that the omapfb2 and the omap-vout drivers provide is
-rotation support with VRFB on OMAP3. I haven't moved to omapdrm on an
-old project for this reason. It should be possible to implement rotation
-support in omapdrm, but I'm not aware of any effort in that direction.
+BUG: memory leak
+unreferenced object 0xffff88811813ea00 (size 512):
+  comm "syz-executor939", pid 10246, jiffies 4294971847 (age 34.510s)
+  hex dump (first 32 bytes):
+    b0 55 1f 9b 00 00 00 00 00 01 00 00 06 00 00 00  .U..............
+    11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<00000000062fad90>] kmalloc include/linux/slab.h:557 [inline]
+    [<00000000062fad90>] fbcon_set_font+0x128/0x370 drivers/video/fbdev/core/fbcon.c:2454
+    [<00000000ed2d1b1e>] con_font_set drivers/tty/vt/vt.c:4667 [inline]
+    [<00000000ed2d1b1e>] con_font_op+0x497/0x740 drivers/tty/vt/vt.c:4711
+    [<00000000fd6b18ad>] vt_io_ioctl drivers/tty/vt/vt_ioctl.c:596 [inline]
+    [<00000000fd6b18ad>] vt_ioctl+0xeab/0x19d0 drivers/tty/vt/vt_ioctl.c:817
+    [<00000000369331c6>] tty_ioctl+0x6c3/0xc40 drivers/tty/tty_io.c:2658
+    [<00000000a092c047>] vfs_ioctl fs/ioctl.c:48 [inline]
+    [<00000000a092c047>] __do_sys_ioctl fs/ioctl.c:753 [inline]
+    [<00000000a092c047>] __se_sys_ioctl fs/ioctl.c:739 [inline]
+    [<00000000a092c047>] __x64_sys_ioctl+0xfc/0x140 fs/ioctl.c:739
+    [<00000000705a3959>] do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+    [<00000000f35163f9>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
 
--- 
-Regards,
+BUG: memory leak
+unreferenced object 0xffff88811813ea00 (size 512):
+  comm "syz-executor939", pid 10246, jiffies 4294971847 (age 36.030s)
+  hex dump (first 32 bytes):
+    b0 55 1f 9b 00 00 00 00 00 01 00 00 06 00 00 00  .U..............
+    11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<00000000062fad90>] kmalloc include/linux/slab.h:557 [inline]
+    [<00000000062fad90>] fbcon_set_font+0x128/0x370 drivers/video/fbdev/core/fbcon.c:2454
+    [<00000000ed2d1b1e>] con_font_set drivers/tty/vt/vt.c:4667 [inline]
+    [<00000000ed2d1b1e>] con_font_op+0x497/0x740 drivers/tty/vt/vt.c:4711
+    [<00000000fd6b18ad>] vt_io_ioctl drivers/tty/vt/vt_ioctl.c:596 [inline]
+    [<00000000fd6b18ad>] vt_ioctl+0xeab/0x19d0 drivers/tty/vt/vt_ioctl.c:817
+    [<00000000369331c6>] tty_ioctl+0x6c3/0xc40 drivers/tty/tty_io.c:2658
+    [<00000000a092c047>] vfs_ioctl fs/ioctl.c:48 [inline]
+    [<00000000a092c047>] __do_sys_ioctl fs/ioctl.c:753 [inline]
+    [<00000000a092c047>] __se_sys_ioctl fs/ioctl.c:739 [inline]
+    [<00000000a092c047>] __x64_sys_ioctl+0xfc/0x140 fs/ioctl.c:739
+    [<00000000705a3959>] do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+    [<00000000f35163f9>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
 
-Laurent Pinchart
+BUG: memory leak
+unreferenced object 0xffff88811813ea00 (size 512):
+  comm "syz-executor939", pid 10246, jiffies 4294971847 (age 37.550s)
+  hex dump (first 32 bytes):
+    b0 55 1f 9b 00 00 00 00 00 01 00 00 06 00 00 00  .U..............
+    11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<00000000062fad90>] kmalloc include/linux/slab.h:557 [inline]
+    [<00000000062fad90>] fbcon_set_font+0x128/0x370 drivers/video/fbdev/core/fbcon.c:2454
+    [<00000000ed2d1b1e>] con_font_set drivers/tty/vt/vt.c:4667 [inline]
+    [<00000000ed2d1b1e>] con_font_op+0x497/0x740 drivers/tty/vt/vt.c:4711
+    [<00000000fd6b18ad>] vt_io_ioctl drivers/tty/vt/vt_ioctl.c:596 [inline]
+    [<00000000fd6b18ad>] vt_ioctl+0xeab/0x19d0 drivers/tty/vt/vt_ioctl.c:817
+    [<00000000369331c6>] tty_ioctl+0x6c3/0xc40 drivers/tty/tty_io.c:2658
+    [<00000000a092c047>] vfs_ioctl fs/ioctl.c:48 [inline]
+    [<00000000a092c047>] __do_sys_ioctl fs/ioctl.c:753 [inline]
+    [<00000000a092c047>] __se_sys_ioctl fs/ioctl.c:739 [inline]
+    [<00000000a092c047>] __x64_sys_ioctl+0xfc/0x140 fs/ioctl.c:739
+    [<00000000705a3959>] do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+    [<00000000f35163f9>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff88811813ea00 (size 512):
+  comm "syz-executor939", pid 10246, jiffies 4294971847 (age 37.630s)
+  hex dump (first 32 bytes):
+    b0 55 1f 9b 00 00 00 00 00 01 00 00 06 00 00 00  .U..............
+    11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<00000000062fad90>] kmalloc include/linux/slab.h:557 [inline]
+    [<00000000062fad90>] fbcon_set_font+0x128/0x370 drivers/video/fbdev/core/fbcon.c:2454
+    [<00000000ed2d1b1e>] con_font_set drivers/tty/vt/vt.c:4667 [inline]
+    [<00000000ed2d1b1e>] con_font_op+0x497/0x740 drivers/tty/vt/vt.c:4711
+    [<00000000fd6b18ad>] vt_io_ioctl drivers/tty/vt/vt_ioctl.c:596 [inline]
+    [<00000000fd6b18ad>] vt_ioctl+0xeab/0x19d0 drivers/tty/vt/vt_ioctl.c:817
+    [<00000000369331c6>] tty_ioctl+0x6c3/0xc40 drivers/tty/tty_io.c:2658
+    [<00000000a092c047>] vfs_ioctl fs/ioctl.c:48 [inline]
+    [<00000000a092c047>] __do_sys_ioctl fs/ioctl.c:753 [inline]
+    [<00000000a092c047>] __se_sys_ioctl fs/ioctl.c:739 [inline]
+    [<00000000a092c047>] __x64_sys_ioctl+0xfc/0x140 fs/ioctl.c:739
+    [<00000000705a3959>] do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+    [<00000000f35163f9>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff88811813ea00 (size 512):
+  comm "syz-executor939", pid 10246, jiffies 4294971847 (age 37.720s)
+  hex dump (first 32 bytes):
+    b0 55 1f 9b 00 00 00 00 00 01 00 00 06 00 00 00  .U..............
+    11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<00000000062fad90>] kmalloc include/linux/slab.h:557 [inline]
+    [<00000000062fad90>] fbcon_set_font+0x128/0x370 drivers/video/fbdev/core/fbcon.c:2454
+    [<00000000ed2d1b1e>] con_font_set drivers/tty/vt/vt.c:4667 [inline]
+    [<00000000ed2d1b1e>] con_font_op+0x497/0x740 drivers/tty/vt/vt.c:4711
+    [<00000000fd6b18ad>] vt_io_ioctl drivers/tty/vt/vt_ioctl.c:596 [inline]
+    [<00000000fd6b18ad>] vt_ioctl+0xeab/0x19d0 drivers/tty/vt/vt_ioctl.c:817
+    [<00000000369331c6>] tty_ioctl+0x6c3/0xc40 drivers/tty/tty_io.c:2658
+    [<00000000a092c047>] vfs_ioctl fs/ioctl.c:48 [inline]
+    [<00000000a092c047>] __do_sys_ioctl fs/ioctl.c:753 [inline]
+    [<00000000a092c047>] __se_sys_ioctl fs/ioctl.c:739 [inline]
+    [<00000000a092c047>] __x64_sys_ioctl+0xfc/0x140 fs/ioctl.c:739
+    [<00000000705a3959>] do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+    [<00000000f35163f9>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+BUG: memory leak
+unreferenced object 0xffff88811813ea00 (size 512):
+  comm "syz-executor939", pid 10246, jiffies 4294971847 (age 37.810s)
+  hex dump (first 32 bytes):
+    b0 55 1f 9b 00 00 00 00 00 01 00 00 06 00 00 00  .U..............
+    11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<00000000062fad90>] kmalloc include/linux/slab.h:557 [inline]
+    [<00000000062fad90>] fbcon_set_font+0x128/0x370 drivers/video/fbdev/core/fbcon.c:2454
+    [<00000000ed2d1b1e>] con_font_set drivers/tty/vt/vt.c:4667 [inline]
+    [<00000000ed2d1b1e>] con_font_op+0x497/0x740 drivers/tty/vt/vt.c:4711
+    [<00000000fd6b18ad>] vt_io_ioctl drivers/tty/vt/vt_ioctl.c:596 [inline]
+    [<00000000fd6b18ad>] vt_ioctl+0xeab/0x19d0 drivers/tty/vt/vt_ioctl.c:817
+    [<00000000369331c6>] tty_ioctl+0x6c3/0xc40 drivers/tty/tty_io.c:2658
+    [<00000000a092c047>] vfs_ioctl fs/ioctl.c:48 [inline]
+    [<00000000a092c047>] __do_sys_ioctl fs/ioctl.c:753 [inline]
+    [<00000000a092c047>] __se_sys_ioctl fs/ioctl.c:739 [inline]
+    [<00000000a092c047>] __x64_sys_ioctl+0xfc/0x140 fs/ioctl.c:739
+    [<00000000705a3959>] do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+    [<00000000f35163f9>] entry_SYSCALL_64_after_hwframe+0x44/0xa9
+
+write to /proc/sys/kernel/hung_task_check_interval_secs failed: No such file or directory
+write to /proc/sys/kernel/softlockup_all_cpu_backtrace failed: No such file or directory
+executing program
+write to /proc/sys/kernel/hung_task_check_interval_secs failed: No such file or directory
+write to /proc/sys/kernel/softlockup_all_cpu_backtrace failed: No such file or directory
+write to /proc/sys/kernel/hung_task_check_interval_secs failed: No such file or directory
+write to /proc/sys/kernel/softlockup_all_cpu_backtrace failed: No such file or directory
+write to /proc/sys/kernel/hung_task_check_interval_secs failed: No such file or directory
+write to /proc/sys/kernel/softlockup_all_cpu_backtrace failed: No such file or directory
+executing program
+write to /proc/sys/kernel/hung_task_check_interval_secs failed: No such file or directory
+write to /proc/sys/kernel/softlockup_all_cpu_backtrace failed: No such file or directory
+write to /proc/sys/kernel/hung_task_check_interval_secs failed: No such file or directory
+write to /proc/sys/kernel/softlockup_all_cpu_backtrace failed: No such file or directory
+write to /proc/sys/kernel/hung_task_check_interval_secs failed: No such file or directory
+write to /proc/sys/kernel/softlockup_all_cpu_backtrace failed: No such file or directory
+write to /proc/sys/kernel/hung_task_check_interval_secs failed: No such file or directory
+write to /proc/sys/kernel/softlockup_all_cpu_backtrace failed: No such file or directory
+
+
+---
+This report is generated by a bot. It may contain errors.
+See https://goo.gl/tpsmEJ for more information about syzbot.
+syzbot engineers can be reached at syzkaller@googlegroups.com.
+
+syzbot will keep track of this issue. See:
+https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+syzbot can test patches for this issue, for details see:
+https://goo.gl/tpsmEJ#testing-patches

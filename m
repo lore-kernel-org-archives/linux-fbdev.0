@@ -7,63 +7,64 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB720C4332E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:53:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F215EC433E0
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:53:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A48BB23602
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:53:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AB13223600
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:53:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726952AbhAMOxH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 13 Jan 2021 09:53:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41784 "EHLO
+        id S1727693AbhAMOxI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 13 Jan 2021 09:53:08 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41782 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727693AbhAMOwN (ORCPT
+        with ESMTP id S1727687AbhAMOwN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Wed, 13 Jan 2021 09:52:13 -0500
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A2396C061358
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:51 -0800 (PST)
-Received: by mail-wm1-x334.google.com with SMTP id e25so1865359wme.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:51 -0800 (PST)
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 80297C061350
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:50 -0800 (PST)
+Received: by mail-wr1-x432.google.com with SMTP id r7so2409673wrc.5
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:50 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=fiTAiO1+djM4LYXjGKueW16bvgv2sBtNiLbtIOEARdk=;
-        b=IDza5YLilamkwPDT+g2/a0lofmuncKNpAv/y/6ZQX7PTgZHHrzIscPArIaLwzgGk21
-         +PTQkWm+NELC+KC9BFDcWCwiEBGUoc7D99iVhf/b8Zau/fF4+imDj62ocQwZfhj48s7p
-         G301bdVxqdgcGdeZ0mOu5lmhiQU2WC/WPRGqNZpFfUOiJAjYflnQOI3iCRme45LwRAT5
-         UA87z3v5OeC740plgM+jScryysn9swGK41grynXPhZPBHzL1uyI195awHeRx0r0D+KV6
-         M3YDyk1IDQxUtVgKliH+QZdMV6naG94aZh3W2EpFGPxDHMNQ6+AhIUIbY31cyP7lq5uP
-         Fxpw==
+        bh=cx+Lvpr+opVztxwCrpEEue+3ZpAhdFGYil/Lm2hEOBU=;
+        b=ClTWBKea4vm3y9ZVGUdkzqdOECtwhR9PudkWuiyjwsis41BqC493w/zvDp2ojr1Xuc
+         ZKnKrxsByJZR0AsZRzPwnncxKrIpJo8q/JxnXgt5uVjgHffxSyJ/m/GiYYZFr0k/fKPF
+         mAUTMzojahcDs+ltW3aBgJgY0pUiUSDu1uCQsHcM5514XCdauiHH8Frr9ruELCw0BD/E
+         FTVVet0fiPEihuRkcU9+1jE680PoB0pOR4Fx8MdQ56p1l1lAxW4F53kcOf3dMgFbW0wD
+         nLFBJyF35Zz+nr0o3nFYMPOFbn8EmarY0vsbpWCUmYqEvxpBpYIoiNLTuo7DHxfJGp22
+         4RYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=fiTAiO1+djM4LYXjGKueW16bvgv2sBtNiLbtIOEARdk=;
-        b=uodIqTmS7Vk3X7hvx6+Ec6XFN11Y7N0XEEcb9WLJ9Me489jK6b5R6KlnAFVAlzM/3U
-         IKba0XM+fjEQEh/8Uy/uUj0ll2w3wa4UbwmMGtOshqZr32ZzCogxKesMuGHCmMukCwNv
-         6h68/3voGEsWQwnpLu56Jdq3YdMgpmbZNi48e3B3hdpJvwPnTXlrrReCj99ZOoxszPPw
-         ZdEfB18JoFpgIWEbFly2uB0K31JK2I/yG2zMI68ooiiGKss9Mu39j6TXBiBldy3A8GLX
-         FVzLfm3L0QtBKGWqCgcsNBwPHTE9l9xaXIoeJaMjIY5EmMYnaYtNQ7TbOYnAuEZ13rJB
-         1xXw==
-X-Gm-Message-State: AOAM531MmRcg7qociE34S579NO1w7sDXTnn7LcnGVFODsK1nVQC5KUVa
-        uvPanPyMDYGEiIiZdQDYYifW2g==
-X-Google-Smtp-Source: ABdhPJzn0hsHSArPV+PdoU3MwAI+uaM7MfxzC+Q9pFqpa5/9nfQ0iIqmvEqP+hOl9RxA7AZoMzJjNw==
-X-Received: by 2002:a1c:988f:: with SMTP id a137mr2554157wme.130.1610549450459;
-        Wed, 13 Jan 2021 06:50:50 -0800 (PST)
-Received: from dell.default ([91.110.221.229])
-        by smtp.gmail.com with ESMTPSA id t188sm3273433wmf.9.2021.01.13.06.50.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        bh=cx+Lvpr+opVztxwCrpEEue+3ZpAhdFGYil/Lm2hEOBU=;
+        b=F7lhjmfDQ6BM5+eilNcKvFbQRGlxYJeFwDo5UzGSK/N2vozv5sOjyu3cVZdNEAKJZp
+         HoyOPoIbeFZtHg/XlUJNQ/BShCoBulXE1rT08L6ZnuRNqlSN7aMxQWMf3N5p/L5+U7EB
+         54MsEYEUm5NNOOJgEWq+RPkxkgcOjTSl09FYNvICTO/4LArasbgty2SzQRiyeP4TBAES
+         IUs3d2vbYczFF4HJFRo0OfpYLNzvwTBTfBy0zx46vLr+DyUxDxLl4d2j5IbquVqYoRvV
+         UjHjsp8W9GBmcf0syM/SpiveLe29qL4QHmNaFS6ETr5uWPLnrHBm9N2/f4MMarWxp34p
+         JqHQ==
+X-Gm-Message-State: AOAM5313mzOuLHZv9dVtHGQeIW0+KgujQ7Zw1cP5eMyzqP62FfRoyL04
+        +HrjC2o4ddfmxHTepr6NaafHyQ==
+X-Google-Smtp-Source: ABdhPJy85VePePA0CqsKm5siGrKpak6OmOYMGqGLRupA7S/S8zgvi5kBWxRpHIlYj831TLmAru4Taw==
+X-Received: by 2002:a5d:674b:: with SMTP id l11mr3094653wrw.247.1610549449265;
         Wed, 13 Jan 2021 06:50:49 -0800 (PST)
+Received: from dell.default ([91.110.221.229])
+        by smtp.gmail.com with ESMTPSA id t188sm3273433wmf.9.2021.01.13.06.50.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 13 Jan 2021 06:50:48 -0800 (PST)
 From:   Lee Jones <lee.jones@linaro.org>
 To:     lee.jones@linaro.org
-Cc:     linux-kernel@vger.kernel.org, Antonino Daplas <adaplas@gmail.com>,
-        Jeff Garzik <jgarzik@pobox.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH 26/31] video: fbdev: riva: riva_hw: Remove set but unused variables 'vus_p' and 'vus_n'
-Date:   Wed, 13 Jan 2021 14:50:04 +0000
-Message-Id: <20210113145009.1272040-27-lee.jones@linaro.org>
+Cc:     linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Software Engineering <lg@denx.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH 25/31] video: fbdev: mx3fb: Remove unused variable 'enabled'
+Date:   Wed, 13 Jan 2021 14:50:03 +0000
+Message-Id: <20210113145009.1272040-26-lee.jones@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210113145009.1272040-1-lee.jones@linaro.org>
 References: <20210113145009.1272040-1-lee.jones@linaro.org>
@@ -76,41 +77,40 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Fixes the following W=1 kernel build warning(s):
 
- drivers/video/fbdev/riva/riva_hw.c: In function ‘nv10CalcArbitration’:
- drivers/video/fbdev/riva/riva_hw.c:845:23: warning: variable ‘vus_p’ set but not used [-Wunused-but-set-variable]
- drivers/video/fbdev/riva/riva_hw.c:845:16: warning: variable ‘vus_n’ set but not used [-Wunused-but-set-variable]
+ drivers/video/fbdev/mx3fb.c: In function ‘sdc_disable_channel’:
+ drivers/video/fbdev/mx3fb.c:448:11: warning: variable ‘enabled’ set but not used [-Wunused-but-set-variable]
 
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-fbdev@vger.kernel.org
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Software Engineering <lg@denx.de>
 Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
 Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/video/fbdev/riva/riva_hw.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/video/fbdev/mx3fb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/riva/riva_hw.c b/drivers/video/fbdev/riva/riva_hw.c
-index 4ee63f7d84d3e..2bc510c24aa9e 100644
---- a/drivers/video/fbdev/riva/riva_hw.c
-+++ b/drivers/video/fbdev/riva/riva_hw.c
-@@ -842,7 +842,7 @@ static void nv10CalcArbitration
-     int found, mclk_extra, mclk_loop, cbs, m1;
-     int mclk_freq, pclk_freq, nvclk_freq, mp_enable;
-     int us_m, us_m_min, us_n, us_p, crtc_drain_rate;
--    int vus_m, vus_n, vus_p;
-+    int vus_m;
-     int vpm_us, us_video, cpm_us, us_crt,clwm;
-     int clwm_rnd_down;
-     int m2us, us_pipe_min, p1clk, p2;
-@@ -924,8 +924,6 @@ static void nv10CalcArbitration
-       us_pipe_min = us_m_min + us_n + us_p;
+diff --git a/drivers/video/fbdev/mx3fb.c b/drivers/video/fbdev/mx3fb.c
+index 894617ddabcb6..d1c8f7a969ac3 100644
+--- a/drivers/video/fbdev/mx3fb.c
++++ b/drivers/video/fbdev/mx3fb.c
+@@ -445,7 +445,6 @@ static void sdc_enable_channel(struct mx3fb_info *mx3_fbi)
+ static void sdc_disable_channel(struct mx3fb_info *mx3_fbi)
+ {
+ 	struct mx3fb_data *mx3fb = mx3_fbi->mx3fb;
+-	uint32_t enabled;
+ 	unsigned long flags;
  
-       vus_m = mclk_loop *1000*1000 / mclk_freq; /* Mclk latency in us */
--      vus_n = (4)*1000*1000 / nvclk_freq;/* nvclk latency in us */
--      vus_p = 0*1000*1000 / pclk_freq;/* pclk latency in us */
+ 	if (mx3_fbi->txd == NULL)
+@@ -453,7 +452,7 @@ static void sdc_disable_channel(struct mx3fb_info *mx3_fbi)
  
-       if(video_enable) {
-         crtc_drain_rate = pclk_freq * bpp/8; /* MB/s */
+ 	spin_lock_irqsave(&mx3fb->lock, flags);
+ 
+-	enabled = sdc_fb_uninit(mx3_fbi);
++	sdc_fb_uninit(mx3_fbi);
+ 
+ 	spin_unlock_irqrestore(&mx3fb->lock, flags);
+ 
 -- 
 2.25.1
 

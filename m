@@ -7,63 +7,63 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24E4CC433E9
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6F19C43331
 	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:53:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E5FD02389E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:53:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 751E623741
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:53:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727721AbhAMOwT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 13 Jan 2021 09:52:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41622 "EHLO
+        id S1727170AbhAMOw7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 13 Jan 2021 09:52:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41922 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727714AbhAMOwS (ORCPT
+        with ESMTP id S1727703AbhAMOwR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 13 Jan 2021 09:52:18 -0500
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46C50C06135B
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:53 -0800 (PST)
-Received: by mail-wm1-x333.google.com with SMTP id n16so3770066wmc.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:53 -0800 (PST)
+        Wed, 13 Jan 2021 09:52:17 -0500
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B26C3C061389
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:38 -0800 (PST)
+Received: by mail-wm1-x332.google.com with SMTP id h17so1654487wmq.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=RvwJoM6XPaTXW+swhyuXIxTf/L820o0O05r3Nn2BahU=;
-        b=nid9QSSJw0nnYpdBxWNfeDxySbsTdIoMqZnUcmEnH52+LjrzqEPdVxtuCSQU+wNDQp
-         62FqX/weiPQySDiuQC9amofCPbG5004lDcrdnsnbkZYpzAuZJWvH09KtuoWBDRa2aWSO
-         AocjLmQI+CLfzX2ZsW6YPb2EJJtPlz/GlBtg1LtWbQlVwwHB11QS8Mte86K91VCLTbrK
-         fFJLvGRnloBApapS2VcH6Q1I7KdGDGhrjWmsEMB+WKoFpwYMTT3bIWKLWXdKJxr7Xn8w
-         cAkIudEJcSr3GiCxwMMFUlqXuSrqw8ck0D0hkmDyZxfdnSB9sa3sIlBp8zjyERLJw0nR
-         orsA==
+        bh=GZEx6Psm5kmVFzQRuV4hKShFUTuX59E1ZZSqS64lTO4=;
+        b=qCaU5/PwjTYjtfnriB60Z9oLOr+vFl/C6eE9S2SqWRzje404GBkmpQhafug/AkVxOy
+         cQQpoF2TPpvHLZ2G0WwI0m9I3+iSy5mECHxCRPxdVQEqbEaiQAKEQ21H2Puw7RerAiVE
+         wFP15HZbbxQs2PH85CQiCco+76nv2mFTwq9YLxfrDpX1dbHfhcDj5xFdWbHJisbQiGp9
+         gXFKfd2QUbQryXwNq3Wq2jJyOgsjiru7oncOJDfA+X11+HkluVlV1zwafJGTb/u8E2G8
+         MRaYmLZI/XB7G9OUxyfbsMCiS30QwhZAVeTDBJWC+SfdIRLhSlZ+MEl7DCFddFc+gJo3
+         s87Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=RvwJoM6XPaTXW+swhyuXIxTf/L820o0O05r3Nn2BahU=;
-        b=bqaX4xHIzPFlJkXaqKV93ZqyGi3ZOdIW1XAuVNsyJOPRqweb3SF5ZKY0DQx0IRXrM/
-         WaxurL9zZKg5k/W82q95VvYdONAzvbFQSYqUW+uuhbi/rpLvwcbVpKmQ0UnLjkxvJTaZ
-         5GLWREa8Jq89q52lGEECZsKCtKWZotI6adlEu7MOvtZ6MuFSzNov5GUzNukTvcvSHOJb
-         EFbjE34RN3N8F/KeWgsHXdp8gp8ZJkATvvI2jTsPj4eUEGV2ljCxB92WsAmy6zYaWOfA
-         41uvdPuSlIHMf3k100Yxgk9oEXB2W2IH7kzerNKAK8x3OKujydBTvztUdx/krPfNRs6z
-         4Sng==
-X-Gm-Message-State: AOAM5304xGNSc3aK2lv7slRwby48HLFU5YRwLqQun47vwXDnHxn1Jzpb
-        x6XdGTMEtwzf7eg8A2AHnUw1akpklVjIiOxF
-X-Google-Smtp-Source: ABdhPJxfLq1AkB7CSlngKBkLh9QrvLjSYsWJajt2KPoiRKEuRYNd2u3c5lDCPhIKbXF1gj4rQNYUUA==
-X-Received: by 2002:a7b:c85a:: with SMTP id c26mr2464833wml.160.1610549452072;
-        Wed, 13 Jan 2021 06:50:52 -0800 (PST)
+        bh=GZEx6Psm5kmVFzQRuV4hKShFUTuX59E1ZZSqS64lTO4=;
+        b=gRYM7eAz28xkGAhyo10bKZWg7TeNPTT6mv/zQCmztXOennS6nAN5g3tYswmBG0CYAp
+         F/yqMvvhX+d6YrtWWJCDTt0OQgcKCtwAyi/+KadU+oS4fXtVWtPdc1oMHzhfOHcHFlXI
+         YyiCvSUd/yN4KmwFs7+RsSaPpUoKA1/G3u+EG2XR2xSsvuyW2UUIqYMKKN7KUQq33JbE
+         hjd5guuHkN3J8KFyt7Ly3upVQZIthwZNJlQecLLlaI3as4DNrWghkioCrNuku5Cbs/1C
+         pfWOofyPmymvd45oQqEKbMkHH5ldA4O+RpBVVbXVQzg3OnLEaHtqApiH0DCUG5KmwdFa
+         YARQ==
+X-Gm-Message-State: AOAM532A70Saha3NfSdRnIgt+UD26kvktWwv8KuxKdbkNjFsCO0e4dC3
+        vIsDKAOlEVDYg91IZy2LVbN08Q==
+X-Google-Smtp-Source: ABdhPJzXGlHjQWCGWlwH0MsHBEeXn1e8tUGwLxoT/K65Pbdak+HaHN+93bMx8dcQNJlERhqlDPiH6w==
+X-Received: by 2002:a1c:40d6:: with SMTP id n205mr2609520wma.0.1610549437515;
+        Wed, 13 Jan 2021 06:50:37 -0800 (PST)
 Received: from dell.default ([91.110.221.229])
-        by smtp.gmail.com with ESMTPSA id t188sm3273433wmf.9.2021.01.13.06.50.50
+        by smtp.gmail.com with ESMTPSA id t188sm3273433wmf.9.2021.01.13.06.50.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 Jan 2021 06:50:51 -0800 (PST)
+        Wed, 13 Jan 2021 06:50:36 -0800 (PST)
 From:   Lee Jones <lee.jones@linaro.org>
 To:     lee.jones@linaro.org
 Cc:     linux-kernel@vger.kernel.org,
-        Thomas Winischhofer <thomas@winischhofer.net>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH 27/31] video: fbdev: sis: init: Remove unused variables 'cr_data2', 'VT' and 'HT'
-Date:   Wed, 13 Jan 2021 14:50:05 +0000
-Message-Id: <20210113145009.1272040-28-lee.jones@linaro.org>
+        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH 15/31] video: fbdev: via: lcd: Remove unused variable 'mode_crt_table'
+Date:   Wed, 13 Jan 2021 14:49:53 +0000
+Message-Id: <20210113145009.1272040-16-lee.jones@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210113145009.1272040-1-lee.jones@linaro.org>
 References: <20210113145009.1272040-1-lee.jones@linaro.org>
@@ -76,65 +76,34 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Fixes the following W=1 kernel build warning(s):
 
- drivers/video/fbdev/sis/init.c: In function ‘SiS_Generic_ConvertCRData’:
- drivers/video/fbdev/sis/init.c:3543:37: warning: variable ‘cr_data2’ set but not used [-Wunused-but-set-variable]
- drivers/video/fbdev/sis/init.c:3542:39: warning: variable ‘VT’ set but not used [-Wunused-but-set-variable]
- drivers/video/fbdev/sis/init.c:3541:39: warning: variable ‘HT’ set but not used [-Wunused-but-set-variable]
+ drivers/video/fbdev/via/lcd.c: In function ‘viafb_lcd_set_mode’:
+ drivers/video/fbdev/via/lcd.c:540:29: warning: variable ‘mode_crt_table’ set but not used [-Wunused-but-set-variable]
 
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: dri-devel@lists.freedesktop.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
 Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/video/fbdev/sis/init.c | 17 +++--------------
- 1 file changed, 3 insertions(+), 14 deletions(-)
+ drivers/video/fbdev/via/lcd.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/sis/init.c b/drivers/video/fbdev/sis/init.c
-index 4510272ad297a..b77ea1a8825a5 100644
---- a/drivers/video/fbdev/sis/init.c
-+++ b/drivers/video/fbdev/sis/init.c
-@@ -3538,16 +3538,13 @@ SiS_Generic_ConvertCRData(struct SiS_Private *SiS_Pr, unsigned char *crdata,
- 			struct fb_var_screeninfo *var, bool writeres
- )
- {
--   unsigned short HRE, HBE, HRS, HDE, HT;
--   unsigned short VRE, VBE, VRS, VDE, VT;
--   unsigned char  sr_data, cr_data, cr_data2;
-+   unsigned short HRE, HBE, HRS, HDE;
-+   unsigned short VRE, VBE, VRS, VDE;
-+   unsigned char  sr_data, cr_data;
-    int            B, C, D, E, F, temp;
+diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd.c
+index 4a869402d120d..088b962076b51 100644
+--- a/drivers/video/fbdev/via/lcd.c
++++ b/drivers/video/fbdev/via/lcd.c
+@@ -537,11 +537,9 @@ void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
+ 	u32 clock;
+ 	struct via_display_timing timing;
+ 	struct fb_var_screeninfo panel_var;
+-	const struct fb_videomode *mode_crt_table, *panel_crt_table;
++	const struct fb_videomode *panel_crt_table;
  
-    sr_data = crdata[14];
- 
--   /* Horizontal total */
--   HT =  crdata[0] | ((unsigned short)(sr_data & 0x03) << 8);
--
-    /* Horizontal display enable end */
-    HDE = crdata[1] | ((unsigned short)(sr_data & 0x0C) << 6);
-    E = HDE + 1;
-@@ -3584,12 +3581,6 @@ SiS_Generic_ConvertCRData(struct SiS_Private *SiS_Pr, unsigned char *crdata,
-    sr_data = crdata[13];
-    cr_data = crdata[7];
- 
--   /* Vertical total */
--   VT  = crdata[6] |
--	 ((unsigned short)(cr_data & 0x01) << 8) |
--	 ((unsigned short)(cr_data & 0x20) << 4) |
--	 ((unsigned short)(sr_data & 0x01) << 10);
--
-    /* Vertical display enable end */
-    VDE = crdata[10] |
- 	 ((unsigned short)(cr_data & 0x02) << 7) |
-@@ -3604,8 +3595,6 @@ SiS_Generic_ConvertCRData(struct SiS_Private *SiS_Pr, unsigned char *crdata,
- 	 ((unsigned short)(sr_data & 0x08) << 7);
-    F = VRS + 1 - E;
- 
--   cr_data2 = (crdata[16] & 0x01) << 5;
--
-    /* Vertical blank end */
-    VBE = crdata[12] | ((unsigned short)(sr_data & 0x10) << 4);
-    temp = VBE - ((E - 1) & 511);
+ 	DEBUG_MSG(KERN_INFO "viafb_lcd_set_mode!!\n");
+-	/* Get mode table */
+-	mode_crt_table = viafb_get_best_mode(set_hres, set_vres, 60);
+ 	/* Get panel table Pointer */
+ 	panel_crt_table = viafb_get_best_mode(panel_hres, panel_vres, 60);
+ 	viafb_fill_var_timing_info(&panel_var, panel_crt_table);
 -- 
 2.25.1
 

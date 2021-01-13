@@ -2,307 +2,252 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F9CBC433DB
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:10:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B114C433E0
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:50:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 144F2233F8
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:10:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 243EB235FF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:50:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725949AbhAMOKC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 13 Jan 2021 09:10:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60998 "EHLO
+        id S1725843AbhAMOu4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 13 Jan 2021 09:50:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41594 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725943AbhAMOKC (ORCPT
+        with ESMTP id S1725772AbhAMOuz (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 13 Jan 2021 09:10:02 -0500
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF656C061794;
-        Wed, 13 Jan 2021 06:09:21 -0800 (PST)
-Received: by mail-lf1-x134.google.com with SMTP id b26so2923437lff.9;
-        Wed, 13 Jan 2021 06:09:21 -0800 (PST)
+        Wed, 13 Jan 2021 09:50:55 -0500
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3438BC061794
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:15 -0800 (PST)
+Received: by mail-wm1-x32f.google.com with SMTP id c124so1836295wma.5
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=YTBMAks+8Eoq/W84U+o1JauA0LtRhSDDqX1jGqiCKGc=;
-        b=O9yJ9XFeYDlQI6Ix0tZw1Eeu1vLa1auz6dm59qYOFrus/Z9ydqd764NZv6qqVzwnfh
-         aO2ZHxv+bNDb6sqhv+ikw0qknkB95WWdorZ34jB58P80SBrA4XSZFag13tnXtPBspquy
-         OOBCfaMBruZUtRqkx8udG1iv6nJWJr3FvDetSZKjibReIreYBfT8uuI/sWbDcJOHYODw
-         j4UXs+VsTh0sQNuVYHoljkcu57fqUA0OcrR7rLeTtGaMYKWbj7MJ11Wh0uq6EGFqSppc
-         39PrfsADVGgcTyHzG1U2qcDpir+hq3AFH4sPNXd9XUhVXLkld3QkeO1ajgRR7b/VlzUL
-         QkOA==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=ZQA0SZS1JjhX66Y3VfvSEDt+f937BTntRK0+0hGKg34=;
+        b=MwG9/Qb6GaHppLStwh0d8g1sY54LVGRwX3gXPZ3kQgCT9ZIDpmtPk7cscnHIZBHdIT
+         6uFVdU4FQdl4gZYI9xks/jTNsVnE6HnH0Js2wu1T1BLUnMnVGvl8dYPIRb0XB7rwP1PV
+         PqCc86pEjQfUdgzibMJ9yPZcNC63MCHC+5JmnZS6Q5ru0WjX4d6UxjertOoZJXpWFqB4
+         9Otj49ELyBLyKb8lFCpERdPWMl0XuIb/G1737c6sgQu5FeLzATgOgrfq09jZPss8N9MR
+         eQH5FtIMvUPKiqCGu+dFedTgUDGRI03g9F5N76w/Ez4e/XK25iX0sBLYXYVw5aWdGjgI
+         bFwg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=YTBMAks+8Eoq/W84U+o1JauA0LtRhSDDqX1jGqiCKGc=;
-        b=B/VaKORCzWSYM9r34i8T1vTZ1nNt6PL0kCJdfJHgWS9vP6tjdDpwrFm26lvUo0QGYy
-         fAJavNRBGYFJ1MTuTkZSVc2/DoIqCTOA7z+S1NsycqZqZ6rmoHcHL31kewsMdBucjgjS
-         dDBvSvi2Jc12465Ws7v24CtRT7vS/wwbBwnWFEbLbWkpOOw0AZfHiJMMWTl6CRmKedb8
-         O7C1tfs+EXEbvgIZorrTj64K3HaRt81nJEUilBxgIaH+sYgmCgubEqqHUeg3bZGG6Atj
-         tnu/bV3tCpVExX6M8+PYMGH/CjIwag02MYMjSgTAAxAI1vhoSX+gEB8Rsy2e8HuX2rAS
-         Nz9A==
-X-Gm-Message-State: AOAM531w/37acGwTMzIGuayiBFJo5488F1w+4uaTF2GP7CRojL3zitGU
-        O7vSQiYQXTcAiFLLkzgWguw4hBd4Rc+fG+EmqME=
-X-Google-Smtp-Source: ABdhPJy6O03GTrwp5YpY9cwawyraXh/FE4I5PQhaffA8ZDh4kQjaM+4QMQnZAhud3/+5bRDsSdrUGXOpKTaF7gLctbE=
-X-Received: by 2002:a19:ca5a:: with SMTP id h26mr971451lfj.612.1610546960244;
- Wed, 13 Jan 2021 06:09:20 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=ZQA0SZS1JjhX66Y3VfvSEDt+f937BTntRK0+0hGKg34=;
+        b=U245XqhdwI5By4kEb3Ne+9QUUatMdm4em6NLR/FYbK5vi/AyNFaGMhENNwrbg3SsMr
+         0Vxe6M/Lh/y259PZGnZKRd/JOLPPZQ/+Y/TbttxXrZH2HQAo32eF/hM+GmJAk5042cF8
+         AIEIwgMAx6YLS8upTuAxMzSdeSTOcIc5a6MoC/pNgzXOm71QIZkEC+g511XsirdNzOiC
+         4ymW62yorLsrYQb7mywRmoHEvoOxnZLTiH7RLOXW3h+bcmElnXAyr0QHe8e5Svg0neEP
+         XIi/cLNmniLmWhy4FpcDRgIyJtCK4jsZRNZhaMjmpOLJ1AwhiOjKUbl9F7s8E5YmixVv
+         NLTg==
+X-Gm-Message-State: AOAM530w30q/3wo8eYYjVmZ8K3IqnMDfabAiJc6tSJJGj8ftW+MV4mqB
+        YuBpCbnJ5dx/AzGYAJfmzKGz4w==
+X-Google-Smtp-Source: ABdhPJyo01wJxIFaqfZaXsoDcuI6YydBQRYmxjlBlLsIvZ45jzX5rh/ERwTAcG1tKBC+qAUFjEGQyw==
+X-Received: by 2002:a1c:ba07:: with SMTP id k7mr2582205wmf.34.1610549413750;
+        Wed, 13 Jan 2021 06:50:13 -0800 (PST)
+Received: from dell.default ([91.110.221.229])
+        by smtp.gmail.com with ESMTPSA id t188sm3273433wmf.9.2021.01.13.06.50.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 13 Jan 2021 06:50:12 -0800 (PST)
+From:   Lee Jones <lee.jones@linaro.org>
+To:     lee.jones@linaro.org
+Cc:     linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>,
+        Alex Dewar <alex.dewar90@gmail.com>,
+        Alex Kern <alex.kern@gmx.de>,
+        Ani Joshi <ajoshi@shell.unixbox.com>,
+        Ani Joshi <ajoshi@unixbox.com>, Anthony Tong <atong@uiuc.edu>,
+        Antonino Daplas <adaplas@gmail.com>,
+        Antonino Daplas <adaplas@pol.net>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Ben Dooks <ben@simtec.co.uk>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Brad Douglas <brad@neruo.com>, carter@compsci.bristol.ac.uk,
+        daniel.mantione@freepascal.org, dri-devel@lists.freedesktop.org,
+        "Eddie C. Dost" <ecd@skynet.be>,
+        Egbert Eich <Egbert.Eich@Physik.TU-Darmstadt.DE>,
+        Emmanuel Marty <core@ggi-project.org>,
+        Evgeny Novikov <novikov@ispras.ru>,
+        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+        Frodo Looijaard <frodol@dds.nl>,
+        Gerd Knorr <kraxel@goldbach.in-berlin.de>,
+        Ghozlane Toumi <gtoumi@laposte.net>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        Hannu Mallat <hmallat@cc.hut.fi>, Helge Deller <deller@gmx.de>,
+        Ilario Nardinocchi <nardinoc@CS.UniBO.IT>,
+        Jakub Jelinek <jakub@redhat.com>,
+        Jakub Jelinek <jj@ultra.linux.cz>,
+        James Simmons <jsimmons@infradead.org>,
+        James Simmons <jsimmons@users.sf.net>,
+        Jeff Garzik <jgarzik@pobox.com>, Jes Sorensen <jds@kom.auc.dk>,
+        Jim Hague <jim.hague@acm.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        John Fremlin <vii@users.sourceforge.net>,
+        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+        linux-fbdev@vger.kernel.org,
+        "Mark D. Studebaker" <mdsxyz123@yahoo.com>,
+        Martin Mares <mj@ucw.cz>, Mike Rapoport <rppt@kernel.org>,
+        Oliver Kropp <dok@directfb.org>,
+        Paul Mundt <lethal@chaoticdreams.org>,
+        Philip Edelbrock <phil@netroedge.com>,
+        Ralph Metzler <rjkm@thp.uni-koeln.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Software Engineering <lg@denx.de>,
+        Steffen Trumtrar <s.trumtrar@pengutronix.de>,
+        Thibaut VARENE <varenet@parisc-linux.org>,
+        "Thomas J. Moore" <dark@mama.indstate.edu>,
+        Thomas Winischhofer <thomas@winischhofer.net>,
+        Urs Ganse <ursg@uni.de>,
+        Vaibhav Gupta <vaibhavgupta40@gmail.com>,
+        William Rucklidge <wjr@cs.cornell.edu>
+Subject: [PATCH 00/31] Rid W=1 warnings from Video
+Date:   Wed, 13 Jan 2021 14:49:38 +0000
+Message-Id: <20210113145009.1272040-1-lee.jones@linaro.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-References: <1608217244-314-1-git-send-email-u0084500@gmail.com> <20210113122133.GC3975472@dell>
-In-Reply-To: <20210113122133.GC3975472@dell>
-From:   ChiYuan Huang <u0084500@gmail.com>
-Date:   Wed, 13 Jan 2021 22:09:08 +0800
-Message-ID: <CADiBU39drqcQYgwp9p6XJuFfwFPGL2OCzm33n1dX-O1R8c4NrA@mail.gmail.com>
-Subject: Re: [PATCH v5 1/6] mfd: rt4831: Adds support for Richtek RT4831 core
-To:     Lee Jones <lee.jones@linaro.org>
-Cc:     lgirdwood@gmail.com, Mark Brown <broonie@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        jingoohan1@gmail.com, b.zolnierkie@samsung.com,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        lkml <linux-kernel@vger.kernel.org>,
-        ChiYuan Huang <cy_huang@richtek.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Lee Jones <lee.jones@linaro.org> =E6=96=BC 2021=E5=B9=B41=E6=9C=8813=E6=97=
-=A5 =E9=80=B1=E4=B8=89 =E4=B8=8B=E5=8D=888:21=E5=AF=AB=E9=81=93=EF=BC=9A
->
-> On Thu, 17 Dec 2020, cy_huang wrote:
->
-> > From: ChiYuan Huang <cy_huang@richtek.com>
-> >
-> > This adds support Richtek RT4831 core. It includes four channel WLED dr=
-iver
-> > and Display Bias Voltage outputs.
-> >
-> > Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> > ---
-> > since v5
-> > - Rename file name from rt4831-core.c to rt4831.c
-> > - Change RICHTEK_VID to RICHTEK_VENDOR_ID.
-> > - Change gpio_desc nameing from 'enable' to 'enable_gpio' in probe.
-> > - Change variable 'val' to the meaningful name 'chip_id'.
-> > - Refine the error log when vendor id is not matched.
-> > - Remove of_match_ptr.
-> >
-> > since v2
-> > - Refine Kconfig descriptions.
-> > - Add copyright.
-> > - Refine error logs in probe.
-> > - Refine comment lines in remove and shutdown.
-> > ---
-> >  drivers/mfd/Kconfig  |  10 +++++
-> >  drivers/mfd/Makefile |   1 +
-> >  drivers/mfd/rt4831.c | 124 +++++++++++++++++++++++++++++++++++++++++++=
-++++++++
-> >  3 files changed, 135 insertions(+)
-> >  create mode 100644 drivers/mfd/rt4831.c
-> >
-> > diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> > index 8b99a13..dfb2640 100644
-> > --- a/drivers/mfd/Kconfig
-> > +++ b/drivers/mfd/Kconfig
-> > @@ -1088,6 +1088,16 @@ config MFD_RDC321X
-> >         southbridge which provides access to GPIOs and Watchdog using t=
-he
-> >         southbridge PCI device configuration space.
-> >
-> > +config MFD_RT4831
-> > +     tristate "Richtek RT4831 four channel WLED and Display Bias Volta=
-ge"
-> > +     depends on I2C
-> > +     select MFD_CORE
-> > +     select REGMAP_I2C
-> > +     help
-> > +       This enables support for the Richtek RT4831 that includes 4 cha=
-nnel
-> > +       WLED driving and Display Bias Voltage. It's commonly used to pr=
-ovide
-> > +       power to the LCD display and LCD backlight.
-> > +
-> >  config MFD_RT5033
-> >       tristate "Richtek RT5033 Power Management IC"
-> >       depends on I2C
-> > diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-> > index 1780019..28d247b 100644
-> > --- a/drivers/mfd/Makefile
-> > +++ b/drivers/mfd/Makefile
-> > @@ -235,6 +235,7 @@ obj-$(CONFIG_MFD_MENF21BMC)       +=3D menf21bmc.o
-> >  obj-$(CONFIG_MFD_HI6421_PMIC)        +=3D hi6421-pmic-core.o
-> >  obj-$(CONFIG_MFD_HI655X_PMIC)   +=3D hi655x-pmic.o
-> >  obj-$(CONFIG_MFD_DLN2)               +=3D dln2.o
-> > +obj-$(CONFIG_MFD_RT4831)     +=3D rt4831.o
-> >  obj-$(CONFIG_MFD_RT5033)     +=3D rt5033.o
-> >  obj-$(CONFIG_MFD_SKY81452)   +=3D sky81452.o
-> >
-> > diff --git a/drivers/mfd/rt4831.c b/drivers/mfd/rt4831.c
-> > new file mode 100644
-> > index 00000000..2bf8364
-> > --- /dev/null
-> > +++ b/drivers/mfd/rt4831.c
-> > @@ -0,0 +1,124 @@
-> > +// SPDX-License-Identifier: GPL-2.0+
-> > +/*
-> > + * Copyright (c) 2020 Richtek Technology Corp.
->
-> Nit: If you respin this, please bump the date.
->
-Okay.
-> > + * Author: ChiYuan Huang <cy_huang@richtek.com>
-> > + */
-> > +
-> > +#include <linux/gpio/consumer.h>
-> > +#include <linux/i2c.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/mfd/core.h>
-> > +#include <linux/module.h>
-> > +#include <linux/regmap.h>
-> > +
-> > +#define RT4831_REG_REVISION  0x01
-> > +#define RT4831_REG_ENABLE    0x08
-> > +#define RT4831_REG_I2CPROT   0x15
-> > +
-> > +#define RICHTEK_VENDOR_ID    0x03
-> > +#define RT4831_VID_MASK              GENMASK(1, 0)
-> > +#define RT4831_RESET_MASK    BIT(7)
-> > +#define RT4831_I2CSAFETMR_MASK       BIT(0)
-> > +
-> > +static const struct mfd_cell rt4831_subdevs[] =3D {
-> > +     OF_MFD_CELL("rt4831-backlight", NULL, NULL, 0, 0, "richtek,rt4831=
--backlight"),
-> > +     MFD_CELL_NAME("rt4831-regulator")
-> > +};
-> > +
-> > +static bool rt4831_is_accessible_reg(struct device *dev, unsigned int =
-reg)
-> > +{
-> > +     if (reg >=3D RT4831_REG_REVISION && reg <=3D RT4831_REG_I2CPROT)
-> > +             return true;
-> > +     return false;
-> > +}
-> > +
-> > +static const struct regmap_config rt4831_regmap_config =3D {
-> > +     .reg_bits =3D 8,
-> > +     .val_bits =3D 8,
-> > +     .max_register =3D RT4831_REG_I2CPROT,
-> > +
-> > +     .readable_reg =3D rt4831_is_accessible_reg,
-> > +     .writeable_reg =3D rt4831_is_accessible_reg,
-> > +};
-> > +
-> > +static int rt4831_probe(struct i2c_client *client)
-> > +{
-> > +     struct gpio_desc *enable_gpio;
-> > +     struct regmap *regmap;
-> > +     unsigned int chip_id;
-> > +     int ret;
-> > +
-> > +     enable_gpio =3D devm_gpiod_get_optional(&client->dev, "enable", G=
-PIOD_OUT_HIGH);
-> > +     if (IS_ERR(enable_gpio)) {
-> > +             dev_err(&client->dev, "Failed to get 'enable' GPIO\n");
-> > +             return PTR_ERR(enable_gpio);
-> > +     }
-> > +
-> > +     regmap =3D devm_regmap_init_i2c(client, &rt4831_regmap_config);
-> > +     if (IS_ERR(regmap)) {
-> > +             dev_err(&client->dev, "Failed to initialize regmap\n");
-> > +             return PTR_ERR(regmap);
-> > +     }
-> > +
-> > +     ret =3D regmap_read(regmap, RT4831_REG_REVISION, &chip_id);
-> > +     if (ret) {
-> > +             dev_err(&client->dev, "Failed to get H/W revision\n");
-> > +             return ret;
-> > +     }
-> > +
-> > +     if ((chip_id & RT4831_VID_MASK) !=3D RICHTEK_VENDOR_ID) {
-> > +             dev_err(&client->dev, "Chip vendor ID 0x%02x not matched\=
-n", chip_id);
-> > +             return -ENODEV;
-> > +     }
-> > +
-> > +     /*
-> > +      * Used to prevent the abnormal shutdown.
-> > +      * If SCL/SDA both keep low for one second to reset HW.
-> > +      */
-> > +     ret =3D regmap_update_bits(regmap, RT4831_REG_I2CPROT, RT4831_I2C=
-SAFETMR_MASK,
-> > +                              RT4831_I2CSAFETMR_MASK);
-> > +     if (ret) {
-> > +             dev_err(&client->dev, "Failed to enable I2C safety timer\=
-n");
-> > +             return ret;
-> > +     }
-> > +
-> > +     return devm_mfd_add_devices(&client->dev, PLATFORM_DEVID_AUTO, rt=
-4831_subdevs,
-> > +                                 ARRAY_SIZE(rt4831_subdevs), NULL, 0, =
-NULL);
-> > +}
-> > +
-> > +static int rt4831_remove(struct i2c_client *client)
-> > +{
-> > +     struct regmap *regmap =3D dev_get_regmap(&client->dev, NULL);
-> > +
-> > +     /* Disable WLED and DSV outputs */
-> > +     return regmap_update_bits(regmap, RT4831_REG_ENABLE, RT4831_RESET=
-_MASK, RT4831_RESET_MASK);
-> > +}
-> > +
-> > +static void rt4831_shutdown(struct i2c_client *client)
-> > +{
-> > +     struct regmap *regmap =3D dev_get_regmap(&client->dev, NULL);
-> > +
-> > +     /* Disable WLED and DSV outputs */
-> > +     regmap_update_bits(regmap, RT4831_REG_ENABLE, RT4831_RESET_MASK, =
-RT4831_RESET_MASK);
-> > +}
->
-> What is your reason for providing a .shutdown() routine?
->
-Just like as remove routine to make sure all output are off for the safety.
-This chip only have one 'enable' pin and I2C as the control signal.
-As normal shutdown, it can be make sure 'enable' will be pull low.
-But for some case, if 'enable' always tied to high, like as ARM reset,
-chip reset only triggered during next booting phase.
-The period from arm  reset to next probe, if user doesn't call DSV and
-WLED off before machine shutdown/reboot, the WLED/DSV voltage boost
-circuit will be kept as on.
-That's why I also put shutdown routine in the driver to reset the whole chi=
-p.
-> > +static const struct of_device_id __maybe_unused rt4831_of_match[] =3D =
-{
-> > +     { .compatible =3D "richtek,rt4831", },
-> > +     {}
-> > +};
-> > +MODULE_DEVICE_TABLE(of, rt4831_of_match);
-> > +
-> > +static struct i2c_driver rt4831_driver =3D {
-> > +     .driver =3D {
-> > +             .name =3D "rt4831",
-> > +             .of_match_table =3D rt4831_of_match,
-> > +     },
-> > +     .probe_new =3D rt4831_probe,
-> > +     .remove =3D rt4831_remove,
-> > +     .shutdown =3D rt4831_shutdown,
-> > +};
-> > +module_i2c_driver(rt4831_driver);
-> > +
-> > +MODULE_AUTHOR("ChiYuan Huang <cy_huang@richtek.com>");
-> > +MODULE_LICENSE("GPL v2");
->
-> --
-> Lee Jones [=E6=9D=8E=E7=90=BC=E6=96=AF]
-> Senior Technical Lead - Developer Services
-> Linaro.org =E2=94=82 Open source software for Arm SoCs
-> Follow Linaro: Facebook | Twitter | Blog
+This set is part of a larger effort attempting to clean-up W=1
+kernel builds, which are currently overwhelmingly riddled with
+niggly little warnings.
+
+This patch-set clears all of the W=1 warnings currently residing
+in drivers/video.
+
+Lee Jones (31):
+  video: fbdev: core: fbmon: Add missing description for 'specs'
+  video: of_display_timing: Provide missing description for 'dt'
+  video: fbdev: aty: atyfb_base: Remove superfluous code surrounding
+    'dac_type'
+  video: fbdev: aty: atyfb_base: Mark 'dac_type' as __maybe_unused
+  video: of_videomode: Fix formatting in kernel-doc header
+  video: fbdev: core: fb_notify: Demote non-conformant kernel-doc header
+  video: fbdev: riva: fbdev: Fix some kernel-doc misdemeanours
+  video: fbdev: sis: sis_main: Remove unused variable 'reg'
+  video: fbdev: sis: Remove superfluous include of 'init.h'
+  video: fbdev: riva: riva_hw: Remove a bunch of unused variables
+  video: fbdev: sis: init: Remove four unused variables
+  video: fbdev: sis: oem310: Remove some unused static const tables
+  video: fbdev: nvidia: nv_setup: Remove a couple of unused 'tmp'
+    variables
+  video: fbdev: aty: mach64_ct: Remove some set but unused variables
+  video: fbdev: via: lcd: Remove unused variable 'mode_crt_table'
+  video: fbdev: pm2fb: Fix some kernel-doc formatting issues
+  video: fbdev: aty: radeon_monitor: Remove unused variable 'mon_types'
+  video: fbdev: neofb: Remove unused variable 'CursorMem'
+  video: fbdev: tdfxfb: Remove unused variable 'tmp'
+  video: fbdev: core: fbcon: Mark 'pending' as __maybe_unused
+  video: fbdev: sstfb: Mark 3 debug variables as __maybe_unused
+  video: fbdev: cirrusfb: Remove unused variable 'dummy' from 'WHDR()'
+  video: fbdev: s1d13xxxfb: Mark debug variables as __maybe_unused
+  video: fbdev: s3c-fb: Fix some kernel-doc misdemeanours
+  video: fbdev: mx3fb: Remove unused variable 'enabled'
+  video: fbdev: riva: riva_hw: Remove set but unused variables 'vus_p'
+    and 'vus_n'
+  video: fbdev: sis: init: Remove unused variables 'cr_data2', 'VT' and
+    'HT'
+  video: fbdev: cirrusfb: Add description for 'info' and correct
+    spelling of 'regbase'
+  video: fbdev: s1d13xxxfb: Function name must be on the 2nd line in
+    kernel-doc
+  video: fbdev: s3c-fb: Remove unused variable 'var' from
+    's3c_fb_probe_win()'
+  video: fbdev: mx3fb: Fix some kernel-doc issues
+
+ drivers/video/fbdev/aty/atyfb_base.c     |  5 +---
+ drivers/video/fbdev/aty/mach64_ct.c      | 19 ++-----------
+ drivers/video/fbdev/aty/radeon_monitor.c |  4 +--
+ drivers/video/fbdev/cirrusfb.c           | 20 +++++++-------
+ drivers/video/fbdev/core/fb_notify.c     |  3 +--
+ drivers/video/fbdev/core/fbcon.c         |  2 +-
+ drivers/video/fbdev/core/fbmon.c         |  2 +-
+ drivers/video/fbdev/mx3fb.c              | 11 ++++----
+ drivers/video/fbdev/neofb.c              |  5 ----
+ drivers/video/fbdev/nvidia/nv_setup.c    |  8 ++----
+ drivers/video/fbdev/pm2fb.c              | 12 ++++-----
+ drivers/video/fbdev/riva/fbdev.c         | 15 ++++-------
+ drivers/video/fbdev/riva/riva_hw.c       | 30 +++++++--------------
+ drivers/video/fbdev/s1d13xxxfb.c         |  5 ++--
+ drivers/video/fbdev/s3c-fb.c             | 11 ++++----
+ drivers/video/fbdev/sis/init.c           | 34 +++++-------------------
+ drivers/video/fbdev/sis/oem310.h         | 20 --------------
+ drivers/video/fbdev/sis/sis.h            |  1 -
+ drivers/video/fbdev/sis/sis_main.c       |  9 +++----
+ drivers/video/fbdev/sstfb.c              |  2 +-
+ drivers/video/fbdev/tdfxfb.c             |  4 +--
+ drivers/video/fbdev/via/lcd.c            |  4 +--
+ drivers/video/of_display_timing.c        |  1 +
+ drivers/video/of_videomode.c             | 10 +++----
+ 24 files changed, 72 insertions(+), 165 deletions(-)
+
+Cc: Alan Cox <alan@redhat.com>
+Cc: Alex Dewar <alex.dewar90@gmail.com>
+Cc: Alex Kern <alex.kern@gmx.de>
+Cc: Ani Joshi <ajoshi@shell.unixbox.com>
+Cc: Ani Joshi <ajoshi@unixbox.com>
+Cc: Anthony Tong <atong@uiuc.edu>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Antonino Daplas <adaplas@pol.net>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Ben Dooks <ben@simtec.co.uk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Brad Douglas <brad@neruo.com>
+Cc: carter@compsci.bristol.ac.uk
+Cc: daniel.mantione@freepascal.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: "Eddie C. Dost" <ecd@skynet.be>
+Cc: Egbert Eich <Egbert.Eich@Physik.TU-Darmstadt.DE>
+Cc: Emmanuel Marty <core@ggi-project.org>
+Cc: Evgeny Novikov <novikov@ispras.ru>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Frodo Looijaard <frodol@dds.nl>
+Cc: Gerd Knorr <kraxel@goldbach.in-berlin.de>
+Cc: Ghozlane Toumi <gtoumi@laposte.net>
+Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Cc: Hannu Mallat <hmallat@cc.hut.fi>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Ilario Nardinocchi <nardinoc@CS.UniBO.IT>
+Cc: Jakub Jelinek <jakub@redhat.com>
+Cc: Jakub Jelinek <jj@ultra.linux.cz>
+Cc: James Simmons <jsimmons@infradead.org>
+Cc: James Simmons <jsimmons@users.sf.net>
+Cc: Jeff Garzik <jgarzik@pobox.com>
+Cc: Jes Sorensen <jds@kom.auc.dk>
+Cc: Jim Hague <jim.hague@acm.org>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: John Fremlin <vii@users.sourceforge.net>
+Cc: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: "Mark D. Studebaker" <mdsxyz123@yahoo.com>
+Cc: Martin Mares <mj@ucw.cz>
+Cc: Mike Rapoport <rppt@kernel.org>
+Cc: Oliver Kropp <dok@directfb.org>
+Cc: Paul Mundt <lethal@chaoticdreams.org>
+Cc: Philip Edelbrock <phil@netroedge.com>
+Cc: Ralph Metzler <rjkm@thp.uni-koeln.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Software Engineering <lg@denx.de>
+Cc: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Cc: Thibaut VARENE <varenet@parisc-linux.org>
+Cc: "Thomas J. Moore" <dark@mama.indstate.edu>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: Urs Ganse <ursg@uni.de>
+Cc: Vaibhav Gupta <vaibhavgupta40@gmail.com>
+Cc: William Rucklidge <wjr@cs.cornell.edu>
+-- 
+2.25.1
+

@@ -7,66 +7,62 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73085C43333
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AFFEC432C3
 	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:52:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4130A235FF
+	by mail.kernel.org (Postfix) with ESMTP id 68F5523600
 	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Jan 2021 14:52:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727633AbhAMOwS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 13 Jan 2021 09:52:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41924 "EHLO
+        id S1727714AbhAMOwT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 13 Jan 2021 09:52:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41624 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727706AbhAMOwR (ORCPT
+        with ESMTP id S1727716AbhAMOwS (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 13 Jan 2021 09:52:17 -0500
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D6FB2C06138B
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:39 -0800 (PST)
-Received: by mail-wm1-x336.google.com with SMTP id y23so1857553wmi.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:39 -0800 (PST)
+        Wed, 13 Jan 2021 09:52:18 -0500
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9283AC06135C
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:54 -0800 (PST)
+Received: by mail-wm1-x32f.google.com with SMTP id r4so1844020wmh.5
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Jan 2021 06:50:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=DB5ZhlcS73D7+78VKV5C4ED9gkOhY09FF/WaEagoeZU=;
-        b=AONsu4c49jYlWKZxIV71Fh+XZdaNm/Vzg4dgCbN9JbxTF4zXdk0hxy5yUAjRqlY1Xp
-         nIupPjhqoIDmU9VkNJPtK0bN3YDe0f2AqkiUUwaqnLI5f/UzmCGOhingAiMylna4SnJ7
-         hLXn2MQXPU6i1MKuVELPGT8kK+K/FZOJI4dUhj0jPoBZq2Enr9vntVzkeQDu+4qMmsGJ
-         v9PLkQKSiH7g77yfRhELqhLTHFPLU2Zj+6aaz97t1aI4q7b6mzr8jI36fIERyEk5M18O
-         pFAOSj+Sqvp1t7uHTA6T4HOtbxb08KOCHlGCDgPp2Qf5TW3Vp2vXs9ztiYrfKzPx/xqZ
-         1DRw==
+        bh=9xOmpZJSJcGjkWdwzXh/1wdxHxk1qdbTp529iSzZw+A=;
+        b=MymSG+nXTdHHBzQGPOze7DAAa+ej555u1BcqPgKwDdULmCR+9lifj/RBMgwbwLjlyt
+         elvEBNHzvmvW/yms4fg79Qi5WzxgrFr7YClQKZgIpcNwnQ6ljdR5HdRdcTX3fA10rdIO
+         aO30H/7nbBKrI5hxOWH6sSs6sEMtOANO1pinWzByh2d2GV3m/EpoTjowTDqX+0kZ8xaX
+         liF75WImH8LTXSQqNUBp9HlqfewIAHFYh7spBcCRwDuq6cWAwda7+vnAqeuvQNX58v7P
+         03COI9tjDj1PG/ZMJxlUk7Sxq24UPa6mvTMs6nk8c9qwdcBQeIG7i50znWEf+3nSQ5RB
+         JzdQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=DB5ZhlcS73D7+78VKV5C4ED9gkOhY09FF/WaEagoeZU=;
-        b=o3+RqW+3T6266f5F66TCCpUSH7q2KEGeJBEZwcnj/LNnNRl0ZtCsmNpI7uUIPNOM2l
-         Hd6bfofnTG35VRZOg7tgNgqqg5cO53UuIkKgM3VolAYq+VfHysmFZvJKBtYjpLjhzjch
-         s62f71bEfGMM9fWIasvuJKUcEZS4DxuYmAy/PYBA1OLNyzz+oJrW+u89nFKMMyXf+nzc
-         rR3wOeB3ZS7CZUgbQy49/6tzpDtR0xzORK+/FvK3sj96YVlVxeID9+s13geWo6lRBFQN
-         T09cjbKyakjYHbQ4uquM6oS35SM3wYbvzSoiJD18Odjr0z4zt6OFSbiVcJ5NpIKb1wJG
-         DrtQ==
-X-Gm-Message-State: AOAM532C4AFzNxZLkUy5hLUjEL01bCHKyz8dcw3ALRP1Oojm20tXqlkl
-        Ot0XU6IfC4+5/9W06JZirguRew==
-X-Google-Smtp-Source: ABdhPJwgYTdZ2SuZ1GC/GjtSB8bSmqwzQcGAszf80Fej8Y4hpcF1LKJ1kwg1EITnZXMFsMy/JoGVCg==
-X-Received: by 2002:a1c:4843:: with SMTP id v64mr2570638wma.186.1610549438672;
-        Wed, 13 Jan 2021 06:50:38 -0800 (PST)
+        bh=9xOmpZJSJcGjkWdwzXh/1wdxHxk1qdbTp529iSzZw+A=;
+        b=py3cwGUscMDEUgsPjNBkkxujCwnCxjZd3sn8M9hwgpHfbn3ie+fyZWFvWLdvgCFS4M
+         a4gZS9UQsPoWA9XrwgCkgsHlIj/PpOfAXey24jWGyB5+kCjzqsRwfCCiCA4z4n8nmm+I
+         HQhN/x+nNL5I/P6XD8w1BGZ0eIgPlxvJIPSyhORQhBO7kd4Pk2O89ePIdsy7DphZbZMD
+         p10hlcahaQOM/2NsnBMY/bDPqMMcgO82D1YWkN98rKBx7L4JP52XHOKZ/sxXGpJ2USoO
+         fcB4IkMyHI2vLAX1jJQUI2vca1KuFlsJ+ei1CdwBFk4Gpbhbwr/am9YSJQ8761EfzaZw
+         Wy6A==
+X-Gm-Message-State: AOAM531a9uLKr1ITZaQY33V/CVZ/3jEiGczA/AA4NuQ4yiblK9pE+Hfw
+        Kx2mIwqQt+nfTvfxjSnbnxutWA==
+X-Google-Smtp-Source: ABdhPJy1eR+KY9VjvEkheIzVcqWp7XoiAxVirwoH+ntCmyxPC42Czfx3zHGSaOqSDxojIeI3efM6eQ==
+X-Received: by 2002:a05:600c:29cc:: with SMTP id s12mr1724821wmd.180.1610549453390;
+        Wed, 13 Jan 2021 06:50:53 -0800 (PST)
 Received: from dell.default ([91.110.221.229])
-        by smtp.gmail.com with ESMTPSA id t188sm3273433wmf.9.2021.01.13.06.50.37
+        by smtp.gmail.com with ESMTPSA id t188sm3273433wmf.9.2021.01.13.06.50.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 Jan 2021 06:50:38 -0800 (PST)
+        Wed, 13 Jan 2021 06:50:52 -0800 (PST)
 From:   Lee Jones <lee.jones@linaro.org>
 To:     lee.jones@linaro.org
-Cc:     linux-kernel@vger.kernel.org,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
-        Jim Hague <jim.hague@acm.org>,
-        Ilario Nardinocchi <nardinoc@CS.UniBO.IT>,
-        Jakub Jelinek <jakub@redhat.com>,
+Cc:     linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH 16/31] video: fbdev: pm2fb: Fix some kernel-doc formatting issues
-Date:   Wed, 13 Jan 2021 14:49:54 +0000
-Message-Id: <20210113145009.1272040-17-lee.jones@linaro.org>
+Subject: [PATCH 28/31] video: fbdev: cirrusfb: Add description for 'info' and correct spelling of 'regbase'
+Date:   Wed, 13 Jan 2021 14:50:06 +0000
+Message-Id: <20210113145009.1272040-29-lee.jones@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210113145009.1272040-1-lee.jones@linaro.org>
 References: <20210113145009.1272040-1-lee.jones@linaro.org>
@@ -78,65 +74,45 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Fixes the following W=1 kernel build warning(s):
 
- drivers/video/fbdev/pm2fb.c:1515: warning: Function parameter or member 'pdev' not described in 'pm2fb_probe'
- drivers/video/fbdev/pm2fb.c:1515: warning: Function parameter or member 'id' not described in 'pm2fb_probe'
- drivers/video/fbdev/pm2fb.c:1721: warning: Function parameter or member 'pdev' not described in 'pm2fb_remove'
- drivers/video/fbdev/pm2fb.c:1765: warning: Function parameter or member 'options' not described in 'pm2fb_setup'
+ drivers/video/fbdev/cirrusfb.c:2815: warning: Function parameter or member 'info' not described in 'cirrusfb_dbg_print_regs'
+ drivers/video/fbdev/cirrusfb.c:2815: warning: Function parameter or member 'regbase' not described in 'cirrusfb_dbg_print_regs'
+ drivers/video/fbdev/cirrusfb.c:2815: warning: Excess function parameter 'base' description in 'cirrusfb_dbg_print_regs'
+ drivers/video/fbdev/cirrusfb.c:2859: warning: Function parameter or member 'info' not described in 'cirrusfb_dbg_reg_dump'
+ drivers/video/fbdev/cirrusfb.c:2859: warning: Function parameter or member 'regbase' not described in 'cirrusfb_dbg_reg_dump'
+ drivers/video/fbdev/cirrusfb.c:2859: warning: Excess function parameter 'base' description in 'cirrusfb_dbg_reg_dump'
 
-Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-Cc: Jim Hague <jim.hague@acm.org>
-Cc: Ilario Nardinocchi <nardinoc@CS.UniBO.IT>
-Cc: Jakub Jelinek <jakub@redhat.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>
 Cc: dri-devel@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org
 Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/video/fbdev/pm2fb.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/cirrusfb.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
-index 27893fa139b08..6a30096676374 100644
---- a/drivers/video/fbdev/pm2fb.c
-+++ b/drivers/video/fbdev/pm2fb.c
-@@ -1504,12 +1504,12 @@ static const struct fb_ops pm2fb_ops = {
- 
- 
- /**
-- * Device initialisation
-+ * pm2fb_probe - Device initialisation
-  *
-  * Initialise and allocate resource for PCI device.
-  *
-- * @param	pdev	PCI device.
-- * @param	id	PCI device ID.
-+ * @pdev:	PCI device.
-+ * @id:		PCI device ID.
-  */
- static int pm2fb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- {
-@@ -1711,11 +1711,11 @@ static int pm2fb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- }
+diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
+index f05160fa34da9..bb2cc753c1cf5 100644
+--- a/drivers/video/fbdev/cirrusfb.c
++++ b/drivers/video/fbdev/cirrusfb.c
+@@ -2800,7 +2800,8 @@ static void bestclock(long freq, int *nom, int *den, int *div)
  
  /**
-- * Device removal.
-+ * pm2fb_remove - Device removal.
+  * cirrusfb_dbg_print_regs
+- * @base: If using newmmio, the newmmio base address, otherwise %NULL
++ * @info: frame buffer info structure
++ * @regbase: If using newmmio, the newmmio base address, otherwise %NULL
+  * @reg_class: type of registers to read: %CRT, or %SEQ
   *
-  * Release all device resources.
-  *
-- * @param	pdev	PCI device to clean up.
-+ * @pdev:	PCI device to clean up.
-  */
- static void pm2fb_remove(struct pci_dev *pdev)
- {
-@@ -1756,7 +1756,7 @@ MODULE_DEVICE_TABLE(pci, pm2fb_id_table);
+  * DESCRIPTION:
+@@ -2847,7 +2848,8 @@ static void cirrusfb_dbg_print_regs(struct fb_info *info,
  
- 
- #ifndef MODULE
--/**
-+/*
-  * Parse user specified options.
+ /**
+  * cirrusfb_dbg_reg_dump
+- * @base: If using newmmio, the newmmio base address, otherwise %NULL
++ * @info: frame buffer info structure
++ * @regbase: If using newmmio, the newmmio base address, otherwise %NULL
   *
-  * This is, comma-separated options following `video=pm2fb:'.
+  * DESCRIPTION:
+  * Dumps a list of interesting VGA and CIRRUSFB registers.  If @base is %NULL,
 -- 
 2.25.1
 

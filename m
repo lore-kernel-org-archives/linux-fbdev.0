@@ -2,156 +2,97 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE6B6C43603
-	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Jan 2021 12:46:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76E9EC433E6
+	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Jan 2021 23:17:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7E0FC23340
-	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Jan 2021 12:46:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4FEAD23B00
+	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Jan 2021 23:17:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729276AbhATMoA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 20 Jan 2021 07:44:00 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42062 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389001AbhATL1j (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 20 Jan 2021 06:27:39 -0500
-Received: from mail-oo1-xc36.google.com (mail-oo1-xc36.google.com [IPv6:2607:f8b0:4864:20::c36])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9186AC061794
-        for <linux-fbdev@vger.kernel.org>; Wed, 20 Jan 2021 03:26:58 -0800 (PST)
-Received: by mail-oo1-xc36.google.com with SMTP id o5so5695113oop.12
-        for <linux-fbdev@vger.kernel.org>; Wed, 20 Jan 2021 03:26:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=bF3kJZOcFi9epN2Ju/OMLYe+R+7Hhk1D0YWcdHI0mig=;
-        b=izVJ/aoMWHJbBtduNtBlv80fvfk4AMOqCR1fVP89sgP4r1KzlitBLQVhei6IdNwC0b
-         n139tWO/jSeG5PB6CmVmJY/ngiDl4uSYqzvBe3JTIqv/BXJAvevrNxctX/wuVegCPkIT
-         q/Vce9FeMPEifc1MdK3IfX/Pwv9tpaXjf7bEk=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=bF3kJZOcFi9epN2Ju/OMLYe+R+7Hhk1D0YWcdHI0mig=;
-        b=fACHXHVX1QbYzUfizggkOPxJOHxidsr8bW5O3vS3EA5glIuATAT43I4zqke4Xwsckd
-         kSO3wu1fO9XDRoDN1pQgrhdW0Lp3mLRKWYw7Ufe5z4lU6zCwWutl7gR4+57lYDjwH1Ol
-         PDX+sX9M4EzwwBO2eqm+0hA8iCQSYbQy31vxxSwmBiBvG057qQfwAz/ErTAcUgGzsVx/
-         VKnY7ORsgaA5zNM4sjOvDis3oUEOlnW4Eakksver9XX411wRScMJngXt7NllMHm/wSXg
-         ldhbOyruN5HPKFXcjCP+8E8MxsNr7vvzoueyOnemxXRf+V2dDpGhiczkEsiZ6M/z+eWW
-         g2hw==
-X-Gm-Message-State: AOAM531mhGNfeDZiougmSBG9FFlnE9wSmyGQwecj4g9KZ0nhrN6VIlJA
-        TZHTIJvH2RhRXX4glvNlR1qEi2F6f6Wf0FRotZ+VI1xYb0XRog==
-X-Google-Smtp-Source: ABdhPJzNf7GDDsKuO2fEPJuRtbJE2LbjunBUPbWEIL8J3gYPW9q007/lCbZ0N5RfnJfLcLzge73Xp86JPERY/PFsHNs=
-X-Received: by 2002:a4a:11c2:: with SMTP id 185mr5917268ooc.85.1611142017564;
- Wed, 20 Jan 2021 03:26:57 -0800 (PST)
+        id S1728568AbhAVXQn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 22 Jan 2021 18:16:43 -0500
+Received: from vps.thesusis.net ([34.202.238.73]:50602 "EHLO vps.thesusis.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729288AbhAVTgR (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 22 Jan 2021 14:36:17 -0500
+X-Greylist: delayed 512 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Jan 2021 14:36:16 EST
+Received: from localhost (localhost [127.0.0.1])
+        by vps.thesusis.net (Postfix) with ESMTP id 8D16F29A9E;
+        Fri, 22 Jan 2021 14:26:40 -0500 (EST)
+Received: from vps.thesusis.net ([127.0.0.1])
+        by localhost (vps.thesusis.net [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id 8wXz7EfBN6Kj; Fri, 22 Jan 2021 14:26:40 -0500 (EST)
+Received: by vps.thesusis.net (Postfix, from userid 1000)
+        id 387A529A9D; Fri, 22 Jan 2021 14:26:40 -0500 (EST)
+References: <20200916205434.GA10389@duo.ucw.cz> <87czyf5jjp.fsf@vps.thesusis.net> <CAHk-=wjsjC1h7fskwYaaRLykN1ms6ZtxGvucQgmL-zZTfxPdBA@mail.gmail.com> <CAKMK7uEGXOC_ci=Drm=Hz+xPGdcoxv8YZ-gcOckoPmu2XijiSA@mail.gmail.com> <CAMuHMdVzCjVim4A3eAZzztqUyjb6a2bjmSkgxUnaugQFv42qag@mail.gmail.com>
+User-agent: mu4e 1.5.7; emacs 26.3
+From:   Phillip Susi <phill@thesusis.net>
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Daniel Vetter <daniel@ffwll.ch>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        "linux-doc\@vger.kernel.org" <linux-doc@vger.kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Subject: Re: fbcon: remove soft scrollback code (missing Doc. patch)
+Date:   Fri, 22 Jan 2021 13:55:04 -0500
+In-reply-to: <CAMuHMdVzCjVim4A3eAZzztqUyjb6a2bjmSkgxUnaugQFv42qag@mail.gmail.com>
+Message-ID: <87k0s4ai33.fsf@vps.thesusis.net>
 MIME-Version: 1.0
-References: <20201228183934.1117012-1-pbrobinson@gmail.com>
- <b00bd27c-70b5-9ef1-85a1-11e733af78da@redhat.com> <X/c/OwqdMtmqzOZq@phenom.ffwll.local>
- <1acc822f-b7a5-b0be-5533-32528080850a@redhat.com>
-In-Reply-To: <1acc822f-b7a5-b0be-5533-32528080850a@redhat.com>
-From:   Daniel Vetter <daniel@ffwll.ch>
-Date:   Wed, 20 Jan 2021 12:26:46 +0100
-Message-ID: <CAKMK7uHX3C8Dmb8wyypJkOXZQgdrF8P1PxJB4e4mnSm12n68Bg@mail.gmail.com>
-Subject: Re: [PATCH] video: fbdev: simplefb: Fix info message during probe
-To:     Hans de Goede <hdegoede@redhat.com>
-Cc:     Peter Robinson <pbrobinson@gmail.com>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jan 20, 2021 at 12:16 PM Hans de Goede <hdegoede@redhat.com> wrote:
->
-> Hi,
->
-> On 1/7/21 6:04 PM, Daniel Vetter wrote:
-> > Hi Hans,
-> >
-> > On Tue, Dec 29, 2020 at 02:02:30PM +0100, Hans de Goede wrote:
-> >> Hi,
-> >>
-> >> On 12/28/20 7:39 PM, Peter Robinson wrote:
-> >>> The info message was showing the mapped address for the framebuffer. To avoid
-> >>> security problems, all virtual addresses are converted to __ptrval__, so
-> >>> the message has pointless information:
-> >>>
-> >>> simple-framebuffer 3ea9b000.framebuffer: framebuffer at 0x3ea9b000, 0x12c000 bytes, mapped to 0x(____ptrval____)
-> >>>
-> >>> Drop the extraneous bits to clean up the message:
-> >>>
-> >>> simple-framebuffer 3ea9b000.framebuffer: framebuffer at 0x3ea9b000, 0x12c000 bytes
-> >>>
-> >>> Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
-> >>
-> >> Thanks, patch looks good to me:
-> >>
-> >> Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-> >
-> > Since you have commit rights for drm-misc I'm assuming you're also going
-> > to push this one?
->
-> I knew there was some discussion about using drm-misc for drivers/video/fbdev stuff
-> but I missed that it was decided to go ahead with that.
->
-> Good to know that this is handled through drm-misc now.
 
-This is official since a while:
+Geert Uytterhoeven writes:
 
-commit 6a7553e8d84d5322d883cb83bb9888c49a0f04e0
-Author: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date:   Fri Aug 9 15:46:40 2019 +0200
+Judging from some of the comments in the code, it looks like you were
+one of the original authors of fbcon?  I haven't been able to find any
+of these sczbot crash reports, and am not sure how fuzzing syscalls
+would really affect this code ( it's not really handling a buch of
+ioctls or otherwise taking arguments from user space ) , but I am a bit
+confused as to why the softback was implemented the way that it was.
 
-   MAINTAINERS: handle fbdev changes through drm-misc tree
+vgacon simply copies the main buffer to vram in ->set_origin() and then
+changes the pointers to operate out of the much larger vram while that
+virtual terminal is active.  If I understand it correctly, it looks like
+fbcon instead opts to operate out of the main buffer but rescue lines as
+they are scrolled off and relocate them to the softback buffer.  This
+seems to be rather more convoluted.
 
-Cheers, Daniel
+I'm thinking of re-implementing scrollback more like the way vgacon does
+it: allocate a big "vram" buffer and operate out of that.  Obviously
+->scroll() and ->scrolldelta() have to actually repaint the screen rather
+than simply change the pointer register, but that should be about the
+only difference.
 
->
-> I've pushed this patch to drm-misc-next.
->
-> Regards,
->
-> Hans
->
->
->
-> >>> ---
-> >>>  drivers/video/fbdev/simplefb.c | 5 ++---
-> >>>  1 file changed, 2 insertions(+), 3 deletions(-)
-> >>>
-> >>> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-> >>> index 533a047d07a2..62f0ded70681 100644
-> >>> --- a/drivers/video/fbdev/simplefb.c
-> >>> +++ b/drivers/video/fbdev/simplefb.c
-> >>> @@ -477,9 +477,8 @@ static int simplefb_probe(struct platform_device *pdev)
-> >>>     simplefb_clocks_enable(par, pdev);
-> >>>     simplefb_regulators_enable(par, pdev);
-> >>>
-> >>> -   dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
-> >>> -                        info->fix.smem_start, info->fix.smem_len,
-> >>> -                        info->screen_base);
-> >>> +   dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes\n",
-> >>> +                        info->fix.smem_start, info->fix.smem_len);
-> >>>     dev_info(&pdev->dev, "format=%s, mode=%dx%dx%d, linelength=%d\n",
-> >>>                          params.format->name,
-> >>>                          info->var.xres, info->var.yres,
-> >>>
-> >>
-> >> _______________________________________________
-> >> dri-devel mailing list
-> >> dri-devel@lists.freedesktop.org
-> >> https://lists.freedesktop.org/mailman/listinfo/dri-devel
-> >
->
+I have also noticed that there was some code to use hardware panning of
+the video buffer rather than having to do a block bitblt to scroll the
+contents of the screen, but that it was disabled because virtually no
+video drivers actually implemented it?  That seems like a shame, but if
+it is so, then there's no sense carrying the dead code so I think I'll
+clean that up now.
 
+Now that I look at it again, everything is simply always redrawn now
+instead of even doing a simple bitblt.  Daniel, you mentioned that
+almost nobody supports hardware acceleration, but even without any
+specific hardware support, surely even if bitblt() is implemented just
+as a memcpy(), it has to be faster than redrawing all of the characters
+doesn't it?  Getting rid of the panning if it isn't generally supported
+I can see, but I don't understand killing bitblt even if most devices
+don't accelerate it.
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+In addition, I noticed that ->screen_pos() was changed to just return
+vc_origin+offset.  fbcon is the only console driver to implement
+->screenpos() and if not implemented, vt defaults to using
+vc_visible_origin+offset, so it looks like this function isn't needed at
+all anymore and ->screen_pos() can be removed from struct consw.
+
+Does this make sense or am I talking crazy?

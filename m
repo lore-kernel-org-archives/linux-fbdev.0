@@ -2,97 +2,276 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76E9EC433E6
-	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Jan 2021 23:17:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B751C433DB
+	for <linux-fbdev@archiver.kernel.org>; Sun, 24 Jan 2021 15:36:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4FEAD23B00
-	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Jan 2021 23:17:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 11B3322EBF
+	for <linux-fbdev@archiver.kernel.org>; Sun, 24 Jan 2021 15:36:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728568AbhAVXQn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 22 Jan 2021 18:16:43 -0500
-Received: from vps.thesusis.net ([34.202.238.73]:50602 "EHLO vps.thesusis.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729288AbhAVTgR (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 22 Jan 2021 14:36:17 -0500
-X-Greylist: delayed 512 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Jan 2021 14:36:16 EST
-Received: from localhost (localhost [127.0.0.1])
-        by vps.thesusis.net (Postfix) with ESMTP id 8D16F29A9E;
-        Fri, 22 Jan 2021 14:26:40 -0500 (EST)
-Received: from vps.thesusis.net ([127.0.0.1])
-        by localhost (vps.thesusis.net [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id 8wXz7EfBN6Kj; Fri, 22 Jan 2021 14:26:40 -0500 (EST)
-Received: by vps.thesusis.net (Postfix, from userid 1000)
-        id 387A529A9D; Fri, 22 Jan 2021 14:26:40 -0500 (EST)
-References: <20200916205434.GA10389@duo.ucw.cz> <87czyf5jjp.fsf@vps.thesusis.net> <CAHk-=wjsjC1h7fskwYaaRLykN1ms6ZtxGvucQgmL-zZTfxPdBA@mail.gmail.com> <CAKMK7uEGXOC_ci=Drm=Hz+xPGdcoxv8YZ-gcOckoPmu2XijiSA@mail.gmail.com> <CAMuHMdVzCjVim4A3eAZzztqUyjb6a2bjmSkgxUnaugQFv42qag@mail.gmail.com>
-User-agent: mu4e 1.5.7; emacs 26.3
-From:   Phillip Susi <phill@thesusis.net>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Daniel Vetter <daniel@ffwll.ch>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "linux-doc\@vger.kernel.org" <linux-doc@vger.kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Subject: Re: fbcon: remove soft scrollback code (missing Doc. patch)
-Date:   Fri, 22 Jan 2021 13:55:04 -0500
-In-reply-to: <CAMuHMdVzCjVim4A3eAZzztqUyjb6a2bjmSkgxUnaugQFv42qag@mail.gmail.com>
-Message-ID: <87k0s4ai33.fsf@vps.thesusis.net>
-MIME-Version: 1.0
-Content-Type: text/plain
+        id S1725910AbhAXPgR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 24 Jan 2021 10:36:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33378 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726298AbhAXPgQ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Sun, 24 Jan 2021 10:36:16 -0500
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16D30C061574;
+        Sun, 24 Jan 2021 07:35:36 -0800 (PST)
+Received: by mail-pj1-x102a.google.com with SMTP id md11so6798202pjb.0;
+        Sun, 24 Jan 2021 07:35:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=wv+3wuXFvnGp7NmO31SkD++8+i2WVpAeSIWwaa8edxU=;
+        b=SMOJRc0c6WRk3ZJrJ66nWjiPsXSD9PV4u+1Rmpv7349czhtW8hbt+2dgR2Yn2oIzao
+         jW3DYBwtmEUqVZPPgtvNJrBMJe1aqdWQGJmQbgyBxOfrNZUYHsYzpyG9aJ1i/vaX2k4W
+         CeLXSjk+RC/sZoTkPn4eqc03RSPQ5Uz262Ep34QFRGxkbUKpM83o4/KCFzqtCR51lU6w
+         UapT1b93J/w3ICvdW/yKwNfIOV5tNlNgyaW49pXcw/aSyJk29ljg8oQRhti2yYyrX2Pw
+         vsoOF/L0PG2SIMkpJye/uyfpf1fToW100DnzhJlxoOut8NTF94QqpVNxSaKMMxs3WO1U
+         9mBA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=wv+3wuXFvnGp7NmO31SkD++8+i2WVpAeSIWwaa8edxU=;
+        b=tFh7H0k3JgzS5f0JYwdWz2gqK+X2UNSy1Ro3mFqISkzBA46D/nIcMe4fF7oAXL+5/T
+         hwN4db80HZ+3xj4MjO03CpoI+ONBxECv7BQbiI1Kk2TatX+KFdkDRYoXSSIckpJv6Irb
+         gVCvBcN+2hAdhZ6t7BBupmexjY83l0Cg6nf2ShTHAlmXZmwIgSO0ulZAOyBoX50jX07y
+         rWorS3hjj4+igP4Unr27Q3EcGoJVL53Hu5ulOElUO98cg1QVlq8IuOR7udK4RqCfjjjG
+         mOwrJj1D1XCEOkWt5V5Dme06XkXIGx2stS1m3FG6TsOhrQiLgx4ER0FEYjUhJZIpO+z7
+         dDBw==
+X-Gm-Message-State: AOAM533v8+Z1SgcZbJHxJMtrTW79an1L6YVe4QOhq0Rd/BbdIF1dlTgu
+        9lq5h1pti+VbpRK2c2XNZrs=
+X-Google-Smtp-Source: ABdhPJxRx4HP7keBURkUrSGMrzZ2UCbHXcHxem8AFiuST4Ceq7bDlYUghFe2XHdQYmuQELx0csAVGQ==
+X-Received: by 2002:a17:90a:6f05:: with SMTP id d5mr3144093pjk.145.1611502535677;
+        Sun, 24 Jan 2021 07:35:35 -0800 (PST)
+Received: from bf-rmsz-10.ccdomain.com ([103.220.76.197])
+        by smtp.gmail.com with ESMTPSA id f15sm15491410pja.24.2021.01.24.07.35.32
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 24 Jan 2021 07:35:34 -0800 (PST)
+From:   Carlis <zhangxuezhi3@gmail.com>
+To:     gregkh@linuxfoundation.org
+Cc:     colin.king@canonical.com, oliver.graute@kococonnector.com,
+        zhangxuezhi1@yulong.com, mh12gx2825@gmail.com, sbrivio@redhat.com,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] fbtft: add tearing signal detect
+Date:   Sun, 24 Jan 2021 23:35:37 +0800
+Message-Id: <1611502537-80668-1-git-send-email-zhangxuezhi3@gmail.com>
+X-Mailer: git-send-email 1.9.1
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+From: "carlis.zhang_cp" <zhangxuezhi1@yulong.com>
 
-Geert Uytterhoeven writes:
+For st7789v ic,add tearing signal detect to avoid screen tearing
 
-Judging from some of the comments in the code, it looks like you were
-one of the original authors of fbcon?  I haven't been able to find any
-of these sczbot crash reports, and am not sure how fuzzing syscalls
-would really affect this code ( it's not really handling a buch of
-ioctls or otherwise taking arguments from user space ) , but I am a bit
-confused as to why the softback was implemented the way that it was.
+Signed-off-by: carlis.zhang_cp <zhangxuezhi1@yulong.com>
+---
+ drivers/staging/fbtft/fb_st7789v.c | 133 ++++++++++++++++++++++++++++++++++++-
+ drivers/staging/fbtft/fbtft.h      |   1 +
+ 2 files changed, 133 insertions(+), 1 deletion(-)
 
-vgacon simply copies the main buffer to vram in ->set_origin() and then
-changes the pointers to operate out of the much larger vram while that
-virtual terminal is active.  If I understand it correctly, it looks like
-fbcon instead opts to operate out of the main buffer but rescue lines as
-they are scrolled off and relocate them to the softback buffer.  This
-seems to be rather more convoluted.
+diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
+index 3a280cc..c687b58 100644
+--- a/drivers/staging/fbtft/fb_st7789v.c
++++ b/drivers/staging/fbtft/fb_st7789v.c
+@@ -9,9 +9,12 @@
+ #include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
++#include <linux/mutex.h>
++#include <linux/interrupt.h>
++#include <linux/completion.h>
+ #include <linux/module.h>
+ #include <video/mipi_display.h>
+-
++#include <linux/gpio/consumer.h>
+ #include "fbtft.h"
+ 
+ #define DRVNAME "fb_st7789v"
+@@ -66,6 +69,38 @@ enum st7789v_command {
+ #define MADCTL_MX BIT(6) /* bitmask for column address order */
+ #define MADCTL_MY BIT(7) /* bitmask for page address order */
+ 
++#define SPI_PANEL_TE_TIMEOUT	400
++static struct mutex te_mutex;/*mutex for tearing line*/
++static struct completion spi_panel_te;
++
++static irqreturn_t spi_panel_te_handler(int irq, void *data)
++{
++	complete(&spi_panel_te);
++	return IRQ_HANDLED;
++}
++
++static void enable_spi_panel_te_irq(struct fbtft_par *par, bool enable)
++{
++	static int te_irq_count;
++
++	if (!par->gpio.te) {
++		pr_err("%s:%d,SPI panel TE GPIO not configured\n",
++		       __func__, __LINE__);
++		return;
++	}
++
++	mutex_lock(&te_mutex);
++
++	if (enable) {
++		if (++te_irq_count == 1)
++			enable_irq(gpiod_to_irq(par->gpio.te));
++	} else {
++		if (--te_irq_count == 0)
++			disable_irq(gpiod_to_irq(par->gpio.te));
++	}
++	mutex_unlock(&te_mutex);
++}
++
+ /**
+  * init_display() - initialize the display controller
+  *
+@@ -82,6 +117,28 @@ enum st7789v_command {
+  */
+ static int init_display(struct fbtft_par *par)
+ {
++	int rc;
++	struct device *dev = par->info->device;
++
++	par->gpio.te = devm_gpiod_get_index_optional(dev, "te", 0, GPIOD_IN);
++	if (par->gpio.te) {
++		init_completion(&spi_panel_te);
++		mutex_init(&te_mutex);
++		rc = devm_request_irq(dev,
++				      gpiod_to_irq(par->gpio.te),
++				     spi_panel_te_handler, IRQF_TRIGGER_RISING,
++				     "TE_GPIO", par);
++		if (rc) {
++			pr_err("TE request_irq failed.\n");
++			par->gpio.te = NULL;
++		} else {
++			disable_irq_nosync(gpiod_to_irq(par->gpio.te));
++			pr_err("TE request_irq completion.\n");
++		}
++	} else {
++		pr_err("%s:%d, TE gpio not specified\n",
++		       __func__, __LINE__);
++	}
+ 	/* turn off sleep mode */
+ 	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
+ 	mdelay(120);
+@@ -137,6 +194,9 @@ static int init_display(struct fbtft_par *par)
+ 	 */
+ 	write_reg(par, PWCTRL1, 0xA4, 0xA1);
+ 
++    /*Tearing Effect Line On*/
++	if (par->gpio.te)
++		write_reg(par, 0x35, 0x00);
+ 	write_reg(par, MIPI_DCS_SET_DISPLAY_ON);
+ 
+ 	if (HSD20_IPS)
+@@ -145,6 +205,76 @@ static int init_display(struct fbtft_par *par)
+ 	return 0;
+ }
+ 
++/*****************************************************************************
++ *
++ *   int (*write_vmem)(struct fbtft_par *par);
++ *
++ *****************************************************************************/
++
++/* 16 bit pixel over 8-bit databus */
++int st7789v_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
++{
++	u16 *vmem16;
++	__be16 *txbuf16 = par->txbuf.buf;
++	size_t remain;
++	size_t to_copy;
++	size_t tx_array_size;
++	int i;
++	int rc, ret = 0;
++	size_t startbyte_size = 0;
++
++	fbtft_par_dbg(DEBUG_WRITE_VMEM, par, "st7789v ---%s(offset=%zu, len=%zu)\n",
++		      __func__, offset, len);
++
++	remain = len / 2;
++	vmem16 = (u16 *)(par->info->screen_buffer + offset);
++
++	if (par->gpio.dc)
++		gpiod_set_value(par->gpio.dc, 1);
++
++	/* non buffered write */
++	if (!par->txbuf.buf)
++		return par->fbtftops.write(par, vmem16, len);
++
++	/* buffered write */
++	tx_array_size = par->txbuf.len / 2;
++
++	if (par->startbyte) {
++		txbuf16 = par->txbuf.buf + 1;
++		tx_array_size -= 2;
++		*(u8 *)(par->txbuf.buf) = par->startbyte | 0x2;
++		startbyte_size = 1;
++	}
++
++	while (remain) {
++		to_copy = min(tx_array_size, remain);
++		dev_dbg(par->info->device, "    to_copy=%zu, remain=%zu\n",
++			to_copy, remain - to_copy);
++
++		for (i = 0; i < to_copy; i++)
++			txbuf16[i] = cpu_to_be16(vmem16[i]);
++
++		vmem16 = vmem16 + to_copy;
++		if (par->gpio.te) {
++			enable_spi_panel_te_irq(par, true);
++			reinit_completion(&spi_panel_te);
++			rc = wait_for_completion_timeout(&spi_panel_te,
++							 msecs_to_jiffies(SPI_PANEL_TE_TIMEOUT));
++			if (rc == 0)
++				pr_err("wait panel TE time out\n");
++		}
++		ret = par->fbtftops.write(par, par->txbuf.buf,
++								startbyte_size + to_copy * 2);
++		if (par->gpio.te)
++			enable_spi_panel_te_irq(par, false);
++		if (ret < 0)
++			return ret;
++		remain -= to_copy;
++	}
++
++	return ret;
++}
++
+ /**
+  * set_var() - apply LCD properties like rotation and BGR mode
+  *
+@@ -259,6 +389,7 @@ static int blank(struct fbtft_par *par, bool on)
+ 	.gamma = HSD20_IPS_GAMMA,
+ 	.fbtftops = {
+ 		.init_display = init_display,
++		.write_vmem = st7789v_write_vmem16_bus8,
+ 		.set_var = set_var,
+ 		.set_gamma = set_gamma,
+ 		.blank = blank,
+diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
+index 76f8c09..93bac05 100644
+--- a/drivers/staging/fbtft/fbtft.h
++++ b/drivers/staging/fbtft/fbtft.h
+@@ -212,6 +212,7 @@ struct fbtft_par {
+ 		struct gpio_desc *wr;
+ 		struct gpio_desc *latch;
+ 		struct gpio_desc *cs;
++		struct gpio_desc *te;
+ 		struct gpio_desc *db[16];
+ 		struct gpio_desc *led[16];
+ 		struct gpio_desc *aux[16];
+-- 
+1.9.1
 
-I'm thinking of re-implementing scrollback more like the way vgacon does
-it: allocate a big "vram" buffer and operate out of that.  Obviously
-->scroll() and ->scrolldelta() have to actually repaint the screen rather
-than simply change the pointer register, but that should be about the
-only difference.
-
-I have also noticed that there was some code to use hardware panning of
-the video buffer rather than having to do a block bitblt to scroll the
-contents of the screen, but that it was disabled because virtually no
-video drivers actually implemented it?  That seems like a shame, but if
-it is so, then there's no sense carrying the dead code so I think I'll
-clean that up now.
-
-Now that I look at it again, everything is simply always redrawn now
-instead of even doing a simple bitblt.  Daniel, you mentioned that
-almost nobody supports hardware acceleration, but even without any
-specific hardware support, surely even if bitblt() is implemented just
-as a memcpy(), it has to be faster than redrawing all of the characters
-doesn't it?  Getting rid of the panning if it isn't generally supported
-I can see, but I don't understand killing bitblt even if most devices
-don't accelerate it.
-
-In addition, I noticed that ->screen_pos() was changed to just return
-vc_origin+offset.  fbcon is the only console driver to implement
-->screenpos() and if not implemented, vt defaults to using
-vc_visible_origin+offset, so it looks like this function isn't needed at
-all anymore and ->screen_pos() can be removed from struct consw.
-
-Does this make sense or am I talking crazy?

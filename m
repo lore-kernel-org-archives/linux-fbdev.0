@@ -2,161 +2,264 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2F4CC433DB
-	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jan 2021 06:00:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CF25C433DB
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jan 2021 08:00:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 94FA022A84
-	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jan 2021 06:00:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5810422B3B
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jan 2021 08:00:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726117AbhAZGAf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 26 Jan 2021 01:00:35 -0500
-Received: from mail-oi1-f175.google.com ([209.85.167.175]:43333 "EHLO
-        mail-oi1-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730147AbhAYPkC (ORCPT
+        id S1728573AbhAZH6r (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 26 Jan 2021 02:58:47 -0500
+Received: from aserp2120.oracle.com ([141.146.126.78]:55330 "EHLO
+        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730753AbhAZH4I (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 25 Jan 2021 10:40:02 -0500
-Received: by mail-oi1-f175.google.com with SMTP id i25so3757279oie.10;
-        Mon, 25 Jan 2021 07:39:46 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=xv2F8uEJDzNOELHmwTwNLPLNs8lRPkq+SnWZqNcKmSE=;
-        b=l0RiaogzJdbwI3BYj1NXzN9PA0A5mun/+03eFzsjANhlnWfE+LejPPZ85bnWGm8GEt
-         P8mwM89xcXvc3sOStSQsVTtRZ79DAVjUMUlAkEZrseS5/g6D6XBLED0tnaWoqFy8hhH6
-         kZ5wIL8bHBN7gcWHltYxXuJI8PZQwZkGUQvlRamY4clk7/9Nx2pjldLHcBoVopr3Q1lV
-         pB/dohKXuIPXa0TammoqpCckEiZuX66MChOceW0K0JJsh4qzvshOe+ASt8nKGRhHtEhx
-         WIAaG0PDEJuqD40HCs+/Q/+mZREE6GoN6+XGH1AOsnGT4DTWQvDRsnx0FfkfE0MguhkL
-         xiAg==
-X-Gm-Message-State: AOAM532xYGwCZyicwI041k9wISSwXBB4v3lc1Fad+4ndO0W3rSlPLyjb
-        rJox62RZq58+tphVi11bEtqA75vOzlRC9NnJQxQ=
-X-Google-Smtp-Source: ABdhPJwZj9WDxzrkp5B5fBpFQxEJMl3itE2IsPYlaaZPJaGCbLO05CDNwOR5DGdC23BcrNbXL/hWQx20i4ztPmfvMHc=
-X-Received: by 2002:aca:1219:: with SMTP id 25mr489984ois.54.1611589161153;
- Mon, 25 Jan 2021 07:39:21 -0800 (PST)
+        Tue, 26 Jan 2021 02:56:08 -0500
+Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
+        by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 10Q7sWnZ142151;
+        Tue, 26 Jan 2021 07:55:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
+ : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=corp-2020-01-29;
+ bh=8ukOlP69r9StlhSqY+DgMD3BvlxzZWEEv5lcyj86YWo=;
+ b=JHTedNTCH08nPA1VfT+fj0pa9paDWB4Zl+yPmlSn+GK+6FPIIX94Nkrs/xxrjW6hYeQK
+ A6pTZJ1UIoGA/4GF2wE5ysZ0Vj0SP4qRAlZpRlVM2U6RTfDiKpZA3SJQZPEFoxrZNGzy
+ m8n7sjyZkbaAihgU3ehDniBNl1QmKlAZQ3TFfSoUKJDwhGyxZtlvSz1Yhpdc0mIq2PAU
+ DEb3EvcRpqMND7BC3vsU7EcLt3b3q5tc+xsHjO4FjlpAqVlxAXCfDxV1qM8lsv6mezXp
+ 23tC0FEHGpu/EgqHlHZ01Pu5lNoEBl6YzVgWYuaRRNEC9FLvtOfKVatHNeKI2n1J7u4q rw== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+        by aserp2120.oracle.com with ESMTP id 368brkgse8-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 26 Jan 2021 07:55:02 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+        by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 10Q7pXjX004836;
+        Tue, 26 Jan 2021 07:54:59 GMT
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+        by userp3020.oracle.com with ESMTP id 368wjqtrf1-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 26 Jan 2021 07:54:59 +0000
+Received: from abhmp0002.oracle.com (abhmp0002.oracle.com [141.146.116.8])
+        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 10Q7soMP031763;
+        Tue, 26 Jan 2021 07:54:51 GMT
+Received: from kadam (/102.36.221.92)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Mon, 25 Jan 2021 23:54:50 -0800
+Date:   Tue, 26 Jan 2021 10:54:41 +0300
+From:   Dan Carpenter <dan.carpenter@oracle.com>
+To:     Carlis <zhangxuezhi3@gmail.com>
+Cc:     gregkh@linuxfoundation.org, devel@driverdev.osuosl.org,
+        linux-fbdev@vger.kernel.org, mh12gx2825@gmail.com,
+        oliver.graute@kococonnector.com, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, sbrivio@redhat.com,
+        colin.king@canonical.com, zhangxuezhi1@yulong.com
+Subject: Re: [PATCH] fbtft: add tearing signal detect
+Message-ID: <20210126075441.GW2696@kadam>
+References: <1611502537-80668-1-git-send-email-zhangxuezhi3@gmail.com>
 MIME-Version: 1.0
-References: <20200916205434.GA10389@duo.ucw.cz> <87czyf5jjp.fsf@vps.thesusis.net>
- <CAHk-=wjsjC1h7fskwYaaRLykN1ms6ZtxGvucQgmL-zZTfxPdBA@mail.gmail.com>
- <CAKMK7uEGXOC_ci=Drm=Hz+xPGdcoxv8YZ-gcOckoPmu2XijiSA@mail.gmail.com>
- <CAMuHMdVzCjVim4A3eAZzztqUyjb6a2bjmSkgxUnaugQFv42qag@mail.gmail.com> <87k0s4ai33.fsf@vps.thesusis.net>
-In-Reply-To: <87k0s4ai33.fsf@vps.thesusis.net>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 25 Jan 2021 16:39:09 +0100
-Message-ID: <CAMuHMdVe-pS4wT++RDzF+EYd-_SC9naGJj8dzWbN6mt0yAnVxg@mail.gmail.com>
-Subject: Re: fbcon: remove soft scrollback code (missing Doc. patch)
-To:     Phillip Susi <phill@thesusis.net>
-Cc:     Daniel Vetter <daniel@ffwll.ch>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1611502537-80668-1-git-send-email-zhangxuezhi3@gmail.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9875 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 suspectscore=0
+ adultscore=0 mlxscore=0 malwarescore=0 spamscore=0 mlxlogscore=999
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2101260041
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9875 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 impostorscore=0
+ phishscore=0 bulkscore=0 priorityscore=1501 mlxlogscore=999
+ lowpriorityscore=0 spamscore=0 mlxscore=0 suspectscore=0 malwarescore=0
+ clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2101260041
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Phillip,
+On Sun, Jan 24, 2021 at 11:35:37PM +0800, Carlis wrote:
+> +static irqreturn_t spi_panel_te_handler(int irq, void *data)
+> +{
+> +	complete(&spi_panel_te);
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static void enable_spi_panel_te_irq(struct fbtft_par *par, bool enable)
 
-On Fri, Jan 22, 2021 at 8:26 PM Phillip Susi <phill@thesusis.net> wrote:
-> Geert Uytterhoeven writes:
-> Judging from some of the comments in the code, it looks like you were
-> one of the original authors of fbcon?  I haven't been able to find any
+It quite confused me that enable actually disables.  I always feel like
+it's clearer to write these as two separate functions.
 
-Indeed, a looooong time ago... Before DRM existed.
+> +{
+> +	static int te_irq_count;
+> +
+> +	if (!par->gpio.te) {
 
-> of these sczbot crash reports, and am not sure how fuzzing syscalls
-> would really affect this code ( it's not really handling a buch of
-> ioctls or otherwise taking arguments from user space ) , but I am a bit
+This is always checked in the caller.  And it's when it's NULL that
+means it's deliberate so don't print a message.
 
-AFAIU, most of these are triggered by VT ioctls.
-There is an intimate relation between the VT and fbev subsystems: VT
-changes impact fbdev, and vice versa.
+> +		pr_err("%s:%d,SPI panel TE GPIO not configured\n",
+> +		       __func__, __LINE__);
+> +		return;
+> +	}
+> +
+> +	mutex_lock(&te_mutex);
+> +
+> +	if (enable) {
+> +		if (++te_irq_count == 1)
+> +			enable_irq(gpiod_to_irq(par->gpio.te));
+> +	} else {
+> +		if (--te_irq_count == 0)
+> +			disable_irq(gpiod_to_irq(par->gpio.te));
+> +	}
+> +	mutex_unlock(&te_mutex);
+> +}
+> +
+>  /**
+>   * init_display() - initialize the display controller
+>   *
+> @@ -82,6 +117,28 @@ enum st7789v_command {
+>   */
+>  static int init_display(struct fbtft_par *par)
+>  {
+> +	int rc;
+> +	struct device *dev = par->info->device;
+> +
+> +	par->gpio.te = devm_gpiod_get_index_optional(dev, "te", 0, GPIOD_IN);
+> +	if (par->gpio.te) {
 
-Perhaps these should be decoupled, at the expense of worse user
-experience (i.e. the user needing to change both screen resolution and
-number of columns/rows of the text console)?
+devm_gpiod_get_index_optional() can return NULL or error pointers.  If
+it returns NULL then don't print an error message.  NULL reports are
+deliberate.
 
-> confused as to why the softback was implemented the way that it was.
->
-> vgacon simply copies the main buffer to vram in ->set_origin() and then
-> changes the pointers to operate out of the much larger vram while that
-> virtual terminal is active.  If I understand it correctly, it looks like
-> fbcon instead opts to operate out of the main buffer but rescue lines as
-> they are scrolled off and relocate them to the softback buffer.  This
-> seems to be rather more convoluted.
->
-> I'm thinking of re-implementing scrollback more like the way vgacon does
-> it: allocate a big "vram" buffer and operate out of that.  Obviously
-> ->scroll() and ->scrolldelta() have to actually repaint the screen rather
-> than simply change the pointer register, but that should be about the
-> only difference.
+	par->gpio.te = devm_gpiod_get_index_optional(dev, "te", 0, GPIOD_IN);
+	if (IS_ERR(par->gpio.te)) {
+		pr_err("%s:%d, TE gpio not specified\n", __func__, __LINE__);
+		return PTR_ERR(par->gpio.te);
+	}
 
-I'm not that intimate familiar anymore with the current state of the
-code, but it used to be like this:
-  - vgacon used a VRAM buffer for the current VC, and multiple shadow
-    buffers to implement virtual consoles,
-  - fbcon always used the shadow buffers, with each update triggering
-    an update of the frame buffer (see below).
+	if (par->gpio.te) {
 
-As the text console buffer handling should be the same for vgacon and
-fbcon, I expect most scrollback bugs (if any) to be present in both.
 
-> I have also noticed that there was some code to use hardware panning of
-> the video buffer rather than having to do a block bitblt to scroll the
-> contents of the screen, but that it was disabled because virtually no
-> video drivers actually implemented it?  That seems like a shame, but if
-> it is so, then there's no sense carrying the dead code so I think I'll
-> clean that up now.
->
-> Now that I look at it again, everything is simply always redrawn now
-> instead of even doing a simple bitblt.  Daniel, you mentioned that
-> almost nobody supports hardware acceleration, but even without any
-> specific hardware support, surely even if bitblt() is implemented just
-> as a memcpy(), it has to be faster than redrawing all of the characters
-> doesn't it?  Getting rid of the panning if it isn't generally supported
-> I can see, but I don't understand killing bitblt even if most devices
-> don't accelerate it.
+> +		init_completion(&spi_panel_te);
+> +		mutex_init(&te_mutex);
+> +		rc = devm_request_irq(dev,
+> +				      gpiod_to_irq(par->gpio.te),
+> +				     spi_panel_te_handler, IRQF_TRIGGER_RISING,
+> +				     "TE_GPIO", par);
+> +		if (rc) {
+> +			pr_err("TE request_irq failed.\n");
+> +			par->gpio.te = NULL;
+> +		} else {
+> +			disable_irq_nosync(gpiod_to_irq(par->gpio.te));
+> +			pr_err("TE request_irq completion.\n");
 
-There are multiple ways to implement scrolling:
-  1. If the hardware supports a larger virtual screen and panning, and
-     the virtual screen is enabled, most scrolling can be implemented by
-     panning, with a casual copy when reaching the bottom (or top) of
-     the virtual screen.
-     This mode is (was) available on most graphics hardware with
-     dedicated graphics memory.
-  2. If a 2D acceleration engine is available, copying (and
-     clearing/filling) can be implemented by rectangle copy/fill
-     operations.
-  3. Rectangle copy/fill by the CPU is always available.
-  4. Redrawing characters by the CPU is always available.
+Why is this printing an error message if devm_request_irq() succeeds?
 
-Which option was used depended on the hardware: not all options are
-available everywhere, and some perform better than others.
-E.g. on PCI graphics cards, reading graphics memory by the CPU is
-usually very slow, so option 3 is much slower than option 4 (given a
-sufficiently fast CPU).
-AFAIU, option 2 is not suitable for modern systems with 3D acceleration.
-On the older (slower) systems (lacking VGA text mode) for which fbcon
-was originally written, option 4 is usually the slowest.
+> +		}
+> +	} else {
+> +		pr_err("%s:%d, TE gpio not specified\n",
+> +		       __func__, __LINE__);
+> +	}
+>  	/* turn off sleep mode */
+>  	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
+>  	mdelay(120);
+> @@ -137,6 +194,9 @@ static int init_display(struct fbtft_par *par)
+>  	 */
+>  	write_reg(par, PWCTRL1, 0xA4, 0xA1);
+>  
+> +    /*Tearing Effect Line On*/
+> +	if (par->gpio.te)
+> +		write_reg(par, 0x35, 0x00);
+>  	write_reg(par, MIPI_DCS_SET_DISPLAY_ON);
+>  
+>  	if (HSD20_IPS)
+> @@ -145,6 +205,76 @@ static int init_display(struct fbtft_par *par)
+>  	return 0;
+>  }
+>  
+> +/*****************************************************************************
+> + *
+> + *   int (*write_vmem)(struct fbtft_par *par);
+> + *
+> + *****************************************************************************/
+> +
+> +/* 16 bit pixel over 8-bit databus */
+> +int st7789v_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
+> +{
+> +	u16 *vmem16;
+> +	__be16 *txbuf16 = par->txbuf.buf;
+> +	size_t remain;
+> +	size_t to_copy;
+> +	size_t tx_array_size;
+> +	int i;
+> +	int rc, ret = 0;
 
-Support for 1-3 were removed in commit 39aead8373b3c20b ("fbcon: Disable
-accelerated scrolling"), which claimed only 3 (DRM) drivers made use of
-this, ignoring the other 32 (fbdev) drivers making use of it.
+Delete one of these "rc" or "rec" variables.
 
-Gr{oetje,eeting}s,
+> +	size_t startbyte_size = 0;
+> +
+> +	fbtft_par_dbg(DEBUG_WRITE_VMEM, par, "st7789v ---%s(offset=%zu, len=%zu)\n",
+> +		      __func__, offset, len);
+> +
+> +	remain = len / 2;
+> +	vmem16 = (u16 *)(par->info->screen_buffer + offset);
+> +
+> +	if (par->gpio.dc)
+> +		gpiod_set_value(par->gpio.dc, 1);
+> +
+> +	/* non buffered write */
+> +	if (!par->txbuf.buf)
+> +		return par->fbtftops.write(par, vmem16, len);
+> +
+> +	/* buffered write */
+> +	tx_array_size = par->txbuf.len / 2;
+> +
+> +	if (par->startbyte) {
+> +		txbuf16 = par->txbuf.buf + 1;
+> +		tx_array_size -= 2;
+> +		*(u8 *)(par->txbuf.buf) = par->startbyte | 0x2;
+> +		startbyte_size = 1;
+> +	}
+> +
+> +	while (remain) {
+> +		to_copy = min(tx_array_size, remain);
+> +		dev_dbg(par->info->device, "    to_copy=%zu, remain=%zu\n",
+> +			to_copy, remain - to_copy);
+> +
+> +		for (i = 0; i < to_copy; i++)
+> +			txbuf16[i] = cpu_to_be16(vmem16[i]);
+> +
+> +		vmem16 = vmem16 + to_copy;
+> +		if (par->gpio.te) {
+> +			enable_spi_panel_te_irq(par, true);
+> +			reinit_completion(&spi_panel_te);
+> +			rc = wait_for_completion_timeout(&spi_panel_te,
+> +							 msecs_to_jiffies(SPI_PANEL_TE_TIMEOUT));
+> +			if (rc == 0)
+> +				pr_err("wait panel TE time out\n");
+> +		}
+> +		ret = par->fbtftops.write(par, par->txbuf.buf,
+> +								startbyte_size + to_copy * 2);
 
-                        Geert
+Line break is whacky.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> +		if (par->gpio.te)
+> +			enable_spi_panel_te_irq(par, false);
+> +		if (ret < 0)
+> +			return ret;
+> +		remain -= to_copy;
+> +	}
+> +
+> +	return ret;
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Shouldn't this be "return len;" or something?
+
+> +}
+> +
+
+regards,
+dan carpenter
+

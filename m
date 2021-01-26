@@ -2,163 +2,119 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFCF2C43381
-	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jan 2021 22:39:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40DFFC43331
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jan 2021 22:39:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D612D204EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jan 2021 22:39:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 24CA320575
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Jan 2021 22:39:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728682AbhAZWhY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 26 Jan 2021 17:37:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57518 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391922AbhAZRfV (ORCPT
+        id S1729387AbhAZWiS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 26 Jan 2021 17:38:18 -0500
+Received: from userp2130.oracle.com ([156.151.31.86]:60000 "EHLO
+        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2392244AbhAZRy5 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 26 Jan 2021 12:35:21 -0500
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A416C0613ED
-        for <linux-fbdev@vger.kernel.org>; Tue, 26 Jan 2021 09:34:41 -0800 (PST)
-Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1l4RgD-00045p-EA; Tue, 26 Jan 2021 17:59:01 +0100
-Received: from ukl by ptx.hi.pengutronix.de with local (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1l4Rg3-0003hY-Ft; Tue, 26 Jan 2021 17:58:51 +0100
-From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-To:     Russell King <linux@armlinux.org.uk>,
-        Matt Mackall <mpm@selenic.com>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Vinod Koul <vkoul@kernel.org>,
-        Dan Williams <dan.j.williams@intel.com>,
-        Eric Anholt <eric@anholt.net>, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Vladimir Zapolskiy <vz@mleia.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Mark Brown <broonie@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Eric Auger <eric.auger@redhat.com>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Cornelia Huck <cohuck@redhat.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
-Cc:     linux-kernel@vger.kernel.org, kernel@pengutronix.de,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig.org@pengutronix.de>,
-        Mike Leach <mike.leach@linaro.org>,
-        Leo Yan <leo.yan@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
-        linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, coresight@lists.linaro.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-i2c@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
-        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-watchdog@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: [PATCH v3 0/5] amba: minor fix and various cleanups
-Date:   Tue, 26 Jan 2021 17:58:30 +0100
-Message-Id: <20210126165835.687514-1-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.29.2
+        Tue, 26 Jan 2021 12:54:57 -0500
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+        by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 10QHroMI193769;
+        Tue, 26 Jan 2021 17:53:58 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
+ : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=corp-2020-01-29;
+ bh=gqTIlCrmkR4s8Y9TJxhSa5y/C1OAm/ZoUsX5inr5tbY=;
+ b=CWzvj3hwc893o1b+uL+P4wzRrDrsyh0Y8Kb8rU2zaad5fVfTdmLaOq3O3wo2riArXvhU
+ cl0xMZ0o4Ms0OVyNP45Z3DW26w+iEy3bwF6DFOPTQr1Yd4yVS21TyRs4p6bDF7eRfIyB
+ XEBm16sO8DHB6eMXvJGqRL4jkj1XoNEtsde1G3DYpEKUoIpkmBvGNNtTLrycfZx0eLJm
+ x9CfOqcWZgwCCqOjF5sJSnS7EmHug0t8+vOWxou+lvaoKw4qSLJNNy0G71V5lYsUOtbD
+ txbO4IkuwTnN1y20Opt8a1mAC03OUGwRqc0oDuL7Q8A+rew2s1137oH5CytIFO9fi2BL GA== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+        by userp2130.oracle.com with ESMTP id 368b7quax0-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 26 Jan 2021 17:53:58 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+        by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 10QHjekl154723;
+        Tue, 26 Jan 2021 17:51:57 GMT
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+        by userp3020.oracle.com with ESMTP id 368wjrevms-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 26 Jan 2021 17:51:56 +0000
+Received: from abhmp0001.oracle.com (abhmp0001.oracle.com [141.146.116.7])
+        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 10QHpoWG017246;
+        Tue, 26 Jan 2021 17:51:50 GMT
+Received: from kadam (/102.36.221.92)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Tue, 26 Jan 2021 09:51:49 -0800
+Date:   Tue, 26 Jan 2021 20:51:41 +0300
+From:   Dan Carpenter <dan.carpenter@oracle.com>
+To:     Carlis <zhangxuezhi3@gmail.com>
+Cc:     gregkh@linuxfoundation.org, devel@driverdev.osuosl.org,
+        linux-fbdev@vger.kernel.org, mh12gx2825@gmail.com,
+        oliver.graute@kococonnector.com, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, sbrivio@redhat.com,
+        colin.king@canonical.com, zhangxuezhi1@yulong.com
+Subject: Re: [PATCH v4] fbtft: add tearing signal detect
+Message-ID: <20210126175141.GZ2696@kadam>
+References: <1611664835-150687-1-git-send-email-zhangxuezhi3@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1611664835-150687-1-git-send-email-zhangxuezhi3@gmail.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9876 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 suspectscore=0
+ adultscore=0 mlxscore=0 malwarescore=0 spamscore=0 mlxlogscore=999
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2101260092
+X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=9876 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 spamscore=0 phishscore=0
+ adultscore=0 impostorscore=0 malwarescore=0 lowpriorityscore=0 bulkscore=0
+ priorityscore=1501 mlxscore=0 clxscore=1015 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2101260093
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Uwe Kleine-König <u.kleine-koenig.org@pengutronix.de
+On Tue, Jan 26, 2021 at 08:40:35PM +0800, Carlis wrote:
+> @@ -82,6 +111,29 @@ enum st7789v_command {
+>   */
+>  static int init_display(struct fbtft_par *par)
+>  {
+> +	int rc;
+> +	struct device *dev = par->info->device;
+> +
+> +	par->gpio.te = devm_gpiod_get_index_optional(dev, "te", 0, GPIOD_IN);
+> +	if (par->gpio.te) {
 
-Hello,
+I explained in my earlier review that devm_gpiod_get_index_optional()
+can return error pointers...  There was quite a bit of detail about how
+to handle this correctly in my earlier review, but I think you might
+not have noticed it.  Please read it again.
 
-Changes since v2 sent with Message-Id:
-20201124133139.3072124-1-uwe@kleine-koenig.org:
+> +		init_completion(&spi_panel_te);
+> +		mutex_init(&te_mutex);
+> +		rc = devm_request_irq(dev,
+> +				      gpiod_to_irq(par->gpio.te),
+> +				     spi_panel_te_handler, IRQF_TRIGGER_RISING,
+> +				     "TE_GPIO", par);
+> +		if (rc) {
+> +			pr_err("TE request_irq failed.\n");
+> +			devm_gpiod_put(dev, par->gpio.te);
+> +			par->gpio.te = NULL;
+> +		} else {
+> +			disable_irq_nosync(gpiod_to_irq(par->gpio.te));
+> +			pr_info("TE request_irq completion.\n");
+> +		}
+> +	} else {
+> +		pr_err("%s:%d, TE gpio not specified\n",
+> +		       __func__, __LINE__);
+> +	}
 
- - Rebase to v5.11-rc1 (which resulted in a few conflicts in
-   drivers/hwtracing).
- - Add various Acks.
- - Send to more maintainers directly (which I think is one of the
-   reasons why there are so few Acks).
-
-For my taste patch 4 needs some more acks (drivers/char/hw_random,
-drivers/dma, drivers/gpu/drm/pl111, drivers/i2c, drivers/mmc,
-drivers/vfio, drivers/watchdog and sound/arm have no maintainer feedback
-yet).
-
-My suggestion is to let this series go in via Russell King (who cares
-for amba). Once enough Acks are there I can also provide a tag for
-merging into different trees. Just tell me if you prefer this solution.
-
-Would be great if this could make it for v5.12, but I'm aware it's
-already late in the v5.11 cycle so it might have to wait for v5.13.
-
-Best regards
-Uwe
-
-Uwe Kleine-König (5):
-  amba: Fix resource leak for drivers without .remove
-  amba: reorder functions
-  vfio: platform: simplify device removal
-  amba: Make the remove callback return void
-  amba: Make use of bus_type functions
-
- drivers/amba/bus.c                            | 234 +++++++++---------
- drivers/char/hw_random/nomadik-rng.c          |   3 +-
- drivers/dma/pl330.c                           |   3 +-
- drivers/gpu/drm/pl111/pl111_drv.c             |   4 +-
- drivers/hwtracing/coresight/coresight-catu.c  |   3 +-
- .../hwtracing/coresight/coresight-cpu-debug.c |   4 +-
- .../hwtracing/coresight/coresight-cti-core.c  |   4 +-
- drivers/hwtracing/coresight/coresight-etb10.c |   4 +-
- .../coresight/coresight-etm3x-core.c          |   4 +-
- .../coresight/coresight-etm4x-core.c          |   4 +-
- .../hwtracing/coresight/coresight-funnel.c    |   4 +-
- .../coresight/coresight-replicator.c          |   4 +-
- drivers/hwtracing/coresight/coresight-stm.c   |   4 +-
- .../hwtracing/coresight/coresight-tmc-core.c  |   4 +-
- drivers/hwtracing/coresight/coresight-tpiu.c  |   4 +-
- drivers/i2c/busses/i2c-nomadik.c              |   4 +-
- drivers/input/serio/ambakmi.c                 |   3 +-
- drivers/memory/pl172.c                        |   4 +-
- drivers/memory/pl353-smc.c                    |   4 +-
- drivers/mmc/host/mmci.c                       |   4 +-
- drivers/rtc/rtc-pl030.c                       |   4 +-
- drivers/rtc/rtc-pl031.c                       |   4 +-
- drivers/spi/spi-pl022.c                       |   5 +-
- drivers/tty/serial/amba-pl010.c               |   4 +-
- drivers/tty/serial/amba-pl011.c               |   3 +-
- drivers/vfio/platform/vfio_amba.c             |  15 +-
- drivers/video/fbdev/amba-clcd.c               |   4 +-
- drivers/watchdog/sp805_wdt.c                  |   4 +-
- include/linux/amba/bus.h                      |   2 +-
- sound/arm/aaci.c                              |   4 +-
- 30 files changed, 157 insertions(+), 198 deletions(-)
-
-
-base-commit: 5c8fe583cce542aa0b84adc939ce85293de36e5e
--- 
-2.29.2
+regards,
+dan carpenter
 

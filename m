@@ -2,105 +2,136 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48E64C4332B
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 12:07:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B37AC433DB
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 12:28:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1763420786
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 12:07:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 317012074A
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 12:28:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237587AbhA0MGc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jan 2021 07:06:32 -0500
-Received: from mail.kernel.org ([198.145.29.99]:41492 "EHLO mail.kernel.org"
+        id S236813AbhA0M1w (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Jan 2021 07:27:52 -0500
+Received: from mail.kernel.org ([198.145.29.99]:47000 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S237582AbhA0MDx (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Jan 2021 07:03:53 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 1227220773;
-        Wed, 27 Jan 2021 12:03:10 +0000 (UTC)
+        id S236296AbhA0MZw (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 27 Jan 2021 07:25:52 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 336752070E;
+        Wed, 27 Jan 2021 12:25:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1611748991;
-        bh=s9FyWRqQBYLlzUUdBkv3FZQxudbP70KKsuwRkeHWHEI=;
+        s=korg; t=1611750310;
+        bh=imd80gPIHbJE8uuSvdkKYNt06yTy9wGgnng4tuLO1bE=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=M8giB4ORvL3mx55LaDcj1/tIi+BhFJb4mO4m9pyBQqvZIwgP2vqkgkDOQ4I1vn8HH
-         U8aP648RT1pUgCmU92gSCKiLyN0XGWtBCyfjACVz8RiJzgpFsPQ6OWW77wlJfo28NM
-         bwp9LYhhA6QMhnElnHGF3hN0OdPBasyFUrm9T7kg=
-Date:   Wed, 27 Jan 2021 13:03:08 +0100
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-Cc:     Russell King <linux@armlinux.org.uk>,
-        Matt Mackall <mpm@selenic.com>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Vinod Koul <vkoul@kernel.org>,
-        Dan Williams <dan.j.williams@intel.com>,
-        Eric Anholt <eric@anholt.net>, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Vladimir Zapolskiy <vz@mleia.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Mark Brown <broonie@kernel.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Eric Auger <eric.auger@redhat.com>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Cornelia Huck <cohuck@redhat.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Takashi Iwai <tiwai@suse.com>, linux-kernel@vger.kernel.org,
-        kernel@pengutronix.de, Mike Leach <mike.leach@linaro.org>,
-        Leo Yan <leo.yan@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
-        linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, coresight@lists.linaro.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-i2c@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
-        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-watchdog@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: Re: [PATCH v3 4/5] amba: Make the remove callback return void
-Message-ID: <YBFWfOmndoPckN1A@kroah.com>
-References: <20210126165835.687514-1-u.kleine-koenig@pengutronix.de>
- <20210126165835.687514-5-u.kleine-koenig@pengutronix.de>
+        b=PSrfJ2+mqCpTL9w5GZtWEYar7eDEJWbgyU+G6jO/ZATY7Bj4zQm+RDJ6hyn1gdwz2
+         EavnWQI6fK3FMdK1im06stlhsW35tDv3fwGIkQIytV7NsowOc1L1cvot9jKmfa71F8
+         OU8jF+mvh41FerQOm7gCQaG/22YnGRMRuQyKPPoI=
+Date:   Wed, 27 Jan 2021 13:25:07 +0100
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     Carlis <zhangxuezhi3@gmail.com>
+Cc:     devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org,
+        mh12gx2825@gmail.com, oliver.graute@kococonnector.com,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        sbrivio@redhat.com, colin.king@canonical.com,
+        zhangxuezhi1@yulong.com
+Subject: Re: [PATCH v8] fbtft: add tearing signal detect
+Message-ID: <YBFbo3QEHF9eQBxy@kroah.com>
+References: <1611743206-136112-1-git-send-email-zhangxuezhi3@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210126165835.687514-5-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1611743206-136112-1-git-send-email-zhangxuezhi3@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Jan 26, 2021 at 05:58:34PM +0100, Uwe Kleine-König wrote:
-> All amba drivers return 0 in their remove callback. Together with the
-> driver core ignoring the return value anyhow, it doesn't make sense to
-> return a value here.
+On Wed, Jan 27, 2021 at 06:26:46PM +0800, Carlis wrote:
+> From: zhangxuezhi <zhangxuezhi1@yulong.com>
 > 
-> Change the remove prototype to return void, which makes it explicit that
-> returning an error value doesn't work as expected. This simplifies changing
-> the core remove callback to return void, too.
+> For st7789v ic,add tearing signal detect to avoid screen tearing
 > 
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-> Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Acked-by: Krzysztof Kozlowski <krzk@kernel.org> # for drivers/memory
-> Acked-by: Mark Brown <broonie@kernel.org>
-> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Acked-by: Linus Walleij <linus.walleij@linaro.org>
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Signed-off-by: zhangxuezhi <zhangxuezhi1@yulong.com>
+> ---
+> v8: delete a log line
+> ---
+>  drivers/staging/fbtft/fb_st7789v.c | 132 ++++++++++++++++++++++++++++++++++++-
+>  drivers/staging/fbtft/fbtft.h      |   1 +
+>  2 files changed, 132 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
+> index 3a280cc..de7460c 100644
+> --- a/drivers/staging/fbtft/fb_st7789v.c
+> +++ b/drivers/staging/fbtft/fb_st7789v.c
+> @@ -9,9 +9,12 @@
+>  #include <linux/delay.h>
+>  #include <linux/init.h>
+>  #include <linux/kernel.h>
+> +#include <linux/mutex.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/completion.h>
+>  #include <linux/module.h>
+>  #include <video/mipi_display.h>
+> -
+> +#include <linux/gpio/consumer.h>
+>  #include "fbtft.h"
+>  
+>  #define DRVNAME "fb_st7789v"
+> @@ -66,6 +69,32 @@ enum st7789v_command {
+>  #define MADCTL_MX BIT(6) /* bitmask for column address order */
+>  #define MADCTL_MY BIT(7) /* bitmask for page address order */
+>  
+> +#define SPI_PANEL_TE_TIMEOUT	400
+> +static struct mutex te_mutex;/*mutex for tearing line*/
+> +static struct completion spi_panel_te;
+> +
+> +static irqreturn_t spi_panel_te_handler(int irq, void *data)
+> +{
+> +	complete(&spi_panel_te);
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static void set_spi_panel_te_irq_status(struct fbtft_par *par, bool enable)
+> +{
+> +	static int te_irq_count;
+> +
+> +	mutex_lock(&te_mutex);
+> +
+> +	if (enable) {
+> +		if (++te_irq_count == 1)
+> +			enable_irq(gpiod_to_irq(par->gpio.te));
+> +	} else {
+> +		if (--te_irq_count == 0)
+> +			disable_irq(gpiod_to_irq(par->gpio.te));
+> +	}
+> +	mutex_unlock(&te_mutex);
+> +}
+> +
+>  /**
+>   * init_display() - initialize the display controller
+>   *
+> @@ -82,6 +111,33 @@ enum st7789v_command {
+>   */
+>  static int init_display(struct fbtft_par *par)
+>  {
+> +	int rc;
+> +	struct device *dev = par->info->device;
+> +
+> +	par->gpio.te = devm_gpiod_get_index_optional(dev, "te", 0, GPIOD_IN);
+> +	if (IS_ERR(par->gpio.te)) {
+> +		rc = PTR_ERR(par->gpio.te);
+> +		pr_err("Failed to request te gpio: %d\n", rc);
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+You are a driver, always use dev_* calls, not pr_*.
+
+This should be dev_err().
+
+same for other pr_ functions you add in this patch.
+
+Also, look at other commits for this file and make your subject: line
+match them (i.e. you forgot "staging: ")
+
+thanks,
+
+greg k-h

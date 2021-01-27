@@ -2,123 +2,105 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B2CEC433DB
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 11:59:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48E64C4332B
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 12:07:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3A9A020773
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 11:59:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1763420786
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 12:07:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234464AbhA0L7M (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jan 2021 06:59:12 -0500
-Received: from mx2.suse.de ([195.135.220.15]:33416 "EHLO mx2.suse.de"
+        id S237587AbhA0MGc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Jan 2021 07:06:32 -0500
+Received: from mail.kernel.org ([198.145.29.99]:41492 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S237239AbhA0Ly0 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Jan 2021 06:54:26 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 684A9ACBA;
-        Wed, 27 Jan 2021 11:53:44 +0000 (UTC)
-Date:   Wed, 27 Jan 2021 12:53:41 +0100
-From:   Oscar Salvador <osalvador@suse.de>
-To:     David Hildenbrand <david@redhat.com>
-Cc:     linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        "Peter Zijlstra (Intel)" <peterz@infradead.org>,
-        Mike Rapoport <rppt@kernel.org>,
-        Michal Hocko <mhocko@kernel.org>,
-        Wei Yang <richard.weiyang@linux.alibaba.com>,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
-        Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v1 1/2] video: fbdev: acornfb: remove free_unused_pages()
-Message-ID: <20210127115341.GB28728@linux>
-References: <20210126182113.19892-1-david@redhat.com>
- <20210126182113.19892-2-david@redhat.com>
+        id S237582AbhA0MDx (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 27 Jan 2021 07:03:53 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 1227220773;
+        Wed, 27 Jan 2021 12:03:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1611748991;
+        bh=s9FyWRqQBYLlzUUdBkv3FZQxudbP70KKsuwRkeHWHEI=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=M8giB4ORvL3mx55LaDcj1/tIi+BhFJb4mO4m9pyBQqvZIwgP2vqkgkDOQ4I1vn8HH
+         U8aP648RT1pUgCmU92gSCKiLyN0XGWtBCyfjACVz8RiJzgpFsPQ6OWW77wlJfo28NM
+         bwp9LYhhA6QMhnElnHGF3hN0OdPBasyFUrm9T7kg=
+Date:   Wed, 27 Jan 2021 13:03:08 +0100
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+Cc:     Russell King <linux@armlinux.org.uk>,
+        Matt Mackall <mpm@selenic.com>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        Vinod Koul <vkoul@kernel.org>,
+        Dan Williams <dan.j.williams@intel.com>,
+        Eric Anholt <eric@anholt.net>, David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+        Alexandre Torgue <alexandre.torgue@st.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Vladimir Zapolskiy <vz@mleia.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Mark Brown <broonie@kernel.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Eric Auger <eric.auger@redhat.com>,
+        Alex Williamson <alex.williamson@redhat.com>,
+        Cornelia Huck <cohuck@redhat.com>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Takashi Iwai <tiwai@suse.com>, linux-kernel@vger.kernel.org,
+        kernel@pengutronix.de, Mike Leach <mike.leach@linaro.org>,
+        Leo Yan <leo.yan@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
+        linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, coresight@lists.linaro.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-i2c@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-rtc@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
+        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-watchdog@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: Re: [PATCH v3 4/5] amba: Make the remove callback return void
+Message-ID: <YBFWfOmndoPckN1A@kroah.com>
+References: <20210126165835.687514-1-u.kleine-koenig@pengutronix.de>
+ <20210126165835.687514-5-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20210126182113.19892-2-david@redhat.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210126165835.687514-5-u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Jan 26, 2021 at 07:21:12PM +0100, David Hildenbrand wrote:
-> This function is never used and it is one of the last remaining user of
-> __free_reserved_page(). Let's just drop it.
+On Tue, Jan 26, 2021 at 05:58:34PM +0100, Uwe Kleine-König wrote:
+> All amba drivers return 0 in their remove callback. Together with the
+> driver core ignoring the return value anyhow, it doesn't make sense to
+> return a value here.
 > 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: "Peter Zijlstra (Intel)" <peterz@infradead.org>
-> Cc: Mike Rapoport <rppt@kernel.org>
-> Cc: Oscar Salvador <osalvador@suse.de>
-> Cc: Michal Hocko <mhocko@kernel.org>
-> Cc: Wei Yang <richard.weiyang@linux.alibaba.com>
-> Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Signed-off-by: David Hildenbrand <david@redhat.com>
-
-Reviewed-by: Oscar Salvador <osalvador@suse.de>
-
-> ---
->  drivers/video/fbdev/acornfb.c | 34 ----------------------------------
->  1 file changed, 34 deletions(-)
+> Change the remove prototype to return void, which makes it explicit that
+> returning an error value doesn't work as expected. This simplifies changing
+> the core remove callback to return void, too.
 > 
-> diff --git a/drivers/video/fbdev/acornfb.c b/drivers/video/fbdev/acornfb.c
-> index bcc92aecf666..1b72edc01cfb 100644
-> --- a/drivers/video/fbdev/acornfb.c
-> +++ b/drivers/video/fbdev/acornfb.c
-> @@ -921,40 +921,6 @@ static int acornfb_detect_monitortype(void)
->  	return 4;
->  }
->  
-> -/*
-> - * This enables the unused memory to be freed on older Acorn machines.
-> - * We are freeing memory on behalf of the architecture initialisation
-> - * code here.
-> - */
-> -static inline void
-> -free_unused_pages(unsigned int virtual_start, unsigned int virtual_end)
-> -{
-> -	int mb_freed = 0;
-> -
-> -	/*
-> -	 * Align addresses
-> -	 */
-> -	virtual_start = PAGE_ALIGN(virtual_start);
-> -	virtual_end = PAGE_ALIGN(virtual_end);
-> -
-> -	while (virtual_start < virtual_end) {
-> -		struct page *page;
-> -
-> -		/*
-> -		 * Clear page reserved bit,
-> -		 * set count to 1, and free
-> -		 * the page.
-> -		 */
-> -		page = virt_to_page(virtual_start);
-> -		__free_reserved_page(page);
-> -
-> -		virtual_start += PAGE_SIZE;
-> -		mb_freed += PAGE_SIZE / 1024;
-> -	}
-> -
-> -	printk("acornfb: freed %dK memory\n", mb_freed);
-> -}
-> -
->  static int acornfb_probe(struct platform_device *dev)
->  {
->  	unsigned long size;
-> -- 
-> 2.29.2
-> 
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+> Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> Acked-by: Krzysztof Kozlowski <krzk@kernel.org> # for drivers/memory
+> Acked-by: Mark Brown <broonie@kernel.org>
+> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
--- 
-Oscar Salvador
-SUSE L3
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>

@@ -2,109 +2,92 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7E5FC433DB
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 08:29:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50797C433DB
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 08:47:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 72F8C2074A
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 08:29:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0217520727
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Jan 2021 08:47:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231582AbhA0I3k (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jan 2021 03:29:40 -0500
-Received: from mleia.com ([178.79.152.223]:33394 "EHLO mail.mleia.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232643AbhA0IZI (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Jan 2021 03:25:08 -0500
-Received: from mail.mleia.com (localhost [127.0.0.1])
-        by mail.mleia.com (Postfix) with ESMTP id 9227042EB56;
-        Wed, 27 Jan 2021 08:12:58 +0000 (UTC)
-Subject: Re: [PATCH v3 4/5] amba: Make the remove callback return void
-To:     =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>
-Cc:     Russell King <linux@armlinux.org.uk>,
-        Matt Mackall <mpm@selenic.com>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Vinod Koul <vkoul@kernel.org>,
-        Dan Williams <dan.j.williams@intel.com>,
-        Eric Anholt <eric@anholt.net>, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Mark Brown <broonie@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Eric Auger <eric.auger@redhat.com>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Cornelia Huck <cohuck@redhat.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Takashi Iwai <tiwai@suse.com>, linux-kernel@vger.kernel.org,
-        kernel@pengutronix.de, Mike Leach <mike.leach@linaro.org>,
-        Leo Yan <leo.yan@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
-        linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, coresight@lists.linaro.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-i2c@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
-        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-watchdog@vger.kernel.org, alsa-devel@alsa-project.org
-References: <20210126165835.687514-1-u.kleine-koenig@pengutronix.de>
- <20210126165835.687514-5-u.kleine-koenig@pengutronix.de>
-From:   Vladimir Zapolskiy <vz@mleia.com>
-Message-ID: <b9bfa80b-ed5f-50f9-de50-76090007556c@mleia.com>
-Date:   Wed, 27 Jan 2021 10:12:55 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.5.0
+        id S231462AbhA0IrI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Jan 2021 03:47:08 -0500
+Received: from mail-oi1-f171.google.com ([209.85.167.171]:46408 "EHLO
+        mail-oi1-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231949AbhA0Io7 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 27 Jan 2021 03:44:59 -0500
+Received: by mail-oi1-f171.google.com with SMTP id k25so1346232oik.13;
+        Wed, 27 Jan 2021 00:44:41 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=mutFHLc1gkkZrR4Fer8oAQQ0VCNtXv8me5nxm8JFG6o=;
+        b=DnOA1IGmjQYbY4KLzonEeZkIja7LjirV7YHOmwmHDUGLetyAeWN0fFNbm78SfD7wNx
+         PJ4dvjIU0x2UgJ2DtDpXzUJ+8x9lwIZR7619AjdskX+ywN20rMm+OoDx6ITAB+canVcN
+         W5DpEI//d0luRFxn5WX967QDKNQhrmEOoX7+yDAy3wNsI3qQMzLeiagbKdTEDerXe2a7
+         vjnNegZjmzAwlJGaZta5Rm7ci5sOWMm6dYNjwIKOHZKQ7q5mNsj+Br1cWTVtfnI2+YTo
+         U6Ityr3DdKz86xPqWDnA/tAZoJxY14f2aBlr7EQFwbjVwTIg3U1c2B4XmKrenxtSjX9d
+         bi8g==
+X-Gm-Message-State: AOAM533tMZ1OoROfyCDdheIyKMK1mhzBjQhYinA12IggeZa6uv8Z1WhE
+        C4j2eUEa3++cDXNfvei+ovxF+G5rtI8MA9DeDVI=
+X-Google-Smtp-Source: ABdhPJyRilKemvCJEv7600MUD7rrw3Vm6t3WWaVeIyKZk2WvWyk7vpQeeMYS1vDHeon2cuMn7KqlF1medC/JKjRyBlE=
+X-Received: by 2002:a54:4e88:: with SMTP id c8mr2448439oiy.148.1611737056266;
+ Wed, 27 Jan 2021 00:44:16 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20210126165835.687514-5-u.kleine-koenig@pengutronix.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-49551924 
-X-CRM114-CacheID: sfid-20210127_081258_639999_D23EB9E2 
-X-CRM114-Status: GOOD (  14.44  )
+References: <20210126182113.19892-1-david@redhat.com> <20210126182113.19892-2-david@redhat.com>
+In-Reply-To: <20210126182113.19892-2-david@redhat.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed, 27 Jan 2021 09:44:05 +0100
+Message-ID: <CAMuHMdVp=K6UpR_BfrJjiFEJgQt4nC7n35M8O+Wr2kSqfeERxQ@mail.gmail.com>
+Subject: Re: [PATCH v1 1/2] video: fbdev: acornfb: remove free_unused_pages()
+To:     David Hildenbrand <david@redhat.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux MM <linux-mm@kvack.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        "Peter Zijlstra (Intel)" <peterz@infradead.org>,
+        Mike Rapoport <rppt@kernel.org>,
+        Oscar Salvador <osalvador@suse.de>,
+        Michal Hocko <mhocko@kernel.org>,
+        Wei Yang <richard.weiyang@linux.alibaba.com>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        Sam Ravnborg <sam@ravnborg.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/26/21 6:58 PM, Uwe Kleine-König wrote:
-> All amba drivers return 0 in their remove callback. Together with the
-> driver core ignoring the return value anyhow, it doesn't make sense to
-> return a value here.
-> 
-> Change the remove prototype to return void, which makes it explicit that
-> returning an error value doesn't work as expected. This simplifies changing
-> the core remove callback to return void, too.
-> 
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-> Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Acked-by: Krzysztof Kozlowski <krzk@kernel.org> # for drivers/memory
-> Acked-by: Mark Brown <broonie@kernel.org>
-> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> Acked-by: Linus Walleij <linus.walleij@linaro.org>
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+On Tue, Jan 26, 2021 at 11:54 PM David Hildenbrand <david@redhat.com> wrote:
+> This function is never used and it is one of the last remaining user of
+> __free_reserved_page(). Let's just drop it.
+>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: "Peter Zijlstra (Intel)" <peterz@infradead.org>
+> Cc: Mike Rapoport <rppt@kernel.org>
+> Cc: Oscar Salvador <osalvador@suse.de>
+> Cc: Michal Hocko <mhocko@kernel.org>
+> Cc: Wei Yang <richard.weiyang@linux.alibaba.com>
+> Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Signed-off-by: David Hildenbrand <david@redhat.com>
 
-For drivers/memory/pl172.c:
+Fixes: ffd29195ed720188 ("drivers/video/acornfb.c: remove dead code")
 
-Acked-by: Vladimir Zapolskiy <vz@mleia.com>
+Gr{oetje,eeting}s,
 
---
-Best wishes,
-Vladimir
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

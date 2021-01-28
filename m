@@ -2,64 +2,65 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51201C433DB
-	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Jan 2021 10:00:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A03CC433DB
+	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Jan 2021 11:04:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EF16164DA1
-	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Jan 2021 10:00:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C5D8E6146D
+	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Jan 2021 11:04:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231811AbhA1J76 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 28 Jan 2021 04:59:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41552 "EHLO
+        id S229658AbhA1LDy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 28 Jan 2021 06:03:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55288 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229695AbhA1J7x (ORCPT
+        with ESMTP id S229569AbhA1LDv (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 28 Jan 2021 04:59:53 -0500
-Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C3C9BC061574;
-        Thu, 28 Jan 2021 01:59:12 -0800 (PST)
-Received: by mail-lj1-x22b.google.com with SMTP id f19so5586671ljn.5;
-        Thu, 28 Jan 2021 01:59:12 -0800 (PST)
+        Thu, 28 Jan 2021 06:03:51 -0500
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A1F7DC061573;
+        Thu, 28 Jan 2021 03:03:09 -0800 (PST)
+Received: by mail-pl1-x62f.google.com with SMTP id b8so3106976plh.12;
+        Thu, 28 Jan 2021 03:03:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=7pfzxki9lheHgOLLzQUHgmk1QHH49lwL5Xi6bGveKqI=;
-        b=C5iQTW3T8+J3IZWK6A5QNut7MFv+TbeI1f0Zb7Qjo0SxH2FThG4KpFizCyByRiNb7s
-         viTeDmowChDcQ8aNRy0KxaHpOKiDumWRod4N7OszB2XwnahAhLDBiP1p4Eh34nW9ck4X
-         c6iMTE2SUHtlRzSq+GVvJrsQ8z4Nq40YZxt+Kp2UpvrTqwnXiR166LxKfl+FW9AUTrt+
-         JInyKlot+NlBlvaaK5w6QO1+VeOP2O9MDEz8rYLSbCf8hQH4g+z4p9ZJxPMG0wj+EB+V
-         AeR5Qn+WmIUDJ0NS/fYzIauFxJ0PXLlubrIEPMNzFhJiJlCugY/kiim2oHuYgpnnxZAv
-         V2yg==
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :organization:mime-version:content-transfer-encoding;
+        bh=sBkTD1ZtjeS8jkP5hzFFT8Mun2/mkX9YEzpaHUFxKDc=;
+        b=oWU+dINW3A0WDBPghq7TwOLXYGxn8ZkRNOSVDRg1ZoLaH3tdPLGkRb+/TjL3IYxi/t
+         yL01IxDEFsbuWL4/FWKNeq1HG3nMJdFjnT2B+aCjX71phI82H9u7q+C3c6FPZBQmQ5Xm
+         TpjmQbpkFZzMPm029X2JLq2jCljq1OAfy3e177WBsYDvmrP+uingSJpcWoKlqG18IpS9
+         PUxzurfgaUSLguu4Hw5ChRSCchxcXAUIY7YqXj129oIJ+GGqABf2Jp9ctWIVMxJrFmMj
+         qERYj5C96cgwnz//AGUDzeow2Ps8or8pBU4WPRZZcO0P8+S3B7XWK2ABKcw0nlHrM8YP
+         J4RA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=7pfzxki9lheHgOLLzQUHgmk1QHH49lwL5Xi6bGveKqI=;
-        b=bs3Kns7SfDsWOQJpo2cpCJZqnXzPv0a1ZmYS55MIDvLXA5siP+M6Upvk3JeQ0+uOwr
-         r1tsP1Aojk2AvD3KRCvd6Am7t/86fV2ADj/7AXdonDfEXoQ6nTKcdWCZtgXVhQ6Y4+o2
-         39zw4MT0yvhm3mQK9b+ra1LI24k6+jhoxxGsDV7fbGweSPjLHACGl/fI3kg3APaqv0XY
-         lku5C7Fr17uGP8JVTl6aSw7x52WSUb6XIk4TUBUOpuFExPvpmfxip/hlFCAjONeudAyq
-         iCh3A9aVevJB90hKY5wQEmnCGIpuoG0UPQbhHXgLP7P2XcYk+RilrT6faPxPOjBw1bZy
-         6u1g==
-X-Gm-Message-State: AOAM533vrgSABH+GwxYEDZPf4WoTu3cS2OtuZTTzjWB83iAIgpUrU5DZ
-        D0i9h+moFMGqHX6KNLDZalw=
-X-Google-Smtp-Source: ABdhPJyQahjeVdQ9RR/Pj8A7PCSfRelscgLOEjJP1Tv1tX+t766D1pvJb3mrXoIpOblsSeRBhdN7Rg==
-X-Received: by 2002:a2e:b8c7:: with SMTP id s7mr7574137ljp.397.1611827951312;
-        Thu, 28 Jan 2021 01:59:11 -0800 (PST)
-Received: from kari-VirtualBox ([31.132.12.44])
-        by smtp.gmail.com with ESMTPSA id k20sm1814663ljb.73.2021.01.28.01.59.10
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:organization:mime-version:content-transfer-encoding;
+        bh=sBkTD1ZtjeS8jkP5hzFFT8Mun2/mkX9YEzpaHUFxKDc=;
+        b=qR1Bl23z1jZ7e5zXhnQGYM68jLUFjipk3DECmSm1RtvjlYkVqhT+agxwYtLwkFu575
+         ttXYYv440h1qd6n0adOFAKKegtGXRoV1p3h3NyB/kOaBPVIF1SEI1JyiBTYPKTbzqVUR
+         9dOzGoydKbBg78wVr2AnTzR1/JqjY71R2z+0+4TAj97SygU9ZUIKDOm2kDtUTsqTvscm
+         oslGU41CzTjd0Sc22I4RkwuQZn01KfpnkIv+yIq80nJDlcJ39PvC28mxCdYurkcQ4pbC
+         iurSFBOyVyTn9tocERrSMNRKst72Yt6ET0oB++AVXTEUCwLwaBRR5Z/tm/gZ8Uecj3S3
+         P8Dw==
+X-Gm-Message-State: AOAM530U1APRxvR7dV4uqXROZM53n8imEVxyJc+E37NFsiuU/OKF+oq1
+        xUHIoTqPKF7k9vojN2wtYk4=
+X-Google-Smtp-Source: ABdhPJxuKefhxuATg5SzADrFU6X/JMwte19Bjrcs0K6eys/yFrX6MPMndXfWktd7S71LXqppupaCdg==
+X-Received: by 2002:a17:90a:db50:: with SMTP id u16mr10793125pjx.39.1611831789172;
+        Thu, 28 Jan 2021 03:03:09 -0800 (PST)
+Received: from localhost ([103.220.76.197])
+        by smtp.gmail.com with ESMTPSA id h6sm5685953pfr.47.2021.01.28.03.03.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 Jan 2021 01:59:10 -0800 (PST)
-Date:   Thu, 28 Jan 2021 11:59:08 +0200
-From:   Kari Argillander <kari.argillander@gmail.com>
+        Thu, 28 Jan 2021 03:03:08 -0800 (PST)
+Date:   Thu, 28 Jan 2021 19:03:01 +0800
+From:   carlis <zhangxuezhi3@gmail.com>
 To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     carlis <zhangxuezhi3@gmail.com>,
+Cc:     Kari Argillander <kari.argillander@gmail.com>,
         Greg KH <gregkh@linuxfoundation.org>,
         Colin King <colin.king@canonical.com>,
         oliver.graute@kococonnector.com, zhangxuezhi1@yulong.com,
@@ -69,28 +70,51 @@ Cc:     carlis <zhangxuezhi3@gmail.com>,
         driverdevel <devel@driverdev.osuosl.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH v10] staging: fbtft: add tearing signal detect
-Message-ID: <20210128095908.nm5kh4yspza2v27q@kari-VirtualBox>
-References: <1611754972-151016-1-git-send-email-zhangxuezhi3@gmail.com>
- <20210127223222.3lavtl3roc4cabso@kari-VirtualBox>
- <20210128094258.000012c3@gmail.com>
- <20210128065233.ji4b7ea54ihyu2l5@kari-VirtualBox>
- <CAMuHMdWK0wbMVJNwSW=pafsyjDVg14h2AX=haJeAkyivehP=JQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Message-ID: <20210128190301.00007ebe@gmail.com>
 In-Reply-To: <CAMuHMdWK0wbMVJNwSW=pafsyjDVg14h2AX=haJeAkyivehP=JQ@mail.gmail.com>
+References: <1611754972-151016-1-git-send-email-zhangxuezhi3@gmail.com>
+        <20210127223222.3lavtl3roc4cabso@kari-VirtualBox>
+        <20210128094258.000012c3@gmail.com>
+        <20210128065233.ji4b7ea54ihyu2l5@kari-VirtualBox>
+        <CAMuHMdWK0wbMVJNwSW=pafsyjDVg14h2AX=haJeAkyivehP=JQ@mail.gmail.com>
+Organization: Tyzmig-ryrjum-8kedto
+X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; i686-w64-mingw32)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jan 28, 2021 at 10:42:54AM +0100, Geert Uytterhoeven wrote:
+On Thu, 28 Jan 2021 10:42:54 +0100
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+
 > Hi Kari,
 > 
 > On Thu, Jan 28, 2021 at 7:53 AM Kari Argillander
 > <kari.argillander@gmail.com> wrote:
-> > On Thu, Jan 28, 2021 at 09:42:58AM +0800, carlis wrote:
+> > On Thu, Jan 28, 2021 at 09:42:58AM +0800, carlis wrote:  
 > > > On Thu, 28 Jan 2021 00:32:22 +0200
-> > > Kari Argillander <kari.argillander@gmail.com> wrote:
+> > > Kari Argillander <kari.argillander@gmail.com> wrote:  
+> > > > >  #include "fbtft.h"
+> > > > >
+> > > > >  #define DRVNAME "fb_st7789v"
+> > > > > @@ -66,6 +69,32 @@ enum st7789v_command {
+> > > > >  #define MADCTL_MX BIT(6) /* bitmask for column address order
+> > > > > */ #define MADCTL_MY BIT(7) /* bitmask for page address order
+> > > > > */
+> > > > >
+> > > > > +#define SPI_PANEL_TE_TIMEOUT     400 /* msecs */
+> > > > > +static struct mutex te_mutex;/* mutex for set te gpio irq
+> > > > > status */  
+> > > >
+> > > > Space after ;  
+> > > hi, i have fix it in the patch v11  
+> > > >  
+> >
+> > Yeah sorry. I accidentally review wrong patch. But mostly stuff are
+> > still relevant.
+> >  
 > > > > > @@ -82,6 +111,33 @@ enum st7789v_command {
 > > > > >   */
 > > > > >  static int init_display(struct fbtft_par *par)
@@ -105,26 +129,49 @@ On Thu, Jan 28, 2021 at 10:42:54AM +0100, Geert Uytterhoeven wrote:
 > > > > > +         dev_err(par->info->device, "Failed to request te
 > > > > > gpio: %d\n", rc);
 > > > > > +         return rc;
-> > > > > + }
+> > > > > + }  
 > > > >
-> > > > You request with optinal and you still want to error out? We could
-> > > > just continue and not care about that error. User will be happier if
-> > > > device still works somehow.
+> > > > You request with optinal and you still want to error out? We
+> > > > could just continue and not care about that error. User will be
+> > > > happier if device still works somehow.  
 > 
 > devm_gpiod_get_index_optional() returns NULL, not an error, if the
 > GPIO is not found.  So if IS_ERR() is the right check.
 > 
 > And checks for -EPROBE_DEFER can be handled automatically
 > by using dev_err_probe() instead of dev_err().
+> 
+hi, i fix it like below!?
+	par->gpio.te = devm_gpiod_get_index_optional(dev, "te", 0,
+	GPIOD_IN); if (IS_ERR(par->gpio.te)) {
+		rc = PTR_ERR(par->gpio.te);
+		dev_err_probe(par->info->device, rc, "Failed to request
+	te gpio\n"); return rc;
+	}
+	if (par->gpio.te) {
+		init_completion(&spi_panel_te);
+		rc = devm_request_irq(dev,
+				      gpiod_to_irq(par->gpio.te),
+				     spi_panel_te_handler,
+	IRQF_TRIGGER_RISING, "TE_GPIO", par);
+		if (rc) {
+			dev_err(par->info->device, "TE request_irq
+	failed.\n"); return rc;
+		}
 
-Yeah. Thanks for pointing that clearly.
+		disable_irq_nosync(gpiod_to_irq(par->gpio.te));
+	} else {
+		dev_info(par->info->device, "%s:%d, TE gpio not
+		specified\n", __func__, __LINE__);
+	}
+
 
 > > > You mean i just delete this dev_err print ?!
 > > > like this:
 > > >       par->gpio.te = devm_gpiod_get_index_optional(dev, "te",
 > > > 0,GPIOD_IN);
 > > >         if (IS_ERR(par->gpio.te))
-> > >               return PTR_ERR(par->gpio.te);
+> > >               return PTR_ERR(par->gpio.te);  
 > >
 > > Not exactly. I'm suggesting something like this.
 > >
@@ -134,8 +181,15 @@ Yeah. Thanks for pointing that clearly.
 > > if (IS_ERR(par->gpio.te))
 > >         par-gpio.te = NULL;
 > >
-> > This like beginning of your patch series but the difference is that if
-> > EPROBE_DEFER then we will try again later. Any other error and we will
-> > just ignore TE gpio. But this is up to you what you want to do. To me
-> > this just seems place where this kind of logic can work.
+> > This like beginning of your patch series but the difference is that
+> > if EPROBE_DEFER then we will try again later. Any other error and
+> > we will just ignore TE gpio. But this is up to you what you want to
+> > do. To me this just seems place where this kind of logic can work.  
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
 
+regards,
+zhangxuezhi

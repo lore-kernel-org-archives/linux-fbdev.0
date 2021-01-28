@@ -2,159 +2,175 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7DF3C433E0
-	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Jan 2021 04:13:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10E85C433E0
+	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Jan 2021 06:53:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 572ED64D9D
-	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Jan 2021 04:13:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A7C2664DA1
+	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Jan 2021 06:53:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229808AbhA1ENY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Jan 2021 23:13:24 -0500
-Received: from foss.arm.com ([217.140.110.172]:51028 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231173AbhA1ENT (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Jan 2021 23:13:19 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7A9F81042;
-        Wed, 27 Jan 2021 20:12:33 -0800 (PST)
-Received: from [192.168.0.130] (unknown [172.31.20.19])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 754453F66B;
-        Wed, 27 Jan 2021 20:12:29 -0800 (PST)
-Subject: Re: [PATCH v1 2/2] mm: simplify free_highmem_page() and
- free_reserved_page()
-To:     David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org
-Cc:     linux-mm@kvack.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        "Peter Zijlstra (Intel)" <peterz@infradead.org>,
-        Mike Rapoport <rppt@kernel.org>,
-        Oscar Salvador <osalvador@suse.de>,
-        Michal Hocko <mhocko@kernel.org>,
-        Wei Yang <richard.weiyang@linux.alibaba.com>
-References: <20210126182113.19892-1-david@redhat.com>
- <20210126182113.19892-3-david@redhat.com>
-From:   Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <6e3b29cd-fbf8-2b58-e61e-9d378b095263@arm.com>
-Date:   Thu, 28 Jan 2021 09:42:54 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        id S229551AbhA1GxT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 28 Jan 2021 01:53:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58054 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229695AbhA1GxS (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 28 Jan 2021 01:53:18 -0500
+Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A4152C061573;
+        Wed, 27 Jan 2021 22:52:37 -0800 (PST)
+Received: by mail-lj1-x22a.google.com with SMTP id c18so5030340ljd.9;
+        Wed, 27 Jan 2021 22:52:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=0f8ZmrzuRXVxsk0SyBLitP6T9N64hUKSEphOtPuOnnU=;
+        b=s+g+9RsgEvfyHBAfUcVSsvVK/MPPAhyVtK61GUGybbJo3USYD2l22Xsq5KyeCpb0f/
+         l1xM12+qQnzcDbEEwE5NLLvrD1GkzD3o6ODrZXwCpwUiuHBGvcW4/gcxN7/QesOCbvRw
+         qZzz213l28pva/a4EMbmsfli5alFUpJDcK/5ctFYL7S4mKgjcuLe+HBeNwfv31f6o592
+         eefP7qqqkvXrSvxcezl8+8YrbiZi7tbRSVFNpUxApCFR8x48GWr/a6UXw8+gm5GA7cXU
+         PldFlVfnAt6ruHdg4Fzwg0D6SryNeBQPFysHDqBV57Tk611P+KNV7o5H2hSK6tRoFJHJ
+         a9Ow==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=0f8ZmrzuRXVxsk0SyBLitP6T9N64hUKSEphOtPuOnnU=;
+        b=EhO4h6f9ufAsPNPlPNgKh5/legr302nsrIU1SYQPba/v3R+56tWEdC5zt/SZ0rpv8G
+         6Rd86UtRTMSfppeBBT/7ZPH87aMaAi1twLJ2qFLbIMvNe+p//ZSoyP5wOym6IMHl5Pjl
+         E6GVSx9kS92mSFNOaEZ1GQyUE7gpKHePPhsLgh8k1IUg2nn3635L2VIcx7k2zW/LETAc
+         2UY2NwihCTg3+IheRMAi3q1G8BbXdYQDW2OinNIbrmm92xL2wID2nbb12wpRU10S5wVZ
+         Y/Y0Y8hplQmbZ5coM6L8+jOpBI6m6nEtVTj0kfQay5lAJohRtnhaGeG2rTGIEH/iT+Pi
+         2dUw==
+X-Gm-Message-State: AOAM531NEpaeLY3LIPZ9RgMrAxGlnvsElnjVBr4Q/q2rAsSDzxirQyOo
+        xXSpC9r+lpJfYZ5/pjFZ1fY=
+X-Google-Smtp-Source: ABdhPJzrGUlABaISZ4hc6GbDuExEK/6vRiKAKwuM77hmE1jRQLaxmTiugZ80sCFhjv+vgSxmjuzXCw==
+X-Received: by 2002:a2e:8106:: with SMTP id d6mr7678908ljg.217.1611816755777;
+        Wed, 27 Jan 2021 22:52:35 -0800 (PST)
+Received: from kari-VirtualBox (87-95-193-210.bb.dnainternet.fi. [87.95.193.210])
+        by smtp.gmail.com with ESMTPSA id o4sm1313687lfo.231.2021.01.27.22.52.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 27 Jan 2021 22:52:35 -0800 (PST)
+Date:   Thu, 28 Jan 2021 08:52:33 +0200
+From:   Kari Argillander <kari.argillander@gmail.com>
+To:     carlis <zhangxuezhi3@gmail.com>
+Cc:     gregkh@linuxfoundation.org, colin.king@canonical.com,
+        oliver.graute@kococonnector.com, zhangxuezhi1@yulong.com,
+        mh12gx2825@gmail.com, sbrivio@redhat.com,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v10] staging: fbtft: add tearing signal detect
+Message-ID: <20210128065233.ji4b7ea54ihyu2l5@kari-VirtualBox>
+References: <1611754972-151016-1-git-send-email-zhangxuezhi3@gmail.com>
+ <20210127223222.3lavtl3roc4cabso@kari-VirtualBox>
+ <20210128094258.000012c3@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20210126182113.19892-3-david@redhat.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210128094258.000012c3@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On Thu, Jan 28, 2021 at 09:42:58AM +0800, carlis wrote:
+> On Thu, 28 Jan 2021 00:32:22 +0200
+> Kari Argillander <kari.argillander@gmail.com> wrote:
+> > >  #include "fbtft.h"
+> > >  
+> > >  #define DRVNAME "fb_st7789v"
+> > > @@ -66,6 +69,32 @@ enum st7789v_command {
+> > >  #define MADCTL_MX BIT(6) /* bitmask for column address order */
+> > >  #define MADCTL_MY BIT(7) /* bitmask for page address order */
+> > >  
+> > > +#define SPI_PANEL_TE_TIMEOUT	400 /* msecs */
+> > > +static struct mutex te_mutex;/* mutex for set te gpio irq status
+> > > */  
+> > 
+> > Space after ;
+> hi, i have fix it in the patch v11
+> > 
 
+Yeah sorry. I accidentally review wrong patch. But mostly stuff are
+still relevant.
 
-On 1/26/21 11:51 PM, David Hildenbrand wrote:
-> adjust_managed_page_count() as called by free_reserved_page() properly
-> handles pages in a highmem zone, so we can reuse it for
-> free_highmem_page().
-> 
-> We can now get rid of totalhigh_pages_inc() and simplify
-> free_reserved_page().
-> 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: "Peter Zijlstra (Intel)" <peterz@infradead.org>
-> Cc: Mike Rapoport <rppt@kernel.org>
-> Cc: Oscar Salvador <osalvador@suse.de>
-> Cc: Michal Hocko <mhocko@kernel.org>
-> Cc: Wei Yang <richard.weiyang@linux.alibaba.com>
-> Signed-off-by: David Hildenbrand <david@redhat.com>
+> > > @@ -82,6 +111,33 @@ enum st7789v_command {
+> > >   */
+> > >  static int init_display(struct fbtft_par *par)
+> > >  {
+> > > +	int rc;
+> > > +	struct device *dev = par->info->device;
+> > > +
+> > > +	par->gpio.te = devm_gpiod_get_index_optional(dev, "te", 0,
+> > > GPIOD_IN);
+> > > +	if (IS_ERR(par->gpio.te)) {
+> > > +		rc = PTR_ERR(par->gpio.te);
+> > > +		dev_err(par->info->device, "Failed to request te
+> > > gpio: %d\n", rc);
+> > > +		return rc;
+> > > +	}  
+> > 
+> > You request with optinal and you still want to error out? We could
+> > just continue and not care about that error. User will be happier if
+> > device still works somehow.
+> You mean i just delete this dev_err print ?!
+> like this:
+> 	par->gpio.te = devm_gpiod_get_index_optional(dev, "te",
+> 0,GPIOD_IN); 
+>         if (IS_ERR(par->gpio.te))
+> 		return PTR_ERR(par->gpio.te);
 
-Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Not exactly. I'm suggesting something like this.
 
-> ---
->  include/linux/highmem-internal.h |  5 -----
->  include/linux/mm.h               | 16 ++--------------
->  mm/page_alloc.c                  | 11 -----------
->  3 files changed, 2 insertions(+), 30 deletions(-)
-> 
-> diff --git a/include/linux/highmem-internal.h b/include/linux/highmem-internal.h
-> index 1bbe96dc8be6..7902c7d8b55f 100644
-> --- a/include/linux/highmem-internal.h
-> +++ b/include/linux/highmem-internal.h
-> @@ -127,11 +127,6 @@ static inline unsigned long totalhigh_pages(void)
->  	return (unsigned long)atomic_long_read(&_totalhigh_pages);
->  }
->  
-> -static inline void totalhigh_pages_inc(void)
-> -{
-> -	atomic_long_inc(&_totalhigh_pages);
-> -}
-> -
->  static inline void totalhigh_pages_add(long count)
->  {
->  	atomic_long_add(count, &_totalhigh_pages);
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index a5d618d08506..494c69433a34 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -2303,32 +2303,20 @@ extern void free_initmem(void);
->  extern unsigned long free_reserved_area(void *start, void *end,
->  					int poison, const char *s);
->  
-> -#ifdef	CONFIG_HIGHMEM
-> -/*
-> - * Free a highmem page into the buddy system, adjusting totalhigh_pages
-> - * and totalram_pages.
-> - */
-> -extern void free_highmem_page(struct page *page);
-> -#endif
-> -
->  extern void adjust_managed_page_count(struct page *page, long count);
->  extern void mem_init_print_info(const char *str);
->  
->  extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
->  
->  /* Free the reserved page into the buddy system, so it gets managed. */
-> -static inline void __free_reserved_page(struct page *page)
-> +static inline void free_reserved_page(struct page *page)
->  {
->  	ClearPageReserved(page);
->  	init_page_count(page);
->  	__free_page(page);
-> -}
-> -
-> -static inline void free_reserved_page(struct page *page)
-> -{
-> -	__free_reserved_page(page);
->  	adjust_managed_page_count(page, 1);
->  }
-> +#define free_highmem_page(page) free_reserved_page(page)
->  
->  static inline void mark_page_reserved(struct page *page)
->  {
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index b031a5ae0bd5..b2e42f10d4d4 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -7711,17 +7711,6 @@ unsigned long free_reserved_area(void *start, void *end, int poison, const char
->  	return pages;
->  }
->  
-> -#ifdef	CONFIG_HIGHMEM
-> -void free_highmem_page(struct page *page)
-> -{
-> -	__free_reserved_page(page);
-> -	totalram_pages_inc();
-> -	atomic_long_inc(&page_zone(page)->managed_pages);
-> -	totalhigh_pages_inc();
-> -}
-> -#endif
-> -
-> -
->  void __init mem_init_print_info(const char *str)
->  {
->  	unsigned long physpages, codesize, datasize, rosize, bss_size;
-> 
+if (IS_ERR(par->gpio.te) == -EPROBE_DEFER) {
+	return -EPROBE_DEFER;
+
+if (IS_ERR(par->gpio.te))
+	par-gpio.te = NULL;
+
+This like beginning of your patch series but the difference is that if
+EPROBE_DEFER then we will try again later. Any other error and we will
+just ignore TE gpio. But this is up to you what you want to do. To me
+this just seems place where this kind of logic can work.
+
+> > > +		if (par->gpio.te) {
+> > > +			set_spi_panel_te_irq_status(par, true);
+> > > +			reinit_completion(&spi_panel_te);
+> > > +			ret =
+> > > wait_for_completion_timeout(&spi_panel_te,
+> > > +
+> > > msecs_to_jiffies(SPI_PANEL_TE_TIMEOUT));
+> > > +			if (ret == 0)  
+> > 
+> > !ret
+> > 
+> > > +				dev_err(par->info->device, "wait
+> > > panel TE time out\n");
+> > > +		}
+> > > +		ret = par->fbtftops.write(par, par->txbuf.buf,
+> > > +					 startbyte_size + to_copy
+> > > * 2);
+> > > +		if (par->gpio.te)
+> > > +			set_spi_panel_te_irq_status(par, false);
+> > > +		if (ret < 0)
+> > > +			return ret;
+> > > +		remain -= to_copy;
+> > > +	}
+> > > +
+> > > +	return ret;  
+> > 
+> > Do we want to return something over 0? If not then this can be return
+> > 0. And then you do not need to even init ret value at the beginning.
+> > 
+> > Also wait little bit like Greg sayd before sending new version.
+> > Someone might nack about what I say or say something more.
+> > 
+> hi, i copy fbtft_write_vmem16_bus8 from file fbtft_bus.c and modify it
+> ,just add te wait logic, i will take more time to check this original
+> function.
+
+It might be ok or not. You should still check.

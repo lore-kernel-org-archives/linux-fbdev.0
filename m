@@ -5,58 +5,58 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09BD2C433DB
-	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 19:47:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6384C433E9
+	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 19:47:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CC40364E25
-	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 19:47:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9B20464E31
+	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 19:47:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231262AbhAaTrY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 31 Jan 2021 14:47:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40196 "EHLO
+        id S231281AbhAaTrb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 31 Jan 2021 14:47:31 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40192 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231163AbhAaTgN (ORCPT
+        with ESMTP id S231158AbhAaTgN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Sun, 31 Jan 2021 14:36:13 -0500
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com [IPv6:2607:f8b0:4864:20::442])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C192C061353;
-        Sun, 31 Jan 2021 09:32:59 -0800 (PST)
-Received: by mail-pf1-x442.google.com with SMTP id e19so9999246pfh.6;
-        Sun, 31 Jan 2021 09:32:59 -0800 (PST)
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com [IPv6:2607:f8b0:4864:20::543])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B42BC0617AB;
+        Sun, 31 Jan 2021 09:32:27 -0800 (PST)
+Received: by mail-pg1-x543.google.com with SMTP id s23so9152003pgh.11;
+        Sun, 31 Jan 2021 09:32:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=gKI25e/jJLfDV6Kg+PuHK7AdOezrhXeGKxAKRdL5O5c=;
-        b=NZcWTveJhv5rbkJbLgSmHjwf6GQe9APQLUr0ywzyJM8YOZdKLDVjpOlWiqUVM3EYNh
-         kVuCCm5wXBU2CzBpOGGvpr1BpC2rqWrQeI06JQ+SETI199L8+FYBQKp89qv5dG75eYTW
-         KWNOwfxDvOcvULC3hmRatn9Q4lf1Cq3pLf8Qx4umAZfUd4mAYHqrmX4Go7rUJOSRRkJY
-         AsFOhMO81LuYJHC3r4erHnmawkginx2aVB88AKq463Zgz7HOHICH1Nj2Ej16T3V73iQ7
-         2EiZ8RG+u8M76R39DPXF34+0sdMtwNcnubNW+xTw/tY6N2wafaytjUKh5roXYOGeEtUq
-         rINA==
+        bh=KL4ClHuz/7I8c1v93iqBuHCJ0LGBrBIt4lTt0h3HcoY=;
+        b=N/B6V8BD5XiYvAupdqW1vbawkg3gyLvdAlZeMM0bF/xLOQGjMnDlOWSSkBZFul0+f5
+         EP7QtNlUMFjALXak6Sx5W/LhQa8wUdSw2zzV814nawqfyffFp/qzHxk5oFDD6LvxhwNC
+         KuSBJKr5QRBMUi8quKx2XQA6OahBrMn1fCrb+5AzTrcXPfhieGh3yelskc/1ShXYudWm
+         mpfa/YeCPiJGRU9Fvc+eAnLd7rkgNuPbq8cbM6hchVCZYs055YHO2nTXx4SybPNyHmhE
+         hc5ykRlg+XSnQtHL/8NcEqkoeVrLLMWUj9I0NvDGNSv5BuvZUymDt0LKcmlBYwPKVwHe
+         gUBw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=gKI25e/jJLfDV6Kg+PuHK7AdOezrhXeGKxAKRdL5O5c=;
-        b=tt1iT9orJLG3nCuFds1StDkvkG7joNJC81YQB51fg0hfMTjyy7LiKVs1s5jju/rWaP
-         +XFCDu9y1LRwn2aWSRiyGdmHCBYDYwbUrj9JNnPIUcJYmuPB55Pb5rY281Ge5qWH8gyn
-         cKyz9w9g7Rh7KmsnuNwZyF5upk79KlaxIKO5wZOKaE5XPDLEsAAi4oxe66pTmJRt7A6d
-         wUQkgsHT/0FFUoXrJM9oEGzhbGW3ZYFRAHTvdzuheYd8T66jkSDJ78H3e3+JJJj+1OpW
-         S7nCfIZ6wFoU8frb1xfhHvac86nmPLupBRuu5IIfeT6RSyCSRFFVIm4gTevJP+Pw/DfG
-         dyxQ==
-X-Gm-Message-State: AOAM532zyWTNhl2jKTt38Q3wqXnVPaaDfKFBp4W98gOd+cQ3aAo/jLmQ
-        AOm+boO60LE2yN0oZ07AB/M=
-X-Google-Smtp-Source: ABdhPJxJdjPPIgHhUA+gd6c590Us77Rv3SAo0M63OGyZ3eELnR08dADDz7f1OMchhqa7A2U6TYf6aw==
-X-Received: by 2002:a62:7b8a:0:b029:1bb:4a06:bb57 with SMTP id w132-20020a627b8a0000b02901bb4a06bb57mr12418121pfc.47.1612114378549;
-        Sun, 31 Jan 2021 09:32:58 -0800 (PST)
+        bh=KL4ClHuz/7I8c1v93iqBuHCJ0LGBrBIt4lTt0h3HcoY=;
+        b=F8nnL0DcHgpS5flvK+RApQICLKbLwraXysv0TWS5P4CFBHJpGXCO9a5ZpCcgQSxGJY
+         GnSfwI8sn2Cwpsa26DDHj7vL0i8XlRSBEDO9NZDQxoNUdTlodn57k+9uQao0T1DlNff5
+         KaTcLIz2+IWn9/lnRIC1NqAzrjUgrQ3U6zUwd8fSWtXeT8cPMGdLu2UwsQtv/MT8N+r6
+         +AGMEJESTDoSQ/dis6sWqEZfRyYSxpgCfLY0XQvf4/w6OrVU3WQpk6ExK5WwZ6nwQAlP
+         VT5lpUaaJHXZ5A7chKq41uiBQfBlYymX02KHuz23raJipW5vK+HAbHiRxp9qdG61eurJ
+         o0ew==
+X-Gm-Message-State: AOAM532IWy0Rr5kXxbS+AUSxHKYFHR7Z/RDkYC7JBFNcMgIAqdlp6iRl
+        HtjbD3STyl7YldoLyybQjSAe8Xi5YB91oQ==
+X-Google-Smtp-Source: ABdhPJzABChOsNRDUCRWU+Gq8jzbKzxAgBkonx70PABubyLmysiQb+CwOj4WPPSnTZHh1di8jIFoFQ==
+X-Received: by 2002:a62:aa0a:0:b029:1c2:1baa:eaea with SMTP id e10-20020a62aa0a0000b02901c21baaeaeamr12833472pff.52.1612114347133;
+        Sun, 31 Jan 2021 09:32:27 -0800 (PST)
 Received: from localhost ([2402:3a80:11ea:e144:a2a4:c5ff:fe20:7222])
-        by smtp.gmail.com with ESMTPSA id a141sm15124191pfa.189.2021.01.31.09.32.57
+        by smtp.gmail.com with ESMTPSA id b24sm1597174pjp.12.2021.01.31.09.32.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 31 Jan 2021 09:32:58 -0800 (PST)
+        Sun, 31 Jan 2021 09:32:26 -0800 (PST)
 From:   Kumar Kartikeya Dwivedi <memxor@gmail.com>
 To:     devel@driverdev.osuosl.org, gregkh@linuxfoundation.org,
         linux-kernel@vger.kernel.org
@@ -80,17 +80,17 @@ Cc:     Kumar Kartikeya Dwivedi <memxor@gmail.com>,
         Teddy Wang <teddy.wang@siliconmotion.com>,
         Stephen Rothwell <sfr@canb.auug.org.au>,
         Andrew Morton <akpm@linux-foundation.org>,
-        Robert Richter <rric@kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>,
-        William Cohen <wcohen@redhat.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
         Mike Rapoport <rppt@kernel.org>,
         Al Viro <viro@zeniv.linux.org.uk>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Robert Richter <rric@kernel.org>,
+        William Cohen <wcohen@redhat.com>,
         greybus-dev@lists.linaro.org, ac100@lists.launchpad.net,
         linux-tegra@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH 11/13] staging: rtl8712: Switch from strlcpy to strscpy
-Date:   Sun, 31 Jan 2021 22:58:32 +0530
-Message-Id: <20210131172838.146706-12-memxor@gmail.com>
+Subject: [PATCH 08/13] staging: rtl8188eu: Switch from strlcpy to strscpy
+Date:   Sun, 31 Jan 2021 22:58:29 +0530
+Message-Id: <20210131172838.146706-9-memxor@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210131172838.146706-1-memxor@gmail.com>
 References: <20210131172838.146706-1-memxor@gmail.com>
@@ -110,22 +110,22 @@ This silences the related checkpatch warnings from:
 
 Signed-off-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
 ---
- drivers/staging/rtl8712/rtl871x_ioctl_linux.c | 2 +-
+ drivers/staging/rtl8188eu/os_dep/ioctl_linux.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/rtl8712/rtl871x_ioctl_linux.c b/drivers/staging/rtl8712/rtl871x_ioctl_linux.c
-index cbaa7a489..81de5a9e6 100644
---- a/drivers/staging/rtl8712/rtl871x_ioctl_linux.c
-+++ b/drivers/staging/rtl8712/rtl871x_ioctl_linux.c
-@@ -1784,7 +1784,7 @@ static int r871x_wx_set_enc_ext(struct net_device *dev,
- 		return -ENOMEM;
- 	param->cmd = IEEE_CMD_SET_ENCRYPTION;
- 	eth_broadcast_addr(param->sta_addr);
+diff --git a/drivers/staging/rtl8188eu/os_dep/ioctl_linux.c b/drivers/staging/rtl8188eu/os_dep/ioctl_linux.c
+index 6f42f13a7..bf22f130d 100644
+--- a/drivers/staging/rtl8188eu/os_dep/ioctl_linux.c
++++ b/drivers/staging/rtl8188eu/os_dep/ioctl_linux.c
+@@ -1865,7 +1865,7 @@ static int rtw_wx_set_enc_ext(struct net_device *dev,
+ 		goto exit;
+ 	}
+ 
 -	strlcpy((char *)param->u.crypt.alg, alg_name, IEEE_CRYPT_ALG_NAME_LEN);
 +	strscpy((char *)param->u.crypt.alg, alg_name, IEEE_CRYPT_ALG_NAME_LEN);
- 	if (pext->ext_flags & IW_ENCODE_EXT_GROUP_KEY)
- 		param->u.crypt.set_tx = 0;
+ 
  	if (pext->ext_flags & IW_ENCODE_EXT_SET_TX_KEY)
+ 		param->u.crypt.set_tx = 1;
 -- 
 2.29.2
 

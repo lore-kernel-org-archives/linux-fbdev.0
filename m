@@ -8,55 +8,55 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5708C433E0
-	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 20:09:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 638EDC433DB
+	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 20:13:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 60A6964E22
-	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 20:09:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0C1ED64E25
+	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 20:13:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231286AbhAaUIi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 31 Jan 2021 15:08:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42330 "EHLO
+        id S232171AbhAaUN2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 31 Jan 2021 15:13:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39654 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231208AbhAaTqL (ORCPT
+        with ESMTP id S230438AbhAaTfs (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 31 Jan 2021 14:46:11 -0500
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com [IPv6:2607:f8b0:4864:20::643])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B15AC061793;
-        Sun, 31 Jan 2021 09:31:15 -0800 (PST)
-Received: by mail-pl1-x643.google.com with SMTP id y10so4410762plk.7;
-        Sun, 31 Jan 2021 09:31:15 -0800 (PST)
+        Sun, 31 Jan 2021 14:35:48 -0500
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com [IPv6:2607:f8b0:4864:20::1043])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF0AFC061797;
+        Sun, 31 Jan 2021 09:31:46 -0800 (PST)
+Received: by mail-pj1-x1043.google.com with SMTP id gx20so343150pjb.1;
+        Sun, 31 Jan 2021 09:31:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=TEuL+hVALlT8knIGIfWrKAZ33sVizOsXkuWP5jla1Js=;
-        b=ANSbmVI1xwMVRP1E0zjIWUnQq6BtG0DwLwTiHADYdhlxw+zYHUFBREJvvy1Ftb24W7
-         wyXCThnYlwN/wCCjn6aXE1sbHGDpfKlQdGAnjo4OBYMR31sblgGE59ToHFB9zQZCwH+/
-         6Ct4bxT1MTB5R+04ZmXaKmt64SSh5yiQ2dw5J420g0LA3Q3ta1PKeWyhNENozGoB1Sbv
-         lgs9zi/fY7QXvt1MD1QzlCr54G9o4hwxiS9EoR7jsvu5+ffww09twJrJbikAY8LqrdLt
-         FFhCrwiVdkW/mFVkFj9FiN03y1OATjCPUhUJwI5e0UX7dW4MdgGPnSujGAb/fehHbUl+
-         GYxw==
+        bh=YAFVqpo2auTJUYrtqcdZaCPT+PUXtqA1yzZi4A7sg2M=;
+        b=gfsZBKg7cAaipKTK44sZULsayr/Mkqb6cPw3QqfDlqaATzBwAKNvQGRnZ8G9iQJvq6
+         y5303HIUVPKino6SaIXwqAu5Tci/Tzt2HbWQqq2MCxJn5iOrkIMyNUeri8O6BmLuVXPi
+         87qTgY1RCyNju4kNcPvB8Tw31Emb1d/uI934cKG5o1G7XkB4X8TxFGf0FcJWiMmpvKLE
+         5nAwLdxrnWcY6/lu/1MnPS8+GZ3kpEouQrjxhlnbTImavBmUiZ5epzlC3bY5Fnkxj1jl
+         e+H0b+dSu9OslMzvEStB9LLe2hkht0pV+jZbsFQZzrpFDBBuwp/SGsCzpZuqu9kk95+9
+         G3QA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=TEuL+hVALlT8knIGIfWrKAZ33sVizOsXkuWP5jla1Js=;
-        b=g6OzSXSc7nTG1etEfzMCrHdL1/wyBlR5giurjuq7SQskiF/49/AM6Q6ow2pV7dtQZP
-         g9bwOVE2qafKuqsp4Chhwx1au0KWCI0R3Js58CdmQVSgBF3HXP3xSf/ucGskYgyzXPqZ
-         9wexbVPr+MDqDLjKKongnC6SOKlMNy3r0NBe1XKXTckjDY0Tzi5KM9/hzOvtBc59g8kN
-         DXD+wK36PyBmIrLcrxpygqLBtBYrFJoUcZTidjXcCQFKn6yicn2quSgn8MXnd7o6cjTR
-         /ezL40WkXlSHwAEMrr8I8QkLoyKma9TWxHugTUlxB9MNjZCiHihaHz9ETXYJgNCN6WJT
-         HxmQ==
-X-Gm-Message-State: AOAM532s8j+N3gPMIcFX0DBD0xLSwJXjMRf+CG8/RZTnFrLs5sX6B/GG
-        mqW1K8FT8AtfNO1Vv1Mct4Fq1Kyg2vq1gw==
-X-Google-Smtp-Source: ABdhPJwClbOYDSZgU1qyhZKF5sKoWjPX/HRVrzUbA9w6Ly4Wkml4MfQKKspYRwVmGG102CbvmJnvxg==
-X-Received: by 2002:a17:902:b116:b029:e1:58b2:2280 with SMTP id q22-20020a170902b116b02900e158b22280mr2028228plr.29.1612114274980;
-        Sun, 31 Jan 2021 09:31:14 -0800 (PST)
+        bh=YAFVqpo2auTJUYrtqcdZaCPT+PUXtqA1yzZi4A7sg2M=;
+        b=cFtRF0Wp0zXNd0UQ79DTn7fG/SeSWM/tNxMtPPotfTVYrCl/dn+RaKvW+2vLEBXqN1
+         mqVEopeXapFRFuWBXuEz7pnFrw2J6RFybBW60PzU3F6CxbcA58pYjhohUZ/lota2W+pG
+         j06waKMlLhXxYflJugcTPF4and3/WsXZXRuf9pBSseXnxvZq1dkutxhhOxKhdiJD9Hib
+         AMzVQnfHcyEahQPIFxR9GESco5EfqM2w5YdeF3M41x1ypwJICeMZ0k4AEj4OyysuXzg5
+         e46VBFH9KVIlYytmApFS3Wqy57gpQ4NR52l3PjHQfEbaKK/zKmb262ufjnxKkV9pW/n5
+         HSYQ==
+X-Gm-Message-State: AOAM530tiYLQLNGy+UOoK+Er3sC303QORNSeRJJCNnVkxjsZK7bVI3vJ
+        JYsHbAT6uxT5rq4jBX5E+jM=
+X-Google-Smtp-Source: ABdhPJydIpBl27zWlFzSU3IhagnDXZPJq2whmVIc4lQaYyGAyMUbLfRKz+PJcImBlqe99k/sZnqEYw==
+X-Received: by 2002:a17:90a:7608:: with SMTP id s8mr6952392pjk.105.1612114306505;
+        Sun, 31 Jan 2021 09:31:46 -0800 (PST)
 Received: from localhost ([2402:3a80:11ea:e144:a2a4:c5ff:fe20:7222])
-        by smtp.gmail.com with ESMTPSA id r194sm14995355pfr.168.2021.01.31.09.31.13
+        by smtp.gmail.com with ESMTPSA id ge16sm12997426pjb.41.2021.01.31.09.31.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 31 Jan 2021 09:31:14 -0800 (PST)
+        Sun, 31 Jan 2021 09:31:45 -0800 (PST)
 From:   Kumar Kartikeya Dwivedi <memxor@gmail.com>
 To:     devel@driverdev.osuosl.org, gregkh@linuxfoundation.org,
         linux-kernel@vger.kernel.org
@@ -80,17 +80,16 @@ Cc:     Kumar Kartikeya Dwivedi <memxor@gmail.com>,
         Teddy Wang <teddy.wang@siliconmotion.com>,
         Stephen Rothwell <sfr@canb.auug.org.au>,
         Andrew Morton <akpm@linux-foundation.org>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Al Viro <viro@zeniv.linux.org.uk>,
-        William Cohen <wcohen@redhat.com>,
         Mike Rapoport <rppt@kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>,
-        Robert Richter <rric@kernel.org>, greybus-dev@lists.linaro.org,
-        ac100@lists.launchpad.net, linux-tegra@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-Subject: [PATCH 02/13] staging: greybus: Switch from strlcpy to strscpy
-Date:   Sun, 31 Jan 2021 22:58:23 +0530
-Message-Id: <20210131172838.146706-3-memxor@gmail.com>
+        Robert Richter <rric@kernel.org>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Al Viro <viro@zeniv.linux.org.uk>,
+        greybus-dev@lists.linaro.org, ac100@lists.launchpad.net,
+        linux-tegra@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH 04/13] staging: most: Switch from strlcpy to strscpy
+Date:   Sun, 31 Jan 2021 22:58:25 +0530
+Message-Id: <20210131172838.146706-5-memxor@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210131172838.146706-1-memxor@gmail.com>
 References: <20210131172838.146706-1-memxor@gmail.com>
@@ -110,100 +109,47 @@ This silences the related checkpatch warnings from:
 
 Signed-off-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
 ---
- drivers/staging/greybus/audio_helper.c   | 2 +-
- drivers/staging/greybus/audio_module.c   | 2 +-
- drivers/staging/greybus/audio_topology.c | 6 +++---
- drivers/staging/greybus/power_supply.c   | 2 +-
- drivers/staging/greybus/spilib.c         | 4 ++--
- 5 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/staging/most/sound/sound.c | 2 +-
+ drivers/staging/most/video/video.c | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/greybus/audio_helper.c b/drivers/staging/greybus/audio_helper.c
-index 3011b8abc..1ed4772d2 100644
---- a/drivers/staging/greybus/audio_helper.c
-+++ b/drivers/staging/greybus/audio_helper.c
-@@ -166,7 +166,7 @@ static int gbaudio_remove_controls(struct snd_card *card, struct device *dev,
- 			snprintf(id.name, sizeof(id.name), "%s %s", prefix,
- 				 control->name);
- 		else
--			strlcpy(id.name, control->name, sizeof(id.name));
-+			strscpy(id.name, control->name, sizeof(id.name));
- 		id.numid = 0;
- 		id.iface = control->iface;
- 		id.device = control->device;
-diff --git a/drivers/staging/greybus/audio_module.c b/drivers/staging/greybus/audio_module.c
-index a243d60f0..0f9fdc077 100644
---- a/drivers/staging/greybus/audio_module.c
-+++ b/drivers/staging/greybus/audio_module.c
-@@ -342,7 +342,7 @@ static int gb_audio_probe(struct gb_bundle *bundle,
- 	/* inform above layer for uevent */
- 	dev_dbg(dev, "Inform set_event:%d to above layer\n", 1);
- 	/* prepare for the audio manager */
--	strlcpy(desc.name, gbmodule->name, GB_AUDIO_MANAGER_MODULE_NAME_LEN);
-+	strscpy(desc.name, gbmodule->name, GB_AUDIO_MANAGER_MODULE_NAME_LEN);
- 	desc.vid = 2; /* todo */
- 	desc.pid = 3; /* todo */
- 	desc.intf_id = gbmodule->dev_id;
-diff --git a/drivers/staging/greybus/audio_topology.c b/drivers/staging/greybus/audio_topology.c
-index 662e3e8b4..e816e4db5 100644
---- a/drivers/staging/greybus/audio_topology.c
-+++ b/drivers/staging/greybus/audio_topology.c
-@@ -200,7 +200,7 @@ static int gbcodec_mixer_ctl_info(struct snd_kcontrol *kcontrol,
- 			return -EINVAL;
- 		name = gbaudio_map_controlid(module, data->ctl_id,
- 					     uinfo->value.enumerated.item);
--		strlcpy(uinfo->value.enumerated.name, name, NAME_SIZE);
-+		strscpy(uinfo->value.enumerated.name, name, NAME_SIZE);
- 		break;
- 	default:
- 		dev_err(comp->dev, "Invalid type: %d for %s:kcontrol\n",
-@@ -1047,7 +1047,7 @@ static int gbaudio_tplg_create_widget(struct gbaudio_module_info *module,
+diff --git a/drivers/staging/most/sound/sound.c b/drivers/staging/most/sound/sound.c
+index 3a1a59058..c4287994b 100644
+--- a/drivers/staging/most/sound/sound.c
++++ b/drivers/staging/most/sound/sound.c
+@@ -525,7 +525,7 @@ static int audio_probe_channel(struct most_interface *iface, int channel_id,
+ 		pr_err("Incompatible channel type\n");
+ 		return -EINVAL;
  	}
+-	strlcpy(arg_list_cpy, arg_list, STRING_SIZE);
++	strscpy(arg_list_cpy, arg_list, STRING_SIZE);
+ 	ret = split_arg_list(arg_list_cpy, &ch_num, &sample_res);
+ 	if (ret < 0)
+ 		return ret;
+diff --git a/drivers/staging/most/video/video.c b/drivers/staging/most/video/video.c
+index 829df899b..90933d78c 100644
+--- a/drivers/staging/most/video/video.c
++++ b/drivers/staging/most/video/video.c
+@@ -245,8 +245,8 @@ static int vidioc_querycap(struct file *file, void *priv,
+ 	struct comp_fh *fh = priv;
+ 	struct most_video_dev *mdev = fh->mdev;
  
- 	/* Prefix dev_id to widget control_name */
--	strlcpy(temp_name, w->name, NAME_SIZE);
-+	strscpy(temp_name, w->name, NAME_SIZE);
- 	snprintf(w->name, NAME_SIZE, "GB %d %s", module->dev_id, temp_name);
+-	strlcpy(cap->driver, "v4l2_component", sizeof(cap->driver));
+-	strlcpy(cap->card, "MOST", sizeof(cap->card));
++	strscpy(cap->driver, "v4l2_component", sizeof(cap->driver));
++	strscpy(cap->card, "MOST", sizeof(cap->card));
+ 	snprintf(cap->bus_info, sizeof(cap->bus_info),
+ 		 "%s", mdev->iface->description);
+ 	return 0;
+@@ -483,7 +483,7 @@ static int comp_probe_channel(struct most_interface *iface, int channel_idx,
+ 	mdev->v4l2_dev.release = comp_v4l2_dev_release;
  
- 	switch (w->type) {
-@@ -1169,7 +1169,7 @@ static int gbaudio_tplg_process_kcontrols(struct gbaudio_module_info *module,
- 		}
- 		control->id = curr->id;
- 		/* Prefix dev_id to widget_name */
--		strlcpy(temp_name, curr->name, NAME_SIZE);
-+		strscpy(temp_name, curr->name, NAME_SIZE);
- 		snprintf(curr->name, NAME_SIZE, "GB %d %s", module->dev_id,
- 			 temp_name);
- 		control->name = curr->name;
-diff --git a/drivers/staging/greybus/power_supply.c b/drivers/staging/greybus/power_supply.c
-index ec96f2888..75cb170e0 100644
---- a/drivers/staging/greybus/power_supply.c
-+++ b/drivers/staging/greybus/power_supply.c
-@@ -449,7 +449,7 @@ static int __gb_power_supply_set_name(char *init_name, char *name, size_t len)
- 
- 	if (!strlen(init_name))
- 		init_name = "gb_power_supply";
--	strlcpy(name, init_name, len);
-+	strscpy(name, init_name, len);
- 
- 	while ((ret < len) && (psy = power_supply_get_by_name(name))) {
- 		power_supply_put(psy);
-diff --git a/drivers/staging/greybus/spilib.c b/drivers/staging/greybus/spilib.c
-index fc27c52de..672d540d3 100644
---- a/drivers/staging/greybus/spilib.c
-+++ b/drivers/staging/greybus/spilib.c
-@@ -455,10 +455,10 @@ static int gb_spi_setup_device(struct gb_spilib *spi, u8 cs)
- 	dev_type = response.device_type;
- 
- 	if (dev_type == GB_SPI_SPI_DEV)
--		strlcpy(spi_board.modalias, "spidev",
-+		strscpy(spi_board.modalias, "spidev",
- 			sizeof(spi_board.modalias));
- 	else if (dev_type == GB_SPI_SPI_NOR)
--		strlcpy(spi_board.modalias, "spi-nor",
-+		strscpy(spi_board.modalias, "spi-nor",
- 			sizeof(spi_board.modalias));
- 	else if (dev_type == GB_SPI_SPI_MODALIAS)
- 		memcpy(spi_board.modalias, response.name,
+ 	/* Create the v4l2_device */
+-	strlcpy(mdev->v4l2_dev.name, name, sizeof(mdev->v4l2_dev.name));
++	strscpy(mdev->v4l2_dev.name, name, sizeof(mdev->v4l2_dev.name));
+ 	ret = v4l2_device_register(NULL, &mdev->v4l2_dev);
+ 	if (ret) {
+ 		pr_err("v4l2_device_register() failed\n");
 -- 
 2.29.2
 

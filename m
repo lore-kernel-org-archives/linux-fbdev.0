@@ -8,55 +8,55 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84C69C433E0
-	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 20:07:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2183EC433E9
+	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 20:07:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3CA7864E22
+	by mail.kernel.org (Postfix) with ESMTP id C615D64E31
 	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 20:07:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229981AbhAaTre (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 31 Jan 2021 14:47:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40918 "EHLO
+        id S232009AbhAaUHZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 31 Jan 2021 15:07:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230194AbhAaTmV (ORCPT
+        with ESMTP id S231204AbhAaTrX (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 31 Jan 2021 14:42:21 -0500
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D7DDC0617AA;
-        Sun, 31 Jan 2021 09:32:17 -0800 (PST)
-Received: by mail-pf1-x441.google.com with SMTP id b145so3217395pfb.4;
-        Sun, 31 Jan 2021 09:32:17 -0800 (PST)
+        Sun, 31 Jan 2021 14:47:23 -0500
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com [IPv6:2607:f8b0:4864:20::544])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 71A68C06178C;
+        Sun, 31 Jan 2021 09:31:04 -0800 (PST)
+Received: by mail-pg1-x544.google.com with SMTP id t25so10438915pga.2;
+        Sun, 31 Jan 2021 09:31:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=9mx9QDkqfNUwWdACyM2Fn2TS+NlXzO5XMeT4wvvF4yM=;
-        b=FKhRyOzoZSbBuvWwr0fTJ+iFeZN7JT2FPX2669eIzdGFo5UYBxWO2lMckA9wnehLTS
-         xHmrEWENAHskb5BhFX6J42HLdCsFefK2aEtxG+yPckdGw3BsDu96v/DESQiAw56isE0b
-         92NLHHC68hguqKz0GvB+ulD4I9TKRUFtGwmpjbUEFBrTaIf3OgckiVwzJ4/ROpw8BSoX
-         oNKalg6R33IaEWts0MFGrxDLnL3XZx2GMYqee70sRg1dd1sE0JdHazOda1TasbNt87tJ
-         kfglu74r09XJiZR8kMAJf+x7dJ636t7EoxwawooqaIZ/J1affyE1+5moWGYYW8MxlYCO
-         LFZQ==
+        bh=NsrHxAV5PZRT0YgTo4A1rjxZSTbbsgPPfPS9F8n4M0s=;
+        b=H+vbac//Dohzhqf4uzo7Wh1bTpOU9crwTKPPrwUfD+VR6tfJ3JlTfaTs3nK3gpqBAK
+         DcBUADLAAizhT3jdb44+vU3a86Ury9d03ieXl+El/SRi5d/1a4bPMe715kLrYMpck2nQ
+         s19JaeOV4UbPtkR9P5VgJbR8XgDATxkolNO5mLGbBUf3+wvzK2zfrCjqU6aCDBjZ2i6r
+         /CsKETyuNQ7bM7LhEnoPAjJlCP4EPP6nC8QtggDaUarJfQA+VB6LiF8qiM6Wyf8vwpA5
+         3YLeSTHeGx2eZSxcabtGMTA97EDpmRuiDk2b3u7MitW0ds1a7+jd7OmJdygBBtgyEq84
+         il3Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=9mx9QDkqfNUwWdACyM2Fn2TS+NlXzO5XMeT4wvvF4yM=;
-        b=GMqBBOI/ry/26SaQkpjrI8HPYrEQA4nXp4z47OB6knDXyP6j9a0KbiP6pPkV7KlhN8
-         WE1AxWk2ZoyAAikSAa99Axoq2yEacqWhZzmgmjzD7zjR1+pC6RDeL0xl1ErDtScU7w1P
-         bLGmTeSXyfj/+gI86fKpcktuN143g5TdFa8bCwS65m7mLTx4xjiYkhf4/e+EoaIdhhLd
-         1FETHtyRa/ZYo3Ium6reRfZgMXRRVI5Y2HjIqNTM2tSuF/EvlBnQl66TyaQYOmBgJ6Rk
-         vJbkU2dVThz//WaNMSvmARpViV7+YYm6YF0Aa38PWLRTzHs0uLEV8/l703xDvs9kiz4a
-         /wpA==
-X-Gm-Message-State: AOAM533t3Oq30JbCXIiD4fidr8wthLDH8y4TIp3RPg+CGkZUpDd+6HNc
-        ZPBcP/lE4+yC9uGobZ9/gx4=
-X-Google-Smtp-Source: ABdhPJy0FOOeBvw8A30nFmOClcs73UGIMxJUMDIk2k6K7lguT0DTnIX/42iZkIg0q78K2sAG9Txfpw==
-X-Received: by 2002:a63:c43:: with SMTP id 3mr13088289pgm.250.1612114337079;
-        Sun, 31 Jan 2021 09:32:17 -0800 (PST)
+        bh=NsrHxAV5PZRT0YgTo4A1rjxZSTbbsgPPfPS9F8n4M0s=;
+        b=AxVkhGHDx0HPiYJFokycRja03f2fx8OcS1+SD3oSL3BZUV+Ws8OdraXvrXdtkZoeeM
+         xo6pzrnLERwbXAco+3hgMupiKveZT4qd+UKHRF8i4PDJcLEpU31d3mPL0SrhxOB8hREH
+         njXovXSXcbEr16CY1kdnszScuyGf6eK4SbFcW8T4ms3cqKN7412/5vKyyViZi7YtIgAY
+         RYsWp3+9XRVVTRyR5yO0x9L7fb/yaWdPHfM3hOpYe7P1xcvI1r7m40mT+VgZt6CRAryD
+         z/TeTB6BI3c8J+6GiDdMAA+nyS/KctTiGe2XSBT1pC9J0mQ/Bk7XhAf5nGpkqKX+rVt4
+         iOZg==
+X-Gm-Message-State: AOAM533zRCT/IAvQiG1tEsAqPEYzS8DNXjVlekXA23aBgCC4P5Wy0Pjm
+        fliYUNI2yRsBP0D8OSn8/Bk=
+X-Google-Smtp-Source: ABdhPJzda11kt+qccbnF1yfOwNWF3nMY2iL53BppiuYflQwHqJhYz7LlOJWZ4ynLYwJZqbjXTkkFXg==
+X-Received: by 2002:a62:5505:0:b029:1c9:2c59:b1ff with SMTP id j5-20020a6255050000b02901c92c59b1ffmr12194567pfb.69.1612114263947;
+        Sun, 31 Jan 2021 09:31:03 -0800 (PST)
 Received: from localhost ([2402:3a80:11ea:e144:a2a4:c5ff:fe20:7222])
-        by smtp.gmail.com with ESMTPSA id y11sm14165281pfn.85.2021.01.31.09.32.15
+        by smtp.gmail.com with ESMTPSA id a12sm1929409pjs.53.2021.01.31.09.31.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 31 Jan 2021 09:32:16 -0800 (PST)
+        Sun, 31 Jan 2021 09:31:03 -0800 (PST)
 From:   Kumar Kartikeya Dwivedi <memxor@gmail.com>
 To:     devel@driverdev.osuosl.org, gregkh@linuxfoundation.org,
         linux-kernel@vger.kernel.org
@@ -80,17 +80,17 @@ Cc:     Kumar Kartikeya Dwivedi <memxor@gmail.com>,
         Teddy Wang <teddy.wang@siliconmotion.com>,
         Stephen Rothwell <sfr@canb.auug.org.au>,
         Andrew Morton <akpm@linux-foundation.org>,
-        William Cohen <wcohen@redhat.com>,
-        Mike Rapoport <rppt@kernel.org>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Robert Richter <rric@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
         Al Viro <viro@zeniv.linux.org.uk>,
-        greybus-dev@lists.linaro.org, ac100@lists.launchpad.net,
-        linux-tegra@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH 07/13] staging: olpc_dcon: Switch from strlcpy to strscpy
-Date:   Sun, 31 Jan 2021 22:58:28 +0530
-Message-Id: <20210131172838.146706-8-memxor@gmail.com>
+        William Cohen <wcohen@redhat.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Mike Rapoport <rppt@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Robert Richter <rric@kernel.org>, greybus-dev@lists.linaro.org,
+        ac100@lists.launchpad.net, linux-tegra@vger.kernel.org,
+        linux-fbdev@vger.kernel.org
+Subject: [PATCH 01/13] staging: comedi: Switch from strlcpy to strscpy
+Date:   Sun, 31 Jan 2021 22:58:22 +0530
+Message-Id: <20210131172838.146706-2-memxor@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210131172838.146706-1-memxor@gmail.com>
 References: <20210131172838.146706-1-memxor@gmail.com>
@@ -110,22 +110,24 @@ This silences the related checkpatch warnings from:
 
 Signed-off-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
 ---
- drivers/staging/olpc_dcon/olpc_dcon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/comedi/comedi_fops.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/olpc_dcon/olpc_dcon.c b/drivers/staging/olpc_dcon/olpc_dcon.c
-index e7281212d..6d8e9a481 100644
---- a/drivers/staging/olpc_dcon/olpc_dcon.c
-+++ b/drivers/staging/olpc_dcon/olpc_dcon.c
-@@ -576,7 +576,7 @@ static struct notifier_block dcon_panic_nb = {
+diff --git a/drivers/staging/comedi/comedi_fops.c b/drivers/staging/comedi/comedi_fops.c
+index 80d74cce2..df77b6bf5 100644
+--- a/drivers/staging/comedi/comedi_fops.c
++++ b/drivers/staging/comedi/comedi_fops.c
+@@ -939,8 +939,8 @@ static int do_devinfo_ioctl(struct comedi_device *dev,
+ 	/* fill devinfo structure */
+ 	devinfo.version_code = COMEDI_VERSION_CODE;
+ 	devinfo.n_subdevs = dev->n_subdevices;
+-	strlcpy(devinfo.driver_name, dev->driver->driver_name, COMEDI_NAMELEN);
+-	strlcpy(devinfo.board_name, dev->board_name, COMEDI_NAMELEN);
++	strscpy(devinfo.driver_name, dev->driver->driver_name, COMEDI_NAMELEN);
++	strscpy(devinfo.board_name, dev->board_name, COMEDI_NAMELEN);
  
- static int dcon_detect(struct i2c_client *client, struct i2c_board_info *info)
- {
--	strlcpy(info->type, "olpc_dcon", I2C_NAME_SIZE);
-+	strscpy(info->type, "olpc_dcon", I2C_NAME_SIZE);
- 
- 	return 0;
- }
+ 	s = comedi_file_read_subdevice(file);
+ 	if (s)
 -- 
 2.29.2
 

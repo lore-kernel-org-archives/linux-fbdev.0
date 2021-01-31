@@ -8,55 +8,55 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0918CC433E0
-	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 20:03:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10B50C433DB
+	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 20:04:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B850564E1F
-	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 20:03:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AF9FB64E1F
+	for <linux-fbdev@archiver.kernel.org>; Sun, 31 Jan 2021 20:04:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231574AbhAaUDV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 31 Jan 2021 15:03:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42312 "EHLO
+        id S231672AbhAaUDn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 31 Jan 2021 15:03:43 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42304 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231380AbhAaTs0 (ORCPT
+        with ESMTP id S231586AbhAaTs0 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Sun, 31 Jan 2021 14:48:26 -0500
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ADF3FC061794;
-        Sun, 31 Jan 2021 09:31:26 -0800 (PST)
-Received: by mail-pf1-x441.google.com with SMTP id j12so9991737pfj.12;
-        Sun, 31 Jan 2021 09:31:26 -0800 (PST)
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com [IPv6:2607:f8b0:4864:20::541])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F3448C061352;
+        Sun, 31 Jan 2021 09:32:48 -0800 (PST)
+Received: by mail-pg1-x541.google.com with SMTP id o7so10446409pgl.1;
+        Sun, 31 Jan 2021 09:32:48 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=elcSuzCsfiYge55RbGFb9kTR1L7/5bJ4aw6jmtvexpM=;
-        b=WpI7Td9mz/HM9oDzyPiwhy3IQV1iTBEOIEuZa/D/SKv6J/4n+bccfqaJqtRyeBFtkU
-         AIunppgOPhltRXbfPQ6i0CdmjTT4pKHeTUOtLCVsoMBKww5Jz3NbeS3SPRY1nGl3ZL98
-         dlF0yT1h4whxfcj5bDWsLxsIOKibEfYPvaYWUwEpmk+9xaCMF7BIEcGIPL6YWg0IGrK0
-         s0GFcDAQ140iZGRdWkBHTMyeoMmOeCVyJEAnQu+L3l3DNAxKFhE2O82X41fLo6AoDgbV
-         SoHs/+ef54Us6Jh+NeZKEQz8yE/n3lBzU/QbQ3xu+pAVSawxWsUo1qFRP6kOTiXfbspM
-         xm3g==
+        bh=mo0+brrhGMjJednSGVa7WEJAUXKYi42r2CVW4s4Y5xs=;
+        b=QAkz1tON5iYvjkr2NHcgpozTGPVoPfYRL4IL0BfDh3zUuFMq5MAc0McwM/O6fZxYTx
+         4Ox6Wp+bygqNnDl+e1e+XZOK8Cn9ZXwWO0yGKqt7AY0w64FQcDxXGdKMjfqfYY7Wcpir
+         qTdPyjnOjGe/hr+t+2gSz6alaE01d7BUa4KwH6+1ZGajL0RoAVzxsrJ7L//OQWb7U5ZR
+         IbbUp31V3HHVm0+gA4trWkKa4jjz7KCsKnILVQNDMBRNjT/IX6/jth0aCQIM44Vn5WBE
+         ZLCisAIdk8IokOJ7qhqv32Rof2XzRSOSCJ00916W7BF1hKgKTiADIs5mFPy+JeqHJ5vu
+         Bgbg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=elcSuzCsfiYge55RbGFb9kTR1L7/5bJ4aw6jmtvexpM=;
-        b=FPJ6tHs0n5p4lAT7WqCnJK1BrHpukeqIrcx3byIy1GUjkPjJQiqwGCEMstJxhrDZ9C
-         F1TsfYRcu/8pbuo22kUKAVKY/T63XH8r1dmEKo2iZXIy12hwnsGP5KjUeQeztbsHZ5SC
-         R+c0JFLwW4RS0dAkal9DhK4fWJ8WgFJDdg9besVvEnRgTeau78QlZD+ifjVtT1EveN9I
-         wY4pguidBZT9YZKj+KaCeLZGcvt2B3lepkaZvc91QvdtYocMeI5AEeUnVN6JDMp0I6ji
-         j5r2FG5CndoOlTWt1poVKOygO58Co+l3DAYb1b2Rif0C1rRafe9bDS+bkz1oJVzsC+Db
-         Dg3Q==
-X-Gm-Message-State: AOAM533OEKXJ2LOo2/ATnnP0c1j4qKMdKbHAvsoJI1SQdUykPW2Lit1X
-        yFuY072qsNIb9qrY9WR3MHc=
-X-Google-Smtp-Source: ABdhPJyxYeeH+ESPtB0JAl+VwK7F+t4XhpvKZBK/qumKbzweqJodO0pWHAslA+k1SpI5/DtlxhBkKQ==
-X-Received: by 2002:a63:1a44:: with SMTP id a4mr13091045pgm.41.1612114286266;
-        Sun, 31 Jan 2021 09:31:26 -0800 (PST)
+        bh=mo0+brrhGMjJednSGVa7WEJAUXKYi42r2CVW4s4Y5xs=;
+        b=pW2ipEAa4c8OurKAbOCgtN1Mb4pyztYn+VTxFzsD72SyrKamXgergW3fCLPWCziMH+
+         a4ES/B+13QbcN07miSwX75Mb6+Wm8sZTqbhEzVjB2JYMG9P9lkEekhRmTYQoLuQzZqsd
+         UF1BDb80FtzpFLHr0VYK9b+flT+YYoyD3wF9GTNUvlfFfT4S+fe/APLjLRkAKt86H6Wd
+         odGU53jRI4dXNous3OiifSaH2Cskfkr8pHlzNJcOj5iQ4qdgNcGveo34Xv3z/nzVc1nn
+         6sejdOzDVz7UtubxyZ2Zk7xOGPhI8EvaNrBEufgv+BsDvKtwwMB2/wynsV2qT5uYwBMP
+         In4Q==
+X-Gm-Message-State: AOAM530YnUuVLLwAAozQXQOtAvRbY3E15p8DWbuaxWmdRVuypCN3of7f
+        3U+WTgUX7ONO7fO1RSzHFaM=
+X-Google-Smtp-Source: ABdhPJwcxoFrwI/FRC06emoEJxOlhapapq3uXAbaNvZgMSxCrsCYsYe4eF797A5mhxRg8Rzkb7s87g==
+X-Received: by 2002:a62:ae0c:0:b029:1bc:a0b9:f0aa with SMTP id q12-20020a62ae0c0000b02901bca0b9f0aamr12613811pff.78.1612114368491;
+        Sun, 31 Jan 2021 09:32:48 -0800 (PST)
 Received: from localhost ([2402:3a80:11ea:e144:a2a4:c5ff:fe20:7222])
-        by smtp.gmail.com with ESMTPSA id q22sm15746139pgi.66.2021.01.31.09.31.25
+        by smtp.gmail.com with ESMTPSA id f71sm14799711pfa.138.2021.01.31.09.32.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 31 Jan 2021 09:31:25 -0800 (PST)
+        Sun, 31 Jan 2021 09:32:47 -0800 (PST)
 From:   Kumar Kartikeya Dwivedi <memxor@gmail.com>
 To:     devel@driverdev.osuosl.org, gregkh@linuxfoundation.org,
         linux-kernel@vger.kernel.org
@@ -81,16 +81,16 @@ Cc:     Kumar Kartikeya Dwivedi <memxor@gmail.com>,
         Stephen Rothwell <sfr@canb.auug.org.au>,
         Andrew Morton <akpm@linux-foundation.org>,
         Al Viro <viro@zeniv.linux.org.uk>,
+        William Cohen <wcohen@redhat.com>,
         Florian Fainelli <f.fainelli@gmail.com>,
         Mike Rapoport <rppt@kernel.org>,
-        William Cohen <wcohen@redhat.com>,
+        Robert Richter <rric@kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>,
-        Robert Richter <rric@kernel.org>, greybus-dev@lists.linaro.org,
-        ac100@lists.launchpad.net, linux-tegra@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-Subject: [PATCH 03/13] staging: fsl-dpaa2: Switch from strlcpy to strscpy
-Date:   Sun, 31 Jan 2021 22:58:24 +0530
-Message-Id: <20210131172838.146706-4-memxor@gmail.com>
+        greybus-dev@lists.linaro.org, ac100@lists.launchpad.net,
+        linux-tegra@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH 10/13] staging: rtl8192u: Switch from strlcpy to strscpy
+Date:   Sun, 31 Jan 2021 22:58:31 +0530
+Message-Id: <20210131172838.146706-11-memxor@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20210131172838.146706-1-memxor@gmail.com>
 References: <20210131172838.146706-1-memxor@gmail.com>
@@ -110,36 +110,22 @@ This silences the related checkpatch warnings from:
 
 Signed-off-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
 ---
- drivers/staging/fsl-dpaa2/ethsw/ethsw-ethtool.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/staging/rtl8192u/ieee80211/ieee80211_softmac_wx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/fsl-dpaa2/ethsw/ethsw-ethtool.c b/drivers/staging/fsl-dpaa2/ethsw/ethsw-ethtool.c
-index d7f4ed1df..0af2e9914 100644
---- a/drivers/staging/fsl-dpaa2/ethsw/ethsw-ethtool.c
-+++ b/drivers/staging/fsl-dpaa2/ethsw/ethsw-ethtool.c
-@@ -38,19 +38,19 @@ static void dpaa2_switch_get_drvinfo(struct net_device *netdev,
- 	u16 version_major, version_minor;
- 	int err;
- 
--	strlcpy(drvinfo->driver, KBUILD_MODNAME, sizeof(drvinfo->driver));
-+	strscpy(drvinfo->driver, KBUILD_MODNAME, sizeof(drvinfo->driver));
- 
- 	err = dpsw_get_api_version(port_priv->ethsw_data->mc_io, 0,
- 				   &version_major,
- 				   &version_minor);
- 	if (err)
--		strlcpy(drvinfo->fw_version, "N/A",
-+		strscpy(drvinfo->fw_version, "N/A",
- 			sizeof(drvinfo->fw_version));
- 	else
- 		snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
- 			 "%u.%u", version_major, version_minor);
- 
--	strlcpy(drvinfo->bus_info, dev_name(netdev->dev.parent->parent),
-+	strscpy(drvinfo->bus_info, dev_name(netdev->dev.parent->parent),
- 		sizeof(drvinfo->bus_info));
- }
- 
+diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_softmac_wx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_softmac_wx.c
+index f434a26cd..afa92ddfa 100644
+--- a/drivers/staging/rtl8192u/ieee80211/ieee80211_softmac_wx.c
++++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_softmac_wx.c
+@@ -484,7 +484,7 @@ int ieee80211_wx_get_name(struct ieee80211_device *ieee,
+ 			     struct iw_request_info *info,
+ 			     union iwreq_data *wrqu, char *extra)
+ {
+-	strlcpy(wrqu->name, "802.11", IFNAMSIZ);
++	strscpy(wrqu->name, "802.11", IFNAMSIZ);
+ 	if (ieee->modulation & IEEE80211_CCK_MODULATION) {
+ 		strlcat(wrqu->name, "b", IFNAMSIZ);
+ 		if (ieee->modulation & IEEE80211_OFDM_MODULATION)
 -- 
 2.29.2
 

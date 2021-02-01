@@ -6,87 +6,91 @@ X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,
 	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
 	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49861C433E6
-	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Feb 2021 15:56:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B661C433DB
+	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Feb 2021 15:57:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0633C64E9C
-	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Feb 2021 15:56:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5C6AD64E98
+	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Feb 2021 15:57:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231326AbhBAPzu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 1 Feb 2021 10:55:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47258 "EHLO
+        id S229763AbhBAP50 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 1 Feb 2021 10:57:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47598 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231160AbhBAPzt (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 1 Feb 2021 10:55:49 -0500
-Received: from mail-io1-xd34.google.com (mail-io1-xd34.google.com [IPv6:2607:f8b0:4864:20::d34])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55B61C061573;
-        Mon,  1 Feb 2021 07:55:09 -0800 (PST)
-Received: by mail-io1-xd34.google.com with SMTP id u17so17906258iow.1;
-        Mon, 01 Feb 2021 07:55:09 -0800 (PST)
+        with ESMTP id S229793AbhBAP5Y (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 1 Feb 2021 10:57:24 -0500
+Received: from mail-io1-xd33.google.com (mail-io1-xd33.google.com [IPv6:2607:f8b0:4864:20::d33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BEBDFC061573;
+        Mon,  1 Feb 2021 07:56:44 -0800 (PST)
+Received: by mail-io1-xd33.google.com with SMTP id h11so17835786ioh.11;
+        Mon, 01 Feb 2021 07:56:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id;
-        bh=nELeOgIxrJtAKHJAjCMFea7kU54jCDRyGoM/8l+Px0E=;
-        b=PbufQ9iQC4YKJpi6oMy3xT+FRJfFwu6npdZBUwldcGxzxnaU4aIyZKWgTPkctHDdLu
-         yY/sRDRuL9mV9E5azwcmc6MBxYxNkeotLtObuOTVrQfdJqGBaZWlag2sLEzyMqoJMKKX
-         yu//gFkqqJS03UT7eEagAH13ZirmLeSBgz2LrAMpzzlorxlWwNrWMHmpmVQ3wqNTKnkF
-         yOkqFhAuY4WJqwmpNcXGR3wZeEG4dar6d/H4v3DH/YXmC3uM/tBqwdThE2/+c0KBuqB8
-         zoVo+3RAaiLEOK+oXE/MzIqrWyJyjR+6rpT8J2A919nhfaFz/FQggfszs40ckbriEkFL
-         XrAg==
+        bh=kcdyPTY1skmYjF1uajFrBrZyBd8/9OXciUlqQZU21U8=;
+        b=uzQLEFhC1+ARNN6hqVIa3FQ1xYmbDBd6n80aAnHAx4MdYkelzPRroBA9AJQ0g6qqs3
+         jk7x6Htzbv9fooOxUmbTNvcYJ0ZtW2rRH9u3Ku57aBuItx9s4yCB1N73BTJjMBRoFI1g
+         kyHhgKtKJ9sTrAANLdvBJ14fZeNwXfpShWQHuWrRRHM8IDqt0s4WxV/Ta+b8NuURv5m/
+         EUGt+SEJl+Sb9wBhHMed/erkr8hNm78soejwZHzeJU0CsnjSPF5swBHQI2321G1NB+sZ
+         QqUpowJcAKuaW9s9XU3ZIlmWQWMbntJQGS/2PQC3+MiNNztGa0LExQuKUK8rvUPD3x5F
+         gTEw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=nELeOgIxrJtAKHJAjCMFea7kU54jCDRyGoM/8l+Px0E=;
-        b=O2t3UvW7GuJNU8C1pZLoTpFtL0dFcfRBC9dBCcSn3XrxXc/SF8jJvpDVdGOghxyPwU
-         k7IpBj3x+hcZ1WRp9MRM2f56yPr7xC8VGcmBbqm09V1mV8qyjLXwFMQNqB8ncFzMzcCY
-         5uJEXQ4lG7YURZcGo/BXJVFjP7yQg9KOhuPBum37lxrHZGQr5Bk7CM00YC/dWNfOveqQ
-         DsbH5h/iBWVVJS1cncw1PXTuphFiY7dXzEMXSwgBu7Q1rHuS7yV60GK9vBUWJJOHkWNw
-         kvlLnBVza63G9eka6iYZsW9eOvESNOVgNqrX8aPSd0J0I9XY+0XGKUi1tEaFGNMI44b2
-         5MOg==
-X-Gm-Message-State: AOAM5302W2pkNgCn+Qj9sD2YF67GokSaozIUi+Vm6Vm07wy88PtsdZ6Q
-        lO0GEdDgv4yQX8NhYohEl3o=
-X-Google-Smtp-Source: ABdhPJw1VnhYH2T8wY5WxQ9OmdQpouFofYvk8eNksW5NkaAlvXq13G9aPbst9Dg3Uw3gPt+Bcpqujw==
-X-Received: by 2002:a05:6602:2f93:: with SMTP id u19mr13038281iow.110.1612194908883;
-        Mon, 01 Feb 2021 07:55:08 -0800 (PST)
+        bh=kcdyPTY1skmYjF1uajFrBrZyBd8/9OXciUlqQZU21U8=;
+        b=kgz69Ookl+tvJzyt1zdBcArooFx3b5CrPLzBVTIy5xMx3WAu6x6uVEFhpodGxWx1hv
+         0pWOoedyq0JC3EUMck0TSV+b/C5gu/jNRIhuO+Ww1Cb4Ura3kq+7oKu+23+KtAa2PWnS
+         XT2oaXCKheR1sDsV72dp2lyVd40+ekcyQws60jTa2U/xc5pHiCXn8wJZ/AarrnNaFMP6
+         aN8biztRVcaEAaaPceMxfZe/y8IsXxVofQ5iCK14eN9bB/VNvNrAbu/oat7MajYVOJhm
+         SX7KrR3Eo3OdVJXG9CZMp/vpcsMlLMuBAIzDeMVAXd3kL1LGCgum7Pij88mJKphXCiyd
+         OiHA==
+X-Gm-Message-State: AOAM533wJrXuCkkRIedSGeZY1STqQExxfVsV9VgHBK3xPMAQ5mEzoLXv
+        6bYQooKy65zbUh68BjHxX7tkIIS1KB9vCu2+
+X-Google-Smtp-Source: ABdhPJzR64pEhc1+heg0E33szWIpaM9xLSkpXN4WnftuLWxO8guiKR5uRsSuzM9125+j6Lk8IeaEgA==
+X-Received: by 2002:a5d:8704:: with SMTP id u4mr12277294iom.3.1612195004270;
+        Mon, 01 Feb 2021 07:56:44 -0800 (PST)
 Received: from spring-Precision-5820-Tower.cs.umn.edu ([2607:ea00:101:3c74:b4b0:f34c:770:f33f])
-        by smtp.gmail.com with ESMTPSA id m19sm9508020ila.81.2021.02.01.07.55.07
+        by smtp.gmail.com with ESMTPSA id t7sm9485796ilg.9.2021.02.01.07.56.43
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 01 Feb 2021 07:55:08 -0800 (PST)
+        Mon, 01 Feb 2021 07:56:43 -0800 (PST)
 From:   Wenjia Zhao <driverfuzzing@gmail.com>
 Cc:     driverfuzzing@gmail.com,
-        Thomas Winischhofer <thomas@winischhofer.net>,
+        Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] fix the out-of-bounds access of dramsr13
-Date:   Mon,  1 Feb 2021 09:54:58 -0600
-Message-Id: <1612194898-44732-1-git-send-email-driverfuzzing@gmail.com>
+Subject: [PATCH 3/3] video: fbdev: fix the out-of-bounds access cr_data->bak
+Date:   Mon,  1 Feb 2021 09:56:34 -0600
+Message-Id: <1612194994-50994-1-git-send-email-driverfuzzing@gmail.com>
 X-Mailer: git-send-email 2.7.4
 To:     unlisted-recipients:; (no To-header on input)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+The size of cr_data->bak is CURSOR_SIZE/4, however the access size in
+the is
+CURSOR_SIZE in the loop. It causes the out-of-bounds access.
+
 Signed-off-by: Wenjia Zhao <driverfuzzing@gmail.com>
 ---
- drivers/video/fbdev/sis/sis_main.c | 2 +-
+ drivers/video/fbdev/via/viafbdev.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index 03c736f..6774252 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -4834,7 +4834,7 @@ static int sisfb_post_xgi_ramsize(struct sis_video_info *ivideo)
- 	sisfb_post_xgi_delay(ivideo, 1);
- 
- 	j = (ivideo->chip == XGI_20) ? 5 : 9;
--	k = (ivideo->chip == XGI_20) ? 12 : 4;
-+	k = (ivideo->chip == XGI_20) ? 11 : 3;
- 	status = -EIO;
- 
- 	for(i = 0; i < k; i++) {
+diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
+index 22deb34..ef217cc 100644
+--- a/drivers/video/fbdev/via/viafbdev.c
++++ b/drivers/video/fbdev/via/viafbdev.c
+@@ -839,7 +839,7 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 	if (cursor->set & FB_CUR_SETSHAPE) {
+ 		struct {
+ 			u8 data[CURSOR_SIZE];
+-			u32 bak[CURSOR_SIZE / 4];
++			u32 bak[CURSOR_SIZE];
+ 		} *cr_data = kzalloc(sizeof(*cr_data), GFP_ATOMIC);
+ 		int size = ((cursor->image.width + 7) >> 3) *
+ 			cursor->image.height;
 -- 
 2.7.4
 

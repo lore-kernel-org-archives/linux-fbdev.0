@@ -2,109 +2,113 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07DE1C433DB
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 09:26:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B0A5C433DB
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 10:10:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9E02F64E9B
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 09:26:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BE86764F55
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 10:10:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232924AbhBBJ0a (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 2 Feb 2021 04:26:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46976 "EHLO
+        id S229870AbhBBKKQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 2 Feb 2021 05:10:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56426 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232874AbhBBJ00 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Feb 2021 04:26:26 -0500
-Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7EC9C0613ED
-        for <linux-fbdev@vger.kernel.org>; Tue,  2 Feb 2021 01:25:45 -0800 (PST)
-Received: by mail-wr1-x42c.google.com with SMTP id l12so19649890wry.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 02 Feb 2021 01:25:45 -0800 (PST)
+        with ESMTP id S229883AbhBBKKF (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Feb 2021 05:10:05 -0500
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA393C0613D6;
+        Tue,  2 Feb 2021 02:09:25 -0800 (PST)
+Received: by mail-pl1-x62b.google.com with SMTP id b8so12181506plh.12;
+        Tue, 02 Feb 2021 02:09:25 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
+        d=gmail.com; s=20161025;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=a1OCFu7h0TcIowMDv7zHkZMNSiLVb4YwniBrbKA3xlU=;
-        b=uF0X2tH0q3rC8OeRvULloT49lCKeBEQIIw6QI9tlhujC4RF3Y6JwL4phRurV64uvih
-         vIy/Bkwwwa+OwUknuhm87RzJbo3TmKLf4F4bTWnWohj0xvbesjcgJf0vvzfBB/IuDpr2
-         T5sGY0IN4mRqFiNIkf4AjHGbM1BMcLte31RgDWX4v3q3MchbIgY1ke2jBZT8K57WRNa5
-         pIM1hekoQS2WUKBuoyDGNSrnzcifBgBLcCwgYgsxQpKhEok5Eamv5Ksvda7NJQk69CUw
-         d2ITCAYRN0sV3AErdVtbrN7+deweE3u94fcS9QmF00PXgEkmZJ1YQlK7NALcXBFTO2LM
-         R6bg==
+        bh=FYeJLFgukpjjaiX0ohZ3jkdwwwc8rHopLauzuSIyIdw=;
+        b=tV+v78ppPBh5j1qozvGytXqYRH3YTJdedkA+I8BKPM/+ZtmYvrTzBWbeVfXbArKUSM
+         iN4DyO4rLEKMayZ/QM19bmkFz6e2qX/7WaBp+PIDYEig7nWtknkexxzua6XvFhgpHqne
+         lMEJZfTOQk7alc33ttk1hifGy5+zTtIrFKaHTSf6mg9Tfz5AO0tqYi4erZkvNM02mM7F
+         34qhUEHyyimt6uvazTjZyHv98SSh3Jyu5L4GyjX35aHc1AQuPb7R2MgE/5cvZaUS1c2/
+         oW/pTvabA1T2TAr4fqG1xQ9yyF5eenOs5p6igNbRJQAuRb/uXxQJoOvzreh2AVCzW5ld
+         4Zkg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=a1OCFu7h0TcIowMDv7zHkZMNSiLVb4YwniBrbKA3xlU=;
-        b=DVdReqyHHbJnZqH+/TRf6zr/dnLudzJ/uK83mu5xxftggZJ+yreQ3AakBIWpYN31Y0
-         dGi1ZFVqzNExNtR2DsYhgPKe353+PBfZVvNl3QE9rdUOLmjJH0oLk6b1tkcI8xgtkeSo
-         knIG9sn5ZxQBspsMSFGCxaK5qT2iCQb9RaF2fIgdAd4+Iiu7OKL+iEGdy/6uibqaVWHL
-         GHq+RJIzAhACIk71CkZg1cy/nJuK2o+Qfb78H0xE0yRdoy9dXr/HqnWvM/L6zDI7gCCG
-         dWCQfVHUpZZLOi3s6rQ0vxhpVXDjd8wosZcbtUsxRaS6e3DoN9cIXNO50gnDNbuRRHyR
-         8Bqg==
-X-Gm-Message-State: AOAM531ltCfBa2MNLN1UAF4R4y8UijXpdeY42NzMrBs8Zz+dYMazOWfX
-        CO9WDGVdY3GcCSkAhdYnN6HipA==
-X-Google-Smtp-Source: ABdhPJy7kfZ4o7WstsegOSMCSFJFOfW1Ibzofjf5AFjyCjsHJFeZ5+FIwpQN0elV9b07P6x7DgPmdw==
-X-Received: by 2002:adf:fc8a:: with SMTP id g10mr23343632wrr.189.1612257944619;
-        Tue, 02 Feb 2021 01:25:44 -0800 (PST)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id q24sm2040048wmq.24.2021.02.02.01.25.43
+        bh=FYeJLFgukpjjaiX0ohZ3jkdwwwc8rHopLauzuSIyIdw=;
+        b=bOIzmPHvRpzgmS1MmP9MuyPEs2lHHMSPd5xHbplR/n2Nkuoow4i8P7LrCQQXSCeBS1
+         QvNEFeKzRbFhC6uC12aL5DJtv1XUUVGpZ3pvo/aD+YB1GW3KheCp70vakvw2UOeHTMI8
+         m8zvpgXyhpfjg2go7ZtNRWUnja84KPvwMWfX/ntL59ar6A4MAFRRmifjg1194UOWYQmZ
+         TO48u5iO/2tHoiwEbDQXds+4SPq4RhWUov2Rj9DXUTOGwebtl3a2Xj91Do65PGYJXQRA
+         LoThXRCR0PF8rrB4Aqhe2LXlpB/duLiDGceGSBlArcWt9GyXEKNwjokHvvnIeobRMGPY
+         mYaA==
+X-Gm-Message-State: AOAM530B6XEA5phDOS5fsxDvc4l8ytxSDmE/WxwxWGcs/xP4Q7NFpd1R
+        RdRQ8vWY/zKTKkDk7GCE5dqcHAMlQE5jlw==
+X-Google-Smtp-Source: ABdhPJzOiwWh5mPPYa1i19XPG4Fp5MvPpEcfOWz0ooMRC2HOki3phGTorM9UmMcRGoRVm4K5OTM51w==
+X-Received: by 2002:a17:90a:d02:: with SMTP id t2mr3397288pja.130.1612260565335;
+        Tue, 02 Feb 2021 02:09:25 -0800 (PST)
+Received: from localhost ([2409:10:2e40:5100:6e29:95ff:fe2d:8f34])
+        by smtp.gmail.com with ESMTPSA id l2sm21403893pga.65.2021.02.02.02.09.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Feb 2021 01:25:43 -0800 (PST)
-Date:   Tue, 2 Feb 2021 09:25:41 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Wenjia Zhao <driverfuzzing@gmail.com>
-Cc:     Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] backlight: pcf50633: pdata may be a null pointer, null
- pointer dereference cause crash
-Message-ID: <20210202092541.2wvzpe53mavrd47x@maple.lan>
-References: <1612190499-73818-1-git-send-email-driverfuzzing@gmail.com>
+        Tue, 02 Feb 2021 02:09:24 -0800 (PST)
+Date:   Tue, 2 Feb 2021 19:09:21 +0900
+From:   Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To:     Masahiro Yamada <masahiroy@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, Petr Mladek <pmladek@suse.com>,
+        Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        John Ogness <john.ogness@linutronix.de>,
+        Andy Shevchenko <andy@infradead.org>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Borislav Petkov <bp@alien8.de>,
+        Darren Hart <dvhart@infradead.org>,
+        Dimitri Sivanich <dimitri.sivanich@hpe.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Mike Travis <mike.travis@hpe.com>,
+        Peter Jones <pjones@redhat.com>,
+        Russ Anderson <russ.anderson@hpe.com>,
+        Steve Wahl <steve.wahl@hpe.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        dri-devel@lists.freedesktop.org, linux-efi@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+        x86@kernel.org
+Subject: Re: [PATCH 1/3] printk: use CONFIG_CONSOLE_LOGLEVEL_* directly
+Message-ID: <YBkk0cZXdwYdXIcD@jagdpanzerIV.localdomain>
+References: <20210202070218.856847-1-masahiroy@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1612190499-73818-1-git-send-email-driverfuzzing@gmail.com>
+In-Reply-To: <20210202070218.856847-1-masahiroy@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Feb 01, 2021 at 08:41:38AM -0600, Wenjia Zhao wrote:
-> Signed-off-by: Wenjia Zhao <driverfuzzing@gmail.com>
-
-There should be a patch description here explaining why the patch
-is needed and how it works.
-
-
-> ---
->  drivers/video/backlight/pcf50633-backlight.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+On (21/02/02 16:02), Masahiro Yamada wrote:
 > 
-> diff --git a/drivers/video/backlight/pcf50633-backlight.c b/drivers/video/backlight/pcf50633-backlight.c
-> index 540dd338..43267af 100644
-> --- a/drivers/video/backlight/pcf50633-backlight.c
-> +++ b/drivers/video/backlight/pcf50633-backlight.c
-> @@ -127,7 +127,8 @@ static int pcf50633_bl_probe(struct platform_device *pdev)
->  
->  	platform_set_drvdata(pdev, pcf_bl);
->  
-> -	pcf50633_reg_write(pcf_bl->pcf, PCF50633_REG_LEDDIM, pdata->ramp_time);
-> +  if (pdata)
-> +    pcf50633_reg_write(pcf_bl->pcf, PCF50633_REG_LEDDIM, pdata->ramp_time);
+> CONSOLE_LOGLEVEL_DEFAULT is nothing more than a shorthand of
+> CONFIG_CONSOLE_LOGLEVEL_DEFAULT.
+> 
+> When you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT from Kconfig, almost
+> all objects are rebuilt because CONFIG_CONSOLE_LOGLEVEL_DEFAULT is
+> used in <linux/printk.h>, which is included from most of source files.
+> 
+> In fact, there are only 4 users of CONSOLE_LOGLEVEL_DEFAULT:
+> 
+>   arch/x86/platform/uv/uv_nmi.c
+>   drivers/firmware/efi/libstub/efi-stub-helper.c
+>   drivers/tty/sysrq.c
+>   kernel/printk/printk.c
+> 
+> So, when you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT and rebuild the
+> kernel, it is enough to recompile those 4 files.
 
-Assuming you found this issue using a static analyzer then I think it
-might be better to if an "if (!pdata) return -EINVAL" further up the
-file instead.
+Do you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT so often that it becomes a
+problem?
 
-In other words it is better to "document" (via the return code) that the
-code does not support pdata == NULL than to add another untested code
-path.
-
-
-Daniel.
+	-ss

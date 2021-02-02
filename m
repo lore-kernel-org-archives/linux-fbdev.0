@@ -2,131 +2,139 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3A7DC433E0
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 10:13:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E2FCC4332D
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 10:51:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 687F464F54
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 10:13:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7B60764EE0
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 10:51:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229870AbhBBKNj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 2 Feb 2021 05:13:39 -0500
-Received: from mail.kernel.org ([198.145.29.99]:46568 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229590AbhBBKNh (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 2 Feb 2021 05:13:37 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 4D1AC64EE2;
-        Tue,  2 Feb 2021 10:12:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1612260775;
-        bh=a9JpeLTPXuDOqgu+ithu1Vjt2uPFzg7y0tFXGXpxM34=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=2G7Sa2W2ilSNpuWlzi5xy2tjO1cPC84KVISQKCBmXkdFncJ0agNWmtpKRNGXthS7M
-         rd2RAlsEu/8qmLpx/S4Q9Tb4/zkCloMzc6hNLmvZhgw4B4eBq90pJ8K/CHAPqsTO5q
-         /uTrJLoBQx5z3FubOBQqvQ5cnYa4wvWYyC/ml7P8=
-Date:   Tue, 2 Feb 2021 11:12:53 +0100
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Masahiro Yamada <masahiroy@kernel.org>
-Cc:     linux-kernel@vger.kernel.org, Petr Mladek <pmladek@suse.com>,
-        Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        John Ogness <john.ogness@linutronix.de>,
-        Andy Shevchenko <andy@infradead.org>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Borislav Petkov <bp@alien8.de>,
-        Darren Hart <dvhart@infradead.org>,
-        Dimitri Sivanich <dimitri.sivanich@hpe.com>,
-        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+        id S229646AbhBBKvk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 2 Feb 2021 05:51:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37114 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229537AbhBBKvj (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Feb 2021 05:51:39 -0500
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51DB0C061573;
+        Tue,  2 Feb 2021 02:50:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:
+        Content-Transfer-Encoding:Content-Type:MIME-Version:References:Message-ID:
+        Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:Resent-Date:
+        Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+         bh=QUFoL1M4pevTeMyLwnDogHEMlQrHMZssskb6wG1LFcA=; b=wg2o6QP/gHbhqBuIhn1RZoUGj
+        2iHotGU7ufXkLAWPw4UwYFPNHzUu8ddsLF6ZH7DAZK9ibPxZPao37pY3QUiSj2kNvPg18QoU3RIbp
+        SB9YdTsgzRp09KPTWE899TVtBN6b7+9uCVpM084z3RB+393ttTKlzy9IbXmuACxRaE7AQP1axErmx
+        9bdLyqL5Tzp+2AR1s8H8Ra8HKPn+VaEgvK7MKLCh/WvBYIcLxWRrMqhYn6+wAR7lOhqYiExSBYnla
+        2ZSGKUuSlOCD0mvUg9A5mz9A1bzzWPt0jeQ/XhpyrV3IGp6JHZ9fsbmIMsvJ8Mev9a6w8QLTZD9/a
+        CRpSMItzA==;
+Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:38176)
+        by pandora.armlinux.org.uk with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <linux@armlinux.org.uk>)
+        id 1l6tFN-0004FH-LS; Tue, 02 Feb 2021 10:49:25 +0000
+Received: from linux by shell.armlinux.org.uk with local (Exim 4.92)
+        (envelope-from <linux@shell.armlinux.org.uk>)
+        id 1l6tFE-0002yZ-0J; Tue, 02 Feb 2021 10:49:16 +0000
+Date:   Tue, 2 Feb 2021 10:49:15 +0000
+From:   Russell King - ARM Linux admin <linux@armlinux.org.uk>
+To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+Cc:     Matt Mackall <mpm@selenic.com>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        Vinod Koul <vkoul@kernel.org>,
+        Dan Williams <dan.j.williams@intel.com>,
+        Eric Anholt <eric@anholt.net>, David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+        Alexandre Torgue <alexandre.torgue@st.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Vladimir Zapolskiy <vz@mleia.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Mark Brown <broonie@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Jiri Slaby <jirislaby@kernel.org>,
-        Mike Travis <mike.travis@hpe.com>,
-        Peter Jones <pjones@redhat.com>,
-        Russ Anderson <russ.anderson@hpe.com>,
-        Steve Wahl <steve.wahl@hpe.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        dri-devel@lists.freedesktop.org, linux-efi@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, platform-driver-x86@vger.kernel.org,
-        x86@kernel.org
-Subject: Re: [PATCH 1/3] printk: use CONFIG_CONSOLE_LOGLEVEL_* directly
-Message-ID: <YBklpQ1PrVc5iEQl@kroah.com>
-References: <20210202070218.856847-1-masahiroy@kernel.org>
+        Eric Auger <eric.auger@redhat.com>,
+        Alex Williamson <alex.williamson@redhat.com>,
+        Cornelia Huck <cohuck@redhat.com>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Takashi Iwai <tiwai@suse.com>, linux-kernel@vger.kernel.org,
+        kernel@pengutronix.de,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig.org@pengutronix.de>,
+        Mike Leach <mike.leach@linaro.org>,
+        Leo Yan <leo.yan@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
+        linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, coresight@lists.linaro.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-i2c@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-rtc@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
+        kvm@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-watchdog@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: Re: [PATCH v3 0/5] amba: minor fix and various cleanups
+Message-ID: <20210202104915.GK1463@shell.armlinux.org.uk>
+References: <20210126165835.687514-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20210202070218.856847-1-masahiroy@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210126165835.687514-1-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+Sender: Russell King - ARM Linux admin <linux@armlinux.org.uk>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Feb 02, 2021 at 04:02:16PM +0900, Masahiro Yamada wrote:
-> CONSOLE_LOGLEVEL_DEFAULT is nothing more than a shorthand of
-> CONFIG_CONSOLE_LOGLEVEL_DEFAULT.
+On Tue, Jan 26, 2021 at 05:58:30PM +0100, Uwe Kleine-König wrote:
+> From: Uwe Kleine-König <u.kleine-koenig.org@pengutronix.de
 > 
-> When you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT from Kconfig, almost
-> all objects are rebuilt because CONFIG_CONSOLE_LOGLEVEL_DEFAULT is
-> used in <linux/printk.h>, which is included from most of source files.
+> Hello,
 > 
-> In fact, there are only 4 users of CONSOLE_LOGLEVEL_DEFAULT:
+> Changes since v2 sent with Message-Id:
+> 20201124133139.3072124-1-uwe@kleine-koenig.org:
 > 
->   arch/x86/platform/uv/uv_nmi.c
->   drivers/firmware/efi/libstub/efi-stub-helper.c
->   drivers/tty/sysrq.c
->   kernel/printk/printk.c
+>  - Rebase to v5.11-rc1 (which resulted in a few conflicts in
+>    drivers/hwtracing).
+>  - Add various Acks.
+>  - Send to more maintainers directly (which I think is one of the
+>    reasons why there are so few Acks).
 > 
-> So, when you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT and rebuild the
-> kernel, it is enough to recompile those 4 files.
+> For my taste patch 4 needs some more acks (drivers/char/hw_random,
+> drivers/dma, drivers/gpu/drm/pl111, drivers/i2c, drivers/mmc,
+> drivers/vfio, drivers/watchdog and sound/arm have no maintainer feedback
+> yet).
 > 
-> Remove the CONSOLE_LOGLEVEL_DEFAULT definition from <linux/printk.h>,
-> and use CONFIG_CONSOLE_LOGLEVEL_DEFAULT directly.
+> My suggestion is to let this series go in via Russell King (who cares
+> for amba). Once enough Acks are there I can also provide a tag for
+> merging into different trees. Just tell me if you prefer this solution.
 > 
-> With this, the build system will rebuild the minimal number of objects.
-> 
-> Steps to confirm it:
-> 
->   [1] Do the full build
->   [2] Change CONFIG_CONSOLE_LOGLEVEL_DEFAULT from 'make menuconfig' etc.
->   [3] Rebuild
-> 
->   $ make
->     SYNC    include/config/auto.conf
->     CALL    scripts/checksyscalls.sh
->     CALL    scripts/atomic/check-atomics.sh
->     DESCEND  objtool
->     CHK     include/generated/compile.h
->     CC      kernel/printk/printk.o
->     AR      kernel/printk/built-in.a
->     AR      kernel/built-in.a
->     CC      drivers/tty/sysrq.o
->     AR      drivers/tty/built-in.a
->     CC      drivers/firmware/efi/libstub/efi-stub-helper.o
->     STUBCPY drivers/firmware/efi/libstub/efi-stub-helper.stub.o
->     AR      drivers/firmware/efi/libstub/lib.a
->     AR      drivers/built-in.a
->     GEN     .version
->     CHK     include/generated/compile.h
->     UPD     include/generated/compile.h
->     CC      init/version.o
->     AR      init/built-in.a
->     LD      vmlinux.o
->     ...
-> 
-> For the same reason, do likewise for CONSOLE_LOGLEVEL_QUIET and
-> MESSAGE_LOGLEVEL_DEFAULT.
-> 
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-> ---
-> 
->  arch/x86/platform/uv/uv_nmi.c                  |  2 +-
->  drivers/firmware/efi/libstub/efi-stub-helper.c |  6 +++---
->  drivers/tty/sysrq.c                            |  4 ++--
->  drivers/video/fbdev/core/fbcon.c               |  2 +-
->  drivers/video/fbdev/efifb.c                    |  2 +-
->  include/linux/printk.h                         | 10 ----------
->  init/main.c                                    |  2 +-
->  kernel/printk/printk.c                         |  6 +++---
->  8 files changed, 12 insertions(+), 22 deletions(-)
+> Would be great if this could make it for v5.12, but I'm aware it's
+> already late in the v5.11 cycle so it might have to wait for v5.13.
 
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+I think you need to have a 6th patch which moves the
+probe/remove/shutdown methods into the bus_type - if you're setting
+them for every struct device_driver, then there's no point doing that
+and they may as well be in the bus_type.
+
+Apart from that, it looks good.
+
+-- 
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!

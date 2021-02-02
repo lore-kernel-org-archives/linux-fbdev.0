@@ -2,139 +2,178 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,INCLUDES_PULL_REQUEST,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6465CC433DB
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 15:25:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66747C433E0
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 19:34:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 28E0F64F54
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 15:25:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3B93F64E93
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 19:34:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235463AbhBBPZf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 2 Feb 2021 10:25:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39246 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235401AbhBBPYg (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Feb 2021 10:24:36 -0500
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01D99C0613ED
-        for <linux-fbdev@vger.kernel.org>; Tue,  2 Feb 2021 07:23:55 -0800 (PST)
-Received: by mail-wm1-x335.google.com with SMTP id m2so2850062wmm.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 02 Feb 2021 07:23:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=PBOv4oa0xyBSu7Av2IkfR/vnH44GMIHIBZqxC79Sm/Y=;
-        b=DS825I+YcxBaWeWEl+ZNWlwgUUIR8iQmQPkY4QFjW+uga7eCjkKj/KLKeVvYlbT342
-         XZW5+2Ar3ZP7nqC+R9oJZP8ayAuB43dHLEmwnU4GvZ9vZ1Wr26KIXGNKp38uQSy6K9Tt
-         lMA+CYFhvJPF2cC1gm5jEgIe+iEoWYF68Djqs=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to;
-        bh=PBOv4oa0xyBSu7Av2IkfR/vnH44GMIHIBZqxC79Sm/Y=;
-        b=jWy2T1ESTslk5aLwRR9UeVOFO/MT/nrJI4uZDaURUyGQhmFzh06Xqx7ZBzKxRF46Wz
-         qf71Dg4B5YWVbLDTphyIudnYxVt9KozQXKPBgs7Vw4IGDGOKUcamvON/QwSO8MCRWe/B
-         nsQFZRGU0uBeomW7FiAeOCr9FsRCQe+JEU0A8NgBsJ8v5WyTk+LjtrnzH5vfQfvowX/3
-         WwhUQl6DcrI3vOYCt8Fof8pDRBsnd2kiidcGfDGuwST9r5NDTmtABQP++PTcGElVBfC3
-         m8zhA5dQxMxaGOcNZ7GeWD63N1gj1ZzIoM78jnZ1ylgG4mHb+j7snTHHtDUsZXOHpG3y
-         o7Rw==
-X-Gm-Message-State: AOAM532WGpwwr/2tBoFqfQEz563ltr/+P0QUkRlYX0NBbyO2TnBNaI1f
-        VE3RW1uDF/HcnUBnTM8FHoDMIQ==
-X-Google-Smtp-Source: ABdhPJwc4Iu2brOpfruPVn+eCfb6X4r3qeK2Ze160BwejVhNYW1tKRv6W4xHtSFBHQEAxujvrMfubQ==
-X-Received: by 2002:a1c:f417:: with SMTP id z23mr4176491wma.29.1612279433428;
-        Tue, 02 Feb 2021 07:23:53 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id f6sm3373520wmq.33.2021.02.02.07.23.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Feb 2021 07:23:52 -0800 (PST)
-Date:   Tue, 2 Feb 2021 16:23:50 +0100
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Phillip Susi <phill@thesusis.net>
-Cc:     Daniel Vetter <daniel@ffwll.ch>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Subject: Re: fbcon: remove soft scrollback code (missing Doc. patch)
-Message-ID: <YBluhm2WV2rmWfja@phenom.ffwll.local>
-Mail-Followup-To: Phillip Susi <phill@thesusis.net>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@infradead.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-References: <20200916205434.GA10389@duo.ucw.cz>
- <87czyf5jjp.fsf@vps.thesusis.net>
- <CAHk-=wjsjC1h7fskwYaaRLykN1ms6ZtxGvucQgmL-zZTfxPdBA@mail.gmail.com>
- <CAKMK7uEGXOC_ci=Drm=Hz+xPGdcoxv8YZ-gcOckoPmu2XijiSA@mail.gmail.com>
- <CAMuHMdVzCjVim4A3eAZzztqUyjb6a2bjmSkgxUnaugQFv42qag@mail.gmail.com>
- <87k0s4ai33.fsf@vps.thesusis.net>
- <YBlfKgQ1laQLFqpW@phenom.ffwll.local>
- <87wnvqts9g.fsf@vps.thesusis.net>
+        id S233576AbhBBTdn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 2 Feb 2021 14:33:43 -0500
+Received: from metis.ext.pengutronix.de ([85.220.165.71]:39275 "EHLO
+        metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233444AbhBBN5O (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Feb 2021 08:57:14 -0500
+Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1l6w82-0000fW-TE; Tue, 02 Feb 2021 14:54:02 +0100
+Received: from ukl by ptx.hi.pengutronix.de with local (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1l6w7u-0006bW-5D; Tue, 02 Feb 2021 14:53:54 +0100
+Date:   Tue, 2 Feb 2021 14:53:50 +0100
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Russell King <linux+pull@armlinux.org.uk>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     linux-fbdev@vger.kernel.org, kvm@vger.kernel.org,
+        alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org,
+        Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig.org@pengutronix.de>, linux-i2c@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-rtc@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-input@vger.kernel.org, Mike Leach <mike.leach@linaro.org>,
+        linux-watchdog@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+        coresight@lists.linaro.org, linux-arm-kernel@lists.infradead.org,
+        linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-crypto@vger.kernel.org,
+        kernel@pengutronix.de, Leo Yan <leo.yan@linaro.org>,
+        dmaengine@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        Vinod Koul <vkoul@kernel.org>,
+        Dan Williams <dan.j.williams@intel.com>,
+        Eric Anholt <eric@anholt.net>, David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+        Alexandre Torgue <alexandre.torgue@st.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Vladimir Zapolskiy <vz@mleia.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Mark Brown <broonie@kernel.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Eric Auger <eric.auger@redhat.com>,
+        Alex Williamson <alex.williamson@redhat.com>,
+        Cornelia Huck <cohuck@redhat.com>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
+Subject: [GIT PULL] immutable branch for amba changes targeting v5.12-rc1
+Message-ID: <20210202135350.36nj3dmcoq3t7gcf@pengutronix.de>
+References: <20210126165835.687514-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="ofqcafd7fzy3m7fk"
 Content-Disposition: inline
-In-Reply-To: <87wnvqts9g.fsf@vps.thesusis.net>
-X-Operating-System: Linux phenom 5.7.0-1-amd64 
+In-Reply-To: <20210126165835.687514-1-u.kleine-koenig@pengutronix.de>
+X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Feb 02, 2021 at 10:13:14AM -0500, Phillip Susi wrote:
-> 
-> Daniel Vetter writes:
-> 
-> > Just a quick comment on this: Since most framebuffers are write-combining,
-> > and reads from that tend to be ~3 orders of magnitude slower than writes
-> > (at least on the pile of machines I looked at here, there's big
-> > differences, and some special streaming cpu instructions to make the
-> > reading side not so slow).
-> >
-> > So scrolling by copying tends to be significantly slower than just
-> > redrawing everything.
-> 
-> I know this was the case years ago with AGP as iirc, it doubled ( 4x, 8x
-> ) the PCI clock rate but only for writes wasn't it?  I thought this was
-> no longer an issue with PCIe, but if it is, then I guess I'll go ahead
-> with cleaning up the dead code and having it re-render with the larger
-> text buffer.
 
-Still the same with PCIe, probably gotten worse since uncached reads are
-still as slow, but write-combined writes have gotten much faster even.
-There's work going on to have a coherent link to gpus which would allow
-fully cached reads and writes, early with nvlink and now as a standard
-with CXL (https://en.wikipedia.org/wiki/Compute_Express_Link)
+--ofqcafd7fzy3m7fk
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-But that's aimed at big compute jobs for servers, not really for display.
+Hello,
 
-Also some on-die gpus have become fully coherent, but again only for
-render/compute buffers, not for the display framebuffer.
+the following changes since commit 5c8fe583cce542aa0b84adc939ce85293de36e5e:
 
-So all together 0 signs this is changing going forward, reading from
-framebuffers is slow.
+  Linux 5.11-rc1 (2020-12-27 15:30:22 -0800)
 
-Ok there's some exceptions: For manual update buffers (defio for fbdev
-drivers, drm also supports this with an entire set of helpers) the
-framebuffer used by the cpu is sometimes (but very often still not)
-cached. Imo not worth optimizing for, since for the drivers where it is
-cached they either have no blitter, or it's really tiny panels behind spi
-links and similar, so not going to be fast anyway.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+are available in the Git repository at:
+
+  https://git.pengutronix.de/git/ukl/linux tags/amba-make-remove-return-void
+
+for you to fetch changes up to f170b59fedd733b92f58c4d7c8357fbf7601d623:
+
+  amba: Make use of bus_type functions (2021-02-02 14:26:02 +0100)
+
+I expect this tag to be merged by Russell King as amba maintainer and by
+Mathieu Poirier (or Greg Kroah-Hartman?) for coresight as there are some
+pending conflicting changes. These are not hard to resolve but also
+non-trivial. Tell me if you need assistance for resolving, also if it's onl=
+y a
+second pair of eyes to judge your resolution.
+
+Best regards,
+Uwe
+
+----------------------------------------------------------------
+Tag for adaptions to struct amba_driver::remove changing prototype
+
+----------------------------------------------------------------
+Uwe Kleine-K=F6nig (5):
+      amba: Fix resource leak for drivers without .remove
+      amba: reorder functions
+      vfio: platform: simplify device removal
+      amba: Make the remove callback return void
+      amba: Make use of bus_type functions
+
+ drivers/amba/bus.c                                 | 234 +++++++++++++++++=
+++++++++++++++++------------------------------
+ drivers/char/hw_random/nomadik-rng.c               |   3 +-
+ drivers/dma/pl330.c                                |   3 +-
+ drivers/gpu/drm/pl111/pl111_drv.c                  |   4 +-
+ drivers/hwtracing/coresight/coresight-catu.c       |   3 +-
+ drivers/hwtracing/coresight/coresight-cpu-debug.c  |   4 +-
+ drivers/hwtracing/coresight/coresight-cti-core.c   |   4 +-
+ drivers/hwtracing/coresight/coresight-etb10.c      |   4 +-
+ drivers/hwtracing/coresight/coresight-etm3x-core.c |   4 +-
+ drivers/hwtracing/coresight/coresight-etm4x-core.c |   4 +-
+ drivers/hwtracing/coresight/coresight-funnel.c     |   4 +-
+ drivers/hwtracing/coresight/coresight-replicator.c |   4 +-
+ drivers/hwtracing/coresight/coresight-stm.c        |   4 +-
+ drivers/hwtracing/coresight/coresight-tmc-core.c   |   4 +-
+ drivers/hwtracing/coresight/coresight-tpiu.c       |   4 +-
+ drivers/i2c/busses/i2c-nomadik.c                   |   4 +-
+ drivers/input/serio/ambakmi.c                      |   3 +-
+ drivers/memory/pl172.c                             |   4 +-
+ drivers/memory/pl353-smc.c                         |   4 +-
+ drivers/mmc/host/mmci.c                            |   4 +-
+ drivers/rtc/rtc-pl030.c                            |   4 +-
+ drivers/rtc/rtc-pl031.c                            |   4 +-
+ drivers/spi/spi-pl022.c                            |   5 +-
+ drivers/tty/serial/amba-pl010.c                    |   4 +-
+ drivers/tty/serial/amba-pl011.c                    |   3 +-
+ drivers/vfio/platform/vfio_amba.c                  |  15 ++--
+ drivers/video/fbdev/amba-clcd.c                    |   4 +-
+ drivers/watchdog/sp805_wdt.c                       |   4 +-
+ include/linux/amba/bus.h                           |   2 +-
+ sound/arm/aaci.c                                   |   4 +-
+ 30 files changed, 157 insertions(+), 198 deletions(-)
+
+
+
+--ofqcafd7fzy3m7fk
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmAZWWsACgkQwfwUeK3K
+7AnMhQgAhyeAx45pa3ebR9ymvzFG1Knp32GwFPlyLYw03yZzLsNR5n+d0kvDNZ1l
+vNIrU0g5WSS1SUWhs+m3WDRIcTlCHcgc3yoCKltLSNWiPXie9G9BZ0815b0gomXY
+eBSKiHZg/Ie8WhIspQcl0IA0P/2nOmTXF8qJx3CFow5WowriUutdf7n1ycTDq86a
+18Xpf2lW+esLut8MHM/98aHJUl6Jkj5PYfQfjgORIXKwNmNDltuK6lwvUU+pw+Vr
+0bDYXdXlaKLkNtSYYHSbDrKALiQccxhXYPg404KZV3FIHpOxKlq6im8hsFHWOOlu
+n9j2wq/tpGso23vYKdErmsE3GDncuQ==
+=P/zp
+-----END PGP SIGNATURE-----
+
+--ofqcafd7fzy3m7fk--

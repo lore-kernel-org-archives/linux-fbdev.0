@@ -2,199 +2,169 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PULL_REQUEST,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3EDAC433E0
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 21:39:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27EF2C433DB
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 23:05:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B34CE64E3D
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 21:39:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DE34C64E41
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Feb 2021 23:05:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231784AbhBBVj2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 2 Feb 2021 16:39:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35512 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232879AbhBBVjD (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Feb 2021 16:39:03 -0500
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 64236C0613ED
-        for <linux-fbdev@vger.kernel.org>; Tue,  2 Feb 2021 13:38:23 -0800 (PST)
-Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1l73KK-0005G0-0Y; Tue, 02 Feb 2021 22:35:12 +0100
-Received: from ukl by ptx.hi.pengutronix.de with local (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1l73KD-000359-6W; Tue, 02 Feb 2021 22:35:05 +0100
-Date:   Tue, 2 Feb 2021 22:35:02 +0100
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Russell King <linux+pull@armlinux.org.uk>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     linux-fbdev@vger.kernel.org, Cornelia Huck <cohuck@redhat.com>,
-        kvm@vger.kernel.org, David Airlie <airlied@linux.ie>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org,
-        Jaroslav Kysela <perex@perex.cz>,
-        Eric Anholt <eric@anholt.net>, linux-i2c@vger.kernel.org,
-        Jiri Slaby <jirislaby@kernel.org>,
-        linux-stm32@st-md-mailman.stormreply.com,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        linux-rtc@vger.kernel.org,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Takashi Iwai <tiwai@suse.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        linux-serial@vger.kernel.org, linux-input@vger.kernel.org,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Mike Leach <mike.leach@linaro.org>,
-        linux-watchdog@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        coresight@lists.linaro.org, Vladimir Zapolskiy <vz@mleia.com>,
-        Eric Auger <eric.auger@redhat.com>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Mark Brown <broonie@kernel.org>,
-        Matt Mackall <mpm@selenic.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Dan Williams <dan.j.williams@intel.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        linux-arm-kernel@lists.infradead.org,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-spi@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
-        linux-crypto@vger.kernel.org, kernel@pengutronix.de,
-        Leo Yan <leo.yan@linaro.org>, dmaengine@vger.kernel.org
-Subject: Re: [GIT PULL] immutable branch for amba changes targeting v5.12-rc1
-Message-ID: <20210202213502.ya4luwvklbte72sz@pengutronix.de>
-References: <20210126165835.687514-1-u.kleine-koenig@pengutronix.de>
- <20210202135350.36nj3dmcoq3t7gcf@pengutronix.de>
+        id S233439AbhBBXF5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 2 Feb 2021 18:05:57 -0500
+Received: from conssluserg-05.nifty.com ([210.131.2.90]:22160 "EHLO
+        conssluserg-05.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233050AbhBBXF4 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Feb 2021 18:05:56 -0500
+X-Greylist: delayed 57464 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Feb 2021 18:05:53 EST
+Received: from mail-pl1-f177.google.com (mail-pl1-f177.google.com [209.85.214.177]) (authenticated)
+        by conssluserg-05.nifty.com with ESMTP id 112N4khF003133;
+        Wed, 3 Feb 2021 08:04:46 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-05.nifty.com 112N4khF003133
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+        s=dec2015msa; t=1612307086;
+        bh=UGA0Rplim8ZfC6e4whP20xTht9RzqhbWWxLaXhzWRUA=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=tOBe0hEHHf9tvmT3rHNnjBL9ugZuudIECWVtYvCik/AC2pP1I4bqBET4RIJ/vBKSB
+         0aRw/i7F91TD/PzkclnU2rVRXFMEw6JAzCx93I17/rKXeFG7l0py1WRGJG2fQCZQLj
+         q99jD6spPDWOLAzyv0+yHJdvetuJ0mv8N9l2T+24C2KTXwMzAOnAFXBCq1xn8EfdZh
+         EqvYL29bZ/OMZE6jEBXdHTulk62/GRSs0uLVCRks7bcTqFsH9kUUbnniWFdepR5nay
+         nVRHIn7crbFdyzki6dQc69GxxIU1dobMhHCeavZav8fqc5flWT+QiFEmuYa9o3WH3Q
+         4bzZRX2Ms/k9g==
+X-Nifty-SrcIP: [209.85.214.177]
+Received: by mail-pl1-f177.google.com with SMTP id u11so13344353plg.13;
+        Tue, 02 Feb 2021 15:04:46 -0800 (PST)
+X-Gm-Message-State: AOAM532yuR3F6Vl6z+NNFjFuGpuWcQl1WLAEmHtTkrLsMp8b4+WdKjrw
+        hQrJrSp9A9DIdg9f51DuZe3ED7EZv7t5beQT7aU=
+X-Google-Smtp-Source: ABdhPJxvtHfeu+crGL+CyXAo0FUYVHkXnleiaiv+dMA4n8+oso6WU2K79gP3aD12VFT56j8XRv47GWHWmTyr4FAXNxk=
+X-Received: by 2002:a17:90b:1b50:: with SMTP id nv16mr88481pjb.153.1612307085830;
+ Tue, 02 Feb 2021 15:04:45 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="iy6nspqtdtxt6xyd"
-Content-Disposition: inline
-In-Reply-To: <20210202135350.36nj3dmcoq3t7gcf@pengutronix.de>
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+References: <20210202070218.856847-1-masahiroy@kernel.org> <YBkk0cZXdwYdXIcD@jagdpanzerIV.localdomain>
+In-Reply-To: <YBkk0cZXdwYdXIcD@jagdpanzerIV.localdomain>
+From:   Masahiro Yamada <masahiroy@kernel.org>
+Date:   Wed, 3 Feb 2021 08:04:08 +0900
+X-Gmail-Original-Message-ID: <CAK7LNAQh=bMuyEinKzr6t28E2TuSWAhYU=M+jeJ+HiNhjQN=3A@mail.gmail.com>
+Message-ID: <CAK7LNAQh=bMuyEinKzr6t28E2TuSWAhYU=M+jeJ+HiNhjQN=3A@mail.gmail.com>
+Subject: Re: [PATCH 1/3] printk: use CONFIG_CONSOLE_LOGLEVEL_* directly
+To:     Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Petr Mladek <pmladek@suse.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        John Ogness <john.ogness@linutronix.de>,
+        Andy Shevchenko <andy@infradead.org>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Borislav Petkov <bp@alien8.de>,
+        Darren Hart <dvhart@infradead.org>,
+        Dimitri Sivanich <dimitri.sivanich@hpe.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Mike Travis <mike.travis@hpe.com>,
+        Peter Jones <pjones@redhat.com>,
+        Russ Anderson <russ.anderson@hpe.com>,
+        Steve Wahl <steve.wahl@hpe.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        linux-efi <linux-efi@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        platform-driver-x86@vger.kernel.org, X86 ML <x86@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On Tue, Feb 2, 2021 at 7:09 PM Sergey Senozhatsky
+<sergey.senozhatsky@gmail.com> wrote:
+>
+> On (21/02/02 16:02), Masahiro Yamada wrote:
+> >
+> > CONSOLE_LOGLEVEL_DEFAULT is nothing more than a shorthand of
+> > CONFIG_CONSOLE_LOGLEVEL_DEFAULT.
+> >
+> > When you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT from Kconfig, almost
+> > all objects are rebuilt because CONFIG_CONSOLE_LOGLEVEL_DEFAULT is
+> > used in <linux/printk.h>, which is included from most of source files.
+> >
+> > In fact, there are only 4 users of CONSOLE_LOGLEVEL_DEFAULT:
+> >
+> >   arch/x86/platform/uv/uv_nmi.c
+> >   drivers/firmware/efi/libstub/efi-stub-helper.c
+> >   drivers/tty/sysrq.c
+> >   kernel/printk/printk.c
+> >
+> > So, when you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT and rebuild the
+> > kernel, it is enough to recompile those 4 files.
+>
+> Do you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT so often that it becomes a
+> problem?
+>
+>         -ss
 
---iy6nspqtdtxt6xyd
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hello,
 
-On Tue, Feb 02, 2021 at 02:53:50PM +0100, Uwe Kleine-K=F6nig wrote:
-> the following changes since commit 5c8fe583cce542aa0b84adc939ce85293de36e=
-5e:
->=20
->   Linux 5.11-rc1 (2020-12-27 15:30:22 -0800)
->=20
-> are available in the Git repository at:
->=20
->   https://git.pengutronix.de/git/ukl/linux tags/amba-make-remove-return-v=
-oid
->=20
-> for you to fetch changes up to f170b59fedd733b92f58c4d7c8357fbf7601d623:
->=20
->   amba: Make use of bus_type functions (2021-02-02 14:26:02 +0100)
->=20
-> I expect this tag to be merged by Russell King as amba maintainer and by
-> Mathieu Poirier (or Greg Kroah-Hartman?) for coresight as there are some
-> pending conflicting changes. These are not hard to resolve but also
-> non-trivial. Tell me if you need assistance for resolving, also if it's o=
-nly a
-> second pair of eyes to judge your resolution.
+<linux/printk.h> is one of most included headers,
+so it is worth downsizing.
 
-Alternatively to my additional patch sent earlier today I prepared a v2
-tag at
+CONSOLE_LOGLEVEL_DEFAULT is not such a parameter
+that printk() users need to know.
 
-  https://git.pengutronix.de/git/ukl/linux tags/amba-make-remove-return-voi=
-d-v2
+Changing CONFIG_CONSOLE_LOGLEVEL_DEFAULT results in
+the rebuilds of the entire tree, which is a flag of
+bad code structure.
 
-with the build fix squashed in. Iff you prefer and both Russell and Greg
-agree to pull this one instead of the (implicit) v1 we can maybe prevent
-introducing this build regression in mainline. Please coordinate among
-you two. And sorry again for breaking the build.
+So, this is not only CONSOLE_LOGLEVEL_DEFAULT.
+<linux/printk.h> contains parameters
+and func declarations that printk() users
+do not need to know.
 
-Best regards
-Uwe
+Examples:
+CONSOLE_LOGLEVEL_DEFAULT
+log_buf_addr_get()
+log_buf_len_get()
+oops_in_progress
+...
 
-PS: The range-diff between the original
-tags/amba-make-remove-return-void and
-tags/amba-make-remove-return-void-v2 is:
 
-1:  3fd269e74f2f ! 1:  481963c91284 amba: Make the remove callback return v=
-oid
-    @@ Commit message
-         Acked-by: Vladimir Zapolskiy <vz@mleia.com> # for memory/pl172
-         Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-         Link: https://lore.kernel.org/r/20210126165835.687514-5-u.kleine-k=
-oenig@pengutronix.de
-    +    [ukleinek: squashed in a build fix for drivers/mailbox/arm_mhuv2.c]
-         Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-    =20
-      ## drivers/amba/bus.c ##
-    @@ drivers/input/serio/ambakmi.c: static int amba_kmi_remove(struct amb=
-a_device *de
-     =20
-      static int __maybe_unused amba_kmi_resume(struct device *dev)
-    =20
-    + ## drivers/mailbox/arm_mhuv2.c ##
-    +@@ drivers/mailbox/arm_mhuv2.c: static int mhuv2_probe(struct amba_dev=
-ice *adev, const struct amba_id *id)
-    +   return ret;
-    + }
-    +=20
-    +-static int mhuv2_remove(struct amba_device *adev)
-    ++static void mhuv2_remove(struct amba_device *adev)
-    + {
-    +   struct mhuv2 *mhu =3D amba_get_drvdata(adev);
-    +=20
-    +   if (mhu->frame =3D=3D SENDER_FRAME)
-    +           writel_relaxed(0x0, &mhu->send->access_request);
-    +-
-    +-  return 0;
-    + }
-    +=20
-    + static struct amba_id mhuv2_ids[] =3D {
-    +
-      ## drivers/memory/pl172.c ##
-     @@ drivers/memory/pl172.c: static int pl172_probe(struct amba_device *=
-adev, const struct amba_id *id)
-        return ret;
-2:  f170b59fedd7 =3D 2:  f30d22a7bfab amba: Make use of bus_type functions
+They are only needed for those who want
+to more closely get access to
+the printk internals.
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
 
---iy6nspqtdtxt6xyd
-Content-Type: application/pgp-signature; name="signature.asc"
+Ideally, such parameters and func
+declarations can go to the subsystems'
+local header (kernel/printk/internal.h)
+but when it is not possible,
+they can be separated out to
+a different header.
 
------BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmAZxYMACgkQwfwUeK3K
-7AnuCggAjiQbE+eiwx7Lq2dUAxw0U6bgjFY/EXIcLCMbTPjdEffSVExAzMT3cTCy
-zISJDI3QF315/RleMFcnEXrXJl7Ft8SkoEvZfheNfz5JmPu8jPIEUp5giooDmpBi
-TV/LqBdE+wmy+J7byBdoH8Chvg9RR52u6aJFyj8nzwAoqj/+YiSYcB2nsMtr962B
-GLNq7i0h7Lj0cZxGVTsh75QuVSyK7yedx7gS4F5wUURJpSa5LzeeWAboWgARpg+M
-/BIWHX1CAs2JGZQqzJF2hffd/HZhQCWJlgTa1x92sg2Ic62K+ufwdsHlo87Wuo42
-N6jvYIoY/t/LHHL+3zxpfxM1yFao+A==
-=lf3x
------END PGP SIGNATURE-----
+I can see a similar idea in the consumer/provider
+model in several subsystems.
 
---iy6nspqtdtxt6xyd--
+Consumers and providers are often orthogonal,
+and de-coupling them clarifies
+who needs what.
+
+See other subsystems, for example,
+
+<linux/clk.h>           -  clk consumer
+<linux/clk-provider.h>  -  clk provider
+
+
+
+
+
+
+
+
+
+
+
+
+
+--
+Best Regards
+Masahiro Yamada

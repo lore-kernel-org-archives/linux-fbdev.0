@@ -2,130 +2,231 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E8ADC433DB
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Feb 2021 07:54:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2AAEC433E6
+	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Feb 2021 08:04:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EFC6364DE7
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Feb 2021 07:54:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7F77864F61
+	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Feb 2021 08:04:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232067AbhBCHyL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 3 Feb 2021 02:54:11 -0500
-Received: from metis.ext.pengutronix.de ([85.220.165.71]:36439 "EHLO
-        metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231862AbhBCHyK (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 Feb 2021 02:54:10 -0500
-Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1l7CrV-0000mf-2a; Wed, 03 Feb 2021 08:46:05 +0100
-Received: from ukl by ptx.hi.pengutronix.de with local (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1l7CrM-0005LW-0J; Wed, 03 Feb 2021 08:45:56 +0100
-Date:   Wed, 3 Feb 2021 08:45:55 +0100
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Russell King - ARM Linux admin <linux@armlinux.org.uk>
-Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
-        Cornelia Huck <cohuck@redhat.com>, kvm@vger.kernel.org,
-        David Airlie <airlied@linux.ie>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        dri-devel@lists.freedesktop.org, Jaroslav Kysela <perex@perex.cz>,
-        Eric Anholt <eric@anholt.net>,
-        Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig.org@pengutronix.de>, linux-i2c@vger.kernel.org,
-        linux-spi@vger.kernel.org, Jiri Slaby <jirislaby@kernel.org>,
-        linux-stm32@st-md-mailman.stormreply.com,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        linux-rtc@vger.kernel.org,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        linux-serial@vger.kernel.org, linux-input@vger.kernel.org,
-        Guenter Roeck <linux@roeck-us.net>,
-        Mike Leach <mike.leach@linaro.org>,
-        Daniel Vetter <daniel@ffwll.ch>, Arnd Bergmann <arnd@arndb.de>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        coresight@lists.linaro.org, Vladimir Zapolskiy <vz@mleia.com>,
-        Eric Auger <eric.auger@redhat.com>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Mark Brown <broonie@kernel.org>, linux-fbdev@vger.kernel.org,
-        Matt Mackall <mpm@selenic.com>,
-        Dan Williams <dan.j.williams@intel.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        linux-watchdog@vger.kernel.org,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        id S232380AbhBCIEe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 3 Feb 2021 03:04:34 -0500
+Received: from mx2.suse.de ([195.135.220.15]:50208 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S232332AbhBCIEa (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 3 Feb 2021 03:04:30 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id BFCDFAEC3;
+        Wed,  3 Feb 2021 08:03:48 +0000 (UTC)
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Daniel Vetter <daniel@ffwll.ch>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        Phillip Susi <phill@thesusis.net>, Pavel Machek <pavel@ucw.cz>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        linux-mmc@vger.kernel.org, Takashi Iwai <tiwai@suse.com>,
-        linux-kernel@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
-        linux-crypto@vger.kernel.org,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Leo Yan <leo.yan@linaro.org>, dmaengine@vger.kernel.org,
-        alsa-devel@alsa-project.org
-Subject: Re: [PATCH v3 0/5] amba: minor fix and various cleanups
-Message-ID: <20210203074555.tusulu3iqg5wgxeb@pengutronix.de>
-References: <20210126165835.687514-1-u.kleine-koenig@pengutronix.de>
- <20210202104915.GK1463@shell.armlinux.org.uk>
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+References: <20200916205434.GA10389@duo.ucw.cz>
+ <87czyf5jjp.fsf@vps.thesusis.net>
+ <CAHk-=wjsjC1h7fskwYaaRLykN1ms6ZtxGvucQgmL-zZTfxPdBA@mail.gmail.com>
+ <CAKMK7uEGXOC_ci=Drm=Hz+xPGdcoxv8YZ-gcOckoPmu2XijiSA@mail.gmail.com>
+ <CAMuHMdVzCjVim4A3eAZzztqUyjb6a2bjmSkgxUnaugQFv42qag@mail.gmail.com>
+ <CAKMK7uEwHu5GLF16wn83PLZUjoJWgF0dcLXwsGkt_aBpOgLt+w@mail.gmail.com>
+ <CAMuHMdUf3eeK=Fr_pasUdXkk_zuicFBqNY+jSnH6EgUgmG+3hA@mail.gmail.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: fbcon: remove soft scrollback code (missing Doc. patch)
+Message-ID: <7d666c65-80ea-905e-b50f-76af5a6dceb0@suse.de>
+Date:   Wed, 3 Feb 2021 09:03:47 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.6.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="nnu6wqtgppbbywlf"
-Content-Disposition: inline
-In-Reply-To: <20210202104915.GK1463@shell.armlinux.org.uk>
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+In-Reply-To: <CAMuHMdUf3eeK=Fr_pasUdXkk_zuicFBqNY+jSnH6EgUgmG+3hA@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="yfezKyx6UTf5mVJ1BQtTrApR6vxn8LUjj"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--yfezKyx6UTf5mVJ1BQtTrApR6vxn8LUjj
+Content-Type: multipart/mixed; boundary="GDhN2qL2aB0rrSOiLw5PqylZkoxuD3V1N";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Daniel Vetter <daniel@ffwll.ch>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Phillip Susi <phill@thesusis.net>, Pavel Machek <pavel@ucw.cz>,
+ Randy Dunlap <rdunlap@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ dri-devel <dri-devel@lists.freedesktop.org>,
+ Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Message-ID: <7d666c65-80ea-905e-b50f-76af5a6dceb0@suse.de>
+Subject: Re: fbcon: remove soft scrollback code (missing Doc. patch)
+References: <20200916205434.GA10389@duo.ucw.cz>
+ <87czyf5jjp.fsf@vps.thesusis.net>
+ <CAHk-=wjsjC1h7fskwYaaRLykN1ms6ZtxGvucQgmL-zZTfxPdBA@mail.gmail.com>
+ <CAKMK7uEGXOC_ci=Drm=Hz+xPGdcoxv8YZ-gcOckoPmu2XijiSA@mail.gmail.com>
+ <CAMuHMdVzCjVim4A3eAZzztqUyjb6a2bjmSkgxUnaugQFv42qag@mail.gmail.com>
+ <CAKMK7uEwHu5GLF16wn83PLZUjoJWgF0dcLXwsGkt_aBpOgLt+w@mail.gmail.com>
+ <CAMuHMdUf3eeK=Fr_pasUdXkk_zuicFBqNY+jSnH6EgUgmG+3hA@mail.gmail.com>
+In-Reply-To: <CAMuHMdUf3eeK=Fr_pasUdXkk_zuicFBqNY+jSnH6EgUgmG+3hA@mail.gmail.com>
 
---nnu6wqtgppbbywlf
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+--GDhN2qL2aB0rrSOiLw5PqylZkoxuD3V1N
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
 
-Hello,
+Hi
 
-we already talked about this via irc, but for the record and the benefit
-of others:
+Am 15.01.21 um 09:06 schrieb Geert Uytterhoeven:
+> Hi Daniel,
+>=20
+> On Thu, Jan 14, 2021 at 5:11 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+>> On Thu, Jan 14, 2021 at 4:56 PM Geert Uytterhoeven <geert@linux-m68k.o=
+rg> wrote:
+>>> On Tue, Jan 12, 2021 at 5:00 PM Daniel Vetter <daniel@ffwll.ch> wrote=
+:
+>>>> On Sat, Jan 9, 2021 at 12:11 AM Linus Torvalds
+>>>> <torvalds@linux-foundation.org> wrote:
+>>>>> On Fri, Jan 8, 2021 at 11:13 AM Phillip Susi <phill@thesusis.net> w=
+rote:
+>>>>>>> Could we pause this madness? Scrollback is still useful. I needed=
+ it
+>>>>>>> today... it was too small, so command results I was looking for
+>>>>>>> already scrolled away, but... life will be really painful with 0
+>>>>>>> scrollback.
+>>>>>>
+>>>>>>> You'll need it, too... as soon as you get oops and will want to s=
+ee
+>>>>>>> errors just prior to that oops.
+>>>>>>
+>>>>>>> If it means I get to maintain it... I'm not happy about it but th=
+at's
+>>>>>>> better than no scrollback.
+>>>>>>
+>>>>>> Amen!  What self respecting admin installs a gui on servers?  What=
+ do we
+>>>>>> have to do to get this back in?  What was so buggy with this code =
+that
+>>>>>> it needed to be removed?  Why was it such a burden to just leave i=
+t be?
+>>>>>
+>>>>> It really was buggy, with security implications. And we have no mai=
+ntainers.
+>>>>>
+>>>>> So the scroll-back code can't come back until we have a maintainer =
+and
+>>>>> a cleaner and simpler implementation.
+>>>>>
+>>>>> And no, maintaining it really doesn't mean "just get it back to the=
 
-On Tue, Feb 02, 2021 at 10:49:15AM +0000, Russell King - ARM Linux admin wr=
-ote:
-> I think you need to have a 6th patch which moves the
-> probe/remove/shutdown methods into the bus_type - if you're setting
-> them for every struct device_driver, then there's no point doing that
-> and they may as well be in the bus_type.
+>>>>> old broken state".
+>>>>>
+>>>>> So far I haven't actually seen any patches, which means that it's n=
+ot
+>>>>> coming back.
+>>>>>
+>>>>> The good news? If you have an actual text VGA console, that should
+>>>>> still work just fine.
+>>>
+>>> IIRC, all of this was written for systems lacking VGA text consoles
+>>> in the first place...
+>>>
+>>>> Also on anything that is remotely modern (i.e. runs a drm kernel
+>>>> modesetting driver undearneath the fbdev/fbcon stack) there's a pile=
 
-This is implemented in patch 5 already.
+>>>> more issues on top of just the scrollback/fbcon code being a mess.
+>>>
+>>> Would it help to remove DRM_FBDEV_EMULATION (instead)?
+
+Of the fbdev code, DRM's fbdev emulation is the cleanest. We now even=20
+have test cases for the userspace I/O.
+
+>>
+>> It's a problem with the hardware. "Write some registers and done"
+>> isn't how display blocks work nowadays. So your proposal amounts to
+>> "no fbdev/fbcon for anything modern-ish".
+>=20
+> With "modern-ish" actually meaning: "desktop/gaming/mobile-style
+> 3D-accelerated wide-color display hardware".  There's plenty of display=
+
+> hardware that doesn't fall into that class, and is served by fbdev (als=
+o
+> out-of-tree due to the moratorium) because of that.
+
+Userspace has been moving away from fbdev. Writing an fbdev driver locks =
+
+you into a legacy userspace. I also found that DRM drivers are smaller,=20
+because of all the DRM helper libraries. Using DRM + fbdev emulation is=20
+a win in almost any case. We did have some complaints about performance=20
+of the emulation. So that might be worth looking into.
 
 Best regards
-Uwe
+Thomas
+
+>=20
+>> Also I said "a pile more", most of the issues in fbcon/fbdev code
+>> apply for all drivers.
+>>
+>>>> Specifically the locking is somewhere between yolo and outright
+>>>> deadlocks. This holds even more so if the use case here is "I want
+>>>> scrollback for an oops". There's rough sketches for how it could be
+>>>> solved, but it's all very tricky work.
+>>>
+>>> When an oops happens, all bets are off.  At that point, all informati=
+on
+>>> you can extract from the system is valuable, and additional locking
+>>> issues are moot.
+>>
+>> Except the first oops then scrolls aways because it's getting buried
+>> under further fail. Your locking needs to be minimally good enough to
+>> not make the situation worse.
+>=20
+> When an oops happens, all bets are off...
+>=20
+> Gr{oetje,eeting}s,
+>=20
+>                          Geert
+>=20
 
 --=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
+(HRB 36809, AG N=C3=BCrnberg)
+Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
 
---nnu6wqtgppbbywlf
-Content-Type: application/pgp-signature; name="signature.asc"
+
+--GDhN2qL2aB0rrSOiLw5PqylZkoxuD3V1N--
+
+--yfezKyx6UTf5mVJ1BQtTrApR6vxn8LUjj
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmAaVLAACgkQwfwUeK3K
-7AlQLgf+P1DKYj6OELp8rvge2qlgjLziflPm/vmYKoER7GP62xMAt1jHBWvMgDLx
-SQfCWfc7aNauEmrPFy3TDOyu3SrNFjDVRf3DfOGZ+VpYmmtyUJihjezhbbhpysK5
-Pchia3IjZ0wVWPBC0mb8a1o5w1GQ7l49/QaVZ6buVR+RoNYiKGFdiKcEc8JB+c19
-s2ksv2HXH9eB66fQ+yNQY7W2lNiK98iTc0txk+lhP2wRnFXHPMgqQhFb3j2wt7Or
-ix27mqEX40GyAOv+Xmam2NtjLRM5WD4zflnasEKvxQoa0Qe0mpR6aSKIotUmM4yi
-oNcARpnSdJUwDrfHL0GDd9ksOomPMA==
-=r9/H
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmAaWOMFAwAAAAAACgkQlh/E3EQov+Cv
+hw//SDOkfXlIrcsAsBu8ZsbwQK8Lq+7RnfJckk3X89r/Zep1wil4Oot0XNNgIe2ZGq8yYTctgvbk
+HePIWpAGcwgoMXRqnC2ZqkCTtfzwFCfmN9NrDUqdLWhrGloGhGIae5amB8bt8wOMVLRzC1n8OQTE
+kayuQws+rJGWjt5GWUmL7aITrzgiDjIJA5TrQJFbu9B2MSxqn3E78pRbNtMpWKhMkLVGaEoZLNl0
+PTlC9qHfz1PZxwJ+d+ZNFTBaWrni+R4OXz4I3NZBsVhH2uLc3zRSzFoux924x66zxxNcypG9120n
+iSF6YCRy05aISl+7thtbL+/cQMVEnDR3vMUUKC2tLnZJi0a9ieDWZ08OdHdfl+GKKK3BzYjTxN6f
+z8FKGJulkOlW7ezoVITsl0ovsB2URbtbEWGiUDS5sZ2o1QqxOYas0bJr2ErX4xygI5GcZlInzHep
+huw+UPJv6OWF5/diHrcz0z3RudON+U7KcaWJ+bx2jeFbt03+MUKbC6ie8+CDGiO/fHL6nMeFLd6s
+0DrAGSvcic6YlimNesJNP6KtlnxCQhpx6jo6xHof0vHvINDQiicHE7MTLaC9dcIYB4FzaGGyPaFu
+ksWL6k4hHRmM9xr9ageJsZBC3iVsyR8pDNAhggKcmOWPyuej2TblmoyX0MaZDLtA+1jKdpmzrAcJ
+zkA=
+=h086
 -----END PGP SIGNATURE-----
 
---nnu6wqtgppbbywlf--
+--yfezKyx6UTf5mVJ1BQtTrApR6vxn8LUjj--

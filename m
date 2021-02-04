@@ -2,54 +2,38 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2494AC433E0
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Feb 2021 21:52:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ABA6EC433DB
+	for <linux-fbdev@archiver.kernel.org>; Thu,  4 Feb 2021 10:16:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BA89064DA3
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Feb 2021 21:52:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6610964F59
+	for <linux-fbdev@archiver.kernel.org>; Thu,  4 Feb 2021 10:16:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229959AbhBCVww (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 3 Feb 2021 16:52:52 -0500
-Received: from conssluserg-02.nifty.com ([210.131.2.81]:61983 "EHLO
-        conssluserg-02.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229897AbhBCVww (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 Feb 2021 16:52:52 -0500
-Received: from mail-pf1-f170.google.com (mail-pf1-f170.google.com [209.85.210.170]) (authenticated)
-        by conssluserg-02.nifty.com with ESMTP id 113LpkpU031784;
-        Thu, 4 Feb 2021 06:51:47 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-02.nifty.com 113LpkpU031784
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
-        s=dec2015msa; t=1612389107;
-        bh=gxgjcR0VEeZAZf1rRpSkG8b/Bi8s2o6fMLa0IvUA9lw=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=m8YX4O0ILm07ceuK5fotq4uY3K1hAC5ptJnoW/XxUW9j/FOFfRWgmXqWK2pF4kSRY
-         4L+fB30NvHjrsFwew2rRy7cFbU3phsYIDhTUChcaf6G3eSioxTg0vL6rH4L65ZYLmT
-         lz94outN2VEfVM9wget8Gd7fyhP75NCUuuRRltnOaYTm33ePYZq6JljjVBZK6k3iZl
-         3ap3wl9kfMRsGrDugDGg9SYkc5ORYZDxbd775RD15YXafXAVy4IK760wiJDiB0jNk6
-         ehrI5u1as17AjgQbBmj8OtK9khhGP8T+iYvA42Yow+UzzxKzQu5AGheonRWWDzVWiT
-         +HiLyq5jRddPQ==
-X-Nifty-SrcIP: [209.85.210.170]
-Received: by mail-pf1-f170.google.com with SMTP id w18so696520pfu.9;
-        Wed, 03 Feb 2021 13:51:47 -0800 (PST)
-X-Gm-Message-State: AOAM530PWonDFWS5MGUKZt+KXi1VUFydsQJGCJj793D3tYC/41DzcCco
-        rTjByl+14SiV/P5wDHKHE13gf4l8p7/VEOOoiy8=
-X-Google-Smtp-Source: ABdhPJx/LaBTQoB963qFg1P+igJksCCKE8Z041HxDmq3/pC0hBJHBlx2ThcrSaLxlu5UdkfwoNWPTs8TPJ6pU3GFLI0=
-X-Received: by 2002:a63:575e:: with SMTP id h30mr5652383pgm.7.1612389106322;
- Wed, 03 Feb 2021 13:51:46 -0800 (PST)
-MIME-Version: 1.0
-References: <20210202070218.856847-1-masahiroy@kernel.org> <87eehy27b5.fsf@jogness.linutronix.de>
- <YBq/2ojccc4ZZp9y@alley>
-In-Reply-To: <YBq/2ojccc4ZZp9y@alley>
-From:   Masahiro Yamada <masahiroy@kernel.org>
-Date:   Thu, 4 Feb 2021 06:51:09 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAQyV-asWNY6CK6MWze9sFZS3CgXxtH2LEht5e=kjrLu7w@mail.gmail.com>
-Message-ID: <CAK7LNAQyV-asWNY6CK6MWze9sFZS3CgXxtH2LEht5e=kjrLu7w@mail.gmail.com>
-Subject: Re: [PATCH 1/3] printk: use CONFIG_CONSOLE_LOGLEVEL_* directly
-To:     Petr Mladek <pmladek@suse.com>
+        id S235332AbhBDKQt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 4 Feb 2021 05:16:49 -0500
+Received: from mx2.suse.de ([195.135.220.15]:45166 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S235298AbhBDKQs (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 4 Feb 2021 05:16:48 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+        t=1612433761; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=YQZOldqCtjkPupLVxZdZt2KMNRlzizKTv66MNg9zXPI=;
+        b=eG3gMKWPwUW01tBEcoF29Eq8Y2qgWWLBNZ4+YaIbBZueMMVpDTfz8dCp+gPebXm6bb9Uyr
+        5KShIQZ5qKE24SnDt53w84yolfaTNcLWCnwArKLdZ6BnyxhVhsi0OUrlmnGKLhqto6NEKb
+        y18uDsei/XZXTChu+NYikcxbz/ke1mQ=
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id 478AFAC97;
+        Thu,  4 Feb 2021 10:16:01 +0000 (UTC)
+Date:   Thu, 4 Feb 2021 11:16:00 +0100
+From:   Petr Mladek <pmladek@suse.com>
+To:     Masahiro Yamada <masahiroy@kernel.org>
 Cc:     John Ogness <john.ogness@linutronix.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
@@ -71,84 +55,110 @@ Cc:     John Ogness <john.ogness@linutronix.de>,
         linux-efi <linux-efi@vger.kernel.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         platform-driver-x86@vger.kernel.org, X86 ML <x86@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH 1/3] printk: use CONFIG_CONSOLE_LOGLEVEL_* directly
+Message-ID: <YBvJYHW7iVhtlJfh@alley>
+References: <20210202070218.856847-1-masahiroy@kernel.org>
+ <87eehy27b5.fsf@jogness.linutronix.de>
+ <YBq/2ojccc4ZZp9y@alley>
+ <CAK7LNAQyV-asWNY6CK6MWze9sFZS3CgXxtH2LEht5e=kjrLu7w@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAK7LNAQyV-asWNY6CK6MWze9sFZS3CgXxtH2LEht5e=kjrLu7w@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Feb 4, 2021 at 12:23 AM Petr Mladek <pmladek@suse.com> wrote:
->
-> On Tue 2021-02-02 09:44:22, John Ogness wrote:
-> > On 2021-02-02, Masahiro Yamada <masahiroy@kernel.org> wrote:
-> > > CONSOLE_LOGLEVEL_DEFAULT is nothing more than a shorthand of
-> > > CONFIG_CONSOLE_LOGLEVEL_DEFAULT.
-> > >
-> > > When you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT from Kconfig, almost
-> > > all objects are rebuilt because CONFIG_CONSOLE_LOGLEVEL_DEFAULT is
-> > > used in <linux/printk.h>, which is included from most of source files.
-> > >
-> > > In fact, there are only 4 users of CONSOLE_LOGLEVEL_DEFAULT:
-> > >
-> > >   arch/x86/platform/uv/uv_nmi.c
-> > >   drivers/firmware/efi/libstub/efi-stub-helper.c
-> > >   drivers/tty/sysrq.c
-> > >   kernel/printk/printk.c
-> > >
-> > > So, when you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT and rebuild the
-> > > kernel, it is enough to recompile those 4 files.
-> > >
-> > > Remove the CONSOLE_LOGLEVEL_DEFAULT definition from <linux/printk.h>,
-> > > and use CONFIG_CONSOLE_LOGLEVEL_DEFAULT directly.
+On Thu 2021-02-04 06:51:09, Masahiro Yamada wrote:
+> On Thu, Feb 4, 2021 at 12:23 AM Petr Mladek <pmladek@suse.com> wrote:
 > >
-> > With commit a8fe19ebfbfd ("kernel/printk: use symbolic defines for
-> > console loglevels") it can be seen that various drivers used to
-> > hard-code their own values. The introduction of the macros in an
-> > intuitive location (include/linux/printk.h) made it easier for authors
-> > to find/use the various available printk settings and thresholds.
+> > On Tue 2021-02-02 09:44:22, John Ogness wrote:
+> > > On 2021-02-02, Masahiro Yamada <masahiroy@kernel.org> wrote:
+> > > > CONSOLE_LOGLEVEL_DEFAULT is nothing more than a shorthand of
+> > > > CONFIG_CONSOLE_LOGLEVEL_DEFAULT.
+> > > >
+> > > > When you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT from Kconfig, almost
+> > > > all objects are rebuilt because CONFIG_CONSOLE_LOGLEVEL_DEFAULT is
+> > > > used in <linux/printk.h>, which is included from most of source files.
+> > > >
+> > > > In fact, there are only 4 users of CONSOLE_LOGLEVEL_DEFAULT:
+> > > >
+> > > >   arch/x86/platform/uv/uv_nmi.c
+> > > >   drivers/firmware/efi/libstub/efi-stub-helper.c
+> > > >   drivers/tty/sysrq.c
+> > > >   kernel/printk/printk.c
+> > > >
+> > > > So, when you change CONFIG_CONSOLE_LOGLEVEL_DEFAULT and rebuild the
+> > > > kernel, it is enough to recompile those 4 files.
+> > > >
+> > > > Remove the CONSOLE_LOGLEVEL_DEFAULT definition from <linux/printk.h>,
+> > > > and use CONFIG_CONSOLE_LOGLEVEL_DEFAULT directly.
+> > >
+> > > With commit a8fe19ebfbfd ("kernel/printk: use symbolic defines for
+> > > console loglevels") it can be seen that various drivers used to
+> > > hard-code their own values. The introduction of the macros in an
+> > > intuitive location (include/linux/printk.h) made it easier for authors
+> > > to find/use the various available printk settings and thresholds.
+> > >
+> > > Technically there is no problem using Kconfig macros directly. But will
+> > > authors bother to hunt down available Kconfig settings? Or will they
+> > > only look in printk.h to see what is available?
+> > >
+> > > IMHO if code wants to use settings from a foreign subsystem, it should
+> > > be taking those from headers of that subsystem, rather than using some
+> > > Kconfig settings from that subsystem. Headers exist to make information
+> > > available to external code. Kconfig (particularly for a subsystem) exist
+> > > to configure that subsystem.
 > >
-> > Technically there is no problem using Kconfig macros directly. But will
-> > authors bother to hunt down available Kconfig settings? Or will they
-> > only look in printk.h to see what is available?
-> >
-> > IMHO if code wants to use settings from a foreign subsystem, it should
-> > be taking those from headers of that subsystem, rather than using some
-> > Kconfig settings from that subsystem. Headers exist to make information
-> > available to external code. Kconfig (particularly for a subsystem) exist
-> > to configure that subsystem.
->
-> I agree with this this view.
+> > I agree with this this view.
+> 
+> 
+> I have never seen a policy to restrict
+> the use of CONFIG options in relevant
+> subsystem headers.
+
+I would say that it is a common sense. But I admit that I did not look
+at the code in detail. See below.
+
+> > What about using default_console_loglevel() in the external code?
+> > It reads the value from an array. This value is initialized to
+> > CONSOLE_LOGLEVEL_DEFAULT and never modified later.
+> 
+> I do not think default_console_loglevel()
+> is a perfect constant
+> because it can be modified via
+> /proc/sys/kernel/printk
+
+And that is the problem. I somehow expected that the external code
+wanted to have the currently valid value and not the prebuilt one.
+
+When I look closely:
+
+  + arch/x86/platform/uv/uv_nmi.c
+  + drivers/firmware/efi/libstub/efi-stub-helper.c
+
+    These use the value to statically initialize global variables that
+    might later be modified by subsystem-specific kernel parameters.
+
+    CONFIG_CONSOLE_LOGLEVEL_DEFAULT is acceptable here from my POV.
+    The build dependency sucks. And it is not worth any too complicated
+    solution.
 
 
-I have never seen a policy to restrict
-the use of CONFIG options in relevant
-subsystem headers.
+  + drivers/tty/sysrq.c
 
+    The intention here is to use the highest console loglevel so that
+    people really see them. It used to be hardcoded "7". sysrq is
+    typically the last chance to get some information from the system.
 
+    We actually want to use the hardcoded "7" here. But we should
+    define it via a macro in printk.h, e.g.
 
-> What about using default_console_loglevel() in the external code?
-> It reads the value from an array. This value is initialized to
-> CONSOLE_LOGLEVEL_DEFAULT and never modified later.
+     #define CONSOLE_LOGLEVEL_ALL_NORMAL 7 /* all non-debugging messages */
 
-I do not think default_console_loglevel()
-is a perfect constant
-because it can be modified via
-/proc/sys/kernel/printk
+     or
 
+     #define CONSOLE_LOGLEVEL_NO_DEBUG 7  /* all non-debugging messages */
 
-I am not sure if it works either.
-
-Some code may not be linked to vmlinux.
-drivers/firmware/efi/libstub/efi-stub-helper.c
-
-
-
-
-> Best Regards,
-> Petr
-
-
-
-
---
-Best Regards
-Masahiro Yamada
+Best Regards,
+Petr

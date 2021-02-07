@@ -2,225 +2,263 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0177C433DB
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Feb 2021 23:17:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0287FC433DB
+	for <linux-fbdev@archiver.kernel.org>; Sun,  7 Feb 2021 14:02:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8188F64F99
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Feb 2021 23:17:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B5F5864E31
+	for <linux-fbdev@archiver.kernel.org>; Sun,  7 Feb 2021 14:02:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229974AbhBEXQs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 5 Feb 2021 18:16:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36140 "EHLO
+        id S229725AbhBGOCf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 7 Feb 2021 09:02:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39666 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230216AbhBEK6p (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Feb 2021 05:58:45 -0500
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9D15C0613D6
-        for <linux-fbdev@vger.kernel.org>; Fri,  5 Feb 2021 02:58:04 -0800 (PST)
-Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1l7ymj-00035C-2Q; Fri, 05 Feb 2021 11:56:21 +0100
-Received: from ukl by ptx.hi.pengutronix.de with local (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1l7ymd-0004Fb-NN; Fri, 05 Feb 2021 11:56:15 +0100
-Date:   Fri, 5 Feb 2021 11:56:15 +0100
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     linux-fbdev@vger.kernel.org, Cornelia Huck <cohuck@redhat.com>,
-        kvm@vger.kernel.org, David Airlie <airlied@linux.ie>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        dri-devel@lists.freedesktop.org, Jaroslav Kysela <perex@perex.cz>,
-        Eric Anholt <eric@anholt.net>,
-        Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig.org@pengutronix.de>, linux-i2c@vger.kernel.org,
-        Jiri Slaby <jirislaby@kernel.org>,
-        linux-stm32@st-md-mailman.stormreply.com,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        linux-rtc@vger.kernel.org,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Russell King - ARM Linux admin <linux@armlinux.org.uk>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        linux-serial@vger.kernel.org, linux-input@vger.kernel.org,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Mike Leach <mike.leach@linaro.org>,
-        linux-watchdog@vger.kernel.org, alsa-devel@alsa-project.org,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        linux-kernel@vger.kernel.org, coresight@lists.linaro.org,
-        Vladimir Zapolskiy <vz@mleia.com>,
-        Eric Auger <eric.auger@redhat.com>,
-        Alex Williamson <alex.williamson@redhat.com>,
-        Mark Brown <broonie@kernel.org>,
-        Matt Mackall <mpm@selenic.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Dan Williams <dan.j.williams@intel.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        linux-mmc@vger.kernel.org, Takashi Iwai <tiwai@suse.com>,
-        linux-spi@vger.kernel.org, Vinod Koul <vkoul@kernel.org>,
-        Arnd Bergmann <arnd@arndb.de>, linux-crypto@vger.kernel.org,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Leo Yan <leo.yan@linaro.org>, dmaengine@vger.kernel.org
-Subject: Re: [GIT PULL] immutable branch for amba changes targeting v5.12-rc1
-Message-ID: <20210205105615.qumu45huvntf2v4j@pengutronix.de>
-References: <20210126165835.687514-1-u.kleine-koenig@pengutronix.de>
- <20210202135350.36nj3dmcoq3t7gcf@pengutronix.de>
- <YBlcTXlxemmC2lgr@kroah.com>
- <20210204165224.GA1463@shell.armlinux.org.uk>
- <YBwnUrQqlAz2LDPI@kroah.com>
- <20210204165951.GB1463@shell.armlinux.org.uk>
- <20210204181551.ethtuzm65flujmwe@pengutronix.de>
- <20210205093744.kr4rc7yvfiq6wimq@pengutronix.de>
- <YB0baUzgvpd+EoO6@kroah.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="vslstwmibba5nymi"
-Content-Disposition: inline
-In-Reply-To: <YB0baUzgvpd+EoO6@kroah.com>
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+        with ESMTP id S229491AbhBGOCe (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 7 Feb 2021 09:02:34 -0500
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EEBCBC06174A;
+        Sun,  7 Feb 2021 06:01:53 -0800 (PST)
+Received: by mail-pl1-x631.google.com with SMTP id e9so6438999plh.3;
+        Sun, 07 Feb 2021 06:01:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=BKfhCVrNE1G6tN7jQvqfXJj8IfC/ZteJhEq5g/yoxvw=;
+        b=A0bWvrmJDtsuEOYxobKagLrEDwfpdGfBUXyNxSLL2RleOEw8xPFdDHa0z3VhfGU29d
+         tUEzSPNkG4BykmsXy5ycaLpCIpWPa/9z8y8Z1p3C0VlkmVlY+aivkjLO0jDWYyAM6dL7
+         GPtRwsL6Km2m7ZteMjy0Juw3C2ctMjWJ/KF92jijWzS1FhkcJvvL1w7Y5V88tJT11fSe
+         kUIuBt2cwYDSmO0L7DdBPDTzzC6bM4eJN/L2bEOFpmdk2Lfsmmbu5ykiIhqmAaRWqqw1
+         XfNFUorWIE0cV9Q9mgJWDShf97oijQgK5KerxxbXeVY9Fcta/xRjF33FBN5419O7gEoE
+         EIig==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=BKfhCVrNE1G6tN7jQvqfXJj8IfC/ZteJhEq5g/yoxvw=;
+        b=qbPc7YnWTKsz4LUzJcZAnKzdKPXuFrXHfvI5+FDIORW3O1V9Fq7L8yrxpMo5SxOveb
+         MWV00ZjlbZMTfKZFM9i6KLcoG6P2yfq/8KftZ45KNd/VAof3HjCmrelyLF4GSb94kat4
+         pK4y+pZehxOPR9aM8RDAi8xF0p5UFQ+ijdtl/EWHh5VS5q/oWL75jV6Bm/2iCMInoO+F
+         qY5dC7AHscRhpguAbKJStvyW6FiRHLKy84CPefiMp65sqWxR7OlmtMi2HEWNt9EfMDZK
+         JbhOZ5VTEfY+w6jt7nxCMzhT9xX8XCRa5cHkL3qSlREqWUFcUKC/aij/HdG3anDK6TmF
+         VUVw==
+X-Gm-Message-State: AOAM53329SmnEJkNCaf8GllUj/x83cwQpxo6GJ2p6rxMjq770qwkHMQc
+        fhsr8E9OHhCJ5G8o7Np335gXLFNXzIatqrNo
+X-Google-Smtp-Source: ABdhPJzDD68MGez2ZZeZZdxvQqsQi2a9z4QnBhFgoIJxSTyQ6l8TOC604eXe9zh39aOBBeYk9QX4Dg==
+X-Received: by 2002:a17:902:e5cc:b029:df:bc77:3aba with SMTP id u12-20020a170902e5ccb02900dfbc773abamr12569541plf.72.1612706512920;
+        Sun, 07 Feb 2021 06:01:52 -0800 (PST)
+Received: from bf-rmsz-10.ccdomain.com ([103.220.76.197])
+        by smtp.gmail.com with ESMTPSA id lf4sm13826283pjb.0.2021.02.07.06.01.49
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 07 Feb 2021 06:01:52 -0800 (PST)
+From:   Carlis <zhangxuezhi3@gmail.com>
+To:     gregkh@linuxfoundation.org
+Cc:     colin.king@canonical.com, oliver.graute@kococonnector.com,
+        zhangxuezhi1@yulong.com, mh12gx2825@gmail.com, sbrivio@redhat.com,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v15] staging: fbtft: add tearing signal detect
+Date:   Sun,  7 Feb 2021 22:01:57 +0800
+Message-Id: <1612706517-124617-1-git-send-email-zhangxuezhi3@gmail.com>
+X-Mailer: git-send-email 1.9.1
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+From: Carlis <zhangxuezhi1@yulong.com>
 
---vslstwmibba5nymi
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For st7789v IC, when we need continuous full screen refresh, it is best to
+wait for the tearing effect line signal to arrive to avoid screen tearing.
 
-On Fri, Feb 05, 2021 at 11:18:17AM +0100, Greg Kroah-Hartman wrote:
-> On Fri, Feb 05, 2021 at 10:37:44AM +0100, Uwe Kleine-K=F6nig wrote:
-> > Hello Russell, hello Greg,
-> >=20
-> > On Thu, Feb 04, 2021 at 07:15:51PM +0100, Uwe Kleine-K=F6nig wrote:
-> > > On Thu, Feb 04, 2021 at 04:59:51PM +0000, Russell King - ARM Linux ad=
-min wrote:
-> > > > On Thu, Feb 04, 2021 at 05:56:50PM +0100, Greg Kroah-Hartman wrote:
-> > > > > On Thu, Feb 04, 2021 at 04:52:24PM +0000, Russell King - ARM Linu=
-x admin wrote:
-> > > > > > On Tue, Feb 02, 2021 at 03:06:05PM +0100, Greg Kroah-Hartman wr=
-ote:
-> > > > > > > I'm glad to take this through my char/misc tree, as that's wh=
-ere the
-> > > > > > > other coresight changes flow through.  So if no one else obje=
-cts, I will
-> > > > > > > do so...
-> > > > > >=20
-> > > > > > Greg, did you end up pulling this after all? If not, Uwe produc=
-ed a v2.
-> > > > > > I haven't merged v2 yet as I don't know what you've done.
-> > > > >=20
-> > > > > I thought you merged this?
-> > > >=20
-> > > > I took v1, and put it in a branch I've promised in the past not to
-> > > > rebase/rewind. Uwe is now asking for me to take a v2 or apply a pat=
-ch
-> > > > on top.
-> > > >=20
-> > > > The only reason to produce an "immutable" branch is if it's the bas=
-is
-> > > > for some dependent work and you need that branch merged into other
-> > > > people's trees... so the whole "lets produce a v2" is really odd
-> > > > workflow... I'm confused about what I should do, and who has to be
-> > > > informed which option I take.
-> > > >=20
-> > > > I'm rather lost here too.
-> > >=20
-> > > Sorry to have cause this confusion. After I saw that my initial tag
-> > > missed to adapt a driver I wanted to make it easy for you to fix the
-> > > situation.
-> > > So I created a patch to fix it and created a second tag with the patch
-> > > squashed in. Obviously only one of them have to be picked and I hoped
-> > > you (=3D Russell + Greg) would agree which option to pick.
-> > >=20
-> > > My preference would be if you both pick up v2 of the tag to yield a
-> > > history that is bisectable without build problems, but if Russell (who
-> > > already picked up the broken tag) considers his tree immutable and so
-> > > isn't willing to rebase, then picking up the patch is the way to go.
-> >=20
-> > OK, the current state is that Russell applied the patch fixing
-> > drivers/mailbox/arm_mhuv2.c on top of merging my first tag.
-> >=20
-> > So the way forward now is that Greg pulls
-> >=20
-> > 	git://git.armlinux.org.uk/~rmk/linux-arm.git devel-stable
-> >=20
-> > which currently points to=20
-> >=20
-> > 	860660fd829e ("ARM: 9055/1: mailbox: arm_mhuv2: make remove callback r=
-eturn void")
-> >=20
-> > , into his tree that contains the hwtracing changes that conflict with =
-my
-> > changes. @Greg: Is this good enough, or do you require a dedicated tag
-> > to pull that?
-> >=20
-> > I think these conflicting hwtracing changes are not yet in any of Greg's
-> > trees (at least they are not in next).
-> >=20
-> > When I pull
-> >=20
-> > 	https://git.kernel.org/pub/scm/linux/kernel/git/coresight/linux.git ne=
-xt
-> >=20
-> > (currently pointing to 4e73ff249184 ("coresight: etm4x: Handle accesses
-> > to TRCSTALLCTLR")) into 860660fd829e, I get a conflict in
-> > drivers/hwtracing/coresight/coresight-etm4x-core.c as expected. My
-> > resolution looks as follows:
->=20
-> Ok, my resolution looked a bit different.
->=20
-> Can you pull my char-misc-testing branch and verify I got this all
-> pulled in correctly?
+Signed-off-by: Carlis <zhangxuezhi1@yulong.com>
+---
+v15: change ret value return logic in write_vmem.
+v14: change to define TE completion and TE irq only in st7789v.
+v13: change TE completion to par data struct member and add a new
+     function to deal te gpio request, add new write_vmem function.
+v12: change dev_err to dev_err_probe and add space in comments start, and
+     delete te_mutex, change te wait logic.
+v11: remove devm_gpio_put and change a dev_err to dev_info.
+v10: additional notes.
+v9: change pr_* to dev_*.
+v8: delete a log line.
+v7: return error value when request fail.
+v6: add te gpio request fail deal logic.
+v5: fix log print.
+v4: modify some code style and change te irq set function name.
+v3: modify author and signed-off-by name.
+v2: add release te gpio after irq request fail.
+---
+ drivers/staging/fbtft/fb_st7789v.c | 115 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 115 insertions(+)
 
-minor side-note: mentioning the repo url would have simplified that test.
+diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
+index 3a280cc..abe9395 100644
+--- a/drivers/staging/fbtft/fb_st7789v.c
++++ b/drivers/staging/fbtft/fb_st7789v.c
+@@ -7,9 +7,13 @@
+ 
+ #include <linux/bitops.h>
+ #include <linux/delay.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
++#include <linux/interrupt.h>
++#include <linux/completion.h>
+ #include <linux/module.h>
++
+ #include <video/mipi_display.h>
+ 
+ #include "fbtft.h"
+@@ -66,6 +70,62 @@ enum st7789v_command {
+ #define MADCTL_MX BIT(6) /* bitmask for column address order */
+ #define MADCTL_MY BIT(7) /* bitmask for page address order */
+ 
++/* 60Hz for 16.6ms, configured as 2*16.6ms */
++#define PANEL_TE_TIMEOUT_MS  33
++
++static struct completion panel_te; /* completion for panel TE line */
++static int irq_te; /* Linux IRQ for LCD TE line */
++
++static irqreturn_t panel_te_handler(int irq, void *data)
++{
++	complete(&panel_te);
++	return IRQ_HANDLED;
++}
++
++/*
++ * init_tearing_effect_line() - init tearing effect line.
++ * @par: FBTFT parameter object.
++ *
++ * Return: 0 on success, or a negative error code otherwise.
++ */
++static int init_tearing_effect_line(struct fbtft_par *par)
++{
++	struct device *dev = par->info->device;
++	struct gpio_desc *te;
++	int rc, irq;
++
++	te = gpiod_get_optional(dev, "te", GPIOD_IN);
++	if (IS_ERR(te))
++		return dev_err_probe(dev, PTR_ERR(te), "Failed to request te GPIO\n");
++
++	/* if te is NULL, indicating no configuration, directly return success */
++	if (!te) {
++		irq_te = 0;
++		return 0;
++	}
++
++	irq = gpiod_to_irq(te);
++
++	/* GPIO is locked as an IRQ, we may drop the reference */
++	gpiod_put(te);
++
++	if (irq < 0)
++		return irq;
++
++	irq_te = irq;
++	init_completion(&panel_te);
++
++	/* The effective state is high and lasts no more than 1000 microseconds */
++	rc = devm_request_irq(dev, irq_te, panel_te_handler,
++			      IRQF_TRIGGER_RISING, "TE_GPIO", par);
++	if (rc)
++		return dev_err_probe(dev, rc, "TE IRQ request failed.\n");
++
++	disable_irq_nosync(irq_te);
++
++	return 0;
++}
++
+ /**
+  * init_display() - initialize the display controller
+  *
+@@ -82,6 +142,12 @@ enum st7789v_command {
+  */
+ static int init_display(struct fbtft_par *par)
+ {
++	int rc;
++
++	rc = init_tearing_effect_line(par);
++	if (rc)
++		return rc;
++
+ 	/* turn off sleep mode */
+ 	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
+ 	mdelay(120);
+@@ -137,6 +203,10 @@ static int init_display(struct fbtft_par *par)
+ 	 */
+ 	write_reg(par, PWCTRL1, 0xA4, 0xA1);
+ 
++	/* TE line output is off by default when powering on */
++	if (irq_te)
++		write_reg(par, MIPI_DCS_SET_TEAR_ON, 0x00);
++
+ 	write_reg(par, MIPI_DCS_SET_DISPLAY_ON);
+ 
+ 	if (HSD20_IPS)
+@@ -145,6 +215,50 @@ static int init_display(struct fbtft_par *par)
+ 	return 0;
+ }
+ 
++/*
++ * write_vmem() - write data to display.
++ * @par: FBTFT parameter object.
++ * @offset: offset from screen_buffer.
++ * @len: the length of data to be writte.
++ *
++ * Return: 0 on success, or a negative error code otherwise.
++ */
++static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
++{
++	struct device *dev = par->info->device;
++	int ret;
++
++	if (irq_te) {
++		enable_irq(irq_te);
++		reinit_completion(&panel_te);
++		ret = wait_for_completion_timeout(&panel_te,
++						  msecs_to_jiffies(PANEL_TE_TIMEOUT_MS));
++		if (ret == 0)
++			dev_err(dev, "wait panel TE timeout\n");
++
++		disable_irq(irq_te);
++	}
++
++	switch (par->pdata->display.buswidth) {
++	case 8:
++		ret = fbtft_write_vmem16_bus8(par, offset, len);
++		break;
++	case 9:
++		ret = fbtft_write_vmem16_bus9(par, offset, len);
++		break;
++	case 16:
++		ret = fbtft_write_vmem16_bus16(par, offset, len);
++		break;
++	default:
++		dev_err(dev, "Unsupported buswidth %d\n",
++			par->pdata->display.buswidth);
++		ret = 0;
++		break;
++	}
++
++	return ret;
++}
++
+ /**
+  * set_var() - apply LCD properties like rotation and BGR mode
+  *
+@@ -259,6 +373,7 @@ static int blank(struct fbtft_par *par, bool on)
+ 	.gamma = HSD20_IPS_GAMMA,
+ 	.fbtftops = {
+ 		.init_display = init_display,
++		.write_vmem = write_vmem,
+ 		.set_var = set_var,
+ 		.set_gamma = set_gamma,
+ 		.blank = blank,
+-- 
+1.9.1
 
-I looked at
-
-	https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc.git char-=
-misc-testing
-
-commit 0573d3fa48640f0fa6b105ff92dcb02b94d6c1ab now.
-
-I didn't compile test, but I'm willing to bet your resolution is wrong.
-You have no return statement in etm4_remove_dev() but its return type is
-int and etm4_remove_amba() still returns int but should return void.
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---vslstwmibba5nymi
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmAdJEwACgkQwfwUeK3K
-7AkhPggAk0ucNSGkkTWYbQF9BBYOZDKVlqvPHzvkMilvBGuAa1EXhuHHKu3esHxh
-NZf5xH5Lh7cnNyXodWF4Mp20NZfV0VFjzhbfNFexDfO2QfKJhJbATh9YiJ5onzsT
-cbMDvw+fQNUmooGN1gOW4OCiRvEPcYf8Z/TdrAkBXuRDaCYLiqJBPX1PCFTumEr3
-8Lxp3+k4zN9Wpkt17sqmgJxalvUHqNFOuL+1II2APrzMSZHB6T5fNtxEzMXUGXHx
-LzNGWjnnUKovRddHUyjFZu+rr6B/MUELKSYf9WH7lPI6osLnyjQf6vtczDdyZmlP
-PmCOMN9d1QJAKEMe6RJZvyfO22d11w==
-=kmsA
------END PGP SIGNATURE-----
-
---vslstwmibba5nymi--

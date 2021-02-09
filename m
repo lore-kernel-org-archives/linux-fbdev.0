@@ -2,235 +2,254 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 686ADC4332E
-	for <linux-fbdev@archiver.kernel.org>; Mon,  8 Feb 2021 22:39:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9D56C433E0
+	for <linux-fbdev@archiver.kernel.org>; Tue,  9 Feb 2021 21:55:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4E03B64EB1
-	for <linux-fbdev@archiver.kernel.org>; Mon,  8 Feb 2021 22:39:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 94EEE64ED2
+	for <linux-fbdev@archiver.kernel.org>; Tue,  9 Feb 2021 21:55:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230132AbhBHWjE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 8 Feb 2021 17:39:04 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:39696 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229894AbhBHWjC (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 8 Feb 2021 17:39:02 -0500
-From:   Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1612823899;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=BvatIb+SuoAuL1N1yaJF6Fqf9sEJaUMKCM1rr5oWM0c=;
-        b=HQ8/+BYas8HMUkPF27kztYqrFhdPsFIp69WWxyy/EEF0Ir4mMx5TNUNl8G8wjx968H0tWA
-        fijZ9pRp9yy5V9jXhZWQWreUCfT4VvtdxXJocSAJAfbcnTEnXMbC9JijwK3xwNArT9da0b
-        i2UhsAjxTMq5BlTbjlWVLsDU1x9n3FZRGzADq8hV1tP/mBQz4OmBfad+vXFf9kj1rgEbE8
-        a8qdJntipwhJnbJEeljHzFMKkgJyINRhS4I8h5SIrUv8Qf6tIC/OEZMZn49zJVbro20krO
-        QQNdgJn/wCKA3HDM9WtcFZWi60bIhfiG/B88mUBeQ3fJ50/YUEjVUQ8gyfmTrw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1612823899;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=BvatIb+SuoAuL1N1yaJF6Fqf9sEJaUMKCM1rr5oWM0c=;
-        b=3qtO6vvCZk8yVT+UG/xPNQ/5g6dZnHinwVdniGk7VN9PvM6WrZAx5BTDtKsCc/h3rdpMLb
-        QvvC58VbkmR+NmCA==
-To:     linux-fbdev@vger.kernel.org
-Cc:     dri-devel@lists.freedesktop.org,
-        Russell King <linux@armlinux.org.uk>,
-        linux-omap@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Ahmed S. Darwish" <a.darwish@linutronix.de>,
-        Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: [PATCH 1/3] video: omap: Remove in_interrupt() usage.
-Date:   Mon,  8 Feb 2021 23:38:08 +0100
-Message-Id: <20210208223810.388502-2-bigeasy@linutronix.de>
-In-Reply-To: <20210208223810.388502-1-bigeasy@linutronix.de>
-References: <20210208223810.388502-1-bigeasy@linutronix.de>
+        id S233378AbhBIVyv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 9 Feb 2021 16:54:51 -0500
+Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:48669 "EHLO
+        mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S234391AbhBIVOm (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 9 Feb 2021 16:14:42 -0500
+X-IronPort-AV: E=Sophos;i="5.81,166,1610406000"; 
+   d="scan'208";a="492125976"
+Received: from palace.lip6.fr ([132.227.105.202])
+  by mail2-relais-roc.national.inria.fr with ESMTP/TLS/DHE-RSA-AES256-SHA; 09 Feb 2021 22:13:29 +0100
+From:   Julia Lawall <Julia.Lawall@inria.fr>
+To:     Fabio Estevam <festevam@gmail.com>
+Cc:     kernel-janitors@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        Michal Simek <michal.simek@xilinx.com>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>,
+        NXP Linux Team <linux-imx@nxp.com>
+Subject: [PATCH] video: use getter/setter functions
+Date:   Tue,  9 Feb 2021 22:13:25 +0100
+Message-Id: <20210209211325.1261842-1-Julia.Lawall@inria.fr>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: "Ahmed S. Darwish" <a.darwish@linutronix.de>
+Use getter and setter functions, for platform_device structures and a
+spi_device structure.
 
-alloc_req() uses in_interrupt() to detect if it is safe to use down().
+Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
 
-The usage of in_interrupt() in drivers is phased out and Linus clearly
-requested that code which changes behaviour depending on context should
-either be separated or the context be conveyed in an argument passed by the
-caller, which usually knows the context.
-
-The semaphore is used as a counting semaphore, initialized with the
-number of slots in the request pool minus IRQ_REQ_POOL_SIZE - which are
-reserved for the in_interrupt() user to ensure that a request is always
-available. The preemptible user will block on the semphore waiting for a
-request to become available in case there are no requests available.
-
-Replace in_interrupt() with a `can_sleep' argument to indicate if it is
-safe to block on the sempahore.
-
-Cc: linux-omap@vger.kernel.org
-Signed-off-by: Ahmed S. Darwish <a.darwish@linutronix.de>
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- drivers/video/fbdev/omap/hwa742.c | 42 ++++++++++++++++++++-----------
- 1 file changed, 28 insertions(+), 14 deletions(-)
+ drivers/video/backlight/qcom-wled.c                                  |    2 +-
+ drivers/video/fbdev/amifb.c                                          |    4 ++--
+ drivers/video/fbdev/da8xx-fb.c                                       |    4 ++--
+ drivers/video/fbdev/imxfb.c                                          |    2 +-
+ drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c |    6 +++---
+ drivers/video/fbdev/omap2/omapfb/dss/dpi.c                           |    4 ++--
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c                           |    4 ++--
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c                         |    2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c                         |    2 +-
+ drivers/video/fbdev/xilinxfb.c                                       |    2 +-
+ 10 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap/hwa742.c b/drivers/video/fbdev/omap/h=
-wa742.c
-index cfe63932f8255..b191bef22d984 100644
---- a/drivers/video/fbdev/omap/hwa742.c
-+++ b/drivers/video/fbdev/omap/hwa742.c
-@@ -100,6 +100,14 @@ struct {
- 	struct hwa742_request	req_pool[REQ_POOL_SIZE];
- 	struct list_head	pending_req_list;
- 	struct list_head	free_req_list;
-+
-+	/*
-+	 * @req_lock: protect request slots pool and its tracking lists
-+	 * @req_sema: counter; slot allocators from task contexts must
-+	 *            push it down before acquiring a slot. This
-+	 *            guarantees that atomic contexts will always have
-+	 *            a minimum of IRQ_REQ_POOL_SIZE slots available.
-+	 */
- 	struct semaphore	req_sema;
- 	spinlock_t		req_lock;
-=20
-@@ -224,13 +232,13 @@ static void disable_tearsync(void)
- 	hwa742_write_reg(HWA742_NDP_CTRL, b);
- }
-=20
--static inline struct hwa742_request *alloc_req(void)
-+static inline struct hwa742_request *alloc_req(bool can_sleep)
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 3bc7800eb0a9..091f07e7c145 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -1692,7 +1692,7 @@ static int wled_probe(struct platform_device *pdev)
+ 
+ static int wled_remove(struct platform_device *pdev)
  {
- 	unsigned long flags;
- 	struct hwa742_request *req;
- 	int req_flags =3D 0;
-=20
--	if (!in_interrupt())
-+	if (can_sleep)
- 		down(&hwa742.req_sema);
- 	else
- 		req_flags =3D REQ_FROM_IRQ_POOL;
-@@ -399,8 +407,8 @@ static void send_frame_complete(void *data)
- 	hwa742.int_ctrl->enable_plane(OMAPFB_PLANE_GFX, 0);
+-	struct wled *wled = dev_get_drvdata(&pdev->dev);
++	struct wled *wled = platform_get_drvdata(pdev);
+ 
+ 	mutex_destroy(&wled->lock);
+ 	cancel_delayed_work_sync(&wled->ovp_work);
+diff --git a/drivers/video/fbdev/xilinxfb.c b/drivers/video/fbdev/xilinxfb.c
+index ca4ff658cad0..ffbf900648d9 100644
+--- a/drivers/video/fbdev/xilinxfb.c
++++ b/drivers/video/fbdev/xilinxfb.c
+@@ -472,7 +472,7 @@ static int xilinxfb_of_probe(struct platform_device *pdev)
+ 	if (of_find_property(pdev->dev.of_node, "rotate-display", NULL))
+ 		pdata.rotate_screen = 1;
+ 
+-	dev_set_drvdata(&pdev->dev, drvdata);
++	platform_set_drvdata(pdev, drvdata);
+ 	return xilinxfb_assign(pdev, drvdata, &pdata);
  }
-=20
--#define ADD_PREQ(_x, _y, _w, _h) do {		\
--	req =3D alloc_req();			\
-+#define ADD_PREQ(_x, _y, _w, _h, can_sleep) do {\
-+	req =3D alloc_req(can_sleep);		\
- 	req->handler	=3D send_frame_handler;	\
- 	req->complete	=3D send_frame_complete;	\
- 	req->par.update.x =3D _x;			\
-@@ -413,7 +421,8 @@ static void send_frame_complete(void *data)
- } while(0)
-=20
- static void create_req_list(struct omapfb_update_window *win,
--			    struct list_head *req_head)
-+			    struct list_head *req_head,
-+			    bool can_sleep)
+ 
+diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+index 884b16efa7e8..7f8debd2da06 100644
+--- a/drivers/video/fbdev/imxfb.c
++++ b/drivers/video/fbdev/imxfb.c
+@@ -657,7 +657,7 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+ static int imxfb_init_fbinfo(struct platform_device *pdev)
  {
- 	struct hwa742_request *req;
- 	int x =3D win->x;
-@@ -427,7 +436,7 @@ static void create_req_list(struct omapfb_update_window=
- *win,
- 	color_mode =3D win->format & OMAPFB_FORMAT_MASK;
-=20
- 	if (x & 1) {
--		ADD_PREQ(x, y, 1, height);
-+		ADD_PREQ(x, y, 1, height, can_sleep);
- 		width--;
- 		x++;
- 		flags &=3D ~OMAPFB_FORMAT_FLAG_TEARSYNC;
-@@ -439,19 +448,19 @@ static void create_req_list(struct omapfb_update_wind=
-ow *win,
-=20
- 		if (xspan * height * 2 > hwa742.max_transmit_size) {
- 			yspan =3D hwa742.max_transmit_size / (xspan * 2);
--			ADD_PREQ(x, ystart, xspan, yspan);
-+			ADD_PREQ(x, ystart, xspan, yspan, can_sleep);
- 			ystart +=3D yspan;
- 			yspan =3D height - yspan;
- 			flags &=3D ~OMAPFB_FORMAT_FLAG_TEARSYNC;
- 		}
-=20
--		ADD_PREQ(x, ystart, xspan, yspan);
-+		ADD_PREQ(x, ystart, xspan, yspan, can_sleep);
- 		x +=3D xspan;
- 		width -=3D xspan;
- 		flags &=3D ~OMAPFB_FORMAT_FLAG_TEARSYNC;
- 	}
- 	if (width)
--		ADD_PREQ(x, y, 1, height);
-+		ADD_PREQ(x, y, 1, height, can_sleep);
- }
-=20
- static void auto_update_complete(void *data)
-@@ -461,12 +470,12 @@ static void auto_update_complete(void *data)
- 			  jiffies + HWA742_AUTO_UPDATE_TIME);
- }
-=20
--static void hwa742_update_window_auto(struct timer_list *unused)
-+static void __hwa742_update_window_auto(bool can_sleep)
+ 	struct imx_fb_platform_data *pdata = dev_get_platdata(&pdev->dev);
+-	struct fb_info *info = dev_get_drvdata(&pdev->dev);
++	struct fb_info *info = platform_get_drvdata(pdev);
+ 	struct imxfb_info *fbi = info->par;
+ 	struct device_node *np;
+ 
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
+index e3d441ade241..2c03608addcd 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
+@@ -713,7 +713,7 @@ static int hdmi5_bind(struct device *dev, struct device *master, void *data)
+ 	int irq;
+ 
+ 	hdmi.pdev = pdev;
+-	dev_set_drvdata(&pdev->dev, &hdmi);
++	platform_set_drvdata(pdev, &hdmi);
+ 
+ 	mutex_init(&hdmi.lock);
+ 	spin_lock_init(&hdmi.audio_playing_lock);
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+index 496b43bdad21..800bd108e834 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+@@ -672,7 +672,7 @@ static int hdmi4_bind(struct device *dev, struct device *master, void *data)
+ 	int irq;
+ 
+ 	hdmi.pdev = pdev;
+-	dev_set_drvdata(&pdev->dev, &hdmi);
++	platform_set_drvdata(pdev, &hdmi);
+ 
+ 	mutex_init(&hdmi.lock);
+ 	spin_lock_init(&hdmi.audio_playing_lock);
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+index 58c7aa279ab1..daa313f14335 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+@@ -399,7 +399,7 @@ module_param(dsi_perf, bool, 0644);
+ 
+ static inline struct dsi_data *dsi_get_dsidrv_data(struct platform_device *dsidev)
  {
- 	LIST_HEAD(req_list);
- 	struct hwa742_request *last;
-=20
--	create_req_list(&hwa742.auto_update_window, &req_list);
-+	create_req_list(&hwa742.auto_update_window, &req_list, can_sleep);
- 	last =3D list_entry(req_list.prev, struct hwa742_request, entry);
-=20
- 	last->complete =3D auto_update_complete;
-@@ -475,6 +484,11 @@ static void hwa742_update_window_auto(struct timer_lis=
-t *unused)
- 	submit_req_list(&req_list);
+-	return dev_get_drvdata(&dsidev->dev);
++	return platform_get_drvdata(dsidev);
  }
-=20
-+static void hwa742_update_window_auto(struct timer_list *unused)
-+{
-+	__hwa742_update_window_auto(false);
-+}
-+
- int hwa742_update_window_async(struct fb_info *fbi,
- 				 struct omapfb_update_window *win,
- 				 void (*complete_callback)(void *arg),
-@@ -497,7 +511,7 @@ int hwa742_update_window_async(struct fb_info *fbi,
- 		goto out;
- 	}
-=20
--	create_req_list(win, &req_list);
-+	create_req_list(win, &req_list, true);
- 	last =3D list_entry(req_list.prev, struct hwa742_request, entry);
-=20
- 	last->complete =3D complete_callback;
-@@ -544,7 +558,7 @@ static void hwa742_sync(void)
- 	struct hwa742_request *req;
- 	struct completion comp;
-=20
--	req =3D alloc_req();
-+	req =3D alloc_req(true);
-=20
- 	req->handler =3D sync_handler;
- 	req->complete =3D NULL;
-@@ -599,7 +613,7 @@ static int hwa742_set_update_mode(enum omapfb_update_mo=
-de mode)
- 		omapfb_notify_clients(hwa742.fbdev, OMAPFB_EVENT_READY);
- 		break;
- 	case OMAPFB_AUTO_UPDATE:
--		hwa742_update_window_auto(0);
-+		__hwa742_update_window_auto(true);
- 		break;
- 	case OMAPFB_UPDATE_DISABLED:
- 		break;
---=20
-2.30.0
+ 
+ static inline struct platform_device *dsi_get_dsidev_from_dssdev(struct omap_dss_device *dssdev)
+@@ -5266,7 +5266,7 @@ static int dsi_bind(struct device *dev, struct device *master, void *data)
+ 		return -ENOMEM;
+ 
+ 	dsi->pdev = dsidev;
+-	dev_set_drvdata(&dsidev->dev, dsi);
++	platform_set_drvdata(dsidev, dsi);
+ 
+ 	spin_lock_init(&dsi->irq_lock);
+ 	spin_lock_init(&dsi->errors_lock);
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dpi.c b/drivers/video/fbdev/omap2/omapfb/dss/dpi.c
+index e2e7fe6f89ee..99ce6e955a46 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dpi.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dpi.c
+@@ -55,7 +55,7 @@ static struct dpi_data *dpi_get_data_from_dssdev(struct omap_dss_device *dssdev)
+ /* only used in non-DT mode */
+ static struct dpi_data *dpi_get_data_from_pdev(struct platform_device *pdev)
+ {
+-	return dev_get_drvdata(&pdev->dev);
++	return platform_get_drvdata(pdev);
+ }
+ 
+ static struct dss_pll *dpi_get_pll(enum omap_channel channel)
+@@ -784,7 +784,7 @@ static int dpi_bind(struct device *dev, struct device *master, void *data)
+ 
+ 	dpi->pdev = pdev;
+ 
+-	dev_set_drvdata(&pdev->dev, dpi);
++	platform_set_drvdata(pdev, dpi);
+ 
+ 	mutex_init(&dpi->lock);
+ 
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
+index 0f93a260e432..1bec7a4422e8 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
+@@ -239,7 +239,7 @@ static struct omap_dss_driver lb035q02_ops = {
+ static int lb035q02_probe_of(struct spi_device *spi)
+ {
+ 	struct device_node *node = spi->dev.of_node;
+-	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
++	struct panel_drv_data *ddata = spi_get_drvdata(spi);
+ 	struct omap_dss_device *in;
+ 	struct gpio_desc *gpio;
+ 
+@@ -277,7 +277,7 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
+ 	if (ddata == NULL)
+ 		return -ENOMEM;
+ 
+-	dev_set_drvdata(&spi->dev, ddata);
++	spi_set_drvdata(spi, ddata);
+ 
+ 	ddata->spi = spi;
+ 
+@@ -318,7 +318,7 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
+ 
+ static int lb035q02_panel_spi_remove(struct spi_device *spi)
+ {
+-	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
++	struct panel_drv_data *ddata = spi_get_drvdata(spi);
+ 	struct omap_dss_device *dssdev = &ddata->dssdev;
+ 	struct omap_dss_device *in = ddata->in;
+ 
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index e38c0e3f9c61..005ac3c17aa1 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -1066,7 +1066,7 @@ static void lcd_da8xx_cpufreq_deregister(struct da8xx_fb_par *par)
+ 
+ static int fb_remove(struct platform_device *dev)
+ {
+-	struct fb_info *info = dev_get_drvdata(&dev->dev);
++	struct fb_info *info = platform_get_drvdata(dev);
+ 	struct da8xx_fb_par *par = info->par;
+ 	int ret;
+ 
+@@ -1482,7 +1482,7 @@ static int fb_probe(struct platform_device *device)
+ 	da8xx_fb_var.activate = FB_ACTIVATE_FORCE;
+ 	fb_set_var(da8xx_fb_info, &da8xx_fb_var);
+ 
+-	dev_set_drvdata(&device->dev, da8xx_fb_info);
++	platform_set_drvdata(device, da8xx_fb_info);
+ 
+ 	/* initialize the vsync wait queue */
+ 	init_waitqueue_head(&par->vsync_wait);
+diff --git a/drivers/video/fbdev/amifb.c b/drivers/video/fbdev/amifb.c
+index 226682550b4b..6e07a97bbd31 100644
+--- a/drivers/video/fbdev/amifb.c
++++ b/drivers/video/fbdev/amifb.c
+@@ -3736,7 +3736,7 @@ static int __init amifb_probe(struct platform_device *pdev)
+ 	if (err)
+ 		goto free_irq;
+ 
+-	dev_set_drvdata(&pdev->dev, info);
++	platform_set_drvdata(pdev, info);
+ 
+ 	err = register_framebuffer(info);
+ 	if (err)
+@@ -3764,7 +3764,7 @@ static int __init amifb_probe(struct platform_device *pdev)
+ 
+ static int __exit amifb_remove(struct platform_device *pdev)
+ {
+-	struct fb_info *info = dev_get_drvdata(&pdev->dev);
++	struct fb_info *info = platform_get_drvdata(pdev);
+ 
+ 	unregister_framebuffer(info);
+ 	fb_dealloc_cmap(&info->cmap);
 

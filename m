@@ -2,36 +2,70 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9D56C433E0
-	for <linux-fbdev@archiver.kernel.org>; Tue,  9 Feb 2021 21:55:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30515C433E6
+	for <linux-fbdev@archiver.kernel.org>; Wed, 10 Feb 2021 08:24:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 94EEE64ED2
-	for <linux-fbdev@archiver.kernel.org>; Tue,  9 Feb 2021 21:55:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D11F660231
+	for <linux-fbdev@archiver.kernel.org>; Wed, 10 Feb 2021 08:24:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233378AbhBIVyv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 9 Feb 2021 16:54:51 -0500
-Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:48669 "EHLO
-        mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S234391AbhBIVOm (ORCPT
+        id S233745AbhBJIYg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 10 Feb 2021 03:24:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47730 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232776AbhBJIYZ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 9 Feb 2021 16:14:42 -0500
-X-IronPort-AV: E=Sophos;i="5.81,166,1610406000"; 
-   d="scan'208";a="492125976"
-Received: from palace.lip6.fr ([132.227.105.202])
-  by mail2-relais-roc.national.inria.fr with ESMTP/TLS/DHE-RSA-AES256-SHA; 09 Feb 2021 22:13:29 +0100
-From:   Julia Lawall <Julia.Lawall@inria.fr>
-To:     Fabio Estevam <festevam@gmail.com>
-Cc:     kernel-janitors@vger.kernel.org, linux-omap@vger.kernel.org,
+        Wed, 10 Feb 2021 03:24:25 -0500
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4308CC061574
+        for <linux-fbdev@vger.kernel.org>; Wed, 10 Feb 2021 00:23:45 -0800 (PST)
+Received: by mail-wr1-x42f.google.com with SMTP id b3so1451444wrj.5
+        for <linux-fbdev@vger.kernel.org>; Wed, 10 Feb 2021 00:23:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=MJzRoK5AHHgr8V25vpyceNTWmZxiFyKsyjhqQm8Vxxc=;
+        b=d/b3ponHrtEaGh9+nR4CHVGjqOHtnpraE5raOOOMutWd3Y/vW/uw1i/PmwjfcCAOlI
+         hSBPogoT7cAULj0g3PmoKbO+SoDAWMPSOECHnT1Hf4DW/HG3NgCZs5Oz4yycpbsGpbXz
+         6aDc3GNQtnk1ZzXHSwQCVv4LOVj0FL2tcZrnkEKPH22CeUw6azGEwO6gqPhOeo/UTzC8
+         CAGMYMu0CibvYCRJgy2fuPg3TqVZbhGt5gHufNtUof0Gw0FDR3KgWX5KWtTvRU2bJCB3
+         6J8LXoac3H1R5/6ZWZ8wIHim0sOUZG312tHezmcG2vA/YZDFQNq2NLrC7BlZj/TPwF8d
+         LG7A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=MJzRoK5AHHgr8V25vpyceNTWmZxiFyKsyjhqQm8Vxxc=;
+        b=EWT2cneZKhu0zxy1yHoKyYbqP9LV2pp6GRrP8eOWpWVXmreSaE59HXmkmw8O49MYYs
+         WejmXCoPNTAni/KJSltMFRZ4PRCR2CHWNBMPBAqOBdZkZeo/Gxb0K/7M9LJca/apMK57
+         wnEL0TQ/wUKZoIJ+okwci2ofGx/0g5Ilvk+MS23eq1m6ImTFH/iSJsjxXPB28+TVa6is
+         hxAsIp1Lz24/tzZ9WOAL4UUXgRdj/S/0ejntPpGYk+kTT9lL8yofIGsXaAypn5Kvmy2w
+         SZ6VbScOw7O8lOFcFEHYGewn4ufytiR5NQGtyyocs3rX1a6JQ8cbuKsRHRSwGqDSZ6oZ
+         TCMQ==
+X-Gm-Message-State: AOAM530igzwG1afWvhnvDUHxb3Y2tu6zVzapiZ9U63fQYngxCEpxdq3m
+        v4e6ly4+Wt2WmWbQpqlY2T70JQ==
+X-Google-Smtp-Source: ABdhPJzpmLKGtf/B7RhbJlQwrCAP0Mb8Tyioqci54O7y0v57o4U82PROFirmSWr5+lJk79X2A0kouQ==
+X-Received: by 2002:a05:6000:2cf:: with SMTP id o15mr2236419wry.184.1612945423966;
+        Wed, 10 Feb 2021 00:23:43 -0800 (PST)
+Received: from dell ([91.110.221.237])
+        by smtp.gmail.com with ESMTPSA id h9sm1850897wrc.94.2021.02.10.00.23.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 10 Feb 2021 00:23:43 -0800 (PST)
+Date:   Wed, 10 Feb 2021 08:23:41 +0000
+From:   Lee Jones <lee.jones@linaro.org>
+To:     Julia Lawall <Julia.Lawall@inria.fr>
+Cc:     Fabio Estevam <festevam@gmail.com>,
+        kernel-janitors@vger.kernel.org, linux-omap@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
         Michal Simek <michal.simek@xilinx.com>,
         Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>,
         Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>,
         linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -40,216 +74,65 @@ Cc:     kernel-janitors@vger.kernel.org, linux-omap@vger.kernel.org,
         Pengutronix Kernel Team <kernel@pengutronix.de>,
         Shawn Guo <shawnguo@kernel.org>,
         NXP Linux Team <linux-imx@nxp.com>
-Subject: [PATCH] video: use getter/setter functions
-Date:   Tue,  9 Feb 2021 22:13:25 +0100
-Message-Id: <20210209211325.1261842-1-Julia.Lawall@inria.fr>
-X-Mailer: git-send-email 2.25.1
+Subject: Re: [PATCH] video: use getter/setter functions
+Message-ID: <20210210082341.GH220368@dell>
+References: <20210209211325.1261842-1-Julia.Lawall@inria.fr>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210209211325.1261842-1-Julia.Lawall@inria.fr>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use getter and setter functions, for platform_device structures and a
-spi_device structure.
+On Tue, 09 Feb 2021, Julia Lawall wrote:
 
-Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+> Use getter and setter functions, for platform_device structures and a
+> spi_device structure.
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+> 
+> ---
+>  drivers/video/backlight/qcom-wled.c                                  |    2 +-
 
----
- drivers/video/backlight/qcom-wled.c                                  |    2 +-
- drivers/video/fbdev/amifb.c                                          |    4 ++--
- drivers/video/fbdev/da8xx-fb.c                                       |    4 ++--
- drivers/video/fbdev/imxfb.c                                          |    2 +-
- drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c |    6 +++---
- drivers/video/fbdev/omap2/omapfb/dss/dpi.c                           |    4 ++--
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c                           |    4 ++--
- drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c                         |    2 +-
- drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c                         |    2 +-
- drivers/video/fbdev/xilinxfb.c                                       |    2 +-
- 10 files changed, 16 insertions(+), 16 deletions(-)
+This patch is fine.
 
-diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-index 3bc7800eb0a9..091f07e7c145 100644
---- a/drivers/video/backlight/qcom-wled.c
-+++ b/drivers/video/backlight/qcom-wled.c
-@@ -1692,7 +1692,7 @@ static int wled_probe(struct platform_device *pdev)
- 
- static int wled_remove(struct platform_device *pdev)
- {
--	struct wled *wled = dev_get_drvdata(&pdev->dev);
-+	struct wled *wled = platform_get_drvdata(pdev);
- 
- 	mutex_destroy(&wled->lock);
- 	cancel_delayed_work_sync(&wled->ovp_work);
-diff --git a/drivers/video/fbdev/xilinxfb.c b/drivers/video/fbdev/xilinxfb.c
-index ca4ff658cad0..ffbf900648d9 100644
---- a/drivers/video/fbdev/xilinxfb.c
-+++ b/drivers/video/fbdev/xilinxfb.c
-@@ -472,7 +472,7 @@ static int xilinxfb_of_probe(struct platform_device *pdev)
- 	if (of_find_property(pdev->dev.of_node, "rotate-display", NULL))
- 		pdata.rotate_screen = 1;
- 
--	dev_set_drvdata(&pdev->dev, drvdata);
-+	platform_set_drvdata(pdev, drvdata);
- 	return xilinxfb_assign(pdev, drvdata, &pdata);
- }
- 
-diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-index 884b16efa7e8..7f8debd2da06 100644
---- a/drivers/video/fbdev/imxfb.c
-+++ b/drivers/video/fbdev/imxfb.c
-@@ -657,7 +657,7 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
- static int imxfb_init_fbinfo(struct platform_device *pdev)
- {
- 	struct imx_fb_platform_data *pdata = dev_get_platdata(&pdev->dev);
--	struct fb_info *info = dev_get_drvdata(&pdev->dev);
-+	struct fb_info *info = platform_get_drvdata(pdev);
- 	struct imxfb_info *fbi = info->par;
- 	struct device_node *np;
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-index e3d441ade241..2c03608addcd 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
-@@ -713,7 +713,7 @@ static int hdmi5_bind(struct device *dev, struct device *master, void *data)
- 	int irq;
- 
- 	hdmi.pdev = pdev;
--	dev_set_drvdata(&pdev->dev, &hdmi);
-+	platform_set_drvdata(pdev, &hdmi);
- 
- 	mutex_init(&hdmi.lock);
- 	spin_lock_init(&hdmi.audio_playing_lock);
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-index 496b43bdad21..800bd108e834 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
-@@ -672,7 +672,7 @@ static int hdmi4_bind(struct device *dev, struct device *master, void *data)
- 	int irq;
- 
- 	hdmi.pdev = pdev;
--	dev_set_drvdata(&pdev->dev, &hdmi);
-+	platform_set_drvdata(pdev, &hdmi);
- 
- 	mutex_init(&hdmi.lock);
- 	spin_lock_init(&hdmi.audio_playing_lock);
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-index 58c7aa279ab1..daa313f14335 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-@@ -399,7 +399,7 @@ module_param(dsi_perf, bool, 0644);
- 
- static inline struct dsi_data *dsi_get_dsidrv_data(struct platform_device *dsidev)
- {
--	return dev_get_drvdata(&dsidev->dev);
-+	return platform_get_drvdata(dsidev);
- }
- 
- static inline struct platform_device *dsi_get_dsidev_from_dssdev(struct omap_dss_device *dssdev)
-@@ -5266,7 +5266,7 @@ static int dsi_bind(struct device *dev, struct device *master, void *data)
- 		return -ENOMEM;
- 
- 	dsi->pdev = dsidev;
--	dev_set_drvdata(&dsidev->dev, dsi);
-+	platform_set_drvdata(dsidev, dsi);
- 
- 	spin_lock_init(&dsi->irq_lock);
- 	spin_lock_init(&dsi->errors_lock);
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dpi.c b/drivers/video/fbdev/omap2/omapfb/dss/dpi.c
-index e2e7fe6f89ee..99ce6e955a46 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dpi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dpi.c
-@@ -55,7 +55,7 @@ static struct dpi_data *dpi_get_data_from_dssdev(struct omap_dss_device *dssdev)
- /* only used in non-DT mode */
- static struct dpi_data *dpi_get_data_from_pdev(struct platform_device *pdev)
- {
--	return dev_get_drvdata(&pdev->dev);
-+	return platform_get_drvdata(pdev);
- }
- 
- static struct dss_pll *dpi_get_pll(enum omap_channel channel)
-@@ -784,7 +784,7 @@ static int dpi_bind(struct device *dev, struct device *master, void *data)
- 
- 	dpi->pdev = pdev;
- 
--	dev_set_drvdata(&pdev->dev, dpi);
-+	platform_set_drvdata(pdev, dpi);
- 
- 	mutex_init(&dpi->lock);
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
-index 0f93a260e432..1bec7a4422e8 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
-@@ -239,7 +239,7 @@ static struct omap_dss_driver lb035q02_ops = {
- static int lb035q02_probe_of(struct spi_device *spi)
- {
- 	struct device_node *node = spi->dev.of_node;
--	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
-+	struct panel_drv_data *ddata = spi_get_drvdata(spi);
- 	struct omap_dss_device *in;
- 	struct gpio_desc *gpio;
- 
-@@ -277,7 +277,7 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
- 	if (ddata == NULL)
- 		return -ENOMEM;
- 
--	dev_set_drvdata(&spi->dev, ddata);
-+	spi_set_drvdata(spi, ddata);
- 
- 	ddata->spi = spi;
- 
-@@ -318,7 +318,7 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
- 
- static int lb035q02_panel_spi_remove(struct spi_device *spi)
- {
--	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
-+	struct panel_drv_data *ddata = spi_get_drvdata(spi);
- 	struct omap_dss_device *dssdev = &ddata->dssdev;
- 	struct omap_dss_device *in = ddata->in;
- 
-diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
-index e38c0e3f9c61..005ac3c17aa1 100644
---- a/drivers/video/fbdev/da8xx-fb.c
-+++ b/drivers/video/fbdev/da8xx-fb.c
-@@ -1066,7 +1066,7 @@ static void lcd_da8xx_cpufreq_deregister(struct da8xx_fb_par *par)
- 
- static int fb_remove(struct platform_device *dev)
- {
--	struct fb_info *info = dev_get_drvdata(&dev->dev);
-+	struct fb_info *info = platform_get_drvdata(dev);
- 	struct da8xx_fb_par *par = info->par;
- 	int ret;
- 
-@@ -1482,7 +1482,7 @@ static int fb_probe(struct platform_device *device)
- 	da8xx_fb_var.activate = FB_ACTIVATE_FORCE;
- 	fb_set_var(da8xx_fb_info, &da8xx_fb_var);
- 
--	dev_set_drvdata(&device->dev, da8xx_fb_info);
-+	platform_set_drvdata(device, da8xx_fb_info);
- 
- 	/* initialize the vsync wait queue */
- 	init_waitqueue_head(&par->vsync_wait);
-diff --git a/drivers/video/fbdev/amifb.c b/drivers/video/fbdev/amifb.c
-index 226682550b4b..6e07a97bbd31 100644
---- a/drivers/video/fbdev/amifb.c
-+++ b/drivers/video/fbdev/amifb.c
-@@ -3736,7 +3736,7 @@ static int __init amifb_probe(struct platform_device *pdev)
- 	if (err)
- 		goto free_irq;
- 
--	dev_set_drvdata(&pdev->dev, info);
-+	platform_set_drvdata(pdev, info);
- 
- 	err = register_framebuffer(info);
- 	if (err)
-@@ -3764,7 +3764,7 @@ static int __init amifb_probe(struct platform_device *pdev)
- 
- static int __exit amifb_remove(struct platform_device *pdev)
- {
--	struct fb_info *info = dev_get_drvdata(&pdev->dev);
-+	struct fb_info *info = platform_get_drvdata(pdev);
- 
- 	unregister_framebuffer(info);
- 	fb_dealloc_cmap(&info->cmap);
+Could you please split it out and submit it separately though please.
 
+>  drivers/video/fbdev/amifb.c                                          |    4 ++--
+>  drivers/video/fbdev/da8xx-fb.c                                       |    4 ++--
+>  drivers/video/fbdev/imxfb.c                                          |    2 +-
+>  drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c |    6 +++---
+>  drivers/video/fbdev/omap2/omapfb/dss/dpi.c                           |    4 ++--
+>  drivers/video/fbdev/omap2/omapfb/dss/dsi.c                           |    4 ++--
+>  drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c                         |    2 +-
+>  drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c                         |    2 +-
+>  drivers/video/fbdev/xilinxfb.c                                       |    2 +-
+>  10 files changed, 16 insertions(+), 16 deletions(-)
+
+...]
+
+> diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+> index 3bc7800eb0a9..091f07e7c145 100644
+> --- a/drivers/video/backlight/qcom-wled.c
+> +++ b/drivers/video/backlight/qcom-wled.c
+> @@ -1692,7 +1692,7 @@ static int wled_probe(struct platform_device *pdev)
+>  
+>  static int wled_remove(struct platform_device *pdev)
+>  {
+> -	struct wled *wled = dev_get_drvdata(&pdev->dev);
+> +	struct wled *wled = platform_get_drvdata(pdev);
+>  
+>  	mutex_destroy(&wled->lock);
+>  	cancel_delayed_work_sync(&wled->ovp_work);
+
+For my own reference (apply this as-is to your sign-off block):
+
+  Acked-for-Backlight-by: Lee Jones <lee.jones@linaro.org>
+
+-- 
+Lee Jones [李琼斯]
+Senior Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog

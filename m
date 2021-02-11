@@ -2,64 +2,63 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A080C433E0
-	for <linux-fbdev@archiver.kernel.org>; Wed, 10 Feb 2021 16:13:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DC7EC433DB
+	for <linux-fbdev@archiver.kernel.org>; Thu, 11 Feb 2021 15:44:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 678F564E76
-	for <linux-fbdev@archiver.kernel.org>; Wed, 10 Feb 2021 16:13:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 74C4E64E92
+	for <linux-fbdev@archiver.kernel.org>; Thu, 11 Feb 2021 15:44:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232112AbhBJQNr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 10 Feb 2021 11:13:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35690 "EHLO
+        id S229714AbhBKPnw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 11 Feb 2021 10:43:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55300 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232009AbhBJQNo (ORCPT
+        with ESMTP id S231283AbhBKPk5 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 10 Feb 2021 11:13:44 -0500
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 373B6C06174A
-        for <linux-fbdev@vger.kernel.org>; Wed, 10 Feb 2021 08:13:03 -0800 (PST)
-Received: by mail-wm1-x32b.google.com with SMTP id y134so2303720wmd.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 10 Feb 2021 08:13:03 -0800 (PST)
+        Thu, 11 Feb 2021 10:40:57 -0500
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 472BDC06178C
+        for <linux-fbdev@vger.kernel.org>; Thu, 11 Feb 2021 07:40:17 -0800 (PST)
+Received: by mail-wm1-x334.google.com with SMTP id y134so6200286wmd.3
+        for <linux-fbdev@vger.kernel.org>; Thu, 11 Feb 2021 07:40:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=9EqkICeAqFea9hutcJE8LTJk6fkCLGfHmOvQQmMvAJM=;
-        b=Hh49I+GceO/gmkekotuymhn3rjlU3YIypVisjoLOygTP1mgYBpzmbiY1B+Z5kDHv1H
-         X+1p+H/pZbOPlldO65mL33J/nmB6ms47MC+u60d9S34oT4MiRfwDpZZWh/qETmt/Om/y
-         olUsvQGKt/zp/HREvWDezf3EVhY9WQSBDq//vrYo+RtlXuw1teA/flfEzF4rT2UCYUo6
-         WEyPCuv9rP7JAXB7hd4Zk5CXQfiPo2bj7YDV4C/V4SfKbO6gG7O8nWSxiVamK32i6r03
-         Vi1DcAM4Whf1JnAWKjVWawTmQnF73oyA7TPneeQ1mIDpdIwY/evQfcTuEdgRAkLg3tZr
-         f/6A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:subject:message-id:references
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
          :mime-version:content-disposition:content-transfer-encoding
          :in-reply-to;
-        bh=9EqkICeAqFea9hutcJE8LTJk6fkCLGfHmOvQQmMvAJM=;
-        b=i7fO/JwM+krwQwRemJeAtAd79LDhd34Ngc82UcBbCje2XlCOALZLJHkmIBvG/Npe5B
-         Jm9tasqsROFSG2z3Qsp8D+0hASzMcpt+EIuo/vhGmaXpa3y0JOLgH2adcVT2WDauNtlQ
-         bHNUgwiw6bEMlDSLV0KiPFsqexlA0HE4qhoLMyafgouJbqfncrQW6SYsLVMAISxunE/O
-         AjJ17Kn58LcZq3kbipFBtnROaOqbbGEZlwmdLheGAKtImiAHosKBYDEDMnm0rSPCDWny
-         iIORRTyIbjpXC1TCIuCz45g1CQ3H9XdmkUeKQn/X+as5KY1D32oy/49PHkqU9k97dKXI
-         l5hA==
-X-Gm-Message-State: AOAM531R93dgGNqAC9qgrxJT3iqwqdOscpnMiQZNmEba2csMdE7BZ0iF
-        EPLGf/TaXINkGDojjfz8uxZDMg==
-X-Google-Smtp-Source: ABdhPJxwjN9tnOjYE29ii/KagRZk+egL7JyD+GF9hT3oJWkCY7DOqROK+nqMjm3eItHTGs95G9LYOA==
-X-Received: by 2002:a05:600c:216:: with SMTP id 22mr3432179wmi.111.1612973581930;
-        Wed, 10 Feb 2021 08:13:01 -0800 (PST)
-Received: from x1 ([91.110.221.237])
-        by smtp.gmail.com with ESMTPSA id x9sm3275333wmb.14.2021.02.10.08.12.59
+        bh=BQASuo84wfslsSEivWFaPBGKyJ+9IhWQICA1bAqw9pc=;
+        b=G/UnfUhjvghbtT5LL/ccChqvxR3VGoeJDY0GnhgqREnzARjQQ+nIuF6vtPkRJ67lFU
+         IOrCaSzzOWXuAcKHDhheox4KAPQXkPZ0VlDd70F+0DJpVVTh0rBkQDVTuSHeQ06xKPSb
+         c1cmmAz6bP+t0knwzzSCM+lT37KdOsOWUDOEw=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :content-transfer-encoding:in-reply-to;
+        bh=BQASuo84wfslsSEivWFaPBGKyJ+9IhWQICA1bAqw9pc=;
+        b=E79+Mo+vcxdGPdw9EOlw9ljxubxgJTDR7hJMOZtJWz2A1OddFNznIwVTWYYYSPU55k
+         b65tT6wiZuNdI43MLcrbe9WwWHMFcrLOYpz3WWcFO3yBnyfPgCy7+tnBD5LbnHj8QzED
+         H0YUIQnIk//t237CJwjYYJ8FRQExXclez41WZvE0OSZmcV2MEsv0EzaghwvxjvSHqyXR
+         livkynkRBZy5eskvpltV8Cj0vRy7A7E4yng+7uA+Tm98OFlN2fcPcculvcRa2xv520gN
+         FnVpcgx77XEFr1KAvKvWyvuLtCrRxV0f26+CD1x0xCcW1vdwbv4GukyCQz2bRRpP7PIF
+         jP4A==
+X-Gm-Message-State: AOAM530JPpEtsjVxsX+7+qCj9nz/v1huQF2T+sdWs1OekL40fBaYes5Z
+        mYHSgDwOJwixuG3FUkZ25kY6eg==
+X-Google-Smtp-Source: ABdhPJyEz8KdbutPUEkFdfjjXqFBnVRyCrjCSeZ53ICqWwBwbN6UTPF9mpSKyi9zn1yrCN7w9m+Wqg==
+X-Received: by 2002:a1c:113:: with SMTP id 19mr5676819wmb.7.1613058015846;
+        Thu, 11 Feb 2021 07:40:15 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id t2sm5773738wru.53.2021.02.11.07.40.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Feb 2021 08:13:00 -0800 (PST)
-Date:   Wed, 10 Feb 2021 16:12:58 +0000
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Julia Lawall <Julia.Lawall@inria.fr>,
+        Thu, 11 Feb 2021 07:40:15 -0800 (PST)
+Date:   Thu, 11 Feb 2021 16:40:13 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     Julia Lawall <Julia.Lawall@inria.fr>,
         Daniel Thompson <daniel.thompson@linaro.org>,
         linux-kernel@vger.kernel.org,
         Pengutronix Kernel Team <kernel@pengutronix.de>,
@@ -75,78 +74,111 @@ To:     Julia Lawall <Julia.Lawall@inria.fr>,
         Shawn Guo <shawnguo@kernel.org>, linux-omap@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
 Subject: Re: [PATCH] video: use getter/setter functions
-Message-ID: <20210210161258.GA124276@x1>
+Message-ID: <YCVP3ZKBsJUV0m8G@phenom.ffwll.local>
+Mail-Followup-To: Lee Jones <lee.jones@linaro.org>,
+        Julia Lawall <Julia.Lawall@inria.fr>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        linux-kernel@vger.kernel.org,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        kernel-janitors@vger.kernel.org,
+        Michal Simek <michal.simek@xilinx.com>,
+        dri-devel@lists.freedesktop.org,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Andy Gross <agross@kernel.org>, NXP Linux Team <linux-imx@nxp.com>,
+        linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        Shawn Guo <shawnguo@kernel.org>, linux-omap@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
 References: <20210209211325.1261842-1-Julia.Lawall@inria.fr>
  <20210210082341.GH220368@dell>
  <YCPbxSHWMipTz+mB@phenom.ffwll.local>
+ <20210210161258.GA124276@x1>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <YCPbxSHWMipTz+mB@phenom.ffwll.local>
+In-Reply-To: <20210210161258.GA124276@x1>
+X-Operating-System: Linux phenom 5.7.0-1-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 10 Feb 2021, Daniel Vetter wrote:
-
-> On Wed, Feb 10, 2021 at 08:23:41AM +0000, Lee Jones wrote:
-> > On Tue, 09 Feb 2021, Julia Lawall wrote:
-> > 
-> > > Use getter and setter functions, for platform_device structures and a
-> > > spi_device structure.
+On Wed, Feb 10, 2021 at 04:12:58PM +0000, Lee Jones wrote:
+> On Wed, 10 Feb 2021, Daniel Vetter wrote:
+> 
+> > On Wed, Feb 10, 2021 at 08:23:41AM +0000, Lee Jones wrote:
+> > > On Tue, 09 Feb 2021, Julia Lawall wrote:
 > > > 
-> > > Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+> > > > Use getter and setter functions, for platform_device structures and a
+> > > > spi_device structure.
+> > > > 
+> > > > Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+> > > > 
+> > > > ---
+> > > >  drivers/video/backlight/qcom-wled.c                                  |    2 +-
 > > > 
-> > > ---
-> > >  drivers/video/backlight/qcom-wled.c                                  |    2 +-
+> > > This patch is fine.
+> > > 
+> > > Could you please split it out and submit it separately though please.
 > > 
-> > This patch is fine.
+> > Or just apply the entire patch through backlight tree, there's nothing
+> > going on in fbdev anyway I think.
 > > 
-> > Could you please split it out and submit it separately though please.
+> > Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 > 
-> Or just apply the entire patch through backlight tree, there's nothing
-> going on in fbdev anyway I think.
-> 
-> Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> I can do that.  Is that an fbdev Ack?
 
-I can do that.  Is that an fbdev Ack?
+Yeah defacto I'm somehow stuck with that as maintainer of last resort :-)
+Iirc we've got an S: orphaned entry pointing at drm.git trees.
+-Daniel
 
-> > >  drivers/video/fbdev/amifb.c                                          |    4 ++--
-> > >  drivers/video/fbdev/da8xx-fb.c                                       |    4 ++--
-> > >  drivers/video/fbdev/imxfb.c                                          |    2 +-
-> > >  drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c |    6 +++---
-> > >  drivers/video/fbdev/omap2/omapfb/dss/dpi.c                           |    4 ++--
-> > >  drivers/video/fbdev/omap2/omapfb/dss/dsi.c                           |    4 ++--
-> > >  drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c                         |    2 +-
-> > >  drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c                         |    2 +-
-> > >  drivers/video/fbdev/xilinxfb.c                                       |    2 +-
-> > >  10 files changed, 16 insertions(+), 16 deletions(-)
-> > 
-> > ...]
-> > 
-> > > diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-> > > index 3bc7800eb0a9..091f07e7c145 100644
-> > > --- a/drivers/video/backlight/qcom-wled.c
-> > > +++ b/drivers/video/backlight/qcom-wled.c
-> > > @@ -1692,7 +1692,7 @@ static int wled_probe(struct platform_device *pdev)
-> > >  
-> > >  static int wled_remove(struct platform_device *pdev)
-> > >  {
-> > > -	struct wled *wled = dev_get_drvdata(&pdev->dev);
-> > > +	struct wled *wled = platform_get_drvdata(pdev);
-> > >  
-> > >  	mutex_destroy(&wled->lock);
-> > >  	cancel_delayed_work_sync(&wled->ovp_work);
-> > 
-> > For my own reference (apply this as-is to your sign-off block):
-> > 
-> >   Acked-for-Backlight-by: Lee Jones <lee.jones@linaro.org>
+
+> 
+> > > >  drivers/video/fbdev/amifb.c                                          |    4 ++--
+> > > >  drivers/video/fbdev/da8xx-fb.c                                       |    4 ++--
+> > > >  drivers/video/fbdev/imxfb.c                                          |    2 +-
+> > > >  drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c |    6 +++---
+> > > >  drivers/video/fbdev/omap2/omapfb/dss/dpi.c                           |    4 ++--
+> > > >  drivers/video/fbdev/omap2/omapfb/dss/dsi.c                           |    4 ++--
+> > > >  drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c                         |    2 +-
+> > > >  drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c                         |    2 +-
+> > > >  drivers/video/fbdev/xilinxfb.c                                       |    2 +-
+> > > >  10 files changed, 16 insertions(+), 16 deletions(-)
+> > > 
+> > > ...]
+> > > 
+> > > > diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+> > > > index 3bc7800eb0a9..091f07e7c145 100644
+> > > > --- a/drivers/video/backlight/qcom-wled.c
+> > > > +++ b/drivers/video/backlight/qcom-wled.c
+> > > > @@ -1692,7 +1692,7 @@ static int wled_probe(struct platform_device *pdev)
+> > > >  
+> > > >  static int wled_remove(struct platform_device *pdev)
+> > > >  {
+> > > > -	struct wled *wled = dev_get_drvdata(&pdev->dev);
+> > > > +	struct wled *wled = platform_get_drvdata(pdev);
+> > > >  
+> > > >  	mutex_destroy(&wled->lock);
+> > > >  	cancel_delayed_work_sync(&wled->ovp_work);
+> > > 
+> > > For my own reference (apply this as-is to your sign-off block):
+> > > 
+> > >   Acked-for-Backlight-by: Lee Jones <lee.jones@linaro.org>
+> > > 
 > > 
 > 
+> -- 
+> Lee Jones [李琼斯]
+> Senior Technical Lead - Developer Services
+> Linaro.org │ Open source software for Arm SoCs
+> Follow Linaro: Facebook | Twitter | Blog
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
 -- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

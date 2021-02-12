@@ -7,178 +7,111 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DC7EC433DB
-	for <linux-fbdev@archiver.kernel.org>; Thu, 11 Feb 2021 15:44:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7FBDC433DB
+	for <linux-fbdev@archiver.kernel.org>; Fri, 12 Feb 2021 10:04:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 74C4E64E92
-	for <linux-fbdev@archiver.kernel.org>; Thu, 11 Feb 2021 15:44:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9A74E64DC3
+	for <linux-fbdev@archiver.kernel.org>; Fri, 12 Feb 2021 10:04:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229714AbhBKPnw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 11 Feb 2021 10:43:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55300 "EHLO
+        id S229948AbhBLKEV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 12 Feb 2021 05:04:21 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37494 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231283AbhBKPk5 (ORCPT
+        with ESMTP id S230319AbhBLKD7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 11 Feb 2021 10:40:57 -0500
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 472BDC06178C
-        for <linux-fbdev@vger.kernel.org>; Thu, 11 Feb 2021 07:40:17 -0800 (PST)
-Received: by mail-wm1-x334.google.com with SMTP id y134so6200286wmd.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 11 Feb 2021 07:40:17 -0800 (PST)
+        Fri, 12 Feb 2021 05:03:59 -0500
+Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72E5AC06178A
+        for <linux-fbdev@vger.kernel.org>; Fri, 12 Feb 2021 02:03:00 -0800 (PST)
+Received: by mail-wm1-x335.google.com with SMTP id i9so438691wmq.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 12 Feb 2021 02:03:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=BQASuo84wfslsSEivWFaPBGKyJ+9IhWQICA1bAqw9pc=;
-        b=G/UnfUhjvghbtT5LL/ccChqvxR3VGoeJDY0GnhgqREnzARjQQ+nIuF6vtPkRJ67lFU
-         IOrCaSzzOWXuAcKHDhheox4KAPQXkPZ0VlDd70F+0DJpVVTh0rBkQDVTuSHeQ06xKPSb
-         c1cmmAz6bP+t0knwzzSCM+lT37KdOsOWUDOEw=
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=6QG81ZJM4e0Z54tok2YgM5IGXnuCS+PLSTvaXCs4Z2g=;
+        b=E49ErNQfQ4F7JxhwHQzgTeuC30dIMojbTZRbamSdRwdB3czRTqDszNo7Sn28rJt8uz
+         pSHlux1bTy4D8YSk1yTP8mIijFRDhlzYmH2FHRhXwzEYCsl3lb/DVyLWpaQjnD3rifEe
+         AcPp6Pv/KAcjhfVAMxvUUaTfgr+4ih/AK6xnkbQewosmXjyliD9D132vlCeyqD0iCIB6
+         07Tdh35P84eeMy37RQ39pXsCdHM8NNLteZHW3YplNJwEPGBYAn7fFj1nGDXSmQmW7Wtm
+         rVvVYkGhsS7vplIxHyOpOTwh4QmNkwNUokld7BmA+QRJE6qRJc6PYSUmA0+yAENfJZhB
+         1+oQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :content-transfer-encoding:in-reply-to;
-        bh=BQASuo84wfslsSEivWFaPBGKyJ+9IhWQICA1bAqw9pc=;
-        b=E79+Mo+vcxdGPdw9EOlw9ljxubxgJTDR7hJMOZtJWz2A1OddFNznIwVTWYYYSPU55k
-         b65tT6wiZuNdI43MLcrbe9WwWHMFcrLOYpz3WWcFO3yBnyfPgCy7+tnBD5LbnHj8QzED
-         H0YUIQnIk//t237CJwjYYJ8FRQExXclez41WZvE0OSZmcV2MEsv0EzaghwvxjvSHqyXR
-         livkynkRBZy5eskvpltV8Cj0vRy7A7E4yng+7uA+Tm98OFlN2fcPcculvcRa2xv520gN
-         FnVpcgx77XEFr1KAvKvWyvuLtCrRxV0f26+CD1x0xCcW1vdwbv4GukyCQz2bRRpP7PIF
-         jP4A==
-X-Gm-Message-State: AOAM530JPpEtsjVxsX+7+qCj9nz/v1huQF2T+sdWs1OekL40fBaYes5Z
-        mYHSgDwOJwixuG3FUkZ25kY6eg==
-X-Google-Smtp-Source: ABdhPJyEz8KdbutPUEkFdfjjXqFBnVRyCrjCSeZ53ICqWwBwbN6UTPF9mpSKyi9zn1yrCN7w9m+Wqg==
-X-Received: by 2002:a1c:113:: with SMTP id 19mr5676819wmb.7.1613058015846;
-        Thu, 11 Feb 2021 07:40:15 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id t2sm5773738wru.53.2021.02.11.07.40.14
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=6QG81ZJM4e0Z54tok2YgM5IGXnuCS+PLSTvaXCs4Z2g=;
+        b=L9BMWkviCROt2VJGZCHxrCgaLiXw3vchcDpikPDVt4wQAavqkq+flmWAzgscQRrqpP
+         vuNR3MJgGFNLYnAmiLS7AQVivAHD/LN0Qa6IcKPSs74zrJ9WTXcgRFrkFZw/+Gf1Tfsx
+         y9EFwfTKUsZimqs4z7DP94w+aVY69plNyjbrLwwQns75SKXRdvb4iY6jtrSfxUAICfvp
+         99R+BO7TmeRkLyfb8gkI4TDKHgZk+d4sZmLtCB7MCVMrJP54nVg1Ic+R6B0WFisLmajy
+         SaSo4Puj+I2tESL+0dX7i+8xDa3yHI7G93EZb+aJi3crnO0JSbQdpxYVyslj76VTqDXP
+         JKTg==
+X-Gm-Message-State: AOAM53000NZjM0xi38UoawRnpf8aPsqAfNhwNeQdM0Dy7i+txipfiIJq
+        wTjKJMnlUxyjKFVMwjPOwJx7eQ==
+X-Google-Smtp-Source: ABdhPJwSdOB4cVf8xwsazH54/QT4EC/+//VnZHLp3grjPTZFnxNJeQp+4pBdBM3/PFw9nPHrQYh9LQ==
+X-Received: by 2002:a1c:6487:: with SMTP id y129mr1865928wmb.106.1613124178877;
+        Fri, 12 Feb 2021 02:02:58 -0800 (PST)
+Received: from dell ([91.110.221.187])
+        by smtp.gmail.com with ESMTPSA id u14sm9972510wro.10.2021.02.12.02.02.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 11 Feb 2021 07:40:15 -0800 (PST)
-Date:   Thu, 11 Feb 2021 16:40:13 +0100
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Lee Jones <lee.jones@linaro.org>
-Cc:     Julia Lawall <Julia.Lawall@inria.fr>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        linux-kernel@vger.kernel.org,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        kernel-janitors@vger.kernel.org,
+        Fri, 12 Feb 2021 02:02:58 -0800 (PST)
+Date:   Fri, 12 Feb 2021 10:02:56 +0000
+From:   Lee Jones <lee.jones@linaro.org>
+To:     Julia Lawall <Julia.Lawall@inria.fr>
+Cc:     Fabio Estevam <festevam@gmail.com>,
+        kernel-janitors@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
         Michal Simek <michal.simek@xilinx.com>,
-        dri-devel@lists.freedesktop.org,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
         Andy Gross <agross@kernel.org>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        Shawn Guo <shawnguo@kernel.org>, linux-omap@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] video: use getter/setter functions
-Message-ID: <YCVP3ZKBsJUV0m8G@phenom.ffwll.local>
-Mail-Followup-To: Lee Jones <lee.jones@linaro.org>,
-        Julia Lawall <Julia.Lawall@inria.fr>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        linux-kernel@vger.kernel.org,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        kernel-janitors@vger.kernel.org,
-        Michal Simek <michal.simek@xilinx.com>,
-        dri-devel@lists.freedesktop.org,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Andy Gross <agross@kernel.org>, NXP Linux Team <linux-imx@nxp.com>,
-        linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        Shawn Guo <shawnguo@kernel.org>, linux-omap@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Shawn Guo <shawnguo@kernel.org>,
+        NXP Linux Team <linux-imx@nxp.com>
+Subject: Re: [PATCH] video: use getter/setter functions
+Message-ID: <20210212100256.GB179940@dell>
 References: <20210209211325.1261842-1-Julia.Lawall@inria.fr>
- <20210210082341.GH220368@dell>
- <YCPbxSHWMipTz+mB@phenom.ffwll.local>
- <20210210161258.GA124276@x1>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210210161258.GA124276@x1>
-X-Operating-System: Linux phenom 5.7.0-1-amd64 
+In-Reply-To: <20210209211325.1261842-1-Julia.Lawall@inria.fr>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Feb 10, 2021 at 04:12:58PM +0000, Lee Jones wrote:
-> On Wed, 10 Feb 2021, Daniel Vetter wrote:
-> 
-> > On Wed, Feb 10, 2021 at 08:23:41AM +0000, Lee Jones wrote:
-> > > On Tue, 09 Feb 2021, Julia Lawall wrote:
-> > > 
-> > > > Use getter and setter functions, for platform_device structures and a
-> > > > spi_device structure.
-> > > > 
-> > > > Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
-> > > > 
-> > > > ---
-> > > >  drivers/video/backlight/qcom-wled.c                                  |    2 +-
-> > > 
-> > > This patch is fine.
-> > > 
-> > > Could you please split it out and submit it separately though please.
-> > 
-> > Or just apply the entire patch through backlight tree, there's nothing
-> > going on in fbdev anyway I think.
-> > 
-> > Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> 
-> I can do that.  Is that an fbdev Ack?
+On Tue, 09 Feb 2021, Julia Lawall wrote:
 
-Yeah defacto I'm somehow stuck with that as maintainer of last resort :-)
-Iirc we've got an S: orphaned entry pointing at drm.git trees.
--Daniel
-
-
+> Use getter and setter functions, for platform_device structures and a
+> spi_device structure.
 > 
-> > > >  drivers/video/fbdev/amifb.c                                          |    4 ++--
-> > > >  drivers/video/fbdev/da8xx-fb.c                                       |    4 ++--
-> > > >  drivers/video/fbdev/imxfb.c                                          |    2 +-
-> > > >  drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c |    6 +++---
-> > > >  drivers/video/fbdev/omap2/omapfb/dss/dpi.c                           |    4 ++--
-> > > >  drivers/video/fbdev/omap2/omapfb/dss/dsi.c                           |    4 ++--
-> > > >  drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c                         |    2 +-
-> > > >  drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c                         |    2 +-
-> > > >  drivers/video/fbdev/xilinxfb.c                                       |    2 +-
-> > > >  10 files changed, 16 insertions(+), 16 deletions(-)
-> > > 
-> > > ...]
-> > > 
-> > > > diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-> > > > index 3bc7800eb0a9..091f07e7c145 100644
-> > > > --- a/drivers/video/backlight/qcom-wled.c
-> > > > +++ b/drivers/video/backlight/qcom-wled.c
-> > > > @@ -1692,7 +1692,7 @@ static int wled_probe(struct platform_device *pdev)
-> > > >  
-> > > >  static int wled_remove(struct platform_device *pdev)
-> > > >  {
-> > > > -	struct wled *wled = dev_get_drvdata(&pdev->dev);
-> > > > +	struct wled *wled = platform_get_drvdata(pdev);
-> > > >  
-> > > >  	mutex_destroy(&wled->lock);
-> > > >  	cancel_delayed_work_sync(&wled->ovp_work);
-> > > 
-> > > For my own reference (apply this as-is to your sign-off block):
-> > > 
-> > >   Acked-for-Backlight-by: Lee Jones <lee.jones@linaro.org>
-> > > 
-> > 
+> Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
 > 
-> -- 
-> Lee Jones [李琼斯]
-> Senior Technical Lead - Developer Services
-> Linaro.org │ Open source software for Arm SoCs
-> Follow Linaro: Facebook | Twitter | Blog
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+> ---
+>  drivers/video/backlight/qcom-wled.c                                  |    2 +-
+>  drivers/video/fbdev/amifb.c                                          |    4 ++--
+>  drivers/video/fbdev/da8xx-fb.c                                       |    4 ++--
+>  drivers/video/fbdev/imxfb.c                                          |    2 +-
+>  drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c |    6 +++---
+>  drivers/video/fbdev/omap2/omapfb/dss/dpi.c                           |    4 ++--
+>  drivers/video/fbdev/omap2/omapfb/dss/dsi.c                           |    4 ++--
+>  drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c                         |    2 +-
+>  drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c                         |    2 +-
+>  drivers/video/fbdev/xilinxfb.c                                       |    2 +-
+>  10 files changed, 16 insertions(+), 16 deletions(-)
+
+I fixed-up the subject line and commit message a bit and applied.
+
+Thanks.
 
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Lee Jones [李琼斯]
+Senior Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog

@@ -2,113 +2,84 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68A18C433E6
-	for <linux-fbdev@archiver.kernel.org>; Mon, 15 Feb 2021 15:32:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4538FC433E6
+	for <linux-fbdev@archiver.kernel.org>; Mon, 15 Feb 2021 17:21:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3E58864ED7
-	for <linux-fbdev@archiver.kernel.org>; Mon, 15 Feb 2021 15:32:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1226F60C40
+	for <linux-fbdev@archiver.kernel.org>; Mon, 15 Feb 2021 17:21:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231248AbhBOPcS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 15 Feb 2021 10:32:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38614 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231199AbhBOPbF (ORCPT
+        id S231551AbhBORVp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 15 Feb 2021 12:21:45 -0500
+Received: from 7.mo2.mail-out.ovh.net ([188.165.48.182]:50027 "EHLO
+        7.mo2.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232571AbhBORUW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 15 Feb 2021 10:31:05 -0500
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB500C061756;
-        Mon, 15 Feb 2021 07:30:24 -0800 (PST)
-Received: by mail-pg1-x529.google.com with SMTP id t11so4392796pgu.8;
-        Mon, 15 Feb 2021 07:30:24 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=nd5Yfn43BCBJomp6sHGwdTlb0IPHeJ9K8m6gaCF931g=;
-        b=QlbaUqnzMU0C+clIlVwtHO1AAUS6hShwRtyZCDsTmZzZwcmd0MvlA67evCsxYKYrv9
-         oKrDig8saJwiRnm4O6aUp1e4/ws+SKz6OIkEQBqzWkWYGXDiNbkIQfjhbtkRbYWfLd0G
-         2/FCRBVDNjvBuweRiYhxsjRRVt0/QXtpRK6r/6gXOlSUzoqQ+5KOS5NRoasd9AldnGTg
-         SQK3zITTU/cF1MExS0UmOE9w7TqHzbR8an+TKYTEacU5q3iZYLdZn5DWxkSYanN1sJHD
-         AxS5K04hDJmBYp+SbaCJr6mhhZzQ9USz2aiea5q+oFgQ5wRm5VgMfP/Qyyzj+W3iEU0R
-         jk/w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=nd5Yfn43BCBJomp6sHGwdTlb0IPHeJ9K8m6gaCF931g=;
-        b=V8Lje2wq8WZENyo5MUs9H8/u2aTikQ6KPHDULfw5nc8hljET/o+cwlPj5n03iW0t6I
-         6yd7F9trfsnVfWfMxtk/uCN5ZH9X8F3p3jAi1PlgmmOaUwvVdosJA0PqCDGcROe2sSMN
-         DZtt+UfYman8wekh7hmIBW2wGDyIe8O74qmUCtfNqndFQ/ddnSN78ZD6ZGPhD0No2FF8
-         apze0Pwj3OtNkq1Ms4pRuk9Mc2D/FkpY2vdfm68kO5XEkGABsJ7fPq+oDKrsDW1iLF90
-         sWCxjunQqBfSOWRltJA7gtKtzVMrqCCZFlPgwOhb3O9zFEdQD6O5sZJlDmmiVFHBDMHZ
-         0EbQ==
-X-Gm-Message-State: AOAM533PGEUSFo7ws5PcQTT0jMQNB/To1PlZlwwbNUoZN73JtOQrhUvZ
-        JrQpL6rNf9LvcrG2+s/PHaCLy6cvO/UrUc9msL8=
-X-Google-Smtp-Source: ABdhPJylFq9d2tX3RjtahOe8hIgIQ4VN+QPYppcEIIbyB9lQQ4aHPmvHcrHpBNqSf8zEzCF2lh70YD492yPKz49qdps=
-X-Received: by 2002:a65:4c08:: with SMTP id u8mr7118551pgq.203.1613403024154;
- Mon, 15 Feb 2021 07:30:24 -0800 (PST)
+        Mon, 15 Feb 2021 12:20:22 -0500
+X-Greylist: delayed 635 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Feb 2021 12:20:19 EST
+Received: from player798.ha.ovh.net (unknown [10.108.57.140])
+        by mo2.mail-out.ovh.net (Postfix) with ESMTP id A28931F3C2A
+        for <linux-fbdev@vger.kernel.org>; Mon, 15 Feb 2021 18:08:59 +0100 (CET)
+Received: from sk2.org (82-65-25-201.subs.proxad.net [82.65.25.201])
+        (Authenticated sender: steve@sk2.org)
+        by player798.ha.ovh.net (Postfix) with ESMTPSA id F06BF1B2BA2CF;
+        Mon, 15 Feb 2021 17:08:54 +0000 (UTC)
+Authentication-Results: garm.ovh; auth=pass (GARM-99G0039a594b61-676e-43c5-8ca7-d80a602cbb63,
+                    C16AD3286F4283AA50684BE431D994343DAE27DC) smtp.auth=steve@sk2.org
+X-OVh-ClientIp: 82.65.25.201
+From:   Stephen Kitt <steve@sk2.org>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org, Stephen Kitt <steve@sk2.org>
+Subject: [PATCH] vgacon: drop unused vga_init_done
+Date:   Mon, 15 Feb 2021 18:08:37 +0100
+Message-Id: <20210215170837.1599706-1-steve@sk2.org>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
-References: <1611838435-151774-1-git-send-email-zhangxuezhi3@gmail.com>
- <CAHp75Vd=ijxnamuSYuxNLeyhGMCod=HaXWrQ0W0+3QCsQAychg@mail.gmail.com>
- <20210129130110.00003bb1@gmail.com> <CAHp75Vdi4H_zY3+QPSq_wmdf20B9xPeqsOT10JHfMLJESX77gA@mail.gmail.com>
- <20210129215638.000047b0@gmail.com> <CAHp75VcdOibSRuSBZYhFtEcVxuammYMfcnrUQGvS6ttArFxj6g@mail.gmail.com>
- <20210130143924.00005432@gmail.com> <CAHp75VenJVOSbAXryGK_BWytRJF=T1zwk5xDimRQOTojoXbMFQ@mail.gmail.com>
- <20210202095234.000059ca@gmail.com>
-In-Reply-To: <20210202095234.000059ca@gmail.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Mon, 15 Feb 2021 17:30:08 +0200
-Message-ID: <CAHp75VdwdBtZLG9rMWMzVSy27i3HwVm4eWk7jyKuJ-60JYJSeg@mail.gmail.com>
-Subject: Re: [PATCH v12] staging: fbtft: add tearing signal detect
-To:     Carlis <zhangxuezhi3@gmail.com>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Colin King <colin.king@canonical.com>,
-        oliver.graute@kococonnector.com, zhangxuezhi1@yulong.com,
-        Deepak R Varma <mh12gx2825@gmail.com>,
-        Stefano Brivio <sbrivio@redhat.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 12297923209508638069
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduledrieekgdelfecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvffufffkofgggfestdekredtredttdenucfhrhhomhepufhtvghphhgvnhcumfhithhtuceoshhtvghvvgesshhkvddrohhrgheqnecuggftrfgrthhtvghrnhepteegudfgleekieekteeggeetveefueefteeugfduieeitdfhhedtfeefkedvfeefnecukfhppedtrddtrddtrddtpdekvddrieehrddvhedrvddtudenucfuphgrmhfkphfpvghtfihorhhkpeekvddrieehrddvhedrvddtudenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejleekrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhg
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Feb 2, 2021 at 3:52 AM Carlis <zhangxuezhi3@gmail.com> wrote:
-> On Mon, 1 Feb 2021 19:40:21 +0200
-> Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
->
-> > On Sat, Jan 30, 2021 at 8:39 AM carlis <zhangxuezhi3@gmail.com> wrote:
-> > > On Fri, 29 Jan 2021 16:26:12 +0200
-> > > Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
-> > > > On Fri, Jan 29, 2021 at 3:56 PM carlis <zhangxuezhi3@gmail.com>
-> > > > wrote:
-> > > > > On Fri, 29 Jan 2021 12:23:08 +0200
-> > > > > Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
-> >
-> > ...
-> >
-> > > > > Hi, I apologize for what I said in the previous two emails. I
-> > > > > missed one email you sent before, and now I probably understand
-> > > > > what you meant. Here is a version I modified according to your
-> > > > > suggestion:
-> >
-> > I have realized that you are mocking stuff in the generic fbtft
-> > structure for all drivers while only a single one is going to use
-> > that. Consider moving everything to the driver in question.
+Commit 973c096f6a85 ("vgacon: remove software scrollback support")
+removed all uses of vga_init_done, so let's get rid of it entirely.
 
->    Do you mean that i define the TE completion and irq_te in the
->    fb_st7789v.c as i did before?
+Signed-off-by: Stephen Kitt <steve@sk2.org>
+---
+ drivers/video/console/vgacon.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-Not in global variables. Perhaps it will require to add/update the
-custom (to the specific driver) data structure.
-But the idea is that all changes should be isolated to that driver.
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 17876f0179b5..36bded9c9876 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -79,7 +79,6 @@ static struct uni_pagedir *vgacon_uni_pagedir;
+ static int vgacon_refcount;
+ 
+ /* Description of the hardware situation */
+-static bool		vga_init_done;
+ static unsigned long	vga_vram_base		__read_mostly;	/* Base of video memory */
+ static unsigned long	vga_vram_end		__read_mostly;	/* End of video memory */
+ static unsigned int	vga_vram_size		__read_mostly;	/* Size of video memory */
+@@ -360,8 +359,6 @@ static const char *vgacon_startup(void)
+ 	vgacon_xres = screen_info.orig_video_cols * VGA_FONTWIDTH;
+ 	vgacon_yres = vga_scan_lines;
+ 
+-	vga_init_done = true;
+-
+ 	return display_desc;
+ }
+ 
 
+base-commit: f40ddce88593482919761f74910f42f4b84c004b
 -- 
-With Best Regards,
-Andy Shevchenko
+2.29.2
+

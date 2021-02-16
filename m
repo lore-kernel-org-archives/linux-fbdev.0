@@ -2,64 +2,65 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12867C433DB
-	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Feb 2021 14:55:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BDBCC433DB
+	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Feb 2021 15:49:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D47E864D9E
-	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Feb 2021 14:55:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 064C864D9E
+	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Feb 2021 15:49:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229996AbhBPOzo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 16 Feb 2021 09:55:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57352 "EHLO
+        id S230218AbhBPPss (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 16 Feb 2021 10:48:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40382 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230021AbhBPOzn (ORCPT
+        with ESMTP id S229708AbhBPPsr (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 16 Feb 2021 09:55:43 -0500
-Received: from mail-il1-x131.google.com (mail-il1-x131.google.com [IPv6:2607:f8b0:4864:20::131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C9CEC0613D6
-        for <linux-fbdev@vger.kernel.org>; Tue, 16 Feb 2021 06:55:03 -0800 (PST)
-Received: by mail-il1-x131.google.com with SMTP id w1so8446315ilm.12
-        for <linux-fbdev@vger.kernel.org>; Tue, 16 Feb 2021 06:55:03 -0800 (PST)
+        Tue, 16 Feb 2021 10:48:47 -0500
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com [IPv6:2607:f8b0:4864:20::542])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 57835C06174A;
+        Tue, 16 Feb 2021 07:48:06 -0800 (PST)
+Received: by mail-pg1-x542.google.com with SMTP id o7so6482831pgl.1;
+        Tue, 16 Feb 2021 07:48:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ieee.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=0L3LUUd4CN2tocODr+9FJOieK/FWdEsnDt1BTgQNXTw=;
-        b=Iufza7OCXAe9UVW0oYI17XE7VpPSXowcoZafTUF02MMumA7XJp0ZoetVtQ3PsYCWWe
-         Zr1G4+kCX4mc8LI6YmNgY+RUQAYwnFVmOC0dHr8pxlcpfqr64GyKSfiERsxQoLqNyDJD
-         WTZe+0OcPC4dsMztfh+85nt4N6c0nmgcFfPbs=
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=yKpUz4pp/u/PHJPYKcG1YaVfe5CKl2imPNvR4JyBFYE=;
+        b=bfsYo575GoJd041ok+laM4Ze2S7KyjHJf0Srx5FyNMReJb74sZo75MjvzAVGc1anAQ
+         6lgCnMT+leWn3V8hJesoG9eeQ93b7XrMlXcfyIXEc3idRL1auUm4wDo0TsTVBoPN0joV
+         ou/TaTydMyNYRMIVv2ppEyXf0drLwBGQReum0gV/fhojLcA2Haz4I/f4RTFJldjbOrrI
+         RyQ/mWRqnDQPSQMFjrvvhR//MY5L5O9CdzXq8v3nDW4Zb0x5GI7djRS8aWRV05sP8UKB
+         yaX/6fsnhdA08FPa5rKljfhsuRJza+x8f/ZvF7c8VL5S4TOUIqfgsa16dah9NO2dMSr3
+         QRkg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=0L3LUUd4CN2tocODr+9FJOieK/FWdEsnDt1BTgQNXTw=;
-        b=Yj2z4YBisQieJz3iBwkcirVRFqIhFdpdCf3wcEuwLaQcwMNPNbx58OD3NHbY153N20
-         pgjnqQKfYL/1g0wd3ZuTCG4TjYWtMbR71LZqkjHuuMlykpYbOneMxJcfVmbv/dAFApgu
-         kzf/VM1sHbKgIwgMjcHtLrify4dZ/AbWT4W98wThbKj5hyTD5Mp2HJAJhkbKji5KpglD
-         hprSjy7v3DjGwhFaNQjL5ATE+OF/L4v/99oleZDarG8ZqrOMGcszgR9DNlHdzWnAAMvD
-         HN4rJHmrFATH0x3EC/9YEJZkPYjt2EPc0XgwkIGuzIOAhe+Pyi5flA86qTNgbwiADXiu
-         Trtg==
-X-Gm-Message-State: AOAM530h5WJdu9U3U3RLsLKmANV1cE5MmNmmtvVmsid0fDmYe67siGO8
-        a6CW+HIFM4jYsRg3oyvBHlXxEyLLfINKv2+H
-X-Google-Smtp-Source: ABdhPJzt5Yfzzw7DoFwQ768GJoYdE5YZWKfKbrolE9kxw0DKXKKgAyl+O5kXJCVCjLWqfVLjJfLRUQ==
-X-Received: by 2002:a05:6e02:164c:: with SMTP id v12mr16847550ilu.49.1613487301947;
-        Tue, 16 Feb 2021 06:55:01 -0800 (PST)
-Received: from [172.22.22.4] (c-73-185-129-58.hsd1.mn.comcast.net. [73.185.129.58])
-        by smtp.googlemail.com with ESMTPSA id g11sm874048iom.23.2021.02.16.06.55.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 16 Feb 2021 06:55:01 -0800 (PST)
-Subject: Re: [PATCH 02/13] staging: greybus: Switch from strlcpy to strscpy
-To:     Kumar Kartikeya Dwivedi <memxor@gmail.com>,
-        devel@driverdev.osuosl.org, gregkh@linuxfoundation.org,
-        linux-kernel@vger.kernel.org
-Cc:     Ian Abbott <abbotti@mev.co.uk>,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=yKpUz4pp/u/PHJPYKcG1YaVfe5CKl2imPNvR4JyBFYE=;
+        b=P/bnM5H1rbb+JMzCsE4AkhjPVyoNKG/pvtTSX/A8zae/MSLHWUh29G1kfHj5h6CE1n
+         Vt0XK6VGc5nA64+PoKAtBJHVDx/aV1IJePUSHig13zM+9kpHBUArBBqslsFz/Kt4D0zO
+         IsrXgxcJMbvwgokKhkiRy6O7scsC912O0biBO/qc2CQi9m2tla2iu5IkpkqzJ4yu9NfY
+         sqSKx7wue59x040wAo44ZQUrP0QtDe3Ip6NpRz43yHMb85lGtve9TtgKRQgAC2AOpSHD
+         hLmPrd2CHCBO1m/tICpzc/Uha1WwU4nIZ+s5EgVnFtsOLZYsDLLJgmqv/O2YRiy5hiFN
+         cYNQ==
+X-Gm-Message-State: AOAM5339+vHp5wUnCrEvkuAb5+UZ2ZZpKS++xWCUoQybxFwYm4kYtI/b
+        sF9jwh6dshG77ufNxA1efFo=
+X-Google-Smtp-Source: ABdhPJwaooUaIKDd1k8p39TS9r9FEuHlOTnCnoBBnatGbzSGokeWf0RqRcRmZatTM6RlcbYYacdx4w==
+X-Received: by 2002:a63:c1d:: with SMTP id b29mr19918863pgl.9.1613490485842;
+        Tue, 16 Feb 2021 07:48:05 -0800 (PST)
+Received: from localhost ([2402:3a80:11ea:c83a:a2a4:c5ff:fe20:7222])
+        by smtp.gmail.com with ESMTPSA id n142sm22804138pfd.82.2021.02.16.07.48.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 16 Feb 2021 07:48:05 -0800 (PST)
+Date:   Tue, 16 Feb 2021 21:18:00 +0530
+From:   Kumar Kartikeya Dwivedi <memxor@gmail.com>
+To:     Alex Elder <elder@ieee.org>
+Cc:     devel@driverdev.osuosl.org, gregkh@linuxfoundation.org,
+        linux-kernel@vger.kernel.org, Ian Abbott <abbotti@mev.co.uk>,
         H Hartley Sweeten <hsweeten@visionengravers.com>,
         Ioana Radulescu <ruxandra.radulescu@nxp.com>,
         Ioana Ciornei <ioana.ciornei@nxp.com>,
@@ -86,127 +87,38 @@ Cc:     Ian Abbott <abbotti@mev.co.uk>,
         Robert Richter <rric@kernel.org>, greybus-dev@lists.linaro.org,
         ac100@lists.launchpad.net, linux-tegra@vger.kernel.org,
         linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 02/13] staging: greybus: Switch from strlcpy to strscpy
+Message-ID: <20210216154800.jg24ahfj52t6qgbd@apollo>
 References: <20210131172838.146706-1-memxor@gmail.com>
  <20210131172838.146706-3-memxor@gmail.com>
-From:   Alex Elder <elder@ieee.org>
-Message-ID: <b565bdae-10a9-9b6c-ae60-dcee88f7dedd@ieee.org>
-Date:   Tue, 16 Feb 2021 08:54:59 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.6.1
+ <b565bdae-10a9-9b6c-ae60-dcee88f7dedd@ieee.org>
 MIME-Version: 1.0
-In-Reply-To: <20210131172838.146706-3-memxor@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b565bdae-10a9-9b6c-ae60-dcee88f7dedd@ieee.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/31/21 11:28 AM, Kumar Kartikeya Dwivedi wrote:
-> strlcpy is marked as deprecated in Documentation/process/deprecated.rst,
-> and there is no functional difference when the caller expects truncation
-> (when not checking the return value). strscpy is relatively better as it
-> also avoids scanning the whole source string.
+On Tue, Feb 16, 2021 at 08:24:59PM IST, Alex Elder wrote:
+> This is a good change.  But while you're at it, I would
+> appreciate if you would convert a few spots to use
+> sizeof(dest) rather than a fixed constant.  I will
+> point them out below.
 > 
-> This silences the related checkpatch warnings from:
-> 5dbdb2d87c29 ("checkpatch: prefer strscpy to strlcpy")
+> If this is the *only* request for a change on your
+> series, please tell me that and I can sign off on
+
+So far, this has been the only request.
+
+> this without you implementing my suggestion.  But
+> if you post a version 2, please do what I describe.
 > 
-> Signed-off-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
 
-This is a good change.  But while you're at it, I would
-appreciate if you would convert a few spots to use
-sizeof(dest) rather than a fixed constant.  I will
-point them out below.
+I will incorporate these if I end up sending a v2.
 
-If this is the *only* request for a change on your
-series, please tell me that and I can sign off on
-this without you implementing my suggestion.  But
-if you post a version 2, please do what I describe.
+Alternatively, would a separate patch with your suggestions applied on top of
+this be acceptable, if I don't?
 
-Thanks.
-
-					-Alex
-
-> ---
->   drivers/staging/greybus/audio_helper.c   | 2 +-
->   drivers/staging/greybus/audio_module.c   | 2 +-
->   drivers/staging/greybus/audio_topology.c | 6 +++---
->   drivers/staging/greybus/power_supply.c   | 2 +-
->   drivers/staging/greybus/spilib.c         | 4 ++--
->   5 files changed, 8 insertions(+), 8 deletions(-)
-
-. . .
-
-
-> diff --git a/drivers/staging/greybus/audio_module.c b/drivers/staging/greybus/audio_module.c
-> index a243d60f0..0f9fdc077 100644
-> --- a/drivers/staging/greybus/audio_module.c
-> +++ b/drivers/staging/greybus/audio_module.c
-> @@ -342,7 +342,7 @@ static int gb_audio_probe(struct gb_bundle *bundle,
->   	/* inform above layer for uevent */
->   	dev_dbg(dev, "Inform set_event:%d to above layer\n", 1);
->   	/* prepare for the audio manager */
-> -	strlcpy(desc.name, gbmodule->name, GB_AUDIO_MANAGER_MODULE_NAME_LEN);
-> +	strscpy(desc.name, gbmodule->name, GB_AUDIO_MANAGER_MODULE_NAME_LEN);
-
-Please use this here instead:
-
-	strscpy(desc.name, gbmodule->name, sizeof(desc.name));
-
->   	desc.vid = 2; /* todo */
->   	desc.pid = 3; /* todo */
->   	desc.intf_id = gbmodule->dev_id;
-> diff --git a/drivers/staging/greybus/audio_topology.c b/drivers/staging/greybus/audio_topology.c
-> index 662e3e8b4..e816e4db5 100644
-> --- a/drivers/staging/greybus/audio_topology.c
-> +++ b/drivers/staging/greybus/audio_topology.c
-> @@ -200,7 +200,7 @@ static int gbcodec_mixer_ctl_info(struct snd_kcontrol *kcontrol,
->   			return -EINVAL;
->   		name = gbaudio_map_controlid(module, data->ctl_id,
->   					     uinfo->value.enumerated.item);
-> -		strlcpy(uinfo->value.enumerated.name, name, NAME_SIZE);
-> +		strscpy(uinfo->value.enumerated.name, name, NAME_SIZE);
-
-Please use this here instead:
-
-		strscpy(uinfo->value.enumerated.name, name,
-			sizeof(uinfo->valiue.enumerated.name));
-
-(I know NAME_SIZE is used throughout this file, and
-could also be converted in this way, but we can save
-that for another patch.)
-
->   		break;
->   	default:
->   		dev_err(comp->dev, "Invalid type: %d for %s:kcontrol\n",
-> @@ -1047,7 +1047,7 @@ static int gbaudio_tplg_create_widget(struct gbaudio_module_info *module,
->   	}
->   
->   	/* Prefix dev_id to widget control_name */
-> -	strlcpy(temp_name, w->name, NAME_SIZE);
-> +	strscpy(temp_name, w->name, NAME_SIZE);
-
-Please use this here instead:
-
-	strscpy(temp_name, w->name, sizeof(temp_name));
-
->   	snprintf(w->name, NAME_SIZE, "GB %d %s", module->dev_id, temp_name);
->   
->   	switch (w->type) {
-> @@ -1169,7 +1169,7 @@ static int gbaudio_tplg_process_kcontrols(struct gbaudio_module_info *module,
->   		}
->   		control->id = curr->id;
->   		/* Prefix dev_id to widget_name */
-> -		strlcpy(temp_name, curr->name, NAME_SIZE);
-> +		strscpy(temp_name, curr->name, NAME_SIZE);
-
-
-Please use this here instead:
-
-		strscpy(temp_name, curr->name, sizeof(temp_name));
-
->   		snprintf(curr->name, NAME_SIZE, "GB %d %s", module->dev_id,
->   			 temp_name);
->   		control->name = curr->name;
-
-. . .
+-- 
+Kartikeya

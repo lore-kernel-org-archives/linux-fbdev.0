@@ -2,96 +2,125 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C090C433E0
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Feb 2021 03:29:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD9AFC433E6
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Feb 2021 07:09:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C845964ECD
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Feb 2021 03:29:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6864F64E92
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Feb 2021 07:09:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229908AbhBVD3q (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 21 Feb 2021 22:29:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59108 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229863AbhBVD3p (ORCPT
+        id S229908AbhBVHJP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 Feb 2021 02:09:15 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:52890 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230038AbhBVHJO (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 21 Feb 2021 22:29:45 -0500
-Received: from merlin.infradead.org (merlin.infradead.org [IPv6:2001:8b0:10b:1231::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABC0CC061574;
-        Sun, 21 Feb 2021 19:29:04 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=merlin.20170209; h=Content-Transfer-Encoding:MIME-Version:
-        Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
-        Content-Description:In-Reply-To:References;
-        bh=2/j5Lqy5dhvDPN7B6GDS9vPRNJDpnM+aTBfnWbXMC7w=; b=OtRJW4wqXmNWb5xMEq9F+WqDJf
-        aPhAT9Xw3GzbfmQkSSruEZcR20orlmcwzomgY+Z/9sZGzmBOf/612nLV6aYXzAdJBN4N8PsovftZm
-        IC0fXQbawnBjb6XS6CTsnthabiNdzyrH/Gz+GjHun2cyEShhnS5us5HO5+eCo759nN85IKjdGZOms
-        Q3olCqW6gTnKPSfGFxeRrXA41UReb4818SsELVc8ZM3OpuaeWPzIkwyvXfbKoaC29NIZB3xR989st
-        p7GCx1FWfJ1tmKDU+PCvgUc7JVqu/3y1EbBjDqiCEPwHvCWeR2D5nig3WPNEar2rTcDPLjj37CWqD
-        KEWjUZzA==;
-Received: from [2601:1c0:6280:3f0::d05b] (helo=merlin.infradead.org)
-        by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1lE1u7-0003dI-HH; Mon, 22 Feb 2021 03:29:00 +0000
-From:   Randy Dunlap <rdunlap@infradead.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        kernel test robot <lkp@intel.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
-        Jani Nikula <jani.nikula@linux.intel.com>
-Subject: [PATCH] fbdev: atyfb: add stubs for aty_{ld,st}_lcd()
-Date:   Sun, 21 Feb 2021 19:28:53 -0800
-Message-Id: <20210222032853.21483-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.26.2
+        Mon, 22 Feb 2021 02:09:14 -0500
+Received: from mail-lj1-f199.google.com ([209.85.208.199])
+        by youngberry.canonical.com with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <kai.heng.feng@canonical.com>)
+        id 1lE5KZ-0006Bd-MG
+        for linux-fbdev@vger.kernel.org; Mon, 22 Feb 2021 07:08:31 +0000
+Received: by mail-lj1-f199.google.com with SMTP id d5so11972159ljg.6
+        for <linux-fbdev@vger.kernel.org>; Sun, 21 Feb 2021 23:08:31 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=xQb/U05beEqXDSOnU2R2gxKRYcy1C5Xug7vclRhtUZo=;
+        b=Izi1wonXTXc9X6YtNXMFWQ8IhsOikmOBxr8lJvFPaCQ23efPoO6rzUnXMSU/F0QVcM
+         sw/uIuhgMNJfu5PkZdLSqd4OxvOfa4q/O2WJnpyKa/xRxWAmn2tGlFj1FpjHWgWTCbLg
+         cZkDG3STva8LCkgDjn0xoY8Q2jNAuIW4V6oQbLwvNOveRO1eSuBuwO9vRentlV++ZlO9
+         fFxEOvybvpgzrHey3beunbzLSxpzBN8HrGhXs5Mc3snDSS2KEbbBHuSTZwtx7cF1H1Qd
+         UJx1PJmTRthY1A4IkSAJyleR42fDLgjDYikffl+KUJ7/mysVyNrcNGsnKY/jQj6TLmRW
+         I+wA==
+X-Gm-Message-State: AOAM530H9Uagk2pTDamZoaXjA3SoSNlRZ8c06KpxQlu6fSnunyHzJMVu
+        Vla4AjUL60O3sW3G7yZzAS3NaHEcGfSUnJzd/tHeJ2+L1a7mVVC4LzLKWeTcRFZFU09bL4k8smq
+        kxl6Nsl1PidZ/q1K86qcxemf37wk4sgR58OE01KOKC2ecGu5kcdneFnd5
+X-Received: by 2002:a05:6512:b1b:: with SMTP id w27mr12697026lfu.10.1613977711157;
+        Sun, 21 Feb 2021 23:08:31 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwmwJFwD2hfSbm4znFNjHvhOMUpClGNSy8bAWfw5K3mLGPr7XuvEwm2N8RU7BjYzrcSZSXdCO0BDnrFKhpgUyk=
+X-Received: by 2002:a05:6512:b1b:: with SMTP id w27mr12697017lfu.10.1613977710921;
+ Sun, 21 Feb 2021 23:08:30 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20210129084327.986630-1-kai.heng.feng@canonical.com> <CADnq5_MduzcezmAjEGK0X7bDiY98f68s8roXc6gOTWjcpNC9Rw@mail.gmail.com>
+In-Reply-To: <CADnq5_MduzcezmAjEGK0X7bDiY98f68s8roXc6gOTWjcpNC9Rw@mail.gmail.com>
+From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date:   Mon, 22 Feb 2021 15:08:19 +0800
+Message-ID: <CAAd53p4y+A5Bv4nUKZw+kzrmxcYm8DXrY06QqkU4iopj0dRrzw@mail.gmail.com>
+Subject: Re: [PATCH] efifb: Ensure graphics device for efifb stays at PCI D0
+To:     pjones@redhat.com
+Cc:     Alex Deucher <alexdeucher@gmail.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        "open list:EFIFB FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix build errors when these functions are not defined.
+On Mon, Feb 1, 2021 at 11:21 PM Alex Deucher <alexdeucher@gmail.com> wrote:
+>
+> On Sat, Jan 30, 2021 at 6:27 AM Kai-Heng Feng
+> <kai.heng.feng@canonical.com> wrote:
+> >
+> > We are seeing root ports on some desktop boards support D3cold for
+> > discrete graphics card. So when efifb is in use while graphics device
+> > isn't bound to a driver, PCI and ACPI will put the graphics to D3cold
+> > when runtime suspend kicks in, makes efifb stop working.
+> >
+> > So ensure the graphics device won't be runtime suspended, to keep efifb
+> > work all the time.
+> >
+> > Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+>
+> Reviewed-by: Alex Deucher <alexander.deucher@amd.com>
 
-../drivers/video/fbdev/aty/atyfb_base.c: In function 'aty_power_mgmt':
-../drivers/video/fbdev/aty/atyfb_base.c:2002:7: error: implicit declaration of function 'aty_ld_lcd'; did you mean 'aty_ld_8'? [-Werror=implicit-function-declaration]
- 2002 |  pm = aty_ld_lcd(POWER_MANAGEMENT, par);
-../drivers/video/fbdev/aty/atyfb_base.c:2004:2: error: implicit declaration of function 'aty_st_lcd'; did you mean 'aty_st_8'? [-Werror=implicit-function-declaration]
- 2004 |  aty_st_lcd(POWER_MANAGEMENT, pm, par);
+A gentle ping...
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Reported-by: kernel test robot <lkp@intel.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: David Airlie <airlied@linux.ie>
-Cc: Jani Nikula <jani.nikula@linux.intel.com>
----
- drivers/video/fbdev/aty/atyfb_base.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
-
---- linux-next-20210219.orig/drivers/video/fbdev/aty/atyfb_base.c
-+++ linux-next-20210219/drivers/video/fbdev/aty/atyfb_base.c
-@@ -175,6 +175,15 @@ u32 aty_ld_lcd(int index, const struct a
- 		return aty_ld_le32(LCD_DATA, par);
- 	}
- }
-+#else /* defined(CONFIG_PMAC_BACKLIGHT) || defined(CONFIG_FB_ATY_BACKLIGHT) \
-+	 defined(CONFIG_FB_ATY_GENERIC_LCD) */
-+void aty_st_lcd(int index, u32 val, const struct atyfb_par *par)
-+{ }
-+
-+u32 aty_ld_lcd(int index, const struct atyfb_par *par)
-+{
-+	return 0;
-+}
- #endif /* defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
- 
- #ifdef CONFIG_FB_ATY_GENERIC_LCD
+>
+> > ---
+> >  drivers/video/fbdev/efifb.c | 3 +++
+> >  1 file changed, 3 insertions(+)
+> >
+> > diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+> > index e57c00824965..19edd7206409 100644
+> > --- a/drivers/video/fbdev/efifb.c
+> > +++ b/drivers/video/fbdev/efifb.c
+> > @@ -16,6 +16,7 @@
+> >  #include <linux/platform_device.h>
+> >  #include <linux/printk.h>
+> >  #include <linux/screen_info.h>
+> > +#include <linux/pm_runtime.h>
+> >  #include <video/vga.h>
+> >  #include <asm/efi.h>
+> >  #include <drm/drm_utils.h> /* For drm_get_panel_orientation_quirk */
+> > @@ -575,6 +576,7 @@ static int efifb_probe(struct platform_device *dev)
+> >                 goto err_fb_dealoc;
+> >         }
+> >         fb_info(info, "%s frame buffer device\n", info->fix.id);
+> > +       pm_runtime_get_sync(&efifb_pci_dev->dev);
+> >         return 0;
+> >
+> >  err_fb_dealoc:
+> > @@ -601,6 +603,7 @@ static int efifb_remove(struct platform_device *pdev)
+> >         unregister_framebuffer(info);
+> >         sysfs_remove_groups(&pdev->dev.kobj, efifb_groups);
+> >         framebuffer_release(info);
+> > +       pm_runtime_put(&efifb_pci_dev->dev);
+> >
+> >         return 0;
+> >  }
+> > --
+> > 2.29.2
+> >
+> > _______________________________________________
+> > dri-devel mailing list
+> > dri-devel@lists.freedesktop.org
+> > https://lists.freedesktop.org/mailman/listinfo/dri-devel

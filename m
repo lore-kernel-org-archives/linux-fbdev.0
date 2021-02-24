@@ -2,112 +2,131 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29393C433DB
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Feb 2021 14:01:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5097EC433E6
+	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Feb 2021 20:01:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C96B664E21
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Feb 2021 14:01:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0230664F2C
+	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Feb 2021 20:01:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230315AbhBXOAU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 Feb 2021 09:00:20 -0500
-Received: from mail.kernel.org ([198.145.29.99]:58412 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S236027AbhBXNIh (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 Feb 2021 08:08:37 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 005DA64F97;
-        Wed, 24 Feb 2021 12:54:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1614171289;
-        bh=EYRaWi8blV+9ujZEjSsC41wqYz+mU0lCnju3XoBnxrg=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=N8LxvnMWZREQJhw9l26gWWQW56myZLkztc3Mj+NVc88C/73BunGQN9svQRVVMtXVr
-         HjQ2H+23QaP1bpEEC+47JfZ2BER6h/iK9dzdb7QOEGjiOGcz0xIEd6Xr2kNCoXReFG
-         p8kfI3CFhwmUaPHVcd9Q9nbVjaIsGabXbnv4Duhb2DkhCpo+YNGsRCZjuMlmQ7Zr1l
-         gUXZvATAKpwsv5WQ6FRNMsFDT243vs4ifceQvhYi5dGN2Ao2JcJztbb7KDc30PGyOr
-         35nU4puuhwvZWCIs89vY2jDXlTraoYuYXpVIdepDinZfte2ZwgMl9EXt141keJ1JHs
-         T2jviTJZxjeOw==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Zqiang <qiang.zhang@windriver.com>,
-        syzbot+c9e365d7f450e8aa615d@syzkaller.appspotmail.com,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 4.19 11/26] udlfb: Fix memory leak in dlfb_usb_probe
-Date:   Wed, 24 Feb 2021 07:54:19 -0500
-Message-Id: <20210224125435.483539-11-sashal@kernel.org>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20210224125435.483539-1-sashal@kernel.org>
-References: <20210224125435.483539-1-sashal@kernel.org>
+        id S234632AbhBXUBZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 24 Feb 2021 15:01:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42038 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234364AbhBXUAo (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 24 Feb 2021 15:00:44 -0500
+Received: from merlin.infradead.org (merlin.infradead.org [IPv6:2001:8b0:10b:1231::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E76BC061788;
+        Wed, 24 Feb 2021 12:00:04 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=merlin.20170209; h=Content-Transfer-Encoding:Content-Type:
+        In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
+        :Reply-To:Content-ID:Content-Description;
+        bh=mK+T5LZEHxUksn3PjQrSRU0QW6w+r5cczZPe9bp7WQc=; b=ymChzcmZ4zZ45BLC9ht82keWKW
+        TZOE9uyAotQdztvvzgsaOlE2jfJTL2HGpfDUcmKuHjVX1zvziS4fn6+tbdOOgWZYe0Fb0U7XNiJpd
+        HHqGejZ/CSqYwqVjHJ+eeZcdO0Rf18cJlYPkMHr/KfYjIZRKA29QjN/wfkbBgNRjHLI0JBsWQOfxn
+        WkxCs+0YtPRv64pO/h+s+xLF+vaZ/JMvBu+T+QgwuECIQD7/FwayU5kR5DtONXT4P/NjCx7eqp36K
+        /x+x7e7PhAJdd8E7S6pONo+QFVq6HoCw6aW4sww42C9joDOmpJ6sOjBLmpgG9m5iGn28OFtLTAPrG
+        Jj8d6J9A==;
+Received: from [2601:1c0:6280:3f0::d05b]
+        by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1lF0K6-0002CE-7b; Wed, 24 Feb 2021 19:59:50 +0000
+Subject: Re: [PATCH] fbdev: atyfb: add stubs for aty_{ld,st}_lcd()
+To:     =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        kernel test robot <lkp@intel.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        David Airlie <airlied@linux.ie>,
+        dri-devel@lists.freedesktop.org, Sam Ravnborg <sam@ravnborg.org>
+References: <20210222032853.21483-1-rdunlap@infradead.org>
+ <YDPtYx1uU5Y4HNZ7@intel.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <7d416971-ae9b-52a8-bfba-79c2c920ec6c@infradead.org>
+Date:   Wed, 24 Feb 2021 11:59:45 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.7.0
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
+In-Reply-To: <YDPtYx1uU5Y4HNZ7@intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Zqiang <qiang.zhang@windriver.com>
+On 2/22/21 9:44 AM, Ville Syrjälä wrote:
+> On Sun, Feb 21, 2021 at 07:28:53PM -0800, Randy Dunlap wrote:
+>> Fix build errors when these functions are not defined.
+>>
+>> ../drivers/video/fbdev/aty/atyfb_base.c: In function 'aty_power_mgmt':
+>> ../drivers/video/fbdev/aty/atyfb_base.c:2002:7: error: implicit declaration of function 'aty_ld_lcd'; did you mean 'aty_ld_8'? [-Werror=implicit-function-declaration]
+>>  2002 |  pm = aty_ld_lcd(POWER_MANAGEMENT, par);
+>> ../drivers/video/fbdev/aty/atyfb_base.c:2004:2: error: implicit declaration of function 'aty_st_lcd'; did you mean 'aty_st_8'? [-Werror=implicit-function-declaration]
+>>  2004 |  aty_st_lcd(POWER_MANAGEMENT, pm, par);
+>> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+>> Reported-by: kernel test robot <lkp@intel.com>
+>> Cc: linux-fbdev@vger.kernel.org
+>> Cc: dri-devel@lists.freedesktop.org
+>> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>> Cc: Sam Ravnborg <sam@ravnborg.org>
+>> Cc: Daniel Vetter <daniel@ffwll.ch>
+>> Cc: David Airlie <airlied@linux.ie>
+>> Cc: Jani Nikula <jani.nikula@linux.intel.com>
+>> ---
+>>  drivers/video/fbdev/aty/atyfb_base.c |    9 +++++++++
+>>  1 file changed, 9 insertions(+)
+>>
+>> --- linux-next-20210219.orig/drivers/video/fbdev/aty/atyfb_base.c
+>> +++ linux-next-20210219/drivers/video/fbdev/aty/atyfb_base.c
+>> @@ -175,6 +175,15 @@ u32 aty_ld_lcd(int index, const struct a
+>>  		return aty_ld_le32(LCD_DATA, par);
+>>  	}
+>>  }
+>> +#else /* defined(CONFIG_PMAC_BACKLIGHT) || defined(CONFIG_FB_ATY_BACKLIGHT) \
+>> +	 defined(CONFIG_FB_ATY_GENERIC_LCD) */
+> 
+> A better fix would seem to be to include these functions if
+> CONFIG_PPC_PMAC is enabled. Otherwise the PM code will surely
+> not work correctly. Though I'm not sure if that PPC PM
+> code makes any sense w/o LCD/backlight support anyway.
 
-[ Upstream commit 5c0e4110f751934e748a66887c61f8e73805f0f9 ]
+Hi Ville,
 
-The dlfb_alloc_urb_list function is called in dlfb_usb_probe function,
-after that if an error occurs, the dlfb_free_urb_list function need to
-be called.
+I tried this:
 
-BUG: memory leak
-unreferenced object 0xffff88810adde100 (size 32):
-  comm "kworker/1:0", pid 17, jiffies 4294947788 (age 19.520s)
-  hex dump (first 32 bytes):
-    10 30 c3 0d 81 88 ff ff c0 fa 63 12 81 88 ff ff  .0........c.....
-    00 30 c3 0d 81 88 ff ff 80 d1 3a 08 81 88 ff ff  .0........:.....
-  backtrace:
-    [<0000000019512953>] kmalloc include/linux/slab.h:552 [inline]
-    [<0000000019512953>] kzalloc include/linux/slab.h:664 [inline]
-    [<0000000019512953>] dlfb_alloc_urb_list drivers/video/fbdev/udlfb.c:1892 [inline]
-    [<0000000019512953>] dlfb_usb_probe.cold+0x289/0x988 drivers/video/fbdev/udlfb.c:1704
-    [<0000000072160152>] usb_probe_interface+0x177/0x370 drivers/usb/core/driver.c:396
-    [<00000000a8d6726f>] really_probe+0x159/0x480 drivers/base/dd.c:554
-    [<00000000c3ce4b0e>] driver_probe_device+0x84/0x100 drivers/base/dd.c:738
-    [<00000000e942e01c>] __device_attach_driver+0xee/0x110 drivers/base/dd.c:844
-    [<00000000de0a5a5c>] bus_for_each_drv+0xb7/0x100 drivers/base/bus.c:431
-    [<00000000463fbcb4>] __device_attach+0x122/0x250 drivers/base/dd.c:912
-    [<00000000b881a711>] bus_probe_device+0xc6/0xe0 drivers/base/bus.c:491
-    [<00000000364bbda5>] device_add+0x5ac/0xc30 drivers/base/core.c:2936
-    [<00000000eecca418>] usb_set_configuration+0x9de/0xb90 drivers/usb/core/message.c:2159
-    [<00000000edfeca2d>] usb_generic_driver_probe+0x8c/0xc0 drivers/usb/core/generic.c:238
-    [<000000001830872b>] usb_probe_device+0x5c/0x140 drivers/usb/core/driver.c:293
-    [<00000000a8d6726f>] really_probe+0x159/0x480 drivers/base/dd.c:554
-    [<00000000c3ce4b0e>] driver_probe_device+0x84/0x100 drivers/base/dd.c:738
-    [<00000000e942e01c>] __device_attach_driver+0xee/0x110 drivers/base/dd.c:844
-    [<00000000de0a5a5c>] bus_for_each_drv+0xb7/0x100 drivers/base/bus.c:431
+-#if defined(CONFIG_PMAC_BACKLIGHT) || defined(CONFIG_FB_ATY_GENERIC_LCD) || \
+-defined(CONFIG_FB_ATY_BACKLIGHT)
++#if defined(CONFIG_PPC_PMAC)
 
-Reported-by: syzbot+c9e365d7f450e8aa615d@syzkaller.appspotmail.com
-Signed-off-by: Zqiang <qiang.zhang@windriver.com>
-Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Link: https://patchwork.freedesktop.org/patch/msgid/20201215063022.16746-1-qiang.zhang@windriver.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/udlfb.c | 1 +
- 1 file changed, 1 insertion(+)
+in both atyfb_base.c and atyfb.h, but then there is a build error in
+mach64_ct.c when PPC_PMAC is not enabled but FB_ATY_GENERIC_LCD is enabled.
+[mach64_ct.c is the only other user of aty_{ld,st}_lcd()]
 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index 5a0d6fb02bbc5..f7823aa99340d 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -1020,6 +1020,7 @@ static void dlfb_ops_destroy(struct fb_info *info)
- 	}
- 	vfree(dlfb->backing_buffer);
- 	kfree(dlfb->edid);
-+	dlfb_free_urb_list(dlfb);
- 	usb_put_dev(dlfb->udev);
- 	kfree(dlfb);
- 
+or did you mean adding CONFIG_PPC_PMAC to that longish #if list?
+(that's not how I understood your comment.)
+
+
+I'll gladly step away and let you submit patches for this. :)
+
+>> +void aty_st_lcd(int index, u32 val, const struct atyfb_par *par)
+>> +{ }
+>> +
+>> +u32 aty_ld_lcd(int index, const struct atyfb_par *par)
+>> +{
+>> +	return 0;
+>> +}
+>>  #endif /* defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
+>>  
+>>  #ifdef CONFIG_FB_ATY_GENERIC_LCD
+>> _______________________________________________
+
+
+thanks.
 -- 
-2.27.0
+~Randy
 

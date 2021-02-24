@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BBBCC433E9
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Feb 2021 12:55:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE696C43381
+	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Feb 2021 13:57:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 52FBF64FA6
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Feb 2021 12:55:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 727CF64EC4
+	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Feb 2021 13:57:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235135AbhBXMyd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 Feb 2021 07:54:33 -0500
-Received: from mail.kernel.org ([198.145.29.99]:50210 "EHLO mail.kernel.org"
+        id S234276AbhBXN4q (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 24 Feb 2021 08:56:46 -0500
+Received: from mail.kernel.org ([198.145.29.99]:54428 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S235200AbhBXMwb (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 Feb 2021 07:52:31 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id E3E3B64F13;
-        Wed, 24 Feb 2021 12:51:01 +0000 (UTC)
+        id S235608AbhBXM7D (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 24 Feb 2021 07:59:03 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id C5C1064F0B;
+        Wed, 24 Feb 2021 12:52:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1614171062;
+        s=k20201202; t=1614171159;
         bh=MujD0LlhJccQMLu8B5pHIBrjM6vOnk8ruXzVCvlOZLc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Tql8D1vxxQtk3L1ahYlw34XVpN/Vaov8AAhFE34o3/aj5a3eCG+UutThcIlLu64dD
-         xVcyciYMMMdU3OYbqPyeUHVQt62f+TUPT1Co+4zAIp4gZSfDXytWvfrGTW4v6Bhd6x
-         P6RqcEN06pF9slSV5/NN1rtM2IEYCsTDLc1vHWNFWdVIw0hwwvPrUqRN2IKdKXdF0+
-         8AwlOvNtp9iKt0IW6owyqmkc3DgrDxD3IYbY1nT95+1/dqAwvEgYlREtI75ncU7x4F
-         mwX1yUzgBnlnB8pbfzIhNjjFlpCDG7minHgdoXdXVUIZoKclvpwTasb9iL+vdCSfAF
-         /yQ4J0hlqqPZQ==
+        b=qPbcDNOvD0Fl82zcgbO4kx1eiv5rxTxwmkQM4Gz2to/TUs+w0A3nm7UjU82r2xe0E
+         UXX53h8nsBIvZtsAvUcXmtn+yjxbZ6KNcggHLQWPIjbZ8Fe0GBK4r9nuF2INGp8Q/M
+         ZWKm2Zjmnnhz9pjgmlrJbWE/EvaG1i2lYeazdFt7y9MtARlpElIDuf8739GdTxjTXf
+         wO/1/FzYoY7EqT61EdAna68N+it5o+xC3szoKpG4HW13SEh7sKqyzP0QCmuH8srxYt
+         TQmSEj61U8Z9JvfX/qmlHdP4QliqI93xd4Kxu2KW+v8gj0nwW/HHHeQbvFxG/gsX+B
+         4jHVJEAE3EMjg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Zqiang <qiang.zhang@windriver.com>,
@@ -38,12 +38,12 @@ Cc:     Zqiang <qiang.zhang@windriver.com>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.11 26/67] udlfb: Fix memory leak in dlfb_usb_probe
-Date:   Wed, 24 Feb 2021 07:49:44 -0500
-Message-Id: <20210224125026.481804-26-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 20/56] udlfb: Fix memory leak in dlfb_usb_probe
+Date:   Wed, 24 Feb 2021 07:51:36 -0500
+Message-Id: <20210224125212.482485-20-sashal@kernel.org>
 X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20210224125026.481804-1-sashal@kernel.org>
-References: <20210224125026.481804-1-sashal@kernel.org>
+In-Reply-To: <20210224125212.482485-1-sashal@kernel.org>
+References: <20210224125212.482485-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore

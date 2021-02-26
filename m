@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E8EEC433DB
-	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 17:10:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6055FC43381
+	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 17:26:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5753964EE7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 17:10:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 21DBD64F27
+	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 17:26:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229618AbhBZRKK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 26 Feb 2021 12:10:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57668 "EHLO
+        id S230112AbhBZR0r (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 26 Feb 2021 12:26:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33076 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230049AbhBZRKB (ORCPT
+        with ESMTP id S229993AbhBZR0p (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 26 Feb 2021 12:10:01 -0500
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DBA3FC06174A
-        for <linux-fbdev@vger.kernel.org>; Fri, 26 Feb 2021 09:09:08 -0800 (PST)
-Received: by mail-wm1-x32c.google.com with SMTP id p3so8002463wmc.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 26 Feb 2021 09:09:08 -0800 (PST)
+        Fri, 26 Feb 2021 12:26:45 -0500
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C7CBBC061786
+        for <linux-fbdev@vger.kernel.org>; Fri, 26 Feb 2021 09:26:04 -0800 (PST)
+Received: by mail-wr1-x431.google.com with SMTP id r3so9303710wro.9
+        for <linux-fbdev@vger.kernel.org>; Fri, 26 Feb 2021 09:26:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=oPmNNtgVI1eH+eqDytkra/zaGpGkiEOuBv8E+PK1q2E=;
-        b=L7hDueq6FbCIPz8Y3pcSNYtyDe8eNaCraw1jcrjoeS23ebZwbWTe2IvnUl3GTrNLmq
-         dp/21SOTMaADDXil2WuhCsxvlC5Bd8t6Q0CQjJBwgdkDx6CfVANpZLQhHs7HuFp/tUKp
-         ugk+lZE1L3c+edikdt8ARj5u40FArM+iVyHpBjX8Uv1EsQ60LVXZpBDQQ8fdHQnKZfNz
-         cTjpmuu4CpOZKv6UhEPfmTf1zEiyzlIUG2JkbTKRtqrdRvBv5kIBCgG2Genf1uTGFD+J
-         sm4ouIPR9uM8KYMJ6DojeiG7g8mio0pX6cOcHUcdrBSc1xVMNbSKwqDTO5CEYpuya8rP
-         U7mg==
+        bh=Bqhbgu1Yp7BWdaUz/Li+kTuQBD64JpudY4kka6cuYOU=;
+        b=de/+gQcXIlBR8jVkGwRajly9Ur7JLImRwKdA+cqTXTZs2N9AXIZdKdqD63bPpunD4X
+         skq0DwsLCISevZLfmV9iOR6B/XV8PPTB0urSK1KY3HiY0yFlCuOSPH1MXrt8FHbRz5dq
+         qm9yXsuQ9A/7hySFuR9vYhZQXbjIhgI0PgCuHk+GmglnrOlbRmcijDueB9SRpR8saq8X
+         Si6LEabKe9dqZqHszSD2dChA8chYp7GnBZgSNV1yPlWZYAX+1UB7xHqJLcqjV4ESJ+mW
+         XmgfxsxOViwwKJgHzfnSA+RUuMgpP09C2JcsYvCwhZoLeuwu+l1MLZTugYxD1FPiG2gG
+         YggA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=oPmNNtgVI1eH+eqDytkra/zaGpGkiEOuBv8E+PK1q2E=;
-        b=unJUfJmhpSH2jDZXqXXpO7YrHRyDTRq3/K6r1Kj0CsboHNP/+r3QQJtdoOw+1bYOWy
-         lY1pk0VXeQ/2O5ZYZslJ91ca+ovM1TaBQaIW2SWUgsv2T0IBtMBeeVnz5EQB4Y/DzTBl
-         5JN3mAQwvAlwXe9rI31pHttkviizavk6yvfLAVsZYqfYIdV7WWtGpd7L0BL5G9jBXTM1
-         VtxGXF9nkt86kRIfF9OT/7p0n/k0wJvYT2QykiBusUtKri5RvqJ9GblHoonGhvdbqIvi
-         /ffqdRbdJLzfpYBdy8HJlJePFJyk54BydazgBa5CKGSitTDh7x3VrFwHHLDv+aojC1O9
-         9pTQ==
-X-Gm-Message-State: AOAM5323CXR1duP/NvbcwRkdd6Ig+kii+gIQf1OMJwCfsvhz/5TEhB+p
-        snikmb5n6CXI9rwiGCLRKKRF7i4TRzqfYkVL
-X-Google-Smtp-Source: ABdhPJy+3JLr8vLHWKe27u3nSTX1ODTzNCh6BSKvpoFvfptBEwnzyGPmA8wyoRhYBiUAbOt8tHcXWw==
-X-Received: by 2002:a1c:5584:: with SMTP id j126mr3925587wmb.153.1614359347431;
-        Fri, 26 Feb 2021 09:09:07 -0800 (PST)
+        bh=Bqhbgu1Yp7BWdaUz/Li+kTuQBD64JpudY4kka6cuYOU=;
+        b=gFp5J9XLGwQJIn4GNngF1G+Bn3iGnrS9KAUAsGsddZHmSdPQl9yio/uTHS6bD1HYul
+         zpi21hQQsVShvej0l76mYXJJu6x8RjNqJtJtfu/C+H7wxvQacEGa4BWc5gw1s6w+CWsY
+         GLRu66M4STzz8lDciBzKsg06vfn3a4nR5Sb8rHpTARtVu7w9gL1YCeI5cSRb2TCz+h76
+         Tbl0qUu0a54rzp7MS35Sx6Nv3Is1IRs6WIDwZTZZGwnyF98WlrbF1HK+HLzrI+yCJ4cl
+         W/sdWQ3ByGiMWIYnVgFarHEWPsXXfiQpFbXkxHkMwOZQWXxY7QhAOcXgu72H1QsjQ7gs
+         qZ3Q==
+X-Gm-Message-State: AOAM533OGrkKPwe6nvAQpuWGY1Xmc9ej0A4f9ZaKNa8w5iKFXMccm2FZ
+        9KrU6RU20qLCSVANbm4yxZt0hg==
+X-Google-Smtp-Source: ABdhPJxv59nbOS4VjGoDEpvCB0o1HoLwhHwNNBMlJkKj6HsOImMA6tQWRJDOfwNGqiBMHmLBgvAGBQ==
+X-Received: by 2002:adf:e409:: with SMTP id g9mr4219176wrm.423.1614360363351;
+        Fri, 26 Feb 2021 09:26:03 -0800 (PST)
 Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id m9sm19290337wml.3.2021.02.26.09.09.06
+        by smtp.gmail.com with ESMTPSA id m9sm57861wro.52.2021.02.26.09.26.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 26 Feb 2021 09:09:06 -0800 (PST)
-Date:   Fri, 26 Feb 2021 17:09:04 +0000
+        Fri, 26 Feb 2021 09:26:02 -0800 (PST)
+Date:   Fri, 26 Feb 2021 17:26:01 +0000
 From:   Daniel Thompson <daniel.thompson@linaro.org>
 To:     Kiran Gunda <kgunda@codeaurora.org>
 Cc:     bjorn.andersson@linaro.org, jingoohan1@gmail.com,
@@ -67,91 +67,89 @@ Cc:     bjorn.andersson@linaro.org, jingoohan1@gmail.com,
         linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org,
         phone-devel@vger.kernel.org
-Subject: Re: [PATCH V2 1/2] backlight: qcom-wled: Fix FSC update issue for
- WLED5
-Message-ID: <20210226170904.u5ysz6kg4tqbh3us@maple.lan>
+Subject: Re: [PATCH V2 2/2] backlight: qcom-wled: Correct the sync_toggle
+ sequence
+Message-ID: <20210226172601.aknj2d4hghkkqjol@maple.lan>
 References: <1614341544-5306-1-git-send-email-kgunda@codeaurora.org>
- <1614341544-5306-2-git-send-email-kgunda@codeaurora.org>
+ <1614341544-5306-3-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1614341544-5306-2-git-send-email-kgunda@codeaurora.org>
+In-Reply-To: <1614341544-5306-3-git-send-email-kgunda@codeaurora.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Feb 26, 2021 at 05:42:23PM +0530, Kiran Gunda wrote:
-> Currently, for WLED5, the FSC (Full scale current) setting is not
-> updated properly due to driver toggling the wrong register after
-> an FSC update.
-> 
-> On WLED5 we should only toggle the MOD_SYNC bit after a brightness
-> update. For an FSC update we need to toggle the SYNC bits instead.
-> 
-> Fix it by adopting the common wled3_sync_toggle() for WLED5 and
-> introducing new code to the brightness update path to compensate.
-> 
-> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+On Fri, Feb 26, 2021 at 05:42:24PM +0530, Kiran Gunda wrote:
+> As per the current implementation, after FSC (Full Scale Current)
+> and brightness update the sync bits are transitioned from 1 to 0.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+This still seems to incorrectly describe the current behaviour.
+
+Surely in most cases (i.e. every time except the first) the value of the
+sync bit is 0 when the function is called and we get both a 0 to 1
+and then a 1 to 0 transition.
+
+That is why I recommended set-then-clear terminology to describe the
+current behaviour. It is concise and correct.
 
 
 Daniel.
 
+
+
+> But, the FSC and brightness sync takes place during a 0 to 1
+> transition of the sync bits. So the hardware team recommends a
+> clear-then-set approach in order to guarantee such a transition
+> regardless of the previous register state.
+> 
+> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
 > ---
->  drivers/video/backlight/qcom-wled.c | 25 +++++++++++++++++++------
->  1 file changed, 19 insertions(+), 6 deletions(-)
+>  drivers/video/backlight/qcom-wled.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
 > 
 > diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-> index 3bc7800..aef52b9 100644
+> index aef52b9..19f83ac 100644
 > --- a/drivers/video/backlight/qcom-wled.c
 > +++ b/drivers/video/backlight/qcom-wled.c
-> @@ -348,7 +348,7 @@ static int wled3_sync_toggle(struct wled *wled)
+> @@ -337,13 +337,13 @@ static int wled3_sync_toggle(struct wled *wled)
+>  
+>  	rc = regmap_update_bits(wled->regmap,
+>  				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
+> -				mask, mask);
+> +				mask, WLED3_SINK_REG_SYNC_CLEAR);
+>  	if (rc < 0)
+>  		return rc;
+>  
+>  	rc = regmap_update_bits(wled->regmap,
+>  				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
+> -				mask, WLED3_SINK_REG_SYNC_CLEAR);
+> +				mask, mask);
+>  
 >  	return rc;
 >  }
->  
-> -static int wled5_sync_toggle(struct wled *wled)
-> +static int wled5_mod_sync_toggle(struct wled *wled)
->  {
+> @@ -353,17 +353,17 @@ static int wled5_mod_sync_toggle(struct wled *wled)
 >  	int rc;
 >  	u8 val;
-> @@ -445,10 +445,23 @@ static int wled_update_status(struct backlight_device *bl)
->  			goto unlock_mutex;
->  		}
 >  
-> -		rc = wled->wled_sync_toggle(wled);
-> -		if (rc < 0) {
-> -			dev_err(wled->dev, "wled sync failed rc:%d\n", rc);
-> -			goto unlock_mutex;
-> +		if (wled->version < 5) {
-> +			rc = wled->wled_sync_toggle(wled);
-> +			if (rc < 0) {
-> +				dev_err(wled->dev, "wled sync failed rc:%d\n", rc);
-> +				goto unlock_mutex;
-> +			}
-> +		} else {
-> +			/*
-> +			 * For WLED5 toggling the MOD_SYNC_BIT updates the
-> +			 * brightness
-> +			 */
-> +			rc = wled5_mod_sync_toggle(wled);
-> +			if (rc < 0) {
-> +				dev_err(wled->dev, "wled mod sync failed rc:%d\n",
-> +					rc);
-> +				goto unlock_mutex;
-> +			}
->  		}
->  	}
+> -	val = (wled->cfg.mod_sel == MOD_A) ? WLED5_SINK_REG_SYNC_MOD_A_BIT :
+> -					     WLED5_SINK_REG_SYNC_MOD_B_BIT;
+>  	rc = regmap_update_bits(wled->regmap,
+>  				wled->sink_addr + WLED5_SINK_REG_MOD_SYNC_BIT,
+> -				WLED5_SINK_REG_SYNC_MASK, val);
+> +				WLED5_SINK_REG_SYNC_MASK, 0);
+>  	if (rc < 0)
+>  		return rc;
 >  
-> @@ -1459,7 +1472,7 @@ static int wled_configure(struct wled *wled)
->  		size = ARRAY_SIZE(wled5_opts);
->  		*cfg = wled5_config_defaults;
->  		wled->wled_set_brightness = wled5_set_brightness;
-> -		wled->wled_sync_toggle = wled5_sync_toggle;
-> +		wled->wled_sync_toggle = wled3_sync_toggle;
->  		wled->wled_cabc_config = wled5_cabc_config;
->  		wled->wled_ovp_delay = wled5_ovp_delay;
->  		wled->wled_auto_detection_required =
+> +	val = (wled->cfg.mod_sel == MOD_A) ? WLED5_SINK_REG_SYNC_MOD_A_BIT :
+> +					     WLED5_SINK_REG_SYNC_MOD_B_BIT;
+>  	return regmap_update_bits(wled->regmap,
+>  				  wled->sink_addr + WLED5_SINK_REG_MOD_SYNC_BIT,
+> -				  WLED5_SINK_REG_SYNC_MASK, 0);
+> +				  WLED5_SINK_REG_SYNC_MASK, val);
+>  }
+>  
+>  static int wled_ovp_fault_status(struct wled *wled, bool *fault_set)
 > -- 
 > The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 >  a Linux Foundation Collaborative Project

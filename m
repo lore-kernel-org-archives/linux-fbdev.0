@@ -2,124 +2,122 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34378C4321A
-	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 12:14:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4149C433DB
+	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 12:14:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 06ADB64ED2
-	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 12:14:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7186664EEE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 12:14:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229622AbhBZMOE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 26 Feb 2021 07:14:04 -0500
-Received: from m42-2.mailgun.net ([69.72.42.2]:42035 "EHLO m42-2.mailgun.net"
+        id S230195AbhBZMOJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 26 Feb 2021 07:14:09 -0500
+Received: from mga04.intel.com ([192.55.52.120]:33190 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230195AbhBZMNy (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        id S230198AbhBZMNy (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
         Fri, 26 Feb 2021 07:13:54 -0500
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1614341616; h=References: In-Reply-To: Message-Id: Date:
- Subject: Cc: To: From: Sender;
- bh=eu6z2kcT31mkhRofy2D9EtXByOz0EiNCdl00jqY/V+I=; b=Iw4v3yL6bNIjyEwZYCtj242MbPntIG6IRDdCsDB23v4/qLT3jwdPurdkZZ3kpi1PhLPNsYne
- PLu5kS9uNedyDjOM4cyTiP9beoy41NJ5Ku9nUgfgTMyepW1rg6l3hYR6E/Nhfh3NOIFO3nDS
- ySY/sMB/EmkLaDS6x0affTgrQh8=
-X-Mailgun-Sending-Ip: 69.72.42.2
-X-Mailgun-Sid: WyI4YmIzMiIsICJsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n06.prod.us-west-2.postgun.com with SMTP id
- 6038e5d0cc1f7d7e95ed4654 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 26 Feb 2021 12:13:04
- GMT
-Sender: kgunda=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 77F56C433ED; Fri, 26 Feb 2021 12:13:04 +0000 (UTC)
-Received: from kgunda-linux.qualcomm.com (unknown [202.46.22.19])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: kgunda)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 08297C433CA;
-        Fri, 26 Feb 2021 12:12:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 08297C433CA
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=kgunda@codeaurora.org
-From:   Kiran Gunda <kgunda@codeaurora.org>
-To:     bjorn.andersson@linaro.org, jingoohan1@gmail.com,
-        lee.jones@linaro.org, b.zolnierkie@samsung.com,
-        dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org,
-        jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org,
-        mark.rutland@arm.com, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-Cc:     phone-devel@vger.kernel.org, Kiran Gunda <kgunda@codeaurora.org>
-Subject: [PATCH V2 2/2] backlight: qcom-wled: Correct the sync_toggle sequence
-Date:   Fri, 26 Feb 2021 17:42:24 +0530
-Message-Id: <1614341544-5306-3-git-send-email-kgunda@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1614341544-5306-1-git-send-email-kgunda@codeaurora.org>
-References: <1614341544-5306-1-git-send-email-kgunda@codeaurora.org>
+IronPort-SDR: vTug/gGgSZcNX0kuq/eCSMDBYH6eS6Kv4Y5dJ6zHLl/GXyfMOFH7pIMtKJundADBKjE9lcaDV1
+ 2XdDQg2p02zg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9906"; a="183398775"
+X-IronPort-AV: E=Sophos;i="5.81,208,1610438400"; 
+   d="scan'208";a="183398775"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Feb 2021 04:12:08 -0800
+IronPort-SDR: QCKg8pjubAp90lXqeGeoPALpG5qzrqJOgRL0AlLgP82lLZJzn6fJKDI7O11yztOLi9VKo11et/
+ UWa6hqZMV76g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.81,208,1610438400"; 
+   d="scan'208";a="404877581"
+Received: from stinkbox.fi.intel.com (HELO stinkbox) ([10.237.72.171])
+  by orsmga008.jf.intel.com with SMTP; 26 Feb 2021 04:12:04 -0800
+Received: by stinkbox (sSMTP sendmail emulation); Fri, 26 Feb 2021 14:12:03 +0200
+Date:   Fri, 26 Feb 2021 14:12:03 +0200
+From:   Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+To:     Randy Dunlap <rdunlap@infradead.org>
+Cc:     linux-kernel@vger.kernel.org,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        David Airlie <airlied@linux.ie>,
+        Jani Nikula <jani.nikula@linux.intel.com>
+Subject: Re: [PATCH -next] fbdev: atyfb: use LCD management functions for
+ PPC_PMAC also
+Message-ID: <YDjlkzg7/qnPBIKI@intel.com>
+References: <20210226000537.8674-1-rdunlap@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210226000537.8674-1-rdunlap@infradead.org>
+X-Patchwork-Hint: comment
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-As per the current implementation, after FSC (Full Scale Current)
-and brightness update the sync bits are transitioned from 1 to 0.
-But, the FSC and brightness sync takes place during a 0 to 1
-transition of the sync bits. So the hardware team recommends a
-clear-then-set approach in order to guarantee such a transition
-regardless of the previous register state.
+On Thu, Feb 25, 2021 at 04:05:37PM -0800, Randy Dunlap wrote:
+> Include PPC_PMAC in the configs that use aty_ld_lcd() and
+> aty_st_lcd() implementations so that the PM code may work
+> correctly for PPC_PMAC.
+> 
+> Suggested-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Cc: Nick Desaulniers <ndesaulniers@google.com>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: David Airlie <airlied@linux.ie>
+> Cc: Jani Nikula <jani.nikula@linux.intel.com>
+> ---
+> Daniel- We also need this patch:
+> https://lore.kernel.org/dri-devel/20210224215528.822-1-rdunlap@infradead.org/
+> to fix a kernel test robot build error.
+> 
+>  drivers/video/fbdev/aty/atyfb_base.c |    8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
+> 
+> --- linux-next-20210219.orig/drivers/video/fbdev/aty/atyfb_base.c
+> +++ linux-next-20210219/drivers/video/fbdev/aty/atyfb_base.c
+> @@ -132,8 +132,7 @@
+>  #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## args)
+>  #define PRINTKE(fmt, args...)	printk(KERN_ERR "atyfb: " fmt, ## args)
+>  
+> -#if defined(CONFIG_PMAC_BACKLIGHT) || defined(CONFIG_FB_ATY_GENERIC_LCD) || \
+> -defined(CONFIG_FB_ATY_BACKLIGHT)
+> +#if defined(CONFIG_PPC_PMAC)
 
-Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
----
- drivers/video/backlight/qcom-wled.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+Did you send an old version by accident? That's definitely
+not what we want since it would break everything except PPC_PMAC.
 
-diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-index aef52b9..19f83ac 100644
---- a/drivers/video/backlight/qcom-wled.c
-+++ b/drivers/video/backlight/qcom-wled.c
-@@ -337,13 +337,13 @@ static int wled3_sync_toggle(struct wled *wled)
- 
- 	rc = regmap_update_bits(wled->regmap,
- 				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
--				mask, mask);
-+				mask, WLED3_SINK_REG_SYNC_CLEAR);
- 	if (rc < 0)
- 		return rc;
- 
- 	rc = regmap_update_bits(wled->regmap,
- 				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
--				mask, WLED3_SINK_REG_SYNC_CLEAR);
-+				mask, mask);
- 
- 	return rc;
- }
-@@ -353,17 +353,17 @@ static int wled5_mod_sync_toggle(struct wled *wled)
- 	int rc;
- 	u8 val;
- 
--	val = (wled->cfg.mod_sel == MOD_A) ? WLED5_SINK_REG_SYNC_MOD_A_BIT :
--					     WLED5_SINK_REG_SYNC_MOD_B_BIT;
- 	rc = regmap_update_bits(wled->regmap,
- 				wled->sink_addr + WLED5_SINK_REG_MOD_SYNC_BIT,
--				WLED5_SINK_REG_SYNC_MASK, val);
-+				WLED5_SINK_REG_SYNC_MASK, 0);
- 	if (rc < 0)
- 		return rc;
- 
-+	val = (wled->cfg.mod_sel == MOD_A) ? WLED5_SINK_REG_SYNC_MOD_A_BIT :
-+					     WLED5_SINK_REG_SYNC_MOD_B_BIT;
- 	return regmap_update_bits(wled->regmap,
- 				  wled->sink_addr + WLED5_SINK_REG_MOD_SYNC_BIT,
--				  WLED5_SINK_REG_SYNC_MASK, 0);
-+				  WLED5_SINK_REG_SYNC_MASK, val);
- }
- 
- static int wled_ovp_fault_status(struct wled *wled, bool *fault_set)
+>  static const u32 lt_lcd_regs[] = {
+>  	CNFG_PANEL_LG,
+>  	LCD_GEN_CNTL_LG,
+> @@ -175,8 +174,7 @@ u32 aty_ld_lcd(int index, const struct a
+>  		return aty_ld_le32(LCD_DATA, par);
+>  	}
+>  }
+> -#else /* defined(CONFIG_PMAC_BACKLIGHT) || defined(CONFIG_FB_ATY_BACKLIGHT) \
+> -	 defined(CONFIG_FB_ATY_GENERIC_LCD) */
+> +#else /* defined(CONFIG_PPC_PMAC) */
+>  void aty_st_lcd(int index, u32 val, const struct atyfb_par *par)
+>  { }
+>  
+> @@ -184,7 +182,7 @@ u32 aty_ld_lcd(int index, const struct a
+>  {
+>  	return 0;
+>  }
+> -#endif /* defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
+> +#endif /* defined(CONFIG_PPC_PMAC) */
+>  
+>  #ifdef CONFIG_FB_ATY_GENERIC_LCD
+>  /*
+
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
- a Linux Foundation Collaborative Project
-
+Ville Syrjälä
+Intel

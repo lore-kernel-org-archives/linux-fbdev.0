@@ -2,113 +2,179 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15670C433E6
-	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 00:06:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3EF5C433DB
+	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 06:32:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D42D564F21
-	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 00:06:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6CE6264EE3
+	for <linux-fbdev@archiver.kernel.org>; Fri, 26 Feb 2021 06:32:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229993AbhBZAGa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 25 Feb 2021 19:06:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36412 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229491AbhBZAGa (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 25 Feb 2021 19:06:30 -0500
-Received: from merlin.infradead.org (merlin.infradead.org [IPv6:2001:8b0:10b:1231::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE10FC061574;
-        Thu, 25 Feb 2021 16:05:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=merlin.20170209; h=Content-Transfer-Encoding:Content-Type:
-        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-ID:
-        Content-Description:In-Reply-To:References;
-        bh=24dyXhbUb6BL7Gvc/cK7SPB9p+BywOZYcYYdftrrIeU=; b=fRv0oPAPX5XbjEKm5/EQWt1L+A
-        U5Lr/DpfM3BaNtbQPUMjeNsLZFBoggvQzn4Ry00EMtcjAY7ouP0dqwIGapb70DNkhOtjMOpeSCM0X
-        q3xoXoDecVJcjJiHimtshgtcPMTE6gns2PHaKI+4YSvO8jEOGEi2lcfbIpL9aTQ2xE2PY62SUcI0f
-        Yh8VPvCejcEAiMmTw42bYisAMa6r+PNKO3Wa/PJBGH8oiB1RPbeXvXP3IWs5sWIBh1pGxCVaIEHgQ
-        yZv+oyydwkCfo4rPtb1q5W8U4Hv0GvFmAS7Ol0xvE4j2KrQP5hTaa3EaNvol9DzOikGWhcOZkxYQQ
-        c/oXIatA==;
-Received: from [2601:1c0:6280:3f0::3ba4] (helo=merlin.infradead.org)
-        by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1lFQdc-0006Ha-H8; Fri, 26 Feb 2021 00:05:45 +0000
-From:   Randy Dunlap <rdunlap@infradead.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= 
-        <ville.syrjala@linux.intel.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        David Airlie <airlied@linux.ie>,
-        Jani Nikula <jani.nikula@linux.intel.com>
-Subject: [PATCH -next] fbdev: atyfb: use LCD management functions for PPC_PMAC also
-Date:   Thu, 25 Feb 2021 16:05:37 -0800
-Message-Id: <20210226000537.8674-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.26.2
+        id S229590AbhBZGc3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 26 Feb 2021 01:32:29 -0500
+Received: from z11.mailgun.us ([104.130.96.11]:38686 "EHLO z11.mailgun.us"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229449AbhBZGc1 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 26 Feb 2021 01:32:27 -0500
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1614321126; h=Message-ID: References: In-Reply-To: Subject:
+ Cc: To: From: Date: Content-Transfer-Encoding: Content-Type:
+ MIME-Version: Sender; bh=hdl2zflkyzgnrN66H07L0bWdahCjua7YjvzKEgluVvI=;
+ b=OXnsZBaItR+W5N0a3NskU9Le9q/zXQ1vNTP6CPpXtQbS+TOhTnONRIylEaNnbBCG4VNwo5Jv
+ 9Wdsy80BdoWgeaeXfXOK7U0HbubPiosuELNHAVWCGC0oRvVDuk3Vs/z5od0LjUqoitUUdzhK
+ mJknKdwxOOyJDteEra3gdkw2E8Q=
+X-Mailgun-Sending-Ip: 104.130.96.11
+X-Mailgun-Sid: WyI4YmIzMiIsICJsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n07.prod.us-west-2.postgun.com with SMTP id
+ 603895c16bec4e44c6a4030a (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 26 Feb 2021 06:31:29
+ GMT
+Sender: kgunda=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id D0CA3C433CA; Fri, 26 Feb 2021 06:31:29 +0000 (UTC)
+Received: from mail.codeaurora.org (localhost.localdomain [127.0.0.1])
+        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: kgunda)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id B790FC433ED;
+        Fri, 26 Feb 2021 06:31:28 +0000 (UTC)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date:   Fri, 26 Feb 2021 12:01:28 +0530
+From:   kgunda@codeaurora.org
+To:     Daniel Thompson <daniel.thompson@linaro.org>
+Cc:     bjorn.andersson@linaro.org, jingoohan1@gmail.com,
+        lee.jones@linaro.org, b.zolnierkie@samsung.com,
+        dri-devel@lists.freedesktop.org, jacek.anaszewski@gmail.com,
+        pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        phone-devel@vger.kernel.org
+Subject: Re: [PATCH V1 1/2] backlight: qcom-wled: Fix FSC update issue for
+ WLED5
+In-Reply-To: <20210224111505.37t5aq25iszg23iv@maple.lan>
+References: <1614138648-2963-1-git-send-email-kgunda@codeaurora.org>
+ <1614138648-2963-2-git-send-email-kgunda@codeaurora.org>
+ <20210224111505.37t5aq25iszg23iv@maple.lan>
+Message-ID: <6ab55df25e193718c143964dda085d8c@codeaurora.org>
+X-Sender: kgunda@codeaurora.org
+User-Agent: Roundcube Webmail/1.3.9
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Include PPC_PMAC in the configs that use aty_ld_lcd() and
-aty_st_lcd() implementations so that the PM code may work
-correctly for PPC_PMAC.
+On 2021-02-24 16:45, Daniel Thompson wrote:
+> On Wed, Feb 24, 2021 at 09:20:47AM +0530, Kiran Gunda wrote:
+>> Currently, for WLED5, after FSC register update MOD_SYNC_BIT
+>> is toggled instead of SYNC_BIT. MOD_SYNC_BIT has to be toggled
+>> after the brightness update and SYNC_BIT has to be toggled after
+>> FSC update for WLED5. Fix it.
+> 
+> Code looks fine but the description is a difficult to read (which makes
+> mining the history difficult).
+> 
+> Basically the descriptions here are very hard to read without the
+> context in PATCH 0/2. Since PATCH 0/2 won't enter the version history
+> that means these descriptions need to integrate some of the text from
+> what is currently PATCH 0/2.
+> 
+> I would expect this to be more like. It is basically joining together
+> text from PATCH 0 and PATCH 1 (I also switched to plural form for SYNC
+> bits... the code in the driver has mask generation based on the number
+> of strings, is that right?):
+Sorry for the trouble. Yes, you are correct. The mask generation is
+based on the number of strings defined in the device tree and only those
+strings are enabled. However, there is no issue if the SYNC bits of all
+the strings are cleared/set. The SYNC takes place only for enabled 
+strings.
 
-Suggested-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Nick Desaulniers <ndesaulniers@google.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: David Airlie <airlied@linux.ie>
-Cc: Jani Nikula <jani.nikula@linux.intel.com>
----
-Daniel- We also need this patch:
-https://lore.kernel.org/dri-devel/20210224215528.822-1-rdunlap@infradead.org/
-to fix a kernel test robot build error.
-
- drivers/video/fbdev/aty/atyfb_base.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
---- linux-next-20210219.orig/drivers/video/fbdev/aty/atyfb_base.c
-+++ linux-next-20210219/drivers/video/fbdev/aty/atyfb_base.c
-@@ -132,8 +132,7 @@
- #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## args)
- #define PRINTKE(fmt, args...)	printk(KERN_ERR "atyfb: " fmt, ## args)
- 
--#if defined(CONFIG_PMAC_BACKLIGHT) || defined(CONFIG_FB_ATY_GENERIC_LCD) || \
--defined(CONFIG_FB_ATY_BACKLIGHT)
-+#if defined(CONFIG_PPC_PMAC)
- static const u32 lt_lcd_regs[] = {
- 	CNFG_PANEL_LG,
- 	LCD_GEN_CNTL_LG,
-@@ -175,8 +174,7 @@ u32 aty_ld_lcd(int index, const struct a
- 		return aty_ld_le32(LCD_DATA, par);
- 	}
- }
--#else /* defined(CONFIG_PMAC_BACKLIGHT) || defined(CONFIG_FB_ATY_BACKLIGHT) \
--	 defined(CONFIG_FB_ATY_GENERIC_LCD) */
-+#else /* defined(CONFIG_PPC_PMAC) */
- void aty_st_lcd(int index, u32 val, const struct atyfb_par *par)
- { }
- 
-@@ -184,7 +182,7 @@ u32 aty_ld_lcd(int index, const struct a
- {
- 	return 0;
- }
--#endif /* defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
-+#endif /* defined(CONFIG_PPC_PMAC) */
- 
- #ifdef CONFIG_FB_ATY_GENERIC_LCD
- /*
+> ~~~
+> Currently, for WLED5, the FSC (Full scale current) setting is not
+> updated properly due to driver toggling the wrong register after an FSC
+> update.
+> 
+> On WLED5 we should only toggle the MOD_SYNC bit after a brightness
+> update. For an FSC update we need to toggle the SYNC bits instead.
+> 
+> Fix it by adopting the common wled3_sync_toggle() for WLED5 and
+> introducing new code to the brightness update path to
+> compensate.
+> ~~~
+> I will update the Documentation/patch description clearly
+as suggested.
+> 
+> Daniel.
+> 
+> 
+> 
+>> 
+>> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+>> ---
+>>  drivers/video/backlight/qcom-wled.c | 25 +++++++++++++++++++------
+>>  1 file changed, 19 insertions(+), 6 deletions(-)
+>> 
+>> diff --git a/drivers/video/backlight/qcom-wled.c 
+>> b/drivers/video/backlight/qcom-wled.c
+>> index 3bc7800..aef52b9 100644
+>> --- a/drivers/video/backlight/qcom-wled.c
+>> +++ b/drivers/video/backlight/qcom-wled.c
+>> @@ -348,7 +348,7 @@ static int wled3_sync_toggle(struct wled *wled)
+>>  	return rc;
+>>  }
+>> 
+>> -static int wled5_sync_toggle(struct wled *wled)
+>> +static int wled5_mod_sync_toggle(struct wled *wled)
+>>  {
+>>  	int rc;
+>>  	u8 val;
+>> @@ -445,10 +445,23 @@ static int wled_update_status(struct 
+>> backlight_device *bl)
+>>  			goto unlock_mutex;
+>>  		}
+>> 
+>> -		rc = wled->wled_sync_toggle(wled);
+>> -		if (rc < 0) {
+>> -			dev_err(wled->dev, "wled sync failed rc:%d\n", rc);
+>> -			goto unlock_mutex;
+>> +		if (wled->version < 5) {
+>> +			rc = wled->wled_sync_toggle(wled);
+>> +			if (rc < 0) {
+>> +				dev_err(wled->dev, "wled sync failed rc:%d\n", rc);
+>> +				goto unlock_mutex;
+>> +			}
+>> +		} else {
+>> +			/*
+>> +			 * For WLED5 toggling the MOD_SYNC_BIT updates the
+>> +			 * brightness
+>> +			 */
+>> +			rc = wled5_mod_sync_toggle(wled);
+>> +			if (rc < 0) {
+>> +				dev_err(wled->dev, "wled mod sync failed rc:%d\n",
+>> +					rc);
+>> +				goto unlock_mutex;
+>> +			}
+>>  		}
+>>  	}
+>> 
+>> @@ -1459,7 +1472,7 @@ static int wled_configure(struct wled *wled)
+>>  		size = ARRAY_SIZE(wled5_opts);
+>>  		*cfg = wled5_config_defaults;
+>>  		wled->wled_set_brightness = wled5_set_brightness;
+>> -		wled->wled_sync_toggle = wled5_sync_toggle;
+>> +		wled->wled_sync_toggle = wled3_sync_toggle;
+>>  		wled->wled_cabc_config = wled5_cabc_config;
+>>  		wled->wled_ovp_delay = wled5_ovp_delay;
+>>  		wled->wled_auto_detection_required =
+>> --
+>> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora 
+>> Forum,
+>>  a Linux Foundation Collaborative Project
+>> 

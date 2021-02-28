@@ -7,23 +7,22 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04B40C433DB
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42847C433E0
 	for <linux-fbdev@archiver.kernel.org>; Sun, 28 Feb 2021 12:52:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BB26164E86
-	for <linux-fbdev@archiver.kernel.org>; Sun, 28 Feb 2021 12:52:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0C3EB64E86
+	for <linux-fbdev@archiver.kernel.org>; Sun, 28 Feb 2021 12:52:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230075AbhB1MwM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S229654AbhB1MwM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Sun, 28 Feb 2021 07:52:12 -0500
-Received: from m-r2.th.seeweb.it ([5.144.164.171]:48999 "EHLO
-        m-r2.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229654AbhB1MwL (ORCPT
+Received: from relay06.th.seeweb.it ([5.144.164.167]:59613 "EHLO
+        relay06.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229982AbhB1MwL (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Sun, 28 Feb 2021 07:52:11 -0500
-X-Greylist: delayed 558 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Feb 2021 07:52:10 EST
 Received: from localhost.localdomain (abab236.neoplus.adsl.tpnet.pl [83.6.165.236])
-        by m-r2.th.seeweb.it (Postfix) with ESMTPA id 1115E3EBAD;
-        Sun, 28 Feb 2021 13:42:11 +0100 (CET)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPA id F39923E7B3;
+        Sun, 28 Feb 2021 13:42:07 +0100 (CET)
 From:   Konrad Dybcio <konrad.dybcio@somainline.org>
 To:     phone-devel@vger.kernel.org
 Cc:     ~postmarketos/upstreaming@lists.sr.ht, martin.botka@somainline.org,
@@ -40,37 +39,35 @@ Cc:     ~postmarketos/upstreaming@lists.sr.ht, martin.botka@somainline.org,
         dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH 2/2] video: backlight: qcom-wled: Add PMI8994 compatible
-Date:   Sun, 28 Feb 2021 13:41:05 +0100
-Message-Id: <20210228124106.135812-2-konrad.dybcio@somainline.org>
+Subject: [PATCH 1/2] dt-bindings: leds: backlight: qcom-wled: Add PMI8994 compatible
+Date:   Sun, 28 Feb 2021 13:41:04 +0100
+Message-Id: <20210228124106.135812-1-konrad.dybcio@somainline.org>
 X-Mailer: git-send-email 2.30.1
-In-Reply-To: <20210228124106.135812-1-konrad.dybcio@somainline.org>
-References: <20210228124106.135812-1-konrad.dybcio@somainline.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Add a compatible for PMI8994 WLED. It uses the V4 of WLED IP.
+Document the newly added PMI8994 compatible.
 
 Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
 ---
- drivers/video/backlight/qcom-wled.c | 1 +
+ Documentation/devicetree/bindings/leds/backlight/qcom-wled.yaml | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-index 3bc7800eb0a9..497b9035a908 100644
---- a/drivers/video/backlight/qcom-wled.c
-+++ b/drivers/video/backlight/qcom-wled.c
-@@ -1704,6 +1704,7 @@ static int wled_remove(struct platform_device *pdev)
- 
- static const struct of_device_id wled_match_table[] = {
- 	{ .compatible = "qcom,pm8941-wled", .data = (void *)3 },
-+	{ .compatible = "qcom,pmi8994-wled", .data = (void *)4 },
- 	{ .compatible = "qcom,pmi8998-wled", .data = (void *)4 },
- 	{ .compatible = "qcom,pm660l-wled", .data = (void *)4 },
- 	{ .compatible = "qcom,pm8150l-wled", .data = (void *)5 },
+diff --git a/Documentation/devicetree/bindings/leds/backlight/qcom-wled.yaml b/Documentation/devicetree/bindings/leds/backlight/qcom-wled.yaml
+index 47938e372987..d839e75d9788 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/qcom-wled.yaml
++++ b/Documentation/devicetree/bindings/leds/backlight/qcom-wled.yaml
+@@ -19,6 +19,7 @@ properties:
+   compatible:
+     enum:
+       - qcom,pm8941-wled
++      - qcom,pmi8994-wled
+       - qcom,pmi8998-wled
+       - qcom,pm660l-wled
+       - qcom,pm8150l-wled
 -- 
 2.30.1
 

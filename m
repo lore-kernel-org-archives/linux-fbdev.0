@@ -7,27 +7,27 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07502C43381
-	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Mar 2021 16:19:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20676C433E6
+	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Mar 2021 16:31:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A323464EEA
-	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Mar 2021 16:19:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E35C864FA8
+	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Mar 2021 16:31:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237767AbhCAQSy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 1 Mar 2021 11:18:54 -0500
-Received: from mail.kernel.org ([198.145.29.99]:56668 "EHLO mail.kernel.org"
+        id S231927AbhCAQay (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 1 Mar 2021 11:30:54 -0500
+Received: from mail.kernel.org ([198.145.29.99]:59980 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S237747AbhCAQSn (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 1 Mar 2021 11:18:43 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 6A36964E54;
-        Mon,  1 Mar 2021 16:16:53 +0000 (UTC)
+        id S234286AbhCAQ0g (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 1 Mar 2021 11:26:36 -0500
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 487F564EDD;
+        Mon,  1 Mar 2021 16:21:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1614615414;
-        bh=MHKz4ZfKfa6/GOuM1K95FrexJoKp56iRc1lVGLiCp44=;
+        s=korg; t=1614615702;
+        bh=3wsdApE+ivQdIPQmSRneskk1l606D7TT1f/TPSoSOTY=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=jPEqX3uY/DJXOWyiOUbVkhCli6DNGW9oYMaKrY52EHfJwYuuxoI7FX5y/6hMm/Zuh
-         GmVZJzo8iZLG3FnHVXQ3LbokEmzWavoKzc1aN/Oux1pfj0bvQI/ogcst61cnC4w4Bz
-         OxyOu707lXHrjCarZmkc7S5A+zfk5h+MFtJHYKxQ=
+        b=cFpmWGjSdpIDk3L5htrNH7p/2rHxLT3/4j2QdfrG2oQshTs30AwLpGusCCSi3245f
+         Gw+hg2R8O1tQ3/839UNXLmya3GsGRBGk+X5wZ0kBenOc+QJFwCV/T62HAZvwNNnOeS
+         0+lJxb9IEqwDAvVSJANz8/Fyawxqh9gBdni7/uOE=
 From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -42,12 +42,12 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 4.4 20/93] fbdev: aty: SPARC64 requires FB_ATY_CT
-Date:   Mon,  1 Mar 2021 17:12:32 +0100
-Message-Id: <20210301161007.892764932@linuxfoundation.org>
+Subject: [PATCH 4.9 029/134] fbdev: aty: SPARC64 requires FB_ATY_CT
+Date:   Mon,  1 Mar 2021 17:12:10 +0100
+Message-Id: <20210301161015.009709858@linuxfoundation.org>
 X-Mailer: git-send-email 2.30.1
-In-Reply-To: <20210301161006.881950696@linuxfoundation.org>
-References: <20210301161006.881950696@linuxfoundation.org>
+In-Reply-To: <20210301161013.585393984@linuxfoundation.org>
+References: <20210301161013.585393984@linuxfoundation.org>
 User-Agent: quilt/0.66
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -91,10 +91,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 6873be0344486..e24e77e31529e 100644
+index 5d3b0db5ce0af..c0d4e645f3b51 100644
 --- a/drivers/video/fbdev/Kconfig
 +++ b/drivers/video/fbdev/Kconfig
-@@ -1397,6 +1397,7 @@ config FB_ATY
+@@ -1405,6 +1405,7 @@ config FB_ATY
  	select FB_CFB_IMAGEBLIT
  	select FB_BACKLIGHT if FB_ATY_BACKLIGHT
  	select FB_MACMODES if PPC
@@ -102,7 +102,7 @@ index 6873be0344486..e24e77e31529e 100644
  	help
  	  This driver supports graphics boards with the ATI Mach64 chips.
  	  Say Y if you have such a graphics board.
-@@ -1407,7 +1408,6 @@ config FB_ATY
+@@ -1415,7 +1416,6 @@ config FB_ATY
  config FB_ATY_CT
  	bool "Mach64 CT/VT/GT/LT (incl. 3D RAGE) support"
  	depends on PCI && FB_ATY

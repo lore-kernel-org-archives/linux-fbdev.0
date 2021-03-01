@@ -2,85 +2,155 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A33CBC433DB
-	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Mar 2021 04:08:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76BAAC433E6
+	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Mar 2021 08:47:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6461364EE1
-	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Mar 2021 04:08:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4D93C64DE0
+	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Mar 2021 08:47:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232616AbhCAEIR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 28 Feb 2021 23:08:17 -0500
-Received: from szxga07-in.huawei.com ([45.249.212.35]:13388 "EHLO
-        szxga07-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232478AbhCAEIN (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 28 Feb 2021 23:08:13 -0500
-Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.59])
-        by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4Dpmrq0xQxz7rVY;
-        Mon,  1 Mar 2021 12:05:47 +0800 (CST)
-Received: from localhost.localdomain (10.67.165.24) by
- DGGEMS407-HUB.china.huawei.com (10.3.19.207) with Microsoft SMTP Server id
- 14.3.498.0; Mon, 1 Mar 2021 12:07:22 +0800
-From:   Hui Tang <tanghui20@huawei.com>
-To:     <daniel.vetter@ffwll.ch>, <grandmaster@al2klimov.de>,
-        <dri-devel@lists.freedesktop.org>
-CC:     <linux-fbdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] video: fbdev: fix use of 'dma_map_single'
-Date:   Mon, 1 Mar 2021 12:05:09 +0800
-Message-ID: <1614571509-40078-1-git-send-email-tanghui20@huawei.com>
-X-Mailer: git-send-email 2.8.1
+        id S233498AbhCAIre (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 1 Mar 2021 03:47:34 -0500
+Received: from z11.mailgun.us ([104.130.96.11]:19878 "EHLO z11.mailgun.us"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233456AbhCAIqp (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 1 Mar 2021 03:46:45 -0500
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1614588348; h=Message-ID: References: In-Reply-To: Subject:
+ Cc: To: From: Date: Content-Transfer-Encoding: Content-Type:
+ MIME-Version: Sender; bh=Cey4WVl7LtaCP6MJNq4HJn9FVmHktZGEEAE5nLQ/M8A=;
+ b=msX9yDzfT02Z7rRyMhfib8r0n4Lfa3NDw3tpSA9FRrZUFzG0yF4s9bqq5UL0pU/8RCNDLCuH
+ TQ6kcwh03FGvP6rlM3yFBjXaAHmMCLFkXpGs3Np83hqJyNY0eYiIxxrCoCK/tjNRFtw6TPBq
+ iqDShotS/dqqEkX4YVu7zPQGdl0=
+X-Mailgun-Sending-Ip: 104.130.96.11
+X-Mailgun-Sid: WyI4YmIzMiIsICJsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n03.prod.us-west-2.postgun.com with SMTP id
+ 603ca9997aa94c52e7f31703 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Mon, 01 Mar 2021 08:45:13
+ GMT
+Sender: kgunda=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id C8F33C43463; Mon,  1 Mar 2021 08:45:13 +0000 (UTC)
+Received: from mail.codeaurora.org (localhost.localdomain [127.0.0.1])
+        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: kgunda)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id EA03EC43462;
+        Mon,  1 Mar 2021 08:45:12 +0000 (UTC)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.67.165.24]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date:   Mon, 01 Mar 2021 14:15:12 +0530
+From:   kgunda@codeaurora.org
+To:     Daniel Thompson <daniel.thompson@linaro.org>
+Cc:     bjorn.andersson@linaro.org, jingoohan1@gmail.com,
+        lee.jones@linaro.org, b.zolnierkie@samsung.com,
+        dri-devel@lists.freedesktop.org, jacek.anaszewski@gmail.com,
+        pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com,
+        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        phone-devel@vger.kernel.org
+Subject: Re: [PATCH V2 2/2] backlight: qcom-wled: Correct the sync_toggle
+ sequence
+In-Reply-To: <20210226172601.aknj2d4hghkkqjol@maple.lan>
+References: <1614341544-5306-1-git-send-email-kgunda@codeaurora.org>
+ <1614341544-5306-3-git-send-email-kgunda@codeaurora.org>
+ <20210226172601.aknj2d4hghkkqjol@maple.lan>
+Message-ID: <0cca377c2a7648c5f1606e38ba1b7d4d@codeaurora.org>
+X-Sender: kgunda@codeaurora.org
+User-Agent: Roundcube Webmail/1.3.9
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-DMA_TO_DEVICE synchronisation must be done after the last modification
-of the memory region by the software and before it is handed off to
-the device.
+On 2021-02-26 22:56, Daniel Thompson wrote:
+> On Fri, Feb 26, 2021 at 05:42:24PM +0530, Kiran Gunda wrote:
+>> As per the current implementation, after FSC (Full Scale Current)
+>> and brightness update the sync bits are transitioned from 1 to 0.
+> 
+> This still seems to incorrectly describe the current behaviour.
+> 
+> Surely in most cases (i.e. every time except the first) the value of 
+> the
+> sync bit is 0 when the function is called and we get both a 0 to 1
+> and then a 1 to 0 transition.
+> 
+> That is why I recommended set-then-clear terminology to describe the
+> current behaviour. It is concise and correct.
+> 
+> 
+> Daniel.
+> 
+> 
+> 
+Okay. Actually I have mentioned the "clear-and-set" in explaining the 
+fix.
+Let me modify the same terminology in explaining the problem case also.
 
-Signed-off-by: Hui Tang <tanghui20@huawei.com>
----
- drivers/video/fbdev/grvga.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/grvga.c b/drivers/video/fbdev/grvga.c
-index 24818b2..25ae9ef 100644
---- a/drivers/video/fbdev/grvga.c
-+++ b/drivers/video/fbdev/grvga.c
-@@ -435,6 +435,8 @@ static int grvga_probe(struct platform_device *dev)
- 			retval = -ENOMEM;
- 			goto dealloc_cmap;
- 		}
-+
-+		memset((unsigned long *) virtual_start, 0, grvga_mem_size);
- 	} else {	/* Allocate frambuffer memory */
- 
- 		unsigned long page;
-@@ -449,6 +451,7 @@ static int grvga_probe(struct platform_device *dev)
- 			goto dealloc_cmap;
- 		}
- 
-+		memset((unsigned long *) virtual_start, 0, grvga_mem_size);
- 		physical_start = dma_map_single(&dev->dev, (void *)virtual_start, grvga_mem_size, DMA_TO_DEVICE);
- 
- 		/* Set page reserved so that mmap will work. This is necessary
-@@ -463,8 +466,6 @@ static int grvga_probe(struct platform_device *dev)
- 		par->fb_alloced = 1;
- 	}
- 
--	memset((unsigned long *) virtual_start, 0, grvga_mem_size);
--
- 	info->screen_base = (char __iomem *) virtual_start;
- 	info->fix.smem_start = physical_start;
- 	info->fix.smem_len   = grvga_mem_size;
--- 
-2.8.1
-
+>> But, the FSC and brightness sync takes place during a 0 to 1
+>> transition of the sync bits. So the hardware team recommends a
+>> clear-then-set approach in order to guarantee such a transition
+>> regardless of the previous register state.
+>> 
+>> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+>> ---
+>>  drivers/video/backlight/qcom-wled.c | 12 ++++++------
+>>  1 file changed, 6 insertions(+), 6 deletions(-)
+>> 
+>> diff --git a/drivers/video/backlight/qcom-wled.c 
+>> b/drivers/video/backlight/qcom-wled.c
+>> index aef52b9..19f83ac 100644
+>> --- a/drivers/video/backlight/qcom-wled.c
+>> +++ b/drivers/video/backlight/qcom-wled.c
+>> @@ -337,13 +337,13 @@ static int wled3_sync_toggle(struct wled *wled)
+>> 
+>>  	rc = regmap_update_bits(wled->regmap,
+>>  				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
+>> -				mask, mask);
+>> +				mask, WLED3_SINK_REG_SYNC_CLEAR);
+>>  	if (rc < 0)
+>>  		return rc;
+>> 
+>>  	rc = regmap_update_bits(wled->regmap,
+>>  				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
+>> -				mask, WLED3_SINK_REG_SYNC_CLEAR);
+>> +				mask, mask);
+>> 
+>>  	return rc;
+>>  }
+>> @@ -353,17 +353,17 @@ static int wled5_mod_sync_toggle(struct wled 
+>> *wled)
+>>  	int rc;
+>>  	u8 val;
+>> 
+>> -	val = (wled->cfg.mod_sel == MOD_A) ? WLED5_SINK_REG_SYNC_MOD_A_BIT :
+>> -					     WLED5_SINK_REG_SYNC_MOD_B_BIT;
+>>  	rc = regmap_update_bits(wled->regmap,
+>>  				wled->sink_addr + WLED5_SINK_REG_MOD_SYNC_BIT,
+>> -				WLED5_SINK_REG_SYNC_MASK, val);
+>> +				WLED5_SINK_REG_SYNC_MASK, 0);
+>>  	if (rc < 0)
+>>  		return rc;
+>> 
+>> +	val = (wled->cfg.mod_sel == MOD_A) ? WLED5_SINK_REG_SYNC_MOD_A_BIT :
+>> +					     WLED5_SINK_REG_SYNC_MOD_B_BIT;
+>>  	return regmap_update_bits(wled->regmap,
+>>  				  wled->sink_addr + WLED5_SINK_REG_MOD_SYNC_BIT,
+>> -				  WLED5_SINK_REG_SYNC_MASK, 0);
+>> +				  WLED5_SINK_REG_SYNC_MASK, val);
+>>  }
+>> 
+>>  static int wled_ovp_fault_status(struct wled *wled, bool *fault_set)
+>> --
+>> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora 
+>> Forum,
+>>  a Linux Foundation Collaborative Project
+>> 

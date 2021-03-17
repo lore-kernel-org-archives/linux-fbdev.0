@@ -2,132 +2,114 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A17B5C433E0
-	for <linux-fbdev@archiver.kernel.org>; Wed, 17 Mar 2021 04:06:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCDFDC433E6
+	for <linux-fbdev@archiver.kernel.org>; Wed, 17 Mar 2021 09:16:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7DC2164F96
-	for <linux-fbdev@archiver.kernel.org>; Wed, 17 Mar 2021 04:06:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7FDA164F44
+	for <linux-fbdev@archiver.kernel.org>; Wed, 17 Mar 2021 09:16:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229708AbhCQEGU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 17 Mar 2021 00:06:20 -0400
-Received: from m42-10.mailgun.net ([69.72.42.10]:51884 "EHLO
-        m42-10.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229761AbhCQEFu (ORCPT
+        id S229704AbhCQJQI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 17 Mar 2021 05:16:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43412 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229954AbhCQJQE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 17 Mar 2021 00:05:50 -0400
-X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Mar 2021 00:05:50 EDT
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1615953950; h=Message-ID: References: In-Reply-To: Subject:
- Cc: To: From: Date: Content-Transfer-Encoding: Content-Type:
- MIME-Version: Sender; bh=JzDLSu+qwz6G/WNOU91LdfXeIczEE/TTUZtA6eKrw7E=;
- b=lI6xYLh1taMEtIhPBpoBxdtaDgDaMdsZHmlKzJeREpgEotBcBwDNKJTbgR93x4hK2wilI+nj
- AzpGYR0IQDrVN1gJbpdpNlxjG2i7r7823e18O8DC/JqQhLuCIaE4lvuF+yRltF+5upeemVHO
- giCVqiAL2Y/Jbl5Yy+Mih1BltlM=
-X-Mailgun-Sending-Ip: 69.72.42.10
-X-Mailgun-Sid: WyI4YmIzMiIsICJsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n05.prod.us-west-2.postgun.com with SMTP id
- 60517eddc32ceb3a917d03bd (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Wed, 17 Mar 2021 04:00:29
- GMT
-Sender: kgunda=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 95D4DC43465; Wed, 17 Mar 2021 04:00:29 +0000 (UTC)
-Received: from mail.codeaurora.org (localhost.localdomain [127.0.0.1])
-        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        (Authenticated sender: kgunda)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 77AE5C433CA;
-        Wed, 17 Mar 2021 04:00:28 +0000 (UTC)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Date:   Wed, 17 Mar 2021 09:30:28 +0530
-From:   kgunda@codeaurora.org
-To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     Marijn Suijten <marijn.suijten@somainline.org>,
-        phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
+        Wed, 17 Mar 2021 05:16:04 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF962C061760
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 Mar 2021 02:16:03 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id b9so1008685wrt.8
+        for <linux-fbdev@vger.kernel.org>; Wed, 17 Mar 2021 02:16:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=oTL9AJaFLnaIJwp+xH/32TIHC+0/+FSk9wN00bes39U=;
+        b=uMXE+VtjZWadyYCebKZ3fIggjz4V1ChdYHWACmzHieC+U5oQgoCuWUExVACd5lgsxw
+         w8s4oFwYG2AfLmamwBO9l9q/0TJ0gCkYFIuji6TWH18CtdAPoR6InemljL7TIsIXKRtt
+         4A7O7wFyg52FK5pUVZzz0oLvx9BjVIqhabtjd6KLq01ti84V3Jhp4GcEDmBBZ3vOAH1e
+         fUDXTKuJbq6ffGadIu8bCA9YpaFqktUqK6fzurFSa82mW9TodOD9yp+4OW+3IXowiWBO
+         aa59V0PpQbYGVaH6WRVool0cghcBDK8OnkTMFtqO/nFZAO4i2WcpJTi7t9ouldiPeFE6
+         4N9Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=oTL9AJaFLnaIJwp+xH/32TIHC+0/+FSk9wN00bes39U=;
+        b=B4DfMXHI1Tp6TVUOvqsJb4SJVWyn0q1Y6Hy/eTS1CNiCSeT5i6BIxrOxptMKS3vCM9
+         I9Of8V2R0fGQ0K7+HYupH4E7TUDCMk97x698vQoQmLEppygVyQNnL6ggU9ZTJSW1QSgR
+         vEI1w6JPknsg8s7RBIcfp4gsAgRrs1e58UBARjwh9VqYb4ZdOHzAX5e+Vt9CXJZmGNIP
+         xQaEBcPKJBDRiPwj+gexFdWf2vlpzHNpOOKmDq9ZnqOo5fm+G5uABPX8BbJxblA7m3is
+         rdlU8Ffu5eMNmFGzykHiQXRWHi7uTe2OHE8RdqKd/kCTwIMxR1Ixf0puZE7iHhhRYklK
+         rb8A==
+X-Gm-Message-State: AOAM5310591MXJVIjOxvf7AFoehBYC6OKq1zTbw4jS1C4r/zVnT1wTdI
+        HZR8jLuyt9B6p6sJE9UfvU/kgg==
+X-Google-Smtp-Source: ABdhPJzccso7yYfvjZ0BNG+B/bhDroptmdi0xF07T+f0b52aGSdXhB4T8OlAfzgB2MnMHmOq7BNizg==
+X-Received: by 2002:a5d:4587:: with SMTP id p7mr3343208wrq.205.1615972562580;
+        Wed, 17 Mar 2021 02:16:02 -0700 (PDT)
+Received: from dell ([91.110.221.194])
+        by smtp.gmail.com with ESMTPSA id p14sm1765900wmc.30.2021.03.17.02.16.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 17 Mar 2021 02:16:02 -0700 (PDT)
+Date:   Wed, 17 Mar 2021 09:16:00 +0000
+From:   Lee Jones <lee.jones@linaro.org>
+To:     Marijn Suijten <marijn.suijten@somainline.org>
+Cc:     phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>,
         Konrad Dybcio <konrad.dybcio@somainline.org>,
         Martin Botka <martin.botka@somainline.org>,
+        Kiran Gunda <kgunda@codeaurora.org>,
         Obeida Shamoun <oshmoun100@googlemail.com>,
         Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>,
         linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] backlight: qcom-wled: Use sink_addr for sync toggle
-In-Reply-To: <20210315122158.ptqi6xvngf6ihjum@maple.lan>
+Message-ID: <20210317091600.GJ701493@dell>
 References: <20210314101110.48024-1-marijn.suijten@somainline.org>
- <20210315122158.ptqi6xvngf6ihjum@maple.lan>
-Message-ID: <347b2f4efa08e051ed764b22e5dc98a2@codeaurora.org>
-X-Sender: kgunda@codeaurora.org
-User-Agent: Roundcube Webmail/1.3.9
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210314101110.48024-1-marijn.suijten@somainline.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2021-03-15 17:51, Daniel Thompson wrote:
-> On Sun, Mar 14, 2021 at 11:11:10AM +0100, Marijn Suijten wrote:
->> From: Obeida Shamoun <oshmoun100@googlemail.com>
->> 
->> WLED3_SINK_REG_SYNC is, as the name implies, a sink register offset.
->> Therefore, use the sink address as base instead of the ctrl address.
->> 
->> This fixes the sync toggle on wled4, which can be observed by the fact
->> that adjusting brightness now works.
->> 
->> It has no effect on wled3 because sink and ctrl base addresses are the
->> same.  This allows adjusting the brightness without having to disable
->> then reenable the module.
->> 
->> Signed-off-by: Obeida Shamoun <oshmoun100@googlemail.com>
->> Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
->> Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
-> 
-> LGTM, although an acked-by from Kiran would be nice to have:
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> 
-> 
-> Daniel.
-> 
-> 
-Acked-by: Kiran Gunda <kgunda@codeaurora.org>
+On Sun, 14 Mar 2021, Marijn Suijten wrote:
 
->> ---
->>  drivers/video/backlight/qcom-wled.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->> 
->> diff --git a/drivers/video/backlight/qcom-wled.c 
->> b/drivers/video/backlight/qcom-wled.c
->> index 091f07e7c145..fc8b443d10fd 100644
->> --- a/drivers/video/backlight/qcom-wled.c
->> +++ b/drivers/video/backlight/qcom-wled.c
->> @@ -336,13 +336,13 @@ static int wled3_sync_toggle(struct wled *wled)
->>  	unsigned int mask = GENMASK(wled->max_string_count - 1, 0);
->> 
->>  	rc = regmap_update_bits(wled->regmap,
->> -				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
->> +				wled->sink_addr + WLED3_SINK_REG_SYNC,
->>  				mask, mask);
->>  	if (rc < 0)
->>  		return rc;
->> 
->>  	rc = regmap_update_bits(wled->regmap,
->> -				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
->> +				wled->sink_addr + WLED3_SINK_REG_SYNC,
->>  				mask, WLED3_SINK_REG_SYNC_CLEAR);
->> 
->>  	return rc;
->> --
->> 2.30.2
->> 
+> From: Obeida Shamoun <oshmoun100@googlemail.com>
+> 
+> WLED3_SINK_REG_SYNC is, as the name implies, a sink register offset.
+> Therefore, use the sink address as base instead of the ctrl address.
+> 
+> This fixes the sync toggle on wled4, which can be observed by the fact
+> that adjusting brightness now works.
+> 
+> It has no effect on wled3 because sink and ctrl base addresses are the
+> same.  This allows adjusting the brightness without having to disable
+> then reenable the module.
+> 
+> Signed-off-by: Obeida Shamoun <oshmoun100@googlemail.com>
+> Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
+> Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
+> ---
+>  drivers/video/backlight/qcom-wled.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+
+Applied, thanks.
+
+-- 
+Lee Jones [李琼斯]
+Senior Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog

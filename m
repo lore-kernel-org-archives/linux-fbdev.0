@@ -2,113 +2,130 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-19.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 857CEC433C1
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 16:19:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7ADB4C433E0
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 16:42:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4988B61923
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 16:19:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 49E92619AC
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 16:42:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231547AbhCVQSr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 22 Mar 2021 12:18:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44854 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231241AbhCVQSP (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 22 Mar 2021 12:18:15 -0400
-Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 460AEC061762
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 Mar 2021 09:18:14 -0700 (PDT)
-Received: by mail-ej1-x635.google.com with SMTP id jy13so22230498ejc.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 22 Mar 2021 09:18:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=5fPU70P+apIZaZ90738281RBQVtiFO6xyPzB24/nFj0=;
-        b=PPVMKoO2LmrxB/EqF6MdsVCuOvCwzdnYIGu2CT53plAQh+yZIwJP+JPbBQG8Mez/X4
-         dL+oIx21/VF4Hq39I/bVUmtrzWJmFH7xgszYCiT6J/He6X7upD15585k4QOPFADu+/eD
-         QGre1T0qcLb0GWCg+tAd2MOaQpSFdYMLRvJ9ocygy2vTtaMWSScKS0tdYl6wOAWqz4wo
-         LuanlAHsC/rGWiQE/jkEUFFhBiiHpYDaYCa8eUN8gX7TC4Pna+GrsqForZ85Nrxp3sbW
-         U9FgvTr2gCIpDVhOQvLw9b1r+gGjYEy2RnlbmW5LH+1/GPpC1dGpGaafVjfP69uGspZ+
-         3Chg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=5fPU70P+apIZaZ90738281RBQVtiFO6xyPzB24/nFj0=;
-        b=mYsnGS+oP7QwKo1Hxh7VMRiUmW1UYGUDGPJoSGqyjNpKWtDM32hC1dW2A31Doqmd4J
-         EbktD/93JEygg3oXW6akYGCeX/wIs3G6pJ5/0CXV0miFjC67/ve+ZWKPrG9QMubiLcr7
-         6x84pdwzTtNxShouqeqv398sNBWmrLeBoSHRzwFkYrsdbwXFKjiCAj1Eelf1xGTA59Xz
-         xjCTsZxrKHsE0c2L8tAfmPNOEcDkJjteO/sbHhF0ZvKqXcGB7tW/mfgBJqzzl0tKmx37
-         eW20009S9NHKcr2WYYtVFOzXUo41Ia0G9iDm/yAdlPD8GRqd7JzXJbnFQtNkMgUX3a6z
-         fTug==
-X-Gm-Message-State: AOAM530++JDYbst4uxP6ehrl2rB/MtMzEFOSaL/QkHIWv90ptenR/cAR
-        9Y0KkwsvigB4RSz9HfOnfHCS1A==
-X-Google-Smtp-Source: ABdhPJxWxOTWcNLPwlbFuHUTnCQvbb7chDavRLIX6ffZBF7loKDa89ZLnniTNDnUEtQqJ6ccAuewSw==
-X-Received: by 2002:a17:906:b316:: with SMTP id n22mr539237ejz.249.1616429892990;
-        Mon, 22 Mar 2021 09:18:12 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id q12sm9950268ejy.91.2021.03.22.09.18.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Mar 2021 09:18:12 -0700 (PDT)
-Date:   Mon, 22 Mar 2021 16:18:10 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Konrad Dybcio <konrad.dybcio@somainline.org>
-Cc:     phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
-        martin.botka@somainline.org,
-        angelogioacchino.delregno@somainline.org,
-        marijn.suijten@somainline.org, Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Dan Murphy <dmurphy@ti.com>, Rob Herring <robh+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Kiran Gunda <kgunda@codeaurora.org>,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] video: backlight: qcom-wled: Add PMI8994 compatible
-Message-ID: <20210322161810.biagj2qro66rv4gt@maple.lan>
-References: <20210228124106.135812-1-konrad.dybcio@somainline.org>
- <20210228124106.135812-2-konrad.dybcio@somainline.org>
+        id S231391AbhCVQln (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 Mar 2021 12:41:43 -0400
+Received: from mail.kernel.org ([198.145.29.99]:34736 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231989AbhCVQlk (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 22 Mar 2021 12:41:40 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id D3D6461983;
+        Mon, 22 Mar 2021 16:41:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1616431299;
+        bh=wTCQr9EWReJqtv/s8uqRSPBYWLbukkFUAZ7BJJhYHhI=;
+        h=From:To:Cc:Subject:Date:From;
+        b=FPrmYxwLnsZstci9axXyytZZzCy9y3Cevl1KqesKwOuenXzXvlVzxhadzwKXI54mr
+         aSjFBZSVdDt22a6tXaI7+rJMgbES/VMyJGT6D0V0jpWtdKNJjJBI7i+FF1Cxm2JvSz
+         Df/icB4sJaXsfPKndnUEX+SJzndY/e/Moin0GZrEgqjqDA1WPy4+f/S3jS/eSYmgQR
+         cX1/5h5kq98Nru1lJO0vBoWrejwnli8I7gsqb9nlCSypsvDhhCyy5J4kLgSCWnWpTO
+         6APc7UdRuJKkdl0BJr4RE5gCy+vyln4Nw7PNsov+iQZrMrG1+gfPGHmvVsIRo0WQH4
+         09iB9yXFo/YoA==
+From:   Arnd Bergmann <arnd@kernel.org>
+To:     Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+        Richard Purdie <rpurdie@linux.intel.com>
+Cc:     Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] backlight: journada720: fix Wmisleading-indentation warning
+Date:   Mon, 22 Mar 2021 17:41:28 +0100
+Message-Id: <20210322164134.827091-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210228124106.135812-2-konrad.dybcio@somainline.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Feb 28, 2021 at 01:41:05PM +0100, Konrad Dybcio wrote:
-> Add a compatible for PMI8994 WLED. It uses the V4 of WLED IP.
-> 
-> Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
+From: Arnd Bergmann <arnd@arndb.de>
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+With gcc-11, we get a warning about code that looks correct
+but badly indented:
 
+drivers/video/backlight/jornada720_bl.c: In function ‘jornada_bl_update_status’:
+drivers/video/backlight/jornada720_bl.c:66:11: error: this ‘else’ clause does not guard... [-Werror=misleading-indentation]
+   66 |         } else  /* turn on backlight */
+      |           ^~~~
 
-Daniel.
+Change the formatting according to our normal conventions.
 
+Fixes: 13a7b5dc0d17 ("backlight: Adds HP Jornada 700 series backlight driver")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/backlight/jornada720_bl.c | 44 ++++++++++++-------------
+ 1 file changed, 22 insertions(+), 22 deletions(-)
 
-> ---
->  drivers/video/backlight/qcom-wled.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-> index 3bc7800eb0a9..497b9035a908 100644
-> --- a/drivers/video/backlight/qcom-wled.c
-> +++ b/drivers/video/backlight/qcom-wled.c
-> @@ -1704,6 +1704,7 @@ static int wled_remove(struct platform_device *pdev)
->  
->  static const struct of_device_id wled_match_table[] = {
->  	{ .compatible = "qcom,pm8941-wled", .data = (void *)3 },
-> +	{ .compatible = "qcom,pmi8994-wled", .data = (void *)4 },
->  	{ .compatible = "qcom,pmi8998-wled", .data = (void *)4 },
->  	{ .compatible = "qcom,pm660l-wled", .data = (void *)4 },
->  	{ .compatible = "qcom,pm8150l-wled", .data = (void *)5 },
-> -- 
-> 2.30.1
+diff --git a/drivers/video/backlight/jornada720_bl.c b/drivers/video/backlight/jornada720_bl.c
+index 996f7ba3b373..066d0dc98f60 100644
+--- a/drivers/video/backlight/jornada720_bl.c
++++ b/drivers/video/backlight/jornada720_bl.c
+@@ -66,30 +66,30 @@ static int jornada_bl_update_status(struct backlight_device *bd)
+ 	} else  /* turn on backlight */
+ 		PPSR |= PPC_LDD1;
+ 
+-		/* send command to our mcu */
+-		if (jornada_ssp_byte(SETBRIGHTNESS) != TXDUMMY) {
+-			dev_info(&bd->dev, "failed to set brightness\n");
+-			ret = -ETIMEDOUT;
+-			goto out;
+-		}
++	/* send command to our mcu */
++	if (jornada_ssp_byte(SETBRIGHTNESS) != TXDUMMY) {
++		dev_info(&bd->dev, "failed to set brightness\n");
++		ret = -ETIMEDOUT;
++		goto out;
++	}
+ 
+-		/*
+-		 * at this point we expect that the mcu has accepted
+-		 * our command and is waiting for our new value
+-		 * please note that maximum brightness is 255,
+-		 * but due to physical layout it is equal to 0, so we simply
+-		 * invert the value (MAX VALUE - NEW VALUE).
+-		 */
+-		if (jornada_ssp_byte(BL_MAX_BRIGHT - bd->props.brightness)
+-			!= TXDUMMY) {
+-			dev_err(&bd->dev, "set brightness failed\n");
+-			ret = -ETIMEDOUT;
+-		}
++	/*
++	 * at this point we expect that the mcu has accepted
++	 * our command and is waiting for our new value
++	 * please note that maximum brightness is 255,
++	 * but due to physical layout it is equal to 0, so we simply
++	 * invert the value (MAX VALUE - NEW VALUE).
++	 */
++	if (jornada_ssp_byte(BL_MAX_BRIGHT - bd->props.brightness)
++		!= TXDUMMY) {
++		dev_err(&bd->dev, "set brightness failed\n");
++		ret = -ETIMEDOUT;
++	}
+ 
+-		/*
+-		 * If infact we get an TXDUMMY as output we are happy and dont
+-		 * make any further comments about it
+-		 */
++	/*
++	 * If infact we get an TXDUMMY as output we are happy and dont
++	 * make any further comments about it
++	 */
+ out:
+ 	jornada_ssp_end();
+ 
+-- 
+2.29.2
+

@@ -3,115 +3,134 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 210FBC433E0
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 13:04:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D88E7C433C1
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 14:00:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E5CDD6187E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 13:04:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8BBC96197F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 14:00:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232530AbhCVNEQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 22 Mar 2021 09:04:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58554 "EHLO
+        id S230461AbhCVN76 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 Mar 2021 09:59:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42864 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233059AbhCVNC0 (ORCPT
+        with ESMTP id S230376AbhCVN7a (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 22 Mar 2021 09:02:26 -0400
-Received: from mail-qk1-x72c.google.com (mail-qk1-x72c.google.com [IPv6:2607:f8b0:4864:20::72c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 956DAC061756;
-        Mon, 22 Mar 2021 06:02:25 -0700 (PDT)
-Received: by mail-qk1-x72c.google.com with SMTP id c3so10359024qkc.5;
-        Mon, 22 Mar 2021 06:02:25 -0700 (PDT)
+        Mon, 22 Mar 2021 09:59:30 -0400
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 904EDC061756
+        for <linux-fbdev@vger.kernel.org>; Mon, 22 Mar 2021 06:59:27 -0700 (PDT)
+Received: by mail-wr1-x435.google.com with SMTP id k8so16958590wrc.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 22 Mar 2021 06:59:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=dMH4QAnKMYAm7SV5kDPsGP+GUy0GDEG+vPXEkoZ0Tc8=;
-        b=UiWo5DT0T6s2hIq4vT2rvCAkJOPIUgQVjcBgQe58BOP9zL6pUJF0ZKVaJ0GiW97qeK
-         hqMjKxAti3LtuoC30QcGslmlNw/9tJoC/hcDjIR/2ECJbIqxUg/uS9G222r1CulMkv4s
-         DHo/nJ4n1Y9Ee+RyyzxSahr+v5eV9Cuz/wSO7zizBtqEkPs7TtCXpv7UtRSjLD6Dz3Hv
-         fSRIePlXgSFxGJjzIJMfDS5JJOyiFhLBS5DwDsUO8yEQrTR3iR2icQVJRcNu4hORRvzd
-         45JQDRKjfEigGkKFr/peQNu3GmT7zVCA9qUComZupiOCC8chBYFGwVwQCgr6RG+VqSal
-         MmOw==
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=aKdbo+Uu7/ENUhR68YhWcl8X+eXVBT0c9mOmmwkHCnM=;
+        b=Gj1KfSTiuddoeJH/lBxsJ9EQ+hE8vdALwwP0jUHXIqZijfU4GRCWVEKf5dBdMI35bm
+         nivCJhhOxw/eaDu8UI+2szAEnV7uUla9f8wOW74JT7ZqK3cuLcRPwfvklX+AKZp++XAp
+         wPnWch7Uk2Ve+Gfh9gfzGt7MSCaex2xttVyss=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=dMH4QAnKMYAm7SV5kDPsGP+GUy0GDEG+vPXEkoZ0Tc8=;
-        b=jWbMLzYnKP941AAzjhAZEOEPyj1XmQ1ZHwBuz40cNAPziKIacgRMkF+vkFbzugyn0R
-         88yOclxkQwJa5lyk/PLWKwi5gRpkb8uauuk8dFI34wxzEBgPrW2oaAAzWob+KDyjHEYi
-         tRKg/IC9hd62MNhpQI2JKqjfInwn3njb8hkcKKzcOVk4ZnZBiKjQgVmYRG38McdWcblR
-         7dLsnnNegZPyXLTqcQi5eRn8LXmbsoNLcKzQ+kNcBdgzIUYvKrX6tQWKrqyLetYOPa54
-         CgB4wJtB0jLEkDLTZIJJiSTnmYMVL51IoXYX2Q47rUalXSIQrfFhL3rYQoM8SMTHlMSX
-         E+tQ==
-X-Gm-Message-State: AOAM533PX2GFpURyqTG/DWz9swqyjqFXjOeJ2VKHLCG4oqAItVzjmXNQ
-        GVT5YDqwZmFTu0yraYoJ4Ck=
-X-Google-Smtp-Source: ABdhPJx+9Viv9Em+PGreRyAyt7xaYv9wDXL//i4JvTFnQZYD+AXa6lRIzDFP80ZnSLA7VZ3tVkmr1w==
-X-Received: by 2002:a37:a9cf:: with SMTP id s198mr10303355qke.143.1616418144881;
-        Mon, 22 Mar 2021 06:02:24 -0700 (PDT)
-Received: from localhost.localdomain ([143.244.44.200])
-        by smtp.gmail.com with ESMTPSA id z89sm8963497qtd.5.2021.03.22.06.02.19
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :in-reply-to;
+        bh=aKdbo+Uu7/ENUhR68YhWcl8X+eXVBT0c9mOmmwkHCnM=;
+        b=Yq+r3uiabkvTxmwCY0SKUO8ZBxs1UAgUJ8CjaA54QyFdHxzZx6UQG3YV3uPY3EufA+
+         AeclWefHKMps550S3BU6K4VknSEtamC4VLyD7mmomwjkDtBz252VFzlRwhcOpFNiXysw
+         5epqIbKNgk04tHd7Kr+Z59uBCgLYyJEXkBvpThVq1HkYyoQa4o83x+NVSMLrQNKbqPc8
+         FCnqZR1JtA4+K5ybDLln7QE5jXz5APXX0UFANdJX6BzSQJ4W0CiU9KifC0zU0OTPbEyZ
+         VMwwQeD1VmyPgAqj8AowFm+IAdk6vRyB/nXE5Fr7AQM2UdIvNAgOkRAjFRzo1gk2t1Le
+         fT6g==
+X-Gm-Message-State: AOAM533kfrH/KgCGE2uDYfEoN/9ki3RFM59Fv+b+lHtwnrtsXO8z226y
+        XWH0rO/2KftF7FEQbVjpokGl3g==
+X-Google-Smtp-Source: ABdhPJxBJbd4aMVAfgIyjvZ1Cg0G2JhoHy5EF4aIr3EEDV5lFFXSjfEDIl29cpNrk8EoT35qvP8akw==
+X-Received: by 2002:adf:e441:: with SMTP id t1mr18441558wrm.21.1616421566393;
+        Mon, 22 Mar 2021 06:59:26 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id v13sm22720694wrt.45.2021.03.22.06.59.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Mar 2021 06:02:22 -0700 (PDT)
-From:   Bhaskar Chowdhury <unixbhaskar@gmail.com>
-To:     unixbhaskar@gmail.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     rdunlap@infradead.org
-Subject: [PATCH] video: mmp: Few typo fixes
-Date:   Mon, 22 Mar 2021 18:32:10 +0530
-Message-Id: <20210322130210.3641181-1-unixbhaskar@gmail.com>
-X-Mailer: git-send-email 2.31.0
+        Mon, 22 Mar 2021 06:59:25 -0700 (PDT)
+Date:   Mon, 22 Mar 2021 14:59:24 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Arnd Bergmann <arnd@kernel.org>
+Cc:     dri-devel@lists.freedesktop.org,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
+        Arnd Bergmann <arnd@arndb.de>, Yue Zou <zouyue3@huawei.com>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] vgaarb: avoid -Wempty-body warnings
+Message-ID: <YFiivD6B5SZLZl7Z@phenom.ffwll.local>
+Mail-Followup-To: Arnd Bergmann <arnd@kernel.org>,
+        dri-devel@lists.freedesktop.org,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>, linux-fbdev@vger.kernel.org,
+        Arnd Bergmann <arnd@arndb.de>, Yue Zou <zouyue3@huawei.com>,
+        linux-kernel@vger.kernel.org
+References: <20210322105307.1291840-1-arnd@kernel.org>
+ <20210322105307.1291840-2-arnd@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210322105307.1291840-2-arnd@kernel.org>
+X-Operating-System: Linux phenom 5.7.0-1-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On Mon, Mar 22, 2021 at 11:53:00AM +0100, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> Building with W=1 shows a few warnings for an empty macro:
+> 
+> drivers/gpu/drm/qxl/qxl_drv.c: In function 'qxl_pci_probe':
+> drivers/gpu/drm/qxl/qxl_drv.c:131:50: error: suggest braces around empty body in an 'if' statement [-Werror=empty-body]
+>   131 |                 vga_put(pdev, VGA_RSRC_LEGACY_IO);
+>       |                                                  ^
+> drivers/gpu/drm/qxl/qxl_drv.c: In function 'qxl_pci_remove':
+> drivers/gpu/drm/qxl/qxl_drv.c:159:50: error: suggest braces around empty body in an 'if' statement [-Werror=empty-body]
+>   159 |                 vga_put(pdev, VGA_RSRC_LEGACY_IO);
+> 
+> Change this to an inline function to make it more robust and avoid
+> the warning.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-s/configed/configured/
-s/registed/registered/
-s/defintions/definitions/
+Both applied to drm-misc-next for 5.13, thanks for your patches.
+-Daniel
 
-Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
----
- include/video/mmp_disp.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+> ---
+>  include/linux/vgaarb.h | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/vgaarb.h b/include/linux/vgaarb.h
+> index fc6dfeba04a5..dc6ddce92066 100644
+> --- a/include/linux/vgaarb.h
+> +++ b/include/linux/vgaarb.h
+> @@ -112,7 +112,9 @@ static inline int vga_get_uninterruptible(struct pci_dev *pdev,
+>  #if defined(CONFIG_VGA_ARB)
+>  extern void vga_put(struct pci_dev *pdev, unsigned int rsrc);
+>  #else
+> -#define vga_put(pdev, rsrc)
+> +static inline void vga_put(struct pci_dev *pdev, unsigned int rsrc)
+> +{
+> +}
+>  #endif
+>  
+>  
+> -- 
+> 2.29.2
+> 
 
-diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
-index 77252cb46361..ea8b4331b7a1 100644
---- a/include/video/mmp_disp.h
-+++ b/include/video/mmp_disp.h
-@@ -172,7 +172,7 @@ struct mmp_panel {
- 	/* use node to register to list */
- 	struct list_head node;
- 	const char *name;
--	/* path name used to connect to proper path configed */
-+	/* path name used to connect to proper path configured */
- 	const char *plat_path_name;
- 	struct device *dev;
- 	int panel_type;
-@@ -291,7 +291,7 @@ static inline int mmp_overlay_set_addr(struct mmp_overlay *overlay,
-  * it defined a common interface that plat driver need to implement
-  */
- struct mmp_path_info {
--	/* driver data, set when registed*/
-+	/* driver data, set when registered*/
- 	const char *name;
- 	struct device *dev;
- 	int id;
-@@ -309,7 +309,7 @@ extern void mmp_unregister_path(struct mmp_path *path);
- extern void mmp_register_panel(struct mmp_panel *panel);
- extern void mmp_unregister_panel(struct mmp_panel *panel);
-
--/* defintions for platform data */
-+/* definitions for platform data */
- /* interface for buffer driver */
- struct mmp_buffer_driver_mach_info {
- 	const char	*name;
---
-2.31.0
-
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

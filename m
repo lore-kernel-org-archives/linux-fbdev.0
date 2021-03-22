@@ -5,40 +5,47 @@ X-Spam-Level:
 X-Spam-Status: No, score=-19.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C1E7C433E1
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 10:53:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB01BC433DB
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 10:54:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5D1B16198E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 10:53:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AAEBD6186A
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 10:54:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230369AbhCVKxO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 22 Mar 2021 06:53:14 -0400
-Received: from mail.kernel.org ([198.145.29.99]:57252 "EHLO mail.kernel.org"
+        id S230293AbhCVKxr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 Mar 2021 06:53:47 -0400
+Received: from mail.kernel.org ([198.145.29.99]:57290 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230367AbhCVKxL (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 22 Mar 2021 06:53:11 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 4B10661983;
-        Mon, 22 Mar 2021 10:53:10 +0000 (UTC)
+        id S230292AbhCVKxU (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 22 Mar 2021 06:53:20 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id B135861585;
+        Mon, 22 Mar 2021 10:53:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1616410391;
-        bh=4U0eak1ORtelSunJ9eE7hPB3yqAxnqQRBSFUlGf+63c=;
-        h=From:To:Cc:Subject:Date:From;
-        b=RgVbcb5GDL09XMuNQ6ApRvSec2jt7qHQUtsB2qr0geekYNbvLm3amzMeHiPM946Uf
-         Cx+8jLIVhr+YZxrmgmMTIGIK6bysN08+ys+ORnyf3sDus3Iyd2ziWZKI/bhctiXAfs
-         Q/MXso1NWbkvBHfvVVZPv5XDYGuGq/aWV0534Qe4ljZHiFeYnyYz3fV/4vuI6FDzfS
-         7n4r6bbscyZZk8UJSFtvJPIlNUkx+Eglq3PM5ikRJEi/VzThTl1lTNdiriwlZ5tTj4
-         QZ2ZrJLUtkAYEvlxqhW2ssKRjo+eNWLSXpyZCuAu6X+CTxJzGI9JQ0jfNtmxL6/Blo
-         TiIiMRucxsIew==
+        s=k20201202; t=1616410400;
+        bh=dgFzVnRh0FbIORkPoqNN87sf585VX/uTn2y5kQW8Hro=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=jCiV//so53WUOq7dRrF8KK3IJ4Lpd9GKJ8HbUGEsYSesGyXSRjqhwVzVCwranxQ7r
+         VM9b4tNbRwXFCRHmZUQEqcQL6vVhOXjXDcbO5T1LrcYp8AMH+FuQXQbjX+o2ZspSy2
+         qxmOK1A1aJhvQt8H70vzrL7bM/yAVUyB4hRuABBIukZkAnPZnV2FcfzMr5yodk9iZP
+         y7fQywTeomlVUGK8LIiT9C8/cqI9CnpaRhCkvqLpQhZpYZW+ljo1sP8OmIgXtteBfD
+         sSt5McPUvfdHshGgD6WIf+DWHyOMTCFGSt6CyRdDyaW5Y2eiS9jn5+5T0nBNTPiP0z
+         DqrnwpU7et9Eg==
 From:   Arnd Bergmann <arnd@kernel.org>
-To:     dri-devel@lists.freedesktop.org
+To:     dri-devel@lists.freedesktop.org,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>
 Cc:     linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-        linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] fbdev: omapfb: avoid -Wempty-body warning
-Date:   Mon, 22 Mar 2021 11:52:59 +0100
-Message-Id: <20210322105307.1291840-1-arnd@kernel.org>
+        Yue Zou <zouyue3@huawei.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] vgaarb: avoid -Wempty-body warnings
+Date:   Mon, 22 Mar 2021 11:53:00 +0100
+Message-Id: <20210322105307.1291840-2-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20210322105307.1291840-1-arnd@kernel.org>
+References: <20210322105307.1291840-1-arnd@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -47,37 +54,39 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-Building with 'make W=1' shows a few harmless warnings:
+Building with W=1 shows a few warnings for an empty macro:
 
-drivers/video/fbdev/omap2/omapfb/omapfb-main.c: In function 'omapfb_calc_addr':
-drivers/video/fbdev/omap2/omapfb/omapfb-main.c:823:56: error: suggest braces around empty body in an 'if' statement [-Werror=empty-body]
-  823 |                     var->xoffset, var->yoffset, offset);
-      |                                                        ^
-drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c: In function 'omapfb_ioctl':
-drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c:911:45: error: suggest braces around empty body in an 'if' statement [-Werror=empty-body]
-  911 |                 DBG("ioctl failed: %d\n", r);
+drivers/gpu/drm/qxl/qxl_drv.c: In function 'qxl_pci_probe':
+drivers/gpu/drm/qxl/qxl_drv.c:131:50: error: suggest braces around empty body in an 'if' statement [-Werror=empty-body]
+  131 |                 vga_put(pdev, VGA_RSRC_LEGACY_IO);
+      |                                                  ^
+drivers/gpu/drm/qxl/qxl_drv.c: In function 'qxl_pci_remove':
+drivers/gpu/drm/qxl/qxl_drv.c:159:50: error: suggest braces around empty body in an 'if' statement [-Werror=empty-body]
+  159 |                 vga_put(pdev, VGA_RSRC_LEGACY_IO);
 
-Avoid these by using no_printk(), which adds format string checking as
-well.
+Change this to an inline function to make it more robust and avoid
+the warning.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/video/fbdev/omap2/omapfb/omapfb.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/vgaarb.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb.h b/drivers/video/fbdev/omap2/omapfb/omapfb.h
-index d27abccb37bc..1c1b5201c8b6 100644
---- a/drivers/video/fbdev/omap2/omapfb/omapfb.h
-+++ b/drivers/video/fbdev/omap2/omapfb/omapfb.h
-@@ -29,7 +29,7 @@ extern bool omapfb_debug;
- 			printk(KERN_DEBUG "OMAPFB: " format, ## __VA_ARGS__); \
- 	} while (0)
+diff --git a/include/linux/vgaarb.h b/include/linux/vgaarb.h
+index fc6dfeba04a5..dc6ddce92066 100644
+--- a/include/linux/vgaarb.h
++++ b/include/linux/vgaarb.h
+@@ -112,7 +112,9 @@ static inline int vga_get_uninterruptible(struct pci_dev *pdev,
+ #if defined(CONFIG_VGA_ARB)
+ extern void vga_put(struct pci_dev *pdev, unsigned int rsrc);
  #else
--#define DBG(format, ...)
-+#define DBG(format, ...) no_printk(format, ## __VA_ARGS__)
+-#define vga_put(pdev, rsrc)
++static inline void vga_put(struct pci_dev *pdev, unsigned int rsrc)
++{
++}
  #endif
  
- #define FB2OFB(fb_info) ((struct omapfb_info *)(fb_info->par))
+ 
 -- 
 2.29.2
 

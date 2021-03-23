@@ -4,129 +4,103 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96988C433E4
-	for <linux-fbdev@archiver.kernel.org>; Tue, 23 Mar 2021 09:43:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18DE9C433DB
+	for <linux-fbdev@archiver.kernel.org>; Tue, 23 Mar 2021 09:44:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5145C619BF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 23 Mar 2021 09:43:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DD09E6197F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 23 Mar 2021 09:44:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229614AbhCWJnD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 23 Mar 2021 05:43:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43090 "EHLO
+        id S230204AbhCWJng (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 23 Mar 2021 05:43:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43248 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230046AbhCWJmf (ORCPT
+        with ESMTP id S229915AbhCWJnS (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 23 Mar 2021 05:42:35 -0400
-Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACB95C061764
-        for <linux-fbdev@vger.kernel.org>; Tue, 23 Mar 2021 02:42:34 -0700 (PDT)
-Received: by mail-ej1-x62e.google.com with SMTP id b7so25999892ejv.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 23 Mar 2021 02:42:34 -0700 (PDT)
+        Tue, 23 Mar 2021 05:43:18 -0400
+Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51895C061574
+        for <linux-fbdev@vger.kernel.org>; Tue, 23 Mar 2021 02:43:18 -0700 (PDT)
+Received: by mail-ed1-x536.google.com with SMTP id bf3so22699242edb.6
+        for <linux-fbdev@vger.kernel.org>; Tue, 23 Mar 2021 02:43:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=RJI1ZulJI/N1c2SHSzXG2bAltLew6mzjF/sjYCXcM5o=;
-        b=JUN66A/8cTYU/eCzY1rGy5pu3Ui6LtQGLfl6KYjMr29YoVG/cdEJDdLL3Rx7rc5i2l
-         QtXpb4pWe9w0bC1DCL7OK/oYYh+mOMk9IAxiy2bA4M8WH+Njssh46rgJrBNVNOhpAKIV
-         VMXATaJV4nZUAxzKlMh2F06xFz+zdQwrb2BJv2VNWWIbB0utRYUhknkLfmbQSr7VGycf
-         1w3WosdRggV3OYeQOERJdI4dNRjvCEwSlEAUsSGgeCWWyRWjEOHRCUDdNu3dO4GPwUGi
-         TIW0ZgHSwC5mRhD3CUAVE533pNm9bdOIDFmJiagr5hE/VViE+ajDPRfkOJZh7hdjpZk/
-         L/Ow==
+        bh=0hkbYACOMfkrmU9Itv7aBZoZaQN614rwNKXnBs92y0U=;
+        b=KFK7Gl6Loz5yCvngMmCyE/TcVpLAju6hCgi8R6DLg/KHgWlEvE0PmzfRnJByr6f1dz
+         y1JF5RZjDJumy3xAkwhWz1LkOa9b1w3jXof53gbR7gRw4PcDJBhoC2SbKsKsQ3NraBkX
+         oj/WRAdbq1BTlNYCgbY6SsaZzTWabF9u7JN986LiHT98xbkcQsCjKui3PWoAN6QOkqIx
+         LFP2D2GOjHRk4bdSI5RwZsZwau1ta9+kMzTD8+nHII+bFvg1e7JYNP1KjyEdNrdJfQX6
+         eKipxfAVe3VDY1D4NrXIC6A22Jyn5KTg6jxLq1LcjuFu5EJcFZnt/4QqfND3c6UrhIkw
+         qhIA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:content-transfer-encoding
          :in-reply-to;
-        bh=RJI1ZulJI/N1c2SHSzXG2bAltLew6mzjF/sjYCXcM5o=;
-        b=tL+b+RRhqeYrZ3zLwVSTj3QaZxJP0y7o5BBcymYzrIhX5+Ub8Rl77eHG+L0MTbMScY
-         mCuvbbb9JTbzB4+i5FpELsrKrfxRhwJq/RIXuFQ6tLHXkeNm4tmFRLHXA6W7zRLQL7+k
-         yRLkih/YQZr7w9vq0aewKRSjWAtkgqlPVR3ase3owkd9SCaZCTb7Satbpwo8wEEg/mzr
-         Ec3CPdmWPdZXjvhWDCR2KbUx8AHYKZPZ4bsuAyU4+E7xTPVNFUSn0aLVrxd7gxNFQ8+J
-         GEVmETV2AdzlMHPlfkKsACHGz55kHomCWA43Pb1jDdlvOfb1s6L7sz8ogKNz+kzMVKuO
-         bq8Q==
-X-Gm-Message-State: AOAM531tCu4HL7GIuEExQeN6gNC8KzFyQ8ZgAwXZsyR1AT3ePeGtHJtc
-        LeVyQwoDhBNvGkMf7t+wwvNWmA==
-X-Google-Smtp-Source: ABdhPJxpkafTXkKvGJHA7aA0u50WutkG/PVWSHFxm9DTViiMH8PsMPRMvCNLbKu9rHqMZj1o5whwtg==
-X-Received: by 2002:a17:906:ca50:: with SMTP id jx16mr4131927ejb.72.1616492553383;
-        Tue, 23 Mar 2021 02:42:33 -0700 (PDT)
+        bh=0hkbYACOMfkrmU9Itv7aBZoZaQN614rwNKXnBs92y0U=;
+        b=U5TlPkvyIGPBbuPe/EAQXsANvAsiI5S0xgLLHdWrKQlNqsH8T/9DURNTuO7MguGB9I
+         2WbW1WAUBMj6vLYqdz3klLEXLpH8hpp1D42Y5jNFa6MSCN20YHtLCYrZgX4VYnJSowvn
+         GI5rqPOQigzQFHKAm7lZpuagN1sKUPK5PjEHVS56Cy7jV81VplZvW9JMPoDR9vB6256X
+         WiS6/UuVEVZLEoDmvkM9FxhtluuFYKUrcW8pAL4gUt68P+0Cbv6uXMVXUx2kv0ljvC+X
+         GgrX3GFtyYcFYzah9egjyjdH7HehGxt3uQxJe+Ulh172KapDStVPUQFDBhh4QP9e3jCR
+         8VKw==
+X-Gm-Message-State: AOAM531FMje1MpZgiqGDelnjOcEd8+LGhuUEpyI53rg/dqt/+1sM9BRZ
+        eDUyIdIN+8p3yPWSF/pTOKUB1w==
+X-Google-Smtp-Source: ABdhPJwfXBUZdaB1Qmf/e0goN/7hGlbXHdwvzBP8U1kMkO9nlQ2EQtfMy25rK2nJlLpWfLzwSL+1cw==
+X-Received: by 2002:a05:6402:1d19:: with SMTP id dg25mr3789557edb.218.1616492597099;
+        Tue, 23 Mar 2021 02:43:17 -0700 (PDT)
 Received: from dell ([91.110.221.180])
-        by smtp.gmail.com with ESMTPSA id g11sm12635053edt.35.2021.03.23.02.42.31
+        by smtp.gmail.com with ESMTPSA id s9sm12075958edd.16.2021.03.23.02.43.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Mar 2021 02:42:32 -0700 (PDT)
-Date:   Tue, 23 Mar 2021 09:42:29 +0000
+        Tue, 23 Mar 2021 02:43:16 -0700 (PDT)
+Date:   Tue, 23 Mar 2021 09:43:14 +0000
 From:   Lee Jones <lee.jones@linaro.org>
-To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     Konrad Dybcio <konrad.dybcio@somainline.org>,
-        phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
-        martin.botka@somainline.org,
-        angelogioacchino.delregno@somainline.org,
-        marijn.suijten@somainline.org, Jingoo Han <jingoohan1@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Kiran Gunda <kgunda@codeaurora.org>,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] video: backlight: qcom-wled: Add PMI8994 compatible
-Message-ID: <20210323094229.GU2916463@dell>
-References: <20210228124106.135812-1-konrad.dybcio@somainline.org>
- <20210228124106.135812-2-konrad.dybcio@somainline.org>
- <20210322161810.biagj2qro66rv4gt@maple.lan>
- <20210323083935.GF2916463@dell>
- <20210323093540.dqrhjlvr6oza3hvt@maple.lan>
+To:     Arnd Bergmann <arnd@kernel.org>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+        Richard Purdie <rpurdie@linux.intel.com>,
+        Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] backlight: journada720: fix Wmisleading-indentation
+ warning
+Message-ID: <20210323094314.GV2916463@dell>
+References: <20210322164134.827091-1-arnd@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210323093540.dqrhjlvr6oza3hvt@maple.lan>
+In-Reply-To: <20210322164134.827091-1-arnd@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, 23 Mar 2021, Daniel Thompson wrote:
+On Mon, 22 Mar 2021, Arnd Bergmann wrote:
 
-> On Tue, Mar 23, 2021 at 08:39:35AM +0000, Lee Jones wrote:
-> > On Mon, 22 Mar 2021, Daniel Thompson wrote:
-> > 
-> > > On Sun, Feb 28, 2021 at 01:41:05PM +0100, Konrad Dybcio wrote:
-> > > > Add a compatible for PMI8994 WLED. It uses the V4 of WLED IP.
-> > > > 
-> > > > Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
-> > > 
-> > > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> > 
-> > Why are you Reviewing/Acking a patch that was applied on the 10th?
+> From: Arnd Bergmann <arnd@arndb.de>
 > 
-> Simply an oversight. Looks like I forgot to remove it from my backlog
-> when it was applied.
+> With gcc-11, we get a warning about code that looks correct
+> but badly indented:
+> 
+> drivers/video/backlight/jornada720_bl.c: In function ‘jornada_bl_update_status’:
+> drivers/video/backlight/jornada720_bl.c:66:11: error: this ‘else’ clause does not guard... [-Werror=misleading-indentation]
+>    66 |         } else  /* turn on backlight */
+>       |           ^~~~
+> 
+> Change the formatting according to our normal conventions.
+> 
+> Fixes: 13a7b5dc0d17 ("backlight: Adds HP Jornada 700 series backlight driver")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/video/backlight/jornada720_bl.c | 44 ++++++++++++-------------
+>  1 file changed, 22 insertions(+), 22 deletions(-)
 
-I wondered if I'd made a mistake.
-
-No problem.  Thanks for the clarification.
-
-> > > > ---
-> > > >  drivers/video/backlight/qcom-wled.c | 1 +
-> > > >  1 file changed, 1 insertion(+)
-> > > > 
-> > > > diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-> > > > index 3bc7800eb0a9..497b9035a908 100644
-> > > > --- a/drivers/video/backlight/qcom-wled.c
-> > > > +++ b/drivers/video/backlight/qcom-wled.c
-> > > > @@ -1704,6 +1704,7 @@ static int wled_remove(struct platform_device *pdev)
-> > > >  
-> > > >  static const struct of_device_id wled_match_table[] = {
-> > > >  	{ .compatible = "qcom,pm8941-wled", .data = (void *)3 },
-> > > > +	{ .compatible = "qcom,pmi8994-wled", .data = (void *)4 },
-> > > >  	{ .compatible = "qcom,pmi8998-wled", .data = (void *)4 },
-> > > >  	{ .compatible = "qcom,pm660l-wled", .data = (void *)4 },
-> > > >  	{ .compatible = "qcom,pm8150l-wled", .data = (void *)5 },
-> > 
+Applied, thanks.
 
 -- 
 Lee Jones [李琼斯]

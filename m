@@ -2,107 +2,114 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F1B1C433C1
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 19:37:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DBEEFC433E0
+	for <linux-fbdev@archiver.kernel.org>; Tue, 23 Mar 2021 07:34:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 32AE46199E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Mar 2021 19:37:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AA150619BF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 23 Mar 2021 07:34:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231871AbhCVTgc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 22 Mar 2021 15:36:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59390 "EHLO
+        id S229493AbhCWHe0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 23 Mar 2021 03:34:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43708 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231765AbhCVTgR (ORCPT
+        with ESMTP id S229670AbhCWHeV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 22 Mar 2021 15:36:17 -0400
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C20F6C061574;
-        Mon, 22 Mar 2021 12:36:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
-        :In-Reply-To:MIME-Version:Date:Message-ID:From:References:To:Subject:Sender:
-        Reply-To:Cc:Content-ID:Content-Description;
-        bh=IX+l4b0PycGUaEzwE8452F1AGQg/n7mMU9I92wynpJY=; b=j2h2a9InCwhOa6GtayYJOF0BXP
-        3enh0qjN4qsbQbGLRcr8WQL1AHTa6oHpFGf0oOraiZ7IYpj6zs+m2JcdBx/ezEyUklCQtbqAIEv4/
-        Lzmzv/CMMK0SwvUmXgFWLK/03mlSMAQo80xKPqCdhnmd0Vw+xsqdOUPaik0+7Y0TKTqe1mIDSEBJP
-        5fhknSorsrR7K/Y9nT6pcmYUh8G3kHVY3SSFewIAEigyR+URYnZXbDa+mqiMNlAydnrbgAuvJ3/b5
-        NMr/oKFgRRS7ic+ouUP+tGgt481gOPfdGAIZI/mCrEQF5uswlvCrwBBmszh4d3ci6AowbfCA3FUNA
-        JlMN0lpg==;
-Received: from [2601:1c0:6280:3f0::3ba4]
-        by desiato.infradead.org with esmtpsa (Exim 4.94 #2 (Red Hat Linux))
-        id 1lOQLW-00CROz-2X; Mon, 22 Mar 2021 19:36:14 +0000
-Subject: Re: [PATCH] video: mmp: Few typo fixes
-To:     Bhaskar Chowdhury <unixbhaskar@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20210322130210.3641181-1-unixbhaskar@gmail.com>
-From:   Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <30241dd5-dfd5-ec67-569b-1552bef58e95@infradead.org>
-Date:   Mon, 22 Mar 2021 12:36:11 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.0
+        Tue, 23 Mar 2021 03:34:21 -0400
+Received: from ustc.edu.cn (email6.ustc.edu.cn [IPv6:2001:da8:d800::8])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id BD46BC061574;
+        Tue, 23 Mar 2021 00:34:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=mail.ustc.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
+        Message-Id:MIME-Version:Content-Transfer-Encoding; bh=bhswRq59Lz
+        Qz4IxCsSIGEpezgpMNfSZEGd8ZjnkD4Ks=; b=vn2fP1t8k7f5tsYZTq/9CGjnha
+        H7GDHwYOenEl1ReUy1MUsIZccTcGlESML7iAAygUivjRz7acdXlmtqtxOVCcIu0U
+        OMZ6GKwYMIvgbEVM/pbNaBVG4fAZ9DjPgrMfxAylJQdFLWeCfWXqRhJyK3lq3toF
+        /UYd/ikvHwcLmmdVk=
+Received: from ubuntu.localdomain (unknown [202.38.69.14])
+        by newmailweb.ustc.edu.cn (Coremail) with SMTP id LkAmygC3v0vhmVlgw3seAA--.4S4;
+        Tue, 23 Mar 2021 15:33:53 +0800 (CST)
+From:   Lv Yunlong <lyl2019@mail.ustc.edu.cn>
+To:     kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com,
+        wei.liu@kernel.org
+Cc:     linux-hyperv@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Lv Yunlong <lyl2019@mail.ustc.edu.cn>
+Subject: [PATCH] video/fbdev: Fix a double free in hvfb_probe
+Date:   Tue, 23 Mar 2021 00:33:50 -0700
+Message-Id: <20210323073350.17697-1-lyl2019@mail.ustc.edu.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <20210322130210.3641181-1-unixbhaskar@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: LkAmygC3v0vhmVlgw3seAA--.4S4
+X-Coremail-Antispam: 1UD129KBjvJXoW7ArW5WFWfJryrAw17WF47CFg_yoW8JFWUpF
+        4kJFyqyrWrtr1j93ykAr4vyFyF9F4fKr9xWr12ya4Fka43J3y8Wr13AFW2krZ5ArW5Gw13
+        ZF1Yy345Ga45CaUanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+        9KBjDU0xBIdaVrnRJUUUvG14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+        rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+        1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
+        JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
+        CE3s1lnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xv
+        F2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r
+        4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I
+        648v4I1lc2xSY4AK67AK6r4xMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r
+        4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF
+        67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2I
+        x0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw20EY4v20xvaj40_WFyUJVCq3wCI42IY
+        6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa
+        73UjIFyTuYvjfUYhL8DUUUU
+X-CM-SenderInfo: ho1ojiyrz6zt1loo32lwfovvfxof0/
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 3/22/21 6:02 AM, Bhaskar Chowdhury wrote:
-> 
-> s/configed/configured/
-> s/registed/registered/
-> s/defintions/definitions/
-> 
-> Signed-off-by: Bhaskar Chowdhury <unixbhaskar@gmail.com>
+In function hvfb_probe in hyperv_fb.c, it calls hvfb_getmem(hdev, info)
+and return err when info->apertures is freed.
 
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
+In the error1 label of hvfb_probe, info->apertures will be freed twice
+by framebuffer_release(info).
 
-> ---
->  include/video/mmp_disp.h | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/video/mmp_disp.h b/include/video/mmp_disp.h
-> index 77252cb46361..ea8b4331b7a1 100644
-> --- a/include/video/mmp_disp.h
-> +++ b/include/video/mmp_disp.h
-> @@ -172,7 +172,7 @@ struct mmp_panel {
->  	/* use node to register to list */
->  	struct list_head node;
->  	const char *name;
-> -	/* path name used to connect to proper path configed */
-> +	/* path name used to connect to proper path configured */
->  	const char *plat_path_name;
->  	struct device *dev;
->  	int panel_type;
-> @@ -291,7 +291,7 @@ static inline int mmp_overlay_set_addr(struct mmp_overlay *overlay,
->   * it defined a common interface that plat driver need to implement
->   */
->  struct mmp_path_info {
-> -	/* driver data, set when registed*/
-> +	/* driver data, set when registered*/
->  	const char *name;
->  	struct device *dev;
->  	int id;
-> @@ -309,7 +309,7 @@ extern void mmp_unregister_path(struct mmp_path *path);
->  extern void mmp_register_panel(struct mmp_panel *panel);
->  extern void mmp_unregister_panel(struct mmp_panel *panel);
-> 
-> -/* defintions for platform data */
-> +/* definitions for platform data */
->  /* interface for buffer driver */
->  struct mmp_buffer_driver_mach_info {
->  	const char	*name;
-> --
+My patch sets info->apertures to NULL after it was freed to avoid
+double free.
 
+Signed-off-by: Lv Yunlong <lyl2019@mail.ustc.edu.cn>
+---
+ drivers/video/fbdev/hyperv_fb.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index c8b0ae676809..2fc9b507e73a 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -1032,6 +1032,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 		if (!pdev) {
+ 			pr_err("Unable to find PCI Hyper-V video\n");
+ 			kfree(info->apertures);
++			info->apertures = NULL;
+ 			return -ENODEV;
+ 		}
+ 
+@@ -1130,6 +1131,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 		pci_dev_put(pdev);
+ 	}
+ 	kfree(info->apertures);
++	info->apertures = NULL;
+ 
+ 	return 0;
+ 
+@@ -1142,6 +1144,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 	if (!gen2vm)
+ 		pci_dev_put(pdev);
+ 	kfree(info->apertures);
++	info->apertures = NULL;
+ 
+ 	return -ENOMEM;
+ }
 -- 
-~Randy
+2.25.1
+
 

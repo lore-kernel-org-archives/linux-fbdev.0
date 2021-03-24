@@ -2,115 +2,208 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,PDS_BAD_THREAD_QP_64,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BAB6C433C1
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Mar 2021 10:38:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2864DC433E0
+	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Mar 2021 13:47:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CBD0161A06
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Mar 2021 10:38:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EAB2161A11
+	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Mar 2021 13:47:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230209AbhCXKhy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 Mar 2021 06:37:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55938 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232877AbhCXKht (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 Mar 2021 06:37:49 -0400
-Received: from ustc.edu.cn (email6.ustc.edu.cn [IPv6:2001:da8:d800::8])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 1A6E9C061763;
-        Wed, 24 Mar 2021 03:37:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=mail.ustc.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
-        Message-Id:MIME-Version:Content-Transfer-Encoding; bh=PXF6JWSoPF
-        BH9Usr8tR+rlIy/zE3h2TbpQbzC+GbL0c=; b=S0rbtQqfTQjcT/uVujgUjkyHsG
-        subYYj47fDisdV53c8qKPSs3jf8xc7wJ59ZKECQvI2wr0r+vkcR7KhFKnFFCjQRa
-        YMDQDrBUgM4ucUFD5Za96Q7yigj14TPCaPJUMLFlWxCkzsSQuZMpKc+s4Ela9imA
-        DQT063mDD54cIyFek=
-Received: from ubuntu.localdomain (unknown [202.38.69.14])
-        by newmailweb.ustc.edu.cn (Coremail) with SMTP id LkAmygAXH09zFltgkvEyAA--.238S4;
-        Wed, 24 Mar 2021 18:37:39 +0800 (CST)
-From:   Lv Yunlong <lyl2019@mail.ustc.edu.cn>
-To:     kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com,
-        wei.liu@kernel.org
-Cc:     linux-hyperv@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Lv Yunlong <lyl2019@mail.ustc.edu.cn>
-Subject: [PATCH v2] video: hyperv_fb: Fix a double free in hvfb_probe
-Date:   Wed, 24 Mar 2021 03:37:24 -0700
-Message-Id: <20210324103724.4189-1-lyl2019@mail.ustc.edu.cn>
-X-Mailer: git-send-email 2.25.1
+        id S235606AbhCXNqv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 24 Mar 2021 09:46:51 -0400
+Received: from mail-eopbgr760090.outbound.protection.outlook.com ([40.107.76.90]:3254
+        "EHLO NAM02-CY1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S235582AbhCXNql (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 24 Mar 2021 09:46:41 -0400
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=WMffZ0hw9oclSLgbKTdoFNL38KeWydRlfMUyaQiOjG9AhUd2SyyNzT50/zweB0nty+IsfowrplgkGqMeEpKO+HYSM7LTdHVmF5OzhywDLJmpEdxlE5LxuNXwzbNy+ALhYWzEUOEfFZ08G+FvpQO1Qevi85efQEqrCmtKw1jU7Y5dPzgz7NNUN+8IH7i/Qgi3YiRHYkuEaRipE24wUYfgUPb7P4dRg+wSxicv7RrX2LGWLMVxkfho8Pq8BTYrMtiH0OzEm2BKVFh9HeYa/xzNBKwtt0HMbjXB6qTOIVKC9MnLLCWi/rtOW3cp6yg+Ed52XRzbw9dq62CX+GyF7gAotQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=CHwH2GEkoMTaDilc/BaJPAd8yOHoPKRPbOBwu+uTZBw=;
+ b=ZqHthbz0mg0OPPHizS1varTdO5e4ImluAtCz0+8SPso7vcoIoFFq0TGvsBIYIllLd3DTmyoRaUajpZK3VuIXGfIYAzcOcTe3GFz8VuOU9EGolq4Il3DeqddzZjA3v2PAJaGa2ZqJYc10RV9LYAbL7MVYVC+gEFlSF/+jCcrvbB9b/fuV5GhoqMWPxS1DZAgCsUQQZSBMUkPZXgyOEPDyfpLdiPLKy3rIvbpYSAp8+CLfdN9uf3gcz7SIcKKgxX8wujgpFyWBEDHbhD5hLNI+7ldBQOuUlYiva+7kSlK2GgzvqCzz83443OhQoiRBVq0QYwqmjfLwvTQrkW3eVPIp5Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=microsoft.com; dmarc=pass action=none
+ header.from=microsoft.com; dkim=pass header.d=microsoft.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=CHwH2GEkoMTaDilc/BaJPAd8yOHoPKRPbOBwu+uTZBw=;
+ b=DdapA82ULIZ57CouVR/spotbTPi1/4HpGacwCZm/+/MrFaMfDhp5+zqxhByyUotDTfjI5eteicHkBiiXOe7lZBO6rmVkKHpD2qvxvT5zwXUDmjz3TGA+0cH/Cku+8ZMZ3TsTbFe+eJSNpNK8o/uWpDQsQqbRyy503U42iUH4s+w=
+Received: from MWHPR21MB1593.namprd21.prod.outlook.com (2603:10b6:301:7c::11)
+ by MW2PR2101MB1068.namprd21.prod.outlook.com (2603:10b6:302:a::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3999.2; Wed, 24 Mar
+ 2021 13:46:39 +0000
+Received: from MWHPR21MB1593.namprd21.prod.outlook.com
+ ([fe80::cbc:735e:a6a5:8b9c]) by MWHPR21MB1593.namprd21.prod.outlook.com
+ ([fe80::cbc:735e:a6a5:8b9c%8]) with mapi id 15.20.3999.004; Wed, 24 Mar 2021
+ 13:46:39 +0000
+From:   Michael Kelley <mikelley@microsoft.com>
+To:     Lv Yunlong <lyl2019@mail.ustc.edu.cn>,
+        KY Srinivasan <kys@microsoft.com>,
+        Haiyang Zhang <haiyangz@microsoft.com>,
+        Stephen Hemminger <sthemmin@microsoft.com>,
+        "wei.liu@kernel.org" <wei.liu@kernel.org>
+CC:     "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v2] video: hyperv_fb: Fix a double free in hvfb_probe
+Thread-Topic: [PATCH v2] video: hyperv_fb: Fix a double free in hvfb_probe
+Thread-Index: AQHXIJnVU648MgoDp0CNqdRDsPJfgqqTIvoQ
+Date:   Wed, 24 Mar 2021 13:46:39 +0000
+Message-ID: <MWHPR21MB1593F19EE7AD10698582FA78D7639@MWHPR21MB1593.namprd21.prod.outlook.com>
+References: <20210324103724.4189-1-lyl2019@mail.ustc.edu.cn>
+In-Reply-To: <20210324103724.4189-1-lyl2019@mail.ustc.edu.cn>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+msip_labels: MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Enabled=true;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_SetDate=2021-03-24T13:46:37Z;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Method=Standard;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Name=Internal;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_SiteId=72f988bf-86f1-41af-91ab-2d7cd011db47;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_ActionId=38b55c63-9cff-4cbd-92cb-434479b39c9a;
+ MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_ContentBits=0
+authentication-results: mail.ustc.edu.cn; dkim=none (message not signed)
+ header.d=none;mail.ustc.edu.cn; dmarc=none action=none
+ header.from=microsoft.com;
+x-originating-ip: [24.22.167.197]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: dfb4f7e5-1435-4226-2464-08d8eecb4018
+x-ms-traffictypediagnostic: MW2PR2101MB1068:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <MW2PR2101MB10689892C80CC40616863DD1D7639@MW2PR2101MB1068.namprd21.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:6790;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: zUCvLwmuQeCNSwYDy2eVRyDVDvBUF2M5I1dTKIe67aoc+NCB7c0rtub1ygxI65etxlqKdwSEih2QMNe0yskg5MBp2ncmbT1ZtKLshl1xOcmSoG5dBC0HBVPWE6BnOZI21YiYFXDUV5uGbz0bRn1JZxHJk5YZ14j9Bk5TLkrz0rep1qEf8Z7c75UWTQLsYoBMmeGMvGR0oOmA3UA3QaDW++F2hU8tZEzZpr6G6qcg2HkVoQAF4zujEfMd2BZgzoRXF9uRl0bN1WgLuJIhmYExEpidLwx60c4LDHOYJV6ZOZtUrPreI+Y2XechrwpdxzwzyAXaPQKNhqoXWA3pBn8WrJ12HJDRHElV5r/g1G9ZsnWRjTjVBj2ZksyJNoQuJzq+1CbwnDwMCsVKua6fn3Fe+BtjKh5rYr8MGh16nT2sqFHdqO0Np5MEiKt8eOpuJpyTj/o1a5X4DNJK/Szz4ZQccohgAIVPCpld0FJznkL5guYl+ShqFQ87xdTy1o9Db/vKcOhSmK/5KKtra56HHMdK32UfrhCMTdMbRktJmE685HkhvHRx41DZfMihNVw/kuYSh7qNUM9NCa/bRb/7U90LNx0E3nxBtD8rYoanwmczpQwdOoUxvu0Duv6m9ga10YSKF++87WJH/UvSEXnSF6S5E3ilwGa5BZ5pdjjUCLCaR34=
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MWHPR21MB1593.namprd21.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(396003)(366004)(376002)(346002)(136003)(39860400002)(186003)(9686003)(55016002)(66446008)(66476007)(83380400001)(86362001)(76116006)(66556008)(64756008)(66946007)(2906002)(26005)(6506007)(52536014)(38100700001)(5660300002)(8936002)(8676002)(7696005)(82950400001)(71200400001)(33656002)(110136005)(4326008)(82960400001)(478600001)(10290500003)(316002)(8990500004)(54906003);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata: =?us-ascii?Q?q6ZKrI0KLZMkAKPFg0h1YV9YcSLPn7Lh2WMRrYWHykkmTnVZGcNChbVuMyXI?=
+ =?us-ascii?Q?RJ6pE2mKQ+8NXCrC4un2vg5YdqFpMu0vPEN2tDz+JIlDciVLD7V2hbduV/fw?=
+ =?us-ascii?Q?FRu+EfZzPbYgrPvBPMsmTZ86zzFZbrGyaYZisn5OMm459bW0ZvJSrX1RKp6e?=
+ =?us-ascii?Q?Rx3Sph0datgIXfNUdWauo2U9e3N7/oF20hGz2zsja55JU5anodxlTmxbNGKi?=
+ =?us-ascii?Q?VKcxRRbPz9EbnPL9XZzjJTxKd8qtOqbSfA7VhoFiDV7P+GJz8Ma/QsRU3VUU?=
+ =?us-ascii?Q?HTtCqyWGOTTf6iXo5r/anXh3VpyMazAhBg/XDh4WiCjEluZEq3R8P+LcDA0k?=
+ =?us-ascii?Q?svFl3NR6WDDOr81o0rZ6p+9aTgfLhQgE2W8gZMz3esRg/Af6HEmMgSmAzWWM?=
+ =?us-ascii?Q?1LU0D98cXX20EaTsnf5HvrqfmQ+9R048jSjp3a1CssSkLheccnEsecZ6ABEx?=
+ =?us-ascii?Q?AMSzOZr+dmwObiupZV480e1wUEIxaMgSbypfDg3QN5GqxjlOs0e1svCWlgCw?=
+ =?us-ascii?Q?M4za2VhUlLlhobZh8O0+hMaNbsRcnE1MQakvdnKUFoqGA+y365rNdsMsOgyu?=
+ =?us-ascii?Q?2j9hx70ZAclyu4B60ZnBLuRwC7jNKPN0aZfapDbXKS9VVSRsp5fozcVwK8aY?=
+ =?us-ascii?Q?KSkReZ3zHuxnxAmiReAJ9YH4FkPNqiR/uuxQWNBUcj2r+ef8VxfKsImxU/R4?=
+ =?us-ascii?Q?vlBovqGbjJa25a1MbvZ0EFjbTklVp4EfKMMVDEjcmLcJxxwZzGKMRMzZZyAF?=
+ =?us-ascii?Q?ez89eR0L4psNT5FFmCOl5nHj+9+0WAZ4qKCJH8lK5wM3e9GWJcwKSD1a4ctD?=
+ =?us-ascii?Q?Z8NH4sVgC8lfIJH6rVL0Ei8NiqJW0T/NLrihA1+7nNiDs4vGifxEV65GB8uj?=
+ =?us-ascii?Q?hO0LjIsLPWen5htOManfMNXcwchpar1Lw4+PBCJsccdv4RXKNdA8WQLhgxAM?=
+ =?us-ascii?Q?tcmGPKQvHPppRkD0byFCiYVz4vbp+KG2XUGOzdNbDK+dRh7jHns7Xx2eBM3k?=
+ =?us-ascii?Q?sPw5kOmoeUhInMzUmvJrCqJBKlodMkv8prKrV+gpfz2ZbLc/jghvHakcxvD5?=
+ =?us-ascii?Q?978l6oZg2XiWChqoz9zbkAF9fmBmRcGY4B0culQPz2sRs60urQZwFn0o2nS6?=
+ =?us-ascii?Q?90XURDOUXO1puL+ndclQQjyF0RBX31iFGj8OW0m9Df18p1asHfs8U59unCkK?=
+ =?us-ascii?Q?x1qLVALDcm3zJczG2y30tYdo05O44RR3jE5fcR18w/7WLGqSaftUZv10falM?=
+ =?us-ascii?Q?gsPwMum+9B5HASqX/26kSr8HAradGP/2p0cWWGqrAs2UtIfPN8S/V5jAJBD/?=
+ =?us-ascii?Q?16ArrKQyEdImgV0/ZYp0DmNf?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: LkAmygAXH09zFltgkvEyAA--.238S4
-X-Coremail-Antispam: 1UD129KBjvJXoW7ArWUuw4rXF13Xry8Zry8uFg_yoW8GFWUpF
-        4kJayqyrW8tw109w4kAF4vyF9Y9Fs3Kr9xuFy2ka4Fya13J3yUuryrAFyI9rZ5ArW3W3WY
-        vF1Ut34rCa45uFUanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-        9KBjDU0xBIdaVrnRJUUUvG14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-        rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-        1l84ACjcxK6xIIjxv20xvE14v26F1j6w1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
-        6r4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
-        Cq3wAac4AC62xK8xCEY4vEwIxC4wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC
-        0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUGVWUXwAv7VC2z280aVAFwI0_Jr0_Gr
-        1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IE
-        rcIFxwCY02Avz4vE14v_Gw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr
-        1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE
-        14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7
-        IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWrJr0_WFyUJwCI42IY
-        6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa
-        73UjIFyTuYvjfUF0eHDUUUU
-X-CM-SenderInfo: ho1ojiyrz6zt1loo32lwfovvfxof0/
+X-OriginatorOrg: microsoft.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MWHPR21MB1593.namprd21.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: dfb4f7e5-1435-4226-2464-08d8eecb4018
+X-MS-Exchange-CrossTenant-originalarrivaltime: 24 Mar 2021 13:46:39.2921
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: TRT9AzSHtOmVvJIFqetzGnhV52tmNAcldQ+r7sXQa7Th5Chfa0jxDJQ42/BeW68AFMXDoV2vNaSSAlJ6xgGZeXQSBJzp9vrd/WoXDRFNIvk=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW2PR2101MB1068
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-In function hvfb_probe in hyperv_fb.c, it calls hvfb_getmem(hdev, info)
-and return err when info->apertures is freed.
+From: Lv Yunlong <lyl2019@mail.ustc.edu.cn> Sent: Wednesday, March 24, 2021=
+ 3:37 AM
+>=20
+> In function hvfb_probe in hyperv_fb.c, it calls hvfb_getmem(hdev, info)
+> and return err when info->apertures is freed.
+>=20
+> In the error1 label of hvfb_probe, info->apertures will be freed for the
+> second time in framebuffer_release(info).
+>=20
+> My patch removes all kfree(info->apertures) instead of set info->aperture=
+s
+> to NULL. It is because that let framebuffer_release() handle freeing the
+> memory flows the fbdev pattern, and less code overall.
 
-In the error1 label of hvfb_probe, info->apertures will be freed for the
-second time in framebuffer_release(info).
+Let me suggest some clarifications in the commit message.  It's probably
+better not to reference the initial approach of setting info->apertures to
+NULL, since there won't be any record of that approach in the commit
+history.  Here's what I would suggest:
 
-My patch removes all kfree(info->apertures) instead of set info->apertures
-to NULL. It is because that let framebuffer_release() handle freeing the
-memory flows the fbdev pattern, and less code overall.
+Function hvfb_probe() calls hvfb_getmem(), expecting upon return that
+info->apertures is either NULL or points to memory that should be freed
+by framebuffer_release().  But hvfb_getmem() is freeing the memory and
+leaving the pointer non-NULL, resulting in a double free if an error
+occurs or later if hvfb_remove() is called.
 
-Signed-off-by: Lv Yunlong <lyl2019@mail.ustc.edu.cn>
----
- drivers/video/fbdev/hyperv_fb.c | 3 ---
- 1 file changed, 3 deletions(-)
+Fix this by removing all kfree(info->apertures) calls in hvfb_getmem().
+This will allow framebuffer_release() to free the memory, which follows
+the pattern of other fbdev drivers.
 
-diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-index c8b0ae676809..4dc9077dd2ac 100644
---- a/drivers/video/fbdev/hyperv_fb.c
-+++ b/drivers/video/fbdev/hyperv_fb.c
-@@ -1031,7 +1031,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
- 			PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
- 		if (!pdev) {
- 			pr_err("Unable to find PCI Hyper-V video\n");
--			kfree(info->apertures);
- 			return -ENODEV;
- 		}
- 
-@@ -1129,7 +1128,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
- 	} else {
- 		pci_dev_put(pdev);
- 	}
--	kfree(info->apertures);
- 
- 	return 0;
- 
-@@ -1141,7 +1139,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
- err1:
- 	if (!gen2vm)
- 		pci_dev_put(pdev);
--	kfree(info->apertures);
- 
- 	return -ENOMEM;
- }
--- 
-2.25.1
+Modulo this revision to the commit message, which Wei Liu can
+probably incorporate,
 
+Reviewed-by: Michael Kelley <mikelley@microsoft.com>
 
+>=20
+> Signed-off-by: Lv Yunlong <lyl2019@mail.ustc.edu.cn>
+> ---
+>  drivers/video/fbdev/hyperv_fb.c | 3 ---
+>  1 file changed, 3 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv=
+_fb.c
+> index c8b0ae676809..4dc9077dd2ac 100644
+> --- a/drivers/video/fbdev/hyperv_fb.c
+> +++ b/drivers/video/fbdev/hyperv_fb.c
+> @@ -1031,7 +1031,6 @@ static int hvfb_getmem(struct hv_device *hdev, stru=
+ct fb_info
+> *info)
+>  			PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
+>  		if (!pdev) {
+>  			pr_err("Unable to find PCI Hyper-V video\n");
+> -			kfree(info->apertures);
+>  			return -ENODEV;
+>  		}
+>=20
+> @@ -1129,7 +1128,6 @@ static int hvfb_getmem(struct hv_device *hdev, stru=
+ct fb_info
+> *info)
+>  	} else {
+>  		pci_dev_put(pdev);
+>  	}
+> -	kfree(info->apertures);
+>=20
+>  	return 0;
+>=20
+> @@ -1141,7 +1139,6 @@ static int hvfb_getmem(struct hv_device *hdev, stru=
+ct fb_info
+> *info)
+>  err1:
+>  	if (!gen2vm)
+>  		pci_dev_put(pdev);
+> -	kfree(info->apertures);
+>=20
+>  	return -ENOMEM;
+>  }
+> --
+> 2.25.1
+>=20

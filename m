@@ -2,124 +2,117 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43195C433E3
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Mar 2021 09:15:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D0EAC433E3
+	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Mar 2021 10:26:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 05F7E619FC
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Mar 2021 09:15:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 169B161A14
+	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Mar 2021 10:26:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234543AbhCXJOk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 Mar 2021 05:14:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37818 "EHLO
+        id S235752AbhCXKZi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 24 Mar 2021 06:25:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53130 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234507AbhCXJOh (ORCPT
+        with ESMTP id S235603AbhCXKZN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 Mar 2021 05:14:37 -0400
-Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4EB6C0613E1
-        for <linux-fbdev@vger.kernel.org>; Wed, 24 Mar 2021 02:14:36 -0700 (PDT)
-Received: by mail-wr1-x431.google.com with SMTP id z2so23659933wrl.5
-        for <linux-fbdev@vger.kernel.org>; Wed, 24 Mar 2021 02:14:36 -0700 (PDT)
+        Wed, 24 Mar 2021 06:25:13 -0400
+Received: from ustc.edu.cn (email6.ustc.edu.cn [IPv6:2001:da8:d800::8])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7CD8CC061763;
+        Wed, 24 Mar 2021 03:24:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=4rN1YksKNQ6jMnv83wrys0vsQCA6pM1XeLstkQR9zSk=;
-        b=aaEalBsXBstsM7Ugh18M+hl8k/wTbYlQwQ6ihztFCEL9SFffFl/IlB3eU6LSKJs1k4
-         GjK340N7lCr3K0iNQ2HLCSKfu9qwSSS5Mp8zQ/OAzufhpBV6bxJQJuLmIMW602QW0Z0i
-         CTqj7hTA4262C48pcQPTWxgvKGSQ1LQgks/73S/V10RAeBK5hHJhx7ZbxahrIHGsK5bU
-         crb2aPqZrt9ArMgFvNEf6/iL2Ia25u/EldQEsOKbOrKgyMUfulRjc6gCETsPm62Fki99
-         ayEXOIgKaYa4YohjIIoMQ+HavVGjkXvTiQCd0/ZohrHC0rsOqSu+B+oZ12+Csh5u+2CE
-         xVgg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=4rN1YksKNQ6jMnv83wrys0vsQCA6pM1XeLstkQR9zSk=;
-        b=KDuGt5DVfBdp3irtRX7kDLNBKWV7blCKiL3FQ5mGndlIGuJ3O04iWwFMHVsQcd0pvl
-         qqjkp3iMGpVC6OnvbjdVrXWoilkjSQ5nP0+VacOxY5wPfVBY2qa3EobI+bp75pt1gFKe
-         utD7xVnDQMREXGX5VXnAuP5RHabClWLAJVE6IaRYaPUK8qqcHhuqKC8M4Any34lWZ+kw
-         9OXtdWbTXfGkzYICIeuumdUU6vDXTVwjVrRA7WHDCgGjEULw/BiJKN8DSB3moHBcnD2i
-         V98n439isnkFL5IugJJQm3R4hngx4vaxp3TI4RwZIkhzv/u/leRnwFE4ZueNHStpQftF
-         nMWw==
-X-Gm-Message-State: AOAM530q8N7Z57t6aCBPkhgyuZ7ZGJvUTADX06wtjsQoV/l8fbJIyUX/
-        Clenp30H0aA/JEGMUDgS4ZmBWg==
-X-Google-Smtp-Source: ABdhPJwiwVGAQSOrEM4tqzstTbRBmqfvaxH3KFKNSYNSQI1y++GJvlZicb7puOlrOD6JdzLf3utu9Q==
-X-Received: by 2002:adf:e8c9:: with SMTP id k9mr2327816wrn.315.1616577275230;
-        Wed, 24 Mar 2021 02:14:35 -0700 (PDT)
-Received: from dell ([91.110.221.180])
-        by smtp.gmail.com with ESMTPSA id n1sm2536565wro.36.2021.03.24.02.14.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Mar 2021 02:14:34 -0700 (PDT)
-Date:   Wed, 24 Mar 2021 09:14:32 +0000
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        phone-devel@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
-        martin.botka@somainline.org,
-        angelogioacchino.delregno@somainline.org,
-        marijn.suijten@somainline.org, Jingoo Han <jingoohan1@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Kiran Gunda <kgunda@codeaurora.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        linux-leds <linux-leds@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH 2/2] video: backlight: qcom-wled: Add PMI8994 compatible
-Message-ID: <20210324091432.GC2916463@dell>
-References: <20210228124106.135812-1-konrad.dybcio@somainline.org>
- <20210228124106.135812-2-konrad.dybcio@somainline.org>
- <20210322161810.biagj2qro66rv4gt@maple.lan>
- <20210323083935.GF2916463@dell>
- <CAMuHMdUamD4rAY1Sn-3Fb9Xf1B9g0FY0Pob8rAFsFR0ZcNZ0rw@mail.gmail.com>
+        d=mail.ustc.edu.cn; s=dkim; h=Received:Date:From:To:Cc:Subject:
+        In-Reply-To:References:Content-Transfer-Encoding:Content-Type:
+        MIME-Version:Message-ID; bh=CQxzGixpgbWGArS2H8DTMl+TRREKp6I+YVDe
+        syqE3EM=; b=Wcr4A4xAIyyTen5OhWFOBjLQaAQx+rwlv239WGFHbjM+WaUqJ9Vo
+        ZwnSsQMWs1PZ56AI1zzJlIUWUV5rq70ABrzL/ul4dj2Csa20ItYyvowMXNIoDrzj
+        UOQ9ckO6RJGp4lhZJTXxKtJjkmK36Yz/3KcSSFHkJAKhjKj/VNrScB4=
+Received: by ajax-webmail-newmailweb.ustc.edu.cn (Coremail) ; Wed, 24 Mar
+ 2021 18:24:48 +0800 (GMT+08:00)
+X-Originating-IP: [202.38.69.14]
+Date:   Wed, 24 Mar 2021 18:24:48 +0800 (GMT+08:00)
+X-CM-HeaderCharset: UTF-8
+From:   lyl2019@mail.ustc.edu.cn
+To:     "Michael Kelley" <mikelley@microsoft.com>
+Cc:     "KY Srinivasan" <kys@microsoft.com>,
+        "Haiyang Zhang" <haiyangz@microsoft.com>,
+        "Stephen Hemminger" <sthemmin@microsoft.com>,
+        "wei.liu@kernel.org" <wei.liu@kernel.org>,
+        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: RE: [PATCH] video/fbdev: Fix a double free in hvfb_probe
+X-Priority: 3
+X-Mailer: Coremail Webmail Server Version XT3.0.8 dev build
+ 20190610(cb3344cf) Copyright (c) 2002-2021 www.mailtech.cn ustc-xl
+In-Reply-To: <MWHPR21MB1593E96D24957865DB46D3DBD7649@MWHPR21MB1593.namprd21.prod.outlook.com>
+References: <20210323073350.17697-1-lyl2019@mail.ustc.edu.cn>
+ <MWHPR21MB1593E96D24957865DB46D3DBD7649@MWHPR21MB1593.namprd21.prod.outlook.com>
+X-SendMailWithSms: false
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAMuHMdUamD4rAY1Sn-3Fb9Xf1B9g0FY0Pob8rAFsFR0ZcNZ0rw@mail.gmail.com>
+Message-ID: <5c22e0b9.10ae8.17863c3eddb.Coremail.lyl2019@mail.ustc.edu.cn>
+X-Coremail-Locale: zh_CN
+X-CM-TRANSID: LkAmygBnbkpwE1tgAq8yAA--.0W
+X-CM-SenderInfo: ho1ojiyrz6zt1loo32lwfovvfxof0/1tbiAQoKBlQhn5ZS1wACs8
+X-Coremail-Antispam: 1Ur529EdanIXcx71UUUUU7IcSsGvfJ3iIAIbVAYjsxI4VWxJw
+        CS07vEb4IE77IF4wCS07vE1I0E4x80FVAKz4kxMIAIbVAFxVCaYxvI4VCIwcAKzIAtYxBI
+        daVFxhVjvjDU=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 24 Mar 2021, Geert Uytterhoeven wrote:
-
-> Hi Lee,
-> 
-> On Tue, Mar 23, 2021 at 9:40 AM Lee Jones <lee.jones@linaro.org> wrote:
-> > On Mon, 22 Mar 2021, Daniel Thompson wrote:
-> > > On Sun, Feb 28, 2021 at 01:41:05PM +0100, Konrad Dybcio wrote:
-> > > > Add a compatible for PMI8994 WLED. It uses the V4 of WLED IP.
-> > > >
-> > > > Signed-off-by: Konrad Dybcio <konrad.dybcio@somainline.org>
-> > >
-> > > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> >
-> > Why are you Reviewing/Acking a patch that was applied on the 10th?
-> 
-> Only 12 days later?!?
-> 
-> It's not uncommon to receive acks for patches after they have been
-> applied upstream. But it is if the patch was applied 10 years and 9
-> months ago!
-> https://lore.kernel.org/linux-m68k/F5513AE92A5A1047AC2F91AEBB9202680288CBBA3983@E2K7-MS2.ds.strath.ac.uk/
-
-That truly is next level! :)
-
--- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+DQoNCg0KPiAtLS0tLeWOn+Wni+mCruS7ti0tLS0tDQo+IOWPkeS7tuS6ujogIk1pY2hhZWwgS2Vs
+bGV5IiA8bWlrZWxsZXlAbWljcm9zb2Z0LmNvbT4NCj4g5Y+R6YCB5pe26Ze0OiAyMDIxLTAzLTI0
+IDAyOjUyOjA3ICjmmJ/mnJ/kuIkpDQo+IOaUtuS7tuS6ujogIkx2IFl1bmxvbmciIDxseWwyMDE5
+QG1haWwudXN0Yy5lZHUuY24+LCAiS1kgU3Jpbml2YXNhbiIgPGt5c0BtaWNyb3NvZnQuY29tPiwg
+IkhhaXlhbmcgWmhhbmciIDxoYWl5YW5nekBtaWNyb3NvZnQuY29tPiwgIlN0ZXBoZW4gSGVtbWlu
+Z2VyIiA8c3RoZW1taW5AbWljcm9zb2Z0LmNvbT4sICJ3ZWkubGl1QGtlcm5lbC5vcmciIDx3ZWku
+bGl1QGtlcm5lbC5vcmc+DQo+IOaKhOmAgTogImxpbnV4LWh5cGVydkB2Z2VyLmtlcm5lbC5vcmci
+IDxsaW51eC1oeXBlcnZAdmdlci5rZXJuZWwub3JnPiwgImRyaS1kZXZlbEBsaXN0cy5mcmVlZGVz
+a3RvcC5vcmciIDxkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnPiwgImxpbnV4LWZiZGV2
+QHZnZXIua2VybmVsLm9yZyIgPGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZz4sICJsaW51eC1r
+ZXJuZWxAdmdlci5rZXJuZWwub3JnIiA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz4NCj4g
+5Li76aKYOiBSRTogW1BBVENIXSB2aWRlby9mYmRldjogRml4IGEgZG91YmxlIGZyZWUgaW4gaHZm
+Yl9wcm9iZQ0KPiANCj4gRnJvbTogTHYgWXVubG9uZyA8bHlsMjAxOUBtYWlsLnVzdGMuZWR1LmNu
+PiBTZW50OiBUdWVzZGF5LCBNYXJjaCAyMywgMjAyMSAxMjozNCBBTQ0KPiA+IA0KPiA+IEluIGZ1
+bmN0aW9uIGh2ZmJfcHJvYmUgaW4gaHlwZXJ2X2ZiLmMsIGl0IGNhbGxzIGh2ZmJfZ2V0bWVtKGhk
+ZXYsIGluZm8pDQo+ID4gYW5kIHJldHVybiBlcnIgd2hlbiBpbmZvLT5hcGVydHVyZXMgaXMgZnJl
+ZWQuDQo+ID4gDQo+ID4gSW4gdGhlIGVycm9yMSBsYWJlbCBvZiBodmZiX3Byb2JlLCBpbmZvLT5h
+cGVydHVyZXMgd2lsbCBiZSBmcmVlZCB0d2ljZQ0KPiA+IGJ5IGZyYW1lYnVmZmVyX3JlbGVhc2Uo
+aW5mbykuDQo+ID4gDQo+ID4gTXkgcGF0Y2ggc2V0cyBpbmZvLT5hcGVydHVyZXMgdG8gTlVMTCBh
+ZnRlciBpdCB3YXMgZnJlZWQgdG8gYXZvaWQNCj4gPiBkb3VibGUgZnJlZS4NCj4gPiANCj4gPiBT
+aWduZWQtb2ZmLWJ5OiBMdiBZdW5sb25nIDxseWwyMDE5QG1haWwudXN0Yy5lZHUuY24+DQo+ID4g
+LS0tDQo+ID4gIGRyaXZlcnMvdmlkZW8vZmJkZXYvaHlwZXJ2X2ZiLmMgfCAzICsrKw0KPiA+ICAx
+IGZpbGUgY2hhbmdlZCwgMyBpbnNlcnRpb25zKCspDQo+ID4gDQo+ID4gZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvdmlkZW8vZmJkZXYvaHlwZXJ2X2ZiLmMgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2h5cGVy
+dl9mYi5jDQo+ID4gaW5kZXggYzhiMGFlNjc2ODA5Li4yZmM5YjUwN2U3M2EgMTAwNjQ0DQo+ID4g
+LS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9oeXBlcnZfZmIuYw0KPiA+ICsrKyBiL2RyaXZlcnMv
+dmlkZW8vZmJkZXYvaHlwZXJ2X2ZiLmMNCj4gPiBAQCAtMTAzMiw2ICsxMDMyLDcgQEAgc3RhdGlj
+IGludCBodmZiX2dldG1lbShzdHJ1Y3QgaHZfZGV2aWNlICpoZGV2LCBzdHJ1Y3QgZmJfaW5mbw0K
+PiA+ICppbmZvKQ0KPiA+ICAJCWlmICghcGRldikgew0KPiA+ICAJCQlwcl9lcnIoIlVuYWJsZSB0
+byBmaW5kIFBDSSBIeXBlci1WIHZpZGVvXG4iKTsNCj4gPiAgCQkJa2ZyZWUoaW5mby0+YXBlcnR1
+cmVzKTsNCj4gPiArCQkJaW5mby0+YXBlcnR1cmVzID0gTlVMTDsNCj4gPiAgCQkJcmV0dXJuIC1F
+Tk9ERVY7DQo+ID4gIAkJfQ0KPiA+IA0KPiA+IEBAIC0xMTMwLDYgKzExMzEsNyBAQCBzdGF0aWMg
+aW50IGh2ZmJfZ2V0bWVtKHN0cnVjdCBodl9kZXZpY2UgKmhkZXYsIHN0cnVjdCBmYl9pbmZvDQo+
+ID4gKmluZm8pDQo+ID4gIAkJcGNpX2Rldl9wdXQocGRldik7DQo+ID4gIAl9DQo+ID4gIAlrZnJl
+ZShpbmZvLT5hcGVydHVyZXMpOw0KPiA+ICsJaW5mby0+YXBlcnR1cmVzID0gTlVMTDsNCj4gPiAN
+Cj4gPiAgCXJldHVybiAwOw0KPiA+IA0KPiA+IEBAIC0xMTQyLDYgKzExNDQsNyBAQCBzdGF0aWMg
+aW50IGh2ZmJfZ2V0bWVtKHN0cnVjdCBodl9kZXZpY2UgKmhkZXYsIHN0cnVjdCBmYl9pbmZvDQo+
+ID4gKmluZm8pDQo+ID4gIAlpZiAoIWdlbjJ2bSkNCj4gPiAgCQlwY2lfZGV2X3B1dChwZGV2KTsN
+Cj4gPiAgCWtmcmVlKGluZm8tPmFwZXJ0dXJlcyk7DQo+ID4gKwlpbmZvLT5hcGVydHVyZXMgPSBO
+VUxMOw0KPiA+IA0KPiA+ICAJcmV0dXJuIC1FTk9NRU07DQo+ID4gIH0NCj4gPiAtLQ0KPiA+IDIu
+MjUuMQ0KPiA+IA0KPiANCj4gV2hpbGUgSSB0aGluayB0aGlzIHdvcmtzLCBhIHNsaWdodGx5IGJl
+dHRlciBzb2x1dGlvbiBtaWdodCBiZSB0byByZW1vdmUNCj4gYWxsIGNhbGxzIHRvIGtmcmVlKGlu
+Zm8tPmFwZXJ0dXJlcykgaW4gaHZmYl9nZXRtZW0oKSwgIGFuZCBqdXN0IGxldA0KPiBmcmFtZWJ1
+ZmZlcl9yZWxlYXNlKCkgaGFuZGxlIGZyZWVpbmcgdGhlIG1lbW9yeS4gIFRoYXQncyB3aGF0IGlz
+DQo+IGRvbmUgaW4gb3RoZXIgZHJpdmVycyB0aGF0IGZvbGxvdyB0aGUgZmJkZXYgcGF0dGVybiwg
+YW5kIGl0J3MgbGVzcw0KPiBjb2RlIG92ZXJhbGwuICANCj4gDQo+IE1pY2hhZWwNCg0KT2ssIGkg
+YWdyZWUgd2l0aCB5b3UuIFJlbW92ZSBhbGwgY2FsbHMgdG8ga2ZyZWUoaW5mby0+YXBlcnR1cmVz
+KQ0KaW4gaHZmYl9nZXRtZW0oKSBpcyBhIGJldHRlciBzb2x1dGlvbi4NCg0KSSB3aWxsIHN1Ymlt
+dCBhIFBBVENIIHYyIGZvciB5b3UgdG8gcmV2aWV3LiBUaGFua3MuDQo=

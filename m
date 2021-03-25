@@ -2,89 +2,103 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65587C433DB
-	for <linux-fbdev@archiver.kernel.org>; Thu, 25 Mar 2021 11:55:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C65EDC433E0
+	for <linux-fbdev@archiver.kernel.org>; Thu, 25 Mar 2021 13:31:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1445261A10
-	for <linux-fbdev@archiver.kernel.org>; Thu, 25 Mar 2021 11:55:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9EDCF61A1E
+	for <linux-fbdev@archiver.kernel.org>; Thu, 25 Mar 2021 13:31:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230392AbhCYLzG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 25 Mar 2021 07:55:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45630 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230386AbhCYLzD (ORCPT
+        id S230093AbhCYNaq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 25 Mar 2021 09:30:46 -0400
+Received: from mail-wm1-f41.google.com ([209.85.128.41]:56306 "EHLO
+        mail-wm1-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229869AbhCYNaj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 25 Mar 2021 07:55:03 -0400
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5EC4C06174A
-        for <linux-fbdev@vger.kernel.org>; Thu, 25 Mar 2021 04:55:02 -0700 (PDT)
-Received: by mail-ej1-x62d.google.com with SMTP id u9so2420914ejj.7
-        for <linux-fbdev@vger.kernel.org>; Thu, 25 Mar 2021 04:55:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=rZWmRs5uiiZzbSAbUlT9DJTNuhGAA3GeDnT628NrQ7w=;
-        b=BxdtSvV+EZJHW2fk1eKvc8Ht075HnGSovHXfOkT72rSYHXnpbVRQrV3XFwBk5Uz0Ia
-         YPTOHsrEV+C/SX8mBa3JTdHvS8+eSGyrq0/hH3s5l1LynwopCgPQznL28ypq95ledDHo
-         dU/p7If9ZAEkOdVed9XtTJTg5PESS8Z7xb/xIeziSsGUWraA6H/jNPuB02PNJ03HYtgc
-         TdTXg2EHDQQfOEcfw9Q65vrgKdO+atqRmtyT2Ry244nIbWtsg7OOF8J093kK3a3xYflS
-         rV1kvTTLdB2kxFQQw+x3Rn69le1RwGPiZFhpBiRqWntzBi5KZmrpQefhTlBQb35DSoQV
-         zrmQ==
+        Thu, 25 Mar 2021 09:30:39 -0400
+Received: by mail-wm1-f41.google.com with SMTP id 12so1177540wmf.5;
+        Thu, 25 Mar 2021 06:30:38 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=rZWmRs5uiiZzbSAbUlT9DJTNuhGAA3GeDnT628NrQ7w=;
-        b=cgoGaFn+CV8pM/cK7TRAeUVwAOQgS5v5T45rX5u3mju4XnqnCwwrlYWP8/eP2aTWFJ
-         ADpgMEOz/ob9eF3btuG1MalZNfKkypuqswrfVIiULwDMHLxFF2JRv8tPejqMJA8+d2Nv
-         QIVazs/FjpMikbl5fc7Vf6uFrM23xuNn0pPBdwWJFqt00lzfofuQ64hDRC9DF1twelKA
-         yfvCJgDbAxQlSbebm5IV1tK+S4dEN0dBgU903PS3QlUdYzKl+eXvngyHfKFD4/pE/cV5
-         lUe6AVw0lGVCIAZ/o9QwUOT0+4Ds2PjqdjfykVbWG1MEid1YN2SxyBHP69N63vqQy5cC
-         TwhA==
-X-Gm-Message-State: AOAM5302bECHUI/CoX4rRlR0PsyJOY2yMuHh0IZfTMymsRr1MwMiYbgq
-        RcBTy2ZU6vMPyEO14K91qVoCsg==
-X-Google-Smtp-Source: ABdhPJzPE/VIPxB5BtQOm53Z531/3bq0GIn3TATCJb4Fkb0yQXA0yz2x6HTeLa+stD5UMjNVUttscw==
-X-Received: by 2002:a17:906:6882:: with SMTP id n2mr8901334ejr.50.1616673301376;
-        Thu, 25 Mar 2021 04:55:01 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id q10sm2554598eds.67.2021.03.25.04.55.00
+        bh=1KxpzHpBzHIIR0d4+mLxk0ks65hJp0uLAyGQBVQSIeU=;
+        b=iVj+00kb7wVQood9ljjGeRAmPkYTvdKdhEJE7+DWUZsdj+mP6SwxqMQcb89U120V1C
+         rgAqsrbG4UJKmGUH6ehyvcoVk2NAMKzI9APEOI0XWJt1t31apWh/UZye7qtAILZNvhAa
+         UfNjmBYNnjAVyv2XCfFPluz97uDipAgbivw932doD0QahVv5irrwmK6W/lKejI7r25Zs
+         um2aoIqiRnbQHkPvMDGOFrVeHDaD4nogFT8U0RE5VShGWdcQux0qto/fxX/2NfyEB3T2
+         yYBsrJsxa/dbnYp0Jlje3xB5mYoXg9+XReamQvSzMFhO5UgtGAarpBRLsWvRcqqhftCI
+         7xmQ==
+X-Gm-Message-State: AOAM533ddLkDXI/uAk3VBGuSG1RNlmxmjmr6Ve4EYRW9DeihuPyRPO2n
+        TRM/jpIw1EWffjvPuBacBC2rAOIWhqg=
+X-Google-Smtp-Source: ABdhPJyzGQH/0Iivphr0ruNHgmB+wKVIcHSWa+rCvr/aADGIZVWt+a3LXw8EM4wj0nir7SJxq10PfQ==
+X-Received: by 2002:a7b:ca44:: with SMTP id m4mr8045770wml.103.1616679038124;
+        Thu, 25 Mar 2021 06:30:38 -0700 (PDT)
+Received: from liuwe-devbox-debian-v2 ([51.145.34.42])
+        by smtp.gmail.com with ESMTPSA id d18sm7685472wra.8.2021.03.25.06.30.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 25 Mar 2021 04:55:00 -0700 (PDT)
-Date:   Thu, 25 Mar 2021 11:54:59 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     ChiYuan Huang <u0084500@gmail.com>
-Cc:     Lee Jones <lee.jones@linaro.org>, lgirdwood@gmail.com,
-        Mark Brown <broonie@kernel.org>, jingoohan1@gmail.com,
-        b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-        ChiYuan Huang <cy_huang@richtek.com>
-Subject: Re: [PATCH v5 5/6] backlight: rt4831: Adds support for Richtek
- RT4831 backlight
-Message-ID: <20210325115459.k5lj5wgype5skh57@maple.lan>
-References: <1608217244-314-1-git-send-email-u0084500@gmail.com>
- <1608217244-314-5-git-send-email-u0084500@gmail.com>
- <CADiBU38aafx9H1Skz_hHmmkQgCGJSssE1VYBC6WddnGfR3ux1w@mail.gmail.com>
+        Thu, 25 Mar 2021 06:30:37 -0700 (PDT)
+Date:   Thu, 25 Mar 2021 13:30:36 +0000
+From:   Wei Liu <wei.liu@kernel.org>
+To:     Michael Kelley <mikelley@microsoft.com>
+Cc:     Lv Yunlong <lyl2019@mail.ustc.edu.cn>,
+        KY Srinivasan <kys@microsoft.com>,
+        Haiyang Zhang <haiyangz@microsoft.com>,
+        Stephen Hemminger <sthemmin@microsoft.com>,
+        "wei.liu@kernel.org" <wei.liu@kernel.org>,
+        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] video: hyperv_fb: Fix a double free in hvfb_probe
+Message-ID: <20210325133036.rbriezf3v32wofkl@liuwe-devbox-debian-v2>
+References: <20210324103724.4189-1-lyl2019@mail.ustc.edu.cn>
+ <MWHPR21MB1593F19EE7AD10698582FA78D7639@MWHPR21MB1593.namprd21.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CADiBU38aafx9H1Skz_hHmmkQgCGJSssE1VYBC6WddnGfR3ux1w@mail.gmail.com>
+In-Reply-To: <MWHPR21MB1593F19EE7AD10698582FA78D7639@MWHPR21MB1593.namprd21.prod.outlook.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Mar 25, 2021 at 04:22:11PM +0800, ChiYuan Huang wrote:
-> Dear reviewers:
+On Wed, Mar 24, 2021 at 01:46:39PM +0000, Michael Kelley wrote:
+> From: Lv Yunlong <lyl2019@mail.ustc.edu.cn> Sent: Wednesday, March 24, 2021 3:37 AM
+> > 
+> > In function hvfb_probe in hyperv_fb.c, it calls hvfb_getmem(hdev, info)
+> > and return err when info->apertures is freed.
+> > 
+> > In the error1 label of hvfb_probe, info->apertures will be freed for the
+> > second time in framebuffer_release(info).
+> > 
+> > My patch removes all kfree(info->apertures) instead of set info->apertures
+> > to NULL. It is because that let framebuffer_release() handle freeing the
+> > memory flows the fbdev pattern, and less code overall.
 > 
->            Didn't get any response about this backlight patch.
-> Is there any part need to be refined?
+> Let me suggest some clarifications in the commit message.  It's probably
+> better not to reference the initial approach of setting info->apertures to
+> NULL, since there won't be any record of that approach in the commit
+> history.  Here's what I would suggest:
+> 
+> Function hvfb_probe() calls hvfb_getmem(), expecting upon return that
+> info->apertures is either NULL or points to memory that should be freed
+> by framebuffer_release().  But hvfb_getmem() is freeing the memory and
+> leaving the pointer non-NULL, resulting in a double free if an error
+> occurs or later if hvfb_remove() is called.
+> 
+> Fix this by removing all kfree(info->apertures) calls in hvfb_getmem().
+> This will allow framebuffer_release() to free the memory, which follows
+> the pattern of other fbdev drivers.
+> 
+> Modulo this revision to the commit message, which Wei Liu can
+> probably incorporate,
+> 
 
-Thanks for the reminders and sorry for the delay. Have just replied
-to the original message!
+Yes. I surely can incorporate the changes.
 
+I will also add the Fixes tag.
 
-Daniel.
+> Reviewed-by: Michael Kelley <mikelley@microsoft.com>

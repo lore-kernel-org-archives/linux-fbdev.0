@@ -2,208 +2,385 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,PDS_BAD_THREAD_QP_64,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2864DC433E0
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Mar 2021 13:47:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39F75C433C1
+	for <linux-fbdev@archiver.kernel.org>; Thu, 25 Mar 2021 08:23:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EAB2161A11
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Mar 2021 13:47:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E4014619F9
+	for <linux-fbdev@archiver.kernel.org>; Thu, 25 Mar 2021 08:23:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235606AbhCXNqv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 Mar 2021 09:46:51 -0400
-Received: from mail-eopbgr760090.outbound.protection.outlook.com ([40.107.76.90]:3254
-        "EHLO NAM02-CY1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S235582AbhCXNql (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 Mar 2021 09:46:41 -0400
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=WMffZ0hw9oclSLgbKTdoFNL38KeWydRlfMUyaQiOjG9AhUd2SyyNzT50/zweB0nty+IsfowrplgkGqMeEpKO+HYSM7LTdHVmF5OzhywDLJmpEdxlE5LxuNXwzbNy+ALhYWzEUOEfFZ08G+FvpQO1Qevi85efQEqrCmtKw1jU7Y5dPzgz7NNUN+8IH7i/Qgi3YiRHYkuEaRipE24wUYfgUPb7P4dRg+wSxicv7RrX2LGWLMVxkfho8Pq8BTYrMtiH0OzEm2BKVFh9HeYa/xzNBKwtt0HMbjXB6qTOIVKC9MnLLCWi/rtOW3cp6yg+Ed52XRzbw9dq62CX+GyF7gAotQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=CHwH2GEkoMTaDilc/BaJPAd8yOHoPKRPbOBwu+uTZBw=;
- b=ZqHthbz0mg0OPPHizS1varTdO5e4ImluAtCz0+8SPso7vcoIoFFq0TGvsBIYIllLd3DTmyoRaUajpZK3VuIXGfIYAzcOcTe3GFz8VuOU9EGolq4Il3DeqddzZjA3v2PAJaGa2ZqJYc10RV9LYAbL7MVYVC+gEFlSF/+jCcrvbB9b/fuV5GhoqMWPxS1DZAgCsUQQZSBMUkPZXgyOEPDyfpLdiPLKy3rIvbpYSAp8+CLfdN9uf3gcz7SIcKKgxX8wujgpFyWBEDHbhD5hLNI+7ldBQOuUlYiva+7kSlK2GgzvqCzz83443OhQoiRBVq0QYwqmjfLwvTQrkW3eVPIp5Q==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=microsoft.com; dmarc=pass action=none
- header.from=microsoft.com; dkim=pass header.d=microsoft.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=CHwH2GEkoMTaDilc/BaJPAd8yOHoPKRPbOBwu+uTZBw=;
- b=DdapA82ULIZ57CouVR/spotbTPi1/4HpGacwCZm/+/MrFaMfDhp5+zqxhByyUotDTfjI5eteicHkBiiXOe7lZBO6rmVkKHpD2qvxvT5zwXUDmjz3TGA+0cH/Cku+8ZMZ3TsTbFe+eJSNpNK8o/uWpDQsQqbRyy503U42iUH4s+w=
-Received: from MWHPR21MB1593.namprd21.prod.outlook.com (2603:10b6:301:7c::11)
- by MW2PR2101MB1068.namprd21.prod.outlook.com (2603:10b6:302:a::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3999.2; Wed, 24 Mar
- 2021 13:46:39 +0000
-Received: from MWHPR21MB1593.namprd21.prod.outlook.com
- ([fe80::cbc:735e:a6a5:8b9c]) by MWHPR21MB1593.namprd21.prod.outlook.com
- ([fe80::cbc:735e:a6a5:8b9c%8]) with mapi id 15.20.3999.004; Wed, 24 Mar 2021
- 13:46:39 +0000
-From:   Michael Kelley <mikelley@microsoft.com>
-To:     Lv Yunlong <lyl2019@mail.ustc.edu.cn>,
-        KY Srinivasan <kys@microsoft.com>,
-        Haiyang Zhang <haiyangz@microsoft.com>,
-        Stephen Hemminger <sthemmin@microsoft.com>,
-        "wei.liu@kernel.org" <wei.liu@kernel.org>
-CC:     "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v2] video: hyperv_fb: Fix a double free in hvfb_probe
-Thread-Topic: [PATCH v2] video: hyperv_fb: Fix a double free in hvfb_probe
-Thread-Index: AQHXIJnVU648MgoDp0CNqdRDsPJfgqqTIvoQ
-Date:   Wed, 24 Mar 2021 13:46:39 +0000
-Message-ID: <MWHPR21MB1593F19EE7AD10698582FA78D7639@MWHPR21MB1593.namprd21.prod.outlook.com>
-References: <20210324103724.4189-1-lyl2019@mail.ustc.edu.cn>
-In-Reply-To: <20210324103724.4189-1-lyl2019@mail.ustc.edu.cn>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-msip_labels: MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Enabled=true;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_SetDate=2021-03-24T13:46:37Z;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Method=Standard;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Name=Internal;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_SiteId=72f988bf-86f1-41af-91ab-2d7cd011db47;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_ActionId=38b55c63-9cff-4cbd-92cb-434479b39c9a;
- MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_ContentBits=0
-authentication-results: mail.ustc.edu.cn; dkim=none (message not signed)
- header.d=none;mail.ustc.edu.cn; dmarc=none action=none
- header.from=microsoft.com;
-x-originating-ip: [24.22.167.197]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-ht: Tenant
-x-ms-office365-filtering-correlation-id: dfb4f7e5-1435-4226-2464-08d8eecb4018
-x-ms-traffictypediagnostic: MW2PR2101MB1068:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <MW2PR2101MB10689892C80CC40616863DD1D7639@MW2PR2101MB1068.namprd21.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:6790;
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: zUCvLwmuQeCNSwYDy2eVRyDVDvBUF2M5I1dTKIe67aoc+NCB7c0rtub1ygxI65etxlqKdwSEih2QMNe0yskg5MBp2ncmbT1ZtKLshl1xOcmSoG5dBC0HBVPWE6BnOZI21YiYFXDUV5uGbz0bRn1JZxHJk5YZ14j9Bk5TLkrz0rep1qEf8Z7c75UWTQLsYoBMmeGMvGR0oOmA3UA3QaDW++F2hU8tZEzZpr6G6qcg2HkVoQAF4zujEfMd2BZgzoRXF9uRl0bN1WgLuJIhmYExEpidLwx60c4LDHOYJV6ZOZtUrPreI+Y2XechrwpdxzwzyAXaPQKNhqoXWA3pBn8WrJ12HJDRHElV5r/g1G9ZsnWRjTjVBj2ZksyJNoQuJzq+1CbwnDwMCsVKua6fn3Fe+BtjKh5rYr8MGh16nT2sqFHdqO0Np5MEiKt8eOpuJpyTj/o1a5X4DNJK/Szz4ZQccohgAIVPCpld0FJznkL5guYl+ShqFQ87xdTy1o9Db/vKcOhSmK/5KKtra56HHMdK32UfrhCMTdMbRktJmE685HkhvHRx41DZfMihNVw/kuYSh7qNUM9NCa/bRb/7U90LNx0E3nxBtD8rYoanwmczpQwdOoUxvu0Duv6m9ga10YSKF++87WJH/UvSEXnSF6S5E3ilwGa5BZ5pdjjUCLCaR34=
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MWHPR21MB1593.namprd21.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(396003)(366004)(376002)(346002)(136003)(39860400002)(186003)(9686003)(55016002)(66446008)(66476007)(83380400001)(86362001)(76116006)(66556008)(64756008)(66946007)(2906002)(26005)(6506007)(52536014)(38100700001)(5660300002)(8936002)(8676002)(7696005)(82950400001)(71200400001)(33656002)(110136005)(4326008)(82960400001)(478600001)(10290500003)(316002)(8990500004)(54906003);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata: =?us-ascii?Q?q6ZKrI0KLZMkAKPFg0h1YV9YcSLPn7Lh2WMRrYWHykkmTnVZGcNChbVuMyXI?=
- =?us-ascii?Q?RJ6pE2mKQ+8NXCrC4un2vg5YdqFpMu0vPEN2tDz+JIlDciVLD7V2hbduV/fw?=
- =?us-ascii?Q?FRu+EfZzPbYgrPvBPMsmTZ86zzFZbrGyaYZisn5OMm459bW0ZvJSrX1RKp6e?=
- =?us-ascii?Q?Rx3Sph0datgIXfNUdWauo2U9e3N7/oF20hGz2zsja55JU5anodxlTmxbNGKi?=
- =?us-ascii?Q?VKcxRRbPz9EbnPL9XZzjJTxKd8qtOqbSfA7VhoFiDV7P+GJz8Ma/QsRU3VUU?=
- =?us-ascii?Q?HTtCqyWGOTTf6iXo5r/anXh3VpyMazAhBg/XDh4WiCjEluZEq3R8P+LcDA0k?=
- =?us-ascii?Q?svFl3NR6WDDOr81o0rZ6p+9aTgfLhQgE2W8gZMz3esRg/Af6HEmMgSmAzWWM?=
- =?us-ascii?Q?1LU0D98cXX20EaTsnf5HvrqfmQ+9R048jSjp3a1CssSkLheccnEsecZ6ABEx?=
- =?us-ascii?Q?AMSzOZr+dmwObiupZV480e1wUEIxaMgSbypfDg3QN5GqxjlOs0e1svCWlgCw?=
- =?us-ascii?Q?M4za2VhUlLlhobZh8O0+hMaNbsRcnE1MQakvdnKUFoqGA+y365rNdsMsOgyu?=
- =?us-ascii?Q?2j9hx70ZAclyu4B60ZnBLuRwC7jNKPN0aZfapDbXKS9VVSRsp5fozcVwK8aY?=
- =?us-ascii?Q?KSkReZ3zHuxnxAmiReAJ9YH4FkPNqiR/uuxQWNBUcj2r+ef8VxfKsImxU/R4?=
- =?us-ascii?Q?vlBovqGbjJa25a1MbvZ0EFjbTklVp4EfKMMVDEjcmLcJxxwZzGKMRMzZZyAF?=
- =?us-ascii?Q?ez89eR0L4psNT5FFmCOl5nHj+9+0WAZ4qKCJH8lK5wM3e9GWJcwKSD1a4ctD?=
- =?us-ascii?Q?Z8NH4sVgC8lfIJH6rVL0Ei8NiqJW0T/NLrihA1+7nNiDs4vGifxEV65GB8uj?=
- =?us-ascii?Q?hO0LjIsLPWen5htOManfMNXcwchpar1Lw4+PBCJsccdv4RXKNdA8WQLhgxAM?=
- =?us-ascii?Q?tcmGPKQvHPppRkD0byFCiYVz4vbp+KG2XUGOzdNbDK+dRh7jHns7Xx2eBM3k?=
- =?us-ascii?Q?sPw5kOmoeUhInMzUmvJrCqJBKlodMkv8prKrV+gpfz2ZbLc/jghvHakcxvD5?=
- =?us-ascii?Q?978l6oZg2XiWChqoz9zbkAF9fmBmRcGY4B0culQPz2sRs60urQZwFn0o2nS6?=
- =?us-ascii?Q?90XURDOUXO1puL+ndclQQjyF0RBX31iFGj8OW0m9Df18p1asHfs8U59unCkK?=
- =?us-ascii?Q?x1qLVALDcm3zJczG2y30tYdo05O44RR3jE5fcR18w/7WLGqSaftUZv10falM?=
- =?us-ascii?Q?gsPwMum+9B5HASqX/26kSr8HAradGP/2p0cWWGqrAs2UtIfPN8S/V5jAJBD/?=
- =?us-ascii?Q?16ArrKQyEdImgV0/ZYp0DmNf?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+        id S229629AbhCYIWg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 25 Mar 2021 04:22:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55938 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229728AbhCYIWY (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 25 Mar 2021 04:22:24 -0400
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56583C06174A;
+        Thu, 25 Mar 2021 01:22:24 -0700 (PDT)
+Received: by mail-lf1-x135.google.com with SMTP id b83so1219346lfd.11;
+        Thu, 25 Mar 2021 01:22:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=G826T6os5KhrXWhgWWSol9eRD4q55UejsVL4Aih0kVk=;
+        b=nkK7ygHCjzogkk85Hs85aPvKDl9+y9aHUUxCc/JPwvqHRwreCYcqEoBSlHZJRAC526
+         meVjDtOWr3Ub1/hGxUxqgGg23+WyX1Q3jXCxhvy0T8e8vEwq/Kg0ulhjPdpUuQpD4odT
+         zP3buTH4Crg4mBy7ydWLObie0uC0qdQYAYwZmxwD2bPwxYLZXAgi6/K+kTe4PVTAmxpf
+         2caREH833aSsd+iiEll92r2kWBUdOh+mh2F+em2BveLKygEEd1vCAcpW0tJhSp2mtGhv
+         cpEfskC2Ce0sPmwnC40/XP/LGo1gpO9MhCBwm8r0noLNnPP2iS442cFkXcJdQh5fRb8i
+         asPQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=G826T6os5KhrXWhgWWSol9eRD4q55UejsVL4Aih0kVk=;
+        b=jc0mnAUyklBH9FR3lIdmWROTe38EbHWngYs4qnEj3UmP3hPCnE8LgkT3dprmyh8hm1
+         VHja+H85vtb9HEYRA30py6Jopavx87US39ZOi2+D2thff0f8zJJ1cWQwrYidO9Dz7uvQ
+         akcUu1ivqzc+OSom9FfKct2Vy0X/HaS6hKO47tp0QTECVak8cL4bLNy5mPmM/CygS/6u
+         zA6Op3t8VHcNwf4IvmTw+SQJETKnvUDLyzF6j4rpN/vwF91nVhoVXUr8x9kXdk3RQYJ4
+         Q1FAFr+JVXZoW8U2WFMpVWB1WalnDK/GvXzs46sE80w30kmcfG+vnd+05qNx7Hp+TN7d
+         IekA==
+X-Gm-Message-State: AOAM530IB7FqrP5GvunvIjZwPJ6x4uJepgVziJSljqWdk9+OIcmQsOHO
+        Hb6ulMZQKxGL7/IOjTQcfxaL0LwEhaJowiX/eiw=
+X-Google-Smtp-Source: ABdhPJyilmo5xJ3ryeQb1hDSfMNJ6g9UEiWKYjSioLwKiFVpAG+2I7g0hvodsspIy0sK9ApNIQWpYBymBEszsmTSPio=
+X-Received: by 2002:a05:6512:1192:: with SMTP id g18mr4084205lfr.408.1616660542638;
+ Thu, 25 Mar 2021 01:22:22 -0700 (PDT)
 MIME-Version: 1.0
-X-OriginatorOrg: microsoft.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: MWHPR21MB1593.namprd21.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: dfb4f7e5-1435-4226-2464-08d8eecb4018
-X-MS-Exchange-CrossTenant-originalarrivaltime: 24 Mar 2021 13:46:39.2921
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: TRT9AzSHtOmVvJIFqetzGnhV52tmNAcldQ+r7sXQa7Th5Chfa0jxDJQ42/BeW68AFMXDoV2vNaSSAlJ6xgGZeXQSBJzp9vrd/WoXDRFNIvk=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW2PR2101MB1068
+References: <1608217244-314-1-git-send-email-u0084500@gmail.com> <1608217244-314-5-git-send-email-u0084500@gmail.com>
+In-Reply-To: <1608217244-314-5-git-send-email-u0084500@gmail.com>
+From:   ChiYuan Huang <u0084500@gmail.com>
+Date:   Thu, 25 Mar 2021 16:22:11 +0800
+Message-ID: <CADiBU38aafx9H1Skz_hHmmkQgCGJSssE1VYBC6WddnGfR3ux1w@mail.gmail.com>
+Subject: Re: [PATCH v5 5/6] backlight: rt4831: Adds support for Richtek RT4831 backlight
+To:     Lee Jones <lee.jones@linaro.org>, lgirdwood@gmail.com,
+        Mark Brown <broonie@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        jingoohan1@gmail.com, b.zolnierkie@samsung.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        lkml <linux-kernel@vger.kernel.org>,
+        ChiYuan Huang <cy_huang@richtek.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Lv Yunlong <lyl2019@mail.ustc.edu.cn> Sent: Wednesday, March 24, 2021=
- 3:37 AM
->=20
-> In function hvfb_probe in hyperv_fb.c, it calls hvfb_getmem(hdev, info)
-> and return err when info->apertures is freed.
->=20
-> In the error1 label of hvfb_probe, info->apertures will be freed for the
-> second time in framebuffer_release(info).
->=20
-> My patch removes all kfree(info->apertures) instead of set info->aperture=
-s
-> to NULL. It is because that let framebuffer_release() handle freeing the
-> memory flows the fbdev pattern, and less code overall.
+Dear reviewers:
 
-Let me suggest some clarifications in the commit message.  It's probably
-better not to reference the initial approach of setting info->apertures to
-NULL, since there won't be any record of that approach in the commit
-history.  Here's what I would suggest:
+           Didn't get any response about this backlight patch.
+Is there any part need to be refined?
 
-Function hvfb_probe() calls hvfb_getmem(), expecting upon return that
-info->apertures is either NULL or points to memory that should be freed
-by framebuffer_release().  But hvfb_getmem() is freeing the memory and
-leaving the pointer non-NULL, resulting in a double free if an error
-occurs or later if hvfb_remove() is called.
-
-Fix this by removing all kfree(info->apertures) calls in hvfb_getmem().
-This will allow framebuffer_release() to free the memory, which follows
-the pattern of other fbdev drivers.
-
-Modulo this revision to the commit message, which Wei Liu can
-probably incorporate,
-
-Reviewed-by: Michael Kelley <mikelley@microsoft.com>
-
->=20
-> Signed-off-by: Lv Yunlong <lyl2019@mail.ustc.edu.cn>
+cy_huang <u0084500@gmail.com> =E6=96=BC 2020=E5=B9=B412=E6=9C=8817=E6=97=A5=
+ =E9=80=B1=E5=9B=9B =E4=B8=8B=E5=8D=8811:01=E5=AF=AB=E9=81=93=EF=BC=9A
+>
+> From: ChiYuan Huang <cy_huang@richtek.com>
+>
+> Adds support for Richtek RT4831 backlight.
+>
+> Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
 > ---
->  drivers/video/fbdev/hyperv_fb.c | 3 ---
->  1 file changed, 3 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv=
-_fb.c
-> index c8b0ae676809..4dc9077dd2ac 100644
-> --- a/drivers/video/fbdev/hyperv_fb.c
-> +++ b/drivers/video/fbdev/hyperv_fb.c
-> @@ -1031,7 +1031,6 @@ static int hvfb_getmem(struct hv_device *hdev, stru=
-ct fb_info
-> *info)
->  			PCI_DEVICE_ID_HYPERV_VIDEO, NULL);
->  		if (!pdev) {
->  			pr_err("Unable to find PCI Hyper-V video\n");
-> -			kfree(info->apertures);
->  			return -ENODEV;
->  		}
->=20
-> @@ -1129,7 +1128,6 @@ static int hvfb_getmem(struct hv_device *hdev, stru=
-ct fb_info
-> *info)
->  	} else {
->  		pci_dev_put(pdev);
->  	}
-> -	kfree(info->apertures);
->=20
->  	return 0;
->=20
-> @@ -1141,7 +1139,6 @@ static int hvfb_getmem(struct hv_device *hdev, stru=
-ct fb_info
-> *info)
->  err1:
->  	if (!gen2vm)
->  		pci_dev_put(pdev);
-> -	kfree(info->apertures);
->=20
->  	return -ENOMEM;
->  }
+>  drivers/video/backlight/Kconfig            |   8 ++
+>  drivers/video/backlight/Makefile           |   1 +
+>  drivers/video/backlight/rt4831-backlight.c | 219 +++++++++++++++++++++++=
+++++++
+>  3 files changed, 228 insertions(+)
+>  create mode 100644 drivers/video/backlight/rt4831-backlight.c
+>
+> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kc=
+onfig
+> index d83c87b..666bdb0 100644
+> --- a/drivers/video/backlight/Kconfig
+> +++ b/drivers/video/backlight/Kconfig
+> @@ -289,6 +289,14 @@ config BACKLIGHT_QCOM_WLED
+>           If you have the Qualcomm PMIC, say Y to enable a driver for the
+>           WLED block. Currently it supports PM8941 and PMI8998.
+>
+> +config BACKLIGHT_RT4831
+> +       tristate "Richtek RT4831 Backlight Driver"
+> +       depends on MFD_RT4831
+> +       help
+> +         This enables support for Richtek RT4831 Backlight driver.
+> +         It's commont used to drive the display WLED. There're four chan=
+nels
+> +         inisde, and each channel can provide up to 30mA current.
+> +
+>  config BACKLIGHT_SAHARA
+>         tristate "Tabletkiosk Sahara Touch-iT Backlight Driver"
+>         depends on X86
+> diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/M=
+akefile
+> index 685f3f1..cae2c83 100644
+> --- a/drivers/video/backlight/Makefile
+> +++ b/drivers/video/backlight/Makefile
+> @@ -49,6 +49,7 @@ obj-$(CONFIG_BACKLIGHT_PANDORA)               +=3D pand=
+ora_bl.o
+>  obj-$(CONFIG_BACKLIGHT_PCF50633)       +=3D pcf50633-backlight.o
+>  obj-$(CONFIG_BACKLIGHT_PWM)            +=3D pwm_bl.o
+>  obj-$(CONFIG_BACKLIGHT_QCOM_WLED)      +=3D qcom-wled.o
+> +obj-$(CONFIG_BACKLIGHT_RT4831)         +=3D rt4831-backlight.o
+>  obj-$(CONFIG_BACKLIGHT_SAHARA)         +=3D kb3886_bl.o
+>  obj-$(CONFIG_BACKLIGHT_SKY81452)       +=3D sky81452-backlight.o
+>  obj-$(CONFIG_BACKLIGHT_TOSA)           +=3D tosa_bl.o
+> diff --git a/drivers/video/backlight/rt4831-backlight.c b/drivers/video/b=
+acklight/rt4831-backlight.c
+> new file mode 100644
+> index 00000000..816c4d6
+> --- /dev/null
+> +++ b/drivers/video/backlight/rt4831-backlight.c
+> @@ -0,0 +1,219 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +
+> +#include <dt-bindings/leds/rt4831-backlight.h>
+> +#include <linux/backlight.h>
+> +#include <linux/bitops.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/mutex.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/property.h>
+> +#include <linux/regmap.h>
+> +
+> +#define RT4831_REG_BLCFG       0x02
+> +#define RT4831_REG_BLDIML      0x04
+> +#define RT4831_REG_ENABLE      0x08
+> +
+> +#define BL_MAX_BRIGHTNESS      2048
+> +
+> +#define RT4831_BLOVP_MASK      GENMASK(7, 5)
+> +#define RT4831_BLOVP_SHIFT     5
+> +#define RT4831_BLPWMEN_MASK    BIT(0)
+> +#define RT4831_BLEN_MASK       BIT(4)
+> +#define RT4831_BLCH_MASK       GENMASK(3, 0)
+> +#define RT4831_BLDIML_MASK     GENMASK(2, 0)
+> +#define RT4831_BLDIMH_MASK     GENMASK(10, 3)
+> +#define RT4831_BLDIMH_SHIFT    3
+> +
+> +struct rt4831_priv {
+> +       struct regmap *regmap;
+> +       struct mutex lock;
+> +       struct backlight_device *bl;
+> +};
+> +
+> +static int rt4831_bl_update_status(struct backlight_device *bl_dev)
+> +{
+> +       struct rt4831_priv *priv =3D bl_get_data(bl_dev);
+> +       int brightness =3D backlight_get_brightness(bl_dev);
+> +       unsigned int enable =3D brightness ? RT4831_BLEN_MASK : 0;
+> +       u8 v[2];
+> +       int ret;
+> +
+> +       mutex_lock(&priv->lock);
+> +
+> +       if (brightness) {
+> +               v[0] =3D (brightness - 1) & RT4831_BLDIML_MASK;
+> +               v[1] =3D ((brightness - 1) & RT4831_BLDIMH_MASK) >> RT483=
+1_BLDIMH_SHIFT;
+> +
+> +               ret =3D regmap_raw_write(priv->regmap, RT4831_REG_BLDIML,=
+ v, sizeof(v));
+> +               if (ret)
+> +                       goto unlock;
+> +       }
+> +
+> +       ret =3D regmap_update_bits(priv->regmap, RT4831_REG_ENABLE, RT483=
+1_BLEN_MASK, enable);
+> +
+> +unlock:
+> +       mutex_unlock(&priv->lock);
+> +       return ret;
+> +}
+> +
+> +static int rt4831_bl_get_brightness(struct backlight_device *bl_dev)
+> +{
+> +       struct rt4831_priv *priv =3D bl_get_data(bl_dev);
+> +       unsigned int val;
+> +       u8 v[2];
+> +       int ret;
+> +
+> +       mutex_lock(&priv->lock);
+> +
+> +       ret =3D regmap_read(priv->regmap, RT4831_REG_ENABLE, &val);
+> +       if (ret)
+> +               return ret;
+> +
+> +       if (!(val & RT4831_BLEN_MASK)) {
+> +               ret =3D 0;
+> +               goto unlock;
+> +       }
+> +
+> +       ret =3D regmap_raw_read(priv->regmap, RT4831_REG_BLDIML, v, sizeo=
+f(v));
+> +       if (ret)
+> +               goto unlock;
+> +
+> +       ret =3D (v[1] << RT4831_BLDIMH_SHIFT) + (v[0] & RT4831_BLDIML_MAS=
+K) + 1;
+> +
+> +unlock:
+> +       mutex_unlock(&priv->lock);
+> +       return ret;
+> +}
+> +
+> +static const struct backlight_ops rt4831_bl_ops =3D {
+> +       .options =3D BL_CORE_SUSPENDRESUME,
+> +       .update_status =3D rt4831_bl_update_status,
+> +       .get_brightness =3D rt4831_bl_get_brightness,
+> +};
+> +
+> +static int rt4831_init_device_properties(struct rt4831_priv *priv, struc=
+t device *dev,
+> +                                         struct backlight_properties *bl=
+_props)
+> +{
+> +       u8 propval;
+> +       u32 brightness;
+> +       unsigned int val =3D 0;
+> +       int ret;
+> +
+> +       /* common properties */
+> +       ret =3D device_property_read_u32(dev, "max-brightness", &brightne=
+ss);
+> +       if (ret) {
+> +               dev_warn(dev, "max-brightness DT property missing, use HW=
+ max as default\n");
+> +               brightness =3D BL_MAX_BRIGHTNESS;
+> +       }
+> +
+> +       bl_props->max_brightness =3D min_t(u32, brightness, BL_MAX_BRIGHT=
+NESS);
+> +
+> +       ret =3D device_property_read_u32(dev, "default-brightness", &brig=
+htness);
+> +       if (ret) {
+> +               dev_warn(dev, "default-brightness DT property missing, us=
+e max limit as default\n");
+> +               brightness =3D bl_props->max_brightness;
+> +       }
+> +
+> +       bl_props->brightness =3D min_t(u32, brightness, bl_props->max_bri=
+ghtness);
+> +
+> +       /* vendor properties */
+> +       if (device_property_read_bool(dev, "richtek,pwm-enable"))
+> +               val =3D RT4831_BLPWMEN_MASK;
+> +
+> +       ret =3D regmap_update_bits(priv->regmap, RT4831_REG_BLCFG, RT4831=
+_BLPWMEN_MASK, val);
+> +       if (ret)
+> +               return ret;
+> +
+> +       ret =3D device_property_read_u8(dev, "richtek,bled-ovp-sel", &pro=
+pval);
+> +       if (ret) {
+> +               dev_warn(dev, "richtek,bled-ovp-sel DT property missing, =
+use default 21V\n");
+> +               propval =3D RT4831_BLOVPLVL_21V;
+> +       }
+> +
+> +       propval =3D min_t(u8, propval, RT4831_BLOVPLVL_29V);
+> +       ret =3D regmap_update_bits(priv->regmap, RT4831_REG_BLCFG, RT4831=
+_BLOVP_MASK,
+> +                                propval << RT4831_BLOVP_SHIFT);
+> +       if (ret)
+> +               return ret;
+> +
+> +       ret =3D device_property_read_u8(dev, "richtek,channel-use", &prop=
+val);
+> +       if (ret) {
+> +               dev_err(dev, "richtek,channel-use DT property missing\n")=
+;
+> +               return ret;
+> +       }
+> +
+> +       if (!(propval & RT4831_BLCH_MASK)) {
+> +               dev_err(dev, "No channel specified\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       return regmap_update_bits(priv->regmap, RT4831_REG_ENABLE, RT4831=
+_BLCH_MASK, propval);
+> +}
+> +
+> +static int rt4831_bl_probe(struct platform_device *pdev)
+> +{
+> +       struct rt4831_priv *priv;
+> +       struct backlight_properties bl_props =3D { .type =3D BACKLIGHT_RA=
+W, };
+> +       int ret;
+> +
+> +       priv =3D devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+> +       if (!priv)
+> +               return -ENOMEM;
+> +
+> +       mutex_init(&priv->lock);
+> +
+> +       priv->regmap =3D dev_get_regmap(pdev->dev.parent, NULL);
+> +       if (IS_ERR(priv->regmap)) {
+> +               dev_err(&pdev->dev, "Failed to init regmap\n");
+> +               return PTR_ERR(priv->regmap);
+> +       }
+> +
+> +       ret =3D rt4831_init_device_properties(priv, &pdev->dev, &bl_props=
+);
+> +       if (ret) {
+> +               dev_err(&pdev->dev, "Failed to init device properties\n")=
+;
+> +               return ret;
+> +       }
+> +
+> +       priv->bl =3D devm_backlight_device_register(&pdev->dev, pdev->nam=
+e, &pdev->dev, priv,
+> +                                                 &rt4831_bl_ops, &bl_pro=
+ps);
+> +       if (IS_ERR(priv->bl)) {
+> +               dev_err(&pdev->dev, "Failed to register backlight\n");
+> +               return PTR_ERR(priv->bl);
+> +       }
+> +
+> +       backlight_update_status(priv->bl);
+> +       platform_set_drvdata(pdev, priv);
+> +
+> +       return 0;
+> +}
+> +
+> +static int rt4831_bl_remove(struct platform_device *pdev)
+> +{
+> +       struct rt4831_priv *priv =3D platform_get_drvdata(pdev);
+> +       struct backlight_device *bl_dev =3D priv->bl;
+> +
+> +       bl_dev->props.brightness =3D 0;
+> +       backlight_update_status(priv->bl);
+> +
+> +       return 0;
+> +}
+> +
+> +static const struct of_device_id __maybe_unused rt4831_bl_of_match[] =3D=
+ {
+> +       { .compatible =3D "richtek,rt4831-backlight", },
+> +       {}
+> +};
+> +MODULE_DEVICE_TABLE(of, rt4831_bl_of_match);
+> +
+> +static struct platform_driver rt4831_bl_driver =3D {
+> +       .driver =3D {
+> +               .name =3D "rt4831-backlight",
+> +               .of_match_table =3D rt4831_bl_of_match,
+> +       },
+> +       .probe =3D rt4831_bl_probe,
+> +       .remove =3D rt4831_bl_remove,
+> +};
+> +module_platform_driver(rt4831_bl_driver);
+> +
+> +MODULE_AUTHOR("ChiYuan Huang <cy_huang@richtek.com>");
+> +MODULE_LICENSE("GPL v2");
 > --
-> 2.25.1
->=20
+> 2.7.4
+>

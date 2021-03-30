@@ -2,132 +2,98 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D972C433EC
-	for <linux-fbdev@archiver.kernel.org>; Mon, 29 Mar 2021 13:47:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAC0AC433DB
+	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Mar 2021 07:22:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2820E6191B
-	for <linux-fbdev@archiver.kernel.org>; Mon, 29 Mar 2021 13:47:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7043B61989
+	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Mar 2021 07:22:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231670AbhC2NrL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 29 Mar 2021 09:47:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36284 "EHLO
+        id S229567AbhC3HVn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 30 Mar 2021 03:21:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37192 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231719AbhC2NrC (ORCPT
+        with ESMTP id S229530AbhC3HVQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 29 Mar 2021 09:47:02 -0400
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 441F0C0613D8;
-        Mon, 29 Mar 2021 06:47:02 -0700 (PDT)
-Received: by mail-lf1-x134.google.com with SMTP id i26so18478677lfl.1;
-        Mon, 29 Mar 2021 06:47:02 -0700 (PDT)
+        Tue, 30 Mar 2021 03:21:16 -0400
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55D9CC061762;
+        Tue, 30 Mar 2021 00:21:16 -0700 (PDT)
+Received: by mail-pj1-x1032.google.com with SMTP id x7-20020a17090a2b07b02900c0ea793940so8982746pjc.2;
+        Tue, 30 Mar 2021 00:21:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=/ZN6EMo52SbaQUsmKOCXmommiFRM5AB/xm3XewoiYhs=;
-        b=Oeqyc89nK7UnF76eztri1XWlbwhf1LqxwgbhcM9yI/hhu1u6x6zmnZ4pTQEh4Qu2QJ
-         VNe4qmDHvddpFurC0edRtdwKXXnwyISy/lF1QI7mFWAy/E37nYjRYOPWuiPKV+RAHjs9
-         wpTNLXkRf1R/HBh4B9dzflVKia/LBF9qvfntHXLyz7z0WG4fkYZA3xYtavUP0DlbuN0j
-         Sud0yBuNt5IzQyVcmvG8eKp8BBZqfJBWM+IGLDkp6rYJJAaCSum1c5CRx401QsOrYyaZ
-         JTkWUShzmUjF1/Kdpb3yn1B906vNJ1Az8ghhJ3J8tlifMW+DDmFlIOzNEEptZQdFLI8l
-         vZOA==
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=6AWbxRR3ovKhPy18pgbZKBcDCZkiPi+DKCTyfvtM7OQ=;
+        b=tCQyB5y1N77+8Q36EAUCWIGXIzQF9hYVvqt72xdiMsbKKnFj+ANMSu7P++cPZ44zJ4
+         mXE1NTOT5f2y077eiIMW20zimj9W3iogu10R7hnZ2Nk8GeCEp57wlceeNGs8XRicVY0d
+         abaUvudh37KQ3MewnpJ1q0pv2Y9BvXIoKR2yfd2HiHjcoEyqeiXZ+FH0av/qHwTGshq0
+         AtNxZJUq44ddyvMXg0ug6MXhY0rSNvw7XrbsmTpNG/JviJHCsInHcnMffaB+wbvtPCAE
+         JczRuEu2s2nwh3hWLw2ndiZoGxDTYUafMxceogKZlKDCUPjG1BN0zRUdl2AqCwZWsrxE
+         IDzw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=/ZN6EMo52SbaQUsmKOCXmommiFRM5AB/xm3XewoiYhs=;
-        b=EX0Y+gK98gKY8EoiUH1s8hoN53hAeg9BWE2Kkar2ibAkFqbSsKiogNyhPHR3nqVvlj
-         KCqWn/5fZEawNYNXIVsXj7wcXp7/ExrdDrba06CAlBhuW+RGw1uUPANMUZ1Q/byGX82D
-         q/xYsioAehElENpfrGmztVPt3i8tL+kDtXp5bcJktIzKAUyISsfAIedmlOiQowOeXuE9
-         3aVCjx+8WckzLf1g6P6aKNI+Yq/3St4jqE6hYMPkhxFq3/5lLVK0wBJ42HZalaL+cwuN
-         IgCMMPOwrkzz7UnToFhV743l6JBSayTHo8TayI3wo5Gz7tvG4OyNeXumLrfPTOajE6yV
-         LSrg==
-X-Gm-Message-State: AOAM530xvI+95A/lhPd2gz/QY5qmNj9JwZe3NJeIZevlRz7SEG162t7/
-        XVPW8AIq/ApWmyaIY2gs9Te6tuowqeCT8jRXS3w=
-X-Google-Smtp-Source: ABdhPJwlTFxxxoL8t/ryBWeJEvoDMU/sXt5+NYDNZCURvjifVPNLUJdBS/C8njMLX/RRBW8oiED2xNB9qFYS5yRZUdo=
-X-Received: by 2002:a05:6512:1192:: with SMTP id g18mr15585545lfr.408.1617025620636;
- Mon, 29 Mar 2021 06:47:00 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=6AWbxRR3ovKhPy18pgbZKBcDCZkiPi+DKCTyfvtM7OQ=;
+        b=hF05i2C7LuZqqC9zx/KeEvnH17l8FZUfCKGaEaOP+HkLIL15DQIIHQDQcfeoxkF8VH
+         I7Pq9d3nZgh9u3gUw7WTOnzAmak196KFLSQEhnpx7yE1o/g4OGsT3TtZOyzsc+QYowR4
+         4rMpqFkciXYOEiOS3mAUp/Gfbdk0amIRqUPGa56LVQ/dQkccJjZYF3ViomPIavx3h2d8
+         f2wtHGHC6ZHrQ5lSqO58iqVg9aJCUJVeNqf3OodVOKFx7gLF6NoQ1MZG4D8znMcd8/sP
+         SCqpHYLvhyYcQe4EcwsqOWqjUYBOZ69SMRjgdrgcGHeQOdzSTkXHK2+kX7+GK6Y/0ZhQ
+         fLHg==
+X-Gm-Message-State: AOAM530861POG+XdOiYdAFIByyUjU08F3BXZjd/+ldu9CwHOns+9tqdM
+        zSNtD+FonlO4+32QhnsNjS0Z63D1do7tvA==
+X-Google-Smtp-Source: ABdhPJyDMXJU2SJetxKoq5cxCluKKPwaxsnUPUUHVlYIANFEgi3tRfSOi5Cfg/mZCwFy1GN7I9PBuw==
+X-Received: by 2002:a17:90a:eac7:: with SMTP id ev7mr3038224pjb.158.1617088875921;
+        Tue, 30 Mar 2021 00:21:15 -0700 (PDT)
+Received: from localhost ([103.220.76.197])
+        by smtp.gmail.com with ESMTPSA id x19sm19449315pfc.152.2021.03.30.00.21.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 30 Mar 2021 00:21:15 -0700 (PDT)
+Date:   Tue, 30 Mar 2021 15:21:10 +0800
+From:   carlis <zhangxuezhi3@gmail.com>
+To:     Greg KH <gregkh@linuxfoundation.org>
+Cc:     zhangxuezhi1@yulong.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] staging: fbtft: fix a typo
+Message-ID: <20210330152110.0000006c@gmail.com>
+In-Reply-To: <YF3bpuh8RVg+3Nx3@kroah.com>
+References: <1616763351-7433-1-git-send-email-zhangxuezhi3@gmail.com>
+        <YF3bpuh8RVg+3Nx3@kroah.com>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; i686-w64-mingw32)
 MIME-Version: 1.0
-References: <1616945059-8718-1-git-send-email-u0084500@gmail.com>
- <1616945059-8718-4-git-send-email-u0084500@gmail.com> <20210329102631.sh5ttefjvfsfg6tk@maple.lan>
-In-Reply-To: <20210329102631.sh5ttefjvfsfg6tk@maple.lan>
-From:   ChiYuan Huang <u0084500@gmail.com>
-Date:   Mon, 29 Mar 2021 21:46:48 +0800
-Message-ID: <CADiBU3-2LvLzUZA08EKvzZ7qG8xKPbzbbFzTE3H-Z_8DMP=5OA@mail.gmail.com>
-Subject: Re: [PATCH v6 4/4] backlight: rt4831: Adds support for Richtek RT4831 backlight
-To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     Lee Jones <lee.jones@linaro.org>, lgirdwood@gmail.com,
-        Mark Brown <broonie@kernel.org>, jingoohan1@gmail.com,
-        b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-        ChiYuan Huang <cy_huang@richtek.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi, Daniel:
+On Fri, 26 Mar 2021 14:03:34 +0100
+Greg KH <gregkh@linuxfoundation.org> wrote:
 
-Daniel Thompson <daniel.thompson@linaro.org> =E6=96=BC 2021=E5=B9=B43=E6=9C=
-=8829=E6=97=A5 =E9=80=B1=E4=B8=80 =E4=B8=8B=E5=8D=886:26=E5=AF=AB=E9=81=93=
-=EF=BC=9A
->
-> On Sun, Mar 28, 2021 at 11:24:19PM +0800, cy_huang wrote:
-> > From: ChiYuan Huang <cy_huang@richtek.com>
-> >
-> > Adds support for Richtek RT4831 backlight.
-> >
-> > Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> > ---
-> > since v6
-> > - Fix Kconfig typo.
-> > - Remove internal mutex lock.
-> > - Add the prefix for max brightness.
-> > - rename init_device_properties to parse_backlight_properties.
-> > - Remove some warning message if default value is adopted.
-> > - Add backlight property scale to LINEAR mapping.
-> > - Fix regmap get to check NULL not IS_ERR.
-> > ---
-> >  drivers/video/backlight/Kconfig            |   8 ++
-> >  drivers/video/backlight/Makefile           |   1 +
-> >  drivers/video/backlight/rt4831-backlight.c | 203 +++++++++++++++++++++=
-++++++++
-> >  3 files changed, 212 insertions(+)
-> >  create mode 100644 drivers/video/backlight/rt4831-backlight.c
-> >
-> > diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/=
-Kconfig
-> > index d83c87b..de96441 100644
-> > --- a/drivers/video/backlight/Kconfig
-> > +++ b/drivers/video/backlight/Kconfig
-> > @@ -289,6 +289,14 @@ config BACKLIGHT_QCOM_WLED
-> >         If you have the Qualcomm PMIC, say Y to enable a driver for the
-> >         WLED block. Currently it supports PM8941 and PMI8998.
-> >
-> > +config BACKLIGHT_RT4831
-> > +     tristate "Richtek RT4831 Backlight Driver"
-> > +     depends on MFD_RT4831
-> > +     help
-> > +       This enables support for Richtek RT4831 Backlight driver.
-> > +       It's common used to drive the display WLED. There're four chann=
-els
->
-> Nitpicking but I was expecting the original typo be converted to
-> "commonly".
->
-OK, I'll correct this typo in v7 next.
-And will merge the reviewed-by line.
-Thx.
->
-> With that addressed:
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
->
->
-> Daniel.
+> On Fri, Mar 26, 2021 at 08:55:51PM +0800, Carlis wrote:
+> > From: Xuezhi Zhang <zhangxuezhi1@yulong.com>
+> > 
+> > Change 'tft' to 'TFT'  
+> 
+> That says what you did, but not _why_ you did it.
+> 
+> And this is not a "typo", as it is not misspelled and really is just
+> fine as-is.
+> 
+> thanks,
+> 
+> greg k-h
+
+Ok,i will undo this patch.
+
+thanks,
+
+Xuezhi Zhang

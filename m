@@ -7,71 +7,59 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DB37C433ED
-	for <linux-fbdev@archiver.kernel.org>; Fri,  2 Apr 2021 09:17:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFB24C433B4
+	for <linux-fbdev@archiver.kernel.org>; Fri,  2 Apr 2021 15:37:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0882460FF3
-	for <linux-fbdev@archiver.kernel.org>; Fri,  2 Apr 2021 09:17:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9E28661057
+	for <linux-fbdev@archiver.kernel.org>; Fri,  2 Apr 2021 15:37:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234649AbhDBJRi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 2 Apr 2021 05:17:38 -0400
-Received: from mail.kernel.org ([198.145.29.99]:55590 "EHLO mail.kernel.org"
+        id S235286AbhDBPh2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 2 Apr 2021 11:37:28 -0400
+Received: from mail.kernel.org ([198.145.29.99]:40686 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229553AbhDBJRi (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 2 Apr 2021 05:17:38 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 577A861008;
-        Fri,  2 Apr 2021 09:17:37 +0000 (UTC)
+        id S229553AbhDBPh1 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 2 Apr 2021 11:37:27 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 2F7DC61057;
+        Fri,  2 Apr 2021 15:37:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1617355057;
-        bh=nNXmKyTHRFu5FEX84hqP3eIGOZ1pmAYpxndQn7fgYQ4=;
+        s=korg; t=1617377846;
+        bh=ioyAbsNNoGGXzGD1/C5Xleu3NV1KP8ccBCEkZhjdmsM=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=1bVRMjgYnmVMwuln9bkOhNMTJOytmbdU1QgJ5Dtjpb2LfVD+hbNtkvBbBZw8IA7w3
-         M/xh4gd+1KECR2HoShaNrE8pvZHCJ1wIkkdioSG/TrpGKy2E6tLztD7laPSepvqlaq
-         XqclZkejDnGUS8hOPj7hLv9X/OQIboeIhOwxWN18=
-Date:   Fri, 2 Apr 2021 11:17:35 +0200
+        b=UkgsOfG2RhojvrNREIt+ny4CmVkZ60qQovPx1i42hvMZsTYtJHpufv9bVEL9KjskX
+         oDOEU4K1q3ilfG9DXHWwRUiJXQCDltpvmgeiXJUqBVOhZEfChN0ZW6898cNZc0VuaR
+         BEevPTWBaTjWDCf3gV1bLL3HR0Kjmf+BJDi1GCKs=
+Date:   Fri, 2 Apr 2021 17:37:23 +0200
 From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Carlis <zhangxuezhi3@gmail.com>
-Cc:     zhangxuezhi1@yulong.com, devel@driverdev.osuosl.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH] staging: fbtft: change snprintf() to scnprintf()
-Message-ID: <YGbhLxwZO9k/330J@kroah.com>
-References: <20210402090501.152561-1-zhangxuezhi3@gmail.com>
+To:     Phillip Potter <phil@philpotter.co.uk>
+Cc:     mchehab+huawei@kernel.org, daniel.vetter@ffwll.ch,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] zero-fill colormap in drivers/video/fbdev/core/fbcmap.c
+Message-ID: <YGc6M4jao4ZbCqzJ@kroah.com>
+References: <20210331220719.1499743-1-phil@philpotter.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210402090501.152561-1-zhangxuezhi3@gmail.com>
+In-Reply-To: <20210331220719.1499743-1-phil@philpotter.co.uk>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Apr 02, 2021 at 09:05:01AM +0000, Carlis wrote:
-> From: Xuezhi Zhang <zhangxuezhi1@yulong.com>
+On Wed, Mar 31, 2021 at 11:07:19PM +0100, Phillip Potter wrote:
+> Use kzalloc() rather than kmalloc() for the dynamically allocated parts
+> of the colormap in fb_alloc_cmap_gfp, to prevent a leak of random kernel
+> data to userspace under certain circumstances.
 > 
-> show() must not use snprintf() when formatting the value to
-> be returned to user space.
-
-Why not?  The code is just fine as-is.
-
+> Fixes a KMSAN-found infoleak bug reported by syzbot at:
+> https://syzkaller.appspot.com/bug?id=741578659feabd108ad9e06696f0c1f2e69c4b6e
 > 
-> Signed-off-by: Xuezhi Zhang <zhangxuezhi1@yulong.com>
+> Reported-by: syzbot+47fa9c9c648b765305b9@syzkaller.appspotmail.com
+> Signed-off-by: Phillip Potter <phil@philpotter.co.uk>
 > ---
->  drivers/staging/fbtft/fbtft-sysfs.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/staging/fbtft/fbtft-sysfs.c b/drivers/staging/fbtft/fbtft-sysfs.c
-> index 26e52cc2de64..7df92db648d6 100644
-> --- a/drivers/staging/fbtft/fbtft-sysfs.c
-> +++ b/drivers/staging/fbtft/fbtft-sysfs.c
-> @@ -199,7 +199,7 @@ static ssize_t show_debug(struct device *device,
->  	struct fb_info *fb_info = dev_get_drvdata(device);
->  	struct fbtft_par *par = fb_info->par;
->  
-> -	return snprintf(buf, PAGE_SIZE, "%lu\n", par->debug);
-> +	return scnprintf(buf, PAGE_SIZE, "%lu\n", par->debug);
+>  drivers/video/fbdev/core/fbcmap.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
-If you really want to "fix" this, please just use sysfs_emit().  This
-change as-is, does nothing.
+Daniel, want me to take this?
 
 thanks,
 

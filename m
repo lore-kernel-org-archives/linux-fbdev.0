@@ -2,107 +2,59 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 559B3C433ED
-	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Apr 2021 09:33:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 523CAC43600
+	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Apr 2021 09:37:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 073ED613C9
-	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Apr 2021 09:33:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1FB5C613E2
+	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Apr 2021 09:37:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237319AbhDFJdo convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 6 Apr 2021 05:33:44 -0400
-Received: from mga12.intel.com ([192.55.52.136]:14984 "EHLO mga12.intel.com"
+        id S244932AbhDFJhK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 6 Apr 2021 05:37:10 -0400
+Received: from mail.kernel.org ([198.145.29.99]:55060 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S236696AbhDFJdn (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 6 Apr 2021 05:33:43 -0400
-IronPort-SDR: nAQjvgOFpT76wHt/4rwAtdtVM+I8aU2LkBV0j3hYQEzISCCMCT9ZyS0fQq/9qKYWSduU4RCbMx
- TwZF7dbCmFTw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9945"; a="172502141"
-X-IronPort-AV: E=Sophos;i="5.81,309,1610438400"; 
-   d="scan'208";a="172502141"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Apr 2021 02:33:34 -0700
-IronPort-SDR: yNx+NRizR5mkR8GcZPzlI8J7Pj0MjByUv03J9PMpLpN8+8z9CtxNE4aHX/zeWYKFAFUMA0T4x4
- hC15JwVa90TA==
-X-IronPort-AV: E=Sophos;i="5.81,309,1610438400"; 
-   d="scan'208";a="457817452"
-Received: from oowomilo-mobl2.ger.corp.intel.com (HELO localhost) ([10.249.33.55])
-  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Apr 2021 02:33:03 -0700
-From:   Jani Nikula <jani.nikula@linux.intel.com>
-To:     Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Lee Jones <lee.jones@linaro.org>
-Cc:     Jonathan Corbet <corbet@lwn.net>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Ludovic Desroches <ludovic.desroches@microchip.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Fabrice Gasnier <fabrice.gasnier@st.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        Jernej Skrabec <jernej.skrabec@siol.net>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-pwm@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-clk@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-        dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-rockchip@lists.infradead.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH] pwm: Rename pwm_get_state() to better reflect its semantic
-In-Reply-To: <20210406073036.26857-1-u.kleine-koenig@pengutronix.de>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20210406073036.26857-1-u.kleine-koenig@pengutronix.de>
-Date:   Tue, 06 Apr 2021 12:32:58 +0300
-Message-ID: <87tuojlpv9.fsf@intel.com>
+        id S244899AbhDFJg4 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 6 Apr 2021 05:36:56 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 9FFD0613C9;
+        Tue,  6 Apr 2021 09:36:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1617701805;
+        bh=J009fz95W1yp7dSEEvcQHAB/rNi9vWwOuHc1FlLXl0M=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=oKQBQARblV68vQSDK3VKfeoxmvxv7g81RjXpQ8RzCHbVVtiEfZvwE+AMvGNbCLaPA
+         /NussvoRNsbHm53jXgIfSjGxUKGXv6jlUVZSBKf8qb6qRHx/fCexFNLvtBwio1lWZV
+         GVTzlP4Eg3YgQUcqFl/X1mTT49Xe86VKu7oi3qCw=
+Date:   Tue, 6 Apr 2021 11:36:41 +0200
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     Pavle Rohalj <pavle.rohalj@gmail.com>
+Cc:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging: sm750fb: Convert camel case to snake case
+Message-ID: <YGwrqUkAUWzccKA2@kroah.com>
+References: <YGwncT6RGvYlL9yj@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YGwncT6RGvYlL9yj@localhost.localdomain>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, 06 Apr 2021, Uwe Kleine-König <u.kleine-koenig@pengutronix.de> wrote:
-> Given that lowlevel drivers usually cannot implement exactly what a
-> consumer requests with pwm_apply_state() there is some rounding involved.
->
-> pwm_get_state() traditionally returned the setting that was requested most
-> recently by the consumer (opposed to what was actually implemented in
-> hardware in reply to the last request). To make this semantic obvious
-> rename the function.
->
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> ---
+On Tue, Apr 06, 2021 at 02:18:41AM -0700, Pavle Rohalj wrote:
+> -	struct dvi_ctrl_device *pCurrentDviCtrl;
+> +	struct dvi_ctrl_device *p_current_dvi_ctrl;
 
->  drivers/gpu/drm/i915/display/intel_panel.c |  4 +--
+Does this change make sense?  Why keep the "p_" here?  We do not need or
+use, this type of variable naming in the kernel.
 
-Acked-by: Jani Nikula <jani.nikula@intel.com>
+Also, please break this up into a patch series where you do one
+structure change at a time.
 
+thanks,
 
--- 
-Jani Nikula, Intel Open Source Graphics Center
+greg k-h

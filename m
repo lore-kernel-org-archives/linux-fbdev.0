@@ -2,171 +2,117 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C238C433B4
-	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Apr 2021 13:44:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BD1DC433B4
+	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Apr 2021 23:41:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 140AE6113E
-	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Apr 2021 13:44:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 24EC6613A7
+	for <linux-fbdev@archiver.kernel.org>; Tue,  6 Apr 2021 23:41:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233551AbhDFNod (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 6 Apr 2021 09:44:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33484 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244100AbhDFNoc (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 6 Apr 2021 09:44:32 -0400
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7E402C061756
-        for <linux-fbdev@vger.kernel.org>; Tue,  6 Apr 2021 06:44:24 -0700 (PDT)
-Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1lTlzt-0004HM-FT; Tue, 06 Apr 2021 15:44:01 +0200
-Received: from ukl by ptx.hi.pengutronix.de with local (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1lTlzo-00033c-7n; Tue, 06 Apr 2021 15:43:56 +0200
-Date:   Tue, 6 Apr 2021 15:43:56 +0200
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Thierry Reding <thierry.reding@gmail.com>
-Cc:     Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org,
-        David Airlie <airlied@linux.ie>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Fabio Estevam <festevam@gmail.com>, linux-clk@vger.kernel.org,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Lee Jones <lee.jones@linaro.org>, Chen-Yu Tsai <wens@csie.org>,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-rockchip@lists.infradead.org,
-        Ludovic Desroches <ludovic.desroches@microchip.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        linux-input@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-        linux-pwm@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Mark Brown <broonie@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        Fabrice Gasnier <fabrice.gasnier@st.com>,
-        linux-arm-kernel@lists.infradead.org,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Jernej Skrabec <jernej.skrabec@siol.net>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        linux-kernel@vger.kernel.org,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>
-Subject: Re: [PATCH] pwm: Rename pwm_get_state() to better reflect its
- semantic
-Message-ID: <20210406134356.dda74heeshkwdarw@pengutronix.de>
-References: <20210406073036.26857-1-u.kleine-koenig@pengutronix.de>
- <YGxDD4jVZx/H/Zdr@orome.fritz.box>
+        id S234014AbhDFXl2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 6 Apr 2021 19:41:28 -0400
+Received: from mta-p5.oit.umn.edu ([134.84.196.205]:58604 "EHLO
+        mta-p5.oit.umn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233969AbhDFXl2 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 6 Apr 2021 19:41:28 -0400
+X-Greylist: delayed 355 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Apr 2021 19:41:27 EDT
+Received: from localhost (unknown [127.0.0.1])
+        by mta-p5.oit.umn.edu (Postfix) with ESMTP id 4FFP5l5Lnjz9vBtn
+        for <linux-fbdev@vger.kernel.org>; Tue,  6 Apr 2021 23:35:23 +0000 (UTC)
+X-Virus-Scanned: amavisd-new at umn.edu
+Received: from mta-p5.oit.umn.edu ([127.0.0.1])
+        by localhost (mta-p5.oit.umn.edu [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id 5Xq6h6820-m9 for <linux-fbdev@vger.kernel.org>;
+        Tue,  6 Apr 2021 18:35:23 -0500 (CDT)
+Received: from mail-io1-f70.google.com (mail-io1-f70.google.com [209.85.166.70])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mta-p5.oit.umn.edu (Postfix) with ESMTPS id 4FFP5l3XK9z9vBrn
+        for <linux-fbdev@vger.kernel.org>; Tue,  6 Apr 2021 18:35:23 -0500 (CDT)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mta-p5.oit.umn.edu 4FFP5l3XK9z9vBrn
+DKIM-Filter: OpenDKIM Filter v2.11.0 mta-p5.oit.umn.edu 4FFP5l3XK9z9vBrn
+Received: by mail-io1-f70.google.com with SMTP id w8so13992512iox.13
+        for <linux-fbdev@vger.kernel.org>; Tue, 06 Apr 2021 16:35:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=umn.edu; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=JFBsXOVlHHjdSzZeWJyJvvBdMued/K0xOEkGtWU402Q=;
+        b=jw0JK6OAT3hKXrthWczTi8kJcQy2JrposNHUiEHoienPromNuX/6FDiFYTdHNKtFwO
+         IuZ1sVYvgK7ysivr4tQcIvOpxT7R2k45lK8OCc1Kq8CiYi2aqfag7FK2nQ/TATZkvFuB
+         TyRJms8yqv928MC35tBPy00HM3O8AbwScP0OAiPv3R/yaKb9ExXiFxZRlvTb7qEVsNgq
+         2vo9FwBN7/Osc73xCQYo+aMRBo5xhEvh/pyaCrGz/Iyslz5Gg+mo4bdedc6aC536kvr6
+         XoZ8Wb1OkX+FJVOAWs1phd/Tj0byJiuyLKvd8rdWz1RRJpcMfhM9BZsYZjXbsdD8EPx2
+         eHhQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=JFBsXOVlHHjdSzZeWJyJvvBdMued/K0xOEkGtWU402Q=;
+        b=GaZa2cOLeTfjco3az9O5LSohHv6NZ3x7zsoxMU+ysvYJglcY2gLx6QlYhWMQHcGDOJ
+         nIt7ijZCTWjjtkvXxJiYiXsLH09pld6fuZ96sxagYmQEosN4bQKTRZnwElOq/K9IJLMT
+         iR0X69aSkjY20Kj1A7eGWBrHPFklz/DMY1N21I7+NI4gW/ZVJ3lZR52bIiH+d542+Inv
+         BQAUIvS2nC7A9O1nHZcbNc1seHXLNmwGxcFp3nAT3dckjEjK313BlIBpHiXT5Pw6aRt7
+         MG7ZzCgZ3EJFe7s5ZqWoezMLfKpAjvygCNeS4YUf8zih+O+IiVfaq3Jjur5zrI+QF78w
+         jSpA==
+X-Gm-Message-State: AOAM5316K+m5BEh4/54bQWPQ1xRIe9+klr0Cv48tftTp1fWqn/HEox6+
+        E4ji2Iykq6f8Rayl2OztrlOJp69WDHKybQnNytM1i6/xiG2WZ/AwrkLtM9ww6q7jvTI3pXcWkVW
+        XjPOQ1xiVZJAtdXlB2CGOYjEQq50=
+X-Received: by 2002:a05:6e02:1a24:: with SMTP id g4mr541656ile.56.1617752123130;
+        Tue, 06 Apr 2021 16:35:23 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJzaO3ytfZodkyajwuLbl1Y4fWouzIS2WVmGek9UP7t+cDJ+s7ZY5VtwQFZ3Q8QArUTuCz1zEw==
+X-Received: by 2002:a05:6e02:1a24:: with SMTP id g4mr541645ile.56.1617752122966;
+        Tue, 06 Apr 2021 16:35:22 -0700 (PDT)
+Received: from syssec1.cs.umn.edu ([2607:ea00:101:3c74:6ecd:6512:5d03:eeb6])
+        by smtp.googlemail.com with ESMTPSA id h128sm14399373ioa.32.2021.04.06.16.35.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 06 Apr 2021 16:35:22 -0700 (PDT)
+From:   Aditya Pakki <pakki001@umn.edu>
+To:     pakki001@umn.edu
+Cc:     kjlu@umn.edu, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] video: fbdev: sm501fb:  Fix deallocation of buffers order
+Date:   Tue,  6 Apr 2021 18:35:17 -0500
+Message-Id: <20210406233519.2205389-1-pakki001@umn.edu>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="t6hkzfhuwxujjtpy"
-Content-Disposition: inline
-In-Reply-To: <YGxDD4jVZx/H/Zdr@orome.fritz.box>
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+The resource release in sm501fb_remove() is not in the inverse order of
+sm501fb_probe(), for the buffers. Release the info object after
+deallocating the buffers.
 
---t6hkzfhuwxujjtpy
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Aditya Pakki <pakki001@umn.edu>
+---
+ drivers/video/fbdev/sm501fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Hello Thierry,
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index 6a52eba64559..4c32c9e88850 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -2060,11 +2060,11 @@ static int sm501fb_remove(struct platform_device *pdev)
+ 		unregister_framebuffer(fbinfo_pnl);
+ 
+ 	sm501fb_stop(info);
+-	kfree(info);
+ 
+ 	framebuffer_release(fbinfo_pnl);
+ 	framebuffer_release(fbinfo_crt);
+ 
++	kfree(info);
+ 	return 0;
+ }
+ 
+-- 
+2.25.1
 
-On Tue, Apr 06, 2021 at 01:16:31PM +0200, Thierry Reding wrote:
-> On Tue, Apr 06, 2021 at 09:30:36AM +0200, Uwe Kleine-K=F6nig wrote:
-> > Given that lowlevel drivers usually cannot implement exactly what a
-> > consumer requests with pwm_apply_state() there is some rounding involve=
-d.
-> >=20
-> > pwm_get_state() traditionally returned the setting that was requested m=
-ost
-> > recently by the consumer (opposed to what was actually implemented in
-> > hardware in reply to the last request). To make this semantic obvious
-> > rename the function.
-> >=20
-> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-> > ---
-> >  Documentation/driver-api/pwm.rst           |  6 +++-
-> >  drivers/clk/clk-pwm.c                      |  2 +-
-> >  drivers/gpu/drm/i915/display/intel_panel.c |  4 +--
-> >  drivers/input/misc/da7280.c                |  2 +-
-> >  drivers/input/misc/pwm-beeper.c            |  2 +-
-> >  drivers/input/misc/pwm-vibra.c             |  4 +--
-> >  drivers/pwm/core.c                         |  4 +--
-> >  drivers/pwm/pwm-atmel-hlcdc.c              |  2 +-
-> >  drivers/pwm/pwm-atmel.c                    |  2 +-
-> >  drivers/pwm/pwm-imx27.c                    |  2 +-
-> >  drivers/pwm/pwm-rockchip.c                 |  2 +-
-> >  drivers/pwm/pwm-stm32-lp.c                 |  4 +--
-> >  drivers/pwm/pwm-sun4i.c                    |  2 +-
-> >  drivers/pwm/sysfs.c                        | 18 ++++++------
-> >  drivers/regulator/pwm-regulator.c          |  4 +--
-> >  drivers/video/backlight/pwm_bl.c           | 10 +++----
-> >  include/linux/pwm.h                        | 34 ++++++++++++++--------
-> >  17 files changed, 59 insertions(+), 45 deletions(-)
->=20
-> Honestly, I don't think this is worth the churn. If you think people
-> will easily get confused by this then a better solution might be to more
-> explicitly document the pwm_get_state() function to say exactly what it
-> returns.
-
-I'm not so optimistic that people become aware of the semantic just
-because there is documentation describing it and I strongly believe that
-a good name for functions is more important than accurate documentation.
-
-If you don't agree, what do you think about the updated wording in
-Documentation/driver-api/pwm.rst?
-
-> But there's no need to make life difficult for everyone by
-> renaming this to something as cumbersome as this.
-
-I don't expect any merge conflicts (and if still a problem occurs
-resolving should be trivial enough). So I obviously don't agree to your
-weighing.
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---t6hkzfhuwxujjtpy
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmBsZZkACgkQwfwUeK3K
-7AnKfQf8CsJvMKdyRy2ch/MNcEI+IBzOnV6nRAbwkLN/G3pbTRHLCtd8Zg/Iobf1
-P7ADJlOPATvorbWWUoagJrzcsXswh3ctV5aSWs0Ax1GJQ+PxNtz20n+MtsiTq2gZ
-flPfVN0AurTPqh+oGXK+f9C9N0ASjR7i2qjuUoub37yQ/abR5exNOpaM8FEnIbcF
-OHcBHOokDL0GpBDir8M9UyfrsPt8TfVD5fk5hXr7hmBhY/iuGQynYDRMQ11/zkvM
-lqdH7zPujy5oNqA/+6OSE8vbqoyTRoSqFHuyPRirxDrO14Yu2U570iUznQfg2O/t
-3egDaTaqSuaJjxZHzKE4dbx3R/z8wQ==
-=ePEJ
------END PGP SIGNATURE-----
-
---t6hkzfhuwxujjtpy--

@@ -8,62 +8,62 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F0F6C4360C
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A4E6C43460
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 491B161222
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 48F236139C
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349167AbhDGGqW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 7 Apr 2021 02:46:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58450 "EHLO
+        id S232556AbhDGGqX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 7 Apr 2021 02:46:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58460 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349157AbhDGGqR (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Apr 2021 02:46:17 -0400
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68716C061763;
-        Tue,  6 Apr 2021 23:46:08 -0700 (PDT)
-Received: by mail-pf1-x429.google.com with SMTP id c204so8440898pfc.4;
-        Tue, 06 Apr 2021 23:46:08 -0700 (PDT)
+        with ESMTP id S242289AbhDGGqT (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Apr 2021 02:46:19 -0400
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09D7CC061756;
+        Tue,  6 Apr 2021 23:46:10 -0700 (PDT)
+Received: by mail-pf1-x432.google.com with SMTP id y16so109108pfc.5;
+        Tue, 06 Apr 2021 23:46:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=date:from:to:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=0In7Usm62iDzXGlWXf0B0UqSRUyq5ZkXwX+9zfXFdWA=;
-        b=f0eEAxBwZAwKyCusdi6rWc6PV83Li0QqWeBqCWFbovV7R7X36fkRlKIauusERa3X6N
-         ZIlMJxAP3oOTwPthCBTn7eMhHQULRSsgnIC6JN7HtzpEZCDbyebtYZORaTM4WvB/QzSZ
-         EQuIVuW9oNztqrYY6IbvGSmHbXjS4bN8n2mBX26eCum5hiO5yZ9Ix89W4tI68Edk2xDW
-         3WZrjSp6RvrJmMpIS7J+lv5ybyyIuY87EUS/4Av5mCEs9YC8qcVCW2KEfYjM9O7cY9nP
-         6e9mREzHX0X5788GK+K67oIiS/3yE0XcYEbkVzylDV+gIUjMnngaVRf/wPWNPubphbSD
-         boHg==
+        bh=r/oBzQNuh63hJGsl/KIQufF0AGvx1q5/RmwFtkCNL+o=;
+        b=pJzk1fBbV1MbhZoF8+rV3MlCvT3v6WtiJR+TdKNaJZaKA7lGQQ2pYyfguhIFru8t0s
+         RtXPorljbp3FPDO3/EkZsl5J21bsBxWst7PRsYgfKh3qwdKsIGRaEHHo377LloRocV8h
+         cZ10BLYrQYC+87Clii+JCtBUKYYJ8UEaynXdOsI9Q/kRYI6hc6wYB9YHkw6ER6v68T3z
+         ayFl6/30OWMMnzI+93MXEyRkrEf633fozyr/wJYKVlYlJ7inDn1gDWrgPndH8PbEMTKm
+         vGRd1kHUwLewJB+82qUxBymc8k2uJi7UW9XNRolh0iWRiOzFDlbMuqb9srltUOPLikga
+         Zv3w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=0In7Usm62iDzXGlWXf0B0UqSRUyq5ZkXwX+9zfXFdWA=;
-        b=hruIJUyf8fb2V6weLBBAq87XfRJ1l+99FGo/g5b/geMIEop4RJngihQz47OatxK1o9
-         tteCvQrGM6rgn7cf+JKnq98QcF6mVzer/k1wY23BXmJV8CCPjisQG3aqndTYR/Rk01aD
-         g6WhrmSNipKQeVsDwc8/akFr948OWyc4o4w3oqvaS9vslsXxhzKQap5etbemxD5D1v7s
-         kk6yKL32ck2iUB2xexbkclO37usSAiHxYaJ0G6f0A0GXUzSkaLdkDY1uoMSGAXkfaY0C
-         m4+d9pJ3CToCDzY7XjunX89S8s9ZutnQgChR3ZljIdnRnZim3qdhCJdr/O1TCc9vIaao
-         zAqw==
-X-Gm-Message-State: AOAM533RQ8VBbi4XnpjQZsLIv9ITQvQw3F1lu6uO3kciJLJjRDapsE++
-        VcLPEF6A1diqfJXoGxPkv5gZWxU2wodJmQ==
-X-Google-Smtp-Source: ABdhPJxysv27ETveWY9+1QtkAc3R4IcuOpZgVZZChEL6e09gINMJcJ08dM2ot+ikFn9ueIvYMXGFvA==
-X-Received: by 2002:a63:1a47:: with SMTP id a7mr1863095pgm.437.1617777967933;
-        Tue, 06 Apr 2021 23:46:07 -0700 (PDT)
+        bh=r/oBzQNuh63hJGsl/KIQufF0AGvx1q5/RmwFtkCNL+o=;
+        b=Y3Qaqq+taNA2xan6QhqgnGyH/cWWS2Y1C+49RmbhrT5YBUq65d4vc3qoxWxXgoimpB
+         flioEW0FzjABSWlojFvVcMs11cvEK6rw2wxcJzi/wfWntpJ+1LqYt8bd3mQEp0fSY1sm
+         T40//yW3etbdBMSkgFlemHTfPywydf+Cm+kLDCdv8N0/kpdQdXzg4MSu3z/w2HXpRImq
+         dW5wmVlAMuvkGR1zZFypOerMILBP6vF0LLToVM8PBPYwBkIaoTg9iRPkSC9DBT8cyqGo
+         2Xv3xWywBohGp6IhX4sBnYInozBM57TRXHIU+ACXNxBMtGuJdZvjTaA3ld1mXga0QmSZ
+         w3jg==
+X-Gm-Message-State: AOAM53352ya6zLTb7LxoElmlmDB+oU3pmU9dmbSj2svKKE1RVyKdgDOj
+        wYenStESxbyimItL+4nTjOQ=
+X-Google-Smtp-Source: ABdhPJw5XIdGszUVi3JOaGNBZJdtQEMf4VsvOZbSVWrStK1FUM+pJHy4cbOkBHrsJRtrgR2Z1mXpuQ==
+X-Received: by 2002:a62:1a08:0:b029:220:da90:9173 with SMTP id a8-20020a621a080000b0290220da909173mr1682186pfa.65.1617777969605;
+        Tue, 06 Apr 2021 23:46:09 -0700 (PDT)
 Received: from localhost.localdomain ([134.173.248.5])
-        by smtp.gmail.com with ESMTPSA id v14sm4035981pju.19.2021.04.06.23.46.07
+        by smtp.gmail.com with ESMTPSA id u1sm20031904pgg.11.2021.04.06.23.46.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Apr 2021 23:46:07 -0700 (PDT)
-Date:   Tue, 6 Apr 2021 23:46:05 -0700
+        Tue, 06 Apr 2021 23:46:09 -0700 (PDT)
+Date:   Tue, 6 Apr 2021 23:46:07 -0700
 From:   Pavle Rohalj <pavle.rohalj@gmail.com>
 To:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
         gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 43/49] staging: sm750fb: Update members of lynx_accel
- struct to snake case
-Message-ID: <52fcfc4480d5ee19f8751dae2d2369a5958fa1fc.1617776878.git.pavle.rohalj@gmail.com>
+Subject: [PATCH v2 44/49] staging: sm750fb: Rename function
+ hw_sm750_crtc_checkMode to snake case
+Message-ID: <34c28569d6d690d72913dfc0347d05f8536c3a9b.1617776878.git.pavle.rohalj@gmail.com>
 References: <cover.1617776878.git.pavle.rohalj@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -73,72 +73,55 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix "Avoid CamelCase" checkpatch.pl checks for the members of
-lynx_accel structure, in particular dprBase and dpPortBase.
+Fix "Avoid CamelCase" checkpatch.pl checks for the function
+hw_sm750_crtc_checkMode.
 
 Signed-off-by: Pavle Rohalj <pavle.rohalj@gmail.com>
 ---
- drivers/staging/sm750fb/sm750.h       | 4 ++--
- drivers/staging/sm750fb/sm750_accel.c | 6 +++---
- drivers/staging/sm750fb/sm750_hw.c    | 4 ++--
- 3 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/staging/sm750fb/sm750.c    | 2 +-
+ drivers/staging/sm750fb/sm750.h    | 2 +-
+ drivers/staging/sm750fb/sm750_hw.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index da37fc81370b..a27aaac5d67a 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -50,9 +50,9 @@ struct init_status {
- 
- struct lynx_accel {
- 	/* base virtual address of DPR registers */
--	volatile unsigned char __iomem *dprBase;
-+	volatile unsigned char __iomem *dpr_base;
- 	/* base virtual address of de data port */
--	volatile unsigned char __iomem *dpPortBase;
-+	volatile unsigned char __iomem *dp_port_base;
- 
- 	/* function pointers */
- 	void (*de_init)(struct lynx_accel *accel);
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index d0b64962b10e..6ca2e5265836 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -20,17 +20,17 @@
- #include "sm750_accel.h"
- static inline void write_dpr(struct lynx_accel *accel, int offset, u32 reg_value)
- {
--	writel(reg_value, accel->dprBase + offset);
-+	writel(reg_value, accel->dpr_base + offset);
- }
- 
- static inline u32 read_dpr(struct lynx_accel *accel, int offset)
- {
--	return readl(accel->dprBase + offset);
-+	return readl(accel->dpr_base + offset);
- }
- 
- static inline void write_dp_port(struct lynx_accel *accel, u32 data)
- {
--	writel(data, accel->dpPortBase);
-+	writel(data, accel->dp_port_base);
- }
- 
- void sm750_hw_de_init(struct lynx_accel *accel)
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 789199e628cd..97b842148bcb 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -60,8 +60,8 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 		pr_info("mmio virtual addr = %p\n", sm750_dev->reg);
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index bb25ab4ba0de..162eaf08db4c 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -512,7 +512,7 @@ static int lynxfb_ops_check_var(struct fb_var_screeninfo *var,
+ 		return -ENOMEM;
  	}
  
--	sm750_dev->accel.dprBase = sm750_dev->reg + DE_BASE_ADDR_TYPE1;
--	sm750_dev->accel.dpPortBase = sm750_dev->reg + DE_PORT_ADDR_TYPE1;
-+	sm750_dev->accel.dpr_base = sm750_dev->reg + DE_BASE_ADDR_TYPE1;
-+	sm750_dev->accel.dp_port_base = sm750_dev->reg + DE_PORT_ADDR_TYPE1;
+-	return hw_sm750_crtc_checkMode(crtc, var);
++	return hw_sm750_crtc_check_mode(crtc, var);
+ }
  
- 	mmio750 = sm750_dev->reg;
- 	sm750_set_chip_type(sm750_dev->devid, sm750_dev->revid);
+ static int lynxfb_ops_setcolreg(unsigned int regno,
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index a27aaac5d67a..2e6481809d43 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -201,7 +201,7 @@ int hw_sm750_output_set_mode(struct lynxfb_output *output,
+ 			    struct fb_var_screeninfo *var,
+ 			    struct fb_fix_screeninfo *fix);
+ 
+-int hw_sm750_crtc_checkMode(struct lynxfb_crtc *crtc,
++int hw_sm750_crtc_check_mode(struct lynxfb_crtc *crtc,
+ 			    struct fb_var_screeninfo *var);
+ 
+ int hw_sm750_crtc_set_mode(struct lynxfb_crtc *crtc,
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 97b842148bcb..b445f075d0a9 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -221,7 +221,7 @@ int hw_sm750_output_set_mode(struct lynxfb_output *output,
+ 	return ret;
+ }
+ 
+-int hw_sm750_crtc_checkMode(struct lynxfb_crtc *crtc,
++int hw_sm750_crtc_check_mode(struct lynxfb_crtc *crtc,
+ 			    struct fb_var_screeninfo *var)
+ {
+ 	struct sm750_dev *sm750_dev;
 -- 
 2.30.2
 

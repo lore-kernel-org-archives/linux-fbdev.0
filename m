@@ -8,62 +8,62 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8C6EC433B4
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CFACC43460
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7A30661222
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 09C566139C
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239509AbhDGGqS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 7 Apr 2021 02:46:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58346 "EHLO
+        id S240581AbhDGGqU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 7 Apr 2021 02:46:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58430 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349160AbhDGGpv (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Apr 2021 02:45:51 -0400
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32E70C061756;
-        Tue,  6 Apr 2021 23:45:42 -0700 (PDT)
-Received: by mail-pg1-x529.google.com with SMTP id b17so8629030pgh.7;
-        Tue, 06 Apr 2021 23:45:42 -0700 (PDT)
+        with ESMTP id S240543AbhDGGqP (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Apr 2021 02:46:15 -0400
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E767C061761;
+        Tue,  6 Apr 2021 23:46:04 -0700 (PDT)
+Received: by mail-pf1-x432.google.com with SMTP id i190so3926782pfc.12;
+        Tue, 06 Apr 2021 23:46:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=date:from:to:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=2cYF68oFcyjU4Kfw0xfEVQzUH83t8nX8JKIHWjr/Ga4=;
-        b=MEokI6t3x8iAwgGFuejhxCZfmi/8MZr1VfKdpod4k0sm+6g0CTIMZud2LT2aIEjPmM
-         SGKqVjzmxeHkaq0RbhWqK0TBvdEod2XCaDHzh/O+S05TvY7T4fiacuLDQYI0hK5UsLrx
-         V11h9pGD6iJZxUEwJAszphcVnKmeM/Ocutf6obIGu5JpbkxIbabAI7FQNc0salQf6OM7
-         c/7tfo6Dv6UW+r1B8uAkp5FRh0kDMHvq+hWQcI4vn1ZZr4ApZ6xoBHx0W4cLNPgXbCqF
-         XxEMZZLA2z0RavXGOmdGyc+9iPDhPjiQPQltvlyDzrowszOJj14dxsOjLdROM37Nf0zw
-         GhFg==
+        bh=Bzo2CT+YJY2F1z9OlT8tzpIHNon2mF4OUcXaigWQziI=;
+        b=OEtvKnq84mcXwBBifO9jX76kOSHpziONcL5SKzP8vMLgmp7JMbP18Sms565rdCRbAg
+         F74VNu3LB4OKj92SaXLahFRQPMsdBnVKp+pnWI56WwTHALeqkjyxqlHGOLDBvCVt6Ea4
+         fPLdcaGvQHhrKQYPMu51quOb/Dka/kK7PksE5lPe2GQJbSLXgmKjQenbhCXDwvNH222W
+         owOpH6N9/wPlMh6fp0isjuJx421rgai089408WskSCSJ9fs38RyhQSatoRVoB6/BadRU
+         ZRY24NKce1Nb5TaeeCLY9dmCuvNIZE0h38G6ElF25/kOldIoCSx8i320p0Q8RqgGKmH7
+         GC9A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=2cYF68oFcyjU4Kfw0xfEVQzUH83t8nX8JKIHWjr/Ga4=;
-        b=qUSiDfJ48CQoTi3FMYePhb7EdPXmv8gCZBtnz+Rg5ct8aCMe76/Wvc2xq/KkfYhT6d
-         D4bedTOH/lUwgJC2N2S6I3wIYqCo92htDfA9Bgw3b1xF1wqM3MXwzoSuekgH1/UU7Q/t
-         ELCzKKWxcGOp5qq0SbzI/46v9yUrLMapU+CtBFfU1ZGacYHUOhitobPtl6+w7IHKQ3ZP
-         N/KRnC5HDU5qqjw+ftnhabE2bsqpLV0xoqvUVt2sKkqdrHSsOkfchI1k0VztQmfKchQ2
-         VoNb14GCtbx5XL+Otbs6Su8CIvb9eNljaYmSwW9gkugxJ5tRQ2lbh7MySpAl9ZTL3Mhk
-         eMbg==
-X-Gm-Message-State: AOAM532yVPhJDyOTSxqvol4v8OplSOzQ+YIf6wWq10lpFLiIZFItNr6N
-        IQwdGuNUwZ9lVRpZfoLLcg4vn3a5M/2/yg==
-X-Google-Smtp-Source: ABdhPJxk+9euoAl2I+ED+syNGgwrNK2Klr1blr3hUcYgQ/TU2vQI/PVdYVYP0vPQ22ggVoTxZGYaBg==
-X-Received: by 2002:a63:1b5f:: with SMTP id b31mr1968300pgm.194.1617777941781;
-        Tue, 06 Apr 2021 23:45:41 -0700 (PDT)
+        bh=Bzo2CT+YJY2F1z9OlT8tzpIHNon2mF4OUcXaigWQziI=;
+        b=FBVt/pkZuXMP16iOc6EnNpIKxjoP0kfXivhlTxPdGHGLSZ5ZSgLvGdyZVysU8K9DJS
+         mZ20yc1bLOCUqjmOjzfvPAmgP3XxikPV4BDQP8BO4JeasGeLBW/Z11LyEZ3w909B51wY
+         DEXJwUaYcp15tAswKBORJlONG7fKp1EBcOB3FvNMdSCv3Z6cHyhMBDO/orhDQhlv7Xvk
+         qVF/SdneflD2Ed5EHZd25BMl6H5d3K07am9kbxB1U/iQmRAeZy7dmjFUWXDtszPoFVY9
+         0vu0s1O67OVRh8/gy3QO9P+B7WV2kIgkKmklldfBcZbzSnyQBt4xCXY16D45JD+pugvF
+         luoA==
+X-Gm-Message-State: AOAM533Wb78lN33pcOxxBeKeOJpKm1DFjUnQF4ePucCt3OQ66f2a6BX5
+        6+1Nkpjn9+BLuihdoJ+vxW0=
+X-Google-Smtp-Source: ABdhPJz16x0AB9cEwqIJ3PiCLPa295Lf4wEyzta3KqGXJS2K67APQvuWlM4EKvxaAD65pfkEihHHOw==
+X-Received: by 2002:a63:544e:: with SMTP id e14mr1978911pgm.288.1617777963878;
+        Tue, 06 Apr 2021 23:46:03 -0700 (PDT)
 Received: from localhost.localdomain ([134.173.248.5])
-        by smtp.gmail.com with ESMTPSA id l25sm21847554pgu.72.2021.04.06.23.45.40
+        by smtp.gmail.com with ESMTPSA id g10sm19697726pfh.212.2021.04.06.23.46.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Apr 2021 23:45:41 -0700 (PDT)
-Date:   Tue, 6 Apr 2021 23:45:39 -0700
+        Tue, 06 Apr 2021 23:46:03 -0700 (PDT)
+Date:   Tue, 6 Apr 2021 23:46:01 -0700
 From:   Pavle Rohalj <pavle.rohalj@gmail.com>
 To:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
         gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 37/49] staging: sm750fb: Rename function
- hw_sm750_output_setMode to snake case
-Message-ID: <b24581cc3a52db532d55f0c2a0a079f95e21613f.1617776878.git.pavle.rohalj@gmail.com>
+Subject: [PATCH v2 40/49] staging: sm750fb: Rename function
+ sm750_hw_cursor_setData2 to snake case
+Message-ID: <89daa11a59211c35ddef3a88bf2937a0a3d6946e.1617776878.git.pavle.rohalj@gmail.com>
 References: <cover.1617776878.git.pavle.rohalj@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -74,54 +74,39 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Fix "Avoid CamelCase" checkpatch.pl checks for the function
-hw_sm750_output_set_mod.
+sm750_hw_cursor_setData2.
 
 Signed-off-by: Pavle Rohalj <pavle.rohalj@gmail.com>
 ---
- drivers/staging/sm750fb/sm750.c    | 2 +-
- drivers/staging/sm750fb/sm750.h    | 2 +-
- drivers/staging/sm750fb/sm750_hw.c | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/staging/sm750fb/sm750_cursor.c | 2 +-
+ drivers/staging/sm750fb/sm750_cursor.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 2c944539eaf0..8e803b580a71 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -395,7 +395,7 @@ static int lynxfb_ops_set_par(struct fb_info *info)
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index 98d294ac223c..3ee3bf78f7a5 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -132,7 +132,7 @@ void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
  	}
- 	ret = hw_sm750_crtc_set_mode(crtc, var, fix);
- 	if (!ret)
--		ret = hw_sm750_output_setMode(output, var, fix);
-+		ret = hw_sm750_output_set_mode(output, var, fix);
- 	return ret;
  }
  
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 368e5cc19147..b46d13134f76 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -197,7 +197,7 @@ void hw_sm750_initAccel(struct sm750_dev *sm750_dev);
- int hw_sm750_deWait(void);
- int hw_sm750le_deWait(void);
- 
--int hw_sm750_output_setMode(struct lynxfb_output *output,
-+int hw_sm750_output_set_mode(struct lynxfb_output *output,
- 			    struct fb_var_screeninfo *var,
- 			    struct fb_fix_screeninfo *fix);
- 
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 7c852c6a153b..410f726b03e9 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -180,7 +180,7 @@ int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 	return 0;
- }
- 
--int hw_sm750_output_setMode(struct lynxfb_output *output,
-+int hw_sm750_output_set_mode(struct lynxfb_output *output,
- 			    struct fb_var_screeninfo *var,
- 			    struct fb_fix_screeninfo *fix)
+-void sm750_hw_cursor_setData2(struct lynx_cursor *cursor, u16 rop,
++void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
+ 			      const u8 *pcol, const u8 *pmsk)
  {
+ 	int i, j, count, pitch, offset;
+diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
+index af0211242ae8..8a1e81b8248d 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.h
++++ b/drivers/staging/sm750fb/sm750_cursor.h
+@@ -10,6 +10,6 @@ void sm750_hw_cursor_set_pos(struct lynx_cursor *cursor, int x, int y);
+ void sm750_hw_cursor_set_color(struct lynx_cursor *cursor, u32 fg, u32 bg);
+ void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
+ 			     const u8 *data, const u8 *mask);
+-void sm750_hw_cursor_setData2(struct lynx_cursor *cursor, u16 rop,
++void sm750_hw_cursor_set_data2(struct lynx_cursor *cursor, u16 rop,
+ 			      const u8 *data, const u8 *mask);
+ #endif
 -- 
 2.30.2
 

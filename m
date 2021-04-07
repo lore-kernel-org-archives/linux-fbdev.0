@@ -8,62 +8,62 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F2B7C433B4
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:44:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16604C43460
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:44:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3E04761222
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:44:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D983D61222
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:44:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349071AbhDGGou (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 7 Apr 2021 02:44:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58060 "EHLO
+        id S1349092AbhDGGoz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 7 Apr 2021 02:44:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58106 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349258AbhDGGop (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Apr 2021 02:44:45 -0400
-Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DC98C06174A;
-        Tue,  6 Apr 2021 23:44:32 -0700 (PDT)
-Received: by mail-pg1-x533.google.com with SMTP id l76so12263828pga.6;
-        Tue, 06 Apr 2021 23:44:32 -0700 (PDT)
+        with ESMTP id S1349108AbhDGGow (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Apr 2021 02:44:52 -0400
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83FDCC061762;
+        Tue,  6 Apr 2021 23:44:43 -0700 (PDT)
+Received: by mail-pl1-x62a.google.com with SMTP id a6so5505174pls.1;
+        Tue, 06 Apr 2021 23:44:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=date:from:to:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=6p8ZANqd/RqsWjSImmd+1sF92/GqWhRbXBxvKnMm8Pg=;
-        b=jV4m0l4ZmxdtJzwPsVyZjRIfDdmI8j5RZhoa/zDJAGovAhwpeq7vTBXKWw2R8FGgT7
-         4h5V3TxuCQ/tx9xQCE3LwD/S0QZhKI2zMN1S87dpLCVZH4kKT9RfIP4FGrxGI6+/PrHt
-         Wel2RMXwRjGPuWIEmWnFJ14EABXdt8Qp4mynEr8aGhGBfy8j0kPW6Gth6J0qTXcsV9Ti
-         8y5xl9yMQoIRlZ0PxtJ/7UUTUsMwQM6cVEOYasdCuGJ5NvJrxbI/4l8ukwIcHz8gze2e
-         RmcQWwc+aott8c3KLTYJocgDasuP1bUab2AsUq6t7f1Sxm+U++S5cHAwB4sCdJuQ/SdK
-         J4gw==
+        bh=v5F66A4CVLf0PCVKwwhgQWPfplNHHogpzp6J0Rowd60=;
+        b=J+83Zbiiag6BpOcxsapxpcpjCFeBM7GFFXJ7MMoFNkOQCMOCajfwQGgfim/yMz0Xjt
+         r/trgUh9QydkyOeFJcI/BZc2virqSs1viHTFxvfI7NZe0cYbSDqrBPHHzmDx6n3xqpoM
+         7iduvXOrbE7tVdAq9UGLBTTwSCxIaBRnbc62ws0d/RTJoPt5joGBvs9xIguZqxyZ3lsw
+         6bCdTnUTj/tFQvvJqsFWlLqV8neyHLzoOM/njFTZn/3e7JPeTm4TN2RyaBVTWuw9A7+9
+         sZdvSHAdOCShuJvMkLf676LEssxQxskJJTIAg/HOK6GJbp863xGhS6Amb7LR/6A3bBZu
+         qHpw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=6p8ZANqd/RqsWjSImmd+1sF92/GqWhRbXBxvKnMm8Pg=;
-        b=c9fSsSQLshCpfe2FjU2cAGgv0L2Zg5tSkyfAWC6tOo4CJacmiqu+a8B5xSy6o7JZiE
-         lN1W67i9DnByOE026Vt96Q1n7Ae8Ic0zQbeIEZT/aJi4uXpRuIexUYeyw2waogwplFav
-         tR5VnnxApWYbJ6UWXxgOZnwr+XAnNQ7AHz4yV80puBcTpuU6p7MEhXe3jq1Jf67HJLou
-         Ow2SgeNi+dYuiX0PnNCz3TSVQ88nulFFwzkUlq8bRLIEC2NkiFUkzmWpa7p7QvQbkExl
-         cdVZxOJ4lEvnwh8+a59TJbWAhNZ40ZIFN1n/oHS95DoJ8/rtftU4Y+348EgGtK1m2zA/
-         LLXw==
-X-Gm-Message-State: AOAM531YafQYK0vEkUFI8wBKzECZsmCGaqieM5mjqegKyMHqWThKpgmq
-        VeuKh5NPBy0ZK1IY7/z4DPg=
-X-Google-Smtp-Source: ABdhPJyFmpsftdsYmNluBQreMHb0XqH5cpB/EVFcvW9RKRwrT0uyXBG66Mq1jUNM4Of1+X3Z6Wmm2Q==
-X-Received: by 2002:a63:c847:: with SMTP id l7mr1919574pgi.445.1617777872126;
-        Tue, 06 Apr 2021 23:44:32 -0700 (PDT)
+        bh=v5F66A4CVLf0PCVKwwhgQWPfplNHHogpzp6J0Rowd60=;
+        b=JAJ7Tz/1yUIvlfeyFk2BH/EPMdWACfGSjLmtJWFIb/VilMH+S9lg/K7Smg0x1QvABU
+         3bBFOkzxfjeqm8MaI5dyg6I9uPHfyJQ73MY4TxQqZaK205KaKouOr0T5oW836LzeILl5
+         QLVC7/NmgXkmfZqgTqrf9Uaghv2K5W2P3krcWXcvWnWLCGfTVWmu5wYiW4hGWY0DU+gy
+         v447IpmMVQelB64E5nWOL/jsL7Iv93ZW7p5IQxUy5SrcqV6Ltq6/c4k86fbVdfJUCNJt
+         SqJX2Y6Y6rcvX6FA6o54q7stsCF2FSmHILdFZA1VDfDghClDR/Yx5hFM5r32wJJEunEw
+         FVGg==
+X-Gm-Message-State: AOAM5309sbukK/Rabuj+1J2tyZg6MO81E4+5+dIIGullosIEEwcPmwfP
+        ez/2BGA7P46a35CEn/ZNv+OKUZZ44ID4uQ==
+X-Google-Smtp-Source: ABdhPJz+XXWB75AReec2tP6DygxwX83W/w/NAB6x50T3Tg926mjmOGn4LbRYExRzqS4N1RCtTls18A==
+X-Received: by 2002:a17:90b:1993:: with SMTP id mv19mr1869403pjb.193.1617777883018;
+        Tue, 06 Apr 2021 23:44:43 -0700 (PDT)
 Received: from localhost.localdomain ([134.173.248.5])
-        by smtp.gmail.com with ESMTPSA id l191sm4313761pfd.36.2021.04.06.23.44.31
+        by smtp.gmail.com with ESMTPSA id s9sm3816977pfc.192.2021.04.06.23.44.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Apr 2021 23:44:31 -0700 (PDT)
-Date:   Tue, 6 Apr 2021 23:44:29 -0700
+        Tue, 06 Apr 2021 23:44:42 -0700 (PDT)
+Date:   Tue, 6 Apr 2021 23:44:40 -0700
 From:   Pavle Rohalj <pavle.rohalj@gmail.com>
 To:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
         gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 32/49] staging: sm750fb: Rename function
- sm750_hw_cursor_setData to snake case
-Message-ID: <3df59f311d53a8d0dba7cc8a9704b036d34c5a7d.1617776878.git.pavle.rohalj@gmail.com>
+Subject: [PATCH v2 33/49] staging: sm750fb: Rename function
+ hw_sm750_crtc_setMode to snake case
+Message-ID: <db83765fac5956430ffc87118a6a667c45377665.1617776878.git.pavle.rohalj@gmail.com>
 References: <cover.1617776878.git.pavle.rohalj@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -74,54 +74,54 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Fix "Avoid CamelCase" checkpatch.pl checks for the function
-sm750_hw_cursor_setData.
+hw_sm750_crtc_setMode.
 
 Signed-off-by: Pavle Rohalj <pavle.rohalj@gmail.com>
 ---
- drivers/staging/sm750fb/sm750.c        | 2 +-
- drivers/staging/sm750fb/sm750_cursor.c | 2 +-
- drivers/staging/sm750fb/sm750_cursor.h | 2 +-
+ drivers/staging/sm750fb/sm750.c    | 2 +-
+ drivers/staging/sm750fb/sm750.h    | 2 +-
+ drivers/staging/sm750fb/sm750_hw.c | 2 +-
  3 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index d93884f9da7f..9263d4bdd222 100644
+index 9263d4bdd222..2343cd897989 100644
 --- a/drivers/staging/sm750fb/sm750.c
 +++ b/drivers/staging/sm750fb/sm750.c
-@@ -145,7 +145,7 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+@@ -393,7 +393,7 @@ static int lynxfb_ops_set_par(struct fb_info *info)
+ 		pr_err("bpp %d not supported\n", var->bits_per_pixel);
+ 		return ret;
  	}
+-	ret = hw_sm750_crtc_setMode(crtc, var, fix);
++	ret = hw_sm750_crtc_set_mode(crtc, var, fix);
+ 	if (!ret)
+ 		ret = hw_sm750_output_setMode(output, var, fix);
+ 	return ret;
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 8271cf7c89f3..6e0805a99180 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -204,7 +204,7 @@ int hw_sm750_output_setMode(struct lynxfb_output *output,
+ int hw_sm750_crtc_checkMode(struct lynxfb_crtc *crtc,
+ 			    struct fb_var_screeninfo *var);
  
- 	if (fbcursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
--		sm750_hw_cursor_setData(cursor,
-+		sm750_hw_cursor_set_data(cursor,
- 					fbcursor->rop,
- 					fbcursor->image.data,
- 					fbcursor->mask);
-diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-index ac83ead1c5bc..98d294ac223c 100644
---- a/drivers/staging/sm750fb/sm750_cursor.c
-+++ b/drivers/staging/sm750fb/sm750_cursor.c
-@@ -82,7 +82,7 @@ void sm750_hw_cursor_set_color(struct lynx_cursor *cursor, u32 fg, u32 bg)
- 	poke32(HWC_COLOR_3, 0xffe0);
+-int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
++int hw_sm750_crtc_set_mode(struct lynxfb_crtc *crtc,
+ 			  struct fb_var_screeninfo *var,
+ 			  struct fb_fix_screeninfo *fix);
+ 
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index e31f4c6bc69e..efe379ef3438 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -247,7 +247,7 @@ int hw_sm750_crtc_checkMode(struct lynxfb_crtc *crtc,
  }
  
--void sm750_hw_cursor_setData(struct lynx_cursor *cursor, u16 rop,
-+void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
- 			     const u8 *pcol, const u8 *pmsk)
+ /* set the controller's mode for @crtc charged with @var and @fix parameters */
+-int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
++int hw_sm750_crtc_set_mode(struct lynxfb_crtc *crtc,
+ 			  struct fb_var_screeninfo *var,
+ 			  struct fb_fix_screeninfo *fix)
  {
- 	int i, j, count, pitch, offset;
-diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
-index edfa6a8202cd..af0211242ae8 100644
---- a/drivers/staging/sm750fb/sm750_cursor.h
-+++ b/drivers/staging/sm750fb/sm750_cursor.h
-@@ -8,7 +8,7 @@ void sm750_hw_cursor_disable(struct lynx_cursor *cursor);
- void sm750_hw_cursor_set_size(struct lynx_cursor *cursor, int w, int h);
- void sm750_hw_cursor_set_pos(struct lynx_cursor *cursor, int x, int y);
- void sm750_hw_cursor_set_color(struct lynx_cursor *cursor, u32 fg, u32 bg);
--void sm750_hw_cursor_setData(struct lynx_cursor *cursor, u16 rop,
-+void sm750_hw_cursor_set_data(struct lynx_cursor *cursor, u16 rop,
- 			     const u8 *data, const u8 *mask);
- void sm750_hw_cursor_setData2(struct lynx_cursor *cursor, u16 rop,
- 			      const u8 *data, const u8 *mask);
 -- 
 2.30.2
 

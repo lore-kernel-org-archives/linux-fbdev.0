@@ -8,62 +8,62 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E529C433B4
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:43:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45243C433ED
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:43:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 62EC061222
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:43:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1DF14613C0
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:43:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349015AbhDGGnn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 7 Apr 2021 02:43:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57796 "EHLO
+        id S1349026AbhDGGnr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 7 Apr 2021 02:43:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57814 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231335AbhDGGnn (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Apr 2021 02:43:43 -0400
-Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55FDEC06174A;
-        Tue,  6 Apr 2021 23:43:34 -0700 (PDT)
-Received: by mail-pj1-x102d.google.com with SMTP id k23-20020a17090a5917b02901043e35ad4aso728939pji.3;
-        Tue, 06 Apr 2021 23:43:34 -0700 (PDT)
+        with ESMTP id S231335AbhDGGnr (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Apr 2021 02:43:47 -0400
+Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43429C06174A;
+        Tue,  6 Apr 2021 23:43:38 -0700 (PDT)
+Received: by mail-pf1-x434.google.com with SMTP id s11so12191336pfm.1;
+        Tue, 06 Apr 2021 23:43:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=date:from:to:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=bvyOIchcblyTZxnk7QAJ5m+10+TOrC3FpEbk+84z4mA=;
-        b=L2LHFPXPOiW6v3ukim6PWI9ekG/YDRwkjW5YT01lM9eZ9nS/i+qJnVnT8ZVAyRalD5
-         dKnt45ZAZR5MioQkIpRouxs1KonXRR1Z+hfsguv3UJONa5oBBBqL+gVj0jZw4w/8DyNJ
-         25IBbZqpKGYMHJc4OZTv8QwTsli8d1gFdQ9oItH5/ejvzsH8B1kWbzecw/VCVD15flQS
-         0ltX1D46/DWkQFSv9HiC2ZU0gTss1F/Sik51jCaN4gwoqAC01DYFwSLCbLewi12/gQU5
-         8T7dSIFDckdzWIshwiNcZrQ6gPymfFiEHfnI7k2PeQuvNGF2trbL0tfKnE4Pb9e1atoV
-         oWjw==
+        bh=qFLPg7mZDXW2+QgSTwSk0nVCNAL/L9QDEUI+JqqFX3k=;
+        b=mT/mUn7WmUIME4GnBmCZDyfX4zs6Bm6ohDT27mTk5sndsJ7EnOZQ7klKCB/g909puv
+         uyusQntZbxLgSrr/+dFpa8tAX6RBUqMCciTeiWL9Qw165iKf5o31jJTdvwfiAlcRVWQ3
+         OHEchdISJQ52hUxRg4KgfaFBe0K3MoLdd4EkkNHZVnEYYVab6kQ5EeGxc1iRt+UScqNF
+         tSubDVgI7VeWKzKXFEQO+HOLhsWo01lrNoal28Cd/ayNyNq6RMIxb6+jJmJ24XFwmCBa
+         zbp3avkBtTjbigntRHWsp/RjggErHM4bg83IMROKbnlrqJbgVPn4m0O/U9UQbI4ydauH
+         0mEg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=bvyOIchcblyTZxnk7QAJ5m+10+TOrC3FpEbk+84z4mA=;
-        b=FW/oOBYAwLpVr1oOHEC03DlGjIVuaryhXcs1frOaGU6ETMPlIglH5K4RLjJhSx1rat
-         tRgnQEbUrlCUaiz03poBK7bxnp3CBPRiKTM4sGDJCihQpiBF6SIhLECYc7BGUYAigufS
-         KIalVOD9FNSSVWjDpLslKGFICRLdP7pN4u7/KIzZHZDyIbtB6QGRwp4fld+N2CsCOaW2
-         i9aiIcjCx8wRN1ukbHWsMx5vxRshscFZyzBokyYmLmBnyEedSmlnub/ptvNECPYlsgxY
-         oMGtuN3ghiJ0SgZ2lvevDEaLeUkntlQljTRO/IfweHR6cWPVom98A/aSY4bTNMGF+7uz
-         jQtg==
-X-Gm-Message-State: AOAM533OKGelxqjPqKBS6PHo4X5Asv9SLM1Sg30X4eNngEfplkgSzFXS
-        NGajPiGkDUwTH8jeJATDaaw=
-X-Google-Smtp-Source: ABdhPJy4Ln4m3cV2fjHszjqG0UJvfKjad9FvZloqq8wON2TZdz9ZWHsKfeBcQ/qPq0j5Rz86wUFH1w==
-X-Received: by 2002:a17:902:ee93:b029:e9:6b29:3219 with SMTP id a19-20020a170902ee93b02900e96b293219mr695699pld.16.1617777813875;
-        Tue, 06 Apr 2021 23:43:33 -0700 (PDT)
+        bh=qFLPg7mZDXW2+QgSTwSk0nVCNAL/L9QDEUI+JqqFX3k=;
+        b=iODILrgpp/QGc+n28w7my7qN6fwDOddnQZZ5zCk0PPPHakq0ypy8DNtrxBJc5LGbDP
+         ABFPzxJRQyV+2ttWd3Sv6yUqCT0hHgZdL63xn3F7pLu1p8uShEtgh0Atn3wDMGGX6NIc
+         GhhJ0rdnPoDWRX09rhms3K8M5h/FZS5LmacSM8yCuAy57VhbdlUDnxOLKpKMfzy2ze/5
+         5L4KoeAa8ia4YCVLyj1stn1GeLkXChKOxuwPUZ9Rh4VCabcdQeWPC8JGLFPbN2cXRIeZ
+         sjbBp2GJ26S169JhOZk/4qPsFuzjMjcIX2L5hDBtvPWenQaZwzOnnz3c3WyYHW3wwrpZ
+         i5yQ==
+X-Gm-Message-State: AOAM530CnO5vnL/JQQDnPviph/dOvq5O4fcfgC6opSy6nT1ST6suVanH
+        FIukL0dqPTDsXekn7D/K83s=
+X-Google-Smtp-Source: ABdhPJwOqNX467U2gyXYnZ7HmnsGJu0HLQzRCxRCYJua+3faT0g0IMb6lROPCAKfblaoO8iLfgb1Rw==
+X-Received: by 2002:a63:dc57:: with SMTP id f23mr774017pgj.294.1617777817858;
+        Tue, 06 Apr 2021 23:43:37 -0700 (PDT)
 Received: from localhost.localdomain ([134.173.248.5])
-        by smtp.gmail.com with ESMTPSA id e190sm20147991pfe.3.2021.04.06.23.43.33
+        by smtp.gmail.com with ESMTPSA id gk20sm3035930pjb.17.2021.04.06.23.43.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Apr 2021 23:43:33 -0700 (PDT)
-Date:   Tue, 6 Apr 2021 23:43:31 -0700
+        Tue, 06 Apr 2021 23:43:37 -0700 (PDT)
+Date:   Tue, 6 Apr 2021 23:43:35 -0700
 From:   Pavle Rohalj <pavle.rohalj@gmail.com>
 To:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
         gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 19/49] staging: sm750fb: Rename function parameter of
- sii164_enable_hot_plug_detection
-Message-ID: <d2feddde2b2d8658ea990eabf16747561c15c395.1617776878.git.pavle.rohalj@gmail.com>
+Subject: [PATCH v2 21/49] staging: sm750fb: Rename function write_dpPort to
+ snake case
+Message-ID: <ed10428746cc0d22256876ab5c11bb1d4c798669.1617776878.git.pavle.rohalj@gmail.com>
 References: <cover.1617776878.git.pavle.rohalj@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -73,28 +73,42 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix "Avoid CamelCase" checkpatch.pl check for the function parameter
-enable_hot_plug in the prototype of the function
-sii164_enable_hot_plug_detection.
+Fix "Avoid CamelCase" checkpatch.pl check for the function
+write_dpPort.
 
 Signed-off-by: Pavle Rohalj <pavle.rohalj@gmail.com>
 ---
- drivers/staging/sm750fb/ddk750_sii164.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/sm750fb/sm750_accel.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
-index ceafac60340f..ac1431dcb419 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.h
-+++ b/drivers/staging/sm750fb/ddk750_sii164.h
-@@ -34,7 +34,7 @@ unsigned short sii164_get_device_id(void);
- void sii164_reset_chip(void);
- char *sii164_get_chip_string(void);
- void sii164_set_power(unsigned char powerUp);
--void sii164_enable_hot_plug_detection(unsigned char enableHotPlug);
-+void sii164_enable_hot_plug_detection(unsigned char enable_hot_plug);
- unsigned char sii164_is_connected(void);
- unsigned char sii164_check_interrupt(void);
- void sii164_clear_interrupt(void);
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 4327bda871e1..4ad2814b5b54 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -28,7 +28,7 @@ static inline u32 read_dpr(struct lynx_accel *accel, int offset)
+ 	return readl(accel->dprBase + offset);
+ }
+ 
+-static inline void write_dpPort(struct lynx_accel *accel, u32 data)
++static inline void write_dp_port(struct lynx_accel *accel, u32 data)
+ {
+ 	writel(data, accel->dpPortBase);
+ }
+@@ -396,12 +396,12 @@ int sm750_hw_imageblit(struct lynx_accel *accel, const char *src_buf,
+ 	for (i = 0; i < height; i++) {
+ 		/* For each line, send the data in chunks of 4 bytes */
+ 		for (j = 0; j < (ul4BytesPerScan / 4); j++)
+-			write_dpPort(accel, *(unsigned int *)(src_buf + (j * 4)));
++			write_dp_port(accel, *(unsigned int *)(src_buf + (j * 4)));
+ 
+ 		if (ulBytesRemain) {
+ 			memcpy(ajRemain, src_buf + ul4BytesPerScan,
+ 			       ulBytesRemain);
+-			write_dpPort(accel, *(unsigned int *)ajRemain);
++			write_dp_port(accel, *(unsigned int *)ajRemain);
+ 		}
+ 
+ 		src_buf += src_delta;
 -- 
 2.30.2
 

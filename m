@@ -8,62 +8,62 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41B50C43462
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AEAEBC43470
 	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:37:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 02EF9613C0
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:37:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6E496613C0
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:37:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348940AbhDGGhY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S1348950AbhDGGhY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Wed, 7 Apr 2021 02:37:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56360 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56370 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348935AbhDGGhU (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Apr 2021 02:37:20 -0400
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5EA4CC06175F;
-        Tue,  6 Apr 2021 23:37:11 -0700 (PDT)
-Received: by mail-pl1-x635.google.com with SMTP id p10so3695846pld.0;
-        Tue, 06 Apr 2021 23:37:11 -0700 (PDT)
+        with ESMTP id S1348913AbhDGGhW (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Apr 2021 02:37:22 -0400
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13893C061761;
+        Tue,  6 Apr 2021 23:37:13 -0700 (PDT)
+Received: by mail-pj1-x1032.google.com with SMTP id t23so6012268pjy.3;
+        Tue, 06 Apr 2021 23:37:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=date:from:to:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=BtyBOMvsqSJAayOGR2ps6Fm5o+TmuUaUOXkQzK0Am80=;
-        b=FYxkr4zNiq+MJV0WrNM/yKUHigyUboVN9BVJ/JJ5qxDsVp7R+hZCNWzmv3aSNvZcvD
-         2uIguRDT37Etg0K2v4exBizNKH2BtXOMR+bpoXs08TP7sZ4mJFZlAa4zDfYQhXujiuaU
-         IUzokmik9TLiLYU8vVaKyySF3kAUQZhKE6FOUim5T8qas27ror5wckKPsJod7tThnTul
-         XKkx8vQpAVWpwmPGqdvBOkEGjSUo0xIchc0wdYe6x3R58WuQFNXiAptRPCeLCl1Ymls9
-         u1v0nUo3g0tNdqVReKWPhw8Tc3aNhzLHS7oZYIg92ZHE8509ju4NxoIlTJmC6eiqpnpr
-         2slw==
+        bh=OdUv2xn5NTVX4upCxFLBlB0yHvpqXhX8iMiPwr0mJUo=;
+        b=feh8cmuNFbOe6K8YLbss+gUYGOmZxEtOYqMSn8UeBRI1QIjyXO6O3TDrS9hhqii26O
+         B+Ffbqg/Kw+8upWR7MiKn556v6yqiO5C/cyeacNP1qOsvuAOPncgQ2tMr6jf4LK/W4kV
+         LyMUulkNgoKbHkLLjaGwWA6s+GF1H7vJwImQWmTT9PilbDm9oLf7JBEi9+lDxg12GqGY
+         peKuuH9WfNA+hfeLlRcvRd5tTZ0WDgmd2gnVLwAFzpq5ndAFHkE/lbGAlA95hqncYlyp
+         LbckmrM5O/iJeG0CCVQrnkfifwMLWMImQ5MPCprnuk6DyFTvulKC4vVzE6D8uK4xxpbe
+         q+tw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=BtyBOMvsqSJAayOGR2ps6Fm5o+TmuUaUOXkQzK0Am80=;
-        b=gd2khaQ3l5raVNlhWGLk24c6XO7j4DDbuyFtDCguznJL6ruIAdEVybLsek/F8frrb2
-         6sEifWcITuGS1i98ASImnPBGQXL5ly6707UG6Tr0n4rh9iopu5Yj+56G3hM6u//6RJvT
-         U/xgWMlzSWMyQEn9DnHorqxS5pJXso3z6VOQA9+fDuKx7okJ+C0ER7h8GlTvSEGOHT3X
-         UeAGVmVPxB6BODydzH4fZum+C54mQNKQx2/7M9wVPpqy4TXhdb5/uXKfCpK5w0s3YkZ4
-         d7Yp5htq/iI9q+hZeI8ZtY4USKX12Tsyr06tOYbD+USeLbXbNkp2+QUhoe/9PIgq7gM+
-         KrqA==
-X-Gm-Message-State: AOAM5337vw5QkfPsaOniq0xllnUDmLH15gO3zNfjItmkrVYrUhTd+sde
-        WIMjYROrRoQXz32wJ+82UFg=
-X-Google-Smtp-Source: ABdhPJx62uNLl6w6YDWL21XyY3o6O682yByIaQI1OCkg2oivnbKc6M+sEPhfMEzwkSr20Tun3HEiDQ==
-X-Received: by 2002:a17:902:f686:b029:e5:de44:af60 with SMTP id l6-20020a170902f686b02900e5de44af60mr1772297plg.64.1617777430958;
-        Tue, 06 Apr 2021 23:37:10 -0700 (PDT)
+        bh=OdUv2xn5NTVX4upCxFLBlB0yHvpqXhX8iMiPwr0mJUo=;
+        b=U22d4Fk5FwV5KXotyJa0jOSlQSoC6ARbG1WN0BZ70DB+siV17896mgOFVlBQ0LmWoz
+         /dj9JhjFim6+DavFLVYcEOr28HOTb5tfhpHKxEqVSTpafAFU+ORmmZXQErDLeM26z3zU
+         Hy4i7i2XztpC8vSh7pMFEDD08MgrIqJqFgtlTi7pKQsqG2lJUVvSf0xjyvU5+MlW/RcR
+         VwW6YGreeENwcGEkjQ5GTzEoZ5oWj/ZCb1fwTIFINGuEqDhTTgSCTUzZvixlxuAjIJFJ
+         xm135llTuTOoFFZZBjVdld0LMAHOtVe9rtUPWpyD+EC2dxZxCxnjKVeKtzJ953YwTwnd
+         A8Fg==
+X-Gm-Message-State: AOAM531tRcWw+M1fT1C/U43WBnDh0kMgXQYnwwLkOtWuBVthBzKJ3aXp
+        TAyRtNlyJI2wBzpZJP6l0ho=
+X-Google-Smtp-Source: ABdhPJx+jOoVjmVg8eboQUVBADDx/rVM3HKCdPwk2DHla3qTcWnsseF+WE+NAdOnRG5f/Cya6++6jg==
+X-Received: by 2002:a17:902:9f94:b029:e9:68a3:8551 with SMTP id g20-20020a1709029f94b02900e968a38551mr835471plq.35.1617777432651;
+        Tue, 06 Apr 2021 23:37:12 -0700 (PDT)
 Received: from localhost.localdomain ([134.173.248.5])
-        by smtp.gmail.com with ESMTPSA id w203sm19836430pfc.188.2021.04.06.23.37.10
+        by smtp.gmail.com with ESMTPSA id w21sm4180614pjy.52.2021.04.06.23.37.11
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Apr 2021 23:37:10 -0700 (PDT)
-Date:   Tue, 6 Apr 2021 23:37:08 -0700
+        Tue, 06 Apr 2021 23:37:12 -0700 (PDT)
+Date:   Tue, 6 Apr 2021 23:37:10 -0700
 From:   Pavle Rohalj <pavle.rohalj@gmail.com>
 To:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
         gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 14/49] staging: sm750fb: Rename
- sii164SelectHotPlugDetectionMode to snake case
-Message-ID: <39d33b45117c205208b6fa9c21ac9d32eaa9c5b1.1617776878.git.pavle.rohalj@gmail.com>
+Subject: [PATCH v2 15/49] staging: sm750fb: Rename gDviCtrlChipName to snake
+ case
+Message-ID: <eee9dc29bf4e8fa116eb32cad88ebbb92e3ce634.1617776878.git.pavle.rohalj@gmail.com>
 References: <cover.1617776878.git.pavle.rohalj@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -73,41 +73,33 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix "Avoid CamelCase" checkpatch.pl check for the function
-sii164SelectHotPlugDetectionMode in ddk750_sii164.c.
+Fix "Avoid CamelCase" checkpatch.pl check for the
+global variable gDviCtrlChipName.
 
 Signed-off-by: Pavle Rohalj <pavle.rohalj@gmail.com>
 ---
- drivers/staging/sm750fb/ddk750_sii164.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/staging/sm750fb/ddk750_sii164.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-index ceeb914f8441..7e0a481970f5 100644
+index 7e0a481970f5..a7e0f001d96f 100644
 --- a/drivers/staging/sm750fb/ddk750_sii164.c
 +++ b/drivers/staging/sm750fb/ddk750_sii164.c
-@@ -298,11 +298,11 @@ void sii164_set_power(unsigned char powerUp)
- }
+@@ -25,7 +25,7 @@
+ 
+ #ifdef SII164_FULL_FUNCTIONS
+ /* Name of the DVI Controller chip */
+-static char *gDviCtrlChipName = "Silicon Image SiI 164";
++static char *dvi_ctrl_chip_name = "Silicon Image SiI 164";
+ #endif
  
  /*
-- *  sii164SelectHotPlugDetectionMode
-+ *  sii164_select_hot_plug_detection_mode
-  *      This function selects the mode of the hot plug detection.
+@@ -269,7 +269,7 @@ void sii164_reset_chip(void)
   */
- static
--void sii164SelectHotPlugDetectionMode(enum sii164_hot_plug_mode hotPlugMode)
-+void sii164_select_hot_plug_detection_mode(enum sii164_hot_plug_mode hotPlugMode)
+ char *sii164_get_chip_string(void)
  {
- 	unsigned char detectReg;
- 
-@@ -344,9 +344,9 @@ void sii164_enable_hot_plug_detection(unsigned char enableHotPlug)
- 	 * on each individual chip design.
- 	 */
- 	if (enableHotPlug != 0)
--		sii164SelectHotPlugDetectionMode(SII164_HOTPLUG_USE_MDI);
-+		sii164_select_hot_plug_detection_mode(SII164_HOTPLUG_USE_MDI);
- 	else
--		sii164SelectHotPlugDetectionMode(SII164_HOTPLUG_DISABLE);
-+		sii164_select_hot_plug_detection_mode(SII164_HOTPLUG_DISABLE);
+-	return gDviCtrlChipName;
++	return dvi_ctrl_chip_name;
  }
  
  /*

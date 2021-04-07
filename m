@@ -8,62 +8,62 @@ X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70E85C43461
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E840C433B4
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3899A61222
-	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0B1DC61222
+	for <linux-fbdev@archiver.kernel.org>; Wed,  7 Apr 2021 06:46:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345378AbhDGGqU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S1345513AbhDGGqU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Wed, 7 Apr 2021 02:46:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58428 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58438 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345398AbhDGGqP (ORCPT
+        with ESMTP id S244668AbhDGGqP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>); Wed, 7 Apr 2021 02:46:15 -0400
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E59F7C061760;
-        Tue,  6 Apr 2021 23:46:02 -0700 (PDT)
-Received: by mail-pl1-x629.google.com with SMTP id z12so4771793plb.9;
-        Tue, 06 Apr 2021 23:46:02 -0700 (PDT)
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A17DEC061762;
+        Tue,  6 Apr 2021 23:46:05 -0700 (PDT)
+Received: by mail-pj1-x1034.google.com with SMTP id ot17-20020a17090b3b51b0290109c9ac3c34so730111pjb.4;
+        Tue, 06 Apr 2021 23:46:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=date:from:to:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=RuREhl/6r10Ul/aj5kYlhGySoHbzCHI5JHMjmbOPC1k=;
-        b=mnBY/ZNujoLmuROjHLZ9tSCR/DZDxFQquNW1LET3jthFDTWzg6gex9lffVXFltJP4s
-         ZPZ0tMCROCdMEa/R6DKY3Nbe0A/jt8Q0in3XjQZoa1dh3rOXEEm9F8iLDGVvbhACNG28
-         k8w2DesvE1+yCySAKzpG+GnsNEi4tDEKz85T2hPOR3GDIMhcTqzZHnztI/O1Ht+WLkBb
-         c6n9xTC/rXdFuJL1Yw02EB8ldI1VkrFvk+1FediLwkCPq3K24sijsGp3IAgNHMCjThKm
-         2TCqhNV8mCYTOFQu31LpS3Xo3+ozV9m10to76RrBLH2t19Qb4JgzGwtZ8SsRyv644hrY
-         jzfQ==
+        bh=sTRc6HlswoGyydauZH0DMBR4btgAttix5SNGQxPT1ew=;
+        b=hCN6Jvlvr0Cy5U3GdI9ixf0wbksuD/gbjt6erm+iwubSjo5xs3jat03k3XWryyQMTV
+         9VqUvLyXv+jS0m2JBVL+kS7hnZia78fvMhYaTH8W993GJYDBPO3W/QJ5L4KRBqFlNtZC
+         fC4NhlyjlUO5UVQEGKrRDxXXJ1IGvimS0oYBFJmkRetQSqlDslXTmkDRJYSiwKol5srt
+         DQjhhMBCwTDkm6knV2BjYnLfc7Hfz6yQf6zpiT4O7iSHs6En9fI2i0pNT2c+0crjiDt+
+         ph65aqOR3rNhda+ypS3vforsRLs6NitKKkr+3htyEtW1kEtp3JY+HCa6uImXlPhqnrKd
+         fLQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=RuREhl/6r10Ul/aj5kYlhGySoHbzCHI5JHMjmbOPC1k=;
-        b=C0ddMot9G8yzhGV0eKfskTc6KFgEk6rVJM7Lfp/TJ1wusoskiB+93BJvpMaYfsw+y9
-         Ldr2O4uE3oeOkHKAwdjAb+vzEx/h8AL7NVsOoSk47nVBl7IPcfXrdqDnjy2K6YLYPWZr
-         tcE9Oxv4eITXjTkXubRWwOiv/NkqLk5AGA3SqwZ9qX3iQfo1eHmSZulujs/SwvG2Su73
-         T1rnSUaUrGndU6qat+Jd9DpwYwL7dtRXAjpq2AAoncZred6UXLRkrblzefbYtA6ZFoob
-         +c2CeI9frSZaEx6Rwokj2PKL8MdARuGDcWPEdVanhWCUJR+nVaD84vViVBaifqZj9AMH
-         yT/w==
-X-Gm-Message-State: AOAM532qjUmq5s80bv36VSLrg9g2nm8zostr3Sn1VDIZLyldIMXJREsR
-        b6gD77Dk34nxuG+0vO+Quww=
-X-Google-Smtp-Source: ABdhPJwValtxEqyXA2Z/HAUme9fwOnwBPtVfz9kJYomrVchhuDMQuF2DvVqf1hNjmn4KLPUBIuuGGg==
-X-Received: by 2002:a17:903:189:b029:e5:d7c3:a264 with SMTP id z9-20020a1709030189b02900e5d7c3a264mr1815902plg.6.1617777962492;
-        Tue, 06 Apr 2021 23:46:02 -0700 (PDT)
+        bh=sTRc6HlswoGyydauZH0DMBR4btgAttix5SNGQxPT1ew=;
+        b=e5TnjgBHgcoALWApkrEDrtv+1o1U2dWzkAenhKFf+5+0mzDMvwqgg+aPYLoRaLd2+s
+         5hUkeu/x7cOmeECaa9xevbLsXIZaTHj8OVcr7HwmdM116+gK5GHrAVi6fxcKFuYriWE8
+         p9YpnrYRgsk1P6Apj6QzSFDdb+1+d+LrHT63ylgJiGIYMwQ3mkO7umybiOllOgMvROqL
+         k1PiPrO2Cd4lrEyEZ/9TDU6mVoYvzM3D9ytgAdA5AwnwyoqmtyJ777jExLCIH8q4NaSa
+         ZTFoo4nBKC5VPAY/h4zEw7AoM+c/EEbRC0QUxRW3NHdzDy3D9vZR67PNRzgfOGTSz5TG
+         GYVA==
+X-Gm-Message-State: AOAM531dmvhN9hIOZMXNxCuP+ZSxxQlsK1/WmzL9Psaey3aA5JHP/wtt
+        ir5HXi970zsVA6wDv4cgSGg=
+X-Google-Smtp-Source: ABdhPJxyljQWFRlxJtZqw/hZYn1qo52UgdL8HH3oq2aLpC1posUFye0QYm18DMhz0P08sTYZxQPNFw==
+X-Received: by 2002:a17:902:bc89:b029:e9:2cd7:382e with SMTP id bb9-20020a170902bc89b02900e92cd7382emr1768815plb.68.1617777965188;
+        Tue, 06 Apr 2021 23:46:05 -0700 (PDT)
 Received: from localhost.localdomain ([134.173.248.5])
-        by smtp.gmail.com with ESMTPSA id 12sm19779641pgw.18.2021.04.06.23.46.01
+        by smtp.gmail.com with ESMTPSA id 77sm16401786pgf.55.2021.04.06.23.46.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 Apr 2021 23:46:02 -0700 (PDT)
-Date:   Tue, 6 Apr 2021 23:46:00 -0700
+        Tue, 06 Apr 2021 23:46:04 -0700 (PDT)
+Date:   Tue, 6 Apr 2021 23:46:02 -0700
 From:   Pavle Rohalj <pavle.rohalj@gmail.com>
 To:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
         gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 39/49] staging: sm750fb: Rename functions *_setBLANK to
- snake case
-Message-ID: <1022013daf6d3985becbdab8b59ed17790fec431.1617776878.git.pavle.rohalj@gmail.com>
+Subject: [PATCH v2 41/49] staging: sm750fb: Rename function
+ hw_sm750_initAccel to snake case
+Message-ID: <9eb8aec92dcef358e174d2e2ab90c91373baeefa.1617776878.git.pavle.rohalj@gmail.com>
 References: <cover.1617776878.git.pavle.rohalj@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -73,65 +73,49 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix "Avoid CamelCase" checkpatch.pl checks for the functions
-hw_sm750_setBLANK and hw_sm750le_setBLANK.
+Fix "Avoid CamelCase" checkpatch.pl checks for the function
+hw_sm750_init_accel.
 
 Signed-off-by: Pavle Rohalj <pavle.rohalj@gmail.com>
 ---
- drivers/staging/sm750fb/sm750.c    | 2 +-
- drivers/staging/sm750fb/sm750.h    | 4 ++--
+ drivers/staging/sm750fb/sm750.h    | 2 +-
  drivers/staging/sm750fb/sm750_hw.c | 4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 62c9a8c5de8f..05f3a1d454db 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -606,7 +606,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 	crtc->ywrapstep = 0;
- 
- 	output->proc_setBLANK = (sm750_dev->revid == SM750LE_REVISION_ID) ?
--				 hw_sm750le_setBLANK : hw_sm750_setBLANK;
-+				 hw_sm750le_set_blank : hw_sm750_set_blank;
- 	/* chip specific phase */
- 	sm750_dev->accel.de_wait = (sm750_dev->revid == SM750LE_REVISION_ID) ?
- 				    hw_sm750le_deWait : hw_sm750_deWait;
 diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 71b4ce05f4fe..7347be7dcded 100644
+index 7347be7dcded..4f9fe3e9ef81 100644
 --- a/drivers/staging/sm750fb/sm750.h
 +++ b/drivers/staging/sm750fb/sm750.h
-@@ -211,8 +211,8 @@ int hw_sm750_crtc_set_mode(struct lynxfb_crtc *crtc,
- int hw_sm750_set_col_reg(struct lynxfb_crtc *crtc, ushort index,
- 		       ushort red, ushort green, ushort blue);
+@@ -193,7 +193,7 @@ static inline unsigned long ps_to_hz(unsigned int psvalue)
  
--int hw_sm750_setBLANK(struct lynxfb_output *output, int blank);
--int hw_sm750le_setBLANK(struct lynxfb_output *output, int blank);
-+int hw_sm750_set_blank(struct lynxfb_output *output, int blank);
-+int hw_sm750le_set_blank(struct lynxfb_output *output, int blank);
- int hw_sm750_pan_display(struct lynxfb_crtc *crtc,
- 			 const struct fb_var_screeninfo *var,
- 			 const struct fb_info *info);
+ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev);
+ int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev);
+-void hw_sm750_initAccel(struct sm750_dev *sm750_dev);
++void hw_sm750_init_accel(struct sm750_dev *sm750_dev);
+ int hw_sm750_deWait(void);
+ int hw_sm750le_deWait(void);
+ 
 diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 7eae56b74a2b..87d2b82f0880 100644
+index 87d2b82f0880..db2c87fe7006 100644
 --- a/drivers/staging/sm750fb/sm750_hw.c
 +++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -382,7 +382,7 @@ int hw_sm750_set_col_reg(struct lynxfb_crtc *crtc, ushort index,
+@@ -175,7 +175,7 @@ int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 
+ 	/* init 2d engine */
+ 	if (!sm750_dev->accel_off)
+-		hw_sm750_initAccel(sm750_dev);
++		hw_sm750_init_accel(sm750_dev);
+ 
+ 	return 0;
+ }
+@@ -476,7 +476,7 @@ int hw_sm750_set_blank(struct lynxfb_output *output, int blank)
  	return 0;
  }
  
--int hw_sm750le_setBLANK(struct lynxfb_output *output, int blank)
-+int hw_sm750le_set_blank(struct lynxfb_output *output, int blank)
+-void hw_sm750_initAccel(struct sm750_dev *sm750_dev)
++void hw_sm750_init_accel(struct sm750_dev *sm750_dev)
  {
- 	int dpms, crtdb;
- 
-@@ -423,7 +423,7 @@ int hw_sm750le_setBLANK(struct lynxfb_output *output, int blank)
- 	return 0;
- }
- 
--int hw_sm750_setBLANK(struct lynxfb_output *output, int blank)
-+int hw_sm750_set_blank(struct lynxfb_output *output, int blank)
- {
- 	unsigned int dpms, pps, crtdb;
+ 	u32 reg;
  
 -- 
 2.30.2

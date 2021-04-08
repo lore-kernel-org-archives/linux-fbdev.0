@@ -2,75 +2,58 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2458C433ED
-	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 16:46:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2F30C433ED
+	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 20:29:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AF5AA610D1
-	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 16:46:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A45BB61159
+	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 20:29:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232299AbhDHQq0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 8 Apr 2021 12:46:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54188 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231655AbhDHQqZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 8 Apr 2021 12:46:25 -0400
-Received: from mail-qk1-x730.google.com (mail-qk1-x730.google.com [IPv6:2607:f8b0:4864:20::730])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41F8CC061760
-        for <linux-fbdev@vger.kernel.org>; Thu,  8 Apr 2021 09:46:14 -0700 (PDT)
-Received: by mail-qk1-x730.google.com with SMTP id q3so2824322qkq.12
-        for <linux-fbdev@vger.kernel.org>; Thu, 08 Apr 2021 09:46:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=P9Dutpry47e9G1LsI+esYplVO+0VII6tEqAJFfWkRFs=;
-        b=YgqR7clyk2k4fwdMNax1iDXb2sF/XnKNGxf0wo1TO8GFWHr9fn3olwvZRTnhLiG401
-         Mg74Akp1RiWZym/qucXFCGV+PA7tE9GSB1FxRXUa12JWocy5RCT3AKfLOF0rPbKAp8zK
-         QDz77Rezb71XzcRKjk67GImEAzjs/v2nKZ80axmwHu/PYnVK5lGGWeP6MQm0qGM8cjbc
-         CePlxVevLaG+j2FEa/lmwKvJRXnHCFMMOtqfpLtAmxzzonEYQ4xP8e4P3F42nXwP39SP
-         QBVuP3x8MHGGhx7X6YmAx60QXV9mNcADixygvhUrdhGe5SJSv9lS4wXFKSFMCma9xIw7
-         TuxA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=P9Dutpry47e9G1LsI+esYplVO+0VII6tEqAJFfWkRFs=;
-        b=MW7eNs4oh9NQHHPY06aWIr88JikmS8BWy6b1v2yUxlHLU+WHXS9V/5iVo3QXZ1+eV5
-         cSisnDEJ0b7SDe0f5bcNBmiEaPQ+wtDQmMBvgDgYGjCwb72h2MULVYCXTu+X6HHp9f//
-         RsCltcRQUW3BQlZhbHhkxE0aZwtowOdazjwqhzbIO28JpqtEeKd6sw6RjCmq76zUxZkh
-         JzqAyIgLUdYiAVrjFJ+RrXqZ7EFj2KgKtUTT+mO06sf6v0ajD3ACcyrnKPIyj7VrEWrE
-         v8vrZIMzcILsYi3C1fGQRnVTZa4ve1jjkJE5foJD+tmkDHR8q+ak84XKTrIwOnxDnfba
-         Y+VA==
-X-Gm-Message-State: AOAM531G85aHMsrOSX3/gBj2RSpCA5oE6P28lIIqRS8s3VhP3kGbgi0b
-        lrtiqGv9x8skQ9mp/JloWvERtQ==
-X-Google-Smtp-Source: ABdhPJzbDYutSfn+FmJJZIAbAHyE8DAfowirb1kwOsQfAUvjL2fOsMnXGxO5fiM2OyXlWuyJctyzMw==
-X-Received: by 2002:a37:6c01:: with SMTP id h1mr9726497qkc.182.1617900373391;
-        Thu, 08 Apr 2021 09:46:13 -0700 (PDT)
-Received: from ziepe.ca (hlfxns017vw-142-162-115-133.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.162.115.133])
-        by smtp.gmail.com with ESMTPSA id p5sm21412244qkj.35.2021.04.08.09.46.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Apr 2021 09:46:12 -0700 (PDT)
-Received: from jgg by mlx with local (Exim 4.94)
-        (envelope-from <jgg@ziepe.ca>)
-        id 1lUXnI-002nMT-BD; Thu, 08 Apr 2021 13:46:12 -0300
-Date:   Thu, 8 Apr 2021 13:46:12 -0300
-From:   Jason Gunthorpe <jgg@ziepe.ca>
-To:     Arnd Bergmann <arnd@arndb.de>,
-        David Hildenbrand <david@redhat.com>,
+        id S232156AbhDHU3r (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 8 Apr 2021 16:29:47 -0400
+Received: from mout.kundenserver.de ([212.227.126.135]:36493 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231451AbhDHU3r (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 8 Apr 2021 16:29:47 -0400
+Received: from mail-ot1-f52.google.com ([209.85.210.52]) by
+ mrelayeu.kundenserver.de (mreue010 [213.165.67.97]) with ESMTPSA (Nemesis) id
+ 1MN5S1-1lBYKG1VzB-00J4Sz; Thu, 08 Apr 2021 22:29:33 +0200
+Received: by mail-ot1-f52.google.com with SMTP id s16-20020a0568301490b02901b83efc84a0so3565046otq.10;
+        Thu, 08 Apr 2021 13:29:33 -0700 (PDT)
+X-Gm-Message-State: AOAM533IzKuF6xVPdGPXgaJ7d9hCS2usV+irVM3gy6KKTf9iL1J8S5mx
+        2SKJHagcAFjDp9gEb0Q3LJna/pICxMjoOcw0F+w=
+X-Google-Smtp-Source: ABdhPJyfPECLeLOF/Bs3NvQ2GDzKFAUyLZwtkCfbxO3pPqunDWbqv1JOjJ/RM4Y98JdJ7lIhjCGjr/ZYV8r3IjuTvvw=
+X-Received: by 2002:a05:6830:148c:: with SMTP id s12mr9613770otq.251.1617913771943;
+ Thu, 08 Apr 2021 13:29:31 -0700 (PDT)
+MIME-Version: 1.0
+References: <20210408092011.52763-1-david@redhat.com> <20210408092011.52763-3-david@redhat.com>
+ <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
+ <cd14d4b4-da82-b21c-2cd6-8e474d97b955@redhat.com> <CAK8P3a0Wg1mGZoBkD_RwMx-jzQNK2krrDxDQV5uhCHoyz-e=dw@mail.gmail.com>
+ <7496ac87-9676-1b4e-3444-c2a662ec376b@redhat.com> <CAK8P3a1tVwkDbtvKi8atkrg1-CfoQHGrXLCzn_uo+=dfZJfdQA@mail.gmail.com>
+ <3a2d64a7-8425-8daf-17ee-95b9f0c635f9@redhat.com> <CACRpkdYizKGhtYzE+22oZAduLNCOGP9Vbp=LQbXG1C-a+MyMcg@mail.gmail.com>
+ <2ef3b65c-c0ef-7bbe-0e05-39ee8f2bae48@redhat.com>
+In-Reply-To: <2ef3b65c-c0ef-7bbe-0e05-39ee8f2bae48@redhat.com>
+From:   Arnd Bergmann <arnd@arndb.de>
+Date:   Thu, 8 Apr 2021 22:29:15 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a3sqZBo8-zye1yiZuD2uMUr0oE_q_QfaK9K54TEgd1Cdw@mail.gmail.com>
+Message-ID: <CAK8P3a3sqZBo8-zye1yiZuD2uMUr0oE_q_QfaK9K54TEgd1Cdw@mail.gmail.com>
+Subject: Re: [PATCH v1 2/2] drivers/gpu/drm: don't select DMA_CMA or CMA from
+ aspeed or etnaviv
+To:     David Hildenbrand <david@redhat.com>
+Cc:     Linus Walleij <linus.walleij@linaro.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Linux-MM <linux-mm@kvack.org>, Joel Stanley <joel@jms.id.au>,
         David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
         Andrew Jeffery <andrew@aj.id.au>,
         Lucas Stach <l.stach@pengutronix.de>,
         Russell King <linux+etnaviv@armlinux.org.uk>,
         Christian Gmeiner <christian.gmeiner@gmail.com>,
         Mike Rapoport <rppt@kernel.org>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
         Michal Simek <michal.simek@xilinx.com>,
         Masahiro Yamada <masahiroy@kernel.org>,
         Randy Dunlap <rdunlap@infradead.org>,
@@ -80,46 +63,78 @@ To:     Arnd Bergmann <arnd@arndb.de>,
         Linux ARM <linux-arm-kernel@lists.infradead.org>,
         The etnaviv authors <etnaviv@lists.freedesktop.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH v1 2/2] drivers/gpu/drm: don't select DMA_CMA or CMA from
- aspeed or etnaviv
-Message-ID: <20210408164612.GD227011@ziepe.ca>
-References: <20210408092011.52763-1-david@redhat.com>
- <20210408092011.52763-3-david@redhat.com>
- <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
- <YG7rKfJkTDJorqvY@phenom.ffwll.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YG7rKfJkTDJorqvY@phenom.ffwll.local>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:fqqdWmjqgGPSFQNtx2u/McZyT6vettSJXcSMUXMdN/UJ3fO/C9u
+ C3+w9mdOt4mQnuWGysw7m9929aavPF/zq24mhsaz2oIdLqqZAN+M4e0Zm2WDlTAKavRVS2r
+ HgcKqJyA+81sEB8853g3CkXCGiRlfiC+d+BYheY5MqvkUnu2OSnjt1LkIBf5VufAplnCJC/
+ m2jMqllwW93M91BydfUAw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:H0Ecz/ctCws=:qA7hK+RyuDUndr+rW+7SpC
+ DrvfkzNbjln6bwVh2BFZOQ5zGhpOdm0w/9CgQIyihWtoTzGR2SKHpYTlvRglIQbGptkSNDsKN
+ lNb/FrfLV4f4pa8/5pTpJLi/0ROAf2fSVm00bSz1mcuEx67y8xOaoQFr3D8pS/3YaViLRiEBd
+ gjMQ5zfMYS1NsYo7FQRQbmC40qcDC3MIaR2GMOYQ6ul+bTjbT3x8nQp9ovv2Ekmj7pDBq8yl3
+ mw/+WmTIMA3rTW3g65eMfSf3Kh1AgetiYeXMgPjr1EIvgHtaWBDhZEgpBS0K0lfdTnL/0aVGE
+ WHLds0K1ft0DKzj+ErTb0M0UB84yPiuW64AzgiQdvhmb3H1FlFMudUfvZjOHiE7J6KkCk2FIz
+ 15u5J+j5DKPkSMYdIjR5vxSZ0X/w5bxb8PuWrSmV3GnhWd2t6OqDQH6KnE8c70K9f2UtsO/Vp
+ BVDKVGenTrGxUuhwoxwydw2toaSzPKWDcEhQeuaCU9qDuCNRnze3A1MVAE+961Z5B9jT78W9T
+ klxz/D1Zv9MeMgDqhNgkTVoNgXr5zPnEKecBo2fT/p3wbgYFpZQzEY6borHx35QVjbSfptgmK
+ 5mh8dZ7yAJj4YZAN+lUGTJBMgm1bfoTa+Y
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Apr 08, 2021 at 01:38:17PM +0200, Daniel Vetter wrote:
+On Thu, Apr 8, 2021 at 6:45 PM David Hildenbrand <david@redhat.com> wrote:
+> On 08.04.21 14:49, Linus Walleij wrote:
+> > On Thu, Apr 8, 2021 at 2:01 PM David Hildenbrand <david@redhat.com> wrote:
+> >
+> >>> This is something you could do using a hidden helper symbol like
+> >>>
+> >>> config DRMA_ASPEED_GFX
+> >>>          bool "Aspeed display driver"
+> >>>          select DRM_WANT_CMA
+> >>>
+> >>> config DRM_WANT_CMA
+> >>>          bool
+> >>>          help
+> >>>             Select this from any driver that benefits from CMA being enabled
+> >>>
+> >>> config DMA_CMA
+> >>>          bool "Use CMA helpers for DRM"
+> >>>          default DRM_WANT_CMA
+> >>>
+> >>>            Arnd
+> >>>
+> >>
+> >> That's precisely what I had first, with an additional "WANT_CMA" --  but
+> >> looking at the number of such existing options (I was able to spot 1 !)
+> >
+> > If you do this it probably makes sense to fix a few other drivers
+> > Kconfig in the process. It's not just a problem with your driver.
+> > "my" drivers:
+> >
+>
+> :) I actually wanted to convert them to "depends on DMA_CMA" but ran
+> into recursive dependencies ...
+>
+> > drivers/gpu/drm/mcde/Kconfig
+> > drivers/gpu/drm/pl111/Kconfig
+> > drivers/gpu/drm/tve200/Kconfig
 
-> If you want to change this, we need automatic conflict resolution like apt
-> and other package managers have, with suggestions how to fix the config if
-> you want to enable a driver, but some of its requirements are missing. The
-> current approach of hiding driver symbols complete if any of their
-> dependencies are off is really not great.
+Right, this is the main problem caused by using 'select' to
+force-enable symbols that other drivers depend on.
 
-+1 to this.. 
+Usually, the answer is to be consistent about the use of 'select'
+and 'depends on', using the former only to enable symbols that
+are hidden, while using 'depends on' for anything that is an
+actual build time dependency.
 
-Though Kconfig is basically already unusuable unless you have hours to
-carefully craft the kconfig you need to get out.
+> I was assuming these are "real" dependencies. Will it also work without
+> DMA_CMA?
 
-I'm not sure trying to optimize this by abusing the existing language
-rules is such a good idea.
+I think in this case, it is fairly likely to work without DMA_CMA when the
+probe function gets called during a fresh boot, but fairly likely to fail if
+it gets called after the system has run for long enough to fragment the
+free memory.
 
-I gave a very half hearted go at a simple heuristic solution solve for
-kconfig a while ago. It is good enough to sometimes automate a kconfig
-task, but it is not so nice.
+The point of DMA_CMA is to make it work reliably.
 
-I use it to do things like "turn on all RDMA drivers" which is quite
-a hard to do by hand.
-
-It looks liked heursitics need a lot of fine tuning as the
-conditionals are complex enough that it is hard to guess which branch
-is going to yield a success.
-
-Jason
+      Arnd

@@ -2,42 +2,49 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6E5CC433B4
-	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 10:21:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33E08C433B4
+	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 10:27:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 88C7861164
-	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 10:21:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F040F61164
+	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 10:27:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229714AbhDHKVW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 8 Apr 2021 06:21:22 -0400
-Received: from mout.kundenserver.de ([212.227.126.135]:60941 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229517AbhDHKVU (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 8 Apr 2021 06:21:20 -0400
-Received: from mail-oi1-f169.google.com ([209.85.167.169]) by
- mrelayeu.kundenserver.de (mreue010 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1MQdpG-1lFWE61c3C-00Nj76; Thu, 08 Apr 2021 12:21:08 +0200
-Received: by mail-oi1-f169.google.com with SMTP id i81so1626652oif.6;
-        Thu, 08 Apr 2021 03:21:08 -0700 (PDT)
-X-Gm-Message-State: AOAM530sxuF05PDzT2jBOo8M3i32n8pLJVhYSCLGHVlZwWmzFIxsyOgu
-        dNiMGjq03FgkfiZH3DknYTLX/D52Qg6jKSjzCnM=
-X-Google-Smtp-Source: ABdhPJy3jeKTxPcNwfngsbvoonksh80soCCHxiz4gKJ4G+0Fm3IstMzm5ZSVa0dFJZ+2JUBZ8yF1Sx9mjNQUOlISLnU=
-X-Received: by 2002:a05:6808:3d9:: with SMTP id o25mr5654228oie.4.1617877267082;
- Thu, 08 Apr 2021 03:21:07 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210408092011.52763-1-david@redhat.com> <20210408092011.52763-3-david@redhat.com>
-In-Reply-To: <20210408092011.52763-3-david@redhat.com>
-From:   Arnd Bergmann <arnd@arndb.de>
-Date:   Thu, 8 Apr 2021 12:20:50 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
-Message-ID: <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
+        id S231134AbhDHK1a (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 8 Apr 2021 06:27:30 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:42119 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S231126AbhDHK12 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 8 Apr 2021 06:27:28 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1617877636;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=5SgLDhmec/hRbace8E5HPCEtL8OCI8oMc6uREL2v7zo=;
+        b=c8rB41SYwy/M7ocN/3M84MyjkkB4U8GB1QVjJqhCYzzWbvYmXxcJB/i5rtaOJALZUJZDrN
+        G399rckpqP/du74HqMiD6QkNEUqGtrO1ALShQhj8nf1HgskQXzQjMm/SeViALrDfBfKDUg
+        H/pNYESaUC9DyFCT6wRa1QsEbg9gW78=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-501-cXUDpcIhOCqLL1mrwS6w2A-1; Thu, 08 Apr 2021 06:27:12 -0400
+X-MC-Unique: cXUDpcIhOCqLL1mrwS6w2A-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com [10.5.11.12])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 4E75410053E6;
+        Thu,  8 Apr 2021 10:27:08 +0000 (UTC)
+Received: from [10.36.114.231] (ovpn-114-231.ams2.redhat.com [10.36.114.231])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 4337060C0F;
+        Thu,  8 Apr 2021 10:27:03 +0000 (UTC)
 Subject: Re: [PATCH v1 2/2] drivers/gpu/drm: don't select DMA_CMA or CMA from
  aspeed or etnaviv
-To:     David Hildenbrand <david@redhat.com>
+To:     Arnd Bergmann <arnd@arndb.de>
 Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Linux-MM <linux-mm@kvack.org>, Joel Stanley <joel@jms.id.au>,
         David Airlie <airlied@linux.ie>,
@@ -58,49 +65,69 @@ Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Linux ARM <linux-arm-kernel@lists.infradead.org>,
         The etnaviv authors <etnaviv@lists.freedesktop.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:HYWuExe01cF59zwb7JFXEVWaI54v42eJ6tJQybH8gWFDHJxeBaC
- loL5xqMuS4QapORYDUtQIowlQjAz1wBbhLbigSUsH7gdX06+xx8dYPIrRUefUs4E18xhccd
- siCnxPqx3br3xy5SxDCES1JOPH+CPxLWbi7H3JdQEmMrnAQqJSBy6TaZVP2tCza2UaFgKEr
- NeCaqDyf4S3pbaerotdpA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:7kdEQ9WMOGE=:ludBy7ITFhUJW/Tf2bRp7J
- UgYmiM9UzaGV6JgHN48Udsf6ozTMG+ohcgyhy0UXCVf4NWM2j/XdhPdcMj8f1bDQg7ohvl4AA
- DU2tzHUhQMA4Egj5JKwEVppz1BuMc6pzHmiMBPQKbiRrj3N0TghDkav3cpsPEkoLN210A62MM
- cYf5h1cAtR34rtLe1h+VGJiSCwOtjAyG1rtdNLaNrob5EKC+Tu5rFq4StWb+dudTFGcuo9w6U
- HrWhOG+moSMVqquib4IG3nhwM2/W71Wvn3Bo3yKR8GlGt5yQP97HpOrf8j5fqqwq/5tV5WrIC
- 7hTK5uqPL1oZKA0EmX0wGV806hyFL4n+x0BChnhyoVlE6f8Ln5IXx54Qgy7So3BBWMMSFLbJI
- G90jn4Q1qmB5NwchaN8/JtyvndbhuEvjGj8l3C1KBrrReBtQvfqHAHGD4lDP12qt3p52aCeVA
- DeroMFGxUcAPOMV1ZUH6pfmoTfBCIc8ZoYDnro+gEu8s5iE00yuPzHqUi/SMFUB1pbZW2sw96
- GvgapO+jocqevyRsM1tgmRtk8Dxym8qbzpyN+qD0UG6yrb6VxmCabJuGM5/oIZGeKk5760eiv
- 5h1MiIqWlVHythk+mXyRcz5aTpr4mARlkf
+References: <20210408092011.52763-1-david@redhat.com>
+ <20210408092011.52763-3-david@redhat.com>
+ <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
+From:   David Hildenbrand <david@redhat.com>
+Organization: Red Hat GmbH
+Message-ID: <cd14d4b4-da82-b21c-2cd6-8e474d97b955@redhat.com>
+Date:   Thu, 8 Apr 2021 12:27:02 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
+MIME-Version: 1.0
+In-Reply-To: <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Apr 8, 2021 at 11:22 AM David Hildenbrand <david@redhat.com> wrote:
->
-> Random drivers should not override a user configuration of core knobs
-> (e.g., CONFIG_DMA_CMA=n). Use "imply" instead, to still respect
-> dependencies and manual overrides.
->
-> "This is similar to "select" as it enforces a lower limit on another
->  symbol except that the "implied" symbol's value may still be set to n
->  from a direct dependency or with a visible prompt."
->
-> Implying DRM_CMA should be sufficient, as that depends on CMA.
->
-> Note: If this is a real dependency, we should use "depends on DMA_CMA"
-> instead -  but I assume the driver can work without CMA just fine --
-> esp. when we wouldn't have HAVE_DMA_CONTIGUOUS right now.
+On 08.04.21 12:20, Arnd Bergmann wrote:
+> On Thu, Apr 8, 2021 at 11:22 AM David Hildenbrand <david@redhat.com> wrote:
+>>
+>> Random drivers should not override a user configuration of core knobs
+>> (e.g., CONFIG_DMA_CMA=n). Use "imply" instead, to still respect
+>> dependencies and manual overrides.
+>>
+>> "This is similar to "select" as it enforces a lower limit on another
+>>   symbol except that the "implied" symbol's value may still be set to n
+>>   from a direct dependency or with a visible prompt."
+>>
+>> Implying DRM_CMA should be sufficient, as that depends on CMA.
+>>
+>> Note: If this is a real dependency, we should use "depends on DMA_CMA"
+>> instead -  but I assume the driver can work without CMA just fine --
+>> esp. when we wouldn't have HAVE_DMA_CONTIGUOUS right now.
+> 
+> 'imply' is almost never the right solution, and it tends to cause more
+> problems than it solves.
 
-'imply' is almost never the right solution, and it tends to cause more
-problems than it solves.
+I thought that was the case with "select" :)
 
-In particular, it does not prevent a configuration with 'DRM_CMA=m'
-and 'DRMA_ASPEED_GFX=y', or any build failures from such
-a configuration.
+> 
+> In particular, it does not prevent a configuration with 'DRM_CMA=m'
 
-If you want this kind of soft dependency, you need
-'depends on DRM_CMA || !DRM_CMA'.
+I assume you meant "DRM_CMA=n" ? DRM_CMA cannot be built as a module.
 
-         Arnd
+> and 'DRMA_ASPEED_GFX=y', or any build failures from such
+> a configuration.
+
+I don't follow. "DRM_CMA=n" and 'DRMA_ASPEED_GFX=y' is supposed to work 
+just fine (e.g., without HAVE_DMA_CONTIGUOUS) or what am I missing?
+
+> 
+> If you want this kind of soft dependency, you need
+> 'depends on DRM_CMA || !DRM_CMA'.
+
+Seriously? I think the point of imply is "please enable if possible and 
+not prevented by someone else". Your example looks more like a NOP - no? 
+Or will it have the same effect?
+
+
+-- 
+Thanks,
+
+David / dhildenb
+

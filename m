@@ -2,47 +2,50 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5483C433B4
-	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 13:19:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C653C433ED
+	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 16:44:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7A126610CB
-	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 13:19:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 02090610D1
+	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 16:44:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229964AbhDHNTu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 8 Apr 2021 09:19:50 -0400
-Received: from mout.kundenserver.de ([217.72.192.74]:35519 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229741AbhDHNTu (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 8 Apr 2021 09:19:50 -0400
-Received: from mail-oi1-f177.google.com ([209.85.167.177]) by
- mrelayeu.kundenserver.de (mreue107 [213.165.67.113]) with ESMTPSA (Nemesis)
- id 1MdeKd-1m3YL2141x-00ZfPn; Thu, 08 Apr 2021 15:19:37 +0200
-Received: by mail-oi1-f177.google.com with SMTP id x2so2135702oiv.2;
-        Thu, 08 Apr 2021 06:19:36 -0700 (PDT)
-X-Gm-Message-State: AOAM5325plcV8cW0pNg1cEVA/yI0jN6GcHvkfWjBhgNShnI/Ix5ZQdMb
-        EDc0i2+YgF2AKDsmVBAavTmt7L/1TqqLnnMriuo=
-X-Google-Smtp-Source: ABdhPJzHb7t36K8Eh3/YW98i9jFFwt105TSLCljFkAhUwPloRFuMsDPsNoXrOsOYqi1vkp97GaHnIbSFi7HvVPlRimE=
-X-Received: by 2002:a05:6808:313:: with SMTP id i19mr5867255oie.67.1617887975911;
- Thu, 08 Apr 2021 06:19:35 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210408092011.52763-1-david@redhat.com> <20210408092011.52763-3-david@redhat.com>
- <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
- <cd14d4b4-da82-b21c-2cd6-8e474d97b955@redhat.com> <CAK8P3a0Wg1mGZoBkD_RwMx-jzQNK2krrDxDQV5uhCHoyz-e=dw@mail.gmail.com>
- <7496ac87-9676-1b4e-3444-c2a662ec376b@redhat.com> <CAK8P3a1tVwkDbtvKi8atkrg1-CfoQHGrXLCzn_uo+=dfZJfdQA@mail.gmail.com>
- <3a2d64a7-8425-8daf-17ee-95b9f0c635f9@redhat.com> <CACRpkdYizKGhtYzE+22oZAduLNCOGP9Vbp=LQbXG1C-a+MyMcg@mail.gmail.com>
-In-Reply-To: <CACRpkdYizKGhtYzE+22oZAduLNCOGP9Vbp=LQbXG1C-a+MyMcg@mail.gmail.com>
-From:   Arnd Bergmann <arnd@arndb.de>
-Date:   Thu, 8 Apr 2021 15:19:19 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a2Wu7tT-YajfdXSSVvg5MYMEnEy3APJ83DcLeJdGkkSrQ@mail.gmail.com>
-Message-ID: <CAK8P3a2Wu7tT-YajfdXSSVvg5MYMEnEy3APJ83DcLeJdGkkSrQ@mail.gmail.com>
+        id S231480AbhDHQou (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 8 Apr 2021 12:44:50 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:53404 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S232023AbhDHQou (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 8 Apr 2021 12:44:50 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1617900278;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=VfhnCQAyCfEthQPScFLk5+XhVK1UjdBG138qICZvuow=;
+        b=ar0/Ev9C0RCZwi438X39cNfOMLl1aBxWyLAyi6OyKjc/zmU21i8LPN6N//W+yq4FJzONLH
+        4bNCvaseHH+G98bKUZPu2XxiX4jNnubPWEEZJnpEkiC2wbd0vRl6off2h9mF0ecii+Kn54
+        wndNFJqgSqM1p/J1PSyOJyr7ZUDhsiY=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-153-x1HZ9uJoOgSGPofB8dKw8A-1; Thu, 08 Apr 2021 12:44:34 -0400
+X-MC-Unique: x1HZ9uJoOgSGPofB8dKw8A-1
+Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com [10.5.11.11])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id DA2FB801814;
+        Thu,  8 Apr 2021 16:44:30 +0000 (UTC)
+Received: from [10.36.113.26] (ovpn-113-26.ams2.redhat.com [10.36.113.26])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 63A0A60636;
+        Thu,  8 Apr 2021 16:44:24 +0000 (UTC)
 Subject: Re: [PATCH v1 2/2] drivers/gpu/drm: don't select DMA_CMA or CMA from
  aspeed or etnaviv
 To:     Linus Walleij <linus.walleij@linaro.org>
-Cc:     David Hildenbrand <david@redhat.com>,
+Cc:     Arnd Bergmann <arnd@arndb.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Linux-MM <linux-mm@kvack.org>, Joel Stanley <joel@jms.id.au>,
         David Airlie <airlied@linux.ie>,
@@ -62,65 +65,80 @@ Cc:     David Hildenbrand <david@redhat.com>,
         Linux ARM <linux-arm-kernel@lists.infradead.org>,
         The etnaviv authors <etnaviv@lists.freedesktop.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:9Bi1GcZUabLvLIcpGf703kW71as+Zj0GIqb+tueq5ZGRzccsQbH
- QPSOV/f5P+7HU9/8riwOK4l+oMn93qaNiGvkKQsuw6gg+DVeNDJWn9VldXZEBTWhhSawOuv
- 4b5wQeJGl38TcLxoRO40zrplN7LjQOWx2TRhQmxF9Y8cA2zLTLbmRPuVUbcu4nRn3wB8eWX
- dd8SY6Kz51dqe8Celk2Pw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:MXnR8ADf6+g=:w0F9nTQidogO6icGFYdtXN
- 3zMpmydVLLrQ5o7Z2jOT0gusfoeol0NoCM5KPVI4vMp6eJDk4IxSBSKeSAc93oThWJX1l2gEV
- 4pNmCxDf6lw6Z5ADvdvId7hqigkqRrjgSrRSsD3Y8JSCibJDBKBugNJm4HeWuxOdW07+tpuW4
- VA3d93DrSD+vJ+O25whCrCUiTTEHAq4WFLqJjkkaDQgRmFN1G6M4+UHMlYEe/86CPFYDcBMSe
- yYS1LTH4gMxGSrEOmDWr2wT65ShIQSJ/3voyt5UhqxvhTnZ7Evo1R6N6NAAfZDpjzJ65JaGQc
- c2ABMzSN5HJqbeqVYw0f5W7Cu6ATus/Y77pJCeMQG6vO48l7tzTfk76lIh9YvOgc1XfsZY7rb
- 0O8r5hkQPfk6/De0yWZwjSHe5s1wBnuLl3x82l7STN3ZoJ6L+ff99VdSd+oq54RUuELehh1Fu
- lSE7Nse/TpmReRASE6g/aNGdd47eSME=
+References: <20210408092011.52763-1-david@redhat.com>
+ <20210408092011.52763-3-david@redhat.com>
+ <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
+ <cd14d4b4-da82-b21c-2cd6-8e474d97b955@redhat.com>
+ <CAK8P3a0Wg1mGZoBkD_RwMx-jzQNK2krrDxDQV5uhCHoyz-e=dw@mail.gmail.com>
+ <7496ac87-9676-1b4e-3444-c2a662ec376b@redhat.com>
+ <CAK8P3a1tVwkDbtvKi8atkrg1-CfoQHGrXLCzn_uo+=dfZJfdQA@mail.gmail.com>
+ <3a2d64a7-8425-8daf-17ee-95b9f0c635f9@redhat.com>
+ <CACRpkdYizKGhtYzE+22oZAduLNCOGP9Vbp=LQbXG1C-a+MyMcg@mail.gmail.com>
+From:   David Hildenbrand <david@redhat.com>
+Organization: Red Hat GmbH
+Message-ID: <2ef3b65c-c0ef-7bbe-0e05-39ee8f2bae48@redhat.com>
+Date:   Thu, 8 Apr 2021 18:44:23 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.8.1
+MIME-Version: 1.0
+In-Reply-To: <CACRpkdYizKGhtYzE+22oZAduLNCOGP9Vbp=LQbXG1C-a+MyMcg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Apr 8, 2021 at 2:50 PM Linus Walleij <linus.walleij@linaro.org> wrote:
->
+On 08.04.21 14:49, Linus Walleij wrote:
 > On Thu, Apr 8, 2021 at 2:01 PM David Hildenbrand <david@redhat.com> wrote:
->
-> > > This is something you could do using a hidden helper symbol like
-> > >
-> > > config DRMA_ASPEED_GFX
-> > >         bool "Aspeed display driver"
-> > >         select DRM_WANT_CMA
-> > >
-> > > config DRM_WANT_CMA
-> > >         bool
-> > >         help
-> > >            Select this from any driver that benefits from CMA being enabled
-> > >
-> > > config DMA_CMA
-> > >         bool "Use CMA helpers for DRM"
-> > >         default DRM_WANT_CMA
-> > >
-> > >           Arnd
-> > >
-> >
-> > That's precisely what I had first, with an additional "WANT_CMA" --  but
-> > looking at the number of such existing options (I was able to spot 1 !)
->
+> 
+>>> This is something you could do using a hidden helper symbol like
+>>>
+>>> config DRMA_ASPEED_GFX
+>>>          bool "Aspeed display driver"
+>>>          select DRM_WANT_CMA
+>>>
+>>> config DRM_WANT_CMA
+>>>          bool
+>>>          help
+>>>             Select this from any driver that benefits from CMA being enabled
+>>>
+>>> config DMA_CMA
+>>>          bool "Use CMA helpers for DRM"
+>>>          default DRM_WANT_CMA
+>>>
+>>>            Arnd
+>>>
+>>
+>> That's precisely what I had first, with an additional "WANT_CMA" --  but
+>> looking at the number of such existing options (I was able to spot 1 !)
+> 
 > If you do this it probably makes sense to fix a few other drivers
 > Kconfig in the process. It's not just a problem with your driver.
 > "my" drivers:
->
+> 
+
+:) I actually wanted to convert them to "depends on DMA_CMA" but ran 
+into recursive dependencies ...
+
 > drivers/gpu/drm/mcde/Kconfig
 > drivers/gpu/drm/pl111/Kconfig
 > drivers/gpu/drm/tve200/Kconfig
->
+
+I was assuming these are "real" dependencies. Will it also work without 
+DMA_CMA?
+
+> 
 > certainly needs this as well, and pretty much anything that is
 > selecting DRM_KMS_CMA_HELPER or
 > DRM_GEM_CMA_HELPER "wants" DMA_CMA.
 
-Are there any that don't select either of the helpers and
-still want CMA? If not, it would be easy to just add
+"wants" as in "desires to use but can life without" or "wants" as in 
+"really needs it". ?
 
-   default  DRM_KMS_CMA_HELPER || DRM_GEM_CMA_HELPER
+-- 
+Thanks,
 
-and skipt the extra symbol.
+David / dhildenb
 
-        Arnd

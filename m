@@ -2,77 +2,109 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EB67C433B4
-	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 09:17:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FAD4C433B4
+	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 09:20:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 381296113A
-	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 09:17:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2A2D061155
+	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 09:20:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229686AbhDHJRj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 8 Apr 2021 05:17:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39786 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229603AbhDHJRi (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 8 Apr 2021 05:17:38 -0400
-Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B05E3C061760;
-        Thu,  8 Apr 2021 02:17:27 -0700 (PDT)
-Received: by mail-pj1-x1029.google.com with SMTP id i4so800668pjk.1;
-        Thu, 08 Apr 2021 02:17:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=date:from:to:subject:message-id:mime-version:content-disposition;
-        bh=3mu2tgSjeO8kAVzp1TsCINDeAL4xZ2nSQTlFe4YLtTA=;
-        b=Q2DOlAeE25xirlQIVu5MqdlYUXnkzzHice1uOMGrS2vhGvC+fBot5hS5rc7qHxpwhw
-         4BcxuXLji6ORs+7mmgdaGq6aB7qPRJ6S4fjoPzPkf4jaOVAodJSwbCrYJfmmCmmhZ8qL
-         H9j1jJpHogvqOW/c/Pll/LipELBeyBnf6kpzocrxo8lNe7zPYI40jwuiLdrdhfGtdJ8z
-         2E6gSneC9Sxoo+9EoYBhlZnPlj1HeGGtT0MVuHYgx7IEV8WULa1XhCwTdPWGZ/JgrOqX
-         0u0crnClnqHZaNx3VN5W4BhOtSmeAm40NoQRPFj0RZka+iaBIIeFrJqbwqYILGN8HItx
-         gHEw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:subject:message-id:mime-version
-         :content-disposition;
-        bh=3mu2tgSjeO8kAVzp1TsCINDeAL4xZ2nSQTlFe4YLtTA=;
-        b=XKhySXFsnftPI/w6qUJYBwcm/JXiz8Lkc6+yCaKIkbPzSabs0zUt1xrFqWPKliCRIr
-         FuEE7a7x1RGNZT4u4gZuK19v8X6+tr1cI8NWjWV0rtHcpjwxwFSOkfk867iaXITWRZXL
-         PNY7djL4XIGEx37/oYw4/AzXBw+D9OvhTGgbaYOsE29uFCwp688wwnKHqCd7Bq5VDfiR
-         dZuZ3DdZ1eKHMS2v/iVxYjjdqWxgdSsF7hXKRKdBUCpjM8LdL6uzn3IMXmwRMoF+GtcI
-         iKJ8Tli2rZuxJk/RssTgmQwZG8od3nfEPNlacqFoWu9M9CQgfk1CjHal68cqAPJWRmbQ
-         bDoA==
-X-Gm-Message-State: AOAM5332PYukWcsohJqRJMghU/8KIXlGdk5J8w/2AMbElzsZj8pu12Ei
-        nD4kG3Jijoro6CzzkZuN+wudp06F1Ss+6A==
-X-Google-Smtp-Source: ABdhPJz6EWrSHYrC3lLKoIkpxc7TxjVAqcqhnexSFarvAreG36tjZCUsesDGdy4iPUCVwyjHEIk0kw==
-X-Received: by 2002:a17:90a:890f:: with SMTP id u15mr7369430pjn.25.1617873447113;
-        Thu, 08 Apr 2021 02:17:27 -0700 (PDT)
-Received: from localhost.localdomain ([134.173.248.5])
-        by smtp.gmail.com with ESMTPSA id 12sm23771545pgw.18.2021.04.08.02.17.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Apr 2021 02:17:26 -0700 (PDT)
-Date:   Thu, 8 Apr 2021 02:17:24 -0700
-From:   Pavle Rohalj <pavle.rohalj@gmail.com>
-To:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: sm750fb: Question about dviInit from ddk750_dvi.(c|h)
-Message-ID: <YG7KJDoolmQRhZsd@localhost.localdomain>
+        id S230360AbhDHJUl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 8 Apr 2021 05:20:41 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:57853 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S230291AbhDHJUj (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 8 Apr 2021 05:20:39 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1617873626;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=xi+SJ2y8OUpO9Dgd14jmOpXRcdTjW75h13/jnB6Tiaw=;
+        b=NFt/O2EBpC+63RWu7wZrkGfDXCS2jqZhnF4egzOnO8Kc+nRjTqcPOxeY5HFTPzJIB46+Vc
+        u4H1pRQ8LzgR4AjK9mAT2x+W3oj7EI16Lfo87QUgqmjetR61f7/NmNCu8BgBPpvNJSBfJ1
+        i1hQHDeP3Z8vzqrs/2s+YipvedMvTLE=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-14-nm4yEbb9OtS8KFrAGWrqtw-1; Thu, 08 Apr 2021 05:20:24 -0400
+X-MC-Unique: nm4yEbb9OtS8KFrAGWrqtw-1
+Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com [10.5.11.11])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 9E60E81431F;
+        Thu,  8 Apr 2021 09:20:20 +0000 (UTC)
+Received: from t480s.redhat.com (ovpn-114-231.ams2.redhat.com [10.36.114.231])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id EF8272C169;
+        Thu,  8 Apr 2021 09:20:11 +0000 (UTC)
+From:   David Hildenbrand <david@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     linux-mm@kvack.org, David Hildenbrand <david@redhat.com>,
+        Joel Stanley <joel@jms.id.au>, David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Andrew Jeffery <andrew@aj.id.au>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Mike Rapoport <rppt@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Michal Simek <michal.simek@xilinx.com>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Peter Collingbourne <pcc@google.com>,
+        linux-aspeed@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org,
+        etnaviv@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH v1 0/2] drivers: don't select DMA_CMA or CMA
+Date:   Thu,  8 Apr 2021 11:20:09 +0200
+Message-Id: <20210408092011.52763-1-david@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-I was working on some checkpatch fixes for ddk750_dvi.h and ddk750_dvi.c
-when I noticed that dviInit function does not seem to be invoked in any
-of the files that belong to this driver and can be removed. Am I missing something?
+Trying to set CONFIG_CMA=y with CONFIG_DMA_CMA=n revealed that we have
+three drivers that select these options. Random drivers should not
+override user settings of such core knobs. Let's use "imply DMA_CMA"
+instead, such that user configuration and dependencies are respected.
 
-Thank you,
-Pavle
+Cc: Joel Stanley <joel@jms.id.au>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Russell King <linux+etnaviv@armlinux.org.uk>
+Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
+Cc: Mike Rapoport <rppt@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Michal Simek <michal.simek@xilinx.com>
+Cc: Masahiro Yamada <masahiroy@kernel.org>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Peter Collingbourne <pcc@google.com>
+Cc: linux-aspeed@lists.ozlabs.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: etnaviv@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+
+David Hildenbrand (2):
+  drivers/video/fbdev: don't select DMA_CMA
+  drivers/gpu/drm: don't select DMA_CMA or CMA from aspeed or etnaviv
+
+ drivers/gpu/drm/aspeed/Kconfig  | 3 +--
+ drivers/gpu/drm/etnaviv/Kconfig | 3 +--
+ drivers/video/fbdev/Kconfig     | 2 +-
+ 3 files changed, 3 insertions(+), 5 deletions(-)
+
+-- 
+2.30.2
+

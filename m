@@ -2,32 +2,54 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2F30C433ED
-	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 20:29:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4B9DC433ED
+	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 21:45:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A45BB61159
-	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 20:29:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A9DFC610CF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  8 Apr 2021 21:45:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232156AbhDHU3r (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 8 Apr 2021 16:29:47 -0400
-Received: from mout.kundenserver.de ([212.227.126.135]:36493 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231451AbhDHU3r (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 8 Apr 2021 16:29:47 -0400
-Received: from mail-ot1-f52.google.com ([209.85.210.52]) by
- mrelayeu.kundenserver.de (mreue010 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1MN5S1-1lBYKG1VzB-00J4Sz; Thu, 08 Apr 2021 22:29:33 +0200
-Received: by mail-ot1-f52.google.com with SMTP id s16-20020a0568301490b02901b83efc84a0so3565046otq.10;
-        Thu, 08 Apr 2021 13:29:33 -0700 (PDT)
-X-Gm-Message-State: AOAM533IzKuF6xVPdGPXgaJ7d9hCS2usV+irVM3gy6KKTf9iL1J8S5mx
-        2SKJHagcAFjDp9gEb0Q3LJna/pICxMjoOcw0F+w=
-X-Google-Smtp-Source: ABdhPJyfPECLeLOF/Bs3NvQ2GDzKFAUyLZwtkCfbxO3pPqunDWbqv1JOjJ/RM4Y98JdJ7lIhjCGjr/ZYV8r3IjuTvvw=
-X-Received: by 2002:a05:6830:148c:: with SMTP id s12mr9613770otq.251.1617913771943;
- Thu, 08 Apr 2021 13:29:31 -0700 (PDT)
+        id S232532AbhDHVps (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 8 Apr 2021 17:45:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35070 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232488AbhDHVps (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 8 Apr 2021 17:45:48 -0400
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1787AC061761
+        for <linux-fbdev@vger.kernel.org>; Thu,  8 Apr 2021 14:45:36 -0700 (PDT)
+Received: by mail-lf1-x12a.google.com with SMTP id b4so6409146lfi.6
+        for <linux-fbdev@vger.kernel.org>; Thu, 08 Apr 2021 14:45:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=8MVBTVTbGflc/UsLhIwl2nRzF2EsRH8eZ0QlPXqs5ps=;
+        b=Zk2v3nSMdaCm5adH4aHswvLKgEBKklbkCPH2zPgIVKp64w70n2axR/qGDplIQ0OZ0n
+         HLegwMCSSCAxIt8LPsDPeA7J+lV2LnPtLiSNhLWjp/m3yDKXUPRvs0hxnHugTRrpsB6U
+         uiiThswQsEAPRovlktmLYn49OPrRupsH66VDSzbKlxFr/Wn44w766AsgYLN7vrCHZLyR
+         Uur3yAtqGAhF8O/MxSPYa1P5Yxp+6YntEF7We62ytpY0VEX1MNQUtmH/O+iMLbWa2H+y
+         yeUIQCjgCMD2v6FVfHm061JaiZ7pmmjnI2REqJ3G0vMQF8z8vVWj0AbKZlNKPI0hg/VG
+         eF2A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=8MVBTVTbGflc/UsLhIwl2nRzF2EsRH8eZ0QlPXqs5ps=;
+        b=lFd9f1/37NKUTN6rqVNJHuFJzpIJjQ45VLb5ZxfIVBsras10r+us2u5XNaRQu7+d7p
+         bCVBIG0ALqgJcN54XyOQE+obfl7I+oIY64RR4TYkYPcxpBDmV8DhK61UlA1Btc02gIie
+         DmFd6q5qdLoOIQ+qIdlvEGhPCNh3Y+sRweuZPklBEPdWdRe7Te9Nai3gKpdNBLGRReQ1
+         D4XLR5MVaEmCTlbixYR4Iha4ly6j2064sJf1GIQz/Q1UJ9X/KqtgueTcMg1bv5lJos8f
+         0Nub0lawR4FhINUfEOrxPS1FsQAQkZs70eUUS2gW1a3fALzlSOe+X9bJUR6chiv3Nf1Q
+         Z2sA==
+X-Gm-Message-State: AOAM5335+rr3H4j7+zr1Ty98mZ75hMDZ2H/aJnEy9HkP3Tz8qDmBQPOd
+        8V4z61x6Caqu1BHLoZbU9VK+FxAPheTeMcCajP7BuA==
+X-Google-Smtp-Source: ABdhPJwOR1qaBP0hkaYoeDA9UZM861Q2LgMU2bP4wenXDG9wfbiuruw1rThn3wnUQVO3cDtDB82sQHZzPUH6KOtdfMo=
+X-Received: by 2002:a19:ef18:: with SMTP id n24mr8062945lfh.291.1617918334556;
+ Thu, 08 Apr 2021 14:45:34 -0700 (PDT)
 MIME-Version: 1.0
 References: <20210408092011.52763-1-david@redhat.com> <20210408092011.52763-3-david@redhat.com>
  <CAK8P3a09LdJ-87ZrN28y=t8Sa0zL-3NOvEWhkStMY+2EbO7UAw@mail.gmail.com>
@@ -36,14 +58,13 @@ References: <20210408092011.52763-1-david@redhat.com> <20210408092011.52763-3-da
  <3a2d64a7-8425-8daf-17ee-95b9f0c635f9@redhat.com> <CACRpkdYizKGhtYzE+22oZAduLNCOGP9Vbp=LQbXG1C-a+MyMcg@mail.gmail.com>
  <2ef3b65c-c0ef-7bbe-0e05-39ee8f2bae48@redhat.com>
 In-Reply-To: <2ef3b65c-c0ef-7bbe-0e05-39ee8f2bae48@redhat.com>
-From:   Arnd Bergmann <arnd@arndb.de>
-Date:   Thu, 8 Apr 2021 22:29:15 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a3sqZBo8-zye1yiZuD2uMUr0oE_q_QfaK9K54TEgd1Cdw@mail.gmail.com>
-Message-ID: <CAK8P3a3sqZBo8-zye1yiZuD2uMUr0oE_q_QfaK9K54TEgd1Cdw@mail.gmail.com>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Thu, 8 Apr 2021 23:45:23 +0200
+Message-ID: <CACRpkdbMLBzG_Q=-XzjsWvpofHyRv7sdB697mHLaRu4F=+GC-g@mail.gmail.com>
 Subject: Re: [PATCH v1 2/2] drivers/gpu/drm: don't select DMA_CMA or CMA from
  aspeed or etnaviv
 To:     David Hildenbrand <david@redhat.com>
-Cc:     Linus Walleij <linus.walleij@linaro.org>,
+Cc:     Arnd Bergmann <arnd@arndb.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Linux-MM <linux-mm@kvack.org>, Joel Stanley <joel@jms.id.au>,
         David Airlie <airlied@linux.ie>,
@@ -64,77 +85,35 @@ Cc:     Linus Walleij <linus.walleij@linaro.org>,
         The etnaviv authors <etnaviv@lists.freedesktop.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:fqqdWmjqgGPSFQNtx2u/McZyT6vettSJXcSMUXMdN/UJ3fO/C9u
- C3+w9mdOt4mQnuWGysw7m9929aavPF/zq24mhsaz2oIdLqqZAN+M4e0Zm2WDlTAKavRVS2r
- HgcKqJyA+81sEB8853g3CkXCGiRlfiC+d+BYheY5MqvkUnu2OSnjt1LkIBf5VufAplnCJC/
- m2jMqllwW93M91BydfUAw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:H0Ecz/ctCws=:qA7hK+RyuDUndr+rW+7SpC
- DrvfkzNbjln6bwVh2BFZOQ5zGhpOdm0w/9CgQIyihWtoTzGR2SKHpYTlvRglIQbGptkSNDsKN
- lNb/FrfLV4f4pa8/5pTpJLi/0ROAf2fSVm00bSz1mcuEx67y8xOaoQFr3D8pS/3YaViLRiEBd
- gjMQ5zfMYS1NsYo7FQRQbmC40qcDC3MIaR2GMOYQ6ul+bTjbT3x8nQp9ovv2Ekmj7pDBq8yl3
- mw/+WmTIMA3rTW3g65eMfSf3Kh1AgetiYeXMgPjr1EIvgHtaWBDhZEgpBS0K0lfdTnL/0aVGE
- WHLds0K1ft0DKzj+ErTb0M0UB84yPiuW64AzgiQdvhmb3H1FlFMudUfvZjOHiE7J6KkCk2FIz
- 15u5J+j5DKPkSMYdIjR5vxSZ0X/w5bxb8PuWrSmV3GnhWd2t6OqDQH6KnE8c70K9f2UtsO/Vp
- BVDKVGenTrGxUuhwoxwydw2toaSzPKWDcEhQeuaCU9qDuCNRnze3A1MVAE+961Z5B9jT78W9T
- klxz/D1Zv9MeMgDqhNgkTVoNgXr5zPnEKecBo2fT/p3wbgYFpZQzEY6borHx35QVjbSfptgmK
- 5mh8dZ7yAJj4YZAN+lUGTJBMgm1bfoTa+Y
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Apr 8, 2021 at 6:45 PM David Hildenbrand <david@redhat.com> wrote:
-> On 08.04.21 14:49, Linus Walleij wrote:
-> > On Thu, Apr 8, 2021 at 2:01 PM David Hildenbrand <david@redhat.com> wrote:
-> >
-> >>> This is something you could do using a hidden helper symbol like
-> >>>
-> >>> config DRMA_ASPEED_GFX
-> >>>          bool "Aspeed display driver"
-> >>>          select DRM_WANT_CMA
-> >>>
-> >>> config DRM_WANT_CMA
-> >>>          bool
-> >>>          help
-> >>>             Select this from any driver that benefits from CMA being enabled
-> >>>
-> >>> config DMA_CMA
-> >>>          bool "Use CMA helpers for DRM"
-> >>>          default DRM_WANT_CMA
-> >>>
-> >>>            Arnd
-> >>>
-> >>
-> >> That's precisely what I had first, with an additional "WANT_CMA" --  but
-> >> looking at the number of such existing options (I was able to spot 1 !)
-> >
-> > If you do this it probably makes sense to fix a few other drivers
-> > Kconfig in the process. It's not just a problem with your driver.
-> > "my" drivers:
-> >
->
-> :) I actually wanted to convert them to "depends on DMA_CMA" but ran
-> into recursive dependencies ...
->
+On Thu, Apr 8, 2021 at 6:44 PM David Hildenbrand <david@redhat.com> wrote:
+
 > > drivers/gpu/drm/mcde/Kconfig
 > > drivers/gpu/drm/pl111/Kconfig
 > > drivers/gpu/drm/tve200/Kconfig
-
-Right, this is the main problem caused by using 'select' to
-force-enable symbols that other drivers depend on.
-
-Usually, the answer is to be consistent about the use of 'select'
-and 'depends on', using the former only to enable symbols that
-are hidden, while using 'depends on' for anything that is an
-actual build time dependency.
-
+>
 > I was assuming these are "real" dependencies. Will it also work without
 > DMA_CMA?
 
-I think in this case, it is fairly likely to work without DMA_CMA when the
-probe function gets called during a fresh boot, but fairly likely to fail if
-it gets called after the system has run for long enough to fragment the
-free memory.
+It will mostly work but that is only because the reservations are
+mostly contiguous anyway because they are done early and
+are small. The hardware requires contiguous buffers in all
+three cases. I'm not sure I always got it right.
 
-The point of DMA_CMA is to make it work reliably.
+> > certainly needs this as well, and pretty much anything that is
+> > selecting DRM_KMS_CMA_HELPER or
+> > DRM_GEM_CMA_HELPER "wants" DMA_CMA.
+>
+> "wants" as in "desires to use but can life without" or "wants" as in
+> "really needs it". ?
 
-      Arnd
+I don't know the exact semantics of using DRM_KMS_CMA*
+without actually using DMA_CMA. I suspect small allocations
+will be contiguous and big allocations will start to fragment?
+but it's just my guess. I guess "really need it"?
+
+Yours,
+Linus Walleij

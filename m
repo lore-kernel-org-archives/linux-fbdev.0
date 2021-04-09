@@ -2,172 +2,75 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 022FAC433ED
-	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Apr 2021 13:40:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A511C433B4
+	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Apr 2021 16:41:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C585C610E5
-	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Apr 2021 13:40:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 697C36108B
+	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Apr 2021 16:41:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232642AbhDINkU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 9 Apr 2021 09:40:20 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:25071 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S231946AbhDINkU (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 9 Apr 2021 09:40:20 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1617975606;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=lsrzJwlfstULCCREnSPVP3WRVuSyvEw5HXvTFd2r4do=;
-        b=OMtcyd0Ey8henN7DdHOa64TG6+RcQ3yQtd9qJqu4fIbwhvuSElxbzysNjju/dUo5Tg7ydo
-        MlYxJSNpyADshpWO3/0QogVaZ3JdMf3ol84JxmiAetnJVVMvG4GV3wa3TtZ+fewuLtpPJ5
-        jJArafTsuWFRRzZd2bJyiA+Iiq6zuQ4=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-143-3MzYaf2pNUSmKJKsGUehFg-1; Fri, 09 Apr 2021 09:40:02 -0400
-X-MC-Unique: 3MzYaf2pNUSmKJKsGUehFg-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com [10.5.11.11])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id CB324C73AD;
-        Fri,  9 Apr 2021 13:39:57 +0000 (UTC)
-Received: from [10.36.115.11] (ovpn-115-11.ams2.redhat.com [10.36.115.11])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id E60C619801;
-        Fri,  9 Apr 2021 13:39:48 +0000 (UTC)
-Subject: Re: [PATCH v3] drivers: introduce and use WANT_DMA_CMA for soft
- dependencies on DMA_CMA
-To:     Arnd Bergmann <arnd@arndb.de>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux-MM <linux-mm@kvack.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>, Joel Stanley <joel@jms.id.au>,
-        Andrew Jeffery <andrew@aj.id.au>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Russell King <linux+etnaviv@armlinux.org.uk>,
-        Christian Gmeiner <christian.gmeiner@gmail.com>,
-        Paul Cercueil <paul@crapouillou.net>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Christoph Hellwig <hch@lst.de>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Robin Murphy <robin.murphy@arm.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Mike Rapoport <rppt@kernel.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Eric Anholt <eric@anholt.net>,
-        Michal Simek <michal.simek@xilinx.com>,
-        Masahiro Yamada <masahiroy@kernel.org>,
-        "Alexander A. Klimov" <grandmaster@al2klimov.de>,
-        Peter Collingbourne <pcc@google.com>,
-        Suman Anna <s-anna@ti.com>, Jason Gunthorpe <jgg@ziepe.ca>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        linux-aspeed <linux-aspeed@lists.ozlabs.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        The etnaviv authors <etnaviv@lists.freedesktop.org>,
-        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        "open list:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>
-References: <20210409112035.27221-1-david@redhat.com>
- <CAK8P3a31uKNcim0n99=yt3zjZ+LQSw4V4+8PS8daLsBdS0iSYg@mail.gmail.com>
-From:   David Hildenbrand <david@redhat.com>
-Organization: Red Hat GmbH
-Message-ID: <53ec94ac-ffe3-d0bc-d081-3489fa03daa1@redhat.com>
-Date:   Fri, 9 Apr 2021 15:39:47 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.8.1
+        id S234091AbhDIQlu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 9 Apr 2021 12:41:50 -0400
+Received: from mga03.intel.com ([134.134.136.65]:52343 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229665AbhDIQlo (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 9 Apr 2021 12:41:44 -0400
+IronPort-SDR: I8hNrpxm/BI4dmXMMsV9I5sfBaMBh16F8XajCmxlxiid3ZpyDO7JGC5RUNkiTgwIx99Adm24cS
+ 8tmpQeYIZyIg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9949"; a="193838014"
+X-IronPort-AV: E=Sophos;i="5.82,209,1613462400"; 
+   d="scan'208";a="193838014"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Apr 2021 09:41:31 -0700
+IronPort-SDR: jRjMIhkQHwFvaGBbqRIpkcEqBHXTBK1ZYjfu2iqnia4QHR1yZRXaNTpCqUoIm5SXJKUGVMFEWs
+ 3JMikjRXdnOA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.82,209,1613462400"; 
+   d="scan'208";a="520337221"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by fmsmga001.fm.intel.com with ESMTP; 09 Apr 2021 09:41:28 -0700
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+        id E6399FC; Fri,  9 Apr 2021 19:41:44 +0300 (EEST)
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Masahiro Yamada <masahiroy@kernel.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 1/1] video: ssd1307fb: Drop OF dependency
+Date:   Fri,  9 Apr 2021 19:41:40 +0300
+Message-Id: <20210409164140.17337-1-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a31uKNcim0n99=yt3zjZ+LQSw4V4+8PS8daLsBdS0iSYg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 09.04.21 15:35, Arnd Bergmann wrote:
-> On Fri, Apr 9, 2021 at 1:21 PM David Hildenbrand <david@redhat.com> wrote:
->>
->> Random drivers should not override a user configuration of core knobs
->> (e.g., CONFIG_DMA_CMA=n). Applicable drivers would like to use DMA_CMA,
->> which depends on CMA, if possible; however, these drivers also have to
->> tolerate if DMA_CMA is not available/functioning, for example, if no CMA
->> area for DMA_CMA use has been setup via "cma=X". In the worst case, the
->> driver cannot do it's job properly in some configurations.
->>
->> For example, commit 63f5677544b3 ("drm/etnaviv: select CMA and DMA_CMA if
->> available") documents
->>          While this is no build dependency, etnaviv will only work correctly
->>          on most systems if CMA and DMA_CMA are enabled. Select both options
->>          if available to avoid users ending up with a non-working GPU due to
->>          a lacking kernel config.
->> So etnaviv really wants to have DMA_CMA, however, can deal with some cases
->> where it is not available.
->>
->> Let's introduce WANT_DMA_CMA and use it in most cases where drivers
->> select CMA/DMA_CMA, or depend on DMA_CMA (in a wrong way via CMA because
->> of recursive dependency issues).
->>
->> We'll assume that any driver that selects DRM_GEM_CMA_HELPER or
->> DRM_KMS_CMA_HELPER would like to use DMA_CMA if possible.
->>
->> With this change, distributions can disable CONFIG_CMA or
->> CONFIG_DMA_CMA, without it silently getting enabled again by random
->> drivers. Also, we'll now automatically try to enabled both, CONFIG_CMA
->> and CONFIG_DMA_CMA if they are unspecified and any driver is around that
->> selects WANT_DMA_CMA -- also implicitly via DRM_GEM_CMA_HELPER or
->> DRM_KMS_CMA_HELPER.
->>
->> For example, if any driver selects WANT_DMA_CMA and we do a
->> "make olddefconfig":
->>
->> 1. With "# CONFIG_CMA is not set" and no specification of
->>     "CONFIG_DMA_CMA"
->>
->> -> CONFIG_DMA_CMA won't be part of .config
->>
->> 2. With no specification of CONFIG_CMA or CONFIG_DMA_CMA
->>
->> Contiguous Memory Allocator (CMA) [Y/n/?] (NEW)
->> DMA Contiguous Memory Allocator (DMA_CMA) [Y/n/?] (NEW)
->>
->> 3. With "# CONFIG_CMA is not set" and "# CONFIG_DMA_CMA is not set"
->>
->> -> CONFIG_DMA_CMA will be removed from .config
->>
->> Note: drivers/remoteproc seems to be special; commit c51e882cd711
->> ("remoteproc/davinci: Update Kconfig to depend on DMA_CMA") explains that
->> there is a real dependency to DMA_CMA for it to work; leave that dependency
->> in place and don't convert it to a soft dependency.
-> 
-> I don't think this dependency is fundamentally different from the others,
-> though davinci machines tend to have less memory than a lot of the
-> other machines, so it's more likely to fail without CMA.
-> 
+After the commit 72915994e028 ("video: ssd1307fb: Make use of device
+properties") driver does not depend on OF, drop unneeded dependency.
 
-I was also unsure - and Lucas had similar thoughts. If you want, I can 
-send a v4 also taking care of this.
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/video/fbdev/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-Thanks!
-
-> Regardless of this,
-> 
-> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-> 
-
-
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 4f02db65dede..7506b5949eb0 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2209,7 +2209,6 @@ config FB_SIMPLE
+ config FB_SSD1307
+ 	tristate "Solomon SSD1307 framebuffer support"
+ 	depends on FB && I2C
+-	depends on OF
+ 	depends on GPIOLIB || COMPILE_TEST
+ 	select FB_SYS_FOPS
+ 	select FB_SYS_FILLRECT
 -- 
-Thanks,
-
-David / dhildenb
+2.30.2
 

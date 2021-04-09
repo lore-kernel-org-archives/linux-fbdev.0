@@ -2,66 +2,45 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC3C7C433B4
-	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Apr 2021 12:36:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D136EC433B4
+	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Apr 2021 13:35:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CC28461106
-	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Apr 2021 12:36:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AD32F60241
+	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Apr 2021 13:35:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233470AbhDIMgT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 9 Apr 2021 08:36:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59990 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233108AbhDIMgS (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 9 Apr 2021 08:36:18 -0400
-Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F7A2C061762
-        for <linux-fbdev@vger.kernel.org>; Fri,  9 Apr 2021 05:36:05 -0700 (PDT)
-Received: by mail-lj1-x22b.google.com with SMTP id s17so6257166ljc.5
-        for <linux-fbdev@vger.kernel.org>; Fri, 09 Apr 2021 05:36:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Tg6sgY5o6KJ5S57CRLT5oBYc675XGvjvO0a75IDhy4M=;
-        b=tD/+WsHQQWYusIiNpWcK7bwWVSNKlMLnyRF8CoJ3CZhMIHxMdvtXVATkH2bY6CsvV6
-         4EeqLJcMu8Lx6dXjIGijM9Z71Ysw7FoPhIt4pVwzFK6l7vQQG0p8gmVQcZtmvl5D6mmc
-         vnQ4vXPZDk4T7ERYAIs5HJIK9/rMwsb/PGlIkgHlPxrLJNQV9qOSD2eFT+qGhgN9rW/v
-         i+5TnZ7zezyrlf0LjEA3nkURPCbcKV3D0THgJHWfMYiU94A6/Dnr2CLqYXHUaZSeUV9C
-         jYnvEDTnSyDvM2CCXvtBaB8N7OxfbX9Umv48J+Clvg4cWNbqEuv5MYIvFfkzoLNaHZdC
-         sk4w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Tg6sgY5o6KJ5S57CRLT5oBYc675XGvjvO0a75IDhy4M=;
-        b=OZQZM+d+MnJSotMw8KnG3kb2bUkejGIPRc3GiUrEJEOjoDdzBwtAzHThurJrWgMtGy
-         4LRQgX4K4qvhM3illUa4qaQzVG6R9+86cyksBJ2W48glCFozrFt0YxvHIo3xnx3QP0xG
-         z7nad1AdeeSaa241ciiYQ210HkOClKTO0w258nzRjA7UOLQCMpwKtHugMo5fk3yD4Kio
-         I5IEoIY4CcEcg2TsMq07EWuyLlsWUb+OEgBQRjtoA9nhVYijivcPEWQMqNebnjlzgOMV
-         3s/45Wzucvybz6vHJuwOZlu6hpJQKC/VTaDSh2qCBjONfXNtrrLxR7l7YaJpBvmjrbra
-         fdNQ==
-X-Gm-Message-State: AOAM532U5YkqW2R6+NSYz3b6BypbJDPpsaGmCVCh5Gjr4J9ZqkhmHRfQ
-        5T7ZWjvJsEWjs9jrzhWOm+JWdfmpJfbUQBx8VLtfFQ==
-X-Google-Smtp-Source: ABdhPJxh1RNVQiQp5bCHRakekzyhAZR4aqS7papfBzgGL0DdgK61i7YYHDZZLT+jLT3UuH+d/zlCtwSkkzSHByUlUhw=
-X-Received: by 2002:a2e:1649:: with SMTP id 9mr9682701ljw.74.1617971763963;
- Fri, 09 Apr 2021 05:36:03 -0700 (PDT)
+        id S231819AbhDINff (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 9 Apr 2021 09:35:35 -0400
+Received: from mout.kundenserver.de ([212.227.17.10]:60757 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231127AbhDINff (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 9 Apr 2021 09:35:35 -0400
+Received: from mail-ot1-f46.google.com ([209.85.210.46]) by
+ mrelayeu.kundenserver.de (mreue109 [213.165.67.113]) with ESMTPSA (Nemesis)
+ id 1MKKd7-1lHJaB3nAt-00Lmj3; Fri, 09 Apr 2021 15:35:21 +0200
+Received: by mail-ot1-f46.google.com with SMTP id k14-20020a9d7dce0000b02901b866632f29so5711168otn.1;
+        Fri, 09 Apr 2021 06:35:20 -0700 (PDT)
+X-Gm-Message-State: AOAM532xvLKvGNL2LF61vwvwtwLHReYP9333LL2z5p1rlYjdMf69CKzw
+        fSpUfUYdMVyq9818UN5Y7dhxe7yzwRDpnGLAGHc=
+X-Google-Smtp-Source: ABdhPJynlbx4kLNikSNjAjnCb5vtFq6G/850R+R5+xWMARHqWLy+tfY7F0Z+Hrp7Hz4KWDmPvvGBCrUcX4hM8LkZWnk=
+X-Received: by 2002:a9d:758b:: with SMTP id s11mr12240759otk.305.1617975319390;
+ Fri, 09 Apr 2021 06:35:19 -0700 (PDT)
 MIME-Version: 1.0
 References: <20210409112035.27221-1-david@redhat.com>
 In-Reply-To: <20210409112035.27221-1-david@redhat.com>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Fri, 9 Apr 2021 14:35:52 +0200
-Message-ID: <CACRpkdb_eQrcCFV9Q9uho8E6HO4X0dRJp1qAdJBcT82=sZ1v7A@mail.gmail.com>
+From:   Arnd Bergmann <arnd@arndb.de>
+Date:   Fri, 9 Apr 2021 15:35:03 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a31uKNcim0n99=yt3zjZ+LQSw4V4+8PS8daLsBdS0iSYg@mail.gmail.com>
+Message-ID: <CAK8P3a31uKNcim0n99=yt3zjZ+LQSw4V4+8PS8daLsBdS0iSYg@mail.gmail.com>
 Subject: Re: [PATCH v3] drivers: introduce and use WANT_DMA_CMA for soft
  dependencies on DMA_CMA
 To:     David Hildenbrand <david@redhat.com>
-Cc:     linux-kernel <linux-kernel@vger.kernel.org>,
-        Linux Memory Management List <linux-mm@kvack.org>,
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux-MM <linux-mm@kvack.org>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
@@ -72,11 +51,12 @@ Cc:     linux-kernel <linux-kernel@vger.kernel.org>,
         Russell King <linux+etnaviv@armlinux.org.uk>,
         Christian Gmeiner <christian.gmeiner@gmail.com>,
         Paul Cercueil <paul@crapouillou.net>,
+        Linus Walleij <linus.walleij@linaro.org>,
         Christoph Hellwig <hch@lst.de>,
         Marek Szyprowski <m.szyprowski@samsung.com>,
         Robin Murphy <robin.murphy@arm.com>,
         Andrew Morton <akpm@linux-foundation.org>,
-        Mike Rapoport <rppt@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Mike Rapoport <rppt@kernel.org>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
         Eric Anholt <eric@anholt.net>,
         Michal Simek <michal.simek@xilinx.com>,
@@ -84,49 +64,88 @@ Cc:     linux-kernel <linux-kernel@vger.kernel.org>,
         "Alexander A. Klimov" <grandmaster@al2klimov.de>,
         Peter Collingbourne <pcc@google.com>,
         Suman Anna <s-anna@ti.com>, Jason Gunthorpe <jgg@ziepe.ca>,
-        "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
         linux-aspeed <linux-aspeed@lists.ozlabs.org>,
         Linux ARM <linux-arm-kernel@lists.infradead.org>,
         The etnaviv authors <etnaviv@lists.freedesktop.org>,
-        linux-mips@vger.kernel.org,
+        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
-        Roedel <joro@8bytes.org>," <iommu@lists.linux-foundation.org>
+        "open list:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>
 Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:/7zXw/c1UfESlEruqAGXS8UzIHuJI2NxiDK7tVwMgfdq4wYKuFS
+ 6pXkdJchhga4+TmhN9Ms++pwBTz9yL9aKgjVvkvHHvhiWjciAWR+WA3f421jDGE5exNDCzr
+ Zk5rhoQb9IDWjo/pGPYYeB2HOtt/KqEOaWYPozig6+QzGPuhVphXpUk/7G2o29IHNdPUcek
+ fajs/Hllr8UunECmkMm7A==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:Ug59u7F3OJQ=:3IXoa0MamCC3tSceenqEE6
+ Q79+SXOGJ/h7Ykjqa6HuOBjWxBa8k1io25xcFGxpQDn5WLf5vIQ04Q7VygmOtvaDZU34kLSWx
+ 3WtRiTo6IJMGXSre12X0/Tp6Yzk7E81VxdfylZacU9F8rwfU8fpA5K5e8gx8N/QAE4FZLg6AW
+ 5wU9f6mF6tQuLiyMAonPYwaVG0slmNcPh447tFDuIc9sQPklyKSNEBzRsSoFxmvPmWWASKKEW
+ BblFUNyAg6zFxLiQZeahg/nmKUn//83+AutMsoa5nDPJmO8xSe6MIyetduAmheLONxu5JJYfG
+ p/TpJ6nkCuxUfDqGueDOCICsT7xcRKuQNdCODZhVZCmHt5oVXblvQQTU8RpfzPbN19SXMoLRb
+ EbiTZbIFeHKKv5M++TMmBAT4T2WFokbdEyo5UT1cFpUmNgeCCizy7OXCSouDqXcv6yGaHGiuo
+ g9Ph9lviL6CiZVSiRw51AcD+QMmrz2o=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Apr 9, 2021 at 1:20 PM David Hildenbrand <david@redhat.com> wrote:
-
+On Fri, Apr 9, 2021 at 1:21 PM David Hildenbrand <david@redhat.com> wrote:
+>
 > Random drivers should not override a user configuration of core knobs
 > (e.g., CONFIG_DMA_CMA=n). Applicable drivers would like to use DMA_CMA,
 > which depends on CMA, if possible; however, these drivers also have to
 > tolerate if DMA_CMA is not available/functioning, for example, if no CMA
 > area for DMA_CMA use has been setup via "cma=X". In the worst case, the
 > driver cannot do it's job properly in some configurations.
+>
+> For example, commit 63f5677544b3 ("drm/etnaviv: select CMA and DMA_CMA if
+> available") documents
+>         While this is no build dependency, etnaviv will only work correctly
+>         on most systems if CMA and DMA_CMA are enabled. Select both options
+>         if available to avoid users ending up with a non-working GPU due to
+>         a lacking kernel config.
+> So etnaviv really wants to have DMA_CMA, however, can deal with some cases
+> where it is not available.
+>
+> Let's introduce WANT_DMA_CMA and use it in most cases where drivers
+> select CMA/DMA_CMA, or depend on DMA_CMA (in a wrong way via CMA because
+> of recursive dependency issues).
+>
+> We'll assume that any driver that selects DRM_GEM_CMA_HELPER or
+> DRM_KMS_CMA_HELPER would like to use DMA_CMA if possible.
+>
+> With this change, distributions can disable CONFIG_CMA or
+> CONFIG_DMA_CMA, without it silently getting enabled again by random
+> drivers. Also, we'll now automatically try to enabled both, CONFIG_CMA
+> and CONFIG_DMA_CMA if they are unspecified and any driver is around that
+> selects WANT_DMA_CMA -- also implicitly via DRM_GEM_CMA_HELPER or
+> DRM_KMS_CMA_HELPER.
+>
+> For example, if any driver selects WANT_DMA_CMA and we do a
+> "make olddefconfig":
+>
+> 1. With "# CONFIG_CMA is not set" and no specification of
+>    "CONFIG_DMA_CMA"
+>
+> -> CONFIG_DMA_CMA won't be part of .config
+>
+> 2. With no specification of CONFIG_CMA or CONFIG_DMA_CMA
+>
+> Contiguous Memory Allocator (CMA) [Y/n/?] (NEW)
+> DMA Contiguous Memory Allocator (DMA_CMA) [Y/n/?] (NEW)
+>
+> 3. With "# CONFIG_CMA is not set" and "# CONFIG_DMA_CMA is not set"
+>
+> -> CONFIG_DMA_CMA will be removed from .config
+>
+> Note: drivers/remoteproc seems to be special; commit c51e882cd711
+> ("remoteproc/davinci: Update Kconfig to depend on DMA_CMA") explains that
+> there is a real dependency to DMA_CMA for it to work; leave that dependency
+> in place and don't convert it to a soft dependency.
 
-Looks good to me. At least a lot better than what we have.
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+I don't think this dependency is fundamentally different from the others,
+though davinci machines tend to have less memory than a lot of the
+other machines, so it's more likely to fail without CMA.
 
-> Let's see if this approach is better for soft dependencies (and if we
-> actually have some hard dependencies in there). This is the follow-up
-> of
->   https://lkml.kernel.org/r/20210408092011.52763-1-david@redhat.com
->   https://lkml.kernel.org/r/20210408100523.63356-1-david@redhat.com
+Regardless of this,
 
-You can just add these to the commit message with Link:
-when applying so people can easily find the discussion from the
-commit.
-
-> I was wondering if it would make sense in some drivers to warn if either
-> CONFIG_DMA_CMA is not available or if DRM_CMA has not been configured
-> properly - just to give people a heads up that something might more likely
-> go wrong; that would, however, be future work.
-
-I think the frameworks  (DRM_*_CMA_HELPER)
-should pr_info something about it so the individual drivers
-don't have to sanity check their entire world.
-
-Yours,
-Linus Walleij
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>

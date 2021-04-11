@@ -2,185 +2,145 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4E76C433ED
-	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Apr 2021 22:40:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13D90C433ED
+	for <linux-fbdev@archiver.kernel.org>; Sun, 11 Apr 2021 21:43:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6CE80611BF
-	for <linux-fbdev@archiver.kernel.org>; Fri,  9 Apr 2021 22:40:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C5895610C8
+	for <linux-fbdev@archiver.kernel.org>; Sun, 11 Apr 2021 21:43:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235088AbhDIWkp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 9 Apr 2021 18:40:45 -0400
-Received: from elvis.franken.de ([193.175.24.41]:37276 "EHLO elvis.franken.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234960AbhDIWko (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 9 Apr 2021 18:40:44 -0400
-Received: from uucp (helo=alpha)
-        by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
-        id 1lUznc-00038n-02; Sat, 10 Apr 2021 00:40:24 +0200
-Received: by alpha.franken.de (Postfix, from userid 1000)
-        id EDAA4C24FC; Sat, 10 Apr 2021 00:39:11 +0200 (CEST)
-Date:   Sat, 10 Apr 2021 00:39:11 +0200
-From:   Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc:     Alexander Lobakin <alobakin@pm.me>, Wei Liu <wei.liu@kernel.org>,
-        Rasmus Villemoes <linux@rasmusvillemoes.dk>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Christian Brauner <christian.brauner@ubuntu.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Kees Cook <keescook@chromium.org>,
-        Mike Rapoport <rppt@kernel.org>,
-        Corey Minyard <cminyard@mvista.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        "Jason J. Herne" <jjherne@linux.ibm.com>,
-        Joerg Roedel <jroedel@suse.de>,
-        Michael Kelley <mikelley@microsoft.com>,
-        Joe Perches <joe@perches.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Scott Branden <scott.branden@broadcom.com>,
-        Olof Johansson <olof@lixom.net>,
-        Mihai Carabas <mihai.carabas@oracle.com>,
-        Wang Wenhu <wenhu.wang@vivo.com>,
-        Marek Czerski <ma.czerski@gmail.com>,
-        Hongbo Yao <yaohongbo@huawei.com>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Vineeth Vijayan <vneethv@linux.ibm.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Peter Oberparleiter <oberpar@linux.ibm.com>,
-        Alexander Egorenkov <egorenar@linux.ibm.com>,
+        id S235543AbhDKVoH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 11 Apr 2021 17:44:07 -0400
+Received: from angie.orcam.me.uk ([157.25.102.26]:38708 "EHLO
+        angie.orcam.me.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231405AbhDKVoH (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Sun, 11 Apr 2021 17:44:07 -0400
+Received: by angie.orcam.me.uk (Postfix, from userid 500)
+        id BAD2692009C; Sun, 11 Apr 2021 23:43:48 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+        by angie.orcam.me.uk (Postfix) with ESMTP id B342192009B;
+        Sun, 11 Apr 2021 23:43:48 +0200 (CEST)
+Date:   Sun, 11 Apr 2021 23:43:48 +0200 (CEST)
+From:   "Maciej W. Rozycki" <macro@orcam.me.uk>
+To:     Greg KH <gregkh@linuxfoundation.org>
+cc:     Martin Hostettler <textshell@uchuujin.de>,
         Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Vlastimil Babka <vbabka@suse.cz>,
-        "Paul E. McKenney" <paulmck@kernel.org>,
-        "Steven Rostedt (VMware)" <rostedt@goodmis.org>,
-        linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
-        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
-        linux-um@lists.infradead.org, linux-hyperv@vger.kernel.org,
-        xen-devel@lists.xenproject.org, linux-xtensa@linux-xtensa.org,
-        openipmi-developer@lists.sourceforge.net,
-        linux-clk@vger.kernel.org, linux-edac@vger.kernel.org,
-        coresight@lists.linaro.org, linux-leds@vger.kernel.org,
-        bcm-kernel-feedback-list@broadcom.com, netdev@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
-        linux-staging@lists.linux.dev, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-arch@vger.kernel.org,
-        kexec@lists.infradead.org, rcu@vger.kernel.org,
-        linux-fsdevel@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
-        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-        Matt Turner <mattst88@gmail.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>,
-        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-        Helge Deller <deller@gmx.de>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Christian Borntraeger <borntraeger@de.ibm.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Jeff Dike <jdike@addtoit.com>,
-        Richard Weinberger <richard@nod.at>,
-        Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-        "K. Y. Srinivasan" <kys@microsoft.com>,
-        Haiyang Zhang <haiyangz@microsoft.com>,
-        Stephen Hemminger <sthemmin@microsoft.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Juergen Gross <jgross@suse.com>,
-        Stefano Stabellini <sstabellini@kernel.org>,
-        Chris Zankel <chris@zankel.net>,
-        Max Filippov <jcmvbkbc@gmail.com>,
-        Corey Minyard <minyard@acm.org>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Dinh Nguyen <dinguyen@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Tony Luck <tony.luck@intel.com>,
-        James Morse <james.morse@arm.com>,
-        Robert Richter <rric@kernel.org>,
-        Suzuki K Poulose <suzuki.poulose@arm.com>,
-        Mike Leach <mike.leach@linaro.org>,
-        Leo Yan <leo.yan@linaro.org>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Pavel Machek <pavel@ucw.cz>, Alex Elder <elder@kernel.org>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Ohad Ben-Cohen <ohad@wizery.com>,
-        Jens Frederich <jfrederich@gmail.com>,
-        Daniel Drake <dsd@laptop.org>,
-        Jon Nettleton <jon.nettleton@gmail.com>,
-        Eric Biederman <ebiederm@xmission.com>,
-        Josh Triplett <josh@joshtriplett.org>,
-        Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-        Lai Jiangshan <jiangshanlai@gmail.com>,
-        Joel Fernandes <joel@joelfernandes.org>,
-        Luis Chamberlain <mcgrof@kernel.org>,
-        Iurii Zaikin <yzaikin@google.com>,
-        Mike Rapoport <rppt@linux.ibm.com>
-Subject: Re: [PATCH v2 1/1] kernel.h: Split out panic and oops helpers
-Message-ID: <20210409223911.GA21445@alpha.franken.de>
-References: <20210409100250.25922-1-andriy.shevchenko@linux.intel.com>
+        jirislaby@kernel.org, Peilin Ye <yepeilin.cs@gmail.com>,
+        syzbot <syzbot+b308f5fd049fbbc6e74f@syzkaller.appspotmail.com>,
+        b.zolnierkie@samsung.com, deller@gmx.de,
+        syzkaller-bugs@googlegroups.com,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        George Kennedy <george.kennedy@oracle.com>
+Subject: Re: [PATCH] vt_ioctl: make VT_RESIZEX behave like VT_RESIZE
+In-Reply-To: <20200929171040.GB1351851@kroah.com>
+Message-ID: <alpine.DEB.2.21.2104112250310.65251@angie.orcam.me.uk>
+References: <000000000000226d3f05b02dd607@google.com> <bbcef674-4ac6-c933-b55d-8961ada97f4c@i-love.sakura.ne.jp> <47907f77-b14b-b433-45c6-a315193f0c1a@i-love.sakura.ne.jp> <494395bc-a7dd-fdb1-8196-a236a266ef54@i-love.sakura.ne.jp> <20200927092701.GA1037755@PWN>
+ <4933b81b-9b1a-355b-df0e-9b31e8280ab9@i-love.sakura.ne.jp> <20200928175956.GF24673@neutronstar.dyndns.org> <100dfd3f-3415-80ae-a6cf-30d15f7ca49f@i-love.sakura.ne.jp> <20200929105203.GG24673@neutronstar.dyndns.org> <20200929165657.GS438822@phenom.ffwll.local>
+ <20200929171040.GB1351851@kroah.com>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210409100250.25922-1-andriy.shevchenko@linux.intel.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=US-ASCII
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Apr 09, 2021 at 01:02:50PM +0300, Andy Shevchenko wrote:
-> kernel.h is being used as a dump for all kinds of stuff for a long time.
-> Here is the attempt to start cleaning it up by splitting out panic and
-> oops helpers.
-> 
-> There are several purposes of doing this:
-> - dropping dependency in bug.h
-> - dropping a loop by moving out panic_notifier.h
-> - unload kernel.h from something which has its own domain
-> 
-> At the same time convert users tree-wide to use new headers, although
-> for the time being include new header back to kernel.h to avoid twisted
-> indirected includes for existing users.
-> 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> Acked-by: Mike Rapoport <rppt@linux.ibm.com>
-> Acked-by: Corey Minyard <cminyard@mvista.com>
-> Acked-by: Christian Brauner <christian.brauner@ubuntu.com>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
-> Acked-by: Kees Cook <keescook@chromium.org>
-> Acked-by: Wei Liu <wei.liu@kernel.org>
-> Acked-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> v2:
->  - fixed all errors with allmodconfig on x86_64 (Andrew)
->  - checked with allyesconfig on x86_64
->  - additionally grepped source code for panic notifier list usage
->    and converted all users
->  - elaborated commit message (Luis)
->  - collected given tags (incl. Andrew's SoB, see below)
-> 
-> I added Andrew's SoB since part of the fixes I took from him. Andrew,
-> feel free to amend or tell me how you want me to do.
-> 
->  arch/mips/kernel/relocate.c                   |  1 +
->  arch/mips/sgi-ip22/ip22-reset.c               |  1 +
->  arch/mips/sgi-ip32/ip32-reset.c               |  1 +
+On Tue, 29 Sep 2020, Greg KH wrote:
 
-Acked-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> > > > >> VT_RESIZEX was introduced in Linux 1.3.3, but it is unclear that what
+> > > > >> comes to the "+ more" part, and I couldn't find a user of VT_RESIZEX.
+> > > > >>
+> > > > > 
+> > > > > It seems this is/was used by "svgatextmode" which seems to be at
+> > > > > http://www.ibiblio.org/pub/Linux/utils/console/
+> > > > > 
+> > > > > Not sure if that kind of software still has a chance to work nowadays.
+> > > > > 
+> > > > 
+> > > > Thanks for the information.
+> > > > 
+> > > > It seems that v.v_vlin = curr_textmode->VDisplay / (MOFLG_ISSET(curr_textmode, ATTR_DOUBLESCAN) ? 2 : 1)
+> > > > and v.v_clin = curr_textmode->FontHeight . Thus, v.v_clin is font's height and seems to be non-zero.
+> > > > But according to https://bugs.gentoo.org/19485 , people are using kernel framebuffer instead.
+> > > > 
+> > > 
+> > > Yes, this seems to be from pre framebuffer times.
+> > > 
+> > > Back in the days "svga" was the wording you got for "pokes svga card
+> > > hardware registers from userspace drivers". And textmode means font
+> > > rendering is done via (fixed function in those times) hardware scanout
+> > > engine. Of course having only to update 2 bytes per character was a huge
+> > > saving early on. Likely this is also before vesa VBE was reliable.
+> > > 
+> > > So i guess the point where this all starts going wrong allowing the X parts
+> > > of the api to be combined with FB based rendering at all? Sounds the only
+> > > user didn't use that combination and so it was never tested?
+> > > 
+> > > Then again, this all relates to hardware from 20 years ago...
+> > 
+> > Imo userspace modesetting should be burned down anywhere we can. We've
+> > gotten away with this in drivers/gpu by just seamlessly transitioning to
+> > kernel drivers.
+> > 
+> > Since th only userspace we've found seems to be able to cope if this ioctl
+> > doesn't do anything, my vote goes towards ripping it out completely and
+> > doing nothing in there. Only question is whether we should error or fail
+> > with a silent success: Former is safer, latter can avoid a few regression
+> > reports since the userspace tools keep "working", and usually people don't
+> > notice for stuff this old. It worked in drivers/gpu :-)
+> 
+> This patch just ignores the ioctl and keeps on going, so userspace
+> "shouldn't" notice it :)
+> 
+> And it's in linux-next now, so all should be good.
 
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
-good idea.                                                [ RFC1925, 2.3 ]
+ So it does trigger with vgacon and my old server, which I have started 
+experimenting with and for a start I have switched to a new kernel for an 
+unrelated purpose (now that I have relieved it from all its usual tasks 
+except for the last remaining one for which I haven't got the required 
+user software ported to the new system yet):
+
+"struct vt_consize"->v_vlin is ignored. Please report if you need this.
+"struct vt_consize"->v_clin is ignored. Please report if you need this.
+
+It continues using svgatextmode with its glass (CRT) VT to set my usual 
+80x37 text mode (720x576 pixel resolution) by manipulating the VGA clock 
+chip and the CRT controller appropriately for a nice refresh rate of 85Hz:
+
+Chipset = `TVGA8900', Textmode clock = 44.90 MHz, 80x37 chars, CharCell = 9x16. Refresh = 52.51kHz/84.7Hz.
+
+ Indeed the piece of software became less usable around Y2K as clock chip 
+support stopped being added to svgatextmode for new video adapters, but 
+with the advent of LCD technology and its disregard for the refresh rate 
+previously driven by the pixel clock the program got its second life and I 
+have used it ever since with its plain VGA driver by just manipulating the 
+CRTC for the resolution required:
+
+Chipset = `VGA', Textmode clock = 28.32 MHz, 80x37 chars, CharCell = 9x16. Refresh = 31.47kHz/49.0Hz.
+
+(that would still work with a standard 800x600 SVGA CRT, but the refresh 
+rate would make anyone's eyes cry soon; with LCD it's just awesome, and 
+the VGA emulation of the actual graphics adapter turns it at the video 
+output into a 1600x1200 picture at the horizontal and vertical rates of 
+75KHz and 60Hz respectively, making the text produced on LCD outstanding 
+while showing about the right amount of it).
+
+ But I'm currently ~160km/100mi away from the server I have triggered this 
+message with, so I cannot easily check what's going on with its VT.  And I 
+can't fiddle with my production laptop (ThinkPad P51) I have with me that 
+I also use svgatextmode with so much as to reboot it with a new kernel 
+(plain Debian 4.19.16-1~bpo9+1 still here).
+
+ So what's the supposed impact of this change that prompted the inclusion 
+of the messages?  I can port svgatextmode (it's my own compilation anyway) 
+if that is required for it to continue working correctly, but I need to 
+understand the circumstances here.  I have failed to find a satisfactory 
+alternative solution to vgacon and svgatextmode; the main showstopper is 
+the IBM's hardware trick for a 9x16 character cell that I rely on.
+
+  Maciej

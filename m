@@ -2,187 +2,164 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCD45C433B4
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Apr 2021 07:01:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1777FC43470
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Apr 2021 13:12:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AE2156120B
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Apr 2021 07:01:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DEEFD610CA
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Apr 2021 13:12:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236692AbhDLHCC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 12 Apr 2021 03:02:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40732 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236569AbhDLHCC (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 12 Apr 2021 03:02:02 -0400
-Received: from mail-oi1-x234.google.com (mail-oi1-x234.google.com [IPv6:2607:f8b0:4864:20::234])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5C59C061574
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Apr 2021 00:01:44 -0700 (PDT)
-Received: by mail-oi1-x234.google.com with SMTP id x2so12489133oiv.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Apr 2021 00:01:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=9eoMDF/wQXgBqcptxwajgyfKHfls18wSno0OgI96W1M=;
-        b=Z8VViXsU+J+0t/NeghxVqUCLlf+iJt7KQWTk4fn7J0Nqu3GKiTU3uJNBi11dErZRwT
-         qnV047UmDkOKJgZ2nIQStIbrlGb9jB10Xmbj7Mejny8Wh9w7qeKQqkHolxPkpkHbbbBD
-         aiS9/TWhgdvEiE4xcNmO7YFTO+uBl46QmeBMs=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=9eoMDF/wQXgBqcptxwajgyfKHfls18wSno0OgI96W1M=;
-        b=Rblpio86BEADDc2hPFh82dCCjpKdQiQ3E6Yx7UFvIDN2LQWI+PBlB9IVabpT9irbcs
-         jNwWgMw5qbza6mFrUiOwia274EsVS+x6vGn04dOjLR91wRk2BJM7opg5XSPFpIZNbSx/
-         3CDx7ZssEiyXG9ft2oXRRcP6kjTEPxTMQmZYbv3XyuI0oLcqHHPoc0PjnAqOjB6+p1r+
-         uv8R40k5PgnidcGDgdJ9f8SqFihhLXgufyTLE3JJ9jTL24junymNDT+j9bQn+AukZRnM
-         TObETTaoBVY6OaFtUDRnIeESm8hiRPR7hZKF+WMzhKWBdn4tBYbVwlZX2AWOstxXPlMQ
-         WveQ==
-X-Gm-Message-State: AOAM5303txnqQ2bq1cBX8xJOzlj/Jx6rf9yOAD/8mD7F1ZqBI7wR6+tD
-        bjfXEwTxJVAsMhYDKY0szKyXbtyZ6i3F9GW0ou94ZA==
-X-Google-Smtp-Source: ABdhPJzn5Y2JD1WWkuSgCEM5RLfbCHfU+wnK35eIswbiFH+SCiimFsZXPintcEeiw7HxTPKJ26KJl6K2LFSWL/9S3TA=
-X-Received: by 2002:aca:b646:: with SMTP id g67mr17522124oif.14.1618210904061;
- Mon, 12 Apr 2021 00:01:44 -0700 (PDT)
-MIME-Version: 1.0
-References: <000000000000226d3f05b02dd607@google.com> <bbcef674-4ac6-c933-b55d-8961ada97f4c@i-love.sakura.ne.jp>
- <47907f77-b14b-b433-45c6-a315193f0c1a@i-love.sakura.ne.jp>
- <494395bc-a7dd-fdb1-8196-a236a266ef54@i-love.sakura.ne.jp>
- <20200927092701.GA1037755@PWN> <4933b81b-9b1a-355b-df0e-9b31e8280ab9@i-love.sakura.ne.jp>
- <20200928175956.GF24673@neutronstar.dyndns.org> <100dfd3f-3415-80ae-a6cf-30d15f7ca49f@i-love.sakura.ne.jp>
- <20200929105203.GG24673@neutronstar.dyndns.org> <20200929165657.GS438822@phenom.ffwll.local>
- <20200929171040.GB1351851@kroah.com> <alpine.DEB.2.21.2104112250310.65251@angie.orcam.me.uk>
- <CAHk-=wgF8e5i+9eeGu=CgWAagTPv-9UbkG7B6bR5jDe6kkkFZQ@mail.gmail.com>
-In-Reply-To: <CAHk-=wgF8e5i+9eeGu=CgWAagTPv-9UbkG7B6bR5jDe6kkkFZQ@mail.gmail.com>
-From:   Daniel Vetter <daniel@ffwll.ch>
-Date:   Mon, 12 Apr 2021 09:01:32 +0200
-Message-ID: <CAKMK7uH4+SGr0=FDBiTsMg+iE1ztiuP2QBxsgcvHNhd38ocndg@mail.gmail.com>
-Subject: Re: [PATCH] vt_ioctl: make VT_RESIZEX behave like VT_RESIZE
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     "Maciej W. Rozycki" <macro@orcam.me.uk>,
-        syzbot <syzbot+b308f5fd049fbbc6e74f@syzkaller.appspotmail.com>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Greg KH <gregkh@linuxfoundation.org>,
-        Helge Deller <deller@gmx.de>,
-        syzkaller-bugs <syzkaller-bugs@googlegroups.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        id S238751AbhDLNMy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 12 Apr 2021 09:12:54 -0400
+Received: from foss.arm.com ([217.140.110.172]:50288 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S241498AbhDLNMu (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 12 Apr 2021 09:12:50 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CFAFD1063;
+        Mon, 12 Apr 2021 06:12:31 -0700 (PDT)
+Received: from [10.57.58.164] (unknown [10.57.58.164])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1FDDA3F73B;
+        Mon, 12 Apr 2021 06:12:27 -0700 (PDT)
+Subject: Re: [PATCH v3] drivers: introduce and use WANT_DMA_CMA for soft
+ dependencies on DMA_CMA
+To:     David Hildenbrand <david@redhat.com>, Arnd Bergmann <arnd@arndb.de>
+Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        linux-aspeed <linux-aspeed@lists.ozlabs.org>,
+        David Airlie <airlied@linux.ie>,
+        Linus Walleij <linus.walleij@linaro.org>,
         dri-devel <dri-devel@lists.freedesktop.org>,
-        Martin Hostettler <textshell@uchuujin.de>,
-        George Kennedy <george.kennedy@oracle.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Peilin Ye <yepeilin.cs@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Eric Anholt <eric@anholt.net>, Christoph Hellwig <hch@lst.de>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        Michal Simek <michal.simek@xilinx.com>,
+        Jason Gunthorpe <jgg@ziepe.ca>, Joel Stanley <joel@jms.id.au>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        The etnaviv authors <etnaviv@lists.freedesktop.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Peter Collingbourne <pcc@google.com>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        "Alexander A. Klimov" <grandmaster@al2klimov.de>,
+        Linux-MM <linux-mm@kvack.org>, Andrew Jeffery <andrew@aj.id.au>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "open list:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Mike Rapoport <rppt@kernel.org>,
+        Lucas Stach <l.stach@pengutronix.de>
+References: <20210409112035.27221-1-david@redhat.com>
+ <CAK8P3a31uKNcim0n99=yt3zjZ+LQSw4V4+8PS8daLsBdS0iSYg@mail.gmail.com>
+ <53ec94ac-ffe3-d0bc-d081-3489fa03daa1@redhat.com>
+From:   Robin Murphy <robin.murphy@arm.com>
+Message-ID: <34350446-0e0e-6947-40bd-fabdccdc835f@arm.com>
+Date:   Mon, 12 Apr 2021 14:12:20 +0100
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101
+ Thunderbird/78.9.0
+MIME-Version: 1.0
+In-Reply-To: <53ec94ac-ffe3-d0bc-d081-3489fa03daa1@redhat.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Apr 12, 2021 at 12:15 AM Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> On Sun, Apr 11, 2021 at 2:43 PM Maciej W. Rozycki <macro@orcam.me.uk> wrote:
-> >
-> >  So it does trigger with vgacon and my old server, which I have started
-> > experimenting with and for a start I have switched to a new kernel for an
-> > unrelated purpose (now that I have relieved it from all its usual tasks
-> > except for the last remaining one for which I haven't got the required
-> > user software ported to the new system yet):
-> >
-> > "struct vt_consize"->v_vlin is ignored. Please report if you need this.
-> > "struct vt_consize"->v_clin is ignored. Please report if you need this.
->
-> Note that it's entirely possible that things continue to work well
-> despite this warning. It's unclear to me from your email if you
-> actually see any difference (and apparently you're not able to see it
-> right now due to not being close to the machine).
+On 2021-04-09 14:39, David Hildenbrand wrote:
+> On 09.04.21 15:35, Arnd Bergmann wrote:
+>> On Fri, Apr 9, 2021 at 1:21 PM David Hildenbrand <david@redhat.com> 
+>> wrote:
+>>>
+>>> Random drivers should not override a user configuration of core knobs
+>>> (e.g., CONFIG_DMA_CMA=n). Applicable drivers would like to use DMA_CMA,
+>>> which depends on CMA, if possible; however, these drivers also have to
+>>> tolerate if DMA_CMA is not available/functioning, for example, if no CMA
+>>> area for DMA_CMA use has been setup via "cma=X". In the worst case, the
+>>> driver cannot do it's job properly in some configurations.
+>>>
+>>> For example, commit 63f5677544b3 ("drm/etnaviv: select CMA and 
+>>> DMA_CMA if
+>>> available") documents
+>>>          While this is no build dependency, etnaviv will only work 
+>>> correctly
+>>>          on most systems if CMA and DMA_CMA are enabled. Select both 
+>>> options
+>>>          if available to avoid users ending up with a non-working GPU 
+>>> due to
+>>>          a lacking kernel config.
+>>> So etnaviv really wants to have DMA_CMA, however, can deal with some 
+>>> cases
+>>> where it is not available.
+>>>
+>>> Let's introduce WANT_DMA_CMA and use it in most cases where drivers
+>>> select CMA/DMA_CMA, or depend on DMA_CMA (in a wrong way via CMA because
+>>> of recursive dependency issues).
+>>>
+>>> We'll assume that any driver that selects DRM_GEM_CMA_HELPER or
+>>> DRM_KMS_CMA_HELPER would like to use DMA_CMA if possible.
+>>>
+>>> With this change, distributions can disable CONFIG_CMA or
+>>> CONFIG_DMA_CMA, without it silently getting enabled again by random
+>>> drivers. Also, we'll now automatically try to enabled both, CONFIG_CMA
+>>> and CONFIG_DMA_CMA if they are unspecified and any driver is around that
+>>> selects WANT_DMA_CMA -- also implicitly via DRM_GEM_CMA_HELPER or
+>>> DRM_KMS_CMA_HELPER.
+>>>
+>>> For example, if any driver selects WANT_DMA_CMA and we do a
+>>> "make olddefconfig":
+>>>
+>>> 1. With "# CONFIG_CMA is not set" and no specification of
+>>>     "CONFIG_DMA_CMA"
+>>>
+>>> -> CONFIG_DMA_CMA won't be part of .config
+>>>
+>>> 2. With no specification of CONFIG_CMA or CONFIG_DMA_CMA
+>>>
+>>> Contiguous Memory Allocator (CMA) [Y/n/?] (NEW)
+>>> DMA Contiguous Memory Allocator (DMA_CMA) [Y/n/?] (NEW)
+>>>
+>>> 3. With "# CONFIG_CMA is not set" and "# CONFIG_DMA_CMA is not set"
+>>>
+>>> -> CONFIG_DMA_CMA will be removed from .config
+>>>
+>>> Note: drivers/remoteproc seems to be special; commit c51e882cd711
+>>> ("remoteproc/davinci: Update Kconfig to depend on DMA_CMA") explains 
+>>> that
+>>> there is a real dependency to DMA_CMA for it to work; leave that 
+>>> dependency
+>>> in place and don't convert it to a soft dependency.
+>>
+>> I don't think this dependency is fundamentally different from the others,
+>> though davinci machines tend to have less memory than a lot of the
+>> other machines, so it's more likely to fail without CMA.
+>>
+> 
+> I was also unsure - and Lucas had similar thoughts. If you want, I can 
+> send a v4 also taking care of this.
 
-Original search didn't turn up any users of VT_RESIZEX, this is the
-first. And looking at the source code I think we could outright remove
-support for VT_RESIZEX (but make it silent) and everything should keep
-working:
+TBH I think it should all just be removed. DMA_CMA is effectively an 
+internal feature of the DMA API, and drivers which simply use the DMA 
+API shouldn't really be trying to assume *how* things might be allocated 
+at runtime - CMA is hardly the only way. Platform-level assumptions 
+about the presence or not of IOMMUs, memory carveouts, etc., and whether 
+it even matters - e.g. a device with a tiny LCD may only need display 
+buffers which still fit in a regular MAX_ORDER allocation - could go in 
+platform-specific configs, but I really don't think they belong at the 
+generic subsystem level.
 
-        /*
-         * ALWAYS do a VT_RESIZE, even if we already did a VT_RESIZEX
-on a 1.3.3 or higher kernel,
-         * until those kernel programmers make this unambiguous
-         */
+We already have various examples like I2S drivers that won't even probe 
+without a dmaengine provider being present, or host controller drivers 
+which are useless without their corresponding phy driver (and I'm 
+guessing you can probably also do higher-level things like include the 
+block layer but omit all filesystem drivers). I don't believe it's 
+Kconfig's job to try to guess whether a given configuration is *useful*, 
+only to enforce that's it's valid to build.
 
-       if (do_VT_RESIZE(curr_textmode->cols, curr_textmode->rows,
-resize1x1)) sresize=TRUE;
-
-       if (check_kernel_version(1,3,3, "VT_RESIZEX"))
-         {
-           /*
-            * VDisplay must de divided by 2 for DoubleScan modes,
-            * or VT_RESIZEX will fail -- until someone fixes the kernel
-            * so it understands about doublescan modes.
-            */
-           if (do_VT_RESIZEX(curr_textmode->cols,
-                             curr_textmode->rows,
-                             curr_textmode->VDisplay /
-(MOFLG_ISSET(curr_textmode, ATTR_DOUBLESCAN) ? 2 : 1),
-                             curr_textmode->FontHeight,
-                             curr_textmode->HDisplay/8*curr_textmode->FontWidth,
-                             curr_textmode->FontWidth, resize1x1)) sresize=TRUE;
-         }
-
-The functions are just straightforward wrappers. There's also no cvs
-repo, changelog or old releases before 2000 that would shed some light
-on why this code even exists.
-
-I think we can just tune down the pr_info_once to pr_debug and done.
-Maybe a comment about where the single user we're aware of is.
--Daniel
-
->
-> The fact that v_vlin/v_clin are ignored doesn't necessarily mean that
-> they are different from what they were before, so the warning may be a
-> non-issue.
->
-> > It continues using svgatextmode with its glass (CRT) VT to set my usual
-> > 80x37 text mode (720x576 pixel resolution) by manipulating the VGA clock
-> > chip and the CRT controller appropriately for a nice refresh rate of 85Hz:
-> >
-> > Chipset = `TVGA8900', Textmode clock = 44.90 MHz, 80x37 chars, CharCell = 9x16. Refresh = 52.51kHz/84.7Hz.
->
-> That doesn't seem necessarily wrong to me.
->
-> >  So what's the supposed impact of this change that prompted the inclusion
-> > of the messages?
->
-> There _may_ be no impact at all apart from the messages.
->
-> The code _used_ to set the scan lines (v_vlin) and font height
-> (v_clin) from those numbers if they were non-zero, and now it just
-> ignores them and warns instead.
->
-> The code now just sets the font height from the actual font size when
-> the font is set. Which is honestly the only thing that ever made
-> sense. Trying to set it with v_clin is ignored, but it's entirely
-> possible - maybe even likely - that your user of VT_RESIZEX sets it to
-> the same values it already has.
->
-> Exactly because setting a font line number to anything else than the
-> font size isn't exactly sensible.
->
-> But if your screen looks different than it used to, that is obviously
-> interesting and says something actually changed (outside of the
-> message itself).
->
->            Linus
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
-
-
-
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Robin.

@@ -2,151 +2,83 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48493C43460
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Apr 2021 13:30:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EB18C433B4
+	for <linux-fbdev@archiver.kernel.org>; Tue, 13 Apr 2021 17:05:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 140A661288
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Apr 2021 13:30:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EB60F613A9
+	for <linux-fbdev@archiver.kernel.org>; Tue, 13 Apr 2021 17:05:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241968AbhDLNaj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 12 Apr 2021 09:30:39 -0400
-Received: from angie.orcam.me.uk ([157.25.102.26]:38766 "EHLO
-        angie.orcam.me.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241917AbhDLNah (ORCPT
+        id S1347012AbhDMRFi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 13 Apr 2021 13:05:38 -0400
+Received: from youngberry.canonical.com ([91.189.89.112]:34529 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239106AbhDMRFi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 12 Apr 2021 09:30:37 -0400
-Received: by angie.orcam.me.uk (Postfix, from userid 500)
-        id 6059092009C; Mon, 12 Apr 2021 15:30:16 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-        by angie.orcam.me.uk (Postfix) with ESMTP id 5A1BE92009B;
-        Mon, 12 Apr 2021 15:30:16 +0200 (CEST)
-Date:   Mon, 12 Apr 2021 15:30:16 +0200 (CEST)
-From:   "Maciej W. Rozycki" <macro@orcam.me.uk>
-To:     Daniel Vetter <daniel@ffwll.ch>
-cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        syzbot <syzbot+b308f5fd049fbbc6e74f@syzkaller.appspotmail.com>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Greg KH <gregkh@linuxfoundation.org>,
-        Helge Deller <deller@gmx.de>,
-        syzkaller-bugs <syzkaller-bugs@googlegroups.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Martin Hostettler <textshell@uchuujin.de>,
-        George Kennedy <george.kennedy@oracle.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Peilin Ye <yepeilin.cs@gmail.com>
-Subject: Re: [PATCH] vt_ioctl: make VT_RESIZEX behave like VT_RESIZE
-In-Reply-To: <CAKMK7uH4+SGr0=FDBiTsMg+iE1ztiuP2QBxsgcvHNhd38ocndg@mail.gmail.com>
-Message-ID: <alpine.DEB.2.21.2104121433040.65251@angie.orcam.me.uk>
-References: <000000000000226d3f05b02dd607@google.com> <bbcef674-4ac6-c933-b55d-8961ada97f4c@i-love.sakura.ne.jp> <47907f77-b14b-b433-45c6-a315193f0c1a@i-love.sakura.ne.jp> <494395bc-a7dd-fdb1-8196-a236a266ef54@i-love.sakura.ne.jp> <20200927092701.GA1037755@PWN>
- <4933b81b-9b1a-355b-df0e-9b31e8280ab9@i-love.sakura.ne.jp> <20200928175956.GF24673@neutronstar.dyndns.org> <100dfd3f-3415-80ae-a6cf-30d15f7ca49f@i-love.sakura.ne.jp> <20200929105203.GG24673@neutronstar.dyndns.org> <20200929165657.GS438822@phenom.ffwll.local>
- <20200929171040.GB1351851@kroah.com> <alpine.DEB.2.21.2104112250310.65251@angie.orcam.me.uk> <CAHk-=wgF8e5i+9eeGu=CgWAagTPv-9UbkG7B6bR5jDe6kkkFZQ@mail.gmail.com> <CAKMK7uH4+SGr0=FDBiTsMg+iE1ztiuP2QBxsgcvHNhd38ocndg@mail.gmail.com>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+        Tue, 13 Apr 2021 13:05:38 -0400
+Received: from 1-171-231-81.dynamic-ip.hinet.net ([1.171.231.81] helo=localhost)
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <kai.heng.feng@canonical.com>)
+        id 1lWMTS-0005T2-Fo; Tue, 13 Apr 2021 17:05:15 +0000
+From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
+To:     pjones@redhat.com
+Cc:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        linux-fbdev@vger.kernel.org (open list:EFIFB FRAMEBUFFER DRIVER),
+        dri-devel@lists.freedesktop.org (open list:FRAMEBUFFER LAYER),
+        linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] efifb: Check efifb_pci_dev before using it
+Date:   Wed, 14 Apr 2021 01:05:08 +0800
+Message-Id: <20210413170508.968148-1-kai.heng.feng@canonical.com>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 12 Apr 2021, Daniel Vetter wrote:
+On some platforms like Hyper-V and RPi4 with UEFI firmware, efifb is not
+a PCI device.
 
-> > Note that it's entirely possible that things continue to work well
-> > despite this warning. It's unclear to me from your email if you
-> > actually see any difference (and apparently you're not able to see it
-> > right now due to not being close to the machine).
-> 
-> Original search didn't turn up any users of VT_RESIZEX, this is the
-> first. And looking at the source code I think we could outright remove
-> support for VT_RESIZEX (but make it silent) and everything should keep
-> working:
-> 
->         /*
->          * ALWAYS do a VT_RESIZE, even if we already did a VT_RESIZEX
-> on a 1.3.3 or higher kernel,
->          * until those kernel programmers make this unambiguous
->          */
-> 
->        if (do_VT_RESIZE(curr_textmode->cols, curr_textmode->rows,
-> resize1x1)) sresize=TRUE;
-> 
->        if (check_kernel_version(1,3,3, "VT_RESIZEX"))
->          {
->            /*
->             * VDisplay must de divided by 2 for DoubleScan modes,
->             * or VT_RESIZEX will fail -- until someone fixes the kernel
->             * so it understands about doublescan modes.
->             */
->            if (do_VT_RESIZEX(curr_textmode->cols,
->                              curr_textmode->rows,
->                              curr_textmode->VDisplay /
-> (MOFLG_ISSET(curr_textmode, ATTR_DOUBLESCAN) ? 2 : 1),
->                              curr_textmode->FontHeight,
->                              curr_textmode->HDisplay/8*curr_textmode->FontWidth,
->                              curr_textmode->FontWidth, resize1x1)) sresize=TRUE;
->          }
-> 
-> The functions are just straightforward wrappers. There's also no cvs
-> repo, changelog or old releases before 2000 that would shed some light
-> on why this code even exists.
+So make sure efifb_pci_dev is found before using it.
 
- I did some archaeology then, using a local copy of the linux-mips.org 
-Linux tree that has historic information imported from the old oss.sgi.com 
-MIPS/Linux CVS repo.  According to that the ioctl was added with or 
-shortly before 2.1.14:
+Fixes: a6c0fd3d5a8b ("efifb: Ensure graphics device for efifb stays at PCI D0")
+BugLink: https://bugs.launchpad.net/bugs/1922403
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+---
+ drivers/video/fbdev/efifb.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-commit beb116954b9b7f3bb56412b2494b562f02b864b1
-Author: Ralf Baechle <ralf@linux-mips.org>
-Date:   Tue Jan 7 02:33:00 1997 +0000
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index f58a545b3bf3..8ea8f079cde2 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -575,7 +575,8 @@ static int efifb_probe(struct platform_device *dev)
+ 		goto err_fb_dealoc;
+ 	}
+ 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+-	pm_runtime_get_sync(&efifb_pci_dev->dev);
++	if (efifb_pci_dev)
++		pm_runtime_get_sync(&efifb_pci_dev->dev);
+ 	return 0;
+ 
+ err_fb_dealoc:
+@@ -602,7 +603,8 @@ static int efifb_remove(struct platform_device *pdev)
+ 	unregister_framebuffer(info);
+ 	sysfs_remove_groups(&pdev->dev.kobj, efifb_groups);
+ 	framebuffer_release(info);
+-	pm_runtime_put(&efifb_pci_dev->dev);
++	if (efifb_pci_dev)
++		pm_runtime_put(&efifb_pci_dev->dev);
+ 
+ 	return 0;
+ }
+-- 
+2.30.2
 
-    Import of Linux/MIPS 2.1.14
-
-and, importantly, it was used to set some parameters: 
-
-		if ( vlin )
-		  video_scan_lines = vlin;
-		if ( clin )
-		  video_font_height = clin;
-
-used by `con_adjust_height' in drivers/char/vga.c: `video_scan_lines' to 
-set the vertical display limit (so that it is a whole multiple of the new 
-font height) and `video_font_height' to set the cursor scan lines in the 
-CRTC.  The function was used by the PIO_FONTX and PIO_FONTRESET VT ioctls 
-at that point.
-
- That code was moved to `vgacon_adjust_height' in drivers/video/vgacon.c 
-and then drivers/video/console/vgacon.c.  The code is still there, serving 
-the KDFONTOP ioctl.
-
- With:
-
-commit 9736a3546de7b6a2b16ad93539e4b3ac72b385bb
-Author: Ralf Baechle <ralf@linux-mips.org>
-Date:   Thu Jun 5 10:06:35 2003 +0000
-
-    Merge with Linux 2.5.66.
-
-the parameters were moved into `struct vc_data':
-
- 		if (vlin)
--			video_scan_lines = vlin;
-+			vc->vc_scan_lines = vlin;
- 		if (clin)
--			video_font_height = clin;
-+			vc->vc_font.height = clin;
-
-and this piece of code to set them only removed with the change discussed 
-here.
-
- So without even looking at the VT, which I'll surely get to eventually, I 
-conclude this change regresses font resizing (KD_FONT_OP_SET) once a new 
-resolution has been set with svgatextmode.  I think this change needs to 
-be reverted, especially as the problematic PIO_FONT ioctl referred has 
-been since removed with commit ff2047fb755d ("vt: drop old FONT ioctls").
-
-  Maciej

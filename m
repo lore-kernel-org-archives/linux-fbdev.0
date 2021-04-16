@@ -2,100 +2,91 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94BDBC433ED
-	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Apr 2021 14:21:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BFF7C433B4
+	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Apr 2021 14:42:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6EF8B610F7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Apr 2021 14:21:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 69CAD61073
+	for <linux-fbdev@archiver.kernel.org>; Fri, 16 Apr 2021 14:42:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244637AbhDPOV2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 16 Apr 2021 10:21:28 -0400
-Received: from mga11.intel.com ([192.55.52.93]:24109 "EHLO mga11.intel.com"
+        id S244996AbhDPOmr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 16 Apr 2021 10:42:47 -0400
+Received: from mga14.intel.com ([192.55.52.115]:24839 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S244572AbhDPOV2 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 16 Apr 2021 10:21:28 -0400
-IronPort-SDR: +SfvAe9xmOgw8i1hcQk0UiuBKEpjR6fx+52RSkSgDaiPMBBPa3x7R7ozn0nHb3FEwpehpWX0kE
- kgu6blHY7ZNg==
-X-IronPort-AV: E=McAfee;i="6200,9189,9956"; a="191856036"
+        id S244373AbhDPOmd (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 16 Apr 2021 10:42:33 -0400
+IronPort-SDR: OkcZ0s6HkwD4zKUlGKKl6+uXeq5e7sdsbyvCiZh7eL/noOThK9TOSsowGGA+ZsXXN5Gjxf+pvI
+ r8ylf4zQYeAw==
+X-IronPort-AV: E=McAfee;i="6200,9189,9956"; a="194606650"
 X-IronPort-AV: E=Sophos;i="5.82,226,1613462400"; 
-   d="scan'208";a="191856036"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Apr 2021 07:21:03 -0700
-IronPort-SDR: zmdCb34RpMljdFJ+iFsV9Zoyu2JS5v7cl2KQLOEOFPzdsUfs7jvKZ8+gpfyVdcNURMi5bs2RCa
- iCh1XdmGXiBA==
+   d="scan'208";a="194606650"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Apr 2021 07:42:08 -0700
+IronPort-SDR: HG4qjL1YMnW5HHQIdjfSEzfDoqyXUesZW51hWmyBeha99RNQ6nryWSzv4AI92sOWr++wOe2EW/
+ w6GtmmN+UAAw==
 X-IronPort-AV: E=Sophos;i="5.82,226,1613462400"; 
-   d="scan'208";a="461979133"
+   d="scan'208";a="399925866"
 Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
-  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Apr 2021 07:21:01 -0700
+  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Apr 2021 07:42:06 -0700
 Received: from andy by smile with local (Exim 4.94)
         (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1lXPL8-004fR5-6x; Fri, 16 Apr 2021 17:20:58 +0300
-Date:   Fri, 16 Apr 2021 17:20:58 +0300
+        id 1lXPfY-004fhK-4q; Fri, 16 Apr 2021 17:42:04 +0300
+Date:   Fri, 16 Apr 2021 17:42:04 +0300
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-        Jan Sebastian =?iso-8859-1?Q?G=F6tte?= <linux@jaseg.net>,
-        Phil Reid <preid@electromag.com.au>,
-        Nishad Kamdar <nishadkamdar@gmail.com>
-Subject: Re: [PATCH v1 1/2] fbtft: Rectify GPIO handling
-Message-ID: <YHmdSpN4PIZghsgS@smile.fi.intel.com>
-References: <20210416123117.4993-1-andriy.shevchenko@linux.intel.com>
- <YHmIb2YrwfzZa7Wh@kroah.com>
+To:     Masahiro Yamada <masahiroy@kernel.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v1 1/1] video: ssd1307fb: Drop OF dependency
+Message-ID: <YHmiPMcgMqHCzaur@smile.fi.intel.com>
+References: <20210409164140.17337-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <YHmIb2YrwfzZa7Wh@kroah.com>
+In-Reply-To: <20210409164140.17337-1-andriy.shevchenko@linux.intel.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Apr 16, 2021 at 02:51:59PM +0200, Greg Kroah-Hartman wrote:
-> On Fri, Apr 16, 2021 at 03:31:16PM +0300, Andy Shevchenko wrote:
-> > The infamous commit c440eee1a7a1 ("Staging: fbtft: Switch to
-> > the GPIO descriptor interface") broke GPIO handling completely.
-> > It has already four commits to rectify and it seems not enough.
-> > In order to fix the mess here we:
-> > 
-> >   1) Set default to "inactive" for all requested pins
-> > 
-> >   2) Fix CS, RD, and WR pins polarity since it's active low and
-> >      GPIO descriptor interface takes it into consideration from
-> >      the Device Tree or ACPI
-> > 
-> >   3) Fix RESET pin polarity in the places missed by the commit
-> >      b918d1c27066 ("Staging: fbtft: Fix reset assertion when using gpio descriptor")
-> > 
-> >   4) Consolidate chip activation (CS assert) under default
-> >      ->reset() callback
-> > 
-> > To summarize the expectations about polarity for GPIOs:
-> > 
-> >    #RD			Low
-> >    #WR			Low
-> >    #CS			Low
-> >    #RESET		Low
-> >    DC or RS		High
-> >    RW			High
-> >    Data	0..15		High
-> > 
-> > See also Adafruit learning course [1] for the example of the schematics.
-> > 
-> > While at it, drop unneeded NULL checks, since GPIO API is tolerant to that.
-> > At the end, update TODO to mark this job eventually done.
-> > 
-> > [1]: https://learn.adafruit.com/adafruit-2-8-and-3-2-color-tft-touchscreen-breakout-v2/downloads
-> 
-> Shouldn't this be broken up into "one patch per thing" from your list
-> above?  Feels like you did a lot of different things all in the same
-> patch :(
++Cc: Greg.
 
-Okay, I split a bit, now it's 4 patches. (See v2).
+Greg, can you pick up this one?
+
+The subsystem seems orphaned and I see your name in the git history for the
+recent submissions against that driver.
+
+Id is 20210409164140.17337-1-andriy.shevchenko@linux.intel.com
+
+On Fri, Apr 09, 2021 at 07:41:40PM +0300, Andy Shevchenko wrote:
+> After the commit 72915994e028 ("video: ssd1307fb: Make use of device
+> properties") driver does not depend on OF, drop unneeded dependency.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  drivers/video/fbdev/Kconfig | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index 4f02db65dede..7506b5949eb0 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -2209,7 +2209,6 @@ config FB_SIMPLE
+>  config FB_SSD1307
+>  	tristate "Solomon SSD1307 framebuffer support"
+>  	depends on FB && I2C
+> -	depends on OF
+>  	depends on GPIOLIB || COMPILE_TEST
+>  	select FB_SYS_FOPS
+>  	select FB_SYS_FILLRECT
+> -- 
+> 2.30.2
+> 
 
 -- 
 With Best Regards,

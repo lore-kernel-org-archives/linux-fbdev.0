@@ -2,66 +2,145 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8912DC433B4
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Apr 2021 08:24:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 255E0C433ED
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Apr 2021 15:44:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 401F261104
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Apr 2021 08:24:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E0FCC61354
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Apr 2021 15:44:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229551AbhDTIZO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 20 Apr 2021 04:25:14 -0400
-Received: from foss.arm.com ([217.140.110.172]:58312 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229543AbhDTIZO (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 20 Apr 2021 04:25:14 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1746A1435;
-        Tue, 20 Apr 2021 01:24:43 -0700 (PDT)
-Received: from bogus (unknown [10.57.52.142])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0529B3F85F;
-        Tue, 20 Apr 2021 01:24:41 -0700 (PDT)
-Date:   Tue, 20 Apr 2021 09:24:39 +0100
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Kai-Heng Feng <kai.heng.feng@canonical.com>
-Cc:     Alex Deucher <alexander.deucher@amd.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Peter Jones <pjones@redhat.com>,
-        "open list:EFIFB FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>,
-        "open list:DRM DRIVERS" <dri-devel@lists.freedesktop.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] efifb: Fix runtime pm calls for non PCI efifb device
-Message-ID: <20210420082439.2xvrmcoa6kygbhow@bogus>
-References: <20210415102224.2764054-1-sudeep.holla@arm.com>
- <20210420075332.t56dlpppb6bnpjzd@bogus>
- <CAAd53p6zti5rmJ5LjW3WbYsSGBs5CgBuOztHv-nvMObGBh7Q+A@mail.gmail.com>
+        id S233140AbhDTPp1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 20 Apr 2021 11:45:27 -0400
+Received: from mail-dm6nam11on2110.outbound.protection.outlook.com ([40.107.223.110]:36704
+        "EHLO NAM11-DM6-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S233022AbhDTPp0 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 20 Apr 2021 11:45:26 -0400
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=mUuIBtNxM04XMqDKOd9t26mQjj5qPiTcSOTsO6FMiOvXfaYNoakafzAuj1ln5rQcJQJPEbBo+WUcuN5Lzb3ZfE+64IYT32YAUJx+FPsOJaXnkPYAbAzgERE8bvklEymrIOxaFalu01+/oPXRqs6n7+As8PwzwKswkv/ZM4hSZ8peQoYpbvpDxSMaajqgNEbiwVoL3348GQpjE+M9E95o+s+T5CZXEd1sHjLL0k4Igca3rcot8+6H22lT1hVauIkx/s2FLlkjYSEssnxWlbZS9MIXamimg3A+vfkdpLDVM74z5qDGDo7Kp6XQvwGBDPEIdpGXeWoty0gan5j5W8mfcg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=T5+edhKgshdWyjXx4xTZ/G6ZEEtMlZx9+PxCso7lOUo=;
+ b=AysIUqrIPVDMWwm/EJkcJEQW3sVjEjFAZ1oHPcWCfoo6XFN9Rp4QbRtC8bVNpQOREby/xyIyaGYpt+/3IohQwLQJw9F0Vbgjj9QJbH2jjAZA9D9injGdil87O1OvkMZ5873F1f2jmjuRjd0aQzT8OYUTpWT6h4qUmdLfMNwHtKDWATCp52Kr0Bg0+6IAPzZlIOKVs09EZe2B4O8o/+WGUVm5mQGb3rlVRbvP/erdkrgDD6FTSXgwn7REXSUjc/SWdFlVOxBDO+Dq627uPSaTXH/5vHdQyoVNhIxWWvLFaQI9zkapCVbLeH6KcdEpmAneDqifitwGKJOIVfyMhVt2Ag==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=microsoft.com; dmarc=pass action=none
+ header.from=microsoft.com; dkim=pass header.d=microsoft.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=T5+edhKgshdWyjXx4xTZ/G6ZEEtMlZx9+PxCso7lOUo=;
+ b=HGdZYednUX6e8JfAteE1W7Vhk9Yi7NhXll8N2umIGHRoynJiC3S0x2YjdpJe3a4Mp/R+lKgrqknTToQRVO8fP6OpQ2rpSoLdcTmA4JSWunWoU/KodrQF0xqRhLqOXdWkr7w5frC1KUH5fpPqxhQG02hD/dIFr9BqAfxh1ChtIfA=
+Authentication-Results: microsoft.com; dkim=none (message not signed)
+ header.d=none;microsoft.com; dmarc=none action=none
+ header.from=microsoft.com;
+Received: from DM6PR21MB1514.namprd21.prod.outlook.com (2603:10b6:5:22d::11)
+ by DM5PR2101MB1062.namprd21.prod.outlook.com (2603:10b6:4:9e::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4087.11; Tue, 20 Apr
+ 2021 15:44:53 +0000
+Received: from DM6PR21MB1514.namprd21.prod.outlook.com
+ ([fe80::7903:384:ac51:1769]) by DM6PR21MB1514.namprd21.prod.outlook.com
+ ([fe80::7903:384:ac51:1769%7]) with mapi id 15.20.4087.015; Tue, 20 Apr 2021
+ 15:44:53 +0000
+From:   Michael Kelley <mikelley@microsoft.com>
+To:     kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com,
+        wei.liu@kernel.org, linux-kernel@vger.kernel.org,
+        linux-hyperv@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Cc:     mikelley@microsoft.com
+Subject: [PATCH 1/1] video: hyperv_fb: Add ratelimit on error message
+Date:   Tue, 20 Apr 2021 08:44:19 -0700
+Message-Id: <1618933459-10585-1-git-send-email-mikelley@microsoft.com>
+X-Mailer: git-send-email 1.8.3.1
+Content-Type: text/plain
+X-Originating-IP: [131.107.160.144]
+X-ClientProxiedBy: MWHPR04CA0069.namprd04.prod.outlook.com
+ (2603:10b6:300:6c::31) To DM6PR21MB1514.namprd21.prod.outlook.com
+ (2603:10b6:5:22d::11)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAAd53p6zti5rmJ5LjW3WbYsSGBs5CgBuOztHv-nvMObGBh7Q+A@mail.gmail.com>
-User-Agent: NeoMutt/20171215
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from mhkdev.corp.microsoft.com (131.107.160.144) by MWHPR04CA0069.namprd04.prod.outlook.com (2603:10b6:300:6c::31) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4042.16 via Frontend Transport; Tue, 20 Apr 2021 15:44:52 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 19d6a8cf-18aa-4ca6-a337-08d904133d77
+X-MS-TrafficTypeDiagnostic: DM5PR2101MB1062:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <DM5PR2101MB106207FEDB6E85D1CCDF2FCED7489@DM5PR2101MB1062.namprd21.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:6108;
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: wDdQKPqaLykqKsm0owXG9jGTjCcLJitPrbZ0L7RohxueBuoY4GXSm1uHG/+csYMjiGJVC3w/67E8qg3O1c+XCs3jQ7uv9N86RmHZhoh0aNWcnSFRZzHl55noNklXsXwUT+Qe970bhb6IvN6ZFaUht3d0fwMCs03IOFELDFHJM8Ptzbf1UZUDuvAqwqYWXHbK09wYHHKqy2Z1qxbvqP//887KkPwJspTuIVskQe5RrTflyZpIo3Tc0pZsGhI1F94TE+JMybhSKGXzSB0LVILUfZVh9w1kvpwkyxFEoBeKRrAPvZDAYz20WZmCtUZVI3mp7qZgpi2lqLbbJ3IGG614dlfLPa+6Jvz45DRQCxTmv13N8GUEBxr8HJEyj1pkIyW41n1gMlrFkMooWEzM7J04frXnglTiA6EbP3n+d61XXeRk1lRMNiWzttkviCFn/009CWUSBX8u88AvzyDkIspNpcLhnqqjv3ajQ+Ka7Ymeq8XTiiV+8uzar/hfLHN8tD4wfh9BBCR/Ca8+7iULdzPYiMr2kbumwvRikm+B63fMhH8RV6ikCo3HldXUCwWkKzlB7l32Zvzuch3mopd8LuiAoqJ3k2F6f0Uop0YjzMy7+sc1n6cmDuwhTwyJFvEttm4KyxHysPQrw6uvRDkgQLZrJwaSH74I9Q2/4ogLeFzOXKI=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR21MB1514.namprd21.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(366004)(52116002)(4326008)(2616005)(83380400001)(5660300002)(498600001)(6486002)(8676002)(36756003)(26005)(7696005)(15650500001)(107886003)(6666004)(10290500003)(186003)(16526019)(86362001)(38100700002)(82960400001)(8936002)(38350700002)(956004)(66556008)(82950400001)(4744005)(66476007)(2906002)(66946007);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData: =?us-ascii?Q?WCe5JKyv3gG/NI1ZN0aIU2QPLE4jdtr3JIua0NjUTzlipeR+8NuvK5SVKZ8c?=
+ =?us-ascii?Q?Sm9SLooTNiQdyNFA591C08vr8TSqx13hZnDMgEPoBWO8ikhUuR73KNFMhaFX?=
+ =?us-ascii?Q?PrHg6avJRhai9XlZ0VQVYJY9I6+E/nx92y9CIslzScMhWLVXCkBrR69iY3ft?=
+ =?us-ascii?Q?rvHXJjIwFqfZw3aYLDRKYdE5OaxKMoEX7EqGHx76Q8jW4YwkKIWYRrf2yf95?=
+ =?us-ascii?Q?INlYqeQPYX+NxM8UWNMeAvFTkm09joh7SqvYBeKsOEq/4BY4JMKZ/+0O+5BF?=
+ =?us-ascii?Q?iFqAvpCRjyQe5eC/AEVHhgx8cPfITq4JqF/NdK7sUxsqqbqpv1uJ9NJbLvHg?=
+ =?us-ascii?Q?6rlIgVEar4GGUfF314Ta8WEWQ+tIivmwFJAofnlZIHHJJf+7cx//5sla0cyv?=
+ =?us-ascii?Q?o8XSTKz8pbsFXcOA2pXw7wuUQqb7rof4OrvI2dipP7T+70/OwGdigDyUMzKZ?=
+ =?us-ascii?Q?iPulrHNvF4yzcfDUSe7zrn0C5qgz6VE98GZ5Lt/rkzyfsN+plHTvC6MvwkAx?=
+ =?us-ascii?Q?RKZm+2/652U3Jilf2awlzKshQpYu2+RI+dWmvVb52oXfYEBr3JylLwr/3k9t?=
+ =?us-ascii?Q?sPBusEZjNCF0Run7l821Pavv8JSzaSKicgojAVryosIHIaPJei0utKSBTCau?=
+ =?us-ascii?Q?SGbACPDf69Nagd7x2jnL3asplAyMndyKYtedpAjubFkt5hdjuSE8ZesBRTWP?=
+ =?us-ascii?Q?voKV8pIO+1eWfLkDJS3AmZzHW2RP7ddNsZvnoXtkUo/OqSp8joOyVd5Zn4ur?=
+ =?us-ascii?Q?oP/Qvgh+wKZ3tAPC9wTRD8e5/vKpX7cJFpAvQEc4Q9pFJAMKblxe5M94r+r2?=
+ =?us-ascii?Q?ry3PLxUF9cy3ONTKyYLi+zgru39NtGcl3F/TwFm7VIEMLM+0xJ5Z82A5iTxx?=
+ =?us-ascii?Q?QHrYjBm+OPq4oNpVaN4Os0WeD/ZyHuhlayHV6l66uhIO3tvFWYUCVB5MXYGx?=
+ =?us-ascii?Q?WTF6Kh/4mIn72deR+SobWue/leZrNxmjZyd74fu6XMwTN+2loWuJTVyDqDdL?=
+ =?us-ascii?Q?StD/90yDj1yvpGW3pcH70qOQwNhyRGBW+ByScI7rSHmwyf1qaQQ8zVQ0shZE?=
+ =?us-ascii?Q?+CiAmmaKsK0tXy4GuJaoCCf94rZe18TZO5t26O0OIBwvNnW3YyRxLclylmXN?=
+ =?us-ascii?Q?lKiKinM4CMJStmj6qUj+k1g4HAGeXWvfZcYno+rJanVB3nQXnqgvL6oRBZi/?=
+ =?us-ascii?Q?niOPlbBuD8z9Dg8NLqkdFIeSmGFZvyMQJ/RWbdC+bLlgRzsR6DCmsDvNCcac?=
+ =?us-ascii?Q?/KoEC0l8YnUznczG7RBtSlCXhEitSzH9Wye+ylKLjOWn4zmvnZJlTzY1e/jN?=
+ =?us-ascii?Q?CZ54DOQfOI0KyYEh5BJv9biC?=
+X-OriginatorOrg: microsoft.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 19d6a8cf-18aa-4ca6-a337-08d904133d77
+X-MS-Exchange-CrossTenant-AuthSource: DM6PR21MB1514.namprd21.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Apr 2021 15:44:53.3210
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 72f988bf-86f1-41af-91ab-2d7cd011db47
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 4z7M/bYs+dQSWpkLxq4C6XMpt5Bpwy1Y+s8JCIqlEqQmXRYZ70T7CIC/6XeJii3WzHCfXsH2g0mkwTg+EorfSA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM5PR2101MB1062
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Apr 20, 2021 at 04:12:26PM +0800, Kai-Heng Feng wrote:
-> Hi Sudeep,
->
-> On Tue, Apr 20, 2021 at 3:53 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
-> >
-> > Gentle Ping! There is boot failure because of this issue with linux-next
-> > on few arm platforms with non PCIe efifb. Please review and get the fix
-> > merged ASAP so the testing on these platforms can continue with linux-next.
->
-> It was merged in drm-tip as d510c88cfbb2 ("efifb: Check efifb_pci_dev
-> before using it").
->
+Due to a full ring buffer, the driver may be unable to send updates to
+the Hyper-V host.  But outputing the error message can make the problem
+worse because console output is also typically written to the frame
+buffer.  As a result, in some circumstances the error message is output
+continuously.
 
-Ah OK, thanks! But I don't think it is appear on -next yet.
+Break the cycle by rate limiting the error message.  Also output
+the error code for additional diagnosability.
 
---
-Regards,
-Sudeep
+Signed-off-by: Michael Kelley <mikelley@microsoft.com>
+---
+ drivers/video/fbdev/hyperv_fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 4dc9077..a7e6eea 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -308,7 +308,7 @@ static inline int synthvid_send(struct hv_device *hdev,
+ 			       VM_PKT_DATA_INBAND, 0);
+ 
+ 	if (ret)
+-		pr_err("Unable to send packet via vmbus\n");
++		pr_err_ratelimited("Unable to send packet via vmbus; error %d\n", ret);
+ 
+ 	return ret;
+ }
+-- 
+1.8.3.1
+

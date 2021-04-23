@@ -2,97 +2,128 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99E42C433B4
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Apr 2021 10:41:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4709EC433B4
+	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Apr 2021 00:59:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 60F8261428
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Apr 2021 10:41:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0ED0D613A9
+	for <linux-fbdev@archiver.kernel.org>; Fri, 23 Apr 2021 00:59:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235097AbhDVKl5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 22 Apr 2021 06:41:57 -0400
-Received: from mail-oi1-f170.google.com ([209.85.167.170]:39649 "EHLO
-        mail-oi1-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230270AbhDVKl5 (ORCPT
+        id S230425AbhDWA7f (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 22 Apr 2021 20:59:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34030 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230367AbhDWA7d (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 22 Apr 2021 06:41:57 -0400
-Received: by mail-oi1-f170.google.com with SMTP id i81so45379016oif.6;
-        Thu, 22 Apr 2021 03:41:22 -0700 (PDT)
+        Thu, 22 Apr 2021 20:59:33 -0400
+Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C5DDC061574;
+        Thu, 22 Apr 2021 17:58:57 -0700 (PDT)
+Received: by mail-lj1-x229.google.com with SMTP id m7so43166569ljp.10;
+        Thu, 22 Apr 2021 17:58:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=N+jXaR0SB+8fxvvMVeDeNfESYRDFwrHiFdNeachsM6Q=;
+        b=pYJyKgcMm7jhXAw5yMF2RJTsBTmNftz7BoC6GSRljtvEGlST/ngMHac1C3rDYDmlU2
+         DOC8RM6zDBLQwuzOBjqErj+9DEPsf4WjQnthj3xjdeE2LgoZ6uiWfi0dSrLpJiY5yq+6
+         OZCXUB0opoMUtqo9Hw/fJpnPzILw6j+tw7d/T3ePlrmZQnZPwEWjl85/+1xGDt3aELtB
+         FTC5D0oJWbtd7K0owLKKNYNb1cfwvX2Nofg/NtgZXoutgyj6Vny3WX3tcCQlo2b/5zhu
+         UNMjR8Bk892Y2v1da3uIgugWZUhrK4mZw0cIjxNmLYObVXvRON5ix87Avp8shyVzu8zf
+         DDIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=ZkoWU4pOXOH5nl2P4HSwkzSQBpPMbT0VUfATt/sd1IE=;
-        b=avThzTXjdBxubTm8QOc/sOqvZpmRUcLRVS6dfT1bCchkKrNpBf0EupxdGct0AOAOsI
-         hlEHKRYPGgemhk9LQ09NyQ6hutlN+dzDnaniqZ9WIrpyRLNFUdF9e4Q1/EmS9hwbnY41
-         3FHk5G1TyQfp6sIxsZ58VaVFaaiMq7n1cMkWV82ZTJTpEVgpmki7A21jzSe6yVelAoxc
-         RwB4ucDxBQB0U35Aug48yV+ZjR+bgFyqIEf5GfJgd8u5TkxhLI0t3U9wxqeqipj8CetA
-         O+Zl+LpS00F/gyEqA7R2jnBAMDyI3yMfj1XLEc7q8p224+hdFx5V/ArS25Gf3hDb448f
-         AZCw==
-X-Gm-Message-State: AOAM533d0S656lpegxZoI5197zSqguhISYpytJVDhHBY5bz+SrtbHQIa
-        tQmmCdLnK/dbmpf/n7gNP5RdCq2lV/FLE27dJnM=
-X-Google-Smtp-Source: ABdhPJz/8mzbKbTdBB4a2vYn5MZT4pcwu5nhZkckeIyYN1aDX+TAJ2gNPiuemuE0Conc0rPMX5voV09Ws9cAelaN388=
-X-Received: by 2002:aca:2107:: with SMTP id 7mr6822209oiz.8.1619088082362;
- Thu, 22 Apr 2021 03:41:22 -0700 (PDT)
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=N+jXaR0SB+8fxvvMVeDeNfESYRDFwrHiFdNeachsM6Q=;
+        b=c0+cHymFLm1GqDFJLkoxwLUY2tcUVnLsqETEDy/MeNreDgiVnIi3HMQFxXxAxqUF1a
+         FVicFZajJ/6x4QhWtB5nS/6FLGmp5a27Ef1OrTvBByQ2PvOfPCE4pkjzcAv+f+80EiJf
+         02Xw3Lmqi0TCdAXBbtJV64dRM9UAGLII0O3P5j12WK6nTUcaTazHKIMdaE9T74yCPKB1
+         YOTXi7rNEdptdQussoUHcyTCgTiT2ER8SjuDzCNpVGg4m3tJ5abd6KNwXIKgFyBiTA82
+         n/87NhS3ADwHoJjX+F3W5FAzBC8QATbKrRqYw9uKp1io6omYeAM0KuZepTUjEpShpuDp
+         q9mQ==
+X-Gm-Message-State: AOAM532m8zxiPyNQaXcdfP8aigWbMDxmUq/7LSYQDEaxeIcmzOVtXMKz
+        SJM+frvVrU6p9pehbhIpwrJTcB9FQVbSx0hIUWjeOif1
+X-Google-Smtp-Source: ABdhPJz5Sq2Kl8285SJaqMSuRC+6FB8sKME1fMLn2LVa8SctzGoFZqjKCE5hJjtd4qYhXcU1sB5mCy0wwuI/TPqkV2E=
+X-Received: by 2002:a05:651c:10f:: with SMTP id a15mr1038547ljb.153.1619139529165;
+ Thu, 22 Apr 2021 17:58:49 -0700 (PDT)
 MIME-Version: 1.0
-References: <20210413170508.968148-1-kai.heng.feng@canonical.com>
- <CADnq5_P7_7jOZWTo+KCj3jOpmyDPN8eH3jNTgg3xLC4V9QM7kQ@mail.gmail.com>
- <CAKMK7uHR0VDk=C+u1d5qiiqQP+3ad5_gXQwvmPbJ56mG=3RjpQ@mail.gmail.com> <CADnq5_MpDz9myx8HiKihq-6_Ud48sN=NXN1_ga7WZa9LguzSjA@mail.gmail.com>
-In-Reply-To: <CADnq5_MpDz9myx8HiKihq-6_Ud48sN=NXN1_ga7WZa9LguzSjA@mail.gmail.com>
-From:   Sudeep Holla <sudeep.holla@arm.com>
-Date:   Thu, 22 Apr 2021 11:41:11 +0100
-Message-ID: <CAPKp9uYEwNfmBndCWt5BSZ7VQ+JHAhzd6aBsN8WO1nmMUQ2Mcw@mail.gmail.com>
-Subject: Re: [PATCH] efifb: Check efifb_pci_dev before using it
-To:     Alex Deucher <alexdeucher@gmail.com>,
-        "open list:EFIFB FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>,
-        "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>,
-        pjones@redhat.com
-Cc:     Daniel Vetter <daniel@ffwll.ch>,
-        Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        open list <linux-kernel@vger.kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Sudeep Holla <sudeep.holla@arm.com>
+References: <1616945059-8718-1-git-send-email-u0084500@gmail.com>
+ <CADiBU3-d3_L8RTeYCirnfjJdG=ea6UVenAi8O8GO_LvOaB7OdA@mail.gmail.com>
+ <20210419072229.GA4869@dell> <20210419072317.GB4869@dell> <20210419072403.GC4869@dell>
+ <CADiBU38bMuH00Bcx5hJas2=yAon00ffcGokT4u89vX-LJYuxNA@mail.gmail.com>
+In-Reply-To: <CADiBU38bMuH00Bcx5hJas2=yAon00ffcGokT4u89vX-LJYuxNA@mail.gmail.com>
+From:   ChiYuan Huang <u0084500@gmail.com>
+Date:   Fri, 23 Apr 2021 08:58:37 +0800
+Message-ID: <CADiBU39F4nHC5U+G+fJJemAJgeYxDimi0cXYkm25+YC8qO5yDA@mail.gmail.com>
+Subject: Re: [PATCH v6 1/4] mfd: rt4831: Adds support for Richtek RT4831
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     lgirdwood@gmail.com, Mark Brown <broonie@kernel.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        jingoohan1@gmail.com, b.zolnierkie@samsung.com,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        lkml <linux-kernel@vger.kernel.org>,
+        ChiYuan Huang <cy_huang@richtek.com>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Apr 14, 2021 at 8:20 AM Alex Deucher <alexdeucher@gmail.com> wrote:
+Hi, Lee:
+
+ChiYuan Huang <u0084500@gmail.com> =E6=96=BC 2021=E5=B9=B44=E6=9C=8819=E6=
+=97=A5 =E9=80=B1=E4=B8=80 =E4=B8=8B=E5=8D=885:55=E5=AF=AB=E9=81=93=EF=BC=9A
 >
-> On Tue, Apr 13, 2021 at 2:37 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+> Lee Jones <lee.jones@linaro.org> =E6=96=BC 2021=E5=B9=B44=E6=9C=8819=E6=
+=97=A5 =E9=80=B1=E4=B8=80 =E4=B8=8B=E5=8D=883:24=E5=AF=AB=E9=81=93=EF=BC=9A
 > >
-> > On Tue, Apr 13, 2021 at 8:02 PM Alex Deucher <alexdeucher@gmail.com> wrote:
-> > >
-> > > On Tue, Apr 13, 2021 at 1:05 PM Kai-Heng Feng
-> > > <kai.heng.feng@canonical.com> wrote:
-> > > >
-> > > > On some platforms like Hyper-V and RPi4 with UEFI firmware, efifb is not
-> > > > a PCI device.
-> > > >
-> > > > So make sure efifb_pci_dev is found before using it.
-> > > >
-> > > > Fixes: a6c0fd3d5a8b ("efifb: Ensure graphics device for efifb stays at PCI D0")
-> > > > BugLink: https://bugs.launchpad.net/bugs/1922403
-> > > > Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> > >
-> > > Reviewed-by: Alex Deucher <alexander.deucher@amd.com>
+> > On Mon, 19 Apr 2021, Lee Jones wrote:
 > >
-> > fbdev is in drm-misc, so maybe you can push this one too?
->
-> Yes, pushed.  Thanks!
->
+> > > On Mon, 19 Apr 2021, Lee Jones wrote:
+> > >
+> > > > On Mon, 19 Apr 2021, ChiYuan Huang wrote:
+> > > >
+> > > > > Hi, Linux mfd reviewers:
+> > > > >    It's been three weeks not to get any response from you.
+> > > > > Is there something wrong about this mfd patch?
+> > > > > If yes, please feel free to let me know.
+> > > >
+> > > > Couple of things:
+> > > >
+> > > > First, if you think a patch had fallen through the gaps, which does
+> > > > happen sometimes, it is generally considered acceptable to submit a
+> > > > [RESEND] ~2 weeks after the initial submission.  FYI: This was such=
+ a
+> > > > patch.  It was not on, or had fallen off of my radar for some reaso=
+n.
+> > > >
+> > > > Secondly, we are really late in the release cycle.  -rc8 has just b=
+een
+> > > > released.  Quite a few maintainers slow down at ~-rc6.  Particularl=
+y
+> > > > for new drivers.
+> > > >
+> > > > No need to resubmit this driver this time.  It is now on my to-revi=
+ew
+> > > > list and I will tend to it shortly.
+> > > >
+> > > > Thanks for your patience.
+> > >
+> > > Also you are missing a DT review on patch 4.
+> >
+> > ... looks like you forgot to Cc them!
+> >
+> Yap, really. I''ll resend patch 4 and cc them. Thx.
 
-Can we have this pushed into the branch that gets merged into linux-next.
-I still don't see this fix in -next and we are unable to do testing on our
-platform as we hit a boot crash without this as reported in [1]. We prefer
-running tests on -next without any additional patches or reverts, hence
-the nagging, sorry for that.
-
-Regards,
-Sudeep
-
-[1] https://lore.kernel.org/dri-devel/20210415102224.2764054-1-sudeep.holla@arm.com/
+Should I resend the patch and loop DT reviewers?
+> > --
+> > Lee Jones [=E6=9D=8E=E7=90=BC=E6=96=AF]
+> > Senior Technical Lead - Developer Services
+> > Linaro.org =E2=94=82 Open source software for Arm SoCs
+> > Follow Linaro: Facebook | Twitter | Blog

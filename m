@@ -2,382 +2,120 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D293AC43460
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Apr 2021 12:25:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 367BAC43461
+	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Apr 2021 09:32:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9431C61249
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Apr 2021 12:25:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F2A01613C2
+	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Apr 2021 09:32:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233239AbhDZMZp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 26 Apr 2021 08:25:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47120 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231983AbhDZMZo (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 26 Apr 2021 08:25:44 -0400
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC3B7C061574
-        for <linux-fbdev@vger.kernel.org>; Mon, 26 Apr 2021 05:25:01 -0700 (PDT)
-Received: by mail-wm1-x330.google.com with SMTP id p6-20020a05600c3586b029014131bbe5c7so1822049wmq.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 26 Apr 2021 05:25:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=Z49sPbUyJLBw3vIXfagJy9E25mAYkGPG99Ouapgyrqk=;
-        b=OmvYwNKN2V1JiAenwB8IyW4fnW73NFsIhVUBUVIvJfYZAfnHPqxZnR5GPAf+I5HKYB
-         wQr1i8DrRmDYqtPf5PvyLqbGXSA+poJocqNNgaffZLjrtDPUSsBq7lGJbDhIQXkhkrLP
-         QyM2nnKKZK7Wf15Ct5ofcG7tLKncukOI7yLnSyz9GdGfwzMEW5l0l77o8bPcmZ6J03SZ
-         kRnnF2JJ660T9zcrYQq2kA5KvduTx6UxonyGI2e1gGWFaMWtZW9JLxfuOvyf3Kk1Wo4G
-         nSZailvOoA9pJ4ta0KmGlXMKxbp7Pa7wsrsSxboAytGFXff2YbdYpZbK2xou9TCudbft
-         HaMg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=Z49sPbUyJLBw3vIXfagJy9E25mAYkGPG99Ouapgyrqk=;
-        b=BQ3leZlGk6XjEIlelLdAjZ4RY1/5yEdxer7+CH1iwrLpNDESRk+3fj+0tcLt9cpGSn
-         pqhp2IHfIC35uNDPdY52jPIScJy0xmFJ4q/wezBj3fxI7kQpPN4+x8FxOVg6aV8OHN3v
-         RIWjgW4Df44ayc24gNMTN3QR0c4Dub6d57t8ODdh1LIeKR3VLHYBzb9/9+0gBWQkr2Vk
-         2Pq3Zl6LMJsh9Ksx5Zjrodd62M8e/s8eLS3KwVatPd3UYboK2IYNHybVvoluxNTyUAdS
-         pw+XPmoTtU7DkelvKsjoPyBL1edH5blDYuyg/AISb9VzOG+eqe/eLf8y+SfFy8/r6lUh
-         RR6A==
-X-Gm-Message-State: AOAM532OmTiLsiyvwSToPheAFozlBg9iak0Axnv9ec5NHd84aoHsgP0q
-        L2dGl9mdg1uhEj8TDZAMu2kBQA==
-X-Google-Smtp-Source: ABdhPJxzplIQEMvuReMhR1l1SDGCHNbDGZJ7f/tkZ9kPHeb0JZTX1meucaQdzHYV4IBc7uyBYQz5PQ==
-X-Received: by 2002:a1c:ac41:: with SMTP id v62mr6073693wme.56.1619439900435;
-        Mon, 26 Apr 2021 05:25:00 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id g5sm20752559wrq.30.2021.04.26.05.24.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Apr 2021 05:24:59 -0700 (PDT)
-Date:   Mon, 26 Apr 2021 13:24:57 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     ChiYuan Huang <u0084500@gmail.com>
-Cc:     Lee Jones <lee.jones@linaro.org>, lgirdwood@gmail.com,
-        Mark Brown <broonie@kernel.org>, jingoohan1@gmail.com,
-        b.zolnierkie@samsung.com, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh+dt@kernel.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        lkml <linux-kernel@vger.kernel.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, cy_huang <cy_huang@richtek.com>
-Subject: Re: [RESEND PATCH v6 4/4] backlight: rt4831: Adds support for
- Richtek RT4831 backlight
-Message-ID: <20210426122457.j4vjvng6bgxbtpjk@maple.lan>
-References: <1619421491-31494-1-git-send-email-u0084500@gmail.com>
- <1619421491-31494-4-git-send-email-u0084500@gmail.com>
- <20210426101955.uvuzzsiig27xyuxc@maple.lan>
- <CADiBU39F8+GM4z7xJPpDVS7riPGi02BrurvMmnHMEPeKBQJ_tg@mail.gmail.com>
+        id S235184AbhD0Jc7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 27 Apr 2021 05:32:59 -0400
+Received: from mail.kernel.org ([198.145.29.99]:38472 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230316AbhD0Jc7 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 27 Apr 2021 05:32:59 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id BCC9C61176;
+        Tue, 27 Apr 2021 09:32:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1619515935;
+        bh=Rbgd9ScvUHvVNgBxoJ/euzCu2miLQ8d0BwdzOdMWw6U=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=sW0mGt+3GRdyqud1tHJRxYyaMv5pikyhb4v7forC4LGiQ1P83v8XR88ElKxtaNtk7
+         34TSWayASDKBiitd+3v+u/npRqb6xzfOIkKOSuCb4g8/st58TmqoQy5qcxVOvIbWKu
+         sFZPd5XcQrj1J1qZvXPebp2fCFuq5awYbVMVUzdU=
+Date:   Tue, 27 Apr 2021 11:31:12 +0200
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     linux-kernel@vger.kernel.org, ac100@lists.launchpad.net,
+        "Alexander A. Klimov" <grandmaster@al2klimov.de>,
+        Allen Pais <apais@linux.microsoft.com>,
+        Anders Blomdell <anders.blomdell@control.lth.se>,
+        Andrea Merello <andrea.merello@gmail.com>,
+        Andres Klode <jak@jak-linux.org>,
+        Andrey Shvetsov <andrey.shvetsov@k2l.de>,
+        Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
+        Christian Brauner <christian@brauner.io>,
+        Comedi <comedi@comedi.org>, "David A. Schleef" <ds@schleef.org>,
+        dri-devel@lists.freedesktop.org,
+        Fabio Aiuto <fabioaiuto83@gmail.com>,
+        Florian Schilhabel <florian.c.schilhabel@googlemail.com>,
+        Forest Bond <forest@alittletooquiet.net>,
+        Herman.Bruyninckx@mech.kuleuven.ac.be,
+        H Hartley Sweeten <hsweeten@visionengravers.com>,
+        Hridya Valsaraju <hridya@google.com>,
+        Ian Abbott <abbotti@mev.co.uk>,
+        Ilya Petrov <ilya.muromec@gmail.com>,
+        Jacob Feder <jacobsfeder@gmail.com>,
+        Jerry chuang <wlanfae@realtek.com>,
+        Joel Fernandes <joel@joelfernandes.org>,
+        "John B. Wyatt IV" <jbwyatt4@gmail.com>,
+        Jonathan Cameron <jic23@kernel.org>,
+        "J.P. Mellor" <jpmellor@rose-hulman.edu>,
+        karthik alapati <mail@karthek.com>,
+        Kees Cook <keescook@chromium.org>,
+        Kernel Team <ac100@lists.lauchpad.net>,
+        Klaas.Gadeyne@mech.kuleuven.ac.be,
+        Larry Finger <Larry.Finger@lwfinger.net>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        linux-fbdev@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-pwm@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-tegra@vger.kernel.org, Marc Dietrich <marvin24@gmx.de>,
+        Marco Cesati <marcocesati@gmail.com>,
+        Martijn Coenen <maco@android.com>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Michael Straube <straube.linux@gmail.com>,
+        Mori Hess <fmhess@users.sourceforge.net>,
+        =?iso-8859-1?Q?N=EDcolas_F=2E_R=2E_A=2E?= Prado 
+        <nfraprado@protonmail.com>,
+        Peter Hurley <peter@hurleysoftware.com>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Pierre-Hugues Husson <phhusson@free.fr>,
+        Robert Love <rlove@google.com>,
+        Romain Perier <romain.perier@gmail.com>,
+        Ross Schmidt <ross.schm.dev@gmail.com>,
+        "Spencer E. Olson" <olsonse@umich.edu>, Stanley@bb.sd3,
+        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Sumera Priyadarsini <sylphrenadin@gmail.com>,
+        Suren Baghdasaryan <surenb@google.com>,
+        Teddy Wang <teddy.wang@siliconmotion.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Todd Kjos <tkjos@android.com>,
+        Truxton Fulton <trux@truxton.com>,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>, Wim.Meeussen@mech.kuleuven.ac.be,
+        Zhansaya Bagdauletkyzy <zhansayabagdaulet@gmail.com>
+Subject: Re: [PATCH 00/57] Rid W=1 warnings from Staging
+Message-ID: <YIfZ4Ad6FxVDtqt/@kroah.com>
+References: <20210414181129.1628598-1-lee.jones@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CADiBU39F8+GM4z7xJPpDVS7riPGi02BrurvMmnHMEPeKBQJ_tg@mail.gmail.com>
+In-Reply-To: <20210414181129.1628598-1-lee.jones@linaro.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Apr 26, 2021 at 06:50:15PM +0800, ChiYuan Huang wrote:
-> Hi,
+On Wed, Apr 14, 2021 at 07:10:32PM +0100, Lee Jones wrote:
+> This set is part of a larger effort attempting to clean-up W=1
+> kernel builds, which are currently overwhelmingly riddled with
+> niggly little warnings.
 > 
-> Daniel Thompson <daniel.thompson@linaro.org> 於 2021年4月26日 週一 下午6:19寫道：
-> >
-> > On Mon, Apr 26, 2021 at 03:18:11PM +0800, cy_huang wrote:
-> > > From: ChiYuan Huang <cy_huang@richtek.com>
-> > >
-> > > Adds support for Richtek RT4831 backlight.
-> > >
-> > > Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
-> > > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> > > ---
-> > > Resend this v6 patch series to loop devicetree reviewers.
-> > >
-> > > For next, if the typo in Kconfig 'common' to 'commonly' can be added the below line
-> > > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> > > ---
-> >
-> > This isn't the best way to handle feedback from multiple maintainers.
-> >
-> > It is great to see you are keeping track of feedback. However it doesn't
-> > make sense to RESEND an old patchset and acknowledge that you haven't
-> > fixed a typo yet.
-> >
-> > It would be better to fix the typo and to resend a v7.
->
-> You can refer to the below reply
-> https://lkml.org/lkml/2021/4/23/229
+> Lee Jones (57):
 
-Indeed.
+44 of these applied to my tree, I'll keep them in my "testing" branch
+for now until -rc1 comes out.  Feel free to rebase your series on that
+and fix up the remaining ones and resend.
 
-However that thread is ambiguous about resending with changes (PATCH v7)
-and resending without changes (PATCH RESEND v6). Given you said in March
-there was a v7 series coming, I think it would have been better to send a
-new version. 
+Note, the comedi drivers have moved to drivers/comedi/ so those patches
+need to be sent as a different series, if you still want to make those
+changes based on the review comments.
 
-Don't worry about this too much. This is turning into quite a lot of
-fuss for a two letter typo. However it's very unusual to send out a
-patch (except perhaps an RFC) together with a comment listing what you
-need to fix next time around. It is pretty much always better to fix
-it first and then send it.
+thanks,
 
-
-Daniel.
-
-
-> > >  drivers/video/backlight/Kconfig            |   8 ++
-> > >  drivers/video/backlight/Makefile           |   1 +
-> > >  drivers/video/backlight/rt4831-backlight.c | 203 +++++++++++++++++++++++++++++
-> > >  3 files changed, 212 insertions(+)
-> > >  create mode 100644 drivers/video/backlight/rt4831-backlight.c
-> > >
-> > > diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> > > index d83c87b..de96441 100644
-> > > --- a/drivers/video/backlight/Kconfig
-> > > +++ b/drivers/video/backlight/Kconfig
-> > > @@ -289,6 +289,14 @@ config BACKLIGHT_QCOM_WLED
-> > >         If you have the Qualcomm PMIC, say Y to enable a driver for the
-> > >         WLED block. Currently it supports PM8941 and PMI8998.
-> > >
-> > > +config BACKLIGHT_RT4831
-> > > +     tristate "Richtek RT4831 Backlight Driver"
-> > > +     depends on MFD_RT4831
-> > > +     help
-> > > +       This enables support for Richtek RT4831 Backlight driver.
-> > > +       It's common used to drive the display WLED. There're four channels
-> > > +       inisde, and each channel can provide up to 30mA current.
-> > > +
-> > >  config BACKLIGHT_SAHARA
-> > >       tristate "Tabletkiosk Sahara Touch-iT Backlight Driver"
-> > >       depends on X86
-> > > diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-> > > index 685f3f1..cae2c83 100644
-> > > --- a/drivers/video/backlight/Makefile
-> > > +++ b/drivers/video/backlight/Makefile
-> > > @@ -49,6 +49,7 @@ obj-$(CONFIG_BACKLIGHT_PANDORA)             += pandora_bl.o
-> > >  obj-$(CONFIG_BACKLIGHT_PCF50633)     += pcf50633-backlight.o
-> > >  obj-$(CONFIG_BACKLIGHT_PWM)          += pwm_bl.o
-> > >  obj-$(CONFIG_BACKLIGHT_QCOM_WLED)    += qcom-wled.o
-> > > +obj-$(CONFIG_BACKLIGHT_RT4831)               += rt4831-backlight.o
-> > >  obj-$(CONFIG_BACKLIGHT_SAHARA)               += kb3886_bl.o
-> > >  obj-$(CONFIG_BACKLIGHT_SKY81452)     += sky81452-backlight.o
-> > >  obj-$(CONFIG_BACKLIGHT_TOSA)         += tosa_bl.o
-> > > diff --git a/drivers/video/backlight/rt4831-backlight.c b/drivers/video/backlight/rt4831-backlight.c
-> > > new file mode 100644
-> > > index 00000000..42155c7
-> > > --- /dev/null
-> > > +++ b/drivers/video/backlight/rt4831-backlight.c
-> > > @@ -0,0 +1,203 @@
-> > > +// SPDX-License-Identifier: GPL-2.0-only
-> > > +
-> > > +#include <dt-bindings/leds/rt4831-backlight.h>
-> > > +#include <linux/backlight.h>
-> > > +#include <linux/bitops.h>
-> > > +#include <linux/kernel.h>
-> > > +#include <linux/module.h>
-> > > +#include <linux/platform_device.h>
-> > > +#include <linux/property.h>
-> > > +#include <linux/regmap.h>
-> > > +
-> > > +#define RT4831_REG_BLCFG     0x02
-> > > +#define RT4831_REG_BLDIML    0x04
-> > > +#define RT4831_REG_ENABLE    0x08
-> > > +
-> > > +#define RT4831_BLMAX_BRIGHTNESS      2048
-> > > +
-> > > +#define RT4831_BLOVP_MASK    GENMASK(7, 5)
-> > > +#define RT4831_BLOVP_SHIFT   5
-> > > +#define RT4831_BLPWMEN_MASK  BIT(0)
-> > > +#define RT4831_BLEN_MASK     BIT(4)
-> > > +#define RT4831_BLCH_MASK     GENMASK(3, 0)
-> > > +#define RT4831_BLDIML_MASK   GENMASK(2, 0)
-> > > +#define RT4831_BLDIMH_MASK   GENMASK(10, 3)
-> > > +#define RT4831_BLDIMH_SHIFT  3
-> > > +
-> > > +struct rt4831_priv {
-> > > +     struct device *dev;
-> > > +     struct regmap *regmap;
-> > > +     struct backlight_device *bl;
-> > > +};
-> > > +
-> > > +static int rt4831_bl_update_status(struct backlight_device *bl_dev)
-> > > +{
-> > > +     struct rt4831_priv *priv = bl_get_data(bl_dev);
-> > > +     int brightness = backlight_get_brightness(bl_dev);
-> > > +     unsigned int enable = brightness ? RT4831_BLEN_MASK : 0;
-> > > +     u8 v[2];
-> > > +     int ret;
-> > > +
-> > > +     if (brightness) {
-> > > +             v[0] = (brightness - 1) & RT4831_BLDIML_MASK;
-> > > +             v[1] = ((brightness - 1) & RT4831_BLDIMH_MASK) >> RT4831_BLDIMH_SHIFT;
-> > > +
-> > > +             ret = regmap_raw_write(priv->regmap, RT4831_REG_BLDIML, v, sizeof(v));
-> > > +             if (ret)
-> > > +                     return ret;
-> > > +     }
-> > > +
-> > > +     return regmap_update_bits(priv->regmap, RT4831_REG_ENABLE, RT4831_BLEN_MASK, enable);
-> > > +
-> > > +}
-> > > +
-> > > +static int rt4831_bl_get_brightness(struct backlight_device *bl_dev)
-> > > +{
-> > > +     struct rt4831_priv *priv = bl_get_data(bl_dev);
-> > > +     unsigned int val;
-> > > +     u8 v[2];
-> > > +     int ret;
-> > > +
-> > > +     ret = regmap_read(priv->regmap, RT4831_REG_ENABLE, &val);
-> > > +     if (ret)
-> > > +             return ret;
-> > > +
-> > > +     if (!(val & RT4831_BLEN_MASK))
-> > > +             return 0;
-> > > +
-> > > +     ret = regmap_raw_read(priv->regmap, RT4831_REG_BLDIML, v, sizeof(v));
-> > > +     if (ret)
-> > > +             return ret;
-> > > +
-> > > +     ret = (v[1] << RT4831_BLDIMH_SHIFT) + (v[0] & RT4831_BLDIML_MASK) + 1;
-> > > +
-> > > +     return ret;
-> > > +}
-> > > +
-> > > +static const struct backlight_ops rt4831_bl_ops = {
-> > > +     .options = BL_CORE_SUSPENDRESUME,
-> > > +     .update_status = rt4831_bl_update_status,
-> > > +     .get_brightness = rt4831_bl_get_brightness,
-> > > +};
-> > > +
-> > > +static int rt4831_parse_backlight_properties(struct rt4831_priv *priv,
-> > > +                                          struct backlight_properties *bl_props)
-> > > +{
-> > > +     struct device *dev = priv->dev;
-> > > +     u8 propval;
-> > > +     u32 brightness;
-> > > +     unsigned int val = 0;
-> > > +     int ret;
-> > > +
-> > > +     /* common properties */
-> > > +     ret = device_property_read_u32(dev, "max-brightness", &brightness);
-> > > +     if (ret)
-> > > +             brightness = RT4831_BLMAX_BRIGHTNESS;
-> > > +
-> > > +     bl_props->max_brightness = min_t(u32, brightness, RT4831_BLMAX_BRIGHTNESS);
-> > > +
-> > > +     ret = device_property_read_u32(dev, "default-brightness", &brightness);
-> > > +     if (ret)
-> > > +             brightness = bl_props->max_brightness;
-> > > +
-> > > +     bl_props->brightness = min_t(u32, brightness, bl_props->max_brightness);
-> > > +
-> > > +     /* vendor properties */
-> > > +     if (device_property_read_bool(dev, "richtek,pwm-enable"))
-> > > +             val = RT4831_BLPWMEN_MASK;
-> > > +
-> > > +     ret = regmap_update_bits(priv->regmap, RT4831_REG_BLCFG, RT4831_BLPWMEN_MASK, val);
-> > > +     if (ret)
-> > > +             return ret;
-> > > +
-> > > +     ret = device_property_read_u8(dev, "richtek,bled-ovp-sel", &propval);
-> > > +     if (ret)
-> > > +             propval = RT4831_BLOVPLVL_21V;
-> > > +
-> > > +     propval = min_t(u8, propval, RT4831_BLOVPLVL_29V);
-> > > +     ret = regmap_update_bits(priv->regmap, RT4831_REG_BLCFG, RT4831_BLOVP_MASK,
-> > > +                              propval << RT4831_BLOVP_SHIFT);
-> > > +     if (ret)
-> > > +             return ret;
-> > > +
-> > > +     ret = device_property_read_u8(dev, "richtek,channel-use", &propval);
-> > > +     if (ret) {
-> > > +             dev_err(dev, "richtek,channel-use DT property missing\n");
-> > > +             return ret;
-> > > +     }
-> > > +
-> > > +     if (!(propval & RT4831_BLCH_MASK)) {
-> > > +             dev_err(dev, "No channel specified\n");
-> > > +             return -EINVAL;
-> > > +     }
-> > > +
-> > > +     return regmap_update_bits(priv->regmap, RT4831_REG_ENABLE, RT4831_BLCH_MASK, propval);
-> > > +}
-> > > +
-> > > +static int rt4831_bl_probe(struct platform_device *pdev)
-> > > +{
-> > > +     struct rt4831_priv *priv;
-> > > +     struct backlight_properties bl_props = { .type = BACKLIGHT_RAW,
-> > > +                                              .scale = BACKLIGHT_SCALE_LINEAR };
-> > > +     int ret;
-> > > +
-> > > +     priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-> > > +     if (!priv)
-> > > +             return -ENOMEM;
-> > > +
-> > > +     priv->dev = &pdev->dev;
-> > > +
-> > > +     priv->regmap = dev_get_regmap(pdev->dev.parent, NULL);
-> > > +     if (!priv->regmap) {
-> > > +             dev_err(&pdev->dev, "Failed to init regmap\n");
-> > > +             return -ENODEV;
-> > > +     }
-> > > +
-> > > +     ret = rt4831_parse_backlight_properties(priv, &bl_props);
-> > > +     if (ret) {
-> > > +             dev_err(&pdev->dev, "Failed to parse backlight properties\n");
-> > > +             return ret;
-> > > +     }
-> > > +
-> > > +     priv->bl = devm_backlight_device_register(&pdev->dev, pdev->name, &pdev->dev, priv,
-> > > +                                               &rt4831_bl_ops, &bl_props);
-> > > +     if (IS_ERR(priv->bl)) {
-> > > +             dev_err(&pdev->dev, "Failed to register backlight\n");
-> > > +             return PTR_ERR(priv->bl);
-> > > +     }
-> > > +
-> > > +     backlight_update_status(priv->bl);
-> > > +     platform_set_drvdata(pdev, priv);
-> > > +
-> > > +     return 0;
-> > > +}
-> > > +
-> > > +static int rt4831_bl_remove(struct platform_device *pdev)
-> > > +{
-> > > +     struct rt4831_priv *priv = platform_get_drvdata(pdev);
-> > > +     struct backlight_device *bl_dev = priv->bl;
-> > > +
-> > > +     bl_dev->props.brightness = 0;
-> > > +     backlight_update_status(priv->bl);
-> > > +
-> > > +     return 0;
-> > > +}
-> > > +
-> > > +static const struct of_device_id __maybe_unused rt4831_bl_of_match[] = {
-> > > +     { .compatible = "richtek,rt4831-backlight", },
-> > > +     {}
-> > > +};
-> > > +MODULE_DEVICE_TABLE(of, rt4831_bl_of_match);
-> > > +
-> > > +static struct platform_driver rt4831_bl_driver = {
-> > > +     .driver = {
-> > > +             .name = "rt4831-backlight",
-> > > +             .of_match_table = rt4831_bl_of_match,
-> > > +     },
-> > > +     .probe = rt4831_bl_probe,
-> > > +     .remove = rt4831_bl_remove,
-> > > +};
-> > > +module_platform_driver(rt4831_bl_driver);
-> > > +
-> > > +MODULE_AUTHOR("ChiYuan Huang <cy_huang@richtek.com>");
-> > > +MODULE_LICENSE("GPL v2");
-> > > --
-> > > 2.7.4
-> > >
+greg k-h

@@ -2,238 +2,137 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72AECC433ED
-	for <linux-fbdev@archiver.kernel.org>; Fri,  7 May 2021 11:10:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7B70C433B4
+	for <linux-fbdev@archiver.kernel.org>; Fri,  7 May 2021 16:34:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4C088613CD
-	for <linux-fbdev@archiver.kernel.org>; Fri,  7 May 2021 11:10:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 786016144F
+	for <linux-fbdev@archiver.kernel.org>; Fri,  7 May 2021 16:34:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235714AbhEGLLb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 7 May 2021 07:11:31 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:54968 "EHLO
-        www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236998AbhEGLLB (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 May 2021 07:11:01 -0400
-Received: from fsav108.sakura.ne.jp (fsav108.sakura.ne.jp [27.133.134.235])
-        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTP id 147B9Rqu023432;
-        Fri, 7 May 2021 20:09:27 +0900 (JST)
-        (envelope-from penguin-kernel@i-love.sakura.ne.jp)
-Received: from www262.sakura.ne.jp (202.181.97.72)
- by fsav108.sakura.ne.jp (F-Secure/fsigk_smtp/550/fsav108.sakura.ne.jp);
- Fri, 07 May 2021 20:09:27 +0900 (JST)
-X-Virus-Status: clean(F-Secure/fsigk_smtp/550/fsav108.sakura.ne.jp)
-Received: from [192.168.1.9] (M106072142033.v4.enabler.ne.jp [106.72.142.33])
-        (authenticated bits=0)
-        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTPSA id 147B9RAW023427
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NO);
-        Fri, 7 May 2021 20:09:27 +0900 (JST)
-        (envelope-from penguin-kernel@i-love.sakura.ne.jp)
-Subject: Re: [syzbot] BUG: unable to handle kernel paging request in
- vga16fb_imageblit (2)
-From:   Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To:     syzbot <syzbot+1f29e126cf461c4de3b3@syzkaller.appspotmail.com>,
-        b.zolnierkie@samsung.com, colin.king@canonical.com,
-        daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org,
-        gregkh@linuxfoundation.org, jani.nikula@intel.com,
-        jirislaby@kernel.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com,
-        "Maciej W. Rozycki" <macro@orcam.me.uk>,
-        "Antonino A. Daplas" <adaplas@gmail.com>
-References: <0000000000006bbd0c05c14f1b09@google.com>
- <6e21483c-06f6-404b-4018-e00ee85c456c@i-love.sakura.ne.jp>
-Message-ID: <87d928e4-b2b9-ad30-f3f0-1dfb8e4e03ed@i-love.sakura.ne.jp>
-Date:   Fri, 7 May 2021 20:09:26 +0900
-User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+        id S238217AbhEGQfj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 7 May 2021 12:35:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56160 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236658AbhEGQfi (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 7 May 2021 12:35:38 -0400
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A9D2C061574
+        for <linux-fbdev@vger.kernel.org>; Fri,  7 May 2021 09:34:38 -0700 (PDT)
+Received: by mail-wr1-x42b.google.com with SMTP id x5so9878767wrv.13
+        for <linux-fbdev@vger.kernel.org>; Fri, 07 May 2021 09:34:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=O99QLS/XuXmi5sOenN2CFxQz7Q5z0xeHfl0XAzi4THc=;
+        b=U+IByuCcxULK3nxRVkk7JSImKY8trLGHWZcfLZTgiCNxRgComAbd5SB0Cfj6jYZ996
+         9lS6uV6uHIiiE4JuSIZxyPiEFBQLgBWjXWWpjAxbl8UM05Asr4O0C2J4hfCVuPJJkeXk
+         Lp1lfV5LSbB4AJ6q9iEoC6lTzRO2xg0DHZElM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :content-transfer-encoding:in-reply-to;
+        bh=O99QLS/XuXmi5sOenN2CFxQz7Q5z0xeHfl0XAzi4THc=;
+        b=uZ90FzBbAuLvXjTJcxjtNvJiA5O+XPcAqWNt6ZXwkpCd+dCD+G8gaHROvG44qqflWG
+         A63Hh2oE0f9B6A3k8Rokf8+SfPsltebZqsiiPATvsUVmd5TWrlfxpX0tkcFuYJpNKTrP
+         CSaqq8LK/f4Z3iLSR+x1/Zycsf68yOHrh4iTjGJ1OoV8YVSmnQ/kjOmaWDPjXFGOcjN1
+         ChqbDiOL54rFH0HH2/R2mB0xt16Od5XJDXwi11hui13cFWjHQc0rcIfMdNwJZbFo0xcT
+         SX+5Diip2NmHNhJ3AE8A/QgEfr+QyHoI13sK+aR7vSNxDgpu7nNFdIdHIoupZgim5VZs
+         uPRg==
+X-Gm-Message-State: AOAM533lW2qWmi0dhLIxJUNPYo4RAkSrLfhJ7AsQe+I8NfM+IxwpfKJX
+        g+NH0JU83TIrMOo+DEHsO+onrQ==
+X-Google-Smtp-Source: ABdhPJz9eV+VjyShaXPfAx4WvqHMrnt9SIWVOMU/ZLtthyBfUy5zg6ri6iuFlihrahEEp1TfX0GW8g==
+X-Received: by 2002:a5d:6181:: with SMTP id j1mr13620583wru.16.1620405276947;
+        Fri, 07 May 2021 09:34:36 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id r2sm8702898wrt.79.2021.05.07.09.34.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 07 May 2021 09:34:36 -0700 (PDT)
+Date:   Fri, 7 May 2021 18:34:34 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+Cc:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        linux-fbdev@vger.kernel.org, shawnguo@kernel.org,
+        s.hauer@pengutronix.de, kernel-janitors@vger.kernel.org,
+        krzysztof.h1@poczta.fm, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, j.beisert@pengutronix.de,
+        linux-imx@nxp.com, kernel@pengutronix.de,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] video: fbdev: imxfb: Fix an error message
+Message-ID: <YJVsGn4+rbh0+b+I@phenom.ffwll.local>
+Mail-Followup-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        linux-fbdev@vger.kernel.org, shawnguo@kernel.org,
+        s.hauer@pengutronix.de, kernel-janitors@vger.kernel.org,
+        krzysztof.h1@poczta.fm, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, j.beisert@pengutronix.de,
+        linux-imx@nxp.com, kernel@pengutronix.de,
+        linux-arm-kernel@lists.infradead.org
+References: <d7b25026f82659da3c6f7159eea480faa9d738be.1620327302.git.christophe.jaillet@wanadoo.fr>
+ <20210507050503.iwrcis2xzhjjthmp@pengutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <6e21483c-06f6-404b-4018-e00ee85c456c@i-love.sakura.ne.jp>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210507050503.iwrcis2xzhjjthmp@pengutronix.de>
+X-Operating-System: Linux phenom 5.10.32scarlett+ 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2021/05/03 22:41, Tetsuo Handa wrote:
-> Therefore, I guess that the problem is that fbcon_putcs() from do_update_region() from
-> redraw_screen() from vt_kdsetmode(KD_TEXT) from ioctl(fd, KDSETMODE, KD_TEXT) tries to
-> redraw 2 x 16640 despite memory amount allocated for actual screen is only 80 x 30.
+On Fri, May 07, 2021 at 07:05:03AM +0200, Uwe Kleine-König wrote:
+> Hello Christophe,
 > 
-> I don't know how to fix this problem...
+> On Thu, May 06, 2021 at 08:57:05PM +0200, Christophe JAILLET wrote:
+> > 'ret' is known to be 0 here.
+> > No error code is available, so just remove it from the error message.
+> > 
+> > Fixes: 72330b0eeefc ("i.MX Framebuffer: Use readl/writel instead of direct pointer deref")
+> > Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> > ---
+> >  drivers/video/fbdev/imxfb.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+> > index 7f8debd2da06..ad598257ab38 100644
+> > --- a/drivers/video/fbdev/imxfb.c
+> > +++ b/drivers/video/fbdev/imxfb.c
+> > @@ -992,7 +992,7 @@ static int imxfb_probe(struct platform_device *pdev)
+> >  	info->screen_buffer = dma_alloc_wc(&pdev->dev, fbi->map_size,
+> >  					   &fbi->map_dma, GFP_KERNEL);
+> >  	if (!info->screen_buffer) {
+> > -		dev_err(&pdev->dev, "Failed to allocate video RAM: %d\n", ret);
+> > +		dev_err(&pdev->dev, "Failed to allocate video RAM\n");
+> >  		ret = -ENOMEM;
+> >  		goto failed_map;
+> >  	}
 > 
+> Reviewed-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 
-Daniel Vetter suggested me that parameter validation is missing/wrong somewhere, for
-resize requests that don't fit should be rejected. Thus, I'm thinking how to add
-parameter validation.
+Thanks for patch& review, queued for 5.14 in drm-misc-next.
+-Daniel
 
-Like a diff shown bottom, adding a hook for validating whether rows / columns are
-small enough (VGA_FB_PHYS_LEN bytes starting from VGA_FB_PHYS ?) survives the
+> 
+> Are you using this driver, or did you find that problem using some
+> static checker?
+> 
+> Best regards
+> Uwe
+> 
+> -- 
+> Pengutronix e.K.                           | Uwe Kleine-König            |
+> Industrial Linux Solutions                 | https://www.pengutronix.de/ |
 
-----------
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <linux/kd.h>
-#include <linux/vt.h>
 
-int main(int argc, char *argv[])
-{
-        const int fd = open("/dev/char/4:1", O_RDWR);
-        struct vt_sizes vt = { 0x4100, 2 };
 
-        ioctl(fd, KDSETMODE, KD_GRAPHICS);
-        ioctl(fd, VT_RESIZE, &vt);
-        ioctl(fd, KDSETMODE, KD_TEXT);
-        return 0;
-}
-----------
-
-reproducer. But I don't know how to calculate upper boundary values for vga16fb_tty_resize(),
-for I even don't know where these values are derived from...
-
-Also, currently resize_screen() calls vc->vc_sw->con_resize() only if vc->vc_mode != KD_GRAPHICS.
-But we need to unconditionally call vga16fb_tty_resize() in order to survive the reproducer; we
-need to prevent vc->vc_{rows,cols} from exceeding the upper boundary values regardless of current
-vc->vc_mode setting. The "vc->vc_mode != KD_GRAPHICS" check predates the git history, and I don't
-know the side effect of removing this check...
-
-----------
-e400b6ec4ede4 drivers/char/vt.c   (Antonino A. Daplas   2007-10-16 01:29:35 -0700 1168) static inline int resize_screen(struct vc_data *vc, int width, int height,
-e400b6ec4ede4 drivers/char/vt.c   (Antonino A. Daplas   2007-10-16 01:29:35 -0700 1169)                                 int user)
-^1da177e4c3f4 drivers/char/vt.c   (Linus Torvalds       2005-04-16 15:20:36 -0700 1170) {
-^1da177e4c3f4 drivers/char/vt.c   (Linus Torvalds       2005-04-16 15:20:36 -0700 1171)         /* Resizes the resolution of the display adapater */
-^1da177e4c3f4 drivers/char/vt.c   (Linus Torvalds       2005-04-16 15:20:36 -0700 1172)         int err = 0;
-^1da177e4c3f4 drivers/char/vt.c   (Linus Torvalds       2005-04-16 15:20:36 -0700 1173)
-^1da177e4c3f4 drivers/char/vt.c   (Linus Torvalds       2005-04-16 15:20:36 -0700 1174)         if (vc->vc_mode != KD_GRAPHICS && vc->vc_sw->con_resize)
-e400b6ec4ede4 drivers/char/vt.c   (Antonino A. Daplas   2007-10-16 01:29:35 -0700 1175)                 err = vc->vc_sw->con_resize(vc, width, height, user);
-e400b6ec4ede4 drivers/char/vt.c   (Antonino A. Daplas   2007-10-16 01:29:35 -0700 1176)
-^1da177e4c3f4 drivers/char/vt.c   (Linus Torvalds       2005-04-16 15:20:36 -0700 1177)         return err;
-^1da177e4c3f4 drivers/char/vt.c   (Linus Torvalds       2005-04-16 15:20:36 -0700 1178) }
-----------
-
-I need more help from those who know this area.
-
- drivers/tty/vt/vt.c              |    2 +-
- drivers/video/fbdev/core/fbcon.c |    7 +++++++
- drivers/video/fbdev/vga16fb.c    |    8 ++++++++
- include/linux/fb.h               |    3 +++
- 4 files changed, 19 insertions(+), 1 deletion(-)
-
-----------
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index a8dccd23c249..870384afb5e9 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -289,14 +289,17 @@ struct fb_ops {
- 
- 	/* teardown any resources to do with this framebuffer */
- 	void (*fb_destroy)(struct fb_info *info);
- 
- 	/* called at KDB enter and leave time to prepare the console */
- 	int (*fb_debug_enter)(struct fb_info *info);
- 	int (*fb_debug_leave)(struct fb_info *info);
-+
-+	/* Check if resizing TTY to these sizes is safe. */
-+	int (*fb_tty_resize)(struct fb_info *info, unsigned int cols, unsigned int rows);
- };
- 
- #ifdef CONFIG_FB_TILEBLITTING
- #define FB_TILE_CURSOR_NONE        0
- #define FB_TILE_CURSOR_UNDERLINE   1
- #define FB_TILE_CURSOR_LOWER_THIRD 2
- #define FB_TILE_CURSOR_LOWER_HALF  3
-diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index 1e8a38a7967d..54aa6a99b09c 100644
---- a/drivers/video/fbdev/vga16fb.c
-+++ b/drivers/video/fbdev/vga16fb.c
-@@ -1266,27 +1266,35 @@ static void vga16fb_destroy(struct fb_info *info)
- {
- 	iounmap(info->screen_base);
- 	fb_dealloc_cmap(&info->cmap);
- 	/* XXX unshare VGA regions */
- 	framebuffer_release(info);
- }
- 
-+static int vga16fb_tty_resize(struct fb_info *info, unsigned int cols, unsigned int rows)
-+{
-+	if (cols <= 80 && rows <= 30)
-+		return 0;
-+	return -EINVAL;
-+}
-+
- static const struct fb_ops vga16fb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_open        = vga16fb_open,
- 	.fb_release     = vga16fb_release,
- 	.fb_destroy	= vga16fb_destroy,
- 	.fb_check_var	= vga16fb_check_var,
- 	.fb_set_par	= vga16fb_set_par,
- 	.fb_setcolreg 	= vga16fb_setcolreg,
- 	.fb_pan_display = vga16fb_pan_display,
- 	.fb_blank 	= vga16fb_blank,
- 	.fb_fillrect	= vga16fb_fillrect,
- 	.fb_copyarea	= vga16fb_copyarea,
- 	.fb_imageblit	= vga16fb_imageblit,
-+	.fb_tty_resize  = vga16fb_tty_resize,
- };
- 
- #ifndef MODULE
- static int __init vga16fb_setup(char *options)
- {
- 	char *this_opt;
- 	
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 3406067985b1..c0eac87a2a56 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -1990,14 +1990,21 @@ static int fbcon_resize(struct vc_data *vc, unsigned int width,
- 		if (pitch <= 0)
- 			return -EINVAL;
- 		size = CALC_FONTSZ(vc->vc_font.height, pitch, vc->vc_font.charcount);
- 		if (size > FNTSIZE(vc->vc_font.data))
- 			return -EINVAL;
- 	}
- 
-+	if (info->fbops && info->fbops->fb_tty_resize) {
-+		int err = info->fbops->fb_tty_resize(info, width, height);
-+
-+		if (err)
-+			return err;
-+	}
-+
- 	virt_w = FBCON_SWAP(ops->rotate, width, height);
- 	virt_h = FBCON_SWAP(ops->rotate, height, width);
- 	virt_fw = FBCON_SWAP(ops->rotate, vc->vc_font.width,
- 				 vc->vc_font.height);
- 	virt_fh = FBCON_SWAP(ops->rotate, vc->vc_font.height,
- 				 vc->vc_font.width);
- 	var.xres = virt_w * virt_fw;
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 01645e87b3d5..fa1548d4f94b 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -1167,15 +1167,15 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
- 
- static inline int resize_screen(struct vc_data *vc, int width, int height,
- 				int user)
- {
- 	/* Resizes the resolution of the display adapater */
- 	int err = 0;
- 
--	if (vc->vc_mode != KD_GRAPHICS && vc->vc_sw->con_resize)
-+	if (vc->vc_sw->con_resize)
- 		err = vc->vc_sw->con_resize(vc, width, height, user);
- 
- 	return err;
- }
- 
- /**
-  *	vc_do_resize	-	resizing method for the tty
-----------
-
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

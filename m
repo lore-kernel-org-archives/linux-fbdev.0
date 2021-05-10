@@ -2,92 +2,75 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	DKIM_ADSP_CUSTOM_MED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 961FEC433ED
-	for <linux-fbdev@archiver.kernel.org>; Sat,  8 May 2021 20:23:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D944C433B4
+	for <linux-fbdev@archiver.kernel.org>; Mon, 10 May 2021 10:13:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6A22D613F2
-	for <linux-fbdev@archiver.kernel.org>; Sat,  8 May 2021 20:23:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EF8FE613AF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 10 May 2021 10:13:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229644AbhEHUYj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 8 May 2021 16:24:39 -0400
-Received: from smtp07.smtpout.orange.fr ([80.12.242.129]:34948 "EHLO
-        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229520AbhEHUYj (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 8 May 2021 16:24:39 -0400
-Received: from localhost.localdomain ([86.243.172.93])
-        by mwinf5d65 with ME
-        id 2LPa2500521Fzsu03LPaNR; Sat, 08 May 2021 22:23:36 +0200
-X-ME-Helo: localhost.localdomain
-X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Sat, 08 May 2021 22:23:36 +0200
-X-ME-IP: 86.243.172.93
-From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To:     krzysztof.h1@wp.pl, akpm@linux-foundation.org, imre.deak@nokia.com,
-        juha.yrjola@solidboot.com
-Cc:     linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        kernel-janitors@vger.kernel.org,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH] video: fbdev: lcd_mipid: Fix a memory leak in an error handling path
-Date:   Sat,  8 May 2021 22:23:33 +0200
-Message-Id: <8b82e34724755b69f34f15dddb288cd373080390.1620505229.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.30.2
+        id S229684AbhEJKOe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 10 May 2021 06:14:34 -0400
+Received: from fgw20-7.mail.saunalahti.fi ([62.142.5.81]:31614 "EHLO
+        fgw20-7.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S230158AbhEJKOd (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 10 May 2021 06:14:33 -0400
+X-Greylist: delayed 964 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 May 2021 06:14:33 EDT
+Received: from localhost (88-115-248-186.elisa-laajakaista.fi [88.115.248.186])
+        by fgw20.mail.saunalahti.fi (Halon) with ESMTP
+        id 1b869fa5-b176-11eb-ba24-005056bd6ce9;
+        Mon, 10 May 2021 12:57:20 +0300 (EEST)
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+To:     Lee Jones <lee.jones@linaro.org>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Brian Masney <masneyb@onstation.org>,
+        Dan Murphy <dmurphy@ti.com>
+Subject: [PATCH v1 1/1] backlight: lm3630a_bl: Put fwnode in error case during ->probe()
+Date:   Mon, 10 May 2021 12:57:16 +0300
+Message-Id: <20210510095716.3302910-1-andy.shevchenko@gmail.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-If 'mipid_detect()' fails, we must free 'md' to avoid a memory leak.
+device_for_each_child_node() bumps a reference counting of a returned variable.
+We have to balance it whenever we return to the caller.
 
-While at it, modernize the function:
-   - remove a useless message in case of memory allocation failure
-   - change a '== NULL' into a '!'
-
-Fixes: 66d2f99d0bb5 ("omapfb: add support for MIPI-DCS compatible LCDs")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Fixes: 8fbce8efe15cd ("backlight: lm3630a: Add firmware node support")
+Cc: Brian Masney <masneyb@onstation.org>
+Cc: Dan Murphy <dmurphy@ti.com>
+Signed-off-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 ---
- drivers/video/fbdev/omap/lcd_mipid.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ drivers/video/backlight/lm3630a_bl.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap/lcd_mipid.c b/drivers/video/fbdev/omap/lcd_mipid.c
-index a75ae0c9b14c..b4b93ff4b41a 100644
---- a/drivers/video/fbdev/omap/lcd_mipid.c
-+++ b/drivers/video/fbdev/omap/lcd_mipid.c
-@@ -551,10 +551,8 @@ static int mipid_spi_probe(struct spi_device *spi)
- 	int r;
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index e88a2b0e5904..662029d6a3dc 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -482,8 +482,10 @@ static int lm3630a_parse_node(struct lm3630a_chip *pchip,
  
- 	md = kzalloc(sizeof(*md), GFP_KERNEL);
--	if (md == NULL) {
--		dev_err(&spi->dev, "out of memory\n");
-+	if (!md)
- 		return -ENOMEM;
--	}
+ 	device_for_each_child_node(pchip->dev, node) {
+ 		ret = lm3630a_parse_bank(pdata, node, &seen_led_sources);
+-		if (ret)
++		if (ret) {
++			fwnode_handle_put(node);
+ 			return ret;
++		}
+ 	}
  
- 	spi->mode = SPI_MODE_0;
- 	md->spi = spi;
-@@ -563,11 +561,15 @@ static int mipid_spi_probe(struct spi_device *spi)
- 
- 	r = mipid_detect(md);
- 	if (r < 0)
--		return r;
-+		goto free_md;
- 
- 	omapfb_register_panel(&md->panel);
- 
- 	return 0;
-+
-+free_md:
-+	kfree(md);
-+	return r;
- }
- 
- static int mipid_spi_remove(struct spi_device *spi)
+ 	return ret;
 -- 
-2.30.2
+2.31.1
 

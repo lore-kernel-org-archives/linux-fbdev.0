@@ -8,53 +8,54 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BAB83C43461
-	for <linux-fbdev@archiver.kernel.org>; Wed, 12 May 2021 16:09:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15F79C43470
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 May 2021 16:09:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8987F61D0D
+	by mail.kernel.org (Postfix) with ESMTP id EE75A61D03
 	for <linux-fbdev@archiver.kernel.org>; Wed, 12 May 2021 16:09:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231215AbhELQI7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 12 May 2021 12:08:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51382 "EHLO
+        id S233593AbhELQJD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 12 May 2021 12:09:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234655AbhELPtM (ORCPT
+        with ESMTP id S235594AbhELPt3 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 12 May 2021 11:49:12 -0400
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C7D70C08E9AF;
-        Wed, 12 May 2021 08:21:49 -0700 (PDT)
-Received: by mail-pf1-x429.google.com with SMTP id i13so18882207pfu.2;
-        Wed, 12 May 2021 08:21:49 -0700 (PDT)
+        Wed, 12 May 2021 11:49:29 -0400
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 86849C08E9B5;
+        Wed, 12 May 2021 08:21:57 -0700 (PDT)
+Received: by mail-pj1-x102c.google.com with SMTP id ep16-20020a17090ae650b029015d00f578a8so568434pjb.2;
+        Wed, 12 May 2021 08:21:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=gc9ynDymCC3a3vz7FumAB7zqjSZEd+eT6DKBS2/xfx8=;
-        b=m0YTHqaNUr7GcmGW2dUX6ZoLKX0BoXFa0ClP86ygRp6wVtqVbxIR5MvgXbjb4DOChU
-         why/lx0uTHYR0zMJQSj0onlwTA7S2miXSR/NqROL+BbpGYQKszTGfWtbpWa8wG2+UaFG
-         Wbf3VWY+QFfB2gKjbjD04mhHLKRsSdyOvyOH8vkZerw3CqkJsE6JLcWb24lihuUyQfqf
-         bywmfvsEwxTSAWs3iovDu4FwQ3Yi0jB4uy93rw1jv+U3Nvm73W1mG6w4BTVT13cUn9tK
-         dZDlwGfSsYaI7CG2Yia6kh0UPjOCjHUSptT/fe7/7GXyyacl03XxIA7TfZtxOGSTcjcJ
-         zBWg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=tVgAkGBFVimZZBUracvErIwvpUEHqs66nyqdBflm5/U=;
+        b=FiOiW1/5F8Tv5RnGj+rHwDk1+p20TPFSFAehCRyPxI9/81bRBgMUBOmlvJxKZNRm6n
+         c9ID7I9wp7I/x6bwwBYIh/PT5Fcij5Zoue9Shqd1CfPzQWFtbXHvLla2LC05+p1EfSr1
+         10i24Isemv4n3WVD5h7YEqZ+NZIYTfjHImdp+BHFhG/rT3pCa6XV0e5KLO5BbUMnQbGd
+         k69CRcGIdn2hfpMcMBqUrqZJVzk/gvBi/CC6SsAtyPYX18AUj4lprOXN+vS3rEC+erRC
+         VRAO8V8/Cmbi8qRMzkJ1dtzap37PjezpXylVIFbx4rMD/cwcV9dEoA5G/5mzygJjVJVd
+         HpZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=gc9ynDymCC3a3vz7FumAB7zqjSZEd+eT6DKBS2/xfx8=;
-        b=iDeOumP+ru/m+mTWUD4HY1T4EQ9U2rFvpE3i2VpLpF+xicpbABIPnSGosOzpg+8CBo
-         CcZUEC4N5AI9VLelJoib/EFe2dz8ov20pSazd7t4FV9IbLR8Md158qvAiwIB96jzST7p
-         7IJ4rTXz8B5SH3Dc8GZBTNSgiQsNVd45nJ8PWjGA6a3mOiRts+BaqkRW0aZayqwKjonX
-         YMzqzgzcXTZAJD6XLwODfuMRxq4Ws3pA1sqTpmz/DMW30WVrxqrUxjFdg+yvJLMfybvd
-         1rXIronT7Gzb+3zw2I4g2JCDAd0XdbFDyxTXE7XDllInT93vk5qhz/QEx3sYDxqX6r3u
-         D7eg==
-X-Gm-Message-State: AOAM531DiYhLPw2NTUfGVVMYDOmKOEplL1tunWZ480T8jgyZ9v5Qw4EA
-        CatL7ZfvmtcVyiEgErxtkPU=
-X-Google-Smtp-Source: ABdhPJwkYp4C0XK96/4okfdd1KKEBv9s1paeAchmnWIeAIAO5YJy/AjlVz2PhvXaLnurS1zVsegb8g==
-X-Received: by 2002:a05:6a00:b96:b029:2aa:d8a8:cd4d with SMTP id g22-20020a056a000b96b02902aad8a8cd4dmr27409146pfj.36.1620832909182;
-        Wed, 12 May 2021 08:21:49 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=tVgAkGBFVimZZBUracvErIwvpUEHqs66nyqdBflm5/U=;
+        b=YeUiPH3JNEj0tJNLKIcDYgY5VpD+tm4iahP1KzUViGnB6i+3BSJsJRQoJTPYKKz4+k
+         c2xLrzaU0ZKVu+I5OprjbVjc82k//W36E6cyiNvF9H46IpRlo88XFKMSXHLUdMECsn80
+         gM6oAaFEc7yn+4PXjF7NWYqkPa7Lge6Anzvc3Z01IQCq3OvD443iK2DLfn1X6gIWLwZS
+         B9PsQbenlhC2Sc0vyzpxqQl9pgHc/XCDZqxGJJVh7JkMAtzb7qxMdul8hkZkIn4WIDBK
+         jtqsFiGFNbQu8SjA1HFY9vFrawUPIC42GsXcMKntYRPoCRnwHM+VRdEGQvCGEJ+CXIE3
+         DzEA==
+X-Gm-Message-State: AOAM531cO1iAbASqFvkG6MIPVSkduhBlkc8il/NIzyBoQhfwKvojSWcp
+        1XA71/0ARLeMXNys3LdliQI=
+X-Google-Smtp-Source: ABdhPJwQh6KTizOSzT5reuY78FXiWUzhLhyiRGLcw/LjHS0z/CiqoR9yKJ7MtEWrp7ToClkc+3TX3w==
+X-Received: by 2002:a17:90b:300e:: with SMTP id hg14mr39484848pjb.149.1620832917021;
+        Wed, 12 May 2021 08:21:57 -0700 (PDT)
 Received: from localhost.localdomain (1-171-3-209.dynamic-ip.hinet.net. [1.171.3.209])
-        by smtp.gmail.com with ESMTPSA id t133sm228633pgb.0.2021.05.12.08.21.44
+        by smtp.gmail.com with ESMTPSA id t133sm228633pgb.0.2021.05.12.08.21.53
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 12 May 2021 08:21:48 -0700 (PDT)
+        Wed, 12 May 2021 08:21:56 -0700 (PDT)
 From:   cy_huang <u0084500@gmail.com>
 To:     lee.jones@linaro.org, lgirdwood@gmail.com, broonie@kernel.org,
         daniel.thompson@linaro.org, jingoohan1@gmail.com,
@@ -62,204 +63,123 @@ To:     lee.jones@linaro.org, lgirdwood@gmail.com, broonie@kernel.org,
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
         devicetree@vger.kernel.org, cy_huang@richtek.com
-Subject: [PATCH v7 1/4] mfd: rt4831: Adds support for Richtek RT4831
-Date:   Wed, 12 May 2021 23:21:37 +0800
-Message-Id: <1620832900-8347-1-git-send-email-u0084500@gmail.com>
+Subject: [PATCH v7 3/4] mfd: rt4831: Adds DT binding document for Richtek RT4831
+Date:   Wed, 12 May 2021 23:21:39 +0800
+Message-Id: <1620832900-8347-3-git-send-email-u0084500@gmail.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1620832900-8347-1-git-send-email-u0084500@gmail.com>
+References: <1620832900-8347-1-git-send-email-u0084500@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: ChiYuan Huang <cy_huang@richtek.com>
 
-This adds support Richtek RT4831 core. It includes four channel WLED driver
-and Display Bias Voltage outputs.
+Adds DT binding document for Richtek RT4831.
 
 Signed-off-by: ChiYuan Huang <cy_huang@richtek.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
-The RT4831 regulator patches are already on main stream, and can be referred to
-9351ab8b0cb6 regulator: rt4831: Adds support for Richtek RT4831 DSV regulator
-934b05e81862 regulator: rt4831: Adds DT binding document for Richtek RT4831 DSV regulator
+ .../devicetree/bindings/mfd/richtek,rt4831.yaml    | 90 ++++++++++++++++++++++
+ 1 file changed, 90 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/richtek,rt4831.yaml
 
-since v6
-- Respin the date from 2020 to 2021.
-- Rmove the shutdown routine.
-- Change the macro OF_MFD_CELL to MFD_CELL_OF.
-
-since v5
-- Rename file name from rt4831-core.c to rt4831.c
-- Change RICHTEK_VID to RICHTEK_VENDOR_ID.
-- Change gpio_desc nameing from 'enable' to 'enable_gpio' in probe.
-- Change variable 'val' to the meaningful name 'chip_id'.
-- Refine the error log when vendor id is not matched.
-- Remove of_match_ptr.
-
-since v2
-- Refine Kconfig descriptions.
-- Add copyright.
-- Refine error logs in probe.
-- Refine comment lines in remove and shutdown.
----
- drivers/mfd/Kconfig  |  10 +++++
- drivers/mfd/Makefile |   1 +
- drivers/mfd/rt4831.c | 115 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 126 insertions(+)
- create mode 100644 drivers/mfd/rt4831.c
-
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 5c7f2b1..49e57c9 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -1076,6 +1076,16 @@ config MFD_RDC321X
- 	  southbridge which provides access to GPIOs and Watchdog using the
- 	  southbridge PCI device configuration space.
- 
-+config MFD_RT4831
-+	tristate "Richtek RT4831 four channel WLED and Display Bias Voltage"
-+	depends on I2C
-+	select MFD_CORE
-+	select REGMAP_I2C
-+	help
-+	  This enables support for the Richtek RT4831 that includes 4 channel
-+	  WLED driving and Display Bias Voltage. It's commonly used to provide
-+	  power to the LCD display and LCD backlight.
-+
- config MFD_RT5033
- 	tristate "Richtek RT5033 Power Management IC"
- 	depends on I2C
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 4f6d2b8..eb42bd4 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -234,6 +234,7 @@ obj-$(CONFIG_MFD_MENF21BMC)	+= menf21bmc.o
- obj-$(CONFIG_MFD_HI6421_PMIC)	+= hi6421-pmic-core.o
- obj-$(CONFIG_MFD_HI655X_PMIC)   += hi655x-pmic.o
- obj-$(CONFIG_MFD_DLN2)		+= dln2.o
-+obj-$(CONFIG_MFD_RT4831)	+= rt4831.o
- obj-$(CONFIG_MFD_RT5033)	+= rt5033.o
- obj-$(CONFIG_MFD_SKY81452)	+= sky81452.o
- 
-diff --git a/drivers/mfd/rt4831.c b/drivers/mfd/rt4831.c
+diff --git a/Documentation/devicetree/bindings/mfd/richtek,rt4831.yaml b/Documentation/devicetree/bindings/mfd/richtek,rt4831.yaml
 new file mode 100644
-index 00000000..b169781
+index 00000000..4762eb1
 --- /dev/null
-+++ b/drivers/mfd/rt4831.c
-@@ -0,0 +1,115 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright (c) 2021 Richtek Technology Corp.
-+ *
-+ * Author: ChiYuan Huang <cy_huang@richtek.com>
-+ */
++++ b/Documentation/devicetree/bindings/mfd/richtek,rt4831.yaml
+@@ -0,0 +1,90 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/richtek,rt4831.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+#include <linux/gpio/consumer.h>
-+#include <linux/i2c.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/core.h>
-+#include <linux/module.h>
-+#include <linux/regmap.h>
++title: Richtek RT4831 DSV and Backlight Integrated IC
 +
-+#define RT4831_REG_REVISION	0x01
-+#define RT4831_REG_ENABLE	0x08
-+#define RT4831_REG_I2CPROT	0x15
++maintainers:
++  - ChiYuan Huang <cy_huang@richtek.com>
 +
-+#define RICHTEK_VENDOR_ID	0x03
-+#define RT4831_VID_MASK		GENMASK(1, 0)
-+#define RT4831_RESET_MASK	BIT(7)
-+#define RT4831_I2CSAFETMR_MASK	BIT(0)
++description: |
++  RT4831 is a multifunctional device that can provide power to the LCD display
++  and LCD backlight.
 +
-+static const struct mfd_cell rt4831_subdevs[] = {
-+	MFD_CELL_OF("rt4831-backlight", NULL, NULL, 0, 0, "richtek,rt4831-backlight"),
-+	MFD_CELL_NAME("rt4831-regulator")
-+};
++  For Display Bias Voltage DSVP and DSVN, the output range is about 4V to 6.5V.
++  It's sufficient to meet the current LCD power requirement.
 +
-+static bool rt4831_is_accessible_reg(struct device *dev, unsigned int reg)
-+{
-+	if (reg >= RT4831_REG_REVISION && reg <= RT4831_REG_I2CPROT)
-+		return true;
-+	return false;
-+}
++  For the LCD backlight, it can provide four channel WLED driving capability.
++  Each channel driving current is up to 30mA
 +
-+static const struct regmap_config rt4831_regmap_config = {
-+	.reg_bits = 8,
-+	.val_bits = 8,
-+	.max_register = RT4831_REG_I2CPROT,
++  Datasheet is available at
++  https://www.richtek.com/assets/product_file/RT4831A/DS4831A-05.pdf
 +
-+	.readable_reg = rt4831_is_accessible_reg,
-+	.writeable_reg = rt4831_is_accessible_reg,
-+};
++properties:
++  compatible:
++    const: richtek,rt4831
 +
-+static int rt4831_probe(struct i2c_client *client)
-+{
-+	struct gpio_desc *enable_gpio;
-+	struct regmap *regmap;
-+	unsigned int chip_id;
-+	int ret;
++  reg:
++    description: I2C device address.
++    maxItems: 1
 +
-+	enable_gpio = devm_gpiod_get_optional(&client->dev, "enable", GPIOD_OUT_HIGH);
-+	if (IS_ERR(enable_gpio)) {
-+		dev_err(&client->dev, "Failed to get 'enable' GPIO\n");
-+		return PTR_ERR(enable_gpio);
-+	}
++  enable-gpios:
++    description: |
++      GPIO to enable/disable the chip. It is optional.
++      Some usage directly tied this pin to follow VIO 1.8V power on sequence.
++    maxItems: 1
 +
-+	regmap = devm_regmap_init_i2c(client, &rt4831_regmap_config);
-+	if (IS_ERR(regmap)) {
-+		dev_err(&client->dev, "Failed to initialize regmap\n");
-+		return PTR_ERR(regmap);
-+	}
++  regulators:
++    $ref: ../regulator/richtek,rt4831-regulator.yaml
 +
-+	ret = regmap_read(regmap, RT4831_REG_REVISION, &chip_id);
-+	if (ret) {
-+		dev_err(&client->dev, "Failed to get H/W revision\n");
-+		return ret;
-+	}
++  backlight:
++    $ref: ../leds/backlight/richtek,rt4831-backlight.yaml
 +
-+	if ((chip_id & RT4831_VID_MASK) != RICHTEK_VENDOR_ID) {
-+		dev_err(&client->dev, "Chip vendor ID 0x%02x not matched\n", chip_id);
-+		return -ENODEV;
-+	}
++required:
++  - compatible
++  - reg
 +
-+	/*
-+	 * Used to prevent the abnormal shutdown.
-+	 * If SCL/SDA both keep low for one second to reset HW.
-+	 */
-+	ret = regmap_update_bits(regmap, RT4831_REG_I2CPROT, RT4831_I2CSAFETMR_MASK,
-+				 RT4831_I2CSAFETMR_MASK);
-+	if (ret) {
-+		dev_err(&client->dev, "Failed to enable I2C safety timer\n");
-+		return ret;
-+	}
++additionalProperties: false
 +
-+	return devm_mfd_add_devices(&client->dev, PLATFORM_DEVID_AUTO, rt4831_subdevs,
-+				    ARRAY_SIZE(rt4831_subdevs), NULL, 0, NULL);
-+}
++examples:
++  - |
++    #include <dt-bindings/leds/rt4831-backlight.h>
++    i2c {
++      #address-cells = <1>;
++      #size-cells = <0>;
 +
-+static int rt4831_remove(struct i2c_client *client)
-+{
-+	struct regmap *regmap = dev_get_regmap(&client->dev, NULL);
++      rt4831@11 {
++        compatible = "richtek,rt4831";
++        reg = <0x11>;
 +
-+	/* Disable WLED and DSV outputs */
-+	return regmap_update_bits(regmap, RT4831_REG_ENABLE, RT4831_RESET_MASK, RT4831_RESET_MASK);
-+}
++        regulators {
++          DSVLCM {
++            regulator-min-microvolt = <4000000>;
++            regulator-max-microvolt = <7150000>;
++            regulator-allow-bypass;
++          };
++          DSVP {
++            regulator-name = "rt4831-dsvp";
++            regulator-min-microvolt = <4000000>;
++            regulator-max-microvolt = <6500000>;
++            regulator-boot-on;
++          };
++          DSVN {
++            regulator-name = "rt4831-dsvn";
++            regulator-min-microvolt = <4000000>;
++            regulator-max-microvolt = <6500000>;
++            regulator-boot-on;
++          };
++        };
 +
-+static const struct of_device_id __maybe_unused rt4831_of_match[] = {
-+	{ .compatible = "richtek,rt4831", },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, rt4831_of_match);
-+
-+static struct i2c_driver rt4831_driver = {
-+	.driver = {
-+		.name = "rt4831",
-+		.of_match_table = rt4831_of_match,
-+	},
-+	.probe_new = rt4831_probe,
-+	.remove = rt4831_remove,
-+};
-+module_i2c_driver(rt4831_driver);
-+
-+MODULE_AUTHOR("ChiYuan Huang <cy_huang@richtek.com>");
-+MODULE_LICENSE("GPL v2");
++        backlight {
++          compatible = "richtek,rt4831-backlight";
++          default-brightness = <1024>;
++          max-brightness = <2048>;
++          richtek,bled-ovp-sel = /bits/ 8 <RT4831_BLOVPLVL_21V>;
++          richtek,channel-use = /bits/ 8 <RT4831_BLED_ALLCHEN>;
++        };
++      };
++    };
 -- 
 2.7.4
 

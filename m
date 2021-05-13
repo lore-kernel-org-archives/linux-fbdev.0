@@ -3,111 +3,125 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17DB4C433B4
-	for <linux-fbdev@archiver.kernel.org>; Thu, 13 May 2021 10:37:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DFFDC433B4
+	for <linux-fbdev@archiver.kernel.org>; Thu, 13 May 2021 11:43:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DD5A16143E
-	for <linux-fbdev@archiver.kernel.org>; Thu, 13 May 2021 10:37:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 419A660FE3
+	for <linux-fbdev@archiver.kernel.org>; Thu, 13 May 2021 11:43:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231529AbhEMKi7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 13 May 2021 06:38:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47764 "EHLO
+        id S231529AbhEMLoa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 13 May 2021 07:44:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34340 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231513AbhEMKi6 (ORCPT
+        with ESMTP id S233542AbhEMLo0 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 13 May 2021 06:38:58 -0400
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E0448C061574
-        for <linux-fbdev@vger.kernel.org>; Thu, 13 May 2021 03:37:48 -0700 (PDT)
-Received: by mail-wm1-x32a.google.com with SMTP id b19-20020a05600c06d3b029014258a636e8so4426834wmn.2
-        for <linux-fbdev@vger.kernel.org>; Thu, 13 May 2021 03:37:48 -0700 (PDT)
+        Thu, 13 May 2021 07:44:26 -0400
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A08BBC061574;
+        Thu, 13 May 2021 04:43:15 -0700 (PDT)
+Received: by mail-pf1-x431.google.com with SMTP id q2so21419525pfh.13;
+        Thu, 13 May 2021 04:43:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=8MRW+RUNJca4AXa5eHgAo8GAC0ZpSS8t7RdPzv49j74=;
-        b=B0gbejrpLRfJnc7OaHsvMS1QG7k7XLm1B6NA5cayaUI06UjWco1rLnhAee8TPlEsR9
-         79AZv5M633+8rl0sKu5uH7Al0KyzlWejVWvOm2eTc4HRIOhDOynreJ9KATnRnd1BsOCt
-         eSp/VhInDLsmakAqEHgBYSDOckMIGwrLNo3ufADJrB+ElQsMpTLL6zUbSXuhm62XSyII
-         Eqc1UT+YS71HYtLU977IyIbFDY+y1ZNvApNRrXJcbYCMjrZYxdGyclZaSu6KaqY2zrK5
-         nt2hAujitIAuD47AfiArnounyddMEmb3fMh8MndjQMENjuL9G4ilVYa13saRTEgJN0Qy
-         j1eg==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=s1VuF8QYDuULXzkDfZzy2fYjCpqH9mbnMRRACxdLFrE=;
+        b=TcHAG5oowcHzcZI3mZ6g/K6KCH4Z0Hjv7UqYycquOg3rs0MeFZbVCnw6Vr+ddIuGSu
+         O2n+75OX5WnDTAjsBeztQEjQLky5rTU4tFtNpWqdDnzBrCla+1xBpNtY6wmGVpao0zs6
+         XZFGs7NAr65B7izFpBpgthOCF6EvSDRKDgaqdTgZGDX/TyI1mLNPL3zIJi5ShShfU9S+
+         RycAJfSj3unFOB26oPv+GHF3ynwkExSd1I2wDyDHiKzP09WLRXfWWpmx79vcuYvuc7r3
+         rqPVOjB0wsd/WIuozpp6FGTdiPYtg9kUqZ7qek6gvyM0soLqj4BQ6NdaePYyoZRiW9CB
+         urVw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=8MRW+RUNJca4AXa5eHgAo8GAC0ZpSS8t7RdPzv49j74=;
-        b=fNqB/sQHDIL4UoSTgvqa4ogJfOo15n2/19uMpZ77jhXT3X6Y5euwUPLcjrGk2yxcXe
-         D6FFL1AKsO7vR4uk8O36OUWC2lpg93sUllyqMyJRVercekMgiF+6onR8rl9uOwclU9Wk
-         9+NrvyxcbOewdoV0DVI/KyDqdxgNQpMN8/2AX7OG7ay+ELXEHQLjXajJiPklX0IPM8Kh
-         A9MrH4eSdbRsanTqEeM2UTcB4quGw8K3NHMb+C+WN2hsOlVBLENnkVEGuKreBWH5QtTP
-         GvicK61eiicbMYeGzjfUVGDxJA9wSxHRMwTn1IbLYBJHAyHXe8X0SwcY6YQ/b3z1/PnM
-         JF7g==
-X-Gm-Message-State: AOAM532SkuACbUr2xFA9CraywbLdeeJcj+rnIBmFbiwVq7joDRc1a1Ko
-        Hyfbw0uw1DLWyXA8lMYvFT0Hvg==
-X-Google-Smtp-Source: ABdhPJxkdOua6E6ia1U9hG/mRkJmaLRXHDGr+I8c7GOqimHlksaxK1gjHzcXbYjFWt/DNACfe855qw==
-X-Received: by 2002:a7b:c252:: with SMTP id b18mr43936215wmj.32.1620902267606;
-        Thu, 13 May 2021 03:37:47 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id m6sm2417459wrp.29.2021.05.13.03.37.46
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=s1VuF8QYDuULXzkDfZzy2fYjCpqH9mbnMRRACxdLFrE=;
+        b=N7TzuzTwpNBrtTV0xKeCeuuLIL9G3YNl4G5BXgy4nl+FRtlpKe9Emv5ay5zYlcSkB3
+         LD8HoL67ScYPiZBF1WNQS1SJFMdOdGcWvQBdukmW6btAX558zX58A2DHDESjiPuwErHo
+         s0axRll+XHfnPZDDKdrpdc0pql7ANxiuEOzJrxHLJydFHroogMZCRfun3gR19teGJSbc
+         weQdSYd0TlUrK7oQV6x/yZ0kyVPkwu6CSmwbjhul9XOzgVSqy6j9Zgz8TRI2c2+hkrtq
+         eneq+Ln7DTZ+3Wq308ZjS2PPX/EFC1/ri+RvwsxTV5n7+LtMqfgSi16pmK/883Ye0410
+         bZXw==
+X-Gm-Message-State: AOAM532wjofWbZyJmUAnYWnTjeGxHLHcqrLwTyobCR2oVawpdSkJMZ5K
+        3QNt3/ND5fiUXNte2epSSEE=
+X-Google-Smtp-Source: ABdhPJzxxUnjWpzts/4jkztJsshg+Yh+/d8t7Zesn8LcEpPJsUjbyVJUF5Mo/eZk4k1uN9Od8zNFlg==
+X-Received: by 2002:a17:90b:f97:: with SMTP id ft23mr14653681pjb.164.1620906194574;
+        Thu, 13 May 2021 04:43:14 -0700 (PDT)
+Received: from yguoaz-VirtualBox.hz.ali.com ([106.11.30.42])
+        by smtp.googlemail.com with ESMTPSA id f3sm6341949pjo.3.2021.05.13.04.43.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 May 2021 03:37:47 -0700 (PDT)
-Date:   Thu, 13 May 2021 11:37:45 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     Lee Jones <lee.jones@linaro.org>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Brian Masney <masneyb@onstation.org>,
-        Dan Murphy <dmurphy@ti.com>
-Subject: Re: [PATCH v1 1/1] backlight: lm3630a_bl: Put fwnode in error case
- during ->probe()
-Message-ID: <20210513103745.2dzawk7c63ku2vz6@maple.lan>
-References: <20210510095716.3302910-1-andy.shevchenko@gmail.com>
+        Thu, 13 May 2021 04:43:14 -0700 (PDT)
+From:   Yiyuan GUO <yguoaz@gmail.com>
+To:     deller@gmx.de
+Cc:     geert@linux-m68k.org, linux-parisc@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        yguoaz@gmail.com
+Subject: [PATCH v2] video/logo: protect against divide by zero when reading image
+Date:   Thu, 13 May 2021 19:42:09 +0800
+Message-Id: <20210513114209.60457-1-yguoaz@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <alpine.DEB.2.22.394.2105121353530.1204552@ramsan.of.borg>
+References: <alpine.DEB.2.22.394.2105121353530.1204552@ramsan.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210510095716.3302910-1-andy.shevchenko@gmail.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, May 10, 2021 at 12:57:16PM +0300, Andy Shevchenko wrote:
-> device_for_each_child_node() bumps a reference counting of a returned variable.
-> We have to balance it whenever we return to the caller.
-> 
-> Fixes: 8fbce8efe15cd ("backlight: lm3630a: Add firmware node support")
-> Cc: Brian Masney <masneyb@onstation.org>
-> Cc: Dan Murphy <dmurphy@ti.com>
-> Signed-off-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+In video/logo/pnmtologo.c, the function read_image can read from the
+image file an integer 0 and pass it to function get_number255, leading
+to a divide by zero problem.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Yiyuan GUO <yguoaz@gmail.com>
+---
+ drivers/video/logo/pnmtologo.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/video/logo/pnmtologo.c b/drivers/video/logo/pnmtologo.c
+index 4718d7895..d9e8d1d5b 100644
+--- a/drivers/video/logo/pnmtologo.c
++++ b/drivers/video/logo/pnmtologo.c
+@@ -116,6 +116,16 @@ static unsigned int get_number(FILE *fp)
+     return val;
+ }
+ 
++static unsigned int get_maxval(FILE *fp)
++{
++    unsigned int maxval = get_number(fp);
++
++    if (!maxval)
++	die("%s: invalid maxval zero\n", filename);
++
++    return maxval;
++}
++
+ static unsigned int get_number255(FILE *fp, unsigned int maxval)
+ {
+     unsigned int val = get_number(fp);
+@@ -182,7 +192,7 @@ static void read_image(void)
+ 
+ 	case '2':
+ 	    /* Plain PGM */
+-	    maxval = get_number(fp);
++	    maxval = get_maxval(fp);
+ 	    for (i = 0; i < logo_height; i++)
+ 		for (j = 0; j < logo_width; j++)
+ 		    logo_data[i][j].red = logo_data[i][j].green =
+@@ -191,7 +201,7 @@ static void read_image(void)
+ 
+ 	case '3':
+ 	    /* Plain PPM */
+-	    maxval = get_number(fp);
++	    maxval = get_maxval(fp);
+ 	    for (i = 0; i < logo_height; i++)
+ 		for (j = 0; j < logo_width; j++) {
+ 		    logo_data[i][j].red = get_number255(fp, maxval);
+-- 
+2.25.1
 
-> ---
->  drivers/video/backlight/lm3630a_bl.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-> index e88a2b0e5904..662029d6a3dc 100644
-> --- a/drivers/video/backlight/lm3630a_bl.c
-> +++ b/drivers/video/backlight/lm3630a_bl.c
-> @@ -482,8 +482,10 @@ static int lm3630a_parse_node(struct lm3630a_chip *pchip,
->  
->  	device_for_each_child_node(pchip->dev, node) {
->  		ret = lm3630a_parse_bank(pdata, node, &seen_led_sources);
-> -		if (ret)
-> +		if (ret) {
-> +			fwnode_handle_put(node);
->  			return ret;
-> +		}
->  	}
->  
->  	return ret;
-> -- 
-> 2.31.1
-> 

@@ -2,91 +2,99 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDC55C433B4
-	for <linux-fbdev@archiver.kernel.org>; Fri, 14 May 2021 21:34:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D4A6C433ED
+	for <linux-fbdev@archiver.kernel.org>; Sat, 15 May 2021 00:45:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8DE8D61440
-	for <linux-fbdev@archiver.kernel.org>; Fri, 14 May 2021 21:34:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EAE0A61264
+	for <linux-fbdev@archiver.kernel.org>; Sat, 15 May 2021 00:45:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232375AbhENVfT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 14 May 2021 17:35:19 -0400
-Received: from mail.kernel.org ([198.145.29.99]:56462 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230475AbhENVfS (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 14 May 2021 17:35:18 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 3D10E6143F;
-        Fri, 14 May 2021 21:34:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1621028046;
-        bh=hJes5fVwFMyBeanoe97q1M/H0pXkUh5gZ9KDWMORWxE=;
-        h=From:To:Cc:Subject:Date:From;
-        b=cU1uvUz4dnLZFAGf0hBvsDMANh2A6Nn29EdaIlH2ApxigmLn5llJ2MOYkOge9CLiM
-         DktbmKF0dGNg+xjxBwE/9nP4x3sxxyLiC2UoS6JsyewiIlBeIAQEDIDTf6RHkWbBrn
-         gxiY3BwLVI7/kd8MdCaFARy4NR29rIYihzGAG3DXSUL/DXqhSdGvvOdbEKyvVL3zKh
-         jq1Jh5+G5gRKCeYwqRHj562jd6FOOyEBq9GUgsD8h3n+S6Nwl3nUQp+boAdzMOwwZq
-         WFqjZmp+YEqZs0gmwyzPn+34UkaOLtDznl44dXJprpQ/g5+r4B7io7jbWpAzSFMkJh
-         fSd9/V+anuz3g==
-From:   Arnd Bergmann <arnd@kernel.org>
-To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc:     Arnd Bergmann <arnd@arndb.de>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Masahiro Yamada <masahiroy@kernel.org>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: matrox: use modern module_init()
-Date:   Fri, 14 May 2021 23:33:05 +0200
-Message-Id: <20210514213316.635070-1-arnd@kernel.org>
-X-Mailer: git-send-email 2.29.2
+        id S230055AbhEOArJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 14 May 2021 20:47:09 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:50295 "EHLO
+        www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230004AbhEOArJ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 14 May 2021 20:47:09 -0400
+Received: from fsav303.sakura.ne.jp (fsav303.sakura.ne.jp [153.120.85.134])
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTP id 14F0jFEm090525;
+        Sat, 15 May 2021 09:45:15 +0900 (JST)
+        (envelope-from penguin-kernel@i-love.sakura.ne.jp)
+Received: from www262.sakura.ne.jp (202.181.97.72)
+ by fsav303.sakura.ne.jp (F-Secure/fsigk_smtp/550/fsav303.sakura.ne.jp);
+ Sat, 15 May 2021 09:45:15 +0900 (JST)
+X-Virus-Status: clean(F-Secure/fsigk_smtp/550/fsav303.sakura.ne.jp)
+Received: from [192.168.1.9] (M106072142033.v4.enabler.ne.jp [106.72.142.33])
+        (authenticated bits=0)
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTPSA id 14F0jFti090520
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NO);
+        Sat, 15 May 2021 09:45:15 +0900 (JST)
+        (envelope-from penguin-kernel@i-love.sakura.ne.jp)
+Subject: Re: [PATCH] video: fbdev: vga16fb: fix OOB write in
+ vga16fb_imageblit()
+To:     "Maciej W. Rozycki" <macro@orcam.me.uk>,
+        Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        syzbot <syzbot+1f29e126cf461c4de3b3@syzkaller.appspotmail.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Colin King <colin.king@canonical.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jani Nikula <jani.nikula@intel.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        syzkaller-bugs <syzkaller-bugs@googlegroups.com>,
+        "Antonino A. Daplas" <adaplas@gmail.com>
+References: <0000000000006bbd0c05c14f1b09@google.com>
+ <6e21483c-06f6-404b-4018-e00ee85c456c@i-love.sakura.ne.jp>
+ <87d928e4-b2b9-ad30-f3f0-1dfb8e4e03ed@i-love.sakura.ne.jp>
+ <05acdda8-dc1c-5119-4326-96eed24bea0c@i-love.sakura.ne.jp>
+ <CAHk-=wguwhFpjhyMtDaH2hhjoV62gDgByC=aPyTrW9CkM5hqvA@mail.gmail.com>
+ <alpine.DEB.2.21.2105142150460.3032@angie.orcam.me.uk>
+From:   Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Message-ID: <543ead9f-08d2-cc9d-e569-78a479378e62@i-love.sakura.ne.jp>
+Date:   Sat, 15 May 2021 09:45:11 +0900
+User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.DEB.2.21.2105142150460.3032@angie.orcam.me.uk>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+On 2021/05/15 5:25, Maciej W. Rozycki wrote:
+>  NB for fbcon the usual ioctl to resize the console is FBIOPUT_VSCREENINFO 
+> rather than VT_RESIZEX; fbset(8) uses it, and I actually experimented with 
+> it and a TGA-like (SFB+) framebuffer when at my lab last time, as Linux is 
+> kind enough to know how to fiddle with its clockchip.  It works just fine.
 
-This is one of the last drivers with a global init_module() function
-instead of the modern module_init() annotation. Convert it over.
+fbcon_update_vcs() from FBIOPUT_VSCREENINFO is no-op if vc->vc_mode != KD_TEXT
+(which is equivalent to "if vc->vc_mode == KD_GRAPHICS" because KD_TEXT0/KD_TEXT1
+are treated as KD_TEXT). Then, maybe it is OK to let resize_screen() return -EINVAL
+in order to make vc_do_resize() request fail if vc->vc_mode == KD_GRAPHICS.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/video/fbdev/matrox/matroxfb_base.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+>  Overall I think it does make sense to resize the text console at any 
+> time, even if the visible console (VT) chosen is in the graphics mode, as 
+> my understanding (and experience at least with vgacon) is that resizing 
+> the console applies globally across all the VTs.  So the intent of the 
+> original change appears valid to me, and the choice not to reprogram the 
+> visible console and only store the settings for a future use if it's in 
+> the graphics mode correct.
+>
+>  Which means any bug triggered here needs to be fixed elsewhere rather 
+> than by making the request fail.
 
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
-index 4325bf7f388c..5c82611e93d9 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -2486,8 +2486,6 @@ static int __init matroxfb_init(void)
- 	return err;
- }
- 
--module_init(matroxfb_init);
--
- #else
- 
- /* *************************** init module code **************************** */
-@@ -2572,7 +2570,7 @@ module_param_named(cmode, default_cmode, int, 0);
- MODULE_PARM_DESC(cmode, "Specify the video depth that should be used (8bit default)");
- #endif
- 
--int __init init_module(void){
-+static int __init matroxfb_init(void){
- 
- 	DBG(__func__)
- 
-@@ -2603,6 +2601,7 @@ int __init init_module(void){
- }
- #endif	/* MODULE */
- 
-+module_init(matroxfb_init);
- module_exit(matrox_done);
- EXPORT_SYMBOL(matroxfb_register_driver);
- EXPORT_SYMBOL(matroxfb_unregister_driver);
--- 
-2.29.2
+Since syzbot does not trigger this problem with Linus's patch, I think we can
+try Linus's patch with
+
+  pr_info_once("Resizing text console while in graphical mode is ignored. Please report if you need this.\n");
+
+added in order to see if somebody wants "only store the settings for a future use".
 

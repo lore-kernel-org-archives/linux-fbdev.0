@@ -2,105 +2,428 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36A03C433B4
-	for <linux-fbdev@archiver.kernel.org>; Sat, 15 May 2021 16:42:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCAABC433ED
+	for <linux-fbdev@archiver.kernel.org>; Sun, 16 May 2021 13:22:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 062FA6127C
-	for <linux-fbdev@archiver.kernel.org>; Sat, 15 May 2021 16:42:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9B80A6113E
+	for <linux-fbdev@archiver.kernel.org>; Sun, 16 May 2021 13:22:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231174AbhEOQn2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 15 May 2021 12:43:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58982 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230491AbhEOQn1 (ORCPT
+        id S233848AbhEPNXx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 16 May 2021 09:23:53 -0400
+Received: from youngberry.canonical.com ([91.189.89.112]:39108 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233720AbhEPNXw (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 15 May 2021 12:43:27 -0400
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DCBAC06174A
-        for <linux-fbdev@vger.kernel.org>; Sat, 15 May 2021 09:42:12 -0700 (PDT)
-Received: by mail-lf1-x12c.google.com with SMTP id j10so2670938lfb.12
-        for <linux-fbdev@vger.kernel.org>; Sat, 15 May 2021 09:42:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=iKkVD1Qtnhdv59KfIngIIRAgpMVGtUMoAaJE9aWcwDg=;
-        b=ZTy8QEEoSvjvmpGGdABqj29z7ZcuL0IRQ9UBKh89fhMz+j8cPVNUeZBKE8yaOCqkMJ
-         kXzjCIiBF/NlemQsWsYyOaATN469b44wJYerSUSZFnkQiC4aQLy7om0FmX9cUarP4FxA
-         D1eo9OLAbDq5eCqiokMYbyAbQahObMHCCCKQo=
+        Sun, 16 May 2021 09:23:52 -0400
+Received: from mail-lj1-f199.google.com ([209.85.208.199])
+        by youngberry.canonical.com with esmtps  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        (Exim 4.93)
+        (envelope-from <juerg.haefliger@canonical.com>)
+        id 1liGj6-0001IF-V9
+        for linux-fbdev@vger.kernel.org; Sun, 16 May 2021 13:22:37 +0000
+Received: by mail-lj1-f199.google.com with SMTP id z14-20020a2e964e0000b02900e9ad576f5aso1999393ljh.20
+        for <linux-fbdev@vger.kernel.org>; Sun, 16 May 2021 06:22:36 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=iKkVD1Qtnhdv59KfIngIIRAgpMVGtUMoAaJE9aWcwDg=;
-        b=s+Bro/jo4iRRyqGksxTW5kYZOeOpSJAV5QY61VSx6APlX5lBe5BrrfiwAWa3hi5Mqz
-         AxJCyh8x4LkG9g0QZzkh3yl0GkHCOayacJxtFitETw/6dBEVxC4tfEZIMw7pSciY/1ws
-         Fnq3I7kjD5VHwhJmbNADS8FJyvqevqQjB8q3BpPM5+4Afg0mcZOKZp2rS5u6NWGKFRp2
-         lLNeEyLTM1ZgyzgK3Cke0zk2Ga8ZZXYLPUzzkJOo3SZCtYI8aXgsVcd8nipi8VQHPGiE
-         3zI2bxU0lEMmiDcmYw+ndQmcTjxuHJoBsS5bE96O724TJmKpmRwsZytk/RYArODQywsS
-         c3YQ==
-X-Gm-Message-State: AOAM532x0MHArQZkvD7LVGtWOTjvI+CQ0YAh6Y0WXSuruvF/rUWk/OdU
-        D67VwcfVXfFU+BHvYOLQIyYr6Fj4DnDV6GYLPDk=
-X-Google-Smtp-Source: ABdhPJzLrsfQ1L7slBdofCNjOC6K1LT/H/V2Tjtul6kUhUu+QNosI0q1OMDGGlQRdgmmqaLBuU4Jbg==
-X-Received: by 2002:a05:6512:2302:: with SMTP id o2mr30134395lfu.647.1621096930946;
-        Sat, 15 May 2021 09:42:10 -0700 (PDT)
-Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com. [209.85.167.43])
-        by smtp.gmail.com with ESMTPSA id u11sm1179185lfo.28.2021.05.15.09.42.09
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 15 May 2021 09:42:09 -0700 (PDT)
-Received: by mail-lf1-f43.google.com with SMTP id x19so2731366lfa.2
-        for <linux-fbdev@vger.kernel.org>; Sat, 15 May 2021 09:42:09 -0700 (PDT)
-X-Received: by 2002:a05:6512:374b:: with SMTP id a11mr35147289lfs.377.1621096929091;
- Sat, 15 May 2021 09:42:09 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=TUZHq1LlIrTbAZVDobXbN76FSlqGTNui2ct6NU02wJo=;
+        b=gObwOomSXJfBt/ubd4B0h+r9WofXHHYi89VOQ+rF11i2fJJUqIbLSr9grGvHR+dPve
+         IpoCjt0RLECg9H3EFeNRLIihTX/NR+RxlANUcMgQHLyHWJfdgET39fbiV3YgVo7bZ7XS
+         Zu+8QE8k5Gk0DejE2QzP3vMWzFKPjC/Z3OJsbQ//Pdy8EpasYTSX5lkrTqWaOFehKG11
+         v6W3KfHol/k6X8rmu3pQEvX659NdfTEz4tLhgdF7W+PjSTGu5l6TmC+4XqVHSxzbVRj1
+         YL/EeOOFIX1gBxxOYtmFGTn1Mox8tjFdSn0ceMkjkvRjDdSGT3pgCJO1sTzlbeqqmJf+
+         GslA==
+X-Gm-Message-State: AOAM530ds58AADFU3oXaTgK4giInqBNL4q14BuifETZKzmLkq3DhXd0c
+        0Jlcsb3QlahCutX5+xStQHK3pEsdPSLHmUhLv1WPpz1PFN8DnxodGuNf3zgSmB6tIuhNqw/p/Oh
+        BWMvna6gxkKKHLlu5Wp55fdnNA3b5FRP1BdzBYJvj
+X-Received: by 2002:a17:906:b2c1:: with SMTP id cf1mr47188634ejb.544.1621171345532;
+        Sun, 16 May 2021 06:22:25 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJwemSH08vKN86fYRji/0gf7FGjjmYQFhv1Tge7BtiRE3+6x/Y5AKDM4p5D+miAtvUmM3VDZVQ==
+X-Received: by 2002:a17:906:b2c1:: with SMTP id cf1mr47188589ejb.544.1621171345102;
+        Sun, 16 May 2021 06:22:25 -0700 (PDT)
+Received: from gollum.fritz.box ([194.191.244.86])
+        by smtp.gmail.com with ESMTPSA id n15sm7126596eje.118.2021.05.16.06.22.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 16 May 2021 06:22:24 -0700 (PDT)
+From:   Juerg Haefliger <juerg.haefliger@canonical.com>
+X-Google-Original-From: Juerg Haefliger <juergh@canonical.com>
+To:     aaro.koskinen@iki.fi, tony@atomide.com, linux@prisktech.co.nz,
+        davem@davemloft.net, kuba@kernel.org, jejb@linux.ibm.com,
+        martin.petersen@oracle.com, gregkh@linuxfoundation.org,
+        lee.jones@linaro.org, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com, mst@redhat.com, jasowang@redhat.com,
+        zbr@ioremap.net, pablo@netfilter.org, kadlec@netfilter.org,
+        fw@strlen.de, horms@verge.net.au, ja@ssi.bg,
+        linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-crypto@vger.kernel.org, linux-usb@vger.kernel.org,
+        netdev@vger.kernel.org, linux-scsi@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        linux-fsdevel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+        coreteam@netfilter.org, lvs-devel@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org,
+        Juerg Haefliger <juergh@canonical.com>
+Subject: [PATCH] treewide: Remove leading spaces in Kconfig files
+Date:   Sun, 16 May 2021 15:22:09 +0200
+Message-Id: <20210516132209.59229-1-juergh@canonical.com>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-References: <0000000000006bbd0c05c14f1b09@google.com> <6e21483c-06f6-404b-4018-e00ee85c456c@i-love.sakura.ne.jp>
- <87d928e4-b2b9-ad30-f3f0-1dfb8e4e03ed@i-love.sakura.ne.jp>
- <05acdda8-dc1c-5119-4326-96eed24bea0c@i-love.sakura.ne.jp>
- <CAHk-=wguwhFpjhyMtDaH2hhjoV62gDgByC=aPyTrW9CkM5hqvA@mail.gmail.com>
- <alpine.DEB.2.21.2105142150460.3032@angie.orcam.me.uk> <CAHk-=wioOHwKNj8AmvXWV-oL60ae0jKswAHy9e6wCYYeA5EQXg@mail.gmail.com>
- <CAHk-=wjkVAjfWrmmJnJe1_MriK9gezWCew_MU=MbQNzHbGopsQ@mail.gmail.com>
- <97f1d292-c3a8-f4d6-0651-b4f5571ecb72@i-love.sakura.ne.jp>
- <alpine.DEB.2.21.2105151815040.3032@angie.orcam.me.uk> <alpine.DEB.2.21.2105151828380.3032@angie.orcam.me.uk>
-In-Reply-To: <alpine.DEB.2.21.2105151828380.3032@angie.orcam.me.uk>
-From:   Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Sat, 15 May 2021 09:41:53 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wgz-iC97f0cnawKZc_S4-0ZEOdOx43J7pVX6b=AqYUhfg@mail.gmail.com>
-Message-ID: <CAHk-=wgz-iC97f0cnawKZc_S4-0ZEOdOx43J7pVX6b=AqYUhfg@mail.gmail.com>
-Subject: Re: [PATCH v2] tty: vt: always invoke vc->vc_sw->con_resize callback
-To:     "Maciej W. Rozycki" <macro@orcam.me.uk>
-Cc:     Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        syzbot <syzbot+1f29e126cf461c4de3b3@syzkaller.appspotmail.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Colin King <colin.king@canonical.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jani Nikula <jani.nikula@intel.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        syzkaller-bugs <syzkaller-bugs@googlegroups.com>,
-        "Antonino A. Daplas" <adaplas@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, May 15, 2021 at 9:33 AM Maciej W. Rozycki <macro@orcam.me.uk> wrote:
->
->  NB I suggest that you request your change to be backported, i.e. post v3
-> with:
->
-> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-> Cc: stable@vger.kernel.org # v2.6.12+
+There are a few occurences of leading spaces before tabs in a couple of
+Kconfig files. Remove them by running the following command:
 
-I've applied it to my tree, but let's wait to see that it doesn't
-cause any issues before notifying the stable people.
+  $ find . -name 'Kconfig*' | xargs sed -r -i 's/^[ ]+\t/\t/'
 
-               Linus
+Signed-off-by: Juerg Haefliger <juergh@canonical.com>
+---
+ arch/arm/mach-omap1/Kconfig     | 12 ++++++------
+ arch/arm/mach-vt8500/Kconfig    |  6 +++---
+ arch/arm/mm/Kconfig             | 10 +++++-----
+ drivers/char/hw_random/Kconfig  |  8 ++++----
+ drivers/net/usb/Kconfig         | 10 +++++-----
+ drivers/net/wan/Kconfig         |  4 ++--
+ drivers/scsi/Kconfig            |  2 +-
+ drivers/uio/Kconfig             |  2 +-
+ drivers/video/backlight/Kconfig | 10 +++++-----
+ drivers/virtio/Kconfig          |  2 +-
+ drivers/w1/masters/Kconfig      |  6 +++---
+ fs/proc/Kconfig                 |  4 ++--
+ init/Kconfig                    |  2 +-
+ net/netfilter/Kconfig           |  2 +-
+ net/netfilter/ipvs/Kconfig      |  2 +-
+ 15 files changed, 41 insertions(+), 41 deletions(-)
+
+diff --git a/arch/arm/mach-omap1/Kconfig b/arch/arm/mach-omap1/Kconfig
+index 9536b8f3c07d..208c700c2455 100644
+--- a/arch/arm/mach-omap1/Kconfig
++++ b/arch/arm/mach-omap1/Kconfig
+@@ -65,14 +65,14 @@ config MACH_OMAP_INNOVATOR
+ config MACH_OMAP_H2
+ 	bool "TI H2 Support"
+ 	depends on ARCH_OMAP16XX
+-    	help
++	help
+ 	  TI OMAP 1610/1611B H2 board support. Say Y here if you have such
+ 	  a board.
+ 
+ config MACH_OMAP_H3
+ 	bool "TI H3 Support"
+ 	depends on ARCH_OMAP16XX
+-    	help
++	help
+ 	  TI OMAP 1710 H3 board support. Say Y here if you have such
+ 	  a board.
+ 
+@@ -85,14 +85,14 @@ config MACH_HERALD
+ config MACH_OMAP_OSK
+ 	bool "TI OSK Support"
+ 	depends on ARCH_OMAP16XX
+-    	help
++	help
+ 	  TI OMAP 5912 OSK (OMAP Starter Kit) board support. Say Y here
+           if you have such a board.
+ 
+ config OMAP_OSK_MISTRAL
+ 	bool "Mistral QVGA board Support"
+ 	depends on MACH_OMAP_OSK
+-    	help
++	help
+ 	  The OSK supports an optional add-on board with a Quarter-VGA
+ 	  touchscreen, PDA-ish buttons, a resume button, bicolor LED,
+ 	  and camera connector.  Say Y here if you have this board.
+@@ -100,14 +100,14 @@ config OMAP_OSK_MISTRAL
+ config MACH_OMAP_PERSEUS2
+ 	bool "TI Perseus2"
+ 	depends on ARCH_OMAP730
+-    	help
++	help
+ 	  Support for TI OMAP 730 Perseus2 board. Say Y here if you have such
+ 	  a board.
+ 
+ config MACH_OMAP_FSAMPLE
+ 	bool "TI F-Sample"
+ 	depends on ARCH_OMAP730
+-    	help
++	help
+ 	  Support for TI OMAP 850 F-Sample board. Say Y here if you have such
+ 	  a board.
+ 
+diff --git a/arch/arm/mach-vt8500/Kconfig b/arch/arm/mach-vt8500/Kconfig
+index d01cdd9ad9c7..408e405ae568 100644
+--- a/arch/arm/mach-vt8500/Kconfig
++++ b/arch/arm/mach-vt8500/Kconfig
+@@ -9,9 +9,9 @@ config ARCH_VT8500
+ 
+ config ARCH_WM8505
+ 	bool "VIA/Wondermedia 85xx and WM8650"
+- 	depends on ARCH_MULTI_V5
+- 	select ARCH_VT8500
+- 	select CPU_ARM926T
++	depends on ARCH_MULTI_V5
++	select ARCH_VT8500
++	select CPU_ARM926T
+ 
+ config ARCH_WM8750
+ 	bool "WonderMedia WM8750"
+diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
+index 35f43d0aa056..7a4a04bafa92 100644
+--- a/arch/arm/mm/Kconfig
++++ b/arch/arm/mm/Kconfig
+@@ -123,13 +123,13 @@ config CPU_ARM925T
+ 	select CPU_PABRT_LEGACY
+ 	select CPU_THUMB_CAPABLE
+ 	select CPU_TLB_V4WBI if MMU
+- 	help
+- 	  The ARM925T is a mix between the ARM920T and ARM926T, but with
++	help
++	  The ARM925T is a mix between the ARM920T and ARM926T, but with
+ 	  different instruction and data caches. It is used in TI's OMAP
+- 	  device family.
++	  device family.
+ 
+- 	  Say Y if you want support for the ARM925T processor.
+- 	  Otherwise, say N.
++	  Say Y if you want support for the ARM925T processor.
++	  Otherwise, say N.
+ 
+ # ARM926T
+ config CPU_ARM926T
+diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
+index 1fe006f3f12f..0e1e97680f08 100644
+--- a/drivers/char/hw_random/Kconfig
++++ b/drivers/char/hw_random/Kconfig
+@@ -168,14 +168,14 @@ config HW_RANDOM_OMAP
+ 	depends on ARCH_OMAP16XX || ARCH_OMAP2PLUS || ARCH_MVEBU
+ 	default HW_RANDOM
+ 	help
+- 	  This driver provides kernel-side support for the Random Number
++	  This driver provides kernel-side support for the Random Number
+ 	  Generator hardware found on OMAP16xx, OMAP2/3/4/5, AM33xx/AM43xx
+ 	  multimedia processors, and Marvell Armada 7k/8k SoCs.
+ 
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called omap-rng.
+ 
+- 	  If unsure, say Y.
++	  If unsure, say Y.
+ 
+ config HW_RANDOM_OMAP3_ROM
+ 	tristate "OMAP3 ROM Random Number Generator support"
+@@ -485,13 +485,13 @@ config HW_RANDOM_NPCM
+ 	depends on ARCH_NPCM || COMPILE_TEST
+ 	default HW_RANDOM
+ 	help
+- 	  This driver provides support for the Random Number
++	  This driver provides support for the Random Number
+ 	  Generator hardware available in Nuvoton NPCM SoCs.
+ 
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called npcm-rng.
+ 
+- 	  If unsure, say Y.
++	  If unsure, say Y.
+ 
+ config HW_RANDOM_KEYSTONE
+ 	depends on ARCH_KEYSTONE || COMPILE_TEST
+diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
+index fbbe78643631..179308782888 100644
+--- a/drivers/net/usb/Kconfig
++++ b/drivers/net/usb/Kconfig
+@@ -169,7 +169,7 @@ config USB_NET_AX8817X
+ 	  This option adds support for ASIX AX88xxx based USB 2.0
+ 	  10/100 Ethernet adapters.
+ 
+- 	  This driver should work with at least the following devices:
++	  This driver should work with at least the following devices:
+ 	    * Aten UC210T
+ 	    * ASIX AX88172
+ 	    * Billionton Systems, USB2AR
+@@ -220,13 +220,13 @@ config USB_NET_CDCETHER
+ 	  CDC Ethernet is an implementation option for DOCSIS cable modems
+ 	  that support USB connectivity, used for non-Microsoft USB hosts.
+ 	  The Linux-USB CDC Ethernet Gadget driver is an open implementation.
+- 	  This driver should work with at least the following devices:
++	  This driver should work with at least the following devices:
+ 
+ 	    * Dell Wireless 5530 HSPA
+- 	    * Ericsson PipeRider (all variants)
++	    * Ericsson PipeRider (all variants)
+ 	    * Ericsson Mobile Broadband Module (all variants)
+- 	    * Motorola (DM100 and SB4100)
+- 	    * Broadcom Cable Modem (reference design)
++	    * Motorola (DM100 and SB4100)
++	    * Broadcom Cable Modem (reference design)
+ 	    * Toshiba (PCX1100U and F3507g/F3607gw)
+ 	    * ...
+ 
+diff --git a/drivers/net/wan/Kconfig b/drivers/net/wan/Kconfig
+index 83c9481995dd..473df2505c8e 100644
+--- a/drivers/net/wan/Kconfig
++++ b/drivers/net/wan/Kconfig
+@@ -49,7 +49,7 @@ config COSA
+ 	  network device.
+ 
+ 	  You will need user-space utilities COSA or SRP boards for downloading
+- 	  the firmware to the cards and to set them up. Look at the
++	  the firmware to the cards and to set them up. Look at the
+ 	  <http://www.fi.muni.cz/~kas/cosa/> for more information. You can also
+ 	  read the comment at the top of the <file:drivers/net/wan/cosa.c> for
+ 	  details about the cards and the driver itself.
+@@ -108,7 +108,7 @@ config HDLC
+ 	  Generic HDLC driver currently supports raw HDLC, Cisco HDLC, Frame
+ 	  Relay, synchronous Point-to-Point Protocol (PPP) and X.25.
+ 
+- 	  To compile this driver as a module, choose M here: the
++	  To compile this driver as a module, choose M here: the
+ 	  module will be called hdlc.
+ 
+ 	  If unsure, say N.
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index 3d114be5b662..c5612896cdb9 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -311,7 +311,7 @@ source "drivers/scsi/cxlflash/Kconfig"
+ config SGIWD93_SCSI
+ 	tristate "SGI WD93C93 SCSI Driver"
+ 	depends on SGI_HAS_WD93 && SCSI
+-  	help
++	help
+ 	  If you have a Western Digital WD93 SCSI controller on
+ 	  an SGI MIPS system, say Y.  Otherwise, say N.
+ 
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+index 5531f3afeb21..2e16c5338e5b 100644
+--- a/drivers/uio/Kconfig
++++ b/drivers/uio/Kconfig
+@@ -18,7 +18,7 @@ config UIO_CIF
+ 	depends on PCI
+ 	help
+ 	  Driver for Hilscher CIF DeviceNet and Profibus cards.  This
+-  	  driver requires a userspace component called cif that handles
++	  driver requires a userspace component called cif that handles
+ 	  all of the heavy lifting and can be found at:
+ 	        <http://www.osadl.org/projects/downloads/UIO/user/>
+ 
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index d83c87b902c1..a967974f6cd6 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -129,11 +129,11 @@ config LCD_HX8357
+ 	  driver.
+ 
+   config LCD_OTM3225A
+-  	tristate "ORISE Technology OTM3225A support"
+-  	depends on SPI
+-  	help
+-  	  If you have a panel based on the OTM3225A controller
+-  	  chip then say y to include a driver for it.
++	tristate "ORISE Technology OTM3225A support"
++	depends on SPI
++	help
++	  If you have a panel based on the OTM3225A controller
++	  chip then say y to include a driver for it.
+ 
+ endif # LCD_CLASS_DEVICE
+ 
+diff --git a/drivers/virtio/Kconfig b/drivers/virtio/Kconfig
+index ce1b3f6ec325..3b3644d60d11 100644
+--- a/drivers/virtio/Kconfig
++++ b/drivers/virtio/Kconfig
+@@ -128,7 +128,7 @@ config VIRTIO_MMIO
+ 	 This drivers provides support for memory mapped virtio
+ 	 platform device driver.
+ 
+- 	 If unsure, say N.
++	 If unsure, say N.
+ 
+ config VIRTIO_MMIO_CMDLINE_DEVICES
+ 	bool "Memory mapped virtio devices parameter parsing"
+diff --git a/drivers/w1/masters/Kconfig b/drivers/w1/masters/Kconfig
+index 24b9a8e05f64..32e993ea6f96 100644
+--- a/drivers/w1/masters/Kconfig
++++ b/drivers/w1/masters/Kconfig
+@@ -17,12 +17,12 @@ config W1_MASTER_MATROX
+ 
+ config W1_MASTER_DS2490
+ 	tristate "DS2490 USB <-> W1 transport layer for 1-wire"
+-  	depends on USB
+-  	help
++	depends on USB
++	help
+ 	  Say Y here if you want to have a driver for DS2490 based USB <-> W1 bridges,
+ 	  for example DS9490*.
+ 
+-  	  This support is also available as a module.  If so, the module
++	  This support is also available as a module.  If so, the module
+ 	  will be called ds2490.
+ 
+ config W1_MASTER_DS2482
+diff --git a/fs/proc/Kconfig b/fs/proc/Kconfig
+index c930001056f9..e8410a99a0ca 100644
+--- a/fs/proc/Kconfig
++++ b/fs/proc/Kconfig
+@@ -81,10 +81,10 @@ config PROC_SYSCTL
+ 	  limited in memory.
+ 
+ config PROC_PAGE_MONITOR
+- 	default y
++	default y
+ 	depends on PROC_FS && MMU
+ 	bool "Enable /proc page monitoring" if EXPERT
+- 	help
++	help
+ 	  Various /proc files exist to monitor process memory utilization:
+ 	  /proc/pid/smaps, /proc/pid/clear_refs, /proc/pid/pagemap,
+ 	  /proc/kpagecount, and /proc/kpageflags. Disabling these
+diff --git a/init/Kconfig b/init/Kconfig
+index 1ea12c64e4c9..9f1cde503739 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -2149,7 +2149,7 @@ config MODULE_SRCVERSION_ALL
+ 	help
+ 	  Modules which contain a MODULE_VERSION get an extra "srcversion"
+ 	  field inserted into their modinfo section, which contains a
+-    	  sum of the source files which made it.  This helps maintainers
++	  sum of the source files which made it.  This helps maintainers
+ 	  see exactly which source was used to build a module (since
+ 	  others sometimes change the module source without updating
+ 	  the version).  With this option, such a "srcversion" field
+diff --git a/net/netfilter/Kconfig b/net/netfilter/Kconfig
+index 56a2531a3402..172d74560632 100644
+--- a/net/netfilter/Kconfig
++++ b/net/netfilter/Kconfig
+@@ -816,7 +816,7 @@ config NETFILTER_XT_TARGET_CLASSIFY
+ 	  the priority of a packet. Some qdiscs can use this value for
+ 	  classification, among these are:
+ 
+-  	  atm, cbq, dsmark, pfifo_fast, htb, prio
++	  atm, cbq, dsmark, pfifo_fast, htb, prio
+ 
+ 	  To compile it as a module, choose M here.  If unsure, say N.
+ 
+diff --git a/net/netfilter/ipvs/Kconfig b/net/netfilter/ipvs/Kconfig
+index d61886874940..271da8447b29 100644
+--- a/net/netfilter/ipvs/Kconfig
++++ b/net/netfilter/ipvs/Kconfig
+@@ -318,7 +318,7 @@ config IP_VS_MH_TAB_INDEX
+ comment 'IPVS application helper'
+ 
+ config	IP_VS_FTP
+-  	tristate "FTP protocol helper"
++	tristate "FTP protocol helper"
+ 	depends on IP_VS_PROTO_TCP && NF_CONNTRACK && NF_NAT && \
+ 		NF_CONNTRACK_FTP
+ 	select IP_VS_NFCT
+-- 
+2.27.0
+

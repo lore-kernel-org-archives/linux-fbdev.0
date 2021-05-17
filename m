@@ -7,60 +7,63 @@ X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58FA8C433ED
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 13:10:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB181C433B4
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 13:13:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 33D2661028
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 13:10:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B36BC610E9
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 13:13:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229996AbhEQNMA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 May 2021 09:12:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51254 "EHLO
+        id S234956AbhEQNOg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 May 2021 09:14:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51896 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235219AbhEQNLz (ORCPT
+        with ESMTP id S229736AbhEQNOf (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 May 2021 09:11:55 -0400
-Received: from mail-oo1-xc32.google.com (mail-oo1-xc32.google.com [IPv6:2607:f8b0:4864:20::c32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C85EC06138A
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 May 2021 06:10:30 -0700 (PDT)
-Received: by mail-oo1-xc32.google.com with SMTP id j17-20020a4ad6d10000b02901fef5280522so1466736oot.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 May 2021 06:10:30 -0700 (PDT)
+        Mon, 17 May 2021 09:14:35 -0400
+Received: from mail-ot1-x32a.google.com (mail-ot1-x32a.google.com [IPv6:2607:f8b0:4864:20::32a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D3966C061756
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 May 2021 06:13:17 -0700 (PDT)
+Received: by mail-ot1-x32a.google.com with SMTP id t10-20020a05683022eab0290304ed8bc759so5452928otc.12
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 May 2021 06:13:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ffwll.ch; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=PAwEga9MsVbe/5u0H4dGqnZ+LwHKVSj8ppgsSx/dwXA=;
-        b=OqI9STlkR7u8mi0tTXuV5SyeZialb8aH253QDX1o+zeoCJ+S5gkI85n74dHCZFGZBj
-         ciyUa3BieaaWvJ/XofZxNU4eItL61acH6SFLNcUyfjmgkFxOv0X3HqAsEYSRKc8UaEPb
-         CR56j6NK/wn5NCcRHFQktnOm55tx52mvWG/RA=
+        bh=1niWPbp6OXctfAAznJewfN6Eqjsqw0nM8ckzYrVktvk=;
+        b=d7CG4UV4uV/QvT/PB3LlqCepedtDGPXwmcB5sYhOAr5UFDYI6t2UWqoAu6SQ50Dl+1
+         ybQlPRgq6zOcYfRTI8AcmZaVF9UmkTtuSsOILLQKg3mDgdY/GtdJWOLYJba019tbu+U3
+         5bHr8t+Jhpl7HsLNJUbqd4PynYK9iGwTXGaoA=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=PAwEga9MsVbe/5u0H4dGqnZ+LwHKVSj8ppgsSx/dwXA=;
-        b=pBdIl0j/DKYh1E+BSWLvo/PgCemirY/gaNfq1Xb+gfnnsdWgzInp0/AemO+V4kHbYs
-         kz16ZMH0vj+QO0BbQdZcKVaLoFvYYPgx9tMWMN2AzE4nG+kpB6O4EDrqLZraubNeQFlR
-         nHTEx8T7xZD9/xnvoIj3M8KLsgvoYTLr7zoU9vJWJ2KKj3/vMqyySCcpBcUNW06MiyaC
-         9cQGeBEO+gZgOCZaJE4UhM4qn+J6rnqJ0bDvi1XxrtpYU0cWmqW2pkorRgvFVzzqbuX3
-         F0fVbgcFtr/CEriV9bPi++lXiq8XOv4v7zEZ7tzdClAQscYfZmt5zDS9kp/zTa4xJE0i
-         Adig==
-X-Gm-Message-State: AOAM532EORtb6WJn7GZtPZxWTXE6uTa3rNj7wZlkXD1iZL/Wf9ynsDyl
-        /aaKSZWWryXSJ+PzMWjz9ac0Hd9r9nbREZAGEh7yVw==
-X-Google-Smtp-Source: ABdhPJzFaSHRb7QuxFF/A3nf7goNfiB9Dxae23DnvcuYbdfw7QRmTBAoqHPvKmf8Utr2ioPitAchQ4NTWof0wYag0JU=
-X-Received: by 2002:a4a:8e04:: with SMTP id q4mr1459797ook.28.1621257030052;
- Mon, 17 May 2021 06:10:30 -0700 (PDT)
+        bh=1niWPbp6OXctfAAznJewfN6Eqjsqw0nM8ckzYrVktvk=;
+        b=Ua7kSl01dAZ5pzYrEnMN9VJRNDGQ+7NPr7lwg79lvAWtKMe6fUcPGAIov2WsJvaFyr
+         YybwL5x8mSUcirdL5/wCxdQFyPZDHKNHG8dN3/lD4FkltcIzX0lDU/X12+5sqqLdM8Tz
+         FO6qRTUjAgYmWTnjicEYuY/gpsq9uzgMXY4Y5dhg0g1AXU0mUZ0rBxu7twgnCVKmwvNF
+         3j3i4gJXPhMdRMzVMWXAy2XT3tpH6JvcV8x1vZZl85IWuA0rsxLcCCR4UvKMcM5Vy9lH
+         FPGgfSFxqmGswUmUpSnpclHCaPyicZRoB4TlyMBO8+okLUzj3wwCRog2QywnkFGmDfxx
+         O9Uw==
+X-Gm-Message-State: AOAM530x46+ezn8jUdcgeuRjJnl/vANj8kvNY6yRNuBX7UYc9Jwiu0NO
+        51NnNzz0TkzrVSVeHSf0s2CLU03nbJw9lsrhK9GhWg==
+X-Google-Smtp-Source: ABdhPJyDuQIvXw+luxml8GEexK3jECtW+UAWqe0kXDIKCICTTAfz7N7CV/zjN9R469BgZWNcW6e4zYMo96HA10ZPQKg=
+X-Received: by 2002:a05:6830:1155:: with SMTP id x21mr31941099otq.303.1621257196488;
+ Mon, 17 May 2021 06:13:16 -0700 (PDT)
 MIME-Version: 1.0
 References: <0000000000006bbd0c05c14f1b09@google.com> <6e21483c-06f6-404b-4018-e00ee85c456c@i-love.sakura.ne.jp>
  <87d928e4-b2b9-ad30-f3f0-1dfb8e4e03ed@i-love.sakura.ne.jp>
  <05acdda8-dc1c-5119-4326-96eed24bea0c@i-love.sakura.ne.jp>
  <CAHk-=wguwhFpjhyMtDaH2hhjoV62gDgByC=aPyTrW9CkM5hqvA@mail.gmail.com>
  <alpine.DEB.2.21.2105142150460.3032@angie.orcam.me.uk> <CAHk-=wioOHwKNj8AmvXWV-oL60ae0jKswAHy9e6wCYYeA5EQXg@mail.gmail.com>
- <CAKMK7uGLP2zn7LX4ATExA4DLo16shVivSd_W58X-rBZNPSb3_w@mail.gmail.com>
-In-Reply-To: <CAKMK7uGLP2zn7LX4ATExA4DLo16shVivSd_W58X-rBZNPSb3_w@mail.gmail.com>
+ <CAHk-=wjkVAjfWrmmJnJe1_MriK9gezWCew_MU=MbQNzHbGopsQ@mail.gmail.com>
+ <97f1d292-c3a8-f4d6-0651-b4f5571ecb72@i-love.sakura.ne.jp>
+ <alpine.DEB.2.21.2105151815040.3032@angie.orcam.me.uk> <alpine.DEB.2.21.2105151828380.3032@angie.orcam.me.uk>
+ <CAHk-=wgz-iC97f0cnawKZc_S4-0ZEOdOx43J7pVX6b=AqYUhfg@mail.gmail.com>
+In-Reply-To: <CAHk-=wgz-iC97f0cnawKZc_S4-0ZEOdOx43J7pVX6b=AqYUhfg@mail.gmail.com>
 From:   Daniel Vetter <daniel@ffwll.ch>
-Date:   Mon, 17 May 2021 15:10:19 +0200
-Message-ID: <CAKMK7uFfuV1GH7rvTwLCovnWvd0hYXPGbAyYELoX9PqZn3u2gQ@mail.gmail.com>
-Subject: Re: [PATCH] video: fbdev: vga16fb: fix OOB write in vga16fb_imageblit()
+Date:   Mon, 17 May 2021 15:13:05 +0200
+Message-ID: <CAKMK7uGO3_EtQem=zuTa2w8jO4zwwT27Ly6uJEYF4wVLYXGZ_Q@mail.gmail.com>
+Subject: Re: [PATCH v2] tty: vt: always invoke vc->vc_sw->con_resize callback
 To:     Linus Torvalds <torvalds@linux-foundation.org>
 Cc:     "Maciej W. Rozycki" <macro@orcam.me.uk>,
         Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
@@ -80,84 +83,25 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, May 17, 2021 at 3:07 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+On Sat, May 15, 2021 at 6:42 PM Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
-> On Fri, May 14, 2021 at 10:33 PM Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
+> On Sat, May 15, 2021 at 9:33 AM Maciej W. Rozycki <macro@orcam.me.uk> wrote:
 > >
-> > On Fri, May 14, 2021 at 1:25 PM Maciej W. Rozycki <macro@orcam.me.uk> wrote:
-> > >
-> > >  Overall I think it does make sense to resize the text console at any
-> > > time, even if the visible console (VT) chosen is in the graphics mode,
+> >  NB I suggest that you request your change to be backported, i.e. post v3
+> > with:
 > >
-> > It might make sense, but only if we call the function to update the
-> > low-level data.
-> >
-> > Not calling it, and then starting to randomly use the (wrong)
-> > geometry, and just limiting it so that it's all within the buffer -
-> > THAT does not make sense.
-> >
-> > So I think your patch is fundamentally wrong. It basically says "let's
-> > use random stale incorrect data, but just make sure that the end
-> > result is still within the allocated buffer".
-> >
-> > My patch is at least conceptually sane.
-> >
-> > An alternative would be to just remove the "vcmode != KD_GRAPHICS"
-> > check entirely, and always call con_resize() to update the low-level
-> > data, but honestly, that seems very likelty to break something very
-> > fundamentally, since it's not how any of fbcon has ever been tested,
+> > Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> > Cc: stable@vger.kernel.org # v2.6.12+
 >
-> Just an aside: I think with fbdev drivers this would go boom, because
-> you'd have fbcon interferring with a direct /dev/fb/* user.
+> I've applied it to my tree, but let's wait to see that it doesn't
+> cause any issues before notifying the stable people.
 
-Boom here means a bit of screen corruption, because fbcon overdraws
-your X sessions. Fixed by the next redraw of X.
-
-> But if your fbdev driver is actually a drm modeset driver, then we
-> have additional limitations: If the userspace accesses the display
-> through /dev/dri/card0, then the kernel blocks all access through
-> /dev/fb/* (including fbcon) to the actual display (it only goes into
-> the buffer used for fbdev emulation). And everything would be fine.
->
-> Also generally you'd get away with this even in problematic cases,
-> since usually you resize your console when looking at it, not when X
-> or something else is using your fbdev direct access.
->
-> The one thing that's left out here a bit in the cold is userspace
-> modeset drivers in X. Those would get hosed. But also, we stopped
-> supporting those in at least i915/amd/radeon/nouveau drivers,
-> automatically falling back to the fbdev stuff in most cases (with or
-> without the drm drivers underneath that), and no one screamed. So
-> probably not many users left.
-
-This one could lead to incosistent hw state, which would be worse.
-
-> So I /think/ we could wager this, if it's the least intrusive fix from
-> the kernel pov. But it has some risks that we need to revert again if
-> we break some of the really old use-cases here.
-
-Cheers, Daniel
-
-> > Another alternative would be to just delay the resize to when vcmode
-> > is put back to text mode again. That sounds somewhat reasonable to me,
-> > but it's a pretty big thing.
-> >
-> > But no, your patch to just "knowingly use entirely wrong values, then
-> > add a limit check because we know the values are possibly garbage and
-> > not consistent with reality" is simply not acceptable.
-> >
-> >               Linus
->
->
->
-> --
-> Daniel Vetter
-> Software Engineer, Intel Corporation
-> http://blog.ffwll.ch
-
-
-
+Ah I missed all the fun with the long w/e. fwiw I think this looks
+very reasonable, see my other reply why I think this shouldn't cause
+issues. Especially when fbcon_resize only touches hw when in KD_TEXT
+mode.
+-Daniel
 -- 
 Daniel Vetter
 Software Engineer, Intel Corporation

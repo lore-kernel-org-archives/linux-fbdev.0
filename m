@@ -2,124 +2,148 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 874F0C433ED
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 12:27:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96201C433ED
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 13:08:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5E9026100C
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 12:27:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6E78061028
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 13:08:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237000AbhEQM3A (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 May 2021 08:29:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41516 "EHLO
+        id S237235AbhEQNJS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 May 2021 09:09:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50548 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231161AbhEQM3A (ORCPT
+        with ESMTP id S237205AbhEQNJO (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 May 2021 08:29:00 -0400
-Received: from mail-qv1-xf2b.google.com (mail-qv1-xf2b.google.com [IPv6:2607:f8b0:4864:20::f2b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0EBA2C061573;
-        Mon, 17 May 2021 05:27:43 -0700 (PDT)
-Received: by mail-qv1-xf2b.google.com with SMTP id w9so2930092qvi.13;
-        Mon, 17 May 2021 05:27:43 -0700 (PDT)
+        Mon, 17 May 2021 09:09:14 -0400
+Received: from mail-oi1-x22f.google.com (mail-oi1-x22f.google.com [IPv6:2607:f8b0:4864:20::22f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4890EC061756
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 May 2021 06:07:47 -0700 (PDT)
+Received: by mail-oi1-x22f.google.com with SMTP id j75so6385282oih.10
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 May 2021 06:07:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=RrMgSrZtTqdB/wlv0id/9NlOUPd01Z7kAGWKqnT2c2M=;
-        b=CctOlq+UkKn18QqKAOdc7VqJDwwJKN9HU/A5tTPZ0EUkYGQMbFanD0RNwVHW2f6R4E
-         7fGATCP3I/aegDtzmOBa5y7HYnBAOTRIl+10jhJuS7FOhQbBKJ3dZOOA6X3ITygKqzls
-         GYKmF56nNhO+08TdkpRANu9VXaTwgiFhOUXy8+b44TjtqJNCthTAiLbF/r709SBk+TTr
-         JFfUCWgDEX967xOAuQfbJGZ4in3xZj/3kE8Mf/9i0HFQ65dEhwLg/3wrcJKdfUh8FmVT
-         hxlDPhEvB3cXIZu0UWRwRNkFRYiWjfn70i3oucULeBS2i2/4Qn1sRdt3WfdmU+uTZ/f+
-         PWNg==
+        d=ffwll.ch; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=dZeinS6LE1NP88+BR+f1LcsUBMPUh7N3G4KpQRQogBk=;
+        b=aGBMVprGuoTf9++f+DatDpeTnGL5ZmpmA0esmGNR7sOjh15bPnJ5xl4LQ5QM8p55SZ
+         k0Gr9tasB7CXqw4F9//xhZFkDKTW8P+jDQg2ksKWGRr8PQl3uomjjBlkpx26Llf80vsO
+         aqPf6OCmWnkSEJ6/iAg/YkwZbF/CzGgpR2sG0=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=RrMgSrZtTqdB/wlv0id/9NlOUPd01Z7kAGWKqnT2c2M=;
-        b=o0mOKwYepWVVpxPVVWFgoPaBZbfTrIsGxkrg/g/y8NEukfd3Sm3jGA8VJzzbc6BGXc
-         DYTumsMOoVyJSPRDVZvNZdluPAxmeUhbmqlK6g9pxDY15LbtCS0hqTYT5tWMN39Tu6nJ
-         BYUrkcagLw6weSS33nn7OKNnvBNq87qwrQti34z+LV6zqA5d45Yq5lzFrFjGluSXrkkk
-         CN+WNfro4jJMRgyUGtbLuj2omndjJWFNfK8DSAhsoo8q3A1CdJmq8pZPKF2ibuBJwYFG
-         N14jhdmq4u1qfh+XVAdPvWu9WDygAAgXa0cyhJYCunxYx3suvhyfd0XpnEuJIg8iNUqs
-         wxMQ==
-X-Gm-Message-State: AOAM530ciHkAjoKLfSTKclWUICNuAVLZx7SmAT7uS9qPJSoK8bcg04hf
-        VtHrez+i2bnO3WAg/URPHt44nRWh7r3NABm3
-X-Google-Smtp-Source: ABdhPJzM+6xSTMZ2jK4banMxGU90aLBTrZTJZYJp2Lr/pLBs4nDcAdGVJO5Aq8VNiSxT+2/N1fJnug==
-X-Received: by 2002:a05:6214:87:: with SMTP id n7mr16082560qvr.1.1621254462149;
-        Mon, 17 May 2021 05:27:42 -0700 (PDT)
-Received: from ?IPv6:2804:14c:125:811b::1003? ([2804:14c:125:811b::1003])
-        by smtp.gmail.com with ESMTPSA id 10sm10377983qka.23.2021.05.17.05.27.39
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 17 May 2021 05:27:41 -0700 (PDT)
-Subject: Re: [PATCH] video: hgafb: correctly handle card detect failure during
- probe
-To:     Anirudh Rayabharam <mail@anirudhrb.com>,
-        Ferenc Bakonyi <fero@drama.obuda.kando.hu>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     linux-kernel-mentees@lists.linuxfoundation.org,
-        kernel test robot <oliver.sang@intel.com>,
-        stable <stable@vger.kernel.org>,
-        linux-nvidia@lists.surfsouth.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20210516192714.25823-1-mail@anirudhrb.com>
-From:   Igor Torrente <igormtorrente@gmail.com>
-Message-ID: <2b945eaa-4288-1601-3f1a-60f2ceaa1ea7@gmail.com>
-Date:   Mon, 17 May 2021 09:27:38 -0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.0
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=dZeinS6LE1NP88+BR+f1LcsUBMPUh7N3G4KpQRQogBk=;
+        b=JCOByFk2NUyGdChtwnDLmbee+644TXjtF4pPM95j3pB0smlEvTEDPH7LHi5zvUJWBp
+         MLc/wmdf88Hm01xTpw6duzzLRkUn/P3sDy0LlmQh1Jon7APYUmCNVbWTbBwAwx2137nC
+         Ix/6ia+u+Y9KxjLNmTa1BVjQ+/+bo83wDCOA/yAaR+m8mWlpkHYfUU30IyxL2cKjDBtt
+         DPUFzDhv3vmyj8epWniZ0sHoLjb/rOWlY0uIIMadrFMBUZCe/kn10msWcCURBY+AKNMb
+         axBsQV2v2t13eg1WWX+vHcmJcJcewgESX7aRYOnDM90P1YXzs2STrKfYd7AJyiFdg+eY
+         EVjA==
+X-Gm-Message-State: AOAM530tnjqu0ISFzEkOZYZCUMriTldR35/HuGt5OvPBEzC1rHCKakE0
+        vX43nzDEz4QzzPAUw2/ZhkYEQuWlgX7uM0zN1PZ2kQ==
+X-Google-Smtp-Source: ABdhPJy7GTk1BfTS88fw/8gIr6/ZDBTUprv35YFaMITbfmvjl7jiiSuHvPGnKkFzht+U6iHn/HLP2JVzKLU+U28GVkY=
+X-Received: by 2002:a54:4809:: with SMTP id j9mr15251365oij.14.1621256866371;
+ Mon, 17 May 2021 06:07:46 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20210516192714.25823-1-mail@anirudhrb.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <0000000000006bbd0c05c14f1b09@google.com> <6e21483c-06f6-404b-4018-e00ee85c456c@i-love.sakura.ne.jp>
+ <87d928e4-b2b9-ad30-f3f0-1dfb8e4e03ed@i-love.sakura.ne.jp>
+ <05acdda8-dc1c-5119-4326-96eed24bea0c@i-love.sakura.ne.jp>
+ <CAHk-=wguwhFpjhyMtDaH2hhjoV62gDgByC=aPyTrW9CkM5hqvA@mail.gmail.com>
+ <alpine.DEB.2.21.2105142150460.3032@angie.orcam.me.uk> <CAHk-=wioOHwKNj8AmvXWV-oL60ae0jKswAHy9e6wCYYeA5EQXg@mail.gmail.com>
+In-Reply-To: <CAHk-=wioOHwKNj8AmvXWV-oL60ae0jKswAHy9e6wCYYeA5EQXg@mail.gmail.com>
+From:   Daniel Vetter <daniel@ffwll.ch>
+Date:   Mon, 17 May 2021 15:07:35 +0200
+Message-ID: <CAKMK7uGLP2zn7LX4ATExA4DLo16shVivSd_W58X-rBZNPSb3_w@mail.gmail.com>
+Subject: Re: [PATCH] video: fbdev: vga16fb: fix OOB write in vga16fb_imageblit()
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     "Maciej W. Rozycki" <macro@orcam.me.uk>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        syzbot <syzbot+1f29e126cf461c4de3b3@syzkaller.appspotmail.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Colin King <colin.king@canonical.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jani Nikula <jani.nikula@intel.com>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        syzkaller-bugs <syzkaller-bugs@googlegroups.com>,
+        "Antonino A. Daplas" <adaplas@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+On Fri, May 14, 2021 at 10:33 PM Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+> On Fri, May 14, 2021 at 1:25 PM Maciej W. Rozycki <macro@orcam.me.uk> wrote:
+> >
+> >  Overall I think it does make sense to resize the text console at any
+> > time, even if the visible console (VT) chosen is in the graphics mode,
+>
+> It might make sense, but only if we call the function to update the
+> low-level data.
+>
+> Not calling it, and then starting to randomly use the (wrong)
+> geometry, and just limiting it so that it's all within the buffer -
+> THAT does not make sense.
+>
+> So I think your patch is fundamentally wrong. It basically says "let's
+> use random stale incorrect data, but just make sure that the end
+> result is still within the allocated buffer".
+>
+> My patch is at least conceptually sane.
+>
+> An alternative would be to just remove the "vcmode != KD_GRAPHICS"
+> check entirely, and always call con_resize() to update the low-level
+> data, but honestly, that seems very likelty to break something very
+> fundamentally, since it's not how any of fbcon has ever been tested,
 
-On 5/16/21 4:27 PM, Anirudh Rayabharam wrote:
-> The return value of hga_card_detect() is not properly handled causing
-> the probe to succeed even though hga_card_detect() failed. Since probe
-> succeeds, hgafb_open() can be called which will end up operating on an
-> unmapped hga_vram. This results in an out-of-bounds access as reported
-> by kernel test robot [1].
-> 
-> To fix this, correctly detect failure of hga_card_detect() by checking
-> for a non-zero error code.
-> 
-> [1]: https://lore.kernel.org/lkml/20210516150019.GB25903@xsang-OptiPlex-9020/
-> 
-> Reported-by: kernel test robot <oliver.sang@intel.com>
-> Fixes: dc13cac4862c ("video: hgafb: fix potential NULL pointer dereference")
-> Cc: stable <stable@vger.kernel.org>
-> Signed-off-by: Anirudh Rayabharam <mail@anirudhrb.com>
-> ---
->   drivers/video/fbdev/hgafb.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
-> index cc8e62ae93f6..bd3d07aa4f0e 100644
-> --- a/drivers/video/fbdev/hgafb.c
-> +++ b/drivers/video/fbdev/hgafb.c
-> @@ -558,7 +558,7 @@ static int hgafb_probe(struct platform_device *pdev)
->   	int ret;
->   
->   	ret = hga_card_detect();
-> -	if (!ret)
-> +	if (ret)
->   		return ret;
->   
->   	printk(KERN_INFO "hgafb: %s with %ldK of memory detected.\n",
-> 
+Just an aside: I think with fbdev drivers this would go boom, because
+you'd have fbcon interferring with a direct /dev/fb/* user.
 
-In fact, this return isn't being properly handled. Thanks for fix it!
+But if your fbdev driver is actually a drm modeset driver, then we
+have additional limitations: If the userspace accesses the display
+through /dev/dri/card0, then the kernel blocks all access through
+/dev/fb/* (including fbcon) to the actual display (it only goes into
+the buffer used for fbdev emulation). And everything would be fine.
 
-Reviewed-by: Igor Matheus Andrade Torrente <igormtorrente@gmail.com>
+Also generally you'd get away with this even in problematic cases,
+since usually you resize your console when looking at it, not when X
+or something else is using your fbdev direct access.
+
+The one thing that's left out here a bit in the cold is userspace
+modeset drivers in X. Those would get hosed. But also, we stopped
+supporting those in at least i915/amd/radeon/nouveau drivers,
+automatically falling back to the fbdev stuff in most cases (with or
+without the drm drivers underneath that), and no one screamed. So
+probably not many users left.
+
+So I /think/ we could wager this, if it's the least intrusive fix from
+the kernel pov. But it has some risks that we need to revert again if
+we break some of the really old use-cases here.
+
+Cheers, Daniel
+
+> Another alternative would be to just delay the resize to when vcmode
+> is put back to text mode again. That sounds somewhat reasonable to me,
+> but it's a pretty big thing.
+>
+> But no, your patch to just "knowingly use entirely wrong values, then
+> add a limit check because we know the values are possibly garbage and
+> not consistent with reality" is simply not acceptable.
+>
+>               Linus
+
+
+
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

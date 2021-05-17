@@ -2,103 +2,124 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49AC1C43460
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 09:59:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 874F0C433ED
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 12:27:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2CEAE61029
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 09:59:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5E9026100C
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 May 2021 12:27:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236507AbhEQKAd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 May 2021 06:00:33 -0400
-Received: from youngberry.canonical.com ([91.189.89.112]:34597 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236308AbhEQJ77 (ORCPT
+        id S237000AbhEQM3A (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 May 2021 08:29:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41516 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231161AbhEQM3A (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 May 2021 05:59:59 -0400
-Received: from mail-ed1-f72.google.com ([209.85.208.72])
-        by youngberry.canonical.com with esmtps  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-        (Exim 4.93)
-        (envelope-from <juerg.haefliger@canonical.com>)
-        id 1lia1K-0002TK-6S
-        for linux-fbdev@vger.kernel.org; Mon, 17 May 2021 09:58:42 +0000
-Received: by mail-ed1-f72.google.com with SMTP id p8-20020aa7c8880000b029038ce714c8d6so3590932eds.10
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 May 2021 02:58:42 -0700 (PDT)
+        Mon, 17 May 2021 08:29:00 -0400
+Received: from mail-qv1-xf2b.google.com (mail-qv1-xf2b.google.com [IPv6:2607:f8b0:4864:20::f2b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0EBA2C061573;
+        Mon, 17 May 2021 05:27:43 -0700 (PDT)
+Received: by mail-qv1-xf2b.google.com with SMTP id w9so2930092qvi.13;
+        Mon, 17 May 2021 05:27:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=RrMgSrZtTqdB/wlv0id/9NlOUPd01Z7kAGWKqnT2c2M=;
+        b=CctOlq+UkKn18QqKAOdc7VqJDwwJKN9HU/A5tTPZ0EUkYGQMbFanD0RNwVHW2f6R4E
+         7fGATCP3I/aegDtzmOBa5y7HYnBAOTRIl+10jhJuS7FOhQbBKJ3dZOOA6X3ITygKqzls
+         GYKmF56nNhO+08TdkpRANu9VXaTwgiFhOUXy8+b44TjtqJNCthTAiLbF/r709SBk+TTr
+         JFfUCWgDEX967xOAuQfbJGZ4in3xZj/3kE8Mf/9i0HFQ65dEhwLg/3wrcJKdfUh8FmVT
+         hxlDPhEvB3cXIZu0UWRwRNkFRYiWjfn70i3oucULeBS2i2/4Qn1sRdt3WfdmU+uTZ/f+
+         PWNg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=2mpH5FVMrjvjH8WEdGmN2JnMyMXBzqsrskS5jwEFjyI=;
-        b=dQPTgLsLi9ZFzO6z7YIjcMDHH27DPwW1G9QZxGzsiXAccUEjohn065L3hsv+oWqq5W
-         XV86pEjH5pcL2sFTpezY4qDL0Abn4UXG6vyb56sAIqG2rnQFXnQVwvD4zbdzODGzxBlb
-         zUuWi+desc7/EIJARCHSj9fwUAr52VGbnd9rgARKeIpzxfkynycsmNQFHuE2guVC4u0b
-         KkMY+HMLnEyshGDpqcILNA6OKsH+G6OIR/LFZSVxlWgQNcKjGmsYTgumAOPePESZN90G
-         mW1zGYlnDzCqwZKQBhATGKyCilMDdqczwnz1tNMkzneYpLmhJucPLqbz93iaHBcQs2qM
-         lezw==
-X-Gm-Message-State: AOAM531MoKjy6YLzAERtc9EmlQBC/xmDrm+LluinlUUTy2886YNul+QX
-        nIQKd/LPg5VImyqrSd/A3IXG6Bw2JR3zUBa01EQX6HrtaNahBafBNyzwAmeb6anhB9RvhINo95o
-        eLjMcg4NwyRXsLI6N+ru09OcPIKfl28adWqLkrwg+
-X-Received: by 2002:a17:906:8478:: with SMTP id hx24mr4112960ejc.490.1621245521964;
-        Mon, 17 May 2021 02:58:41 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzFRG/l/G2rg1zX50CxuoToOo+lAsM6sV5pKwmdKQGRrZLr8YNgrn4AfOtYJKORD+xj1Qs8MA==
-X-Received: by 2002:a17:906:8478:: with SMTP id hx24mr4112949ejc.490.1621245521826;
-        Mon, 17 May 2021 02:58:41 -0700 (PDT)
-Received: from gollum.fritz.box ([194.191.244.86])
-        by smtp.gmail.com with ESMTPSA id i20sm4883813edr.94.2021.05.17.02.58.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 17 May 2021 02:58:41 -0700 (PDT)
-From:   Juerg Haefliger <juerg.haefliger@canonical.com>
-X-Google-Original-From: Juerg Haefliger <juergh@canonical.com>
-To:     lee.jones@linaro.org, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org, juergh@canonical.com
-Subject: [PATCH] backlight: Remove leading spaces in Kconfig
-Date:   Mon, 17 May 2021 11:58:39 +0200
-Message-Id: <20210517095839.81833-1-juergh@canonical.com>
-X-Mailer: git-send-email 2.27.0
+        bh=RrMgSrZtTqdB/wlv0id/9NlOUPd01Z7kAGWKqnT2c2M=;
+        b=o0mOKwYepWVVpxPVVWFgoPaBZbfTrIsGxkrg/g/y8NEukfd3Sm3jGA8VJzzbc6BGXc
+         DYTumsMOoVyJSPRDVZvNZdluPAxmeUhbmqlK6g9pxDY15LbtCS0hqTYT5tWMN39Tu6nJ
+         BYUrkcagLw6weSS33nn7OKNnvBNq87qwrQti34z+LV6zqA5d45Yq5lzFrFjGluSXrkkk
+         CN+WNfro4jJMRgyUGtbLuj2omndjJWFNfK8DSAhsoo8q3A1CdJmq8pZPKF2ibuBJwYFG
+         N14jhdmq4u1qfh+XVAdPvWu9WDygAAgXa0cyhJYCunxYx3suvhyfd0XpnEuJIg8iNUqs
+         wxMQ==
+X-Gm-Message-State: AOAM530ciHkAjoKLfSTKclWUICNuAVLZx7SmAT7uS9qPJSoK8bcg04hf
+        VtHrez+i2bnO3WAg/URPHt44nRWh7r3NABm3
+X-Google-Smtp-Source: ABdhPJzM+6xSTMZ2jK4banMxGU90aLBTrZTJZYJp2Lr/pLBs4nDcAdGVJO5Aq8VNiSxT+2/N1fJnug==
+X-Received: by 2002:a05:6214:87:: with SMTP id n7mr16082560qvr.1.1621254462149;
+        Mon, 17 May 2021 05:27:42 -0700 (PDT)
+Received: from ?IPv6:2804:14c:125:811b::1003? ([2804:14c:125:811b::1003])
+        by smtp.gmail.com with ESMTPSA id 10sm10377983qka.23.2021.05.17.05.27.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 17 May 2021 05:27:41 -0700 (PDT)
+Subject: Re: [PATCH] video: hgafb: correctly handle card detect failure during
+ probe
+To:     Anirudh Rayabharam <mail@anirudhrb.com>,
+        Ferenc Bakonyi <fero@drama.obuda.kando.hu>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     linux-kernel-mentees@lists.linuxfoundation.org,
+        kernel test robot <oliver.sang@intel.com>,
+        stable <stable@vger.kernel.org>,
+        linux-nvidia@lists.surfsouth.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20210516192714.25823-1-mail@anirudhrb.com>
+From:   Igor Torrente <igormtorrente@gmail.com>
+Message-ID: <2b945eaa-4288-1601-3f1a-60f2ceaa1ea7@gmail.com>
+Date:   Mon, 17 May 2021 09:27:38 -0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210516192714.25823-1-mail@anirudhrb.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Remove leading spaces before tabs in Kconfig file(s) by running the
-following command:
+Hi,
 
-  $ find drivers/video/backlight -name 'Kconfig*' | \
-    xargs sed -r -i 's/^[ ]+\t/\t/'
+On 5/16/21 4:27 PM, Anirudh Rayabharam wrote:
+> The return value of hga_card_detect() is not properly handled causing
+> the probe to succeed even though hga_card_detect() failed. Since probe
+> succeeds, hgafb_open() can be called which will end up operating on an
+> unmapped hga_vram. This results in an out-of-bounds access as reported
+> by kernel test robot [1].
+> 
+> To fix this, correctly detect failure of hga_card_detect() by checking
+> for a non-zero error code.
+> 
+> [1]: https://lore.kernel.org/lkml/20210516150019.GB25903@xsang-OptiPlex-9020/
+> 
+> Reported-by: kernel test robot <oliver.sang@intel.com>
+> Fixes: dc13cac4862c ("video: hgafb: fix potential NULL pointer dereference")
+> Cc: stable <stable@vger.kernel.org>
+> Signed-off-by: Anirudh Rayabharam <mail@anirudhrb.com>
+> ---
+>   drivers/video/fbdev/hgafb.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
+> index cc8e62ae93f6..bd3d07aa4f0e 100644
+> --- a/drivers/video/fbdev/hgafb.c
+> +++ b/drivers/video/fbdev/hgafb.c
+> @@ -558,7 +558,7 @@ static int hgafb_probe(struct platform_device *pdev)
+>   	int ret;
+>   
+>   	ret = hga_card_detect();
+> -	if (!ret)
+> +	if (ret)
+>   		return ret;
+>   
+>   	printk(KERN_INFO "hgafb: %s with %ldK of memory detected.\n",
+> 
 
-Signed-off-by: Juerg Haefliger <juergh@canonical.com>
----
- drivers/video/backlight/Kconfig | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+In fact, this return isn't being properly handled. Thanks for fix it!
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index d83c87b902c1..a967974f6cd6 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -129,11 +129,11 @@ config LCD_HX8357
- 	  driver.
- 
-   config LCD_OTM3225A
--  	tristate "ORISE Technology OTM3225A support"
--  	depends on SPI
--  	help
--  	  If you have a panel based on the OTM3225A controller
--  	  chip then say y to include a driver for it.
-+	tristate "ORISE Technology OTM3225A support"
-+	depends on SPI
-+	help
-+	  If you have a panel based on the OTM3225A controller
-+	  chip then say y to include a driver for it.
- 
- endif # LCD_CLASS_DEVICE
- 
--- 
-2.27.0
-
+Reviewed-by: Igor Matheus Andrade Torrente <igormtorrente@gmail.com>

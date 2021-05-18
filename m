@@ -2,141 +2,85 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF1C5C433B4
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 May 2021 09:06:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FD92C433ED
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 May 2021 13:22:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C652761209
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 May 2021 09:06:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F3D3A610CD
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 May 2021 13:22:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347768AbhERJHi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 May 2021 05:07:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37300 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347707AbhERJHS (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 May 2021 05:07:18 -0400
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52106C06138F
-        for <linux-fbdev@vger.kernel.org>; Tue, 18 May 2021 02:05:57 -0700 (PDT)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed20:c161:a89e:52bd:1787])
-        by xavier.telenet-ops.be with bizsmtp
-        id 695s2500Q446CkP0195sBf; Tue, 18 May 2021 11:05:55 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1livfk-006q2F-4x; Tue, 18 May 2021 11:05:52 +0200
-Received: from geert by rox.of.borg with local (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1liv5J-0069nz-PT; Tue, 18 May 2021 10:28:13 +0200
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-To:     Maxime Ripard <mripard@kernel.org>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 5/5] video: fbdev: ssd1307fb: Cache address ranges
-Date:   Tue, 18 May 2021 10:28:09 +0200
-Message-Id: <20210518082809.1467549-6-geert@linux-m68k.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20210518082809.1467549-1-geert@linux-m68k.org>
-References: <20210518082809.1467549-1-geert@linux-m68k.org>
+        id S1349526AbhERNYI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 May 2021 09:24:08 -0400
+Received: from mail.kernel.org ([198.145.29.99]:39728 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S239145AbhERNYI (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 18 May 2021 09:24:08 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id C0E946008E;
+        Tue, 18 May 2021 13:22:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1621344169;
+        bh=WQdgNlO00HhjMFdrkbm64uxHBJSPAptuMCxpaqsX5Ak=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=eobGBP/zR+zFAlh4OHSckEZCrGAD8rw8f5LybnkJhkGJEYW9y2Mhl3iq9P4fP4//1
+         J/f20J4SV4ufuJlIrcUcUEkHL4lWvmrP9qd1yYdbrTdhdISsRHe5NX/Q6S6ah3fwUW
+         EJRB4LkdoLZB2FnhoW4u6iSKc9ZIPgYf3FHUkDJjv2NA1aYLL3/sWwgci3jp8jq3ZM
+         78/udASoxg//AJfKwNx4XRFrP2dNLcp41DHdaBlSHGUpo0u1WY5KMiAJK7EEnYXnVo
+         XkzNemx1O7/i6UPIqakAu6Mxf0PqC5gV4FqVMCstAkon1oeqFLcMokjiXTMwT0+fYM
+         BoY5YZu5Sl9EQ==
+Date:   Tue, 18 May 2021 09:22:48 -0400
+From:   Sasha Levin <sashal@kernel.org>
+To:     Greg KH <greg@kroah.com>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        stable <stable@vger.kernel.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        syzbot <syzbot+1f29e126cf461c4de3b3@syzkaller.appspotmail.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Subject: Re: [PATCH AUTOSEL 5.12 5/5] tty: vt: always invoke
+ vc->vc_sw->con_resize callback
+Message-ID: <YKO/qKRwPYJF7ols@sashalap>
+References: <20210518010940.1485417-1-sashal@kernel.org>
+ <20210518010940.1485417-5-sashal@kernel.org>
+ <CAHk-=whw9_rp0NYTsCqcGnUkcV5Qgv7FTxADtPrdq4KFmsj+Lg@mail.gmail.com>
+ <YKNUl/f/c8HfF6dS@kroah.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <YKNUl/f/c8HfF6dS@kroah.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Cache the column and page ranges, to avoid doing unneeded I2C transfers
-when the values haven't changed.
+On Tue, May 18, 2021 at 07:45:59AM +0200, Greg KH wrote:
+>On Mon, May 17, 2021 at 06:35:24PM -0700, Linus Torvalds wrote:
+>> On Mon, May 17, 2021 at 6:09 PM Sasha Levin <sashal@kernel.org> wrote:
+>> >
+>> > From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+>> >
+>> > [ Upstream commit ffb324e6f874121f7dce5bdae5e05d02baae7269 ]
+>>
+>> So I think the commit is fine, and yes, it should be applied to
+>> stable, but it's one of those "there were three different patches in
+>> as many days to fix the problem, and this is the right one, but maybe
+>> stable should hold off for a while to see that there aren't any
+>> problem reports".
+>>
+>> I don't think there will be any problems from this, but while the
+>> patch is tiny, it's conceptually quite a big change to something that
+>> people haven't really touched for a long time.
+>>
+>> So use your own judgement, but it might be a good idea to wait a week
+>> before backporting this to see if anything screams.
+>
+>I was going to wait a few weeks for this, and the other vt patches that
+>were marked with cc: stable@ before queueing them up.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/video/fbdev/ssd1307fb.c | 52 +++++++++++++++++++++++----------
- 1 file changed, 36 insertions(+), 16 deletions(-)
+I'll drop it from my queue then.
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 8e3d4be74723b9bf..23b43ce479898813 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -82,6 +82,11 @@ struct ssd1307fb_par {
- 	struct regulator *vbat_reg;
- 	u32 vcomh;
- 	u32 width;
-+	/* Cached address ranges */
-+	u8 col_start;
-+	u8 col_end;
-+	u8 page_start;
-+	u8 page_end;
- };
- 
- struct ssd1307fb_array {
-@@ -160,28 +165,43 @@ static int ssd1307fb_set_address_range(struct ssd1307fb_par *par, u8 col_start,
- 	int ret;
- 
- 	/* Set column range */
--	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_COL_RANGE);
--	if (ret < 0)
--		return ret;
-+	if (col_start != par->col_start || col_end != par->col_end) {
-+		ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_COL_RANGE);
-+		if (ret < 0)
-+			return ret;
- 
--	ret = ssd1307fb_write_cmd(par->client, col_start);
--	if (ret < 0)
--		return ret;
-+		ret = ssd1307fb_write_cmd(par->client, col_start);
-+		if (ret < 0)
-+			return ret;
- 
--	ret = ssd1307fb_write_cmd(par->client, col_end);
--	if (ret < 0)
--		return ret;
-+		ret = ssd1307fb_write_cmd(par->client, col_end);
-+		if (ret < 0)
-+			return ret;
-+
-+		par->col_start = col_start;
-+		par->col_end = col_end;
-+	}
- 
- 	/* Set page range */
--	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_PAGE_RANGE);
--	if (ret < 0)
--		return ret;
-+	if (page_start != par->page_start || page_end != par->page_end) {
-+		ret = ssd1307fb_write_cmd(par->client,
-+					  SSD1307FB_SET_PAGE_RANGE);
-+		if (ret < 0)
-+			return ret;
- 
--	ret = ssd1307fb_write_cmd(par->client, page_start);
--	if (ret < 0)
--		return ret;
-+		ret = ssd1307fb_write_cmd(par->client, page_start);
-+		if (ret < 0)
-+			return ret;
-+
-+		ret = ssd1307fb_write_cmd(par->client, page_end);
-+		if (ret < 0)
-+			return ret;
- 
--	return ssd1307fb_write_cmd(par->client, page_end);
-+		par->page_start = page_start;
-+		par->page_end = page_end;
-+	}
-+
-+	return 0;
- }
- 
- static int ssd1307fb_update_rect(struct ssd1307fb_par *par, unsigned int x,
 -- 
-2.25.1
-
+Thanks,
+Sasha

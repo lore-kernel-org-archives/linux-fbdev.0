@@ -2,126 +2,99 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4482CC43462
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 May 2021 01:09:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C25BC433B4
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 May 2021 01:35:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 273B261354
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 May 2021 01:09:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1C45361396
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 May 2021 01:35:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345411AbhERBLG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 May 2021 21:11:06 -0400
-Received: from mail.kernel.org ([198.145.29.99]:56908 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1345413AbhERBLG (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 May 2021 21:11:06 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 0C66461354;
-        Tue, 18 May 2021 01:09:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1621300188;
-        bh=0zKjkGyEvQV2romi22O4oKlA9u2Zf+tpdLVoIqglSLc=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=OweZpeDIZXqLP/xyVBRgeVY588O42UWbJ2mRdhcERaUblxrPuISqXyw3cwIIYCSvC
-         d+oG7kQjZiXb90wlm9oMq5oT2UYnPfk2BM8ewiou5jK7OqUDWPGfaQp5PYVnCTnlvG
-         f+suzg+GqLMhfqnFtJzRM9Z7QfUJs9sEmEJnshA+UCtpuOjHMe/aW5O8CgaO/VMKFA
-         CA9qGc169fQkZf4C914MS2dVr6IbpVA66VeyVSRAfn9XqM+kVisFkhOh7IKD+IIzzj
-         gvpOERVaq9kP2PilKRudaQw++PAU/aq5/w6dR54168FGYIV2y6BCkzJwuHydNGWJgK
-         ozNGFZNfele+Q==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-        syzbot <syzbot+1f29e126cf461c4de3b3@syzkaller.appspotmail.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Sasha Levin <sashal@kernel.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.12 5/5] tty: vt: always invoke vc->vc_sw->con_resize callback
-Date:   Mon, 17 May 2021 21:09:40 -0400
-Message-Id: <20210518010940.1485417-5-sashal@kernel.org>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210518010940.1485417-1-sashal@kernel.org>
-References: <20210518010940.1485417-1-sashal@kernel.org>
+        id S1345912AbhERBhJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 May 2021 21:37:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50016 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1345909AbhERBhG (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 17 May 2021 21:37:06 -0400
+Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9940BC06175F
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 May 2021 18:35:47 -0700 (PDT)
+Received: by mail-lf1-x12f.google.com with SMTP id i9so11568245lfe.13
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 May 2021 18:35:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linux-foundation.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=3Y4UC937pcRi6mdp2HazCoUPjtNxk9PJkqRxwraum1Y=;
+        b=gqVqIx8Ym2P95cU1nEwsXDnOMInJKjvLvl6PdHm+m4USuWxwS7QapJ/4AnjrYoQgjp
+         Ul+p1xz0jsBYnf7HxkvT5KEQQnHy9T/2McLKcqfpIWocA0q+0ATrVtMzn0XcOX6uS6dk
+         /MUMbUdum0s43SXkfV0oQ3/kVHBjAyHYj0f2I=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=3Y4UC937pcRi6mdp2HazCoUPjtNxk9PJkqRxwraum1Y=;
+        b=BVU+CabsQpE+iwAy+oAPqjzFgNJSZuCC38Q/c9SrBcgoBk5HCfN7d+zJEpQ2+EEPwM
+         0ezl0G/Z+rdBJ4rD6CSYLiNEvOkHlI2qt+iF2RhjRRT97QIad2WbusongA4tfCT/w7NC
+         vnilyWhBF3ADOti56V1xHWwfL/6X7m1iJL/yuKqoLaRNn0biYXscIbGnu6X8TDgdJvNr
+         DdfT7YNznR4WAD6jPQe0Jpn1MHWOtCmwnnCQVenaitzVhhkVzFmGzu4JqqyVQuc31HG+
+         7YRaM1yxAM5hZ3Z99P5LncVj19s0SLTxcGt/XyyJrTGDs4Fo/p4osXuTKtD8pIozePIS
+         lDZg==
+X-Gm-Message-State: AOAM532ZTgWmo1NIab5aawtJRuxju81Oo2zMwrx0GQUaoniQN84iVT0Z
+        BOC8Gf5Vnk/VRvLYxB+TUQrRoQ3Otzl6bCnh
+X-Google-Smtp-Source: ABdhPJxJmajOyHnrWnhXeI0XqmldxaOMw6gOf6tMdoQeK61AWvZcSU9BSCPSHJ04WvAubxg0SjNT9g==
+X-Received: by 2002:ac2:5687:: with SMTP id 7mr2145045lfr.549.1621301745789;
+        Mon, 17 May 2021 18:35:45 -0700 (PDT)
+Received: from mail-lf1-f42.google.com (mail-lf1-f42.google.com. [209.85.167.42])
+        by smtp.gmail.com with ESMTPSA id o15sm1271258lfr.257.2021.05.17.18.35.44
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 17 May 2021 18:35:45 -0700 (PDT)
+Received: by mail-lf1-f42.google.com with SMTP id j6so8932862lfr.11
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 May 2021 18:35:44 -0700 (PDT)
+X-Received: by 2002:a05:6512:36c5:: with SMTP id e5mr2066552lfs.41.1621301740633;
+ Mon, 17 May 2021 18:35:40 -0700 (PDT)
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+References: <20210518010940.1485417-1-sashal@kernel.org> <20210518010940.1485417-5-sashal@kernel.org>
+In-Reply-To: <20210518010940.1485417-5-sashal@kernel.org>
+From:   Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Mon, 17 May 2021 18:35:24 -0700
+X-Gmail-Original-Message-ID: <CAHk-=whw9_rp0NYTsCqcGnUkcV5Qgv7FTxADtPrdq4KFmsj+Lg@mail.gmail.com>
+Message-ID: <CAHk-=whw9_rp0NYTsCqcGnUkcV5Qgv7FTxADtPrdq4KFmsj+Lg@mail.gmail.com>
+Subject: Re: [PATCH AUTOSEL 5.12 5/5] tty: vt: always invoke
+ vc->vc_sw->con_resize callback
+To:     Sasha Levin <sashal@kernel.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        stable <stable@vger.kernel.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        syzbot <syzbot+1f29e126cf461c4de3b3@syzkaller.appspotmail.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+On Mon, May 17, 2021 at 6:09 PM Sasha Levin <sashal@kernel.org> wrote:
+>
+> From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+>
+> [ Upstream commit ffb324e6f874121f7dce5bdae5e05d02baae7269 ]
 
-[ Upstream commit ffb324e6f874121f7dce5bdae5e05d02baae7269 ]
+So I think the commit is fine, and yes, it should be applied to
+stable, but it's one of those "there were three different patches in
+as many days to fix the problem, and this is the right one, but maybe
+stable should hold off for a while to see that there aren't any
+problem reports".
 
-syzbot is reporting OOB write at vga16fb_imageblit() [1], for
-resize_screen() from ioctl(VT_RESIZE) returns 0 without checking whether
-requested rows/columns fit the amount of memory reserved for the graphical
-screen if current mode is KD_GRAPHICS.
+I don't think there will be any problems from this, but while the
+patch is tiny, it's conceptually quite a big change to something that
+people haven't really touched for a long time.
 
-----------
-  #include <sys/types.h>
-  #include <sys/stat.h>
-  #include <fcntl.h>
-  #include <sys/ioctl.h>
-  #include <linux/kd.h>
-  #include <linux/vt.h>
+So use your own judgement, but it might be a good idea to wait a week
+before backporting this to see if anything screams.
 
-  int main(int argc, char *argv[])
-  {
-        const int fd = open("/dev/char/4:1", O_RDWR);
-        struct vt_sizes vt = { 0x4100, 2 };
-
-        ioctl(fd, KDSETMODE, KD_GRAPHICS);
-        ioctl(fd, VT_RESIZE, &vt);
-        ioctl(fd, KDSETMODE, KD_TEXT);
-        return 0;
-  }
-----------
-
-Allow framebuffer drivers to return -EINVAL, by moving vc->vc_mode !=
-KD_GRAPHICS check from resize_screen() to fbcon_resize().
-
-Link: https://syzkaller.appspot.com/bug?extid=1f29e126cf461c4de3b3 [1]
-Reported-by: syzbot <syzbot+1f29e126cf461c4de3b3@syzkaller.appspotmail.com>
-Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Tested-by: syzbot <syzbot+1f29e126cf461c4de3b3@syzkaller.appspotmail.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/tty/vt/vt.c              | 2 +-
- drivers/video/fbdev/core/fbcon.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 0cc360da5426..53cbf2c3f033 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -1171,7 +1171,7 @@ static inline int resize_screen(struct vc_data *vc, int width, int height,
- 	/* Resizes the resolution of the display adapater */
- 	int err = 0;
- 
--	if (vc->vc_mode != KD_GRAPHICS && vc->vc_sw->con_resize)
-+	if (vc->vc_sw->con_resize)
- 		err = vc->vc_sw->con_resize(vc, width, height, user);
- 
- 	return err;
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 3406067985b1..22bb3892f6bd 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2019,7 +2019,7 @@ static int fbcon_resize(struct vc_data *vc, unsigned int width,
- 			return -EINVAL;
- 
- 		pr_debug("resize now %ix%i\n", var.xres, var.yres);
--		if (con_is_visible(vc)) {
-+		if (con_is_visible(vc) && vc->vc_mode == KD_TEXT) {
- 			var.activate = FB_ACTIVATE_NOW |
- 				FB_ACTIVATE_FORCE;
- 			fb_set_var(info, &var);
--- 
-2.30.2
-
+          Linus

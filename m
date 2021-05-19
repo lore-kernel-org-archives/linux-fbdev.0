@@ -2,135 +2,84 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF4A0C433B4
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 May 2021 15:44:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5766AC433B4
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 May 2021 21:35:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CC79760D07
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 May 2021 15:44:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 278A1611AD
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 May 2021 21:35:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233065AbhESPpt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 May 2021 11:45:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58952 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354715AbhESPpn (ORCPT
+        id S229734AbhESVgp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 May 2021 17:36:45 -0400
+Received: from mail-oi1-f175.google.com ([209.85.167.175]:33630 "EHLO
+        mail-oi1-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229505AbhESVgp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 May 2021 11:45:43 -0400
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 37AE7C06175F
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 May 2021 08:44:23 -0700 (PDT)
-Received: by mail-wm1-x331.google.com with SMTP id z85-20020a1c7e580000b029017a76f3afbaso1062493wmc.2
-        for <linux-fbdev@vger.kernel.org>; Wed, 19 May 2021 08:44:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=4nu3OSdvPAQ7VkA5Lu/t0kQYvXnt9HghzAhj6ZR5wXc=;
-        b=KW4jncRtsVJ0qOZ8xXM9WdklXP/wPTxhSi5g4UQZUOyLMg5rF0WFjn6wOI3G5tB1X+
-         wvH5LtDvcBr0gj+jyw9Y3DzVQek2meyK5G0iRkndiLobnkoEtVdKkjvUNIeTGF5xJ29D
-         HeXVJcFy+WVxXf8muJp4RNBPVa9e2hShFmstZsEZLy7NWK0rJCnuDNTHdAGXh3vhGGwD
-         V+zB7FaW6abbE218yv3F3NKmajccjq4im07xAPAB2M6E8GOjs6wzmBmDrChrbi/4PGUR
-         WH/qzpOQISHnWW7+DMT4j9Emc+1TFBFXtARDDrlJX7Mm7im/5w68aG63BPt+IFfe6XyF
-         xqiA==
+        Wed, 19 May 2021 17:36:45 -0400
+Received: by mail-oi1-f175.google.com with SMTP id b25so14540791oic.0;
+        Wed, 19 May 2021 14:35:24 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=4nu3OSdvPAQ7VkA5Lu/t0kQYvXnt9HghzAhj6ZR5wXc=;
-        b=VsswiyjeYDAHONq6mwGZd2NbSwcJ604xX2iFE3NPtkm4tNoySNCF3hvAmWxP5HJtwz
-         kll1HnzuHdIHnhV9OgPHoIff1ToddFPZvvdaGinqL8ittr0C2v7zwpV5jQu34a/EAN5C
-         qbEo1vHwLwWLYp1W8T4x0cBi1z6P18EAul15tI+jHeElT1CgNTn0thceK3JAftIPS+f+
-         giQ0JIm7hvDjrshgkdxmMMuYkIOvXdlvA9cLS1eqZR+ocl9IrbYPQ52OwrSgOPyPL4mm
-         rCwJmvraZLNOHDi9Y02tqSpFQoLJg6OIYTb18EuAsf3LXibrlDzf4TSjKc+4m9qksz6o
-         vAXw==
-X-Gm-Message-State: AOAM530/ROE5DI6PC2WCX6x6q7xxMmiJMfwz4MTTUlSkW7w6foMOiTUe
-        cxwgSzyXmWQdTAApBch9gMgsAQ==
-X-Google-Smtp-Source: ABdhPJxm3DicWObRp7AE2/siDsEzYxCeS+fBjpBkSEKmMtJQ29aNWO0Wp4a8UD/rCQih9Wz3T4VICQ==
-X-Received: by 2002:a1c:f70d:: with SMTP id v13mr11921329wmh.183.1621439061770;
-        Wed, 19 May 2021 08:44:21 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id q1sm6200684wmq.48.2021.05.19.08.44.20
+        bh=2rgWWzmu9+l/+keqWvE5o3R7X9qXR0ySXAn+ph51bgs=;
+        b=D830CuH6Noa+O2Hq0Crom2p9enNfgVF6VuiMH5Ak5Lj7GhWcTv7rN8sHyYRAv9+cvo
+         8xFVD0QQzP+nNAGQx2c4wrwVO0+2yDd06cqkfNqoBu3MnnWatAHx0lRmRr57fbxEDYUe
+         g893kW+f+RzlWX3lSbGFsk0BSoAmv/fHlRObsOW2pLof/rxI53ljXEvmnCW4EPNXL5OO
+         X0Ly0qWAw/oHygy20wy7RrIeCLBOzEAf4QzYiiXTpSq4QWvU0QAwS6gdfkW8frlre5jB
+         /fxdE3gvg/0iRkJX+j2IZEe+Le01eHKWrry0Gw73HGfF7BIqx3UD/vh8+3q6gqb8uSe/
+         Klpg==
+X-Gm-Message-State: AOAM531RIpkrzGuvqdl+dZa1xzp6cqdE8wSqsLx9ecjE7LCSseAYWKyI
+        N2oJlhk840keklm4CPzxaMZ+yw7qqA==
+X-Google-Smtp-Source: ABdhPJyxgegfTcfNU9tUV1HgiyoVr8+U6uW9P8E1qSVwfvrfm/k357lHNjRPmR4qmC2FQCMHyZdaag==
+X-Received: by 2002:a05:6808:13d5:: with SMTP id d21mr964288oiw.31.1621460123905;
+        Wed, 19 May 2021 14:35:23 -0700 (PDT)
+Received: from robh.at.kernel.org (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id e20sm132049oot.11.2021.05.19.14.35.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 May 2021 08:44:21 -0700 (PDT)
-Date:   Wed, 19 May 2021 16:44:19 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Juerg Haefliger <juerg.haefliger@canonical.com>
-Cc:     Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Juerg Haefliger <juergh@canonical.com>
-Subject: Re: [PATCH v2] backlight: Kconfig whitespace and indentation cleanups
-Message-ID: <20210519154419.n74hcf7lnqvmuuvf@maple.lan>
-References: <20210517095839.81833-1-juergh@canonical.com>
- <20210519110300.17918-1-juergh@canonical.com>
+        Wed, 19 May 2021 14:35:22 -0700 (PDT)
+Received: (nullmailer pid 3694182 invoked by uid 1000);
+        Wed, 19 May 2021 21:33:46 -0000
+Date:   Wed, 19 May 2021 16:33:46 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Daniel Vetter <daniel@ffwll.ch>,
+        Maxime Ripard <mripard@kernel.org>,
+        linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
+        Rob Herring <robh+dt@kernel.org>,
+        dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: display: ssd1307fb: Convert to json-schema
+Message-ID: <20210519213346.GA3694120@robh.at.kernel.org>
+References: <20210518075131.1463091-1-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20210519110300.17918-1-juergh@canonical.com>
+In-Reply-To: <20210518075131.1463091-1-geert@linux-m68k.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, May 19, 2021 at 01:03:00PM +0200, Juerg Haefliger wrote:
-> Remove leading whitespaces, replace multi spaces with tabs, and fix help
-> text indentation.
+On Tue, 18 May 2021 09:51:31 +0200, Geert Uytterhoeven wrote:
+> Convert the Solomon SSD1307 Framebuffer Device Tree binding
+> documentation to json-schema.
 > 
-> Signed-off-by: Juerg Haefliger <juergh@canonical.com>
-
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-
-
-Daniel.
-
+> Fix the spelling of the "pwms" property.
+> Document default values.
+> Make properties with default values not required.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 > ---
->  drivers/video/backlight/Kconfig | 22 +++++++++++-----------
->  1 file changed, 11 insertions(+), 11 deletions(-)
+> I have listed Maxime as the maintainer, as he wrote the original driver
+> and bindings.  Maxime: Please scream if this is inappropriate ;-)
+> ---
+>  .../bindings/display/solomon,ssd1307fb.yaml   | 166 ++++++++++++++++++
+>  .../devicetree/bindings/display/ssd1307fb.txt |  60 -------
+>  2 files changed, 166 insertions(+), 60 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
+>  delete mode 100644 Documentation/devicetree/bindings/display/ssd1307fb.txt
 > 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index d83c87b902c1..c887338de386 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -128,12 +128,12 @@ config LCD_HX8357
->  	  If you have a HX-8357 LCD panel, say Y to enable its LCD control
->  	  driver.
->  
-> -  config LCD_OTM3225A
-> -  	tristate "ORISE Technology OTM3225A support"
-> -  	depends on SPI
-> -  	help
-> -  	  If you have a panel based on the OTM3225A controller
-> -  	  chip then say y to include a driver for it.
-> +config LCD_OTM3225A
-> +	tristate "ORISE Technology OTM3225A support"
-> +	depends on SPI
-> +	help
-> +	  If you have a panel based on the OTM3225A controller
-> +	  chip then say y to include a driver for it.
->  
->  endif # LCD_CLASS_DEVICE
->  
-> @@ -269,11 +269,11 @@ config BACKLIGHT_MAX8925
->  	  WLED output, say Y here to enable this driver.
->  
->  config BACKLIGHT_APPLE
-> -       tristate "Apple Backlight Driver"
-> -       depends on X86 && ACPI
-> -       help
-> -	 If you have an Intel-based Apple say Y to enable a driver for its
-> -	 backlight.
-> +	tristate "Apple Backlight Driver"
-> +	depends on X86 && ACPI
-> +	help
-> +	  If you have an Intel-based Apple say Y to enable a driver for its
-> +	  backlight.
->  
->  config BACKLIGHT_TOSA
->  	tristate "Sharp SL-6000 Backlight Driver"
-> -- 
-> 2.27.0
-> 
+
+Reviewed-by: Rob Herring <robh@kernel.org>

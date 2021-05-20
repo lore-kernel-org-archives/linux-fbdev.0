@@ -2,109 +2,108 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB1DBC433B4
-	for <linux-fbdev@archiver.kernel.org>; Thu, 20 May 2021 07:49:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AD2FC433B4
+	for <linux-fbdev@archiver.kernel.org>; Thu, 20 May 2021 13:41:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A4F65611BE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 20 May 2021 07:49:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6BBC260240
+	for <linux-fbdev@archiver.kernel.org>; Thu, 20 May 2021 13:41:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229536AbhETHvH convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 20 May 2021 03:51:07 -0400
-Received: from mout.kundenserver.de ([212.227.126.133]:44171 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229534AbhETHvH (ORCPT
+        id S239851AbhETNmu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 20 May 2021 09:42:50 -0400
+Received: from sender4-of-o53.zoho.com ([136.143.188.53]:21371 "EHLO
+        sender4-of-o53.zoho.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238175AbhETNmg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 20 May 2021 03:51:07 -0400
-Received: from mail-wm1-f46.google.com ([209.85.128.46]) by
- mrelayeu.kundenserver.de (mreue011 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1M9WiK-1lmugn09OW-005auD; Thu, 20 May 2021 09:49:45 +0200
-Received: by mail-wm1-f46.google.com with SMTP id y184-20020a1ce1c10000b02901769b409001so4617457wmg.3;
-        Thu, 20 May 2021 00:49:44 -0700 (PDT)
-X-Gm-Message-State: AOAM533+kgwK5+GRhL34lL8Z1KvV48ZD3AbiT3BsaAsAgGO8vqUBur3j
-        bxnukR4u8y0PSOPnG46xvTyQSQFM1o441aGI7og=
-X-Google-Smtp-Source: ABdhPJzTnFiyItuVXHf2Goa+uE3iwf9aQon2dCDtZRjZ/2Qcnq1b1x03TFmZZogoXxw8ZVwpVrjaamoTcjQg4uj+qBY=
-X-Received: by 2002:a7b:c849:: with SMTP id c9mr2699323wml.84.1621496984686;
- Thu, 20 May 2021 00:49:44 -0700 (PDT)
+        Thu, 20 May 2021 09:42:36 -0400
+ARC-Seal: i=1; a=rsa-sha256; t=1621518051; cv=none; 
+        d=zohomail.com; s=zohoarc; 
+        b=g366NAyIOHGUnmU1H63NB1lXwhcYXHlezQIRprstNF8Wtjt9iC/dczA9RagvoEs5ys621mpiRDd7x/v4cWWmtwC8YR5FIfYIzMZYqsxQzEx9Wr6ijIUPpYZn8MS/NWnsQsi9ud+tpVhTbjPtR//y9Nq4ZmXI8g53oKfIGDvK5fc=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+        t=1621518051; h=Content-Type:Cc:Date:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:To; 
+        bh=7VNeDRXRLa85jo7cthDYXanGoVHoiLzcwRL2eJbBc4Q=; 
+        b=NT/YbWWIGwaB810Ax5TA/0bAb/G3mAGqKXs617ByEW7UgVb0Ff5EAklvknryjULH2NGMpEWhvAKTXTRUVoIBgOKhAZkrCtu2CgqCUmCze3ct+H5S5HhGOzzkMDtx9/JZnBT4df4j+1dx//yaADH4EWzxa9DFs8qX13ehf5odse8=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+        dkim=pass  header.i=anirudhrb.com;
+        spf=pass  smtp.mailfrom=mail@anirudhrb.com;
+        dmarc=pass header.from=<mail@anirudhrb.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1621518051;
+        s=zoho; d=anirudhrb.com; i=mail@anirudhrb.com;
+        h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:Content-Type:In-Reply-To;
+        bh=7VNeDRXRLa85jo7cthDYXanGoVHoiLzcwRL2eJbBc4Q=;
+        b=DhQR6BlcX/91j1pV697dRGRM60S+vbqLTUXQRJ257ZxRwhLgDvA6cXqImWdgFNPD
+        VZuxjfxgplf/s9w/0voP/XSRUPvKd/oLZy36qHm3JLp+KQ9GlWeN4MryAWdaKMZEmSj
+        xpOb2stWUt7eJQp8VED2Az3/0EMFGgWfZn2Ac05k=
+Received: from anirudhrb.com (106.51.110.115 [106.51.110.115]) by mx.zohomail.com
+        with SMTPS id 1621518046958980.6684477891203; Thu, 20 May 2021 06:40:46 -0700 (PDT)
+Date:   Thu, 20 May 2021 19:10:39 +0530
+From:   Anirudh Rayabharam <mail@anirudhrb.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     linux-kernel-mentees@lists.linuxfoundation.org,
+        kernel test robot <oliver.sang@intel.com>,
+        stable <stable@vger.kernel.org>,
+        linux-nvidia@lists.surfsouth.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        mail@anirudhrb.com, igormtorrente@gmail.com,
+        fero@drama.obuda.kando.hu
+Subject: Re: [PATCH] video: hgafb: correctly handle card detect failure
+ during probe
+Message-ID: <YKZm17dj4R1c2ns/@anirudhrb.com>
+References: <20210516192714.25823-1-mail@anirudhrb.com>
 MIME-Version: 1.0
-References: <20210519120028.7350-1-songqiang@uniontech.com>
- <YKUBtiOTE7zJHAjI@casper.infradead.org> <1049640176.41531.1621490295842.JavaMail.xmail@localhost.localdomain>
-In-Reply-To: <1049640176.41531.1621490295842.JavaMail.xmail@localhost.localdomain>
-From:   Arnd Bergmann <arnd@arndb.de>
-Date:   Thu, 20 May 2021 09:48:29 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a2Pt+e3fbfWxJru7O-Np9u2u-_cVZqd5xBejLSraFYALQ@mail.gmail.com>
-Message-ID: <CAK8P3a2Pt+e3fbfWxJru7O-Np9u2u-_cVZqd5xBejLSraFYALQ@mail.gmail.com>
-Subject: Re: Re: [PATCH] drivers/video/fbdev/core/fbmem.c: add pointer judgment
-To:     =?UTF-8?B?5a6L5by6?= <songqiang@uniontech.com>
-Cc:     Matthew Wilcox <willy@infradead.org>, sam <sam@ravnborg.org>,
-        "b.zolnierkie" <b.zolnierkie@samsung.com>,
-        penguin-kernel <penguin-kernel@i-love.sakura.ne.jp>,
-        "george.kennedy" <george.kennedy@oracle.com>,
-        tzimmermann <tzimmermann@suse.de>, jgg <jgg@ziepe.ca>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        linux-fbdev <linux-fbdev@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-X-Provags-ID: V03:K1:NfkXDccIH0OFI/eaJXwafFWdvnS+fVPxMMZlw9UVXSn2di68EaK
- 2Po+fXuNsoLZGy1NXaOw4ei2Cqk4Bj12oh+dwMyF87BxSup8mW/sf2B6ZQLX+vGXp19IkCH
- wJmgoR+Q10nwqNQxac9aBedRdYZn7yjkciFqz8cPPRYw7eQuo+zeQGpaGDXZszg3MxWTzUq
- S2GuwiRiSj57QupbCW9qQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:mq6gJmgebVo=:Ac18aJQfiT6IGPL+mN4BZo
- zLTzZ2WGSoIhRVlrJDrPKSx2uznTEIXwlrNdS5kk1WaEfB9k4S3EpVosrP0OuqFaTJ9GLx4vp
- cSHBIw+W2DIknh5o+sQsQoGJNft1gKXAZrToTXuby+4rZ1Rcn5f09Sg8LfDvEmtRdOQeqp5CO
- TyhxnW8fVILzY+xnt4SwnjhUIVhHTtW0IBtfoyqasVgZjmWP/TxG6T2/LoyWK7QQ24uUuN8cJ
- GxZ7Y7JUaX7V6kzsytuRJJ76143yZpEBjn/Ws+c17iox/zE0hHE4EapSLZvvb/aYLxGnNX7D0
- usmwxsJDrsJKllrAnxFvaHRGb7SqUJekAbAxojLwOomc7Vtsw6GrBuW7tJjfwxf7Fm5SI/g+L
- YArJI25MLriZUj4SYjBrYMGaocpCNgnc/vvJPVv0P1pMY0h92gtqGcWq+Nzap5OGy5IfvsftH
- GpPLXOOf2sp8u4DVxUUeYXoGj7cVZOAqaoJ0YW6ZqnQgTxXqFeZ2tLPjcbTGI1KieUn4dAi6A
- CL91XzfB/QB4acgDtQ6bN7nl1ZYt4XuPGl6Vqs1PG43/B983U9tXURHmXdF0lKfzrrnmLduWO
- Ll5mJtHgrjCq9IUvxm6QmT3toNNb1Qg1pHR7lLG2sCStDvwIDtCCSS4rxyeFK/LtICdzOjplT
- SARQ=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210516192714.25823-1-mail@anirudhrb.com>
+X-ZohoMailClient: External
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
->  > On Wed, May 19, 2021 at 08:00:28PM +0800, songqiang wrote:
-> > Signed-off-by: songqiang <songqiang@uniontech.com>
-> From: "Matthew Wilcox <willy@infradead.org>"
-> > You need to explain:
-> >
-> > - Why you think this patch is needed
-> > - Did you observe a problem at runtime?
-> > - Is this the output from some checking tool?
-> > - Why this is the right way to address the problem
->
-On Thu, May 20, 2021 at 7:58 AM 宋强 <songqiang@uniontech.com> wrote:
->
-> I find null pointer bug when I debug the kernel of loongson，I think the function fb_set_suspend()
-> add pointer judgment will more friendly.
+On Mon, May 17, 2021 at 12:57:14AM +0530, Anirudh Rayabharam wrote:
+> The return value of hga_card_detect() is not properly handled causing
+> the probe to succeed even though hga_card_detect() failed. Since probe
+> succeeds, hgafb_open() can be called which will end up operating on an
+> unmapped hga_vram. This results in an out-of-bounds access as reported
+> by kernel test robot [1].
+> 
+> To fix this, correctly detect failure of hga_card_detect() by checking
+> for a non-zero error code.
+> 
+> [1]: https://lore.kernel.org/lkml/20210516150019.GB25903@xsang-OptiPlex-9020/
+> 
+> Reported-by: kernel test robot <oliver.sang@intel.com>
+> Fixes: dc13cac4862c ("video: hgafb: fix potential NULL pointer dereference")
 
-When replying to emails on the list, please remember
+Greg, this is one of the UMN fixes we did. So, do you want to take this
+patch into your tree?
 
-- avoid top-posting, see https://git-send-email.io/top-posting.html
-- use plain text email, html replies get dropped by many mailing lists.
+thanks!
 
-The information from your reply should be part of the patch description when
-you send a patch, see
-https://www.kernel.org/doc/html/v4.17/process/submitting-patches.html
+	- Anirudh.
 
-
-> [  102.011018] Call Trace:
->
-> [  102.013443] [<ffffffff81068e10>] fb_set_suspend+0x50/0x80
-> [  102.018819] [<ffffffffc0061aa0>] loongson_drm_suspend+0x1a0/0x340 [loongson]
-> [  102.025827] [<ffffffffc0061c58>] loongson_pmops_freeze+0x18/0x40 [loongson]
-> [  102.032748] [<ffffffff81008fd4>] pci_pm_freeze+0x94/0x240
-> [  102.038114] [<ffffffff815377e0>] dpm_run_callback.isra.5+0x20/0x140
-> [  102.044341] [<ffffffff81539608>] __device_suspend+0x2c8/0x740
-
-It looks like the check would actually belong into the loongson_drm driver.
-The driver is not upstream yet, but I assume you have the source for it, so
-try to fix the bug there and send the patch to the owners of that driver.
-
-       Arnd
+> Cc: stable <stable@vger.kernel.org>
+> Signed-off-by: Anirudh Rayabharam <mail@anirudhrb.com>
+> ---
+>  drivers/video/fbdev/hgafb.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
+> index cc8e62ae93f6..bd3d07aa4f0e 100644
+> --- a/drivers/video/fbdev/hgafb.c
+> +++ b/drivers/video/fbdev/hgafb.c
+> @@ -558,7 +558,7 @@ static int hgafb_probe(struct platform_device *pdev)
+>  	int ret;
+>  
+>  	ret = hga_card_detect();
+> -	if (!ret)
+> +	if (ret)
+>  		return ret;
+>  
+>  	printk(KERN_INFO "hgafb: %s with %ldK of memory detected.\n",
+> -- 
+> 2.26.2
+> 

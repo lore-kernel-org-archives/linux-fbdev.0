@@ -2,149 +2,115 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22084C04FF3
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 May 2021 11:48:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDB2DC04FF3
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 May 2021 12:01:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 021C46128D
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 May 2021 11:48:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AB57E613CB
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 May 2021 12:01:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232547AbhEXLuR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 May 2021 07:50:17 -0400
-Received: from out4-smtp.messagingengine.com ([66.111.4.28]:38229 "EHLO
-        out4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S232476AbhEXLuP (ORCPT
+        id S232937AbhEXMCu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 May 2021 08:02:50 -0400
+Received: from new4-smtp.messagingengine.com ([66.111.4.230]:44305 "EHLO
+        new4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S232819AbhEXMCY (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 May 2021 07:50:15 -0400
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-        by mailout.nyi.internal (Postfix) with ESMTP id 7984B5C00DD;
-        Mon, 24 May 2021 07:48:47 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute5.internal (MEProxy); Mon, 24 May 2021 07:48:47 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=
+        Mon, 24 May 2021 08:02:24 -0400
+Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
+        by mailnew.nyi.internal (Postfix) with ESMTP id 5796F58270C;
+        Mon, 24 May 2021 08:00:56 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+  by compute4.internal (MEProxy); Mon, 24 May 2021 08:00:56 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=
         date:from:to:cc:subject:message-id:references:mime-version
-        :content-type:in-reply-to; s=fm2; bh=M4uM525A9EdEenfyxCSJtV/Cbcv
-        IXk+39bR9IA9px/U=; b=iMu3Rv0rHb3pir9dfEXjv6ff2o1LbLMJjM64SZCAU8x
-        5YQKepeJfH4e6PoWcGl+pozTWs+QlylG39XiORO4inBCY6Et564KBwJHTCgjtA7K
-        2w0gf93w11s9HqEgcK+mhDPKYqYJMizGG+0pJFn2q7VUcdWbKL+k06vga+rRi88K
-        DYuMeHuf0kyL+mu1jPemf38HYoZO2uqH+RbXUE3Z4HibFNhYyj8iUSGKMrjDrzNd
-        sLx2UUrcKppEz3ntnPiysZe/7QrLHuglMZyefUAUgmoMUVhHKphdBcgJSo6QU5sR
-        lM50elpIGGE3g7LlKIAARXDAbCU4gyl+rlesmazkb4Q==
+        :content-type:in-reply-to; s=fm3; bh=9b68iKsk8DPJHoYxXOYWybMr7+T
+        fDaS+j0bppFnZpLo=; b=aYxbuGTfofOqjr3l46ffYuGleIRL9XBMhQT9Zgknwgw
+        26NkeNlothDsGmm8UFEZmbC+pKj3pmmsMdvMsNNcbq2zPbYxcjxAb7tpLZu82mVE
+        O/EHyv/z8hMS3yhLHIufw1U1MYjzY5hPEH2uflSCkBXwCThXDRgsrx9R5dt4PBms
+        5JJlgeFs4/jd+O1Rn2PSON4UBWvpiOTeVDLWdlmZTDBuY+py9ADefYRG6W41HKVF
+        fG7wd9888EWenY7VaqPCI7XN8C5qUHZxSKs/aPHP8WI+o+L9z33VGny19xj4GfsL
+        vURJYFnKkHrkEYdf+wAtdXaoZMhVtLxar6e0BLVrJ3w==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
         messagingengine.com; h=cc:content-type:date:from:in-reply-to
         :message-id:mime-version:references:subject:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=M4uM52
-        5A9EdEenfyxCSJtV/CbcvIXk+39bR9IA9px/U=; b=bswJFF6a1D0WyWPTe8CpsT
-        NP/Bob8ujcHOUY5RlnKWpWqLElVFegnizJtBU+lRZxmW1w0MvQRkFc79FuoEhAvA
-        C1kJwy1ic9sqPvl2t0HDhnS9wd0qlHnN3yw4q/WPkYSpfOgVfaJb8w5ytpzZexgA
-        yqQIXxUoMcMw9dBQ1B9OAPZidWDKTuZiB7woaAJG8fvcwyYKJ5nHL/gxNgoOfOCO
-        VpBS2gFCASvFIJELJFCjHXIqQpYgVdWfJk+cBOlqZMh15/eHMqDLC3LfIzaCSYgU
-        8UanokcIVa46kbqZELbKWrPNJrbdXf8iDS76BG6ZmYwUBTqgB680Vy7+u1bnsmYQ
+        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=9b68iK
+        sk8DPJHoYxXOYWybMr7+TfDaS+j0bppFnZpLo=; b=EpqzaZa8hQY2XMl+bD4Ibs
+        5J6Vx3hDVHqcdvcNMW8piRtpH0jcqRY3Os4gGw/ygc9Ue3EDY+ZGeaMttHDw9ciJ
+        09La2Xqx/wwAwsCJcAol9yS9QLLCN9I0IF7b6O9k17OO78KXEtu069hJROzdpt/g
+        3/V+2952OmNHIF/VqPdc/rRa9+cqwPjje6Beqw7F9oVxOc0Z+vPuDmZijV2Mi1Ac
+        iSMzezWYvVFQe/UBgvC3dAsnyjYW2SdO3TZ1Ti6SyXiUFcSld9G5Ibp8bujTtOij
+        gyd6TB0DeFCOKA4aK/aIj+kuiU0jUua8KrPV/ulBca0yepvFhHsGahk44NTtHA8g
         ==
-X-ME-Sender: <xms:npKrYCJlDHx4cjgsUHnRtbxk3cCjyFNEMCSeffxlb2akbKC9GoVo7g>
-    <xme:npKrYKK3cfOr3r34JkXL_dETk1Q7kWa_bSHZh39P1hEHWiKh1QJQ_0BBCjVtLxQIt
-    6Q-Ba1ph1D0XU62fxY>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduledrvdejledggeeiucetufdoteggodetrfdotf
+X-ME-Sender: <xms:d5WrYLCt6JBEFXq5dMXTK_K1Q3FLgT31oN4r4jvVxsWpYdRzh2sMhw>
+    <xme:d5WrYBgwVMUKI1qPW2FOMwhRCGrI4CWiJcTRDO2pR4nI12yvgQDgdvITGSUaKwxL_
+    olHgkLdI1pLXA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduledrvdejledggeekucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
     uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvffukfhfgggtuggjsehgtderredttddvnecuhfhrohhmpeforgigihhm
-    vgcutfhiphgrrhguuceomhgrgihimhgvsegtvghrnhhordhtvggthheqnecuggftrfgrth
-    htvghrnhepleekgeehhfdutdeljefgleejffehfffgieejhffgueefhfdtveetgeehieeh
-    gedunecukfhppeeltddrkeelrdeikedrjeeinecuvehluhhsthgvrhfuihiivgeptdenuc
-    frrghrrghmpehmrghilhhfrhhomhepmhgrgihimhgvsegtvghrnhhordhtvggthh
-X-ME-Proxy: <xmx:npKrYCsUH49U1F8x0TFg08IF39GvQvUKoLdeqTEzRHZBugKJ8df8jg>
-    <xmx:npKrYHak4QJRgP6B1DG26CVYBX9GCj2agLrBig1vPZHkFuJp917dUA>
-    <xmx:npKrYJbO4CBCosN0qrOnGH9UfqZK4rihhZ1pwquqim21F09g7rgyDA>
-    <xmx:n5KrYIU7wE7lfz739K4RSLbdMW2XXDQ_Q3xl0FVYbV5jwf0X1Jb7AQ>
-Received: from localhost (lfbn-tou-1-1502-76.w90-89.abo.wanadoo.fr [90.89.68.76])
+    cujfgurhepfffhvffukfhfgggtuggjsehttdertddttddvnecuhfhrohhmpefirhgvghcu
+    mffjuceoghhrvghgsehkrhhorghhrdgtohhmqeenucggtffrrghtthgvrhhnpeevueehje
+    fgfffgiedvudekvdektdelleelgefhleejieeugeegveeuuddukedvteenucfkphepkeef
+    rdekiedrjeegrdeigeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrih
+    hlfhhrohhmpehgrhgvgheskhhrohgrhhdrtghomh
+X-ME-Proxy: <xmx:d5WrYGlijsWGTkjJsz5c8gLwDWUyzsmaUSUivmTlzpiqr6F_oM71dg>
+    <xmx:d5WrYNyouRWKitd-ArnyUUpxd_X5AfNFLeJGgqx16xtp0wSxBgmYYw>
+    <xmx:d5WrYARS1ryrICK-Xz-tJKA-ewqwE7h5Ph_p_hAkTQKHVSNbjYDu9Q>
+    <xmx:eJWrYCD5kumaSPNhpAhDiLvUVssdoO1Xu-KGyHyCq4R9iZDe2TpjIQ>
+Received: from localhost (83-86-74-64.cable.dynamic.v4.ziggo.nl [83.86.74.64])
         by mail.messagingengine.com (Postfix) with ESMTPA;
-        Mon, 24 May 2021 07:48:46 -0400 (EDT)
-Date:   Mon, 24 May 2021 13:48:43 +0200
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Rob Herring <robh+dt@kernel.org>, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>
-Subject: Re: [PATCH] dt-bindings: display: ssd1307fb: Convert to json-schema
-Message-ID: <20210524114843.ihhgdhup7crskf4j@gilmour>
-References: <20210518075131.1463091-1-geert@linux-m68k.org>
- <20210518143317.yy2sxxnd7yt6cyrx@gilmour>
- <CAMuHMdXKaLpLL5Q1FnjHJ5kbs=+9Mm-QHXZp1i3M4zNr7G=e_w@mail.gmail.com>
+        Mon, 24 May 2021 08:00:54 -0400 (EDT)
+Date:   Mon, 24 May 2021 14:00:41 +0200
+From:   Greg KH <greg@kroah.com>
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Sasha Levin <sashal@kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        stable <stable@vger.kernel.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        syzbot <syzbot+1f29e126cf461c4de3b3@syzkaller.appspotmail.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Subject: Re: [PATCH AUTOSEL 5.12 5/5] tty: vt: always invoke
+ vc->vc_sw->con_resize callback
+Message-ID: <YKuVaUJFp0K929k+@kroah.com>
+References: <20210518010940.1485417-1-sashal@kernel.org>
+ <20210518010940.1485417-5-sashal@kernel.org>
+ <CAHk-=whw9_rp0NYTsCqcGnUkcV5Qgv7FTxADtPrdq4KFmsj+Lg@mail.gmail.com>
+ <YKNUl/f/c8HfF6dS@kroah.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="kawgr3kfamzs2jih"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdXKaLpLL5Q1FnjHJ5kbs=+9Mm-QHXZp1i3M4zNr7G=e_w@mail.gmail.com>
+In-Reply-To: <YKNUl/f/c8HfF6dS@kroah.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-
---kawgr3kfamzs2jih
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi
-
-On Tue, May 18, 2021 at 04:49:45PM +0200, Geert Uytterhoeven wrote:
-> On Tue, May 18, 2021 at 4:33 PM Maxime Ripard <maxime@cerno.tech> wrote:
-> > On Tue, May 18, 2021 at 09:51:31AM +0200, Geert Uytterhoeven wrote:
-> > > Convert the Solomon SSD1307 Framebuffer Device Tree binding
-> > > documentation to json-schema.
+On Tue, May 18, 2021 at 07:45:59AM +0200, Greg KH wrote:
+> On Mon, May 17, 2021 at 06:35:24PM -0700, Linus Torvalds wrote:
+> > On Mon, May 17, 2021 at 6:09 PM Sasha Levin <sashal@kernel.org> wrote:
 > > >
-> > > Fix the spelling of the "pwms" property.
-> > > Document default values.
-> > > Make properties with default values not required.
+> > > From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 > > >
-> > > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> > > ---
-> > > I have listed Maxime as the maintainer, as he wrote the original driv=
-er
-> > > and bindings.  Maxime: Please scream if this is inappropriate ;-)
-> >
-> > Fine by me :)
->=20
-> Thanks!
->=20
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
->=20
-> > > +  solomon,dclk-div:
-> > > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > > +    minimum: 1
-> > > +    maximum: 16
-> > > +    description:
-> > > +      Clock divisor. The default value is controller-dependent.
-> >
-> > I guess we could document the default using an if / else statement?
->=20
-> While clk-div has only two different defaults, dclk-frq has different
-> defaults for each of the 4 variants supported.
->=20
-> Do you think it's worthwhile doing that? All upstream DTS files lack
-> these properties, thus use the default values.
+> > > [ Upstream commit ffb324e6f874121f7dce5bdae5e05d02baae7269 ]
+> > 
+> > So I think the commit is fine, and yes, it should be applied to
+> > stable, but it's one of those "there were three different patches in
+> > as many days to fix the problem, and this is the right one, but maybe
+> > stable should hold off for a while to see that there aren't any
+> > problem reports".
+> > 
+> > I don't think there will be any problems from this, but while the
+> > patch is tiny, it's conceptually quite a big change to something that
+> > people haven't really touched for a long time.
+> > 
+> > So use your own judgement, but it might be a good idea to wait a week
+> > before backporting this to see if anything screams.
+> 
+> I was going to wait a few weeks for this, and the other vt patches that
+> were marked with cc: stable@ before queueing them up.
 
-I'd say it's even more important if everyone relies on it :)
+I have now queued all of these up.
 
-Maxime
-
---kawgr3kfamzs2jih
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYKuSmwAKCRDj7w1vZxhR
-xQUrAQDztdpV83mKelLkQAL8eURDG6cd9gD/7Ntvbg03LHwmWQD+JLtjeb3ucmns
-yhOJHM5mokmAm7CAdDYGH4BhqetBzw0=
-=C6df
------END PGP SIGNATURE-----
-
---kawgr3kfamzs2jih--
+greg k-h

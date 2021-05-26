@@ -2,115 +2,175 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDB2DC04FF3
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 May 2021 12:01:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE10AC47088
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 May 2021 19:39:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AB57E613CB
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 May 2021 12:01:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C44D4613D3
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 May 2021 19:39:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232937AbhEXMCu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 May 2021 08:02:50 -0400
-Received: from new4-smtp.messagingengine.com ([66.111.4.230]:44305 "EHLO
-        new4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S232819AbhEXMCY (ORCPT
+        id S232310AbhEZTke (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 May 2021 15:40:34 -0400
+Received: from smtp-out2.suse.de ([195.135.220.29]:52480 "EHLO
+        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231321AbhEZTkd (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 May 2021 08:02:24 -0400
-Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
-        by mailnew.nyi.internal (Postfix) with ESMTP id 5796F58270C;
-        Mon, 24 May 2021 08:00:56 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute4.internal (MEProxy); Mon, 24 May 2021 08:00:56 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=
-        date:from:to:cc:subject:message-id:references:mime-version
-        :content-type:in-reply-to; s=fm3; bh=9b68iKsk8DPJHoYxXOYWybMr7+T
-        fDaS+j0bppFnZpLo=; b=aYxbuGTfofOqjr3l46ffYuGleIRL9XBMhQT9Zgknwgw
-        26NkeNlothDsGmm8UFEZmbC+pKj3pmmsMdvMsNNcbq2zPbYxcjxAb7tpLZu82mVE
-        O/EHyv/z8hMS3yhLHIufw1U1MYjzY5hPEH2uflSCkBXwCThXDRgsrx9R5dt4PBms
-        5JJlgeFs4/jd+O1Rn2PSON4UBWvpiOTeVDLWdlmZTDBuY+py9ADefYRG6W41HKVF
-        fG7wd9888EWenY7VaqPCI7XN8C5qUHZxSKs/aPHP8WI+o+L9z33VGny19xj4GfsL
-        vURJYFnKkHrkEYdf+wAtdXaoZMhVtLxar6e0BLVrJ3w==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:content-type:date:from:in-reply-to
-        :message-id:mime-version:references:subject:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=9b68iK
-        sk8DPJHoYxXOYWybMr7+TfDaS+j0bppFnZpLo=; b=EpqzaZa8hQY2XMl+bD4Ibs
-        5J6Vx3hDVHqcdvcNMW8piRtpH0jcqRY3Os4gGw/ygc9Ue3EDY+ZGeaMttHDw9ciJ
-        09La2Xqx/wwAwsCJcAol9yS9QLLCN9I0IF7b6O9k17OO78KXEtu069hJROzdpt/g
-        3/V+2952OmNHIF/VqPdc/rRa9+cqwPjje6Beqw7F9oVxOc0Z+vPuDmZijV2Mi1Ac
-        iSMzezWYvVFQe/UBgvC3dAsnyjYW2SdO3TZ1Ti6SyXiUFcSld9G5Ibp8bujTtOij
-        gyd6TB0DeFCOKA4aK/aIj+kuiU0jUua8KrPV/ulBca0yepvFhHsGahk44NTtHA8g
-        ==
-X-ME-Sender: <xms:d5WrYLCt6JBEFXq5dMXTK_K1Q3FLgT31oN4r4jvVxsWpYdRzh2sMhw>
-    <xme:d5WrYBgwVMUKI1qPW2FOMwhRCGrI4CWiJcTRDO2pR4nI12yvgQDgdvITGSUaKwxL_
-    olHgkLdI1pLXA>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduledrvdejledggeekucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvffukfhfgggtuggjsehttdertddttddvnecuhfhrohhmpefirhgvghcu
-    mffjuceoghhrvghgsehkrhhorghhrdgtohhmqeenucggtffrrghtthgvrhhnpeevueehje
-    fgfffgiedvudekvdektdelleelgefhleejieeugeegveeuuddukedvteenucfkphepkeef
-    rdekiedrjeegrdeigeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrih
-    hlfhhrohhmpehgrhgvgheskhhrohgrhhdrtghomh
-X-ME-Proxy: <xmx:d5WrYGlijsWGTkjJsz5c8gLwDWUyzsmaUSUivmTlzpiqr6F_oM71dg>
-    <xmx:d5WrYNyouRWKitd-ArnyUUpxd_X5AfNFLeJGgqx16xtp0wSxBgmYYw>
-    <xmx:d5WrYARS1ryrICK-Xz-tJKA-ewqwE7h5Ph_p_hAkTQKHVSNbjYDu9Q>
-    <xmx:eJWrYCD5kumaSPNhpAhDiLvUVssdoO1Xu-KGyHyCq4R9iZDe2TpjIQ>
-Received: from localhost (83-86-74-64.cable.dynamic.v4.ziggo.nl [83.86.74.64])
-        by mail.messagingengine.com (Postfix) with ESMTPA;
-        Mon, 24 May 2021 08:00:54 -0400 (EDT)
-Date:   Mon, 24 May 2021 14:00:41 +0200
-From:   Greg KH <greg@kroah.com>
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Sasha Levin <sashal@kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        stable <stable@vger.kernel.org>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        syzbot <syzbot+1f29e126cf461c4de3b3@syzkaller.appspotmail.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH AUTOSEL 5.12 5/5] tty: vt: always invoke
- vc->vc_sw->con_resize callback
-Message-ID: <YKuVaUJFp0K929k+@kroah.com>
-References: <20210518010940.1485417-1-sashal@kernel.org>
- <20210518010940.1485417-5-sashal@kernel.org>
- <CAHk-=whw9_rp0NYTsCqcGnUkcV5Qgv7FTxADtPrdq4KFmsj+Lg@mail.gmail.com>
- <YKNUl/f/c8HfF6dS@kroah.com>
+        Wed, 26 May 2021 15:40:33 -0400
+X-Greylist: delayed 360 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 May 2021 15:40:32 EDT
+Received: from imap.suse.de (imap-alt.suse-dmz.suse.de [192.168.254.47])
+        (using TLSv1.2 with cipher ECDHE-ECDSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 2220D1FD2A;
+        Wed, 26 May 2021 19:32:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1622057579; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=XnKoLQ9wdrpqMlILXZXaccGxyHEJ08JoRUS4Y1cY7TY=;
+        b=F71eGL41aGRy6VGBnPaLriWrylB4kACYlYLUWrLanab0ea8TtyALa4rucBXWPtMgcns4nC
+        ol68lj7oEQG++xHjT0MItQGcmKj2ROYLY1fCfANKxQyG8ELxv1oIWbVwL46Y658bLvsV6w
+        3JjKDpuJZeAbk3/+5z1imRx1WGsW4H8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1622057579;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=XnKoLQ9wdrpqMlILXZXaccGxyHEJ08JoRUS4Y1cY7TY=;
+        b=Pg57YpSDGXoZfOdIkD8AAt3MjogHUVm379lxaFwOsoZ4ysThdrV4yR4cd+9PENYiJFdcEV
+        eQ3VTdYLC5Y1vlAw==
+Received: from director2.suse.de (director2.suse-dmz.suse.de [192.168.254.72])
+        by imap.suse.de (Postfix) with ESMTPSA id D896B11A98;
+        Wed, 26 May 2021 19:32:58 +0000 (UTC)
+Subject: Re: [PATCH] fbdev: matrox: use modern module_init()
+To:     Arnd Bergmann <arnd@kernel.org>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Cc:     Arnd Bergmann <arnd@arndb.de>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        linux-kernel@vger.kernel.org
+References: <20210514213316.635070-1-arnd@kernel.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+Message-ID: <f92da893-99fd-e666-c033-2a0dfda91af0@suse.de>
+Date:   Wed, 26 May 2021 21:32:58 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.10.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YKNUl/f/c8HfF6dS@kroah.com>
+In-Reply-To: <20210514213316.635070-1-arnd@kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="KjYTvGArAJW9dIAx3SZMsHc6xqgxm4dmw"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, May 18, 2021 at 07:45:59AM +0200, Greg KH wrote:
-> On Mon, May 17, 2021 at 06:35:24PM -0700, Linus Torvalds wrote:
-> > On Mon, May 17, 2021 at 6:09 PM Sasha Levin <sashal@kernel.org> wrote:
-> > >
-> > > From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> > >
-> > > [ Upstream commit ffb324e6f874121f7dce5bdae5e05d02baae7269 ]
-> > 
-> > So I think the commit is fine, and yes, it should be applied to
-> > stable, but it's one of those "there were three different patches in
-> > as many days to fix the problem, and this is the right one, but maybe
-> > stable should hold off for a while to see that there aren't any
-> > problem reports".
-> > 
-> > I don't think there will be any problems from this, but while the
-> > patch is tiny, it's conceptually quite a big change to something that
-> > people haven't really touched for a long time.
-> > 
-> > So use your own judgement, but it might be a good idea to wait a week
-> > before backporting this to see if anything screams.
-> 
-> I was going to wait a few weeks for this, and the other vt patches that
-> were marked with cc: stable@ before queueing them up.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--KjYTvGArAJW9dIAx3SZMsHc6xqgxm4dmw
+Content-Type: multipart/mixed; boundary="VCDtghEHKrr9enattwxa4kCZWpmLROarj";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Arnd Bergmann <arnd@kernel.org>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Masahiro Yamada <masahiroy@kernel.org>, linux-kernel@vger.kernel.org
+Message-ID: <f92da893-99fd-e666-c033-2a0dfda91af0@suse.de>
+Subject: Re: [PATCH] fbdev: matrox: use modern module_init()
+References: <20210514213316.635070-1-arnd@kernel.org>
+In-Reply-To: <20210514213316.635070-1-arnd@kernel.org>
 
-I have now queued all of these up.
+--VCDtghEHKrr9enattwxa4kCZWpmLROarj
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-greg k-h
+
+
+Am 14.05.21 um 23:33 schrieb Arnd Bergmann:
+> From: Arnd Bergmann <arnd@arndb.de>
+>=20
+> This is one of the last drivers with a global init_module() function
+> instead of the modern module_init() annotation. Convert it over.
+>=20
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+Added to drm-misc-next. Thank you.
+
+Best regards
+Thomas
+
+> ---
+>   drivers/video/fbdev/matrox/matroxfb_base.c | 5 ++---
+>   1 file changed, 2 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video=
+/fbdev/matrox/matroxfb_base.c
+> index 4325bf7f388c..5c82611e93d9 100644
+> --- a/drivers/video/fbdev/matrox/matroxfb_base.c
+> +++ b/drivers/video/fbdev/matrox/matroxfb_base.c
+> @@ -2486,8 +2486,6 @@ static int __init matroxfb_init(void)
+>   	return err;
+>   }
+>  =20
+> -module_init(matroxfb_init);
+> -
+>   #else
+>  =20
+>   /* *************************** init module code *********************=
+******* */
+> @@ -2572,7 +2570,7 @@ module_param_named(cmode, default_cmode, int, 0);=
+
+>   MODULE_PARM_DESC(cmode, "Specify the video depth that should be used =
+(8bit default)");
+>   #endif
+>  =20
+> -int __init init_module(void){
+> +static int __init matroxfb_init(void){
+>  =20
+>   	DBG(__func__)
+>  =20
+> @@ -2603,6 +2601,7 @@ int __init init_module(void){
+>   }
+>   #endif	/* MODULE */
+>  =20
+> +module_init(matroxfb_init);
+>   module_exit(matrox_done);
+>   EXPORT_SYMBOL(matroxfb_register_driver);
+>   EXPORT_SYMBOL(matroxfb_unregister_driver);
+>=20
+
+--=20
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
+(HRB 36809, AG N=C3=BCrnberg)
+Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
+
+
+--VCDtghEHKrr9enattwxa4kCZWpmLROarj--
+
+--KjYTvGArAJW9dIAx3SZMsHc6xqgxm4dmw
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmCuomoFAwAAAAAACgkQlh/E3EQov+DP
+jBAAxh7FsZU/GHlQYV1R/8+f9sRJEVnK7bu0uj0uKHwt589HGsLi5zFO44WZQzUGW7WybD39bnAY
+q6N8iWPEvEPG2qrGOme1PMRr5cnELkUBedyMm0u905LkV73bLk/eNfUw+3ZoxqQYqvHq841UKsae
+hZkLEbUlsUYjhZVuSepGxhLLR9dglpsqYQAKnJyP9RsBXQrJvnz42EgDIDM0ncOfYefckGppkMrZ
+/218n85y7buLTWLGji7dbudu5Rerf0LKBNTkhJMlMSTunzP6/UgVTHQe1tZIla0oMDkaT5BSz3so
+0wwE5YbPtMcIAa+dAZKPO01NbFRIoZlEz8+d7bY7e5g7Ffl/f407jDUaI1wuc2/QHrByuu+rxS95
+UDS7Hh8VjL2xjx8rAD2AS1RvVkZPOtc9ZfXq3FS0/5BaNtNngC1aSq+TM0eGXofVJHwyrSXE9Zfh
+S1QSN1Uqv3A7vJQC5qPxu2V4Yz344bTxKSqsz6jD0Y+vp4hk7EXYG0ugZxxXgjVT8zE0NhO/ICp7
+CPlc3I5HF/IRtnh2FFGJI9bzV6BKfE+BSp/VtOjhgp5KxZmwG+W3pYLr5eUBzUXVHQcP5UEeQBuO
+L2vZPkuaum52joyu0DN5xZI/IE8Ktk9b42FG5pD8YDMdBIWsrGQB+ZmIo8aaYD+h3dzPg2kkiIo1
+Tdc=
+=ZCQi
+-----END PGP SIGNATURE-----
+
+--KjYTvGArAJW9dIAx3SZMsHc6xqgxm4dmw--

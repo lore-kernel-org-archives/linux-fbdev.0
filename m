@@ -2,356 +2,83 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83A1FC47087
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 May 2021 12:14:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 075A0C47091
+	for <linux-fbdev@archiver.kernel.org>; Sun, 30 May 2021 21:14:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 67DA9601FD
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 May 2021 12:14:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D1B4B6120E
+	for <linux-fbdev@archiver.kernel.org>; Sun, 30 May 2021 21:14:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236286AbhE1MQB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 May 2021 08:16:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58770 "EHLO
+        id S229847AbhE3VQP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 30 May 2021 17:16:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40988 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236301AbhE1MPm (ORCPT
+        with ESMTP id S229805AbhE3VQP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 May 2021 08:15:42 -0400
-Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [IPv6:2a02:1800:120:4::f00:13])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8393BC061763
-        for <linux-fbdev@vger.kernel.org>; Fri, 28 May 2021 05:13:11 -0700 (PDT)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed20:7839:f444:cb37:3ebc])
-        by baptiste.telenet-ops.be with bizsmtp
-        id ACD92500J3gF9cb01CD9rJ; Fri, 28 May 2021 14:13:09 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1lmbMS-00AFAw-UV; Fri, 28 May 2021 14:13:08 +0200
-Received: from geert by rox.of.borg with local (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1lmbMS-007ga2-5l; Fri, 28 May 2021 14:13:08 +0200
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-To:     Maxime Ripard <mripard@kernel.org>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>
-Cc:     Rob Herring <robh+dt@kernel.org>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Rob Herring <robh@kernel.org>
-Subject: [PATCH v2] dt-bindings: display: ssd1307fb: Convert to json-schema
-Date:   Fri, 28 May 2021 14:13:06 +0200
-Message-Id: <20210528121306.1831931-1-geert@linux-m68k.org>
-X-Mailer: git-send-email 2.25.1
+        Sun, 30 May 2021 17:16:15 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ADDE5C061574;
+        Sun, 30 May 2021 14:14:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=yW68hQEkpPiNL7uFDxA39zvaW5WfzJ0CVb//k2zxdsE=; b=SvD1BTau2uhxHeBp7pn7JMUXfw
+        08wnL7Y1tXf9cpMlwCv5fEUriKCRdaRXANNmc+4lPHvrdbvhJ5GRsWYFfqV/myItaPLvSEyqBdchZ
+        6YkKnb560Zk4AGx5nfjel1cWtxU5EEBuRHQrmMoYeaJdfsDNKDpamtsROTId1ZH1KKkHDT+6hBgyU
+        +clUPI2COgBZSDGLDYRaW15YSbK3OoeBjICDjc5J1nBvRZWaql0tuDdB0m0cekw13zxgtdo0UW9eb
+        TAc0qGlgR1cjgkXYcCzDqE2DDKJLSoylZhoD3fgtglvLEEEzBPax465sN9mpqRZVA0izr6+yi4l+h
+        roYFS5/w==;
+Received: from willy by casper.infradead.org with local (Exim 4.94 #2 (Red Hat Linux))
+        id 1lnSlK-008Pdd-7c; Sun, 30 May 2021 21:14:25 +0000
+Date:   Sun, 30 May 2021 22:14:22 +0100
+From:   Matthew Wilcox <willy@infradead.org>
+To:     Nathan Chancellor <nathan@kernel.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        William Kucharski <william.kucharski@oracle.com>,
+        Jani Nikula <jani.nikula@intel.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+        Ian Campbell <ijc@hellion.org.uk>,
+        linux-fsdevel@vger.kernel.org,
+        Jaya Kumar <jayakumar.lkml@gmail.com>,
+        Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH v2] fb_defio: Remove custom address_space_operations
+Message-ID: <YLQALv2YENIDh77N@casper.infradead.org>
+References: <20210310185530.1053320-1-willy@infradead.org>
+ <YLPjwUUmHDRjyPpR@Ryzen-9-3900X.localdomain>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YLPjwUUmHDRjyPpR@Ryzen-9-3900X.localdomain>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Convert the Solomon SSD1307 Framebuffer Device Tree binding
-documentation to json-schema.
+On Sun, May 30, 2021 at 12:13:05PM -0700, Nathan Chancellor wrote:
+> Hi Matthew,
+> 
+> On Wed, Mar 10, 2021 at 06:55:30PM +0000, Matthew Wilcox (Oracle) wrote:
+> > There's no need to give the page an address_space.  Leaving the
+> > page->mapping as NULL will cause the VM to handle set_page_dirty()
+> > the same way that it's handled now, and that was the only reason to
+> > set the address_space in the first place.
+> > 
+> > Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+> > Reviewed-by: Christoph Hellwig <hch@lst.de>
+> > Reviewed-by: William Kucharski <william.kucharski@oracle.com>
+> 
+> This patch in mainline as commit ccf953d8f3d6 ("fb_defio: Remove custom
+> address_space_operations") causes my Hyper-V based VM to no longer make
+> it to a graphical environment.
 
-Fix the spelling of the "pwms" property.
-Document default values.
-Make properties with default values not required.
+Hi Nathan,
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
-v2:
-  - Add Reviewed-by,
-  - Document solomon,dclk-{div,freq} defaults.
----
- .../bindings/display/solomon,ssd1307fb.yaml   | 208 ++++++++++++++++++
- .../devicetree/bindings/display/ssd1307fb.txt |  60 -----
- 2 files changed, 208 insertions(+), 60 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
- delete mode 100644 Documentation/devicetree/bindings/display/ssd1307fb.txt
-
-diff --git a/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
-new file mode 100644
-index 0000000000000000..2ed2a7d0ca2fa23e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
-@@ -0,0 +1,208 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/display/solomon,ssd1307fb.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Solomon SSD1307 OLED Controller Framebuffer
-+
-+maintainers:
-+  - Maxime Ripard <mripard@kernel.org>
-+
-+properties:
-+  compatible:
-+    enum:
-+      - solomon,ssd1305fb-i2c
-+      - solomon,ssd1306fb-i2c
-+      - solomon,ssd1307fb-i2c
-+      - solomon,ssd1309fb-i2c
-+
-+  reg:
-+    maxItems: 1
-+
-+  pwms:
-+    maxItems: 1
-+
-+  reset-gpios:
-+    maxItems: 1
-+
-+  vbat-supply:
-+    description: The supply for VBAT
-+
-+  solomon,height:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    default: 16
-+    description:
-+      Height in pixel of the screen driven by the controller
-+
-+  solomon,width:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    default: 96
-+    description:
-+      Width in pixel of the screen driven by the controller
-+
-+  solomon,page-offset:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    default: 1
-+    description:
-+      Offset of pages (band of 8 pixels) that the screen is mapped to
-+
-+  solomon,segment-no-remap:
-+    type: boolean
-+    description:
-+      Display needs normal (non-inverted) data column to segment mapping
-+
-+  solomon,col-offset:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    default: 0
-+    description:
-+      Offset of columns (COL/SEG) that the screen is mapped to
-+
-+  solomon,com-seq:
-+    type: boolean
-+    description:
-+      Display uses sequential COM pin configuration
-+
-+  solomon,com-lrremap:
-+    type: boolean
-+    description:
-+      Display uses left-right COM pin remap
-+
-+  solomon,com-invdir:
-+    type: boolean
-+    description:
-+      Display uses inverted COM pin scan direction
-+
-+  solomon,com-offset:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    default: 0
-+    description:
-+      Number of the COM pin wired to the first display line
-+
-+  solomon,prechargep1:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    default: 2
-+    description:
-+      Length of deselect period (phase 1) in clock cycles
-+
-+  solomon,prechargep2:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    default: 2
-+    description:
-+      Length of precharge period (phase 2) in clock cycles.  This needs to be
-+      the higher, the higher the capacitance of the OLED's pixels is.
-+
-+  solomon,dclk-div:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 1
-+    maximum: 16
-+    description:
-+      Clock divisor. The default value is controller-dependent.
-+
-+  solomon,dclk-frq:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 0
-+    maximum: 15
-+    description:
-+      Clock frequency, higher value means higher frequency.
-+      The default value is controller-dependent.
-+
-+  solomon,lookup-table:
-+    $ref: /schemas/types.yaml#/definitions/uint8-array
-+    maxItems: 4
-+    description:
-+      8 bit value array of current drive pulse widths for BANK0, and colors A,
-+      B, and C. Each value in range of 31 to 63 for pulse widths of 32 to 64.
-+      Color D is always width 64.
-+
-+  solomon,area-color-enable:
-+    type: boolean
-+    description:
-+      Display uses color mode
-+
-+  solomon,low-power:
-+    type: boolean
-+    description:
-+      Display runs in low power mode
-+
-+required:
-+  - compatible
-+  - reg
-+
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: solomon,ssd1305fb-i2c
-+    then:
-+      properties:
-+        solomon,dclk-div:
-+          default: 1
-+        solomon,dclk-frq:
-+          default: 7
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: solomon,ssd1306fb-i2c
-+    then:
-+      properties:
-+        solomon,dclk-div:
-+          default: 1
-+        solomon,dclk-frq:
-+          default: 8
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: solomon,ssd1307fb-i2c
-+    then:
-+      properties:
-+        solomon,dclk-div:
-+          default: 2
-+        solomon,dclk-frq:
-+          default: 12
-+      required:
-+        - pwms
-+
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: solomon,ssd1309fb-i2c
-+    then:
-+      properties:
-+        solomon,dclk-div:
-+          default: 1
-+        solomon,dclk-frq:
-+          default: 10
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    i2c1 {
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+
-+            ssd1307: oled@3c {
-+                    compatible = "solomon,ssd1307fb-i2c";
-+                    reg = <0x3c>;
-+                    pwms = <&pwm 4 3000>;
-+                    reset-gpios = <&gpio2 7>;
-+            };
-+
-+            ssd1306: oled@3d {
-+                    compatible = "solomon,ssd1306fb-i2c";
-+                    reg = <0x3c>;
-+                    pwms = <&pwm 4 3000>;
-+                    reset-gpios = <&gpio2 7>;
-+                    solomon,com-lrremap;
-+                    solomon,com-invdir;
-+                    solomon,com-offset = <32>;
-+                    solomon,lookup-table = /bits/ 8 <0x3f 0x3f 0x3f 0x3f>;
-+            };
-+    };
-diff --git a/Documentation/devicetree/bindings/display/ssd1307fb.txt b/Documentation/devicetree/bindings/display/ssd1307fb.txt
-deleted file mode 100644
-index 2dcb6d12d1371536..0000000000000000
---- a/Documentation/devicetree/bindings/display/ssd1307fb.txt
-+++ /dev/null
-@@ -1,60 +0,0 @@
--* Solomon SSD1307 Framebuffer Driver
--
--Required properties:
--  - compatible: Should be "solomon,<chip>fb-<bus>". The only supported bus for
--    now is i2c, and the supported chips are ssd1305, ssd1306, ssd1307 and
--    ssd1309.
--  - reg: Should contain address of the controller on the I2C bus. Most likely
--         0x3c or 0x3d
--  - pwm: Should contain the pwm to use according to the OF device tree PWM
--         specification [0]. Only required for the ssd1307.
--  - solomon,height: Height in pixel of the screen driven by the controller
--  - solomon,width: Width in pixel of the screen driven by the controller
--  - solomon,page-offset: Offset of pages (band of 8 pixels) that the screen is
--    mapped to.
--
--Optional properties:
--  - reset-gpios: The GPIO used to reset the OLED display, if available. See
--                 Documentation/devicetree/bindings/gpio/gpio.txt for details.
--  - vbat-supply: The supply for VBAT
--  - solomon,segment-no-remap: Display needs normal (non-inverted) data column
--                              to segment mapping
--  - solomon,col-offset: Offset of columns (COL/SEG) that the screen is mapped to.
--  - solomon,com-seq: Display uses sequential COM pin configuration
--  - solomon,com-lrremap: Display uses left-right COM pin remap
--  - solomon,com-invdir: Display uses inverted COM pin scan direction
--  - solomon,com-offset: Number of the COM pin wired to the first display line
--  - solomon,prechargep1: Length of deselect period (phase 1) in clock cycles.
--  - solomon,prechargep2: Length of precharge period (phase 2) in clock cycles.
--                         This needs to be the higher, the higher the capacitance
--                         of the OLED's pixels is
--  - solomon,dclk-div: Clock divisor 1 to 16
--  - solomon,dclk-frq: Clock frequency 0 to 15, higher value means higher
--                      frequency
--  - solomon,lookup-table: 8 bit value array of current drive pulse widths for
--                          BANK0, and colors A, B, and C. Each value in range
--                          of 31 to 63 for pulse widths of 32 to 64. Color D
--                          is always width 64.
--  - solomon,area-color-enable: Display uses color mode
--  - solomon,low-power. Display runs in low power mode
--
--[0]: Documentation/devicetree/bindings/pwm/pwm.txt
--
--Examples:
--ssd1307: oled@3c {
--        compatible = "solomon,ssd1307fb-i2c";
--        reg = <0x3c>;
--        pwms = <&pwm 4 3000>;
--        reset-gpios = <&gpio2 7>;
--};
--
--ssd1306: oled@3c {
--        compatible = "solomon,ssd1306fb-i2c";
--        reg = <0x3c>;
--        pwms = <&pwm 4 3000>;
--        reset-gpios = <&gpio2 7>;
--        solomon,com-lrremap;
--        solomon,com-invdir;
--        solomon,com-offset = <32>;
--        solomon,lookup-table = /bits/ 8 <0x3f 0x3f 0x3f 0x3f>;
--};
--- 
-2.25.1
-
+Thanks for the report.  I sent Daniel a revert patch with a full
+explanation last week, which I assume he'll queue up for a pull soon.
+You can just git revert ccf953d8f3d6 for yourself until that shows up.
+Sorry for the inconvenience.

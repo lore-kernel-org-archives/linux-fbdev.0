@@ -2,90 +2,95 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74355C47080
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 09:09:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0402BC47080
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 12:37:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4961161375
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 09:09:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D2D6F61396
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 12:37:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231139AbhFAJKp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Jun 2021 05:10:45 -0400
-Received: from szxga01-in.huawei.com ([45.249.212.187]:6108 "EHLO
-        szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233160AbhFAJKo (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Jun 2021 05:10:44 -0400
-Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.55])
-        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4FvR954gkWzYnSM;
-        Tue,  1 Jun 2021 17:06:17 +0800 (CST)
-Received: from dggpemm500006.china.huawei.com (7.185.36.236) by
- dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Tue, 1 Jun 2021 17:09:01 +0800
-Received: from thunder-town.china.huawei.com (10.174.177.72) by
- dggpemm500006.china.huawei.com (7.185.36.236) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Tue, 1 Jun 2021 17:09:00 +0800
-From:   Zhen Lei <thunder.leizhen@huawei.com>
-To:     Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        "Signed-off-by : Wolfram Sang" <wsa@the-dreams.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        linux-fbdev <linux-fbdev@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-CC:     Zhen Lei <thunder.leizhen@huawei.com>
-Subject: [PATCH 1/1] video: fbdev: mb862xx: use DEVICE_ATTR_RO macro
-Date:   Tue, 1 Jun 2021 17:08:52 +0800
-Message-ID: <20210601090852.10531-1-thunder.leizhen@huawei.com>
-X-Mailer: git-send-email 2.26.0.windows.1
+        id S233336AbhFAMiz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Jun 2021 08:38:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56862 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233584AbhFAMiy (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Jun 2021 08:38:54 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A5FAC061574
+        for <linux-fbdev@vger.kernel.org>; Tue,  1 Jun 2021 05:37:12 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id c5so2968247wrq.9
+        for <linux-fbdev@vger.kernel.org>; Tue, 01 Jun 2021 05:37:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=q0VBZ1AmByAwe483WcR/T7rzmaJh9QClItlEm17BvFI=;
+        b=d2Hgau+jcqalZ4sy6NlOFUwOXyUHs4G8vNJNITWkEyxo6ZTyRi0W+W7PkycmX1qqM1
+         L2MXvn4TJ/hQsqIjFiXcuXZ8PPNjEBm5UHAseOTHzAhWiyJhmQNfJroG0qDHmhBVpnkQ
+         fdbn0Xx5DBVT1+FqgqWHbRbvatcuxeg5apstgUHyoJfqoEbx/CQadfM9af7BQL3ZxXvU
+         KJCmMhbuq0nj8S/7W0oMu522gOGO3Pz4d+yOiMzKi75fYABMUfVkWEQ0Fwf7Xlvq5Ip1
+         0QQg+LNGMQWrdzySFIqcrJFQTO7nJwNhIIXtjT4/r3dDzwYp+JyoTiPeX5j+yJvIrUtQ
+         SxBg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=q0VBZ1AmByAwe483WcR/T7rzmaJh9QClItlEm17BvFI=;
+        b=ONlOnxlpAu4qsoM2/9T03yGElU4ffuX/7x5kudsaxtY+/fk0p4ma8+hyhtaMgSPjK8
+         DeptK3M7EL8paSmK/2GRyDiJLALf+Ap8KOIyEX6Gg2ErRT0MxqNdzUmq6V71kSSXw9mB
+         /5Dxv0pEKEGZNGgkKDNElYj98VPa/BhkausAzgrbOkAMS0TMb/8pqv3XgP1FOhG9+rWB
+         xWpNSjxRT1smzkEArgzMsI0r8gwEcoZCWwb+SrC12ZIQVGoLuz+7BZXJT1uo67o6+4B1
+         eEwAvlaAzNPWpCo1CJXFbu0yRvbnfvoZ+6Tnge0/j5GwnrBUX11PKI5E0lJx4EeyVGcP
+         gCrA==
+X-Gm-Message-State: AOAM5307RcW8y3q+8bGBXPYGW68UmI4SW43JrLS9Zj2Z2zt2lgf0HYxW
+        8+QBDVMesXMVWw0FnuyESs/1kA==
+X-Google-Smtp-Source: ABdhPJx+WkixZCBNz3HyAM2qy3S4l/JY78r8hqeHHTCllSX5rLccBj2FPCaEijRD6IGJi7GnZig83w==
+X-Received: by 2002:a5d:6484:: with SMTP id o4mr26822370wri.8.1622551030771;
+        Tue, 01 Jun 2021 05:37:10 -0700 (PDT)
+Received: from dell ([91.110.221.249])
+        by smtp.gmail.com with ESMTPSA id b10sm3900609wrr.27.2021.06.01.05.37.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 01 Jun 2021 05:37:10 -0700 (PDT)
+Date:   Tue, 1 Jun 2021 13:37:08 +0100
+From:   Lee Jones <lee.jones@linaro.org>
+To:     Juerg Haefliger <juerg.haefliger@canonical.com>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Juerg Haefliger <juergh@canonical.com>
+Subject: Re: [PATCH v2] backlight: Kconfig whitespace and indentation cleanups
+Message-ID: <20210601123708.GF543307@dell>
+References: <20210517095839.81833-1-juergh@canonical.com>
+ <20210519110300.17918-1-juergh@canonical.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.174.177.72]
-X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
- dggpemm500006.china.huawei.com (7.185.36.236)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210519110300.17918-1-juergh@canonical.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use DEVICE_ATTR_RO helper instead of plain DEVICE_ATTR, which makes the
-code a bit shorter and easier to read.
+On Wed, 19 May 2021, Juerg Haefliger wrote:
 
-Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
----
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+> Remove leading whitespaces, replace multi spaces with tabs, and fix help
+> text indentation.
+> 
+> Signed-off-by: Juerg Haefliger <juergh@canonical.com>
+> ---
+>  drivers/video/backlight/Kconfig | 22 +++++++++++-----------
+>  1 file changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-index 52755b591c1489f..63721337a37787b 100644
---- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-@@ -542,8 +542,8 @@ static int mb862xxfb_init_fbinfo(struct fb_info *fbi)
- /*
-  * show some display controller and cursor registers
-  */
--static ssize_t mb862xxfb_show_dispregs(struct device *dev,
--				       struct device_attribute *attr, char *buf)
-+static ssize_t dispregs_show(struct device *dev,
-+			     struct device_attribute *attr, char *buf)
- {
- 	struct fb_info *fbi = dev_get_drvdata(dev);
- 	struct mb862xxfb_par *par = fbi->par;
-@@ -577,7 +577,7 @@ static ssize_t mb862xxfb_show_dispregs(struct device *dev,
- 	return ptr - buf;
- }
- 
--static DEVICE_ATTR(dispregs, 0444, mb862xxfb_show_dispregs, NULL);
-+static DEVICE_ATTR_RO(dispregs);
- 
- static irqreturn_t mb862xx_intr(int irq, void *dev_id)
- {
+Applied, thanks.
+
 -- 
-2.26.0.106.g9fadedd
-
-
+Lee Jones [李琼斯]
+Senior Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog

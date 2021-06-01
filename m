@@ -2,91 +2,77 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1837AC47091
-	for <linux-fbdev@archiver.kernel.org>; Sun, 30 May 2021 22:40:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8786C47082
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 01:29:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D9E8E6120E
-	for <linux-fbdev@archiver.kernel.org>; Sun, 30 May 2021 22:40:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7CB1D610A0
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 01:29:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229897AbhE3WmZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 30 May 2021 18:42:25 -0400
-Received: from mail.kernel.org ([198.145.29.99]:51624 "EHLO mail.kernel.org"
+        id S232268AbhFABa7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 May 2021 21:30:59 -0400
+Received: from m12-12.163.com ([220.181.12.12]:60708 "EHLO m12-12.163.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229887AbhE3WmZ (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 30 May 2021 18:42:25 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 7F6386120D;
-        Sun, 30 May 2021 22:40:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1622414446;
-        bh=sc3R+OcBRxHghAUonKX5pP6gZpOYy1KwZ2uEQyTtgFw=;
-        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
-        b=pkNqwGTUxIdX8NjYWGh7LlXj3qo9xJzzdxmWUnGf0UtzHzSVGof15D1EMCk8OhlHH
-         FEYaTPYsZ0JQaskZIZe64uXcTAzWyP5b9cM0pbaPjdxg2pv5PoGjrND94f2st1fTEH
-         sDR+w6tQZGFKO41jYYrCqcL3I/uScXN5Nx3UwbJT5qVCG7z+wDS/Dte/FQc4PSS8yq
-         YbV+h702IRtxidsqPz3C5vBbulyYjuubmqWJXlM8fLckJzeC84QUm/V9S4jSk/0Lwr
-         zADbsy7BQEAgJORLamFXccqqXooOjc96fmYGXHdJoJJ+OYAzTF7b+E0Ure7w4BOdIY
-         +Z6ZPIuxh0iUg==
-Subject: Re: [PATCH v2] fb_defio: Remove custom address_space_operations
-To:     Matthew Wilcox <willy@infradead.org>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        William Kucharski <william.kucharski@oracle.com>,
-        Jani Nikula <jani.nikula@intel.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-        Ian Campbell <ijc@hellion.org.uk>,
-        linux-fsdevel@vger.kernel.org,
-        Jaya Kumar <jayakumar.lkml@gmail.com>,
-        Christoph Hellwig <hch@lst.de>
-References: <20210310185530.1053320-1-willy@infradead.org>
- <YLPjwUUmHDRjyPpR@Ryzen-9-3900X.localdomain>
- <YLQALv2YENIDh77N@casper.infradead.org>
-From:   Nathan Chancellor <nathan@kernel.org>
-Message-ID: <2977064f-42d0-7b64-176d-9509c205bfc3@kernel.org>
-Date:   Sun, 30 May 2021 15:40:44 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.2
+        id S231714AbhFABa7 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 31 May 2021 21:30:59 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=TD8tt
+        DRjkoIh5GipXEh5UOfa9zr6wYIAwrcv6LbbEQQ=; b=jDcI3ldYfFIWJE73onAQN
+        dPdSXiakmfvG26Bkh6HlFpj8qEeI2tDucp220sdDHVz0dR8xEEtS9HBYWEwS4vnH
+        APvsgT7WdKdViFeQ4HSQUjLSCmbZAuntBuLUxZm51Jn8Zl5xy5hbKri+rR7+kOtG
+        q0IpTxepz1DjXYO6nId8mc=
+Received: from localhost.localdomain (unknown [218.17.89.92])
+        by smtp8 (Coremail) with SMTP id DMCowADHu_dhjbVgHw2AHQ--.8323S2;
+        Tue, 01 Jun 2021 09:29:06 +0800 (CST)
+From:   lijian_8010a29@163.com
+To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     lijian <lijian@yulong.com>
+Subject: [PATCH] video: fbdev: atyfb: mach64_cursor.c: deleted the repeated word
+Date:   Tue,  1 Jun 2021 09:27:47 +0800
+Message-Id: <20210601012747.38884-1-lijian_8010a29@163.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <YLQALv2YENIDh77N@casper.infradead.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: DMCowADHu_dhjbVgHw2AHQ--.8323S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7JryxtF4kAryfArW3CFykZrb_yoWDXrX_Cr
+        srZ39Yqryvyw4vqrn3Jw4fWFyqq3WkXFWDX3s2qrWSk34UXr45Xr1Dur10gFyUWryUZFZ8
+        Zwna9rWvv3yfujkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+        9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU5b_-JUUUUU==
+X-Originating-IP: [218.17.89.92]
+X-CM-SenderInfo: 5olmxttqbyiikqdsmqqrwthudrp/xtbBLAOkUF++MAqd8QAAss
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/30/2021 2:14 PM, Matthew Wilcox wrote:
-> On Sun, May 30, 2021 at 12:13:05PM -0700, Nathan Chancellor wrote:
->> Hi Matthew,
->>
->> On Wed, Mar 10, 2021 at 06:55:30PM +0000, Matthew Wilcox (Oracle) wrote:
->>> There's no need to give the page an address_space.  Leaving the
->>> page->mapping as NULL will cause the VM to handle set_page_dirty()
->>> the same way that it's handled now, and that was the only reason to
->>> set the address_space in the first place.
->>>
->>> Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
->>> Reviewed-by: Christoph Hellwig <hch@lst.de>
->>> Reviewed-by: William Kucharski <william.kucharski@oracle.com>
->>
->> This patch in mainline as commit ccf953d8f3d6 ("fb_defio: Remove custom
->> address_space_operations") causes my Hyper-V based VM to no longer make
->> it to a graphical environment.
-> 
-> Hi Nathan,
-> 
-> Thanks for the report.  I sent Daniel a revert patch with a full
-> explanation last week, which I assume he'll queue up for a pull soon.
-> You can just git revert ccf953d8f3d6 for yourself until that shows up.
-> Sorry for the inconvenience.
-> 
+From: lijian <lijian@yulong.com>
 
-Thank you for the quick response! I will keep an eye out for the patch 
-while reverting it locally in the meantime.
+deleted the repeated word 'be' in the comments.
 
-Cheers,
-Nathan
+Signed-off-by: lijian <lijian@yulong.com>
+---
+ drivers/video/fbdev/aty/mach64_cursor.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/aty/mach64_cursor.c b/drivers/video/fbdev/aty/mach64_cursor.c
+index b06fa6e42e6e..4ad0331a8c57 100644
+--- a/drivers/video/fbdev/aty/mach64_cursor.c
++++ b/drivers/video/fbdev/aty/mach64_cursor.c
+@@ -46,7 +46,7 @@
+  * The Screen position of the top left corner of the displayed
+  * cursor is specificed by CURS_HORZ_VERT_POSN. Care must be taken
+  * when the cursor hot spot is not the top left corner and the
+- * physical cursor position becomes negative. It will be be displayed
++ * physical cursor position becomes negative. It will be displayed
+  * if either the horizontal or vertical cursor position is negative
+  *
+  * If x becomes negative the cursor manager must adjust the CURS_HORZ_OFFSET
+-- 
+2.25.1
+
+

@@ -2,63 +2,42 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 711DBC47093
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 14:10:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1E93C47080
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 14:30:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 445F0613CB
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 14:10:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B25666136E
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 14:30:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233797AbhFAOMT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Jun 2021 10:12:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50172 "EHLO
+        id S234126AbhFAOcU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Jun 2021 10:32:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54724 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233964AbhFAOMS (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Jun 2021 10:12:18 -0400
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8619BC061574
-        for <linux-fbdev@vger.kernel.org>; Tue,  1 Jun 2021 07:10:36 -0700 (PDT)
-Received: by mail-wm1-x333.google.com with SMTP id p13-20020a05600c358db029019f44afc845so825169wmq.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 01 Jun 2021 07:10:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=7iGbvcFYMb3tLwZvkHa1Xrgwf6I7yyg/yxMiEiySaC0=;
-        b=ejnEUTO1DiWDFagv+Dl6hADRqW7H1logS/cF6NBmsns/CZtF8MMuELJR17uBvI2xCD
-         ngbYDadN3KqmTc1Ga64JG9ipPURDyswvZSzXT8SgS+f7+2fznZZ5iWjaYZC/aQASeaFy
-         V8hUWaNgJgUeTGGYdT4EErDL9mDPIsVnl+zdU=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to;
-        bh=7iGbvcFYMb3tLwZvkHa1Xrgwf6I7yyg/yxMiEiySaC0=;
-        b=hS/xfeUm8lIHzu7p75TgAyOpVfFf0zPDR0DFaptT7ujloiuIwufot+r72kTfpYTtwi
-         urhxYCkzTT6W/zVxGTfeeDIDI4gNyLOTggEIfXLKcLCyTriuXXAlwkWsy+U/U7Qgtzn9
-         KEYA8wTL3E03DEMHa7944ZO+FaO45FhY+CcgeweS//GHE/k6FszJHchVBQSjWJV7ztF1
-         6nKfG9DSlepVLWspKUZEmo0iOoMtKtiBxMmnPCWmtmSoYtbZSpwinUn96QyKNuzC3z8C
-         cH5PXJFjhk+/iCsouoc9hQlxcLb8ovUgN13NWW+EPi1uBY+/uY/HVGQROHgCmyehlwLl
-         UnKQ==
-X-Gm-Message-State: AOAM530V0nT5Isr8epnAPpEH7lpr7PCWJjglLONajSSUUXbD953DzxpZ
-        T1kw3VsFqHnQjmVPbRPAKNRkUWr+B7nfGg==
-X-Google-Smtp-Source: ABdhPJxmv2iRwq3JXX8sQlPH3fi0l96M70KDiLaBl1d14VByekZy30x12OgkHti6Mr59TGXbgwmE1g==
-X-Received: by 2002:a05:600c:2109:: with SMTP id u9mr104645wml.7.1622556635096;
-        Tue, 01 Jun 2021 07:10:35 -0700 (PDT)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id f1sm4206218wrr.63.2021.06.01.07.10.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 01 Jun 2021 07:10:34 -0700 (PDT)
-Date:   Tue, 1 Jun 2021 16:10:32 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Matthew Wilcox <willy@infradead.org>
-Cc:     Nathan Chancellor <nathan@kernel.org>, linux-fbdev@vger.kernel.org,
+        with ESMTP id S234014AbhFAOcT (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Jun 2021 10:32:19 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0EEFDC061574;
+        Tue,  1 Jun 2021 07:30:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:To:From:Date:Sender:Reply-To:Cc:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=HJDgl1iY2Z3fUN3IPfhLi/UD9VZIA/neNyy393ulZWo=; b=Srqfo/9bnr/j7N2SYfCtTP9zGa
+        enNfxpv7x7y9A2cEgwGiiCqgSJgUaZr//4MkdKoO9ffCC+NP8vVGdYU8UK1A+oF2AEOLyaOfY9DOe
+        QQTYghj92V6d47Kaaf0o6KgS4rzaojSz+8Kq+Faf5yYLpqXnQZNn/u9I71jf6CdGi2o2Xra/dRc2L
+        zOV6Jbnk0GeDKYnPhw9C7afLakax84WLSWsYOtQaGy9FzM9a5SW3Sriz16goK46YNQ8PHjiiy5Y4b
+        vDfN9vHI0j/w9yokgGHxG5QA3aFHQ1Gsph4oFOm91dHj0hHiMakyylRClhsEyCPgGQ3FKW374vl8l
+        q/+f51Fw==;
+Received: from willy by casper.infradead.org with local (Exim 4.94 #2 (Red Hat Linux))
+        id 1lo5Pa-00A7Ao-Uf; Tue, 01 Jun 2021 14:30:31 +0000
+Date:   Tue, 1 Jun 2021 15:30:30 +0100
+From:   Matthew Wilcox <willy@infradead.org>
+To:     Nathan Chancellor <nathan@kernel.org>, linux-fbdev@vger.kernel.org,
         linux-mm@kvack.org, Jani Nikula <jani.nikula@intel.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         William Kucharski <william.kucharski@oracle.com>,
         Ian Campbell <ijc@hellion.org.uk>,
@@ -66,58 +45,177 @@ Cc:     Nathan Chancellor <nathan@kernel.org>, linux-fbdev@vger.kernel.org,
         Jaya Kumar <jayakumar.lkml@gmail.com>,
         Christoph Hellwig <hch@lst.de>
 Subject: Re: [PATCH v2] fb_defio: Remove custom address_space_operations
-Message-ID: <YLY/2O16fAjriZGQ@phenom.ffwll.local>
-Mail-Followup-To: Matthew Wilcox <willy@infradead.org>,
-        Nathan Chancellor <nathan@kernel.org>, linux-fbdev@vger.kernel.org,
-        linux-mm@kvack.org, Jani Nikula <jani.nikula@intel.com>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        William Kucharski <william.kucharski@oracle.com>,
-        Ian Campbell <ijc@hellion.org.uk>, linux-fsdevel@vger.kernel.org,
-        Jaya Kumar <jayakumar.lkml@gmail.com>,
-        Christoph Hellwig <hch@lst.de>
+Message-ID: <YLZEhv0cpZp8uVE3@casper.infradead.org>
 References: <20210310185530.1053320-1-willy@infradead.org>
  <YLPjwUUmHDRjyPpR@Ryzen-9-3900X.localdomain>
  <YLQALv2YENIDh77N@casper.infradead.org>
+ <YLY/2O16fAjriZGQ@phenom.ffwll.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="OUZuLF3ujgGn3J2J"
 Content-Disposition: inline
-In-Reply-To: <YLQALv2YENIDh77N@casper.infradead.org>
-X-Operating-System: Linux phenom 5.10.32scarlett+ 
+In-Reply-To: <YLY/2O16fAjriZGQ@phenom.ffwll.local>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, May 30, 2021 at 10:14:22PM +0100, Matthew Wilcox wrote:
-> On Sun, May 30, 2021 at 12:13:05PM -0700, Nathan Chancellor wrote:
-> > Hi Matthew,
-> > 
-> > On Wed, Mar 10, 2021 at 06:55:30PM +0000, Matthew Wilcox (Oracle) wrote:
-> > > There's no need to give the page an address_space.  Leaving the
-> > > page->mapping as NULL will cause the VM to handle set_page_dirty()
-> > > the same way that it's handled now, and that was the only reason to
-> > > set the address_space in the first place.
+
+--OUZuLF3ujgGn3J2J
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Tue, Jun 01, 2021 at 04:10:32PM +0200, Daniel Vetter wrote:
+> On Sun, May 30, 2021 at 10:14:22PM +0100, Matthew Wilcox wrote:
+> > On Sun, May 30, 2021 at 12:13:05PM -0700, Nathan Chancellor wrote:
+> > > Hi Matthew,
 > > > 
-> > > Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
-> > > Reviewed-by: Christoph Hellwig <hch@lst.de>
-> > > Reviewed-by: William Kucharski <william.kucharski@oracle.com>
+> > > On Wed, Mar 10, 2021 at 06:55:30PM +0000, Matthew Wilcox (Oracle) wrote:
+> > > > There's no need to give the page an address_space.  Leaving the
+> > > > page->mapping as NULL will cause the VM to handle set_page_dirty()
+> > > > the same way that it's handled now, and that was the only reason to
+> > > > set the address_space in the first place.
+> > > > 
+> > > > Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+> > > > Reviewed-by: Christoph Hellwig <hch@lst.de>
+> > > > Reviewed-by: William Kucharski <william.kucharski@oracle.com>
+> > > 
+> > > This patch in mainline as commit ccf953d8f3d6 ("fb_defio: Remove custom
+> > > address_space_operations") causes my Hyper-V based VM to no longer make
+> > > it to a graphical environment.
 > > 
-> > This patch in mainline as commit ccf953d8f3d6 ("fb_defio: Remove custom
-> > address_space_operations") causes my Hyper-V based VM to no longer make
-> > it to a graphical environment.
+> > Hi Nathan,
+> > 
+> > Thanks for the report.  I sent Daniel a revert patch with a full
+> > explanation last week, which I assume he'll queue up for a pull soon.
+> > You can just git revert ccf953d8f3d6 for yourself until that shows up.
+> > Sorry for the inconvenience.
 > 
-> Hi Nathan,
-> 
-> Thanks for the report.  I sent Daniel a revert patch with a full
-> explanation last week, which I assume he'll queue up for a pull soon.
-> You can just git revert ccf953d8f3d6 for yourself until that shows up.
-> Sorry for the inconvenience.
+> Uh that patch didn't get cc'ed to any list so I've ignored it. I've found
+> it now, but lack of lore link is awkward. Can you pls resubmit with
+> dri-devel on cc? fbdev list is dead, I don't look there.
 
-Uh that patch didn't get cc'ed to any list so I've ignored it. I've found
-it now, but lack of lore link is awkward. Can you pls resubmit with
-dri-devel on cc? fbdev list is dead, I don't look there.
+How about I just attach it here?
 
-Thanks, Daniel
+--OUZuLF3ujgGn3J2J
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment;
+	filename="0001-Revert-fb_defio-Remove-custom-address_space_operatio.patch"
+
+From e88921d0775d87323a8688af37dfd7cdebdde5a9 Mon Sep 17 00:00:00 2001
+From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
+Date: Tue, 25 May 2021 08:37:33 -0400
+Subject: [PATCH] Revert "fb_defio: Remove custom address_space_operations"
+
+Commit ccf953d8f3d6 makes framebuffers which use deferred I/O stop
+displaying updates after the first one.  This is because the pages
+handled by fb_defio no longer have a page_mapping().  That prevents
+page_mkclean() from marking the PTEs as clean, and so writes are only
+noticed the first time.
+
+Reported-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+---
+ drivers/video/fbdev/core/fb_defio.c | 35 +++++++++++++++++++++++++++++
+ drivers/video/fbdev/core/fbmem.c    |  4 ++++
+ include/linux/fb.h                  |  3 +++
+ 3 files changed, 42 insertions(+)
+
+diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
+index b292887a2481..a591d291b231 100644
+--- a/drivers/video/fbdev/core/fb_defio.c
++++ b/drivers/video/fbdev/core/fb_defio.c
+@@ -52,6 +52,13 @@ static vm_fault_t fb_deferred_io_fault(struct vm_fault *vmf)
+ 		return VM_FAULT_SIGBUS;
+ 
+ 	get_page(page);
++
++	if (vmf->vma->vm_file)
++		page->mapping = vmf->vma->vm_file->f_mapping;
++	else
++		printk(KERN_ERR "no mapping available\n");
++
++	BUG_ON(!page->mapping);
+ 	page->index = vmf->pgoff;
+ 
+ 	vmf->page = page;
+@@ -144,6 +151,17 @@ static const struct vm_operations_struct fb_deferred_io_vm_ops = {
+ 	.page_mkwrite	= fb_deferred_io_mkwrite,
+ };
+ 
++static int fb_deferred_io_set_page_dirty(struct page *page)
++{
++	if (!PageDirty(page))
++		SetPageDirty(page);
++	return 0;
++}
++
++static const struct address_space_operations fb_deferred_io_aops = {
++	.set_page_dirty = fb_deferred_io_set_page_dirty,
++};
++
+ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	vma->vm_ops = &fb_deferred_io_vm_ops;
+@@ -194,12 +212,29 @@ void fb_deferred_io_init(struct fb_info *info)
+ }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_init);
+ 
++void fb_deferred_io_open(struct fb_info *info,
++			 struct inode *inode,
++			 struct file *file)
++{
++	file->f_mapping->a_ops = &fb_deferred_io_aops;
++}
++EXPORT_SYMBOL_GPL(fb_deferred_io_open);
++
+ void fb_deferred_io_cleanup(struct fb_info *info)
+ {
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
++	struct page *page;
++	int i;
+ 
+ 	BUG_ON(!fbdefio);
+ 	cancel_delayed_work_sync(&info->deferred_work);
++
++	/* clear out the mapping that we setup */
++	for (i = 0 ; i < info->fix.smem_len; i += PAGE_SIZE) {
++		page = fb_deferred_io_page(info, i);
++		page->mapping = NULL;
++	}
++
+ 	mutex_destroy(&fbdefio->lock);
+ }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 072780b0e570..98f193078c05 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1415,6 +1415,10 @@ __releases(&info->lock)
+ 		if (res)
+ 			module_put(info->fbops->owner);
+ 	}
++#ifdef CONFIG_FB_DEFERRED_IO
++	if (info->fbdefio)
++		fb_deferred_io_open(info, inode, file);
++#endif
+ out:
+ 	unlock_fb_info(info);
+ 	if (res)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index a8dccd23c249..ecfbcc0553a5 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -659,6 +659,9 @@ static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch,
+ /* drivers/video/fb_defio.c */
+ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma);
+ extern void fb_deferred_io_init(struct fb_info *info);
++extern void fb_deferred_io_open(struct fb_info *info,
++				struct inode *inode,
++				struct file *file);
+ extern void fb_deferred_io_cleanup(struct fb_info *info);
+ extern int fb_deferred_io_fsync(struct file *file, loff_t start,
+ 				loff_t end, int datasync);
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.30.2
+
+
+--OUZuLF3ujgGn3J2J--

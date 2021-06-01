@@ -7,243 +7,104 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CADBC47096
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 15:39:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B27DCC47096
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 16:06:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E8D38613AD
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 15:39:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 74787613E4
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 16:06:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234305AbhFAPlL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Jun 2021 11:41:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42386 "EHLO
+        id S230523AbhFAQG7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Jun 2021 12:06:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48392 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233088AbhFAPlL (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Jun 2021 11:41:11 -0400
-Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9612DC061756
-        for <linux-fbdev@vger.kernel.org>; Tue,  1 Jun 2021 08:39:28 -0700 (PDT)
-Received: by mail-wr1-x42e.google.com with SMTP id z17so14850497wrq.7
-        for <linux-fbdev@vger.kernel.org>; Tue, 01 Jun 2021 08:39:28 -0700 (PDT)
+        with ESMTP id S230288AbhFAQG6 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Jun 2021 12:06:58 -0400
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5EBCDC061574
+        for <linux-fbdev@vger.kernel.org>; Tue,  1 Jun 2021 09:05:17 -0700 (PDT)
+Received: by mail-wr1-x431.google.com with SMTP id j14so14915674wrq.5
+        for <linux-fbdev@vger.kernel.org>; Tue, 01 Jun 2021 09:05:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ffwll.ch; s=google;
         h=date:from:to:cc:subject:message-id:mail-followup-to:references
          :mime-version:content-disposition:in-reply-to;
-        bh=Z/ysYleRM2YWzX9orexLMMrJ25j/bIHTJa7Myg7V+/g=;
-        b=eu9MiLEbQyakIhjEXcMmgjSRv78Ba7G/e1UOLBHnzFW/YA+RyANkoF4bC/6/K0B/hU
-         3vzKx00aYuV61b3NWUWl+Sruw4cWGJK9FdTT0O9uLhRged5Tx49j2vUbmETZQiZ3pYHB
-         IA4NGuTOYCEjOJf0RiCqhil8b3s/w6/5+Kh9k=
+        bh=6hYvV1ZLP+xMrFDhtMUMFiYVGTkJ+UiqIQSVG/EohRE=;
+        b=HLjN80P0ak7Jx9CtCQYucHtcNmJ6urFt2HolmpDzUZ2je8iVTeqGx8fQ1TOJrci8bv
+         xHosrB8C2ihkl3nQJwyf/Qs+xfI33Eod1BG/RkgRt3CmFQRoYCg6qTNtKzpAdjKOiWmB
+         kCfu9Jm3JAyBAi0QkbqJYy0h+f7jR698S8DrE=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id
          :mail-followup-to:references:mime-version:content-disposition
          :in-reply-to;
-        bh=Z/ysYleRM2YWzX9orexLMMrJ25j/bIHTJa7Myg7V+/g=;
-        b=XtzirA5RoE8TUBNhDCJ6AduAGY55+L3HVzH5n3zzDJhXS307Hu1zCz6iGT44qfK6J1
-         9TsdiWXHyXIcB8Jfuj/t2QEk+lDopuC+nh2oqGOWndN+nuLXvyY4xjeEgRBEZrcVZjeB
-         owMwwuTOErlN17PnD6SjsLfKpgGVpSoX/tOqwr9QEAKY/RuOcKObguS4bdj+Mug9eZ5i
-         oHVYI+Kf/nPCksRAIoJ0pycDDD+tPksNrU5oYm6CgZ3L/kSKD5tW0qUk3unR/jMOqAAR
-         vlQEcYeSR4L/LNEdy3WJaM+cB3xswrcDPQiOZVWUpyqEaDaRJHO92XLSFmRWnK3rEz+a
-         G97Q==
-X-Gm-Message-State: AOAM530dw4kVd+vklKX/O9dlufMaqo9lvHFC8RGmNp+82iiFwp19avIZ
-        mpRzVwCOoDvvKA4tp6FsQ7N3tQ==
-X-Google-Smtp-Source: ABdhPJyWk8xbTDu5kyBta0mIR4LHfdyYJ1fyzR7WqhCo0hJxT1KtDnyJ8ajPu2j2FMjyD1tm65qN0Q==
-X-Received: by 2002:adf:9dd1:: with SMTP id q17mr16440710wre.402.1622561967210;
-        Tue, 01 Jun 2021 08:39:27 -0700 (PDT)
+        bh=6hYvV1ZLP+xMrFDhtMUMFiYVGTkJ+UiqIQSVG/EohRE=;
+        b=sg1n0gmRVdcFryHBZ5KHlWajSvIPycBJY5w9GSOeiCKRkFLMLbw5XsHkGamg28Yqx7
+         1cyEuM/sXRI+jrLVJ1R5nmuu+ICWDz9tpTllclkI+N8O9wmc8MaQfkwli48WaBhFqq6b
+         dNEj/kyVMhdJBheONavKCsGyLCiELS+5jIwJY3Epp7OsQcvszIKN6WRTutgQZ7rKQafO
+         eNT8GUqYO2tKslo+oEXigTeeSeYU6X9mhUCbhmZQfK+40jFNqz6ARMO5O4HeAsAWVl1g
+         fKw8dE3VS4W/5he9aeL1ZrOFLZvXPZ+Z/+mmU0nVjnHYgz6cH0tXJ1k1nT6CX88M2ob4
+         tZgA==
+X-Gm-Message-State: AOAM5305Fpx01jRL4/ea0wptgLMFJmP0N0xpYCesHMeyj2MN0Bf3fPA2
+        NdSzs+AbzA1eVi5YQmNojb+AOw==
+X-Google-Smtp-Source: ABdhPJzq2ewoSxbWvhQouYQM3hTC5PtMTjQisz0uB+MLFo9IL0F9rkkfvAdPT+tbNS77wjgurbim8g==
+X-Received: by 2002:adf:e58d:: with SMTP id l13mr28459183wrm.369.1622563516048;
+        Tue, 01 Jun 2021 09:05:16 -0700 (PDT)
 Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id 62sm3894313wrm.1.2021.06.01.08.39.26
+        by smtp.gmail.com with ESMTPSA id d131sm3143120wmd.4.2021.06.01.09.05.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 01 Jun 2021 08:39:26 -0700 (PDT)
-Date:   Tue, 1 Jun 2021 17:39:24 +0200
+        Tue, 01 Jun 2021 09:05:15 -0700 (PDT)
+Date:   Tue, 1 Jun 2021 18:05:13 +0200
 From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Matthew Wilcox <willy@infradead.org>
-Cc:     Nathan Chancellor <nathan@kernel.org>, linux-fbdev@vger.kernel.org,
-        linux-mm@kvack.org, Jani Nikula <jani.nikula@intel.com>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        William Kucharski <william.kucharski@oracle.com>,
-        Ian Campbell <ijc@hellion.org.uk>,
-        linux-fsdevel@vger.kernel.org,
-        Jaya Kumar <jayakumar.lkml@gmail.com>,
-        Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH v2] fb_defio: Remove custom address_space_operations
-Message-ID: <YLZUrEjVJWBGGMxf@phenom.ffwll.local>
-Mail-Followup-To: Matthew Wilcox <willy@infradead.org>,
-        Nathan Chancellor <nathan@kernel.org>, linux-fbdev@vger.kernel.org,
-        linux-mm@kvack.org, Jani Nikula <jani.nikula@intel.com>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        William Kucharski <william.kucharski@oracle.com>,
-        Ian Campbell <ijc@hellion.org.uk>, linux-fsdevel@vger.kernel.org,
-        Jaya Kumar <jayakumar.lkml@gmail.com>,
-        Christoph Hellwig <hch@lst.de>
-References: <20210310185530.1053320-1-willy@infradead.org>
- <YLPjwUUmHDRjyPpR@Ryzen-9-3900X.localdomain>
- <YLQALv2YENIDh77N@casper.infradead.org>
- <YLY/2O16fAjriZGQ@phenom.ffwll.local>
- <YLZEhv0cpZp8uVE3@casper.infradead.org>
+To:     lijian_8010a29@163.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, lijian <lijian@yulong.com>
+Subject: Re: [PATCH] video: fbdev: atyfb: mach64_cursor.c: deleted the
+ repeated word
+Message-ID: <YLZauT5Awwf3UlOw@phenom.ffwll.local>
+Mail-Followup-To: lijian_8010a29@163.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        lijian <lijian@yulong.com>
+References: <20210601012747.38884-1-lijian_8010a29@163.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <YLZEhv0cpZp8uVE3@casper.infradead.org>
+In-Reply-To: <20210601012747.38884-1-lijian_8010a29@163.com>
 X-Operating-System: Linux phenom 5.10.32scarlett+ 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Jun 01, 2021 at 03:30:30PM +0100, Matthew Wilcox wrote:
-> On Tue, Jun 01, 2021 at 04:10:32PM +0200, Daniel Vetter wrote:
-> > On Sun, May 30, 2021 at 10:14:22PM +0100, Matthew Wilcox wrote:
-> > > On Sun, May 30, 2021 at 12:13:05PM -0700, Nathan Chancellor wrote:
-> > > > Hi Matthew,
-> > > > 
-> > > > On Wed, Mar 10, 2021 at 06:55:30PM +0000, Matthew Wilcox (Oracle) wrote:
-> > > > > There's no need to give the page an address_space.  Leaving the
-> > > > > page->mapping as NULL will cause the VM to handle set_page_dirty()
-> > > > > the same way that it's handled now, and that was the only reason to
-> > > > > set the address_space in the first place.
-> > > > > 
-> > > > > Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
-> > > > > Reviewed-by: Christoph Hellwig <hch@lst.de>
-> > > > > Reviewed-by: William Kucharski <william.kucharski@oracle.com>
-> > > > 
-> > > > This patch in mainline as commit ccf953d8f3d6 ("fb_defio: Remove custom
-> > > > address_space_operations") causes my Hyper-V based VM to no longer make
-> > > > it to a graphical environment.
-> > > 
-> > > Hi Nathan,
-> > > 
-> > > Thanks for the report.  I sent Daniel a revert patch with a full
-> > > explanation last week, which I assume he'll queue up for a pull soon.
-> > > You can just git revert ccf953d8f3d6 for yourself until that shows up.
-> > > Sorry for the inconvenience.
-> > 
-> > Uh that patch didn't get cc'ed to any list so I've ignored it. I've found
-> > it now, but lack of lore link is awkward. Can you pls resubmit with
-> > dri-devel on cc? fbdev list is dead, I don't look there.
+On Tue, Jun 01, 2021 at 09:27:47AM +0800, lijian_8010a29@163.com wrote:
+> From: lijian <lijian@yulong.com>
 > 
-> How about I just attach it here?
-
-Thanks, that worked with Link: and everything and no choking of my script
-:-)
-
-Cheers, Daniel
-
-> From e88921d0775d87323a8688af37dfd7cdebdde5a9 Mon Sep 17 00:00:00 2001
-> From: "Matthew Wilcox (Oracle)" <willy@infradead.org>
-> Date: Tue, 25 May 2021 08:37:33 -0400
-> Subject: [PATCH] Revert "fb_defio: Remove custom address_space_operations"
+> deleted the repeated word 'be' in the comments.
 > 
-> Commit ccf953d8f3d6 makes framebuffers which use deferred I/O stop
-> displaying updates after the first one.  This is because the pages
-> handled by fb_defio no longer have a page_mapping().  That prevents
-> page_mkclean() from marking the PTEs as clean, and so writes are only
-> noticed the first time.
-> 
-> Reported-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-> Signed-off-by: Matthew Wilcox (Oracle) <willy@infradead.org>
+> Signed-off-by: lijian <lijian@yulong.com>
+
+Applied to drm-misc-next, thanks for your patch.
+-Daniel
+
 > ---
->  drivers/video/fbdev/core/fb_defio.c | 35 +++++++++++++++++++++++++++++
->  drivers/video/fbdev/core/fbmem.c    |  4 ++++
->  include/linux/fb.h                  |  3 +++
->  3 files changed, 42 insertions(+)
+>  drivers/video/fbdev/aty/mach64_cursor.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-> index b292887a2481..a591d291b231 100644
-> --- a/drivers/video/fbdev/core/fb_defio.c
-> +++ b/drivers/video/fbdev/core/fb_defio.c
-> @@ -52,6 +52,13 @@ static vm_fault_t fb_deferred_io_fault(struct vm_fault *vmf)
->  		return VM_FAULT_SIGBUS;
->  
->  	get_page(page);
-> +
-> +	if (vmf->vma->vm_file)
-> +		page->mapping = vmf->vma->vm_file->f_mapping;
-> +	else
-> +		printk(KERN_ERR "no mapping available\n");
-> +
-> +	BUG_ON(!page->mapping);
->  	page->index = vmf->pgoff;
->  
->  	vmf->page = page;
-> @@ -144,6 +151,17 @@ static const struct vm_operations_struct fb_deferred_io_vm_ops = {
->  	.page_mkwrite	= fb_deferred_io_mkwrite,
->  };
->  
-> +static int fb_deferred_io_set_page_dirty(struct page *page)
-> +{
-> +	if (!PageDirty(page))
-> +		SetPageDirty(page);
-> +	return 0;
-> +}
-> +
-> +static const struct address_space_operations fb_deferred_io_aops = {
-> +	.set_page_dirty = fb_deferred_io_set_page_dirty,
-> +};
-> +
->  int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
->  {
->  	vma->vm_ops = &fb_deferred_io_vm_ops;
-> @@ -194,12 +212,29 @@ void fb_deferred_io_init(struct fb_info *info)
->  }
->  EXPORT_SYMBOL_GPL(fb_deferred_io_init);
->  
-> +void fb_deferred_io_open(struct fb_info *info,
-> +			 struct inode *inode,
-> +			 struct file *file)
-> +{
-> +	file->f_mapping->a_ops = &fb_deferred_io_aops;
-> +}
-> +EXPORT_SYMBOL_GPL(fb_deferred_io_open);
-> +
->  void fb_deferred_io_cleanup(struct fb_info *info)
->  {
->  	struct fb_deferred_io *fbdefio = info->fbdefio;
-> +	struct page *page;
-> +	int i;
->  
->  	BUG_ON(!fbdefio);
->  	cancel_delayed_work_sync(&info->deferred_work);
-> +
-> +	/* clear out the mapping that we setup */
-> +	for (i = 0 ; i < info->fix.smem_len; i += PAGE_SIZE) {
-> +		page = fb_deferred_io_page(info, i);
-> +		page->mapping = NULL;
-> +	}
-> +
->  	mutex_destroy(&fbdefio->lock);
->  }
->  EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> index 072780b0e570..98f193078c05 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -1415,6 +1415,10 @@ __releases(&info->lock)
->  		if (res)
->  			module_put(info->fbops->owner);
->  	}
-> +#ifdef CONFIG_FB_DEFERRED_IO
-> +	if (info->fbdefio)
-> +		fb_deferred_io_open(info, inode, file);
-> +#endif
->  out:
->  	unlock_fb_info(info);
->  	if (res)
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index a8dccd23c249..ecfbcc0553a5 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -659,6 +659,9 @@ static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch,
->  /* drivers/video/fb_defio.c */
->  int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma);
->  extern void fb_deferred_io_init(struct fb_info *info);
-> +extern void fb_deferred_io_open(struct fb_info *info,
-> +				struct inode *inode,
-> +				struct file *file);
->  extern void fb_deferred_io_cleanup(struct fb_info *info);
->  extern int fb_deferred_io_fsync(struct file *file, loff_t start,
->  				loff_t end, int datasync);
+> diff --git a/drivers/video/fbdev/aty/mach64_cursor.c b/drivers/video/fbdev/aty/mach64_cursor.c
+> index b06fa6e42e6e..4ad0331a8c57 100644
+> --- a/drivers/video/fbdev/aty/mach64_cursor.c
+> +++ b/drivers/video/fbdev/aty/mach64_cursor.c
+> @@ -46,7 +46,7 @@
+>   * The Screen position of the top left corner of the displayed
+>   * cursor is specificed by CURS_HORZ_VERT_POSN. Care must be taken
+>   * when the cursor hot spot is not the top left corner and the
+> - * physical cursor position becomes negative. It will be be displayed
+> + * physical cursor position becomes negative. It will be displayed
+>   * if either the horizontal or vertical cursor position is negative
+>   *
+>   * If x becomes negative the cursor manager must adjust the CURS_HORZ_OFFSET
 > -- 
-> 2.30.2
+> 2.25.1
 > 
-
+> 
 
 -- 
 Daniel Vetter

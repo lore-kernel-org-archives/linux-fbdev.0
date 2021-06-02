@@ -2,128 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6CBFC47080
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 16:12:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C332C4708F
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Jun 2021 02:17:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D2154613CE
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Jun 2021 16:12:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E5C1F61027
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Jun 2021 02:17:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230523AbhFAQOP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Jun 2021 12:14:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50070 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233698AbhFAQOO (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Jun 2021 12:14:14 -0400
-Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 27E7EC061574
-        for <linux-fbdev@vger.kernel.org>; Tue,  1 Jun 2021 09:12:33 -0700 (PDT)
-Received: by mail-wr1-x42a.google.com with SMTP id c3so14926300wrp.8
-        for <linux-fbdev@vger.kernel.org>; Tue, 01 Jun 2021 09:12:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=A+MnKSQdNE7K12Vo7bfXlH+u3+rwSbIwzZ/MH9R+hCU=;
-        b=fXDfQLMj2a92S7LqF0+bJGD4ntsRpYtD+5eL7xdUED43yXcmpRM5EUYebILLUi4Pyp
-         51tYm3ksYSnW/wqBfdt0v3sbGQl2ddGEEbax05rm6Vxxfx4ZcrMQFehscnJO/mxZdMlF
-         yyJuQUqs3PYqhHpIODFRhzRD28vePHZ6eGk90=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to;
-        bh=A+MnKSQdNE7K12Vo7bfXlH+u3+rwSbIwzZ/MH9R+hCU=;
-        b=nS5tZXVMXFv/xoRW3pcF+n3m547xG0N8G1GYS2LNrU5tuYAbRqREgV0fbEQtL7ut4e
-         N3Axa21wOe9WfPZTd5VTa59WZzJNyAeQvlKfxtxPbTQnO7c3ksxmyhEa3mbgWHsL88C0
-         rJ7WjoLZLiXh6g3MyzQkFKMP3fkCRyW1gRVkIUvV6XakhE5d+f4RtIyui88+/TloeNkZ
-         K3NfRW3Xv/1HGZpFFDuuyY+i1YX/xX3Ozu5GX2BA3w3tX4ZlgFRVsG9MQ1XFsMVV2qQy
-         +VtodfY0SWnEWOdMwb9LYtv+LvH7mjStAVDBGrZ8/QT0X/7LysbI3KO8UAsThNV0Ve+V
-         aCDg==
-X-Gm-Message-State: AOAM532K+TTcDvhLTFOdqIKO9rVrIwb775J4XeGY7h0G9iMPRKnycMdE
-        mN2OJddD8qh5W4lx5f4lZ2FGfg==
-X-Google-Smtp-Source: ABdhPJz05k0XhNrh1QSM0xrnZ9oif/CUuRvsxGK5dEIUsHJY4nwc/OA0AP5fRzpDHCNc7AElGuGyEQ==
-X-Received: by 2002:adf:dfc7:: with SMTP id q7mr1257166wrn.292.1622563951262;
-        Tue, 01 Jun 2021 09:12:31 -0700 (PDT)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id h15sm18874800wmq.1.2021.06.01.09.12.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 01 Jun 2021 09:12:30 -0700 (PDT)
-Date:   Tue, 1 Jun 2021 18:12:29 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Zhen Lei <thunder.leizhen@huawei.com>
-Cc:     Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        "Signed-off-by : Wolfram Sang" <wsa@the-dreams.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        id S230100AbhFBCTR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Jun 2021 22:19:17 -0400
+Received: from szxga03-in.huawei.com ([45.249.212.189]:3378 "EHLO
+        szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229845AbhFBCTO (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Jun 2021 22:19:14 -0400
+Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.54])
+        by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4Fvsyb0xLrz66rD;
+        Wed,  2 Jun 2021 10:13:43 +0800 (CST)
+Received: from dggpemm500006.china.huawei.com (7.185.36.236) by
+ dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Wed, 2 Jun 2021 10:17:27 +0800
+Received: from thunder-town.china.huawei.com (10.174.177.72) by
+ dggpemm500006.china.huawei.com (7.185.36.236) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Wed, 2 Jun 2021 10:17:26 +0800
+From:   Zhen Lei <thunder.leizhen@huawei.com>
+To:     Sam Ravnborg <sam@ravnborg.org>,
+        Jani Nikula <jani.nikula@intel.com>,
+        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
         dri-devel <dri-devel@lists.freedesktop.org>,
         linux-fbdev <linux-fbdev@vger.kernel.org>,
         linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] video: fbdev: mb862xx: use DEVICE_ATTR_RO macro
-Message-ID: <YLZcbZVXnYBQM3n+@phenom.ffwll.local>
-Mail-Followup-To: Zhen Lei <thunder.leizhen@huawei.com>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        "Signed-off-by : Wolfram Sang" <wsa@the-dreams.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        linux-fbdev <linux-fbdev@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-References: <20210601090852.10531-1-thunder.leizhen@huawei.com>
+CC:     Zhen Lei <thunder.leizhen@huawei.com>
+Subject: [PATCH 1/1] video: fbdev: w100fb: use DEVICE_ATTR_WO macro
+Date:   Wed, 2 Jun 2021 10:17:16 +0800
+Message-ID: <20210602021716.10640-1-thunder.leizhen@huawei.com>
+X-Mailer: git-send-email 2.26.0.windows.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210601090852.10531-1-thunder.leizhen@huawei.com>
-X-Operating-System: Linux phenom 5.10.32scarlett+ 
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.174.177.72]
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+ dggpemm500006.china.huawei.com (7.185.36.236)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Jun 01, 2021 at 05:08:52PM +0800, Zhen Lei wrote:
-> Use DEVICE_ATTR_RO helper instead of plain DEVICE_ATTR, which makes the
-> code a bit shorter and easier to read.
-> 
-> Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
+Use DEVICE_ATTR_WO macro helper instead of plain DEVICE_ATTR, which makes
+the code a bit shorter and easier to read.
 
-Applied to drm-misc-next, thanks.
--Daniel
+Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
+---
+ drivers/video/fbdev/w100fb.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-> ---
->  drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-> index 52755b591c1489f..63721337a37787b 100644
-> --- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-> +++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-> @@ -542,8 +542,8 @@ static int mb862xxfb_init_fbinfo(struct fb_info *fbi)
->  /*
->   * show some display controller and cursor registers
->   */
-> -static ssize_t mb862xxfb_show_dispregs(struct device *dev,
-> -				       struct device_attribute *attr, char *buf)
-> +static ssize_t dispregs_show(struct device *dev,
-> +			     struct device_attribute *attr, char *buf)
->  {
->  	struct fb_info *fbi = dev_get_drvdata(dev);
->  	struct mb862xxfb_par *par = fbi->par;
-> @@ -577,7 +577,7 @@ static ssize_t mb862xxfb_show_dispregs(struct device *dev,
->  	return ptr - buf;
->  }
->  
-> -static DEVICE_ATTR(dispregs, 0444, mb862xxfb_show_dispregs, NULL);
-> +static DEVICE_ATTR_RO(dispregs);
->  
->  static irqreturn_t mb862xx_intr(int irq, void *dev_id)
->  {
-> -- 
-> 2.26.0.106.g9fadedd
-> 
-> 
-
+diff --git a/drivers/video/fbdev/w100fb.c b/drivers/video/fbdev/w100fb.c
+index d96ab28f8ce4ae5..64a5e048c13f76a 100644
+--- a/drivers/video/fbdev/w100fb.c
++++ b/drivers/video/fbdev/w100fb.c
+@@ -108,7 +108,7 @@ static ssize_t flip_store(struct device *dev, struct device_attribute *attr, con
+ 
+ static DEVICE_ATTR_RW(flip);
+ 
+-static ssize_t w100fb_reg_read(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
++static ssize_t reg_read_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ {
+ 	unsigned long regs, param;
+ 	regs = simple_strtoul(buf, NULL, 16);
+@@ -117,9 +117,9 @@ static ssize_t w100fb_reg_read(struct device *dev, struct device_attribute *attr
+ 	return count;
+ }
+ 
+-static DEVICE_ATTR(reg_read, 0200, NULL, w100fb_reg_read);
++static DEVICE_ATTR_WO(reg_read);
+ 
+-static ssize_t w100fb_reg_write(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
++static ssize_t reg_write_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+ {
+ 	unsigned long regs, param;
+ 	sscanf(buf, "%lx %lx", &regs, &param);
+@@ -132,7 +132,7 @@ static ssize_t w100fb_reg_write(struct device *dev, struct device_attribute *att
+ 	return count;
+ }
+ 
+-static DEVICE_ATTR(reg_write, 0200, NULL, w100fb_reg_write);
++static DEVICE_ATTR_WO(reg_write);
+ 
+ 
+ static ssize_t fastpllclk_show(struct device *dev, struct device_attribute *attr, char *buf)
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.26.0.106.g9fadedd
+
+

@@ -8,72 +8,73 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54555C47080
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Jun 2021 02:48:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A94A3C47083
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Jun 2021 03:25:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 37A2B60720
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Jun 2021 02:48:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8859761396
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Jun 2021 03:25:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229831AbhFBCuT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Jun 2021 22:50:19 -0400
-Received: from m12-18.163.com ([220.181.12.18]:36782 "EHLO m12-18.163.com"
+        id S231174AbhFBD1f (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Jun 2021 23:27:35 -0400
+Received: from m12-16.163.com ([220.181.12.16]:58171 "EHLO m12-16.163.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229631AbhFBCuT (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Jun 2021 22:50:19 -0400
+        id S231192AbhFBD1f (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Jun 2021 23:27:35 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=DM3i/
-        sEar+rgTXWuUpWQOQV9DGRjv3jpGVAH42azir8=; b=mT0ED5EyN6g/yVX5zve1h
-        tc6GPVOZO9NYtYyT0ffcpB7sjlKGWGGXByOX6dSoHa/9BKrnm01hl54xTwA0bDla
-        vqecklzyrfgtW5GADD7QXmiFm4aNSzCys1gZRctnJ/I+NqoFKmwqyp71FjJHgUzS
-        TlBldhjwovX+BOKaTlrEow=
+        s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=hCjNx
+        bHkM7idDtVYQL2Q4f8U61IqG0gepdecr463U5U=; b=S4qRZUn8nSOGPmxQ0Nugq
+        H6nwe8dTK5MEX9MBMAqZXiuuDfFX+pLQHr1dvfqrVPrvcLMcFxxRsuJ0Ljtf/RCW
+        hKl4+LT8Fr66YZ4ISIPYAWuDn+MapflAGGen2cPshvAMUoi/8KxSXQl352cNYhu8
+        lDSMGwe4Io5S0ntMk5Myok=
 Received: from localhost.localdomain (unknown [218.17.89.92])
-        by smtp14 (Coremail) with SMTP id EsCowAC3vOR58bZgNm7tmw--.26211S2;
-        Wed, 02 Jun 2021 10:48:26 +0800 (CST)
+        by smtp12 (Coremail) with SMTP id EMCowAA3PBg8+rZgOTXqug--.28168S2;
+        Wed, 02 Jun 2021 11:25:49 +0800 (CST)
 From:   lijian_8010a29@163.com
 To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     lijian <lijian@yulong.com>
-Subject: [PATCH] video: fbdev: kyro: STG4000OverlayDevice.c: deleted the repeated word
-Date:   Wed,  2 Jun 2021 10:47:28 +0800
-Message-Id: <20210602024728.74862-1-lijian_8010a29@163.com>
+Subject: [PATCH] video: fbdev: kyro: STG4000OverlayDevice.c: Fix a typo
+Date:   Wed,  2 Jun 2021 11:24:50 +0800
+Message-Id: <20210602032450.90703-1-lijian_8010a29@163.com>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: EsCowAC3vOR58bZgNm7tmw--.26211S2
-X-Coremail-Antispam: 1Uf129KBjvdXoWrZryxJrW5Zw1kGFWkKry8Krg_yoWfZFX_C3
-        9FvF4fWrWkKFy8G3ZxJFnIvr90va9rZFyrWF12q3s3GrZxJ3ySq3yjqr1FgrykGrs8Z3WD
-        W3ZFqr18Zrn3CjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-        9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IU5bVy3UUUUU==
+X-CM-TRANSID: EMCowAA3PBg8+rZgOTXqug--.28168S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7Jw4DWrWUur4rKr1rAF1fJFb_yoW3KFg_Cw
+        1IvFsxX3y8GFW0g3ZxJry3ZryYvFWUZr95WF1qqas5Xry3X393Xw4jvr18KrnYqrZxu3Zr
+        WFsFqr4rA3yfKjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+        9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUnu6wJUUUUU==
 X-Originating-IP: [218.17.89.92]
-X-CM-SenderInfo: 5olmxttqbyiikqdsmqqrwthudrp/1tbiHRqlUFSIq--YGAAAs6
+X-CM-SenderInfo: 5olmxttqbyiikqdsmqqrwthudrp/xtbBER2lUFaEEj9bzwAAsS
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: lijian <lijian@yulong.com>
 
-deleted the repeated word 'number' in the comments
+Change 'thses' to 'these'.
 
 Signed-off-by: lijian <lijian@yulong.com>
 ---
- drivers/video/fbdev/kyro/STG4000OverlayDevice.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/kyro/STG4000OverlayDevice.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/kyro/STG4000OverlayDevice.c b/drivers/video/fbdev/kyro/STG4000OverlayDevice.c
-index 9fde0e3b69ec..7a09178024a6 100644
+index 7a09178024a6..46f17020c8cd 100644
 --- a/drivers/video/fbdev/kyro/STG4000OverlayDevice.c
 +++ b/drivers/video/fbdev/kyro/STG4000OverlayDevice.c
-@@ -398,7 +398,9 @@ int SetOverlayViewPort(volatile STG4000REG __iomem *pSTGReg,
- 		ulDecimated =
- 		    (ulBits * ulApplied) + Overlap((ulSrc % 32),
- 						   ulPattern);
--		ulSrc = ulSrc - ulDecimated;	/* the number number of lines that will go into the scaler */
-+
-+		/* the number of lines that will go into the scaler */
-+		ulSrc = ulSrc - ulDecimated;
- 	}
+@@ -60,7 +60,10 @@ typedef struct _OVRL_SRC_DEST {
+ 	u32 ulDstX2;
+ 	u32 ulDstY2;
  
- 	if (ulBits && (ulBits != 32)) {
+-	/*clipped pixel pos of source data within buffer thses need to be 128 bit word aligned */
++	/*
++	 * clipped pixel pos of source data within buffer
++	 * these need to be 128 bit word aligned
++	 */
+ 	u32 ulSrcX1;
+ 	u32 ulSrcY1;
+ 	u32 ulSrcX2;
 -- 
 2.25.1
 

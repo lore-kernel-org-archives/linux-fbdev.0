@@ -2,96 +2,96 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD73CC47082
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Jun 2021 12:14:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2194FC48BCF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Jun 2021 10:39:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AF4CE61185
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Jun 2021 12:14:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0CC41608FE
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Jun 2021 10:39:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232259AbhFHMQJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 8 Jun 2021 08:16:09 -0400
-Received: from szxga01-in.huawei.com ([45.249.212.187]:3799 "EHLO
-        szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231993AbhFHMQJ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Jun 2021 08:16:09 -0400
-Received: from dggemv703-chm.china.huawei.com (unknown [172.30.72.55])
-        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4Fzpv80J0FzWsdF;
-        Tue,  8 Jun 2021 20:09:24 +0800 (CST)
-Received: from dggemi762-chm.china.huawei.com (10.1.198.148) by
- dggemv703-chm.china.huawei.com (10.3.19.46) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256) id
- 15.1.2176.2; Tue, 8 Jun 2021 20:14:14 +0800
-Received: from linux-lmwb.huawei.com (10.175.103.112) by
- dggemi762-chm.china.huawei.com (10.1.198.148) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2176.2; Tue, 8 Jun 2021 20:14:14 +0800
-From:   Zou Wei <zou_wei@huawei.com>
-To:     <daniel.vetter@ffwll.ch>, <penguin-kernel@i-love.sakura.ne.jp>
-CC:     <dri-devel@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, Zou Wei <zou_wei@huawei.com>
-Subject: [PATCH -next] fbdev: convert list_for_each to entry variant
-Date:   Tue, 8 Jun 2021 20:32:49 +0800
-Message-ID: <1623155569-61744-1-git-send-email-zou_wei@huawei.com>
-X-Mailer: git-send-email 2.6.2
+        id S238408AbhFIKld (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Jun 2021 06:41:33 -0400
+Received: from mout.kundenserver.de ([212.227.17.13]:39701 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239003AbhFIKlc (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Jun 2021 06:41:32 -0400
+Received: from mail-wr1-f44.google.com ([209.85.221.44]) by
+ mrelayeu.kundenserver.de (mreue109 [213.165.67.113]) with ESMTPSA (Nemesis)
+ id 1McH1O-1lKs6f1wqK-00ckMn for <linux-fbdev@vger.kernel.org>; Wed, 09 Jun
+ 2021 11:30:17 +0200
+Received: by mail-wr1-f44.google.com with SMTP id a11so22812364wrt.13
+        for <linux-fbdev@vger.kernel.org>; Wed, 09 Jun 2021 02:30:17 -0700 (PDT)
+X-Gm-Message-State: AOAM533lyQ88rRG4B1UxzXa+7ZsghyUc76MYLIoDOsz+VJh11671z/l2
+        87h5sdSKf32nbS3GdAS2iPcYBO1ecvVwkdrDdOc=
+X-Google-Smtp-Source: ABdhPJzSUnfxZ8LwqKlwrv2bklC04HJaA0aceSDDVOkdulM4vUlC4C4l0QpvA5YJj63Bv3ttsWTULoaeeZe1hMG9qiE=
+X-Received: by 2002:a5d:4050:: with SMTP id w16mr27202710wrp.99.1623231017160;
+ Wed, 09 Jun 2021 02:30:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.175.103.112]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggemi762-chm.china.huawei.com (10.1.198.148)
-X-CFilter-Loop: Reflected
+References: <20210608103833.598348-1-joel@jms.id.au> <CAK8P3a00xuEAKTHrCDw52M-YPJUphSU8bYayW9P_xyNDsTsNzg@mail.gmail.com>
+ <3877ae18-dbda-242a-60b2-f73734f8ba03@xs4all.nl>
+In-Reply-To: <3877ae18-dbda-242a-60b2-f73734f8ba03@xs4all.nl>
+From:   Arnd Bergmann <arnd@arndb.de>
+Date:   Wed, 9 Jun 2021 11:28:24 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a18EdBKQdGDOZc9cPKsf=hY8==v2cO0DBE_tyd82Uq-Ng@mail.gmail.com>
+Message-ID: <CAK8P3a18EdBKQdGDOZc9cPKsf=hY8==v2cO0DBE_tyd82Uq-Ng@mail.gmail.com>
+Subject: Re: [PATCH] ARM: config: Refresh mutli v7
+To:     Hans Verkuil <hverkuil@xs4all.nl>
+Cc:     Joel Stanley <joel@jms.id.au>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:ubJD44owI8GHbnwNBdgHmpqRY0SXVUG2hNKxxV6GkXj7GZvfHmI
+ 0rudlleekyZwKV6h5E6C3MDIZ9H8QgfHBurZpDPpzYndni6Dy4yqJhtXnlUt81lY508ckdQ
+ 7GMOYmsWLwQBS0ZiMgY6d+ncn4bu4JQTY+GHUNPDsoMF6UdJrmqxd9XZQGfOtyQINeMl5N3
+ 4qiLL7VZGuac+b65dbhtQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:hPjVuFo0dyY=:Pjps992iAMb029I6l6dH1Z
+ YpnscJsL2sQbtgOTutF1TFdgg/nl12ErAS6RxMZq+Q6hCVUEhFtl6390rARSP5hrbwR17ZFMh
+ kfNusCxinwYfUMZHi3T7aOQYI6epSV/zuCDVgVsnv/CqMu0hvTuLNNpuiwb4epovWRxPgE26s
+ VQdnWy82+g2NTsY6Yhr439XfC9fF6w//xZAr0Quqp2xWDDWsSx5ej+W/C+yAKtjSwXuFqYXFB
+ c81o9b0zLvkpnPiHMsvF5yH7VolSw1srhARA1HtHJm1nIkShNnJUl4HwsDSzQW05zmLVGG/og
+ j/Oup97Wpblssw8Qt+QAyWNQ1DZoB/aUVb6cDhaIBJzBI17SIf+3bQdV+6UH+3LTjDdGsIwg2
+ 6F5KwchsIdpJIakRh8SiapyxdAO7XNrC8nvT2JKPFY9UeCKzQHFi50qKLZzoqOYJeEJy1fsXu
+ vyoYe4v4NHFhQHyaMU8AwJsgKwJOlbyszVgYtNEYX3dL66fj4bhOrjKtJS70pR5p+oQfie7t4
+ hpSeOfeYc3YUUfW0GU1a/M=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-convert list_for_each() to list_for_each_entry() where
-applicable.
+On Tue, Jun 8, 2021 at 6:49 PM Hans Verkuil <hverkuil@xs4all.nl> wrote:
+> On 08/06/2021 18:14, Arnd Bergmann wrote:
+>
+> Right now it is inherent to the driver. It is probably possible to drop support
+> for video overlay devices if CONFIG_FB=n, but it is not something I have time
+> for. It's just a test driver (albeit a very useful test driver), so it is no
+> big deal if it is disabled when CONFIG_FB=n.
 
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Zou Wei <zou_wei@huawei.com>
----
- drivers/video/fbdev/core/fbsysfs.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+Ok, thanks for the reply, makes sense.
 
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index 65dae05..753ecc8 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -130,14 +130,12 @@ static ssize_t store_mode(struct device *device, struct device_attribute *attr,
- 	struct fb_var_screeninfo var;
- 	struct fb_modelist *modelist;
- 	struct fb_videomode *mode;
--	struct list_head *pos;
- 	size_t i;
- 	int err;
- 
- 	memset(&var, 0, sizeof(var));
- 
--	list_for_each(pos, &fb_info->modelist) {
--		modelist = list_entry(pos, struct fb_modelist, list);
-+	list_for_each_entry(modelist, &fb_info->modelist, list) {
- 		mode = &modelist->mode;
- 		i = mode_string(mstr, 0, mode);
- 		if (strncmp(mstr, buf, max(count, i)) == 0) {
-@@ -198,13 +196,11 @@ static ssize_t show_modes(struct device *device, struct device_attribute *attr,
- {
- 	struct fb_info *fb_info = dev_get_drvdata(device);
- 	unsigned int i;
--	struct list_head *pos;
- 	struct fb_modelist *modelist;
- 	const struct fb_videomode *mode;
- 
- 	i = 0;
--	list_for_each(pos, &fb_info->modelist) {
--		modelist = list_entry(pos, struct fb_modelist, list);
-+	list_for_each_entry(modelist, &fb_info->modelist, list) {
- 		mode = &modelist->mode;
- 		i += mode_string(buf, i, mode);
- 	}
--- 
-2.6.2
+I checked what other consequences there are if we disable CONFIG_FB
+and CONFIG_DRM_KMS_FB_HELPER=y in all the defconfigs now,
+as the patch from Kees did.
 
+It appears that the only other arm32 framebuffers that remain are
+FB_EFI=y, FB_WM8505=y, FB_MX3=m and FB_SIMPLE=y.
+
+On arm64, losing CONFIG_FB=y would disable FB_EFI=y,
+XEN_FBDEV_FRONTEND=y, and FB_MX3=m
+
+On x86, it's only CONFIG_FB_EFI
+
+It appears that FB_MX3 is orphaned since commit e1324ece2af4
+("ARM: imx: Remove i.MX35 board files") because all Armv6 or
+newer i.MX now use drivers/gpu/drm/mxsfb/mxsfb_drv.c, and
+FB_WM8505 is probably unused as well (we discussed removing the
+platform last winter, but decided to give it another year to see if
+new users come up, which has not happened).
+
+As long as simplefb, efifb and xenfb are needed though, we probably
+want CONFIG_FB=y anyway and leaving VIVID=m with the dependency
+does not cause problems until those are all turned into drm drivers.
+
+      Arnd

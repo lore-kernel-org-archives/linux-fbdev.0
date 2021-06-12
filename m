@@ -2,110 +2,120 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61F92C48BCF
-	for <linux-fbdev@archiver.kernel.org>; Sat, 12 Jun 2021 11:58:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D4F7C49360
+	for <linux-fbdev@archiver.kernel.org>; Sat, 12 Jun 2021 12:09:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 356B9613AA
-	for <linux-fbdev@archiver.kernel.org>; Sat, 12 Jun 2021 11:58:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CAB84613BC
+	for <linux-fbdev@archiver.kernel.org>; Sat, 12 Jun 2021 12:09:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231252AbhFLMAH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 12 Jun 2021 08:00:07 -0400
-Received: from mail.kernel.org ([198.145.29.99]:51220 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230191AbhFLMAH (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 12 Jun 2021 08:00:07 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 032F0613A9;
-        Sat, 12 Jun 2021 11:57:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1623499072;
-        bh=UwAZa/YA/87dlDJ+IAPZQ0Ba7P9WCrmF43C+R9dF0xg=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=sbLMo8DtwvxPziSaTTHl6G0wuslvNqekjXOqaHnh02jxNE4oFbtBpxgVm8BIzvBgi
-         zowzdmsufX9+Ifg1axFX/DXy1cLNORqg+vSO+bDoHo2KSTh6mH82UYjFuu0xcK1wlS
-         +3yCnQaAptwmil+v8d7xIDne6qWYepiDQj4tisWY=
-Date:   Sat, 12 Jun 2021 13:57:48 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     arjuncr <arjuncr00@gmail.com>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix for checkpatch.pl
-Message-ID: <YMShPMuUiWNKxav0@kroah.com>
-References: <20210612114505.6833-1-arjuncr00@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210612114505.6833-1-arjuncr00@gmail.com>
+        id S231158AbhFLMLG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 12 Jun 2021 08:11:06 -0400
+Received: from alexa-out.qualcomm.com ([129.46.98.28]:7932 "EHLO
+        alexa-out.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230191AbhFLMLG (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Sat, 12 Jun 2021 08:11:06 -0400
+Received: from ironmsg09-lv.qualcomm.com ([10.47.202.153])
+  by alexa-out.qualcomm.com with ESMTP; 12 Jun 2021 05:09:06 -0700
+X-QCInternal: smtphost
+Received: from ironmsg02-blr.qualcomm.com ([10.86.208.131])
+  by ironmsg09-lv.qualcomm.com with ESMTP/TLS/AES256-SHA; 12 Jun 2021 05:09:04 -0700
+X-QCInternal: smtphost
+Received: from rajeevny-linux.qualcomm.com ([10.204.66.121])
+  by ironmsg02-blr.qualcomm.com with ESMTP; 12 Jun 2021 17:38:15 +0530
+Received: by rajeevny-linux.qualcomm.com (Postfix, from userid 2363605)
+        id D0ED421465; Sat, 12 Jun 2021 17:38:14 +0530 (IST)
+From:   Rajeev Nandan <rajeevny@codeaurora.org>
+To:     dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
+        freedreno@lists.freedesktop.org, devicetree@vger.kernel.org
+Cc:     Rajeev Nandan <rajeevny@codeaurora.org>,
+        linux-kernel@vger.kernel.org, thierry.reding@gmail.com,
+        sam@ravnborg.org, robdclark@gmail.com, dianders@chromium.org,
+        lyude@redhat.com, jani.nikula@intel.com, robh@kernel.org,
+        laurent.pinchart@ideasonboard.com, a.hajda@samsung.com,
+        daniel.thompson@linaro.org, hoegsberg@chromium.org,
+        abhinavk@codeaurora.org, seanpaul@chromium.org,
+        kalyan_t@codeaurora.org, mkrishn@codeaurora.org,
+        lee.jones@linaro.org, jingoohan1@gmail.com,
+        linux-fbdev@vger.kernel.org
+Subject: [v6 0/5] drm: Support basic DPCD backlight in panel-simple and add a new panel ATNA33XC20
+Date:   Sat, 12 Jun 2021 17:37:57 +0530
+Message-Id: <1623499682-2140-1-git-send-email-rajeevny@codeaurora.org>
+X-Mailer: git-send-email 2.7.4
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Jun 12, 2021 at 05:15:05PM +0530, arjuncr wrote:
-> Signed-off-by: arjuncr <arjuncr00@gmail.com>
-> ---
->  drivers/staging/fbtft/fbtft-bus.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
-> index 63c65dd67..cdb451dd3 100644
-> --- a/drivers/staging/fbtft/fbtft-bus.c
-> +++ b/drivers/staging/fbtft/fbtft-bus.c
-> @@ -62,9 +62,9 @@ out:									      \
->  }                                                                             \
->  EXPORT_SYMBOL(func);
->  
-> -define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
-> +define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8,)
->  define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
-> -define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
-> +define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16,)
->  
->  void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
->  {
-> -- 
-> 2.25.1
-> 
-> 
+This series adds the support for the eDP panel that needs the backlight
+controlling over the DP AUX channel using DPCD registers of the panel
+as per the VESA's standard.
 
-Hi,
+This series also adds support for the Samsung eDP AMOLED panel that
+needs DP AUX to control the backlight, and introduces new delays in the
+@panel_desc.delay to support this panel.
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
+This patch series depends on the following two series:
+- Doug's series [1], exposed the DP AUX channel to the panel-simple.
+- Lyude's series [2], introduced new drm helper functions for DPCD
+  backlight.
 
-You are receiving this message because of the following common error(s)
-as indicated below:
+This series is the logical successor to the series [3].
 
-- You did not specify a description of why the patch is needed, or
-  possibly, any description at all, in the email body.  Please read the
-  section entitled "The canonical patch format" in the kernel file,
-  Documentation/SubmittingPatches for what is needed in order to
-  properly describe the change.
+Changes in v1:
+- Created dpcd backlight helper with very basic functionality, added
+  backlight registration in the ti-sn65dsi86 bridge driver.
 
-- You did not write a descriptive Subject: for the patch, allowing Greg,
-  and everyone else, to know what this patch is all about.  Please read
-  the section entitled "The canonical patch format" in the kernel file,
-  Documentation/SubmittingPatches for what a proper Subject: line should
-  look like.
+Changes in v2:
+- Created a new DisplayPort aux backlight driver and moved the code from
+  drm_dp_aux_backlight.c (v1) to the new driver.
 
-- It looks like you did not use your "real" name for the patch on either
-  the Signed-off-by: line, or the From: line (both of which have to
-  match).  Please read the kernel file, Documentation/SubmittingPatches
-  for how to do this correctly.
+Changes in v3:
+- Fixed module compilation (kernel test bot).
 
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
+Changes in v4:
+- Added basic DPCD backlight support in panel-simple.
+- Added support for a new Samsung panel ATNA33XC20 that needs DPCD
+  backlight controlling and has a requirement of delays between enable
+  GPIO and regulator.
 
-thanks,
+Changes in v5:
+Addressed review suggestions from Douglas:
+- Created a new API drm_panel_dp_aux_backlight() in drm_panel.c
+- Moved DP AUX backlight functions from panel-simple.c to drm_panel.c
+- panel-simple probe() calls drm_panel_dp_aux_backlight() to create
+  backlight when the backlight phandle is not specified in panel DT
+  and DP AUX channel is present.
+- Added check for drm_edp_backlight_supported() before registering.
+- Removed the @uses_dpcd_backlight flag from panel_desc as this
+  should be auto-detected.
+- Updated comments/descriptions.
 
-greg k-h's patch email bot
+Changes in v6:
+- Rebased
+- Updated wanrning messages, fixed word wrapping in comments.
+- Fixed ordering of memory allocation
+
+[1] https://lore.kernel.org/dri-devel/20210525000159.3384921-1-dianders@chromium.org/
+[2] https://lore.kernel.org/dri-devel/20210514181504.565252-1-lyude@redhat.com/
+[3] https://lore.kernel.org/dri-devel/1619416756-3533-1-git-send-email-rajeevny@codeaurora.org/
+
+Rajeev Nandan (5):
+  drm/panel: add basic DP AUX backlight support
+  drm/panel-simple: Support DP AUX backlight
+  drm/panel-simple: Support for delays between GPIO & regulator
+  dt-bindings: display: simple: Add Samsung ATNA33XC20
+  drm/panel-simple: Add Samsung ATNA33XC20
+
+ .../bindings/display/panel/panel-simple.yaml       |   2 +
+ drivers/gpu/drm/drm_panel.c                        | 108 +++++++++++++++++++++
+ drivers/gpu/drm/panel/panel-simple.c               |  67 +++++++++++++
+ include/drm/drm_panel.h                            |  15 ++-
+ 4 files changed, 188 insertions(+), 4 deletions(-)
+
+-- 
+2.7.4
+

@@ -2,98 +2,106 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B01AC49EA6
-	for <linux-fbdev@archiver.kernel.org>; Sat, 12 Jun 2021 12:09:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7C61C48BDF
+	for <linux-fbdev@archiver.kernel.org>; Sun, 13 Jun 2021 23:32:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3EFEE613AA
-	for <linux-fbdev@archiver.kernel.org>; Sat, 12 Jun 2021 12:09:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C2F4161159
+	for <linux-fbdev@archiver.kernel.org>; Sun, 13 Jun 2021 23:32:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231311AbhFLMLN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 12 Jun 2021 08:11:13 -0400
-Received: from alexa-out.qualcomm.com ([129.46.98.28]:29689 "EHLO
-        alexa-out.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231288AbhFLMLL (ORCPT
+        id S232181AbhFMXeZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 13 Jun 2021 19:34:25 -0400
+Received: from mail-wm1-f51.google.com ([209.85.128.51]:54259 "EHLO
+        mail-wm1-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232154AbhFMXeZ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 12 Jun 2021 08:11:11 -0400
-Received: from ironmsg-lv-alpha.qualcomm.com ([10.47.202.13])
-  by alexa-out.qualcomm.com with ESMTP; 12 Jun 2021 05:09:11 -0700
-X-QCInternal: smtphost
-Received: from ironmsg02-blr.qualcomm.com ([10.86.208.131])
-  by ironmsg-lv-alpha.qualcomm.com with ESMTP/TLS/AES256-SHA; 12 Jun 2021 05:09:09 -0700
-X-QCInternal: smtphost
-Received: from rajeevny-linux.qualcomm.com ([10.204.66.121])
-  by ironmsg02-blr.qualcomm.com with ESMTP; 12 Jun 2021 17:38:32 +0530
-Received: by rajeevny-linux.qualcomm.com (Postfix, from userid 2363605)
-        id 4425721465; Sat, 12 Jun 2021 17:38:31 +0530 (IST)
-From:   Rajeev Nandan <rajeevny@codeaurora.org>
-To:     dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
-        freedreno@lists.freedesktop.org, devicetree@vger.kernel.org
-Cc:     Rajeev Nandan <rajeevny@codeaurora.org>,
-        linux-kernel@vger.kernel.org, thierry.reding@gmail.com,
-        sam@ravnborg.org, robdclark@gmail.com, dianders@chromium.org,
-        lyude@redhat.com, jani.nikula@intel.com, robh@kernel.org,
-        laurent.pinchart@ideasonboard.com, a.hajda@samsung.com,
-        daniel.thompson@linaro.org, hoegsberg@chromium.org,
-        abhinavk@codeaurora.org, seanpaul@chromium.org,
-        kalyan_t@codeaurora.org, mkrishn@codeaurora.org,
-        lee.jones@linaro.org, jingoohan1@gmail.com,
+        Sun, 13 Jun 2021 19:34:25 -0400
+Received: by mail-wm1-f51.google.com with SMTP id b205so6337186wmb.3;
+        Sun, 13 Jun 2021 16:32:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=QwXW92AMV2Zj//j5lOIkr635SG8SKf3W/g8yx73Deyw=;
+        b=DUroW1l97aA1bQpXB1gL/Mva4UMt3HN8cVre8KVO/G992+d6by8qKBsM83pW6Q107Y
+         hs8iSCaoamecyCYycUEnWrL/eyxV4bNO+BE1ySyXaKbgLjqjS4jiVLbJ56Xcsv9GSNHP
+         VOTygISZ/LJ4CnrgejEQx2gjuFyVzMBr7Zl0QhsQErcjbFmyLaLrv3DWnIqakCI5yNob
+         IYB4F5XlvobD/KVRSwPxJjwd9JFeV3SzQODCwbysgNtWvC8qS3BO1lL9i8SrpY/Qnq8g
+         XnLn+6bq1aNwZcfcY+uVBU9DcvepLFJZ729Tl/HB5LRLV5R1XBGgxJp5UXph2dwV6Wge
+         L3CA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=QwXW92AMV2Zj//j5lOIkr635SG8SKf3W/g8yx73Deyw=;
+        b=gvlDWQlOUFleoEKkmMkMUplon/FudvE9tbn0Yt7H7RK5UAl7DI+DpnrvIESei+hBZs
+         fUCRHV/ppqY0q1CnGmB36OLNJFBvlBjq7JHy4BHuRlqydBFc7qslM7vce1k5EWGpFn9h
+         kUxX0qYCZcGe4FT9ea4Wh5ph4WNWPTo7tnCnf20QCqYFieT/J+luGudXAGCXsyXRSxp+
+         hqpLQeVI/XreRBjyUJdB52tHdYv2apeuqRk53mCE1l9FyI+DNMd+E6SsX5zOYIes5e9D
+         u03YjC+Jmxn8MDnJT7gNHtHwPXhtG174jw2cJG2YBpKXgnLyQf+YS8peTejAl0XAN90l
+         shTg==
+X-Gm-Message-State: AOAM533Uw0imReAc9pWZSaNzxYzKhPf4osZhhQztBbSMBskRpnW+tqJ8
+        ry6e49Z63FV8dsVcC5lom70=
+X-Google-Smtp-Source: ABdhPJzLxMVGfF57HHlMph/YXajIfLnISEATl7O2cTyaAnm2qogppDHsEpF3EIVNuiYET/ha1sCf9Q==
+X-Received: by 2002:a05:600c:3786:: with SMTP id o6mr13460279wmr.170.1623627083066;
+        Sun, 13 Jun 2021 16:31:23 -0700 (PDT)
+Received: from localhost.localdomain ([195.245.23.224])
+        by smtp.gmail.com with ESMTPSA id i9sm17882511wrn.54.2021.06.13.16.31.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 13 Jun 2021 16:31:22 -0700 (PDT)
+From:   Alexander Sverdlin <alexander.sverdlin@gmail.com>
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Nikita Shubin <nikita.shubin@maquefel.me>,
         linux-fbdev@vger.kernel.org
-Subject: [v6 2/5] drm/panel-simple: Support DP AUX backlight
-Date:   Sat, 12 Jun 2021 17:37:59 +0530
-Message-Id: <1623499682-2140-3-git-send-email-rajeevny@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1623499682-2140-1-git-send-email-rajeevny@codeaurora.org>
-References: <1623499682-2140-1-git-send-email-rajeevny@codeaurora.org>
+Cc:     Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH 4/7] video: ep93xx: Prepare clock before using it
+Date:   Mon, 14 Jun 2021 01:30:38 +0200
+Message-Id: <20210613233041.128961-5-alexander.sverdlin@gmail.com>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20210613233041.128961-1-alexander.sverdlin@gmail.com>
+References: <20210613233041.128961-1-alexander.sverdlin@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-If there is no backlight specified in the device tree and the panel
-has access to the DP AUX channel then create a DP AUX backlight if
-supported by the panel.
+Use clk_prepare_enable()/clk_disable_unprepare() in preparation for switch
+to Common Clock Framework.
 
-Signed-off-by: Rajeev Nandan <rajeevny@codeaurora.org>
-Reviewed-by: Douglas Anderson <dianders@chromium.org>
+Signed-off-by: Alexander Sverdlin <alexander.sverdlin@gmail.com>
 ---
+ drivers/video/fbdev/ep93xx-fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-(no changes since v5)
-
-This patch depends on the previous patch (2/5) of this series.
-
-Changes in v4:
-- New
-
-Changes in v5:
-- Address review comments and move backlight functions to drm_panel.c (Douglas)
-- Create and register DP AUX backlight if there is no backlight specified in the
-  device tree and panel has the DP AUX channel. (Douglas)
-- The new drm_panel_dp_aux_backlight() will do the drm_edp_backlight_supported() check.
-
- drivers/gpu/drm/panel/panel-simple.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
-index df6fbd1..26555ec 100644
---- a/drivers/gpu/drm/panel/panel-simple.c
-+++ b/drivers/gpu/drm/panel/panel-simple.c
-@@ -800,6 +800,12 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc,
+diff --git a/drivers/video/fbdev/ep93xx-fb.c b/drivers/video/fbdev/ep93xx-fb.c
+index ba33b4dce0df..2398b3d48fed 100644
+--- a/drivers/video/fbdev/ep93xx-fb.c
++++ b/drivers/video/fbdev/ep93xx-fb.c
+@@ -548,7 +548,7 @@ static int ep93xxfb_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	ep93xxfb_set_par(info);
+-	clk_enable(fbi->clk);
++	clk_prepare_enable(fbi->clk);
+ 
+ 	err = register_framebuffer(info);
  	if (err)
- 		goto disable_pm_runtime;
+@@ -577,7 +577,7 @@ static int ep93xxfb_remove(struct platform_device *pdev)
+ 	struct ep93xx_fbi *fbi = info->par;
  
-+	if (!panel->base.backlight && panel->aux) {
-+		err = drm_panel_dp_aux_backlight(&panel->base, panel->aux);
-+		if (err)
-+			goto disable_pm_runtime;
-+	}
-+
- 	drm_panel_add(&panel->base);
+ 	unregister_framebuffer(info);
+-	clk_disable(fbi->clk);
++	clk_disable_unprepare(fbi->clk);
+ 	ep93xxfb_dealloc_videomem(info);
+ 	fb_dealloc_cmap(&info->cmap);
  
- 	return 0;
 -- 
-2.7.4
+2.32.0
 

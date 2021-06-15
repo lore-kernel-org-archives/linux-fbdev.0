@@ -2,37 +2,37 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A52AC48BDF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Jun 2021 03:13:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 723ECC48BE5
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Jun 2021 03:17:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 736F160698
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Jun 2021 03:13:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4607761400
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Jun 2021 03:17:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230451AbhFODPZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Jun 2021 23:15:25 -0400
-Received: from mga14.intel.com ([192.55.52.115]:63354 "EHLO mga14.intel.com"
+        id S230117AbhFODTZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Jun 2021 23:19:25 -0400
+Received: from mga11.intel.com ([192.55.52.93]:14782 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229869AbhFODPX (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Jun 2021 23:15:23 -0400
-IronPort-SDR: 099d/PWc8XWJRmxHFRFmPC2KGVABcjjn5E3Q4NUddU8kzOjCJfr/IQ15EtOeVk2AzsNWG+cEEc
- cC1TOc8b1DYw==
-X-IronPort-AV: E=McAfee;i="6200,9189,10015"; a="205722726"
+        id S229868AbhFODTY (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 14 Jun 2021 23:19:24 -0400
+IronPort-SDR: pTqv5eVJDgwHO1ZWtKU0xqM2AZJPqjw3cehDiuSF7LhhEq+Eyvdf7A9z7hXFc1LKobELBHgSV4
+ pfT9E5TWAMaw==
+X-IronPort-AV: E=McAfee;i="6200,9189,10015"; a="202879192"
 X-IronPort-AV: E=Sophos;i="5.83,273,1616482800"; 
-   d="scan'208";a="205722726"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jun 2021 18:09:46 -0700
-IronPort-SDR: sTaes4+9gmVh30N7ddQM1lqNPlIPL/XeS8T4HAr+XsPX3XZ11fkjoMnv9vlNVb03XGnsfaSGqI
- 0fckwWoXHe/g==
+   d="scan'208";a="202879192"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jun 2021 18:08:57 -0700
+IronPort-SDR: m8YrB9Yd4usLrMSp/h4lqUHwCbGVQo7pLituvmU1gNRLs8LagHH5JCFvkOw23mRlA4Jsrwgnrq
+ Gp1VlLZVuD1g==
 X-IronPort-AV: E=Sophos;i="5.83,273,1616482800"; 
-   d="scan'208";a="451793118"
+   d="scan'208";a="450065067"
 Received: from shao2-debian.sh.intel.com (HELO localhost) ([10.239.13.11])
-  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jun 2021 18:09:43 -0700
-Date:   Tue, 15 Jun 2021 09:09:42 +0800
+  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jun 2021 18:08:55 -0700
+Date:   Tue, 15 Jun 2021 09:08:53 +0800
 From:   kernel test robot <rong.a.chen@intel.com>
 To:     Ingo Molnar <mingo@kernel.org>
 Cc:     kbuild-all@lists.01.org, linux-kernel@vger.kernel.org,
@@ -41,92 +41,39 @@ Cc:     kbuild-all@lists.01.org, linux-kernel@vger.kernel.org,
         Jingoo Han <jingoohan1@gmail.com>,
         Support Opensource <support.opensource@diasemi.com>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [RFC PATCH tip] sched/headers, fb: fix duplicated inclusion
-Message-ID: <20210615010941.GN237458@shao2-debian>
+Subject: [tip:tmp.tmp2 302/364] drivers/video/backlight/rave-sp-backlight.c:
+ linux/backlight.h is included more than once.
+Message-ID: <20210615010853.GM237458@shao2-debian>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20210615010853.GM237458@shao2-debian>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-drivers/video/backlight/rave-sp-backlight.c: linux/backlight.h is included more than once.
-drivers/video/backlight/lm3639_bl.c: linux/backlight.h is included more than once.
-drivers/video/backlight/kb3886_bl.c: linux/backlight.h is included more than once.
-drivers/video/backlight/da9052_bl.c: linux/backlight.h is included more than once.
-drivers/video/backlight/cr_bllcd.c: linux/backlight.h is included more than once.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git tmp.tmp2
+head:   adcceb5eb7aee38e4a9c15bdf599655f0e1b1324
+commit: 3fb8658426ac271948eb757e1c5a5554afdc5cf8 [302/364] sched/headers, fb: Simplify <linux/fb.h> dependencies
+compiler: gcc-9 (Debian 9.3.0-22) 9.3.0
 
-Generated by: scripts/checkincludes.pl
-
+If you fix the issue, kindly add following tag as appropriate
 Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: kernel test robot <lkp@intel.com>
----
- cr_bllcd.c          |    1 -
- da9052_bl.c         |    1 -
- kb3886_bl.c         |    1 -
- lm3639_bl.c         |    1 -
- rave-sp-backlight.c |    1 -
- 5 files changed, 5 deletions(-)
 
-diff --git a/drivers/video/backlight/cr_bllcd.c b/drivers/video/backlight/cr_bllcd.c
-index aa94e1dfbc2c4..570105c7c5f22 100644
---- a/drivers/video/backlight/cr_bllcd.c
-+++ b/drivers/video/backlight/cr_bllcd.c
-@@ -21,7 +21,6 @@
- #include <linux/platform_device.h>
- #include <linux/mutex.h>
- #include <linux/fb.h>
--#include <linux/backlight.h>
- #include <linux/lcd.h>
- #include <linux/pci.h>
- #include <linux/slab.h>
-diff --git a/drivers/video/backlight/da9052_bl.c b/drivers/video/backlight/da9052_bl.c
-index d805c57e8f9ac..3bdec323e98e7 100644
---- a/drivers/video/backlight/da9052_bl.c
-+++ b/drivers/video/backlight/da9052_bl.c
-@@ -7,7 +7,6 @@
-  * Author: David Dajun Chen <dchen@diasemi.com>
-  */
- 
--#include <linux/backlight.h>
- #include <linux/delay.h>
- #include <linux/fb.h>
- #include <linux/module.h>
-diff --git a/drivers/video/backlight/kb3886_bl.c b/drivers/video/backlight/kb3886_bl.c
-index 55800c904338c..3088455c03603 100644
---- a/drivers/video/backlight/kb3886_bl.c
-+++ b/drivers/video/backlight/kb3886_bl.c
-@@ -13,7 +13,6 @@
- #include <linux/platform_device.h>
- #include <linux/mutex.h>
- #include <linux/fb.h>
--#include <linux/backlight.h>
- #include <linux/delay.h>
- #include <linux/dmi.h>
- #include <linux/backlight.h>
-diff --git a/drivers/video/backlight/lm3639_bl.c b/drivers/video/backlight/lm3639_bl.c
-index df26b7768eb9c..30731a8bb063e 100644
---- a/drivers/video/backlight/lm3639_bl.c
-+++ b/drivers/video/backlight/lm3639_bl.c
-@@ -7,7 +7,6 @@
- #include <linux/slab.h>
- #include <linux/i2c.h>
- #include <linux/leds.h>
--#include <linux/backlight.h>
- #include <linux/err.h>
- #include <linux/delay.h>
- #include <linux/uaccess.h>
-diff --git a/drivers/video/backlight/rave-sp-backlight.c b/drivers/video/backlight/rave-sp-backlight.c
-index 71419c384293c..2dd46c32f6150 100644
---- a/drivers/video/backlight/rave-sp-backlight.c
-+++ b/drivers/video/backlight/rave-sp-backlight.c
-@@ -7,7 +7,6 @@
-  *
-  */
- 
--#include <linux/backlight.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/mfd/rave-sp.h>
+
+includecheck warnings: (new ones prefixed by >>)
+>> drivers/video/backlight/rave-sp-backlight.c: linux/backlight.h is included more than once.
+--
+>> drivers/video/backlight/lm3639_bl.c: linux/backlight.h is included more than once.
+--
+>> drivers/video/backlight/kb3886_bl.c: linux/backlight.h is included more than once.
+--
+>> drivers/video/backlight/da9052_bl.c: linux/backlight.h is included more than once.
+--
+>> drivers/video/backlight/cr_bllcd.c: linux/backlight.h is included more than once.
+
+Please review and possibly fold the followup patch.
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org

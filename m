@@ -2,78 +2,81 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 723ECC48BE5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Jun 2021 03:17:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A757C48BE8
+	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Jun 2021 03:16:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4607761400
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Jun 2021 03:17:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 05B3761246
+	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Jun 2021 03:16:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230117AbhFODTZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Jun 2021 23:19:25 -0400
-Received: from mga11.intel.com ([192.55.52.93]:14782 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229868AbhFODTY (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Jun 2021 23:19:24 -0400
-IronPort-SDR: pTqv5eVJDgwHO1ZWtKU0xqM2AZJPqjw3cehDiuSF7LhhEq+Eyvdf7A9z7hXFc1LKobELBHgSV4
- pfT9E5TWAMaw==
-X-IronPort-AV: E=McAfee;i="6200,9189,10015"; a="202879192"
-X-IronPort-AV: E=Sophos;i="5.83,273,1616482800"; 
-   d="scan'208";a="202879192"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jun 2021 18:08:57 -0700
-IronPort-SDR: m8YrB9Yd4usLrMSp/h4lqUHwCbGVQo7pLituvmU1gNRLs8LagHH5JCFvkOw23mRlA4Jsrwgnrq
- Gp1VlLZVuD1g==
-X-IronPort-AV: E=Sophos;i="5.83,273,1616482800"; 
-   d="scan'208";a="450065067"
-Received: from shao2-debian.sh.intel.com (HELO localhost) ([10.239.13.11])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Jun 2021 18:08:55 -0700
-Date:   Tue, 15 Jun 2021 09:08:53 +0800
-From:   kernel test robot <rong.a.chen@intel.com>
-To:     Ingo Molnar <mingo@kernel.org>
-Cc:     kbuild-all@lists.01.org, linux-kernel@vger.kernel.org,
-        x86@kernel.org, Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Support Opensource <support.opensource@diasemi.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [tip:tmp.tmp2 302/364] drivers/video/backlight/rave-sp-backlight.c:
- linux/backlight.h is included more than once.
-Message-ID: <20210615010853.GM237458@shao2-debian>
+        id S229966AbhFPDSn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 15 Jun 2021 23:18:43 -0400
+Received: from szxga01-in.huawei.com ([45.249.212.187]:10080 "EHLO
+        szxga01-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229931AbhFPDSn (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 15 Jun 2021 23:18:43 -0400
+Received: from dggeme756-chm.china.huawei.com (unknown [172.30.72.53])
+        by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4G4VdJ6M92zZfQY;
+        Wed, 16 Jun 2021 11:13:40 +0800 (CST)
+Received: from ubuntu1804.huawei.com (10.67.174.62) by
+ dggeme756-chm.china.huawei.com (10.3.19.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
+ 15.1.2176.2; Wed, 16 Jun 2021 11:16:35 +0800
+From:   Yu Jiahua <yujiahua1@huawei.com>
+To:     <dri-devel@lists.freedesktop.org>
+CC:     <linux-omap@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <yujiahua1@huawei.com>
+Subject: [PATCH -next] apply: use DEFINE_SPINLOCK() instead of spin_lock_init().
+Date:   Tue, 15 Jun 2021 19:17:13 -0800
+Message-ID: <20210616031713.24959-1-yujiahua1@huawei.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain
+X-Originating-IP: [10.67.174.62]
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ dggeme756-chm.china.huawei.com (10.3.19.102)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git tmp.tmp2
-head:   adcceb5eb7aee38e4a9c15bdf599655f0e1b1324
-commit: 3fb8658426ac271948eb757e1c5a5554afdc5cf8 [302/364] sched/headers, fb: Simplify <linux/fb.h> dependencies
-compiler: gcc-9 (Debian 9.3.0-22) 9.3.0
+From: Jiahua Yu <yujiahua1@huawei.com>
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+spinlock can be initialized automatically with DEFINE_SPINLOCK()
+rather than explicitly calling spin_lock_init().
 
-
-includecheck warnings: (new ones prefixed by >>)
->> drivers/video/backlight/rave-sp-backlight.c: linux/backlight.h is included more than once.
---
->> drivers/video/backlight/lm3639_bl.c: linux/backlight.h is included more than once.
---
->> drivers/video/backlight/kb3886_bl.c: linux/backlight.h is included more than once.
---
->> drivers/video/backlight/da9052_bl.c: linux/backlight.h is included more than once.
---
->> drivers/video/backlight/cr_bllcd.c: linux/backlight.h is included more than once.
-
-Please review and possibly fold the followup patch.
-
+Signed-off-by: Jiahua Yu <yujiahua1@huawei.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ drivers/video/fbdev/omap2/omapfb/dss/apply.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/apply.c b/drivers/video/fbdev/omap2/omapfb/dss/apply.c
+index c71021091828..acca991c7540 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/apply.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/apply.c
+@@ -108,7 +108,7 @@ static struct {
+ } dss_data;
+ 
+ /* protects dss_data */
+-static spinlock_t data_lock;
++static DEFINE_SPINLOCK(data_lock);
+ /* lock for blocking functions */
+ static DEFINE_MUTEX(apply_lock);
+ static DECLARE_COMPLETION(extra_updated_completion);
+@@ -131,8 +131,6 @@ static void apply_init_priv(void)
+ 	struct mgr_priv_data *mp;
+ 	int i;
+ 
+-	spin_lock_init(&data_lock);
+-
+ 	for (i = 0; i < num_ovls; ++i) {
+ 		struct ovl_priv_data *op;
+ 
+-- 
+2.17.1
+

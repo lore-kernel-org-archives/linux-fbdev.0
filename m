@@ -2,75 +2,55 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C023CC2B9F4
-	for <linux-fbdev@archiver.kernel.org>; Tue, 22 Jun 2021 18:33:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4550C4743C
+	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Jun 2021 06:15:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9EECF60249
-	for <linux-fbdev@archiver.kernel.org>; Tue, 22 Jun 2021 18:33:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8BD4C611AC
+	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Jun 2021 06:15:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231726AbhFVSfy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 22 Jun 2021 14:35:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45758 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232558AbhFVSfx (ORCPT
+        id S229818AbhFWGSD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 23 Jun 2021 02:18:03 -0400
+Received: from so254-9.mailgun.net ([198.61.254.9]:12771 "EHLO
+        so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229665AbhFWGSD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 22 Jun 2021 14:35:53 -0400
-Received: from mail-oi1-x22a.google.com (mail-oi1-x22a.google.com [IPv6:2607:f8b0:4864:20::22a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A48B2C061756
-        for <linux-fbdev@vger.kernel.org>; Tue, 22 Jun 2021 11:33:36 -0700 (PDT)
-Received: by mail-oi1-x22a.google.com with SMTP id m137so401124oig.6
-        for <linux-fbdev@vger.kernel.org>; Tue, 22 Jun 2021 11:33:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=pumBvi+qi7d1sRM6cwo7R1W/BHxp1boGJK8L9dh8S7I=;
-        b=Gnb/8JfrLJ+yvZfpmSoMuJKpnj9MskU5T49YYM3w8+ZW9IypPBpCVKfYBZ02l5sZS0
-         52RS8k1paGyZM5BA6bltHp9N0Sq2IWSZwbT/ojCUlljFvnkTkQmcIHt74VxA+KVyV8lY
-         wiVJcA1DfdRMryKyocv7WRfaVD9tANv1RWGyU=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=pumBvi+qi7d1sRM6cwo7R1W/BHxp1boGJK8L9dh8S7I=;
-        b=fsqXpSdPVgxMLbWCSqwB+TWCbAVCEArsuUwJtno+rH9vR65taQmMoHb32daml5d+F0
-         ffvGcI35DWADLqUSyOoiZMyvsyUDqWEzuB7bBjJFPAdIXGUtK0h1NXrZy6zOTh3TwVpQ
-         i089C2R2zxzXO9KV/Mtnr9ylcP5A75krSG38nmQCe7b2b3x6XoKxLWTlVAEp4CVbjC+A
-         w/9h9QgOowwcD8Mm/uwh0tbSy8KFzVvB6NAwesq18cV6xsVPSPuY2cdb4NttGkcpFbgi
-         omRQNdSkaHdEbrXIE5alYJ+aZmW2HFMnMy7+xGaA4VAZoj7w9mAfTv/CS6bMavkCCd2n
-         9CWw==
-X-Gm-Message-State: AOAM530SjH5WKR618fDJRAPhFHJxFbEOgITbTy3h1fcTms7iuyAoRnZA
-        o87g72WJvmvSIw2ZUg4pZg2nY512vmHxIw==
-X-Google-Smtp-Source: ABdhPJyxN3ijObd6UoiqjKyDv/cKscShTNP1NCAFdii/VoDbm7/qV8X5Zjf8vfdFMIIA9etR+RNTMA==
-X-Received: by 2002:aca:170a:: with SMTP id j10mr119535oii.23.1624386816001;
-        Tue, 22 Jun 2021 11:33:36 -0700 (PDT)
-Received: from mail-ot1-f44.google.com (mail-ot1-f44.google.com. [209.85.210.44])
-        by smtp.gmail.com with ESMTPSA id z4sm34098otq.48.2021.06.22.11.33.35
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 22 Jun 2021 11:33:35 -0700 (PDT)
-Received: by mail-ot1-f44.google.com with SMTP id t4-20020a9d66c40000b029045e885b18deso1999130otm.6
-        for <linux-fbdev@vger.kernel.org>; Tue, 22 Jun 2021 11:33:35 -0700 (PDT)
-X-Received: by 2002:a5b:54a:: with SMTP id r10mr6520278ybp.476.1624386805037;
- Tue, 22 Jun 2021 11:33:25 -0700 (PDT)
+        Wed, 23 Jun 2021 02:18:03 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1624428946; h=Message-ID: References: In-Reply-To: Subject:
+ Cc: To: From: Date: Content-Transfer-Encoding: Content-Type:
+ MIME-Version: Sender; bh=YgXZ6VNhDITS6yDaGx56LtlJqbhq7xTELt1tz8y6TYM=;
+ b=L8uDHvsVTSBBO5yxeEk2FcNdxCQlLcuHSd3uMhIj2Y2xiLXMtfTpCm6NG8skjaO1NO2QHJfh
+ Usq7EyZZjqQAqW7vlhjNSAlrgmRvuwho/ixnxQDz+64ctRYnAYKx6tlF9VG1xRiKtNEM84px
+ BUj0+0w2DphVh8qSX3EGtEN27Xo=
+X-Mailgun-Sending-Ip: 198.61.254.9
+X-Mailgun-Sid: WyI4YmIzMiIsICJsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n06.prod.us-west-2.postgun.com with SMTP id
+ 60d2d17f638039e997219933 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Wed, 23 Jun 2021 06:15:27
+ GMT
+Sender: rajeevny=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id AD7C9C433F1; Wed, 23 Jun 2021 06:15:27 +0000 (UTC)
+Received: from mail.codeaurora.org (localhost.localdomain [127.0.0.1])
+        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: rajeevny)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 93D9CC433D3;
+        Wed, 23 Jun 2021 06:15:24 +0000 (UTC)
 MIME-Version: 1.0
-References: <1624099230-20899-1-git-send-email-rajeevny@codeaurora.org>
- <1624099230-20899-2-git-send-email-rajeevny@codeaurora.org>
- <20210620093141.GA703072@ravnborg.org> <ebf5581759daee9596c2f092ca836ecb@codeaurora.org>
- <20210621183828.GA918146@ravnborg.org>
-In-Reply-To: <20210621183828.GA918146@ravnborg.org>
-From:   Doug Anderson <dianders@chromium.org>
-Date:   Tue, 22 Jun 2021 11:33:13 -0700
-X-Gmail-Original-Message-ID: <CAD=FV=WJiA+RxaQA9xt7Tik_2pCEJo0+6b39Di8cfnSWGuKkJQ@mail.gmail.com>
-Message-ID: <CAD=FV=WJiA+RxaQA9xt7Tik_2pCEJo0+6b39Di8cfnSWGuKkJQ@mail.gmail.com>
-Subject: Re: [v7 1/5] drm/panel: add basic DP AUX backlight support
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     Rajeev Nandan <rajeevny@codeaurora.org>,
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date:   Wed, 23 Jun 2021 11:45:24 +0530
+From:   rajeevny@codeaurora.org
+To:     Doug Anderson <dianders@chromium.org>
+Cc:     Sam Ravnborg <sam@ravnborg.org>,
         dri-devel <dri-devel@lists.freedesktop.org>,
         linux-arm-msm <linux-arm-msm@vger.kernel.org>,
         freedreno <freedreno@lists.freedesktop.org>,
@@ -90,37 +70,168 @@ Cc:     Rajeev Nandan <rajeevny@codeaurora.org>,
         Krishna Manikandan <mkrishn@codeaurora.org>,
         Lee Jones <lee.jones@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [v7 1/5] drm/panel: add basic DP AUX backlight support
+In-Reply-To: <CAD=FV=WJiA+RxaQA9xt7Tik_2pCEJo0+6b39Di8cfnSWGuKkJQ@mail.gmail.com>
+References: <1624099230-20899-1-git-send-email-rajeevny@codeaurora.org>
+ <1624099230-20899-2-git-send-email-rajeevny@codeaurora.org>
+ <20210620093141.GA703072@ravnborg.org>
+ <ebf5581759daee9596c2f092ca836ecb@codeaurora.org>
+ <20210621183828.GA918146@ravnborg.org>
+ <CAD=FV=WJiA+RxaQA9xt7Tik_2pCEJo0+6b39Di8cfnSWGuKkJQ@mail.gmail.com>
+Message-ID: <c15947bb1566f176a2f534c52a7c3183@codeaurora.org>
+X-Sender: rajeevny@codeaurora.org
+User-Agent: Roundcube Webmail/1.3.9
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi,
 
-On Mon, Jun 21, 2021 at 11:38 AM Sam Ravnborg <sam@ravnborg.org> wrote:
->
-> > > I cannot see why you need the extra check on ->enabled?
-> > > Would it be sufficient to check backlight_is_blank() only?
-> >
-> > This extra check on bl->enabled flag is added to avoid enabling/disabling
-> > backlight again if it is already enabled/disabled.
-> > Using this flag way can know the transition between backlight blank and
-> > un-blank, and decide when to enable/disable the backlight.
->
-> My point is that this should really not be needed, as it would cover up
-> for some other bug whaere we try to do something twice that is not
-> needed. But I am less certain here so if you think it is needed, keep
-> it as is.
+On 23-06-2021 00:03, Doug Anderson wrote:
+> Hi,
+> 
+> On Mon, Jun 21, 2021 at 11:38 AM Sam Ravnborg <sam@ravnborg.org> wrote:
+>> 
+>> > > I cannot see why you need the extra check on ->enabled?
+>> > > Would it be sufficient to check backlight_is_blank() only?
+>> >
+>> > This extra check on bl->enabled flag is added to avoid enabling/disabling
+>> > backlight again if it is already enabled/disabled.
+>> > Using this flag way can know the transition between backlight blank and
+>> > un-blank, and decide when to enable/disable the backlight.
+>> 
+>> My point is that this should really not be needed, as it would cover 
+>> up
+>> for some other bug whaere we try to do something twice that is not
+>> needed. But I am less certain here so if you think it is needed, keep
+>> it as is.
+> 
+> I haven't tested this myself, but I believe that it is needed. I don't
+> think the backlight update_status() function is like an enable/disable
+> function. I believe it can be called more than one time even while the
+> backlight is disabled. For instance, you can see that
+> backlight_update_status() just blindly calls through to update the
+> status. That function can be called for a number of reasons. Perhaps
+> Rajeev can put some printouts to confirm but I think that if the
+> backlight is "blanked" for whatever reason and you write to sysfs and
+> change the backlight level you'll still get called again even though
+> the backlight is still "disabled".
+> 
+Yes, sysfs write will always try to update the backlight even though the 
+backlight is "blanked".
 
-I haven't tested this myself, but I believe that it is needed. I don't
-think the backlight update_status() function is like an enable/disable
-function. I believe it can be called more than one time even while the
-backlight is disabled. For instance, you can see that
-backlight_update_status() just blindly calls through to update the
-status. That function can be called for a number of reasons. Perhaps
-Rajeev can put some printouts to confirm but I think that if the
-backlight is "blanked" for whatever reason and you write to sysfs and
-change the backlight level you'll still get called again even though
-the backlight is still "disabled".
+The "bl->enabled" check is also required to prevent unnecessary calls to 
+drm_edp_backlight_enable() during every backlight level change.
 
--Doug
+To confirm this, I have added few prints in 
+dp_aux_backlight_update_status() function and collected the logs.
+(Copying the code here to make the review easy)
+
+
+static int dp_aux_backlight_update_status(struct backlight_device *bd)
+{
+         struct dp_aux_backlight *bl = bl_get_data(bd);
+         u16 brightness = backlight_get_brightness(bd);
+         int ret = 0;
+
++        pr_err("%s: brightness %d, _is_blank %d, bl->enabled %d\n", 
+__func__,
++                brightness, backlight_is_blank(bd), bl->enabled);
+
+         if (!backlight_is_blank(bd)) {
+                 if (!bl->enabled) {
++                        pr_err("%s: enabling backlight\n", __func__);
+                         drm_edp_backlight_enable(bl->aux, &bl->info, 
+brightness);
+                         bl->enabled = true;
+                         return 0;
+                 }
+                 ret = drm_edp_backlight_set_level(bl->aux, &bl->info, 
+brightness);
+         } else {
+                 if (bl->enabled) {
++                       pr_err("%s: disabling backlight\n", __func__);
+                         drm_edp_backlight_disable(bl->aux, &bl->info);
+                         bl->enabled = false;
+                 }
+         }
+
+         return ret;
+}
+
+
+LOGS
+====
+
+During boot
+-----------
+[    4.752188] dp_aux_backlight_update_status: brightness 102, _is_blank 
+0, bl->enabled 0
+[    4.760447] dp_aux_backlight_update_status: enabling backlight
+[    5.503866] dp_aux_backlight_update_status: brightness 102, _is_blank 
+0, bl->enabled 1
+[    6.897355] dp_aux_backlight_update_status: brightness 103, _is_blank 
+0, bl->enabled 1
+[    6.938617] dp_aux_backlight_update_status: brightness 104, _is_blank 
+0, bl->enabled 1
+[    6.980634] dp_aux_backlight_update_status: brightness 105, _is_blank 
+0, bl->enabled 1
+
+
+Turning Panel OFF
+-----------------
+localhost ~ # set_power_policy --ac_screen_dim_delay=5 
+--ac_screen_off_delay=10
+localhost ~ #
+
+[  106.555140] dp_aux_backlight_update_status: brightness 145, _is_blank 
+0, bl->enabled 1
+...
+...
+[  111.679407] dp_aux_backlight_update_status: brightness 7, _is_blank 
+0, bl->enabled 1
+[  111.700302] dp_aux_backlight_update_status: brightness 4, _is_blank 
+0, bl->enabled 1
+[  111.720805] dp_aux_backlight_update_status: brightness 2, _is_blank 
+0, bl->enabled 1
+[  111.747486] dp_aux_backlight_update_status: brightness 0, _is_blank 
+1, bl->enabled 1
+[  111.755580] dp_aux_backlight_update_status: disabling backlight
+[  111.792344] dp_aux_backlight_update_status: brightness 0, _is_blank 
+1, bl->enabled 0
+
+
+Changing brightness from sysfs while panel is off
+--------------------------------------------------
+(it will do nothing)
+
+localhost ~ # echo 100 > 
+/sys/class/backlight/dp_aux_backlight/brightness
+[  352.754963] dp_aux_backlight_update_status: brightness 0, _is_blank 
+1, bl->enabled 0
+
+localhost ~ # echo 200 > 
+/sys/class/backlight/dp_aux_backlight/brightness
+[  364.708048] dp_aux_backlight_update_status: brightness 0, _is_blank 
+1, bl->enabled 0
+
+localhost ~ # echo 0 > /sys/class/backlight/dp_aux_backlight/brightness
+[  378.850978] dp_aux_backlight_update_status: brightness 0, _is_blank 
+1, bl->enabled 0
+
+
+Turning Panel ON
+----------------
+[  553.381745] dp_aux_backlight_update_status: brightness 0, _is_blank 
+0, bl->enabled 0
+[  553.418133] dp_aux_backlight_update_status: enabling backlight
+[  553.426397] dp_aux_backlight_update_status: brightness 159, _is_blank 
+0, bl->enabled 1
+
+====
+
+
+
+Thanks,
+Rajeev
+

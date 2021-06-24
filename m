@@ -2,236 +2,115 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4550C4743C
-	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Jun 2021 06:15:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDC08C49EA5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Jun 2021 20:10:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8BD4C611AC
-	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Jun 2021 06:15:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D43B1613B3
+	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Jun 2021 20:10:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229818AbhFWGSD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 23 Jun 2021 02:18:03 -0400
-Received: from so254-9.mailgun.net ([198.61.254.9]:12771 "EHLO
-        so254-9.mailgun.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229665AbhFWGSD (ORCPT
+        id S232178AbhFXUMd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 24 Jun 2021 16:12:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37880 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232120AbhFXUMc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 23 Jun 2021 02:18:03 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1624428946; h=Message-ID: References: In-Reply-To: Subject:
- Cc: To: From: Date: Content-Transfer-Encoding: Content-Type:
- MIME-Version: Sender; bh=YgXZ6VNhDITS6yDaGx56LtlJqbhq7xTELt1tz8y6TYM=;
- b=L8uDHvsVTSBBO5yxeEk2FcNdxCQlLcuHSd3uMhIj2Y2xiLXMtfTpCm6NG8skjaO1NO2QHJfh
- Usq7EyZZjqQAqW7vlhjNSAlrgmRvuwho/ixnxQDz+64ctRYnAYKx6tlF9VG1xRiKtNEM84px
- BUj0+0w2DphVh8qSX3EGtEN27Xo=
-X-Mailgun-Sending-Ip: 198.61.254.9
-X-Mailgun-Sid: WyI4YmIzMiIsICJsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n06.prod.us-west-2.postgun.com with SMTP id
- 60d2d17f638039e997219933 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Wed, 23 Jun 2021 06:15:27
- GMT
-Sender: rajeevny=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id AD7C9C433F1; Wed, 23 Jun 2021 06:15:27 +0000 (UTC)
-Received: from mail.codeaurora.org (localhost.localdomain [127.0.0.1])
-        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        (Authenticated sender: rajeevny)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 93D9CC433D3;
-        Wed, 23 Jun 2021 06:15:24 +0000 (UTC)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Date:   Wed, 23 Jun 2021 11:45:24 +0530
-From:   rajeevny@codeaurora.org
-To:     Doug Anderson <dianders@chromium.org>
-Cc:     Sam Ravnborg <sam@ravnborg.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        freedreno <freedreno@lists.freedesktop.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+        Thu, 24 Jun 2021 16:12:32 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F8CFC061574
+        for <linux-fbdev@vger.kernel.org>; Thu, 24 Jun 2021 13:10:13 -0700 (PDT)
+Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1lwVfu-0002BF-TB; Thu, 24 Jun 2021 22:10:10 +0200
+Received: from ukl by ptx.hi.pengutronix.de with local (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1lwVft-0005ob-Uy; Thu, 24 Jun 2021 22:10:09 +0200
+Date:   Thu, 24 Jun 2021 22:10:09 +0200
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
         Thierry Reding <thierry.reding@gmail.com>,
-        Rob Clark <robdclark@gmail.com>, Lyude Paul <lyude@redhat.com>,
-        Jani Nikula <jani.nikula@intel.com>,
-        Rob Herring <robh@kernel.org>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Andrzej Hajda <a.hajda@samsung.com>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        "Kristian H. Kristensen" <hoegsberg@chromium.org>,
-        Abhinav Kumar <abhinavk@codeaurora.org>,
-        Sean Paul <seanpaul@chromium.org>,
-        Kalyan Thota <kalyan_t@codeaurora.org>,
-        Krishna Manikandan <mkrishn@codeaurora.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org
-Subject: Re: [v7 1/5] drm/panel: add basic DP AUX backlight support
-In-Reply-To: <CAD=FV=WJiA+RxaQA9xt7Tik_2pCEJo0+6b39Di8cfnSWGuKkJQ@mail.gmail.com>
-References: <1624099230-20899-1-git-send-email-rajeevny@codeaurora.org>
- <1624099230-20899-2-git-send-email-rajeevny@codeaurora.org>
- <20210620093141.GA703072@ravnborg.org>
- <ebf5581759daee9596c2f092ca836ecb@codeaurora.org>
- <20210621183828.GA918146@ravnborg.org>
- <CAD=FV=WJiA+RxaQA9xt7Tik_2pCEJo0+6b39Di8cfnSWGuKkJQ@mail.gmail.com>
-Message-ID: <c15947bb1566f176a2f534c52a7c3183@codeaurora.org>
-X-Sender: rajeevny@codeaurora.org
-User-Agent: Roundcube Webmail/1.3.9
+        kernel@pengutronix.de
+Subject: Re: [PATCH v3 2/2] backlight: lm3630a: convert to atomic PWM API and
+ check for errors
+Message-ID: <20210624201009.5se7o27b7m6bff4g@pengutronix.de>
+References: <20210621122148.116863-1-u.kleine-koenig@pengutronix.de>
+ <20210621122148.116863-3-u.kleine-koenig@pengutronix.de>
+ <YNHh2cdcyzLWSCkK@dell>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="e6q5sr5ki5ppu4gv"
+Content-Disposition: inline
+In-Reply-To: <YNHh2cdcyzLWSCkK@dell>
+X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
 
-On 23-06-2021 00:03, Doug Anderson wrote:
-> Hi,
-> 
-> On Mon, Jun 21, 2021 at 11:38 AM Sam Ravnborg <sam@ravnborg.org> wrote:
->> 
->> > > I cannot see why you need the extra check on ->enabled?
->> > > Would it be sufficient to check backlight_is_blank() only?
->> >
->> > This extra check on bl->enabled flag is added to avoid enabling/disabling
->> > backlight again if it is already enabled/disabled.
->> > Using this flag way can know the transition between backlight blank and
->> > un-blank, and decide when to enable/disable the backlight.
->> 
->> My point is that this should really not be needed, as it would cover 
->> up
->> for some other bug whaere we try to do something twice that is not
->> needed. But I am less certain here so if you think it is needed, keep
->> it as is.
-> 
-> I haven't tested this myself, but I believe that it is needed. I don't
-> think the backlight update_status() function is like an enable/disable
-> function. I believe it can be called more than one time even while the
-> backlight is disabled. For instance, you can see that
-> backlight_update_status() just blindly calls through to update the
-> status. That function can be called for a number of reasons. Perhaps
-> Rajeev can put some printouts to confirm but I think that if the
-> backlight is "blanked" for whatever reason and you write to sysfs and
-> change the backlight level you'll still get called again even though
-> the backlight is still "disabled".
-> 
-Yes, sysfs write will always try to update the backlight even though the 
-backlight is "blanked".
+--e6q5sr5ki5ppu4gv
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The "bl->enabled" check is also required to prevent unnecessary calls to 
-drm_edp_backlight_enable() during every backlight level change.
+Hi Lee,
 
-To confirm this, I have added few prints in 
-dp_aux_backlight_update_status() function and collected the logs.
-(Copying the code here to make the review easy)
+On Tue, Jun 22, 2021 at 02:12:57PM +0100, Lee Jones wrote:
+> On Mon, 21 Jun 2021, Uwe Kleine-K=F6nig wrote:
+>=20
+> > The practical upside here is that this only needs a single API call to
+> > program the hardware which (depending on the underlaying hardware) can
+> > be more effective and prevents glitches.
+> >=20
+> > Up to now the return value of the pwm functions was ignored. Fix this
+> > and propagate the error to the caller.
+> >=20
+> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+> > ---
+> >  drivers/video/backlight/lm3630a_bl.c | 42 +++++++++++++---------------
+> >  1 file changed, 19 insertions(+), 23 deletions(-)
+>=20
+> Fixed the subject line and applied, thanks.
 
+It's not obvious to me what needed fixing here, and I don't find where
+you the patches, neither in next nor in
+https://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git; so I
+cannot check what you actually changed.
 
-static int dp_aux_backlight_update_status(struct backlight_device *bd)
-{
-         struct dp_aux_backlight *bl = bl_get_data(bd);
-         u16 brightness = backlight_get_brightness(bd);
-         int ret = 0;
+I assume you did s/lm3630a/lm3630a_bl/ ? I didn't because it felt
+tautological.
 
-+        pr_err("%s: brightness %d, _is_blank %d, bl->enabled %d\n", 
-__func__,
-+                brightness, backlight_is_blank(bd), bl->enabled);
+Best regards
+Uwe
 
-         if (!backlight_is_blank(bd)) {
-                 if (!bl->enabled) {
-+                        pr_err("%s: enabling backlight\n", __func__);
-                         drm_edp_backlight_enable(bl->aux, &bl->info, 
-brightness);
-                         bl->enabled = true;
-                         return 0;
-                 }
-                 ret = drm_edp_backlight_set_level(bl->aux, &bl->info, 
-brightness);
-         } else {
-                 if (bl->enabled) {
-+                       pr_err("%s: disabling backlight\n", __func__);
-                         drm_edp_backlight_disable(bl->aux, &bl->info);
-                         bl->enabled = false;
-                 }
-         }
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
 
-         return ret;
-}
+--e6q5sr5ki5ppu4gv
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
-LOGS
-====
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmDU5p4ACgkQwfwUeK3K
+7AmTZwf/ZQn7nKoCAT8thn0EIoPpaCREmTbKgFd9pjB/yd43HL30wWUWsLR54BDp
+YMhPwHHfdN8aNyFiZpJx5nYRdxBSWTYnW+kfFp0RcRarDMgrzIr4KdRBPGrzf9p3
+V9NJys4V4KWpdja6Tld2hBhsuKkZjJa17i0tcCfsje8XWNVMvT0Txb7dRAcb7oYO
+w2/X5dsO5X+atCCchKwdyI9rKlRB2MvX8MBG1xx6k6spoLG0q3/mW5oiWCAoJaJu
+rm7AJl6HDO6LBtm41vj8WCW+D145cR5fLqL7jmhO1hSHvmGf+WaFBF/VMspoStBW
+lvNdPE8/9mcO3+jIOYUNNzG5WI2Hcw==
+=jj+6
+-----END PGP SIGNATURE-----
 
-During boot
------------
-[    4.752188] dp_aux_backlight_update_status: brightness 102, _is_blank 
-0, bl->enabled 0
-[    4.760447] dp_aux_backlight_update_status: enabling backlight
-[    5.503866] dp_aux_backlight_update_status: brightness 102, _is_blank 
-0, bl->enabled 1
-[    6.897355] dp_aux_backlight_update_status: brightness 103, _is_blank 
-0, bl->enabled 1
-[    6.938617] dp_aux_backlight_update_status: brightness 104, _is_blank 
-0, bl->enabled 1
-[    6.980634] dp_aux_backlight_update_status: brightness 105, _is_blank 
-0, bl->enabled 1
-
-
-Turning Panel OFF
------------------
-localhost ~ # set_power_policy --ac_screen_dim_delay=5 
---ac_screen_off_delay=10
-localhost ~ #
-
-[  106.555140] dp_aux_backlight_update_status: brightness 145, _is_blank 
-0, bl->enabled 1
-...
-...
-[  111.679407] dp_aux_backlight_update_status: brightness 7, _is_blank 
-0, bl->enabled 1
-[  111.700302] dp_aux_backlight_update_status: brightness 4, _is_blank 
-0, bl->enabled 1
-[  111.720805] dp_aux_backlight_update_status: brightness 2, _is_blank 
-0, bl->enabled 1
-[  111.747486] dp_aux_backlight_update_status: brightness 0, _is_blank 
-1, bl->enabled 1
-[  111.755580] dp_aux_backlight_update_status: disabling backlight
-[  111.792344] dp_aux_backlight_update_status: brightness 0, _is_blank 
-1, bl->enabled 0
-
-
-Changing brightness from sysfs while panel is off
---------------------------------------------------
-(it will do nothing)
-
-localhost ~ # echo 100 > 
-/sys/class/backlight/dp_aux_backlight/brightness
-[  352.754963] dp_aux_backlight_update_status: brightness 0, _is_blank 
-1, bl->enabled 0
-
-localhost ~ # echo 200 > 
-/sys/class/backlight/dp_aux_backlight/brightness
-[  364.708048] dp_aux_backlight_update_status: brightness 0, _is_blank 
-1, bl->enabled 0
-
-localhost ~ # echo 0 > /sys/class/backlight/dp_aux_backlight/brightness
-[  378.850978] dp_aux_backlight_update_status: brightness 0, _is_blank 
-1, bl->enabled 0
-
-
-Turning Panel ON
-----------------
-[  553.381745] dp_aux_backlight_update_status: brightness 0, _is_blank 
-0, bl->enabled 0
-[  553.418133] dp_aux_backlight_update_status: enabling backlight
-[  553.426397] dp_aux_backlight_update_status: brightness 159, _is_blank 
-0, bl->enabled 1
-
-====
-
-
-
-Thanks,
-Rajeev
-
+--e6q5sr5ki5ppu4gv--

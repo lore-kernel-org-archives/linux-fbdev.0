@@ -2,123 +2,154 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34040C49EA7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Jun 2021 08:44:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BED43C2B9F4
+	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Jun 2021 22:33:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1E2EE613EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Jun 2021 08:44:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8955A6194D
+	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Jun 2021 22:33:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230010AbhFYIrJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 25 Jun 2021 04:47:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35966 "EHLO
+        id S229906AbhFYWgE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 25 Jun 2021 18:36:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52130 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229839AbhFYIrI (ORCPT
+        with ESMTP id S229776AbhFYWgE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 25 Jun 2021 04:47:08 -0400
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2796EC061574
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Jun 2021 01:44:48 -0700 (PDT)
-Received: by mail-wr1-x433.google.com with SMTP id h11so9685462wrx.5
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Jun 2021 01:44:48 -0700 (PDT)
+        Fri, 25 Jun 2021 18:36:04 -0400
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 17707C061574;
+        Fri, 25 Jun 2021 15:33:42 -0700 (PDT)
+Received: by mail-lf1-x131.google.com with SMTP id k10so18730086lfv.13;
+        Fri, 25 Jun 2021 15:33:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=CeLIgK7phntxuaeQvPCnk2ZyJcdGeb6jadwfkvYxxgM=;
-        b=vXsFLLSmooZPxNu5MeItcer3hbOrLr7vuzPntpRAKSJDQDP50GigF6mB/+YGJPQ6Qi
-         q1xJXzWsnJlQE0sI+cTJKDCoFYFrF2u0gxI15ckp7cr9XDrQM9FjRPO51PvEeANGHL1W
-         46c3eofsBeTcqCUoHry7gzKMde/py9SMCq9y8LCibLzMpAR6UDrxTG3Aksl/fn1abUG/
-         qUT7DM8SNwJEhV2KbJNUQ0P/2BbSZaHL8wFYyJ8oys9wC+qeOLtaoFk3ghxsxzP5wd6y
-         arVd0bXMxsiUM1cpGDMlcgxxz3KUoNrNgi0ieNE6NFRSld3h1RCFuj1QoZU6nmKgiA6v
-         EZ8Q==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=9NMDPaGNwo9dp++pt7dEDvz6yBvTGcBoymI++g12NOc=;
+        b=XxeooSIoZSkGhXTTLzsaf8YXlV0sKShLzgUbVXnUr+3uwjIxtVEAvtn/nLYxqjjS+E
+         645gOFtwDu27Q2bAAHc1zQcxXFbXxzSxfIZhsikD9NAkQtowjvqVchR1yrMRrcr3yaGc
+         oG89m+lOmnnzs6JW0urF1QbP5OqI5hZg/9Jnz9Zs7O8csPTsI0+1T/sF8vRN4F34ulaO
+         jN0E5IiFX+v3fHdTikeXUT+tPYBiENiOPFZ5MEntFVJJ1mx9Fin/wN/atCa6UNVG1s34
+         HbD7SNrvdHKSxq1DP43W6eGaSw8NRSBhDXqdrJpu6uhntRQPxAqupsG5Ep8oRmof/4P4
+         qiPw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=CeLIgK7phntxuaeQvPCnk2ZyJcdGeb6jadwfkvYxxgM=;
-        b=DcqirZQLD+5sCBAHlXefRd5m55C5ie5jB6ncbGOnxgXdBoF1Fwdi+o3QLGZMdkt0Z2
-         gCr0FAT5ORiJDlMFXoVhNznnrqsoPNOdB4jfBSWyK/LvcuV/oQzv5nDyHMJJdeKJo7Iw
-         sCRP40cEhnRbexarXq6sXitBTbTnvdhLSiu+uJaE5Na9yrC+d+iieNXxb8jKE4gnQYhs
-         0FxIuVpnhi72BbGNrpy4XpHqOeaAhuqISm0PxrrVwQ1ytwHZ5yKiFVpkvL56HmCspxPP
-         LwtVHkixZlBnpiBbEBOehlsQ8f8V0oVovUnbUkVRWzUucUfix9le57z5xLT851F9MctR
-         X9iw==
-X-Gm-Message-State: AOAM533XT/0vUh+waA/5a+zBneN8nNIFYLQrVULoIkTP8r8LAkJJc3y5
-        8bT+KxBaUhaXPQ2U8dy3BmY8eXB/6JOpDBv7
-X-Google-Smtp-Source: ABdhPJy6QPvA46rrabm8WK7MpmyNlT70x3mmpSQDGdKnjvoL839Qo+4WZsph4rnpzLh8DptMMKfy6A==
-X-Received: by 2002:a5d:4983:: with SMTP id r3mr9484655wrq.184.1624610686789;
-        Fri, 25 Jun 2021 01:44:46 -0700 (PDT)
-Received: from dell (92.40.180.154.threembb.co.uk. [92.40.180.154])
-        by smtp.gmail.com with ESMTPSA id o17sm9632530wmh.19.2021.06.25.01.44.45
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=9NMDPaGNwo9dp++pt7dEDvz6yBvTGcBoymI++g12NOc=;
+        b=FVvAq50/xWj9AEb5hCPIjXw70LZG6VULZNqlmkcg5Bp17gbqAeCONM2kmS3mhDZuB8
+         YC9zUUOnPRg2nwaj6FL4XUyeGBdSRPZ/MEscLGL1/YRuh3Z/+OXFByINxRjZ8jzdfHdC
+         wMH/TB/iGge95cpmP99oZSspjM0OuKYFexkN+kV0nbAa3KZ++WQzE/lx28WRDfG9HxDe
+         CCo+GpJsoHpHMf6L9hqgqSu5T9jzomrU/wj7HyWntKDtJcG0rLSG7JoPFAUKuni/3yyI
+         XazgQpE/jVwA3hQjcSHHuAoRqJET4rjdCqW6BthsOupIWZtiUkpKddNws/1ALNvUmclp
+         MraQ==
+X-Gm-Message-State: AOAM532B8OwUB7Px7clKTjYM3ZH0ucKvxoD8rmbqBsFGvUyXtYYPoXP+
+        ZNSiHsUdmufcu++qx//hlUM=
+X-Google-Smtp-Source: ABdhPJxw0w49mOJH8eZ2E+fmYpRltbdOf6mNxIn28I5KywQCjMRXPg6FGSFpgOtx0JdQRn+GFIukdA==
+X-Received: by 2002:ac2:4281:: with SMTP id m1mr9344466lfh.164.1624660420338;
+        Fri, 25 Jun 2021 15:33:40 -0700 (PDT)
+Received: from localhost.localdomain ([94.103.225.155])
+        by smtp.gmail.com with ESMTPSA id p26sm707610ljn.94.2021.06.25.15.33.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Jun 2021 01:44:46 -0700 (PDT)
-Date:   Fri, 25 Jun 2021 09:44:43 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Thierry Reding <thierry.reding@gmail.com>,
-        kernel@pengutronix.de
-Subject: Re: [PATCH v3 2/2] backlight: lm3630a: convert to atomic PWM API and
- check for errors
-Message-ID: <YNWXe9OhS3o4iRGi@dell>
-References: <20210621122148.116863-1-u.kleine-koenig@pengutronix.de>
- <20210621122148.116863-3-u.kleine-koenig@pengutronix.de>
- <YNHh2cdcyzLWSCkK@dell>
- <20210624201009.5se7o27b7m6bff4g@pengutronix.de>
+        Fri, 25 Jun 2021 15:33:39 -0700 (PDT)
+From:   Pavel Skripkin <paskripkin@gmail.com>
+To:     gustavoars@kernel.org, sam@ravnborg.org, tomi.valkeinen@ti.com
+Cc:     linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        linux-kernel-mentees@lists.linuxfoundation.org,
+        Pavel Skripkin <paskripkin@gmail.com>
+Subject: [PATCH] OMAP: DSS2: OMAPFB: fix potential GPF
+Date:   Sat, 26 Jun 2021 01:33:23 +0300
+Message-Id: <20210625223323.13930-1-paskripkin@gmail.com>
+X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20210624201009.5se7o27b7m6bff4g@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, 24 Jun 2021, Uwe Kleine-König wrote:
+In case of allocation failures, all code paths was jumping
+to this code:
 
-> Hi Lee,
-> 
-> On Tue, Jun 22, 2021 at 02:12:57PM +0100, Lee Jones wrote:
-> > On Mon, 21 Jun 2021, Uwe Kleine-König wrote:
-> > 
-> > > The practical upside here is that this only needs a single API call to
-> > > program the hardware which (depending on the underlaying hardware) can
-> > > be more effective and prevents glitches.
-> > > 
-> > > Up to now the return value of the pwm functions was ignored. Fix this
-> > > and propagate the error to the caller.
-> > > 
-> > > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> > > ---
-> > >  drivers/video/backlight/lm3630a_bl.c | 42 +++++++++++++---------------
-> > >  1 file changed, 19 insertions(+), 23 deletions(-)
-> > 
-> > Fixed the subject line and applied, thanks.
-> 
-> It's not obvious to me what needed fixing here, and I don't find where
-> you the patches, neither in next nor in
-> https://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git; so I
-> cannot check what you actually changed.
-> 
-> I assume you did s/lm3630a/lm3630a_bl/ ? I didn't because it felt
-> tautological.
+err:
+	kfree(fbi);
+	kfree(var);
+	kfree(fbops);
 
-No, but perhaps I should have.  Format goes:
+	return r;
 
-<backlight>: <driver_file_name>: <Subject starting with uppercase>
+Since all 3 pointers placed on stack and don't initialized, they
+will be filled with some random values, which leads to
+deferencing random pointers in kfree(). Fix it by rewriting
+error handling path.
 
-Where <driver_file_name> has the file extension removed.
+Fixes: 897044e99e43 ("OMAP: DSS2: OMAPFB: Reduce stack usage")
+Signed-off-by: Pavel Skripkin <paskripkin@gmail.com>
+---
+ .../video/fbdev/omap2/omapfb/omapfb-main.c    | 21 +++++++++----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
 
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+index a3decc7fadde..6a302138ebeb 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -2025,21 +2025,19 @@ static int omapfb_mode_to_timings(const char *mode_str,
+ 	fbops = NULL;
+ 
+ 	fbi = kzalloc(sizeof(*fbi), GFP_KERNEL);
+-	if (fbi == NULL) {
+-		r = -ENOMEM;
+-		goto err;
+-	}
++	if (fbi == NULL)
++		return -ENOMEM;
+ 
+ 	var = kzalloc(sizeof(*var), GFP_KERNEL);
+ 	if (var == NULL) {
+ 		r = -ENOMEM;
+-		goto err;
++		goto err_var;
+ 	}
+ 
+ 	fbops = kzalloc(sizeof(*fbops), GFP_KERNEL);
+ 	if (fbops == NULL) {
+ 		r = -ENOMEM;
+-		goto err;
++		goto err_fbops;
+ 	}
+ 
+ 	fbi->fbops = fbops;
+@@ -2047,7 +2045,7 @@ static int omapfb_mode_to_timings(const char *mode_str,
+ 	r = fb_find_mode(var, fbi, mode_str, NULL, 0, NULL, 24);
+ 	if (r == 0) {
+ 		r = -EINVAL;
+-		goto err;
++		goto err_find;
+ 	}
+ 
+ 	if (display->driver->get_timings) {
+@@ -2088,11 +2086,12 @@ static int omapfb_mode_to_timings(const char *mode_str,
+ 
+ 	r = 0;
+ 
+-err:
+-	kfree(fbi);
+-	kfree(var);
++err_find:
+ 	kfree(fbops);
+-
++err_fbops:
++	kfree(var);
++err_var:
++	kfree(fbi);
+ 	return r;
+ }
+ 
 -- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.32.0
+

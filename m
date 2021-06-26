@@ -2,154 +2,282 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BED43C2B9F4
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Jun 2021 22:33:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F51DC49EBD
+	for <linux-fbdev@archiver.kernel.org>; Sat, 26 Jun 2021 16:52:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8955A6194D
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Jun 2021 22:33:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 16E9161C39
+	for <linux-fbdev@archiver.kernel.org>; Sat, 26 Jun 2021 16:52:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229906AbhFYWgE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 25 Jun 2021 18:36:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52130 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229776AbhFYWgE (ORCPT
+        id S230388AbhFZQyg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 26 Jun 2021 12:54:36 -0400
+Received: from alexa-out.qualcomm.com ([129.46.98.28]:64840 "EHLO
+        alexa-out.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230260AbhFZQya (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 25 Jun 2021 18:36:04 -0400
-Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 17707C061574;
-        Fri, 25 Jun 2021 15:33:42 -0700 (PDT)
-Received: by mail-lf1-x131.google.com with SMTP id k10so18730086lfv.13;
-        Fri, 25 Jun 2021 15:33:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=9NMDPaGNwo9dp++pt7dEDvz6yBvTGcBoymI++g12NOc=;
-        b=XxeooSIoZSkGhXTTLzsaf8YXlV0sKShLzgUbVXnUr+3uwjIxtVEAvtn/nLYxqjjS+E
-         645gOFtwDu27Q2bAAHc1zQcxXFbXxzSxfIZhsikD9NAkQtowjvqVchR1yrMRrcr3yaGc
-         oG89m+lOmnnzs6JW0urF1QbP5OqI5hZg/9Jnz9Zs7O8csPTsI0+1T/sF8vRN4F34ulaO
-         jN0E5IiFX+v3fHdTikeXUT+tPYBiENiOPFZ5MEntFVJJ1mx9Fin/wN/atCa6UNVG1s34
-         HbD7SNrvdHKSxq1DP43W6eGaSw8NRSBhDXqdrJpu6uhntRQPxAqupsG5Ep8oRmof/4P4
-         qiPw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=9NMDPaGNwo9dp++pt7dEDvz6yBvTGcBoymI++g12NOc=;
-        b=FVvAq50/xWj9AEb5hCPIjXw70LZG6VULZNqlmkcg5Bp17gbqAeCONM2kmS3mhDZuB8
-         YC9zUUOnPRg2nwaj6FL4XUyeGBdSRPZ/MEscLGL1/YRuh3Z/+OXFByINxRjZ8jzdfHdC
-         wMH/TB/iGge95cpmP99oZSspjM0OuKYFexkN+kV0nbAa3KZ++WQzE/lx28WRDfG9HxDe
-         CCo+GpJsoHpHMf6L9hqgqSu5T9jzomrU/wj7HyWntKDtJcG0rLSG7JoPFAUKuni/3yyI
-         XazgQpE/jVwA3hQjcSHHuAoRqJET4rjdCqW6BthsOupIWZtiUkpKddNws/1ALNvUmclp
-         MraQ==
-X-Gm-Message-State: AOAM532B8OwUB7Px7clKTjYM3ZH0ucKvxoD8rmbqBsFGvUyXtYYPoXP+
-        ZNSiHsUdmufcu++qx//hlUM=
-X-Google-Smtp-Source: ABdhPJxw0w49mOJH8eZ2E+fmYpRltbdOf6mNxIn28I5KywQCjMRXPg6FGSFpgOtx0JdQRn+GFIukdA==
-X-Received: by 2002:ac2:4281:: with SMTP id m1mr9344466lfh.164.1624660420338;
-        Fri, 25 Jun 2021 15:33:40 -0700 (PDT)
-Received: from localhost.localdomain ([94.103.225.155])
-        by smtp.gmail.com with ESMTPSA id p26sm707610ljn.94.2021.06.25.15.33.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Jun 2021 15:33:39 -0700 (PDT)
-From:   Pavel Skripkin <paskripkin@gmail.com>
-To:     gustavoars@kernel.org, sam@ravnborg.org, tomi.valkeinen@ti.com
-Cc:     linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-kernel-mentees@lists.linuxfoundation.org,
-        Pavel Skripkin <paskripkin@gmail.com>
-Subject: [PATCH] OMAP: DSS2: OMAPFB: fix potential GPF
-Date:   Sat, 26 Jun 2021 01:33:23 +0300
-Message-Id: <20210625223323.13930-1-paskripkin@gmail.com>
-X-Mailer: git-send-email 2.32.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        Sat, 26 Jun 2021 12:54:30 -0400
+Received: from ironmsg09-lv.qualcomm.com ([10.47.202.153])
+  by alexa-out.qualcomm.com with ESMTP; 26 Jun 2021 09:52:08 -0700
+X-QCInternal: smtphost
+Received: from ironmsg01-blr.qualcomm.com ([10.86.208.130])
+  by ironmsg09-lv.qualcomm.com with ESMTP/TLS/AES256-SHA; 26 Jun 2021 09:52:06 -0700
+X-QCInternal: smtphost
+Received: from rajeevny-linux.qualcomm.com ([10.204.66.121])
+  by ironmsg01-blr.qualcomm.com with ESMTP; 26 Jun 2021 22:21:19 +0530
+Received: by rajeevny-linux.qualcomm.com (Postfix, from userid 2363605)
+        id 09DF021478; Sat, 26 Jun 2021 22:21:16 +0530 (IST)
+From:   Rajeev Nandan <rajeevny@codeaurora.org>
+To:     dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
+        freedreno@lists.freedesktop.org, devicetree@vger.kernel.org
+Cc:     Rajeev Nandan <rajeevny@codeaurora.org>,
+        linux-kernel@vger.kernel.org, thierry.reding@gmail.com,
+        sam@ravnborg.org, robdclark@gmail.com, dianders@chromium.org,
+        lyude@redhat.com, jani.nikula@intel.com, robh@kernel.org,
+        laurent.pinchart@ideasonboard.com, a.hajda@samsung.com,
+        daniel.thompson@linaro.org, hoegsberg@chromium.org,
+        abhinavk@codeaurora.org, seanpaul@chromium.org,
+        kalyan_t@codeaurora.org, mkrishn@codeaurora.org,
+        lee.jones@linaro.org, jingoohan1@gmail.com,
+        linux-fbdev@vger.kernel.org
+Subject: [v8 1/6] drm/panel: add basic DP AUX backlight support
+Date:   Sat, 26 Jun 2021 22:21:03 +0530
+Message-Id: <1624726268-14869-2-git-send-email-rajeevny@codeaurora.org>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1624726268-14869-1-git-send-email-rajeevny@codeaurora.org>
+References: <1624726268-14869-1-git-send-email-rajeevny@codeaurora.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-In case of allocation failures, all code paths was jumping
-to this code:
+Some panels support backlight control over DP AUX channel using
+VESA's standard backlight control interface.
+Using new DRM eDP backlight helpers, add support to create and
+register a backlight for those panels in drm_panel to simplify
+the panel drivers.
 
-err:
-	kfree(fbi);
-	kfree(var);
-	kfree(fbops);
+The panel driver with access to "struct drm_dp_aux" can create and
+register a backlight device using following code snippet in its
+probe() function:
 
-	return r;
+	err = drm_panel_dp_aux_backlight(panel, aux);
+	if (err)
+		return err;
 
-Since all 3 pointers placed on stack and don't initialized, they
-will be filled with some random values, which leads to
-deferencing random pointers in kfree(). Fix it by rewriting
-error handling path.
+Then drm_panel will handle backlight_(enable|disable) calls
+similar to the case when drm_panel_of_backlight() is used.
 
-Fixes: 897044e99e43 ("OMAP: DSS2: OMAPFB: Reduce stack usage")
-Signed-off-by: Pavel Skripkin <paskripkin@gmail.com>
+Currently, we are not supporting one feature where the source
+device can combine the backlight brightness levels set through
+DP AUX and the BL_PWM_DIM eDP connector pin. Since it's not
+required for the basic backlight controls, it can be added later.
+
+Signed-off-by: Rajeev Nandan <rajeevny@codeaurora.org>
+Reviewed-by: Douglas Anderson <dianders@chromium.org>
+Reviewed-by: Lyude Paul <lyude@redhat.com>
 ---
- .../video/fbdev/omap2/omapfb/omapfb-main.c    | 21 +++++++++----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-index a3decc7fadde..6a302138ebeb 100644
---- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-@@ -2025,21 +2025,19 @@ static int omapfb_mode_to_timings(const char *mode_str,
- 	fbops = NULL;
+Changes in v5:
+- New
+
+Changes in v6:
+- Fixed ordering of memory allocation (Douglas)
+- Updated word wrapping in a comment (Douglas)
+
+Changes in v8:
+- Now using backlight_is_blank() to get the backlight blank status (Sam Ravnborg)
+
+ drivers/gpu/drm/drm_panel.c | 108 ++++++++++++++++++++++++++++++++++++++++++++
+ include/drm/drm_panel.h     |  15 ++++--
+ 2 files changed, 119 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_panel.c b/drivers/gpu/drm/drm_panel.c
+index f634371..4fa1e3b 100644
+--- a/drivers/gpu/drm/drm_panel.c
++++ b/drivers/gpu/drm/drm_panel.c
+@@ -26,12 +26,20 @@
+ #include <linux/module.h>
  
- 	fbi = kzalloc(sizeof(*fbi), GFP_KERNEL);
--	if (fbi == NULL) {
--		r = -ENOMEM;
--		goto err;
--	}
-+	if (fbi == NULL)
-+		return -ENOMEM;
+ #include <drm/drm_crtc.h>
++#include <drm/drm_dp_helper.h>
+ #include <drm/drm_panel.h>
+ #include <drm/drm_print.h>
  
- 	var = kzalloc(sizeof(*var), GFP_KERNEL);
- 	if (var == NULL) {
- 		r = -ENOMEM;
--		goto err;
-+		goto err_var;
- 	}
+ static DEFINE_MUTEX(panel_lock);
+ static LIST_HEAD(panel_list);
  
- 	fbops = kzalloc(sizeof(*fbops), GFP_KERNEL);
- 	if (fbops == NULL) {
- 		r = -ENOMEM;
--		goto err;
-+		goto err_fbops;
- 	}
- 
- 	fbi->fbops = fbops;
-@@ -2047,7 +2045,7 @@ static int omapfb_mode_to_timings(const char *mode_str,
- 	r = fb_find_mode(var, fbi, mode_str, NULL, 0, NULL, 24);
- 	if (r == 0) {
- 		r = -EINVAL;
--		goto err;
-+		goto err_find;
- 	}
- 
- 	if (display->driver->get_timings) {
-@@ -2088,11 +2086,12 @@ static int omapfb_mode_to_timings(const char *mode_str,
- 
- 	r = 0;
- 
--err:
--	kfree(fbi);
--	kfree(var);
-+err_find:
- 	kfree(fbops);
--
-+err_fbops:
-+	kfree(var);
-+err_var:
-+	kfree(fbi);
- 	return r;
++struct dp_aux_backlight {
++	struct backlight_device *base;
++	struct drm_dp_aux *aux;
++	struct drm_edp_backlight_info info;
++	bool enabled;
++};
++
+ /**
+  * DOC: drm panel
+  *
+@@ -342,6 +350,106 @@ int drm_panel_of_backlight(struct drm_panel *panel)
+ 	return 0;
  }
+ EXPORT_SYMBOL(drm_panel_of_backlight);
++
++static int dp_aux_backlight_update_status(struct backlight_device *bd)
++{
++	struct dp_aux_backlight *bl = bl_get_data(bd);
++	u16 brightness = backlight_get_brightness(bd);
++	int ret = 0;
++
++	if (!backlight_is_blank(bd)) {
++		if (!bl->enabled) {
++			drm_edp_backlight_enable(bl->aux, &bl->info, brightness);
++			bl->enabled = true;
++			return 0;
++		}
++		ret = drm_edp_backlight_set_level(bl->aux, &bl->info, brightness);
++	} else {
++		if (bl->enabled) {
++			drm_edp_backlight_disable(bl->aux, &bl->info);
++			bl->enabled = false;
++		}
++	}
++
++	return ret;
++}
++
++static const struct backlight_ops dp_aux_bl_ops = {
++	.update_status = dp_aux_backlight_update_status,
++};
++
++/**
++ * drm_panel_dp_aux_backlight - create and use DP AUX backlight
++ * @panel: DRM panel
++ * @aux: The DP AUX channel to use
++ *
++ * Use this function to create and handle backlight if your panel
++ * supports backlight control over DP AUX channel using DPCD
++ * registers as per VESA's standard backlight control interface.
++ *
++ * When the panel is enabled backlight will be enabled after a
++ * successful call to &drm_panel_funcs.enable()
++ *
++ * When the panel is disabled backlight will be disabled before the
++ * call to &drm_panel_funcs.disable().
++ *
++ * A typical implementation for a panel driver supporting backlight
++ * control over DP AUX will call this function at probe time.
++ * Backlight will then be handled transparently without requiring
++ * any intervention from the driver.
++ *
++ * drm_panel_dp_aux_backlight() must be called after the call to drm_panel_init().
++ *
++ * Return: 0 on success or a negative error code on failure.
++ */
++int drm_panel_dp_aux_backlight(struct drm_panel *panel, struct drm_dp_aux *aux)
++{
++	struct dp_aux_backlight *bl;
++	struct backlight_properties props = { 0 };
++	u16 current_level;
++	u8 current_mode;
++	u8 edp_dpcd[EDP_DISPLAY_CTL_CAP_SIZE];
++	int ret;
++
++	if (!panel || !panel->dev || !aux)
++		return -EINVAL;
++
++	ret = drm_dp_dpcd_read(aux, DP_EDP_DPCD_REV, edp_dpcd,
++			       EDP_DISPLAY_CTL_CAP_SIZE);
++	if (ret < 0)
++		return ret;
++
++	if (!drm_edp_backlight_supported(edp_dpcd)) {
++		DRM_DEV_INFO(panel->dev, "DP AUX backlight is not supported\n");
++		return 0;
++	}
++
++	bl = devm_kzalloc(panel->dev, sizeof(*bl), GFP_KERNEL);
++	if (!bl)
++		return -ENOMEM;
++
++	bl->aux = aux;
++
++	ret = drm_edp_backlight_init(aux, &bl->info, 0, edp_dpcd,
++				     &current_level, &current_mode);
++	if (ret < 0)
++		return ret;
++
++	props.type = BACKLIGHT_RAW;
++	props.brightness = current_level;
++	props.max_brightness = bl->info.max;
++
++	bl->base = devm_backlight_device_register(panel->dev, "dp_aux_backlight",
++						  panel->dev, bl,
++						  &dp_aux_bl_ops, &props);
++	if (IS_ERR(bl->base))
++		return PTR_ERR(bl->base);
++
++	panel->backlight = bl->base;
++
++	return 0;
++}
++EXPORT_SYMBOL(drm_panel_dp_aux_backlight);
+ #endif
  
+ MODULE_AUTHOR("Thierry Reding <treding@nvidia.com>");
+diff --git a/include/drm/drm_panel.h b/include/drm/drm_panel.h
+index 33605c3..3ebfaa6 100644
+--- a/include/drm/drm_panel.h
++++ b/include/drm/drm_panel.h
+@@ -32,6 +32,7 @@ struct backlight_device;
+ struct device_node;
+ struct drm_connector;
+ struct drm_device;
++struct drm_dp_aux;
+ struct drm_panel;
+ struct display_timing;
+ 
+@@ -64,8 +65,8 @@ enum drm_panel_orientation;
+  * the panel. This is the job of the .unprepare() function.
+  *
+  * Backlight can be handled automatically if configured using
+- * drm_panel_of_backlight(). Then the driver does not need to implement the
+- * functionality to enable/disable backlight.
++ * drm_panel_of_backlight() or drm_panel_dp_aux_backlight(). Then the driver
++ * does not need to implement the functionality to enable/disable backlight.
+  */
+ struct drm_panel_funcs {
+ 	/**
+@@ -144,8 +145,8 @@ struct drm_panel {
+ 	 * Backlight device, used to turn on backlight after the call
+ 	 * to enable(), and to turn off backlight before the call to
+ 	 * disable().
+-	 * backlight is set by drm_panel_of_backlight() and drivers
+-	 * shall not assign it.
++	 * backlight is set by drm_panel_of_backlight() or
++	 * drm_panel_dp_aux_backlight() and drivers shall not assign it.
+ 	 */
+ 	struct backlight_device *backlight;
+ 
+@@ -208,11 +209,17 @@ static inline int of_drm_get_panel_orientation(const struct device_node *np,
+ #if IS_ENABLED(CONFIG_DRM_PANEL) && (IS_BUILTIN(CONFIG_BACKLIGHT_CLASS_DEVICE) || \
+ 	(IS_MODULE(CONFIG_DRM) && IS_MODULE(CONFIG_BACKLIGHT_CLASS_DEVICE)))
+ int drm_panel_of_backlight(struct drm_panel *panel);
++int drm_panel_dp_aux_backlight(struct drm_panel *panel, struct drm_dp_aux *aux);
+ #else
+ static inline int drm_panel_of_backlight(struct drm_panel *panel)
+ {
+ 	return 0;
+ }
++static inline int drm_panel_dp_aux_backlight(struct drm_panel *panel,
++					     struct drm_dp_aux *aux)
++{
++	return 0;
++}
+ #endif
+ 
+ #endif
 -- 
-2.32.0
+2.7.4
 

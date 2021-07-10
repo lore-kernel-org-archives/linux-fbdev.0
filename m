@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 730E8C11F66
-	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Jul 2021 02:37:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5844EC11F6C
+	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Jul 2021 02:38:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 558D3613E1
-	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Jul 2021 02:37:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3156D613C5
+	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Jul 2021 02:38:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235010AbhGJCkN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 9 Jul 2021 22:40:13 -0400
-Received: from mail.kernel.org ([198.145.29.99]:58438 "EHLO mail.kernel.org"
+        id S234402AbhGJClJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 9 Jul 2021 22:41:09 -0400
+Received: from mail.kernel.org ([198.145.29.99]:58368 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S235793AbhGJCjr (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 9 Jul 2021 22:39:47 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 3550061422;
-        Sat, 10 Jul 2021 02:35:54 +0000 (UTC)
+        id S234886AbhGJCjR (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 9 Jul 2021 22:39:17 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id C2DAC613EB;
+        Sat, 10 Jul 2021 02:35:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1625884555;
+        s=k20201202; t=1625884506;
         bh=lAu+LTAR349mDL0w4BHlXProjoot0ns5zpTda0DaVLw=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=e4qjD1qKpaipYGHYlSsEIP8DpG+apnXsX1KyB1IrGvYIrrzMqVBjE54MXrT0koqJp
-         KI2WmL/qHnhoXvwYJwKy2MUtWeHjOC3n59tcD1yNrbq0TFVJw2nR1k0hV/Z0eBEm6d
-         bIO6YLcukyJzZC2rUHTuhoarVPkiKFfdsNkrFqgh9ET4K1baMQsYOr+PJpx0O+DkxT
-         xhyBH1gNU2JTzUHGiTwvL7oJ/01qfTJo72r9MMBa7LCLbh5RQ7KPG8Clb9FgLnHxgj
-         2gZBIsdBzxxojcED6Hnf1azVjX45P2sUP/5eMwZzYdoc0we/xBgrvjIXxpp5/uIgdr
-         hgJtDljYNuXXg==
+        b=n8zaVreUzXkhMDgzdqi/E5WDXJbQAZvzSmJF/86P2q/H/n6qwHX3tevrbG2bRtY6b
+         WZJ3f3Cc3Y76JMRDlo+e5oRbsEb1NMK8eITl9Wg/mMM8XSqn+kKg9gZd0MJ2HUY3ga
+         iZYU2YktMNEH9z8Ngi4LizVaU4z8V/7nQNllQysnAG+pRgyD9vPM1jtSiOxNK9BIZK
+         P1oUISXisaLWCFQCo4BCUqBvL7sUldTkPwTAXp7gpvpQD7zz50GkYpY+qAJVczTlOx
+         ncYPDrcR4LjuYM8qjtQxOJWT4IEHBjg5EUNRVfNdAntW4ZrqIY1v8u2XcC/Kn4Cvkq
+         213OabovX61Ug==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
@@ -39,12 +39,12 @@ Cc:     =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
         Lee Jones <lee.jones@linaro.org>,
         Sasha Levin <sashal@kernel.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 27/33] backlight: lm3630a: Fix return code of .update_status() callback
-Date:   Fri,  9 Jul 2021 22:35:09 -0400
-Message-Id: <20210710023516.3172075-27-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 33/39] backlight: lm3630a: Fix return code of .update_status() callback
+Date:   Fri,  9 Jul 2021 22:31:58 -0400
+Message-Id: <20210710023204.3171428-33-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210710023516.3172075-1-sashal@kernel.org>
-References: <20210710023516.3172075-1-sashal@kernel.org>
+In-Reply-To: <20210710023204.3171428-1-sashal@kernel.org>
+References: <20210710023204.3171428-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 X-stable: review

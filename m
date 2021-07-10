@@ -7,30 +7,30 @@ X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5844EC11F6C
-	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Jul 2021 02:38:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3410C07E9B
+	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Jul 2021 02:41:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3156D613C5
-	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Jul 2021 02:38:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8DA2F613BE
+	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Jul 2021 02:41:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234402AbhGJClJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 9 Jul 2021 22:41:09 -0400
-Received: from mail.kernel.org ([198.145.29.99]:58368 "EHLO mail.kernel.org"
+        id S235401AbhGJCnq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 9 Jul 2021 22:43:46 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33764 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234886AbhGJCjR (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 9 Jul 2021 22:39:17 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id C2DAC613EB;
-        Sat, 10 Jul 2021 02:35:05 +0000 (UTC)
+        id S235392AbhGJCmy (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 9 Jul 2021 22:42:54 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id B754A613DC;
+        Sat, 10 Jul 2021 02:39:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1625884506;
-        bh=lAu+LTAR349mDL0w4BHlXProjoot0ns5zpTda0DaVLw=;
+        s=k20201202; t=1625884745;
+        bh=p58epB/5XPf9VoPg+aVuld8nvvB+GnyYnomEpyTlmtw=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=n8zaVreUzXkhMDgzdqi/E5WDXJbQAZvzSmJF/86P2q/H/n6qwHX3tevrbG2bRtY6b
-         WZJ3f3Cc3Y76JMRDlo+e5oRbsEb1NMK8eITl9Wg/mMM8XSqn+kKg9gZd0MJ2HUY3ga
-         iZYU2YktMNEH9z8Ngi4LizVaU4z8V/7nQNllQysnAG+pRgyD9vPM1jtSiOxNK9BIZK
-         P1oUISXisaLWCFQCo4BCUqBvL7sUldTkPwTAXp7gpvpQD7zz50GkYpY+qAJVczTlOx
-         ncYPDrcR4LjuYM8qjtQxOJWT4IEHBjg5EUNRVfNdAntW4ZrqIY1v8u2XcC/Kn4Cvkq
-         213OabovX61Ug==
+        b=RTGdlvbfdUD5I0oxng4J/M86/7SY//Ses4uUbSdWlcrd+Lca9Hy4nbQITf681Y/iw
+         AaPhh0LQbxj2QxFBsJxJxNFCYUV79KtjWTtkK8hQHE0YP7ZIDglQR1PiMs38SoqGru
+         pALrgxNY0Gqw9gCAQvHNySzoca3iwbf5e47r3dnvhzuMOJCNrPEEMa0fmggUWdWr7O
+         DKXu7TmOxgRxPj+dN1Ga0BHUw3fR35uGkr3I59N6Tg1tP1o0XZ7CbsNT3SBT1CbAuE
+         4oDdl5mHBvVp0MveCXS/Exvtzxj0vCMaiF1M6rpZ7SR6uk+bOQbum4yI/OTyR0FRqQ
+         u9lOBXReuv39g==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
@@ -39,12 +39,12 @@ Cc:     =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
         Lee Jones <lee.jones@linaro.org>,
         Sasha Levin <sashal@kernel.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 33/39] backlight: lm3630a: Fix return code of .update_status() callback
-Date:   Fri,  9 Jul 2021 22:31:58 -0400
-Message-Id: <20210710023204.3171428-33-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 22/26] backlight: lm3630a: Fix return code of .update_status() callback
+Date:   Fri,  9 Jul 2021 22:36:00 -0400
+Message-Id: <20210710023604.3172486-22-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210710023204.3171428-1-sashal@kernel.org>
-References: <20210710023204.3171428-1-sashal@kernel.org>
+In-Reply-To: <20210710023604.3172486-1-sashal@kernel.org>
+References: <20210710023604.3172486-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 X-stable: review
@@ -74,10 +74,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-index ef2553f452ca..f17e5a8860fa 100644
+index 1771220b2437..90a24b975240 100644
 --- a/drivers/video/backlight/lm3630a_bl.c
 +++ b/drivers/video/backlight/lm3630a_bl.c
-@@ -184,7 +184,7 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
+@@ -183,7 +183,7 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
  	if ((pwm_ctrl & LM3630A_PWM_BANK_A) != 0) {
  		lm3630a_pwm_ctrl(pchip, bl->props.brightness,
  				 bl->props.max_brightness);
@@ -86,7 +86,7 @@ index ef2553f452ca..f17e5a8860fa 100644
  	}
  
  	/* disable sleep */
-@@ -204,8 +204,8 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
+@@ -203,8 +203,8 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
  	return 0;
  
  out_i2c_err:
@@ -97,7 +97,7 @@ index ef2553f452ca..f17e5a8860fa 100644
  }
  
  static int lm3630a_bank_a_get_brightness(struct backlight_device *bl)
-@@ -261,7 +261,7 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
+@@ -260,7 +260,7 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
  	if ((pwm_ctrl & LM3630A_PWM_BANK_B) != 0) {
  		lm3630a_pwm_ctrl(pchip, bl->props.brightness,
  				 bl->props.max_brightness);
@@ -106,7 +106,7 @@ index ef2553f452ca..f17e5a8860fa 100644
  	}
  
  	/* disable sleep */
-@@ -281,8 +281,8 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
+@@ -280,8 +280,8 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
  	return 0;
  
  out_i2c_err:

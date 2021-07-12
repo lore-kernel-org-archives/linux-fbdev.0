@@ -2,133 +2,394 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49A0AC07E9C
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 09:05:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75E36C07E99
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 09:41:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3467D611C1
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 09:05:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 586C060FE9
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 09:41:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345049AbhGLJHu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 12 Jul 2021 05:07:50 -0400
-Received: from szxga03-in.huawei.com ([45.249.212.189]:11286 "EHLO
-        szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1357552AbhGLI7V (ORCPT
+        id S237903AbhGLJo0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 12 Jul 2021 05:44:26 -0400
+Received: from smtp-out1.suse.de ([195.135.220.28]:45316 "EHLO
+        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S237846AbhGLJoZ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 12 Jul 2021 04:59:21 -0400
-Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.55])
-        by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4GNcvW6Kt1z78YD;
-        Mon, 12 Jul 2021 16:51:51 +0800 (CST)
-Received: from dggpemm500006.china.huawei.com (7.185.36.236) by
- dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 12 Jul 2021 16:56:17 +0800
-Received: from thunder-town.china.huawei.com (10.174.179.0) by
- dggpemm500006.china.huawei.com (7.185.36.236) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2176.2; Mon, 12 Jul 2021 16:56:16 +0800
-From:   Zhen Lei <thunder.leizhen@huawei.com>
-To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        linux-fbdev <linux-fbdev@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-CC:     Zhen Lei <thunder.leizhen@huawei.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Subject: [PATCH 1/1] fbmem: Do not delete the mode that is still in use
-Date:   Mon, 12 Jul 2021 16:55:44 +0800
-Message-ID: <20210712085544.2828-1-thunder.leizhen@huawei.com>
-X-Mailer: git-send-email 2.26.0.windows.1
+        Mon, 12 Jul 2021 05:44:25 -0400
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id B55692213D;
+        Mon, 12 Jul 2021 09:41:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1626082895; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=kBOZ8F7mpJ8ZkKh31gjSwikxw852LG7Y+3uDu17esUw=;
+        b=xsGNJTDkxke2V7x9DyC/qIo0uHMDc2zlJJY76BGJO5IQukOwgPF4Cj1x3fEYz6Bg/71Fdg
+        iCp9IObGoB4J3G306GDZrxwbUnboKY7Qjl988gmgFzbzOuQ4OvF+7v4Eu5dckcoT307glo
+        rf9i3g9FOdp8LdXL4LvSdIiVYg7wPTU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1626082895;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=kBOZ8F7mpJ8ZkKh31gjSwikxw852LG7Y+3uDu17esUw=;
+        b=qF2GDARqdicHcQklGHl1ri+9ueQUKdDGHRRs0nb5sQkHbuyAGwmcW6RSEF4u4o/Y3yEjme
+        BT4cDOAtjHVuECCA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3912613B1D;
+        Mon, 12 Jul 2021 09:41:35 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id bFjKDE8O7GATKQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 12 Jul 2021 09:41:35 +0000
+Subject: Re: [v8 1/6] drm/panel: add basic DP AUX backlight support
+To:     Rajeev Nandan <rajeevny@codeaurora.org>,
+        dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
+        freedreno@lists.freedesktop.org, devicetree@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org, thierry.reding@gmail.com,
+        sam@ravnborg.org, robdclark@gmail.com, dianders@chromium.org,
+        lyude@redhat.com, jani.nikula@intel.com, robh@kernel.org,
+        laurent.pinchart@ideasonboard.com, a.hajda@samsung.com,
+        daniel.thompson@linaro.org, hoegsberg@chromium.org,
+        abhinavk@codeaurora.org, seanpaul@chromium.org,
+        kalyan_t@codeaurora.org, mkrishn@codeaurora.org,
+        lee.jones@linaro.org, jingoohan1@gmail.com,
+        linux-fbdev@vger.kernel.org
+References: <1624726268-14869-1-git-send-email-rajeevny@codeaurora.org>
+ <1624726268-14869-2-git-send-email-rajeevny@codeaurora.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+Message-ID: <7f8562df-7e1f-dcfb-1c58-f1edd9dcc606@suse.de>
+Date:   Mon, 12 Jul 2021 11:41:34 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.174.179.0]
-X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
- dggpemm500006.china.huawei.com (7.185.36.236)
-X-CFilter-Loop: Reflected
+In-Reply-To: <1624726268-14869-2-git-send-email-rajeevny@codeaurora.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="pI0bX0lZwZiRn3v4qGUBQl4ZFLgHyzkI0"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The execution of fb_delete_videomode() is not based on the result of the
-previous fbcon_mode_deleted(). As a result, the mode is directly deleted,
-regardless of whether it is still in use, which may cause UAF.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--pI0bX0lZwZiRn3v4qGUBQl4ZFLgHyzkI0
+Content-Type: multipart/mixed; boundary="HhVIaNadSSQ6n2fzFQyF1bVjBTxK3fWU9";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Rajeev Nandan <rajeevny@codeaurora.org>, dri-devel@lists.freedesktop.org,
+ linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
+ devicetree@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, thierry.reding@gmail.com, sam@ravnborg.org,
+ robdclark@gmail.com, dianders@chromium.org, lyude@redhat.com,
+ jani.nikula@intel.com, robh@kernel.org, laurent.pinchart@ideasonboard.com,
+ a.hajda@samsung.com, daniel.thompson@linaro.org, hoegsberg@chromium.org,
+ abhinavk@codeaurora.org, seanpaul@chromium.org, kalyan_t@codeaurora.org,
+ mkrishn@codeaurora.org, lee.jones@linaro.org, jingoohan1@gmail.com,
+ linux-fbdev@vger.kernel.org
+Message-ID: <7f8562df-7e1f-dcfb-1c58-f1edd9dcc606@suse.de>
+Subject: Re: [v8 1/6] drm/panel: add basic DP AUX backlight support
+References: <1624726268-14869-1-git-send-email-rajeevny@codeaurora.org>
+ <1624726268-14869-2-git-send-email-rajeevny@codeaurora.org>
+In-Reply-To: <1624726268-14869-2-git-send-email-rajeevny@codeaurora.org>
 
-==================================================================
-BUG: KASAN: use-after-free in fb_mode_is_equal+0x36e/0x5e0 \
-drivers/video/fbdev/core/modedb.c:924
-Read of size 4 at addr ffff88807e0ddb1c by task syz-executor.0/18962
-
-CPU: 2 PID: 18962 Comm: syz-executor.0 Not tainted 5.10.45-rc1+ #3
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS ...
-Call Trace:
- __dump_stack lib/dump_stack.c:77 [inline]
- dump_stack+0x137/0x1be lib/dump_stack.c:118
- print_address_description+0x6c/0x640 mm/kasan/report.c:385
- __kasan_report mm/kasan/report.c:545 [inline]
- kasan_report+0x13d/0x1e0 mm/kasan/report.c:562
- fb_mode_is_equal+0x36e/0x5e0 drivers/video/fbdev/core/modedb.c:924
- fbcon_mode_deleted+0x16a/0x220 drivers/video/fbdev/core/fbcon.c:2746
- fb_set_var+0x1e1/0xdb0 drivers/video/fbdev/core/fbmem.c:975
- do_fb_ioctl+0x4d9/0x6e0 drivers/video/fbdev/core/fbmem.c:1108
- vfs_ioctl fs/ioctl.c:48 [inline]
- __do_sys_ioctl fs/ioctl.c:753 [inline]
- __se_sys_ioctl+0xfb/0x170 fs/ioctl.c:739
- do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
- entry_SYSCALL_64_after_hwframe+0x44/0xa9
-
-Freed by task 18960:
- kasan_save_stack mm/kasan/common.c:48 [inline]
- kasan_set_track+0x3d/0x70 mm/kasan/common.c:56
- kasan_set_free_info+0x17/0x30 mm/kasan/generic.c:355
- __kasan_slab_free+0x108/0x140 mm/kasan/common.c:422
- slab_free_hook mm/slub.c:1541 [inline]
- slab_free_freelist_hook+0xd6/0x1a0 mm/slub.c:1574
- slab_free mm/slub.c:3139 [inline]
- kfree+0xca/0x3d0 mm/slub.c:4121
- fb_delete_videomode+0x56a/0x820 drivers/video/fbdev/core/modedb.c:1104
- fb_set_var+0x1f3/0xdb0 drivers/video/fbdev/core/fbmem.c:978
- do_fb_ioctl+0x4d9/0x6e0 drivers/video/fbdev/core/fbmem.c:1108
- vfs_ioctl fs/ioctl.c:48 [inline]
- __do_sys_ioctl fs/ioctl.c:753 [inline]
- __se_sys_ioctl+0xfb/0x170 fs/ioctl.c:739
- do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
- entry_SYSCALL_64_after_hwframe+0x44/0xa9
-
-Fixes: 13ff178ccd6d ("fbcon: Call fbcon_mode_deleted/new_modelist directly")
-Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
----
- drivers/video/fbdev/core/fbmem.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 98f193078c05..1c855145711b 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -970,13 +970,11 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
- 		fb_var_to_videomode(&mode2, &info->var);
- 		/* make sure we don't delete the videomode of current var */
- 		ret = fb_mode_is_equal(&mode1, &mode2);
--
--		if (!ret)
--			fbcon_mode_deleted(info, &mode1);
--
--		if (!ret)
--			fb_delete_videomode(&mode1, &info->modelist);
--
-+		if (!ret) {
-+			ret = fbcon_mode_deleted(info, &mode1);
-+			if (!ret)
-+				fb_delete_videomode(&mode1, &info->modelist);
-+		}
- 
- 		return ret ? -EINVAL : 0;
- 	}
--- 
-2.25.1
+--HhVIaNadSSQ6n2fzFQyF1bVjBTxK3fWU9
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
 
+
+Am 26.06.21 um 18:51 schrieb Rajeev Nandan:
+> Some panels support backlight control over DP AUX channel using
+> VESA's standard backlight control interface.
+> Using new DRM eDP backlight helpers, add support to create and
+> register a backlight for those panels in drm_panel to simplify
+> the panel drivers.
+>=20
+> The panel driver with access to "struct drm_dp_aux" can create and
+> register a backlight device using following code snippet in its
+> probe() function:
+>=20
+> 	err =3D drm_panel_dp_aux_backlight(panel, aux);
+> 	if (err)
+> 		return err;
+>=20
+> Then drm_panel will handle backlight_(enable|disable) calls
+> similar to the case when drm_panel_of_backlight() is used.
+>=20
+> Currently, we are not supporting one feature where the source
+> device can combine the backlight brightness levels set through
+> DP AUX and the BL_PWM_DIM eDP connector pin. Since it's not
+> required for the basic backlight controls, it can be added later.
+>=20
+> Signed-off-by: Rajeev Nandan <rajeevny@codeaurora.org>
+> Reviewed-by: Douglas Anderson <dianders@chromium.org>
+> Reviewed-by: Lyude Paul <lyude@redhat.com>
+> ---
+>=20
+> Changes in v5:
+> - New
+>=20
+> Changes in v6:
+> - Fixed ordering of memory allocation (Douglas)
+> - Updated word wrapping in a comment (Douglas)
+>=20
+> Changes in v8:
+> - Now using backlight_is_blank() to get the backlight blank status (Sam=
+ Ravnborg)
+>=20
+>   drivers/gpu/drm/drm_panel.c | 108 +++++++++++++++++++++++++++++++++++=
++++++++++
+>   include/drm/drm_panel.h     |  15 ++++--
+>   2 files changed, 119 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/gpu/drm/drm_panel.c b/drivers/gpu/drm/drm_panel.c
+> index f634371..4fa1e3b 100644
+> --- a/drivers/gpu/drm/drm_panel.c
+> +++ b/drivers/gpu/drm/drm_panel.c
+> @@ -26,12 +26,20 @@
+>   #include <linux/module.h>
+>  =20
+>   #include <drm/drm_crtc.h>
+> +#include <drm/drm_dp_helper.h>
+>   #include <drm/drm_panel.h>
+>   #include <drm/drm_print.h>
+>  =20
+>   static DEFINE_MUTEX(panel_lock);
+>   static LIST_HEAD(panel_list);
+>  =20
+> +struct dp_aux_backlight {
+> +	struct backlight_device *base;
+> +	struct drm_dp_aux *aux;
+> +	struct drm_edp_backlight_info info;
+> +	bool enabled;
+> +};
+> +
+>   /**
+>    * DOC: drm panel
+>    *
+> @@ -342,6 +350,106 @@ int drm_panel_of_backlight(struct drm_panel *pane=
+l)
+>   	return 0;
+>   }
+>   EXPORT_SYMBOL(drm_panel_of_backlight);
+> +
+> +static int dp_aux_backlight_update_status(struct backlight_device *bd)=
+
+> +{
+> +	struct dp_aux_backlight *bl =3D bl_get_data(bd);
+> +	u16 brightness =3D backlight_get_brightness(bd);
+> +	int ret =3D 0;
+> +
+> +	if (!backlight_is_blank(bd)) {
+> +		if (!bl->enabled) {
+> +			drm_edp_backlight_enable(bl->aux, &bl->info, brightness);
+> +			bl->enabled =3D true;
+> +			return 0;
+> +		}
+> +		ret =3D drm_edp_backlight_set_level(bl->aux, &bl->info, brightness);=
+
+> +	} else {
+> +		if (bl->enabled) {
+> +			drm_edp_backlight_disable(bl->aux, &bl->info);
+> +			bl->enabled =3D false;
+> +		}
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static const struct backlight_ops dp_aux_bl_ops =3D {
+> +	.update_status =3D dp_aux_backlight_update_status,
+> +};
+> +
+> +/**
+> + * drm_panel_dp_aux_backlight - create and use DP AUX backlight
+> + * @panel: DRM panel
+> + * @aux: The DP AUX channel to use
+> + *
+> + * Use this function to create and handle backlight if your panel
+> + * supports backlight control over DP AUX channel using DPCD
+> + * registers as per VESA's standard backlight control interface.
+> + *
+> + * When the panel is enabled backlight will be enabled after a
+> + * successful call to &drm_panel_funcs.enable()
+> + *
+> + * When the panel is disabled backlight will be disabled before the
+> + * call to &drm_panel_funcs.disable().
+> + *
+> + * A typical implementation for a panel driver supporting backlight
+> + * control over DP AUX will call this function at probe time.
+> + * Backlight will then be handled transparently without requiring
+> + * any intervention from the driver.
+> + *
+> + * drm_panel_dp_aux_backlight() must be called after the call to drm_p=
+anel_init().
+> + *
+> + * Return: 0 on success or a negative error code on failure.
+> + */
+> +int drm_panel_dp_aux_backlight(struct drm_panel *panel, struct drm_dp_=
+aux *aux)
+> +{
+> +	struct dp_aux_backlight *bl;
+> +	struct backlight_properties props =3D { 0 };
+> +	u16 current_level;
+> +	u8 current_mode;
+> +	u8 edp_dpcd[EDP_DISPLAY_CTL_CAP_SIZE];
+> +	int ret;
+> +
+> +	if (!panel || !panel->dev || !aux)
+> +		return -EINVAL;
+> +
+> +	ret =3D drm_dp_dpcd_read(aux, DP_EDP_DPCD_REV, edp_dpcd,
+> +			       EDP_DISPLAY_CTL_CAP_SIZE);
+
+This creates a cyclic dependency between drm_kms_helper-ko and drm.ko.=20
+drm_panel.c is in the latter, while drm_dp_dpcd_read() in=20
+drm_dp_helper.c is in the former. Please fix.
+
+Best regards
+Thomas
+
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	if (!drm_edp_backlight_supported(edp_dpcd)) {
+> +		DRM_DEV_INFO(panel->dev, "DP AUX backlight is not supported\n");
+> +		return 0;
+> +	}
+> +
+> +	bl =3D devm_kzalloc(panel->dev, sizeof(*bl), GFP_KERNEL);
+> +	if (!bl)
+> +		return -ENOMEM;
+> +
+> +	bl->aux =3D aux;
+> +
+> +	ret =3D drm_edp_backlight_init(aux, &bl->info, 0, edp_dpcd,
+> +				     &current_level, &current_mode);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	props.type =3D BACKLIGHT_RAW;
+> +	props.brightness =3D current_level;
+> +	props.max_brightness =3D bl->info.max;
+> +
+> +	bl->base =3D devm_backlight_device_register(panel->dev, "dp_aux_backl=
+ight",
+> +						  panel->dev, bl,
+> +						  &dp_aux_bl_ops, &props);
+> +	if (IS_ERR(bl->base))
+> +		return PTR_ERR(bl->base);
+> +
+> +	panel->backlight =3D bl->base;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(drm_panel_dp_aux_backlight);
+>   #endif
+>  =20
+>   MODULE_AUTHOR("Thierry Reding <treding@nvidia.com>");
+> diff --git a/include/drm/drm_panel.h b/include/drm/drm_panel.h
+> index 33605c3..3ebfaa6 100644
+> --- a/include/drm/drm_panel.h
+> +++ b/include/drm/drm_panel.h
+> @@ -32,6 +32,7 @@ struct backlight_device;
+>   struct device_node;
+>   struct drm_connector;
+>   struct drm_device;
+> +struct drm_dp_aux;
+>   struct drm_panel;
+>   struct display_timing;
+>  =20
+> @@ -64,8 +65,8 @@ enum drm_panel_orientation;
+>    * the panel. This is the job of the .unprepare() function.
+>    *
+>    * Backlight can be handled automatically if configured using
+> - * drm_panel_of_backlight(). Then the driver does not need to implemen=
+t the
+> - * functionality to enable/disable backlight.
+> + * drm_panel_of_backlight() or drm_panel_dp_aux_backlight(). Then the =
+driver
+> + * does not need to implement the functionality to enable/disable back=
+light.
+>    */
+>   struct drm_panel_funcs {
+>   	/**
+> @@ -144,8 +145,8 @@ struct drm_panel {
+>   	 * Backlight device, used to turn on backlight after the call
+>   	 * to enable(), and to turn off backlight before the call to
+>   	 * disable().
+> -	 * backlight is set by drm_panel_of_backlight() and drivers
+> -	 * shall not assign it.
+> +	 * backlight is set by drm_panel_of_backlight() or
+> +	 * drm_panel_dp_aux_backlight() and drivers shall not assign it.
+>   	 */
+>   	struct backlight_device *backlight;
+>  =20
+> @@ -208,11 +209,17 @@ static inline int of_drm_get_panel_orientation(co=
+nst struct device_node *np,
+>   #if IS_ENABLED(CONFIG_DRM_PANEL) && (IS_BUILTIN(CONFIG_BACKLIGHT_CLAS=
+S_DEVICE) || \
+>   	(IS_MODULE(CONFIG_DRM) && IS_MODULE(CONFIG_BACKLIGHT_CLASS_DEVICE)))=
+
+>   int drm_panel_of_backlight(struct drm_panel *panel);
+> +int drm_panel_dp_aux_backlight(struct drm_panel *panel, struct drm_dp_=
+aux *aux);
+>   #else
+>   static inline int drm_panel_of_backlight(struct drm_panel *panel)
+>   {
+>   	return 0;
+>   }
+> +static inline int drm_panel_dp_aux_backlight(struct drm_panel *panel,
+> +					     struct drm_dp_aux *aux)
+> +{
+> +	return 0;
+> +}
+>   #endif
+>  =20
+>   #endif
+>=20
+
+--=20
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
+(HRB 36809, AG N=C3=BCrnberg)
+Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
+
+
+--HhVIaNadSSQ6n2fzFQyF1bVjBTxK3fWU9--
+
+--pI0bX0lZwZiRn3v4qGUBQl4ZFLgHyzkI0
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmDsDk4FAwAAAAAACgkQlh/E3EQov+DZ
+dQ//dVOts02Z0+fd8xcvFtGJPdj6IouyIU93AH9R8qr37ZV9NfnSK77lksrnV+Z9H09Zz5tOOpeW
+A+QjyaYvZ771vLkfYfwg4sGfjGgzhb+7LcaZ2pkJyZoLeaOwyCHQTGQQYNHWqlFaUV8f1mqh8d3Q
+fbtKuqyn0m0xeYcIAFqjfTFP1Aoy+QPlYykV0UHKHSlmy797FeVBg24tiBDuBqrQoyfJyJhCaQao
+x5g4e5VtqBKUHu37Lx2bYe3hHvZ24fn/Yy+YJIoeEAa6p8ZPcdao9qzMfKFlh0BddlF0ZsPSYy7i
+DS0MWaMZLB3cs/+bzMrq1/lxtd+1RUdqNfXkm4kzSwiVnLHc/XzwHXWalwgs1ziyFGN9xYHwrq1/
+7HkZZP25oxeEOUHRZAySHKa53wBqKysEAUQ9PRCLD/8i7I+IuhNS/Z29Awrqlnu8EOdHh8+lg+jU
+WnXmyguhrUVGait99sW54Lk0bKgjFsbEg4yrJajicdn4EyrLSnREH8ddmIsRvTb/ijM9TuW7Sem3
+AsC+BbZsXxkyAvuVB8DaFSjCeBbh+xzKvnY/qWnlIcLEvCzDakxjPRMs6/N+3bVaWuAwlPY0zdpL
+W5hLkyi8MjX1oHm/HBOEkM01ic2b1qUWSRkR7DoeCBpbnWzdP3rv0mOQ+HbFHzHenEjdSpcemtyn
+j2Y=
+=2fPd
+-----END PGP SIGNATURE-----
+
+--pI0bX0lZwZiRn3v4qGUBQl4ZFLgHyzkI0--

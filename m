@@ -2,121 +2,133 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1E41C11F75
-	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Jul 2021 02:42:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49A0AC07E9C
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 09:05:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C7D93613D9
-	for <linux-fbdev@archiver.kernel.org>; Sat, 10 Jul 2021 02:42:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3467D611C1
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 09:05:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235334AbhGJCpS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 9 Jul 2021 22:45:18 -0400
-Received: from mail.kernel.org ([198.145.29.99]:34528 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233970AbhGJCns (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 9 Jul 2021 22:43:48 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 3788A61413;
-        Sat, 10 Jul 2021 02:39:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1625884783;
-        bh=XWiPw7umbjmeU/JEnr2FjZX9/PD8fOl6yYG1jQX7LoE=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=SKpaC9YT9EGd5beK5xHOqMUR0WubI+jLXZ/xYkUg8aEQPp87TayPhGET9Z5A4bfOw
-         zZtIulWDBPUWeJ5zMss+aRqIw3l79PJCHiKtj7/VmjPLr0Q1788OKRamDGbiJfKKhW
-         DQA5Qjmjf6PFvldIf8TYmR5erEav8CFDfDTJ01ZGM5OFSq0tIJVc44WFcZIwA9fIQc
-         XqGvlwOLzmOpOoHLDzteqETbgnSW5mVETLCRlSQkFtLavUwZtXqgXkOBCE4XB/417w
-         4wNWZ51y39OBIq9ZMVAYoOw41Xl0M7pzvY7DLSgHP0EoSfgynb7gcN+rnku3DaWPLt
-         X36hyoX5Mj9/g==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sasha Levin <sashal@kernel.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 20/23] backlight: lm3630a: Fix return code of .update_status() callback
-Date:   Fri,  9 Jul 2021 22:39:09 -0400
-Message-Id: <20210710023912.3172972-20-sashal@kernel.org>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210710023912.3172972-1-sashal@kernel.org>
-References: <20210710023912.3172972-1-sashal@kernel.org>
+        id S1345049AbhGLJHu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 12 Jul 2021 05:07:50 -0400
+Received: from szxga03-in.huawei.com ([45.249.212.189]:11286 "EHLO
+        szxga03-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1357552AbhGLI7V (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 12 Jul 2021 04:59:21 -0400
+Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.55])
+        by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4GNcvW6Kt1z78YD;
+        Mon, 12 Jul 2021 16:51:51 +0800 (CST)
+Received: from dggpemm500006.china.huawei.com (7.185.36.236) by
+ dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Mon, 12 Jul 2021 16:56:17 +0800
+Received: from thunder-town.china.huawei.com (10.174.179.0) by
+ dggpemm500006.china.huawei.com (7.185.36.236) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2176.2; Mon, 12 Jul 2021 16:56:16 +0800
+From:   Zhen Lei <thunder.leizhen@huawei.com>
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        linux-fbdev <linux-fbdev@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+CC:     Zhen Lei <thunder.leizhen@huawei.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Subject: [PATCH 1/1] fbmem: Do not delete the mode that is still in use
+Date:   Mon, 12 Jul 2021 16:55:44 +0800
+Message-ID: <20210712085544.2828-1-thunder.leizhen@huawei.com>
+X-Mailer: git-send-email 2.26.0.windows.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.174.179.0]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+ dggpemm500006.china.huawei.com (7.185.36.236)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+The execution of fb_delete_videomode() is not based on the result of the
+previous fbcon_mode_deleted(). As a result, the mode is directly deleted,
+regardless of whether it is still in use, which may cause UAF.
 
-[ Upstream commit b9481a667a90ec739995e85f91f3672ca44d6ffa ]
+==================================================================
+BUG: KASAN: use-after-free in fb_mode_is_equal+0x36e/0x5e0 \
+drivers/video/fbdev/core/modedb.c:924
+Read of size 4 at addr ffff88807e0ddb1c by task syz-executor.0/18962
 
-According to <linux/backlight.h> .update_status() is supposed to
-return 0 on success and a negative error code otherwise. Adapt
-lm3630a_bank_a_update_status() and lm3630a_bank_b_update_status() to
-actually do it.
+CPU: 2 PID: 18962 Comm: syz-executor.0 Not tainted 5.10.45-rc1+ #3
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS ...
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0x137/0x1be lib/dump_stack.c:118
+ print_address_description+0x6c/0x640 mm/kasan/report.c:385
+ __kasan_report mm/kasan/report.c:545 [inline]
+ kasan_report+0x13d/0x1e0 mm/kasan/report.c:562
+ fb_mode_is_equal+0x36e/0x5e0 drivers/video/fbdev/core/modedb.c:924
+ fbcon_mode_deleted+0x16a/0x220 drivers/video/fbdev/core/fbcon.c:2746
+ fb_set_var+0x1e1/0xdb0 drivers/video/fbdev/core/fbmem.c:975
+ do_fb_ioctl+0x4d9/0x6e0 drivers/video/fbdev/core/fbmem.c:1108
+ vfs_ioctl fs/ioctl.c:48 [inline]
+ __do_sys_ioctl fs/ioctl.c:753 [inline]
+ __se_sys_ioctl+0xfb/0x170 fs/ioctl.c:739
+ do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+ entry_SYSCALL_64_after_hwframe+0x44/0xa9
 
-While touching that also add the error code to the failure message.
+Freed by task 18960:
+ kasan_save_stack mm/kasan/common.c:48 [inline]
+ kasan_set_track+0x3d/0x70 mm/kasan/common.c:56
+ kasan_set_free_info+0x17/0x30 mm/kasan/generic.c:355
+ __kasan_slab_free+0x108/0x140 mm/kasan/common.c:422
+ slab_free_hook mm/slub.c:1541 [inline]
+ slab_free_freelist_hook+0xd6/0x1a0 mm/slub.c:1574
+ slab_free mm/slub.c:3139 [inline]
+ kfree+0xca/0x3d0 mm/slub.c:4121
+ fb_delete_videomode+0x56a/0x820 drivers/video/fbdev/core/modedb.c:1104
+ fb_set_var+0x1f3/0xdb0 drivers/video/fbdev/core/fbmem.c:978
+ do_fb_ioctl+0x4d9/0x6e0 drivers/video/fbdev/core/fbmem.c:1108
+ vfs_ioctl fs/ioctl.c:48 [inline]
+ __do_sys_ioctl fs/ioctl.c:753 [inline]
+ __se_sys_ioctl+0xfb/0x170 fs/ioctl.c:739
+ do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+ entry_SYSCALL_64_after_hwframe+0x44/0xa9
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Fixes: 13ff178ccd6d ("fbcon: Call fbcon_mode_deleted/new_modelist directly")
+Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
 ---
- drivers/video/backlight/lm3630a_bl.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/core/fbmem.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-index 5ef6f9d420a2..ab882c04f975 100644
---- a/drivers/video/backlight/lm3630a_bl.c
-+++ b/drivers/video/backlight/lm3630a_bl.c
-@@ -183,7 +183,7 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
- 	if ((pwm_ctrl & LM3630A_PWM_BANK_A) != 0) {
- 		lm3630a_pwm_ctrl(pchip, bl->props.brightness,
- 				 bl->props.max_brightness);
--		return bl->props.brightness;
-+		return 0;
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 98f193078c05..1c855145711b 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -970,13 +970,11 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ 		fb_var_to_videomode(&mode2, &info->var);
+ 		/* make sure we don't delete the videomode of current var */
+ 		ret = fb_mode_is_equal(&mode1, &mode2);
+-
+-		if (!ret)
+-			fbcon_mode_deleted(info, &mode1);
+-
+-		if (!ret)
+-			fb_delete_videomode(&mode1, &info->modelist);
+-
++		if (!ret) {
++			ret = fbcon_mode_deleted(info, &mode1);
++			if (!ret)
++				fb_delete_videomode(&mode1, &info->modelist);
++		}
+ 
+ 		return ret ? -EINVAL : 0;
  	}
- 
- 	/* disable sleep */
-@@ -203,8 +203,8 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
- 	return 0;
- 
- out_i2c_err:
--	dev_err(pchip->dev, "i2c failed to access\n");
--	return bl->props.brightness;
-+	dev_err(pchip->dev, "i2c failed to access (%pe)\n", ERR_PTR(ret));
-+	return ret;
- }
- 
- static int lm3630a_bank_a_get_brightness(struct backlight_device *bl)
-@@ -260,7 +260,7 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
- 	if ((pwm_ctrl & LM3630A_PWM_BANK_B) != 0) {
- 		lm3630a_pwm_ctrl(pchip, bl->props.brightness,
- 				 bl->props.max_brightness);
--		return bl->props.brightness;
-+		return 0;
- 	}
- 
- 	/* disable sleep */
-@@ -280,8 +280,8 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
- 	return 0;
- 
- out_i2c_err:
--	dev_err(pchip->dev, "i2c failed to access REG_CTRL\n");
--	return bl->props.brightness;
-+	dev_err(pchip->dev, "i2c failed to access (%pe)\n", ERR_PTR(ret));
-+	return ret;
- }
- 
- static int lm3630a_bank_b_get_brightness(struct backlight_device *bl)
 -- 
-2.30.2
+2.25.1
+
 

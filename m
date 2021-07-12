@@ -2,315 +2,128 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85339C07E9B
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 09:45:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB29DC07E99
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 10:26:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5E404610CB
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 09:45:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 860D461004
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 10:26:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238884AbhGLJsE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 12 Jul 2021 05:48:04 -0400
-Received: from smtp-out1.suse.de ([195.135.220.28]:45790 "EHLO
-        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238845AbhGLJsD (ORCPT
+        id S232237AbhGLK2q (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 12 Jul 2021 06:28:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56450 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229555AbhGLK2p (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 12 Jul 2021 05:48:03 -0400
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id ACB4022142;
-        Mon, 12 Jul 2021 09:45:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1626083113; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=gfwhSPRIk1+SU5zNMfYFVZ/T+A7xSDs2uH693upll9k=;
-        b=cCH0WnhWwxgMyqUi3AB538P3pV7PNZoCiQKbCqHz8+PnICeDkY+Nhrl7bdbiHlaQxMtOEH
-        w5mhyq8u+6RLMx5kTVZhZeub7ZgVcXFQP7XxJ1XfvgfdyQY9tf3lCCvZhUDWVewIZYMuDC
-        afMNyZDqJ/OWwCYdSz+yUocwnha4Eq0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1626083113;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=gfwhSPRIk1+SU5zNMfYFVZ/T+A7xSDs2uH693upll9k=;
-        b=Sc8CI5XeRV6twIKVWmbSDM9JxVmlgzFnM/oDF3vmiP1rO2Enj1E6QKpL6trvKngrYiJDcP
-        xkWeznEE7D0NLHBA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 423A913B1D;
-        Mon, 12 Jul 2021 09:45:13 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id veg6DykP7GAuKgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 12 Jul 2021 09:45:13 +0000
-Subject: Re: [v8 1/6] drm/panel: add basic DP AUX backlight support
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     Rajeev Nandan <rajeevny@codeaurora.org>,
-        dri-devel@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
-        freedreno@lists.freedesktop.org, devicetree@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org, thierry.reding@gmail.com,
-        sam@ravnborg.org, robdclark@gmail.com, dianders@chromium.org,
-        lyude@redhat.com, jani.nikula@intel.com, robh@kernel.org,
-        laurent.pinchart@ideasonboard.com, a.hajda@samsung.com,
-        daniel.thompson@linaro.org, hoegsberg@chromium.org,
-        abhinavk@codeaurora.org, seanpaul@chromium.org,
-        kalyan_t@codeaurora.org, mkrishn@codeaurora.org,
-        lee.jones@linaro.org, jingoohan1@gmail.com,
-        linux-fbdev@vger.kernel.org
-References: <1624726268-14869-1-git-send-email-rajeevny@codeaurora.org>
- <1624726268-14869-2-git-send-email-rajeevny@codeaurora.org>
- <7f8562df-7e1f-dcfb-1c58-f1edd9dcc606@suse.de>
-Message-ID: <00e95983-c7de-1091-d295-9d544f37687c@suse.de>
-Date:   Mon, 12 Jul 2021 11:45:12 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+        Mon, 12 Jul 2021 06:28:45 -0400
+Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A3BCC0613DD
+        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jul 2021 03:25:57 -0700 (PDT)
+Received: by mail-wm1-x329.google.com with SMTP id j25-20020a05600c1c19b02902269686f585so849076wms.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jul 2021 03:25:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=lLjUDjdWxPclbryuFR9izI75sQqrpyAMRrc80ykdjNY=;
+        b=awyJadfSI81+vFylzF4VuEQTlG1d+tBVabVVugUGOXe0DCvV/DveP6MFR2Aei/nrNc
+         +zK9YhQqWQUjxLJCcgiiskDw9IXv6PrWlUMiGuduvSGUk1GSoZOIjUNwxXZHR0tkrld3
+         7THO61XKQfgFfxbSkDhDktf8x0IZ8VsTsDihZ/vlu3FttAlTpAiYzyuyVGUn7QsVheE6
+         vQrqtmAXXaqBOCPiS6YYbLQd3CJSJRwhUxYfzdqcyo5y6ySMkODOC7QUUL9yC3iI+qMs
+         0GlUsGcihNcriVKLmFla4idBo89BQUHCAe3YcqzJ8bhyOaL1UAaDoIctzj54lrp9yQCa
+         ewOw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=lLjUDjdWxPclbryuFR9izI75sQqrpyAMRrc80ykdjNY=;
+        b=dzy8JL6ryH23eXj/q9YBlfGWtIg7j7HILRNA6u4AGso9SAigWZOd3tM5ZV5In5RdXS
+         wlCdvspst/JUPCHQITsRRNhFBOY4N1RHM5HpBUL/bNlPh5GGuM3TnAVCYgUWD6AeeIkX
+         /H4jVBY8nmLSVUDfKmNIpooi+mRklpCUsm0Rz9d2PF0A7bPArb9DK1sT+nhFrKoSsQxo
+         xJ41ZGVAuQQv4rzrs+RY43VDwkPOvVtvqAoMBvttt0H1NnxXJxSudJAYIkvutyulqFoL
+         sbjNUqfk38DI4adZeOKlpcvvq/Ws2LfQmxS8+f0tH/Ca3aVGISf7N7LKgI0/YOoQICEM
+         +ufw==
+X-Gm-Message-State: AOAM5339EjQxTC84uYUAuO9xDQsaAmBdjhsq3gxWHn65qcQSgz8Jdwwk
+        mMBSvR82xthz7tY6mibaAHJxKA==
+X-Google-Smtp-Source: ABdhPJyboP90WE/DsXxubQCq3b4TFqGRmnfmdseq3xPSGUo2tQZ11zJw2RRXien+JB0uKG1A6gtTQg==
+X-Received: by 2002:a05:600c:4fc7:: with SMTP id o7mr53768712wmq.16.1626085555727;
+        Mon, 12 Jul 2021 03:25:55 -0700 (PDT)
+Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id b9sm16533947wrh.81.2021.07.12.03.25.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Jul 2021 03:25:55 -0700 (PDT)
+Date:   Mon, 12 Jul 2021 11:25:53 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Noralf =?utf-8?Q?Tr=C3=B8nnes?= <noralf@tronnes.org>
+Cc:     Marek Vasut <marex@denx.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org,
+        Meghana Madhyastha <meghana.madhyastha@gmail.com>,
+        Sean Paul <seanpaul@chromium.org>,
+        Thierry Reding <treding@nvidia.com>
+Subject: Re: [PATCH] video: backlight: Drop maximum brightness override for
+ brightness zero
+Message-ID: <20210712102553.ehsgp2ozrveuwaxv@maple.lan>
+References: <20210709132600.5417-1-marex@denx.de>
+ <0822c219-c1c6-0bb4-f379-e73f40adfa8e@tronnes.org>
 MIME-Version: 1.0
-In-Reply-To: <7f8562df-7e1f-dcfb-1c58-f1edd9dcc606@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="t9eMn3jl6KwcYz0iCxm3oll8aCOnlDRLo"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <0822c219-c1c6-0bb4-f379-e73f40adfa8e@tronnes.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---t9eMn3jl6KwcYz0iCxm3oll8aCOnlDRLo
-Content-Type: multipart/mixed; boundary="DFHLtkuiMWmSrmqVbMA3p8REMY4RbpHUp";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Rajeev Nandan <rajeevny@codeaurora.org>, dri-devel@lists.freedesktop.org,
- linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org,
- devicetree@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, thierry.reding@gmail.com, sam@ravnborg.org,
- robdclark@gmail.com, dianders@chromium.org, lyude@redhat.com,
- jani.nikula@intel.com, robh@kernel.org, laurent.pinchart@ideasonboard.com,
- a.hajda@samsung.com, daniel.thompson@linaro.org, hoegsberg@chromium.org,
- abhinavk@codeaurora.org, seanpaul@chromium.org, kalyan_t@codeaurora.org,
- mkrishn@codeaurora.org, lee.jones@linaro.org, jingoohan1@gmail.com,
- linux-fbdev@vger.kernel.org
-Message-ID: <00e95983-c7de-1091-d295-9d544f37687c@suse.de>
-Subject: Re: [v8 1/6] drm/panel: add basic DP AUX backlight support
-References: <1624726268-14869-1-git-send-email-rajeevny@codeaurora.org>
- <1624726268-14869-2-git-send-email-rajeevny@codeaurora.org>
- <7f8562df-7e1f-dcfb-1c58-f1edd9dcc606@suse.de>
-In-Reply-To: <7f8562df-7e1f-dcfb-1c58-f1edd9dcc606@suse.de>
+On Fri, Jul 09, 2021 at 03:53:16PM +0200, Noralf Trønnes wrote:
+> 
+> 
+> Den 09.07.2021 15.26, skrev Marek Vasut:
+> > The note in c2adda27d202f ("video: backlight: Add of_find_backlight helper
+> > in backlight.c") says that gpio-backlight uses brightness as power state.
+> > This has been fixed since in ec665b756e6f7 ("backlight: gpio-backlight:
+> > Correct initial power state handling") and other backlight drivers do not
+> > require this workaround. Drop the workaround.
+> > 
+> > This fixes the case where e.g. pwm-backlight can perfectly well be set to
+> > brightness 0 on boot in DT, which without this patch leads to the display
+> > brightness to be max instead of off.
+> > 
+> > Fixes: c2adda27d202f ("video: backlight: Add of_find_backlight helper in backlight.c")
+> 
+> I not sure about the rules, but if this is automatically picked up for
+> stable, maybe this is needed to avoid changing behaviour on 4.19:
+> 
+> 
+> of_find_backlight() was added in 4.17 and the gpio fix in 5.4.
+> 
+> Or perhaps there are other ways to signal this dependency.
 
---DFHLtkuiMWmSrmqVbMA3p8REMY4RbpHUp
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+Agree we need to make sure the Fixes: tag doesn't provoke regressions
+in v4.19.
 
-Hi
+Is this the syntax appropriate?
 
-Am 12.07.21 um 11:41 schrieb Thomas Zimmermann:
->=20
->=20
-> Am 26.06.21 um 18:51 schrieb Rajeev Nandan:
->> Some panels support backlight control over DP AUX channel using
->> VESA's standard backlight control interface.
->> Using new DRM eDP backlight helpers, add support to create and
->> register a backlight for those panels in drm_panel to simplify
->> the panel drivers.
->>
->> The panel driver with access to "struct drm_dp_aux" can create and
->> register a backlight device using following code snippet in its
->> probe() function:
->>
->> =C2=A0=C2=A0=C2=A0=C2=A0err =3D drm_panel_dp_aux_backlight(panel, aux)=
-;
->> =C2=A0=C2=A0=C2=A0=C2=A0if (err)
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return err;
->>
->> Then drm_panel will handle backlight_(enable|disable) calls
->> similar to the case when drm_panel_of_backlight() is used.
->>
->> Currently, we are not supporting one feature where the source
->> device can combine the backlight brightness levels set through
->> DP AUX and the BL_PWM_DIM eDP connector pin. Since it's not
->> required for the basic backlight controls, it can be added later.
->>
->> Signed-off-by: Rajeev Nandan <rajeevny@codeaurora.org>
->> Reviewed-by: Douglas Anderson <dianders@chromium.org>
->> Reviewed-by: Lyude Paul <lyude@redhat.com>
->> ---
->>
->> Changes in v5:
->> - New
->>
->> Changes in v6:
->> - Fixed ordering of memory allocation (Douglas)
->> - Updated word wrapping in a comment (Douglas)
->>
->> Changes in v8:
->> - Now using backlight_is_blank() to get the backlight blank status=20
->> (Sam Ravnborg)
->>
->> =C2=A0 drivers/gpu/drm/drm_panel.c | 108=20
->> ++++++++++++++++++++++++++++++++++++++++++++
->> =C2=A0 include/drm/drm_panel.h=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 15 ++++=
---
->> =C2=A0 2 files changed, 119 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/gpu/drm/drm_panel.c b/drivers/gpu/drm/drm_panel.c=
-
->> index f634371..4fa1e3b 100644
->> --- a/drivers/gpu/drm/drm_panel.c
->> +++ b/drivers/gpu/drm/drm_panel.c
->> @@ -26,12 +26,20 @@
->> =C2=A0 #include <linux/module.h>
->> =C2=A0 #include <drm/drm_crtc.h>
->> +#include <drm/drm_dp_helper.h>
->> =C2=A0 #include <drm/drm_panel.h>
->> =C2=A0 #include <drm/drm_print.h>
->> =C2=A0 static DEFINE_MUTEX(panel_lock);
->> =C2=A0 static LIST_HEAD(panel_list);
->> +struct dp_aux_backlight {
->> +=C2=A0=C2=A0=C2=A0 struct backlight_device *base;
->> +=C2=A0=C2=A0=C2=A0 struct drm_dp_aux *aux;
->> +=C2=A0=C2=A0=C2=A0 struct drm_edp_backlight_info info;
->> +=C2=A0=C2=A0=C2=A0 bool enabled;
->> +};
->> +
->> =C2=A0 /**
->> =C2=A0=C2=A0 * DOC: drm panel
->> =C2=A0=C2=A0 *
->> @@ -342,6 +350,106 @@ int drm_panel_of_backlight(struct drm_panel *pan=
-el)
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return 0;
->> =C2=A0 }
->> =C2=A0 EXPORT_SYMBOL(drm_panel_of_backlight);
->> +
->> +static int dp_aux_backlight_update_status(struct backlight_device *bd=
-)
->> +{
->> +=C2=A0=C2=A0=C2=A0 struct dp_aux_backlight *bl =3D bl_get_data(bd);
->> +=C2=A0=C2=A0=C2=A0 u16 brightness =3D backlight_get_brightness(bd);
->> +=C2=A0=C2=A0=C2=A0 int ret =3D 0;
->> +
->> +=C2=A0=C2=A0=C2=A0 if (!backlight_is_blank(bd)) {
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (!bl->enabled) {
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 dr=
-m_edp_backlight_enable(bl->aux, &bl->info, brightness);
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 bl=
-->enabled =3D true;
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 re=
-turn 0;
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ret =3D drm_edp_backlight_=
-set_level(bl->aux, &bl->info,=20
->> brightness);
->> +=C2=A0=C2=A0=C2=A0 } else {
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 if (bl->enabled) {
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 dr=
-m_edp_backlight_disable(bl->aux, &bl->info);
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 bl=
-->enabled =3D false;
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 }
->> +=C2=A0=C2=A0=C2=A0 }
->> +
->> +=C2=A0=C2=A0=C2=A0 return ret;
->> +}
->> +
->> +static const struct backlight_ops dp_aux_bl_ops =3D {
->> +=C2=A0=C2=A0=C2=A0 .update_status =3D dp_aux_backlight_update_status,=
-
->> +};
->> +
->> +/**
->> + * drm_panel_dp_aux_backlight - create and use DP AUX backlight
->> + * @panel: DRM panel
->> + * @aux: The DP AUX channel to use
->> + *
->> + * Use this function to create and handle backlight if your panel
->> + * supports backlight control over DP AUX channel using DPCD
->> + * registers as per VESA's standard backlight control interface.
->> + *
->> + * When the panel is enabled backlight will be enabled after a
->> + * successful call to &drm_panel_funcs.enable()
->> + *
->> + * When the panel is disabled backlight will be disabled before the
->> + * call to &drm_panel_funcs.disable().
->> + *
->> + * A typical implementation for a panel driver supporting backlight
->> + * control over DP AUX will call this function at probe time.
->> + * Backlight will then be handled transparently without requiring
->> + * any intervention from the driver.
->> + *
->> + * drm_panel_dp_aux_backlight() must be called after the call to=20
->> drm_panel_init().
->> + *
->> + * Return: 0 on success or a negative error code on failure.
->> + */
->> +int drm_panel_dp_aux_backlight(struct drm_panel *panel, struct=20
->> drm_dp_aux *aux)
->> +{
->> +=C2=A0=C2=A0=C2=A0 struct dp_aux_backlight *bl;
->> +=C2=A0=C2=A0=C2=A0 struct backlight_properties props =3D { 0 };
->> +=C2=A0=C2=A0=C2=A0 u16 current_level;
->> +=C2=A0=C2=A0=C2=A0 u8 current_mode;
->> +=C2=A0=C2=A0=C2=A0 u8 edp_dpcd[EDP_DISPLAY_CTL_CAP_SIZE];
->> +=C2=A0=C2=A0=C2=A0 int ret;
->> +
->> +=C2=A0=C2=A0=C2=A0 if (!panel || !panel->dev || !aux)
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 return -EINVAL;
->> +
->> +=C2=A0=C2=A0=C2=A0 ret =3D drm_dp_dpcd_read(aux, DP_EDP_DPCD_REV, edp=
-_dpcd,
->> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 EDP_DISPLAY_CTL_CAP_SIZE);
->=20
-> This creates a cyclic dependency between drm_kms_helper-ko and drm.ko. =
-
-> drm_panel.c is in the latter, while drm_dp_dpcd_read() in=20
-> drm_dp_helper.c is in the former. Please fix.
-
-FYI, build DRM as modules and the error shows up during make module_insta=
-ll.
-
-Best regards
-Thomas
+Cc: <stable@vger.kernel.org> # 5.4+
+Cc: <stable@vger.kernel.org> # 4.19.x: ec665b756e6f7: backlight: gpio-backlight: Correct initial power state handling
 
 
---=20
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
-(HRB 36809, AG N=C3=BCrnberg)
-Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
+> > Signed-off-by: Marek Vasut <marex@denx.de>
+> > Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> > Cc: Meghana Madhyastha <meghana.madhyastha@gmail.com>
+> > Cc: Noralf Trønnes <noralf@tronnes.org>
+> > Cc: Sean Paul <seanpaul@chromium.org>
+> > Cc: Thierry Reding <treding@nvidia.com>
+> > ---
+> 
+> Acked-by: Noralf Trønnes <noralf@tronnes.org>
+
+With the above (or something similar to avoid problems with v4.19):
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
 
---DFHLtkuiMWmSrmqVbMA3p8REMY4RbpHUp--
-
---t9eMn3jl6KwcYz0iCxm3oll8aCOnlDRLo
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmDsDygFAwAAAAAACgkQlh/E3EQov+AU
-kw//R7KbArU8YSyU6DQ9XelF9MKwAlhPhJXTR5BGVwrq8JiRKrc+JXxyAe1ScbUUEhIbMsgFHN3E
-X/MQ/qxycEc8A/Ud5hAOzGLdA+06WsDvDsN5TPBNmbJ/gTBIqnkj9nPWXNAhyVIm6pPjSJi7kwDZ
-j6cK8dUz3Np1W5ewQfMakllblTXHnYqD2q0fUGGNmsSnMSOc69rLataleWk70M3xZYBolAOMQpuG
-8EaVuVOXG1KyQSka15oZgpRnRsfXbfww5XKZca6hbUKZuJI7iMQtK8UHjL6ZGyL+2fQUqKKIqaxL
-Ksx6JFvA56BLDzoVokkOgx0DHw/VfqSU1w+uDIxrI7g1NtKxJaxr3wlQl94O0fVbPrzlJqp7ZxyT
-NA8FXUFB7EyyxfkpkVm/0jt2lFZfXLFS+kmcdR/j0cCwxxORnDmAL5TRLsIlz++J8Sfaj6UXtvq7
-5yvD56i7oQLCbgQFPUdlnCiziF4XVN0xQVkph43A6g5b0V9tDr2vHcIMuP2+oNq0eGJ1eBk0s7w5
-Y5LTfeugG+uXmeLxFRmEdQXQeuxGblg65r5tW5mZhEN/lvHKy9pgEk84tfueSdTYAE4UxZHNOYl/
-4xrUPztEJ8BHzL9PDSW47BgtCHht074azHLhX45a5qcMmuoFRW61OMpwSMAL+yC5vw0sN0b+7OH5
-VVE=
-=/HfC
------END PGP SIGNATURE-----
-
---t9eMn3jl6KwcYz0iCxm3oll8aCOnlDRLo--
+Daniel.

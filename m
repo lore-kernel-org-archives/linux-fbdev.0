@@ -2,114 +2,175 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EFB7C07E99
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 13:40:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A960C07E99
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 14:37:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E27C960FE7
-	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 13:40:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EF56A61156
+	for <linux-fbdev@archiver.kernel.org>; Mon, 12 Jul 2021 14:37:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234585AbhGLNms (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 12 Jul 2021 09:42:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45112 "EHLO
+        id S235209AbhGLOkl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 12 Jul 2021 10:40:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58536 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234434AbhGLNmn (ORCPT
+        with ESMTP id S235179AbhGLOkk (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 12 Jul 2021 09:42:43 -0400
-Received: from mail-vk1-xa32.google.com (mail-vk1-xa32.google.com [IPv6:2607:f8b0:4864:20::a32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D37BC0613E9
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jul 2021 06:39:54 -0700 (PDT)
-Received: by mail-vk1-xa32.google.com with SMTP id bb26so3781705vkb.10
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jul 2021 06:39:54 -0700 (PDT)
+        Mon, 12 Jul 2021 10:40:40 -0400
+Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1ADB8C0613E5
+        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jul 2021 07:37:52 -0700 (PDT)
+Received: by mail-wm1-x335.google.com with SMTP id b14-20020a1c1b0e0000b02901fc3a62af78so14593601wmb.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jul 2021 07:37:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=/y3AswAn7xrfStWckKQ4mdfAYQv8LuashoWFVm7wmnI=;
-        b=JIUoCU9T0XfyuPyJPuVrcxCa8UoWsH/qeP/iWmQomkfVNKt6Mnzy8lEYTsbBLAjQDY
-         qA2lrYcGl7R7GwRo7zb4EcRYe0d2sy5LWLilGAQERXHWRpwcRsU4AXvQl2DgNurV6j9N
-         GaO1ghyx3qKRzIY5oEx/5Ib8QbPhKF1MbPyX8=
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=5MvsjY4pTEd5k29K3lYAodvANPB7dCwy0fDdN4Dc+OU=;
+        b=DL95kZw7btL3htFTaW94KekmngiAohubrwxs52d8zHcU2Pbn5FIq7Y1SsbA7R09BqS
+         eFcpL7PqpCyuTqLIAzpNm23Z04Gqg/XOiVnaxa2X0FlakC/xkAJkHizc8EUURhyOzF/s
+         RLdM1aY0/8HeyoOOqmiWLFcb9UmOz8UikBLp4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=/y3AswAn7xrfStWckKQ4mdfAYQv8LuashoWFVm7wmnI=;
-        b=RBpETkPAkhIx8LqkOyyn09d4MFrh7iqG9Oahyd4szjYGxBdK7Mxk0jmDQKekfG4iVe
-         ZjbvcT8bgbCPJKwXej4kgE3XBDK3wJdzudMrA4uMlAva6zl2sSTtNLLei+BHSq+9uVuH
-         jF3Wi9ktg58KP74LHa1mPYd5bJ0cUJ97etCcyQVVncB274toYC/D5Fnqw6oH3d1uyhzR
-         B0ro72VhUjPxUPNQb5PzUjzsY78vVOSJYio6eBUUHwUhO7QyQRsAC+6+FgZwf/ZMPt9P
-         +gJzpKyDyd9KiRaHlOlhdn31bgm+58bH6V7pCojCH/MyDMYnhm+7MDoFvi4je2Lh5vEH
-         hGRQ==
-X-Gm-Message-State: AOAM533oWepYLgU8ihL91I6ObCfg7VaHI603KoWG3MjvVYD4A67ZZJBR
-        P3n4pYPn/qrtdnsW/GwI3vnThFbsjikuww==
-X-Google-Smtp-Source: ABdhPJyFoimG0vPGjOgBjeCYwzIKKkUhRl1mN94BsIk3AYj4wXu4mtuvLIeLPZBlbI9CBt9Xs+XyBQ==
-X-Received: by 2002:ac5:c941:: with SMTP id s1mr42590411vkm.23.1626097193243;
-        Mon, 12 Jul 2021 06:39:53 -0700 (PDT)
-Received: from mail-ua1-f41.google.com (mail-ua1-f41.google.com. [209.85.222.41])
-        by smtp.gmail.com with ESMTPSA id j5sm126963uak.2.2021.07.12.06.39.53
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 12 Jul 2021 06:39:53 -0700 (PDT)
-Received: by mail-ua1-f41.google.com with SMTP id 109so2832681uar.10
-        for <linux-fbdev@vger.kernel.org>; Mon, 12 Jul 2021 06:39:53 -0700 (PDT)
-X-Received: by 2002:a25:3486:: with SMTP id b128mr71633896yba.523.1626097181672;
- Mon, 12 Jul 2021 06:39:41 -0700 (PDT)
-MIME-Version: 1.0
-References: <1624726268-14869-1-git-send-email-rajeevny@codeaurora.org>
- <1624726268-14869-2-git-send-email-rajeevny@codeaurora.org> <7f8562df-7e1f-dcfb-1c58-f1edd9dcc606@suse.de>
-In-Reply-To: <7f8562df-7e1f-dcfb-1c58-f1edd9dcc606@suse.de>
-From:   Doug Anderson <dianders@chromium.org>
-Date:   Mon, 12 Jul 2021 06:39:29 -0700
-X-Gmail-Original-Message-ID: <CAD=FV=V8CaKObbQTCsX2GrP=O8aJUaWLZY3zgBMRATtSn6Be4g@mail.gmail.com>
-Message-ID: <CAD=FV=V8CaKObbQTCsX2GrP=O8aJUaWLZY3zgBMRATtSn6Be4g@mail.gmail.com>
-Subject: Re: [v8 1/6] drm/panel: add basic DP AUX backlight support
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Rajeev Nandan <rajeevny@codeaurora.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        freedreno <freedreno@lists.freedesktop.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :in-reply-to;
+        bh=5MvsjY4pTEd5k29K3lYAodvANPB7dCwy0fDdN4Dc+OU=;
+        b=sGHWYiVJ2nK0Gv3rCboa+3EGXbE4nSTOwcgQcCBRFZtHYj8NHz5JNQNjk+QhLccuzX
+         cIUsZ+c0ZN8e+pg9i7QUEe/B/nJocyGxusP6mS5HQBv/HGFTV8jpKMH2J6A6xYwe3wnB
+         zJSzUr/3n4npQGQPxY+P7WzyB06Rrvq2lMH/icKHvXRBzuGxLd2BpUQWsne7H8fQAHtB
+         Nt1u6bZZ3yBhsBRvARdcGxFV/BBpqi7AJN5F0Hafywb/6/Fkvdz+kVE0iQ0si2mlaJ/j
+         N9IcUR+NE5rUfB/Nflx/UEXbLKfgRKpeGDxW/zbo+BVH1vMOh2IIY/lwHyTxOJkh/JPD
+         5W4g==
+X-Gm-Message-State: AOAM532vBojham+fHB7yJDhfDokY0WA4rss81ulWuke+tRtD97BWLs6I
+        5dWRAHPpXkIlY1QOScPIfzJHDw==
+X-Google-Smtp-Source: ABdhPJxQay/+e0GLtdI0ff33EQHMLSIiRe5WWhtjGOPQLPgpU8vOTCjIMVM1pdQ7c3u9d0Pa7Ymgqw==
+X-Received: by 2002:a05:600c:1d1f:: with SMTP id l31mr3197939wms.26.1626100670687;
+        Mon, 12 Jul 2021 07:37:50 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id l20sm13057801wmq.3.2021.07.12.07.37.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Jul 2021 07:37:49 -0700 (PDT)
+Date:   Mon, 12 Jul 2021 16:37:48 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Zhen Lei <thunder.leizhen@huawei.com>
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Sam Ravnborg <sam@ravnborg.org>,
-        Rob Clark <robdclark@gmail.com>, Lyude Paul <lyude@redhat.com>,
-        Jani Nikula <jani.nikula@intel.com>,
-        Rob Herring <robh@kernel.org>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Andrzej Hajda <a.hajda@samsung.com>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        "Kristian H. Kristensen" <hoegsberg@chromium.org>,
-        Abhinav Kumar <abhinavk@codeaurora.org>,
-        Sean Paul <seanpaul@chromium.org>,
-        Kalyan Thota <kalyan_t@codeaurora.org>,
-        Krishna Manikandan <mkrishn@codeaurora.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        linux-fbdev <linux-fbdev@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Subject: Re: [PATCH 1/1] fbmem: Do not delete the mode that is still in use
+Message-ID: <YOxTvOayYYCro+qh@phenom.ffwll.local>
+Mail-Followup-To: Zhen Lei <thunder.leizhen@huawei.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        linux-fbdev <linux-fbdev@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+References: <20210712085544.2828-1-thunder.leizhen@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210712085544.2828-1-thunder.leizhen@huawei.com>
+X-Operating-System: Linux phenom 5.10.0-7-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+On Mon, Jul 12, 2021 at 04:55:44PM +0800, Zhen Lei wrote:
+> The execution of fb_delete_videomode() is not based on the result of the
+> previous fbcon_mode_deleted(). As a result, the mode is directly deleted,
+> regardless of whether it is still in use, which may cause UAF.
+> 
+> ==================================================================
+> BUG: KASAN: use-after-free in fb_mode_is_equal+0x36e/0x5e0 \
+> drivers/video/fbdev/core/modedb.c:924
+> Read of size 4 at addr ffff88807e0ddb1c by task syz-executor.0/18962
+> 
+> CPU: 2 PID: 18962 Comm: syz-executor.0 Not tainted 5.10.45-rc1+ #3
+> Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS ...
+> Call Trace:
+>  __dump_stack lib/dump_stack.c:77 [inline]
+>  dump_stack+0x137/0x1be lib/dump_stack.c:118
+>  print_address_description+0x6c/0x640 mm/kasan/report.c:385
+>  __kasan_report mm/kasan/report.c:545 [inline]
+>  kasan_report+0x13d/0x1e0 mm/kasan/report.c:562
+>  fb_mode_is_equal+0x36e/0x5e0 drivers/video/fbdev/core/modedb.c:924
+>  fbcon_mode_deleted+0x16a/0x220 drivers/video/fbdev/core/fbcon.c:2746
+>  fb_set_var+0x1e1/0xdb0 drivers/video/fbdev/core/fbmem.c:975
+>  do_fb_ioctl+0x4d9/0x6e0 drivers/video/fbdev/core/fbmem.c:1108
+>  vfs_ioctl fs/ioctl.c:48 [inline]
+>  __do_sys_ioctl fs/ioctl.c:753 [inline]
+>  __se_sys_ioctl+0xfb/0x170 fs/ioctl.c:739
+>  do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+>  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+> 
+> Freed by task 18960:
+>  kasan_save_stack mm/kasan/common.c:48 [inline]
+>  kasan_set_track+0x3d/0x70 mm/kasan/common.c:56
+>  kasan_set_free_info+0x17/0x30 mm/kasan/generic.c:355
+>  __kasan_slab_free+0x108/0x140 mm/kasan/common.c:422
+>  slab_free_hook mm/slub.c:1541 [inline]
+>  slab_free_freelist_hook+0xd6/0x1a0 mm/slub.c:1574
+>  slab_free mm/slub.c:3139 [inline]
+>  kfree+0xca/0x3d0 mm/slub.c:4121
+>  fb_delete_videomode+0x56a/0x820 drivers/video/fbdev/core/modedb.c:1104
+>  fb_set_var+0x1f3/0xdb0 drivers/video/fbdev/core/fbmem.c:978
+>  do_fb_ioctl+0x4d9/0x6e0 drivers/video/fbdev/core/fbmem.c:1108
+>  vfs_ioctl fs/ioctl.c:48 [inline]
+>  __do_sys_ioctl fs/ioctl.c:753 [inline]
+>  __se_sys_ioctl+0xfb/0x170 fs/ioctl.c:739
+>  do_syscall_64+0x2d/0x70 arch/x86/entry/common.c:46
+>  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+> 
+> Fixes: 13ff178ccd6d ("fbcon: Call fbcon_mode_deleted/new_modelist directly")
+> Signed-off-by: Zhen Lei <thunder.leizhen@huawei.com>
 
-On Mon, Jul 12, 2021 at 2:41 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
->
-> > +     ret = drm_dp_dpcd_read(aux, DP_EDP_DPCD_REV, edp_dpcd,
-> > +                            EDP_DISPLAY_CTL_CAP_SIZE);
->
-> This creates a cyclic dependency between drm_kms_helper-ko and drm.ko.
-> drm_panel.c is in the latter, while drm_dp_dpcd_read() in
-> drm_dp_helper.c is in the former. Please fix.
+Nice catch, that indeed got lost.
 
-Yeah, this was reported Friday and I posted a patch to try to fix it:
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: <stable@vger.kernel.org> # v5.3+
 
-https://lore.kernel.org/lkml/20210709152909.1.I23eb4cc5a680341e7b3e791632a635566fa5806a@changeid/
+Needs to be applied to drm-misc-fixes, but the tree isn't ready yet.
+-Daniel
 
-I see Rajeev had some feedback on it. Once I've dug out of my weekend
-email hole I'll take a look at plan to post a v2 ASAP.
+> ---
+>  drivers/video/fbdev/core/fbmem.c | 12 +++++-------
+>  1 file changed, 5 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> index 98f193078c05..1c855145711b 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -970,13 +970,11 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+>  		fb_var_to_videomode(&mode2, &info->var);
+>  		/* make sure we don't delete the videomode of current var */
+>  		ret = fb_mode_is_equal(&mode1, &mode2);
+> -
+> -		if (!ret)
+> -			fbcon_mode_deleted(info, &mode1);
+> -
+> -		if (!ret)
+> -			fb_delete_videomode(&mode1, &info->modelist);
+> -
+> +		if (!ret) {
+> +			ret = fbcon_mode_deleted(info, &mode1);
+> +			if (!ret)
+> +				fb_delete_videomode(&mode1, &info->modelist);
+> +		}
+>  
+>  		return ret ? -EINVAL : 0;
+>  	}
+> -- 
+> 2.25.1
+> 
+> 
 
--Doug
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

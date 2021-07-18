@@ -2,106 +2,141 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4664AC636CA
-	for <linux-fbdev@archiver.kernel.org>; Sun, 18 Jul 2021 19:43:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FB65C636CB
+	for <linux-fbdev@archiver.kernel.org>; Sun, 18 Jul 2021 21:14:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1822E61073
-	for <linux-fbdev@archiver.kernel.org>; Sun, 18 Jul 2021 19:43:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 34B2C60FED
+	for <linux-fbdev@archiver.kernel.org>; Sun, 18 Jul 2021 21:14:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229697AbhGRTqR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 18 Jul 2021 15:46:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34648 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229585AbhGRTqR (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 18 Jul 2021 15:46:17 -0400
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 292E0C061762;
-        Sun, 18 Jul 2021 12:43:19 -0700 (PDT)
-Received: by mail-pj1-x102f.google.com with SMTP id bt15so10058638pjb.2;
-        Sun, 18 Jul 2021 12:43:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=7exFBskhTjXcI0G1jQYaweC6zi6nB0YxhW9GhW8QVJk=;
-        b=hTAqgsHvvgfNcEagZtVOoEg9FPZ1K7swFoeQE74LVxhVPjWe4cMJ36z1icfI5N90l0
-         Q5NEeHaePN4cZlD/CHtW4Q3HajTJXac5NUjQ3Tfn2qYdk7cJOxD93QiuahCUEOdvoYan
-         yWAQXjAMKElZboyb3fVwi3x1JZL/sJ6Kaf4cbOmJ4HWzjIM7H5CRcv+C/ovoiTK5KLZO
-         MewH468+Xkk/Jq2ehDT+j7bKEfHjqYerJXYXfL+fUWicAa9dKBPN3mXL6A41iuyJcvu0
-         q699wJgigkj4sMp84K14HXfLRz4drOEqjzlqLQhWSBDA6e5vjBNH9oe/EgXH+w0RCd+7
-         LXXQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=7exFBskhTjXcI0G1jQYaweC6zi6nB0YxhW9GhW8QVJk=;
-        b=hzXQQjqBS0Dn4fcomJyCxdw5jlUTqkBv7NNsLWVST38focPuLioFLiv39VW7D2xDT3
-         U86rtZtpcNuNJwPPRchhD54vpO5K89FUpr4Wnr/NtUdis/SQVXveaHnv7ITBxSWY1Ix4
-         LeILry6BiLyVOILgsQLL5bT+imfUV8iUPQPx4zj10Ab0jV+IZlp95rofNGF9e69R0CEA
-         Ttp6BlOg3mC/ZuARw/n59Ip8yFJVjcC7J7Xt2kPLmY7RD1aG0RzxBTsiFF84/RsWAHnW
-         b73xbCQwwHC0ZHzs5at4lTbo0zNbjZcobfKJ4jgI20Qbp2izi1CD86lCncL9qLqxuHff
-         X1sg==
-X-Gm-Message-State: AOAM531FSTCXOaSqt7UbuJwxC+lz1d/Wl3G0M/SieLiC6nZErNQ+dHl8
-        ISGzI7P6PZ1uL2KdfmZ8yJxtzuyLyOrje/xm6aw=
-X-Google-Smtp-Source: ABdhPJxzjFnbQny4tL/Gtmd96c7VmxuNdY93ug+tJ2p9Dj5gOXvWXiaA+eeh1wWvAvNR+4wesFTmw2sp9FFlCmRM9oI=
-X-Received: by 2002:a17:902:b198:b029:11b:2246:e374 with SMTP id
- s24-20020a170902b198b029011b2246e374mr16552094plr.17.1626637398478; Sun, 18
- Jul 2021 12:43:18 -0700 (PDT)
+        id S229863AbhGRVR0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 18 Jul 2021 17:17:26 -0400
+Received: from phobos.denx.de ([85.214.62.61]:37914 "EHLO phobos.denx.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229585AbhGRVRZ (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Sun, 18 Jul 2021 17:17:25 -0400
+Received: from tr.lan (ip-89-176-112-137.net.upcbroadband.cz [89.176.112.137])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: marex@denx.de)
+        by phobos.denx.de (Postfix) with ESMTPSA id 955B68033E;
+        Sun, 18 Jul 2021 23:14:25 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+        s=phobos-20191101; t=1626642866;
+        bh=DpL/aZwfGE8i32NM528iche5Yn/SJH+28jhVNUngo+4=;
+        h=From:To:Cc:Subject:Date:From;
+        b=o1fvQV4lSaRFMuf7HvFJMi96Mzm5yxrk9yBX0havV6LgAvlfEnNwKltb50VOxySSA
+         78fpl7HpRa0ZFLNJ6LbHC1sU9HD3Sfb4NqkFAelRlGBKPFbvudRr7vXqaiAy2RHIEZ
+         +XgGuw2gTrhAdgx4QBuaNSOra+gVgzJ5RTIj6sPurnEVFVu+C+EbHuUeQOzBVGBOrn
+         AmWV6/avNi2nIUo6PuWiDrvcnEBMbe0QTD2C/1mlPCb92rVqWY/+h8CrElcuazpv28
+         CnbQwA9omZvQKr+nzaYsIZ8b4JTXkPhJI0D0jrf9FaFOsPfF+o3KbwJ1pLLwIh6yOh
+         cu5moKVO5+f3Q==
+From:   Marek Vasut <marex@denx.de>
+To:     dri-devel@lists.freedesktop.org
+Cc:     linux-fbdev@vger.kernel.org, Marek Vasut <marex@denx.de>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Thierry Reding <treding@nvidia.com>, linux-pwm@vger.kernel.org
+Subject: [PATCH] backlight: pwm_bl: Avoid backlight flicker if backlight control GPIO is input
+Date:   Sun, 18 Jul 2021 23:14:15 +0200
+Message-Id: <20210718211415.143709-1-marex@denx.de>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-References: <20210718133920.15825-1-len.baker@gmx.com>
-In-Reply-To: <20210718133920.15825-1-len.baker@gmx.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Sun, 18 Jul 2021 22:42:42 +0300
-Message-ID: <CAHp75VeEA0=KFsfdjCnBm-b9+F+NnFWJ38nkh+qtb85XdXVWog@mail.gmail.com>
-Subject: Re: [PATCH] staging/fbtft: Remove all strcpy() uses
-To:     Len Baker <len.baker@gmx.com>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Phil Reid <preid@electromag.com.au>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        linux-staging@lists.linux.dev,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: clamav-milter 0.103.2 at phobos.denx.de
+X-Virus-Status: Clean
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Jul 18, 2021 at 4:43 PM Len Baker <len.baker@gmx.com> wrote:
->
-> strcpy() performs no bounds checking on the destination buffer. This
-> could result in linear overflows beyond the end of the buffer, leading
-> to all kinds of misbehaviors. The safe replacement is strscpy() but in
-> this case it is simpler to add NULL to the first position since we want
-> to empty the string.
+If the backlight enable GPIO is configured as input, the driver currently
+unconditionally forces the GPIO to output-enable. This can cause backlight
+flicker on boot e.g. in case the GPIO should not be enabled before the PWM
+is configured and is correctly pulled low by external resistor.
 
-> This is a previous step in the path to remove the strcpy() function.
+Fix this by extending the current check to differentiate between backlight
+GPIO enable set as input and set as direction unknown. In case of input,
+read the GPIO value to determine the pull resistor placement, set the GPIO
+as output, and drive that exact value it was pulled to. In case of unknown
+direction, retain previous behavior, that is set the GPIO as output-enable.
 
-Any document behind this (something to read on the site(s) more or
-less affiliated with what is going to happen in the kernel) to read
-background?
+Fixes: 3698d7e7d221 ("backlight: pwm_bl: Avoid backlight flicker when probed from DT")
+Signed-off-by: Marek Vasut <marex@denx.de>
+Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Heiko Stuebner <heiko@sntech.de>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: Thierry Reding <treding@nvidia.com>
+Cc: linux-pwm@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+To: dri-devel@lists.freedesktop.org
+---
+NOTE: I think this whole auto-detection scheme should just be replaced by a
+      DT prop, because it is very fragile.
+---
+ drivers/video/backlight/pwm_bl.c | 35 +++++++++++++++++++++++---------
+ 1 file changed, 25 insertions(+), 10 deletions(-)
 
-...
-
->                 case -1:
->                         i++;
->                         /* make debug message */
-> -                       strcpy(msg, "");
-> +                       msg[0] = 0;
-
-Strictly speaking it should be '\0'.
-
->                         j = i + 1;
->                         while (par->init_sequence[j] >= 0) {
->                                 sprintf(str, "0x%02X ", par->init_sequence[j]);
-
-
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index e48fded3e414..7ec992b722eb 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -445,7 +445,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	struct device_node *node = pdev->dev.of_node;
+ 	struct pwm_bl_data *pb;
+ 	struct pwm_state state;
+-	unsigned int i;
++	unsigned int i, dir, val;
+ 	int ret;
+ 
+ 	if (!data) {
+@@ -487,16 +487,31 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/*
+-	 * If the GPIO is not known to be already configured as output, that
+-	 * is, if gpiod_get_direction returns either 1 or -EINVAL, change the
+-	 * direction to output and set the GPIO as active.
+-	 * Do not force the GPIO to active when it was already output as it
+-	 * could cause backlight flickering or we would enable the backlight too
+-	 * early. Leave the decision of the initial backlight state for later.
++	 * If the GPIO is not known to be already configured as output, then:
++	 * - if the GPIO direction is input, read its current value to find out
++	 *   whether the pin is pulled high or low (it is backlight control, so
++	 *   it cannot be floating), change the direction to output and set the
++	 *   GPIO such that it drives this strapped value.
++	 *   Do not force the GPIO to state which is different than that to
++	 *   which the GPIO was pulled to, this could cause backlight flicker
++	 *   on boot e.g. in case the PWM is not ready yet.
++	 * - if the GPIO direction is unknown, tahat is, if gpiod_get_direction
++	 *   returns -EINVAL, change the direction to output and set the GPIO
++	 *   as active.
++	 *   Do not force the GPIO to active when it was already output as it
++	 *   could cause backlight flickering or we would enable the backlight
++	 *   too early. Leave the decision of the initial backlight state for
++	 *   later.
+ 	 */
+-	if (pb->enable_gpio &&
+-	    gpiod_get_direction(pb->enable_gpio) != 0)
+-		gpiod_direction_output(pb->enable_gpio, 1);
++	if (pb->enable_gpio) {
++		dir = gpiod_get_direction(pb->enable_gpio);
++		if (dir != 0) {
++			val = 1;
++			if (dir == 1)
++				val = gpiod_get_value_cansleep(pb->enable_gpio);
++			gpiod_direction_output(pb->enable_gpio, val);
++		}
++	}
+ 
+ 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+ 	if (IS_ERR(pb->power_supply)) {
 -- 
-With Best Regards,
-Andy Shevchenko
+2.30.2
+

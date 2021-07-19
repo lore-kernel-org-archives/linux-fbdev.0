@@ -2,196 +2,114 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 115AEC636CE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Jul 2021 11:23:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E639AC07E9B
+	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Jul 2021 23:27:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F1D7F6112D
-	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Jul 2021 11:23:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BA0BA6113A
+	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Jul 2021 23:27:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236302AbhGSKms (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 19 Jul 2021 06:42:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34772 "EHLO
+        id S237769AbhGSWpx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 19 Jul 2021 18:45:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48190 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236718AbhGSKla (ORCPT
+        with ESMTP id S1386015AbhGSTXI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 19 Jul 2021 06:41:30 -0400
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1607EC061574
-        for <linux-fbdev@vger.kernel.org>; Mon, 19 Jul 2021 03:32:53 -0700 (PDT)
-Received: by mail-wr1-x429.google.com with SMTP id d12so21530546wre.13
-        for <linux-fbdev@vger.kernel.org>; Mon, 19 Jul 2021 04:22:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=19Ti1NA8xVHCqT+B8GYPMXpjdTLfZFTkg7dVmDYiAEs=;
-        b=jAyCwfKi2yqyRkfxA82+bQyCTExzPurK7LDyypufme3eSHYHBzPBWBBBnUzo9GBfRs
-         NJ3jnlfG8TJxNXEc/L4SnQfF9D7h7uBmkJLc1cdMiJ7RbSW4WKDeZpSy9zsDkUjHxqmb
-         8nrIEwuTsY4HuqFcbixvcihqEuKWBMazj63bwpma3KAtWLMewuGZZJq2u4pH2tQaznkh
-         nJiP/BSTiYrXkBeS5bWQcjpr5T8xEePeNmxEmxVEpmqHWjOFynRLzTAQMTrsBNumWF9g
-         6iAReWVOaKoSOJpTMYTewADer5Nk0IgOlnR1I+sw76QkwhtfZzvMNtas7DZebVVSdYNo
-         QzRQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=19Ti1NA8xVHCqT+B8GYPMXpjdTLfZFTkg7dVmDYiAEs=;
-        b=dwiUi3nUSVTiGgEwxU2I9d/IJnEU0JHYshPfYqYp2Df+lcM3ucTAiQVaElm3vXg7us
-         8nnudoYFJ3utJDZdaCxBYIV60/WZVGPDi5ArN/d6BWbf6eBp9zSedmJNseEeBS6vLFBC
-         lc/oGJ+2z75ubI3fg7rixLg8YpYhg3YxtFvtE8TNPJ5me8Hvnv8nzjZTiKHqfoBQVXVQ
-         dbwB6TPYqkM9IdEViADWCRDv90pIrhDuWQkw0PmjoLWx0SzNA45+uMdOBnt3TxvlQ8+e
-         nkcZvsT+X3vROLiPS5rMxARLVm8bkw34J6GJzVMya0to+ftr3cK9gB2ud2Ch6NbGR1Ny
-         G8eQ==
-X-Gm-Message-State: AOAM533OoxvRv09oWYwHiFoEb0pvAXOqcIzgkV1y1GRVDXSLIrMivhwo
-        meuZErNHdqnMCJPwsWFUGEKlWw==
-X-Google-Smtp-Source: ABdhPJx1HmRU4Pb7pJdzPw2qozjXr9k8BAezOmNqwPaNbmc9C7dUNiBMx3ODTUPKpcXItKDcBZArEg==
-X-Received: by 2002:a05:6000:1867:: with SMTP id d7mr29237501wri.199.1626693725475;
-        Mon, 19 Jul 2021 04:22:05 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id d67sm20703707wmd.9.2021.07.19.04.22.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Jul 2021 04:22:04 -0700 (PDT)
-Date:   Mon, 19 Jul 2021 12:22:02 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Marek Vasut <marex@denx.de>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Christian Gmeiner <christian.gmeiner@gmail.com>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Thierry Reding <treding@nvidia.com>, linux-pwm@vger.kernel.org
-Subject: Re: [PATCH] backlight: pwm_bl: Avoid backlight flicker if backlight
- control GPIO is input
-Message-ID: <20210719112202.4fvmn57ibgy3yesa@maple.lan>
-References: <20210718211415.143709-1-marex@denx.de>
+        Mon, 19 Jul 2021 15:23:08 -0400
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7AF6C061574;
+        Mon, 19 Jul 2021 12:58:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:
+        Subject:Sender:Reply-To:Content-ID:Content-Description;
+        bh=/Va7aGBo6zBlj5l5FvHAL96Jxg2PHZuQ/EZJgrQ6pXY=; b=uIllQ1oDecOK6YrHSA/xXpXAoa
+        dih8CbN+tqUG3wjtT2oCviI53z39WfQLun7bH3S4ooLvohHCRHh3+pXKaYQXZvqQAhhS7PMEbkz3I
+        itfHGwOnblx3sLdxdsdl7+eeixxVLvIT7iImpTGK9BGHTxUUM00dN6C2+ruCRvSJbXwF4BJnMWD+f
+        pLqCAuHot4f0VhJNoVcB9P6Fnrar88g5dMSXPdKCyESEuuBEpTFZRx3f5FyX1exaRWuXUGmOJNvGP
+        KM6sjHfiNZIHW2eAaIp9rDQtu8hi2Yspq374sk/EBPgYq67XpTuf3HPl4fF3VMPj8ZFttVLTxFBs2
+        meQtNccg==;
+Received: from [2601:1c0:6280:3f0::aefb]
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1m5ZUO-00BDRo-88; Mon, 19 Jul 2021 20:03:44 +0000
+Subject: Re: [PATCH] fbdev: simplefb: limit its use to DRM_SIMPLEDRM=n
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Masahiro Yamada <masahiroy@kernel.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        kernel test robot <lkp@intel.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>
+References: <20210719023327.17039-1-rdunlap@infradead.org>
+ <CAMuHMdUtTzgnP4GR5phFcVnFVCrU1J87sner-XN6Koc_eZ7Zhg@mail.gmail.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <5a667be9-d2cb-d8fd-d321-b35e673b237e@infradead.org>
+Date:   Mon, 19 Jul 2021 13:03:43 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.11.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210718211415.143709-1-marex@denx.de>
+In-Reply-To: <CAMuHMdUtTzgnP4GR5phFcVnFVCrU1J87sner-XN6Koc_eZ7Zhg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Jul 18, 2021 at 11:14:15PM +0200, Marek Vasut wrote:
-> If the backlight enable GPIO is configured as input, the driver currently
-> unconditionally forces the GPIO to output-enable. This can cause backlight
-> flicker on boot e.g. in case the GPIO should not be enabled before the PWM
-> is configured and is correctly pulled low by external resistor.
+On 7/19/21 1:06 AM, Geert Uytterhoeven wrote:
+> Hi Randy,
 > 
-> Fix this by extending the current check to differentiate between backlight
-> GPIO enable set as input and set as direction unknown. In case of input,
-> read the GPIO value to determine the pull resistor placement, set the GPIO
-> as output, and drive that exact value it was pulled to. In case of unknown
-> direction, retain previous behavior, that is set the GPIO as output-enable.
+> On Mon, Jul 19, 2021 at 4:34 AM Randy Dunlap <rdunlap@infradead.org> wrote:
+>> When DRM_SIMPLEDRM=m, all of FB_CFB_{FILLRECT,COPYAREA,IMAGEBLIT} are =m,
 > 
-> Fixes: 3698d7e7d221 ("backlight: pwm_bl: Avoid backlight flicker when probed from DT")
-> Signed-off-by: Marek Vasut <marex@denx.de>
-> Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
-> Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> Cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: Philipp Zabel <p.zabel@pengutronix.de>
-> Cc: Thierry Reding <treding@nvidia.com>
-> Cc: linux-pwm@vger.kernel.org
-> Cc: linux-fbdev@vger.kernel.org
-> To: dri-devel@lists.freedesktop.org
-> ---
-> NOTE: I think this whole auto-detection scheme should just be replaced by a
->       DT prop, because it is very fragile.
+> Why does that happen?
+> FB_SIMPLE does select FB_CFB_*, so all of the latter should be builtin?
+> Do I need my morning coffee? I'm about to fetch it...
 
-I have some sympathy for this view... although I think the boat has
-already set sail.
+Hi Geert,
 
-However, on the basis of making things less fragile, I think the
-underlying problem here is the assumption that it is safe to modify
-enable_gpio before the driver has imposed state upon the PWM (this
-assumption has always been made and, in addition to systems where the BL
-has a phandle will also risks flicker problems on systems where
-power_pwm_on_delay is not zero).
+I have no idea why this happens. It feels like a kconfig bug to me.
 
-This patch does not change the assumption that we can configure the
-GPIO before we modify the PWM state. This means it won't fix the problem
-for cases there the pin is HiZ by default but whose GPIOD_ASIS state is
-neither input nor output.
-
-I wonder if it might be better to move the code to configure the
-direction of enable_gpio out of the probe function and into
-pwm_backlight_power_on():
-
-	if (pb->enable_gpio) {
-		if (gpiod_get_direction(pb->enable_gpio) != 0))
-			gpiod_direction_output(pb->enable_gpio, 1);
-		else
-			gpiod_set_value_can_sleep(pb->enable_gpio, 1);
-	}
-
-By the time we reach this function the driver explicitly applies state
-to the GPIO then we know what the value must be.
-
-
-Daniel.
-
-> ---
->  drivers/video/backlight/pwm_bl.c | 35 +++++++++++++++++++++++---------
->  1 file changed, 25 insertions(+), 10 deletions(-)
+>> causing undefined references in fbdev/simplefb.o.
+>>
+>> By restricting FB_SIMPLEFB to be set only when DRM_SIMPLEDRM is not set,
+>> the FB_CFB_* symbols are =y and the build completes without these
+>> undefined references.
+>>
+>> IOW, really "disable simplefb if simpledrm has been selected".
 > 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index e48fded3e414..7ec992b722eb 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -445,7 +445,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->  	struct device_node *node = pdev->dev.of_node;
->  	struct pwm_bl_data *pb;
->  	struct pwm_state state;
-> -	unsigned int i;
-> +	unsigned int i, dir, val;
->  	int ret;
->  
->  	if (!data) {
-> @@ -487,16 +487,31 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->  	}
->  
->  	/*
-> -	 * If the GPIO is not known to be already configured as output, that
-> -	 * is, if gpiod_get_direction returns either 1 or -EINVAL, change the
-> -	 * direction to output and set the GPIO as active.
-> -	 * Do not force the GPIO to active when it was already output as it
-> -	 * could cause backlight flickering or we would enable the backlight too
-> -	 * early. Leave the decision of the initial backlight state for later.
-> +	 * If the GPIO is not known to be already configured as output, then:
-> +	 * - if the GPIO direction is input, read its current value to find out
-> +	 *   whether the pin is pulled high or low (it is backlight control, so
-> +	 *   it cannot be floating), change the direction to output and set the
-> +	 *   GPIO such that it drives this strapped value.
-> +	 *   Do not force the GPIO to state which is different than that to
-> +	 *   which the GPIO was pulled to, this could cause backlight flicker
-> +	 *   on boot e.g. in case the PWM is not ready yet.
-> +	 * - if the GPIO direction is unknown, tahat is, if gpiod_get_direction
-> +	 *   returns -EINVAL, change the direction to output and set the GPIO
-> +	 *   as active.
-> +	 *   Do not force the GPIO to active when it was already output as it
-> +	 *   could cause backlight flickering or we would enable the backlight
-> +	 *   too early. Leave the decision of the initial backlight state for
-> +	 *   later.
->  	 */
-> -	if (pb->enable_gpio &&
-> -	    gpiod_get_direction(pb->enable_gpio) != 0)
-> -		gpiod_direction_output(pb->enable_gpio, 1);
-> +	if (pb->enable_gpio) {
-> +		dir = gpiod_get_direction(pb->enable_gpio);
-> +		if (dir != 0) {
-> +			val = 1;
-> +			if (dir == 1)
-> +				val = gpiod_get_value_cansleep(pb->enable_gpio);
-> +			gpiod_direction_output(pb->enable_gpio, val);
-> +		}
-> +	}
->  
->  	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
->  	if (IS_ERR(pb->power_supply)) {
-> -- 
-> 2.30.2
+> That does make sense, regardless of my question above ;-)
 > 
+>> or1k-linux-ld: drivers/video/fbdev/simplefb.o:(.rodata+0x2c): undefined reference to `cfb_fillrect'
+>> or1k-linux-ld: drivers/video/fbdev/simplefb.o:(.rodata+0x30): undefined reference to `cfb_copyarea'
+>> or1k-linux-ld: drivers/video/fbdev/simplefb.o:(.rodata+0x34): undefined reference to `cfb_imageblit'
+>>
+>> Fixes: 11e8f5fd223b ("drm: Add simpledrm driver")
+>> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> 
+>> --- linux-next-20210716.orig/drivers/video/fbdev/Kconfig
+>> +++ linux-next-20210716/drivers/video/fbdev/Kconfig
+>> @@ -2192,7 +2192,7 @@ config FB_HYPERV
+>>
+>>  config FB_SIMPLE
+>>         bool "Simple framebuffer support"
+>> -       depends on (FB = y) && !DRM_SIMPLEDRM
+>> +       depends on (FB = y) && DRM_SIMPLEDRM=n
+>>         select FB_CFB_FILLRECT
+>>         select FB_CFB_COPYAREA
+>>         select FB_CFB_IMAGEBLIT
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+
+
+-- 
+~Randy
+

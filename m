@@ -2,136 +2,113 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,HK_RANDOM_FROM,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CC5AC636C9
-	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Jul 2021 06:01:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E170DC12002
+	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Jul 2021 07:53:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5D5C06109E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Jul 2021 06:01:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C72FE61164
+	for <linux-fbdev@archiver.kernel.org>; Mon, 19 Jul 2021 07:53:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229916AbhGSGEu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 19 Jul 2021 02:04:50 -0400
-Received: from zg8tmty1ljiyny4xntqumjca.icoremail.net ([165.227.154.27]:35423
-        "HELO zg8tmty1ljiyny4xntqumjca.icoremail.net" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S233710AbhGSGEt (ORCPT
+        id S234778AbhGSH4t (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 19 Jul 2021 03:56:49 -0400
+Received: from mail-ua1-f54.google.com ([209.85.222.54]:35698 "EHLO
+        mail-ua1-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235180AbhGSH4q (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 19 Jul 2021 02:04:49 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fudan.edu.cn; s=dkim; h=Received:From:To:Cc:Subject:Date:
-        Message-Id; bh=3HTbXrkdRBgh0QIJpcMwxUac2r5yW+CgKCOIIaqrpTU=; b=i
-        yATwRcX4oZ8epqf7PjXbQskHxBZzHOV3t7PrOM2EHIPMfih0WAtq3yyvbQkpezBE
-        iib4k7qsPxOya81btjirA3kpO7dbvh27pm27jcyHg/mCmIgw3/9oamt95i1RJLTI
-        To6iQzkqFO8q/lNhD1C6eeBnwTFeq3Ib5IR5qTeOE8=
-Received: from localhost.localdomain (unknown [10.162.86.133])
-        by app1 (Coremail) with SMTP id XAUFCgDHzYnbFPVgPRWJAA--.1241S3;
-        Mon, 19 Jul 2021 13:59:55 +0800 (CST)
-From:   Xiyu Yang <xiyuyang19@fudan.edu.cn>
-To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
-        Matthew Wilcox <willy@infradead.org>,
-        Sam Ravnborg <sam@ravnborg.org>, Arnd Bergmann <arnd@arndb.de>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        George Kennedy <george.kennedy@oracle.com>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Jason Gunthorpe <jgg@ziepe.ca>,
-        William Kucharski <william.kucharski@oracle.com>,
-        Xin Tan <tanxin.ctf@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     yuanxzhang@fudan.edu.cn
-Subject: [PATCH] fbmem: Convert from atomic_t to refcount_t on fb_info->count
-Date:   Mon, 19 Jul 2021 13:59:45 +0800
-Message-Id: <1626674392-55857-1-git-send-email-xiyuyang19@fudan.edu.cn>
-X-Mailer: git-send-email 2.7.4
-X-CM-TRANSID: XAUFCgDHzYnbFPVgPRWJAA--.1241S3
-X-Coremail-Antispam: 1UD129KBjvJXoW7Wry3tF17ZF1DKw45CrW5Awb_yoW8Zr1fpF
-        n8Ka4DtF4rAryxCr4kCa1jvFy3Ja18CF9xJrZFga4FyFy3tr1Ygw1DJFyYvrWrArWxCF4Y
-        qryI9w15CFWUur7anT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-        9KBjDU0xBIdaVrnRJUUU9G14x267AKxVW5JVWrJwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-        rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-        1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
-        JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
-        CE3s1lnxkEFVAIw20F6cxK64vIFxWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xv
-        F2IEw4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jrv_JF1lYx0Ex4A2jsIE14v26r1j6r
-        4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I
-        648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1lc2xSY4AK6svPMxAIw28IcxkI7VAKI48JMx
-        C20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAF
-        wI0_JrI_JrWlx4CE17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20x
-        vE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v2
-        0xvaj40_Gr0_Zr1lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxV
-        W8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUbLID7UUUUU==
-X-CM-SenderInfo: irzsiiysuqikmy6i3vldqovvfxof0/
+        Mon, 19 Jul 2021 03:56:46 -0400
+Received: by mail-ua1-f54.google.com with SMTP id n61so6493301uan.2;
+        Mon, 19 Jul 2021 00:53:41 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=UFrHGkePZup1taj30Rt41mFp0n9XCiwOIs/xt1tbnaw=;
+        b=ILbqZWvTJ4tnouXLPQmgYQhcoUF9/+cAIYgUjJbF0zcCAcWJcwAEcIRXWs/zvynuzZ
+         HJx2hYBqI8YtidL3XlaDBILFYUzzS+p2boNhgF2Hr3xaav2OLSLq/PWdHkUWTD1ULZW8
+         2YxcM1NZJzJDLarp7S1Ut2q5RqcOD8N3U6RK+5ZB61eY2cPwTPy5zlY9iPgc7zXmh/Y9
+         rtRBw15hG5TrG2S2zHOF/F5tr7hMyX/u94wN8ZIPS50+TXgiJ3dthcDb12FoV7Dh4I2n
+         RWoDy0eP0qZ/8keeFIwwhl4jYxPuaktVxl0UZ8WDJzWztYImUUEn1HcU4GUlw5LaIyYn
+         y7AQ==
+X-Gm-Message-State: AOAM5324RULE5Dm+9m9/N9mPwofzWP5ZBnCsVaaIMBVP0r7c8zV4IPSc
+        si+ocUseyrm5QXSZNrLWNXIcIE7Op5C5mk4AVYw=
+X-Google-Smtp-Source: ABdhPJzXmKaiICvApSnCr48W0kVIIhAe0HClSDvRY/+X8t7EqH9YSmdjsOer92Kdg8iWZJTvPkJd3JyN+8IpVFrQ92Y=
+X-Received: by 2002:a9f:3f0d:: with SMTP id h13mr24866271uaj.100.1626681220672;
+ Mon, 19 Jul 2021 00:53:40 -0700 (PDT)
+MIME-Version: 1.0
+References: <20210718133920.15825-1-len.baker@gmx.com> <CAHp75VeEA0=KFsfdjCnBm-b9+F+NnFWJ38nkh+qtb85XdXVWog@mail.gmail.com>
+In-Reply-To: <CAHp75VeEA0=KFsfdjCnBm-b9+F+NnFWJ38nkh+qtb85XdXVWog@mail.gmail.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 19 Jul 2021 09:53:29 +0200
+Message-ID: <CAMuHMdXnhzumSrr=MAkv5nwY2o8xCa4s5zKa9meJTuo0r9yABw@mail.gmail.com>
+Subject: Re: [PATCH] staging/fbtft: Remove all strcpy() uses
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     Len Baker <len.baker@gmx.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Phil Reid <preid@electromag.com.au>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        linux-staging@lists.linux.dev,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-refcount_t type and corresponding API can protect refcounters from
-accidental underflow and overflow and further use-after-free situations.
+On Sun, Jul 18, 2021 at 9:43 PM Andy Shevchenko
+<andy.shevchenko@gmail.com> wrote:
+> On Sun, Jul 18, 2021 at 4:43 PM Len Baker <len.baker@gmx.com> wrote:
+> > strcpy() performs no bounds checking on the destination buffer. This
+> > could result in linear overflows beyond the end of the buffer, leading
+> > to all kinds of misbehaviors. The safe replacement is strscpy() but in
+> > this case it is simpler to add NULL to the first position since we want
 
-Signed-off-by: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-Signed-off-by: Xin Tan <tanxin.ctf@gmail.com>
----
- drivers/video/fbdev/core/fbmem.c | 6 +++---
- include/linux/fb.h               | 3 ++-
- 2 files changed, 5 insertions(+), 4 deletions(-)
+"NULL" is a pointer value, "NUL" is the character with value zero.
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 98f193078c05..b7d26b928e1d 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -67,7 +67,7 @@ static struct fb_info *get_fb_info(unsigned int idx)
- 	mutex_lock(&registration_lock);
- 	fb_info = registered_fb[idx];
- 	if (fb_info)
--		atomic_inc(&fb_info->count);
-+		refcount_inc(&fb_info->count);
- 	mutex_unlock(&registration_lock);
- 
- 	return fb_info;
-@@ -75,7 +75,7 @@ static struct fb_info *get_fb_info(unsigned int idx)
- 
- static void put_fb_info(struct fb_info *fb_info)
- {
--	if (!atomic_dec_and_test(&fb_info->count))
-+	if (!refcount_dec_and_test(&fb_info->count))
- 		return;
- 	if (fb_info->fbops->fb_destroy)
- 		fb_info->fbops->fb_destroy(fb_info);
-@@ -1594,7 +1594,7 @@ static int do_register_framebuffer(struct fb_info *fb_info)
- 		if (!registered_fb[i])
- 			break;
- 	fb_info->node = i;
--	atomic_set(&fb_info->count, 1);
-+	refcount_set(&fb_info->count, 1);
- 	mutex_init(&fb_info->lock);
- 	mutex_init(&fb_info->mm_lock);
- 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index ecfbcc0553a5..5950f8f5dc74 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -2,6 +2,7 @@
- #ifndef _LINUX_FB_H
- #define _LINUX_FB_H
- 
-+#include <linux/refcount.h>
- #include <linux/kgdb.h>
- #include <uapi/linux/fb.h>
- 
-@@ -435,7 +436,7 @@ struct fb_tile_ops {
- 
- 
- struct fb_info {
--	atomic_t count;
-+	refcount_t count;
- 	int node;
- 	int flags;
- 	/*
+> > to empty the string.
+>
+> > This is a previous step in the path to remove the strcpy() function.
+>
+> Any document behind this (something to read on the site(s) more or
+> less affiliated with what is going to happen in the kernel) to read
+> background?
+>
+> ...
+>
+> >                 case -1:
+> >                         i++;
+> >                         /* make debug message */
+> > -                       strcpy(msg, "");
+
+While this strcpy() is provably safe at compile-time, and will probably
+be replaced by an assignment to zero by the compiler...
+
+> > +                       msg[0] = 0;
+>
+> Strictly speaking it should be '\0'.
+>
+> >                         j = i + 1;
+> >                         while (par->init_sequence[j] >= 0) {
+> >                                 sprintf(str, "0x%02X ", par->init_sequence[j]);
+
+... the real danger is the
+
+        strcat(msg, str);
+
+on the next line.
+Fortunately this whole debug printing block (including the strcpy)
+can (and should) be rewritten to just use "%*ph".
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.7.4
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

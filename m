@@ -2,53 +2,63 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0CE0C07E9B
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 09:17:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CF9DC07E9B
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 15:19:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BA2CB610F7
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 09:17:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 827C4610F7
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 15:19:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233350AbhGTIgz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 20 Jul 2021 04:36:55 -0400
-Received: from mail-vs1-f48.google.com ([209.85.217.48]:42820 "EHLO
-        mail-vs1-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234809AbhGTIgB (ORCPT
+        id S239014AbhGTOhm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 20 Jul 2021 10:37:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48206 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234905AbhGTORU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 20 Jul 2021 04:36:01 -0400
-Received: by mail-vs1-f48.google.com with SMTP id u7so10867964vst.9;
-        Tue, 20 Jul 2021 02:16:39 -0700 (PDT)
+        Tue, 20 Jul 2021 10:17:20 -0400
+Received: from mail-ot1-x330.google.com (mail-ot1-x330.google.com [IPv6:2607:f8b0:4864:20::330])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7FD60C061766
+        for <linux-fbdev@vger.kernel.org>; Tue, 20 Jul 2021 07:53:41 -0700 (PDT)
+Received: by mail-ot1-x330.google.com with SMTP id h24-20020a9d64180000b029036edcf8f9a6so21777911otl.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 20 Jul 2021 07:53:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=j09lu3sICtnVWYbFQVf04X58J7J9DzrYfN54qh1JeP8=;
+        b=ImwZmUTbQ1ngxEuIoZFjF/bP/zahZJ+7NJ9/6qY4DJQB/hYLzUuloIM75qHIeXH6dV
+         Q6AOIDxTD7W9bj6TOp1x4KTmlk0CDYTUrLVPn/k8bkZR9FDj0tjR9d+g/WuRjiF65llR
+         nEuw6sCuWe9aKfWNnjgUEPREI/MT4WRg85yTo=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=pGK4Y9q1wNdkFd2qkEzt4SoJHeKZj51kb/6+Vc2cCrE=;
-        b=HkD5FyjvnacsybfiyGgnoE3eHRIvRdfujN3HyK8qaCoRsGE3fv86T3BD3eGDe5EIPB
-         aruLvK9JsDCSPxttsJj2L2PN8TQpIPIet8e3mJIjEPuFAX/B3HrTwa3sZ4oMgOmlRuNC
-         mOAXdue1fcLLNF6haY5NvDMUw/GqFTFMlFP3r7NrtV0E/4oNY5Lv72+chzr2UiU4fKZm
-         e/uLXITaAj4jSoQ03oCh+/lqWnhnJZ0tqu5oKelJivOMl1cyDG1G5sykd6vMfixR+LIK
-         jAZjdUEpKfJCYIWk8TPPbmeB+apQ/ZwxdgmgZRcKWsfGZyO7aVFiz8T4lnL/LY26VO1b
-         vuyg==
-X-Gm-Message-State: AOAM530u1jWUVA32ugMUdtiDOoPBFsUQxqp+57ZWlOS80GatYk0A1kGV
-        f9d5zjsp0BqkZoBosdWTliGCClC+iwdi3xPTsps=
-X-Google-Smtp-Source: ABdhPJwoXV/bWgXqVc9IJcEEctt4YRmAEI9f2fx6tde3GwJo5sjH+AcIOE8BcMkUYIB6TTzpfyMnpZ0rvcI6B2cggsM=
-X-Received: by 2002:a67:3c2:: with SMTP id 185mr27684696vsd.42.1626772598880;
- Tue, 20 Jul 2021 02:16:38 -0700 (PDT)
+        bh=j09lu3sICtnVWYbFQVf04X58J7J9DzrYfN54qh1JeP8=;
+        b=CY2/jqBPJDob+lm0RwdzzzGWp0hm1ySTL8UZFFH/yO5VXypqETNZLB4SqW+M0P5NPr
+         o0Z/3gAphiKjPKiIurpzv1lw36U3ESCf+LuGJ9pKpy/KJz5vnxP/YRR9E1qPsDsLXX4c
+         N7NRVFoAaTa6SDH0HDo9aH5BllAzmi19VAB9skWfDYNPeIAnvx94AaaHJ8pMGdxNCyef
+         koJjUl+oHjYyNZc+wkssb+YdZW0ESuQH+ecIICPvDcc6/IDlOkW+W1Q5VbUpOnpqkt0x
+         ZIS8WVHHuhcuh4jxToCJAiK+rzYm0n3bSWG3Cgz0LjTtrHutXcVlRrKf7kcRtd6OW8ug
+         rAnA==
+X-Gm-Message-State: AOAM5307mc+GNYnqh5193zF7gN6M+TW9pcgocQjKFptxAYwztrlU7raX
+        To9wQ1ZNZz5RK9eYvR39JfSoh9ZFCoy+YeiyEHTDeA==
+X-Google-Smtp-Source: ABdhPJzl9J0lkEu4CIIjY+U4b76K2eGMh6WUo5jGAXXEoYBh2685zCiCh40ygbBUtWz6N55Q1gllGQQLiVPua84eQ6A=
+X-Received: by 2002:a05:6830:2802:: with SMTP id w2mr21307426otu.303.1626792820912;
+ Tue, 20 Jul 2021 07:53:40 -0700 (PDT)
 MIME-Version: 1.0
 References: <20210714145804.2530727-1-geert@linux-m68k.org>
- <20210714145804.2530727-5-geert@linux-m68k.org> <YPXQnlpWUa1QaZKd@ravnborg.org>
- <CAMuHMdVyuzQzXF0X3OA=PH4E4ifaT2TfHs76yGgRKk-XrEbwzw@mail.gmail.com>
-In-Reply-To: <CAMuHMdVyuzQzXF0X3OA=PH4E4ifaT2TfHs76yGgRKk-XrEbwzw@mail.gmail.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 20 Jul 2021 11:16:27 +0200
-Message-ID: <CAMuHMdVpxVJx8=aGasrop6soO011gby8Xxotr+Yomi9oBOTrpA@mail.gmail.com>
-Subject: Re: [PATCH resend 4/5] video: fbdev: ssd1307fb: Optimize screen updates
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
+ <YO8CT+Hcw1wfhnH5@ravnborg.org> <CAMuHMdVjXhTE2x8mRrinmh9CCrdXQr+BYPfP-peaZ4AsLwsaaA@mail.gmail.com>
+In-Reply-To: <CAMuHMdVjXhTE2x8mRrinmh9CCrdXQr+BYPfP-peaZ4AsLwsaaA@mail.gmail.com>
+From:   Daniel Vetter <daniel@ffwll.ch>
+Date:   Tue, 20 Jul 2021 16:53:29 +0200
+Message-ID: <CAKMK7uGpmQ3=OB52RYFgJoH7FWwhgx1t-TcSwpwjHPMWcyRd0w@mail.gmail.com>
+Subject: Re: [PATCH resend 0/5] video: fbdev: ssd1307fb: Optimizations and improvements
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Sam Ravnborg <sam@ravnborg.org>, David Airlie <airlied@linux.ie>,
         Maxime Ripard <mripard@kernel.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -58,59 +68,47 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Sam,
-
-On Tue, Jul 20, 2021 at 9:56 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Mon, Jul 19, 2021 at 9:21 PM Sam Ravnborg <sam@ravnborg.org> wrote:
-> > On Wed, Jul 14, 2021 at 04:58:03PM +0200, Geert Uytterhoeven wrote:
-> > > Currently, each screen update triggers an I2C transfer of all screen
-> > > data, up to 1 KiB of data for a 128x64 display, which takes at least 20
-> > > ms in Fast mode.
-> > >
-> > > Reduce the amount of transferred data by only updating the rectangle
-> > > that changed.  Remove the call to ssd1307fb_set_address_range() during
-> > > initialization, as ssd1307fb_update_rect() now takes care of that.
-> > >
-> > > Note that for now the optimized operation is only used for fillrect,
-> > > copyarea, and imageblit, which are used by fbcon.
-> > >
-> > > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+On Thu, Jul 15, 2021 at 8:54 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 >
-> > > --- a/drivers/video/fbdev/ssd1307fb.c
-> > > +++ b/drivers/video/fbdev/ssd1307fb.c
-> > > @@ -184,16 +184,18 @@ static int ssd1307fb_set_address_range(struct ssd1307fb_par *par, u8 col_start,
-> > >       return ssd1307fb_write_cmd(par->client, page_end);
-> > >  }
-> > >
-> > > -static int ssd1307fb_update_display(struct ssd1307fb_par *par)
-> > > +static int ssd1307fb_update_rect(struct ssd1307fb_par *par, unsigned int x,
-> > > +                              unsigned int y, unsigned int width,
-> > > +                              unsigned int height)
-> > >  {
-> > >       struct ssd1307fb_array *array;
-> > >       u8 *vmem = par->info->screen_buffer;
-> > >       unsigned int line_length = par->info->fix.line_length;
-> > > -     unsigned int pages = DIV_ROUND_UP(par->height, 8);
-> > > +     unsigned int pages = DIV_ROUND_UP(height + y % 8, 8);
+> Hi Sam,
+>
+> On Wed, Jul 14, 2021 at 5:27 PM Sam Ravnborg <sam@ravnborg.org> wrote:
+> > On Wed, Jul 14, 2021 at 04:57:59PM +0200, Geert Uytterhoeven wrote:
+> > > This patch series optimizes console operations on ssd1307fb, after the
+> > > customary fixes and cleanups.
 > >
-> > Add () like this - at least it helps me:
-> > > +     unsigned int pages = DIV_ROUND_UP((height + y) % 8, 8);
+> > What is required to to have a drm driver that could do the same?
 >
-> Thanks, that's actually a genuine bug.
+> Add monochrome support to DRM?
 
-No it's not "(height + y) % 8" is wrong.
+I think the bits that are missing for that are
+- wiring up the conversion from R* formats to their fbdev counterparts
+in the emulation helper (if you want to support userspace sending the
+native format directly through fbdev
 
-Better if I reorder the operands like below?
+Everything else is there and we have drivers doing this, e.g.
+drm/tiny/repaper.c.
+-Daniel
 
-    unsigned int pages = DIV_ROUND_UP(y % 8 + height, 8);
+>
+> > Note: I will take a look at the patches a bit later.
+>
+> TIA!
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
 
-Gr{oetje,eeting}s,
 
-                        Geert
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

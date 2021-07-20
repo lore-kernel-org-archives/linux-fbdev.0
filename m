@@ -2,49 +2,50 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D259C07E9B
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 07:33:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94AF0C07E95
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 07:44:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4779F60FEA
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 07:33:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 709F761175
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 07:44:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235175AbhGTGwp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 20 Jul 2021 02:52:45 -0400
-Received: from mail-ua1-f42.google.com ([209.85.222.42]:37447 "EHLO
-        mail-ua1-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234908AbhGTGwo (ORCPT
+        id S234902AbhGTHDU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 20 Jul 2021 03:03:20 -0400
+Received: from mail-vs1-f54.google.com ([209.85.217.54]:35668 "EHLO
+        mail-vs1-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234353AbhGTHCz (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 20 Jul 2021 02:52:44 -0400
-Received: by mail-ua1-f42.google.com with SMTP id w6so7770829uaq.4;
-        Tue, 20 Jul 2021 00:33:22 -0700 (PDT)
+        Tue, 20 Jul 2021 03:02:55 -0400
+Received: by mail-vs1-f54.google.com with SMTP id r25so10839671vsk.2;
+        Tue, 20 Jul 2021 00:43:34 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=lcwwIKXkcen+cASiKX8dxRt5ZT8ziwWwN38CXX7LydU=;
-        b=dTHtdYxMC99ojL9KB6M8ky4NXxZPfUZc33CcpVXyJWvmpMuYN7iw+nInCfh/a86opD
-         /f6FPCPsQwvshIdQTK9DymGaz9PK0c7o0UNI+tKQVV4SsmMosbzL+xjicVzy7t8Ovjon
-         eyf8kVxDiFxeb32E+tcU3dnf0I/hJxM534aMvM4T3HjCRFvExHlqcANuu8aZbwZTy7UI
-         OWbYXXE2fGVmKuFgoiXzho1axvwIJbYbtjIx2diPFDlUrtg9wlUl96av1EjbCAf5ChA6
-         YKcVw4pe8lbysryrQKxCB5ZcHsFEe7o7h4kknttjOTozZNKyhEbt6XcK5lcwBEW+f6WN
-         SEgA==
-X-Gm-Message-State: AOAM532X4WmHahO/+aG+xwAr496sngMm+PblkJOjvRb8NBIog6arCbZ8
-        tXEobtEjcNzV0Q5aqxpu/LaGgqdie/A0s5huydUYlfMc
-X-Google-Smtp-Source: ABdhPJwPDX91aff2YPV7tV6BcHro69P/gJKxmT+erTLAbtVlBy5/BOX9Kb3TXYB1oJJEukohKoWiib/KNNVZ8lXCc/c=
-X-Received: by 2002:ab0:6710:: with SMTP id q16mr6956039uam.106.1626766402335;
- Tue, 20 Jul 2021 00:33:22 -0700 (PDT)
+        bh=HkbFPSCh7E2GNVgDLGmZQaSXqDJjyX+benlbPIfM6pQ=;
+        b=sOwwkhPpQgpEI1A/lLoowhm5e8t+j9cqWMiC1WMZ4xZtkjpJTPhC8aXvJ4iYPuvE1y
+         4nwxGfiZj7hvFcxoUqPfdH4fJkCUds0IagEhluxLrboCMb6dQRO8sVpJVdKnMvVVy0x4
+         GkVmL45tsd21oSJU6exDAJzN6CRLYB+lv9jvuM37gInqStN2LpwM95wSiLdd7aFOHAb7
+         fzBPquQDh0pTKmamSyWjieShJLI+aU7mcnRfoaBxKIfKcWBFs88dMqAyU3Gz/oCOCaCt
+         sVajZHeOUdtUJ9BvfHfl52GwFPVb0BfY3/WKoh3ITnjh7HZDd6V15hXER0FJwwrr9+Zy
+         Xcjw==
+X-Gm-Message-State: AOAM531b1RuRgsA7jzH71GdeBCiJWPxxUsbeT07ujNXyrgUjkh+6IDnN
+        RQ2yNSjCnuKd1l8u44PVeFxJGyXYS9S37B7qZoA=
+X-Google-Smtp-Source: ABdhPJyYlmc3X5ogaM2YCN+ZHjp31T159xYrBHR1iUCbkq8Cwh9HpbKTX06IJtME6LP+AGswyxAbmP74MJhqkDc7akg=
+X-Received: by 2002:a05:6102:321c:: with SMTP id r28mr28139380vsf.40.1626767013827;
+ Tue, 20 Jul 2021 00:43:33 -0700 (PDT)
 MIME-Version: 1.0
-References: <20210714145804.2530727-1-geert@linux-m68k.org> <YPXRMXQxCW+Agaz8@ravnborg.org>
-In-Reply-To: <YPXRMXQxCW+Agaz8@ravnborg.org>
+References: <20210714145804.2530727-1-geert@linux-m68k.org>
+ <20210714145804.2530727-3-geert@linux-m68k.org> <YPXM8AXNje7GXf+i@ravnborg.org>
+In-Reply-To: <YPXM8AXNje7GXf+i@ravnborg.org>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 20 Jul 2021 09:33:11 +0200
-Message-ID: <CAMuHMdXK5X5Zawgp=SivGQSvOi=p_PwarYUR4QikGuB+f_d6YQ@mail.gmail.com>
-Subject: Re: [PATCH resend 0/5] video: fbdev: ssd1307fb: Optimizations and improvements
+Date:   Tue, 20 Jul 2021 09:43:22 +0200
+Message-ID: <CAMuHMdXgKkJeTstLdwh9h8ywe0a5=77izAW4eYyaOtk8ktSjWg@mail.gmail.com>
+Subject: Re: [PATCH resend 2/5] video: fbdev: ssd1307fb: Simplify ssd1307fb_update_display()
 To:     Sam Ravnborg <sam@ravnborg.org>
 Cc:     David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
         Maxime Ripard <mripard@kernel.org>,
@@ -58,44 +59,73 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi Sam,
 
-On Mon, Jul 19, 2021 at 9:23 PM Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Wed, Jul 14, 2021 at 04:57:59PM +0200, Geert Uytterhoeven wrote:
-> > This patch series optimizes console operations on ssd1307fb, after the
-> > customary fixes and cleanups.
+On Mon, Jul 19, 2021 at 9:05 PM Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Wed, Jul 14, 2021 at 04:58:01PM +0200, Geert Uytterhoeven wrote:
+> > Simplify the nested loops to handle conversion from linear frame buffer
+> > to ssd1307 page layout:
+> >   1. Move last page handling one level up, as the value of "m" is the
+> >      same inside a page,
+> >   2. array->data[] is filled linearly, so there is no need to
+> >      recalculate array_idx over and over again; a simple increment is
+> >      sufficient.
 > >
-> > Currently, each screen update triggers an I2C transfer of all screen
-> > data, up to 1 KiB of data for a 128x64 display, which takes at least 20
-> > ms in Fast mode.  While many displays are smaller, and thus require less
-> > data to be transferred, 20 ms is still an optimistic value, as the
-> > actual data transfer may be much slower, especially on bitbanged I2C
-> > drivers.  After this series, the amount of data transfer is reduced, as
-> > fillrect, copyarea, and imageblit only update the rectangle that
-> > changed.
+> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> > ---
+> >  drivers/video/fbdev/ssd1307fb.c | 17 ++++++++++-------
+> >  1 file changed, 10 insertions(+), 7 deletions(-)
 > >
-> > This has been tested on an Adafruit FeatherWing OLED with an SSD1306
-> > controller and a 128x32 OLED, connected to an OrangeCrab ECP5 FPGA board
-> > running a 64 MHz VexRiscv RISC-V softcore, where it reduced the CPU
-> > usage for blinking the cursor from more than 70% to ca. 10%.
+> > diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+> > index e6b6263e3bef847f..6d7bd025bca1a175 100644
+> > --- a/drivers/video/fbdev/ssd1307fb.c
+> > +++ b/drivers/video/fbdev/ssd1307fb.c
+> > @@ -158,6 +158,7 @@ static int ssd1307fb_update_display(struct ssd1307fb_par *par)
+> >       u8 *vmem = par->info->screen_buffer;
+> >       unsigned int line_length = par->info->fix.line_length;
+> >       unsigned int pages = DIV_ROUND_UP(par->height, 8);
+> > +     u32 array_idx = 0;
+> >       int ret, i, j, k;
 > >
-> > Thanks for your comments!
+> >       array = ssd1307fb_alloc_array(par->width * pages, SSD1307FB_DATA);
+> > @@ -194,19 +195,21 @@ static int ssd1307fb_update_display(struct ssd1307fb_par *par)
+> >        */
 > >
-> > Geert Uytterhoeven (5):
-> >   video: fbdev: ssd1307fb: Propagate errors via
-> >     ssd1307fb_update_display()
-> >   video: fbdev: ssd1307fb: Simplify ssd1307fb_update_display()
-> >   video: fbdev: ssd1307fb: Extract ssd1307fb_set_address_range()
-> >   video: fbdev: ssd1307fb: Optimize screen updates
-> >   video: fbdev: ssd1307fb: Cache address ranges
+> >       for (i = 0; i < pages; i++) {
+> > +             int m = 8;
+> > +
+> > +             /* Last page may be partial */
+> > +             if (i + 1 == pages && par->height % 8)
+> > +                     m = par->height % 8;
+> >               for (j = 0; j < par->width; j++) {
+> > -                     int m = 8;
+> > -                     u32 array_idx = i * par->width + j;
+> > -                     array->data[array_idx] = 0;
+> > -                     /* Last page may be partial */
+> > -                     if (i + 1 == pages && par->height % 8)
+> > -                             m = par->height % 8;
+> > +                     u8 data = 0;
+> > +
+> >                       for (k = 0; k < m; k++) {
+> If the last page is partial then m will be less than 8 for all bytes in
+> j = 0..par-width - but m should only be less than 8 for the last
+> iteration of the loop.
 >
-> A few comments left for a couple of patches.
-> The remaining patches are:
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> Do I miss something or is the code buggy?
 
-Thank you!
+"the loop" is the j-loop?
+If m is less than 8 for the last page, it should be less than 8 for
+all iterations of j, as all last bytes in each "line" (visible
+row) are partial, cfr. the comments above the code, explaining the
+representation of the screen.
 
-> Do you have commit rights to drm-misc-next?
-
-No I have not (and I don't think I should).
+> >                               u8 byte = vmem[(8 * i + k) * line_length +
+> >                                              j / 8];
+> >                               u8 bit = (byte >> (j % 8)) & 1;
+> > -                             array->data[array_idx] |= bit << k;
+> > +                             data |= bit << k;
+> >                       }
+> > +                     array->data[array_idx++] = data;
+> >               }
+> >       }
 
 Gr{oetje,eeting}s,
 

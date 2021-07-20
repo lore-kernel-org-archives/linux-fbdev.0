@@ -7,45 +7,45 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63621C07E95
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 07:53:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B5C9C07E95
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 07:57:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4718961165
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 07:53:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5961761165
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 07:57:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232431AbhGTHMs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 20 Jul 2021 03:12:48 -0400
-Received: from mail-vs1-f49.google.com ([209.85.217.49]:44581 "EHLO
-        mail-vs1-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231273AbhGTHLN (ORCPT
+        id S230161AbhGTHQ4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 20 Jul 2021 03:16:56 -0400
+Received: from mail-vs1-f47.google.com ([209.85.217.47]:37434 "EHLO
+        mail-vs1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229777AbhGTHQg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 20 Jul 2021 03:11:13 -0400
-Received: by mail-vs1-f49.google.com with SMTP id f4so10782311vsh.11;
-        Tue, 20 Jul 2021 00:51:45 -0700 (PDT)
+        Tue, 20 Jul 2021 03:16:36 -0400
+Received: by mail-vs1-f47.google.com with SMTP id r18so10775710vsa.4;
+        Tue, 20 Jul 2021 00:57:04 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=DZMv92PNWEyH/QL4ILLkJC90/ugfFVFAmOpTreas0WA=;
-        b=jLhuOLYicrbYys3/wGtixRHB2Vx+VIY5ZwJuI5izpKmLg4hSs3Fl6LON+W2xV2U/bL
-         Dk7o9KEjkdBJyIcgEP6GyGL4BBwtG+lJH0QqPXhH5929H0yYxnqFWCIiQHRzHjYm8bv0
-         CWUVGM595WhCTuttTHfgxoa3nTKgUQd9m3nx0q+V3Rh2g/qSjEfAFB9XKT45D4LD0ixO
-         mXMHTwlfmNbwL2UZ14uuabD5h8gndtt/XMZZ1TbULxHzLJnEGLk2eDIw/+eAyCeff6m7
-         lQZxzoNakN2n8du/RybkQklTJMborBrh1BCZV+QyRBQpoV8nWTpNdX0685o/Agoxs8Z9
-         a8kw==
-X-Gm-Message-State: AOAM533uFELZR95PY0oOl5crv6hmlOpKnihTUIhuzD9HCeZLyKbPf8bR
-        5vTpgs1pqnQpmvARSVtG5Kf8iPQo/2rJuoEsgvE=
-X-Google-Smtp-Source: ABdhPJy5ykCKOa7GH2xtwasEaNh2q+NOLASUypUGJI2+3KRHExc/ycIzEpJaXbEHJmfx54Z9yxO7Ae8R7oW52MzL2T8=
-X-Received: by 2002:a05:6102:321c:: with SMTP id r28mr28150910vsf.40.1626767503947;
- Tue, 20 Jul 2021 00:51:43 -0700 (PDT)
+        bh=u76ZFso6QMLrbaHGGcoA+mUtQA4GgwHmW+WhPdmK3Xk=;
+        b=si8yWWuvczpElJ+G4rTB5WQJO+gU1lcYFw1gtgWMJ+Drh7TYfseI+Xkew4FV5Ehy9D
+         GMCB3y7WncJJyfgRQOhWvmZHfauvvcpwF9Su6lr1pc8q1+tjiwcC1t6e/eRxXw7AiuCh
+         A0891A9YsuxghB6azd8Id6BzZnvM5XzfJ0DGc/XDmcQjmjhsnbPSsLN20WZTvneSJniL
+         UIw++2QXYgbr1PSNcrPWA47GnL81NDd1zhLrH/NOusan/sFNDBFfr/37prOqGrsMD6ki
+         +m8cyuimOBAg270fDGbhh6hcW87UsRpDEoxhPL87gFDMIY3fGiK+UUhO8ORqf+brGo0q
+         QSbg==
+X-Gm-Message-State: AOAM530gWw6sAKFeKoTGU02MAWgCC5GignrqcEt/G6YkPLTrEss8dHgN
+        2ZUb+KI4djRf3g+PV2j9rMC2t3F9/UobgGvWwsQ=
+X-Google-Smtp-Source: ABdhPJyraCkn1488rWpkxZYL7ZH8R1r3G5CQ45R3Arx+9chg4x8zFL4cnxbqoC1QMarh/xMlberMMdgRC4Gq/ndBVro=
+X-Received: by 2002:a05:6102:2828:: with SMTP id ba8mr28144523vsb.18.1626767823268;
+ Tue, 20 Jul 2021 00:57:03 -0700 (PDT)
 MIME-Version: 1.0
 References: <20210714145804.2530727-1-geert@linux-m68k.org>
- <20210714145804.2530727-4-geert@linux-m68k.org> <YPXNdJNpYoPSpxSb@ravnborg.org>
-In-Reply-To: <YPXNdJNpYoPSpxSb@ravnborg.org>
+ <20210714145804.2530727-5-geert@linux-m68k.org> <YPXQnlpWUa1QaZKd@ravnborg.org>
+In-Reply-To: <YPXQnlpWUa1QaZKd@ravnborg.org>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 20 Jul 2021 09:51:32 +0200
-Message-ID: <CAMuHMdUJsLMErGYkr8M3y+yGtVd1YhHAmir2_FEOC7n3=9-yfA@mail.gmail.com>
-Subject: Re: [PATCH resend 3/5] video: fbdev: ssd1307fb: Extract ssd1307fb_set_address_range()
+Date:   Tue, 20 Jul 2021 09:56:52 +0200
+Message-ID: <CAMuHMdVyuzQzXF0X3OA=PH4E4ifaT2TfHs76yGgRKk-XrEbwzw@mail.gmail.com>
+Subject: Re: [PATCH resend 4/5] video: fbdev: ssd1307fb: Optimize screen updates
 To:     Sam Ravnborg <sam@ravnborg.org>
 Cc:     David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
         Maxime Ripard <mripard@kernel.org>,
@@ -59,38 +59,63 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi Sam,
 
-On Mon, Jul 19, 2021 at 9:07 PM Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Wed, Jul 14, 2021 at 04:58:02PM +0200, Geert Uytterhoeven wrote:
-> > Extract the code to set the column and page ranges into a helper
-> > function.
+On Mon, Jul 19, 2021 at 9:21 PM Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Wed, Jul 14, 2021 at 04:58:03PM +0200, Geert Uytterhoeven wrote:
+> > Currently, each screen update triggers an I2C transfer of all screen
+> > data, up to 1 KiB of data for a 128x64 display, which takes at least 20
+> > ms in Fast mode.
+> >
+> > Reduce the amount of transferred data by only updating the rectangle
+> > that changed.  Remove the call to ssd1307fb_set_address_range() during
+> > initialization, as ssd1307fb_update_rect() now takes care of that.
+> >
+> > Note that for now the optimized operation is only used for fillrect,
+> > copyarea, and imageblit, which are used by fbcon.
 > >
 > > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> > ---
-> >  drivers/video/fbdev/ssd1307fb.c | 61 +++++++++++++++++++--------------
-> >  1 file changed, 36 insertions(+), 25 deletions(-)
-> >
-> > diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-> > index 6d7bd025bca1a175..cfa27ea0feab4f01 100644
+
 > > --- a/drivers/video/fbdev/ssd1307fb.c
 > > +++ b/drivers/video/fbdev/ssd1307fb.c
-> > @@ -152,6 +152,38 @@ static inline int ssd1307fb_write_cmd(struct i2c_client *client, u8 cmd)
-> >       return ret;
+> > @@ -184,16 +184,18 @@ static int ssd1307fb_set_address_range(struct ssd1307fb_par *par, u8 col_start,
+> >       return ssd1307fb_write_cmd(par->client, page_end);
 > >  }
 > >
-> > +static int ssd1307fb_set_address_range(struct ssd1307fb_par *par, u8 col_start,
-> > +                                    u8 cols, u8 page_start, u8 pages)
-> > +{
-> Bikeshedding, but I think a dedicated function for col_range and another
-> for page_range had been simpler to read.
+> > -static int ssd1307fb_update_display(struct ssd1307fb_par *par)
+> > +static int ssd1307fb_update_rect(struct ssd1307fb_par *par, unsigned int x,
+> > +                              unsigned int y, unsigned int width,
+> > +                              unsigned int height)
+> >  {
+> >       struct ssd1307fb_array *array;
+> >       u8 *vmem = par->info->screen_buffer;
+> >       unsigned int line_length = par->info->fix.line_length;
+> > -     unsigned int pages = DIV_ROUND_UP(par->height, 8);
+> > +     unsigned int pages = DIV_ROUND_UP(height + y % 8, 8);
+>
+> Add () like this - at least it helps me:
+> > +     unsigned int pages = DIV_ROUND_UP((height + y) % 8, 8);
 
-I agree.
-Originally, before I removed the call during initialization, there were
-two calls to this function, so it made sense to have a single function.
+Thanks, that's actually a genuine bug.
 
-> With or wihout this change:
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> > @@ -226,13 +228,18 @@ static int ssd1307fb_update_display(struct ssd1307fb_par *par)
+> >        *  (5) A4 B4 C4 D4 E4 F4 G4 H4
+> >        */
+> >
+> > -     for (i = 0; i < pages; i++) {
+> > +     ret = ssd1307fb_set_address_range(par, par->col_offset + x, width,
+> > +                                       par->page_offset + y / 8, pages);
+> > +     if (ret < 0)
+> > +             goto out_free;
+> > +
+> > +     for (i = y / 8; i < y / 8 + pages; i++) {
+> >               int m = 8;
+> >
+> >               /* Last page may be partial */
+> > -             if (i + 1 == pages && par->height % 8)
+> > +             if (8 * (i + 1) > par->height)
+> >                       m = par->height % 8;
+> As before, this looks wrong to me.
 
-Thanks!
+Let's sort that out in the other thread...
 
 Gr{oetje,eeting}s,
 

@@ -7,44 +7,45 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B5C9C07E95
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 07:57:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0CE0C07E9B
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 09:17:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5961761165
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 07:57:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BA2CB610F7
+	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 09:17:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230161AbhGTHQ4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 20 Jul 2021 03:16:56 -0400
-Received: from mail-vs1-f47.google.com ([209.85.217.47]:37434 "EHLO
-        mail-vs1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229777AbhGTHQg (ORCPT
+        id S233350AbhGTIgz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 20 Jul 2021 04:36:55 -0400
+Received: from mail-vs1-f48.google.com ([209.85.217.48]:42820 "EHLO
+        mail-vs1-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234809AbhGTIgB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 20 Jul 2021 03:16:36 -0400
-Received: by mail-vs1-f47.google.com with SMTP id r18so10775710vsa.4;
-        Tue, 20 Jul 2021 00:57:04 -0700 (PDT)
+        Tue, 20 Jul 2021 04:36:01 -0400
+Received: by mail-vs1-f48.google.com with SMTP id u7so10867964vst.9;
+        Tue, 20 Jul 2021 02:16:39 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=u76ZFso6QMLrbaHGGcoA+mUtQA4GgwHmW+WhPdmK3Xk=;
-        b=si8yWWuvczpElJ+G4rTB5WQJO+gU1lcYFw1gtgWMJ+Drh7TYfseI+Xkew4FV5Ehy9D
-         GMCB3y7WncJJyfgRQOhWvmZHfauvvcpwF9Su6lr1pc8q1+tjiwcC1t6e/eRxXw7AiuCh
-         A0891A9YsuxghB6azd8Id6BzZnvM5XzfJ0DGc/XDmcQjmjhsnbPSsLN20WZTvneSJniL
-         UIw++2QXYgbr1PSNcrPWA47GnL81NDd1zhLrH/NOusan/sFNDBFfr/37prOqGrsMD6ki
-         +m8cyuimOBAg270fDGbhh6hcW87UsRpDEoxhPL87gFDMIY3fGiK+UUhO8ORqf+brGo0q
-         QSbg==
-X-Gm-Message-State: AOAM530gWw6sAKFeKoTGU02MAWgCC5GignrqcEt/G6YkPLTrEss8dHgN
-        2ZUb+KI4djRf3g+PV2j9rMC2t3F9/UobgGvWwsQ=
-X-Google-Smtp-Source: ABdhPJyraCkn1488rWpkxZYL7ZH8R1r3G5CQ45R3Arx+9chg4x8zFL4cnxbqoC1QMarh/xMlberMMdgRC4Gq/ndBVro=
-X-Received: by 2002:a05:6102:2828:: with SMTP id ba8mr28144523vsb.18.1626767823268;
- Tue, 20 Jul 2021 00:57:03 -0700 (PDT)
+        bh=pGK4Y9q1wNdkFd2qkEzt4SoJHeKZj51kb/6+Vc2cCrE=;
+        b=HkD5FyjvnacsybfiyGgnoE3eHRIvRdfujN3HyK8qaCoRsGE3fv86T3BD3eGDe5EIPB
+         aruLvK9JsDCSPxttsJj2L2PN8TQpIPIet8e3mJIjEPuFAX/B3HrTwa3sZ4oMgOmlRuNC
+         mOAXdue1fcLLNF6haY5NvDMUw/GqFTFMlFP3r7NrtV0E/4oNY5Lv72+chzr2UiU4fKZm
+         e/uLXITaAj4jSoQ03oCh+/lqWnhnJZ0tqu5oKelJivOMl1cyDG1G5sykd6vMfixR+LIK
+         jAZjdUEpKfJCYIWk8TPPbmeB+apQ/ZwxdgmgZRcKWsfGZyO7aVFiz8T4lnL/LY26VO1b
+         vuyg==
+X-Gm-Message-State: AOAM530u1jWUVA32ugMUdtiDOoPBFsUQxqp+57ZWlOS80GatYk0A1kGV
+        f9d5zjsp0BqkZoBosdWTliGCClC+iwdi3xPTsps=
+X-Google-Smtp-Source: ABdhPJwoXV/bWgXqVc9IJcEEctt4YRmAEI9f2fx6tde3GwJo5sjH+AcIOE8BcMkUYIB6TTzpfyMnpZ0rvcI6B2cggsM=
+X-Received: by 2002:a67:3c2:: with SMTP id 185mr27684696vsd.42.1626772598880;
+ Tue, 20 Jul 2021 02:16:38 -0700 (PDT)
 MIME-Version: 1.0
 References: <20210714145804.2530727-1-geert@linux-m68k.org>
  <20210714145804.2530727-5-geert@linux-m68k.org> <YPXQnlpWUa1QaZKd@ravnborg.org>
-In-Reply-To: <YPXQnlpWUa1QaZKd@ravnborg.org>
+ <CAMuHMdVyuzQzXF0X3OA=PH4E4ifaT2TfHs76yGgRKk-XrEbwzw@mail.gmail.com>
+In-Reply-To: <CAMuHMdVyuzQzXF0X3OA=PH4E4ifaT2TfHs76yGgRKk-XrEbwzw@mail.gmail.com>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 20 Jul 2021 09:56:52 +0200
-Message-ID: <CAMuHMdVyuzQzXF0X3OA=PH4E4ifaT2TfHs76yGgRKk-XrEbwzw@mail.gmail.com>
+Date:   Tue, 20 Jul 2021 11:16:27 +0200
+Message-ID: <CAMuHMdVpxVJx8=aGasrop6soO011gby8Xxotr+Yomi9oBOTrpA@mail.gmail.com>
 Subject: Re: [PATCH resend 4/5] video: fbdev: ssd1307fb: Optimize screen updates
 To:     Sam Ravnborg <sam@ravnborg.org>
 Cc:     David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
@@ -59,63 +60,49 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi Sam,
 
-On Mon, Jul 19, 2021 at 9:21 PM Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Wed, Jul 14, 2021 at 04:58:03PM +0200, Geert Uytterhoeven wrote:
-> > Currently, each screen update triggers an I2C transfer of all screen
-> > data, up to 1 KiB of data for a 128x64 display, which takes at least 20
-> > ms in Fast mode.
-> >
-> > Reduce the amount of transferred data by only updating the rectangle
-> > that changed.  Remove the call to ssd1307fb_set_address_range() during
-> > initialization, as ssd1307fb_update_rect() now takes care of that.
-> >
-> > Note that for now the optimized operation is only used for fillrect,
-> > copyarea, and imageblit, which are used by fbcon.
-> >
-> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-> > --- a/drivers/video/fbdev/ssd1307fb.c
-> > +++ b/drivers/video/fbdev/ssd1307fb.c
-> > @@ -184,16 +184,18 @@ static int ssd1307fb_set_address_range(struct ssd1307fb_par *par, u8 col_start,
-> >       return ssd1307fb_write_cmd(par->client, page_end);
-> >  }
-> >
-> > -static int ssd1307fb_update_display(struct ssd1307fb_par *par)
-> > +static int ssd1307fb_update_rect(struct ssd1307fb_par *par, unsigned int x,
-> > +                              unsigned int y, unsigned int width,
-> > +                              unsigned int height)
-> >  {
-> >       struct ssd1307fb_array *array;
-> >       u8 *vmem = par->info->screen_buffer;
-> >       unsigned int line_length = par->info->fix.line_length;
-> > -     unsigned int pages = DIV_ROUND_UP(par->height, 8);
-> > +     unsigned int pages = DIV_ROUND_UP(height + y % 8, 8);
+On Tue, Jul 20, 2021 at 9:56 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Mon, Jul 19, 2021 at 9:21 PM Sam Ravnborg <sam@ravnborg.org> wrote:
+> > On Wed, Jul 14, 2021 at 04:58:03PM +0200, Geert Uytterhoeven wrote:
+> > > Currently, each screen update triggers an I2C transfer of all screen
+> > > data, up to 1 KiB of data for a 128x64 display, which takes at least 20
+> > > ms in Fast mode.
+> > >
+> > > Reduce the amount of transferred data by only updating the rectangle
+> > > that changed.  Remove the call to ssd1307fb_set_address_range() during
+> > > initialization, as ssd1307fb_update_rect() now takes care of that.
+> > >
+> > > Note that for now the optimized operation is only used for fillrect,
+> > > copyarea, and imageblit, which are used by fbcon.
+> > >
+> > > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 >
-> Add () like this - at least it helps me:
-> > +     unsigned int pages = DIV_ROUND_UP((height + y) % 8, 8);
-
-Thanks, that's actually a genuine bug.
-
-> > @@ -226,13 +228,18 @@ static int ssd1307fb_update_display(struct ssd1307fb_par *par)
-> >        *  (5) A4 B4 C4 D4 E4 F4 G4 H4
-> >        */
+> > > --- a/drivers/video/fbdev/ssd1307fb.c
+> > > +++ b/drivers/video/fbdev/ssd1307fb.c
+> > > @@ -184,16 +184,18 @@ static int ssd1307fb_set_address_range(struct ssd1307fb_par *par, u8 col_start,
+> > >       return ssd1307fb_write_cmd(par->client, page_end);
+> > >  }
+> > >
+> > > -static int ssd1307fb_update_display(struct ssd1307fb_par *par)
+> > > +static int ssd1307fb_update_rect(struct ssd1307fb_par *par, unsigned int x,
+> > > +                              unsigned int y, unsigned int width,
+> > > +                              unsigned int height)
+> > >  {
+> > >       struct ssd1307fb_array *array;
+> > >       u8 *vmem = par->info->screen_buffer;
+> > >       unsigned int line_length = par->info->fix.line_length;
+> > > -     unsigned int pages = DIV_ROUND_UP(par->height, 8);
+> > > +     unsigned int pages = DIV_ROUND_UP(height + y % 8, 8);
 > >
-> > -     for (i = 0; i < pages; i++) {
-> > +     ret = ssd1307fb_set_address_range(par, par->col_offset + x, width,
-> > +                                       par->page_offset + y / 8, pages);
-> > +     if (ret < 0)
-> > +             goto out_free;
-> > +
-> > +     for (i = y / 8; i < y / 8 + pages; i++) {
-> >               int m = 8;
-> >
-> >               /* Last page may be partial */
-> > -             if (i + 1 == pages && par->height % 8)
-> > +             if (8 * (i + 1) > par->height)
-> >                       m = par->height % 8;
-> As before, this looks wrong to me.
+> > Add () like this - at least it helps me:
+> > > +     unsigned int pages = DIV_ROUND_UP((height + y) % 8, 8);
+>
+> Thanks, that's actually a genuine bug.
 
-Let's sort that out in the other thread...
+No it's not "(height + y) % 8" is wrong.
+
+Better if I reorder the operands like below?
+
+    unsigned int pages = DIV_ROUND_UP(y % 8 + height, 8);
 
 Gr{oetje,eeting}s,
 

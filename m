@@ -2,145 +2,78 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 209E7C07E9B
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 20:51:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEEC2C07E9B
+	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Jul 2021 11:32:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 08C5561165
-	for <linux-fbdev@archiver.kernel.org>; Tue, 20 Jul 2021 20:51:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A04EC6101E
+	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Jul 2021 11:32:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233242AbhGTUJh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 20 Jul 2021 16:09:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39284 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237201AbhGTTsA (ORCPT
+        id S235808AbhGUKvH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 21 Jul 2021 06:51:07 -0400
+Received: from smtp-relay-canonical-1.canonical.com ([185.125.188.121]:59866
+        "EHLO smtp-relay-canonical-1.canonical.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S238773AbhGUJpc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 20 Jul 2021 15:48:00 -0400
-Received: from phobos.denx.de (phobos.denx.de [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4188DC061574;
-        Tue, 20 Jul 2021 13:28:38 -0700 (PDT)
-Received: from [IPv6:::1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+        Wed, 21 Jul 2021 05:45:32 -0400
+Received: from localhost (1.general.cking.uk.vpn [10.172.193.212])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        (Authenticated sender: marex@denx.de)
-        by phobos.denx.de (Postfix) with ESMTPSA id C910982977;
-        Tue, 20 Jul 2021 22:28:32 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
-        s=phobos-20191101; t=1626812913;
-        bh=d/oWvjB00i6oJ+9T3eKmMHhNOvRfGvUeewgfn+NNM08=;
-        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
-        b=zEx9w1T7rocWXQVxb4y7WtBWlqCpZ/4cVKL+fYyLX9tzHAqPuVP8G3dvAV+awKcd+
-         PbEgh6MvQJIzgJLcH5Py8+eE1i4hkW9ErydVmhmlOasodXYyVgMN/KYYpfbn2QW3Tk
-         ky8Dit1JaQ8GoSvFHZEQl03eLHw4F0NzWJNSbC0yTFCv0YinUrIBpjLTQoa0bNTwZo
-         XBC2GSQ1kbeLJwFsxb6HTURklLr3DoWAhm0lbacF7iagH/7pcisLT8MTbl7eoFG7wq
-         e+NJH8mFka6FNQVIZvHexwLX8rd3UMonhKzGWIA/U9HMa8lmXRXyyqHqGcHusBJF9A
-         NT2LsCVU/JL3g==
-Subject: Re: [PATCH] backlight: pwm_bl: Avoid backlight flicker if backlight
- control GPIO is input
-To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Christian Gmeiner <christian.gmeiner@gmail.com>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Thierry Reding <treding@nvidia.com>, linux-pwm@vger.kernel.org
-References: <20210718211415.143709-1-marex@denx.de>
- <20210719112202.4fvmn57ibgy3yesa@maple.lan>
-From:   Marek Vasut <marex@denx.de>
-Message-ID: <bbaad78e-91c7-0787-fa72-b5cfabcc6dbd@denx.de>
-Date:   Tue, 20 Jul 2021 22:28:32 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+        by smtp-relay-canonical-1.canonical.com (Postfix) with ESMTPSA id 69AD13F227;
+        Wed, 21 Jul 2021 10:26:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+        s=20210705; t=1626863168;
+        bh=zZPrblOdlGr4apLUsC5WZiWZpIfxrwea/Xu2+T9Z6Cg=;
+        h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type;
+        b=AAwxA67lC0LtBTzqHe8QGxeEHc1zvXp5tbpA5diArC9pNsw7yid5qZnnZhp24YQpl
+         4gaSve7Oanm03ahuGnDFnIZ78UETA/XPQZ49G1f9bzbMyweW9ART0K++1E7tla0eBW
+         oeP1lq74eQVv1U+M6Cbtiq3HsJhsDBNuvj6Kp+0y8n7LHo/Ugi76GzM+2IFCtg2lKs
+         PsMijxnD1IpWU9+fhEGs6LL62QNUhbhTLtmBbcZs+yT57dHPG95hY9xSQlCqO1R/sJ
+         JyQUIC4TOfYkyfTIBTd0RJUWAZFh0Ra7vF+6DcWvw1sNv9w9jNwkiJVMiLyBpdk/uz
+         LSO7ofi0g3dkg==
+From:   Colin King <colin.king@canonical.com>
+To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] video: fbdev: arcfb: remove redundant initialization of variable err
+Date:   Wed, 21 Jul 2021 11:26:08 +0100
+Message-Id: <20210721102608.42694-1-colin.king@canonical.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-In-Reply-To: <20210719112202.4fvmn57ibgy3yesa@maple.lan>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Virus-Scanned: clamav-milter 0.103.2 at phobos.denx.de
-X-Virus-Status: Clean
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/19/21 1:22 PM, Daniel Thompson wrote:
-> On Sun, Jul 18, 2021 at 11:14:15PM +0200, Marek Vasut wrote:
->> If the backlight enable GPIO is configured as input, the driver currently
->> unconditionally forces the GPIO to output-enable. This can cause backlight
->> flicker on boot e.g. in case the GPIO should not be enabled before the PWM
->> is configured and is correctly pulled low by external resistor.
->>
->> Fix this by extending the current check to differentiate between backlight
->> GPIO enable set as input and set as direction unknown. In case of input,
->> read the GPIO value to determine the pull resistor placement, set the GPIO
->> as output, and drive that exact value it was pulled to. In case of unknown
->> direction, retain previous behavior, that is set the GPIO as output-enable.
->>
->> Fixes: 3698d7e7d221 ("backlight: pwm_bl: Avoid backlight flicker when probed from DT")
->> Signed-off-by: Marek Vasut <marex@denx.de>
->> Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
->> Cc: Daniel Thompson <daniel.thompson@linaro.org>
->> Cc: Heiko Stuebner <heiko@sntech.de>
->> Cc: Philipp Zabel <p.zabel@pengutronix.de>
->> Cc: Thierry Reding <treding@nvidia.com>
->> Cc: linux-pwm@vger.kernel.org
->> Cc: linux-fbdev@vger.kernel.org
->> To: dri-devel@lists.freedesktop.org
->> ---
->> NOTE: I think this whole auto-detection scheme should just be replaced by a
->>        DT prop, because it is very fragile.
-> 
-> I have some sympathy for this view... although I think the boat has
-> already set sail.
+From: Colin Ian King <colin.king@canonical.com>
 
-I'm not sure that's correct, we can simply say that any new uses of the 
-pwm-backlight should specify the initial GPIO configuration, and for the 
-legacy ones, use whatever is in the code now.
+The variable err is being initialized with a value that is never
+read, the assignment is redundant and can be removed.
 
-> However, on the basis of making things less fragile, I think the
-> underlying problem here is the assumption that it is safe to modify
-> enable_gpio before the driver has imposed state upon the PWM (this
-> assumption has always been made and, in addition to systems where the BL
-> has a phandle will also risks flicker problems on systems where
-> power_pwm_on_delay is not zero).
+Addresses-Coverity: ("Unused value")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/video/fbdev/arcfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-It is safe to modify the GPIO into defined state, but that defined state 
-is not always out/enabled, that defined state depends on the hardware.
+diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+index 1447324ed0b6..45e64016db32 100644
+--- a/drivers/video/fbdev/arcfb.c
++++ b/drivers/video/fbdev/arcfb.c
+@@ -446,7 +446,7 @@ static ssize_t arcfb_write(struct fb_info *info, const char __user *buf,
+ 	/* modded from epson 1355 */
+ 
+ 	unsigned long p;
+-	int err=-EINVAL;
++	int err;
+ 	unsigned int fbmemlength,x,y,w,h, bitppos, startpos, endpos, bitcount;
+ 	struct arcfb_par *par;
+ 	unsigned int xres;
+-- 
+2.31.1
 
-> This patch does not change the assumption that we can configure the
-> GPIO before we modify the PWM state. This means it won't fix the problem
-> for cases there the pin is HiZ by default but whose GPIOD_ASIS state is
-> neither input nor output.
-
-That is correct, for pin that is floating, we lost. But then I would 
-argue that if your backlight-enable GPIO is floating, the hardware is 
-buggy, I would expect some pull resistor to keep the backlight off on 
-power on on that GPIO.
-
-> I wonder if it might be better to move the code to configure the
-> direction of enable_gpio out of the probe function and into
-> pwm_backlight_power_on():
-
-No, I tried that already.
-
-The first thing that is called on boot is pwm_backlight_power_off() to 
-set the backlight to 0 (and thus set pwm to 0), but since pb->enabled is 
-false, that is where the function exits with configuring PWM and without 
-configuring the GPIO state.
-
-I also experimented with some "first time only" flag in those functions, 
-but that looked ugly and complicated the runtime code.
-
-> 	if (pb->enable_gpio) {
-> 		if (gpiod_get_direction(pb->enable_gpio) != 0))
-> 			gpiod_direction_output(pb->enable_gpio, 1);
-> 		else
-> 			gpiod_set_value_can_sleep(pb->enable_gpio, 1);
-> 	}
-> 
-> By the time we reach this function the driver explicitly applies state
-> to the GPIO then we know what the value must be.
-
-See above, I don't think that's the best option.

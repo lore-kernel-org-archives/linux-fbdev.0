@@ -2,252 +2,113 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-20.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BBA6C636CA
-	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Jul 2021 15:10:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30A26C12002
+	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Jul 2021 15:18:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2FFF161019
-	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Jul 2021 15:10:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 121876124B
+	for <linux-fbdev@archiver.kernel.org>; Wed, 21 Jul 2021 15:18:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238403AbhGUO3X (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 21 Jul 2021 10:29:23 -0400
-Received: from phobos.denx.de ([85.214.62.61]:41216 "EHLO phobos.denx.de"
+        id S239378AbhGUOiJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 21 Jul 2021 10:38:09 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33338 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S237799AbhGUO3X (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 21 Jul 2021 10:29:23 -0400
-Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
-        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: marex@denx.de)
-        by phobos.denx.de (Postfix) with ESMTPSA id CA75482039;
-        Wed, 21 Jul 2021 17:09:57 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
-        s=phobos-20191101; t=1626880198;
-        bh=gVzLSMlvEpKxP0K+zmlqHuSXNrL3MNmtqjvyCCiDHlw=;
-        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
-        b=Jlu6Jp6RSvY15NsbCEgcw1Sqv9NCBvIkQWa0RPYnWm4H2D+AkSq4xLa6/Hmnzzyoe
-         XPo1+vq1QHRtxV/9orrBdn/sCyTWDCWBXfpxzMRFOIaGb6LPin6nLnn5SBRQWXcezo
-         J2tTbjBGPNjM86SImL5ub6SqqWtWaF+wqqXufQYqOAAnsc/c2pcOLHUQ0CwMoN9Oj5
-         dYleMgMMTXs4XG67jlP1Q30e+rP/IIXCRUrFS+qtLfKdhk0BAU0NEQhUvEFq9mMdGA
-         WVdjLbtKY0Zv2HfYgM7GvK7C1Xb/9cT2kIbgrI/WnXrKNSN1ZovIxU6tMHzgacW3uM
-         GFltE7UfzKsAw==
-Subject: Re: [PATCH] backlight: pwm_bl: Avoid backlight flicker if backlight
- control GPIO is input
-To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Christian Gmeiner <christian.gmeiner@gmail.com>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Thierry Reding <treding@nvidia.com>, linux-pwm@vger.kernel.org
-References: <20210718211415.143709-1-marex@denx.de>
- <20210719112202.4fvmn57ibgy3yesa@maple.lan>
- <bbaad78e-91c7-0787-fa72-b5cfabcc6dbd@denx.de>
- <20210721104914.4difos6w3ysjelnv@maple.lan>
-From:   Marek Vasut <marex@denx.de>
-Message-ID: <fee1ad9e-ae70-1644-5444-6c894473b48e@denx.de>
-Date:   Wed, 21 Jul 2021 17:09:57 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+        id S238083AbhGUOiJ (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 21 Jul 2021 10:38:09 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id EB96F61246;
+        Wed, 21 Jul 2021 15:18:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1626880726;
+        bh=rHewC8c5p0knxx95PKPppJx1ZIfzczey+Q7nqFGbe1g=;
+        h=From:To:Cc:Subject:Date:From;
+        b=biu8xVWJdFQe9hPe1MR00MmTDZLvkdzJrXLSyc44H3ao7+QlvaF2qavXQqnwvznps
+         +ZiKWdt6IAid+59oKGhrSqbnXZCEhQA68Ujpi/zVaEF8Qe6scucrjVw2ScLSu23fDs
+         UGuh8jHTm0tWFqOc/3bxfMQIPhhpUjIib1gms4e3WkWl5hnd9EtlMDlXfaCZDjATrC
+         Qfi7IWDPof+2XLJT96RQhpLpr4B72j0qIJswSVNpGjsSTebX7Njj5ZS2dHJAnUOGbm
+         DooGKftfv1YwvTCXz4iTnBhHfG2/owHkaGiG1Y6uuxJQYikPKgRkxezcVvwuInngO+
+         JWjlkmeAcPzOg==
+From:   Arnd Bergmann <arnd@kernel.org>
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Maxime Ripard <maxime@cerno.tech>
+Cc:     Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh+dt@kernel.org>,
+        Frank Rowand <frowand.list@gmail.com>,
+        Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH] fbdev: simplefb: fix Kconfig dependencies
+Date:   Wed, 21 Jul 2021 17:17:46 +0200
+Message-Id: <20210721151839.2484245-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
-In-Reply-To: <20210721104914.4difos6w3ysjelnv@maple.lan>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Virus-Scanned: clamav-milter 0.103.2 at phobos.denx.de
-X-Virus-Status: Clean
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 7/21/21 12:49 PM, Daniel Thompson wrote:
-[...]
+From: Arnd Bergmann <arnd@arndb.de>
 
->>>> NOTE: I think this whole auto-detection scheme should just be replaced by a
->>>>         DT prop, because it is very fragile.
->>>
->>> I have some sympathy for this view... although I think the boat has
->>> already set sail.
->>
->> I'm not sure that's correct, we can simply say that any new uses of the
->> pwm-backlight should specify the initial GPIO configuration, and for the
->> legacy ones, use whatever is in the code now.
-> 
-> I'm not 100% against the idea... however if we still have to get the
-> code to read state from the hardware right for legacy cases that means
-> we have to do the same work but with fewer people testing it.
+Configurations with both CONFIG_FB_SIMPLE=y and CONFIG_DRM_SIMPLEDRM=m
+are allowed by Kconfig because the 'depends on !DRM_SIMPLEDRM' dependency
+does not disallow FB_SIMPLE as long as SIMPLEDRM is not built-in. This
+can however result in a build failure when cfb_fillrect() etc are then
+also in loadable modules:
 
-We can do something like this:
+x86_64-linux-ld: drivers/video/fbdev/simplefb.o:(.rodata+0x1f8): undefined reference to `cfb_fillrect'
+x86_64-linux-ld: drivers/video/fbdev/simplefb.o:(.rodata+0x200): undefined reference to `cfb_copyarea'
+x86_64-linux-ld: drivers/video/fbdev/simplefb.o:(.rodata+0x208): undefined reference to `cfb_imageblit'
 
-if (of_property_read_bool(np, "enable-active-high"))
-   gpiod_direction_output(pb->enable_gpio, 1);
-else if (of_property_read_bool(np, "enable-active-low"))
-   gpiod_direction_output(pb->enable_gpio, 0);
-else {
-   WARN_ON_ONCE("Fix your DT"); // or some such notification
-   ... legacy code path ...
-}
+To work around this, change FB_SIMPLE to be a 'tristate' symbol,
+which still allows both to be =m together, but not one of them to
+be =y if the other one is =m. If a distro kernel picks this
+configuration, it can be determined by local policy which of
+the two modules gets loaded. The 'of_chosen' export is needed
+as this is the first loadable module referencing it.
 
-Note that I picked the same DT prop names as drivers/gpio/gpiolib-of.c 
-of_gpio_flags_quirks() uses, because we are headed into similar mess 
-here I'm afraid.
+Alternatively, the Kconfig dependency could be changed to
+'depends on DRM_SIMPLEDRM=n', which would forbid the configuration
+with both drivers.
 
->>> However, on the basis of making things less fragile, I think the
->>> underlying problem here is the assumption that it is safe to modify
->>> enable_gpio before the driver has imposed state upon the PWM (this
->>> assumption has always been made and, in addition to systems where the BL
->>> has a phandle will also risks flicker problems on systems where
->>> power_pwm_on_delay is not zero).
->>
->> It is safe to modify the GPIO into defined state, but that defined state is
->> not always out/enabled, that defined state depends on the hardware.
-> 
-> It is only safe to do this once we know what the initial value should be
-> and I'm not sure that value can comes exclusively from reading the pin.
+Fixes: 11e8f5fd223b ("drm: Add simpledrm driver")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/of/base.c           | 1 +
+ drivers/video/fbdev/Kconfig | 5 +++--
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-I agree, it is far from perfect, but so is the current code.
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 48e941f99558..073ea7cd007b 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -36,6 +36,7 @@ LIST_HEAD(aliases_lookup);
+ struct device_node *of_root;
+ EXPORT_SYMBOL(of_root);
+ struct device_node *of_chosen;
++EXPORT_SYMBOL(of_chosen);
+ struct device_node *of_aliases;
+ struct device_node *of_stdout;
+ static const char *of_stdout_options;
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 8a98539ec490..5fbcb3cc2e8e 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2207,8 +2207,9 @@ config FB_HYPERV
+ 	  This framebuffer driver supports Microsoft Hyper-V Synthetic Video.
+ 
+ config FB_SIMPLE
+-	bool "Simple framebuffer support"
+-	depends on (FB = y) && !DRM_SIMPLEDRM
++	tristate "Simple framebuffer support"
++	depends on FB
++	depends on !DRM_SIMPLEDRM
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-- 
+2.29.2
 
-However, see below regarding the floating backlight enable pin.
-
->>> This patch does not change the assumption that we can configure the
->>> GPIO before we modify the PWM state. This means it won't fix the problem
->>> for cases there the pin is HiZ by default but whose GPIOD_ASIS state is
->>> neither input nor output.
->>
->> That is correct, for pin that is floating, we lost. But then I would argue
->> that if your backlight-enable GPIO is floating, the hardware is buggy, I
->> would expect some pull resistor to keep the backlight off on power on on
->> that GPIO.
-> 
-> I didn't say that the pin was floating. I said that the pin was in a HiZ
-> state meaning it could still be subject to pull up/down.
-> 
-> However there are cases, such as when the regulator is off, where I
-> think it is entirely legitimate for the enable pin to be floating. The
-> current driver does the wrong thing here if the pin is set as input
-> since if the regulator is off the initial enable_gpio value should be 0.
-
-Oh, right, that's a valid point.
-
-So if the pin is input, we can basically toss a coin.
-
->>> I wonder if it might be better to move the code to configure the
->>> direction of enable_gpio out of the probe function and into
->>> pwm_backlight_power_on():
->>
->> No, I tried that already.
->>
->> The first thing that is called on boot is pwm_backlight_power_off() to set
->> the backlight to 0 (and thus set pwm to 0), but since pb->enabled is false,
->> that is where the function exits with configuring PWM and without
->> configuring the GPIO state.
->>
->> I also experimented with some "first time only" flag in those functions, but
->> that looked ugly and complicated the runtime code.
-> 
-> I followed that idea and came to a similar conclusion w.r.t. to the
-> first time flag.
-> 
-> I think a reasonably elegant approach can be reached by making
-> pwm_backlight_initial_power_state() responsible for ensuring enable_gpio
-> matches the observed hardware state (taking into account both the pin
-> state and the regulator). I think this will fix both your flicker
-> concerns whilst permitting the legitimate cases for a floating pin.
-> 
-> Something like:
-
-I think we are getting closer, but there is extra problem to this.
-
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index e48fded3e414..8d8959a70e44 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -409,6 +409,33 @@ static bool pwm_backlight_is_linear(struct platform_pwm_backlight_data *data)
->   static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
->   {
->   	struct device_node *node = pb->dev->of_node;
-> +	bool active = true;
-> +
-> +	/*
-> +	 * If the enable GPIO is present, observable (either as input
-> +	 * or output) and off then the backlight is not currently active.
-> +	 * */
-> +	if (pb->enable_gpio && gpiod_get_value_cansleep(pb->enable_gpio) == 0)
-> +		active = false;
-
-This will fail on iMX GPIO controller, where if the GPIO is output, you 
-can read its state, but by default that state is what you wrote into the 
-GPIO output value register, not what is the actual value on the pin 
-(i.e. consider you have a strong pull resistor that overpowers the driver).
-
-To have a GPIO which is output and sample the actual pin value, you have 
-to tweak the pinmux and enable the SION bit, then you get the actual 
-value. But that is specific to the iMX GPIO controller/pinmux.
-
-So I suspect you might still want to check the direction here.
-
-> +	if (!regulator_is_enabled(pb->power_supply))
-> +		active = false;
-> +
-> +	if (!pwm_is_enabled(pb->pwm))
-> +		active = false;
-> +
-> +	/*
-> +	 * Synchronize the enable_gpio with the observed state of the
-> +	 * hardware.
-> +	 */
-> +	if (pb->enable_gpio)
-> +		gpiod_direction_output(pb->enable_gpio, active);
-> +
-> +	/*
-> +	 * Do not change pb->enabled here! pb->enabled essentially
-> +	 * tells us if we own one of the regulator's use counts and
-> +	 * right now we do not.
-> +	 */
->   
->   	/* Not booted with device tree or no phandle link to the node */
->   	if (!node || !node->phandle)
-> @@ -420,20 +447,7 @@ static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
->   	 * assume that another driver will enable the backlight at the
->   	 * appropriate time. Therefore, if it is disabled, keep it so.
->   	 */
-> -
-> -	/* if the enable GPIO is disabled, do not enable the backlight */
-> -	if (pb->enable_gpio && gpiod_get_value_cansleep(pb->enable_gpio) == 0)
-> -		return FB_BLANK_POWERDOWN;
-> -
-> -	/* The regulator is disabled, do not enable the backlight */
-> -	if (!regulator_is_enabled(pb->power_supply))
-> -		return FB_BLANK_POWERDOWN;
-> -
-> -	/* The PWM is disabled, keep it like this */
-> -	if (!pwm_is_enabled(pb->pwm))
-> -		return FB_BLANK_POWERDOWN;
-> -
-> -	return FB_BLANK_UNBLANK;
-> +	return active ? FB_BLANK_UNBLANK: FB_BLANK_POWERDOWN;
->   }
->   
->   static int pwm_backlight_probe(struct platform_device *pdev)
-> @@ -486,18 +500,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->   		goto err_alloc;
->   	}
->   
-> -	/*
-> -	 * If the GPIO is not known to be already configured as output, that
-> -	 * is, if gpiod_get_direction returns either 1 or -EINVAL, change the
-> -	 * direction to output and set the GPIO as active.
-> -	 * Do not force the GPIO to active when it was already output as it
-> -	 * could cause backlight flickering or we would enable the backlight too
-> -	 * early. Leave the decision of the initial backlight state for later.
-> -	 */
-> -	if (pb->enable_gpio &&
-> -	    gpiod_get_direction(pb->enable_gpio) != 0)
-> -		gpiod_direction_output(pb->enable_gpio, 1);
-
-pwm_backlight_initial_power_state() is still called after 
-pwm_apply_state() in pwm_backlight_probe(), so that might still be too 
-late, no ?

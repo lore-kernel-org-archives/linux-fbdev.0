@@ -7,55 +7,55 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97809C63798
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Jul 2021 14:46:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5589AC63798
+	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Jul 2021 14:53:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7E2EF6100C
-	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Jul 2021 14:46:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3862461278
+	for <linux-fbdev@archiver.kernel.org>; Thu, 22 Jul 2021 14:53:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232447AbhGVOGX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 22 Jul 2021 10:06:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50010 "EHLO
+        id S232361AbhGVONJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 22 Jul 2021 10:13:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51584 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232414AbhGVOGX (ORCPT
+        with ESMTP id S232571AbhGVONH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 22 Jul 2021 10:06:23 -0400
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00145C061757
-        for <linux-fbdev@vger.kernel.org>; Thu, 22 Jul 2021 07:46:57 -0700 (PDT)
-Received: by mail-wm1-x32f.google.com with SMTP id p15-20020a05600c358fb0290245467f26a4so3135204wmq.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 22 Jul 2021 07:46:57 -0700 (PDT)
+        Thu, 22 Jul 2021 10:13:07 -0400
+Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B91AAC061799
+        for <linux-fbdev@vger.kernel.org>; Thu, 22 Jul 2021 07:52:40 -0700 (PDT)
+Received: by mail-wm1-x329.google.com with SMTP id p9so1411340wmq.5
+        for <linux-fbdev@vger.kernel.org>; Thu, 22 Jul 2021 07:52:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=DnmHNNXEi+D67CdXt2sdtRiYmXnF0UzDAK5d1qxhJYo=;
-        b=sh8hlv9dg7eFqGZTlCBS2fKOrpDKfSZK3zJeZAxqFqqhfvCmEK+p2ojCMdRWL4QTY1
-         qHojFkfGdIg6xnOeJsgldaeFwrZXI+0iVQAYPS3CL4l1xCGYemJTMcW38fTnJoXCdl/x
-         t/bhlRsTtobXIZx9KJPjblZFuuHKoNbtUftrzqGxFV6GnOBEyLkgCOHKzm89LzDkfnpy
-         bo1lPduqlKiYJzUzLcbCGTFOQ5vPoPyPxk+9Bdj6CZ1itgw5tz7j/fFh6Fu4QFmrkKG+
-         8qS9w+idYQf/1f/QWfl6Bc6iw2Hp3K25vaDVrlWaCKyoCu2YX52X2iXDrh+XKwdT25hL
-         SBbA==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=NP0Nk6TpvGXmi3EQspzqhmeGXtJTWbb2t8lR/ui8TD4=;
+        b=izUC5Qvf/tubSNdCEliUDdjaUor/iX8CATtMD/ErOTgRdDxMAKIFt3zG53ZHHOZogA
+         xpLQ++qh4wvdPwv+BS2h+ZSz2nvLI+dJLauYxNCgRHa7dzFSLC7Du1yuHucHCt5Gnb4V
+         ddRFrp71Lnb7AUlyWZ7QxMsJhrQTgPQGQO7NTG1h7M79yfis3wwcP2Hy0SraUA9F83lP
+         M1Qv6MG5/oCL863uBERgRSzRsBaUPn2sqYNF7gw6CWT7f3uSr/sUOBtNU0H7REb5PqQT
+         wtEbXtVjfTjbPDyvDi5uYllGTU1HAYEryx1rrTECSAXWMj0+0BWTbgPD6JvmCWqBEh7A
+         UXJQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=DnmHNNXEi+D67CdXt2sdtRiYmXnF0UzDAK5d1qxhJYo=;
-        b=hklhnFqZOdkoPiwHBvze+VZxEBxJ1fZvGAxvf5q0jjJ4BZM46ogupbzdbbEMXqBsgs
-         bun6H4Kk4aSjLdpkTMxDCRqHUn+ZG+frlCU6BFto5L/97R0q1W2rvWWSWSsbVPYPmHZO
-         baPi/oEx993CUxThOnzoZ+uyo6pcYLB33bq+Yj9rODyn9ERFCgoaI11TUJiGhEA+Jcdu
-         OR4/M33JGRUGjjSs5QitJgLIqQFLouVz+bWTsTrEbiB09xsSMHZN9jlYFR/VFs7XZbRB
-         DRoklc1OHGCRwIaDkGI2lJdlxzvsBpiPwyW9uv9PDrFS0Q7g48Sv23+LwfFkrEd+CrKX
-         qZrQ==
-X-Gm-Message-State: AOAM530sVJlvfX8dUQaQdUrBzyc5hZkeF020NJEeJ299mL8B+Dy9SGio
-        1HQ7QPZw2dIpOB5bBeyfyvphOQ==
-X-Google-Smtp-Source: ABdhPJyXKXdBb+fuVyS8Yn0+pkXgwpRuUuzEuOXAMYs5CxxpmGCrWsN6xeN3PEe8irE+we8l+OBkxg==
-X-Received: by 2002:a7b:c7cb:: with SMTP id z11mr9558960wmk.102.1626965216396;
-        Thu, 22 Jul 2021 07:46:56 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=NP0Nk6TpvGXmi3EQspzqhmeGXtJTWbb2t8lR/ui8TD4=;
+        b=m1BxpVbogVdte3DHil7Oz+loKkqcQhTaPlPm9U7fE2FQtaFOkSokgtEkG++0MUcIjn
+         /mohND/DZSEVdE3nO8cBwhHuF3oHWEOhQVEFLZUEgVO6lJHs7tDliyotTGZ8urnF43zE
+         09AsZoHr65Nle3s/hQfIAqVkaChcUdF2CWjBj/abbu3WS0kg+xG6g35Sr4EPFoY9nqPo
+         75RaEhtksTl7E3BdsBHfaboeMb3WAyFOQdjpEsy3rpzbXQbxrPit2tQS7bkSuoxhzugv
+         LWzpQnjaDb41Ju3L7FYSq3nTnjfUGLnpLHulyKeNpe+z4x3TTC/5Lfd+TsX5vU2UNsrk
+         Ey5w==
+X-Gm-Message-State: AOAM531PYcupS5pzuWHBQdQIIw8dBqhQ24Eh/srMLJ5LNyxTiQqO8Ygc
+        G4u09MwK/ZT5xHO5oW6ND3gzIldSplgSBg==
+X-Google-Smtp-Source: ABdhPJy+uWxaydk70jwEcneHyghwzuOPld3QjaXdRC3fwtuprHx9eqlp5Y1QL6QB6ktCf4+LdElMcA==
+X-Received: by 2002:a05:600c:1c86:: with SMTP id k6mr43890478wms.147.1626965559165;
+        Thu, 22 Jul 2021 07:52:39 -0700 (PDT)
 Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id z2sm10167362wma.45.2021.07.22.07.46.54
+        by smtp.gmail.com with ESMTPSA id t6sm30527687wru.75.2021.07.22.07.52.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 22 Jul 2021 07:46:55 -0700 (PDT)
+        Thu, 22 Jul 2021 07:52:38 -0700 (PDT)
 From:   Daniel Thompson <daniel.thompson@linaro.org>
 To:     Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>
 Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
@@ -65,10 +65,12 @@ Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org, Marek Vasut <marex@denx.de>,
         stable@vger.kernel.org
-Subject: [PATCH] backlight: pwm_bl: Improve bootloader/kernel device handover
-Date:   Thu, 22 Jul 2021 15:46:23 +0100
-Message-Id: <20210722144623.1572816-1-daniel.thompson@linaro.org>
+Subject: [PATCH v2] backlight: pwm_bl: Improve bootloader/kernel device handover
+Date:   Thu, 22 Jul 2021 15:52:27 +0100
+Message-Id: <20210722145227.1573115-1-daniel.thompson@linaro.org>
 X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20210722144623.1572816-1-daniel.thompson@linaro.org>
+References: <20210722144623.1572816-1-daniel.thompson@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -95,9 +97,14 @@ backlight is on.
 Reported-by: Marek Vasut <marex@denx.de>
 Signed-off-by: Daniel Thompson <daniel.thompson@linaro.org>
 Cc: stable@vger.kernel.org
+Fixes: 3698d7e7d221 ("backlight: pwm_bl: Avoid backlight flicker when probed from DT")
 Acked-by: Marek Vasut <marex@denx.de>
 Tested-by: Marek Vasut <marex@denx.de>
 ---
+
+Notes:
+    v2: Added Fixes: tag (sorry for the noise)
+
  drivers/video/backlight/pwm_bl.c | 54 +++++++++++++++++---------------
  1 file changed, 28 insertions(+), 26 deletions(-)
 

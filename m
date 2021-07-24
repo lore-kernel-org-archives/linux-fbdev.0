@@ -2,149 +2,94 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31603C43214
-	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jul 2021 11:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44673C4338F
+	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jul 2021 15:14:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1A0EF60BD3
-	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jul 2021 11:16:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2D0D160EB0
+	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jul 2021 15:14:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229586AbhGXKf1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 24 Jul 2021 06:35:27 -0400
-Received: from mout.gmx.net ([212.227.15.15]:59349 "EHLO mout.gmx.net"
+        id S229944AbhGXOeP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 24 Jul 2021 10:34:15 -0400
+Received: from mout.gmx.net ([212.227.15.15]:54725 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232258AbhGXKfU (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 24 Jul 2021 06:35:20 -0400
+        id S229992AbhGXOeO (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Sat, 24 Jul 2021 10:34:14 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1627125335;
-        bh=EbwSnGgErGioLtZ9SjG8svALcdfgzH3xpEgvBjbS5U4=;
-        h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
-        b=NW4WWrySmiU9reoo2b5sQCrdB5nwVs3zpBCe/qsUaK3AWxAJz1rAxYurXRIC3X10J
-         n2w0USAXFhr3W6/yl8vHNJmEOBksUKyIUu2v4OgB//w4YOWveyhw9PTU9dJKiKid1M
-         sxW5dG6Pklh2dI5LQKRwH1YMCO5h7PklHsRgAas0=
+        s=badeba3b8450; t=1627139666;
+        bh=4noc/sQzclIW/kkrihBjzzi6QwizoNZ8djRM4lvM73g=;
+        h=X-UI-Sender-Class:From:To:Cc:Subject:Date;
+        b=lWuupqZvPp60MW1gvccIpZbpV3BV0Y2OPov5Sl7JQNykMOhs0y4XHb1aDQI+3W1EK
+         72fg87aV0FYCm4bkVOA9evD72G4d/VsyO/Ht1TCD87QWTwuK9Kb+Dc5okPtIpoAa47
+         j3MOZRZoXmKxy9/DfQEYjAA37pXuK+eszRe+JCto=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from titan ([83.52.228.41]) by mail.gmx.net (mrgmx004
- [212.227.17.184]) with ESMTPSA (Nemesis) id 1MqJqD-1lJq7g0veV-00nQM3; Sat, 24
- Jul 2021 13:15:35 +0200
-Date:   Sat, 24 Jul 2021 13:15:32 +0200
+Received: from localhost.localdomain ([83.52.228.41]) by mail.gmx.net
+ (mrgmx005 [212.227.17.184]) with ESMTPSA (Nemesis) id
+ 1N0oBr-1lBVhf04W5-00wpiS; Sat, 24 Jul 2021 17:14:26 +0200
 From:   Len Baker <len.baker@gmx.com>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Andy Shevchenko <andy.shevchenko@gmail.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc:     Len Baker <len.baker@gmx.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Phil Reid <preid@electromag.com.au>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        linux-staging@lists.linux.dev,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] staging/fbtft: Remove all strcpy() uses
-Message-ID: <20210724111532.GB4709@titan>
-References: <20210718133920.15825-1-len.baker@gmx.com>
- <CAHp75VeEA0=KFsfdjCnBm-b9+F+NnFWJ38nkh+qtb85XdXVWog@mail.gmail.com>
- <CAMuHMdXnhzumSrr=MAkv5nwY2o8xCa4s5zKa9meJTuo0r9yABw@mail.gmail.com>
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/3] Remove all strcpy() uses
+Date:   Sat, 24 Jul 2021 17:14:08 +0200
+Message-Id: <20210724151411.9531-1-len.baker@gmx.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdXnhzumSrr=MAkv5nwY2o8xCa4s5zKa9meJTuo0r9yABw@mail.gmail.com>
-X-Provags-ID: V03:K1:LGbsxKMon4WHzLQ8n04LauX8j5z6/6dVSMiYxp1Prrj9P7mNSD7
- VvrTqTmzuJO+Bby1BsSsXEiUkIiMS2ODmTipcQb5SvDMgZ1WEiYZz0DkkSyHhLcmwNwd+S9
- ybp/bPhfpueGHvuTB+ab67+ucPZk6a8YBLrFJNWZUWrkn9ewhRyJzmU5+RGxR+Vm3VOVrZA
- Ofe1z9Jp8Frluwpu+X2XQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:lXghBVD0FTw=:li5TEGASHZpBFfCNCMHSlm
- O3+bHd/z8R7A6x0kYE9MaMtMv/Hmtv5MgJyGngjyRFspkJJ9i8rzNyGHyq+yap2PMAjEqxL+N
- RnqCtQKzCr5GPXUDG3/edXtjPhokkxUgMgjvATOpmTdKS2urDAmbJN2etpP4C5mcwuDE/aCzi
- SNwWpPFkYugT/FAUrNpU06D7yazycNeYXLQDWijjLcHJ5YtLuyAigrCRk7knv6bpJ2+DhqjJq
- B+vkqDhpCgngmvsNM55n+9PNo3DfDZZ/Rwkwhh6BS/9Tmu38IKvh7A1biRFVZ/IQjMCEcyTfJ
- ecBzpFdXIyuUIDhIRdriXpmbYkHF2gsVh2g++hEzWcvzFVpMgn+FDJkAYC88TN9RpwD19XHtS
- pdE/BinX2+yte69evqy871zw+p3zrDxMpJbs6jWipxlGzRLjkDXDeM2GkAy7nhy5UnnfsBzJp
- dFd569WF3g8sTQaoyQkyp5BkZxu8RCvKhhfFll5cwnSt4ku2YwZ+xG0qDE1dMybiG1hhVC6gq
- 9kxmoVPEHY3tlr0MRQ7A6+aPCOzlndZFkjnHyoz1zTUnjVzWE8NwlVJfqyq6EU9tQNf1e5ZxQ
- aiDJVN3QUy09m2Wexd4b/s3pu6Otb3bymZ6nEWMvUAoqJretRhxFFmBp6D9EBdKxPPyvEc/eA
- vxbEjKo9e10EzFPlOQyddkFfJRUZDA08JtGos3UbFkSPYj/zIKV4dyTYCkwYEstt8wbL54Tpp
- VEn23pWF0xyYnfR6rlUSdRibPCw3KEFaLueKVYFQ0LsjOO92lVXHB66IGyFJRh8yH5fTw3HgQ
- oQI2qnCe2V1ho+23xChR5UL7T3bGxJxU2Pkrmm44x2iyoM1H3hlxzPfEbNJZAjhYJfY7oMXOf
- 1f8RYE27l5IYbUBlSVjHPXACVY1V2Egq2ZuHMfjEVMG+t9TLzmGKqcuMu6WOXzEeOzndhlmPv
- uKpTokgohCMEviVcbP75bnPHlu4Cu4BmP6ld0h5dKSWNPcAfmZ1KRMOkqm+L5WvyjSzf1ZU1p
- W5Gh5AsAOhwZY/8S6XNvap77VLaS2OkTtSKvk+abRN5Ev2X0sre0Cm+DGwSLGOD8srRFN5JVt
- KGCSqVwTh+ghso4Q+7F9fxlNabiB4laV7nj
 Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:CF3KTYSkqaOEngOglxyMd9EaNlUb1/dUGyEAN5GU0u03js5doC/
+ EM/4b9OWhbjKSd8ru2UsL197JEJVkoJ01uJW+UCo8Ib0nVE/Kjg6/LwqUCSKrPRwG8tshkb
+ nYwzaM44pjBoeFei5eLsV4sr1WCEw82bY3EGORYXF2KyoMTwfX22dqSBeoZuYNPF0q7qS3e
+ FkZkqVqZaZAfI7lSgoHtQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:RqDB3YaQbQo=:uDk5LDovtG0+MYOzDQ8jE0
+ XYwmMu2BOsBt4QV3A+LIE5bBK1CCjII05VUvqKg/Mq+SnYY15OFAcCDoU4oqr6KG4l9/SduzR
+ oMVr2yCtPStMkFyLWSc6iLgDOCYNWC3f1Asi/OrmeHPzY29i79LYyxQMCqs/qwgp/iCo7MFwz
+ qxBwtbbssO9Eo3VEfBuBJ7eQQ4JNYj5pf9ZWfz8+Rai4TmVKqaSidvF1DODPSaQ+G7sASDqiq
+ yUATZhIyeyvq/syvBrhP0838+PavDK5tAmwoJOTLY4uXKjXG/p0koYD7JY/778lej8wa+FIOB
+ tVeV20NTaqxbXR7N0EXRASQPsbEWGWIq4NbZUD4Xs84Hyp3X2dwBjrTJW7wr77Si/tAigRzT5
+ GEEV2vSGQ1EkakyTcgQ8p8cGXPvFK4cZ+Rg4g5h2b+Zu9CgO/Xcf9WLLVmbvHprjqdBh6jX8L
+ fGJ9Yq0urLwgLy2KFQ06TCCtxNSmM9ImwRO7SkR19l0jyCbI8vPTA+Ptd+gjPcSnc3W12LtId
+ 8m0vRazFbAKbllGDQIpdm1AEJbdRHHYg3TG1KPqXB04cInnWMAyFKf53abFuOzOZ5oWMHaNCV
+ Q0nw+vpdAhASPyViMtyrZCnGw4DIzD0DYpqPHf/F0JMaMKcFXzZULFk2DukSMOIrTXfAl61uJ
+ 6AHTitFA+GghNqzceTrTtPf9kU/TC946QIMGpLYUDpa3pLGddyamwITInCUAok2uuC6JMUVO3
+ Y42G7fIfR94JzSAhrE4+eoMthLKzr6Lu2n/LXhK99VIKhQ6Vo7cB8ZEXwMf1wPLRKp9fXjxd+
+ u3ldvZgzvpDxNDU2jn9GjlBJLbUfnbJ8bzEDA5yB2E9Bgzp+IGTLM5TwBYni4miJMaX/KUFRE
+ ZXb7/6smxzV5yy5fXMhBUOqvpLuv6JndVpdmSkNtt5HAFhubtaqrlxr/lUK7RAuUm/9tL4BxF
+ Uq3mrkPa7MmCoEXO5hih8fo7AKMFHzLazw9tJdlU2SVZaKDCX0+Gjnm5yDDK28cAXkoMxG1qS
+ ZG/vDRP9unJ2v4wiNdCU4v0D+PWjeXJJ53wfspsATd9hFnYnK6Qs7LFdFU0f8wOmy4ZmxnpEo
+ w8RBvQq3A2+RAHE6Q4cl4G8Q3dJoN1P6UY2
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jul 19, 2021 at 09:53:29AM +0200, Geert Uytterhoeven wrote:
-> On Sun, Jul 18, 2021 at 9:43 PM Andy Shevchenko
-> <andy.shevchenko@gmail.com> wrote:
-> > On Sun, Jul 18, 2021 at 4:43 PM Len Baker <len.baker@gmx.com> wrote:
-> > > strcpy() performs no bounds checking on the destination buffer. This
-> > > could result in linear overflows beyond the end of the buffer, leadi=
-ng
-> > > to all kinds of misbehaviors. The safe replacement is strscpy() but =
-in
-> > > this case it is simpler to add NULL to the first position since we w=
-ant
->
-> "NULL" is a pointer value, "NUL" is the character with value zero.
+strcpy() performs no bounds checking on the destination buffer. This
+could result in linear overflows beyond the end of the buffer, leading
+to all kinds of misbehaviors. So, this serie removes all strcpy uses
+from the "staging/fbtft" subsystem.
 
-Ok, understood. Thanks.
+Also, refactor the code a bit to follow the kernel coding-style and
+avoid unnecessary variable initialization.
 
->
-> > > to empty the string.
-> >
-> > > This is a previous step in the path to remove the strcpy() function.
-> >
-> > Any document behind this (something to read on the site(s) more or
-> > less affiliated with what is going to happen in the kernel) to read
-> > background?
-> >
-> > ...
-> >
-> > >                 case -1:
-> > >                         i++;
-> > >                         /* make debug message */
-> > > -                       strcpy(msg, "");
->
-> While this strcpy() is provably safe at compile-time, and will probably
-> be replaced by an assignment to zero by the compiler...
->
-> > > +                       msg[0] =3D 0;
-> >
-> > Strictly speaking it should be '\0'.
-> >
-> > >                         j =3D i + 1;
-> > >                         while (par->init_sequence[j] >=3D 0) {
-> > >                                 sprintf(str, "0x%02X ", par->init_se=
-quence[j]);
->
-> ... the real danger is the
->
->         strcat(msg, str);
->
-> on the next line.
-> Fortunately this whole debug printing block (including the strcpy)
-> can (and should) be rewritten to just use "%*ph".
+Changelog v1 -> v2
+- Add two new commits to clean the code.
+- Use the "%*ph" format specifier instead of strscpy() function (Geert
+  Uytterhoeven)
 
-Ok, I will work on it and I will send a v2 for review. Thanks for the
-feedback.
+Len Baker (3):
+  staging/fbtft: Remove all strcpy() uses
+  staging/fbtft: Remove unnecessary variable initialization
+  staging/fbtft: Fix braces coding style
 
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m=
-68k.org
->
-> In personal conversations with technical people, I call myself a hacker.=
- But
-> when I'm talking to journalists I just say "programmer" or something lik=
-e that.
->                                 -- Linus Torvalds
+ drivers/staging/fbtft/fbtft-core.c | 30 +++++++++++++-----------------
+ 1 file changed, 13 insertions(+), 17 deletions(-)
 
-Regards,
-Len
+=2D-
+2.25.1
+

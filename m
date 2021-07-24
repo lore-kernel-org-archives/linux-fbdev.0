@@ -8,29 +8,29 @@ X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 751FFC4338F
-	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jul 2021 16:55:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E6A4C4338F
+	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jul 2021 17:44:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5AEAF60E0C
-	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jul 2021 16:55:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 329F560E8F
+	for <linux-fbdev@archiver.kernel.org>; Sat, 24 Jul 2021 17:44:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229672AbhGXQOa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 24 Jul 2021 12:14:30 -0400
-Received: from mout.gmx.net ([212.227.15.18]:42993 "EHLO mout.gmx.net"
+        id S229530AbhGXRE0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 24 Jul 2021 13:04:26 -0400
+Received: from mout.gmx.net ([212.227.15.15]:59081 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229530AbhGXQOa (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 24 Jul 2021 12:14:30 -0400
+        id S229461AbhGXREY (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Sat, 24 Jul 2021 13:04:24 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1627145673;
-        bh=wSYHYXjQ8tY2LuOVqUnrRReY9Qkro14biYwp5qK9Qbg=;
+        s=badeba3b8450; t=1627148677;
+        bh=NnnKncfAnaFeKpuZRfNKoEnQZQQS40lYryGaD8rwMk4=;
         h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=L+tQhJdM8xwferGORR21neTgmRxe/Guw+NJ4eh+UMFI37GVhv9GN839nFHvjt/wk8
-         20gTx6DxdNAHQ0Mxi4wcFWuA1dzEEIDcvP1KAqiYxwUIBeyySdX/f9xOHgbXXoUZmi
-         Q5ZK5JT8vYy2KWFAkpBMeHB5o+cbaVLS/rIDqyAw=
+        b=NFNUK8e1lGKlLsZ78wPfP5vHKXND1wmC2AI4RH71M5Ie9Y8wYdWHqJVuRDtIJ3wW3
+         VXs2CX4KUZKOYnpaq3xLdSs4YyW7qx6gNhO3e4eHKLo/QnqC/AzUNWViHh7ztLdfXa
+         a3TfKXl//kPVXrValL65VXLVmtUKycHLbFO8vyjI=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from localhost.localdomain ([83.52.228.41]) by mail.gmx.net
  (mrgmx004 [212.227.17.184]) with ESMTPSA (Nemesis) id
- 1MQe5k-1lkjZG48YQ-00NjkY; Sat, 24 Jul 2021 18:54:33 +0200
+ 1Ml6mE-1lMEif0gvs-00lTqs; Sat, 24 Jul 2021 19:44:37 +0200
 From:   Len Baker <len.baker@gmx.com>
 To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc:     Len Baker <len.baker@gmx.com>,
@@ -39,62 +39,79 @@ Cc:     Len Baker <len.baker@gmx.com>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/3] staging/fbtft: Remove unnecessary variable initialization
-Date:   Sat, 24 Jul 2021 17:14:10 +0200
-Message-Id: <20210724151411.9531-3-len.baker@gmx.com>
+Subject: [PATCH v2 3/3] staging/fbtft: Fix braces coding style
+Date:   Sat, 24 Jul 2021 17:14:11 +0200
+Message-Id: <20210724151411.9531-4-len.baker@gmx.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20210724151411.9531-1-len.baker@gmx.com>
 References: <20210724151411.9531-1-len.baker@gmx.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:rSb/1rkm96QKJVkdD088liE9MP7SztbliVsYvbYCK+YrW7iDYYq
- HU/dJvRyII6cTTHQZQzwVy+75Zu0HmH2G2Mkk/z/F1vReW8xpIJrWi8B99CCqSZtb8v2KzN
- l6OZ/SfERY4L+rKQwlMpHXX0qK2BHDILB+LoYCMpGlG1FBo1CUGM9EGumIV+/GGmeyChCce
- eGgevo9c/bPR7Odcw86ow==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:b2MJHBGWTlQ=:OXq0MS/8hkj1BxEsUVhVYM
- oBHhsBJmTHlO0M/pOFx3QclSI1wUBCigQ4s9Sa7A1CjQmoTKhtdJ/oyVrPClFgKT/w/tAnz7a
- vRALzoO3n2hbnKZM0tR9ari1BjovUUXmnAqajK8ToAaTVOLQ4Zg/FvR5/+oEknEraf6u6Zvck
- Hdin+nf9wErG/apNrynfWeO760O6HQPccPI8CYz9rtf6ogAKkdK77oNh88UM9t9VC+SkXR6a3
- W6wltemJVs9NA0Duzi6p7ba5ewPdlZWp25ZkDBG741ss7pzFrR48DPDJTTQPlouLWHgy7tbtJ
- oHPkFAkHVuMuNAnOAmvXj/ynO5v6Ajqy0eheCupmMHgT5Xn3vd1qyi/t65kGWSXrvR9euRoq2
- ZtXF5YJRrUL7CcK+HWzMvhaId1QNq3HgBWhM2JZgFzwDHNbK7Ife8IRBt9lCtfEfEK20ms71i
- FiK4HTMcjZmR6mI7CbiyAG9iJdjJCqElaZNjptitm8mezKiII4lclDjMNjntszWRp25dYiECp
- dX7JWF5P0bRKZrjK/mMHBGPDcqcaVJ165i/VkMJsD9xeCNv00CTiDXsUDAYGuAJPoNWQaa/Qr
- 13I5aORe/YJZt1lE05Yo7C/G/Xs3UzFMR7sfK++dNmw2q/I//GegiNuWI9hkGJM0nNALgZOM1
- Qm7A6IpL+ROx+NDNDD++g2nc8Q5rwdzMWNPhzEi5n1KV2g6+t4Ubq2Oh2fxqAMrakNven2k80
- TymJFe2CS+SS9o+JGcPE1CXShLzrvxvgKXrA5xEwlRe/+ZHXrnDzf0hxm7vn45inf28wGtCzu
- 4hjSwmi7Nd++7HgBXzZ/IVBmELmB9VKM7QcQvIRka77E+ZUrKRflpOr3jUFXQgtKjLKDVugi9
- ci/7cykY2ChbIG/RYSaqXCEu2BkaWsqtlnwd3hOH4r0TeSrJI74+rIjsVhlwnbiqruuIAGfnS
- 2GGVOoWJMO7SONvjcjypKGWzHBPwoO3j52bPpd2oVeRfJu9yeyBTNqY50ieqLn/cCTTkccGKa
- ZUulqmK+IC4CIWw+t/edPCA6XGE8f8gIcCf9sgZ40Q1mJ8PxeY1xxsExx5JIoMRTm/pJgwiq6
- pxrVzx3VTlMSXCUv4di8MCQ5u0g2s1zyfpy
+X-Provags-ID: V03:K1:Lxq6kiLtjzFc7OrUMkOeAtgYvYuYKRc/giZKldt3BoFUT8h46VN
+ Kg9FIPsCHHoEzU1Mpx9okxfyNGfBWPsPHYWimuPRdKM7YMgx2f/hyOp2LoOaeTQQ39tB119
+ r00lutgbYittzltAdnF6QCZZMkyT5+zF0brw7VKPt3rZbRv5z9hwxA/m471V2iAF4Ivk4re
+ fJ9snb6LaTghFsDzNuZKg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:+WwuL9lnI14=:Lg8CcfCZ7rwXHqQl323hZy
+ fGlFde99fZWlaom5py+XLvoegd+qdqmZEnaZcZfjaZXvCeQfq1VcgF/kPHuf3DX7+Dnc+fEYM
+ GF5J3HJvxIuQB/LKFn2AYmrVe+k7eP8fdhESjiwle6j2jlpdvGJkY53L22oeIQ9pjNVzIssJR
+ lTeRxVTZoFtv7PJXi4frv7WYleVjSsoS+aMSpp7psFbCVzS0eR36Fl61cRvfhokOfM3YVs71d
+ TSUNWgcaTPd2gGx/iffDIqzBPfpZfSPZ57NqUjGggEfbgwrNQyh7zBArIEtgH6Qdl/hRT32PJ
+ JXoI9p0V8gNiUjVGp1f1s9Uz/+ibpDt7QxC6XeQ+0bo1/uw6tqnO3lVGaVIHVWKq7VzeNY4+d
+ 2OpnbFIPjtMG4G37mboGXULo2eh2u2o6A0XFu2pYtyK0J8GAyB5aIjgh7s9SVTV94dYXhLCBv
+ 0miwN3QGGRxpnD5Kxw+0pfJfAJubKiXXXruRCsawp5sJ1aqNmI/GellC7vWzdjvW3M7JFhBxV
+ D+LTiSfdu6TIqkaju1DEGsoHLejU9iO+jg2GOwpf4tsTVfz1rkaaYRT/YilFHbaxeuENaDVUZ
+ KlfGAn9Q7eBgvNoXqYPJUM5Pt6dN/Eo6NbpkJs5P7okfSgpPdP2YqDk9OMZRSdn0kNciNMdl+
+ MXvkoUTAtJe1fy93gvr7MVIvwmN5QCaxcMZI9NMCETYMV7S45tDl+wEZvFEdBP9aSuXC0ughK
+ 9odmeqPINVGQWl1Vd5BMuvN1jf1ucvBSmD+b+XDCaA8oPJGqNg94oTA5jI2lbELcTe+UEUC4k
+ 2VZZkSasNSfjuaS0Qw9UY62tOGme/eW2xzVXIUdkAfKzSdOYg5SspQsEp7tl/gKC640W26ivK
+ +3GDojDJUFZNf5dAvtRwplJIKRuG3mo4RXhFXDekbKGom+ybJq+s19ZFJRtYW30q99dg66Oqn
+ NVZ/95qRcpoIbhYb87SLwP2G1O9gMhadg3TgGQpfaJZstM6uK6dGjVuaN6h/ixb7IWFI5k/Nl
+ 7wG2olAL5nGf7iJQ2NFtfHQ9f0MCh6jDVlSoiwy4qZmjA2XnlK5rUjsDTiI6vIPDskEW+/YdI
+ DBKweJCMhiMW2bjwr0ar/okB4t5uJ6NbzgQ
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Remove the initialization of the variable "i" since it is written a few
-lines later.
+Add braces to the "for" loop and remove braces from the "if" statement.
+This way the kernel coding style is followed.
 
 Signed-off-by: Len Baker <len.baker@gmx.com>
 =2D--
- drivers/staging/fbtft/fbtft-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/fbtft/fbtft-core.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fb=
 tft-core.c
-index be20da3c4a5c..cc2bee22f7ad 100644
+index cc2bee22f7ad..d87792649efe 100644
 =2D-- a/drivers/staging/fbtft/fbtft-core.c
 +++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -992,7 +992,7 @@ static int fbtft_init_display_from_property(struct fbt=
-ft_par *par)
- int fbtft_init_display(struct fbtft_par *par)
- {
- 	int buf[64];
--	int i =3D 0;
-+	int i;
- 	int j;
+@@ -1003,9 +1003,11 @@ int fbtft_init_display(struct fbtft_par *par)
+ 	}
 
- 	/* sanity check */
+ 	/* make sure stop marker exists */
+-	for (i =3D 0; i < FBTFT_MAX_INIT_SEQUENCE; i++)
++	for (i =3D 0; i < FBTFT_MAX_INIT_SEQUENCE; i++) {
+ 		if (par->init_sequence[i] =3D=3D -3)
+ 			break;
++	}
++
+ 	if (i =3D=3D FBTFT_MAX_INIT_SEQUENCE) {
+ 		dev_err(par->info->device,
+ 			"missing stop marker at end of init sequence\n");
+@@ -1016,10 +1018,9 @@ int fbtft_init_display(struct fbtft_par *par)
+
+ 	i =3D 0;
+ 	while (i < FBTFT_MAX_INIT_SEQUENCE) {
+-		if (par->init_sequence[i] =3D=3D -3) {
+-			/* done */
+-			return 0;
+-		}
++		if (par->init_sequence[i] =3D=3D -3)
++			return 0; /* done */
++
+ 		if (par->init_sequence[i] >=3D 0) {
+ 			dev_err(par->info->device,
+ 				"missing delimiter at position %d\n", i);
 =2D-
 2.25.1
 

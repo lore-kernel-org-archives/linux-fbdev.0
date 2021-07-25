@@ -2,111 +2,122 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBBB0C4338F
-	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Jul 2021 14:02:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1E08C4338F
+	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Jul 2021 18:51:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CFA3560F23
-	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Jul 2021 14:02:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B2DD560F13
+	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Jul 2021 18:51:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230260AbhGYNVx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 25 Jul 2021 09:21:53 -0400
-Received: from mout.gmx.net ([212.227.17.21]:44023 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230029AbhGYNVx (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 25 Jul 2021 09:21:53 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1627221727;
-        bh=340oxUqB+pwxiqxWW/cd7DjFI0xOrzq59FIfoXP3S1I=;
-        h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
-        b=gbvFuDGOyKNCqw5KidhNLWnATQrXYGbCL60RErsLk8WUUv80FI6ipKOydrqL1w6XY
-         2xDmvC5Yf/EsHCQVvDue/mNxqwP4idWefRTY5NBrBfoWVmGXt+gNLgTfG3o5JFM0Bf
-         kpi/gLgRJ19i3fu6szYRigGoq2qdxdNQZCfzCEuI=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from titan ([83.52.228.41]) by mail.gmx.net (mrgmx105
- [212.227.17.174]) with ESMTPSA (Nemesis) id 1N63VY-1l1VBu38Wm-016S1K; Sun, 25
- Jul 2021 16:02:06 +0200
-Date:   Sun, 25 Jul 2021 16:02:04 +0200
-From:   Len Baker <len.baker@gmx.com>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Len Baker <len.baker@gmx.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        id S231189AbhGYSLZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 25 Jul 2021 14:11:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48262 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230244AbhGYSLZ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Sun, 25 Jul 2021 14:11:25 -0400
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FE4BC061757;
+        Sun, 25 Jul 2021 11:51:54 -0700 (PDT)
+Received: by mail-pl1-x634.google.com with SMTP id k1so8907723plt.12;
+        Sun, 25 Jul 2021 11:51:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=Qirs+iLZFGRKsz/ZopqRyNng3+a0VdaNoIeySOmoJBs=;
+        b=ryQJ486SrysdfwQYYY2pSFz6x9WPYf3me6zDgsy0m4p2aDx7AsvFubmhNxrWI+j4mv
+         nsvVtOQpACYSIKSnrUTMMMUUQdp3SgVsYl0TD7ExOXYMOl9F27ZE/bAU4iYLTFdlttbM
+         mgCsWVFzt5OIJaGyyWvVlaXnqOtUUQ3nC2OVhZV1MZ77YP7msKpmtmRPj9vV2BXO76Wu
+         DeRSI5ITm7mYKMjdHyrm4wxysMYOQwP9EkFdubOY8tc52aVAyjbKLgzmaoChdQBcBiij
+         VHm02K4+SLwTlRDCumkBT32LVccoGk37flJDSBLtEmBt5OrWlE4gDEz5t7dxqImxSUYj
+         ZVyg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Qirs+iLZFGRKsz/ZopqRyNng3+a0VdaNoIeySOmoJBs=;
+        b=n4D0gmo2T5CESr+dmd2SLKtoxl6Cpccc6vYcxLJ6kUmq35t2RuKqpWYap3H9bzvnU6
+         71sz6xzkobxNR5bXrbQKfeNKSDW2mnr4T4fWt8G4OgLRGtNvZbxeTP5KwE7soywXgH0b
+         HCpXUWwO8mj0ZlYQ9UGm2kRruWG2xHC61fCxmeVPcne+RfHc6t0pYkf1JgnlHKVb7sI4
+         0d6WVyoLKv96MqAZobh5KvrY38RU8yuFd0E+huyJoeH0JRLOUg1Txypd+tmVS+YgVJxC
+         SQumXurNNeGjCNUVBcBvM/6OBFTcCy9BkcKnW7iVuieWN90df9POy89MjlfIb8AeOKsK
+         gZNg==
+X-Gm-Message-State: AOAM531vQWAqE9h2ICb46ZBFSnXEbNFN2FZ20h0mux08GDSAsyqX5MEN
+        FmhoJp2fMOQMtSFrj5u/6LflxZhZ8slz5De+1jY=
+X-Google-Smtp-Source: ABdhPJxHwipVJbJmzeHfWz64SwkxLZVfnnCGACfafL10iji3Cc/k3Num3SbdXCt9DRUt1CVwHIbCU+9rEVCNd+x0eNo=
+X-Received: by 2002:a63:d014:: with SMTP id z20mr14700708pgf.203.1627239114212;
+ Sun, 25 Jul 2021 11:51:54 -0700 (PDT)
+MIME-Version: 1.0
+References: <20210724151411.9531-1-len.baker@gmx.com> <20210724151411.9531-2-len.baker@gmx.com>
+ <CAHp75Vd+ZM_yO6CU_6oJieePMt00Sp6oKEU2+QEyZxLDg5PN8A@mail.gmail.com> <20210725135844.GA1953@titan>
+In-Reply-To: <20210725135844.GA1953@titan>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Sun, 25 Jul 2021 21:51:18 +0300
+Message-ID: <CAHp75Vd=_qgnaLpAq+=Awf+ggUf9DEm0amNyTE0KkYThxtP=WQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/3] staging/fbtft: Remove all strcpy() uses
+To:     Len Baker <len.baker@gmx.com>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Phil Reid <preid@electromag.com.au>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
         linux-staging@lists.linux.dev,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 3/3] staging/fbtft: Fix braces coding style
-Message-ID: <20210725140204.GB1953@titan>
-References: <20210724151411.9531-1-len.baker@gmx.com>
- <20210724151411.9531-4-len.baker@gmx.com>
- <CAMuHMdX6PUr0irndogg=Aa+AFDdiDJMeMWM74mLBkuLrW+zWng@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdX6PUr0irndogg=Aa+AFDdiDJMeMWM74mLBkuLrW+zWng@mail.gmail.com>
-X-Provags-ID: V03:K1:3Eg3v7AELPHXFdoJHGTE5b05uHbis/dRr8ApGFt/g1+gkHNbSSg
- KSHc03AunknsizsegEZKOcG0miDl6Ne1a/radEDdbQ3VP4TJhjoU5qW5U8qCJTxKuJ9qiva
- u91KUIi8wpJOrhsSZLaBz9LJvnmmQNbtRhlk32j3azogf4uNS4mIs7R/t7MeP1II6juDyTl
- K7VvjSL0a7vD9NSEJW5tQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:2xiUjm9aORg=:xoqOPOdWGflIJ4WGEGkMFX
- bOCy2BhOi925zBfTtkX8yYLF6T0iQXo9hgeFgB7zzS57DL2EK8UXbCD5MVSiwZwmpT8KTOQBA
- Aj9KHT9jfQ/5a03etCykDe7InMaDfoE0e+rVV7EA+FAa5RrCkfycn7vKCTtzM8YG1qsSy/v47
- KuV1CzL/dLjXr4qKwIbP6MCICTkDCsqWtz1H7C2zCAsbQqWYsXc94T7k4gEMVPoMmRC+QbTxz
- vgtNrbOlVnCWIj5cdXXmlQRvGoWhaTs2G1+xo7egfgnIZmIi36FKVHP9RYdqbTwokJXR66gyl
- aZ2XMylFK2Xt30NYSv+Fzo2ookmxTz089a2UJCs2yuiyYRoA+wNdquQ+ocIhv4xWt+pGBh/Fd
- AtYzoJIplwayVMRtJWx5ZAS0MwGc4tUhKTyHrEPOtEmi4fcf/SXij4pgInsyPaOXYxNL9tBPq
- CBIyZffZ0PA5UaL5e4YQ1nAjVuJRB9V8bhcdHKcuWgBmS51Q8MM862KLT5a0Ey5RSA/sYh0X0
- o+87gwdZSFKmPPRxQhIfjhqhq67xRI8Cx/bDdkJ5brFj0wusgnhD36MsxEyG+O9RlZMVM+q0O
- nFLTcLfjLIMT8Qu8qjEhdxBemT1GibOHaL6HJXztsP2dZoDDv5WjUkyTn8zD6Yaxg3ARt5lCz
- McCFp0E33C+bfLtkUrD2KEf1nsHyL9EUshkWLDI/6zXR67tP8FYQbRvUXGTSZZUNi9sHLylOE
- 8b4YFP4SpcCLCroz/O0eQjtN3/MnThINO7+amlF9yEidr8kSRRLSDaRqTXEK0CWOeafkxMLDf
- YodzEnnsa4gMtiSHFU35RYzg48rqs/KTPE4AxCSg0Zc3KD4+v36A5qwFpgIjsqkSdveL2vBi6
- GO3cYaaUy8R65Efn935qlAYLej8IkvF1AMKMEpSxo7scDuTlRUlzS5x+CNfEAX/o4P/KOztin
- UVi3vlWtKghw2Ox0F8zStg+7ujU6rcYNOPgWHQVUzlYf6EWwmHQN++7GpgHYuDtQeeGbsgZ+F
- 0jPEjxGjvP3CHbOF/tu1EgbtJITWkLEZuJ7l7X1lMI+/AF5CqHv+fZtbtVJ0FQR2z7T9JCJuj
- 6dQnNQI8bD4bJ13eAPboqYD+k5iqbjPtrQI
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+On Sun, Jul 25, 2021 at 4:59 PM Len Baker <len.baker@gmx.com> wrote:
+> On Sat, Jul 24, 2021 at 11:21:04PM +0300, Andy Shevchenko wrote:
+> > On Sat, Jul 24, 2021 at 7:05 PM Len Baker <len.baker@gmx.com> wrote:
 
-On Sat, Jul 24, 2021 at 08:01:53PM +0200, Geert Uytterhoeven wrote:
-> Hi Len,
->
-> On Sat, Jul 24, 2021 at 7:44 PM Len Baker <len.baker@gmx.com> wrote:
-> > Add braces to the "for" loop and remove braces from the "if" statement=
-.
-> > This way the kernel coding style is followed.
+...
+
+> > > -       char msg[128];
 > >
-> > Signed-off-by: Len Baker <len.baker@gmx.com>
+> > 128 / 4 = 32. So, this buffer is enough to debug print only up to 32
+> > bytes. Hence %*ph replacement won't cut output earlier than requested.
 >
-> Thanks for your patch!
+> I'm sorry, but I don't understand what you are trying to explain. Moreover,
+> with the "0x%02X " in the sprintf followed by the strcat, the msg buffer can
+> print 128/5 values (25 hex values).
 >
-> > --- a/drivers/staging/fbtft/fbtft-core.c
-> > +++ b/drivers/staging/fbtft/fbtft-core.c
->
-> > @@ -1016,10 +1018,9 @@ int fbtft_init_display(struct fbtft_par *par)
+> The %*ph replacement can print up to 64 bytes, so I don't see any problem
+> here.
+
+Right. That's what I am trying to say and the hint here is to combine
+this part into a phrase in the commit message in the next version of
+the patch.
+
+...
+
+> > > +                       for (j = i + 1; par->init_sequence[j] >= 0; j++);
 > >
-> >         i =3D 0;
-> >         while (i < FBTFT_MAX_INIT_SEQUENCE) {
-> > -               if (par->init_sequence[i] =3D=3D -3) {
-> > -                       /* done */
-> > -                       return 0;
-> > -               }
+> > Why is i + 1 initial for the j? You may rather access the 'i + 1 +
+> > j'th element in the array...
+> >
+> > ...
+> >
+> > > +                                     par->init_sequence[i], j - i - 1,
+> >
+> > ...and get rid of the ' - i -1' part here.
 >
-> These braces should not be removed, due to the presence of
-> the comment.
+> Yes, it was the first idea but I prefer this method since we save aritmethic
+> operations. In other words, if I use what you suggest, the index for
+> par->init_sequence is calculated as a "sum" every iteration. But if the
+> performance is not an issue and you believe that the above is more clear, I
+> have no problem. What do you prefer?
 
-Ok, I leave it as is.
+I prefer my variant and I believe the compilers nowadays are clever
+enough to understand this. Have you tried to compile and compare the
+real assembly?
 
-Thanks,
-Len
+-- 
+With Best Regards,
+Andy Shevchenko

@@ -2,122 +2,129 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8F6FC4320A
-	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Jul 2021 02:11:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 345FBC4338F
+	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Jul 2021 13:59:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AD5FA60E8F
-	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Jul 2021 02:11:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1816860F35
+	for <linux-fbdev@archiver.kernel.org>; Sun, 25 Jul 2021 13:59:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230158AbhGYBbD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 24 Jul 2021 21:31:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55976 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230089AbhGYBav (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 24 Jul 2021 21:30:51 -0400
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C101C061757;
-        Sat, 24 Jul 2021 19:11:21 -0700 (PDT)
-Received: by mail-pj1-x1030.google.com with SMTP id m1so7888387pjv.2;
-        Sat, 24 Jul 2021 19:11:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=b5jPra08N1jrGXye0AqIJzH6O9flfE0TslEKmsIUVKI=;
-        b=tel9YPzrvYPp1Kj0jNPjd7H1ga53aW03g4oasrfak9aCK6aAIeWf0ATkYJP8pKf9Po
-         0U+ElAcDv5Be7TwACzA3P/XQn4vL3oY9nCSoCjO4fqNnbRHC+57Ft1EcZL9Xn3t2FX6s
-         wUF8xeCLgeKC43YMuSbgtgtCCh/JCJqbb7Rb166107xAWZP18o4ElwO60LVrpe8ctASZ
-         Dz8Og8CYks0CEE0u29hMe2h65qHRbfn2KrizwoqQ/lf+UM2/HVKVlK84gnFVDdmd3MU+
-         qs5NaBdFwiq5hMqAHwoJYldWPPdjor/Vhq5m4O1V52l5VtJSsoBp06C7GZR5DGaDT0GE
-         lIjw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=b5jPra08N1jrGXye0AqIJzH6O9flfE0TslEKmsIUVKI=;
-        b=dNOjlnWcTcMscDRYTtSiTnP2tg6OdQfg3WvzDmc2iB6IrnGQduaaa6kCw/dPAT5Uk2
-         f2Hl1gF6/slJZkfXtqeAq+OYEQZyHgtAal/dvr0x0noDmy8Nch0Way18U3skWSAU4Joz
-         Gk9qH/d1RB7U4dljNo2xormVdZJbGWc6h0I43950uV2rFnS9358gVTnxQ72Y/ni5b/3C
-         grq/nzA74sJlbXvSq4j4YUj/YSe9hXDyCBRB0ITKgv0ZUa91IIA5YeNrXn9QIVSs1k6y
-         yNUHf7LHqCqfy3BclPIVtppiBIv9P0uToxCVhRITIvHxEJ7jVWuSqO0IaZheXPoctZIO
-         Qtpw==
-X-Gm-Message-State: AOAM533wT0SuQP9cxZykZJCQAuqyRcFGwtc3uo04DKjVcIqEDbfS3b0l
-        DlN7x+uVf9ekxBa8DrcIJg==
-X-Google-Smtp-Source: ABdhPJyDCY4AM99VJ/986peBSGIuC2ol9sFa7fOWfXRXJ6vHYojLh6NK7TZvEeHvIGbWMskfxUzD4Q==
-X-Received: by 2002:a62:1bc7:0:b029:328:cbf5:b6b0 with SMTP id b190-20020a621bc70000b0290328cbf5b6b0mr11297361pfb.81.1627179081119;
-        Sat, 24 Jul 2021 19:11:21 -0700 (PDT)
-Received: from vultr.guest ([107.191.53.97])
-        by smtp.gmail.com with ESMTPSA id y139sm12122341pfb.107.2021.07.24.19.11.19
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Sat, 24 Jul 2021 19:11:20 -0700 (PDT)
-From:   Zheyu Ma <zheyuma97@gmail.com>
-To:     adaplas@gmail.com
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Zheyu Ma <zheyuma97@gmail.com>
-Subject: [PATCH 3/3] video: fbdev: asiliantfb: add a check against divide error
-Date:   Sun, 25 Jul 2021 02:10:54 +0000
-Message-Id: <1627179054-29903-4-git-send-email-zheyuma97@gmail.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1627179054-29903-1-git-send-email-zheyuma97@gmail.com>
-References: <1627179054-29903-1-git-send-email-zheyuma97@gmail.com>
+        id S230260AbhGYNSq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 25 Jul 2021 09:18:46 -0400
+Received: from mout.gmx.net ([212.227.17.21]:37967 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230029AbhGYNSp (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Sun, 25 Jul 2021 09:18:45 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1627221537;
+        bh=9JOWuUIENdIuSyDGKKcT4bIsyOiev+WVf9ryeJ+imdE=;
+        h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
+        b=P6kt0i8XF6A0F0yygNB/gkp3bZnqqKKLvcORcR84uwwllPD3flVNmjpKkILWIj4AL
+         BrR8dbxa6sBhhfL9WF743xKu8l6DASgU9KqByPyBQSrv7BgPhsin0oy8iJ6VCzvJY8
+         Gw1vCtrKEtsOc78viDkj2mB3KVosfhBXtZedag6s=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from titan ([83.52.228.41]) by mail.gmx.net (mrgmx105
+ [212.227.17.174]) with ESMTPSA (Nemesis) id 1MxDou-1lAKwS3Ptw-00xcK1; Sun, 25
+ Jul 2021 15:58:56 +0200
+Date:   Sun, 25 Jul 2021 15:58:44 +0200
+From:   Len Baker <len.baker@gmx.com>
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     Len Baker <len.baker@gmx.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Phil Reid <preid@electromag.com.au>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        linux-staging@lists.linux.dev,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/3] staging/fbtft: Remove all strcpy() uses
+Message-ID: <20210725135844.GA1953@titan>
+References: <20210724151411.9531-1-len.baker@gmx.com>
+ <20210724151411.9531-2-len.baker@gmx.com>
+ <CAHp75Vd+ZM_yO6CU_6oJieePMt00Sp6oKEU2+QEyZxLDg5PN8A@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHp75Vd+ZM_yO6CU_6oJieePMt00Sp6oKEU2+QEyZxLDg5PN8A@mail.gmail.com>
+X-Provags-ID: V03:K1:iAqHZEABVjEHSpYT/IzYlVIkOHoMdCujwMQ6INd7zOiseMdT/st
+ 3LaYh3CImBe0kCexfi/eaHk7hTgIeSRAU/TjzYC71zay9UXyybrY1rx0XdBv8eGVWcK0jOy
+ nFWo6knPP/H5sFodeL6Vk3flzYR8u8geyXI7qve4eXBNpFhfQ52KBpsXAyzgQqPWib0K5y/
+ FDueNX/Pn/Lh5KkmYLPHg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:MEWIDFz4tLM=:Bl8LVt8MUnomMU2m6J980r
+ dJxwSdOTDwOnyKoXm1xwlsvvQi+HKAIuK2yCFGliWF2Ppk79ZeJz0gsgqkFnRqmfrA2UQ8gr2
+ q/mXYnabD4L6t+dALHYG7/RdFKBCieuSBw262oChGCA11oGTTIuaE7suH/Q0ibK+32rExXVsw
+ TaarFA1KLbuP5H6IUNej9s1p5wrGPtsPgAWz4tk5rFkQNiV2afGIaGMLubMcVUaaLFqTS6s1G
+ Iu0E92mUoGSY2nO6Q+AaPE2cS0S0hdOXqouekXLlXe7RPqA3+J2Y5GGdP8l1C4IiUziL3+oYY
+ EFSGlfL5ZcyynwRNyHORqCwmMVKHZY4oTF0HNSczZBgKllrRC/4RhEzrK00FxDFn6xvf3a+B4
+ Ox6zAJC/qUhEBRxXBm83GY8SUKuf84/C15BA3R2J23buHp1rx+aWzj4r0TXe2aXasrpls6DMi
+ SWJkz5VdInaMy9iTrAbBIxJTteQ8j5XdLY3b0C8qMhKMJaKRYDQkuzsMUTJTQKeXAOcFDJkuj
+ uB6FIm49j/zFPasxaRO3jBfJJE0dxoMhP2X/zj7uq7wroT5zW7EAAQBojxPT7wQ2r/dMbPRjf
+ osqq8o6ulHRaIcwgs2o/hMTOqCvcR4HBsz00TzZFohuLBwp+zJ+Y0iZ6l9QbQwMvyELlr7wcm
+ 43psQVZwrYohLN8/l94HHVL36f/h+YqJFEgMwmQeD22CymYesK8ZDZKeqvXSyEbwImCyLcJv5
+ elt5XydXm03aO3g8mHedThErBwjX8oS/tFL+ocPp6KZdJuzum4M+MxUgtNoK2jW7vGNDxbLQz
+ XJsxbB2m1atmbgHX71J8HP/BKIb3X+MPcd7mYTJ9zD/MS8iBHbNFhei9vLYl/gcsZM6VuRiKQ
+ XSp1IwlGGUv0SsRuGH47p6jhcAqvDpnE3eBl2/Zsxw0bqQ9P4i7zzhbfLVBk3lfc/IaawVOjX
+ o7EjGQ++1eNsj4F75gJ1lQEl8V+HXT5bkpOx3CpFLidDb9aqEY48rCKovyLuD4mVat+giicB7
+ 6dHr4fpldjq7dB5rCHNuYEYZ1Q9RKeoZiMsgoEopx6wXwRoUroDhyYsCtVjuzlEj5mSYtc8Pu
+ 2YaxZ1q7RPTuicbfJGfxcMxtj7a+l+WFnhd
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The userspace program could pass any values to the driver through
-ioctl() interface. If the driver doesn't check the value of 'pixclock',
-it may cause divide error.
+Hi,
 
-Fix this by checking whether 'pixclock' is zero first.
+On Sat, Jul 24, 2021 at 11:21:04PM +0300, Andy Shevchenko wrote:
+> On Sat, Jul 24, 2021 at 7:05 PM Len Baker <len.baker@gmx.com> wrote:
+> >
+> > strcpy() performs no bounds checking on the destination buffer. This
+> > could result in linear overflows beyond the end of the buffer, leading
+> > to all kinds of misbehaviors. The safe replacement is strscpy() but in
+> > this case it is simpler to use the "%*ph" format specifier.
+>
+> ...
+>
+> > -       char msg[128];
+>
+> 128 / 4 =3D 32. So, this buffer is enough to debug print only up to 32
+> bytes. Hence %*ph replacement won't cut output earlier than requested.
 
-The following log reveals it:
+I'm sorry, but I don't understand what you are trying to explain. Moreover=
+,
+with the "0x%02X " in the sprintf followed by the strcat, the msg buffer c=
+an
+print 128/5 values (25 hex values).
 
-[   43.861711] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-[   43.861737] CPU: 2 PID: 11764 Comm: i740 Not tainted 5.14.0-rc2-00513-gac532c9bbcfb-dirty #224
-[   43.861756] RIP: 0010:asiliantfb_check_var+0x4e/0x730
-[   43.861843] Call Trace:
-[   43.861848]  ? asiliantfb_remove+0x190/0x190
-[   43.861858]  fb_set_var+0x2e4/0xeb0
-[   43.861866]  ? fb_blank+0x1a0/0x1a0
-[   43.861873]  ? lock_acquire+0x1ef/0x530
-[   43.861884]  ? lock_release+0x810/0x810
-[   43.861892]  ? lock_is_held_type+0x100/0x140
-[   43.861903]  ? ___might_sleep+0x1ee/0x2d0
-[   43.861914]  ? __mutex_lock+0x620/0x1190
-[   43.861921]  ? do_fb_ioctl+0x313/0x700
-[   43.861929]  ? mutex_lock_io_nested+0xfa0/0xfa0
-[   43.861936]  ? __this_cpu_preempt_check+0x1d/0x30
-[   43.861944]  ? _raw_spin_unlock_irqrestore+0x46/0x60
-[   43.861952]  ? lockdep_hardirqs_on+0x59/0x100
-[   43.861959]  ? _raw_spin_unlock_irqrestore+0x46/0x60
-[   43.861967]  ? trace_hardirqs_on+0x6a/0x1c0
-[   43.861978]  do_fb_ioctl+0x31e/0x700
+The %*ph replacement can print up to 64 bytes, so I don't see any problem
+here.
 
-Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
----
- drivers/video/fbdev/asiliantfb.c | 3 +++
- 1 file changed, 3 insertions(+)
+>
+> ...
+>
+> > +                       for (j =3D i + 1; par->init_sequence[j] >=3D 0=
+; j++);
+>
+> Why is i + 1 initial for the j? You may rather access the 'i + 1 +
+> j'th element in the array...
+>
+> ...
+>
+> > +                                     par->init_sequence[i], j - i - 1=
+,
+>
+> ...and get rid of the ' - i -1' part here.
 
-diff --git a/drivers/video/fbdev/asiliantfb.c b/drivers/video/fbdev/asiliantfb.c
-index 3e006da47752..84c56f525889 100644
---- a/drivers/video/fbdev/asiliantfb.c
-+++ b/drivers/video/fbdev/asiliantfb.c
-@@ -227,6 +227,9 @@ static int asiliantfb_check_var(struct fb_var_screeninfo *var,
- {
- 	unsigned long Ftarget, ratio, remainder;
- 
-+	if (!var->pixclock)
-+		return -EINVAL;
-+
- 	ratio = 1000000 / var->pixclock;
- 	remainder = 1000000 % var->pixclock;
- 	Ftarget = 1000000 * ratio + (1000000 * remainder) / var->pixclock;
--- 
-2.17.6
+Yes, it was the first idea but I prefer this method since we save aritmeth=
+ic
+operations. In other words, if I use what you suggest, the index for
+par->init_sequence is calculated as a "sum" every iteration. But if the
+performance is not an issue and you believe that the above is more clear, =
+I
+have no problem. What do you prefer?
 
+Thanks,
+Len

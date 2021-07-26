@@ -8,61 +8,61 @@ X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2158C432BE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Jul 2021 10:04:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3363AC4338F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Jul 2021 10:04:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B39CC60524
-	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Jul 2021 10:04:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1BA6E60F11
+	for <linux-fbdev@archiver.kernel.org>; Mon, 26 Jul 2021 10:04:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233084AbhGZJXt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 26 Jul 2021 05:23:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52924 "EHLO
+        id S233109AbhGZJXv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 26 Jul 2021 05:23:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52918 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232990AbhGZJXs (ORCPT
+        with ESMTP id S232958AbhGZJXs (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
         Mon, 26 Jul 2021 05:23:48 -0400
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA6E9C061764;
-        Mon, 26 Jul 2021 03:04:15 -0700 (PDT)
-Received: by mail-pl1-x634.google.com with SMTP id e21so6440236pla.5;
-        Mon, 26 Jul 2021 03:04:15 -0700 (PDT)
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3747CC061760;
+        Mon, 26 Jul 2021 03:04:13 -0700 (PDT)
+Received: by mail-pj1-x102c.google.com with SMTP id pf12-20020a17090b1d8cb0290175c085e7a5so18996677pjb.0;
+        Mon, 26 Jul 2021 03:04:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=oLqmAGPc4SVQoWTmixoeM0OSXPTGLwR/vf6mA6ujJrw=;
-        b=jDEhCV0MesJWmyfwARGKqSlkU4IvJEiOkkMs5Q6tTIZ/2yHUxRb+ayd29hH316o3RE
-         XPMvLlYnOu8Jb8aW6QcpAwDmlYpvPuz+A/Of4LFLj7aXEw3GhTlY8aDIGdU6DKaLtv5S
-         i9p7+tmhWAZwR/mH2fpbCG+J10goLVPzkC4lsNqafvEiU2U7MgevQ9R2TO+nXb/9+c/w
-         vNJkToMzgq7noG4CEeFyQOXxmBD1Fm/eymn8+1ryAgRcJXqEbzGu2NWyw6Pvdr8o+1N6
-         gb7cgoLEsqPAK58pyr/SNYIexpwOUdbikB0jgimEvz8u/XGakGebts7PMqQ0MSTMJNos
-         KRlQ==
+        bh=38ZBRruD9SD0W+tDWCkmMr8EuewiszPAFe4KSlkuKoQ=;
+        b=AgUWoFLd8ftqSp6xu5Pr0CHAW8h+KzDV7GAoCelIYqZBl/DGaEG/TW5B2Wj4yXs6Vq
+         qvD/EZ+yV95S2dZ87kIiqRUR8Ih2YATIxHsMZCx24sppnVGKZs7LbZ+jvo7kiJHifAJ0
+         7cwwv8xRSds6HFWgZo5KhlnpbLB7JxiidB716+QSz6NRZdH7sWK8Ag/a4mO0Wqh35K6x
+         z1nxuMJ4dGkO2f+C1CiyYOaGHcrrbdaf/srP5g4gIpybTF4K1DvrpUZ7R8S7WTAuzmbe
+         7NhjBB4KxDXdbMfrTIvzpzuHST07OlLmxYEAwK+o0its7FH5QVURJGlRmTXwiH/zceBr
+         VkaA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=oLqmAGPc4SVQoWTmixoeM0OSXPTGLwR/vf6mA6ujJrw=;
-        b=ZuK3S8ffPeN/RYzY4ojehfJOhny5mETBmd/B+RgJ8IOWwMobV6+wdRdSCTYY5xJwnV
-         2VNPEfe09CCc6xWW6KhgML/PWG+qiQrdXI+GvCn4KMJ0qwELmQtQHDiRbG3fO8SKfui0
-         7L3oox4MLXsLeHUtmW/VfTI23TrMArNPnupzmuGId8r7yY49Z08IlwWnzjnLqUcptzIT
-         Q6yzIH9bcJE+9LGTRqROUNWQJu3LDbQVElVED2caGlw7PMeTnRh+qJj1tIYP5W7jPr4R
-         wOdYJEuu7iAy3gL8+V/TlouEGyNGxCc0wKARDgvuUJ7n6ZJSBkdfxC1cv8iI8f1JGmsr
-         Tdfw==
-X-Gm-Message-State: AOAM533g7lMjPVsBM1TwQHHM21td6ve/8mHhCNiMrRPpBruhIbaUChJg
-        F5pK0VLiWaYzDjZd1LvsCg==
-X-Google-Smtp-Source: ABdhPJwbnGkQtNU75HgbhJkdcgiC7P3ABNH4BW4RXUmVbmLYQFMJrXBHBUSds9DZntWqWMXHdnU4uw==
-X-Received: by 2002:a17:902:684a:b029:12b:8d3e:68dc with SMTP id f10-20020a170902684ab029012b8d3e68dcmr14110881pln.79.1627293855175;
-        Mon, 26 Jul 2021 03:04:15 -0700 (PDT)
+        bh=38ZBRruD9SD0W+tDWCkmMr8EuewiszPAFe4KSlkuKoQ=;
+        b=t4Y1uaGShOwqIq09YLWqp6MTtET5jE3YLY0XUzcBO+rUIZTj0b4aXYqBimCikGd6v+
+         PIHKAvUcTdwb8qdFtX8J9VH+6oyQIIJs3j3NJKuFgmnSckW2DFk1Mgh/U/oEAp+DGzWj
+         3OyJTMks1xYkwh8csRUBHy57HmeckdTVXiMBoS84DgwHOQHjcZot4ya+lLXgPhNfLzhu
+         WGsdXdlKGk3sGGN3qcOaCvIbtso8MdrltwRD7ySTDiTEbxz721LLK4lqEUXm/FSHU1Tp
+         tXgc6mlVbnvZdIFxp/kN+MrPPOd+evmmg3rDxgrwAZfPFzKZwKLXapnXCENseChkKOy0
+         93sQ==
+X-Gm-Message-State: AOAM530wlTAjWEnDuNIpVJ/SNidBrRtv1+g+LjzctjJByJWLMyB4xv4U
+        wLHf+zBJFVTyb33UTwL12g==
+X-Google-Smtp-Source: ABdhPJxT0iMdkn+MLdhl+8zVXCcq7JsfN6y2gWC2nTx75rgzzv4N7fEtTtoQ++wUn/CnIhmhFB4cmw==
+X-Received: by 2002:a17:90a:de16:: with SMTP id m22mr25692271pjv.38.1627293852339;
+        Mon, 26 Jul 2021 03:04:12 -0700 (PDT)
 Received: from vultr.guest ([107.191.53.97])
-        by smtp.gmail.com with ESMTPSA id ft7sm13504530pjb.32.2021.07.26.03.04.13
+        by smtp.gmail.com with ESMTPSA id ft7sm13504530pjb.32.2021.07.26.03.04.10
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 26 Jul 2021 03:04:14 -0700 (PDT)
+        Mon, 26 Jul 2021 03:04:11 -0700 (PDT)
 From:   Zheyu Ma <zheyuma97@gmail.com>
 To:     adaplas@gmail.com
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org, Zheyu Ma <zheyuma97@gmail.com>
-Subject: [PATCH v2 2/3] video: fbdev: kyro: Error out if 'pixclock' equals zero
-Date:   Mon, 26 Jul 2021 10:03:54 +0000
-Message-Id: <1627293835-17441-3-git-send-email-zheyuma97@gmail.com>
+Subject: [PATCH v2 1/3] video: fbdev: asiliantfb: Error out if 'pixclock' equals zero
+Date:   Mon, 26 Jul 2021 10:03:53 +0000
+Message-Id: <1627293835-17441-2-git-send-email-zheyuma97@gmail.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1627293835-17441-1-git-send-email-zheyuma97@gmail.com>
 References: <1627293835-17441-1-git-send-email-zheyuma97@gmail.com>
@@ -71,64 +71,56 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 The userspace program could pass any values to the driver through
-ioctl() interface. if the driver doesn't check the value of 'pixclock',
-it may cause divide error because the value of 'lineclock' and
-'frameclock' will be zero.
+ioctl() interface. If the driver doesn't check the value of 'pixclock',
+it may cause divide error.
 
-Fix this by checking whether 'pixclock' is zero in kyrofb_check_var().
+Fix this by checking whether 'pixclock' is zero first.
 
 The following log reveals it:
 
-[  103.073930] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-[  103.073942] CPU: 4 PID: 12483 Comm: syz-executor Not tainted 5.14.0-rc2-00478-g2734d6c1b1a0-dirty #118
-[  103.073959] RIP: 0010:kyrofb_set_par+0x316/0xc80
-[  103.074045] Call Trace:
-[  103.074048]  ? ___might_sleep+0x1ee/0x2d0
-[  103.074060]  ? kyrofb_ioctl+0x330/0x330
-[  103.074069]  fb_set_var+0x5bf/0xeb0
-[  103.074078]  ? fb_blank+0x1a0/0x1a0
-[  103.074085]  ? lock_acquire+0x3bd/0x530
-[  103.074094]  ? lock_release+0x810/0x810
-[  103.074103]  ? ___might_sleep+0x1ee/0x2d0
-[  103.074114]  ? __mutex_lock+0x620/0x1190
-[  103.074126]  ? trace_hardirqs_on+0x6a/0x1c0
-[  103.074137]  do_fb_ioctl+0x31e/0x700
-[  103.074144]  ? fb_getput_cmap+0x280/0x280
-[  103.074152]  ? rcu_read_lock_sched_held+0x11/0x80
-[  103.074162]  ? rcu_read_lock_sched_held+0x11/0x80
-[  103.074171]  ? __sanitizer_cov_trace_switch+0x67/0xf0
-[  103.074181]  ? __sanitizer_cov_trace_const_cmp2+0x20/0x80
-[  103.074191]  ? do_vfs_ioctl+0x14b/0x16c0
-[  103.074199]  ? vfs_fileattr_set+0xb60/0xb60
-[  103.074207]  ? rcu_read_lock_sched_held+0x11/0x80
-[  103.074216]  ? lock_release+0x483/0x810
-[  103.074224]  ? __fget_files+0x217/0x3d0
-[  103.074234]  ? __fget_files+0x239/0x3d0
-[  103.074243]  ? do_fb_ioctl+0x700/0x700
-[  103.074250]  fb_ioctl+0xe6/0x130
+[   43.861711] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
+[   43.861737] CPU: 2 PID: 11764 Comm: i740 Not tainted 5.14.0-rc2-00513-gac532c9bbcfb-dirty #224
+[   43.861756] RIP: 0010:asiliantfb_check_var+0x4e/0x730
+[   43.861843] Call Trace:
+[   43.861848]  ? asiliantfb_remove+0x190/0x190
+[   43.861858]  fb_set_var+0x2e4/0xeb0
+[   43.861866]  ? fb_blank+0x1a0/0x1a0
+[   43.861873]  ? lock_acquire+0x1ef/0x530
+[   43.861884]  ? lock_release+0x810/0x810
+[   43.861892]  ? lock_is_held_type+0x100/0x140
+[   43.861903]  ? ___might_sleep+0x1ee/0x2d0
+[   43.861914]  ? __mutex_lock+0x620/0x1190
+[   43.861921]  ? do_fb_ioctl+0x313/0x700
+[   43.861929]  ? mutex_lock_io_nested+0xfa0/0xfa0
+[   43.861936]  ? __this_cpu_preempt_check+0x1d/0x30
+[   43.861944]  ? _raw_spin_unlock_irqrestore+0x46/0x60
+[   43.861952]  ? lockdep_hardirqs_on+0x59/0x100
+[   43.861959]  ? _raw_spin_unlock_irqrestore+0x46/0x60
+[   43.861967]  ? trace_hardirqs_on+0x6a/0x1c0
+[   43.861978]  do_fb_ioctl+0x31e/0x700
 
 Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
 ---
 Changes in v2:
-    - Make commmit log more descriptive
+    - Make commit log more descriptive
 ---
- drivers/video/fbdev/kyro/fbdev.c | 3 +++
+ drivers/video/fbdev/asiliantfb.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
-index 8fbde92ae8b9..6db7e5e83f11 100644
---- a/drivers/video/fbdev/kyro/fbdev.c
-+++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -394,6 +394,9 @@ static int kyrofb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+diff --git a/drivers/video/fbdev/asiliantfb.c b/drivers/video/fbdev/asiliantfb.c
+index 3e006da47752..84c56f525889 100644
+--- a/drivers/video/fbdev/asiliantfb.c
++++ b/drivers/video/fbdev/asiliantfb.c
+@@ -227,6 +227,9 @@ static int asiliantfb_check_var(struct fb_var_screeninfo *var,
  {
- 	struct kyrofb_info *par = info->par;
+ 	unsigned long Ftarget, ratio, remainder;
  
 +	if (!var->pixclock)
 +		return -EINVAL;
 +
- 	if (var->bits_per_pixel != 16 && var->bits_per_pixel != 32) {
- 		printk(KERN_WARNING "kyrofb: depth not supported: %u\n", var->bits_per_pixel);
- 		return -EINVAL;
+ 	ratio = 1000000 / var->pixclock;
+ 	remainder = 1000000 % var->pixclock;
+ 	Ftarget = 1000000 * ratio + (1000000 * remainder) / var->pixclock;
 -- 
 2.17.6
 

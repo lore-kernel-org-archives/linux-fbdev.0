@@ -2,149 +2,130 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2F3CC4338F
-	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 13:43:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3935C432BE
+	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 22:05:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 91EB961042
-	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 13:43:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C8E3560F56
+	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 22:05:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233086AbhGaNnt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 31 Jul 2021 09:43:49 -0400
-Received: from mout.gmx.net ([212.227.15.19]:41057 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233207AbhGaNnr (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 31 Jul 2021 09:43:47 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1627738996;
-        bh=Fu/lW7pPCxMAVtTTCjrX6D5BTYRamvOOTo6hAqwjT+M=;
-        h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
-        b=ZsL7JBbsitWzQJ5WHefWqlFAwGe7vJbhBj2faIoGOl88YzZTi5tGfkfH4bOBa7px9
-         StEJYLOeYKn/M6DazE9IQoM6PEzwTFJTynEpHLZypO7Za35UYAJRTBrNcbfCFk/4A8
-         KaadioHrg2gvzVdhC8DaNWlMa/g5tj8RuZSkW3lA=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from titan ([79.150.72.99]) by mail.gmx.net (mrgmx005
- [212.227.17.184]) with ESMTPSA (Nemesis) id 1N63Vi-1nG7GW0WYy-016QDW; Sat, 31
- Jul 2021 15:43:16 +0200
-Date:   Sat, 31 Jul 2021 15:43:03 +0200
-From:   Len Baker <len.baker@gmx.com>
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     Len Baker <len.baker@gmx.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Phil Reid <preid@electromag.com.au>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        linux-staging@lists.linux.dev,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/3] staging/fbtft: Remove all strcpy() uses
-Message-ID: <20210731134303.GA1979@titan>
-References: <20210724151411.9531-1-len.baker@gmx.com>
- <20210724151411.9531-2-len.baker@gmx.com>
- <CAHp75Vd+ZM_yO6CU_6oJieePMt00Sp6oKEU2+QEyZxLDg5PN8A@mail.gmail.com>
- <20210725135844.GA1953@titan>
- <CAHp75Vd=_qgnaLpAq+=Awf+ggUf9DEm0amNyTE0KkYThxtP=WQ@mail.gmail.com>
+        id S231766AbhGaWFV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 31 Jul 2021 18:05:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35082 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231598AbhGaWFU (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Sat, 31 Jul 2021 18:05:20 -0400
+Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com [IPv6:2a00:1450:4864:20::231])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A17BAC061798
+        for <linux-fbdev@vger.kernel.org>; Sat, 31 Jul 2021 15:05:12 -0700 (PDT)
+Received: by mail-lj1-x231.google.com with SMTP id h9so18344312ljq.8
+        for <linux-fbdev@vger.kernel.org>; Sat, 31 Jul 2021 15:05:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=eavS7+nVlKa3pE/nMERuVdSNOcLN0CSyw0CYPXJs2RE=;
+        b=oxTawDKtE7gUMCEZTGVhmlVv2Y3WYDP+FS3lOaHPAgoD7WcgQjYd0RzzaaCmE3977P
+         y2AZlp+prHKgerutQ7jx1R/cVL6lbK+WzauqEJucT+Izj+ziz0I0tc0O+XwvtPwksIj1
+         ukvPhZPy1rocK17IvtjWMFHZ1JmoIIqK4FLNFIt716WQ3Pie0UvlUCbiTbUjKG2RTcHV
+         7aLptfufBWxUeUNmjY6/SgCFLiwOzAyRIGpCOm9JFIGiWEdzkbX1t7kvgcWoJlruvGQV
+         TNKC7K+DYoXaKkZDcceTWufkpcffdIMAe8eG+6751qHasEPk6w4m+/EI6Gd9NCUzZuvT
+         oxzQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=eavS7+nVlKa3pE/nMERuVdSNOcLN0CSyw0CYPXJs2RE=;
+        b=X5XVgeylcDDJSlvnhDdhUIWOu6Mdsl7b5vb4RQMk3TgLK8XDJhz0xU8geHFmxMahYI
+         zD0nB/DXnp3WHgY7U+R6eM0QOHdDuHFZm2tulwaqkSuex3L/y8lysHc7yZgvOOgUKAYF
+         kk74ggD7OTsVtSvJDHoD+QZd93TmD6aindn81hnJA9NLJEHyzzX+OIsFtReSEjKF9zIN
+         /Ja2SW+BlPsUGz8DuuS7Z1P0IUVTnpBoAo+iKQiV9WRUxqUW750EASJTf9z3QbA7TPzv
+         XkVcYZ36szJdoNkjk3l0fzzRQkF80Nyf2rpJp4WXL5SE3QXpyiNDzMSd9hKhgzQhTf3u
+         xmqA==
+X-Gm-Message-State: AOAM530Vsb0u4UJqAaI70yJnzcKHdpdPwL+hb+1R1esa614zPdTYfF2S
+        t5CmAVaXmWL2w6ysVYCCUALt4tSGnoQq8rKoJ6t63jZJe0U=
+X-Google-Smtp-Source: ABdhPJwTjpbUeZT+xrHLeSR/vD0UodSpw43lXDmx8pJiyALETra8HqJRQTMUGT7mTfcqIT7xDGsd2Eo06KRRqoQp1Bw=
+X-Received: by 2002:a2e:bc14:: with SMTP id b20mr6401323ljf.200.1627769110442;
+ Sat, 31 Jul 2021 15:05:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAHp75Vd=_qgnaLpAq+=Awf+ggUf9DEm0amNyTE0KkYThxtP=WQ@mail.gmail.com>
-X-Provags-ID: V03:K1:DfpDEk+H0BF86NTgWDM1eIV7LCLQS0mvdmiGmakvUXg55dsSL2J
- 56o7cLVbGe9OJ1bVo0UskmwedbqtAit7HeAC1EbxrtgzUfQgPWmSQvhH/4UzluXfSUxa5TR
- rWiiCQB5D782uCPZAH0YyipX3JZR3lpMuUrj+J7+HtR3QsRpSyDAvQk6LB72RWj9iZHSlfY
- em3DBJgdQNEFuTcfH6Hdw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:tH6Wma+ggNg=:igYXSXxsqbjd7FSyhf80oM
- FqmUZ4+wQF9/cPupsLE0OcFE+yhEk5TnW3wfWy1SDebC8/k1KCoR4DH6rhfs5Eo8c4edpUgPs
- YEc8EK5y0kDU67PEtXwfuZChISRADttUjSaolNl56RE1qfiote4aJh/P0Vb2CXCxoacFHwp5z
- 5ggX2auQdiE99YGYTOM460ezh4kOobmRv740UdN8TUecwa/5HU3/IKsYznyzoonPpC1dciNnU
- C4bk/4FoPt/aW5q7jJ5PmpuW1Y30IjW3pTgc3HI6X8BlmYdsh8Cz5oqIsIU44buQhjqOFQa3d
- +duOZ5zxXqHFOvQ0+fAqLwAsY7qzD0oLTCOchzFIrWDyzQ5z32X3eP8/G3xN/0Q3Lj5E53iP0
- xLVe2XfZzhKayNBDROVVBXsJJQY7HvCG7xrN7wQN2B2osSpQWNiqBx/zIOVqjLCQN5Oi77Opn
- xi7xIAnPbUFX2VfZJaa/60OT6aczVyt0WDGioMJvgiNUxnKZiIoC8pyeXiQ38NsLVnjGkbBgh
- svDAUiO320GHoOhPZtKxN04960uVN0Tm2jZ1szbVPEMMr/gfz95yk06786NhOICtCvp47lg9o
- /9wedIflNsYZtLu2pVPeAU2HsL48Ujmz2yK9X8HN21UPxwML/GKYM48u1SRaP9MBmempr0tdj
- d0Zi01Vmj7fXa+68IJ0ZOSog6EKrjXsMmEJ6P+W2VNS/j8eFzaww8EVRHW9UsS4Wc072l3Ylv
- TA9swyt+AkHrMcW8tOVyntq6EufS/Owy0YO59Zq1fhHe3xcSxoSMpbq6rk7kPrh4RS1tbgpNM
- fZq4svBGzOFKu+76OwiTFgBHGT2tGSr5nLrNagBOkeXJS/cyXAwjf6KvsEO9GhbZjfevioDHF
- +4RL9gc2XS9JECa8BPuTJhM5jy77ZNf0dZE35SSJxVnkbHejPIec7NMcLuMBvI0jGIyOJSxx6
- Gk6e1X84wFslP8aAD/ngeaLiYSN5AtoCsjgTkjHL+f1uh09Rb1i26TKNMC/yB6Fib1ozlBQE0
- biuyG2ajaeExfSsNleq8Djb5u+MK+8grVZmtKfKrlDbj28FoOkJ6dnKrIiW+JuApDbh/Zfz3n
- ACMnR5GdXGcshMpiaj9KEDC8fG8mg+Qml7M
-Content-Transfer-Encoding: quoted-printable
+References: <20210726115058.23729-1-nikita.shubin@maquefel.me>
+In-Reply-To: <20210726115058.23729-1-nikita.shubin@maquefel.me>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Sun, 1 Aug 2021 00:04:59 +0200
+Message-ID: <CACRpkdYeqJFFwkc6pfSrz3-gaN_PjjV52jstqzR2sMa+bxbMuQ@mail.gmail.com>
+Subject: Re: [PATCH 0/8] arm: ep93xx: CCF conversion
+To:     Nikita Shubin <nikita.shubin@maquefel.me>
+Cc:     Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." 
+        <alsa-devel@alsa-project.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        Anshuman Khandual <anshuman.khandual@arm.com>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        "open list:DMA GENERIC OFFLOAD ENGINE SUBSYSTEM" 
+        <dmaengine@vger.kernel.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        "open list:IIO SUBSYSTEM AND DRIVERS" <linux-iio@vger.kernel.org>,
+        "open list:INPUT (KEYBOARD, MOUSE, JOYSTICK, TOUCHSCREEN)..." 
+        <linux-input@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>,
+        "open list:PWM SUBSYSTEM" <linux-pwm@vger.kernel.org>,
+        "open list:SPI SUBSYSTEM" <linux-spi@vger.kernel.org>,
+        Mark Brown <broonie@kernel.org>,
+        Mike Rapoport <rppt@kernel.org>,
+        Russell King <rmk+kernel@armlinux.org.uk>,
+        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>, YiFei Zhu <yifeifz2@illinois.edu>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Jul 25, 2021 at 09:51:18PM +0300, Andy Shevchenko wrote:
-> On Sun, Jul 25, 2021 at 4:59 PM Len Baker <len.baker@gmx.com> wrote:
-> > On Sat, Jul 24, 2021 at 11:21:04PM +0300, Andy Shevchenko wrote:
-> > > On Sat, Jul 24, 2021 at 7:05 PM Len Baker <len.baker@gmx.com> wrote:
+On Mon, Jul 26, 2021 at 1:51 PM Nikita Shubin <nikita.shubin@maquefel.me> wrote:
+
+> This series series of patches converts ep93xx to Common Clock Framework.
 >
-> ...
+> It consists of preparation patches to use clk_prepare_enable where it is
+> needed, instead of clk_enable used in ep93xx drivers prior to CCF and
+> a patch converting mach-ep93xx/clock.c to CCF.
 >
-> > > > -       char msg[128];
-> > >
-> > > 128 / 4 =3D 32. So, this buffer is enough to debug print only up to =
-32
-> > > bytes. Hence %*ph replacement won't cut output earlier than requeste=
-d.
-> >
-> > I'm sorry, but I don't understand what you are trying to explain. More=
-over,
-> > with the "0x%02X " in the sprintf followed by the strcat, the msg buff=
-er can
-> > print 128/5 values (25 hex values).
-> >
-> > The %*ph replacement can print up to 64 bytes, so I don't see any prob=
-lem
-> > here.
+> Link: https://lore.kernel.org/patchwork/cover/1445563/
+> Link: https://lore.kernel.org/patchwork/patch/1435884/
 >
-> Right. That's what I am trying to say and the hint here is to combine
-> this part into a phrase in the commit message in the next version of
-> the patch.
-
-Ok, I will update the commit changelog for the next version.
-
+> Alexander Sverdlin (7):
+>   iio: ep93xx: Prepare clock before using it
+>   spi: spi-ep93xx: Prepare clock before using it
+>   Input: ep93xx_keypad: Prepare clock before using it
+>   video: ep93xx: Prepare clock before using it
+>   dmaengine: ep93xx: Prepare clock before using it
+>   ASoC: cirrus: i2s: Prepare clock before using it
+>   pwm: ep93xx: Prepare clock before using it
 >
-> ...
->
-> > > > +                       for (j =3D i + 1; par->init_sequence[j] >=
-=3D 0; j++);
-> > >
-> > > Why is i + 1 initial for the j? You may rather access the 'i + 1 +
-> > > j'th element in the array...
-> > >
-> > > ...
-> > >
-> > > > +                                     par->init_sequence[i], j - i=
- - 1,
-> > >
-> > > ...and get rid of the ' - i -1' part here.
-> >
-> > Yes, it was the first idea but I prefer this method since we save arit=
-methic
-> > operations. In other words, if I use what you suggest, the index for
-> > par->init_sequence is calculated as a "sum" every iteration. But if th=
-e
-> > performance is not an issue and you believe that the above is more cle=
-ar, I
-> > have no problem. What do you prefer?
->
-> I prefer my variant and I believe the compilers nowadays are clever
-> enough to understand this.
+> Nikita Shubin (1):
+>   ep93xx: clock: convert in-place to COMMON_CLK
 
-Ok, understood. Thanks.
+This series is looking very good.
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-> Have you tried to compile and compare the real assembly?
+I suppose the per-subsystem patches can be picked up by
+each subsystem maintainer and then you can send the "big patch"
+to the SoC tree.
 
-I will test it.
-
-> --
-> With Best Regards,
-> Andy Shevchenko
-
-Regards,
-Len
+Yours,
+Linus Walleij

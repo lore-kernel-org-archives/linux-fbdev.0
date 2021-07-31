@@ -2,194 +2,97 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8E97C4338F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Jul 2021 19:20:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43392C4338F
+	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 06:28:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 90AB360F41
-	for <linux-fbdev@archiver.kernel.org>; Tue, 27 Jul 2021 19:20:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 14BB560D07
+	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 06:28:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232047AbhG0TUX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 27 Jul 2021 15:20:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59680 "EHLO
+        id S231786AbhGaG2u (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 31 Jul 2021 02:28:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50142 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232062AbhG0TUV (ORCPT
+        with ESMTP id S229683AbhGaG2t (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 27 Jul 2021 15:20:21 -0400
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5F24C0613C1;
-        Tue, 27 Jul 2021 12:20:20 -0700 (PDT)
-Received: by mail-pl1-x636.google.com with SMTP id i10so14097968pla.3;
-        Tue, 27 Jul 2021 12:20:20 -0700 (PDT)
+        Sat, 31 Jul 2021 02:28:49 -0400
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDD89C06175F;
+        Fri, 30 Jul 2021 23:28:42 -0700 (PDT)
+Received: by mail-pj1-x1032.google.com with SMTP id mz5-20020a17090b3785b0290176ecf64922so23921979pjb.3;
+        Fri, 30 Jul 2021 23:28:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=uO7kQ42xSTAH3+3Dd4r+058TnMUPwUJwWEreFhwbiJ4=;
-        b=XrG6NfXeZJF2h4g6w7+A3bstUDqrEF6qjbBGUEjH4N8/44iFl0VC3sMUocTpGbGzut
-         dzKBjRuWT6Oi+cWY9jnprPf9Nth5xSEZqmmW4V2K8glOA3ocQ+L7iHqOcvkKj6xwVuwy
-         IKR0JsgSbUvDhozXTRrL5Y0ofAgbXnmityuRrS+Ssq8LNfc0Bk7lg6LgE2UeCGPv4OwS
-         0ZcKxpE/IeOOHNMZB8KFg0lwU+GsdSFFQg2zs4wabdICMOh5x0oWrAJiITfXknn8+JMa
-         oe2gDrqX375oEST4VKrT6XfARbuTeR2leeTFM5z05Qk+8j8LBtmjTFyOVfPwRbssqK/4
-         gydA==
+        h=to:cc:from:subject:message-id:date:user-agent:mime-version
+         :content-transfer-encoding:content-language;
+        bh=JI/AiDS71PLMhgUv0hBwFcFtgPLD6LDNF4PEDeob9ro=;
+        b=MOr0BM39xVuj92jfaMMUBFIQ0dbZrOfjkySR61KBZFifIngNEgamqr8i6fT250V8Za
+         dgE9kQMAB+H2ku+52DnI9evayG9+uQF7tBDAf7xl8fT8MSMQt73RTfvhJOC6H1GKhihE
+         DWu0XwkEdr8zH0GWJsbOB8/MemoeIdaa1/u6zyicw/OxvaF1PKS9JV8W6CL3ev5TCk4w
+         ms5NUqmAXXEd2V0DQp07UrKZQTTAGIqkvV4nFEduPgIFaBC2LOBe3Uq6MdOLxyHTnHov
+         P2a1d0MclBg/nGeuSUTjkIylMUTlU+U6SeKEuwNdHJ4RBsdZyxslCJ65ORZjYDf9xRCx
+         ggmg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=uO7kQ42xSTAH3+3Dd4r+058TnMUPwUJwWEreFhwbiJ4=;
-        b=aW48ZayuqS2hjTW6G7IBCz/B3bDnXYVcT4q2NyLolqExr3ZEb9z2av6iStfny3vHM/
-         nVxIhNG0zpw4y9Y+pw/LNXCzppoCw7UpH/9oGxRoLBSGOLO1keoUk82e54ZxammNJ4IA
-         F/f++D1rrrs4fqFHEZKbeJdarhngi8DV8Trat7k3/Z2R0IWXUuBhb+IOY6AtGiAM8ESu
-         UcCqyCBklGVyTtroA2S3v6MKeRhMVI2yIhlhG+MavkltD+5UrpSs3znEXxdFWyuxdNkI
-         HyNTdnkfBOEclyTWljeuv7a2eDHAzL1HxbNQjf5HMcmrGyXXsAJCo/Xo2ob8QMtuuZIF
-         tZBQ==
-X-Gm-Message-State: AOAM5323CCYFcWzdW2QApqnz9vSkWbfTo1ZDQbnGzNXciDs8IzcFeQvZ
-        DJsXo7AqX9HS/gmOIbtVexc=
-X-Google-Smtp-Source: ABdhPJyx+Om6fO6BkBy8rKT1fjJbR3aHCZ09gTN9jElT1zRxPVnyyxJl0kW2X0Z3cXJU0fejK+/5qQ==
-X-Received: by 2002:a17:90a:d816:: with SMTP id a22mr16713760pjv.180.1627413620528;
-        Tue, 27 Jul 2021 12:20:20 -0700 (PDT)
-Received: from localhost.localdomain ([2402:e280:2130:198:9b25:1cfb:9ff3:2a8f])
-        by smtp.gmail.com with ESMTPSA id f7sm4317096pfc.111.2021.07.27.12.20.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Jul 2021 12:20:20 -0700 (PDT)
-From:   Benjamin Philip <benjamin.philip495@gmail.com>
-To:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org,
-        Benjamin Philip <benjamin.philip495@gmail.com>
-Subject: [PATCH 4/4] staging: sm750fb: Rename vScreen to v_screen in lynxfb_crtc
-Date:   Wed, 28 Jul 2021 00:49:53 +0530
-Message-Id: <52db14bfc2f39e246aed7fdf866845a72e503b36.1627413010.git.benjamin.philip495@gmail.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <cover.1627413010.git.benjamin.philip495@gmail.com>
-References: <cover.1627413010.git.benjamin.philip495@gmail.com>
+        h=x-gm-message-state:to:cc:from:subject:message-id:date:user-agent
+         :mime-version:content-transfer-encoding:content-language;
+        bh=JI/AiDS71PLMhgUv0hBwFcFtgPLD6LDNF4PEDeob9ro=;
+        b=HL/i57KylezErnZfr/iJ2fnVmG9fATdfjV+9vY14la3MqBslv6XDCRrG91STgkfpJQ
+         AQdymN7oly3MDcwnxsBBPwazxioK6HGYsj+70yc9KGRJzlJnXVTBh4FZ3AUVtxsml0v3
+         9aXmdoW4jje/E63KEWgwAQuD1rzWqccuCaC6p6n6/nIZWbP8YxF+g1r/KNtzknQ+jF21
+         GR7Vdxt8uNlQuANLEH5+qooxHRGi8fEYQbGoHHqH3A19XBNUN9uJv3uSzIvdx+kvSpkY
+         FT+f843oBfGtbrtrryvOUgzB3XBROiu17fCMLR1b53gu8ZhZJtmQfMudQBdxXo6R6Xli
+         3WmQ==
+X-Gm-Message-State: AOAM530vLo3YiGghVDvl19RfKVnmzUdw/afngQ1RolQdcA1bPP54ozVo
+        QFicmZtT430WQ+F+dtFzGItaasa3w5H7UA==
+X-Google-Smtp-Source: ABdhPJzIpd2r4Hg0vSxNMPGAydkVCoSMg0Vn8hPVD1soJeL4Zhdd0jtTSvC5xzqIT+2msYDwWK3+KQ==
+X-Received: by 2002:a17:903:41c1:b029:12c:a3eb:21c with SMTP id u1-20020a17090341c1b029012ca3eb021cmr422810ple.72.1627712922486;
+        Fri, 30 Jul 2021 23:28:42 -0700 (PDT)
+Received: from [10.106.0.50] ([45.135.186.29])
+        by smtp.gmail.com with ESMTPSA id p3sm4255848pjt.0.2021.07.30.23.28.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 30 Jul 2021 23:28:42 -0700 (PDT)
+To:     thomas@winischhofer.net
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, baijiaju1990@gmail.com
+From:   Li Tuo <islituo@gmail.com>
+Subject: [BUG] video: fbdev: sis: possible uninitialized-variable access in
+ SiS_SetCRT2FIFO_300()
+Message-ID: <e0f988f3-f010-6299-d000-5c035e5f2e2e@gmail.com>
+Date:   Sat, 31 Jul 2021 14:28:39 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.12.0
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Language: en-US
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The struct lynxfb_crtc has a member named vScreen. This name is
-CamelCase and is frowned upon. This commit renames it to v_screen
-and makes the necessary changes for the module to build.
+Hello,
 
-This change also fixes the following checkpatch CHECKs:
+Our static analysis tool finds a possible uninitialized-variable access 
+in the sis driver in Linux 5.14.0-rc3:
 
-CHECK: Avoid CamelCase: <vScreen>
-454: FILE: sm750.c:454:
-+		memset_io(crtc->vScreen, 0x0, crtc->vidmem_size);
+At the beginning of the function SiS_SetCRT2FIFO_300(), the variable 
+modeidindex is not initialized.
+If the following conditions are false, it remains uninitialized.
+5346:    if(!SiS_Pr->CRT1UsesCustomMode)
+5438:    if(!SiS_Pr->UseCustomMode)
 
-CHECK: Avoid CamelCase: <vScreen>
-136: FILE: sm750.h:136:
-+	unsigned char __iomem *vScreen; /* virtual address of on_screen */
+But it is accessed at:
+5466:    colorth = SiS_GetColorDepth(SiS_Pr,CRT2ModeNo,modeidindex) >> 1;
 
-Signed-off-by: Benjamin Philip <benjamin.philip495@gmail.com>
----
- drivers/staging/sm750fb/sm750.c | 18 +++++++++---------
- drivers/staging/sm750fb/sm750.h |  2 +-
- 2 files changed, 10 insertions(+), 10 deletions(-)
+I am not quite sure whether this possible uninitialized-variable access 
+is real and how to fix it if it is real.
+Any feedback would be appreciated, thanks!
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 202d8f47365c..dbd1159a2ef0 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -451,7 +451,7 @@ static int __maybe_unused lynxfb_resume(struct device *dev)
- 		crtc = &par->crtc;
- 		cursor = &crtc->cursor;
- 		memset_io(cursor->vstart, 0x0, cursor->size);
--		memset_io(crtc->vScreen, 0x0, crtc->vidmem_size);
-+		memset_io(crtc->v_screen, 0x0, crtc->vidmem_size);
- 		lynxfb_ops_set_par(info);
- 		fb_set_suspend(info, 0);
- 	}
-@@ -463,7 +463,7 @@ static int __maybe_unused lynxfb_resume(struct device *dev)
- 		crtc = &par->crtc;
- 		cursor = &crtc->cursor;
- 		memset_io(cursor->vstart, 0x0, cursor->size);
--		memset_io(crtc->vScreen, 0x0, crtc->vidmem_size);
-+		memset_io(crtc->v_screen, 0x0, crtc->vidmem_size);
- 		lynxfb_ops_set_par(info);
- 		fb_set_suspend(info, 0);
- 	}
-@@ -615,27 +615,27 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 		output->paths = sm750_pnc;
- 		crtc->channel = sm750_primary;
- 		crtc->o_screen = 0;
--		crtc->vScreen = sm750_dev->pvMem;
-+		crtc->v_screen = sm750_dev->pvMem;
- 		pr_info("use simul primary mode\n");
- 		break;
- 	case sm750_simul_sec:
- 		output->paths = sm750_pnc;
- 		crtc->channel = sm750_secondary;
- 		crtc->o_screen = 0;
--		crtc->vScreen = sm750_dev->pvMem;
-+		crtc->v_screen = sm750_dev->pvMem;
- 		break;
- 	case sm750_dual_normal:
- 		if (par->index == 0) {
- 			output->paths = sm750_panel;
- 			crtc->channel = sm750_primary;
- 			crtc->o_screen = 0;
--			crtc->vScreen = sm750_dev->pvMem;
-+			crtc->v_screen = sm750_dev->pvMem;
- 		} else {
- 			output->paths = sm750_crt;
- 			crtc->channel = sm750_secondary;
- 			/* not consider of padding stuffs for o_screen,need fix */
- 			crtc->o_screen = sm750_dev->vidmem_size >> 1;
--			crtc->vScreen = sm750_dev->pvMem + crtc->o_screen;
-+			crtc->v_screen = sm750_dev->pvMem + crtc->o_screen;
- 		}
- 		break;
- 	case sm750_dual_swap:
-@@ -643,7 +643,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 			output->paths = sm750_panel;
- 			crtc->channel = sm750_secondary;
- 			crtc->o_screen = 0;
--			crtc->vScreen = sm750_dev->pvMem;
-+			crtc->v_screen = sm750_dev->pvMem;
- 		} else {
- 			output->paths = sm750_crt;
- 			crtc->channel = sm750_primary;
-@@ -651,7 +651,7 @@ static int sm750fb_set_drv(struct lynxfb_par *par)
- 			 * need fix
- 			 */
- 			crtc->o_screen = sm750_dev->vidmem_size >> 1;
--			crtc->vScreen = sm750_dev->pvMem + crtc->o_screen;
-+			crtc->v_screen = sm750_dev->pvMem + crtc->o_screen;
- 		}
- 		break;
- 	default:
-@@ -801,7 +801,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 			    crtc->line_pad);
- 
- 	info->pseudo_palette = &par->pseudo_palette[0];
--	info->screen_base = crtc->vScreen;
-+	info->screen_base = crtc->v_screen;
- 	pr_debug("screen_base vaddr = %p\n", info->screen_base);
- 	info->screen_size = line_length * var->yres_virtual;
- 	info->flags = FBINFO_FLAG_DEFAULT | 0;
-diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
-index 8952154739ac..aff69661c8e6 100644
---- a/drivers/staging/sm750fb/sm750.h
-+++ b/drivers/staging/sm750fb/sm750.h
-@@ -133,7 +133,7 @@ struct lynx_cursor {
- 
- struct lynxfb_crtc {
- 	unsigned char __iomem *v_cursor; /* virtual address of cursor */
--	unsigned char __iomem *vScreen; /* virtual address of on_screen */
-+	unsigned char __iomem *v_screen; /* virtual address of on_screen */
- 	int o_cursor; /* cursor address offset in vidmem */
- 	int o_screen; /* onscreen address offset in vidmem */
- 	int channel;/* which channel this crtc stands for*/
--- 
-2.31.1
+Reported-by: TOTE Robot <oslab@tsinghua.edu.cn>
 
+Best wishes,
+Tuo Li

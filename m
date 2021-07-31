@@ -2,97 +2,149 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-0.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43392C4338F
-	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 06:28:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2F3CC4338F
+	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 13:43:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 14BB560D07
-	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 06:28:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 91EB961042
+	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 13:43:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231786AbhGaG2u (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 31 Jul 2021 02:28:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50142 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229683AbhGaG2t (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 31 Jul 2021 02:28:49 -0400
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDD89C06175F;
-        Fri, 30 Jul 2021 23:28:42 -0700 (PDT)
-Received: by mail-pj1-x1032.google.com with SMTP id mz5-20020a17090b3785b0290176ecf64922so23921979pjb.3;
-        Fri, 30 Jul 2021 23:28:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=to:cc:from:subject:message-id:date:user-agent:mime-version
-         :content-transfer-encoding:content-language;
-        bh=JI/AiDS71PLMhgUv0hBwFcFtgPLD6LDNF4PEDeob9ro=;
-        b=MOr0BM39xVuj92jfaMMUBFIQ0dbZrOfjkySR61KBZFifIngNEgamqr8i6fT250V8Za
-         dgE9kQMAB+H2ku+52DnI9evayG9+uQF7tBDAf7xl8fT8MSMQt73RTfvhJOC6H1GKhihE
-         DWu0XwkEdr8zH0GWJsbOB8/MemoeIdaa1/u6zyicw/OxvaF1PKS9JV8W6CL3ev5TCk4w
-         ms5NUqmAXXEd2V0DQp07UrKZQTTAGIqkvV4nFEduPgIFaBC2LOBe3Uq6MdOLxyHTnHov
-         P2a1d0MclBg/nGeuSUTjkIylMUTlU+U6SeKEuwNdHJ4RBsdZyxslCJ65ORZjYDf9xRCx
-         ggmg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:to:cc:from:subject:message-id:date:user-agent
-         :mime-version:content-transfer-encoding:content-language;
-        bh=JI/AiDS71PLMhgUv0hBwFcFtgPLD6LDNF4PEDeob9ro=;
-        b=HL/i57KylezErnZfr/iJ2fnVmG9fATdfjV+9vY14la3MqBslv6XDCRrG91STgkfpJQ
-         AQdymN7oly3MDcwnxsBBPwazxioK6HGYsj+70yc9KGRJzlJnXVTBh4FZ3AUVtxsml0v3
-         9aXmdoW4jje/E63KEWgwAQuD1rzWqccuCaC6p6n6/nIZWbP8YxF+g1r/KNtzknQ+jF21
-         GR7Vdxt8uNlQuANLEH5+qooxHRGi8fEYQbGoHHqH3A19XBNUN9uJv3uSzIvdx+kvSpkY
-         FT+f843oBfGtbrtrryvOUgzB3XBROiu17fCMLR1b53gu8ZhZJtmQfMudQBdxXo6R6Xli
-         3WmQ==
-X-Gm-Message-State: AOAM530vLo3YiGghVDvl19RfKVnmzUdw/afngQ1RolQdcA1bPP54ozVo
-        QFicmZtT430WQ+F+dtFzGItaasa3w5H7UA==
-X-Google-Smtp-Source: ABdhPJzIpd2r4Hg0vSxNMPGAydkVCoSMg0Vn8hPVD1soJeL4Zhdd0jtTSvC5xzqIT+2msYDwWK3+KQ==
-X-Received: by 2002:a17:903:41c1:b029:12c:a3eb:21c with SMTP id u1-20020a17090341c1b029012ca3eb021cmr422810ple.72.1627712922486;
-        Fri, 30 Jul 2021 23:28:42 -0700 (PDT)
-Received: from [10.106.0.50] ([45.135.186.29])
-        by smtp.gmail.com with ESMTPSA id p3sm4255848pjt.0.2021.07.30.23.28.40
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 30 Jul 2021 23:28:42 -0700 (PDT)
-To:     thomas@winischhofer.net
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, baijiaju1990@gmail.com
-From:   Li Tuo <islituo@gmail.com>
-Subject: [BUG] video: fbdev: sis: possible uninitialized-variable access in
- SiS_SetCRT2FIFO_300()
-Message-ID: <e0f988f3-f010-6299-d000-5c035e5f2e2e@gmail.com>
-Date:   Sat, 31 Jul 2021 14:28:39 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+        id S233086AbhGaNnt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 31 Jul 2021 09:43:49 -0400
+Received: from mout.gmx.net ([212.227.15.19]:41057 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233207AbhGaNnr (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Sat, 31 Jul 2021 09:43:47 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1627738996;
+        bh=Fu/lW7pPCxMAVtTTCjrX6D5BTYRamvOOTo6hAqwjT+M=;
+        h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
+        b=ZsL7JBbsitWzQJ5WHefWqlFAwGe7vJbhBj2faIoGOl88YzZTi5tGfkfH4bOBa7px9
+         StEJYLOeYKn/M6DazE9IQoM6PEzwTFJTynEpHLZypO7Za35UYAJRTBrNcbfCFk/4A8
+         KaadioHrg2gvzVdhC8DaNWlMa/g5tj8RuZSkW3lA=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from titan ([79.150.72.99]) by mail.gmx.net (mrgmx005
+ [212.227.17.184]) with ESMTPSA (Nemesis) id 1N63Vi-1nG7GW0WYy-016QDW; Sat, 31
+ Jul 2021 15:43:16 +0200
+Date:   Sat, 31 Jul 2021 15:43:03 +0200
+From:   Len Baker <len.baker@gmx.com>
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     Len Baker <len.baker@gmx.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Phil Reid <preid@electromag.com.au>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+        linux-staging@lists.linux.dev,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/3] staging/fbtft: Remove all strcpy() uses
+Message-ID: <20210731134303.GA1979@titan>
+References: <20210724151411.9531-1-len.baker@gmx.com>
+ <20210724151411.9531-2-len.baker@gmx.com>
+ <CAHp75Vd+ZM_yO6CU_6oJieePMt00Sp6oKEU2+QEyZxLDg5PN8A@mail.gmail.com>
+ <20210725135844.GA1953@titan>
+ <CAHp75Vd=_qgnaLpAq+=Awf+ggUf9DEm0amNyTE0KkYThxtP=WQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHp75Vd=_qgnaLpAq+=Awf+ggUf9DEm0amNyTE0KkYThxtP=WQ@mail.gmail.com>
+X-Provags-ID: V03:K1:DfpDEk+H0BF86NTgWDM1eIV7LCLQS0mvdmiGmakvUXg55dsSL2J
+ 56o7cLVbGe9OJ1bVo0UskmwedbqtAit7HeAC1EbxrtgzUfQgPWmSQvhH/4UzluXfSUxa5TR
+ rWiiCQB5D782uCPZAH0YyipX3JZR3lpMuUrj+J7+HtR3QsRpSyDAvQk6LB72RWj9iZHSlfY
+ em3DBJgdQNEFuTcfH6Hdw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:tH6Wma+ggNg=:igYXSXxsqbjd7FSyhf80oM
+ FqmUZ4+wQF9/cPupsLE0OcFE+yhEk5TnW3wfWy1SDebC8/k1KCoR4DH6rhfs5Eo8c4edpUgPs
+ YEc8EK5y0kDU67PEtXwfuZChISRADttUjSaolNl56RE1qfiote4aJh/P0Vb2CXCxoacFHwp5z
+ 5ggX2auQdiE99YGYTOM460ezh4kOobmRv740UdN8TUecwa/5HU3/IKsYznyzoonPpC1dciNnU
+ C4bk/4FoPt/aW5q7jJ5PmpuW1Y30IjW3pTgc3HI6X8BlmYdsh8Cz5oqIsIU44buQhjqOFQa3d
+ +duOZ5zxXqHFOvQ0+fAqLwAsY7qzD0oLTCOchzFIrWDyzQ5z32X3eP8/G3xN/0Q3Lj5E53iP0
+ xLVe2XfZzhKayNBDROVVBXsJJQY7HvCG7xrN7wQN2B2osSpQWNiqBx/zIOVqjLCQN5Oi77Opn
+ xi7xIAnPbUFX2VfZJaa/60OT6aczVyt0WDGioMJvgiNUxnKZiIoC8pyeXiQ38NsLVnjGkbBgh
+ svDAUiO320GHoOhPZtKxN04960uVN0Tm2jZ1szbVPEMMr/gfz95yk06786NhOICtCvp47lg9o
+ /9wedIflNsYZtLu2pVPeAU2HsL48Ujmz2yK9X8HN21UPxwML/GKYM48u1SRaP9MBmempr0tdj
+ d0Zi01Vmj7fXa+68IJ0ZOSog6EKrjXsMmEJ6P+W2VNS/j8eFzaww8EVRHW9UsS4Wc072l3Ylv
+ TA9swyt+AkHrMcW8tOVyntq6EufS/Owy0YO59Zq1fhHe3xcSxoSMpbq6rk7kPrh4RS1tbgpNM
+ fZq4svBGzOFKu+76OwiTFgBHGT2tGSr5nLrNagBOkeXJS/cyXAwjf6KvsEO9GhbZjfevioDHF
+ +4RL9gc2XS9JECa8BPuTJhM5jy77ZNf0dZE35SSJxVnkbHejPIec7NMcLuMBvI0jGIyOJSxx6
+ Gk6e1X84wFslP8aAD/ngeaLiYSN5AtoCsjgTkjHL+f1uh09Rb1i26TKNMC/yB6Fib1ozlBQE0
+ biuyG2ajaeExfSsNleq8Djb5u+MK+8grVZmtKfKrlDbj28FoOkJ6dnKrIiW+JuApDbh/Zfz3n
+ ACMnR5GdXGcshMpiaj9KEDC8fG8mg+Qml7M
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+On Sun, Jul 25, 2021 at 09:51:18PM +0300, Andy Shevchenko wrote:
+> On Sun, Jul 25, 2021 at 4:59 PM Len Baker <len.baker@gmx.com> wrote:
+> > On Sat, Jul 24, 2021 at 11:21:04PM +0300, Andy Shevchenko wrote:
+> > > On Sat, Jul 24, 2021 at 7:05 PM Len Baker <len.baker@gmx.com> wrote:
+>
+> ...
+>
+> > > > -       char msg[128];
+> > >
+> > > 128 / 4 =3D 32. So, this buffer is enough to debug print only up to =
+32
+> > > bytes. Hence %*ph replacement won't cut output earlier than requeste=
+d.
+> >
+> > I'm sorry, but I don't understand what you are trying to explain. More=
+over,
+> > with the "0x%02X " in the sprintf followed by the strcat, the msg buff=
+er can
+> > print 128/5 values (25 hex values).
+> >
+> > The %*ph replacement can print up to 64 bytes, so I don't see any prob=
+lem
+> > here.
+>
+> Right. That's what I am trying to say and the hint here is to combine
+> this part into a phrase in the commit message in the next version of
+> the patch.
 
-Our static analysis tool finds a possible uninitialized-variable access 
-in the sis driver in Linux 5.14.0-rc3:
+Ok, I will update the commit changelog for the next version.
 
-At the beginning of the function SiS_SetCRT2FIFO_300(), the variable 
-modeidindex is not initialized.
-If the following conditions are false, it remains uninitialized.
-5346:    if(!SiS_Pr->CRT1UsesCustomMode)
-5438:    if(!SiS_Pr->UseCustomMode)
+>
+> ...
+>
+> > > > +                       for (j =3D i + 1; par->init_sequence[j] >=
+=3D 0; j++);
+> > >
+> > > Why is i + 1 initial for the j? You may rather access the 'i + 1 +
+> > > j'th element in the array...
+> > >
+> > > ...
+> > >
+> > > > +                                     par->init_sequence[i], j - i=
+ - 1,
+> > >
+> > > ...and get rid of the ' - i -1' part here.
+> >
+> > Yes, it was the first idea but I prefer this method since we save arit=
+methic
+> > operations. In other words, if I use what you suggest, the index for
+> > par->init_sequence is calculated as a "sum" every iteration. But if th=
+e
+> > performance is not an issue and you believe that the above is more cle=
+ar, I
+> > have no problem. What do you prefer?
+>
+> I prefer my variant and I believe the compilers nowadays are clever
+> enough to understand this.
 
-But it is accessed at:
-5466:    colorth = SiS_GetColorDepth(SiS_Pr,CRT2ModeNo,modeidindex) >> 1;
+Ok, understood. Thanks.
 
-I am not quite sure whether this possible uninitialized-variable access 
-is real and how to fix it if it is real.
-Any feedback would be appreciated, thanks!
+> Have you tried to compile and compare the real assembly?
 
-Reported-by: TOTE Robot <oslab@tsinghua.edu.cn>
+I will test it.
 
-Best wishes,
-Tuo Li
+> --
+> With Best Regards,
+> Andy Shevchenko
+
+Regards,
+Len

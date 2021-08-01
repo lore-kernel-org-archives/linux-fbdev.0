@@ -2,130 +2,102 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3935C432BE
-	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 22:05:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04EB9C4338F
+	for <linux-fbdev@archiver.kernel.org>; Sun,  1 Aug 2021 08:52:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C8E3560F56
-	for <linux-fbdev@archiver.kernel.org>; Sat, 31 Jul 2021 22:05:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D54FA61054
+	for <linux-fbdev@archiver.kernel.org>; Sun,  1 Aug 2021 08:52:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231766AbhGaWFV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 31 Jul 2021 18:05:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35082 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231598AbhGaWFU (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 31 Jul 2021 18:05:20 -0400
-Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com [IPv6:2a00:1450:4864:20::231])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A17BAC061798
-        for <linux-fbdev@vger.kernel.org>; Sat, 31 Jul 2021 15:05:12 -0700 (PDT)
-Received: by mail-lj1-x231.google.com with SMTP id h9so18344312ljq.8
-        for <linux-fbdev@vger.kernel.org>; Sat, 31 Jul 2021 15:05:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=eavS7+nVlKa3pE/nMERuVdSNOcLN0CSyw0CYPXJs2RE=;
-        b=oxTawDKtE7gUMCEZTGVhmlVv2Y3WYDP+FS3lOaHPAgoD7WcgQjYd0RzzaaCmE3977P
-         y2AZlp+prHKgerutQ7jx1R/cVL6lbK+WzauqEJucT+Izj+ziz0I0tc0O+XwvtPwksIj1
-         ukvPhZPy1rocK17IvtjWMFHZ1JmoIIqK4FLNFIt716WQ3Pie0UvlUCbiTbUjKG2RTcHV
-         7aLptfufBWxUeUNmjY6/SgCFLiwOzAyRIGpCOm9JFIGiWEdzkbX1t7kvgcWoJlruvGQV
-         TNKC7K+DYoXaKkZDcceTWufkpcffdIMAe8eG+6751qHasEPk6w4m+/EI6Gd9NCUzZuvT
-         oxzQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=eavS7+nVlKa3pE/nMERuVdSNOcLN0CSyw0CYPXJs2RE=;
-        b=X5XVgeylcDDJSlvnhDdhUIWOu6Mdsl7b5vb4RQMk3TgLK8XDJhz0xU8geHFmxMahYI
-         zD0nB/DXnp3WHgY7U+R6eM0QOHdDuHFZm2tulwaqkSuex3L/y8lysHc7yZgvOOgUKAYF
-         kk74ggD7OTsVtSvJDHoD+QZd93TmD6aindn81hnJA9NLJEHyzzX+OIsFtReSEjKF9zIN
-         /Ja2SW+BlPsUGz8DuuS7Z1P0IUVTnpBoAo+iKQiV9WRUxqUW750EASJTf9z3QbA7TPzv
-         XkVcYZ36szJdoNkjk3l0fzzRQkF80Nyf2rpJp4WXL5SE3QXpyiNDzMSd9hKhgzQhTf3u
-         xmqA==
-X-Gm-Message-State: AOAM530Vsb0u4UJqAaI70yJnzcKHdpdPwL+hb+1R1esa614zPdTYfF2S
-        t5CmAVaXmWL2w6ysVYCCUALt4tSGnoQq8rKoJ6t63jZJe0U=
-X-Google-Smtp-Source: ABdhPJwTjpbUeZT+xrHLeSR/vD0UodSpw43lXDmx8pJiyALETra8HqJRQTMUGT7mTfcqIT7xDGsd2Eo06KRRqoQp1Bw=
-X-Received: by 2002:a2e:bc14:: with SMTP id b20mr6401323ljf.200.1627769110442;
- Sat, 31 Jul 2021 15:05:10 -0700 (PDT)
-MIME-Version: 1.0
-References: <20210726115058.23729-1-nikita.shubin@maquefel.me>
-In-Reply-To: <20210726115058.23729-1-nikita.shubin@maquefel.me>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Sun, 1 Aug 2021 00:04:59 +0200
-Message-ID: <CACRpkdYeqJFFwkc6pfSrz3-gaN_PjjV52jstqzR2sMa+bxbMuQ@mail.gmail.com>
-Subject: Re: [PATCH 0/8] arm: ep93xx: CCF conversion
-To:     Nikita Shubin <nikita.shubin@maquefel.me>
-Cc:     Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+        id S231462AbhHAIwi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 1 Aug 2021 04:52:38 -0400
+Received: from mout.gmx.net ([212.227.15.15]:43445 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230087AbhHAIwh (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Sun, 1 Aug 2021 04:52:37 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1627807929;
+        bh=SOIFLquzf5Zz0SDbbcnVJ8DB5eWL4PtOwemIlXPqT4Y=;
+        h=X-UI-Sender-Class:From:To:Cc:Subject:Date;
+        b=TIvReMHWhYORyqwjmEayuO3kZj96KrTT6tPaJrN8yXIw6eD/m5W6wWw84DAWhNlGg
+         rhKsgV/ewp5X/zEylKgITozYp5logbjbF3xwFU0HiI66L0+zwRdGDKOuPY/tjd62yu
+         0nj63ST6oys2hyDHR1CiZX3RRrgNujV/bAWP9sCI=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from localhost.localdomain ([79.150.72.99]) by mail.gmx.net
+ (mrgmx005 [212.227.17.184]) with ESMTPSA (Nemesis) id
+ 1Mlf4S-1mrfPm3VHW-00igu5; Sun, 01 Aug 2021 10:52:09 +0200
+From:   Len Baker <len.baker@gmx.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Len Baker <len.baker@gmx.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Phil Reid <preid@electromag.com.au>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
-        "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." 
-        <alsa-devel@alsa-project.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
-        Anshuman Khandual <anshuman.khandual@arm.com>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        "open list:DMA GENERIC OFFLOAD ENGINE SUBSYSTEM" 
-        <dmaengine@vger.kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        "open list:IIO SUBSYSTEM AND DRIVERS" <linux-iio@vger.kernel.org>,
-        "open list:INPUT (KEYBOARD, MOUSE, JOYSTICK, TOUCHSCREEN)..." 
-        <linux-input@vger.kernel.org>,
-        open list <linux-kernel@vger.kernel.org>,
-        "open list:PWM SUBSYSTEM" <linux-pwm@vger.kernel.org>,
-        "open list:SPI SUBSYSTEM" <linux-spi@vger.kernel.org>,
-        Mark Brown <broonie@kernel.org>,
-        Mike Rapoport <rppt@kernel.org>,
-        Russell King <rmk+kernel@armlinux.org.uk>,
-        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, YiFei Zhu <yifeifz2@illinois.edu>
-Content-Type: text/plain; charset="UTF-8"
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
+Subject: [PATCH v3 0/3] Remove all strcpy() uses
+Date:   Sun,  1 Aug 2021 10:51:52 +0200
+Message-Id: <20210801085155.3170-1-len.baker@gmx.com>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:srW7+QTLXJ7EzVaF4TWVA9WepIXkUL0J7UT9FQCJ+SLKR7a2RRI
+ rvW1K1KbCC1tyLMlihI/G9Ic6pVfq0/0cB6y4kXzkQUbPadtlnkAKW42Aj8ySG9JMH6YsjR
+ ZTGcToRcth60QTmJ95v3NjRHI7PID8nI5N2fnvzbTslnUuY1HC1LlIqr49kNnNKxPWQB+77
+ oF5+ZQO1kMyGMe9Z0TZNA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:LiJhGubXC8I=:IWp5R7iGCVjZjY2qtZYuTM
+ LQuvyE6104hlATg3VwkYJqq19W+690jJ8RUru0rTfmZRebtnSeYzyNwlM16IqEsEgXDEjQX66
+ JgmbADBujwRhlAZIHRpsdnN8/v68Xh2Qs778w+5yyW1H+Tsju0UdOBLx9E8QTxf3wJyN9NLXw
+ zX39DNbMTTHirS4w7UTSGY/K62msTs0bQVM+4F49Dpn/J0FSZUAQmCDc/n7KZ+BYebZPvCnLP
+ yH0el+mNFzKKosSf4RC1YpohXFEGF1gxsy0fn2QUzRiR/b53O3Hh0ZFHXdHKS4vn/dql7ET3u
+ 86VPvLwjMZXf/SychaXrxpfADPtzTioX1rbRlXaR4qG4MWtt2AJCVwMjC/RVQQW/9PuO+xUhC
+ B8hvG6lCYi2N/bLrkaVrUWTFF9kwTYk7oU/Xw/qr1pqFF4YyST+0rexNDNgqD8iPXBKVg/V82
+ /x3+K17SFxkHPkSCHncNGdE3ZrpwbS8wPPkGRnQjXsuYXDEKgXRK0zfGRaoRvmPP4Lnu09XOd
+ qkNbaoCxXiXQlqCq4IR6UvUkG7os0qLYghcYFdAqhhsSuOcRpio6nnBP58PWBbP7CcWu1QvUR
+ SRsicuygLf8L+QDlm/yviB8Y8t7lZYmtpKeUehW8m/YVlbPGybSGDhQ+9RwXJ8n570chaz9gl
+ weow9eQh6sDND3why5IMYXtiCPUArAM3F+iMJkzpb3a8rLeFBCVkg6CJnEm+KmqRwoE94Jaed
+ ut4C9gSlKf/OZ6p2IDrXhrLrDdFIppgHPDXcHB/lVk6pJ24Rge2RIKcv03L/mix/W9TtpqTel
+ 6UZ31HkZBQJL3WATn/oha6acC9JsHCH4284c4sXvq+m5mkzFIJ9O/+unFAuYjB45x4SjQxWcW
+ WHh/O7HrqONLhKDHmjBxiaOfQzdpm56BqfDUbRWmuZ/ZC97FBW7IZIygdNskirAGAj77LwMVl
+ 6Q/jjkrIz0hhtjtRSVzZ+br/L/Bn8O7zoNwDJYq11tLVeZJy7Id3jrUuZ8bfi6pyjesqpETA1
+ xRqhbMuSv3CkT+JjMi5F4xpAmFG+otaNeFK0xzl89J41zPkQ696l0ZmkLhUn2pvq7KN7IC3Hq
+ Z6JnzWFpLpXIJFiBsUyxAdxmotE8ZM3uxmo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jul 26, 2021 at 1:51 PM Nikita Shubin <nikita.shubin@maquefel.me> wrote:
+strcpy() performs no bounds checking on the destination buffer. This
+could result in linear overflows beyond the end of the buffer, leading
+to all kinds of misbehaviors. So, this serie removes all strcpy uses
+from the "staging/fbtft" subsystem.
 
-> This series series of patches converts ep93xx to Common Clock Framework.
->
-> It consists of preparation patches to use clk_prepare_enable where it is
-> needed, instead of clk_enable used in ep93xx drivers prior to CCF and
-> a patch converting mach-ep93xx/clock.c to CCF.
->
-> Link: https://lore.kernel.org/patchwork/cover/1445563/
-> Link: https://lore.kernel.org/patchwork/patch/1435884/
->
-> Alexander Sverdlin (7):
->   iio: ep93xx: Prepare clock before using it
->   spi: spi-ep93xx: Prepare clock before using it
->   Input: ep93xx_keypad: Prepare clock before using it
->   video: ep93xx: Prepare clock before using it
->   dmaengine: ep93xx: Prepare clock before using it
->   ASoC: cirrus: i2s: Prepare clock before using it
->   pwm: ep93xx: Prepare clock before using it
->
-> Nikita Shubin (1):
->   ep93xx: clock: convert in-place to COMMON_CLK
+Also, refactor the code a bit to follow the kernel coding-style and
+avoid unnecessary variable initialization.
 
-This series is looking very good.
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Changelog v1 -> v2
+- Add two new commits to clean the code.
+- Use the "%*ph" format specifier instead of strscpy() function (Geert
+  Uytterhoeven)
 
-I suppose the per-subsystem patches can be picked up by
-each subsystem maintainer and then you can send the "big patch"
-to the SoC tree.
+Changelog v2 -> v3
+- Change the initialization of the "j" variable in the "for" loop and
+  update the code accordingly (Andy Shevchenko).
+- Improve the commit message to inform that the "%*ph" replacement
+  won't cut output earlier than requested (Andy Shevchenko).
+- Don't remove the braces in the "if" statement due to the presence of
+  the comment (Geert Uytterhoeven).
 
-Yours,
-Linus Walleij
+Len Baker (3):
+  staging/fbtft: Remove all strcpy() uses
+  staging/fbtft: Remove unnecessary variable initialization
+  staging/fbtft: Fix braces coding style
+
+ drivers/staging/fbtft/fbtft-core.c | 23 ++++++++++-------------
+ 1 file changed, 10 insertions(+), 13 deletions(-)
+
+=2D-
+2.25.1
+

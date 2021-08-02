@@ -2,96 +2,109 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BF49C4338F
-	for <linux-fbdev@archiver.kernel.org>; Sun,  1 Aug 2021 13:36:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3CB2C4338F
+	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Aug 2021 13:35:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EAA1A610A2
-	for <linux-fbdev@archiver.kernel.org>; Sun,  1 Aug 2021 13:36:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AE112600D4
+	for <linux-fbdev@archiver.kernel.org>; Mon,  2 Aug 2021 13:35:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231546AbhHANgW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 1 Aug 2021 09:36:22 -0400
-Received: from mout.gmx.net ([212.227.17.21]:38527 "EHLO mout.gmx.net"
+        id S233719AbhHBNgF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 2 Aug 2021 09:36:05 -0400
+Received: from mga12.intel.com ([192.55.52.136]:54230 "EHLO mga12.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S232027AbhHANfe (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 1 Aug 2021 09:35:34 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1627824855;
-        bh=Q/dcoSBUFR0wkRhCtWTaj2W+MgEtc+eWAxQm14Cb/Lc=;
-        h=X-UI-Sender-Class:Date:From:To:Cc:Subject:References:In-Reply-To;
-        b=Off6RzThUjmsVS5ZtJbBRxOQDs1SmQwvn5QgY962YAs51ZTpHFTowGf1WC7Ei1FAO
-         yIsLbSD75IwpasBqZzSHf8B3RNpo/KIhdE5OUeudiX0TcD0ev5fX59X2wy9G2J6gDQ
-         0Zw8MorDm7sIK2BTzWyeyN2KE+3o59A+bpzyhJ3M=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from titan ([79.150.72.99]) by mail.gmx.net (mrgmx105
- [212.227.17.174]) with ESMTPSA (Nemesis) id 1MKbkC-1mSxyd2auy-00KzLZ; Sun, 01
- Aug 2021 15:34:15 +0200
-Date:   Sun, 1 Aug 2021 15:34:04 +0200
-From:   Len Baker <len.baker@gmx.com>
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     Len Baker <len.baker@gmx.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Phil Reid <preid@electromag.com.au>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
-        linux-staging@lists.linux.dev,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3 0/3] Remove all strcpy() uses
-Message-ID: <20210801133404.GA5988@titan>
-References: <20210801085155.3170-1-len.baker@gmx.com>
- <CAHp75VcD_Kqedpkw-Pj+uQbWqdu_9FhXqJS5TuGUPoVv2x45-Q@mail.gmail.com>
+        id S233925AbhHBNgF (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 2 Aug 2021 09:36:05 -0400
+X-IronPort-AV: E=McAfee;i="6200,9189,10063"; a="193050284"
+X-IronPort-AV: E=Sophos;i="5.84,289,1620716400"; 
+   d="scan'208";a="193050284"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Aug 2021 06:35:55 -0700
+X-IronPort-AV: E=Sophos;i="5.84,289,1620716400"; 
+   d="scan'208";a="520567355"
+Received: from ideak-desk.fi.intel.com ([10.237.68.141])
+  by fmsmga002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Aug 2021 06:35:53 -0700
+From:   Imre Deak <imre.deak@intel.com>
+To:     linux-fbdev@vger.kernel.org,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc:     dri-devel@lists.freedesktop.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        intel-gfx@lists.freedesktop.org
+Subject: [PATCH] fbdev/efifb: Release PCI device's runtime PM ref during FB destroy
+Date:   Mon,  2 Aug 2021 16:35:51 +0300
+Message-Id: <20210802133551.1904964-1-imre.deak@intel.com>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAHp75VcD_Kqedpkw-Pj+uQbWqdu_9FhXqJS5TuGUPoVv2x45-Q@mail.gmail.com>
-X-Provags-ID: V03:K1:4+Pp4U/a3eSnM89ROA2oEnBRHBcVjHUvh/sOFYn7YGYbhQXrOK3
- gIIzhRk1TOmkGk1sFHh2YVEYJjCu1Qso3Id/QdM0w58LyJbBIhqgHBWjfnAfzaG4/mbcDJZ
- rEwEZpDxC59TL9nSjLQbEIHAXdSmp47hSiul/4wX3151mcV8guZYKlnDmYdVsx1rnIhtdQT
- daY6wAb19kHUDxREuLOPg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:TOOnf/w1Jdk=:/0N54ezEkdw4FzS5U1m82p
- BYkyYs7ZB1sM1mtlLA0StOdcoX20D8NuiciAiVB1x24xveLcMHpzYqSNLknYDh5fiC36Ymu1d
- aGGW+Wb/gItkYj7w7T/TvYKhHJo5RaggnRNq9EuP+isCSYxLMQjU1l5r0jLNHqhGuY54S+M6s
- GEuM7J8VgACMNJXe+jxdYV/0ctHImxvZvJ/8GJNhxXKL/GMXQyAdjj1rf9e7Yj+Yt/vLbwVhK
- zD3NxNzjUReXeiiNhdq/m/USxW6uVPzV81hzEiEfFbXTZHsmQVIxD5k9Z91jgIEol5Xzhpwcj
- fNpnF35tBur3M8z3KHdGwNBtDkcQ6Zln9DnWFv1eu4dMiVlRVTcXfi9kYfouWARkr/xoXtgft
- R/1bRFS4r3zIXc23nbFniqL8J7YtO2ndH8p4EhaQLFG4CBrPOkZ+DQ3ZqshxSUjrUuO7uJSJ0
- vLb/B2OasUxn9GRBsA55qM0W2XDrlSQgtj3Hlw1lof54FUl3v4wg0K+ijPJn7jED2NBk5Wfks
- Z6GiZyKgnbShIJtW0mJGhF67ilRyNcNCWV690KUwx8zuSs79kgooEWfKaYy2ft22t1EW16y1S
- /MzYEzm9TdqzlPLVnZUS92b6JquQ0Fv80XAhF4O0FnWVvZGUw3lPbBPME5tYgxL/JocyVlkCh
- Zb4JtUtirKOARRBCAAjwltLdi4EAT77yB4COqp4/J/SnQcRa7pbeUKd3Al3rHMq82SJRSSR/B
- uUgHP9pKS2PxZ6Q7DENJKkbcOjlU9mxdlKnK33dd9uJTeINI2HZ2/79pbUhJtwY0+8hnglrQ7
- Fw8ZVHQJkEltHq0WRJhT6anNebqQseQsc0XUKCgt6kRvWuKEs+91ULK2l6h4BnGUCJ/B12CWu
- oFnPz6y/kv+U0Ayodd7JZ/ifwMSwlZF8SiEb/kDTIpqhAAq3+7QodfQD0/1F4z6tuyM9HnD3W
- QtUwfJlG8/tSawhQGkbOmF+k1dwvlbkcXX0h8Bm5E1D5Y0GZan/D6Y7JlG/5grkZlwvccCHA3
- 9kZar2RXyi+uNWu06pHCcsCBz60mhQie9tv8yABFEhyZug7RI9pxwRBYpDmJS2CmEraVnICcO
- BcTCpHvPf+Gzcu2uDSLHe7cAK7zfZ+wdGUO
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Andy,
+Atm the EFI FB driver gets a runtime PM reference for the associated GFX
+PCI device during driver probing and releases it only when removing the
+driver.
 
-On Sun, Aug 01, 2021 at 02:40:40PM +0300, Andy Shevchenko wrote:
-> On Sun, Aug 1, 2021 at 11:53 AM Len Baker <len.baker@gmx.com> wrote:
-> >
-> > strcpy() performs no bounds checking on the destination buffer. This
-> > could result in linear overflows beyond the end of the buffer, leading
-> > to all kinds of misbehaviors. So, this serie removes all strcpy uses
-> > from the "staging/fbtft" subsystem.
-> >
-> > Also, refactor the code a bit to follow the kernel coding-style and
-> > avoid unnecessary variable initialization.
->
-> I don't see patch 3 (even on lore.kernel.org).
+When fbcon switches to the FB provided by the PCI device's driver (for
+instance i915/drmfb), the EFI FB will get only unregistered without the
+EFI FB driver getting unloaded, keeping the runtime PM reference
+acquired during driver probing. This reference will prevent the PCI
+driver from runtime suspending the device.
 
-Due to my email provider restrictions (number of emails per hour), I
-need to send an email every x time.
+Fix this by releasing the RPM reference from the EFI FB's destroy hook,
+called when the FB gets unregistered.
 
-Regards,
-Len
+Fixes: a6c0fd3d5a8b ("efifb: Ensure graphics device for efifb stays at PCI D0")
+Cc: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Signed-off-by: Imre Deak <imre.deak@intel.com>
+---
+ drivers/video/fbdev/efifb.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 8ea8f079cde26..25cdea32b9633 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -47,6 +47,8 @@ static bool use_bgrt = true;
+ static bool request_mem_succeeded = false;
+ static u64 mem_flags = EFI_MEMORY_WC | EFI_MEMORY_UC;
+ 
++static struct pci_dev *efifb_pci_dev;	/* dev with BAR covering the efifb */
++
+ static struct fb_var_screeninfo efifb_defined = {
+ 	.activate		= FB_ACTIVATE_NOW,
+ 	.height			= -1,
+@@ -243,6 +245,9 @@ static inline void efifb_show_boot_graphics(struct fb_info *info) {}
+ 
+ static void efifb_destroy(struct fb_info *info)
+ {
++	if (efifb_pci_dev)
++		pm_runtime_put(&efifb_pci_dev->dev);
++
+ 	if (info->screen_base) {
+ 		if (mem_flags & (EFI_MEMORY_UC | EFI_MEMORY_WC))
+ 			iounmap(info->screen_base);
+@@ -333,7 +338,6 @@ ATTRIBUTE_GROUPS(efifb);
+ 
+ static bool pci_dev_disabled;	/* FB base matches BAR of a disabled device */
+ 
+-static struct pci_dev *efifb_pci_dev;	/* dev with BAR covering the efifb */
+ static struct resource *bar_resource;
+ static u64 bar_offset;
+ 
+@@ -603,8 +607,6 @@ static int efifb_remove(struct platform_device *pdev)
+ 	unregister_framebuffer(info);
+ 	sysfs_remove_groups(&pdev->dev.kobj, efifb_groups);
+ 	framebuffer_release(info);
+-	if (efifb_pci_dev)
+-		pm_runtime_put(&efifb_pci_dev->dev);
+ 
+ 	return 0;
+ }
+-- 
+2.27.0
+

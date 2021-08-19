@@ -2,102 +2,116 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 564F5C4338F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Aug 2021 15:00:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B86ABC43214
+	for <linux-fbdev@archiver.kernel.org>; Thu, 19 Aug 2021 09:59:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 38C0E610FC
-	for <linux-fbdev@archiver.kernel.org>; Fri, 13 Aug 2021 15:00:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A1A8761154
+	for <linux-fbdev@archiver.kernel.org>; Thu, 19 Aug 2021 09:59:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241079AbhHMPBR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 13 Aug 2021 11:01:17 -0400
-Received: from mail.kernel.org ([198.145.29.99]:46678 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S241052AbhHMPBR (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 13 Aug 2021 11:01:17 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id BDF7E610F7;
-        Fri, 13 Aug 2021 15:00:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1628866850;
-        bh=6RC6vslFjh+wQ8aj4nLqwnEjlCwuuO/dIriJN4spDOU=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=Q5nskbAqluCwv1ZaznzfE/fQY3JWn0B9SKicAEJHrm1haXbQ7RCSqc434mUzOfsgK
-         NfZJgizQZaTPiMBKMfZMtfogIhi79RFVigtolj9VowNQTi+PbWl9uNoVSBqXuDC6xN
-         dXkf2sPnSL6UO+rmXL97gx0jg3QDbn/4pRNDU7tM=
-Date:   Fri, 13 Aug 2021 17:00:47 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Oliver Graute <oliver.graute@kococonnector.com>
-Cc:     oliver.graute@gmail.com, Carlis <zhangxuezhi1@yulong.com>,
+        id S238041AbhHSKAK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 19 Aug 2021 06:00:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36490 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238023AbhHSKAJ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 19 Aug 2021 06:00:09 -0400
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 60ED9C061757
+        for <linux-fbdev@vger.kernel.org>; Thu, 19 Aug 2021 02:59:33 -0700 (PDT)
+Received: by mail-wr1-x435.google.com with SMTP id q11so8162786wrr.9
+        for <linux-fbdev@vger.kernel.org>; Thu, 19 Aug 2021 02:59:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=xtunD2GxO/8/vmP/JIhc/Q4AXeVK5pzMLPGPI0WktNo=;
+        b=ULGrdUlLjfonZ9gXeFBZL1uRfDlE0SqvpHLPwuyDblWuDL6n7yMagTIZsgstsvo+qS
+         r2ts6k9+C4pXp8Sju0Va2gPM+ieguklAU4b9hD9AslIY+NgmsgLibrWbQ1LiZ0Qsk3rH
+         F4JEmqWQWSRFqw+Y6qDkS74exs7H14uKfiSDwl74vGXJMZfBp4C9GqgKKDJXSQ/hupfn
+         oURWGu3f4FfnLlPSov6wUBSXVnpJHIfk9oWzJA427L1hiGyatYZ/YU553dT38q8yqgAn
+         d+ajJsiH6+zxUGDU4WyG1Nhdmg9w9s1BBQAhxibNshdCVsKc6AhrRapWUea8HkBS/5Ng
+         uvpQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=xtunD2GxO/8/vmP/JIhc/Q4AXeVK5pzMLPGPI0WktNo=;
+        b=osOxa+c+hvsuf2ZftKRzzay4Jo04BN4Wu7VbQixWGPQUpS6QiXXzCZX4sTYTdCTUl2
+         7DkEiGARjX5ungZS2qn+PRg2fWsRMTyhzJYGVXuIm1dFu2ol4djHWgW/Sk3Dbln1ExQX
+         xxJwo3/PQtxDBOjB89QmTDcTo6ev4ukbqit5iLM+qW9+I5W2N2ZPU0YBXI3TpdJ7iird
+         qzDtooAB6Yy9NAYqekUBVRi9n9qPw7Bd68QXZP9CPq6Dd7cukyBHG9AeUwl3ILsRV9iF
+         InBCGNUpWEXBxT0imB1KgUx+7tQrz3k6VfBFddwbpCrAhsWSJZFkfi9iIpMaPSflY841
+         GX+A==
+X-Gm-Message-State: AOAM532jHEIj7oA6uKybC8a5CyVpbebc+bK+PbOlkPjpHqipe/2zP69p
+        jKHnAawawgjO0liJ6G4pYXF2Vg==
+X-Google-Smtp-Source: ABdhPJyutlGQ6Z6gY20AlGAJAhV+LbVsUxEHKzeIqK38emB1LhIfllep0G5vUV02GJWRWcT0Ec9kgQ==
+X-Received: by 2002:a5d:4290:: with SMTP id k16mr2749296wrq.224.1629367172037;
+        Thu, 19 Aug 2021 02:59:32 -0700 (PDT)
+Received: from google.com ([2.31.167.59])
+        by smtp.gmail.com with ESMTPSA id z5sm7338694wmp.26.2021.08.19.02.59.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 19 Aug 2021 02:59:31 -0700 (PDT)
+Date:   Thu, 19 Aug 2021 10:59:29 +0100
+From:   Lee Jones <lee.jones@linaro.org>
+To:     Daniel Thompson <daniel.thompson@linaro.org>
+Cc:     Jingoo Han <jingoohan1@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>, linux-pwm@vger.kernel.org,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1] staging: fbtft: fb_st7789v: reset display before
- initialization
-Message-ID: <YRaJH5Sj+X4Z3xH/@kroah.com>
-References: <20210813125928.3734-1-oliver.graute@kococonnector.com>
+        linux-kernel@vger.kernel.org, Marek Vasut <marex@denx.de>,
+        stable@vger.kernel.org
+Subject: Re: [PATCH] backlight: pwm_bl: Improve bootloader/kernel device
+ handover
+Message-ID: <YR4rgXdHqLzpYfEY@google.com>
+References: <20210722144623.1572816-1-daniel.thompson@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20210813125928.3734-1-oliver.graute@kococonnector.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20210722144623.1572816-1-daniel.thompson@linaro.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Aug 13, 2021 at 02:59:27PM +0200, Oliver Graute wrote:
-> In rare cases the display is flipped or mirrored. This was observed more
-> often in a low temperature environment. A clean reset on init_display()
-> should help to get registers in a sane state.
+On Thu, 22 Jul 2021, Daniel Thompson wrote:
+
+> Currently there are (at least) two problems in the way pwm_bl starts
+> managing the enable_gpio pin. Both occur when the backlight is initially
+> off and the driver finds the pin not already in output mode and, as a
+> result, unconditionally switches it to output-mode and asserts the signal.
 > 
-> Signed-off-by: Oliver Graute <oliver.graute@kococonnector.com>
+> Problem 1: This could cause the backlight to flicker since, at this stage
+> in driver initialisation, we have no idea what the PWM and regulator are
+> doing (an unconfigured PWM could easily "rest" at 100% duty cycle).
+> 
+> Problem 2: This will cause us not to correctly honour the
+> post_pwm_on_delay (which also risks flickers).
+> 
+> Fix this by moving the code to configure the GPIO output mode until after
+> we have examines the handover state. That allows us to initialize
+> enable_gpio to off if the backlight is currently off and on if the
+> backlight is on.
+> 
+> Reported-by: Marek Vasut <marex@denx.de>
+> Signed-off-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Cc: stable@vger.kernel.org
+> Acked-by: Marek Vasut <marex@denx.de>
+> Tested-by: Marek Vasut <marex@denx.de>
 > ---
->  drivers/staging/fbtft/fb_st7789v.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
-> index 3a280cc1892c..0a2dbed9ffc7 100644
-> --- a/drivers/staging/fbtft/fb_st7789v.c
-> +++ b/drivers/staging/fbtft/fb_st7789v.c
-> @@ -82,6 +82,8 @@ enum st7789v_command {
->  {
->  	int rc;
-> 
-> +	par->fbtftops.reset(par);
-> +
->  	rc = init_tearing_effect_line(par);
->  	if (rc)
->  		return rc;
-> -- 
-> 2.17.1
-> 
-> 
+>  drivers/video/backlight/pwm_bl.c | 54 +++++++++++++++++---------------
+>  1 file changed, 28 insertions(+), 26 deletions(-)
 
-Hi,
+Applied, thanks.
 
-This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
-a patch that has triggered this response.  He used to manually respond
-to these common problems, but in order to save his sanity (he kept
-writing the same thing over and over, yet to different people), I was
-created.  Hopefully you will not take offence and will fix the problem
-in your patch and resubmit it so that it can be accepted into the Linux
-kernel tree.
-
-You are receiving this message because of the following common error(s)
-as indicated below:
-
-- This looks like a new version of a previously submitted patch, but you
-  did not list below the --- line any changes from the previous version.
-  Please read the section entitled "The canonical patch format" in the
-  kernel file, Documentation/SubmittingPatches for what needs to be done
-  here to properly describe this.
-
-If you wish to discuss this problem further, or you have questions about
-how to resolve this issue, please feel free to respond to this email and
-Greg will reply once he has dug out from the pending patches received
-from other developers.
-
-thanks,
-
-greg k-h's patch email bot
+-- 
+Lee Jones [李琼斯]
+Senior Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog

@@ -2,133 +2,91 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EFE2C4320A
-	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Aug 2021 22:02:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDCA0C432BE
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Aug 2021 11:10:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2CF8A60EB0
-	for <linux-fbdev@archiver.kernel.org>; Fri, 27 Aug 2021 22:02:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CEA18601FD
+	for <linux-fbdev@archiver.kernel.org>; Sat, 28 Aug 2021 11:10:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232094AbhH0WDR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 27 Aug 2021 18:03:17 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:59245 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S232078AbhH0WDQ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 27 Aug 2021 18:03:16 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1630101746;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=F6xavDxclU2457G1Vw6lUkX39komt2IDfPFEDUjuZSY=;
-        b=fsjO1Mue/JzuzabqY4fPvM7IGJnaENDcRL9WilQsbLASZKAYekQDWqGP9ASJxcIj5/JrmX
-        if8rEtNgXtkJnF8mkIqDOEgfNzX2DMP8Fu5msX/ywMDdW+cPZv3k9cSYczvbt8GzL9D21F
-        Q3ce1wadtEK9U5kiauVVhRvaCZMjV2M=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-265-YcDboKqNNVCGvVWw2kccGw-1; Fri, 27 Aug 2021 18:02:25 -0400
-X-MC-Unique: YcDboKqNNVCGvVWw2kccGw-1
-Received: by mail-wm1-f70.google.com with SMTP id m33-20020a05600c3b2100b002e87a0542efso2110246wms.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 27 Aug 2021 15:02:25 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=F6xavDxclU2457G1Vw6lUkX39komt2IDfPFEDUjuZSY=;
-        b=L8K/8JHSMR6tWPC49NexJQLs5y4xY7cuYstovuMrOb7Op4JljqVsGKnhAIIFXL+QIl
-         coXiJSZbRBKL9ZghmhWanwe5sfy58QgiwcfvwxbCGS2F2ydHteXcjyjhZvWMs5THoQab
-         fprUgflI/ZggbXKVWSy/e0setSkYxX4jpWvckKLiF/vhHaFGHwTpuP4ysS9u8d3oSNWO
-         XeGP+wHaEWbVRmsDrXoX04epoZchpFaT9kqHZCnITnGrDOIq/2ksFe+cSua7TOAG224j
-         fxv37xyj9zyPt4tYKVw+ZQ2pDuk6AOj66MiZdefcd4E6UKH6mbL5BnOKsQpaoIhIGOZj
-         f4DA==
-X-Gm-Message-State: AOAM530u3qur3Jr+wzfBbrzGY/JA8Oy1SSCR66tn0M0ZBY7o7hj5FAW+
-        T2eWi+wFanWl11ep9MYzRlFW3MGF2jKm9nvAGvLjP/ImKeweBxpcjoCNLREJjYAV+DZmPflto7M
-        iRAPcK9bxrB6bv1e4qmj7hF0=
-X-Received: by 2002:a5d:6cb0:: with SMTP id a16mr11883619wra.245.1630101743845;
-        Fri, 27 Aug 2021 15:02:23 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJx0sjJPekqAFrzI+I21wArpuNqneRzwvRM7qmHiOpufcRJPM7zXryENkyja4nv3/Jn1chky2g==
-X-Received: by 2002:a5d:6cb0:: with SMTP id a16mr11883596wra.245.1630101743658;
-        Fri, 27 Aug 2021 15:02:23 -0700 (PDT)
-Received: from [192.168.1.101] ([92.176.231.106])
-        by smtp.gmail.com with ESMTPSA id z126sm6853997wmc.11.2021.08.27.15.02.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 27 Aug 2021 15:02:23 -0700 (PDT)
-Subject: Re: [RFC PATCH 0/4] Allow to use DRM fbdev emulation layer with
- CONFIG_FB disabled
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-kernel@vger.kernel.org, "H . Peter Anvin" <hpa@zytor.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        x86@kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-fbdev@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-        Maxime Ripard <mripard@kernel.org>,
-        Borislav Petkov <bp@alien8.de>,
-        Peter Robinson <pbrobinson@gmail.com>,
+        id S233917AbhH1LL2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 28 Aug 2021 07:11:28 -0400
+Received: from mail.z3ntu.xyz ([128.199.32.197]:60824 "EHLO mail.z3ntu.xyz"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233960AbhH1LL1 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Sat, 28 Aug 2021 07:11:27 -0400
+X-Greylist: delayed 497 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Aug 2021 07:11:27 EDT
+Received: from localhost.localdomain (ip-213-127-63-121.ip.prioritytelecom.net [213.127.63.121])
+        by mail.z3ntu.xyz (Postfix) with ESMTPSA id 97FD2C938F;
+        Sat, 28 Aug 2021 11:02:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=z3ntu.xyz; s=z3ntu;
+        t=1630148538; bh=593ciw0QW1roD1h3TFS7025Qd9Um6NsB+kmDNsGtp2E=;
+        h=From:To:Cc:Subject:Date;
+        b=YP2K5BgAcdkPXUhhs/TGPxseXSfdP9tL7CEpGui+ebRwolbC6RJgoLExFn/Gi+gQI
+         pb+EnTaSgi2YfGHzc52ilbSZA0liS9jVntxAKYO2gszKX4KUp8dMxuYojfTIcff2an
+         F3rqQjRAwyerZbdyuSn/4ZCIchyIRxsflmqhBf+Q=
+From:   Luca Weiss <luca@z3ntu.xyz>
+To:     linux-fbdev@vger.kernel.org
+Cc:     ~postmarketos/upstreaming@lists.sr.ht, Luca Weiss <luca@z3ntu.xyz>,
         Hans de Goede <hdegoede@redhat.com>,
-        dri-devel@lists.freedesktop.org, Ingo Molnar <mingo@redhat.com>,
-        David Airlie <airlied@linux.ie>
-References: <20210827100027.1577561-1-javierm@redhat.com>
- <bb5d045c-c9de-b6df-cf45-32b1a866264a@suse.de>
- <YSlI+ryYqoRxM7aB@phenom.ffwll.local>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-Message-ID: <a7395626-f022-5c89-07cd-c30d0d52d3dd@redhat.com>
-Date:   Sat, 28 Aug 2021 00:02:21 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Rob Herring <robh+dt@kernel.org>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] dt-bindings: display: add missing simple-framebuffer formats
+Date:   Sat, 28 Aug 2021 13:02:05 +0200
+Message-Id: <20210828110206.142899-1-luca@z3ntu.xyz>
+X-Mailer: git-send-email 2.33.0
 MIME-Version: 1.0
-In-Reply-To: <YSlI+ryYqoRxM7aB@phenom.ffwll.local>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Daniel and Thomas,
+Document all formats currently present in include/linux/platform_data/
+simplefb.h
 
-On 8/27/21 10:20 PM, Daniel Vetter wrote:
-> On Fri, Aug 27, 2021 at 07:50:23PM +0200, Thomas Zimmermann wrote:
->> Hi
->>
->> Am 27.08.21 um 12:00 schrieb Javier Martinez Canillas:
->>> This patch series splits the fbdev core support in two different Kconfig
->>> symbols: FB and FB_CORE. The motivation for this is to allow CONFIG_FB to
->>> be disabled, while still using fbcon with the DRM fbdev emulation layer.
->>
->> I'm skeptical. DRM's fbdev emulation is not just the console emulation, it's
->> a full fbdev device. You can see the related device file as /dev/fb*.
->> Providing the file while having CONFIG_FB disabled doesn't make much sense
->> to me. I know it's not pretty, but it's consistent at least.
->>
->> If you want to remove fbdev, you could try to untangle fbdev and the console
->> emulation such that DRM can set up a console by itself. Old fbdev drives
->> would also set up the console individually.
-> 
-> Yeah given the horrendous security track record of all that code, and the
-> maze of handover we have (stuff like flicker free boot and all that) I'm
-> wondering whether typing a new drmcon wouldn't be faster and a lot more
-> maintainable.
-> 
+Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
+---
+ .../bindings/display/simple-framebuffer.yaml         | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-We talked about a drmcon with Peter Robinson as well but then decided that a
-way to disable CONFIG_FB but still having the DRM fbdev emulation could be a
-intermediary step, hence these RFC patches.
-
-But yes, I agree that a drmcon would be the proper approach for this, to not
-need any fbdev support at all. We will just keep the explicit disable for the
-fbdev drivers then in the meantime.
-
-Thanks a lot for your feedback.
-
-Best regards,
+diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+index c2499a7906f5..c1acd2859ae8 100644
+--- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
++++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+@@ -83,13 +83,25 @@ properties:
+   format:
+     description: >
+       Format of the framebuffer:
++        * `a1r5g5b5` - 16-bit pixels, d[15]=a, d[14:10]=r, d[9:5]=g, d[4:0]=b
++        * `a2r10g10b10` - 32-bit pixels, d[31:30]=a, d[29:20]=r, d[19:10]=g, d[9:0]=b
+         * `a8b8g8r8` - 32-bit pixels, d[31:24]=a, d[23:16]=b, d[15:8]=g, d[7:0]=r
++        * `a8r8g8b8` - 32-bit pixels, d[31:24]=a, d[23:16]=r, d[15:8]=g, d[7:0]=b
+         * `r5g6b5` - 16-bit pixels, d[15:11]=r, d[10:5]=g, d[4:0]=b
++        * `r5g5b5a1` - 16-bit pixels, d[15:11]=r, d[10:6]=g, d[5:1]=b, d[0]=a
++        * `r8g8b8` - 24-bit pixels, d[23:16]=r, d[15:8]=g, d[7:0]=b
++        * `x1r5g5b5` - 16-bit pixels, d[14:10]=r, d[9:5]=g, d[4:0]=b
+         * `x2r10g10b10` - 32-bit pixels, d[29:20]=r, d[19:10]=g, d[9:0]=b
+         * `x8r8g8b8` - 32-bit pixels, d[23:16]=r, d[15:8]=g, d[7:0]=b
+     enum:
++      - a1r5g5b5
++      - a2r10g10b10
+       - a8b8g8r8
++      - a8r8g8b8
+       - r5g6b5
++      - r5g5b5a1
++      - r8g8b8
++      - x1r5g5b5
+       - x2r10g10b10
+       - x8r8g8b8
+ 
 -- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+2.33.0
 

@@ -2,53 +2,40 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F382C4320E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Aug 2021 14:30:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD6EEC432BE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Aug 2021 14:38:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 61D3C6023E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Aug 2021 14:30:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 84CCA6023E
+	for <linux-fbdev@archiver.kernel.org>; Mon, 30 Aug 2021 14:38:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237195AbhH3Obp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 30 Aug 2021 10:31:45 -0400
-Received: from mail-vs1-f44.google.com ([209.85.217.44]:40615 "EHLO
-        mail-vs1-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237181AbhH3Obm (ORCPT
+        id S237004AbhH3Oju (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 30 Aug 2021 10:39:50 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:63355 "EHLO
+        www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S237156AbhH3Ojt (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 30 Aug 2021 10:31:42 -0400
-Received: by mail-vs1-f44.google.com with SMTP id d6so4300973vsr.7;
-        Mon, 30 Aug 2021 07:30:48 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=VgKhHizq2L8dQZoQcxBfufERxFjnVK3q48k2GBzHxbg=;
-        b=gHEekl3GLlnCmOd+FZFDoDl80NkQfMka975uFWQjgPFQ/lNnGYXkXtGwCXC+xGsnsf
-         pJE5ClOj7MEyDLhYoiKDNwPd/IZJb0OQ9uRDsUhS1vEayYV5cKkNrUy8wh0xO4N4M3kg
-         K3AKMSkO7mWf8JSNCqz/T7LyiWCgRair8f9pklBcm+1LNKsbhBMlBDfpJnzA3MJwlmaY
-         2wSnWm6QxR+H0mWlKEZ6Jel8GV4/Su/saBWUpH/Y3wCzbNjSS0I2hiIEkEFaJ6ByibOo
-         uWsY6zVEnYKpSsUYy5toRpnpaAs1f5/U+KOJZBKdxQ3RdFjuk4l0zVT6oTKcJS9ZmaOL
-         YjGw==
-X-Gm-Message-State: AOAM530ZRiWtKnVF1w4BQYd8QrFG/6FsJiAODizUFT9VD9KgiQlTajIp
-        7nYKOUeICmS67fm92WSWsu40YRMjHRnzNHsDN/c=
-X-Google-Smtp-Source: ABdhPJwXrGuINMzmLOeLoNvKrXr8kded9JMrOcZu3G8T8pbvFnWwxXU9kXJU7O9Mej5MH/LuttPsiK2qv0RDHBrX1gw=
-X-Received: by 2002:a67:cb0a:: with SMTP id b10mr14980584vsl.9.1630333847661;
- Mon, 30 Aug 2021 07:30:47 -0700 (PDT)
-MIME-Version: 1.0
-References: <000000000000815b9605c70e74f8@google.com> <131b24e5-ee31-6f7b-42b4-c34583711913@infradead.org>
- <2fccb5d3-191c-924e-159f-1c9d423e282f@i-love.sakura.ne.jp>
- <CAMuHMdV=xVhEHLEoYt3OF+kmGrLOr6t7SP1sghSmp9JqXD+3Og@mail.gmail.com>
- <20210830130000.GW7722@kadam> <8ed0ca59-226b-2d0e-b1ae-82305202558d@i-love.sakura.ne.jp>
- <20210830134719.GI12231@kadam> <03d0f549-9731-8b06-1393-60d4bef27884@i-love.sakura.ne.jp>
-In-Reply-To: <03d0f549-9731-8b06-1393-60d4bef27884@i-love.sakura.ne.jp>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 30 Aug 2021 16:30:36 +0200
-Message-ID: <CAMuHMdXp7D02Z_Hs4wT9y4WeNzqdxHMgExiOzVauvpfgf4Veig@mail.gmail.com>
-Subject: Re: [syzbot] BUG: unable to handle kernel paging request in vga16fb_fillrect
-To:     Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+        Mon, 30 Aug 2021 10:39:49 -0400
+Received: from fsav414.sakura.ne.jp (fsav414.sakura.ne.jp [133.242.250.113])
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTP id 17UEcNYN087219;
+        Mon, 30 Aug 2021 23:38:23 +0900 (JST)
+        (envelope-from penguin-kernel@i-love.sakura.ne.jp)
+Received: from www262.sakura.ne.jp (202.181.97.72)
+ by fsav414.sakura.ne.jp (F-Secure/fsigk_smtp/550/fsav414.sakura.ne.jp);
+ Mon, 30 Aug 2021 23:38:23 +0900 (JST)
+X-Virus-Status: clean(F-Secure/fsigk_smtp/550/fsav414.sakura.ne.jp)
+Received: from [192.168.1.9] (M106072142033.v4.enabler.ne.jp [106.72.142.33])
+        (authenticated bits=0)
+        by www262.sakura.ne.jp (8.15.2/8.15.2) with ESMTPSA id 17UEcNhJ087216
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NO);
+        Mon, 30 Aug 2021 23:38:23 +0900 (JST)
+        (envelope-from penguin-kernel@i-love.sakura.ne.jp)
+Subject: Re: [syzbot] BUG: unable to handle kernel paging request in
+ vga16fb_fillrect
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
 Cc:     Dan Carpenter <dan.carpenter@oracle.com>,
         Randy Dunlap <rdunlap@infradead.org>,
         syzbot <syzbot+04168c8063cfdde1db5e@syzkaller.appspotmail.com>,
@@ -60,68 +47,42 @@ Cc:     Dan Carpenter <dan.carpenter@oracle.com>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Masahiro Yamada <masahiroy@kernel.org>,
         syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+References: <000000000000815b9605c70e74f8@google.com>
+ <131b24e5-ee31-6f7b-42b4-c34583711913@infradead.org>
+ <2fccb5d3-191c-924e-159f-1c9d423e282f@i-love.sakura.ne.jp>
+ <CAMuHMdV=xVhEHLEoYt3OF+kmGrLOr6t7SP1sghSmp9JqXD+3Og@mail.gmail.com>
+ <20210830130000.GW7722@kadam>
+ <8ed0ca59-226b-2d0e-b1ae-82305202558d@i-love.sakura.ne.jp>
+ <20210830134719.GI12231@kadam>
+ <03d0f549-9731-8b06-1393-60d4bef27884@i-love.sakura.ne.jp>
+ <CAMuHMdXp7D02Z_Hs4wT9y4WeNzqdxHMgExiOzVauvpfgf4Veig@mail.gmail.com>
+From:   Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Message-ID: <ba78b9a5-08a5-36d3-7c6f-e26ee239d92f@i-love.sakura.ne.jp>
+Date:   Mon, 30 Aug 2021 23:38:22 +0900
+User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
+MIME-Version: 1.0
+In-Reply-To: <CAMuHMdXp7D02Z_Hs4wT9y4WeNzqdxHMgExiOzVauvpfgf4Veig@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Tetsuo,
+On 2021/08/30 23:30, Geert Uytterhoeven wrote:
+> The highest possible value of maxmem inside vga16fb_check_var()
+> is 65536.
 
-On Mon, Aug 30, 2021 at 4:26 PM Tetsuo Handa
-<penguin-kernel@i-love.sakura.ne.jp> wrote:
-> On 2021/08/30 22:47, Dan Carpenter wrote:
-> > On Mon, Aug 30, 2021 at 10:37:31PM +0900, Tetsuo Handa wrote:
-> >> On 2021/08/30 22:00, Dan Carpenter wrote:
-> >>>>> diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-> >>>>> index e2757ff1c23d..e483a3f5fd47 100644
-> >>>>> --- a/drivers/video/fbdev/vga16fb.c
-> >>>>> +++ b/drivers/video/fbdev/vga16fb.c
-> >>>>> @@ -403,7 +403,7 @@ static int vga16fb_check_var(struct fb_var_screeninfo *var,
-> >>>>>
-> >>>>>         if (yres > vyres)
-> >>>>>                 vyres = yres;
-> >>>>> -       if (vxres * vyres > maxmem) {
-> >>>>> +       if ((u64) vxres * vyres > (u64) maxmem) {
-> >>>>
-> >>>> Mindlessly changing the sizes is not the solution.
-> >>>> Please use e.g. the array_size() helper from <linux/overflow.h>
-> >>>> instead.
-> >>>
-> >>> On a 64bit system the array_size() macro is going to do the exact same
-> >>> casts?  But I do think this code would be easier to understand if the
-> >>> integer overflow check were pull out separately and done first:
-> >>>
-> >>>     if (array_size(vxres, vyres) >= UINT_MAX)
-> >>>             return -EINVAL;
-> >>
-> >> This is wrong. array_size() returns ULONG_MAX on 64bits upon overflow and
-> >> returns UINT_MAX on 32bits upon overflow. However, UINT_MAX is a valid
-> >> value without overflow (e.g. vxres == UINT_MAX / 15 && vyres == 15).
-> >
-> > Huh...  I just assumed we didn't allow resolutions that high.
->
-> Of course, we don't allow resolutions that high. ;-)
->
-> Since I don't know possible max resolutions, I chose UINT_MAX + 1 as a common
-> limit for returning -EINVAL. Unless overflow happens, vga16fb_check_var() will
-> return -ENOMEM on such high resolutions.
+Yes.
 
-The highest possible value of maxmem inside vga16fb_check_var()
-is 65536.
+> 
+> So I believe
+> 
+>     if (array_size(vxres, vyres) > maxmem)
+> 
+> should work fine.
 
-So I believe
-
-    if (array_size(vxres, vyres) > maxmem)
-
-should work fine.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+My intent is to check at common path than individual module so that we don't
+need to add same check to every module. Same approach is proposed at
+https://lkml.kernel.org/r/1630294223-7225-1-git-send-email-tcs_kernel@tencent.com .

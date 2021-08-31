@@ -2,121 +2,113 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4BBEC4320E
-	for <linux-fbdev@archiver.kernel.org>; Tue, 31 Aug 2021 19:05:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 971A3C4320E
+	for <linux-fbdev@archiver.kernel.org>; Tue, 31 Aug 2021 21:30:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8B64061074
-	for <linux-fbdev@archiver.kernel.org>; Tue, 31 Aug 2021 19:05:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7012861056
+	for <linux-fbdev@archiver.kernel.org>; Tue, 31 Aug 2021 21:30:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240002AbhHaTF6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 31 Aug 2021 15:05:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45226 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239924AbhHaTF4 (ORCPT
+        id S240604AbhHaVbP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 31 Aug 2021 17:31:15 -0400
+Received: from mail-ot1-f49.google.com ([209.85.210.49]:38464 "EHLO
+        mail-ot1-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239708AbhHaVbM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 31 Aug 2021 15:05:56 -0400
-Received: from mail-oi1-x22d.google.com (mail-oi1-x22d.google.com [IPv6:2607:f8b0:4864:20::22d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E504AC061575
-        for <linux-fbdev@vger.kernel.org>; Tue, 31 Aug 2021 12:05:00 -0700 (PDT)
-Received: by mail-oi1-x22d.google.com with SMTP id w19so424060oik.10
-        for <linux-fbdev@vger.kernel.org>; Tue, 31 Aug 2021 12:05:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=ZvHe6WFLlEOY+cnNyJHf8IUGJZtLzfrewOzKEL/ktBI=;
-        b=ACWt0ukBTDTGH9DZcqNb3LHML6ZIXTJi22x9F1+NGl+2yrk61J+GgzScyE3gFTlSlQ
-         x226k4VgR+xl+Mxu1P2nWpexNXNlNb1LiuVItVK2b3hkNGxNhP3j+ea03k66KOk1vptW
-         JM2F8HfiCiSzN9m0fQJeZ3AwirWfftjNbongs=
+        Tue, 31 Aug 2021 17:31:12 -0400
+Received: by mail-ot1-f49.google.com with SMTP id i8-20020a056830402800b0051afc3e373aso950667ots.5;
+        Tue, 31 Aug 2021 14:30:17 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=ZvHe6WFLlEOY+cnNyJHf8IUGJZtLzfrewOzKEL/ktBI=;
-        b=V8W+tA4f9X7lCBU0OtZcpkGNcEk4kKRSiUH5ZeLD+J7ov4Xw4pX8H6/AXPSRAxHwUH
-         Mulv2dC+l7O2lYj/YOc9TvKMsH4sTgaam7Ml3LMkXg1JUIbPAT73KBh7ZYwQOyHIJeUc
-         V1IWG+WA52Nmz8JW9KRH48l2UvSGTWahmwjRUAi/FfDYvTt1URDZBU5fOvs8XbIyhAHp
-         HzEyJFFgH9XyrRbkNqiLHYVlSSJzL96ddwLbMyNduqDCrxkco+K/ibDSlL0jhO6ISq6F
-         WW+mA0hSISWcPu8HlAmhQnvQvlHDGyGCsuFw6iUfTVsTQ+A+dvy0AkV3ykuQObvetl8r
-         UupQ==
-X-Gm-Message-State: AOAM532zgzJCburl0lNLL0Ki8XSUvxke2Oame/o//VQx5CCuRWQ7nucY
-        fzbPxpyzLIY3/ByMjPR4ldjLfEnI3qLw2q7vclaG/Q==
-X-Google-Smtp-Source: ABdhPJzuNvtIttTsikeJhpfgPjZLhIkRqb9ifqIW1nYLm/S07/enaQExtksB0ZnMvf3m4HMYN91Gb9HNmjtQutiTXpc=
-X-Received: by 2002:a05:6808:1449:: with SMTP id x9mr4264801oiv.14.1630436700262;
- Tue, 31 Aug 2021 12:05:00 -0700 (PDT)
-MIME-Version: 1.0
-References: <000000000000815b9605c70e74f8@google.com> <131b24e5-ee31-6f7b-42b4-c34583711913@infradead.org>
- <2fccb5d3-191c-924e-159f-1c9d423e282f@i-love.sakura.ne.jp>
- <339bfb21-8e80-c7d9-46dd-c416f87c50c0@infradead.org> <535e404d-03bf-8e7a-b296-132a2a98c599@i-love.sakura.ne.jp>
- <CAMuHMdWX7s63X_zR9329canbQkPGBVxZNG4O+_=jUut60aGR9g@mail.gmail.com>
- <5c6d2b95-31d7-0d59-5e62-2593d9a0e1fe@i-love.sakura.ne.jp>
- <CAMuHMdWbSUGRGAVi-17C3hyDBZnGLAsmbAs+wXPHiCNWWLbMpA@mail.gmail.com>
- <CAKMK7uF1cnen2UVWeOL164z1CCqOuRMC5SmM+5GvRvi7C-UOTw@mail.gmail.com> <CAMuHMdWNYaZxZB0Td4PFb76rrtQMumKu6cJgLi2aNnW-9NmG8A@mail.gmail.com>
-In-Reply-To: <CAMuHMdWNYaZxZB0Td4PFb76rrtQMumKu6cJgLi2aNnW-9NmG8A@mail.gmail.com>
-From:   Daniel Vetter <daniel.vetter@ffwll.ch>
-Date:   Tue, 31 Aug 2021 21:04:48 +0200
-Message-ID: <CAKMK7uHuOQWUnsiH00QFbHKgTdjjryK0ra9We2stojXMiAVgJA@mail.gmail.com>
-Subject: Re: [PATCH] fbmem: don't allow too huge resolutions
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        syzbot <syzbot+04168c8063cfdde1db5e@syzkaller.appspotmail.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=Lv/ljHshSZK3RFgD2a8g0MVknlEMt9i5zUtkABsa3c0=;
+        b=QbRpDfRY+/x1atbFO5/WMv28jcwGZEFYMzrZhCyFNV2hlVI/fZPuFu1RsdLG3giDBL
+         lMq7reipv1KB5cIjzYbgs5ytUCdabjJsiWL4ZujIkiJ2ZGVF4ElD7L4qLfjDIQGG8lpF
+         XfaMWKRsKm06bPGoUYSAA5OCly466G40egn0tYTHf3ojx9ED0v6zR1P3G9APsy+OwbZL
+         1XHdbSIcG9VpzfHugG5CprcQ3v1W9DGwa3a1Fg55orR0SkLzeqidGEm5LokEixw0j8b9
+         GIGTiUHko7x+0KNMV8m6G+YnNvI/jJ/9iTx5JHBcU6T4mjOsCGtCHKWwAmwNiC8fiXjn
+         O6mw==
+X-Gm-Message-State: AOAM5312vOXvkVdDOYLPAKJ/0fWq+F9+85ZD24KC7AP78aOMGK2S2Pw+
+        YXrRL+PsrMfyF3xbtj/WZA==
+X-Google-Smtp-Source: ABdhPJzCoKKVloeON0/InoVfsSGtFPejEa6c0Hy6uFnCKvcn2QG3UG5aK/HzG37HQA69/+Y37NLGSQ==
+X-Received: by 2002:a9d:74c5:: with SMTP id a5mr25815380otl.205.1630445416795;
+        Tue, 31 Aug 2021 14:30:16 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-148-213.dyn.grandenetworks.net. [66.90.148.213])
+        by smtp.gmail.com with ESMTPSA id n130sm3841778oif.32.2021.08.31.14.30.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 31 Aug 2021 14:30:16 -0700 (PDT)
+Received: (nullmailer pid 678569 invoked by uid 1000);
+        Tue, 31 Aug 2021 21:30:15 -0000
+Date:   Tue, 31 Aug 2021 16:30:15 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Luca Weiss <luca@z3ntu.xyz>
+Cc:     linux-fbdev@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
+        Hans de Goede <hdegoede@redhat.com>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Colin King <colin.king@canonical.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Masahiro Yamada <masahiroy@kernel.org>,
-        syzkaller-bugs <syzkaller-bugs@googlegroups.com>,
-        Randy Dunlap <rdunlap@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+        dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: display: add missing simple-framebuffer
+ formats
+Message-ID: <YS6fZ4nFgic1DYhR@robh.at.kernel.org>
+References: <20210828110206.142899-1-luca@z3ntu.xyz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20210828110206.142899-1-luca@z3ntu.xyz>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Aug 31, 2021 at 8:56 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> Hi Daniel,
->
-> On Tue, Aug 31, 2021 at 8:53 PM Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
-> > On Tue, Aug 31, 2021 at 7:19 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > On Tue, Aug 31, 2021 at 5:24 PM Tetsuo Handa
-> > > <penguin-kernel@i-love.sakura.ne.jp> wrote:
-> > > > On 2021/08/31 15:48, Geert Uytterhoeven wrote:
-> > > > > Furthermore, this restricts the virtual frame buffer size on 64-bit,
-> > > > > too, while graphics cards can have much more than 4 GiB of RAM.
-> > > >
-> > > > Excuse me, but do you mean that some hardware allows allocating more than
-> > > > UINT_MAX bytes of memory for kernel frame buffer drivers?
-> > >
-> > > While smem_len is u32 (there have been complaints about such
-> > > limitations on 64-bit platforms as far as 10 years ago), I see no
-> > > reason why a graphics card with more than 4 GiB of RAM would not be
-> > > able to provide a very large virtual screen.
-> > >
-> > > Of course e.g. vga16fb cannot, as it is limited to 64 KiB.
-> >
-> > The first gpus with 4GB or more memory started shipping in 2012. We're
-> > not going to have fbdev drivers for these, so let's not invent code
-> > for use-cases that aren't please.
->
-> This code path is used with fbdev emulation for drm drivers, too,
-> right?
+On Sat, Aug 28, 2021 at 01:02:05PM +0200, Luca Weiss wrote:
+> Document all formats currently present in include/linux/platform_data/
+> simplefb.h
+> 
+> Signed-off-by: Luca Weiss <luca@z3ntu.xyz>
+> ---
+>  .../bindings/display/simple-framebuffer.yaml         | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+> index c2499a7906f5..c1acd2859ae8 100644
+> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+> @@ -83,13 +83,25 @@ properties:
+>    format:
+>      description: >
+>        Format of the framebuffer:
+> +        * `a1r5g5b5` - 16-bit pixels, d[15]=a, d[14:10]=r, d[9:5]=g, d[4:0]=b
+> +        * `a2r10g10b10` - 32-bit pixels, d[31:30]=a, d[29:20]=r, d[19:10]=g, d[9:0]=b
 
-Yeah, you get one buffer, with overallocating 2. That's all, you don't
-get the entire vram because we can't revoke that for fbdev users. We'd
-have fixed this long ago if it's a real limitations.
+Not a new problem, but are these 32-bit big or little endian words? That 
+should be figured out before we add more.
 
-8k at 64bpp is still less than 256MB. Also due to pci bar limitations
-(which finally get lifted now because windows fixed their pci code,
-which motivates motherboard manufactures for desktop space to also fix
-theirs) we're limited to 256MB actually cpu visible anyway.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+>          * `a8b8g8r8` - 32-bit pixels, d[31:24]=a, d[23:16]=b, d[15:8]=g, d[7:0]=r
+> +        * `a8r8g8b8` - 32-bit pixels, d[31:24]=a, d[23:16]=r, d[15:8]=g, d[7:0]=b
+>          * `r5g6b5` - 16-bit pixels, d[15:11]=r, d[10:5]=g, d[4:0]=b
+> +        * `r5g5b5a1` - 16-bit pixels, d[15:11]=r, d[10:6]=g, d[5:1]=b, d[0]=a
+> +        * `r8g8b8` - 24-bit pixels, d[23:16]=r, d[15:8]=g, d[7:0]=b
+> +        * `x1r5g5b5` - 16-bit pixels, d[14:10]=r, d[9:5]=g, d[4:0]=b
+>          * `x2r10g10b10` - 32-bit pixels, d[29:20]=r, d[19:10]=g, d[9:0]=b
+>          * `x8r8g8b8` - 32-bit pixels, d[23:16]=r, d[15:8]=g, d[7:0]=b
+>      enum:
+> +      - a1r5g5b5
+> +      - a2r10g10b10
+>        - a8b8g8r8
+> +      - a8r8g8b8
+>        - r5g6b5
+> +      - r5g5b5a1
+> +      - r8g8b8
+> +      - x1r5g5b5
+>        - x2r10g10b10
+>        - x8r8g8b8
+>  
+> -- 
+> 2.33.0
+> 
+> 

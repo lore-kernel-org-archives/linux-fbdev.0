@@ -2,35 +2,63 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7026C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri,  3 Sep 2021 13:55:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02F98C433F5
+	for <linux-fbdev@archiver.kernel.org>; Sat,  4 Sep 2021 02:13:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A1D3D61059
-	for <linux-fbdev@archiver.kernel.org>; Fri,  3 Sep 2021 13:55:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D049A61056
+	for <linux-fbdev@archiver.kernel.org>; Sat,  4 Sep 2021 02:13:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347375AbhICN4p (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 3 Sep 2021 09:56:45 -0400
-Received: from mail.kernel.org ([198.145.29.99]:57352 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S235766AbhICN4p (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 3 Sep 2021 09:56:45 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id BFA2460E77;
-        Fri,  3 Sep 2021 13:55:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1630677345;
-        bh=TIbAWhTZGeVzB0CS+6tdg41yfnyaP30d8USQVO4qjVg=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=wMZ2jbXBjk8UtWa32Me7qCGlPU2DPxDL+hN8pL+IOeAfrGSJvARtZ3NLQtfgAFufG
-         ksoyincXUqW4wAkUe6P3tECH2ckwHS3WdzcB9K9vJPApOKB1HDMGFFtlSBEFWxBNbe
-         8G15ASSQuqxJuC6B7zEIzGhabX/8ClUrnSewou6I=
-Date:   Fri, 3 Sep 2021 15:55:42 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Dongliang Mu <mudongliangabcd@gmail.com>
+        id S236244AbhIDCOL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 3 Sep 2021 22:14:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57862 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236120AbhIDCOL (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 3 Sep 2021 22:14:11 -0400
+Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A65AAC061757;
+        Fri,  3 Sep 2021 19:13:10 -0700 (PDT)
+Received: by mail-ej1-x62d.google.com with SMTP id me10so1554590ejb.11;
+        Fri, 03 Sep 2021 19:13:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=/Yxd3tLdwA6axcDY2mcJ1N4bmyKI/tSiwpamDgl6Gsc=;
+        b=EBm3Mrc/KHMZzBUaktxLe3RwEFcfcqbQXJoOhiNiRA0R5Ftc5cBYA20B5uGudCdyOE
+         MMllLDqbdQ1KoH68wR2TNLupwk6jw+2sENeTJilRhQlRgIWKGJMb1ofj6nPnvWrAzypV
+         htVAAR9Lb2aCod2V/wac4AUCwrh6ZiP2ehumiiaiMLl58zIOgFLhgKWyiXv7GEXiK4Gi
+         H1qa/pywLXm6hPa6DL8M3agUYaEyEnlEwvpIua6QaxuKBd2K8uq9vuHTx1Io0FYoDcS2
+         SsRRQF043fbg5oj8BaC4i15UPLni8mq8a5A2zg6rKChe0aJ/X5Y5Gui+/VYl7nE23Oin
+         Wi/g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=/Yxd3tLdwA6axcDY2mcJ1N4bmyKI/tSiwpamDgl6Gsc=;
+        b=F90ovZrqWIIOJng5Uea7YyOiVHoTi2rRpp5LqLZxplnQUi6X4aRR2wa33HjxJDaJFf
+         O/q9eFTCgMvzct9B8CEjul93U/TNlQPrc7P20lFASdPVOaY5tWHZZFB39geObhoL0QWN
+         HJZSgnOZlA6bOhEA6Db1Zc9QqVDuNObiIiYBHR5FI5WiBVQTmycpYyZdgJBwdT6HM5nK
+         4/10W/cTcANRD6Edg9Dw0AkAyg0vTSvb2l+JTtVRzrRc1/2KJRzVy7t+/BSuv/9YFgcY
+         t6Iu/ZUAlUdaLuVdqtvLYjku3youuPreY/3cDqSNwqFZaiiUbwLX2tlYMAoo84TFNIj7
+         xDQQ==
+X-Gm-Message-State: AOAM533//i4c5XpQAaqB3KOHt5bYIAlsrw3w1fplYg9R/6+OieAkjNUv
+        GTPYxJEpx1eZ45dNWJFFnrJ//wQNz36yOfa2Hmo=
+X-Google-Smtp-Source: ABdhPJz0X1b/YbEKKNLhcxMoCb87/9e/3f184cZJ+kqFRfrYc6dzaThaCuwn/x3Ad+qCblXYaajtCxLMzXHzs0wYopg=
+X-Received: by 2002:a17:906:ce24:: with SMTP id sd4mr1981555ejb.329.1630721589217;
+ Fri, 03 Sep 2021 19:13:09 -0700 (PDT)
+MIME-Version: 1.0
+References: <20210902061048.1703559-1-mudongliangabcd@gmail.com> <YTIpXrJmJTasAGJU@kroah.com>
+In-Reply-To: <YTIpXrJmJTasAGJU@kroah.com>
+From:   Dongliang Mu <mudongliangabcd@gmail.com>
+Date:   Sat, 4 Sep 2021 10:12:43 +0800
+Message-ID: <CAD-N9QU4KBs=XwjPpqSM1T3i9r0Fsd+s64O6gbD0Cf5KFFf-ZQ@mail.gmail.com>
+Subject: Re: [PATCH 4.19] fbmem: add margin check to fb_check_caps()
+To:     Greg KH <gregkh@linuxfoundation.org>
 Cc:     stable@vger.kernel.org,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
         George Kennedy <george.kennedy@oracle.com>,
@@ -38,38 +66,38 @@ Cc:     stable@vger.kernel.org,
         Dan Carpenter <dan.carpenter@oracle.com>,
         Dhaval Giani <dhaval.giani@oracle.com>,
         Sasha Levin <sashal@kernel.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4.19] fbmem: add margin check to fb_check_caps()
-Message-ID: <YTIpXrJmJTasAGJU@kroah.com>
-References: <20210902061048.1703559-1-mudongliangabcd@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210902061048.1703559-1-mudongliangabcd@gmail.com>
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Sep 02, 2021 at 02:10:48PM +0800, Dongliang Mu wrote:
-> [ Upstream commit a49145acfb975d921464b84fe00279f99827d816 ]
-> 
-> A fb_ioctl() FBIOPUT_VSCREENINFO call with invalid xres setting
-> or yres setting in struct fb_var_screeninfo will result in a
-> KASAN: vmalloc-out-of-bounds failure in bitfill_aligned() as
-> the margins are being cleared. The margins are cleared in
-> chunks and if the xres setting or yres setting is a value of
-> zero upto the chunk size, the failure will occur.
-> 
-> Add a margin check to validate xres and yres settings.
-> 
-> Note that, this patch needs special handling to backport it to linux
-> kernel 4.19, 4.14, 4.9, 4.4.
+On Fri, Sep 3, 2021 at 9:55 PM Greg KH <gregkh@linuxfoundation.org> wrote:
+>
+> On Thu, Sep 02, 2021 at 02:10:48PM +0800, Dongliang Mu wrote:
+> > [ Upstream commit a49145acfb975d921464b84fe00279f99827d816 ]
+> >
+> > A fb_ioctl() FBIOPUT_VSCREENINFO call with invalid xres setting
+> > or yres setting in struct fb_var_screeninfo will result in a
+> > KASAN: vmalloc-out-of-bounds failure in bitfill_aligned() as
+> > the margins are being cleared. The margins are cleared in
+> > chunks and if the xres setting or yres setting is a value of
+> > zero upto the chunk size, the failure will occur.
+> >
+> > Add a margin check to validate xres and yres settings.
+> >
+> > Note that, this patch needs special handling to backport it to linux
+> > kernel 4.19, 4.14, 4.9, 4.4.
+>
+> Looks like this is already in the 4.4.283, 4.9.282, 4.14.246, and
+> 4.19.206 kernel releases.  Can you check them to verify that it matches
+> your backport as well?
 
-Looks like this is already in the 4.4.283, 4.9.282, 4.14.246, and
-4.19.206 kernel releases.  Can you check them to verify that it matches
-your backport as well?
+Yes, I have seen them in these releases and they are fine to me.
 
-thanks,
-
-greg k-h
+>
+> thanks,
+>
+> greg k-h

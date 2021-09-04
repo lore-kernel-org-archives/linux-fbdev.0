@@ -2,102 +2,94 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02F98C433F5
-	for <linux-fbdev@archiver.kernel.org>; Sat,  4 Sep 2021 02:13:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D71E2C433EF
+	for <linux-fbdev@archiver.kernel.org>; Sat,  4 Sep 2021 06:31:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D049A61056
-	for <linux-fbdev@archiver.kernel.org>; Sat,  4 Sep 2021 02:13:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A5E5560FD7
+	for <linux-fbdev@archiver.kernel.org>; Sat,  4 Sep 2021 06:31:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236244AbhIDCOL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 3 Sep 2021 22:14:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57862 "EHLO
+        id S234676AbhIDGcm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 4 Sep 2021 02:32:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57376 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236120AbhIDCOL (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 3 Sep 2021 22:14:11 -0400
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A65AAC061757;
-        Fri,  3 Sep 2021 19:13:10 -0700 (PDT)
-Received: by mail-ej1-x62d.google.com with SMTP id me10so1554590ejb.11;
-        Fri, 03 Sep 2021 19:13:10 -0700 (PDT)
+        with ESMTP id S229994AbhIDGcl (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 4 Sep 2021 02:32:41 -0400
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78157C061575;
+        Fri,  3 Sep 2021 23:31:40 -0700 (PDT)
+Received: by mail-pj1-x102b.google.com with SMTP id j1so945990pjv.3;
+        Fri, 03 Sep 2021 23:31:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=/Yxd3tLdwA6axcDY2mcJ1N4bmyKI/tSiwpamDgl6Gsc=;
-        b=EBm3Mrc/KHMZzBUaktxLe3RwEFcfcqbQXJoOhiNiRA0R5Ftc5cBYA20B5uGudCdyOE
-         MMllLDqbdQ1KoH68wR2TNLupwk6jw+2sENeTJilRhQlRgIWKGJMb1ofj6nPnvWrAzypV
-         htVAAR9Lb2aCod2V/wac4AUCwrh6ZiP2ehumiiaiMLl58zIOgFLhgKWyiXv7GEXiK4Gi
-         H1qa/pywLXm6hPa6DL8M3agUYaEyEnlEwvpIua6QaxuKBd2K8uq9vuHTx1Io0FYoDcS2
-         SsRRQF043fbg5oj8BaC4i15UPLni8mq8a5A2zg6rKChe0aJ/X5Y5Gui+/VYl7nE23Oin
-         Wi/g==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=1uz0oGH2peoXwoViq7ISy7dnv7QydlkNRkRbvHanRv4=;
+        b=RAzfx9ZbzUl7+CFMq0YA99u/jBVlx0xAFoDQ2uq9SPGKcXCE2+Q2vR2gWB6JAYMuqQ
+         MTGDDdoK8qKWA+vqpmJOEaw0lNPiQseAra9NdeULs/2vhQgOrSLeDLLrFmTBMzz1LghF
+         /GD7qLHU/q4KrGboP47vLzgj0cNRHLW2SBxtpzpNAF+OmKtbD8J/yJUNtVpfg/yq2Jqm
+         hE3lYVv3Po8vCIE2DYjbwKTk7sq47wqMRnSeSGII+7Vw31r8VB+D5tE1CwSfWatQnmmw
+         /9Ddaz35OJUq3A581q5LUQqFK9uy+vLNA9W0l59W+KTB6FhEd2q+7pZmIVLy/o0LFkHA
+         m+Gw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=/Yxd3tLdwA6axcDY2mcJ1N4bmyKI/tSiwpamDgl6Gsc=;
-        b=F90ovZrqWIIOJng5Uea7YyOiVHoTi2rRpp5LqLZxplnQUi6X4aRR2wa33HjxJDaJFf
-         O/q9eFTCgMvzct9B8CEjul93U/TNlQPrc7P20lFASdPVOaY5tWHZZFB39geObhoL0QWN
-         HJZSgnOZlA6bOhEA6Db1Zc9QqVDuNObiIiYBHR5FI5WiBVQTmycpYyZdgJBwdT6HM5nK
-         4/10W/cTcANRD6Edg9Dw0AkAyg0vTSvb2l+JTtVRzrRc1/2KJRzVy7t+/BSuv/9YFgcY
-         t6Iu/ZUAlUdaLuVdqtvLYjku3youuPreY/3cDqSNwqFZaiiUbwLX2tlYMAoo84TFNIj7
-         xDQQ==
-X-Gm-Message-State: AOAM533//i4c5XpQAaqB3KOHt5bYIAlsrw3w1fplYg9R/6+OieAkjNUv
-        GTPYxJEpx1eZ45dNWJFFnrJ//wQNz36yOfa2Hmo=
-X-Google-Smtp-Source: ABdhPJz0X1b/YbEKKNLhcxMoCb87/9e/3f184cZJ+kqFRfrYc6dzaThaCuwn/x3Ad+qCblXYaajtCxLMzXHzs0wYopg=
-X-Received: by 2002:a17:906:ce24:: with SMTP id sd4mr1981555ejb.329.1630721589217;
- Fri, 03 Sep 2021 19:13:09 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=1uz0oGH2peoXwoViq7ISy7dnv7QydlkNRkRbvHanRv4=;
+        b=EJoRI0C4eI8VsX/vkj6bSe3tfPUFaIBZVlMzLT1bXguMnHLILC0aubakphdCg5VM/p
+         H1V07aIAWfkFpI1VT4C+gcIdVJ2dmFnzYYNGYedY3yzVr+ayptNAm9kq2hXLPQYqE042
+         kyZk5HVgF25g15+Ox/rB8Zc9D0HNzgCeK5LI88KWkVrypfckt51WT7sLV6y/1VrUWADM
+         pKg2Y50BiOXh2wlubRpyLxEPYKIJqYy2P0OkJCo7VJqp3zriKKf2b5kIyzf3ij1/T0UQ
+         XEyB7AoAOdt/oNeQevbtHVL6oz0IgiZHJA4ylsLVd2WOR3dZoLQl4jSZs0NUBo7T0VnZ
+         HesA==
+X-Gm-Message-State: AOAM530BveN/LdArrI7WcABSa5NBgAyM2inL6+8ows/ty3eS+s6BgXaC
+        At1d4HqbaOh4zV8mX6dSf8s=
+X-Google-Smtp-Source: ABdhPJyuZpl9wW4ps+FAaEdQj7Q0fyN344v3p+LFNSy1+2G2NRjD4gsEKPT8X3Keja90XKvEm0DFKA==
+X-Received: by 2002:a17:902:6b49:b0:136:3f21:7a9 with SMTP id g9-20020a1709026b4900b001363f2107a9mr2196578plt.81.1630737099883;
+        Fri, 03 Sep 2021 23:31:39 -0700 (PDT)
+Received: from localhost.localdomain ([2401:4900:1c26:4b2d:32ce:9155:7c42:8667])
+        by smtp.gmail.com with ESMTPSA id p24sm1408256pgm.54.2021.09.03.23.31.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 03 Sep 2021 23:31:39 -0700 (PDT)
+From:   srivathsa <srivathsa729.8@gmail.com>
+To:     gregkh@linuxfoundation.org
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
+        srivathsa <srivathsa729.8@gmail.com>
+Subject: [PATCH] Fix ERROR: trailing statements should be on next line
+Date:   Sat,  4 Sep 2021 12:01:27 +0530
+Message-Id: <20210904063127.11142-1-srivathsa729.8@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-References: <20210902061048.1703559-1-mudongliangabcd@gmail.com> <YTIpXrJmJTasAGJU@kroah.com>
-In-Reply-To: <YTIpXrJmJTasAGJU@kroah.com>
-From:   Dongliang Mu <mudongliangabcd@gmail.com>
-Date:   Sat, 4 Sep 2021 10:12:43 +0800
-Message-ID: <CAD-N9QU4KBs=XwjPpqSM1T3i9r0Fsd+s64O6gbD0Cf5KFFf-ZQ@mail.gmail.com>
-Subject: Re: [PATCH 4.19] fbmem: add margin check to fb_check_caps()
-To:     Greg KH <gregkh@linuxfoundation.org>
-Cc:     stable@vger.kernel.org,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        George Kennedy <george.kennedy@oracle.com>,
-        syzbot+e5fd3e65515b48c02a30@syzkaller.appspotmail.com,
-        Dan Carpenter <dan.carpenter@oracle.com>,
-        Dhaval Giani <dhaval.giani@oracle.com>,
-        Sasha Levin <sashal@kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Sep 3, 2021 at 9:55 PM Greg KH <gregkh@linuxfoundation.org> wrote:
->
-> On Thu, Sep 02, 2021 at 02:10:48PM +0800, Dongliang Mu wrote:
-> > [ Upstream commit a49145acfb975d921464b84fe00279f99827d816 ]
-> >
-> > A fb_ioctl() FBIOPUT_VSCREENINFO call with invalid xres setting
-> > or yres setting in struct fb_var_screeninfo will result in a
-> > KASAN: vmalloc-out-of-bounds failure in bitfill_aligned() as
-> > the margins are being cleared. The margins are cleared in
-> > chunks and if the xres setting or yres setting is a value of
-> > zero upto the chunk size, the failure will occur.
-> >
-> > Add a margin check to validate xres and yres settings.
-> >
-> > Note that, this patch needs special handling to backport it to linux
-> > kernel 4.19, 4.14, 4.9, 4.4.
->
-> Looks like this is already in the 4.4.283, 4.9.282, 4.14.246, and
-> 4.19.206 kernel releases.  Can you check them to verify that it matches
-> your backport as well?
+Signed-off-by: Srivathsa Dara <srivathsa729.8@gmail.com>
+---
+ drivers/staging/fbtft/fbtft-core.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Yes, I have seen them in these releases and they are fine to me.
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index ed992ca605eb..65de1c02e7dc 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -1038,7 +1038,8 @@ int fbtft_init_display(struct fbtft_par *par)
+ 			i++;
+ 
+ 			/* make debug message */
+-			for (j = 0; par->init_sequence[i + 1 + j] >= 0; j++);
++			for (j = 0; par->init_sequence[i + 1 + j] >= 0; j++)
++				;
+ 
+ 			fbtft_par_dbg(DEBUG_INIT_DISPLAY, par,
+ 				      "init: write(0x%02X) %*ph\n",
+-- 
+2.25.1
 
->
-> thanks,
->
-> greg k-h

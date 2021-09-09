@@ -7,38 +7,38 @@ X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CA97C433EF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 964A1C4332F
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 13:11:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 46D84611C5
+	by mail.kernel.org (Postfix) with ESMTP id 7F444611C5
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 13:11:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357226AbhIINMV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Sep 2021 09:12:21 -0400
-Received: from mail.kernel.org ([198.145.29.99]:54050 "EHLO mail.kernel.org"
+        id S1355876AbhIINMX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Sep 2021 09:12:23 -0400
+Received: from mail.kernel.org ([198.145.29.99]:53472 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1357958AbhIINFn (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 9 Sep 2021 09:05:43 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 9251763293;
-        Thu,  9 Sep 2021 12:00:20 +0000 (UTC)
+        id S1358413AbhIINHT (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 9 Sep 2021 09:07:19 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 679A7632B4;
+        Thu,  9 Sep 2021 12:00:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1631188821;
-        bh=zkJXNiOWHCHmQ+k/IaEzh/5tMPvplbf31/yZRRetPMg=;
+        s=k20201202; t=1631188835;
+        bh=UDiClydY6tObt0PZNd1SZt9G8hnhTbLPunilXpDsPXc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Ij8i2g2PIk6TCwzgjUFybPG4SksDWI/nuTnSUSFIjKyt+NYswv8b8sHlmIUsehvXq
-         9To9bLq8Tc5CsXYH3D0xuAbbdVQB1r4iwkoZhsyl2brDOUeJIWSRhfEeDEeC6vH3o6
-         vTVbJB4Knu0rSqu0VQc+xtgv5nZCiMpbDjBT8X504sru2xn79Dxlp1HrfcXI6n/2Rg
-         Ad1kbL0CYji1NT6sIx4JRhwvYErhu+Qc0B4lsgUWpSMvEhICIV+jxtyDNxR5v31XNz
-         bj3VoUXgcsOR9QyEKsJLQmXcSPT8rWxj6l8CGtgYVVIxlJOiY1rvanjc0LK9fLIyGS
-         pdUmahbiNXJsQ==
+        b=b0KCao/z9srIPiEILqMjORyLAlnV6Iy6cDvhqgMTNlQKGe1QZ8k50g+y02M+jWL66
+         scOgHRDyFFAB7W3kiG2F+qd2ArLhVhSLSVoK0sFwh7+CwiHCB6HC4vVblo2KZpgfvB
+         UQMUe0CY+ONUAkZ4ISdlHXtHPIgc9HlFNO+Ogw1eTS1eu6GGfC2Te++KC4EeL0KpwK
+         S4Tg0J3Em6P4L1c6pCqjrEbxcpdzptxYCzpHDEPqZH8i4fuLaxAqk1fHYR9xFJ4mEY
+         koyzY7kmqykldUCjY7q3GYzwmXi5aGHDxBRK3rLb6Lq/fADnUMTvjGEqF6ajbpmN9V
+         yGksNfIxtAc7w==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Zheyu Ma <zheyuma97@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
         Sasha Levin <sashal@kernel.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 04/48] video: fbdev: kyro: fix a DoS bug by restricting user input
-Date:   Thu,  9 Sep 2021 07:59:31 -0400
-Message-Id: <20210909120015.150411-4-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 15/48] video: fbdev: asiliantfb: Error out if 'pixclock' equals zero
+Date:   Thu,  9 Sep 2021 07:59:42 -0400
+Message-Id: <20210909120015.150411-15-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210909120015.150411-1-sashal@kernel.org>
 References: <20210909120015.150411-1-sashal@kernel.org>
@@ -52,51 +52,59 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Zheyu Ma <zheyuma97@gmail.com>
 
-[ Upstream commit 98a65439172dc69cb16834e62e852afc2adb83ed ]
+[ Upstream commit b36b242d4b8ea178f7fd038965e3cac7f30c3f09 ]
 
-The user can pass in any value to the driver through the 'ioctl'
-interface. The driver dost not check, which may cause DoS bugs.
+The userspace program could pass any values to the driver through
+ioctl() interface. If the driver doesn't check the value of 'pixclock',
+it may cause divide error.
+
+Fix this by checking whether 'pixclock' is zero first.
 
 The following log reveals it:
 
-divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-RIP: 0010:SetOverlayViewPort+0x133/0x5f0 drivers/video/fbdev/kyro/STG4000OverlayDevice.c:476
-Call Trace:
- kyro_dev_overlay_viewport_set drivers/video/fbdev/kyro/fbdev.c:378 [inline]
- kyrofb_ioctl+0x2eb/0x330 drivers/video/fbdev/kyro/fbdev.c:603
- do_fb_ioctl+0x1f3/0x700 drivers/video/fbdev/core/fbmem.c:1171
- fb_ioctl+0xeb/0x130 drivers/video/fbdev/core/fbmem.c:1185
- vfs_ioctl fs/ioctl.c:48 [inline]
- __do_sys_ioctl fs/ioctl.c:753 [inline]
- __se_sys_ioctl fs/ioctl.c:739 [inline]
- __x64_sys_ioctl+0x19b/0x220 fs/ioctl.c:739
- do_syscall_64+0x32/0x80 arch/x86/entry/common.c:46
- entry_SYSCALL_64_after_hwframe+0x44/0xae
+[   43.861711] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
+[   43.861737] CPU: 2 PID: 11764 Comm: i740 Not tainted 5.14.0-rc2-00513-gac532c9bbcfb-dirty #224
+[   43.861756] RIP: 0010:asiliantfb_check_var+0x4e/0x730
+[   43.861843] Call Trace:
+[   43.861848]  ? asiliantfb_remove+0x190/0x190
+[   43.861858]  fb_set_var+0x2e4/0xeb0
+[   43.861866]  ? fb_blank+0x1a0/0x1a0
+[   43.861873]  ? lock_acquire+0x1ef/0x530
+[   43.861884]  ? lock_release+0x810/0x810
+[   43.861892]  ? lock_is_held_type+0x100/0x140
+[   43.861903]  ? ___might_sleep+0x1ee/0x2d0
+[   43.861914]  ? __mutex_lock+0x620/0x1190
+[   43.861921]  ? do_fb_ioctl+0x313/0x700
+[   43.861929]  ? mutex_lock_io_nested+0xfa0/0xfa0
+[   43.861936]  ? __this_cpu_preempt_check+0x1d/0x30
+[   43.861944]  ? _raw_spin_unlock_irqrestore+0x46/0x60
+[   43.861952]  ? lockdep_hardirqs_on+0x59/0x100
+[   43.861959]  ? _raw_spin_unlock_irqrestore+0x46/0x60
+[   43.861967]  ? trace_hardirqs_on+0x6a/0x1c0
+[   43.861978]  do_fb_ioctl+0x31e/0x700
 
 Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Link: https://patchwork.freedesktop.org/patch/msgid/1626235762-2590-1-git-send-email-zheyuma97@gmail.com
+Link: https://patchwork.freedesktop.org/patch/msgid/1627293835-17441-2-git-send-email-zheyuma97@gmail.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/kyro/fbdev.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/video/fbdev/asiliantfb.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
-index f77478fb3d14..517057a48dd4 100644
---- a/drivers/video/fbdev/kyro/fbdev.c
-+++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -372,6 +372,11 @@ static int kyro_dev_overlay_viewport_set(u32 x, u32 y, u32 ulWidth, u32 ulHeight
- 		/* probably haven't called CreateOverlay yet */
- 		return -EINVAL;
+diff --git a/drivers/video/fbdev/asiliantfb.c b/drivers/video/fbdev/asiliantfb.c
+index 91eea4583382..ceb579eff1ea 100644
+--- a/drivers/video/fbdev/asiliantfb.c
++++ b/drivers/video/fbdev/asiliantfb.c
+@@ -227,6 +227,9 @@ static int asiliantfb_check_var(struct fb_var_screeninfo *var,
+ {
+ 	unsigned long Ftarget, ratio, remainder;
  
-+	if (ulWidth == 0 || ulWidth == 0xffffffff ||
-+	    ulHeight == 0 || ulHeight == 0xffffffff ||
-+	    (x < 2 && ulWidth + 2 == 0))
++	if (!var->pixclock)
 +		return -EINVAL;
 +
- 	/* Stop Ramdac Output */
- 	DisableRamdacOutput(deviceInfo.pSTGReg);
- 
+ 	ratio = 1000000 / var->pixclock;
+ 	remainder = 1000000 % var->pixclock;
+ 	Ftarget = 1000000 * ratio + (1000000 * remainder) / var->pixclock;
 -- 
 2.30.2
 

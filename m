@@ -7,41 +7,41 @@ X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 964A1C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 13:11:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 831AAC433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 13:21:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7F444611C5
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 13:11:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6D58760F92
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 13:21:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355876AbhIINMX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Sep 2021 09:12:23 -0400
-Received: from mail.kernel.org ([198.145.29.99]:53472 "EHLO mail.kernel.org"
+        id S1354172AbhIINXA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Sep 2021 09:23:00 -0400
+Received: from mail.kernel.org ([198.145.29.99]:35420 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1358413AbhIINHT (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 9 Sep 2021 09:07:19 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 679A7632B4;
-        Thu,  9 Sep 2021 12:00:34 +0000 (UTC)
+        id S1358524AbhIINLR (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 9 Sep 2021 09:11:17 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 7B57C632CC;
+        Thu,  9 Sep 2021 12:01:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1631188835;
-        bh=UDiClydY6tObt0PZNd1SZt9G8hnhTbLPunilXpDsPXc=;
+        s=k20201202; t=1631188892;
+        bh=ovSl2u1v1UUxmr8ZvewG/tT0E+y2m3G4BQGjE2dUXeM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=b0KCao/z9srIPiEILqMjORyLAlnV6Iy6cDvhqgMTNlQKGe1QZ8k50g+y02M+jWL66
-         scOgHRDyFFAB7W3kiG2F+qd2ArLhVhSLSVoK0sFwh7+CwiHCB6HC4vVblo2KZpgfvB
-         UQMUe0CY+ONUAkZ4ISdlHXtHPIgc9HlFNO+Ogw1eTS1eu6GGfC2Te++KC4EeL0KpwK
-         S4Tg0J3Em6P4L1c6pCqjrEbxcpdzptxYCzpHDEPqZH8i4fuLaxAqk1fHYR9xFJ4mEY
-         koyzY7kmqykldUCjY7q3GYzwmXi5aGHDxBRK3rLb6Lq/fADnUMTvjGEqF6ajbpmN9V
-         yGksNfIxtAc7w==
+        b=K4Rz2PY3V6FUy+OLC/imHJbIBbsAiIuibZp15aH001VhH/ESDFtwWkmiGO76R/k/3
+         L5J9uZhwHOE0tic/RX8JuvXeQMCz2vx/15nTkp7AGKLJ7gKzTceP0wmoF3JwSZWTCO
+         jYXIy/Z9wF/AU5Pn4/s8vzI02ETFvLSqXUMGZ9Zg1KwgaqAlypocPVxMJgostKvmI8
+         hCf6wryE+L14EnXJWfedtnDgBbia3cTFj8a+TJEJygUQ/DjB80j4PRIbYXJ5/1VN4O
+         /jnfem979uod08tB9lcf6tAihn8pUjbZzzdRYo9do3s+FE9Q07vRacNkIw9FfQcMUv
+         +Mm/7SMgRv07g==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Zheyu Ma <zheyuma97@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
         Sasha Levin <sashal@kernel.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 15/48] video: fbdev: asiliantfb: Error out if 'pixclock' equals zero
-Date:   Thu,  9 Sep 2021 07:59:42 -0400
-Message-Id: <20210909120015.150411-15-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 12/35] video: fbdev: asiliantfb: Error out if 'pixclock' equals zero
+Date:   Thu,  9 Sep 2021 08:00:53 -0400
+Message-Id: <20210909120116.150912-12-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20210909120015.150411-1-sashal@kernel.org>
-References: <20210909120015.150411-1-sashal@kernel.org>
+In-Reply-To: <20210909120116.150912-1-sashal@kernel.org>
+References: <20210909120116.150912-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -92,7 +92,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+)
 
 diff --git a/drivers/video/fbdev/asiliantfb.c b/drivers/video/fbdev/asiliantfb.c
-index 91eea4583382..ceb579eff1ea 100644
+index 7e8ddf00ccc2..dbcc6ebaf904 100644
 --- a/drivers/video/fbdev/asiliantfb.c
 +++ b/drivers/video/fbdev/asiliantfb.c
 @@ -227,6 +227,9 @@ static int asiliantfb_check_var(struct fb_var_screeninfo *var,

@@ -7,38 +7,38 @@ X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EC9BC28B54
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73A50C28B58
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 12:49:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3FE066134F
+	by mail.kernel.org (Postfix) with ESMTP id 6200D6136F
 	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 12:49:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351056AbhIIMus (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Sep 2021 08:50:48 -0400
-Received: from mail.kernel.org ([198.145.29.99]:55848 "EHLO mail.kernel.org"
+        id S245671AbhIIMu4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Sep 2021 08:50:56 -0400
+Received: from mail.kernel.org ([198.145.29.99]:57492 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1351967AbhIIMnD (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 9 Sep 2021 08:43:03 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id A920261BFB;
-        Thu,  9 Sep 2021 11:55:20 +0000 (UTC)
+        id S1353047AbhIIMno (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 9 Sep 2021 08:43:44 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id A6991613A0;
+        Thu,  9 Sep 2021 11:55:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1631188521;
-        bh=9sqIlj1TMlzStrSfKyBBB4xXAtrh/JOARt+Z0euvc/E=;
+        s=k20201202; t=1631188544;
+        bh=d7EUfqwWWpV7h3TBHRCTu2b8IRuzuCKWsO/Z6kfeEZ0=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=T0RGhQjc6KkQGrTKCDehDjxgheyDg+w7Ma4HmKVNgHuMJoGq3o3giHmzB9XLRphCN
-         I/N6ICPBU/m0NUgrNbSykVNp5qIizBqoujnVgE7Y0RiOLwP+WcyBlvRNNBpvoJw4gK
-         TdfFm6Xb/TnKoMPNEonha1gLlwWpwguTb83nzSO0JmnL9a6vA4fy2jAGTTBsjrs7t7
-         rYS8zXJCqc9Fe7Dgm0aCcuZid7vwebVr3XRo+SUFZJ+q4h2QvxbYYZblOGVCrn8h9w
-         FHCx52dmXbrpGS7//bR4UjcnIEM1j9ZiQKWKhKfTZdmAZ0NVem6G+ZnyINZ7hiAFcS
-         czajDlMBShXBg==
+        b=Ph6HzA22fLhJGh7v3dQ9uWDJuO9ezWKkWQCSaKLNjAxm0yq8SGu6lUSUliV1lXBQj
+         7lmmRKmkH9qK+yTvZY4vvdOINFcKGZzEiDSCxChYNTARZS8P+WkongQAl85EzNIvjH
+         mqG8E+UMWcJTcbyEmsls2Hp3p0pD6d/wOZGtkStgnE/IJQTPY3onjdPE4bz0nleB0P
+         IrxzXS6cGFOnHjxCjsvqAHLNopbhGpA6zcNrfkNvnBFzfXvywf9/IjJilSYvDXisE7
+         /1RSvuwuc2femDGyN+Ck6wtOlKQRGsBwkCtxiEUNl5g8vsqyfM2mOeobGkXoFI+/bI
+         utuNGCvFLNfyA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Zheyu Ma <zheyuma97@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
         Sasha Levin <sashal@kernel.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 011/109] video: fbdev: kyro: fix a DoS bug by restricting user input
-Date:   Thu,  9 Sep 2021 07:53:28 -0400
-Message-Id: <20210909115507.147917-11-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 029/109] video: fbdev: kyro: Error out if 'pixclock' equals zero
+Date:   Thu,  9 Sep 2021 07:53:46 -0400
+Message-Id: <20210909115507.147917-29-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210909115507.147917-1-sashal@kernel.org>
 References: <20210909115507.147917-1-sashal@kernel.org>
@@ -52,51 +52,67 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Zheyu Ma <zheyuma97@gmail.com>
 
-[ Upstream commit 98a65439172dc69cb16834e62e852afc2adb83ed ]
+[ Upstream commit 1520b4b7ba964f8eec2e7dd14c571d50de3e5191 ]
 
-The user can pass in any value to the driver through the 'ioctl'
-interface. The driver dost not check, which may cause DoS bugs.
+The userspace program could pass any values to the driver through
+ioctl() interface. if the driver doesn't check the value of 'pixclock',
+it may cause divide error because the value of 'lineclock' and
+'frameclock' will be zero.
+
+Fix this by checking whether 'pixclock' is zero in kyrofb_check_var().
 
 The following log reveals it:
 
-divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-RIP: 0010:SetOverlayViewPort+0x133/0x5f0 drivers/video/fbdev/kyro/STG4000OverlayDevice.c:476
-Call Trace:
- kyro_dev_overlay_viewport_set drivers/video/fbdev/kyro/fbdev.c:378 [inline]
- kyrofb_ioctl+0x2eb/0x330 drivers/video/fbdev/kyro/fbdev.c:603
- do_fb_ioctl+0x1f3/0x700 drivers/video/fbdev/core/fbmem.c:1171
- fb_ioctl+0xeb/0x130 drivers/video/fbdev/core/fbmem.c:1185
- vfs_ioctl fs/ioctl.c:48 [inline]
- __do_sys_ioctl fs/ioctl.c:753 [inline]
- __se_sys_ioctl fs/ioctl.c:739 [inline]
- __x64_sys_ioctl+0x19b/0x220 fs/ioctl.c:739
- do_syscall_64+0x32/0x80 arch/x86/entry/common.c:46
- entry_SYSCALL_64_after_hwframe+0x44/0xae
+[  103.073930] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
+[  103.073942] CPU: 4 PID: 12483 Comm: syz-executor Not tainted 5.14.0-rc2-00478-g2734d6c1b1a0-dirty #118
+[  103.073959] RIP: 0010:kyrofb_set_par+0x316/0xc80
+[  103.074045] Call Trace:
+[  103.074048]  ? ___might_sleep+0x1ee/0x2d0
+[  103.074060]  ? kyrofb_ioctl+0x330/0x330
+[  103.074069]  fb_set_var+0x5bf/0xeb0
+[  103.074078]  ? fb_blank+0x1a0/0x1a0
+[  103.074085]  ? lock_acquire+0x3bd/0x530
+[  103.074094]  ? lock_release+0x810/0x810
+[  103.074103]  ? ___might_sleep+0x1ee/0x2d0
+[  103.074114]  ? __mutex_lock+0x620/0x1190
+[  103.074126]  ? trace_hardirqs_on+0x6a/0x1c0
+[  103.074137]  do_fb_ioctl+0x31e/0x700
+[  103.074144]  ? fb_getput_cmap+0x280/0x280
+[  103.074152]  ? rcu_read_lock_sched_held+0x11/0x80
+[  103.074162]  ? rcu_read_lock_sched_held+0x11/0x80
+[  103.074171]  ? __sanitizer_cov_trace_switch+0x67/0xf0
+[  103.074181]  ? __sanitizer_cov_trace_const_cmp2+0x20/0x80
+[  103.074191]  ? do_vfs_ioctl+0x14b/0x16c0
+[  103.074199]  ? vfs_fileattr_set+0xb60/0xb60
+[  103.074207]  ? rcu_read_lock_sched_held+0x11/0x80
+[  103.074216]  ? lock_release+0x483/0x810
+[  103.074224]  ? __fget_files+0x217/0x3d0
+[  103.074234]  ? __fget_files+0x239/0x3d0
+[  103.074243]  ? do_fb_ioctl+0x700/0x700
+[  103.074250]  fb_ioctl+0xe6/0x130
 
 Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Link: https://patchwork.freedesktop.org/patch/msgid/1626235762-2590-1-git-send-email-zheyuma97@gmail.com
+Link: https://patchwork.freedesktop.org/patch/msgid/1627293835-17441-3-git-send-email-zheyuma97@gmail.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/kyro/fbdev.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/video/fbdev/kyro/fbdev.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
-index a7bd9f25911b..d7aa431e6846 100644
+index d7aa431e6846..74bf26b527b9 100644
 --- a/drivers/video/fbdev/kyro/fbdev.c
 +++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -372,6 +372,11 @@ static int kyro_dev_overlay_viewport_set(u32 x, u32 y, u32 ulWidth, u32 ulHeight
- 		/* probably haven't called CreateOverlay yet */
- 		return -EINVAL;
+@@ -399,6 +399,9 @@ static int kyrofb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	struct kyrofb_info *par = info->par;
  
-+	if (ulWidth == 0 || ulWidth == 0xffffffff ||
-+	    ulHeight == 0 || ulHeight == 0xffffffff ||
-+	    (x < 2 && ulWidth + 2 == 0))
++	if (!var->pixclock)
 +		return -EINVAL;
 +
- 	/* Stop Ramdac Output */
- 	DisableRamdacOutput(deviceInfo.pSTGReg);
- 
+ 	if (var->bits_per_pixel != 16 && var->bits_per_pixel != 32) {
+ 		printk(KERN_WARNING "kyrofb: depth not supported: %u\n", var->bits_per_pixel);
+ 		return -EINVAL;
 -- 
 2.30.2
 

@@ -7,38 +7,38 @@ X-Spam-Status: No, score=-19.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 820AFC28B59
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 12:49:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4715C433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 12:50:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 79B8C6124C
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 12:49:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BD7AB61051
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 12:50:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354048AbhIIMu6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S1354259AbhIIMu6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Thu, 9 Sep 2021 08:50:58 -0400
-Received: from mail.kernel.org ([198.145.29.99]:57486 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.99]:57494 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1353016AbhIIMno (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        id S1353050AbhIIMno (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
         Thu, 9 Sep 2021 08:43:44 -0400
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 6E91E61BD3;
-        Thu,  9 Sep 2021 11:55:42 +0000 (UTC)
+Received: by mail.kernel.org (Postfix) with ESMTPSA id DDD8261C57;
+        Thu,  9 Sep 2021 11:55:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1631188543;
-        bh=PX2xQm/C4MK4PU4j7gsqvgYGjt7b7XdaBqs4CaQJ+Bo=;
+        s=k20201202; t=1631188545;
+        bh=lLd16bR7KFDAcQyJi/kQnKCTrzwAXDW4mmvfvqiwpbg=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=U5L/qtym6hWewlp4oE475OrFl8AIu2k39gx+dCdmkEmScJnsAAS02bmw5Z2c1r08F
-         kFSQCxbUlWS4yJP95uhAnL7D71lE/UEcAONvlHT6xvcMdlP+cKIE9x/ynI0SHzCkHX
-         E+ksd/S2yXN60ElVrJIiO9QIDt1eIJruqsKXoBSNgN9BK82Mv/1qfKHtQojHErbgqg
-         7NwP/rAKYeMvgpN1Zsujo7KFa11Zhxj45YoAjIGzMSyfbBx53gGOp8TAcIBUxE3P1U
-         z2vQm9Yq1DbKG8i5M4hZEdj4AfKv69rlRMoL+EZbuwfhbTrSkxa0Ps4ju/xz9z0HIp
-         HM/r0iyKlz8kA==
+        b=iqGkYZNvuAAMkuVA/baFD6h3r2LhrrIlAeWjA6u6iTQZPFdCDQWYx5OdYWFWOd9vp
+         v6Ovc+ub5t4a0CRXjh2vydgX8pJqDlFYXg37V3ugnsGJ4uu8q4zo3QWh/oTdiasgds
+         Va3K4/cp9zHbXYFKo9lnJhMQ9NKJEAHWT6ySNpFsclXF5rzqVzReL9tO5tCP9U0igb
+         POSZVK05wMeJe5qYLsRyDc1inD45oqxMJftylg6Nh+UNSk7n52EbVsqgIBAgro2o5z
+         3eSr5Lg092lyhficEUrSjIR+DbKvREO80l6mmErNQAr+/D6XO4ZDKBzEguqIgDfj8K
+         XydFEBwrHVuPg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Zheyu Ma <zheyuma97@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-        Sasha Levin <sashal@kernel.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 028/109] video: fbdev: asiliantfb: Error out if 'pixclock' equals zero
-Date:   Thu,  9 Sep 2021 07:53:45 -0400
-Message-Id: <20210909115507.147917-28-sashal@kernel.org>
+        Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [PATCH AUTOSEL 5.4 030/109] video: fbdev: riva: Error out if 'pixclock' equals zero
+Date:   Thu,  9 Sep 2021 07:53:47 -0400
+Message-Id: <20210909115507.147917-30-sashal@kernel.org>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20210909115507.147917-1-sashal@kernel.org>
 References: <20210909115507.147917-1-sashal@kernel.org>
@@ -52,7 +52,7 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Zheyu Ma <zheyuma97@gmail.com>
 
-[ Upstream commit b36b242d4b8ea178f7fd038965e3cac7f30c3f09 ]
+[ Upstream commit f92763cb0feba247e0939ed137b495601fd072a5 ]
 
 The userspace program could pass any values to the driver through
 ioctl() interface. If the driver doesn't check the value of 'pixclock',
@@ -62,49 +62,57 @@ Fix this by checking whether 'pixclock' is zero first.
 
 The following log reveals it:
 
-[   43.861711] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-[   43.861737] CPU: 2 PID: 11764 Comm: i740 Not tainted 5.14.0-rc2-00513-gac532c9bbcfb-dirty #224
-[   43.861756] RIP: 0010:asiliantfb_check_var+0x4e/0x730
-[   43.861843] Call Trace:
-[   43.861848]  ? asiliantfb_remove+0x190/0x190
-[   43.861858]  fb_set_var+0x2e4/0xeb0
-[   43.861866]  ? fb_blank+0x1a0/0x1a0
-[   43.861873]  ? lock_acquire+0x1ef/0x530
-[   43.861884]  ? lock_release+0x810/0x810
-[   43.861892]  ? lock_is_held_type+0x100/0x140
-[   43.861903]  ? ___might_sleep+0x1ee/0x2d0
-[   43.861914]  ? __mutex_lock+0x620/0x1190
-[   43.861921]  ? do_fb_ioctl+0x313/0x700
-[   43.861929]  ? mutex_lock_io_nested+0xfa0/0xfa0
-[   43.861936]  ? __this_cpu_preempt_check+0x1d/0x30
-[   43.861944]  ? _raw_spin_unlock_irqrestore+0x46/0x60
-[   43.861952]  ? lockdep_hardirqs_on+0x59/0x100
-[   43.861959]  ? _raw_spin_unlock_irqrestore+0x46/0x60
-[   43.861967]  ? trace_hardirqs_on+0x6a/0x1c0
-[   43.861978]  do_fb_ioctl+0x31e/0x700
+[   33.396850] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
+[   33.396864] CPU: 5 PID: 11754 Comm: i740 Not tainted 5.14.0-rc2-00513-gac532c9bbcfb-dirty #222
+[   33.396883] RIP: 0010:riva_load_video_mode+0x417/0xf70
+[   33.396969] Call Trace:
+[   33.396973]  ? debug_smp_processor_id+0x1c/0x20
+[   33.396984]  ? tick_nohz_tick_stopped+0x1a/0x90
+[   33.396996]  ? rivafb_copyarea+0x3c0/0x3c0
+[   33.397003]  ? wake_up_klogd.part.0+0x99/0xd0
+[   33.397014]  ? vprintk_emit+0x110/0x4b0
+[   33.397024]  ? vprintk_default+0x26/0x30
+[   33.397033]  ? vprintk+0x9c/0x1f0
+[   33.397041]  ? printk+0xba/0xed
+[   33.397054]  ? record_print_text.cold+0x16/0x16
+[   33.397063]  ? __kasan_check_read+0x11/0x20
+[   33.397074]  ? profile_tick+0xc0/0x100
+[   33.397084]  ? __sanitizer_cov_trace_const_cmp4+0x24/0x80
+[   33.397094]  ? riva_set_rop_solid+0x2a0/0x2a0
+[   33.397102]  rivafb_set_par+0xbe/0x610
+[   33.397111]  ? riva_set_rop_solid+0x2a0/0x2a0
+[   33.397119]  fb_set_var+0x5bf/0xeb0
+[   33.397127]  ? fb_blank+0x1a0/0x1a0
+[   33.397134]  ? lock_acquire+0x1ef/0x530
+[   33.397143]  ? lock_release+0x810/0x810
+[   33.397151]  ? lock_is_held_type+0x100/0x140
+[   33.397159]  ? ___might_sleep+0x1ee/0x2d0
+[   33.397170]  ? __mutex_lock+0x620/0x1190
+[   33.397180]  ? trace_hardirqs_on+0x6a/0x1c0
+[   33.397190]  do_fb_ioctl+0x31e/0x700
 
 Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Link: https://patchwork.freedesktop.org/patch/msgid/1627293835-17441-2-git-send-email-zheyuma97@gmail.com
+Link: https://patchwork.freedesktop.org/patch/msgid/1627293835-17441-4-git-send-email-zheyuma97@gmail.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/asiliantfb.c | 3 +++
+ drivers/video/fbdev/riva/fbdev.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/asiliantfb.c b/drivers/video/fbdev/asiliantfb.c
-index ea31054a28ca..c1d6e6336225 100644
---- a/drivers/video/fbdev/asiliantfb.c
-+++ b/drivers/video/fbdev/asiliantfb.c
-@@ -227,6 +227,9 @@ static int asiliantfb_check_var(struct fb_var_screeninfo *var,
- {
- 	unsigned long Ftarget, ratio, remainder;
- 
+diff --git a/drivers/video/fbdev/riva/fbdev.c b/drivers/video/fbdev/riva/fbdev.c
+index ca593a3e41d7..51c9d9508c0b 100644
+--- a/drivers/video/fbdev/riva/fbdev.c
++++ b/drivers/video/fbdev/riva/fbdev.c
+@@ -1088,6 +1088,9 @@ static int rivafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	int mode_valid = 0;
+ 	
+ 	NVTRACE_ENTER();
 +	if (!var->pixclock)
 +		return -EINVAL;
 +
- 	ratio = 1000000 / var->pixclock;
- 	remainder = 1000000 % var->pixclock;
- 	Ftarget = 1000000 * ratio + (1000000 * remainder) / var->pixclock;
+ 	switch (var->bits_per_pixel) {
+ 	case 1 ... 8:
+ 		var->red.offset = var->green.offset = var->blue.offset = 0;
 -- 
 2.30.2
 

@@ -2,137 +2,81 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA5F2C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Sep 2021 15:17:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FBB8C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Sep 2021 16:58:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CCD95611C5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Sep 2021 15:17:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 694FB610F8
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Sep 2021 16:58:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234252AbhIJPSQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Sep 2021 11:18:16 -0400
-Received: from mail-vs1-f47.google.com ([209.85.217.47]:35451 "EHLO
-        mail-vs1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229749AbhIJPSL (ORCPT
+        id S230474AbhIJQ75 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Sep 2021 12:59:57 -0400
+Received: from smtp-relay-canonical-0.canonical.com ([185.125.188.120]:49050
+        "EHLO smtp-relay-canonical-0.canonical.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S230465AbhIJQ75 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Sep 2021 11:18:11 -0400
-Received: by mail-vs1-f47.google.com with SMTP id p14so1902136vsm.2;
-        Fri, 10 Sep 2021 08:17:00 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=3BcYGTvP/p5y9awC2x3olztEkOI5xebLT4gUcpSRmlY=;
-        b=pqQ+zh0YZrJP4UysuUgUS9lgK3fmzB22dBzqELerFuUHATe/4lNXZmB9ocUo9qDzop
-         7DG1uaJgC2dxXq4H6vPKBReyLCKjceDckzYt2PiJ3Vgn7M+Kx2zfA2FYA469rXWdlufy
-         pIYv6evzhgwQDsSreNnavPy8BIUK2c+C53dOHB+uMrLrRpB2HLu3P1PzunhlUR0nasGo
-         SIu5dce0Dr7mzkYGuJphLwAFXg2Ldp6WaoA21kGRMR3OqXamxlT92ysHRV4OfGx6ieVH
-         TLNLVMqPcapfpk1h+7cmLuQA4HpRduoBPmAJcT/M6WHlbLzjGoaFsO6NeK/G9h4/GgWn
-         CkSg==
-X-Gm-Message-State: AOAM5327560HWZmsEC1l4YL8bjglxe8Rwkd5y0BkQS144uVyFihWRzdQ
-        tHCJISVqXcxkUIa0laiMeS/AAdH7Rgt2yLTfpjkIfjhQ
-X-Google-Smtp-Source: ABdhPJwT5ETyKLWcQ5k7xuhcbA0yvTD3jh/UbJMdE4jvWnM+tTSMk70pO5NvxTo6u5XWka0X6xtHA4gmLbXeWevGZoo=
-X-Received: by 2002:a05:6102:b10:: with SMTP id b16mr5775448vst.41.1631287016565;
- Fri, 10 Sep 2021 08:16:56 -0700 (PDT)
+        Fri, 10 Sep 2021 12:59:57 -0400
+Received: from localhost (1.general.cking.uk.vpn [10.172.193.212])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by smtp-relay-canonical-0.canonical.com (Postfix) with ESMTPSA id 2B6AB3F04C;
+        Fri, 10 Sep 2021 16:58:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
+        s=20210705; t=1631293125;
+        bh=P4J0uP+mvBeCpdSBmGVI2spIor3xRsNEZjAeWnGcryo=;
+        h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type;
+        b=DG0kXV2QncuQ1VkQGiYLOTf9w1Tq0m32MF9+mIoDus8+TlQsxzFSx60hPb0Z3FuBS
+         QXY0iK7RHnjsUf1xSKjirRw7M7F5LsycIOLQFNMFI5bCgV/VSmRxZUFhO+G/mXcd2I
+         peMd159lomSA/M121gSRQcD8nGudZEOJCnhazk++veFYTGmg71/l9KPSBZAMndj5Lw
+         /IEslUJGu7bV03tcEnqV3W+xZB2rmrX9DmTGcZENeo50SufQVD4w0IPS4sXnKKpYMH
+         EumnL09/TEMUbMY24PRfpm6zMctAQRS8uyXQEuDpwXnRpT0AGP1BVaA3HZdGRZCg3j
+         aO0YVOmw1aafg==
+From:   Colin King <colin.king@canonical.com>
+To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] video: fbdev: atyfb: Remove assigned but never used variable statements
+Date:   Fri, 10 Sep 2021 17:58:44 +0100
+Message-Id: <20210910165844.98940-1-colin.king@canonical.com>
+X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
-References: <1627293835-17441-1-git-send-email-zheyuma97@gmail.com> <1627293835-17441-2-git-send-email-zheyuma97@gmail.com>
-In-Reply-To: <1627293835-17441-2-git-send-email-zheyuma97@gmail.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Fri, 10 Sep 2021 17:16:44 +0200
-Message-ID: <CAMuHMdXB_HHgi1iPSnjusQvgdUYJDBwQc=+f+5vpmEjXBKArng@mail.gmail.com>
-Subject: Re: [PATCH v2 1/3] video: fbdev: asiliantfb: Error out if 'pixclock'
- equals zero
-To:     Zheyu Ma <zheyuma97@gmail.com>
-Cc:     "Antonino A. Daplas" <adaplas@gmail.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        stable <stable@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Zheyu,
+From: Colin Ian King <colin.king@canonical.com>
 
-On Mon, Jul 26, 2021 at 12:04 PM Zheyu Ma <zheyuma97@gmail.com> wrote:
-> The userspace program could pass any values to the driver through
-> ioctl() interface. If the driver doesn't check the value of 'pixclock',
-> it may cause divide error.
->
-> Fix this by checking whether 'pixclock' is zero first.
->
-> The following log reveals it:
->
-> [   43.861711] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-> [   43.861737] CPU: 2 PID: 11764 Comm: i740 Not tainted 5.14.0-rc2-00513-gac532c9bbcfb-dirty #224
-> [   43.861756] RIP: 0010:asiliantfb_check_var+0x4e/0x730
-> [   43.861843] Call Trace:
-> [   43.861848]  ? asiliantfb_remove+0x190/0x190
-> [   43.861858]  fb_set_var+0x2e4/0xeb0
-> [   43.861866]  ? fb_blank+0x1a0/0x1a0
-> [   43.861873]  ? lock_acquire+0x1ef/0x530
-> [   43.861884]  ? lock_release+0x810/0x810
-> [   43.861892]  ? lock_is_held_type+0x100/0x140
-> [   43.861903]  ? ___might_sleep+0x1ee/0x2d0
-> [   43.861914]  ? __mutex_lock+0x620/0x1190
-> [   43.861921]  ? do_fb_ioctl+0x313/0x700
-> [   43.861929]  ? mutex_lock_io_nested+0xfa0/0xfa0
-> [   43.861936]  ? __this_cpu_preempt_check+0x1d/0x30
-> [   43.861944]  ? _raw_spin_unlock_irqrestore+0x46/0x60
-> [   43.861952]  ? lockdep_hardirqs_on+0x59/0x100
-> [   43.861959]  ? _raw_spin_unlock_irqrestore+0x46/0x60
-> [   43.861967]  ? trace_hardirqs_on+0x6a/0x1c0
-> [   43.861978]  do_fb_ioctl+0x31e/0x700
->
-> Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
+There are a couple of statements where local variables are being assigned
+values that are never read because the function returns immediately after
+the assignment. Clean up the code by removing them.
 
-Thanks for your patch!
+Addresses-Coverity: ("Unused value")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/video/fbdev/aty/mach64_gx.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-> ---
-> Changes in v2:
->     - Make commit log more descriptive
-> ---
->  drivers/video/fbdev/asiliantfb.c | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/drivers/video/fbdev/asiliantfb.c b/drivers/video/fbdev/asiliantfb.c
-> index 3e006da47752..84c56f525889 100644
-> --- a/drivers/video/fbdev/asiliantfb.c
-> +++ b/drivers/video/fbdev/asiliantfb.c
-> @@ -227,6 +227,9 @@ static int asiliantfb_check_var(struct fb_var_screeninfo *var,
->  {
->         unsigned long Ftarget, ratio, remainder;
->
-> +       if (!var->pixclock)
-> +               return -EINVAL;
+diff --git a/drivers/video/fbdev/aty/mach64_gx.c b/drivers/video/fbdev/aty/mach64_gx.c
+index 9c37e28fb78b..d06d24830080 100644
+--- a/drivers/video/fbdev/aty/mach64_gx.c
++++ b/drivers/video/fbdev/aty/mach64_gx.c
+@@ -352,10 +352,8 @@ static int aty_var_to_pll_18818(const struct fb_info *info, u32 vclk_per,
+ 	post_divider = 1;
+ 
+ 	if (MHz100 > MAX_FREQ_2595) {
+-		MHz100 = MAX_FREQ_2595;
+ 		return -EINVAL;
+ 	} else if (MHz100 < ABS_MIN_FREQ_2595) {
+-		program_bits = 0;	/* MHz100 = 257 */
+ 		return -EINVAL;
+ 	} else {
+ 		while (MHz100 < MIN_FREQ_2595) {
+-- 
+2.32.0
 
-While this fixes the crash, it is not correct: according to the
-fbdev API, invalid values must be rounded up to a supported value,
-if possible.  -EINVAL should only be returned if rounding up values
-in fb_var_screeninfo cannot give a valid mode.
-
-The same comment applies to the other patches in this series:
-[PATCH v2 2/3] video: fbdev: kyro: Error out if 'pixclock' equals zero
-[PATCH v2 3/3] video: fbdev: riva: Error out if 'pixclock' equals zero
-
-> +
->         ratio = 1000000 / var->pixclock;
->         remainder = 1000000 % var->pixclock;
->         Ftarget = 1000000 * ratio + (1000000 * remainder) / var->pixclock;
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

@@ -2,94 +2,137 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28325C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 16:27:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA5F2C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Sep 2021 15:17:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 077386113E
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Sep 2021 16:27:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CCD95611C5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Sep 2021 15:17:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237039AbhIIQ2S (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Sep 2021 12:28:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43454 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229816AbhIIQ2S (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Sep 2021 12:28:18 -0400
-Received: from smtp.domeneshop.no (smtp.domeneshop.no [IPv6:2a01:5b40:0:3005::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B71EC061574;
-        Thu,  9 Sep 2021 09:27:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=tronnes.org
-        ; s=ds202012; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:
-        MIME-Version:Date:Message-ID:From:Subject:References:Cc:To:Sender:Reply-To:
-        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-        List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=8fM6t+CZ3TSxl0jBQrfAnRu3bSUr2tc6gGURbxgCLUE=; b=bBMePvtXPp4cKRU4T+oMuLswT2
-        dt1suHpjoK6DJwdogL2e0UPXWwhm27R1p3yJQcnovDCNgpw8xIhlsDv+GZozryPolrukMuKgpt+eB
-        nvElMCPOqCPCt4nCzA+9k60oM9h6czLRJ1kMaM8A6nXFiCqt9IgtTwS6n2dmhY8K7q8r3L2sdFrRf
-        OlcP5FW5vXrKjJFD9fjnRKbebaZgmDIyWotaxBFDqBLXJrJIGZBZH30bAxCYD1GVzbUcTEzCnyDh8
-        a9WElTR2qa8BGnfjA07wpjgdrgiXOtQR7/Yyjqz3zgu7V6PYfRwhtOpQDvye4B5oCdpRds17Fevvc
-        LKna/I2A==;
-Received: from 211.81-166-168.customer.lyse.net ([81.166.168.211]:49957 helo=[192.168.10.61])
-        by smtp.domeneshop.no with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.92)
-        (envelope-from <noralf@tronnes.org>)
-        id 1mOMtG-0002FB-Ip; Thu, 09 Sep 2021 18:27:06 +0200
-To:     noralf@tronnes.org
-Cc:     airlied@linux.ie, bp@alien8.de, dri-devel@lists.freedesktop.org,
-        gregkh@linuxfoundation.org, hdegoede@redhat.com, hpa@zytor.com,
-        javierm@redhat.com, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, maarten.lankhorst@linux.intel.com,
-        mingo@redhat.com, mripard@kernel.org, pbrobinson@gmail.com,
-        sam@ravnborg.org, tglx@linutronix.de, tzimmermann@suse.de,
-        x86@kernel.org
-References: <2527f0ef-dae1-9ad5-84a4-00712c44940d@tronnes.org>
-Subject: Re: [RFC PATCH 0/4] Allow to use DRM fbdev emulation layer with
- CONFIG_FB disabled
-From:   =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
-Message-ID: <ff6a590e-19ee-b2b6-bed5-236962637418@tronnes.org>
-Date:   Thu, 9 Sep 2021 18:27:02 +0200
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+        id S234252AbhIJPSQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 10 Sep 2021 11:18:16 -0400
+Received: from mail-vs1-f47.google.com ([209.85.217.47]:35451 "EHLO
+        mail-vs1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229749AbhIJPSL (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 10 Sep 2021 11:18:11 -0400
+Received: by mail-vs1-f47.google.com with SMTP id p14so1902136vsm.2;
+        Fri, 10 Sep 2021 08:17:00 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=3BcYGTvP/p5y9awC2x3olztEkOI5xebLT4gUcpSRmlY=;
+        b=pqQ+zh0YZrJP4UysuUgUS9lgK3fmzB22dBzqELerFuUHATe/4lNXZmB9ocUo9qDzop
+         7DG1uaJgC2dxXq4H6vPKBReyLCKjceDckzYt2PiJ3Vgn7M+Kx2zfA2FYA469rXWdlufy
+         pIYv6evzhgwQDsSreNnavPy8BIUK2c+C53dOHB+uMrLrRpB2HLu3P1PzunhlUR0nasGo
+         SIu5dce0Dr7mzkYGuJphLwAFXg2Ldp6WaoA21kGRMR3OqXamxlT92ysHRV4OfGx6ieVH
+         TLNLVMqPcapfpk1h+7cmLuQA4HpRduoBPmAJcT/M6WHlbLzjGoaFsO6NeK/G9h4/GgWn
+         CkSg==
+X-Gm-Message-State: AOAM5327560HWZmsEC1l4YL8bjglxe8Rwkd5y0BkQS144uVyFihWRzdQ
+        tHCJISVqXcxkUIa0laiMeS/AAdH7Rgt2yLTfpjkIfjhQ
+X-Google-Smtp-Source: ABdhPJwT5ETyKLWcQ5k7xuhcbA0yvTD3jh/UbJMdE4jvWnM+tTSMk70pO5NvxTo6u5XWka0X6xtHA4gmLbXeWevGZoo=
+X-Received: by 2002:a05:6102:b10:: with SMTP id b16mr5775448vst.41.1631287016565;
+ Fri, 10 Sep 2021 08:16:56 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <2527f0ef-dae1-9ad5-84a4-00712c44940d@tronnes.org>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+References: <1627293835-17441-1-git-send-email-zheyuma97@gmail.com> <1627293835-17441-2-git-send-email-zheyuma97@gmail.com>
+In-Reply-To: <1627293835-17441-2-git-send-email-zheyuma97@gmail.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Fri, 10 Sep 2021 17:16:44 +0200
+Message-ID: <CAMuHMdXB_HHgi1iPSnjusQvgdUYJDBwQc=+f+5vpmEjXBKArng@mail.gmail.com>
+Subject: Re: [PATCH v2 1/3] video: fbdev: asiliantfb: Error out if 'pixclock'
+ equals zero
+To:     Zheyu Ma <zheyuma97@gmail.com>
+Cc:     "Antonino A. Daplas" <adaplas@gmail.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        stable <stable@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Hi Zheyu,
 
-> > Hi Daniel,
-> >
-> > >
-> > > I think for a substantial improvement here in robustness what you
-really
-> > > want is
-> > > - kmscon in userspace
-> > > - disable FB layer
-> > > - ideally also disable console/vt layer in the kernel
-> > > - have a minimal emergency/boot-up log thing in drm, patches for that
-> > >   floated around a few times
-> >
-> > I assume you refer to this work by David Herrmann:
-> > "[RFC] drm: add kernel-log renderer"
-> > https://lists.freedesktop.org/archives/dri-devel/2014-March/055136.html
-> >
+On Mon, Jul 26, 2021 at 12:04 PM Zheyu Ma <zheyuma97@gmail.com> wrote:
+> The userspace program could pass any values to the driver through
+> ioctl() interface. If the driver doesn't check the value of 'pixclock',
+> it may cause divide error.
 >
-> There's also this:
+> Fix this by checking whether 'pixclock' is zero first.
 >
-> [PATCH v2 0/3] drm: Add panic handling
+> The following log reveals it:
 >
-https://lore.kernel.org/dri-devel/20190311174218.51899-1-noralf@tronnes.org/
+> [   43.861711] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
+> [   43.861737] CPU: 2 PID: 11764 Comm: i740 Not tainted 5.14.0-rc2-00513-gac532c9bbcfb-dirty #224
+> [   43.861756] RIP: 0010:asiliantfb_check_var+0x4e/0x730
+> [   43.861843] Call Trace:
+> [   43.861848]  ? asiliantfb_remove+0x190/0x190
+> [   43.861858]  fb_set_var+0x2e4/0xeb0
+> [   43.861866]  ? fb_blank+0x1a0/0x1a0
+> [   43.861873]  ? lock_acquire+0x1ef/0x530
+> [   43.861884]  ? lock_release+0x810/0x810
+> [   43.861892]  ? lock_is_held_type+0x100/0x140
+> [   43.861903]  ? ___might_sleep+0x1ee/0x2d0
+> [   43.861914]  ? __mutex_lock+0x620/0x1190
+> [   43.861921]  ? do_fb_ioctl+0x313/0x700
+> [   43.861929]  ? mutex_lock_io_nested+0xfa0/0xfa0
+> [   43.861936]  ? __this_cpu_preempt_check+0x1d/0x30
+> [   43.861944]  ? _raw_spin_unlock_irqrestore+0x46/0x60
+> [   43.861952]  ? lockdep_hardirqs_on+0x59/0x100
+> [   43.861959]  ? _raw_spin_unlock_irqrestore+0x46/0x60
+> [   43.861967]  ? trace_hardirqs_on+0x6a/0x1c0
+> [   43.861978]  do_fb_ioctl+0x31e/0x700
+>
+> Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
 
-And here's a DRM console example that was part of the early drm_client work:
+Thanks for your patch!
 
-[RFC v4 25/25] drm/client: Hack: Add DRM VT console client
-https://lore.kernel.org/dri-devel/20180414115318.14500-26-noralf@tronnes.org/
+> ---
+> Changes in v2:
+>     - Make commit log more descriptive
+> ---
+>  drivers/video/fbdev/asiliantfb.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/drivers/video/fbdev/asiliantfb.c b/drivers/video/fbdev/asiliantfb.c
+> index 3e006da47752..84c56f525889 100644
+> --- a/drivers/video/fbdev/asiliantfb.c
+> +++ b/drivers/video/fbdev/asiliantfb.c
+> @@ -227,6 +227,9 @@ static int asiliantfb_check_var(struct fb_var_screeninfo *var,
+>  {
+>         unsigned long Ftarget, ratio, remainder;
+>
+> +       if (!var->pixclock)
+> +               return -EINVAL;
 
-Noralf.
+While this fixes the crash, it is not correct: according to the
+fbdev API, invalid values must be rounded up to a supported value,
+if possible.  -EINVAL should only be returned if rounding up values
+in fb_var_screeninfo cannot give a valid mode.
+
+The same comment applies to the other patches in this series:
+[PATCH v2 2/3] video: fbdev: kyro: Error out if 'pixclock' equals zero
+[PATCH v2 3/3] video: fbdev: riva: Error out if 'pixclock' equals zero
+
+> +
+>         ratio = 1000000 / var->pixclock;
+>         remainder = 1000000 % var->pixclock;
+>         Ftarget = 1000000 * ratio + (1000000 * remainder) / var->pixclock;
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

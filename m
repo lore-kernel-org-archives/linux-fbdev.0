@@ -2,81 +2,115 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FBB8C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Sep 2021 16:58:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4D63C433F5
+	for <linux-fbdev@archiver.kernel.org>; Sat, 11 Sep 2021 18:40:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 694FB610F8
-	for <linux-fbdev@archiver.kernel.org>; Fri, 10 Sep 2021 16:58:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9E3AF6101D
+	for <linux-fbdev@archiver.kernel.org>; Sat, 11 Sep 2021 18:40:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230474AbhIJQ75 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 10 Sep 2021 12:59:57 -0400
-Received: from smtp-relay-canonical-0.canonical.com ([185.125.188.120]:49050
-        "EHLO smtp-relay-canonical-0.canonical.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S230465AbhIJQ75 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 10 Sep 2021 12:59:57 -0400
-Received: from localhost (1.general.cking.uk.vpn [10.172.193.212])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        id S233539AbhIKSmK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 11 Sep 2021 14:42:10 -0400
+Received: from phobos.denx.de ([85.214.62.61]:52972 "EHLO phobos.denx.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233408AbhIKSmK (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Sat, 11 Sep 2021 14:42:10 -0400
+Received: from [127.0.0.1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
         (No client certificate requested)
-        by smtp-relay-canonical-0.canonical.com (Postfix) with ESMTPSA id 2B6AB3F04C;
-        Fri, 10 Sep 2021 16:58:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1631293125;
-        bh=P4J0uP+mvBeCpdSBmGVI2spIor3xRsNEZjAeWnGcryo=;
-        h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type;
-        b=DG0kXV2QncuQ1VkQGiYLOTf9w1Tq0m32MF9+mIoDus8+TlQsxzFSx60hPb0Z3FuBS
-         QXY0iK7RHnjsUf1xSKjirRw7M7F5LsycIOLQFNMFI5bCgV/VSmRxZUFhO+G/mXcd2I
-         peMd159lomSA/M121gSRQcD8nGudZEOJCnhazk++veFYTGmg71/l9KPSBZAMndj5Lw
-         /IEslUJGu7bV03tcEnqV3W+xZB2rmrX9DmTGcZENeo50SufQVD4w0IPS4sXnKKpYMH
-         EumnL09/TEMUbMY24PRfpm6zMctAQRS8uyXQEuDpwXnRpT0AGP1BVaA3HZdGRZCg3j
-         aO0YVOmw1aafg==
-From:   Colin King <colin.king@canonical.com>
-To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] video: fbdev: atyfb: Remove assigned but never used variable statements
-Date:   Fri, 10 Sep 2021 17:58:44 +0100
-Message-Id: <20210910165844.98940-1-colin.king@canonical.com>
-X-Mailer: git-send-email 2.32.0
+        (Authenticated sender: marex@denx.de)
+        by phobos.denx.de (Postfix) with ESMTPSA id 6B53A83853;
+        Sat, 11 Sep 2021 20:40:55 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+        s=phobos-20191101; t=1631385656;
+        bh=UECCOBS7xX1FRbQ2hWV9VfO2PrYzdXOlf9p/yOxKoqA=;
+        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+        b=PKUGuT4v30Ga2ZnsM3HuornSwmZR0uD849ENjdhS9oL74SCUD4szxVHRS8l61OY43
+         /SIRrsRx00lPP6h0tJGisQvVRlaExXM8r5ZI6g5zbZlKdVzx+3q5bLLcMc5DftEoeQ
+         zKyEkJbQ7601Fjv46JcwYgQSkPo02PjfwObEYOmzAtMI95nu89YMIdDyky/15lH3uz
+         MYbSY+oa1UIWvzoZZzTqLK6JU8ZRQye9GhCCdjpDAFAbptyFRTFJy03IWqwTV2KEOT
+         w7rSB9ew0C1TiKhk/DPQvu0czOSGgMerYKYzig+5kGGD7uDN9/EDHzh76Z8pF0qUuA
+         79nfaUwVBysdw==
+Subject: Re: [PATCH V2] video: backlight: Drop maximum brightness override for
+ brightness zero
+To:     dri-devel@lists.freedesktop.org
+Cc:     linux-fbdev@vger.kernel.org,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        stable@vger.kernel.org,
+        Meghana Madhyastha <meghana.madhyastha@gmail.com>,
+        Sean Paul <seanpaul@chromium.org>,
+        Thierry Reding <treding@nvidia.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Lee Jones <lee.jones@linaro.org>
+References: <20210713191633.121317-1-marex@denx.de>
+From:   Marek Vasut <marex@denx.de>
+Message-ID: <072e01b7-8554-de4f-046a-da11af3958d6@denx.de>
+Date:   Sat, 11 Sep 2021 20:40:54 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20210713191633.121317-1-marex@denx.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: clamav-milter 0.103.2 at phobos.denx.de
+X-Virus-Status: Clean
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+On 7/13/21 9:16 PM, Marek Vasut wrote:
+> The note in c2adda27d202f ("video: backlight: Add of_find_backlight helper
+> in backlight.c") says that gpio-backlight uses brightness as power state.
+> This has been fixed since in ec665b756e6f7 ("backlight: gpio-backlight:
+> Correct initial power state handling") and other backlight drivers do not
+> require this workaround. Drop the workaround.
+> 
+> This fixes the case where e.g. pwm-backlight can perfectly well be set to
+> brightness 0 on boot in DT, which without this patch leads to the display
+> brightness to be max instead of off.
+> 
+> Fixes: c2adda27d202f ("video: backlight: Add of_find_backlight helper in backlight.c")
+> Acked-by: Noralf Trønnes <noralf@tronnes.org>
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Cc: <stable@vger.kernel.org> # 5.4+
+> Cc: <stable@vger.kernel.org> # 4.19.x: ec665b756e6f7: backlight: gpio-backlight: Correct initial power state handling
+> Signed-off-by: Marek Vasut <marex@denx.de>
+> Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> Cc: Meghana Madhyastha <meghana.madhyastha@gmail.com>
+> Cc: Noralf Trønnes <noralf@tronnes.org>
+> Cc: Sean Paul <seanpaul@chromium.org>
+> Cc: Thierry Reding <treding@nvidia.com>
+> ---
+> V2: Add AB/RB, CC stable
+> ---
+>   drivers/video/backlight/backlight.c | 6 ------
+>   1 file changed, 6 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+> index 537fe1b376ad7..fc990e576340b 100644
+> --- a/drivers/video/backlight/backlight.c
+> +++ b/drivers/video/backlight/backlight.c
+> @@ -688,12 +688,6 @@ static struct backlight_device *of_find_backlight(struct device *dev)
+>   			of_node_put(np);
+>   			if (!bd)
+>   				return ERR_PTR(-EPROBE_DEFER);
+> -			/*
+> -			 * Note: gpio_backlight uses brightness as
+> -			 * power state during probe
+> -			 */
+> -			if (!bd->props.brightness)
+> -				bd->props.brightness = bd->props.max_brightness;
+>   		}
+>   	}
+>   
+> 
 
-There are a couple of statements where local variables are being assigned
-values that are never read because the function returns immediately after
-the assignment. Clean up the code by removing them.
+Any news on this ?
 
-Addresses-Coverity: ("Unused value")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/video/fbdev/aty/mach64_gx.c | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/aty/mach64_gx.c b/drivers/video/fbdev/aty/mach64_gx.c
-index 9c37e28fb78b..d06d24830080 100644
---- a/drivers/video/fbdev/aty/mach64_gx.c
-+++ b/drivers/video/fbdev/aty/mach64_gx.c
-@@ -352,10 +352,8 @@ static int aty_var_to_pll_18818(const struct fb_info *info, u32 vclk_per,
- 	post_divider = 1;
- 
- 	if (MHz100 > MAX_FREQ_2595) {
--		MHz100 = MAX_FREQ_2595;
- 		return -EINVAL;
- 	} else if (MHz100 < ABS_MIN_FREQ_2595) {
--		program_bits = 0;	/* MHz100 = 257 */
- 		return -EINVAL;
- 	} else {
- 		while (MHz100 < MIN_FREQ_2595) {
--- 
-2.32.0
-
+Expanding CC list.

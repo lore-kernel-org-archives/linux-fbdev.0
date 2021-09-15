@@ -2,182 +2,139 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6B55C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Sep 2021 03:07:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 647A7C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 15 Sep 2021 13:34:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 86FBF6108E
-	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Sep 2021 03:07:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 430B960F26
+	for <linux-fbdev@archiver.kernel.org>; Wed, 15 Sep 2021 13:34:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237613AbhIMDI0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 12 Sep 2021 23:08:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59750 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237608AbhIMDIZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 12 Sep 2021 23:08:25 -0400
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B2C4C061574;
-        Sun, 12 Sep 2021 20:07:10 -0700 (PDT)
-Received: by mail-pf1-x429.google.com with SMTP id 18so7462684pfh.9;
-        Sun, 12 Sep 2021 20:07:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:from:date:message-id:subject:to:cc;
-        bh=pVNO0zZ6yed+HlHm5+s+npBLAVUBPnKD4pEfkjJWdiw=;
-        b=Ny6Ka3Bm3j5DTjq/rAe6Th+cYsozUEwE3iTzzrso0m2GLP0vbXzkXYp50V4TZwastM
-         3LtI7sskNxT67nkcKM+dzkJAEoW5YAMpG+1i2ArAKkKRA/n+AXCls0x5AFrDH7L7Y9a/
-         sNS1qZWY5D3pbOTmzCSGPE75jcUGb91kL0yO3JIZgO3HzwaFLS8ujJXfe6F604NCG1mK
-         VJhwMhv2tSlY127ogXb5+X50ouCi8xcFwSogf6+9oOiPNrlGDQ38xhYIMDCy7spr7Ssv
-         1BPVXT9Qwxw1dsSKXsTNBdIoUfVe0ML19Exfkqt3vWS0i1HV5AZB0N/Mob0lZO+ugvwV
-         eMoA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=pVNO0zZ6yed+HlHm5+s+npBLAVUBPnKD4pEfkjJWdiw=;
-        b=dhDBZfRaI4VIb4iV2nR4HcHOjdANh3RbaKuW2dF/nkFDy19R8sFMLHJK4gMtCc7OVk
-         k13BTFWusvp/05zVVCJaKainMuonctr+jPIHgjXy4q6pg5lOG6QqaOIiKc7dqDC6aMXG
-         4+OnkieTJpS2Jub7xNdqznVMuowhO1+MhhizLuy0IAuyJcsrv6rJRIJqaL9vR3zhk9Kb
-         UlQzjBdjSQ5HgzplNk0SQ5GmU+0dV08YfHO2qZ9VDg+H5DqUk7km2F0nY/FINrCy/2fH
-         lAbjgic9OUdib/Xsp/BixdvhRdI49K9e8bwjYjoPyVy3+jh1e3MoOdt1CriaRdOEnt5d
-         k1JQ==
-X-Gm-Message-State: AOAM5326wKWoDqAqIcSdoKj4uYgO1ieOndy93OQLPONTwCgFJ88G1PKZ
-        pWGGAl461cXbDk0JYLyA9NtNdPHzYeu4V7z4L57MMwqvVP8t
-X-Google-Smtp-Source: ABdhPJzSAK904fj9ZTNC/8VRmssxW0y+nn/hj5ajg2rjoreRTmVpOl8fHjWh6o1IRdArFWoSMbtSIipzpbLaq/PfKWk=
-X-Received: by 2002:a05:6a00:2449:b0:43c:4a5e:55a6 with SMTP id
- d9-20020a056a00244900b0043c4a5e55a6mr5247471pfj.43.1631502429412; Sun, 12 Sep
- 2021 20:07:09 -0700 (PDT)
+        id S233520AbhIONgI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 15 Sep 2021 09:36:08 -0400
+Received: from pegase2.c-s.fr ([93.17.235.10]:32943 "EHLO pegase2.c-s.fr"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233472AbhIONgH (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 15 Sep 2021 09:36:07 -0400
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+        by localhost (Postfix) with ESMTP id 4H8h5z1lRrz9sTD;
+        Wed, 15 Sep 2021 15:34:47 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+        by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id dEgdXHE1a0lz; Wed, 15 Sep 2021 15:34:47 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+        by pegase2.c-s.fr (Postfix) with ESMTP id 4H8h5z0TFqz9sT4;
+        Wed, 15 Sep 2021 15:34:47 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+        by messagerie.si.c-s.fr (Postfix) with ESMTP id 00D478B77B;
+        Wed, 15 Sep 2021 15:34:47 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+        by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+        with ESMTP id ysdChU92eEWl; Wed, 15 Sep 2021 15:34:46 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
+        by messagerie.si.c-s.fr (Postfix) with ESMTP id D272F8B763;
+        Wed, 15 Sep 2021 15:34:46 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+        by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1) with ESMTPS id 18FDYa5U374511
+        (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+        Wed, 15 Sep 2021 15:34:36 +0200
+Received: (from chleroy@localhost)
+        by PO20335.IDSI0.si.c-s.fr (8.16.1/8.16.1/Submit) id 18FDYZW0374510;
+        Wed, 15 Sep 2021 15:34:35 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
+From:   Christophe Leroy <christophe.leroy@csgroup.eu>
+To:     Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Andrew Morton <akpm@linux-foundation.org>
+Cc:     Christophe Leroy <christophe.leroy@csgroup.eu>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        Stan Johnson <userm57@yahoo.com>,
+        Finn Thain <fthain@linux-m68k.org>
+Subject: [PATCH] video: fbdev: use memset_io() instead of memset()
+Date:   Wed, 15 Sep 2021 15:34:35 +0200
+Message-Id: <884a54f1e5cb774c1d9b4db780209bee5d4f6718.1631712563.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-From:   Hao Sun <sunhao.th@gmail.com>
-Date:   Mon, 13 Sep 2021 11:06:58 +0800
-Message-ID: <CACkBjsYmdk-wjpX2E8+ooTDph2F8ZPMGwBNydbaxwDD9AmZekg@mail.gmail.com>
-Subject: BUG: unable to handle kernel paging request in imageblit
-To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+While investigating a lockup at startup on Powerbook 3400C, it was
+identified that the fbdev driver generates alignment exception at
+startup:
 
-When using Healer to fuzz the Linux kernel, the following crash was triggered.
+	--- interrupt: 600 at memset+0x60/0xc0
+	NIP:  c0021414 LR: c03fc49c CTR: 00007fff
+	REGS: ca021c10 TRAP: 0600   Tainted: G        W          (5.14.2-pmac-00727-g12a41fa69492)
+	MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 44008442  XER: 20000100
+	DAR: cab80020 DSISR: 00017c07
+	GPR00: 00000007 ca021cd0 c14412e0 cab80000 00000000 00100000 cab8001c 00000004
+	GPR08: 00100000 00007fff 00000000 00000000 84008442 00000000 c0006fb4 00000000
+	GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00100000
+	GPR24: 00000000 81800000 00000320 c15fa400 c14d1878 00000000 c14d1800 c094e19c
+	NIP [c0021414] memset+0x60/0xc0
+	LR [c03fc49c] chipsfb_pci_init+0x160/0x580
+	--- interrupt: 600
+	[ca021cd0] [c03fc46c] chipsfb_pci_init+0x130/0x580 (unreliable)
+	[ca021d20] [c03a3a70] pci_device_probe+0xf8/0x1b8
+	[ca021d50] [c043d584] really_probe.part.0+0xac/0x388
+	[ca021d70] [c043d914] __driver_probe_device+0xb4/0x170
+	[ca021d90] [c043da18] driver_probe_device+0x48/0x144
+	[ca021dc0] [c043e318] __driver_attach+0x11c/0x1c4
+	[ca021de0] [c043ad30] bus_for_each_dev+0x88/0xf0
+	[ca021e10] [c043c724] bus_add_driver+0x190/0x22c
+	[ca021e40] [c043ee94] driver_register+0x9c/0x170
+	[ca021e60] [c0006c28] do_one_initcall+0x54/0x1ec
+	[ca021ed0] [c08246e4] kernel_init_freeable+0x1c0/0x270
+	[ca021f10] [c0006fdc] kernel_init+0x28/0x11c
+	[ca021f30] [c0017148] ret_from_kernel_thread+0x14/0x1c
+	Instruction dump:
+	7d4601a4 39490777 7d4701a4 39490888 7d4801a4 39490999 7d4901a4 39290aaa
+	7d2a01a4 4c00012c 4bfffe88 0fe00000 <4bfffe80> 9421fff0 38210010 48001970
 
-HEAD commit: ac08b1c68d1b Merge tag 'pci-v5.15-changes'
-git tree: upstream
-console output:
-https://drive.google.com/file/d/1Vvyiebkb1BAbgnM8QXg4XeotLYE7Xrk6/view?usp=sharing
-kernel config: https://drive.google.com/file/d/1qrJUXD8ZIeAkg-xojzDpp04v9MtQ8RR6/view?usp=sharing
-C reproducer: https://drive.google.com/file/d/1p79Nwcx6l7pC0qLZnbHFvr5FLSR79x0J/view?usp=sharing
-Syzlang reproducer:
-https://drive.google.com/file/d/1MT6DvJG2lMonmimV6XbED-I_STFMvaFo/view?usp=sharing
+This is due to 'dcbz' instruction being used on non-cached memory.
+'dcbz' instruction is used by memset() to zeroize a complete
+cacheline at once, and memset() is not expected to be used on non
+cached memory.
 
-If you fix this issue, please add the following tag to the commit:
-Reported-by: Hao Sun <sunhao.th@gmail.com>
+When performing a 'sparse' check on fbdev driver, it also appears
+that the use of memset() is unexpected:
 
-BUG: unable to handle page fault for address: ffffc90007731480
-#PF: supervisor write access in kernel mode
-#PF: error_code(0x0002) - not-present page
-PGD 8c00067 P4D 8c00067 PUD 8d63067 PMD 1026f8067 PTE 0
-Oops: 0002 [#1] PREEMPT SMP
-CPU: 0 PID: 10837 Comm: syz-executor Not tainted 5.14.0+ #15
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS
-rel-1.12.0-59-gc9ba5276e321-prebuilt.qemu.org 04/01/2014
-RIP: 0010:fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
-RIP: 0010:sys_imageblit+0x48c/0x830 drivers/video/fbdev/core/sysimgblt.c:275
-Code: 04 41 0f be 5d 00 83 fd 1f 0f 87 75 03 00 00 e8 5a d5 f9 fe 89
-e9 8b 44 24 14 d3 fb 23 5c 24 08 41 23 04 9f 33 44 24 04 85 ed <41> 89
-44 24 fc 75 b9 e8 38 d5 f9 fe 49 83 c5 01 bd 08 00 00 00 e8
-RSP: 0018:ffffc9000928f890 EFLAGS: 00010202
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000007
-RDX: 0000000000040000 RSI: ffffffff823dbcd6 RDI: ffffc9000928f9f0
-RBP: 0000000000000007 R08: 0000000000000018 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000002 R12: ffffc90007731484
-R13: ffff88810496f13c R14: ffffc90007731500 R15: ffffffff849e52c0
-FS:  00007fef7bf33700(0000) GS:ffff88807dc00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffffc90007731480 CR3: 000000001ef3e000 CR4: 0000000000750ef0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-PKRU: 55555554
-Call Trace:
- drm_fb_helper_sys_imageblit+0x18/0x40 drivers/gpu/drm/drm_fb_helper.c:794
- drm_fbdev_fb_imageblit+0x4b/0xa0 drivers/gpu/drm/drm_fb_helper.c:2276
- bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:139 [inline]
- bit_putcs+0x33c/0x590 drivers/video/fbdev/core/bitblit.c:188
- fbcon_putcs+0x13f/0x1a0 drivers/video/fbdev/core/fbcon.c:1296
- do_update_region+0x163/0x230 drivers/tty/vt/vt.c:676
- invert_screen+0x105/0x280 drivers/tty/vt/vt.c:800
- highlight drivers/tty/vt/selection.c:57 [inline]
- clear_selection+0x48/0x60 drivers/tty/vt/selection.c:84
- vc_do_resize+0x60b/0x6f0 drivers/tty/vt/vt.c:1257
- fbcon_do_set_font+0x188/0x2a0 drivers/video/fbdev/core/fbcon.c:2397
- fbcon_set_font+0x333/0x450 drivers/video/fbdev/core/fbcon.c:2483
- con_font_set drivers/tty/vt/vt.c:4666 [inline]
- con_font_op+0x238/0x4b0 drivers/tty/vt/vt.c:4710
- vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
- vt_ioctl+0xd05/0x1890 drivers/tty/vt/vt_ioctl.c:752
- tty_ioctl+0x114/0xb00 drivers/tty/tty_io.c:2805
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:874 [inline]
- __se_sys_ioctl fs/ioctl.c:860 [inline]
- __x64_sys_ioctl+0xb6/0x100 fs/ioctl.c:860
- do_syscall_x64 arch/x86/entry/common.c:50 [inline]
- do_syscall_64+0x34/0xb0 arch/x86/entry/common.c:80
- entry_SYSCALL_64_after_hwframe+0x44/0xae
-RIP: 0033:0x46a9a9
-Code: f7 d8 64 89 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 48 89 f8 48
-89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d
-01 f0 ff ff 73 01 c3 48 c7 c1 bc ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007fef7bf32c58 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 000000000078c0a0 RCX: 000000000046a9a9
-RDX: 0000000020000080 RSI: 0000000000004b72 RDI: 0000000000000004
-RBP: 00000000004e4042 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 000000000078c0a0
-R13: 0000000000000000 R14: 000000000078c0a0 R15: 00007fff66610a60
-Modules linked in:
-Dumping ftrace buffer:
-   (ftrace buffer empty)
-CR2: ffffc90007731480
----[ end trace b77be2f6638c5c66 ]---
-RIP: 0010:fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
-RIP: 0010:sys_imageblit+0x48c/0x830 drivers/video/fbdev/core/sysimgblt.c:275
-Code: 04 41 0f be 5d 00 83 fd 1f 0f 87 75 03 00 00 e8 5a d5 f9 fe 89
-e9 8b 44 24 14 d3 fb 23 5c 24 08 41 23 04 9f 33 44 24 04 85 ed <41> 89
-44 24 fc 75 b9 e8 38 d5 f9 fe 49 83 c5 01 bd 08 00 00 00 e8
-RSP: 0018:ffffc9000928f890 EFLAGS: 00010202
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000007
-RDX: 0000000000040000 RSI: ffffffff823dbcd6 RDI: ffffc9000928f9f0
-RBP: 0000000000000007 R08: 0000000000000018 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000002 R12: ffffc90007731484
-R13: ffff88810496f13c R14: ffffc90007731500 R15: ffffffff849e52c0
-FS:  00007fef7bf33700(0000) GS:ffff88807dc00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffffc90007731480 CR3: 000000001ef3e000 CR4: 0000000000750ef0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-PKRU: 55555554
-----------------
-Code disassembly (best guess):
-   0: 04 41                add    $0x41,%al
-   2: 0f be 5d 00          movsbl 0x0(%rbp),%ebx
-   6: 83 fd 1f              cmp    $0x1f,%ebp
-   9: 0f 87 75 03 00 00    ja     0x384
-   f: e8 5a d5 f9 fe        callq  0xfef9d56e
-  14: 89 e9                mov    %ebp,%ecx
-  16: 8b 44 24 14          mov    0x14(%rsp),%eax
-  1a: d3 fb                sar    %cl,%ebx
-  1c: 23 5c 24 08          and    0x8(%rsp),%ebx
-  20: 41 23 04 9f          and    (%r15,%rbx,4),%eax
-  24: 33 44 24 04          xor    0x4(%rsp),%eax
-  28: 85 ed                test   %ebp,%ebp
-* 2a: 41 89 44 24 fc        mov    %eax,-0x4(%r12) <-- trapping instruction
-  2f: 75 b9                jne    0xffffffea
-  31: e8 38 d5 f9 fe        callq  0xfef9d56e
-  36: 49 83 c5 01          add    $0x1,%r13
-  3a: bd 08 00 00 00        mov    $0x8,%ebp
-  3f: e8                    .byte 0xe8
+	drivers/video/fbdev/chipsfb.c:334:17: warning: incorrect type in argument 1 (different address spaces)
+	drivers/video/fbdev/chipsfb.c:334:17:    expected void *
+	drivers/video/fbdev/chipsfb.c:334:17:    got char [noderef] __iomem *screen_base
+	drivers/video/fbdev/chipsfb.c:334:15: warning: memset with byte count of 1048576
+
+Use fb_memset() instead of memset(). fb_memset() is defined as
+memset_io() for powerpc.
+
+Fixes: 8c8709334cec ("[PATCH] ppc32: Remove CONFIG_PMAC_PBOOK")
+Reported-by: Stan Johnson <userm57@yahoo.com>
+Cc: Finn Thain <fthain@linux-m68k.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ drivers/video/fbdev/chipsfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
+index 998067b701fa..393894af26f8 100644
+--- a/drivers/video/fbdev/chipsfb.c
++++ b/drivers/video/fbdev/chipsfb.c
+@@ -331,7 +331,7 @@ static const struct fb_var_screeninfo chipsfb_var = {
+ 
+ static void init_chips(struct fb_info *p, unsigned long addr)
+ {
+-	memset(p->screen_base, 0, 0x100000);
++	fb_memset(p->screen_base, 0, 0x100000);
+ 
+ 	p->fix = chipsfb_fix;
+ 	p->fix.smem_start = addr;
+-- 
+2.31.1
+

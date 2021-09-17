@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8C9DC433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Sep 2021 04:22:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E767C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Sep 2021 04:22:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 96F7260F93
-	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Sep 2021 04:22:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5127360FBF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Sep 2021 04:22:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244474AbhIQEYD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 17 Sep 2021 00:24:03 -0400
-Received: from mx22.baidu.com ([220.181.50.185]:52850 "EHLO baidu.com"
+        id S244488AbhIQEYH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 17 Sep 2021 00:24:07 -0400
+Received: from mx22.baidu.com ([220.181.50.185]:52916 "EHLO baidu.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S244382AbhIQEXw (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 17 Sep 2021 00:23:52 -0400
-Received: from BC-Mail-EX04.internal.baidu.com (unknown [172.31.51.44])
-        by Forcepoint Email with ESMTPS id 68C8343F6DF5E86072FD;
-        Fri, 17 Sep 2021 12:22:28 +0800 (CST)
+        id S244448AbhIQEX4 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 17 Sep 2021 00:23:56 -0400
+Received: from BC-Mail-Ex32.internal.baidu.com (unknown [172.31.51.26])
+        by Forcepoint Email with ESMTPS id 9BA9452307335D260215;
+        Fri, 17 Sep 2021 12:22:32 +0800 (CST)
 Received: from BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) by
- BC-Mail-EX04.internal.baidu.com (172.31.51.44) with Microsoft SMTP Server
+ BC-Mail-Ex32.internal.baidu.com (172.31.51.26) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2242.12; Fri, 17 Sep 2021 12:22:28 +0800
+ 15.1.2242.12; Fri, 17 Sep 2021 12:22:32 +0800
 Received: from LAPTOP-UKSR4ENP.internal.baidu.com (172.31.63.8) by
  BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2308.14; Fri, 17 Sep 2021 12:22:27 +0800
+ 15.1.2308.14; Fri, 17 Sep 2021 12:22:31 +0800
 From:   Cai Huoqing <caihuoqing@baidu.com>
 To:     <caihuoqing@baidu.com>
 CC:     Jingoo Han <jingoohan1@gmail.com>,
         <dri-devel@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/6] fbdev: ssd1307fb: Make use of the helper function dev_err_probe()
-Date:   Fri, 17 Sep 2021 12:22:10 +0800
-Message-ID: <20210917042213.17689-4-caihuoqing@baidu.com>
+Subject: [PATCH 6/6] fbdev: mmp: Make use of the helper function dev_err_probe()
+Date:   Fri, 17 Sep 2021 12:22:12 +0800
+Message-ID: <20210917042213.17689-6-caihuoqing@baidu.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20210917042213.17689-1-caihuoqing@baidu.com>
 References: <20210917042213.17689-1-caihuoqing@baidu.com>
@@ -58,33 +58,22 @@ gets printed.
 
 Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 1e2f71c2f8a8..c6d5df31111d 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -658,9 +658,8 @@ static int ssd1307fb_probe(struct i2c_client *client)
- 
- 	par->reset = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_LOW);
- 	if (IS_ERR(par->reset)) {
--		dev_err(dev, "failed to get reset gpio: %ld\n",
--			PTR_ERR(par->reset));
--		ret = PTR_ERR(par->reset);
-+		ret = dev_err_probe(dev, PTR_ERR(par->reset),
-+				    "failed to get reset gpio\n");
- 		goto fb_alloc_error;
- 	}
- 
-@@ -670,7 +669,7 @@ static int ssd1307fb_probe(struct i2c_client *client)
- 		if (ret == -ENODEV) {
- 			par->vbat_reg = NULL;
- 		} else {
--			dev_err(dev, "failed to get VBAT regulator: %d\n", ret);
-+			dev_err_probe(dev, ret, "failed to get VBAT regulator\n");
- 			goto fb_alloc_error;
- 		}
+diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
+index 061a105afb86..a9df8ee79810 100644
+--- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
++++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
+@@ -514,7 +514,8 @@ static int mmphw_probe(struct platform_device *pdev)
+ 	/* get clock */
+ 	ctrl->clk = devm_clk_get(ctrl->dev, mi->clk_name);
+ 	if (IS_ERR(ctrl->clk)) {
+-		dev_err(ctrl->dev, "unable to get clk %s\n", mi->clk_name);
++		dev_err_probe(ctrl->dev, ret,
++			      "unable to get clk %s\n", mi->clk_name);
+ 		ret = -ENOENT;
+ 		goto failed;
  	}
 -- 
 2.25.1

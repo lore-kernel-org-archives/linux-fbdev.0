@@ -7,45 +7,41 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EEA3C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Sep 2021 04:38:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45881C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Sep 2021 04:40:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DCF9E60F50
-	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Sep 2021 04:38:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1C57260FBF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Sep 2021 04:40:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243809AbhIQEjh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 17 Sep 2021 00:39:37 -0400
-Received: from mx24.baidu.com ([111.206.215.185]:36810 "EHLO baidu.com"
+        id S244775AbhIQEli (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 17 Sep 2021 00:41:38 -0400
+Received: from mx22.baidu.com ([220.181.50.185]:38234 "EHLO baidu.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S239754AbhIQEjc (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 17 Sep 2021 00:39:32 -0400
-X-Greylist: delayed 938 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Sep 2021 00:39:29 EDT
-Received: from BC-Mail-Ex03.internal.baidu.com (unknown [172.31.51.43])
-        by Forcepoint Email with ESMTPS id EF4F84E4D0413A9999FC;
-        Fri, 17 Sep 2021 12:22:23 +0800 (CST)
+        id S244720AbhIQElZ (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 17 Sep 2021 00:41:25 -0400
+Received: from BC-Mail-Ex29.internal.baidu.com (unknown [172.31.51.23])
+        by Forcepoint Email with ESMTPS id EF57B883484BA65A75EB;
+        Fri, 17 Sep 2021 12:24:20 +0800 (CST)
 Received: from BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) by
- BC-Mail-Ex03.internal.baidu.com (172.31.51.43) with Microsoft SMTP Server
+ BC-Mail-Ex29.internal.baidu.com (172.31.51.23) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2242.12; Fri, 17 Sep 2021 12:22:23 +0800
+ 15.1.2242.12; Fri, 17 Sep 2021 12:24:20 +0800
 Received: from LAPTOP-UKSR4ENP.internal.baidu.com (172.31.63.8) by
  BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
- 15.1.2308.14; Fri, 17 Sep 2021 12:22:23 +0800
+ 15.1.2308.14; Fri, 17 Sep 2021 12:24:20 +0800
 From:   Cai Huoqing <caihuoqing@baidu.com>
 To:     <caihuoqing@baidu.com>
-CC:     Jingoo Han <jingoohan1@gmail.com>,
-        <dri-devel@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/6] fbdev: pxa168fb: Make use of the helper function dev_err_probe()
-Date:   Fri, 17 Sep 2021 12:22:08 +0800
-Message-ID: <20210917042213.17689-2-caihuoqing@baidu.com>
+CC:     <linux-fbdev@vger.kernel.org>, <linux-omap@vger.kernel.org>,
+        <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/4] fbdev: omapfb: panel-lgphilips-lb035q02: Make use of the helper function dev_err_probe()
+Date:   Fri, 17 Sep 2021 12:24:10 +0800
+Message-ID: <20210917042414.17787-1-caihuoqing@baidu.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20210917042213.17689-1-caihuoqing@baidu.com>
-References: <20210917042213.17689-1-caihuoqing@baidu.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [172.31.63.8]
-X-ClientProxiedBy: BJHW-Mail-Ex05.internal.baidu.com (10.127.64.15) To
+X-ClientProxiedBy: BC-Mail-Ex15.internal.baidu.com (172.31.51.55) To
  BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
@@ -59,27 +55,27 @@ gets printed.
 
 Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
 ---
- drivers/video/fbdev/pxa168fb.c | 7 +++----
+ .../fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c | 7 +++----
  1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
-index 47e6a1d0d229..35cf806a9219 100644
---- a/drivers/video/fbdev/pxa168fb.c
-+++ b/drivers/video/fbdev/pxa168fb.c
-@@ -606,10 +606,9 @@ static int pxa168fb_probe(struct platform_device *pdev)
- 	}
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
+index 1bec7a4422e8..6befd22dbd5c 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
+@@ -244,10 +244,9 @@ static int lb035q02_probe_of(struct spi_device *spi)
+ 	struct gpio_desc *gpio;
  
- 	clk = devm_clk_get(&pdev->dev, "LCDCLK");
--	if (IS_ERR(clk)) {
--		dev_err(&pdev->dev, "unable to get LCDCLK");
--		return PTR_ERR(clk);
+ 	gpio = devm_gpiod_get(&spi->dev, "enable", GPIOD_OUT_LOW);
+-	if (IS_ERR(gpio)) {
+-		dev_err(&spi->dev, "failed to parse enable gpio\n");
+-		return PTR_ERR(gpio);
 -	}
-+	if (IS_ERR(clk))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(clk),
-+				     "unable to get LCDCLK");
++	if (IS_ERR(gpio))
++		return dev_err_probe(&spi->dev, PTR_ERR(gpio),
++				     "failed to parse enable gpio\n");
  
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (res == NULL) {
+ 	ddata->enable_gpio = gpio;
+ 
 -- 
 2.25.1
 

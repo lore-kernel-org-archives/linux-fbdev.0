@@ -2,97 +2,107 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 209F8C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 16 Sep 2021 17:07:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AEB8C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Sep 2021 03:13:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 00CF660EE4
-	for <linux-fbdev@archiver.kernel.org>; Thu, 16 Sep 2021 17:07:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 529CC61019
+	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Sep 2021 03:13:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345058AbhIPRI1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 16 Sep 2021 13:08:27 -0400
-Received: from smtp-relay-internal-1.canonical.com ([185.125.188.123]:54094
-        "EHLO smtp-relay-internal-1.canonical.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S242598AbhIPRG0 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 16 Sep 2021 13:06:26 -0400
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com [209.85.221.72])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id D1F5F4025A
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Sep 2021 17:05:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1631811903;
-        bh=OstzCEYmtVLZNRdG6WO7Mm1Vo0KZNtl5VBM7iApmnEE=;
-        h=From:To:Cc:Subject:Date:Message-Id:MIME-Version;
-        b=u29hRxq3U0kCUrcNILhXSPpsczBYrBSSoXIAp7t4WKOlzV2tZcpKHv1wVN4N/DsF7
-         3+6WIL3nQ8BOf7tRuC6ImlStONuZj9ccFwry0r9Yn4WO9iUYvr4db08gsjPbtzu2Rn
-         AgCstq7XnANXiK7raVW/pJKM68Rc6BY4VUUkaWordJJmCoUMGVZAMRJ22tyUP610ZA
-         ZopgwO2TXqkMNXvhF5v9JGYdYygZKJfpkuAZH0sFFdTxAi2KDyfTJpQLF4kuOObUXK
-         GyFzEagErHGM5OQYbgSIiv0Zy6wFtb/m7wOMS9e/UzdysujyTJl21gawghRglz895M
-         L8iuksWN0azXw==
-Received: by mail-wr1-f72.google.com with SMTP id v1-20020adfc401000000b0015e11f71e65so2699697wrf.2
-        for <linux-fbdev@vger.kernel.org>; Thu, 16 Sep 2021 10:05:03 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=OstzCEYmtVLZNRdG6WO7Mm1Vo0KZNtl5VBM7iApmnEE=;
-        b=GPbK3+bNwclQOCRBUZgTGoOYX0jT97rXiRXUQh8aAvVBAo276wpR3MeImNdMOzqOkE
-         JFO6XStLWDEE2bF/GHEe+lJ3ZTnOiQDPeDa+8VSbt4FCx6JfdAyBkdpe97bacf7ZZ299
-         YGQGdHp7S4GXYr88Sm+ZIAeD6ahryou2d2ukymZyjLp3IMyYrvBTBipKPyJ+I/47ZHNu
-         3TVi8YSa8coDjmFkaJH5lQppQFvwK/D5YDhaSf6Ca2eHZNt7CipHCOyWaagRixverwZI
-         FZbfCXRtgDJoeNRNfq1peo8wixTzBH084owKltD46njocg+jJfEoRY8j11oqHKNLow8q
-         QVuw==
-X-Gm-Message-State: AOAM531v3pvoZdnnezKMvnfm8iGYJNWxYxbI0WuVdITsC/dSA/X8eQAz
-        HjEFxu/pqlAcNAvv0sYjsaI5hjuC7uLeWF2xlLk68EldlTiZpdLT2T+5mlUKdFKI7ZfEoISPpa3
-        suPnmB7ZGeOlqQEKxKXN35/TOBHruIZFa8VE4zAfF
-X-Received: by 2002:adf:e40b:: with SMTP id g11mr7347747wrm.313.1631811903561;
-        Thu, 16 Sep 2021 10:05:03 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJw4kl/6AH0mpphfd4mDrnsfnhni4/TUU7nT32lFb3Prdb2KZaNGd9Q9JLbukKSrmVp+BXBQqQ==
-X-Received: by 2002:adf:e40b:: with SMTP id g11mr7347728wrm.313.1631811903378;
-        Thu, 16 Sep 2021 10:05:03 -0700 (PDT)
-Received: from kozik-lap.lan (lk.84.20.244.219.dc.cable.static.lj-kabel.net. [84.20.244.219])
-        by smtp.gmail.com with ESMTPSA id h16sm3971694wre.52.2021.09.16.10.05.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Sep 2021 10:05:02 -0700 (PDT)
-From:   Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH] video: fbdev: s3c-fb: drop unneeded MODULE_ALIAS
-Date:   Thu, 16 Sep 2021 19:04:59 +0200
-Message-Id: <20210916170459.137696-1-krzysztof.kozlowski@canonical.com>
-X-Mailer: git-send-email 2.30.2
+        id S236366AbhIQDOl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 16 Sep 2021 23:14:41 -0400
+Received: from mx22.baidu.com ([220.181.50.185]:47476 "EHLO baidu.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S232364AbhIQDOk (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 16 Sep 2021 23:14:40 -0400
+Received: from BJHW-Mail-Ex08.internal.baidu.com (unknown [10.127.64.18])
+        by Forcepoint Email with ESMTPS id E3F661BD0EB5B06CFFC0;
+        Fri, 17 Sep 2021 11:13:16 +0800 (CST)
+Received: from BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) by
+ BJHW-Mail-Ex08.internal.baidu.com (10.127.64.18) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
+ 15.1.2308.14; Fri, 17 Sep 2021 11:13:16 +0800
+Received: from LAPTOP-UKSR4ENP.internal.baidu.com (172.31.63.8) by
+ BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id
+ 15.1.2308.14; Fri, 17 Sep 2021 11:13:16 +0800
+From:   Cai Huoqing <caihuoqing@baidu.com>
+To:     <caihuoqing@baidu.com>
+CC:     Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        <dri-devel@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] backlight: bd6107: Make use of the helper function dev_err_probe()
+Date:   Fri, 17 Sep 2021 11:13:06 +0800
+Message-ID: <20210917031308.17623-1-caihuoqing@baidu.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [172.31.63.8]
+X-ClientProxiedBy: BJHW-Mail-Ex15.internal.baidu.com (10.127.64.38) To
+ BJHW-MAIL-EX27.internal.baidu.com (10.127.64.42)
+X-Baidu-BdMsfe-DateCheck: 1_BJHW-Mail-Ex08_2021-09-17 11:13:16:946
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The MODULE_DEVICE_TABLE already creates proper alias for platform
-driver.  Having another MODULE_ALIAS causes the alias to be duplicated.
+When possible use dev_err_probe help to properly deal with the
+PROBE_DEFER error, the benefit is that DEFER issue will be logged
+in the devices_deferred debugfs file.
+Using dev_err_probe() can reduce code size, and the error value
+gets printed.
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>
+Signed-off-by: Cai Huoqing <caihuoqing@baidu.com>
 ---
- drivers/video/fbdev/s3c-fb.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/backlight/bd6107.c | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
-index 3b134e1bbc38..1d88dcd3e26b 100644
---- a/drivers/video/fbdev/s3c-fb.c
-+++ b/drivers/video/fbdev/s3c-fb.c
-@@ -1810,4 +1810,3 @@ module_platform_driver(s3c_fb_driver);
- MODULE_AUTHOR("Ben Dooks <ben@simtec.co.uk>");
- MODULE_DESCRIPTION("Samsung S3C SoC Framebuffer driver");
- MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:s3c-fb");
+diff --git a/drivers/video/backlight/bd6107.c b/drivers/video/backlight/bd6107.c
+index 515184fbe33a..e21b793302a2 100644
+--- a/drivers/video/backlight/bd6107.c
++++ b/drivers/video/backlight/bd6107.c
+@@ -120,7 +120,6 @@ static int bd6107_probe(struct i2c_client *client,
+ 	struct backlight_device *backlight;
+ 	struct backlight_properties props;
+ 	struct bd6107 *bd;
+-	int ret;
+ 
+ 	if (pdata == NULL) {
+ 		dev_err(&client->dev, "No platform data\n");
+@@ -148,11 +147,9 @@ static int bd6107_probe(struct i2c_client *client,
+ 	 * the reset.
+ 	 */
+ 	bd->reset = devm_gpiod_get(&client->dev, "reset", GPIOD_OUT_HIGH);
+-	if (IS_ERR(bd->reset)) {
+-		dev_err(&client->dev, "unable to request reset GPIO\n");
+-		ret = PTR_ERR(bd->reset);
+-		return ret;
+-	}
++	if (IS_ERR(bd->reset))
++		return dev_err_probe(&client->dev, PTR_ERR(bd->reset),
++				     "unable to request reset GPIO\n");
+ 
+ 	memset(&props, 0, sizeof(props));
+ 	props.type = BACKLIGHT_RAW;
+@@ -164,10 +161,9 @@ static int bd6107_probe(struct i2c_client *client,
+ 					      dev_name(&client->dev),
+ 					      &bd->client->dev, bd,
+ 					      &bd6107_backlight_ops, &props);
+-	if (IS_ERR(backlight)) {
+-		dev_err(&client->dev, "failed to register backlight\n");
+-		return PTR_ERR(backlight);
+-	}
++	if (IS_ERR(backlight))
++		return dev_err_probe(&client->dev, PTR_ERR(backlight),
++				     "failed to register backlight\n");
+ 
+ 	backlight_update_status(backlight);
+ 	i2c_set_clientdata(client, backlight);
 -- 
-2.30.2
+2.25.1
 

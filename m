@@ -2,100 +2,132 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D134C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Sep 2021 14:56:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B384C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Sep 2021 17:32:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 55481610A0
-	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Sep 2021 14:56:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D626E60F24
+	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Sep 2021 17:32:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233770AbhIUO5r (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 21 Sep 2021 10:57:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42646 "EHLO
+        id S230351AbhIURdN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 21 Sep 2021 13:33:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50708 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233751AbhIUO5r (ORCPT
+        with ESMTP id S230442AbhIURdD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 21 Sep 2021 10:57:47 -0400
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7E3E5C061574
-        for <linux-fbdev@vger.kernel.org>; Tue, 21 Sep 2021 07:56:18 -0700 (PDT)
-Received: by mail-wr1-x430.google.com with SMTP id u15so40048424wru.6
-        for <linux-fbdev@vger.kernel.org>; Tue, 21 Sep 2021 07:56:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=Uy/6vpAUKhCQrg81XG5Al3uBoXiNf0Mz5dJc/PJ/1Oo=;
-        b=inwX55DyAUgJ5+/69FFQ5BYIFwpAEpPaNG5iUXLgI9Xx2QUcCzH3GiU03HfEj2LI0e
-         qULLRtnz8pRXEtVEGBeiKj9+uiTYiTUFXpLcis2a9BBM01JdTgCa/ERr9ANh+2AY5m5/
-         e8ZCbXtASjaNOpOkLp94OMpaFrrvdWD+B1REo6iIAjHq5DvhQn9fx/Oi2Ny0gGl1IqhZ
-         oA8omaGlRrNw7uY44M1ZGwm6nSWSXZvx45U8dYvauqZ8gu3qSmpYzWZFTWY6clpmDTWo
-         4RhKh65OdHy6+OkNXArCmGdvTOQZmLpi5VZd9JEuOhL82m7pMpORjtL+91x+bhe6oQnM
-         +pew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=Uy/6vpAUKhCQrg81XG5Al3uBoXiNf0Mz5dJc/PJ/1Oo=;
-        b=ebE0AvWGjCAm6Xk/4vWIzI2bXU5JF7rpzWoZLNm7OmcmQLGGCVn7bIO7r+WL3TnNNF
-         1nf8mlosBYMBYpIbI/4qgxNOGO3v05zT9MF+IHOrlM5wuw7ABIir+ZdOzWYXxWUEMcMp
-         ysLhICmNsPP/dUBgzLoTr1keOAlbHLPJB+ZlDn90PV7WTfKSvoJLN/lpdQlCsqWJYKL6
-         0A2x4FZF6CN695iLwOylALTWFmRtCw0K609vQ4ljojXZpyTQziL0mwrOxNDHAHpSx8xe
-         kwHSf5GWYXxM48EtKxmdJM4tRWz3XI+pOsdgNO2XefTf8kkdvZtwl3i+iZcPAaK8ad23
-         MkWQ==
-X-Gm-Message-State: AOAM531GUInCGkNUruOiTKpct8KsZLlgujL5PZADsX/d06uhE0LRAJkF
-        jZLANxmPsKyfwkccWtOulT78aEbhSK4opw==
-X-Google-Smtp-Source: ABdhPJxwyJfqbv3VS2qWqfkrpeWNt0/HGXMc8xJMgFLQyg5ZWJYmS0L9SbXC8wwBEt/xh1Dd4Dt+5w==
-X-Received: by 2002:adf:e390:: with SMTP id e16mr35385598wrm.217.1632236175859;
-        Tue, 21 Sep 2021 07:56:15 -0700 (PDT)
-Received: from google.com ([95.148.6.233])
-        by smtp.gmail.com with ESMTPSA id 135sm3191822wma.32.2021.09.21.07.56.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Sep 2021 07:56:15 -0700 (PDT)
-Date:   Tue, 21 Sep 2021 15:56:13 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] backlight: propagate errors from get_brightness()
-Message-ID: <YUnyjSdhJt5nK5Kd@google.com>
-References: <20210907124751.6404-1-linux@weissschuh.net>
- <b25975d3-f417-4cba-92d1-35c93d37e1e6@t-8ch.de>
+        Tue, 21 Sep 2021 13:33:03 -0400
+Received: from phobos.denx.de (phobos.denx.de [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C55D9C061574;
+        Tue, 21 Sep 2021 10:31:33 -0700 (PDT)
+Received: from [IPv6:::1] (p578adb1c.dip0.t-ipconnect.de [87.138.219.28])
+        (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: marex@denx.de)
+        by phobos.denx.de (Postfix) with ESMTPSA id 77B4F832AD;
+        Tue, 21 Sep 2021 19:31:28 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=denx.de;
+        s=phobos-20191101; t=1632245489;
+        bh=e+yPbo4fafWFxb6MVPrE7e9eDwpFOH2agg9WR2G9PLk=;
+        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+        b=AlEDMZm4EdAkkgDdttyNxp5kAZ+Q57nOZbBsHYjeRADT28QaHSFtV6AytjRu3crly
+         KSfcOUuMPo2EV8U7nPJOmJHYWvHSqneQOZWlLyat7CjGFyVuZj9z8Mnt77DkvNMaDT
+         C8KSD9ueULP4oGjlVr5zc2QP2UV/q5ZCkabAWauyRo8y09q51zu+4AnGDT5xZndoHu
+         jD5IzMPxTrujqdq2jxV0sZgLkFldwWbSdGc24ofFGeoF9P8X1h0wamfGR8R8PVrPUV
+         6bdse02Gz/D4x3ssiBr5tfEzFdz8SKADvKoGJhGJF3XY4kHX6aZ38hl+x3+MJSoGuS
+         l/BUXhJspBrig==
+Subject: Re: [PATCH V2] video: backlight: Drop maximum brightness override for
+ brightness zero
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        stable@vger.kernel.org,
+        Meghana Madhyastha <meghana.madhyastha@gmail.com>,
+        Sean Paul <seanpaul@chromium.org>,
+        Thierry Reding <treding@nvidia.com>,
+        Sam Ravnborg <sam@ravnborg.org>
+References: <20210713191633.121317-1-marex@denx.de>
+ <072e01b7-8554-de4f-046a-da11af3958d6@denx.de> <YUnfIFllpOMnie4l@google.com>
+From:   Marek Vasut <marex@denx.de>
+Message-ID: <3799d8fe-0ff3-f3df-e963-b40d825f8e95@denx.de>
+Date:   Tue, 21 Sep 2021 19:31:27 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+In-Reply-To: <YUnfIFllpOMnie4l@google.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <b25975d3-f417-4cba-92d1-35c93d37e1e6@t-8ch.de>
+X-Virus-Scanned: clamav-milter 0.103.2 at phobos.denx.de
+X-Virus-Status: Clean
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, 21 Sep 2021, Thomas Weißschuh wrote:
-
-> On 2021-09-07T14:47+0200, Thomas Weißschuh wrote:
-> > backlight.h documents "struct backlight_ops->get_brightness()" to return
-> > a negative errno on failure.
-> > So far these errors have not been handled in the backlight core.
-> > This leads to negative values being exposed through sysfs although only
-> > positive values are documented to be reported.
+On 9/21/21 3:33 PM, Lee Jones wrote:
+> On Sat, 11 Sep 2021, Marek Vasut wrote:
 > 
-> > [..]
+>> On 7/13/21 9:16 PM, Marek Vasut wrote:
+>>> The note in c2adda27d202f ("video: backlight: Add of_find_backlight helper
+>>> in backlight.c") says that gpio-backlight uses brightness as power state.
+>>> This has been fixed since in ec665b756e6f7 ("backlight: gpio-backlight:
+>>> Correct initial power state handling") and other backlight drivers do not
+>>> require this workaround. Drop the workaround.
+>>>
+>>> This fixes the case where e.g. pwm-backlight can perfectly well be set to
+>>> brightness 0 on boot in DT, which without this patch leads to the display
+>>> brightness to be max instead of off.
+>>>
+>>> Fixes: c2adda27d202f ("video: backlight: Add of_find_backlight helper in backlight.c")
+>>> Acked-by: Noralf Trønnes <noralf@tronnes.org>
+>>> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+>>> Cc: <stable@vger.kernel.org> # 5.4+
+>>> Cc: <stable@vger.kernel.org> # 4.19.x: ec665b756e6f7: backlight: gpio-backlight: Correct initial power state handling
+>>> Signed-off-by: Marek Vasut <marex@denx.de>
+>>> Cc: Daniel Thompson <daniel.thompson@linaro.org>
+>>> Cc: Meghana Madhyastha <meghana.madhyastha@gmail.com>
+>>> Cc: Noralf Trønnes <noralf@tronnes.org>
+>>> Cc: Sean Paul <seanpaul@chromium.org>
+>>> Cc: Thierry Reding <treding@nvidia.com>
+>>> ---
+>>> V2: Add AB/RB, CC stable
+>>> ---
+>>>    drivers/video/backlight/backlight.c | 6 ------
+>>>    1 file changed, 6 deletions(-)
+>>>
+>>> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+>>> index 537fe1b376ad7..fc990e576340b 100644
+>>> --- a/drivers/video/backlight/backlight.c
+>>> +++ b/drivers/video/backlight/backlight.c
+>>> @@ -688,12 +688,6 @@ static struct backlight_device *of_find_backlight(struct device *dev)
+>>>    			of_node_put(np);
+>>>    			if (!bd)
+>>>    				return ERR_PTR(-EPROBE_DEFER);
+>>> -			/*
+>>> -			 * Note: gpio_backlight uses brightness as
+>>> -			 * power state during probe
+>>> -			 */
+>>> -			if (!bd->props.brightness)
+>>> -				bd->props.brightness = bd->props.max_brightness;
+>>>    		}
+>>>    	}
+>>>
+>>
+>> Any news on this ?
+>>
+>> Expanding CC list.
 > 
-> Friendly ping.
+> Looks like I was left off of the original submission.
+> 
+> I can't apply a quoted patch.  Please re-submit.
 
-Don't do that.  If you think the submission has been forgotten about
-(it hasn't), then please submit a [RESEND].  As it happens, this is on
-my TOREVEW list.  I just need to get around to it post-vacation.
+I see. It seems the patch is available in both Lore and Patchwork:
 
--- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+https://lore.kernel.org/all/072e01b7-8554-de4f-046a-da11af3958d6@denx.de/T/
+
+https://patchwork.freedesktop.org/patch/443823/

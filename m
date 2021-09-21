@@ -2,156 +2,144 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1E49C433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Sep 2021 18:04:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 172F6C4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Sep 2021 13:33:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A82B360724
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Sep 2021 18:04:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EC62E6115A
+	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Sep 2021 13:33:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355970AbhITSGA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 20 Sep 2021 14:06:00 -0400
-Received: from mout.gmx.net ([212.227.15.19]:54279 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1357240AbhITSDn (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 20 Sep 2021 14:03:43 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1632160919;
-        bh=qs0DArqAPOvJVRu48rowJhF8MgdjMaPpAg6EqgXnKTY=;
-        h=X-UI-Sender-Class:Subject:To:Cc:References:From:Date:In-Reply-To;
-        b=HfeksWb8LsK1BsT0Rl64NbuI6PRBJqR+5afGmXMVOpT9MQ1sGhbd4aj4wKnqg/u0/
-         WrfhZhz7yfGSieU/yXeb42bdH/pP+Foq5+xtvqElrDnj/AmkUWvZ7qETaZTC3if+Vg
-         lCzK14K/5EENOL21FIyHBP400DgQNiVDIJ3AgrjY=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.139.149]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M9FnZ-1mYijQ0r9L-006KF7; Mon, 20
- Sep 2021 20:01:59 +0200
-Subject: Re: [PATCH] agp: define proper stubs for empty helpers
-To:     Arnd Bergmann <arnd@kernel.org>, linux-fbdev@vger.kernel.org,
-        "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "David S. Miller" <davem@davemloft.net>
-Cc:     dri-devel@lists.freedesktop.org, Arnd Bergmann <arnd@arndb.de>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
-References: <20210920121728.94045-1-arnd@kernel.org>
-From:   Helge Deller <deller@gmx.de>
-Message-ID: <964b57bd-d9ea-2df7-72f8-4fe0a24e365c@gmx.de>
-Date:   Mon, 20 Sep 2021 20:01:52 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+        id S233092AbhIUNez (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 21 Sep 2021 09:34:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51358 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233112AbhIUNex (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 21 Sep 2021 09:34:53 -0400
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7B6AC061575
+        for <linux-fbdev@vger.kernel.org>; Tue, 21 Sep 2021 06:33:24 -0700 (PDT)
+Received: by mail-wr1-x434.google.com with SMTP id g16so39236440wrb.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 21 Sep 2021 06:33:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=A31aJO/5YcdUocsEcyn0bhc0bNHd+7HvWCL+8pVGDDU=;
+        b=XXnHlbsVJeiz43Y3LESLsOdS/m8OXgkzBDvNRuXaOhzIFk9XPGFB8+4fzF+fhcPttK
+         FvPwPmNgxuEnz6VX/pugMXfkccU1NnwbfTphH095zmWsunddDBDkNpBwv0V6s+OvfSzw
+         oHQOgUsamKJGEUduN/kILiR81SKXt0x7/e7DUk55aAFS+TH1KIz3NoJsw1cXsVNhgXL7
+         RUkPzrz2CYT8e+24iQOzYwtNzVSKtcauNmzjGdxTocSiSIJ9HlrP9Ke2CSkTPRxCPCUK
+         o9AyIB91PX/qD/ilB+5C7p1rcqcTBgGtp8O3JY68Tf3s61h1FgmkmmUG1rxJe5oz4d0U
+         Xs3g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=A31aJO/5YcdUocsEcyn0bhc0bNHd+7HvWCL+8pVGDDU=;
+        b=tna9FtxhGQLndYK0SCAxfw/ZG3RFgFCUglwMcF0lkrJyr0TKR1cTVIm/4gT4KIx5gC
+         vWyy+c5hqEwb5VI2T2OeKOZsuJfRuaKUOD+ZJkbI6HjP1NsWmVbV5Zmz2yKIlAzavgQW
+         fzDmRV4FgAGBha+8OUsEyqIY1jamH+h9/2sK+90gSyuR7/rYjUEyC/TcJyWKNKcYHa5/
+         NadZr34G4y758STnUDbWtfttIU5Rg61L5o4N2yqngtjH/DylpC+471kSZOLmvfL2JU3e
+         J45lYlxldzxO8m9fdByDTy07tNGpb6LSoRJDUUfDcp74MC7eDuhHpQP4Rn/T3BNTOzzw
+         3toA==
+X-Gm-Message-State: AOAM532yFxDzIZBqLmf+HvzIBbmfe6Pre0UZQHilkWT1qmiVE+AhH4dT
+        4qF/SZbIzdIhrILHmxFUdux6zA==
+X-Google-Smtp-Source: ABdhPJxs/pQcAS2zvnJ16CTjs9g477Rs5JMYYC8B5kkiiA0dn7lD3oQ/W7AtqrHOuibodbiz+oZI3Q==
+X-Received: by 2002:a1c:2351:: with SMTP id j78mr4690686wmj.40.1632231203097;
+        Tue, 21 Sep 2021 06:33:23 -0700 (PDT)
+Received: from google.com ([95.148.6.233])
+        by smtp.gmail.com with ESMTPSA id g1sm4434940wmk.2.2021.09.21.06.33.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 21 Sep 2021 06:33:22 -0700 (PDT)
+Date:   Tue, 21 Sep 2021 14:33:20 +0100
+From:   Lee Jones <lee.jones@linaro.org>
+To:     Marek Vasut <marex@denx.de>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        stable@vger.kernel.org,
+        Meghana Madhyastha <meghana.madhyastha@gmail.com>,
+        Sean Paul <seanpaul@chromium.org>,
+        Thierry Reding <treding@nvidia.com>,
+        Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH V2] video: backlight: Drop maximum brightness override
+ for brightness zero
+Message-ID: <YUnfIFllpOMnie4l@google.com>
+References: <20210713191633.121317-1-marex@denx.de>
+ <072e01b7-8554-de4f-046a-da11af3958d6@denx.de>
 MIME-Version: 1.0
-In-Reply-To: <20210920121728.94045-1-arnd@kernel.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ielC16M4jNM8r9XDB90QignHCy/6YlUha15mhFWovRcMy9O1zzb
- 8QypFMtAxF5MzAHK++H1MBI81Sa75wLy/setk5x13DasmVS0AKNKY6GfUyCrzNgdbtkCKTc
- kwWR86U72xfpyB6Hrky0K/RNzjOCDlpPupfFbZssjNmoecQixWFYM7O/WLC1GhFaR6lMazX
- yBDHtqk4g/mtZryfF0OBQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:C/wqI77xvAo=:HRjvLc6nN+tv6C/BrmKRSq
- WKcOglc7y5AqtARLrn1+leF9neQNkKr82co/040Gxm7EJ+yY13wgWDcHM+ltiUt6FxyBZ9d5k
- 1bwC0RiNnFLO3gEM4KXxkyl8qK0jX4PAeuysc0Hnh+wrIJvBeAN45i4J8tguZxMTYVp6BTA95
- xXAfx5a28vu9RZlTaN7V1RPjnVwRxsOVSUA1IBORZprdzG4zoegm8ZHIFL/kV+s+T1Bpd81cH
- EVfVEyM2p5HFn6ozGuaV/xi7QlFhdFtDHCsvAPeYdRu/vDFjLyXsUXVRTf40igCLBe/sCuF0I
- 4dzjsZ/xCGzQ2vqidVfuKnOqUmdO6cx3TcKHiXMHyZpbHgzmHlxde0nH2nRRxHuvDSDdqOkXG
- QETmwXxWNyc6vJJE5fe6vA7bPIV7Hvw8xkqtZDG8z7jHxsuAsi88u3RRl9/Ia0crUKPBDiB8F
- z13T5dDSmqJcSTU3gUzmPoNxJD83aRFGY+CbrFxrDSexaNijgHO4vympYNcO3SfmeAi2QF9VN
- MPiFrqCqLcx/6JF59MRnLlyM/MmX5WjIwtJNazFd8JFcnKvqEmMemQX9OdzVTh85d62mKRxx8
- LXmQOSl2PJyciYWePTbhHhDSRUpyVo/pcL10CsBPaZX3Ux+qgMEfAKTXKhFTTXalsDbImF2TV
- zQJfbjEy3qdXrNtasPETDkJmPo2FeuBXtV5v8osPkxZo7Ew+Xyo2NpHRH7Wh9+ChnT9xiMcQC
- e0IuZ5Ktpgz1Y2nmng13PrGWD7VgOBPzLnYPikjlAxgrp/r5E4OAU20frGFDyWal0RYppWlWk
- BczjLrqVR9i+2f64AKfli9cYRTpvBDhzXssdxzqzO3QQEc+Fvdmo8qRQTkBWutfqRL2PF2QE/
- A+y/5JftYjrOUQ+nJNqmLunrtUpUbygu7fxX+sC4PfE/+LYDEzTfm/rVjbf2lqRrtzQPOaTd1
- 1/wVfzKDreknGXRA5+Sfjykp1RGHZ3JhqOZpuYBdHzVhKiMcwtTrHCIw3smrupIOF88E2wMbn
- SdlleS7Lfiw9A+j4ou7ClrVwGe5QYtPpZQ1Jyu87gSVLfdM0Cs+A6o1Tw06Eia4zbUX4l4kyz
- ULO/TkD8wCoZS0=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <072e01b7-8554-de4f-046a-da11af3958d6@denx.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 9/20/21 2:17 PM, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> The empty unmap_page_from_agp() macro causes a warning when
-> building with 'make W=3D1' on a couple of architectures:
->
-> drivers/char/agp/generic.c: In function 'agp_generic_destroy_page':
-> drivers/char/agp/generic.c:1265:28: error: suggest braces around empty b=
-ody in an 'if' statement [-Werror=3Dempty-body]
->   1265 |   unmap_page_from_agp(page);
->
-> Change the definitions to a 'do { } while (0)' construct to
-> make these more reliable.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+On Sat, 11 Sep 2021, Marek Vasut wrote:
 
-Acked-by: Helge Deller <deller@gmx.de> # parisc
+> On 7/13/21 9:16 PM, Marek Vasut wrote:
+> > The note in c2adda27d202f ("video: backlight: Add of_find_backlight helper
+> > in backlight.c") says that gpio-backlight uses brightness as power state.
+> > This has been fixed since in ec665b756e6f7 ("backlight: gpio-backlight:
+> > Correct initial power state handling") and other backlight drivers do not
+> > require this workaround. Drop the workaround.
+> > 
+> > This fixes the case where e.g. pwm-backlight can perfectly well be set to
+> > brightness 0 on boot in DT, which without this patch leads to the display
+> > brightness to be max instead of off.
+> > 
+> > Fixes: c2adda27d202f ("video: backlight: Add of_find_backlight helper in backlight.c")
+> > Acked-by: Noralf Trønnes <noralf@tronnes.org>
+> > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> > Cc: <stable@vger.kernel.org> # 5.4+
+> > Cc: <stable@vger.kernel.org> # 4.19.x: ec665b756e6f7: backlight: gpio-backlight: Correct initial power state handling
+> > Signed-off-by: Marek Vasut <marex@denx.de>
+> > Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> > Cc: Meghana Madhyastha <meghana.madhyastha@gmail.com>
+> > Cc: Noralf Trønnes <noralf@tronnes.org>
+> > Cc: Sean Paul <seanpaul@chromium.org>
+> > Cc: Thierry Reding <treding@nvidia.com>
+> > ---
+> > V2: Add AB/RB, CC stable
+> > ---
+> >   drivers/video/backlight/backlight.c | 6 ------
+> >   1 file changed, 6 deletions(-)
+> > 
+> > diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+> > index 537fe1b376ad7..fc990e576340b 100644
+> > --- a/drivers/video/backlight/backlight.c
+> > +++ b/drivers/video/backlight/backlight.c
+> > @@ -688,12 +688,6 @@ static struct backlight_device *of_find_backlight(struct device *dev)
+> >   			of_node_put(np);
+> >   			if (!bd)
+> >   				return ERR_PTR(-EPROBE_DEFER);
+> > -			/*
+> > -			 * Note: gpio_backlight uses brightness as
+> > -			 * power state during probe
+> > -			 */
+> > -			if (!bd->props.brightness)
+> > -				bd->props.brightness = bd->props.max_brightness;
+> >   		}
+> >   	}
+> > 
+> 
+> Any news on this ?
+> 
+> Expanding CC list.
 
-Thanks,
-Helge
+Looks like I was left off of the original submission.
 
-> ---
->   arch/parisc/include/asm/agp.h  | 4 ++--
->   arch/powerpc/include/asm/agp.h | 4 ++--
->   arch/sparc/include/asm/agp.h   | 6 +++---
->   3 files changed, 7 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/parisc/include/asm/agp.h b/arch/parisc/include/asm/agp=
-.h
-> index cb04470e63d0..14ae54cfd368 100644
-> --- a/arch/parisc/include/asm/agp.h
-> +++ b/arch/parisc/include/asm/agp.h
-> @@ -8,8 +8,8 @@
->    *
->    */
->
-> -#define map_page_into_agp(page)		/* nothing */
-> -#define unmap_page_from_agp(page)	/* nothing */
-> +#define map_page_into_agp(page)		do { } while (0)
-> +#define unmap_page_from_agp(page)	do { } while (0)
->   #define flush_agp_cache()		mb()
->
->   /* GATT allocation. Returns/accepts GATT kernel virtual address. */
-> diff --git a/arch/powerpc/include/asm/agp.h b/arch/powerpc/include/asm/a=
-gp.h
-> index b29b1186f819..6b6485c988dd 100644
-> --- a/arch/powerpc/include/asm/agp.h
-> +++ b/arch/powerpc/include/asm/agp.h
-> @@ -5,8 +5,8 @@
->
->   #include <asm/io.h>
->
-> -#define map_page_into_agp(page)
-> -#define unmap_page_from_agp(page)
-> +#define map_page_into_agp(page) do {} while (0)
-> +#define unmap_page_from_agp(page) do {} while (0)
->   #define flush_agp_cache() mb()
->
->   /* GATT allocation. Returns/accepts GATT kernel virtual address. */
-> diff --git a/arch/sparc/include/asm/agp.h b/arch/sparc/include/asm/agp.h
-> index efe0d6a12e5a..2d0ff84cee3f 100644
-> --- a/arch/sparc/include/asm/agp.h
-> +++ b/arch/sparc/include/asm/agp.h
-> @@ -4,9 +4,9 @@
->
->   /* dummy for now */
->
-> -#define map_page_into_agp(page)
-> -#define unmap_page_from_agp(page)
-> -#define flush_agp_cache() mb()
-> +#define map_page_into_agp(page)		do { } while (0)
-> +#define unmap_page_from_agp(page)	do { } while (0)
-> +#define flush_agp_cache()		mb()
->
->   /* GATT allocation. Returns/accepts GATT kernel virtual address. */
->   #define alloc_gatt_pages(order)		\
->
+I can't apply a quoted patch.  Please re-submit.
 
+-- 
+Lee Jones [李琼斯]
+Senior Technical Lead - Developer Services
+Linaro.org │ Open source software for Arm SoCs
+Follow Linaro: Facebook | Twitter | Blog

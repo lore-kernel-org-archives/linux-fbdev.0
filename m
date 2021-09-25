@@ -2,42 +2,41 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 074F9C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 24 Sep 2021 22:22:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E685BC433EF
+	for <linux-fbdev@archiver.kernel.org>; Sat, 25 Sep 2021 22:54:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C44A961250
-	for <linux-fbdev@archiver.kernel.org>; Fri, 24 Sep 2021 22:22:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ABABB60FDC
+	for <linux-fbdev@archiver.kernel.org>; Sat, 25 Sep 2021 22:54:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239455AbhIXWX7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 24 Sep 2021 18:23:59 -0400
-Received: from smtp-relay-canonical-0.canonical.com ([185.125.188.120]:58992
-        "EHLO smtp-relay-canonical-0.canonical.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S230139AbhIXWX7 (ORCPT
+        id S230124AbhIYW4O (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 25 Sep 2021 18:56:14 -0400
+Received: from smtp-relay-canonical-1.canonical.com ([185.125.188.121]:37690
+        "EHLO smtp-relay-canonical-1.canonical.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S230078AbhIYW4N (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 24 Sep 2021 18:23:59 -0400
+        Sat, 25 Sep 2021 18:56:13 -0400
 Received: from localhost (1.general.cking.uk.vpn [10.172.193.212])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by smtp-relay-canonical-0.canonical.com (Postfix) with ESMTPSA id 35E4C4015E;
-        Fri, 24 Sep 2021 22:22:23 +0000 (UTC)
+        by smtp-relay-canonical-1.canonical.com (Postfix) with ESMTPSA id 39DA94017D;
+        Sat, 25 Sep 2021 22:54:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-        s=20210705; t=1632522143;
-        bh=s7NAl5BrbFi3IzEIAE8SRfLu7xxGL8BY3hza4BKEYzk=;
+        s=20210705; t=1632610477;
+        bh=AG12UD5GriQyZRsgo14qtdKvfNVSCkgR37Dg0qaOmc0=;
         h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type;
-        b=DfJQdzMu6XeK/TGgo7xtYAzrUVSJZ9G5sA69oRVG/AmxS5tPIp4mjdREw+9WNP0YR
-         OB3T0JWR43ojE3i8IGaZhXjIcMicNep6J3nYuC5+aQpIYGY49x1J7MgIVdwjddKrlE
-         WVROohEfvbxqyLVyEXuFmphQ1PBih9vJrGzAaoVAGbf4mX5NC3STolhi4H6rJ3GU51
-         4H5SYdBXdXvonDOslnM0shUxH2PrN8dJEGy/a3pBzGIkzrm/MpZ6XPu97RQYS24gqG
-         Xo9U5DwIuWEP1uRXYWBl65fDUo0huuRCuEsWGePT/6E1VK+t7a1SKKibBESFBYXvE5
-         TSTu/P3YbqS0Q==
+        b=dKN4sJPMlwObnLl1dEaMjayZxqCCMu2zWiEm8cJ/792OMYftatnp+AoUvWClN6Ggp
+         bmUxT/VYf/yC5j+bCdZLdxguIopdu/TY3wcxXcTb5ZdI3KHoapL8cUZgR4PGK+7VlG
+         F5/o1bP024knrFoI3l+0POYNHPlPZkqvvLmhKlDai94HbMPI57iEvIVfKFZPm5zXIu
+         grtwq8V9nmPkCHDNdH5gM7znZJr3iVls59zGUZfBZmWPkIq9JpTHlKagnwo8MgKe4a
+         ZPS30SUBxiojnD1cTXLv2hsk3sPNqyHOQgQkgB/zfA4tAaUeNIGMAPgqZlkitt+5J5
+         PHXUpLh0mp0ZQ==
 From:   Colin King <colin.king@canonical.com>
-To:     Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] video: fbdev: via: Fix spelling mistake "bellow" -> "below"
-Date:   Fri, 24 Sep 2021 23:22:22 +0100
-Message-Id: <20210924222222.141645-1-colin.king@canonical.com>
+Subject: [PATCH] video: fbdev: pxa168fb: Initialize pointers with NULL and not plain integer 0
+Date:   Sat, 25 Sep 2021 23:54:36 +0100
+Message-Id: <20210925225436.183770-1-colin.king@canonical.com>
 X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -48,26 +47,29 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Colin Ian King <colin.king@canonical.com>
 
-There is a spelling mistake in a debug message. Fix it.
+Pointers info and fbi are being initialized with plain integer zeros. Fix
+this by initializing them with NULLs.
 
 Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/video/fbdev/via/lcd.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/pxa168fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd.c
-index 088b962076b5..beec5c8d4d08 100644
---- a/drivers/video/fbdev/via/lcd.c
-+++ b/drivers/video/fbdev/via/lcd.c
-@@ -543,7 +543,7 @@ void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
- 	/* Get panel table Pointer */
- 	panel_crt_table = viafb_get_best_mode(panel_hres, panel_vres, 60);
- 	viafb_fill_var_timing_info(&panel_var, panel_crt_table);
--	DEBUG_MSG(KERN_INFO "bellow viafb_lcd_set_mode!!\n");
-+	DEBUG_MSG(KERN_INFO "below viafb_lcd_set_mode!!\n");
- 	if (VT1636_LVDS == plvds_chip_info->lvds_chip_name)
- 		viafb_init_lvds_vt1636(plvds_setting_info, plvds_chip_info);
- 	clock = PICOS2KHZ(panel_crt_table->pixclock) * 1000;
+diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
+index 47e6a1d0d229..461fedf9bf24 100644
+--- a/drivers/video/fbdev/pxa168fb.c
++++ b/drivers/video/fbdev/pxa168fb.c
+@@ -593,8 +593,8 @@ static void pxa168fb_init_mode(struct fb_info *info,
+ static int pxa168fb_probe(struct platform_device *pdev)
+ {
+ 	struct pxa168fb_mach_info *mi;
+-	struct fb_info *info = 0;
+-	struct pxa168fb_info *fbi = 0;
++	struct fb_info *info = NULL;
++	struct pxa168fb_info *fbi = NULL;
+ 	struct resource *res;
+ 	struct clk *clk;
+ 	int irq, ret;
 -- 
 2.32.0
 

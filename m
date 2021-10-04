@@ -2,89 +2,105 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20D57C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Oct 2021 14:20:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DEBBEC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Oct 2021 19:34:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 08DCA61A81
-	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Oct 2021 14:20:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C6C02611C8
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Oct 2021 19:34:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354448AbhJAOV7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 1 Oct 2021 10:21:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51738 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354434AbhJAOV6 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Oct 2021 10:21:58 -0400
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A3D5C061775
-        for <linux-fbdev@vger.kernel.org>; Fri,  1 Oct 2021 07:20:14 -0700 (PDT)
-Received: by mail-wm1-x331.google.com with SMTP id v127so7333741wme.5
-        for <linux-fbdev@vger.kernel.org>; Fri, 01 Oct 2021 07:20:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=TkvezXZi1fkQu2wSS8sN2XxyukeSXc1Ehs+Ng7L0v2o=;
-        b=M37+gLJCudNwkTp3onhQJxl5TOiJ+FpReycB0OQLaRNEuWn1E3vnJuOczX97Uweqru
-         jNnu7MsRbuYvB1nlUzf6sJsFOAAo9bxuptxMabl2H3kVl8wZK+HtrbvNaY0K13RLGA7Y
-         cjBugFhfb27ajXQKgIhGNCuQS8sVlRR0lj/14pOJOki6xNOn4pdafgoxcNYW1QscNQcx
-         KUeg0/EQs2mnzVr/8+sfA8yoYiwArhzRHcUXxmFvpVrn9SR8rEjvqwtygf5HLUutijZF
-         aO6aZxd4+9mh5m7MMNgwbBmqEMsmFSG1uz26QSDG6SvB5bowL5YIFS1T1GxGymoPYZBF
-         55ZA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=TkvezXZi1fkQu2wSS8sN2XxyukeSXc1Ehs+Ng7L0v2o=;
-        b=6IEKIRD43r0zj5RWXfn6Q4OhtNWeq9WDggC0GInlDQLyXN4Xpeyr9F7A6HP4sQRYBR
-         VWgTizwu/ZhJX5Mdx+3EaU4LvSZWtcf0AqUDKIeBObTWzkrjQFLOFQMmtcQL+WnerDEi
-         Er6iFhm706RY1aM1bmPBHT0VRSwt23gRAfrRz94dN2Q8RuCt4B8233ZUe/hEzf3lLkbe
-         4ZmS/zQ1Id6ckZ6rhGVlrDlpS+GE7O2uXwacSyNorAh2fZ2jfgSqSHDGudqdBGMCDzDr
-         ycjYulETBuTl9v/eaAXijr6aIl3F4Wwmd4WOuSqEFr5A9H4jHyEi0ceP7PZroqFPD81X
-         rCrg==
-X-Gm-Message-State: AOAM531W8UlDj91V6JfaaXK6dmARWtrIQ7man5/7n0fW0wE1lUy5Gvrj
-        WiFq7g2k28onSICK+eRqiTo1NDmy5OfDHQ==
-X-Google-Smtp-Source: ABdhPJzxtZlp1kEw8K9aNJvxGPN2K1mx0SKE8o8iaolaSDtaINwMztEVAHUiLcBZbVwCmCnCJqmBGQ==
-X-Received: by 2002:a7b:cde8:: with SMTP id p8mr4695246wmj.160.1633098013189;
-        Fri, 01 Oct 2021 07:20:13 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id d129sm8300815wmd.23.2021.10.01.07.20.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 01 Oct 2021 07:20:12 -0700 (PDT)
-Date:   Fri, 1 Oct 2021 15:20:10 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Mark Brown <broonie@kernel.org>
-Cc:     Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH] backlight: hx8357: Add SPI device ID table
-Message-ID: <20211001142010.weg4w3doowdsj3ch@maple.lan>
-References: <20210922151014.49719-1-broonie@kernel.org>
- <20210927094200.a7d73sl2k4x5xjch@maple.lan>
- <20210927114727.GB4199@sirena.org.uk>
- <20210927132417.lixg3ojhnwlleht3@maple.lan>
- <20210927133055.GD4199@sirena.org.uk>
+        id S238926AbhJDTfu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 4 Oct 2021 15:35:50 -0400
+Received: from relay01.th.seeweb.it ([5.144.164.162]:41391 "EHLO
+        relay01.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232043AbhJDTfu (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Oct 2021 15:35:50 -0400
+X-Greylist: delayed 375 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Oct 2021 15:35:50 EDT
+Received: from Marijn-Arch-PC.localdomain (94-209-165-62.cable.dynamic.v4.ziggo.nl [94.209.165.62])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 85F901F6A2;
+        Mon,  4 Oct 2021 21:27:47 +0200 (CEST)
+From:   Marijn Suijten <marijn.suijten@somainline.org>
+To:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>
+Cc:     ~postmarketos/upstreaming@lists.sr.ht,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Martin Botka <martin.botka@somainline.org>,
+        Jami Kettunen <jami.kettunen@somainline.org>,
+        Pavel Dubrova <pashadubrova@gmail.com>,
+        Marijn Suijten <marijn.suijten@somainline.org>,
+        Kiran Gunda <kgunda@codeaurora.org>,
+        Courtney Cavin <courtney.cavin@sonymobile.com>,
+        Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH 05/10] backlight: qcom-wled: Fix off-by-one maximum with default num_strings
+Date:   Mon,  4 Oct 2021 21:27:36 +0200
+Message-Id: <20211004192741.621870-6-marijn.suijten@somainline.org>
+X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20211004192741.621870-1-marijn.suijten@somainline.org>
+References: <20211004192741.621870-1-marijn.suijten@somainline.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20210927133055.GD4199@sirena.org.uk>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Sep 27, 2021 at 02:30:56PM +0100, Mark Brown wrote:
-> On Mon, Sep 27, 2021 at 02:24:17PM +0100, Daniel Thompson wrote:
-> 
-> > In that case what is the point of including unconsumed driver data? Most
-> > DT centric drivers that included this for modalias reasons leave it
-> > NULL.
-> 
-> It's mainly there because it's generated fairly mechanically from the OF
-> ID table - there's no great reason for it to be there while all
-> instantiation is done via DT.
+When not specifying num-strings in the DT the default is used, but +1 is
+added to it which turns wled3 into 4 and wled4/5 into 5 strings instead
+of 3 and 4 respectively, causing out of bounds reads and register
+read/writes.  This +1 exists for a deficiency in the DT parsing code,
+and is simply omitted entirely - solving this oob issue - by allowing
+one extra iteration of the wled_var_cfg function parsing this particular
+property.
 
-Ok. If there's no plan to change the driver to pick it up from the table then
-let's remove the redundant values. They just make it look like somebody forgot
-something in the probe method (instead of it being a deliberate choice).
+Fixes: 93c64f1ea1e8 ("leds: add Qualcomm PM8941 WLED driver")
+Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+---
+ drivers/video/backlight/qcom-wled.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 27e8949c7922..66ce77ee3099 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -1255,17 +1255,17 @@ static const struct wled_var_cfg wled5_ovp_cfg = {
+ 
+ static u32 wled3_num_strings_values_fn(u32 idx)
+ {
+-	return idx + 1;
++	return idx;
+ }
+ 
+ static const struct wled_var_cfg wled3_num_strings_cfg = {
+ 	.fn = wled3_num_strings_values_fn,
+-	.size = 3,
++	.size = 4, /* [0, 3] */
+ };
+ 
+ static const struct wled_var_cfg wled4_num_strings_cfg = {
+ 	.fn = wled3_num_strings_values_fn,
+-	.size = 4,
++	.size = 5, /* [0, 4] */
+ };
+ 
+ static u32 wled3_switch_freq_values_fn(u32 idx)
+@@ -1520,8 +1520,6 @@ static int wled_configure(struct wled *wled)
+ 			*bool_opts[i].val_ptr = true;
+ 	}
+ 
+-	cfg->num_strings = cfg->num_strings + 1;
+-
+ 	string_len = of_property_count_elems_of_size(dev->of_node,
+ 						     "qcom,enabled-strings",
+ 						     sizeof(u32));
+-- 
+2.33.0
 
-Daniel.

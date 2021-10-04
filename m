@@ -2,24 +2,27 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFA0AC43217
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A584C4332F
 	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Oct 2021 19:34:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DAFF861181
+	by mail.kernel.org (Postfix) with ESMTP id 35FEA61181
 	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Oct 2021 19:34:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238633AbhJDTgD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S238974AbhJDTgD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Mon, 4 Oct 2021 15:36:03 -0400
-Received: from relay03.th.seeweb.it ([5.144.164.164]:44149 "EHLO
-        relay03.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238971AbhJDTf7 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Oct 2021 15:35:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38056 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238929AbhJDTfv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Oct 2021 15:35:51 -0400
+Received: from relay02.th.seeweb.it (relay02.th.seeweb.it [IPv6:2001:4b7a:2000:18::163])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ABDC9C06174E
+        for <linux-fbdev@vger.kernel.org>; Mon,  4 Oct 2021 12:34:01 -0700 (PDT)
 Received: from Marijn-Arch-PC.localdomain (94-209-165-62.cable.dynamic.v4.ziggo.nl [94.209.165.62])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id 6925B1F69D;
-        Mon,  4 Oct 2021 21:27:48 +0200 (CEST)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id D1AE81F68F;
+        Mon,  4 Oct 2021 21:27:44 +0200 (CEST)
 From:   Marijn Suijten <marijn.suijten@somainline.org>
 To:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
@@ -39,9 +42,9 @@ Cc:     ~postmarketos/upstreaming@lists.sr.ht,
         Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 06/10] backlight: qcom-wled: Remove unnecessary 4th default string in wled3
-Date:   Mon,  4 Oct 2021 21:27:37 +0200
-Message-Id: <20211004192741.621870-7-marijn.suijten@somainline.org>
+Subject: [PATCH 02/10] backlight: qcom-wled: Use cpu_to_le16 macro to perform conversion
+Date:   Mon,  4 Oct 2021 21:27:33 +0200
+Message-Id: <20211004192741.621870-3-marijn.suijten@somainline.org>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20211004192741.621870-1-marijn.suijten@somainline.org>
 References: <20211004192741.621870-1-marijn.suijten@somainline.org>
@@ -51,33 +54,88 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The previous commit improves num_strings parsing to not go over the
-maximum of 3 strings for wled3 anymore.  Likewise this default index for
-a hypothetical 4th string is invalid and could access registers that are
-not mapped to the desired purpose.
-Removing this value gets rid of undesired confusion and avoids the
-possibility of accessing registers at this offset even if the 4th array
-element is used by accident.
+The kernel already provides appropriate primitives to perform endianness
+conversion which should be used in favour of manual bit-wrangling.
 
 Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 ---
- drivers/video/backlight/qcom-wled.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/backlight/qcom-wled.c | 25 +++++++++++--------------
+ 1 file changed, 11 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-index 66ce77ee3099..9ec1bdd374d2 100644
+index 6af808af2328..9927ed98944a 100644
 --- a/drivers/video/backlight/qcom-wled.c
 +++ b/drivers/video/backlight/qcom-wled.c
-@@ -946,7 +946,7 @@ static const struct wled_config wled3_config_defaults = {
- 	.cs_out_en = false,
- 	.ext_gen = false,
- 	.cabc = false,
--	.enabled_strings = {0, 1, 2, 3},
-+	.enabled_strings = {0, 1, 2},
- };
+@@ -231,14 +231,14 @@ struct wled {
+ static int wled3_set_brightness(struct wled *wled, u16 brightness)
+ {
+ 	int rc, i;
+-	u8 v[2];
++	u16 v;
  
- static int wled4_setup(struct wled *wled)
+-	v[0] = brightness & 0xff;
+-	v[1] = (brightness >> 8) & 0xf;
++	v = cpu_to_le16(brightness & WLED3_SINK_REG_BRIGHT_MAX);
+ 
+ 	for (i = 0;  i < wled->cfg.num_strings; ++i) {
+ 		rc = regmap_bulk_write(wled->regmap, wled->ctrl_addr +
+-				       WLED3_SINK_REG_BRIGHT(i), v, 2);
++				       WLED3_SINK_REG_BRIGHT(i),
++				       &v, sizeof(v));
+ 		if (rc < 0)
+ 			return rc;
+ 	}
+@@ -249,19 +249,18 @@ static int wled3_set_brightness(struct wled *wled, u16 brightness)
+ static int wled4_set_brightness(struct wled *wled, u16 brightness)
+ {
+ 	int rc, i;
+-	u16 low_limit = wled->max_brightness * 4 / 1000;
+-	u8 v[2];
++	u16 v, low_limit = wled->max_brightness * 4 / 1000;
+ 
+ 	/* WLED4's lower limit of operation is 0.4% */
+ 	if (brightness > 0 && brightness < low_limit)
+ 		brightness = low_limit;
+ 
+-	v[0] = brightness & 0xff;
+-	v[1] = (brightness >> 8) & 0xf;
++	v = cpu_to_le16(brightness & WLED3_SINK_REG_BRIGHT_MAX);
+ 
+ 	for (i = 0;  i < wled->cfg.num_strings; ++i) {
+ 		rc = regmap_bulk_write(wled->regmap, wled->sink_addr +
+-				       WLED4_SINK_REG_BRIGHT(i), v, 2);
++				       WLED4_SINK_REG_BRIGHT(i),
++				       &v, sizeof(v));
+ 		if (rc < 0)
+ 			return rc;
+ 	}
+@@ -272,22 +271,20 @@ static int wled4_set_brightness(struct wled *wled, u16 brightness)
+ static int wled5_set_brightness(struct wled *wled, u16 brightness)
+ {
+ 	int rc, offset;
+-	u16 low_limit = wled->max_brightness * 1 / 1000;
+-	u8 v[2];
++	u16 v, low_limit = wled->max_brightness * 1 / 1000;
+ 
+ 	/* WLED5's lower limit is 0.1% */
+ 	if (brightness < low_limit)
+ 		brightness = low_limit;
+ 
+-	v[0] = brightness & 0xff;
+-	v[1] = (brightness >> 8) & 0x7f;
++	v = cpu_to_le16(brightness & WLED5_SINK_REG_BRIGHT_MAX_15B);
+ 
+ 	offset = (wled->cfg.mod_sel == MOD_A) ?
+ 		  WLED5_SINK_REG_MOD_A_BRIGHTNESS_LSB :
+ 		  WLED5_SINK_REG_MOD_B_BRIGHTNESS_LSB;
+ 
+ 	rc = regmap_bulk_write(wled->regmap, wled->sink_addr + offset,
+-			       v, 2);
++			       &v, sizeof(v));
+ 	return rc;
+ }
+ 
 -- 
 2.33.0
 

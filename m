@@ -2,57 +2,58 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C8BCC4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 10:42:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD939C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 10:53:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 33A0261381
-	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 10:42:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9F83161502
+	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 10:53:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234019AbhJEKoO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 5 Oct 2021 06:44:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47870 "EHLO
+        id S234017AbhJEKzI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 5 Oct 2021 06:55:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50472 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233961AbhJEKoM (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Oct 2021 06:44:12 -0400
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C2426C061745
-        for <linux-fbdev@vger.kernel.org>; Tue,  5 Oct 2021 03:42:20 -0700 (PDT)
-Received: by mail-wm1-x330.google.com with SMTP id v127so15945326wme.5
-        for <linux-fbdev@vger.kernel.org>; Tue, 05 Oct 2021 03:42:20 -0700 (PDT)
+        with ESMTP id S233855AbhJEKzH (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Oct 2021 06:55:07 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D571C06174E
+        for <linux-fbdev@vger.kernel.org>; Tue,  5 Oct 2021 03:53:17 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id m14-20020a05600c3b0e00b0030d4dffd04fso2551425wms.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 05 Oct 2021 03:53:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:subject:message-id:references:mime-version
+        h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=pVmRMn4rUtOm+1OEO0FywEMDowWiLVKHkRDbrijKrwg=;
-        b=ZS4YWF0OVkd9jDh40UlLY2uWt9d78SYkfjqGVKzM8G7JktwnA3ZteL30wEy+4PTRQ4
-         XemlL5BOCByzoBuNx8gMHUkinaI3VAsxs3agCljtjM2BJ4R7QMgIr2glQ/g0PXhB2nCR
-         tsfYgj9lJY3iPWBf/OmK4QTrupPJGVj1MdGUb2lHG5tt3aYvEPIFvmZPqkNkvOHH2EqN
-         juUBaWFSztsy/ioPPpV+e4Vr+Iv7Ce5UflDsH3oMJUoTR8y9CjLz6P/xHautUGrUdYNm
-         8nDQjmCoHgV7KEXm3LLN3JPxmk+wXRxcZ1j7ig9qgk6ZPKxaQxptiOnOorsFd6RyEciP
-         AKuA==
+        bh=oTS2oBDfu2qK2s9U2SS48/r8vYyQ0sH7yh9TkjSLfg4=;
+        b=wtqDN2BUF7B+RsSZ1cv9rGw41+p10e4VjPqj3DoifND0YwO+uY7viRKIpGmwZvTB0r
+         DqfxgDCIqJKnJDUGLlVSepXKGwX+/+efSvUYu8Z3PxOHpCMux9G9hgk1ICrp9ODo978a
+         zznvAA7JMsJ7ADIqeAZVmWI2bZBs+S5OHjX7ip4R5rAq7vOC5DiTd2fzA1teRF4KBe14
+         hV35RWAPtdSN3wHB9kwXMft2BloQfEo1NZVWIbGu8PD8r2Mq0SZBTmr9KK51ZlHr+vHu
+         8LGefWt7njELwZZiMAvzDOA0Dc3vPFgxLwSUXsQnFa7zn0CanlW54HFBrUbj9U+moaRR
+         CZDA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:subject:message-id:references
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=pVmRMn4rUtOm+1OEO0FywEMDowWiLVKHkRDbrijKrwg=;
-        b=5wfQYqxd/ryrgGYaNpFYuKYOvIxLSw5LjSia4dkPuGRYhAt8PP5o0vDY+f6V5bHVH7
-         YA0R+Ky4sPd0Q8ANLq2deVhbaTtU/nkcd6GVt+0eXYNHH/l1/cnaNRne+NfA6qKQO5L8
-         zgEwTIo3eTgH9D+7EDiRCMG55VOew74KstJk/alOKNxLTvW/BHD+fYtPwAsj0OmhUNOw
-         FyxlZ8bS5RGqdqus5sKbMGYv/qGWMy0EG5yhJFfng782XleRu6wb4qgzc/oKFw+Aj4KX
-         mKDUBSUqVfBMivDb+DBtfLROhTSIlEuZNk2wPmjPFoA5GX848thKPC2EUKBq+2uyD6Yy
-         xmKA==
-X-Gm-Message-State: AOAM532SP1V9TajavKp0mC1GrMrYdldLEWGUV5hJyYkoTHWTA9t9OKKr
-        F0XoXZ8MrInsRoIuds3lI1NF2g==
-X-Google-Smtp-Source: ABdhPJzk4476G45fhoT/tD2ExwshD2DdotRERLbyFyzc5wY17wFdvvLODEf4w4SPO9mjXk77xKdD6w==
-X-Received: by 2002:a1c:f008:: with SMTP id a8mr2588809wmb.140.1633430539291;
-        Tue, 05 Oct 2021 03:42:19 -0700 (PDT)
+        bh=oTS2oBDfu2qK2s9U2SS48/r8vYyQ0sH7yh9TkjSLfg4=;
+        b=aBR05WDGYksG52clbt51khT/MRFF+ftdXcbBxLc0kNeyJoGX+Df752ALAHuKRb3ZQX
+         2/I0c4IuO95hNAEyMaR272h/Yq+btf37t5I4f/6pwB96xhxhor8KiOaTSris/bSSToGm
+         xcDQZw9PRqteiRpOVvsMY5CJqN91agaO0vxEth79ArOkCD0SBVvBEorm4Y0j8C74VQ/k
+         /eW/5OJSALtm14es8KYMmaySPK7xzhDqsrHGy1yVAa4sCWcr1R1mWnSE8bsr1FM4Yijk
+         EDgByNbIB02s42WI6jpg/NxxNmi5vy95L98KzL281DHxcfJtSlbEO8ZfQFDgKx6cQhjI
+         opYA==
+X-Gm-Message-State: AOAM530lzW6w1cIljelHbGh1K7mXCzN492bIUvOy7Iog3b1bJe7BFd8k
+        EjdhM86v0IucJY2pLGTDhxV2ww==
+X-Google-Smtp-Source: ABdhPJyixh7+Xhqge46v4VUyw24e//BY5vWBinq6c7+AnLp/aMzF80GlAm88p3o4d1k2Lvi8OuYWgg==
+X-Received: by 2002:a7b:cc96:: with SMTP id p22mr2645777wma.26.1633431195487;
+        Tue, 05 Oct 2021 03:53:15 -0700 (PDT)
 Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id k18sm699320wrn.81.2021.10.05.03.42.18
+        by smtp.gmail.com with ESMTPSA id h15sm9413745wrt.0.2021.10.05.03.53.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Oct 2021 03:42:18 -0700 (PDT)
-Date:   Tue, 5 Oct 2021 11:42:16 +0100
+        Tue, 05 Oct 2021 03:53:14 -0700 (PDT)
+Date:   Tue, 5 Oct 2021 11:53:12 +0100
 From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
+To:     Marijn Suijten <marijn.suijten@somainline.org>
+Cc:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Lee Jones <lee.jones@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>,
@@ -68,87 +69,86 @@ To:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
         Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 04/10] backlight: qcom-wled: Validate enabled string
- indices in DT
-Message-ID: <20211005104216.7hqqdyqcqekqhg56@maple.lan>
+Subject: Re: [PATCH 05/10] backlight: qcom-wled: Fix off-by-one maximum with
+ default num_strings
+Message-ID: <20211005105312.kqiyzoqtzzjxayhg@maple.lan>
 References: <20211004192741.621870-1-marijn.suijten@somainline.org>
- <20211004192741.621870-5-marijn.suijten@somainline.org>
- <20211005091452.4ecqhlhrdxdgvs3c@maple.lan>
- <20211005100350.p56xuq74qsc7vhyp@SoMainline.org>
+ <20211004192741.621870-6-marijn.suijten@somainline.org>
+ <20211005091947.7msztp5l554c7cy4@maple.lan>
+ <20211005100606.faxra73mzkvjd4f6@SoMainline.org>
+ <20211005103843.heufyonycnudxnzd@maple.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20211005100350.p56xuq74qsc7vhyp@SoMainline.org>
+In-Reply-To: <20211005103843.heufyonycnudxnzd@maple.lan>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Oct 05, 2021 at 12:03:50PM +0200, Marijn Suijten wrote:
-> On 2021-10-05 10:14:52, Daniel Thompson wrote:
-> > On Mon, Oct 04, 2021 at 09:27:35PM +0200, Marijn Suijten wrote:
-> > > The strings passed in DT may possibly cause out-of-bounds register
-> > > accesses and should be validated before use.
+On Tue, Oct 05, 2021 at 11:38:43AM +0100, Daniel Thompson wrote:
+> On Tue, Oct 05, 2021 at 12:06:06PM +0200, Marijn Suijten wrote:
+> > On 2021-10-05 10:19:47, Daniel Thompson wrote:
+> > > On Mon, Oct 04, 2021 at 09:27:36PM +0200, Marijn Suijten wrote:
+> > > > When not specifying num-strings in the DT the default is used, but +1 is
+> > > > added to it which turns wled3 into 4 and wled4/5 into 5 strings instead
+> > > > of 3 and 4 respectively, causing out of bounds reads and register
+> > > > read/writes.  This +1 exists for a deficiency in the DT parsing code,
+> > > > and is simply omitted entirely - solving this oob issue - by allowing
+> > > > one extra iteration of the wled_var_cfg function parsing this particular
+> > > > property.
+> > > > 
+> > > > Fixes: 93c64f1ea1e8 ("leds: add Qualcomm PM8941 WLED driver")
+> > > > Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
+> > > > Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+> > > > ---
+> > > >  drivers/video/backlight/qcom-wled.c | 8 +++-----
+> > > >  1 file changed, 3 insertions(+), 5 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+> > > > index 27e8949c7922..66ce77ee3099 100644
+> > > > --- a/drivers/video/backlight/qcom-wled.c
+> > > > +++ b/drivers/video/backlight/qcom-wled.c
+> > > > @@ -1255,17 +1255,17 @@ static const struct wled_var_cfg wled5_ovp_cfg = {
+> > > >  
+> > > >  static u32 wled3_num_strings_values_fn(u32 idx)
+> > > >  {
+> > > > -	return idx + 1;
+> > > > +	return idx;
+> 
+> 
+> > > >  }
+> > > >  
+> > > >  static const struct wled_var_cfg wled3_num_strings_cfg = {
+> > > >  	.fn = wled3_num_strings_values_fn,
+> > > > -	.size = 3,
+> > > > +	.size = 4, /* [0, 3] */
 > > > 
-> > > Fixes: 775d2ffb4af6 ("backlight: qcom-wled: Restructure the driver for WLED3")
+> > > 0 is not a valid value for this property.
 > > 
-> > The first half of this patch actually fixes patch 1 from this patch set.
-> > It would be better to move that code there.
+> > These comments represent the possible loop iterations the DT "cfg
+> > parser" runs through, starting at j=0 and running up until and including
+> > j=3.  Should I make that more clear or omit these comments entirely?
 > 
-> It only helps guarding against a maximum of 3 leds for WLED3, while
-> using string_len instead of an unintentional sizeof(u32) (resulting in
-> a fixed size of 4) is a different issue requiring a separate patch to
-> fix.
+> The role of wled3_num_strings_values_fn() is to enumerate the list of
+> legal values for the property [ 1, 2, 3 ]. Your changes cause the
+> enumeration to include a non-legal value so that you can have an
+> identity mapping between the symbol and the enumerate value.
 > 
-> Would it help to reorder this patch before 1/10, and mention in patch
-> 1/10 (then 2/10) that, besides properly using string_len instead of
-> hardcoded 4 (which causes wrong reads from DT on top of this), it relies
-> on the previous patch to prevent against an array longer than 3 for
-> WLED3?
+> An alternative approach would be to leave the enumeration logic
+> alone but set the num_string default to UINT_MAX in all cases:
+> 
+> -	cfg->num_strings = cfg->num_strings + 1;
+> +	if (cfg->num_strings == UINT_MAX)
+> +		cfg->num_strings = 
 
-Reordering is OK for me.
-
-
-Daniel.
+Oops... looks like I missed the cfg->max_string_count here.
 
 
-> > > Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
-> > > Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
-> > > ---
-> > >  drivers/video/backlight/qcom-wled.c | 14 ++++++++++++++
-> > >  1 file changed, 14 insertions(+)
-> > > 
-> > > diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-> > > index 29910e603c42..27e8949c7922 100644
-> > > --- a/drivers/video/backlight/qcom-wled.c
-> > > +++ b/drivers/video/backlight/qcom-wled.c
-> > > @@ -1526,6 +1526,12 @@ static int wled_configure(struct wled *wled)
-> > >  						     "qcom,enabled-strings",
-> > >  						     sizeof(u32));
-> > >  	if (string_len > 0) {
-> > > +		if (string_len > wled->max_string_count) {
-> > > +			dev_err(dev, "Cannot have more than %d strings\n",
-> > > +				wled->max_string_count);
-> > > +			return -EINVAL;
-> > > +		}
-> > > +
-> > >  		rc = of_property_read_u32_array(dev->of_node,
-> > >  						"qcom,enabled-strings",
-> > >  						wled->cfg.enabled_strings,
-> > > @@ -1537,6 +1543,14 @@ static int wled_configure(struct wled *wled)
-> > >  			return -EINVAL;
-> > >  		}
-> > >  
-> > > +		for (i = 0; i < string_len; ++i) {
-> > > +			if (wled->cfg.enabled_strings[i] >= wled->max_string_count) {
-> > > +				dev_err(dev, "qcom,enabled-strings index %d at %d is out of bounds\n",
-> > > +					wled->cfg.enabled_strings[i], i);
-> > > +				return -EINVAL;
-> > > +			}
-> > > +		}
-> > > +
-> > >  		cfg->num_strings = string_len;
-> > >  	}
-> > >  
-> > > -- 
-> > > 2.33.0
-> > > 
+> +	else
+> +               /* Convert from enumerated to numeric form */
+> +		cfg->num_strings = wled3_num_strings_values_fn(
+> +						cfg->num_strings);
+
+
+PS the alternative option is not to treat num-strings as an enumerated
+   value at all and just read it directly without using wled_values()...

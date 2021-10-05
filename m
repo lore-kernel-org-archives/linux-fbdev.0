@@ -2,55 +2,55 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92ACAC433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 09:05:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 598D4C4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 09:07:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7492E61371
-	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 09:05:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 40C6261019
+	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 09:07:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233372AbhJEJHt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 5 Oct 2021 05:07:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52968 "EHLO
+        id S233454AbhJEJIy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 5 Oct 2021 05:08:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53234 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232478AbhJEJHs (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Oct 2021 05:07:48 -0400
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D747C061745
-        for <linux-fbdev@vger.kernel.org>; Tue,  5 Oct 2021 02:05:57 -0700 (PDT)
-Received: by mail-wm1-x329.google.com with SMTP id j27so15762782wms.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 05 Oct 2021 02:05:57 -0700 (PDT)
+        with ESMTP id S232773AbhJEJIx (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Oct 2021 05:08:53 -0400
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F40E1C061745
+        for <linux-fbdev@vger.kernel.org>; Tue,  5 Oct 2021 02:07:02 -0700 (PDT)
+Received: by mail-wr1-x436.google.com with SMTP id r10so19581197wra.12
+        for <linux-fbdev@vger.kernel.org>; Tue, 05 Oct 2021 02:07:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to;
-        bh=Sch0aWxDBNQdpah51FulP42zKP3FSOyTJMCjs7CVLTM=;
-        b=bY1lQ0osNyWKNqBAua4Kg5sBOYow4ldD0jTiPF6AlazJXq8jACkl3c0roM248Trihg
-         IP1KhGgFlPLVdLbcJ1LQeVgaTZDTX8dl62IlXg5NzbZv3pc/nkiVxgPatKf/tZaHm1dL
-         kWzZPcxsZ1+0mJeUm2cRo7GK1UtZzJCa6edlGwQPdzpIgr6QnEosRGm68aQsotwzRJXF
-         CDbleSXqI0i4BrCEaC5F1nDeuw3Wo75cHlLNBDTaOZrwrqkmq0tiaCjWf2eIqL13yYp3
-         wOpHJgeVAURft6aB7hMKER+PDuAzkvCD3WYlBBpsOe5ccbcbMWKY+sZV6UI69i1B+isa
-         q/4Q==
+        bh=eaV0+J7Wo9tK3d7Pp4N0WiS/CcawwxdUB4nHgm9+zy0=;
+        b=ZXvn7SJFoyDObMwwo9ZWh6POj4WW7/1eklTP/d3r8iibQyg5wGZ7+9e2L0yu0ld2Kq
+         4JVkS7GN0LnAdK6z6TfxE7GTlSQGMUN6LD/oHcWj0GpK4Cfb8my3/lJHD87ve0HsXcTA
+         aTThHdwj/zJ5q8W0c3zbCPSrev/iXLSGF0AppJaanIcXbQIrM6lBk4T+K0qMfOO66QqK
+         FtNXDr0Zx/qKttPgYepu3rPahQQaxCPUSB8kGTJVUg6HmDZVgQKJXLPqROT1fNjr9opH
+         Wk7BMpINyxFBeafBWJkYf1Hr/puNf9EPHWdlbkyzg7e6RSgpfK2jMhcxhJhxFSP4xMDE
+         vD7A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=Sch0aWxDBNQdpah51FulP42zKP3FSOyTJMCjs7CVLTM=;
-        b=yX8QPR9C4sQl/z9ACCgezBDNqulB+rDKs58XCPgAw1x2CPgrDgkmB/NKQJ5iGu5n9T
-         m0kl+kDd1jSlaRssSLaH0xa1jw5A1r30LKxJeyQ4o5ebyHVHhNfu96bgqdyM7q0w1jvq
-         QNeElQsUQmtDpwATuSErMXcDubIJxUxH2Lsv1uNTkE9zjy/KirptLWENVglEpiszfsPN
-         dW0AL1oLQWn3Jd7yePtXvQ5HyXLfRG63mBdDgBoyX0PO0pCiEWaBGslbuUnJG8uCSRhb
-         AGBnWT5FBGTuH/jtIU7zZx/qMznuJJ+noxp+Xuzuct2EFoiM79gTqccSk4GJQfMWAAUi
-         0lBA==
-X-Gm-Message-State: AOAM533HuchScHGlvQSQp6K5IbHn6K23VoHKPnCC1zT3cowLLPo0rIPJ
-        2NE4uX8H1Xx9wn4dbF8UAZC3GA==
-X-Google-Smtp-Source: ABdhPJxihmBnUHQnbQ4fyua0XZJasSFmZfAkJOHSSqxnk0Vb1yLrCSgSEA7VR57yIqbCyZjlKhl21w==
-X-Received: by 2002:a05:600c:4e86:: with SMTP id f6mr2195141wmq.52.1633424756122;
-        Tue, 05 Oct 2021 02:05:56 -0700 (PDT)
+        bh=eaV0+J7Wo9tK3d7Pp4N0WiS/CcawwxdUB4nHgm9+zy0=;
+        b=5LWTnBP858OyUCywx2JJuAl7jvFpxa6vVdji9KyIDAFeG1DYlzPgdNlsLnTowtR54e
+         huXfjkNJoyKsJd9F34uxtpWgMJh6Ou3Iphy5gkhHuQL7QGcUDMVrSCkQUy6M2wgn8nsZ
+         66tgmtHRhJ9Nf5U7pGYTq+5qHczm4IJynLSdOh/vznZ1TANnLRhgfirLu7jBoCBQeGrG
+         c0K794tm4Ykm5ZJ1kGrIf6AnTIlodos+MOYLE6iQKO/basw+Vf9LveYtUfYKSL34fnWT
+         yjIUqGrWaXW4HFmCFogvgm3FFWWQkhXI3kPoVBIz57ADeXXwHbBdWLKrlLYlxyl9Up5G
+         EVYA==
+X-Gm-Message-State: AOAM530TAQ2/L99zsjlw7Pboy7mMR2Thkrkf+vVMadOjKzS5WFe9PmSx
+        jP3bSYl+bYbHLe7Z2TJz0JnRKg==
+X-Google-Smtp-Source: ABdhPJxRA1+wjgnKkpwp1XCWLgEsaMfS4QCdHS5DNeS6CllcRYETYMqf8z7uXu9CnqZB/pQVxZWYng==
+X-Received: by 2002:a5d:59a4:: with SMTP id p4mr19411684wrr.332.1633424821514;
+        Tue, 05 Oct 2021 02:07:01 -0700 (PDT)
 Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id k9sm16658777wrz.22.2021.10.05.02.05.54
+        by smtp.gmail.com with ESMTPSA id z12sm17048213wrv.31.2021.10.05.02.07.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Oct 2021 02:05:55 -0700 (PDT)
-Date:   Tue, 5 Oct 2021 10:05:53 +0100
+        Tue, 05 Oct 2021 02:07:00 -0700 (PDT)
+Date:   Tue, 5 Oct 2021 10:06:59 +0100
 From:   Daniel Thompson <daniel.thompson@linaro.org>
 To:     Marijn Suijten <marijn.suijten@somainline.org>
 Cc:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
@@ -69,29 +69,23 @@ Cc:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
         Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/10] backlight: qcom-wled: Pass number of elements to
- read to read_u32_array
-Message-ID: <20211005090553.zoqzzz4767srvwzb@maple.lan>
+Subject: Re: [PATCH 02/10] backlight: qcom-wled: Use cpu_to_le16 macro to
+ perform conversion
+Message-ID: <20211005090659.rt4bxlkvbabwsiru@maple.lan>
 References: <20211004192741.621870-1-marijn.suijten@somainline.org>
- <20211004192741.621870-2-marijn.suijten@somainline.org>
+ <20211004192741.621870-3-marijn.suijten@somainline.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20211004192741.621870-2-marijn.suijten@somainline.org>
+In-Reply-To: <20211004192741.621870-3-marijn.suijten@somainline.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Oct 04, 2021 at 09:27:32PM +0200, Marijn Suijten wrote:
-> of_property_read_u32_array takes the number of elements to read as last
-> argument. This does not always need to be 4 (sizeof(u32)) but should
-> instead be the size of the array in DT as read just above with
-> of_property_count_elems_of_size.
+On Mon, Oct 04, 2021 at 09:27:33PM +0200, Marijn Suijten wrote:
+> The kernel already provides appropriate primitives to perform endianness
+> conversion which should be used in favour of manual bit-wrangling.
 > 
-> To not make such an error go unnoticed again the driver now bails
-> accordingly when of_property_read_u32_array returns an error.
-> 
-> Fixes: 775d2ffb4af6 ("backlight: qcom-wled: Restructure the driver for WLED3")
 > Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
 > Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
 
@@ -99,35 +93,82 @@ Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
 
 > ---
->  drivers/video/backlight/qcom-wled.c | 13 ++++++++++---
->  1 file changed, 10 insertions(+), 3 deletions(-)
+>  drivers/video/backlight/qcom-wled.c | 25 +++++++++++--------------
+>  1 file changed, 11 insertions(+), 14 deletions(-)
 > 
 > diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-> index d094299c2a48..6af808af2328 100644
+> index 6af808af2328..9927ed98944a 100644
 > --- a/drivers/video/backlight/qcom-wled.c
 > +++ b/drivers/video/backlight/qcom-wled.c
-> @@ -1528,11 +1528,18 @@ static int wled_configure(struct wled *wled)
->  	string_len = of_property_count_elems_of_size(dev->of_node,
->  						     "qcom,enabled-strings",
->  						     sizeof(u32));
-> -	if (string_len > 0)
-> -		of_property_read_u32_array(dev->of_node,
-> +	if (string_len > 0) {
-> +		rc = of_property_read_u32_array(dev->of_node,
->  						"qcom,enabled-strings",
->  						wled->cfg.enabled_strings,
-> -						sizeof(u32));
-> +						string_len);
-> +		if (rc) {
-> +			dev_err(dev, "Failed to read %d elements from "
-> +				"qcom,enabled-strings: %d\n",
-> +				string_len, rc);
-> +			return -EINVAL;
-> +		}
-> +	}
+> @@ -231,14 +231,14 @@ struct wled {
+>  static int wled3_set_brightness(struct wled *wled, u16 brightness)
+>  {
+>  	int rc, i;
+> -	u8 v[2];
+> +	u16 v;
 >  
->  	return 0;
+> -	v[0] = brightness & 0xff;
+> -	v[1] = (brightness >> 8) & 0xf;
+> +	v = cpu_to_le16(brightness & WLED3_SINK_REG_BRIGHT_MAX);
+>  
+>  	for (i = 0;  i < wled->cfg.num_strings; ++i) {
+>  		rc = regmap_bulk_write(wled->regmap, wled->ctrl_addr +
+> -				       WLED3_SINK_REG_BRIGHT(i), v, 2);
+> +				       WLED3_SINK_REG_BRIGHT(i),
+> +				       &v, sizeof(v));
+>  		if (rc < 0)
+>  			return rc;
+>  	}
+> @@ -249,19 +249,18 @@ static int wled3_set_brightness(struct wled *wled, u16 brightness)
+>  static int wled4_set_brightness(struct wled *wled, u16 brightness)
+>  {
+>  	int rc, i;
+> -	u16 low_limit = wled->max_brightness * 4 / 1000;
+> -	u8 v[2];
+> +	u16 v, low_limit = wled->max_brightness * 4 / 1000;
+>  
+>  	/* WLED4's lower limit of operation is 0.4% */
+>  	if (brightness > 0 && brightness < low_limit)
+>  		brightness = low_limit;
+>  
+> -	v[0] = brightness & 0xff;
+> -	v[1] = (brightness >> 8) & 0xf;
+> +	v = cpu_to_le16(brightness & WLED3_SINK_REG_BRIGHT_MAX);
+>  
+>  	for (i = 0;  i < wled->cfg.num_strings; ++i) {
+>  		rc = regmap_bulk_write(wled->regmap, wled->sink_addr +
+> -				       WLED4_SINK_REG_BRIGHT(i), v, 2);
+> +				       WLED4_SINK_REG_BRIGHT(i),
+> +				       &v, sizeof(v));
+>  		if (rc < 0)
+>  			return rc;
+>  	}
+> @@ -272,22 +271,20 @@ static int wled4_set_brightness(struct wled *wled, u16 brightness)
+>  static int wled5_set_brightness(struct wled *wled, u16 brightness)
+>  {
+>  	int rc, offset;
+> -	u16 low_limit = wled->max_brightness * 1 / 1000;
+> -	u8 v[2];
+> +	u16 v, low_limit = wled->max_brightness * 1 / 1000;
+>  
+>  	/* WLED5's lower limit is 0.1% */
+>  	if (brightness < low_limit)
+>  		brightness = low_limit;
+>  
+> -	v[0] = brightness & 0xff;
+> -	v[1] = (brightness >> 8) & 0x7f;
+> +	v = cpu_to_le16(brightness & WLED5_SINK_REG_BRIGHT_MAX_15B);
+>  
+>  	offset = (wled->cfg.mod_sel == MOD_A) ?
+>  		  WLED5_SINK_REG_MOD_A_BRIGHTNESS_LSB :
+>  		  WLED5_SINK_REG_MOD_B_BRIGHTNESS_LSB;
+>  
+>  	rc = regmap_bulk_write(wled->regmap, wled->sink_addr + offset,
+> -			       v, 2);
+> +			       &v, sizeof(v));
+>  	return rc;
 >  }
+>  
 > -- 
 > 2.33.0
 > 

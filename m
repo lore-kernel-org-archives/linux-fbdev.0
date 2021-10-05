@@ -2,57 +2,30 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94617C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 09:38:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64C74C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 10:04:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 761B460FD8
-	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 09:38:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4346A6121F
+	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Oct 2021 10:04:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233517AbhJEJkQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 5 Oct 2021 05:40:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60816 "EHLO
+        id S233365AbhJEKFw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 5 Oct 2021 06:05:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38850 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233602AbhJEJkP (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Oct 2021 05:40:15 -0400
-Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63FB9C061745
-        for <linux-fbdev@vger.kernel.org>; Tue,  5 Oct 2021 02:38:25 -0700 (PDT)
-Received: by mail-wr1-x431.google.com with SMTP id r10so19736755wra.12
-        for <linux-fbdev@vger.kernel.org>; Tue, 05 Oct 2021 02:38:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=vt9oy+0kcElMx6lSJpjsV9uP82l0Z+RoA+ivzl5gLLQ=;
-        b=py36VqET7Mcd78BQTYkjhaGkz6+fhMmSLSICQIezDBrLNYaQ4htKIDZqTdBgNycNpV
-         UEnXtku01BKhzZo4K59hnJSf0mXC2DtG4d+7g1s8SmFcXtk0LpDf/brT7GQYRQsCvhFn
-         9emCFWPLaQM0DvrHvq2Ivibwx5F3AXpzgn6eczf6Xttaj1l1bm7zjj0MecyyLdgTaGtp
-         2lOV1VlUCvV93Y/NZInzWI1c1xTpCXrd/kX/tw3syYeRfPeW+5VcbbVODEq4lIS7z6qn
-         vq6XgzTvW5DDe8xp/NJj25+D8dqytOVAcE/xzOVKFELPxrBmGnJRwzZ7AjRDojsgLCg/
-         N3Iw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=vt9oy+0kcElMx6lSJpjsV9uP82l0Z+RoA+ivzl5gLLQ=;
-        b=L9EKWzmqQbuYF7B78Fet2hpXQ+Hccz28Be7wEgGoTwHgOfqDEkr8wptmJAJnc6P85h
-         8jNWXVvN9xQTs7ECZoAw1JNQAOycl90oSlj3HeRfL1a6QM2QtVb64nHc/iEqFmYh4FgZ
-         W+TOsZ+at7Ist55jZQBL/B2QKNQzSXMMZMzgEdV7YSrCtu3QeEz7xvc3ftYF4jWu1E8y
-         m6ni+oDq5vI7cs3vBUyEovnxZnwYJszEenhvZ622hY2XXQMyCTq/VX5SMHjc1jaKOk6S
-         YkWP2NAn2vhz3uvwMbRIntlfFXHC6ifyvhI8gSwqxw7o4+lbEeFQydY6vIxQqM12HpkY
-         bE+Q==
-X-Gm-Message-State: AOAM531LIb9fCfET2EnK7/LJZjaGQKTVZ6UKpbnd677ChHdH4etjffOb
-        5znJedn3ZKhFm/HfIDhQ8isfTA==
-X-Google-Smtp-Source: ABdhPJy2Cv4VLFXCmn/y9qaTgx5H3ZhL33c2RWwwNK7Ws33XZqkeaVtFR0N8phhQcgpM8qjPLyvO8A==
-X-Received: by 2002:adf:97cd:: with SMTP id t13mr20122276wrb.312.1633426703978;
-        Tue, 05 Oct 2021 02:38:23 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id c185sm1321846wma.8.2021.10.05.02.38.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Oct 2021 02:38:23 -0700 (PDT)
-Date:   Tue, 5 Oct 2021 10:38:21 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Marijn Suijten <marijn.suijten@somainline.org>
+        with ESMTP id S233469AbhJEKFr (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Oct 2021 06:05:47 -0400
+Received: from relay05.th.seeweb.it (relay05.th.seeweb.it [IPv6:2001:4b7a:2000:18::166])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40D9BC061749
+        for <linux-fbdev@vger.kernel.org>; Tue,  5 Oct 2021 03:03:56 -0700 (PDT)
+Received: from SoMainline.org (94-209-165-62.cable.dynamic.v4.ziggo.nl [94.209.165.62])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 02B013F585;
+        Tue,  5 Oct 2021 12:03:51 +0200 (CEST)
+Date:   Tue, 5 Oct 2021 12:03:50 +0200
+From:   Marijn Suijten <marijn.suijten@somainline.org>
+To:     Daniel Thompson <daniel.thompson@linaro.org>
 Cc:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Lee Jones <lee.jones@linaro.org>,
@@ -69,27 +42,99 @@ Cc:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
         Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/10] backlight: qcom-wled: Override num-strings when
- enabled-strings is set
-Message-ID: <20211005093821.6kj6wuoszz2ruodl@maple.lan>
+Subject: Re: [PATCH 04/10] backlight: qcom-wled: Validate enabled string
+ indices in DT
+Message-ID: <20211005100350.p56xuq74qsc7vhyp@SoMainline.org>
+Mail-Followup-To: Daniel Thompson <daniel.thompson@linaro.org>,
+        phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Martin Botka <martin.botka@somainline.org>,
+        Jami Kettunen <jami.kettunen@somainline.org>,
+        Pavel Dubrova <pashadubrova@gmail.com>,
+        Kiran Gunda <kgunda@codeaurora.org>,
+        Courtney Cavin <courtney.cavin@sonymobile.com>,
+        Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
 References: <20211004192741.621870-1-marijn.suijten@somainline.org>
- <20211004192741.621870-4-marijn.suijten@somainline.org>
+ <20211004192741.621870-5-marijn.suijten@somainline.org>
+ <20211005091452.4ecqhlhrdxdgvs3c@maple.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20211004192741.621870-4-marijn.suijten@somainline.org>
+In-Reply-To: <20211005091452.4ecqhlhrdxdgvs3c@maple.lan>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Oct 04, 2021 at 09:27:34PM +0200, Marijn Suijten wrote:
-> DT-bindings do not specify num-strings as mandatory property, yet it is
-> required to be specified even if enabled-strings is used.  The length of
-> that property-array should already be enough to determine exactly which
-> and how many strings to enable.
+On 2021-10-05 10:14:52, Daniel Thompson wrote:
+> On Mon, Oct 04, 2021 at 09:27:35PM +0200, Marijn Suijten wrote:
+> > The strings passed in DT may possibly cause out-of-bounds register
+> > accesses and should be validated before use.
+> > 
+> > Fixes: 775d2ffb4af6 ("backlight: qcom-wled: Restructure the driver for WLED3")
 > 
-> Fixes: 775d2ffb4af6 ("backlight: qcom-wled: Restructure the driver for WLED3")
-> Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
-> Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+> The first half of this patch actually fixes patch 1 from this patch set.
+> It would be better to move that code there.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+It only helps guarding against a maximum of 3 leds for WLED3, while
+using string_len instead of an unintentional sizeof(u32) (resulting in
+a fixed size of 4) is a different issue requiring a separate patch to
+fix.
+
+Would it help to reorder this patch before 1/10, and mention in patch
+1/10 (then 2/10) that, besides properly using string_len instead of
+hardcoded 4 (which causes wrong reads from DT on top of this), it relies
+on the previous patch to prevent against an array longer than 3 for
+WLED3?
+
+- Marijn
+
+> Daniel.
+> 
+> 
+> > Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
+> > Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+> > ---
+> >  drivers/video/backlight/qcom-wled.c | 14 ++++++++++++++
+> >  1 file changed, 14 insertions(+)
+> > 
+> > diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+> > index 29910e603c42..27e8949c7922 100644
+> > --- a/drivers/video/backlight/qcom-wled.c
+> > +++ b/drivers/video/backlight/qcom-wled.c
+> > @@ -1526,6 +1526,12 @@ static int wled_configure(struct wled *wled)
+> >  						     "qcom,enabled-strings",
+> >  						     sizeof(u32));
+> >  	if (string_len > 0) {
+> > +		if (string_len > wled->max_string_count) {
+> > +			dev_err(dev, "Cannot have more than %d strings\n",
+> > +				wled->max_string_count);
+> > +			return -EINVAL;
+> > +		}
+> > +
+> >  		rc = of_property_read_u32_array(dev->of_node,
+> >  						"qcom,enabled-strings",
+> >  						wled->cfg.enabled_strings,
+> > @@ -1537,6 +1543,14 @@ static int wled_configure(struct wled *wled)
+> >  			return -EINVAL;
+> >  		}
+> >  
+> > +		for (i = 0; i < string_len; ++i) {
+> > +			if (wled->cfg.enabled_strings[i] >= wled->max_string_count) {
+> > +				dev_err(dev, "qcom,enabled-strings index %d at %d is out of bounds\n",
+> > +					wled->cfg.enabled_strings[i], i);
+> > +				return -EINVAL;
+> > +			}
+> > +		}
+> > +
+> >  		cfg->num_strings = string_len;
+> >  	}
+> >  
+> > -- 
+> > 2.33.0
+> > 

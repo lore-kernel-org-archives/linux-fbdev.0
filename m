@@ -2,136 +2,137 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB26FC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Oct 2021 09:25:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6080EC433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Oct 2021 14:44:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A13766117A
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Oct 2021 09:25:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3FE35610C9
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Oct 2021 14:44:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237758AbhJFJ05 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Oct 2021 05:26:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51172 "EHLO
+        id S238205AbhJFOqn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Oct 2021 10:46:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41218 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237851AbhJFJ04 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Oct 2021 05:26:56 -0400
-Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com [IPv6:2607:f8b0:4864:20::52b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 36DA1C061749;
-        Wed,  6 Oct 2021 02:25:05 -0700 (PDT)
-Received: by mail-pg1-x52b.google.com with SMTP id 133so1979066pgb.1;
-        Wed, 06 Oct 2021 02:25:05 -0700 (PDT)
+        with ESMTP id S231403AbhJFOql (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Oct 2021 10:46:41 -0400
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3916BC061749
+        for <linux-fbdev@vger.kernel.org>; Wed,  6 Oct 2021 07:44:49 -0700 (PDT)
+Received: by mail-wr1-x42a.google.com with SMTP id t8so9697406wri.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 06 Oct 2021 07:44:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:from:date:message-id:subject:to;
-        bh=YoKNEf2WSYB/PwAMSXP3Pm+YEc1WB69hZKGup8EMISM=;
-        b=PdugfPRBmSgMLJz8TSMOmqaPuf0HSj2jFh24P+eXMctQ6KVC9AKc6JjRNci5ing4kp
-         l47z0IiVYX/HP1tJRvWVXpfBUekNdCGbBKy3gx1GAd2ihOXbw3iCUtYpk0QRALk+aVBZ
-         4syQ6n4sDriORW/ViLi++ivIbItNmNL8zP1LMrDFlnuo8jLiXDPCTtNpffLqrvFw55o1
-         /Lfgf0brYcB3znqt1Nc+3NiNzfGkKD8uv9tdnwV8m4XL78H8kUKTODl4eDUv/mA7e+Qg
-         EfsMDjfoCJvsluZzbiVPgfO89egX2AP3mbYZ3W13d6YAgfIr7IvijDi4P0WmW7rHUhuw
-         0yTw==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=D8IjD/aX+SAqkEjm7xgEe5lxocD/PXw4l5YWyLqfbtc=;
+        b=sjymcv1htUJfHr/ek8Mjj/Jzt/jL4wvmG/taOYRNvKcZWk9BkgQtJjHgO7wbXBFrHy
+         meZmY5A0tTIXo7CrDb1wtV1kVUe0zpcretTP/oJR1dUYtCogFfD4itlw7SlETG69n6Xi
+         cRM1/7X/fYoubACDyBPEiCkkKuAUi0hY2aAzKxEFA/nDteTiuhRMStnHbhpfANKS6SOo
+         aZ2uU5GuqODutpS9OMjadts9W8OOjuOAgFSiKeYSCLDwsbW9Cov/zeNYAJFIXp8iKB4R
+         qB3jLqqhLJY0SdzrfSgr+y6OWem7CqBIbjFWChJaTT0M0IN9Rp0D7UjF4OBKnk8d1pUl
+         rGUg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to;
-        bh=YoKNEf2WSYB/PwAMSXP3Pm+YEc1WB69hZKGup8EMISM=;
-        b=c5WEKnxPEWeT2M7ItPvYd+6AwhplEwI9iFUlqNe/ZRzXqVpd4pXRucPeGTTGZHGphr
-         D1/o5cojQQP/n+6wFyc+CTI/7vb2iigZJlHjv8XV4aAJxcT+f6XwnDoOq1GYSviW/gpR
-         c/hX6ZnwqkVIzJU+D30K5e2ja+zXOEa/7JQm0WZKfPyes3M+wFoSq/fEAh3U9kMT346s
-         yr3zwL5naySA6ob826298Ka5zjER6kY7KDTa3HgTWSiMb/cd1gi/E83bW58IU8qmQIU3
-         sqoiAmE3dikmZzT6yFJSUjr+yZ5e7yI0V6bwEVImeLQwiqlDKgmXGS7bZ5YRzizomNpk
-         +LbA==
-X-Gm-Message-State: AOAM532jWbKdSBfxGWXDgx9uasMfwKlOJomho0ckhWXgAw8wQJsm/GIy
-        oVuIJBBXDGNKm0gURXy6mgHayYXCUxxuzxXGAEYi5PD0ILL7ys4=
-X-Google-Smtp-Source: ABdhPJyCLQAb2aAMg7RpDcBBkAmHwbKxxU4/PLFxw+OhVQ9LWQoIpn86p+YJ9IanwZgaMo+CN7L0bGx+4ZYscUc998c=
-X-Received: by 2002:a63:594a:: with SMTP id j10mr19701173pgm.205.1633512304644;
- Wed, 06 Oct 2021 02:25:04 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=D8IjD/aX+SAqkEjm7xgEe5lxocD/PXw4l5YWyLqfbtc=;
+        b=Vb7qSOO8TqB7e0X0rFNkmq2ep8EchylITa/oTyz22EzSFUxqAwiwmr9eMU8++u+S1F
+         aqZlbdVmg5du6y6P6lGh/ZJ2JBWH0ztS1mVriACmLkJUu6idwl5edEO2HWo8hkQd8js5
+         PpIWgSwhb/r34QyG7qv3K4+RtqrPnedAA6EecwYOLKf1Xcpa+eiUHEz3jBa6Yxh1qaqh
+         yHsRp0SdhRpqU+MY3ksEutKy1G2DKotr/6oXpSOFzOrnnu9ziUgogeDjLglzZbjt7tjV
+         BAuwkAzslVD/OJS4xjxFUGac1Q+kWK+LIP1zzSm8vpe1Bg23PD7sKKTqceOHOdmmg+9Y
+         0Exg==
+X-Gm-Message-State: AOAM533ei0Q9km1Pg4YxgYwaSJz26Zf8Ly9KkwvM1IaxYwzzXbSvgYsQ
+        lT4TShf975+G3Bn/zvQdbZFahg==
+X-Google-Smtp-Source: ABdhPJzOIM/pk9tWOTUWl5e+TDTH0xpNOQTnfj4KEfoU6EtOZONtFMHK6lwbDtQM4rXB6YpRldnDdg==
+X-Received: by 2002:a1c:5413:: with SMTP id i19mr10372676wmb.31.1633531487682;
+        Wed, 06 Oct 2021 07:44:47 -0700 (PDT)
+Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id f7sm3104178wmj.20.2021.10.06.07.44.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 06 Oct 2021 07:44:46 -0700 (PDT)
+Date:   Wed, 6 Oct 2021 15:44:44 +0100
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Marijn Suijten <marijn.suijten@somainline.org>
+Cc:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Martin Botka <martin.botka@somainline.org>,
+        Jami Kettunen <jami.kettunen@somainline.org>,
+        Pavel Dubrova <pashadubrova@gmail.com>,
+        Kiran Gunda <kgunda@codeaurora.org>,
+        Courtney Cavin <courtney.cavin@sonymobile.com>,
+        Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 05/10] backlight: qcom-wled: Fix off-by-one maximum with
+ default num_strings
+Message-ID: <20211006144444.6q3qm3bzfrhzwa46@maple.lan>
+References: <20211004192741.621870-6-marijn.suijten@somainline.org>
+ <20211005091947.7msztp5l554c7cy4@maple.lan>
+ <20211005100606.faxra73mzkvjd4f6@SoMainline.org>
+ <20211005103843.heufyonycnudxnzd@maple.lan>
+ <20211005105312.kqiyzoqtzzjxayhg@maple.lan>
+ <20211005114435.phyq2jsbdyroa6kn@SoMainline.org>
+ <20211005140349.kefi26yev3gy3zhv@maple.lan>
+ <20211005152326.5k5cb53ajqnactrg@SoMainline.org>
+ <20211005162453.ozckxhm47jcarsza@maple.lan>
+ <20211005173400.lyu3gabbalv2l3uq@SoMainline.org>
 MIME-Version: 1.0
-From:   Hao Sun <sunhao.th@gmail.com>
-Date:   Wed, 6 Oct 2021 17:24:53 +0800
-Message-ID: <CACkBjsaAFR4Jx3+pxM5zM09jFL1Th2pi-XNfn4CoSrjePmxSKQ@mail.gmail.com>
-Subject: KASAN: vmalloc-out-of-bounds Write in imageblit
-To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211005173400.lyu3gabbalv2l3uq@SoMainline.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+On Tue, Oct 05, 2021 at 07:34:00PM +0200, Marijn Suijten wrote:
+> On 2021-10-05 17:24:53, Daniel Thompson wrote:
+> > On Tue, Oct 05, 2021 at 05:23:26PM +0200, Marijn Suijten wrote:
+> > > Since there don't seem to be any substantial platforms/PMICs using this
+> > > functionality in a working manner, can I talk you into agreeing with
+> > > fixing the DT instead?
+> > 
+> > I've no objections to seeing the DT updated. However I don't really see
+> > what benefit we get from breaking existing DTs in order to do so.
+> > 
+> > "Cleaning up annoying legacy" is seldom a good reason to break existing
+> > DTs since, if we could break DTs whenever we choose, there would never
+> > be any annoying legacy to worry about. When conflicting properties
+> > result in uninterpretable DTs then a break may be justified but that is
+> > not the case here.
+> 
+> As mentioned in my message and repeated by Konrad, the only "existing
+> DT" that could possibly be broken is a platform that's brought up by us
+> (SoMainline) and we're more than happy to improve the driver and leave
+> legacy DT behind us, unless there's more DT in circulation that hasn't
+> landed in Linux mainline but should be taken into account?
 
-When using Healer to fuzz the latest Linux kernel, the following crash
-was triggered.
+Devicetrees are supposed to be the domain of firmware (e.g. not part of
+the kernel).
 
-HEAD commit: 42d43c92fc57  Merge branch 'for-linus'
-git tree: upstream
-console output:
-https://drive.google.com/file/d/1fV8jSOKPspCPI-4i7Ee_FJIPIvz24MYu/view?usp=sharing
-kernel config: https://drive.google.com/file/d/15vWoQRbJuuMu4ovWhUm1h4SrHyNwK8im/view?usp=sharing
-
-Sorry, I don't have a reproducer for this crash, hope the symbolized
-report can help.
-If you fix this issue, please add the following tag to the commit:
-Reported-by: Hao Sun <sunhao.th@gmail.com>
-
-==================================================================
-BUG: KASAN: vmalloc-out-of-bounds in fast_imageblit
-drivers/video/fbdev/core/sysimgblt.c:229 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x1372/0x13f0
-drivers/video/fbdev/core/sysimgblt.c:275
-Write of size 4 at addr ffffc90005741000 by task syz-executor/15849
-
-CPU: 0 PID: 15849 Comm: syz-executor Not tainted 5.15.0-rc3+ #1
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS
-1.13.0-1ubuntu1.1 04/01/2014
-Call Trace:
- __dump_stack lib/dump_stack.c:88 [inline]
- dump_stack_lvl+0xcd/0x134 lib/dump_stack.c:106
- print_address_description.constprop.0.cold+0xf/0x334 mm/kasan/report.c:256
- __kasan_report mm/kasan/report.c:442 [inline]
- kasan_report.cold+0x83/0xdf mm/kasan/report.c:459
- fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
- sys_imageblit+0x1372/0x13f0 drivers/video/fbdev/core/sysimgblt.c:275
- drm_fb_helper_sys_imageblit+0x1c/0x180 drivers/gpu/drm/drm_fb_helper.c:794
- drm_fbdev_fb_imageblit+0x179/0x260 drivers/gpu/drm/drm_fb_helper.c:2276
- bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:139 [inline]
- bit_putcs+0x8ed/0xd80 drivers/video/fbdev/core/bitblit.c:188
- fbcon_putcs+0x362/0x450 drivers/video/fbdev/core/fbcon.c:1296
- do_update_region+0x399/0x630 drivers/tty/vt/vt.c:676
- invert_screen+0x2a7/0x610 drivers/tty/vt/vt.c:800
- highlight drivers/tty/vt/selection.c:57 [inline]
- clear_selection drivers/tty/vt/selection.c:84 [inline]
- clear_selection+0x55/0x70 drivers/tty/vt/selection.c:80
- vc_do_resize+0xda8/0x10a0 drivers/tty/vt/vt.c:1257
- fbcon_do_set_font+0x47e/0x780 drivers/video/fbdev/core/fbcon.c:2397
- fbcon_set_font+0x81e/0xa10 drivers/video/fbdev/core/fbcon.c:2483
- con_font_set drivers/tty/vt/vt.c:4666 [inline]
- con_font_op+0x73a/0xca0 drivers/tty/vt/vt.c:4710
- vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
- vt_ioctl+0x1de9/0x2af0 drivers/tty/vt/vt_ioctl.c:752
- tty_ioctl+0xc80/0x1450 drivers/tty/tty_io.c:2805
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:874 [inline]
- __se_sys_ioctl fs/ioctl.c:860 [inline]
- __x64_sys_ioctl+0x193/0x200 fs/ioctl.c:860
- do_syscall_x64 arch/x86/entry/common.c:50 [inline]
- do_syscall_64+0x35/0xb0 arch/x86/entry/common.c:80
- entry_SYSCALL_64_after_hwframe+0x44/0xae
-RIP: 0033:0x7fbb0c85cc4d
-Code: 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 f3 0f 1e fa 48 89 f8 48
-89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d
-01 f0 ff ff 73 01 c3 48 c7 c1 bc ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007fbb09dc4c58 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 00007fbb0c9830a0 RCX: 00007fbb0c85cc4d
-RDX: 0000000020000080 RSI: 0000000000004b72 RDI: 0000000000000006
-RBP: 00007fbb0c8d5d80 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 00007fbb0c9830a0
-R13: 00007ffdbece6b9f R14: 00007ffdbece6d40 R15: 00007fbb09dc4dc0
+I'm therefore reluctant to adopt an "it only exists if it is upstream"
+approach for documented DT bindings. Doubly so when it is our bugs that
+causes DTs to be written in a manner which we then retrospectively
+declare to be wrong.
 
 
-Memory state around the buggy address:
- ffffc90005740f00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- ffffc90005740f80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->ffffc90005741000: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-                   ^
- ffffc90005741080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc90005741100: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-==================================================================
+> Anyway the plan is to leave qcom,num-strings in place so that the
+> default enabled_strings list in this driver actually serves a purpose.
+> Then, if num-strings and enabled-strings is provided the former has
+> precedence (assuming it doesn't exceed the size of the latter) but
+> we'll print a warning about this (now unnecessary) ambiguity, and if
+> possible at all - haven't found an example yet - make the properties
+> mutually exclusive in dt-bindings.
+> 
+> Disallowing both cases would only simplify the code in the end but we
+> can spend a few lines to support the desired legacy.
+
+Yes, warning is OK for me.
+
+
+Daniel.

@@ -2,137 +2,266 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6080EC433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Oct 2021 14:44:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 792BEC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Oct 2021 19:38:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3FE35610C9
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Oct 2021 14:44:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5BB0E611C1
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Oct 2021 19:38:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238205AbhJFOqn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Oct 2021 10:46:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41218 "EHLO
+        id S229992AbhJFTkS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Oct 2021 15:40:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53770 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231403AbhJFOql (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Oct 2021 10:46:41 -0400
-Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3916BC061749
-        for <linux-fbdev@vger.kernel.org>; Wed,  6 Oct 2021 07:44:49 -0700 (PDT)
-Received: by mail-wr1-x42a.google.com with SMTP id t8so9697406wri.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 06 Oct 2021 07:44:49 -0700 (PDT)
+        with ESMTP id S239248AbhJFTkQ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Oct 2021 15:40:16 -0400
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B993AC061755
+        for <linux-fbdev@vger.kernel.org>; Wed,  6 Oct 2021 12:38:23 -0700 (PDT)
+Received: by mail-pj1-x1034.google.com with SMTP id qe4-20020a17090b4f8400b0019f663cfcd1so5207116pjb.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 06 Oct 2021 12:38:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=D8IjD/aX+SAqkEjm7xgEe5lxocD/PXw4l5YWyLqfbtc=;
-        b=sjymcv1htUJfHr/ek8Mjj/Jzt/jL4wvmG/taOYRNvKcZWk9BkgQtJjHgO7wbXBFrHy
-         meZmY5A0tTIXo7CrDb1wtV1kVUe0zpcretTP/oJR1dUYtCogFfD4itlw7SlETG69n6Xi
-         cRM1/7X/fYoubACDyBPEiCkkKuAUi0hY2aAzKxEFA/nDteTiuhRMStnHbhpfANKS6SOo
-         aZ2uU5GuqODutpS9OMjadts9W8OOjuOAgFSiKeYSCLDwsbW9Cov/zeNYAJFIXp8iKB4R
-         qB3jLqqhLJY0SdzrfSgr+y6OWem7CqBIbjFWChJaTT0M0IN9Rp0D7UjF4OBKnk8d1pUl
-         rGUg==
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=LOPyAAlgkloGBvBKaHv+rjO0uew1lLPS4TPvNQXgGpg=;
+        b=NfRXDAjZ56Sp834gnEHgLwuXxQVUtsJkT2wga3+6IgC06j+y5bTeXit8d+59Vzb3EB
+         d5z8MUC2yTrMyl/REWDz7Xj7y4VryHU2ACdz7TdMZ2sEy74M46zyTFe14HUcaaYbxfCK
+         nRCyGp7GzMSIaj6tmAg4lxzSmurSmmRsCLgRk=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=D8IjD/aX+SAqkEjm7xgEe5lxocD/PXw4l5YWyLqfbtc=;
-        b=Vb7qSOO8TqB7e0X0rFNkmq2ep8EchylITa/oTyz22EzSFUxqAwiwmr9eMU8++u+S1F
-         aqZlbdVmg5du6y6P6lGh/ZJ2JBWH0ztS1mVriACmLkJUu6idwl5edEO2HWo8hkQd8js5
-         PpIWgSwhb/r34QyG7qv3K4+RtqrPnedAA6EecwYOLKf1Xcpa+eiUHEz3jBa6Yxh1qaqh
-         yHsRp0SdhRpqU+MY3ksEutKy1G2DKotr/6oXpSOFzOrnnu9ziUgogeDjLglzZbjt7tjV
-         BAuwkAzslVD/OJS4xjxFUGac1Q+kWK+LIP1zzSm8vpe1Bg23PD7sKKTqceOHOdmmg+9Y
-         0Exg==
-X-Gm-Message-State: AOAM533ei0Q9km1Pg4YxgYwaSJz26Zf8Ly9KkwvM1IaxYwzzXbSvgYsQ
-        lT4TShf975+G3Bn/zvQdbZFahg==
-X-Google-Smtp-Source: ABdhPJzOIM/pk9tWOTUWl5e+TDTH0xpNOQTnfj4KEfoU6EtOZONtFMHK6lwbDtQM4rXB6YpRldnDdg==
-X-Received: by 2002:a1c:5413:: with SMTP id i19mr10372676wmb.31.1633531487682;
-        Wed, 06 Oct 2021 07:44:47 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id f7sm3104178wmj.20.2021.10.06.07.44.46
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=LOPyAAlgkloGBvBKaHv+rjO0uew1lLPS4TPvNQXgGpg=;
+        b=Izd6mJLctqGRTLCeSatnwEzna1SkabbL9FSP2zgIJu0SupMXDNi37IP/cOWDD7/Gv3
+         330OmUrxDMMwNJ1js3kqXYAn6IlHIMKEyepTnEBOIp9hyzuV23RBuqlrDx7zfCZHMjJw
+         Ips0YJ/FgMm1/RS4TtH1gFAk+6cDflUea8O68+M6zuCdPHtGFiqs99NzcvsaPKybUTHs
+         DWA5Bc19JzEeRSgRJpdSpBTe9GJlJOOCKqj0aHF1lt+YKXMZBKtV1PHL1v/wspFoovoJ
+         ypnko5VJ0qlpNfCkLkEEKFageLP66rQZjbG+xPLkwWpdGx5Ij0bJgFhbAK2+xdnTX8Q9
+         eqrA==
+X-Gm-Message-State: AOAM531WlKvVrkXkrvkq0zqR2VOj53Wk8q+EbDphcmWoAV5QT9Sit46X
+        bfb8H6zClCTw6m3IyhOkGGFETQ==
+X-Google-Smtp-Source: ABdhPJyOSP9eTH58O4sZphYJfqDacdQGshqo1a+GgIDJL6zusxu34JwQnPr+XtN/rdjjr7tkocXkfA==
+X-Received: by 2002:a17:902:6b0b:b0:13a:18bf:1ece with SMTP id o11-20020a1709026b0b00b0013a18bf1ecemr12512498plk.49.1633549103194;
+        Wed, 06 Oct 2021 12:38:23 -0700 (PDT)
+Received: from smtp.gmail.com ([2620:15c:202:201:d412:c5eb:4aca:4738])
+        by smtp.gmail.com with ESMTPSA id o14sm22011296pfh.84.2021.10.06.12.38.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 06 Oct 2021 07:44:46 -0700 (PDT)
-Date:   Wed, 6 Oct 2021 15:44:44 +0100
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Marijn Suijten <marijn.suijten@somainline.org>
-Cc:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Martin Botka <martin.botka@somainline.org>,
-        Jami Kettunen <jami.kettunen@somainline.org>,
-        Pavel Dubrova <pashadubrova@gmail.com>,
-        Kiran Gunda <kgunda@codeaurora.org>,
-        Courtney Cavin <courtney.cavin@sonymobile.com>,
-        Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/10] backlight: qcom-wled: Fix off-by-one maximum with
- default num_strings
-Message-ID: <20211006144444.6q3qm3bzfrhzwa46@maple.lan>
-References: <20211004192741.621870-6-marijn.suijten@somainline.org>
- <20211005091947.7msztp5l554c7cy4@maple.lan>
- <20211005100606.faxra73mzkvjd4f6@SoMainline.org>
- <20211005103843.heufyonycnudxnzd@maple.lan>
- <20211005105312.kqiyzoqtzzjxayhg@maple.lan>
- <20211005114435.phyq2jsbdyroa6kn@SoMainline.org>
- <20211005140349.kefi26yev3gy3zhv@maple.lan>
- <20211005152326.5k5cb53ajqnactrg@SoMainline.org>
- <20211005162453.ozckxhm47jcarsza@maple.lan>
- <20211005173400.lyu3gabbalv2l3uq@SoMainline.org>
+        Wed, 06 Oct 2021 12:38:22 -0700 (PDT)
+From:   Stephen Boyd <swboyd@chromium.org>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Benjamin Gaignard <benjamin.gaignard@linaro.org>,
+        Chen Feng <puck.chen@hisilicon.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Emma Anholt <emma@anholt.net>,
+        =?UTF-8?q?Heiko=20St=C3=BCbner?= <heiko@sntech.de>,
+        Inki Dae <inki.dae@samsung.com>,
+        James Qian Wang <james.qian.wang@arm.com>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Joerg Roedel <joro@8bytes.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Joonyoung Shim <jy0922.shim@samsung.com>,
+        Jyri Sarha <jyri.sarha@iki.fi>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-pm@vger.kernel.org, Liviu Dudau <liviu.dudau@arm.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Clark <robdclark@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Russell King <rmk+kernel@arm.linux.org.uk>,
+        Sandy Huang <hjc@rock-chips.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Seung-Woo Kim <sw0312.kim@samsung.com>,
+        Takashi Iwai <tiwai@suse.com>,
+        Tian Tao <tiantao6@hisilicon.com>,
+        Tomas Winkler <tomas.winkler@intel.com>,
+        Tomi Valkeinen <tomba@kernel.org>,
+        Will Deacon <will@kernel.org>,
+        Xinliang Liu <xinliang.liu@linaro.org>,
+        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
+        Yong Wu <yong.wu@mediatek.com>
+Subject: [PATCH v2 00/34] component: Make into an aggregate bus
+Date:   Wed,  6 Oct 2021 12:37:45 -0700
+Message-Id: <20211006193819.2654854-1-swboyd@chromium.org>
+X-Mailer: git-send-email 2.33.0.800.g4c38ced690-goog
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211005173400.lyu3gabbalv2l3uq@SoMainline.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Oct 05, 2021 at 07:34:00PM +0200, Marijn Suijten wrote:
-> On 2021-10-05 17:24:53, Daniel Thompson wrote:
-> > On Tue, Oct 05, 2021 at 05:23:26PM +0200, Marijn Suijten wrote:
-> > > Since there don't seem to be any substantial platforms/PMICs using this
-> > > functionality in a working manner, can I talk you into agreeing with
-> > > fixing the DT instead?
-> > 
-> > I've no objections to seeing the DT updated. However I don't really see
-> > what benefit we get from breaking existing DTs in order to do so.
-> > 
-> > "Cleaning up annoying legacy" is seldom a good reason to break existing
-> > DTs since, if we could break DTs whenever we choose, there would never
-> > be any annoying legacy to worry about. When conflicting properties
-> > result in uninterpretable DTs then a break may be justified but that is
-> > not the case here.
-> 
-> As mentioned in my message and repeated by Konrad, the only "existing
-> DT" that could possibly be broken is a platform that's brought up by us
-> (SoMainline) and we're more than happy to improve the driver and leave
-> legacy DT behind us, unless there's more DT in circulation that hasn't
-> landed in Linux mainline but should be taken into account?
+This series is from discussion we had on reordering the device lists for
+drm shutdown paths[1]. I've introduced an 'aggregate' bus that we put
+the aggregate device onto and then we probe the aggregate device once
+all the components are probed and call component_add(). The probe/remove
+hooks are where the bind/unbind calls go, and then a shutdown hook is
+added that can be used to shutdown the drm display pipeline at the right
+time.
 
-Devicetrees are supposed to be the domain of firmware (e.g. not part of
-the kernel).
+This works for me on my sc7180 board. I no longer get a warning from i2c
+at shutdown that we're trying to make an i2c transaction after the i2c
+bus has been shutdown. There's more work to do on the msm drm driver to
+extract component device resources like clks, regulators, etc. out of
+the component bind function into the driver probe but I wanted to move
+everything over now in other component drivers before tackling that
+problem.
 
-I'm therefore reluctant to adopt an "it only exists if it is upstream"
-approach for documented DT bindings. Doubly so when it is our bugs that
-causes DTs to be written in a manner which we then retrospectively
-declare to be wrong.
+I'll definitely be sending a v3 so this is partially a request for
+testing to shake out any more problems. Tested-by tags would be appreciated,
+and Acked-by/Reviewed-by tags too. I sent this to gregkh which may be
+incorrect but I don't know what better tree to send it all through.
+Maybe drm?
+
+I'll be faster at resending this next time, sorry for the long delay!
+
+Changes since v1 (https://lore.kernel.org/r/20210520002519.3538432-1-swboyd@chromium.org):
+ - Use devlink to connect components to the aggregate device
+ - Don't set the registering device as a parent of the aggregate device
+ - New patch for bind_component/unbind_component ops that takes the
+   aggregate device
+ - Convert all drivers in the tree to use the aggregate driver approach
+ - Allow one aggregate driver to be used for multiple aggregate devices
+
+[1] https://lore.kernel.org/r/20210508074118.1621729-1-swboyd@chromium.org
+
+Stephen Boyd (34):
+  component: Introduce struct aggregate_device
+  component: Introduce the aggregate bus_type
+  component: Move struct aggregate_device out to header file
+  drm/msm: Migrate to aggregate driver
+  component: Add {bind,unbind}_component() ops that take aggregate
+    device
+  drm/of: Add a drm_of_aggregate_probe() API
+  drm/komeda: Migrate to aggregate driver
+  drm/arm/hdlcd: Migrate to aggregate driver
+  drm/malidp: Migrate to aggregate driver
+  drm/armada: Migrate to aggregate driver
+  drm/etnaviv: Migrate to aggregate driver
+  drm/kirin: Migrate to aggregate driver
+  drm/exynos: Migrate to aggregate driver
+  drm/imx: Migrate to aggregate driver
+  drm/ingenic: Migrate to aggregate driver
+  drm/mcde: Migrate to aggregate driver
+  drm/mediatek: Migrate to aggregate driver
+  drm/meson: Migrate to aggregate driver
+  drm/omap: Migrate to aggregate driver
+  drm/rockchip: Migrate to aggregate driver
+  drm/sti: Migrate to aggregate driver
+  drm/sun4i: Migrate to aggregate driver
+  drm/tilcdc: Migrate to aggregate driver
+  drm/vc4: Migrate to aggregate driver
+  drm/zte: Migrate to aggregate driver
+  iommu/mtk: Migrate to aggregate driver
+  mei: Migrate to aggregate driver
+  power: supply: ab8500: Migrate to aggregate driver
+  fbdev: omap2: Migrate to aggregate driver
+  sound: hdac: Migrate to aggregate driver
+  ASoC: codecs: wcd938x: Migrate to aggregate driver
+  component: Get rid of drm_of_component_probe()
+  component: Remove component_master_ops and friends
+  component: Remove all references to 'master'
+
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+Cc: Chen Feng <puck.chen@hisilicon.com>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
+Cc: Chun-Kuang Hu <chunkuang.hu@kernel.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Emma Anholt <emma@anholt.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Heiko Stübner" <heiko@sntech.de>
+Cc: Inki Dae <inki.dae@samsung.com>
+Cc: James Qian Wang (Arm Technology China) <james.qian.wang@arm.com>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Joerg Roedel <joro@8bytes.org>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Joonyoung Shim <jy0922.shim@samsung.com>
+Cc: Jyri Sarha <jyri.sarha@iki.fi>
+Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: <linux-fbdev@vger.kernel.org>
+Cc: <linux-omap@vger.kernel.org>
+Cc: <linux-pm@vger.kernel.org>
+Cc: Liviu Dudau <liviu.dudau@arm.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: Neil Armstrong <narmstrong@baylibre.com>
+Cc: Paul Cercueil <paul@crapouillou.net>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Russell King <linux+etnaviv@armlinux.org.uk>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Sandy Huang <hjc@rock-chips.com>
+Cc: Saravana Kannan <saravanak@google.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Seung-Woo Kim <sw0312.kim@samsung.com>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Tian Tao <tiantao6@hisilicon.com>
+Cc: Tomas Winkler <tomas.winkler@intel.com>
+Cc: Tomi Valkeinen <tomba@kernel.org>
+Cc: Will Deacon <will@kernel.org>
+Cc: Xinliang Liu <xinliang.liu@linaro.org>
+Cc: Xinwei Kong <kong.kongxinwei@hisilicon.com>
+Cc: Yong Wu <yong.wu@mediatek.com>
+
+ drivers/base/component.c                      | 555 +++++++++++-------
+ .../gpu/drm/arm/display/komeda/komeda_drv.c   |  20 +-
+ drivers/gpu/drm/arm/hdlcd_drv.c               |  21 +-
+ drivers/gpu/drm/arm/malidp_drv.c              |  21 +-
+ drivers/gpu/drm/armada/armada_drv.c           |  23 +-
+ drivers/gpu/drm/drm_drv.c                     |   2 +-
+ drivers/gpu/drm/drm_of.c                      |  20 +-
+ drivers/gpu/drm/etnaviv/etnaviv_drv.c         |  20 +-
+ drivers/gpu/drm/exynos/exynos_drm_drv.c       |  21 +-
+ .../gpu/drm/hisilicon/kirin/kirin_drm_drv.c   |  20 +-
+ drivers/gpu/drm/imx/imx-drm-core.c            |  20 +-
+ drivers/gpu/drm/ingenic/ingenic-drm-drv.c     |  24 +-
+ drivers/gpu/drm/mcde/mcde_drv.c               |  23 +-
+ drivers/gpu/drm/mediatek/mtk_drm_drv.c        |  20 +-
+ drivers/gpu/drm/meson/meson_drv.c             |  21 +-
+ drivers/gpu/drm/msm/msm_drv.c                 |  46 +-
+ drivers/gpu/drm/omapdrm/dss/dss.c             |  17 +-
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.c   |  20 +-
+ drivers/gpu/drm/sti/sti_drv.c                 |  20 +-
+ drivers/gpu/drm/sun4i/sun4i_drv.c             |  26 +-
+ drivers/gpu/drm/tilcdc/tilcdc_drv.c           |  28 +-
+ drivers/gpu/drm/vc4/vc4_drv.c                 |  20 +-
+ drivers/gpu/drm/zte/zx_drm_drv.c              |  20 +-
+ drivers/iommu/mtk_iommu.c                     |  14 +-
+ drivers/iommu/mtk_iommu.h                     |   6 +-
+ drivers/iommu/mtk_iommu_v1.c                  |  14 +-
+ drivers/misc/mei/hdcp/mei_hdcp.c              |  22 +-
+ drivers/power/supply/ab8500_charger.c         |  22 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c    |  20 +-
+ include/drm/drm_of.h                          |   9 +-
+ include/linux/component.h                     |  92 ++-
+ sound/hda/hdac_component.c                    |  21 +-
+ sound/soc/codecs/wcd938x.c                    |  20 +-
+ 33 files changed, 780 insertions(+), 488 deletions(-)
 
 
-> Anyway the plan is to leave qcom,num-strings in place so that the
-> default enabled_strings list in this driver actually serves a purpose.
-> Then, if num-strings and enabled-strings is provided the former has
-> precedence (assuming it doesn't exceed the size of the latter) but
-> we'll print a warning about this (now unnecessary) ambiguity, and if
-> possible at all - haven't found an example yet - make the properties
-> mutually exclusive in dt-bindings.
-> 
-> Disallowing both cases would only simplify the code in the end but we
-> can spend a few lines to support the desired legacy.
+base-commit: e4e737bb5c170df6135a127739a9e6148ee3da82
+-- 
+https://chromeos.dev
 
-Yes, warning is OK for me.
-
-
-Daniel.

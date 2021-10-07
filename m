@@ -2,150 +2,159 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADFA2C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Oct 2021 19:40:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75A50C433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Oct 2021 10:16:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9762261423
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Oct 2021 19:40:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5ECFA61108
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Oct 2021 10:16:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239611AbhJFTmP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Oct 2021 15:42:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53834 "EHLO
+        id S232166AbhJGKS1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 7 Oct 2021 06:18:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53418 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239777AbhJFTlg (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Oct 2021 15:41:36 -0400
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 80680C0617BA
-        for <linux-fbdev@vger.kernel.org>; Wed,  6 Oct 2021 12:38:57 -0700 (PDT)
-Received: by mail-pg1-x52f.google.com with SMTP id a73so3457717pge.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 06 Oct 2021 12:38:57 -0700 (PDT)
+        with ESMTP id S231825AbhJGKSZ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Oct 2021 06:18:25 -0400
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A7B6CC061746;
+        Thu,  7 Oct 2021 03:16:31 -0700 (PDT)
+Received: by mail-wr1-x42d.google.com with SMTP id o20so17426625wro.3;
+        Thu, 07 Oct 2021 03:16:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=7Yh3mBEg2nfQJzEtBIxus+8u5VcBe7iEDAWACHn4tN4=;
-        b=U9t/V66lvld0RzEXb++En51W/wZYZPUEPKiGpmWOjHVpfyAWf5GXzah9KRevUB6X2x
-         E1Xwqfi4gZTVJQ0Kwfykyh7ztY48om+yOO9b+3F93MmzmQGgbNYyoiKOeiyGdWV3CvMQ
-         P2GHLdvkmSFVCcMis+tjSKEbm30mCqQoC233g=
+        d=gmail.com; s=20210112;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=1gYAE2vWPz0MbraCtd8aQQgWxPLZqacAtSV7iYxbEtQ=;
+        b=EbdSYwqx3mHUc7kNlSYIJXdd6OTrPllHE9Wd8JhKhMNbu0hEFfGYAtI3UQ+Pa8yoxe
+         KC6ZA+SRfrhiNSnvdR1W5txmyvjKgQvkbk1BLqqkTs+K//aTJl1BC53AzkNZPhHbj4Cj
+         VWgCh+lDEedu1+BOMFt+UONsQg1FM8vjKTnvIKmXXQWDTgoWbkxMB4jvRxpk6o171WAf
+         7yV0zS2NI9Dh92/WE2viXUmxxoDadKN91gTfU54gtNyqhDdPq0E8yiM+a0umZ7edr7Md
+         lYfQC/RDsM6EOXB2s2fEJXkO/JIdRMVGLNaSrQs4xC7/Oq7vpju5VBSAX8hs1jbHr6pe
+         U5RQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=7Yh3mBEg2nfQJzEtBIxus+8u5VcBe7iEDAWACHn4tN4=;
-        b=KwWWQPHMFtwLZimJG7wzsnL3a5VEhncTpz0m4EeKtCWAu3C6vdbgRAhI5BwXTftZ09
-         dUFkUkHS47rgWM3JRYS1HfVqNtLOtT/dCAsMZbcM5Np8CkQ/4WS+BRAB3yNu3v2GfMeF
-         7RK28yPQEQBU/kbiT67QfJg4NyyU52o3CIlmBQFwGYhT0gvP91ljvafjjCVcThYWT1lH
-         LfhLsqUgoQkJEZJPE8NQC7l8w8YheNT1MkszrSZEer4PpnpTcC/UHcNwQava/UC3l9Zz
-         Kushlu5OxDVZSHYfbFbg0q6p8NW/N5cRtGfLlBGJu/S72CURfZkkTFcdnreJ8HtUHgO0
-         godA==
-X-Gm-Message-State: AOAM531Y/bUO2DeMG7RtNoJLqriBykqg9Du82eZhjoC8e4+G+2POPLPE
-        7Vg1CXJPlp3K6rtLFtIWWOKOQw==
-X-Google-Smtp-Source: ABdhPJz92vTWQMcjgF1fSdUOTLALP+adXUegWOTvRs47ng/FwRSYAB2qO/9HC5eL0SMUOg+GS75xEQ==
-X-Received: by 2002:a62:15c6:0:b0:44c:74b7:14f5 with SMTP id 189-20020a6215c6000000b0044c74b714f5mr13490385pfv.80.1633549137020;
-        Wed, 06 Oct 2021 12:38:57 -0700 (PDT)
-Received: from smtp.gmail.com ([2620:15c:202:201:d412:c5eb:4aca:4738])
-        by smtp.gmail.com with ESMTPSA id o14sm22011296pfh.84.2021.10.06.12.38.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 06 Oct 2021 12:38:56 -0700 (PDT)
-From:   Stephen Boyd <swboyd@chromium.org>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=1gYAE2vWPz0MbraCtd8aQQgWxPLZqacAtSV7iYxbEtQ=;
+        b=T+VK2jwhupWP+dMbLbqheIhPfbQsLwnpuBVxFwM2NacZssS8HqnwbVorUGV04pO0YW
+         pTD2CQT4P8ydUb6pOkT6tHNdSYn+cb6dIV4eRxghK74u9wxIo/cgBRz8hK7ZYGrkqSIh
+         c24NNbS0ZGYWHGQqJJ63mHhGKN0OXUwQjPPWA48YkI/UO44TiudNpd1JE3dN1Vcj/zuG
+         Z9RAyKNsK8nPdmHfH8m7hVI97qPgE56BTNzt5/VRNhT2J8Nd6UXf08F6h9Bu2ugkFvii
+         aq4sCMfBYhJFyyRPG9K6wpWaLvBnBRr5H0DyULnNjCNsEigEgugmX9tgmNOXvmbStFyq
+         ic5w==
+X-Gm-Message-State: AOAM532xBQBmXGTNB+Mb/TvVV4n1288b4mWSQOjToKHpmELC9n6OZpgk
+        3M+NbSV8z7zkjolsuCooxJo=
+X-Google-Smtp-Source: ABdhPJyO84sEJgEs46P+YCpyCH8r2D08a2F9o/3ytykleY8cSd00FUEVVOpPAaOOAp7N04KX5vUOtQ==
+X-Received: by 2002:a1c:f302:: with SMTP id q2mr3697177wmq.56.1633601790274;
+        Thu, 07 Oct 2021 03:16:30 -0700 (PDT)
+Received: from [192.168.0.14] (095160158079.dynamic-2-waw-k-4-2-0.vectranet.pl. [95.160.158.79])
+        by smtp.gmail.com with ESMTPSA id e8sm9576415wrg.48.2021.10.07.03.16.28
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 07 Oct 2021 03:16:29 -0700 (PDT)
+Subject: Re: [PATCH v2 00/34] component: Make into an aggregate bus
+To:     Stephen Boyd <swboyd@chromium.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
-        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Benjamin Gaignard <benjamin.gaignard@linaro.org>,
+        Chen Feng <puck.chen@hisilicon.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Emma Anholt <emma@anholt.net>,
+        =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>,
+        Inki Dae <inki.dae@samsung.com>,
+        James Qian Wang <james.qian.wang@arm.com>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Joerg Roedel <joro@8bytes.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Joonyoung Shim <jy0922.shim@samsung.com>,
+        Jyri Sarha <jyri.sarha@iki.fi>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-pm@vger.kernel.org, Liviu Dudau <liviu.dudau@arm.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Rob Clark <robdclark@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
         Russell King <rmk+kernel@arm.linux.org.uk>,
-        Saravana Kannan <saravanak@google.com>
-Subject: [PATCH v2 29/34] fbdev: omap2: Migrate to aggregate driver
-Date:   Wed,  6 Oct 2021 12:38:14 -0700
-Message-Id: <20211006193819.2654854-30-swboyd@chromium.org>
-X-Mailer: git-send-email 2.33.0.800.g4c38ced690-goog
-In-Reply-To: <20211006193819.2654854-1-swboyd@chromium.org>
+        Sandy Huang <hjc@rock-chips.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Seung-Woo Kim <sw0312.kim@samsung.com>,
+        Takashi Iwai <tiwai@suse.com>,
+        Tian Tao <tiantao6@hisilicon.com>,
+        Tomas Winkler <tomas.winkler@intel.com>,
+        Tomi Valkeinen <tomba@kernel.org>,
+        Will Deacon <will@kernel.org>,
+        Xinliang Liu <xinliang.liu@linaro.org>,
+        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
+        Yong Wu <yong.wu@mediatek.com>
 References: <20211006193819.2654854-1-swboyd@chromium.org>
+From:   Andrzej Hajda <andrzej.hajda@gmail.com>
+Message-ID: <5d3f4343-da38-04b4-fdb9-cb2dd4983db2@gmail.com>
+Date:   Thu, 7 Oct 2021 12:16:27 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.13.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20211006193819.2654854-1-swboyd@chromium.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use an aggregate driver instead of component ops so that we can get
-proper driver probe ordering of the aggregate device with respect to all
-the component devices that make up the aggregate device.
+Hi Stephen,
 
-Cc: <linux-omap@vger.kernel.org>
-Cc: <linux-fbdev@vger.kernel.org>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Saravana Kannan <saravanak@google.com>
-Signed-off-by: Stephen Boyd <swboyd@chromium.org>
----
- drivers/video/fbdev/omap2/omapfb/dss/dss.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+On 06.10.2021 21:37, Stephen Boyd wrote:
+> This series is from discussion we had on reordering the device lists for
+> drm shutdown paths[1]. I've introduced an 'aggregate' bus that we put
+> the aggregate device onto and then we probe the aggregate device once
+> all the components are probed and call component_add(). The probe/remove
+> hooks are where the bind/unbind calls go, and then a shutdown hook is
+> added that can be used to shutdown the drm display pipeline at the right
+> time.
+> 
+> This works for me on my sc7180 board. I no longer get a warning from i2c
+> at shutdown that we're trying to make an i2c transaction after the i2c
+> bus has been shutdown. There's more work to do on the msm drm driver to
+> extract component device resources like clks, regulators, etc. out of
+> the component bind function into the driver probe but I wanted to move
+> everything over now in other component drivers before tackling that
+> problem.
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-index a6b1c1598040..f12663c39ceb 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-@@ -1067,8 +1067,9 @@ static int dss_video_pll_probe(struct platform_device *pdev)
- }
- 
- /* DSS HW IP initialisation */
--static int dss_bind(struct device *dev)
-+static int dss_bind(struct aggregate_device *adev)
- {
-+	struct device *dev = adev->parent;
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct resource *dss_mem;
- 	u32 rev;
-@@ -1167,8 +1168,9 @@ static int dss_bind(struct device *dev)
- 	return r;
- }
- 
--static void dss_unbind(struct device *dev)
-+static void dss_unbind(struct aggregate_device *adev)
- {
-+	struct device *dev = adev->parent;
- 	struct platform_device *pdev = to_platform_device(dev);
- 
- 	dss_initialized = false;
-@@ -1188,9 +1190,13 @@ static void dss_unbind(struct device *dev)
- 	dss_put_clocks();
- }
- 
--static const struct component_master_ops dss_component_ops = {
--	.bind = dss_bind,
--	.unbind = dss_unbind,
-+static struct aggregate_driver dss_aggregate_driver = {
-+	.probe = dss_bind,
-+	.remove = dss_unbind,
-+	.driver = {
-+		.name = "dss_fbdev",
-+		.owner = THIS_MODULE,
-+	},
- };
- 
- static int dss_component_compare(struct device *dev, void *data)
-@@ -1225,7 +1231,7 @@ static int dss_probe(struct platform_device *pdev)
- 	/* add all the child devices as components */
- 	device_for_each_child(&pdev->dev, &match, dss_add_child_component);
- 
--	r = component_master_add_with_match(&pdev->dev, &dss_component_ops, match);
-+	r = component_aggregate_register(&pdev->dev, &dss_aggregate_driver, match);
- 	if (r)
- 		return r;
- 
-@@ -1234,7 +1240,7 @@ static int dss_probe(struct platform_device *pdev)
- 
- static int dss_remove(struct platform_device *pdev)
- {
--	component_master_del(&pdev->dev, &dss_component_ops);
-+	component_aggregate_unregister(&pdev->dev, &dss_aggregate_driver);
- 	return 0;
- }
- 
--- 
-https://chromeos.dev
 
+As I understand you have DSI host with i2c-controlled DSI bridge. And 
+there is an issue that bridge is shutdown before msmdrm. Your solution 
+is to 'adjust' device order on pm list.
+I had similar issue and solved it locally by adding notification from 
+DSI bridge to DSI host that is has to be removed: mipi_dsi_detach, this 
+notification escalates in DSI host to component_del and this allow to 
+react properly.
+
+Advantages:
+- it is local (only involves DSI host and DSI device),
+- it does not depend on PM internals,
+- it can be used in other scenarios as well - unbinding DSI device driver
+
+Disadvantage:
+- It is DSI specific (but this is your case), I have advertised some 
+time ago more general approach [1][2].
+
+[1]: https://static.sched.com/hosted_files/osseu18/0f/deferred_problem.pdf
+[2]: https://lwn.net/Articles/625454/
+
+
+Regards
+Andrzej

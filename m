@@ -2,24 +2,27 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E4C1C41535
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Oct 2021 21:34:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C18DC433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Oct 2021 21:34:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0E7AB61130
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Oct 2021 21:34:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 29DED610E6
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Oct 2021 21:34:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241846AbhJGVgF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S242173AbhJGVgF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Thu, 7 Oct 2021 17:36:05 -0400
-Received: from m-r2.th.seeweb.it ([5.144.164.171]:36041 "EHLO
-        m-r2.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241640AbhJGVgD (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Oct 2021 17:36:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43692 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S241745AbhJGVgE (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Oct 2021 17:36:04 -0400
+Received: from m-r2.th.seeweb.it (m-r2.th.seeweb.it [IPv6:2001:4b7a:2000:18::171])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7889CC061765;
+        Thu,  7 Oct 2021 14:34:08 -0700 (PDT)
 Received: from Marijn-Arch-PC.localdomain (94-209-165-62.cable.dynamic.v4.ziggo.nl [94.209.165.62])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 5CE173E815;
-        Thu,  7 Oct 2021 23:34:07 +0200 (CEST)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 8C4353E7BE;
+        Thu,  7 Oct 2021 23:34:06 +0200 (CEST)
 From:   Marijn Suijten <marijn.suijten@somainline.org>
 To:     phone-devel@vger.kernel.org
 Cc:     ~postmarketos/upstreaming@lists.sr.ht,
@@ -30,16 +33,17 @@ Cc:     ~postmarketos/upstreaming@lists.sr.ht,
         Jami Kettunen <jami.kettunen@somainline.org>,
         Pavel Dubrova <pashadubrova@gmail.com>,
         Marijn Suijten <marijn.suijten@somainline.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
         Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>,
+        Kiran Gunda <kgunda@codeaurora.org>,
         linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 06/13] backlight: qcom-wled: Remove unnecessary 4th default string in WLED3
-Date:   Thu,  7 Oct 2021 23:33:53 +0200
-Message-Id: <20211007213400.258371-7-marijn.suijten@somainline.org>
+Subject: [PATCH v2 05/13] backlight: qcom-wled: Override default length with qcom,enabled-strings
+Date:   Thu,  7 Oct 2021 23:33:52 +0200
+Message-Id: <20211007213400.258371-6-marijn.suijten@somainline.org>
 X-Mailer: git-send-email 2.33.0
 In-Reply-To: <20211007213400.258371-1-marijn.suijten@somainline.org>
 References: <20211007213400.258371-1-marijn.suijten@somainline.org>
@@ -49,34 +53,31 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The previous commit improves num_strings parsing to not go over the
-maximum of 3 strings for WLED3 anymore.  Likewise this default index for
-a hypothetical 4th string is invalid and could access registers that are
-not mapped to the desired purpose.
-Removing this value gets rid of undesired confusion and avoids the
-possibility of accessing registers at this offset even if the 4th array
-element is used by accident.
+The length of qcom,enabled-strings as property array is enough to
+determine the number of strings to be enabled, without needing to set
+qcom,num-strings to override the default number of strings when less
+than the default (which is also the maxium) is provided in DT.
 
+Fixes: 775d2ffb4af6 ("backlight: qcom-wled: Restructure the driver for WLED3")
 Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
 Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 ---
- drivers/video/backlight/qcom-wled.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/backlight/qcom-wled.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-index 9bfbf601762a..c342cd8440e1 100644
+index c5232478a343..9bfbf601762a 100644
 --- a/drivers/video/backlight/qcom-wled.c
 +++ b/drivers/video/backlight/qcom-wled.c
-@@ -946,7 +946,7 @@ static const struct wled_config wled3_config_defaults = {
- 	.cs_out_en = false,
- 	.ext_gen = false,
- 	.cabc = false,
--	.enabled_strings = {0, 1, 2, 3},
-+	.enabled_strings = {0, 1, 2},
- };
+@@ -1518,6 +1518,8 @@ static int wled_configure(struct wled *wled)
+ 				return -EINVAL;
+ 			}
+ 		}
++
++		cfg->num_strings = string_len;
+ 	}
  
- static int wled4_setup(struct wled *wled)
+ 	rc = of_property_read_u32(dev->of_node, "qcom,num-strings", &val);
 -- 
 2.33.0
 

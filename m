@@ -2,132 +2,104 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39C57C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Oct 2021 21:28:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AA43C433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Oct 2021 21:34:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 12DDE61073
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Oct 2021 21:28:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 161C1610C7
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Oct 2021 21:34:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241187AbhJGVaV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 7 Oct 2021 17:30:21 -0400
-Received: from relay08.th.seeweb.it ([5.144.164.169]:49793 "EHLO
-        relay08.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241164AbhJGVaU (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Oct 2021 17:30:20 -0400
-Received: from SoMainline.org (94-209-165-62.cable.dynamic.v4.ziggo.nl [94.209.165.62])
+        id S239918AbhJGVf7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 7 Oct 2021 17:35:59 -0400
+Received: from relay07.th.seeweb.it ([5.144.164.168]:52987 "EHLO
+        relay07.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234055AbhJGVf7 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Oct 2021 17:35:59 -0400
+Received: from Marijn-Arch-PC.localdomain (94-209-165-62.cable.dynamic.v4.ziggo.nl [94.209.165.62])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id F08043E7BE;
-        Thu,  7 Oct 2021 23:28:22 +0200 (CEST)
-Date:   Thu, 7 Oct 2021 23:28:21 +0200
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 71B273E7BE;
+        Thu,  7 Oct 2021 23:34:02 +0200 (CEST)
 From:   Marijn Suijten <marijn.suijten@somainline.org>
-To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
+To:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
         Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        ~postmarketos/upstreaming@lists.sr.ht,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>
+Cc:     ~postmarketos/upstreaming@lists.sr.ht,
         AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@somainline.org>,
         Konrad Dybcio <konrad.dybcio@somainline.org>,
         Martin Botka <martin.botka@somainline.org>,
         Jami Kettunen <jami.kettunen@somainline.org>,
         Pavel Dubrova <pashadubrova@gmail.com>,
+        Marijn Suijten <marijn.suijten@somainline.org>,
         Kiran Gunda <kgunda@codeaurora.org>,
-        Courtney Cavin <courtney.cavin@sonymobile.com>,
         Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/10] backlight: qcom-wled: Fix off-by-one maximum with
- default num_strings
-Message-ID: <20211007212821.57x2ndggugwfd725@SoMainline.org>
-Mail-Followup-To: Marijn Suijten <marijn.suijten@somainline.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Martin Botka <martin.botka@somainline.org>,
-        Jami Kettunen <jami.kettunen@somainline.org>,
-        Pavel Dubrova <pashadubrova@gmail.com>,
-        Kiran Gunda <kgunda@codeaurora.org>,
-        Courtney Cavin <courtney.cavin@sonymobile.com>,
-        Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20211005091947.7msztp5l554c7cy4@maple.lan>
- <20211005100606.faxra73mzkvjd4f6@SoMainline.org>
- <20211005103843.heufyonycnudxnzd@maple.lan>
- <20211005105312.kqiyzoqtzzjxayhg@maple.lan>
- <20211005114435.phyq2jsbdyroa6kn@SoMainline.org>
- <20211005140349.kefi26yev3gy3zhv@maple.lan>
- <20211005152326.5k5cb53ajqnactrg@SoMainline.org>
- <20211005162453.ozckxhm47jcarsza@maple.lan>
- <20211005173400.lyu3gabbalv2l3uq@SoMainline.org>
- <20211006144444.6q3qm3bzfrhzwa46@maple.lan>
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH v2 00/13] backlight: qcom-wled: fix and solidify handling of enabled-strings
+Date:   Thu,  7 Oct 2021 23:33:47 +0200
+Message-Id: <20211007213400.258371-1-marijn.suijten@somainline.org>
+X-Mailer: git-send-email 2.33.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211006144444.6q3qm3bzfrhzwa46@maple.lan>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2021-10-06 15:44:44, Daniel Thompson wrote:
-> On Tue, Oct 05, 2021 at 07:34:00PM +0200, Marijn Suijten wrote:
-> > On 2021-10-05 17:24:53, Daniel Thompson wrote:
-> > > On Tue, Oct 05, 2021 at 05:23:26PM +0200, Marijn Suijten wrote:
-> > > > Since there don't seem to be any substantial platforms/PMICs using this
-> > > > functionality in a working manner, can I talk you into agreeing with
-> > > > fixing the DT instead?
-> > > 
-> > > I've no objections to seeing the DT updated. However I don't really see
-> > > what benefit we get from breaking existing DTs in order to do so.
-> > > 
-> > > "Cleaning up annoying legacy" is seldom a good reason to break existing
-> > > DTs since, if we could break DTs whenever we choose, there would never
-> > > be any annoying legacy to worry about. When conflicting properties
-> > > result in uninterpretable DTs then a break may be justified but that is
-> > > not the case here.
-> > 
-> > As mentioned in my message and repeated by Konrad, the only "existing
-> > DT" that could possibly be broken is a platform that's brought up by us
-> > (SoMainline) and we're more than happy to improve the driver and leave
-> > legacy DT behind us, unless there's more DT in circulation that hasn't
-> > landed in Linux mainline but should be taken into account?
-> 
-> Devicetrees are supposed to be the domain of firmware (e.g. not part of
-> the kernel).
-> 
-> I'm therefore reluctant to adopt an "it only exists if it is upstream"
-> approach for documented DT bindings. Doubly so when it is our bugs that
-> causes DTs to be written in a manner which we then retrospectively
-> declare to be wrong.
+This patchset fixes WLED's handling of enabled-strings: besides some
+cleanup it is now actually possible to specify a non-contiguous array of
+enabled strings (not necessarily starting at zero) and the values from
+DT are now validated to prevent possible unexpected out-of-bounds
+register and array element accesses.
+Off-by-one mistakes in the maximum number of strings, also causing
+out-of-bounds access, have been addressed as well.
 
-I'm aware that DT is considered firmware and is ""intended"" to be
-shipped separately (and probably only once out of the factory) but it
-seems so far there's an advantage in updating DT in parallel with the
-kernel.  However this is the first time hearing that having dt-bindings
-documentation available contributes to considering the DT contract
-(more) stable.  Either way I'd expect these bindings to have been fixed
-much sooner if it was really actively used.
+Changes in v2:
+- Reordered patch 4/10 (Validate enabled string indices in DT) to sit
+  before patch 1/10 (Pass number of elements to read to read_u32_array);
+- Pulled qcom,num-strings out of the DT enumeration parser, and moved it
+  after qcom,enabled-strings parser to always have final sign-off over
+  the number of strings;
+- Extra validation for this number of strings against
+  qcom,enabled-strings;
+- Recombined patch 9 (Consistently use enabled-strings in
+  set_brightness) and patch 10 (Consider enabled_strings in
+  autodetection), which both solve the same problem in two different
+  functions.  In addition the autodetection code uses set_brightness as
+  helper already;
+- Improved DT configurations for pmi8994 and pm660l, currently in 5.15
+  rc's.
 
-> > Anyway the plan is to leave qcom,num-strings in place so that the
-> > default enabled_strings list in this driver actually serves a purpose.
-> > Then, if num-strings and enabled-strings is provided the former has
-> > precedence (assuming it doesn't exceed the size of the latter) but
-> > we'll print a warning about this (now unnecessary) ambiguity, and if
-> > possible at all - haven't found an example yet - make the properties
-> > mutually exclusive in dt-bindings.
-> > 
-> > Disallowing both cases would only simplify the code in the end but we
-> > can spend a few lines to support the desired legacy.
-> 
-> Yes, warning is OK for me.
+v1: https://lore.kernel.org/dri-devel/20211004192741.621870-1-marijn.suijten@somainline.org
 
-Great, sending v2 shortly.
+Marijn Suijten (13):
+  backlight: qcom-wled: Validate enabled string indices in DT
+  backlight: qcom-wled: Pass number of elements to read to
+    read_u32_array
+  backlight: qcom-wled: Use cpu_to_le16 macro to perform conversion
+  backlight: qcom-wled: Fix off-by-one maximum with default num_strings
+  backlight: qcom-wled: Override default length with
+    qcom,enabled-strings
+  backlight: qcom-wled: Remove unnecessary 4th default string in WLED3
+  backlight: qcom-wled: Provide enabled_strings default for WLED 4 and 5
+  backlight: qcom-wled: Remove unnecessary double whitespace
+  backlight: qcom-wled: Respect enabled-strings in set_brightness
+  arm64: dts: qcom: pmi8994: Fix "eternal"->"external" typo in WLED node
+  arm64: dts: qcom: pmi8994: Remove hardcoded linear WLED
+    enabled-strings
+  arm64: dts: qcom: Move WLED num-strings from pmi8994 to
+    sony-xperia-tone
+  arm64: dt: qcom: pm660l: Remove board-specific WLED configuration
 
-- Marijn
+ .../dts/qcom/msm8996-sony-xperia-tone.dtsi    |   1 +
+ arch/arm64/boot/dts/qcom/pm660l.dtsi          |   7 -
+ arch/arm64/boot/dts/qcom/pmi8994.dtsi         |   5 +-
+ drivers/video/backlight/qcom-wled.c           | 131 ++++++++++--------
+ 4 files changed, 73 insertions(+), 71 deletions(-)
+
+--
+2.33.0
+

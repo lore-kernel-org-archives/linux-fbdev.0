@@ -2,147 +2,87 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1E7CC433F5
-	for <linux-fbdev@archiver.kernel.org>; Sun, 10 Oct 2021 06:42:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E805C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Oct 2021 12:07:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8084A60ED4
-	for <linux-fbdev@archiver.kernel.org>; Sun, 10 Oct 2021 06:42:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 08A9260698
+	for <linux-fbdev@archiver.kernel.org>; Mon, 11 Oct 2021 12:07:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229916AbhJJGom (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 10 Oct 2021 02:44:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44976 "EHLO
+        id S236445AbhJKMJ5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 11 Oct 2021 08:09:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229840AbhJJGol (ORCPT
+        with ESMTP id S236439AbhJKMJ4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 10 Oct 2021 02:44:41 -0400
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50033C061570;
-        Sat,  9 Oct 2021 23:42:43 -0700 (PDT)
-Received: by mail-pf1-x432.google.com with SMTP id 187so11897504pfc.10;
-        Sat, 09 Oct 2021 23:42:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id;
-        bh=/fo+SL59BqhBp8OwXWZaQWCV9nYu75S/chQz3wujueI=;
-        b=ZgFYjNHVIn8b1F/37R31LzGFz1t2iuolTYtbKonSY1vvYElgPlb7XncvrVoW1UFuYr
-         T4Nv+62Z7y7ERSUpvHvmin3wIn0BJBNNi3eyGIDKBKXaCceSo6JwIVjDceZDT9QqI9px
-         hz50DraMhIGWlN3GDw8gKAF3L85GQQVoCbcOlQ+dFcaBlLF9BeNs8g7Ggy53+CTou91u
-         qmKZq2u35eDB5Q3XwclmRRluSqlYasoJ0GooeEAucKSPcFW7zg/mbhqFcegXURHa48xp
-         iKWHx5FqYz2UquuiItB5fRLtFKRS6bU726w7v1ngB7UYuenYClbSSBGyAghjBGvfXRO8
-         OpHQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=/fo+SL59BqhBp8OwXWZaQWCV9nYu75S/chQz3wujueI=;
-        b=0HiQ5L38skp83VFyDFIwYBC/vX50xJ155Ngw+ZzKSsEHbBQVwsdWZJCxFi9Rs4und4
-         lec/QKWtGUoKdaW7Nv7gimbOI38Vytpum6M+OpYskCBN8WQHFrLwRcVBbJX8qKKlHvff
-         IFh4kSXJvp09RSgCl/rJhXOjeD8mTOWcsT1Lq6iBiiW192va8ssFF9AmQXQzSETA1Dcf
-         Sx9bMUCXg2NROSR2v6BS2TgBON2Ta0F+SYA218PL49Vjn5OLVpNu7CZnsKzJKQy+0pTk
-         W807EeNmZJhlwvtQuJGzUUFxwXEeRLe0IQAJz3qcqQFb0QwQr6vt5kJZzlBhqscTYFWm
-         Fp1A==
-X-Gm-Message-State: AOAM530Z7ULJ8OI0h9GyXJCM1+b0lY6cq5whZ8m5WGONlb/6QoJfK4o3
-        vyqTnRiYj2VfpJIcxbkm8Q==
-X-Google-Smtp-Source: ABdhPJwV/WF678MkNnZwGi1mVyKfzHnZ5lAckmRMyF9WU/RzTeI724ojh+nwcm48h7sCrxFtqfxqkg==
-X-Received: by 2002:a63:7746:: with SMTP id s67mr2983525pgc.225.1633848162816;
-        Sat, 09 Oct 2021 23:42:42 -0700 (PDT)
-Received: from vultr.guest ([107.191.53.97])
-        by smtp.gmail.com with ESMTPSA id t3sm2553823pgu.87.2021.10.09.23.42.41
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Sat, 09 Oct 2021 23:42:42 -0700 (PDT)
-From:   Zheyu Ma <zheyuma97@gmail.com>
-To:     dri-devel@lists.freedesktop.org
-Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Zheyu Ma <zheyuma97@gmail.com>
-Subject: [PATCH 2/2] fbdev: fbmem: Fix double free of 'fb_info->pixmap.addr'
-Date:   Sun, 10 Oct 2021 06:42:28 +0000
-Message-Id: <1633848148-29747-1-git-send-email-zheyuma97@gmail.com>
-X-Mailer: git-send-email 2.7.4
+        Mon, 11 Oct 2021 08:09:56 -0400
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [IPv6:2404:9400:2:0:216:3eff:fee2:21ea])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C0CB0C06161C;
+        Mon, 11 Oct 2021 05:07:56 -0700 (PDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        by mail.ozlabs.org (Postfix) with ESMTPSA id 4HScxh5lgHz4xbX;
+        Mon, 11 Oct 2021 23:07:52 +1100 (AEDT)
+From:   Michael Ellerman <patch-notifications@ellerman.id.au>
+To:     Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Andrew Morton <akpm@linux-foundation.org>
+Cc:     linuxppc-dev@lists.ozlabs.org, Stan Johnson <userm57@yahoo.com>,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Finn Thain <fthain@linux-m68k.org>,
+        dri-devel@lists.freedesktop.org
+In-Reply-To: <884a54f1e5cb774c1d9b4db780209bee5d4f6718.1631712563.git.christophe.leroy@csgroup.eu>
+References: <884a54f1e5cb774c1d9b4db780209bee5d4f6718.1631712563.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] video: fbdev: use memset_io() instead of memset()
+Message-Id: <163395400552.4094789.12015421663855128336.b4-ty@ellerman.id.au>
+Date:   Mon, 11 Oct 2021 23:06:45 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-savagefb and some other drivers call kfree to free 'info->pixmap.addr'
-even after calling unregister_framebuffer, which may cause double free.
+On Wed, 15 Sep 2021 15:34:35 +0200, Christophe Leroy wrote:
+> While investigating a lockup at startup on Powerbook 3400C, it was
+> identified that the fbdev driver generates alignment exception at
+> startup:
+> 
+> 	--- interrupt: 600 at memset+0x60/0xc0
+> 	NIP:  c0021414 LR: c03fc49c CTR: 00007fff
+> 	REGS: ca021c10 TRAP: 0600   Tainted: G        W          (5.14.2-pmac-00727-g12a41fa69492)
+> 	MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 44008442  XER: 20000100
+> 	DAR: cab80020 DSISR: 00017c07
+> 	GPR00: 00000007 ca021cd0 c14412e0 cab80000 00000000 00100000 cab8001c 00000004
+> 	GPR08: 00100000 00007fff 00000000 00000000 84008442 00000000 c0006fb4 00000000
+> 	GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00100000
+> 	GPR24: 00000000 81800000 00000320 c15fa400 c14d1878 00000000 c14d1800 c094e19c
+> 	NIP [c0021414] memset+0x60/0xc0
+> 	LR [c03fc49c] chipsfb_pci_init+0x160/0x580
+> 	--- interrupt: 600
+> 	[ca021cd0] [c03fc46c] chipsfb_pci_init+0x130/0x580 (unreliable)
+> 	[ca021d20] [c03a3a70] pci_device_probe+0xf8/0x1b8
+> 	[ca021d50] [c043d584] really_probe.part.0+0xac/0x388
+> 	[ca021d70] [c043d914] __driver_probe_device+0xb4/0x170
+> 	[ca021d90] [c043da18] driver_probe_device+0x48/0x144
+> 	[ca021dc0] [c043e318] __driver_attach+0x11c/0x1c4
+> 	[ca021de0] [c043ad30] bus_for_each_dev+0x88/0xf0
+> 	[ca021e10] [c043c724] bus_add_driver+0x190/0x22c
+> 	[ca021e40] [c043ee94] driver_register+0x9c/0x170
+> 	[ca021e60] [c0006c28] do_one_initcall+0x54/0x1ec
+> 	[ca021ed0] [c08246e4] kernel_init_freeable+0x1c0/0x270
+> 	[ca021f10] [c0006fdc] kernel_init+0x28/0x11c
+> 	[ca021f30] [c0017148] ret_from_kernel_thread+0x14/0x1c
+> 	Instruction dump:
+> 	7d4601a4 39490777 7d4701a4 39490888 7d4801a4 39490999 7d4901a4 39290aaa
+> 	7d2a01a4 4c00012c 4bfffe88 0fe00000 <4bfffe80> 9421fff0 38210010 48001970
+> 
+> [...]
 
-Fix this by setting 'fb_info->pixmap.addr' to NULL after kfree in
-unregister_framebuffer.
+Applied to powerpc/next.
 
-The following log reveals it:
+[1/1] video: fbdev: use memset_io() instead of memset()
+      https://git.kernel.org/powerpc/c/f2719b26ae27282c145202ffd656d5ff1fe737cc
 
-[   37.318872] BUG: KASAN: double-free or invalid-free in kfree+0x13e/0x290
-[   37.319369]
-[   37.320803] Call Trace:
-[   37.320992]  dump_stack_lvl+0xa8/0xd1
-[   37.321274]  print_address_description+0x87/0x3b0
-[   37.321632]  ? kfree+0x13e/0x290
-[   37.321879]  ? kfree+0x13e/0x290
-[   37.322126]  ? kfree+0x13e/0x290
-[   37.322374]  kasan_report_invalid_free+0x58/0x90
-[   37.322724]  ____kasan_slab_free+0x123/0x140
-[   37.323049]  __kasan_slab_free+0x11/0x20
-[   37.323347]  slab_free_freelist_hook+0x81/0x150
-[   37.323689]  ? savagefb_remove+0xa1/0xc0 [savagefb]
-[   37.324066]  kfree+0x13e/0x290
-[   37.324304]  savagefb_remove+0xa1/0xc0 [savagefb]
-[   37.324655]  pci_device_remove+0xa9/0x250
-[   37.324959]  ? pci_device_probe+0x7d0/0x7d0
-[   37.325273]  device_release_driver_internal+0x4f7/0x7a0
-[   37.325666]  driver_detach+0x1e8/0x2c0
-[   37.325952]  bus_remove_driver+0x134/0x290
-[   37.326262]  ? sysfs_remove_groups+0x97/0xb0
-[   37.326584]  driver_unregister+0x77/0xa0
-[   37.326883]  pci_unregister_driver+0x2c/0x1c0
-[   37.336124]
-[   37.336245] Allocated by task 5465:
-[   37.336507]  ____kasan_kmalloc+0xb5/0xe0
-[   37.336801]  __kasan_kmalloc+0x9/0x10
-[   37.337069]  kmem_cache_alloc_trace+0x12b/0x220
-[   37.337405]  register_framebuffer+0x3f3/0xa00
-[   37.337731]  foo_register_framebuffer+0x3b/0x50 [savagefb]
-[   37.338136]
-[   37.338255] Freed by task 5475:
-[   37.338492]  kasan_set_track+0x3d/0x70
-[   37.338774]  kasan_set_free_info+0x23/0x40
-[   37.339081]  ____kasan_slab_free+0x10b/0x140
-[   37.339399]  __kasan_slab_free+0x11/0x20
-[   37.339694]  slab_free_freelist_hook+0x81/0x150
-[   37.340034]  kfree+0x13e/0x290
-[   37.340267]  do_unregister_framebuffer+0x21c/0x3d0
-[   37.340624]  unregister_framebuffer+0x23/0x40
-[   37.340950]  savagefb_remove+0x45/0xc0 [savagefb]
-[   37.341302]  pci_device_remove+0xa9/0x250
-[   37.341603]  device_release_driver_internal+0x4f7/0x7a0
-[   37.341990]  driver_detach+0x1e8/0x2c0
-[   37.342272]  bus_remove_driver+0x134/0x290
-[   37.342577]  driver_unregister+0x77/0xa0
-[   37.342873]  pci_unregister_driver+0x2c/0x1c0
-[   37.343196]  cleanup_module+0x15/0x1c [savagefb]
-[   37.343543]  __se_sys_delete_module+0x398/0x490
-[   37.343881]  __x64_sys_delete_module+0x56/0x60
-[   37.344221]  do_syscall_64+0x4d/0xc0
-[   37.344492]  entry_SYSCALL_64_after_hwframe+0x44/0xae
-
-Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
----
- drivers/video/fbdev/core/fbmem.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 7420d2c16e47..b81b0e37daed 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1702,8 +1702,10 @@ static void do_unregister_framebuffer(struct fb_info *fb_info)
- {
- 	unlink_framebuffer(fb_info);
- 	if (fb_info->pixmap.addr &&
--	    (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT))
-+	    (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT)) {
- 		kfree(fb_info->pixmap.addr);
-+		fb_info->pixmap.addr = NULL;
-+	}
- 	fb_destroy_modelist(&fb_info->modelist);
- 	registered_fb[fb_info->node] = NULL;
- 	num_registered_fb--;
--- 
-2.17.6
-
+cheers

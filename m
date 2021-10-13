@@ -2,423 +2,220 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95A9CC433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Oct 2021 03:28:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DD8AC4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Oct 2021 12:14:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7192F60E0C
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Oct 2021 03:28:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3852E61100
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Oct 2021 12:14:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237397AbhJMDaj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Oct 2021 23:30:39 -0400
-Received: from mail-eopbgr1310101.outbound.protection.outlook.com ([40.107.131.101]:6912
-        "EHLO APC01-SG2-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S237241AbhJMDai (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Oct 2021 23:30:38 -0400
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=DgTgL3+Xb/0ACR0YLb0yJQGRurl7Kbkifsi4t4jOwqO1D4hFmVbEh7asQk9HPx6Jsl0QgtKtB7ggZEn+ED845sEopxkGLeU+1K8Cyk/6xSxnvZ+3MCPJroRRXPtCjeq2FiVeMISyLOTw2I+W+6dYOY4d7HPS+rnWHVVhpRP+DNgemK9tDrcDoFoLHvfDuu2eAQrKQ/kSY2RzaDLQ1wfHHzqPfYg6ghUqiRfIl090twwD/4yQ93rywElL/ivOaWGICWarsx8b+stp3v2OMi/6HNfJWkGRnorE7XwU+hPdZqYcO/5NUpkaXRkhmMv4pTERms1ivIkBklO1kr5qRK0JGw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=86U+SnTm0ZlbVa88xEGhPJnUWzWJHbJOsg6SqD+Bb7o=;
- b=hN59sDjijg0qEx7M37OewMvVIXg+rKz75JueKw9xJV2p0JXKrVOQNxiB2oV37XG3ZEQj8Fc19dmHv2KFa+IK3SgYQQ5YxBHJMtZm6pcTHWGiCla2o6PnLw4Zm///K1/yHXfueO41vZ1HpLFXkeZ74WgHnCbGuHFINYv5rjSg6IE7k73/CAcm5k7tU+7WI2nk0JdcJ+0FX6ggwNQtPXlRIAjtcQdVn+A/h/oE4HL3Nr+IzdFo1HUt/moR68a+e03V6RpW8kaulYS53LsicxeM1sGJre0t2Zi/V/q2MiFmSxKgLDAa9tHw+Xla2hF2LcoVYEXcenkil8a6NKTg20fb7A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
- dkim=pass header.d=vivo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo0.onmicrosoft.com;
- s=selector2-vivo0-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=86U+SnTm0ZlbVa88xEGhPJnUWzWJHbJOsg6SqD+Bb7o=;
- b=ICAsMsDjSJJ9wKYcAN/foNVGf+T15hPxxEtVcvDp45BKkWM2eyTwvwYFOZAwXVZyW01Y3h0eSrVYahdB8LRPRPiuOVxyOHBpe3en7HGrDOYNqWr9C0oPxXcKW1GQhE+dyVtTEddFEZG+sFm3Kp39c7B3PRC2iWR/nPVjD4MnfaQ=
-Authentication-Results: vger.kernel.org; dkim=none (message not signed)
- header.d=none;vger.kernel.org; dmarc=none action=none header.from=vivo.com;
-Received: from SL2PR06MB3082.apcprd06.prod.outlook.com (2603:1096:100:37::17)
- by SL2PR06MB2955.apcprd06.prod.outlook.com (2603:1096:100:3d::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4587.18; Wed, 13 Oct
- 2021 03:28:31 +0000
-Received: from SL2PR06MB3082.apcprd06.prod.outlook.com
- ([fe80::4c9b:b71f:fb67:6414]) by SL2PR06MB3082.apcprd06.prod.outlook.com
- ([fe80::4c9b:b71f:fb67:6414%6]) with mapi id 15.20.4587.024; Wed, 13 Oct 2021
- 03:28:31 +0000
-From:   Qing Wang <wangqing@vivo.com>
-To:     linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc:     Qing Wang <wangqing@vivo.com>
-Subject: [PATCH] video: omapfb: replace snprintf in show functions with sysfs_emit
-Date:   Tue, 12 Oct 2021 20:28:13 -0700
-Message-Id: <1634095693-4428-1-git-send-email-wangqing@vivo.com>
-X-Mailer: git-send-email 2.7.4
-Content-Type: text/plain
-X-ClientProxiedBy: HK2PR02CA0169.apcprd02.prod.outlook.com
- (2603:1096:201:1f::29) To SL2PR06MB3082.apcprd06.prod.outlook.com
- (2603:1096:100:37::17)
+        id S232772AbhJMMQt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 13 Oct 2021 08:16:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46130 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232634AbhJMMQq (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 13 Oct 2021 08:16:46 -0400
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1A0CC061753
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Oct 2021 05:14:42 -0700 (PDT)
+Received: by mail-wr1-x435.google.com with SMTP id e12so7682097wra.4
+        for <linux-fbdev@vger.kernel.org>; Wed, 13 Oct 2021 05:14:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=dMRaftnF9U+W3ku1B/GD71FJ+aEgoWgdI3sg+irCBSU=;
+        b=MhciuyvSk02sHng4PyOacoSMmXkEirv4ROaG/YFOPm3C/PGs4IaqJa0KzfxdG/7GZy
+         j0erLuzznKPfPq1SooRZKFK4Ph0eeQeU9mpXHHT+jpz7xE3bhD8wZpm0IH5MWOlJV1Vs
+         JSjS/+eukQ+3NvBveep9Rvje8X5OHCWQU9oNk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :in-reply-to;
+        bh=dMRaftnF9U+W3ku1B/GD71FJ+aEgoWgdI3sg+irCBSU=;
+        b=Kk+imG+Ltl7+gcGmM96GTNLLvfbOtTCLUV0xoH08sOQjbzxe4aA0zCcMbfH4UxSPXe
+         9iOCxXY4aXBQylHLvlsxaRPqHLr4Blno0gazWwb26WUV1TixRzDoH+baOs+dDn8G76UP
+         odO9b4FOWFrQ23FcybyaOI4/fTTY6qWxtsS0QgxGKzjXB6kqn/ebNZ053WZ5Um69vzXJ
+         MNx6q+3FWCMn9cEULUCZ/XTTAYTzn0UGsU3KQDpRXJgpNl/HrQX2A7fraQFQ9bEpZRp3
+         SMiKNl1oq8so8lAoo3DrSRsbTZ1Qc9YUyuqRTp8K53nhZPRdQckUz/9hn/Go7bL6A8wD
+         wBBg==
+X-Gm-Message-State: AOAM531tF4hhKknC2XAmw2Dg4c+KDfrXCMq8+bQrXrkULgt5lA78+mAm
+        CzDrx4QbdcmmnSBFMg7q2xnnbQ==
+X-Google-Smtp-Source: ABdhPJwjQFtFTLxMhkElGP+tQ3IDjeuJllYWlfjQHSU4ZkxQZ996sxB4SGM/CwV1ziLNNbEonMsSKw==
+X-Received: by 2002:a05:600c:4ba9:: with SMTP id e41mr12535688wmp.70.1634127281038;
+        Wed, 13 Oct 2021 05:14:41 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id q16sm13619647wru.39.2021.10.13.05.14.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 13 Oct 2021 05:14:40 -0700 (PDT)
+Date:   Wed, 13 Oct 2021 14:14:37 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Stephen Boyd <swboyd@chromium.org>
+Cc:     Andrzej Hajda <andrzej.hajda@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Benjamin Gaignard <benjamin.gaignard@linaro.org>,
+        Chen Feng <puck.chen@hisilicon.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Emma Anholt <emma@anholt.net>,
+        Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
+        Inki Dae <inki.dae@samsung.com>,
+        James Qian Wang <james.qian.wang@arm.com>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Joerg Roedel <joro@8bytes.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Joonyoung Shim <jy0922.shim@samsung.com>,
+        Jyri Sarha <jyri.sarha@iki.fi>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-pm@vger.kernel.org, Liviu Dudau <liviu.dudau@arm.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Clark <robdclark@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Russell King <rmk+kernel@arm.linux.org.uk>,
+        Sandy Huang <hjc@rock-chips.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Seung-Woo Kim <sw0312.kim@samsung.com>,
+        Takashi Iwai <tiwai@suse.com>,
+        Tian Tao <tiantao6@hisilicon.com>,
+        Tomas Winkler <tomas.winkler@intel.com>,
+        Tomi Valkeinen <tomba@kernel.org>,
+        Will Deacon <will@kernel.org>,
+        Xinliang Liu <xinliang.liu@linaro.org>,
+        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
+        Yong Wu <yong.wu@mediatek.com>
+Subject: Re: [PATCH v2 00/34] component: Make into an aggregate bus
+Message-ID: <YWbNrfxQ0IqV7vsO@phenom.ffwll.local>
+Mail-Followup-To: Stephen Boyd <swboyd@chromium.org>,
+        Andrzej Hajda <andrzej.hajda@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Benjamin Gaignard <benjamin.gaignard@linaro.org>,
+        Chen Feng <puck.chen@hisilicon.com>, Chen-Yu Tsai <wens@csie.org>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Emma Anholt <emma@anholt.net>,
+        Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
+        Inki Dae <inki.dae@samsung.com>,
+        James Qian Wang <james.qian.wang@arm.com>,
+        Jaroslav Kysela <perex@perex.cz>, Joerg Roedel <joro@8bytes.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Joonyoung Shim <jy0922.shim@samsung.com>,
+        Jyri Sarha <jyri.sarha@iki.fi>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-pm@vger.kernel.org, Liviu Dudau <liviu.dudau@arm.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>, Maxime Ripard <mripard@kernel.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Clark <robdclark@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Russell King <rmk+kernel@arm.linux.org.uk>,
+        Sandy Huang <hjc@rock-chips.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Seung-Woo Kim <sw0312.kim@samsung.com>,
+        Takashi Iwai <tiwai@suse.com>, Tian Tao <tiantao6@hisilicon.com>,
+        Tomas Winkler <tomas.winkler@intel.com>,
+        Tomi Valkeinen <tomba@kernel.org>, Will Deacon <will@kernel.org>,
+        Xinliang Liu <xinliang.liu@linaro.org>,
+        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
+        Yong Wu <yong.wu@mediatek.com>
+References: <20211006193819.2654854-1-swboyd@chromium.org>
+ <5d3f4343-da38-04b4-fdb9-cb2dd4983db2@gmail.com>
+ <CAE-0n50s_cOLA0xRa8mmUS2Nawd5X7WiQE3PvOLHu+i=hE3Eow@mail.gmail.com>
 MIME-Version: 1.0
-Received: from ubuntu.localdomain (218.213.202.189) by HK2PR02CA0169.apcprd02.prod.outlook.com (2603:1096:201:1f::29) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256) id 15.20.4587.21 via Frontend Transport; Wed, 13 Oct 2021 03:28:30 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: cc6f5614-7e66-4324-6891-08d98df987d6
-X-MS-TrafficTypeDiagnostic: SL2PR06MB2955:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <SL2PR06MB29552416023E338CE38B8EF1BDB79@SL2PR06MB2955.apcprd06.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:225;
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 1gRIftN/hR7aBn3Kp/2FJBE2BZwIYUvat4OJ67bFcV8FG0dpPZa47iwMOIbdeIyVneFsZG3V2cltY/HYIw3olKQx4iAU6P8EHC0QYHb2KVe1gj8L4DmvNaCBjdqfydqFE09gPzCmwt3rGtDB3saZNFz9OI2Qxa3dtWayD04rxmebhz8w9ltMWMiZJjYFY7/7uUGkAH7MLnChx1+yLQiAY6Lt3yuHHg1Ww/nmW+jnSwS1nehBqboh+xhVXud3BQnWKXOMfZQHtPK5R9OW3Ff8rTw8ZUbbuHO8qwQhQJv28s2MrFFnwKRFAb47Fpo/u+XypDOnThs/4BIDUDZqfnTdhuLWcCaGUASdYnKfBlzZLwatp0rbZ9mzLxjOTPfSpM2jgg8dZJEfv/hbtlIS1PdQ0l9D9gt+TH4cyM4qJbAnnyub7JhGdVdfoq2Jl7HvN57B8oOuJSLefaRRTj93k/qLL1AdpG2hy6CmWPgBJt5m8o1l0vFqmIgqpYPkI3WHuZkubvKfBVkgsDHGYqK2QuKw+WzwvdL+S5TrF2/cBq17n83DPlsl9nsBiPm+PUOLj5yFTctf0rY+HBId938NYLj0ZVdirBghOGEwQkTfZTdsuRBXXKCjiyZbO048f5E28pcBazXI4Ap5Vin+zbJMhRqpw5O/Cfl0IAUW5Lgl6sboX3MvkbKdPKzpYH22s74EbsRsQN94cn8WxfG4DisJBQUvHw==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SL2PR06MB3082.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(366004)(956004)(508600001)(186003)(6666004)(107886003)(66476007)(66556008)(8936002)(66946007)(26005)(2906002)(6486002)(30864003)(2616005)(36756003)(83380400001)(4326008)(52116002)(6512007)(6506007)(86362001)(8676002)(316002)(38350700002)(5660300002)(38100700002);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?WEvEKLpjKHWnHaMsSrO8nfu7yUFwU1kY0TYp5aLS/gNMtuhE0cUsyifvEtFX?=
- =?us-ascii?Q?hW8HP/M+qcN7Tpz5rqF5pgLkdjIs2p4L/2t3dTGyjBki4IswO26RZ7E0J877?=
- =?us-ascii?Q?iZBmafzjxyR3BTpZkYYDVHTUaetLU9/IztOLcmvfbFRQDpv6n255AsYtr9qn?=
- =?us-ascii?Q?sQ45Ag/6j0rasIc2z0xPyPM4TZ0DCz+lqIDd+DtL5xGpuY9kTm4G8UYazSHS?=
- =?us-ascii?Q?eMEiF1EnPau4/CdF7bpllfFI3whx3aPiY67iMUJnMUQNbrXNMjG6fqcctXdW?=
- =?us-ascii?Q?3iTYg26yAUFO8c/2mHKdptMZjw39R5XTo4tj4jCZIilteR3q4cnz2Ra6vnr2?=
- =?us-ascii?Q?bmBIA4ZL5/+jkq1m/qNPwYgAVUrRwAqDVmv7zLKq6+Opd211wYOMXwif0M6D?=
- =?us-ascii?Q?IlfwWlqLXpTSexILG+mb66o4Rz3ufTOZISAulQm3Iqdx0OV1WYbouQhm7zv8?=
- =?us-ascii?Q?cjxIAhMpRcq9zyjQxfL7f0oW/bB38DNPRfMGuEPRtEk+3lrYcxQezhqVLCKg?=
- =?us-ascii?Q?E7jol7hSouPN3a97ibfJHjwgsTC+lELP5XETx41pWPmpvNAMZOQ4Hyu5dbmw?=
- =?us-ascii?Q?uNgJRZUzQWyCEOo7TsfAYRxxC4ryATBSIsJLthUxtYrxaZoZ1RY9Zupx5eB/?=
- =?us-ascii?Q?5X7Dm1kYOrrh5Bm8iS8PM49e1CUMiiIcbMlrWf+Yd82oGwC8l61qJ2SdiEXj?=
- =?us-ascii?Q?gbUWPmHFfrHqRux+wXGxOfI2d9jwcuez76tfIXdGy/zZgLHN8LDVSKEN8UX4?=
- =?us-ascii?Q?0WbzQFghpJ9BppDIqoImPELlTWXhUzKx7p1kWe37TdIiZxObeMq1sRRlFF4H?=
- =?us-ascii?Q?pQ7hXKc0TiJIZ3cMCEgJIpnl/5IKEcN/8iNMs/ZI0yovrkISB2VS9gnFiWEu?=
- =?us-ascii?Q?1ONF407sRDb0kIFrLiM921KayxaKRhb6FepcQUA1RmUG54abktaSNWGyFbpF?=
- =?us-ascii?Q?Xn7Z47MOOCoG0tTV4SjgPy02BWuzb9kH3XSpShc/lh5i/i9l1jxd4uBPoNqA?=
- =?us-ascii?Q?t5Y/SDAzGZ4d3efGwfoeVrx8TqmB6qu9GySJkJWJGMbPFwTFRKWqiWuQNJOt?=
- =?us-ascii?Q?c7Vc8lRowTze8krrL0xB7+8qjnCHULDYRmBCxRGrU/GE20QxGQ/JwzTzckVJ?=
- =?us-ascii?Q?bEgtuXDY72qSRbp/o0ThnCbMiAQxKt7ueXck01QXwuHCyfu+x1ZCag5qHtOA?=
- =?us-ascii?Q?+6qYYc2j3Kw4mVww8SIuDfDbi0e/AxmtEKQJs+H4din7GBcAj9unfBElThrD?=
- =?us-ascii?Q?11c93/nI3ONQheufO+HjjfvxrYkBl9U/2ZCSNAQLg0cYz+0Qil/xij/HotmQ?=
- =?us-ascii?Q?TbkSQB/jL27mHYFo8sg02Ihz?=
-X-OriginatorOrg: vivo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: cc6f5614-7e66-4324-6891-08d98df987d6
-X-MS-Exchange-CrossTenant-AuthSource: SL2PR06MB3082.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Oct 2021 03:28:31.6283
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: uaVgU9tVZD/1Gk0DWugG+EMxU/tpVjqTdJE8Yj7mZZzgJDP6yU4JmmQUwNy1nfCXltb+o5+N4xk8T/mCwHL1YQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SL2PR06MB2955
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAE-0n50s_cOLA0xRa8mmUS2Nawd5X7WiQE3PvOLHu+i=hE3Eow@mail.gmail.com>
+X-Operating-System: Linux phenom 5.10.0-8-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-coccicheck complains about the use of snprintf() in sysfs show functions.
+On Thu, Oct 07, 2021 at 04:46:22PM -0400, Stephen Boyd wrote:
+> Quoting Andrzej Hajda (2021-10-07 03:16:27)
+> > Hi Stephen,
+> >
+> > On 06.10.2021 21:37, Stephen Boyd wrote:
+> > > This series is from discussion we had on reordering the device lists for
+> > > drm shutdown paths[1]. I've introduced an 'aggregate' bus that we put
+> > > the aggregate device onto and then we probe the aggregate device once
+> > > all the components are probed and call component_add(). The probe/remove
+> > > hooks are where the bind/unbind calls go, and then a shutdown hook is
+> > > added that can be used to shutdown the drm display pipeline at the right
+> > > time.
+> > >
+> > > This works for me on my sc7180 board. I no longer get a warning from i2c
+> > > at shutdown that we're trying to make an i2c transaction after the i2c
+> > > bus has been shutdown. There's more work to do on the msm drm driver to
+> > > extract component device resources like clks, regulators, etc. out of
+> > > the component bind function into the driver probe but I wanted to move
+> > > everything over now in other component drivers before tackling that
+> > > problem.
+> >
+> >
+> > As I understand you have DSI host with i2c-controlled DSI bridge. And
+> > there is an issue that bridge is shutdown before msmdrm. Your solution
+> > is to 'adjust' device order on pm list.
+> > I had similar issue and solved it locally by adding notification from
+> > DSI bridge to DSI host that is has to be removed: mipi_dsi_detach, this
+> > notification escalates in DSI host to component_del and this allow to
+> > react properly.
+> >
+> > Advantages:
+> > - it is local (only involves DSI host and DSI device),
+> > - it does not depend on PM internals,
+> > - it can be used in other scenarios as well - unbinding DSI device driver
+> >
+> > Disadvantage:
+> > - It is DSI specific (but this is your case), I have advertised some
+> > time ago more general approach [1][2].
+> >
+> > [1]: https://static.sched.com/hosted_files/osseu18/0f/deferred_problem.pdf
+> > [2]: https://lwn.net/Articles/625454/
+> >
+> 
+> I think these are all points for or against using the component code in
+> general? Maybe you can send patches that you think can solve the problem
+> I'm experiencing and we can review them on the list.
 
-Fix the coccicheck warning:
-WARNING: use scnprintf or sprintf.
+Yeah I think this is entirely orthogonal. If you use component, then
+component should provide a way to handle this.
 
-Use sysfs_emit instead of scnprintf or sprintf makes more sense.
+If you use something else, like drm_bridge or dsi or whatever, then that
+part should provide a solution to stage stuff correctly and handle all the
+ordering.
 
-Signed-off-by: Qing Wang <wangqing@vivo.com>
----
- drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c | 14 +++++++-------
- drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c | 18 +++++++++---------
- drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c | 20 ++++++++++----------
- drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c      | 12 ++++++------
- 4 files changed, 32 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-index 6dbe265..8f355d1 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c
-@@ -19,14 +19,14 @@
- 
- static ssize_t display_name_show(struct omap_dss_device *dssdev, char *buf)
- {
--	return snprintf(buf, PAGE_SIZE, "%s\n",
-+	return sysfs_emit(buf, "%s\n",
- 			dssdev->name ?
- 			dssdev->name : "");
- }
- 
- static ssize_t display_enabled_show(struct omap_dss_device *dssdev, char *buf)
- {
--	return snprintf(buf, PAGE_SIZE, "%d\n",
-+	return sysfs_emit(buf, "%d\n",
- 			omapdss_device_is_enabled(dssdev));
- }
- 
-@@ -59,7 +59,7 @@ static ssize_t display_enabled_store(struct omap_dss_device *dssdev,
- 
- static ssize_t display_tear_show(struct omap_dss_device *dssdev, char *buf)
- {
--	return snprintf(buf, PAGE_SIZE, "%d\n",
-+	return sysfs_emit(buf, "%d\n",
- 			dssdev->driver->get_te ?
- 			dssdev->driver->get_te(dssdev) : 0);
- }
-@@ -93,7 +93,7 @@ static ssize_t display_timings_show(struct omap_dss_device *dssdev, char *buf)
- 
- 	dssdev->driver->get_timings(dssdev, &t);
- 
--	return snprintf(buf, PAGE_SIZE, "%u,%u/%u/%u/%u,%u/%u/%u/%u\n",
-+	return sysfs_emit(buf, "%u,%u/%u/%u/%u,%u/%u/%u/%u\n",
- 			t.pixelclock,
- 			t.x_res, t.hfp, t.hbp, t.hsw,
- 			t.y_res, t.vfp, t.vbp, t.vsw);
-@@ -143,7 +143,7 @@ static ssize_t display_rotate_show(struct omap_dss_device *dssdev, char *buf)
- 	if (!dssdev->driver->get_rotate)
- 		return -ENOENT;
- 	rotate = dssdev->driver->get_rotate(dssdev);
--	return snprintf(buf, PAGE_SIZE, "%u\n", rotate);
-+	return sysfs_emit(buf, "%u\n", rotate);
- }
- 
- static ssize_t display_rotate_store(struct omap_dss_device *dssdev,
-@@ -171,7 +171,7 @@ static ssize_t display_mirror_show(struct omap_dss_device *dssdev, char *buf)
- 	if (!dssdev->driver->get_mirror)
- 		return -ENOENT;
- 	mirror = dssdev->driver->get_mirror(dssdev);
--	return snprintf(buf, PAGE_SIZE, "%u\n", mirror);
-+	return sysfs_emit(buf, "%u\n", mirror);
- }
- 
- static ssize_t display_mirror_store(struct omap_dss_device *dssdev,
-@@ -203,7 +203,7 @@ static ssize_t display_wss_show(struct omap_dss_device *dssdev, char *buf)
- 
- 	wss = dssdev->driver->get_wss(dssdev);
- 
--	return snprintf(buf, PAGE_SIZE, "0x%05x\n", wss);
-+	return sysfs_emit(buf, "0x%05x\n", wss);
- }
- 
- static ssize_t display_wss_store(struct omap_dss_device *dssdev,
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-index b52cc1a..3ffb1fe 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
-@@ -22,14 +22,14 @@
- 
- static ssize_t manager_name_show(struct omap_overlay_manager *mgr, char *buf)
- {
--	return snprintf(buf, PAGE_SIZE, "%s\n", mgr->name);
-+	return sysfs_emit(buf, "%s\n", mgr->name);
- }
- 
- static ssize_t manager_display_show(struct omap_overlay_manager *mgr, char *buf)
- {
- 	struct omap_dss_device *dssdev = mgr->get_device(mgr);
- 
--	return snprintf(buf, PAGE_SIZE, "%s\n", dssdev ?
-+	return sysfs_emit(buf, "%s\n", dssdev ?
- 			dssdev->name : "<none>");
- }
- 
-@@ -120,7 +120,7 @@ static ssize_t manager_default_color_show(struct omap_overlay_manager *mgr,
- 
- 	mgr->get_manager_info(mgr, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%#x\n", info.default_color);
-+	return sysfs_emit(buf, "%#x\n", info.default_color);
- }
- 
- static ssize_t manager_default_color_store(struct omap_overlay_manager *mgr,
-@@ -165,7 +165,7 @@ static ssize_t manager_trans_key_type_show(struct omap_overlay_manager *mgr,
- 	key_type = info.trans_key_type;
- 	BUG_ON(key_type >= ARRAY_SIZE(trans_key_type_str));
- 
--	return snprintf(buf, PAGE_SIZE, "%s\n", trans_key_type_str[key_type]);
-+	return sysfs_emit(buf, "%s\n", trans_key_type_str[key_type]);
- }
- 
- static ssize_t manager_trans_key_type_store(struct omap_overlay_manager *mgr,
-@@ -200,7 +200,7 @@ static ssize_t manager_trans_key_value_show(struct omap_overlay_manager *mgr,
- 
- 	mgr->get_manager_info(mgr, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%#x\n", info.trans_key);
-+	return sysfs_emit(buf, "%#x\n", info.trans_key);
- }
- 
- static ssize_t manager_trans_key_value_store(struct omap_overlay_manager *mgr,
-@@ -236,7 +236,7 @@ static ssize_t manager_trans_key_enabled_show(struct omap_overlay_manager *mgr,
- 
- 	mgr->get_manager_info(mgr, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%d\n", info.trans_enabled);
-+	return sysfs_emit(buf, "%d\n", info.trans_enabled);
- }
- 
- static ssize_t manager_trans_key_enabled_store(struct omap_overlay_manager *mgr,
-@@ -275,7 +275,7 @@ static ssize_t manager_alpha_blending_enabled_show(
- 
- 	mgr->get_manager_info(mgr, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%d\n",
-+	return sysfs_emit(buf, "%d\n",
- 		info.partial_alpha_enabled);
- }
- 
-@@ -316,7 +316,7 @@ static ssize_t manager_cpr_enable_show(struct omap_overlay_manager *mgr,
- 
- 	mgr->get_manager_info(mgr, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%d\n", info.cpr_enable);
-+	return sysfs_emit(buf, "%d\n", info.cpr_enable);
- }
- 
- static ssize_t manager_cpr_enable_store(struct omap_overlay_manager *mgr,
-@@ -358,7 +358,7 @@ static ssize_t manager_cpr_coef_show(struct omap_overlay_manager *mgr,
- 
- 	mgr->get_manager_info(mgr, &info);
- 
--	return snprintf(buf, PAGE_SIZE,
-+	return sysfs_emit(buf,
- 			"%d %d %d %d %d %d %d %d %d\n",
- 			info.cpr_coefs.rr,
- 			info.cpr_coefs.rg,
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-index 36acf36..421dcb7 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c
-@@ -22,12 +22,12 @@
- 
- static ssize_t overlay_name_show(struct omap_overlay *ovl, char *buf)
- {
--	return snprintf(buf, PAGE_SIZE, "%s\n", ovl->name);
-+	return sysfs_emit(buf, "%s\n", ovl->name);
- }
- 
- static ssize_t overlay_manager_show(struct omap_overlay *ovl, char *buf)
- {
--	return snprintf(buf, PAGE_SIZE, "%s\n",
-+	return sysfs_emit(buf, "%s\n",
- 			ovl->manager ? ovl->manager->name : "<none>");
- }
- 
-@@ -108,7 +108,7 @@ static ssize_t overlay_input_size_show(struct omap_overlay *ovl, char *buf)
- 
- 	ovl->get_overlay_info(ovl, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%d,%d\n",
-+	return sysfs_emit(buf, "%d,%d\n",
- 			info.width, info.height);
- }
- 
-@@ -118,7 +118,7 @@ static ssize_t overlay_screen_width_show(struct omap_overlay *ovl, char *buf)
- 
- 	ovl->get_overlay_info(ovl, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%d\n", info.screen_width);
-+	return sysfs_emit(buf, "%d\n", info.screen_width);
- }
- 
- static ssize_t overlay_position_show(struct omap_overlay *ovl, char *buf)
-@@ -127,7 +127,7 @@ static ssize_t overlay_position_show(struct omap_overlay *ovl, char *buf)
- 
- 	ovl->get_overlay_info(ovl, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%d,%d\n",
-+	return sysfs_emit(buf, "%d,%d\n",
- 			info.pos_x, info.pos_y);
- }
- 
-@@ -166,7 +166,7 @@ static ssize_t overlay_output_size_show(struct omap_overlay *ovl, char *buf)
- 
- 	ovl->get_overlay_info(ovl, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%d,%d\n",
-+	return sysfs_emit(buf, "%d,%d\n",
- 			info.out_width, info.out_height);
- }
- 
-@@ -201,7 +201,7 @@ static ssize_t overlay_output_size_store(struct omap_overlay *ovl,
- 
- static ssize_t overlay_enabled_show(struct omap_overlay *ovl, char *buf)
- {
--	return snprintf(buf, PAGE_SIZE, "%d\n", ovl->is_enabled(ovl));
-+	return sysfs_emit(buf, "%d\n", ovl->is_enabled(ovl));
- }
- 
- static ssize_t overlay_enabled_store(struct omap_overlay *ovl, const char *buf,
-@@ -231,7 +231,7 @@ static ssize_t overlay_global_alpha_show(struct omap_overlay *ovl, char *buf)
- 
- 	ovl->get_overlay_info(ovl, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%d\n",
-+	return sysfs_emit(buf, "%d\n",
- 			info.global_alpha);
- }
- 
-@@ -273,7 +273,7 @@ static ssize_t overlay_pre_mult_alpha_show(struct omap_overlay *ovl,
- 
- 	ovl->get_overlay_info(ovl, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%d\n",
-+	return sysfs_emit(buf, "%d\n",
- 			info.pre_mult_alpha);
- }
- 
-@@ -314,7 +314,7 @@ static ssize_t overlay_zorder_show(struct omap_overlay *ovl, char *buf)
- 
- 	ovl->get_overlay_info(ovl, &info);
- 
--	return snprintf(buf, PAGE_SIZE, "%d\n", info.zorder);
-+	return sysfs_emit(buf, "%d\n", info.zorder);
- }
- 
- static ssize_t overlay_zorder_store(struct omap_overlay *ovl,
-diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
-index 2d39dbf..deed5c7 100644
---- a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
-+++ b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
-@@ -29,7 +29,7 @@ static ssize_t show_rotate_type(struct device *dev,
- 	struct fb_info *fbi = dev_get_drvdata(dev);
- 	struct omapfb_info *ofbi = FB2OFB(fbi);
- 
--	return snprintf(buf, PAGE_SIZE, "%d\n", ofbi->rotation_type);
-+	return sysfs_emit(buf, "%d\n", ofbi->rotation_type);
- }
- 
- static ssize_t store_rotate_type(struct device *dev,
-@@ -83,7 +83,7 @@ static ssize_t show_mirror(struct device *dev,
- 	struct fb_info *fbi = dev_get_drvdata(dev);
- 	struct omapfb_info *ofbi = FB2OFB(fbi);
- 
--	return snprintf(buf, PAGE_SIZE, "%d\n", ofbi->mirror);
-+	return sysfs_emit(buf, "%d\n", ofbi->mirror);
- }
- 
- static ssize_t store_mirror(struct device *dev,
-@@ -415,7 +415,7 @@ static ssize_t show_size(struct device *dev,
- 	struct fb_info *fbi = dev_get_drvdata(dev);
- 	struct omapfb_info *ofbi = FB2OFB(fbi);
- 
--	return snprintf(buf, PAGE_SIZE, "%lu\n", ofbi->region->size);
-+	return sysfs_emit(buf, "%lu\n", ofbi->region->size);
- }
- 
- static ssize_t store_size(struct device *dev, struct device_attribute *attr,
-@@ -492,7 +492,7 @@ static ssize_t show_phys(struct device *dev,
- 	struct fb_info *fbi = dev_get_drvdata(dev);
- 	struct omapfb_info *ofbi = FB2OFB(fbi);
- 
--	return snprintf(buf, PAGE_SIZE, "%0x\n", ofbi->region->paddr);
-+	return sysfs_emit(buf, "%0x\n", ofbi->region->paddr);
- }
- 
- static ssize_t show_virt(struct device *dev,
-@@ -501,7 +501,7 @@ static ssize_t show_virt(struct device *dev,
- 	struct fb_info *fbi = dev_get_drvdata(dev);
- 	struct omapfb_info *ofbi = FB2OFB(fbi);
- 
--	return snprintf(buf, PAGE_SIZE, "%p\n", ofbi->region->vaddr);
-+	return sysfs_emit(buf, "%p\n", ofbi->region->vaddr);
- }
- 
- static ssize_t show_upd_mode(struct device *dev,
-@@ -516,7 +516,7 @@ static ssize_t show_upd_mode(struct device *dev,
- 	if (r)
- 		return r;
- 
--	return snprintf(buf, PAGE_SIZE, "%u\n", (unsigned)mode);
-+	return sysfs_emit(buf, "%u\n", (unsigned)mode);
- }
- 
- static ssize_t store_upd_mode(struct device *dev, struct device_attribute *attr,
+Now there's a bunch of drivers which mix up component with bridge use and
+hilarity ensues, but since there's no real effort to fix that I think it's
+toally fine to just improve component.c meanwhile.
+-Daniel
 -- 
-2.7.4
-
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

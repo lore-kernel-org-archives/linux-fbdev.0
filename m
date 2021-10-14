@@ -2,155 +2,82 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 443CEC433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Oct 2021 13:58:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD368C43217
+	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Oct 2021 16:49:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 24FA1610CC
-	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Oct 2021 13:58:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C64FB61139
+	for <linux-fbdev@archiver.kernel.org>; Thu, 14 Oct 2021 16:49:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231388AbhJNOAo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 14 Oct 2021 10:00:44 -0400
-Received: from smtp-out2.suse.de ([195.135.220.29]:48376 "EHLO
-        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230177AbhJNOAn (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 14 Oct 2021 10:00:43 -0400
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id DA14D1FD29;
-        Thu, 14 Oct 2021 13:58:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1634219917; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=9A+GQeaFgonmZoQA1BJNWLgEss6Z/Jtafc/0hYNUu4Y=;
-        b=Jw2sjnBCXAWISc+DK4rVtikmY9lEX1FPmZRRQdo4II2PfKP7mWQ/wRVMSxtC+j5yCYLmSM
-        y7L4kXi05iGRK3cV4He62a9sTcF8iEsX/C6kzLguIHZnIeMwafKO3FOwzkFfTJYM1Uo+ol
-        cguefB3ALh1fV8kwX77EjQYbq0P7ayc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1634219917;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=9A+GQeaFgonmZoQA1BJNWLgEss6Z/Jtafc/0hYNUu4Y=;
-        b=3JWZomZAlwpzJqHYa9IvRFuBKdAe6Y2jQkUnyTaBdWM2L/Yfwq5zCVpIKQIfJngTgEyJeG
-        ctzsH6yvHYSFWJAQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B4E4C13D97;
-        Thu, 14 Oct 2021 13:58:37 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id cTFEK403aGE+awAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 14 Oct 2021 13:58:37 +0000
-Message-ID: <8742cda5-1fc7-ae44-076c-e4a522ca43f5@suse.de>
-Date:   Thu, 14 Oct 2021 15:58:37 +0200
+        id S233524AbhJNQvE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 14 Oct 2021 12:51:04 -0400
+Received: from mail.kernel.org ([198.145.29.99]:37450 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233497AbhJNQvB (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 14 Oct 2021 12:51:01 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id B2BDD6109E;
+        Thu, 14 Oct 2021 16:48:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1634230136;
+        bh=/Hf0VjXN6iyYy6YK32OUC6tMBg1hQi/SYJ14SKE5H/4=;
+        h=Date:From:To:Subject:From;
+        b=ooCImsbvs+VtpH8EU0ZNPxgl6dfPCRirRShNowMC4TH6HA74C7k0jmazO2lO0D4FB
+         riKUsg+P3Tw825Db06ypvOYMi00tW/xFnJFc1Obfqp53qI/qhjkBm0iH1StR785T00
+         oaQBtBpMgElQP7UP/dEG34IdcqgEH2An1K1HBjaKzzEHlSOldL0drDzqeQbGIb0JFT
+         C4AR2wXM5KPbcEDc2IIG89gllO6wPZ9p81Ij4MOL+dzXfL2IzEJSTZYkT2hj+5hiff
+         mNAy8+H+ftORN/K2uJcBivQsPuJWRzOK2Fe/JpABAoSmBWQP27zTM4XHmO6m5pK03I
+         G79ZH9vfz96dg==
+Date:   Thu, 14 Oct 2021 11:53:20 -0500
+From:   "Gustavo A. R. Silva" <gustavoars@kernel.org>
+To:     Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        linux-hardening@vger.kernel.org, ;
+Illegal-Object: Syntax error in To: address found on vger.kernel.org:
+        To:     ;
+                        ^-missing semicolon to end mail group, extraneous tokens in mailbox, missing end of mailbox
+Subject: [PATCH] video: omapfb: Fix fall-through warning for Clang
+Message-ID: <20211014165320.GA1145571@embeddedor>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.1.2
-Subject: Re: [PATCH] video: smscufx: Fix null-ptr-deref in ufx_usb_probe()
-Content-Language: en-US
-To:     Wang Hai <wanghai38@huawei.com>, steve.glendinning@shawell.net,
-        FlorianSchandinat@gmx.de, gregkh@suse.de
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20211014132231.555138-1-wanghai38@huawei.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20211014132231.555138-1-wanghai38@huawei.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------ffM8l0TxRYwhGR0oMWNe03pk"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------ffM8l0TxRYwhGR0oMWNe03pk
-Content-Type: multipart/mixed; boundary="------------dzQNDPAH6MVNLQ7iZa2Lns6c";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Wang Hai <wanghai38@huawei.com>, steve.glendinning@shawell.net,
- FlorianSchandinat@gmx.de, gregkh@suse.de
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org
-Message-ID: <8742cda5-1fc7-ae44-076c-e4a522ca43f5@suse.de>
-Subject: Re: [PATCH] video: smscufx: Fix null-ptr-deref in ufx_usb_probe()
-References: <20211014132231.555138-1-wanghai38@huawei.com>
-In-Reply-To: <20211014132231.555138-1-wanghai38@huawei.com>
+Fix the following fallthrough warnings:
 
---------------dzQNDPAH6MVNLQ7iZa2Lns6c
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+drivers/video/fbdev/omap/omapfb_main.c:1558:2: warning: unannotated fall-through between switch labels [-Wimplicit-fallthrough]
+           case 0:
+           ^
+   drivers/video/fbdev/omap/omapfb_main.c:1558:2: note: insert 'break;' to avoid fall-through
+           case 0:
+           ^
+           break;
+   1 warning generated.
 
-SGkNCg0KQW0gMTQuMTAuMjEgdW0gMTU6MjIgc2NocmllYiBXYW5nIEhhaToNCj4gSSBnb3Qg
-YSBudWxsLXB0ci1kZXJlZiByZXBvcnQ6DQo+IA0KPiBCVUc6IGtlcm5lbCBOVUxMIHBvaW50
-ZXIgZGVyZWZlcmVuY2UsIGFkZHJlc3M6IDAwMDAwMDAwMDAwMDAwMDANCj4gLi4uDQo+IFJJ
-UDogMDAxMDpmYl9kZXN0cm95X21vZGVsaXN0KzB4MzgvMHgxMDANCj4gLi4uDQo+IENhbGwg
-VHJhY2U6DQo+ICAgdWZ4X3VzYl9wcm9iZS5jb2xkKzB4MmI1LzB4YWMxIFtzbXNjdWZ4XQ0K
-PiAgIHVzYl9wcm9iZV9pbnRlcmZhY2UrMHgxYWEvMHgzYzAgW3VzYmNvcmVdDQo+ICAgcmVh
-bGx5X3Byb2JlKzB4MTY3LzB4NDYwDQo+IC4uLg0KPiAgIHJldF9mcm9tX2ZvcmsrMHgxZi8w
-eDMwDQo+IA0KPiBJZiBmYl9hbGxvY19jbWFwKCkgZmFpbHMgaW4gdWZ4X3VzYl9wcm9iZSgp
-LCBmYl9kZXN0cm95X21vZGVsaXN0KCkgd2lsbA0KPiBiZSBjYWxsZWQgdG8gZGVzdHJveSBt
-b2RlbGlzdCBpbiB0aGUgZXJyb3IgaGFuZGxpbmcgcGF0aC4gQnV0IG1vZGVsaXN0DQo+IGhh
-cyBub3QgYmVlbiBpbml0aWFsaXplZCB5ZXQsIHNvIGl0IHdpbGwgcmVzdWx0IGluIG51bGwt
-cHRyLWRlcmVmLg0KPiANCj4gSW5pdGlhbGl6ZSBtb2RlbGlzdCBiZWZvcmUgY2FsbGluZyBm
-Yl9hbGxvY19jbWFwKCkgdG8gZml4IHRoaXMgYnVnLg0KPiANCj4gRml4ZXM6IDNjOGE2M2Uy
-MmEwOCAoIkFkZCBzdXBwb3J0IGZvciBTTVNDIFVGWDYwMDAvNzAwMCBVU0IgZGlzcGxheSBh
-ZGFwdGVycyIpDQo+IFJlcG9ydGVkLWJ5OiBIdWxrIFJvYm90IDxodWxrY2lAaHVhd2VpLmNv
-bT4NCj4gU2lnbmVkLW9mZi1ieTogV2FuZyBIYWkgPHdhbmdoYWkzOEBodWF3ZWkuY29tPg0K
-DQpBY2tlZC1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+DQoN
-CkkgZ290IG9uZSBvZiB0aGVzZSBkZXZpY2VzIGJ1dCB0aGUgZHJpdmVyIGRpZG4ndCBwcm9k
-dWNlIGFueSBvdXRwdXQgZm9yIA0KbWUuIEFyZSBhY3R1YWxseSBhYmxlIHRvIHVzZSB0aGUg
-ZHJpdmVyPw0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IC0tLQ0KPiAgIGRyaXZlcnMv
-dmlkZW8vZmJkZXYvc21zY3VmeC5jIHwgMyArLS0NCj4gICAxIGZpbGUgY2hhbmdlZCwgMSBp
-bnNlcnRpb24oKyksIDIgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVy
-cy92aWRlby9mYmRldi9zbXNjdWZ4LmMgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3Ntc2N1Zngu
-Yw0KPiBpbmRleCBiZmFjM2VlNGE2NDIuLjI4NzY4YzI3MmI3MyAxMDA2NDQNCj4gLS0tIGEv
-ZHJpdmVycy92aWRlby9mYmRldi9zbXNjdWZ4LmMNCj4gKysrIGIvZHJpdmVycy92aWRlby9m
-YmRldi9zbXNjdWZ4LmMNCj4gQEAgLTE2NTYsNiArMTY1Niw3IEBAIHN0YXRpYyBpbnQgdWZ4
-X3VzYl9wcm9iZShzdHJ1Y3QgdXNiX2ludGVyZmFjZSAqaW50ZXJmYWNlLA0KPiAgIAlpbmZv
-LT5wYXIgPSBkZXY7DQo+ICAgCWluZm8tPnBzZXVkb19wYWxldHRlID0gZGV2LT5wc2V1ZG9f
-cGFsZXR0ZTsNCj4gICAJaW5mby0+ZmJvcHMgPSAmdWZ4X29wczsNCj4gKwlJTklUX0xJU1Rf
-SEVBRCgmaW5mby0+bW9kZWxpc3QpOw0KPiAgIA0KPiAgIAlyZXR2YWwgPSBmYl9hbGxvY19j
-bWFwKCZpbmZvLT5jbWFwLCAyNTYsIDApOw0KPiAgIAlpZiAocmV0dmFsIDwgMCkgew0KPiBA
-QCAtMTY2Niw4ICsxNjY3LDYgQEAgc3RhdGljIGludCB1ZnhfdXNiX3Byb2JlKHN0cnVjdCB1
-c2JfaW50ZXJmYWNlICppbnRlcmZhY2UsDQo+ICAgCUlOSVRfREVMQVlFRF9XT1JLKCZkZXYt
-PmZyZWVfZnJhbWVidWZmZXJfd29yaywNCj4gICAJCQkgIHVmeF9mcmVlX2ZyYW1lYnVmZmVy
-X3dvcmspOw0KPiAgIA0KPiAtCUlOSVRfTElTVF9IRUFEKCZpbmZvLT5tb2RlbGlzdCk7DQo+
-IC0NCj4gICAJcmV0dmFsID0gdWZ4X3JlZ19yZWFkKGRldiwgMHgzMDAwLCAmaWRfcmV2KTsN
-Cj4gICAJY2hlY2tfd2Fybl9nb3RvX2Vycm9yKHJldHZhbCwgImVycm9yICVkIHJlYWRpbmcg
-MHgzMDAwIHJlZ2lzdGVyIGZyb20gZGV2aWNlIiwgcmV0dmFsKTsNCj4gICAJZGV2X2RiZyhk
-ZXYtPmdkZXYsICJJRF9SRVYgcmVnaXN0ZXIgdmFsdWUgMHglMDh4IiwgaWRfcmV2KTsNCj4g
-DQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXIN
-ClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwg
-OTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpH
-ZXNjaMOkZnRzZsO8aHJlcjogRmVsaXggSW1lbmTDtnJmZmVyDQo=
+This helps with the ongoing efforts to globally enable
+-Wimplicit-fallthrough for Clang.
 
---------------dzQNDPAH6MVNLQ7iZa2Lns6c--
+Link: https://github.com/KSPP/linux/issues/115
+Link: https://lore.kernel.org/lkml/202110141005.hUjaYMEi-lkp@intel.com/
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+---
+ drivers/video/fbdev/omap/omapfb_main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
---------------ffM8l0TxRYwhGR0oMWNe03pk
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index 3d090d2d9ed9..b495c09e6102 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1555,6 +1555,7 @@ static void omapfb_free_resources(struct omapfb_device *fbdev, int state)
+ 	case 1:
+ 		dev_set_drvdata(fbdev->dev, NULL);
+ 		kfree(fbdev);
++		break;
+ 	case 0:
+ 		/* nothing to free */
+ 		break;
+-- 
+2.27.0
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmFoN40FAwAAAAAACgkQlh/E3EQov+Be
-XQ/8CUvzhqSHEvJvOGEFy749mT9d2yCS3FIAdnNGwOLlnqt8tHlweLEknX/sEpxQ7t5GEKQV7azT
-QQqs/O5MKKi1HKuRv4q81OZZW69EqLP+LDJ4kKYiViCin7KoUxIiu+71vtequhqeF3e3fqa700iS
-bWgOHD3qVU1xdQTJMQ1mBH1v2h+WWjAeTzb/xh4EqYxq1yV4SDX4JdpD35uPYF7g2PMfd5M6s9ga
-fc3breWN6vNjWckWRoebn7wXK33t1YStpweWlJ42aytyrLy2eD4M8F2t2Rl8F5d1qmiuhkz6sv/F
-rfS9NWl2dfT6fYbb+kWRSyLnhPSEVjiM0OeyCLAA4FeGY9B5VnMFo/oEphbS1UINXsLwWTlaYYs7
-gcIc3lzQOsJZS0iqF1SkzOZNItQzEbaLUpJjKLl7Ph/HMpIuy0CZBt8iW2KgOlOrYh9L8WFttj/b
-hEjGbsJqXu09MxzX800ai3cStk4g6thnZTKLtxcQAEWXId4cz/8sV5sB4W606CfbiNukPiy0M8R7
-xKZvfBRU49t2nDdaBMAGqfQeibLoz35/d37M6nHuARmxQmJEfIpHVu+7ihVpSkmM8rDMsSuBy1b8
-7eXF9Syv78m1VGVGZQg6teDlPQkAMtbwfieM2qELKh95Mb3SvVsgYsZlqxpSMfG/YL1fuam9o2Wp
-5w0=
-=EdCo
------END PGP SIGNATURE-----
-
---------------ffM8l0TxRYwhGR0oMWNe03pk--

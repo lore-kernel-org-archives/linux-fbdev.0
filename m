@@ -2,95 +2,150 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA2C9C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Oct 2021 14:14:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AA82C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Oct 2021 06:49:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8EB37610CF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Oct 2021 14:14:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 03DEB60EE3
+	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Oct 2021 06:49:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229632AbhJTOQc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 20 Oct 2021 10:16:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48090 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229639AbhJTOQb (ORCPT
+        id S232032AbhJVGvY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 22 Oct 2021 02:51:24 -0400
+Received: from smtp-out1.suse.de ([195.135.220.28]:59700 "EHLO
+        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231616AbhJVGvX (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 20 Oct 2021 10:16:31 -0400
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4023DC06161C
-        for <linux-fbdev@vger.kernel.org>; Wed, 20 Oct 2021 07:14:17 -0700 (PDT)
-Received: by mail-wm1-x329.google.com with SMTP id j15-20020a1c230f000000b00322f53b9bbfso404881wmj.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 20 Oct 2021 07:14:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=lTTo+8CQc/PqPJKiqi3R5Zq/naK0BJaStFZKEFzIMGY=;
-        b=XE5BOwdM6MFT8nfQ+AsiilO5q65yPpW8S8VdeV/ZVBQ+Paypnm15C8imeEbuwnAacD
-         T3rV6ah/sTpJ/FXMKJrY0ZVTcOFDwin0J2gr/y4/30olLpo3xIX1h4QtY2qcOopSaqd5
-         jJsBe4i72ozInsXDeuHN54uccEshCS8FnLJW8NvpGj5wjEZu4VYN+X6AJjVE87wf52Hg
-         7cbU649e5ZJxXD9eJvjxv7jsy2GIuCBxAVzzKYmj5AotBhqTJVubv8e3RqIuAtVxuIVG
-         p/a6YUGOEBjFi0KbzOtHj+WYFp9DFodSajamhHgiO5s+FKBOVqZWIXXQy7CMDkRGuYvg
-         BQLg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=lTTo+8CQc/PqPJKiqi3R5Zq/naK0BJaStFZKEFzIMGY=;
-        b=PjDwMo2FHfS8XJ748h0JjkLAH/40tgDcZT2i3UOBSUXXXUn8ZEGQw9pBC0kpFuoItk
-         7NwcNVYVryEiZhGjX5DRoII/hnu68Hugu4/o6iLg3TeyLZS4xyU4rVyAZvRxABTkW+yt
-         Sx1S3twQ4TVdt2PkdXtHzFfIByqS3QlJfXwThjTeeQY7bKiR7jt1pyuXrJ2wxTDj/ekt
-         TtPrCAA+VUWooacE5b1OCOKHryr9iVUBQcMIs5RwS49kCNPC6N9d5kRCkEqHvk8xhrfu
-         QIfKKOiVkAX8ExLPI4gm4K9cWOx3R8VR4vbtwVKvrkr5T0CLrmD8niFPvE/aahUY3OhY
-         8Gxg==
-X-Gm-Message-State: AOAM531eqXOHTOIGjOx3NfphGMyiquOeqV0UCYUjqSyiED3PSV1KNLas
-        uS4Q+Ojtk8KR1M3XamDmP/V6Ew==
-X-Google-Smtp-Source: ABdhPJxjxE/sse1ro3W61H+27+4b2kviDDXbSKUuInCFapBrDo5me8r3dYXJpqA4sN94WKGQ7AFkkw==
-X-Received: by 2002:a5d:598e:: with SMTP id n14mr53432911wri.187.1634739255749;
-        Wed, 20 Oct 2021 07:14:15 -0700 (PDT)
-Received: from google.com ([95.148.6.207])
-        by smtp.gmail.com with ESMTPSA id x7sm2094937wrq.69.2021.10.20.07.14.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 Oct 2021 07:14:15 -0700 (PDT)
-Date:   Wed, 20 Oct 2021 15:14:13 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org,
-        kernel@pengutronix.de
-Subject: Re: [PATCH] video: backlight: ili9320: Make ili9320_remove() return
- void
-Message-ID: <YXAkNUrm2QI2XNyo@google.com>
-References: <20211019120927.3822792-1-u.kleine-koenig@pengutronix.de>
+        Fri, 22 Oct 2021 02:51:23 -0400
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id D0BB121983;
+        Fri, 22 Oct 2021 06:49:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+        t=1634885344; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=kLjFhRTaZVh+922MiISGe9xKfsnF1lnWNXu00NonX3Y=;
+        b=Yz8ovdFyj3/pte4s30R5bKNii8Dj0Cui8WBkly6EcM+9mbjl8dcoRZskne4zX9d2rhTnSM
+        nSZJZNU8MNvgJ0hVKAWx33tvmv06DzvqeJSYABc5kbSCmE3JCkFNf0szyoGGdajX9441j+
+        iwpYYIVKuMs8a9+feAbvot98kgyfm38=
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 92EEA13C79;
+        Fri, 22 Oct 2021 06:49:04 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id AF+wIuBecmEIEwAAMHmgww
+        (envelope-from <jgross@suse.com>); Fri, 22 Oct 2021 06:49:04 +0000
+From:   Juergen Gross <jgross@suse.com>
+To:     xen-devel@lists.xenproject.org, linux-input@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+Cc:     Juergen Gross <jgross@suse.com>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Stefano Stabellini <sstabellini@kernel.org>
+Subject: [PATCH 1/5] xen: add "not_essential" flag to struct xenbus_driver
+Date:   Fri, 22 Oct 2021 08:47:56 +0200
+Message-Id: <20211022064800.14978-2-jgross@suse.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20211022064800.14978-1-jgross@suse.com>
+References: <20211022064800.14978-1-jgross@suse.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20211019120927.3822792-1-u.kleine-koenig@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, 19 Oct 2021, Uwe Kleine-König wrote:
+When booting the xenbus driver will wait for PV devices to have
+connected to their backends before continuing. The timeout is different
+between essential and non-essential devices.
 
-> Up to now ili9320_remove() returns zero unconditionally. Make it return
-> void instead which makes it easier to see in the callers that there is
-> no error to handle.
-> 
-> Also the return value of spi remove callbacks is ignored anyway.
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> ---
->  drivers/video/backlight/ili9320.c   | 3 +--
->  drivers/video/backlight/ili9320.h   | 2 +-
->  drivers/video/backlight/vgg2432a4.c | 4 +++-
->  3 files changed, 5 insertions(+), 4 deletions(-)
+Non-essential devices are identified by their nodenames directly in the
+xenbus driver, which requires to update this list in case a new device
+type being non-essential is added (this was missed for several types
+in the past).
 
-Applied, thanks.
+In order to avoid this problem, add a "not_essential" flag to struct
+xenbus_driver which can be set to "true" by the respective frontend.
 
+Set this flag for the frontends currently regarded to be not essential
+(vkbs and vfb) and use it for testing in the xenbus driver.
+
+Signed-off-by: Juergen Gross <jgross@suse.com>
+---
+ drivers/input/misc/xen-kbdfront.c          |  1 +
+ drivers/video/fbdev/xen-fbfront.c          |  1 +
+ drivers/xen/xenbus/xenbus_probe_frontend.c | 14 +++-----------
+ include/xen/xenbus.h                       |  1 +
+ 4 files changed, 6 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/input/misc/xen-kbdfront.c b/drivers/input/misc/xen-kbdfront.c
+index 4ff5cd2a6d8d..3d17a0b3fe51 100644
+--- a/drivers/input/misc/xen-kbdfront.c
++++ b/drivers/input/misc/xen-kbdfront.c
+@@ -542,6 +542,7 @@ static struct xenbus_driver xenkbd_driver = {
+ 	.remove = xenkbd_remove,
+ 	.resume = xenkbd_resume,
+ 	.otherend_changed = xenkbd_backend_changed,
++	.not_essential = true,
+ };
+ 
+ static int __init xenkbd_init(void)
+diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
+index 5ec51445bee8..6826f986da43 100644
+--- a/drivers/video/fbdev/xen-fbfront.c
++++ b/drivers/video/fbdev/xen-fbfront.c
+@@ -695,6 +695,7 @@ static struct xenbus_driver xenfb_driver = {
+ 	.remove = xenfb_remove,
+ 	.resume = xenfb_resume,
+ 	.otherend_changed = xenfb_backend_changed,
++	.not_essential = true,
+ };
+ 
+ static int __init xenfb_init(void)
+diff --git a/drivers/xen/xenbus/xenbus_probe_frontend.c b/drivers/xen/xenbus/xenbus_probe_frontend.c
+index 480944606a3c..07b010a68fcf 100644
+--- a/drivers/xen/xenbus/xenbus_probe_frontend.c
++++ b/drivers/xen/xenbus/xenbus_probe_frontend.c
+@@ -211,19 +211,11 @@ static int is_device_connecting(struct device *dev, void *data, bool ignore_none
+ 	if (drv && (dev->driver != drv))
+ 		return 0;
+ 
+-	if (ignore_nonessential) {
+-		/* With older QEMU, for PVonHVM guests the guest config files
+-		 * could contain: vfb = [ 'vnc=1, vnclisten=0.0.0.0']
+-		 * which is nonsensical as there is no PV FB (there can be
+-		 * a PVKB) running as HVM guest. */
++	xendrv = to_xenbus_driver(dev->driver);
+ 
+-		if ((strncmp(xendev->nodename, "device/vkbd", 11) == 0))
+-			return 0;
++	if (ignore_nonessential && xendrv->not_essential)
++		return 0;
+ 
+-		if ((strncmp(xendev->nodename, "device/vfb", 10) == 0))
+-			return 0;
+-	}
+-	xendrv = to_xenbus_driver(dev->driver);
+ 	return (xendev->state < XenbusStateConnected ||
+ 		(xendev->state == XenbusStateConnected &&
+ 		 xendrv->is_ready && !xendrv->is_ready(xendev)));
+diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
+index b94074c82772..b13eb86395e0 100644
+--- a/include/xen/xenbus.h
++++ b/include/xen/xenbus.h
+@@ -112,6 +112,7 @@ struct xenbus_driver {
+ 	const char *name;       /* defaults to ids[0].devicetype */
+ 	const struct xenbus_device_id *ids;
+ 	bool allow_rebind; /* avoid setting xenstore closed during remove */
++	bool not_essential;     /* is not mandatory for boot progress */
+ 	int (*probe)(struct xenbus_device *dev,
+ 		     const struct xenbus_device_id *id);
+ 	void (*otherend_changed)(struct xenbus_device *dev,
 -- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.26.2
+

@@ -2,249 +2,193 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E508C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Oct 2021 07:34:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B6C8C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Oct 2021 09:36:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 119AA610E7
-	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Oct 2021 07:34:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 168BD610C8
+	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Oct 2021 09:36:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231923AbhJVHgZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 22 Oct 2021 03:36:25 -0400
-Received: from smtp-out1.suse.de ([195.135.220.28]:33206 "EHLO
-        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231846AbhJVHgY (ORCPT
+        id S232402AbhJVJiR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 22 Oct 2021 05:38:17 -0400
+Received: from esa6.hc3370-68.iphmx.com ([216.71.155.175]:50917 "EHLO
+        esa6.hc3370-68.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229545AbhJVJiQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 22 Oct 2021 03:36:24 -0400
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 86C262197F;
-        Fri, 22 Oct 2021 07:34:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-        t=1634888046; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=fnrILhOsdhDoqefufopQipvYiwZJNHEk+YhPHhT8LNs=;
-        b=gVFJe/75JgdII+nyKN4CY1GDnnKavmsp03xZsagBfrhea6AJJs56+bcatktdrHVP+llPiz
-        h5+uPhDyjSVhBW8XOk99QTIkmkYA9pKSdGhtODdu9hYjIBWoV6WR4I/TwKaHHSm+DuUS2m
-        m+AcIZ7DdJKDMbWAzBMSMnsIV8HILls=
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id BEE2213C7A;
-        Fri, 22 Oct 2021 07:34:05 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id /BeyLG1pcmFiKQAAMHmgww
-        (envelope-from <jgross@suse.com>); Fri, 22 Oct 2021 07:34:05 +0000
-To:     Jan Beulich <jbeulich@suse.com>
-Cc:     Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Fri, 22 Oct 2021 05:38:16 -0400
+X-Greylist: delayed 427 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Oct 2021 05:38:16 EDT
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=citrix.com; s=securemail; t=1634895359;
+  h=subject:to:cc:references:from:message-id:date:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=1dmNTJLtZ88C511eeAfj50yNHRBGH1CGA3LqoJJKFq0=;
+  b=CfEcq+aGPBO0lbqRhE+WoJDYq/1Gnx6qBIZ7tGDG2i+d1vM88QIMNDZf
+   5WKubPQUsdnkVzPCiiapgFr0WtRvEVldEGWDzdYy7xgCkSsKswuE7Ozt0
+   FeNV7KXl8ZZ3vfqFgHclCA9p0URif/ejoZt+aAZvc4aBbtachmgmWSOdU
+   I=;
+Authentication-Results: esa6.hc3370-68.iphmx.com; dkim=pass (signature verified) header.i=@citrix.onmicrosoft.com
+IronPort-SDR: UP/KYTxqp5H8qocDfBKCDFSlp0W5SZOXxKDiUTFhPQMj8tCNMK6IEAlw8r2spKIhOqJZhpmQLM
+ E94kaYFz6jm5rWyFzisKLTEeetCgubFO6H7d8zKdnX/OyT+4a5MXMB+agYozvc0L0IOdQCIFtY
+ 44kH6i9Eq7S6CYnDCV3OxBEVo1yFKtXeTxKJ8HqH0rrrS8G/Pjg/G6SikPIs4i5HzkvwI0EkTL
+ xHUT3F5/TQCJS17cQT1SC4YLLQ51ObbPSPPNSaTiFM0mjqSRZiFRChE3smpx3Jg29MbRx8lNC6
+ M2k6qOoCFKCcazsqPRtfKHF2
+X-SBRS: 5.1
+X-MesageID: 55802968
+X-Ironport-Server: esa6.hc3370-68.iphmx.com
+X-Remote-IP: 162.221.156.83
+X-Policy: $RELAYED
+IronPort-Data: A9a23:lByUp6MYiyAPRjvvrR29kcFynXyQoLVcMsEvi/4bfWQNrUorhTAFy
+ zAcCD3UOvyPMzbxc4h+bYWwoB9XvJHTn9MyQQto+SlhQUwRpJueD7x1DKtR0wB+jCHnZBg6h
+ ynLQoCYdKjYdpJYz/uUGuCJQUNUjMlkfZKhTr6bUsxNbVU8En540Ug5w7RRbrNA2rBVPSvc4
+ bsenOWHULOV82Yc3rU8sv/rRLtH5ZweiRtA1rAMTakjUGz2zhH5OKk3N6CpR0YUd6EPdgKMq
+ 0Qv+5nilo/R109F5tpICd8XeGVSKlLZFVDmZna7x8FOK/WNz8A/+v9TCRYSVatYoxHWtftoi
+ /dKjqWhVy0SO63jxeEgfAYNRkmSPYUekFPGCX22sMjVxEzaaXr8hf5pCSnaP6VBpLwxWzsXs
+ 6VFdnZdNXhvhMrvqF6/YsBqit4uM4/AO4QHt2s75TrYEewnUdbIRKCiCdpwgWpg3pofQ6a2i
+ 8wxVRxSMi3ZQhZ0P2wlIqInuOKijGTgfGgNwL6SjfVuuDWCpOBr65DpMdzIapmLQ91Igm6Gq
+ W/cuWf0GBcXMJqY0zXt2natgPLf2CD2QoQfEJWm+fNwxl6e3GoeDFsRT1TTifu2kEmlQPpEN
+ lcZvCEpqMAa5EGtC9XwQRC8iHqFpQIHHcpdFfUg7wOAwbaS5ByWbkAIVD8EZNE4ucseQT0xy
+ kTPkcnkCDBiq76JTmrb8a2bxRu4PjIUNikFfjMeShUe4MjLp5s6hRbCCN1kFcadlcbpEDv9x
+ zSLqikWhLgJi8MPkaKh8jjvhzOqu4iMQAQ56xv/QG2o9EV6aZSjaoju7kLUhd5MKYeFVEjHo
+ H8enMue6/4mApSElSjLS+IIdIxF/N7cbmea2wQ2WcB8qXL9oBZPYLy8/hlae21CK4UmfgTQc
+ VH5ggZRy8JWAVS1OPofj52KN+wmyq3pFNLAX//Sb8ZTbpUZSDJr7B2CdmbLgDizyBlEfbUXf
+ M7BK571XCly5bFPlWLuH48gPakXKjfSLI85bavwyAi7yvKgbXqRRKZt3LCmP71hsv3sTOk49
+ b9i2yq2J/d3DLKWjsr/q9d7wbU2wZ4TX8yeRyt/LbbrH+aeMDt9Y8I9OJt4E2Cfo4xbl/3T4
+ la2UVJCxVz0iBXvcFvRNiA/Mey/Bc0i/BrX2BDA237yhxDPhq70tM8im2YfJ+F7pISPM9YkJ
+ xX6RylwKqsWEWmWk9jsRZL8sJZjZHyWafGmZEKYjMwEV8c4HWTho4a8FiO2rXVmJnfn5KMW/
+ uz7viuGEMVreuiXJJuPAB5Z5wjq5iZ1dSMbdxagH+S/j221odE0cXSo06drSyzOQD2arganO
+ 8+tKU5wjcHGopMv8cmPgqaBroyzFPB5EFYcFG7ehYta/wGDloZ66YMfAuuOYx7HU2b4pPera
+ elPlqmuO/wbhlda9YF7Fu8zn6454tLuoZ5czxhlQyqXPwj6VOs4LynUx9RLu41M2qRd5Vm8V
+ HWQ94QIIr6OIs7kTgIcfVJ3cuSZ2PgIsTDO9vBpcl7i7Sp68ePfA0VfNhWBkgJHK75xPN93y
+ OstopdOuQe+lgArIpCNiSUNrzaAKXkJUqMGsJAGAdC01lp3mw8aOZGFU334+pCCbdlII3IGG
+ D7MifqQnalYy2rDb2E3SSrH091CiMlcoxtN1lIDeQiEw4KXmv8t0RRN2j0rVQAJnA5f2ud+N
+ 2U3ZU14IaKCo2VhiMRZBj3+HghAAFuS+1DryktPn2rcFhH6WmvIJWw7GOCM4EFGrD4MImkFp
+ OmVmDT/TDLnXMDtxS9jC0dqpsvqQcF16gCfytusGN6IHsVibDfo6kN0ibHkd/cz7RsNuXD6
+IronPort-HdrOrdr: A9a23:gQxdCKPOHnqT+MBcT1H155DYdb4zR+YMi2TDiHofdfUFSKClfp
+ 6V8cjztSWUtN4QMEtQ/exoS5PwPk80kqQFnbX5XI3SITUO3VHHEGgM1/qb/9SNIVyZygcZ79
+ YbT0EcMqyBMbEZt7eC3ODQKb9Jq7PmgcPY9ts2jU0dKj2CA5sQnjuRYTzrcHGeKjM2YKbRWK
+ Dsnfau8FGbCAoqh4mAdzQ4dtmGg+eOuIPtYBYACRJiwA6SjQmw4Lq/NxSDxB8RXx5G3L9nqA
+ H+4kPEz5Tml8v+5g7X1mfV4ZgTsNz9yuFbDMjJrsQOMD3jhiuheYwkcbyfuzIepv2p9T8R4Z
+ XxiiZlG/42x2Laf2mzrxeo8w780Aw243un8lOciWuLm72weBsKT+56wa5JeBrQ7EQt+Ptm1r
+ hQ4m6fv51LSTvdgSXU/bHzJlFXv3vxhUBnvf8YjnRZX4dbQqRWt5Yj8ERcF4pFND7m6bogDP
+ JlAKjnlbdrmGuhHjLkV1RUsZmRtixZJGbDfqFCgL3a79FupgE786NCr/Zv2Uvp9/oGOtB5Dq
+ r/Q+JVfYp1P7orhJRGdZE8qPuMex7wqC33QRavyHTcZeo60iH22tTKCItc3pDcRHVP9upqpK
+ j8
+X-IronPort-AV: E=Sophos;i="5.87,172,1631592000"; 
+   d="scan'208";a="55802968"
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=EeDe+UqHNKT2FRkbUA61UPM3qnr1gsMU7dL7zD8nq4A5ciIiDVvaYncQvU2KDFg2/iIM2LFprWPYkLpt1gPMdR9w/6UvHS+09/JX+Fa1Fd5EyVPg5WBZW6nWWCuwYpoiTsVj37oP2h3+qj6/BU44kUJ+67ux4vQuTteRm0YALdn0WV72+7qCT/hAypXuXxFk/pR+NcHmsJvc3eJKeHYTQnMGCs6IpAKym6N7DH5JO1d5ZFR+p8FlUxeaytdrnn8CC5nPL4q8IeDnqW+eS+7giJ0w1uMFAspnFpZxJ06iW3r/Am303p+oxFm9dIvWTbc0tp2/ccVRXXIjnC/lvJNE8w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=1dmNTJLtZ88C511eeAfj50yNHRBGH1CGA3LqoJJKFq0=;
+ b=YAC7uszzKcPzUCxcAlWmDMh+GXzviz9Nva3YTskQQh83K0Gsh3gVLmt6VtoBTH89O0zp0ZxuM9uavhjPRTiWrMiYyn9Znq9L2Ci8ngUO7ImMKGZ02Q+C23DsGMdFexUmvxCXxS6XTfOjNIPOmldd7bplVIcVTumpnPvWMQlFpx4jo12e4U0WzOqMQkE6ssYqqRXAMr98xLjEaDAHUOJfCUbCEUU/Yl6O9jmPsyARInwOLFsnOZbJznN4wkIXLbcYfUqlbJdykFxUZGotNIPIJlr1STxQAB5zkAgrKMYsuBqCEsltPvhlGbqPd4IoLW7GmfxgMhXJZ2RTu52VaDsJ5g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=citrix.com; dmarc=pass action=none header.from=citrix.com;
+ dkim=pass header.d=citrix.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=citrix.onmicrosoft.com; s=selector2-citrix-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=1dmNTJLtZ88C511eeAfj50yNHRBGH1CGA3LqoJJKFq0=;
+ b=aYqgrVg1x4VmQiPkmg/VImi8eqbXXL/kY3t4FDk5Md9+FbeWPY19Q+JYPBkidXPlCloxV5/5kzd++A4QYsA5Z18OQgQyAFbLTcqb9lE0WkcyJHcXeex0hbddI7sIoSt9YqCpA/ia4wnwfINQFPh3FbpJWrHV7G3XH9pSG8BopHk=
+Subject: Re: [PATCH 1/5] xen: add "not_essential" flag to struct xenbus_driver
+To:     Juergen Gross <jgross@suse.com>, <xen-devel@lists.xenproject.org>,
+        <linux-input@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <dri-devel@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>
+CC:     Dmitry Torokhov <dmitry.torokhov@gmail.com>,
         Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Stefano Stabellini <sstabellini@kernel.org>,
-        Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
-        xen-devel@lists.xenproject.org, linux-input@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+        Stefano Stabellini <sstabellini@kernel.org>
 References: <20211022064800.14978-1-jgross@suse.com>
- <c4f534f1-8f07-085e-6a10-edbeb884d1a4@suse.com>
-From:   Juergen Gross <jgross@suse.com>
-Subject: Re: [PATCH 0/5] xen: cleanup detection of non-essential pv devices
-Message-ID: <00ae0535-22e3-5467-9c0d-8e2f7a8793b5@suse.com>
-Date:   Fri, 22 Oct 2021 09:34:05 +0200
+ <20211022064800.14978-2-jgross@suse.com>
+From:   Andrew Cooper <andrew.cooper3@citrix.com>
+Message-ID: <fe397fd6-a80e-d3f9-08d2-4f72ec739c0b@citrix.com>
+Date:   Fri, 22 Oct 2021 10:28:40 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+ Thunderbird/78.14.0
+In-Reply-To: <20211022064800.14978-2-jgross@suse.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Content-Language: en-GB
+X-ClientProxiedBy: LO4P123CA0453.GBRP123.PROD.OUTLOOK.COM
+ (2603:10a6:600:1aa::8) To BYAPR03MB3623.namprd03.prod.outlook.com
+ (2603:10b6:a02:aa::12)
 MIME-Version: 1.0
-In-Reply-To: <c4f534f1-8f07-085e-6a10-edbeb884d1a4@suse.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="YvdluBdUp3DXuRKhlN5HNuKdU3k8LezFO"
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 4f2d8f74-a5ac-4f29-a0a0-08d9953e59c2
+X-MS-TrafficTypeDiagnostic: BYAPR03MB3863:
+X-Microsoft-Antispam-PRVS: <BYAPR03MB3863EAA25284A3BF266B3555BA809@BYAPR03MB3863.namprd03.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:8273;
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 1gQX7y+XiDMvDH4+nBlHr9uhucCGDGzH91vhTL6cZbBMllixyYS8EjpOrDdu7sQPSlWl46m+W7xCHGTgkfnq0Vhr5y5t/mT47YChr4YYlPM6TBCM4tV2A6gQoxjkkl0AMGCw/GDeYbFG9979F3VE0Y5sEg5yccsUyi6wij0WP3OUuCnIo20BWOeLLWQ/xG9UhvCUWJzB8FFBf2B1Ftzf011+7kPy9hP2KJL3pv/jmP+WIi34ZthjFgG4yjHUKajYTg8wp6zktiSpMd9qaGmopTKIeWmkTmKaDU8+1iWl+l7dSM6I/u/SBPVgfgCDEJP1LoHIi+q3DAIdewwmyMxMJOuFcNFzn34CPmjZv8FUcAQCOVHJBf7cdXXOPJRKVsMEmgP9nU4gXlqy6oOAYJrLDsYGG3NS2jdnshZNmcbsvQlHcmWuIP9pOSKW4ILCEpJniREx3cbFUxYxRI6NtwAyPKJSHBlC3tPRbKgkxbCZXsOBjBJUWHwSM0yIqp15f1+CujMWzcMOeJ2F4UQ8v8nPyEoOc01wIfp796MyRlf2KSTAyeWwZfj+PXOyZOn4YJMvjzeI2A8H428qWxGNq19crXd0yQaqp6GM4jWruMGn+8H7cyn8OpncBTYFLO8G7ZwMDVu5310p3+1RZKpS9akaDQlsvcBmwD+cyo3AiNYDb/1wTghJ+FtGY/r0jJEXtFIuoMai790qUD82LTTg6yT/kqo7e/wWyTimsNLUtiZXbZk=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR03MB3623.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(366004)(86362001)(4326008)(186003)(66476007)(4744005)(66556008)(53546011)(316002)(31696002)(82960400001)(83380400001)(6666004)(26005)(54906003)(2616005)(8936002)(956004)(8676002)(38100700002)(66946007)(6486002)(16576012)(508600001)(5660300002)(2906002)(31686004)(36756003)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eU9oRW00TDVaYWJ4am1wSFRKZHNueWhhWHhGejBiMUV6SFZGSWMzNkUzZ3dX?=
+ =?utf-8?B?dVZzVnN3NDYxNlEzT2hmZ3pPWVN0OGIxVThxWVVZVkJPWXpGeUhXc3Q2bERy?=
+ =?utf-8?B?eTlOaEdYTnNYNktSREhhUFhvNlVoN3JScHR4WDY2cHIyMEFTWGNZYkx3K0xU?=
+ =?utf-8?B?ZythbzBhTnp1bTVkM0YxckZNOFEyQ0huQ2Y0c0pOb3BwdFZCN3l2Z0NmM3ZU?=
+ =?utf-8?B?bE9idStWc1ZqN0lUbXkwYW9sb2kxNVFWMHJKSEpxYkNYMmx3RFROeW10YmpB?=
+ =?utf-8?B?dERyVGUyeDBDMXZNQjNldXBHczVWVFQ3b1F2M2kzRmMvNEU5cVFjNGF0T21q?=
+ =?utf-8?B?WjhGblJ1WldVci93WU1tTVBabk9YQ3JtY0Z1OFpVeDBCRGRNSGhNNDJWZEhq?=
+ =?utf-8?B?b3U5WnA5VzdtdkZOWDJhNlByekpFRGVGRkcvUm1TQ3dVSGZJelJQckRmdTBV?=
+ =?utf-8?B?ckJ6dUc0RFFjMHhCSG1EUWZ3WDRRSUFBaC9UNHNhL2hiWmo3M2U3eFBQWS9W?=
+ =?utf-8?B?LzkyRW92WUxIV3NiUEtoejFucmNJazNBVUkxNUd3UmQzbXpDUTNVcEpiQ1ow?=
+ =?utf-8?B?NncyN0tHTG9RRkFBTURScm1tZ2c5MVdqaEQvVjAxN0hsV0ZpOUxzY3NLWENR?=
+ =?utf-8?B?WGE2d2Q4OWpUUVpuS0hjOVkzTTZmMTNvMlY3Ni9jMWY1TEtjTXVHL0VMUk42?=
+ =?utf-8?B?K3VwMFpOUGZWTzJKTjNzRUpLNk9NYmJFZjBtaTBKaVRGNjRCS3daSlgvZTJX?=
+ =?utf-8?B?cUdIWVZxanZVdS93NmZiUTluNzBNY1JBdklaQlpyeVIwTHRQZ2VKbVlRUzdX?=
+ =?utf-8?B?aWN4YjNjL0NMVUhLckxTWTUwbVYzSXZyaFNNdDZmYVViNVBNSHNqcXpmcEhZ?=
+ =?utf-8?B?YWNnSWk3RmFzaGNWWW1yR0plbzVIa1d1THlWdktTNUU4Z3NLUUVSUWExQWZv?=
+ =?utf-8?B?U09uZ1EvcTBHUU5rU1pzdklDdVA0aDRJRjJWNzI1aFVaQ3N2MEswaGtsOWRq?=
+ =?utf-8?B?d2hTUER6SXI0YTMyMVRTT0RiTTE3NUgzUk02YVNsZE0rNHo1ZmhQWGoyTVhn?=
+ =?utf-8?B?am1ZYlJFQTRhSGdwakJLeDNqcDIwQmZieUtoVjA0dUNoSTdmdm96QVlMeUcv?=
+ =?utf-8?B?anZIRVVwZGJDMkxOelNhM0NJdlo3MlR1TmlSMVkzWi9TanZMclhaa2lTMFFV?=
+ =?utf-8?B?K2Z2RGtZUXlscnY2R3YyRm1zb3RkeUwyREs4OTNleDlyTTFlQVUySFRIc3lI?=
+ =?utf-8?B?UFhmM1hvcXRkQ3ZVNXZoTjR1T3lIZnAwcFczRzFJc29NK0VIWmFzMzhqcUxI?=
+ =?utf-8?B?UlFvU2xNSXlQNjA0azB4MHA1Y0RqTzNZNXdPdUkvWE50VU50TTdpT0o3a3JE?=
+ =?utf-8?B?Nk1aL2ZMTDVlODRlVldVSlQvbENxWFEvaFlRUlB0Q0NLbXBPYWlNcWFxalpT?=
+ =?utf-8?B?aDV6U0hpWjEyQVBFVk55MzRoN0w0cGxSbE1hVTFxWGx0MGxxQWpWcldIRjVJ?=
+ =?utf-8?B?bzZvZXR4dWRjL2hick9talVHT1hXVWM0cTd3Z3AzbkZsa1dWM2NyZmYvRFla?=
+ =?utf-8?B?cU1nMDBzK1V5Q2ZMNWRmS1h1N2ozcGoyampYRm9lQ0dWSVpEdVRqTldIVnd6?=
+ =?utf-8?B?QVZwaGpqMm1UbEJSbUxVTkg1ak12WFpIZlBONVAycFVFOUhIWXluVnFPeVc1?=
+ =?utf-8?B?VnlDU1ArUUFHTGRJNmtrOEZGS2xhTUVoUnNGd0tEemRPMU9Dem5GL3cvUDNj?=
+ =?utf-8?B?czB3Zjl3em1RdHh5WUFWcTNTWSthUCtWNFVVQ3ZueHJaSENFRWJKSDhTOStU?=
+ =?utf-8?B?WjU1bEpBbEU1ZXQrTmZYcmtDWm1NQlQ1OXQ0Ti9raXZGVjhRSGlCOHh6L3hS?=
+ =?utf-8?B?VDltMytIM1dIOCthS0h3ZFZKU01ydDlLR3JWemVIL2dMWUs2YkpmNHJMaE5B?=
+ =?utf-8?Q?iNBRo1KviLHlZd80ac5+6dKSOoMjuih5?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4f2d8f74-a5ac-4f29-a0a0-08d9953e59c2
+X-MS-Exchange-CrossTenant-AuthSource: BYAPR03MB3623.namprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Oct 2021 09:28:48.2350
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 335836de-42ef-43a2-b145-348c2ee9ca5b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: andrew.cooper3@citrix.com
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR03MB3863
+X-OriginatorOrg: citrix.com
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---YvdluBdUp3DXuRKhlN5HNuKdU3k8LezFO
-Content-Type: multipart/mixed; boundary="aXNRS2JOiFT36L2Znoe6tP3phbNNMU6Ha";
- protected-headers="v1"
-From: Juergen Gross <jgross@suse.com>
-To: Jan Beulich <jbeulich@suse.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Stefano Stabellini <sstabellini@kernel.org>,
- Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>,
- David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jirislaby@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
- xen-devel@lists.xenproject.org, linux-input@vger.kernel.org,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-ID: <00ae0535-22e3-5467-9c0d-8e2f7a8793b5@suse.com>
-Subject: Re: [PATCH 0/5] xen: cleanup detection of non-essential pv devices
-References: <20211022064800.14978-1-jgross@suse.com>
- <c4f534f1-8f07-085e-6a10-edbeb884d1a4@suse.com>
-In-Reply-To: <c4f534f1-8f07-085e-6a10-edbeb884d1a4@suse.com>
+On 22/10/2021 07:47, Juergen Gross wrote:
+> When booting the xenbus driver will wait for PV devices to have
+> connected to their backends before continuing. The timeout is different
+> between essential and non-essential devices.
+>
+> Non-essential devices are identified by their nodenames directly in the
+> xenbus driver, which requires to update this list in case a new device
+> type being non-essential is added (this was missed for several types
+> in the past).
+>
+> In order to avoid this problem, add a "not_essential" flag to struct
+> xenbus_driver which can be set to "true" by the respective frontend.
+>
+> Set this flag for the frontends currently regarded to be not essential
+> (vkbs and vfb) and use it for testing in the xenbus driver.
+>
+> Signed-off-by: Juergen Gross <jgross@suse.com>
 
---aXNRS2JOiFT36L2Znoe6tP3phbNNMU6Ha
-Content-Type: multipart/mixed;
- boundary="------------05C3AAE5BEB34C7C12A2BC5C"
-Content-Language: en-US
+Wouldn't it be better to annotate essential?  That way, when new misc
+drivers come along, they don't by default block boot.
 
-This is a multi-part message in MIME format.
---------------05C3AAE5BEB34C7C12A2BC5C
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-
-On 22.10.21 09:24, Jan Beulich wrote:
-> On 22.10.2021 08:47, Juergen Gross wrote:
->> Today the non-essential pv devices are hard coded in the xenbus driver=
-
->> and this list is lacking multiple entries.
->>
->> This series reworks the detection logic of non-essential devices by
->> adding a flag for that purpose to struct xenbus_driver.
->=20
-> I'm wondering whether it wouldn't better be the other way around: The
-> (hopefully few) essential ones get flagged, thus also making it more
-> prominent during patch review that a flag gets added (and justification=
-
-> provided), instead of having to spot the lack of a flag getting set.
-
-Not flagging a non-essential one is less problematic than not flagging
-an essential driver IMO.
-
-For some drivers I'm on the edge, BTW. The pv 9pfs driver ought to be
-non-essential in most cases, but there might be use cases where it is
-needed, so I didn't set its non_essential flag.
-
-Same applies to pv-usb and maybe pv-scsi, while pv-tpm probably really
-is essential.
-
-With the current series I'm ending up with 6 non-essential drivers and
-6 essential ones, so either way needs the same number of drivers
-modified.
-
-
-Juergen
-
---------------05C3AAE5BEB34C7C12A2BC5C
-Content-Type: application/pgp-keys;
- name="OpenPGP_0xB0DE9DD628BF132F.asc"
-Content-Transfer-Encoding: quoted-printable
-Content-Description: OpenPGP public key
-Content-Disposition: attachment;
- filename="OpenPGP_0xB0DE9DD628BF132F.asc"
-
------BEGIN PGP PUBLIC KEY BLOCK-----
-
-xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOBy=
-cWx
-w3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJvedYm8O=
-f8Z
-d621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJNwQpd369y=
-9bf
-IhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvxXP3FAp2pkW0xq=
-G7/
-377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEBAAHNHEp1ZXJnZW4gR=
-3Jv
-c3MgPGpnQHBmdXBmLm5ldD7CwHkEEwECACMFAlOMcBYCGwMHCwkIBwMCAQYVCAIJCgsEFgIDA=
-QIe
-AQIXgAAKCRCw3p3WKL8TL0KdB/93FcIZ3GCNwFU0u3EjNbNjmXBKDY4FUGNQH2lvWAUy+dnyT=
-hpw
-dtF/jQ6j9RwE8VP0+NXcYpGJDWlNb9/JmYqLiX2Q3TyevpB0CA3dbBQp0OW0fgCetToGIQrg0=
-MbD
-1C/sEOv8Mr4NAfbauXjZlvTj30H2jO0u+6WGM6nHwbh2l5O8ZiHkH32iaSTfN7Eu5RnNVUJbv=
-oPH
-Z8SlM4KWm8rG+lIkGurqqu5gu8q8ZMKdsdGC4bBxdQKDKHEFExLJK/nRPFmAuGlId1E3fe10v=
-5QL
-+qHI3EIPtyfE7i9Hz6rVwi7lWKgh7pe0ZvatAudZ+JNIlBKptb64FaiIOAWDCx1SzR9KdWVyZ=
-2Vu
-IEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+wsB5BBMBAgAjBQJTjHCvAhsDBwsJCAcDAgEGFQgCC=
-QoL
-BBYCAwECHgECF4AACgkQsN6d1ii/Ey/HmQf/RtI7kv5A2PS4RF7HoZhPVPogNVbC4YA6lW7Dr=
-Wf0
-teC0RR3MzXfy6pJ+7KLgkqMlrAbN/8Dvjoz78X+5vhH/rDLa9BuZQlhFmvcGtCF8eR0T1v0nC=
-/nu
-AFVGy+67q2DH8As3KPu0344TBDpAvr2uYM4tSqxK4DURx5INz4ZZ0WNFHcqsfvlGJALDeE0Lh=
-ITT
-d9jLzdDad1pQSToCnLl6SBJZjDOX9QQcyUigZFtCXFst4dlsvddrxyqT1f17+2cFSdu7+ynLm=
-XBK
-7abQ3rwJY8SbRO2iRulogc5vr/RLMMlscDAiDkaFQWLoqHHOdfO9rURssHNN8WkMnQfvUewRz=
-80h
-SnVlcmdlbiBHcm9zcyA8amdyb3NzQG5vdmVsbC5jb20+wsB5BBMBAgAjBQJTjHDXAhsDBwsJC=
-AcD
-AgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey8PUQf/ehmgCI9jB9hlgexLvgOtf7PJn=
-FOX
-gMLdBQgBlVPO3/D9R8LtF9DBAFPNhlrsfIG/SqICoRCqUcJ96Pn3P7UUinFG/I0ECGF4EvTE1=
-jnD
-kfJZr6jrbjgyoZHiw/4BNwSTL9rWASyLgqlA8u1mf+c2yUwcGhgkRAd1gOwungxcwzwqgljf0=
-N51
-N5JfVRHRtyfwq/ge+YEkDGcTU6Y0sPOuj4Dyfm8fJzdfHNQsWq3PnczLVELStJNdapwPOoE+l=
-otu
-fe3AM2vAEYJ9rTz3Cki4JFUsgLkHFqGZarrPGi1eyQcXeluldO3m91NK/1xMI3/+8jbO0tsn1=
-tqS
-EUGIJi7ox80eSnVlcmdlbiBHcm9zcyA8amdyb3NzQHN1c2UuZGU+wsB5BBMBAgAjBQJTjHDrA=
-hsD
-BwsJCAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey+LhQf9GL45eU5vOowA2u5N3=
-g3O
-ZUEBmDHVVbqMtzwlmNC4k9Kx39r5s2vcFl4tXqW7g9/ViXYuiDXb0RfUpZiIUW89siKrkzmQ5=
-dM7
-wRqzgJpJwK8Bn2MIxAKArekWpiCKvBOB/Cc+3EXE78XdlxLyOi/NrmSGRIov0karw2RzMNOu5=
-D+j
-LRZQd1Sv27AR+IP3I8U4aqnhLpwhK7MEy9oCILlgZ1QZe49kpcumcZKORmzBTNh30FVKK1Evm=
-V2x
-AKDoaEOgQB4iFQLhJCdP1I5aSgM5IVFdn7v5YgEYuJYx37IoN1EblHI//x/e2AaIHpzK5h88N=
-Eaw
-QsaNRpNSrcfbFmAg987ATQRTjHAWAQgAyzH6AOODMBjgfWE9VeCgsrwH3exNAU32gLq2xvjpW=
-nHI
-s98ndPUDpnoxWQugJ6MpMncr0xSwFmHEgnSEjK/PAjppgmyc57BwKII3sV4on+gDVFJR6Y8ZR=
-wgn
-BC5mVM6JjQ5xDk8WRXljExRfUX9pNhdE5eBOZJrDRoLUmmjDtKzWaDhIg/+1Hzz93X4fCQkNV=
-bVF
-LELU9bMaLPBG/x5q4iYZ2k2ex6d47YE1ZFdMm6YBYMOljGkZKwYde5ldM9mo45mmwe0icXKLk=
-pEd
-IXKTZeKDO+Hdv1aqFuAcccTg9RXDQjmwhC3yEmrmcfl0+rPghO0Iv3OOImwTEe4co3c1mwARA=
-QAB
-wsBfBBgBAgAJBQJTjHAWAhsMAAoJELDendYovxMvQ/gH/1ha96vm4P/L+bQpJwrZ/dneZcmEw=
-Tbe
-8YFsw2V/Buv6Z4Mysln3nQK5ZadD534CF7TDVft7fC4tU4PONxF5D+/tvgkPfDAfF77zy2AH1=
-vJz
-Q1fOU8lYFpZXTXIHb+559UqvIB8AdgR3SAJGHHt4RKA0F7f5ipYBBrC6cyXJyyoprT10EMvU8=
-VGi
-wXvTyJz3fjoYsdFzpWPlJEBRMedCot60g5dmbdrZ5DWClAr0yau47zpWj3enf1tLWaqcsuylW=
-svi
-uGjKGw7KHQd3bxALOknAp4dN3QwBYCKuZ7AddY9yjynVaD5X7nF9nO5BjR/i1DG86lem3iBDX=
-zXs
-ZDn8R38=3D
-=3D2wuH
------END PGP PUBLIC KEY BLOCK-----
-
---------------05C3AAE5BEB34C7C12A2BC5C--
-
---aXNRS2JOiFT36L2Znoe6tP3phbNNMU6Ha--
-
---YvdluBdUp3DXuRKhlN5HNuKdU3k8LezFO
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmFyaW0FAwAAAAAACgkQsN6d1ii/Ey+/
-mQf+LFgKttHG9U1GFsmgad1/cMvgMbcyn2AcZkkzdzE0JSvS8vEwkEtPV+5/B1ZRcWHMBy0qzLUU
-TZ02dm/hChDYWgZBJRHoYmtLM5HajuXj1cRrvE7UEjAVTTIA8gZTm1oCsdXg+LEFOBYydRIg5rA7
-YAjr1Skcr3NEpkfHWuZuEJ9sbmOO5nMmA/hKKXu1i0P2a29m4vCMaacTtmcgZuJWdluzxbBv9swi
-q91QZslhU7gX++eRN1AtZGBAZcieznQVks1BcwBu0sW3GJUBXeOoSKD4j1GH8wZ2u21W0lU2I3Pp
-5aSffUxsGFOluHqmEV0LQT+DsBoXDWLWLambX0iVyA==
-=JnIb
------END PGP SIGNATURE-----
-
---YvdluBdUp3DXuRKhlN5HNuKdU3k8LezFO--
+~Andrew

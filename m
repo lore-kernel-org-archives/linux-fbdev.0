@@ -2,120 +2,251 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 023E2C433F5
-	for <linux-fbdev@archiver.kernel.org>; Sat, 23 Oct 2021 13:48:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EA62C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Oct 2021 09:30:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DB88060FE3
-	for <linux-fbdev@archiver.kernel.org>; Sat, 23 Oct 2021 13:48:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 87AE160F9D
+	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Oct 2021 09:30:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230476AbhJWNvD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 23 Oct 2021 09:51:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50210 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230452AbhJWNvD (ORCPT
+        id S232577AbhJYJc5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 25 Oct 2021 05:32:57 -0400
+Received: from smtp-out2.suse.de ([195.135.220.29]:52040 "EHLO
+        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229946AbhJYJcy (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 23 Oct 2021 09:51:03 -0400
-Received: from mail-ua1-x92a.google.com (mail-ua1-x92a.google.com [IPv6:2607:f8b0:4864:20::92a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 18A00C061766
-        for <linux-fbdev@vger.kernel.org>; Sat, 23 Oct 2021 06:48:44 -0700 (PDT)
-Received: by mail-ua1-x92a.google.com with SMTP id o12so8956427uap.0
-        for <linux-fbdev@vger.kernel.org>; Sat, 23 Oct 2021 06:48:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=usp.br; s=usp-google;
-        h=date:from:to:cc:subject:message-id:mime-version:content-disposition
-         :content-transfer-encoding;
-        bh=iX6cmvyeDuJOkrf+xUpE4t3ouX8J2Wth4BJQBEZvdC0=;
-        b=PJeoeHi87FNVFRvOrlMgjLSB19zOHxvaqVaQoUrbBe4NYsqIzVz13D19jqP7YYPmwm
-         bfOeMMKrEDvAySkNkHtCod8Valdbum9uQXv6b4ehR91WNPb5RyQHcNY21EqgWoAeml9C
-         1bFNYL6FXCBfcemkgqOhOGE3NdntABHsUYg3NTdi36gfFBk/ORKUVxzJnwhDISNtuEcg
-         sK0Y0LIgTc+8oLv4H5GSpEnV67xHMeZV3OCAKSYuxVsQ2MO5QxQozKNP77ObQ8gJ1wAO
-         ZO2LNyw8+Bex+C7bDFkZ4CqHqYmpMNq5XBOD0utmjYZigVejjziwpqx5ocw9i4Fzx+0X
-         gKEA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
-         :content-disposition:content-transfer-encoding;
-        bh=iX6cmvyeDuJOkrf+xUpE4t3ouX8J2Wth4BJQBEZvdC0=;
-        b=Q0Vt5HWbM/Qwdguj6Kq2i0/6iMNl3evuhk75ss5/4CoUnDppkhb+kk4q9PRaoO+4aH
-         nIigqHR3pw6XTgNkFbR/ToM1d3NUxLs/KUh/Z2gT9QzgBlaTxEbC4fBobaHgsoaWupZm
-         a2ziuT1SoPDrcefJd7xT+Q6z9lT6VnbF9GO2KreY2ATAtfdWRMLlT3r9CFqdO5JsCc7e
-         g7aIKtx3hnG7i4IVoGoE3zzAxrCYWLBCAFMbUkkUeX99qivJY0g6kuzRZdpSs1YZ2YIA
-         bT4ccq5IyghiXbejeZQNHojkKD/7TKqLN1doaTCxRdjOa2BFp8b9anPqFs9W7++odAIU
-         fiuQ==
-X-Gm-Message-State: AOAM5318KSlOTEJq9Ipa3r2C6QQVfQek8msZBYixNpTEBu51u479SgrZ
-        1/CLh+gVfpM+t9YrVjageFYB5Q==
-X-Google-Smtp-Source: ABdhPJwxdDl4z01c9F66VI9AyRP7pXIo6Ntzy4KZdke4zr3ikYJXWWXs5oUwbePIExZg4WIuUSkp0A==
-X-Received: by 2002:a67:ea0b:: with SMTP id g11mr6728954vso.2.1634996923166;
-        Sat, 23 Oct 2021 06:48:43 -0700 (PDT)
-Received: from fedora ([187.64.134.142])
-        by smtp.gmail.com with ESMTPSA id m184sm6687249vsc.6.2021.10.23.06.48.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 23 Oct 2021 06:48:42 -0700 (PDT)
-Date:   Sat, 23 Oct 2021 10:48:38 -0300
-From:   =?iso-8859-1?Q?Ma=EDra?= Canal <maira.canal@usp.br>
-To:     lee.jones@linaro.org, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com, thierry.reding@gmail.com
-Cc:     u.kleine-koenig@pengutronix.de, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org
-Subject: [PATCH] backlight: lp855x: Switch to atomic PWM API
-Message-ID: <YXQStu5yv4bwj2Tn@fedora>
+        Mon, 25 Oct 2021 05:32:54 -0400
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 899A51FD34;
+        Mon, 25 Oct 2021 09:30:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+        t=1635154231; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=KRGww6yZbI/Yt5jVmhMhFsKU1wRB0IaHQ8wTV+diPmc=;
+        b=BUpWf7a6s/iFTUKqBZ0IABlQlxTbqRFhhvFbzSJW9eK5MeTIMPQv04R3Vs/9eSP8RQwZo6
+        0P9Ys4O0nSz/xZc+CveKTXhCpBJGoRjxVS87pIhwU/fhwNbC2kdxUKw7Nix2ZsaE252nlg
+        14bqeEgsyrlUQYpvTSd3WP5jEe2p84Q=
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DBF681377E;
+        Mon, 25 Oct 2021 09:30:30 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id l0O2MjZ5dmHLTAAAMHmgww
+        (envelope-from <jgross@suse.com>); Mon, 25 Oct 2021 09:30:30 +0000
+To:     Andrew Cooper <andrew.cooper3@citrix.com>,
+        xen-devel@lists.xenproject.org, linux-input@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+Cc:     Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Stefano Stabellini <sstabellini@kernel.org>
+References: <20211022064800.14978-1-jgross@suse.com>
+ <20211022064800.14978-2-jgross@suse.com>
+ <fe397fd6-a80e-d3f9-08d2-4f72ec739c0b@citrix.com>
+From:   Juergen Gross <jgross@suse.com>
+Subject: Re: [PATCH 1/5] xen: add "not_essential" flag to struct xenbus_driver
+Message-ID: <06bf785a-c661-ce18-6e48-7077c5944890@suse.com>
+Date:   Mon, 25 Oct 2021 11:30:30 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.12.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <fe397fd6-a80e-d3f9-08d2-4f72ec739c0b@citrix.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="osso5FxvKknFWuti2qByayI8n0rKWIOdo"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Remove legacy PWM interface (pwm_config, pwm_enable, pwm_disable) and
-replace it for the atomic PWM API.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--osso5FxvKknFWuti2qByayI8n0rKWIOdo
+Content-Type: multipart/mixed; boundary="UqKrfN4EOpH1zBdeQbsH4TMElHBbnARpK";
+ protected-headers="v1"
+From: Juergen Gross <jgross@suse.com>
+To: Andrew Cooper <andrew.cooper3@citrix.com>,
+ xen-devel@lists.xenproject.org, linux-input@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Stefano Stabellini <sstabellini@kernel.org>
+Message-ID: <06bf785a-c661-ce18-6e48-7077c5944890@suse.com>
+Subject: Re: [PATCH 1/5] xen: add "not_essential" flag to struct xenbus_driver
+References: <20211022064800.14978-1-jgross@suse.com>
+ <20211022064800.14978-2-jgross@suse.com>
+ <fe397fd6-a80e-d3f9-08d2-4f72ec739c0b@citrix.com>
+In-Reply-To: <fe397fd6-a80e-d3f9-08d2-4f72ec739c0b@citrix.com>
 
-Signed-off-by: Maíra Canal <maira.canal@usp.br>
----
- drivers/video/backlight/lp855x_bl.c | 19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+--UqKrfN4EOpH1zBdeQbsH4TMElHBbnARpK
+Content-Type: multipart/mixed;
+ boundary="------------C02A3EE7C04771EB3B004689"
+Content-Language: en-US
 
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index e94932c69f54..dd63141a0d26 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -236,6 +236,7 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- 	unsigned int period = lp->pdata->period_ns;
- 	unsigned int duty = br * period / max_br;
- 	struct pwm_device *pwm;
-+	struct pwm_state state;
- 
- 	/* request pwm device with the consumer name */
- 	if (!lp->pwm) {
-@@ -244,19 +245,19 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- 			return;
- 
- 		lp->pwm = pwm;
--
--		/*
--		 * FIXME: pwm_apply_args() should be removed when switching to
--		 * the atomic PWM API.
--		 */
--		pwm_apply_args(pwm);
- 	}
- 
--	pwm_config(lp->pwm, duty, period);
-+	pwm_init_state(pwm, &state);
-+
-+	state.duty_cycle = duty;
-+	state.period = period;
-+
- 	if (duty)
--		pwm_enable(lp->pwm);
-+		state.enabled = true;
- 	else
--		pwm_disable(lp->pwm);
-+		state.enabled = false;
-+
-+	pwm_apply_state(pwm, &state);
- }
- 
- static int lp855x_bl_update_status(struct backlight_device *bl)
--- 
-2.31.1
+This is a multi-part message in MIME format.
+--------------C02A3EE7C04771EB3B004689
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
+On 22.10.21 11:28, Andrew Cooper wrote:
+> On 22/10/2021 07:47, Juergen Gross wrote:
+>> When booting the xenbus driver will wait for PV devices to have
+>> connected to their backends before continuing. The timeout is differen=
+t
+>> between essential and non-essential devices.
+>>
+>> Non-essential devices are identified by their nodenames directly in th=
+e
+>> xenbus driver, which requires to update this list in case a new device=
+
+>> type being non-essential is added (this was missed for several types
+>> in the past).
+>>
+>> In order to avoid this problem, add a "not_essential" flag to struct
+>> xenbus_driver which can be set to "true" by the respective frontend.
+>>
+>> Set this flag for the frontends currently regarded to be not essential=
+
+>> (vkbs and vfb) and use it for testing in the xenbus driver.
+>>
+>> Signed-off-by: Juergen Gross <jgross@suse.com>
+>=20
+> Wouldn't it be better to annotate essential?=C2=A0 That way, when new m=
+isc
+> drivers come along, they don't by default block boot.
+
+It isn't as if new drivers would "block boot". Normally the short
+timeout for all drivers of 30 seconds is more than enough for all of
+them.
+
+I'm a little bit hesitant to have a kind of "white listing" essential
+drivers, as there might be different views which drivers should have
+that flag. Doing this the other way round is easier: in case of
+disagreement such a patch just wouldn't go in, not breaking anything
+in that case.
+
+Additionally there might be out-of-tree PV drivers, which could be
+hit by not being flagged to be essential. With the not_essential flag
+the situation wouldn't change for such a driver.
+
+
+Juergen
+
+--------------C02A3EE7C04771EB3B004689
+Content-Type: application/pgp-keys;
+ name="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Transfer-Encoding: quoted-printable
+Content-Description: OpenPGP public key
+Content-Disposition: attachment;
+ filename="OpenPGP_0xB0DE9DD628BF132F.asc"
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOBy=
+cWx
+w3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJvedYm8O=
+f8Z
+d621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJNwQpd369y=
+9bf
+IhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvxXP3FAp2pkW0xq=
+G7/
+377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEBAAHNHEp1ZXJnZW4gR=
+3Jv
+c3MgPGpnQHBmdXBmLm5ldD7CwHkEEwECACMFAlOMcBYCGwMHCwkIBwMCAQYVCAIJCgsEFgIDA=
+QIe
+AQIXgAAKCRCw3p3WKL8TL0KdB/93FcIZ3GCNwFU0u3EjNbNjmXBKDY4FUGNQH2lvWAUy+dnyT=
+hpw
+dtF/jQ6j9RwE8VP0+NXcYpGJDWlNb9/JmYqLiX2Q3TyevpB0CA3dbBQp0OW0fgCetToGIQrg0=
+MbD
+1C/sEOv8Mr4NAfbauXjZlvTj30H2jO0u+6WGM6nHwbh2l5O8ZiHkH32iaSTfN7Eu5RnNVUJbv=
+oPH
+Z8SlM4KWm8rG+lIkGurqqu5gu8q8ZMKdsdGC4bBxdQKDKHEFExLJK/nRPFmAuGlId1E3fe10v=
+5QL
++qHI3EIPtyfE7i9Hz6rVwi7lWKgh7pe0ZvatAudZ+JNIlBKptb64FaiIOAWDCx1SzR9KdWVyZ=
+2Vu
+IEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+wsB5BBMBAgAjBQJTjHCvAhsDBwsJCAcDAgEGFQgCC=
+QoL
+BBYCAwECHgECF4AACgkQsN6d1ii/Ey/HmQf/RtI7kv5A2PS4RF7HoZhPVPogNVbC4YA6lW7Dr=
+Wf0
+teC0RR3MzXfy6pJ+7KLgkqMlrAbN/8Dvjoz78X+5vhH/rDLa9BuZQlhFmvcGtCF8eR0T1v0nC=
+/nu
+AFVGy+67q2DH8As3KPu0344TBDpAvr2uYM4tSqxK4DURx5INz4ZZ0WNFHcqsfvlGJALDeE0Lh=
+ITT
+d9jLzdDad1pQSToCnLl6SBJZjDOX9QQcyUigZFtCXFst4dlsvddrxyqT1f17+2cFSdu7+ynLm=
+XBK
+7abQ3rwJY8SbRO2iRulogc5vr/RLMMlscDAiDkaFQWLoqHHOdfO9rURssHNN8WkMnQfvUewRz=
+80h
+SnVlcmdlbiBHcm9zcyA8amdyb3NzQG5vdmVsbC5jb20+wsB5BBMBAgAjBQJTjHDXAhsDBwsJC=
+AcD
+AgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey8PUQf/ehmgCI9jB9hlgexLvgOtf7PJn=
+FOX
+gMLdBQgBlVPO3/D9R8LtF9DBAFPNhlrsfIG/SqICoRCqUcJ96Pn3P7UUinFG/I0ECGF4EvTE1=
+jnD
+kfJZr6jrbjgyoZHiw/4BNwSTL9rWASyLgqlA8u1mf+c2yUwcGhgkRAd1gOwungxcwzwqgljf0=
+N51
+N5JfVRHRtyfwq/ge+YEkDGcTU6Y0sPOuj4Dyfm8fJzdfHNQsWq3PnczLVELStJNdapwPOoE+l=
+otu
+fe3AM2vAEYJ9rTz3Cki4JFUsgLkHFqGZarrPGi1eyQcXeluldO3m91NK/1xMI3/+8jbO0tsn1=
+tqS
+EUGIJi7ox80eSnVlcmdlbiBHcm9zcyA8amdyb3NzQHN1c2UuZGU+wsB5BBMBAgAjBQJTjHDrA=
+hsD
+BwsJCAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey+LhQf9GL45eU5vOowA2u5N3=
+g3O
+ZUEBmDHVVbqMtzwlmNC4k9Kx39r5s2vcFl4tXqW7g9/ViXYuiDXb0RfUpZiIUW89siKrkzmQ5=
+dM7
+wRqzgJpJwK8Bn2MIxAKArekWpiCKvBOB/Cc+3EXE78XdlxLyOi/NrmSGRIov0karw2RzMNOu5=
+D+j
+LRZQd1Sv27AR+IP3I8U4aqnhLpwhK7MEy9oCILlgZ1QZe49kpcumcZKORmzBTNh30FVKK1Evm=
+V2x
+AKDoaEOgQB4iFQLhJCdP1I5aSgM5IVFdn7v5YgEYuJYx37IoN1EblHI//x/e2AaIHpzK5h88N=
+Eaw
+QsaNRpNSrcfbFmAg987ATQRTjHAWAQgAyzH6AOODMBjgfWE9VeCgsrwH3exNAU32gLq2xvjpW=
+nHI
+s98ndPUDpnoxWQugJ6MpMncr0xSwFmHEgnSEjK/PAjppgmyc57BwKII3sV4on+gDVFJR6Y8ZR=
+wgn
+BC5mVM6JjQ5xDk8WRXljExRfUX9pNhdE5eBOZJrDRoLUmmjDtKzWaDhIg/+1Hzz93X4fCQkNV=
+bVF
+LELU9bMaLPBG/x5q4iYZ2k2ex6d47YE1ZFdMm6YBYMOljGkZKwYde5ldM9mo45mmwe0icXKLk=
+pEd
+IXKTZeKDO+Hdv1aqFuAcccTg9RXDQjmwhC3yEmrmcfl0+rPghO0Iv3OOImwTEe4co3c1mwARA=
+QAB
+wsBfBBgBAgAJBQJTjHAWAhsMAAoJELDendYovxMvQ/gH/1ha96vm4P/L+bQpJwrZ/dneZcmEw=
+Tbe
+8YFsw2V/Buv6Z4Mysln3nQK5ZadD534CF7TDVft7fC4tU4PONxF5D+/tvgkPfDAfF77zy2AH1=
+vJz
+Q1fOU8lYFpZXTXIHb+559UqvIB8AdgR3SAJGHHt4RKA0F7f5ipYBBrC6cyXJyyoprT10EMvU8=
+VGi
+wXvTyJz3fjoYsdFzpWPlJEBRMedCot60g5dmbdrZ5DWClAr0yau47zpWj3enf1tLWaqcsuylW=
+svi
+uGjKGw7KHQd3bxALOknAp4dN3QwBYCKuZ7AddY9yjynVaD5X7nF9nO5BjR/i1DG86lem3iBDX=
+zXs
+ZDn8R38=3D
+=3D2wuH
+-----END PGP PUBLIC KEY BLOCK-----
+
+--------------C02A3EE7C04771EB3B004689--
+
+--UqKrfN4EOpH1zBdeQbsH4TMElHBbnARpK--
+
+--osso5FxvKknFWuti2qByayI8n0rKWIOdo
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmF2eTYFAwAAAAAACgkQsN6d1ii/Ey9O
+xgf+IGDTE+YDE61LIodtFf3QJmdPssYsBAOBwYWJFs5jGT2ddgGd51lqt0gCBPxYovlxXfLf24U5
+PCXgb/UPtU5R0xKq99Gc0hQonmBj8esYaqKhdldHkgfmd3E58dsJQ1bYB3Ye84SafU7sNaiKBTh0
+CkXxpEhogtaP19nhjxM96AyKcVBko/kdQwH4yd9kp28zo2+rw2IU2CKQPJS0CH0IkJlVcIJAXCK/
+Oa0TgXnhDwPVtH0rf2O/MDuvpSz2O29BOaa/cH3W2jhUI249Eq6k6s1KqwB0/qjqX8UddTLmVynL
+Ftj+I0OdFgwzIwDaKWEJQCucvHD6inXkx+vr50ziVw==
+=RfSy
+-----END PGP SIGNATURE-----
+
+--osso5FxvKknFWuti2qByayI8n0rKWIOdo--

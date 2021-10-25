@@ -2,251 +2,180 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EA62C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Oct 2021 09:30:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 718C3C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Oct 2021 19:01:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 87AE160F9D
-	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Oct 2021 09:30:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4F39D6103C
+	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Oct 2021 19:01:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232577AbhJYJc5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 25 Oct 2021 05:32:57 -0400
-Received: from smtp-out2.suse.de ([195.135.220.29]:52040 "EHLO
-        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229946AbhJYJcy (ORCPT
+        id S233750AbhJYTDb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 25 Oct 2021 15:03:31 -0400
+Received: from mx0b-00069f02.pphosted.com ([205.220.177.32]:36248 "EHLO
+        mx0b-00069f02.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S233746AbhJYTDa (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 25 Oct 2021 05:32:54 -0400
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 899A51FD34;
-        Mon, 25 Oct 2021 09:30:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-        t=1635154231; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=KRGww6yZbI/Yt5jVmhMhFsKU1wRB0IaHQ8wTV+diPmc=;
-        b=BUpWf7a6s/iFTUKqBZ0IABlQlxTbqRFhhvFbzSJW9eK5MeTIMPQv04R3Vs/9eSP8RQwZo6
-        0P9Ys4O0nSz/xZc+CveKTXhCpBJGoRjxVS87pIhwU/fhwNbC2kdxUKw7Nix2ZsaE252nlg
-        14bqeEgsyrlUQYpvTSd3WP5jEe2p84Q=
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DBF681377E;
-        Mon, 25 Oct 2021 09:30:30 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id l0O2MjZ5dmHLTAAAMHmgww
-        (envelope-from <jgross@suse.com>); Mon, 25 Oct 2021 09:30:30 +0000
-To:     Andrew Cooper <andrew.cooper3@citrix.com>,
-        xen-devel@lists.xenproject.org, linux-input@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-Cc:     Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Stefano Stabellini <sstabellini@kernel.org>
-References: <20211022064800.14978-1-jgross@suse.com>
- <20211022064800.14978-2-jgross@suse.com>
- <fe397fd6-a80e-d3f9-08d2-4f72ec739c0b@citrix.com>
-From:   Juergen Gross <jgross@suse.com>
-Subject: Re: [PATCH 1/5] xen: add "not_essential" flag to struct xenbus_driver
-Message-ID: <06bf785a-c661-ce18-6e48-7077c5944890@suse.com>
-Date:   Mon, 25 Oct 2021 11:30:30 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.12.0
+        Mon, 25 Oct 2021 15:03:30 -0400
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 19PHnjo0030370;
+        Mon, 25 Oct 2021 19:00:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id : content-type : mime-version;
+ s=corp-2021-07-09; bh=7lXaKCJiWZ6P0QIzVf0jAqXIKUr5SvLSKWkgTMUehtU=;
+ b=B7CPjZP1hUKeblu7LNSNi+GHXzUL0i5MvZlFtSEZ8rQNEuU0taOQrKFzdlJkHWuuEZMf
+ Tb2ziXT5bdZ696GNiQEz3Zk8Kzk3/WX68h7ti7DkLV/A7kuJX0SmGixFwevtTdpoR5sL
+ gYvBn4E5OqzA+B7/Oi+nFbUfe4Yd/ySWPXVKTYrBo54zMSrC3M/yFoQRuSj5K2L91X42
+ A3cHykQVdN0F9RZqnv3ClRqaeWh/41/0RmEsX6o4TMM96J/AgGae7/7mExji51vXb5NG
+ NO8nxjGsR6/j97fOn4F7JUamCGwLpnw9irc9efK4KMmZodYoQ0UVPK8DJgAXj0LC/gS+ JQ== 
+Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
+        by mx0b-00069f02.pphosted.com with ESMTP id 3bw6v1w0rf-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 25 Oct 2021 19:00:52 +0000
+Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
+        by userp3030.oracle.com (8.16.1.2/8.16.1.2) with SMTP id 19PItsrS124056;
+        Mon, 25 Oct 2021 19:00:51 GMT
+Received: from nam10-mw2-obe.outbound.protection.outlook.com (mail-mw2nam10lp2101.outbound.protection.outlook.com [104.47.55.101])
+        by userp3030.oracle.com with ESMTP id 3bv7gv61g9-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 25 Oct 2021 19:00:51 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=U3mhMITgGfkV6nZkJ6MeJUSi2yE15AC9pPfKoiGkMjmCcZXaQ/kckL6LYZjardu04b1gbLsrX36Y294SZhBBpG2LoISVuZSqyHyHqkoXUByBbZHPWx3ON8IvMQ58J3NM6A1p7aZpyUw2AcgumGrcK/9FWCSBFfbmYtDuZ4pgDAvhZ21eXr2g9DV9NPVSEBr8wLQF8N5rGRPxdDtQ17FGsec+jYKAspxnadh9QUVydI97N/vFHvO0Hr7GUNDJ1uNFtDw5SoUhBFjNWqCg/30r2+c8gxysrRBSW3nbWLEFKj3M/JCJQ4J944/NWW/SY2zfulq6r72VKNk461joEE3I6Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=7lXaKCJiWZ6P0QIzVf0jAqXIKUr5SvLSKWkgTMUehtU=;
+ b=OVKi6x+JUd/bB36eaFk8bXmx/4ra5LVIawR3MULXWSE8P8whSHX+S9bx3U1PTOImDqfy9xbmaflujBOb0Z8CzSP1tMplib2LM5qEjmoUpz7AnUXDrFoBqa9AbRP4RF4ts0MVAM8cRI1CI8tDto1Q5drJ8P06/BRvFlc+EjPUEklvpWEsK02pFunQuqbbh4WmiV9l6s5sU43oz6WpVabTr0dPBS+ioI0ckaTgx59hnO0AP1m0kH2qPhuwQK2D0cfdmZoZNpOTicfyQQU3ACW9FQUh1W1xDIME8ygkrMi88DhgC6c7SeapDLrzxqV14BEVnR4+ROmOIlRlq8UfbTG68w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7lXaKCJiWZ6P0QIzVf0jAqXIKUr5SvLSKWkgTMUehtU=;
+ b=FlLfuqhpb2AI4P67nk/58gvuyuY7nPLWaoBoPreA804GBcj1tl1llEcrAb6sI4jncPdk5fDm2bJ55CxepEi0fcmoTvJKorCGjpeu6NRMqRPPIrzrfMaYhhHELtaN5RHblIz9nAgpIYyAvHp9EDpEMn2xt1XzNKedeWRZ27MNLt4=
+Authentication-Results: linuxfoundation.org; dkim=none (message not signed)
+ header.d=none;linuxfoundation.org; dmarc=none action=none
+ header.from=oracle.com;
+Received: from BN0PR10MB5192.namprd10.prod.outlook.com (2603:10b6:408:115::8)
+ by BN8PR10MB3364.namprd10.prod.outlook.com (2603:10b6:408:d0::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4628.18; Mon, 25 Oct
+ 2021 19:00:47 +0000
+Received: from BN0PR10MB5192.namprd10.prod.outlook.com
+ ([fe80::8823:3dbf:b88f:2c0e]) by BN0PR10MB5192.namprd10.prod.outlook.com
+ ([fe80::8823:3dbf:b88f:2c0e%4]) with mapi id 15.20.4628.020; Mon, 25 Oct 2021
+ 19:00:46 +0000
+From:   George Kennedy <george.kennedy@oracle.com>
+To:     gregkh@linuxfoundation.org, tzimmermann@suse.de, sam@ravnborg.org
+Cc:     george.kennedy@oracle.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] video: fbdev: cirrusfb: check pixclock to avoid divide by zero
+Date:   Mon, 25 Oct 2021 14:01:30 -0500
+Message-Id: <1635188490-15082-1-git-send-email-george.kennedy@oracle.com>
+X-Mailer: git-send-email 1.9.4
+Content-Type: text/plain
+X-ClientProxiedBy: SN4PR0501CA0101.namprd05.prod.outlook.com
+ (2603:10b6:803:42::18) To BN0PR10MB5192.namprd10.prod.outlook.com
+ (2603:10b6:408:115::8)
 MIME-Version: 1.0
-In-Reply-To: <fe397fd6-a80e-d3f9-08d2-4f72ec739c0b@citrix.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="osso5FxvKknFWuti2qByayI8n0rKWIOdo"
+Received: from dhcp-10-152-13-169.usdhcp.oraclecorp.com.com (209.17.40.40) by SN4PR0501CA0101.namprd05.prod.outlook.com (2603:10b6:803:42::18) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4649.11 via Frontend Transport; Mon, 25 Oct 2021 19:00:45 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 4a662441-7a07-4580-b804-08d997e9c05b
+X-MS-TrafficTypeDiagnostic: BN8PR10MB3364:
+X-Microsoft-Antispam-PRVS: <BN8PR10MB3364B07F1DEA7F6BCFF0AC07E6839@BN8PR10MB3364.namprd10.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:3826;
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: yCX4oQnrZgDBPzX9uJejfis47RurSs8o0BhgmLFEZ9LRGQLKAUfs1iyCiExLv+Rc8fUWBU2Q4Y+RuuOL9f0XMXVr00dC28sH1uuPZ3X02w7DIQZy5v4YfKMhH4YHtgHFERjS1DmWdeHMIagIRtcO4TqPzyo7g5woL6/ao2OeEuBuo3JO/QvINK2nk2QUDBE9TQ4cKkOJTR0ogf2fR7kJ4X2c2seX6k7kg6QOZXtVdddL33uAYpVcRAhvU3A0fG/5QLewcoHgWW4koqMMX69ZwoHAWIa7y0nC26r6HxQBS+BoW0n8vkYsWWx4g//iN0FSw4E1Hk1kzkmjpV5NDhUANkK97icEWj/qWRMfW8/w5WDO+CZ8WHYouuhHKvMrn5cGdI0+sXA0t/jfmbJgvjiqBk4G7IbB17B2+Uo45ZqLs2Xi+nMtP1NKKaZUED33dED6q8Bm5q6KxxIqiMFUuIoR9RHPjNl/Fvg1ikJhHYUYm8X6tSWo1yNXmPacRcIZ8bsSt5DQPTZx75sOqEhbhqQtulUB3rn3sgUSbpJBiNOdLSbabarK1yoVi7G3koMWariPMTE8sndNjf883ejfZJ54UkW8yMIvIVC/70ufLGgLzRiXNbfdjOQmjXxgkOJSvzsYBPfndD4bNLPw3wH5dizRGdP6H67U1MORtNfnRmm70XB/hA+uswEbZnj13tjNK/cUZ+bM35+fMY0sdUk5MRkETA==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN0PR10MB5192.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(366004)(36756003)(6666004)(6486002)(316002)(186003)(2906002)(83380400001)(508600001)(66556008)(4326008)(52116002)(86362001)(66946007)(956004)(66476007)(26005)(6512007)(2616005)(44832011)(8936002)(38350700002)(38100700002)(5660300002)(6506007)(8676002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?pYjwyYdPBmcrnaEI1/2PsTdeioHWgB2ZfdmbIGVvzZmNgQheHHRswBDpM7r4?=
+ =?us-ascii?Q?OAEi+PqBA4W8UBOcmB74fl79oFInW2Fs8mPupqpYdkqw3XS/SdlZSmf/oW+7?=
+ =?us-ascii?Q?DBDe1ENpqvayypPm2T7ZZx6tGbSfKgJrjMG/9KhwK42HyJhLMJBaDrrvauOA?=
+ =?us-ascii?Q?4sIhSS9Jt8yz5W29Itb/3XPESINURF1+3rBSY8zD/HYyYYa1cORSuz2Ljdwf?=
+ =?us-ascii?Q?q6hRYrWZIUJ2fFIvctLCdGyCPHc/EJhBV+noSzqQPaZGH47EIFqVfFwlK5zi?=
+ =?us-ascii?Q?lwS6k0puEEy5K2Quc0a4fy/TnYHFehfgWDsp+576UBaxw1Sz4MRyLFBL9yFu?=
+ =?us-ascii?Q?OsSP4LRmU0FpPXWeATGPFp8Yb9z1a7XMAkyip+VRDf9nVBl1yl7uIKjIRLMA?=
+ =?us-ascii?Q?c8NiWk2hIo/e/+1RcXCi/qVsTEfb6Fb2DbKF2DSSKfEZTClNzQUqI0Ievjlq?=
+ =?us-ascii?Q?MkMsr5zcQqP6wt7cM5oxDSgaV7lbpyVadMr6XZb6kouEjkY9NQ9qCFa3kqxF?=
+ =?us-ascii?Q?UBNa5uGf79wueNlHh5MkVwUfbu4PSYeXvrPzLkXADia5phApJ3tM8OJnk+w1?=
+ =?us-ascii?Q?Dv1iArnOlpuLXxT/MU9q4S+jaaf63g80irCjBHsUZ90UP6YE7cOuNWZzdttR?=
+ =?us-ascii?Q?xtyUkYhnv/Le+251kc2zJihzJ/3OCC5LpAt4FLvr2m8pj6y/zVu6r5cUzJ4w?=
+ =?us-ascii?Q?BFp0LSBwJUcWbAtOnyycyPebB9CJ79I/s84EvnS+5YnDFePgAa+SRwG4Yiss?=
+ =?us-ascii?Q?7Z8Sd8fbOWpRtuwB8LT5ZFxxcnxFjXpYHsCW9d04KLiT+RRE0aeKRB35UeaV?=
+ =?us-ascii?Q?lh/rZQG6R9C2O84DgtQO2vxP04sxmtHH9yPVoSlELGmqOgGrsVcD8doE3OW4?=
+ =?us-ascii?Q?Oau2y9fU7sGmb41XuB1SE0YTcdjLX6nmN38psYcKIdkyoawdXZ5qGV1UZt2L?=
+ =?us-ascii?Q?YjeeT4sVG6cke5IwKHwyVTQ+U5UU4blAEVAsC4Z5Rnk3Vlrg3o5brkxb4QyS?=
+ =?us-ascii?Q?sjMqX1rSlxLUsGP/pIVwPgsXBf//iKAoXKLaCx8hNPQVhzqEZUsJEvd6f0+D?=
+ =?us-ascii?Q?KDCiMH0IvCKfMP6w67P0I/qJDEGDSHHbdron835S1LBUUARxjf4uONKTPLOH?=
+ =?us-ascii?Q?vDpR+nM6RZqZbmatQFAJjfpK4aBPOtDqA9xRvkHoG93JsD5YXemVCwoJYQg2?=
+ =?us-ascii?Q?sdxJW7dD4Vqg2f3ZurxJtYvTQXAttfYSyjN54RZw4tcGHvcxm9uZ0yXirEuy?=
+ =?us-ascii?Q?81PiX+LRx79t3o6xyEEuhrhTSIJnLhoRK70xC4HHocqGHP0ysz5ur4bqGc46?=
+ =?us-ascii?Q?eyi3evKm340Ebxe8Cs6lh1SoTfSyTu4jr/XWpMyv7RVQQjJD9FogDqb/tWTi?=
+ =?us-ascii?Q?zPuau1pcA3i+wfeoglkPQ9gA+qwHE1FQPibl3hUfgS0Hi3k1C3xXIy3n9fFk?=
+ =?us-ascii?Q?gq+QF6tTXuVcNZtRhXT+jAKR+K2l2ybfMfiHQvD20JgdfKp5hj9KTWP3SeDP?=
+ =?us-ascii?Q?LRTUqAVHAkbFvwoQ1CmolA25E0RawqrfNQtgtTOehPYJHL3pnZTUlIBAJsEY?=
+ =?us-ascii?Q?/++DE4RAFf/3fx7Vn08aoAH/F8k4Dfn/hn8XPaz4Lhsm40zfdwcs8UJDj+aV?=
+ =?us-ascii?Q?h7dCYgmZ/TR64ulfRgSt5sVuSgEWUpV18750qEi67Qggu8u1WdJhPKs2xPVO?=
+ =?us-ascii?Q?8iWReg=3D=3D?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4a662441-7a07-4580-b804-08d997e9c05b
+X-MS-Exchange-CrossTenant-AuthSource: BN0PR10MB5192.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Oct 2021 19:00:46.1719
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 2BW1SOq73VD+Y/pGgWZtQRocPD1t7sIclOq/ejL8IqzZQ4nKKznburRcPbI/s+IrqYIUFXbbL7N7Kni9+6ofemvrGxzB5KJ2DzvFTwpIRS0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN8PR10MB3364
+X-Proofpoint-Virus-Version: vendor=nai engine=6300 definitions=10148 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 phishscore=0 adultscore=0
+ suspectscore=0 mlxscore=0 bulkscore=0 mlxlogscore=999 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2109230001
+ definitions=main-2110250110
+X-Proofpoint-GUID: 1ITtTsz_fOxPwDVxLP-kznG2yrhEy4KF
+X-Proofpoint-ORIG-GUID: 1ITtTsz_fOxPwDVxLP-kznG2yrhEy4KF
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---osso5FxvKknFWuti2qByayI8n0rKWIOdo
-Content-Type: multipart/mixed; boundary="UqKrfN4EOpH1zBdeQbsH4TMElHBbnARpK";
- protected-headers="v1"
-From: Juergen Gross <jgross@suse.com>
-To: Andrew Cooper <andrew.cooper3@citrix.com>,
- xen-devel@lists.xenproject.org, linux-input@vger.kernel.org,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- Stefano Stabellini <sstabellini@kernel.org>
-Message-ID: <06bf785a-c661-ce18-6e48-7077c5944890@suse.com>
-Subject: Re: [PATCH 1/5] xen: add "not_essential" flag to struct xenbus_driver
-References: <20211022064800.14978-1-jgross@suse.com>
- <20211022064800.14978-2-jgross@suse.com>
- <fe397fd6-a80e-d3f9-08d2-4f72ec739c0b@citrix.com>
-In-Reply-To: <fe397fd6-a80e-d3f9-08d2-4f72ec739c0b@citrix.com>
+Do a sanity check on pixclock value before using it as a divisor.
 
---UqKrfN4EOpH1zBdeQbsH4TMElHBbnARpK
-Content-Type: multipart/mixed;
- boundary="------------C02A3EE7C04771EB3B004689"
-Content-Language: en-US
+Syzkaller reported a divide error in cirrusfb_check_pixclock.
 
-This is a multi-part message in MIME format.
---------------C02A3EE7C04771EB3B004689
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
+divide error: 0000 [#1] SMP KASAN PTI
+CPU: 0 PID: 14938 Comm: cirrusfb_test Not tainted 5.15.0-rc6 #1
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.11.0-2
+RIP: 0010:cirrusfb_check_var+0x6f1/0x1260
 
-On 22.10.21 11:28, Andrew Cooper wrote:
-> On 22/10/2021 07:47, Juergen Gross wrote:
->> When booting the xenbus driver will wait for PV devices to have
->> connected to their backends before continuing. The timeout is differen=
-t
->> between essential and non-essential devices.
->>
->> Non-essential devices are identified by their nodenames directly in th=
-e
->> xenbus driver, which requires to update this list in case a new device=
+Call Trace:
+ fb_set_var+0x398/0xf90
+ do_fb_ioctl+0x4b8/0x6f0
+ fb_ioctl+0xeb/0x130
+ __x64_sys_ioctl+0x19d/0x220
+ do_syscall_64+0x3a/0x80
+ entry_SYSCALL_64_after_hwframe+0x44/0xae
 
->> type being non-essential is added (this was missed for several types
->> in the past).
->>
->> In order to avoid this problem, add a "not_essential" flag to struct
->> xenbus_driver which can be set to "true" by the respective frontend.
->>
->> Set this flag for the frontends currently regarded to be not essential=
+Signed-off-by: George Kennedy <george.kennedy@oracle.com>
+---
+ drivers/video/fbdev/cirrusfb.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
->> (vkbs and vfb) and use it for testing in the xenbus driver.
->>
->> Signed-off-by: Juergen Gross <jgross@suse.com>
->=20
-> Wouldn't it be better to annotate essential?=C2=A0 That way, when new m=
-isc
-> drivers come along, they don't by default block boot.
+diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
+index 93802ab..099ddcb 100644
+--- a/drivers/video/fbdev/cirrusfb.c
++++ b/drivers/video/fbdev/cirrusfb.c
+@@ -477,6 +477,9 @@ static int cirrusfb_check_pixclock(const struct fb_var_screeninfo *var,
+ 	struct cirrusfb_info *cinfo = info->par;
+ 	unsigned maxclockidx = var->bits_per_pixel >> 3;
+ 
++	if (!var->pixclock)
++		return -EINVAL;
++
+ 	/* convert from ps to kHz */
+ 	freq = PICOS2KHZ(var->pixclock);
+ 
+-- 
+1.8.3.1
 
-It isn't as if new drivers would "block boot". Normally the short
-timeout for all drivers of 30 seconds is more than enough for all of
-them.
-
-I'm a little bit hesitant to have a kind of "white listing" essential
-drivers, as there might be different views which drivers should have
-that flag. Doing this the other way round is easier: in case of
-disagreement such a patch just wouldn't go in, not breaking anything
-in that case.
-
-Additionally there might be out-of-tree PV drivers, which could be
-hit by not being flagged to be essential. With the not_essential flag
-the situation wouldn't change for such a driver.
-
-
-Juergen
-
---------------C02A3EE7C04771EB3B004689
-Content-Type: application/pgp-keys;
- name="OpenPGP_0xB0DE9DD628BF132F.asc"
-Content-Transfer-Encoding: quoted-printable
-Content-Description: OpenPGP public key
-Content-Disposition: attachment;
- filename="OpenPGP_0xB0DE9DD628BF132F.asc"
-
------BEGIN PGP PUBLIC KEY BLOCK-----
-
-xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOBy=
-cWx
-w3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJvedYm8O=
-f8Z
-d621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJNwQpd369y=
-9bf
-IhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvxXP3FAp2pkW0xq=
-G7/
-377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEBAAHNHEp1ZXJnZW4gR=
-3Jv
-c3MgPGpnQHBmdXBmLm5ldD7CwHkEEwECACMFAlOMcBYCGwMHCwkIBwMCAQYVCAIJCgsEFgIDA=
-QIe
-AQIXgAAKCRCw3p3WKL8TL0KdB/93FcIZ3GCNwFU0u3EjNbNjmXBKDY4FUGNQH2lvWAUy+dnyT=
-hpw
-dtF/jQ6j9RwE8VP0+NXcYpGJDWlNb9/JmYqLiX2Q3TyevpB0CA3dbBQp0OW0fgCetToGIQrg0=
-MbD
-1C/sEOv8Mr4NAfbauXjZlvTj30H2jO0u+6WGM6nHwbh2l5O8ZiHkH32iaSTfN7Eu5RnNVUJbv=
-oPH
-Z8SlM4KWm8rG+lIkGurqqu5gu8q8ZMKdsdGC4bBxdQKDKHEFExLJK/nRPFmAuGlId1E3fe10v=
-5QL
-+qHI3EIPtyfE7i9Hz6rVwi7lWKgh7pe0ZvatAudZ+JNIlBKptb64FaiIOAWDCx1SzR9KdWVyZ=
-2Vu
-IEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+wsB5BBMBAgAjBQJTjHCvAhsDBwsJCAcDAgEGFQgCC=
-QoL
-BBYCAwECHgECF4AACgkQsN6d1ii/Ey/HmQf/RtI7kv5A2PS4RF7HoZhPVPogNVbC4YA6lW7Dr=
-Wf0
-teC0RR3MzXfy6pJ+7KLgkqMlrAbN/8Dvjoz78X+5vhH/rDLa9BuZQlhFmvcGtCF8eR0T1v0nC=
-/nu
-AFVGy+67q2DH8As3KPu0344TBDpAvr2uYM4tSqxK4DURx5INz4ZZ0WNFHcqsfvlGJALDeE0Lh=
-ITT
-d9jLzdDad1pQSToCnLl6SBJZjDOX9QQcyUigZFtCXFst4dlsvddrxyqT1f17+2cFSdu7+ynLm=
-XBK
-7abQ3rwJY8SbRO2iRulogc5vr/RLMMlscDAiDkaFQWLoqHHOdfO9rURssHNN8WkMnQfvUewRz=
-80h
-SnVlcmdlbiBHcm9zcyA8amdyb3NzQG5vdmVsbC5jb20+wsB5BBMBAgAjBQJTjHDXAhsDBwsJC=
-AcD
-AgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey8PUQf/ehmgCI9jB9hlgexLvgOtf7PJn=
-FOX
-gMLdBQgBlVPO3/D9R8LtF9DBAFPNhlrsfIG/SqICoRCqUcJ96Pn3P7UUinFG/I0ECGF4EvTE1=
-jnD
-kfJZr6jrbjgyoZHiw/4BNwSTL9rWASyLgqlA8u1mf+c2yUwcGhgkRAd1gOwungxcwzwqgljf0=
-N51
-N5JfVRHRtyfwq/ge+YEkDGcTU6Y0sPOuj4Dyfm8fJzdfHNQsWq3PnczLVELStJNdapwPOoE+l=
-otu
-fe3AM2vAEYJ9rTz3Cki4JFUsgLkHFqGZarrPGi1eyQcXeluldO3m91NK/1xMI3/+8jbO0tsn1=
-tqS
-EUGIJi7ox80eSnVlcmdlbiBHcm9zcyA8amdyb3NzQHN1c2UuZGU+wsB5BBMBAgAjBQJTjHDrA=
-hsD
-BwsJCAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey+LhQf9GL45eU5vOowA2u5N3=
-g3O
-ZUEBmDHVVbqMtzwlmNC4k9Kx39r5s2vcFl4tXqW7g9/ViXYuiDXb0RfUpZiIUW89siKrkzmQ5=
-dM7
-wRqzgJpJwK8Bn2MIxAKArekWpiCKvBOB/Cc+3EXE78XdlxLyOi/NrmSGRIov0karw2RzMNOu5=
-D+j
-LRZQd1Sv27AR+IP3I8U4aqnhLpwhK7MEy9oCILlgZ1QZe49kpcumcZKORmzBTNh30FVKK1Evm=
-V2x
-AKDoaEOgQB4iFQLhJCdP1I5aSgM5IVFdn7v5YgEYuJYx37IoN1EblHI//x/e2AaIHpzK5h88N=
-Eaw
-QsaNRpNSrcfbFmAg987ATQRTjHAWAQgAyzH6AOODMBjgfWE9VeCgsrwH3exNAU32gLq2xvjpW=
-nHI
-s98ndPUDpnoxWQugJ6MpMncr0xSwFmHEgnSEjK/PAjppgmyc57BwKII3sV4on+gDVFJR6Y8ZR=
-wgn
-BC5mVM6JjQ5xDk8WRXljExRfUX9pNhdE5eBOZJrDRoLUmmjDtKzWaDhIg/+1Hzz93X4fCQkNV=
-bVF
-LELU9bMaLPBG/x5q4iYZ2k2ex6d47YE1ZFdMm6YBYMOljGkZKwYde5ldM9mo45mmwe0icXKLk=
-pEd
-IXKTZeKDO+Hdv1aqFuAcccTg9RXDQjmwhC3yEmrmcfl0+rPghO0Iv3OOImwTEe4co3c1mwARA=
-QAB
-wsBfBBgBAgAJBQJTjHAWAhsMAAoJELDendYovxMvQ/gH/1ha96vm4P/L+bQpJwrZ/dneZcmEw=
-Tbe
-8YFsw2V/Buv6Z4Mysln3nQK5ZadD534CF7TDVft7fC4tU4PONxF5D+/tvgkPfDAfF77zy2AH1=
-vJz
-Q1fOU8lYFpZXTXIHb+559UqvIB8AdgR3SAJGHHt4RKA0F7f5ipYBBrC6cyXJyyoprT10EMvU8=
-VGi
-wXvTyJz3fjoYsdFzpWPlJEBRMedCot60g5dmbdrZ5DWClAr0yau47zpWj3enf1tLWaqcsuylW=
-svi
-uGjKGw7KHQd3bxALOknAp4dN3QwBYCKuZ7AddY9yjynVaD5X7nF9nO5BjR/i1DG86lem3iBDX=
-zXs
-ZDn8R38=3D
-=3D2wuH
------END PGP PUBLIC KEY BLOCK-----
-
---------------C02A3EE7C04771EB3B004689--
-
---UqKrfN4EOpH1zBdeQbsH4TMElHBbnARpK--
-
---osso5FxvKknFWuti2qByayI8n0rKWIOdo
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmF2eTYFAwAAAAAACgkQsN6d1ii/Ey9O
-xgf+IGDTE+YDE61LIodtFf3QJmdPssYsBAOBwYWJFs5jGT2ddgGd51lqt0gCBPxYovlxXfLf24U5
-PCXgb/UPtU5R0xKq99Gc0hQonmBj8esYaqKhdldHkgfmd3E58dsJQ1bYB3Ye84SafU7sNaiKBTh0
-CkXxpEhogtaP19nhjxM96AyKcVBko/kdQwH4yd9kp28zo2+rw2IU2CKQPJS0CH0IkJlVcIJAXCK/
-Oa0TgXnhDwPVtH0rf2O/MDuvpSz2O29BOaa/cH3W2jhUI249Eq6k6s1KqwB0/qjqX8UddTLmVynL
-Ftj+I0OdFgwzIwDaKWEJQCucvHD6inXkx+vr50ziVw==
-=RfSy
------END PGP SIGNATURE-----
-
---osso5FxvKknFWuti2qByayI8n0rKWIOdo--

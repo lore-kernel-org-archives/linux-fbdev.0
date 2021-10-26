@@ -2,124 +2,270 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71637C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Oct 2021 22:26:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8BBEC4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Oct 2021 00:01:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5B2DE61039
-	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Oct 2021 22:26:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 974286109E
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Oct 2021 00:01:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234033AbhJYW2x (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 25 Oct 2021 18:28:53 -0400
-Received: from angie.orcam.me.uk ([78.133.224.34]:34528 "EHLO
-        angie.orcam.me.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233692AbhJYW2v (ORCPT
+        id S235113AbhJZADN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 25 Oct 2021 20:03:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58288 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233072AbhJZADK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 25 Oct 2021 18:28:51 -0400
-Received: by angie.orcam.me.uk (Postfix, from userid 500)
-        id 3C03492009C; Tue, 26 Oct 2021 00:26:22 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-        by angie.orcam.me.uk (Postfix) with ESMTP id 378FE92009B;
-        Tue, 26 Oct 2021 00:26:22 +0200 (CEST)
-Date:   Tue, 26 Oct 2021 00:26:22 +0200 (CEST)
-From:   "Maciej W. Rozycki" <macro@orcam.me.uk>
+        Mon, 25 Oct 2021 20:03:10 -0400
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83670C061348
+        for <linux-fbdev@vger.kernel.org>; Mon, 25 Oct 2021 17:00:47 -0700 (PDT)
+Received: by mail-pl1-x630.google.com with SMTP id f8so2230333plo.12
+        for <linux-fbdev@vger.kernel.org>; Mon, 25 Oct 2021 17:00:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=hVtm5VmIX53N/m0Y93GQ8NnzFNcJLh+fSgNJkLUzoBQ=;
+        b=UoV8niq8Fg3t0VgyL/cuMnFIHA75+zfSZlyLNmgbDDuBCJyWdlw1o6lIPq6tD95EXa
+         OMtJAi/LFpQySAmIMbQXKoKwX0xiCeYsAcWJfFgXHiUm8p+7raqYMic/dUCXn7IfksaI
+         fgz8DZ8zfukC1oZPLIAyYkmhQgZ5vZTihtICY=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=hVtm5VmIX53N/m0Y93GQ8NnzFNcJLh+fSgNJkLUzoBQ=;
+        b=54Jv+TyGLQldGc5A1DbWT8TqbGyQnKIaWgZhoXyxGYPBebJ9KM6pXPiGjOzxK2Li6x
+         yRs4Gvex6vBDidUEzfn1nQlfdMyniNPqWd/ljzWi7N+dC5XMKoLJ3O/NH1xbK8Oh0ROU
+         wO5ZwvlR6vfOEUbhlPYy38vOkR2Cx7niK5uzQ4eE5j9/nh46HNobjbMaZiTVDbYKnb74
+         iL0UhKxQn4xNAzVbPoS13kJozaxHBjrzRMsRl7+D/5DwkE1IkjAkDggzJu+bg2t6yxll
+         sUeepCyl6d3qKdhTQTLmFkWX+dOyyVSS9G7ZY/ciO6608vmzBqdpXBUZt7xvvWp1ey3c
+         L8TQ==
+X-Gm-Message-State: AOAM532CRUqiBATIy0vPeElC9bW64OgmRJz8hoDW5nZJygL2fKsEHI/n
+        LizAQPXEI5t6eT9eb0uhav0ehw==
+X-Google-Smtp-Source: ABdhPJwZDdpWoXA4SVpIZYuWp3H9Dd3C0JBKQ4wRlria4Rtetrmm7yCucfxPYDMuJfzOx3VYXXkMjQ==
+X-Received: by 2002:a17:902:8bcc:b0:13f:ea68:a135 with SMTP id r12-20020a1709028bcc00b0013fea68a135mr19698483plo.41.1635206446478;
+        Mon, 25 Oct 2021 17:00:46 -0700 (PDT)
+Received: from smtp.gmail.com ([2620:15c:202:201:f5e3:5eb1:d5ee:6893])
+        by smtp.gmail.com with ESMTPSA id b7sm9900747pfm.28.2021.10.25.17.00.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 25 Oct 2021 17:00:46 -0700 (PDT)
+From:   Stephen Boyd <swboyd@chromium.org>
 To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-cc:     Wim Osterholt <wim@djo.tudelft.nl>,
-        "Pavel V. Panteleev" <panteleev_p@mcst.ru>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] vgacon: Propagate console boot parameters before calling
- `vc_resize'
-Message-ID: <alpine.DEB.2.21.2110252317110.58149@angie.orcam.me.uk>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Benjamin Gaignard <benjamin.gaignard@linaro.org>,
+        Chen Feng <puck.chen@hisilicon.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Emma Anholt <emma@anholt.net>,
+        =?UTF-8?q?Heiko=20St=C3=BCbner?= <heiko@sntech.de>,
+        Inki Dae <inki.dae@samsung.com>,
+        James Qian Wang <james.qian.wang@arm.com>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Joerg Roedel <joro@8bytes.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Joonyoung Shim <jy0922.shim@samsung.com>,
+        Jyri Sarha <jyri.sarha@iki.fi>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Clark <robdclark@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Russell King <rmk+kernel@arm.linux.org.uk>,
+        Sandy Huang <hjc@rock-chips.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Seung-Woo Kim <sw0312.kim@samsung.com>,
+        Takashi Iwai <tiwai@suse.com>,
+        Tian Tao <tiantao6@hisilicon.com>,
+        Tomas Winkler <tomas.winkler@intel.com>,
+        Tomi Valkeinen <tomba@kernel.org>,
+        Will Deacon <will@kernel.org>,
+        Xinliang Liu <xinliang.liu@linaro.org>,
+        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
+        Yong Wu <yong.wu@mediatek.com>
+Subject: [PATCH v3 00/34] component: Make into an aggregate bus
+Date:   Mon, 25 Oct 2021 17:00:10 -0700
+Message-Id: <20211026000044.885195-1-swboyd@chromium.org>
+X-Mailer: git-send-email 2.33.0.1079.g6e70778dc9-goog
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Fix a division by zero in `vgacon_resize' with a backtrace like:
+This series is from discussion we had on reordering the device lists for
+drm shutdown paths[1]. I've introduced an 'aggregate' bus that we put
+the aggregate device onto and then we probe the aggregate device once
+all the components are probed and call component_add(). The probe/remove
+hooks are where the bind/unbind calls go, and then a shutdown hook is
+added that can be used to shutdown the drm display pipeline at the right
+time.
 
-vgacon_resize
-vc_do_resize
-vgacon_init
-do_bind_con_driver
-do_unbind_con_driver
-fbcon_fb_unbind
-do_unregister_framebuffer
-do_register_framebuffer
-register_framebuffer
-__drm_fb_helper_initial_config_and_unlock
-drm_helper_hpd_irq_event
-dw_hdmi_irq
-irq_thread
-kthread
+This works for me on my sc7180 board. I no longer get a warning from i2c
+at shutdown that we're trying to make an i2c transaction after the i2c
+bus has been shutdown. There's more work to do on the msm drm driver to
+extract component device resources like clks, regulators, etc. out of
+the component bind function into the driver probe but I wanted to move
+everything over now in other component drivers before tackling that
+problem.
 
-caused by `c->vc_cell_height' not having been initialized.  This has 
-only started to trigger with commit 860dafa90259 ("vt: Fix character 
-height handling with VT_RESIZEX"), however the ultimate offender is 
-commit 50ec42edd978 ("[PATCH] Detaching fbcon: fix vgacon to allow 
-retaking of the console").
+Tested-by tags would be appreciated, and Acked-by/Reviewed-by tags too.
+I sent this to gregkh which may be incorrect but I don't know what
+better tree to send it all through.  Maybe drm?
 
-Said commit has added a call to `vc_resize' whenever `vgacon_init' is 
-called with the `init' argument set to 0, which did not happen before. 
-And the call is made before a key vgacon boot parameter retrieved in 
-`vgacon_startup' has been propagated in `vgacon_init' for `vc_resize' to 
-use to the console structure being worked on.  Previously the parameter 
-was `c->vc_font.height' and now it is `c->vc_cell_height'.
+Changes since v2 (https://lore.kernel.org/r/20211006193819.2654854-1-swboyd@chromium.org):
+ - Picked up acks
+ - Fixed build warnings/errors
+ - Reworked patch series to rename 'master' in a different patch
 
-In this particular scenario the registration of fbcon has failed and vt 
-resorts to vgacon.  Now fbcon does have initialized `c->vc_font.height' 
-somehow, unlike `c->vc_cell_height', which is why this code did not 
-crash before, but either way the boot parameters should have been copied 
-to the console structure ahead of the call to `vc_resize' rather than 
-afterwards, so that first the call has a chance to use them and second 
-they do not change the console structure to something possibly different 
-from what was used by `vc_resize'.
+Changes since v1 (https://lore.kernel.org/r/20210520002519.3538432-1-swboyd@chromium.org):
+ - Use devlink to connect components to the aggregate device
+ - Don't set the registering device as a parent of the aggregate device
+ - New patch for bind_component/unbind_component ops that takes the
+   aggregate device
+ - Convert all drivers in the tree to use the aggregate driver approach
+ - Allow one aggregate driver to be used for multiple aggregate devices
 
-Move the propagation of the vgacon boot parameters ahead of the call to 
-`vc_resize' then.  Adjust the comment accordingly.
+[1] https://lore.kernel.org/r/20210508074118.1621729-1-swboyd@chromium.org
 
-Signed-off-by: Maciej W. Rozycki <macro@orcam.me.uk>
-Reported-by: Wim Osterholt <wim@djo.tudelft.nl>
-Reported-by: Pavel V. Panteleev <panteleev_p@mcst.ru>
-Fixes: 50ec42edd978 ("[PATCH] Detaching fbcon: fix vgacon to allow retaking of the console")
-Cc: stable@vger.kernel.org # v2.6.18+
----
- drivers/video/console/vgacon.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+Stephen Boyd (34):
+  component: Introduce struct aggregate_device
+  component: Remove most references to 'master'
+  component: Introduce the aggregate bus_type
+  component: Move struct aggregate_device out to header file
+  component: Add {bind,unbind}_component() ops that take aggregate
+    device
+  drm/of: Add a drm_of_aggregate_probe() API
+  drm/msm: Migrate to aggregate driver
+  drm/komeda: Migrate to aggregate driver
+  drm/arm/hdlcd: Migrate to aggregate driver
+  drm/malidp: Migrate to aggregate driver
+  drm/armada: Migrate to aggregate driver
+  drm/etnaviv: Migrate to aggregate driver
+  drm/kirin: Migrate to aggregate driver
+  drm/exynos: Migrate to aggregate driver
+  drm/imx: Migrate to aggregate driver
+  drm/ingenic: Migrate to aggregate driver
+  drm/mcde: Migrate to aggregate driver
+  drm/mediatek: Migrate to aggregate driver
+  drm/meson: Migrate to aggregate driver
+  drm/omap: Migrate to aggregate driver
+  drm/rockchip: Migrate to aggregate driver
+  drm/sti: Migrate to aggregate driver
+  drm/sun4i: Migrate to aggregate driver
+  drm/tilcdc: Migrate to aggregate driver
+  drm/vc4: Migrate to aggregate driver
+  drm/zte: Migrate to aggregate driver
+  iommu/mtk: Migrate to aggregate driver
+  mei: Migrate to aggregate driver
+  power: supply: ab8500: Migrate to aggregate driver
+  fbdev: omap2: Migrate to aggregate driver
+  sound: hdac: Migrate to aggregate driver
+  ASoC: codecs: wcd938x: Migrate to aggregate driver
+  component: Get rid of drm_of_component_probe()
+  component: Remove component_master_ops and friends
 
-linux-vt-vgacon-init-cell-height-fix.diff
-Index: linux-macro-ide-tty/drivers/video/console/vgacon.c
-===================================================================
---- linux-macro-ide-tty.orig/drivers/video/console/vgacon.c
-+++ linux-macro-ide-tty/drivers/video/console/vgacon.c
-@@ -366,11 +366,17 @@ static void vgacon_init(struct vc_data *
- 	struct uni_pagedir *p;
- 
- 	/*
--	 * We cannot be loaded as a module, therefore init is always 1,
--	 * but vgacon_init can be called more than once, and init will
--	 * not be 1.
-+	 * We cannot be loaded as a module, therefore init will be 1
-+	 * if we are the default console, however if we are a fallback
-+	 * console, for example if fbcon has failed registration, then
-+	 * init will be 0, so we need to make sure our boot parameters
-+	 * have been copied to the console structure for vgacon_resize
-+	 * ultimately called by vc_resize.  Any subsequent calls to
-+	 * vgacon_init init will have init set to 0 too.
- 	 */
- 	c->vc_can_do_color = vga_can_do_color;
-+	c->vc_scan_lines = vga_scan_lines;
-+	c->vc_font.height = c->vc_cell_height = vga_video_font_height;
- 
- 	/* set dimensions manually if init != 0 since vc_resize() will fail */
- 	if (init) {
-@@ -379,8 +385,6 @@ static void vgacon_init(struct vc_data *
- 	} else
- 		vc_resize(c, vga_video_num_columns, vga_video_num_lines);
- 
--	c->vc_scan_lines = vga_scan_lines;
--	c->vc_font.height = c->vc_cell_height = vga_video_font_height;
- 	c->vc_complement_mask = 0x7700;
- 	if (vga_512_chars)
- 		c->vc_hi_font_mask = 0x0800;
+ drivers/base/component.c                      | 540 ++++++++++--------
+ .../gpu/drm/arm/display/komeda/komeda_drv.c   |  20 +-
+ drivers/gpu/drm/arm/hdlcd_drv.c               |  21 +-
+ drivers/gpu/drm/arm/malidp_drv.c              |  21 +-
+ drivers/gpu/drm/armada/armada_drv.c           |  23 +-
+ drivers/gpu/drm/drm_drv.c                     |   2 +-
+ drivers/gpu/drm/drm_of.c                      |  18 +-
+ drivers/gpu/drm/etnaviv/etnaviv_drv.c         |  20 +-
+ drivers/gpu/drm/exynos/exynos_drm_drv.c       |  21 +-
+ .../gpu/drm/hisilicon/kirin/kirin_drm_drv.c   |  20 +-
+ drivers/gpu/drm/imx/imx-drm-core.c            |  20 +-
+ drivers/gpu/drm/ingenic/ingenic-drm-drv.c     |  25 +-
+ drivers/gpu/drm/mcde/mcde_drv.c               |  23 +-
+ drivers/gpu/drm/mediatek/mtk_drm_drv.c        |  20 +-
+ drivers/gpu/drm/meson/meson_drv.c             |  21 +-
+ drivers/gpu/drm/msm/msm_drv.c                 |  46 +-
+ drivers/gpu/drm/omapdrm/dss/dss.c             |  17 +-
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.c   |  20 +-
+ drivers/gpu/drm/sti/sti_drv.c                 |  20 +-
+ drivers/gpu/drm/sun4i/sun4i_drv.c             |  26 +-
+ drivers/gpu/drm/tilcdc/tilcdc_drv.c           |  28 +-
+ drivers/gpu/drm/vc4/vc4_drv.c                 |  20 +-
+ drivers/gpu/drm/zte/zx_drm_drv.c              |  20 +-
+ drivers/iommu/mtk_iommu.c                     |  14 +-
+ drivers/iommu/mtk_iommu.h                     |   6 +-
+ drivers/iommu/mtk_iommu_v1.c                  |  14 +-
+ drivers/misc/mei/hdcp/mei_hdcp.c              |  22 +-
+ drivers/power/supply/ab8500_charger.c         |  22 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c    |  20 +-
+ include/drm/drm_of.h                          |  10 +-
+ include/linux/component.h                     |  92 ++-
+ sound/hda/hdac_component.c                    |  21 +-
+ sound/soc/codecs/wcd938x.c                    |  20 +-
+ 33 files changed, 767 insertions(+), 486 deletions(-)
+
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+Cc: Chen Feng <puck.chen@hisilicon.com>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
+Cc: Chun-Kuang Hu <chunkuang.hu@kernel.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Emma Anholt <emma@anholt.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Heiko Stübner" <heiko@sntech.de>
+Cc: Inki Dae <inki.dae@samsung.com>
+Cc: James Qian Wang (Arm Technology China) <james.qian.wang@arm.com>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Joerg Roedel <joro@8bytes.org>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Joonyoung Shim <jy0922.shim@samsung.com>
+Cc: Jyri Sarha <jyri.sarha@iki.fi>
+Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: <linux-fbdev@vger.kernel.org>
+Cc: <linux-omap@vger.kernel.org>
+Cc: <linux-pm@vger.kernel.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Liviu Dudau <liviu.dudau@arm.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: Neil Armstrong <narmstrong@baylibre.com>
+Cc: Paul Cercueil <paul@crapouillou.net>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Russell King <linux+etnaviv@armlinux.org.uk>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Sandy Huang <hjc@rock-chips.com>
+Cc: Saravana Kannan <saravanak@google.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Seung-Woo Kim <sw0312.kim@samsung.com>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Tian Tao <tiantao6@hisilicon.com>
+Cc: Tomas Winkler <tomas.winkler@intel.com>
+Cc: Tomi Valkeinen <tomba@kernel.org>
+Cc: Will Deacon <will@kernel.org>
+Cc: Xinliang Liu <xinliang.liu@linaro.org>
+Cc: Xinwei Kong <kong.kongxinwei@hisilicon.com>
+Cc: Yong Wu <yong.wu@mediatek.com>
+
+
+base-commit: e4e737bb5c170df6135a127739a9e6148ee3da82
+-- 
+https://chromeos.dev
+

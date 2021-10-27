@@ -2,135 +2,184 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB4DCC433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Oct 2021 01:20:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DAD0C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Oct 2021 06:54:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D295761040
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Oct 2021 01:20:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 19BC2600CC
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Oct 2021 06:54:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236464AbhJ0BWq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 26 Oct 2021 21:22:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34504 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234147AbhJ0BWp (ORCPT
+        id S236188AbhJ0G4b (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Oct 2021 02:56:31 -0400
+Received: from mail-ua1-f41.google.com ([209.85.222.41]:44851 "EHLO
+        mail-ua1-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231776AbhJ0G4a (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 26 Oct 2021 21:22:45 -0400
-Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C96FC061570;
-        Tue, 26 Oct 2021 18:20:21 -0700 (PDT)
-Received: by mail-pg1-x52e.google.com with SMTP id f5so1240976pgc.12;
-        Tue, 26 Oct 2021 18:20:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to;
-        bh=lCiBeAFnaHniNfW4RWf0sWglC39grZloKnVh+Fb/4cA=;
-        b=fDB0Jh91LeKE7MEFFEdv0pGBcz6T0/xyeXpa023IStCuFBMHFPq/Oj2Kv42zCg34Vm
-         BNQIJwhSd3alGmaghekPkVXZhvlv8s7l/UQTx57Ck6h/hEiXwY1S1s4+t2Wj4kfvh/lC
-         Dp9AnIbc5ss9rxfMSMllyRt8SLFgNZ7/aQqp/jQkreLMobGVYaKXNXFjCl8fPWiv2x+q
-         gf0Q+axgFy3xAtiyyYvtvvHzCJqh7bJ35RvMLjcGHFAsfYjm62EthFC6FD9+jhzSOvoo
-         C61I7qgSh544NgKcYMxIfctKXDxyUNvJjz1OX8FRz+ZwP66oHGMaVgoMxWbcecZenN2a
-         QESw==
+        Wed, 27 Oct 2021 02:56:30 -0400
+Received: by mail-ua1-f41.google.com with SMTP id e5so2976752uam.11;
+        Tue, 26 Oct 2021 23:54:05 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to;
-        bh=lCiBeAFnaHniNfW4RWf0sWglC39grZloKnVh+Fb/4cA=;
-        b=LHCw6FqzJ+hlonL5dGUgqbBH2V0eaDEXOeBPlvI+DOrsJpuLRH2HnXagZ0ne0bpgIN
-         OyzkZ+2WI6D0Wxd3s0vY8bJxxib2/GviCLIIQezhfXVmZ9zU+VmPxHyrfY7xTSUuizjN
-         t3Yj6E71ht1yF+8NT+/jBKasY+9msHzxIzKCyctp66fAAGhIpmOvFIGfK8AFlv+T/Fa5
-         CR3ned4iAx7EI3NrXu2aiINrjjQ+xRNccsbbSfvRQE6oA8nhmv6h8XBMhda4rMzsIy5h
-         Cn4b3QzMHUPcaZnC29kqR30VcqgCFrYDyRp5j44KMLyO0zh19mVc+rGJxPVF+sv2M0kL
-         gjCQ==
-X-Gm-Message-State: AOAM533wgVUZ21qy227zwVuWoX8XGcfzP7k/lc8R/lp7w3x3INE/NT29
-        wZMUuYrX3CwuzotpBKfkyUxFQCEvahacrcfzvOlYqnSoqJTelQtDEQ==
-X-Google-Smtp-Source: ABdhPJy5sckpy0bgbbhJMUkpzV1d6ndtoSi4WF0fnp3+5cLZgFijVS9ILGiftbpdrZbVX5mBw1erb/64Gorrg5r7FQs=
-X-Received: by 2002:a05:6a00:1242:b0:44c:2025:29e3 with SMTP id
- u2-20020a056a00124200b0044c202529e3mr29820950pfi.59.1635297620605; Tue, 26
- Oct 2021 18:20:20 -0700 (PDT)
+         :message-id:subject:to:cc;
+        bh=uHeQsCzj+NuIoaUijS+BqVs1TYH9sOv+TDs8LySkQvc=;
+        b=m7vXgr+jgGuHrDKqzGF9AKOmvSaw+8jt1pSGe/+LpQDCbUK7SPdtku8gvHD4LtEUfK
+         RgpreFDTlVHmk3hrk9M6MkSMbVUOL0yMtmAV6DfW7Vl3B6vnjpfEtStwSgeWGM0yATTm
+         4MKMmrGIx3S4bGMJK+sPOklXzClM36w/gAlxjVA+bMiN/TzAmBzUOEJsDNqYXKE9aWli
+         jye8wuEZ8sXk/nSHBOEafpzNoUsV9H4XaszGnGW5sh1RQ6iMg5KAU+TxZ7NHFAKoTJog
+         z/hJDolUeOyyTDJg5OlGxjh3nGVhP5q/2A+4nr9eqSEqBUDuQwNcFLtO9+m6PZeCgJgn
+         z8bw==
+X-Gm-Message-State: AOAM53346ZIv/MXLwXh2no8bg54ndz/kqTfGUBmkeBFI4KR458Jn0mcB
+        E0++w6eAtOHl88lx9XR45dR4lWAZLTG1XA==
+X-Google-Smtp-Source: ABdhPJzTdk0nQVLJvERT3qsUiM5rO1tfFcej6c4uFrsdarZyP9KKaVl3zhqNPkBSoaVMRLKBLTHyhg==
+X-Received: by 2002:ab0:720f:: with SMTP id u15mr27966737uao.54.1635317644908;
+        Tue, 26 Oct 2021 23:54:04 -0700 (PDT)
+Received: from mail-ua1-f45.google.com (mail-ua1-f45.google.com. [209.85.222.45])
+        by smtp.gmail.com with ESMTPSA id a126sm1956027vsc.27.2021.10.26.23.54.04
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 26 Oct 2021 23:54:04 -0700 (PDT)
+Received: by mail-ua1-f45.google.com with SMTP id v20so3000276uaj.9;
+        Tue, 26 Oct 2021 23:54:04 -0700 (PDT)
+X-Received: by 2002:ab0:2bd2:: with SMTP id s18mr28311148uar.78.1635317644217;
+ Tue, 26 Oct 2021 23:54:04 -0700 (PDT)
 MIME-Version: 1.0
-References: <CACkBjsaAFR4Jx3+pxM5zM09jFL1Th2pi-XNfn4CoSrjePmxSKQ@mail.gmail.com>
-In-Reply-To: <CACkBjsaAFR4Jx3+pxM5zM09jFL1Th2pi-XNfn4CoSrjePmxSKQ@mail.gmail.com>
-From:   Hao Sun <sunhao.th@gmail.com>
-Date:   Wed, 27 Oct 2021 09:20:07 +0800
-Message-ID: <CACkBjsZaNnPkvPLJ14xN85AsAy1S52CkaeYAPtE+VBwBWhFA_g@mail.gmail.com>
-Subject: Re: KASAN: vmalloc-out-of-bounds Write in imageblit
-To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+References: <1635188490-15082-1-git-send-email-george.kennedy@oracle.com>
+ <YXcAbXJfg/jKCo5h@kroah.com> <0ddb1c19-64b0-4117-7a92-c3d2fcddfdcf@oracle.com>
+ <CAMuHMdWcU7wy1dxa_MXuHoUTWebvq6ShP820Bn_v+8tx7-TEdg@mail.gmail.com>
+ <c73402dd-ec3f-4df7-6a16-36fb276a50f4@oracle.com> <CAMuHMdVHt=9N274SG+B7W83JbVVnbz_U5Nkejs_PR2HqvZvJgQ@mail.gmail.com>
+ <d2119d59-89e4-34aa-86df-38fee2a0c6ef@oracle.com> <CAMuHMdUZq00r7QYeAKGm36UKpGwH_uEGMvwHBzRi9_nxV-dRhg@mail.gmail.com>
+ <4cf6a155-85b7-649b-066d-e56da87dc8fd@oracle.com>
+In-Reply-To: <4cf6a155-85b7-649b-066d-e56da87dc8fd@oracle.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed, 27 Oct 2021 08:53:53 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVJ=92S9Ds66cYZO+96THsOkz-jjYPWUgsJ6oRibEMoCA@mail.gmail.com>
+Message-ID: <CAMuHMdVJ=92S9Ds66cYZO+96THsOkz-jjYPWUgsJ6oRibEMoCA@mail.gmail.com>
+Subject: Re: [PATCH] video: fbdev: cirrusfb: check pixclock to avoid divide by zero
+To:     George Kennedy <george.kennedy@oracle.com>
+Cc:     Greg KH <gregkh@linuxfoundation.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+Hi George,
 
-This bug can still be triggered repeatedly on the latest Linux.
+On Wed, Oct 27, 2021 at 3:13 AM George Kennedy
+<george.kennedy@oracle.com> wrote:
+> On 10/26/2021 1:12 PM, Geert Uytterhoeven wrote:
+> > On Tue, Oct 26, 2021 at 5:48 PM George Kennedy
+> > <george.kennedy@oracle.com> wrote:
+> >> On 10/26/2021 10:11 AM, Geert Uytterhoeven wrote:
+> >>> On Tue, Oct 26, 2021 at 3:38 PM George Kennedy
+> >>> <george.kennedy@oracle.com> wrote:
+> >>>> On 10/26/2021 4:30 AM, Geert Uytterhoeven wrote:
+> >>>>> On Mon, Oct 25, 2021 at 9:37 PM George Kennedy
+> >>>>> <george.kennedy@oracle.com> wrote:
+> >>>>>> On 10/25/2021 3:07 PM, Greg KH wrote:
+> >>>>>>> On Mon, Oct 25, 2021 at 02:01:30PM -0500, George Kennedy wrote:
+> >>>>>>>> Do a sanity check on pixclock value before using it as a divisor.
+> >>>>>>>>
+> >>>>>>>> Syzkaller reported a divide error in cirrusfb_check_pixclock.
+> >>>>>>>>
+> >>>>>>>> divide error: 0000 [#1] SMP KASAN PTI
+> >>>>>>>> CPU: 0 PID: 14938 Comm: cirrusfb_test Not tainted 5.15.0-rc6 #1
+> >>>>>>>> Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.11.0-2
+> >>>>>>>> RIP: 0010:cirrusfb_check_var+0x6f1/0x1260
+> >>>>>>>>
+> >>>>>>>> Call Trace:
+> >>>>>>>>      fb_set_var+0x398/0xf90
+> >>>>>>>>      do_fb_ioctl+0x4b8/0x6f0
+> >>>>>>>>      fb_ioctl+0xeb/0x130
+> >>>>>>>>      __x64_sys_ioctl+0x19d/0x220
+> >>>>>>>>      do_syscall_64+0x3a/0x80
+> >>>>>>>>      entry_SYSCALL_64_after_hwframe+0x44/0xae
+> >>>>>>>>
+> >>>>>>>> Signed-off-by: George Kennedy <george.kennedy@oracle.com>
+> >>>>>>>> --- a/drivers/video/fbdev/cirrusfb.c
+> >>>>>>>> +++ b/drivers/video/fbdev/cirrusfb.c
+> >>>>>>>> @@ -477,6 +477,9 @@ static int cirrusfb_check_pixclock(const struct fb_var_screeninfo *var,
+> >>>>>>>>         struct cirrusfb_info *cinfo = info->par;
+> >>>>>>>>         unsigned maxclockidx = var->bits_per_pixel >> 3;
+> >>>>>>>>
+> >>>>>>>> +    if (!var->pixclock)
+> >>>>>>>> +            return -EINVAL;
+> >>>>> This is not correct: fbdev drivers should round up invalid values,
+> >>>>> and only return an error if rounding up cannot yield a valid value.
+> >>>> What default value would you recommend? Here are examples of some of the
+> >>>> possible cirrusfb pixclock values:
+> >>>> 40000: 25MHz
+> >>>> 20000: 50Mhz
+> >>>> 12500: 80Mhz
+> >>> You should pick the lowest supported value.
+> >> In bestclock() the frequency value ("freq") is not allowed to go below 8000.
+> >>
+> >>           if (freq < 8000)
+> >>                   freq = 8000;
+> >>
+> >> If pixclock is passed in as zero to cirrusfb_check_pixclock(), is it ok
+> >> to then set the value of pixclock to 125000, which will result in "freq"
+> >> being set to 8000 (or adjust the passed in pixclock value to make sure
+> >> "freq" does not get below 8000)?
+> > No, clock rate is the inverse of clock period.
+> > So the smallest clock period (fb_var_screeninfo.pixclock) corresponds
+> > to the largest clock rate (freq in bestclock()).
+>
+> How about this?
+>
+> This gets the frequency derived from pixclock to maxclock or rounds up
+> pixclock to get the frequency as close to maxclock as possible.
+>
+> diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
+> index 93802ab..2e8e620 100644
+> --- a/drivers/video/fbdev/cirrusfb.c
+> +++ b/drivers/video/fbdev/cirrusfb.c
+> @@ -620,6 +620,18 @@ static int cirrusfb_check_var(struct
+> fb_var_screeninfo *var,
+>                  return -EINVAL;
+>          }
+>
+> +       if (!var->pixclock) {
+> +               long maxclock;
+> +               unsigned maxclockidx = var->bits_per_pixel >> 3;
+> +
+> +               maxclock =
+> cirrusfb_board_info[cinfo->btype].maxclock[maxclockidx];
+> +
+> +               var->pixclock = KHZ2PICOS(maxclock);
+> +               while (PICOS2KHZ(var->pixclock) > maxclock) {
+> +                       var->pixclock++;
+> +               }
+> +       }
+> +
+>          if (cirrusfb_check_pixclock(var, info))
+>                  return -EINVAL;
+>
+> The work can't be done in cirrusfb_check_pixclock() as var->pixclock is
+> read-only because "var" is "const struct fb_var_screeninfo *var".
 
-HEAD commit: 519d81956ee2 Linux 5.15-rc6
-git tree: upstream
-console output:
-https://drive.google.com/file/d/17xFIX8JgBxamy8iUnUTAdcVvaASuhqxr/view?usp=sharing
-kernel config: https://drive.google.com/file/d/12PUnxIM1EPBgW4ZJmI7WJBRaY1lA83an/view?usp=sharing
+Perhaps the const should be dropped from the var parameter, so the
+rounding can be done in the function where it makes most sense,
+and where most of the above operations are already done?
 
-==================================================================
-BUG: KASAN: vmalloc-out-of-bounds in fast_imageblit
-drivers/video/fbdev/core/sysimgblt.c:229 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x1372/0x13f0
-drivers/video/fbdev/core/sysimgblt.c:275
-Write of size 4 at addr ffffc90005759380 by task syz-executor/31261
+Then, you can simplify:
 
-CPU: 2 PID: 31261 Comm: syz-executor Not tainted 5.15.0-rc6 #4
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS
-1.13.0-1ubuntu1.1 04/01/2014
-Call Trace:
- __dump_stack lib/dump_stack.c:88 [inline]
- dump_stack_lvl+0xcd/0x134 lib/dump_stack.c:106
- print_address_description.constprop.0.cold+0xf/0x334 mm/kasan/report.c:256
- __kasan_report mm/kasan/report.c:442 [inline]
- kasan_report.cold+0x83/0xdf mm/kasan/report.c:459
- fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
- sys_imageblit+0x1372/0x13f0 drivers/video/fbdev/core/sysimgblt.c:275
- drm_fb_helper_sys_imageblit+0x1c/0x180 drivers/gpu/drm/drm_fb_helper.c:794
- drm_fbdev_fb_imageblit+0x179/0x260 drivers/gpu/drm/drm_fb_helper.c:2282
- bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:139 [inline]
- bit_putcs+0x8ed/0xd80 drivers/video/fbdev/core/bitblit.c:188
- fbcon_putcs+0x362/0x450 drivers/video/fbdev/core/fbcon.c:1296
- do_update_region+0x399/0x630 drivers/tty/vt/vt.c:676
- invert_screen+0x2a7/0x610 drivers/tty/vt/vt.c:800
- highlight drivers/tty/vt/selection.c:57 [inline]
- clear_selection drivers/tty/vt/selection.c:84 [inline]
- clear_selection+0x55/0x70 drivers/tty/vt/selection.c:80
- vc_do_resize+0xda8/0x10a0 drivers/tty/vt/vt.c:1257
- fbcon_do_set_font+0x47e/0x780 drivers/video/fbdev/core/fbcon.c:2397
- fbcon_set_font+0x81e/0xa10 drivers/video/fbdev/core/fbcon.c:2483
- con_font_set drivers/tty/vt/vt.c:4666 [inline]
- con_font_op+0x73a/0xca0 drivers/tty/vt/vt.c:4710
- vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
- vt_ioctl+0x1de9/0x2af0 drivers/tty/vt/vt_ioctl.c:752
- tty_ioctl+0xc80/0x1450 drivers/tty/tty_io.c:2805
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:874 [inline]
- __se_sys_ioctl fs/ioctl.c:860 [inline]
- __x64_sys_ioctl+0x193/0x200 fs/ioctl.c:860
- do_syscall_x64 arch/x86/entry/common.c:50 [inline]
- do_syscall_64+0x35/0xb0 arch/x86/entry/common.c:80
- entry_SYSCALL_64_after_hwframe+0x44/0xae
-RIP: 0033:0x7ff832e3ec4d
-Code: 02 b8 ff ff ff ff c3 66 0f 1f 44 00 00 f3 0f 1e fa 48 89 f8 48
-89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d
-01 f0 ff ff 73 01 c3 48 c7 c1 bc ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007ff8303a6c58 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 00007ff832f650a0 RCX: 00007ff832e3ec4d
-RDX: 0000000020000100 RSI: 0000000000004b72 RDI: 0000000000000004
-RBP: 00007ff832eb7d80 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000246 R12: 00007ff832f650a0
-R13: 00007ffffdbaddff R14: 00007ffffdbadfa0 R15: 00007ff8303a6dc0
+-        freq = PICOS2KHZ(var->pixclock);
++        freq = PICOS2KHZ(var->pixclock ? : 1);
 
+and change the "if (freq > maxclock) return -EINVAL" to use maxclock
+instead.
 
-Memory state around the buggy address:
- ffffc90005759280: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc90005759300: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
->ffffc90005759380: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-                   ^
- ffffc90005759400: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc90005759480: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-==================================================================
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

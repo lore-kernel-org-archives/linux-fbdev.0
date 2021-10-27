@@ -2,113 +2,82 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33CD7C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Oct 2021 13:42:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4935C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Oct 2021 13:49:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 209EB600D4
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Oct 2021 13:42:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AA3CE60E76
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Oct 2021 13:49:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242210AbhJ0Noi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Oct 2021 09:44:38 -0400
-Received: from mga11.intel.com ([192.55.52.93]:29346 "EHLO mga11.intel.com"
+        id S237566AbhJ0Nvm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Oct 2021 09:51:42 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33776 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S242227AbhJ0Noh (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Oct 2021 09:44:37 -0400
-X-IronPort-AV: E=McAfee;i="6200,9189,10149"; a="227617391"
-X-IronPort-AV: E=Sophos;i="5.87,186,1631602800"; 
-   d="scan'208";a="227617391"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Oct 2021 06:42:04 -0700
-X-IronPort-AV: E=Sophos;i="5.87,186,1631602800"; 
-   d="scan'208";a="497870033"
-Received: from smaharan-mobl.gar.corp.intel.com (HELO localhost) ([10.251.214.195])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Oct 2021 06:41:59 -0700
-From:   Jani Nikula <jani.nikula@linux.intel.com>
-To:     Arnd Bergmann <arnd@kernel.org>, dri-devel@lists.freedesktop.org,
+        id S231458AbhJ0Nvl (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 27 Oct 2021 09:51:41 -0400
+Received: by mail.kernel.org (Postfix) with ESMTPSA id 69AB960E74;
+        Wed, 27 Oct 2021 13:49:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1635342556;
+        bh=fYZWrsKGlOp7lc/xKrJeyNzK/8u8cgiGUJ+/2sKfEe4=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=U77fnHxIIXJm4+qiC90pNvz1GrZM8catxUQG7co8cVjv+UYRYVBKwCeKgPPwHViuj
+         xoJ27M5dFmNBhFvyMPli6fYHsUydemysyTGE9Ebf0eWT8F2Ulk9F04sK1UnFnlhiJF
+         0vm6HcrSv3i8ETCP2piQNWl+EDlH3FTJ1cAzruc0ybYXacPFwluwmr2EdnzUyJ+Iep
+         +SOUOC4U5ZF59ELZ475X7m09U5PLF/OnvDVfcHidoo8TzjjHp+FUfWWfgMQ007IbRo
+         b5gi4tQFssHjeeHLKRHrH2Yns7c+HmBmUHKYMHTx4ccmilVI/ycU+QmygFQ9Kvxseo
+         FxFxqsIBUdY9A==
+Received: by mail-wr1-f44.google.com with SMTP id g7so3222305wrb.2;
+        Wed, 27 Oct 2021 06:49:16 -0700 (PDT)
+X-Gm-Message-State: AOAM531HAkaFUXR3s1IJhODxmY28mhlcwa8vj1Et1/y202pyOxJn35Xr
+        Qy3ahsRhFw2OYtCtA9hHfPGVUgtWfH4AonQ0MK8=
+X-Google-Smtp-Source: ABdhPJwyFrogSswX9aFMchaesz3OloZkKeoRK58xGE8J8a1euHLGUsdWENXaWPhRgbPktw6Hq/mkQOMklICoHioJnp4=
+X-Received: by 2002:a5d:4692:: with SMTP id u18mr210674wrq.428.1635342554955;
+ Wed, 27 Oct 2021 06:49:14 -0700 (PDT)
+MIME-Version: 1.0
+References: <20211027132732.3993279-1-arnd@kernel.org> <20211027132732.3993279-3-arnd@kernel.org>
+ <87r1c6h9ek.fsf@intel.com>
+In-Reply-To: <87r1c6h9ek.fsf@intel.com>
+From:   Arnd Bergmann <arnd@kernel.org>
+Date:   Wed, 27 Oct 2021 15:48:59 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a0Lcwb4mROKt-sZHYFfCF2ji-dAbpWyy5_f7v6SHnzpjQ@mail.gmail.com>
+Message-ID: <CAK8P3a0Lcwb4mROKt-sZHYFfCF2ji-dAbpWyy5_f7v6SHnzpjQ@mail.gmail.com>
+Subject: Re: [PATCH 3/3] [v2] i915: fix backlight configuration issue
+To:     Jani Nikula <jani.nikula@linux.intel.com>
+Cc:     dri-devel <dri-devel@lists.freedesktop.org>,
         Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
         Rodrigo Vivi <rodrigo.vivi@intel.com>,
         David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>
-Cc:     linux-fbdev@vger.kernel.org, intel-gfx@lists.freedesktop.org,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Intel Graphics <intel-gfx@lists.freedesktop.org>,
         Arnd Bergmann <arnd@arndb.de>,
         Matthew Auld <matthew.auld@intel.com>,
         Zhenyu Wang <zhenyuw@linux.intel.com>,
         Alex Williamson <alex.williamson@redhat.com>,
         Jason Gunthorpe <jgg@ziepe.ca>,
         Daniele Ceraolo Spurio <daniele.ceraolospurio@intel.com>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] [v2] i915: fix backlight configuration issue
-In-Reply-To: <20211027132732.3993279-3-arnd@kernel.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20211027132732.3993279-1-arnd@kernel.org> <20211027132732.3993279-3-arnd@kernel.org>
-Date:   Wed, 27 Oct 2021 16:41:55 +0300
-Message-ID: <87r1c6h9ek.fsf@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 27 Oct 2021, Arnd Bergmann <arnd@kernel.org> wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+On Wed, Oct 27, 2021 at 3:41 PM Jani Nikula <jani.nikula@linux.intel.com> wrote:
+> > @@ -16,10 +18,6 @@ config DRM_I915
+> >       select IRQ_WORK
+> >       # i915 depends on ACPI_VIDEO when ACPI is enabled
+> >       # but for select to work, need to select ACPI_VIDEO's dependencies, ick
 >
-> The i915 driver can use the backlight subsystem as an option, and usually
-> selects it when CONFIG_ACPI is set. However it is possible to configure
-> a kernel with modular backlight classdev support and a built-in i915
-> driver, which leads to a linker error:
+> The comment needs updating as well.
+
+Right, I've removed that comment now.
+
+> Other than that,
 >
-> drivers/gpu/drm/i915/display/intel_panel.o: In function `intel_backlight_device_register':
-> intel_panel.c:(.text+0x2f58): undefined reference to `backlight_device_register'
-> drivers/gpu/drm/i915/display/intel_panel.o: In function `intel_backlight_device_unregister':
-> intel_panel.c:(.text+0x2fe4): undefined reference to `backlight_device_unregister'
+> Acked-by: Jani Nikula <jani.nikula@intel.com>
 >
-> Change i915 to just 'depends on' for both BACKLIGHT_CLASS_DEVICE
-> and ACPI_VIDEO, which avoids a lot of the problems.
->
-> Link: https://lore.kernel.org/all/20200108140227.3976563-1-arnd@arndb.de/
-> Link: https://lore.kernel.org/all/20200417155553.675905-1-arnd@arndb.de/
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
-> This change depends on cleaning up drivers/video/fbdev to no longer
-> 'select' I2C and BACKLIGHT_CLASS_DEVICE, otherwise it causes
-> dependency loops.
-> ---
->  drivers/gpu/drm/i915/Kconfig | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/gpu/drm/i915/Kconfig b/drivers/gpu/drm/i915/Kconfig
-> index 84b6fc70cbf5..f427e6d50d9b 100644
-> --- a/drivers/gpu/drm/i915/Kconfig
-> +++ b/drivers/gpu/drm/i915/Kconfig
-> @@ -3,6 +3,8 @@ config DRM_I915
->  	tristate "Intel 8xx/9xx/G3x/G4x/HD Graphics"
->  	depends on DRM
->  	depends on X86 && PCI
-> +	depends on ACPI_VIDEO || !ACPI
-> +	depends on BACKLIGHT_CLASS_DEVICE || !BACKLIGHT_CLASS_DEVICE
->  	select INTEL_GTT
->  	select INTERVAL_TREE
->  	# we need shmfs for the swappable backing store, and in particular
-> @@ -16,10 +18,6 @@ config DRM_I915
->  	select IRQ_WORK
->  	# i915 depends on ACPI_VIDEO when ACPI is enabled
->  	# but for select to work, need to select ACPI_VIDEO's dependencies, ick
+> on the series.
 
-The comment needs updating as well.
+Thanks!
 
-Other than that,
-
-Acked-by: Jani Nikula <jani.nikula@intel.com>
-
-on the series.
-
-> -	select BACKLIGHT_CLASS_DEVICE if ACPI
-> -	select INPUT if ACPI
-> -	select ACPI_VIDEO if ACPI
-> -	select ACPI_BUTTON if ACPI
->  	select SYNC_FILE
->  	select IOSF_MBI
->  	select CRC32
-
--- 
-Jani Nikula, Intel Open Source Graphics Center
+         Arnd

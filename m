@@ -2,100 +2,109 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6629CC433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Oct 2021 08:05:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9534FC433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Oct 2021 11:08:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4FD9860E78
-	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Oct 2021 08:05:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7497A604AC
+	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Oct 2021 11:08:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229881AbhJ1IHk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 28 Oct 2021 04:07:40 -0400
-Received: from mail-ua1-f51.google.com ([209.85.222.51]:40614 "EHLO
-        mail-ua1-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229626AbhJ1IHj (ORCPT
+        id S230124AbhJ1LLW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 28 Oct 2021 07:11:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41344 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229868AbhJ1LLW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 28 Oct 2021 04:07:39 -0400
-Received: by mail-ua1-f51.google.com with SMTP id e2so9924732uax.7;
-        Thu, 28 Oct 2021 01:05:12 -0700 (PDT)
+        Thu, 28 Oct 2021 07:11:22 -0400
+Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C748C061570;
+        Thu, 28 Oct 2021 04:08:55 -0700 (PDT)
+Received: by mail-pg1-x530.google.com with SMTP id e65so6037230pgc.5;
+        Thu, 28 Oct 2021 04:08:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=5nulpv/PsHbHxr0CG/x6sRTRQ9BjFwug8L0Dm2Jq6QY=;
+        b=LzG1s0sKFcVmxgRJOab3TCFB4S6VETIqqf0jgmYH2Vbu3VkMUYvOahXCMMv3XosvzP
+         Af8DjStRBlc0HSp2YNXDWu8gSaqgtkeHGDJnWXWK4EO01O4hhzVkQkO5hxKtFaRccNUx
+         u5pneT4GuBIOUcMgSAUcR4roBSPkjvdJLHOFTw23vyYrs+DWyO5fXhoHCabcENdcgYv7
+         YeavoViCEMNxiAcTfNoDfp+2zCg7qoMMg7RWfnh3vzxbe9jN8yhN4BBfvtWMWc0Dz+oD
+         l2vXdCcQcA4PWBOa44Jn/D6p6RjUxZKSqLR8ZWIYcN+UGGHdZxMfmvqB+jhMSIi120Tf
+         L74A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=8hX6YWh2Qu9VP/L6RLPs/omkiX7ZNKmtW4SWOeHX3y0=;
-        b=0D452tJFovFsb28l7v8CzT1Pao9gaPuuh8ggUyZSvjyNtzhi6qYGi3DWYDq6ag5Lh9
-         Ibwehkvvj+Wiie9e8TX474wlJAk29NT7gMLJTQvgzc5tzO6lDx3YsE5Y6Pn4gK7mrkY2
-         pngMokbYHJhR/p1hwDWOzXQvDAW+YAOD5EGnBRwHc84r8iGFrO8Z2U5BxeEVK/A7EjvL
-         G7KVzFONOH/kTbf+ZSAW+1Z05FVZJJ/EwSfm/9c0e9zeJS7FyoOYuiBvUbcmmlZTVW45
-         x9Y4kCcbo4RKzTlAvopz5t7p7DdNVm92Sy+z21i3Y8TNNOLmNggDLt1BPVK9qNHXkuQy
-         xQTQ==
-X-Gm-Message-State: AOAM532odL91nfi74V7Yrb+wKmu7EQ4G09Kt0fI+7w0nyUcrXRmQotPg
-        68AJqHtWFx7Jg6tgJlzvKkme6lMnjHIgng==
-X-Google-Smtp-Source: ABdhPJzYFmsfJReHY44qrah1tHIFTN2DVuIo0LlSaq/kJvzBBBL4aIlGSolsvPNWRT1xnCKBmUmWbA==
-X-Received: by 2002:a67:2c95:: with SMTP id s143mr2916623vss.0.1635408312403;
-        Thu, 28 Oct 2021 01:05:12 -0700 (PDT)
-Received: from mail-vk1-f178.google.com (mail-vk1-f178.google.com. [209.85.221.178])
-        by smtp.gmail.com with ESMTPSA id y25sm343891vkb.42.2021.10.28.01.05.11
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 28 Oct 2021 01:05:12 -0700 (PDT)
-Received: by mail-vk1-f178.google.com with SMTP id h133so2564703vke.10;
-        Thu, 28 Oct 2021 01:05:11 -0700 (PDT)
-X-Received: by 2002:a1f:1604:: with SMTP id 4mr2695337vkw.11.1635408311641;
- Thu, 28 Oct 2021 01:05:11 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=5nulpv/PsHbHxr0CG/x6sRTRQ9BjFwug8L0Dm2Jq6QY=;
+        b=vE8aeE2riYpq05m9JRc7zvohxU1OAyi+vzMjlL25iYKhQ5fZRQPezETGSaGS4S77d8
+         KuN8ZKYp+bv4Q+lxGnnc4mPXnHuJPIoFtMPf09cU18T08rECerwF0Wf4N2v3haUrGis4
+         ogi7m14PoVGUkiSZdKVV0ZJ9iIMm6qv24G9jFlGBlV2BBxGQl320suG0TRTlfFVQSl20
+         XEBQ9zUfDiIUJN7Wjv8GE45EcOtdU7As4OWX6lxayBTaQsWrjvmkTG9zy9FJyZ0uPdFa
+         1TbUd+u8Fccdi7pbm8Sd3lsOFBWjMK+/QGBrCdBbG3bV7eCffCy/VEKPTGWGQDxJgUj1
+         1DCw==
+X-Gm-Message-State: AOAM532YMCIJpfzX7ojDjr/fIW8FrN+PkOUkvXDF00qdhBgr4V/TzaAa
+        QlUlyMMgLyJywGIK/1tamjE=
+X-Google-Smtp-Source: ABdhPJwYOdpqFrFadto506ERZE8kgIfbKQyR411fTPJCuDdHSnUigcetqFdmEnX1BTJ01fkE/ZYW8g==
+X-Received: by 2002:a05:6a00:22c1:b0:47c:28f5:7b9c with SMTP id f1-20020a056a0022c100b0047c28f57b9cmr3585030pfj.80.1635419335104;
+        Thu, 28 Oct 2021 04:08:55 -0700 (PDT)
+Received: from localhost.localdomain ([193.203.214.57])
+        by smtp.gmail.com with ESMTPSA id s2sm8072443pjs.56.2021.10.28.04.08.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 28 Oct 2021 04:08:54 -0700 (PDT)
+From:   cgel.zte@gmail.com
+X-Google-Original-From: deng.changcheng@zte.com.cn
+To:     daniel.vetter@ffwll.ch
+Cc:     sam@ravnborg.org, willy@infradead.org, deng.changcheng@zte.com.cn,
+        thunder.leizhen@huawei.com, jgg@ziepe.ca,
+        penguin-kernel@i-love.sakura.ne.jp, zheyuma97@gmail.com,
+        xiyuyang19@fudan.edu.cn, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Zeal Robot <zealci@zte.com.cn>
+Subject: [PATCH l] fbdev: fbmem: use swap() to make code cleaner
+Date:   Thu, 28 Oct 2021 11:08:47 +0000
+Message-Id: <20211028110847.15516-1-deng.changcheng@zte.com.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-References: <1635366613-22507-1-git-send-email-george.kennedy@oracle.com>
-In-Reply-To: <1635366613-22507-1-git-send-email-george.kennedy@oracle.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 28 Oct 2021 10:05:00 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXcO1K7da=4Ck2X0Rc_pfaM32dDKf0EfdDXNG0HL18h5Q@mail.gmail.com>
-Message-ID: <CAMuHMdXcO1K7da=4Ck2X0Rc_pfaM32dDKf0EfdDXNG0HL18h5Q@mail.gmail.com>
-Subject: Re: [PATCH v2] video: fbdev: cirrusfb: check pixclock to avoid divide
- by zero
-To:     George Kennedy <george.kennedy@oracle.com>
-Cc:     Greg KH <gregkh@linuxfoundation.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Oct 27, 2021 at 10:32 PM George Kennedy
-<george.kennedy@oracle.com> wrote:
-> Do a sanity check on pixclock value to avoid divide by zero.
->
-> If the pixclock value is zero, the cirrusfb driver will round up
-> pixclock to get the derived frequency as close to maxclock as
-> possible.
->
-> Syzkaller reported a divide error in cirrusfb_check_pixclock.
->
-> divide error: 0000 [#1] SMP KASAN PTI
-> CPU: 0 PID: 14938 Comm: cirrusfb_test Not tainted 5.15.0-rc6 #1
-> Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.11.0-2
-> RIP: 0010:cirrusfb_check_var+0x6f1/0x1260
->
-> Call Trace:
->  fb_set_var+0x398/0xf90
->  do_fb_ioctl+0x4b8/0x6f0
->  fb_ioctl+0xeb/0x130
->  __x64_sys_ioctl+0x19d/0x220
->  do_syscall_64+0x3a/0x80
->  entry_SYSCALL_64_after_hwframe+0x44/0xae
->
-> Signed-off-by: George Kennedy <george.kennedy@oracle.com>
+From: Changcheng Deng <deng.changcheng@zte.com.cn>
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Use swap() in order to make code cleaner. Issue found by coccinelle.
 
-Gr{oetje,eeting}s,
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Changcheng Deng <deng.changcheng@zte.com.cn>
+---
+ drivers/video/fbdev/core/fbmem.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-                        Geert
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 826175ad88a2..2c8e6feef0c9 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -396,18 +396,14 @@ static void fb_rotate_logo(struct fb_info *info, u8 *dst,
+ 	} else if (rotate == FB_ROTATE_CW) {
+ 		fb_rotate_logo_cw(image->data, dst, image->width,
+ 				  image->height);
+-		tmp = image->width;
+-		image->width = image->height;
+-		image->height = tmp;
++		swap(image->width, image->height);
+ 		tmp = image->dy;
+ 		image->dy = image->dx;
+ 		image->dx = info->var.xres - image->width - tmp;
+ 	} else if (rotate == FB_ROTATE_CCW) {
+ 		fb_rotate_logo_ccw(image->data, dst, image->width,
+ 				   image->height);
+-		tmp = image->width;
+-		image->width = image->height;
+-		image->height = tmp;
++		swap(image->width, image->height);
+ 		tmp = image->dx;
+ 		image->dx = image->dy;
+ 		image->dy = info->var.yres - image->height - tmp;
+-- 
+2.25.1
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

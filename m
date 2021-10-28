@@ -2,93 +2,135 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D3FBC433FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Oct 2021 01:01:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 938C3C4332F
+	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Oct 2021 06:33:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0E2A4608FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Oct 2021 01:01:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 76FE060527
+	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Oct 2021 06:33:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229638AbhJ1BEL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Oct 2021 21:04:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47324 "EHLO
+        id S229807AbhJ1Gf1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 28 Oct 2021 02:35:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35234 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229532AbhJ1BEJ (ORCPT
+        with ESMTP id S229626AbhJ1Gf0 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Oct 2021 21:04:09 -0400
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 220FDC061570;
-        Wed, 27 Oct 2021 18:01:42 -0700 (PDT)
-Received: by mail-pg1-x52f.google.com with SMTP id l186so4690402pge.7;
-        Wed, 27 Oct 2021 18:01:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=hDvRc3zSZmPMaUlLovS+QCbZBjY1LcMWYS4FPlOxhUE=;
-        b=ZBXEcxpctXzRRxgxaCNpMlghQfSLZqwZO3Tbe3akH1DeJjnmEfkqN287iSsYZLidVC
-         xJE6fAw7CKtEl0SHiSFtzZH4XhlZNZfJ/6wdxfuuY9ijwjUTT58TUqZS6GskSMwl7CoG
-         Teuin4CGu/hvT+BR26GjEL+tug36Id5l+b8CZVeN/axgDLN8xJn67giB/q96h/ns3mJi
-         iU8O3aEpEPTZsGmkq8VcC/WJqQvtULlYV0M7EmsGsX0N75LfqmnSQjPhyh+Rlp+Z7NzU
-         BTh3n4vW8gxR1l3UfuqKm6GnwMkNNw6h6sJjoi/QR/dOUIGK2++OUzOsvH63mzFT24tM
-         6DYg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=hDvRc3zSZmPMaUlLovS+QCbZBjY1LcMWYS4FPlOxhUE=;
-        b=2uciT9geiU6FK5EArhT42c35YPgE7dPHFBNGvnnEepcZmfx9g5Tycq3rwDyL0spbPV
-         eYB/EULD4EoYgNDujNshQfk1QuqNftDDH9SvJDrKUz0ayQi5Dqmj8QXDIR7W3J3er3FJ
-         5J+Y+/AB7BSWeEM0zz+7dt4xFMSUYw2JzQwcww5PPBgi9uF0FGEbYgzu00OuDvuBZw/u
-         0gwS9g7lDJOQEWlOLT2s2cxr6H9/s4IGlQK7vePRqUn3P1LdsSHZIhEVh/ykpY8wX1nO
-         gsjO++GnCRSGjIWeqG9f9tKWgDNjYtWvKqKmnlcimkb8msWC9P8m0aazjRkzKhkHQw4Q
-         O9xA==
-X-Gm-Message-State: AOAM532DO1FLruI+CgktpuCUFl97f0Mti9+44LvYRI85DpTfcerT0PIp
-        g5zhwNg7XS/Rm/fzMR2p3Bo=
-X-Google-Smtp-Source: ABdhPJw/02gEZFtyzsCkNG027d512vf0kGUzOzi8v2Of6RGkWlg1RsvHFDTkYGcSw1ql+hXMudDYHA==
-X-Received: by 2002:a63:b519:: with SMTP id y25mr849122pge.237.1635382901741;
-        Wed, 27 Oct 2021 18:01:41 -0700 (PDT)
-Received: from localhost.localdomain ([193.203.214.57])
-        by smtp.gmail.com with ESMTPSA id k14sm856108pji.45.2021.10.27.18.01.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 Oct 2021 18:01:41 -0700 (PDT)
-From:   Yang Guang <cgel.zte@gmail.com>
-X-Google-Original-From: Yang Guang <yang.guang5@zte.com.cn>
-To:     Thomas Winischhofer <thomas@winischhofer.net>
-Cc:     Yang Guang <yang.guang5@zte.com.cn>,
-        Zeal Robot <zealci@zte.com.cn>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] video: use swap() to make code cleaner
-Date:   Thu, 28 Oct 2021 01:01:34 +0000
-Message-Id: <20211028010134.7681-1-yang.guang5@zte.com.cn>
-X-Mailer: git-send-email 2.25.1
+        Thu, 28 Oct 2021 02:35:26 -0400
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5B6CC061570
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 Oct 2021 23:32:59 -0700 (PDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1mfyy1-00078i-7l; Thu, 28 Oct 2021 08:32:49 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1mfyxy-0001q6-J6; Thu, 28 Oct 2021 08:32:46 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1mfyxy-000331-Ht; Thu, 28 Oct 2021 08:32:46 +0200
+Date:   Thu, 28 Oct 2021 08:32:46 +0200
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     =?utf-8?B?TWHDrXJh?= Canal <maira.canal@usp.br>
+Cc:     lee.jones@linaro.org, daniel.thompson@linaro.org,
+        jingoohan1@gmail.com, thierry.reding@gmail.com, lkp@intel.com,
+        llvm@lists.linux.dev, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-pwm@vger.kernel.org
+Subject: Re: [PATCH v2] backlight: lp855x: Switch to atomic PWM API
+Message-ID: <20211028063246.p5mvij3653wg7nm4@pengutronix.de>
+References: <YXmeVPIroq96BXfm@fedora>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="mjgubidvytdfc23f"
+Content-Disposition: inline
+In-Reply-To: <YXmeVPIroq96BXfm@fedora>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Using swap() make it more readable.
 
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
----
- drivers/video/fbdev/sis/sis_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+--mjgubidvytdfc23f
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index 266a5582f94d..742f62986b80 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -213,7 +213,7 @@ static void sisfb_search_mode(char *name, bool quiet)
- 		/* This does some fuzzy mode naming detection */
- 		if(sscanf(strbuf1, "%u %u %u %u", &xres, &yres, &depth, &rate) == 4) {
- 			if((rate <= 32) || (depth > 32)) {
--				j = rate; rate = depth; depth = j;
-+				swap(rate, depth);
- 			}
- 			sprintf(strbuf, "%ux%ux%u", xres, yres, depth);
- 			nameptr = strbuf;
--- 
-2.30.2
+On Wed, Oct 27, 2021 at 03:45:40PM -0300, Ma=EDra Canal wrote:
+> Remove legacy PWM interface (pwm_config, pwm_enable, pwm_disable) and
+> replace it for the atomic PWM API.
+>=20
+> Signed-off-by: Ma=EDra Canal <maira.canal@usp.br>
+> Reported-by: kernel test robot <lkp@intel.com>
+> ---
+> V1 -> V2: Initializing variable and simplyfing conditional loop
+> ---
+>  drivers/video/backlight/lp855x_bl.c | 23 +++++++++--------------
+>  1 file changed, 9 insertions(+), 14 deletions(-)
+>=20
+> diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backligh=
+t/lp855x_bl.c
+> index e94932c69f54..a895a8ca6d26 100644
+> --- a/drivers/video/backlight/lp855x_bl.c
+> +++ b/drivers/video/backlight/lp855x_bl.c
+> @@ -233,9 +233,8 @@ static int lp855x_configure(struct lp855x *lp)
+> =20
+>  static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
+>  {
+> -	unsigned int period =3D lp->pdata->period_ns;
+> -	unsigned int duty =3D br * period / max_br;
+> -	struct pwm_device *pwm;
+> +	struct pwm_device *pwm =3D NULL;
+> +	struct pwm_state state;
+> =20
+>  	/* request pwm device with the consumer name */
+>  	if (!lp->pwm) {
+> @@ -244,19 +243,15 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int =
+br, int max_br)
+>  			return;
+> =20
+>  		lp->pwm =3D pwm;
+> -
+> -		/*
+> -		 * FIXME: pwm_apply_args() should be removed when switching to
+> -		 * the atomic PWM API.
+> -		 */
+> -		pwm_apply_args(pwm);
+>  	}
+> =20
+> -	pwm_config(lp->pwm, duty, period);
+> -	if (duty)
+> -		pwm_enable(lp->pwm);
+> -	else
+> -		pwm_disable(lp->pwm);
+> +	pwm_init_state(pwm, &state);
 
+This is broken. If lp->pwm is already set at function entry, pwm is
+NULL.
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--mjgubidvytdfc23f
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmF6RAoACgkQwfwUeK3K
+7Anebgf9HGhfhTpcJqWOKkxvlVftY0zDg637KqLVbPRkC58by+y66DVocHuCj+jp
+TrtP5OyEmMYYdvSK1LA6lFuDjxje3mHlACG8TwZWrDyoWGkTtqP1o4dsuQ6QAJMk
+1qea6fyvPF9dKhlsHYKd8z3/Z7dDGoPTCY6fZlYhYMTsJtBJhCMdCgHyte+vvi0f
+AOiXy6xo6p2qLwUz3U+Pp13eu3Xjbw2CDr1XVxuSc+0qjvSPg3Xc6RQyi7nEscmA
+MDJCRq6bRkC5BF00b1D2Fxdz/dQvlJlCbIl4PA8lcmdLOQJLgvlXGHGvPIKOWhVr
+AfP46DAQVB192zi4YO2uegiRV45P2Q==
+=obWM
+-----END PGP SIGNATURE-----
+
+--mjgubidvytdfc23f--

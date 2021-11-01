@@ -2,113 +2,149 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5604C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Nov 2021 08:54:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19E51C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Nov 2021 09:35:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C68BD61027
-	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Nov 2021 08:54:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 03C9760FC4
+	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Nov 2021 09:35:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231485AbhKAI5P (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 1 Nov 2021 04:57:15 -0400
-Received: from outbound5h.eu.mailhop.org ([18.156.94.234]:55033 "EHLO
-        outbound5h.eu.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230520AbhKAI5O (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 1 Nov 2021 04:57:14 -0400
-X-Greylist: delayed 46844 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Nov 2021 04:57:14 EDT
-ARC-Seal: i=1; a=rsa-sha256; t=1635756879; cv=none;
-        d=outbound.mailhop.org; s=arc-outbound20181012;
-        b=qdIItRYJOGrGkQY8fTskU4+ZtZPD+8vz37iCU2G2xXjn1Aau55+IIcPi/x7F1OnGdaXN9ijK+W3ry
-         ZgqTYmV+96YnsYctXTVPT564/ibxxp+yNOyPDZyMSVZWiC/TfEqlo8Z2jfxakn1HaCWOm91OFWDgKh
-         Mxw8bg9fT7Y++GVhvbVR1MVyPR6agY6NY+0ITdNWbDODqCkyHPH3NrU3PmryDxgQ+p5U6SIRAnXqbl
-         KWiPt3UvdzgjJOZO5vEEpSozq7R2VB8yWwEoRe0Vdqyko8UolgM1pZzCXK2l6u+/bakb3RSUWlI+B9
-         zFb8hokKuIB116Z/95sbhxOF63r7Ssw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=outbound.mailhop.org; s=arc-outbound20181012;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:dkim-signature:dkim-signature:from;
-        bh=U/T3aMOfisAvCp+Jrrv8IHsVMGPDCr1S7PcDgSgM39I=;
-        b=tGDEfMN0yyvphA8sCPt0/3YdPD7idv9ZSBWj9wWAmN/PMN5nQBd0VXuB6z7dMg1z/WHPaKRyR61wr
-         ELTD+JnjPXFtBuLzV8nDPZNEBn57/Gu8CTSY4jnkdyHsg69E48ultIKM2T6EIkryOrQDJicuIQzsun
-         FGmh8Ma6jVXWDX1XDbaSiGANHoxg4GHF+ngfqN93YWEX2a2BWn3dP0wGcBxUgVbS+k0KkGJ30NDVr6
-         BinX8/qI1CVp2i1Yu3OKBhRTRA7Yg2M+VRcxagFeG47Hp1NJ9ewjzLn9LCCraPwEw8JFcHth2l2dzX
-         EEfooypjPEAb4DrbQDy66CNg8WhMPmA==
-ARC-Authentication-Results: i=1; outbound2.eu.mailhop.org;
-        spf=pass smtp.mailfrom=stackframe.org smtp.remote-ip=91.207.61.48;
-        dmarc=none header.from=stackframe.org;
-        arc=none header.oldest-pass=0;
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=stackframe.org; s=duo-1634547266507-560c42ae;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:from;
-        bh=U/T3aMOfisAvCp+Jrrv8IHsVMGPDCr1S7PcDgSgM39I=;
-        b=jQxRhkypWDINtYqQriPAbDixpNmKm1jyQ1nohPw+7/fsyXlLtfSRyPAToyKj4WGhXzGVLx2OG5H9/
-         WwjDSCbxa7pbcN2vRhlvXIpXhWyimmtH3Ak49+9sErVydyUQ45H9PeVh/ADEi5nY2CbO+P0LIBQ4eq
-         Vpncd/lQKwlpatp0=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=outbound.mailhop.org; s=dkim-high;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:from;
-        bh=U/T3aMOfisAvCp+Jrrv8IHsVMGPDCr1S7PcDgSgM39I=;
-        b=P9VaAvkLh5+XCyblcg8hABgvTRxKChxuB/Si0oXHQMrCGKq28hgHvn2WryIzOl8j/567YRvGcKwRm
-         yw9RSaRs3hOhHtQtNMeyZIloXBFzEjf4+UT9dEE8w21z38an64BawA//wUYChEX89X0+phJvkJLucH
-         9U3S8pYSoop1ASPQZ0k34sI1f9AtBnX5+llJO3kbp7ZIBj7+kvDSINbFbd7H3GZWzk76uRAleIdE0H
-         h1O9Fe+xdeJHsij2nbPKOAGDms34RFnX2tcmGOvz4gW8wnCmxzYPquSXo7BfonrrAzh5MyOIYRBNKa
-         /00TDrJ5dWWcMOcoGykJ/yjNNlWf1TQ==
-X-Originating-IP: 91.207.61.48
-X-MHO-RoutePath: dG9ta2lzdG5lcm51
-X-MHO-User: 553ce03f-3af1-11ec-a070-973b52397bcb
-X-Report-Abuse-To: https://support.duocircle.com/support/solutions/articles/5000540958-duocircle-standard-smtp-abuse-information
-X-Mail-Handler: DuoCircle Outbound SMTP
-Received: from mail.duncanthrax.net (propper.duncanthrax.net [91.207.61.48])
-        by outbound2.eu.mailhop.org (Halon) with ESMTPSA
-        id 553ce03f-3af1-11ec-a070-973b52397bcb;
-        Mon, 01 Nov 2021 08:54:35 +0000 (UTC)
-Received: from hsi-kbw-109-193-149-228.hsi7.kabel-badenwuerttemberg.de ([109.193.149.228] helo=x1.stackframe.org.stackframe.org)
-        by mail.duncanthrax.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <svens@stackframe.org>)
-        id 1mhT5M-00DIPs-M3; Mon, 01 Nov 2021 10:54:32 +0200
-From:   Sven Schnelle <svens@stackframe.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
+        id S233684AbhKAJhw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 1 Nov 2021 05:37:52 -0400
+Received: from smtp-out1.suse.de ([195.135.220.28]:45410 "EHLO
+        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233178AbhKAJfs (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 1 Nov 2021 05:35:48 -0400
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 4FE592192D;
+        Mon,  1 Nov 2021 09:33:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1635759194; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=9OFcVxogKJLBgkZwFiYVQOM3mC4SMasLfoZRXvDpYYM=;
+        b=gghbkPPjtqVkO3J4kBGxRlDYnihKx+D0LpCAc2W7mh1ElxsTV00w/L8Mu8sroMgPOLLuWS
+        Mjj/iT4UJpnzdgjzLG+3ikdMtcWLClN/S/4wCj3ZXpi0c69ploR0HuN5jq3jCid335AFA7
+        CEIq6cGXUcR5Eypp6rBQZsboEwFxdI0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1635759194;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=9OFcVxogKJLBgkZwFiYVQOM3mC4SMasLfoZRXvDpYYM=;
+        b=19kzubA65PXqcp4IYvMuKTIzJGxyeYLGtmDVEpcEyrhjGKmOnnnF4Nkf2Hbz4SQwWmd76Y
+        meN8awQIlT/1wyAQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2D90E13AB7;
+        Mon,  1 Nov 2021 09:33:14 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id SVDZCVq0f2EpOgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 01 Nov 2021 09:33:14 +0000
+Message-ID: <e21cdf83-2178-7c59-2585-a6012f861f68@suse.de>
+Date:   Mon, 1 Nov 2021 10:33:12 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.2.1
+Subject: Re: [PATCH/RFT] fbdev driver for HP Visualize FX cards
+Content-Language: en-US
+To:     Sven Schnelle <svens@stackframe.org>
 Cc:     linux-parisc@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel <dri-devel@lists.freedesktop.org>,
         Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH/RFT] fbdev driver for HP Visualize FX cards
 References: <20211031195347.13754-1-svens@stackframe.org>
-        <cd0f90d9-7dba-af33-f88b-289fc6f80b51@suse.de>
-Date:   Mon, 01 Nov 2021 09:54:30 +0100
-In-Reply-To: <cd0f90d9-7dba-af33-f88b-289fc6f80b51@suse.de> (Thomas
-        Zimmermann's message of "Mon, 1 Nov 2021 08:07:41 +0100")
-Message-ID: <87r1c0s1bt.fsf@x1.stackframe.org>
-MIME-Version: 1.0
-Content-Type: text/plain
+ <cd0f90d9-7dba-af33-f88b-289fc6f80b51@suse.de>
+ <87r1c0s1bt.fsf@x1.stackframe.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <87r1c0s1bt.fsf@x1.stackframe.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------VDI6vAhjyhFxGj6kurmJYqiL"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------VDI6vAhjyhFxGj6kurmJYqiL
+Content-Type: multipart/mixed; boundary="------------5IwxK6LZfw08OHypdse56VHl";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sven Schnelle <svens@stackframe.org>
+Cc: linux-parisc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel <dri-devel@lists.freedesktop.org>, Helge Deller <deller@gmx.de>
+Message-ID: <e21cdf83-2178-7c59-2585-a6012f861f68@suse.de>
+Subject: Re: [PATCH/RFT] fbdev driver for HP Visualize FX cards
+References: <20211031195347.13754-1-svens@stackframe.org>
+ <cd0f90d9-7dba-af33-f88b-289fc6f80b51@suse.de>
+ <87r1c0s1bt.fsf@x1.stackframe.org>
+In-Reply-To: <87r1c0s1bt.fsf@x1.stackframe.org>
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+--------------5IwxK6LZfw08OHypdse56VHl
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-> Am 31.10.21 um 20:53 schrieb Sven Schnelle:
->> Hi List(s),
->> i wrote a fbdev driver for the HP Visualize FX cards used some of
->> the
->> PA-RISC workstations. It utilizes some of the 2D acceleration features
->> present in the card.
->> [..]
->
-> Thanks for all the work you put into this. We welcome drivers even for
-> older hardware, but not for fbdev. DRM is all the rage now and has
-> been for a while. I'd like to ask you to convert the driver to DRM and
-> resubmit to <dri-devel@lists.freedesktop.org>.
->
-> I while ago, I made conversion helpers for this. You can look at [1]
-> for a trivial DRM drivers that wraps existing fbdev drivers for use
-> with DRM. Once you have that, it turns into a refactoring job.
+SGkNCg0KQW0gMDEuMTEuMjEgdW0gMDk6NTQgc2NocmllYiBTdmVuIFNjaG5lbGxlOg0KPiBI
+aSBUaG9tYXMsDQo+IA0KPiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5k
+ZT4gd3JpdGVzOg0KPiANCj4+IEFtIDMxLjEwLjIxIHVtIDIwOjUzIHNjaHJpZWIgU3ZlbiBT
+Y2huZWxsZToNCj4+PiBIaSBMaXN0KHMpLA0KPj4+IGkgd3JvdGUgYSBmYmRldiBkcml2ZXIg
+Zm9yIHRoZSBIUCBWaXN1YWxpemUgRlggY2FyZHMgdXNlZCBzb21lIG9mDQo+Pj4gdGhlDQo+
+Pj4gUEEtUklTQyB3b3Jrc3RhdGlvbnMuIEl0IHV0aWxpemVzIHNvbWUgb2YgdGhlIDJEIGFj
+Y2VsZXJhdGlvbiBmZWF0dXJlcw0KPj4+IHByZXNlbnQgaW4gdGhlIGNhcmQuDQo+Pj4gWy4u
+XQ0KPj4NCj4+IFRoYW5rcyBmb3IgYWxsIHRoZSB3b3JrIHlvdSBwdXQgaW50byB0aGlzLiBX
+ZSB3ZWxjb21lIGRyaXZlcnMgZXZlbiBmb3INCj4+IG9sZGVyIGhhcmR3YXJlLCBidXQgbm90
+IGZvciBmYmRldi4gRFJNIGlzIGFsbCB0aGUgcmFnZSBub3cgYW5kIGhhcw0KPj4gYmVlbiBm
+b3IgYSB3aGlsZS4gSSdkIGxpa2UgdG8gYXNrIHlvdSB0byBjb252ZXJ0IHRoZSBkcml2ZXIg
+dG8gRFJNIGFuZA0KPj4gcmVzdWJtaXQgdG8gPGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3Rv
+cC5vcmc+Lg0KPj4NCj4+IEkgd2hpbGUgYWdvLCBJIG1hZGUgY29udmVyc2lvbiBoZWxwZXJz
+IGZvciB0aGlzLiBZb3UgY2FuIGxvb2sgYXQgWzFdDQo+PiBmb3IgYSB0cml2aWFsIERSTSBk
+cml2ZXJzIHRoYXQgd3JhcHMgZXhpc3RpbmcgZmJkZXYgZHJpdmVycyBmb3IgdXNlDQo+PiB3
+aXRoIERSTS4gT25jZSB5b3UgaGF2ZSB0aGF0LCBpdCB0dXJucyBpbnRvIGEgcmVmYWN0b3Jp
+bmcgam9iLg0KPiANCj4gVGhhbmtzLCBpIHdhc24ndCBhd2FyZSBhcyBpIG5vcm1hbGx5IGRv
+bid0IGRvIGFueSBncmFwaGljcyByZWxhdGVkDQo+IGRldmVsb3BtZW50LiBJIHRha2UgYSBs
+b29rIGF0IGRyaSBhbmQgcG9ydCB0aGUgZHJpdmVyLCB3aGljaCBpcw0KPiBob3BlZnVsbHkg
+bm90IHRvbyBoYXJkLg0KDQpTb3VuZHMgZ29vZC4NCg0KVGhlIG9uZSBiaWcgZGlmZmVyZW5j
+ZSB3aGVuIGNvbnZlcnRpbmcgaXMgdGhhdCBEUk0gcmVhbGx5IHdhbnRzIGRyaXZlcnMgDQp0
+byBzdXBwb3J0IDMyLWJpdCBYUkdCIGNvbG9ycy4gSXQncyBub3QgYSBEUk0gbGltaXRhdGlv
+biBwZXIgc2UsIGJ1dCBhIA0KcmVxdWlyZW1lbnQgb2YgdG9kYXkncyB1c2Vyc3BhY2UgcHJv
+Z3JhbXMuIEFGQUlDUyB5b3VyIGZiZGV2IGRyaXZlciB1c2VzIA0KYSAyNTYtY29sb3IgcGFs
+ZXR0ZSBmb3JtYXQuIFNvIHRoZSBEUk0gZHJpdmVyIHdvdWxkIGhhdmUgdG8gY29udmVydA0K
+WFJHQjg4ODggdG8gOC1iaXQgUkdCMzMyIGFuZCBpbnN0YWxsIGEgY29ycmVzcG9uZGluZyBw
+YWxldHRlLiBEb24ndCANCndvcnJ5LCBpdCdzIGVhc3kuIFRha2UgYSBsb29rIGF0IHRoZSBj
+aXJydXMgZHJpdmVyIGZvciBhIHNpbXBsZSBEUk0gDQpkcml2ZXIuIFsxXQ0KDQpJZiB5b3Ug
+bmVlZCBoZWxwLCB0aGVyZSdzIDxkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnPi4N
+Cg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KWzFdIA0KaHR0cHM6Ly9lbGl4aXIuYm9vdGxp
+bi5jb20vbGludXgvbGF0ZXN0L3NvdXJjZS9kcml2ZXJzL2dwdS9kcm0vdGlueS9jaXJydXMu
+Yw0KDQo+IA0KPiBTdmVuDQo+IA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGlj
+cyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdt
+YkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgw
+OSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
-Thanks, i wasn't aware as i normally don't do any graphics related
-development. I take a look at dri and port the driver, which is
-hopefully not too hard.
+--------------5IwxK6LZfw08OHypdse56VHl--
 
-Sven
+--------------VDI6vAhjyhFxGj6kurmJYqiL
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmF/tFkFAwAAAAAACgkQlh/E3EQov+CZ
+wBAAufeTzCECm7XqUxHhxlLDxHi1Gu8y5fR0N05E+KnXkqeW7yvG6VVqsNcB6CEqQB4NmPdVqMx4
+nTmldiE3QUNWjSHqHRsA7PkB6lAtiEcFmfqb2OwoswCxaFpuX+slbAp8VyU6treq/hOgJxi70kLa
+7pihVJ+9r/K6EmyP2GtNhCdVSiVIA5M917cDnotcqx6zhQJiSjOV+7CagFi96mjGaTA4keqkK/0e
++z2d4CiXJPbljvnMwTwm1sd6rFPfMfibwxHwhRoaKSY8JHmg9ZgkixATzUZurFVzw+kRQDM8R5SD
+0TathAfY1ME5m1AkrTm0Kxx91mlQzwQ2NDGojBGPDN0kQleuVDwx3SVPAGjeJBtlkNusRS67roCL
+qxGrp670K8dcTnuDHVCGtA64lF66G+Dqbcfm+6XwU6Etn6KtwL1fm1CrGR7lLXAFXoQ8bDwWltxN
+4M979Tc5VKli8O9XQQzaNnFvy6syTMXimeq95+0oyqVj7IxE/T3gpLRDwTNrgPv2F1hQnGqdbReD
+vF35fmvMtY9efxUfpkrzgY9tftLdTiRmiuALw/kIpppH6SOABoYpPJJMCZBRiw6Z3n1ysNRhLbVE
+Y2eBEr0UuMajrMY0oxxPaC5DwZPAUuuasdz9yrk5/+UkNx09sBwYRvBUdVaIDTI15r27qtijNQgm
+gng=
+=ZqXA
+-----END PGP SIGNATURE-----
+
+--------------VDI6vAhjyhFxGj6kurmJYqiL--

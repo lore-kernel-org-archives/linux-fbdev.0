@@ -2,124 +2,135 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AFBCC433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Nov 2021 13:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B610C433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Nov 2021 08:39:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F2C2F60F0F
-	for <linux-fbdev@archiver.kernel.org>; Mon,  1 Nov 2021 13:19:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 51D5761053
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Nov 2021 08:39:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232147AbhKANWE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 1 Nov 2021 09:22:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40764 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232146AbhKANWB (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 1 Nov 2021 09:22:01 -0400
-Received: from mail-qk1-x736.google.com (mail-qk1-x736.google.com [IPv6:2607:f8b0:4864:20::736])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2A7CAC061714
-        for <linux-fbdev@vger.kernel.org>; Mon,  1 Nov 2021 06:19:28 -0700 (PDT)
-Received: by mail-qk1-x736.google.com with SMTP id bl12so2151495qkb.13
-        for <linux-fbdev@vger.kernel.org>; Mon, 01 Nov 2021 06:19:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=usp.br; s=usp-google;
-        h=date:from:to:cc:subject:message-id:mime-version:content-disposition
-         :content-transfer-encoding;
-        bh=TtX9VhCBKuhF3Ol7gnPYFLRhj5nFsqp3SrQe6dqQFXM=;
-        b=ZnSQtUuzlxpPJR1GQQpbQSUoHtb09P8H7VrR18O2ahTTXRWmIDnxQOQgnULadzL610
-         JTN6lYue33HVu7p8L3y+810xNbHrJ19Tbeg/nOHqdYm3ftynFUO/NzeHUfMkEmSBM0as
-         ixAQxM3YbNoJXyv6pSbwPGcTlgAAOJXCqc13eV7HVkg/mau8AHrgfsWxgHABcrz2rwRh
-         UeEIEFLjysCIxUATqgwwbyaCpZHBJytSLFFgeo2NtXcSey60XzPh+fJHD56twsIX7o+/
-         PaI3j9470t9hHKW9dYvhUboq8DOEMMJw2ouHi3SnG6XPpzRVJ/ugKM+EZj1UusPbJosC
-         Qq0g==
+        id S229720AbhKBIm1 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 2 Nov 2021 04:42:27 -0400
+Received: from mail-ua1-f44.google.com ([209.85.222.44]:36400 "EHLO
+        mail-ua1-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229612AbhKBIm1 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Nov 2021 04:42:27 -0400
+Received: by mail-ua1-f44.google.com with SMTP id e10so36591796uab.3;
+        Tue, 02 Nov 2021 01:39:52 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
-         :content-disposition:content-transfer-encoding;
-        bh=TtX9VhCBKuhF3Ol7gnPYFLRhj5nFsqp3SrQe6dqQFXM=;
-        b=SW839HM1v127KcjiH08U1/MM87/YCHjWn9stkQS+YNFwS8XoyUhyl4S5dRLzEy12Qn
-         DUpPEXGF1dnTtL/qhH+ltbFTNLCq6XEgbJ90n/Af8TTng3SHlL1ow3KzIYEfEOgZlqlL
-         lj1VzrQmolUvPeEU582NNSOiTWijOp3jOSQcdTOmvi9s6ZLRMG3hMjDvrRcxHYbH9XHd
-         fUGPQiF4Rk0P5Bef4OHQwpfYpPuIa0c7rHRQATwxdowTQwKLfpmuFb1rxm6EYkUQ3d78
-         qopn5akPB3ucTtjIzIEBCvmr45iI8qetL/4M59zR1uWkmNXpbktpu9D3OzOT3hmxB4Lr
-         Z04g==
-X-Gm-Message-State: AOAM531nJ497FTsZEX6Gges//sztc2skz4QKaJ4GkwBTLMXzIsgr9TD1
-        QTg3J6mZpEUnKtSVwGJ0NyT/dA==
-X-Google-Smtp-Source: ABdhPJwRu8kRDMOftlvRTysjNpt3BbtoelDYP69+cdAc8RNpfvYVVPhdMVgDl11Rbi0bEU43xN5/Tg==
-X-Received: by 2002:a05:620a:1999:: with SMTP id bm25mr23030512qkb.40.1635772767335;
-        Mon, 01 Nov 2021 06:19:27 -0700 (PDT)
-Received: from fedora ([187.64.134.142])
-        by smtp.gmail.com with ESMTPSA id h17sm4185790qtx.64.2021.11.01.06.19.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 01 Nov 2021 06:19:27 -0700 (PDT)
-Date:   Mon, 1 Nov 2021 10:19:21 -0300
-From:   =?iso-8859-1?Q?Ma=EDra?= Canal <maira.canal@usp.br>
-To:     lee.jones@linaro.org, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com, thierry.reding@gmail.com,
-        u.kleine-koenig@pengutronix.de
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org
-Subject: [PATCH v4] backlight: lp855x: Switch to atomic PWM API
-Message-ID: <YX/pWeXPv1bykg2g@fedora>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=vtHObjXz/fBAC2wVKkwQJuDdB+3lhXmiXIXLkWkTc/M=;
+        b=QRjdTDM7DGiXoPUsGRBHxFmP30NWTeiX+m8+IeTa/riO77kl5T24MmY8cVXrxXxslI
+         OIyFVa7AjwOABF9Gqnz8/miuV2Uyx0Kou2g3SAWOM7ItKkQiIwauQTAe5jIxX9Ct+UPS
+         13EzHDKOteOrg5SQsWYORbt71WTyxyGh9FsVTpq89YdyFb3gSWuBPqbmUJK3n8kW8EKN
+         wCv+2O2TINOjQ5WHRT+UJwG5+E6UJB4/r5OrB1eXVd/pOI/7zHbptijEBRBLYl6u9Sdc
+         1B2DbbzmhMufte6hTUM4e7CmLVJHd5h0BG+nip+kNHzSTqsG+jg+hdfIjEjAkQjkD+hN
+         mtbA==
+X-Gm-Message-State: AOAM531Yy2wADEp+VAhKDmGhl4Ufa+6j+oa1zFU8MkLAH6B6js7Epgbp
+        Y2veFyerT4gKM0sw+ebH4aWlcNmeMXwKmw==
+X-Google-Smtp-Source: ABdhPJzaZy7uW+fnKl5lEyCferMvOTPDGz+HhS234VwPunT4zBn9WGDVPTO3F5C7Ce+j1k1Ce6kkRA==
+X-Received: by 2002:a05:6102:3750:: with SMTP id u16mr37365166vst.60.1635842391918;
+        Tue, 02 Nov 2021 01:39:51 -0700 (PDT)
+Received: from mail-ua1-f44.google.com (mail-ua1-f44.google.com. [209.85.222.44])
+        by smtp.gmail.com with ESMTPSA id l8sm885718vse.30.2021.11.02.01.39.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 02 Nov 2021 01:39:51 -0700 (PDT)
+Received: by mail-ua1-f44.google.com with SMTP id ay21so16052961uab.12;
+        Tue, 02 Nov 2021 01:39:50 -0700 (PDT)
+X-Received: by 2002:ab0:2bd2:: with SMTP id s18mr35296866uar.78.1635842390754;
+ Tue, 02 Nov 2021 01:39:50 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+References: <YX1KCclMB/HTZ22c@fedora>
+In-Reply-To: <YX1KCclMB/HTZ22c@fedora>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 2 Nov 2021 09:39:39 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdW5thqxWz37er3BHwqee_agvhHVDK5p8Hrx7HCKOdFjLA@mail.gmail.com>
+Message-ID: <CAMuHMdW5thqxWz37er3BHwqee_agvhHVDK5p8Hrx7HCKOdFjLA@mail.gmail.com>
+Subject: Re: [PATCH v3] backlight: lp855x: Switch to atomic PWM API
+To:     =?UTF-8?B?TWHDrXJhIENhbmFs?= <maira.canal@usp.br>
+Cc:     Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PWM List <linux-pwm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Remove legacy PWM interface (pwm_config, pwm_enable, pwm_disable) and
-replace it for the atomic PWM API.
+Hi Maíra,
 
-Signed-off-by: Ma�ra Canal <maira.canal@usp.br>
----
-V1 -> V2: Initialize variable and simply conditional loop
-V2 -> V3: Fix assignment of NULL variable
-V3 -> V4: Replace division for pwm_set_relative_duty_cycle
----
- drivers/video/backlight/lp855x_bl.c | 20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
+On Sat, Oct 30, 2021 at 3:35 PM Maíra Canal <maira.canal@usp.br> wrote:
+> Remove legacy PWM interface (pwm_config, pwm_enable, pwm_disable) and
+> replace it for the atomic PWM API.
+>
+> Signed-off-by: Maíra Canal <maira.canal@usp.br>
 
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index e94932c69f54..bbf24564082a 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -233,9 +233,8 @@ static int lp855x_configure(struct lp855x *lp)
- 
- static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- {
--	unsigned int period = lp->pdata->period_ns;
--	unsigned int duty = br * period / max_br;
- 	struct pwm_device *pwm;
-+	struct pwm_state state;
- 
- 	/* request pwm device with the consumer name */
- 	if (!lp->pwm) {
-@@ -245,18 +244,15 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- 
- 		lp->pwm = pwm;
- 
--		/*
--		 * FIXME: pwm_apply_args() should be removed when switching to
--		 * the atomic PWM API.
--		 */
--		pwm_apply_args(pwm);
-+		pwm_init_state(lp->pwm, &state);
-+		state.period = lp->pdata->period_ns;
- 	}
- 
--	pwm_config(lp->pwm, duty, period);
--	if (duty)
--		pwm_enable(lp->pwm);
--	else
--		pwm_disable(lp->pwm);
-+	pwm_get_state(lp->pwm, &state);
-+	pwm_set_relative_duty_cycle(&state, br, max_br);
-+	state.enabled = state.duty_cycle;
-+
-+	pwm_apply_state(lp->pwm, &state);
- }
- 
- static int lp855x_bl_update_status(struct backlight_device *bl)
--- 
-2.31.1
+Thanks for your patch!
 
+> --- a/drivers/video/backlight/lp855x_bl.c
+> +++ b/drivers/video/backlight/lp855x_bl.c
+> @@ -233,9 +233,8 @@ static int lp855x_configure(struct lp855x *lp)
+>
+>  static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
+>  {
+> -       unsigned int period = lp->pdata->period_ns;
+> -       unsigned int duty = br * period / max_br;
+> -       struct pwm_device *pwm;
+> +       struct pwm_device *pwm = NULL;
+> +       struct pwm_state state;
+>
+>         /* request pwm device with the consumer name */
+>         if (!lp->pwm) {
+> @@ -245,18 +244,16 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
+>
+>                 lp->pwm = pwm;
+>
+> -               /*
+> -                * FIXME: pwm_apply_args() should be removed when switching to
+> -                * the atomic PWM API.
+> -                */
+> -               pwm_apply_args(pwm);
+> +               pwm_init_state(lp->pwm, &state);
+> +               state.period = lp->pdata->period_ns;
+>         }
+>
+> -       pwm_config(lp->pwm, duty, period);
+> -       if (duty)
+> -               pwm_enable(lp->pwm);
+> -       else
+> -               pwm_disable(lp->pwm);
+> +       pwm_get_state(lp->pwm, &state);
+> +
+> +       state.duty_cycle = br * state.period / max_br;
+
+Above is a 64-by-32 division, which should not be open-coded, as
+that will cause link failures on 32-bit platform (cfr. "undefined
+reference to `__udivdi3'", as reported by the kernel test robot).
+Please use div_u64() instead.
+
+> +       state.enabled = state.duty_cycle;
+> +
+> +       pwm_apply_state(lp->pwm, &state);
+>  }
+>
+>  static int lp855x_bl_update_status(struct backlight_device *bl)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -2,142 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1C3AC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Nov 2021 16:00:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43C3CC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Nov 2021 21:42:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BB9A061105
-	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Nov 2021 16:00:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1EB71604AC
+	for <linux-fbdev@archiver.kernel.org>; Tue,  2 Nov 2021 21:42:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232692AbhKBQCj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 2 Nov 2021 12:02:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34622 "EHLO
+        id S231696AbhKBVoz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 2 Nov 2021 17:44:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57578 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234389AbhKBQCj (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Nov 2021 12:02:39 -0400
-Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62232C061203
-        for <linux-fbdev@vger.kernel.org>; Tue,  2 Nov 2021 09:00:04 -0700 (PDT)
-Received: by mail-wr1-x42f.google.com with SMTP id d5so18770299wrc.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 02 Nov 2021 09:00:04 -0700 (PDT)
+        with ESMTP id S231216AbhKBVoy (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 2 Nov 2021 17:44:54 -0400
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74E52C061203
+        for <linux-fbdev@vger.kernel.org>; Tue,  2 Nov 2021 14:42:19 -0700 (PDT)
+Received: by mail-wr1-x431.google.com with SMTP id d3so575285wrh.8
+        for <linux-fbdev@vger.kernel.org>; Tue, 02 Nov 2021 14:42:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=soQC7NvwSDRBZqkI7s6xnknhSLp6r09XDuYbODEjkgc=;
-        b=mI1LdYKr3uNkluaEcBClbKGUsJfGPt6nnozQwAb02R4IwXZXZYGCrtZv+Q0v5NPyVQ
-         S9T/yR5BkKLFfLwvO2Vi7sjIk/Kxow9Q8jPhxeLwuO4yv7M2costSM+57epqyeJ9OFK3
-         N3kSnL5rWFVzYsVblRrjKoQSO9SE+taHm0AsvZWZ+2wZmAdKWMfETwnoAWZvZcgkhLZF
-         RR/vubCeacoqiI+vUEaYFxaXVaIIIXr0mouqVUgxvZFa6X2zZ9kLGkObCQYJTbP8y5lz
-         58D4t340IPKY2lUP+WSppERmUJ5gPTIfnzzdrhffNcpi8qVM3i6Jxsq3XgNLibxNvYqT
-         GSnw==
+        bh=++s5U25AmrtB0jRnPpON4TpfrUm8lCjgAhvwZZmMcyk=;
+        b=ypsj6Ztj6KKT7yYtszeRDXqjLyZmFUoIc+pxUWoktkz3jaSW6u2HbXU9Bl27QlJsl0
+         IWvAbSyqQ0WxqnNA+uYNY973Li8SVWTmbRsqnS11uD6ZwfizcpG3d0twxYCkNSiFdZ8A
+         yajUdx3i+Tn1HCidgUivgNykquHBWP/isqlmQY7+Nzjv9Z5FnpKswnFgweJTvVPjQ2Mb
+         aMd0ytn8pyd8gAAfCxVvIy7VFJoxgv11UiuwG1pkK5jdHWmP8I9DBnl5oFmChc0h4wIY
+         hJUzmoQKiTrYN+UauG/GalqSk3lqXw/Q25UCoakaIc3KigU0ObihOu3kT2sed6VD3B7M
+         DBkg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:content-transfer-encoding
          :in-reply-to;
-        bh=soQC7NvwSDRBZqkI7s6xnknhSLp6r09XDuYbODEjkgc=;
-        b=FO8i5SqaouLr1jhbhvH1qoqdj3dteXzMB7HlN++bt9YdRcJY+g+UxGlUBiE5vV//LH
-         4sG+Df8HdMyN0ihCUVFGkQDDXXQA1T8mJaEenViOPm4aNwwCdkwwN4T/PqIFEsqOSldg
-         anUvSAP8kYUoQYncqrrD6u7rYdlFCVAph9rmALPQdQog9Zg/ZrZ+3avxd8DmgvfQmLyk
-         JOQujQa+HAlF77FO8dB12YAg5okiVjOxyrb9JOCaYawdgbVXlsRnSnRsy+EXeVEn2Wj4
-         iPJl/u9Bqpv933E3t7RIPqrrgITCK0aMhXC85plSnyNCjRjZOCMx9N7IW/CwwcyYnFR3
-         mP2A==
-X-Gm-Message-State: AOAM531HaVptph6sfPG8Zc2E9NyAscl5BnLjIkbsFBHBfx4wH4wis5dr
-        eOlA4VFbxghotlt6AxjSIvptKg==
-X-Google-Smtp-Source: ABdhPJw9jPPQfCPPiExh9uQm6mXjK33Pw8aA2tl7f4/xtTsMj7OHHX5OrVdH3CJO/RqZC/el9fIZYA==
-X-Received: by 2002:adf:ef4f:: with SMTP id c15mr3296739wrp.226.1635868802700;
-        Tue, 02 Nov 2021 09:00:02 -0700 (PDT)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id 10sm3576379wme.27.2021.11.02.09.00.01
+        bh=++s5U25AmrtB0jRnPpON4TpfrUm8lCjgAhvwZZmMcyk=;
+        b=qRS1oXhezv5x9Ty9pBBIV8ohFh0n4otCjxOI37OaLRYiPr6y0+Hib8ZZ0Y7k2QGDYY
+         C4aSrFEB35ua70ozbFO/GC2uxm8KkUlzrvxzAwPoBwOnzjVruUrAqsCPSR+sZRW+cXLq
+         ksVRDyNkIH6rptqKAwNHSC7Z5LeF89J/jU7IxRiMDTRUyLUmxbMAo2DUEJj1hzbGH9E4
+         T6GZI7DJCMFypZGGJW4b6Qqf/hnTED7/dm9qfOuNdCQyAQpmbs8EXkhurwHsxkMsLDal
+         FbtzPTy0get1/FXOVjB0EPC1xiV4h2zbL1mDudHScbZs9CLA2p16qF9Qauhk3iDGoMeJ
+         YjEQ==
+X-Gm-Message-State: AOAM533PRqIrNcGfgJ/VvRMkUIg6yMuc4cefU3LWlVMjVWeqaOu3SP1o
+        B2p0LB/dZ4Xizsf+3mpxXp1T+Q==
+X-Google-Smtp-Source: ABdhPJzr8YmQqLyUSmCkYejogwjzQiAMastwvkFjwXPWrtwricO0JbZ/1JZUr6s7j1zCifzs7f6EIQ==
+X-Received: by 2002:adf:a28f:: with SMTP id s15mr49491954wra.138.1635889338120;
+        Tue, 02 Nov 2021 14:42:18 -0700 (PDT)
+Received: from Red ([2a01:cb1d:3d5:a100:264b:feff:fe03:2806])
+        by smtp.googlemail.com with ESMTPSA id e12sm217581wrq.20.2021.11.02.14.42.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Nov 2021 09:00:02 -0700 (PDT)
-Date:   Tue, 2 Nov 2021 16:00:00 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     =?utf-8?B?TWHDrXJh?= Canal <maira.canal@usp.br>
+        Tue, 02 Nov 2021 14:42:17 -0700 (PDT)
+Date:   Tue, 2 Nov 2021 22:42:16 +0100
+From:   LABBE Corentin <clabbe@baylibre.com>
+To:     Daniel Thompson <daniel.thompson@linaro.org>
 Cc:     lee.jones@linaro.org, jingoohan1@gmail.com,
-        thierry.reding@gmail.com, u.kleine-koenig@pengutronix.de,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org
-Subject: Re: [PATCH v4] backlight: lp855x: Switch to atomic PWM API
-Message-ID: <20211102160000.kvi6hhhgdjowgnft@maple.lan>
-References: <YX/pWeXPv1bykg2g@fedora>
+        linux-kernel@vger.kernel.org, khilman@baylibre.com,
+        Jean-Jacques Hiblot <jjhiblot@ti.com>,
+        Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] backlight: led_bl: Add support for an "enable" GPIO
+Message-ID: <YYGwuCmORnjFRHMk@Red>
+References: <20211102100455.2016610-1-clabbe@baylibre.com>
+ <20211102111942.xd7eqz2zrtb7zotc@maple.lan>
+ <20211102112514.75v7evbdp4ccyyt5@maple.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <YX/pWeXPv1bykg2g@fedora>
+In-Reply-To: <20211102112514.75v7evbdp4ccyyt5@maple.lan>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Nov 01, 2021 at 10:19:21AM -0300, Maíra Canal wrote:
-> Remove legacy PWM interface (pwm_config, pwm_enable, pwm_disable) and
-> replace it for the atomic PWM API.
+Le Tue, Nov 02, 2021 at 11:25:14AM +0000, Daniel Thompson a écrit :
+> On Tue, Nov 02, 2021 at 11:19:42AM +0000, Daniel Thompson wrote:
+> > On Tue, Nov 02, 2021 at 10:04:55AM +0000, Corentin LABBE wrote:
+> > > From: Jean-Jacques Hiblot <jjhiblot@ti.com>
+> > > 
+> > > This patch adds support for an "enable GPIO".
+> > 
+> > Before taking this kind of change is there a good reason why backlight
+> > should manage the GPIO? I thought that the LED subsystem was a sub
+> > system for LEDs (not LED controllers). In other words if you direct
+> > that the LED be lit up then isn't it the LED driver's job to manage
+> > the GPIO and ensure that it lights up?
 > 
-> Signed-off-by: Maíra Canal <maira.canal@usp.br>
-> ---
-> V1 -> V2: Initialize variable and simply conditional loop
-> V2 -> V3: Fix assignment of NULL variable
-> V3 -> V4: Replace division for pwm_set_relative_duty_cycle
-> ---
->  drivers/video/backlight/lp855x_bl.c | 20 ++++++++------------
->  1 file changed, 8 insertions(+), 12 deletions(-)
+> Sorry... I should have paid more attention to my sense of déjà vu with
+> this patch.
 > 
-> diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-> index e94932c69f54..bbf24564082a 100644
-> --- a/drivers/video/backlight/lp855x_bl.c
-> +++ b/drivers/video/backlight/lp855x_bl.c
-> @@ -233,9 +233,8 @@ static int lp855x_configure(struct lp855x *lp)
->  
->  static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
->  {
-> -	unsigned int period = lp->pdata->period_ns;
-> -	unsigned int duty = br * period / max_br;
->  	struct pwm_device *pwm;
-> +	struct pwm_state state;
->  
->  	/* request pwm device with the consumer name */
->  	if (!lp->pwm) {
-> @@ -245,18 +244,15 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
->  
->  		lp->pwm = pwm;
->  
-> -		/*
-> -		 * FIXME: pwm_apply_args() should be removed when switching to
-> -		 * the atomic PWM API.
-> -		 */
-> -		pwm_apply_args(pwm);
-> +		pwm_init_state(lp->pwm, &state);
-> +		state.period = lp->pdata->period_ns;
->  	}
->  
-> -	pwm_config(lp->pwm, duty, period);
-> -	if (duty)
-> -		pwm_enable(lp->pwm);
-> -	else
-> -		pwm_disable(lp->pwm);
-> +	pwm_get_state(lp->pwm, &state);
-
-Should this be:
-
-	} else {
-		pwm_get_state(lp->pwm, &state);
-	}
-
-As currently written this will clobber the state.period that was set
-above.
-
-
-Daniel.
-
-
-> +	pwm_set_relative_duty_cycle(&state, br, max_br);
-> +	state.enabled = state.duty_cycle;
-> +
-> +	pwm_apply_state(lp->pwm, &state);
->  }
->  
->  static int lp855x_bl_update_status(struct backlight_device *bl)
-> -- 
-> 2.31.1
+> This approach was discussed and rejected when we first introduced the
+> led_bl driver:
+> https://lore.kernel.org/linux-leds/20190705100851.zn2jkipj4fxq5we6@devuan/
 > 
+
+Hello
+
+I am sorry, I didnt checked if the patch was already submitted or not.
+
+Regards

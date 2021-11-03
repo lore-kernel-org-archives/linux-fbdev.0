@@ -2,41 +2,68 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EAA9C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Nov 2021 12:56:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D68AC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Nov 2021 13:02:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7789D610EA
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Nov 2021 12:56:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3A87760F90
+	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Nov 2021 13:02:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230435AbhKCM7Y convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 3 Nov 2021 08:59:24 -0400
-Received: from mga17.intel.com ([192.55.52.151]:47805 "EHLO mga17.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230152AbhKCM7X (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 3 Nov 2021 08:59:23 -0400
-X-IronPort-AV: E=McAfee;i="6200,9189,10156"; a="212239588"
-X-IronPort-AV: E=Sophos;i="5.87,205,1631602800"; 
-   d="scan'208";a="212239588"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2021 05:56:46 -0700
-X-IronPort-AV: E=Sophos;i="5.87,205,1631602800"; 
-   d="scan'208";a="501045631"
-Received: from bmagdala-mobl.ger.corp.intel.com (HELO localhost) ([10.251.215.42])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2021 05:56:38 -0700
-From:   Jani Nikula <jani.nikula@linux.intel.com>
+        id S230185AbhKCNEg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 3 Nov 2021 09:04:36 -0400
+Received: from smtp-out2.suse.de ([195.135.220.29]:46014 "EHLO
+        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231151AbhKCNEg (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 Nov 2021 09:04:36 -0400
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 852261F782;
+        Wed,  3 Nov 2021 13:01:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1635944518; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=tMU4O279Z10wVhWG7ere31FR2v1n4UkGIxK2VXMDmvk=;
+        b=uRL8++YwZOFaSnpmncFTkimRxMwEcesvZFLYYYxQCGjiqBYGU1bokSDrqkA6Ht2Nz2w83J
+        qjNvhvf5akOafRqKlAGlq2/yblV+jtLeDrSR0ade7JV+1CfffA6TqHUjOiL1fJ6Fd5b4sq
+        6Rd9dFnTVskyu/etbAX+ypE+xBUCQHo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1635944518;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=tMU4O279Z10wVhWG7ere31FR2v1n4UkGIxK2VXMDmvk=;
+        b=I5hR8vqQoqkq/Xd5ebI+lANga9HeTYWK8PKs0S9boLFjTFgcDUxfN4mYQTWoXjgJ5b++0t
+        /oH3wgSDgSYneCAw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DB85913E03;
+        Wed,  3 Nov 2021 13:01:57 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id nE2SNEWIgmHLZQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 03 Nov 2021 13:01:57 +0000
+Message-ID: <e02d23be-1a1c-570d-e76f-dbea76b6dd55@suse.de>
+Date:   Wed, 3 Nov 2021 14:01:57 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.2.1
+Subject: Re: [RESEND PATCH 0/5] Cleanups for the nomodeset kernel command line
+ parameter logic
+Content-Language: en-US
 To:     Javier Martinez Canillas <javierm@redhat.com>,
         linux-kernel@vger.kernel.org
 Cc:     Peter Robinson <pbrobinson@gmail.com>,
-        Michel =?utf-8?Q?D=C3=A4nzer?= <michel@daenzer.net>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
+        =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>,
         Pekka Paalanen <pekka.paalanen@collabora.com>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         Neal Gompa <ngompa13@gmail.com>,
-        Javier Martinez Canillas <javierm@redhat.com>,
         Alex Deucher <alexander.deucher@amd.com>,
         Ben Skeggs <bskeggs@redhat.com>, Chia-I Wu <olvaffe@gmail.com>,
-        Christian =?utf-8?Q?K=C3=B6nig?= <christian.koenig@amd.com>,
+        =?UTF-8?Q?Christian_K=c3=b6nig?= <christian.koenig@amd.com>,
         Daniel Vetter <daniel@ffwll.ch>,
         Dave Airlie <airlied@redhat.com>,
         David Airlie <airlied@linux.ie>,
@@ -44,10 +71,11 @@ Cc:     Peter Robinson <pbrobinson@gmail.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Gurchetan Singh <gurchetansingh@chromium.org>,
         Hans de Goede <hdegoede@redhat.com>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
         Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
-        "Pan\, Xinhui" <Xinhui.Pan@amd.com>,
+        "Pan, Xinhui" <Xinhui.Pan@amd.com>,
         Rodrigo Vivi <rodrigo.vivi@intel.com>,
         VMware Graphics <linux-graphics-maintainer@vmware.com>,
         Zack Rusin <zackr@vmware.com>, amd-gfx@lists.freedesktop.org,
@@ -55,344 +83,151 @@ Cc:     Peter Robinson <pbrobinson@gmail.com>,
         linux-fbdev@vger.kernel.org, nouveau@lists.freedesktop.org,
         spice-devel@lists.freedesktop.org,
         virtualization@lists.linux-foundation.org
-Subject: Re: [RESEND PATCH 2/5] drm: Move nomodeset kernel parameter handler to the DRM subsystem
-In-Reply-To: <20211103122809.1040754-3-javierm@redhat.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20211103122809.1040754-1-javierm@redhat.com> <20211103122809.1040754-3-javierm@redhat.com>
-Date:   Wed, 03 Nov 2021 14:56:36 +0200
-Message-ID: <87tugtbdob.fsf@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+References: <20211103122809.1040754-1-javierm@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20211103122809.1040754-1-javierm@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------bVlFqC8A7AGyAxb3T60UWzGg"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 03 Nov 2021, Javier Martinez Canillas <javierm@redhat.com> wrote:
-> The "nomodeset" kernel cmdline parameter is handled by the vgacon driver
-> but the exported vgacon_text_force() symbol is only used by DRM drivers.
->
-> It makes much more sense for the parameter logic to be in the subsystem
-> of the drivers that are making use of it. Let's move that to DRM.
->
-> Suggested-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-> ---
->
->  drivers/gpu/drm/Makefile                |  2 ++
->  drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c |  3 +--
->  drivers/gpu/drm/ast/ast_drv.c           |  1 -
->  drivers/gpu/drm/drm_nomodeset.c         | 26 +++++++++++++++++++++++++
->  drivers/gpu/drm/i915/i915_module.c      |  2 --
->  drivers/gpu/drm/mgag200/mgag200_drv.c   |  1 -
->  drivers/gpu/drm/nouveau/nouveau_drm.c   |  1 -
->  drivers/gpu/drm/qxl/qxl_drv.c           |  1 -
->  drivers/gpu/drm/radeon/radeon_drv.c     |  1 -
->  drivers/gpu/drm/tiny/bochs.c            |  1 -
->  drivers/gpu/drm/tiny/cirrus.c           |  1 -
->  drivers/gpu/drm/vboxvideo/vbox_drv.c    |  1 -
->  drivers/gpu/drm/virtio/virtgpu_drv.c    |  1 -
->  drivers/gpu/drm/vmwgfx/vmwgfx_drv.c     |  1 -
->  drivers/video/console/vgacon.c          | 21 --------------------
->  include/drm/drm_mode_config.h           |  6 ++++++
->  include/linux/console.h                 |  6 ------
->  17 files changed, 35 insertions(+), 41 deletions(-)
->  create mode 100644 drivers/gpu/drm/drm_nomodeset.c
->
-> diff --git a/drivers/gpu/drm/Makefile b/drivers/gpu/drm/Makefile
-> index 1c41156deb5f..0e2d60ea93ca 100644
-> --- a/drivers/gpu/drm/Makefile
-> +++ b/drivers/gpu/drm/Makefile
-> @@ -33,6 +33,8 @@ drm-$(CONFIG_DRM_PRIVACY_SCREEN) += drm_privacy_screen.o drm_privacy_screen_x86.
->  
->  obj-$(CONFIG_DRM_DP_AUX_BUS) += drm_dp_aux_bus.o
->  
-> +obj-y += drm_nomodeset.o
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------bVlFqC8A7AGyAxb3T60UWzGg
+Content-Type: multipart/mixed; boundary="------------ok1AXfyISINrrjET9V0shOJL";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ linux-kernel@vger.kernel.org
+Cc: Peter Robinson <pbrobinson@gmail.com>, =?UTF-8?Q?Michel_D=c3=a4nzer?=
+ <michel@daenzer.net>, Pekka Paalanen <pekka.paalanen@collabora.com>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>, Neal Gompa <ngompa13@gmail.com>,
+ Alex Deucher <alexander.deucher@amd.com>, Ben Skeggs <bskeggs@redhat.com>,
+ Chia-I Wu <olvaffe@gmail.com>, =?UTF-8?Q?Christian_K=c3=b6nig?=
+ <christian.koenig@amd.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Dave Airlie <airlied@redhat.com>, David Airlie <airlied@linux.ie>,
+ Gerd Hoffmann <kraxel@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Gurchetan Singh <gurchetansingh@chromium.org>,
+ Hans de Goede <hdegoede@redhat.com>,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, "Pan, Xinhui" <Xinhui.Pan@amd.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>,
+ VMware Graphics <linux-graphics-maintainer@vmware.com>,
+ Zack Rusin <zackr@vmware.com>, amd-gfx@lists.freedesktop.org,
+ dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, nouveau@lists.freedesktop.org,
+ spice-devel@lists.freedesktop.org, virtualization@lists.linux-foundation.org
+Message-ID: <e02d23be-1a1c-570d-e76f-dbea76b6dd55@suse.de>
+Subject: Re: [RESEND PATCH 0/5] Cleanups for the nomodeset kernel command line
+ parameter logic
+References: <20211103122809.1040754-1-javierm@redhat.com>
+In-Reply-To: <20211103122809.1040754-1-javierm@redhat.com>
 
-This is a subtle functional change. With this, you'll always have
-__setup("nomodeset", text_mode) builtin and the parameter available. And
-using nomodeset will print out the pr_warn() splat from text_mode(). But
-removing nomodeset will have no impact if CONFIG_VGA_CONSOLE=n as that
-leads to vgacon_text_force() always returning false.
+--------------ok1AXfyISINrrjET9V0shOJL
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-To not make functional changes, this should be:
-
-obj-$(CONFIG_VGA_CONSOLE) += drm_nomodeset.o
-
-Now, going with the cleanup in this series, maybe we should make the
-functional change, and break the connection to CONFIG_VGA_CONSOLE
-altogether, also in the header?
-
-(Maybe we'll also need a proxy drm kconfig option to only have
-drm_modeset.o builtin when CONFIG_DRM != n.)
-
-> +
->  drm_cma_helper-y := drm_gem_cma_helper.o
->  obj-$(CONFIG_DRM_GEM_CMA_HELPER) += drm_cma_helper.o
->  
-> diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-> index c718fb5f3f8a..2680a2aaa877 100644
-> --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-> +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-> @@ -31,7 +31,6 @@
->  #include "amdgpu_drv.h"
->  
->  #include <drm/drm_pciids.h>
-> -#include <linux/console.h>
->  #include <linux/module.h>
->  #include <linux/pm_runtime.h>
->  #include <linux/vga_switcheroo.h>
-> @@ -2515,7 +2514,7 @@ static int __init amdgpu_init(void)
->  	int r;
->  
->  	if (vgacon_text_force()) {
-> -		DRM_ERROR("VGACON disables amdgpu kernel modesetting.\n");
-> +		DRM_ERROR("amdgpu kernel modesetting disabled.\n");
->  		return -EINVAL;
->  	}
->  
-> diff --git a/drivers/gpu/drm/ast/ast_drv.c b/drivers/gpu/drm/ast/ast_drv.c
-> index 86d5cd7b6318..048be607b182 100644
-> --- a/drivers/gpu/drm/ast/ast_drv.c
-> +++ b/drivers/gpu/drm/ast/ast_drv.c
-> @@ -26,7 +26,6 @@
->   * Authors: Dave Airlie <airlied@redhat.com>
->   */
->  
-> -#include <linux/console.h>
->  #include <linux/module.h>
->  #include <linux/pci.h>
->  
-> diff --git a/drivers/gpu/drm/drm_nomodeset.c b/drivers/gpu/drm/drm_nomodeset.c
-> new file mode 100644
-> index 000000000000..1ac9a8d5a8fe
-> --- /dev/null
-> +++ b/drivers/gpu/drm/drm_nomodeset.c
-> @@ -0,0 +1,26 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +#include <linux/module.h>
-> +#include <linux/types.h>
-> +
-> +static bool vgacon_text_mode_force;
-> +
-> +bool vgacon_text_force(void)
-> +{
-> +	return vgacon_text_mode_force;
-> +}
-> +EXPORT_SYMBOL(vgacon_text_force);
-> +
-> +static int __init text_mode(char *str)
-> +{
-> +	vgacon_text_mode_force = true;
-> +
-> +	pr_warn("You have booted with nomodeset. This means your GPU drivers are DISABLED\n");
-> +	pr_warn("Any video related functionality will be severely degraded, and you may not even be able to suspend the system properly\n");
-> +	pr_warn("Unless you actually understand what nomodeset does, you should reboot without enabling it\n");
-> +
-> +	return 1;
-> +}
-> +
-> +/* force text mode - used by kernel modesetting */
-> +__setup("nomodeset", text_mode);
-> diff --git a/drivers/gpu/drm/i915/i915_module.c b/drivers/gpu/drm/i915/i915_module.c
-> index c7507266aa83..14a59226519d 100644
-> --- a/drivers/gpu/drm/i915/i915_module.c
-> +++ b/drivers/gpu/drm/i915/i915_module.c
-> @@ -4,8 +4,6 @@
->   * Copyright © 2021 Intel Corporation
->   */
->  
-> -#include <linux/console.h>
-> -
->  #include "gem/i915_gem_context.h"
->  #include "gem/i915_gem_object.h"
->  #include "i915_active.h"
-> diff --git a/drivers/gpu/drm/mgag200/mgag200_drv.c b/drivers/gpu/drm/mgag200/mgag200_drv.c
-> index 6b9243713b3c..685e766db6a4 100644
-> --- a/drivers/gpu/drm/mgag200/mgag200_drv.c
-> +++ b/drivers/gpu/drm/mgag200/mgag200_drv.c
-> @@ -6,7 +6,6 @@
->   *          Dave Airlie
->   */
->  
-> -#include <linux/console.h>
->  #include <linux/module.h>
->  #include <linux/pci.h>
->  #include <linux/vmalloc.h>
-> diff --git a/drivers/gpu/drm/nouveau/nouveau_drm.c b/drivers/gpu/drm/nouveau/nouveau_drm.c
-> index 1f828c9f691c..029997f50d1a 100644
-> --- a/drivers/gpu/drm/nouveau/nouveau_drm.c
-> +++ b/drivers/gpu/drm/nouveau/nouveau_drm.c
-> @@ -22,7 +22,6 @@
->   * Authors: Ben Skeggs
->   */
->  
-> -#include <linux/console.h>
->  #include <linux/delay.h>
->  #include <linux/module.h>
->  #include <linux/pci.h>
-> diff --git a/drivers/gpu/drm/qxl/qxl_drv.c b/drivers/gpu/drm/qxl/qxl_drv.c
-> index fc47b0deb021..3cd6bd9f059d 100644
-> --- a/drivers/gpu/drm/qxl/qxl_drv.c
-> +++ b/drivers/gpu/drm/qxl/qxl_drv.c
-> @@ -29,7 +29,6 @@
->  
->  #include "qxl_drv.h"
->  
-> -#include <linux/console.h>
->  #include <linux/module.h>
->  #include <linux/pci.h>
->  #include <linux/vgaarb.h>
-> diff --git a/drivers/gpu/drm/radeon/radeon_drv.c b/drivers/gpu/drm/radeon/radeon_drv.c
-> index b74cebca1f89..9b606c1b11ec 100644
-> --- a/drivers/gpu/drm/radeon/radeon_drv.c
-> +++ b/drivers/gpu/drm/radeon/radeon_drv.c
-> @@ -31,7 +31,6 @@
->  
->  
->  #include <linux/compat.h>
-> -#include <linux/console.h>
->  #include <linux/module.h>
->  #include <linux/pm_runtime.h>
->  #include <linux/vga_switcheroo.h>
-> diff --git a/drivers/gpu/drm/tiny/bochs.c b/drivers/gpu/drm/tiny/bochs.c
-> index 2ce3bd903b70..04333f78be55 100644
-> --- a/drivers/gpu/drm/tiny/bochs.c
-> +++ b/drivers/gpu/drm/tiny/bochs.c
-> @@ -1,6 +1,5 @@
->  // SPDX-License-Identifier: GPL-2.0-or-later
->  
-> -#include <linux/console.h>
->  #include <linux/pci.h>
->  
->  #include <drm/drm_aperture.h>
-> diff --git a/drivers/gpu/drm/tiny/cirrus.c b/drivers/gpu/drm/tiny/cirrus.c
-> index 4611ec408506..8bd674f0d682 100644
-> --- a/drivers/gpu/drm/tiny/cirrus.c
-> +++ b/drivers/gpu/drm/tiny/cirrus.c
-> @@ -16,7 +16,6 @@
->   * Copyright 1999-2001 Jeff Garzik <jgarzik@pobox.com>
->   */
->  
-> -#include <linux/console.h>
->  #include <linux/dma-buf-map.h>
->  #include <linux/module.h>
->  #include <linux/pci.h>
-> diff --git a/drivers/gpu/drm/vboxvideo/vbox_drv.c b/drivers/gpu/drm/vboxvideo/vbox_drv.c
-> index a6c81af37345..e6d983121d0b 100644
-> --- a/drivers/gpu/drm/vboxvideo/vbox_drv.c
-> +++ b/drivers/gpu/drm/vboxvideo/vbox_drv.c
-> @@ -7,7 +7,6 @@
->   *          Michael Thayer <michael.thayer@oracle.com,
->   *          Hans de Goede <hdegoede@redhat.com>
->   */
-> -#include <linux/console.h>
->  #include <linux/module.h>
->  #include <linux/pci.h>
->  #include <linux/vt_kern.h>
-> diff --git a/drivers/gpu/drm/virtio/virtgpu_drv.c b/drivers/gpu/drm/virtio/virtgpu_drv.c
-> index 749db18dcfa2..cd4c170236f1 100644
-> --- a/drivers/gpu/drm/virtio/virtgpu_drv.c
-> +++ b/drivers/gpu/drm/virtio/virtgpu_drv.c
-> @@ -27,7 +27,6 @@
->   */
->  
->  #include <linux/module.h>
-> -#include <linux/console.h>
->  #include <linux/pci.h>
->  #include <linux/poll.h>
->  #include <linux/wait.h>
-> diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-> index ab9a1750e1df..fcc4b5a7f639 100644
-> --- a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-> +++ b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-> @@ -25,7 +25,6 @@
->   *
->   **************************************************************************/
->  
-> -#include <linux/console.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/module.h>
->  #include <linux/pci.h>
-> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-> index ef9c57ce0906..d4320b147956 100644
-> --- a/drivers/video/console/vgacon.c
-> +++ b/drivers/video/console/vgacon.c
-> @@ -97,30 +97,9 @@ static int 		vga_video_font_height;
->  static int 		vga_scan_lines		__read_mostly;
->  static unsigned int 	vga_rolled_over; /* last vc_origin offset before wrap */
->  
-> -static bool vgacon_text_mode_force;
->  static bool vga_hardscroll_enabled;
->  static bool vga_hardscroll_user_enable = true;
->  
-> -bool vgacon_text_force(void)
-> -{
-> -	return vgacon_text_mode_force;
-> -}
-> -EXPORT_SYMBOL(vgacon_text_force);
-> -
-> -static int __init text_mode(char *str)
-> -{
-> -	vgacon_text_mode_force = true;
-> -
-> -	pr_warn("You have booted with nomodeset. This means your GPU drivers are DISABLED\n");
-> -	pr_warn("Any video related functionality will be severely degraded, and you may not even be able to suspend the system properly\n");
-> -	pr_warn("Unless you actually understand what nomodeset does, you should reboot without enabling it\n");
-> -
-> -	return 1;
-> -}
-> -
-> -/* force text mode - used by kernel modesetting */
-> -__setup("nomodeset", text_mode);
-> -
->  static int __init no_scroll(char *str)
->  {
->  	/*
-> diff --git a/include/drm/drm_mode_config.h b/include/drm/drm_mode_config.h
-> index 48b7de80daf5..e1d2042a7b77 100644
-> --- a/include/drm/drm_mode_config.h
-> +++ b/include/drm/drm_mode_config.h
-> @@ -969,4 +969,10 @@ static inline int drm_mode_config_init(struct drm_device *dev)
->  void drm_mode_config_reset(struct drm_device *dev);
->  void drm_mode_config_cleanup(struct drm_device *dev);
->  
-> +#ifdef CONFIG_VGA_CONSOLE
-> +extern bool vgacon_text_force(void);
-> +#else
-> +static inline bool vgacon_text_force(void) { return false; }
-> +#endif
-> +
-
-As said, maybe the CONFIG_VGA_CONSOLE ifdef should be dropped.
-
-Also, this seems like a completely arbitrary choice of header to place
-this.
+SGkNCg0KQW0gMDMuMTEuMjEgdW0gMTM6Mjggc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
+aWxsYXM6DQo+IFsgcmVzZW5kIHdpdGggYWxsIHJlbGV2YW50IHBlb3BsZSBhcyBDYyBub3cs
+IHNvcnJ5IHRvIG90aGVycyBmb3IgdGhlIHNwYW0gXQ0KPiANCj4gVGhlcmUgaXMgYSBsb3Qg
+b2YgaGlzdG9yaWNhbCBiYWdnYWdlIG9uIHRoaXMgcGFyYW1ldGVyLiBJdCdzIGRlZmluZWQg
+aW4NCj4gdGhlIHZnYWNvbiBkcml2ZXIgYXMgYSAibm9tb2Rlc2V0IiBwYXJhbWV0ZXIsIGJ1
+dCBpdCdzIGhhbmRsZXIgZnVuY3Rpb24gaXMNCj4gY2FsbGVkIHRleHRfbW9kZSgpIHRoYXQg
+c2V0cyBhIHZhcmlhYmxlIG5hbWVkIHZnYWNvbl90ZXh0X21vZGVfZm9yY2Ugd2hvc2UNCj4g
+dmFsdWUgaXMgcXVlcmllZCB3aXRoIGEgZnVuY3Rpb24gbmFtZWQgdmdhY29uX3RleHRfZm9y
+Y2UoKS4NCj4gDQo+IEFsbCB0aGlzIGltcGxpZXMgdGhhdCBpdCdzIGFib3V0IGZvcmNpbmcg
+dGV4dCBtb2RlIGZvciBWR0EsIHlldCBpdCBpcyBub3QNCj4gdXNlZCBpbiBuZWl0aGVyIHZn
+YWNvbiBub3Igb3RoZXIgY29uc29sZSBkcml2ZXIuIFRoZSBvbmx5IHVzZXJzIGZvciB0aGVz
+ZQ0KPiBhcmUgRFJNIGRyaXZlcnMsIHRoYXQgY2hlY2sgZm9yIHRoZSB2Z2Fjb25fdGV4dF9m
+b3JjZSgpIHJldHVybiB2YWx1ZSB0bw0KPiBkZXRlcm1pbmUgd2hldGhlciB0aGUgZHJpdmVy
+IGNvdWxkIGJlIGxvYWRlZCBvciBub3QuDQo+IA0KPiBUaGF0IG1ha2VzIGl0IHF1aXRlIGNv
+bmZ1c2luZyB0byByZWFkIHRoZSBjb2RlLCBiZWNhdXNlIHRoZSB2YXJpYWJsZXMgYW5kDQo+
+IGZ1bmN0aW9uIG5hbWVzIGRvbid0IHJlZmxlY3Qgd2hhdCB0aGV5IGFjdHVhbGx5IGRvIGFu
+ZCBhbHNvIGFyZSBub3QgaW4gdGhlDQo+IHNhbWUgc3Vic3lzdGVtIGFzIHRoZSBkcml2ZXJz
+IHRoYXQgbWFrZSB1c2Ugb2YgdGhlbS4NCj4gDQo+IFRoaXMgcGF0Y2gtc2V0IGF0dGVtcHRz
+IHRvIGNsZWFudXAgdGhlIGNvZGUgYnkgbW92aW5nIHRoZSBub21vZHNlc2V0IHBhcmFtDQo+
+IHRvIHRoZSBEUk0gc3Vic3lzdGVtIGFuZCBkbyBzb21lIHJlbmFtaW5nIHRvIG1ha2UgdGhl
+aXIgaW50ZW50aW9uIGNsZWFyZXIuDQo+IA0KPiBUaGVyZSBpcyBhbHNvIGFub3RoZXIgYXNw
+ZWN0IHRoYXQgY291bGQgYmUgaW1wcm92ZWQsIGFuZCBpcyB0aGUgZmFjdCB0aGF0DQo+IGRy
+aXZlcnMgYXJlIGNoZWNraW5nIGZvciB0aGUgbm9tb2Rlc2V0IGJlaW5nIHNldCBhcyBhbiBp
+bmRpY2F0aW9uIGlmIGhhdmUNCj4gdG8gYmUgbG9hZGVkLg0KPiANCj4gQnV0IHRoZXJlIG1h
+eSBiZSBvdGhlciByZWFzb25zIHdoeSB0aGlzIGNvdWxkIGJlIHRoZSBjYXNlLCBzbyBpdCBp
+cyBiZXR0ZXINCj4gdG8gZW5jYXBzdWxhdGUgdGhlIGxvZ2ljIGluIGEgc2VwYXJhdGUgZnVu
+Y3Rpb24gdG8gbWFrZSBjbGVhciB3aGF0J3MgYWJvdXQuDQo+IA0KPiBQYXRjaCAjMSBpcyBq
+dXN0IGEgdHJpdmlhbCBmaXggZm9yIGEgY29tbWVudCB0aGF0IGlzbid0IHJlZmVycmluZyB0
+byB0aGUNCj4gY29ycmVjdCBrZXJuZWwgcGFyYW1ldGVyLg0KPiANCj4gUGF0Y2ggIzIgbW92
+ZXMgdGhlIG5vbW9kZXNldCBsb2dpYyB0byB0aGUgRFJNIHN1YnN5c3RlbS4NCj4gDQo+IFBh
+dGNoICMzIHJlbmFtZXMgdGhlIHZnYWNvbl90ZXh0X2ZvcmNlKCkgZnVuY3Rpb24gYW5kIGFj
+Y29tcGFuaW5nIGxvZ2ljIGFzDQo+IGRybV9tb2Rlc2V0X2Rpc2FibGVkKCksIHdoaWNoIGlz
+IHdoYXQgdGhpcyBmdW5jdGlvbiBpcyByZWFsbHkgYWJvdXQuDQo+IA0KPiBQYXRjaCAjNCBh
+ZGRzIGEgZHJtX2Rydl9lbmFibGVkKCkgZnVuY3Rpb24gdGhhdCBjb3VsZCBiZSB1c2VkIGJ5
+IGRyaXZlcnMNCj4gdG8gY2hlY2sgaWYgY291bGQgYmUgZW5hYmxlZC4NCj4gDQo+IFBhdGNo
+ICM1IHVzZXMgdGhlIGRybV9kcnZfZW5hYmxlZCgpIGZ1bmN0aW9uIHRvIGNoZWNrIHRoaXMg
+aW5zdGVhZCBvZiBqdXN0DQo+IGNoZWNraW5nIGlmIG5vbW9kZXNldCBoYXMgYmVlbiBzZXQu
+DQo+IA0KPiANCj4gSmF2aWVyIE1hcnRpbmV6IENhbmlsbGFzICg1KToNCj4gICAgZHJtL2k5
+MTU6IEZpeCBjb21tZW50IGFib3V0IG1vZGVzZXQgcGFyYW1ldGVycw0KPiAgICBkcm06IE1v
+dmUgbm9tb2Rlc2V0IGtlcm5lbCBwYXJhbWV0ZXIgaGFuZGxlciB0byB0aGUgRFJNIHN1YnN5
+c3RlbQ0KPiAgICBkcm06IFJlbmFtZSB2Z2Fjb25fdGV4dF9mb3JjZSgpIGZ1bmN0aW9uIHRv
+IGRybV9tb2Rlc2V0X2Rpc2FibGVkKCkNCj4gICAgZHJtOiBBZGQgYSBkcm1fZHJ2X2VuYWJs
+ZWQoKSBoZWxwZXIgZnVuY3Rpb24NCj4gICAgZHJtOiBVc2UgZHJtX2Rydl9lbmFibGVkKCkg
+aW5zdGVhZCBvZiBkcm1fbW9kZXNldF9kaXNhYmxlZCgpDQoNClRoZXJlJ3MgdG9vIG11Y2gg
+Y2h1cm4gaGVyZSBJTUhPLiBQbGVhc2UgbWVyZ2UgcGF0Y2hlcyAyKzMgYW5kIDQrNS4gQW5k
+IA0KSSdkIHB1dCBwYXRjaCAoNCs1KSBmaXJzdCwgc28geW91IGhhdmUgdGhlIGRyaXZlcnMg
+b3V0IG9mIHRoZSB3YXkuIEFmdGVyIA0KdGhhdCBwYXRjaCAoMiszKSBzaG91bGQgb25seSBt
+b2RpZnkgZHJtX2Rydl9lbmFibGVkKCkuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4g
+DQo+ICAgZHJpdmVycy9ncHUvZHJtL01ha2VmaWxlICAgICAgICAgICAgICAgIHwgIDIgKysN
+Cj4gICBkcml2ZXJzL2dwdS9kcm0vYW1kL2FtZGdwdS9hbWRncHVfZHJ2LmMgfCAgNSArKy0t
+LQ0KPiAgIGRyaXZlcnMvZ3B1L2RybS9hc3QvYXN0X2Rydi5jICAgICAgICAgICB8ICAzICst
+LQ0KPiAgIGRyaXZlcnMvZ3B1L2RybS9kcm1fZHJ2LmMgICAgICAgICAgICAgICB8IDIxICsr
+KysrKysrKysrKysrKysrKysrDQo+ICAgZHJpdmVycy9ncHUvZHJtL2RybV9ub21vZGVzZXQu
+YyAgICAgICAgIHwgMjYgKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiAgIGRyaXZlcnMv
+Z3B1L2RybS9pOTE1L2k5MTVfbW9kdWxlLmMgICAgICB8IDEwICsrKysrLS0tLS0NCj4gICBk
+cml2ZXJzL2dwdS9kcm0vbWdhZzIwMC9tZ2FnMjAwX2Rydi5jICAgfCAgMyArLS0NCj4gICBk
+cml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2RybS5jICAgfCAgMyArLS0NCj4gICBk
+cml2ZXJzL2dwdS9kcm0vcXhsL3F4bF9kcnYuYyAgICAgICAgICAgfCAgMyArLS0NCj4gICBk
+cml2ZXJzL2dwdS9kcm0vcmFkZW9uL3JhZGVvbl9kcnYuYyAgICAgfCAgMyArLS0NCj4gICBk
+cml2ZXJzL2dwdS9kcm0vdGlueS9ib2Nocy5jICAgICAgICAgICAgfCAgMyArLS0NCj4gICBk
+cml2ZXJzL2dwdS9kcm0vdGlueS9jaXJydXMuYyAgICAgICAgICAgfCAgMyArLS0NCj4gICBk
+cml2ZXJzL2dwdS9kcm0vdmJveHZpZGVvL3Zib3hfZHJ2LmMgICAgfCAgNSArLS0tLQ0KPiAg
+IGRyaXZlcnMvZ3B1L2RybS92aXJ0aW8vdmlydGdwdV9kcnYuYyAgICB8ICAzICstLQ0KPiAg
+IGRyaXZlcnMvZ3B1L2RybS92bXdnZngvdm13Z2Z4X2Rydi5jICAgICB8ICAzICstLQ0KPiAg
+IGRyaXZlcnMvdmlkZW8vY29uc29sZS92Z2Fjb24uYyAgICAgICAgICB8IDIxIC0tLS0tLS0t
+LS0tLS0tLS0tLS0tDQo+ICAgaW5jbHVkZS9kcm0vZHJtX2Rydi5oICAgICAgICAgICAgICAg
+ICAgIHwgIDEgKw0KPiAgIGluY2x1ZGUvZHJtL2RybV9tb2RlX2NvbmZpZy5oICAgICAgICAg
+ICB8ICA2ICsrKysrKw0KPiAgIGluY2x1ZGUvbGludXgvY29uc29sZS5oICAgICAgICAgICAg
+ICAgICB8ICA2IC0tLS0tLQ0KPiAgIDE5IGZpbGVzIGNoYW5nZWQsIDczIGluc2VydGlvbnMo
+KyksIDU3IGRlbGV0aW9ucygtKQ0KPiAgIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2dw
+dS9kcm0vZHJtX25vbW9kZXNldC5jDQo+IA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpH
+cmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJt
+YW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhS
+QiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
 
-BR,
-Jani.
+--------------ok1AXfyISINrrjET9V0shOJL--
 
+--------------bVlFqC8A7AGyAxb3T60UWzGg
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
->  #endif
-> diff --git a/include/linux/console.h b/include/linux/console.h
-> index 20874db50bc8..d4dd8384898b 100644
-> --- a/include/linux/console.h
-> +++ b/include/linux/console.h
-> @@ -217,12 +217,6 @@ extern atomic_t ignore_console_lock_warning;
->  #define VESA_HSYNC_SUSPEND      2
->  #define VESA_POWERDOWN          3
->  
-> -#ifdef CONFIG_VGA_CONSOLE
-> -extern bool vgacon_text_force(void);
-> -#else
-> -static inline bool vgacon_text_force(void) { return false; }
-> -#endif
-> -
->  extern void console_init(void);
->  
->  /* For deferred console takeover */
+-----BEGIN PGP SIGNATURE-----
 
--- 
-Jani Nikula, Intel Open Source Graphics Center
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmGCiEUFAwAAAAAACgkQlh/E3EQov+Bb
+aRAAmqLzPWgo3W8UMaTkUsRuetzv9PbcupeXZmojS0Wf8UTJ6P3v6LX4l7S8CHmsi03HAHUb4hIW
+K5eXj9hJtQgD6KiNX/ELV9c+8suNSMQDyNeEHKiEJm3f/ZnwrHRcHIvsnb/ib9ExtCYeHE1iY7Gr
+t4dZRP/Umv5DOII4VSNfisnAJUb03r8u7q7aw+iBntqIRYlX4WyvGbPbEfdOJHepdxbBIaia4yJZ
+yZuwIZJXOmiYJcpTBF/TDr89vwJD5n6IW9p3MYfkEXcjcndp9zUq+RxRA64PLgoFvq0jxddHV7Ia
+k9smKLvPQQ8Wrrgdl0xP/xC2UQGRtkNVlLjxIAa605i7PjIvrYWC9+wCb2uZH5gjqlwZSEAYwhB7
+44RoQwdilj8Zp7N/IFncVpB6vSQYPYJt7NbnDyQayU3j5ovjybJ1800fHLeX6DBeMesvB8KEqZE2
+B4uEAOVosXJY712Zq6avKPDkhjk0JAS+7kwn3Z4bOQUgPcnBvyCYe+mG8Wa6Sn4gQEUWx9MMCeQ+
+y0s4ACTyx4iYiDmipvwPkRDgTHBQw310Y0L3xfVrxKPFLvejz4JeiRRyMCnw7Yn3MPTkUPwYO+al
+ZxELeM/tYheA0gn92n8NGYcYZMwK8h3SJJlvt90gfQnRG4zOpwW/zCA9OOR0v8+p40b7hK8w1oLT
+5Uk=
+=bE1F
+-----END PGP SIGNATURE-----
+
+--------------bVlFqC8A7AGyAxb3T60UWzGg--

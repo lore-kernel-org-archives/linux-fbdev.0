@@ -2,136 +2,126 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08698C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Nov 2021 15:00:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D53DC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Nov 2021 17:38:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E5C0160FC4
-	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Nov 2021 15:00:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6C9C460724
+	for <linux-fbdev@archiver.kernel.org>; Wed,  3 Nov 2021 17:38:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229698AbhKCPD3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 3 Nov 2021 11:03:29 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:43662 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S229587AbhKCPD3 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 3 Nov 2021 11:03:29 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1635951652;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=uwI0Y59Q5jmF4PHv+uLDkwhNmEWKp2IZoCsuOpcoatA=;
-        b=V8hupRDi7JW+MC8owgkOu+/x5Qo5KaggJE3sSIstfNGwbQoL9+gRulz1GWQFi/8GxGc41a
-        enkqUtLyhFFkpJTFmMNpm+gZLs/uvyOcF+btSBtMsx0ql6i57D9Ot9z146O6p1kWLNpk7M
-        zPe2NrI7r68797d6wlshTQaNDptLT/A=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-401-cvTfjZQWMdOV7UUhjuJrQQ-1; Wed, 03 Nov 2021 11:00:51 -0400
-X-MC-Unique: cvTfjZQWMdOV7UUhjuJrQQ-1
-Received: by mail-wm1-f71.google.com with SMTP id j25-20020a05600c1c1900b00332372c252dso1220077wms.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 03 Nov 2021 08:00:51 -0700 (PDT)
+        id S230191AbhKCRkv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 3 Nov 2021 13:40:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45802 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229943AbhKCRkt (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 3 Nov 2021 13:40:49 -0400
+Received: from mail-ot1-x32f.google.com (mail-ot1-x32f.google.com [IPv6:2607:f8b0:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C824FC061203
+        for <linux-fbdev@vger.kernel.org>; Wed,  3 Nov 2021 10:38:12 -0700 (PDT)
+Received: by mail-ot1-x32f.google.com with SMTP id n13-20020a9d710d000000b005558709b70fso4515997otj.10
+        for <linux-fbdev@vger.kernel.org>; Wed, 03 Nov 2021 10:38:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=usp.br; s=usp-google;
+        h=date:from:to:cc:subject:message-id:mime-version:content-disposition
+         :content-transfer-encoding;
+        bh=KNIg2kQ3uZauu+dnwK3HwVUo4epk3uh+4Ru2o+wrxl0=;
+        b=ILGjE1hgsxqN3af/0WC7REvDKgUS7+6LqX6lOkbSBAzASsdyW8wbRImU0SNUwB48Nc
+         UW6KiJ1e0JCzGrLJAm7s6Lcl5AWZoMzgIP6wE38AC4mw+sV/R5PDAcvltRJ6jH/dF3xo
+         wRC7HScW0cjAz9xgavhgDhIoNYFnQg4z3q+suYLGj8tfqJdROD1MSSkMM33ig/8XpPjw
+         lTlJtkgar8mgjyJdvjTp1i6eRs/WbVekjEg2Qa6VYOpmHyxHvvoeCoGI7JmOKm0N35g7
+         CoDS1jynUT7ELatCQK+qEGU0rytOyhZIoxFKbYfvqNlgGEEdiKyr1CCm/mYaXKEHGVXa
+         ZZGA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=uwI0Y59Q5jmF4PHv+uLDkwhNmEWKp2IZoCsuOpcoatA=;
-        b=5WcB+6z9W+IsowjGzM0bQ4LXusYxuKF08qfTbWKn5Gy0rfawsA9i7RpOpu/okSHHXF
-         sjwX4yVg3YOj4P7TQkc6F57XVx0u6L/KgXaKxSu8C8LDkt295btTbXRiKbxu8Vkjrl0+
-         L4PeNegBOFvx+IoYeGU5R3Wz/m2xlUz533YfXUhosYEBx8O4vIJ4eCn2whAU3O4mLgIO
-         yn1J04ZLobawhVoiyJyOHw9b6I8QNYJRIwm3BYxOZJWPKIUqD627W4h683Vrcw4YJy9o
-         ZPDF3zGGHgQl7TCR2SqT436ZmBdIwNwAIkdnG9he8NMeoO7/rJh6zmxsZmKOV/dx6sZX
-         MyeA==
-X-Gm-Message-State: AOAM531Zc1NdxH/QoJQ7PMl/CsoSi3SNVU44rIXJcxYOqhMH2+YMqjSk
-        +le6Dztb/DxDCLjO4vDyp4mmnB0gbamYjKoo5HtfawoC0ad3EKWFNN+nay0WVv3pA80nqwuoOt3
-        zqLj8fvR0KUsbf9urwzk+LHo=
-X-Received: by 2002:a1c:740e:: with SMTP id p14mr15702641wmc.109.1635951650068;
-        Wed, 03 Nov 2021 08:00:50 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzlHYGSvfJmLDivVAOaT4xxbH7zmwqgCefExXH/bfigpAgkjWjbQ8meeoW65MqFlJvktgySGg==
-X-Received: by 2002:a1c:740e:: with SMTP id p14mr15702572wmc.109.1635951649817;
-        Wed, 03 Nov 2021 08:00:49 -0700 (PDT)
-Received: from [192.168.1.128] ([92.176.231.106])
-        by smtp.gmail.com with ESMTPSA id q1sm2089857wmj.20.2021.11.03.08.00.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 03 Nov 2021 08:00:49 -0700 (PDT)
-Message-ID: <dbdbaf95-8625-aec9-4446-d39db77b23f2@redhat.com>
-Date:   Wed, 3 Nov 2021 16:00:47 +0100
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
+         :content-disposition:content-transfer-encoding;
+        bh=KNIg2kQ3uZauu+dnwK3HwVUo4epk3uh+4Ru2o+wrxl0=;
+        b=rpmmG9W077/4SyWfo3gvdGHfvoCEqglFF93pPp7u4SSr9/Wq3wPX3iGWnD4f82q83W
+         FmRF/rmXQAJ/OUoeAZBkUcEv6LqhC++mmFwKG68HBK8rTL7Su7wA501c6ztUcrkj6hZH
+         rg1gVGHqfxxZBgrkrfbI0VPVaxnjiPy52+HfPUf7HsPi5NQujZu7WoTDiVtxZMKEFXC/
+         9XcFA5xxgINafgSSTdjxE0xUFG69wnkdcRo6tZRAGTcv6a8PJZDdFgrgdUWQytvn18bu
+         v4izkvsQyY6t01qPpxzardGwtZBjIxS6/ZjBO3e+ytdIpbHZsbiI5UjbM6uE5n4QXJby
+         1gFQ==
+X-Gm-Message-State: AOAM531JvyH3NigBD7OD8BZl1/ChafiHrrnjxK7Tire4Wy7caGM5awuB
+        HRTP4OB94pBR0c2W8hGDmHm94VS6oSL3G+Ns
+X-Google-Smtp-Source: ABdhPJwMefisJ6fYt8/aFM7zFKH09aYePVgs7ob6+8bNCxPG+kXZp8UpPBPULcCTaQBjsUg8VtkQsQ==
+X-Received: by 2002:a05:6830:1e42:: with SMTP id e2mr33459329otj.41.1635961092162;
+        Wed, 03 Nov 2021 10:38:12 -0700 (PDT)
+Received: from fedora ([187.64.134.142])
+        by smtp.gmail.com with ESMTPSA id d7sm669920otl.19.2021.11.03.10.38.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 03 Nov 2021 10:38:11 -0700 (PDT)
+Date:   Wed, 3 Nov 2021 14:38:05 -0300
+From:   =?iso-8859-1?Q?Ma=EDra?= Canal <maira.canal@usp.br>
+To:     daniel.thompson@linaro.org, lee.jones@linaro.org,
+        jingoohan1@gmail.com, thierry.reding@gmail.com,
+        u.kleine-koenig@pengutronix.de
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org
+Subject: [PATCH v5] backlight: lp855x: Switch to atomic PWM API
+Message-ID: <YYLI/b7KcqM8wcEB@fedora>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
-Subject: Re: [RESEND PATCH 0/5] Cleanups for the nomodeset kernel command line
- parameter logic
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-kernel@vger.kernel.org
-Cc:     Peter Robinson <pbrobinson@gmail.com>,
-        =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>,
-        Pekka Paalanen <pekka.paalanen@collabora.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Neal Gompa <ngompa13@gmail.com>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Ben Skeggs <bskeggs@redhat.com>, Chia-I Wu <olvaffe@gmail.com>,
-        =?UTF-8?Q?Christian_K=c3=b6nig?= <christian.koenig@amd.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Dave Airlie <airlied@redhat.com>,
-        David Airlie <airlied@linux.ie>,
-        Gerd Hoffmann <kraxel@redhat.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Gurchetan Singh <gurchetansingh@chromium.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        "Pan, Xinhui" <Xinhui.Pan@amd.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>,
-        VMware Graphics <linux-graphics-maintainer@vmware.com>,
-        Zack Rusin <zackr@vmware.com>, amd-gfx@lists.freedesktop.org,
-        dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, nouveau@lists.freedesktop.org,
-        spice-devel@lists.freedesktop.org,
-        virtualization@lists.linux-foundation.org
-References: <20211103122809.1040754-1-javierm@redhat.com>
- <e02d23be-1a1c-570d-e76f-dbea76b6dd55@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <e02d23be-1a1c-570d-e76f-dbea76b6dd55@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Thomas,
+Remove legacy PWM interface (pwm_config, pwm_enable, pwm_disable) and
+replace it for the atomic PWM API.
 
-On 11/3/21 14:01, Thomas Zimmermann wrote:
+Signed-off-by: Maíra Canal <maira.canal@usp.br>
+---
+V1 -> V2: Initialize variable and simplify conditional loop
+V2 -> V3: Fix assignment of NULL variable
+V3 -> V4: Replace division for pwm_set_relative_duty_cycle
+V4 -> V5: Fix overwrite of state.period
+---
+ drivers/video/backlight/lp855x_bl.c | 21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
 
-[snip]
-
->>
->>
->> Javier Martinez Canillas (5):
->>    drm/i915: Fix comment about modeset parameters
->>    drm: Move nomodeset kernel parameter handler to the DRM subsystem
->>    drm: Rename vgacon_text_force() function to drm_modeset_disabled()
->>    drm: Add a drm_drv_enabled() helper function
->>    drm: Use drm_drv_enabled() instead of drm_modeset_disabled()
-> 
-> There's too much churn here IMHO. Please merge patches 2+3 and 4+5. And 
-> I'd put patch (4+5) first, so you have the drivers out of the way. After 
-> that patch (2+3) should only modify drm_drv_enabled().
->
-
-Sure, I'm happy with less patches.
-
-Thanks for your feedback.
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
+index e94932c69f54..e70a7b72dcf3 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -233,9 +233,8 @@ static int lp855x_configure(struct lp855x *lp)
  
-> Best regards
-> Thomas
-> 
-Best regards,
+ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
+ {
+-	unsigned int period = lp->pdata->period_ns;
+-	unsigned int duty = br * period / max_br;
+ 	struct pwm_device *pwm;
++	struct pwm_state state;
+ 
+ 	/* request pwm device with the consumer name */
+ 	if (!lp->pwm) {
+@@ -245,18 +244,16 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
+ 
+ 		lp->pwm = pwm;
+ 
+-		/*
+-		 * FIXME: pwm_apply_args() should be removed when switching to
+-		 * the atomic PWM API.
+-		 */
+-		pwm_apply_args(pwm);
++		pwm_init_state(lp->pwm, &state);
++		state.period = lp->pdata->period_ns;
++	} else {
++		pwm_get_state(lp->pwm, &state);
+ 	}
+ 
+-	pwm_config(lp->pwm, duty, period);
+-	if (duty)
+-		pwm_enable(lp->pwm);
+-	else
+-		pwm_disable(lp->pwm);
++	pwm_set_relative_duty_cycle(&state, br, max_br);
++	state.enabled = state.duty_cycle;
++
++	pwm_apply_state(lp->pwm, &state);
+ }
+ 
+ static int lp855x_bl_update_status(struct backlight_device *bl)
 -- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+2.31.1
 

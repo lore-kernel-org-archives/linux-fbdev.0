@@ -2,127 +2,125 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA6A7C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  4 Nov 2021 17:59:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2507DC433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Nov 2021 08:13:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9807B60EC0
-	for <linux-fbdev@archiver.kernel.org>; Thu,  4 Nov 2021 17:59:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0931960FC2
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Nov 2021 08:13:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234016AbhKDSBh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 4 Nov 2021 14:01:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35566 "EHLO
+        id S232620AbhKEIQW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 5 Nov 2021 04:16:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55126 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232245AbhKDSBY (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 4 Nov 2021 14:01:24 -0400
-Received: from mail-qt1-x830.google.com (mail-qt1-x830.google.com [IPv6:2607:f8b0:4864:20::830])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BDC53C061714
-        for <linux-fbdev@vger.kernel.org>; Thu,  4 Nov 2021 10:58:45 -0700 (PDT)
-Received: by mail-qt1-x830.google.com with SMTP id d21so4876559qtw.11
-        for <linux-fbdev@vger.kernel.org>; Thu, 04 Nov 2021 10:58:45 -0700 (PDT)
+        with ESMTP id S231837AbhKEIQV (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Nov 2021 04:16:21 -0400
+Received: from mail-qt1-x832.google.com (mail-qt1-x832.google.com [IPv6:2607:f8b0:4864:20::832])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 646B2C061714;
+        Fri,  5 Nov 2021 01:13:42 -0700 (PDT)
+Received: by mail-qt1-x832.google.com with SMTP id o12so6501512qtv.4;
+        Fri, 05 Nov 2021 01:13:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=usp.br; s=usp-google;
-        h=date:from:to:cc:subject:message-id:mime-version:content-disposition
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=OBD4zrSh/ePkUnk6YwhNCFUdHCAqcEy6CNxm9jGbw1E=;
-        b=efsmc+I8Gu0dvNcX1qm770XfceWiNa3/PjnuBuaj57Eve+m8Ihp2497SZvjhu0wk+I
-         dBQdiRuVdsRdQ88zPoJo215J2XIWyysoq3/C4itTTagxytVynpgN3E3C01HBYpWcQzN5
-         d651ofwEbdP+eJ9uYCa6p+0eOB7ZZz5wm2FnG6H2Ldln9MbupAOVrP+0UJ0s8ctCwkok
-         60OXulTTh0i8LdggtkZJtDa7ImVwwg/Tal7donT2Z5PyyPMMA481LCl7tPK3lKCJ70hr
-         V6V0S+cKLvqA04QNH/broFMTpoRi2uaIy4e+50su1yh6ZIePmaXw+RiEPMfOArYRdFDA
-         qufA==
+        bh=fVlZRJCKXUiqoF7G7hyUyfyk+5I40Id7HCqnbB08HMQ=;
+        b=kTtDhSSUVBAaLquaHLkNCUmCFlhIfFNbkpBVUYWy/kf4GCXD82Rp+uFqFFnjosL91f
+         GJet10XZfMoRgklh86ym1VJPDkjGjsl8HX25SW41/0tMoF7tQ/u+7mZIAiDz2JBPomRE
+         SH5JPoqYH3/rpRIRstCz9budfZujQhFpdJ3Dij51Y0avydA/BEkM7KqUs5i2QSbIRQ6o
+         qcyx0MW1AgCk+xqEvuHIcmQyVxr/sxeSVL6BV47RG+r4fB3skeUvIMu/A+Q3kjvbvwIT
+         QXDGbl0dMbun5EYa1X+6PILPjL0ZZIiN6tJ5/mycAbBaQjBZYoqkcAeYin6eYSJP0Agk
+         Ci2A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
-         :content-disposition:content-transfer-encoding;
-        bh=OBD4zrSh/ePkUnk6YwhNCFUdHCAqcEy6CNxm9jGbw1E=;
-        b=IQhYo/OO8UDXmePQbER2AtUhE84kYHusbZtDJICjXar1qJ2mGaL+g1XSgku6TxXVy1
-         QYxF+6cHE4rvO6iCktv10Vp5JtilTcn6TzkTy1TkLTC2Zxwxm3kZDGTkkdTm+c+Q5v60
-         9vaE4NimMLXk+8awfnYQEssmN3/VC6V/cQIq+5ErqYvfBa6W+eWDLuKifNZrTseyE4c6
-         gbFngkfdt/o50rihqqwwi2rPJTKD+omC5iCrP9sAFdczQZP9gWDGqKrP2WGj2lZanh9q
-         sXF5E2ce8yOtEiQWcibGMC4FRYvMmgEuDgzdLZxDlr+LQHvGbOmUb0WLjrz31ZVxePs9
-         RLxA==
-X-Gm-Message-State: AOAM532Siht8HcT75l6IvAnErDuLSL5typj5eqjx2ZPKnRbcXVvDml1w
-        L6wpxIDuFtWfwTNUZzg08Nl5CQ==
-X-Google-Smtp-Source: ABdhPJz1exMNa5eZlL8wV3nYiOktH4b5Sb1c9IjsFUvBKk4Szp0YFYGCfYBishzhorgUT7jfV+ZwxQ==
-X-Received: by 2002:a05:622a:606:: with SMTP id z6mr57105056qta.253.1636048724933;
-        Thu, 04 Nov 2021 10:58:44 -0700 (PDT)
-Received: from fedora ([187.64.134.142])
-        by smtp.gmail.com with ESMTPSA id 13sm3937167qkc.40.2021.11.04.10.58.41
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=fVlZRJCKXUiqoF7G7hyUyfyk+5I40Id7HCqnbB08HMQ=;
+        b=z0ukC34zePgcGF/rV3+vgppLIyuhTtMyDxChXWD2eUuzlRD3F04TEmgQ8Wa/KPqdGz
+         lftJ/T5slYXMGp64MIkwVa8yHTg9iJLj3pYmfGe9VxgpCgWfNwLsCOwwdsDR8W//c0TG
+         YTAeZx1VKZkaK2i2Vp6xr39Yo9G4xbRt1ZY8BDeAtoB9M769T/IXMoxGIpFuzeBYVjyr
+         gtZe5sTGENndPeyYMU0t5TrZRb+wbMgE1VzYnZqTEoqq+EMa+dOYQSNivfRIpEDc+QRO
+         gkf43r4VpU0WO1O/TUBhhnt0o+ZJTF30eGFd53rHXn3/VczYh6xW+66cRFQeOUVBYw4A
+         RQDw==
+X-Gm-Message-State: AOAM533Vu971o0v/G2TUPaVTM29onfNMvAhF5urvQ3JKbHCgdkgy7MNZ
+        bPuMzSwF5rXjpZJ+OMVQcou5QnracyU=
+X-Google-Smtp-Source: ABdhPJxUNp4kKqoDFXNGw/s5Alxe9f3i4Axux6ohHFVYJVgy0gVbIefnUP4h24e3WH9Tvqnk9m80Yg==
+X-Received: by 2002:a05:622a:1705:: with SMTP id h5mr36744355qtk.228.1636100021385;
+        Fri, 05 Nov 2021 01:13:41 -0700 (PDT)
+Received: from localhost.localdomain ([193.203.214.57])
+        by smtp.gmail.com with ESMTPSA id e10sm5428630qte.57.2021.11.05.01.13.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Nov 2021 10:58:44 -0700 (PDT)
-Date:   Thu, 4 Nov 2021 14:58:38 -0300
-From:   =?iso-8859-1?Q?Ma=EDra?= Canal <maira.canal@usp.br>
-To:     daniel.thompson@linaro.org, lee.jones@linaro.org,
-        jingoohan1@gmail.com, thierry.reding@gmail.com,
-        u.kleine-koenig@pengutronix.de
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org
-Subject: [PATCH v6] backlight: lp855x: Switch to atomic PWM API
-Message-ID: <YYQfThRqabp4A7Dz@fedora>
+        Fri, 05 Nov 2021 01:13:40 -0700 (PDT)
+From:   cgel.zte@gmail.com
+X-Google-Original-From: yao.jing2@zte.com.cn
+To:     linux-omap@vger.kernel.org
+Cc:     yao.jing2@zte.com.cn, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Zeal Robot <zealci@zte.com.cn>
+Subject: [PATCH] omapfb: panel-dsi-cm: Replace snprintf in show functions with sysfs_emit
+Date:   Fri,  5 Nov 2021 08:13:33 +0000
+Message-Id: <20211105081333.76861-1-yao.jing2@zte.com.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Remove legacy PWM interface (pwm_config, pwm_enable, pwm_disable) and
-replace it for the atomic PWM API.
+From: Jing Yao <yao.jing2@zte.com.cn>
 
-Signed-off-by: Maíra Canal <maira.canal@usp.br>
----
-V1 -> V2: Initialize variable and simplify conditional loop
-V2 -> V3: Fix assignment of NULL variable
-V3 -> V4: Replace division for pwm_set_relative_duty_cycle
-V4 -> V5: Fix overwrite of state.period
-V5 -> V6: Fix duty cycle rounding and set period outside conditional loop
----
- drivers/video/backlight/lp855x_bl.c | 21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+coccicheck complains about the use of snprintf() in sysfs show
+functions:
+WARNING use scnprintf or sprintf
 
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index e94932c69f54..8f893cf0cfde 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -233,9 +233,8 @@ static int lp855x_configure(struct lp855x *lp)
+Use sysfs_emit instead of scnprintf, snprintf or sprintf makes more
+sense.
+
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Jing Yao <yao.jing2@zte.com.cn>
+---
+ drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
+index 4b0793abdd84..a2c7c5cb1523 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
+@@ -409,7 +409,7 @@ static ssize_t dsicm_num_errors_show(struct device *dev,
+ 	if (r)
+ 		return r;
  
- static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- {
--	unsigned int period = lp->pdata->period_ns;
--	unsigned int duty = br * period / max_br;
- 	struct pwm_device *pwm;
-+	struct pwm_state state;
- 
- 	/* request pwm device with the consumer name */
- 	if (!lp->pwm) {
-@@ -245,18 +244,16 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- 
- 		lp->pwm = pwm;
- 
--		/*
--		 * FIXME: pwm_apply_args() should be removed when switching to
--		 * the atomic PWM API.
--		 */
--		pwm_apply_args(pwm);
-+		pwm_init_state(lp->pwm, &state);
-+	} else {
-+		pwm_get_state(lp->pwm, &state);
- 	}
- 
--	pwm_config(lp->pwm, duty, period);
--	if (duty)
--		pwm_enable(lp->pwm);
--	else
--		pwm_disable(lp->pwm);
-+	state.period = lp->pdata->period_ns;
-+	state.duty_cycle = div_u64(br * state.period, max_br);
-+	state.enabled = state.duty_cycle;
-+
-+	pwm_apply_state(lp->pwm, &state);
+-	return snprintf(buf, PAGE_SIZE, "%d\n", errors);
++	return sysfs_emit(buf, "%d\n", errors);
  }
  
- static int lp855x_bl_update_status(struct backlight_device *bl)
+ static ssize_t dsicm_hw_revision_show(struct device *dev,
+@@ -439,7 +439,7 @@ static ssize_t dsicm_hw_revision_show(struct device *dev,
+ 	if (r)
+ 		return r;
+ 
+-	return snprintf(buf, PAGE_SIZE, "%02x.%02x.%02x\n", id1, id2, id3);
++	return sysfs_emit(buf, "%02x.%02x.%02x\n", id1, id2, id3);
+ }
+ 
+ static ssize_t dsicm_store_ulps(struct device *dev,
+@@ -487,7 +487,7 @@ static ssize_t dsicm_show_ulps(struct device *dev,
+ 	t = ddata->ulps_enabled;
+ 	mutex_unlock(&ddata->lock);
+ 
+-	return snprintf(buf, PAGE_SIZE, "%u\n", t);
++	return sysfs_emit(buf, "%u\n", t);
+ }
+ 
+ static ssize_t dsicm_store_ulps_timeout(struct device *dev,
+@@ -532,7 +532,7 @@ static ssize_t dsicm_show_ulps_timeout(struct device *dev,
+ 	t = ddata->ulps_timeout;
+ 	mutex_unlock(&ddata->lock);
+ 
+-	return snprintf(buf, PAGE_SIZE, "%u\n", t);
++	return sysfs_emit(buf, "%u\n", t);
+ }
+ 
+ static DEVICE_ATTR(num_dsi_errors, S_IRUGO, dsicm_num_errors_show, NULL);
 -- 
-2.31.1
+2.25.1
 

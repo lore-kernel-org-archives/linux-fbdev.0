@@ -2,70 +2,137 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01B5EC433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Nov 2021 20:27:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9ED5C43217
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Nov 2021 20:44:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D96A0611C4
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Nov 2021 20:27:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C49F761357
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Nov 2021 20:44:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233536AbhKEU3l (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 5 Nov 2021 16:29:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52030 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233534AbhKEU3l (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Nov 2021 16:29:41 -0400
-Received: from smtp.domeneshop.no (smtp.domeneshop.no [IPv6:2a01:5b40:0:3005::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88410C061714;
-        Fri,  5 Nov 2021 13:27:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=tronnes.org
-        ; s=ds202012; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:
-        MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender:Reply-To:
-        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-        List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=c7xL3ULUvDEQY8y11JsWZ8qJvPv11YqU/ku2rqgY1ww=; b=iqUPoKkx2ggx9bqJoDGzYLoSFv
-        ZTj25RKGAhdI0A7DLOIF2+4TH8ZVLKHUquDkvkhOx1W3Yg58DkzzhhNLeBFhfh4olfJMcU07scxQ6
-        Yn2h7O+JoHEuxj+QUrQHL8mmD0RuqPpwPVfCvBHQ4LuIeqV3qafidcGwiSFUH3gby+FKwZEHvCxAA
-        RcrRlxazQfnlaKoT0EULpKhBHlJCmu/MiQ84j0VB0fwk+7mH5kbL30e8B4S4ouDpkn8isCKpCh2WF
-        m5lPL0D7s3v7KJtn2XRWABiG6h92aPjFc8Zgm2PM1EuFNBAMXPoYp77quZt3jhJaGupwbz++38H5c
-        YUTNZofA==;
-Received: from 211.81-166-168.customer.lyse.net ([81.166.168.211]:51024 helo=[192.168.10.61])
-        by smtp.domeneshop.no with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.92)
-        (envelope-from <noralf@tronnes.org>)
-        id 1mj5ne-0006rL-Lg; Fri, 05 Nov 2021 21:26:58 +0100
-Subject: Re: [PATCH] staging/fbtft: Fix backlight
+        id S233709AbhKEUqp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 5 Nov 2021 16:46:45 -0400
+Received: from asav22.altibox.net ([109.247.116.9]:36178 "EHLO
+        asav22.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233055AbhKEUqo (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Nov 2021 16:46:44 -0400
+Received: from localhost.localdomain (211.81-166-168.customer.lyse.net [81.166.168.211])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: noralf.tronnes@ebnett.no)
+        by asav22.altibox.net (Postfix) with ESMTPSA id C616520A19;
+        Fri,  5 Nov 2021 21:44:00 +0100 (CET)
+From:   =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-staging@lists.linux.dev, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, stable@vger.kernel.org
-References: <20211030162901.17918-1-noralf@tronnes.org>
-From:   =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
-Message-ID: <9915936e-8a02-2e7a-5c47-f048c1f0319b@tronnes.org>
-Date:   Fri, 5 Nov 2021 21:26:56 +0100
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.14.0
+        linux-fbdev@vger.kernel.org,
+        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        stable@vger.kernel.org
+Subject: [PATCH v2] staging/fbtft: Fix backlight
+Date:   Fri,  5 Nov 2021 21:43:58 +0100
+Message-Id: <20211105204358.2991-1-noralf@tronnes.org>
+X-Mailer: git-send-email 2.33.0
 MIME-Version: 1.0
-In-Reply-To: <20211030162901.17918-1-noralf@tronnes.org>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-CMAE-Score: 0
+X-CMAE-Analysis: v=2.3 cv=aqWc9xRV c=1 sm=1 tr=0
+        a=OYZzhG0JTxDrWp/F2OJbnw==:117 a=OYZzhG0JTxDrWp/F2OJbnw==:17
+        a=IkcTkHD0fZMA:10 a=M51BFTxLslgA:10 a=VwQbUJbxAAAA:8 a=SJz97ENfAAAA:8
+        a=1p55k4irWVlsT-gVo68A:9 a=QEXdDO2ut3YA:10 a=AjGcO6oz07-iQ99wixmX:22
+        a=vFet0B0WnEQeilDPIY6i:22
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Commit b4a1ed0cd18b ("fbdev: make FB_BACKLIGHT a tristate") forgot to
+update fbtft breaking its backlight support when FB_BACKLIGHT is a module.
 
+Since FB_TFT selects FB_BACKLIGHT there's no need for this conditional
+so just remove it and we're good.
 
-Den 30.10.2021 18.29, skrev Noralf Trønnes:
-> Commit b4a1ed0cd18b ("fbdev: make FB_BACKLIGHT a tristate") forgot to
-> update fbtft breaking its backlight support when FB_BACKLIGHT is a module.
-> 
-> Fix this by using IS_ENABLED().
-> 
-> Fixes: b4a1ed0cd18b ("fbdev: make FB_BACKLIGHT a tristate")
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Noralf Trønnes <noralf@tronnes.org>
-> ---
+Fixes: b4a1ed0cd18b ("fbdev: make FB_BACKLIGHT a tristate")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Noralf Trønnes <noralf@tronnes.org>
+---
 
-I discovered that fb_ssd1351 also has this #ifdef, so need to fix that
-as well. Will send a new version.
+Changes since v1:
+- No need for the #ifdef at all since FB_BACKLIGHT is always selected
+- Fix fb_ssd1351 as well
 
-Noralf.
+fb_watterott has the same problem, but I've sent a removal patch for that one.
+
+ drivers/staging/fbtft/fb_ssd1351.c | 4 ----
+ drivers/staging/fbtft/fbtft-core.c | 9 +--------
+ 2 files changed, 1 insertion(+), 12 deletions(-)
+
+diff --git a/drivers/staging/fbtft/fb_ssd1351.c b/drivers/staging/fbtft/fb_ssd1351.c
+index cf263a58a148..6fd549a424d5 100644
+--- a/drivers/staging/fbtft/fb_ssd1351.c
++++ b/drivers/staging/fbtft/fb_ssd1351.c
+@@ -187,7 +187,6 @@ static struct fbtft_display display = {
+ 	},
+ };
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
+ static int update_onboard_backlight(struct backlight_device *bd)
+ {
+ 	struct fbtft_par *par = bl_get_data(bd);
+@@ -231,9 +230,6 @@ static void register_onboard_backlight(struct fbtft_par *par)
+ 	if (!par->fbtftops.unregister_backlight)
+ 		par->fbtftops.unregister_backlight = fbtft_unregister_backlight;
+ }
+-#else
+-static void register_onboard_backlight(struct fbtft_par *par) { };
+-#endif
+ 
+ FBTFT_REGISTER_DRIVER(DRVNAME, "solomon,ssd1351", &display);
+ 
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index ed992ca605eb..1690358b8f01 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -128,7 +128,6 @@ static int fbtft_request_gpios(struct fbtft_par *par)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
+ static int fbtft_backlight_update_status(struct backlight_device *bd)
+ {
+ 	struct fbtft_par *par = bl_get_data(bd);
+@@ -161,6 +160,7 @@ void fbtft_unregister_backlight(struct fbtft_par *par)
+ 		par->info->bl_dev = NULL;
+ 	}
+ }
++EXPORT_SYMBOL(fbtft_unregister_backlight);
+ 
+ static const struct backlight_ops fbtft_bl_ops = {
+ 	.get_brightness	= fbtft_backlight_get_brightness,
+@@ -198,12 +198,7 @@ void fbtft_register_backlight(struct fbtft_par *par)
+ 	if (!par->fbtftops.unregister_backlight)
+ 		par->fbtftops.unregister_backlight = fbtft_unregister_backlight;
+ }
+-#else
+-void fbtft_register_backlight(struct fbtft_par *par) { };
+-void fbtft_unregister_backlight(struct fbtft_par *par) { };
+-#endif
+ EXPORT_SYMBOL(fbtft_register_backlight);
+-EXPORT_SYMBOL(fbtft_unregister_backlight);
+ 
+ static void fbtft_set_addr_win(struct fbtft_par *par, int xs, int ys, int xe,
+ 			       int ye)
+@@ -853,13 +848,11 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
+ 		 fb_info->fix.smem_len >> 10, text1,
+ 		 HZ / fb_info->fbdefio->delay, text2);
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
+ 	/* Turn on backlight if available */
+ 	if (fb_info->bl_dev) {
+ 		fb_info->bl_dev->props.power = FB_BLANK_UNBLANK;
+ 		fb_info->bl_dev->ops->update_status(fb_info->bl_dev);
+ 	}
+-#endif
+ 
+ 	return 0;
+ 
+-- 
+2.33.0
+

@@ -2,387 +2,70 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BE70C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Nov 2021 20:25:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01B5EC433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Nov 2021 20:27:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 304AB60F56
-	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Nov 2021 20:25:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D96A0611C4
+	for <linux-fbdev@archiver.kernel.org>; Fri,  5 Nov 2021 20:27:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233479AbhKEU1j (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 5 Nov 2021 16:27:39 -0400
-Received: from asav22.altibox.net ([109.247.116.9]:59580 "EHLO
-        asav22.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233373AbhKEU1j (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Nov 2021 16:27:39 -0400
-Received: from localhost.localdomain (211.81-166-168.customer.lyse.net [81.166.168.211])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: noralf.tronnes@ebnett.no)
-        by asav22.altibox.net (Postfix) with ESMTPSA id 09B7020CC2;
-        Fri,  5 Nov 2021 21:24:56 +0100 (CET)
-From:   =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
+        id S233536AbhKEU3l (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 5 Nov 2021 16:29:41 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52030 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233534AbhKEU3l (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 5 Nov 2021 16:29:41 -0400
+Received: from smtp.domeneshop.no (smtp.domeneshop.no [IPv6:2a01:5b40:0:3005::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88410C061714;
+        Fri,  5 Nov 2021 13:27:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=tronnes.org
+        ; s=ds202012; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:
+        MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender:Reply-To:
+        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+        List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=c7xL3ULUvDEQY8y11JsWZ8qJvPv11YqU/ku2rqgY1ww=; b=iqUPoKkx2ggx9bqJoDGzYLoSFv
+        ZTj25RKGAhdI0A7DLOIF2+4TH8ZVLKHUquDkvkhOx1W3Yg58DkzzhhNLeBFhfh4olfJMcU07scxQ6
+        Yn2h7O+JoHEuxj+QUrQHL8mmD0RuqPpwPVfCvBHQ4LuIeqV3qafidcGwiSFUH3gby+FKwZEHvCxAA
+        RcrRlxazQfnlaKoT0EULpKhBHlJCmu/MiQ84j0VB0fwk+7mH5kbL30e8B4S4ouDpkn8isCKpCh2WF
+        m5lPL0D7s3v7KJtn2XRWABiG6h92aPjFc8Zgm2PM1EuFNBAMXPoYp77quZt3jhJaGupwbz++38H5c
+        YUTNZofA==;
+Received: from 211.81-166-168.customer.lyse.net ([81.166.168.211]:51024 helo=[192.168.10.61])
+        by smtp.domeneshop.no with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.92)
+        (envelope-from <noralf@tronnes.org>)
+        id 1mj5ne-0006rL-Lg; Fri, 05 Nov 2021 21:26:58 +0100
+Subject: Re: [PATCH] staging/fbtft: Fix backlight
 To:     gregkh@linuxfoundation.org
 Cc:     linux-staging@lists.linux.dev, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org,
-        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
-Subject: [PATCH] staging: fbtft: Remove fb_watterott driver
-Date:   Fri,  5 Nov 2021 21:24:48 +0100
-Message-Id: <20211105202448.62518-1-noralf@tronnes.org>
-X-Mailer: git-send-email 2.33.0
+        linux-fbdev@vger.kernel.org, stable@vger.kernel.org
+References: <20211030162901.17918-1-noralf@tronnes.org>
+From:   =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
+Message-ID: <9915936e-8a02-2e7a-5c47-f048c1f0319b@tronnes.org>
+Date:   Fri, 5 Nov 2021 21:26:56 +0100
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.14.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20211030162901.17918-1-noralf@tronnes.org>
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-X-CMAE-Score: 0
-X-CMAE-Analysis: v=2.3 cv=aqWc9xRV c=1 sm=1 tr=0
-        a=OYZzhG0JTxDrWp/F2OJbnw==:117 a=OYZzhG0JTxDrWp/F2OJbnw==:17
-        a=IkcTkHD0fZMA:10 a=M51BFTxLslgA:10 a=SJz97ENfAAAA:8
-        a=mPjjHadsz3_Gl_dk1RIA:9 a=QEXdDO2ut3YA:10 a=vFet0B0WnEQeilDPIY6i:22
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This driver was made for a prototype and as far as I know it never went
-into production because it was too slow. So let's remove it.
 
-Signed-off-by: Noralf Trønnes <noralf@tronnes.org>
----
- drivers/staging/fbtft/Kconfig        |   6 -
- drivers/staging/fbtft/Makefile       |   1 -
- drivers/staging/fbtft/fb_watterott.c | 302 ---------------------------
- 3 files changed, 309 deletions(-)
- delete mode 100644 drivers/staging/fbtft/fb_watterott.c
 
-diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
-index dad1ddcd7b0c..4d29e8c1014e 100644
---- a/drivers/staging/fbtft/Kconfig
-+++ b/drivers/staging/fbtft/Kconfig
-@@ -200,9 +200,3 @@ config FB_TFT_UPD161704
- 	depends on FB_TFT
- 	help
- 	  Generic Framebuffer support for uPD161704
--
--config FB_TFT_WATTEROTT
--	tristate "FB driver for the WATTEROTT LCD Controller"
--	depends on FB_TFT
--	help
--	  Generic Framebuffer support for WATTEROTT
-diff --git a/drivers/staging/fbtft/Makefile b/drivers/staging/fbtft/Makefile
-index e87193f7df14..e9cdf0f0a7da 100644
---- a/drivers/staging/fbtft/Makefile
-+++ b/drivers/staging/fbtft/Makefile
-@@ -36,4 +36,3 @@ obj-$(CONFIG_FB_TFT_TLS8204)     += fb_tls8204.o
- obj-$(CONFIG_FB_TFT_UC1611)      += fb_uc1611.o
- obj-$(CONFIG_FB_TFT_UC1701)      += fb_uc1701.o
- obj-$(CONFIG_FB_TFT_UPD161704)   += fb_upd161704.o
--obj-$(CONFIG_FB_TFT_WATTEROTT)   += fb_watterott.o
-diff --git a/drivers/staging/fbtft/fb_watterott.c b/drivers/staging/fbtft/fb_watterott.c
-deleted file mode 100644
-index a57e1f4feef3..000000000000
---- a/drivers/staging/fbtft/fb_watterott.c
-+++ /dev/null
-@@ -1,302 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0+
--/*
-- * FB driver for the Watterott LCD Controller
-- *
-- * Copyright (C) 2013 Noralf Tronnes
-- */
--
--#include <linux/module.h>
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/delay.h>
--
--#include "fbtft.h"
--
--#define DRVNAME			"fb_watterott"
--#define WIDTH			320
--#define HEIGHT			240
--#define FPS			5
--#define TXBUFLEN		1024
--#define DEFAULT_BRIGHTNESS	50
--
--#define CMD_VERSION		0x01
--#define CMD_LCD_LED		0x10
--#define CMD_LCD_RESET		0x11
--#define CMD_LCD_ORIENTATION	0x20
--#define CMD_LCD_DRAWIMAGE	0x27
--#define COLOR_RGB323		8
--#define COLOR_RGB332		9
--#define COLOR_RGB233		10
--#define COLOR_RGB565		16
--
--static short mode = 565;
--module_param(mode, short, 0000);
--MODULE_PARM_DESC(mode, "RGB color transfer mode: 332, 565 (default)");
--
--static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
--{
--	va_list args;
--	int i, ret;
--	u8 *buf = par->buf;
--
--	va_start(args, len);
--	for (i = 0; i < len; i++)
--		*buf++ = (u8)va_arg(args, unsigned int);
--	va_end(args);
--
--	fbtft_par_dbg_hex(DEBUG_WRITE_REGISTER, par,
--			  par->info->device, u8, par->buf,
--			  len, "%s: ", __func__);
--
--	ret = par->fbtftops.write(par, par->buf, len);
--	if (ret < 0) {
--		dev_err(par->info->device,
--			"write() failed and returned %d\n", ret);
--		return;
--	}
--}
--
--static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
--{
--	unsigned int start_line, end_line;
--	u16 *vmem16 = (u16 *)(par->info->screen_buffer + offset);
--	__be16 *pos = par->txbuf.buf + 1;
--	__be16 *buf16 = par->txbuf.buf + 10;
--	int i, j;
--	int ret = 0;
--
--	start_line = offset / par->info->fix.line_length;
--	end_line = start_line + (len / par->info->fix.line_length) - 1;
--
--	/* Set command header. pos: x, y, w, h */
--	((u8 *)par->txbuf.buf)[0] = CMD_LCD_DRAWIMAGE;
--	pos[0] = 0;
--	pos[2] = cpu_to_be16(par->info->var.xres);
--	pos[3] = cpu_to_be16(1);
--	((u8 *)par->txbuf.buf)[9] = COLOR_RGB565;
--
--	for (i = start_line; i <= end_line; i++) {
--		pos[1] = cpu_to_be16(i);
--		for (j = 0; j < par->info->var.xres; j++)
--			buf16[j] = cpu_to_be16(*vmem16++);
--		ret = par->fbtftops.write(par,
--			par->txbuf.buf, 10 + par->info->fix.line_length);
--		if (ret < 0)
--			return ret;
--		udelay(300);
--	}
--
--	return 0;
--}
--
--static inline int rgb565_to_rgb332(u16 c)
--{
--	return ((c & 0xE000) >> 8) | ((c & 000700) >> 6) | ((c & 0x0018) >> 3);
--}
--
--static int write_vmem_8bit(struct fbtft_par *par, size_t offset, size_t len)
--{
--	unsigned int start_line, end_line;
--	u16 *vmem16 = (u16 *)(par->info->screen_buffer + offset);
--	__be16 *pos = par->txbuf.buf + 1;
--	u8 *buf8 = par->txbuf.buf + 10;
--	int i, j;
--	int ret = 0;
--
--	start_line = offset / par->info->fix.line_length;
--	end_line = start_line + (len / par->info->fix.line_length) - 1;
--
--	/* Set command header. pos: x, y, w, h */
--	((u8 *)par->txbuf.buf)[0] = CMD_LCD_DRAWIMAGE;
--	pos[0] = 0;
--	pos[2] = cpu_to_be16(par->info->var.xres);
--	pos[3] = cpu_to_be16(1);
--	((u8 *)par->txbuf.buf)[9] = COLOR_RGB332;
--
--	for (i = start_line; i <= end_line; i++) {
--		pos[1] = cpu_to_be16(i);
--		for (j = 0; j < par->info->var.xres; j++) {
--			buf8[j] = rgb565_to_rgb332(*vmem16);
--			vmem16++;
--		}
--		ret = par->fbtftops.write(par,
--			par->txbuf.buf, 10 + par->info->var.xres);
--		if (ret < 0)
--			return ret;
--		udelay(700);
--	}
--
--	return 0;
--}
--
--static unsigned int firmware_version(struct fbtft_par *par)
--{
--	u8 rxbuf[4] = {0, };
--
--	write_reg(par, CMD_VERSION);
--	par->fbtftops.read(par, rxbuf, 4);
--	if (rxbuf[1] != '.')
--		return 0;
--
--	return (rxbuf[0] - '0') << 8 | (rxbuf[2] - '0') << 4 | (rxbuf[3] - '0');
--}
--
--static int init_display(struct fbtft_par *par)
--{
--	int ret;
--	unsigned int version;
--	u8 save_mode;
--
--	/* enable SPI interface by having CS and MOSI low during reset */
--	save_mode = par->spi->mode;
--	/*
--	 * Set CS active inverse polarity: just setting SPI_CS_HIGH does not
--	 * work with GPIO based chip selects that are logically active high
--	 * but inverted inside the GPIO library, so enforce inverted
--	 * semantics.
--	 */
--	par->spi->mode ^= SPI_CS_HIGH;
--	ret = spi_setup(par->spi);
--	if (ret) {
--		dev_err(par->info->device,
--			"Could not set inverse CS polarity\n");
--		return ret;
--	}
--	write_reg(par, 0x00); /* make sure mode is set */
--
--	mdelay(50);
--	par->fbtftops.reset(par);
--	mdelay(1000);
--	par->spi->mode = save_mode;
--	ret = spi_setup(par->spi);
--	if (ret) {
--		dev_err(par->info->device, "Could not restore SPI mode\n");
--		return ret;
--	}
--	write_reg(par, 0x00);
--
--	version = firmware_version(par);
--	fbtft_par_dbg(DEBUG_INIT_DISPLAY, par, "Firmware version: %x.%02x\n",
--		      version >> 8, version & 0xFF);
--
--	if (mode == 332)
--		par->fbtftops.write_vmem = write_vmem_8bit;
--	return 0;
--}
--
--static void set_addr_win(struct fbtft_par *par, int xs, int ys, int xe, int ye)
--{
--	/* not used on this controller */
--}
--
--static int set_var(struct fbtft_par *par)
--{
--	u8 rotate;
--
--	/* this controller rotates clock wise */
--	switch (par->info->var.rotate) {
--	case 90:
--		rotate = 27;
--		break;
--	case 180:
--		rotate = 18;
--		break;
--	case 270:
--		rotate = 9;
--		break;
--	default:
--		rotate = 0;
--	}
--	write_reg(par, CMD_LCD_ORIENTATION, rotate);
--
--	return 0;
--}
--
--static int verify_gpios(struct fbtft_par *par)
--{
--	if (!par->gpio.reset) {
--		dev_err(par->info->device, "Missing 'reset' gpio. Aborting.\n");
--		return -EINVAL;
--	}
--	return 0;
--}
--
--#ifdef CONFIG_FB_BACKLIGHT
--static int backlight_chip_update_status(struct backlight_device *bd)
--{
--	struct fbtft_par *par = bl_get_data(bd);
--	int brightness = bd->props.brightness;
--
--	fbtft_par_dbg(DEBUG_BACKLIGHT, par,
--		      "%s: brightness=%d, power=%d, fb_blank=%d\n", __func__,
--		      bd->props.brightness, bd->props.power,
--		      bd->props.fb_blank);
--
--	if (bd->props.power != FB_BLANK_UNBLANK)
--		brightness = 0;
--
--	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
--		brightness = 0;
--
--	write_reg(par, CMD_LCD_LED, brightness);
--
--	return 0;
--}
--
--static const struct backlight_ops bl_ops = {
--	.update_status = backlight_chip_update_status,
--};
--
--static void register_chip_backlight(struct fbtft_par *par)
--{
--	struct backlight_device *bd;
--	struct backlight_properties bl_props = { 0, };
--
--	bl_props.type = BACKLIGHT_RAW;
--	bl_props.power = FB_BLANK_POWERDOWN;
--	bl_props.max_brightness = 100;
--	bl_props.brightness = DEFAULT_BRIGHTNESS;
--
--	bd = backlight_device_register(dev_driver_string(par->info->device),
--				       par->info->device, par, &bl_ops,
--				       &bl_props);
--	if (IS_ERR(bd)) {
--		dev_err(par->info->device,
--			"cannot register backlight device (%ld)\n",
--			PTR_ERR(bd));
--		return;
--	}
--	par->info->bl_dev = bd;
--
--	if (!par->fbtftops.unregister_backlight)
--		par->fbtftops.unregister_backlight = fbtft_unregister_backlight;
--}
--#else
--#define register_chip_backlight NULL
--#endif
--
--static struct fbtft_display display = {
--	.regwidth = 8,
--	.buswidth = 8,
--	.width = WIDTH,
--	.height = HEIGHT,
--	.fps = FPS,
--	.txbuflen = TXBUFLEN,
--	.fbtftops = {
--		.write_register = write_reg8_bus8,
--		.write_vmem = write_vmem,
--		.init_display = init_display,
--		.set_addr_win = set_addr_win,
--		.set_var = set_var,
--		.verify_gpios = verify_gpios,
--		.register_backlight = register_chip_backlight,
--	},
--};
--
--FBTFT_REGISTER_DRIVER(DRVNAME, "watterott,openlcd", &display);
--
--MODULE_ALIAS("spi:" DRVNAME);
--
--MODULE_DESCRIPTION("FB driver for the Watterott LCD Controller");
--MODULE_AUTHOR("Noralf Tronnes");
--MODULE_LICENSE("GPL");
--- 
-2.33.0
+Den 30.10.2021 18.29, skrev Noralf Trønnes:
+> Commit b4a1ed0cd18b ("fbdev: make FB_BACKLIGHT a tristate") forgot to
+> update fbtft breaking its backlight support when FB_BACKLIGHT is a module.
+> 
+> Fix this by using IS_ENABLED().
+> 
+> Fixes: b4a1ed0cd18b ("fbdev: make FB_BACKLIGHT a tristate")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Noralf Trønnes <noralf@tronnes.org>
+> ---
 
+I discovered that fb_ssd1351 also has this #ifdef, so need to fix that
+as well. Will send a new version.
+
+Noralf.

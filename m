@@ -2,126 +2,161 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F139C433EF
-	for <linux-fbdev@archiver.kernel.org>; Sat,  6 Nov 2021 21:03:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22A74C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon,  8 Nov 2021 08:37:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 245E260F5A
-	for <linux-fbdev@archiver.kernel.org>; Sat,  6 Nov 2021 21:03:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0576061279
+	for <linux-fbdev@archiver.kernel.org>; Mon,  8 Nov 2021 08:37:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229723AbhKFVFr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 6 Nov 2021 17:05:47 -0400
-Received: from outbound5i.eu.mailhop.org ([35.156.234.212]:42742 "EHLO
-        outbound5i.eu.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234369AbhKFVFr (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 6 Nov 2021 17:05:47 -0400
-ARC-Seal: i=1; a=rsa-sha256; t=1636232584; cv=none;
-        d=outbound.mailhop.org; s=arc-outbound20181012;
-        b=to5iLk+2q1vfVlOTuPGvPT6vQTxyEsdvawx04QJafpsvYD6OST5yOjcYRqe30jrRNFaVv8dD/kbdv
-         cXVn9PgzRVXQIHoVi6A3M9IiMA2UjecVb0SzRxeeKnn8nvCR6pLUDlQ+eCOgDNe70pv9+CMAx6SODU
-         ntYMp41DaGVaz3dtZfP4+aYoOeFO9GnvA6IDFQC82X/ku/qqoG1fQzQmBlD3zbN2AaFpK0m9X3YaZd
-         03SuXKKsS3A8uLqF7tE0duJmLSNIlBtq0VpnlAjvNmVWtE1P3VuoCudJd8mvgnBIvViwGfr5a5/OxE
-         DkTxfV1Wc31ULzBL3nnDOoJp8AVEqnw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=outbound.mailhop.org; s=arc-outbound20181012;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:dkim-signature:dkim-signature:from;
-        bh=0MBGuzUkLcp0R0JFWcdoVV3M1cQOHai/JPSjIYTAT8E=;
-        b=mzN9jwicxZdDLtceUZKcpwKopJQkNcWh0HH54H1IzzS2UhD8LTtA20Jh0QHMdkyEgqQPGy69ogThH
-         OSxqigGe+TiHpHbspGQk3xEYdL0AbUNf4VtMnBdWgf0815TNTXeTH8vZldBvWNRBVLIwECxVEhgHKq
-         JJGFTFjafDOeS3u+4aBwhqh0WNpZGevPnZbC+nv/fqfhCWFx+6EhhsXdHazvMeSkyIdMjJ+mUzHsVJ
-         eW85eXTQa4sJKiW6wAv4HEjXr6OfYCfi7pUsvXlY3pdUyyxpnd+OYgGa5t3I8xBKUgnA9h3EKn+NoR
-         NUH7Yh5Z2oNGtej2/4+p+nXyAfKZ+0Q==
-ARC-Authentication-Results: i=1; outbound2.eu.mailhop.org;
-        spf=pass smtp.mailfrom=stackframe.org smtp.remote-ip=91.207.61.48;
-        dmarc=none header.from=stackframe.org;
-        arc=none header.oldest-pass=0;
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=stackframe.org; s=duo-1634547266507-560c42ae;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:from;
-        bh=0MBGuzUkLcp0R0JFWcdoVV3M1cQOHai/JPSjIYTAT8E=;
-        b=MVqmXoMdVPr7cf5dEXFnQGQ/b/K3TFDlLpBsANZKMNOSd426sTwfscBZCL6x1jd0gZrJhBxRLyiVW
-         ONmy8o+JB/9pgS/3o+/MLaeLKok+Woick18FiCFiTPN7yfAjOYDCGKILgWPgSddrwFp9G82KxdoR0r
-         O+i5scGa9B/PGW2g=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=outbound.mailhop.org; s=dkim-high;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:from;
-        bh=0MBGuzUkLcp0R0JFWcdoVV3M1cQOHai/JPSjIYTAT8E=;
-        b=kgUMDCynqrfNJUhtOXrwIKd0nM4Bn6P6iH1Jr2BapSnZkpN95suqxlX7GpSy0KmwkRBfgqi3u4PrG
-         QDYq+XtE+MRCbO4tyWtERXJr7H1CcNUgzgSPHFScWQuKrS88QYoXmt5XXcdD7NmGx/pQ1AdC5qZ9sn
-         Xlb7q9RaM2khbnyly+9Wp8c8DqIU6NADE82Rl5xbMP8MQdILVohmDXo2SB2JNPh6xGcwoNQD7K2SCa
-         7xQz04ZwXWJmJHdEKOF8n/bV3LAk820zqo9dD2sk74Xl3y5cRMxRdujTrNw8vYQfRVCeS8kuwOoipJ
-         3DHcHHflvS7RxEmjdod+/zGWBugSXXQ==
-X-Originating-IP: 91.207.61.48
-X-MHO-RoutePath: dG9ta2lzdG5lcm51
-X-MHO-User: ec6f18a5-3f44-11ec-a072-973b52397bcb
-X-Report-Abuse-To: https://support.duocircle.com/support/solutions/articles/5000540958-duocircle-standard-smtp-abuse-information
-X-Mail-Handler: DuoCircle Outbound SMTP
-Received: from mail.duncanthrax.net (propper.duncanthrax.net [91.207.61.48])
-        by outbound2.eu.mailhop.org (Halon) with ESMTPSA
-        id ec6f18a5-3f44-11ec-a072-973b52397bcb;
-        Sat, 06 Nov 2021 21:03:00 +0000 (UTC)
-Received: from hsi-kbw-109-193-149-228.hsi7.kabel-badenwuerttemberg.de ([109.193.149.228] helo=x1.stackframe.org.stackframe.org)
-        by mail.duncanthrax.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <svens@stackframe.org>)
-        id 1mjSq3-00DrWQ-3h; Sat, 06 Nov 2021 23:02:59 +0200
-From:   Sven Schnelle <svens@stackframe.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
+        id S237233AbhKHIjr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 8 Nov 2021 03:39:47 -0500
+Received: from smtp-out2.suse.de ([195.135.220.29]:57924 "EHLO
+        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235223AbhKHIjq (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 8 Nov 2021 03:39:46 -0500
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id F14361FD6D;
+        Mon,  8 Nov 2021 08:37:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1636360621; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=m47UAY2ZcyR+FhtsO4aVyPTcYB/9rHV9T+gQ8c/5pAk=;
+        b=Minh2m7rxvc2DMoW2LH2qYO5gOW8gSGAozwRYB+8B9kXCTsrC0Miapuo/aA5erTLxKXKSh
+        2mU2pl2sVD3/3MkJ8Zo0noDflkpKrie3hsR/SUR3pmgOWP/1/iFmO0dn7D3eLzKL4aqMPQ
+        WDZU10opHeLjOri0PsD/mR75lJbI5r8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1636360621;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=m47UAY2ZcyR+FhtsO4aVyPTcYB/9rHV9T+gQ8c/5pAk=;
+        b=zxMYzuYR8k8tv1u7IyuPNqP9W/yVx0pwwR0sgi6Y7WDU2lNWog4FyUqLChzcaH3SiHZHxH
+        y3UM/b2PNn/DDRCw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C559A139CF;
+        Mon,  8 Nov 2021 08:37:01 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id VSr1Lq3hiGGzXAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 08 Nov 2021 08:37:01 +0000
+Message-ID: <312d6427-67ff-67c5-b662-23127bb76d12@suse.de>
+Date:   Mon, 8 Nov 2021 09:37:01 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.2.1
+Subject: Re: [PATCH/RFT] fbdev driver for HP Visualize FX cards
+Content-Language: en-US
+To:     Sven Schnelle <svens@stackframe.org>
 Cc:     linux-parisc@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel <dri-devel@lists.freedesktop.org>,
         Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH/RFT] fbdev driver for HP Visualize FX cards
 References: <20211031195347.13754-1-svens@stackframe.org>
-        <cd0f90d9-7dba-af33-f88b-289fc6f80b51@suse.de>
-        <87r1c0s1bt.fsf@x1.stackframe.org>
-        <e21cdf83-2178-7c59-2585-a6012f861f68@suse.de>
-Date:   Sat, 06 Nov 2021 22:02:57 +0100
-In-Reply-To: <e21cdf83-2178-7c59-2585-a6012f861f68@suse.de> (Thomas
-        Zimmermann's message of "Mon, 1 Nov 2021 10:33:12 +0100")
-Message-ID: <87o86x80am.fsf@x1.stackframe.org>
-MIME-Version: 1.0
-Content-Type: text/plain
+ <cd0f90d9-7dba-af33-f88b-289fc6f80b51@suse.de>
+ <87r1c0s1bt.fsf@x1.stackframe.org>
+ <e21cdf83-2178-7c59-2585-a6012f861f68@suse.de>
+ <87o86x80am.fsf@x1.stackframe.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <87o86x80am.fsf@x1.stackframe.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------Ua3NsWBcmIn5JzZRJKhoK9GM"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Thomas Zimmermann <tzimmermann@suse.de> writes:
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------Ua3NsWBcmIn5JzZRJKhoK9GM
+Content-Type: multipart/mixed; boundary="------------ECTrUU3oVoAPEqx5K8r4DiqJ";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sven Schnelle <svens@stackframe.org>
+Cc: linux-parisc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ dri-devel <dri-devel@lists.freedesktop.org>, Helge Deller <deller@gmx.de>
+Message-ID: <312d6427-67ff-67c5-b662-23127bb76d12@suse.de>
+Subject: Re: [PATCH/RFT] fbdev driver for HP Visualize FX cards
+References: <20211031195347.13754-1-svens@stackframe.org>
+ <cd0f90d9-7dba-af33-f88b-289fc6f80b51@suse.de>
+ <87r1c0s1bt.fsf@x1.stackframe.org>
+ <e21cdf83-2178-7c59-2585-a6012f861f68@suse.de>
+ <87o86x80am.fsf@x1.stackframe.org>
+In-Reply-To: <87o86x80am.fsf@x1.stackframe.org>
 
-> Hi
->
-> Am 01.11.21 um 09:54 schrieb Sven Schnelle:
->> Hi Thomas,
->> Thomas Zimmermann <tzimmermann@suse.de> writes:
->> Thanks, i wasn't aware as i normally don't do any graphics related
->> development. I take a look at dri and port the driver, which is
->> hopefully not too hard.
->
-> Sounds good.
->
-> The one big difference when converting is that DRM really wants
-> drivers to support 32-bit XRGB colors. It's not a DRM limitation per
-> se, but a requirement of today's userspace programs. AFAICS your fbdev
-> driver uses a 256-color palette format. So the DRM driver would have
-> to convert
-> XRGB8888 to 8-bit RGB332 and install a corresponding palette. Don't
-> worry, it's easy. Take a look at the cirrus driver for a simple DRM
-> driver. [1]
+--------------ECTrUU3oVoAPEqx5K8r4DiqJ
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-I have converted the driver, but am using FORMAT_C8 because i haven't
-figured out yet how to switch the card to XRGB8888. That's still on the
-TODO list.
+SGkNCg0KQW0gMDYuMTEuMjEgdW0gMjI6MDIgc2NocmllYiBTdmVuIFNjaG5lbGxlOg0KPiBU
+aG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5Ac3VzZS5kZT4gd3JpdGVzOg0KPiANCj4+
+IEhpDQo+Pg0KPj4gQW0gMDEuMTEuMjEgdW0gMDk6NTQgc2NocmllYiBTdmVuIFNjaG5lbGxl
+Og0KPj4+IEhpIFRob21hcywNCj4+PiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1lcm1hbm5A
+c3VzZS5kZT4gd3JpdGVzOg0KPj4+IFRoYW5rcywgaSB3YXNuJ3QgYXdhcmUgYXMgaSBub3Jt
+YWxseSBkb24ndCBkbyBhbnkgZ3JhcGhpY3MgcmVsYXRlZA0KPj4+IGRldmVsb3BtZW50LiBJ
+IHRha2UgYSBsb29rIGF0IGRyaSBhbmQgcG9ydCB0aGUgZHJpdmVyLCB3aGljaCBpcw0KPj4+
+IGhvcGVmdWxseSBub3QgdG9vIGhhcmQuDQo+Pg0KPj4gU291bmRzIGdvb2QuDQo+Pg0KPj4g
+VGhlIG9uZSBiaWcgZGlmZmVyZW5jZSB3aGVuIGNvbnZlcnRpbmcgaXMgdGhhdCBEUk0gcmVh
+bGx5IHdhbnRzDQo+PiBkcml2ZXJzIHRvIHN1cHBvcnQgMzItYml0IFhSR0IgY29sb3JzLiBJ
+dCdzIG5vdCBhIERSTSBsaW1pdGF0aW9uIHBlcg0KPj4gc2UsIGJ1dCBhIHJlcXVpcmVtZW50
+IG9mIHRvZGF5J3MgdXNlcnNwYWNlIHByb2dyYW1zLiBBRkFJQ1MgeW91ciBmYmRldg0KPj4g
+ZHJpdmVyIHVzZXMgYSAyNTYtY29sb3IgcGFsZXR0ZSBmb3JtYXQuIFNvIHRoZSBEUk0gZHJp
+dmVyIHdvdWxkIGhhdmUNCj4+IHRvIGNvbnZlcnQNCj4+IFhSR0I4ODg4IHRvIDgtYml0IFJH
+QjMzMiBhbmQgaW5zdGFsbCBhIGNvcnJlc3BvbmRpbmcgcGFsZXR0ZS4gRG9uJ3QNCj4+IHdv
+cnJ5LCBpdCdzIGVhc3kuIFRha2UgYSBsb29rIGF0IHRoZSBjaXJydXMgZHJpdmVyIGZvciBh
+IHNpbXBsZSBEUk0NCj4+IGRyaXZlci4gWzFdDQo+IA0KPiBJIGhhdmUgY29udmVydGVkIHRo
+ZSBkcml2ZXIsIA0KDQpDb29sIQ0KDQo+IGJ1dCBhbSB1c2luZyBGT1JNQVRfQzggYmVjYXVz
+ZSBpIGhhdmVuJ3QNCj4gZmlndXJlZCBvdXQgeWV0IGhvdyB0byBzd2l0Y2ggdGhlIGNhcmQg
+dG8gWFJHQjg4ODguIFRoYXQncyBzdGlsbCBvbiB0aGUNCj4gVE9ETyBsaXN0Lg0KDQpEb24n
+dCB3b3JyeS4gQXMgSSBvdXRsaW5lZCAsIHlvdSBjYW4gc3RpbGwgY29udmVydCBhbnkgaW1h
+Z2UgZnJvbSANClhSR0I4ODggdG8gUkdCMzMyIGFuZCBkaXNwbGF5IHRoaXMgaW5zdGVhZC4N
+Cg0KPiANCj4gT25lIHF1ZXN0aW9uIGFib3V0IGh3IGJsaXR0aW5nOiB3aXRoIHRoZSBvbGQg
+ZmJkZXYgZnJhbWV3b3JrIG9uZSBjb3VsZA0KPiByZXBsYWNlIHRoZSBmYl9pbWFnZWJsaXQg
+ZnVuY3Rpb24uIEZvciBub3JtYWwgY29uc29sZSB0ZXh0LCB0aGlzDQo+IGZ1bmN0aW9uIGdl
+dHMgY2FsbGVkIHdpdGggYSBtb25vY2hyb21lIGJpdG1hcCwgYW5kIGFuIGZnL2JnIGNvbG9y
+IHZhbHVlLg0KPiBUaGlzIG1ha2VzIGl0IGVhc3kgdG8gdXNlIEhXIGFjY2VsZXJhdGVkIGJs
+aXR0aW5nIGZvciB0ZXh0LiBJbiB0aGUNCj4gZ3B1L2RybSBkcml2ZXJzIGkgdGhpbmsgaSBm
+b3VuZCBvbmx5IG9uZSBkcml2ZXIgKG5vdXZlYXUpIGRvaW5nIHRoaXMgYW5kDQo+IHRoYXQg
+d2FzIHZpYSB0aGUgZHJtIGZiZGV2IGxheWVyLg0KPiANCj4gSXMgdGhhdCBzdGlsbCB0aGUg
+d2F5IHRvIGdvLCBvciBpcyB0aGVyZSBhIGJldHRlciB3YXkgdG8gZG8gSFcgYWNjZWxlcmF0
+ZWQNCj4gdGV4dCBibGl0dGluZz8NCg0KU2ltcGx5IGNhbGwgZHJtX2ZiZGV2X2dlbmVyaWNf
+c2V0dXAoKSBhZnRlciByZWdpc3RlcmluZyB0aGUgZGV2aWNlLiBUaGlzIA0Kc2hvdWxkIGdp
+dmUgeW91IGEgY29uc29sZS4NCg0KRG9uJ3QgYm90aGVyIGFib3V0IEhXLWFjY2VsZXJhdGVk
+IGJsaXR0aW5nLiBGcm9tIHdoYXQgSSd2ZSBoZWFyZCwgaXQgDQpiYXJlbHkgbWFrZXMgYSBk
+aWZmZXJlbmNlIG5vd2FkYXlzLiBBbmQgb3VyIGdlbmVyaWMgaGVscGVycyBoYXZlIHBsZW50
+eSANCm9mIGZlYXR1cmVzLiBOb3QgdXNpbmcgdGhlbSB0byBnZXQgYSBzbWFsbCBiZW5lZml0
+IGZyb20gSFcgYmxpdHRpbmcgDQppc24ndCB3b3J0aCBpdC4NCg0KQmVzdCByZWdhcmRzDQpU
+aG9tYXMNCg0KPiANCj4gVGhhbmtzDQo+IFN2ZW4NCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1l
+cm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRp
+b25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJt
+YW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZv
+IFRvdGV2DQo=
 
-One question about hw blitting: with the old fbdev framework one could
-replace the fb_imageblit function. For normal console text, this
-function gets called with a monochrome bitmap, and an fg/bg color value.
-This makes it easy to use HW accelerated blitting for text. In the
-gpu/drm drivers i think i found only one driver (nouveau) doing this and
-that was via the drm fbdev layer.
+--------------ECTrUU3oVoAPEqx5K8r4DiqJ--
 
-Is that still the way to go, or is there a better way to do HW accelerated
-text blitting?
+--------------Ua3NsWBcmIn5JzZRJKhoK9GM
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-Thanks
-Sven
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmGI4a0FAwAAAAAACgkQlh/E3EQov+As
+UA//YRuNTmiRQXom7SSQzZ3yOLLxko9XIy1O/rHT3EkobAlu7juFnpc05SFas3IOGhQQo2oVJ6OT
+DC9Fe1wdDyO8913hroZ34kqw60VnWY8ifcfp58EMJaJ+OVb+7t9mU3/8l+HHy79YtFN6hglJ/pJj
+43ETrryJZDJPVoOJX2tKvVHEI83DS4NHKZBEHjMiS8/O8V5+UnzZhRdwC1KR9+4QkXD8i6YEzTku
+hCDWjrHF+k4ZPgP85AYgzxV7VrTsMg1AHjTESU+LrY/aE9HH7azFznLLU3hmMrsiUIui7c8On+Tf
+OzAWpdFntmEe2CDkp6HjgWPibZB6kcyw20CkQq/TK5VoY5ZooAeCvrluHz0Em9k/o/9W44jfFViX
+msd+quuitzCRWOgP4GykiqqwIbaUEVAvy8vgU6vCN2y5drHV80FKP2FYMhf7L/8J7GuAOMTe9v5g
+hkYxp+Lxye01CpQCooiiBbDXUjp9mQkCsOOrL0SC+ElJks3qSSQM5NHd8En/CoWibwaZxbwIHN2P
+PuA283K/XVhm7cH4YXgv2o4zPLFe2bpaJwvmBlM3BCJ6flY/qQaK31Q4LfGqTX8Bqs/c94Ew8xDB
+1PwAH67fvIZ7PB5OH3UMrrCRPdGsJOWk2SE+6dNgOPHuHcWqIamAeY9mWR0czhEGu7Lp4Jk/4DoY
+oGs=
+=bT6n
+-----END PGP SIGNATURE-----
+
+--------------Ua3NsWBcmIn5JzZRJKhoK9GM--

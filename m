@@ -2,257 +2,130 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5921CC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 10 Nov 2021 13:06:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A838FC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 10 Nov 2021 20:31:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 47F316115A
-	for <linux-fbdev@archiver.kernel.org>; Wed, 10 Nov 2021 13:06:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6C75E61213
+	for <linux-fbdev@archiver.kernel.org>; Wed, 10 Nov 2021 20:31:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232053AbhKJNJf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 10 Nov 2021 08:09:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51652 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232048AbhKJNJf (ORCPT
+        id S231254AbhKJUdv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 10 Nov 2021 15:33:51 -0500
+Received: from office.oderland.com ([91.201.60.5]:38264 "EHLO
+        office.oderland.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230230AbhKJUdu (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 10 Nov 2021 08:09:35 -0500
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B560C061764
-        for <linux-fbdev@vger.kernel.org>; Wed, 10 Nov 2021 05:06:47 -0800 (PST)
-Received: by mail-wm1-x330.google.com with SMTP id z200so2109438wmc.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 10 Nov 2021 05:06:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=Up09Yp1cAkGEwJVvJMibaaAPFlik/zZFWIRClXIemi8=;
-        b=qE0MIQHMZyMGoaqEuxp62GjFz7RN/ySBT0NT6d+IpuAQXi+hnjP3P52DYcgFuLl7AL
-         b3Nf1SIyEQWAREWMXC67estwJD3b1w6ykJHn4oEcxKDQBrkb4oa31XAlBihTY/aiYPqO
-         1WEVAo6x2cMyqo9SbrCrc03a/W6wq3U7slG+EgoCt/N19y+4sCINMxzzgBAZ3ysVQnKu
-         MXkyL1YRoqG3j4/rOt5B/eg6RKCWExQcJHeaB51+2lXaPGHjhgQAXgBRuUTP7S2e5/UE
-         +zNZPNMwOYy+56j62FaKaTonPLozefo2Nnp7dJPns919dLRCLkL+DKp98HIFaNbTiQUf
-         6Dzw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=Up09Yp1cAkGEwJVvJMibaaAPFlik/zZFWIRClXIemi8=;
-        b=UFEQiJQfjmj2Ic/Ogj2DtwUp79h/awWWTNL0aYjKV9VXSUsNYN4TPU+f7eIWDPlI6J
-         Jd6nY9UcbveWZj/U6zglTGg+IZ1stZbCjkrXEtQgdxvisbrFMHv9ZDKuAa/qXkHMk1Rh
-         eK64T0F/a6ZysexgLX/hz/dFOcdqqKCe2mT956oyo/5gr1EoynTjrrTYRHDKaKUfJHxr
-         yBtWMVJTEVTSK/SXjb+aJJymM4oz+X5mFnx+qMdyWVkyNrtEPUShkoU0Euu1wgkewdVR
-         DCyLiFlvITBlkryXVK7gXG47j4Dy9VDy+aO6SI1pn3GmqAmEhihg2CWcH5ld6EdOWSfD
-         3tMQ==
-X-Gm-Message-State: AOAM533LN+MhlE8RBzbF/8h8B+YXqj9jACR/2DRMY2Vy+zHUKNFuY5zN
-        3VMprTV92LH73hmYuMYrnkoQuvZH2t0Eng==
-X-Google-Smtp-Source: ABdhPJy9wv3tQgyVDbjVQGfwjxsKt/gG2S79p0KAun+cQvoMfg55YXmXXbbeCFawEsBG65zww04uBA==
-X-Received: by 2002:a05:600c:202:: with SMTP id 2mr16396453wmi.134.1636549606053;
-        Wed, 10 Nov 2021 05:06:46 -0800 (PST)
-Received: from localhost.localdomain (laubervilliers-656-1-151-143.w92-154.abo.wanadoo.fr. [92.154.18.143])
-        by smtp.gmail.com with ESMTPSA id i17sm5952175wmq.48.2021.11.10.05.06.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Nov 2021 05:06:45 -0800 (PST)
-From:   Guillaume Ranquet <granquet@baylibre.com>
-To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>
-Cc:     Markus Schneider-Pargmann <msp@baylibre.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v6 4/7] video/hdmi: Add audio_infoframe packing for DP
-Date:   Wed, 10 Nov 2021 14:06:20 +0100
-Message-Id: <20211110130623.20553-5-granquet@baylibre.com>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20211110130623.20553-1-granquet@baylibre.com>
-References: <20211110130623.20553-1-granquet@baylibre.com>
+        Wed, 10 Nov 2021 15:33:50 -0500
+Received: from [155.4.220.82] (port=44276 helo=[10.137.0.14])
+        by office.oderland.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        (Exim 4.94.2)
+        (envelope-from <josef@oderland.se>)
+        id 1mkuFI-0024jk-5i; Wed, 10 Nov 2021 21:31:00 +0100
+Message-ID: <19176a3c-e554-0ff4-2e0b-5813d353d15e@oderland.se>
+Date:   Wed, 10 Nov 2021 21:30:57 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:93.0) Gecko/20100101
+ Thunderbird/93.0
+Subject: Re: [PATCH] PCI/MSI: Move non-mask check back into low level
+ accessors
+Content-Language: en-US
+To:     Thomas Gleixner <tglx@linutronix.de>
+Cc:     boris.ostrovsky@oracle.com, helgaas@kernel.org, jgross@suse.com,
+        linux-pci@vger.kernel.org, maz@kernel.org,
+        xen-devel@lists.xenproject.org, Jason Andryuk <jandryuk@gmail.com>,
+        David Woodhouse <dwmw2@infradead.org>,
+        Peter Jones <pjones@redhat.com>, linux-fbdev@vger.kernel.org,
+        Peter Zijlstra <peterz@infradead.org>,
+        LKML <linux-kernel@vger.kernel.org>, x86@kernel.org
+References: <90277228-cf14-0cfa-c95e-d42e7d533353@oderland.se>
+ <20211025012503.33172-1-jandryuk@gmail.com> <87fssmg8k4.ffs@tglx>
+ <87cznqg5k8.ffs@tglx> <d1cc20aa-5c5c-6c7b-2e5d-bc31362ad891@oderland.se>
+ <89d6c2f4-4d00-972f-e434-cb1839e78598@oderland.se>
+ <5b3d4653-0cdf-e098-0a4a-3c5c3ae3977b@oderland.se> <87ee7w6bxi.ffs@tglx>
+From:   Josef Johansson <josef@oderland.se>
+In-Reply-To: <87ee7w6bxi.ffs@tglx>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - office.oderland.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - oderland.se
+X-Get-Message-Sender-Via: office.oderland.com: authenticated_id: josjoh@oderland.se
+X-Authenticated-Sender: office.oderland.com: josjoh@oderland.se
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Markus Schneider-Pargmann <msp@baylibre.com>
+On 11/4/21 00:45, Thomas Gleixner wrote:
+> On Wed, Oct 27 2021 at 17:29, Josef Johansson wrote:
+>
+> CC+: EFIFB and scheduler folks
+>
+>> On 10/27/21 14:01, Josef Johansson wrote:
+>>
+>> printk: Suspending console(s) (use no_console_suspend to debug)
+>> [drm] free PSP TMR buffer
+>> PM: suspend devices took 0.428 seconds
+>> ACPI: EC: interrupt blocked
+>> ACPI: PM: Preparing to enter system sleep state S3
+>> ACPI: EC: event blocked
+>> ACPI: EC: EC stopped
+>> ACPI: PM: Saving platform NVS memory
+>> Disabling non-boot CPUs ...
+>> ------------[ cut here ]------------
+>> WARNING: CPU: 1 PID: 0 at arch/x86/mm/tlb.c:522  switch_mm_irqs_off+0x3c5/0x400
+> 	if (WARN_ON_ONCE(__read_cr3() != build_cr3(real_prev->pgd, prev_asid))) {
+>
+>> Modules linked in: snd_seq_dummy snd_hrtimer snd_seq snd_seq_device snd_timer nf_tables nfnetlink vfat fat intel_rapl_msr think_lmi firmware_attributes_class wmi_bmof intel_rapl_common pcspkr uvcvideo videobuf2_vmalloc videobuf2_memops joydev videobuf2_v4l2 sp5100_tco k10temp videobuf2_common i2c_piix4 iwlwifi videodev mc cfg80211 thinkpad_acpi ipmi_devintf ucsi_acpi platform_profile typec_ucsi ledtrig_audio ipmi_msghandler r8169 rfkill typec snd wmi soundcore video i2c_scmi fuse xenfs ip_tables dm_thin_pool dm_persistent_data dm_bio_prison dm_crypt trusted asn1_encoder hid_multitouch amdgpu crct10dif_pclmul crc32_pclmul crc32c_intel gpu_sched i2c_algo_bit drm_ttm_helper ghash_clmulni_intel ttm serio_raw drm_kms_helper cec sdhci_pci cqhci sdhci xhci_pci drm xhci_pci_renesas nvme xhci_hcd ehci_pci mmc_core ehci_hcd nvme_core xen_acpi_processor xen_privcmd xen_pciback xen_blkback xen_gntalloc xen_gntdev xen_evtchn uinput
+>> CPU: 1 PID: 0 Comm: swapper/1 Tainted: G        W        --------- ---  5.15.0-0.rc7.0.fc32.qubes.x86_64 #1
+>> Hardware name: LENOVO 20Y1S02400/20Y1S02400, BIOS R1BET65W(1.34 ) 06/17/2021
+>> RIP: e030:switch_mm_irqs_off+0x3c5/0x400
+>> Code: f0 41 80 65 01 fb ba 01 00 00 00 49 8d b5 60 23 00 00 4c 89 ef 49 c7 85 68 23 00 00 60 1d 08 81 e8 a0 f3 08 00 e9 15 fd ff ff <0f> 0b e8 34 fa ff ff e9 ad fc ff ff 0f 0b e9 31 fe ff ff 0f 0b e9
+>> RSP: e02b:ffffc900400f3eb0 EFLAGS: 00010006
+>> RAX: 00000001336c6000 RBX: ffff888140660000 RCX: 0000000000000040
+>> RDX: ffff8881003027c0 RSI: 0000000000000000 RDI: ffff8881b36c6000
+>> RBP: ffffffff829d91c0 R08: 0000000000000000 R09: 0000000000000000
+>> R10: 0000000000000008 R11: 0000000000000000 R12: ffff888104e88440
+>> R13: ffff8881003027c0 R14: 0000000000000000 R15: 0000000000000001
+>> FS:  0000000000000000(0000) GS:ffff888140640000(0000) knlGS:0000000000000000
+>> CS:  10000e030 DS: 002b ES: 002b CR0: 0000000080050033
+>> CR2: 000060b7d78bf198 CR3: 0000000002810000 CR4: 0000000000050660
+>> Call Trace:
+>>  switch_mm+0x1c/0x30
+>>  idle_task_exit+0x55/0x60
+>>  play_dead_common+0xa/0x20
+>>  xen_pv_play_dead+0xa/0x60
+> So this is when bringing the non boot CPUs down and the switch_mm() code
+> discovers inconsistency between CR3 and the expected value.
+>
+> Would probably be interesting to print the actual values, but XEN folks
+> might have an idea.
+I can install some print-statements showing some more info here.
+I guess I will be getting memory addresses, we already know that CR3 is
+0000000002810000
 
-Similar to HDMI, DP uses audio infoframes as well which are structured
-very similar to the HDMI ones.
-
-This patch adds a helper function to pack the HDMI audio infoframe for
-DP, called hdmi_audio_infoframe_pack_for_dp().
-hdmi_audio_infoframe_pack_only() is split into two parts. One of them
-packs the payload only and can be used for HDMI and DP.
-
-Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
----
- drivers/video/hdmi.c        | 83 ++++++++++++++++++++++++++++---------
- include/drm/drm_dp_helper.h |  2 +
- include/linux/hdmi.h        |  7 +++-
- 3 files changed, 72 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
-index 947be761dfa40..63e74d9fd210e 100644
---- a/drivers/video/hdmi.c
-+++ b/drivers/video/hdmi.c
-@@ -21,6 +21,7 @@
-  * DEALINGS IN THE SOFTWARE.
-  */
- 
-+#include <drm/drm_dp_helper.h>
- #include <linux/bitops.h>
- #include <linux/bug.h>
- #include <linux/errno.h>
-@@ -381,12 +382,34 @@ static int hdmi_audio_infoframe_check_only(const struct hdmi_audio_infoframe *fr
-  *
-  * Returns 0 on success or a negative error code on failure.
-  */
--int hdmi_audio_infoframe_check(struct hdmi_audio_infoframe *frame)
-+int hdmi_audio_infoframe_check(const struct hdmi_audio_infoframe *frame)
- {
- 	return hdmi_audio_infoframe_check_only(frame);
- }
- EXPORT_SYMBOL(hdmi_audio_infoframe_check);
- 
-+static void
-+hdmi_audio_infoframe_pack_payload(const struct hdmi_audio_infoframe *frame,
-+				  u8 *buffer)
-+{
-+	u8 channels;
-+
-+	if (frame->channels >= 2)
-+		channels = frame->channels - 1;
-+	else
-+		channels = 0;
-+
-+	buffer[0] = ((frame->coding_type & 0xf) << 4) | (channels & 0x7);
-+	buffer[1] = ((frame->sample_frequency & 0x7) << 2) |
-+		 (frame->sample_size & 0x3);
-+	buffer[2] = frame->coding_type_ext & 0x1f;
-+	buffer[3] = frame->channel_allocation;
-+	buffer[4] = (frame->level_shift_value & 0xf) << 3;
-+
-+	if (frame->downmix_inhibit)
-+		buffer[4] |= BIT(7);
-+}
-+
- /**
-  * hdmi_audio_infoframe_pack_only() - write HDMI audio infoframe to binary buffer
-  * @frame: HDMI audio infoframe
-@@ -404,7 +427,6 @@ EXPORT_SYMBOL(hdmi_audio_infoframe_check);
- ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
- 				       void *buffer, size_t size)
- {
--	unsigned char channels;
- 	u8 *ptr = buffer;
- 	size_t length;
- 	int ret;
-@@ -420,28 +442,13 @@ ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
- 
- 	memset(buffer, 0, size);
- 
--	if (frame->channels >= 2)
--		channels = frame->channels - 1;
--	else
--		channels = 0;
--
- 	ptr[0] = frame->type;
- 	ptr[1] = frame->version;
- 	ptr[2] = frame->length;
- 	ptr[3] = 0; /* checksum */
- 
--	/* start infoframe payload */
--	ptr += HDMI_INFOFRAME_HEADER_SIZE;
--
--	ptr[0] = ((frame->coding_type & 0xf) << 4) | (channels & 0x7);
--	ptr[1] = ((frame->sample_frequency & 0x7) << 2) |
--		 (frame->sample_size & 0x3);
--	ptr[2] = frame->coding_type_ext & 0x1f;
--	ptr[3] = frame->channel_allocation;
--	ptr[4] = (frame->level_shift_value & 0xf) << 3;
--
--	if (frame->downmix_inhibit)
--		ptr[4] |= BIT(7);
-+	hdmi_audio_infoframe_pack_payload(frame,
-+					  ptr + HDMI_INFOFRAME_HEADER_SIZE);
- 
- 	hdmi_infoframe_set_checksum(buffer, length);
- 
-@@ -479,6 +486,44 @@ ssize_t hdmi_audio_infoframe_pack(struct hdmi_audio_infoframe *frame,
- }
- EXPORT_SYMBOL(hdmi_audio_infoframe_pack);
- 
-+/**
-+ * hdmi_audio_infoframe_pack_for_dp - Pack a HDMI Audio infoframe for
-+ *                                    displayport
-+ *
-+ * @frame HDMI Audio infoframe
-+ * @sdp secondary data packet for display port. This is filled with the
-+ * appropriate data
-+ * @dp_version Display Port version to be encoded in the header
-+ *
-+ * Packs a HDMI Audio Infoframe to be sent over Display Port. This function
-+ * fills the secondary data packet to be used for Display Port.
-+ *
-+ * Return: Number of total written bytes or a negative errno on failure.
-+ */
-+ssize_t
-+hdmi_audio_infoframe_pack_for_dp(const struct hdmi_audio_infoframe *frame,
-+				 struct dp_sdp *sdp, u8 dp_version)
-+{
-+	int ret;
-+
-+	ret = hdmi_audio_infoframe_check(frame);
-+	if (ret)
-+		return ret;
-+
-+	memset(sdp->db, 0, sizeof(sdp->db));
-+
-+	// Secondary-data packet header
-+	sdp->sdp_header.HB0 = 0;
-+	sdp->sdp_header.HB1 = frame->type;
-+	sdp->sdp_header.HB2 = DP_SDP_AUDIO_INFOFRAME_HB2;
-+	sdp->sdp_header.HB3 = (dp_version & 0x3f) << 2;
-+
-+	hdmi_audio_infoframe_pack_payload(frame, sdp->db);
-+
-+	return frame->length + 4;
-+}
-+EXPORT_SYMBOL(hdmi_audio_infoframe_pack_for_dp);
-+
- /**
-  * hdmi_vendor_infoframe_init() - initialize an HDMI vendor infoframe
-  * @frame: HDMI vendor infoframe
-diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
-index b52df4db3e8fe..d1527175716aa 100644
---- a/include/drm/drm_dp_helper.h
-+++ b/include/drm/drm_dp_helper.h
-@@ -1550,6 +1550,8 @@ int drm_dp_bw_code_to_link_rate(u8 link_bw);
- #define DP_SDP_VSC_EXT_CEA		0x21 /* DP 1.4 */
- /* 0x80+ CEA-861 infoframe types */
- 
-+#define DP_SDP_AUDIO_INFOFRAME_HB2	0x1b
-+
- /**
-  * struct dp_sdp_header - DP secondary data packet header
-  * @HB0: Secondary Data Packet ID
-diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
-index c8ec982ff4984..2f4dcc8d060e3 100644
---- a/include/linux/hdmi.h
-+++ b/include/linux/hdmi.h
-@@ -336,7 +336,12 @@ ssize_t hdmi_audio_infoframe_pack(struct hdmi_audio_infoframe *frame,
- 				  void *buffer, size_t size);
- ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
- 				       void *buffer, size_t size);
--int hdmi_audio_infoframe_check(struct hdmi_audio_infoframe *frame);
-+int hdmi_audio_infoframe_check(const struct hdmi_audio_infoframe *frame);
-+
-+struct dp_sdp;
-+ssize_t
-+hdmi_audio_infoframe_pack_for_dp(const struct hdmi_audio_infoframe *frame,
-+				 struct dp_sdp *sdp, u8 dp_version);
- 
- enum hdmi_3d_structure {
- 	HDMI_3D_STRUCTURE_INVALID = -1,
--- 
-2.32.0
+If you have any hints on how to do an effective print statement for this
+please do say so :)
+I'll try though and see what I find out.
+>>  do_idle+0xd1/0xe0
+>>  cpu_startup_entry+0x19/0x20
+>>  asm_cpu_bringup_and_idle+0x5/0x1000
+>> ---[ end trace b068d3cd1b7f5f4b ]---
+>> smpboot: CPU 1 is now offline
+>> smpboot: CPU 2 is now offline
+>> smpboot: CPU 3 is now offline
+>> smpboot: CPU 4 is now offline
+>> smpboot: CPU 5 is now offline
+>> smpboot: CPU 6 is now offline
+>> smpboot: CPU 7 is now offline
+>> ACPI: PM: Low-level resume complete
+>> ACPI: EC: EC started
+>> ACPI: PM: Restoring platform NVS memory
+>> xen_acpi_processor: Uploading Xen processor PM info
+>> xen_acpi_processor: (_PXX): Hypervisor error (-19) for ACPI CPU1
+>> xen_acpi_processor: (_PXX): Hypervisor error (-19) for ACPI CPU3
+>> xen_acpi_processor: (_PXX): Hypervisor error (-19) for ACPI CPU5
+>> xen_acpi_processor: (_PXX): Hypervisor error (-19) for ACPI CPU7
+>> xen_acpi_processor: (_PXX): Hypervisor error (-19) for ACPI CPU9
+>>
 

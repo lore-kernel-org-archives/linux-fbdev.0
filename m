@@ -2,133 +2,153 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E05F7C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 11 Nov 2021 10:25:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 098CDC433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu, 11 Nov 2021 11:11:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BB2B861261
-	for <linux-fbdev@archiver.kernel.org>; Thu, 11 Nov 2021 10:25:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E06A561381
+	for <linux-fbdev@archiver.kernel.org>; Thu, 11 Nov 2021 11:11:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230256AbhKKK2T (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 11 Nov 2021 05:28:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57412 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229668AbhKKK2T (ORCPT
+        id S233065AbhKKLOh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 11 Nov 2021 06:14:37 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:34432 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S233062AbhKKLOg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 11 Nov 2021 05:28:19 -0500
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [IPv6:2a01:488:42:1000:50ed:8234::])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70B0DC061766;
-        Thu, 11 Nov 2021 02:25:30 -0800 (PST)
-Received: from ip4d173d4a.dynamic.kabel-deutschland.de ([77.23.61.74] helo=[192.168.66.200]); authenticated
-        by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        id 1ml7Gq-0006dt-HS; Thu, 11 Nov 2021 11:25:28 +0100
-Message-ID: <34c2969a-e916-cef4-80bb-f39cb2fdd6cb@leemhuis.info>
-Date:   Thu, 11 Nov 2021 11:25:28 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
-Subject: Re: [PATCH] fbdev: Prevent probing generic drivers if a FB is already
- registered
-Content-Language: en-BS
-To:     Javier Martinez Canillas <javierm@redhat.com>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
+        Thu, 11 Nov 2021 06:14:36 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1636629107;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=6eGvVdE+WOQI0n1vAW2uJhdmDZdRKNo3k8x27QeGSUs=;
+        b=OBiPJVT8VtQoBR6gHEWaMjlYe6pqexa2UpgMl/Tk7Xb7F2cU/1+9KEHfrOcgQyukEnlplh
+        WuagTGy7czdRxTc4DhWLqeJQPZ+6QxktNPskPTWgKQZbZ+wkBmIi/FIxAWlx++9yjQqhMC
+        mLS1VEzY7urp1wu1AYLU7aY1gaw83jI=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-467-aJQSpVqkMb6yHs3BmxakJw-1; Thu, 11 Nov 2021 06:11:46 -0500
+X-MC-Unique: aJQSpVqkMb6yHs3BmxakJw-1
+Received: by mail-wr1-f72.google.com with SMTP id r12-20020adfdc8c000000b0017d703c07c0so970261wrj.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 11 Nov 2021 03:11:45 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=6eGvVdE+WOQI0n1vAW2uJhdmDZdRKNo3k8x27QeGSUs=;
+        b=0RnPMo7nSzIIPCkVXJmLO7cNPWtZDluwYpRiVXOifrABLuyKPGZAiLAlgb5Eud/SlN
+         pFV8yWNbRLT2N2l90T03ujxNESU+soeXmSk0ZO5zgin/QPcHTX/yKmXuOQBgGq3nRd7L
+         weJ2Y2t1qQDuUiYyPcPGKOA33tALnNlNhi36NET0+WgEJ2ie8qVHVNDMGyw8wms9SK4m
+         o1Y8W2lm9k4z81XVMGSbr0kuEHmCxGijBUgnWWyTIjuaNnhndaxpDGqdOaSV6nMnuWll
+         5UmGNgDcNKe2dsc+Hc+eYL13mfVR6ca8wiB2tWcbIPrwqHq0ASrNyERutTTwG+pNbExr
+         IjzA==
+X-Gm-Message-State: AOAM531TaC/a7PYDf0yUM15/I49S/J7J+IBlAIihfxK9WpDIAhUbW/w3
+        BVXZayJJDIrhyUVYzoYfrjLXUCmwslsPcVoDt54+5t3LacxaTMPo27NDZiwYaea+8+BT7C72ZJx
+        RSJsh9jIc/aeX019La2QLhuc=
+X-Received: by 2002:a5d:548d:: with SMTP id h13mr7729993wrv.30.1636629104856;
+        Thu, 11 Nov 2021 03:11:44 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwpiIEii6T7ztWVEFXdyjsxYX2ZgZCjRy/OqBzYjm9qowfTgAkURfVua5FAPoeW2C2TpR0nOg==
+X-Received: by 2002:a5d:548d:: with SMTP id h13mr7729960wrv.30.1636629104600;
+        Thu, 11 Nov 2021 03:11:44 -0800 (PST)
+Received: from minerva.redhat.com ([92.176.231.106])
+        by smtp.gmail.com with ESMTPSA id f7sm7937292wmg.6.2021.11.11.03.11.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 11 Nov 2021 03:11:44 -0800 (PST)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Peter Jones <pjones@redhat.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Hans de Goede <hdegoede@redhat.com>,
         Ilya Trukhanov <lahvuun@gmail.com>,
-        Sam Ravnborg <sam@ravnborg.org>
-References: <20211111092053.1328304-1-javierm@redhat.com>
- <23b693d5-0335-8f42-a206-65e170ab6e52@leemhuis.info>
- <YYzptg1V+lyO0iVP@phenom.ffwll.local>
-From:   Thorsten Leemhuis <regressions@leemhuis.info>
-In-Reply-To: <YYzptg1V+lyO0iVP@phenom.ffwll.local>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1636626330;118f9cd4;
-X-HE-SMSGID: 1ml7Gq-0006dt-HS
+        Thorsten Leemhuis <regressions@leemhuis.info>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Borislav Petkov <bp@suse.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH v2] fbdev: Prevent probing generic drivers if a FB is already registered
+Date:   Thu, 11 Nov 2021 12:11:20 +0100
+Message-Id: <20211111111120.1344613-1-javierm@redhat.com>
+X-Mailer: git-send-email 2.33.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 11.11.21 11:00, Daniel Vetter wrote:
-> On Thu, Nov 11, 2021 at 10:58:14AM +0100, Thorsten Leemhuis wrote:
->> On 11.11.21 10:20, Javier Martinez Canillas wrote:
->>> The efifb and simplefb drivers just render to a pre-allocated frame buffer
->>> and rely on the display hardware being initialized before the kernel boots.
->>>
->>> But if another driver already probed correctly and registered a fbdev, the
->>> generic drivers shouldn't be probed since an actual driver for the display
->>> hardware is already present.
->>>
->>> Reported-by: Ilya Trukhanov <lahvuun@gmail.com>
->>> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
->>> ---
->>
->> TLDR: Javier, in case you need to send an improved patch, could you
->> please add this before the 'Reported-by:'
->>
->> Link: https://lore.kernel.org/r/20211110200253.rfudkt3edbd3nsyj@lahvuun/
-> 
-> Uh I thought Link: was for the patch submission chain, and we've used
-> References: for bug reports and everything else. Is the extension of Link:
-> a new thing?
+The efifb and simplefb drivers just render to a pre-allocated frame buffer
+and rely on the display hardware being initialized before the kernel boots.
 
-Not really (afaics), but I made that clearer recently. To quote from my
-own text below:
+But if another driver already probed correctly and registered a fbdev, the
+generic drivers shouldn't be probed since an actual driver for the display
+hardware is already present.
 
->> This concept is old, but the text was reworked recently to make this use
->> case for the Link: tag clearer. For details see:
->> https://git.kernel.org/linus/1f57bd42b77c
+This is more likely to occur after commit d391c5827107 ("drivers/firmware:
+move x86 Generic System Framebuffers support") since the "efi-framebuffer"
+and "simple-framebuffer" platform devices are registered at a later time.
 
-If you search the history, you'll find quite a few commits (some really
-old) that use 'Link:' to point to bugtracker or regression reports.
-'References:' is used as well, but mainly by the drm subsystem.
+Link: https://lore.kernel.org/r/20211110200253.rfudkt3edbd3nsyj@lahvuun/
+Fixes: d391c5827107 ("drivers/firmware: move x86 Generic System Framebuffers support")
+Reported-by: Ilya Trukhanov <lahvuun@gmail.com>
+Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
 
-But yes, sadly the Link tag historically is overloaded and used for
-different things afaics. I'm all for fixing this and plan to start a
-discussion about this in the next few days (hopefully it doesn't become
-weeks), but for now I have a few issues with regzbot I need to deal with
-first.
+Changes in v2:
+- Add a Link: tag with a reference to the bug report (Thorsten Leemhuis).
+- Add a comment explaining why the probe fails earlier (Daniel Vetter).
+- Add a Fixes: tag for stable to pick the fix (Daniel Vetter).
+- Add Daniel Vetter's Reviewed-by: tag.
+- Improve the commit message and mention the culprit commit
 
-Ciao, Thorsten
+ drivers/video/fbdev/efifb.c    | 11 +++++++++++
+ drivers/video/fbdev/simplefb.c | 11 +++++++++++
+ 2 files changed, 22 insertions(+)
 
->> And if the patch is already good to go: could the subsystem maintainer
->> please add it when applying?
->>
->>
->> Long story: hi, this is your Linux kernel regression tracker speaking.
->> Thanks for working on a fix for a regression I'm keeping an eye on.
->>
->> There is one small detail that could be improved: the commit message
->> would benefit from a link to the regression report, for reasons
->> explained in Documentation/process/submitting-patches.rst. To quote:
->>
->> ```
->> If related discussions or any other background information behind the
->> change can be found on the web, add 'Link:' tags pointing to it. In case
->> your patch fixes a bug, for example, add a tag with a URL referencing
->> the report in the mailing list archives or a bug tracker;
->> ```
->>
->> This concept is old, but the text was reworked recently to make this use
->> case for the Link: tag clearer. For details see:
->> https://git.kernel.org/linus/1f57bd42b77c
->>
->> Yes, that "Link:" is not really crucial; but it's good to have if
->> someone needs to look into the backstory of this change sometime in the
->> future. But I care for a different reason. I'm tracking this regression
->> (and others) with regzbot, my Linux kernel regression tracking bot. This
->> bot will notice if a patch with a Link: tag to a tracked regression gets
->> posted and record that, which allowed anyone looking into the regression
->> to quickly gasp the current status from regzbot's webui
->> (https://linux-regtracking.leemhuis.info/regzbot ) or its reports. The
->> bot will also notice if a commit with a Link: tag to a regression report
->> is applied by Linus and then automatically mark the regression as
->> resolved then.
->>
->> IOW: this tag makes my life a regression tracker a lot easier, as I
->> otherwise have to tell regzbot manually about the fix. ;-)
->>
->> Ciao, Thorsten (while carrying his Linux kernel regression tracker hat)
->>
->> #regzbot ^backmonitor
->> https://lore.kernel.org/r/20211110200253.rfudkt3edbd3nsyj@lahvuun/
-> 
+diff --git drivers/video/fbdev/efifb.c drivers/video/fbdev/efifb.c
+index edca3703b964..ea42ba6445b2 100644
+--- drivers/video/fbdev/efifb.c
++++ drivers/video/fbdev/efifb.c
+@@ -351,6 +351,17 @@ static int efifb_probe(struct platform_device *dev)
+ 	char *option = NULL;
+ 	efi_memory_desc_t md;
+ 
++	/*
++	 * Generic drivers must not be registered if a framebuffer exists.
++	 * If a native driver was probed, the display hardware was already
++	 * taken and attempting to use the system framebuffer is dangerous.
++	 */
++	if (num_registered_fb > 0) {
++		dev_err(&dev->dev,
++			"efifb: a framebuffer is already registered\n");
++		return -EINVAL;
++	}
++
+ 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI || pci_dev_disabled)
+ 		return -ENODEV;
+ 
+diff --git drivers/video/fbdev/simplefb.c drivers/video/fbdev/simplefb.c
+index 62f0ded70681..b63074fd892e 100644
+--- drivers/video/fbdev/simplefb.c
++++ drivers/video/fbdev/simplefb.c
+@@ -407,6 +407,17 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	struct simplefb_par *par;
+ 	struct resource *mem;
+ 
++	/*
++	 * Generic drivers must not be registered if a framebuffer exists.
++	 * If a native driver was probed, the display hardware was already
++	 * taken and attempting to use the system framebuffer is dangerous.
++	 */
++	if (num_registered_fb > 0) {
++		dev_err(&pdev->dev,
++			"simplefb: a framebuffer is already registered\n");
++		return -EINVAL;
++	}
++
+ 	if (fb_get_options("simplefb", NULL))
+ 		return -ENODEV;
+ 
+-- 
+2.33.1
+

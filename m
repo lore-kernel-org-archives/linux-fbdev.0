@@ -2,153 +2,127 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FADEC43217
-	for <linux-fbdev@archiver.kernel.org>; Fri, 12 Nov 2021 15:11:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83C71C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 12 Nov 2021 16:12:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 29D2860F4B
-	for <linux-fbdev@archiver.kernel.org>; Fri, 12 Nov 2021 15:11:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6B43960551
+	for <linux-fbdev@archiver.kernel.org>; Fri, 12 Nov 2021 16:12:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229678AbhKLPNw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 12 Nov 2021 10:13:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51226 "EHLO
+        id S235209AbhKLQPP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 12 Nov 2021 11:15:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37146 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229835AbhKLPNw (ORCPT
+        with ESMTP id S229952AbhKLQPO (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 12 Nov 2021 10:13:52 -0500
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E6FBC06127A
-        for <linux-fbdev@vger.kernel.org>; Fri, 12 Nov 2021 07:11:01 -0800 (PST)
-Received: by mail-wm1-x334.google.com with SMTP id z200so8002575wmc.1
-        for <linux-fbdev@vger.kernel.org>; Fri, 12 Nov 2021 07:11:01 -0800 (PST)
+        Fri, 12 Nov 2021 11:15:14 -0500
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E57D9C061766
+        for <linux-fbdev@vger.kernel.org>; Fri, 12 Nov 2021 08:12:23 -0800 (PST)
+Received: by mail-wm1-x331.google.com with SMTP id y196so8127499wmc.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 12 Nov 2021 08:12:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=aq9hqCG8idgTpRhc5meZTF7+FM8GBSfO5tUh1K9J7b0=;
-        b=WO+i2o7Jziiy0BtVpnE7pqYL0Q5027w0/uMoDNHjVvdpUzTiDfAeBccQWZBmQR25Pa
-         ZNz2t3TB/E7fImoXUUvEkJLZppUTRR5+3QnuMOTlsqEpKPjrPYZN3DX0SL1tET3NRjSl
-         +C7QsjzBHzc3attCinLB1ljbbfORuLK8C5TQychZ5JkQchTo1UpfYV0+XN34FYOf0XI+
-         7G7sWuQOV2KaMnQgEO+uEZxxGgk8UBpYTTYVjE9ETukGEb6YbDPuqPmglR6Vyw3+lSOr
-         RcWU/6YLxEzFRter4kowEpfyc/Xz8bQuKkC9b1/tuLAUgdFBzU9ko7gXv31kG5nbCuLc
-         Fi6g==
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=twurRhba5qgXRpgexuSI57Dp4Y9u2cq2aOPi/t5IpCg=;
+        b=P5AJMChoaTUh2v8lFArlEIxhsCWAkMxOmfTMhbkQvQDPp4rJAdPEpg5fljtJxT16r1
+         Vl1X1fTWPLWfziVxg2uS2EQxFUqItRjnMV7PX/rvoynchtAeMIhH/o6qCVyZcKW9MpgF
+         6C4zjXegh05Rxg9jEX8zfB35njzKFfOkhs2DY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=aq9hqCG8idgTpRhc5meZTF7+FM8GBSfO5tUh1K9J7b0=;
-        b=ADhnowXosNBdQAwfDoExyErGc0T8VGpKyKQWOKguHmTzTQm2e1BS4cmrS+imrZ9ZnF
-         0vcfWLaQr9P2ZrrSlM6EOTDnuTbEWSDeyQp+1odSr2LHdbKzUjGCp24kMs/AaNr/Qe2o
-         bjuQlzq6pUaGmQtqXv0pRZkdksvXh1jk/atke5Td2GptG0hhxRJjqXMHNP6yYHk10Uwh
-         c8HydJ23+iLz1VVZxFROFo3fo1uF1R8JTHgPNJI9juxBoF6nU7JF8m5IsRX73HW3ex2b
-         jfQR1TMiKBz63iTuhSCgLu5OZcSkf4vZ+BRuveXMB58yxkSD5XnQ293KfzEF7CvyTetk
-         ZlrQ==
-X-Gm-Message-State: AOAM532D3GR5o9JSX8u6cEQCMSJtEF0BKRSYZJ9TY2bmcrfOP/TIO7Fx
-        mebIQQGBInubivm1ILuKL7RlOA==
-X-Google-Smtp-Source: ABdhPJwR5hWfk95kDgYfAnrK9AqbZuzMKtLs6G7ePVwgAHK72HqZr2HBm0By7v4Ftl1w7VgCXoj3UA==
-X-Received: by 2002:a05:600c:3b1b:: with SMTP id m27mr18462847wms.125.1636729859565;
-        Fri, 12 Nov 2021 07:10:59 -0800 (PST)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id b197sm5822645wmb.24.2021.11.12.07.10.58
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :in-reply-to;
+        bh=twurRhba5qgXRpgexuSI57Dp4Y9u2cq2aOPi/t5IpCg=;
+        b=HKYWo89OujHrug7afscUc1fvcsU++Jwd8+lnIVEzI03k+4k4Ud2bBvzEKXh/W0ewjm
+         fYccDU7eI0IbsrqKQla+5xJwSO8eL1o5W/3Hlvk45TuWmmtFAo9eglPGW3VpKqwtykEH
+         drKQqhytyMw47oJdyqy9dA/oZjUjQBVcQkxlBuv2s6pyzqp8QNoqY2ZVKRrcjTEGUQ85
+         T4UA5pLI9JGXCoiGSkiHipAHaDOM6ZRrX6ZoYRwK3T0IRNsr3eRxzW40G3qUvxGBmTEp
+         qBGFRJZDO6vPhFvhjSJstcoGkAOzuHdhkIkR4brZVCboqY/IlOR9gux86H3ZjkVqcsk0
+         kQGQ==
+X-Gm-Message-State: AOAM533xwq+mdPmuwNtOw/8C4zjHOliGw+BTCkPJk08HsaNEV09fubQi
+        Yn32KcVMY9Hksm9qwaV1otDYvw==
+X-Google-Smtp-Source: ABdhPJyEP4m/8kd4jlKweTPP4u7zakHKKjuN/yJDukwgCYB58zUMCs0ErybOgSz0h1SjnM9VGwNqyA==
+X-Received: by 2002:a05:600c:221a:: with SMTP id z26mr36546315wml.20.1636733542549;
+        Fri, 12 Nov 2021 08:12:22 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id o2sm6374468wrg.1.2021.11.12.08.12.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Nov 2021 07:10:58 -0800 (PST)
-Date:   Fri, 12 Nov 2021 15:10:57 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Marijn Suijten <marijn.suijten@somainline.org>,
-        phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Martin Botka <martin.botka@somainline.org>,
-        Jami Kettunen <jami.kettunen@somainline.org>,
-        Pavel Dubrova <pashadubrova@gmail.com>,
-        Kiran Gunda <kgunda@codeaurora.org>,
-        Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [RESEND PATCH v2 05/13] backlight: qcom-wled: Override default
- length with qcom,enabled-strings
-Message-ID: <20211112151057.h474227aln2huf6l@maple.lan>
-References: <20211112002706.453289-1-marijn.suijten@somainline.org>
- <20211112002706.453289-6-marijn.suijten@somainline.org>
- <20211112121238.kb3kkt6xzv5so26j@maple.lan>
- <20211112124522.g7e3m7l2oxxxobof@SoMainline.org>
- <20211112132336.z2x4bzrfqr4u3jol@maple.lan>
- <20211112141917.akufukmeyz5enjg3@SoMainline.org>
+        Fri, 12 Nov 2021 08:12:22 -0800 (PST)
+Date:   Fri, 12 Nov 2021 17:12:20 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Javier Martinez Canillas <javierm@redhat.com>,
+        linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Peter Jones <pjones@redhat.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Hans de Goede <hdegoede@redhat.com>,
+        Ilya Trukhanov <lahvuun@gmail.com>,
+        Thorsten Leemhuis <regressions@leemhuis.info>,
+        Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH v2] fbdev: Prevent probing generic drivers if a FB is
+ already registered
+Message-ID: <YY6SZJM8nDDCAzXU@phenom.ffwll.local>
+Mail-Followup-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-kernel@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>, Peter Jones <pjones@redhat.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Hans de Goede <hdegoede@redhat.com>,
+        Ilya Trukhanov <lahvuun@gmail.com>,
+        Thorsten Leemhuis <regressions@leemhuis.info>,
+        Borislav Petkov <bp@suse.de>
+References: <20211111111120.1344613-1-javierm@redhat.com>
+ <YY0A8LOVhs5JbMXW@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20211112141917.akufukmeyz5enjg3@SoMainline.org>
+In-Reply-To: <YY0A8LOVhs5JbMXW@kroah.com>
+X-Operating-System: Linux phenom 5.10.0-8-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Nov 12, 2021 at 03:19:17PM +0100, Marijn Suijten wrote:
-> On 2021-11-12 13:23:36, Daniel Thompson wrote:
-> > On Fri, Nov 12, 2021 at 01:45:22PM +0100, Marijn Suijten wrote:
-> > > On 2021-11-12 12:12:38, Daniel Thompson wrote:
-> > > > On Fri, Nov 12, 2021 at 01:26:58AM +0100, Marijn Suijten wrote:
-> > > > > The length of qcom,enabled-strings as property array is enough to
-> > > > > determine the number of strings to be enabled, without needing to set
-> > > > > qcom,num-strings to override the default number of strings when less
-> > > > > than the default (which is also the maxium) is provided in DT.
-> > > > > 
-> > > > > Fixes: 775d2ffb4af6 ("backlight: qcom-wled: Restructure the driver for WLED3")
-> > > > > Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
-> > > > > Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
-> > > > > ---
-> > > > >  drivers/video/backlight/qcom-wled.c | 2 ++
-> > > > >  1 file changed, 2 insertions(+)
-> > > > > 
-> > > > > diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-> > > > > index c5232478a343..9bfbf601762a 100644
-> > > > > --- a/drivers/video/backlight/qcom-wled.c
-> > > > > +++ b/drivers/video/backlight/qcom-wled.c
-> > > > > @@ -1518,6 +1518,8 @@ static int wled_configure(struct wled *wled)
-> > > > >  				return -EINVAL;
-> > > > >  			}
-> > > > >  		}
-> > > > > +
-> > > > > +		cfg->num_strings = string_len;
-> > > > 
-> > > > I still don't really understand why this wants to be a separate patch.
-> > > 
-> > > I'm viewing this as a separate issue, and this makes it easier to
-> > > document the change in a loose commit.
-> > > 
-> > > > The warning text emitted by the previous patch (whatever text we agree
-> > > > on) will be nonsense until this patch is applied.
-> > > > 
-> > > > If this patch cannot appear before the warning is introduces then there
-> > > > is no correct order for patches 4 and 5 (which implies they should be the
-> > > > same patch).
-> > > 
-> > > Agreed, this is a weird way of doing things in v2 - the error message is
-> > > printed yet the length of qcom,enabled-strings is always ignored before
-> > > this patch.
-> > > 
-> > > If we were to reorder patch 5 before patch 4 that should also
-> > > temporarily move `cfg->num_strings = cfg->num_strings + 1;` right below
-> > > this `if` so that `qcom,num-strings` remains the definitive way to
-> > > set/override length.  That's doable, and makes it easier to read patch 4
-> > > as that bit of code will be replaced by of_property_read_u32 on that
-> > > exact line.  Let me know which method you prefer.
+On Thu, Nov 11, 2021 at 12:39:28PM +0100, Greg Kroah-Hartman wrote:
+> On Thu, Nov 11, 2021 at 12:11:20PM +0100, Javier Martinez Canillas wrote:
+> > The efifb and simplefb drivers just render to a pre-allocated frame buffer
+> > and rely on the display hardware being initialized before the kernel boots.
 > > 
-> > Personally I would just squash them together. There are no redundant
-> > values in the DT that could be fixed until we can use the string_len
-> > to set num_strings.
+> > But if another driver already probed correctly and registered a fbdev, the
+> > generic drivers shouldn't be probed since an actual driver for the display
+> > hardware is already present.
+> > 
+> > This is more likely to occur after commit d391c5827107 ("drivers/firmware:
+> > move x86 Generic System Framebuffers support") since the "efi-framebuffer"
+> > and "simple-framebuffer" platform devices are registered at a later time.
+> > 
+> > Link: https://lore.kernel.org/r/20211110200253.rfudkt3edbd3nsyj@lahvuun/
+> > Fixes: d391c5827107 ("drivers/firmware: move x86 Generic System Framebuffers support")
+> > Reported-by: Ilya Trukhanov <lahvuun@gmail.com>
+> > Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+> > Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> > ---
+> > 
+> > Changes in v2:
+> > - Add a Link: tag with a reference to the bug report (Thorsten Leemhuis).
+> > - Add a comment explaining why the probe fails earlier (Daniel Vetter).
+> > - Add a Fixes: tag for stable to pick the fix (Daniel Vetter).
 > 
-> Reordering this patch before patch 4 in the way described above should
-> allow just that, except that no warnings will be given for ambiguity
-> until patch 4 is applied after that - which is weird given that that
-> patch only intends the off-by-one error.  Perhaps we should keep the
-> order as it is, but add the ambiguity warning in this patch instead.
+> That does not mean that it will make it into the stable tree.  Please
+> read:
+>     https://www.kernel.org/doc/html/latest/process/stable-kernel-rules.html
+> for how to do this properly.
 
-That works for me. Sounds good.
+Defacto your auto-picker is aggressive enough that just Fixes: is actually
+good enough to get it into stable :-)
 
-
-Daniel.
+But yeah explicit cc: stable can't hurt.
+-Daniel
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

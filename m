@@ -2,80 +2,174 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 471EEC433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 15 Nov 2021 23:27:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60B94C4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Nov 2021 00:18:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2BD9261A09
-	for <linux-fbdev@archiver.kernel.org>; Mon, 15 Nov 2021 23:27:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4DB9F613A7
+	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Nov 2021 00:18:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235301AbhKOXau (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 15 Nov 2021 18:30:50 -0500
-Received: from mail.kernel.org ([198.145.29.99]:39280 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S243484AbhKOX2u (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 15 Nov 2021 18:28:50 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 4BAAB61882;
-        Mon, 15 Nov 2021 23:25:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1637018754;
-        bh=rGYlQyxDaD3rF9edRUkWserAGW/waRNxxYO5X77TR0A=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=rHNtf20mOE69yBjq72LUkrANiH0nkEAgcXR7+XtZn5SkPFrx8uLyyYouV+vaWhJdb
-         evf224lm2E+vdylYG396rGdoKa0fYKULmw71l3rWcdMVh1MIPBP8qRCkbiGBDB1lNE
-         NPvVTe6XjPhS3ShdrbAM/oYdLu4LA+DcQq6MeFE/2SiXN1AkiOZqUt0ISNdc9EDxM2
-         3D3IxCQ8sjPwOXZng7CRhMsNaVyQk9u7d858/12Rh0W/5oIeLxWWx9v3q8Pan4AknW
-         TksRUI9MN8a7f6x7p8wjWqwAyEu5TU0KzutxtdEOGAPKuf+8XRf6PUsVMkhvSufNbx
-         gEFhF/ecEICoQ==
-Date:   Mon, 15 Nov 2021 17:30:58 -0600
-From:   "Gustavo A. R. Silva" <gustavoars@kernel.org>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>,
-        Manuel Lauss <mano@roarinelk.homelinux.net>,
-        Yoshinori Sato <ysato@users.sourceforge.jp>,
-        Rich Felker <dalias@libc.org>,
-        Linux-sh list <linux-sh@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        linux-hardening@vger.kernel.org
-Subject: Re: [PATCH] fbdev: sh7760fb: document fallthrough cases
-Message-ID: <20211115233058.GA116241@embeddedor>
-References: <20211115063257.14369-1-rdunlap@infradead.org>
- <CAMuHMdWerZGYz_i8oBK4-ZC+AHZm8c0VW7CXDRX=2PxboWFZ-w@mail.gmail.com>
+        id S1345864AbhKPAVr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 15 Nov 2021 19:21:47 -0500
+Received: from relay02.th.seeweb.it ([5.144.164.163]:37499 "EHLO
+        relay02.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1351852AbhKOUjI (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 15 Nov 2021 15:39:08 -0500
+Received: from Marijn-Arch-PC.localdomain (94-209-165-62.cable.dynamic.v4.ziggo.nl [94.209.165.62])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by m-r1.th.seeweb.it (Postfix) with ESMTPSA id C7CE8200D2;
+        Mon, 15 Nov 2021 21:35:08 +0100 (CET)
+From:   Marijn Suijten <marijn.suijten@somainline.org>
+To:     phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>
+Cc:     ~postmarketos/upstreaming@lists.sr.ht,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Martin Botka <martin.botka@somainline.org>,
+        Jami Kettunen <jami.kettunen@somainline.org>,
+        Pavel Dubrova <pashadubrova@gmail.com>,
+        Marijn Suijten <marijn.suijten@somainline.org>,
+        Kiran Gunda <kgunda@codeaurora.org>,
+        Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Courtney Cavin <courtney.cavin@sonymobile.com>
+Subject: [PATCH v3 4/9] backlight: qcom-wled: Fix off-by-one maximum with default num_strings
+Date:   Mon, 15 Nov 2021 21:34:54 +0100
+Message-Id: <20211115203459.1634079-5-marijn.suijten@somainline.org>
+X-Mailer: git-send-email 2.33.1
+In-Reply-To: <20211115203459.1634079-1-marijn.suijten@somainline.org>
+References: <20211115203459.1634079-1-marijn.suijten@somainline.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdWerZGYz_i8oBK4-ZC+AHZm8c0VW7CXDRX=2PxboWFZ-w@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Nov 15, 2021 at 09:35:09AM +0100, Geert Uytterhoeven wrote:
-> On Mon, Nov 15, 2021 at 7:33 AM Randy Dunlap <rdunlap@infradead.org> wrote:
-> > Fix fallthrough warnings in sh776fb.c:
-> >
-> > ../drivers/video/fbdev/sh7760fb.c: In function 'sh7760fb_get_color_info':
-> > ../drivers/video/fbdev/sh7760fb.c:138:23: warning: this statement may fall through [-Wimplicit-fallthrough=]
-> >   138 |                 lgray = 1;
-> > ../drivers/video/fbdev/sh7760fb.c:143:23: warning: this statement may fall through [-Wimplicit-fallthrough=]
-> >   143 |                 lgray = 1;
-> >
-> > Just document the current state of code execution/flow.
-> >
-> > Fixes: 4a25e41831ee ("video: sh7760fb: SH7760/SH7763 LCDC framebuffer driver")
-> > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> 
-> Section 30.4.4 ("Data Format") of the SH7760 Group Hardware
-> Manual confirms fall-through is appropriate here (especially for
-> the odd 6 bpp mode).
-> 
-> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+When not specifying num-strings in the DT the default is used, but +1 is
+added to it which turns WLED3 into 4 and WLED4/5 into 5 strings instead
+of 3 and 4 respectively, causing out-of-bounds reads and register
+read/writes.  This +1 exists for a deficiency in the DT parsing code,
+and is simply omitted entirely - solving this oob issue - by parsing the
+property separately much like qcom,enabled-strings.
 
-I'm taking this in my -next tree[1].
+This also enables more stringent checks on the maximum value when
+qcom,enabled-strings is provided in the DT, by parsing num-strings after
+enabled-strings to allow it to check against (and in a subsequent patch
+override) the length of enabled-strings: it is invalid to set
+num-strings higher than that.
+The DT currently utilizes it to get around an incorrect fixed read of
+four elements from that array (has been addressed in a prior patch) by
+setting a lower num-strings where desired.
 
-Thanks
---
-Gustavo
+Fixes: 93c64f1ea1e8 ("leds: add Qualcomm PM8941 WLED driver")
+Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
+Reviewed-By: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+---
+ drivers/video/backlight/qcom-wled.c | 48 ++++++++++-------------------
+ 1 file changed, 16 insertions(+), 32 deletions(-)
 
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/gustavoars/linux.git/log/?h=for-next/kspp-misc-fixes
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 9d883e702134..ab10910971e9 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -1255,21 +1255,6 @@ static const struct wled_var_cfg wled5_ovp_cfg = {
+ 	.size = 16,
+ };
+ 
+-static u32 wled3_num_strings_values_fn(u32 idx)
+-{
+-	return idx + 1;
+-}
+-
+-static const struct wled_var_cfg wled3_num_strings_cfg = {
+-	.fn = wled3_num_strings_values_fn,
+-	.size = 3,
+-};
+-
+-static const struct wled_var_cfg wled4_num_strings_cfg = {
+-	.fn = wled3_num_strings_values_fn,
+-	.size = 4,
+-};
+-
+ static u32 wled3_switch_freq_values_fn(u32 idx)
+ {
+ 	return 19200 / (2 * (1 + idx));
+@@ -1343,11 +1328,6 @@ static int wled_configure(struct wled *wled)
+ 			.val_ptr = &cfg->switch_freq,
+ 			.cfg = &wled3_switch_freq_cfg,
+ 		},
+-		{
+-			.name = "qcom,num-strings",
+-			.val_ptr = &cfg->num_strings,
+-			.cfg = &wled3_num_strings_cfg,
+-		},
+ 	};
+ 
+ 	const struct wled_u32_opts wled4_opts[] = {
+@@ -1371,11 +1351,6 @@ static int wled_configure(struct wled *wled)
+ 			.val_ptr = &cfg->switch_freq,
+ 			.cfg = &wled3_switch_freq_cfg,
+ 		},
+-		{
+-			.name = "qcom,num-strings",
+-			.val_ptr = &cfg->num_strings,
+-			.cfg = &wled4_num_strings_cfg,
+-		},
+ 	};
+ 
+ 	const struct wled_u32_opts wled5_opts[] = {
+@@ -1399,11 +1374,6 @@ static int wled_configure(struct wled *wled)
+ 			.val_ptr = &cfg->switch_freq,
+ 			.cfg = &wled3_switch_freq_cfg,
+ 		},
+-		{
+-			.name = "qcom,num-strings",
+-			.val_ptr = &cfg->num_strings,
+-			.cfg = &wled4_num_strings_cfg,
+-		},
+ 		{
+ 			.name = "qcom,modulator-sel",
+ 			.val_ptr = &cfg->mod_sel,
+@@ -1522,8 +1492,6 @@ static int wled_configure(struct wled *wled)
+ 			*bool_opts[i].val_ptr = true;
+ 	}
+ 
+-	cfg->num_strings = cfg->num_strings + 1;
+-
+ 	string_len = of_property_count_elems_of_size(dev->of_node,
+ 						     "qcom,enabled-strings",
+ 						     sizeof(u32));
+@@ -1554,6 +1522,22 @@ static int wled_configure(struct wled *wled)
+ 		}
+ 	}
+ 
++	rc = of_property_read_u32(dev->of_node, "qcom,num-strings", &val);
++	if (!rc) {
++		if (val < 1 || val > wled->max_string_count) {
++			dev_err(dev, "qcom,num-strings must be between 1 and %d\n",
++				wled->max_string_count);
++			return -EINVAL;
++		}
++
++		if (string_len > 0 && val > string_len) {
++			dev_err(dev, "qcom,num-strings exceeds qcom,enabled-strings\n");
++			return -EINVAL;
++		}
++
++		cfg->num_strings = val;
++	}
++
+ 	return 0;
+ }
+ 
+-- 
+2.33.1
+

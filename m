@@ -2,134 +2,91 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FA29C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 12 Nov 2021 21:43:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E873C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 15 Nov 2021 06:33:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8879360EE4
-	for <linux-fbdev@archiver.kernel.org>; Fri, 12 Nov 2021 21:43:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3325261AF0
+	for <linux-fbdev@archiver.kernel.org>; Mon, 15 Nov 2021 06:33:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235815AbhKLVqd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 12 Nov 2021 16:46:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55456 "EHLO
+        id S229877AbhKOGf4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 15 Nov 2021 01:35:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59570 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235792AbhKLVqc (ORCPT
+        with ESMTP id S229935AbhKOGf4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 12 Nov 2021 16:46:32 -0500
-Received: from relay06.th.seeweb.it (relay06.th.seeweb.it [IPv6:2001:4b7a:2000:18::167])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D49EC061766;
-        Fri, 12 Nov 2021 13:43:41 -0800 (PST)
-Received: from SoMainline.org (94-209-165-62.cable.dynamic.v4.ziggo.nl [94.209.165.62])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 3F3CF3F248;
-        Fri, 12 Nov 2021 22:43:39 +0100 (CET)
-Date:   Fri, 12 Nov 2021 22:43:37 +0100
-From:   Marijn Suijten <marijn.suijten@somainline.org>
-To:     Daniel Thompson <daniel.thompson@linaro.org>,
-        phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Martin Botka <martin.botka@somainline.org>,
-        Jami Kettunen <jami.kettunen@somainline.org>,
-        Pavel Dubrova <pashadubrova@gmail.com>,
-        Kiran Gunda <kgunda@codeaurora.org>,
-        Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Courtney Cavin <courtney.cavin@sonymobile.com>
-Subject: Re: [RESEND PATCH v2 04/13] backlight: qcom-wled: Fix off-by-one
- maximum with default num_strings
-Message-ID: <20211112214337.r5xrpeyjgdygzc3n@SoMainline.org>
-Mail-Followup-To: Marijn Suijten <marijn.suijten@somainline.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>, Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        Martin Botka <martin.botka@somainline.org>,
-        Jami Kettunen <jami.kettunen@somainline.org>,
-        Pavel Dubrova <pashadubrova@gmail.com>,
-        Kiran Gunda <kgunda@codeaurora.org>, Bryan Wu <cooloney@gmail.com>,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org,
-        Courtney Cavin <courtney.cavin@sonymobile.com>
-References: <20211112002706.453289-1-marijn.suijten@somainline.org>
- <20211112002706.453289-5-marijn.suijten@somainline.org>
- <20211112120839.i6g747vewg6bkyk7@maple.lan>
- <20211112123501.pz5e6g7gavlinung@SoMainline.org>
+        Mon, 15 Nov 2021 01:35:56 -0500
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:e::133])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A438CC061746;
+        Sun, 14 Nov 2021 22:33:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+        Content-ID:Content-Description:In-Reply-To:References;
+        bh=h5X8gcsyL1WxSZzJUqESom9+PnxuV9JPbXOEEk5fPhs=; b=uWgnClOH7zriUsMz06ItcAyvnn
+        fp6rtbr2KqzYV84LtRji4VAhAO9pMCwi2d/Oenphzj8GT82m3GRPf2SWXyQ0hpXJMXI1QZc61h3+/
+        dHRYQ6lU2eWVMJ8RLjYMABFF9PoluQREcsn9Evl95AP+pbT6FEwjl0osYnkxVgiP+w6N5TumIxp0Z
+        RYUsB8rlv7xgN6Ae/6+t3FLQUNjGRyNTkp30SHzqoAANvzbUOhsfvYb9QmxeuKrNSS/cQ+13y490z
+        oiYmyVKlQpf9YoG7ypO1xaBsUre4GilNoMbwYTKcAndrhDL/yhVxXWgIimvOnv/7QA0wt/lCjkEDa
+        b5taH/Kw==;
+Received: from [2601:1c0:6280:3f0::aa0b] (helo=bombadil.infradead.org)
+        by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1mmVY3-00ESW0-32; Mon, 15 Nov 2021 06:32:59 +0000
+From:   Randy Dunlap <rdunlap@infradead.org>
+To:     linux-kernel@vger.kernel.org
+Cc:     Randy Dunlap <rdunlap@infradead.org>,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>,
+        Manuel Lauss <mano@roarinelk.homelinux.net>,
+        Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH] fbdev: sh7760fb: document fallthrough cases
+Date:   Sun, 14 Nov 2021 22:32:57 -0800
+Message-Id: <20211115063257.14369-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211112123501.pz5e6g7gavlinung@SoMainline.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2021-11-12 13:35:03, Marijn Suijten wrote:
-> On 2021-11-12 12:08:39, Daniel Thompson wrote:
-> > On Fri, Nov 12, 2021 at 01:26:57AM +0100, Marijn Suijten wrote:
-> > > When not specifying num-strings in the DT the default is used, but +1 is
-> > > added to it which turns WLED3 into 4 and WLED4/5 into 5 strings instead
-> > > of 3 and 4 respectively, causing out-of-bounds reads and register
-> > > read/writes.  This +1 exists for a deficiency in the DT parsing code,
-> > > and is simply omitted entirely - solving this oob issue - by parsing the
-> > > property separately much like qcom,enabled-strings.
-> > > 
-> > > This also allows more stringent checks on the maximum value when
-> > > qcom,enabled-strings is provided in the DT.  Note that num-strings is
-> > > parsed after enabled-strings to give it final sign-off over the length,
-> > > which DT currently utilizes to get around an incorrect fixed read of
-> > > four elements from that array (has been addressed in a prior patch).
-> > > 
-> > > Fixes: 93c64f1ea1e8 ("leds: add Qualcomm PM8941 WLED driver")
-> > > Signed-off-by: Marijn Suijten <marijn.suijten@somainline.org>
-> > > Reviewed-By: AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
-> > > ---
-> > >  drivers/video/backlight/qcom-wled.c | 51 +++++++++++------------------
-> > >  1 file changed, 19 insertions(+), 32 deletions(-)
-> > > 
-> > > diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-> > > index 977cd75827d7..c5232478a343 100644
-> > > --- a/drivers/video/backlight/qcom-wled.c
-> > > +++ b/drivers/video/backlight/qcom-wled.c
-> > > @@ -1552,6 +1520,25 @@ static int wled_configure(struct wled *wled)
-> > >  		}
-> > >  	}
-> > > 
-> > > +	rc = of_property_read_u32(dev->of_node, "qcom,num-strings", &val);
-> > > +	if (!rc) {
-> > > +		if (val < 1 || val > wled->max_string_count) {
-> > > +			dev_err(dev, "qcom,num-strings must be between 1 and %d\n",
-> > > +				wled->max_string_count);
-> > > +			return -EINVAL;
-> > > +		}
-> > > +
-> > > +		if (string_len > 0) {
-> > > +			dev_warn(dev, "qcom,num-strings and qcom,enabled-strings are ambiguous\n");
-> > 
-> > The warning should also be below the error message on the next if statement.
-> 
-> Agreed.
+Fix fallthrough warnings in sh776fb.c:
 
-Thinking about this again while reworking the patches, I initially put
-this above the error to make DT writers aware.  There's no point telling
-them that their values are out of sync (num-strings >
-len(enabled-strings)), when they "shouldn't even" (don't need to) set
-both in the first place.  They might needlessly fix the discrepancy, see
-the driver finally probe (working backlight) and carry on without
-noticing this warning that now appears.
+../drivers/video/fbdev/sh7760fb.c: In function 'sh7760fb_get_color_info':
+../drivers/video/fbdev/sh7760fb.c:138:23: warning: this statement may fall through [-Wimplicit-fallthrough=]
+  138 |                 lgray = 1;
+../drivers/video/fbdev/sh7760fb.c:143:23: warning: this statement may fall through [-Wimplicit-fallthrough=]
+  143 |                 lgray = 1;
 
-Sorry for bringing this back up, but I'm curious about your opinion.
+Just document the current state of code execution/flow.
 
-- Marijn
+Fixes: 4a25e41831ee ("video: sh7760fb: SH7760/SH7763 LCDC framebuffer driver")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Cc: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Cc: Manuel Lauss <mano@roarinelk.homelinux.net>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: Rich Felker <dalias@libc.org>
+Cc: linux-sh@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+---
+ drivers/video/fbdev/sh7760fb.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- linux-next-20211112.orig/drivers/video/fbdev/sh7760fb.c
++++ linux-next-20211112/drivers/video/fbdev/sh7760fb.c
+@@ -136,11 +136,13 @@ static int sh7760fb_get_color_info(struc
+ 		break;
+ 	case LDDFR_4BPP_MONO:
+ 		lgray = 1;
++		fallthrough;
+ 	case LDDFR_4BPP:
+ 		lbpp = 4;
+ 		break;
+ 	case LDDFR_6BPP_MONO:
+ 		lgray = 1;
++		fallthrough;
+ 	case LDDFR_8BPP:
+ 		lbpp = 8;
+ 		break;

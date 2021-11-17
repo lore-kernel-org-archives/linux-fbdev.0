@@ -2,143 +2,170 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61FBCC433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Nov 2021 19:18:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CE00C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 17 Nov 2021 12:19:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4C24263227
-	for <linux-fbdev@archiver.kernel.org>; Tue, 16 Nov 2021 19:18:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2A8A96135E
+	for <linux-fbdev@archiver.kernel.org>; Wed, 17 Nov 2021 12:19:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239997AbhKPTVX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 16 Nov 2021 14:21:23 -0500
-Received: from mail.kernel.org ([198.145.29.99]:54098 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S239881AbhKPTVL (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 16 Nov 2021 14:21:11 -0500
-Received: by mail.kernel.org (Postfix) with ESMTPSA id 354526322C;
-        Tue, 16 Nov 2021 19:18:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1637090293;
-        bh=cnE1MXGiLmPpRtN/cnvdTU1sq0u1ItfQ4UaqvApuf0A=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=lutaWK18GV7fGck6kElTwzvbshsZ5Qst04PLv8J4HfFMHIP2gG5ACORHLtU0HgX4H
-         d1odNUziYDBRkFEUU9tVd7l0Hfong8KukKShvt8ksdMIjQ/NmkuKfkrCkOssaA/Rgx
-         xN5B3/YN38ChxO4c4JmeB3DClzV2fB7PhvDVLdD3ICJQC45EGQjygtY2ymcc7PFPc6
-         KvfLhBkk5k3oCR4Lf0SYxzakRlrwE3BRm6YLA7ffT/ib7J5/NRlhZdE25CPo9bQ/Nt
-         uvWS/zZ4FkA2S9WzQ4+lyPsTTE0QViwAddSuatkzggsHB+SJYB/r3NMXmoPpwF4XyW
-         we74fO48JkjdA==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Zheyu Ma <zheyuma97@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-        Sasha Levin <sashal@kernel.org>, daniel.vetter@ffwll.ch,
-        willy@infradead.org, geert+renesas@glider.be,
-        william.kucharski@oracle.com, xiyuyang19@fudan.edu.cn,
-        penguin-kernel@i-love.sakura.ne.jp, thunder.leizhen@huawei.com,
-        linux@roeck-us.net, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 07/65] fbdev: fbmem: Fix double free of 'fb_info->pixmap.addr'
-Date:   Tue, 16 Nov 2021 14:16:52 -0500
-Message-Id: <20211116191754.2419097-7-sashal@kernel.org>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20211116191754.2419097-1-sashal@kernel.org>
-References: <20211116191754.2419097-1-sashal@kernel.org>
-MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
+        id S237239AbhKQMWG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 17 Nov 2021 07:22:06 -0500
+Received: from mail-sgaapc01on2117.outbound.protection.outlook.com ([40.107.215.117]:18528
+        "EHLO APC01-SG2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S233484AbhKQMV4 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 17 Nov 2021 07:21:56 -0500
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=OYpAobBUF3gqvTGir4Q+wli4xmn4FMRgJX0JWL5TjUcvRzc+zW0RoXJ1flLWNYk4qBNeVyoMhzWPxTEs1SPWPzS1JyGrHq3AjFwW7KvGj8uVyvo6BfWg1iZVqczmeL+fbafgWMFNoWyKyQr+sbfMvpFJz1swXa9uGf2WwnVrXLi1MgPrg9Naajw+F05xyo4iA4j8IL1+LQ44HylOfokF0kTISgvl0fIY47LQj7ONMHVBoEtZ6xyqmXpMMcj8qQ6Ljcq3DQSEkHhAGgGXX90qo3U7mkOFZcXRb1GweH3pQFMhr0Hd7hMhogRSXHCwFBixJVZ05LvxBD+EvANAwyz/iA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=15VuHjSp6q7YbiCOqlzawGrhlRrQZiqoG9rw0z4ksRg=;
+ b=WgVx3F8Dz6TrQmOEapdgSdxLa96rjuzxkS1ms9bQqnnOPobzXNlf2eYkQrX9dfcHNo2u2ue/GEh2dQSM+K3mkNb7ahxzo5pswp4sbccnMj9xe7nxg8BO56kYVObTeECpgzIGbr172yUgoPJgCelV3eon7n/D35bxi1WfuhiHkvRdWazARitL7TDH0DinPgywoG9kkNndBcNtBd9X4BSykNxr2PI33oEpYjF4TpOhUEKwq4tJ5WDNliMysxzdLvNcXhnfMZpyxQ7GjUh0uIO5HWTJnrlhyq3PMiHjNUQ+QoSMpnULorcP3TWtzZYnK+uu0fPeUWHIOLDl0UrbKOuCLA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
+ dkim=pass header.d=vivo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo0.onmicrosoft.com;
+ s=selector2-vivo0-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=15VuHjSp6q7YbiCOqlzawGrhlRrQZiqoG9rw0z4ksRg=;
+ b=BDsdPeC/21WdJnq7S9po2GL8ttKHeScPm9M5CPxW0rbDA8FfcvLLK512wn8JLQvD34CONaY74NX8qK8kHGbcknsn7lT4kIG8k3xHyJLNh98y8SqSqKblNKqTVK+Rin5Rk9Wems3piYGoQvQcE0McEolMGoj7o5c891muOt05TGU=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=vivo.com;
+Received: from HK2PR06MB3492.apcprd06.prod.outlook.com (2603:1096:202:2f::10)
+ by HK2PR06MB3282.apcprd06.prod.outlook.com (2603:1096:202:33::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4690.27; Wed, 17 Nov
+ 2021 12:18:54 +0000
+Received: from HK2PR06MB3492.apcprd06.prod.outlook.com
+ ([fe80::814a:4668:a3bd:768]) by HK2PR06MB3492.apcprd06.prod.outlook.com
+ ([fe80::814a:4668:a3bd:768%7]) with mapi id 15.20.4713.021; Wed, 17 Nov 2021
+ 12:18:54 +0000
+From:   Guo Zhengkui <guozhengkui@vivo.com>
+To:     "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Guo Zhengkui <guozhengkui@vivo.com>,
+        linux-fbdev@vger.kernel.org (open list:OMAP FRAMEBUFFER SUPPORT),
+        linux-omap@vger.kernel.org (open list:OMAP FRAMEBUFFER SUPPORT),
+        dri-devel@lists.freedesktop.org (open list:FRAMEBUFFER LAYER),
+        linux-kernel@vger.kernel.org (open list)
+Cc:     kernel@vivo.com
+Subject: [PATCH] video: omapfb: Use scnprintf() instead of snprintf()
+Date:   Wed, 17 Nov 2021 20:17:44 +0800
+Message-Id: <20211117121829.11141-1-guozhengkui@vivo.com>
+X-Mailer: git-send-email 2.20.1
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: HK2PR02CA0200.apcprd02.prod.outlook.com
+ (2603:1096:201:20::12) To HK2PR06MB3492.apcprd06.prod.outlook.com
+ (2603:1096:202:2f::10)
+MIME-Version: 1.0
+Received: from localhost.localdomain (218.213.202.190) by HK2PR02CA0200.apcprd02.prod.outlook.com (2603:1096:201:20::12) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4713.19 via Frontend Transport; Wed, 17 Nov 2021 12:18:53 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: c2bed1e2-c158-4698-0f28-08d9a9c46be7
+X-MS-TrafficTypeDiagnostic: HK2PR06MB3282:
+X-Microsoft-Antispam-PRVS: <HK2PR06MB3282E5B00233C81F50C280DDC79A9@HK2PR06MB3282.apcprd06.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:78;
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: NrRo9HOJqgjQSmFjhVo108yu57hAAGxMcmRD/3erhbIV39pr2mI1H5cpFLn5xE53PjvUMTjIf/QefLuC50qWW5nSQIKwNDwGPKnaEWHgmjeJAzPOS0MLogXd7vxBBiTysmNXfatK4xlzFhqxP6OFDgNXWRWZnWmpK0nVzRb0bn89Q4+uWp515xxVdWb6LBl6rIRUBKBSuuNMPNnGV9X4ySfisqCnAje5Rgo2qBkRDFnx5Qs2OS4UhURcaDevajPaJjIx04Lg8Vl7Ohk0XLXSi2EyGyvWhjCsY+6M3xxJfCbPB44QMXvZl052/FyNnmXEJe2bxIM1RezCkWxuZSgNC6qTig5+a1KZu0WdHWCqnaVeB0FzmAMPMX4g69IY97B2Ca+NxgdDdMDn9kOREBMCkr5kbXy0gSCXVk4RLUqBGCurUggt0880QLF+Evmr9ePzDp4pLBXQ+DjVto8/Xjr95pG43ETh945lyJbe/3m57Db0KbAH1qisIHishKCXMQhuAOB+ocvq/+akd7k/bKfssEon02qtWLi/HJOBujhVcJX4EqRq0PedSSHHSOy5kusZQqTJeQSs7m5w9ETpJrO43325SldaQo+fUQOln7iVVcxLj39Ru2RDenhKc+WezkNlrIzPTSS1Mnu5gJ6hB+KU8CY4kL4CZALDJupLg+foY6fKwptL1+LjMWSvVWQD+fiepFCXNLxrpNeX50gNs2tPPg==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:HK2PR06MB3492.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(366004)(6666004)(86362001)(4326008)(8676002)(5660300002)(26005)(8936002)(36756003)(6512007)(6506007)(52116002)(186003)(66476007)(83380400001)(66946007)(107886003)(66556008)(508600001)(2906002)(2616005)(316002)(1076003)(38350700002)(38100700002)(6486002)(110136005)(956004);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?7M6uOWMugcm6pXf03RycBmFs4LoxIvRPNlNqpZlq9FD8cYGgNsNGvtA2BdI4?=
+ =?us-ascii?Q?8Fb9t1Q710RF1HFCvxBab8r66uie0DOzInLwWBL5WWip4i/vU+U6oiW/1OW8?=
+ =?us-ascii?Q?JWVuXwVuouxuMe0lOB+zpgGTP2MyYzJSEC3CeQaxbql5LT4X8V8iGfn87js3?=
+ =?us-ascii?Q?tfMB1B1AEjiNJqeQ+eNSd33IX4shxYuIkXxGmhsvGlp/67mpaRAB2aGq6B0x?=
+ =?us-ascii?Q?ugcMsbpPjRRZ7uhbtys+vW8ANM+8Ay1y9H2qz5XGzAaYlaEok1SiGc73vN8S?=
+ =?us-ascii?Q?KUtriEog9ePFMeeQJQ7RaBi4wRy2AqplP2A+fXGO4wUzY2Xc9h7NQ+umkzIW?=
+ =?us-ascii?Q?lhYsZZnBKIAIkc/Ts8ng05aLEx9FOU3fQGgg5JpGhp0qh3OQg2of/3GpCtUC?=
+ =?us-ascii?Q?5yYR4xK/9LvpvwV38zMTMESmMDT8ujTlkEKhT/hM5qWINJH6GmVjzEw9cA/H?=
+ =?us-ascii?Q?OIP5Vlyj8PDP8XUS++koa93ZDSWXCWSDVHkUqdt/TC0JZYAHoqdMR01jNIYl?=
+ =?us-ascii?Q?9ORm9VXDxzNwZonY9tV6mUOxC6tTP7ubia2XoPI4K++fV31TrYWyJGpJxCif?=
+ =?us-ascii?Q?iA8dkvdxHoeFR9fyaneFv4TFc7OA0paHQ6z7xYrOPfRK1SUJgGXScnx5d7Eh?=
+ =?us-ascii?Q?ihpE4gQA4ZXTdlfeRlQAhSzy/Sv3nbbEzUI2V1zz8/3uPVKLttRdzDityaNV?=
+ =?us-ascii?Q?mNwhziowlu7IQYXLw99CgaI3Ill1m+28RzqJOyCsLrzITBZ/wVPjkoP5gL3V?=
+ =?us-ascii?Q?BgLhefRNuVbIwH5JLTAqvlezaLL+bk4FKqZt4+evcdI4S4ZWbL3brF7l8Gdz?=
+ =?us-ascii?Q?IPe3SSrpL7jy92r7Qg5zkPwpFBALSM5GqjY4K76UwcEOJdpi3T6S4agr6CVv?=
+ =?us-ascii?Q?h3gymHDaxd2pwoEqbrG7GbnB5r152cZKENtamANgNVUwOdBGHIY3zINMirk1?=
+ =?us-ascii?Q?0YHEZvn3JS7WLyLtQ5CuPsOIH2xTMOrQPQMdlx6RIdf3iowXJc96ZM9mU72g?=
+ =?us-ascii?Q?ug3Kgpld5lV4YFpUiB19gnhEa/3/GEaZldsuR1mJ/o2/frWhLM3EBhHq/Mbg?=
+ =?us-ascii?Q?OUtgSKayFUndKpdYM/1hy8hQp55Xzd+FxX227fR6uEbqbRUQGa9/4E93+noN?=
+ =?us-ascii?Q?dgyTnC1hSM7uc4KvUMg1rEw9gC2CHgnKq+88X4fY/jARfDl0clEJzCz3+scq?=
+ =?us-ascii?Q?wIfqQa2Rm+f7dXn1/uZQXbaeoujeoa8pV0a95EJ7Zih+cQPpEh9cMNpI3tb4?=
+ =?us-ascii?Q?ZzTzcmNAJZScLJJiyZnPKzvd/OFscdZqvmN7GrIQfUuCxQqz5YUbqqbt0XvB?=
+ =?us-ascii?Q?wnRIs10oyCtXdsGkdw1EKrzYY19YL3Nnf80tnpwXI55ZBXs31twsDbxFp/qg?=
+ =?us-ascii?Q?AYlP4Qza3P/v4LolHnjGVqRuILVcUkXEtzjeBEtUi1efF3cCvu3r6zOihv/N?=
+ =?us-ascii?Q?E0HiA5tF2SNlaxCvxW3wo3QiFJZvYg5kk4pJBby9wZNwn3xPH623pKo/EfWi?=
+ =?us-ascii?Q?aZbT5LQ9SwKK+EZpwQXGLA2IAFsyowmKTG1ZEXEZKXoHYjpJKIveicUjp2Xp?=
+ =?us-ascii?Q?TYNstJ1FE6REjKNY8n+G4YCd95xHZUNn0i9CCgGwQkGRDDVsPbOziCJa3g2R?=
+ =?us-ascii?Q?BGIjHpq7ivHIoKthlSEN67U=3D?=
+X-OriginatorOrg: vivo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: c2bed1e2-c158-4698-0f28-08d9a9c46be7
+X-MS-Exchange-CrossTenant-AuthSource: HK2PR06MB3492.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Nov 2021 12:18:54.0863
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: LXvQk2bPaW+URX+ivaEirxeD9HJ2mYE9ReoP79oMBUBHxE7rcZdxB5aYu2EECQl3eCDW91QtDi+O7ATh+XZb1w==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: HK2PR06MB3282
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Zheyu Ma <zheyuma97@gmail.com>
+Fix following warnings:
+./drivers/video/fbdev/omap/omapfb_main.c:1382:8-16:
+WARNING: use scnprintf or sprintf
+./drivers/video/fbdev/omap/omapfb_main.c:1306:8-16:
+WARNING: use scnprintf or sprintf
 
-[ Upstream commit 2c0c19b681d5a331b53aab0d170f72a87c7bff12 ]
-
-savagefb and some other drivers call kfree to free 'info->pixmap.addr'
-even after calling unregister_framebuffer, which may cause double free.
-
-Fix this by setting 'fb_info->pixmap.addr' to NULL after kfree in
-unregister_framebuffer.
-
-The following log reveals it:
-
-[   37.318872] BUG: KASAN: double-free or invalid-free in kfree+0x13e/0x290
-[   37.319369]
-[   37.320803] Call Trace:
-[   37.320992]  dump_stack_lvl+0xa8/0xd1
-[   37.321274]  print_address_description+0x87/0x3b0
-[   37.321632]  ? kfree+0x13e/0x290
-[   37.321879]  ? kfree+0x13e/0x290
-[   37.322126]  ? kfree+0x13e/0x290
-[   37.322374]  kasan_report_invalid_free+0x58/0x90
-[   37.322724]  ____kasan_slab_free+0x123/0x140
-[   37.323049]  __kasan_slab_free+0x11/0x20
-[   37.323347]  slab_free_freelist_hook+0x81/0x150
-[   37.323689]  ? savagefb_remove+0xa1/0xc0 [savagefb]
-[   37.324066]  kfree+0x13e/0x290
-[   37.324304]  savagefb_remove+0xa1/0xc0 [savagefb]
-[   37.324655]  pci_device_remove+0xa9/0x250
-[   37.324959]  ? pci_device_probe+0x7d0/0x7d0
-[   37.325273]  device_release_driver_internal+0x4f7/0x7a0
-[   37.325666]  driver_detach+0x1e8/0x2c0
-[   37.325952]  bus_remove_driver+0x134/0x290
-[   37.326262]  ? sysfs_remove_groups+0x97/0xb0
-[   37.326584]  driver_unregister+0x77/0xa0
-[   37.326883]  pci_unregister_driver+0x2c/0x1c0
-[   37.336124]
-[   37.336245] Allocated by task 5465:
-[   37.336507]  ____kasan_kmalloc+0xb5/0xe0
-[   37.336801]  __kasan_kmalloc+0x9/0x10
-[   37.337069]  kmem_cache_alloc_trace+0x12b/0x220
-[   37.337405]  register_framebuffer+0x3f3/0xa00
-[   37.337731]  foo_register_framebuffer+0x3b/0x50 [savagefb]
-[   37.338136]
-[   37.338255] Freed by task 5475:
-[   37.338492]  kasan_set_track+0x3d/0x70
-[   37.338774]  kasan_set_free_info+0x23/0x40
-[   37.339081]  ____kasan_slab_free+0x10b/0x140
-[   37.339399]  __kasan_slab_free+0x11/0x20
-[   37.339694]  slab_free_freelist_hook+0x81/0x150
-[   37.340034]  kfree+0x13e/0x290
-[   37.340267]  do_unregister_framebuffer+0x21c/0x3d0
-[   37.340624]  unregister_framebuffer+0x23/0x40
-[   37.340950]  savagefb_remove+0x45/0xc0 [savagefb]
-[   37.341302]  pci_device_remove+0xa9/0x250
-[   37.341603]  device_release_driver_internal+0x4f7/0x7a0
-[   37.341990]  driver_detach+0x1e8/0x2c0
-[   37.342272]  bus_remove_driver+0x134/0x290
-[   37.342577]  driver_unregister+0x77/0xa0
-[   37.342873]  pci_unregister_driver+0x2c/0x1c0
-[   37.343196]  cleanup_module+0x15/0x1c [savagefb]
-[   37.343543]  __se_sys_delete_module+0x398/0x490
-[   37.343881]  __x64_sys_delete_module+0x56/0x60
-[   37.344221]  do_syscall_64+0x4d/0xc0
-[   37.344492]  entry_SYSCALL_64_after_hwframe+0x44/0xae
-
-Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Link: https://patchwork.freedesktop.org/patch/msgid/1633848148-29747-1-git-send-email-zheyuma97@gmail.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Guo Zhengkui <guozhengkui@vivo.com>
 ---
- drivers/video/fbdev/core/fbmem.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/omap/omapfb_main.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 7420d2c16e47e..826175ad88a2f 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1702,8 +1702,11 @@ static void do_unregister_framebuffer(struct fb_info *fb_info)
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index b495c09e6102..a0d472943c60 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1303,7 +1303,7 @@ static ssize_t omapfb_show_panel_name(struct device *dev,
  {
- 	unlink_framebuffer(fb_info);
- 	if (fb_info->pixmap.addr &&
--	    (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT))
-+	    (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT)) {
- 		kfree(fb_info->pixmap.addr);
-+		fb_info->pixmap.addr = NULL;
-+	}
-+
- 	fb_destroy_modelist(&fb_info->modelist);
- 	registered_fb[fb_info->node] = NULL;
- 	num_registered_fb--;
+ 	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 
+-	return snprintf(buf, PAGE_SIZE, "%s\n", fbdev->panel->name);
++	return scnprintf(buf, PAGE_SIZE, "%s\n", fbdev->panel->name);
+ }
+ 
+ static ssize_t omapfb_show_bklight_level(struct device *dev,
+@@ -1314,7 +1314,7 @@ static ssize_t omapfb_show_bklight_level(struct device *dev,
+ 	int r;
+ 
+ 	if (fbdev->panel->get_bklight_level) {
+-		r = snprintf(buf, PAGE_SIZE, "%d\n",
++		r = scnprintf(buf, PAGE_SIZE, "%d\n",
+ 			     fbdev->panel->get_bklight_level(fbdev->panel));
+ 	} else
+ 		r = -ENODEV;
+@@ -1348,7 +1348,7 @@ static ssize_t omapfb_show_bklight_max(struct device *dev,
+ 	int r;
+ 
+ 	if (fbdev->panel->get_bklight_level) {
+-		r = snprintf(buf, PAGE_SIZE, "%d\n",
++		r = scnprintf(buf, PAGE_SIZE, "%d\n",
+ 			     fbdev->panel->get_bklight_max(fbdev->panel));
+ 	} else
+ 		r = -ENODEV;
+@@ -1379,7 +1379,7 @@ static ssize_t omapfb_show_ctrl_name(struct device *dev,
+ {
+ 	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 
+-	return snprintf(buf, PAGE_SIZE, "%s\n", fbdev->ctrl->name);
++	return scnprintf(buf, PAGE_SIZE, "%s\n", fbdev->ctrl->name);
+ }
+ 
+ static struct device_attribute dev_attr_ctrl_name =
 -- 
-2.33.0
+2.20.1
 

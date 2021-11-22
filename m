@@ -1,156 +1,241 @@
 Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DE59C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 19 Nov 2021 09:18:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7C5EF61A8C
-	for <linux-fbdev@archiver.kernel.org>; Fri, 19 Nov 2021 09:18:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27312C433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 22 Nov 2021 08:20:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234116AbhKSJVZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 19 Nov 2021 04:21:25 -0500
-Received: from mail-io1-f72.google.com ([209.85.166.72]:57070 "EHLO
-        mail-io1-f72.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234009AbhKSJVY (ORCPT
+        id S231183AbhKVIXo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 22 Nov 2021 03:23:44 -0500
+Received: from smtp-out1.suse.de ([195.135.220.28]:54490 "EHLO
+        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230487AbhKVIXn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 19 Nov 2021 04:21:24 -0500
-Received: by mail-io1-f72.google.com with SMTP id r199-20020a6b2bd0000000b005e234972ddfso5253068ior.23
-        for <linux-fbdev@vger.kernel.org>; Fri, 19 Nov 2021 01:18:23 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:date:message-id:subject:from:to;
-        bh=oZJ1ZvgM2MTH4JzpVQcxnkDfXFABgNeZ+HUKmgEFpX0=;
-        b=ZKThUBTIJkYszsU62kdk1qMMHpShUkPmuTA+/Gnzda/c/IfsAKOenDjVJc510dewhk
-         dz/1IGIV+yQa/6aIG85OqsdRJqtHgy2UMiggnkB9pDwmcfyWhqGjQOo2AjtjQz3NaC0J
-         1Bt+QbVgker6mEKchH3OIKaVULw+N3yMnHQlpeP3Cw1G4JP4Gmo9QoEOPVv+DSERNQy2
-         gBV2vYde9GSpN8KyvlCD6J7OkNsHFYraoj9+3cmYlnp9I/aYdpWMHROqpOdHCtrjBJhm
-         T0w1kXYv1H+TmP1PJv48ma6AnUQ9auhKAB5iZU9O0L92dogOsR2/RUkwKu+aH7P5lf32
-         xeDw==
-X-Gm-Message-State: AOAM533pd6OWtksQ1+0gY1EfNIOKJekMuKIaOZB2FyqZ7rdtpCXrGZHW
-        WTrqmeYWQioLPdOi9dbCTIOzpjdwAGBBzxaF1D/Z+uXC4OfP
-X-Google-Smtp-Source: ABdhPJyMWG24aZxGW9kelXBa+W83Kj1OprEnNkNwd6lsB0bXfMQgYVeSGZIltrr5Hkj3WwPVgw49idJzrL8lnUZMEAULHmjSxJ46
+        Mon, 22 Nov 2021 03:23:43 -0500
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 5E06D212C9;
+        Mon, 22 Nov 2021 08:20:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+        t=1637569236; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Ff3sFJnwHj4g47uQQ2WaQKizkxdoi19uAVGPOc0LUYk=;
+        b=iZuH8N02ke6VpWOFbNvwci86IpLj6WoPAcypg/xzyuEndH5+rn0W4QbabTkCYJtWYJ8Dfz
+        3X32MQcKvBCvmgo02rIihHMrRKOrt6rbI0RLss5Mci8NdQoXldX6ee71bluqqXIbUh+Rw6
+        1uSX+eEVIgasLIjLP2aITuWCi2w0vaM=
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id F03F313ACC;
+        Mon, 22 Nov 2021 08:20:35 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id Ye0DOdNSm2HEMQAAMHmgww
+        (envelope-from <jgross@suse.com>); Mon, 22 Nov 2021 08:20:35 +0000
+Subject: Re: [PATCH 0/5] xen: cleanup detection of non-essential pv devices
+To:     xen-devel@lists.xenproject.org, linux-input@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc:     Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Stefano Stabellini <sstabellini@kernel.org>,
+        Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org
+References: <20211022064800.14978-1-jgross@suse.com>
+From:   Juergen Gross <jgross@suse.com>
+Message-ID: <bf5a4749-0216-53db-a022-ef4f84d823c5@suse.com>
+Date:   Mon, 22 Nov 2021 09:20:35 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.12.0
 MIME-Version: 1.0
-X-Received: by 2002:a92:c88e:: with SMTP id w14mr3620284ilo.24.1637313503024;
- Fri, 19 Nov 2021 01:18:23 -0800 (PST)
-Date:   Fri, 19 Nov 2021 01:18:23 -0800
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <000000000000bbdd0405d120c155@google.com>
-Subject: [syzbot] KASAN: vmalloc-out-of-bounds Write in imageblit (2)
-From:   syzbot <syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com>
-To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20211022064800.14978-1-jgross@suse.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="XEaNfdRUT9nxGyjL4aqukte3olVamRRGk"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--XEaNfdRUT9nxGyjL4aqukte3olVamRRGk
+Content-Type: multipart/mixed; boundary="OWjDMMJSeGZf17EglbIPG7kS4okiXpxXj";
+ protected-headers="v1"
+From: Juergen Gross <jgross@suse.com>
+To: xen-devel@lists.xenproject.org, linux-input@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>,
+ David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jirislaby@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org
+Message-ID: <bf5a4749-0216-53db-a022-ef4f84d823c5@suse.com>
+Subject: Re: [PATCH 0/5] xen: cleanup detection of non-essential pv devices
+References: <20211022064800.14978-1-jgross@suse.com>
+In-Reply-To: <20211022064800.14978-1-jgross@suse.com>
 
-syzbot found the following issue on:
+--OWjDMMJSeGZf17EglbIPG7kS4okiXpxXj
+Content-Type: multipart/mixed;
+ boundary="------------2CA7EB0B620BD414B5FABDC4"
+Content-Language: en-US
 
-HEAD commit:    fa55b7dcdc43 Linux 5.16-rc1
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=15fe2569b00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=6d3b8fd1977c1e73
-dashboard link: https://syzkaller.appspot.com/bug?extid=14b0e8f3fd1612e35350
-compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
-userspace arch: i386
+This is a multi-part message in MIME format.
+--------------2CA7EB0B620BD414B5FABDC4
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-Unfortunately, I don't have any reproducer for this issue yet.
+On 22.10.21 08:47, Juergen Gross wrote:
+> Today the non-essential pv devices are hard coded in the xenbus driver
+> and this list is lacking multiple entries.
+>=20
+> This series reworks the detection logic of non-essential devices by
+> adding a flag for that purpose to struct xenbus_driver.
+>=20
+> Juergen Gross (5):
+>    xen: add "not_essential" flag to struct xenbus_driver
+>    xen: flag xen_drm_front to be not essential for system boot
+>    xen: flag hvc_xen to be not essential for system boot
+>    xen: flag pvcalls-front to be not essential for system boot
+>    xen: flag xen_snd_front to be not essential for system boot
+>=20
+>   drivers/gpu/drm/xen/xen_drm_front.c        |  1 +
+>   drivers/input/misc/xen-kbdfront.c          |  1 +
+>   drivers/tty/hvc/hvc_xen.c                  |  1 +
+>   drivers/video/fbdev/xen-fbfront.c          |  1 +
+>   drivers/xen/pvcalls-front.c                |  1 +
+>   drivers/xen/xenbus/xenbus_probe_frontend.c | 14 +++-----------
+>   include/xen/xenbus.h                       |  1 +
+>   sound/xen/xen_snd_front.c                  |  1 +
+>   8 files changed, 10 insertions(+), 11 deletions(-)
+>=20
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com
-
-524155 pages RAM
-0 pages HighMem/MovableOnly
-163742 pages reserved
-0 pages cma reserved
-==================================================================
-BUG: KASAN: vmalloc-out-of-bounds in fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
-BUG: KASAN: vmalloc-out-of-bounds in sys_imageblit+0x12f4/0x1430 drivers/video/fbdev/core/sysimgblt.c:275
-Write of size 4 at addr ffffc90004631000 by task syz-executor.0/7913
-
-CPU: 0 PID: 7913 Comm: syz-executor.0 Not tainted 5.16.0-rc1-syzkaller #0
-Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 1.14.0-2 04/01/2014
-Call Trace:
- <TASK>
- __dump_stack lib/dump_stack.c:88 [inline]
- dump_stack_lvl+0xcd/0x134 lib/dump_stack.c:106
- print_address_description.constprop.0.cold+0xf/0x320 mm/kasan/report.c:247
- __kasan_report mm/kasan/report.c:433 [inline]
- kasan_report.cold+0x83/0xdf mm/kasan/report.c:450
- fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
- sys_imageblit+0x12f4/0x1430 drivers/video/fbdev/core/sysimgblt.c:275
- drm_fb_helper_sys_imageblit drivers/gpu/drm/drm_fb_helper.c:794 [inline]
- drm_fbdev_fb_imageblit+0x15c/0x350 drivers/gpu/drm/drm_fb_helper.c:2282
- bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:124 [inline]
- bit_putcs+0x6e1/0xd20 drivers/video/fbdev/core/bitblit.c:173
- fbcon_putcs+0x353/0x440 drivers/video/fbdev/core/fbcon.c:1277
- do_update_region+0x399/0x630 drivers/tty/vt/vt.c:676
- redraw_screen+0x61f/0x740 drivers/tty/vt/vt.c:1035
- fbcon_modechanged+0x58c/0x6c0 drivers/video/fbdev/core/fbcon.c:2182
- fbcon_update_vcs+0x3a/0x50 drivers/video/fbdev/core/fbcon.c:2227
- do_fb_ioctl+0x62e/0x690 drivers/video/fbdev/core/fbmem.c:1114
- fb_compat_ioctl+0x17e/0x610 drivers/video/fbdev/core/fbmem.c:1313
- __do_compat_sys_ioctl+0x1c7/0x290 fs/ioctl.c:972
- do_syscall_32_irqs_on arch/x86/entry/common.c:112 [inline]
- __do_fast_syscall_32+0x65/0xf0 arch/x86/entry/common.c:178
- do_fast_syscall_32+0x2f/0x70 arch/x86/entry/common.c:203
- entry_SYSENTER_compat_after_hwframe+0x4d/0x5c
-RIP: 0023:0xf6e67549
-Code: 03 74 c0 01 10 05 03 74 b8 01 10 06 03 74 b4 01 10 07 03 74 b0 01 10 08 03 74 d8 01 00 00 00 00 00 51 52 55 89 e5 0f 34 cd 80 <5d> 5a 59 c3 90 90 90 90 8d b4 26 00 00 00 00 8d b4 26 00 00 00 00
-RSP: 002b:00000000f44615fc EFLAGS: 00000296 ORIG_RAX: 0000000000000036
-RAX: ffffffffffffffda RBX: 0000000000000005 RCX: 0000000000004601
-RDX: 0000000020000000 RSI: 0000000000000000 RDI: 0000000000000000
-RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
-R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
- </TASK>
+Any further comments?
 
 
-Memory state around the buggy address:
- ffffc90004630f00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- ffffc90004630f80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
->ffffc90004631000: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-                   ^
- ffffc90004631080: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
- ffffc90004631100: f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8 f8
-==================================================================
-----------------
-Code disassembly (best guess):
-   0:	03 74 c0 01          	add    0x1(%rax,%rax,8),%esi
-   4:	10 05 03 74 b8 01    	adc    %al,0x1b87403(%rip)        # 0x1b8740d
-   a:	10 06                	adc    %al,(%rsi)
-   c:	03 74 b4 01          	add    0x1(%rsp,%rsi,4),%esi
-  10:	10 07                	adc    %al,(%rdi)
-  12:	03 74 b0 01          	add    0x1(%rax,%rsi,4),%esi
-  16:	10 08                	adc    %cl,(%rax)
-  18:	03 74 d8 01          	add    0x1(%rax,%rbx,8),%esi
-  1c:	00 00                	add    %al,(%rax)
-  1e:	00 00                	add    %al,(%rax)
-  20:	00 51 52             	add    %dl,0x52(%rcx)
-  23:	55                   	push   %rbp
-  24:	89 e5                	mov    %esp,%ebp
-  26:	0f 34                	sysenter
-  28:	cd 80                	int    $0x80
-* 2a:	5d                   	pop    %rbp <-- trapping instruction
-  2b:	5a                   	pop    %rdx
-  2c:	59                   	pop    %rcx
-  2d:	c3                   	retq
-  2e:	90                   	nop
-  2f:	90                   	nop
-  30:	90                   	nop
-  31:	90                   	nop
-  32:	8d b4 26 00 00 00 00 	lea    0x0(%rsi,%riz,1),%esi
-  39:	8d b4 26 00 00 00 00 	lea    0x0(%rsi,%riz,1),%esi
+Juergen
 
+--------------2CA7EB0B620BD414B5FABDC4
+Content-Type: application/pgp-keys;
+ name="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Transfer-Encoding: quoted-printable
+Content-Description: OpenPGP public key
+Content-Disposition: attachment;
+ filename="OpenPGP_0xB0DE9DD628BF132F.asc"
 
----
-This report is generated by a bot. It may contain errors.
-See https://goo.gl/tpsmEJ for more information about syzbot.
-syzbot engineers can be reached at syzkaller@googlegroups.com.
+-----BEGIN PGP PUBLIC KEY BLOCK-----
 
-syzbot will keep track of this issue. See:
-https://goo.gl/tpsmEJ#status for how to communicate with syzbot.
+xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOBy=
+cWx
+w3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJvedYm8O=
+f8Z
+d621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJNwQpd369y=
+9bf
+IhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvxXP3FAp2pkW0xq=
+G7/
+377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEBAAHNHEp1ZXJnZW4gR=
+3Jv
+c3MgPGpnQHBmdXBmLm5ldD7CwHkEEwECACMFAlOMcBYCGwMHCwkIBwMCAQYVCAIJCgsEFgIDA=
+QIe
+AQIXgAAKCRCw3p3WKL8TL0KdB/93FcIZ3GCNwFU0u3EjNbNjmXBKDY4FUGNQH2lvWAUy+dnyT=
+hpw
+dtF/jQ6j9RwE8VP0+NXcYpGJDWlNb9/JmYqLiX2Q3TyevpB0CA3dbBQp0OW0fgCetToGIQrg0=
+MbD
+1C/sEOv8Mr4NAfbauXjZlvTj30H2jO0u+6WGM6nHwbh2l5O8ZiHkH32iaSTfN7Eu5RnNVUJbv=
+oPH
+Z8SlM4KWm8rG+lIkGurqqu5gu8q8ZMKdsdGC4bBxdQKDKHEFExLJK/nRPFmAuGlId1E3fe10v=
+5QL
++qHI3EIPtyfE7i9Hz6rVwi7lWKgh7pe0ZvatAudZ+JNIlBKptb64FaiIOAWDCx1SzR9KdWVyZ=
+2Vu
+IEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+wsB5BBMBAgAjBQJTjHCvAhsDBwsJCAcDAgEGFQgCC=
+QoL
+BBYCAwECHgECF4AACgkQsN6d1ii/Ey/HmQf/RtI7kv5A2PS4RF7HoZhPVPogNVbC4YA6lW7Dr=
+Wf0
+teC0RR3MzXfy6pJ+7KLgkqMlrAbN/8Dvjoz78X+5vhH/rDLa9BuZQlhFmvcGtCF8eR0T1v0nC=
+/nu
+AFVGy+67q2DH8As3KPu0344TBDpAvr2uYM4tSqxK4DURx5INz4ZZ0WNFHcqsfvlGJALDeE0Lh=
+ITT
+d9jLzdDad1pQSToCnLl6SBJZjDOX9QQcyUigZFtCXFst4dlsvddrxyqT1f17+2cFSdu7+ynLm=
+XBK
+7abQ3rwJY8SbRO2iRulogc5vr/RLMMlscDAiDkaFQWLoqHHOdfO9rURssHNN8WkMnQfvUewRz=
+80h
+SnVlcmdlbiBHcm9zcyA8amdyb3NzQG5vdmVsbC5jb20+wsB5BBMBAgAjBQJTjHDXAhsDBwsJC=
+AcD
+AgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey8PUQf/ehmgCI9jB9hlgexLvgOtf7PJn=
+FOX
+gMLdBQgBlVPO3/D9R8LtF9DBAFPNhlrsfIG/SqICoRCqUcJ96Pn3P7UUinFG/I0ECGF4EvTE1=
+jnD
+kfJZr6jrbjgyoZHiw/4BNwSTL9rWASyLgqlA8u1mf+c2yUwcGhgkRAd1gOwungxcwzwqgljf0=
+N51
+N5JfVRHRtyfwq/ge+YEkDGcTU6Y0sPOuj4Dyfm8fJzdfHNQsWq3PnczLVELStJNdapwPOoE+l=
+otu
+fe3AM2vAEYJ9rTz3Cki4JFUsgLkHFqGZarrPGi1eyQcXeluldO3m91NK/1xMI3/+8jbO0tsn1=
+tqS
+EUGIJi7ox80eSnVlcmdlbiBHcm9zcyA8amdyb3NzQHN1c2UuZGU+wsB5BBMBAgAjBQJTjHDrA=
+hsD
+BwsJCAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey+LhQf9GL45eU5vOowA2u5N3=
+g3O
+ZUEBmDHVVbqMtzwlmNC4k9Kx39r5s2vcFl4tXqW7g9/ViXYuiDXb0RfUpZiIUW89siKrkzmQ5=
+dM7
+wRqzgJpJwK8Bn2MIxAKArekWpiCKvBOB/Cc+3EXE78XdlxLyOi/NrmSGRIov0karw2RzMNOu5=
+D+j
+LRZQd1Sv27AR+IP3I8U4aqnhLpwhK7MEy9oCILlgZ1QZe49kpcumcZKORmzBTNh30FVKK1Evm=
+V2x
+AKDoaEOgQB4iFQLhJCdP1I5aSgM5IVFdn7v5YgEYuJYx37IoN1EblHI//x/e2AaIHpzK5h88N=
+Eaw
+QsaNRpNSrcfbFmAg987ATQRTjHAWAQgAyzH6AOODMBjgfWE9VeCgsrwH3exNAU32gLq2xvjpW=
+nHI
+s98ndPUDpnoxWQugJ6MpMncr0xSwFmHEgnSEjK/PAjppgmyc57BwKII3sV4on+gDVFJR6Y8ZR=
+wgn
+BC5mVM6JjQ5xDk8WRXljExRfUX9pNhdE5eBOZJrDRoLUmmjDtKzWaDhIg/+1Hzz93X4fCQkNV=
+bVF
+LELU9bMaLPBG/x5q4iYZ2k2ex6d47YE1ZFdMm6YBYMOljGkZKwYde5ldM9mo45mmwe0icXKLk=
+pEd
+IXKTZeKDO+Hdv1aqFuAcccTg9RXDQjmwhC3yEmrmcfl0+rPghO0Iv3OOImwTEe4co3c1mwARA=
+QAB
+wsBfBBgBAgAJBQJTjHAWAhsMAAoJELDendYovxMvQ/gH/1ha96vm4P/L+bQpJwrZ/dneZcmEw=
+Tbe
+8YFsw2V/Buv6Z4Mysln3nQK5ZadD534CF7TDVft7fC4tU4PONxF5D+/tvgkPfDAfF77zy2AH1=
+vJz
+Q1fOU8lYFpZXTXIHb+559UqvIB8AdgR3SAJGHHt4RKA0F7f5ipYBBrC6cyXJyyoprT10EMvU8=
+VGi
+wXvTyJz3fjoYsdFzpWPlJEBRMedCot60g5dmbdrZ5DWClAr0yau47zpWj3enf1tLWaqcsuylW=
+svi
+uGjKGw7KHQd3bxALOknAp4dN3QwBYCKuZ7AddY9yjynVaD5X7nF9nO5BjR/i1DG86lem3iBDX=
+zXs
+ZDn8R38=3D
+=3D2wuH
+-----END PGP PUBLIC KEY BLOCK-----
+
+--------------2CA7EB0B620BD414B5FABDC4--
+
+--OWjDMMJSeGZf17EglbIPG7kS4okiXpxXj--
+
+--XEaNfdRUT9nxGyjL4aqukte3olVamRRGk
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmGbUtMFAwAAAAAACgkQsN6d1ii/Ey8C
+1Qf/YfoBv1l6Tq2f0wMBQKsAOR+FYHvpwvebr7MgEpYdc2q31N7iFloujufNoVMHVVzMT1ALCHr6
+cQEwSvk+X0mXidxvXBLYi/ZMMJ5F/fKtK8M151B9E6XJ7rBikW71qu/3QbVbhqrVEw/nx73zyk3v
+OFc78wOoxCjYlkYffnub22qaVhnpYgrO3lka2nNEditpGCbIvKNcINTUp0exBLMTQxc3xZyvyNwR
+ZllRNBQrQacpDXFKr6mrmdLY1EYIejtoPaauTMBi7c/RBJCiLoNE4sxmV5u473jVZ8T9003BQ8qr
+9fWvu96QdIKHjAmdrdYobCzxRddVjj+QhYzqrDiFTQ==
+=GTer
+-----END PGP SIGNATURE-----
+
+--XEaNfdRUT9nxGyjL4aqukte3olVamRRGk--

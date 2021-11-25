@@ -2,172 +2,196 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02209C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 24 Nov 2021 22:19:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D90DC433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 25 Nov 2021 15:25:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245129AbhKXWW6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 24 Nov 2021 17:22:58 -0500
-Received: from vern.gendns.com ([98.142.107.122]:39146 "EHLO vern.gendns.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S243516AbhKXWW5 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 24 Nov 2021 17:22:57 -0500
-X-Greylist: delayed 997 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Nov 2021 17:22:57 EST
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=lechnology.com; s=default; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
-        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=cPTkm5dKyGu8+kzGw6UdVofJoo3PgcRhgy9Z9JjJlyA=; b=PozlIypVuJfS0CUVCF/v5R3Z7t
-        c7/fquKX/OVyTv1Y5tbpZPUv8P3aZmhXg89nFDyM6VdqhxmOkt0qdCGylDm4IRmYwQn4xc9tx10tu
-        WdQklCM6BCQ3laysqHCC3f34MpujxhAk+4LVJaAQS8agB9ggw5VBWBit92qtw43tJDPUXb/2RjCiA
-        SQOk9YRPy0Ef9x8hoP9Ayym2RdwrYwgsSKxGb0we8b+C3vejlXn0iyt29K77gTaZwI+lqm8/wx+gD
-        kWyvdJWzFhmxxB5IebR3gIeGScYVbBEs450CCKc/2FTkxm0846RpxC6QsIh2GPO3zOuzlQ8Sn0LkP
-        0jRKM2yw==;
-Received: from [2600:1700:4830:1658::fb2] (port=55892)
-        by vern.gendns.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-        (Exim 4.94.2)
-        (envelope-from <david@lechnology.com>)
-        id 1mq0M0-00070D-6r; Wed, 24 Nov 2021 17:03:09 -0500
-Subject: Re: [PATCH 0/6] drm/tiny/st7735r: Match up with staging/fbtft driver
-To:     =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        robh+dt@kernel.org
-Cc:     devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        dave.stevenson@raspberrypi.com, maxime@cerno.tech
-References: <20211124150757.17929-1-noralf@tronnes.org>
-From:   David Lechner <david@lechnology.com>
-Message-ID: <eba23198-5c52-6520-079b-d2d41f71dc25@lechnology.com>
-Date:   Wed, 24 Nov 2021 16:03:07 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.14.0
-MIME-Version: 1.0
-In-Reply-To: <20211124150757.17929-1-noralf@tronnes.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+        id S1356036AbhKYP22 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 25 Nov 2021 10:28:28 -0500
+Received: from mx0b-00069f02.pphosted.com ([205.220.177.32]:8292 "EHLO
+        mx0b-00069f02.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1356124AbhKYP0Z (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 25 Nov 2021 10:26:25 -0500
+Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1APFLBG1005318;
+        Thu, 25 Nov 2021 15:21:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=message-id : date :
+ subject : to : cc : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=corp-2021-07-09;
+ bh=xOJcvQ6fbJUOm0/j1nsNc/L5/Wzc3OVZQ2WAo52zC7I=;
+ b=QpYK6mQOKyrTNKIfAy2cVNxQnPy9dfkLabZekvWqd3CN36hupZTVX3iACv7rSY/mRAMh
+ g6QwZuGXqMKaApM6va3d2+Oh5Cks6+MRpp6n1eCnLP+K0DD9V8n5oWMqjQLzFJFp8R2h
+ sazGJEvDkRorWn1DFI86L/zRevO0T6HsDX/GCbgSerdoMOVWeHlme22KXFI/3Y1Myr8b
+ /niJp/UJX9aBL0Cwn9JHsrZ0VHdDlVTy1mr36Zf2W2zEPv6Od0zRN0Nd8lYIXW+BQu2I
+ /4wjuRo7dvVnLvc7JcLKc9FbVxfZbWnNYvo6KXLxrbLxLw9RjKhiKjG+X5EMIHyFSSFt uA== 
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
+        by mx0b-00069f02.pphosted.com with ESMTP id 3chk007rcx-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Thu, 25 Nov 2021 15:21:54 +0000
+Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
+        by aserp3030.oracle.com (8.16.1.2/8.16.1.2) with SMTP id 1APFFIaw111632;
+        Thu, 25 Nov 2021 15:21:53 GMT
+Received: from nam11-co1-obe.outbound.protection.outlook.com (mail-co1nam11lp2176.outbound.protection.outlook.com [104.47.56.176])
+        by aserp3030.oracle.com with ESMTP id 3ceq2hsqse-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Thu, 25 Nov 2021 15:21:53 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=deVhZjW2ErlAfMn2kpwIWCCcr70VkysnkinuhioojLMjnQBbs+cD3wvdf+/FmvIi1GxIWSBXVE/cqvqWbML/GRNChS+FgPzeER9qZxF6AXZPvBkMMQxRZXHWINpyw0FbLX3KHg88CDC9Jd5TWYnpCtWmzdgktG9Sz4a//0syX0eoRlBqnbhJBKwdbxtocV+7/+YBp5FUPjWZsFJmGWdGEbyh1imFG12t4qJLZLGARaAuRSLEPzgO4yYud7tTdHj6xk8zsXCyWV2uyTlNOkP4zVFSFxVISOHhYw6s/aG9TZZAO6WCtjEtShYCozIWIBIYhmR59g1dge4pa0kZ+Tdiiw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=xOJcvQ6fbJUOm0/j1nsNc/L5/Wzc3OVZQ2WAo52zC7I=;
+ b=jgBpGXqqlljaGHB0ei0+oD6676Dfy+aaaGfJq+X8PidpStyo3EfeBUZIDC9p434fch825+jbqwK8MlBwlg5QXWrxUww2D4qkEFXB8TVM7yMh6wbZvrjiOKmP1Dh4Il3syWIlB44MBO0FAYjt0rm2Ib9bwtLmQfVR1nqpZfObC3iwnl+Xq2zgakmU4NXmOFSgi8RkJoGgGT1jDD7GvZpoEMmYpZHzJNzXMW0ndT5wm2fr52enO1q6zbu2GQGShuEvAUMbv5tafDew06sIi+UxZdjlhvHOlzqO3SQMZjjWM5VVczcZ7qdkOskaqjONAYkyEdYBHndBhlRhThIXqCmvuw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=xOJcvQ6fbJUOm0/j1nsNc/L5/Wzc3OVZQ2WAo52zC7I=;
+ b=eXBfqvFrwjT8KKGhqwNICDf/TLh0E3jD39WvuExuaZ666g6yB1oNnRoKa2UetW6vof5s9knru3Sls8Pn10gnFTN0OsaTkdt9RTndqaxvhOpR2ovF+HE/KrPrVJGIfqQhDTzn1aShh/rZ9NI0Rmw8wWqZhRzM5j5VrM2cfvL4UZc=
+Received: from BLAPR10MB5009.namprd10.prod.outlook.com (2603:10b6:208:321::10)
+ by MN2PR10MB4383.namprd10.prod.outlook.com (2603:10b6:208:1d4::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4713.19; Thu, 25 Nov
+ 2021 15:21:51 +0000
+Received: from BLAPR10MB5009.namprd10.prod.outlook.com
+ ([fe80::8d84:1f40:881:7b12]) by BLAPR10MB5009.namprd10.prod.outlook.com
+ ([fe80::8d84:1f40:881:7b12%4]) with mapi id 15.20.4713.025; Thu, 25 Nov 2021
+ 15:21:51 +0000
+Message-ID: <b14018d0-a978-7c51-431b-ebdfe902e172@oracle.com>
+Date:   Thu, 25 Nov 2021 10:21:41 -0500
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
+ Gecko/20100101 Thunderbird/91.3.1
+Subject: Re: [PATCH 0/5] xen: cleanup detection of non-essential pv devices
 Content-Language: en-US
+To:     Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org,
+        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org
+Cc:     Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Stefano Stabellini <sstabellini@kernel.org>,
+        Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org
+References: <20211022064800.14978-1-jgross@suse.com>
+ <bf5a4749-0216-53db-a022-ef4f84d823c5@suse.com>
+From:   Boris Ostrovsky <boris.ostrovsky@oracle.com>
+In-Reply-To: <bf5a4749-0216-53db-a022-ef4f84d823c5@suse.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - vern.gendns.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - lechnology.com
-X-Get-Message-Sender-Via: vern.gendns.com: authenticated_id: davidmain+lechnology.com/only user confirmed/virtual account not confirmed
-X-Authenticated-Sender: vern.gendns.com: davidmain@lechnology.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+X-ClientProxiedBy: SJ0PR03CA0040.namprd03.prod.outlook.com
+ (2603:10b6:a03:33e::15) To BLAPR10MB5009.namprd10.prod.outlook.com
+ (2603:10b6:208:321::10)
+MIME-Version: 1.0
+Received: from [10.74.106.108] (138.3.200.44) by SJ0PR03CA0040.namprd03.prod.outlook.com (2603:10b6:a03:33e::15) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4734.22 via Frontend Transport; Thu, 25 Nov 2021 15:21:46 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: bca32ac4-babd-4bd0-7609-08d9b0274e39
+X-MS-TrafficTypeDiagnostic: MN2PR10MB4383:
+X-Microsoft-Antispam-PRVS: <MN2PR10MB438351371AD34DE6301057148A629@MN2PR10MB4383.namprd10.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:4303;
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: izFBXKiEDIni2MgEDXHJ4qsQDAWTTRuCQKVdzdDC34prTkeOouN+dpq94lkKFZnhEnffMdYZ4bX7zIXKnX2X9L3TkelkAla6+D6UbTRVHeg7zln+z7YAe521Tat6q0PmVIDbnJHByU8+os9PUbEeefWwQx3XCjuZ4jKjzBu5Bqc9Ysl61JNCxI2CdwRDKb1fSVHGTarb0NTi43KbZ2Kfosmty2txN7/uq8ERbXjElm3YuAnbbogc50AfrBVs8NyFOG1gtbx2atpEXDnquHzcemBKgQz2dQoi5IBAAxUDBD47DSudZYQAYHXRJJB+mU2O6Sg521qzJkzLLbOT6u4scOz+gs4n41w0lUHud/71GqofqYqUfhIEmbbMuUSDyRO3KpTSBiEx1AUqtzePz0xtlypszpK9Y8oWVEYpzX+xuAhxgU25+XfMrZp32MO2hpXdRZ1y3kLmttQ9a0Jp6RSUEJ58eMm+kIVBdbRj51Us73KeZtHC67pRV6YKqOu7zG3kNCk139MP2s7VXGrE4sZ5rd68QECz8s4YjwuTjM+qNPGHfJeqTpcfhvwucN0xppu8AB7cTv5pWtrXNs9xAQIild5GKf6vdCYwW7Y++iJ9n9pOqNje5028ODhbhaIvpaVV0Wal07ai6oAZTahU36SW6p0n23D5WrTXbsHlc2af+MjbeThHOxYVNZ8em8qM94l/Em6ZxAqGCh5TYmBvaNQhNbjm6Lngiu23qbGcu4NFD685zCkBElgR6TdGyzlK8v36
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BLAPR10MB5009.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(366004)(83380400001)(44832011)(4326008)(54906003)(2616005)(31696002)(66946007)(66556008)(186003)(316002)(6486002)(5660300002)(16576012)(7416002)(38100700002)(508600001)(956004)(2906002)(66476007)(86362001)(26005)(8676002)(53546011)(8936002)(6666004)(31686004)(36756003)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?ZGhHSjF4VC9FTGZwN2puR3FWQWkvc1N0a1RER0U4MmxOUXZibU1TRHRpT1NM?=
+ =?utf-8?B?alU2bFVSREg5REp1dC9ydHdXSm5JdjFjQ2xXNG8yMUNmY0lkMGhMYkxiKzBB?=
+ =?utf-8?B?ZGhBS3IvRERqTXRhOFgvWHFCMThZNzNIQ0t5MUpGOWk1Q1pWc2t4OUZwUmxH?=
+ =?utf-8?B?WkFIbnUvSllKT3M3ejI2SjhtQjZDbzNnVHlCSDdVWnpQbjVFczN4cG9rVWg4?=
+ =?utf-8?B?T25rN09iRlRzQVVxMVp1TTNzOXhmSTN1bStVd1ZBbkRHSDg3bmREVlJiVitu?=
+ =?utf-8?B?bzU4cjFGZm1FR1lhUzVLemxRWGlocDRnVGlFd2p5S0xuOFAwM1lrcFVFY3Rv?=
+ =?utf-8?B?M3BYOHFveUl1MEJ0QUhMRFRTMEMrZ2ZKbUVnY0VEMlJaOXVyOEdmcHFvbTk0?=
+ =?utf-8?B?UUFVWVVMczF3c3lQZmNUM2o5QjBGU0E0emZwQkZ2TjJueDVMTlErSFExOUNE?=
+ =?utf-8?B?cmtiazJwT0lEZUlIaE84SG5wNkNRZzBlY214eTZSRnFUWFRQZG9Od3VuV0d6?=
+ =?utf-8?B?M2Joamx6RmJLZGtvZ0E1dmkxQVlQbEFpYzQ4ZllFNkxsVGJmYkl5UW5QMzRN?=
+ =?utf-8?B?VWV6WDBYWXJIeTJpYk9NTXB5RkZoWUxRRzE2ZTJWWGJVRnhCSWZYY3dyQUhQ?=
+ =?utf-8?B?elVUOGROSlVuS0JFTTVMZEdsNWVFNjF0MDByUm0zTWl3TmJUVnEvK1hnUXlS?=
+ =?utf-8?B?eWlSczZRc3Fpeko3cmFCRnRuOTgzNDY1TlM1UmQ5eEd2a1YrRmY5Y082NVFI?=
+ =?utf-8?B?ZjNTeVFGS2N6NTlxb0hGUU0vOEkvaFJ4WjEzdG5ndWQ0NE1JZld4TGtReUZO?=
+ =?utf-8?B?d1Axdzd3dFJlVS93WXBHeVJJVk1IelhGVEttc1p2d1NQa1pITjd6akhSZlhX?=
+ =?utf-8?B?Qk1LU21FSW1qRkJXK0RmMWtlcGRmL3NjYWd6UkZrZy9VTFZuSzhlZ1BaZVlY?=
+ =?utf-8?B?d2xuUm03eDZId2duZngvZ0NVWTYva1d3d1R4NGlhQThISWZpUEV0VjQ1UXlt?=
+ =?utf-8?B?V1NYU1EwZm5XaFNaZUcyRjZXY256Y0MwYm9LeDFxQjY2Mmdra2tIUmYzOVlR?=
+ =?utf-8?B?QWREcWg1OElsVXphRG40VTlZTDIvc1RrMzZjUDRNdDNuckpmY3ByYnZUeFhh?=
+ =?utf-8?B?ZzdZVjIzWjdtaktaYS9IQVBvbmh5cXJ2N00xREhGakRORThOaDhKV2RuUzJR?=
+ =?utf-8?B?QVp6QjgvQ1llVzNIWG9HclgrelI2Umt2M0FKYmFjQkJJQnExK0JnMFBVSXJP?=
+ =?utf-8?B?cnYyUDV0OHJpdFBLOER5THpjeHd2bFJNa0c3ODF6S3hWSHVMZm1ML2ljKzZV?=
+ =?utf-8?B?S0JWV0xlSVgxRUdoVkR6c1FlM3JaRlZGaW5Qc3dWNjhpZjhxOWxLTEdGVmpv?=
+ =?utf-8?B?TnQ2OVI0V1hrc3lJRW5jeksySUIzem5OK3FKZ1AzQ2d1akY3eWp0RGdwdWxW?=
+ =?utf-8?B?enA1RGlZWVNtSFRzNURsZHhkQU50ZXYzSExDb3dVclJ6RGxzTzdVQ2dUUXNX?=
+ =?utf-8?B?dWUwYWE1UDVocTc1SThXWmtZQXFETlU0ZWxKTHRkMXRvU1BYYk90VkpZMTZq?=
+ =?utf-8?B?S1BsMFhHQlhwYlQ1aTFmRkt5eVFuaUtQNmtVYk1NZDlybGJpMmdIT2htc201?=
+ =?utf-8?B?ZnovSkhIMmtvRFJ0eU5NNlBKT1BzOWNlTmxlRVVhVnBXL1BhbkFsc253Z09u?=
+ =?utf-8?B?VHB0bVpheFBUVDhkcHlTSXY5b3dMZGlueVBCUDhHd1B5bE5oVDMyZ3dKTjVW?=
+ =?utf-8?B?RWN0K0tKRnRZWWpNVlArWVk1ZUpzTjI5UVhhZS84cFczNmdIVkM0L3M2Uldh?=
+ =?utf-8?B?NkRaZmJDeTJMaGVEbnNHcW5KUGZSTFJpN3l6V2ozNUt5UHA5NGZiQlFjdzVt?=
+ =?utf-8?B?dloydDdIam8rUW0rWmJjUUhLQnZ3SFBzNEc3YUZnU1Mrb0tua2ZTQk90cjl4?=
+ =?utf-8?B?eWh6bFZoanlNQzNGWUlnZWNoUlRXRDR6U1RRa0t2azFNYSsrOWMyUmZSREpM?=
+ =?utf-8?B?anA4U2lYcEZITm11UzJmMUtjYjg2ME1zVmpJRzlud05vL1Z0c05LWURYT3I2?=
+ =?utf-8?B?bFNkaEExbEY0N1NvVEpKZmozb2JoSUFjVm1POEJhdGFWMG03akJLSkdzOXhm?=
+ =?utf-8?B?cjdRdkN1dk9IU0lBRW1DZUFBRzhqQnU1WWsxT2RIZDVQTndTV0FxQ2huR2w1?=
+ =?utf-8?B?bksyeUh1REloaksvdHd3ZUJScElEUFFldHZRTkk1THZUeFJRWDBvbFJBQzZk?=
+ =?utf-8?B?cndIQUVyRjM1Y3FMckFZSVdJQnJBPT0=?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bca32ac4-babd-4bd0-7609-08d9b0274e39
+X-MS-Exchange-CrossTenant-AuthSource: BLAPR10MB5009.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Nov 2021 15:21:51.3711
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: WNwnUwzlptoU7PN9FlUem6dEYoTxBzr3Ll6KrPKYNLOaqjfs0npiEmctdtfiaN/RiSWNLmnc3NvfHZ67c0ht+7MQt2nosKscLQCd6yzalwg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR10MB4383
+X-Proofpoint-Virus-Version: vendor=nai engine=6300 definitions=10179 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 adultscore=0 spamscore=0
+ bulkscore=0 suspectscore=0 mlxscore=0 mlxlogscore=999 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2110150000
+ definitions=main-2111250085
+X-Proofpoint-ORIG-GUID: X_NWAn0AHYKFSi1y9iGuMiKi1e_UfJMo
+X-Proofpoint-GUID: X_NWAn0AHYKFSi1y9iGuMiKi1e_UfJMo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 11/24/21 9:07 AM, Noralf Trønnes wrote:
-> Hi,
-> 
-> This patchset adds a missing piece for decommissioning the
-> staging/fbtft/fb_st7735r.c driver namely a way to configure the
-> controller from Device Tree.
-> 
-> All fbtft drivers have builtin support for one display panel and all
-> other panels using that controller are configured using the Device Tree
-> 'init' property. This property is supported by all fbtft drivers and
-> provides a generic way to set register values or issue commands
-> (depending on the type of controller).
-> 
-> It is common for these types of displays to have a datasheet listing the
-> necessary controller settings/commands or some example code doing the
-> same.
-> 
-> This is how the panel directly supported by the fb_st7735r staging
-> driver is described using Device Tree with that driver:
-> 
->      width = <160>;
->      height = <128>;
-> 
->      init = <0x1000001
->              0x2000096
->              0x1000011
->              0x20000ff
->              0x10000B1 0x01 0x2C 0x2D
->              0x10000B4 0x07
->              0x10000C0 0xA2 0x02 0x84
->              0x10000C1 0xC5
->              0x10000C2 0x0A 0x00
->              0x10000C5 0x0E
->              0x100003a 0x55
->              0x1000036 0x60
->              0x10000E0 0x0F 0x1A 0x0F 0x18 0x2F 0x28 0x20 0x22
->                        0x1F 0x1B 0x23 0x37 0x00 0x07 0x02 0x10
->              0x10000E1 0x0F 0x1B 0x0F 0x17 0x33 0x2C 0x29 0x2E
->                        0x30 0x30 0x39 0x3F 0x00 0x07 0x03 0x10
->              0x1000029
->              0x2000064>;
-> 
-> 
-> This is how the same panel is described using the st7735r drm driver and
-> this patchset:
-> 
->      width = <160>;
->      height = <128>;
-> 
->      frmctr1 = [ 01 2C 2D ];
->      invctr = [ 07 ];
->      pwctr1 = [ A2 02 84 ];
->      pwctr2 = [ C5 ];
->      pwctr3 = [ 0A 00 ];
->      vmctr1 = [ 0E ];
->      madctl = [ 60 ];
->      gamctrp1 = [ 0F 1A 0F 18 2F 28 20 22 1F 1B 23 37 00 07 02 10 ];
->      gamctrn1 = [ 0F 1B 0F 17 33 2C 29 2E 30 30 39 3F 00 07 03 10 ];
 
-Do these setting correspond to actual physical properties of the display?
-
-What is the advantage of this compared to just adding a new compatible
-string if a new display requires different settings? (Other than being
-able to use a new display without compiling a new kernel/module.)
-
-It is nice for the driver implementation to be able to use the byte
-arrays from the binding directly, but it doesn't really make sense from
-a "device tree describes the hardware" point of view.
-
-For example, looking at the data sheet, frmctr1 looks like it is actually
-multiple properties, the 1-line period, front porch and back porch.
-
-> 
-> 
-> Back when the fbtft drivers were added to staging I asked on the DT
-> mailinglist if it was OK to use the 'init' property but it was turned
-> down. In this patchset I'm trying the same approach used by the
-> solomon,ssd1307fb.yaml binding in describing the attached panel. That
-> binding prefixes the properties with the vendor name, not sure why that
-> is and I think it looks strange so I try without it.
-
-Because [1] says so?
-
-"DO use a vendor prefix on device-specific property names. Consider if
-properties could be common among devices of the same class. Check other
-existing bindings for similar devices."
-
-Do all displays have "frmctr1" or only sitronix displays?
+On 11/22/21 3:20 AM, Juergen Gross wrote:
+> On 22.10.21 08:47, Juergen Gross wrote:
+>> Today the non-essential pv devices are hard coded in the xenbus driver
+>> and this list is lacking multiple entries.
+>>
+>> This series reworks the detection logic of non-essential devices by
+>> adding a flag for that purpose to struct xenbus_driver.
+>>
+>> Juergen Gross (5):
+>>    xen: add "not_essential" flag to struct xenbus_driver
+>>    xen: flag xen_drm_front to be not essential for system boot
+>>    xen: flag hvc_xen to be not essential for system boot
+>>    xen: flag pvcalls-front to be not essential for system boot
+>>    xen: flag xen_snd_front to be not essential for system boot
+>>
+>>   drivers/gpu/drm/xen/xen_drm_front.c        |  1 +
+>>   drivers/input/misc/xen-kbdfront.c          |  1 +
+>>   drivers/tty/hvc/hvc_xen.c                  |  1 +
+>>   drivers/video/fbdev/xen-fbfront.c          |  1 +
+>>   drivers/xen/pvcalls-front.c                |  1 +
+>>   drivers/xen/xenbus/xenbus_probe_frontend.c | 14 +++-----------
+>>   include/xen/xenbus.h                       |  1 +
+>>   sound/xen/xen_snd_front.c                  |  1 +
+>>   8 files changed, 10 insertions(+), 11 deletions(-)
+>>
+>
 
 
-[1]: https://www.kernel.org/doc/html/latest/devicetree/bindings/writing-bindings.html
 
-> 
-> Noralf.
-> 
-> 
-> Noralf Trønnes (6):
->    dt-bindings: display: sitronix,st7735r: Fix backlight in example
->    dt-bindings: display: sitronix,st7735r: Make reset-gpios optional
->    dt-bindings: display: sitronix,st7735r: Remove spi-max-frequency limit
->    dt-bindings: display: sitronix,st7735r: Add initialization properties
->    drm/mipi-dbi: Add device property functions
->    drm: tiny: st7735r: Support DT initialization of controller
-> 
->   .../bindings/display/sitronix,st7735r.yaml    | 122 ++++++++++++++-
->   drivers/gpu/drm/drm_mipi_dbi.c                | 139 ++++++++++++++++++
->   drivers/gpu/drm/tiny/st7735r.c                |  87 +++++++++--
->   include/drm/drm_mipi_dbi.h                    |   3 +
->   4 files changed, 334 insertions(+), 17 deletions(-)
-> 
+Applied to for-linus-5.16c
+
+
+-boris
 

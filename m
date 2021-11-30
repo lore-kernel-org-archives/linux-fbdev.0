@@ -2,273 +2,151 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E200C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Nov 2021 14:30:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3989C43217
+	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Nov 2021 14:52:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234767AbhK3Odo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 30 Nov 2021 09:33:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55566 "EHLO
+        id S242925AbhK3Ozl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 30 Nov 2021 09:55:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60018 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229946AbhK3Odj (ORCPT
+        with ESMTP id S243108AbhK3OyN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 30 Nov 2021 09:33:39 -0500
-Received: from smtp.domeneshop.no (smtp.domeneshop.no [IPv6:2a01:5b40:0:3005::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D4E08C061574;
-        Tue, 30 Nov 2021 06:30:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=tronnes.org
-        ; s=ds202012; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
-        References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
-        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-        List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=6NOP2+DTQqJWzYfZgacKEgawyS+7L+fJvsJ6rTKXdLA=; b=j7pBp3prUgC8J+CyT27U6yBxWL
-        f9l91X9YIQR564dtipwHIhD73fYvzpJ2JDdhfdmq1rX62pRinDd+BIhZuofrvpzlk9DjdI6uZ7WsD
-        PXbdZw7MILI7XEcN7+yYfy4deReYWUGwgwNQV9mJLRrvUms4B1IFDfdnkfGf+c1AlIlW441rici04
-        y2ZtxvAEGLO3vw32r4WjLN7tpA1Om6YcWtO1YjCjm5jCLIyu8JlQHqxJGzCEaJrAG+5uj65KDqheg
-        kYFbEQpzl8t5adFU31Ua3brPbjOeoCpcZJaMdxoA39iqIiPTIu2Th6BJAJGD07rghO9tFTynJ7/TB
-        MnusnHQQ==;
-Received: from 211.81-166-168.customer.lyse.net ([81.166.168.211]:52436 helo=[192.168.10.61])
-        by smtp.domeneshop.no with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <noralf@tronnes.org>)
-        id 1ms498-0000G2-JT; Tue, 30 Nov 2021 15:30:14 +0100
-Message-ID: <ca9e432a-6b04-9935-2469-135a9b47514e@tronnes.org>
-Date:   Tue, 30 Nov 2021 15:30:11 +0100
+        Tue, 30 Nov 2021 09:54:13 -0500
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3980CC061372;
+        Tue, 30 Nov 2021 06:49:14 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by sin.source.kernel.org (Postfix) with ESMTPS id 8517ECE1A58;
+        Tue, 30 Nov 2021 14:49:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE41BC53FD1;
+        Tue, 30 Nov 2021 14:49:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1638283750;
+        bh=Gw5VQ3RYUXRNsUiATi1GYRmPBWdQxHeYZIBJlwYHLnY=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=UbHT917w5sbc5FLhlCDUTHfQoevGT+ykC1Xo+FPPzepoU+mXmuKdP/4ZdrvLklWnN
+         Fpno/yBqaHqFKOzWTShzFU+yLtMEJ/j+6AlzyqBH+rnKltgIH+qFy3GXr6BmJ/TPwJ
+         26lDtMEu+fwn/KMzlzL+NDjRx8m03eT4AixbUZwAkbFjn6tdfHNBlYOANWpnMShDrQ
+         IUHvS74R0QDKEpCNlvylxSPXhxUvIAz8mjbz9rerpkCycITu4q+2MS/Gd46l4Aomcb
+         HsUO5JLlRuvqCLf05d1kkFIoLaLU4X59vRhcitSyIltcxxoEv7a/9QAW8M3iVZetRT
+         eHP6SUg86swfw==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Juergen Gross <jgross@suse.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Sasha Levin <sashal@kernel.org>, dmitry.torokhov@gmail.com,
+        linux-input@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org
+Subject: [PATCH AUTOSEL 5.15 48/68] xen: add "not_essential" flag to struct xenbus_driver
+Date:   Tue, 30 Nov 2021 09:46:44 -0500
+Message-Id: <20211130144707.944580-48-sashal@kernel.org>
+X-Mailer: git-send-email 2.33.0
+In-Reply-To: <20211130144707.944580-1-sashal@kernel.org>
+References: <20211130144707.944580-1-sashal@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.1
-Subject: Re: [PATCH 0/6] drm/tiny/st7735r: Match up with staging/fbtft driver
-To:     Maxime Ripard <maxime@cerno.tech>,
-        David Lechner <david@lechnology.com>
-Cc:     robh+dt@kernel.org, devicetree@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, dave.stevenson@raspberrypi.com
-References: <20211124150757.17929-1-noralf@tronnes.org>
- <eba23198-5c52-6520-079b-d2d41f71dc25@lechnology.com>
- <20211129093946.xhp22mvdut3m67sc@houat>
-From:   =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
-In-Reply-To: <20211129093946.xhp22mvdut3m67sc@houat>
-Content-Type: text/plain; charset=UTF-8
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+From: Juergen Gross <jgross@suse.com>
 
+[ Upstream commit 37a72b08a3e1eb28053214dd8211eb09c2fd3187 ]
 
-Den 29.11.2021 10.39, skrev Maxime Ripard:
-> Hi,
-> 
-> On Wed, Nov 24, 2021 at 04:03:07PM -0600, David Lechner wrote:
->> On 11/24/21 9:07 AM, Noralf Trønnes wrote:
->>> This patchset adds a missing piece for decommissioning the
->>> staging/fbtft/fb_st7735r.c driver namely a way to configure the
->>> controller from Device Tree.
->>>
->>> All fbtft drivers have builtin support for one display panel and all
->>> other panels using that controller are configured using the Device Tree
->>> 'init' property. This property is supported by all fbtft drivers and
->>> provides a generic way to set register values or issue commands
->>> (depending on the type of controller).
->>>
->>> It is common for these types of displays to have a datasheet listing the
->>> necessary controller settings/commands or some example code doing the
->>> same.
->>>
->>> This is how the panel directly supported by the fb_st7735r staging
->>> driver is described using Device Tree with that driver:
->>>
->>>      width = <160>;
->>>      height = <128>;
->>>
->>>      init = <0x1000001
->>>              0x2000096
->>>              0x1000011
->>>              0x20000ff
->>>              0x10000B1 0x01 0x2C 0x2D
->>>              0x10000B4 0x07
->>>              0x10000C0 0xA2 0x02 0x84
->>>              0x10000C1 0xC5
->>>              0x10000C2 0x0A 0x00
->>>              0x10000C5 0x0E
->>>              0x100003a 0x55
->>>              0x1000036 0x60
->>>              0x10000E0 0x0F 0x1A 0x0F 0x18 0x2F 0x28 0x20 0x22
->>>                        0x1F 0x1B 0x23 0x37 0x00 0x07 0x02 0x10
->>>              0x10000E1 0x0F 0x1B 0x0F 0x17 0x33 0x2C 0x29 0x2E
->>>                        0x30 0x30 0x39 0x3F 0x00 0x07 0x03 0x10
->>>              0x1000029
->>>              0x2000064>;
->>>
->>>
->>> This is how the same panel is described using the st7735r drm driver and
->>> this patchset:
->>>
->>>      width = <160>;
->>>      height = <128>;
->>>
->>>      frmctr1 = [ 01 2C 2D ];
->>>      invctr = [ 07 ];
->>>      pwctr1 = [ A2 02 84 ];
->>>      pwctr2 = [ C5 ];
->>>      pwctr3 = [ 0A 00 ];
->>>      vmctr1 = [ 0E ];
->>>      madctl = [ 60 ];
->>>      gamctrp1 = [ 0F 1A 0F 18 2F 28 20 22 1F 1B 23 37 00 07 02 10 ];
->>>      gamctrn1 = [ 0F 1B 0F 17 33 2C 29 2E 30 30 39 3F 00 07 03 10 ];
->>
->> Do these setting correspond to actual physical properties of the display?
->>
->> What is the advantage of this compared to just adding a new compatible
->> string if a new display requires different settings? (Other than being
->> able to use a new display without compiling a new kernel/module.)
->>
->> It is nice for the driver implementation to be able to use the byte
->> arrays from the binding directly, but it doesn't really make sense from
->> a "device tree describes the hardware" point of view.
->>
->> For example, looking at the data sheet, frmctr1 looks like it is actually
->> multiple properties, the 1-line period, front porch and back porch.
-> 
-> You're right, but we have two sets of problems that we want to solve,
-> and so far the discussion has only been to address one while ignoring
-> the other.
-> 
-> The solution you suggested works great for the problem the kernel is
-> facing: we want a solution that is easy to maintain over the long run,
-> while being reliable. Thus, we want to introduce a compatible for each
-> panel, that will allow us to describe the panel in the DT without
-> exposing too much data, the data being in the kernel.
-> 
-> This works great over the long run because we can update and fix any
-> problem we might have had, send them to stable, etc. It's awesome, but
-> it's mostly centered on us, the developers and maintainers.
-> 
-> 
-> The problem that fbtft (and this series) wants to fix is completely
-> different though: it wants to address the issue the users are facing.
-> Namely, you get a cheap display from wherever, connect it to your shiny
-> new SBC and wants to get something on the display.
-> 
-> In this situation, the user probably doesn't have the knowledge to
-> introduce the compatible in the kernel in the first place. But there's
-> also some technical barriers there: if they use secure boot, they can't
-> change the kernel (well, at least the knowledge required is far above
-> what we can expect from the average user). If the platform doesn't allow
-> access to the DT, you can't change the DT either.
-> 
+When booting the xenbus driver will wait for PV devices to have
+connected to their backends before continuing. The timeout is different
+between essential and non-essential devices.
 
-Like Geert I wondered about this statement, since you need to change the
-DT to use such a display. But if you count overlays as not changing the
-DT, ok.
+Non-essential devices are identified by their nodenames directly in the
+xenbus driver, which requires to update this list in case a new device
+type being non-essential is added (this was missed for several types
+in the past).
 
-> Let's set aside those constraints for a moment though. For most of these
-> devices, you wouldn't even be able to come up with a proper compatible.
-> All of those displays are typically a panel and a controller glued
-> together, and the exact initialization sequence depends on both. The
-> panel is never really mentioned, neither is its manufacturer, or its
-> exact product id. In other words, we wouldn't be able to come up with a
-> good compatible for them.
-> 
-> Let's now assume we do have access to all those info and can come up
-> with a good, upstreamable, compatible. We now require the user to
-> contribute it upstream, and then expect them to wait for 1-2 years for
-> that patch to show up in their distribution of choice.
-> 
-> And then, if we were to get those patches, chances are we don't really
-> want them anyway since we would be drowning in those small patches
-> no-one really wants to review.
-> 
-> 
-> So yeah, the solution we have is probably a good solution for "real"
-> panels, glued to a device (and even then, the recent discussion around
-> panel-edp shows that it has a few shortcomings). But it's a *terrible*
-> solution for all parties involved when it comes to those kind of
-> displays.
-> 
+In order to avoid this problem, add a "not_essential" flag to struct
+xenbus_driver which can be set to "true" by the respective frontend.
 
-Really good writeup of the situation Maxime!
+Set this flag for the frontends currently regarded to be not essential
+(vkbs and vfb) and use it for testing in the xenbus driver.
 
-> 
-> I agree that it doesn't really fit in the DT either though. Noralf, what
-> kind of data do we need to setup a display in fbtft? The init sequence,
-> and maybe some enable/reset GPIO, plus some timing duration maybe?
-> 
-> There's one similar situation I can think of: wifi chips. Those also
-> need a few infos from the DT (like what bus it's connected to, enable
-> GPIO, etc) and a different sequence (firmware), sometimes different from
-> one board to the other.
-> 
-> Could we have a binding that would be something like:
-> 
-> panel@42 {
-> 	 compatible = "panel-spi";
-> 	 model = "panel-from-random-place-42";
-> 	 enable-gpios = <&...>;
-> }
-> 
-> And then, the driver would request the init sequence through the
-> firmware mechanism using a name generated from the model property.
-> 
-> It allows to support multiple devices in a given system, since the
-> firmware name wouldn't conflict, it makes a decent binding, and users
-> can adjust the init sequence easily (maybe with a bit of tooling)
-> 
-> Would that work?
-> 
+Signed-off-by: Juergen Gross <jgross@suse.com>
+Link: https://lore.kernel.org/r/20211022064800.14978-2-jgross@suse.com
+Reviewed-by: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Signed-off-by: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/input/misc/xen-kbdfront.c          |  1 +
+ drivers/video/fbdev/xen-fbfront.c          |  1 +
+ drivers/xen/xenbus/xenbus_probe_frontend.c | 14 +++-----------
+ include/xen/xenbus.h                       |  1 +
+ 4 files changed, 6 insertions(+), 11 deletions(-)
 
-I really like this idea. An added benefit is that one driver can handle
-all MIPI DBI compatible controllers avoiding the need to do a patchset
-like this for all the various MIPI DBI controllers. The firmware will
-just contain numeric commands with parameters, so no need for different
-controller drivers to handle the controller specific command names.
+diff --git a/drivers/input/misc/xen-kbdfront.c b/drivers/input/misc/xen-kbdfront.c
+index 4ff5cd2a6d8de..3d17a0b3fe511 100644
+--- a/drivers/input/misc/xen-kbdfront.c
++++ b/drivers/input/misc/xen-kbdfront.c
+@@ -542,6 +542,7 @@ static struct xenbus_driver xenkbd_driver = {
+ 	.remove = xenkbd_remove,
+ 	.resume = xenkbd_resume,
+ 	.otherend_changed = xenkbd_backend_changed,
++	.not_essential = true,
+ };
+ 
+ static int __init xenkbd_init(void)
+diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
+index 5ec51445bee88..6826f986da436 100644
+--- a/drivers/video/fbdev/xen-fbfront.c
++++ b/drivers/video/fbdev/xen-fbfront.c
+@@ -695,6 +695,7 @@ static struct xenbus_driver xenfb_driver = {
+ 	.remove = xenfb_remove,
+ 	.resume = xenfb_resume,
+ 	.otherend_changed = xenfb_backend_changed,
++	.not_essential = true,
+ };
+ 
+ static int __init xenfb_init(void)
+diff --git a/drivers/xen/xenbus/xenbus_probe_frontend.c b/drivers/xen/xenbus/xenbus_probe_frontend.c
+index 480944606a3c9..07b010a68fcf9 100644
+--- a/drivers/xen/xenbus/xenbus_probe_frontend.c
++++ b/drivers/xen/xenbus/xenbus_probe_frontend.c
+@@ -211,19 +211,11 @@ static int is_device_connecting(struct device *dev, void *data, bool ignore_none
+ 	if (drv && (dev->driver != drv))
+ 		return 0;
+ 
+-	if (ignore_nonessential) {
+-		/* With older QEMU, for PVonHVM guests the guest config files
+-		 * could contain: vfb = [ 'vnc=1, vnclisten=0.0.0.0']
+-		 * which is nonsensical as there is no PV FB (there can be
+-		 * a PVKB) running as HVM guest. */
++	xendrv = to_xenbus_driver(dev->driver);
+ 
+-		if ((strncmp(xendev->nodename, "device/vkbd", 11) == 0))
+-			return 0;
++	if (ignore_nonessential && xendrv->not_essential)
++		return 0;
+ 
+-		if ((strncmp(xendev->nodename, "device/vfb", 10) == 0))
+-			return 0;
+-	}
+-	xendrv = to_xenbus_driver(dev->driver);
+ 	return (xendev->state < XenbusStateConnected ||
+ 		(xendev->state == XenbusStateConnected &&
+ 		 xendrv->is_ready && !xendrv->is_ready(xendev)));
+diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
+index b94074c827721..b13eb86395e05 100644
+--- a/include/xen/xenbus.h
++++ b/include/xen/xenbus.h
+@@ -112,6 +112,7 @@ struct xenbus_driver {
+ 	const char *name;       /* defaults to ids[0].devicetype */
+ 	const struct xenbus_device_id *ids;
+ 	bool allow_rebind; /* avoid setting xenstore closed during remove */
++	bool not_essential;     /* is not mandatory for boot progress */
+ 	int (*probe)(struct xenbus_device *dev,
+ 		     const struct xenbus_device_id *id);
+ 	void (*otherend_changed)(struct xenbus_device *dev,
+-- 
+2.33.0
 
-The following is a list of the MIPI DBI compatible controllers currently
-in staging/fbtft: ili9341, hx8357d, st7735r, ili9163, ili9163, ili9163,
-ili9163, ili9486, ili9481, tinylcd, s6d02a1, s6d02a1, hx8340bn, ili9340.
-
-The compatible needs to be a bit more specific though since there are 2
-major SPI protocols for these display: MIPI DBI and the one used by
-ILI9325 and others.
-
-The full binding would be something like this:
-
-panel@42 {
-	compatible = "panel-mipi-dbi-spi";
-	model = "panel-from-random-place-42";
-
-	/* The MIPI DBI spec lists these powers supply pins */
-	vdd-supply = <&...>;
-	vddi-supply = <&...>;
-
-	/* Optional gpio to drive the RESX line */
-	reset-gpios = <&...>;
-
-	/*
-	 * D/CX: Data/Command, Command is active low
-	 * Abcense: Interface option 1 (D/C embedded in 9-bit word)
-	 * Precense: Interface option 3
-	 */
-	dc-gpios = <&...>;
-
-	/*
-	 * If set the driver won't try to read from the controller to see
-	 * if it's already configured by the bootloader or previously by
-	 * the driver. A readable controller avoids flicker and/or delay
-	 * enabling the pipeline.
-	 *
-	 * This property might not be necessary if we are guaranteed to
-	 * always read back all 1's or 0's when MISO is not connected.
-	 * I don't know if all setups can guarantee that.
-	 */
-	write-only;
-
-	/* Optional ref to backlight node */
-	backlight = <&...>;
-}
-
-Many of these controllers also have a RGB interface option for the
-pixels and only do configuration over SPI.
-Maybe the compatible should reflect these 2 options somehow?
-
-Noralf.

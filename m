@@ -2,67 +2,108 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26599C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 29 Nov 2021 20:12:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26697C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Nov 2021 00:05:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232939AbhK2UPt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 29 Nov 2021 15:15:49 -0500
-Received: from mail-ot1-f44.google.com ([209.85.210.44]:47004 "EHLO
-        mail-ot1-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234524AbhK2UNt (ORCPT
+        id S231168AbhK3AIk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 29 Nov 2021 19:08:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55736 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231482AbhK3AIj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 29 Nov 2021 15:13:49 -0500
-Received: by mail-ot1-f44.google.com with SMTP id 98-20020a9d086b000000b0057a403bbd4eso2521828oty.13;
-        Mon, 29 Nov 2021 12:10:31 -0800 (PST)
+        Mon, 29 Nov 2021 19:08:39 -0500
+Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6010DC061574;
+        Mon, 29 Nov 2021 16:05:21 -0800 (PST)
+Received: by mail-pj1-x102d.google.com with SMTP id j5-20020a17090a318500b001a6c749e697so12691844pjb.1;
+        Mon, 29 Nov 2021 16:05:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=wkjZyN1c2Y9GQc80h4xdKR14ovJk4gf09rJILRmjtTU=;
+        b=Ub/o3b66eoqONKeNJPi0CUuJknTbGXftG779TZbCg9Nki8v/P9X5jP9FvdbrtAKqXs
+         Ih+9NneVY5oZST2rk3xDbqkeUlc4IyqQLDaslvJlOMkYtvuxXHuA4GKrKoXCxu1MD3xc
+         fTB1VpxvkMet8h8Yq28v4+jSeFaBpqUkc9kdSLbMLS78wBauj4exbIXMv/1yv7g9WKWX
+         YMi0ZagFfBRVQOwFvxKvkPTBUkqS9YubHBPU8zoJLf5asQM3C1qX0XgWCSBVNWs5BRky
+         3I54oyTnUVM0hQBmVjedzAFFjsE76KVSQX7FNRSLsGU9iBeOIAOw4u2hyO9c3avloh4v
+         av1g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=AZAXsJSUQjYW1ESouOH/jYv3V0TFgwXgT2iRk93eZU8=;
-        b=3X9ZCVnCWpbwg31PoLYS+k1qQ2RouGlEPYibn9DEs/Mqdh+54elA8sUnjY/onpGaeX
-         /ePiFNYYQ1MewcVMKiSzajqgaPtF7onHYs3ts3+Q+l7gQIeJrohWMW3+ZfKpmbJ2alSZ
-         rwRob1t2uCZ0QTPOQc8hE8QpqvEN1SICjHDGxQ5OxkBgDLwF9NLsXcnyHZLriQbxizSR
-         fQGq8ytbexcz+JZYZByjJ4UmhBhdYIuLEGiV2RyCOIdLGtGeUezNY0OpcHy/uS9Yp0WA
-         qhanj0JKY0qIm2HqRvLtBBSLBiVFLLoAVsVoVxs2FFoD08CwrIYjTcTXE0LSAmpQ+Wao
-         yeoA==
-X-Gm-Message-State: AOAM530qLvAJBnLcvdCENPgc9CC9+3LuXEfX8Ifwyn/KgvuSpujC4zrt
-        BNXqRQvW7N6yskbneXsIWw==
-X-Google-Smtp-Source: ABdhPJzuHSkT6aK0MzKQ+XdJKL442IfwmKnd73aDsFA/r4KNla6O+3VTcXB/4IPqG8A+cIv3BXl2Rg==
-X-Received: by 2002:a05:6830:169a:: with SMTP id k26mr47154935otr.64.1638216630690;
-        Mon, 29 Nov 2021 12:10:30 -0800 (PST)
-Received: from robh.at.kernel.org (66-90-148-213.dyn.grandenetworks.net. [66.90.148.213])
-        by smtp.gmail.com with ESMTPSA id v12sm2827187ote.9.2021.11.29.12.10.29
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=wkjZyN1c2Y9GQc80h4xdKR14ovJk4gf09rJILRmjtTU=;
+        b=dEn2t72T+OXnHkaCeQQNmicrvwKfg9BmYninzREQjF6aPdV6GW5SOb3X4+7c9nha2k
+         pnoUN2NGQzzsejola9+/Ek7VNYJ6DmVFylFW+LWq1Cuk1+mqh67oYMwfQL28zPQXefgx
+         9/mVti4MRacYkOm9QguhNQsYDxThSlekyW8XOnt2MtE4HtxkC1BmAHMGao5k7kAH49Ua
+         5FOekSReHPPPsTeUX+2W1q5CQK0kF90Rt7qcTQn9lyCcFL/Maj5+6BVoPiSOYfkgZMUL
+         +T9Nhg/nDEtk8nOIE/ztCqPOrH9TYmwdTx5GPXWRD/kOwtseg9FqRz0C9+6eRrdiKXAH
+         vu8g==
+X-Gm-Message-State: AOAM531/zzbY8UA/I70n50+F2+FysmN06Yit8/M8WzovufYA4NkGS2ZT
+        LGCVoGeH9qSV8+9BlscTsKU=
+X-Google-Smtp-Source: ABdhPJwbgQDyoddUomQxlAnMDmC3A6cZb4Y//MC0zyw0PYbnZNXnkemRJbearZQHIbRmSYRk+IoUrA==
+X-Received: by 2002:a17:90a:ba13:: with SMTP id s19mr1687317pjr.62.1638230720938;
+        Mon, 29 Nov 2021 16:05:20 -0800 (PST)
+Received: from debian11-dev-61.localdomain (192.243.120.180.16clouds.com. [192.243.120.180])
+        by smtp.gmail.com with ESMTPSA id k1sm19543223pfu.31.2021.11.29.16.05.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Nov 2021 12:10:30 -0800 (PST)
-Received: (nullmailer pid 522769 invoked by uid 1000);
-        Mon, 29 Nov 2021 20:10:29 -0000
-Date:   Mon, 29 Nov 2021 14:10:29 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     David Heidelberg <david@ixit.cz>
-Cc:     dri-devel@lists.freedesktop.org,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        ~okias/devicetree@lists.sr.ht, Hans de Goede <hdegoede@redhat.com>,
-        devicetree@vger.kernel.org, David Airlie <airlied@linux.ie>,
-        Rob Herring <robh+dt@kernel.org>, linux-kernel@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>
-Subject: Re: [PATCH] dt-bindings: display: sync formats with simplefb.h
-Message-ID: <YaUztTzXSRaK9dOB@robh.at.kernel.org>
-References: <20211108183322.68192-1-david@ixit.cz>
+        Mon, 29 Nov 2021 16:05:20 -0800 (PST)
+From:   davidcomponentone@gmail.com
+X-Google-Original-From: yang.guang5@zte.com.cn
+To:     ducheng2@gmail.com
+Cc:     davidcomponentone@gmail.com, tzimmermann@suse.de,
+        penguin-kernel@I-love.SAKURA.ne.jp, gregkh@linuxfoundation.org,
+        cssk@net-c.es, yang.guang5@zte.com.cn,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Zeal Robot <zealci@zte.com.cn>
+Subject: [PATCH] fbdev: replace snprintf in show functions with sysfs_emit
+Date:   Tue, 30 Nov 2021 08:05:08 +0800
+Message-Id: <0cb7ca73d9cd7162988a22a24cd18bbcd3d8bb27.1638156341.git.yang.guang5@zte.com.cn>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211108183322.68192-1-david@ixit.cz>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 08 Nov 2021 19:33:22 +0100, David Heidelberg wrote:
-> Sync all formats from simplefb.h into documentation.
-> 
-> Signed-off-by: David Heidelberg <david@ixit.cz>
-> ---
->  .../bindings/display/simple-framebuffer.yaml         | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
+From: Yang Guang <yang.guang5@zte.com.cn>
 
-Applied, thanks!
+coccinelle report:
+./drivers/video/fbdev/core/fbcon.c:2680:8-16:
+WARNING: use scnprintf or sprintf
+./drivers/video/fbdev/core/fbcon.c:2655:8-16:
+WARNING: use scnprintf or sprintf
+
+Use sysfs_emit instead of scnprintf or sprintf makes more sense.
+
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
+---
+ drivers/video/fbdev/core/fbcon.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 99ecd9a6d844..b4234ec2f047 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2652,7 +2652,7 @@ static ssize_t show_rotate(struct device *device,
+ 	rotate = fbcon_get_rotate(info);
+ err:
+ 	console_unlock();
+-	return snprintf(buf, PAGE_SIZE, "%d\n", rotate);
++	return sysfs_emit(buf, "%d\n", rotate);
+ }
+ 
+ static ssize_t show_cursor_blink(struct device *device,
+@@ -2677,7 +2677,7 @@ static ssize_t show_cursor_blink(struct device *device,
+ 	blink = (ops->flags & FBCON_FLAGS_CURSOR_TIMER) ? 1 : 0;
+ err:
+ 	console_unlock();
+-	return snprintf(buf, PAGE_SIZE, "%d\n", blink);
++	return sysfs_emit(buf, "%d\n", blink);
+ }
+ 
+ static ssize_t store_cursor_blink(struct device *device,
+-- 
+2.30.2
+

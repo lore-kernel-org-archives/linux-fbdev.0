@@ -2,148 +2,128 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87E71C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Nov 2021 14:53:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9701AC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 30 Nov 2021 20:23:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243082AbhK3O5D (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 30 Nov 2021 09:57:03 -0500
-Received: from ams.source.kernel.org ([145.40.68.75]:47362 "EHLO
-        ams.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243350AbhK3OzC (ORCPT
+        id S1343652AbhK3U0U (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 30 Nov 2021 15:26:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52964 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235402AbhK3U0R (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 30 Nov 2021 09:55:02 -0500
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id A8ED6B81A4A;
-        Tue, 30 Nov 2021 14:51:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E356C53FC1;
-        Tue, 30 Nov 2021 14:51:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1638283900;
-        bh=PfM6ae6GNFZCEw4a4VjeDB12qCeaG+vd7Sf6HSh7xCQ=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=M/XZ9QWX3+5gNGC7IsMT4I+34yJzwGQQEjwZt3AjKosHkaiS5c6LY4gEpx+ivvYj7
-         ySpQbrdVfc0cIHsOmIKAtJrVsv92do1onq9YXAz2ONLmrJcPzt7Wakla9FjrO4IuZ6
-         hzxT/ScncraPhpiOvJ6jQdTQpK0jr29RDydVRUQ738Qt1bogN0hXqNoxWQwZXujfPr
-         cZ7RxSdGtTK2vUgY/9HO78AQ/lSPMwpu0jgpv+D6b5RssSKPbsSe20iVY7aLyJM3K7
-         zXBsFgvEb0ISIr9UfRzozPl5+1HIEBpdA7sxWulHSjwHqcwcufh9a14T1CrBffEA/v
-         gteKp2H2/J9nw==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Juergen Gross <jgross@suse.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Sasha Levin <sashal@kernel.org>, dmitry.torokhov@gmail.com,
-        linux-input@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org
-Subject: [PATCH AUTOSEL 5.10 34/43] xen: add "not_essential" flag to struct xenbus_driver
-Date:   Tue, 30 Nov 2021 09:50:11 -0500
-Message-Id: <20211130145022.945517-34-sashal@kernel.org>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20211130145022.945517-1-sashal@kernel.org>
-References: <20211130145022.945517-1-sashal@kernel.org>
+        Tue, 30 Nov 2021 15:26:17 -0500
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DBB93C061574
+        for <linux-fbdev@vger.kernel.org>; Tue, 30 Nov 2021 12:22:57 -0800 (PST)
+Received: by mail-wr1-x42f.google.com with SMTP id l16so47064426wrp.11
+        for <linux-fbdev@vger.kernel.org>; Tue, 30 Nov 2021 12:22:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=02uY4AmojDwifo7LgepwuVCqs4Jz+sFd/07AQHN7lY0=;
+        b=jbF/TxWeIOG9zF+Sg6hp+nRBv7Ql9V7HNVmAjWhvG7abajbX923ZC/ZZs+GFWcFKjp
+         JpHt3aGvrrWCQAXAaV8IjEWvrRk+E3Qfl71sdfYM7jWB+7sH8sernuoAs7OZl4ljHY1z
+         ArHlhlavWip4kdFPzLyrdOMRCbwf1xTqcT+arquc+ngNhHn0ieqwUmFuWi3aaQW/9nnk
+         iLa53Wx/Yjo30/xm2KgOtU2vqczHgVVlCx/v5kqwDzNU09uRLlggFDVt5i8XGdvVRugd
+         XbeG1iMzmFe/7bsrtrrb8HI4FWRRSC6vCntmUbwmM4InTF/yc2485UuWWZoHNppHOOhl
+         o/uQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=02uY4AmojDwifo7LgepwuVCqs4Jz+sFd/07AQHN7lY0=;
+        b=rlQsI2Vl0N6/soaB0ZkjH9lTi0rIx3YYF5LTdy+A6PsWQA1Di7wRFJU3y7JBwO5P3s
+         1G1xD33BTLfYCPseP2FWoIVGIjJb4pVun+kiyepJa7KJ4NXrKEOVfo1IAq2DValOkXjW
+         gUos095GdPBKiCz/x2xG3t16brH6nX5cco8oe5Nq1DyxCn77kN60clhhN1gJgBz1g23y
+         lnDCM8dY5aurnLN8NN8Rmo8jWoQXECWLVFe3zhqX+rtBU2Hoxs4r9djBdvXPd5ooDFrc
+         LCCNEMjqG7tJo841to2dxvrhtOsvKM7vVatyLl7W5pz9sgtXpGzSHAX2Q9HdELXUA5TQ
+         0V4Q==
+X-Gm-Message-State: AOAM530lh0ca47RJmgvhv7CzXXLKAH8rI547XMobLCFBROuZOCyv+Cuo
+        MD4ZJdX9u11BKAWWgVkhFZQ=
+X-Google-Smtp-Source: ABdhPJzJTgk7rUqaZ3m5/DRW8UjR5XiojzKeXyklSH+D4g5cHUFuA0L9SjbjHQ/YuoUjc9TpybqKSw==
+X-Received: by 2002:a5d:64e7:: with SMTP id g7mr1264073wri.350.1638303776509;
+        Tue, 30 Nov 2021 12:22:56 -0800 (PST)
+Received: from ?IPV6:2003:ea:8f1a:f00:cdea:1258:1cb4:5e92? (p200300ea8f1a0f00cdea12581cb45e92.dip0.t-ipconnect.de. [2003:ea:8f1a:f00:cdea:1258:1cb4:5e92])
+        by smtp.googlemail.com with ESMTPSA id m125sm3216445wmm.39.2021.11.30.12.22.55
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 30 Nov 2021 12:22:56 -0800 (PST)
+Message-ID: <8597bdf2-c383-43b5-6205-f78c90b4957a@gmail.com>
+Date:   Tue, 30 Nov 2021 21:22:50 +0100
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.2
+Subject: Re: [PATCH] staging: fbtft: add spi_device_id table
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        linux-staging@lists.linux.dev
+References: <aadbd32c-c0ab-4c8a-c590-3334f736f224@gmail.com>
+ <CAMuHMdU_90XdFZM6kVA78XUX+7+Jm1WqjBmBN7irVOY3k-Gcfg@mail.gmail.com>
+From:   Heiner Kallweit <hkallweit1@gmail.com>
+In-Reply-To: <CAMuHMdU_90XdFZM6kVA78XUX+7+Jm1WqjBmBN7irVOY3k-Gcfg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Juergen Gross <jgross@suse.com>
+On 30.11.2021 09:16, Geert Uytterhoeven wrote:
+> Hi Heiner,
+> 
+> On Mon, Nov 29, 2021 at 10:12 PM Heiner Kallweit <hkallweit1@gmail.com> wrote:
+>> After 5fa6863ba692 ("spi: Check we have a spi_device_id for each DT
+>> compatible") we need the following to make the SPI core happy.
+>>
+>> Works for me with a SH1106-based OLED display.
+>>
+>> Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
+> 
+> Thanks for your patch!
+> 
+>> --- a/drivers/staging/fbtft/fbtft.h
+>> +++ b/drivers/staging/fbtft/fbtft.h
+>> @@ -307,12 +307,19 @@ static const struct of_device_id dt_ids[] = {                              \
+>>                                                                            \
+>>  MODULE_DEVICE_TABLE(of, dt_ids);                                           \
+>>                                                                            \
+>> +static const struct spi_device_id spi_ids[] = {                            \
+>> +       { .name = _compatible },                                           \
+> 
+> Shouldn't this be the part of _compatible after the "<vendor>," prefix?
+> 
 
-[ Upstream commit 37a72b08a3e1eb28053214dd8211eb09c2fd3187 ]
+You're right. I was fooled by a new bug in SPI core that made the warning
+suddenly disappear:
+https://patchwork.kernel.org/project/spi-devel-general/patch/44b2ad71-dc4b-801c-237f-9c233f675c0d@gmail.com/
 
-When booting the xenbus driver will wait for PV devices to have
-connected to their backends before continuing. The timeout is different
-between essential and non-essential devices.
-
-Non-essential devices are identified by their nodenames directly in the
-xenbus driver, which requires to update this list in case a new device
-type being non-essential is added (this was missed for several types
-in the past).
-
-In order to avoid this problem, add a "not_essential" flag to struct
-xenbus_driver which can be set to "true" by the respective frontend.
-
-Set this flag for the frontends currently regarded to be not essential
-(vkbs and vfb) and use it for testing in the xenbus driver.
-
-Signed-off-by: Juergen Gross <jgross@suse.com>
-Link: https://lore.kernel.org/r/20211022064800.14978-2-jgross@suse.com
-Reviewed-by: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Signed-off-by: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/input/misc/xen-kbdfront.c          |  1 +
- drivers/video/fbdev/xen-fbfront.c          |  1 +
- drivers/xen/xenbus/xenbus_probe_frontend.c | 14 +++-----------
- include/xen/xenbus.h                       |  1 +
- 4 files changed, 6 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/input/misc/xen-kbdfront.c b/drivers/input/misc/xen-kbdfront.c
-index 4ff5cd2a6d8de..3d17a0b3fe511 100644
---- a/drivers/input/misc/xen-kbdfront.c
-+++ b/drivers/input/misc/xen-kbdfront.c
-@@ -542,6 +542,7 @@ static struct xenbus_driver xenkbd_driver = {
- 	.remove = xenkbd_remove,
- 	.resume = xenkbd_resume,
- 	.otherend_changed = xenkbd_backend_changed,
-+	.not_essential = true,
- };
- 
- static int __init xenkbd_init(void)
-diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
-index 5ec51445bee88..6826f986da436 100644
---- a/drivers/video/fbdev/xen-fbfront.c
-+++ b/drivers/video/fbdev/xen-fbfront.c
-@@ -695,6 +695,7 @@ static struct xenbus_driver xenfb_driver = {
- 	.remove = xenfb_remove,
- 	.resume = xenfb_resume,
- 	.otherend_changed = xenfb_backend_changed,
-+	.not_essential = true,
- };
- 
- static int __init xenfb_init(void)
-diff --git a/drivers/xen/xenbus/xenbus_probe_frontend.c b/drivers/xen/xenbus/xenbus_probe_frontend.c
-index 480944606a3c9..07b010a68fcf9 100644
---- a/drivers/xen/xenbus/xenbus_probe_frontend.c
-+++ b/drivers/xen/xenbus/xenbus_probe_frontend.c
-@@ -211,19 +211,11 @@ static int is_device_connecting(struct device *dev, void *data, bool ignore_none
- 	if (drv && (dev->driver != drv))
- 		return 0;
- 
--	if (ignore_nonessential) {
--		/* With older QEMU, for PVonHVM guests the guest config files
--		 * could contain: vfb = [ 'vnc=1, vnclisten=0.0.0.0']
--		 * which is nonsensical as there is no PV FB (there can be
--		 * a PVKB) running as HVM guest. */
-+	xendrv = to_xenbus_driver(dev->driver);
- 
--		if ((strncmp(xendev->nodename, "device/vkbd", 11) == 0))
--			return 0;
-+	if (ignore_nonessential && xendrv->not_essential)
-+		return 0;
- 
--		if ((strncmp(xendev->nodename, "device/vfb", 10) == 0))
--			return 0;
--	}
--	xendrv = to_xenbus_driver(dev->driver);
- 	return (xendev->state < XenbusStateConnected ||
- 		(xendev->state == XenbusStateConnected &&
- 		 xendrv->is_ready && !xendrv->is_ready(xendev)));
-diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
-index bf3cfc7c35d0b..b5626edda6f5b 100644
---- a/include/xen/xenbus.h
-+++ b/include/xen/xenbus.h
-@@ -106,6 +106,7 @@ struct xenbus_driver {
- 	const char *name;       /* defaults to ids[0].devicetype */
- 	const struct xenbus_device_id *ids;
- 	bool allow_rebind; /* avoid setting xenstore closed during remove */
-+	bool not_essential;     /* is not mandatory for boot progress */
- 	int (*probe)(struct xenbus_device *dev,
- 		     const struct xenbus_device_id *id);
- 	void (*otherend_changed)(struct xenbus_device *dev,
--- 
-2.33.0
+>> +       {},                                                                \
+>> +};                                                                         \
+>> +                                                                          \
+>> +MODULE_DEVICE_TABLE(spi, spi_ids);                                        \
+>>                                                                            \
+>>  static struct spi_driver fbtft_driver_spi_driver = {                       \
+>>         .driver = {                                                        \
+>>                 .name   = _name,                                           \
+>>                 .of_match_table = dt_ids,                                  \
+>>         },                                                                 \
+>> +       .id_table = spi_ids,                                               \
+>>         .probe  = fbtft_driver_probe_spi,                                  \
+>>         .remove = fbtft_driver_remove_spi,                                 \
+>>  };                                                                         \
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+> 
 

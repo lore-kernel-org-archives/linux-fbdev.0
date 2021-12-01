@@ -2,191 +2,98 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC6DFC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Dec 2021 14:52:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17019C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Dec 2021 21:03:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242347AbhLAO4E (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 1 Dec 2021 09:56:04 -0500
-Received: from wout1-smtp.messagingengine.com ([64.147.123.24]:52997 "EHLO
-        wout1-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S231266AbhLAO4E (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 1 Dec 2021 09:56:04 -0500
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-        by mailout.west.internal (Postfix) with ESMTP id 2BACD3201805;
-        Wed,  1 Dec 2021 09:52:42 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute3.internal (MEProxy); Wed, 01 Dec 2021 09:52:43 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=
-        date:from:to:cc:subject:message-id:references:mime-version
-        :content-type:in-reply-to; s=fm1; bh=97XXQ3gLcRUr43IrksH+Lte3PkG
-        vGsPSg5dKT/RQncY=; b=WRXsQ1zZbZU0/hp8JVnGkjViCfc9hRM+81X2xVv5M7g
-        dj/PbDX4mjWqAdN8VVq3d3VS4XO3tW+WoNRtJlVz3GOaAI0XVlNANTm67nL8qoZ1
-        qozpQLBhrTUsWGteXwt9J+SN4E3w+tHd5SMsZITROhisuuTVTN014jyX9jWUGrZX
-        C97TnZ1WcLtKSSvg74YsU2s5KKYyqrvoe1YRDJPjFfW2xWhPZ0CAvXmNq+ekDZJH
-        DOezxZXH4xw9PnzKueCgfCOmWjKDXZ5wapOMhVLy9KnZ5vSRZnn2NJQM6GaMBL3D
-        lyRHWWkWAXLHjAsDRUMTPL618cu9Ma0HIsYAyXyynNQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:content-type:date:from:in-reply-to
-        :message-id:mime-version:references:subject:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=97XXQ3
-        gLcRUr43IrksH+Lte3PkGvGsPSg5dKT/RQncY=; b=IhIlvJTcucuSqNav6zd38y
-        no+ASvcpz6SxmcnKJ1mW0y7Hxx1AovCnt4K/e9C0eToF8D73Blbzds+/oyBRUqFM
-        AcEmYsVdYPvyvLn/uDeNlsC2Vww7rU2Bu5xIOgKHQ1uD3YwmjrS4rFpFeqlNH7O2
-        kAFIIRO70rs1qjMFDYAGzvSy6Yttcwao1kBtD4MfaHpf69A40lM1Sl2Xw2s0x/lq
-        E1cbZQAqM9KEno5WkAgLq2kTK0s9UzDhAWoRdLfpm+79LvwLSAQxzZtBYR251HxC
-        tsMOl2ReyoosmpeXANsQaEqVfUBVyJ6L62Vqkgg5p0VGMhr1MupRUNAVcqo8iP4w
-        ==
-X-ME-Sender: <xms:OYynYVnRx7P5vkZ9XxLHkTR-lbZlw2ZfYjS0dgfqAxUJuhWbvYwyFw>
-    <xme:OYynYQ01LIYqvfjWQ7WFlHKX95lWwrzpzs1WMBgyCOLlzzxsfrm43wlr6qYY03p2J
-    G25XK_da8VHGIX0sYU>
-X-ME-Received: <xmr:OYynYbqc2P2kaLmtkBPZKUCCOCHsnEMzUgt7-LdsWcO1mSZ1ydwcCr7W0BQL_B1jxuC7_C0TqDLLNaQLFpnFB5RzN4erlObuwSTxNqsCTD9s6g>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrieefgdeikecutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpeffhffvuffkfhggtggujgesghdtreertddtudenucfhrhhomhepofgrgihimhgv
-    ucftihhprghrugcuoehmrgigihhmvgestggvrhhnohdrthgvtghhqeenucggtffrrghtth
-    gvrhhnpeduvdduhfekkeehgffftefflefgffdtheffudffgeevteffheeuiedvvdejvdfg
-    veenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehmrg
-    igihhmvgestggvrhhnohdrthgvtghh
-X-ME-Proxy: <xmx:OYynYVlDZb5nGbBLdXrUBy5chSiPeH7BK7VepZCxsPcSoMo7F09_Hw>
-    <xmx:OYynYT1n74sfS69dwrAPM0z2lCj9i2uxMbJOyeq12PmG-9yyTaSIBw>
-    <xmx:OYynYUtf0j7Rla3wGx5ZhBuGQixAD-NLiu8bB6g9NYhkmWfRBck9XQ>
-    <xmx:OYynYdo-IB3nT-xP6YOc9NmzykniJohE-aVhVajLWLz3Px7QVQZ_6g>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
- 1 Dec 2021 09:52:40 -0500 (EST)
-Date:   Wed, 1 Dec 2021 15:52:37 +0100
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     Noralf =?utf-8?Q?Tr=C3=B8nnes?= <noralf@tronnes.org>
-Cc:     David Lechner <david@lechnology.com>, robh+dt@kernel.org,
-        devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        dave.stevenson@raspberrypi.com
-Subject: Re: [PATCH 0/6] drm/tiny/st7735r: Match up with staging/fbtft driver
-Message-ID: <20211201145237.6ezs4pwkmku3pesv@houat>
-References: <20211124150757.17929-1-noralf@tronnes.org>
- <eba23198-5c52-6520-079b-d2d41f71dc25@lechnology.com>
- <20211129093946.xhp22mvdut3m67sc@houat>
- <ca9e432a-6b04-9935-2469-135a9b47514e@tronnes.org>
+        id S239256AbhLAVGu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 1 Dec 2021 16:06:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53046 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1353341AbhLAVFC (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Dec 2021 16:05:02 -0500
+Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0BECC06174A
+        for <linux-fbdev@vger.kernel.org>; Wed,  1 Dec 2021 13:01:35 -0800 (PST)
+Received: by mail-wr1-x434.google.com with SMTP id a9so55128766wrr.8
+        for <linux-fbdev@vger.kernel.org>; Wed, 01 Dec 2021 13:01:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:from:to:cc:content-language
+         :subject:content-transfer-encoding;
+        bh=cwvui+qdm6o4ZBCSGekTkzJQ8eW+ZDFl8qkzfDK7qGs=;
+        b=nnni6Cz9XfrpnREjVjJ3qU6idrJQkxJ/izedgQZiwydqcV/yvi1TSe8JbV+ZZwB0vg
+         raD7MTVw+DvHc16prhi1HeVDtnZ+ImRbwqGZXeQQBzb2caYcpxDWFbWKdSLuJBpZ/8Rj
+         kL4/UzcIF2XPKrArZBYEADnm8HMXijVuPb+7WaWzNBWg3Erw+r3qqrOwV8CK2Dfssye/
+         P0RdI8pYEN8if0Ah4IsZe+f8WnbaFW3TGEXBb5WKsdH2ZnPCDbdsnzUKHjI3ZB2Pran/
+         nK5sIABvihfVQ5pjGqdCVVS74macaZpbzxHsecDBkZeD3OCGEQ2WcYBW6GouaS8qqsSl
+         RTOQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:from:to
+         :cc:content-language:subject:content-transfer-encoding;
+        bh=cwvui+qdm6o4ZBCSGekTkzJQ8eW+ZDFl8qkzfDK7qGs=;
+        b=q4HE3/nuOz842f5zHjGH+m/zz+kbCXPO4mcFtOBjjUUkOnR6dRl+EVzJ2jgub6efHS
+         P76ThFzIhBImFcnOUp6t1lMo8ZbrnkwDPjaDkCZBhl3pWmnRK1fER7XAI8202c9moByO
+         Kh39wO5h4pQU53fj/SEDFGLbtdA0/4kAsN4G5CeXDKwdFpv5EMo0CJuA3A1BrwkwTuTE
+         ppce2C9VEY4lV+JGEvX6sBhSxuf0BHgZnpSIhs8CGNIrvkONpyo7yxvBvCFrSeWW30IF
+         LGG5AdjXasb+Yg6ySmzUUCdeKy1IA2qW81KtYyJfN4gNJUsrlf+bpSqpwm8VUhTeVgeH
+         o4Sg==
+X-Gm-Message-State: AOAM531UIyQuU2cadOgA4bXlwPk/zj78jgi1aVnuR9EO1sXGLdZmpDiS
+        QF3QVc4gLQo2lo/GlKLwvz6Dgrn7gB8=
+X-Google-Smtp-Source: ABdhPJwA2PlDRxVgGoDQjj93GVxXQ9ndvQaEeP3vjhUM1LswijOqOb6p3niWW+1ygygaj6qcarOO8w==
+X-Received: by 2002:a05:6000:1787:: with SMTP id e7mr9423868wrg.433.1638392494414;
+        Wed, 01 Dec 2021 13:01:34 -0800 (PST)
+Received: from ?IPV6:2003:ea:8f1a:f00:4055:a69:db9e:1280? (p200300ea8f1a0f0040550a69db9e1280.dip0.t-ipconnect.de. [2003:ea:8f1a:f00:4055:a69:db9e:1280])
+        by smtp.googlemail.com with ESMTPSA id y6sm323567wma.37.2021.12.01.13.01.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 01 Dec 2021 13:01:33 -0800 (PST)
+Message-ID: <773dc6ff-f2b4-4192-a128-c34bd3f5be01@gmail.com>
+Date:   Wed, 1 Dec 2021 22:01:22 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="t7h6p5wa7vue6hpy"
-Content-Disposition: inline
-In-Reply-To: <ca9e432a-6b04-9935-2469-135a9b47514e@tronnes.org>
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.2
+From:   Heiner Kallweit <hkallweit1@gmail.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev
+Content-Language: en-US
+Subject: [PATCH v2 0/2] staging: fbtft: add and use macro
+ FBTFT_REGISTER_SPI_DRIVER
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+After 5fa6863ba692 ("spi: Check we have a spi_device_id for each DT
+compatible") we need to add spi id_tables. Changing existing macro
+FBTFT_REGISTER_DRIVER would have meant to change arguments and
+therefore adjust all fbtft drivers.
 
---t7h6p5wa7vue6hpy
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This series adds a new and simplified macro FBTFT_REGISTER_SPI_DRIVER
+that includes a spi id_table, and in addition to that:
+- does not define a platform driver
+- uses macro module_spi_driver()
 
-Hi Noralf,
+Also the MODULE_ALIASes can be removed.
 
-On Tue, Nov 30, 2021 at 03:30:11PM +0100, Noralf Tr=F8nnes wrote:
-> Den 29.11.2021 10.39, skrev Maxime Ripard:
-> > On Wed, Nov 24, 2021 at 04:03:07PM -0600, David Lechner wrote:
-> >> On 11/24/21 9:07 AM, Noralf Tr=F8nnes wrote:
-> > I agree that it doesn't really fit in the DT either though. Noralf, what
-> > kind of data do we need to setup a display in fbtft? The init sequence,
-> > and maybe some enable/reset GPIO, plus some timing duration maybe?
-> >=20
-> > There's one similar situation I can think of: wifi chips. Those also
-> > need a few infos from the DT (like what bus it's connected to, enable
-> > GPIO, etc) and a different sequence (firmware), sometimes different from
-> > one board to the other.
-> >=20
-> > Could we have a binding that would be something like:
-> >=20
-> > panel@42 {
-> > 	 compatible =3D "panel-spi";
-> > 	 model =3D "panel-from-random-place-42";
-> > 	 enable-gpios =3D <&...>;
-> > }
-> >=20
-> > And then, the driver would request the init sequence through the
-> > firmware mechanism using a name generated from the model property.
-> >=20
-> > It allows to support multiple devices in a given system, since the
-> > firmware name wouldn't conflict, it makes a decent binding, and users
-> > can adjust the init sequence easily (maybe with a bit of tooling)
-> >=20
-> > Would that work?
->
-> I really like this idea. An added benefit is that one driver can handle
-> all MIPI DBI compatible controllers avoiding the need to do a patchset
-> like this for all the various MIPI DBI controllers. The firmware will
-> just contain numeric commands with parameters, so no need for different
-> controller drivers to handle the controller specific command names.
->=20
-> The following is a list of the MIPI DBI compatible controllers currently
-> in staging/fbtft: ili9341, hx8357d, st7735r, ili9163, ili9163, ili9163,
-> ili9163, ili9486, ili9481, tinylcd, s6d02a1, s6d02a1, hx8340bn, ili9340.
->=20
-> The compatible needs to be a bit more specific though since there are 2
-> major SPI protocols for these display: MIPI DBI and the one used by
-> ILI9325 and others.
->=20
-> The full binding would be something like this:
->=20
-> panel@42 {
-> 	compatible =3D "panel-mipi-dbi-spi";
-> 	model =3D "panel-from-random-place-42";
->=20
-> 	/* The MIPI DBI spec lists these powers supply pins */
-> 	vdd-supply =3D <&...>;
-> 	vddi-supply =3D <&...>;
->=20
-> 	/* Optional gpio to drive the RESX line */
-> 	reset-gpios =3D <&...>;
->=20
-> 	/*
-> 	 * D/CX: Data/Command, Command is active low
-> 	 * Abcense: Interface option 1 (D/C embedded in 9-bit word)
-> 	 * Precense: Interface option 3
-> 	 */
-> 	dc-gpios =3D <&...>;
->=20
-> 	/*
-> 	 * If set the driver won't try to read from the controller to see
-> 	 * if it's already configured by the bootloader or previously by
-> 	 * the driver. A readable controller avoids flicker and/or delay
-> 	 * enabling the pipeline.
-> 	 *
-> 	 * This property might not be necessary if we are guaranteed to
-> 	 * always read back all 1's or 0's when MISO is not connected.
-> 	 * I don't know if all setups can guarantee that.
-> 	 */
-> 	write-only;
->=20
-> 	/* Optional ref to backlight node */
-> 	backlight =3D <&...>;
-> }
+Works for me with a SH1106-based OLED display incl. module autoload.
+For now I changed this driver only because I have hw to test it.
 
-It looks decent to me. We'll want Rob to give his opinion though, but it
-looks in a much better shape compared to what we usually have :)
+v2:
+- consider that spi id_table name consists of device part of compatible string only
+- instead of changing the existing macro, add a new one and make fb_sh1106 the first user
 
-> Many of these controllers also have a RGB interface option for the
-> pixels and only do configuration over SPI.
-> Maybe the compatible should reflect these 2 options somehow?
+Heiner Kallweit (2):
+  staging: fbtft: add macro FBTFT_REGISTER_SPI_DRIVER
+  staging: fbtft: sh1106: use new macro FBTFT_REGISTER_SPI_DRIVER
 
-I think we'll want a "real" panel for RGB, with its own compatible
-though. We have a few of these drivers in tree already, so it's better
-to remain consistent.
+ drivers/staging/fbtft/fb_sh1106.c |  7 +-----
+ drivers/staging/fbtft/fbtft.h     | 41 +++++++++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+), 6 deletions(-)
 
-Maxime
+-- 
+2.34.1
 
---t7h6p5wa7vue6hpy
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYaeMNQAKCRDj7w1vZxhR
-xS9tAP97O/fE4VyFUMC/zgJm79yHc1PNoOp9KscuTXy6u8NB9QD/cXZGBJe2Qh7Y
-16Qdu45H/3tqX4UKfzsOrCoz7emoRgk=
-=4AhX
------END PGP SIGNATURE-----
-
---t7h6p5wa7vue6hpy--

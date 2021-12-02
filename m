@@ -2,244 +2,278 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A93D6C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  1 Dec 2021 22:08:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DA40C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu,  2 Dec 2021 22:27:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242605AbhLAWMB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 1 Dec 2021 17:12:01 -0500
-Received: from mail-oi1-f173.google.com ([209.85.167.173]:35424 "EHLO
-        mail-oi1-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234903AbhLAWL5 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 1 Dec 2021 17:11:57 -0500
-Received: by mail-oi1-f173.google.com with SMTP id m6so51590886oim.2;
-        Wed, 01 Dec 2021 14:08:36 -0800 (PST)
+        id S1349205AbhLBWa7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 2 Dec 2021 17:30:59 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60492 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239809AbhLBWa7 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 2 Dec 2021 17:30:59 -0500
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6909CC061758
+        for <linux-fbdev@vger.kernel.org>; Thu,  2 Dec 2021 14:27:36 -0800 (PST)
+Received: by mail-pj1-x1029.google.com with SMTP id x7so882252pjn.0
+        for <linux-fbdev@vger.kernel.org>; Thu, 02 Dec 2021 14:27:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=5WjMVJlEvHCp7tTv7npHyleFiHNkXhRhHCdBOuZtqvQ=;
+        b=Bjy1MQ1/dmjzsHusnNupzZgwROVBZHR+JowF629y1E1WFpdgUOafwyPSlDiFFbH4DS
+         TtmOv1mKEn8sS6GtBLCyMvee4wdRX9qPCJLPht+ksdTUTV8k07HfHtgVui1y1uKKElqY
+         h58KNT3N4Jkutcui3TbymX6qTPQ2JnAA4eAss=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=61rAikMT2xFefgUe5g0NFULS9kpnMPEF5LrvcuuTYAU=;
-        b=IDGXs5ECjthXMyZxVSzBLjlL1woGo+xmfQVatWN8ICij1q2Nm4S3s7B4gzwI7d2Ez4
-         WqKCWO7+usNsT1qSmkN29r95ALpnhQ2cOCcPUJ7/PcdcRIpqLZciV6lnkook1VB9KE53
-         ufkWBFDwB8HHRqFGaxO8LwzRVkxCE0rk+orebQomhCWep/LyJpO0EeJs/ekdFYx4qXjP
-         HvvnZ5HFKmXkbpkXqEvy705mHm3uuaNRDJ6TsJg1nWdm42IxJtjNo6uf0zNF3ps2gKR1
-         NcRQOmKXScu8Mj4dXdpNVJuOMh+sNGCr6+MZHBzv4cfp4gBDZuhDyxMMq3Nc/eg2W7nz
-         8flQ==
-X-Gm-Message-State: AOAM532LYYYDbcygf5l40saGW7zEN/Bc4qrmBUUJTjG0TXeynmDkspKv
-        3P7r/vQBBqgF++JtG+fKaA==
-X-Google-Smtp-Source: ABdhPJxtSafNCNJSoXOFWLNnynN6wCIJQOugyj5c5EA3SsbJixIS28ajEXBr/1ehe/2yFDSR2rhwDg==
-X-Received: by 2002:a05:6808:14e:: with SMTP id h14mr1048175oie.28.1638396516123;
-        Wed, 01 Dec 2021 14:08:36 -0800 (PST)
-Received: from robh.at.kernel.org (66-90-148-213.dyn.grandenetworks.net. [66.90.148.213])
-        by smtp.gmail.com with ESMTPSA id a3sm632937oil.32.2021.12.01.14.08.35
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=5WjMVJlEvHCp7tTv7npHyleFiHNkXhRhHCdBOuZtqvQ=;
+        b=3CFQRJtS/Y0nBHaw7n5Z25TqxwPxqbZ5qlFuwmCcS0XR6zMhOncYtHl1hC0nQHVnWV
+         WgYPcpcVnmBz3BRFmMNk4N8xITDNxQyw4fGLxCdwQVx6TNkBooKPY7Db8DJ4v7pEUYog
+         f3/MTzVkb/zzogV5jMzByXehJslqo2n41B4UN4EWM2QDudR0BCL7xA8nLGT1VkTMD7sM
+         +k3vdInEWLYCR4bF9nmwGcf8Gyd7fGU4rn06j0+lU8L808g9ZYamqA0BZqe5HpawdJyN
+         iO13LApZL4rv9uKisP9RbquNz52/vlqqWMJc1tn/jFuOtyXytPYNoH+denZSfS8cQDXv
+         2BtA==
+X-Gm-Message-State: AOAM532z7h0ht+eKXR4m9gOH6+DQZUfr4su9lifMOA3n31+PQJU3aYWW
+        6GPBETPgyt4DbHe2db4PTJKy6A==
+X-Google-Smtp-Source: ABdhPJyMSX7reHsiHW/u9oxdh7JPxePin6ydBK/uJtlLT6HG2XEj1YzWc6sEjYmPD3r5kOUwBPPOdA==
+X-Received: by 2002:a17:903:4053:b0:143:6d84:984c with SMTP id n19-20020a170903405300b001436d84984cmr18435905pla.37.1638484055856;
+        Thu, 02 Dec 2021 14:27:35 -0800 (PST)
+Received: from smtp.gmail.com ([2620:15c:202:201:f4f2:1b7e:5aea:bf3c])
+        by smtp.gmail.com with ESMTPSA id q9sm836934pfj.9.2021.12.02.14.27.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Dec 2021 14:08:35 -0800 (PST)
-Received: (nullmailer pid 2780052 invoked by uid 1000);
-        Wed, 01 Dec 2021 22:08:34 -0000
-Date:   Wed, 1 Dec 2021 16:08:34 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>
-Cc:     david@lechnology.com, devicetree@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, dave.stevenson@raspberrypi.com,
-        maxime@cerno.tech
-Subject: Re: [PATCH 4/6] dt-bindings: display: sitronix,st7735r: Add
- initialization properties
-Message-ID: <YafyYgrwga0Tf/EB@robh.at.kernel.org>
-References: <20211124150757.17929-1-noralf@tronnes.org>
- <20211124150757.17929-5-noralf@tronnes.org>
+        Thu, 02 Dec 2021 14:27:34 -0800 (PST)
+From:   Stephen Boyd <swboyd@chromium.org>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Benjamin Gaignard <benjamin.gaignard@linaro.org>,
+        Chen Feng <puck.chen@hisilicon.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Emma Anholt <emma@anholt.net>,
+        =?UTF-8?q?Heiko=20St=C3=BCbner?= <heiko@sntech.de>,
+        Inki Dae <inki.dae@samsung.com>,
+        James Qian Wang <james.qian.wang@arm.com>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Joerg Roedel <joro@8bytes.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Joonyoung Shim <jy0922.shim@samsung.com>,
+        Jyri Sarha <jyri.sarha@iki.fi>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Clark <robdclark@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Russell King <rmk+kernel@arm.linux.org.uk>,
+        Sandy Huang <hjc@rock-chips.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Seung-Woo Kim <sw0312.kim@samsung.com>,
+        Takashi Iwai <tiwai@suse.com>,
+        Tian Tao <tiantao6@hisilicon.com>,
+        Tomas Winkler <tomas.winkler@intel.com>,
+        Tomi Valkeinen <tomba@kernel.org>,
+        Will Deacon <will@kernel.org>,
+        Xinliang Liu <xinliang.liu@linaro.org>,
+        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
+        Yong Wu <yong.wu@mediatek.com>,
+        Vitaly Lubart <vitaly.lubart@intel.com>,
+        Daniele Ceraolo Spurio <daniele.ceraolospurio@intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>
+Subject: [PATCH v4 00/34] component: Make into an aggregate bus
+Date:   Thu,  2 Dec 2021 14:26:58 -0800
+Message-Id: <20211202222732.2453851-1-swboyd@chromium.org>
+X-Mailer: git-send-email 2.34.0.384.gca35af8252-goog
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20211124150757.17929-5-noralf@tronnes.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Nov 24, 2021 at 04:07:55PM +0100, Noralf Trønnes wrote:
-> Add initialization properties that are commonly used to initialize the
-> controller for a specific display panel. It is common for displays to have
-> a datasheet listing the necessary controller settings or some example code
-> doing the same. These settings can be matched directly to the DT
-> properties.
-> 
-> The commands FRMCTR2, FRMCTR3, PWCTR4 and PWCTR5 are usually part of the
-> setup examples but they are skipped here since they deal with partial and
-> idle mode which are powersaving modes for very special use cases.
-> 
-> dc-gpios is made optional because its absence indicates 3-line mode.
-> 
-> Signed-off-by: Noralf Trønnes <noralf@tronnes.org>
-> ---
->  .../bindings/display/sitronix,st7735r.yaml    | 118 +++++++++++++++++-
->  1 file changed, 116 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/display/sitronix,st7735r.yaml b/Documentation/devicetree/bindings/display/sitronix,st7735r.yaml
-> index 157b1a7b18f9..2db1cfe6ae30 100644
-> --- a/Documentation/devicetree/bindings/display/sitronix,st7735r.yaml
-> +++ b/Documentation/devicetree/bindings/display/sitronix,st7735r.yaml
-> @@ -19,6 +19,10 @@ allOf:
->  properties:
->    compatible:
->      oneOf:
-> +      - description:
-> +          Sitronix ST7735R 262K Color Single-Chip TFT Controller/Driver
-> +        items:
-> +          - const: sitronix,st7735r
->        - description:
->            Adafruit 1.8" 160x128 Color TFT LCD (Product ID 358 or 618)
->          items:
-> @@ -32,20 +36,99 @@ properties:
->                - okaya,rh128128t
->            - const: sitronix,st7715r
->  
-> +  width:
-> +    description:
-> +      Width of display panel in pixels
-> +
-> +  height:
-> +    description:
-> +      Height of display panel in pixels
+This series is from discussion we had on reordering the device lists for
+drm shutdown paths[1]. I've introduced an 'aggregate' bus that we put
+the aggregate device onto and then we probe the aggregate device once
+all the components are probed and call component_add(). The probe/remove
+hooks are where the bind/unbind calls go, and then a shutdown hook is
+added that can be used to shutdown the drm display pipeline at the right
+time.
+
+This works for me on my sc7180 board. I no longer get a warning from i2c
+at shutdown that we're trying to make an i2c transaction after the i2c
+bus has been shutdown. There's more work to do on the msm drm driver to
+extract component device resources like clks, regulators, etc. out of
+the component bind function into the driver probe but I wanted to move
+everything over now in other component drivers before tackling that
+problem.
+
+Tested-by tags would be appreciated, and Acked-by/Reviewed-by tags too.
+
+Changes since v3 (https://lore.kernel.org/r/20211026000044.885195-1-swboyd@chromium.org):
+ - Picked up tags
+ - Rebased to v5.16-rc2
+ - Updated component.c for a few new patches there
+ - Dropped a conversion patch
+ - Added a conversion patch
+
+Changes since v2 (https://lore.kernel.org/r/20211006193819.2654854-1-swboyd@chromium.org):
+ - Picked up acks
+ - Fixed build warnings/errors
+ - Reworked patch series to rename 'master' in a different patch
+
+Changes since v1 (https://lore.kernel.org/r/20210520002519.3538432-1-swboyd@chromium.org):
+ - Use devlink to connect components to the aggregate device
+ - Don't set the registering device as a parent of the aggregate device
+ - New patch for bind_component/unbind_component ops that takes the
+   aggregate device
+ - Convert all drivers in the tree to use the aggregate driver approach
+ - Allow one aggregate driver to be used for multiple aggregate devices
+
+[1] https://lore.kernel.org/r/20210508074118.1621729-1-swboyd@chromium.org
 
 
-We already have width-mm and height-mm for physical size so this might 
-be a bit confusing. There's also panel-timing 'vactive' and 'hactive' 
-which is effectively the same thing you are defining.
+Stephen Boyd (34):
+  component: Introduce struct aggregate_device
+  component: Remove most references to 'master'
+  component: Introduce the aggregate bus_type
+  component: Move struct aggregate_device out to header file
+  component: Add {bind,unbind}_component() ops that take aggregate
+    device
+  drm/of: Add a drm_of_aggregate_probe() API
+  drm/msm: Migrate to aggregate driver
+  drm/komeda: Migrate to aggregate driver
+  drm/arm/hdlcd: Migrate to aggregate driver
+  drm/malidp: Migrate to aggregate driver
+  drm/armada: Migrate to aggregate driver
+  drm/etnaviv: Migrate to aggregate driver
+  drm/kirin: Migrate to aggregate driver
+  drm/exynos: Migrate to aggregate driver
+  drm/imx: Migrate to aggregate driver
+  drm/ingenic: Migrate to aggregate driver
+  drm/mcde: Migrate to aggregate driver
+  drm/mediatek: Migrate to aggregate driver
+  drm/meson: Migrate to aggregate driver
+  drm/omap: Migrate to aggregate driver
+  drm/rockchip: Migrate to aggregate driver
+  drm/sti: Migrate to aggregate driver
+  drm/sun4i: Migrate to aggregate driver
+  drm/tilcdc: Migrate to aggregate driver
+  drm/vc4: Migrate to aggregate driver
+  iommu/mtk: Migrate to aggregate driver
+  mei: Migrate to aggregate driver
+  power: supply: ab8500: Migrate to aggregate driver
+  fbdev: omap2: Migrate to aggregate driver
+  sound: hdac: Migrate to aggregate driver
+  ASoC: codecs: wcd938x: Migrate to aggregate driver
+  mei: pxp: Migrate to aggregate driver
+  component: Get rid of drm_of_component_probe()
+  component: Remove component_master_ops and friends
 
-> +
-> +  frmctr1:
+ drivers/base/component.c                      | 544 ++++++++++--------
+ .../gpu/drm/arm/display/komeda/komeda_drv.c   |  20 +-
+ drivers/gpu/drm/arm/hdlcd_drv.c               |  21 +-
+ drivers/gpu/drm/arm/malidp_drv.c              |  21 +-
+ drivers/gpu/drm/armada/armada_drv.c           |  23 +-
+ drivers/gpu/drm/drm_drv.c                     |   2 +-
+ drivers/gpu/drm/drm_of.c                      |  18 +-
+ drivers/gpu/drm/etnaviv/etnaviv_drv.c         |  20 +-
+ drivers/gpu/drm/exynos/exynos_drm_drv.c       |  21 +-
+ .../gpu/drm/hisilicon/kirin/kirin_drm_drv.c   |  20 +-
+ drivers/gpu/drm/imx/imx-drm-core.c            |  20 +-
+ drivers/gpu/drm/ingenic/ingenic-drm-drv.c     |  25 +-
+ drivers/gpu/drm/mcde/mcde_drv.c               |  23 +-
+ drivers/gpu/drm/mediatek/mtk_drm_drv.c        |  20 +-
+ drivers/gpu/drm/meson/meson_drv.c             |  21 +-
+ drivers/gpu/drm/msm/msm_drv.c                 |  46 +-
+ drivers/gpu/drm/omapdrm/dss/dss.c             |  20 +-
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.c   |  20 +-
+ drivers/gpu/drm/sti/sti_drv.c                 |  20 +-
+ drivers/gpu/drm/sun4i/sun4i_drv.c             |  26 +-
+ drivers/gpu/drm/tilcdc/tilcdc_drv.c           |  28 +-
+ drivers/gpu/drm/vc4/vc4_drv.c                 |  20 +-
+ drivers/iommu/mtk_iommu.c                     |  14 +-
+ drivers/iommu/mtk_iommu.h                     |   6 +-
+ drivers/iommu/mtk_iommu_v1.c                  |  14 +-
+ drivers/misc/mei/hdcp/mei_hdcp.c              |  22 +-
+ drivers/misc/mei/pxp/mei_pxp.c                |  22 +-
+ drivers/power/supply/ab8500_charger.c         |  22 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c    |  20 +-
+ include/drm/drm_of.h                          |  10 +-
+ include/linux/component.h                     |  92 ++-
+ sound/hda/hdac_component.c                    |  21 +-
+ sound/soc/codecs/wcd938x.c                    |  20 +-
+ 33 files changed, 772 insertions(+), 490 deletions(-)
 
-Are all these standardized by MIPI or otherwise common? If not, they 
-need vendor prefixes.
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+Cc: Chen Feng <puck.chen@hisilicon.com>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
+Cc: Chun-Kuang Hu <chunkuang.hu@kernel.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Emma Anholt <emma@anholt.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Heiko StÃ¼bner" <heiko@sntech.de>
+Cc: Inki Dae <inki.dae@samsung.com>
+Cc: James Qian Wang (Arm Technology China) <james.qian.wang@arm.com>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Joerg Roedel <joro@8bytes.org>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Joonyoung Shim <jy0922.shim@samsung.com>
+Cc: Jyri Sarha <jyri.sarha@iki.fi>
+Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: <linux-fbdev@vger.kernel.org>
+Cc: <linux-omap@vger.kernel.org>
+Cc: <linux-pm@vger.kernel.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Liviu Dudau <liviu.dudau@arm.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: Neil Armstrong <narmstrong@baylibre.com>
+Cc: Paul Cercueil <paul@crapouillou.net>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Russell King <linux+etnaviv@armlinux.org.uk>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Sandy Huang <hjc@rock-chips.com>
+Cc: Saravana Kannan <saravanak@google.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Seung-Woo Kim <sw0312.kim@samsung.com>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Tian Tao <tiantao6@hisilicon.com>
+Cc: Tomas Winkler <tomas.winkler@intel.com>
+Cc: Tomi Valkeinen <tomba@kernel.org>
+Cc: Will Deacon <will@kernel.org>
+Cc: Xinliang Liu <xinliang.liu@linaro.org>
+Cc: Xinwei Kong <kong.kongxinwei@hisilicon.com>
+Cc: Yong Wu <yong.wu@mediatek.com>
+Cc: Vitaly Lubart <vitaly.lubart@intel.com>
+Cc: Daniele Ceraolo Spurio <daniele.ceraolospurio@intel.com>
+Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
+Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
 
-> +    $ref: /schemas/types.yaml#definitions/uint8-array
-> +    description:
-> +      Frame Rate Control (In normal mode/Full colors) (B1h)
-> +    minItems: 3
-> +    maxItems: 3
-> +
-> +  invctr:
-> +    $ref: /schemas/types.yaml#definitions/uint8-array
-> +    description:
-> +      Display Inversion Control (B4h)
-> +    minItems: 1
-> +    maxItems: 1
-> +
-> +  pwctr1:
-> +    $ref: /schemas/types.yaml#definitions/uint8-array
-> +    description:
-> +      Power Control 1 (C0h)
-> +    minItems: 3
-> +    maxItems: 3
-> +
-> +  pwctr2:
-> +    $ref: /schemas/types.yaml#definitions/uint8-array
-> +    description:
-> +      Power Control 2 (C1h)
-> +    minItems: 1
-> +    maxItems: 1
-> +
-> +  pwctr3:
-> +    $ref: /schemas/types.yaml#definitions/uint8-array
-> +    description:
-> +      Power Control 3 (in Normal mode/Full colors) (C2h)
-> +    minItems: 2
-> +    maxItems: 2
-> +
-> +  vmctr1:
-> +    $ref: /schemas/types.yaml#definitions/uint8-array
-> +    description:
-> +      VCOM Control 1 (C5h)
-> +    minItems: 1
-> +    maxItems: 1
-> +
-> +  madctl:
-> +    $ref: /schemas/types.yaml#definitions/uint8-array
-> +    description:
-> +      Memory Data Access Control (36h)
-> +    minItems: 1
-> +    maxItems: 1
-> +
-> +  gamctrp1:
-> +    $ref: /schemas/types.yaml#definitions/uint8-array
-> +    description:
-> +      Gamma Positive Polarity Correction Characteristics Setting (E0h)
-> +    minItems: 16
-> +    maxItems: 16
-> +
-> +  gamctrn1:
-> +    $ref: /schemas/types.yaml#definitions/uint8-array
-> +    description:
-> +      Gamma Negative Polarity Correction Characteristics Setting (E1h)
-> +    minItems: 16
-> +    maxItems: 16
-> +
-> +  write-only:
-> +    type: boolean
-> +    description:
-> +      Controller is not readable (ie. MISO is not wired up).
-> +
->    dc-gpios:
->      maxItems: 1
-> -    description: Display data/command selection (D/CX)
-> +    description: |
-> +      Controller data/command selection (D/CX) in 4-line SPI mode.
-> +      If not set, the controller is in 3-line SPI mode.
->  
->    backlight: true
->    reg: true
->    spi-max-frequency: true
->    reset-gpios: true
->    rotation: true
-> +  width-mm: true
-> +  height-mm: true
->  
->  required:
->    - compatible
->    - reg
-> -  - dc-gpios
->  
->  additionalProperties: false
->  
-> @@ -72,5 +155,36 @@ examples:
->                      backlight = <&backlight>;
->              };
->      };
-> +  - |
-> +    #include <dt-bindings/gpio/gpio.h>
-> +
-> +    spi {
-> +            #address-cells = <1>;
-> +            #size-cells = <0>;
-> +
-> +            sainsmart18@0{
-> +                    compatible = "sitronix,st7735r";
-> +                    reg = <0>;
-> +                    spi-max-frequency = <40000000>;
-> +
-> +                    width = <160>;
-> +                    height = <128>;
-> +
-> +                    frmctr1 = [ 01 2C 2D ];
-> +                    invctr = [ 07 ];
-> +                    pwctr1 = [ A2 02 84 ];
-> +                    pwctr2 = [ C5 ];
-> +                    pwctr3 = [ 0A 00 ];
-> +                    vmctr1 = [ 0E ];
-> +                    madctl = [ 60 ];
-> +                    gamctrp1 = [ 0F 1A 0F 18 2F 28 20 22 1F 1B 23 37 00 07 02 10 ];
-> +                    gamctrn1 = [ 0F 1B 0F 17 33 2C 29 2E 30 30 39 3F 00 07 03 10 ];
-> +
-> +                    dc-gpios = <&gpio 43 GPIO_ACTIVE_HIGH>;
-> +                    reset-gpios = <&gpio 80 GPIO_ACTIVE_HIGH>;
-> +                    write-only;
-> +            };
-> +    };
-> +
->  
->  ...
-> -- 
-> 2.33.0
-> 
-> 
+base-commit: 136057256686de39cc3a07c2e39ef6bc43003ff6
+-- 
+https://chromeos.dev
+

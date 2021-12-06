@@ -2,166 +2,79 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CBFBC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Dec 2021 15:34:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E93FC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon,  6 Dec 2021 16:13:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357731AbhLFPhz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 6 Dec 2021 10:37:55 -0500
-Received: from vern.gendns.com ([98.142.107.122]:44916 "EHLO vern.gendns.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1386847AbhLFPaL (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 6 Dec 2021 10:30:11 -0500
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=lechnology.com; s=default; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
-        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=ju0HGoaDlI3NtJceOq4hz3W9DZf1MVSOEOEdOkJiahM=; b=OebpVDLsG197RJ/t6TgUimh/As
-        6SjtAQcP4Qpp4FiOgxoy03gzCXUprPE2oxk5plLyhbEUh1rD1DUz3EHfDBrBm6cVNxBOMVJKsIG+E
-        r9s3BzOyVd4s8Welkty1B51f6brKAbdkz18Cf6Q+r4z1dadNUTTQfy9RFTAlBtRdTaABKnfR6aa5g
-        +rcC53mM23azXzHBvsQWYd1scoP2CbDM90unAPf5xMr1tBPuPy6Sc1lqTYMfE1W4jO8YBaFbDoCKc
-        Wy8CeRKPkMSEU/mQhJk3GNaaIYuZwlnLiv7anCb7BA0AdnguFxW/8bLPs11ELEMFX9s3ojKFyg3i/
-        ycDeSZtw==;
-Received: from 108-198-5-147.lightspeed.okcbok.sbcglobal.net ([108.198.5.147]:49498 helo=[192.168.0.134])
-        by vern.gendns.com with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-        (Exim 4.94.2)
-        (envelope-from <david@lechnology.com>)
-        id 1muFsy-0007g0-Vb; Mon, 06 Dec 2021 10:26:39 -0500
-Subject: Re: [PATCH 0/6] drm/tiny/st7735r: Match up with staging/fbtft driver
-To:     Maxime Ripard <maxime@cerno.tech>,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
-Cc:     robh+dt@kernel.org, devicetree@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, dave.stevenson@raspberrypi.com
-References: <20211124150757.17929-1-noralf@tronnes.org>
- <eba23198-5c52-6520-079b-d2d41f71dc25@lechnology.com>
- <20211129093946.xhp22mvdut3m67sc@houat>
- <ca9e432a-6b04-9935-2469-135a9b47514e@tronnes.org>
- <20211201145237.6ezs4pwkmku3pesv@houat>
-From:   David Lechner <david@lechnology.com>
-Message-ID: <1fec2480-195a-b1ec-a58e-caedf7798019@lechnology.com>
-Date:   Mon, 6 Dec 2021 09:26:38 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.14.0
+        id S1386364AbhLFQRA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 6 Dec 2021 11:17:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40938 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1359046AbhLFQQ1 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 6 Dec 2021 11:16:27 -0500
+Received: from smtp.domeneshop.no (smtp.domeneshop.no [IPv6:2a01:5b40:0:3005::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9C4DC02B766;
+        Mon,  6 Dec 2021 08:02:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=tronnes.org
+        ; s=ds202012; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
+        References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
+        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+        List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=GQst4t/4LdWSVVcCrm8SH8Vn8HARUfxxGSM3TziIqtg=; b=TlbdtDbZXaqHvM5WwxDFaOJnMe
+        bum/P9yHE+wMNvtWFA0vau3/uepcq6HBt5JPOESm0MIkFSvegyZQtzAPyyuRyOW6kHDf9Az7Ekuqa
+        FVhvq7/lBDhcRV8BIlz9lDjTvlAXMPsiV0RfruSDiH9TXdDJxcELBf+306+OlNR5gvgp756kgkr/z
+        KBbc26G+M0O5S7FGDqJas/PNYylxKOySRSygWkbteDR5XD8qJ/yt6G93pNPK/las7bTQNPerU+jAd
+        HkOrEv20TiH4PYJSsrPtaHzDZI2Db7nID95jWsLUqfw/hsvXV8i6F47f9D6d+II4gxaz2knXzjK7+
+        Whk8igMw==;
+Received: from 211.81-166-168.customer.lyse.net ([81.166.168.211]:64292 helo=[192.168.10.61])
+        by smtp.domeneshop.no with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <noralf@tronnes.org>)
+        id 1muGRV-0007xK-E9; Mon, 06 Dec 2021 17:02:17 +0100
+Message-ID: <6add71c8-3685-38dd-08a7-dd95c149d2be@tronnes.org>
+Date:   Mon, 6 Dec 2021 17:02:13 +0100
 MIME-Version: 1.0
-In-Reply-To: <20211201145237.6ezs4pwkmku3pesv@houat>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Language: en-US
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.1
+Subject: Re: [PATCH 3/6] dt-bindings: display: sitronix,st7735r: Remove
+ spi-max-frequency limit
+To:     David Lechner <david@lechnology.com>, robh+dt@kernel.org
+Cc:     devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        dave.stevenson@raspberrypi.com, maxime@cerno.tech
+References: <20211124150757.17929-1-noralf@tronnes.org>
+ <20211124150757.17929-4-noralf@tronnes.org>
+ <1a094ddf-2190-3586-16b9-8c610e406bc2@lechnology.com>
+From:   =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
+In-Reply-To: <1a094ddf-2190-3586-16b9-8c610e406bc2@lechnology.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - vern.gendns.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - lechnology.com
-X-Get-Message-Sender-Via: vern.gendns.com: authenticated_id: davidmain+lechnology.com/only user confirmed/virtual account not confirmed
-X-Authenticated-Sender: vern.gendns.com: davidmain@lechnology.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 12/1/21 8:52 AM, Maxime Ripard wrote:
-> Hi Noralf,
+
+
+Den 06.12.2021 16.19, skrev David Lechner:
+> On 11/24/21 9:07 AM, Noralf Tr√∏nnes wrote:
+>> The datasheet lists the minimum Serial clock cycle (Write) as 66ns
+>> which is
 > 
-> On Tue, Nov 30, 2021 at 03:30:11PM +0100, Noralf Tr¯nnes wrote:
->> Den 29.11.2021 10.39, skrev Maxime Ripard:
->>> On Wed, Nov 24, 2021 at 04:03:07PM -0600, David Lechner wrote:
->>>> On 11/24/21 9:07 AM, Noralf Tr¯nnes wrote:
->>> I agree that it doesn't really fit in the DT either though. Noralf, what
->>> kind of data do we need to setup a display in fbtft? The init sequence,
->>> and maybe some enable/reset GPIO, plus some timing duration maybe?
->>>
->>> There's one similar situation I can think of: wifi chips. Those also
->>> need a few infos from the DT (like what bus it's connected to, enable
->>> GPIO, etc) and a different sequence (firmware), sometimes different from
->>> one board to the other.
->>>
->>> Could we have a binding that would be something like:
->>>
->>> panel@42 {
->>> 	 compatible = "panel-spi";
->>> 	 model = "panel-from-random-place-42";
->>> 	 enable-gpios = <&...>;
->>> }
->>>
->>> And then, the driver would request the init sequence through the
->>> firmware mechanism using a name generated from the model property.
->>>
->>> It allows to support multiple devices in a given system, since the
->>> firmware name wouldn't conflict, it makes a decent binding, and users
->>> can adjust the init sequence easily (maybe with a bit of tooling)
->>>
->>> Would that work?
->>
->> I really like this idea. An added benefit is that one driver can handle
->> all MIPI DBI compatible controllers avoiding the need to do a patchset
->> like this for all the various MIPI DBI controllers. The firmware will
->> just contain numeric commands with parameters, so no need for different
->> controller drivers to handle the controller specific command names.
->>
->> The following is a list of the MIPI DBI compatible controllers currently
->> in staging/fbtft: ili9341, hx8357d, st7735r, ili9163, ili9163, ili9163,
->> ili9163, ili9486, ili9481, tinylcd, s6d02a1, s6d02a1, hx8340bn, ili9340.
->>
->> The compatible needs to be a bit more specific though since there are 2
->> major SPI protocols for these display: MIPI DBI and the one used by
->> ILI9325 and others.
->>
->> The full binding would be something like this:
->>
->> panel@42 {
->> 	compatible = "panel-mipi-dbi-spi";
->> 	model = "panel-from-random-place-42";
->>
->> 	/* The MIPI DBI spec lists these powers supply pins */
->> 	vdd-supply = <&...>;
->> 	vddi-supply = <&...>;
->>
->> 	/* Optional gpio to drive the RESX line */
->> 	reset-gpios = <&...>;
->>
->> 	/*
->> 	 * D/CX: Data/Command, Command is active low
->> 	 * Abcense: Interface option 1 (D/C embedded in 9-bit word)
->> 	 * Precense: Interface option 3
->> 	 */
->> 	dc-gpios = <&...>;
->>
->> 	/*
->> 	 * If set the driver won't try to read from the controller to see
->> 	 * if it's already configured by the bootloader or previously by
->> 	 * the driver. A readable controller avoids flicker and/or delay
->> 	 * enabling the pipeline.
->> 	 *
->> 	 * This property might not be necessary if we are guaranteed to
->> 	 * always read back all 1's or 0's when MISO is not connected.
->> 	 * I don't know if all setups can guarantee that.
->> 	 */
->> 	write-only;
->>
->> 	/* Optional ref to backlight node */
->> 	backlight = <&...>;
->> }
-> 
-> It looks decent to me. We'll want Rob to give his opinion though, but it
-> looks in a much better shape compared to what we usually have :)
-> 
->> Many of these controllers also have a RGB interface option for the
->> pixels and only do configuration over SPI.
->> Maybe the compatible should reflect these 2 options somehow?
-> 
-> I think we'll want a "real" panel for RGB, with its own compatible
-> though. We have a few of these drivers in tree already, so it's better
-> to remain consistent.
-> 
-> Maxime
+> Is this supposed to say "maximum" rather than "minimum"?
 > 
 
-I'm on board with the idea of the init sequence as firmware as well.
+Minimum cycle time == maximum frequency.
 
-It looks like Rob might have missed this thread, so maybe just apply
-the acked patches and submit a v2 with the firmware implementation?
+Noralf.
 
+>> 15MHz. Mostly it can do much better than that and is in fact often run at
+>> 32MHz. With a clever driver that runs configuration commands at a low
+>> speed
+>> and only the pixel data at the maximum speed the configuration can't be
+>> messed up by transfer errors and the speed is only limited by the
+>> amount of
+>> pixel glitches that one is able to tolerate.
+>>
+>> Signed-off-by: Noralf Tr√∏nnes <noralf@tronnes.org>
+>> ---
+> Acked-by: David Lechner <david@lechnology.com>

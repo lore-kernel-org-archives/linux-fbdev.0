@@ -2,229 +2,349 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64A74C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Dec 2021 10:51:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D547C433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Dec 2021 18:22:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230269AbhLGKz0 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Dec 2021 05:55:26 -0500
-Received: from mga05.intel.com ([192.55.52.43]:57266 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230169AbhLGKz0 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 7 Dec 2021 05:55:26 -0500
-X-IronPort-AV: E=McAfee;i="6200,9189,10190"; a="323807456"
-X-IronPort-AV: E=Sophos;i="5.87,293,1631602800"; 
-   d="scan'208";a="323807456"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Dec 2021 02:51:56 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.87,293,1631602800"; 
-   d="scan'208";a="611630779"
-Received: from lkp-server02.sh.intel.com (HELO 9e1e9f9b3bcb) ([10.239.97.151])
-  by orsmga004.jf.intel.com with ESMTP; 07 Dec 2021 02:51:53 -0800
-Received: from kbuild by 9e1e9f9b3bcb with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1muY4e-000MTV-L4; Tue, 07 Dec 2021 10:51:52 +0000
-Date:   Tue, 7 Dec 2021 18:51:27 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     Dan Carpenter <error27@gmail.com>,
-        Antonino Daplas <adaplas@gmail.com>
-Cc:     llvm@lists.linux.dev, kbuild-all@lists.01.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] fbdev: savagefb: make a variable local
-Message-ID: <202112071822.Ry2XAYAN-lkp@intel.com>
-References: <20211203095715.GD2480@kili>
+        id S240342AbhLGSZv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Dec 2021 13:25:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44858 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S240168AbhLGSZu (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Dec 2021 13:25:50 -0500
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B92E8C061748
+        for <linux-fbdev@vger.kernel.org>; Tue,  7 Dec 2021 10:22:19 -0800 (PST)
+Received: by mail-wr1-x431.google.com with SMTP id d24so31478575wra.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 07 Dec 2021 10:22:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=08Y7iJI/PLTRM2a75Lt/X18n1ghFVyrjUSIXA87jB1c=;
+        b=NaDI0vUgbYnBOYtMUBltHLOUYkBXWIXJLzv1PJ7Qa9rHdOKP9n7wD2RgoiI26BUkdU
+         CZEv7LjjD++6EkU7BPSrcm5S5wjFQxbu6pQpfZBClnaei3kVbRcKDTFCdpA2g/elj3oJ
+         9KfrkXcOBOAK/G7Zr0zvdI5whTEkEdr8KfEX0=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :content-transfer-encoding:in-reply-to;
+        bh=08Y7iJI/PLTRM2a75Lt/X18n1ghFVyrjUSIXA87jB1c=;
+        b=6PRbaUQP7RHZ8ODIB2v9uqbSZr2MNFMJSpZVcD20Z+2xlWMVdMx11Dmm2jBrSi6MBi
+         5DRRWrDJSMDs2gXGnd9eaoqFLV6gL9vYBoC/2/hIaLUc+Vo6i9V/Sr41uEUr1CWswuMd
+         uyCa2mGvinHUtxMspcEU2XQv0GNtmp/fCsAnZby2VSVA0IHP+j7V4+DvUqqWUH8t8RTt
+         Lp0vHT6+RskJIcm+8QJ9vox86FrZvmrdfc+KJDYaf6tIe3kv8onaB2ZtT5v3n4orF29F
+         2yGZ5Uf8dQHwY+c/ppwIOsQ6zyHSoqMGRlm8fi5HJlbi5rhskQzuUM3YoCzyxBrrHK+y
+         rB9A==
+X-Gm-Message-State: AOAM531fOu1dRq42YtY5WMASs9g2AgQ1Q8KLiVSf2HJVDgsqXy3vrCgL
+        oy3iS8odXhDau3SDbuHJcn0QtA==
+X-Google-Smtp-Source: ABdhPJxK2mhzgF3YMS/fG40gJ9DDy/bEcttiC7rT6MkCLhX411tsNH3w2Tru9t1nhhNXbQLQaKdz8Q==
+X-Received: by 2002:adf:d1e2:: with SMTP id g2mr54445987wrd.362.1638901338335;
+        Tue, 07 Dec 2021 10:22:18 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id w4sm421952wrs.88.2021.12.07.10.22.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Dec 2021 10:22:17 -0800 (PST)
+Date:   Tue, 7 Dec 2021 19:22:15 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Stephen Boyd <swboyd@chromium.org>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Benjamin Gaignard <benjamin.gaignard@linaro.org>,
+        Chen Feng <puck.chen@hisilicon.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Emma Anholt <emma@anholt.net>,
+        Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
+        Inki Dae <inki.dae@samsung.com>,
+        James Qian Wang <james.qian.wang@arm.com>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Joerg Roedel <joro@8bytes.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Joonyoung Shim <jy0922.shim@samsung.com>,
+        Jyri Sarha <jyri.sarha@iki.fi>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Clark <robdclark@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Russell King <rmk+kernel@arm.linux.org.uk>,
+        Sandy Huang <hjc@rock-chips.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Seung-Woo Kim <sw0312.kim@samsung.com>,
+        Takashi Iwai <tiwai@suse.com>,
+        Tian Tao <tiantao6@hisilicon.com>,
+        Tomas Winkler <tomas.winkler@intel.com>,
+        Tomi Valkeinen <tomba@kernel.org>,
+        Will Deacon <will@kernel.org>,
+        Xinliang Liu <xinliang.liu@linaro.org>,
+        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
+        Yong Wu <yong.wu@mediatek.com>,
+        Vitaly Lubart <vitaly.lubart@intel.com>,
+        Daniele Ceraolo Spurio <daniele.ceraolospurio@intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>
+Subject: Re: [PATCH v4 00/34] component: Make into an aggregate bus
+Message-ID: <Ya+mV/zuRVVIGVy1@phenom.ffwll.local>
+Mail-Followup-To: Stephen Boyd <swboyd@chromium.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
+        Arnd Bergmann <arnd@arndb.de>,
+        Benjamin Gaignard <benjamin.gaignard@linaro.org>,
+        Chen Feng <puck.chen@hisilicon.com>, Chen-Yu Tsai <wens@csie.org>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Emma Anholt <emma@anholt.net>,
+        Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
+        Inki Dae <inki.dae@samsung.com>,
+        James Qian Wang <james.qian.wang@arm.com>,
+        Jaroslav Kysela <perex@perex.cz>, Joerg Roedel <joro@8bytes.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Joonyoung Shim <jy0922.shim@samsung.com>,
+        Jyri Sarha <jyri.sarha@iki.fi>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>, Maxime Ripard <mripard@kernel.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Clark <robdclark@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Russell King <rmk+kernel@arm.linux.org.uk>,
+        Sandy Huang <hjc@rock-chips.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Seung-Woo Kim <sw0312.kim@samsung.com>,
+        Takashi Iwai <tiwai@suse.com>, Tian Tao <tiantao6@hisilicon.com>,
+        Tomas Winkler <tomas.winkler@intel.com>,
+        Tomi Valkeinen <tomba@kernel.org>, Will Deacon <will@kernel.org>,
+        Xinliang Liu <xinliang.liu@linaro.org>,
+        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
+        Yong Wu <yong.wu@mediatek.com>,
+        Vitaly Lubart <vitaly.lubart@intel.com>,
+        Daniele Ceraolo Spurio <daniele.ceraolospurio@intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>
+References: <20211202222732.2453851-1-swboyd@chromium.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20211203095715.GD2480@kili>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20211202222732.2453851-1-swboyd@chromium.org>
+X-Operating-System: Linux phenom 5.10.0-8-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Dan,
+On Thu, Dec 02, 2021 at 02:26:58PM -0800, Stephen Boyd wrote:
+> This series is from discussion we had on reordering the device lists for
+> drm shutdown paths[1]. I've introduced an 'aggregate' bus that we put
+> the aggregate device onto and then we probe the aggregate device once
+> all the components are probed and call component_add(). The probe/remove
+> hooks are where the bind/unbind calls go, and then a shutdown hook is
+> added that can be used to shutdown the drm display pipeline at the right
+> time.
+> 
+> This works for me on my sc7180 board. I no longer get a warning from i2c
+> at shutdown that we're trying to make an i2c transaction after the i2c
+> bus has been shutdown. There's more work to do on the msm drm driver to
+> extract component device resources like clks, regulators, etc. out of
+> the component bind function into the driver probe but I wanted to move
+> everything over now in other component drivers before tackling that
+> problem.
+> 
+> Tested-by tags would be appreciated, and Acked-by/Reviewed-by tags too.
 
-Thank you for the patch! Perhaps something to improve:
+Thanks for pushing this forward. Unfortunately I'm completely burried and
+it's just not improving, so merge plan:
 
-[auto build test WARNING on linus/master]
-[also build test WARNING on v5.16-rc4 next-20211207]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+- please get Greg KH to ack the bus/driver core stuff
 
-url:    https://github.com/0day-ci/linux/commits/Dan-Carpenter/fbdev-savagefb-make-a-variable-local/20211203-175849
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 5f58da2befa58edf3a70b91ed87ed9bf77f1e70e
-config: mips-buildonly-randconfig-r004-20211207 (https://download.01.org/0day-ci/archive/20211207/202112071822.Ry2XAYAN-lkp@intel.com/config)
-compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project f50be8eb0a12a61d23db6cda452c693001d76898)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # install mips cross compiling tool for clang build
-        # apt-get install binutils-mips-linux-gnu
-        # https://github.com/0day-ci/linux/commit/9ea7012b220fc1bd8aa2f0a65b97403cea046343
-        git remote add linux-review https://github.com/0day-ci/linux
-        git fetch --no-tags linux-review Dan-Carpenter/fbdev-savagefb-make-a-variable-local/20211203-175849
-        git checkout 9ea7012b220fc1bd8aa2f0a65b97403cea046343
-        # save the config file to linux build tree
-        mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=mips SHELL=/bin/bash drivers/video/fbdev/savage/
+- please get one of the drm-misc committers we have from Google's Chromeos
+  team (there should be a few by now) to review&push this.
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+Otherwise I fear this might get stuck and I'd really like to avoid that.
 
-All warnings (new ones prefixed by >>):
+Cheers, Daniel
 
->> drivers/video/fbdev/savage/savagefb_driver.c:2173:17: warning: unused variable 'edid'
-   unsigned char
-   ^
-   fatal error: error in backend: Nested variants found in inline asm string: '.if ( 0x00 ) != -1)) 0x00 ) != -1)) : ($( static struct ftrace_branch_data __attribute__((__aligned__(4))) __attribute__((__section__("_ftrace_branch"))) __if_trace = $( .func = __func__, .file = "arch/mips/include/asm/barrier.h", .line = 16, $); 0x00 ) != -1)) : $))) ) && ( (1 << 0) ); .set push; .set mips64r2; .rept 1; sync 0x00; .endr; .set pop; .else; ; .endif'
-   PLEASE submit a bug report to https://bugs.llvm.org/ and include the crash backtrace, preprocessed source, and associated run script.
-   Stack dump:
-   0. Program arguments: clang -Wp,-MMD,drivers/video/fbdev/savage/.savagefb_driver.o.d -nostdinc -Iarch/mips/include -I./arch/mips/include/generated -Iinclude -I./include -Iarch/mips/include/uapi -I./arch/mips/include/generated/uapi -Iinclude/uapi -I./include/generated/uapi -include include/linux/compiler-version.h -include include/linux/kconfig.h -include include/linux/compiler_types.h -D__KERNEL__ -DVMLINUX_LOAD_ADDRESS=0xffffffff80100000 -DLINKER_LOAD_ADDRESS=0xffffffff80100000 -DDATAOFFSET=0 -Qunused-arguments -fmacro-prefix-map== -DKBUILD_EXTRA_WARN1 -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Wno-format-security -std=gnu89 --target=mips64el-linux -fintegrated-as -Werror=unknown-warning-option -Werror=ignored-optimization-argument -mabi=64 -G 0 -mno-abicalls -fno-pic -pipe -msoft-float -DGAS_HAS_SET_HARDFLOAT -Wa,-msoft-float -ffreestanding -EL -fno-stack-check -march=mips64 -Wa,--trap -DTOOLCHAIN_SUPPORTS_VIRT -Iarch/mips/include/asm/mach-malta -Iarch/mips/include/asm/mach-generic -fno-asynchronous-unwind-tables -fno-delete-null-pointer-checks -Wno-frame-address -Wno-address-of-packed-member -O2 -Wframe-larger-than=2048 -fstack-protector -Wimplicit-fallthrough -Wno-gnu -mno-global-merge -Wno-unused-but-set-variable -Wno-unused-const-variable -ftrivial-auto-var-init=zero -enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang -fno-stack-clash-protection -pg -falign-functions=64 -Wdeclaration-after-statement -Wvla -Wno-pointer-sign -Wno-array-bounds -fno-strict-overflow -fno-stack-check -Werror=date-time -Werror=incompatible-pointer-types -Wextra -Wunused -Wno-unused-parameter -Wmissing-declarations -Wmissing-format-attribute -Wmissing-prototypes -Wold-style-definition -Wmissing-include-dirs -Wunused-but-set-variable -Wunused-const-variable -Wno-missing-field-initializers -Wno-sign-compare -Wno-type-limits -I drivers/video/fbdev/savage -I ./drivers/video/fbdev/savage -ffunction-sections -fdata-sections -DKBUILD_MODFILE="drivers/video/fbdev/savage/savagefb" -DKBUILD_BASENAME="savagefb_driver" -DKBUILD_MODNAME="savagefb" -D__KBUILD_MODNAME=kmod_savagefb -c -o drivers/video/fbdev/savage/savagefb_driver.o drivers/video/fbdev/savage/savagefb_driver.c
-   1. <eof> parser at end of file
-   2. Code generation
-   3. Running pass 'Function Pass Manager' on module 'drivers/video/fbdev/savage/savagefb_driver.c'.
-   4. Running pass 'Mips Assembly Printer' on function '@savagefb_probe'
-   #0 0x000055c047cb37df Signals.cpp:0:0
-   #1 0x000055c047cb16fc llvm::sys::CleanupOnSignal(unsigned long) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x339a6fc)
-   #2 0x000055c047bfef87 llvm::CrashRecoveryContext::HandleExit(int) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x32e7f87)
-   #3 0x000055c047ca9dae llvm::sys::Process::Exit(int, bool) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x3392dae)
-   #4 0x000055c04597378b (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x105c78b)
-   #5 0x000055c047c05a2c llvm::report_fatal_error(llvm::Twine const&, bool) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x32eea2c)
-   #6 0x000055c0488b15e8 llvm::AsmPrinter::emitInlineAsm(llvm::MachineInstr const (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x3f9a5e8)
-   #7 0x000055c0488ad3e9 llvm::AsmPrinter::emitFunctionBody() (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x3f963e9)
-   #8 0x000055c0463c0afe llvm::MipsAsmPrinter::runOnMachineFunction(llvm::MachineFunction&) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x1aa9afe)
-   #9 0x000055c047045a1d llvm::MachineFunctionPass::runOnFunction(llvm::Function&) (.part.53) MachineFunctionPass.cpp:0:0
-   #10 0x000055c04746dfc7 llvm::FPPassManager::runOnFunction(llvm::Function&) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x2b56fc7)
-   #11 0x000055c04746e141 llvm::FPPassManager::runOnModule(llvm::Module&) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x2b57141)
-   #12 0x000055c04746f41f llvm::legacy::PassManagerImpl::run(llvm::Module&) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x2b5841f)
-   #13 0x000055c047fbab9a clang::EmitBackendOutput(clang::DiagnosticsEngine&, clang::HeaderSearchOptions const&, clang::CodeGenOptions const&, clang::TargetOptions const&, clang::LangOptions const&, llvm::StringRef, clang::BackendAction, std::unique_ptr<llvm::raw_pwrite_stream, std::default_delete<llvm::raw_pwrite_stream> >) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x36a3b9a)
-   #14 0x000055c048c39443 clang::BackendConsumer::HandleTranslationUnit(clang::ASTContext&) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x4322443)
-   #15 0x000055c049738d99 clang::ParseAST(clang::Sema&, bool, bool) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x4e21d99)
-   #16 0x000055c048c3829f clang::CodeGenAction::ExecuteAction() (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x432129f)
-   #17 0x000055c0485c1401 clang::FrontendAction::Execute() (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x3caa401)
-   #18 0x000055c0485594ea clang::CompilerInstance::ExecuteAction(clang::FrontendAction&) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x3c424ea)
-   #19 0x000055c04868a5ab (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x3d735ab)
-   #20 0x000055c0459744d4 cc1_main(llvm::ArrayRef<char char (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x105d4d4)
-   #21 0x000055c045971a1b ExecuteCC1Tool(llvm::SmallVectorImpl<char driver.cpp:0:0
-   #22 0x000055c0483fc4b5 void llvm::function_ref<void ()>::callback_fn<clang::driver::CC1Command::Execute(llvm::ArrayRef<llvm::Optional<llvm::StringRef> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> const::'lambda'()>(long) Job.cpp:0:0
-   #23 0x000055c047bfee43 llvm::CrashRecoveryContext::RunSafely(llvm::function_ref<void ()>) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x32e7e43)
-   #24 0x000055c0483fcdb7 clang::driver::CC1Command::Execute(llvm::ArrayRef<llvm::Optional<llvm::StringRef> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> const (.part.216) Job.cpp:0:0
-   #25 0x000055c0483d40c7 clang::driver::Compilation::ExecuteCommand(clang::driver::Command const&, clang::driver::Command const (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x3abd0c7)
-   #26 0x000055c0483d4aa7 clang::driver::Compilation::ExecuteJobs(clang::driver::JobList const&, llvm::SmallVectorImpl<std::pair<int, clang::driver::Command >&) const (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x3abdaa7)
-   #27 0x000055c0483ddde9 clang::driver::Driver::ExecuteCompilation(clang::driver::Compilation&, llvm::SmallVectorImpl<std::pair<int, clang::driver::Command >&) (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x3ac6de9)
-   #28 0x000055c04589f17f main (/opt/cross/clang-097a1cb1d5/bin/clang-14+0xf8817f)
-   #29 0x00007f312c6b8d0a __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x26d0a)
-   #30 0x000055c04597153a _start (/opt/cross/clang-097a1cb1d5/bin/clang-14+0x105a53a)
-   clang-14: error: clang frontend command failed with exit code 70 (use -v to see invocation)
-   clang version 14.0.0 (git://gitmirror/llvm_project 097a1cb1d5ebb3a0ec4bcaed8ba3ff6a8e33c00a)
-   Target: mips64el-unknown-linux
-   Thread model: posix
-   InstalledDir: /opt/cross/clang-097a1cb1d5/bin
-   clang-14: note: diagnostic msg:
-   Makefile arch drivers include kernel nr_bisected scripts source usr
+> 
+> Changes since v3 (https://lore.kernel.org/r/20211026000044.885195-1-swboyd@chromium.org):
+>  - Picked up tags
+>  - Rebased to v5.16-rc2
+>  - Updated component.c for a few new patches there
+>  - Dropped a conversion patch
+>  - Added a conversion patch
+> 
+> Changes since v2 (https://lore.kernel.org/r/20211006193819.2654854-1-swboyd@chromium.org):
+>  - Picked up acks
+>  - Fixed build warnings/errors
+>  - Reworked patch series to rename 'master' in a different patch
+> 
+> Changes since v1 (https://lore.kernel.org/r/20210520002519.3538432-1-swboyd@chromium.org):
+>  - Use devlink to connect components to the aggregate device
+>  - Don't set the registering device as a parent of the aggregate device
+>  - New patch for bind_component/unbind_component ops that takes the
+>    aggregate device
+>  - Convert all drivers in the tree to use the aggregate driver approach
+>  - Allow one aggregate driver to be used for multiple aggregate devices
+> 
+> [1] https://lore.kernel.org/r/20210508074118.1621729-1-swboyd@chromium.org
+> 
+> 
+> Stephen Boyd (34):
+>   component: Introduce struct aggregate_device
+>   component: Remove most references to 'master'
+>   component: Introduce the aggregate bus_type
+>   component: Move struct aggregate_device out to header file
+>   component: Add {bind,unbind}_component() ops that take aggregate
+>     device
+>   drm/of: Add a drm_of_aggregate_probe() API
+>   drm/msm: Migrate to aggregate driver
+>   drm/komeda: Migrate to aggregate driver
+>   drm/arm/hdlcd: Migrate to aggregate driver
+>   drm/malidp: Migrate to aggregate driver
+>   drm/armada: Migrate to aggregate driver
+>   drm/etnaviv: Migrate to aggregate driver
+>   drm/kirin: Migrate to aggregate driver
+>   drm/exynos: Migrate to aggregate driver
+>   drm/imx: Migrate to aggregate driver
+>   drm/ingenic: Migrate to aggregate driver
+>   drm/mcde: Migrate to aggregate driver
+>   drm/mediatek: Migrate to aggregate driver
+>   drm/meson: Migrate to aggregate driver
+>   drm/omap: Migrate to aggregate driver
+>   drm/rockchip: Migrate to aggregate driver
+>   drm/sti: Migrate to aggregate driver
+>   drm/sun4i: Migrate to aggregate driver
+>   drm/tilcdc: Migrate to aggregate driver
+>   drm/vc4: Migrate to aggregate driver
+>   iommu/mtk: Migrate to aggregate driver
+>   mei: Migrate to aggregate driver
+>   power: supply: ab8500: Migrate to aggregate driver
+>   fbdev: omap2: Migrate to aggregate driver
+>   sound: hdac: Migrate to aggregate driver
+>   ASoC: codecs: wcd938x: Migrate to aggregate driver
+>   mei: pxp: Migrate to aggregate driver
+>   component: Get rid of drm_of_component_probe()
+>   component: Remove component_master_ops and friends
+> 
+>  drivers/base/component.c                      | 544 ++++++++++--------
+>  .../gpu/drm/arm/display/komeda/komeda_drv.c   |  20 +-
+>  drivers/gpu/drm/arm/hdlcd_drv.c               |  21 +-
+>  drivers/gpu/drm/arm/malidp_drv.c              |  21 +-
+>  drivers/gpu/drm/armada/armada_drv.c           |  23 +-
+>  drivers/gpu/drm/drm_drv.c                     |   2 +-
+>  drivers/gpu/drm/drm_of.c                      |  18 +-
+>  drivers/gpu/drm/etnaviv/etnaviv_drv.c         |  20 +-
+>  drivers/gpu/drm/exynos/exynos_drm_drv.c       |  21 +-
+>  .../gpu/drm/hisilicon/kirin/kirin_drm_drv.c   |  20 +-
+>  drivers/gpu/drm/imx/imx-drm-core.c            |  20 +-
+>  drivers/gpu/drm/ingenic/ingenic-drm-drv.c     |  25 +-
+>  drivers/gpu/drm/mcde/mcde_drv.c               |  23 +-
+>  drivers/gpu/drm/mediatek/mtk_drm_drv.c        |  20 +-
+>  drivers/gpu/drm/meson/meson_drv.c             |  21 +-
+>  drivers/gpu/drm/msm/msm_drv.c                 |  46 +-
+>  drivers/gpu/drm/omapdrm/dss/dss.c             |  20 +-
+>  drivers/gpu/drm/rockchip/rockchip_drm_drv.c   |  20 +-
+>  drivers/gpu/drm/sti/sti_drv.c                 |  20 +-
+>  drivers/gpu/drm/sun4i/sun4i_drv.c             |  26 +-
+>  drivers/gpu/drm/tilcdc/tilcdc_drv.c           |  28 +-
+>  drivers/gpu/drm/vc4/vc4_drv.c                 |  20 +-
+>  drivers/iommu/mtk_iommu.c                     |  14 +-
+>  drivers/iommu/mtk_iommu.h                     |   6 +-
+>  drivers/iommu/mtk_iommu_v1.c                  |  14 +-
+>  drivers/misc/mei/hdcp/mei_hdcp.c              |  22 +-
+>  drivers/misc/mei/pxp/mei_pxp.c                |  22 +-
+>  drivers/power/supply/ab8500_charger.c         |  22 +-
+>  drivers/video/fbdev/omap2/omapfb/dss/dss.c    |  20 +-
+>  include/drm/drm_of.h                          |  10 +-
+>  include/linux/component.h                     |  92 ++-
+>  sound/hda/hdac_component.c                    |  21 +-
+>  sound/soc/codecs/wcd938x.c                    |  20 +-
+>  33 files changed, 772 insertions(+), 490 deletions(-)
+> 
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+> Cc: Chen Feng <puck.chen@hisilicon.com>
+> Cc: Chen-Yu Tsai <wens@csie.org>
+> Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
+> Cc: Chun-Kuang Hu <chunkuang.hu@kernel.org>
+> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Cc: Emma Anholt <emma@anholt.net>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: "Heiko Stübner" <heiko@sntech.de>
+> Cc: Inki Dae <inki.dae@samsung.com>
+> Cc: James Qian Wang (Arm Technology China) <james.qian.wang@arm.com>
+> Cc: Jaroslav Kysela <perex@perex.cz>
+> Cc: Joerg Roedel <joro@8bytes.org>
+> Cc: John Stultz <john.stultz@linaro.org>
+> Cc: Joonyoung Shim <jy0922.shim@samsung.com>
+> Cc: Jyri Sarha <jyri.sarha@iki.fi>
+> Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
+> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Cc: <linux-fbdev@vger.kernel.org>
+> Cc: <linux-omap@vger.kernel.org>
+> Cc: <linux-pm@vger.kernel.org>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Liviu Dudau <liviu.dudau@arm.com>
+> Cc: Lucas Stach <l.stach@pengutronix.de>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Maxime Ripard <mripard@kernel.org>
+> Cc: Neil Armstrong <narmstrong@baylibre.com>
+> Cc: Paul Cercueil <paul@crapouillou.net>
+> Cc: Philipp Zabel <p.zabel@pengutronix.de>
+> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> Cc: Rob Clark <robdclark@gmail.com>
+> Cc: Russell King <linux@armlinux.org.uk>
+> Cc: Russell King <linux+etnaviv@armlinux.org.uk>
+> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+> Cc: Sandy Huang <hjc@rock-chips.com>
+> Cc: Saravana Kannan <saravanak@google.com>
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: Seung-Woo Kim <sw0312.kim@samsung.com>
+> Cc: Takashi Iwai <tiwai@suse.com>
+> Cc: Tian Tao <tiantao6@hisilicon.com>
+> Cc: Tomas Winkler <tomas.winkler@intel.com>
+> Cc: Tomi Valkeinen <tomba@kernel.org>
+> Cc: Will Deacon <will@kernel.org>
+> Cc: Xinliang Liu <xinliang.liu@linaro.org>
+> Cc: Xinwei Kong <kong.kongxinwei@hisilicon.com>
+> Cc: Yong Wu <yong.wu@mediatek.com>
+> Cc: Vitaly Lubart <vitaly.lubart@intel.com>
+> Cc: Daniele Ceraolo Spurio <daniele.ceraolospurio@intel.com>
+> Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
+> Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
+> 
+> base-commit: 136057256686de39cc3a07c2e39ef6bc43003ff6
+> -- 
+> https://chromeos.dev
+> 
 
-
-vim +/edid +2173 drivers/video/fbdev/savage/savagefb_driver.c
-
-  2167	
-  2168	static int savagefb_probe(struct pci_dev *dev, const struct pci_device_id *id)
-  2169	{
-  2170		struct fb_info *info;
-  2171		struct savagefb_par *par;
-  2172		u_int h_sync, v_sync;
-> 2173		unsigned char *edid;
-  2174		int err, lpitch;
-  2175		int video_len;
-  2176	
-  2177		DBG("savagefb_probe");
-  2178	
-  2179		info = framebuffer_alloc(sizeof(struct savagefb_par), &dev->dev);
-  2180		if (!info)
-  2181			return -ENOMEM;
-  2182		par = info->par;
-  2183		mutex_init(&par->open_lock);
-  2184		err = pci_enable_device(dev);
-  2185		if (err)
-  2186			goto failed_enable;
-  2187	
-  2188		if ((err = pci_request_regions(dev, "savagefb"))) {
-  2189			printk(KERN_ERR "cannot request PCI regions\n");
-  2190			goto failed_enable;
-  2191		}
-  2192	
-  2193		err = -ENOMEM;
-  2194	
-  2195		if ((err = savage_init_fb_info(info, dev, id)))
-  2196			goto failed_init;
-  2197	
-  2198		err = savage_map_mmio(info);
-  2199		if (err)
-  2200			goto failed_mmio;
-  2201	
-  2202		video_len = savage_init_hw(par);
-  2203		/* FIXME: can't be negative */
-  2204		if (video_len < 0) {
-  2205			err = video_len;
-  2206			goto failed_mmio;
-  2207		}
-  2208	
-  2209		err = savage_map_video(info, video_len);
-  2210		if (err)
-  2211			goto failed_video;
-  2212	
-  2213		INIT_LIST_HEAD(&info->modelist);
-  2214	#if defined(CONFIG_FB_SAVAGE_I2C)
-  2215		savagefb_create_i2c_busses(info);
-  2216		savagefb_probe_i2c_connector(info, &edid);
-  2217		fb_edid_to_monspecs(edid, &info->monspecs);
-  2218		kfree(edid);
-  2219		fb_videomode_to_modelist(info->monspecs.modedb,
-  2220					 info->monspecs.modedb_len,
-  2221					 &info->modelist);
-  2222	#endif
-  2223		info->var = savagefb_var800x600x8;
-  2224		/* if a panel was detected, default to a CVT mode instead */
-  2225		if (par->SavagePanelWidth) {
-  2226			struct fb_videomode cvt_mode;
-  2227	
-  2228			memset(&cvt_mode, 0, sizeof(cvt_mode));
-  2229			cvt_mode.xres = par->SavagePanelWidth;
-  2230			cvt_mode.yres = par->SavagePanelHeight;
-  2231			cvt_mode.refresh = 60;
-  2232			/* FIXME: if we know there is only the panel
-  2233			 * we can enable reduced blanking as well */
-  2234			if (fb_find_mode_cvt(&cvt_mode, 0, 0))
-  2235				printk(KERN_WARNING "No CVT mode found for panel\n");
-  2236			else if (fb_find_mode(&info->var, info, NULL, NULL, 0,
-  2237					      &cvt_mode, 0) != 3)
-  2238				info->var = savagefb_var800x600x8;
-  2239		}
-  2240	
-  2241		if (mode_option) {
-  2242			fb_find_mode(&info->var, info, mode_option,
-  2243				     info->monspecs.modedb, info->monspecs.modedb_len,
-  2244				     NULL, 8);
-  2245		} else if (info->monspecs.modedb != NULL) {
-  2246			const struct fb_videomode *mode;
-  2247	
-  2248			mode = fb_find_best_display(&info->monspecs, &info->modelist);
-  2249			savage_update_var(&info->var, mode);
-  2250		}
-  2251	
-  2252		/* maximize virtual vertical length */
-  2253		lpitch = info->var.xres_virtual*((info->var.bits_per_pixel + 7) >> 3);
-  2254		info->var.yres_virtual = info->fix.smem_len/lpitch;
-  2255	
-  2256		if (info->var.yres_virtual < info->var.yres) {
-  2257			err = -ENOMEM;
-  2258			goto failed;
-  2259		}
-  2260	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

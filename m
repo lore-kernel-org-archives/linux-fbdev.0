@@ -2,349 +2,207 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D547C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Dec 2021 18:22:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE7CCC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  7 Dec 2021 19:01:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240342AbhLGSZv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 7 Dec 2021 13:25:51 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44858 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240168AbhLGSZu (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 7 Dec 2021 13:25:50 -0500
-Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B92E8C061748
-        for <linux-fbdev@vger.kernel.org>; Tue,  7 Dec 2021 10:22:19 -0800 (PST)
-Received: by mail-wr1-x431.google.com with SMTP id d24so31478575wra.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 07 Dec 2021 10:22:19 -0800 (PST)
+        id S231828AbhLGTFW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 7 Dec 2021 14:05:22 -0500
+Received: from mx0b-00069f02.pphosted.com ([205.220.177.32]:26272 "EHLO
+        mx0b-00069f02.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S231668AbhLGTFW (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 7 Dec 2021 14:05:22 -0500
+Received: from pps.filterd (m0246632.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1B7I4YK5021777;
+        Tue, 7 Dec 2021 19:01:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=message-id : date :
+ subject : to : cc : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=corp-2021-07-09;
+ bh=n0gncZPwGkQkDP6w/OPBB+xoS+e1qXfojnzRId4yilM=;
+ b=0Qwhp9LC1xxBULAgj0aFi9ksvmbNHDIV3U0gcJRDTLHnha2MvwwuJ3WvKEkXQPlTqL8g
+ xFNZyq4waMSMOEKzsl70bz7czXh1taCVllUYoegvmhYIUAZGNPG0JEPCK403ovRp1ztb
+ gPDW40ERoy18LJq9pTraVU6XU9mj5wcK8P4aADBk7dVN+zZxx5/IUsi1csyLB2JuP93y
+ 1yp+ntcYUfTLsFZPYL2ry/MbM/kf27DAiRlRWG+NMf0sz36aH/nYOQJY/xPma/m5yH8w
+ SXbguiZjTJRbaq1okBfsMfy0lnZ6Oj+2GFekTjSK0dbfqNax3cNvCFNIZomjO4rsN7W7 9g== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+        by mx0b-00069f02.pphosted.com with ESMTP id 3csdfje6hb-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 07 Dec 2021 19:01:36 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+        by userp3020.oracle.com (8.16.1.2/8.16.1.2) with SMTP id 1B7Iuf1x112956;
+        Tue, 7 Dec 2021 19:01:35 GMT
+Received: from nam04-dm6-obe.outbound.protection.outlook.com (mail-dm6nam08lp2045.outbound.protection.outlook.com [104.47.73.45])
+        by userp3020.oracle.com with ESMTP id 3cr1spevvx-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 07 Dec 2021 19:01:34 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=NzIdQ2d+xUPgt0oY0hFMgRzNSVen23PTP576QBX3ZMDXjdq80hcxLUDCyBMvnJgd8vD2IOY3dooFakJ9nKfgm/V1OO8R5DOGYM8by9GFuPblMZ9f27ZIW19k3JO+NgbpZ27L0YFNjz77oGbMdHir3HirMMDdpu4cZ5eMWxM3ZOrSXaMAQ9VdwcCyohmXuBzBAQOwyL0vdrl/d/4miVNQ7d0zW2JXKZhxjQlAc4e0J5gmy7FY6Kt7YZ8zpvNrxdryy9vFoJtxXsEFfboVacBAzYP+8RiVJ90BjDiwHHYeU9qxcGaGyaqa3yud2eHPRKGOGVZ4TtGW8TCvfi4d4+5Y7A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=n0gncZPwGkQkDP6w/OPBB+xoS+e1qXfojnzRId4yilM=;
+ b=iLagdBnL2A2YxXeADKoDLpQCgsWsXHaUMAvitEI8mBlO23Lt1//v9otRmyoCaBWrac3kCM4c84gdpxTJPvR3+kL/JeKe2APrUxCngkW/Ym/DlFEIi4DYFQI2TPc2WusiV4aevmW5TTGO8ESS6fHb9Wq5J+vwY2dI7tAK/KR7jJVOP1zVoe0N/YUHxIsSrgkusej0R+NtrQSjFjDWYslXhYTNcD3ZT1aq7LI/SSWCxQADYT9VLUy+GNTx/XjleMU3tdr37VAbQMuitWN0vo4gdM9uPo3U5hAcViqhU1pUl8tK4Xw6Kiky0ba28S8nRRzJBvbLDXVqNGnAI69zAN8+zw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=08Y7iJI/PLTRM2a75Lt/X18n1ghFVyrjUSIXA87jB1c=;
-        b=NaDI0vUgbYnBOYtMUBltHLOUYkBXWIXJLzv1PJ7Qa9rHdOKP9n7wD2RgoiI26BUkdU
-         CZEv7LjjD++6EkU7BPSrcm5S5wjFQxbu6pQpfZBClnaei3kVbRcKDTFCdpA2g/elj3oJ
-         9KfrkXcOBOAK/G7Zr0zvdI5whTEkEdr8KfEX0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :content-transfer-encoding:in-reply-to;
-        bh=08Y7iJI/PLTRM2a75Lt/X18n1ghFVyrjUSIXA87jB1c=;
-        b=6PRbaUQP7RHZ8ODIB2v9uqbSZr2MNFMJSpZVcD20Z+2xlWMVdMx11Dmm2jBrSi6MBi
-         5DRRWrDJSMDs2gXGnd9eaoqFLV6gL9vYBoC/2/hIaLUc+Vo6i9V/Sr41uEUr1CWswuMd
-         uyCa2mGvinHUtxMspcEU2XQv0GNtmp/fCsAnZby2VSVA0IHP+j7V4+DvUqqWUH8t8RTt
-         Lp0vHT6+RskJIcm+8QJ9vox86FrZvmrdfc+KJDYaf6tIe3kv8onaB2ZtT5v3n4orF29F
-         2yGZ5Uf8dQHwY+c/ppwIOsQ6zyHSoqMGRlm8fi5HJlbi5rhskQzuUM3YoCzyxBrrHK+y
-         rB9A==
-X-Gm-Message-State: AOAM531fOu1dRq42YtY5WMASs9g2AgQ1Q8KLiVSf2HJVDgsqXy3vrCgL
-        oy3iS8odXhDau3SDbuHJcn0QtA==
-X-Google-Smtp-Source: ABdhPJxK2mhzgF3YMS/fG40gJ9DDy/bEcttiC7rT6MkCLhX411tsNH3w2Tru9t1nhhNXbQLQaKdz8Q==
-X-Received: by 2002:adf:d1e2:: with SMTP id g2mr54445987wrd.362.1638901338335;
-        Tue, 07 Dec 2021 10:22:18 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id w4sm421952wrs.88.2021.12.07.10.22.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 07 Dec 2021 10:22:17 -0800 (PST)
-Date:   Tue, 7 Dec 2021 19:22:15 +0100
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Stephen Boyd <swboyd@chromium.org>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
-        Arnd Bergmann <arnd@arndb.de>,
-        Benjamin Gaignard <benjamin.gaignard@linaro.org>,
-        Chen Feng <puck.chen@hisilicon.com>,
-        Chen-Yu Tsai <wens@csie.org>,
-        Christian Gmeiner <christian.gmeiner@gmail.com>,
-        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Emma Anholt <emma@anholt.net>,
-        Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
-        Inki Dae <inki.dae@samsung.com>,
-        James Qian Wang <james.qian.wang@arm.com>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Joerg Roedel <joro@8bytes.org>,
-        John Stultz <john.stultz@linaro.org>,
-        Joonyoung Shim <jy0922.shim@samsung.com>,
-        Jyri Sarha <jyri.sarha@iki.fi>,
-        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
-        linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
-        Liviu Dudau <liviu.dudau@arm.com>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Mark Brown <broonie@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Neil Armstrong <narmstrong@baylibre.com>,
-        Paul Cercueil <paul@crapouillou.net>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Rob Clark <robdclark@gmail.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Russell King <linux+etnaviv@armlinux.org.uk>,
-        Russell King <rmk+kernel@arm.linux.org.uk>,
-        Sandy Huang <hjc@rock-chips.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Seung-Woo Kim <sw0312.kim@samsung.com>,
-        Takashi Iwai <tiwai@suse.com>,
-        Tian Tao <tiantao6@hisilicon.com>,
-        Tomas Winkler <tomas.winkler@intel.com>,
-        Tomi Valkeinen <tomba@kernel.org>,
-        Will Deacon <will@kernel.org>,
-        Xinliang Liu <xinliang.liu@linaro.org>,
-        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
-        Yong Wu <yong.wu@mediatek.com>,
-        Vitaly Lubart <vitaly.lubart@intel.com>,
-        Daniele Ceraolo Spurio <daniele.ceraolospurio@intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>
-Subject: Re: [PATCH v4 00/34] component: Make into an aggregate bus
-Message-ID: <Ya+mV/zuRVVIGVy1@phenom.ffwll.local>
-Mail-Followup-To: Stephen Boyd <swboyd@chromium.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
-        Arnd Bergmann <arnd@arndb.de>,
-        Benjamin Gaignard <benjamin.gaignard@linaro.org>,
-        Chen Feng <puck.chen@hisilicon.com>, Chen-Yu Tsai <wens@csie.org>,
-        Christian Gmeiner <christian.gmeiner@gmail.com>,
-        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
-        Emma Anholt <emma@anholt.net>,
-        Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
-        Inki Dae <inki.dae@samsung.com>,
-        James Qian Wang <james.qian.wang@arm.com>,
-        Jaroslav Kysela <perex@perex.cz>, Joerg Roedel <joro@8bytes.org>,
-        John Stultz <john.stultz@linaro.org>,
-        Joonyoung Shim <jy0922.shim@samsung.com>,
-        Jyri Sarha <jyri.sarha@iki.fi>,
-        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
-        linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
-        Liviu Dudau <liviu.dudau@arm.com>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Mark Brown <broonie@kernel.org>, Maxime Ripard <mripard@kernel.org>,
-        Neil Armstrong <narmstrong@baylibre.com>,
-        Paul Cercueil <paul@crapouillou.net>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Rob Clark <robdclark@gmail.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Russell King <linux+etnaviv@armlinux.org.uk>,
-        Russell King <rmk+kernel@arm.linux.org.uk>,
-        Sandy Huang <hjc@rock-chips.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Seung-Woo Kim <sw0312.kim@samsung.com>,
-        Takashi Iwai <tiwai@suse.com>, Tian Tao <tiantao6@hisilicon.com>,
-        Tomas Winkler <tomas.winkler@intel.com>,
-        Tomi Valkeinen <tomba@kernel.org>, Will Deacon <will@kernel.org>,
-        Xinliang Liu <xinliang.liu@linaro.org>,
-        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
-        Yong Wu <yong.wu@mediatek.com>,
-        Vitaly Lubart <vitaly.lubart@intel.com>,
-        Daniele Ceraolo Spurio <daniele.ceraolospurio@intel.com>,
-        Rodrigo Vivi <rodrigo.vivi@intel.com>
-References: <20211202222732.2453851-1-swboyd@chromium.org>
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=n0gncZPwGkQkDP6w/OPBB+xoS+e1qXfojnzRId4yilM=;
+ b=iaVF+L1VaO1klaZXODQqpCttSsZwDCXqKViaqFG9y1WMd7fx/cioMnL2PXYw6ZtnArgNBbkNPVnYvuSrobUyXZvCj3WfmIWodhPmnxBhd88pzpi9y5D3K8NAK+xJXJzgytspG6E3kU0VTBnIP3ChH9g7eNVKUKult0TjbsdWth0=
+Received: from BN0PR10MB5192.namprd10.prod.outlook.com (2603:10b6:408:115::8)
+ by BN0PR10MB5320.namprd10.prod.outlook.com (2603:10b6:408:12a::23) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4755.20; Tue, 7 Dec
+ 2021 19:01:33 +0000
+Received: from BN0PR10MB5192.namprd10.prod.outlook.com
+ ([fe80::4440:4f39:6d92:a14c]) by BN0PR10MB5192.namprd10.prod.outlook.com
+ ([fe80::4440:4f39:6d92:a14c%6]) with mapi id 15.20.4755.022; Tue, 7 Dec 2021
+ 19:01:32 +0000
+Message-ID: <226972a9-2e1c-be72-c970-3a16cd51d2cd@oracle.com>
+Date:   Tue, 7 Dec 2021 14:01:28 -0500
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.2
+Subject: Re: [PATCH v2] video: fbdev: cirrusfb: check pixclock to avoid divide
+ by zero
+Content-Language: en-CA
+To:     DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Cc:     Greg KH <gregkh@linuxfoundation.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+References: <1635366613-22507-1-git-send-email-george.kennedy@oracle.com>
+ <CAMuHMdXcO1K7da=4Ck2X0Rc_pfaM32dDKf0EfdDXNG0HL18h5Q@mail.gmail.com>
+From:   George Kennedy <george.kennedy@oracle.com>
+Organization: Oracle Corporation
+In-Reply-To: <CAMuHMdXcO1K7da=4Ck2X0Rc_pfaM32dDKf0EfdDXNG0HL18h5Q@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SN7PR18CA0030.namprd18.prod.outlook.com
+ (2603:10b6:806:f3::7) To BN0PR10MB5192.namprd10.prod.outlook.com
+ (2603:10b6:408:115::8)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20211202222732.2453851-1-swboyd@chromium.org>
-X-Operating-System: Linux phenom 5.10.0-8-amd64 
+Received: from [10.39.208.49] (138.3.201.49) by SN7PR18CA0030.namprd18.prod.outlook.com (2603:10b6:806:f3::7) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4755.20 via Frontend Transport; Tue, 7 Dec 2021 19:01:31 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: f702f520-1f84-4112-4c10-08d9b9b3fbb9
+X-MS-TrafficTypeDiagnostic: BN0PR10MB5320:EE_
+X-Microsoft-Antispam-PRVS: <BN0PR10MB53204CA324EC21F5F2CD3113E66E9@BN0PR10MB5320.namprd10.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:4941;
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: CqMK5iou7uO1HYwTTc4+ucu5EjKy4ypfVj6TjLGwXTST4cRIufDDe2izbr6VxyE0/QzOyGaOwU2iApOktyXuzacdXr7qmenFZR8kn/ugtsL6Pex5eey46tSpXJKC7qO+XRZ6VhPQT/ASLRWaJCLuWGGJM+8rJuBQFf46yxIc1QLJCXz1ofm3qtOr/tvJ7yTk9aPcxfsY5mUYNERjcUgdbW4oldy93YsSw3FGDM3xUp59FaChKXzVIxuUoirQcRBAcSHQUNm8StxXlfH7mCTNINd6xTJV5ZITugaAk/GKDl8WCtVpV7mJpssuWAE/iKSyzZa3FyOHuk2YmjN5nzWbKbNWPcPoI80lyUpSDxOmBmB3dTNiGNj3RDFepWPyPB/ASm1hYPzP3ooDvkNKOfBu3x994gE2Hlvhv60f42wPJacb/YKcZu/W/qc7v1JWqSrc02eGL5PzoVnzERy9AviB6nu2wgzbk/h1+7Yv+a6sczeaFoD68ch5fiv7EaTTrSFKyZ4z1WTbbBTcUthqH0B87GTI57B036yvBKQPqndqQ1sob4IpD6X62naP+06V4dVvzwZQDGfEO8LjV7fh5y5QMHsHgQLZcdhC4PthdmkoosARafJLFkj1MplJYOMe5i5+bVXip50eOJhyumV/yQj4Gf3DCa1XDppfLEoBZvdAqGFn0oPBTq8T6zoFJKhvTjONBlMbGwWquEHk/H/Rw9XtD7QOTDz3k2mkNtuirlHdGxhlwRZjvaR0TdYkXgQ/+4Q8+LuDWpdczcFoLR5GRIkhDr/BO3UrAv5/I+VvvMrawSX6MuQbRuNA4dM3Z510Khz5nVBmbLfk+RRmN6ChMWtlPJpmWUfhbvDIY5p2xgL4LXs=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN0PR10MB5192.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(366004)(38100700002)(36916002)(6486002)(86362001)(83380400001)(53546011)(186003)(2906002)(66946007)(66556008)(8936002)(26005)(5660300002)(66476007)(31696002)(956004)(8676002)(966005)(4326008)(54906003)(316002)(31686004)(36756003)(16576012)(508600001)(2616005)(44832011)(6666004)(110136005)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?OEdQbDlFeXVnS2NEZFpxemN6ZVlFclJkaEtvZjRTajR0cXBpaWd4RU1PNmQz?=
+ =?utf-8?B?ZG9qVHJWcjRHWGJ5YzRiV2hmUEhmNDVRQW5FQ2RNYmpSa1A5a0xlYk82akVp?=
+ =?utf-8?B?Nms3OFNSYUZ5cGZIM0Y0dzZwOFBTWnVaZUYrNVJEZWJ0VmNmT2pkTm1Balg5?=
+ =?utf-8?B?eDM0Y0dFc1h0ajZQWlFJL1BwZXdKcUxmU3FSOHRjQkRKbE01aFBkWEVROHdF?=
+ =?utf-8?B?RTJVMElhbHBHNFZLREExckVHbjFEN1BaNC81T2JOL1JxMkxVZi9WQkh6YTFK?=
+ =?utf-8?B?VFBLdkN2M2hqczdxd2Erdms3SkU5YWxnNjJwcmpEYUUxVllXdzhkSjFOR25z?=
+ =?utf-8?B?VGo2aEVmY0hxdVhJck5HRndJMDEzR2NubVMyTlpDbDJaUHpVN1VpVmdMM0Z1?=
+ =?utf-8?B?RndINDJaRjBacGRkSnBEWEVyN255K01NYkFDZWJmZ0JOTkdNZDhBdnZwckJU?=
+ =?utf-8?B?a04wLzJVSUhRVW9NTytManZEYWRRd1BKYnp6VG5aSDlhY3hSd0ZCN2s3RXJn?=
+ =?utf-8?B?eDRFeDNhMFA3akZ1eGFJckxpZ3JCK0ptejNRRmlieFRISGwyVjdtQjdubXFi?=
+ =?utf-8?B?TkRDblBnM29EMUlyVFpXU0xFcVBMb3V5UXgxdnVOUUlZYm1vTkVBMzA4aG1m?=
+ =?utf-8?B?YVdnWVY1bnNPZG1Vd0xlNmJrR1RoQ05NQ0pxUC9rY3Q2RTBhZWxUelpTTzh0?=
+ =?utf-8?B?WUtFQnpxNzBoOE1vbVNZdHR0SnJKbmd6WEsxMWc2OFVEczIvS1pPUnk3Zmpk?=
+ =?utf-8?B?cmozNVVySjRrblRTTFArelBON05JVStvdHQxU3F2blhxSW9RZ1QrUDBVS0Ji?=
+ =?utf-8?B?RGo0YmZSNE9RYmd2N2lnS1JocktiR0FDME5RL25hVHk3NEE4Sy83UitQWjRX?=
+ =?utf-8?B?cnVGdy9mY3pwUzUzbDl0SGxSaGlhZDhJZWZ2a25vdzZOQVloZ1orWHphSmZv?=
+ =?utf-8?B?ZTI5R2xKZ1R5dysxcytlcDBadzVoUzdMM2ZtMGxoWTRIL2UxVEc4OUd1VkFx?=
+ =?utf-8?B?cmk1MGtLOStwM0grdnc0eHJBUXJSVSs0QUpVR3dwWXJoY2RoSWhHR29SVXpB?=
+ =?utf-8?B?RTJyOUJJU3lCMXpXUlRKZmpRK3ZVa3J4M0FtZzdETXArOGpQQmM5alhjbVU1?=
+ =?utf-8?B?TGE2Yk9SQ2NzL2taYXFxSURydDlrR0VIUVZxWVdnQ3dUVlJaS1BWWG12NDNR?=
+ =?utf-8?B?NEFqSGVobXV3VU5rZnhFZW5pcGl3VFlCY0JXVjhXN2M5MFl1emRyazZRTnpR?=
+ =?utf-8?B?L0hjS0o4RWF6OXo5UklkcmFlaHg5ZlR6OVJyS1QzV0xrNnhGZys4emNJcWZW?=
+ =?utf-8?B?cEcyckdXUVZYdDRaSWlYSlYxTE1xYUF0QU81czhMa2NpV21Mb0ozY3Z2TTJK?=
+ =?utf-8?B?UmZqYkI2SGltTWEyeExibGFsbjhSTThNWk9rVERFeWU1V0E0M1kyVlp4eTcw?=
+ =?utf-8?B?bnFET3BTV1lGcmFoWVk3S0E4RkhNc0ZHQzl5VWdVSTF6cTMrT1E4SXdkNnVn?=
+ =?utf-8?B?T0pjdktYMHdpWUY3NTJoQmFCUGZSNWQ2dmNqNmVxM0twOTQwK3pYeUFrNXNt?=
+ =?utf-8?B?bTUrZiszQm1xcnlLQkdSdENrSjFLZjkvSEZ6NklCYjA3ZEVjTy95ektSaXIr?=
+ =?utf-8?B?bDVWRkRodzdneVp4Szhyc2laMTVJRHovR0s2bVI2ckxjZHUxL0F3VTNPNitp?=
+ =?utf-8?B?QlZwSDFqc2hlUkVzWlpYN01yTzJ4SkkrQ2VXWXlQVThjLzVLV2VVRFk0em9U?=
+ =?utf-8?B?TkxEbWlwcFp3ck1QdlZTK0RPZ2JSc0JPdUlqbXhmTGhWdksxWHd4SE8rd2hW?=
+ =?utf-8?B?b25jcHFMcEVDdjQySnVYVXIrZzM4NmtEdnpXakxJNEZEVmlhWGN2cDhmeDhS?=
+ =?utf-8?B?ZXhBN2xzUTRvMFJldmtGSlBBMU1RemZsNklYOVNETEtYQUFLUmFNTE5DZ0pT?=
+ =?utf-8?B?bmRTQzFXNlJrT0hnS3BkRUNQNWtkMzk2QWhGY0lMTmF5TGNhQzE5aG9aWEhm?=
+ =?utf-8?B?Q2Q3dS9hVjJzL2FabFV4Qm1xY3NsMGpodUx3NjBEdXMyTUVRRjRudWZpa3U0?=
+ =?utf-8?B?Nk9OM1JtOHB4a1l1aGhTbDBBZzRwa080Uy9Jejc4aHM1cWZJRk1BajQ5dEww?=
+ =?utf-8?B?REtKOEk0MjdSK1A5MXc1OHZBdDJxZ01JSDh5Znh4UUdjeXYyVVZWQ0Z2UDYx?=
+ =?utf-8?B?Y0F5NlpyTGtVMXpKUjMzWlNFbHpQTUd0aUwybHVqcGRFMXYyKzZNOFpQN2hj?=
+ =?utf-8?B?UlRwckdMVURrdnB1aS9EWnZQNHN3PT0=?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f702f520-1f84-4112-4c10-08d9b9b3fbb9
+X-MS-Exchange-CrossTenant-AuthSource: BN0PR10MB5192.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Dec 2021 19:01:32.8144
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: L1RnkzQhB2M20lppnPbZ168mq22mMtxSNOTFuuEImsT2GvMVFH1RhpmctJNUrK1nUrniQvSLsAcGbnwRSxwGIZ9TU0550nlvstWRny8e4Os=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN0PR10MB5320
+X-Proofpoint-Virus-Version: vendor=nai engine=6300 definitions=10190 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 mlxscore=0 spamscore=0
+ phishscore=0 bulkscore=0 suspectscore=0 malwarescore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2110150000
+ definitions=main-2112070118
+X-Proofpoint-GUID: blDjbxzLCMMTmbVKIvxWpOK5ObVtyy5K
+X-Proofpoint-ORIG-GUID: blDjbxzLCMMTmbVKIvxWpOK5ObVtyy5K
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Dec 02, 2021 at 02:26:58PM -0800, Stephen Boyd wrote:
-> This series is from discussion we had on reordering the device lists for
-> drm shutdown paths[1]. I've introduced an 'aggregate' bus that we put
-> the aggregate device onto and then we probe the aggregate device once
-> all the components are probed and call component_add(). The probe/remove
-> hooks are where the bind/unbind calls go, and then a shutdown hook is
-> added that can be used to shutdown the drm display pipeline at the right
-> time.
-> 
-> This works for me on my sc7180 board. I no longer get a warning from i2c
-> at shutdown that we're trying to make an i2c transaction after the i2c
-> bus has been shutdown. There's more work to do on the msm drm driver to
-> extract component device resources like clks, regulators, etc. out of
-> the component bind function into the driver probe but I wanted to move
-> everything over now in other component drivers before tackling that
-> problem.
-> 
-> Tested-by tags would be appreciated, and Acked-by/Reviewed-by tags too.
+Can the DRM maintainers accept this Reviewed by patch?
 
-Thanks for pushing this forward. Unfortunately I'm completely burried and
-it's just not improving, so merge plan:
+Links to the Reviewed by patch:
 
-- please get Greg KH to ack the bus/driver core stuff
+https://lkml.org/lkml/2021/10/27/982
+https://lore.kernel.org/all/1635366613-22507-1-git-send-email-george.kennedy@oracle.com/ 
 
-- please get one of the drm-misc committers we have from Google's Chromeos
-  team (there should be a few by now) to review&push this.
 
-Otherwise I fear this might get stuck and I'd really like to avoid that.
+Thank you,
+George
 
-Cheers, Daniel
 
-> 
-> Changes since v3 (https://lore.kernel.org/r/20211026000044.885195-1-swboyd@chromium.org):
->  - Picked up tags
->  - Rebased to v5.16-rc2
->  - Updated component.c for a few new patches there
->  - Dropped a conversion patch
->  - Added a conversion patch
-> 
-> Changes since v2 (https://lore.kernel.org/r/20211006193819.2654854-1-swboyd@chromium.org):
->  - Picked up acks
->  - Fixed build warnings/errors
->  - Reworked patch series to rename 'master' in a different patch
-> 
-> Changes since v1 (https://lore.kernel.org/r/20210520002519.3538432-1-swboyd@chromium.org):
->  - Use devlink to connect components to the aggregate device
->  - Don't set the registering device as a parent of the aggregate device
->  - New patch for bind_component/unbind_component ops that takes the
->    aggregate device
->  - Convert all drivers in the tree to use the aggregate driver approach
->  - Allow one aggregate driver to be used for multiple aggregate devices
-> 
-> [1] https://lore.kernel.org/r/20210508074118.1621729-1-swboyd@chromium.org
-> 
-> 
-> Stephen Boyd (34):
->   component: Introduce struct aggregate_device
->   component: Remove most references to 'master'
->   component: Introduce the aggregate bus_type
->   component: Move struct aggregate_device out to header file
->   component: Add {bind,unbind}_component() ops that take aggregate
->     device
->   drm/of: Add a drm_of_aggregate_probe() API
->   drm/msm: Migrate to aggregate driver
->   drm/komeda: Migrate to aggregate driver
->   drm/arm/hdlcd: Migrate to aggregate driver
->   drm/malidp: Migrate to aggregate driver
->   drm/armada: Migrate to aggregate driver
->   drm/etnaviv: Migrate to aggregate driver
->   drm/kirin: Migrate to aggregate driver
->   drm/exynos: Migrate to aggregate driver
->   drm/imx: Migrate to aggregate driver
->   drm/ingenic: Migrate to aggregate driver
->   drm/mcde: Migrate to aggregate driver
->   drm/mediatek: Migrate to aggregate driver
->   drm/meson: Migrate to aggregate driver
->   drm/omap: Migrate to aggregate driver
->   drm/rockchip: Migrate to aggregate driver
->   drm/sti: Migrate to aggregate driver
->   drm/sun4i: Migrate to aggregate driver
->   drm/tilcdc: Migrate to aggregate driver
->   drm/vc4: Migrate to aggregate driver
->   iommu/mtk: Migrate to aggregate driver
->   mei: Migrate to aggregate driver
->   power: supply: ab8500: Migrate to aggregate driver
->   fbdev: omap2: Migrate to aggregate driver
->   sound: hdac: Migrate to aggregate driver
->   ASoC: codecs: wcd938x: Migrate to aggregate driver
->   mei: pxp: Migrate to aggregate driver
->   component: Get rid of drm_of_component_probe()
->   component: Remove component_master_ops and friends
-> 
->  drivers/base/component.c                      | 544 ++++++++++--------
->  .../gpu/drm/arm/display/komeda/komeda_drv.c   |  20 +-
->  drivers/gpu/drm/arm/hdlcd_drv.c               |  21 +-
->  drivers/gpu/drm/arm/malidp_drv.c              |  21 +-
->  drivers/gpu/drm/armada/armada_drv.c           |  23 +-
->  drivers/gpu/drm/drm_drv.c                     |   2 +-
->  drivers/gpu/drm/drm_of.c                      |  18 +-
->  drivers/gpu/drm/etnaviv/etnaviv_drv.c         |  20 +-
->  drivers/gpu/drm/exynos/exynos_drm_drv.c       |  21 +-
->  .../gpu/drm/hisilicon/kirin/kirin_drm_drv.c   |  20 +-
->  drivers/gpu/drm/imx/imx-drm-core.c            |  20 +-
->  drivers/gpu/drm/ingenic/ingenic-drm-drv.c     |  25 +-
->  drivers/gpu/drm/mcde/mcde_drv.c               |  23 +-
->  drivers/gpu/drm/mediatek/mtk_drm_drv.c        |  20 +-
->  drivers/gpu/drm/meson/meson_drv.c             |  21 +-
->  drivers/gpu/drm/msm/msm_drv.c                 |  46 +-
->  drivers/gpu/drm/omapdrm/dss/dss.c             |  20 +-
->  drivers/gpu/drm/rockchip/rockchip_drm_drv.c   |  20 +-
->  drivers/gpu/drm/sti/sti_drv.c                 |  20 +-
->  drivers/gpu/drm/sun4i/sun4i_drv.c             |  26 +-
->  drivers/gpu/drm/tilcdc/tilcdc_drv.c           |  28 +-
->  drivers/gpu/drm/vc4/vc4_drv.c                 |  20 +-
->  drivers/iommu/mtk_iommu.c                     |  14 +-
->  drivers/iommu/mtk_iommu.h                     |   6 +-
->  drivers/iommu/mtk_iommu_v1.c                  |  14 +-
->  drivers/misc/mei/hdcp/mei_hdcp.c              |  22 +-
->  drivers/misc/mei/pxp/mei_pxp.c                |  22 +-
->  drivers/power/supply/ab8500_charger.c         |  22 +-
->  drivers/video/fbdev/omap2/omapfb/dss/dss.c    |  20 +-
->  include/drm/drm_of.h                          |  10 +-
->  include/linux/component.h                     |  92 ++-
->  sound/hda/hdac_component.c                    |  21 +-
->  sound/soc/codecs/wcd938x.c                    |  20 +-
->  33 files changed, 772 insertions(+), 490 deletions(-)
-> 
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Benjamin Gaignard <benjamin.gaignard@linaro.org>
-> Cc: Chen Feng <puck.chen@hisilicon.com>
-> Cc: Chen-Yu Tsai <wens@csie.org>
-> Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
-> Cc: Chun-Kuang Hu <chunkuang.hu@kernel.org>
-> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Cc: Emma Anholt <emma@anholt.net>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: "Heiko Stübner" <heiko@sntech.de>
-> Cc: Inki Dae <inki.dae@samsung.com>
-> Cc: James Qian Wang (Arm Technology China) <james.qian.wang@arm.com>
-> Cc: Jaroslav Kysela <perex@perex.cz>
-> Cc: Joerg Roedel <joro@8bytes.org>
-> Cc: John Stultz <john.stultz@linaro.org>
-> Cc: Joonyoung Shim <jy0922.shim@samsung.com>
-> Cc: Jyri Sarha <jyri.sarha@iki.fi>
-> Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
-> Cc: Kyungmin Park <kyungmin.park@samsung.com>
-> Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> Cc: <linux-fbdev@vger.kernel.org>
-> Cc: <linux-omap@vger.kernel.org>
-> Cc: <linux-pm@vger.kernel.org>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: Liviu Dudau <liviu.dudau@arm.com>
-> Cc: Lucas Stach <l.stach@pengutronix.de>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Maxime Ripard <mripard@kernel.org>
-> Cc: Neil Armstrong <narmstrong@baylibre.com>
-> Cc: Paul Cercueil <paul@crapouillou.net>
-> Cc: Philipp Zabel <p.zabel@pengutronix.de>
-> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-> Cc: Rob Clark <robdclark@gmail.com>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Russell King <linux+etnaviv@armlinux.org.uk>
-> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-> Cc: Sandy Huang <hjc@rock-chips.com>
-> Cc: Saravana Kannan <saravanak@google.com>
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: Seung-Woo Kim <sw0312.kim@samsung.com>
-> Cc: Takashi Iwai <tiwai@suse.com>
-> Cc: Tian Tao <tiantao6@hisilicon.com>
-> Cc: Tomas Winkler <tomas.winkler@intel.com>
-> Cc: Tomi Valkeinen <tomba@kernel.org>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: Xinliang Liu <xinliang.liu@linaro.org>
-> Cc: Xinwei Kong <kong.kongxinwei@hisilicon.com>
-> Cc: Yong Wu <yong.wu@mediatek.com>
-> Cc: Vitaly Lubart <vitaly.lubart@intel.com>
-> Cc: Daniele Ceraolo Spurio <daniele.ceraolospurio@intel.com>
-> Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
-> Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
-> 
-> base-commit: 136057256686de39cc3a07c2e39ef6bc43003ff6
-> -- 
-> https://chromeos.dev
-> 
+On 10/28/2021 4:05 AM, Geert Uytterhoeven wrote:
+> On Wed, Oct 27, 2021 at 10:32 PM George Kennedy
+> <george.kennedy@oracle.com> wrote:
+>> Do a sanity check on pixclock value to avoid divide by zero.
+>>
+>> If the pixclock value is zero, the cirrusfb driver will round up
+>> pixclock to get the derived frequency as close to maxclock as
+>> possible.
+>>
+>> Syzkaller reported a divide error in cirrusfb_check_pixclock.
+>>
+>> divide error: 0000 [#1] SMP KASAN PTI
+>> CPU: 0 PID: 14938 Comm: cirrusfb_test Not tainted 5.15.0-rc6 #1
+>> Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.11.0-2
+>> RIP: 0010:cirrusfb_check_var+0x6f1/0x1260
+>>
+>> Call Trace:
+>>   fb_set_var+0x398/0xf90
+>>   do_fb_ioctl+0x4b8/0x6f0
+>>   fb_ioctl+0xeb/0x130
+>>   __x64_sys_ioctl+0x19d/0x220
+>>   do_syscall_64+0x3a/0x80
+>>   entry_SYSCALL_64_after_hwframe+0x44/0xae
+>>
+>> Signed-off-by: George Kennedy <george.kennedy@oracle.com>
+> Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>
+> Gr{oetje,eeting}s,
+>
+>                          Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                  -- Linus Torvalds
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch

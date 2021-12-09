@@ -2,155 +2,117 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8FF2C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Dec 2021 18:25:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6376CC433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Dec 2021 19:20:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243240AbhLIS2x (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 9 Dec 2021 13:28:53 -0500
-Received: from mail-io1-f72.google.com ([209.85.166.72]:47838 "EHLO
-        mail-io1-f72.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243261AbhLIS2x (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Dec 2021 13:28:53 -0500
-Received: by mail-io1-f72.google.com with SMTP id o11-20020a0566022e0b00b005e95edf792dso7848385iow.14
-        for <linux-fbdev@vger.kernel.org>; Thu, 09 Dec 2021 10:25:19 -0800 (PST)
+        id S229752AbhLITYa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Dec 2021 14:24:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48762 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229379AbhLITYa (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Dec 2021 14:24:30 -0500
+Received: from mail-oi1-x22c.google.com (mail-oi1-x22c.google.com [IPv6:2607:f8b0:4864:20::22c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 86EABC0617A1
+        for <linux-fbdev@vger.kernel.org>; Thu,  9 Dec 2021 11:20:56 -0800 (PST)
+Received: by mail-oi1-x22c.google.com with SMTP id n66so10044907oia.9
+        for <linux-fbdev@vger.kernel.org>; Thu, 09 Dec 2021 11:20:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=1ZruaxW8L8OX9fgPYZgSgXNy2q463+9DO5ICSEYbDKQ=;
+        b=N5tZh16fD1ANTvVPiBC20CwgGsc6/G5thWhdbHIjDVfF3kjmqFrMEGeemOh0NUz55r
+         T7HSSqVz8FTFdGYKmRFJKlsuNFvd/DuTJjX5ppySrk66OuO+XTQektMUkyMwOQMqzQsn
+         PDtBFk2aGCQZMRGrCUIrEQZ1PQX0LeoKy40X1VNZDG2KHrz6Smd1v5EW7YhxZidbmueY
+         ylnoSnwlgJVI5cADit6x6G9Mcjbz6T7oyfcnexaLMiMLZbl3cNoOterQV1DkDFAlA5RM
+         Zkf86+tx85LOQ8p5BxrMEZM+6tZl4LrMp+r/srfMMzq25DIB7TtdvOWkbU1no2y5UjKw
+         TNew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:date:in-reply-to:message-id:subject
-         :from:to;
-        bh=edrf3WGb+loDWPUhjhXV6BiUS2ZF3RBRAHKPa1IeGs0=;
-        b=dzt1/sTDPbwACIkgPS/DLWR01P5QKnMyJ563eAJlI6j1ezTuZTlVCfXev4eHj1OPhC
-         J69H7U9b4tLTxDZCpTLScifDLKk9d8+KB1QeNZzYXSORQDDVmOchb8+2ruzrD0RgF3gm
-         lyasCpg44W4+bRuD6eXIGJdraBgeFNRkIQso8cz7bjsc+HzNfRCv2LoH6P2rrfSKKZJH
-         HRHEzLB9bSbRb+kiy9j5jS2qzpy4PO5B7d8jem6QuyQjSyyr/5D0lGe8q5MsyOw+vt5W
-         Uj/DFU3hv/v0LpQtx1MIRzjHwRiPOmefOMJ1O0CMIdITov5yBTzxoTkiyDXEyo12N+Zn
-         /JTA==
-X-Gm-Message-State: AOAM531cFPIVV71ntjcFNppomvovh4yGTmNO4Yr4q2rGk5p9cwu+/xhG
-        S8dx1cKMJbhpaAZ9BYRGzmAtpwSuzpVQAQAfz69PDuBUkfv8
-X-Google-Smtp-Source: ABdhPJznpQq6seoFNCr/7hO0cr5JyZeF0yLYtuJVhwAKd/jeo9++7bupaH5QCSmMHTOI5aYEuIXxw0lDy9Qpb4BMKB8c7987f09v
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=1ZruaxW8L8OX9fgPYZgSgXNy2q463+9DO5ICSEYbDKQ=;
+        b=Lxjgmu7xEg3ZA9j6E+P4xLkY3n7TE3wUuco4yrbidrpo9c6OjNi4cAE1Xg5DaQRNF0
+         vo3fE3ibEk56VeQHtpbPBlCAFL56HbLNvSfXXcpTxu8Yv0mIvWZVUhNLvGwthF9WHmSK
+         mbITqFcyOxc13E/ReSYQCjgU32l66CGzgCTa97+a8SRqKPyHKQTlh3CHO5fk9E9R4qWC
+         WSCCyv2kD8NW8pdFmF9m6nGxFsO/a+VPJymlQxZQHBsbshXeK31Pt20pnRFJhMcsVDr7
+         /N37LwCSFJ9/daoLqdg6ufhVM84MHZ2ovE+woNRtfmEnGOg58Kzt16lrEa7eudmXp0rH
+         r5FQ==
+X-Gm-Message-State: AOAM531YuijL87rn/CR+7NPUHQCgBdPcqVB8EG9XHoS3Y5LG4iOTPix8
+        TPoKnlwc1R1vvGmFyfRf2Nhc5FUgMJ/f0586TTA=
+X-Google-Smtp-Source: ABdhPJxCMzUslRm7FidnI2hciOCsoX6UY9Zg/OGwr/RHaqiQjQWNzl83PTeK5eoLmny8OS3z8e7aSMDIS+YzrGYC86Y=
+X-Received: by 2002:a05:6808:68f:: with SMTP id k15mr7667479oig.5.1639077655957;
+ Thu, 09 Dec 2021 11:20:55 -0800 (PST)
 MIME-Version: 1.0
-X-Received: by 2002:a92:c541:: with SMTP id a1mr17129451ilj.243.1639074319304;
- Thu, 09 Dec 2021 10:25:19 -0800 (PST)
-Date:   Thu, 09 Dec 2021 10:25:19 -0800
-In-Reply-To: <000000000000ab6df705b453993a@google.com>
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <000000000000900f3505d2baba20@google.com>
-Subject: Re: [syzbot] BUG: unable to handle kernel paging request in
- bitfill_aligned (2)
-From:   syzbot <syzbot+a4edd73d589b0b7efbeb@syzkaller.appspotmail.com>
-To:     b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        ngraniel@cocobongo.net, syzkaller-bugs@googlegroups.com
+References: <62aab616-53cb-ff9f-c5f3-169c547bd1ee@igalia.com>
+ <CADnq5_O8x3_8f7GZ=tme55-QW+nqMJ2YoqvROjDPg2YZP2catQ@mail.gmail.com>
+ <a1f4d263-b3d2-4ceb-8a89-948c8129500f@igalia.com> <CADnq5_N9ptK4c86LO77YcrF5_M==hket+L7eYjsGCaKbORO=ug@mail.gmail.com>
+ <eaea0143-a961-b83c-3c6c-4d612cd003bc@igalia.com>
+In-Reply-To: <eaea0143-a961-b83c-3c6c-4d612cd003bc@igalia.com>
+From:   Alex Deucher <alexdeucher@gmail.com>
+Date:   Thu, 9 Dec 2021 14:20:44 -0500
+Message-ID: <CADnq5_P+J_xxJ62zmTPGY0NfQR05Vnp51M_bYGXmdY1cXARfLA@mail.gmail.com>
+Subject: Re: Reuse framebuffer after a kexec (amdgpu / efifb)
+To:     "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+Cc:     "open list:EFIFB FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>,
+        kexec@lists.infradead.org,
+        amd-gfx list <amd-gfx@lists.freedesktop.org>,
+        kernel@gpiccoli.net, Baoquan He <bhe@redhat.com>,
+        =?UTF-8?Q?Samuel_Iglesias_Gons=C3=A1lvez?= <siglesias@igalia.com>,
+        xinhui pan <Xinhui.Pan@amd.com>,
+        Maling list - DRI developers 
+        <dri-devel@lists.freedesktop.org>, pjones@redhat.com,
+        Gerd Hoffmann <kraxel@redhat.com>,
+        "Deucher, Alexander" <alexander.deucher@amd.com>,
+        Dave Young <dyoung@redhat.com>,
+        Christian Koenig <christian.koenig@amd.com>,
+        Vivek Goyal <vgoyal@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-syzbot has found a reproducer for the following issue on:
+On Thu, Dec 9, 2021 at 1:18 PM Guilherme G. Piccoli <gpiccoli@igalia.com> wrote:
+>
+> Thanks again Alex! Some comments inlined below:
+>
+> On 09/12/2021 15:06, Alex Deucher wrote:
+> > Not really in a generic way.  It's asic and platform specific.  In
+> > addition most modern displays require link training to bring up the
+> > display, so you can't just save and restore registers.
+>
+> Oh sure, I understand that. My question is more like: is there a way,
+> inside amdgpu driver, to save this state before taking
+> over/overwriting/reprogramming the device? So we could (again, from
+> inside the amdgpu driver) dump this pre-saved state in the shutdown
+> handler, for example, having the device in a "pre-OS" state when the new
+> kexec'ed kernel starts.
 
-HEAD commit:    2a987e65025e Merge tag 'perf-tools-fixes-for-v5.16-2021-12..
-git tree:       upstream
-console output: https://syzkaller.appspot.com/x/log.txt?x=12f8fdc5b00000
-kernel config:  https://syzkaller.appspot.com/x/.config?x=7d5e878e3399b6cc
-dashboard link: https://syzkaller.appspot.com/bug?extid=a4edd73d589b0b7efbeb
-compiler:       Debian clang version 11.0.1-2, GNU ld (GNU Binutils for Debian) 2.35.2
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16671badb00000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=122beabdb00000
+Sure, it could be done, it's just a fair amount of work.  Things like
+legacy vga text mode is a bit more of a challenge, but that tends to
+be less relevant as non-legacy UEFI becomes more pervasive.
 
-IMPORTANT: if you fix the issue, please add the following tag to the commit:
-Reported-by: syzbot+a4edd73d589b0b7efbeb@syzkaller.appspotmail.com
+>
+> >
+> > The drivers are asic and platform specific.  E.g., the driver for
+> > vangogh is different from renoir is different from skylake, etc.  The
+> > display programming interfaces are asic specific.
+>
+> Cool, that makes sense! But if you (or anybody here) know some of these
+> GOP drivers, e.g. for the qemu/qxl device, I'm just curious to
+> see/understand how complex is the FW driver to just put the
+> device/screen in a usable state.
 
-BUG: unable to handle page fault for address: ffff888001000030
-#PF: supervisor write access in kernel mode
-#PF: error_code(0x0003) - permissions violation
-PGD 11201067 P4D 11201067 PUD 11202067 PMD 80000000010001e1 
-Oops: 0003 [#1] PREEMPT SMP KASAN
-CPU: 0 PID: 6524 Comm: syz-executor260 Not tainted 5.16.0-rc4-syzkaller #0
-Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
-RIP: 0010:__writeq arch/x86/include/asm/io.h:98 [inline]
-RIP: 0010:bitfill_aligned+0x1d2/0x270 drivers/video/fbdev/core/cfbfillrect.c:75
-Code: 39 1b fd eb 09 e8 3e 39 1b fd 48 83 c3 40 31 ff 89 ee e8 41 3d 1b fd 85 ed 74 2c 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 ff cd <4c> 89 33 85 ed 74 0b 48 83 c3 08 e8 0e 39 1b fd eb ec e8 07 39 1b
-RSP: 0018:ffffc90002b4ee38 EFLAGS: 00010202
-RAX: 0000000000000000 RBX: ffff888001000030 RCX: ffff888020209d00
-RDX: ffff888020209d00 RSI: 0000000000000002 RDI: 0000000000000000
-RBP: 0000000000000001 R08: ffffffff84695e4f R09: 0000000000000040
-R10: 0000000000000002 R11: ffff888020209d00 R12: ffffffffffffffff
-R13: 0000000000000080 R14: 0000000000000000 R15: 0000000000000000
-FS:  0000555555c14300(0000) GS:ffff8880b9a00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffff888001000030 CR3: 00000000708fb000 CR4: 00000000003506f0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-Call Trace:
- <TASK>
- cfb_fillrect+0x5d8/0x800 drivers/video/fbdev/core/cfbfillrect.c:327
- bit_clear_margins+0x2d7/0x6e0 drivers/video/fbdev/core/bitblit.c:209
- fbcon_clear_margins drivers/video/fbdev/core/fbcon.c:1296 [inline]
- fbcon_switch+0x1569/0x21f0 drivers/video/fbdev/core/fbcon.c:1677
- redraw_screen+0x53d/0x1280 drivers/tty/vt/vt.c:1021
- vc_do_resize+0x1361/0x1930 drivers/tty/vt/vt.c:1342
- fbcon_do_set_font+0x9ef/0x10d0 drivers/video/fbdev/core/fbcon.c:1928
- fbcon_set_font+0x9f9/0xc80 drivers/video/fbdev/core/fbcon.c:2014
- con_font_set drivers/tty/vt/vt.c:4666 [inline]
- con_font_op+0xbcd/0x1080 drivers/tty/vt/vt.c:4710
- vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
- vt_ioctl+0x1838/0x3860 drivers/tty/vt/vt_ioctl.c:752
- tty_ioctl+0xfb2/0x17d0 drivers/tty/tty_io.c:2805
- vfs_ioctl fs/ioctl.c:51 [inline]
- __do_sys_ioctl fs/ioctl.c:874 [inline]
- __se_sys_ioctl+0xfb/0x170 fs/ioctl.c:860
- do_syscall_x64 arch/x86/entry/common.c:50 [inline]
- do_syscall_64+0x44/0xd0 arch/x86/entry/common.c:80
- entry_SYSCALL_64_after_hwframe+0x44/0xae
-RIP: 0033:0x7f44f1232229
-Code: 28 00 00 00 75 05 48 83 c4 28 c3 e8 b1 14 00 00 90 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 c0 ff ff ff f7 d8 64 89 01 48
-RSP: 002b:00007fffb8c823a8 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
-RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 00007f44f1232229
-RDX: 0000000020000400 RSI: 0000000000004b72 RDI: 0000000000000004
-RBP: 0000000000000000 R08: 000000000000000d R09: 00007fffb8c82548
-R10: 0000000000000000 R11: 0000000000000246 R12: 00007f44f11f5820
-R13: 431bde82d7b634db R14: 0000000000000000 R15: 0000000000000000
- </TASK>
-Modules linked in:
-CR2: ffff888001000030
----[ end trace 3cf2fa8eab0f5f7d ]---
-RIP: 0010:__writeq arch/x86/include/asm/io.h:98 [inline]
-RIP: 0010:bitfill_aligned+0x1d2/0x270 drivers/video/fbdev/core/cfbfillrect.c:75
-Code: 39 1b fd eb 09 e8 3e 39 1b fd 48 83 c3 40 31 ff 89 ee e8 41 3d 1b fd 85 ed 74 2c 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 00 ff cd <4c> 89 33 85 ed 74 0b 48 83 c3 08 e8 0e 39 1b fd eb ec e8 07 39 1b
-RSP: 0018:ffffc90002b4ee38 EFLAGS: 00010202
-RAX: 0000000000000000 RBX: ffff888001000030 RCX: ffff888020209d00
-RDX: ffff888020209d00 RSI: 0000000000000002 RDI: 0000000000000000
-RBP: 0000000000000001 R08: ffffffff84695e4f R09: 0000000000000040
-R10: 0000000000000002 R11: ffff888020209d00 R12: ffffffffffffffff
-R13: 0000000000000080 R14: 0000000000000000 R15: 0000000000000000
-FS:  0000555555c14300(0000) GS:ffff8880b9a00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: ffff888001000030 CR3: 00000000708fb000 CR4: 00000000003506f0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-----------------
-Code disassembly (best guess):
-   0:	39 1b                	cmp    %ebx,(%rbx)
-   2:	fd                   	std
-   3:	eb 09                	jmp    0xe
-   5:	e8 3e 39 1b fd       	callq  0xfd1b3948
-   a:	48 83 c3 40          	add    $0x40,%rbx
-   e:	31 ff                	xor    %edi,%edi
-  10:	89 ee                	mov    %ebp,%esi
-  12:	e8 41 3d 1b fd       	callq  0xfd1b3d58
-  17:	85 ed                	test   %ebp,%ebp
-  19:	74 2c                	je     0x47
-  1b:	66 2e 0f 1f 84 00 00 	nopw   %cs:0x0(%rax,%rax,1)
-  22:	00 00 00
-  25:	0f 1f 00             	nopl   (%rax)
-  28:	ff cd                	dec    %ebp
-* 2a:	4c 89 33             	mov    %r14,(%rbx) <-- trapping instruction
-  2d:	85 ed                	test   %ebp,%ebp
-  2f:	74 0b                	je     0x3c
-  31:	48 83 c3 08          	add    $0x8,%rbx
-  35:	e8 0e 39 1b fd       	callq  0xfd1b3948
-  3a:	eb ec                	jmp    0x28
-  3c:	e8                   	.byte 0xe8
-  3d:	07                   	(bad)
-  3e:	39 1b                	cmp    %ebx,(%rbx)
+Most of the asic init and display setup on AMD GPUs is handled via
+atombios command tables (basically little scripted stored in the
+vbios) which are shared by the driver and the GOP driver for most
+programming sequences.  In our case, the GOP driver is pretty simple.
+Take a look at the pre-DC display code in amdgpu to see what a basic
+display driver would look like (e.g., dce_v11_0.c).  The GOP driver
+would call the atombios asic_init table to make sure the chip itself
+is initialized (e.g., memory controller, etc.), then walk the display
+data tables in the vbios to determine the display configuration
+specific to this board, then probe the displays and use the atombios
+display command tables to light them up.
 
+Alex

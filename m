@@ -2,87 +2,72 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21E78C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  8 Dec 2021 14:46:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FFD6C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu,  9 Dec 2021 09:01:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232953AbhLHOuT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 8 Dec 2021 09:50:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45528 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232932AbhLHOuS (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 8 Dec 2021 09:50:18 -0500
-Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D6EAC061746;
-        Wed,  8 Dec 2021 06:46:47 -0800 (PST)
-Received: by mail-pg1-x530.google.com with SMTP id k4so2237790pgb.8;
-        Wed, 08 Dec 2021 06:46:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=abO6t0h0ZyTAKao1FORuZLKClUQrGyg7tXcyMOqZ1OA=;
-        b=CGWBvzAFHk4gwwCoMS6EvYfqDjTdGfgoAd9DwJtw15ptspglZcqwY+9LOtpzc8EsOt
-         hIh2r+01UgDUHyXpjNO+q93STzUHiCURYXEnCpqE37ex/X+kMLwxASVKlxIiseWvtozH
-         sVt6dieU0hh3BuIvRfvhAfgHPGxQNs4bRKF06U09KRLy53eExj4DpOz+LZ2LxJDrjeYX
-         xWXbvIEfGOijMn1sm+yfKT4MfdC3MMDBDvYK0JZryMgj7N3LzfCXSQs+5zb5paz6MkPc
-         PwOF/2iQ9TFf/Go6oNkmiOX99KYC0u8D+ashqLd7EGE8V+1Cc/kfXrBfIv4Ia3W4DQik
-         xQsw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=abO6t0h0ZyTAKao1FORuZLKClUQrGyg7tXcyMOqZ1OA=;
-        b=yYS/KaKftoqRhH2Ts1StCahA+DkeTiGZNqbPY2fHjRdA1qK90tGcXN6qi7v0YO5W/m
-         fg7Puh3ujdDVUd4QCW+vRTWfWMjM3PHiIeYax8s2UOxGXflqqzleDQu4AcG1mSHfVnNu
-         g4tj4vbT8orYfegLiERe1yESF26klYi49c9gTU6nb5JMfs3rRBzQNGFQqvW3f+vJ+CNa
-         h+mBgolyGNwqEqyOc6wpTf4ajC8R48C0OVCDH3ir7XzgMiAfTf0w2mxOAv/EsTo78ORK
-         +HrMdhmMnJz9MJWeNt/BQjwm54YXlq0PMQRfRFkcb9rsswRZnbogp2yAlWNPBf22ss/d
-         t/xQ==
-X-Gm-Message-State: AOAM5335/juRZZDV7jxFo7Qm7GBkNbYJktWfZAktNW39rpAz1LTIFnwI
-        mu2Dx1p7W5UOe1lZ1q3DkWUdavrFZPv61w==
-X-Google-Smtp-Source: ABdhPJzRxlFT2LitZqt5q22fxIHSpBytcIkyx6Cq4uWtDot4pKiZxMB9+FSTclQJ5vYpkfNGz4mnRA==
-X-Received: by 2002:a65:6a43:: with SMTP id o3mr28961742pgu.329.1638974806321;
-        Wed, 08 Dec 2021 06:46:46 -0800 (PST)
-Received: from localhost.localdomain (27-53-123-192.adsl.fetnet.net. [27.53.123.192])
-        by smtp.gmail.com with ESMTPSA id t38sm4135280pfg.199.2021.12.08.06.46.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Dec 2021 06:46:45 -0800 (PST)
-From:   Wei Ming Chen <jj251510319013@gmail.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     linux-fbdev@vger.kernel.org, tzimmermann@suse.de, robh@kernel.org,
-        andriy.shevchenko@linux.intel.com, maxime@cerno.tech,
-        Wei Ming Chen <jj251510319013@gmail.com>
-Subject: [PATCH] fbdev: Fix file path that does not exist
-Date:   Wed,  8 Dec 2021 22:46:31 +0800
-Message-Id: <20211208144631.3710-1-jj251510319013@gmail.com>
-X-Mailer: git-send-email 2.25.1
+        id S231773AbhLIJEv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 9 Dec 2021 04:04:51 -0500
+Received: from szxga08-in.huawei.com ([45.249.212.255]:29109 "EHLO
+        szxga08-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231602AbhLIJEv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 9 Dec 2021 04:04:51 -0500
+Received: from canpemm500007.china.huawei.com (unknown [172.30.72.55])
+        by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4J8nxr74yJz1DJyF;
+        Thu,  9 Dec 2021 16:58:24 +0800 (CST)
+Received: from localhost (10.174.179.215) by canpemm500007.china.huawei.com
+ (7.192.104.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.20; Thu, 9 Dec
+ 2021 17:01:16 +0800
+From:   YueHaibing <yuehaibing@huawei.com>
+To:     <sam@ravnborg.org>, <b.zolnierkie@samsung.com>
+CC:     <dri-devel@lists.freedesktop.org>, <linux-fbdev@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, YueHaibing <yuehaibing@huawei.com>
+Subject: [PATCH -next] video: fbdev: controlfb: Fix COMPILE_TEST build
+Date:   Thu, 9 Dec 2021 17:01:13 +0800
+Message-ID: <20211209090113.37756-1-yuehaibing@huawei.com>
+X-Mailer: git-send-email 2.10.2.windows.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.174.179.215]
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ canpemm500007.china.huawei.com (7.192.104.62)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-pvr2fb.c should be under drivers/video/fbdev/
-instead of drivers/video/
+If PPC_BOOK3S, PPC_PMAC and PPC32 is n, COMPILE_TEST build fails:
 
-Signed-off-by: Wei Ming Chen <jj251510319013@gmail.com>
+drivers/video/fbdev/controlfb.c:70:0: error: "pgprot_cached_wthru" redefined [-Werror]
+ #define pgprot_cached_wthru(prot) (prot)
+
+In file included from ./arch/powerpc/include/asm/pgtable.h:20:0,
+                 from ./include/linux/pgtable.h:6,
+                 from ./include/linux/mm.h:33,
+                 from drivers/video/fbdev/controlfb.c:37:
+./arch/powerpc/include/asm/nohash/pgtable.h:243:0: note: this is the location of the previous definition
+ #define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+
+Fixes: a07a63b0e24d ("video: fbdev: controlfb: add COMPILE_TEST support")
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/video/fbdev/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/controlfb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 6ed5e608dd04..93b8d84c34cf 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -829,7 +829,7 @@ config FB_PVR2
- 	  You can pass several parameters to the driver at boot time or at
- 	  module load time.  The parameters look like "video=pvr2:XXX", where
- 	  the meaning of XXX can be found at the end of the main source file
--	  (<file:drivers/video/pvr2fb.c>). Please see the file
-+	  (<file:drivers/video/fbdev/pvr2fb.c>). Please see the file
- 	  <file:Documentation/fb/pvr2fb.rst>.
- 
- config FB_OPENCORES
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 509311471d51..bd59e7b11ed5 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -67,7 +67,9 @@
+ #define out_8(addr, val)	(void)(val)
+ #define in_le32(addr)		0
+ #define out_le32(addr, val)	(void)(val)
++#ifndef pgprot_cached_wthru
+ #define pgprot_cached_wthru(prot) (prot)
++#endif
+ #else
+ static void invalid_vram_cache(void __force *addr)
+ {
 -- 
-2.25.1
+2.17.1
 

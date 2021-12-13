@@ -2,116 +2,106 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD83BC433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Dec 2021 08:27:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 450D0C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 13 Dec 2021 08:28:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229960AbhLMI1N (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 13 Dec 2021 03:27:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38154 "EHLO
+        id S232934AbhLMI2C (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 13 Dec 2021 03:28:02 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38218 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229890AbhLMI1M (ORCPT
+        with ESMTP id S232944AbhLMI1W (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 13 Dec 2021 03:27:12 -0500
+        Mon, 13 Dec 2021 03:27:22 -0500
 Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A87E3C0613FE
-        for <linux-fbdev@vger.kernel.org>; Mon, 13 Dec 2021 00:27:11 -0800 (PST)
-Received: by mail-ed1-x530.google.com with SMTP id w1so49176122edc.6
-        for <linux-fbdev@vger.kernel.org>; Mon, 13 Dec 2021 00:27:11 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55F16C061D72
+        for <linux-fbdev@vger.kernel.org>; Mon, 13 Dec 2021 00:27:22 -0800 (PST)
+Received: by mail-ed1-x530.google.com with SMTP id e3so50051309edu.4
+        for <linux-fbdev@vger.kernel.org>; Mon, 13 Dec 2021 00:27:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=fairphone.com; s=fair;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=9qNVJJUEkc7Dcqq+w3jXBP/JOAXOW45KnRjiowBHvGk=;
-        b=lGsG+RSK6fKMObsJQ7Iti5lpYgJ6YDHFJh2yVwO4XuHD8dveHSTYe/H5vctCR3EceI
-         XqKuogxu2fO0A5lqmYqIOpALu/ZAlwyN5MpiGyuxrhGT4dFdyWMvGpLMx8bvZsddP9hp
-         uygNMnJ/yqA/HLuo9RxL3P+UaNjwUw8FVJxoH5ME1qus3y9LosZQt6MPD+Go9ivr+x+I
-         5NBCzSlBofWA0sfijE46EUYppcRu4UKN9UbgQuwQlhr8/MVWSyaIoK6EGtTLTPMvbQQ1
-         YS5aqS6H4kpadwXpvOh44y1zf//CCrxgItwxZNG/CI17aEzqwFI/8ITqQJIsV4zBY6wg
-         c6OA==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=cCXYTlbzoYt/Q28BNia8J8S+G15WMUnhTesQFEhNzfI=;
+        b=Rojam3hdYP7hQgOm6VhLrHu+G8tyuNzvRMCqH8pOcqteulHTYa/0ryuQJFdxS/ARNf
+         647IcWus/mIAleA2delSi8xvMNEIPaAoe6fyhAi1U/g7Xsz0CjMg8B4frlivzhalWBsP
+         GcK2l70kVOUocbxB/9qV73dYKKUczSx7XUon4rgv7DMLhxRWmPCzLwUFjZvjPoarqmgt
+         etTBTqpAAWP2xhwcSyNJ26QuR/tyBqFMagKxa2GsLVqpeoprUpioRcXjnVzKqVgbxbZZ
+         c2fBoKBoDT/kpTi3bxk9Gj1Qho8vg39QKe29vy+6i97JkqQT4vU2TEPmmDpiY9MDWi7k
+         P+1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=9qNVJJUEkc7Dcqq+w3jXBP/JOAXOW45KnRjiowBHvGk=;
-        b=vyCNUGvb7ok2wsJhEKE+5+ETTp3m435CykjOZlTdHQtJ1A9tmFULg9M/X3OyPoR8gb
-         F7VDR/Qk1up+RKv1td+YQQyWZRCxejw96T4tCTzBf86u6tcDjFxfpI9OmedvK0n0x7el
-         5Mo//GIHqnkOacI6a0fN40z2bJLI/bzpOiZiEaj5qMajzfqsYiH4tATPdJ0/EM5aXVdb
-         Oieqovj0UmjDw4g7ZR1DbxoUh4FVT9BhkeSsKtuYlrK/xzX8z28SFuFABbVQN2pbqBei
-         NrbuvG8fUfgCwDveUW3LNG0JBCbWPVzdF9trSMZQWaaNfskYWkQ8xLmBu0acP3psIBwJ
-         1A2A==
-X-Gm-Message-State: AOAM530GcItHudwTxQ4fh/Nbw2w7KY/vhgNUD9T2S82d+lpegfsbzBlz
-        bvAiAO9vfQv1nD1T8r97vH+wAQ==
-X-Google-Smtp-Source: ABdhPJzJQzH9IbD0iKwzxP+OhiHo4OBp+NQ23YW0riJPC6Agdl1/DHF8upIV5V9+Kb8bNnWCgPyEyg==
-X-Received: by 2002:a17:907:608f:: with SMTP id ht15mr41645248ejc.300.1639384030231;
-        Mon, 13 Dec 2021 00:27:10 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=cCXYTlbzoYt/Q28BNia8J8S+G15WMUnhTesQFEhNzfI=;
+        b=sx1WOb44xvNnjynQrWYXEqDS5imd5Oopb/yDY+7JJJAZIFuCpx/1wk5ayDNq21k9fs
+         DNUzg7k4lt9kwA1CK+n3T7Tgx8qjXl3AOoEMbef/5rzQnWOhPN1BIi2bVemRSwbGLuDR
+         Ys2tSYv8ZhjBH35e/MOdgEzjFq4GTil9bPRuGbXJazdhhie5tmmXhlsy9/Jlb9a/yvJ9
+         Y+QgLnWuvrmRT7FuMGbMgFcxdNGo2+sfVarDEG3c4zVQciBQ43qwEM0/+BSdMZ8Xd5qj
+         zYrMEPe2AdlC3o2sfcTUsIwHFX+SejENMgTzAmBNYT+vjIX1vg9V72U9bfpw8sVl51AU
+         kXsg==
+X-Gm-Message-State: AOAM531F2mDqmQYinwlIuNbIimoHk3G1IcuH8ervQO2/lqMMm2NkyF4/
+        dBB6GIaYfAjZ5oB23R0gwSuwJg==
+X-Google-Smtp-Source: ABdhPJxHCYCw81OQMQ+WDW5DK6U8tfsxHYWpHXmWp7zdWdIXmEtyqZJxdLCYFxtjui6NLq3pfFRQDQ==
+X-Received: by 2002:a05:6402:154:: with SMTP id s20mr65434822edu.148.1639384040946;
+        Mon, 13 Dec 2021 00:27:20 -0800 (PST)
 Received: from localhost.localdomain ([2a02:a210:20c5:8c80:7d0a:cd68:c339:f426])
-        by smtp.gmail.com with ESMTPSA id b11sm6062432ede.62.2021.12.13.00.27.09
+        by smtp.gmail.com with ESMTPSA id b11sm6062432ede.62.2021.12.13.00.27.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Dec 2021 00:27:09 -0800 (PST)
+        Mon, 13 Dec 2021 00:27:20 -0800 (PST)
 From:   Luca Weiss <luca.weiss@fairphone.com>
 To:     linux-arm-msm@vger.kernel.org
 Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
         Luca Weiss <luca.weiss@fairphone.com>,
-        Amit Kucheria <amitk@kernel.org>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>,
+        Hans de Goede <hdegoede@redhat.com>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Rob Herring <robh+dt@kernel.org>,
         Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        de Goede <hdegoede@redhat.com>, devicetree@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Konrad Dybcio <konrad.dybcio@somainline.org>,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-phy@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Manu Gautam <mgautam@codeaurora.org>,
-        Prakash Ranjan <saiprakash.ranjan@codeaurora.org>,
-        Rishabh Bhatnagar <rishabhb@codeaurora.org>,
-        Rob Herring <robh@kernel.org>, Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 00/10] dt-binding patches for sm6350
-Date:   Mon, 13 Dec 2021 09:26:01 +0100
-Message-Id: <20211213082614.22651-1-luca.weiss@fairphone.com>
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 09/10] dt-bindings: simple-framebuffer: allow standalone compatible
+Date:   Mon, 13 Dec 2021 09:26:10 +0100
+Message-Id: <20211213082614.22651-10-luca.weiss@fairphone.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20211213082614.22651-1-luca.weiss@fairphone.com>
+References: <20211213082614.22651-1-luca.weiss@fairphone.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This series adds compatibles to the dt-bindings documentation where it
-was missed before.
+Qualcomm platforms use "simple-framebuffer" without a more specific
+compatible. Allow that in the binding doc.
 
-Finally, the last patch solves some further dtbs_check errors by
-modifying the sm6350.dtsi to match the binding docs more closely.
+Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+---
+ .../bindings/display/simple-framebuffer.yaml         | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-Please note, that the first patch from Konrad is a resend that wasn't
-picked up when sent to the lists in August 2021.
-
-Konrad Dybcio (1):
-  dt-bindings: arm: msm: Add LLCC for SM6350
-
-Luca Weiss (9):
-  dt-bindings: firmware: scm: Add SM6350 compatible
-  dt-bindings: qcom,pdc: Add SM6350 compatible
-  dt-bindings: phy: qcom,qusb2: Add SM6350 compatible
-  dt-bindings: thermal: tsens: Add SM6350 compatible
-  dt-bindings: usb: qcom,dwc3: Add SM6350 compatible
-  dt-bindings: watchdog: Add SM6350 and SM8250 compatible
-  dt-bindings: arm: msm: Don't mark LLCC interrupt as required
-  dt-bindings: simple-framebuffer: allow standalone compatible
-  arm64: dts: qcom: sm6350: Fix validation errors
-
- .../devicetree/bindings/arm/msm/qcom,llcc.yaml   |  2 +-
- .../bindings/display/simple-framebuffer.yaml     | 12 +++++++-----
- .../devicetree/bindings/firmware/qcom,scm.txt    |  1 +
- .../bindings/interrupt-controller/qcom,pdc.txt   |  5 +++--
- .../devicetree/bindings/phy/qcom,qusb2-phy.yaml  |  1 +
- .../devicetree/bindings/thermal/qcom-tsens.yaml  |  1 +
- .../devicetree/bindings/usb/qcom,dwc3.yaml       |  1 +
- .../devicetree/bindings/watchdog/qcom-wdt.yaml   |  2 ++
- arch/arm64/boot/dts/qcom/sm6350.dtsi             | 16 ++++++++--------
- 9 files changed, 25 insertions(+), 16 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+index c2499a7906f5..2d82d0ce4a34 100644
+--- a/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
++++ b/Documentation/devicetree/bindings/display/simple-framebuffer.yaml
+@@ -52,11 +52,13 @@ description: |+
+ 
+ properties:
+   compatible:
+-    items:
+-      - enum:
+-          - apple,simple-framebuffer
+-          - allwinner,simple-framebuffer
+-          - amlogic,simple-framebuffer
++    oneOf:
++      - items:
++          - enum:
++              - apple,simple-framebuffer
++              - allwinner,simple-framebuffer
++              - amlogic,simple-framebuffer
++          - const: simple-framebuffer
+       - const: simple-framebuffer
+ 
+   reg:
 -- 
 2.34.1
 

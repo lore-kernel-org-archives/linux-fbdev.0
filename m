@@ -2,52 +2,72 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B13FAC43219
-	for <linux-fbdev@archiver.kernel.org>; Tue, 14 Dec 2021 08:40:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3F11C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 15 Dec 2021 20:11:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231889AbhLNIkn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 14 Dec 2021 03:40:43 -0500
-Received: from mail.thebizzie.pl ([192.236.147.111]:41326 "EHLO
-        mail.thebizzie.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231891AbhLNIkm (ORCPT
+        id S233166AbhLOULn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 15 Dec 2021 15:11:43 -0500
+Received: from mail-oi1-f172.google.com ([209.85.167.172]:41495 "EHLO
+        mail-oi1-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231579AbhLOULm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 14 Dec 2021 03:40:42 -0500
-Received: by mail.thebizzie.pl (Postfix, from userid 1002)
-        id 3E1821814D3; Tue, 14 Dec 2021 08:32:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=thebizzie.pl; s=mail;
-        t=1639470783; bh=kU+//Lu71IqgcFfjayWXuIc0mZtoyrYJc2YuqyU8eS8=;
-        h=Date:From:To:Subject:From;
-        b=ehDTjWSm/hgpdp0cICdgqQsWjh4FVjCxKG5kWfQ1B9S9no2z8yKt+CZ3Hvzo7IPNM
-         3VwHgD92E/w0N+uohiPi8TbHLbXVayN/fJQS1OdVxFCxq6aLFk85Wo/ZtFZkPZ/D2P
-         nKip6HyKsA9ywLQR31V8mDCz2i1Sz3Eykdz//zHlLmSzA4iJ1GQSJdrfAla04lbNfv
-         P97h3h/QUB9UEWbYj4zCZPjxxZPbgDHbA+LTHrBHqUWC9rMzymgZPANTrhnRBDg47w
-         ZYGXA0lO2t7PTM+c446MX0PmuNgZm55HryWfg6PpdR+94twISzh1RyBnCp+ggxNq6z
-         dBEGR5w4rWvlg==
-Received: by mail.thebizzie.pl for <linux-fbdev@vger.kernel.org>; Tue, 14 Dec 2021 08:32:04 GMT
-Message-ID: <20211214074500-0.1.7.2iy.0.elmyjrw0yw@thebizzie.pl>
-Date:   Tue, 14 Dec 2021 08:32:04 GMT
-From:   "Mateusz Adamczyk" <mateusz.adamczyk@thebizzie.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: Wycena paneli fotowoltaicznych
-X-Mailer: mail.thebizzie.pl
+        Wed, 15 Dec 2021 15:11:42 -0500
+Received: by mail-oi1-f172.google.com with SMTP id u74so33202683oie.8;
+        Wed, 15 Dec 2021 12:11:42 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=Cmkh2Es9i+8G9hTWcV5pi5vTt+BeIBoGLAmd/MNJvhA=;
+        b=rHlH7992kDmAW+WsyErx+09JpmdGdhepl53qn+WtU4mA1yb4dpdSl0S4dE9ZWAUsvX
+         vP6kM7YCwKed/OM7fpo44/YtFTOcxbctopFuGAu2xx/5d9b+IbFbPpQW1T6uzHUkjKKE
+         dGLjticDX0O1Ce9ph0qLB42j3v6LAxoR6OHV/NU8AUze1C8wYPPW2ZFuNWkCBx4SEn5l
+         /OTdpCFTrosuNUfPDZ5jWh9+d9+mWc0hOYpN22ZPFNtjVvTp8aAH27WGvdkD4K0JZHZK
+         hxk/jCCpXMl3dFxgIkNxy1qwl6L8w1QEpJb/rRPOuxpAZpkB4wMkrVw2b8+LipaWxpvM
+         8A6Q==
+X-Gm-Message-State: AOAM531fJz+/aIP1V43B/Fu8PNFbDEjHY/Qy6cYcbmVF2bgcIGZr0iFP
+        WBugT9Z6TocRsfji9lpnPQ==
+X-Google-Smtp-Source: ABdhPJyM1ZMlrf4TO+CVAER9wA5DaXo2npuenGcEbYZYr9u3fHtpFP4yfaVSSVT0qgkXzTvNNTxF8g==
+X-Received: by 2002:aca:1c02:: with SMTP id c2mr1417576oic.53.1639599102086;
+        Wed, 15 Dec 2021 12:11:42 -0800 (PST)
+Received: from robh.at.kernel.org (66-90-148-213.dyn.grandenetworks.net. [66.90.148.213])
+        by smtp.gmail.com with ESMTPSA id b22sm514322oib.41.2021.12.15.12.11.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 15 Dec 2021 12:11:41 -0800 (PST)
+Received: (nullmailer pid 1756808 invoked by uid 1000);
+        Wed, 15 Dec 2021 20:11:40 -0000
+Date:   Wed, 15 Dec 2021 14:11:40 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Luca Weiss <luca.weiss@fairphone.com>
+Cc:     devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Daniel Vetter <daniel@ffwll.ch>, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, Rob Herring <robh+dt@kernel.org>,
+        phone-devel@vger.kernel.org, David Airlie <airlied@linux.ie>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/10] dt-bindings: simple-framebuffer: allow standalone
+ compatible
+Message-ID: <YbpL/MG0xZyVD01B@robh.at.kernel.org>
+References: <20211213082614.22651-1-luca.weiss@fairphone.com>
+ <20211213082614.22651-10-luca.weiss@fairphone.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211213082614.22651-10-luca.weiss@fairphone.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+On Mon, 13 Dec 2021 09:26:10 +0100, Luca Weiss wrote:
+> Qualcomm platforms use "simple-framebuffer" without a more specific
+> compatible. Allow that in the binding doc.
+> 
+> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+> ---
+>  .../bindings/display/simple-framebuffer.yaml         | 12 +++++++-----
+>  1 file changed, 7 insertions(+), 5 deletions(-)
+> 
 
-dostrzegam mo=C5=BCliwo=C5=9B=C4=87 wsp=C3=B3=C5=82pracy z Pa=C5=84stwa f=
-irm=C4=85.
-
-=C5=9Awiadczymy kompleksow=C4=85 obs=C5=82ug=C4=99 inwestycji w fotowolta=
-ik=C4=99, kt=C3=B3ra obni=C5=BCa koszty energii elektrycznej nawet o 90%.
-
-Czy s=C4=85 Pa=C5=84stwo zainteresowani weryfikacj=C4=85 wst=C4=99pnych p=
-ropozycji?
-
-
-Pozdrawiam,
-Mateusz Adamczyk
+Acked-by: Rob Herring <robh@kernel.org>

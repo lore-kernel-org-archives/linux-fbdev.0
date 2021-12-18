@@ -2,166 +2,93 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26577C43219
-	for <linux-fbdev@archiver.kernel.org>; Fri, 17 Dec 2021 17:19:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 360FDC433EF
+	for <linux-fbdev@archiver.kernel.org>; Sat, 18 Dec 2021 01:57:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239822AbhLQRTm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 17 Dec 2021 12:19:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55996 "EHLO
+        id S229718AbhLRB5L (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 17 Dec 2021 20:57:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59314 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239802AbhLQRTl (ORCPT
+        with ESMTP id S229709AbhLRB5L (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 17 Dec 2021 12:19:41 -0500
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [IPv6:2a01:488:42:1000:50ed:8234::])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3FCAC061574;
-        Fri, 17 Dec 2021 09:19:41 -0800 (PST)
-Received: from ip4d173d4a.dynamic.kabel-deutschland.de ([77.23.61.74] helo=[192.168.66.200]); authenticated
-        by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        id 1myGtO-0002Mw-9f; Fri, 17 Dec 2021 18:19:38 +0100
-Message-ID: <2f27c760-7679-c8d6-15f0-da1423ee9eb8@leemhuis.info>
-Date:   Fri, 17 Dec 2021 18:19:37 +0100
+        Fri, 17 Dec 2021 20:57:11 -0500
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2ED62C061574;
+        Fri, 17 Dec 2021 17:57:11 -0800 (PST)
+Received: by mail-pl1-x62b.google.com with SMTP id w24so3295745ply.12;
+        Fri, 17 Dec 2021 17:57:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=FWqKFfL0KnIRZ7fFC42ZHJVI9If0P8ietPAL2PVfcNk=;
+        b=iiObPEgrWKUc39gyldEFVpjAyEhD6GkJAxtS2exyvywdMY4A846TPrlUZ8VepXlTX8
+         NDOGavwbnTJ2S7RBImH3zv/+PVOjR8zr3Z+BTy/QPnev8Csp6WfrQkKZ2EyjIFZyeoKB
+         nxHMfcaCFTrBxMjbY5OYJKSAsVC2mIKAD3zjBjZ20SX7yNG4gP8jlUxs8O4aHkGzJCUP
+         rxcC1fPYkyiluPqaHgyCv2KMe2ScC/hxADyr7WAORa42Dbfo+Zo0RT1LdeUMHussiHbJ
+         8qGSQjB2ju57tvkUOibqoY/Bgpq5XjSg3UCpYVlTgHiI2BnaPqoHX67at1/8vebAqaok
+         PxrQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=FWqKFfL0KnIRZ7fFC42ZHJVI9If0P8ietPAL2PVfcNk=;
+        b=vIfW6XWF6GtObbwt2pd5ySYz2XIrdIH6UayB87PhZa15w62AihX6ROaQOT0VqZvrar
+         ZT1WWJqgkSGsKDfPASkpt6mOfhZpH9wJUi9d/8m1ftb8U/l0fefhIp+jC7K+P8n037Vc
+         ih9gs0xsS2nAtfo/74LpnaUSu+3QfyBSqEetE/Kpg9c8wULpbiVWQ1LC5skWREy9XolK
+         U+oWYeUWNdGM1NhV3D3Ij6KVrvE+6RDp3sHjHdQnQQu16YXOs+3vvzs7Zhjfy4ZYRXxD
+         5KKq80rUwjz9Y81GPfI2MogvDunRBZFT7FrnfAXhUeuPdbyjyLXyLapR5RounCY19ItL
+         6Nmw==
+X-Gm-Message-State: AOAM530tnl1h2Ah0S5ez9fiVyMCWLWVx6cWFGT/gs5bPGdxhC1hIiKZB
+        0P/IitWydHhNu/YkS0PTJyw=
+X-Google-Smtp-Source: ABdhPJxp0drx+e0V2hp8dhYxC09S94TpbG+m+EAN7fjKrBkCzuJ20GTwyN6MAdNpAiCrpKPmptN1kA==
+X-Received: by 2002:a17:902:bcc4:b0:141:bfc4:ada with SMTP id o4-20020a170902bcc400b00141bfc40adamr5847673pls.20.1639792630688;
+        Fri, 17 Dec 2021 17:57:10 -0800 (PST)
+Received: from debian11-dev-61.localdomain (192.243.120.180.16clouds.com. [192.243.120.180])
+        by smtp.gmail.com with ESMTPSA id v63sm9434593pgv.71.2021.12.17.17.57.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 17 Dec 2021 17:57:10 -0800 (PST)
+From:   davidcomponentone@gmail.com
+To:     thomas@winischhofer.net
+Cc:     davidcomponentone@gmail.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Yang Guang <yang.guang5@zte.com.cn>,
+        Zeal Robot <zealci@zte.com.cn>
+Subject: [PATCH] video: fbdev: use swap() to make code cleaner
+Date:   Sat, 18 Dec 2021 09:56:59 +0800
+Message-Id: <81d101e615dcd8cc661272965a6a3a51d77aa491.1639791676.git.yang.guang5@zte.com.cn>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [Bug Report] Desktop monitor sleep regression
-Content-Language: en-BS
-To:     Imre Deak <imre.deak@intel.com>
-Cc:     Brandon Nielsen <nielsenb@jetfuse.net>,
-        linux-fbdev@vger.kernel.org,
-        "regressions@lists.linux.dev" <regressions@lists.linux.dev>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        amd-gfx@lists.freedesktop.org, pjones@redhat.com,
-        dri-devel@lists.freedesktop.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        David Airlie <airlied@linux.ie>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <8a27c986-4767-bd29-2073-6c4ffed49bba@jetfuse.net>
- <962fe0af-a080-fc0d-15f3-203166ff4584@leemhuis.info>
- <dca67eb4-d007-2fa0-e0c2-b21d124967f1@leemhuis.info>
- <20211217145202.GB1572087@ideak-desk.fi.intel.com>
-From:   Thorsten Leemhuis <regressions@leemhuis.info>
-In-Reply-To: <20211217145202.GB1572087@ideak-desk.fi.intel.com>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1639761581;456d6697;
-X-HE-SMSGID: 1myGtO-0002Mw-9f
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+From: Yang Guang <yang.guang5@zte.com.cn>
 
+Use the macro 'swap()' defined in 'include/linux/minmax.h' to avoid
+opencoding it.
 
-On 17.12.21 15:52, Imre Deak wrote:
-> On Fri, Dec 17, 2021 at 03:46:21PM +0100, Thorsten Leemhuis wrote:
->> added some CCs Geert added in his reply
->>
->> On 07.12.21 08:20, Thorsten Leemhuis wrote:
->>>
->>> [TLDR: adding this regression to regzbot; most of this mail is compiled
->>> from a few templates paragraphs some of you might have seen already.]
->>>
->>> Hi, this is your Linux kernel regression tracker speaking.
->>
->> /me again
->>
->> What's up here? We are getting close to rc6, but there afaics wasn't any
->> reply of substance since the report ten days ago. Hence:
->>
->> Could anybody please comment on this? Imre Deak, the commit Brandon
->> found in the bisection contains a patch of yours, do you maybe have an
->> idea what's up here?
-> 
-> Yes,
-> https://bugzilla.kernel.org/show_bug.cgi?id=215203
-> 
-> based on which the problem is somehere in the AMD driver.
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: David Yang <davidcomponentone@gmail.com>
+Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
+---
+ drivers/video/fbdev/sis/sis_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Ha, sorry for the noise then, I really feel stupid: I have no idea why I
-didn't check the bug report for an update, as I do normally do. Much
-have slipped through. Ohh well, hopefully we one day have have a central
-place to handle these things.
+diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
+index 266a5582f94d..742f62986b80 100644
+--- a/drivers/video/fbdev/sis/sis_main.c
++++ b/drivers/video/fbdev/sis/sis_main.c
+@@ -213,7 +213,7 @@ static void sisfb_search_mode(char *name, bool quiet)
+ 		/* This does some fuzzy mode naming detection */
+ 		if(sscanf(strbuf1, "%u %u %u %u", &xres, &yres, &depth, &rate) == 4) {
+ 			if((rate <= 32) || (depth > 32)) {
+-				j = rate; rate = depth; depth = j;
++				swap(rate, depth);
+ 			}
+ 			sprintf(strbuf, "%ux%ux%u", xres, yres, depth);
+ 			nameptr = strbuf;
+-- 
+2.30.2
 
-Ciao, Thorsten
-
->> Ciao, Thorsten
->>
->> #regzbot poke
->>
->>> Adding the regression mailing list to the list of recipients, as it
->>> should be in the loop for all regressions, as explained here:
->>> https://www.kernel.org/doc/html/latest/admin-guide/reporting-issues.html
->>>
->>> Also adding the authors and reviewers of the culprit and two appropriate
->>> mailing lists.
->>>
->>> On 07.12.21 01:21, Brandon Nielsen wrote:
->>>> Monitors no longer sleep properly on my system (dual monitor connected
->>>> via DP->DVI, amdgpu, x86_64). The monitors slept properly on 5.14, but
->>>> stopped during the 5.15 series. I have also filed this bug on the kernel
->>>> bugzilla[0] and downstream[1].
->>>>
->>>> I have performed a bisect, first "bad" commit to master is
->>>> 55285e21f04517939480966164a33898c34b2af2[1], the same change made it
->>>> into the 5.15 branch as e3b39825ed0813f787cb3ebdc5ecaa5131623647.
->>>
->>> TWIMC: That was for 5.15.3
->>>
->>>> I have
->>>> verified the issue exists in latest master
->>>> (a51e3ac43ddbad891c2b1a4f3aa52371d6939570).
->>>>
->>>> Steps to reproduce:
->>>>
->>>>   1. Boot system (Fedora Workstation 35 in this case)
->>>>   2. Log in
->>>>   3. Lock screen (after a few seconds, monitors will enter power save
->>>> "sleep" state with backlight off)
->>>>   4. Wait (usually no more than 30 seconds, sometimes up to a few minutes)
->>>>   5. Observe monitor leaving "sleep" state (backlight comes back on),
->>>> but nothing is displayed
->>>>
->>>> [0] - https://bugzilla.kernel.org/show_bug.cgi?id=215203
->>>> [1] - https://bugzilla.redhat.com/show_bug.cgi?id=2028613
->>>
->>> To be sure this issue doesn't fall through the cracks unnoticed, I'm
->>> adding it to regzbot, my Linux kernel regression tracking bot:
->>>
->>> #regzbot ^introduced 55285e21f04517939480966164a33898c34b2af2
->>> #regzbot title fbdev/efifb: Monitors no longer sleep (amdgpu dual
->>> monitor setup)
->>> #regzbot ignore-activity
->>>
->>> Reminder: when fixing the issue, please add a 'Link:' tag with the URL
->>> to the report (the parent of this mail), then regzbot will automatically
->>> mark the regression as resolved once the fix lands in the appropriate
->>> tree. For more details about regzbot see footer.
->>>
->>> Sending this to everyone that got the initial report, to make all aware
->>> of the tracking. I also hope that messages like this motivate people to
->>> directly get at least the regression mailing list and ideally even
->>> regzbot involved when dealing with regressions, as messages like this
->>> wouldn't be needed then.
->>>
->>> Don't worry, I'll send further messages wrt to this regression just to
->>> the lists (with a tag in the subject so people can filter them away), as
->>> long as they are intended just for regzbot. With a bit of luck no such
->>> messages will be needed anyway.
->>>
->>> Ciao, Thorsten, your Linux kernel regression tracker.
->>>
->>> P.S.: As a Linux kernel regression tracker I'm getting a lot of reports
->>> on my table. I can only look briefly into most of them. Unfortunately
->>> therefore I sometimes will get things wrong or miss something important.
->>> I hope that's not the case here; if you think it is, don't hesitate to
->>> tell me about it in a public reply. That's in everyone's interest, as
->>> what I wrote above might be misleading to everyone reading this; any
->>> suggestion I gave they thus might sent someone reading this down the
->>> wrong rabbit hole, which none of us wants.
->>>
->>> BTW, I have no personal interest in this issue, which is tracked using
->>> regzbot, my Linux kernel regression tracking bot
->>> (https://linux-regtracking.leemhuis.info/regzbot/). I'm only posting
->>> this mail to get things rolling again and hence don't need to be CC on
->>> all further activities wrt to this regression.
->>>
-> 

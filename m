@@ -2,86 +2,88 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 115E3C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Dec 2021 08:30:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC6D5C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 20 Dec 2021 08:32:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232459AbhLTIaJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 20 Dec 2021 03:30:09 -0500
-Received: from mail-ua1-f45.google.com ([209.85.222.45]:36855 "EHLO
-        mail-ua1-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231287AbhLTIaJ (ORCPT
+        id S234584AbhLTIcB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 20 Dec 2021 03:32:01 -0500
+Received: from mail-ua1-f47.google.com ([209.85.222.47]:40903 "EHLO
+        mail-ua1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231287AbhLTIcA (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 20 Dec 2021 03:30:09 -0500
-Received: by mail-ua1-f45.google.com with SMTP id r15so16325401uao.3;
-        Mon, 20 Dec 2021 00:30:08 -0800 (PST)
+        Mon, 20 Dec 2021 03:32:00 -0500
+Received: by mail-ua1-f47.google.com with SMTP id y23so16283755uay.7;
+        Mon, 20 Dec 2021 00:31:59 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=rMAO1VGZAlbtYZ79yXzZbE6uNLUuolj3od2YVWnGiLQ=;
-        b=UveSCvYZeIXhE5t6S0vI1qJaDHCuld83TYTFt5YiJpP8WSYFirj91wN+ZZdyzNl8aW
-         iPWAupDSSGZKgZAIUC+lorFfSUM97T4+7VYFWGzb5dMF+BBeuL9u2T4wYYR7gNoa631b
-         0CV4sc9NT6USgc+gmBptoyAKpJewbnUqliHlS64Jc7r71k9hpJjLDiwgm5Qnmg+QLtLJ
-         FhCfORKDYSZnrTyeV1ipG6qIjdhFNdNju1XALCtdB0mB7QnoAeqBtvvpUJOsvH3tCy1W
-         JB6/TxRr8hzlm2+ROR9ZereDiOvsIyE3Qs2xS6idona8L7vwZ36B3nCMnYeW02IMfjHY
-         cM4Q==
-X-Gm-Message-State: AOAM530HHaBvSegGY7gfX/JwWqQ0JmE7uWSGDqINmyIIWOR+bTDpJWHN
-        Tw5wPeZl29h3aL5qlZ1K4tvOF8E+WRnEEg==
-X-Google-Smtp-Source: ABdhPJzS+UuIYwicJpWu84Ncm8JS88IQrccXLSHDYpGL5n3GrMm2owLBJOhETRl2BaLGPjN9bEsUCQ==
-X-Received: by 2002:a67:c106:: with SMTP id d6mr4317149vsj.77.1639989008291;
-        Mon, 20 Dec 2021 00:30:08 -0800 (PST)
-Received: from mail-ua1-f41.google.com (mail-ua1-f41.google.com. [209.85.222.41])
-        by smtp.gmail.com with ESMTPSA id m3sm2540411vsh.7.2021.12.20.00.30.07
+        bh=EgjLQvrKGuGeCYHnkgESw4n2mOzkXtzgjSJa+/vyJgI=;
+        b=iJNu/vXH11pXz2aa+fzl7Q8mqkAXzQoCTrW5vMqiVB7TEpfdmcCb1Mq4FfDPz5OmTj
+         4tOlpcfUDoyaxYqw0oIBHdcq3c4tg8CQI4EQ/Kazz1StDkCG2To3gFk6CHermNZ0OwLx
+         BZqo05BPmGmcQD7aMD29zi9GI/ZyV0UJz4scRd9rsP9HKdg41P9f9eAktVyZ9gQkGnlo
+         JvO398e84pn2T5+CYjo+OzA/ppola7FD/5qvu5J5Z6hmyBGH/EgO15+yEi7Xfh9cDQzY
+         UfK6wak3+sIvaAIyYgAYAQ4I9qXzUzlx1n+vaJ4Nn3m4hOvhiT8tqD4I2ct+i2IUbfxN
+         GeLA==
+X-Gm-Message-State: AOAM532+rgFp6yp9syzc0rpGL4fkOXTYIjZSDiKsJVBkwfHnANI/OCJI
+        7uv2mzSeGm5wRPM+fAlPJ+8Mp3x9rOtCwA==
+X-Google-Smtp-Source: ABdhPJw417rxtNPSZg6m7k/o1pZCAYviPftsGzQn7e0RGN+WniR/Fkb2tujGSbTR17GWyNyeS/2UuQ==
+X-Received: by 2002:a05:6102:3907:: with SMTP id e7mr4475513vsu.39.1639989119130;
+        Mon, 20 Dec 2021 00:31:59 -0800 (PST)
+Received: from mail-vk1-f171.google.com (mail-vk1-f171.google.com. [209.85.221.171])
+        by smtp.gmail.com with ESMTPSA id q185sm1658685vka.14.2021.12.20.00.31.58
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 20 Dec 2021 00:30:07 -0800 (PST)
-Received: by mail-ua1-f41.google.com with SMTP id p2so16235242uad.11;
-        Mon, 20 Dec 2021 00:30:07 -0800 (PST)
-X-Received: by 2002:a05:6102:2155:: with SMTP id h21mr2504985vsg.68.1639989007492;
- Mon, 20 Dec 2021 00:30:07 -0800 (PST)
+        Mon, 20 Dec 2021 00:31:58 -0800 (PST)
+Received: by mail-vk1-f171.google.com with SMTP id 70so5633966vkx.7;
+        Mon, 20 Dec 2021 00:31:58 -0800 (PST)
+X-Received: by 2002:ac5:c853:: with SMTP id g19mr1252601vkm.20.1639989118527;
+ Mon, 20 Dec 2021 00:31:58 -0800 (PST)
 MIME-Version: 1.0
-References: <20211220081132.883709-1-jiasheng@iscas.ac.cn>
-In-Reply-To: <20211220081132.883709-1-jiasheng@iscas.ac.cn>
+References: <20211218180035.200552-1-liuzx@knownsec.com>
+In-Reply-To: <20211218180035.200552-1-liuzx@knownsec.com>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 20 Dec 2021 09:29:56 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWhs-wTcZNq2VrAZXrxeSNa88GR49j2rn5zSryxF4peOw@mail.gmail.com>
-Message-ID: <CAMuHMdWhs-wTcZNq2VrAZXrxeSNa88GR49j2rn5zSryxF4peOw@mail.gmail.com>
-Subject: Re: [PATCH v2] video: fbdev: Check for null res pointer
-To:     Jiasheng Jiang <jiasheng@iscas.ac.cn>
-Cc:     s.hauer@pengutronix.de, kernel@pengutronix.de, shawnguo@kernel.org,
-        festevam@gmail.com, linux-imx@nxp.com, linux-fbdev@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Date:   Mon, 20 Dec 2021 09:31:47 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWfPG3tSJWGciDs3PoNguvdoGEM514TEcSQg3YL398_LA@mail.gmail.com>
+Message-ID: <CAMuHMdWfPG3tSJWGciDs3PoNguvdoGEM514TEcSQg3YL398_LA@mail.gmail.com>
+Subject: Re: [PATCH] matroxfb: set maxvram of vbG200eW to the same as vbG200
+ to avoid black screen
+To:     "Z. Liu" <liuzx@knownsec.com>
+Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Rich Felker <dalias@libc.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Jiasheng,
+CC Rich (author of commit in Fixes tag)
 
-On Mon, Dec 20, 2021 at 9:19 AM Jiasheng Jiang <jiasheng@iscas.ac.cn> wrote:
-> The return value of platform_get_resource() needs to be checked.
-> To avoid use of error pointer in case that there is no suitable resource.
-
-Thanks for your patch!
-
-> Fixes: f7018c213502 ("video: move fbdev to drivers/video/fbdev")
-
-That can't be the real introducer of the "bug"...
-
-> Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
-
-> --- a/drivers/video/fbdev/imxfb.c
-> +++ b/drivers/video/fbdev/imxfb.c
-> @@ -1083,6 +1083,8 @@ static int imxfb_remove(struct platform_device *pdev)
->         struct resource *res;
+On Sun, Dec 19, 2021 at 11:31 PM Z. Liu <liuzx@knownsec.com> wrote:
+> Start from commit 11be60bd66d54 "matroxfb: add Matrox MGA-G200eW board
+> support", when maxvram is 0x800000, monitor become black w/ error message
+> said: "The current input timing is not supported by the monitor display.
+> Please change your input timing to 1920x1080@60Hz ...".
 >
->         res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +       if (!res)
-> +               return -EINVAL;
-
-This cannot happen, as imxfb_remove() can only be called if
-imxfb_probe() succeeded.  imxfb_probe() does check the result of
-platform_get_resource(), and fails if the resource was not found.
+> Fixes: 1be60bd66d54 ("matroxfb: add Matrox MGA-G200eW board support")
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Z. Liu <liuzx@knownsec.com>
+> ---
+>  drivers/video/fbdev/matrox/matroxfb_base.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
+> index 5c82611e93d9..236521b19daf 100644
+> --- a/drivers/video/fbdev/matrox/matroxfb_base.c
+> +++ b/drivers/video/fbdev/matrox/matroxfb_base.c
+> @@ -1377,7 +1377,7 @@ static struct video_board vbG200 = {
+>         .lowlevel = &matrox_G100
+>  };
+>  static struct video_board vbG200eW = {
+> -       .maxvram = 0x800000,
+> +       .maxvram = 0x100000,
+>         .maxdisplayable = 0x800000,
+>         .accelID = FB_ACCEL_MATROX_MGAG200,
+>         .lowlevel = &matrox_G100
 
 Gr{oetje,eeting}s,
 

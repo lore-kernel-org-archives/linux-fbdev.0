@@ -2,87 +2,77 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BAB0C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Dec 2021 00:42:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3847C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Dec 2021 08:11:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233438AbhLUAmu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 20 Dec 2021 19:42:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56246 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231355AbhLUAmt (ORCPT
+        id S235430AbhLUILk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 21 Dec 2021 03:11:40 -0500
+Received: from mail-vk1-f181.google.com ([209.85.221.181]:45027 "EHLO
+        mail-vk1-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235432AbhLUILg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 20 Dec 2021 19:42:49 -0500
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32F8EC061574;
-        Mon, 20 Dec 2021 16:42:49 -0800 (PST)
-Received: by mail-wm1-x333.google.com with SMTP id bg2-20020a05600c3c8200b0034565c2be15so563885wmb.0;
-        Mon, 20 Dec 2021 16:42:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=Puo2oNvsoRrnpQH+n5NLnmsOFgzm1Lgnbw19SNKWiaE=;
-        b=Yba/NrOEC10S1hJBj0eFz30kKNmKLgaqv31/VG2P2JWZnd8YevofZq00lN4ZZYpVxm
-         424ZLUH3eISz79/DXuMlNABq2nJjRWi0U3qlqC0Ll0pdrG249cCdq1fldf+sfZLYJfp3
-         SfvRJQ81dRqJWIgcol2ywuZPcNG/V9KSsxq/WzXgqiuvsreUmO/bqMDWn5dk++kSE2P8
-         bhRTTaZlcSwDGERXwXT3Pu4x3FAUkCtiZMpRMLdZVbbgvH2n/Ig86m7v5im/IK6u90Dj
-         HMMdvnjekcWiWtdcwBM/YA8aYQYu2jElTpI6eBO6nrBiXQBcGel+xWf40iMX5Y1Nw9zy
-         lxDg==
+        Tue, 21 Dec 2021 03:11:36 -0500
+Received: by mail-vk1-f181.google.com with SMTP id b77so2281683vka.11;
+        Tue, 21 Dec 2021 00:11:36 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=Puo2oNvsoRrnpQH+n5NLnmsOFgzm1Lgnbw19SNKWiaE=;
-        b=SuVt3NkVDwat1YxVBUkGvpBNUGUZnzVbwQTbUPbdYzXDsjfcc+Y46QQKi+uufdKKmF
-         aQJ2ZtHGw+0QXMDSO/+tyDJFdcDXLsvj/Ku3rd1x9D8Cy0qs1g97BClR/5R5dTjZtATj
-         jFg7lxgk4KXOUjBNyiy74sNfdkHyqGJ5ngS23EzU3WuiMvR/xzNFshJWUn2K9T3pZATn
-         ZQo6S8X1YPdHfd62W+9FPFZkdpDCQBldGpoJUQjfNIUk/eCZMUxH86toDAeb+ioLdf7k
-         ycrcN7DgK5BW8fdOFB6B+rurcgmHVRZFORvy5cJnw+5e1GPDEyliyLGfWl9MgQCnp6Zm
-         Duyg==
-X-Gm-Message-State: AOAM530U6a7HmOZReGDeT+S+tQ5RfbcAVAo0A7sp/I/4ef/yuq5tO39s
-        hZ9+hkrhd4AurDnyeSrJqBQ=
-X-Google-Smtp-Source: ABdhPJzjBBPLhk7+kN3XdBeElOx6r0VuLj7K389GxHsxIkT+d5ia1DNpdzu60cAWnGs3oVVdDE0kHw==
-X-Received: by 2002:a05:600c:2f01:: with SMTP id r1mr409570wmn.153.1640047367820;
-        Mon, 20 Dec 2021 16:42:47 -0800 (PST)
-Received: from localhost (cpc154979-craw9-2-0-cust193.16-3.cable.virginm.net. [80.193.200.194])
-        by smtp.gmail.com with ESMTPSA id h2sm16176319wrz.23.2021.12.20.16.42.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Dec 2021 16:42:47 -0800 (PST)
-From:   Colin Ian King <colin.i.king@gmail.com>
-To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] video: fbdev: mb862xx: remove redundant assignment to pointer ptr
-Date:   Tue, 21 Dec 2021 00:42:46 +0000
-Message-Id: <20211221004246.213203-1-colin.i.king@gmail.com>
-X-Mailer: git-send-email 2.33.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=TB3EgKnQ6cDDwbUNjEM7H+wsTNMcb9wXt6YvS3W4ql8=;
+        b=jXYRKzSpCEHYENaxvdriLAWEEGUkR6NkkpovRU9Ehwl/l+QvWlHQGhTj1iyHgMopiE
+         IyDHyBYl5pHroyYRjeCv539l4B4IMjm5hcyr0Lt2YVpcgtMpvKkTcpRJCusFcNSRcy9K
+         kGgQoBlrH5ofcnyWQ2CccX3lGhBltYFPGVlK5TCY3smdRQmqvDJ2u/xDZ5X1n0vMbY+w
+         t0oBnk/Rg6C45B2fW7Uhas5HspN83dLQqyh8jQFyMTeVv0dDxBK+Lfqw49U0oc6BDilL
+         vSIYvwmTXK3nZBW39kvNYZEz3n/82hhE3xDDgcWh8hZoN5aF8eyin12wDCHoYMGVBIBC
+         5qdQ==
+X-Gm-Message-State: AOAM53284x8AjwrVqi4MN22CVj4cAjJDCJfjhUcSKCDIhg0qaCbnhYoJ
+        MkDKlB7b5JLM1iG+oaFtjw5kzWSPY6Xh5A==
+X-Google-Smtp-Source: ABdhPJxzRKHJi0hSv0lLc7UvBTg+bgTAuGdijAPJbPY9Q7lRnU7vwgvJ++BY/aHXe27BY4POTqz/YQ==
+X-Received: by 2002:a05:6122:d0f:: with SMTP id az15mr385543vkb.28.1640074295784;
+        Tue, 21 Dec 2021 00:11:35 -0800 (PST)
+Received: from mail-ua1-f44.google.com (mail-ua1-f44.google.com. [209.85.222.44])
+        by smtp.gmail.com with ESMTPSA id q8sm821317vkq.4.2021.12.21.00.11.35
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 21 Dec 2021 00:11:35 -0800 (PST)
+Received: by mail-ua1-f44.google.com with SMTP id o1so22311104uap.4;
+        Tue, 21 Dec 2021 00:11:35 -0800 (PST)
+X-Received: by 2002:a67:2e09:: with SMTP id u9mr653700vsu.77.1640074295303;
+ Tue, 21 Dec 2021 00:11:35 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20211221004246.213203-1-colin.i.king@gmail.com>
+In-Reply-To: <20211221004246.213203-1-colin.i.king@gmail.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 21 Dec 2021 09:11:23 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdXN=jjgirX4mTghvYo1TQtW4F+5uMLxHoOFKSXbqk5qPg@mail.gmail.com>
+Message-ID: <CAMuHMdXN=jjgirX4mTghvYo1TQtW4F+5uMLxHoOFKSXbqk5qPg@mail.gmail.com>
+Subject: Re: [PATCH] video: fbdev: mb862xx: remove redundant assignment to
+ pointer ptr
+To:     Colin Ian King <colin.i.king@gmail.com>
+Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        kernel-janitors@vger.kernel.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The pointer ptr is being assigned a value that is never read. The
-pointer is being re-assigned later in a loop. The assignment is
-redundant and can be removed.
+On Tue, Dec 21, 2021 at 3:01 AM Colin Ian King <colin.i.king@gmail.com> wrote:
+> The pointer ptr is being assigned a value that is never read. The
+> pointer is being re-assigned later in a loop. The assignment is
+> redundant and can be removed.
+>
+> Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
 
-Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
----
- drivers/video/fbdev/mb862xx/mb862xxfb_accel.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-diff --git a/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c b/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c
-index d40b806461ca..61aed7fc0b8d 100644
---- a/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xxfb_accel.c
-@@ -132,7 +132,7 @@ static void mb86290fb_imageblit8(u32 *cmd, u16 step, u16 dx, u16 dy,
- 	cmd[2] = (height << 16) | width;
- 
- 	i = 0;
--	line = ptr = image->data;
-+	line = image->data;
- 	bytes = image->width;
- 
- 	while (i < height) {
--- 
-2.32.0
+Gr{oetje,eeting}s,
 
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

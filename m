@@ -2,77 +2,106 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3847C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Dec 2021 08:11:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6ADF5C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue, 21 Dec 2021 23:39:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235430AbhLUILk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 21 Dec 2021 03:11:40 -0500
-Received: from mail-vk1-f181.google.com ([209.85.221.181]:45027 "EHLO
-        mail-vk1-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235432AbhLUILg (ORCPT
+        id S237936AbhLUXjn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 21 Dec 2021 18:39:43 -0500
+Received: from relay08.th.seeweb.it ([5.144.164.169]:42811 "EHLO
+        relay08.th.seeweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S237268AbhLUXjm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 21 Dec 2021 03:11:36 -0500
-Received: by mail-vk1-f181.google.com with SMTP id b77so2281683vka.11;
-        Tue, 21 Dec 2021 00:11:36 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=TB3EgKnQ6cDDwbUNjEM7H+wsTNMcb9wXt6YvS3W4ql8=;
-        b=jXYRKzSpCEHYENaxvdriLAWEEGUkR6NkkpovRU9Ehwl/l+QvWlHQGhTj1iyHgMopiE
-         IyDHyBYl5pHroyYRjeCv539l4B4IMjm5hcyr0Lt2YVpcgtMpvKkTcpRJCusFcNSRcy9K
-         kGgQoBlrH5ofcnyWQ2CccX3lGhBltYFPGVlK5TCY3smdRQmqvDJ2u/xDZ5X1n0vMbY+w
-         t0oBnk/Rg6C45B2fW7Uhas5HspN83dLQqyh8jQFyMTeVv0dDxBK+Lfqw49U0oc6BDilL
-         vSIYvwmTXK3nZBW39kvNYZEz3n/82hhE3xDDgcWh8hZoN5aF8eyin12wDCHoYMGVBIBC
-         5qdQ==
-X-Gm-Message-State: AOAM53284x8AjwrVqi4MN22CVj4cAjJDCJfjhUcSKCDIhg0qaCbnhYoJ
-        MkDKlB7b5JLM1iG+oaFtjw5kzWSPY6Xh5A==
-X-Google-Smtp-Source: ABdhPJxzRKHJi0hSv0lLc7UvBTg+bgTAuGdijAPJbPY9Q7lRnU7vwgvJ++BY/aHXe27BY4POTqz/YQ==
-X-Received: by 2002:a05:6122:d0f:: with SMTP id az15mr385543vkb.28.1640074295784;
-        Tue, 21 Dec 2021 00:11:35 -0800 (PST)
-Received: from mail-ua1-f44.google.com (mail-ua1-f44.google.com. [209.85.222.44])
-        by smtp.gmail.com with ESMTPSA id q8sm821317vkq.4.2021.12.21.00.11.35
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 21 Dec 2021 00:11:35 -0800 (PST)
-Received: by mail-ua1-f44.google.com with SMTP id o1so22311104uap.4;
-        Tue, 21 Dec 2021 00:11:35 -0800 (PST)
-X-Received: by 2002:a67:2e09:: with SMTP id u9mr653700vsu.77.1640074295303;
- Tue, 21 Dec 2021 00:11:35 -0800 (PST)
+        Tue, 21 Dec 2021 18:39:42 -0500
+X-Greylist: delayed 483 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Dec 2021 18:39:41 EST
+Received: from SoMainline.org (94-209-165-62.cable.dynamic.v4.ziggo.nl [94.209.165.62])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        by m-r2.th.seeweb.it (Postfix) with ESMTPSA id 646FD3F64B;
+        Wed, 22 Dec 2021 00:31:32 +0100 (CET)
+Date:   Wed, 22 Dec 2021 00:31:31 +0100
+From:   Marijn Suijten <marijn.suijten@somainline.org>
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Martin Botka <martin.botka@somainline.org>,
+        Jami Kettunen <jami.kettunen@somainline.org>,
+        Pavel Dubrova <pashadubrova@gmail.com>,
+        Kiran Gunda <kgunda@codeaurora.org>,
+        Bryan Wu <cooloney@gmail.com>, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v3 0/9] backlight: qcom-wled: fix and solidify handling
+ of enabled-strings
+Message-ID: <20211221233131.rwjjojuawgffr2gf@SoMainline.org>
+Mail-Followup-To: Marijn Suijten <marijn.suijten@somainline.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        phone-devel@vger.kernel.org, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>,
+        Konrad Dybcio <konrad.dybcio@somainline.org>,
+        Martin Botka <martin.botka@somainline.org>,
+        Jami Kettunen <jami.kettunen@somainline.org>,
+        Pavel Dubrova <pashadubrova@gmail.com>,
+        Kiran Gunda <kgunda@codeaurora.org>, Bryan Wu <cooloney@gmail.com>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+References: <20211115203459.1634079-1-marijn.suijten@somainline.org>
+ <20211116120213.n7qxqfi62lrxhyl7@maple.lan>
+ <YZPRV2jD1EBYGdHL@google.com>
 MIME-Version: 1.0
-References: <20211221004246.213203-1-colin.i.king@gmail.com>
-In-Reply-To: <20211221004246.213203-1-colin.i.king@gmail.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 21 Dec 2021 09:11:23 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXN=jjgirX4mTghvYo1TQtW4F+5uMLxHoOFKSXbqk5qPg@mail.gmail.com>
-Message-ID: <CAMuHMdXN=jjgirX4mTghvYo1TQtW4F+5uMLxHoOFKSXbqk5qPg@mail.gmail.com>
-Subject: Re: [PATCH] video: fbdev: mb862xx: remove redundant assignment to
- pointer ptr
-To:     Colin Ian King <colin.i.king@gmail.com>
-Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        kernel-janitors@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <YZPRV2jD1EBYGdHL@google.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Dec 21, 2021 at 3:01 AM Colin Ian King <colin.i.king@gmail.com> wrote:
-> The pointer ptr is being assigned a value that is never read. The
-> pointer is being re-assigned later in a loop. The assignment is
-> redundant and can be removed.
->
-> Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+On 2021-11-16 15:42:15, Lee Jones wrote:
+> On Tue, 16 Nov 2021, Daniel Thompson wrote:
+> 
+> > Hi Lee
+> > 
+> > On Mon, Nov 15, 2021 at 09:34:50PM +0100, Marijn Suijten wrote:
+> > > This patchset fixes WLED's handling of enabled-strings: besides some
+> > > cleanup it is now actually possible to specify a non-contiguous array of
+> > > enabled strings (not necessarily starting at zero) and the values from
+> > > DT are now validated to prevent possible unexpected out-of-bounds
+> > > register and array element accesses.
+> > > Off-by-one mistakes in the maximum number of strings, also causing
+> > > out-of-bounds access, have been addressed as well.
+> > 
+> > They have arrived piecemeal (during v1, v2 and v3) but all patches on
+> > the set should now have my R-b: attached to them.
+> 
+> I can see that.  Nothing for you to worry about.
+> 
+> I'll apply these when I conduct my next sweep, thanks.
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Thanks for that Lee!  Has the next sweep already passed by?  Seems
+everyone is preparing for the 5.17 merge window but these patches
+haven't yet landed on the backlight tree [1].  I'd appreciate it if we
+can make them appear in the 5.17 window :)
 
-Gr{oetje,eeting}s,
+[1]: https://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git/
 
-                        Geert
+Thanks!
+- Marijn
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> -- 
+> Lee Jones [李琼斯]
+> Senior Technical Lead - Developer Services
+> Linaro.org │ Open source software for Arm SoCs
+> Follow Linaro: Facebook | Twitter | Blog

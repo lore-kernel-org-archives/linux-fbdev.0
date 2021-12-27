@@ -2,147 +2,210 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22B09C43217
-	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Dec 2021 17:49:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3967C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Dec 2021 18:27:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231126AbhL0Rs7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 27 Dec 2021 12:48:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39770 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229973AbhL0Rs6 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 27 Dec 2021 12:48:58 -0500
-Received: from mail-oi1-x22c.google.com (mail-oi1-x22c.google.com [IPv6:2607:f8b0:4864:20::22c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59D31C06173E;
-        Mon, 27 Dec 2021 09:48:58 -0800 (PST)
-Received: by mail-oi1-x22c.google.com with SMTP id p4so26342029oia.9;
-        Mon, 27 Dec 2021 09:48:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=sender:to:cc:references:from:subject:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=pEDTSevr8Wui7/9Ib0ms0N7Elw3SuXo4ylecnWyhlSo=;
-        b=ehv/beOOjVHY0/sgKdcpY8YzavbZDivcQVdBoIeoRKI4qC8EayE8VBARAwiSsJBeMg
-         Zz3lXu+y9k2nNSuIlCNv/KXJeQUZt+jBe9GlImPC6RkELaI4OwGtotJ8lJT4/RYUvXeg
-         5Yx++5EIDR1wB7QuoetS4tNem0svdSDSCecLUq4Nl5eBOUOKs2Gs+UisJK8zu7iYw2pq
-         PcDsXaJJl8yT+sBrdf2ZMSprNPKxdo/1kTE/fvwlcME88l50Ds0vKqwzoH4bPkfvnAPw
-         BW+JRWfrn/ItjQte78Dwgt8Dko2eYYW3nLA+EyqURprwTeFBH4+RkctBrk7LJGBiMFCC
-         vwig==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:sender:to:cc:references:from:subject:message-id
-         :date:user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=pEDTSevr8Wui7/9Ib0ms0N7Elw3SuXo4ylecnWyhlSo=;
-        b=grPxdLNZWxzd6MLJXLvlie32V5D+cK6q+VbTuMDzkR3MJP1KD4OB5da1uChIe9RmTa
-         5cVLVRaTYgXzxS223geGtti6TYnB9rkSBXhDePMy5/Q5lbGJzIg1t5xaZFudVus9p7MV
-         s3GA06+kfgruyHj1/n5ABoFhx39H260P5fpgXQNQ5inu0t8j0ZiWu56eCz2L+JOoRBCQ
-         UUWLMM4LFEARQQ41292Vzfm55apBrIcH8CAZZ2ZTNhMWbnoVb2AV5xJtrAEGFGPBogPA
-         dubgaDij7gl1Lq4RaK/z9Dz0VvBt4DaSzE3fFrgvoa1JVXXZzjWHpP6yg57wVH/GZsZs
-         GDlA==
-X-Gm-Message-State: AOAM532nUlvdX7rl9vye27j1VwVn4NtgHVc4eR4Xfztr203T7CRcMktC
-        WxhMOD3US83YiuD8VfYl7fk=
-X-Google-Smtp-Source: ABdhPJxb6+7biAtxOQefdtgXxvyx2b2YNDyhmSemqV7yYJxoDKcbxu7R4xufBgYDTWnPfrrEWMwb0g==
-X-Received: by 2002:a05:6808:20a6:: with SMTP id s38mr14781112oiw.152.1640627337723;
-        Mon, 27 Dec 2021 09:48:57 -0800 (PST)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id 23sm2931424oty.6.2021.12.27.09.48.51
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 27 Dec 2021 09:48:57 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-To:     Niklas Schnelle <schnelle@linux.ibm.com>,
-        Arnd Bergmann <arnd@kernel.org>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        John Garry <john.garry@huawei.com>,
-        Nick Hu <nickhu@andestech.com>,
-        Greentime Hu <green.hu@gmail.com>,
-        Vincent Chen <deanbo422@gmail.com>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>, Guo Ren <guoren@kernel.org>,
-        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
-        Ian Abbott <abbotti@mev.co.uk>,
-        H Hartley Sweeten <hsweeten@visionengravers.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Jean Delvare <jdelvare@suse.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Karsten Keil <isdn@linux-pingi.de>,
-        Hans Verkuil <hverkuil-cisco@xs4all.nl>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Sathya Prakash <sathya.prakash@broadcom.com>,
-        Sreekanth Reddy <sreekanth.reddy@broadcom.com>,
-        Suganath Prabu Subramani 
-        <suganath-prabu.subramani@broadcom.com>,
-        Michael Grzeschik <m.grzeschik@pengutronix.de>,
-        "David S. Miller" <davem@davemloft.net>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Jesse Brandeburg <jesse.brandeburg@intel.com>,
-        Tony Nguyen <anthony.l.nguyen@intel.com>,
-        Kalle Valo <kvalo@kernel.org>, Jouni Malinen <j@w1.fi>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Hannes Reinecke <hare@suse.com>,
-        Kashyap Desai <kashyap.desai@broadcom.com>,
-        Sumit Saxena <sumit.saxena@broadcom.com>,
-        Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
-        Nilesh Javali <njavali@marvell.com>,
-        GR-QLogic-Storage-Upstream@marvell.com,
-        Mark Brown <broonie@kernel.org>,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Forest Bond <forest@alittletooquiet.net>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
-Cc:     linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-riscv@lists.infradead.org,
-        linux-csky@vger.kernel.org, linux-ide@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org,
-        linux-i2c@vger.kernel.org, linux-input@vger.kernel.org,
-        netdev@vger.kernel.org, linux-media@vger.kernel.org,
-        MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org,
-        intel-wired-lan@lists.osuosl.org, linux-wireless@vger.kernel.org,
-        megaraidlinux.pdl@broadcom.com, linux-spi@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-serial@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-watchdog@vger.kernel.org, alsa-devel@alsa-project.org
-References: <20211227164317.4146918-1-schnelle@linux.ibm.com>
- <20211227164317.4146918-2-schnelle@linux.ibm.com>
-From:   Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [RFC 01/32] Kconfig: introduce and depend on LEGACY_PCI
-Message-ID: <281298ec-3898-9b02-1d92-66bf6df41170@roeck-us.net>
-Date:   Mon, 27 Dec 2021 09:48:50 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.14.0
+        id S229706AbhL0S1N (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 27 Dec 2021 13:27:13 -0500
+Received: from mail-co1nam11on2066.outbound.protection.outlook.com ([40.107.220.66]:36001
+        "EHLO NAM11-CO1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S231609AbhL0S1M (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 27 Dec 2021 13:27:12 -0500
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=MnbQ0Ns8L4xZWahrMnATC+dybx0HLF8kD+G+ZAf4ZP4SFXaYEEu45D4PT9J8IOHLxj0WYA0LsH39zKWUAerUMjwhF/sawOJ3fm9xrbkunenH0PulHlxw3QRZ2XclU1iOE2VjEBYlJcwKDdsvjKgBjb96jst6xs5X0hgz1DnDWHqbR4rnzaY7ZDuaSi/LyejkXQiaY4Z1vkFRZiLmq4LTxo7ea73nKIVL0WjfffK3PtrG/qHa7a9m4Oxb4vjXqhzT08wkqXnN0g+u70iHRNMaqU1EQPbAPgRmlXVb/zQk09d02gZuF0UYfSDpiDLzXhotztcvWB08DvmHT3lKDsScsQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=RdWhkNxtd9/J4K14eZk1dhGVPdbC5d4CyzIHw0T9AxI=;
+ b=OQH2st9Jh3mRoDj50pjISoGtdYsZUmGv/pUY+aiSIq1blFGf7ctvO7qlRWRyt3GFx8FpDV2mhKPiBogAO7FMtsue9fWWWHdyHfO8kkX29QZpdC2RvO8SaNiMhifDdfwWYRn1w/sZgOk9qqMcApKvvGl8UZBm63M+86Ush2hpE6YqGRQ2uHAUIUX4msg0bH9pJvQt2089zJ877ri4jfYWj+AqSh0TyeNj+kYkiKT5vkfTx9bUQJjBWmEB6gxWEOJ+wxhN1/UWlYSgKPDbJjKxnfgtKRBiCORiqkw4RAtiRbl33bJCN9bxbUR9zecB+W+MaiwAtaJ/Nhprwph0cNiGYg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=lists.freedesktop.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=RdWhkNxtd9/J4K14eZk1dhGVPdbC5d4CyzIHw0T9AxI=;
+ b=NEECXV+6E6DlXWqmx7s8HmiFvl4c8LpHBvKf9xko1ZHHaZSpVOhwxXmSjxfGGfcga7pLkWW+fSCn3quI0o+sNVPKKj4BOwuUV+nhk1gPB5L02kNbZ2GOY8XozQDXl8QP6y96O9pQIGU2SiruA2ZiexCzK48IuD/MbpZAN3x4EZ8=
+Received: from BN9PR03CA0230.namprd03.prod.outlook.com (2603:10b6:408:f8::25)
+ by BY5PR12MB5509.namprd12.prod.outlook.com (2603:10b6:a03:1d7::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4823.19; Mon, 27 Dec
+ 2021 18:27:10 +0000
+Received: from BN8NAM11FT039.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:408:f8:cafe::e5) by BN9PR03CA0230.outlook.office365.com
+ (2603:10b6:408:f8::25) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4823.19 via Frontend
+ Transport; Mon, 27 Dec 2021 18:27:10 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB03.amd.com;
+Received: from SATLEXMB03.amd.com (165.204.84.17) by
+ BN8NAM11FT039.mail.protection.outlook.com (10.13.177.169) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.4823.18 via Frontend Transport; Mon, 27 Dec 2021 18:27:09 +0000
+Received: from tr4.amd.com (10.180.168.240) by SATLEXMB03.amd.com
+ (10.181.40.144) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.17; Mon, 27 Dec
+ 2021 12:27:08 -0600
+From:   Alex Deucher <alexander.deucher@amd.com>
+To:     <amd-gfx@lists.freedesktop.org>, <dri-devel@lists.freedesktop.org>,
+        <linux-fbdev@vger.kernel.org>
+CC:     Alex Deucher <alexander.deucher@amd.com>
+Subject: [PATCH 2/2] drm/amdgpu: disable runpm if we are the primary adapter
+Date:   Mon, 27 Dec 2021 13:26:56 -0500
+Message-ID: <20211227182656.2110664-2-alexander.deucher@amd.com>
+X-Mailer: git-send-email 2.33.1
+In-Reply-To: <20211227182656.2110664-1-alexander.deucher@amd.com>
+References: <20211227182656.2110664-1-alexander.deucher@amd.com>
 MIME-Version: 1.0
-In-Reply-To: <20211227164317.4146918-2-schnelle@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB03.amd.com
+ (10.181.40.144)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 9ce62275-0044-44a0-5f4d-08d9c9667eb8
+X-MS-TrafficTypeDiagnostic: BY5PR12MB5509:EE_
+X-Microsoft-Antispam-PRVS: <BY5PR12MB5509B6C5642F58BDC0A3FBABF7429@BY5PR12MB5509.namprd12.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:68;
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: lkhqAV/jMjK43wj2z2AcbQ2QE7jLeUD8Q6s5PrzoNilXHmBmMup0Cjd42+ymyAQ8CbcrGdHl6Nccf+v1N00fGKxW86N1e2YKWKrF2TMdGDKONVhMCQCfsg0dk9MX2c4Ys5dS8TCfGWhJjEX9t/mvz1gPuA7bxzgvJThOcw6rqKcuZ5ee4RuxDzO2/ErJRh5aoM/8fvKIuDVGzWiNscYiGnL0FWr7AOROguWSsSioKaaZijyiVEJYIfEX3RL0wlhw4YlKs49iB0Dbzs5CiVG7XeYvHYJV++KniXHchx7G4jDTWLAOBQWfQSXY5N1dHTPB8cqm7Nc57kFah4u6itXaqeSD1/Tmj5ea3N5lUNHB7pjojKLuUnJ5UPYvIViBcmSLDKZwE3Enwq1sR29p8WolFEs5rm1Lcg3plZLRbHHsmtLdZkFyCEsk76QH+miq4co9gkDtUFibR+0e3A50qkMUMeUycM44CWJy0+quzWWFAD+etW9mzf/IBrzCVrpOBVKRxNFAOsDCcL29XGmSeNsPGDlLwDp4RRrCKJFt6LEpdm199fXIe/xdgul1W0MAuPG0czj7Qv/bwV/wTUDBflI4Ai00W1WhH6rlrsUN4NXMyO0oQPLX6wG4LjMcg8yxn488HgWgR7/Z4UOR2BCRCPDaMnX0BMOL9VjU/nGI+YZXOXjp+yqEBiQlzimtlu43FmjJbFa1uBUwSaRX0H4fu4DRCfoAK39SnT/tNuMcDreHETbizlStirYL+TSmxEDpPDLKYLC/C+sMn95hUAweW+d5ilInkwbOjZqPZcDTjtyiieEo9v21qqOPzOdQuHpZHZyGgS4YgaMAptVMlSbxsUJdXdyVN5HXaevzRaqsfdqP7n8Xzq5U5EFR/j73CF/3NRHNWi2XtNbTU62Yc68aCBg7xw==
+X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB03.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(4636009)(40470700002)(36840700001)(46966006)(7696005)(336012)(40460700001)(2616005)(2906002)(966005)(82310400004)(356005)(81166007)(83380400001)(8676002)(426003)(508600001)(6666004)(8936002)(70586007)(70206006)(47076005)(86362001)(110136005)(26005)(316002)(36756003)(5660300002)(1076003)(186003)(16526019)(36860700001)(4326008)(21314003)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Dec 2021 18:27:09.9026
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9ce62275-0044-44a0-5f4d-08d9c9667eb8
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB03.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT039.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR12MB5509
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 12/27/21 8:42 AM, Niklas Schnelle wrote:
-> Introduce a new LEGACY_PCI Kconfig option which gates support for legacy
-> PCI devices including those attached to a PCI-to-PCI Express bridge and
-> PCI Express devices using legacy I/O spaces. Note that this is different
-> from non PCI uses of I/O ports such as by ACPI.
-> 
-> Add dependencies on LEGACY_PCI for all PCI drivers which only target
-> legacy PCI devices and ifdef legacy PCI specific functions in ata
-> handling.
-> 
+If we are the primary adapter (i.e., the one used by the firwmare
+framebuffer), disable runtime pm.  This fixes a regression caused
+by commit 55285e21f045 which results in the displays waking up
+shortly after they go to sleep due to teh device coming out of
+runtime suspend and sending a hotplug uevent.
 
-This effectively disables all default configurations which now depend
-on CONFIG_LEGACY_PCI. Yet, I don't see CONFIG_LEGACY_PCI added to
-configuration files which explicitly enable any of the affected
-configurations. Is that on purpose ? If so, I think it should at least
-be mentioned in the commit description. However, I think it would be
-more appropriate to either delete all affected configuration flags from
-the affected configuration files, or to add CONFIG_LEGACY_PCI=y to those
-files.
+v2: squash in reworked fix from Evan
 
-Guenter
+Fixes: 55285e21f045 ("fbdev/efifb: Release PCI device's runtime PM ref during FB destroy")
+Bug: https://bugzilla.kernel.org/show_bug.cgi?id=215203
+Bug: https://gitlab.freedesktop.org/drm/amd/-/issues/1840
+Signed-off-by: Alex Deucher <alexander.deucher@amd.com>
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu.h     |  1 +
+ drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c | 28 +++++++++++++++++++++++++
+ drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c |  6 ++++++
+ 3 files changed, 35 insertions(+)
+
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu.h b/drivers/gpu/drm/amd/amdgpu/amdgpu.h
+index b85b67a88a3d..7d67aec6f4a2 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu.h
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu.h
+@@ -1077,6 +1077,7 @@ struct amdgpu_device {
+ 	bool                            runpm;
+ 	bool                            in_runpm;
+ 	bool                            has_pr3;
++	bool                            is_fw_fb;
+ 
+ 	bool                            pm_sysfs_en;
+ 	bool                            ucode_sysfs_en;
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
+index 86ca80da9eea..99370bdd8c5b 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
+@@ -39,6 +39,7 @@
+ #include <linux/mmu_notifier.h>
+ #include <linux/suspend.h>
+ #include <linux/cc_platform.h>
++#include <linux/fb.h>
+ 
+ #include "amdgpu.h"
+ #include "amdgpu_irq.h"
+@@ -1890,6 +1891,26 @@ MODULE_DEVICE_TABLE(pci, pciidlist);
+ 
+ static const struct drm_driver amdgpu_kms_driver;
+ 
++static bool amdgpu_is_fw_framebuffer(resource_size_t base,
++				     resource_size_t size)
++{
++	bool found = false;
++#if IS_REACHABLE(CONFIG_FB)
++	struct apertures_struct *a;
++
++	a = alloc_apertures(1);
++	if (!a)
++		return false;
++
++	a->ranges[0].base = base;
++	a->ranges[0].size = size;
++
++	found = is_firmware_framebuffer(a);
++	kfree(a);
++#endif
++	return found;
++}
++
+ static int amdgpu_pci_probe(struct pci_dev *pdev,
+ 			    const struct pci_device_id *ent)
+ {
+@@ -1898,6 +1919,8 @@ static int amdgpu_pci_probe(struct pci_dev *pdev,
+ 	unsigned long flags = ent->driver_data;
+ 	int ret, retry = 0, i;
+ 	bool supports_atomic = false;
++	bool is_fw_fb;
++	resource_size_t base, size;
+ 
+ 	/* skip devices which are owned by radeon */
+ 	for (i = 0; i < ARRAY_SIZE(amdgpu_unsupported_pciidlist); i++) {
+@@ -1966,6 +1989,10 @@ static int amdgpu_pci_probe(struct pci_dev *pdev,
+ 	}
+ #endif
+ 
++	base = pci_resource_start(pdev, 0);
++	size = pci_resource_len(pdev, 0);
++	is_fw_fb = amdgpu_is_fw_framebuffer(base, size);
++
+ 	/* Get rid of things like offb */
+ 	ret = drm_aperture_remove_conflicting_pci_framebuffers(pdev, &amdgpu_kms_driver);
+ 	if (ret)
+@@ -1978,6 +2005,7 @@ static int amdgpu_pci_probe(struct pci_dev *pdev,
+ 	adev->dev  = &pdev->dev;
+ 	adev->pdev = pdev;
+ 	ddev = adev_to_drm(adev);
++	adev->is_fw_fb = is_fw_fb;
+ 
+ 	if (!supports_atomic)
+ 		ddev->driver_features &= ~DRIVER_ATOMIC;
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c
+index 651c7abfde03..09ad17944eb2 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c
+@@ -206,6 +206,12 @@ int amdgpu_driver_load_kms(struct amdgpu_device *adev, unsigned long flags)
+ 			adev->runpm = true;
+ 			break;
+ 		}
++		/* XXX: disable runtime pm if we are the primary adapter
++		 * to avoid displays being re-enabled after DPMS.
++		 * This needs to be sorted out and fixed properly.
++		 */
++		if (adev->is_fw_fb)
++			adev->runpm = false;
+ 		if (adev->runpm)
+ 			dev_info(adev->dev, "Using BACO for runtime pm\n");
+ 	}
+-- 
+2.33.1
+

@@ -2,254 +2,151 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 120A7C433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Dec 2021 09:34:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DF75C43217
+	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Dec 2021 16:44:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235821AbhL0JeC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 27 Dec 2021 04:34:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40666 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229652AbhL0JeB (ORCPT
+        id S231728AbhL0Qo4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 27 Dec 2021 11:44:56 -0500
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:11694 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S230323AbhL0QoR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 27 Dec 2021 04:34:01 -0500
-Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A3A1C06173E
-        for <linux-fbdev@vger.kernel.org>; Mon, 27 Dec 2021 01:34:01 -0800 (PST)
-Received: by mail-ed1-x531.google.com with SMTP id y22so59657868edq.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 27 Dec 2021 01:34:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=Up09Yp1cAkGEwJVvJMibaaAPFlik/zZFWIRClXIemi8=;
-        b=Sc1s1Htt/pYoJUtWHYVVXf8lsx8AjMP3yM5bjDGm12A2Hlm4iUHrUtGOB2MlPZQYii
-         Fz+WFfonZDX5W9mMlheSY+PeszwXZbKi+pDB4SJl+1ekUoaTtawhUiPN320gVRpOj9BD
-         pg/tvFs2yhhCt1p5H8vrar3vXBzKPVV1FbDXRg7B8LlU93kiU+ktDKV4fgBNJM/DNvsy
-         4tkYelN9qwruOC7txNCwPiUWgGTJAOGO1JgqXjv9kZg7WaDAFtUZoIlGbmGiuZZnuIAh
-         EnIpW9Ma49zAsv4ZjM/NoEu5j0jk5pBPWnojzRg66lX1YQ96J+w/ZFf8LfREL0cb8NJy
-         epKg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=Up09Yp1cAkGEwJVvJMibaaAPFlik/zZFWIRClXIemi8=;
-        b=tm4pan9yWD/eUJQ6/4tN6cf8OoyPSf9TcQ0NRD0zxBI5F/OuYw2Ob0QUCn1fvMcmjC
-         Qdb1O3iykCXOCj9DOeYR9rgSbPwEdmDbHFIqxfmNHHWt7Gr36c9T4Gz7HB1QHKeHFpp6
-         ZiGM5UzXifovtC/rciuI+/c5qYXt3FxnEYJjNhS1+7N83JBE6zfMaOcHRcseb24gE7G1
-         H2kV0CL6qyDTawGQgH6zI7NgU1JZ8Ike4e34zfLsKZLCBSP5OrXWgjCTlI47hzzRqR7U
-         9E8rB7X/L2Pe1XneLxg9SPTGUr3/LYWUZCVAxZFOYY9z5GvPCRLFdwML4z4d/KTSs/cA
-         6Cng==
-X-Gm-Message-State: AOAM532jBSak5tM3RzYDEkcDOoqXObSxUeKnXdn1972icwJF60DeCwGK
-        KpoLp7lk8lu58s7El/TLgwK1+BmF3BNzUA==
-X-Google-Smtp-Source: ABdhPJyr6GYj10UrcnLO/EuXsvTRoRAzenXzwU4phjK7PkxETU1Ce+JbcK69SLvTat82vXTnkGFX2w==
-X-Received: by 2002:a17:907:7f13:: with SMTP id qf19mr12952458ejc.103.1640597639584;
-        Mon, 27 Dec 2021 01:33:59 -0800 (PST)
-Received: from localhost.localdomain (2a02-8440-6140-7e07-3074-96af-9642-0003.rev.sfr.net. [2a02:8440:6140:7e07:3074:96af:9642:3])
-        by smtp.gmail.com with ESMTPSA id qf14sm4287568ejc.18.2021.12.27.01.33.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Dec 2021 01:33:59 -0800 (PST)
-From:   Guillaume Ranquet <granquet@baylibre.com>
-To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>
-Cc:     Markus Schneider-Pargmann <msp@baylibre.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v7 4/8] video/hdmi: Add audio_infoframe packing for DP
-Date:   Mon, 27 Dec 2021 10:33:28 +0100
-Message-Id: <20211227093329.5589-2-granquet@baylibre.com>
+        Mon, 27 Dec 2021 11:44:17 -0500
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 1BREBsQO013190;
+        Mon, 27 Dec 2021 16:43:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=Pvtf+6bGtw1lT1XKK96EsrHI6tn2htfQybVbOkeijcI=;
+ b=FWqqq+2pMQz5sGZ9BpCBenbMsG/ylJZIr+DKbLQBpQ5B3nthCTg6kegYizBOwCI+6d3B
+ purrpfZL0hxte9ENk5CTZLg4033BMH5ea/+HoVFsHzn2zQJA1DvkXli697bYvA12IcZ5
+ xpdF2YVNk3l41C+heUW70ciKYQUKl1IGajUBJU0u+z8nM19+sDT16FAOVVD94KOizjV3
+ fVLrSNtcPk4ClHOCCt86VGxD79fsIGvkBzcCOHRJu4lN96bnvJ16ZetRvjEG2An8v3iq
+ XcUwgTwnq90RmWJyERHwMIZK3Ab8kHZEgPknGXt/bAz/f2HWWYHpTyCef9KF7l9LDqVW eg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 3d7f1narbv-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 27 Dec 2021 16:43:51 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+        by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 1BRGGYPU031705;
+        Mon, 27 Dec 2021 16:43:50 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 3d7f1narb7-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 27 Dec 2021 16:43:50 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+        by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 1BRGgkpN003026;
+        Mon, 27 Dec 2021 16:43:48 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+        by ppma03ams.nl.ibm.com with ESMTP id 3d5tx9bf52-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 27 Dec 2021 16:43:48 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+        by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 1BRGhjor40108482
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 27 Dec 2021 16:43:45 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 6CE3EA4054;
+        Mon, 27 Dec 2021 16:43:45 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id EA3ECA405B;
+        Mon, 27 Dec 2021 16:43:44 +0000 (GMT)
+Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
+        by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+        Mon, 27 Dec 2021 16:43:44 +0000 (GMT)
+From:   Niklas Schnelle <schnelle@linux.ibm.com>
+To:     Arnd Bergmann <arnd@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        John Garry <john.garry@huawei.com>,
+        Nick Hu <nickhu@andestech.com>,
+        Greentime Hu <green.hu@gmail.com>,
+        Vincent Chen <deanbo422@gmail.com>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Guo Ren <guoren@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+        linux-pci@vger.kernel.org, linux-riscv@lists.infradead.org,
+        linux-csky@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+Subject: [RFC 22/32] video: handle HAS_IOPORT dependencies
+Date:   Mon, 27 Dec 2021 17:43:07 +0100
+Message-Id: <20211227164317.4146918-23-schnelle@linux.ibm.com>
 X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20211217150854.2081-1-granquet@baylibre.com>
-References: <20211217150854.2081-1-granquet@baylibre.com>
+In-Reply-To: <20211227164317.4146918-1-schnelle@linux.ibm.com>
+References: <20211227164317.4146918-1-schnelle@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: dajHH7ysqYXG6zAJZbpZ-TuOsR9X149-
+X-Proofpoint-ORIG-GUID: whmQ-It2gXfjGHUjD3wLCqsb2tIPDbiw
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.790,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2021-12-27_08,2021-12-24_01,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 adultscore=0
+ lowpriorityscore=0 mlxlogscore=999 clxscore=1015 bulkscore=0
+ priorityscore=1501 impostorscore=0 spamscore=0 phishscore=0 suspectscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2110150000 definitions=main-2112270080
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Markus Schneider-Pargmann <msp@baylibre.com>
+In a future patch HAS_IOPORT=n will result in inb()/outb() and friends
+not being declared. We thus need to add HAS_IOPORT as dependency for
+those drivers using them and guard inline code in headers.
 
-Similar to HDMI, DP uses audio infoframes as well which are structured
-very similar to the HDMI ones.
-
-This patch adds a helper function to pack the HDMI audio infoframe for
-DP, called hdmi_audio_infoframe_pack_for_dp().
-hdmi_audio_infoframe_pack_only() is split into two parts. One of them
-packs the payload only and can be used for HDMI and DP.
-
-Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+Co-developed-by: Arnd Bergmann <arnd@kernel.org>
+Signed-off-by: Arnd Bergmann <arnd@kernel.org>
+Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
 ---
- drivers/video/hdmi.c        | 83 ++++++++++++++++++++++++++++---------
- include/drm/drm_dp_helper.h |  2 +
- include/linux/hdmi.h        |  7 +++-
- 3 files changed, 72 insertions(+), 20 deletions(-)
+ drivers/video/fbdev/Kconfig | 1 +
+ include/video/vga.h         | 8 ++++++++
+ 2 files changed, 9 insertions(+)
 
-diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
-index 947be761dfa40..63e74d9fd210e 100644
---- a/drivers/video/hdmi.c
-+++ b/drivers/video/hdmi.c
-@@ -21,6 +21,7 @@
-  * DEALINGS IN THE SOFTWARE.
-  */
- 
-+#include <drm/drm_dp_helper.h>
- #include <linux/bitops.h>
- #include <linux/bug.h>
- #include <linux/errno.h>
-@@ -381,12 +382,34 @@ static int hdmi_audio_infoframe_check_only(const struct hdmi_audio_infoframe *fr
-  *
-  * Returns 0 on success or a negative error code on failure.
-  */
--int hdmi_audio_infoframe_check(struct hdmi_audio_infoframe *frame)
-+int hdmi_audio_infoframe_check(const struct hdmi_audio_infoframe *frame)
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index a3446d44c118..d95f638f4deb 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -436,6 +436,7 @@ config FB_FM2
+ config FB_ARC
+ 	tristate "Arc Monochrome LCD board support"
+ 	depends on FB && (X86 || COMPILE_TEST)
++	depends on HAS_IOPORT
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+ 	select FB_SYS_IMAGEBLIT
+diff --git a/include/video/vga.h b/include/video/vga.h
+index d334e64c1c19..53cb52c0fddb 100644
+--- a/include/video/vga.h
++++ b/include/video/vga.h
+@@ -201,18 +201,26 @@ extern int restore_vga(struct vgastate *state);
+  
+ static inline unsigned char vga_io_r (unsigned short port)
  {
- 	return hdmi_audio_infoframe_check_only(frame);
++#ifdef CONFIG_HAS_IOPORT
+ 	return inb_p(port);
++#else
++	return 0xff;
++#endif
  }
- EXPORT_SYMBOL(hdmi_audio_infoframe_check);
  
-+static void
-+hdmi_audio_infoframe_pack_payload(const struct hdmi_audio_infoframe *frame,
-+				  u8 *buffer)
-+{
-+	u8 channels;
-+
-+	if (frame->channels >= 2)
-+		channels = frame->channels - 1;
-+	else
-+		channels = 0;
-+
-+	buffer[0] = ((frame->coding_type & 0xf) << 4) | (channels & 0x7);
-+	buffer[1] = ((frame->sample_frequency & 0x7) << 2) |
-+		 (frame->sample_size & 0x3);
-+	buffer[2] = frame->coding_type_ext & 0x1f;
-+	buffer[3] = frame->channel_allocation;
-+	buffer[4] = (frame->level_shift_value & 0xf) << 3;
-+
-+	if (frame->downmix_inhibit)
-+		buffer[4] |= BIT(7);
-+}
-+
- /**
-  * hdmi_audio_infoframe_pack_only() - write HDMI audio infoframe to binary buffer
-  * @frame: HDMI audio infoframe
-@@ -404,7 +427,6 @@ EXPORT_SYMBOL(hdmi_audio_infoframe_check);
- ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
- 				       void *buffer, size_t size)
+ static inline void vga_io_w (unsigned short port, unsigned char val)
  {
--	unsigned char channels;
- 	u8 *ptr = buffer;
- 	size_t length;
- 	int ret;
-@@ -420,28 +442,13 @@ ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
- 
- 	memset(buffer, 0, size);
- 
--	if (frame->channels >= 2)
--		channels = frame->channels - 1;
--	else
--		channels = 0;
--
- 	ptr[0] = frame->type;
- 	ptr[1] = frame->version;
- 	ptr[2] = frame->length;
- 	ptr[3] = 0; /* checksum */
- 
--	/* start infoframe payload */
--	ptr += HDMI_INFOFRAME_HEADER_SIZE;
--
--	ptr[0] = ((frame->coding_type & 0xf) << 4) | (channels & 0x7);
--	ptr[1] = ((frame->sample_frequency & 0x7) << 2) |
--		 (frame->sample_size & 0x3);
--	ptr[2] = frame->coding_type_ext & 0x1f;
--	ptr[3] = frame->channel_allocation;
--	ptr[4] = (frame->level_shift_value & 0xf) << 3;
--
--	if (frame->downmix_inhibit)
--		ptr[4] |= BIT(7);
-+	hdmi_audio_infoframe_pack_payload(frame,
-+					  ptr + HDMI_INFOFRAME_HEADER_SIZE);
- 
- 	hdmi_infoframe_set_checksum(buffer, length);
- 
-@@ -479,6 +486,44 @@ ssize_t hdmi_audio_infoframe_pack(struct hdmi_audio_infoframe *frame,
++#ifdef CONFIG_HAS_IOPORT
+ 	outb_p(val, port);
++#endif
  }
- EXPORT_SYMBOL(hdmi_audio_infoframe_pack);
  
-+/**
-+ * hdmi_audio_infoframe_pack_for_dp - Pack a HDMI Audio infoframe for
-+ *                                    displayport
-+ *
-+ * @frame HDMI Audio infoframe
-+ * @sdp secondary data packet for display port. This is filled with the
-+ * appropriate data
-+ * @dp_version Display Port version to be encoded in the header
-+ *
-+ * Packs a HDMI Audio Infoframe to be sent over Display Port. This function
-+ * fills the secondary data packet to be used for Display Port.
-+ *
-+ * Return: Number of total written bytes or a negative errno on failure.
-+ */
-+ssize_t
-+hdmi_audio_infoframe_pack_for_dp(const struct hdmi_audio_infoframe *frame,
-+				 struct dp_sdp *sdp, u8 dp_version)
-+{
-+	int ret;
-+
-+	ret = hdmi_audio_infoframe_check(frame);
-+	if (ret)
-+		return ret;
-+
-+	memset(sdp->db, 0, sizeof(sdp->db));
-+
-+	// Secondary-data packet header
-+	sdp->sdp_header.HB0 = 0;
-+	sdp->sdp_header.HB1 = frame->type;
-+	sdp->sdp_header.HB2 = DP_SDP_AUDIO_INFOFRAME_HB2;
-+	sdp->sdp_header.HB3 = (dp_version & 0x3f) << 2;
-+
-+	hdmi_audio_infoframe_pack_payload(frame, sdp->db);
-+
-+	return frame->length + 4;
-+}
-+EXPORT_SYMBOL(hdmi_audio_infoframe_pack_for_dp);
-+
- /**
-  * hdmi_vendor_infoframe_init() - initialize an HDMI vendor infoframe
-  * @frame: HDMI vendor infoframe
-diff --git a/include/drm/drm_dp_helper.h b/include/drm/drm_dp_helper.h
-index b52df4db3e8fe..d1527175716aa 100644
---- a/include/drm/drm_dp_helper.h
-+++ b/include/drm/drm_dp_helper.h
-@@ -1550,6 +1550,8 @@ int drm_dp_bw_code_to_link_rate(u8 link_bw);
- #define DP_SDP_VSC_EXT_CEA		0x21 /* DP 1.4 */
- /* 0x80+ CEA-861 infoframe types */
+ static inline void vga_io_w_fast (unsigned short port, unsigned char reg,
+ 				  unsigned char val)
+ {
++#ifdef CONFIG_HAS_IOPORT
+ 	outw(VGA_OUT16VAL (val, reg), port);
++#endif
+ }
  
-+#define DP_SDP_AUDIO_INFOFRAME_HB2	0x1b
-+
- /**
-  * struct dp_sdp_header - DP secondary data packet header
-  * @HB0: Secondary Data Packet ID
-diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
-index c8ec982ff4984..2f4dcc8d060e3 100644
---- a/include/linux/hdmi.h
-+++ b/include/linux/hdmi.h
-@@ -336,7 +336,12 @@ ssize_t hdmi_audio_infoframe_pack(struct hdmi_audio_infoframe *frame,
- 				  void *buffer, size_t size);
- ssize_t hdmi_audio_infoframe_pack_only(const struct hdmi_audio_infoframe *frame,
- 				       void *buffer, size_t size);
--int hdmi_audio_infoframe_check(struct hdmi_audio_infoframe *frame);
-+int hdmi_audio_infoframe_check(const struct hdmi_audio_infoframe *frame);
-+
-+struct dp_sdp;
-+ssize_t
-+hdmi_audio_infoframe_pack_for_dp(const struct hdmi_audio_infoframe *frame,
-+				 struct dp_sdp *sdp, u8 dp_version);
- 
- enum hdmi_3d_structure {
- 	HDMI_3D_STRUCTURE_INVALID = -1,
+ static inline unsigned char vga_mm_r (void __iomem *regbase, unsigned short port)
 -- 
 2.32.0
 

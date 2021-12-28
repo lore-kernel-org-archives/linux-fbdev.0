@@ -2,176 +2,164 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A321C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 27 Dec 2021 18:27:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4887CC4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 28 Dec 2021 02:10:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231609AbhL0S1S (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 27 Dec 2021 13:27:18 -0500
-Received: from mail-dm6nam10on2059.outbound.protection.outlook.com ([40.107.93.59]:34753
-        "EHLO NAM10-DM6-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S231622AbhL0S1S (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 27 Dec 2021 13:27:18 -0500
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=XqBBXYA9Qd0QvRnqyMWDovfk9bEWIqN2/Mo7vgfHnxoXorQ7r4oGZfiwpn/p4QckQcfN0uYD50I9DtND5O+ds5IRVEMoEreIYQWx9qONoveKWof8VMcmlMfUIp7wG5WCZPMHaRPVvFac/xE6PAnH1cEik53N2N6DcjaX+oTNWF2Wv9AB8EnipEA7zSoaoRLJGiRRURuob+2q9gEVhUMQb4YDtGfOYmSdJOsLK6Gylf4R9R7No08ApqJ4hWEnti/wssbWptTBqVlAWDayMcCAOCcpQ/VVZXiuJpK1GH6Pf5/zMAf1bDHUYCBYj+HQF5C60riw6E6BAPogJjUurkZrWQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vW+p8NKGCiwOFZOb7xERZK7JbWeLxtGJ/fWV75NyPUc=;
- b=F3L7smnc6Lu6VywC3OXagOY2qmA2YLETwhKZP6sRE/GqekzY/0mEl59CjHRK2NZQJzZfDLnHrEBkOtvdLisdABDMaHy9voeKXhNeU5jKDPOLs+AaHxwscVjBPFsvzUNiB9mCxBraO0dTuwdnEnGt/b7Ls/PR2A11NUvt6jjRc6Wc6M9t/YXN8l+52eMeBv5LMTeBfv8dqH40i7np0YSKKur7ktoAWWgIp3HMgT6VYP6iKXsj4vw/pQH0zItiVJQWP0IW8JTPYL9EfCVr+PZcaMmLsSeNA2IA/h9ICT0LdRERMZ6OSYsM0LaPyrIhTn9zLFevhNkSP9amRQpRHz/8Ng==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=lists.freedesktop.org smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vW+p8NKGCiwOFZOb7xERZK7JbWeLxtGJ/fWV75NyPUc=;
- b=Vfbp3tIMt2UjEihFdQI+NIZRpAGR2bwSdUp6WRRiflV5GpKWIDcBMgi5cHZBcN+z19bcUqrv/nPFCzR5Nv+hdR3jIOfmDgfxc6CQC3Z+IcypNznaEaAW9OLklT5D04KK/zwwcOaWm99dzgrESbn2zTOEU+21j9HxTyFvYfb8aKk=
-Received: from BN9PR03CA0227.namprd03.prod.outlook.com (2603:10b6:408:f8::22)
- by MWHPR12MB1840.namprd12.prod.outlook.com (2603:10b6:300:114::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4823.19; Mon, 27 Dec
- 2021 18:27:09 +0000
-Received: from BN8NAM11FT039.eop-nam11.prod.protection.outlook.com
- (2603:10b6:408:f8:cafe::48) by BN9PR03CA0227.outlook.office365.com
- (2603:10b6:408:f8::22) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4823.18 via Frontend
- Transport; Mon, 27 Dec 2021 18:27:09 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB03.amd.com;
-Received: from SATLEXMB03.amd.com (165.204.84.17) by
- BN8NAM11FT039.mail.protection.outlook.com (10.13.177.169) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.4823.18 via Frontend Transport; Mon, 27 Dec 2021 18:27:09 +0000
-Received: from tr4.amd.com (10.180.168.240) by SATLEXMB03.amd.com
- (10.181.40.144) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.17; Mon, 27 Dec
- 2021 12:27:08 -0600
-From:   Alex Deucher <alexander.deucher@amd.com>
-To:     <amd-gfx@lists.freedesktop.org>, <dri-devel@lists.freedesktop.org>,
-        <linux-fbdev@vger.kernel.org>
-CC:     Alex Deucher <alexander.deucher@amd.com>
-Subject: [PATCH 1/2] fbdev: fbmem: add a helper to determine if an aperture is used by a fw fb
-Date:   Mon, 27 Dec 2021 13:26:55 -0500
-Message-ID: <20211227182656.2110664-1-alexander.deucher@amd.com>
-X-Mailer: git-send-email 2.33.1
+        id S234551AbhL1CKJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 27 Dec 2021 21:10:09 -0500
+Received: from ams.source.kernel.org ([145.40.68.75]:43708 "EHLO
+        ams.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232504AbhL1CKJ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 27 Dec 2021 21:10:09 -0500
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 1B799B8117D;
+        Tue, 28 Dec 2021 02:10:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C19A8C36AEA;
+        Tue, 28 Dec 2021 02:09:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1640657404;
+        bh=SWYw07zmaaDNu+bU6UjWMUGttSEKl48ssAwYr917Irk=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=AP7PTZtlYcp1DDFFD9oOox44rlGILxnZhjrWGoppO9nx889cG994Anev93Fi8avnE
+         QKDjPgXQd+0j5ryyJUZRF2fBwkLwO80XrnSF/7Fx+x50yneeRCMv+6NTewDTm+M3mY
+         UmjlUI3lKpBa+eY+azArRNs2im3Ff4KiJ7Zi2yf5dhhdWeFi5sankCfKs3hH/NkcWY
+         C3nDae4xyYfSY866Hl7iueZkbXg7sQjQFFHeioueEr+2zR+wkgXwGDiPuaIoio9xml
+         rwSFGRLZ2Ry45efsPcHYEzY5Wj/FdpgdsOlVeG8/L54LBpew0o0F/pJgWb5CCAbMPX
+         5d9alQgd1Ngqw==
+Date:   Tue, 28 Dec 2021 03:09:46 +0100
+From:   Mauro Carvalho Chehab <mchehab@kernel.org>
+To:     Niklas Schnelle <schnelle@linux.ibm.com>
+Cc:     Arnd Bergmann <arnd@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        John Garry <john.garry@huawei.com>,
+        Nick Hu <nickhu@andestech.com>,
+        Greentime Hu <green.hu@gmail.com>,
+        Vincent Chen <deanbo422@gmail.com>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Guo Ren <guoren@kernel.org>,
+        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+        Ian Abbott <abbotti@mev.co.uk>,
+        H Hartley Sweeten <hsweeten@visionengravers.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Karsten Keil <isdn@linux-pingi.de>,
+        Hans Verkuil <hverkuil-cisco@xs4all.nl>,
+        Sathya Prakash <sathya.prakash@broadcom.com>,
+        Sreekanth Reddy <sreekanth.reddy@broadcom.com>,
+        Suganath Prabu Subramani 
+        <suganath-prabu.subramani@broadcom.com>,
+        Michael Grzeschik <m.grzeschik@pengutronix.de>,
+        "David S. Miller" <davem@davemloft.net>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Jesse Brandeburg <jesse.brandeburg@intel.com>,
+        Tony Nguyen <anthony.l.nguyen@intel.com>,
+        Kalle Valo <kvalo@kernel.org>, Jouni Malinen <j@w1.fi>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Hannes Reinecke <hare@suse.com>,
+        Kashyap Desai <kashyap.desai@broadcom.com>,
+        Sumit Saxena <sumit.saxena@broadcom.com>,
+        Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
+        Nilesh Javali <njavali@marvell.com>,
+        GR-QLogic-Storage-Upstream@marvell.com,
+        Mark Brown <broonie@kernel.org>,
+        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Teddy Wang <teddy.wang@siliconmotion.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Forest Bond <forest@alittletooquiet.net>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Takashi Iwai <tiwai@suse.com>, linux-kernel@vger.kernel.org,
+        linux-arch@vger.kernel.org, linux-pci@vger.kernel.org,
+        linux-riscv@lists.infradead.org, linux-csky@vger.kernel.org,
+        linux-ide@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org,
+        linux-input@vger.kernel.org, netdev@vger.kernel.org,
+        linux-media@vger.kernel.org, MPT-FusionLinux.pdl@broadcom.com,
+        linux-scsi@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+        linux-wireless@vger.kernel.org, megaraidlinux.pdl@broadcom.com,
+        linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-serial@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-watchdog@vger.kernel.org,
+        alsa-devel@alsa-project.org
+Subject: Re: [RFC 01/32] Kconfig: introduce and depend on LEGACY_PCI
+Message-ID: <20211228030946.65932d2e@coco.lan>
+In-Reply-To: <20211227164317.4146918-2-schnelle@linux.ibm.com>
+References: <20211227164317.4146918-1-schnelle@linux.ibm.com>
+        <20211227164317.4146918-2-schnelle@linux.ibm.com>
+X-Mailer: Claws Mail 4.0.0 (GTK+ 3.24.30; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB03.amd.com (10.181.40.144) To SATLEXMB03.amd.com
- (10.181.40.144)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: b45c6d42-4ae1-4118-8e01-08d9c9667e43
-X-MS-TrafficTypeDiagnostic: MWHPR12MB1840:EE_
-X-Microsoft-Antispam-PRVS: <MWHPR12MB18403162C4B0C39955BF23F9F7429@MWHPR12MB1840.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:5236;
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 4Tqj7gXIkQx6ow2uXsHc/pJVSGPT+5Wik4Uo3iDI7CaufVoIR+b4H+5k5kgqxNgb/WCJnj0bygrZ+RxMqj07A72qaF+fdg6AhrjxvsoRlABoXY4z+0WngmfiJ4rU7TXFS6FG3zn/FyoNqJpkxNMmC01+asZ37X3ywi21QuxdP2LMjZXJcll5T0xRBukYSYyu+UIAo893Hbe3LrsoScj8sc9kFvNJVP6oWn7kQiGFWyD/O8HxD/O/f86mo5aa1H6/tVzbpOtq4bEFehsfuTUcX/J2gndlbqJJ1SQjnZn8LxWlY/pl/b8Yl9s6oDaS9eG5FNlanhHMN68je0H+5NfF7HOILXlJqWNZfwraEbrjsfQ4JAztsCiwXR08lnN9A62uWH3ETOPkXxHZ2Iyn2a3f+2UMTdRZku2PDCy0khYLT1WCYQ9epywRaF5SFK78MX6HPbjKtZeLoTeFetnZGSzPzRvkruI2AO4nwYP+kNSBTxXoB/YSkWJPhKozm8sqIGj5odmlgWp32E27CXxO8w09gREIHxu3u6cnB6rbIgpKzHLsRZFYwzgvIsWgVzYfUJLn5bABdPpCNOfEpDJW+jQTWUipxnQDfBOs9v8VXsRuolov0PmEIUhn1myjzvtRmIR/QyuHLqQVkeM6nLWU1s57ex4+SY804TmUbH/mX9uxgfjjrxUw9vQ/Q/cs2lJ6sRGizu+mRO1ubRy11hvsQVYFCcH15p0w4QHq7xUJ4ZxOeCfv7nebagUsR9/W4tdXms+TELmJDUWwpINjfR2rA8l0WEFQK0Mrsfu/CXNET+a7rPMFoqdiXi+abWEIlCB+9q3byonclxm1BhzvR5GoKBbapm2k9Nj04ZMAES92zFHMIrKPCGfkdk/rh1lyy2TLLg0N
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB03.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(4636009)(40470700002)(46966006)(36840700001)(316002)(16526019)(26005)(186003)(7696005)(110136005)(336012)(5660300002)(86362001)(426003)(8936002)(1076003)(356005)(36860700001)(2616005)(8676002)(47076005)(81166007)(70586007)(70206006)(508600001)(966005)(82310400004)(83380400001)(40460700001)(6666004)(36756003)(2906002)(4326008)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Dec 2021 18:27:09.1370
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: b45c6d42-4ae1-4118-8e01-08d9c9667e43
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB03.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN8NAM11FT039.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR12MB1840
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Add a function for drivers to check if the a firmware initialized
-fb is corresponds to their aperture.  This allows drivers to check if the
-device corresponds to what the firmware set up as the display device.
+Em Mon, 27 Dec 2021 17:42:46 +0100
+Niklas Schnelle <schnelle@linux.ibm.com> escreveu:
 
-Bug: https://bugzilla.kernel.org/show_bug.cgi?id=215203
-Bug: https://gitlab.freedesktop.org/drm/amd/-/issues/1840
-Signed-off-by: Alex Deucher <alexander.deucher@amd.com>
----
- drivers/video/fbdev/core/fbmem.c | 47 ++++++++++++++++++++++++++++++++
- include/linux/fb.h               |  1 +
- 2 files changed, 48 insertions(+)
+> Introduce a new LEGACY_PCI Kconfig option which gates support for legacy
+> PCI devices including those attached to a PCI-to-PCI Express bridge and
+> PCI Express devices using legacy I/O spaces. Note that this is different
+> from non PCI uses of I/O ports such as by ACPI.
+> 
+> Add dependencies on LEGACY_PCI for all PCI drivers which only target
+> legacy PCI devices and ifdef legacy PCI specific functions in ata
+> handling.
+> 
+> Co-developed-by: Arnd Bergmann <arnd@kernel.org>
+> Signed-off-by: Arnd Bergmann <arnd@kernel.org>
+> Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
+> ---
+>  drivers/ata/Kconfig                          | 34 ++++++++--------
+>  drivers/ata/ata_generic.c                    |  3 +-
+>  drivers/ata/libata-sff.c                     |  2 +
+>  drivers/comedi/Kconfig                       | 42 +++++++++++++++++++
+>  drivers/gpio/Kconfig                         |  2 +-
+>  drivers/hwmon/Kconfig                        |  6 +--
+>  drivers/i2c/busses/Kconfig                   | 24 +++++------
+>  drivers/input/gameport/Kconfig               |  4 +-
+>  drivers/isdn/hardware/mISDN/Kconfig          | 14 +++----
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 826175ad88a2..0fa7ede94fa6 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1762,6 +1762,53 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
- }
- EXPORT_SYMBOL(remove_conflicting_framebuffers);
- 
-+/**
-+ * is_firmware_framebuffer - detect if firmware-configured framebuffer matches
-+ * @a: memory range, users of which are to be checked
-+ *
-+ * This function checks framebuffer devices (initialized by firmware/bootloader)
-+ * which use memory range described by @a. If @a matchesm the function returns
-+ * true, otherwise false.
-+ */
-+bool is_firmware_framebuffer(struct apertures_struct *a)
-+{
-+	bool do_free = false;
-+	bool found = false;
-+	int i;
-+
-+	if (!a) {
-+		a = alloc_apertures(1);
-+		if (!a)
-+			return false;
-+
-+		a->ranges[0].base = 0;
-+		a->ranges[0].size = ~0;
-+		do_free = true;
-+	}
-+
-+	mutex_lock(&registration_lock);
-+	/* check all firmware fbs and kick off if the base addr overlaps */
-+	for_each_registered_fb(i) {
-+		struct apertures_struct *gen_aper;
-+
-+		if (!(registered_fb[i]->flags & FBINFO_MISC_FIRMWARE))
-+			continue;
-+
-+		gen_aper = registered_fb[i]->apertures;
-+		if (fb_do_apertures_overlap(gen_aper, a)) {
-+			found = true;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&registration_lock);
-+
-+	if (do_free)
-+		kfree(a);
-+
-+	return found;
-+}
-+EXPORT_SYMBOL(is_firmware_framebuffer);
-+
- /**
-  * remove_conflicting_pci_framebuffers - remove firmware-configured framebuffers for PCI devices
-  * @pdev: PCI device
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 6f3db99ab990..3da95842b207 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -610,6 +610,7 @@ extern int remove_conflicting_pci_framebuffers(struct pci_dev *pdev,
- 					       const char *name);
- extern int remove_conflicting_framebuffers(struct apertures_struct *a,
- 					   const char *name, bool primary);
-+extern bool is_firmware_framebuffer(struct apertures_struct *a);
- extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
- extern int fb_show_logo(struct fb_info *fb_info, int rotate);
- extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
--- 
-2.33.1
+>  drivers/media/cec/platform/Kconfig           |  2 +-
+>  drivers/media/pci/dm1105/Kconfig             |  2 +-
+>  drivers/media/radio/Kconfig                  |  2 +-
 
+Not sure what you meant by "legacy I/O spaces" on this patch. 
+I mean, I would expect non-PCIe devices - like bttv and other
+devices developed at the past millennium or so to be "legacy",
+but at least on media, it is touching some drivers that aren't
+that old, while keeping the really old ones untouched. Instead,
+it is touching a driver developed in 2017 plus two other ones
+that are a way newer than other drivers.
+
+The support for the Bt8xx chipset, in particular, is really 
+weird, as a sound driver for such chipset:
+
+> @@ -172,6 +177,7 @@ config SND_AZT3328
+>  
+>  config SND_BT87X
+>  	tristate "Bt87x Audio Capture"
+> +	depends on LEGACY_PCI
+>  	select SND_PCM
+>  	help
+>  	  If you want to record audio from TV cards based on
+
+was marked as dependent of LEGACY_PCI, while the DVB and V4L2 ones 
+weren't.
+
+Sounds confusing to me, as the PCI bridge used by a Bt87x device 
+should be the same for all three subdevices.
+
+I'm confused...
+
+Regards,
+Mauro

@@ -2,94 +2,89 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07130C4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed, 29 Dec 2021 17:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6F90C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 30 Dec 2021 15:52:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241048AbhL2REf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 29 Dec 2021 12:04:35 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40968 "EHLO
+        id S238761AbhL3PwF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 30 Dec 2021 10:52:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57734 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241023AbhL2REe (ORCPT
+        with ESMTP id S232051AbhL3PwE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 29 Dec 2021 12:04:34 -0500
-Received: from mail-ed1-x533.google.com (mail-ed1-x533.google.com [IPv6:2a00:1450:4864:20::533])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F08DC061401
-        for <linux-fbdev@vger.kernel.org>; Wed, 29 Dec 2021 09:04:33 -0800 (PST)
-Received: by mail-ed1-x533.google.com with SMTP id z29so88517512edl.7
-        for <linux-fbdev@vger.kernel.org>; Wed, 29 Dec 2021 09:04:33 -0800 (PST)
+        Thu, 30 Dec 2021 10:52:04 -0500
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7AD21C061574;
+        Thu, 30 Dec 2021 07:52:04 -0800 (PST)
+Received: by mail-wr1-x432.google.com with SMTP id r17so51212288wrc.3;
+        Thu, 30 Dec 2021 07:52:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fairphone.com; s=fair;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=Zzzoaw9nwT/sLWjoXAxYNO4/5wEGpc2LGKlTzw2/Nmo=;
-        b=rRDXfOV2riF8m3eENMG6TCo7kUtjkSO7KgaD6hrRGKOU1U0LATdWx2kSuO/omigerc
-         HS3uReuDDRQlwThLronJmYerKaQqTjTMT2Dlx49JF02IhDDfWTuoXqBp0rsEfZdkXUQw
-         zgI2tlBxkxMrogtxhUBTycLyyqLd/yiscHkf5sTBp6T/NNlmHrIYIUKT9q6qJk53hGqD
-         TVN2RUQ11SELxcFA/QLI+6TJnZaekMVJgle0EsB4gEj7GInfpW5EvYfWZFuC7DGHiepA
-         POf76H95BxcZhO/RA0QBORriwITuyRFcezZEVLti7aDrcFzbwN0vhI1XIzKULE8SMCeB
-         qQ6A==
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=kfSEh+kMWcMB2oG20OjNOZJx52OyGLAU5iACdztgHAM=;
+        b=LSe1c8wx29G4o6EHIysvSVoWfm8jbpRdfXqi/Sn96bwLYHcxEIPZj+58H5hzp9nxxN
+         zel2M2/KB4eyjXt473MV8NzT/+bnQNccGzNvt+IR6EIUxDlgEamcQg9KFgUR+vclHNYG
+         cW8NC4dpSq3YrXfs+ZCCTBs1h9Gyzci6VIhMzoAtJfMawtLoJYA6qEx4OCQVbQUsTpEF
+         BPzqxwzjN8IVp2ZT/Pe826g61sr1VpRPs+a3oRuZc0BOXwTQkx/YZ9MZ3oFpYZMRKBHB
+         5otKQqiTb35RreN0x2M1D2qwsK8Ik1t9fCBvKMyMd3MoF5kibR2ZnUxOJ7kIbMT+orCv
+         JN5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=Zzzoaw9nwT/sLWjoXAxYNO4/5wEGpc2LGKlTzw2/Nmo=;
-        b=ScJZxu2UhoqoAHqw3Eji53SiULKEWGLH2RSBYH94L4NjKdMv4Ko8iDWQ/Foa6tUXiV
-         Z/d4J7ZWygSqGM2qxCWg/afQpT5OtNWi7hkQ1sdyMXWNvCAadUQEhDR9H0RWZ5HTjnsn
-         BOQLWnoRkJBqlFr1Wtp9f/Ji3a1FCT+atrQdRtprbKgk6raiWIuOcP84JZfcYowfMW3U
-         0QEs7lyd2L/0i/66m7Jcxrnb8UDA/NXkEIqPSj0cUxgsCGJJztMWp1/7v1owGI6bvdAV
-         zj9ogfMzIMKLq+YH0H/QjtxvePcaFkLbMd4TJHhXUbR95F+gw9zHOk5O+N05suvporDN
-         E0aQ==
-X-Gm-Message-State: AOAM531tednY1U2Cdlf6xxddEa3rjZVCFMsw2ARIqTUKR4iO2slE5d45
-        UTnXULKuS2IqwDN2dwlRZjy55g==
-X-Google-Smtp-Source: ABdhPJyw3/QGNXRpt1eE5AdOGe9of2v2ZlyzW2iOuugasp3Ck/Ai66iFDEh5sqOB1BU76Lr5YkJe0Q==
-X-Received: by 2002:aa7:c481:: with SMTP id m1mr26088776edq.204.1640797471615;
-        Wed, 29 Dec 2021 09:04:31 -0800 (PST)
-Received: from localhost.localdomain ([2a02:a210:20c5:8c80:7d0a:cd68:c339:f426])
-        by smtp.gmail.com with ESMTPSA id w11sm8546153edv.65.2021.12.29.09.04.30
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=kfSEh+kMWcMB2oG20OjNOZJx52OyGLAU5iACdztgHAM=;
+        b=08mZJ0x9bOh3YfNLVybTcqMJ7GYPTVpsop2oQE5RzfuJd6nZXpmDvXlvHX9XKfBoaS
+         bE5+MXKfadD1NSRORUPNveLwvkhqBy6T6/wK+Fbe1qpgAHXx2oYwrcBISrf/e+xCZe9H
+         KEGcQG6fu6YmB0hhsV8ji6rlPkmBJkoNn+v3rnHmgChwYVDdDDxO89OVnt9n2AWxXjVf
+         ZkkAippTb+JIsS14Z4Q+74biOAzQ9gq2LVuIysC4pVw5I6qwk3v9J+psjaRHWJotnftk
+         TJ+QY+wFA/OipVp1hvPTU5OVteAtYUkyu4TSTW581S3p4x+JgxXHu1T9cvP/8o9JAeic
+         +2RQ==
+X-Gm-Message-State: AOAM532rCRajOgNghkQAlIMSWK2QgyA2Y6n8Xk0SUz1J65ptT06uIp1p
+        U4+TLbUsoS4a9QDs55Yp4yONvoY/C0OpExSH
+X-Google-Smtp-Source: ABdhPJyBVYh0Oove2VBiz9Jd/MdVtDP9KyAEL3OOxOiMXWn2lKi2LyJM0+xNP1ys/VrHP42WIlCNVA==
+X-Received: by 2002:a5d:4dca:: with SMTP id f10mr25977728wru.595.1640879523053;
+        Thu, 30 Dec 2021 07:52:03 -0800 (PST)
+Received: from localhost (cpc154979-craw9-2-0-cust193.16-3.cable.virginm.net. [80.193.200.194])
+        by smtp.gmail.com with ESMTPSA id l12sm29750798wmq.2.2021.12.30.07.52.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Dec 2021 09:04:31 -0800 (PST)
-From:   Luca Weiss <luca.weiss@fairphone.com>
-To:     linux-arm-msm@vger.kernel.org
-Cc:     ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Luca Weiss <luca.weiss@fairphone.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] backlight: qcom-wled: Add PM6150L compatible
-Date:   Wed, 29 Dec 2021 18:03:56 +0100
-Message-Id: <20211229170358.2457006-3-luca.weiss@fairphone.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20211229170358.2457006-1-luca.weiss@fairphone.com>
-References: <20211229170358.2457006-1-luca.weiss@fairphone.com>
+        Thu, 30 Dec 2021 07:52:02 -0800 (PST)
+From:   Colin Ian King <colin.i.king@gmail.com>
+To:     Sam Ravnborg <sam@ravnborg.org>, Zheyu Ma <zheyuma97@gmail.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] video: fbdev: asiliantfb: remove redundant assignment to variable Ftarget
+Date:   Thu, 30 Dec 2021 15:52:01 +0000
+Message-Id: <20211230155202.355336-1-colin.i.king@gmail.com>
+X-Mailer: git-send-email 2.33.1
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-PM6150L contains WLED of version 5. Add support ofr it to the driver.
+Variable Ftarget is being initialized with a value that is never read,
+it is being re-assigned a different value a little later on. The
+assignment is redundant and can be removed.
 
-Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
 ---
- drivers/video/backlight/qcom-wled.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/asiliantfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-index 306bcc6ccb92..527210e85795 100644
---- a/drivers/video/backlight/qcom-wled.c
-+++ b/drivers/video/backlight/qcom-wled.c
-@@ -1734,6 +1734,7 @@ static const struct of_device_id wled_match_table[] = {
- 	{ .compatible = "qcom,pmi8994-wled", .data = (void *)4 },
- 	{ .compatible = "qcom,pmi8998-wled", .data = (void *)4 },
- 	{ .compatible = "qcom,pm660l-wled", .data = (void *)4 },
-+	{ .compatible = "qcom,pm6150l-wled", .data = (void *)5 },
- 	{ .compatible = "qcom,pm8150l-wled", .data = (void *)5 },
- 	{}
- };
+diff --git a/drivers/video/fbdev/asiliantfb.c b/drivers/video/fbdev/asiliantfb.c
+index 84c56f525889..f8ef62542f7f 100644
+--- a/drivers/video/fbdev/asiliantfb.c
++++ b/drivers/video/fbdev/asiliantfb.c
+@@ -110,7 +110,7 @@ static const struct fb_ops asiliantfb_ops = {
+ static void asiliant_calc_dclk2(u32 *ppixclock, u8 *dclk2_m, u8 *dclk2_n, u8 *dclk2_div)
+ {
+ 	unsigned pixclock = *ppixclock;
+-	unsigned Ftarget = 1000000 * (1000000 / pixclock);
++	unsigned Ftarget;
+ 	unsigned n;
+ 	unsigned best_error = 0xffffffff;
+ 	unsigned best_m = 0xffffffff,
 -- 
-2.34.1
+2.33.1
 

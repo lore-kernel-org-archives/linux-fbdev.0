@@ -2,80 +2,158 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E47EC433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue,  4 Jan 2022 14:20:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 729B8C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed,  5 Jan 2022 17:42:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231774AbiADOUt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 4 Jan 2022 09:20:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52192 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229744AbiADOUs (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 4 Jan 2022 09:20:48 -0500
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3432FC061761
-        for <linux-fbdev@vger.kernel.org>; Tue,  4 Jan 2022 06:20:48 -0800 (PST)
-Received: by mail-wr1-x436.google.com with SMTP id s1so76507697wra.6
-        for <linux-fbdev@vger.kernel.org>; Tue, 04 Jan 2022 06:20:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=WeeQCilTFNE7Nh007wpxMFboWE5lVX/qeHUt4Da2x6c=;
-        b=KJiosB/89hqKX7GXGJC0SgqE7yLt3BnJ+gWDCoQ3Eh7n9pW11tyn5I2ygUov09Z4f+
-         HvyzWkpUTZk89/jv9FhjAUHp0240JCKYZFML/yqGzz6seu2ob65gpk4jgkpE58p3PZ0X
-         nU5NcJ7+8cBv9X94p+fp6GJcNwqzkuMbzi0l30NMfvWEIB3lRIImEP5SgZD9rSfBacbU
-         64+XimNRphqL/JQ20UagMgU+h5dzPH+Ci+EicYq942IgGs2nkxiqWhvfxX18q58SoUw1
-         lweURD7cElEXdJt+auTId7ok7ZlHT7jwiRNnrm08gJWgcsJsYDTjxUngOVm/ulV1KZIX
-         OWxg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=WeeQCilTFNE7Nh007wpxMFboWE5lVX/qeHUt4Da2x6c=;
-        b=avF/NMqLCYsP+icBKWPSHDz/IQADJyyNfx/8OEXXZXMQYhJHqqn3dBSBUBADJp8GSi
-         ccDDhhu+tYq3mCBq5e7l8rAW9MmX7+DDjgu4yC5W7FGVR6J4oMpy5X3rX0TbLGiZCXd4
-         S9cyHXydK9Z6K5ArvoFsU4028vXsgMlUD0L7pl/RrAoV0+N7ftSOYL59OIEtcyz35Pi3
-         47RaMGiQjJjspJQO5mUT3Af/LAyqxl+lUQH3mopXTkNK1Z/ZHD0IUyg4+NUkyR1Fz0e4
-         p1eqWlwB0ncJgGcX/PJXSHJA8njTtxgoo3AMQbwJaaysMUqshOZcrXT5cSttBVO5Is4b
-         oWNw==
-X-Gm-Message-State: AOAM530RimfN5q33rUAjBJTy26MX/4Jqxj8ltyphbdvx+AwK06mnF66K
-        LdVWekk7KXTdFw6POIzdyukCkQ==
-X-Google-Smtp-Source: ABdhPJwMrTzASSAtuAeHD13Uah3zwGwzHwTERozrKIQfJGj44BxpQ00MYPr62K/vCy7LTPB3/EduVA==
-X-Received: by 2002:a5d:4c47:: with SMTP id n7mr42360529wrt.322.1641306046777;
-        Tue, 04 Jan 2022 06:20:46 -0800 (PST)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id j39sm35717478wms.0.2022.01.04.06.20.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Jan 2022 06:20:46 -0800 (PST)
-Date:   Tue, 4 Jan 2022 14:20:44 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Luca Weiss <luca.weiss@fairphone.com>
-Cc:     linux-arm-msm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] backlight: qcom-wled: Add PM6150L compatible
-Message-ID: <20220104142044.iit5wnsrgzngu76w@maple.lan>
-References: <20211229170358.2457006-1-luca.weiss@fairphone.com>
- <20211229170358.2457006-3-luca.weiss@fairphone.com>
+        id S242428AbiAERmj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 5 Jan 2022 12:42:39 -0500
+Received: from frasgout.his.huawei.com ([185.176.79.56]:4352 "EHLO
+        frasgout.his.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S242412AbiAERmi (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 5 Jan 2022 12:42:38 -0500
+Received: from fraeml707-chm.china.huawei.com (unknown [172.18.147.226])
+        by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4JTcDP1FRwz67w73;
+        Thu,  6 Jan 2022 01:39:17 +0800 (CST)
+Received: from lhreml724-chm.china.huawei.com (10.201.108.75) by
+ fraeml707-chm.china.huawei.com (10.206.15.35) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2308.20; Wed, 5 Jan 2022 18:42:31 +0100
+Received: from [10.47.27.56] (10.47.27.56) by lhreml724-chm.china.huawei.com
+ (10.201.108.75) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.20; Wed, 5 Jan
+ 2022 17:42:28 +0000
+From:   John Garry <john.garry@huawei.com>
+Subject: Re: [RFC 01/32] Kconfig: introduce and depend on LEGACY_PCI
+To:     Niklas Schnelle <schnelle@linux.ibm.com>,
+        Bjorn Helgaas <helgaas@kernel.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        "Arnd Bergmann" <arnd@arndb.de>
+CC:     Hans Verkuil <hverkuil-cisco@xs4all.nl>,
+        Ettore Chimenti <ek5.chimenti@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Arnd Bergmann <arnd@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Nick Hu <nickhu@andestech.com>,
+        Greentime Hu <green.hu@gmail.com>,
+        Vincent Chen <deanbo422@gmail.com>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        "Palmer Dabbelt" <palmer@dabbelt.com>,
+        Albert Ou <aou@eecs.berkeley.edu>, Guo Ren <guoren@kernel.org>,
+        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+        "Ian Abbott" <abbotti@mev.co.uk>,
+        H Hartley Sweeten <hsweeten@visionengravers.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <brgl@bgdev.pl>,
+        Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        "Karsten Keil" <isdn@linux-pingi.de>,
+        Sathya Prakash <sathya.prakash@broadcom.com>,
+        Sreekanth Reddy <sreekanth.reddy@broadcom.com>,
+        Suganath Prabu Subramani 
+        <suganath-prabu.subramani@broadcom.com>,
+        Michael Grzeschik <m.grzeschik@pengutronix.de>,
+        "David S. Miller" <davem@davemloft.net>,
+        "Jakub Kicinski" <kuba@kernel.org>,
+        Jesse Brandeburg <jesse.brandeburg@intel.com>,
+        Tony Nguyen <anthony.l.nguyen@intel.com>,
+        Kalle Valo <kvalo@kernel.org>, Jouni Malinen <j@w1.fi>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Hannes Reinecke <hare@suse.com>,
+        Kashyap Desai <kashyap.desai@broadcom.com>,
+        Sumit Saxena <sumit.saxena@broadcom.com>,
+        Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
+        Nilesh Javali <njavali@marvell.com>,
+        <GR-QLogic-Storage-Upstream@marvell.com>,
+        Mark Brown <broonie@kernel.org>,
+        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        "Teddy Wang" <teddy.wang@siliconmotion.com>,
+        Forest Bond <forest@alittletooquiet.net>,
+        Jiri Slaby <jirislaby@kernel.org>,
+        "Wim Van Sebroeck" <wim@linux-watchdog.org>,
+        Jaroslav Kysela <perex@perex.cz>,
+        "Takashi Iwai" <tiwai@suse.com>, <linux-kernel@vger.kernel.org>,
+        <linux-arch@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+        <linux-riscv@lists.infradead.org>, <linux-csky@vger.kernel.org>,
+        <linux-ide@vger.kernel.org>, <linux-gpio@vger.kernel.org>,
+        <linux-hwmon@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
+        <linux-input@vger.kernel.org>, <netdev@vger.kernel.org>,
+        <linux-media@vger.kernel.org>, <MPT-FusionLinux.pdl@broadcom.com>,
+        <linux-scsi@vger.kernel.org>, <intel-wired-lan@lists.osuosl.org>,
+        <linux-wireless@vger.kernel.org>, <megaraidlinux.pdl@broadcom.com>,
+        <linux-spi@vger.kernel.org>, <linux-fbdev@vger.kernel.org>,
+        <linux-serial@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+        <linux-watchdog@vger.kernel.org>
+References: <20211229160317.GA1681139@bhelgaas>
+ <e0877e91d7d50299ea5a3ffcee2cf1016458ce10.camel@linux.ibm.com>
+Message-ID: <3f39d8a2-2e57-a671-2926-eb4f2bf20c76@huawei.com>
+Date:   Wed, 5 Jan 2022 17:42:16 +0000
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211229170358.2457006-3-luca.weiss@fairphone.com>
+In-Reply-To: <e0877e91d7d50299ea5a3ffcee2cf1016458ce10.camel@linux.ibm.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.47.27.56]
+X-ClientProxiedBy: lhreml736-chm.china.huawei.com (10.201.108.87) To
+ lhreml724-chm.china.huawei.com (10.201.108.75)
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Dec 29, 2021 at 06:03:56PM +0100, Luca Weiss wrote:
-> PM6150L contains WLED of version 5. Add support ofr it to the driver.
+On 29/12/2021 16:55, Niklas Schnelle wrote:
+> On Wed, 2021-12-29 at 10:03 -0600, Bjorn Helgaas wrote:
+>> On Wed, Dec 29, 2021 at 01:12:07PM +0100, Mauro Carvalho Chehab wrote:
+>>> Em Wed, 29 Dec 2021 12:45:38 +0100
+>>> Niklas Schnelle<schnelle@linux.ibm.com>  escreveu:
+>>>> ...
+>>>> I do think we agree that once done correctly there is value in
+>>>> such an option independent of HAS_IOPORT only gating inb() etc uses.
+>> I'm not sure I'm convinced about this.  For s390, you could do this
+>> patch series, where you don't define inb() at all, and you add new
+>> dependencies to prevent compile errors.  Or you could define inb() to
+>> return ~0, which is what happens on other platforms when the device is
+>> not present.
+>>
+>>> Personally, I don't see much value on a Kconfig var for legacy PCI I/O
+>>> space. From maintenance PoV, bots won't be triggered if someone use
+>>> HAS_IOPORT instead of the PCI specific one - or vice-versa. So, we
+>>> could end having a mix of both at the wrong places, in long term.
+>>>
+>>> Also, assuming that PCIe hardware will some day abandon support for
+>>> "legacy" PCI I/O space, I guess some runtime logic would be needed,
+>>> in order to work with both kinds of PCIe controllers. So, having a
+>>> Kconfig option won't help much, IMO.
+>>>
+>>> So, my personal preference would be to have just one Kconfig var, but
+>>> I'm ok if the PCI maintainers decide otherwise.
+>> I don't really like the "LEGACY_PCI" Kconfig option.  "Legacy" just
+>> means something old and out of favor; it doesn't say*what*  that
+>> something is.
+>>
+>> I think you're specifically interested in I/O port space usage, and it
+>> seems that you want all PCI drivers that*only*  use I/O port space to
+>> depend on LEGACY_PCI?  Drivers that can use either I/O or memory
+>> space or both would not depend on LEGACY_PCI?  This seems a little
+>> murky and error-prone.
+> I'd like to hear Arnd's opinion on this but you're the PCI maintainer
+> so of course your buy-in would be quite important for such an option.
 > 
-> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Hi Niklas,
 
+I can't see the value in the LEGACY_PCI config - however I don't really 
+understand Arnd's original intention.
 
-Daniel.
+It was written that it would allow us to control "whether we have any 
+pre-PCIe devices or those PCIe drivers that need PIO accessors other 
+than ioport_map()/pci_iomap()".
+
+However I just don't see why CONFIG_PCI=y and CONFIG_HAS_IOPORT=y aren't 
+always the gating factor here. Arnd?
+
+Thanks,
+John

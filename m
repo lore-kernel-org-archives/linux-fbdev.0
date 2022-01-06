@@ -2,127 +2,287 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7DDAC43217
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jan 2022 18:14:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 986A5C43219
+	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jan 2022 21:46:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242375AbiAFSOP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 6 Jan 2022 13:14:15 -0500
-Received: from dfw.source.kernel.org ([139.178.84.217]:57816 "EHLO
-        dfw.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241192AbiAFSOM (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jan 2022 13:14:12 -0500
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 4870561D17;
-        Thu,  6 Jan 2022 18:14:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A780C36AEB;
-        Thu,  6 Jan 2022 18:14:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1641492850;
-        bh=pk9c3vFsS24A9H9YRNmuoLU04tTgveyiSfxz/RguLrg=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:From;
-        b=tWL9ah320xPJ7ZLvQrLFkjIeV1LTlPrJ2qSY/t0fKFbU+5MxnpWBBUesVfIjO0xOO
-         l+Yvi8TANgRjNK2vReZYRlLqehfzP4qE2oNJarfvWixIS0OfQkuKWpI6rrQEfWGn25
-         oroVHI/IQA8JEpMkHqxWMkHxAKg+IVXn/Zqji7RoVtpWyymeRt5WcM4qay0A7EFOWe
-         jnI4JpbaAmAttF9a/Yhl/wWUUgx6A1s8zF9Wpc8ft5Y9hFSMLv91rRujQQ/od6scnA
-         LsHiF+8iYMGoQ6RcvIn/+ZU8WqHN0Y3LnsXMJdYHRbXi/+K/WGfnGi+pM9zExj10bs
-         +smYL/+iBYHZg==
-Date:   Thu, 6 Jan 2022 12:14:09 -0600
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     John Garry <john.garry@huawei.com>
-Cc:     Niklas Schnelle <schnelle@linux.ibm.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        id S244385AbiAFVqF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 6 Jan 2022 16:46:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44094 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S244409AbiAFVqB (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jan 2022 16:46:01 -0500
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D201C0611FF
+        for <linux-fbdev@vger.kernel.org>; Thu,  6 Jan 2022 13:46:00 -0800 (PST)
+Received: by mail-pg1-x535.google.com with SMTP id v25so3741806pge.2
+        for <linux-fbdev@vger.kernel.org>; Thu, 06 Jan 2022 13:46:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=brCHUxffELX7g748GhedHfW2USaNa6/M+pFJyVUZXSA=;
+        b=HD4HW3q92GwTjzL9pH/Q6hAxGyWK7FaS4wX+mWQI8N2hWyPHzSMKWSgVlwux2spoJg
+         cNHk7vFdROBIG5PRkUmJ5lb4wEZpd2H+Uw8Gr8gjGHCUmHMV5pJieUd7WaUfd9aa3JCz
+         POMEAHF/2Wg2S+sbtZ1lCIj2wXz7dU6sntyDw=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=brCHUxffELX7g748GhedHfW2USaNa6/M+pFJyVUZXSA=;
+        b=PczoKBWpr+E4lZWJ9SJnrPQ1BrvaPIdYRdJY+/utPweyyVddgfVOm7jAqv/LARv9HZ
+         DN19x+cxmVO3ScIj1pwQ5Mdf3aErb8VrbD9ir9VdiD62B02GDi8K4So2HEmFvZ+i2z5n
+         qilu9/xIMQ7PuzXMXJXSTjqx6UCO+YRWSVM0yD92Hfj1zDh+e5qCf9Q2ACcPqCEdK5gV
+         ZNhEgsnKEP3EXaIOYVg1IMF3+OAk2d9R3WEsIXyKgwwGHqFbkNhjBtMornjeREn9DbW4
+         CV4QuVyIUyeC3OagOTnuzG4fMKKiYToSn//h65TRc2UR+vxyBJwt288Xxsve7THRwt/8
+         cALQ==
+X-Gm-Message-State: AOAM532mPVu3KWpyujas5uWdiiUX3q2sdST5cHyHlYG9jSQAjJtmkfj/
+        eyunPl8iNJIfUg4SUV99NCmDjA==
+X-Google-Smtp-Source: ABdhPJyXE9BLzE1n4jQ3aYOyiKDxTUXdx0jwxEiX+rDhUHA6y/W6opCn8DzCUvw5dPSbkoiH2am8ng==
+X-Received: by 2002:a65:5808:: with SMTP id g8mr53947571pgr.91.1641505559977;
+        Thu, 06 Jan 2022 13:45:59 -0800 (PST)
+Received: from smtp.gmail.com ([2620:15c:202:201:1ebe:a8fd:f9b0:7e85])
+        by smtp.gmail.com with ESMTPSA id 10sm3539960pfm.56.2022.01.06.13.45.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 06 Jan 2022 13:45:59 -0800 (PST)
+From:   Stephen Boyd <swboyd@chromium.org>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Douglas Anderson <dianders@chromium.org>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
         Arnd Bergmann <arnd@arndb.de>,
-        Hans Verkuil <hverkuil-cisco@xs4all.nl>,
-        Ettore Chimenti <ek5.chimenti@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Arnd Bergmann <arnd@kernel.org>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Nick Hu <nickhu@andestech.com>,
-        Greentime Hu <green.hu@gmail.com>,
-        Vincent Chen <deanbo422@gmail.com>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Albert Ou <aou@eecs.berkeley.edu>, Guo Ren <guoren@kernel.org>,
-        Damien Le Moal <damien.lemoal@opensource.wdc.com>,
-        Ian Abbott <abbotti@mev.co.uk>,
-        H Hartley Sweeten <hsweeten@visionengravers.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Karsten Keil <isdn@linux-pingi.de>,
-        Sathya Prakash <sathya.prakash@broadcom.com>,
-        Sreekanth Reddy <sreekanth.reddy@broadcom.com>,
-        Suganath Prabu Subramani 
-        <suganath-prabu.subramani@broadcom.com>,
-        Michael Grzeschik <m.grzeschik@pengutronix.de>,
-        "David S. Miller" <davem@davemloft.net>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Jesse Brandeburg <jesse.brandeburg@intel.com>,
-        Tony Nguyen <anthony.l.nguyen@intel.com>,
-        Kalle Valo <kvalo@kernel.org>, Jouni Malinen <j@w1.fi>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Hannes Reinecke <hare@suse.com>,
-        Kashyap Desai <kashyap.desai@broadcom.com>,
-        Sumit Saxena <sumit.saxena@broadcom.com>,
-        Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
-        Nilesh Javali <njavali@marvell.com>,
-        GR-QLogic-Storage-Upstream@marvell.com,
-        Mark Brown <broonie@kernel.org>,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Teddy Wang <teddy.wang@siliconmotion.com>,
-        Forest Bond <forest@alittletooquiet.net>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Chen Feng <puck.chen@hisilicon.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Emma Anholt <emma@anholt.net>,
+        =?UTF-8?q?Heiko=20St=C3=BCbner?= <heiko@sntech.de>,
+        Inki Dae <inki.dae@samsung.com>,
+        James Qian Wang <james.qian.wang@arm.com>,
         Jaroslav Kysela <perex@perex.cz>,
-        Takashi Iwai <tiwai@suse.com>, linux-kernel@vger.kernel.org,
-        linux-arch@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-riscv@lists.infradead.org, linux-csky@vger.kernel.org,
-        linux-ide@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org,
-        linux-input@vger.kernel.org, netdev@vger.kernel.org,
-        linux-media@vger.kernel.org, MPT-FusionLinux.pdl@broadcom.com,
-        linux-scsi@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
-        linux-wireless@vger.kernel.org, megaraidlinux.pdl@broadcom.com,
-        linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-serial@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-watchdog@vger.kernel.org
-Subject: Re: [RFC 01/32] Kconfig: introduce and depend on LEGACY_PCI
-Message-ID: <20220106181409.GA297735@bhelgaas>
+        Joerg Roedel <joro@8bytes.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Joonyoung Shim <jy0922.shim@samsung.com>,
+        Jyri Sarha <jyri.sarha@iki.fi>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Mark Brown <broonie@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Rob Clark <robdclark@gmail.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Russell King <rmk+kernel@arm.linux.org.uk>,
+        Sandy Huang <hjc@rock-chips.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Seung-Woo Kim <sw0312.kim@samsung.com>,
+        Takashi Iwai <tiwai@suse.com>,
+        Tian Tao <tiantao6@hisilicon.com>,
+        Tomas Winkler <tomas.winkler@intel.com>,
+        Tomi Valkeinen <tomba@kernel.org>,
+        Will Deacon <will@kernel.org>,
+        Xinliang Liu <xinliang.liu@linaro.org>,
+        Xinwei Kong <kong.kongxinwei@hisilicon.com>,
+        Yong Wu <yong.wu@mediatek.com>,
+        Vitaly Lubart <vitaly.lubart@intel.com>,
+        Daniele Ceraolo Spurio <daniele.ceraolospurio@intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>
+Subject: [PATCH v5 00/32] component: Make into an aggregate bus
+Date:   Thu,  6 Jan 2022 13:45:23 -0800
+Message-Id: <20220106214556.2461363-1-swboyd@chromium.org>
+X-Mailer: git-send-email 2.34.1.448.ga2b2bfdf31-goog
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <74bf4fde-3972-1c36-ca04-58089da0d82b@huawei.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jan 06, 2022 at 05:41:00PM +0000, John Garry wrote:
-> On 05/01/2022 19:47, Bjorn Helgaas wrote:
+This series is from discussion we had on reordering the device lists for
+drm shutdown paths[1]. I've introduced an 'aggregate' bus that we put
+the aggregate device onto and then we probe the aggregate device once
+all the components are probed and call component_add(). The probe/remove
+hooks are where the bind/unbind calls go, and then a shutdown hook is
+added that can be used to shutdown the drm display pipeline at the right
+time.
 
-> > IMO inb() should
-> > be present but do something innocuous like return ~0, as it would if
-> > I/O port space is supported but there's no device at that address.
-> > 
-> > [1]https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/scsi/megaraid.c?id=v5.15#n4210
-> > 
-> 
-> That driver would prob not be used on systems which does not support PIO,
-> and so could have a HAS_IOPORT dependency. But it is not strictly necessary.
+This works for me on my sc7180 board. I no longer get a warning from i2c
+at shutdown that we're trying to make an i2c transaction after the i2c
+bus has been shutdown. There's more work to do on the msm drm driver to
+extract component device resources like clks, regulators, etc. out of
+the component bind function into the driver probe but I wanted to move
+everything over now in other component drivers before tackling that
+problem.
 
-I don't want the path of "this driver isn't needed because the device
-is unlikely to be used on this arch."
+Tested-by tags would be appreciated, and Acked-by/Reviewed-by tags too.
 
-Maybe it's not _always_ possible, but if the device can be plugged
-into the platform, I think we should be able to build the driver for
-it.
+Per Daniel, I've resent this to collect Acks or Review tags from gregkh
+and once Greg is happy with the driver core bits it can be merged
+through drm-misc tree via dianders (both are on the To line).
 
-If the device requires I/O port space and the platform doesn't support
-it, the PCI core or the driver should detect that and give a useful
-diagnostic.
+One last thing, I suspect I'll have to send this once again after the
+merge window because something is probably in linux-next that conflicts
+with some driver patch. I'll do that in about two weeks.
 
-Bjorn
+Changes since v4 (https://lore.kernel.org/r/20211202222732.2453851-1-swboyd@chromium.org):
+ - Picked up tags
+ - Moved rename patch to first in the series
+ - Squashed device and bus type patch together
+
+Changes since v3 (https://lore.kernel.org/r/20211026000044.885195-1-swboyd@chromium.org):
+ - Picked up tags
+ - Rebased to v5.16-rc2
+ - Updated component.c for a few new patches there
+ - Dropped a conversion patch
+ - Added a conversion patch
+
+Changes since v2 (https://lore.kernel.org/r/20211006193819.2654854-1-swboyd@chromium.org):
+ - Picked up acks
+ - Fixed build warnings/errors
+ - Reworked patch series to rename 'master' in a different patch
+
+Changes since v1 (https://lore.kernel.org/r/20210520002519.3538432-1-swboyd@chromium.org):
+ - Use devlink to connect components to the aggregate device
+ - Don't set the registering device as a parent of the aggregate device
+ - New patch for bind_component/unbind_component ops that takes the
+   aggregate device
+ - Convert all drivers in the tree to use the aggregate driver approach
+ - Allow one aggregate driver to be used for multiple aggregate devices
+
+[1] https://lore.kernel.org/r/20210508074118.1621729-1-swboyd@chromium.org
+
+Stephen Boyd (32):
+  component: Replace most references to 'master' with 'aggregate device'
+  component: Introduce the aggregate bus_type
+  component: Move struct aggregate_device out to header file
+  component: Add {bind,unbind}_component() ops that take aggregate
+    device
+  drm/of: Add a drm_of_aggregate_probe() API
+  drm/msm: Migrate to aggregate driver
+  drm/komeda: Migrate to aggregate driver
+  drm/arm/hdlcd: Migrate to aggregate driver
+  drm/malidp: Migrate to aggregate driver
+  drm/armada: Migrate to aggregate driver
+  drm/etnaviv: Migrate to aggregate driver
+  drm/kirin: Migrate to aggregate driver
+  drm/exynos: Migrate to aggregate driver
+  drm/imx: Migrate to aggregate driver
+  drm/ingenic: Migrate to aggregate driver
+  drm/mcde: Migrate to aggregate driver
+  drm/mediatek: Migrate to aggregate driver
+  drm/meson: Migrate to aggregate driver
+  drm/omap: Migrate to aggregate driver
+  drm/rockchip: Migrate to aggregate driver
+  drm/sti: Migrate to aggregate driver
+  drm/sun4i: Migrate to aggregate driver
+  drm/tilcdc: Migrate to aggregate driver
+  drm/vc4: Migrate to aggregate driver
+  iommu/mtk: Migrate to aggregate driver
+  mei: Migrate to aggregate driver
+  power: supply: ab8500: Migrate to aggregate driver
+  fbdev: omap2: Migrate to aggregate driver
+  sound: hdac: Migrate to aggregate driver
+  ASoC: codecs: wcd938x: Migrate to aggregate driver
+  component: Get rid of drm_of_component_probe()
+  component: Remove component_master_ops and friends
+
+ drivers/base/component.c                      | 544 ++++++++++--------
+ .../gpu/drm/arm/display/komeda/komeda_drv.c   |  20 +-
+ drivers/gpu/drm/arm/hdlcd_drv.c               |  21 +-
+ drivers/gpu/drm/arm/malidp_drv.c              |  21 +-
+ drivers/gpu/drm/armada/armada_drv.c           |  23 +-
+ drivers/gpu/drm/drm_drv.c                     |   2 +-
+ drivers/gpu/drm/drm_of.c                      |  18 +-
+ drivers/gpu/drm/etnaviv/etnaviv_drv.c         |  20 +-
+ drivers/gpu/drm/exynos/exynos_drm_drv.c       |  21 +-
+ .../gpu/drm/hisilicon/kirin/kirin_drm_drv.c   |  20 +-
+ drivers/gpu/drm/imx/imx-drm-core.c            |  20 +-
+ drivers/gpu/drm/ingenic/ingenic-drm-drv.c     |  25 +-
+ drivers/gpu/drm/mcde/mcde_drv.c               |  23 +-
+ drivers/gpu/drm/mediatek/mtk_drm_drv.c        |  20 +-
+ drivers/gpu/drm/meson/meson_drv.c             |  21 +-
+ drivers/gpu/drm/msm/msm_drv.c                 |  46 +-
+ drivers/gpu/drm/omapdrm/dss/dss.c             |  20 +-
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.c   |  20 +-
+ drivers/gpu/drm/sti/sti_drv.c                 |  20 +-
+ drivers/gpu/drm/sun4i/sun4i_drv.c             |  26 +-
+ drivers/gpu/drm/tilcdc/tilcdc_drv.c           |  28 +-
+ drivers/gpu/drm/vc4/vc4_drv.c                 |  20 +-
+ drivers/iommu/mtk_iommu.c                     |  14 +-
+ drivers/iommu/mtk_iommu.h                     |   6 +-
+ drivers/iommu/mtk_iommu_v1.c                  |  14 +-
+ drivers/misc/mei/hdcp/mei_hdcp.c              |  22 +-
+ drivers/misc/mei/pxp/mei_pxp.c                |  22 +-
+ drivers/power/supply/ab8500_charger.c         |  22 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c    |  20 +-
+ include/drm/drm_of.h                          |  10 +-
+ include/linux/component.h                     |  92 ++-
+ sound/hda/hdac_component.c                    |  21 +-
+ sound/soc/codecs/wcd938x.c                    |  20 +-
+ 33 files changed, 772 insertions(+), 490 deletions(-)
+
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Chen Feng <puck.chen@hisilicon.com>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
+Cc: Chun-Kuang Hu <chunkuang.hu@kernel.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Emma Anholt <emma@anholt.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Heiko Stübner" <heiko@sntech.de>
+Cc: Inki Dae <inki.dae@samsung.com>
+Cc: James Qian Wang (Arm Technology China) <james.qian.wang@arm.com>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Joerg Roedel <joro@8bytes.org>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Joonyoung Shim <jy0922.shim@samsung.com>
+Cc: Jyri Sarha <jyri.sarha@iki.fi>
+Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: <linux-fbdev@vger.kernel.org>
+Cc: <linux-omap@vger.kernel.org>
+Cc: <linux-pm@vger.kernel.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Liviu Dudau <liviu.dudau@arm.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: Neil Armstrong <narmstrong@baylibre.com>
+Cc: Paul Cercueil <paul@crapouillou.net>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rob Clark <robdclark@gmail.com>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Russell King <linux+etnaviv@armlinux.org.uk>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Sandy Huang <hjc@rock-chips.com>
+Cc: Saravana Kannan <saravanak@google.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Seung-Woo Kim <sw0312.kim@samsung.com>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Tian Tao <tiantao6@hisilicon.com>
+Cc: Tomas Winkler <tomas.winkler@intel.com>
+Cc: Tomi Valkeinen <tomba@kernel.org>
+Cc: Will Deacon <will@kernel.org>
+Cc: Xinliang Liu <xinliang.liu@linaro.org>
+Cc: Xinwei Kong <kong.kongxinwei@hisilicon.com>
+Cc: Yong Wu <yong.wu@mediatek.com>
+Cc: Vitaly Lubart <vitaly.lubart@intel.com>
+Cc: Daniele Ceraolo Spurio <daniele.ceraolospurio@intel.com>
+Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
+Cc: Kai Vehmanen <kai.vehmanen@linux.intel.com>
+
+base-commit: 136057256686de39cc3a07c2e39ef6bc43003ff6
+-- 
+https://chromeos.dev
+

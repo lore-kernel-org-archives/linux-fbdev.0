@@ -2,148 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75937C433FE
-	for <linux-fbdev@archiver.kernel.org>; Thu,  6 Jan 2022 21:47:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB4B0C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri,  7 Jan 2022 11:07:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245597AbiAFVrh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 6 Jan 2022 16:47:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44194 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244901AbiAFVqy (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 6 Jan 2022 16:46:54 -0500
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8E84EC02982C
-        for <linux-fbdev@vger.kernel.org>; Thu,  6 Jan 2022 13:46:36 -0800 (PST)
-Received: by mail-pj1-x102e.google.com with SMTP id m13so3557901pji.3
-        for <linux-fbdev@vger.kernel.org>; Thu, 06 Jan 2022 13:46:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=7Yh3mBEg2nfQJzEtBIxus+8u5VcBe7iEDAWACHn4tN4=;
-        b=bQgFVNcdsjnA7zW9FFXSITmcWjYkWGAB8wIRURyJ5ti0xuNPsSAy9ghoYEb1syKKJs
-         CGLf/Q/oMrQcJwXU3CDgbPhlA20klKs2lFHi/PEmoc8VHgh96v1EkUV6JppBc9bUOpOY
-         flarDI+B9t/W/Ty3wNZQQPlH80IiRnLiaJXmQ=
+        id S1346990AbiAGLHf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 7 Jan 2022 06:07:35 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:50467 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S232906AbiAGLHf (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 7 Jan 2022 06:07:35 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1641553654;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=+kcDM4DA7iF+2H6LBkZldn3r6QWbKOMJ1NrH2QklOIQ=;
+        b=Mx4FXWdPZ4TiluYsosNBJOJLLQ4rwf2cYYAcc1CDWvqBFdOPDNf8SEqTHnaHI4GJdZzv/c
+        sfKjCgXNW1zhiqUQd+NwCh9dQqvRAQyKd9XoLGpMd60JqphmLfJpFJKtbqDJgT/E0VSyn4
+        idjop+OcctuK3JsymcAurqIH3nDyNwY=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-8-fV5FVbL_OBKUgYkcVE3A3A-1; Fri, 07 Jan 2022 06:07:33 -0500
+X-MC-Unique: fV5FVbL_OBKUgYkcVE3A3A-1
+Received: by mail-wr1-f72.google.com with SMTP id v18-20020a5d5912000000b001815910d2c0so2137036wrd.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 07 Jan 2022 03:07:33 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=7Yh3mBEg2nfQJzEtBIxus+8u5VcBe7iEDAWACHn4tN4=;
-        b=LduGMrMk0yT6IvUKIDENsdNeI/oCf6ZZ+KCMQza3fqf4tyLmoyFKr4E7UUjyq2EFlS
-         9fEgvBFv9ER+2FKhdhJPagdBOlaZpsEXN4HyxULio845rTRHLUjHXvYPSxkyWaRwYzne
-         mL6X/pjuYsRuFxjphcUREZCY0sEsem0CynSykSSZbgsGmhSD6SNvsMcdaL50SjHcyneu
-         WvrXy6TT2VC3iWJrv3F85J7bcQgYU5OpKsRm5YGbyky4kM9jvf1+7nW0xf/eO3U+uAYL
-         Bl+8Tb0JKmzN81NKAhN3CPCR5mlE43Reiksmu/Z642IQ9IkB2560hel01jyciLiTp8yR
-         BAZg==
-X-Gm-Message-State: AOAM5320ytjdCIVnQtih+/F6QDeLz8lynun7AfdI+QbmCIOZhRSu/NPZ
-        ukCAqpF14elhU6BIoycEZxmVGQ==
-X-Google-Smtp-Source: ABdhPJx3yLhPBYfq8wjRHSBRsuhDLs2BYE0BBSiTReIZmuvnjn2UxO8YtDDtwxw4qwXOdHpY78HYvw==
-X-Received: by 2002:a17:903:188:b0:149:512a:e69c with SMTP id z8-20020a170903018800b00149512ae69cmr60164734plg.40.1641505596109;
-        Thu, 06 Jan 2022 13:46:36 -0800 (PST)
-Received: from smtp.gmail.com ([2620:15c:202:201:1ebe:a8fd:f9b0:7e85])
-        by smtp.gmail.com with ESMTPSA id 10sm3539960pfm.56.2022.01.06.13.46.34
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=+kcDM4DA7iF+2H6LBkZldn3r6QWbKOMJ1NrH2QklOIQ=;
+        b=Tj4B00NjprJP6QzRdZZSnvaZtK4fkfgpHbc0h1SL1g8ljD9zFjtg3KXir2u7X6ecL1
+         CH+Y+EIrust8VybprPoLn5eBa5Z9BuEGQj9aFuqXoySV4tu02NX3g7HUhZOKncD+PJO9
+         a83GO+wqDugN5ZTlyMtHdU08YzFQpxYYwpnno+szXSO94zavITB6w+cPupcgAZdELTA5
+         KZT+PEH15asbr6qivnYtxNL6KlLd6gRGIhmzQqvb4N74mYG7Bn0WwqNHxF3ZslLNwgeP
+         eEoPy3kI7YzzyckTXa5I8PqlaS/itt1PPV++zH9naCjYcO9jsePfIKKp/01RFsOYLaRg
+         qN4w==
+X-Gm-Message-State: AOAM5338n1KRQKykWWERQ/cX3Rwd9BS5ZLQEB0ECzjRHhWakwwxBi5Y/
+        jkCmPh/lXeRZvg7d53URTaEqZMkijZRMnVO459yRE1Z6y4sX5PVKD5d8BAAMRofPJG/VaAmKfoS
+        NDQ5vD7mot8v8kPWUKiZVSRU=
+X-Received: by 2002:a05:6000:1449:: with SMTP id v9mr54376476wrx.49.1641553652091;
+        Fri, 07 Jan 2022 03:07:32 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwtOPD/6pEBen2ILWzQHaAQuxOtuwbQ3rz4DnLfmgOAOVsFRE5K9lxV3eeCKmjU9fywMsfmMw==
+X-Received: by 2002:a05:6000:1449:: with SMTP id v9mr54376465wrx.49.1641553651914;
+        Fri, 07 Jan 2022 03:07:31 -0800 (PST)
+Received: from minerva.home ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id r9sm9337273wmq.18.2022.01.07.03.07.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 06 Jan 2022 13:46:35 -0800 (PST)
-From:   Stephen Boyd <swboyd@chromium.org>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Douglas Anderson <dianders@chromium.org>
-Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
-        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Fri, 07 Jan 2022 03:07:31 -0800 (PST)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Kris Karas <bugs-a21@moonlit-rail.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Borislav Petkov <bp@suse.de>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Rob Clark <robdclark@gmail.com>,
-        Russell King <rmk+kernel@arm.linux.org.uk>,
-        Saravana Kannan <saravanak@google.com>
-Subject: [PATCH v5 28/32] fbdev: omap2: Migrate to aggregate driver
-Date:   Thu,  6 Jan 2022 13:45:51 -0800
-Message-Id: <20220106214556.2461363-29-swboyd@chromium.org>
-X-Mailer: git-send-email 2.34.1.448.ga2b2bfdf31-goog
-In-Reply-To: <20220106214556.2461363-1-swboyd@chromium.org>
-References: <20220106214556.2461363-1-swboyd@chromium.org>
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH 0/2] video: A couple of fixes for the vga16fb driver
+Date:   Fri,  7 Jan 2022 12:07:21 +0100
+Message-Id: <20220107110723.323276-1-javierm@redhat.com>
+X-Mailer: git-send-email 2.33.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use an aggregate driver instead of component ops so that we can get
-proper driver probe ordering of the aggregate device with respect to all
-the component devices that make up the aggregate device.
+This patch series contains two fixes for the vga16fb driver. I looked at
+the driver due a regression reported [0], caused by commit d391c5827107
+("drivers/firmware: move x86 Generic System Framebuffers support").
 
-Cc: <linux-omap@vger.kernel.org>
-Cc: <linux-fbdev@vger.kernel.org>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Saravana Kannan <saravanak@google.com>
-Signed-off-by: Stephen Boyd <swboyd@chromium.org>
----
- drivers/video/fbdev/omap2/omapfb/dss/dss.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+The mentioned commit didn't change any logic but just moved the platform
+device registration that matches the vesafb and efifb drivers to happen
+later. And this caused the vga16fb driver to be probed even in machines
+that don't have an EGA or VGA video adapter.
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-index a6b1c1598040..f12663c39ceb 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-@@ -1067,8 +1067,9 @@ static int dss_video_pll_probe(struct platform_device *pdev)
- }
- 
- /* DSS HW IP initialisation */
--static int dss_bind(struct device *dev)
-+static int dss_bind(struct aggregate_device *adev)
- {
-+	struct device *dev = adev->parent;
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct resource *dss_mem;
- 	u32 rev;
-@@ -1167,8 +1168,9 @@ static int dss_bind(struct device *dev)
- 	return r;
- }
- 
--static void dss_unbind(struct device *dev)
-+static void dss_unbind(struct aggregate_device *adev)
- {
-+	struct device *dev = adev->parent;
- 	struct platform_device *pdev = to_platform_device(dev);
- 
- 	dss_initialized = false;
-@@ -1188,9 +1190,13 @@ static void dss_unbind(struct device *dev)
- 	dss_put_clocks();
- }
- 
--static const struct component_master_ops dss_component_ops = {
--	.bind = dss_bind,
--	.unbind = dss_unbind,
-+static struct aggregate_driver dss_aggregate_driver = {
-+	.probe = dss_bind,
-+	.remove = dss_unbind,
-+	.driver = {
-+		.name = "dss_fbdev",
-+		.owner = THIS_MODULE,
-+	},
- };
- 
- static int dss_component_compare(struct device *dev, void *data)
-@@ -1225,7 +1231,7 @@ static int dss_probe(struct platform_device *pdev)
- 	/* add all the child devices as components */
- 	device_for_each_child(&pdev->dev, &match, dss_add_child_component);
- 
--	r = component_master_add_with_match(&pdev->dev, &dss_component_ops, match);
-+	r = component_aggregate_register(&pdev->dev, &dss_aggregate_driver, match);
- 	if (r)
- 		return r;
- 
-@@ -1234,7 +1240,7 @@ static int dss_probe(struct platform_device *pdev)
- 
- static int dss_remove(struct platform_device *pdev)
- {
--	component_master_del(&pdev->dev, &dss_component_ops);
-+	component_aggregate_unregister(&pdev->dev, &dss_aggregate_driver);
- 	return 0;
- }
- 
+Patch #1 is fixing the wrong check to determine if either EGA or VGA is
+used and patch #2 adds a check to the driver to only be loaded for EGA
+and VGA 16 color graphic cards.
+
+[0]: https://bugzilla.kernel.org/show_bug.cgi?id=215001
+
+Best regards,
+Javier
+
+
+Javier Martinez Canillas (2):
+  video: vga16fb: Fix logic that checks for the display standard
+  video: vga16fb: Only probe for EGA and VGA 16 color graphic cards
+
+ drivers/video/fbdev/vga16fb.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
 -- 
-https://chromeos.dev
+2.33.1
 

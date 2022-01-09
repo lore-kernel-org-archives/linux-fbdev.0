@@ -2,76 +2,110 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AF09C433F5
-	for <linux-fbdev@archiver.kernel.org>; Sun,  9 Jan 2022 20:38:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE70CC433EF
+	for <linux-fbdev@archiver.kernel.org>; Sun,  9 Jan 2022 22:37:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236938AbiAIUif (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 9 Jan 2022 15:38:35 -0500
-Received: from hua.moonlit-rail.com ([45.79.167.250]:41422 "EHLO
-        hua.moonlit-rail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229579AbiAIUie (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 9 Jan 2022 15:38:34 -0500
-X-Greylist: delayed 1105 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Jan 2022 15:38:34 EST
-Received: from 209-6-248-230.s2276.c3-0.wrx-ubr1.sbo-wrx.ma.cable.rcncustomer.com ([209.6.248.230] helo=boston.moonlit-rail.com)
-        by hua.moonlit-rail.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.95)
-        (envelope-from <bugs-a21@moonlit-rail.com>)
-        id 1n6efg-0005L8-6P;
-        Sun, 09 Jan 2022 15:20:08 -0500
-Received: from springdale.mc.moonlit-rail.com ([192.168.71.36])
-        by boston.moonlit-rail.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-        (Exim 4.95)
-        (envelope-from <bugs-a21@moonlit-rail.com>)
-        id 1n6eff-0008P0-GV;
-        Sun, 09 Jan 2022 15:20:07 -0500
-Message-ID: <4fac9803-50d2-0c83-8b49-a1b2058d7da0@moonlit-rail.com>
-Date:   Sun, 9 Jan 2022 15:20:07 -0500
+        id S235387AbiAIWhX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 9 Jan 2022 17:37:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45450 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235362AbiAIWhX (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 9 Jan 2022 17:37:23 -0500
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8BC95C06173F;
+        Sun,  9 Jan 2022 14:37:22 -0800 (PST)
+Received: by mail-wr1-x42d.google.com with SMTP id o3so23357900wrh.10;
+        Sun, 09 Jan 2022 14:37:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=gAsgOQMc3UKaM9UezU0vbWaZoPnffHLnW6ZeF8Qj0QI=;
+        b=o+1lAT46noVYrgjZW9HZPc4qtWWikPTfj7o3lrQey5wipz6hDagam9IyTzyQlrIuDf
+         C3BLmI4U+rXVZnmH8cuGyo/fZcLaPKWtzc+V5MI3Rcb/+LT6OaowZHljFj96uBXarKIL
+         YKWJEHyyk2W4x6lk9ifx+CRWtoiV3oXqknRpjxKNjacAPANhA2XV+hQs9ZBWDnv8RStH
+         8So2Sw8zJc0AmNx2nSJlnsDrqon/AedkMcLG6IDjfbph6Qc1ra1+8QBwTNvjhva/NgTu
+         agAjj/Vxc3iOMCgURtm8kAjfGbozceWZM5OdYGC9cPaltCp+J+wCuYMy9xPsq7QB6Agd
+         djoQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=gAsgOQMc3UKaM9UezU0vbWaZoPnffHLnW6ZeF8Qj0QI=;
+        b=E8HC+ImDe90tyMB5JK6MU0MsC48IoiYU/CLqgJC1ERq3436Q2FQ+vUefEQoMR1SSNf
+         5ZuY172V9FLio7dCqTW3zD5oOgCeV9Txd5rtw+SSs0t/uyx86DuK5B8ZMWy4Pv5UqCOt
+         AMBXR9/r4Hn5BeKvmY9tDlO3iIFWs+H3Zn2EWRaVecy8YLI8bU5KTZuIzdZANsKxMVot
+         bW8hGpuZiIhMfIF1Lfi6fCKQvXfY9cYD4+9T8uWQARf8QpyO1P4QJLKaggU/VlumwMF7
+         wtjnpHHYEPvGGCvahG+0TN3eNU2TG1LN/axQ4PprKHNF68kEhaVJT7oIpf+EXyZUxv64
+         4G+Q==
+X-Gm-Message-State: AOAM532t+iAY0R3qa0giW2qi4Nb400YMMnRQfIS71rwuilY8JMjuwpoJ
+        Z3zSY0I67ae5wussjft0tUrZMaSrjeGKzw==
+X-Google-Smtp-Source: ABdhPJyH5i6RVFey13kTaLeghj8KZIguTmG4qmxVgzJ9wwoBuJgCycBO7xSTg+/0yiCjBMUkLWOyrg==
+X-Received: by 2002:a5d:4450:: with SMTP id x16mr61237707wrr.95.1641767841045;
+        Sun, 09 Jan 2022 14:37:21 -0800 (PST)
+Received: from localhost (cpc154979-craw9-2-0-cust193.16-3.cable.virginm.net. [80.193.200.194])
+        by smtp.gmail.com with ESMTPSA id g6sm5266102wri.67.2022.01.09.14.37.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 09 Jan 2022 14:37:20 -0800 (PST)
+From:   Colin Ian King <colin.i.king@gmail.com>
+To:     Paul Mackerras <paulus@samba.org>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] fbdev: aty128fb: make some arrays static const
+Date:   Sun,  9 Jan 2022 22:37:19 +0000
+Message-Id: <20220109223719.56043-1-colin.i.king@gmail.com>
+X-Mailer: git-send-email 2.33.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.1
-Subject: Re: [PATCH 1/2] video: vga16fb: Fix logic that checks for the display
- standard
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-References: <20220107110723.323276-1-javierm@redhat.com>
- <20220107110723.323276-2-javierm@redhat.com>
- <CAMuHMdXG3xOUrzOoRQVgpb4MmuQKJ1y3yPXv=p4AiNEohrzZug@mail.gmail.com>
-From:   "Kris Karas (Bug reporting)" <bugs-a21@moonlit-rail.com>
-In-Reply-To: <CAMuHMdXG3xOUrzOoRQVgpb4MmuQKJ1y3yPXv=p4AiNEohrzZug@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Groetje, Geert,
+Don't populate some read-only arrays on the stack but instead
+make them static const. Also makes the object code a little smaller.
+Re-format one of the declarations. Add spaces between commas and make
+PostDivSet unsigned int to fixup checkpatch warnings.
 
-Geert Uytterhoeven wrote:
->
->> -       par->isVGA = screen_info.orig_video_isVGA;
->> +       par->isVGA = screen_info.orig_video_isVGA == VIDEO_TYPE_VGAC;
-> All non-x86 architectures (except for 2 MIPS platforms) treat
-> orig_video_isVGA as a boolean flag, and just assign 1 to it.
-> Hence this change would break them.
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+---
+ drivers/video/fbdev/aty/aty128fb.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-I see a bit of a conflict with using orig_video_isVGA as a boolean. All 
-the modern architecture-agnostic driver code, such as sysfb, 
-sysfb_simplefb, and efifb, all use and expect orig_video_isVGA to be an 
-integer.  On the other hand, the VGA driver for XEN first sets 
-orig_video_isVGA  = 1 (boolean), and then VIDEO_TYPE_VLFB or 
-VIDEO_TYPE_EFI (integer).  Overloading the definition for 
-orig_video_isVGA to be both boolean and integer - within the same file - 
-seems like a recipe for bugs to me.
+diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
+index e6a48689c294..882e3cdb750d 100644
+--- a/drivers/video/fbdev/aty/aty128fb.c
++++ b/drivers/video/fbdev/aty/aty128fb.c
+@@ -952,7 +952,7 @@ static void aty128_timings(struct aty128fb_par *par)
+ 	u32 x_mpll_ref_fb_div;
+ 	u32 xclk_cntl;
+ 	u32 Nx, M;
+-	unsigned PostDivSet[] = { 0, 1, 2, 4, 8, 3, 6, 12 };
++	static const unsigned int PostDivSet[] = { 0, 1, 2, 4, 8, 3, 6, 12 };
+ #endif
+ 
+ 	if (!par->constants.ref_clk)
+@@ -1321,8 +1321,10 @@ static void aty128_set_pll(struct aty128_pll *pll,
+ {
+ 	u32 div3;
+ 
+-	unsigned char post_conv[] =	/* register values for post dividers */
+-        { 2, 0, 1, 4, 2, 2, 6, 2, 3, 2, 2, 2, 7 };
++	/* register values for post dividers */
++	static const unsigned char post_conv[] = {
++		2, 0, 1, 4, 2, 2, 6, 2, 3, 2, 2, 2, 7
++	};
+ 
+ 	/* select PPLL_DIV_3 */
+ 	aty_st_le32(CLOCK_CNTL_INDEX, aty_ld_le32(CLOCK_CNTL_INDEX) | (3 << 8));
+@@ -1360,7 +1362,7 @@ static int aty128_var_to_pll(u32 period_in_ps, struct aty128_pll *pll,
+ 			     const struct aty128fb_par *par)
+ {
+ 	const struct aty128_constants c = par->constants;
+-	unsigned char post_dividers[] = {1,2,4,8,3,6,12};
++	static const unsigned char post_dividers[] = { 1, 2, 4, 8, 3, 6, 12 };
+ 	u32 output_freq;
+ 	u32 vclk;        /* in .01 MHz */
+ 	int i = 0;
+-- 
+2.32.0
 
-That said, I think that wrapping the par->isVGA code, above, within a 
-check for CONFIG_X86 seems safe and expedient.  But I would be much 
-happier if the non-x86 architectures would set it to a proper integer 
-value (even if fake) that coincidentally satisfies boolean "true", say 
-VIDEO_TYPE_VGAC; that way, there would be no confusion as to data type 
-in all the more recent architecture-agnostic framebuffer code.
-
-Kris

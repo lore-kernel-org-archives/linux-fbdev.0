@@ -2,69 +2,96 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01E6EC433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Jan 2022 02:19:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00C90C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Jan 2022 07:57:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348370AbiALCTt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Jan 2022 21:19:49 -0500
-Received: from hua.moonlit-rail.com ([45.79.167.250]:41424 "EHLO
-        hua.moonlit-rail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348090AbiALCTt (ORCPT
+        id S1351300AbiALH54 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 12 Jan 2022 02:57:56 -0500
+Received: from mail-ua1-f50.google.com ([209.85.222.50]:35577 "EHLO
+        mail-ua1-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S237500AbiALH54 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Jan 2022 21:19:49 -0500
-Received: from 209-6-248-230.s2276.c3-0.wrx-ubr1.sbo-wrx.ma.cable.rcncustomer.com ([209.6.248.230] helo=boston.moonlit-rail.com)
-        by hua.moonlit-rail.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.95)
-        (envelope-from <bugs-a21@moonlit-rail.com>)
-        id 1n7TEn-0004MI-QE;
-        Tue, 11 Jan 2022 21:19:45 -0500
-Received: from springdale.mc.moonlit-rail.com ([192.168.71.36])
-        by boston.moonlit-rail.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-        (Exim 4.95)
-        (envelope-from <bugs-a21@moonlit-rail.com>)
-        id 1n7TEn-0000gg-Hc;
-        Tue, 11 Jan 2022 21:19:45 -0500
-Message-ID: <65a13d92-93fc-25d2-0009-b7e60f3392c4@moonlit-rail.com>
-Date:   Tue, 11 Jan 2022 21:19:45 -0500
+        Wed, 12 Jan 2022 02:57:56 -0500
+Received: by mail-ua1-f50.google.com with SMTP id m90so3245395uam.2;
+        Tue, 11 Jan 2022 23:57:55 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=dlv4bb07uQ08vixl16O6rQbCEVIDaSU7CPtshf2sCJ8=;
+        b=xJzZyJaRdhl50Fq/aKQNRYGE9yShXNzGnjRSCkd5XunKN0xAlQ9A9yUgOqp5QAaqQP
+         iXDbcTr/gx0b33wIijpC3tGQRENo8lxOBDIgGFTXTJv9VofiJxcpChux0sxdhbvffiDP
+         8Azn6zWwwHYW+cSJD1WfpxfyqzGlgP/9MeX3MZf8Sxd57s3xJkg46oWmd+1RAeHwU5yZ
+         Tgpe+JFN42f2W8TBgcxqFNyl31TuwfweGUc/7BNXjhOg6mG3Ynj10b/AZ0ed0MXQBFot
+         11xb9OrE7sVTRdXut59ktbaI8SO3ifcV452OZ++zrpukmw6pb5rHG7lJytdqCaUOYPx9
+         2alQ==
+X-Gm-Message-State: AOAM532njuS9eqPJwIne+QZ+6fckxdXvFaGatLZgKTvDLYzZK0gsim2N
+        X8E+qGT1OkVkYZ/9p0pIaLplWCybDKcPzQ==
+X-Google-Smtp-Source: ABdhPJzwq2lon5agsPMriD1uoDPAbBQaz8iEzso6djGSIQe/q8TY3E6qSTOJjzTONrwLWA3XqVI0/Q==
+X-Received: by 2002:ab0:22c5:: with SMTP id z5mr3794812uam.100.1641974275458;
+        Tue, 11 Jan 2022 23:57:55 -0800 (PST)
+Received: from mail-ua1-f41.google.com (mail-ua1-f41.google.com. [209.85.222.41])
+        by smtp.gmail.com with ESMTPSA id u33sm7308702uau.7.2022.01.11.23.57.54
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 11 Jan 2022 23:57:54 -0800 (PST)
+Received: by mail-ua1-f41.google.com with SMTP id x33so3145138uad.12;
+        Tue, 11 Jan 2022 23:57:54 -0800 (PST)
+X-Received: by 2002:a67:e985:: with SMTP id b5mr3471391vso.77.1641974274526;
+ Tue, 11 Jan 2022 23:57:54 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.1
+References: <20220110095625.278836-1-javierm@redhat.com> <65a13d92-93fc-25d2-0009-b7e60f3392c4@moonlit-rail.com>
+In-Reply-To: <65a13d92-93fc-25d2-0009-b7e60f3392c4@moonlit-rail.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed, 12 Jan 2022 08:57:43 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdXWBfA2rqu4DhWkpDt+PmNdZLC6_zcG+W+m=8UDudO+vA@mail.gmail.com>
+Message-ID: <CAMuHMdXWBfA2rqu4DhWkpDt+PmNdZLC6_zcG+W+m=8UDudO+vA@mail.gmail.com>
 Subject: Re: [PATCH v2 0/2] video: A couple of fixes for the vga16fb driver
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-kernel@vger.kernel.org,
+To:     "Kris Karas (Bug reporting)" <bugs-a21@moonlit-rail.com>
+Cc:     Javier Martinez Canillas <javierm@redhat.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Peter Robinson <pbrobinson@gmail.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
         Borislav Petkov <bp@suse.de>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20220110095625.278836-1-javierm@redhat.com>
-From:   "Kris Karas (Bug reporting)" <bugs-a21@moonlit-rail.com>
-In-Reply-To: <20220110095625.278836-1-javierm@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Javier, Geert, et al,
+Hi Kris,
 
-Javier Martinez Canillas wrote:
-> Changes in v2:
-> - Make the change only for x86 (Geert Uytterhoeven)
-> - Only check the suppported video mode for x86 (Geert Uytterhoeven).
+On Wed, Jan 12, 2022 at 3:19 AM Kris Karas (Bug reporting)
+<bugs-a21@moonlit-rail.com> wrote:
+> Javier Martinez Canillas wrote:
+> > Changes in v2:
+> > - Make the change only for x86 (Geert Uytterhoeven)
+> > - Only check the suppported video mode for x86 (Geert Uytterhoeven).
+>
+> I just updated Bug 215001 to reflect that I have tested this new, V2
+> patch against 4 systems, one more than last time - 2 BIOS/VGAC and 2
+> UEFI - and it works perfectly on all four.
+>
+> Thanks, Javier, for the excellent work!
+> I didn't test with non-X86, but the code appears to bypass the patch on
+> non-X86, so should work fine for Geert.
 
-I just updated Bug 215001 to reflect that I have tested this new, V2 
-patch against 4 systems, one more than last time - 2 BIOS/VGAC and 2 
-UEFI - and it works perfectly on all four.
+Note that I can no longer test the PPC use case, as the hardware
+died a long time ago.
 
-Thanks, Javier, for the excellent work!
-I didn't test with non-X86, but the code appears to bypass the patch on 
-non-X86, so should work fine for Geert.
+> Tested-By: Kris Karas <bugs-a21@moonlit-rail.com>
 
-Kris
+Thanks!
 
-Tested-By: Kris Karas <bugs-a21@moonlit-rail.com>
+Gr{oetje,eeting}s,
 
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

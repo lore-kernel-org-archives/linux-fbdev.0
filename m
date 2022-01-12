@@ -2,123 +2,69 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04FADC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 11 Jan 2022 13:16:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01E6EC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 12 Jan 2022 02:19:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240331AbiAKNQF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 11 Jan 2022 08:16:05 -0500
-Received: from wnew1-smtp.messagingengine.com ([64.147.123.26]:35405 "EHLO
-        wnew1-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S231301AbiAKNQF (ORCPT
+        id S1348370AbiALCTt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 11 Jan 2022 21:19:49 -0500
+Received: from hua.moonlit-rail.com ([45.79.167.250]:41424 "EHLO
+        hua.moonlit-rail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1348090AbiALCTt (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 11 Jan 2022 08:16:05 -0500
-Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
-        by mailnew.west.internal (Postfix) with ESMTP id BF2342B000AA;
-        Tue, 11 Jan 2022 08:16:03 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute1.internal (MEProxy); Tue, 11 Jan 2022 08:16:04 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=
-        date:from:to:cc:subject:message-id:references:mime-version
-        :content-type:in-reply-to; s=fm1; bh=yXTF+1sEdjFyfoYhAlSGINwu0y1
-        8yyw0z2aXapj6u4s=; b=em2fys3m84jBAFDKBEC2AtPfRilTDRqkdzw8ozzA6l6
-        30K4NDfPlt1b8QYIJMPqk7fIWDEziCILf40sm/KhSZspwryVD4twAz5xNT98hWbu
-        QiWMjFg1ReB+ejs5OYkDtWff3+s23Ky5H9DyXGJMANhEQGfPzGaktvEmCfOG+KaE
-        6rB6nVIMEVGnL8pywaZl0GjF/+y1B0Gv7I739IjwcgsMLPo/dd3yecNIoqBM3S92
-        6+b1f0swMcOXFtZPoPn/lWrDEUK+Q3PP96/JL2UWupTV/ULVMHDAWpSvTzt4unT/
-        X0yfFyBA27LEykZEMDpQLSmrTseAZSZjVw+wm/W4V1A==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:content-type:date:from:in-reply-to
-        :message-id:mime-version:references:subject:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=yXTF+1
-        sEdjFyfoYhAlSGINwu0y18yyw0z2aXapj6u4s=; b=C+zr0Y0956COKArNfHRi56
-        IDtjkytBsqm5Coct7+bYOVMexGoB29J/yOeQyHxFVtSN3NWHM2eQVtKi9AuM0OXE
-        svEwkJKmG33o8eYktYg2kBQl2WOzCV6jAjdYhuHS7uq1eAY/09g1NopLe+VO5hrj
-        1hIod3wivTRUUSbEgvoSrao56fp9YYlL7NjYfSVEtGSJm8HOeKfR59VKMSeBZfRA
-        dtAsksVWzZofW2v3BNP4kS2wVu9RegXT5oHv6JByPakrtV9tWejYN/F8yzGlZMVR
-        o0OEkUyPeM+QTHILkQhSZFHolVy3ZzB2W+FgRrtfco3FV2enF7/w0WNc9Jxla7vg
-        ==
-X-ME-Sender: <xms:EoPdYad0marmisCixdg_8fVLP38I_JWJ52xK9uzP5BwYAebeFNznXQ>
-    <xme:EoPdYUPRDiaHR9nam5B6FvrzRrSJm52tWillR4Sn7WF37x8rzCyoTe35Se6OWqb5e
-    SvP7w9QINNGVRYGoJE>
-X-ME-Received: <xmr:EoPdYbijdX-m7OiCg45S9T3GxFFboEfpClpikmxQVeBEu4AYNC_B9tbDhGjk_jt-rC3LiGQx0RvlhDH7nCsDd3-_bCPFNoK8K7UaY5A>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvuddrudehfedghedtucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvffukfhfgggtuggjsehgtderredttddvnecuhfhrohhmpeforgigihhm
-    vgcutfhiphgrrhguuceomhgrgihimhgvsegtvghrnhhordhtvggthheqnecuggftrfgrth
-    htvghrnhepleekgeehhfdutdeljefgleejffehfffgieejhffgueefhfdtveetgeehieeh
-    gedunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepmh
-    grgihimhgvsegtvghrnhhordhtvggthh
-X-ME-Proxy: <xmx:EoPdYX9xsbi5OKt0UVB5Jz7mUeIhO-8PLiOE_ao_XQWal4FBUz85Cg>
-    <xmx:EoPdYWsx3Q4nY_ScaWbb0nGHzkgiqjCYiZFAw5NIKrQSTP-lDzVBoA>
-    <xmx:EoPdYeHIHujuD1UkImBK1090PRp3fe1BeYzT5l3puZPF2u8gKPjFUQ>
-    <xmx:E4PdYQLwkXLO94HZxxhz8aDZg5Ng_9bQLnGiW-8duNk12P9wLUb6QjYN0zA>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 11 Jan 2022 08:16:02 -0500 (EST)
-Date:   Tue, 11 Jan 2022 14:16:01 +0100
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        dri-devel@lists.freedesktop.org,
-        Kris Karas <bugs-a21@moonlit-rail.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Peter Robinson <pbrobinson@gmail.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Borislav Petkov <bp@suse.de>
-Subject: Re: [PATCH v2 0/2] video: A couple of fixes for the vga16fb driver
-Message-ID: <20220111131601.u36j6grsvnir5gvp@houat>
-References: <20220110095625.278836-1-javierm@redhat.com>
+        Tue, 11 Jan 2022 21:19:49 -0500
+Received: from 209-6-248-230.s2276.c3-0.wrx-ubr1.sbo-wrx.ma.cable.rcncustomer.com ([209.6.248.230] helo=boston.moonlit-rail.com)
+        by hua.moonlit-rail.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.95)
+        (envelope-from <bugs-a21@moonlit-rail.com>)
+        id 1n7TEn-0004MI-QE;
+        Tue, 11 Jan 2022 21:19:45 -0500
+Received: from springdale.mc.moonlit-rail.com ([192.168.71.36])
+        by boston.moonlit-rail.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        (Exim 4.95)
+        (envelope-from <bugs-a21@moonlit-rail.com>)
+        id 1n7TEn-0000gg-Hc;
+        Tue, 11 Jan 2022 21:19:45 -0500
+Message-ID: <65a13d92-93fc-25d2-0009-b7e60f3392c4@moonlit-rail.com>
+Date:   Tue, 11 Jan 2022 21:19:45 -0500
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="5rhk7fpudnheurb4"
-Content-Disposition: inline
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.4.1
+Subject: Re: [PATCH v2 0/2] video: A couple of fixes for the vga16fb driver
+Content-Language: en-US
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     linux-kernel@vger.kernel.org,
+        Peter Robinson <pbrobinson@gmail.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Borislav Petkov <bp@suse.de>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20220110095625.278836-1-javierm@redhat.com>
+From:   "Kris Karas (Bug reporting)" <bugs-a21@moonlit-rail.com>
 In-Reply-To: <20220110095625.278836-1-javierm@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+Hi Javier, Geert, et al,
 
---5rhk7fpudnheurb4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Javier Martinez Canillas wrote:
+> Changes in v2:
+> - Make the change only for x86 (Geert Uytterhoeven)
+> - Only check the suppported video mode for x86 (Geert Uytterhoeven).
 
-Hi,
+I just updated Bug 215001 to reflect that I have tested this new, V2 
+patch against 4 systems, one more than last time - 2 BIOS/VGAC and 2 
+UEFI - and it works perfectly on all four.
 
-On Mon, Jan 10, 2022 at 10:56:23AM +0100, Javier Martinez Canillas wrote:
-> This patch series contains two fixes for the vga16fb driver. I looked at
-> the driver due a regression reported [0], caused by commit d391c5827107
-> ("drivers/firmware: move x86 Generic System Framebuffers support").
->=20
-> The mentioned commit didn't change any logic but just moved the platform
-> device registration that matches the vesafb and efifb drivers to happen
-> later. And this caused the vga16fb driver to be probed even in machines
-> that don't have an EGA or VGA video adapter.
->=20
-> This is a v2 of the patch series that addresses issues pointed out by
-> Geert Uytterhoeven.
->=20
-> Patch #1 is fixing the wrong check to determine if either EGA or VGA is
-> used and patch #2 adds a check to the driver to only be loaded for EGA
-> and VGA 16 color graphic cards.
+Thanks, Javier, for the excellent work!
+I didn't test with non-X86, but the code appears to bypass the patch on 
+non-X86, so should work fine for Geert.
 
-For both patches,
+Kris
 
-Acked-by: Maxime Ripard <maxime@cerno.tech>
+Tested-By: Kris Karas <bugs-a21@moonlit-rail.com>
 
-Maxime
-
---5rhk7fpudnheurb4
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYd2DEQAKCRDj7w1vZxhR
-xbXXAP4gpuUuyyTwx3PEj37oaIJQF37qaFBZHNDqYNK9DJonuQD+LsvkihtOL+7n
-xXiJmQtTvSoH/8OE236YGI56zT1kvAQ=
-=fqNz
------END PGP SIGNATURE-----
-
---5rhk7fpudnheurb4--

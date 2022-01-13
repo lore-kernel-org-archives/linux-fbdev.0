@@ -2,73 +2,79 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8B32C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Jan 2022 08:48:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDBC8C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 13 Jan 2022 15:02:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229660AbiAMIss (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 13 Jan 2022 03:48:48 -0500
-Received: from smtp21.cstnet.cn ([159.226.251.21]:53450 "EHLO cstnet.cn"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S229648AbiAMIss (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 13 Jan 2022 03:48:48 -0500
-Received: from localhost.localdomain (unknown [124.16.141.244])
-        by APP-01 (Coremail) with SMTP id qwCowABnb59b599hVSpGBg--.58605S2;
-        Thu, 13 Jan 2022 16:48:28 +0800 (CST)
-From:   Xu Wang <vulab@iscas.ac.cn>
-To:     lee.jones@linaro.org, daniel.thompson@linaro.org,
-        jingoohan1@gmail.com
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        id S233677AbiAMPCk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 13 Jan 2022 10:02:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43650 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233638AbiAMPCj (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 13 Jan 2022 10:02:39 -0500
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E0B1C06161C
+        for <linux-fbdev@vger.kernel.org>; Thu, 13 Jan 2022 07:02:39 -0800 (PST)
+Received: by mail-wr1-x42c.google.com with SMTP id o3so10596126wrh.10
+        for <linux-fbdev@vger.kernel.org>; Thu, 13 Jan 2022 07:02:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=NjQ5CckMH/FqJHfWgmyb7DQKMb+OQO1cEac1mm0zNp0=;
+        b=yt160kvam3HJdDmZb3vsgy1B/f68cJyCqRxHQGpeUER/bpnSaBG7Qh/n9igDWSpKlW
+         lMQHT+qDXxcH3Ji+D24uEeHoEGgFn9vwppBCwpbmCI00TJsAxYE/zuzhspFjriUt3zIO
+         xO1kYIHSoT7TdChA2VswjVnPZ7zaQG20FDT4WB+SdrPYYjW7k+3dbRvf+geNvagAYkpq
+         AMr5RBx28EPYCSqhT8++9pqwwsSMEFhlsEOhqs2BGtwAJqEMVFDO3V26YtGLQ8Pu/OqL
+         ga6ApEUefApiDfHc9WqxWYwCOHyKMnDIWJPL/5ETrgBEebfweJNEM0UEZko1ivBtaQjx
+         zw3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=NjQ5CckMH/FqJHfWgmyb7DQKMb+OQO1cEac1mm0zNp0=;
+        b=OmLc0CgrGpCIXMBsekbp/2ZyMqGzf9Gx3c2hBnxuzy4hzu4dnJya0LqjHNPoUNuoaD
+         nk0gVScc71pfazGB5Vo035BRTIT4yei+58DM5H4RuEYFXQDMKjghk6Y4RW0wxLaoF5Y4
+         +s8b1JjdvXL+JxjX05QQLxqn7W17oXDfu+lPTva8qB8gLxZ2TFmYzftimaqa9vwe3QEW
+         vNW6OAabOyDZhUWL3ImBI7hfqljYPKl3JfKBijT6cgD6jpRQ99zxaPG0e6uWrRcEqz50
+         ktl9K8bzMvInmwkpQV+wyBmEz516vD4T4bg0IzB7h5Sivz5FePNSKMt8s1YFBv7meg3R
+         S3mQ==
+X-Gm-Message-State: AOAM530e7p0L1jr7a/TFa3KDDftQe0AgTcx0qm2DA0PdAjL4cuiNPUf+
+        d/Sx8pHWw8TVC+z0gZ5+6yMMbg==
+X-Google-Smtp-Source: ABdhPJxel8Y0oxv14BbumdD74ugMJ5nF6Wawn+vNlK5AtA4I45AJGBMjljCF4xkTlJ3wYfJ8vpqPrQ==
+X-Received: by 2002:a05:6000:1563:: with SMTP id 3mr1836447wrz.395.1642086157839;
+        Thu, 13 Jan 2022 07:02:37 -0800 (PST)
+Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id h14sm2682335wrz.31.2022.01.13.07.02.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 13 Jan 2022 07:02:37 -0800 (PST)
+Date:   Thu, 13 Jan 2022 15:02:35 +0000
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Xu Wang <vulab@iscas.ac.cn>
+Cc:     lee.jones@linaro.org, jingoohan1@gmail.com,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH] backlight: lm3630a_bl: Remove redundant 'flush_workqueue()' calls
-Date:   Thu, 13 Jan 2022 08:48:06 +0000
-Message-Id: <20220113084806.13822-1-vulab@iscas.ac.cn>
-X-Mailer: git-send-email 2.25.1
+Subject: Re: [PATCH] backlight: lm3630a_bl: Remove redundant
+ 'flush_workqueue()' calls
+Message-ID: <20220113150235.fyzee7bhx7uceiwk@maple.lan>
+References: <20220113084806.13822-1-vulab@iscas.ac.cn>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: qwCowABnb59b599hVSpGBg--.58605S2
-X-Coremail-Antispam: 1UD129KBjvdXoWrKF1xtr43uF4kGFWrZrW5Jrb_yoW3ArX_Kr
-        ZFqryfWFWUKF409FZrtFWrZFWFkaykuFy5XF4FyFyFy34UWry5uFZFvrs7uF1Uua45GFsr
-        u34a9r40vr1fJjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-        9fnUUIcSsGvfJTRUUUbFkYjsxI4VWkCwAYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I
-        6I8E6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AEw4v_Jr0_Jr4l8cAvFVAK0II2c7xJM2
-        8CjxkF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVW5JVW7JwA2z4x0Y4vE2Ix0
-        cI8IcVCY1x0267AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4
-        A2jsIEc7CjxVAFwI0_GcCE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IE
-        w4CE5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMc
-        vjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwCF04k20xvY0x0EwIxGrwCFx2Iq
-        xVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r
-        106r1rMI8E67AF67kF1VAFwI0_JF0_Jw1lIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AK
-        xVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7
-        xG6rW3Jr0E3s1lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVWU
-        JVW8JbIYCTnIWIevJa73UjIFyTuYvjxUcDDGUUUUU
-X-Originating-IP: [124.16.141.244]
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiCwkFA1z4kwKO+wAAsE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220113084806.13822-1-vulab@iscas.ac.cn>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-'destroy_workqueue()' already drains the queue before destroying it, so
-there is no need to flush it explicitly.
+On Thu, Jan 13, 2022 at 08:48:06AM +0000, Xu Wang wrote:
+> 'destroy_workqueue()' already drains the queue before destroying it, so
+> there is no need to flush it explicitly.
+> 
+> Remove the redundant 'flush_workqueue()' calls.
+> 
+> Signed-off-by: Xu Wang <vulab@iscas.ac.cn>
 
-Remove the redundant 'flush_workqueue()' calls.
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-Signed-off-by: Xu Wang <vulab@iscas.ac.cn>
----
- drivers/video/backlight/lm3630a_bl.c | 1 -
- 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-index e8b185bb6f5e..1d17c439430e 100644
---- a/drivers/video/backlight/lm3630a_bl.c
-+++ b/drivers/video/backlight/lm3630a_bl.c
-@@ -594,7 +594,6 @@ static int lm3630a_remove(struct i2c_client *client)
- 
- 	if (pchip->irq) {
- 		free_irq(pchip->irq, pchip);
--		flush_workqueue(pchip->irqthread);
- 		destroy_workqueue(pchip->irqthread);
- 	}
- 	return 0;
--- 
-2.25.1
-
+Daniel.

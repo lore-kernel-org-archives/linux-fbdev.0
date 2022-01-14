@@ -2,78 +2,98 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1A59C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jan 2022 18:31:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C81EC433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jan 2022 19:13:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234625AbiANSbW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 14 Jan 2022 13:31:22 -0500
-Received: from mail-ua1-f46.google.com ([209.85.222.46]:38855 "EHLO
-        mail-ua1-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229717AbiANSbW (ORCPT
+        id S239598AbiANTNL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 14 Jan 2022 14:13:11 -0500
+Received: from mail-wm1-f49.google.com ([209.85.128.49]:44825 "EHLO
+        mail-wm1-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234061AbiANTNK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 14 Jan 2022 13:31:22 -0500
-Received: by mail-ua1-f46.google.com with SMTP id h11so18441271uar.5;
-        Fri, 14 Jan 2022 10:31:21 -0800 (PST)
+        Fri, 14 Jan 2022 14:13:10 -0500
+Received: by mail-wm1-f49.google.com with SMTP id f141-20020a1c1f93000000b003497aec3f86so7439883wmf.3;
+        Fri, 14 Jan 2022 11:13:10 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=ia/9q2E3tSjqPvHPFubkiPIGbF6QBSNFRiW9j/QalMo=;
-        b=DWgdUAXK+zqhjgodeqIvt8csbouUVo6gEibhZi7IhSiqyjvRscK2TSlJgKjCv3R0e/
-         tWCeB3ems3gaPWt+vd8vLYyG5wN64iBv/eQzhmbkfIrhPw+A6lr4jP8o4pgiW1knWhs9
-         fIQo9gfrqEm8ubPF+BIT08qcJwoRPkq/0XY0kDbLgOn86YMaiwiLZ1EavEvflFxxhOwK
-         iHNvrM9Th/f9wI2kvDP3SbGOfVBB5N4kDdzQsdUkjexIt3/7C2URXY6FnJ93+oNpwKzP
-         HxVxbmlpwafajj8v+jlVWEONgxX3KThBKkEzFXWvkj1Zl5Jir9C3rUi8/lyOu8y7NyNY
-         Aypw==
-X-Gm-Message-State: AOAM533hD3Cgckq9pPdAYGd6OI1R2/evFkz55mxH8nV/3RMvsL1sA91w
-        oxMAXeamwPQqutUpZUs0uqO5oN8v/Q9MKP0M
-X-Google-Smtp-Source: ABdhPJw5zR72GeLcKWBQpvlWAQ/C/SHUE3jf8tEfopq9XERJ2+kZTTnr9thfAK9cUvDGXg1ZmMPGEA==
-X-Received: by 2002:ab0:13c3:: with SMTP id n3mr4673460uae.39.1642185081230;
-        Fri, 14 Jan 2022 10:31:21 -0800 (PST)
-Received: from mail-vk1-f180.google.com (mail-vk1-f180.google.com. [209.85.221.180])
-        by smtp.gmail.com with ESMTPSA id u137sm2248766vku.42.2022.01.14.10.31.20
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 14 Jan 2022 10:31:20 -0800 (PST)
-Received: by mail-vk1-f180.google.com with SMTP id h16so6359109vkp.5;
-        Fri, 14 Jan 2022 10:31:20 -0800 (PST)
-X-Received: by 2002:a1f:384b:: with SMTP id f72mr4877434vka.0.1642185080729;
- Fri, 14 Jan 2022 10:31:20 -0800 (PST)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=80fbgApjgxRqmQ/SUBxRZx2r8MYqVc4l2XpDiV7SkBM=;
+        b=irS5VW+96mvUlD17dHtUUD+q4jmXY4vqtc/g+92N1VXrHOsQC8A7Zrrf9Ik01F1kaY
+         uWCgFK2yV+PtjrNdCX+rMMvYIz4WVq6n1OFh0nSRuf9veMQ3GQB8BN/5e0fUsdFCWOrr
+         xRfm5+mb3vYMXAzEASJH5iuj+QYIN+MEjJEJPpaItgF+Ay26GWFZnpW+iGKhf7sfyfiR
+         ogLLs3WCX2zCjzh5jyInRMWj68bXCUjEfBHQBJTiy6zT+R7AT9dAyEovmgHRGP1Ev7xp
+         SZlIrD4pI1U9/uKKxsvdJB/RrFhdC45bZBg0ydFs0pvZ2DSFwRLQeaA5a75d3ERXKHbl
+         nBGA==
+X-Gm-Message-State: AOAM533RHNoEUsgE/6GzyXYXCpKe1AIQ6Ai1+HYYHo9sbi/X7rCBZWqn
+        O5WBci29QQC9wWf4JH0BYuGhWlBUjDk=
+X-Google-Smtp-Source: ABdhPJy6FfH4KDLMgZmC0MFcbsFJm4Zgm0/mXIWR4k8R0ydt6WvRRewAXvkkhnsGqSP3BX2Qwg91pg==
+X-Received: by 2002:a05:600c:6020:: with SMTP id az32mr3830646wmb.149.1642187589431;
+        Fri, 14 Jan 2022 11:13:09 -0800 (PST)
+Received: from liuwe-devbox-debian-v2 ([51.145.34.42])
+        by smtp.gmail.com with ESMTPSA id z6sm7961353wmp.9.2022.01.14.11.13.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 14 Jan 2022 11:13:08 -0800 (PST)
+Date:   Fri, 14 Jan 2022 19:13:07 +0000
+From:   Wei Liu <wei.liu@kernel.org>
+To:     Andrea Parri <parri.andrea@gmail.com>
+Cc:     Yanming Liu <yanminglr@gmail.com>, linux-hyperv@vger.kernel.org,
+        Wei Liu <wei.liu@kernel.org>, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com,
+        decui@microsoft.com, drawat.floss@gmail.com, airlied@linux.ie,
+        daniel@ffwll.ch, mikelley@microsoft.com, lkmlabelt@gmail.com
+Subject: Re: [PATCH v2] hv: account for packet descriptor in maximum packet
+ size
+Message-ID: <20220114191307.uu2oel7wbxhiqe56@liuwe-devbox-debian-v2>
+References: <20220109095516.3250392-1-yanminglr@gmail.com>
+ <20220110004419.GA435914@anparri>
 MIME-Version: 1.0
-References: <YeG8ydoJNWWkGrTb@ls3530>
-In-Reply-To: <YeG8ydoJNWWkGrTb@ls3530>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Fri, 14 Jan 2022 19:31:09 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWNzDb--Ud1DzGyoqWsgFU9m8YZ6fa1TqfBWtg4pkd==A@mail.gmail.com>
-Message-ID: <CAMuHMdWNzDb--Ud1DzGyoqWsgFU9m8YZ6fa1TqfBWtg4pkd==A@mail.gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-To:     Helge Deller <deller@gmx.de>
-Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220110004419.GA435914@anparri>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Helge,
+On Mon, Jan 10, 2022 at 01:44:19AM +0100, Andrea Parri wrote:
+> (Extending Cc: list,)
+> 
+> On Sun, Jan 09, 2022 at 05:55:16PM +0800, Yanming Liu wrote:
+> > Commit adae1e931acd ("Drivers: hv: vmbus: Copy packets sent by Hyper-V
+> > out of the ring buffer") introduced a notion of maximum packet size in
+> > vmbus channel and used that size to initialize a buffer holding all
+> > incoming packet along with their vmbus packet header. Currently, some
+> > vmbus drivers set max_pkt_size to the size of their receive buffer
+> > passed to vmbus_recvpacket, however vmbus_open expects this size to also
+> > include vmbus packet header. This leads to corruption of the ring buffer
+> > state when receiving a maximum sized packet.
+> > 
+> > Specifically, in hv_balloon I have observed of a dm_unballoon_request
+> > message of 4096 bytes being truncated to 4080 bytes. When the driver
+> > tries to read next packet it starts from a wrong read_index, receives
+> > garbage and prints a lot of "Unhandled message: type: <garbage>" in
+> > dmesg.
+> > 
+> > The same mismatch also happens in hv_fcopy, hv_kvp, hv_snapshot,
+> > hv_util, hyperv_drm and hyperv_fb, though bad cases are not observed
+> > yet.
+> > 
+> > Allocate the buffer with HV_HYP_PAGE_SIZE more bytes to make room for
+> > the descriptor, assuming the vmbus packet header will never be larger
+> > than HV_HYP_PAGE_SIZE. This is essentially free compared to just adding
+> > 'sizeof(struct vmpacket_descriptor)' because these buffers are all more
+> > than HV_HYP_PAGE_SIZE bytes so kmalloc rounds them up anyway.
+> > 
+> > Fixes: adae1e931acd ("Drivers: hv: vmbus: Copy packets sent by Hyper-V out of the ring buffer")
+> > Suggested-by: Andrea Parri (Microsoft) <parri.andrea@gmail.com>
+> > Signed-off-by: Yanming Liu <yanminglr@gmail.com>
+> 
+> Thanks for sorting this out; the patch looks good to me:
+> 
+> Reviewed-by: Andrea Parri (Microsoft) <parri.andrea@gmail.com>
+> 
 
-On Fri, Jan 14, 2022 at 7:12 PM Helge Deller <deller@gmx.de> wrote:
-> The fbdev layer is orphaned, but seems to need some care.
-> So I'd like to step up as new maintainer.
->
-> Signed-off-by: Helge Deller <deller@gmx.de>
+Thanks. I will pick this up after 5.17-rc1 is out.
 
-Thanks a lot!
-
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Wei.

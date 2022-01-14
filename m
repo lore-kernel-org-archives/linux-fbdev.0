@@ -2,85 +2,78 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36F14C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jan 2022 18:12:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1A59C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 14 Jan 2022 18:31:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244041AbiANSMn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 14 Jan 2022 13:12:43 -0500
-Received: from mout.gmx.net ([212.227.15.15]:59769 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S236802AbiANSMn (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 14 Jan 2022 13:12:43 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1642183948;
-        bh=BfT+QXQondzq2MdcCIjBYr2wbp9CQ606HkEA+VJrpaM=;
-        h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
-        b=OyLa6aXFERPG+wAnPEzonDwd5okKrOXtRCfk1yDbGk/oFLgUy3nXBKm/XEjB1TS1z
-         spdRg4x7LEXeVr+HNkM3id9pz0AWcQKRVwruNpL7EOULk7hTPr8tPZIjaUQ5gocYpA
-         ZN02iQe/s2utpQhxqEAPhxi093H7oZPGHNnDeYlw=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from ls3530 ([92.116.186.160]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1Ma24s-1mnYAi28xQ-00VzJu; Fri, 14
- Jan 2022 19:12:28 +0100
-Date:   Fri, 14 Jan 2022 19:11:21 +0100
-From:   Helge Deller <deller@gmx.de>
-To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc:     linux-kernel@vger.kernel.org
-Subject: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-Message-ID: <YeG8ydoJNWWkGrTb@ls3530>
+        id S234625AbiANSbW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 14 Jan 2022 13:31:22 -0500
+Received: from mail-ua1-f46.google.com ([209.85.222.46]:38855 "EHLO
+        mail-ua1-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229717AbiANSbW (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 14 Jan 2022 13:31:22 -0500
+Received: by mail-ua1-f46.google.com with SMTP id h11so18441271uar.5;
+        Fri, 14 Jan 2022 10:31:21 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=ia/9q2E3tSjqPvHPFubkiPIGbF6QBSNFRiW9j/QalMo=;
+        b=DWgdUAXK+zqhjgodeqIvt8csbouUVo6gEibhZi7IhSiqyjvRscK2TSlJgKjCv3R0e/
+         tWCeB3ems3gaPWt+vd8vLYyG5wN64iBv/eQzhmbkfIrhPw+A6lr4jP8o4pgiW1knWhs9
+         fIQo9gfrqEm8ubPF+BIT08qcJwoRPkq/0XY0kDbLgOn86YMaiwiLZ1EavEvflFxxhOwK
+         iHNvrM9Th/f9wI2kvDP3SbGOfVBB5N4kDdzQsdUkjexIt3/7C2URXY6FnJ93+oNpwKzP
+         HxVxbmlpwafajj8v+jlVWEONgxX3KThBKkEzFXWvkj1Zl5Jir9C3rUi8/lyOu8y7NyNY
+         Aypw==
+X-Gm-Message-State: AOAM533hD3Cgckq9pPdAYGd6OI1R2/evFkz55mxH8nV/3RMvsL1sA91w
+        oxMAXeamwPQqutUpZUs0uqO5oN8v/Q9MKP0M
+X-Google-Smtp-Source: ABdhPJw5zR72GeLcKWBQpvlWAQ/C/SHUE3jf8tEfopq9XERJ2+kZTTnr9thfAK9cUvDGXg1ZmMPGEA==
+X-Received: by 2002:ab0:13c3:: with SMTP id n3mr4673460uae.39.1642185081230;
+        Fri, 14 Jan 2022 10:31:21 -0800 (PST)
+Received: from mail-vk1-f180.google.com (mail-vk1-f180.google.com. [209.85.221.180])
+        by smtp.gmail.com with ESMTPSA id u137sm2248766vku.42.2022.01.14.10.31.20
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 14 Jan 2022 10:31:20 -0800 (PST)
+Received: by mail-vk1-f180.google.com with SMTP id h16so6359109vkp.5;
+        Fri, 14 Jan 2022 10:31:20 -0800 (PST)
+X-Received: by 2002:a1f:384b:: with SMTP id f72mr4877434vka.0.1642185080729;
+ Fri, 14 Jan 2022 10:31:20 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Provags-ID: V03:K1:U8AySo36viW77ZA+cTW+h6saPqOmnFC3bwCFYOxUzXGXX3knDVl
- i9qqybvIB/2E3qrz8jDtRQdRcAcjEAa05/653by446WEP4yljRIwDQ97ta1w22qoUDefIEW
- YxiYXMZSnScedrA6obPgqq+rL3aA6kWVFpAq1Gw32hMe5ZPPFvBw+xNUozqO2PKPlAhyMVj
- TBzp9LjSUvt6oV+4qz9qw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:E8Zc6+s8G5o=:HQGNleRj26OUA3Mh3rlRV7
- LYmyVrRWa4canrQxQYCaREImbO9dnDduWrGj/9QXnFk8ofgN1oHO80do+qIZVz8NjU9cMhWKc
- bQ5x7Wp9ubHG/ySjqqnyWvm6seAoaQeYmIuAueh9f5JbPVLl3s8pKJvXFX8D+3FLkl6gGGPgd
- mGWH4OLry4rRe1Z97Cd6GTm6vPvbJ0R4Zqut1ZWdh6KtL2yhamWRj+PHnSypHsZcgRFIpxIys
- zoIGm4cNdNbUvMUVt1HxptXJe/U7TVa7ZAfs7EnTsnDxQTPkO2bZ0OOG/t5J/y8oPjoJMD4o1
- 4VBkwQ5ArxnsamgZ75xfZl42PqurVberV4G8swfnScDxS7JNfG41gWM1Sg8kCocMUZ4o7tuh0
- bJ81JQt+4vHv1R8WWi5lKfjWS8gEgJ9dW7CBbfWJrZ7j6lZBAbCRQFmcfUMPsnYtav8NUPHz3
- WsTXG0Mz4sfR15PdWqApNrzn90diERvInOl0rBm1/Lz9t/hgpPe/IyZnzR+VbkzOCuR3Pm8ea
- TxgSuQA0unV8tNiwMwk/9ShKr3Gsyn4GyfMc3m9UhpgRxJeQH3+wsJkzhCgdtu8YlOrHSXJG7
- ZCHv4vj8B4nC1AeMY7MuwtEMTrUYMXbhYVgpBvUmr9HtMF7UFrMFdviWYiACHzB1vCFi/mgrA
- U2VgjnB9P9garj8bbIoUQ+rMjlej9LXVClKH+3UXOXqOCO44RZ2Bx9VDNe+iZ/jDi8PQeFzBW
- 13A35uQ9YsB/TvxMI5W30EXW9KWPXVdXCt5gboaTFWnPKfLPwa8Ko8pQPIXKYt1cLA+jLJrVS
- bkDk7gScowwBPVL6izJIg4TjrACJIKYMeT2CMMxIlpeRM5zpfgcGiXK271mH8Pn3WhwZGLaEK
- JnI1conPnNdJQ7KREIHnHivKc6u5bmN2WRgma6/YKpsYWpsnfhHnDk2gr83Y7FUplmC/QZG6T
- dEkPgQtYKpkDWIeog7jbIAVdQTfmxlLnYdpgFnzlw6nweFaOmERL1iHFiMDRtlWu/a8ElGyIV
- UVteo/sajHbN1e+Ngzb9cxiU00IUkM+m5v8fNgD0u5V/7zcabkLREhmjFq2olIZgduyqouw7v
- PmHPnwHXOGlQ3o=
-Content-Transfer-Encoding: quoted-printable
+References: <YeG8ydoJNWWkGrTb@ls3530>
+In-Reply-To: <YeG8ydoJNWWkGrTb@ls3530>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Fri, 14 Jan 2022 19:31:09 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWNzDb--Ud1DzGyoqWsgFU9m8YZ6fa1TqfBWtg4pkd==A@mail.gmail.com>
+Message-ID: <CAMuHMdWNzDb--Ud1DzGyoqWsgFU9m8YZ6fa1TqfBWtg4pkd==A@mail.gmail.com>
+Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
+To:     Helge Deller <deller@gmx.de>
+Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The fbdev layer is orphaned, but seems to need some care.
-So I'd like to step up as new maintainer.
+Hi Helge,
 
-Signed-off-by: Helge Deller <deller@gmx.de>
+On Fri, Jan 14, 2022 at 7:12 PM Helge Deller <deller@gmx.de> wrote:
+> The fbdev layer is orphaned, but seems to need some care.
+> So I'd like to step up as new maintainer.
+>
+> Signed-off-by: Helge Deller <deller@gmx.de>
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 5d0cd537803a..ce47dbc467cc 100644
-=2D-- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7583,11 +7583,12 @@ W:	http://floatingpoint.sourceforge.net/emulator/i=
-ndex.html
- F:	arch/x86/math-emu/
+Thanks a lot!
 
- FRAMEBUFFER LAYER
--L:	dri-devel@lists.freedesktop.org
-+M:	Helge Deller <deller@gmx.de>
- L:	linux-fbdev@vger.kernel.org
--S:	Orphan
-+L:	dri-devel@lists.freedesktop.org
-+S:	Maintained
- Q:	http://patchwork.kernel.org/project/linux-fbdev/list/
--T:	git git://anongit.freedesktop.org/drm/drm-misc
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.g=
-it
- F:	Documentation/fb/
- F:	drivers/video/
- F:	include/linux/fb.h
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

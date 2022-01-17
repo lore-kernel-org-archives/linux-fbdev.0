@@ -2,92 +2,83 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A0FCC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 10:19:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F6D6C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 10:49:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238173AbiAQKT4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Jan 2022 05:19:56 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:37378 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S237389AbiAQKTz (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Jan 2022 05:19:55 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1642414795;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=M2Jwh6X9L+KjOaA4kG9lgML07Ljz7RAuTmgyF2gmzTk=;
-        b=hDeQUcPeAJOXBs5atH6HAwl9kQExo2ca5HPbaHMSH3nF/EvVU55mqz1weiSGpITOj1Xyl9
-        29KEDwYi5rMJCXjSI6aLP+sCudDF/z5h7nCveMHQFYXlgmT9Ue6Sua8LIjExy8MCb2vYna
-        YFoYOiHyXuEqbBSTKreQrYKjP+Sgklw=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-478-rk5ahMAOMRGSXRrko6WMNg-1; Mon, 17 Jan 2022 05:19:53 -0500
-X-MC-Unique: rk5ahMAOMRGSXRrko6WMNg-1
-Received: by mail-wm1-f70.google.com with SMTP id k41-20020a05600c1ca900b0034aea0b9948so8459268wms.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 Jan 2022 02:19:52 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=M2Jwh6X9L+KjOaA4kG9lgML07Ljz7RAuTmgyF2gmzTk=;
-        b=jgPjZL3V97agg+4vPyZVXmxw1gDGPLSW518xOTX07oE1y5qlxibHNHxqWbyqKZhfJH
-         7ebE6AkxHuEQjD7tRX+YHiao0i3WJfg1F4bbatDkNRU0MG9SEn2sO2Fop0z+vMXqNN8r
-         tyoSR5vXJgXrWnDwG9pCLStipTWriGp2lNN0224YdYpzD+ji12O9WindmFDvv1pPDIui
-         70tFuWLe5gQZDd3McJB0ldwI4FWekSu+77j40B1YiW22Mur3oN33wrAbYhBMFyx4b68I
-         sv/jHiG9CMw4GXPAawJFYMExVw6iLArJ01246B+HP38KnlyRvoABwdYcDH0VA9TBTjtr
-         TSQw==
-X-Gm-Message-State: AOAM530Q83dlndqaOKbetfLfHX0hIi9Xa0Z5b2NtR/hBjDo1wsnhNQso
-        HKFKrCx3L+SWPqtumWeoU0OL0935d826rpKQEPL1tZPjOrXmvZUiFUgZwizHKy0Ce1JtYzdmeAW
-        cdsiki3gBPdRZCgNWy7jlwFM=
-X-Received: by 2002:adf:b60d:: with SMTP id f13mr8447984wre.225.1642414791822;
-        Mon, 17 Jan 2022 02:19:51 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJzjvQUUb/H0EZLSZ3Ie0h6oeM1z//4qUyAexcNH+Hmg6QGgAM53E0ZxOy6w07KCaNZAYcAt7Q==
-X-Received: by 2002:adf:b60d:: with SMTP id f13mr8447972wre.225.1642414791578;
-        Mon, 17 Jan 2022 02:19:51 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id z7sm15283605wrm.117.2022.01.17.02.19.50
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 17 Jan 2022 02:19:51 -0800 (PST)
-Message-ID: <fa7d7b0e-50bf-dc1b-a708-408de47b1e66@redhat.com>
-Date:   Mon, 17 Jan 2022 11:19:50 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.0
-Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-Content-Language: en-US
+        id S233696AbiAQKt6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Jan 2022 05:49:58 -0500
+Received: from mga14.intel.com ([192.55.52.115]:29944 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S231277AbiAQKt6 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 17 Jan 2022 05:49:58 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1642416598; x=1673952598;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=+F3cr2LC9C2ZI7Rd8QEaWqzsRs3Pay43Ar9tUq2gZg8=;
+  b=du/2Bu+HOsxISVEc2SZWEqB27NjdOuOGd27FuJvqPvpSyev4P4BDX/Oc
+   xoFO6eA6tbv1V6x992+mxUBE+nv6OVIV6Y1WV/6Ow6zD/lLehW7cCQaso
+   U1WTHBS4KWB5gJ0466NqvI/aX9KTjDj/OSMLp9AyQldZPDZbsSqsc2//L
+   kscHoztU6jsx/yrWyVJbcgpUBkM56ghyO2rSyV69gxLDGxRBusUB1+8yi
+   x9MzI5704KGd8LUrY17Ioagjn5yzLSTS+I4Cu1O8vfzGuvHj3F/U8PWaj
+   IjwaYnAv499gSnvjWwJ5bJTxYIVeYyM9oHm6/1J9DxRuWOctqEK8JV9lk
+   w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10229"; a="244797820"
+X-IronPort-AV: E=Sophos;i="5.88,295,1635231600"; 
+   d="scan'208";a="244797820"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jan 2022 02:49:58 -0800
+X-IronPort-AV: E=Sophos;i="5.88,295,1635231600"; 
+   d="scan'208";a="476605640"
+Received: from nsilva2-mobl1.amr.corp.intel.com (HELO localhost) ([10.252.2.18])
+  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jan 2022 02:49:54 -0800
+From:   Jani Nikula <jani.nikula@linux.intel.com>
 To:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
         Linus Torvalds <torvalds@linux-foundation.org>,
         "airlied@gmail.com" <airlied@gmail.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
+Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Javier Martinez Canillas <javierm@redhat.com>
+Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
+In-Reply-To: <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 References: <YeG8ydoJNWWkGrTb@ls3530>
  <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Date:   Mon, 17 Jan 2022 12:49:45 +0200
+Message-ID: <87o84a63hy.fsf@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/17/22 11:02, Daniel Vetter wrote:
-
-[snip]
-
+On Mon, 17 Jan 2022, Daniel Vetter <daniel@ffwll.ch> wrote:
+> Hi Helge
+>
+> On Fri, Jan 14, 2022 at 7:18 PM Helge Deller <deller@gmx.de> wrote:
+>>
+>> The fbdev layer is orphaned, but seems to need some care.
+>> So I'd like to step up as new maintainer.
+>>
+>> Signed-off-by: Helge Deller <deller@gmx.de>
+>>
+>> diff --git a/MAINTAINERS b/MAINTAINERS
+>> index 5d0cd537803a..ce47dbc467cc 100644
+>> --- a/MAINTAINERS
+>> +++ b/MAINTAINERS
+>> @@ -7583,11 +7583,12 @@ W:      http://floatingpoint.sourceforge.net/emulator/index.html
+>>  F:     arch/x86/math-emu/
+>>
 >>  FRAMEBUFFER LAYER
 >> -L:     dri-devel@lists.freedesktop.org
 >> +M:     Helge Deller <deller@gmx.de>
 >>  L:     linux-fbdev@vger.kernel.org
 >> -S:     Orphan
-> 
+>
 > Maybe don't rush maintainer changes in over the w/e without even bothering
 > to get any input from the people who've been maintaining it before.
-> 
+>
 > Because the status isn't entirely correct, fbdev core code and fbcon and
 > all that has been maintained, but in bugfixes only mode. And there's very
 > solid&important reasons to keep merging these patches through a drm tree,
@@ -96,7 +87,7 @@ On 1/17/22 11:02, Daniel Vetter wrote:
 > automated ones that exist to my knowledge - and we run them in CI). So
 > moving that into an obscure new tree which isn't even in linux-next yet is
 > no good at all.
-> 
+>
 > Now fbdev driver bugfixes is indeed practically orphaned and I very much
 > welcome anyone stepping up for that, but the simplest approach there would
 > be to just get drm-misc commit rights and push the oddball bugfix in there
@@ -104,25 +95,44 @@ On 1/17/22 11:02, Daniel Vetter wrote:
 > that I don't care and there's really no interference I think, so
 > whatever floats.
 >
+> But any code that is relevant for drm drivers really needs to go in through
+> drm trees, nothing else makes much sense.
+>
+> I guess you're first action as newly minted fbdev maintainer is going to be to
+> clean up the confusion you just created.
 
-I second that getting commit rights in drm-misc and pushing the changes
-there makes much more sense than keeping a separate tree for fbdev.
+As much as I like folks stepping up as maintainers, I've got to say this
+is not a style I appreciate at all.
 
-Not only for the fbdev core and fbcon but also for fbdev drivers. There
-is common for fbdev drivers bugs to be exposed after DRM changes, so it
-is more convenient to push fixes for these through the same tree as well.
+Thursday: Object a recent fbdev change [1].
 
-As an example, just last week I had to fix issues in the vga16fb driver
-that started to occur after a change to support simpledrm in aarch64:
+Friday: Step up as fbdev maintainer, change git tree (this thread) [2].
 
-https://lore.kernel.org/all/20220111131601.u36j6grsvnir5gvp@houat/T/
+Sunday: Send the maintainer change to Linus [3].
 
-If there is a separate tree for fbdev, then this would require to do
-some coordination, share and merge immutable branches, etc for no
-clear benefit.
+Later Sunday: Start reverting the changes objected to on Thursday, with
+no discussion, no acks, no reviews, in the new git tree [4].
 
-Best regards,-- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+Monday: Continue reverting the changes [5].
 
+I'm heavily in favor of maintainers who are open, transparent,
+collaborative, who seek consensus through discussion, and only put their
+foot down when required.
+
+I really don't like the optics here. I'd expect some pretty good
+explanations.
+
+
+BR,
+Jani.
+
+
+[1] https://lore.kernel.org/r/feea8303-2b83-fc36-972c-4fc8ad723bde@gmx.de
+[2] https://lore.kernel.org/r/YeG8ydoJNWWkGrTb@ls3530
+[3] https://lore.kernel.org/r/YeRyfaesC2kxkgZC@ls3530
+[4] https://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git/commit/?h=for-next&id=a8005a65d06cfb89585574d956d80b6e23012caa
+[5] https://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git/commit/?h=for-next&id=9a89eeda722231fd1079dbfab4a9769b4beb868d
+
+
+-- 
+Jani Nikula, Intel Open Source Graphics Center

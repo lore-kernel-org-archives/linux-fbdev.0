@@ -2,183 +2,128 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0286C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 13:51:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1A44C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 14:10:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231959AbiAQNvM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Jan 2022 08:51:12 -0500
-Received: from smtp-out2.suse.de ([195.135.220.29]:43684 "EHLO
-        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231328AbiAQNvJ (ORCPT
+        id S234326AbiAQOKN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Jan 2022 09:10:13 -0500
+Received: from mail-ua1-f53.google.com ([209.85.222.53]:46844 "EHLO
+        mail-ua1-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230445AbiAQOKN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Jan 2022 08:51:09 -0500
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id AB9261F399;
-        Mon, 17 Jan 2022 13:51:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1642427468; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=0mK1vTdh/N1JGSY5RLEBdcoglPVme0D3aV+HDcYBmm8=;
-        b=vi+8Dmi9KMQxUAlbbbEJkXgg0xPCHSnKQnYA5jU9G6QbAlF1HIXYf4HX5AqygOML7gS/od
-        tjHMmR5GcXWl8nW9i17bpc4y+nA/NdcGegolk56jq3gXFA1zdDPdjZqTFozd8y5XksPycs
-        fRyOAi+FETwecOp2P1ukbvrEk+ME/9E=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1642427468;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=0mK1vTdh/N1JGSY5RLEBdcoglPVme0D3aV+HDcYBmm8=;
-        b=DmVqlP1Omwvlgfg60OiHiNeuVO8zyg8do0/v3Xvvn1SSOmQiKj99E71h568tzmCKhcc8s1
-        2Mi3irK7umWxR+BQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 73D4B13D94;
-        Mon, 17 Jan 2022 13:51:08 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id A+DTGkx05WHPUwAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 17 Jan 2022 13:51:08 +0000
-Message-ID: <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de>
-Date:   Mon, 17 Jan 2022 14:51:07 +0100
+        Mon, 17 Jan 2022 09:10:13 -0500
+Received: by mail-ua1-f53.google.com with SMTP id c36so30514829uae.13;
+        Mon, 17 Jan 2022 06:10:13 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=IVkUe3uV+8LCxfEyOkwQAxMSTEPLRyMs/0Qx0B4nQCU=;
+        b=NU3WzHjZNvmYoqfteQtWZMlr5Mpol057e5ikKlgFF54YUjW9Kes83mRSC7lJcr+rUI
+         CNLd8zhY8vxhpieLc/Zb/rMVnVizRY73AknaNbUrPNdXpUO9R25G/5RupMHRdu1G47S2
+         HHyOC9PP3IuxAQIw4Z9MhxIp9WWXIkb/VVvmp5TMdb2Z7cpQvcRupPR0PYB2bZHZKliU
+         fVK3AIJJNa0VH6gqpzrVkXY6fa8ihdbrEx8JsaXa/AWnCQH+9eo6/wGL9Tz2niVAcEf+
+         +3IyVo9WsY4jEMg7hReXTZT2tw2FTQQJpkv6fOooFK+3NFxEq4d2C+xCjlVT2wJc6DcK
+         iBGg==
+X-Gm-Message-State: AOAM532U+ZELnBdqXXmo1ytDWXGLkGaNYYIkYVINhztvePKMpQ4ItS0W
+        U6d2vEOlGpR+MDsjCf17lIlIYmH5T3Vbtw==
+X-Google-Smtp-Source: ABdhPJyveOK2vsyjygRhrucwI9ABwHYr1oireyMbGlhFB+C+UK+UJAQVIbS4uwiuspQQ12g1GYM6DQ==
+X-Received: by 2002:a9f:2105:: with SMTP id 5mr1076798uab.38.1642428612625;
+        Mon, 17 Jan 2022 06:10:12 -0800 (PST)
+Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com. [209.85.221.182])
+        by smtp.gmail.com with ESMTPSA id e10sm541227vsa.29.2022.01.17.06.10.11
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 17 Jan 2022 06:10:12 -0800 (PST)
+Received: by mail-vk1-f182.google.com with SMTP id n14so9203380vkk.6;
+        Mon, 17 Jan 2022 06:10:11 -0800 (PST)
+X-Received: by 2002:a1f:2344:: with SMTP id j65mr7794483vkj.7.1642428611448;
+ Mon, 17 Jan 2022 06:10:11 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
+References: <YeG8ydoJNWWkGrTb@ls3530> <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
+ <c80ed72c-2eb4-16dd-a7ad-57e9dde59ba1@gmx.de> <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
+ <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com> <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de>
+In-Reply-To: <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 17 Jan 2022 15:10:00 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
+Message-ID: <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
 Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Gerd Hoffmann <kraxel@redhat.com>
-Cc:     Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Gerd Hoffmann <kraxel@redhat.com>, Helge Deller <deller@gmx.de>,
+        Daniel Vetter <daniel@ffwll.ch>,
         Linus Torvalds <torvalds@linux-foundation.org>,
         "airlied@gmail.com" <airlied@gmail.com>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         DRI Development <dri-devel@lists.freedesktop.org>,
         Javier Martinez Canillas <javierm@redhat.com>
-References: <YeG8ydoJNWWkGrTb@ls3530>
- <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
- <c80ed72c-2eb4-16dd-a7ad-57e9dde59ba1@gmx.de>
- <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
- <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------KsZMdQUxiibxK2wrIo0AAOOd"
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------KsZMdQUxiibxK2wrIo0AAOOd
-Content-Type: multipart/mixed; boundary="------------LDzgbro4DDuoxg4TzhAhBU08";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
- Gerd Hoffmann <kraxel@redhat.com>
-Cc: Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "airlied@gmail.com" <airlied@gmail.com>,
- Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- DRI Development <dri-devel@lists.freedesktop.org>,
- Javier Martinez Canillas <javierm@redhat.com>
-Message-ID: <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de>
-Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-References: <YeG8ydoJNWWkGrTb@ls3530>
- <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
- <c80ed72c-2eb4-16dd-a7ad-57e9dde59ba1@gmx.de>
- <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
- <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
-In-Reply-To: <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
+Hi Thomas,
 
---------------LDzgbro4DDuoxg4TzhAhBU08
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On Mon, Jan 17, 2022 at 2:51 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Am 17.01.22 um 14:29 schrieb Geert Uytterhoeven:
+> > On Mon, Jan 17, 2022 at 1:57 PM Gerd Hoffmann <kraxel@redhat.com> wrote:
+> >>> b) to include new drivers (for old hardware) if they arrive (probably happens rarely but there can be).
+> >>>     I know of at least one driver which won't be able to support DRM....
+> >>
+> >> Hmm?  I seriously doubt that.  There is always the option to use a
+> >> shadow framebuffer, then convert from standard drm formats to whatever
+> >> esoteric pixel format your hardware expects.
+> >>
+> >> Been there, done that.  Have a look at the cirrus driver.  The physical
+> >> hardware was designed in the early 90-ies, almost 30 years ago.  These
+> >> days it exists in virtual form only (qemu emulates it).  Thanks to the
+> >> drm driver it runs wayland just fine even though it has a bunch of
+> >> constrains dictated by the hardware design.
+> >
+> > The Cirrus DRM driver supports TrueColor (RGB565/888 and ARGB8888)
+> > modes only.  The Cirrus fbdev driver also supports mochrome and 256
+> > color modes.
+> >
+> > There exist some DRM drivers that do support DRM_FORMAT_C8, but none of
+> > the "tiny" ones do. Same for DRM_FORMAT_RGB{332,233}.  Using a shadow
+> > frame buffer to convert from truecolor to 256 colors would be doable,
+> > but would give bad results. And what about less colors?
+> > Adding support for e.g. DRM_FORMAT_C4 is not straight-forward, as
+> > the DRM core assumes in many places that a pixel is at least 1 byte,
+> > and would crash otherwise (yes I tried).  Other modes needed are
+> > DRM_FORMAT_Y4 and DRM_FORMAT_{BW,WB} (monochrome).
+>
+> We export XRGB32 from each driver, because userspace expects it. But
+> that is not a hard requirement. Userspace can use any format. It's just
+> that no one seems to have any use cases so far, so no work has been
+> done. Think of XRGB32 as a fallback.
 
-SGkNCg0KQW0gMTcuMDEuMjIgdW0gMTQ6Mjkgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
-DQo+IEhpIEdlcmQsDQo+IA0KPiBPbiBNb24sIEphbiAxNywgMjAyMiBhdCAxOjU3IFBNIEdl
-cmQgSG9mZm1hbm4gPGtyYXhlbEByZWRoYXQuY29tPiB3cm90ZToNCj4+PiBiKSB0byBpbmNs
-dWRlIG5ldyBkcml2ZXJzIChmb3Igb2xkIGhhcmR3YXJlKSBpZiB0aGV5IGFycml2ZSAocHJv
-YmFibHkgaGFwcGVucyByYXJlbHkgYnV0IHRoZXJlIGNhbiBiZSkuDQo+Pj4gICAgIEkga25v
-dyBvZiBhdCBsZWFzdCBvbmUgZHJpdmVyIHdoaWNoIHdvbid0IGJlIGFibGUgdG8gc3VwcG9y
-dCBEUk0uLi4uDQo+Pg0KPj4gSG1tPyAgSSBzZXJpb3VzbHkgZG91YnQgdGhhdC4gIFRoZXJl
-IGlzIGFsd2F5cyB0aGUgb3B0aW9uIHRvIHVzZSBhDQo+PiBzaGFkb3cgZnJhbWVidWZmZXIs
-IHRoZW4gY29udmVydCBmcm9tIHN0YW5kYXJkIGRybSBmb3JtYXRzIHRvIHdoYXRldmVyDQo+
-PiBlc290ZXJpYyBwaXhlbCBmb3JtYXQgeW91ciBoYXJkd2FyZSBleHBlY3RzLg0KPj4NCj4+
-IEJlZW4gdGhlcmUsIGRvbmUgdGhhdC4gIEhhdmUgYSBsb29rIGF0IHRoZSBjaXJydXMgZHJp
-dmVyLiAgVGhlIHBoeXNpY2FsDQo+PiBoYXJkd2FyZSB3YXMgZGVzaWduZWQgaW4gdGhlIGVh
-cmx5IDkwLWllcywgYWxtb3N0IDMwIHllYXJzIGFnby4gIFRoZXNlDQo+PiBkYXlzIGl0IGV4
-aXN0cyBpbiB2aXJ0dWFsIGZvcm0gb25seSAocWVtdSBlbXVsYXRlcyBpdCkuICBUaGFua3Mg
-dG8gdGhlDQo+PiBkcm0gZHJpdmVyIGl0IHJ1bnMgd2F5bGFuZCBqdXN0IGZpbmUgZXZlbiB0
-aG91Z2ggaXQgaGFzIGEgYnVuY2ggb2YNCj4+IGNvbnN0cmFpbnMgZGljdGF0ZWQgYnkgdGhl
-IGhhcmR3YXJlIGRlc2lnbi4NCj4gDQo+IFRoZSBDaXJydXMgRFJNIGRyaXZlciBzdXBwb3J0
-cyBUcnVlQ29sb3IgKFJHQjU2NS84ODggYW5kIEFSR0I4ODg4KQ0KPiBtb2RlcyBvbmx5LiAg
-VGhlIENpcnJ1cyBmYmRldiBkcml2ZXIgYWxzbyBzdXBwb3J0cyBtb2Nocm9tZSBhbmQgMjU2
-DQo+IGNvbG9yIG1vZGVzLg0KPiANCj4gVGhlcmUgZXhpc3Qgc29tZSBEUk0gZHJpdmVycyB0
-aGF0IGRvIHN1cHBvcnQgRFJNX0ZPUk1BVF9DOCwgYnV0IG5vbmUgb2YNCj4gdGhlICJ0aW55
-IiBvbmVzIGRvLiBTYW1lIGZvciBEUk1fRk9STUFUX1JHQnszMzIsMjMzfS4gIFVzaW5nIGEg
-c2hhZG93DQo+IGZyYW1lIGJ1ZmZlciB0byBjb252ZXJ0IGZyb20gdHJ1ZWNvbG9yIHRvIDI1
-NiBjb2xvcnMgd291bGQgYmUgZG9hYmxlLA0KPiBidXQgd291bGQgZ2l2ZSBiYWQgcmVzdWx0
-cy4gQW5kIHdoYXQgYWJvdXQgbGVzcyBjb2xvcnM/DQo+IEFkZGluZyBzdXBwb3J0IGZvciBl
-LmcuIERSTV9GT1JNQVRfQzQgaXMgbm90IHN0cmFpZ2h0LWZvcndhcmQsIGFzDQo+IHRoZSBE
-Uk0gY29yZSBhc3N1bWVzIGluIG1hbnkgcGxhY2VzIHRoYXQgYSBwaXhlbCBpcyBhdCBsZWFz
-dCAxIGJ5dGUsDQo+IGFuZCB3b3VsZCBjcmFzaCBvdGhlcndpc2UgKHllcyBJIHRyaWVkKS4g
-IE90aGVyIG1vZGVzIG5lZWRlZCBhcmUNCj4gRFJNX0ZPUk1BVF9ZNCBhbmQgRFJNX0ZPUk1B
-VF97QlcsV0J9IChtb25vY2hyb21lKS4NCg0KV2UgZXhwb3J0IFhSR0IzMiBmcm9tIGVhY2gg
-ZHJpdmVyLCBiZWNhdXNlIHVzZXJzcGFjZSBleHBlY3RzIGl0LiBCdXQgDQp0aGF0IGlzIG5v
-dCBhIGhhcmQgcmVxdWlyZW1lbnQuIFVzZXJzcGFjZSBjYW4gdXNlIGFueSBmb3JtYXQuIEl0
-J3MganVzdCANCnRoYXQgbm8gb25lIHNlZW1zIHRvIGhhdmUgYW55IHVzZSBjYXNlcyBzbyBm
-YXIsIHNvIG5vIHdvcmsgaGFzIGJlZW4gDQpkb25lLiBUaGluayBvZiBYUkdCMzIgYXMgYSBm
-YWxsYmFjay4NCg0KUGVyc29uYWxseSwgSSdkIG11Y2ggYXBwcmVjaWF0ZSBpZiB1c2Vyc3Bh
-Y2Ugd291bGQgc3VwcG9ydCBtb3JlIG9mIHRoZSANCm5hdGl2ZSBmb3JtYXRzIGFuZCBub3Qg
-cmVseSBvbiBYUkdCMzIuDQoNCg0KPiBUaGlzIG5vdCBvbmx5IHRvIHN1cHBvcnQgIm9sZCIg
-aGFyZHdhcmUsIGJ1dCBhbHNvIG1vZGVybiBzbWFsbCBPTEVEDQo+IGFuZCBlLWluayBkaXNw
-bGF5cy4NCg0KVGhlcmUncyBhIERSTSBkcml2ZXIgZm9yIFJlcGFwZXIgZS1JbmsgZGlzcGxh
-eXMuIFNvIGl0IHNlZW1zIGRvYWJsZSBhdCANCmxlYXN0Lg0KDQpCZXN0IHJlZ2FyZHMNClRo
-b21hcw0KDQo+IA0KPiBPbiB0aGUgcG9zaXRpdmUgc2lkZTogRFJNIHdvdWxkIGZvcmNlIGUu
-Zy4gdGhlIEFtaWdhIGFuZCBBdGFyaQ0KPiBiaXRwbGFuZSBmb3JtYXRzIHRvIGJlY29tZSBp
-bnRlcm5hbCB0byB0aGUga2VybmVsIGRyaXZlciwgd2l0aCB0aGUNCj4ga2VybmVsIGRyaXZl
-ciBjb252ZXJ0aW5nIGZyb20gcGFja2VkIHBpeGVscyB0byBiaXRwbGFuZXMuICBIZW5jZQ0K
-PiB1c2Vyc3BhY2Ugd291bGQgbm8gbG9uZ2VyIGhhdmUgdG8gY2FyZSBhYm91dCBiaXRwbGFu
-ZXMuDQo+IA0KPiANCj4gR3J7b2V0amUsZWV0aW5nfXMsDQo+IA0KPiAgICAgICAgICAgICAg
-ICAgICAgICAgICAgR2VlcnQNCj4gDQo+IC0tDQo+IEdlZXJ0IFV5dHRlcmhvZXZlbiAtLSBU
-aGVyZSdzIGxvdHMgb2YgTGludXggYmV5b25kIGlhMzIgLS0gZ2VlcnRAbGludXgtbTY4ay5v
-cmcNCj4gDQo+IEluIHBlcnNvbmFsIGNvbnZlcnNhdGlvbnMgd2l0aCB0ZWNobmljYWwgcGVv
-cGxlLCBJIGNhbGwgbXlzZWxmIGEgaGFja2VyLiBCdXQNCj4gd2hlbiBJJ20gdGFsa2luZyB0
-byBqb3VybmFsaXN0cyBJIGp1c3Qgc2F5ICJwcm9ncmFtbWVyIiBvciBzb21ldGhpbmcgbGlr
-ZSB0aGF0Lg0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAtLSBMaW51cyBU
-b3J2YWxkcw0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2
-ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRz
-dHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5i
-ZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
+Using an XRGB32 intermediate would kill the user experience on old
+machines, due to both increased memory usage and copy overhead.
 
---------------LDzgbro4DDuoxg4TzhAhBU08--
+> Personally, I'd much appreciate if userspace would support more of the
+> native formats and not rely on XRGB32.
 
---------------KsZMdQUxiibxK2wrIo0AAOOd
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Supporting monochrome, 16 colors, and 256 colors would be nice.
 
------BEGIN PGP SIGNATURE-----
+> > This not only to support "old" hardware, but also modern small OLED
+> > and e-ink displays.
+>
+> There's a DRM driver for Repaper e-Ink displays. So it seems doable at
+> least.
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmHldEsFAwAAAAAACgkQlh/E3EQov+AH
-Tg/7BhfzrXcUXwFax2XWiYFiFFGTavb4EbcPO3rUNNF7U1S2Oe1newd1hMxyk9OCE2aHc04GP1qn
-5S/ifcVOWVUEmuX7qhdIR15NkiEW5atEdIL384OSKsPIg46ZmMCeMm346LPuOtivYY2khwMVmkz6
-P7Sq1QU+DukWJMNFjHmeBKuN039fy+RXgCjAsLi90CZjz6qbFTs3cGZCCpJ7ch6tq/TRX064lUtC
-dx+pRMhrRK3rzof3g+A/R829/dTvArNplNkP1dUI5mssqR0Cle9lkrT2EmSKW9KNAnyRHvZUMhy1
-UcQQX0CqtXMf5ta9q+hadJS+TcyT/hJUHQCT7J1OnxphLRlEpnRKJXi47fl/ww6doLtjlQkF4o4I
-rVa8vIAuokyS1HBc9/HI4H/Ia+dcJZuQ39d9xZ6HhyxoroZUakpR2R//fF19vCXem/HAKQMGh/nL
-OnH3koMoTp57TbZsd5ceKtXSpLk+gzaKJ1yPRb7+Wgvo9sjjyZdp9DF+jFBWlUIZ1X/p/yjMHFyv
-6fbBIFObigMPRtFXOjsAdd5t3meDrLSBd1c8um6nmOfZbMsIBklKnRcWu2iBoi8IPt2+TrDJvlsV
-kYCIMHAQN9BJf8C24E2Pi29mo2m2EHUC23yCJx0suX7vWZ4JDTYPl0QKFWHAD7Y+SQo3ooPfavtE
-7tM=
-=3nPB
------END PGP SIGNATURE-----
+Which uses an DRM_FORMAT_XRGB8888 intermediate, and
+drm_fb_xrgb8888_to_gray8() and repaper_gray8_to_mono_reversed()
+to convert from truecolor to monochrome.  I guess that would work,
+as this is a slow e-ink display.  Have fun as a text console ;-)
 
---------------KsZMdQUxiibxK2wrIo0AAOOd--
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

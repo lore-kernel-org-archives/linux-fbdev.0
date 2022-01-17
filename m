@@ -2,100 +2,133 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6543C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 09:30:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E645C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 09:48:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235760AbiAQJaJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Jan 2022 04:30:09 -0500
-Received: from mout.gmx.net ([212.227.17.22]:55019 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S235754AbiAQJaD (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Jan 2022 04:30:03 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1642411797;
-        bh=GDRi6PlDojShJJ7+VpCOWmzUNyc4yYA4SNWwW6pbR9M=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=RXKsvyIi9CIUQoyPCxWawUG4AWz93YxykTxZhyxFs31hShCQKwtKWmnfSYkfYyHyn
-         s/xd1T78M4dpt5dUWOjAbC/VIzYRlL0Xmzi+T2OX9NbyTFBFIFEeGCovjjPMb+nuRo
-         mkKp0610AwyWfkyXU+yen92m2K+SXovvpr0lCWv4=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.167.237]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Md6R1-1mabTy1yVP-00aA0v; Mon, 17
- Jan 2022 10:29:57 +0100
-Message-ID: <07123931-39d8-42b9-6d2f-b9fde89675bf@gmx.de>
-Date:   Mon, 17 Jan 2022 10:28:52 +0100
+        id S236031AbiAQJsG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Jan 2022 04:48:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58670 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230076AbiAQJsG (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 17 Jan 2022 04:48:06 -0500
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D1FCC06161C
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 Jan 2022 01:48:05 -0800 (PST)
+Received: by mail-ed1-x52d.google.com with SMTP id j7so14665322edr.4
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 Jan 2022 01:48:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=Hvs7wdHNk9d6evPXMTRPHKlvNS1pd2jeBhpDZL4yqgM=;
+        b=j2eUcRSqjv8rz+GGyoypRLAiAp5ByKbji3UGDPaismYVEFznjzB0AqxcwnFSnIa5XG
+         b0cBStOP4jQD2Zw/3wYoPLGO+9ULjkL+mz7s1pp8yfHTSVx67v6T6OxrVIq6AbOZHk2L
+         j7v7/kvJC9ch+PZ4wTRPp0dRN2QdlGFNNfhcM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :in-reply-to;
+        bh=Hvs7wdHNk9d6evPXMTRPHKlvNS1pd2jeBhpDZL4yqgM=;
+        b=CAS6NF2yHR/BLTJemTa7WBL7jc2gLqpVU++n2b386dBaHOeHMfbnwg9LR++S20VpYc
+         XM5M1wXRWkEGbb9jp+Ld8AXd0N9BPgYmLIxEMntBQbXfslHhEtit5EtVnEN4h3bV4mkZ
+         Cr7JMs4GEOhBKQyEHkvekDAM9OzZKxY8ooE6HzgdGA3fISSklWdY3Z70QZXVmYUXMr3x
+         FbWLRbSIw6eJ8oHn06vUVUDZwNgxeTisbP+1xrDNrEWymPjL913dmG7vaRIh7oxPo8rW
+         jn2niuFad1jUNNbjpP0vAg5FVFuSIWKr2HxJKfWnyVoRalxCo0yXKPRg1PpFauEyqhUB
+         jKHw==
+X-Gm-Message-State: AOAM531FrvIOLEViaMJePuad1WhzwoMNof+4tM6/HGzsaPRQ+EaBhugr
+        aOH57dfYXs7asGJy5jDqxpVsvA==
+X-Google-Smtp-Source: ABdhPJzgzyXyFgTeax+VBjmTswOv7LJ3YOfVs1bNjMWWzVqPATfGKipEN5KgjwU4FLcDhpQ8YuNBeA==
+X-Received: by 2002:a17:907:3e07:: with SMTP id hp7mr7400211ejc.469.1642412883687;
+        Mon, 17 Jan 2022 01:48:03 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id p4sm2887048ejl.78.2022.01.17.01.48.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 17 Jan 2022 01:48:03 -0800 (PST)
+Date:   Mon, 17 Jan 2022 10:48:01 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Helge Deller <deller@gmx.de>,
+        "airlied@gmail.com" <airlied@gmail.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
+Message-ID: <CAKMK7uFnhK7pnfiMzz-UY1UYv3WG=sVOCe24bz0xROhQOxY+eA@mail.gmail.com>
+Mail-Followup-To: Helge Deller <deller@gmx.de>,
+        "airlied@gmail.com" <airlied@gmail.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <YeG8ydoJNWWkGrTb@ls3530>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [GIT PULL] fbdev updates for v5.17-rc1
-Content-Language: en-US
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-References: <YeRyfaesC2kxkgZC@ls3530>
- <CAHk-=whE5gmEKLt+rtEn2MV=BN8p+QTU56VaPdSD_kmxkx7smQ@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAHk-=whE5gmEKLt+rtEn2MV=BN8p+QTU56VaPdSD_kmxkx7smQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:iDjATMD3E2Ic3kJmHBjTt6VE54vxdd/QNdoIVuvd0BKRTIFZJRv
- tyb9QwhtQsEFB8C/jtigqGz3jk6j/AQOwGGDqGIwnHjthaO9NGbZWdgnTwwSS4WN3+vgemi
- h5iXQXVN25X0HDf+Pi/nLnRhBZS5Gp+ZJSUETz1uaQlaam7aFAE80lhGl5f+AAVdumWpDmI
- 3YczbMIr/djPnPx+SGxFg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:u2jqbMnErjg=:Hx8AIAecmEsMcircfABNz5
- NVWekfhgewEJiVahygG0ywsPCtOZCpz5zNlYvpMDeCDVbXkSWzL2jkOh91L4Eyix2PKjLjGic
- mH0UJ9tg8INdkf5CRpqx6Nsajsd5wwcbiVoc29N32pFUSSoBFu97N4omsBVBiAdPF6Z9GaA5i
- CA+el4w0l4IQfkbNHhSwH1T8r287tNZFfvyeKPHGFKA8KDuT4oIiNShINrtYf37XjDINa0J9c
- XXFSBXaF9PDus0YwcvUBRxZVf7WGkN0HK2feNGKlYwOZk430YZ7e5irBBWt+ZCY/ao8wwcJkv
- /mC+7fVw69xHt0ZU54GP7Jxi1jpul0F5OMGxjN5iKebOcdEy50ccw9gqXvEG4+aY0qScKUsVf
- ZiPY7qlchj8IEWkFqXWsSBuECJmIVHfxzwHOXwbM03VpZ18ASWsfsoCmbFD2Pzn4qwBi+1Bld
- 4jSxoDgp4eelS5mp6XbIxkWXZHdGkTPUvEaU4yl5LjyaBvDzF73YKjA/d1fVUNOatwz3a9UMg
- 8m3tKXIPDLc98F2MAyvnTyyrUurd8+Asy0Q4i3bPq+1dTVByq3q743aRhBL0wGh5hWpda/hov
- bNCU2h4nlNVrpSCYx7xiX7IpOoldAsgQdzUEAZ3e/iN5AokVfXHp/wsIPQrwkS1+vSUmHtkE8
- eGY3DD8rS/sVixiZKFz/BRiljRzPtPNl4CKOYsp4tUSdk/jioG5kJnZ0bGPkx2ybp/Ovl9a7n
- XbyMYhHtYywSM3kESk4rRDwFaeVDdYpqJ/JHmv9I123QSfKLbCHnZBopN318aRkwVLdJkUWV3
- 2fcTXvDElZxWCwyEZcDLQqHNsEBsIoIb72ZDI/nbXb0/EPrN3wcnahlQ2KGCKMYPtCWaFfCm9
- DuPnDfDuuYntlCcOFcLnJ/W4jcuFEwS/ROJVwhOnQ4f+Q7ACGc4+sxPyfTWm7ky+fZGdSmg+N
- Pw3pNUdxfsVPnAHERpmaYuQxL/MCSXFDlsGbBlmMIQ6rbqdJSS4DocGtUst8KxDWtGsleVTY+
- NwFDGpdEDuz/U2qLptVVuRzL95y7Z3KH/0SwsGHhY9iugsjRjz1yUPSe/kKh6cyy3tijsFl/d
- YY4+IEM+E7dx2w=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YeG8ydoJNWWkGrTb@ls3530>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/17/22 05:33, Linus Torvalds wrote:
-> On Sun, Jan 16, 2022 at 9:32 PM Helge Deller <deller@gmx.de> wrote:
->>
->> This pull request contains only one single initial patch which adds
->> myself to the MAINTAINERS file for the FRAMBUFFER LAYER.
+Hi Helge
+
+On Fri, Jan 14, 2022 at 7:18 PM Helge Deller <deller@gmx.de> wrote:
 >
-> I'll pull this
+> The fbdev layer is orphaned, but seems to need some care.
+> So I'd like to step up as new maintainer.
+>
+> Signed-off-by: Helge Deller <deller@gmx.de>
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 5d0cd537803a..ce47dbc467cc 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -7583,11 +7583,12 @@ W:      http://floatingpoint.sourceforge.net/emulator/index.html
+>  F:     arch/x86/math-emu/
+>
+>  FRAMEBUFFER LAYER
+> -L:     dri-devel@lists.freedesktop.org
+> +M:     Helge Deller <deller@gmx.de>
+>  L:     linux-fbdev@vger.kernel.org
+> -S:     Orphan
+> +L:     dri-devel@lists.freedesktop.org
+> +S:     Maintained
+>  Q:     http://patchwork.kernel.org/project/linux-fbdev/list/
+> -T:     git git://anongit.freedesktop.org/drm/drm-misc
+> +T:     git git://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git
 
-Thanks!
+Maybe don't rush maintainer changes in over the w/e without even bothering
+to get any input from the people who've been maintaining it before.
 
-> (as my test builds for other things complete), but this
-> is just a note to say that this pull request email was marked as spam
-> for me, with gmail saying something along the lines of "lots of emails
-> from gmx.de have been marked as spam"
+Because the status isn't entirely correct, fbdev core code and fbcon and
+all that has been maintained, but in bugfixes only mode. And there's very
+solid&important reasons to keep merging these patches through a drm tree,
+because that's where all the driver development happens, and hence also
+all the testing (e.g. the drm test suite has some fbdev tests - the only
+automated ones that exist to my knowledge - and we run them in CI). So
+moving that into an obscure new tree which isn't even in linux-next yet is
+no good at all.
 
-GMX is the biggest (free-) email provider in Germany. I'm sure their
-mailboxes get heavily attacked by spammers, and others may try to use them
-for spamming.
+Now fbdev driver bugfixes is indeed practically orphaned and I very much
+welcome anyone stepping up for that, but the simplest approach there would
+be to just get drm-misc commit rights and push the oddball bugfix in there
+directly. But also if you want to do your own pull requests to Linus for
+that I don't care and there's really no interference, so whatever floats.
 
-> I see nothing odd in the email itself, and it has proper SPF and DKIM,
-> but it's possible that you end up sharing a subnet (or an ISP) with
-> spammers...
+But any code that is relevant for drm drivers really needs to in through
+drm trees, nothing else makes much sense.
 
-No, I'm on a dial-up DSL line and send/get my mails via smtp/imap over the=
- official
-GMX mail servers. So, it's strange that gmail suddenly thinks it's spam.
+I guess you're first action as newly minted maintainer is going to be to
+clean up the confusion you just created.
 
-> Or maybe it was a random one-off. We'll see. I check spam filters
-> enough that I _usually_ tend to catch these things.
+Cheers, Daniel
 
-Great.
-If it happens again I can switch to my kernel.org account instead...
+>  F:     Documentation/fb/
+>  F:     drivers/video/
+>  F:     include/linux/fb.h
 
-Helge
+
+
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

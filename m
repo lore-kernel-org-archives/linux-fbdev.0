@@ -2,162 +2,146 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9753C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 10:58:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AA3CC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 11:16:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238791AbiAQK6y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Jan 2022 05:58:54 -0500
-Received: from mout.gmx.net ([212.227.17.20]:60377 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229503AbiAQK6y (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Jan 2022 05:58:54 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1642417124;
-        bh=ZlkRI76O1HNMaDibceLBJ4+Yr9W5biTnm7ePlGXax8c=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=BwHcpXm3NG1Lwqd5XnmY5I13XEroXICdnIhOyAtjctLB+ZbD8AMT83sL6BLMwuMUE
-         RNor84k7NkJGdF+BTLmzC4gwe1o5UuLxlRozF59cPDu5uduZa5pmbuDpR9J7Y5H/H1
-         OmZ39nqVBn86+zhnL/pJ7o+4oTUefstaX7Dd+ZLc=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.167.237]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MN5eX-1mqNGg3sxx-00J3u5; Mon, 17
- Jan 2022 11:58:43 +0100
-Message-ID: <60fad896-235c-7602-39d1-14691282ebf6@gmx.de>
-Date:   Mon, 17 Jan 2022 11:57:38 +0100
+        id S236256AbiAQLQY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Jan 2022 06:16:24 -0500
+Received: from smtp-out2.suse.de ([195.135.220.29]:52632 "EHLO
+        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233906AbiAQLQX (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 17 Jan 2022 06:16:23 -0500
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id AAE921F399;
+        Mon, 17 Jan 2022 11:16:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1642418182; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=ZnTiZM/I4lXeOrr5FJ9dytOgHT4W17EpADJ4XFi+biI=;
+        b=zELPdUDwUWFsS6Z+7Wc5i6oy2EI5kLe9gqE9YN+kre4ec/sIgNaaoWvYKzCVOQIdx82bwu
+        WI3xdYPRrTsdAMKq1l/KP1ag2zQZ+rs7oYmLZrOa2xN7Gbmv2NfTpCqy90FzeX4rrS8NJ+
+        Du+WmRqeHKea/8eG92Sqszc38gzfCUE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1642418182;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=ZnTiZM/I4lXeOrr5FJ9dytOgHT4W17EpADJ4XFi+biI=;
+        b=V4s+mm89QqxIM01QfXeKCx9f8pGOSeYo7DDWbKndoiIW5rrOpAI3/suBiWL9rcstXl+hRU
+        tbLDImgsJf89saAw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8F48C13AE2;
+        Mon, 17 Jan 2022 11:16:22 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id J5rzIQZQ5WGIcwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 17 Jan 2022 11:16:22 +0000
+Message-ID: <c48ad8ae-aea5-43fa-882f-dccb90dde9a4@suse.de>
+Date:   Mon, 17 Jan 2022 12:16:22 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
+ Thunderbird/91.5.0
 Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
 Content-Language: en-US
-To:     Jani Nikula <jani.nikula@linux.intel.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        "airlied@gmail.com" <airlied@gmail.com>
-Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Javier Martinez Canillas <javierm@redhat.com>
+To:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Cc:     linux-kernel@vger.kernel.org
 References: <YeG8ydoJNWWkGrTb@ls3530>
- <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
- <87o84a63hy.fsf@intel.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <87o84a63hy.fsf@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ebVuJl/dmLqN1DusLAVJLl1TzbN3n+pZ2TDGb0JtsNZMKjzmqgX
- AcrDzss4HYUU4gGfKlDiuJmsR/a5e3j0YMe9gONh2MWqf/Q+jfxq67YuTBd1YgtvBfMNWnw
- o75DkRCCC5uDZACJqcEHVBpW+aTxTTKUITA68CQXTvqOdI7AmgoBfwWsqtwFUAPJAdpVcbX
- 6qxo5uiHQle2Hy46OdqfA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:Vl7fjTBigKs=:1/42af+1H3BqrJsWlSFH/o
- RZfzhKKvGuIrHY0xRLqz3QObRNaNDFiE6fdTQDVod6fFYPpMDtjNNXN6oHSeb0yZU69bK3IvO
- QK4LY0IWHelVcWmoEdEcqLYAh0taPBWcToUbS+AOr0pwOV1G8/sUApFI5DuqBgB79HFQUg6RI
- +YN8qTdRlP67RmGDzy0LiSi2YyZ7EjAkzeyEy2g+4J91T35knvcXQ009d+qN7jqo/qpOThWel
- zz6YX+VcpzOIkzK0u19pBZwiEzrvBOzN9FpcVY7F8aBXc+xH0js1ZRNdeTsxT1EK5lHx0UnuT
- 5Mt1O1BgK6JtxTQfRQkyiNIMAXnNgudr18iixaTzvLbeerE4hf7yb/PITQv43pKeT+KzKOR60
- 13dYcHlgT+NlloWCZO41vrmrJX6PJh37g0FkGpRo3J/I26CZt9pyMDrhx+Rj4dlNCS607WZf/
- PeLxGlJoZDLPqJSdCf3Y6h3+s6lxlNlkOhi7TmR2gjw6p9Fyfe5OCQ0hQPzDoE+9KCLcaBDg4
- tvE1wXHot1y1ZjIi6a+95m9AxM+njeOBnsolwPNTMbAHxwM3YKsmKNBdsleC9s7nrbY1S/j34
- YdmZA2aZmGo1O/ZiM1J6CgZyPGdcv8yy6rln0Xe/w2mc+6D0qlFDkSkj0WoFT1zok8RCGd4jZ
- wwg4VNlxdoQ0CGPjS58YWNSH7TcmShdGRusF4DJg6o3sfHKxzaETaE/zWZEJZbkG3jazelU1V
- bmYhgcH3d5QWKBZyIDu3izQXeL1R4q2A2WxQXPBSRSnhV3wduB2pib3Xz6F5KC/sU3CsUZw+Z
- 1v+SptapJKwtINPGptCvnOu/UtYx66WF8VT5w+Wq8ViYWU2xczdidoaF6DqXte5a6Jd7hDxro
- 1GRRRe3L1c8x0in3J5e1pEyi95mT4M1s549hvcowIuWb7Aygkd45aPIgKix9SvvYcuSW0+LGf
- eMvU318jN3DhQoKQib5iTD59tIUQd9u4NKuuUE1bzOsYqH3dw4w4J2hwwZsKkCgwWdufEN29L
- 2wi2GFjFLsWgZbYcMWS91JuXRAVlGtVxArGWPpaJXwMYcUNl/Ka4ICq8D9HecL0PCxBCrh/FE
- t0fka4TH4+eZ88=
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <YeG8ydoJNWWkGrTb@ls3530>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------l0YNj3Le6R4cDBjWbmghtxim"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Jani,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------l0YNj3Le6R4cDBjWbmghtxim
+Content-Type: multipart/mixed; boundary="------------8Q1TezFaHshXCr3Viua02Bqu";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+ dri-devel@lists.freedesktop.org
+Cc: linux-kernel@vger.kernel.org
+Message-ID: <c48ad8ae-aea5-43fa-882f-dccb90dde9a4@suse.de>
+Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
+References: <YeG8ydoJNWWkGrTb@ls3530>
+In-Reply-To: <YeG8ydoJNWWkGrTb@ls3530>
 
-On 1/17/22 11:49, Jani Nikula wrote:
-> On Mon, 17 Jan 2022, Daniel Vetter <daniel@ffwll.ch> wrote:
->> Hi Helge
->>
->> On Fri, Jan 14, 2022 at 7:18 PM Helge Deller <deller@gmx.de> wrote:
->>>
->>> The fbdev layer is orphaned, but seems to need some care.
->>> So I'd like to step up as new maintainer.
->>>
->>> Signed-off-by: Helge Deller <deller@gmx.de>
->>>
->>> diff --git a/MAINTAINERS b/MAINTAINERS
->>> index 5d0cd537803a..ce47dbc467cc 100644
->>> --- a/MAINTAINERS
->>> +++ b/MAINTAINERS
->>> @@ -7583,11 +7583,12 @@ W:      http://floatingpoint.sourceforge.net/e=
-mulator/index.html
->>>  F:     arch/x86/math-emu/
->>>
->>>  FRAMEBUFFER LAYER
->>> -L:     dri-devel@lists.freedesktop.org
->>> +M:     Helge Deller <deller@gmx.de>
->>>  L:     linux-fbdev@vger.kernel.org
->>> -S:     Orphan
->>
->> Maybe don't rush maintainer changes in over the w/e without even bother=
-ing
->> to get any input from the people who've been maintaining it before.
->>
->> Because the status isn't entirely correct, fbdev core code and fbcon an=
-d
->> all that has been maintained, but in bugfixes only mode. And there's ve=
-ry
->> solid&important reasons to keep merging these patches through a drm tre=
-e,
->> because that's where all the driver development happens, and hence also
->> all the testing (e.g. the drm test suite has some fbdev tests - the onl=
-y
->> automated ones that exist to my knowledge - and we run them in CI). So
->> moving that into an obscure new tree which isn't even in linux-next yet=
- is
->> no good at all.
->>
->> Now fbdev driver bugfixes is indeed practically orphaned and I very muc=
-h
->> welcome anyone stepping up for that, but the simplest approach there wo=
-uld
->> be to just get drm-misc commit rights and push the oddball bugfix in th=
-ere
->> directly. But also if you want to do your own pull requests to Linus fo=
-r
->> that I don't care and there's really no interference I think, so
->> whatever floats.
->>
->> But any code that is relevant for drm drivers really needs to go in thr=
-ough
->> drm trees, nothing else makes much sense.
->>
->> I guess you're first action as newly minted fbdev maintainer is going t=
-o be to
->> clean up the confusion you just created.
->
-> As much as I like folks stepping up as maintainers, I've got to say this
-> is not a style I appreciate at all.
->
-> Thursday: Object a recent fbdev change [1].
->
-> Friday: Step up as fbdev maintainer, change git tree (this thread) [2].
->
-> Sunday: Send the maintainer change to Linus [3].
->
-> Later Sunday: Start reverting the changes objected to on Thursday, with
-> no discussion, no acks, no reviews, in the new git tree [4].
->
-> Monday: Continue reverting the changes [5].
->
-> I'm heavily in favor of maintainers who are open, transparent,
-> collaborative, who seek consensus through discussion, and only put their
-> foot down when required.
->
-> I really don't like the optics here. I'd expect some pretty good
-> explanations.
+--------------8Q1TezFaHshXCr3Viua02Bqu
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Jani, please don't worry!
-I've started to sort things out, to work through the existing backlog of
-patches (which is a LOT!) and nothing has been pushed yet.
-I've seen the other mails and we will discuss.
+SGkNCg0KQW0gMTQuMDEuMjIgdW0gMTk6MTEgc2NocmllYiBIZWxnZSBEZWxsZXI6DQo+IFRo
+ZSBmYmRldiBsYXllciBpcyBvcnBoYW5lZCwgYnV0IHNlZW1zIHRvIG5lZWQgc29tZSBjYXJl
+Lg0KPiBTbyBJJ2QgbGlrZSB0byBzdGVwIHVwIGFzIG5ldyBtYWludGFpbmVyLg0KPiANCj4g
+U2lnbmVkLW9mZi1ieTogSGVsZ2UgRGVsbGVyIDxkZWxsZXJAZ214LmRlPg0KDQpGaXJzdCBv
+ZiBhbGwsIHRoYW5rIHlvdSBmb3Igc3RlcHBpbmcgdXAgdG8gbWFpbnRhaW4gdGhlIGZiZGV2
+IGNvZGViYXNlLiANCkl0IHJlYWxseSBuZWVkcyBzb21lb25lIGFjdGl2ZWx5IGxvb2tpbmcg
+YWZ0ZXIgaXQuDQoNCkFuZCBub3cgY29tZXMgdGhlIEJVVC4NCg0KSSB3YW50IHRvIHNlY29u
+ZCBldmVyeXRoaW5nIHNhaWQgYnkgRGFuaWFsIGFuZCBKYXZpZXIuIEluIGFkZGl0aW9uIHRv
+IA0KcHVyZWx5IG9yZ2FuaXphdGlvbmFsIHRvcGljcyAodHJlZXMsIFBScywgZXRjKSwgdGhl
+cmUgYXJlIGEgbnVtYmVyIG9mIA0KaW5oZXJpdCBwcm9ibGVtcyB3aXRoIGZiZGV2Lg0KDQog
+ICogSXQncyA5MHMgdGVjaG5vbG9neS4gTmVpdGhlciBkb2VzIGl0IGZpdCB0b2RheSdzIHVz
+ZXJzcGFjZSwgbm90IA0KaGFyZHdhcmUuIElmIHlvdSBoYXZlIG1vcmUgdGhhbiBqdXN0IHRo
+ZSBtb3N0IHRyaXZpYWwgb2YgZ3JhcGhpY2FsIA0Kb3V0cHV0IGZiZGV2IGlzbid0IGZvciB5
+b3UuDQoNCiAgKiBUaGVyZSdzIG5vIG5ldyBkZXZlbG9wbWVudCBpbiBmYmRldiBhbmQgdGhl
+cmUgYXJlIG5vIG5ldyBkcml2ZXJzLiANCkV2ZXJ5b25lIHdvcmtzIG9uIERSTSwgd2hpY2gg
+aXMgYmV0dGVyIGluIG1vc3QgcmVnYXJkcy4gVGhlIGNvbnNlcXVlbmNlIA0KaXMgdGhhdCB1
+c2Vyc3BhY2UgaXMgc2xvd2x5IGxvb3NpbmcgdGhlIGFiaWxpdHkgdG8gdXNlIGZiZGV2Lg0K
+DQogICogQSBmZXcgdXNlLWNhc2VzIGZvciBlZmlmYiByZW1haW4sIGJ1dCBkaXN0cmlidXRp
+b25zIGFyZSBhY3RpdmVseSANCm1vdmluZyBhd2F5IGZyb20gZmJkZXYuIEkga25vdyB0aGF0
+IGF0IGxlYXN0IG9wZW5TVVNFLCBGZWRvcmEgYW5kIEFscGluZSANCmRvIHRoaXMuDQoNCkkn
+ZCBsaWtlIHRvIGhlYXIgd2hhdCB5b3VyIHBsYW5zIGFyZSBmb3IgZmJkZXY/DQoNCkJlc3Qg
+cmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+IGRpZmYgLS1naXQgYS9NQUlOVEFJTkVSUyBiL01B
+SU5UQUlORVJTDQo+IGluZGV4IDVkMGNkNTM3ODAzYS4uY2U0N2RiYzQ2N2NjIDEwMDY0NA0K
+PiAtLS0gYS9NQUlOVEFJTkVSUw0KPiArKysgYi9NQUlOVEFJTkVSUw0KPiBAQCAtNzU4Mywx
+MSArNzU4MywxMiBAQCBXOglodHRwOi8vZmxvYXRpbmdwb2ludC5zb3VyY2Vmb3JnZS5uZXQv
+ZW11bGF0b3IvaW5kZXguaHRtbA0KPiAgIEY6CWFyY2gveDg2L21hdGgtZW11Lw0KPiANCj4g
+ICBGUkFNRUJVRkZFUiBMQVlFUg0KPiAtTDoJZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9w
+Lm9yZw0KPiArTToJSGVsZ2UgRGVsbGVyIDxkZWxsZXJAZ214LmRlPg0KPiAgIEw6CWxpbnV4
+LWZiZGV2QHZnZXIua2VybmVsLm9yZw0KPiAtUzoJT3JwaGFuDQo+ICtMOglkcmktZGV2ZWxA
+bGlzdHMuZnJlZWRlc2t0b3Aub3JnDQo+ICtTOglNYWludGFpbmVkDQo+ICAgUToJaHR0cDov
+L3BhdGNod29yay5rZXJuZWwub3JnL3Byb2plY3QvbGludXgtZmJkZXYvbGlzdC8NCj4gLVQ6
+CWdpdCBnaXQ6Ly9hbm9uZ2l0LmZyZWVkZXNrdG9wLm9yZy9kcm0vZHJtLW1pc2MNCj4gK1Q6
+CWdpdCBnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvZGVs
+bGVyL2xpbnV4LWZiZGV2LmdpdA0KPiAgIEY6CURvY3VtZW50YXRpb24vZmIvDQo+ICAgRjoJ
+ZHJpdmVycy92aWRlby8NCj4gICBGOglpbmNsdWRlL2xpbnV4L2ZiLmgNCg0KLS0gDQpUaG9t
+YXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2Fy
+ZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJl
+cmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xo
+cmVyOiBJdm8gVG90ZXYNCg==
 
-So, please just ignore the current state of the linux-fbdev tree for now.
+--------------8Q1TezFaHshXCr3Viua02Bqu--
 
-Helge
+--------------l0YNj3Le6R4cDBjWbmghtxim
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmHlUAYFAwAAAAAACgkQlh/E3EQov+C0
+LQ//ZoGs5bMCFn9WBQ7zO9i5wFwNh7TDZX2K1AW//MV+bjL4qF3JeAeA3PCAauWzC1vPxwq5zk7A
+5ud9b6KXN1wFk/3beHjHb6hgBPGjRjmve/mxlooNHMf+g1j0gAzZzBXIv4S2PMUMRBcAh2EHhKhV
+lumNarchne9RZElI8AeVN5pKVtn2yeB3VDHp3mFfCDxXIEIEee8DJi7phhYNu5D6JXmT6xDt0l44
+zUfZCLbnrAlfpstD5yKnjgXMSwIxSKTvM9Ixz7AYG5QTjvBa1SBm55KLEGBbTozLet22Ob6A1fjx
+hCRY2NZGOqvd8o/i0DLPMmUxPxk2qG/5vPxXHQtwP6WnIoeb6bci5GEHPK8vRWQ4FrLSkVtLOQXa
+JM37/PpjR7WnLvKPh4RlZkJ9NY5MoEjoqa2e17nl0Uc/7L7TdEJginl4CnHdMTcA7JjuDi5JCJ0o
+NWCWIj3GoIhZaGlA0x6Hoeu3W3WBWDF2BhB4cZnhXCteahHqND9HU7no0EOSkUL7PTzf+FiiIp4/
+pux6dMglU3LHGE0BwTBX0EvrP5PJrg1Awd4vH/i8r7j+DK5oxT9/qQr+8Wx76SKi8owrZSVz3thK
+xHwko1P0pG9gCZwb0ywBLlR28CP5BnCE/kM+9wxTnAeTb33w9JHmHqakI7DvvvAt1DslY+b8jylg
+7oM=
+=5yiM
+-----END PGP SIGNATURE-----
+
+--------------l0YNj3Le6R4cDBjWbmghtxim--

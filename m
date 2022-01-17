@@ -2,139 +2,186 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 942B2C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 15:58:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DCDCC433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 16:06:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237531AbiAQP6l (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Jan 2022 10:58:41 -0500
-Received: from smtp-out2.suse.de ([195.135.220.29]:59318 "EHLO
-        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232951AbiAQP6i (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Jan 2022 10:58:38 -0500
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 196351F3B8;
-        Mon, 17 Jan 2022 15:58:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1642435117; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=s7i6JnRec/qPSbejEKa8vCZtphgmyJdE4r+234KW65g=;
-        b=QfRB+2j+8qhTy+b0XI76lp07VQurCz/rDFAjOKUDdhoIQsz9G69t6cbSIMSMb8P4X6sNCh
-        hVrR12ygkHQMVmPuRQ51eA6yO6jOnRRJrLtfqs0Utwy1TEWENSwIQuPQi83XKAVa1vBxzH
-        goPnMyqyvGTXNZ/dflpMT/Oiate5bYc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1642435117;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=s7i6JnRec/qPSbejEKa8vCZtphgmyJdE4r+234KW65g=;
-        b=Y9/0W6vsrOYKqGRrXuqsHT0R59+f4QakY9nPmgV51O2zR/I+x/eBPYIcEfjTatD/cqkxME
-        7vjRV0GpQXrVILDg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DE59413CCF;
-        Mon, 17 Jan 2022 15:58:36 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id APJXNSyS5WFmUAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 17 Jan 2022 15:58:36 +0000
-Message-ID: <97d49bca-f5f7-dba4-b62d-b6fcdd4276ac@suse.de>
-Date:   Mon, 17 Jan 2022 16:58:36 +0100
+        id S240707AbiAQQGh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Jan 2022 11:06:37 -0500
+Received: from mout.gmx.net ([212.227.17.22]:51155 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S237342AbiAQQGg (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 17 Jan 2022 11:06:36 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1642435587;
+        bh=s5BIBuSXS7UxV06lWqKoBfQTCsNxGaUxkMitDZfBz9U=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=hrniWZGE+BsmDagjivRek4WFwVYPKilvlnJ1lzpC3gAdOx9sFfjiNdq2jeagck7uc
+         iHbp88+x6rvhwoSeJCb9s/u62Um6dt844fHSdYMyVt1Flg/okPkwh4j/FzKd9A6bCg
+         aQEuhkgpf1myePB5kgq5mLFk9be7l/BWeT1R5gIQ=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.167.237]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MhD2Y-1mf5iy3dXG-00eOrF; Mon, 17
+ Jan 2022 17:06:26 +0100
+Message-ID: <669792cd-9899-980a-04b1-4ff64886b751@gmx.de>
+Date:   Mon, 17 Jan 2022 17:05:21 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
+ Thunderbird/91.3.0
 Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
 Content-Language: en-US
-To:     Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        "airlied@gmail.com" <airlied@gmail.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        Javier Martinez Canillas <javierm@redhat.com>,
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
         Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Gerd Hoffmann <kraxel@redhat.com>, Daniel Vetter <daniel@ffwll.ch>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        "airlied@gmail.com" <airlied@gmail.com>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Javier Martinez Canillas <javierm@redhat.com>
 References: <YeG8ydoJNWWkGrTb@ls3530>
  <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
  <c80ed72c-2eb4-16dd-a7ad-57e9dde59ba1@gmx.de>
- <CAKMK7uHVHn9apB6YYbLSwu+adEB2Fqp4FM0z582zf4F-v3_GnQ@mail.gmail.com>
- <cf21018b-f231-7538-169e-2ad450643cbf@gmx.de>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <cf21018b-f231-7538-169e-2ad450643cbf@gmx.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------BzT7mC0YBuKTDd1Yiq9Z9p76"
+ <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
+ <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
+ <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de>
+ <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
+ <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de>
+ <faa46e76-d38c-f436-d005-ce69915033fb@suse.de>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <faa46e76-d38c-f436-d005-ce69915033fb@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:ZW2m36RD2bEb4hSnYRTY1+FAWG6uOcoJ3sYwXhAVazg96rrtGSL
+ utdB9MSWGPPp1VJzhrRkYpTqxqHevQB29c39eXmh7A+lTvJZGHPlXC3qsILj1KNVIpF/Grz
+ JqaMFa/iHQHjb86Zo8V1r//lXg3TAOANEqiraHnB+/7lJAaPsNWdl0UocvHmRgcBuk2t414
+ EcT0rmXNmEnSwlr/FfdIw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:NUlVH8f4SYE=:gGcTH/ICXvEUgsOIfGcJ7c
+ bs1UF2IahUFvlpW8tB1nVz/2MfNmWiT2wWihsiypKa/zn1dWfcDYKi41YpEP8uVEiyGSQIWKg
+ 1pV0NTWHSXPEo0A8wkP63wu9l7grwPN8zK112rpVBAejK+2A8+gf2pHhLDvdMRCdYxEVM4yKt
+ /cfGmn4trlF1BDKOsWxCJ4hVyN6AWo/16KpksygeCVElgrGPkn3SwRaGrVnfzuHoXwK07UKQa
+ hlEvCS3f9a8Zq/om3iFHH+BLOCANtvMSNcAnuctbliNdBk3BZsCldozu+yGdYEEQ3ap1FERmy
+ 1beq2IvkX7QmWJPZiN844fFoKYhevMX5jY9TIY4AUIJoJDqpdOqyKiyphZJxojQwXfpvzEJN8
+ rYzCTMJaMWjjni34+V164fWloiubd6AOaL1s8CBR8bNGaYgDkUak7JEu7mGWgQII+miaWYKU5
+ zeG1ESGoR8tUUEB7ykzcNlsCigu1HUc9r3r/MQHPBJzS9oKYL3yYWHvV654PDCf52ePn22G73
+ RGz2G2d+km1QD1osoM7RPI1xVInOhwGACwXu+eKzu7fATma8XWijYdMHXsu7ORHT6+u1Af7F3
+ Dvg5ZKJ3XM9ThR0i0ndpMHedMD6MHWEh8NMsNkDwG+arRGjaF5xlAAxHSC2m0nOp9AoN1py0n
+ 4MSOWbfxR5dlTvjBN+k2DYgPdmE6d7Q3ljsiVgAj1gp7kwYofR3Tz7tFdZPEve5xka7Ba+u8h
+ pH4MS9YjRNHTZOjNsIy54UF2kb7lMdQbCGsb+fz6zSuJtgPm+42kNT2IY5jkn89ZHzkvUYGVd
+ 5UcNoNO+PaEVKpTlp+PbuL+t5Wh9pux358htzi+Grwrc2v5m5NsxFm3oFNoQpIMhCgV42cyS0
+ ybVPmUwIGOM2YVbvC7qHZmKjnOUVnVLLkPxoeBH40i99ILbog6jVkkiW7ubgzzk1w6CxpGjKT
+ RZx7Y1I4oC7uU5ZVrbRXmsiGZXznP3KCc1F+SKv51Pgnnnn7TKkq1oU77FNsQqiR8juhDp8fO
+ WtAWXcXjwzrH7bMnfIEIbht+W6xENBe3hm7BNY5mpPt80GmGNypVzg7pK74J3ZbtOoUUc4phE
+ DdXRLqsbOqW8aI=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------BzT7mC0YBuKTDd1Yiq9Z9p76
-Content-Type: multipart/mixed; boundary="------------A6CH4XiJT0nidYEpEMHS4Rvq";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- "airlied@gmail.com" <airlied@gmail.com>, linux-fbdev@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- Javier Martinez Canillas <javierm@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>
-Message-ID: <97d49bca-f5f7-dba4-b62d-b6fcdd4276ac@suse.de>
-Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-References: <YeG8ydoJNWWkGrTb@ls3530>
- <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
- <c80ed72c-2eb4-16dd-a7ad-57e9dde59ba1@gmx.de>
- <CAKMK7uHVHn9apB6YYbLSwu+adEB2Fqp4FM0z582zf4F-v3_GnQ@mail.gmail.com>
- <cf21018b-f231-7538-169e-2ad450643cbf@gmx.de>
-In-Reply-To: <cf21018b-f231-7538-169e-2ad450643cbf@gmx.de>
+Hi Thomas,
 
---------------A6CH4XiJT0nidYEpEMHS4Rvq
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On 1/17/22 16:05, Thomas Zimmermann wrote:
+> Hi
+>
+> Am 17.01.22 um 15:47 schrieb Helge Deller:
+>> On 1/17/22 15:10, Geert Uytterhoeven wrote:
+>> [...]
+>>> Using an XRGB32 intermediate would kill the user experience on old
+>>> machines, due to both increased memory usage and copy overhead.
+>>>
+>>>> Personally, I'd much appreciate if userspace would support more of th=
+e
+>>>> native formats and not rely on XRGB32.
+>>>
+>>> Supporting monochrome, 16 colors, and 256 colors would be nice.
+>>
+>> =C2=A0From this conversation it seems DRM completely lacks backwards co=
+mpatibility,
+>> including a missing 2D bitblt copy.
+>> Isn't that all what's needed and then migrating existing drivers would
+>> be easy ?
+>
+> What exactly do you mean by 'backwards compatibility'?
 
-SGkNCg0KQW0gMTcuMDEuMjIgdW0gMTY6NDIgc2NocmllYiBIZWxnZSBEZWxsZXI6DQogPiBb
-Li4uXQ0KPj4+IGMpIHJlaW50cm9kdWNlIHRoZSBzdGF0ZSB3aGVyZSBmYmNvbiBpcyBmYXN0
-IG9uIGZiZGV2LiBUaGlzIGlzIGltcG9ydGFudCBmb3Igbm9uLURSTSBtYWNoaW5lcywNCj4+
-PiAgICAgZWl0aGVyIHdoZW4gcnVuIG9uIG5hdGl2ZSBoYXJkd2FyZSBvciBpbiBhbiBlbXVs
-YXRvci4NCj4+PiBkKSBub3QgYnJlYWsgRFJNIGRldmVsb3BtZW50DQo+Pj4NCj4+PiBFc3Bl
-Y2lhbGx5IHJlZ2FyZGluZyBjKSBJIGNvbXBsYWluZWQgaW4gWzFdIGFuZCBnb3Qgbm8gZmVl
-ZGJhY2suIEkgcmVhbGx5IHdvdWxkIGxpa2UgdG8NCj4+PiB1bmRlcnN0YW5kIHdoZXJlIHRo
-ZSBhY3R1YWwgcHJvYmxlbXMgd2VyZSBhbmQgd2hhdCdzIG5lY2Vzc2FyeSB0byBmaXggdGhl
-bS4NCj4+Pg0KPj4+IEhlbGdlDQo+Pj4NCj4+PiBbMV0gaHR0cHM6Ly9sb3JlLmtlcm5lbC5v
-cmcvci9mZWVhODMwMy0yYjgzLWZjMzYtOTcyYy00ZmM4YWQ3MjNiZGVAZ214LmRlDQoNClNl
-ZW1zIGxpa2UgZmV3IHBlb3BsZSByZWFkIGxpbnV4LWZiZGV2IHRoZXNlIGRheXMuIEkgc3Vn
-Z2VzdCB0byBwYXJ0bHkgDQpyZXZlcnQgdGhlIHBhdGNoIHRvIHRoZSBwb2ludCB3ZXJlIHBl
-cmZvcm1hbmNlIGdldHMgYmV0dGVyIGFnYWluLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0K
-DQoNCj4+DQo+Pg0KPj4NCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNz
-IERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21i
-SA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5
-LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+DRM to provide possibility to run (in at least a few) of the bitmap format=
+s
+mentioned above.
 
---------------A6CH4XiJT0nidYEpEMHS4Rvq--
+> The driver API is different, of course.
 
---------------BzT7mC0YBuKTDd1Yiq9Z9p76
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Sure.
+I would think of a defined set how to activate a special graphics output.
+And a function to do on-screen 2D bitblt to move contents (for usage of
+fbcon emulation).
 
------BEGIN PGP SIGNATURE-----
+> My conversion helpers can provide a starting point to move fbdev code
+> into DRM drivers.
+I need to look into this.
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmHlkiwFAwAAAAAACgkQlh/E3EQov+AD
-nA//b2kV0Ya8NmHBHB1VGQ5vwMxFzEA1lLfB7/LdaDgAHUzLBIVghPg4HTdPM9zhBQylXEFjPviz
-Hds/JrQdKfvDmIiWR7jeZZhvWmyJnRyzsi7Shcer/3Rxnv9yEmjuOENGLF7yhXOcAFb0ixshvyEK
-KIV26gDJms+4CqcuB3Ht2OnAvAsvccyYZWHjGinbNoK+X+NoG7cWDyum2Aw+xvo6lxxG1re6E1vA
-mKOQ6Q7A7mcKU6ECNVJWCZNKpW3Pa6/ilDhHBrKCh6Pesbzpiajo0k+r7XcdfjiYefqKz0OTkqMG
-XnjpXkMpvyUJ1loHVZ5JpmNsDFT9Ao1TbdqFAtgW4umuVvgXWcJJc97v57FqXJwmwJXZZc8nTZWv
-P9LieEcZWeDd9YYpN2A7EyhIuCA7NQ2BGGnP0qSPWEvxHe9nRAZI42KVg8bOa6vF4MegsemCTQSb
-kvKrDaTtIXVJjj79jv5WsAdq4KwfICNKEyslVuQKPjBYzZKj7rSxEopny2mfLToqJtzdY6CxgVkU
-cDVKAUgfd72iYOKHq/LupVv4BsJZNNDLOy/dVfuC7JXWtxU0NODhIE4guUSe7JEZbT+LiAvwyY8s
-p3FuJHBSK8VP1WNh3sftBsK+uGFKzz/XZVz63Sh5o6Tdlxcu/p1IvvyO86daVlNw1mbz3m5blvHj
-79I=
-=4cT/
------END PGP SIGNATURE-----
+> For fbdev 2d-bitblt ioctls,
 
---------------BzT7mC0YBuKTDd1Yiq9Z9p76--
+I'm not talking about 2d bitblt "IOCTLS". I'm talking about fbcon utilizin=
+g
+2D graphic card bitblt to move on-screen contents to speed up a text conso=
+le.
+E.g. text upwards scrolling.
+
+> you can add them to DRM drivers and set
+> up DRM's fbdev emulation accordingly. Some DRM drivers do/did this.
+
+> To my knowledge, so far there's not been a use case where that
+> provides a benefit over simple memcpy.
+
+It's a huge difference on older machines with slower busses for example.
+So, for text console emulation, moving windows ... it's important.
+
+> For fast 2d blitting from userspace, you should read Daniel's comment
+> at [1]. tl;dr: a generic solution is non-trivial.
+Probably. I think fbdev doesn't provide that functionality either today
+(at least I think so) - so that's probably not a focus (and not relevant
+regading the "backwards compatibility" I mentioned).
+
+Helge
+
+
+> Best regards
+> Thomas
+>
+> [1] https://blog.ffwll.ch/2018/08/no-2d-in-drm.html
+>
+>>
+>> Helge
+>>
+>>
+>>>>> This not only to support "old" hardware, but also modern small OLED
+>>>>> and e-ink displays.
+>>>>
+>>>> There's a DRM driver for Repaper e-Ink displays. So it seems doable a=
+t
+>>>> least.
+>>>
+>>> Which uses an DRM_FORMAT_XRGB8888 intermediate, and
+>>> drm_fb_xrgb8888_to_gray8() and repaper_gray8_to_mono_reversed()
+>>> to convert from truecolor to monochrome.=C2=A0 I guess that would work=
+,
+>>> as this is a slow e-ink display.=C2=A0 Have fun as a text console ;-)
+>>>
+>>> Gr{oetje,eeting}s,
+>>>
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0 Geert
+>>>
+>>> --
+>>> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux=
+-m68k.org
+>>>
+>>> In personal conversations with technical people, I call myself a hacke=
+r. But
+>>> when I'm talking to journalists I just say "programmer" or something l=
+ike that.
+>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 -- Linus Torvalds
+>>>
+>>
+>
+

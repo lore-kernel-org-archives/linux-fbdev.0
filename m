@@ -2,169 +2,165 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C5B8C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 15:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9196C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 17 Jan 2022 15:03:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230219AbiAQPAq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 17 Jan 2022 10:00:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45384 "EHLO
+        id S240293AbiAQPDw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 17 Jan 2022 10:03:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46126 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229773AbiAQPAp (ORCPT
+        with ESMTP id S240291AbiAQPDv (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 17 Jan 2022 10:00:45 -0500
-Received: from mail-ot1-x333.google.com (mail-ot1-x333.google.com [IPv6:2607:f8b0:4864:20::333])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C8E8C061574
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 Jan 2022 07:00:45 -0800 (PST)
-Received: by mail-ot1-x333.google.com with SMTP id x31-20020a056830245f00b00599111c8b20so6625294otr.7
-        for <linux-fbdev@vger.kernel.org>; Mon, 17 Jan 2022 07:00:45 -0800 (PST)
+        Mon, 17 Jan 2022 10:03:51 -0500
+Received: from mail-ot1-x330.google.com (mail-ot1-x330.google.com [IPv6:2607:f8b0:4864:20::330])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5DD90C061574
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 Jan 2022 07:03:51 -0800 (PST)
+Received: by mail-ot1-x330.google.com with SMTP id m8-20020a9d4c88000000b00592bae7944bso16963556otf.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 17 Jan 2022 07:03:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ffwll.ch; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=/dxZvD461SlMfyeHYzrFRmG+0lHmJjYtARJeJQLPvpY=;
-        b=lWRjQkiGCj+cTGTeXbOuRbrEMphiURVSpENiEBC0prgzVPEt0g8iXSfTDmshf+ViTD
-         CIjoFMzlGXB7oJSSoq0W5kXmTUcSRHhur2KTpXyIbekYrhC+nJS9YFMUx9a0EKRF2F15
-         dMtZKZCCYLoW+ULl/4YVAuX/Mk6zWOwbLrHx8=
+        bh=THQ5/GDYwzhowPGkTHlKwpOER01fDlo33fQ7jTXIfGM=;
+        b=HyEfUGHwC/aDJmOWqsnYpDBv2rJLeDcksnXdbJ10SqiszTT2cU3u8SfwrzwBEYzzDe
+         zBJb7AN4dhihR7JDJfW0yGofsulhJHbR8psBK97UVMakM8KRHiCBFh8dsObuEzHJpBvi
+         pgxi/GP0D4r44P9WLgjDOHO7vQ3S6QhH66wkI=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=/dxZvD461SlMfyeHYzrFRmG+0lHmJjYtARJeJQLPvpY=;
-        b=ZymEp8zS41RW2RwpvzfyCJdATxKgdwbfW7TbFnxiU+BEbBy8k+BqhMtqnp+OvQFVPw
-         OzD25gY7N0QhDoBKnzEn149bkCAjNncRAwA9zYyIjrYAmPjoRXDe0acJH8/LVlX7dYlU
-         3KRNOIZBlXvLzghfCzqEWHvtr1YcvEyrOL4sIwYjybZf9oNRwrPJdkMiZ8FqcjciWrAv
-         NIJ95wVKShjJgd6MOZB6DqWDx14I6KhCqgt+Zc3L/P3VfAS2v0P+EPXYsEygBQQrjpNZ
-         44Y+gkLo5itlnyUNJ0Dze6NXI8rUS3IKg1Nqbr+Ovn8ZSu6Wvi+zW0oTx/x1SCsTELjb
-         RxdA==
-X-Gm-Message-State: AOAM531eLtEghcoRd/n66lmAvJRgkGn2y2Qy0c8nNX94pTQBI/HJl3x3
-        f6SrK6iSYByKv4OzqMENHngvKSpPNq0/R4ZwbKFbBg==
-X-Google-Smtp-Source: ABdhPJyjl9zZGHl5jLCvJP/Li+7kpC1gjq+uBoXlAxknMVKszuG/kGjLQ+TET5p0Sgcor7GmumXL5rsNoxy7CE3/xvY=
-X-Received: by 2002:a9d:685a:: with SMTP id c26mr16484836oto.239.1642431644611;
- Mon, 17 Jan 2022 07:00:44 -0800 (PST)
+        bh=THQ5/GDYwzhowPGkTHlKwpOER01fDlo33fQ7jTXIfGM=;
+        b=6okugAjwzqFMZPRjSglEeJdTps9D9PuIMAZIG+4Ak23aPFJmY14F/fglN4iQ+o03uq
+         JV8JBMk82t+2iCXE2sp8Wv0vGuAncs6tKnPVpTCrVEXIAsHWu4S4KjCsNXdVewnixnAR
+         yb4ZYaSN0AoJB2ITPff71FvJHAtjVy3zV+AIH7J/WX2CgO0MtNo/4thH3b3ksLkAvxYh
+         KbhKqyis0q0xokA4fbehCPW0Tc+f1IMTD6T7tekXTJmqKWRtSx91o6bPpW64wviR/tFw
+         BipLt1RerAcABt/RTh+1/d+hVffUXukJmxxVNUbiFhnYMoWiWa45VPFrng6DuWcj8mNM
+         MYGw==
+X-Gm-Message-State: AOAM530RhdrYx9M3/6GILSu11O2S6pvoDaPnlmVAFS5paCNXfZiMsfVa
+        4RDPsYV7CUn4TWzVVtR60px/Ofjji+3dXKOkVBkNtQ==
+X-Google-Smtp-Source: ABdhPJzSDDOCkmzV3Sk6ECBMGYdBHWibu6XEyZwL/kT0+dKt5n4BVpNxu6iCvabnhidMw4EMC2Im+NYWtI63JpZvzBI=
+X-Received: by 2002:a9d:d12:: with SMTP id 18mr14105706oti.75.1642431830676;
+ Mon, 17 Jan 2022 07:03:50 -0800 (PST)
 MIME-Version: 1.0
 References: <YeG8ydoJNWWkGrTb@ls3530> <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
- <c80ed72c-2eb4-16dd-a7ad-57e9dde59ba1@gmx.de>
-In-Reply-To: <c80ed72c-2eb4-16dd-a7ad-57e9dde59ba1@gmx.de>
+ <c80ed72c-2eb4-16dd-a7ad-57e9dde59ba1@gmx.de> <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
+ <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
+ <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de> <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
+ <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de>
+In-Reply-To: <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de>
 From:   Daniel Vetter <daniel@ffwll.ch>
-Date:   Mon, 17 Jan 2022 16:00:33 +0100
-Message-ID: <CAKMK7uHVHn9apB6YYbLSwu+adEB2Fqp4FM0z582zf4F-v3_GnQ@mail.gmail.com>
+Date:   Mon, 17 Jan 2022 16:03:39 +0100
+Message-ID: <CAKMK7uE7jnTtetB5ovGeyPxHq4ymhbWmQXWmSVw-V1vP3iNAKQ@mail.gmail.com>
 Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
 To:     Helge Deller <deller@gmx.de>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Gerd Hoffmann <kraxel@redhat.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
         "airlied@gmail.com" <airlied@gmail.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Javier Martinez Canillas <javierm@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jan 17, 2022 at 1:16 PM Helge Deller <deller@gmx.de> wrote:
+On Mon, Jan 17, 2022 at 3:48 PM Helge Deller <deller@gmx.de> wrote:
 >
-> Hello Daniel,
->
-> On 1/17/22 11:02, Daniel Vetter wrote:
-> > Hi Helge
+> On 1/17/22 15:10, Geert Uytterhoeven wrote:
+> > Hi Thomas,
 > >
-> > On Fri, Jan 14, 2022 at 7:18 PM Helge Deller <deller@gmx.de> wrote:
+> > On Mon, Jan 17, 2022 at 2:51 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> >> Am 17.01.22 um 14:29 schrieb Geert Uytterhoeven:
+> >>> On Mon, Jan 17, 2022 at 1:57 PM Gerd Hoffmann <kraxel@redhat.com> wrote:
+> >>>>> b) to include new drivers (for old hardware) if they arrive (probably happens rarely but there can be).
+> >>>>>     I know of at least one driver which won't be able to support DRM....
+> >>>>
+> >>>> Hmm?  I seriously doubt that.  There is always the option to use a
+> >>>> shadow framebuffer, then convert from standard drm formats to whatever
+> >>>> esoteric pixel format your hardware expects.
+> >>>>
+> >>>> Been there, done that.  Have a look at the cirrus driver.  The physical
+> >>>> hardware was designed in the early 90-ies, almost 30 years ago.  These
+> >>>> days it exists in virtual form only (qemu emulates it).  Thanks to the
+> >>>> drm driver it runs wayland just fine even though it has a bunch of
+> >>>> constrains dictated by the hardware design.
+> >>>
+> >>> The Cirrus DRM driver supports TrueColor (RGB565/888 and ARGB8888)
+> >>> modes only.  The Cirrus fbdev driver also supports mochrome and 256
+> >>> color modes.
+> >>>
+> >>> There exist some DRM drivers that do support DRM_FORMAT_C8, but none of
+> >>> the "tiny" ones do. Same for DRM_FORMAT_RGB{332,233}.  Using a shadow
+> >>> frame buffer to convert from truecolor to 256 colors would be doable,
+> >>> but would give bad results. And what about less colors?
+> >>> Adding support for e.g. DRM_FORMAT_C4 is not straight-forward, as
+> >>> the DRM core assumes in many places that a pixel is at least 1 byte,
+> >>> and would crash otherwise (yes I tried).  Other modes needed are
+> >>> DRM_FORMAT_Y4 and DRM_FORMAT_{BW,WB} (monochrome).
 > >>
-> >> The fbdev layer is orphaned, but seems to need some care.
-> >> So I'd like to step up as new maintainer.
-> >>
-> >> Signed-off-by: Helge Deller <deller@gmx.de>
-> >>
-> >> diff --git a/MAINTAINERS b/MAINTAINERS
-> >> index 5d0cd537803a..ce47dbc467cc 100644
-> >> --- a/MAINTAINERS
-> >> +++ b/MAINTAINERS
-> >> @@ -7583,11 +7583,12 @@ W:      http://floatingpoint.sourceforge.net/emulator/index.html
-> >>  F:     arch/x86/math-emu/
-> >>
-> >>  FRAMEBUFFER LAYER
-> >> -L:     dri-devel@lists.freedesktop.org
-> >> +M:     Helge Deller <deller@gmx.de>
-> >>  L:     linux-fbdev@vger.kernel.org
-> >> -S:     Orphan
+> >> We export XRGB32 from each driver, because userspace expects it. But
+> >> that is not a hard requirement. Userspace can use any format. It's just
+> >> that no one seems to have any use cases so far, so no work has been
+> >> done. Think of XRGB32 as a fallback.
 > >
-> > Maybe don't rush maintainer changes in over the w/e without even bothering
-> > to get any input from the people who've been maintaining it before.
+> > Using an XRGB32 intermediate would kill the user experience on old
+> > machines, due to both increased memory usage and copy overhead.
 > >
-> > Because the status isn't entirely correct, fbdev core code and fbcon and
-> > all that has been maintained, but in bugfixes only mode. And there's very
-> > solid&important reasons to keep merging these patches through a drm tree,
-> > because that's where all the driver development happens, and hence also
-> > all the testing (e.g. the drm test suite has some fbdev tests - the only
-> > automated ones that exist to my knowledge - and we run them in CI). So
-> > moving that into an obscure new tree which isn't even in linux-next yet is
-> > no good at all.
+> >> Personally, I'd much appreciate if userspace would support more of the
+> >> native formats and not rely on XRGB32.
 > >
-> > Now fbdev driver bugfixes is indeed practically orphaned and I very much
-> > welcome anyone stepping up for that, but the simplest approach there would
-> > be to just get drm-misc commit rights and push the oddball bugfix in there
-> > directly. But also if you want to do your own pull requests to Linus for
-> > that I don't care and there's really no interference I think, so
-> > whatever floats.
-> >
-> > But any code that is relevant for drm drivers really needs to go in through
-> > drm trees, nothing else makes much sense.
-> >
-> > I guess you're first action as newly minted fbdev maintainer is going to be to
-> > clean up the confusion you just created.
+> > Supporting monochrome, 16 colors, and 256 colors would be nice.
 >
-> Most of my machines depend on a working fbdev layer since drm isn't (and probably
-> -due to technical requirements of DRM- won't be) available for those.
-> So, since the fbdev drivers were marked orphaned, I decided to step up as maintainer.
->
-> I see your point that at least the fbdev core code and fbcon are shared between DRM and fbdev.
-> For me it's really not important to drive any patches through a seperate tree, so
-> I'd be happy to join the drm-misc tree if you feel it's necessary. (By the way,
-> adding my tree to for-next was on my todo list...)
->
-> What's important for me though is, to keep fbdev actively maintained, which means:
-> a) to get fixes which were posted to fbdev mailing list applied if they are useful & correct,
+> From this conversation it seems DRM completely lacks backwards compatibility,
+> including a missing 2D bitblt copy.
+> Isn't that all what's needed and then migrating existing drivers would
+> be easy ?
 
-Yeah it'd be great if we have that, for a while Bart took care of
-these, but had to step down again. drm-misc is maintained with the dim
-scrip suite, which comes with docs and bash completion and everything.
-Good starting pointer is here:
+Not sure who you talked to, but we have drivers with fbdev bitblt
+accel (well, in some cases had, because driver maintainers decided
+it's just not worth it and ripped it out again or never merged it).
+Also the other discussions about some low-bit formats is pretty much
+just a question of extending a few enums and wiring through the fbdev
+emulation layer. So the things brought up in this thread thus far are
+actually the fairly easy items, which should take at most a handful of
+patches to rectify. There's much more nastier issues in fbdev, which
+will take serious amounts of development time to fix.
 
-https://drm.pages.freedesktop.org/maintainer-tools/getting-started.html
+Unfortunately in the past 5+ years absolutely no one stepped up with
+actual patches, which is why fbdev was marked as orphaned in
+MAINTAINERS.
+-Daniel
 
-Process for getting commit rights is documented here:
-
-https://drm.pages.freedesktop.org/maintainer-tools/commit-access.html#drm-misc
-
-But there's a pile more. I think once we've set that up and got it
-going we can look at the bigger items. Some of them are fairly
-low-hanging fruit, but the past 5+ years absolutely no one bothered to
-step up and sort them out. Other problem areas in fbdev are extremely
-hard to fix properly, without only doing minimal security-fixes only
-support, so fair warning there. I think a good starting point would be
-to read the patches and discussions for some of the things you've
-reverted in your tree.
-
-Anyway I hope this gets you started, and hopefully after a minor
-detour: Welcome to dri-devel, we're happy to take any help we can get,
-there's lots to do!
-
-Cheers, Daniel
-
-> b) to include new drivers (for old hardware) if they arrive (probably happens rarely but there can be).
->    I know of at least one driver which won't be able to support DRM....
->    Of course, if the hardware is capable to support DRM, it should be written for DRM and not applied for fbdev.
-> c) reintroduce the state where fbcon is fast on fbdev. This is important for non-DRM machines,
->    either when run on native hardware or in an emulator.
-> d) not break DRM development
->
-> Especially regarding c) I complained in [1] and got no feedback. I really would like to
-> understand where the actual problems were and what's necessary to fix them.
 >
 > Helge
 >
-> [1] https://lore.kernel.org/r/feea8303-2b83-fc36-972c-4fc8ad723bde@gmx.de
-
+>
+> >>> This not only to support "old" hardware, but also modern small OLED
+> >>> and e-ink displays.
+> >>
+> >> There's a DRM driver for Repaper e-Ink displays. So it seems doable at
+> >> least.
+> >
+> > Which uses an DRM_FORMAT_XRGB8888 intermediate, and
+> > drm_fb_xrgb8888_to_gray8() and repaper_gray8_to_mono_reversed()
+> > to convert from truecolor to monochrome.  I guess that would work,
+> > as this is a slow e-ink display.  Have fun as a text console ;-)
+> >
+> > Gr{oetje,eeting}s,
+> >
+> >                         Geert
+> >
+> > --
+> > Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> >
+> > In personal conversations with technical people, I call myself a hacker. But
+> > when I'm talking to journalists I just say "programmer" or something like that.
+> >                                 -- Linus Torvalds
+> >
+>
 
 
 -- 

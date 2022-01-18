@@ -2,63 +2,62 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E3DDC433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jan 2022 11:14:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C91DBC433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jan 2022 11:19:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239015AbiARLO3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jan 2022 06:14:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39708 "EHLO
+        id S240085AbiARLTr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jan 2022 06:19:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40634 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234277AbiARLO2 (ORCPT
+        with ESMTP id S240098AbiARLSq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jan 2022 06:14:28 -0500
-Received: from mail-ot1-x330.google.com (mail-ot1-x330.google.com [IPv6:2607:f8b0:4864:20::330])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5183EC061574
-        for <linux-fbdev@vger.kernel.org>; Tue, 18 Jan 2022 03:14:28 -0800 (PST)
-Received: by mail-ot1-x330.google.com with SMTP id 60-20020a9d0142000000b0059103eb18d4so23623844otu.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 18 Jan 2022 03:14:28 -0800 (PST)
+        Tue, 18 Jan 2022 06:18:46 -0500
+Received: from mail-oi1-x234.google.com (mail-oi1-x234.google.com [IPv6:2607:f8b0:4864:20::234])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 98B15C061762
+        for <linux-fbdev@vger.kernel.org>; Tue, 18 Jan 2022 03:18:43 -0800 (PST)
+Received: by mail-oi1-x234.google.com with SMTP id bx18so9466218oib.7
+        for <linux-fbdev@vger.kernel.org>; Tue, 18 Jan 2022 03:18:43 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ffwll.ch; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=IE2Bi6BX71GxVQQunYcWXmzILspUK92Ha2RwuVxfI6g=;
-        b=LhkdNE7Wa26DngF4QUM7KSJu6ffhXhV5rJMzNxMrt1cOP43VQAYu3S47MmjB6Tokyu
-         g+i+uC7VE/qqn2eyLWNhPtarxTba/7Rt8z1VALemM5KSN00/UOLhnIKU9xtl0pFEv+3h
-         4yH4xyvyE6otKaXhN2fXWk3QwgUS3V76OsszQ=
+        bh=wa1dZG4GoQTrXlzOi6DDYuer/mOyHhSLIkqIRyNfCb0=;
+        b=fuf/49aasH2ICZ5tiYtVjQdBuAqwceTPNFDeB2rPyXb5ynaEJYfpZPt98OPIWjHB9A
+         SixKkvj07y2F7xGCnTcxaJk5Rpwb349v98j/8S5jwou/75iGPEOmUFL/p/+/9hfvK/mf
+         tMBRo5/5GEbk14QLHVOhXOJ/O5l/4D6Q8nsQI=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=IE2Bi6BX71GxVQQunYcWXmzILspUK92Ha2RwuVxfI6g=;
-        b=3M3+s2Knw8qmpLrv80Ui98hU6nzChGGJXsLAI4d1yAbUpiIiTMgJPwB6EJmxqr37LY
-         0J8OyLemp9iJlAYKkL8xduW1gPDMYnKfNJJ0jc4nDwcsYEjRyJ3IYjH7lkE/i3Ne3jTc
-         XEvushcI5ixaEyVN5DWttiHQNjuDg2UCQ7AYoJ+w0tqQEcQ1V3bBUMHGJu/fei6pl5bc
-         KIZIQ8RxT9HjRbsrXgTTkq9jFultXvU18qttqPC2g/jWl1YyNJOjnkHNQKLP2q0KxDyZ
-         IbJ8pRHgLNkTHnJqeMIGa2If8nP/2t8Lr/a9+U8rwo9mrdH5H7r63MYN5iGvBQm1N4uV
-         9LBA==
-X-Gm-Message-State: AOAM530WgZ5/dqcmIknaXH599LYjtbR0DAyz6MY7V37+A9rzs5OSpG7X
-        3ZY5ObUrIvtt/RClRduLX3tD93nXso6usFrV9KO4bw==
-X-Google-Smtp-Source: ABdhPJz/h9I5sASIC1KgAr2w0o6g5bvtKYeaZaU2ifc/uG9A1tp3zEkGuLQZ79GYR8K7qHRcO4txTn0Lx+0OAr5LxfE=
-X-Received: by 2002:a9d:685a:: with SMTP id c26mr19640268oto.239.1642504467576;
- Tue, 18 Jan 2022 03:14:27 -0800 (PST)
+        bh=wa1dZG4GoQTrXlzOi6DDYuer/mOyHhSLIkqIRyNfCb0=;
+        b=6xRTMjFlQ67Ga2E1z/2QUMkRDZXCxaNWYCIwz4UQxKCiLrnDtBW1//BKrkUuiZ+1LV
+         yTnishGcz0Dt4yZ9Q3+hYbC8nPkr9SDhlHveAoYICEvqt3h3eRw/xjSZQLfpgaDnTlSF
+         jtT4WT5llYk6pylskxjK0RBbigE0jm+PS7p848YTGdFgAlA5rS7prOSGLv0n0SpPesKJ
+         XasxDr3tI66erGaRJMtt7dFfPKOo3Z4dAqhtQYlDleHDhiRN6dl6brtSwl3V/MA9J8oz
+         msCugXwA2r495bblLlXY2h3gptg/DyfC8FM5qQnObEL3woUGj4gR/bEr700TPVRnwUK7
+         kV7Q==
+X-Gm-Message-State: AOAM530XI+tTP4TEKzKKfxyI9dPyCd985GS3FtEOqQYOgqxgmk1kukVn
+        Gn/sG+xeDF3d0B3Td880Q10HD2FFwYodIchkok49GQ==
+X-Google-Smtp-Source: ABdhPJwaiWOvuwzgv58eTEUe46jNmMAihEdSp5q+fSNBT1IED8/qYXBr7kRmRyn8hc73vcobXONscKk/imKt+JwYtY4=
+X-Received: by 2002:a05:6808:3a3:: with SMTP id n3mr12412474oie.128.1642504723007;
+ Tue, 18 Jan 2022 03:18:43 -0800 (PST)
 MIME-Version: 1.0
 References: <YeG8ydoJNWWkGrTb@ls3530> <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
  <c80ed72c-2eb4-16dd-a7ad-57e9dde59ba1@gmx.de> <CAKMK7uHVHn9apB6YYbLSwu+adEB2Fqp4FM0z582zf4F-v3_GnQ@mail.gmail.com>
  <cf21018b-f231-7538-169e-2ad450643cbf@gmx.de> <97d49bca-f5f7-dba4-b62d-b6fcdd4276ac@suse.de>
- <e19563aa-21a3-e13c-4143-847bd77a38c7@gmx.de> <e4242fe9-13b1-91b5-d254-992f48115589@gmx.de>
- <CAKb7UvgXaeX7FRUK_Q35N=2zBms8WgCe=ZBKr3dHrixoJWtvqw@mail.gmail.com>
-In-Reply-To: <CAKb7UvgXaeX7FRUK_Q35N=2zBms8WgCe=ZBKr3dHrixoJWtvqw@mail.gmail.com>
+ <87ee5659dt.fsf@intel.com> <4f1d6018-d74e-8e62-ea4d-0ca79c6bbbc5@gmx.de>
+ <87a6ft5thv.fsf@intel.com> <5ba33e10-7d75-9f9a-dfd6-c04608d230a4@gmx.de>
+In-Reply-To: <5ba33e10-7d75-9f9a-dfd6-c04608d230a4@gmx.de>
 From:   Daniel Vetter <daniel@ffwll.ch>
-Date:   Tue, 18 Jan 2022 12:14:16 +0100
-Message-ID: <CAKMK7uH+88f6_NANd1F3ux7+j3iXg+AYWsNrVktuZOAAfc9Ngg@mail.gmail.com>
+Date:   Tue, 18 Jan 2022 12:18:31 +0100
+Message-ID: <CAKMK7uG48Due9Tv_78BJT52hvC5JcbT6-7S6_Qt7FiZ-GrTRzw@mail.gmail.com>
 Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-To:     Ilia Mirkin <imirkin@alum.mit.edu>
-Cc:     Helge Deller <deller@gmx.de>,
+To:     Helge Deller <deller@gmx.de>
+Cc:     Jani Nikula <jani.nikula@linux.intel.com>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev <linux-fbdev@vger.kernel.org>,
+        linux-fbdev@vger.kernel.org,
         Linus Torvalds <torvalds@linux-foundation.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Javier Martinez Canillas <javierm@redhat.com>,
         Geert Uytterhoeven <geert@linux-m68k.org>
 Content-Type: text/plain; charset="UTF-8"
@@ -66,68 +65,58 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jan 17, 2022 at 10:55 PM Ilia Mirkin <imirkin@alum.mit.edu> wrote:
+On Tue, Jan 18, 2022 at 9:56 AM Helge Deller <deller@gmx.de> wrote:
 >
-> On Mon, Jan 17, 2022 at 2:47 PM Helge Deller <deller@gmx.de> wrote:
+> On 1/18/22 09:38, Jani Nikula wrote:
+> > On Mon, 17 Jan 2022, Helge Deller <deller@gmx.de> wrote:
+> >> On 1/17/22 22:40, Jani Nikula wrote:
+> >>> On Mon, 17 Jan 2022, Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> >>>> Seems like few people read linux-fbdev these days.
+> >>>
+> >>> How much traffic is there to linux-fbdev that is *not* Cc'd to dri-devel
+> >>> also?
+> >>
+> >> Doesn't seem like much traffic - which IMHO is OK for such a tree with
+> >> mostly just maintenance patches.
+> >>
+> >>> Do we still need a separate linux-fbdev mailing list at all?
+> >>
+> >> Yes. I want to have it seperate of dri-devel.
+> >> Actually I'd prefer to drop dri-devel from the list where patches
+> >> for fbdev are sent...
 > >
-> > On 1/17/22 17:21, Helge Deller wrote:
-> > > On 1/17/22 16:58, Thomas Zimmermann wrote:
-> > >> Hi
-> > >>
-> > >> Am 17.01.22 um 16:42 schrieb Helge Deller:
-> > >>> [...]
-> > >>>>> c) reintroduce the state where fbcon is fast on fbdev. This is important for non-DRM machines,
-> > >>>>>     either when run on native hardware or in an emulator.
-> > >>>>> d) not break DRM development
-> > >>>>>
-> > >>>>> Especially regarding c) I complained in [1] and got no feedback. I really would like to
-> > >>>>> understand where the actual problems were and what's necessary to fix them.
-> > >>>>>
-> > >>>>> Helge
-> > >>>>>
-> > >>>>> [1] https://lore.kernel.org/r/feea8303-2b83-fc36-972c-4fc8ad723bde@gmx.de
-> > >>
-> > >> Seems like few people read linux-fbdev these days.
-> > >> I suggest to partly revert the patch to the point were performance
-> > >> gets better again.
-> > > Yes, *please*!
-> > > That would solve my biggest concern.
-> > >
-> > > As far as I can see that's only 2 commits to be reverted:
-> > > b3ec8cdf457e - "fbdev: Garbage collect fbdev scrolling acceleration, part 1 (from TODO list)"
-> > > 39aead8373b3 - "fbcon: Disable accelerated scrolling"for-next-next
-> > >
-> > > I think both were not related to any 0-day bug reports (but again, I might be wrong).
-> >
-> > I did some more checking...
-> >
-> > Both patches are not related to DRM, since no DRM driver sets the
-> > FBINFO_HWACCEL_COPYAREA or FBINFO_HWACCEL_FILLRECT flags.
+> > Disagreed. If anything, this thread shows we can't have fbdev and drm in
+> > silos of their own.
 >
-> These used to be set by, at least, nouveau (which is a drm driver).
-> And yeah, console responsiveness is _way_ worse without that. People
-> keep pushing the messaging that it's the same speed to do it as
-> memcpy, but that's just not the case in my experience, on a pretty
-> bog-standard x86 desktop. The support got dumped, and it felt pretty
-> clear from the messaging at the time, "too bad". Would love to see it
-> come back.
+> Patches to fbdev usually don't affect DRM.
+> Patches which affect DRM needs to through to dri-devel.
+> In addition this would take the burden of the dri-developers to receive
+> unrelated fbdev driver updates and patches.
 
-You need to add in a shadow buffer and it's fast. The problem is that
-the default fbcon sw code just replaces a hw blitter, and so does a
-_lot_ of memmoves reading from wc/uc memory. Which is an absolute
-disaster and results in a slideshow.
+I added dri-devel for fbdev because stuff landed that shouldn't have.
+Let's not remove that, because the amount of patches for fbdev which
+arent relevant for drm drivers is pretty much nothing.
 
-Once you stop doing that the thing is pretty reasonable, which would
-also be what all the userspace sw compositors are doing. Fact that no
-one bothers to roll this out for most drivers just shows how little
-people care about accelerated fbcon.
+I really don't like the idea that fbdev goes off again becoming a
+silo, just because it's too hard to wire through low-bit greyscale
+support. Which no I can't type for you, because I don't have such hw
+here.
+
+Everything where people cared enough for adding fbdev compat support
+for to actually write a patch is supported.
+
+If you do want a silo  for fbdev then I think the only reasonable
+option is that we create a copy of the fbdev/fbcon code for drm
+(somewhat renamed), so that you can do the reverts without impacting
+drm drivers. But there will still be some overlap and minimal
+coordination, plus I'm not seeing anyone from the drm side
+volunteering for the sizeable amount of work.
 -Daniel
 
-
+> > Also, if the patches continue to get merged through drm-misc, they need
+> > to be sent to dri-devel.
 >
-> Cheers,
->
->   -ilia
+> Helge
 
 
 

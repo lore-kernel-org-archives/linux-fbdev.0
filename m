@@ -2,121 +2,116 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE092C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jan 2022 08:11:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16FFBC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jan 2022 08:22:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343994AbiARILF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jan 2022 03:11:05 -0500
-Received: from mout.gmx.net ([212.227.15.18]:44835 "EHLO mout.gmx.net"
+        id S1344045AbiARIWA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jan 2022 03:22:00 -0500
+Received: from mout.gmx.net ([212.227.15.19]:39811 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1343973AbiARILE (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jan 2022 03:11:04 -0500
+        id S1343729AbiARIV7 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 18 Jan 2022 03:21:59 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1642493455;
-        bh=YvKRHw1tFJN1cKyfD3xEwJGNkcxUYdcTnHvH2l+gF0M=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=YJ9tUolwMDvHkCVKiMfRwGRFDqwO0+dbVgZYHjrpSknZgcX+G50liWyJcbvWjf/ua
-         ntZLnAVzSVVJviKdrBrUEtyC4rjiT/hlTDHYeGFMUUpRmFuNrsqvqidnVXxHZsbq9L
-         WtbrNuS+Wyyp+RyX3jU3mSZsPuPbyQgbwEcSGD8Y=
+        s=badeba3b8450; t=1642494109;
+        bh=iEnrxoLs+M+Xhm5bqXFfPM9bJaACNANweZulGOVxe2s=;
+        h=X-UI-Sender-Class:Date:To:Cc:References:From:Subject:In-Reply-To;
+        b=it/n+Bu20A+rDNDARaFFa+TClsrGy3v7xNggTzObRv2hWXBJDaiS5QWdmqVX5CnEA
+         riJkhb7xVYVNa+VoRz2xhGni4zmOrFtS5R5N5C3yjt5YOONt86IfERImdTEruH1aR0
+         R8PbyBV1//daa3DnuVQYelqwCjUS6UdF1TbDj69k=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.155.155]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MBDjA-1n1S7N0B8I-00CeYZ; Tue, 18
- Jan 2022 09:10:55 +0100
-Message-ID: <9565ea8d-c374-5a9e-2590-bdcbec6d37bd@gmx.de>
-Date:   Tue, 18 Jan 2022 09:09:49 +0100
+Received: from [192.168.20.60] ([92.116.155.155]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MtfJd-1mJpgI0h8p-00v9Bg; Tue, 18
+ Jan 2022 09:21:49 +0100
+Message-ID: <ebe9c076-e2a9-0cb7-eb6a-ae71c075975e@gmx.de>
+Date:   Tue, 18 Jan 2022 09:20:43 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.3.0
-Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
 Content-Language: en-US
-To:     Gerd Hoffmann <kraxel@redhat.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
+To:     Gerd Hoffmann <kraxel@redhat.com>
 Cc:     Daniel Vetter <daniel@ffwll.ch>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        "airlied@gmail.com" <airlied@gmail.com>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Sven Schnelle <svens@stackframe.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         DRI Development <dri-devel@lists.freedesktop.org>,
-        Javier Martinez Canillas <javierm@redhat.com>
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Linus Torvalds <torvalds@linux-foundation.org>
 References: <YeG8ydoJNWWkGrTb@ls3530>
  <CAKMK7uGdJckdM+fg+576iJXsqzCOUg20etPBMwRLB9U7GcG01Q@mail.gmail.com>
  <c80ed72c-2eb4-16dd-a7ad-57e9dde59ba1@gmx.de>
  <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
  <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
- <20220118061120.7exr5vtdwyuzhnup@sirius.home.kraxel.org>
+ <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de>
+ <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
+ <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de>
+ <CAKMK7uE7jnTtetB5ovGeyPxHq4ymhbWmQXWmSVw-V1vP3iNAKQ@mail.gmail.com>
+ <b32ffceb-ea90-3d26-f20e-29ae21c68fcf@gmx.de>
+ <20220118062947.6kfuam6ah63z5mmn@sirius.home.kraxel.org>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220118061120.7exr5vtdwyuzhnup@sirius.home.kraxel.org>
+Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
+In-Reply-To: <20220118062947.6kfuam6ah63z5mmn@sirius.home.kraxel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:UgTaROfJXqyNofTJXXCjg2j0fjMac4/tCMThylcFiyPOUV3OSYx
- Bmw+0HDc4D0P1st4nbx2vCpO1oSy3qR7VzbinU7/mKzbCaFXjHV5FgYNQMAnVoTbLkWebB8
- NtD2p9lIrH8H7UVwgo4dqmBaKEI1Q25sfaVtfYoYgrb1Fd9t8BKKYm16n2htQ/uzwe4nDOL
- yo9VzUcvWOtSKTK+/ojHw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:YifBO2F8olo=:cAq842N23kMH1S+4nILs6S
- 0Jbhvu9zSPNH523qw6hKGInRJRk6t/zd+v8n7bXSEuO+oh//wjPNygnylFvrnWBLyWNGj1pL/
- auhxiaNS1sbA4RkWE/GSslayr2ft+TeuaAHspkiBZpfRfqmlbkx37WbvkSEHabsZP3i4wi5nz
- CzASasoCC+Q07nqmVU+wFvG5YavvIXLc+1iRCp2t8hfN2pWBgRWlES7DQr8lGcY0AyvIKjuzy
- eDbb0k+U/WN6v+cagUKC8CUfRgS190s7JwmBlvhjH5a8Wga+dfPDvSOJu9NQ+TTbFF7/aNZNR
- 7OJfUNigCbO2bRHJc7ol0azYASrv9cGorhu93iqj66+nzqNVavBb+4XrM32i5Rj3yMgi16rOa
- mGQo3sF+m9x0HomCAY45diEbjgx2Wm06sU+NzYApsCf04/jPb2B4r/vvol9gzRBq8SKSVu3/f
- AcMa1WjeLKdx+JxGu18uuI1lL6qK2zUycD+20UXLVrw4X9b5UacH8gDzLbuAzG8lrqyQsnHxI
- Z5lg6ZUYlo3wqhq4ozlJFLd7KyvPJZfQtvi0+ELn6eaVFB8oTN6mDpq0SWxtwxDZMx8wXfqmp
- JG41WKnJIZ/D4sAcKiY1Z2ZGi8hDr3Zxome4U/ee1Lbi/J1yN4dMAUKknow2lnO01pgCkOUD/
- KTBlX1bs5mZRB3NxwM+Uh6KgW0LjzB1KUGbLo0oQQD25Pf0g8MvDkjMbJSgDRyMY9R7riTkE/
- YoYaDw0Ll+/zdEBlYXI5sCQpbbDPvlAXsiea/ecnQWS+eVG/l+djInP/R0bBuZVUcOECb0EUU
- mCmnKdh0D52MJxUNKzLU74dcPmGqYFwfINdOxqjceYuTprSAmR5fpukJ5jW7SR6SczWrkd/fb
- 043V8nFbvHnZGMwcmBkVMh56aQZmTGsMl2FQxfjeGcNaMi4JdxwfGsy2gji6j50RQWUdlCJKr
- LFpD0KuBHB+dI8XFamOmd0MuLcRQhcwuVXrEKA6WSGGn5HcWmx9ZDVUB/ayBNHESskAJSDGav
- OWm94wv7y+xQSkWuS8Ib2ZC/TviP8peA3OB5E8SXWnFuKCDH9JqO7roB6djpL7vIeZbjPrlDI
- YV6S/K5Nc1iZBY=
+X-Provags-ID: V03:K1:prWw9Xzsb49CRbqWjcdFLIUei76xAcWz2JUkyRqfu6+rvcGmd7o
+ MpFTdhlErIj5qC+iOCYB7gLwlqvPwELibl4pUuPJK9rLPx2JJpeg+uJpUmbQUwDNbXZ5dNc
+ svt0Q1GTrGyNf7GrJCs5/9KQYDG41yqUF0RUd4crRs8DSoJ2gMW5AsMSFGR0Rrs27+kfAWN
+ rB88KhNOGtfKEk7RAh8QA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:CprwXkI8ZOI=:TgwiIbvFKPZjAL3KebNfYh
+ 3KExnKEjR0oUcn7JWXiFZ+6gda2EkX20oih1TkXpdKQWCgyK/gFNWNVJrVUi97x7wlHCPKECn
+ vz2nO6Ee8htWmtmAbyJOJnZ9o9gy3YkekEbOuiFayEAjerZy+QT2pWhqiHo0Im8n73H9Q+rTN
+ xT6ZvDFJQi2cCpeUEkiro4ekhWlEtMGueN7ILWjFD0Ydgu0WfjIcI13nXzGUNqAN1wObOPXEe
+ kcfLBMrpiCBBB1i1ISNdgYyLNP74MwhikRDkfLev16OM6FcCp0qX4StpSKEEzTeQ98qDN0skn
+ u2gdNo2MyxWayMFrVzvvPysykU90bRPZjWcmqRCJCbiIaZKh98kU84CfdG2iP6LIpPnWzxHR5
+ KDunMMUm32ZAw+szYFtDnwAatJFRYA8CRuGJ76fsFvK+aYMrYrD0Q15MxyqJ5kb+2JkaMu070
+ LtdfjVZwr/CGCGYFea2xDHHiQPL4LTt5Nr6cAMz0XCV69rxRkhplrggGGpjWo1TA/xUhSix+W
+ aj632CRP/F4NL1v19yYP3gO2FZ7+4OWL6Ds6pEqhyKXVMfBSc+QP4x43Xv3vFCSbKwTdkzCHA
+ nRQ4pJ/Hp9c2BgXPtK7hJAdzznCweiktAeUjZvmbt6kIbKsTg7FypagkCwI6Ny6CsxeVIlyXw
+ 1OUCzQIns+TKzvJqMqQ+P/NaHgn3uz8wwAz83kr9xFoPL8eLB+xIbBDOUKkaIKwAyxPfzkFtV
+ XFIHGtOOQpk4R6V3nZK3nrP9COyyN2tWnfCDGvSF32Fu2biWIz1+cnOzyVtXE5/yeCpIP8i5v
+ 4yuyeAxu7Thkkztc6tPHpIKkSzqULxzUxtqViFsN7+x9OLez7PgRLZeYR0+MAWGWz/iVv+Niw
+ DXN+DoAGOay3BQolOA6THzysTCrFNZbkoNQO6oZd8cIvw0v7S9eGT13DXfXRvJQUzRn4LRW6Y
+ DOVVjjSXrrqfbQAjdlF7KZr1wyiwB/SdxcsbCk41Qc9T6FHYZLq/ZqRM+LiKcsUVYbMKe3ZD2
+ 12to/9cUh3FqkyrpuLn3IIXdMDR+ox9JxP/A8zWPxmCbjYdi7ZfX0D2zhb0EwPKpUXPnbMz1X
+ ABrSsl1epg843o=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/18/22 07:11, Gerd Hoffmann wrote:
-> On Mon, Jan 17, 2022 at 02:29:47PM +0100, Geert Uytterhoeven wrote:
->> Hi Gerd,
->>
->> On Mon, Jan 17, 2022 at 1:57 PM Gerd Hoffmann <kraxel@redhat.com> wrote=
-:
->>>> b) to include new drivers (for old hardware) if they arrive (probably=
- happens rarely but there can be).
->>>>    I know of at least one driver which won't be able to support DRM..=
-..
->>>
->>> Hmm?  I seriously doubt that.  There is always the option to use a
->>> shadow framebuffer, then convert from standard drm formats to whatever
->>> esoteric pixel format your hardware expects.
->>>
->>> Been there, done that.  Have a look at the cirrus driver.  The physica=
-l
->>> hardware was designed in the early 90-ies, almost 30 years ago.  These
->>> days it exists in virtual form only (qemu emulates it).  Thanks to the
->>> drm driver it runs wayland just fine even though it has a bunch of
->>> constrains dictated by the hardware design.
->>
->> The Cirrus DRM driver supports TrueColor (RGB565/888 and ARGB8888)
->> modes only.  The Cirrus fbdev driver also supports mochrome and 256
->> color modes.
->>
->> There exist some DRM drivers that do support DRM_FORMAT_C8, but none of
->> the "tiny" ones do. Same for DRM_FORMAT_RGB{332,233}.
+On 1/18/22 07:29, Gerd Hoffmann wrote:
+>> Please correct me if I'm wrong, but text-console emulation/scrolling on=
+ DRM is
+>> currently unaccelerated and bound to Truecolour modes only,
 >
-> Adding that to the cirrus driver shouldn't be hard.  I'm wondering
-> whenever there are any userspace apps which would actually use that
-> though.
+> Yes.  Adding support for formats beside argb8888 to the drm fbcon
+> emulation shouldn't be that much of a problem though.
 
-The discussion is not about userspace apps.
+Really? Assuming a graphic card which runs with only 256 colors framebuffe=
+r
+is easily supported by DRM, and you can use fbcon without using lots of me=
+mcpy()?
 
-It's about the case, that if existing fbdev drivers should be converted to
-DRM, then they are currently required to run in TrueColor. Some of those c=
-ards/drivers
-don't support TrueColor (which is problem #1), and even if they do, then
-only with their existing 2D bitblt acceleration they are somewhat performa=
-nce-wise
-useable as framebuffer console (problem #2).
+> Acceleration is harder.  The scroll acceleration had issues nobody
+> addressed for years, and on modern hardware it is simply not used, which
+> is probably the reason nobody stepped up fixing things and it ended up
+> being dropped.
 
-So, if DRM would natively support other formats, then it's not hard to
-convert them to DRM.
+The DRM layer doesn't use scroll acceleration.
+More than 30 other existing fbdev drivers use it.
+
+> Bringing it back is much more work than just reverting the commits remov=
+ing it.
+
+Reverting those commits have no effect on DRM's usage of fbcon.
+But reverting those commits bring back scroll acceleration for all others.
+I'm trying to find out which patches did apparently fixed such issues
+for the REDRAW case. If you have a pointer it would be helpful.
+
+> Also note that using a shadow framebuffer allows to decouple fbcon
+> updates and scanout framebuffer updates.  Can be used to speed up
+> things without depending on the 2d blitter.
+
+Not on older hardware.
 
 Helge

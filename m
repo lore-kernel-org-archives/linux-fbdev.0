@@ -2,167 +2,141 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9A89C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jan 2022 10:45:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC994C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jan 2022 10:51:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235348AbiARKpm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jan 2022 05:45:42 -0500
-Received: from mout.gmx.net ([212.227.17.20]:36519 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S235240AbiARKpm (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jan 2022 05:45:42 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1642502731;
-        bh=JW+QcUwSTe/qvoccvRFDM6uCr/IeefTcWJCBZIb73JE=;
-        h=X-UI-Sender-Class:Date:Subject:From:To:Cc:References:In-Reply-To;
-        b=FUoqr2g6SrdxgbR7s3ZBQzgB6sf5/IzzwT+GDFZBQPHyfBcjzHzRbEwEzMKAhnT4M
-         pXZAH9qJYjA53LMfM5wG4P2aICpoxOeK9PAiKq7Am7HlpfCUKhWMNcgQ6uGvM1fgaN
-         MbtZ/oV0MDQ8ah9iW0mAWS9rph88+IHgV6ltWy88=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.155.155]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1N7zBb-1mEFXF39ON-0154Gr; Tue, 18
- Jan 2022 11:45:30 +0100
-Message-ID: <c2526855-233e-c785-ddca-e89c79ca9676@gmx.de>
-Date:   Tue, 18 Jan 2022 11:44:25 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
+        id S238043AbiARKvW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jan 2022 05:51:22 -0500
+Received: from outbound5a.eu.mailhop.org ([3.124.88.253]:11615 "EHLO
+        outbound5a.eu.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S234494AbiARKvW (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 18 Jan 2022 05:51:22 -0500
+ARC-Seal: i=1; a=rsa-sha256; t=1642500317; cv=none;
+        d=outbound.mailhop.org; s=arc-outbound20181012;
+        b=Xov+PwYfgjEeA+fegLVcooWnnBB6aaCMoT7FYzEcZsG9DTDK4XC3iZy7DhQmyNT4CyjSfnqzuP0MH
+         SLhUDNlH1/tBTpnkzrcR2w6PDeE/G7lYxq+YA8AwHJ/EXync8k/frgX5TPqMXxO93M810s1USoWu6u
+         MfRHJSYWgf3aaHWWDpc4Up+aEn6IlLSrGF0rGgUPs36dvt8NdeEipCEwWIUviWmPtZGyH+MB25Cui2
+         RYTxX5E1ccmzKugqjAZjOtaSX6dXKYLwdt2WXysObxULM4fGsbQPrRyi6n7/ocYF7zqMIyuc/dimma
+         VZmhyPpzE+gYRmG143DMeKBBDr/zo6w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=outbound.mailhop.org; s=arc-outbound20181012;
+        h=content-transfer-encoding:content-type:mime-version:message-id:in-reply-to:
+         date:references:subject:cc:to:from:dkim-signature:dkim-signature:from;
+        bh=+nnzxvvQj7+bvjQcSTQPnIo0ojYxhfwmrLpYQ8reS7o=;
+        b=QEjX+HUTpBwhrngljwl9WJG7EVkw80G6K/hfqUXEbm7LC4qR7PwMmbLUfYewushFcT2hF8MCLu9mD
+         hKOye5Bh/tNCzbQe13G755vq2I8+He2yPSv9SqS0C+6Sus/Loz9F07CeTsGMEi38Sasyof+B50IrQr
+         hpQW8Mv+/dY/+6jqmUSJAeVUPDWk68IpayDJbrQdmHPR4BZlHzG+7H1d+4cvOEQqflCZiQ7gU9cV2r
+         13GjMVV+N7jGd1WOnjiMKhNz1fgYyrWqndd9Flck788+NgJfNggq52PaILkxswwC67kds3a41iuD8Q
+         gmuFWYer4mOYfiPxUzWVli5VLGEXSJA==
+ARC-Authentication-Results: i=1; outbound3.eu.mailhop.org;
+        spf=pass smtp.mailfrom=stackframe.org smtp.remote-ip=91.207.61.48;
+        dmarc=none header.from=stackframe.org;
+        arc=none header.oldest-pass=0;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=stackframe.org; s=duo-1634547266507-560c42ae;
+        h=content-transfer-encoding:content-type:mime-version:message-id:in-reply-to:
+         date:references:subject:cc:to:from:from;
+        bh=+nnzxvvQj7+bvjQcSTQPnIo0ojYxhfwmrLpYQ8reS7o=;
+        b=bxHvMxbl5ntdEp+6XLmItF/hxD10ToBwYre08e+FlQmA74fF/ccBqQiMIcYe+d+Lyj4ybM4t0sQBt
+         I/pNyEqVO9xn5rYE+naazMJ3LcX0m3EO7UTH6I5PIjuZ+opPjdXRxSaZfHAUvEJTer4SzxBwbs/VDZ
+         gX0C1QKizq7goO3k=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=outbound.mailhop.org; s=dkim-high;
+        h=content-transfer-encoding:content-type:mime-version:message-id:in-reply-to:
+         date:references:subject:cc:to:from:from;
+        bh=+nnzxvvQj7+bvjQcSTQPnIo0ojYxhfwmrLpYQ8reS7o=;
+        b=pWEf8RqoSlJW6MG02oIJd0fcFPHtwGSAqcs+K0FqJVn1OTouF/8AYmJXZDeODEpQ0OxQPtX3HOhhc
+         kfOrFkl/C+a2cw+jsgHoUOO9xxHAxJgpCn5wRTT7mv0U2mf7ybuOslv82HITN++NnrrKyNIQxYLImh
+         x5EGL9mhemxmCX/sdBEBfQEkJdvvPkCSpHkZU2GHyQA2J3LgGmJFXrSt1hE19P+EAS3xcxvWyit6bA
+         gxKPPfII/I6DwX2T6wx6I3u1ikBPqW6qno+I4tOBTCfE2HcCrERowc4UwXzn23Gl1Tomjmtf1l0S/z
+         QA2/AwM9485CylFlf/1pf/bPk5TPWyA==
+X-Originating-IP: 91.207.61.48
+X-MHO-RoutePath: dG9ta2lzdG5lcm51
+X-MHO-User: 1f77ca2d-7846-11ec-92ec-95b64d6800c5
+X-Report-Abuse-To: https://support.duocircle.com/support/solutions/articles/5000540958-duocircle-standard-smtp-abuse-information
+X-Mail-Handler: DuoCircle Outbound SMTP
+Received: from mail.duncanthrax.net (propper.duncanthrax.net [91.207.61.48])
+        by outbound3.eu.mailhop.org (Halon) with ESMTPSA
+        id 1f77ca2d-7846-11ec-92ec-95b64d6800c5;
+        Tue, 18 Jan 2022 10:05:12 +0000 (UTC)
+Received: from hsi-kbw-109-193-149-228.hsi7.kabel-badenwuerttemberg.de ([109.193.149.228] helo=x1.stackframe.org.stackframe.org)
+        by mail.duncanthrax.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <svens@stackframe.org>)
+        id 1n9lMU-004ylN-Hg; Tue, 18 Jan 2022 12:05:10 +0200
+From:   Sven Schnelle <svens@stackframe.org>
+To:     Michel =?utf-8?Q?D=C3=A4nzer?= <michel.daenzer@mailbox.org>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-Content-Language: en-US
-From:   Helge Deller <deller@gmx.de>
-To:     Gerd Hoffmann <kraxel@redhat.com>
-Cc:     Daniel Vetter <daniel@ffwll.ch>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Sven Schnelle <svens@stackframe.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Linus Torvalds <torvalds@linux-foundation.org>
-References: <c80ed72c-2eb4-16dd-a7ad-57e9dde59ba1@gmx.de>
- <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
- <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
- <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de>
- <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
- <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de>
- <CAKMK7uE7jnTtetB5ovGeyPxHq4ymhbWmQXWmSVw-V1vP3iNAKQ@mail.gmail.com>
- <b32ffceb-ea90-3d26-f20e-29ae21c68fcf@gmx.de>
- <20220118062947.6kfuam6ah63z5mmn@sirius.home.kraxel.org>
- <ebe9c076-e2a9-0cb7-eb6a-ae71c075975e@gmx.de>
- <20220118091615.3ih5n7vhd6tgmnku@sirius.home.kraxel.org>
- <ffef1042-e1af-d5b5-b140-ae24fcc1855b@gmx.de>
-In-Reply-To: <ffef1042-e1af-d5b5-b140-ae24fcc1855b@gmx.de>
-Content-Type: text/plain; charset=UTF-8
+References: <YeG8ydoJNWWkGrTb@ls3530>
+        <c48ad8ae-aea5-43fa-882f-dccb90dde9a4@suse.de>
+        <87bl0amc6s.fsf@x1.stackframe.org>
+        <a922343d-8805-3446-c000-cf7969699823@mailbox.org>
+Date:   Tue, 18 Jan 2022 11:05:08 +0100
+In-Reply-To: <a922343d-8805-3446-c000-cf7969699823@mailbox.org> ("Michel
+        =?utf-8?Q?D=C3=A4nzer=22's?= message of "Tue, 18 Jan 2022 09:58:13 +0100")
+Message-ID: <87h7a1l5pn.fsf@x1.stackframe.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:lmGpmKheriWIpGTC9y29Op8mC39RE4Ab6zzfHl/6o98L6WwynYR
- 6NhK0wilkiCZsfmY5AWLyEJK9Lghxg5Zja6JIpAExEb+wWiIC+fvJnLTfDG2u/+cDFHUPl+
- oDLW0D58BnAwNvS85SrQc1Eh3cdbwyFcpoKE9X8yvJ6GcxwbWjuUHOw3ZhauRyPDJZsptAd
- OHXGO4NEsQm1qxmdUNNag==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:TGVFCWwRQW4=:p6xqOSVgld85oN8cqabdFQ
- zaPoklAxiGlRmy414zJsMaZwHZVX3od/N4qo1Ykk6WpM2AckbND/X0q/oq0tuqYyTn8dfbfMY
- 1+QJEy+3LjPV9ywyXE5IW0dZDGEaFv3S3rHkV77h9n6BoSfz24DQ7mi7nZUUbqAAgPGRQrYxY
- qS0PSCUapyBn9LG8CzVgXhLFrbOMJ0Iy9qx4zFYSi5zL0GbpdG5JH9AgIcsif0DSD/vvycr7T
- hLoI9/vU5X2f6+O2h4pCTza96hrh8wuvLlukaABJR9Fg1P48Bj+hC22AMrygKGhWt8x64A4o6
- sgzrmBbx125qMqjfHO0EKknQN5WZ1gOK4BChkqOr9yPVrblA8XeFBpWVPfSkJE/G+gzKvWKiq
- XBY7/inRtZh3JE06MtxgRqjwolepbxkeFrqDyrGFhOKuj59J/UC61pFpeqY36C3xver9/RgL4
- uQcJPRrvm32WBlNakUPhkE1NyzblQH4+1+lkJJ4LwYlf0Ftopt1LQrQb/pe2GbC+tTs6x4aKT
- 2lFP5l3Cr/abjHdiJbhr1bQ/+k1bqO/Na1OuIVQOjAWf9HOE7WyxyvczTxUczSQKBQG/5ieuL
- tDTl3NLlK5dFsiz+/h2x//8qQ7f9VnvqM7aLHnF1eZrAB5iYnold00pRzkEouSre0/Rhd7xV/
- z6ssIUGOnbF7+OKRXy+d1kAbgWd7oS/KuRV20VkFD7uaOq0R4Up7n8kPUrF9wwgQcgW6e98xq
- OeKRPLyDNgAMKyY4peT7PX2WKDaol8cOULTtknDHZu7EMNlFaSlCC6tul1ZyQcQmM4ek2rXTJ
- N3FgtLMg1p7yN2258fGAHnG+riSUAv0P0pRsfF/nE/bTkyOobXKszbUQ9ms19769ObLFVNDOk
- QZM2dGZ56IpDizCbRI1HKa2dN/oolD98rd9FgEzNJ8lIAaQ1CaphDayrPMw5YPcXPorJQ2l8Y
- RMcR1QB/vLKql6cfhNK9OERGZhrjxngmWlLViVQboY8W0sTwmnIreQdnManOLntKNSnGj41rR
- Z1FLsarFU3XIEU7UHjHxmtPg4wITvUfdrsDwb5YzC7Rvn573J8kFhF0jJnvZEDtoGzy2Ugmfl
- 2FMGI/43j5SOy8=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/18/22 11:13, Helge Deller wrote:
-> On 1/18/22 10:16, Gerd Hoffmann wrote:
->> On Tue, Jan 18, 2022 at 09:20:43AM +0100, Helge Deller wrote:
->>> On 1/18/22 07:29, Gerd Hoffmann wrote:
->>>>> Please correct me if I'm wrong, but text-console emulation/scrolling=
- on DRM is
->>>>> currently unaccelerated and bound to Truecolour modes only,
->>>>
->>>> Yes.  Adding support for formats beside argb8888 to the drm fbcon
->>>> emulation shouldn't be that much of a problem though.
->>>
->>> Really? Assuming a graphic card which runs with only 256 colors frameb=
-uffer
->>> is easily supported by DRM, and you can use fbcon without using lots o=
-f memcpy()?
->>
->> Driver: programming a fixed color cube palette, then use RGB332.
->>
->> fbcon/fbdev emulation: RGB332 support must be added I think.  But both
->> argb888 and rgb565 are supported today, so it should not be hard to fin=
-d
->> the places where you have to add some code to handle RGB332 too.
->
-> I'd expect that that framework is provided by DRM developers if there is=
- the wish
-> to get rid of old fbdev and transition existing drivers over to use DRM.
->
->>>> Acceleration is harder.  The scroll acceleration had issues nobody
->>>> addressed for years, and on modern hardware it is simply not used, wh=
-ich
->>>> is probably the reason nobody stepped up fixing things and it ended u=
-p
->>>> being dropped.
->>>
->>> The DRM layer doesn't use scroll acceleration.
->>> More than 30 other existing fbdev drivers use it.
->>
->> Yes.  The world shifted from 2d acceleration to 3d acceleration.  Moder=
-n
->> hardware simply has no classic blitter any more.  Which is a problem
->> when it comes to keeping scroll acceleration alive, it is already a ver=
-y
->> niche use case and it will only become worse ...
->
-> For me it's Ok that the DRM drivers don't use 2d acceleration (as it is =
-today
-> with the arguments mentioned multiple times).
-> But the patches broke existing fbdev acceleration which is available by
-> the fbdev drivers. That's a big regression from point of fbdev.
->
->>>> Bringing it back is much more work than just reverting the commits re=
-moving it.
->>>
->>> Reverting those commits have no effect on DRM's usage of fbcon.
->>> But reverting those commits bring back scroll acceleration for all oth=
-ers.
->>> I'm trying to find out which patches did apparently fixed such issues
->>> for the REDRAW case. If you have a pointer it would be helpful.
->>
->> IIRC the code had a bunch of races and syzkaller flagged problems.
->> I didn't follow very closely though.
->
-> That's sad.
-> Nevertheless I wonder if the changes which were apparently done for
-> the SCROLL_REDRAW case (on the higher level?) didn't also fixed the issu=
-es
-> for SCROLL_MOVE.
+Hi Michel,
 
-I've just looked through all patches in drivers/video which were tagged
-with syzbot or syzkaller back to year 2005. The vast majority fixed the
-reported issues on a higher level, e.g. when screen is to be resized,
-or when font size is to be changed. The few ones which touched driver
-code fixed a real driver bug, e.g. by adding a check.
+Michel D=C3=A4nzer <michel.daenzer@mailbox.org> writes:
 
-NONE of those patches touched either the SCROLL_MOVE or the SCROLL_REDRAW =
-case.
-That means, I see no reason why SCROLL_MOVE had to be ripped-out and just
-SCROLL_REDRAW had to be used instead, other than simply "it's not being
-used by DRM, so let's pull it out".
-The patches which removed SCROLL_MOVE support simply ignored the fact
-that SCROLL_MOVE is still heavily used by fbdev (non-DRM).
+> On 2022-01-17 19:47, Sven Schnelle wrote:
+>>=20
+>>>  * There's no new development in fbdev and there are no new
+>>>    drivers. Everyone works on DRM, which is better in most
+>>>    regards. The consequence is that userspace is slowly loosing the
+>>>   ability to use fbdev.
+>>=20
+>> That might be caused by the fact that no new drivers are accepted for
+>> fbdev. I wrote a driver for the HP Visualize FX5/10 cards end of last
+>> year which was rejected for inclusion into fbdev[1].
+>>=20
+>> Based on your recommendation i re-wrote the whole thing in DRM. This
+>> works but has several drawbacks:
+>>=20
+>> - no modesetting. With fbdev, i can nicely switch resolutions with
+>>   fbset. That doesn't work, and i've been told that this is not supporte=
+d[2]
+>>=20
+>> - It is *much* slower than fbset with hardware blitting. I would have to
+>>   dig out the numbers, but it's in the ratio of 1:15. The nice thing
+>>   with fbdev blitting is that i get an array of pixels and the
+>>   foreground/background colors all of these these pixels should have.
+>>   With the help of the hardware blitting, i can write 32 pixels at once
+>>   with every 32-bit transfer.
+>>=20
+>>   With DRM, the closest i could find was DRM_FORMAT_C8, which means one
+>>   byte per pixel. So i can put 4 pixels into one 32-bit transfer.
+>>=20
+>>   fbdev also clears the lines with hardware blitting, which is much
+>>   faster than clearing it with memcpy.
+>>=20
+>>   Based on your recommendation i also verified that pci coalescing is
+>>   enabled.
+>>=20
+>>   These numbers are with DRM's unnatural scrolling behaviour - it seems
+>>   to scroll several (text)lines at once if it takes to much time. I
+>>   guess if DRM would scroll line by line it would be even slower.
+>>=20
+>>   If DRM would add those things - hardware clearing of memory regions,
+>>   hw blitting for text with a FG/BG color and modesetting i wouldn't
+>>   care about fbdev at all. But right now, it's working way faster for me.
+>
+> A DRM driver can implement the same fbdev acceleration hooks as an fbdev =
+driver.
 
-I don't see a reason why the two patches which removed SCROLL_MOVE
-shouldn't be reverted. Or what am I missing?
+But i guess i can still only use the DRM_FORMAT_* encodings with that?
+What i need is a pixel bitmap with separate FG/BG colors. Is that
+possible?
 
-Helge
+/Sven

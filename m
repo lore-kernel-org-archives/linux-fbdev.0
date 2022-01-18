@@ -2,79 +2,198 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36206C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jan 2022 14:39:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1BE6C4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jan 2022 18:13:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240056AbiAROjU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jan 2022 09:39:20 -0500
-Received: from mail-4022.proton.ch ([185.70.40.22]:61534 "EHLO
-        mail-4022.proton.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235722AbiAROjU (ORCPT
+        id S233793AbiARSNz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 18 Jan 2022 13:13:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52710 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1347838AbiARSNx (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jan 2022 09:39:20 -0500
-Date:   Tue, 18 Jan 2022 14:39:14 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=emersion.fr;
-        s=protonmail2; t=1642516758;
-        bh=pTGiM9Eqjwi0l/eloFZx82RA/+Eanez+YibOS4Y8RVY=;
-        h=Date:To:From:Cc:Reply-To:Subject:Message-ID:In-Reply-To:
-         References:From:To:Cc;
-        b=qcKe/r6MWaQtqzD8hRMIUaR4NRtuHsQ2KoIqWAN2uDXjtROUcntz425JzbReKzcmV
-         jcF4hrzH/xOqw6/0KSdh79fqWlolg+vUvLR0iW3QNc5L6OzeWlplPLyuinyFVtwXHN
-         qN6wypuk36g/5RAqXqIQDC+CDOkpLDS6uMSDl5qJD+UqSx8VLiy5Ehc8/Vq8r//LNq
-         M1H9Fy7UoavHbclldC6ubpFO7LH0PfRvGxAFCyAvLiQeAO+7uM7VS1vSCevuHFxiTF
-         HcUHjWsZ6tATuEVvW46ZgiZbrJhrtvo7r+eCMCqrzStt21c874lg+V2Df34dE/CdHw
-         MYJpS8FljcDCA==
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-From:   Simon Ser <contact@emersion.fr>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Gerd Hoffmann <kraxel@redhat.com>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Helge Deller <deller@gmx.de>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Sven Schnelle <svens@stackframe.org>
-Reply-To: Simon Ser <contact@emersion.fr>
-Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-Message-ID: <vUIPai73T-nuC9ppTs9iaxFwCLWyB3ip7A3zfbhJTyYBqlqJLbOU217hKMAjZNrSnSdeKJa_3cnsr3S7vsK1QuxH22ESAGN-iZXF0DigALU=@emersion.fr>
-In-Reply-To: <3f96f393-e59d-34ac-c98b-46180e2225cd@suse.de>
-References: <YeG8ydoJNWWkGrTb@ls3530> <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de> <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com> <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de> <CAKMK7uE7jnTtetB5ovGeyPxHq4ymhbWmQXWmSVw-V1vP3iNAKQ@mail.gmail.com> <b32ffceb-ea90-3d26-f20e-29ae21c68fcf@gmx.de> <20220118062947.6kfuam6ah63z5mmn@sirius.home.kraxel.org> <CAMuHMdWXWA2h7zrZa_nnqR_qNdsOdHJS=Vf1YExhvs08KukoNg@mail.gmail.com> <3f96f393-e59d-34ac-c98b-46180e2225cd@suse.de>
+        Tue, 18 Jan 2022 13:13:53 -0500
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC252C06161C
+        for <linux-fbdev@vger.kernel.org>; Tue, 18 Jan 2022 10:13:53 -0800 (PST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1n9szM-000881-TH; Tue, 18 Jan 2022 19:13:49 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1n9szL-00B2zr-2n; Tue, 18 Jan 2022 19:13:46 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1n9szJ-0006zL-Rl; Tue, 18 Jan 2022 19:13:45 +0100
+From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Heiner Kallweit <hkallweit1@gmail.com>,
+        Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+        Noralf Tronnes <notro@tronnes.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, kernel@pengutronix.de
+Subject: [PATCH 2/2] staging: fbtft: Deduplicate driver registration macros
+Date:   Tue, 18 Jan 2022 19:13:38 +0100
+Message-Id: <20220118181338.207943-2-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220118181338.207943-1-u.kleine-koenig@pengutronix.de>
+References: <20220118181338.207943-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5994; h=from:subject; bh=SUIWoQXNcWfP6INie0kXP+/jZKbEezM9NjGBKjU3edc=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBh5wNOj3DBMMPaJDcKy744CvGpP86YIU5fQi7PIa2Z zeBr2emJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCYecDTgAKCRDB/BR4rcrsCaIMB/ 4ngFTSwQLdkQb8ILiWNrklQzGwcpD0Aru0dOS3DeWWPOrfJPZplmfOAmWS0HGewjce+8f0swpLG4TH HJCI3rpUpZxmZoSUQWNcpGKvehDso3Vgnl6AHrgaRHL4nSoQcnM2SVQSYOzs4Ya5G8YIn5V/GTtiua DmOdVZeNuWYKEn1qWEwfCQreK7ymMbC+Th4iJfwfE5m8FO6nY254xq2Mqwjp6ici6OC4RQaqpJYft+ WTDNVUb4Lf0311C6FTGNYzqkaHUfQQ5T9SY5FvSLRCM/TG3lctd1SL8B06A97IzC0bcsxsbNsUsz5y f9ORaX6U1kq4oq5O3vxr3vdy4OuflD
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tuesday, January 18th, 2022 at 15:23, Thomas Zimmermann <tzimmermann@sus=
-e.de> wrote:
+The two macros FBTFT_REGISTER_DRIVER and FBTFT_REGISTER_SPI_DRIVER
+contain quite some duplication: Both define an spi driver and an of device
+table and the differences are quite subtle.
 
-> Am 18.01.22 um 09:10 schrieb Geert Uytterhoeven:
-> > Hi Gerd,
-> >
-> > On Tue, Jan 18, 2022 at 7:30 AM Gerd Hoffmann <kraxel@redhat.com> wrote=
-:
-> >> Also note that using a shadow framebuffer allows to decouple fbcon
-> >> updates and scanout framebuffer updates.  Can be used to speed up
-> >> things without depending on the 2d blitter.
-> >
-> > Assuming accesses to the shadow frame buffer are faster than accesses
-> > to the scanout frame buffer. While this is true on modern hardware,
-> > this is not the case on all hardware.  Especially if the shadow frame
-> > buffer has a higher depth (XRGB8888) than the scanout frame buffer
-> > (e.g. Cn)...
-> >
-> > The funny thing is that the systems we are interested in, once used
-> > to be known for their graphics capabilities and/or performance...
->
-> What I still don't understand: why are you so keen on maintaining an
-> interface that only serves the console? Nothing else uses fbdev these
-> days. Why not improve DRM/userspace to the point where it fits your
-> requirements? Long-term, the latter would make a lot more sense.
+So create two new macros and use both twice.
 
-+1
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/staging/fbtft/fbtft.h | 93 ++++++++++++++---------------------
+ 1 file changed, 36 insertions(+), 57 deletions(-)
 
-If you need any help with adapting user-space, feel free to ping me. I'd be
-interested in discussing, providing feedback and potentially user-space
-patches.
+diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
+index 55677efc0138..6a7545b5bcd2 100644
+--- a/drivers/staging/fbtft/fbtft.h
++++ b/drivers/staging/fbtft/fbtft.h
+@@ -272,21 +272,40 @@ void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...);
+ void fbtft_write_reg16_bus8(struct fbtft_par *par, int len, ...);
+ void fbtft_write_reg16_bus16(struct fbtft_par *par, int len, ...);
+ 
++#define FBTFT_DT_TABLE(_compatible)						\
++static const struct of_device_id dt_ids[] = {					\
++	{ .compatible = _compatible },						\
++	{},									\
++};										\
++MODULE_DEVICE_TABLE(of, dt_ids);
++
++#define FBTFT_SPI_DRIVER(_name, _compatible, _display, _spi_ids)		\
++										\
++static int fbtft_driver_probe_spi(struct spi_device *spi)			\
++{										\
++	return fbtft_probe_common(_display, spi, NULL);				\
++}										\
++										\
++static int fbtft_driver_remove_spi(struct spi_device *spi)			\
++{										\
++	struct fb_info *info = spi_get_drvdata(spi);				\
++										\
++	fbtft_remove_common(&spi->dev, info);					\
++	return 0;								\
++}										\
++										\
++static struct spi_driver fbtft_driver_spi_driver = {				\
++	.driver = {								\
++		.name = _name,							\
++		.of_match_table = dt_ids,					\
++	},									\
++	.id_table = _spi_ids,							\
++	.probe = fbtft_driver_probe_spi,					\
++	.remove = fbtft_driver_remove_spi,					\
++};
++
+ #define FBTFT_REGISTER_DRIVER(_name, _compatible, _display)                \
+ 									   \
+-static int fbtft_driver_probe_spi(struct spi_device *spi)                  \
+-{                                                                          \
+-	return fbtft_probe_common(_display, spi, NULL);                    \
+-}                                                                          \
+-									   \
+-static int fbtft_driver_remove_spi(struct spi_device *spi)                 \
+-{                                                                          \
+-	struct fb_info *info = spi_get_drvdata(spi);                       \
+-									   \
+-	fbtft_remove_common(&spi->dev, info);                              \
+-	return 0;                                                          \
+-}                                                                          \
+-									   \
+ static int fbtft_driver_probe_pdev(struct platform_device *pdev)           \
+ {                                                                          \
+ 	return fbtft_probe_common(_display, NULL, pdev);                   \
+@@ -300,22 +319,9 @@ static int fbtft_driver_remove_pdev(struct platform_device *pdev)          \
+ 	return 0;                                                          \
+ }                                                                          \
+ 									   \
+-static const struct of_device_id dt_ids[] = {                              \
+-	{ .compatible = _compatible },                                     \
+-	{},                                                                \
+-};                                                                         \
+-									   \
+-MODULE_DEVICE_TABLE(of, dt_ids);                                           \
++FBTFT_DT_TABLE(_compatible)						   \
+ 									   \
+-									   \
+-static struct spi_driver fbtft_driver_spi_driver = {                       \
+-	.driver = {                                                        \
+-		.name   = _name,                                           \
+-		.of_match_table = dt_ids,                                  \
+-	},                                                                 \
+-	.probe  = fbtft_driver_probe_spi,                                  \
+-	.remove = fbtft_driver_remove_spi,                                 \
+-};                                                                         \
++FBTFT_SPI_DRIVER(_name, _compatible, _display, NULL)			   \
+ 									   \
+ static struct platform_driver fbtft_driver_platform_driver = {             \
+ 	.driver = {                                                        \
+@@ -351,42 +357,15 @@ module_exit(fbtft_driver_module_exit);
+ 
+ #define FBTFT_REGISTER_SPI_DRIVER(_name, _comp_vend, _comp_dev, _display)	\
+ 										\
+-static int fbtft_driver_probe_spi(struct spi_device *spi)			\
+-{										\
+-	return fbtft_probe_common(_display, spi, NULL);				\
+-}										\
+-										\
+-static int fbtft_driver_remove_spi(struct spi_device *spi)			\
+-{										\
+-	struct fb_info *info = spi_get_drvdata(spi);				\
+-										\
+-	fbtft_remove_common(&spi->dev, info);					\
+-	return 0;								\
+-}										\
+-										\
+-static const struct of_device_id dt_ids[] = {					\
+-	{ .compatible = _comp_vend "," _comp_dev },				\
+-	{},									\
+-};										\
+-										\
+-MODULE_DEVICE_TABLE(of, dt_ids);						\
++FBTFT_DT_TABLE(_comp_vend "," _comp_dev)					\
+ 										\
+ static const struct spi_device_id spi_ids[] = {					\
+ 	{ .name = _comp_dev },							\
+ 	{},									\
+ };										\
+-										\
+ MODULE_DEVICE_TABLE(spi, spi_ids);						\
+ 										\
+-static struct spi_driver fbtft_driver_spi_driver = {				\
+-	.driver = {								\
+-		.name  = _name,							\
+-		.of_match_table = dt_ids,					\
+-	},									\
+-	.id_table = spi_ids,							\
+-	.probe  = fbtft_driver_probe_spi,					\
+-	.remove = fbtft_driver_remove_spi,					\
+-};										\
++FBTFT_SPI_DRIVER(_name, _comp_vend "," _comp_dev, _display, spi_ids)		\
+ 										\
+ module_spi_driver(fbtft_driver_spi_driver);
+ 
+-- 
+2.34.1
+

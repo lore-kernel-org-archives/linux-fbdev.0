@@ -2,151 +2,167 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1187AC433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 16:35:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84D05C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 16:56:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1356089AbiASQfF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jan 2022 11:35:05 -0500
-Received: from outbound3.eu.mailhop.org ([52.29.21.168]:15866 "EHLO
-        outbound3.eu.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344646AbiASQfE (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jan 2022 11:35:04 -0500
-ARC-Seal: i=1; a=rsa-sha256; t=1642610042; cv=none;
-        d=outbound.mailhop.org; s=arc-outbound20181012;
-        b=Y+tPn/5aEtxkM96TTJjQp1NAuC8n41DwWghKukM5OXiUlxFkzE/4WTiAAY1bxCvncLV7T+tBABLtP
-         lz/xjIFbpvLtuRAa6NKKimTUsyvvqkbciekEpueWU0ca4Id8GPKqB5bjHM5pkkffBe8frBjR/ajwXr
-         2f0hstN7wgA2jtAO5c12crWwt8X5YwXzzh+Q6E3QOQdOu7NP/qR15TyImgFjIk9AkxJOtCIa3VYPBH
-         qw3LIJLJ+SPxHlc5IEOuYhHpRobu20/6lMdGmzjfL+1AmNLPC6wysKjmMtYY9cphfSi3W9ihY/CwE5
-         Y4+VPu7jMLdTeYd9UBKm5kbR0RSQpZA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=outbound.mailhop.org; s=arc-outbound20181012;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:dkim-signature:dkim-signature:from;
-        bh=7ctqYw8QlI1E1AnvRvotZUK92AmaQDVXBVY1gD/M+fo=;
-        b=BGyEodF1TcKUtT5PUOWf0TY4SB5hfTyLq1KjPTRjOyvFhBfftWgdKGf80/uEqK5Cl64yPVgqn3PP8
-         a8C/ZWrKVtPm93A1pWMnElIc+wUHX/Xbvjm2FV+DqktccM8ol1hj45jJu9GwsbDGBTV9+phmP/7wYd
-         oz7md/cCA0j1Cxy1H4cmcu668GfwdtTVyjbz54w2v8CpW6KJXWkfFhiqPjRmK+mXR4uhPAxduM8IIg
-         8OXjPxuRy73p+Dz4jsgTpm8rBPDM5yqQ8tM3lEKlpBXHCE81p112ffY+nN8yv1h0cSTNp4+RgBOq5t
-         q4AzO1jhqJ+vUq3uVyi00Niklectb8g==
-ARC-Authentication-Results: i=1; outbound3.eu.mailhop.org;
-        spf=pass smtp.mailfrom=stackframe.org smtp.remote-ip=91.207.61.48;
-        dmarc=none header.from=stackframe.org;
-        arc=none header.oldest-pass=0;
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=stackframe.org; s=duo-1634547266507-560c42ae;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:from;
-        bh=7ctqYw8QlI1E1AnvRvotZUK92AmaQDVXBVY1gD/M+fo=;
-        b=I075ed2j0VOXU7SjA5CFHcYp23agZYZNqmSTEZVl4M5Ll96QfnUHOTJ77sa3eqtLWYwNNnOtAEf/r
-         BJ4RnSCRjmsrc+QpQZjeSpJcCumwW49x2AjoiiGz1Qxdny37F/IOiNE6euw7EQLe4O8Uv92bzfEQGu
-         2m0X9l1wyGVV6npY=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=outbound.mailhop.org; s=dkim-high;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:from;
-        bh=7ctqYw8QlI1E1AnvRvotZUK92AmaQDVXBVY1gD/M+fo=;
-        b=KcMtmBOzRIe//z92gp6ouawTqh9lOmQP4NxJXMJvEPfXE/Sm0rixUvcRuVKOem3Juoi9QzqfAmoCV
-         jvCPja+z7P8qhmcQv6JAuuIA2ksszgjJvltO3N3DkeL+IO8N9UyS3TtXzpDlZW5i0I74Sc/jnUthJh
-         NJndDCJq142u7Xn2XzsUHmKXrKO+EAu9J/SrFXqAS+OKN4NSssQ6/k9NV13CGd1a5y5pwomRdL/FOG
-         uAw3E7F9wHmEh2IEevqCgGtL6Vbzb5G/bqp9e5EJUtoT2vKZbuIkJ8aiKFpqDiINXTo8++DdUPlC4v
-         4pps31XCHHMWMEI+Rl2QuXbnz3aSKlw==
-X-Originating-IP: 91.207.61.48
-X-MHO-RoutePath: dG9ta2lzdG5lcm51
-X-MHO-User: 986eedd9-7945-11ec-9572-95b64d6800c5
-X-Report-Abuse-To: https://support.duocircle.com/support/solutions/articles/5000540958-duocircle-standard-smtp-abuse-information
-X-Mail-Handler: DuoCircle Outbound SMTP
-Received: from mail.duncanthrax.net (propper.duncanthrax.net [91.207.61.48])
-        by outbound3.eu.mailhop.org (Halon) with ESMTPSA
-        id 986eedd9-7945-11ec-9572-95b64d6800c5;
-        Wed, 19 Jan 2022 16:33:56 +0000 (UTC)
-Received: from hsi-kbw-109-193-149-228.hsi7.kabel-badenwuerttemberg.de ([109.193.149.228] helo=x1.stackframe.org.stackframe.org)
-        by mail.duncanthrax.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <svens@stackframe.org>)
-        id 1nADuF-0059af-32; Wed, 19 Jan 2022 18:33:55 +0200
-From:   Sven Schnelle <svens@stackframe.org>
-To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Hamza Mahfooz <someguy@effective-light.com>
-Subject: Re: fbdev: Garbage collect fbdev scrolling acceleration
-References: <feea8303-2b83-fc36-972c-4fc8ad723bde@gmx.de>
-        <87zgnz71ic.fsf@x1.stackframe.org>
-        <Yegwl/rwRhjROxcy@phenom.ffwll.local>
-        <87y23bitvz.fsf@x1.stackframe.org>
-        <Yeg6nYZX0/0UUd/N@phenom.ffwll.local>
-Date:   Wed, 19 Jan 2022 17:33:53 +0100
-In-Reply-To: <Yeg6nYZX0/0UUd/N@phenom.ffwll.local> (Daniel Vetter's message of
-        "Wed, 19 Jan 2022 17:21:49 +0100")
-Message-ID: <87tudzit1q.fsf@x1.stackframe.org>
+        id S1356245AbiASQ4t (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jan 2022 11:56:49 -0500
+Received: from mout.gmx.net ([212.227.17.21]:46323 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1356239AbiASQ4q (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 19 Jan 2022 11:56:46 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1642611383;
+        bh=790ASOPuelDKgJCWbHfE72K9QtVauJVh+5rgqS6XWlg=;
+        h=X-UI-Sender-Class:Date:To:Cc:References:From:Subject:In-Reply-To;
+        b=IO5N5LDnCrJ/sUXAXxb0DnYgrElXjrComLAgS5+zl6QcmTfdrRdy5Kb2UaCNF56AO
+         4+chFyFSKxgAbG7fOYdjkHGvRXIrJbZAmmPUiwBwdOrKGZLZ38TZsoqilXSHUiahBC
+         JSVeomxeOmq9hdljttLWEO4gLj5fKJY3ILBvGG0k=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.183.52]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MxDkm-1mLj6F233Y-00xZhO; Wed, 19
+ Jan 2022 17:56:23 +0100
+Message-ID: <408c5dbd-a915-e3fc-fafb-738f6badc91a@gmx.de>
+Date:   Wed, 19 Jan 2022 17:55:15 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+Content-Language: en-US
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Sven Schnelle <svens@stackframe.org>,
+        Daniel Vetter <daniel@ffwll.ch>
+Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        Claudio Suarez <cssk@net-c.es>,
+        Gerd Hoffmann <kraxel@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Sam Ravnborg <sam@ravnborg.org>
+References: <20220119110839.33187-1-deller@gmx.de>
+ <20220119110839.33187-3-deller@gmx.de> <Yef0j8+DBbwC7Kjv@kroah.com>
+ <Yef15k2GtC40aJEu@kroah.com>
+ <CAMuHMdVWFJEDwjf-htZ_D1484efmuPnz_L-qhcTeUE-GVpvZXA@mail.gmail.com>
+ <4d8950c7-5f51-ca2b-4c93-741c7805a214@gmx.de>
+ <CAHk-=wikFKjwdUBWCLCu=iL3rFq4BDDF0aBGdXC6ay74yJb+5Q@mail.gmail.com>
+ <CAKMK7uEb53iu_HxYSnFZ59j=vXQdMvTWT7xosEo85XkAwzDMnA@mail.gmail.com>
+ <8735ljkboo.fsf@x1.stackframe.org>
+ <ccec8635-6ec6-89c3-6738-65bd07a48508@suse.de>
+From:   Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
+In-Reply-To: <ccec8635-6ec6-89c3-6738-65bd07a48508@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:mCGZru8DeL3paShNjPqKyVgOekHsVUXzqSNQGg8DN6QsWjcg8iB
+ nClHsEFZqoJUpviM1uVCxS1J5nDqsatiawqr+YD8RCrVJwTO62HJwFWKznhIwkZGf0Tqjin
+ 1gDbcTWRjMkW2BAJnIIPKFHUzS5ZNgxVXyzAHI0oBdodkkt+VAnXTQCBK2kJxY010TNf7jr
+ nYMC5mUkUFMU9uTKjjwaA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:CqdHO7XByJw=:Bjksvg/0loelnHY0g2Sn7o
+ gQimfaj37A7jnR23nka+ASNgAktHt+dJppwpIBNFBovUjLAYf/0BDIRrM2olyn6qQ7Aw4eSMK
+ MC0+9a5xxRJKqpH/yjBhdXhcsABAh29ykTiWDlyCKJs7Y5QXhV7O3C2mqYgFOEicupL1DsD24
+ Z5QTyxDS65Ks1EGAFT/i3sef9gUt+e3muiSMquwgRxL8FO7q6x+UpTNwf2gfmHwuV47oDWWc3
+ NM7NVnAtykAUU3b0BYcI6Bm4eFPZSOpJfUYd564LNzieBFmqWXw1EQHmcZ8zaKKxvcHF+DEKC
+ z/EY1VzsILfNmHUHzTM5jntd4btxWS6i3pyN6SRg7cCOupvunlRkLC2TQnZvERYSeBThesitC
+ wQJHHvbFQvDdhkNfO1rmuqy8Hq2ggqKcNcHO8os/0j2aLlpATpViC+bLyDrctplJ2f0CN6mxp
+ VZI5cAPtYH0/H224ecshZIFfE2dJixShCNGLnPRJN6fmyYEIFTM4bUstEcSK5Uq2jGi6yOKAE
+ iCpA1H19fZXbeNE5BzgaLgHOW5dk+dUdzG5A6A4ltbdxzDf7Drb8qA+rQttmNRK9l3b2uEkPK
+ Y63F6PeStnOMT3g0LXavbFkB587q7e5FfSJvzZcq3WdTB1Y8+nn3MyQ/vvZuu/Hxe0BBtuDj3
+ HB6XF9MiAiR8/ZPmrdBiGkgamQE/FntuX8dkpTIHbssDcaJuf2kvrLsl68CB3E/+3qyOd6Q+N
+ +rgt8I388rhCtwHj6FPdpi+I4Z18gs6Py8jtCHv5JmWpyP7FemezWeYcqSQ8+l8t6OzaPlpVe
+ iZCMr2TrMAg6Gw7EOh3sB1+BlUkldF2zlBQg/q4lT3WdZiaWt3MkVAXGqh+6XTr36F1PAK9F7
+ aBqWjVtSVZK1Gdtbik+Ojs+09HgYMhgiPqyFpHuARt2SId6jCkRYv1QtH0qvHk99Uv3MyCU+2
+ i3/kTT6vzs2vzrk+eUG9IG9UAX/u82uK6v+zOKCwMk7/npWk6bO3Gncg7ZMq9SpIGZNTMVRxL
+ Kil8RcyDRtUwhF8SfB57lCaoEgFzIHeGqvsJd5WUG2jrfpyDpbD/5Hs8vw89tK95IGUVnZIMh
+ 1iFE/XW/in0eYI=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel,
+Hi Thomas,
 
-Daniel Vetter <daniel@ffwll.ch> writes:
-
-> On Wed, Jan 19, 2022 at 05:15:44PM +0100, Sven Schnelle wrote:
->> Hi Daniel,
->> 
+On 1/19/22 16:37, Thomas Zimmermann wrote:
+> Am 19.01.22 um 16:05 schrieb Sven Schnelle:
 >> Daniel Vetter <daniel@ffwll.ch> writes:
->> 
->> > On Thu, Jan 13, 2022 at 10:46:03PM +0100, Sven Schnelle wrote:
->> >> Helge Deller <deller@gmx.de> writes:
->> >> > Maybe on fast new x86 boxes the performance difference isn't huge,
->> >> > but for all old systems, or when emulated in qemu, this makes
->> >> > a big difference.
->> >> >
->> >> > Helge
->> >> 
->> >> I second that. For most people, the framebuffer isn't important as
->> >> they're mostly interested in getting to X11/wayland as fast as possible.
->> >> But for systems like servers without X11 it's nice to have a fast
->> >> console.
->> >
->> > Fast console howto:
->> > - shadow buffer in cached memory
->> > - timer based upload of changed areas to the real framebuffer
->> >
->> > This one is actually fast, instead of trying to use hw bltcopy and having
->> > the most terrible fallback path if that's gone. Yes drm fbdev helpers has
->> > this (but not enabled on most drivers because very, very few people care).
->> 
->> Hmm.... Take my Laptop with a 4k (3180x2160) screen as an example:
->> 
->> Lets say on average the half of every line is filled with text.
->> 
->> So 3840/2*2160 pixels that change = 4147200 pixels. Every pixel takes 4
->> bytes = 16,588800 bytes per timer interrupt. In another Mail updating on
->> vsync was mentioned, so multiply that by 60 and get ~927MB. And even if
->> you only update the screen ony 4 times per second, that would be ~64MB
->> of data. I'm likely missing something here.
+>>
+>>> On Wed, Jan 19, 2022 at 3:01 PM Linus Torvalds
+>>> <torvalds@linux-foundation.org> wrote:
+>>> Irrespective of this code being buggy or not buggy I think the bigger
+>>> pictures, and really the reason I want to see as much code ditched
+>>> from the fbdev/fbcon stack as we possible can, are very clear:
+>>>
+>>> - it's full of bugs
+>>> - there's no test coverage/CI to speak of
+>>> - it's very arcane code which is damn hard to understand and fix issue=
+s within
+>>> - the locking is busted (largely thanks to console_lock, and the
+>>> effort to make that reasonable from -rt folks has been slowly creeping
+>>> forward for years).
+>>>
+>>> Iow this subsystem is firmly stuck in the 90s, and I think it's best
+>>> to just leave it there. There's also not been anyone actually capable
+>>> and willing to put in the work to change this (pretty much all actual
+>>> changes/fixes have been done by drm folks anyway, like me having a
+>>> small pet project to make the fbdev vs fbcon locking slightly less
+>>> busted).
+>>
+>> Saying it's stuck in the 90ies, and actively trying to prevent
+>> Helge from taking over maintainership at the same time looks odd.
 >
-> Since you say 4k it's a modern box, so you have on the order of 10GB/s of
-> write bandwidth.
+> The issues are in the design itself. It's impossible to model today's
+> hardware and constraints with fbdev. It's impossible to change
+> configuration in a reliable way (i.e., what DRM calls atomic). Fbdev
+> mmaps plain video ram to userspace, which is one of the reasons why
+> DRM's fbdev support is hard to improve.
+
+That's fully understood, but I think you are mixing up things here...
+
+The fbdev userspace api is most likely not the best way forward.
+I'm sure that drm can and will provide better solutions for userspace.
+And userspace will surely pick up those new interfaces.
+DRM folks will drive it in the right direction, I'm sure!
+
+But in addition fbdev/fbcon is the kernel framework for nearly
+all existing graphic cards which are not (yet) supported by DRM.
+They need fbdev/fbcon to show their text console and maybe a simple X serv=
+er.
+If you break fbdev for those cards, they are completely stuck.
+Hopefully those drivers will be ported to DRM, but that's currently
+not easily possible (or they would be so slow that they are unuseable).
+
+So, I don't think you should try to improve DRM's /dev/fb0 support further=
+,
+but instead work forward for a new interface which perfectly suits DRM.
+That's Ok, and my goal is not to prevent that.
+
+>> I think Helge should at least get a chance to fix the issues. If the
+>> state is still the same in a year or so it should be discussed again.
 >
-> And around 100MB/s of read bandwidth. Both from the cpu. It all adds up.
-> It's that uncached read which kills you and means dmesg takes seconds to
-> display.
+> You cannot fix that in 10yrs.
 >
-> Also since this is 4k looking at sales volume we're talking integrated, so
-> whether it's the gpu or the cpu that's doing the memcpy, it's the same
-> memory bw budget you're burning down.
+>>
+>>> The other side is that being a maintainer is about collaboration, and
+>>> this entire fbdev maintainership takeover has been a demonstration of
+>>> anything but that. MAINTAINERS entry was a bit confusing since defacto
+>>> drm has been maintaining it for years.
+>>
+>> It was marked as 'Orphaned'. Anyone is free to send a Patch/PR to take
+>> over maintainership. If you have strong opinions about that code (And y=
+ou
+>> obviously have reading your mail, set it to 'maintained' and care about
+>> it. Everything else is just wrong in my opinion.
+>
+> No, it's not wrong. Helge takes fbdev over the weekend, without notewort=
+hy experience, and ignores advice from the people that have kept it alive =
+over the past years. This isn't going to work in the long term.
+>
+> Best regards
+> Thomas
+>
+>>
+>> /Sven
+>
 
-That might be true for integrated graphics, as said, i don't know the
-architecture. But saying it's good just because it's good on one
-architecture doesn't mean it's good for everyone. If you have an
-external GPU, than the memory/system bus BW would be different whether
-it's memcpy or the GPU doing the scrolling. And whether internal or external
-graphics - the CPU could do other stuff while the GPU scrolls stuff.
-
-Quite a lot of discussion for a revert of a patch that was already in
-the kernel for more than 20(?) years.
-
-/Sven

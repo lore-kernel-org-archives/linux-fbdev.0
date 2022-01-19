@@ -2,47 +2,70 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 896A1C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 15:20:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49602C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 15:37:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355648AbiASPUH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jan 2022 10:20:07 -0500
-Received: from mout.gmx.net ([212.227.17.22]:51193 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1355645AbiASPUG (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jan 2022 10:20:06 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1642605583;
-        bh=1wueW8BO2whJgvsCqgT7W/w+DL8z3im+ceSWmVhDJBs=;
-        h=X-UI-Sender-Class:Date:To:Cc:References:From:Subject:In-Reply-To;
-        b=ZCGIGcc48p7NH4m612POSZjIkPA/BEQbPqE7Hcj4txhvyjOMRsA6CieXRdAZof8+C
-         FpxsE4DMHVPHjujgpVXQkUC0G0UVenqi8M0pK/o/mlMe08TwmsTkSd3+WrJk+lOz+g
-         Wz4dZQQdyawMvF1lozEAzH1aVQl9bx168ugi8iQU=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.183.52]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mq2jC-1mXHRN21FS-00n8Tz; Wed, 19
- Jan 2022 16:19:43 +0100
-Message-ID: <31410fa2-293f-9b47-8fb1-e2486033fd22@gmx.de>
-Date:   Wed, 19 Jan 2022 16:18:35 +0100
+        id S1355810AbiASPhD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jan 2022 10:37:03 -0500
+Received: from smtp-out1.suse.de ([195.135.220.28]:54300 "EHLO
+        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1352437AbiASPhD (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 19 Jan 2022 10:37:03 -0500
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 13986212C2;
+        Wed, 19 Jan 2022 15:37:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1642606622; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Yy7uZ+QDDUdD3y4+31E5IV8g2YY1wZT39Hu1q90QqiQ=;
+        b=ooI513y+dRQPUFXznGYC9LkauTvhYG8rZxwhA7bwef27uwMZta/98j+G5D081dhGSBOaIY
+        D4U+iovUNK4e5xY/ZcGapIgq39Ppsxuon4dujIBK0xvI4xCfk6zH2nbe1s5mN8S1/S5UpZ
+        pPbpaWmkoUfagRfbF4Ce68fcxfm8TCQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1642606622;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Yy7uZ+QDDUdD3y4+31E5IV8g2YY1wZT39Hu1q90QqiQ=;
+        b=XxfXC8gOsY5+utbJpyv4l9EPUaobcr4jIMDKk/Y7QReTrHwiFoG/C7SZww42CJpB0joIMe
+        myTi7KlgEHuCO/Bw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B899013E15;
+        Wed, 19 Jan 2022 15:37:01 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id plT6Kx0w6GHVCgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 19 Jan 2022 15:37:01 +0000
+Message-ID: <ccec8635-6ec6-89c3-6738-65bd07a48508@suse.de>
+Date:   Wed, 19 Jan 2022 16:37:01 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
 Content-Language: en-US
-To:     Daniel Vetter <daniel@ffwll.ch>,
-        Linus Torvalds <torvalds@linux-foundation.org>
+To:     Sven Schnelle <svens@stackframe.org>,
+        Daniel Vetter <daniel@ffwll.ch>
 Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Helge Deller <deller@gmx.de>,
         Javier Martinez Canillas <javierm@redhat.com>,
         DRI Development <dri-devel@lists.freedesktop.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Claudio Suarez <cssk@net-c.es>,
         Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        Claudio Suarez <cssk@net-c.es>,
+        Gerd Hoffmann <kraxel@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Sven Schnelle <svens@stackframe.org>,
-        Gerd Hoffmann <kraxel@redhat.com>
+        Sam Ravnborg <sam@ravnborg.org>
 References: <20220119110839.33187-1-deller@gmx.de>
  <20220119110839.33187-3-deller@gmx.de> <Yef0j8+DBbwC7Kjv@kroah.com>
  <Yef15k2GtC40aJEu@kroah.com>
@@ -50,156 +73,121 @@ References: <20220119110839.33187-1-deller@gmx.de>
  <4d8950c7-5f51-ca2b-4c93-741c7805a214@gmx.de>
  <CAHk-=wikFKjwdUBWCLCu=iL3rFq4BDDF0aBGdXC6ay74yJb+5Q@mail.gmail.com>
  <CAKMK7uEb53iu_HxYSnFZ59j=vXQdMvTWT7xosEo85XkAwzDMnA@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
-In-Reply-To: <CAKMK7uEb53iu_HxYSnFZ59j=vXQdMvTWT7xosEo85XkAwzDMnA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:6zO4hVKFAQeptRF1xDsaMUngTmTgz6fBOQmqxQHV9tYchko01GW
- AXojxLbLPhh04GfuWtYRoKaZNpCezkzKqHUcn1zl8UwTXXQbE/zPMI4qgsJPKV62qcNFlw/
- 9V3Uq5pZI3w+MqzYXkwYsJp3sVVl6qn5bYyuY46EZFpY6wAY1dDAfsT7eUrSCiJeBbeXAGu
- Ek5VC3Cm1g4b/uWPzbLbQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:iRMuHJLEPBQ=:KKJiJoPvAvG6Zo4y71VOKc
- WrByrBlGbkLCfKP0wDoSYzbMf4mTfiMLNyf+MlD4mLhF+g3y2qM3ueH/k2ZtpmP7Fqy8+o8eQ
- QdyS5TiNCzP/BqCkuLr4v+k7kKDHNOqHeAJrv6Vx8XHF0cuyizWb8+G5F8Dil20RkzxJNGXH7
- VcQ4dOctutb5hxU5OpnYQUuMVp6cZPP7NcX9NZqxxu4TwKTfpzifyHXxvnxOD0MrDi+b98z20
- TD56McIS1R6G4a0P7kujxhLhIF9KbWaji/fXcDqtu28DPptDGuxzo0fLKWPN2uAqGP4D9JW3F
- VUYLl59j+lSbj8/tmWSIzHwZsnyWMq+Zgsu897fzmaaUHOBdceOVM1/AAnARzebzjgtn8LaCI
- Z+MPLZlO+7Ms4fh3WrDUTXQLSYHU4f0E5uIi8LbKP1Xl5sKt7h5qdk8OmzXyDhGPqKU5VpXWL
- Id+u54Ud0roTADv9995VS/KMKjCGiOvM5hHFlxV8ecxduXiGQlLxh858Tjbgww4FVXrCGOJeU
- ilEas9T7lOdVvKFefiaSJzRQZ/45wUErO3+trMOIhgoTuq3+Mu9pAkdAC/Buj9CpzQtO9uzPe
- v1DUAtTfBu2nR6R8rD0eb3HjeHfvRSXYtqD24NffaSMoY+jJ1ESakU07jFbcMnL2Mb49pmhXQ
- z2H6ENwKvoa5ZZ0YIMdBARaQCaLI7Aj/6nHuYkhpefgd1vcJDkm4+X9OYVqXCfhOEXvwtv+js
- Er150Fxvl8XJFA1ZoAwwMiUsEG21Z9YG7ztJ7m8cVp2SGnRdgagbGRSiwqzd2oTNRm8a/aeIm
- PdLXDTWFG90z0fFmIWE+XhtVr0oYZvUnDCTCmm+JM23tRVO3oSrnpsLcoTZi8Y7kPc2aDSRjk
- YfeVcXNH9rrq4FlGar/GtP4FGbuk6sTJvm/GJIZiLD67CnsZYam3Gx0KOraVbRQxb1qpDynIj
- Kz0/tmqOEutAHk0/FoSaVlYj1JwuoRcBcC9lVg/OkvFVUH2+ybvneK2UiD+7Vl7XHBXoMJ5UN
- wOvi1Or3jBcsMD4yMXqaUppLbT3lAj/VpHamm7Jpq8zaTlie34Oy9M3+qgbto8Eqg3vofJ0sV
- DrM1T3TKZVspJc=
+ <8735ljkboo.fsf@x1.stackframe.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <8735ljkboo.fsf@x1.stackframe.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------gWgXlBM6luHpgwUeody7d7Fc"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/19/22 15:34, Daniel Vetter wrote:
-> On Wed, Jan 19, 2022 at 3:01 PM Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
->>
->> On Wed, Jan 19, 2022 at 2:29 PM Helge Deller <deller@gmx.de> wrote:
->>>
->>>>>
->>>>> Ah, no, that was just the soft scrollback code I was thinking of, wh=
-ich
->>>
->>> Right.
->>> That was commit 973c096f6a85 and it was about vgacon, not fbcon.
->>
->> No, fbcon had some bug too, although I've paged out the details. See
->> commit 50145474f6ef ("fbcon: remove soft scrollback code").
->
-> tbh I've paged it all out too.
->
->> If I remember correctly (and it's entirely possible that I don't), the
->> whole "softback_lines" logic had serious problems with resizing the
->> console (or maybe changing the font size).
->
-> Yeah that pile of reverts was my motiviation to look into this and see
-> what else we could rip out most likely and still have an fbcon that
-> works as well as it does right now for almost all users (which is not
-> so great, but oh well).
->
->> There may have been some other bad interaction with
->> foreground/background consoles too, I forget.
->
-> Irrespective of this code being buggy or not buggy I think the bigger
-> pictures, and really the reason I want to see as much code ditched
-> from the fbdev/fbcon stack as we possible can, are very clear:
->
-> - it's full of bugs
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------gWgXlBM6luHpgwUeody7d7Fc
+Content-Type: multipart/mixed; boundary="------------1n0AowBnC0QreoQcDd1C604p";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sven Schnelle <svens@stackframe.org>, Daniel Vetter <daniel@ffwll.ch>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ Daniel Vetter <daniel.vetter@intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Helge Deller
+ <deller@gmx.de>, Javier Martinez Canillas <javierm@redhat.com>,
+ DRI Development <dri-devel@lists.freedesktop.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, Claudio Suarez <cssk@net-c.es>,
+ Gerd Hoffmann <kraxel@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>
+Message-ID: <ccec8635-6ec6-89c3-6738-65bd07a48508@suse.de>
+Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
+References: <20220119110839.33187-1-deller@gmx.de>
+ <20220119110839.33187-3-deller@gmx.de> <Yef0j8+DBbwC7Kjv@kroah.com>
+ <Yef15k2GtC40aJEu@kroah.com>
+ <CAMuHMdVWFJEDwjf-htZ_D1484efmuPnz_L-qhcTeUE-GVpvZXA@mail.gmail.com>
+ <4d8950c7-5f51-ca2b-4c93-741c7805a214@gmx.de>
+ <CAHk-=wikFKjwdUBWCLCu=iL3rFq4BDDF0aBGdXC6ay74yJb+5Q@mail.gmail.com>
+ <CAKMK7uEb53iu_HxYSnFZ59j=vXQdMvTWT7xosEo85XkAwzDMnA@mail.gmail.com>
+ <8735ljkboo.fsf@x1.stackframe.org>
+In-Reply-To: <8735ljkboo.fsf@x1.stackframe.org>
 
-I'm sure that there are bugs. Not just in fbcon/fbdev.
-Other than that, if there are bugs I'm sure they are independend
-of the question if you use hardware acceleration or not.
+--------------1n0AowBnC0QreoQcDd1C604p
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-> - there's no test coverage/CI to speak of
-> - it's very arcane code which is damn hard to understand and fix issues =
-within
-> - the locking is busted (largely thanks to console_lock, and the
-> effort to make that reasonable from -rt folks has been slowly creeping
-> forward for years).
->
-> Iow this subsystem is firmly stuck in the 90s, and I think it's best
-> to just leave it there. There's also not been anyone actually capable
-> and willing to put in the work to change this (pretty much all actual
-> changes/fixes have been done by drm folks anyway, like me having a
-> small pet project to make the fbdev vs fbcon locking slightly less
-> busted).
+SGkNCg0KQW0gMTkuMDEuMjIgdW0gMTY6MDUgc2NocmllYiBTdmVuIFNjaG5lbGxlOg0KPiBE
+YW5pZWwgVmV0dGVyIDxkYW5pZWxAZmZ3bGwuY2g+IHdyaXRlczoNCj4gDQo+PiBPbiBXZWQs
+IEphbiAxOSwgMjAyMiBhdCAzOjAxIFBNIExpbnVzIFRvcnZhbGRzDQo+PiA8dG9ydmFsZHNA
+bGludXgtZm91bmRhdGlvbi5vcmc+IHdyb3RlOg0KPj4gSXJyZXNwZWN0aXZlIG9mIHRoaXMg
+Y29kZSBiZWluZyBidWdneSBvciBub3QgYnVnZ3kgSSB0aGluayB0aGUgYmlnZ2VyDQo+PiBw
+aWN0dXJlcywgYW5kIHJlYWxseSB0aGUgcmVhc29uIEkgd2FudCB0byBzZWUgYXMgbXVjaCBj
+b2RlIGRpdGNoZWQNCj4+IGZyb20gdGhlIGZiZGV2L2ZiY29uIHN0YWNrIGFzIHdlIHBvc3Np
+YmxlIGNhbiwgYXJlIHZlcnkgY2xlYXI6DQo+Pg0KPj4gLSBpdCdzIGZ1bGwgb2YgYnVncw0K
+Pj4gLSB0aGVyZSdzIG5vIHRlc3QgY292ZXJhZ2UvQ0kgdG8gc3BlYWsgb2YNCj4+IC0gaXQn
+cyB2ZXJ5IGFyY2FuZSBjb2RlIHdoaWNoIGlzIGRhbW4gaGFyZCB0byB1bmRlcnN0YW5kIGFu
+ZCBmaXggaXNzdWVzIHdpdGhpbg0KPj4gLSB0aGUgbG9ja2luZyBpcyBidXN0ZWQgKGxhcmdl
+bHkgdGhhbmtzIHRvIGNvbnNvbGVfbG9jaywgYW5kIHRoZQ0KPj4gZWZmb3J0IHRvIG1ha2Ug
+dGhhdCByZWFzb25hYmxlIGZyb20gLXJ0IGZvbGtzIGhhcyBiZWVuIHNsb3dseSBjcmVlcGlu
+Zw0KPj4gZm9yd2FyZCBmb3IgeWVhcnMpLg0KPj4NCj4+IElvdyB0aGlzIHN1YnN5c3RlbSBp
+cyBmaXJtbHkgc3R1Y2sgaW4gdGhlIDkwcywgYW5kIEkgdGhpbmsgaXQncyBiZXN0DQo+PiB0
+byBqdXN0IGxlYXZlIGl0IHRoZXJlLiBUaGVyZSdzIGFsc28gbm90IGJlZW4gYW55b25lIGFj
+dHVhbGx5IGNhcGFibGUNCj4+IGFuZCB3aWxsaW5nIHRvIHB1dCBpbiB0aGUgd29yayB0byBj
+aGFuZ2UgdGhpcyAocHJldHR5IG11Y2ggYWxsIGFjdHVhbA0KPj4gY2hhbmdlcy9maXhlcyBo
+YXZlIGJlZW4gZG9uZSBieSBkcm0gZm9sa3MgYW55d2F5LCBsaWtlIG1lIGhhdmluZyBhDQo+
+PiBzbWFsbCBwZXQgcHJvamVjdCB0byBtYWtlIHRoZSBmYmRldiB2cyBmYmNvbiBsb2NraW5n
+IHNsaWdodGx5IGxlc3MNCj4+IGJ1c3RlZCkuDQo+IA0KPiBTYXlpbmcgaXQncyBzdHVjayBp
+biB0aGUgOTBpZXMsIGFuZCBhY3RpdmVseSB0cnlpbmcgdG8gcHJldmVudA0KPiBIZWxnZSBm
+cm9tIHRha2luZyBvdmVyIG1haW50YWluZXJzaGlwIGF0IHRoZSBzYW1lIHRpbWUgbG9va3Mg
+b2RkLg0KDQpUaGUgaXNzdWVzIGFyZSBpbiB0aGUgZGVzaWduIGl0c2VsZi4gSXQncyBpbXBv
+c3NpYmxlIHRvIG1vZGVsIHRvZGF5J3MgDQpoYXJkd2FyZSBhbmQgY29uc3RyYWludHMgd2l0
+aCBmYmRldi4gSXQncyBpbXBvc3NpYmxlIHRvIGNoYW5nZSANCmNvbmZpZ3VyYXRpb24gaW4g
+YSByZWxpYWJsZSB3YXkgKGkuZS4sIHdoYXQgRFJNIGNhbGxzIGF0b21pYykuIEZiZGV2IA0K
+bW1hcHMgcGxhaW4gdmlkZW8gcmFtIHRvIHVzZXJzcGFjZSwgd2hpY2ggaXMgb25lIG9mIHRo
+ZSByZWFzb25zIHdoeSANCkRSTSdzIGZiZGV2IHN1cHBvcnQgaXMgaGFyZCB0byBpbXByb3Zl
+Lg0KDQo+IEkgdGhpbmsgSGVsZ2Ugc2hvdWxkIGF0IGxlYXN0IGdldCBhIGNoYW5jZSB0byBm
+aXggdGhlIGlzc3Vlcy4gSWYgdGhlDQo+IHN0YXRlIGlzIHN0aWxsIHRoZSBzYW1lIGluIGEg
+eWVhciBvciBzbyBpdCBzaG91bGQgYmUgZGlzY3Vzc2VkIGFnYWluLg0KDQpZb3UgY2Fubm90
+IGZpeCB0aGF0IGluIDEweXJzLg0KDQo+IA0KPj4gVGhlIG90aGVyIHNpZGUgaXMgdGhhdCBi
+ZWluZyBhIG1haW50YWluZXIgaXMgYWJvdXQgY29sbGFib3JhdGlvbiwgYW5kDQo+PiB0aGlz
+IGVudGlyZSBmYmRldiBtYWludGFpbmVyc2hpcCB0YWtlb3ZlciBoYXMgYmVlbiBhIGRlbW9u
+c3RyYXRpb24gb2YNCj4+IGFueXRoaW5nIGJ1dCB0aGF0LiBNQUlOVEFJTkVSUyBlbnRyeSB3
+YXMgYSBiaXQgY29uZnVzaW5nIHNpbmNlIGRlZmFjdG8NCj4+IGRybSBoYXMgYmVlbiBtYWlu
+dGFpbmluZyBpdCBmb3IgeWVhcnMuDQo+IA0KPiBJdCB3YXMgbWFya2VkIGFzICdPcnBoYW5l
+ZCcuIEFueW9uZSBpcyBmcmVlIHRvIHNlbmQgYSBQYXRjaC9QUiB0byB0YWtlDQo+IG92ZXIg
+bWFpbnRhaW5lcnNoaXAuIElmIHlvdSBoYXZlIHN0cm9uZyBvcGluaW9ucyBhYm91dCB0aGF0
+IGNvZGUgKEFuZCB5b3UNCj4gb2J2aW91c2x5IGhhdmUgcmVhZGluZyB5b3VyIG1haWwsIHNl
+dCBpdCB0byAnbWFpbnRhaW5lZCcgYW5kIGNhcmUgYWJvdXQNCj4gaXQuIEV2ZXJ5dGhpbmcg
+ZWxzZSBpcyBqdXN0IHdyb25nIGluIG15IG9waW5pb24uDQoNCk5vLCBpdCdzIG5vdCB3cm9u
+Zy4gSGVsZ2UgdGFrZXMgZmJkZXYgb3ZlciB0aGUgd2Vla2VuZCwgd2l0aG91dCANCm5vdGV3
+b3J0aHkgZXhwZXJpZW5jZSwgYW5kIGlnbm9yZXMgYWR2aWNlIGZyb20gdGhlIHBlb3BsZSB0
+aGF0IGhhdmUga2VwdCANCml0IGFsaXZlIG92ZXIgdGhlIHBhc3QgeWVhcnMuIFRoaXMgaXNu
+J3QgZ29pbmcgdG8gd29yayBpbiB0aGUgbG9uZyB0ZXJtLg0KDQpCZXN0IHJlZ2FyZHMNClRo
+b21hcw0KDQo+IA0KPiAvU3Zlbg0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGlj
+cyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdt
+YkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgw
+OSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
-Yes, drm folks fixed a lot of bugs in the generic fbcon code.
-I think everyone is thankful for this.
+--------------1n0AowBnC0QreoQcDd1C604p--
 
-> The other side is that being a maintainer is about collaboration, and
-> this entire fbdev maintainership takeover has been a demonstration of
-> anything but that. MAINTAINERS entry was a bit confusing since defacto
-> drm has been maintaining it for years, but for the above reasons we've
-> done that by just aggressively deleting stuff that isn't absolutely
-> needed - hence why I figured "orphaned" is a reasonable description of
-> the state of things. This entire affair of rushing in a maintainer
-> change over the w/e and then being greeted by a lot of wtf mails next
-> Monday does leave a rather sour aftertaste. Plus that thread shows a
-> lot of misunderstandings of what's all been going on and what drm can
-> and cannot do by Helge, which doesn't improve the entire "we need
-> fbdev back" argument.
+--------------gWgXlBM6luHpgwUeody7d7Fc
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-I'm happy to *really* maintain fbdev code & drivers.
-Up to now only those parts which were still needed by drm (like fbcon)
-were fixed & "maintained" by drm folks.
-Nearly all other patches sent to the fbdev list were ignored and even new
-submissions for fbdev drivers were denied.
-Now in next step really important infrastructure for fbdev-drivers was
-ripped out of fbcon, like suddenly denying fbdev-drivers to use hardware
-acceleration.
-According to the docs the next step would have been to drop even more
-code from the fbdev drivers.
-This is not what "maintain" really is about.
+-----BEGIN PGP SIGNATURE-----
 
-> But if the overall consensus is that that fbdev needs to be brought
-> back to it's full 90s glory then I think we need a copy of that code
-> for drm drivers (should work out if we intercept fb_open() and put our
-> own file_ops in there, maybe some more fun with fbcon), so that at
-> least for anything modern using drm driver we can keep on maintaining
-> that compat support code.
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmHoMB0FAwAAAAAACgkQlh/E3EQov+DD
+ABAAl6tvXvOROEJYeyhcthr4oAyhsP9RZGai62SVbs5YFEnjrBHJsOg822HsJLwQM78sUpi04tMl
+HNlGKteJxBL9I7ytTXo7sS5RFaNaC2DmugssxDX/kOe2kyBjBomLXsxYVf6s/uBFl1FMKYwAreS+
+xeUJAizResiT8i5kapbCVdUEc2siM0KlKOHgHdQC24G94KnV67JRJkewZhlJF4WyewtBQGeYKnPx
+Z00eP3z1i2h24wEq7aaDPRocViFksDosfvXl3i/ssrkQ4JLz22OFgW9S1uJjh0hHTlwdqInnTH8W
+PGuXVWC5L9/rFRCekpAOBCjr5DRzotXcD5r0XPqIlEnxHl82H67yQmEPvpC11JNjwOroTYcJ14Ai
+ohq0AvEaK0kNMNW19FCSnLwYXHCWiqzLfAo1oGst7TahwNgt0IP1JpyluTfSUAcmmRhZEI+RBDgb
+Sn7KP5V5dVzdOykuM322V3e6ZXukhzxJT+5AvC73Ir37V/ag2RWEy04QvYt2EUOwbsizI4F2bNah
+zDgEND9y1CE9YnEUiBHaL92IeLps4S7JK6tyVGfj/QaodrynBB09XL7TOzewF1zedMqwPxAAIK8s
+vmptZ03Q3/aMq1tYPMUx2slwYYB3KdiJxqRmuHYwdP6qnKbfh/kpUQzy2kzIT1IRVc3XAxJq+NP+
+bF0=
+=TGDD
+-----END PGP SIGNATURE-----
 
-It's not about to keep something alive or to stop future developments.
-It's about fairness and not actively breaking other parts of the kernel
-for no good reason.
-
-> And with maintaining here I don't mean build a museum around it, but
-> actually try to keep/move the thing towards a state where we can still
-> tell distros that enabling it is an ok thing to do and not just a CVE
-> subscription (well it is that too right now, but at least we can fix a
-> lot of them by just deleting code).
->
-> I think until that mess is sorted out resurrecting code that's not
-> strictly needed is just not a bright idea.
-
-That's wrong.
-It's strictly needed by more than 35 fbdev drivers and as such
-you introduced a regression for those.
-
-> Also wrt the issue at hand of "fbcon scrolling": The way to actually
-> do that with some speed is to render into a fully cached shadow buffer
-> and upload changed areas with a timer. Not with hw accelerated
-> scrolling, at least not if we just don't have full scale development
-> teams for each driver because creating 2d accel that doesn't suck is
-> really hard. drm fbdev compat helpers give you that shadow buffer for
-> free (well you got to set some options).
->
-> Unfortunately just ditching fbdev/fbcon compat is not an option for
-> many distros still, althought things are very slowly moving towards
-> that. Until we've arrived there I can't just pretend to not care about
-> what's going on in drivers/video.
-
-I'm happy to take care about it.
-That's why I stepped up as maintainer.
-
-Helge
+--------------gWgXlBM6luHpgwUeody7d7Fc--

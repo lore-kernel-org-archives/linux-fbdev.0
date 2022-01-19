@@ -2,75 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04BDFC433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 12:46:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89EDBC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 13:03:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349602AbiASMqJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jan 2022 07:46:09 -0500
-Received: from mail-ua1-f47.google.com ([209.85.222.47]:40756 "EHLO
-        mail-ua1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245463AbiASMqH (ORCPT
+        id S1354586AbiASNDC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jan 2022 08:03:02 -0500
+Received: from outbound1a.eu.mailhop.org ([52.58.109.202]:64887 "EHLO
+        outbound1a.eu.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1354664AbiASNCq (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jan 2022 07:46:07 -0500
-Received: by mail-ua1-f47.google.com with SMTP id w21so4222273uan.7;
-        Wed, 19 Jan 2022 04:46:07 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=jSJaWLFbSmKDo2PDFLJ/OlDDjxv/sePlYig27gKKORM=;
-        b=3u7mBhgt4YNpY8+GLAA3HgafJhumKwn/Ezbwe1mi2JXqzneBntTFm2v4wsKncJyrBg
-         JXhxSaCN8J1Imv/b2zjhELBY6dw5XxArAK5hdm1JERlR4JOUpCzu76AEdfKVMXGJNom5
-         ADZD3jB4IDLh9cQM2ONdzosGrcjRkXzS1ILZFKxW/eiGdqciOI93/sM3F2MEcGvSBn83
-         UW+OgwXP7n2OxAkTugcub1pmE6HECaEDroSHpSui3f+g2W80X1AgANRv06N+Nhi3i/6c
-         +kW/q5Ux/RoG0w3liBbV4dvVlWsVn76Z43TIwtrkM/JU+0lvS00h1WL0VRrGsdIx2sfJ
-         /swQ==
-X-Gm-Message-State: AOAM530+k0Wk1vPcmpJz22UslLn4Idt56zDUD4gvokW+E7S74AV1nOOa
-        kW/FlIl7OlAr0kIMZ2qVc9dDH+mFw0bTig==
-X-Google-Smtp-Source: ABdhPJxgr0MrFCoZkDTidnW4zpKhPY5nlGmAJKRr85MEKl8yXKrsd4U82JVD9D0ezLjK2BOLByjuBg==
-X-Received: by 2002:a67:d315:: with SMTP id a21mr11100069vsj.51.1642596366888;
-        Wed, 19 Jan 2022 04:46:06 -0800 (PST)
-Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com. [209.85.222.46])
-        by smtp.gmail.com with ESMTPSA id k5sm2243920vsc.14.2022.01.19.04.46.04
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 19 Jan 2022 04:46:05 -0800 (PST)
-Received: by mail-ua1-f46.google.com with SMTP id m90so4279777uam.2;
-        Wed, 19 Jan 2022 04:46:04 -0800 (PST)
-X-Received: by 2002:a9f:3e01:: with SMTP id o1mr11968203uai.89.1642596364458;
- Wed, 19 Jan 2022 04:46:04 -0800 (PST)
-MIME-Version: 1.0
-References: <20220119110839.33187-1-deller@gmx.de>
-In-Reply-To: <20220119110839.33187-1-deller@gmx.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 19 Jan 2022 13:45:53 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXj2WsQ2htP63vXD_PRuhrqry3GgD8U1tJQ99BkQPQL=w@mail.gmail.com>
-Message-ID: <CAMuHMdXj2WsQ2htP63vXD_PRuhrqry3GgD8U1tJQ99BkQPQL=w@mail.gmail.com>
-Subject: Re: [PATCH 0/2] Fix regression introduced by disabling accelerated
- scrolling in fbcon
+        Wed, 19 Jan 2022 08:02:46 -0500
+ARC-Seal: i=1; a=rsa-sha256; t=1642597363; cv=none;
+        d=outbound.mailhop.org; s=arc-outbound20181012;
+        b=gq6NIJZQpLSjHv++FrPvkHB8cTBfh0YorOok8ww5Nfdn9l+T5R1YUC0T1xua8+Hex973VGzk3KC9s
+         Yc8MkKZ8MtiihpgGf28Dg2qACtyaL8naFpuYNwghcCGvX4J12eBOqGJJ0uILUIKxKKRdN91uMIYmrX
+         8MSfO+ecJzq+E37Cyf0U4CA8fL3Z5xWvZRilvm2l7ID9ZeNhipnHhyBNXm0jr3+sY8LtHeY+CP6VoL
+         IDWu/s+9/9BZbfP2kjQxldaVE2b5yO+QZG0yaHpBOSFbFR+hrrvCnQlQZo9IY0bVvObi7Cn3SgvWRQ
+         Fgev1MR+xLsfNs61mK+3NX+ECVAa3Bw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=outbound.mailhop.org; s=arc-outbound20181012;
+        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
+         to:from:dkim-signature:dkim-signature:from;
+        bh=mM9bLZllLp6WR65cBIP3lh4VI/VKsNc4pyQsMAa398o=;
+        b=mfv2NlGXgKDeBq7ZFKZt6mnqdCfMorQ9M9A2Pcp0/B95fuDHxCZC4ZJKPLlIeCWuRsg0XYMOprXXZ
+         toBWmt/Rf/Jc1+83vsFdTa0KH8n0okvcVSs77IZYrp6OGTmToPfScxCVbPfanP7vX+Ewll3+TG1EG2
+         FM7KN52i9Bzz8mDlrPYXGHsuSuCYc32A04qnvNOVw+xADEsmNVFLo3PoJWxkB/MwEinN6ll1WcEUun
+         zy7ovFbaa6EXlB0MYQHp9M4LEETWozzsowpbd+WwWGfLeFlRaM/avRsxemqg06xYfncrjWJoRICmel
+         9up8wh2Lr5hFjgjinPVn8GoPR6+1uQw==
+ARC-Authentication-Results: i=1; outbound2.eu.mailhop.org;
+        spf=pass smtp.mailfrom=stackframe.org smtp.remote-ip=91.207.61.48;
+        dmarc=none header.from=stackframe.org;
+        arc=none header.oldest-pass=0;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=stackframe.org; s=duo-1634547266507-560c42ae;
+        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
+         to:from:from;
+        bh=mM9bLZllLp6WR65cBIP3lh4VI/VKsNc4pyQsMAa398o=;
+        b=DNkhnUT7ut6iuCBCgELVbH8Tl8vwCFuUJ8GE0VeHVP560HOgYzotORtHjocI8Ttaf6q/tkpjHxpG1
+         hpsF1tpojO0WT0x1vKVe2hFgqi1YudgR8cFo/TNlnz4zn5iqWMTourkEVJJJEhecgBTmshHYx5c/Hp
+         V0wRiceJtFLanGn4=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=outbound.mailhop.org; s=dkim-high;
+        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
+         to:from:from;
+        bh=mM9bLZllLp6WR65cBIP3lh4VI/VKsNc4pyQsMAa398o=;
+        b=J0RbRaZARuiEkUZzC8m8nKbKVTZE7BU1CvdS9HvvAL5KBmhLvpdm1TW4l+VbL7ELDrYeZ7h92s28S
+         u68g+sEoqY30OjYW0JEkaDSz+E8DNuCnnnB+mUf8vhyuUdpxfFRQfetVVeH1rKKA2KPjd9ossUwttc
+         NXxQtSmbSRlwBC/fca/riQCLPE0u1WvQDfPfpwkPsnzvpU5MK7pzXvoAaBsvCkH01L6qq5del1gVpW
+         6eY5DeF9xdagy3/r/IQK9fsNYzspv5uR2xkukRySUCZLeZABLrfeIH5P/D+kKbd3YdSBe6NF69j0r1
+         NSDWESTGspLbeT3A9fVUr6eXM3kb4dQ==
+X-Originating-IP: 91.207.61.48
+X-MHO-RoutePath: dG9ta2lzdG5lcm51
+X-MHO-User: 0ec14c04-7928-11ec-a077-973b52397bcb
+X-Report-Abuse-To: https://support.duocircle.com/support/solutions/articles/5000540958-duocircle-standard-smtp-abuse-information
+X-Mail-Handler: DuoCircle Outbound SMTP
+Received: from mail.duncanthrax.net (propper.duncanthrax.net [91.207.61.48])
+        by outbound2.eu.mailhop.org (Halon) with ESMTPSA
+        id 0ec14c04-7928-11ec-a077-973b52397bcb;
+        Wed, 19 Jan 2022 13:02:31 +0000 (UTC)
+Received: from hsi-kbw-109-193-149-228.hsi7.kabel-badenwuerttemberg.de ([109.193.149.228] helo=x1.stackframe.org.stackframe.org)
+        by mail.duncanthrax.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <svens@stackframe.org>)
+        id 1nAAbc-0058X8-Ai; Wed, 19 Jan 2022 15:02:28 +0200
+From:   Sven Schnelle <svens@stackframe.org>
 To:     Helge Deller <deller@gmx.de>
 Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Sven Schnelle <svens@stackframe.org>,
+        linux-fbdev@vger.kernel.org,
         Linus Torvalds <torvalds@linux-foundation.org>,
         Javier Martinez Canillas <javierm@redhat.com>,
         Daniel Vetter <daniel.vetter@intel.com>,
         Ilia Mirkin <imirkin@alum.mit.edu>,
         Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
+        dri-devel@lists.freedesktop.org,
         Jani Nikula <jani.nikula@linux.intel.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
         Gerd Hoffmann <kraxel@redhat.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
         Sam Ravnborg <sam@ravnborg.org>, Claudio Suarez <cssk@net-c.es>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH 0/2] Fix regression introduced by disabling accelerated
+ scrolling in fbcon
+References: <20220119110839.33187-1-deller@gmx.de>
+Date:   Wed, 19 Jan 2022 14:02:25 +0100
+In-Reply-To: <20220119110839.33187-1-deller@gmx.de> (Helge Deller's message of
+        "Wed, 19 Jan 2022 12:08:37 +0100")
+Message-ID: <87k0evkhem.fsf@x1.stackframe.org>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Helge,
+Helge Deller <deller@gmx.de> writes:
 
-On Wed, Jan 19, 2022 at 12:10 PM Helge Deller <deller@gmx.de> wrote:
 > This series reverts two patches which disabled scrolling acceleration in
 > fbcon/fbdev. Those patches introduced a regression for fbdev-supported graphic
 > cards because of the performance penalty by doing screen scrolling by software
@@ -130,18 +155,22 @@ On Wed, Jan 19, 2022 at 12:10 PM Helge Deller <deller@gmx.de> wrote:
 >   Revert "fbdev: Garbage collect fbdev scrolling acceleration, part 1
 >     (from TODO list)"
 >   Revert "fbcon: Disable accelerated scrolling"
+>
+>  Documentation/gpu/todo.rst              |  24 --
+>  drivers/video/fbdev/core/bitblit.c      |  16 +
+>  drivers/video/fbdev/core/fbcon.c        | 540 +++++++++++++++++++++++-
+>  drivers/video/fbdev/core/fbcon.h        |  59 +++
+>  drivers/video/fbdev/core/fbcon_ccw.c    |  28 +-
+>  drivers/video/fbdev/core/fbcon_cw.c     |  28 +-
+>  drivers/video/fbdev/core/fbcon_rotate.h |   9 +
+>  drivers/video/fbdev/core/fbcon_ud.c     |  37 +-
+>  drivers/video/fbdev/core/tileblit.c     |  16 +
+>  drivers/video/fbdev/skeletonfb.c        |  12 +-
+>  include/linux/fb.h                      |   2 +-
+>  11 files changed, 703 insertions(+), 68 deletions(-)
 
-Thank you for this series, and the prior analysis!
+Thanks Helge!
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Feel free to add my:
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Acked-by: Sven Schnelle <svens@stackframe.org>

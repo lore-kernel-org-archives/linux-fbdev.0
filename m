@@ -2,147 +2,145 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F137EC433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 15:56:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47C15C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 16:02:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355987AbiASP4F (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jan 2022 10:56:05 -0500
-Received: from mout.gmx.net ([212.227.17.22]:53475 "EHLO mout.gmx.net"
+        id S1355977AbiASQCi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jan 2022 11:02:38 -0500
+Received: from mout.gmx.net ([212.227.17.22]:42863 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1355991AbiASP4E (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jan 2022 10:56:04 -0500
+        id S1355744AbiASQCi (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 19 Jan 2022 11:02:38 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1642607743;
-        bh=YI7Q13xa1667GBXT2yWDs/SWe72Hu8X9+CPfpHuc99A=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=RC+x85sZczSRAQWVSK8ejYomi/BNayTf6lz+afsU5eO7YusQ2ncqCoHFNxMxUjvR0
-         vAmlv6UFbjP6YNbPtfZxEYMgcq8L5c4+XOMDfx318IGA5xu4rr1WyWIgNHoaWnrIV/
-         YOf1IiGj08Q29S2whMs79fIBCln49zZ4sBicRPO8=
+        s=badeba3b8450; t=1642608154;
+        bh=JEMjXleBru/gLCy/oOLYjEj9hZH6cOzwnx1wA8kkjSc=;
+        h=X-UI-Sender-Class:Date:From:To:Subject;
+        b=CDHzUakxxcAdHOyEkKCyU3lT7nfJ2tsFe1GWUX8TnNoSc7fSEQnoWmBOrwmz5hV53
+         nLeqceRQ2VB1p3f81HibXEsUCWqyroyJaMBX4Tjq2Nb6ybqXYnF2yzem3LO3gXcPbI
+         QviPoyHGYs/O+ynvL21lXmVMNcpqXmuKmvKFlPx8=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.183.52]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M72sJ-1nEKR61YVT-008d9h; Wed, 19
- Jan 2022 16:55:43 +0100
-Message-ID: <40d39363-bae8-93f2-71c6-7d5531f144bf@gmx.de>
-Date:   Wed, 19 Jan 2022 16:54:35 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
-Content-Language: en-US
-To:     Daniel Vetter <daniel@ffwll.ch>,
-        Sven Schnelle <svens@stackframe.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Claudio Suarez <cssk@net-c.es>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Gerd Hoffmann <kraxel@redhat.com>
-References: <20220119110839.33187-1-deller@gmx.de>
- <20220119110839.33187-3-deller@gmx.de> <Yef0j8+DBbwC7Kjv@kroah.com>
- <Yef15k2GtC40aJEu@kroah.com>
- <CAMuHMdVWFJEDwjf-htZ_D1484efmuPnz_L-qhcTeUE-GVpvZXA@mail.gmail.com>
- <4d8950c7-5f51-ca2b-4c93-741c7805a214@gmx.de>
- <CAHk-=wikFKjwdUBWCLCu=iL3rFq4BDDF0aBGdXC6ay74yJb+5Q@mail.gmail.com>
- <CAKMK7uEb53iu_HxYSnFZ59j=vXQdMvTWT7xosEo85XkAwzDMnA@mail.gmail.com>
- <8735ljkboo.fsf@x1.stackframe.org>
- <CAKMK7uHHF22+MBz5D2kBv07X2BR76UDi2-JP7eO-f=nm-pymcw@mail.gmail.com>
+Received: from ls3530 ([92.116.183.52]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Msq24-1mHR0D3cYC-00tC0V; Wed, 19
+ Jan 2022 17:02:33 +0100
+Date:   Wed, 19 Jan 2022 17:01:26 +0100
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAKMK7uHHF22+MBz5D2kBv07X2BR76UDi2-JP7eO-f=nm-pymcw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev updates & fixes for v5.17-rc1
+Message-ID: <Yeg11pHSqx29yg/T@ls3530>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:2z0TYX9D3a0a7Bay37UHJF18IENXDzXFGI/rMc7qUMCnERrLHXu
- 9R0jxsNowo9md+SFIj73tzJAjebZpZS64c7i7Q8tU1il0PCTOt2HV7jfJjJHUznf9pO6/ml
- OCm7TtXAy7Oa1Yh46JU4VVNQ8Z7Bj5i/59YTFRRyj8m7BLXQTb5su9A/fd+8bXSu66a0LGn
- ooDTr7eLMAua5vXEINtCA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:T6BME9pdjQI=:tOIf66w0c6tKIjq1IicbBO
- aPMVUZDDlBJrLWD8XkXldQuAUYwKDyOcKPYTqUoQHitI5+Sw0rkgOgjT3fvbNx1psgTqc3SQf
- 55fa841sVz9lVwIqAK5+lZrRMiMIvVM9bdrjvDypEquCQjtzVJyossFPsi2/TW4FULy7I0GQA
- pXMuGM0oNOkf4Dk5G8WKAvyUBt3/43puLz7rWkhjpzi2QbS15QTXG+3TF6UxO8IWrinDhimeb
- ZxTNTBHSRPCsoUoxm62mH9q0N+Re4c10RfaSWN+BC/BOxMv+fJlAu9jGhxTZIMAVB/C6Kr5Zj
- bClr46VFt0J9aqfNy788OWsiEkP8W1K4yZKZmCX77oDIsoTJk14EWX3s/zFtlyuUYaoFH3/Qx
- W4vJhQEprkk3nDuRclolD3Uxsd6drmXavOucrzoYBnQaktFP58dID0q9NjSUimcd44986mnAN
- GdByH7Oss5tSQwQDragzNc85Ym9/31yIqGihIoZFQqBIfhmKNJTI1T4B/Sz6UHtrliIttc2ad
- WRhwPELOu3ypJ4yHVYLXoTufdCbMFtkxRcDdiLLzBgkIlJOlQlfh3BeZHg1Xmf8eShSTTQ+mJ
- bIOEXS3CpAbwDo1/aWTqhJooWSnTnvWk61HF7EkoLJb7DTNfoMxKlaFPSgef67RMDxsN5hJ3q
- FFXpZ+UAw2fIKJLVU85EAMGw8wd9pxCcjJ/vYu3bqgMzfKRDHAXCXTjecGok/bz5APIFD9eBn
- T/13dg+ChWvz7S40E+XGeV/hqhKfJdnW1yGsmTcMhvB0wz8diP/BEw+uy/ZM8qp61sqz2cRZ6
- XGxLwzKaz3ccLJNm6c3zZ6zFPqRcu1n1KpyNfeNmGeY47yB/7F0jbBq3CAuXTj5OqaEKEMku0
- u+U1EVqV0K3zu2DYxTsliLSKw03amUPypqzNuFKcdFmc9O6QAcWED0B/1JYWqCuq2b71x1ixb
- y3AXZzA32WUisTTAiL14v5TdN01x3W4zShjuluzP8pz3mO2EvwWqMEzwpkrEDshgHovX+vpmh
- +kv7ZOT9IzR/GggInaXpodzeysbJAOpA1Pk/bM3hvf0ottZgUFOblptQqCH0CTkaJJN0BBE4y
- bACFjuhhFAciJE=
+X-Provags-ID: V03:K1:5O4+rNi6WJzQVMB+rTkMWYPHXQd1MKtr9EcwARWkfS6QfG+7GT9
+ 044Q6svnW1H9NthTjUk5BvGtYbh90Ql+LLim33SoXHyM9L1nAi1wNiQVSClob0fZ+AKvpYy
+ L+0y9SxutqityVLXJEiD2krOQqlMDSXKTtRxUJRAywiBSi3XFn5cy13Oeck+mKZx0Lv43TZ
+ 7yoOr9kSnGdUfkgG9/pYQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:mGsiSMYeQpU=:tQdMhoIcPsY/hgXhctthf7
+ icNGYjXoR9CsRRO2QZRSkZfVAmMZwbu5hvLkdnCJX/sGYW46uQbKknOhl8FHz5jiA89LKB/h0
+ ZsMa7aWQw7XgQP0sVX5uP4E68YZkAPUUX3L0iK1jHuSXLIhHWjbPnaTHsIc9KO4MWnDD9ner+
+ zAgYbtayKkFNbS6bdBeOaonU8BGpMCokqAI8TcQChSwO7wKfKxvgEXiq1bM74IJJ6I1z+MZao
+ RJ58jegStheKNcs0/txV0WAYAMj2HquikR5POBsPdUo6QBz1byXAg6KqacKKjQbJzhhz41mAW
+ /QfxXlDWrnpOXfBV7XmuMJqXb3r2mGpV4H5nhnm+ej3agaRc4CA+ZX8oMLiPAXuD1L9XqGewf
+ ItZTsfFi1vbGrIsPbK8yavPrNV79CUrU9fiBU2AZJQljWO3omJBXz21likrb6ocXIxNL9CYlm
+ x/YmZaesD7I3SGSJfz8TzA+jIhtGVeK5RuBMrnmO6uPtzoV3yC2hT2NOc+0B34uxJdwt6mZSf
+ nvSNzvMIuQKHhafHrLgL0vSS4fzm9EAkmuQMqkM34rbV3x2VP302stxOYgShQYqO6h9evQu6N
+ +IFQ/G+LiEYhjSBqhSlICXoBO0ilnf2nY7bFA5ITEJXtEXjfKCm4sphxnfF99l0GTj6HZtVqd
+ 4WXB4QjfcDsiPfz0y9H6DKAQydJkk+E1ncYM2K2tb20ilScpNN/cNpYc3Sv3DJOyfkOyTXePJ
+ h5lzeXDF1ZjUv85YGSPqtzG1h4/SaQ5APBT5oUBcb0AYfECwlJGMAV3DdWxEXSQVHvvv4tS0+
+ LBOK/mMIkXL0SzvSiSSdoEF09cMkenMi/reehn85rfJAnZ0mmfJakpr1OlGhvs7c47xnR8rIC
+ ZN5HVSjN0Ah03Qcda7azy8nNTqi2y9LM4kGLawABZnV2rOoJS/wlhBoTmJxnav+1cksFmJxgU
+ qJJtZ1KxROwdwati8LNPOXLUW8Xszotn+JpSvdnKh4uYd2ABP1YlaTC/axpGnjH8Pp8J9+nAo
+ e6aQlXi2WehVgOCExPZ6BAXf7drIr84Vwv5vcmq59Z/ATlsw7lW4EyJHumoxZMfLMWJs8qW70
+ 2E0omya9j3bWnU=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/19/22 16:42, Daniel Vetter wrote:
-> On Wed, Jan 19, 2022 at 4:06 PM Sven Schnelle <svens@stackframe.org> wro=
-te:
->>
->> Daniel Vetter <daniel@ffwll.ch> writes:
->>
->>> On Wed, Jan 19, 2022 at 3:01 PM Linus Torvalds
->>> <torvalds@linux-foundation.org> wrote:
->>> Irrespective of this code being buggy or not buggy I think the bigger
->>> pictures, and really the reason I want to see as much code ditched
->>> from the fbdev/fbcon stack as we possible can, are very clear:
->>>
->>> - it's full of bugs
->>> - there's no test coverage/CI to speak of
->>> - it's very arcane code which is damn hard to understand and fix issue=
-s within
->>> - the locking is busted (largely thanks to console_lock, and the
->>> effort to make that reasonable from -rt folks has been slowly creeping
->>> forward for years).
->>>
->>> Iow this subsystem is firmly stuck in the 90s, and I think it's best
->>> to just leave it there. There's also not been anyone actually capable
->>> and willing to put in the work to change this (pretty much all actual
->>> changes/fixes have been done by drm folks anyway, like me having a
->>> small pet project to make the fbdev vs fbcon locking slightly less
->>> busted).
->>
->> Saying it's stuck in the 90ies, and actively trying to prevent
->> Helge from taking over maintainership at the same time looks odd.
->> I think Helge should at least get a chance to fix the issues. If the
->> state is still the same in a year or so it should be discussed again.
->
-> You don't need maintainership to fix issues. You need to submit patches.
+The following changes since commit 0c947b893d69231a9add855939da7c66237ab44=
+f:
 
-The very first email of this thread is my patch.
-And you just added your comments to this patch.
+  Merge tag '5.17-rc-part1-smb3-fixes' of git://git.samba.org/sfrench/cifs=
+-2.6 (2022-01-17 09:53:21 +0200)
 
-> If otoh you get the maintainership first to be able to cram in reverts
-> without discussions, then it's very backwards.
-I'm working on the Linux kernel since at least 23 years and am a maintaine=
-r of parts of it.
-I know that and would never push something which is controversal without d=
-iscussions.
+are available in the Git repository at:
 
->>> The other side is that being a maintainer is about collaboration, and
->>> this entire fbdev maintainership takeover has been a demonstration of
->>> anything but that. MAINTAINERS entry was a bit confusing since defacto
->>> drm has been maintaining it for years.
->>
->> It was marked as 'Orphaned'. Anyone is free to send a Patch/PR to take
->> over maintainership. If you have strong opinions about that code (And y=
-ou
->> obviously have reading your mail, set it to 'maintained' and care about
->> it. Everything else is just wrong in my opinion.
->
-> I already added dri-devel so anything we drastically change can be
-> discussed first. If that's indeed not strong enough then yes I can
-> whack in full maintainer entry with a bugfix-only status.
->
-> But really I try to not create facts with just editing MAINTAINERS
-> first and ask questions later, that's just not a great way to
-> collaborate.
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git ta=
+gs/fbdev-5.17-2
 
-Helge
+for you to fetch changes up to 842086bc7262a36f002e0361f9dc351556cae3f3:
+
+  video: fbdev: controlfb: Fix COMPILE_TEST build (2022-01-17 22:39:37 +01=
+00)
+
+=2D---------------------------------------------------------------
+fbdev updates for v5.17-rc1
+
+A first bunch of updates and fixes for the following fbdev & backlight dri=
+vers:
+ocfb, aty128fb, mb862xx, omapfb, qcom-wled, dt-bindings, hyperv_fb,
+lm3630a_bl, omap2, controlfb, matroxfb
+
+Nothing really important, mostly cleanups, const conversions, added null
+pointer/boundary checks and build fixes.
+
+Signed-off-by: Helge Deller <deller@gmx.de>
+
+=2D---------------------------------------------------------------
+Chunyang Zhong (1):
+      video: ocfb: add const to of_device_id=A0
+
+Colin Ian King (2):
+      fbdev: aty128fb: make some arrays static const
+      video: fbdev: mb862xx: remove redundant assignment to pointer ptr
+
+Greg Kroah-Hartman (1):
+      omapfb: use default_groups in kobj_type
+
+Jiasheng Jiang (1):
+      video: fbdev: Check for null res pointer
+
+Luca Weiss (2):
+      backlight: qcom-wled: Add PM6150L compatible
+      dt-bindings: simple-framebuffer: allow standalone compatible
+
+Michael Kelley (1):
+      video: hyperv_fb: Fix validation of screen resolution
+
+Minghao Chi (1):
+      drivers/video: remove redundant res variable
+
+Xu Wang (2):
+      backlight: lm3630a_bl: Remove redundant 'flush_workqueue()' calls
+      fbdev: omap2: omapfb: Remove redundant 'flush_workqueue()' calls
+
+Yang Guang (1):
+      video: fbdev: use swap() to make code cleaner
+
+YueHaibing (1):
+      video: fbdev: controlfb: Fix COMPILE_TEST build
+
+Z. Liu (1):
+      matroxfb: set maxvram of vbG200eW to the same as vbG200 to avoid bla=
+ck screen
+
+ .../devicetree/bindings/display/simple-framebuffer.yaml  | 12 +++++++----=
+-
+ drivers/video/backlight/lm3630a_bl.c                     |  1 -
+ drivers/video/backlight/qcom-wled.c                      |  1 +
+ drivers/video/fbdev/aty/aty128fb.c                       | 10 ++++++----
+ drivers/video/fbdev/aty/mach64_ct.c                      |  4 +---
+ drivers/video/fbdev/controlfb.c                          |  2 ++
+ drivers/video/fbdev/hyperv_fb.c                          | 16 +++--------=
+-----
+ drivers/video/fbdev/imxfb.c                              |  2 ++
+ drivers/video/fbdev/matrox/matroxfb_base.c               |  2 +-
+ drivers/video/fbdev/mb862xx/mb862xxfb_accel.c            |  2 +-
+ drivers/video/fbdev/ocfb.c                               |  2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c     |  3 ++-
+ drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c     |  3 ++-
+ drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c     |  3 ++-
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c           |  1 -
+ drivers/video/fbdev/sis/sis_main.c                       |  2 +-
+ 16 files changed, 32 insertions(+), 34 deletions(-)

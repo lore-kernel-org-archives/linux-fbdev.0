@@ -2,74 +2,35 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 270FAC433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 15:07:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 896A1C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 15:20:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349752AbiASPHU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jan 2022 10:07:20 -0500
-Received: from outbound5b.eu.mailhop.org ([3.125.66.160]:53706 "EHLO
-        outbound5b.eu.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235115AbiASPHU (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jan 2022 10:07:20 -0500
-ARC-Seal: i=1; a=rsa-sha256; t=1642604776; cv=none;
-        d=outbound.mailhop.org; s=arc-outbound20181012;
-        b=XmJULg7KcEsaAaNVIau0nr+3RqdjTMF7EPD+qQzoldcmZAh7cNxSVCsZ7INWh5yKqbSX56p2YCXG3
-         sWtgv3aYaB6xeKUEb2io7X1VxBKX/stnD7snv4Jvee8+m1aGr/REB8VpC2hx805sFtOSLMQ65ooT0X
-         UyVIxM6zn6GacF+jeeRHAOVWMcKR/Z3hjB0lhu88J5YiyW7HZsrfuhGZPPEiGUNLn7OMWbIqPCCaH7
-         ujKpfWZdvzwdoalVB5qozPwn4siRJLpduTcc3oz/z3FN48LFkf109ABPMSJln2KRyIcMMuMS346rYY
-         18rLeK50laBEbqzClBqlzWXXyVvSZYQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=outbound.mailhop.org; s=arc-outbound20181012;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:dkim-signature:dkim-signature:from;
-        bh=xKcGXC5UN2NwkPJrRpedUdXpH3K121N9tHO7S7nhcBQ=;
-        b=D+QOjciww+Dka5r7dfyw07WWl75WFkX0wqPYKO8IFWnEAYQQK1dZ5jzztbY4Mj53Dd5SvH6XJecjw
-         jLypbGN6BTLZ/Xwa2yjb+y2Er9Pq5hrn6ECPykbCRyEr67Qv7wSmEXmJ9X82puP9ycqdxXYKsLAzXZ
-         Id7jGQqWhMpNFjrPFcyVoUZKdG0vUBcrv1gpeXqvdpTuhHJgDx24cByK75hGy1DiiJzNu5o/fG3Qv0
-         KEQEDM8JSm8iiET4CxUTYOA7E9ARzBEoQRpJGLRdwguizoK4LKvfF0IYDfiYKdy3lUar0aco4XBl0b
-         XApxbsCTLs/ofBJ+jBB1r+J9jyrQ2HQ==
-ARC-Authentication-Results: i=1; outbound3.eu.mailhop.org;
-        spf=pass smtp.mailfrom=stackframe.org smtp.remote-ip=91.207.61.48;
-        dmarc=none header.from=stackframe.org;
-        arc=none header.oldest-pass=0;
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=stackframe.org; s=duo-1634547266507-560c42ae;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:from;
-        bh=xKcGXC5UN2NwkPJrRpedUdXpH3K121N9tHO7S7nhcBQ=;
-        b=BcLT82Y/1rcgNQu3U9ScUtmrhIv4jV67PRF3CeVDj1oq4Q9FsmYxulno70Xhdev93EWnVu92jDNrt
-         uDMEeI4pM835cgf2rmZ0+uDqKlaP0dRvXq7/IO9zM5tDTkF2JhzhggqBmaZyxi/m4Xta26vQWOaezI
-         lPrdR4Dj31elnWq4=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=outbound.mailhop.org; s=dkim-high;
-        h=content-type:mime-version:message-id:in-reply-to:date:references:subject:cc:
-         to:from:from;
-        bh=xKcGXC5UN2NwkPJrRpedUdXpH3K121N9tHO7S7nhcBQ=;
-        b=fBBbq/RhuKo8xz+BjEVFrwo0c4C5bqsWZS+Z+TgQg+4S7heoONiN9WC8WGe4n9ODZg75BtyYYsV5V
-         PiGzwtLGM3SZdq0XCbw1DU0PmdxyqAOaOhuByU+XWpPOnXj3bItofFdKz82Ht7H6Bg4ZiwMTw96zD3
-         oiNAOa5Rz+pYOsUWHcgp7EfZ0keOyestZuH5py5Emn+KNMkorSqMOCte5xQ91MKyTwpzdSP5oBspXc
-         mehik1F/Cz0GyA7gKiKy/4kk5vpL9AYQ6IC9Xosg5374GZ8xhT4v+CutRs+4PG75I3QlYW9fZny4XX
-         nxeDzERRrGIPgTIaO/d2+wQDcg0YAlg==
-X-Originating-IP: 91.207.61.48
-X-MHO-RoutePath: dG9ta2lzdG5lcm51
-X-MHO-User: 51bf6f5a-7939-11ec-9564-95b64d6800c5
-X-Report-Abuse-To: https://support.duocircle.com/support/solutions/articles/5000540958-duocircle-standard-smtp-abuse-information
-X-Mail-Handler: DuoCircle Outbound SMTP
-Received: from mail.duncanthrax.net (propper.duncanthrax.net [91.207.61.48])
-        by outbound3.eu.mailhop.org (Halon) with ESMTPSA
-        id 51bf6f5a-7939-11ec-9564-95b64d6800c5;
-        Wed, 19 Jan 2022 15:06:05 +0000 (UTC)
-Received: from hsi-kbw-109-193-149-228.hsi7.kabel-badenwuerttemberg.de ([109.193.149.228] helo=x1.stackframe.org.stackframe.org)
-        by mail.duncanthrax.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <svens@stackframe.org>)
-        id 1nACXC-00599H-8i; Wed, 19 Jan 2022 17:06:02 +0200
-From:   Sven Schnelle <svens@stackframe.org>
-To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Helge Deller <deller@gmx.de>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        id S1355648AbiASPUH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jan 2022 10:20:07 -0500
+Received: from mout.gmx.net ([212.227.17.22]:51193 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1355645AbiASPUG (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 19 Jan 2022 10:20:06 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1642605583;
+        bh=1wueW8BO2whJgvsCqgT7W/w+DL8z3im+ceSWmVhDJBs=;
+        h=X-UI-Sender-Class:Date:To:Cc:References:From:Subject:In-Reply-To;
+        b=ZCGIGcc48p7NH4m612POSZjIkPA/BEQbPqE7Hcj4txhvyjOMRsA6CieXRdAZof8+C
+         FpxsE4DMHVPHjujgpVXQkUC0G0UVenqi8M0pK/o/mlMe08TwmsTkSd3+WrJk+lOz+g
+         Wz4dZQQdyawMvF1lozEAzH1aVQl9bx168ugi8iQU=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.183.52]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mq2jC-1mXHRN21FS-00n8Tz; Wed, 19
+ Jan 2022 16:19:43 +0100
+Message-ID: <31410fa2-293f-9b47-8fb1-e2486033fd22@gmx.de>
+Date:   Wed, 19 Jan 2022 16:18:35 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+Content-Language: en-US
+To:     Daniel Vetter <daniel@ffwll.ch>,
+        Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Javier Martinez Canillas <javierm@redhat.com>,
@@ -80,36 +41,88 @@ Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Daniel Vetter <daniel.vetter@intel.com>,
+        Sven Schnelle <svens@stackframe.org>,
         Gerd Hoffmann <kraxel@redhat.com>
-Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
 References: <20220119110839.33187-1-deller@gmx.de>
-        <20220119110839.33187-3-deller@gmx.de> <Yef0j8+DBbwC7Kjv@kroah.com>
-        <Yef15k2GtC40aJEu@kroah.com>
-        <CAMuHMdVWFJEDwjf-htZ_D1484efmuPnz_L-qhcTeUE-GVpvZXA@mail.gmail.com>
-        <4d8950c7-5f51-ca2b-4c93-741c7805a214@gmx.de>
-        <CAHk-=wikFKjwdUBWCLCu=iL3rFq4BDDF0aBGdXC6ay74yJb+5Q@mail.gmail.com>
-        <CAKMK7uEb53iu_HxYSnFZ59j=vXQdMvTWT7xosEo85XkAwzDMnA@mail.gmail.com>
-Date:   Wed, 19 Jan 2022 16:05:59 +0100
+ <20220119110839.33187-3-deller@gmx.de> <Yef0j8+DBbwC7Kjv@kroah.com>
+ <Yef15k2GtC40aJEu@kroah.com>
+ <CAMuHMdVWFJEDwjf-htZ_D1484efmuPnz_L-qhcTeUE-GVpvZXA@mail.gmail.com>
+ <4d8950c7-5f51-ca2b-4c93-741c7805a214@gmx.de>
+ <CAHk-=wikFKjwdUBWCLCu=iL3rFq4BDDF0aBGdXC6ay74yJb+5Q@mail.gmail.com>
+ <CAKMK7uEb53iu_HxYSnFZ59j=vXQdMvTWT7xosEo85XkAwzDMnA@mail.gmail.com>
+From:   Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
 In-Reply-To: <CAKMK7uEb53iu_HxYSnFZ59j=vXQdMvTWT7xosEo85XkAwzDMnA@mail.gmail.com>
-        (Daniel Vetter's message of "Wed, 19 Jan 2022 15:34:06 +0100")
-Message-ID: <8735ljkboo.fsf@x1.stackframe.org>
-MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:6zO4hVKFAQeptRF1xDsaMUngTmTgz6fBOQmqxQHV9tYchko01GW
+ AXojxLbLPhh04GfuWtYRoKaZNpCezkzKqHUcn1zl8UwTXXQbE/zPMI4qgsJPKV62qcNFlw/
+ 9V3Uq5pZI3w+MqzYXkwYsJp3sVVl6qn5bYyuY46EZFpY6wAY1dDAfsT7eUrSCiJeBbeXAGu
+ Ek5VC3Cm1g4b/uWPzbLbQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:iRMuHJLEPBQ=:KKJiJoPvAvG6Zo4y71VOKc
+ WrByrBlGbkLCfKP0wDoSYzbMf4mTfiMLNyf+MlD4mLhF+g3y2qM3ueH/k2ZtpmP7Fqy8+o8eQ
+ QdyS5TiNCzP/BqCkuLr4v+k7kKDHNOqHeAJrv6Vx8XHF0cuyizWb8+G5F8Dil20RkzxJNGXH7
+ VcQ4dOctutb5hxU5OpnYQUuMVp6cZPP7NcX9NZqxxu4TwKTfpzifyHXxvnxOD0MrDi+b98z20
+ TD56McIS1R6G4a0P7kujxhLhIF9KbWaji/fXcDqtu28DPptDGuxzo0fLKWPN2uAqGP4D9JW3F
+ VUYLl59j+lSbj8/tmWSIzHwZsnyWMq+Zgsu897fzmaaUHOBdceOVM1/AAnARzebzjgtn8LaCI
+ Z+MPLZlO+7Ms4fh3WrDUTXQLSYHU4f0E5uIi8LbKP1Xl5sKt7h5qdk8OmzXyDhGPqKU5VpXWL
+ Id+u54Ud0roTADv9995VS/KMKjCGiOvM5hHFlxV8ecxduXiGQlLxh858Tjbgww4FVXrCGOJeU
+ ilEas9T7lOdVvKFefiaSJzRQZ/45wUErO3+trMOIhgoTuq3+Mu9pAkdAC/Buj9CpzQtO9uzPe
+ v1DUAtTfBu2nR6R8rD0eb3HjeHfvRSXYtqD24NffaSMoY+jJ1ESakU07jFbcMnL2Mb49pmhXQ
+ z2H6ENwKvoa5ZZ0YIMdBARaQCaLI7Aj/6nHuYkhpefgd1vcJDkm4+X9OYVqXCfhOEXvwtv+js
+ Er150Fxvl8XJFA1ZoAwwMiUsEG21Z9YG7ztJ7m8cVp2SGnRdgagbGRSiwqzd2oTNRm8a/aeIm
+ PdLXDTWFG90z0fFmIWE+XhtVr0oYZvUnDCTCmm+JM23tRVO3oSrnpsLcoTZi8Y7kPc2aDSRjk
+ YfeVcXNH9rrq4FlGar/GtP4FGbuk6sTJvm/GJIZiLD67CnsZYam3Gx0KOraVbRQxb1qpDynIj
+ Kz0/tmqOEutAHk0/FoSaVlYj1JwuoRcBcC9lVg/OkvFVUH2+ybvneK2UiD+7Vl7XHBXoMJ5UN
+ wOvi1Or3jBcsMD4yMXqaUppLbT3lAj/VpHamm7Jpq8zaTlie34Oy9M3+qgbto8Eqg3vofJ0sV
+ DrM1T3TKZVspJc=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Daniel Vetter <daniel@ffwll.ch> writes:
-
+On 1/19/22 15:34, Daniel Vetter wrote:
 > On Wed, Jan 19, 2022 at 3:01 PM Linus Torvalds
 > <torvalds@linux-foundation.org> wrote:
+>>
+>> On Wed, Jan 19, 2022 at 2:29 PM Helge Deller <deller@gmx.de> wrote:
+>>>
+>>>>>
+>>>>> Ah, no, that was just the soft scrollback code I was thinking of, wh=
+ich
+>>>
+>>> Right.
+>>> That was commit 973c096f6a85 and it was about vgacon, not fbcon.
+>>
+>> No, fbcon had some bug too, although I've paged out the details. See
+>> commit 50145474f6ef ("fbcon: remove soft scrollback code").
+>
+> tbh I've paged it all out too.
+>
+>> If I remember correctly (and it's entirely possible that I don't), the
+>> whole "softback_lines" logic had serious problems with resizing the
+>> console (or maybe changing the font size).
+>
+> Yeah that pile of reverts was my motiviation to look into this and see
+> what else we could rip out most likely and still have an fbcon that
+> works as well as it does right now for almost all users (which is not
+> so great, but oh well).
+>
+>> There may have been some other bad interaction with
+>> foreground/background consoles too, I forget.
+>
 > Irrespective of this code being buggy or not buggy I think the bigger
 > pictures, and really the reason I want to see as much code ditched
 > from the fbdev/fbcon stack as we possible can, are very clear:
 >
 > - it's full of bugs
+
+I'm sure that there are bugs. Not just in fbcon/fbdev.
+Other than that, if there are bugs I'm sure they are independend
+of the question if you use hardware acceleration or not.
+
 > - there's no test coverage/CI to speak of
-> - it's very arcane code which is damn hard to understand and fix issues within
+> - it's very arcane code which is damn hard to understand and fix issues =
+within
 > - the locking is busted (largely thanks to console_lock, and the
 > effort to make that reasonable from -rt folks has been slowly creeping
 > forward for years).
@@ -121,19 +134,72 @@ Daniel Vetter <daniel@ffwll.ch> writes:
 > small pet project to make the fbdev vs fbcon locking slightly less
 > busted).
 
-Saying it's stuck in the 90ies, and actively trying to prevent
-Helge from taking over maintainership at the same time looks odd.
-I think Helge should at least get a chance to fix the issues. If the
-state is still the same in a year or so it should be discussed again.
+Yes, drm folks fixed a lot of bugs in the generic fbcon code.
+I think everyone is thankful for this.
 
 > The other side is that being a maintainer is about collaboration, and
 > this entire fbdev maintainership takeover has been a demonstration of
 > anything but that. MAINTAINERS entry was a bit confusing since defacto
-> drm has been maintaining it for years.
+> drm has been maintaining it for years, but for the above reasons we've
+> done that by just aggressively deleting stuff that isn't absolutely
+> needed - hence why I figured "orphaned" is a reasonable description of
+> the state of things. This entire affair of rushing in a maintainer
+> change over the w/e and then being greeted by a lot of wtf mails next
+> Monday does leave a rather sour aftertaste. Plus that thread shows a
+> lot of misunderstandings of what's all been going on and what drm can
+> and cannot do by Helge, which doesn't improve the entire "we need
+> fbdev back" argument.
 
-It was marked as 'Orphaned'. Anyone is free to send a Patch/PR to take
-over maintainership. If you have strong opinions about that code (And you
-obviously have reading your mail, set it to 'maintained' and care about
-it. Everything else is just wrong in my opinion.
+I'm happy to *really* maintain fbdev code & drivers.
+Up to now only those parts which were still needed by drm (like fbcon)
+were fixed & "maintained" by drm folks.
+Nearly all other patches sent to the fbdev list were ignored and even new
+submissions for fbdev drivers were denied.
+Now in next step really important infrastructure for fbdev-drivers was
+ripped out of fbcon, like suddenly denying fbdev-drivers to use hardware
+acceleration.
+According to the docs the next step would have been to drop even more
+code from the fbdev drivers.
+This is not what "maintain" really is about.
 
-/Sven
+> But if the overall consensus is that that fbdev needs to be brought
+> back to it's full 90s glory then I think we need a copy of that code
+> for drm drivers (should work out if we intercept fb_open() and put our
+> own file_ops in there, maybe some more fun with fbcon), so that at
+> least for anything modern using drm driver we can keep on maintaining
+> that compat support code.
+
+It's not about to keep something alive or to stop future developments.
+It's about fairness and not actively breaking other parts of the kernel
+for no good reason.
+
+> And with maintaining here I don't mean build a museum around it, but
+> actually try to keep/move the thing towards a state where we can still
+> tell distros that enabling it is an ok thing to do and not just a CVE
+> subscription (well it is that too right now, but at least we can fix a
+> lot of them by just deleting code).
+>
+> I think until that mess is sorted out resurrecting code that's not
+> strictly needed is just not a bright idea.
+
+That's wrong.
+It's strictly needed by more than 35 fbdev drivers and as such
+you introduced a regression for those.
+
+> Also wrt the issue at hand of "fbcon scrolling": The way to actually
+> do that with some speed is to render into a fully cached shadow buffer
+> and upload changed areas with a timer. Not with hw accelerated
+> scrolling, at least not if we just don't have full scale development
+> teams for each driver because creating 2d accel that doesn't suck is
+> really hard. drm fbdev compat helpers give you that shadow buffer for
+> free (well you got to set some options).
+>
+> Unfortunately just ditching fbdev/fbcon compat is not an option for
+> many distros still, althought things are very slowly moving towards
+> that. Until we've arrived there I can't just pretend to not care about
+> what's going on in drivers/video.
+
+I'm happy to take care about it.
+That's why I stepped up as maintainer.
+
+Helge

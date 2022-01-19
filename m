@@ -2,84 +2,137 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9443C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 18 Jan 2022 18:13:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C487C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 08:40:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347843AbiARSNz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 18 Jan 2022 13:13:55 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52708 "EHLO
+        id S1352561AbiASIkG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jan 2022 03:40:06 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49196 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233793AbiARSNx (ORCPT
+        with ESMTP id S1348416AbiASIkG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 18 Jan 2022 13:13:53 -0500
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9CB11C061574
-        for <linux-fbdev@vger.kernel.org>; Tue, 18 Jan 2022 10:13:53 -0800 (PST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1n9szM-000880-TH; Tue, 18 Jan 2022 19:13:48 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1n9szK-00B2zq-Tk; Tue, 18 Jan 2022 19:13:46 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1n9szJ-0006zF-K4; Tue, 18 Jan 2022 19:13:45 +0100
-From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Heiner Kallweit <hkallweit1@gmail.com>,
-        Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-        Noralf Tronnes <notro@tronnes.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, kernel@pengutronix.de
-Subject: [PATCH 1/2] staging: fbtft: Fix error path in fbtft_driver_module_init()
-Date:   Tue, 18 Jan 2022 19:13:37 +0100
-Message-Id: <20220118181338.207943-1-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.34.1
+        Wed, 19 Jan 2022 03:40:06 -0500
+Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D210CC06161C;
+        Wed, 19 Jan 2022 00:40:05 -0800 (PST)
+Received: by mail-lf1-x130.google.com with SMTP id m3so6595862lfu.0;
+        Wed, 19 Jan 2022 00:40:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :mime-version;
+        bh=SXQq9rN5zBUkQKNE0Ivp3Pzg3xcm4M4u40k+sMdUxTA=;
+        b=fhc0hK1/WnEzeZqe7BKS8KCMrfuRKaA+bBGmof8JOE9+6GMUmkvTZgBVPmfSf5c1D9
+         rQg8D0i7Rqz4NFAewNNakJ7w0oDxbJk7l/Z+B4yetE5iyMYPwRxZjnlfc0csJmsgzrpN
+         Uikj9y79xNJZYEvwNs8ctv9mO6YCzruThn1OlFMkpJ7pXRaau9pYeBoC0KmJIAmZWgQl
+         6pC4QyFi+b2/5PNP3niAP/0Gh8VTGVECB1zxNH3xw0f5sViQ+nO+AD1DfriZ74Lj+wXW
+         vCfkd0D5RYfRiQqLjoCQbXen4jXTUdaksg2/R1ndVjxLzPVedPs9DeZ27zCm4CFB6huU
+         +deA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:mime-version;
+        bh=SXQq9rN5zBUkQKNE0Ivp3Pzg3xcm4M4u40k+sMdUxTA=;
+        b=A5/FFCXsnBIZyUH2/Z/5O2z4k9kMbjUZu5WWUWG9CmWFLsIAJJC9Dj4ez/FCcvKNNW
+         EyY4ZGlbmKzmOwBumakL/HbOAiTbdwduOuEtehzI01WZi0Rmq7u0R0HN6WPh+JjT+LeY
+         Moq6gbIvavcuJBr9QMoH1H+LJu9BjL1jdzSbF8ESEzMqdnsN3z8Or4xWUMD7vxa485k4
+         jPm4L61WxUsJciDWe+x5lk0YxE76XRmsEjPKIu6ZnTpQk0EsldxwUl3agFEsK9ckYYzX
+         3IMJjWqjQFHQ+Xw89vq7j7vcOwNQGs4MDxyh8tGewTgXJJ7Z9mQKiuBacO3ac39M0W8S
+         U64Q==
+X-Gm-Message-State: AOAM532w8VKJF3dQsisE4UjZB777R1Bvvcp8KgkAwAW4jb/HdLYYEat7
+        URJ6I9VcC/Es3i0JO4JzjI0=
+X-Google-Smtp-Source: ABdhPJwxq0qLxjcvHPejq/3Va1n4aFFKdh6SzZ39AvI96pEeJFP1ic33G48wGqCvRn5McCgtLxEgIg==
+X-Received: by 2002:a2e:5801:: with SMTP id m1mr12246227ljb.164.1642581604046;
+        Wed, 19 Jan 2022 00:40:04 -0800 (PST)
+Received: from eldfell ([194.136.85.206])
+        by smtp.gmail.com with ESMTPSA id k21sm1451287lfu.24.2022.01.19.00.40.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Jan 2022 00:40:03 -0800 (PST)
+Date:   Wed, 19 Jan 2022 10:39:53 +0200
+From:   Pekka Paalanen <ppaalanen@gmail.com>
+To:     Gerd Hoffmann <kraxel@redhat.com>
+Cc:     Sven Schnelle <svens@stackframe.org>,
+        dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>,
+        linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
+Message-ID: <20220119103953.75138bac@eldfell>
+In-Reply-To: <20220118095352.xsb6fqacw4p276c5@sirius.home.kraxel.org>
+References: <YeG8ydoJNWWkGrTb@ls3530>
+        <c48ad8ae-aea5-43fa-882f-dccb90dde9a4@suse.de>
+        <87bl0amc6s.fsf@x1.stackframe.org>
+        <20220118103323.4bae3a7d@eldfell>
+        <20220118095352.xsb6fqacw4p276c5@sirius.home.kraxel.org>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1441; h=from:subject; bh=gJiA8AksyJTrtpGrzRfF50OuBu19LDZN1xB1saUxAWQ=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBh5wNJFwDFQehIYnjVfgYfBt2NN9k1zG22si9Ri/8c S5fL84aJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCYecDSQAKCRDB/BR4rcrsCbkLCA CMkktbQyNtmyTjX2Jy5zZT5GMGpn+o+jgaJObINj8Q2HSqz4hu5YuO23ib1z+scTXKXMoabCUYTqPl lfRCJHOlyxO8shOKTdvs/U66r1+Sy1pl0B6kyLAKmZYv+WSApKCCHH9URQXBwtkH4aAkkQpqrF+3Tw iz+HSbK676qIaG/aW5SWts2WSSruXzYwZSDIaS4Jt+KZkWf40agCIN5WEotN8N+bVCiVX3XOmgpmdG tRSOtkvnd8ff96S721N4CYsNFfS3tPtsTy7BofK1+sAYro3D1B42wAwuBywJ997GZyTG0IQQNUqclZ eZPgnMdjffd5X1xMXg9PfGTzYYovlH
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Type: multipart/signed; boundary="Sig_/bND91UWGGOh_7.dIQvYk7JE";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-If registering the platform driver fails, the function must not return
-without undoing the spi driver registration first.
+--Sig_/bND91UWGGOh_7.dIQvYk7JE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Fixes: c296d5f9957c ("staging: fbtft: core support")
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/staging/fbtft/fbtft.h | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+On Tue, 18 Jan 2022 10:53:52 +0100
+Gerd Hoffmann <kraxel@redhat.com> wrote:
 
-diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index 4cdec34e23d2..55677efc0138 100644
---- a/drivers/staging/fbtft/fbtft.h
-+++ b/drivers/staging/fbtft/fbtft.h
-@@ -334,7 +334,10 @@ static int __init fbtft_driver_module_init(void)                           \
- 	ret = spi_register_driver(&fbtft_driver_spi_driver);               \
- 	if (ret < 0)                                                       \
- 		return ret;                                                \
--	return platform_driver_register(&fbtft_driver_platform_driver);    \
-+	ret = platform_driver_register(&fbtft_driver_platform_driver);     \
-+	if (ret < 0)                                                       \
-+		spi_unregister_driver(&fbtft_driver_spi_driver);           \
-+	return ret;                                                        \
- }                                                                          \
- 									   \
- static void __exit fbtft_driver_module_exit(void)                          \
+> On Tue, Jan 18, 2022 at 10:33:23AM +0200, Pekka Paalanen wrote:
+> > On Mon, 17 Jan 2022 19:47:39 +0100
+> > Sven Schnelle <svens@stackframe.org> wrote:
+> >  =20
+> > > I also tested the speed on my Thinkpad X1 with Intel graphics, and th=
+ere
+> > > a dmesg with 919 lines one the text console took about 2s to display.=
+ In
+> > > x11, i measure 22ms. This might be unfair because encoding might be
+> > > different, but i cannot confirm the 'memcpy' is faster than hardware
+> > > blitting' point. I think if that would be the case, no-one would care
+> > > about 2D acceleration. =20
+> >=20
+> > I think that is an extremely unfair comparison, because a graphical
+> > terminal app is not going to render every line of text streamed to it.
+> > It probably renders only the final view alone if you simply run
+> > 'dmesg', skipping the first 800-900 lines completely. =20
+>=20
+> Probably more like "render on every vblank", but yes, unlike fbcon it
+> surely wouldn't render every single character sent to the terminal.
 
-base-commit: 0c947b893d69231a9add855939da7c66237ab44f
--- 
-2.34.1
+Yes, and since 1k lines of dmesg is such little data, I would guess
+even an old machine can chew that up in much less than one refresh
+period until it needs to draw, so there is only going to be one or two
+screen updates to be drawn.
 
+Also, since X11 does not have vblank or frame boundaries in the
+protocol, a terminal emulator app will do render throttling somehow
+else. Maybe when it temporarily exhausts input and a timer as a
+deadline in case input just keeps on flooding, would be my wild guess.
+
+
+Thanks,
+pq
+
+--Sig_/bND91UWGGOh_7.dIQvYk7JE
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJQjwWQChkWOYOIONI1/ltBGqqqcFAmHnzlkACgkQI1/ltBGq
+qqeVcQ//b/3acJqaOlvPPa2ubpvE2sLqP9JGlaV2ADN6X12IuC9N8dxIvV/Wt5J7
+XrK47knUS0THSys+KigeUJa5bVTwquZLkfWp+eBECsyNulcv0PMFIoWHSCQBWHfO
+smfyj0Do0UIPPUc0dG0Gawf1ye0oJPuo4xfwu5k2SE6fJa/Tm8ofIG3pq5GJo5a5
+zUp9rIzDN7BclCKi/xQyXL+adyy7Mbe9/Ww6R0jFreMA4IBcNsDHqtGqI+OwIAEr
+LHmZHG3QwA/rrBl+lO8AkoW3+2ym43IQESV0qDWHKeT9LNw3ua2N2loNUjarNaom
+oxjzjyCII8o7ftiVdgeYJyYnaBcQP8NiOWOjWIXG8IrJwWp3nXEkvkeQMeQ5eqSP
+ZbErx/2IPgbGKpS6PrMaSKeJWdkGq7xlnb8aSOmFdpmjvH7dHvHfR2ouhts028p8
+f9PP7JqnIkPDaM0VDrdS1/m2v8N7gzwvDR3B5k0YHSHl2jtZbZmifStakeC8Emzu
+A5XDQVgy1BjJw99cICtbZOhNkdOQQmmoLozN4vWgU2sm2axE9SnOMXh9QGVzja0N
+CBbhu+mnNi51jtrBb8pfQV2sKhxaMtNi57hEaChcQbLFENbkXkjPgYdjVc4Ybsyq
+BBeklMjSeiIvc/pdux9iykReqh6VzE1MR8OdB1OTs+b91fWBBSo=
+=npdH
+-----END PGP SIGNATURE-----
+
+--Sig_/bND91UWGGOh_7.dIQvYk7JE--

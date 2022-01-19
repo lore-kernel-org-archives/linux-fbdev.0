@@ -2,129 +2,101 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CA76C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 13:49:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14CEBC433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 14:01:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344453AbiASNtI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jan 2022 08:49:08 -0500
-Received: from mout.gmx.net ([212.227.15.19]:58895 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S236230AbiASNtI (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jan 2022 08:49:08 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1642600144;
-        bh=jxwlRtLaSGT/yTdV+f+Hstct/Vl6fLs6Dlkqm8HpcKc=;
-        h=X-UI-Sender-Class:Date:From:To:Subject;
-        b=I4IxZqKw+3tintR8T0auB0tAjMkCnksjQPYRHFjzO8UJI3eph3KUSAGNlVaGww9fs
-         7QO/TkGGPPSg0yqFB3BRchd8xq7M9ZwepDeIz8zkzsFMkU9fRbRSoZkcBz+QblCqmD
-         0v5Uc1EM6m9QbH2EsCVAGaNI1LUVPZdujdESVgYw=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from ls3530 ([92.116.183.52]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MMofW-1mtkNY0Nj2-00Io9G; Wed, 19
- Jan 2022 14:49:04 +0100
-Date:   Wed, 19 Jan 2022 14:47:57 +0100
-From:   Helge Deller <deller@gmx.de>
-To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: heads-up for fbdev pull request
-Message-ID: <YegWjWSF/Pg+r4PH@ls3530>
+        id S1345358AbiASOBZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jan 2022 09:01:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38516 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1354962AbiASOBY (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 19 Jan 2022 09:01:24 -0500
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0DBFCC06173F
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Jan 2022 06:01:24 -0800 (PST)
+Received: by mail-ed1-x529.google.com with SMTP id z22so12045687edd.12
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Jan 2022 06:01:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linux-foundation.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=9nBImq/nQkQnpOEWVoZQh94HXj35ecrQ4IXZo3Dyzmw=;
+        b=KSHMHMEeC0dv+WHm/tTZDcjCTpmGgJ+2O/Bcj5nqx14TU6rVFm0TYJQNimzbkDNAZn
+         R8D5a4s470rm4/0YtqDbW1Uye6IoKCIq7W9dhj78xwaHPlVVV6WmGawx0MQMZTuxkVFU
+         HmV0aG6V3m/+6aXvoG0EXnalfyW8QG4N8bJgA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=9nBImq/nQkQnpOEWVoZQh94HXj35ecrQ4IXZo3Dyzmw=;
+        b=3iyN0fkHmcAXzdW0Oys8vbgsU+LEHRMQqenynZ4zdc3tUZFeyuxv5OTtp6phKmMFaO
+         kZHdZInH77RFf3wJSGdc1v0hibDfKVHuI1xB5//xm+gtl5xFColjCUSIXNAj6KBbBhVh
+         nhizau4DCdIUhWaCGzQ/842WKpMmR1AUPR2i9+unhkCE9ZH+QuvNteI2uHr8qMkUpYRi
+         myZQIPdXReXjJP/zvrgWLZL5pOeo6Mivm69WHN5uvrXGCrLmwMMbea0lV+3n+OomsOvQ
+         qvBGJZwVlN7M2Ykfj76lIivH1v/AxV6SaVGvPVFpxZKs5mhYON+jEDToPYPu1axk0GdB
+         T/kA==
+X-Gm-Message-State: AOAM533NykSAnnB+egw5dnG4tmGdilmSQeNsBuES8hgUyxEOvZTAvnai
+        S+mVDhl0LJX8HBS2Q5ZMsXJFoefg9oLjUrqoGBk=
+X-Google-Smtp-Source: ABdhPJxNzsmhecFeKNHzPG/YCy5PIasBRbahjBjtZbkQ2xSXqX/7YsRqalLQ4CDzfueqYbSE6+byMQ==
+X-Received: by 2002:a17:906:608:: with SMTP id s8mr26288943ejb.754.1642600882465;
+        Wed, 19 Jan 2022 06:01:22 -0800 (PST)
+Received: from mail-ed1-f49.google.com (mail-ed1-f49.google.com. [209.85.208.49])
+        by smtp.gmail.com with ESMTPSA id m25sm1283701edp.41.2022.01.19.06.01.20
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 19 Jan 2022 06:01:21 -0800 (PST)
+Received: by mail-ed1-f49.google.com with SMTP id m4so12106024edb.10
+        for <linux-fbdev@vger.kernel.org>; Wed, 19 Jan 2022 06:01:20 -0800 (PST)
+X-Received: by 2002:adf:c74e:: with SMTP id b14mr29011574wrh.97.1642600880273;
+ Wed, 19 Jan 2022 06:01:20 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:OqYKRYkEigh3meraLXbMuoTVA5gJrQjl1sd3f7KbN0ArOsSdxik
- TU3XOwG43SycA54x2ZypKuzdFfudgM1Ny0Yjm8jzwF0/wIuGHUswvRJauYqwECS/XlDD8h5
- x3JXbRMoB5+CcntCZGOS6uw0nAP9m+5SbO71WlNh7gR9STVm0vOhilY8Jq4yeSp08KFzkz9
- hrMyh/FFbteDugnakyyEQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:WCkUaVBvYfY=:PtYNoI9RhT9DrSKTgRQ5s4
- TquRCs8Vg7fdhrsRacyY+jb0xRb/tlxHz3uG5K7uM5ukrqSiNq+HIZt3eokd6NXzSLMM3r3eM
- UVIpdb4aoXu1kuK3vhoG5DJH4GBRom27qA6+tSm4EEAc77+/8UmJ1IKSRlL8KR/ePREan0KEH
- KCu/eOZoQq83FsLaxJUM2r/5UQ3RfHoGD+IxCCQZ1ffIxR+8soNEBcIorcz8egzgUEU5CFiUJ
- hTzy1vivgk1+g7cFCd4kcmnVkfJvIYEp98vJF/31i+lfZtElAUWIi379RB5lqFMakEWowPwxs
- 38xb00MTMzywhz2B7oepG/+M73R8CHx+NBrDym/hpILy8LByF5WLs0G5TzA5XyLvxHK1oTlI9
- bke2V5+ciyvlaCZ1kkhjXPqpijJ+eYwFRJfvBNY1qfXR1kEoQlzvgzjYDkoNT/qa07Ey5hMK2
- d6tG8+xFajOIGCBsSBPSaM506JbQT3Ao3pW+wXabIIltWMrgqkahNCvM51m/H26RH04PdnIeZ
- r11vBbvOudRi2LF/0Ky5RmqIOHA6tZcI9yco9TRu2KQ41HFcgmMZFPoX+BIXJnHp0+toM/Au0
- 6uDVAbTlJQnvvACS17fEtVRT67re0GKbs2+17y2ns2TR9h2p1XMxfolW1LW4Sg7xGHpIBnTDf
- vJEz0LbAK347sNgrV/SITM0Uw5mQIvkVBNTtxMp/D4de1aJJeqJno+hLAfMACkC75DFasXFU7
- 5mKxdgMoUq+f4vUtpShW00rLY01d+rTdfZEzShVkPl2W2B/XYH8h+dEa1+ShuBzEq6rpxIBjH
- EztoBbbGUPWwKwOBW2h6trbTJ6blyzKabY3gPE8+khX2kUoQXixohaWg/6St+EzaXNeOBcwe6
- Ws+YJcBIF/Oek859WXXezlt5rqyWVhDR5wP8NHafLjaqyd4RR72rtA601SPN1k1EqinL20t4K
- UVWserK0JoV66CjsSpde1EOcRwBgPUn7QnEdOV/vaGVtrEfD5TlOpARs6ROC0fwq6rGOCWmOt
- 0RKblA4yFqBtqaQ26x1mKoGg28mswVe1bf+CY9OBKOwlscUV83pwoDr8PHg2kyBFRhR9iODF2
- ojd+vWKV+6j9Yk=
+References: <20220119110839.33187-1-deller@gmx.de> <20220119110839.33187-3-deller@gmx.de>
+ <Yef0j8+DBbwC7Kjv@kroah.com> <Yef15k2GtC40aJEu@kroah.com> <CAMuHMdVWFJEDwjf-htZ_D1484efmuPnz_L-qhcTeUE-GVpvZXA@mail.gmail.com>
+ <4d8950c7-5f51-ca2b-4c93-741c7805a214@gmx.de>
+In-Reply-To: <4d8950c7-5f51-ca2b-4c93-741c7805a214@gmx.de>
+From:   Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Wed, 19 Jan 2022 16:01:01 +0200
+X-Gmail-Original-Message-ID: <CAHk-=wikFKjwdUBWCLCu=iL3rFq4BDDF0aBGdXC6ay74yJb+5Q@mail.gmail.com>
+Message-ID: <CAHk-=wikFKjwdUBWCLCu=iL3rFq4BDDF0aBGdXC6ay74yJb+5Q@mail.gmail.com>
+Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
+To:     Helge Deller <deller@gmx.de>
+Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Sven Schnelle <svens@stackframe.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Ilia Mirkin <imirkin@alum.mit.edu>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Pavel Machek <pavel@ucw.cz>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Gerd Hoffmann <kraxel@redhat.com>,
+        Sam Ravnborg <sam@ravnborg.org>, Claudio Suarez <cssk@net-c.es>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is just a heads-up, that I'm planning to send a pull request for
-fbdev fixes to Linus later today.
+On Wed, Jan 19, 2022 at 2:29 PM Helge Deller <deller@gmx.de> wrote:
+>
+> >>
+> >> Ah, no, that was just the soft scrollback code I was thinking of, which
+>
+> Right.
+> That was commit 973c096f6a85 and it was about vgacon, not fbcon.
 
-Nothing really important - just fixes for various fbdev drivers.
+No, fbcon had some bug too, although I've paged out the details. See
+commit 50145474f6ef ("fbcon: remove soft scrollback code").
 
-It has been a few days in for-next and no DRM parts are touched.
+If I remember correctly (and it's entirely possible that I don't), the
+whole "softback_lines" logic had serious problems with resizing the
+console (or maybe changing the font size).
 
-Changelog is below, and it can be pulled from:
-http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags=
-/fbdev-5.17-2
+There may have been some other bad interaction with
+foreground/background consoles too, I forget.
 
-Helge
-
-=2D---------------------------------------------------------------
-Chunyang Zhong (1):
-      video: ocfb: add const to of_device_id=A0
-
-Colin Ian King (2):
-      fbdev: aty128fb: make some arrays static const
-      video: fbdev: mb862xx: remove redundant assignment to pointer ptr
-
-Greg Kroah-Hartman (1):
-      omapfb: use default_groups in kobj_type
-
-Jiasheng Jiang (1):
-      video: fbdev: Check for null res pointer
-
-Luca Weiss (2):
-      backlight: qcom-wled: Add PM6150L compatible
-      dt-bindings: simple-framebuffer: allow standalone compatible
-
-Michael Kelley (1):
-      video: hyperv_fb: Fix validation of screen resolution
-
-Minghao Chi (1):
-      drivers/video: remove redundant res variable
-
-Xu Wang (2):
-      backlight: lm3630a_bl: Remove redundant 'flush_workqueue()' calls
-      fbdev: omap2: omapfb: Remove redundant 'flush_workqueue()' calls
-
-Yang Guang (1):
-      video: fbdev: use swap() to make code cleaner
-
-YueHaibing (1):
-      video: fbdev: controlfb: Fix COMPILE_TEST build
-
-Z. Liu (1):
-      matroxfb: set maxvram of vbG200eW to the same as vbG200 to avoid bla=
-ck screen
-
- .../devicetree/bindings/display/simple-framebuffer.yaml  | 12 +++++++----=
--
- drivers/video/backlight/lm3630a_bl.c                     |  1 -
- drivers/video/backlight/qcom-wled.c                      |  1 +
- drivers/video/fbdev/aty/aty128fb.c                       | 10 ++++++----
- drivers/video/fbdev/aty/mach64_ct.c                      |  4 +---
- drivers/video/fbdev/controlfb.c                          |  2 ++
- drivers/video/fbdev/hyperv_fb.c                          | 16 +++--------=
------
- drivers/video/fbdev/imxfb.c                              |  2 ++
- drivers/video/fbdev/matrox/matroxfb_base.c               |  2 +-
- drivers/video/fbdev/mb862xx/mb862xxfb_accel.c            |  2 +-
- drivers/video/fbdev/ocfb.c                               |  2 +-
- drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c     |  3 ++-
- drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c     |  3 ++-
- drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c     |  3 ++-
- drivers/video/fbdev/omap2/omapfb/omapfb-main.c           |  1 -
- drivers/video/fbdev/sis/sis_main.c                       |  2 +-
- 16 files changed, 32 insertions(+), 34 deletions(-)
-
-
+       Linus

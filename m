@@ -2,110 +2,129 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EFAEC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 13:35:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CA76C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 13:49:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354841AbiASNfW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jan 2022 08:35:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60724 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354833AbiASNfV (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jan 2022 08:35:21 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DBA76C061574;
-        Wed, 19 Jan 2022 05:35:20 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id A55FDB81911;
-        Wed, 19 Jan 2022 13:35:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 994EBC340E5;
-        Wed, 19 Jan 2022 13:35:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1642599318;
-        bh=MJBZhpZfujJ78Q+Y4DFAt3dHmUNItZSed2KuLByhnlc=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=vmBaNkvL0H29zQblw/+q9Mm11UDoBEGlp6W/zm16RQOzLjtWqDu/IfI98mPvlXden
-         4pNoBjaOiSsJxSsBWKAVi+xNPdNELsiiqQN8E+IOJvKWesszTRrHeCULqKWUC9GFXi
-         fmuWLSByaLPeDKjFU2z9E3FI3gHHkXfdy3YnFOg0=
-Date:   Wed, 19 Jan 2022 14:35:15 +0100
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Sven Schnelle <svens@stackframe.org>
-Cc:     Helge Deller <deller@gmx.de>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-fbdev@vger.kernel.org,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Ilia Mirkin <imirkin@alum.mit.edu>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        dri-devel@lists.freedesktop.org,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-        Gerd Hoffmann <kraxel@redhat.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Sam Ravnborg <sam@ravnborg.org>, Claudio Suarez <cssk@net-c.es>
-Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
-Message-ID: <YegTkwdFAb56D5Ud@kroah.com>
-References: <20220119110839.33187-1-deller@gmx.de>
- <20220119110839.33187-3-deller@gmx.de>
- <Yef0j8+DBbwC7Kjv@kroah.com>
- <Yef15k2GtC40aJEu@kroah.com>
- <87o847khfr.fsf@x1.stackframe.org>
+        id S1344453AbiASNtI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jan 2022 08:49:08 -0500
+Received: from mout.gmx.net ([212.227.15.19]:58895 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S236230AbiASNtI (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 19 Jan 2022 08:49:08 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1642600144;
+        bh=jxwlRtLaSGT/yTdV+f+Hstct/Vl6fLs6Dlkqm8HpcKc=;
+        h=X-UI-Sender-Class:Date:From:To:Subject;
+        b=I4IxZqKw+3tintR8T0auB0tAjMkCnksjQPYRHFjzO8UJI3eph3KUSAGNlVaGww9fs
+         7QO/TkGGPPSg0yqFB3BRchd8xq7M9ZwepDeIz8zkzsFMkU9fRbRSoZkcBz+QblCqmD
+         0v5Uc1EM6m9QbH2EsCVAGaNI1LUVPZdujdESVgYw=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from ls3530 ([92.116.183.52]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MMofW-1mtkNY0Nj2-00Io9G; Wed, 19
+ Jan 2022 14:49:04 +0100
+Date:   Wed, 19 Jan 2022 14:47:57 +0100
+From:   Helge Deller <deller@gmx.de>
+To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: heads-up for fbdev pull request
+Message-ID: <YegWjWSF/Pg+r4PH@ls3530>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <87o847khfr.fsf@x1.stackframe.org>
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:OqYKRYkEigh3meraLXbMuoTVA5gJrQjl1sd3f7KbN0ArOsSdxik
+ TU3XOwG43SycA54x2ZypKuzdFfudgM1Ny0Yjm8jzwF0/wIuGHUswvRJauYqwECS/XlDD8h5
+ x3JXbRMoB5+CcntCZGOS6uw0nAP9m+5SbO71WlNh7gR9STVm0vOhilY8Jq4yeSp08KFzkz9
+ hrMyh/FFbteDugnakyyEQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:WCkUaVBvYfY=:PtYNoI9RhT9DrSKTgRQ5s4
+ TquRCs8Vg7fdhrsRacyY+jb0xRb/tlxHz3uG5K7uM5ukrqSiNq+HIZt3eokd6NXzSLMM3r3eM
+ UVIpdb4aoXu1kuK3vhoG5DJH4GBRom27qA6+tSm4EEAc77+/8UmJ1IKSRlL8KR/ePREan0KEH
+ KCu/eOZoQq83FsLaxJUM2r/5UQ3RfHoGD+IxCCQZ1ffIxR+8soNEBcIorcz8egzgUEU5CFiUJ
+ hTzy1vivgk1+g7cFCd4kcmnVkfJvIYEp98vJF/31i+lfZtElAUWIi379RB5lqFMakEWowPwxs
+ 38xb00MTMzywhz2B7oepG/+M73R8CHx+NBrDym/hpILy8LByF5WLs0G5TzA5XyLvxHK1oTlI9
+ bke2V5+ciyvlaCZ1kkhjXPqpijJ+eYwFRJfvBNY1qfXR1kEoQlzvgzjYDkoNT/qa07Ey5hMK2
+ d6tG8+xFajOIGCBsSBPSaM506JbQT3Ao3pW+wXabIIltWMrgqkahNCvM51m/H26RH04PdnIeZ
+ r11vBbvOudRi2LF/0Ky5RmqIOHA6tZcI9yco9TRu2KQ41HFcgmMZFPoX+BIXJnHp0+toM/Au0
+ 6uDVAbTlJQnvvACS17fEtVRT67re0GKbs2+17y2ns2TR9h2p1XMxfolW1LW4Sg7xGHpIBnTDf
+ vJEz0LbAK347sNgrV/SITM0Uw5mQIvkVBNTtxMp/D4de1aJJeqJno+hLAfMACkC75DFasXFU7
+ 5mKxdgMoUq+f4vUtpShW00rLY01d+rTdfZEzShVkPl2W2B/XYH8h+dEa1+ShuBzEq6rpxIBjH
+ EztoBbbGUPWwKwOBW2h6trbTJ6blyzKabY3gPE8+khX2kUoQXixohaWg/6St+EzaXNeOBcwe6
+ Ws+YJcBIF/Oek859WXXezlt5rqyWVhDR5wP8NHafLjaqyd4RR72rtA601SPN1k1EqinL20t4K
+ UVWserK0JoV66CjsSpde1EOcRwBgPUn7QnEdOV/vaGVtrEfD5TlOpARs6ROC0fwq6rGOCWmOt
+ 0RKblA4yFqBtqaQ26x1mKoGg28mswVe1bf+CY9OBKOwlscUV83pwoDr8PHg2kyBFRhR9iODF2
+ ojd+vWKV+6j9Yk=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jan 19, 2022 at 02:01:44PM +0100, Sven Schnelle wrote:
-> Hi Greg,
-> 
-> Greg Kroah-Hartman <gregkh@linuxfoundation.org> writes:
-> 
-> > On Wed, Jan 19, 2022 at 12:22:55PM +0100, Greg Kroah-Hartman wrote:
-> >> On Wed, Jan 19, 2022 at 12:08:39PM +0100, Helge Deller wrote:
-> >> > This reverts commit 39aead8373b3c20bb5965c024dfb51a94e526151.
-> >> > 
-> >> > Revert this patch.  This patch started to introduce the regression that
-> >> > all hardware acceleration of more than 35 existing fbdev drivers were
-> >> > bypassed and thus fbcon console output for those was dramatically slowed
-> >> > down by factor of 10 and more.
-> >> > 
-> >> > Reverting this commit has no impact on DRM, since none of the DRM drivers are
-> >> > tagged with the acceleration flags FBINFO_HWACCEL_COPYAREA,
-> >> > FBINFO_HWACCEL_FILLRECT or others.
-> >> > 
-> >> > Signed-off-by: Helge Deller <deller@gmx.de>
-> >> > Cc: stable@vger.kernel.org # v5.16
-> >> 
-> >> Why just 5.16?  This commit came in on 5.11 and was backported to
-> >> 5.10.5.
-> >> 
-> >> As for "why", I think there was a number of private bugs that were
-> >> reported in this code, which is why it was removed.  I do not think it
-> >> can be safely added back in without addressing them first.  Let me go
-> >> dig through my email to see if I can find them...
-> >
-> > Ah, no, that was just the soft scrollback code I was thinking of, which
-> > was a different revert and is still gone, thankfully :)
-> >
-> > This one was just removed because Daniel noticed that only 3 drivers
-> > used this (nouveau, omapdrm, and gma600), so this shouldn't have caused
-> > any regressions in any other drivers like you are reporting here.
-> 
-> I'm counting more than 3 drivers using this. I think one of the reasons
-> why it was reverted was that no one is actively maintaining fbdev. With
-> Helge now volunteering i don't see a reason why it should stay reverted.
-> If there are issues coming up i'm pretty sure Helge would care, and i
-> would probably also take a look.
+This is just a heads-up, that I'm planning to send a pull request for
+fbdev fixes to Linus later today.
 
-Ok, no objection from me, but I think Daniel should weigh in as it is
-his commit that is being reverted here.
+Nothing really important - just fixes for various fbdev drivers.
 
-thanks,
+It has been a few days in for-next and no DRM parts are touched.
 
-greg k-h
+Changelog is below, and it can be pulled from:
+http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags=
+/fbdev-5.17-2
+
+Helge
+
+=2D---------------------------------------------------------------
+Chunyang Zhong (1):
+      video: ocfb: add const to of_device_id=A0
+
+Colin Ian King (2):
+      fbdev: aty128fb: make some arrays static const
+      video: fbdev: mb862xx: remove redundant assignment to pointer ptr
+
+Greg Kroah-Hartman (1):
+      omapfb: use default_groups in kobj_type
+
+Jiasheng Jiang (1):
+      video: fbdev: Check for null res pointer
+
+Luca Weiss (2):
+      backlight: qcom-wled: Add PM6150L compatible
+      dt-bindings: simple-framebuffer: allow standalone compatible
+
+Michael Kelley (1):
+      video: hyperv_fb: Fix validation of screen resolution
+
+Minghao Chi (1):
+      drivers/video: remove redundant res variable
+
+Xu Wang (2):
+      backlight: lm3630a_bl: Remove redundant 'flush_workqueue()' calls
+      fbdev: omap2: omapfb: Remove redundant 'flush_workqueue()' calls
+
+Yang Guang (1):
+      video: fbdev: use swap() to make code cleaner
+
+YueHaibing (1):
+      video: fbdev: controlfb: Fix COMPILE_TEST build
+
+Z. Liu (1):
+      matroxfb: set maxvram of vbG200eW to the same as vbG200 to avoid bla=
+ck screen
+
+ .../devicetree/bindings/display/simple-framebuffer.yaml  | 12 +++++++----=
+-
+ drivers/video/backlight/lm3630a_bl.c                     |  1 -
+ drivers/video/backlight/qcom-wled.c                      |  1 +
+ drivers/video/fbdev/aty/aty128fb.c                       | 10 ++++++----
+ drivers/video/fbdev/aty/mach64_ct.c                      |  4 +---
+ drivers/video/fbdev/controlfb.c                          |  2 ++
+ drivers/video/fbdev/hyperv_fb.c                          | 16 +++--------=
+-----
+ drivers/video/fbdev/imxfb.c                              |  2 ++
+ drivers/video/fbdev/matrox/matroxfb_base.c               |  2 +-
+ drivers/video/fbdev/mb862xx/mb862xxfb_accel.c            |  2 +-
+ drivers/video/fbdev/ocfb.c                               |  2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c     |  3 ++-
+ drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c     |  3 ++-
+ drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c     |  3 ++-
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c           |  1 -
+ drivers/video/fbdev/sis/sis_main.c                       |  2 +-
+ 16 files changed, 32 insertions(+), 34 deletions(-)
+
+

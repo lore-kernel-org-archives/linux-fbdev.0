@@ -2,36 +2,54 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B49F8C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 12:29:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04BDFC433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 12:46:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354466AbiASM3u (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jan 2022 07:29:50 -0500
-Received: from mout.gmx.net ([212.227.17.22]:43889 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234862AbiASM3k (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jan 2022 07:29:40 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1642595353;
-        bh=AzTwOkP2qFnqwWKULceIA25l5VnbUIb4mxUkPf/nTzo=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=RfMii8tw7jSZtIvm9xiEwlmoEvvajRQGG0f5Bek3CszkjEYjqxiJGTgGU9ep1ZCOU
-         f3uFvF2v/7LDarAuqEs7IdpCb71k2gZb6tsFS4Gdu4G18WSYpuUgrguYh2Hyms60w4
-         5ScBtF+5b3z7Rpq4ImuT41xvHpJ66pvyOOk0E97o=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.183.52]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M8ygY-1nGE5n230Q-0064UN; Wed, 19
- Jan 2022 13:29:13 +0100
-Message-ID: <4d8950c7-5f51-ca2b-4c93-741c7805a214@gmx.de>
-Date:   Wed, 19 Jan 2022 13:28:06 +0100
+        id S1349602AbiASMqJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jan 2022 07:46:09 -0500
+Received: from mail-ua1-f47.google.com ([209.85.222.47]:40756 "EHLO
+        mail-ua1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S245463AbiASMqH (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 19 Jan 2022 07:46:07 -0500
+Received: by mail-ua1-f47.google.com with SMTP id w21so4222273uan.7;
+        Wed, 19 Jan 2022 04:46:07 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=jSJaWLFbSmKDo2PDFLJ/OlDDjxv/sePlYig27gKKORM=;
+        b=3u7mBhgt4YNpY8+GLAA3HgafJhumKwn/Ezbwe1mi2JXqzneBntTFm2v4wsKncJyrBg
+         JXhxSaCN8J1Imv/b2zjhELBY6dw5XxArAK5hdm1JERlR4JOUpCzu76AEdfKVMXGJNom5
+         ADZD3jB4IDLh9cQM2ONdzosGrcjRkXzS1ILZFKxW/eiGdqciOI93/sM3F2MEcGvSBn83
+         UW+OgwXP7n2OxAkTugcub1pmE6HECaEDroSHpSui3f+g2W80X1AgANRv06N+Nhi3i/6c
+         +kW/q5Ux/RoG0w3liBbV4dvVlWsVn76Z43TIwtrkM/JU+0lvS00h1WL0VRrGsdIx2sfJ
+         /swQ==
+X-Gm-Message-State: AOAM530+k0Wk1vPcmpJz22UslLn4Idt56zDUD4gvokW+E7S74AV1nOOa
+        kW/FlIl7OlAr0kIMZ2qVc9dDH+mFw0bTig==
+X-Google-Smtp-Source: ABdhPJxgr0MrFCoZkDTidnW4zpKhPY5nlGmAJKRr85MEKl8yXKrsd4U82JVD9D0ezLjK2BOLByjuBg==
+X-Received: by 2002:a67:d315:: with SMTP id a21mr11100069vsj.51.1642596366888;
+        Wed, 19 Jan 2022 04:46:06 -0800 (PST)
+Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com. [209.85.222.46])
+        by smtp.gmail.com with ESMTPSA id k5sm2243920vsc.14.2022.01.19.04.46.04
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 19 Jan 2022 04:46:05 -0800 (PST)
+Received: by mail-ua1-f46.google.com with SMTP id m90so4279777uam.2;
+        Wed, 19 Jan 2022 04:46:04 -0800 (PST)
+X-Received: by 2002:a9f:3e01:: with SMTP id o1mr11968203uai.89.1642596364458;
+ Wed, 19 Jan 2022 04:46:04 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <20220119110839.33187-1-deller@gmx.de>
+In-Reply-To: <20220119110839.33187-1-deller@gmx.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed, 19 Jan 2022 13:45:53 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdXj2WsQ2htP63vXD_PRuhrqry3GgD8U1tJQ99BkQPQL=w@mail.gmail.com>
+Message-ID: <CAMuHMdXj2WsQ2htP63vXD_PRuhrqry3GgD8U1tJQ99BkQPQL=w@mail.gmail.com>
+Subject: Re: [PATCH 0/2] Fix regression introduced by disabling accelerated
+ scrolling in fbcon
+To:     Helge Deller <deller@gmx.de>
 Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         Sven Schnelle <svens@stackframe.org>,
         Linus Torvalds <torvalds@linux-foundation.org>,
@@ -45,106 +63,85 @@ Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Gerd Hoffmann <kraxel@redhat.com>,
         Sam Ravnborg <sam@ravnborg.org>, Claudio Suarez <cssk@net-c.es>
-References: <20220119110839.33187-1-deller@gmx.de>
- <20220119110839.33187-3-deller@gmx.de> <Yef0j8+DBbwC7Kjv@kroah.com>
- <Yef15k2GtC40aJEu@kroah.com>
- <CAMuHMdVWFJEDwjf-htZ_D1484efmuPnz_L-qhcTeUE-GVpvZXA@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAMuHMdVWFJEDwjf-htZ_D1484efmuPnz_L-qhcTeUE-GVpvZXA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:kH6rz4fWH4V5I9BuuMjlUgUgN4zBgAIh8HdN1Q57L7UUprT5obY
- YPluvR3niGe8oQy8iy5Csh7ruQsVz2XkUrPl9vr24Xhb9586ElsISuWodSPaPMIZBzDTek0
- EZ8UoUWc7QgpZJoHd7Vp8Dgm62X8A94TaQ/qpJTWtBZUPdBy0fTF+bDKW4leQfLggle0ys2
- HpJ3Qq18ysc/QI2tfGjcg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:y12KkCrP0wM=:LVLC78OFUBA0Maz52K+ooI
- c5vjpiraec9GiDC5ssk80QeQinJphuKF6ECxaZFsoE75u6q/BVx5B4VQgMVv2jn/oN/ff57B+
- eC/JbIkuesva7Wg/Y3phJcfGB1fHh9K+NW7KL5suEnMekUe5utmETAHEAQTuIrU9iQIGjMNxM
- FieYF0jay2AUkHabSuamsOcfW46QtK5lfusSU1wKdLWynnc9g8FLehoFpe7B2/V9waAnA1QOb
- ezALILRsXqWGHC5hkrs2X3KRJsOMqFxz1dFj8FBc8uPUozxkDJePAl5xqurjy1npLmstqTR1/
- aiKvfLmAJHGOfHMggzvomC3SM0lyvn/KR6WiEaOQwnWe75HS3nGc5/hCsDmX9KmAqzRxIVkfm
- 5QvEtI1GG8azB9EISmUbYKKwT48nbvRNL66rTpb6bi9R9DTxuDO1NGj4Qnaofp0K4z0AD/LoN
- EpzEjYGy3ff+sj9H2uOQmB8y6/04HdSHkFXm5j+NuGBqe9Yt28LBHJusiVY2BENVautCBy1PL
- kKezZRWPhsPLmiXDgAmQlDHmnFlIWpBaoA9zjAKWfT1SvV0nW9ciQ/KL+V3qGSCU8MFCQZBiK
- IE0BH1SfLui4waAy/fxhK/Vzvq8bNM+Xn11zVO/BJca2iudX9l6tNWwOr4Q9GqseRa6ORqBnw
- H2nw91Zdy8y2Lugkx56PrWxr7fR1skVgxC4Q5e88ZeQfgOp9ocKL9y0RhKxcW5Fr8atRu8ri2
- aL6skB9QEUGES6cmoDCJSU1KXMvF9Z2KfgfXTmsGWyVdoAoHyQX8naM1bWy7x+Qq8ZL+JQHfo
- 06gu6Z7JhRurQrrCYfokFmrQqUwR/8iG1+MwoWCyTPhgmNjYrdZuTYYUkvULGUIGT3/and8Cr
- fhM5pZT32Hs62/aN23oMuq/neT/P2OC23FGm4MeVyTOebQ9rcaT962KYiP5Ju2ozeANRlPle7
- YGP96uwsWfNmSq8p3UFcwTdVn0Si3P2ogeYyOjXgtHXf+DD6sjgCUHmnUn7hVc2r+ehVJnezR
- DhuzQ/iSJ8GOCmn/+eZUC/4c3P7DfZvkC/fOFSoMQ//HQZBU72oI10c1cDQsdkvkr/VQHzwew
- +LDc1+Stqv12rA=
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Greg,
+Hi Helge,
 
-On 1/19/22 12:47, Geert Uytterhoeven wrote:
-> On Wed, Jan 19, 2022 at 12:28 PM Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
->> On Wed, Jan 19, 2022 at 12:22:55PM +0100, Greg Kroah-Hartman wrote:
->>> On Wed, Jan 19, 2022 at 12:08:39PM +0100, Helge Deller wrote:
->>>> This reverts commit 39aead8373b3c20bb5965c024dfb51a94e526151.
->>>>
->>>> Revert this patch.  This patch started to introduce the regression th=
-at
->>>> all hardware acceleration of more than 35 existing fbdev drivers were
->>>> bypassed and thus fbcon console output for those was dramatically slo=
-wed
->>>> down by factor of 10 and more.
->>>>
->>>> Reverting this commit has no impact on DRM, since none of the DRM dri=
-vers are
->>>> tagged with the acceleration flags FBINFO_HWACCEL_COPYAREA,
->>>> FBINFO_HWACCEL_FILLRECT or others.
->>>>
->>>> Signed-off-by: Helge Deller <deller@gmx.de>
+On Wed, Jan 19, 2022 at 12:10 PM Helge Deller <deller@gmx.de> wrote:
+> This series reverts two patches which disabled scrolling acceleration in
+> fbcon/fbdev. Those patches introduced a regression for fbdev-supported graphic
+> cards because of the performance penalty by doing screen scrolling by software
+> instead of using hardware acceleration.
 >
->>> As for "why", I think there was a number of private bugs that were
->>> reported in this code, which is why it was removed.  I do not think it
->>> can be safely added back in without addressing them first.  Let me go
->>> dig through my email to see if I can find them...
->>
->> Ah, no, that was just the soft scrollback code I was thinking of, which
+> Console scrolling acceleration was disabled by dropping code which checked at
+> runtime the driver hardware possibilities for the BINFO_HWACCEL_COPYAREA or
+> FBINFO_HWACCEL_FILLRECT flags and if set, it enabled scrollmode SCROLL_MOVE
+> which uses hardware acceleration to move screen contents.  After dropping those
+> checks scrollmode was hard-wired to SCROLL_REDRAW instead, which forces all
+> graphic cards to redraw every character at the new screen position when
+> scrolling.
+>
+> This change effectively disabled all hardware-based scrolling acceleration for
+> ALL drivers, because now all kind of 2D hardware acceleration (bitblt,
+> fillrect) in the drivers isn't used any longer.
+>
+> The original commit message mentions that only 3 DRM drivers (nouveau, omapdrm
+> and gma500) used hardware acceleration in the past and thus code for checking
+> and using scrolling acceleration is obsolete.
+>
+> This statement is NOT TRUE, because beside the DRM drivers there are around 35
+> other fbdev drivers which depend on fbdev/fbcon and still provide hardware
+> acceleration for fbdev/fbcon.
+>
+> The original commit message also states that syzbot found lots of bugs in fbcon
+> and thus it's "often the solution to just delete code and remove features".
+> This is true, and the bugs - which actually affected all users of fbcon,
+> including DRM - were fixed, or code was dropped like e.g. the support for
+> software scrollback in vgacon (commit 973c096f6a85).
+>
+> So to further analyze which bugs were found by syzbot, I've looked through all
+> patches in drivers/video which were tagged with syzbot or syzkaller back to
+> year 2005. The vast majority fixed the reported issues on a higher level, e.g.
+> when screen is to be resized, or when font size is to be changed. The few ones
+> which touched driver code fixed a real driver bug, e.g. by adding a check.
+>
+> But NONE of those patches touched code of either the SCROLL_MOVE or the
+> SCROLL_REDRAW case.
+>
+> That means, there was no real reason why SCROLL_MOVE had to be ripped-out and
+> just SCROLL_REDRAW had to be used instead. The only reason I can imagine so far
+> was that SCROLL_MOVE wasn't used by DRM and as such it was assumed that it
+> could go away. That argument completely missed the fact that SCROLL_MOVE is
+> still heavily used by fbdev (non-DRM) drivers.
+>
+> Some people mention that using memcpy() instead of the hardware acceleration is
+> pretty much the same speed. But that's not true, at least not for older graphic
+> cards and machines where we see speed decreases by factor 10 and more and thus
+> this change leads to console responsiveness way worse than before.
+>
+> That's why I propose to revert those patches, re-introduce hardware-based
+> scrolling acceleration and fix the performance-regression for fbdev drivers.
+> There isn't any impact on DRM when reverting those patches.
+>
+> Helge Deller (2):
+>   Revert "fbdev: Garbage collect fbdev scrolling acceleration, part 1
+>     (from TODO list)"
+>   Revert "fbcon: Disable accelerated scrolling"
 
-Right.
-That was commit 973c096f6a85 and it was about vgacon, not fbcon.
+Thank you for this series, and the prior analysis!
 
-I did mentioned it in my cover letter, together with my analysis of
-the reported bugs.
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Maybe I should have put all the information from the cover letter into
-the patch here as well. If you haven't read the cover letter yet, please d=
-o.
+Gr{oetje,eeting}s,
 
-Helge
+                        Geert
 
-> So the bugs argument is moot.
->
->> was a different revert and is still gone, thankfully :)
->
-> FTR, not everyone else was thankful about that one...
->
->> This one was just removed because Daniel noticed that only 3 drivers
->> used this (nouveau, omapdrm, and gma600), so this shouldn't have caused
->> any regressions in any other drivers like you are reporting here.
->>
->> So perhaps this regression is caused by something else?
->
-> 1. Daniel's patch was not CCed to linux-fbdev,
-> 2. When I discovered the patch, I pointed out that the premise of 3
->    drivers was not true, and that it affects 32 more fbdev drivers[1] .
->    The patch was applied regardless.
-> 3. When the patch was suggested for backporting, I pointed out the
->    same[2].
->    The patch was backported regardless.
->
-> [1] https://lore.kernel.org/r/alpine.DEB.2.22.394.2010311116530.379363@r=
-amsan.of.borg/
-> [2] https://lore.kernel.org/r/CAMuHMdXRgam2zahPEGcw8+76Xm-0AO-Ci9-YmVa5J=
-pTKVHphRw@mail.gmail.com/
->
-> Gr{oetje,eeting}s,
->
->                         Geert
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

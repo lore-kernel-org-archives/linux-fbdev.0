@@ -2,137 +2,173 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C487C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 08:40:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 033FBC433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 11:10:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352561AbiASIkG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jan 2022 03:40:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49196 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348416AbiASIkG (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jan 2022 03:40:06 -0500
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D210CC06161C;
-        Wed, 19 Jan 2022 00:40:05 -0800 (PST)
-Received: by mail-lf1-x130.google.com with SMTP id m3so6595862lfu.0;
-        Wed, 19 Jan 2022 00:40:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references
-         :mime-version;
-        bh=SXQq9rN5zBUkQKNE0Ivp3Pzg3xcm4M4u40k+sMdUxTA=;
-        b=fhc0hK1/WnEzeZqe7BKS8KCMrfuRKaA+bBGmof8JOE9+6GMUmkvTZgBVPmfSf5c1D9
-         rQg8D0i7Rqz4NFAewNNakJ7w0oDxbJk7l/Z+B4yetE5iyMYPwRxZjnlfc0csJmsgzrpN
-         Uikj9y79xNJZYEvwNs8ctv9mO6YCzruThn1OlFMkpJ7pXRaau9pYeBoC0KmJIAmZWgQl
-         6pC4QyFi+b2/5PNP3niAP/0Gh8VTGVECB1zxNH3xw0f5sViQ+nO+AD1DfriZ74Lj+wXW
-         vCfkd0D5RYfRiQqLjoCQbXen4jXTUdaksg2/R1ndVjxLzPVedPs9DeZ27zCm4CFB6huU
-         +deA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
-         :references:mime-version;
-        bh=SXQq9rN5zBUkQKNE0Ivp3Pzg3xcm4M4u40k+sMdUxTA=;
-        b=A5/FFCXsnBIZyUH2/Z/5O2z4k9kMbjUZu5WWUWG9CmWFLsIAJJC9Dj4ez/FCcvKNNW
-         EyY4ZGlbmKzmOwBumakL/HbOAiTbdwduOuEtehzI01WZi0Rmq7u0R0HN6WPh+JjT+LeY
-         Moq6gbIvavcuJBr9QMoH1H+LJu9BjL1jdzSbF8ESEzMqdnsN3z8Or4xWUMD7vxa485k4
-         jPm4L61WxUsJciDWe+x5lk0YxE76XRmsEjPKIu6ZnTpQk0EsldxwUl3agFEsK9ckYYzX
-         3IMJjWqjQFHQ+Xw89vq7j7vcOwNQGs4MDxyh8tGewTgXJJ7Z9mQKiuBacO3ac39M0W8S
-         U64Q==
-X-Gm-Message-State: AOAM532w8VKJF3dQsisE4UjZB777R1Bvvcp8KgkAwAW4jb/HdLYYEat7
-        URJ6I9VcC/Es3i0JO4JzjI0=
-X-Google-Smtp-Source: ABdhPJwxq0qLxjcvHPejq/3Va1n4aFFKdh6SzZ39AvI96pEeJFP1ic33G48wGqCvRn5McCgtLxEgIg==
-X-Received: by 2002:a2e:5801:: with SMTP id m1mr12246227ljb.164.1642581604046;
-        Wed, 19 Jan 2022 00:40:04 -0800 (PST)
-Received: from eldfell ([194.136.85.206])
-        by smtp.gmail.com with ESMTPSA id k21sm1451287lfu.24.2022.01.19.00.40.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Jan 2022 00:40:03 -0800 (PST)
-Date:   Wed, 19 Jan 2022 10:39:53 +0200
-From:   Pekka Paalanen <ppaalanen@gmail.com>
-To:     Gerd Hoffmann <kraxel@redhat.com>
-Cc:     Sven Schnelle <svens@stackframe.org>,
-        dri-devel@lists.freedesktop.org, Helge Deller <deller@gmx.de>,
-        linux-fbdev@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-Message-ID: <20220119103953.75138bac@eldfell>
-In-Reply-To: <20220118095352.xsb6fqacw4p276c5@sirius.home.kraxel.org>
-References: <YeG8ydoJNWWkGrTb@ls3530>
-        <c48ad8ae-aea5-43fa-882f-dccb90dde9a4@suse.de>
-        <87bl0amc6s.fsf@x1.stackframe.org>
-        <20220118103323.4bae3a7d@eldfell>
-        <20220118095352.xsb6fqacw4p276c5@sirius.home.kraxel.org>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+        id S1353948AbiASLKO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jan 2022 06:10:14 -0500
+Received: from mout.gmx.net ([212.227.15.19]:47251 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1354024AbiASLKO (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 19 Jan 2022 06:10:14 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1642590586;
+        bh=03ODW03j8YJfxEci8KnMyw4Mt/JjljIu8pLQIEO4aj0=;
+        h=X-UI-Sender-Class:From:To:Subject:Date;
+        b=ED7v8mlJwz/aUHJFcbJIKUCN+roP4i0vr/Wrjj/YL+6T+QsIo46E2H2Vf81urzIE9
+         KpS51FfQKNAfwA9WkwG5y/YwqwX7Ov+ffjEkbo+lVB33I7qZxRgEMqEbjSkty+u7pB
+         wXGHKIQqKKxH/ITKLgMXqIOGBawmrmKp4kYnuCA0=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from ls3530.fritz.box ([92.116.183.52]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MiacH-1mdGnd1wRj-00fhXJ; Wed, 19
+ Jan 2022 12:09:46 +0100
+From:   Helge Deller <deller@gmx.de>
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-fbdev@vger.kernel.org, Sven Schnelle <svens@stackframe.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Ilia Mirkin <imirkin@alum.mit.edu>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        dri-devel@lists.freedesktop.org,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+        Gerd Hoffmann <kraxel@redhat.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Sam Ravnborg <sam@ravnborg.org>, Claudio Suarez <cssk@net-c.es>
+Subject: [PATCH 0/2] Fix regression introduced by disabling accelerated scrolling in fbcon
+Date:   Wed, 19 Jan 2022 12:08:37 +0100
+Message-Id: <20220119110839.33187-1-deller@gmx.de>
+X-Mailer: git-send-email 2.31.1
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/bND91UWGGOh_7.dIQvYk7JE";
- protocol="application/pgp-signature"; micalg=pgp-sha256
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:qTmYAWli9L6TudjwN284cLCRYhReB55axJIO2pVzY3b+UC4RW6t
+ tnVdB2RrR5++3EZ8ZyPl9/F0oBmB2NjY9IFOawMo3lqoSpcFMLbHqCDdfg7JjEgXU6sCEb2
+ E+IXcJIvoQETmXnWfhWy2ID1ZcrtV3d1M6C+S1QFjKnTC86iXCONsc4nURwo9nWMnHpka0D
+ vloc84ERRzz85GQj+dbeQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:P/sA5GOmAxk=:Fx5fyN3Mc8+FOsPWITIPWM
+ H36ut17iHqkiPDl3YdxGmi+uhyKjt1A/+iEwY1Ya+0rOXyUb40323j5XAO1VC/+sP5wBUjaKC
+ iapmzojahcNlNsLBKr0YYU+iKSlp1aibERjzjbIDoJBsa+1EjI47NN3rnw8DL7OUSfOqzXu1p
+ x38f7bClH92GbMbaxHh338j/LeUKH05xAwjYqjZgkvQXDcTU5tmePY4PFEfrkVJhYDIxcxVAT
+ W2LcvMbMYku3/T0glVUB+aDQl9/rEk7mCWkhvUyKyVSyBFtwCdVuwxovEoPSJCkj72WZZ+naM
+ JeRvTRJO/4YhCMBybM+HfAM9+foINyveEwxQl5sLFmGrWdilkC7ZZ507LPgBFquLVWjNd1TGh
+ cha5y1NIXk4zOpLHK5TRR354yRv3UajE+BD+zJXT+6DIBQoCICEu41FQZoDEg5tZUhGoJTHXV
+ Ntz/4U9j2NDIMFbdHFciYMzdBiIMj/TmOi5oXiWPoK5+sS6Pc6O8D28y4nnPPPhzEB8juD0Gx
+ 0j2ir5BCaElpe3NJMc1nRo+95OWavGLfYmOV8yiXjDvUBNRaoVwb0iGx53C2L7UELAJw/xIcL
+ 3LiA9CfJ60JoMPWF6x0UwoEG9i+HlUQTxdhST5yR4afHGf2jWfGQKSmTYSONE3psgwOCcTQ7s
+ A0Tbyf295rZRyvpgMHIh7PdEhVTSwarEaxn3S9RwJerEjyi4lSaNpjAhMF9qKZL74pNiUmUvA
+ t0ZqbsVO4EvH+GSc/vwUmIXsr8oW8oeGaNC27kNuFLbPimsTKe9vFoOHFbTwpoFPTpKDJtqQQ
+ LivRBIYYCNSY1XgyLtIOWVMUax3IJPOZ9eGcI3oeLAg9r6ddVEUBQIUjWZO0sNuxd+ATV+Cf+
+ bKgEKImiLC49o4yq6WM36V0kwzPU+GIwE1JPk23Emy/k0H2vuns/DvtymKATeBEJHLs/zXu9a
+ 1Vuffuppgf2bV60Lkj7RvxFR/d9+o3I7tltzVihUU6AFJdn6PMfJsh43wESBZKybmLrD+SEDI
+ dxWRh4qYv5T+31j5lqbuZiLRmh3wk2TU/wZ5oUfF1OQgA6nKR5HUAbvxfd3Ca1UlGaGVOTuzT
+ +bTK5iFf2DZk3U=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
---Sig_/bND91UWGGOh_7.dIQvYk7JE
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 18 Jan 2022 10:53:52 +0100
-Gerd Hoffmann <kraxel@redhat.com> wrote:
-
-> On Tue, Jan 18, 2022 at 10:33:23AM +0200, Pekka Paalanen wrote:
-> > On Mon, 17 Jan 2022 19:47:39 +0100
-> > Sven Schnelle <svens@stackframe.org> wrote:
-> >  =20
-> > > I also tested the speed on my Thinkpad X1 with Intel graphics, and th=
-ere
-> > > a dmesg with 919 lines one the text console took about 2s to display.=
- In
-> > > x11, i measure 22ms. This might be unfair because encoding might be
-> > > different, but i cannot confirm the 'memcpy' is faster than hardware
-> > > blitting' point. I think if that would be the case, no-one would care
-> > > about 2D acceleration. =20
-> >=20
-> > I think that is an extremely unfair comparison, because a graphical
-> > terminal app is not going to render every line of text streamed to it.
-> > It probably renders only the final view alone if you simply run
-> > 'dmesg', skipping the first 800-900 lines completely. =20
->=20
-> Probably more like "render on every vblank", but yes, unlike fbcon it
-> surely wouldn't render every single character sent to the terminal.
-
-Yes, and since 1k lines of dmesg is such little data, I would guess
-even an old machine can chew that up in much less than one refresh
-period until it needs to draw, so there is only going to be one or two
-screen updates to be drawn.
-
-Also, since X11 does not have vblank or frame boundaries in the
-protocol, a terminal emulator app will do render throttling somehow
-else. Maybe when it temporarily exhausts input and a timer as a
-deadline in case input just keeps on flooding, would be my wild guess.
-
-
-Thanks,
-pq
-
---Sig_/bND91UWGGOh_7.dIQvYk7JE
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEJQjwWQChkWOYOIONI1/ltBGqqqcFAmHnzlkACgkQI1/ltBGq
-qqeVcQ//b/3acJqaOlvPPa2ubpvE2sLqP9JGlaV2ADN6X12IuC9N8dxIvV/Wt5J7
-XrK47knUS0THSys+KigeUJa5bVTwquZLkfWp+eBECsyNulcv0PMFIoWHSCQBWHfO
-smfyj0Do0UIPPUc0dG0Gawf1ye0oJPuo4xfwu5k2SE6fJa/Tm8ofIG3pq5GJo5a5
-zUp9rIzDN7BclCKi/xQyXL+adyy7Mbe9/Ww6R0jFreMA4IBcNsDHqtGqI+OwIAEr
-LHmZHG3QwA/rrBl+lO8AkoW3+2ym43IQESV0qDWHKeT9LNw3ua2N2loNUjarNaom
-oxjzjyCII8o7ftiVdgeYJyYnaBcQP8NiOWOjWIXG8IrJwWp3nXEkvkeQMeQ5eqSP
-ZbErx/2IPgbGKpS6PrMaSKeJWdkGq7xlnb8aSOmFdpmjvH7dHvHfR2ouhts028p8
-f9PP7JqnIkPDaM0VDrdS1/m2v8N7gzwvDR3B5k0YHSHl2jtZbZmifStakeC8Emzu
-A5XDQVgy1BjJw99cICtbZOhNkdOQQmmoLozN4vWgU2sm2axE9SnOMXh9QGVzja0N
-CBbhu+mnNi51jtrBb8pfQV2sKhxaMtNi57hEaChcQbLFENbkXkjPgYdjVc4Ybsyq
-BBeklMjSeiIvc/pdux9iykReqh6VzE1MR8OdB1OTs+b91fWBBSo=
-=npdH
------END PGP SIGNATURE-----
-
---Sig_/bND91UWGGOh_7.dIQvYk7JE--
+This series reverts two patches which disabled scrolling acceleration in=0D
+fbcon/fbdev. Those patches introduced a regression for fbdev-supported grap=
+hic=0D
+cards because of the performance penalty by doing screen scrolling by softw=
+are=0D
+instead of using hardware acceleration.=0D
+=0D
+Console scrolling acceleration was disabled by dropping code which checked =
+at=0D
+runtime the driver hardware possibilities for the BINFO_HWACCEL_COPYAREA or=
+=0D
+FBINFO_HWACCEL_FILLRECT flags and if set, it enabled scrollmode SCROLL_MOVE=
+=0D
+which uses hardware acceleration to move screen contents.  After dropping t=
+hose=0D
+checks scrollmode was hard-wired to SCROLL_REDRAW instead, which forces all=
+=0D
+graphic cards to redraw every character at the new screen position when=0D
+scrolling.=0D
+=0D
+This change effectively disabled all hardware-based scrolling acceleration =
+for=0D
+ALL drivers, because now all kind of 2D hardware acceleration (bitblt,=0D
+fillrect) in the drivers isn't used any longer.=0D
+=0D
+The original commit message mentions that only 3 DRM drivers (nouveau, omap=
+drm=0D
+and gma500) used hardware acceleration in the past and thus code for checki=
+ng=0D
+and using scrolling acceleration is obsolete.=0D
+=0D
+This statement is NOT TRUE, because beside the DRM drivers there are around=
+ 35=0D
+other fbdev drivers which depend on fbdev/fbcon and still provide hardware=
+=0D
+acceleration for fbdev/fbcon.=0D
+=0D
+The original commit message also states that syzbot found lots of bugs in f=
+bcon=0D
+and thus it's "often the solution to just delete code and remove features".=
+=0D
+This is true, and the bugs - which actually affected all users of fbcon,=0D
+including DRM - were fixed, or code was dropped like e.g. the support for=0D
+software scrollback in vgacon (commit 973c096f6a85).=0D
+=0D
+So to further analyze which bugs were found by syzbot, I've looked through =
+all=0D
+patches in drivers/video which were tagged with syzbot or syzkaller back to=
+=0D
+year 2005. The vast majority fixed the reported issues on a higher level, e=
+.g.=0D
+when screen is to be resized, or when font size is to be changed. The few o=
+nes=0D
+which touched driver code fixed a real driver bug, e.g. by adding a check.=
+=0D
+=0D
+But NONE of those patches touched code of either the SCROLL_MOVE or the=0D
+SCROLL_REDRAW case.=0D
+=0D
+That means, there was no real reason why SCROLL_MOVE had to be ripped-out a=
+nd=0D
+just SCROLL_REDRAW had to be used instead. The only reason I can imagine so=
+ far=0D
+was that SCROLL_MOVE wasn't used by DRM and as such it was assumed that it=
+=0D
+could go away. That argument completely missed the fact that SCROLL_MOVE is=
+=0D
+still heavily used by fbdev (non-DRM) drivers.=0D
+=0D
+Some people mention that using memcpy() instead of the hardware acceleratio=
+n is=0D
+pretty much the same speed. But that's not true, at least not for older gra=
+phic=0D
+cards and machines where we see speed decreases by factor 10 and more and t=
+hus=0D
+this change leads to console responsiveness way worse than before.=0D
+=0D
+That's why I propose to revert those patches, re-introduce hardware-based=0D
+scrolling acceleration and fix the performance-regression for fbdev drivers=
+.=0D
+There isn't any impact on DRM when reverting those patches.=0D
+=0D
+Helge Deller (2):=0D
+  Revert "fbdev: Garbage collect fbdev scrolling acceleration, part 1=0D
+    (from TODO list)"=0D
+  Revert "fbcon: Disable accelerated scrolling"=0D
+=0D
+ Documentation/gpu/todo.rst              |  24 --=0D
+ drivers/video/fbdev/core/bitblit.c      |  16 +=0D
+ drivers/video/fbdev/core/fbcon.c        | 540 +++++++++++++++++++++++-=0D
+ drivers/video/fbdev/core/fbcon.h        |  59 +++=0D
+ drivers/video/fbdev/core/fbcon_ccw.c    |  28 +-=0D
+ drivers/video/fbdev/core/fbcon_cw.c     |  28 +-=0D
+ drivers/video/fbdev/core/fbcon_rotate.h |   9 +=0D
+ drivers/video/fbdev/core/fbcon_ud.c     |  37 +-=0D
+ drivers/video/fbdev/core/tileblit.c     |  16 +=0D
+ drivers/video/fbdev/skeletonfb.c        |  12 +-=0D
+ include/linux/fb.h                      |   2 +-=0D
+ 11 files changed, 703 insertions(+), 68 deletions(-)=0D
+=0D
+-- =0D
+2.31.1=0D
+=0D

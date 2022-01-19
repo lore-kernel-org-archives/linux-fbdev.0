@@ -2,26 +2,26 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 033FBC433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 11:10:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16CAAC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 11:10:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1353948AbiASLKO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jan 2022 06:10:14 -0500
-Received: from mout.gmx.net ([212.227.15.19]:47251 "EHLO mout.gmx.net"
+        id S240645AbiASLKZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 19 Jan 2022 06:10:25 -0500
+Received: from mout.gmx.net ([212.227.15.15]:49047 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1354024AbiASLKO (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jan 2022 06:10:14 -0500
+        id S1354027AbiASLKV (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 19 Jan 2022 06:10:21 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1642590586;
-        bh=03ODW03j8YJfxEci8KnMyw4Mt/JjljIu8pLQIEO4aj0=;
-        h=X-UI-Sender-Class:From:To:Subject:Date;
-        b=ED7v8mlJwz/aUHJFcbJIKUCN+roP4i0vr/Wrjj/YL+6T+QsIo46E2H2Vf81urzIE9
-         KpS51FfQKNAfwA9WkwG5y/YwqwX7Ov+ffjEkbo+lVB33I7qZxRgEMqEbjSkty+u7pB
-         wXGHKIQqKKxH/ITKLgMXqIOGBawmrmKp4kYnuCA0=
+        s=badeba3b8450; t=1642590588;
+        bh=RGiIIof/++wYXg6xAlJlqJrLedfDeADl0VZRLLIROQA=;
+        h=X-UI-Sender-Class:From:To:Subject:Date:In-Reply-To:References;
+        b=Oe10AR4JkCg160gI7uvY57z0umFQNt5bKmahozBPxl0wx85r+zQteEaxYrd1v9+uR
+         7Q36lpdLd4fZ7pHzpao2Tu7ikk5SyRlQ0V1e0eRWnKhlBGn4QVDgrvoTkJ5kn6VQTr
+         5wCELjmJVZ2LyPVddmsrZ1YdfRLy5W2UEa3k5iw0=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from ls3530.fritz.box ([92.116.183.52]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MiacH-1mdGnd1wRj-00fhXJ; Wed, 19
- Jan 2022 12:09:46 +0100
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MnaoZ-1mQbLa3R9Z-00jX0h; Wed, 19
+ Jan 2022 12:09:47 +0100
 From:   Helge Deller <deller@gmx.de>
 To:     Thomas Zimmermann <tzimmermann@suse.de>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -37,138 +37,181 @@ To:     Thomas Zimmermann <tzimmermann@suse.de>,
         Gerd Hoffmann <kraxel@redhat.com>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         Sam Ravnborg <sam@ravnborg.org>, Claudio Suarez <cssk@net-c.es>
-Subject: [PATCH 0/2] Fix regression introduced by disabling accelerated scrolling in fbcon
-Date:   Wed, 19 Jan 2022 12:08:37 +0100
-Message-Id: <20220119110839.33187-1-deller@gmx.de>
+Subject: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
+Date:   Wed, 19 Jan 2022 12:08:39 +0100
+Message-Id: <20220119110839.33187-3-deller@gmx.de>
 X-Mailer: git-send-email 2.31.1
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20220119110839.33187-1-deller@gmx.de>
+References: <20220119110839.33187-1-deller@gmx.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:qTmYAWli9L6TudjwN284cLCRYhReB55axJIO2pVzY3b+UC4RW6t
- tnVdB2RrR5++3EZ8ZyPl9/F0oBmB2NjY9IFOawMo3lqoSpcFMLbHqCDdfg7JjEgXU6sCEb2
- E+IXcJIvoQETmXnWfhWy2ID1ZcrtV3d1M6C+S1QFjKnTC86iXCONsc4nURwo9nWMnHpka0D
- vloc84ERRzz85GQj+dbeQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:P/sA5GOmAxk=:Fx5fyN3Mc8+FOsPWITIPWM
- H36ut17iHqkiPDl3YdxGmi+uhyKjt1A/+iEwY1Ya+0rOXyUb40323j5XAO1VC/+sP5wBUjaKC
- iapmzojahcNlNsLBKr0YYU+iKSlp1aibERjzjbIDoJBsa+1EjI47NN3rnw8DL7OUSfOqzXu1p
- x38f7bClH92GbMbaxHh338j/LeUKH05xAwjYqjZgkvQXDcTU5tmePY4PFEfrkVJhYDIxcxVAT
- W2LcvMbMYku3/T0glVUB+aDQl9/rEk7mCWkhvUyKyVSyBFtwCdVuwxovEoPSJCkj72WZZ+naM
- JeRvTRJO/4YhCMBybM+HfAM9+foINyveEwxQl5sLFmGrWdilkC7ZZ507LPgBFquLVWjNd1TGh
- cha5y1NIXk4zOpLHK5TRR354yRv3UajE+BD+zJXT+6DIBQoCICEu41FQZoDEg5tZUhGoJTHXV
- Ntz/4U9j2NDIMFbdHFciYMzdBiIMj/TmOi5oXiWPoK5+sS6Pc6O8D28y4nnPPPhzEB8juD0Gx
- 0j2ir5BCaElpe3NJMc1nRo+95OWavGLfYmOV8yiXjDvUBNRaoVwb0iGx53C2L7UELAJw/xIcL
- 3LiA9CfJ60JoMPWF6x0UwoEG9i+HlUQTxdhST5yR4afHGf2jWfGQKSmTYSONE3psgwOCcTQ7s
- A0Tbyf295rZRyvpgMHIh7PdEhVTSwarEaxn3S9RwJerEjyi4lSaNpjAhMF9qKZL74pNiUmUvA
- t0ZqbsVO4EvH+GSc/vwUmIXsr8oW8oeGaNC27kNuFLbPimsTKe9vFoOHFbTwpoFPTpKDJtqQQ
- LivRBIYYCNSY1XgyLtIOWVMUax3IJPOZ9eGcI3oeLAg9r6ddVEUBQIUjWZO0sNuxd+ATV+Cf+
- bKgEKImiLC49o4yq6WM36V0kwzPU+GIwE1JPk23Emy/k0H2vuns/DvtymKATeBEJHLs/zXu9a
- 1Vuffuppgf2bV60Lkj7RvxFR/d9+o3I7tltzVihUU6AFJdn6PMfJsh43wESBZKybmLrD+SEDI
- dxWRh4qYv5T+31j5lqbuZiLRmh3wk2TU/wZ5oUfF1OQgA6nKR5HUAbvxfd3Ca1UlGaGVOTuzT
- +bTK5iFf2DZk3U=
+X-Provags-ID: V03:K1:Roi+RGUkFP/ZjyHOVDyhOFbAk4MIfBdlPeQy/dls++mRYGy/G33
+ TXlCK+Rl1iZFrJ/pPRsyP1hVUEoVJcV10TNFk88b4fke7C199gmzM/Od8cCvhGCGm3xa9jo
+ 2dQf5U/OEBZhgrhUEvm/OKIdaRMooaLsfLnCXHhixPHJKJN+OX0hJR99bfyDrxrBU3eJ60D
+ A2C8n/TpWNEzNaUZ5AFHg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:i8VsAxP1Cto=:EcQZcKgte4cEUKEORz5Npv
+ YSa/An/vjP7tEnxHbOeWBqsSHbsr6Ud/Pgy+jn2uEayw7lL4Zp4t6xFAE6+HSfEy+zq3zZPV+
+ k2u5Q9YKY/KhU3rq9dqWcvHwSnIDyfKsEohptq0/3injCNIE39oJ413CjkkcbKNKykJWgbgl6
+ pp5gFYfDZkCMUu98FHQD5mKSaZzttx3hiYmGamLIsNoZMxfki958WeT11wNG1bx8HGPqYAitL
+ +cQBOeLUJWPHjJI3u4aQTgWtKKY5MLGfUZVgjV+UJlH0vTe6OgMFgEOKqN6QPGcFk4b6IWZqP
+ FAGpFfbf1hT096Oxjbvv70MxJwkUk7iMR3LmH8shxlxUGM13LSZbcpJ5gsxpwu43MqM3LblN3
+ CDTZFvBcO7m8KhBeU2OGWuSyaHReiktPj8dJEFzg9HyStPWEmY7Be6n5XOn4Qp2dh1MxzZ8rS
+ p1q5thIzzpbLpUPAwfhJZk4vxBeLVO/snqFODrvwKo1CRmjOAguoIMC6X2t7xjmci5xgNfU4z
+ 8h1xQ+HxgII3Cz8O7sDkhgaNqjfR+MO32dWiM/+TtriBF3PZ67Ij9mJ3U5VMr9myt2pr/Hn6p
+ OX1GaxZBZC/TH8NTs7WrR78SllP+uG+XHyhxencuoed0hYBHAByfqfHhNgIzUaBcQq1jZJHs+
+ RrV4nwmyhcJLB+cwlY3g6h0BB3MkSMMKvgmTUbfjfKefNUf5UQKXoIhVEJlLzFm7ugF/dy2IG
+ 6K7An8uTGaGEqX/03EaWttCkpi+49jO5iX5YPEUVPbUuGLpm7dyIMG0vmxy0UKrEAiu6UYVPX
+ 5kdIFc02nj4ZIvYSNZCowJtttBWk2YVtHbKJJNV4ndYGrf/A3IXtxA4vu1YOAMbNTVZjJ0SI9
+ tcdwFCLGkeqmgaR/06LVCgy+l6kHTc5E6+WjuoGNRC2rW4KOZxF/j9FImtQSqWGDpzxKRGFeV
+ N6T/01a1kk/8essodfJIZLuTKl6RnbhQO1CJbcvh0qwp0vZH8+C4cQHpY/WhJjhKQYe+/ZgGh
+ 68J2s99AFvxnGf1tPHYrLSq33/2rGQBJRP4sgAy02AwEQEcmXJse4vygsGk2O9xWFlbUL8mls
+ pGlv8WjvSTQPjQ=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This series reverts two patches which disabled scrolling acceleration in=0D
-fbcon/fbdev. Those patches introduced a regression for fbdev-supported grap=
-hic=0D
-cards because of the performance penalty by doing screen scrolling by softw=
-are=0D
-instead of using hardware acceleration.=0D
-=0D
-Console scrolling acceleration was disabled by dropping code which checked =
-at=0D
-runtime the driver hardware possibilities for the BINFO_HWACCEL_COPYAREA or=
-=0D
-FBINFO_HWACCEL_FILLRECT flags and if set, it enabled scrollmode SCROLL_MOVE=
-=0D
-which uses hardware acceleration to move screen contents.  After dropping t=
-hose=0D
-checks scrollmode was hard-wired to SCROLL_REDRAW instead, which forces all=
-=0D
-graphic cards to redraw every character at the new screen position when=0D
-scrolling.=0D
-=0D
-This change effectively disabled all hardware-based scrolling acceleration =
-for=0D
-ALL drivers, because now all kind of 2D hardware acceleration (bitblt,=0D
-fillrect) in the drivers isn't used any longer.=0D
-=0D
-The original commit message mentions that only 3 DRM drivers (nouveau, omap=
-drm=0D
-and gma500) used hardware acceleration in the past and thus code for checki=
-ng=0D
-and using scrolling acceleration is obsolete.=0D
-=0D
-This statement is NOT TRUE, because beside the DRM drivers there are around=
- 35=0D
-other fbdev drivers which depend on fbdev/fbcon and still provide hardware=
-=0D
-acceleration for fbdev/fbcon.=0D
-=0D
-The original commit message also states that syzbot found lots of bugs in f=
-bcon=0D
-and thus it's "often the solution to just delete code and remove features".=
-=0D
-This is true, and the bugs - which actually affected all users of fbcon,=0D
-including DRM - were fixed, or code was dropped like e.g. the support for=0D
-software scrollback in vgacon (commit 973c096f6a85).=0D
-=0D
-So to further analyze which bugs were found by syzbot, I've looked through =
-all=0D
-patches in drivers/video which were tagged with syzbot or syzkaller back to=
-=0D
-year 2005. The vast majority fixed the reported issues on a higher level, e=
-.g.=0D
-when screen is to be resized, or when font size is to be changed. The few o=
-nes=0D
-which touched driver code fixed a real driver bug, e.g. by adding a check.=
-=0D
-=0D
-But NONE of those patches touched code of either the SCROLL_MOVE or the=0D
-SCROLL_REDRAW case.=0D
-=0D
-That means, there was no real reason why SCROLL_MOVE had to be ripped-out a=
-nd=0D
-just SCROLL_REDRAW had to be used instead. The only reason I can imagine so=
- far=0D
-was that SCROLL_MOVE wasn't used by DRM and as such it was assumed that it=
-=0D
-could go away. That argument completely missed the fact that SCROLL_MOVE is=
-=0D
-still heavily used by fbdev (non-DRM) drivers.=0D
-=0D
-Some people mention that using memcpy() instead of the hardware acceleratio=
-n is=0D
-pretty much the same speed. But that's not true, at least not for older gra=
-phic=0D
-cards and machines where we see speed decreases by factor 10 and more and t=
-hus=0D
-this change leads to console responsiveness way worse than before.=0D
-=0D
-That's why I propose to revert those patches, re-introduce hardware-based=0D
-scrolling acceleration and fix the performance-regression for fbdev drivers=
-.=0D
-There isn't any impact on DRM when reverting those patches.=0D
-=0D
-Helge Deller (2):=0D
-  Revert "fbdev: Garbage collect fbdev scrolling acceleration, part 1=0D
-    (from TODO list)"=0D
-  Revert "fbcon: Disable accelerated scrolling"=0D
-=0D
- Documentation/gpu/todo.rst              |  24 --=0D
- drivers/video/fbdev/core/bitblit.c      |  16 +=0D
- drivers/video/fbdev/core/fbcon.c        | 540 +++++++++++++++++++++++-=0D
- drivers/video/fbdev/core/fbcon.h        |  59 +++=0D
- drivers/video/fbdev/core/fbcon_ccw.c    |  28 +-=0D
- drivers/video/fbdev/core/fbcon_cw.c     |  28 +-=0D
- drivers/video/fbdev/core/fbcon_rotate.h |   9 +=0D
- drivers/video/fbdev/core/fbcon_ud.c     |  37 +-=0D
- drivers/video/fbdev/core/tileblit.c     |  16 +=0D
- drivers/video/fbdev/skeletonfb.c        |  12 +-=0D
- include/linux/fb.h                      |   2 +-=0D
- 11 files changed, 703 insertions(+), 68 deletions(-)=0D
-=0D
--- =0D
-2.31.1=0D
-=0D
+This reverts commit 39aead8373b3c20bb5965c024dfb51a94e526151.
+
+Revert this patch.  This patch started to introduce the regression that
+all hardware acceleration of more than 35 existing fbdev drivers were
+bypassed and thus fbcon console output for those was dramatically slowed
+down by factor of 10 and more.
+
+Reverting this commit has no impact on DRM, since none of the DRM drivers =
+are
+tagged with the acceleration flags FBINFO_HWACCEL_COPYAREA,
+FBINFO_HWACCEL_FILLRECT or others.
+
+Signed-off-by: Helge Deller <deller@gmx.de>
+Cc: stable@vger.kernel.org # v5.16
+=2D--
+ Documentation/gpu/todo.rst       | 21 ---------------
+ drivers/video/fbdev/core/fbcon.c | 45 ++++++++++++++++++++++++++------
+ 2 files changed, 37 insertions(+), 29 deletions(-)
+
+diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
+index 29506815d24a..a1212b5b3026 100644
+=2D-- a/Documentation/gpu/todo.rst
++++ b/Documentation/gpu/todo.rst
+@@ -300,27 +300,6 @@ Contact: Daniel Vetter, Noralf Tronnes
+
+ Level: Advanced
+
+-Garbage collect fbdev scrolling acceleration
+=2D--------------------------------------------
+-
+-Scroll acceleration is disabled in fbcon by hard-wiring p->scrollmode =3D
+-SCROLL_REDRAW. There's a ton of code this will allow us to remove:
+-
+=2D- lots of code in fbcon.c
+-
+=2D- a bunch of the hooks in fbcon_ops, maybe the remaining hooks could be=
+ called
+-  directly instead of the function table (with a switch on p->rotate)
+-
+=2D- fb_copyarea is unused after this, and can be deleted from all drivers
+-
+-Note that not all acceleration code can be deleted, since clearing and cu=
+rsor
+-support is still accelerated, which might be good candidates for further
+-deletion projects.
+-
+-Contact: Daniel Vetter
+-
+-Level: Intermediate
+-
+ idr_init_base()
+ ---------------
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/f=
+bcon.c
+index 22bb3892f6bd..b813985f1403 100644
+=2D-- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -1025,7 +1025,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 	struct vc_data *svc =3D *default_mode;
+ 	struct fbcon_display *t, *p =3D &fb_display[vc->vc_num];
+ 	int logo =3D 1, new_rows, new_cols, rows, cols;
+-	int ret;
++	int cap, ret;
+
+ 	if (WARN_ON(info_idx =3D=3D -1))
+ 	    return;
+@@ -1034,6 +1034,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 		con2fb_map[vc->vc_num] =3D info_idx;
+
+ 	info =3D registered_fb[con2fb_map[vc->vc_num]];
++	cap =3D info->flags;
+
+ 	if (logo_shown < 0 && console_loglevel <=3D CONSOLE_LOGLEVEL_QUIET)
+ 		logo_shown =3D FBCON_LOGO_DONTSHOW;
+@@ -1135,13 +1136,11 @@ static void fbcon_init(struct vc_data *vc, int ini=
+t)
+
+ 	ops->graphics =3D 0;
+
+-	/*
+-	 * No more hw acceleration for fbcon.
+-	 *
+-	 * FIXME: Garbage collect all the now dead code after sufficient time
+-	 * has passed.
+-	 */
+-	p->scrollmode =3D SCROLL_REDRAW;
++	if ((cap & FBINFO_HWACCEL_COPYAREA) &&
++	    !(cap & FBINFO_HWACCEL_DISABLED))
++		p->scrollmode =3D SCROLL_MOVE;
++	else /* default to something safe */
++		p->scrollmode =3D SCROLL_REDRAW;
+
+ 	/*
+ 	 *  ++guenther: console.c:vc_allocate() relies on initializing
+@@ -1953,15 +1952,45 @@ static void updatescrollmode(struct fbcon_display =
+*p,
+ {
+ 	struct fbcon_ops *ops =3D info->fbcon_par;
+ 	int fh =3D vc->vc_font.height;
++	int cap =3D info->flags;
++	u16 t =3D 0;
++	int ypan =3D FBCON_SWAP(ops->rotate, info->fix.ypanstep,
++				  info->fix.xpanstep);
++	int ywrap =3D FBCON_SWAP(ops->rotate, info->fix.ywrapstep, t);
+ 	int yres =3D FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
+ 	int vyres =3D FBCON_SWAP(ops->rotate, info->var.yres_virtual,
+ 				   info->var.xres_virtual);
++	int good_pan =3D (cap & FBINFO_HWACCEL_YPAN) &&
++		divides(ypan, vc->vc_font.height) && vyres > yres;
++	int good_wrap =3D (cap & FBINFO_HWACCEL_YWRAP) &&
++		divides(ywrap, vc->vc_font.height) &&
++		divides(vc->vc_font.height, vyres) &&
++		divides(vc->vc_font.height, yres);
++	int reading_fast =3D cap & FBINFO_READS_FAST;
++	int fast_copyarea =3D (cap & FBINFO_HWACCEL_COPYAREA) &&
++		!(cap & FBINFO_HWACCEL_DISABLED);
++	int fast_imageblit =3D (cap & FBINFO_HWACCEL_IMAGEBLIT) &&
++		!(cap & FBINFO_HWACCEL_DISABLED);
+
+ 	p->vrows =3D vyres/fh;
+ 	if (yres > (fh * (vc->vc_rows + 1)))
+ 		p->vrows -=3D (yres - (fh * vc->vc_rows)) / fh;
+ 	if ((yres % fh) && (vyres % fh < yres % fh))
+ 		p->vrows--;
++
++	if (good_wrap || good_pan) {
++		if (reading_fast || fast_copyarea)
++			p->scrollmode =3D good_wrap ?
++				SCROLL_WRAP_MOVE : SCROLL_PAN_MOVE;
++		else
++			p->scrollmode =3D good_wrap ? SCROLL_REDRAW :
++				SCROLL_PAN_REDRAW;
++	} else {
++		if (reading_fast || (fast_copyarea && !fast_imageblit))
++			p->scrollmode =3D SCROLL_MOVE;
++		else
++			p->scrollmode =3D SCROLL_REDRAW;
++	}
+ }
+
+ #define PITCH(w) (((w) + 7) >> 3)
+=2D-
+2.31.1
+

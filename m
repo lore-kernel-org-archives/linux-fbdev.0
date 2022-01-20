@@ -2,100 +2,99 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8150CC433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jan 2022 07:57:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB9CBC433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jan 2022 08:46:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1379308AbiAUH5a (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jan 2022 02:57:30 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:24862 "EHLO
+        id S1378863AbiAUIqx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jan 2022 03:46:53 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:50747 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1379235AbiAUH4h (ORCPT
+        by vger.kernel.org with ESMTP id S1349514AbiAUIqx (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jan 2022 02:56:37 -0500
+        Fri, 21 Jan 2022 03:46:53 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1642751795;
+        s=mimecast20190719; t=1642754812;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=m2Ho/lCZKO10EzmqqcIcm9qmBssIoEL4oIglAIQFltM=;
-        b=NkUymEuQfICVF0n6My8trFNrxc1UYZmm2CcebWHGKCjguESu7csN5XnwTJ/WWtIFUgmpYR
-        GCKXWRRkCDnH1N53D49jqHYnzDjxmJpCllho7F/ST4Y/cTOqT0EOm6/5cn84jCa4mDDRv6
-        fkKka2+B9+jSx6P+Bo4vy6NxrOvAswE=
+        bh=8BhdL+2/fM2j9f1ZwOZXyG90SLRXQYh6XlmojCCWoc8=;
+        b=LrLjOjkTXirS1WZ0isIMj/drweHEvxTxUn0qSpKhUcH5yScpzczW25XS2/YZOvELpDyFla
+        1rJSwVKKNjtftWe0ontPpBVYDn04w9fyYSChIegpmtJkWzcEpfAMwFUV4qaDwKLQVBpXcC
+        vgZkW7jpZny9AHr1Tjvu1qiNxqUwsPk=
 Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
  [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-308-qmajEbmeOGKJKS2Wspa7_w-1; Fri, 21 Jan 2022 02:56:30 -0500
-X-MC-Unique: qmajEbmeOGKJKS2Wspa7_w-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com [10.5.11.11])
+ us-mta-163-qmuLorQsOVOAKtDCsyaYRw-1; Fri, 21 Jan 2022 03:46:47 -0500
+X-MC-Unique: qmuLorQsOVOAKtDCsyaYRw-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com [10.5.11.22])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 088D084DA42;
-        Fri, 21 Jan 2022 07:56:27 +0000 (UTC)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 93A681083F6A;
+        Fri, 21 Jan 2022 08:46:45 +0000 (UTC)
 Received: from sirius.home.kraxel.org (unknown [10.39.193.47])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id 22F6970D21;
-        Fri, 21 Jan 2022 07:56:17 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTPS id 2556F1059112;
+        Fri, 21 Jan 2022 08:46:15 +0000 (UTC)
 Received: by sirius.home.kraxel.org (Postfix, from userid 1000)
-        id A8B8F180060F; Fri, 21 Jan 2022 08:20:06 +0100 (CET)
-Date:   Fri, 21 Jan 2022 08:20:06 +0100
+        id A72A61800617; Thu, 20 Jan 2022 13:50:15 +0100 (CET)
+Date:   Thu, 20 Jan 2022 13:50:15 +0100
 From:   Gerd Hoffmann <kraxel@redhat.com>
-To:     Helge Deller <deller@gmx.de>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-fbdev@vger.kernel.org, Sven Schnelle <svens@stackframe.org>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Sven Schnelle <svens@stackframe.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
         Javier Martinez Canillas <javierm@redhat.com>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Ilia Mirkin <imirkin@alum.mit.edu>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        dri-devel@lists.freedesktop.org,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Sam Ravnborg <sam@ravnborg.org>, Claudio Suarez <cssk@net-c.es>
-Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
-Message-ID: <20220121072006.ylw2hdl7jbkbwnre@sirius.home.kraxel.org>
-References: <20220119110839.33187-1-deller@gmx.de>
- <20220119110839.33187-3-deller@gmx.de>
- <YelyGDNDTn1Aq/hm@phenom.ffwll.local>
- <6c000477-002b-d125-b945-2c4831bad8a5@gmx.de>
+        Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
+Message-ID: <20220120125015.sx5n7ziq3765rwyo@sirius.home.kraxel.org>
+References: <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
+ <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
+ <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de>
+ <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
+ <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de>
+ <CAKMK7uE7jnTtetB5ovGeyPxHq4ymhbWmQXWmSVw-V1vP3iNAKQ@mail.gmail.com>
+ <b32ffceb-ea90-3d26-f20e-29ae21c68fcf@gmx.de>
+ <20220118062947.6kfuam6ah63z5mmn@sirius.home.kraxel.org>
+ <CAMuHMdWXWA2h7zrZa_nnqR_qNdsOdHJS=Vf1YExhvs08KukoNg@mail.gmail.com>
+ <3f96f393-e59d-34ac-c98b-46180e2225cd@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6c000477-002b-d125-b945-2c4831bad8a5@gmx.de>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
+In-Reply-To: <3f96f393-e59d-34ac-c98b-46180e2225cd@suse.de>
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
   Hi,
 
-> > So if this really has to come back then I think the pragmatic approach is
-> > to do it behind a CONFIG_FBCON_ACCEL, default n, and with a huge warning
-> > that enabling that shouldn't be done for any distro which only enables
-> > firmware and drm fbdev drivers.
-> 
-> Thanks for coming back on this, but quite frankly I don't understand
-> that request. How should that warning look like, something along:
-> "BE WARNED: The framebuffer text console on your non-DRM supported
-> graphic card will then run faster and smoother if you enable this option."
-> That doesn't make sense. People and distros would want to enable that.
+> What I still don't understand: why are you so keen on maintaining an
+> interface that only serves the console? Nothing else uses fbdev these days.
+> Why not improve DRM/userspace to the point where it fits your requirements?
+> Long-term, the latter would make a lot more sense.
 
-Nope.  Most distros want disable fbdev drivers rather sooner than later.
-The fbdev drivers enabled in the fedora kernel today:
+And note that it is *much* easier to write drm drivers these days.
+We got alot of helpers, we got generic fbdev emulation and more.
 
-	CONFIG_FB_VGA16=m
-	CONFIG_FB_VESA=y
-	CONFIG_FB_EFI=y
-	CONFIG_FB_SSD1307=m
+If you are curious just compare the initial commit of the bochs drm
+driver with the current code.  Initially the driver had to manage ttm
+and fbdev and whatnot else.  These days writing a (non-accelerated) drm
+driver is basically some boilerplate picking the helpers which work best
+for your hardware, the code to actually program the hardware and that's
+it.
 
-CONFIG_FB_VESA + CONFIG_FB_EFI will go away soon, with simpledrm taking
-over their role.
+The "new drivers should be drm" policy exists for years already btw,
+exactly because of the unfixable fbdev API limitations.  The bochs drm
+was a fbdev driver initially.  Never merged.  Got rewritten as drm
+driver and that was merged instead.  In 2013, almost a decade ago.
 
-> And if a distro *just* has firmware and drm fbdev drivers enabled,
-> none of the non-DRM graphic cards would be loaded anyway and this code
-> wouldn't be executed anyway.
-
-Yes, exactly.  That's why there is no point in compiling that code.
+And, yes, it very well might be that drm misses some piece here and
+there for specific hardware, such as fbdev emulation not supporting
+rgb332.  But I fully agree with Thomas here:  Improving drm is probably
+a much better way to spend your time.  drm is where the development
+happens.  fbdev is only kept alive.
 
 take care,
   Gerd

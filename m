@@ -2,138 +2,254 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13ADAC433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Jan 2022 12:46:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6548FC433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Jan 2022 14:30:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243052AbiATMq1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 20 Jan 2022 07:46:27 -0500
-Received: from mail-ua1-f43.google.com ([209.85.222.43]:33517 "EHLO
-        mail-ua1-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243043AbiATMq0 (ORCPT
+        id S1345826AbiATOay (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 20 Jan 2022 09:30:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60666 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232657AbiATOax (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 20 Jan 2022 07:46:26 -0500
-Received: by mail-ua1-f43.google.com with SMTP id u6so10689521uaq.0;
-        Thu, 20 Jan 2022 04:46:26 -0800 (PST)
+        Thu, 20 Jan 2022 09:30:53 -0500
+Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com [IPv6:2a00:1450:4864:20::52c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3183CC06161C
+        for <linux-fbdev@vger.kernel.org>; Thu, 20 Jan 2022 06:30:53 -0800 (PST)
+Received: by mail-ed1-x52c.google.com with SMTP id a18so29473344edj.7
+        for <linux-fbdev@vger.kernel.org>; Thu, 20 Jan 2022 06:30:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=SCDpb+26SFz1wQvYU9DSOHXua0IKyerUiHHc0Cwap8E=;
+        b=gfQd4+TvEmiS7NJiLo0g/BkOlizTO8gxf2GzXSbGpo1prZjzVybvWf1M5hWUn5D5yN
+         YGmMY2GavTgDlVV1BFUJtZ7fGvzAIk8mPX/sAQzp7z1G2wl70nUSmbrlx3o6B2UBsEAx
+         G3aPDDiDCk4/IZZeHhu8j62PfyWAGfRidHFqY=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=TVOsKevTrHGaSWoEOZEFy6vOm3loanQlCT1W9IuMkTY=;
-        b=o3EiDTvPn7H9z934kwdP+i00L1D+wGbPU88KR0qs4s1OA3tt8R/G+tH1jNkmb+jDpR
-         dPJ3KRt78MSwvQELGsqzhCzrF9n/nkQkN6WMd1aEqy1mpI6AhzAzLDZ946Vb8J0gBU9Q
-         seEBOdbB3y/IR9ZlfFtUj5e6M+o3MZbqa7FYo+37tdNMpexEMIlAhizD2Aw1bkkSNcVt
-         LNNz69f9AA1FQJH3mqAucPA4YJ+seQCPKuGS9Txw9H0ZP0bsv82eu5WDUYeD3MsgBiHc
-         YkrTaLLTJFgsYuBoX8SoxJBnzAcm6s6jT2QaNuIKXel259t8/qH36bXk6oakhawQUdR2
-         HRVA==
-X-Gm-Message-State: AOAM533lzPKxlVZbN5Wo0IH1A65MA9JWeE9QIgXLF5N6rB9ImqyjK1wp
-        BHyERx30bRF6gLUsm3kizF2eEs8/o9nr+Q==
-X-Google-Smtp-Source: ABdhPJx5aNuJzWU/Xs1db70cb2rO4A5BZGiUuHo0G2s11SyaCMRTVm+bPoNDyRb74EFtnpYECUO1Dw==
-X-Received: by 2002:a67:c911:: with SMTP id w17mr13422729vsk.23.1642682785782;
-        Thu, 20 Jan 2022 04:46:25 -0800 (PST)
-Received: from mail-ua1-f53.google.com (mail-ua1-f53.google.com. [209.85.222.53])
-        by smtp.gmail.com with ESMTPSA id a12sm381809vsq.29.2022.01.20.04.46.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 20 Jan 2022 04:46:25 -0800 (PST)
-Received: by mail-ua1-f53.google.com with SMTP id n15so9070451uaq.5;
-        Thu, 20 Jan 2022 04:46:25 -0800 (PST)
-X-Received: by 2002:a67:e985:: with SMTP id b5mr12549674vso.77.1642682784811;
- Thu, 20 Jan 2022 04:46:24 -0800 (PST)
-MIME-Version: 1.0
-References: <YeG8ydoJNWWkGrTb@ls3530> <c48ad8ae-aea5-43fa-882f-dccb90dde9a4@suse.de>
- <87bl0amc6s.fsf@x1.stackframe.org> <20220118103323.4bae3a7d@eldfell>
- <20220118095352.xsb6fqacw4p276c5@sirius.home.kraxel.org> <CAMuHMdWV+-+Jr7HggbfH_GEDcdep4pJLiMG+15jxBvQ91BCS0w@mail.gmail.com>
- <CAKMK7uEOFg3z2btFERQ5XBQ7hqex6bXCb9X=SdwCjeLfX_SdFw@mail.gmail.com>
- <CAMuHMdVjv1+UNeXkCBE+80tdtLuNg=5d6N12hNLgJdaS-jxERg@mail.gmail.com> <CAKMK7uEwDdaR7kDVi9Oah0w8qFEoAywp_wj2eH7DtttVD2L00A@mail.gmail.com>
-In-Reply-To: <CAKMK7uEwDdaR7kDVi9Oah0w8qFEoAywp_wj2eH7DtttVD2L00A@mail.gmail.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 20 Jan 2022 13:46:13 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXboG=DxpO9WN-e0c-Zoet-fWwiwYATGb6TZYQd9Ajg6Q@mail.gmail.com>
-Message-ID: <CAMuHMdXboG=DxpO9WN-e0c-Zoet-fWwiwYATGb6TZYQd9Ajg6Q@mail.gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     Gerd Hoffmann <kraxel@redhat.com>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Helge Deller <deller@gmx.de>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :in-reply-to;
+        bh=SCDpb+26SFz1wQvYU9DSOHXua0IKyerUiHHc0Cwap8E=;
+        b=zzS+4uArZIrGtXOc7YtFMkgk070E9prrel7XucqzClNjAGr6O9L4BL0xDGaBTkrpJk
+         Xg8D7LWbJ86qWo+APc0I4BslSRguTeJbQJnw3C4h7JdIf5hmEk8XnI3tINNeNOvnmxNz
+         YBx3/o2FhBhAPK7+TvKhPxCDWuq9hu6p19GuGVcdqUMIkb308v7+/TDxAaUuN/FqZYHr
+         +ueluzvjmsEd2rF2Wsyqpn3mRYrb0Z0KXZIEHVLKXptp1HkPo6ig3WSuxNlYonSoXEBP
+         EH5wF6eQVIaaezJ8H4EkCUusEfILhNNISFw/KzKj06hdrQpEUwAcm/3L3lRRyGx/phmj
+         Co8g==
+X-Gm-Message-State: AOAM530JdFlrja0mM1RUp0egara6X8K1f8ZJC/Z7MjnYvloWu3Lwc/nk
+        nvw4ZluTlJs8HVAy+XlTBbtrxg==
+X-Google-Smtp-Source: ABdhPJxM9+iY32WnseakJpGa48pZv+dmbkVgLjm00azuMpDBLB/BXqsdyqEiyGJ1pFUzd4wpawDQsA==
+X-Received: by 2002:a17:907:168d:: with SMTP id hc13mr18067115ejc.470.1642689051681;
+        Thu, 20 Jan 2022 06:30:51 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id rl11sm1123297ejb.15.2022.01.20.06.30.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 20 Jan 2022 06:30:50 -0800 (PST)
+Date:   Thu, 20 Jan 2022 15:30:48 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-fbdev@vger.kernel.org, Sven Schnelle <svens@stackframe.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Ilia Mirkin <imirkin@alum.mit.edu>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        dri-devel@lists.freedesktop.org,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+        Gerd Hoffmann <kraxel@redhat.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Sam Ravnborg <sam@ravnborg.org>, Claudio Suarez <cssk@net-c.es>
+Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
+Message-ID: <YelyGDNDTn1Aq/hm@phenom.ffwll.local>
+Mail-Followup-To: Helge Deller <deller@gmx.de>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Sven Schnelle <svens@stackframe.org>
-Content-Type: text/plain; charset="UTF-8"
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-fbdev@vger.kernel.org, Sven Schnelle <svens@stackframe.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Ilia Mirkin <imirkin@alum.mit.edu>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        dri-devel@lists.freedesktop.org,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+        Gerd Hoffmann <kraxel@redhat.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Sam Ravnborg <sam@ravnborg.org>, Claudio Suarez <cssk@net-c.es>
+References: <20220119110839.33187-1-deller@gmx.de>
+ <20220119110839.33187-3-deller@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220119110839.33187-3-deller@gmx.de>
+X-Operating-System: Linux phenom 5.10.0-8-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel,
+On Wed, Jan 19, 2022 at 12:08:39PM +0100, Helge Deller wrote:
+> This reverts commit 39aead8373b3c20bb5965c024dfb51a94e526151.
+> 
+> Revert this patch.  This patch started to introduce the regression that
+> all hardware acceleration of more than 35 existing fbdev drivers were
+> bypassed and thus fbcon console output for those was dramatically slowed
+> down by factor of 10 and more.
+> 
+> Reverting this commit has no impact on DRM, since none of the DRM drivers are
+> tagged with the acceleration flags FBINFO_HWACCEL_COPYAREA,
+> FBINFO_HWACCEL_FILLRECT or others.
+> 
+> Signed-off-by: Helge Deller <deller@gmx.de>
+> Cc: stable@vger.kernel.org # v5.16
 
-On Thu, Jan 20, 2022 at 1:33 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> On Thu, Jan 20, 2022 at 1:13 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Thu, Jan 20, 2022 at 12:33 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> > > On Thu, Jan 20, 2022 at 10:06 AM Geert Uytterhoeven
-> > > <geert@linux-m68k.org> wrote:
-> > > > On Thu, Jan 20, 2022 at 4:29 AM Gerd Hoffmann <kraxel@redhat.com> wrote:
-> > > > > On Tue, Jan 18, 2022 at 10:33:23AM +0200, Pekka Paalanen wrote:
-> > > > > > On Mon, 17 Jan 2022 19:47:39 +0100
-> > > > > > Sven Schnelle <svens@stackframe.org> wrote:
-> > > > > > > I also tested the speed on my Thinkpad X1 with Intel graphics, and there
-> > > > > > > a dmesg with 919 lines one the text console took about 2s to display. In
-> > > > > > > x11, i measure 22ms. This might be unfair because encoding might be
-> > > > > > > different, but i cannot confirm the 'memcpy' is faster than hardware
-> > > > > > > blitting' point. I think if that would be the case, no-one would care
-> > > > > > > about 2D acceleration.
-> > > > > >
-> > > > > > I think that is an extremely unfair comparison, because a graphical
-> > > > > > terminal app is not going to render every line of text streamed to it.
-> > > > > > It probably renders only the final view alone if you simply run
-> > > > > > 'dmesg', skipping the first 800-900 lines completely.
-> > > > >
-> > > > > Probably more like "render on every vblank", but yes, unlike fbcon it
-> > > > > surely wouldn't render every single character sent to the terminal.
-> > > > >
-> > > > > Also acceleration on modern hardware is more like "compose window
-> > > > > content using the 3d engine" than "use 2d blitter to scroll the window".
-> > > > >
-> > > > > > Maybe fbcon should do the same when presented with a flood of text,
-> > > > > > but I don't know how or why it works like it works.
-> > > > >
-> > > > > fbcon could do the same, i.e. render to fbdev in a 60Hz timer instead of
-> > > > > doing it synchronously.
-> > > >
-> > > > Hopefully only the parts of the screen which need a redraw?
-> > > >
-> > > > Not all displays can be updated that fast. For a "modern" example, see
-> > > > https://patchwork.freedesktop.org/series/93070/.
-> > >
-> > > drm does damage tracking throughout the stack, e.g.
-> > >
-> > > https://dri.freedesktop.org/docs/drm/gpu/drm-kms.html#damage-tracking-properties
-> > >
-> > > And unlike fbdev, it's explicit (so less overhead since userspace
-> > > generally knows what it's drawn) and doesn't rely on page fault
-> > > intercepting and fun stuff like that.
-> >
-> > My reply was to a paragraph about rendering text by fbcon, not about
-> > userspace rendering graphics.
->
-> Yeah, and ofc when I say "throughout the stack" this also includes the
-> fbdev emulation, including the mmap intercepting with fbdev_defio and
-> all that. They all get remapped to that damage tracking property,
-> which drivers can then inspect using a bunch of helpers.
+So if this really has to come back then I think the pragmatic approach is
+to do it behind a CONFIG_FBCON_ACCEL, default n, and with a huge warning
+that enabling that shouldn't be done for any distro which only enables
+firmware and drm fbdev drivers.
 
-And I really meant the text rendering part, not the copy of the shadow
-buffer after the rendering.
+Plus adjusting the todo to limit it to drm drivers. Maybe also #ifdef out
+the code that's then dead from fbcon.
 
-> But reading code&docs is too hard I guess, safer to assume it's just
-> broken and not supported.
+Also in that case I guess it's ok to cc: stable, and really if you cc:
+stable it needs to go down to 5.11, not 5.16.
 
-Don't worry, I'm actually writing a larger rebuttal _and_ code...
+And if we do that, I think that should go in through a -next cycle, or at
+least quite some soaking before it's cherry-picked over. Enough to give
+syzbot a chance to discover any path we've missed at least.
+-Daniel
 
-Gr{oetje,eeting}s,
+> ---
+>  Documentation/gpu/todo.rst       | 21 ---------------
+>  drivers/video/fbdev/core/fbcon.c | 45 ++++++++++++++++++++++++++------
+>  2 files changed, 37 insertions(+), 29 deletions(-)
+> 
+> diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
+> index 29506815d24a..a1212b5b3026 100644
+> --- a/Documentation/gpu/todo.rst
+> +++ b/Documentation/gpu/todo.rst
+> @@ -300,27 +300,6 @@ Contact: Daniel Vetter, Noralf Tronnes
+> 
+>  Level: Advanced
+> 
+> -Garbage collect fbdev scrolling acceleration
+> ---------------------------------------------
+> -
+> -Scroll acceleration is disabled in fbcon by hard-wiring p->scrollmode =
+> -SCROLL_REDRAW. There's a ton of code this will allow us to remove:
+> -
+> -- lots of code in fbcon.c
+> -
+> -- a bunch of the hooks in fbcon_ops, maybe the remaining hooks could be called
+> -  directly instead of the function table (with a switch on p->rotate)
+> -
+> -- fb_copyarea is unused after this, and can be deleted from all drivers
+> -
+> -Note that not all acceleration code can be deleted, since clearing and cursor
+> -support is still accelerated, which might be good candidates for further
+> -deletion projects.
+> -
+> -Contact: Daniel Vetter
+> -
+> -Level: Intermediate
+> -
+>  idr_init_base()
+>  ---------------
+> 
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index 22bb3892f6bd..b813985f1403 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -1025,7 +1025,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+>  	struct vc_data *svc = *default_mode;
+>  	struct fbcon_display *t, *p = &fb_display[vc->vc_num];
+>  	int logo = 1, new_rows, new_cols, rows, cols;
+> -	int ret;
+> +	int cap, ret;
+> 
+>  	if (WARN_ON(info_idx == -1))
+>  	    return;
+> @@ -1034,6 +1034,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+>  		con2fb_map[vc->vc_num] = info_idx;
+> 
+>  	info = registered_fb[con2fb_map[vc->vc_num]];
+> +	cap = info->flags;
+> 
+>  	if (logo_shown < 0 && console_loglevel <= CONSOLE_LOGLEVEL_QUIET)
+>  		logo_shown = FBCON_LOGO_DONTSHOW;
+> @@ -1135,13 +1136,11 @@ static void fbcon_init(struct vc_data *vc, int init)
+> 
+>  	ops->graphics = 0;
+> 
+> -	/*
+> -	 * No more hw acceleration for fbcon.
+> -	 *
+> -	 * FIXME: Garbage collect all the now dead code after sufficient time
+> -	 * has passed.
+> -	 */
+> -	p->scrollmode = SCROLL_REDRAW;
+> +	if ((cap & FBINFO_HWACCEL_COPYAREA) &&
+> +	    !(cap & FBINFO_HWACCEL_DISABLED))
+> +		p->scrollmode = SCROLL_MOVE;
+> +	else /* default to something safe */
+> +		p->scrollmode = SCROLL_REDRAW;
+> 
+>  	/*
+>  	 *  ++guenther: console.c:vc_allocate() relies on initializing
+> @@ -1953,15 +1952,45 @@ static void updatescrollmode(struct fbcon_display *p,
+>  {
+>  	struct fbcon_ops *ops = info->fbcon_par;
+>  	int fh = vc->vc_font.height;
+> +	int cap = info->flags;
+> +	u16 t = 0;
+> +	int ypan = FBCON_SWAP(ops->rotate, info->fix.ypanstep,
+> +				  info->fix.xpanstep);
+> +	int ywrap = FBCON_SWAP(ops->rotate, info->fix.ywrapstep, t);
+>  	int yres = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
+>  	int vyres = FBCON_SWAP(ops->rotate, info->var.yres_virtual,
+>  				   info->var.xres_virtual);
+> +	int good_pan = (cap & FBINFO_HWACCEL_YPAN) &&
+> +		divides(ypan, vc->vc_font.height) && vyres > yres;
+> +	int good_wrap = (cap & FBINFO_HWACCEL_YWRAP) &&
+> +		divides(ywrap, vc->vc_font.height) &&
+> +		divides(vc->vc_font.height, vyres) &&
+> +		divides(vc->vc_font.height, yres);
+> +	int reading_fast = cap & FBINFO_READS_FAST;
+> +	int fast_copyarea = (cap & FBINFO_HWACCEL_COPYAREA) &&
+> +		!(cap & FBINFO_HWACCEL_DISABLED);
+> +	int fast_imageblit = (cap & FBINFO_HWACCEL_IMAGEBLIT) &&
+> +		!(cap & FBINFO_HWACCEL_DISABLED);
+> 
+>  	p->vrows = vyres/fh;
+>  	if (yres > (fh * (vc->vc_rows + 1)))
+>  		p->vrows -= (yres - (fh * vc->vc_rows)) / fh;
+>  	if ((yres % fh) && (vyres % fh < yres % fh))
+>  		p->vrows--;
+> +
+> +	if (good_wrap || good_pan) {
+> +		if (reading_fast || fast_copyarea)
+> +			p->scrollmode = good_wrap ?
+> +				SCROLL_WRAP_MOVE : SCROLL_PAN_MOVE;
+> +		else
+> +			p->scrollmode = good_wrap ? SCROLL_REDRAW :
+> +				SCROLL_PAN_REDRAW;
+> +	} else {
+> +		if (reading_fast || (fast_copyarea && !fast_imageblit))
+> +			p->scrollmode = SCROLL_MOVE;
+> +		else
+> +			p->scrollmode = SCROLL_REDRAW;
+> +	}
+>  }
+> 
+>  #define PITCH(w) (((w) + 7) >> 3)
+> --
+> 2.31.1
+> 
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

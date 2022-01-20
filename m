@@ -2,218 +2,107 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1A40C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 19 Jan 2022 20:14:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8275C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Jan 2022 09:06:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242439AbiASUOL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 19 Jan 2022 15:14:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40038 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230196AbiASUOK (ORCPT
+        id S1358993AbiATJGS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 20 Jan 2022 04:06:18 -0500
+Received: from mail-ua1-f52.google.com ([209.85.222.52]:40721 "EHLO
+        mail-ua1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1358624AbiATJGP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 19 Jan 2022 15:14:10 -0500
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E7F4C061574;
-        Wed, 19 Jan 2022 12:14:10 -0800 (PST)
-Received: by mail-lf1-x133.google.com with SMTP id o15so12702822lfo.11;
-        Wed, 19 Jan 2022 12:14:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=kdECfyTlH9oIX1INZDhG7zfW8t8vpJV5SIYtDDGY1nc=;
-        b=mVfChiTRlR52otgIciCZ+fVVRi8nHooY5ndpTYsWLVFk3NlEGYw4jeLbQHYh6BKxxI
-         vlxeIjppYp65Y01iqLnfjYe1HSgQi9LnuZAcYROl76L0wkn/ihtCvLQJP11hZ549duCd
-         U+yMDLD6IJtQFaiVbg17mGhD/Bg+xszj8xyEQOC91h+MO2S0Xi1Hf6aZUYZiaDClLJG8
-         Fvply5AVXxI8ACmV5Z0a/SI4Lchm7P5apnX3JwAZnkBQlm3KZqi/lUwsPmY08HV/TrxU
-         vgpHEQ1HnG3gBl4A4+7Jl1y1yC8WcN9BP9/VRG9PAosELLNmUq2p/ghLI9SuSZPAdCtb
-         rbGQ==
+        Thu, 20 Jan 2022 04:06:15 -0500
+Received: by mail-ua1-f52.google.com with SMTP id w21so9557155uan.7;
+        Thu, 20 Jan 2022 01:06:14 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=kdECfyTlH9oIX1INZDhG7zfW8t8vpJV5SIYtDDGY1nc=;
-        b=hvaAmr0WcyUXSQFLzd5qA6T0ZiIhAc7pDxl6Zz1jLedmWB1jy4XNBM9Gx9Mr+B7UuW
-         48dglGJoG+Szir1YdPrmU8IQzKhEUWDALOFtVOt5iJBjoxl401PueY985u6LURemVKET
-         duSWy3I0FRzhBpWx4t8l1Y+0+Jb4SFwStdlWCukwtfrZwFHPQF6S6QpQkYsq1MTA+4Qv
-         BEbTZmhO1uy51O2mmfaiikAGujAVtlTQve3cryIvvcQQZn/kfvo+u1heoQBzxIA/Ahgm
-         allbXXrUzKJXinffKc/PxFrbPytwmV9hE/adI1qhFI+cGAGGQkulqUaFMjP3/Mda4JNY
-         ADVQ==
-X-Gm-Message-State: AOAM531cN0a/hE8+Ru7bGXnZ8gkJKlCBJV0cXdjDaAzFeEMmuJpuWLkl
-        PE/wB33SPkF0QPUmnGNrhe6LmjpP+VTJAzoqDLg=
-X-Google-Smtp-Source: ABdhPJy7lyRzLjKdMwTgSEYWLm+wfhMR600om5OGmmvwN2/K/WUWdz4wmJe8VFPXMmuG2eJ+qll39mfrBiWSWVSxGIQ=
-X-Received: by 2002:a05:6512:39d5:: with SMTP id k21mr25180456lfu.474.1642623248573;
- Wed, 19 Jan 2022 12:14:08 -0800 (PST)
+        bh=9hW9NoHGAjAtGmLgUFLCO4iu8bgqOUYOgRPSBz28dQI=;
+        b=gz3O9TQALU//uJ3Ys1iuLzlh8sdDEDWLAezBshq8s9nb5p12tPXIQuPztiX8HOtUul
+         sux5AQNz7v/iIaF+wnzDCWdF/pYR7pHMuyR3fa7U04mRH9TXpvi+tYqewiYOC4lB99vg
+         fhhIRwIQAUF1FK1BFqVCQ7UMWebcFV0Uhd5yTcz5u0ADNUPQQzVomTqB77h2XYJ2mdgz
+         +tX7BoGlory8qjsO78zzGlx0nSo8PZjeG47M1W4qIwvof6snsBKpxrO9sIcQfgpiia7K
+         HJtHZY1PdP/ZQMoFFBLWm9GHdIaZfOy44M5s6dWsPEYHwVF0F6S3DNKmZiPGe1R4F+d5
+         JGHA==
+X-Gm-Message-State: AOAM530UWnMi8SuDmMsvlf18cvp4Pcyp/5zNS+/8u7TCrTdAIRb0clMX
+        +RrupQf3l5s7V7sdLyOd3aRW4eLgu+s9FQ==
+X-Google-Smtp-Source: ABdhPJz1oTOokLYNyA095Sy0z2F/YJvGyOTLAnnNfnN4Ja7xkyyIdiPf1jsHirUOCqIc7JwzxRwk7A==
+X-Received: by 2002:a05:6102:3010:: with SMTP id s16mr656050vsa.47.1642669574242;
+        Thu, 20 Jan 2022 01:06:14 -0800 (PST)
+Received: from mail-ua1-f52.google.com (mail-ua1-f52.google.com. [209.85.222.52])
+        by smtp.gmail.com with ESMTPSA id 10sm438357vky.24.2022.01.20.01.06.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 20 Jan 2022 01:06:13 -0800 (PST)
+Received: by mail-ua1-f52.google.com with SMTP id x33so9507934uad.12;
+        Thu, 20 Jan 2022 01:06:13 -0800 (PST)
+X-Received: by 2002:a05:6102:3581:: with SMTP id h1mr13566234vsu.5.1642669573470;
+ Thu, 20 Jan 2022 01:06:13 -0800 (PST)
 MIME-Version: 1.0
-References: <20220109095516.3250392-1-yanminglr@gmail.com> <20220110004419.GA435914@anparri>
- <20220114191307.uu2oel7wbxhiqe56@liuwe-devbox-debian-v2> <CY4PR21MB1586D30C6CEC81EFC37A9848D7599@CY4PR21MB1586.namprd21.prod.outlook.com>
-In-Reply-To: <CY4PR21MB1586D30C6CEC81EFC37A9848D7599@CY4PR21MB1586.namprd21.prod.outlook.com>
-From:   Yanming Liu <yanminglr@gmail.com>
-Date:   Thu, 20 Jan 2022 04:13:45 +0800
-Message-ID: <CAH+BkoGWu7BgEJo9+c3kAcyEf1qptvmts1DMoW4RoP=3e7eN7Q@mail.gmail.com>
-Subject: Re: [PATCH v2] hv: account for packet descriptor in maximum packet size
-To:     "Michael Kelley (LINUX)" <mikelley@microsoft.com>
-Cc:     Wei Liu <wei.liu@kernel.org>,
-        Andrea Parri <parri.andrea@gmail.com>,
-        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        KY Srinivasan <kys@microsoft.com>,
-        Haiyang Zhang <haiyangz@microsoft.com>,
-        Stephen Hemminger <sthemmin@microsoft.com>,
-        Dexuan Cui <decui@microsoft.com>,
-        "drawat.floss@gmail.com" <drawat.floss@gmail.com>,
-        "airlied@linux.ie" <airlied@linux.ie>,
-        "daniel@ffwll.ch" <daniel@ffwll.ch>,
-        "lkmlabelt@gmail.com" <lkmlabelt@gmail.com>
+References: <YeG8ydoJNWWkGrTb@ls3530> <c48ad8ae-aea5-43fa-882f-dccb90dde9a4@suse.de>
+ <87bl0amc6s.fsf@x1.stackframe.org> <20220118103323.4bae3a7d@eldfell> <20220118095352.xsb6fqacw4p276c5@sirius.home.kraxel.org>
+In-Reply-To: <20220118095352.xsb6fqacw4p276c5@sirius.home.kraxel.org>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Thu, 20 Jan 2022 10:06:01 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWV+-+Jr7HggbfH_GEDcdep4pJLiMG+15jxBvQ91BCS0w@mail.gmail.com>
+Message-ID: <CAMuHMdWV+-+Jr7HggbfH_GEDcdep4pJLiMG+15jxBvQ91BCS0w@mail.gmail.com>
+Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
+To:     Gerd Hoffmann <kraxel@redhat.com>
+Cc:     Pekka Paalanen <ppaalanen@gmail.com>,
+        Sven Schnelle <svens@stackframe.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Helge Deller <deller@gmx.de>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jan 20, 2022 at 2:12 AM Michael Kelley (LINUX)
-<mikelley@microsoft.com> wrote:
->
-> From: Wei Liu <wei.liu@kernel.org> Sent: Friday, January 14, 2022 11:13 AM
+Hi Gerd,
+
+On Thu, Jan 20, 2022 at 4:29 AM Gerd Hoffmann <kraxel@redhat.com> wrote:
+> On Tue, Jan 18, 2022 at 10:33:23AM +0200, Pekka Paalanen wrote:
+> > On Mon, 17 Jan 2022 19:47:39 +0100
+> > Sven Schnelle <svens@stackframe.org> wrote:
 > >
-> > On Mon, Jan 10, 2022 at 01:44:19AM +0100, Andrea Parri wrote:
-> > > (Extending Cc: list,)
-> > >
-> > > On Sun, Jan 09, 2022 at 05:55:16PM +0800, Yanming Liu wrote:
-> > > > Commit adae1e931acd ("Drivers: hv: vmbus: Copy packets sent by Hyper-V
-> > > > out of the ring buffer") introduced a notion of maximum packet size in
-> > > > vmbus channel and used that size to initialize a buffer holding all
-> > > > incoming packet along with their vmbus packet header. Currently, some
-> > > > vmbus drivers set max_pkt_size to the size of their receive buffer
-> > > > passed to vmbus_recvpacket, however vmbus_open expects this size to also
-> > > > include vmbus packet header. This leads to corruption of the ring buffer
-> > > > state when receiving a maximum sized packet.
-> > > >
-> > > > Specifically, in hv_balloon I have observed of a dm_unballoon_request
-> > > > message of 4096 bytes being truncated to 4080 bytes. When the driver
-> > > > tries to read next packet it starts from a wrong read_index, receives
-> > > > garbage and prints a lot of "Unhandled message: type: <garbage>" in
-> > > > dmesg.
-> > > >
-> > > > The same mismatch also happens in hv_fcopy, hv_kvp, hv_snapshot,
-> > > > hv_util, hyperv_drm and hyperv_fb, though bad cases are not observed
-> > > > yet.
-> > > >
-> > > > Allocate the buffer with HV_HYP_PAGE_SIZE more bytes to make room for
-> > > > the descriptor, assuming the vmbus packet header will never be larger
-> > > > than HV_HYP_PAGE_SIZE. This is essentially free compared to just adding
-> > > > 'sizeof(struct vmpacket_descriptor)' because these buffers are all more
-> > > > than HV_HYP_PAGE_SIZE bytes so kmalloc rounds them up anyway.
-> > > >
-> > > > Fixes: adae1e931acd ("Drivers: hv: vmbus: Copy packets sent by Hyper-V out of the ring buffer")
-> > > > Suggested-by: Andrea Parri (Microsoft) <parri.andrea@gmail.com>
-> > > > Signed-off-by: Yanming Liu <yanminglr@gmail.com>
-> > >
-> > > Thanks for sorting this out; the patch looks good to me:
-> > >
-> > > Reviewed-by: Andrea Parri (Microsoft) <parri.andrea@gmail.com>
-> > >
+> > > I also tested the speed on my Thinkpad X1 with Intel graphics, and there
+> > > a dmesg with 919 lines one the text console took about 2s to display. In
+> > > x11, i measure 22ms. This might be unfair because encoding might be
+> > > different, but i cannot confirm the 'memcpy' is faster than hardware
+> > > blitting' point. I think if that would be the case, no-one would care
+> > > about 2D acceleration.
 > >
-> > Thanks. I will pick this up after 5.17-rc1 is out.
-> >
-> > Wei.
+> > I think that is an extremely unfair comparison, because a graphical
+> > terminal app is not going to render every line of text streamed to it.
+> > It probably renders only the final view alone if you simply run
+> > 'dmesg', skipping the first 800-900 lines completely.
 >
-> I'm NACK'ing this set of changes.  I've spent some further time investigating,
-> so let me explain.
+> Probably more like "render on every vblank", but yes, unlike fbcon it
+> surely wouldn't render every single character sent to the terminal.
 >
-> I'm good with the overall approach of fixing individual drivers to set the
-> max_pkt_size to account for the VMbus packet header, as this is an
-> important aspect that was missed in the original coding.   But interestingly,
-> all but one of the miscellaneous VMbus drivers allocate significantly more
-> receive buffer space than is actually needed, and the max_pkt_size matching
-> that receive buffer size is already bigger than needed.  In all these
-> cases, there is already plenty of space for the VMbus packet header.
+> Also acceleration on modern hardware is more like "compose window
+> content using the 3d engine" than "use 2d blitter to scroll the window".
 >
+> > Maybe fbcon should do the same when presented with a flood of text,
+> > but I don't know how or why it works like it works.
+>
+> fbcon could do the same, i.e. render to fbdev in a 60Hz timer instead of
+> doing it synchronously.
 
-Appreciate for the additional insight on what Hyper-V would do!
+Hopefully only the parts of the screen which need a redraw?
 
-> These hv-util.c drivers allocate a receive buffer 4 Kbytes in size, and all
-> receive only small fixed-size packets:  heartbeat, shutdown, timesync.
-> I don't think any changes are needed for these drivers because the default
-> max_pkt_size value of 4 Kbytes bytes is plenty of space even when
-> accounting for the VMbus packet header.
->
-> The VSS driver in hv_snapshot.c allocates a receive buffer of 8 Kbytes
-> and sets max_pkt_size to 8 Kbytes.  But the received messages are
-> all fixed size and small.  I don't know why the driver uses an 8 Kbyte
-> receive buffer instead of 4 Kbytes, but the current settings are
-> more than sufficient.
->
+Not all displays can be updated that fast. For a "modern" example, see
+https://patchwork.freedesktop.org/series/93070/.
 
-Well, I'm not sure, on August 2021 there was a patch changing
-max_pkt_size to 8 KiB for VSS driver:
-https://lore.kernel.org/linux-hyperv/20210825190217.qh2c6yq5qr3ntum5@liuwe-devbox-debian-v2/T/
+Gr{oetje,eeting}s,
 
-The patch mentioned a 6304 bytes VSS message. Which is part of the
-reason I tried to address the more "general" problem of potentially
-mismatching buffer size.
+                        Geert
 
-> The FCOPY driver in hv_fcopy.c allocates a receive buffer of 8 Kbytes
-> and sets max_pkt_size to 8 Kbytes.  The received messages have
-> some header overhead plus up to 6 Kbytes of data, so the 8 Kbyte
-> receive buffer is definitely needed.  And while this one is a little
-> closer to filling up the available receive space than the previous
-> ones, there's still plenty of room for the VMbus packet header.  I
-> don't think any changes are needed.
->
-> The KVP driver in hv_kvp.c allocates a receive buffer of 16 Kbytes
-> and sets max_pkt_size to 16 Kbytes.  From what I can tell, the
-> received messages max out at close to 4 Kbytes.   Key exchange
-> messages have 512 bytes of key name and 2048 bytes of key
-> value, plus some header overhead.   ipaddr_value messages
-> are the largest, with 3 IP addresses @ 1024 bytes each, plus
-> a gateway with 512 bytes, and an adapter ID with 128 bytes.
-> But altogether, that is still less than 4096.  I don't know why
-> the receive buffer is 16 Kbytes, but it is plenty big and no
-> changes are needed.
->
-> The two frame buffer drivers also use 16 Kbyte receive buffers
-> and set max_pkt_size to 16 Kbytes.  Again, this looks to be overkill
-> as the messages received are mostly fixed size.  One message
-> returns a variable size list of supported screen resolutions, but
-> each entry in the list is only 4 bytes, and we're looking at a few
-> tens of resolutions at the very most.  Again, no changes are
-> needed.
->
-> After all this analysis, the balloon driver is the only one that
-> needs changing.   It uses a 4 Kbyte receive buffer, and indeed
-> Hyper-V may fill that receive buffer in the case of unballoon
-> messages.   And that where the original problem was observed.
->
-> Two other aspects for completeness.  First, all these drivers
-> do protocol version negotiation with the Hyper-V host.  The
-> negotiation includes a variable-size list of supported versions.
-> Each version in the list takes 4 bytes, but there would never
-> be enough different versions to come close to filling a 4 Kbyte
-> buffer.  So there's no problem here.
->
-> The other lurking issue is the 'offset8' field in the VMbus
-> packet header, which says where the payload starts relative
-> to the VMbus packet header.  In practice, this value is always
-> small, so there's no significant additional space to account
-> for.  While it's theoretically possible that Hyper-V could use
-> a much larger value, and cause max_pkt_size to be exceeded,
-> there's no real way to fix this problem.  Adding an extra page
-> to max_pkt_size, as it done in this patch, certainly provides
-> some extra room, but doesn't guarantee the problem can't
-> happen.  But since there's no indication Hyper-V would ever
-> put a big value into offset8, I don't think we need to worry
-> about the possibility.
->
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Thanks for confirming this!
-
-> My bottom-line:  Let's fix the balloon driver.  But now
-> that we know the other drivers are safe "as is", let's leave
-> them unchanged and not waste the additional memory.
->
-
-Sure, after all I just want a working kernel :)
-
-> Michael
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

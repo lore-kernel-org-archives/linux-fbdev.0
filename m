@@ -2,286 +2,161 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E19DDC433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Jan 2022 17:02:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAF18C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 20 Jan 2022 22:58:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1377183AbiATRCk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 20 Jan 2022 12:02:40 -0500
-Received: from mout.gmx.net ([212.227.17.22]:57865 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1377148AbiATRCj (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 20 Jan 2022 12:02:39 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1642698129;
-        bh=+JXhNOsw5MHkIVzGSJW0sfejmO+zFCCP/sfpuUD9wKI=;
-        h=X-UI-Sender-Class:Date:To:References:From:Subject:In-Reply-To;
-        b=aDJ2eioR3emy6j0MAQZ9JAh5JHbIRcXkOt3Ml/c5lvqy6R3bXlCo0jaO+kLdiwL6k
-         3+VYB9hz9jdbp4BwbNh9SWJPe9TsIyExHch3/rTdI/6enK40FbgZwMeGwRah78Wi5O
-         AsMrqChkZOs0V93Wsi1VoKNB5f8Miw02GcAMcWrk=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.166.9]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MrQJ5-1mYFL42TUF-00oXJG; Thu, 20
- Jan 2022 18:02:09 +0100
-Message-ID: <6c000477-002b-d125-b945-2c4831bad8a5@gmx.de>
-Date:   Thu, 20 Jan 2022 18:01:00 +0100
+        id S1378134AbiATW63 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 20 Jan 2022 17:58:29 -0500
+Received: from mail-io1-f72.google.com ([209.85.166.72]:54800 "EHLO
+        mail-io1-f72.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1378131AbiATW62 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 20 Jan 2022 17:58:28 -0500
+Received: by mail-io1-f72.google.com with SMTP id z130-20020a6bc988000000b006058a1dd100so4915645iof.21
+        for <linux-fbdev@vger.kernel.org>; Thu, 20 Jan 2022 14:58:28 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:date:in-reply-to:message-id:subject
+         :from:to;
+        bh=E/oY8dcRhQcRe59iLrebfgHUOTZmi9pnmFWRS2GH3Nc=;
+        b=wN1yw+JarHLWw2uBDuRnJx4FwURbwyNdWY6P9zBPZgB13vF6nZ45MZpV659QoHSulZ
+         J65TlGdBBu+OpGd4mznLEGUC26OYTBP6XpPE5wl2+ge+XNcIWBghYSPNzph5Avtwugw9
+         mX4Mq4+CTEyu6RYViziwQNrxveOSXLBFZPM4F+jbdHpNj+H4jK3EcLA70eJUHkeksJ9v
+         Ppe1M1cb4DOKZKF6Qt8TN3m0Kydjq5Nt2gx3uh8D0GGT/GVv4rsoN6xYITL+9AOzrDMH
+         PcE+pV1726Auio/gitsODUqj2jdS+EaFmq6Y4ChBzgQembJh7dBTFYMuf6MM5QswnsQs
+         G5og==
+X-Gm-Message-State: AOAM530l3CCNx8R9wYUknYXZmkWktK0VxwQZiLaLHedtCB1QIQLQ7aMp
+        1uWuQ0KUE5399wpB5hkou0YhoY+O9LR+I6TvDlw459H7Onnl
+X-Google-Smtp-Source: ABdhPJzq0T7SYoftdhczmsPM+Di8xpRuGlLyrSQ54z+TCXgzXKnZ2lZMy/v7Wy7N4Q4OALji5iXr+27LMG9WLEC1KJ4pfKSby0N+
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-fbdev@vger.kernel.org, Sven Schnelle <svens@stackframe.org>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Ilia Mirkin <imirkin@alum.mit.edu>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        dri-devel@lists.freedesktop.org,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-        Gerd Hoffmann <kraxel@redhat.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Sam Ravnborg <sam@ravnborg.org>, Claudio Suarez <cssk@net-c.es>
-References: <20220119110839.33187-1-deller@gmx.de>
- <20220119110839.33187-3-deller@gmx.de> <YelyGDNDTn1Aq/hm@phenom.ffwll.local>
-From:   Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
-In-Reply-To: <YelyGDNDTn1Aq/hm@phenom.ffwll.local>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:HYKznw+AROEUb19KFphHX3jBu+8VFsPzvK1w56ZWReh6hz5gRAL
- Yv+ISQ95yKuukbtq5OeYmZKYIb2CZm98fRx6wfi3oeQUQe6JHPXAlZtJRF3posFuCHiBqwX
- FJGbMXwNJJpgWY4mpel58M/MtVGWMjwX1/ahtIna3d42Bz+7CHpGTiAZhBIbnKBo5OYs28x
- 5o58uyOHlpZthTSM4VWqA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:vuR0FnfXGrI=:FNei+G/vJWgcWxM9I1dSE3
- tdVYcE5p9pqqMpa0gpCHxg3tnxGfZHWkf2RGrt5LI2cCGDyBE2Mt2iENp+WIPxCp6zvqDugVv
- tG7aDjZVXDZmsnz4VSJZ93HXX3SQPznJdU5Ywjx0g21LJYtXvlsi1T7Nx995cz70DZBHS+yag
- SoIjsvvSUJdAE7lITZmZWl5JGgJiaI2CLpLklZl47rFG03FxNKVB2NVKOUlMMH+mo8AsnqJRs
- d+UYw4sbOs/oD5e2w5J1fJD720hQ15GFHF0bZvDJ7s+5Vj9WajppumhcOK4YbgtUDB/hAXK2B
- WKjZ4kT4L1Qxg8Tj0MlA/s6WAptapMe1YkSeHjC6dywaMTlJNj4gT0Xz2UwZRqFKgwJtK6SDf
- A+0Si7VEZTsEQXlQm4T3/jv9Vko8jIiQHeqNs17kcwFIvMNkDrbNkxnj5hUG37BYnhZfwz72d
- hWwJXMlp5sBX+SY1Q5h5yNYLnCqFMUkJT8g+0ekBCkRtCrP/2UnudLbbIfVXWg2R8nas/c5Mk
- ly2T8j3ShTKHYY0AlokYOzsrBr4TL8NIEGc9Xsn8rcjFfKpiutx4vPlxaqOfu0PFT1UKbXwlp
- Ai6j+EorbgBiqtmbYRtTWBcs4Kbkw0NMkmPd4cAFh+H0fijN4+/CoV/K2ACwoVpdP/aznPm6d
- Qo8fmM+i2xsZceWhOd749ILyJ0QyR/Zluew+Josaja/MnscqKJiDHwJqrwdPquH10MbyIJEpM
- UGUNV4oLiWk71HbdgycprCyLJ0u4kWpKjFPG8QO50xwi7+cjho+TuUtxKhrefNTylKtoASdlr
- 3oWpswA4f6V1C092b+D2Xkb9MyPXmiB2gQW1D/3bZx+Kh+dj67QnurVhJYnILJwRb/m7kLW7T
- LeXgtRg1OwALQNVpbK9SUvK+05ty47p/Xv8c1A9kad+OzdGLZIb4deZEG7dx6OGop+Vwwl98s
- BgJybX8lIGemZuJfLaJpUmGvnux9RFKjApDzEM8AC4cDaiRadVngo00AZwr9vkH4wlU+z13kz
- 4o7KiHtDr0/9JqZEV5K4fjfIjo/ZCnzuVi1vYJp0klaYAXSvkPQqr32atvo21spncF301GIdj
- 9TBWxFAMTH8Pzw=
+X-Received: by 2002:a05:6e02:160d:: with SMTP id t13mr640152ilu.231.1642719508334;
+ Thu, 20 Jan 2022 14:58:28 -0800 (PST)
+Date:   Thu, 20 Jan 2022 14:58:28 -0800
+In-Reply-To: <000000000000bbdd0405d120c155@google.com>
+X-Google-Appengine-App-Id: s~syzkaller
+X-Google-Appengine-App-Id-Alias: syzkaller
+Message-ID: <000000000000c2906805d60b707c@google.com>
+Subject: Re: [syzbot] KASAN: vmalloc-out-of-bounds Write in imageblit (2)
+From:   syzbot <syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com>
+To:     deller@gmx.de, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Daniel,
+syzbot has found a reproducer for the following issue on:
 
-On 1/20/22 15:30, Daniel Vetter wrote:
-> On Wed, Jan 19, 2022 at 12:08:39PM +0100, Helge Deller wrote:
->> This reverts commit 39aead8373b3c20bb5965c024dfb51a94e526151.
->>
->> Revert this patch.  This patch started to introduce the regression that
->> all hardware acceleration of more than 35 existing fbdev drivers were
->> bypassed and thus fbcon console output for those was dramatically slowe=
-d
->> down by factor of 10 and more.
->>
->> Reverting this commit has no impact on DRM, since none of the DRM drive=
-rs are
->> tagged with the acceleration flags FBINFO_HWACCEL_COPYAREA,
->> FBINFO_HWACCEL_FILLRECT or others.
->>
->> Signed-off-by: Helge Deller <deller@gmx.de>
->> Cc: stable@vger.kernel.org # v5.16
->
-> So if this really has to come back then I think the pragmatic approach i=
-s
-> to do it behind a CONFIG_FBCON_ACCEL, default n, and with a huge warning
-> that enabling that shouldn't be done for any distro which only enables
-> firmware and drm fbdev drivers.
+HEAD commit:    7fc5253f5a13 Add linux-next specific files for 20220120
+git tree:       linux-next
+console output: https://syzkaller.appspot.com/x/log.txt?x=16385270700000
+kernel config:  https://syzkaller.appspot.com/x/.config?x=94e8da4df9ab6319
+dashboard link: https://syzkaller.appspot.com/bug?extid=14b0e8f3fd1612e35350
+compiler:       gcc (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2
+syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=155dde3db00000
+C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=125298e0700000
 
-Thanks for coming back on this, but quite frankly I don't understand
-that request. How should that warning look like, something along:
-"BE WARNED: The framebuffer text console on your non-DRM supported
-graphic card will then run faster and smoother if you enable this option."
-That doesn't make sense. People and distros would want to enable that.
+IMPORTANT: if you fix the issue, please add the following tag to the commit:
+Reported-by: syzbot+14b0e8f3fd1612e35350@syzkaller.appspotmail.com
 
-And if a distro *just* has firmware and drm fbdev drivers enabled,
-none of the non-DRM graphic cards would be loaded anyway and this code
-wouldn't be executed anyway.
-
-I think what you want is that DRM drivers are preferred over standard
-fbdev drivers, esp. if there is a driver for both available.
-But that's completely independed of fbdev-drivers console hardware acceler=
-ation.
-
-> Plus adjusting the todo to limit it to drm drivers. Maybe also #ifdef ou=
-t
-> the code that's then dead from fbcon.
-
-Sorry, I don't understand that either.
-I assume you mean to put code of fbcon which is only used by fbdev-drivers
-into and #ifdef CONFIG_FB .. #endif (CONFIG_FB may be wrong in this exampl=
-e).
-That's probably possible, but I don't see a big win.
-If there is no fbdev driver compiled-in or as module, none of this fbdev-d=
-rivers
-will be loaded and that code path wouldn't be executed anyway.
-In that case you will win a few bytes of code, but probably not much.
-
-> Also in that case I guess it's ok to cc: stable, and really if you cc:
-> stable it needs to go down to 5.11, not 5.16.
-
-Yes, I missed that in my patch request. Will fix.
-
-> And if we do that, I think that should go in through a -next cycle, or a=
-t
-> least quite some soaking before it's cherry-picked over. Enough to give
-> syzbot a chance to discover any path we've missed at least.
-
-Sure. We don't need to hurry.
-
-Thanks!
-Helge
-
-
-> -Daniel
->
->> ---
->>  Documentation/gpu/todo.rst       | 21 ---------------
->>  drivers/video/fbdev/core/fbcon.c | 45 ++++++++++++++++++++++++++------
->>  2 files changed, 37 insertions(+), 29 deletions(-)
->>
->> diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
->> index 29506815d24a..a1212b5b3026 100644
->> --- a/Documentation/gpu/todo.rst
->> +++ b/Documentation/gpu/todo.rst
->> @@ -300,27 +300,6 @@ Contact: Daniel Vetter, Noralf Tronnes
->>
->>  Level: Advanced
->>
->> -Garbage collect fbdev scrolling acceleration
->> ---------------------------------------------
->> -
->> -Scroll acceleration is disabled in fbcon by hard-wiring p->scrollmode =
-=3D
->> -SCROLL_REDRAW. There's a ton of code this will allow us to remove:
->> -
->> -- lots of code in fbcon.c
->> -
->> -- a bunch of the hooks in fbcon_ops, maybe the remaining hooks could b=
-e called
->> -  directly instead of the function table (with a switch on p->rotate)
->> -
->> -- fb_copyarea is unused after this, and can be deleted from all driver=
-s
->> -
->> -Note that not all acceleration code can be deleted, since clearing and=
- cursor
->> -support is still accelerated, which might be good candidates for furth=
-er
->> -deletion projects.
->> -
->> -Contact: Daniel Vetter
->> -
->> -Level: Intermediate
->> -
->>  idr_init_base()
->>  ---------------
->>
->> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/cor=
-e/fbcon.c
->> index 22bb3892f6bd..b813985f1403 100644
->> --- a/drivers/video/fbdev/core/fbcon.c
->> +++ b/drivers/video/fbdev/core/fbcon.c
->> @@ -1025,7 +1025,7 @@ static void fbcon_init(struct vc_data *vc, int in=
-it)
->>  	struct vc_data *svc =3D *default_mode;
->>  	struct fbcon_display *t, *p =3D &fb_display[vc->vc_num];
->>  	int logo =3D 1, new_rows, new_cols, rows, cols;
->> -	int ret;
->> +	int cap, ret;
->>
->>  	if (WARN_ON(info_idx =3D=3D -1))
->>  	    return;
->> @@ -1034,6 +1034,7 @@ static void fbcon_init(struct vc_data *vc, int in=
-it)
->>  		con2fb_map[vc->vc_num] =3D info_idx;
->>
->>  	info =3D registered_fb[con2fb_map[vc->vc_num]];
->> +	cap =3D info->flags;
->>
->>  	if (logo_shown < 0 && console_loglevel <=3D CONSOLE_LOGLEVEL_QUIET)
->>  		logo_shown =3D FBCON_LOGO_DONTSHOW;
->> @@ -1135,13 +1136,11 @@ static void fbcon_init(struct vc_data *vc, int =
-init)
->>
->>  	ops->graphics =3D 0;
->>
->> -	/*
->> -	 * No more hw acceleration for fbcon.
->> -	 *
->> -	 * FIXME: Garbage collect all the now dead code after sufficient time
->> -	 * has passed.
->> -	 */
->> -	p->scrollmode =3D SCROLL_REDRAW;
->> +	if ((cap & FBINFO_HWACCEL_COPYAREA) &&
->> +	    !(cap & FBINFO_HWACCEL_DISABLED))
->> +		p->scrollmode =3D SCROLL_MOVE;
->> +	else /* default to something safe */
->> +		p->scrollmode =3D SCROLL_REDRAW;
->>
->>  	/*
->>  	 *  ++guenther: console.c:vc_allocate() relies on initializing
->> @@ -1953,15 +1952,45 @@ static void updatescrollmode(struct fbcon_displ=
-ay *p,
->>  {
->>  	struct fbcon_ops *ops =3D info->fbcon_par;
->>  	int fh =3D vc->vc_font.height;
->> +	int cap =3D info->flags;
->> +	u16 t =3D 0;
->> +	int ypan =3D FBCON_SWAP(ops->rotate, info->fix.ypanstep,
->> +				  info->fix.xpanstep);
->> +	int ywrap =3D FBCON_SWAP(ops->rotate, info->fix.ywrapstep, t);
->>  	int yres =3D FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
->>  	int vyres =3D FBCON_SWAP(ops->rotate, info->var.yres_virtual,
->>  				   info->var.xres_virtual);
->> +	int good_pan =3D (cap & FBINFO_HWACCEL_YPAN) &&
->> +		divides(ypan, vc->vc_font.height) && vyres > yres;
->> +	int good_wrap =3D (cap & FBINFO_HWACCEL_YWRAP) &&
->> +		divides(ywrap, vc->vc_font.height) &&
->> +		divides(vc->vc_font.height, vyres) &&
->> +		divides(vc->vc_font.height, yres);
->> +	int reading_fast =3D cap & FBINFO_READS_FAST;
->> +	int fast_copyarea =3D (cap & FBINFO_HWACCEL_COPYAREA) &&
->> +		!(cap & FBINFO_HWACCEL_DISABLED);
->> +	int fast_imageblit =3D (cap & FBINFO_HWACCEL_IMAGEBLIT) &&
->> +		!(cap & FBINFO_HWACCEL_DISABLED);
->>
->>  	p->vrows =3D vyres/fh;
->>  	if (yres > (fh * (vc->vc_rows + 1)))
->>  		p->vrows -=3D (yres - (fh * vc->vc_rows)) / fh;
->>  	if ((yres % fh) && (vyres % fh < yres % fh))
->>  		p->vrows--;
->> +
->> +	if (good_wrap || good_pan) {
->> +		if (reading_fast || fast_copyarea)
->> +			p->scrollmode =3D good_wrap ?
->> +				SCROLL_WRAP_MOVE : SCROLL_PAN_MOVE;
->> +		else
->> +			p->scrollmode =3D good_wrap ? SCROLL_REDRAW :
->> +				SCROLL_PAN_REDRAW;
->> +	} else {
->> +		if (reading_fast || (fast_copyarea && !fast_imageblit))
->> +			p->scrollmode =3D SCROLL_MOVE;
->> +		else
->> +			p->scrollmode =3D SCROLL_REDRAW;
->> +	}
->>  }
->>
->>  #define PITCH(w) (((w) + 7) >> 3)
->> --
->> 2.31.1
->>
->
+BUG: unable to handle page fault for address: fffff520008b2208
+#PF: supervisor read access in kernel mode
+#PF: error_code(0x0000) - not-present page
+PGD 23ffed067 P4D 23ffed067 PUD 10db4067 PMD 1470c4067 PTE 0
+Oops: 0000 [#1] PREEMPT SMP KASAN
+CPU: 0 PID: 3595 Comm: syz-executor362 Not tainted 5.16.0-next-20220120-syzkaller #0
+Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+RIP: 0010:fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
+RIP: 0010:sys_imageblit+0x656/0x1430 drivers/video/fbdev/core/sysimgblt.c:275
+Code: 14 38 48 89 d8 83 e0 07 83 c0 03 38 d0 7c 08 84 d2 0f 85 b6 0c 00 00 8b 44 24 20 23 03 8b 5c 24 18 31 c3 48 89 e8 48 c1 e8 03 <42> 0f b6 14 38 48 89 e8 83 e0 07 83 c0 03 38 d0 7c 08 84 d2 0f 85
+RSP: 0018:ffffc90002a1f368 EFLAGS: 00010a02
+RAX: 1ffff920008b2208 RBX: 0000000000000000 RCX: 0000000000000007
+RDX: 0000000000000000 RSI: ffffffff84257bf0 RDI: 0000000000000003
+RBP: ffffc90004591040 R08: 000000000000001f R09: ffffffff84257a74
+R10: ffffffff84257be1 R11: 0000000000000020 R12: 0000000000000007
+R13: 00000000000003ef R14: ffff888146efc7e0 R15: dffffc0000000000
+FS:  0000555555c5d300(0000) GS:ffff8880b9c00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: fffff520008b2208 CR3: 0000000023b12000 CR4: 00000000003506f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+Call Trace:
+ <TASK>
+ drm_fb_helper_sys_imageblit drivers/gpu/drm/drm_fb_helper.c:794 [inline]
+ drm_fbdev_fb_imageblit+0x15c/0x350 drivers/gpu/drm/drm_fb_helper.c:2288
+ bit_putcs_unaligned drivers/video/fbdev/core/bitblit.c:124 [inline]
+ bit_putcs+0x6e1/0xd20 drivers/video/fbdev/core/bitblit.c:173
+ fbcon_putcs+0x353/0x440 drivers/video/fbdev/core/fbcon.c:1277
+ do_update_region+0x399/0x630 drivers/tty/vt/vt.c:676
+ invert_screen+0x1d4/0x600 drivers/tty/vt/vt.c:800
+ highlight drivers/tty/vt/selection.c:57 [inline]
+ clear_selection drivers/tty/vt/selection.c:84 [inline]
+ clear_selection+0x55/0x70 drivers/tty/vt/selection.c:80
+ vc_do_resize+0xe6e/0x1180 drivers/tty/vt/vt.c:1257
+ fbcon_do_set_font+0x47a/0x760 drivers/video/fbdev/core/fbcon.c:1928
+ fbcon_set_font+0x817/0xa00 drivers/video/fbdev/core/fbcon.c:2014
+ con_font_set drivers/tty/vt/vt.c:4666 [inline]
+ con_font_op+0x73a/0xc90 drivers/tty/vt/vt.c:4710
+ vt_k_ioctl drivers/tty/vt/vt_ioctl.c:474 [inline]
+ vt_ioctl+0x1e26/0x2b10 drivers/tty/vt/vt_ioctl.c:752
+ tty_ioctl+0xbbd/0x1660 drivers/tty/tty_io.c:2778
+ vfs_ioctl fs/ioctl.c:51 [inline]
+ __do_sys_ioctl fs/ioctl.c:874 [inline]
+ __se_sys_ioctl fs/ioctl.c:860 [inline]
+ __x64_sys_ioctl+0x193/0x200 fs/ioctl.c:860
+ do_syscall_x64 arch/x86/entry/common.c:50 [inline]
+ do_syscall_64+0x35/0xb0 arch/x86/entry/common.c:80
+ entry_SYSCALL_64_after_hwframe+0x44/0xae
+RIP: 0033:0x7f3bac0e1349
+Code: 28 c3 e8 2a 14 00 00 66 2e 0f 1f 84 00 00 00 00 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 c7 c1 c0 ff ff ff f7 d8 64 89 01 48
+RSP: 002b:00007ffff160a718 EFLAGS: 00000246 ORIG_RAX: 0000000000000010
+RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 00007f3bac0e1349
+RDX: 0000000020000000 RSI: 0000000000004b72 RDI: 0000000000000004
+RBP: 00007f3bac0a51d0 R08: 000000000000000d R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 00007f3bac0a5260
+R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+ </TASK>
+Modules linked in:
+CR2: fffff520008b2208
+---[ end trace 0000000000000000 ]---
+RIP: 0010:fast_imageblit drivers/video/fbdev/core/sysimgblt.c:229 [inline]
+RIP: 0010:sys_imageblit+0x656/0x1430 drivers/video/fbdev/core/sysimgblt.c:275
+Code: 14 38 48 89 d8 83 e0 07 83 c0 03 38 d0 7c 08 84 d2 0f 85 b6 0c 00 00 8b 44 24 20 23 03 8b 5c 24 18 31 c3 48 89 e8 48 c1 e8 03 <42> 0f b6 14 38 48 89 e8 83 e0 07 83 c0 03 38 d0 7c 08 84 d2 0f 85
+RSP: 0018:ffffc90002a1f368 EFLAGS: 00010a02
+RAX: 1ffff920008b2208 RBX: 0000000000000000 RCX: 0000000000000007
+RDX: 0000000000000000 RSI: ffffffff84257bf0 RDI: 0000000000000003
+RBP: ffffc90004591040 R08: 000000000000001f R09: ffffffff84257a74
+R10: ffffffff84257be1 R11: 0000000000000020 R12: 0000000000000007
+R13: 00000000000003ef R14: ffff888146efc7e0 R15: dffffc0000000000
+FS:  0000555555c5d300(0000) GS:ffff8880b9c00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: fffff520008b2208 CR3: 0000000023b12000 CR4: 00000000003506f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+----------------
+Code disassembly (best guess):
+   0:	14 38                	adc    $0x38,%al
+   2:	48 89 d8             	mov    %rbx,%rax
+   5:	83 e0 07             	and    $0x7,%eax
+   8:	83 c0 03             	add    $0x3,%eax
+   b:	38 d0                	cmp    %dl,%al
+   d:	7c 08                	jl     0x17
+   f:	84 d2                	test   %dl,%dl
+  11:	0f 85 b6 0c 00 00    	jne    0xccd
+  17:	8b 44 24 20          	mov    0x20(%rsp),%eax
+  1b:	23 03                	and    (%rbx),%eax
+  1d:	8b 5c 24 18          	mov    0x18(%rsp),%ebx
+  21:	31 c3                	xor    %eax,%ebx
+  23:	48 89 e8             	mov    %rbp,%rax
+  26:	48 c1 e8 03          	shr    $0x3,%rax
+* 2a:	42 0f b6 14 38       	movzbl (%rax,%r15,1),%edx <-- trapping instruction
+  2f:	48 89 e8             	mov    %rbp,%rax
+  32:	83 e0 07             	and    $0x7,%eax
+  35:	83 c0 03             	add    $0x3,%eax
+  38:	38 d0                	cmp    %dl,%al
+  3a:	7c 08                	jl     0x44
+  3c:	84 d2                	test   %dl,%dl
+  3e:	0f                   	.byte 0xf
+  3f:	85                   	.byte 0x85
 

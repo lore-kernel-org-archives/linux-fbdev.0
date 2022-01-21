@@ -2,134 +2,125 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AA42C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jan 2022 10:16:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DAC2C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jan 2022 10:17:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1379951AbiAUKQX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jan 2022 05:16:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43490 "EHLO
+        id S1349941AbiAUKRy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jan 2022 05:17:54 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43860 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349960AbiAUKQW (ORCPT
+        with ESMTP id S1379984AbiAUKRx (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jan 2022 05:16:22 -0500
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F73BC061574
-        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 02:16:21 -0800 (PST)
-Received: by mail-wm1-x32f.google.com with SMTP id o1-20020a1c4d01000000b0034d95625e1fso13414619wmh.4
-        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 02:16:21 -0800 (PST)
+        Fri, 21 Jan 2022 05:17:53 -0500
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D4EBFC061751
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 02:17:52 -0800 (PST)
+Received: by mail-wm1-x334.google.com with SMTP id c66so16968908wma.5
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 02:17:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=CLYJz2R+mFRqKL06xxzdwISpHcTd92SLYyoRfz6Al/k=;
-        b=ImlCVd8TOUysf7M9Mfv1MzTv3rmqrgTlic/bC1gbxOJw/rZ5BQCqGg2CmfpR5Q5lcq
-         k1jErxG3rifuktK2RinNxjLDxT0VsvPbki1Ge9sP/dyzSc8Y5M870vm7xymaqjqVZ27D
-         gtcGfGqJ4o6c4YJepG0hUT1oQLR5U8YfpFg6ZDIz+DcZ12ztoK1tY1noAAH1+YOBdR9b
-         WezQngRAvPXEvwk0ZBykKwlkQ3qo3yo3Lic3rQrp2heaERoZVQ5ZmxiZrOxei3igXxQl
-         n8yLOIwZHekLh6jKCk7XVrZAj8uA7NCkLRhWBKmSZTACwumpeiBJR69bAK1m350kyBKj
-         KOHA==
+        bh=+qjyKZOszfxARlUjaf8ExNQkAP8pObI31nb6cY6ygyE=;
+        b=Q1L8146j2oVMl5S7ZA5dp36WxXZYEmFQqLOJsBJEnYRnC0GKhsyNxpXqxzcIuhLiXR
+         AWjog25dOBimu3Pafw7bfjwJoIL99Uw1wUiO7ABNuu/U86Rh3JYEP2uwthabb90fgNHS
+         YxMnC07a3qDk8hS3QfDEoyqOMUm+lKUjGc/PpK++VbX/KyztLmDJGCNCZi+Kh1JCWYdD
+         uyQamEsK+V8Ko13zw0w3c9uCeN/gkjCC7u3ByWcD/LPqFV33S45vhxs0tvqvcrFvNgCV
+         4EQ4TASBm7FLIRTpvPP51J/v3XdU6srhhn5PKKmsvGO2sFnoFGZa/1j+FSgnE52YGvio
+         FqAA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:content-transfer-encoding
          :in-reply-to;
-        bh=CLYJz2R+mFRqKL06xxzdwISpHcTd92SLYyoRfz6Al/k=;
-        b=ftN3Wbnq0BfVLLjZyFZK0tfiGM83lPK4xZurvq1xVba2vLXbYO7OFTdcQVHsoXpwm/
-         efAXyrOTY/6il+IzxIZh9JcHTJJgdf7z5/1hf+df18MAQEwbgDo3QBZsfItpH/lkDqZo
-         tb9YyAR9qqq7ATa28lh+VXO508u4/NWfQpL0lxXgzRG4bk/jV+bOS9R5QOuOA1QgJLLB
-         BEY1zk6FHXOzcho7NCfz/pyjpwnQj1zJSHiVzmuE02zp+GXt19BMZACqAfk9HwSAuk10
-         XPgeUE+K5gFyukV+xI8tX3JAgonfhL+vqxQ1P8Lq6g4itntHbV8uNVT5gtfEJgr9BJ7D
-         qYEQ==
-X-Gm-Message-State: AOAM530FwoCUb2jOeTgL6lcbak9/p4VnnQH6FBYuRB8QHyuKuslzxZRK
-        zEyPQajYwAhcrq4H8T7etup1DQ==
-X-Google-Smtp-Source: ABdhPJxiH8szE7URldCF7knvg8nx9Plh7JPmXtM2hJR79Fpi7soLXMfkEG5o/1HFNKOVFP8qEZ+DTQ==
-X-Received: by 2002:a05:600c:190c:: with SMTP id j12mr40421wmq.41.1642760180152;
-        Fri, 21 Jan 2022 02:16:20 -0800 (PST)
+        bh=+qjyKZOszfxARlUjaf8ExNQkAP8pObI31nb6cY6ygyE=;
+        b=u/uhSupyK9spm1wfmhLecfu9qikuaVrUoGzTsA6Sr/06UzQILeuGtbfKep+SDAGM5T
+         8Y9A30/wHL2TyrVYQTql9t4BJB6i8ZjwBF8lOUe3GHDMpch9HO8Du1YhjgeU9beOOsHh
+         7Zf9B3k7XcF9rqjYiuvAYduSz/ADZCZXhrvhdVDc2R3/xmuPX1d7CUYwKxWUGf6Jno0e
+         0iOeh+l3ZFzuosYX8xJUYQqCyLzOZaZAV1WzDp784JWd73FZEBrEdO4gJ/E4BCX8sssp
+         QlCNwZBkM2NpbKsuRkU+RgQR0E4nLjoFjLSXbXfIvbu3uD4AAuTxPGtsIqy+ctVpnfDa
+         S5cQ==
+X-Gm-Message-State: AOAM532nlohd7ojG8a52qy+SxGEeDEwiKNK4oim/OVKHrMwujDgzs11n
+        8a5hePrZKUJ0z1d+M5LY3pKVjA==
+X-Google-Smtp-Source: ABdhPJzo/PMT8MItnYFhOxxP48Ab+NXa5j0UbzbG5l58oX+SIXHyM3HP7gyFVOAyDxjayedzmb25UA==
+X-Received: by 2002:a7b:c76e:: with SMTP id x14mr111558wmk.12.1642760271378;
+        Fri, 21 Jan 2022 02:17:51 -0800 (PST)
 Received: from google.com (cpc106310-bagu17-2-0-cust853.1-3.cable.virginm.net. [86.15.223.86])
-        by smtp.gmail.com with ESMTPSA id y15sm2219968wry.36.2022.01.21.02.16.19
+        by smtp.gmail.com with ESMTPSA id b1sm6355459wrd.78.2022.01.21.02.17.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Jan 2022 02:16:19 -0800 (PST)
-Date:   Fri, 21 Jan 2022 10:16:17 +0000
+        Fri, 21 Jan 2022 02:17:50 -0800 (PST)
+Date:   Fri, 21 Jan 2022 10:17:49 +0000
 From:   Lee Jones <lee.jones@linaro.org>
-To:     Daniel Vetter <daniel@ffwll.ch>
+To:     Helge Deller <deller@gmx.de>
 Cc:     Jani Nikula <jani.nikula@linux.intel.com>,
-        Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
         Linus Torvalds <torvalds@linux-foundation.org>,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>
 Subject: Re: [GIT PULL] fbdev updates & fixes for v5.17-rc1
-Message-ID: <YeqH8Y6+gElerxZm@google.com>
+Message-ID: <YeqITV9pAyI6clOB@google.com>
 References: <Yeg11pHSqx29yg/T@ls3530>
  <CAKMK7uGeGBBvTGFyBxLwvTAxEWwXMS8U1rrYUb_7gbui-jV+KA@mail.gmail.com>
  <87fsph4fr2.fsf@intel.com>
  <Yep6te0wrK0ZQ8SB@google.com>
- <CAKMK7uG9FaBM6e_kXFZUgBCk4JFcPCbzG5D_9XcypwVeXqDq6A@mail.gmail.com>
+ <016269c1-cf56-04ca-91e8-02417f770af5@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAKMK7uG9FaBM6e_kXFZUgBCk4JFcPCbzG5D_9XcypwVeXqDq6A@mail.gmail.com>
+In-Reply-To: <016269c1-cf56-04ca-91e8-02417f770af5@gmx.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, 21 Jan 2022, Daniel Vetter wrote:
+On Fri, 21 Jan 2022, Helge Deller wrote:
 
-> On Fri, Jan 21, 2022 at 10:19 AM Lee Jones <lee.jones@linaro.org> wrote:
-> >
+> On 1/21/22 10:19, Lee Jones wrote:
 > > On Fri, 21 Jan 2022, Jani Nikula wrote:
 > >
-> > > On Fri, 21 Jan 2022, Daniel Vetter <daniel@ffwll.ch> wrote:
-> > > > On Wed, Jan 19, 2022 at 5:02 PM Helge Deller <deller@gmx.de> wrote:
-> > > >> A first bunch of updates and fixes for the following fbdev & backlight drivers:
-> > > >> ocfb, aty128fb, mb862xx, omapfb, qcom-wled, dt-bindings, hyperv_fb,
-> > > >> lm3630a_bl, omap2, controlfb, matroxfb
-> > > >>
-> > > >> Nothing really important, mostly cleanups, const conversions, added null
-> > > >> pointer/boundary checks and build fixes.
-> > > >>
-> > > >> Signed-off-by: Helge Deller <deller@gmx.de>
-> > > >
-> > > > Not sure whether Linus missed this or just wanted to let the
-> > > > discussion settle first. But since this is all random patches for
-> > > > drivers that many distros don't even enable anymore there's no issues
-> > > > here, and I very much welcome someone volunteering to pick these up.
-> > > > I'd expect there's a pile more since it's been 1-2 years since Bart
-> > > > took care of these and merged them consistently.
-> > > >
-> > > > Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> > >
-> > > ...
-> > >
-> > > >>  drivers/video/backlight/lm3630a_bl.c                     |  1 -
-> > > >>  drivers/video/backlight/qcom-wled.c                      |  1 +
-> > >
-> > > Backlight changes usually go through the backlight tree.
-> >
+> >> On Fri, 21 Jan 2022, Daniel Vetter <daniel@ffwll.ch> wrote:
+> >>> On Wed, Jan 19, 2022 at 5:02 PM Helge Deller <deller@gmx.de> wrote:
+> >>>> A first bunch of updates and fixes for the following fbdev & backlight drivers:
+> >>>> ocfb, aty128fb, mb862xx, omapfb, qcom-wled, dt-bindings, hyperv_fb,
+> >>>> lm3630a_bl, omap2, controlfb, matroxfb
+> >>>>
+> >>>> Nothing really important, mostly cleanups, const conversions, added null
+> >>>> pointer/boundary checks and build fixes.
+> >>>>
+> >>>> Signed-off-by: Helge Deller <deller@gmx.de>
+> >>>
+> >>> Not sure whether Linus missed this or just wanted to let the
+> >>> discussion settle first. But since this is all random patches for
+> >>> drivers that many distros don't even enable anymore there's no issues
+> >>> here, and I very much welcome someone volunteering to pick these up.
+> >>> I'd expect there's a pile more since it's been 1-2 years since Bart
+> >>> took care of these and merged them consistently.
+> >>>
+> >>> Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> >>
+> >> ...
+> >>
+> >>>>  drivers/video/backlight/lm3630a_bl.c                     |  1 -
+> >>>>  drivers/video/backlight/qcom-wled.c                      |  1 +
+> >>
+> >> Backlight changes usually go through the backlight tree.
+> 
+> Sorry, I didn't know yet.
+> 
 > > Yes, they do.  How were these applied to the DRM tree?
 > 
-> They are not applied to any drm trees, Helge jumped in last week to
-> take over drivers/video maintainership.
-> -Daniel
+> I did applied them.
 
-Sorry s/DRM/fbdev/
+When you apply patches, you should reply to let the contributor know.
 
-> > I don't see any mails about them being applied:
-> >
-> >   Luca Weiss (2):
-> >         backlight: qcom-wled: Add PM6150L compatible
-> >
-> >   https://lore.kernel.org/all/20211229170358.2457006-2-luca.weiss@fairphone.com/
-> >
-> >   Xu Wang (2):
-> >         backlight: lm3630a_bl: Remove redundant 'flush_workqueue()' calls
-> >
-> >   https://lore.kernel.org/all/20220113084806.13822-1-vulab@iscas.ac.cn/
-> >
-> 
-> 
-> 
+> Shall I drop them and you decide about them?
+
+No, there's no need for that.
+
+> Next I round I'll take care not to pick backlight patches.
+
+Thank you.
 
 -- 
 Lee Jones [李琼斯]

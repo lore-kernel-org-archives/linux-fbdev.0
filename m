@@ -2,156 +2,114 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B984C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jan 2022 08:47:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54279C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jan 2022 08:55:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349700AbiAUIra (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jan 2022 03:47:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51816 "EHLO
+        id S1379276AbiAUIzi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jan 2022 03:55:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53634 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349499AbiAUIrV (ORCPT
+        with ESMTP id S1349505AbiAUIzi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jan 2022 03:47:21 -0500
-Received: from mail-ot1-x334.google.com (mail-ot1-x334.google.com [IPv6:2607:f8b0:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 267C2C061574
-        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 00:47:21 -0800 (PST)
-Received: by mail-ot1-x334.google.com with SMTP id a10-20020a9d260a000000b005991bd6ae3eso10898859otb.11
-        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 00:47:21 -0800 (PST)
+        Fri, 21 Jan 2022 03:55:38 -0500
+Received: from mail-ot1-x336.google.com (mail-ot1-x336.google.com [IPv6:2607:f8b0:4864:20::336])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CBF41C061574
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 00:55:37 -0800 (PST)
+Received: by mail-ot1-x336.google.com with SMTP id q13-20020a9d4b0d000000b0059b1209d708so10932223otf.10
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 00:55:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ffwll.ch; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=wTU29Vd39alUth1lv80uW9+OTVBlyJFtnlVs7XZ4g0U=;
-        b=ZFu2SshhTOHKlkc/b+4TRfashMda7GnAW3h5UHdHgEqpU676K6+mNXoXBA2LdQ2I6i
-         Uohcjg/m8sqM7DsAjG5pRUo3ZDOvVhnEaVLkjDecHFQzgvPZUUyOKGn82fPYSgIEaelI
-         3CJdSa0m60uHDFC4uGviXk1TV/OlhWShMWVs8=
+        bh=yrM5fABO5SZcVbJoe9Ix4MRfc99NE9JR6NJPbJC6LIw=;
+        b=KdiG09w8aBvAILbJf1NNS5DPaRYfzCW+Q2zBiSQtGxosLVvdbNwIij9eBpVmRKEEfd
+         RiRNQcPkdeCrvSHGjaGe0wdonu4KDRc+HZkaE+DdIjteru54VOeon+Jkt5l+H6OONHzd
+         Nyn93CewKb0rN9iwOgv9qdnYX9xYsU8pQrCKU=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=wTU29Vd39alUth1lv80uW9+OTVBlyJFtnlVs7XZ4g0U=;
-        b=Dp7eRvrIS+WZBtfxiP4Dqsmc9BscTjHPLP0Obm/r9QhQNYXs+2YivzjUkbNTfmQxKp
-         WXPyQJhbss11sXgYGSvB8gdj5XIpgfCChbOcCsFNQM6eQiQe36YIL4VPC9mJx7RRPnzW
-         YSZ7xvv3LsBkMsZ+y8BA1O90LplRIscZQcLRxPFCCTkQ6UQY93liFIkmrbJKKwt2P7Xr
-         IeWtK5hH8sflJa0RkHBU6zFRFFkFQMitvwIUcqxZqgy7M0Zrf2kEhM9OBhehltgpkPAu
-         2qGdfzUN3NkHmuV5/MkSMaV6H8UwhQJkbYz08E4CH1YrQl/vqXN3PSpg5lzO+r7Lktp/
-         7Y8Q==
-X-Gm-Message-State: AOAM5311719Qg5yuXTe48XIdFiEHnNUbwqHdYQjpVZAAE+J0b8Fys4nu
-        IBacEyzMNT5nfxxT4yBctEORhGz0aMC79k+mRaFFYghfBmc=
-X-Google-Smtp-Source: ABdhPJyp37Qj+oFvVhbsorkMGIDruzMkeIfPB0ZqbOaZMHPBpGWsl25ldzc2vCd3lW5DSHjdU4E82ZQloH0SZMkT8Ls=
-X-Received: by 2002:a9d:685a:: with SMTP id c26mr2020145oto.239.1642754840485;
- Fri, 21 Jan 2022 00:47:20 -0800 (PST)
+        bh=yrM5fABO5SZcVbJoe9Ix4MRfc99NE9JR6NJPbJC6LIw=;
+        b=T/Rj2ztxmbr1/rmFYNH8021ezY+mi3WeCU5Ar248+ndJPuZLepkBmcLQlOoftoH4n2
+         1mTm57T1qjY0p2ko0hji0i5BOxbVv0s985WZc3pSm18U3foWdgmdt1SheKxJIjgkFbrL
+         nXB058dAVDEUNbMiny5Op0l5+BHx99qgDTPJ37Yrp1DdCXbKxE5/cvzzVTPdwrjzaZjI
+         o4gL05GLusqJ9p+SzUNyjXG0LrD1QENtiZ+p0vlzEmChGY+gSes0dfpCTf1gjScH5VSM
+         p7HLsrFyoyMF8r1CDlfIT0xZ9N0bIJ56BInvaXdxzl1AMfnh7EAudQ4d2PykZg4H91Ct
+         /lAA==
+X-Gm-Message-State: AOAM533GYJFjLHu8lw/WJHaQJ9GPGX3Y+2nJPdivszSFpWA89Hp2Hqc5
+        V4SZJnUDGrzTeijFoEArs/uNl9hGFIlEOTjiPDCAHA==
+X-Google-Smtp-Source: ABdhPJwrgrd7mUq8sWYme18g4XUw+hqETrkJjUSeUFg9R3q8K6f9Zr4UIqjlIxPMWOCnbdhuDzG7lMe27pz7wBHqx+4=
+X-Received: by 2002:a05:6830:2704:: with SMTP id j4mr2063258otu.323.1642755337197;
+ Fri, 21 Jan 2022 00:55:37 -0800 (PST)
 MIME-Version: 1.0
-References: <Yeg11pHSqx29yg/T@ls3530>
-In-Reply-To: <Yeg11pHSqx29yg/T@ls3530>
+References: <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
+ <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
+ <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de> <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
+ <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de> <CAKMK7uE7jnTtetB5ovGeyPxHq4ymhbWmQXWmSVw-V1vP3iNAKQ@mail.gmail.com>
+ <b32ffceb-ea90-3d26-f20e-29ae21c68fcf@gmx.de> <20220118062947.6kfuam6ah63z5mmn@sirius.home.kraxel.org>
+ <CAMuHMdWXWA2h7zrZa_nnqR_qNdsOdHJS=Vf1YExhvs08KukoNg@mail.gmail.com>
+ <3f96f393-e59d-34ac-c98b-46180e2225cd@suse.de> <20220120125015.sx5n7ziq3765rwyo@sirius.home.kraxel.org>
+In-Reply-To: <20220120125015.sx5n7ziq3765rwyo@sirius.home.kraxel.org>
 From:   Daniel Vetter <daniel@ffwll.ch>
-Date:   Fri, 21 Jan 2022 09:47:09 +0100
-Message-ID: <CAKMK7uGeGBBvTGFyBxLwvTAxEWwXMS8U1rrYUb_7gbui-jV+KA@mail.gmail.com>
-Subject: Re: [GIT PULL] fbdev updates & fixes for v5.17-rc1
-To:     Helge Deller <deller@gmx.de>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
+Date:   Fri, 21 Jan 2022 09:55:25 +0100
+Message-ID: <CAKMK7uF-V20qWTxQLvTC6GjC8Sg+Pst+UJ3pWCLQ4Q7Khgy62g@mail.gmail.com>
+Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
+To:     Gerd Hoffmann <kraxel@redhat.com>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Helge Deller <deller@gmx.de>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Sven Schnelle <svens@stackframe.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jan 19, 2022 at 5:02 PM Helge Deller <deller@gmx.de> wrote:
+On Fri, Jan 21, 2022 at 9:46 AM Gerd Hoffmann <kraxel@redhat.com> wrote:
 >
-> The following changes since commit 0c947b893d69231a9add855939da7c66237ab44f:
+>   Hi,
 >
->   Merge tag '5.17-rc-part1-smb3-fixes' of git://git.samba.org/sfrench/cifs-2.6 (2022-01-17 09:53:21 +0200)
+> > What I still don't understand: why are you so keen on maintaining an
+> > interface that only serves the console? Nothing else uses fbdev these days.
+> > Why not improve DRM/userspace to the point where it fits your requirements?
+> > Long-term, the latter would make a lot more sense.
 >
-> are available in the Git repository at:
+> And note that it is *much* easier to write drm drivers these days.
+> We got alot of helpers, we got generic fbdev emulation and more.
 >
->   http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-5.17-2
+> If you are curious just compare the initial commit of the bochs drm
+> driver with the current code.  Initially the driver had to manage ttm
+> and fbdev and whatnot else.  These days writing a (non-accelerated) drm
+> driver is basically some boilerplate picking the helpers which work best
+> for your hardware, the code to actually program the hardware and that's
+> it.
 >
-> for you to fetch changes up to 842086bc7262a36f002e0361f9dc351556cae3f3:
+> The "new drivers should be drm" policy exists for years already btw,
+> exactly because of the unfixable fbdev API limitations.  The bochs drm
+> was a fbdev driver initially.  Never merged.  Got rewritten as drm
+> driver and that was merged instead.  In 2013, almost a decade ago.
 >
->   video: fbdev: controlfb: Fix COMPILE_TEST build (2022-01-17 22:39:37 +0100)
->
-> ----------------------------------------------------------------
-> fbdev updates for v5.17-rc1
->
-> A first bunch of updates and fixes for the following fbdev & backlight drivers:
-> ocfb, aty128fb, mb862xx, omapfb, qcom-wled, dt-bindings, hyperv_fb,
-> lm3630a_bl, omap2, controlfb, matroxfb
->
-> Nothing really important, mostly cleanups, const conversions, added null
-> pointer/boundary checks and build fixes.
->
-> Signed-off-by: Helge Deller <deller@gmx.de>
+> And, yes, it very well might be that drm misses some piece here and
+> there for specific hardware, such as fbdev emulation not supporting
+> rgb332.  But I fully agree with Thomas here:  Improving drm is probably
+> a much better way to spend your time.  drm is where the development
+> happens.  fbdev is only kept alive.
 
-Not sure whether Linus missed this or just wanted to let the
-discussion settle first. But since this is all random patches for
-drivers that many distros don't even enable anymore there's no issues
-here, and I very much welcome someone volunteering to pick these up.
-I'd expect there's a pile more since it's been 1-2 years since Bart
-took care of these and merged them consistently.
-
-Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-
-Cheers, Daniel
-
->
-> ----------------------------------------------------------------
-> Chunyang Zhong (1):
->       video: ocfb: add const to of_device_id
->
-> Colin Ian King (2):
->       fbdev: aty128fb: make some arrays static const
->       video: fbdev: mb862xx: remove redundant assignment to pointer ptr
->
-> Greg Kroah-Hartman (1):
->       omapfb: use default_groups in kobj_type
->
-> Jiasheng Jiang (1):
->       video: fbdev: Check for null res pointer
->
-> Luca Weiss (2):
->       backlight: qcom-wled: Add PM6150L compatible
->       dt-bindings: simple-framebuffer: allow standalone compatible
->
-> Michael Kelley (1):
->       video: hyperv_fb: Fix validation of screen resolution
->
-> Minghao Chi (1):
->       drivers/video: remove redundant res variable
->
-> Xu Wang (2):
->       backlight: lm3630a_bl: Remove redundant 'flush_workqueue()' calls
->       fbdev: omap2: omapfb: Remove redundant 'flush_workqueue()' calls
->
-> Yang Guang (1):
->       video: fbdev: use swap() to make code cleaner
->
-> YueHaibing (1):
->       video: fbdev: controlfb: Fix COMPILE_TEST build
->
-> Z. Liu (1):
->       matroxfb: set maxvram of vbG200eW to the same as vbG200 to avoid black screen
->
->  .../devicetree/bindings/display/simple-framebuffer.yaml  | 12 +++++++-----
->  drivers/video/backlight/lm3630a_bl.c                     |  1 -
->  drivers/video/backlight/qcom-wled.c                      |  1 +
->  drivers/video/fbdev/aty/aty128fb.c                       | 10 ++++++----
->  drivers/video/fbdev/aty/mach64_ct.c                      |  4 +---
->  drivers/video/fbdev/controlfb.c                          |  2 ++
->  drivers/video/fbdev/hyperv_fb.c                          | 16 +++-------------
->  drivers/video/fbdev/imxfb.c                              |  2 ++
->  drivers/video/fbdev/matrox/matroxfb_base.c               |  2 +-
->  drivers/video/fbdev/mb862xx/mb862xxfb_accel.c            |  2 +-
->  drivers/video/fbdev/ocfb.c                               |  2 +-
->  drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c     |  3 ++-
->  drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c     |  3 ++-
->  drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c     |  3 ++-
->  drivers/video/fbdev/omap2/omapfb/omapfb-main.c           |  1 -
->  drivers/video/fbdev/sis/sis_main.c                       |  2 +-
->  16 files changed, 32 insertions(+), 34 deletions(-)
-
-
-
+Just to clarify, since we had lots of smaller and bigger
+misunderstandings in the thread thus far: DRM_FORMAT_RGB332 exists, so
+drm support that already. The fbdev emulation doesn't yet, but all
+that's needed for that is filling out the code to remap the drm
+description to the fbdev format description for this case. Plus
+testing it all works ofc with fbcon and whatelse. Note that RGB332  is
+a bit more work than e.g. C4, since atm fbdev still uses only bpp to
+identify formats, so would need to be switch over to drm_fourcc first
+before adding anything which aliases with something existing (we have
+C8 already wired up).
+-Daniel
 -- 
 Daniel Vetter
 Software Engineer, Intel Corporation

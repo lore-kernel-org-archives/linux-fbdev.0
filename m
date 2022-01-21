@@ -2,100 +2,157 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB9CBC433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jan 2022 08:46:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B984C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jan 2022 08:47:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378863AbiAUIqx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jan 2022 03:46:53 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:50747 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1349514AbiAUIqx (ORCPT
+        id S1349700AbiAUIra (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jan 2022 03:47:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51816 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1349499AbiAUIrV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jan 2022 03:46:53 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1642754812;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=8BhdL+2/fM2j9f1ZwOZXyG90SLRXQYh6XlmojCCWoc8=;
-        b=LrLjOjkTXirS1WZ0isIMj/drweHEvxTxUn0qSpKhUcH5yScpzczW25XS2/YZOvELpDyFla
-        1rJSwVKKNjtftWe0ontPpBVYDn04w9fyYSChIegpmtJkWzcEpfAMwFUV4qaDwKLQVBpXcC
-        vgZkW7jpZny9AHr1Tjvu1qiNxqUwsPk=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-163-qmuLorQsOVOAKtDCsyaYRw-1; Fri, 21 Jan 2022 03:46:47 -0500
-X-MC-Unique: qmuLorQsOVOAKtDCsyaYRw-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com [10.5.11.22])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 93A681083F6A;
-        Fri, 21 Jan 2022 08:46:45 +0000 (UTC)
-Received: from sirius.home.kraxel.org (unknown [10.39.193.47])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id 2556F1059112;
-        Fri, 21 Jan 2022 08:46:15 +0000 (UTC)
-Received: by sirius.home.kraxel.org (Postfix, from userid 1000)
-        id A72A61800617; Thu, 20 Jan 2022 13:50:15 +0100 (CET)
-Date:   Thu, 20 Jan 2022 13:50:15 +0100
-From:   Gerd Hoffmann <kraxel@redhat.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Sven Schnelle <svens@stackframe.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-Message-ID: <20220120125015.sx5n7ziq3765rwyo@sirius.home.kraxel.org>
-References: <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
- <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
- <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de>
- <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
- <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de>
- <CAKMK7uE7jnTtetB5ovGeyPxHq4ymhbWmQXWmSVw-V1vP3iNAKQ@mail.gmail.com>
- <b32ffceb-ea90-3d26-f20e-29ae21c68fcf@gmx.de>
- <20220118062947.6kfuam6ah63z5mmn@sirius.home.kraxel.org>
- <CAMuHMdWXWA2h7zrZa_nnqR_qNdsOdHJS=Vf1YExhvs08KukoNg@mail.gmail.com>
- <3f96f393-e59d-34ac-c98b-46180e2225cd@suse.de>
+        Fri, 21 Jan 2022 03:47:21 -0500
+Received: from mail-ot1-x334.google.com (mail-ot1-x334.google.com [IPv6:2607:f8b0:4864:20::334])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 267C2C061574
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 00:47:21 -0800 (PST)
+Received: by mail-ot1-x334.google.com with SMTP id a10-20020a9d260a000000b005991bd6ae3eso10898859otb.11
+        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 00:47:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=wTU29Vd39alUth1lv80uW9+OTVBlyJFtnlVs7XZ4g0U=;
+        b=ZFu2SshhTOHKlkc/b+4TRfashMda7GnAW3h5UHdHgEqpU676K6+mNXoXBA2LdQ2I6i
+         Uohcjg/m8sqM7DsAjG5pRUo3ZDOvVhnEaVLkjDecHFQzgvPZUUyOKGn82fPYSgIEaelI
+         3CJdSa0m60uHDFC4uGviXk1TV/OlhWShMWVs8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=wTU29Vd39alUth1lv80uW9+OTVBlyJFtnlVs7XZ4g0U=;
+        b=Dp7eRvrIS+WZBtfxiP4Dqsmc9BscTjHPLP0Obm/r9QhQNYXs+2YivzjUkbNTfmQxKp
+         WXPyQJhbss11sXgYGSvB8gdj5XIpgfCChbOcCsFNQM6eQiQe36YIL4VPC9mJx7RRPnzW
+         YSZ7xvv3LsBkMsZ+y8BA1O90LplRIscZQcLRxPFCCTkQ6UQY93liFIkmrbJKKwt2P7Xr
+         IeWtK5hH8sflJa0RkHBU6zFRFFkFQMitvwIUcqxZqgy7M0Zrf2kEhM9OBhehltgpkPAu
+         2qGdfzUN3NkHmuV5/MkSMaV6H8UwhQJkbYz08E4CH1YrQl/vqXN3PSpg5lzO+r7Lktp/
+         7Y8Q==
+X-Gm-Message-State: AOAM5311719Qg5yuXTe48XIdFiEHnNUbwqHdYQjpVZAAE+J0b8Fys4nu
+        IBacEyzMNT5nfxxT4yBctEORhGz0aMC79k+mRaFFYghfBmc=
+X-Google-Smtp-Source: ABdhPJyp37Qj+oFvVhbsorkMGIDruzMkeIfPB0ZqbOaZMHPBpGWsl25ldzc2vCd3lW5DSHjdU4E82ZQloH0SZMkT8Ls=
+X-Received: by 2002:a9d:685a:: with SMTP id c26mr2020145oto.239.1642754840485;
+ Fri, 21 Jan 2022 00:47:20 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3f96f393-e59d-34ac-c98b-46180e2225cd@suse.de>
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
+References: <Yeg11pHSqx29yg/T@ls3530>
+In-Reply-To: <Yeg11pHSqx29yg/T@ls3530>
+From:   Daniel Vetter <daniel@ffwll.ch>
+Date:   Fri, 21 Jan 2022 09:47:09 +0100
+Message-ID: <CAKMK7uGeGBBvTGFyBxLwvTAxEWwXMS8U1rrYUb_7gbui-jV+KA@mail.gmail.com>
+Subject: Re: [GIT PULL] fbdev updates & fixes for v5.17-rc1
+To:     Helge Deller <deller@gmx.de>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-  Hi,
+On Wed, Jan 19, 2022 at 5:02 PM Helge Deller <deller@gmx.de> wrote:
+>
+> The following changes since commit 0c947b893d69231a9add855939da7c66237ab44f:
+>
+>   Merge tag '5.17-rc-part1-smb3-fixes' of git://git.samba.org/sfrench/cifs-2.6 (2022-01-17 09:53:21 +0200)
+>
+> are available in the Git repository at:
+>
+>   http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/fbdev-5.17-2
+>
+> for you to fetch changes up to 842086bc7262a36f002e0361f9dc351556cae3f3:
+>
+>   video: fbdev: controlfb: Fix COMPILE_TEST build (2022-01-17 22:39:37 +0100)
+>
+> ----------------------------------------------------------------
+> fbdev updates for v5.17-rc1
+>
+> A first bunch of updates and fixes for the following fbdev & backlight drivers:
+> ocfb, aty128fb, mb862xx, omapfb, qcom-wled, dt-bindings, hyperv_fb,
+> lm3630a_bl, omap2, controlfb, matroxfb
+>
+> Nothing really important, mostly cleanups, const conversions, added null
+> pointer/boundary checks and build fixes.
+>
+> Signed-off-by: Helge Deller <deller@gmx.de>
 
-> What I still don't understand: why are you so keen on maintaining an
-> interface that only serves the console? Nothing else uses fbdev these days.
-> Why not improve DRM/userspace to the point where it fits your requirements?
-> Long-term, the latter would make a lot more sense.
+Not sure whether Linus missed this or just wanted to let the
+discussion settle first. But since this is all random patches for
+drivers that many distros don't even enable anymore there's no issues
+here, and I very much welcome someone volunteering to pick these up.
+I'd expect there's a pile more since it's been 1-2 years since Bart
+took care of these and merged them consistently.
 
-And note that it is *much* easier to write drm drivers these days.
-We got alot of helpers, we got generic fbdev emulation and more.
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-If you are curious just compare the initial commit of the bochs drm
-driver with the current code.  Initially the driver had to manage ttm
-and fbdev and whatnot else.  These days writing a (non-accelerated) drm
-driver is basically some boilerplate picking the helpers which work best
-for your hardware, the code to actually program the hardware and that's
-it.
+Cheers, Daniel
 
-The "new drivers should be drm" policy exists for years already btw,
-exactly because of the unfixable fbdev API limitations.  The bochs drm
-was a fbdev driver initially.  Never merged.  Got rewritten as drm
-driver and that was merged instead.  In 2013, almost a decade ago.
+>
+> ----------------------------------------------------------------
+> Chunyang Zhong (1):
+>       video: ocfb: add const to of_device_id
+>
+> Colin Ian King (2):
+>       fbdev: aty128fb: make some arrays static const
+>       video: fbdev: mb862xx: remove redundant assignment to pointer ptr
+>
+> Greg Kroah-Hartman (1):
+>       omapfb: use default_groups in kobj_type
+>
+> Jiasheng Jiang (1):
+>       video: fbdev: Check for null res pointer
+>
+> Luca Weiss (2):
+>       backlight: qcom-wled: Add PM6150L compatible
+>       dt-bindings: simple-framebuffer: allow standalone compatible
+>
+> Michael Kelley (1):
+>       video: hyperv_fb: Fix validation of screen resolution
+>
+> Minghao Chi (1):
+>       drivers/video: remove redundant res variable
+>
+> Xu Wang (2):
+>       backlight: lm3630a_bl: Remove redundant 'flush_workqueue()' calls
+>       fbdev: omap2: omapfb: Remove redundant 'flush_workqueue()' calls
+>
+> Yang Guang (1):
+>       video: fbdev: use swap() to make code cleaner
+>
+> YueHaibing (1):
+>       video: fbdev: controlfb: Fix COMPILE_TEST build
+>
+> Z. Liu (1):
+>       matroxfb: set maxvram of vbG200eW to the same as vbG200 to avoid black screen
+>
+>  .../devicetree/bindings/display/simple-framebuffer.yaml  | 12 +++++++-----
+>  drivers/video/backlight/lm3630a_bl.c                     |  1 -
+>  drivers/video/backlight/qcom-wled.c                      |  1 +
+>  drivers/video/fbdev/aty/aty128fb.c                       | 10 ++++++----
+>  drivers/video/fbdev/aty/mach64_ct.c                      |  4 +---
+>  drivers/video/fbdev/controlfb.c                          |  2 ++
+>  drivers/video/fbdev/hyperv_fb.c                          | 16 +++-------------
+>  drivers/video/fbdev/imxfb.c                              |  2 ++
+>  drivers/video/fbdev/matrox/matroxfb_base.c               |  2 +-
+>  drivers/video/fbdev/mb862xx/mb862xxfb_accel.c            |  2 +-
+>  drivers/video/fbdev/ocfb.c                               |  2 +-
+>  drivers/video/fbdev/omap2/omapfb/dss/display-sysfs.c     |  3 ++-
+>  drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c     |  3 ++-
+>  drivers/video/fbdev/omap2/omapfb/dss/overlay-sysfs.c     |  3 ++-
+>  drivers/video/fbdev/omap2/omapfb/omapfb-main.c           |  1 -
+>  drivers/video/fbdev/sis/sis_main.c                       |  2 +-
+>  16 files changed, 32 insertions(+), 34 deletions(-)
 
-And, yes, it very well might be that drm misses some piece here and
-there for specific hardware, such as fbdev emulation not supporting
-rgb332.  But I fully agree with Thomas here:  Improving drm is probably
-a much better way to spend your time.  drm is where the development
-happens.  fbdev is only kept alive.
 
-take care,
-  Gerd
 
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

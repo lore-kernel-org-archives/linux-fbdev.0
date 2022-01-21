@@ -2,128 +2,127 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DAC2C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jan 2022 10:17:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 166ADC433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jan 2022 16:57:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349941AbiAUKRy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jan 2022 05:17:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43860 "EHLO
+        id S1380554AbiAUQ5U (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 21 Jan 2022 11:57:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49612 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379984AbiAUKRx (ORCPT
+        with ESMTP id S1380207AbiAUQ45 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jan 2022 05:17:53 -0500
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D4EBFC061751
-        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 02:17:52 -0800 (PST)
-Received: by mail-wm1-x334.google.com with SMTP id c66so16968908wma.5
-        for <linux-fbdev@vger.kernel.org>; Fri, 21 Jan 2022 02:17:52 -0800 (PST)
+        Fri, 21 Jan 2022 11:56:57 -0500
+Received: from mail-oi1-x22f.google.com (mail-oi1-x22f.google.com [IPv6:2607:f8b0:4864:20::22f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 979CBC061770;
+        Fri, 21 Jan 2022 08:55:42 -0800 (PST)
+Received: by mail-oi1-x22f.google.com with SMTP id x193so14466068oix.0;
+        Fri, 21 Jan 2022 08:55:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=+qjyKZOszfxARlUjaf8ExNQkAP8pObI31nb6cY6ygyE=;
-        b=Q1L8146j2oVMl5S7ZA5dp36WxXZYEmFQqLOJsBJEnYRnC0GKhsyNxpXqxzcIuhLiXR
-         AWjog25dOBimu3Pafw7bfjwJoIL99Uw1wUiO7ABNuu/U86Rh3JYEP2uwthabb90fgNHS
-         YxMnC07a3qDk8hS3QfDEoyqOMUm+lKUjGc/PpK++VbX/KyztLmDJGCNCZi+Kh1JCWYdD
-         uyQamEsK+V8Ko13zw0w3c9uCeN/gkjCC7u3ByWcD/LPqFV33S45vhxs0tvqvcrFvNgCV
-         4EQ4TASBm7FLIRTpvPP51J/v3XdU6srhhn5PKKmsvGO2sFnoFGZa/1j+FSgnE52YGvio
-         FqAA==
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=EONUWJiGBiFmk1iJqYCT7v73PWb5tLXI9z7AYQ153+I=;
+        b=aad+fr6w46RiyYwIGj0bv9tlmUENIOrZQpszpW75bDcFiMmDEQ7MA3A3+vn7o/1SZi
+         uthe990vX/MVBrA4EkUn9GYzFohlQQu/TZ0SRqkRs7Njk0/NqPfPeW2F4on/rzC56k05
+         OrUJO8V20q/mAxbJTiWQWN7bgsQEEUPrzJiwMrW7KO7db+WiHBjbhe4IXzJJ1jXeDw/Q
+         nK7iNU5uj9N5T6NfJFOnzA7Fj6lUGXHMONlcUDOCs7yWBNbMiGuhPzBGzMJ6/16e/yrR
+         fl1kmqXIU10sQxaWdeDTrOQs9A4ZOA1awpk8APv8Hx8WS9QU39kXTOs4PSKN56ASEYrh
+         qiOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=+qjyKZOszfxARlUjaf8ExNQkAP8pObI31nb6cY6ygyE=;
-        b=u/uhSupyK9spm1wfmhLecfu9qikuaVrUoGzTsA6Sr/06UzQILeuGtbfKep+SDAGM5T
-         8Y9A30/wHL2TyrVYQTql9t4BJB6i8ZjwBF8lOUe3GHDMpch9HO8Du1YhjgeU9beOOsHh
-         7Zf9B3k7XcF9rqjYiuvAYduSz/ADZCZXhrvhdVDc2R3/xmuPX1d7CUYwKxWUGf6Jno0e
-         0iOeh+l3ZFzuosYX8xJUYQqCyLzOZaZAV1WzDp784JWd73FZEBrEdO4gJ/E4BCX8sssp
-         QlCNwZBkM2NpbKsuRkU+RgQR0E4nLjoFjLSXbXfIvbu3uD4AAuTxPGtsIqy+ctVpnfDa
-         S5cQ==
-X-Gm-Message-State: AOAM532nlohd7ojG8a52qy+SxGEeDEwiKNK4oim/OVKHrMwujDgzs11n
-        8a5hePrZKUJ0z1d+M5LY3pKVjA==
-X-Google-Smtp-Source: ABdhPJzo/PMT8MItnYFhOxxP48Ab+NXa5j0UbzbG5l58oX+SIXHyM3HP7gyFVOAyDxjayedzmb25UA==
-X-Received: by 2002:a7b:c76e:: with SMTP id x14mr111558wmk.12.1642760271378;
-        Fri, 21 Jan 2022 02:17:51 -0800 (PST)
-Received: from google.com (cpc106310-bagu17-2-0-cust853.1-3.cable.virginm.net. [86.15.223.86])
-        by smtp.gmail.com with ESMTPSA id b1sm6355459wrd.78.2022.01.21.02.17.50
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=EONUWJiGBiFmk1iJqYCT7v73PWb5tLXI9z7AYQ153+I=;
+        b=oPv9jWCkB3mLxZSb5vhypqxgoViud6X7ZsANYdn+LSW0RJQTgcj+7tAYRFRHhdV691
+         OWLJ9CqU3dG+rZcZ9NJhiwC6/Bd7daJnlrPAKWfgzpR2Yne/JfjTA4qmu+NUwB+3l1vU
+         09YbOZMMOpe1PxXzgX525io5VwbSswb6I7NzK41wKLYZYiAYi06PyxCHa87Vb+6AEEJh
+         gI4NPiT22nNaO5oNX0kkQRvVxu7bK0i7AirE2jF7frNZh/v+R0KiZbj4xOEh926Ay/rz
+         Cxvw332D+yXlqLubfukdSq0QHkLz6PBNi+LAsLax/JyQJwDLjv/ADoPnJAukXVVFvcoY
+         M9Hw==
+X-Gm-Message-State: AOAM532cCKDkxs/eYEBOPLZX+4w8Kn8U+jfCSbpD41UaDJCl67k0FJhn
+        4sX1agwvR9gxHERkUb+dq/8=
+X-Google-Smtp-Source: ABdhPJw5RZlemfgOZ2JSxB+h74JPNrnYn7EOQ34SHJ6/u2NPq0tcb7c4dwH4t5xwlLqRqvJClr2EJg==
+X-Received: by 2002:a54:4198:: with SMTP id 24mr1225683oiy.21.1642784142081;
+        Fri, 21 Jan 2022 08:55:42 -0800 (PST)
+Received: from thinkpad.localdomain ([2804:14d:5cd1:5d03:cf72:4317:3105:f6e5])
+        by smtp.gmail.com with ESMTPSA id y8sm1089271oou.23.2022.01.21.08.55.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Jan 2022 02:17:50 -0800 (PST)
-Date:   Fri, 21 Jan 2022 10:17:49 +0000
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Helge Deller <deller@gmx.de>
-Cc:     Jani Nikula <jani.nikula@linux.intel.com>,
-        Daniel Vetter <daniel@ffwll.ch>, linux-fbdev@vger.kernel.org,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Fri, 21 Jan 2022 08:55:41 -0800 (PST)
+From:   Luiz Sampaio <sampaio.ime@gmail.com>
+To:     Michael Hennerich <michael.hennerich@analog.com>,
+        Lee Jones <lee.jones@linaro.org>,
         Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>
-Subject: Re: [GIT PULL] fbdev updates & fixes for v5.17-rc1
-Message-ID: <YeqITV9pAyI6clOB@google.com>
-References: <Yeg11pHSqx29yg/T@ls3530>
- <CAKMK7uGeGBBvTGFyBxLwvTAxEWwXMS8U1rrYUb_7gbui-jV+KA@mail.gmail.com>
- <87fsph4fr2.fsf@intel.com>
- <Yep6te0wrK0ZQ8SB@google.com>
- <016269c1-cf56-04ca-91e8-02417f770af5@gmx.de>
+        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Cc:     linux-kernel@vger.kernel.org, Luiz Sampaio <sampaio.ime@gmail.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH 24/31] video: backlight: changing LED_* from enum led_brightness to actual value
+Date:   Fri, 21 Jan 2022 13:54:29 -0300
+Message-Id: <20220121165436.30956-25-sampaio.ime@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220121165436.30956-1-sampaio.ime@gmail.com>
+References: <20220121165436.30956-1-sampaio.ime@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <016269c1-cf56-04ca-91e8-02417f770af5@gmx.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, 21 Jan 2022, Helge Deller wrote:
+The enum led_brightness, which contains the declaration of LED_OFF,
+LED_ON, LED_HALF and LED_FULL is obsolete, as the led class now supports
+max_brightness.
+---
+ drivers/video/backlight/adp8860_bl.c | 4 ++--
+ drivers/video/backlight/adp8870_bl.c | 4 ++--
+ drivers/video/backlight/led_bl.c     | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-> On 1/21/22 10:19, Lee Jones wrote:
-> > On Fri, 21 Jan 2022, Jani Nikula wrote:
-> >
-> >> On Fri, 21 Jan 2022, Daniel Vetter <daniel@ffwll.ch> wrote:
-> >>> On Wed, Jan 19, 2022 at 5:02 PM Helge Deller <deller@gmx.de> wrote:
-> >>>> A first bunch of updates and fixes for the following fbdev & backlight drivers:
-> >>>> ocfb, aty128fb, mb862xx, omapfb, qcom-wled, dt-bindings, hyperv_fb,
-> >>>> lm3630a_bl, omap2, controlfb, matroxfb
-> >>>>
-> >>>> Nothing really important, mostly cleanups, const conversions, added null
-> >>>> pointer/boundary checks and build fixes.
-> >>>>
-> >>>> Signed-off-by: Helge Deller <deller@gmx.de>
-> >>>
-> >>> Not sure whether Linus missed this or just wanted to let the
-> >>> discussion settle first. But since this is all random patches for
-> >>> drivers that many distros don't even enable anymore there's no issues
-> >>> here, and I very much welcome someone volunteering to pick these up.
-> >>> I'd expect there's a pile more since it's been 1-2 years since Bart
-> >>> took care of these and merged them consistently.
-> >>>
-> >>> Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> >>
-> >> ...
-> >>
-> >>>>  drivers/video/backlight/lm3630a_bl.c                     |  1 -
-> >>>>  drivers/video/backlight/qcom-wled.c                      |  1 +
-> >>
-> >> Backlight changes usually go through the backlight tree.
-> 
-> Sorry, I didn't know yet.
-> 
-> > Yes, they do.  How were these applied to the DRM tree?
-> 
-> I did applied them.
-
-When you apply patches, you should reply to let the contributor know.
-
-> Shall I drop them and you decide about them?
-
-No, there's no need for that.
-
-> Next I round I'll take care not to pick backlight patches.
-
-Thank you.
-
+diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlight/adp8860_bl.c
+index 8ec19425671f..063be4189e7e 100644
+--- a/drivers/video/backlight/adp8860_bl.c
++++ b/drivers/video/backlight/adp8860_bl.c
+@@ -261,10 +261,10 @@ static int adp8860_led_probe(struct i2c_client *client)
+ 		led_dat->cdev.name = cur_led->name;
+ 		led_dat->cdev.default_trigger = cur_led->default_trigger;
+ 		led_dat->cdev.brightness_set = adp8860_led_set;
+-		led_dat->cdev.brightness = LED_OFF;
++		led_dat->cdev.brightness = 0;
+ 		led_dat->flags = cur_led->flags >> FLAG_OFFT_SHIFT;
+ 		led_dat->client = client;
+-		led_dat->new_brightness = LED_OFF;
++		led_dat->new_brightness = 0;
+ 		INIT_WORK(&led_dat->work, adp8860_led_work);
+ 
+ 		ret = led_classdev_register(&client->dev, &led_dat->cdev);
+diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
+index 8b5213a39527..b04faf8d631d 100644
+--- a/drivers/video/backlight/adp8870_bl.c
++++ b/drivers/video/backlight/adp8870_bl.c
+@@ -287,10 +287,10 @@ static int adp8870_led_probe(struct i2c_client *client)
+ 		led_dat->cdev.name = cur_led->name;
+ 		led_dat->cdev.default_trigger = cur_led->default_trigger;
+ 		led_dat->cdev.brightness_set = adp8870_led_set;
+-		led_dat->cdev.brightness = LED_OFF;
++		led_dat->cdev.brightness = 0;
+ 		led_dat->flags = cur_led->flags >> FLAG_OFFT_SHIFT;
+ 		led_dat->client = client;
+-		led_dat->new_brightness = LED_OFF;
++		led_dat->new_brightness = 0;
+ 		INIT_WORK(&led_dat->work, adp8870_led_work);
+ 
+ 		ret = led_classdev_register(&client->dev, &led_dat->cdev);
+diff --git a/drivers/video/backlight/led_bl.c b/drivers/video/backlight/led_bl.c
+index f54d256e2d54..1b869624b4f8 100644
+--- a/drivers/video/backlight/led_bl.c
++++ b/drivers/video/backlight/led_bl.c
+@@ -46,7 +46,7 @@ static void led_bl_power_off(struct led_bl_data *priv)
+ 		return;
+ 
+ 	for (i = 0; i < priv->nb_leds; i++)
+-		led_set_brightness(priv->leds[i], LED_OFF);
++		led_set_brightness(priv->leds[i], 0);
+ 
+ 	priv->enabled = false;
+ }
 -- 
-Lee Jones [李琼斯]
-Principal Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.34.1
+

@@ -2,76 +2,200 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 669ECC433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 21 Jan 2022 18:08:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5DF0C433F5
+	for <linux-fbdev@archiver.kernel.org>; Sun, 23 Jan 2022 17:52:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239373AbiAUSIx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 21 Jan 2022 13:08:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38578 "EHLO
+        id S232441AbiAWRwT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 23 Jan 2022 12:52:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42712 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230223AbiAUSIx (ORCPT
+        with ESMTP id S239351AbiAWRwQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 21 Jan 2022 13:08:53 -0500
-Received: from mail-ot1-x329.google.com (mail-ot1-x329.google.com [IPv6:2607:f8b0:4864:20::329])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68362C06173B;
-        Fri, 21 Jan 2022 10:08:53 -0800 (PST)
-Received: by mail-ot1-x329.google.com with SMTP id i7-20020a9d68c7000000b0059396529af8so12748382oto.4;
-        Fri, 21 Jan 2022 10:08:53 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=EdV9jeW0XS2fClTtRWmHZ/pfb6gc0JxRxLCJ6LOKoaE=;
-        b=meeX0EanCREvHkjbpCqG1ZNOiORRW+lck5Lrf1ekknEV8tSG9pCQLCeAnEuG4jpXD0
-         bafWNuO2n56RKk4TdK9uv2oNQejIRjkllXH6p6aP4C9jAkMlf5+v0rcAW7sSOpN1Qweh
-         lxSM31FA4Y43sLimq/jcXuW6eVM6AlExrxl1DXPcd/lnUWTfxapFeQ6Vroc9GMHHkVdm
-         97m8GVhmzYVEmE10GbST644VMlhZCQisjDIHKzn7O25SSjVtP5rvi50XqDaxdl970OUf
-         fiVIVPlAPQINuvTf/7SDsq/HZuPG3pCZGpJ3TIbB+GHG4qt4Msz5m9tPxcfApIeOkFGs
-         jJiQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=EdV9jeW0XS2fClTtRWmHZ/pfb6gc0JxRxLCJ6LOKoaE=;
-        b=7ZQ5ljfdMoojJtBWewgLdgGGEgy1abYzxPXqy2tjBMryxU+FZ9jsuVl2iIm8gR/A43
-         k/7m00wCBZa/mQ3LqAERj0ZbaPsU3OZ6TFzrph94yMsH1Ez/c0KxOHRWArrX1AsHVBfM
-         1Ib41ckLXGTW0MlBTdgBmleJiXd4WQLxr7iYzp11rFEzgqIpLPrP4XAcqzb3fuTFTmlE
-         AGh8WURlScW4qgSiwft4baXSWJVXqs63TLgzksTUH/6yXTcrBHtx9HyL7MkxcH+P/Tva
-         c5hMfz0zWF71vKjD1uK8OsmegmeT1UDPw+x1S3HoU2bppkxeB0ZmSkH00XnwR9hcz+so
-         hvvA==
-X-Gm-Message-State: AOAM532bVDL08nDTjw/DNXqGRRYhl3P6zc0f1hjFLg+sBqZJzwNHQcs4
-        XOzKtyR3w+CS9hWfMIDif3s=
-X-Google-Smtp-Source: ABdhPJwUwR1moHUHUerjoZQiDlOouzASByE3AZ2eOElQtAiRB0NohFq9+NrBSRM+s/N+I4ND4sgA/A==
-X-Received: by 2002:a05:6830:2788:: with SMTP id x8mr3568081otu.349.1642788532834;
-        Fri, 21 Jan 2022 10:08:52 -0800 (PST)
-Received: from thinkpad.localdomain ([2804:14d:5cd1:5d03:f1a4:cff3:1fd1:7bc1])
-        by smtp.gmail.com with ESMTPSA id m14sm1161490ooe.20.2022.01.21.10.08.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Jan 2022 10:08:52 -0800 (PST)
-From:   Luiz Sampaio <sampaio.ime@gmail.com>
-To:     daniel.thompson@linaro.org
-Cc:     michael.hennerich@analog.com, lee.jones@linaro.org,
-        jingoohan1@gmail.com, deller@gmx.de, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Luiz Sampaio <sampaio.ime@gmail.com>
-Subject: Re: [PATCH 24/31] video: backlight: changing LED_* from enum led_brightness to actual value
-Date:   Fri, 21 Jan 2022 15:09:48 -0300
-Message-Id: <20220121180948.2501-1-sampaio.ime@gmail.com>
+        Sun, 23 Jan 2022 12:52:16 -0500
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F2EBC06173B
+        for <linux-fbdev@vger.kernel.org>; Sun, 23 Jan 2022 09:52:16 -0800 (PST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1nBh29-0007aF-Qo; Sun, 23 Jan 2022 18:52:09 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1nBh28-00BycG-BF; Sun, 23 Jan 2022 18:52:07 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1nBh26-000tza-R3; Sun, 23 Jan 2022 18:52:06 +0100
+From:   =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>
+To:     Mark Brown <broonie@kernel.org>
+Cc:     linux-spi@vger.kernel.org, kernel@pengutronix.de,
+        linux-kernel@vger.kernel.org,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-fbdev@vger.kernel.org, Noralf Tronnes <notro@tronnes.org>,
+        linux-staging@lists.linux.dev, dri-devel@lists.freedesktop.org,
+        Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+        Heiner Kallweit <hkallweit1@gmail.com>
+Subject: [PATCH 2/5] staging: fbtft: Deduplicate driver registration macros
+Date:   Sun, 23 Jan 2022 18:51:58 +0100
+Message-Id: <20220123175201.34839-3-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220121170540.w6c4wqwrqzpde2lm@maple.lan>
-References: <20220121170540.w6c4wqwrqzpde2lm@maple.lan>
+In-Reply-To: <20220123175201.34839-1-u.kleine-koenig@pengutronix.de>
+References: <20220123175201.34839-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6082; h=from:subject; bh=foBmuuEI1He7NuGg3QW3ixnzXwI1LphRcPTFGI3t6X8=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBh7ZWvvuKPqNnlGxkliBrLUAPrmqBmyjgXYcMtZRKf /OdSJuKJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCYe2VrwAKCRDB/BR4rcrsCQKdB/ 9sBcrdFWuKD0qO5mR5tfx7V99RsL9sa3essPy4tP8F1zgmNlTI+c/J1M7jmBWqkVi++cVYuMXpmSIK KiijgTxGBFHiLiYNjgP/fAymP0jHYKH3wHWWfclIN2e7gfhCsgrxEQU7NTtYMvn95rqgxunuYQiTGl CmlZHDzsSpxAmVUxWcnc8FUi8nrO6LYKp+UR6y47c1RxsmBBvys/7eJKwR+1kgueeeD2grtULKWqgr 5QIF0deXNH1uj85z3vf93rT/L/0zWIWiCtgM34u6J39dCh5X2T2jjtorNcYMs+2Dj7oNLfss3CFi9G /KRKOrig0xxNdVmMyl6neeSDKdjmJF
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello, Daniel
+The two macros FBTFT_REGISTER_DRIVER and FBTFT_REGISTER_SPI_DRIVER
+contain quite some duplication: Both define an spi driver and an of device
+table and the differences are quite subtle.
 
-Thanks for your reply. This is one of my first patches, so I am still
-learning. This series of patches affects others subsystems too (hid,
-leds, sound etc). Should I create series for each subsystem
-separately, instead of creating one series for everyone?
-What do you mean by "this patch might wants to land in one tree"?
+So create two new macros and use both twice.
 
-Thank you for your attention!
+Link: https://lore.kernel.org/r/20220118181338.207943-2-u.kleine-koenig@pengutronix.de
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/staging/fbtft/fbtft.h | 93 ++++++++++++++---------------------
+ 1 file changed, 36 insertions(+), 57 deletions(-)
+
+diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
+index 55677efc0138..6a7545b5bcd2 100644
+--- a/drivers/staging/fbtft/fbtft.h
++++ b/drivers/staging/fbtft/fbtft.h
+@@ -272,21 +272,40 @@ void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...);
+ void fbtft_write_reg16_bus8(struct fbtft_par *par, int len, ...);
+ void fbtft_write_reg16_bus16(struct fbtft_par *par, int len, ...);
+ 
++#define FBTFT_DT_TABLE(_compatible)						\
++static const struct of_device_id dt_ids[] = {					\
++	{ .compatible = _compatible },						\
++	{},									\
++};										\
++MODULE_DEVICE_TABLE(of, dt_ids);
++
++#define FBTFT_SPI_DRIVER(_name, _compatible, _display, _spi_ids)		\
++										\
++static int fbtft_driver_probe_spi(struct spi_device *spi)			\
++{										\
++	return fbtft_probe_common(_display, spi, NULL);				\
++}										\
++										\
++static int fbtft_driver_remove_spi(struct spi_device *spi)			\
++{										\
++	struct fb_info *info = spi_get_drvdata(spi);				\
++										\
++	fbtft_remove_common(&spi->dev, info);					\
++	return 0;								\
++}										\
++										\
++static struct spi_driver fbtft_driver_spi_driver = {				\
++	.driver = {								\
++		.name = _name,							\
++		.of_match_table = dt_ids,					\
++	},									\
++	.id_table = _spi_ids,							\
++	.probe = fbtft_driver_probe_spi,					\
++	.remove = fbtft_driver_remove_spi,					\
++};
++
+ #define FBTFT_REGISTER_DRIVER(_name, _compatible, _display)                \
+ 									   \
+-static int fbtft_driver_probe_spi(struct spi_device *spi)                  \
+-{                                                                          \
+-	return fbtft_probe_common(_display, spi, NULL);                    \
+-}                                                                          \
+-									   \
+-static int fbtft_driver_remove_spi(struct spi_device *spi)                 \
+-{                                                                          \
+-	struct fb_info *info = spi_get_drvdata(spi);                       \
+-									   \
+-	fbtft_remove_common(&spi->dev, info);                              \
+-	return 0;                                                          \
+-}                                                                          \
+-									   \
+ static int fbtft_driver_probe_pdev(struct platform_device *pdev)           \
+ {                                                                          \
+ 	return fbtft_probe_common(_display, NULL, pdev);                   \
+@@ -300,22 +319,9 @@ static int fbtft_driver_remove_pdev(struct platform_device *pdev)          \
+ 	return 0;                                                          \
+ }                                                                          \
+ 									   \
+-static const struct of_device_id dt_ids[] = {                              \
+-	{ .compatible = _compatible },                                     \
+-	{},                                                                \
+-};                                                                         \
+-									   \
+-MODULE_DEVICE_TABLE(of, dt_ids);                                           \
++FBTFT_DT_TABLE(_compatible)						   \
+ 									   \
+-									   \
+-static struct spi_driver fbtft_driver_spi_driver = {                       \
+-	.driver = {                                                        \
+-		.name   = _name,                                           \
+-		.of_match_table = dt_ids,                                  \
+-	},                                                                 \
+-	.probe  = fbtft_driver_probe_spi,                                  \
+-	.remove = fbtft_driver_remove_spi,                                 \
+-};                                                                         \
++FBTFT_SPI_DRIVER(_name, _compatible, _display, NULL)			   \
+ 									   \
+ static struct platform_driver fbtft_driver_platform_driver = {             \
+ 	.driver = {                                                        \
+@@ -351,42 +357,15 @@ module_exit(fbtft_driver_module_exit);
+ 
+ #define FBTFT_REGISTER_SPI_DRIVER(_name, _comp_vend, _comp_dev, _display)	\
+ 										\
+-static int fbtft_driver_probe_spi(struct spi_device *spi)			\
+-{										\
+-	return fbtft_probe_common(_display, spi, NULL);				\
+-}										\
+-										\
+-static int fbtft_driver_remove_spi(struct spi_device *spi)			\
+-{										\
+-	struct fb_info *info = spi_get_drvdata(spi);				\
+-										\
+-	fbtft_remove_common(&spi->dev, info);					\
+-	return 0;								\
+-}										\
+-										\
+-static const struct of_device_id dt_ids[] = {					\
+-	{ .compatible = _comp_vend "," _comp_dev },				\
+-	{},									\
+-};										\
+-										\
+-MODULE_DEVICE_TABLE(of, dt_ids);						\
++FBTFT_DT_TABLE(_comp_vend "," _comp_dev)					\
+ 										\
+ static const struct spi_device_id spi_ids[] = {					\
+ 	{ .name = _comp_dev },							\
+ 	{},									\
+ };										\
+-										\
+ MODULE_DEVICE_TABLE(spi, spi_ids);						\
+ 										\
+-static struct spi_driver fbtft_driver_spi_driver = {				\
+-	.driver = {								\
+-		.name  = _name,							\
+-		.of_match_table = dt_ids,					\
+-	},									\
+-	.id_table = spi_ids,							\
+-	.probe  = fbtft_driver_probe_spi,					\
+-	.remove = fbtft_driver_remove_spi,					\
+-};										\
++FBTFT_SPI_DRIVER(_name, _comp_vend "," _comp_dev, _display, spi_ids)		\
+ 										\
+ module_spi_driver(fbtft_driver_spi_driver);
+ 
+-- 
+2.34.1
+

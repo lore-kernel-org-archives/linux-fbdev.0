@@ -2,94 +2,95 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6D30C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 14:00:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC7B2C433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 14:02:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237962AbiAXOAb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 09:00:31 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:25608 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S237965AbiAXOAY (ORCPT
+        id S238143AbiAXOCc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 09:02:32 -0500
+Received: from mail-wm1-f50.google.com ([209.85.128.50]:47051 "EHLO
+        mail-wm1-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238136AbiAXOCc (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 09:00:24 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643032823;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=rktM0S0usSPLY5LvkfsWofVmD3HAzupt/hqZRguzdL4=;
-        b=Wo6Wb5wQfh0zwtlwLdUnY5CDQ+uW01XgiMulT4lQECk9cblFRonlt+7BHuGK4RT2M/tZmp
-        V3Db+fY4R6QWshssSUliR6yiNxMOCKYa6PBikZlQHMUnG8FKF6U0j869qLGc7bpkPsNuxg
-        411PidehjAwFtP8uvf5ANZI1sRkUDpc=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-634-R8eRxS5WO4OBn3H1NOhHaw-1; Mon, 24 Jan 2022 09:00:22 -0500
-X-MC-Unique: R8eRxS5WO4OBn3H1NOhHaw-1
-Received: by mail-wm1-f70.google.com with SMTP id c16-20020a1c9a10000000b0034dd409329eso9650075wme.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 06:00:21 -0800 (PST)
+        Mon, 24 Jan 2022 09:02:32 -0500
+Received: by mail-wm1-f50.google.com with SMTP id a203-20020a1c98d4000000b0034d2956eb04so1372444wme.5;
+        Mon, 24 Jan 2022 06:02:31 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=rktM0S0usSPLY5LvkfsWofVmD3HAzupt/hqZRguzdL4=;
-        b=51o7HNnVV6JrjPch+2Yp4GHlh4V/bC9MEmZSKfg0d6UVdmK+VysBt4Lbfsua351X7r
-         DsLKDDRjrJCBiE5Ax3VoesXxYsW1Ce/Q2dHUdj8G4wT6KNXB5BD30U0jSxm1ltM+w1Nq
-         0Fj6pc+OF23Jqp2D+4ar3QMPoGyIaaNGKaYGDl0hZqMsO9NXyMpI3BbQiIkvcrX6FbQd
-         OJixQSR+JNdcdlzgZvewCzMp/3WztfRQAgVcPSJ+pFxDKWNSq5LblHfp5YPHEWP3r1Ct
-         BCsRwSXsE4NWruMc8eyYctV3qgc5kJbNaQR2OyzL4hpDGAQb4b+SFr+kHyA1OyjAPKT7
-         gpkA==
-X-Gm-Message-State: AOAM5317STbiIsuL4+Mk3jEb9G+FGtcCFPTRoKOMMt5lVqYgkXoLm7fk
-        vvqHEFZccrGFoOLHkLw/xZ93EJWv1wnynoDzQw9xbgtzmdIaMfSPpLAh/aOjt9D2r/ak4HdIwnZ
-        JrJTK6Jm9+EtTz0JV3S4qsAo=
-X-Received: by 2002:a5d:457b:: with SMTP id a27mr9200347wrc.86.1643032820867;
-        Mon, 24 Jan 2022 06:00:20 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJytZhOKI7fYVQiuKsKaaK1W6CiHUlA4X/OwcDEUpQv/bAfKFUv01YVhuawIMIM4PyYrfjRyjg==
-X-Received: by 2002:a5d:457b:: with SMTP id a27mr9200329wrc.86.1643032820652;
-        Mon, 24 Jan 2022 06:00:20 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id p26sm5181839wms.2.2022.01.24.06.00.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Jan 2022 06:00:20 -0800 (PST)
-Message-ID: <91872b43-042e-3b8a-0dbb-f9ddebfadea0@redhat.com>
-Date:   Mon, 24 Jan 2022 15:00:18 +0100
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=THU4jK8TMCvPkYwnRlwAVctd3mj6SQNDR24XQxhu4+0=;
+        b=KsDoKjUv2QSX1vscJ+xxbvD4woDY3dO6pOOnt3O/9ycWd45HP4DGP2WqqQYKtqNGRh
+         pyXklvYL+/I3QgaqVlbRhV+7CRLRnnj8YsU1JMhJNaEbfXS9exdU07xzCH5zO2OLTX/h
+         zzYuwWwNgkLhcirf4r4S/io4l7cQVOidDR0fmHXfpYtdB2I6rchIBRHxH2fvRrTayrHy
+         OiY5mNyOH8VxT6As3yZ+BUmGb/zdiKJo8+JGifhgC65R14BrSj3xzNEdddu9M2h2QcA3
+         hEOJhMGVDkz8i/QddZkoMy47HVqY+oz0/t3oruYayT0iI8dQOAioWo0sy8lSfe/p73eD
+         gCoQ==
+X-Gm-Message-State: AOAM531c4paxanHTtNGAern1xXyTLzEcEIyEKNNA1grE2P1ESzHSi4DN
+        wIsfNw2V0fsazmeHxQalijk=
+X-Google-Smtp-Source: ABdhPJww5yfltt0+zq2PHbn2mD/HvnB+5pJIrqjhflb5W4S5NoJLdhhqq8/MabUEsqvCVzoBXrIvIA==
+X-Received: by 2002:a1c:f002:: with SMTP id a2mr1961082wmb.29.1643032950560;
+        Mon, 24 Jan 2022 06:02:30 -0800 (PST)
+Received: from liuwe-devbox-debian-v2 ([51.145.34.42])
+        by smtp.gmail.com with ESMTPSA id b15sm13677648wrs.93.2022.01.24.06.02.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Jan 2022 06:02:30 -0800 (PST)
+Date:   Mon, 24 Jan 2022 14:02:28 +0000
+From:   Wei Liu <wei.liu@kernel.org>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Wei Liu <wei.liu@kernel.org>,
+        "Michael Kelley (LINUX)" <mikelley@microsoft.com>,
+        Haiyang Zhang <haiyangz@microsoft.com>,
+        KY Srinivasan <kys@microsoft.com>,
+        Stephen Hemminger <sthemmin@microsoft.com>,
+        Wei Hu <weh@microsoft.com>, Dexuan Cui <decui@microsoft.com>,
+        "drawat.floss@gmail.com" <drawat.floss@gmail.com>,
+        hhei <hhei@redhat.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+Subject: Re: [PATCH 1/1] video: hyperv_fb: Fix validation of screen resolution
+Message-ID: <20220124140228.ywtxgrx3jqngmbqt@liuwe-devbox-debian-v2>
+References: <1642360711-2335-1-git-send-email-mikelley@microsoft.com>
+ <MN2PR21MB1295CE3BD15D4EB257A158DCCA569@MN2PR21MB1295.namprd21.prod.outlook.com>
+ <20220123215606.fzycryooluavtar4@liuwe-devbox-debian-v2>
+ <MWHPR21MB1593ED650DA82BC3009F66CED75D9@MWHPR21MB1593.namprd21.prod.outlook.com>
+ <20220123223030.ijdzrunduww76jiq@liuwe-devbox-debian-v2>
+ <e396a22d-7e0e-73a4-d831-f69dc854bfa8@gmx.de>
+ <20220124133119.3yxfr7ypmmdotm6h@liuwe-devbox-debian-v2>
+ <cb4323b6-99f0-c813-502a-2fbe107353ee@gmx.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.0
-Subject: Re: [PATCH 3/5] drm/simpledrm: Request memory region in driver
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, zackr@vmware.com,
-        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
-        airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de,
-        hdegoede@redhat.com
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20220124123659.4692-1-tzimmermann@suse.de>
- <20220124123659.4692-4-tzimmermann@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220124123659.4692-4-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cb4323b6-99f0-c813-502a-2fbe107353ee@gmx.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/24/22 13:36, Thomas Zimmermann wrote:
-> Requesting the framebuffer memory in simpledrm marks the memory
-> range as busy. This used to be done by the firmware sysfb code,
-> but the driver is the correct place.
+On Mon, Jan 24, 2022 at 02:48:57PM +0100, Helge Deller wrote:
+> On 1/24/22 14:31, Wei Liu wrote:
+[...]
+> >>
+> >> Linus hasn't pulled my tree yet, and he will probably not before the
+> >> next merge window. So, if this is an urgent bugfix for you, I can offer
+> >> to drop it from the fbdev tree and that you take it through the hyperv-fixes tree.
+> >> In that case you may add an Acked-by: Helge Deller <deller@gmx.de>.
+> >> Just let me know what you prefer.
+> >
+> > Hi Helge
+> >
+> > Yes, I would like to upstream it as soon as possible so that it can
+> > propagate to stable trees and be backported by downstream vendors.
+> >
+> > I will pick it up in hyperv-fixes. Please drop it from your for-next
+> > tree.
 > 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
+> Dropped now from fbdev tree.
 
-Looks good to me.
+Thanks! I added your ack and pushed the patch to hyperv-fixes.
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Wei.
 
-Best regards,
--- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+> 
+> Thanks!
+> Helge

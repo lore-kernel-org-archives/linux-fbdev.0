@@ -2,173 +2,114 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B410CC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 15:45:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A308C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 15:50:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235569AbiAXPpM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 10:45:12 -0500
-Received: from smtp-out1.suse.de ([195.135.220.28]:37892 "EHLO
-        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231203AbiAXPpJ (ORCPT
+        id S230400AbiAXPue (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 10:50:34 -0500
+Received: from mail-ua1-f54.google.com ([209.85.222.54]:37482 "EHLO
+        mail-ua1-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S231140AbiAXPud (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 10:45:09 -0500
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id BBDFD21996;
-        Mon, 24 Jan 2022 15:45:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1643039107; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=RjA/80OqKTnpvG+7iaVvyP9DqrW+0KIpdaVg1ap2eOE=;
-        b=2TCwQzFJJnx3al7jo0+FElkT1uyARf4BEAwT9wgQ7eIykP6Rlptr1faEj7t3+vHroXxPHE
-        Odmy3kJt9Ev/0iJbP3ok6/YTgbkFDu/2hMlrIbv7UL1SHqiaQ2Y2e9uzNDUcuf6NYgE5e2
-        QrywRykpn7r0o/whMri62uyokOhLgh0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1643039107;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=RjA/80OqKTnpvG+7iaVvyP9DqrW+0KIpdaVg1ap2eOE=;
-        b=2YAZo15gi+QAyPzuy2ECKu0ZRsf4JS1zT6QReLFoj9Gca5bVqL+ljqhdHE1mXkgoJBFsaP
-        vHPpSng/5bjp76Bw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 69FD713C28;
-        Mon, 24 Jan 2022 15:45:07 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id CTs9GIPJ7mGNJgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 24 Jan 2022 15:45:07 +0000
-Message-ID: <6b41c8cf-8ab6-7224-8af2-c8c77a6f5d3b@suse.de>
-Date:   Mon, 24 Jan 2022 16:45:06 +0100
+        Mon, 24 Jan 2022 10:50:33 -0500
+Received: by mail-ua1-f54.google.com with SMTP id b16so31784939uaq.4;
+        Mon, 24 Jan 2022 07:50:33 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Qn8yuU/dY9yzYdXTyBmgzczJZCif2R504KsT3GAaWuA=;
+        b=EH/azo2n+xVnDTrSK+A4gHMd3HAcVFRhi2rB0XqKFePER29TQHaB5+Im9JWmRpcmtm
+         56oCJLF1eM2V4nLGK3gBGslHm1XRCjctEg/Vpjz1To+gxO/yo6XKceNo+uU4l5f0utdf
+         76nlIllAzZ4ZYiOkWTmJXGNkL1vks85UqmchxFbZi4Mbfhz4ZOvFTVEMVKhL9TZP2CPN
+         O7J9xd0vt6M7AlRujnODdTzmxncosUE4ah2qGLeAh0yu6oUtZOTG4u84fx/Oe6ovIjCO
+         pUgUOgauu1ch8oRMfVLNturACMV1306wR3nPqqazvfFGdaj9mG/NNZ78AZXz49ev6hHS
+         JQKQ==
+X-Gm-Message-State: AOAM533BaNM/EBbqV4w4rTwhP/vr7ZzqO46/q6Y3GPkN0C9KXSmkVhjs
+        NuoAd0Venx3264koVUeF+KFrUMeo3IhSag==
+X-Google-Smtp-Source: ABdhPJwRww2LRfHpBthtBVTM6QfehR063xCOsjJGa08Kmiojk9Hr6nhICQHyTXTowFCPafe7NQs3kQ==
+X-Received: by 2002:a05:6102:5087:: with SMTP id bl7mr2439728vsb.22.1643039432296;
+        Mon, 24 Jan 2022 07:50:32 -0800 (PST)
+Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com. [209.85.222.43])
+        by smtp.gmail.com with ESMTPSA id y18sm2852168ual.15.2022.01.24.07.50.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Jan 2022 07:50:31 -0800 (PST)
+Received: by mail-ua1-f43.google.com with SMTP id b16so31784769uaq.4;
+        Mon, 24 Jan 2022 07:50:31 -0800 (PST)
+X-Received: by 2002:a67:b009:: with SMTP id z9mr2526092vse.57.1643039430885;
+ Mon, 24 Jan 2022 07:50:30 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
+References: <20220119110839.33187-1-deller@gmx.de> <20220119110839.33187-3-deller@gmx.de>
+ <YelyGDNDTn1Aq/hm@phenom.ffwll.local> <6c000477-002b-d125-b945-2c4831bad8a5@gmx.de>
+ <20220121072006.ylw2hdl7jbkbwnre@sirius.home.kraxel.org> <64fd46cb-9746-3fd0-ec92-c64dba76875a@gmx.de>
+ <d23800b4-503c-a6e2-2c51-2c07a736dffc@suse.de> <2fc200bb-4b40-7833-31c9-90a78512b601@redhat.com>
+ <de6e06e1-f293-1c98-7898-b5d52c400b59@gmx.de>
+In-Reply-To: <de6e06e1-f293-1c98-7898-b5d52c400b59@gmx.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 24 Jan 2022 16:50:19 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdW-txqH1fnpkvyOSYUVkG8PTJKWkWFq_X8k-4VcdKR79Q@mail.gmail.com>
+Message-ID: <CAMuHMdW-txqH1fnpkvyOSYUVkG8PTJKWkWFq_X8k-4VcdKR79Q@mail.gmail.com>
 Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
-Content-Language: en-US
-To:     Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Gerd Hoffmann <kraxel@redhat.com>
-Cc:     linux-fbdev@vger.kernel.org,
+To:     Helge Deller <deller@gmx.de>
+Cc:     Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Gerd Hoffmann <kraxel@redhat.com>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Sven Schnelle <svens@stackframe.org>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Linus Torvalds <torvalds@linux-foundation.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Claudio Suarez <cssk@net-c.es>,
         Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        Claudio Suarez <cssk@net-c.es>, Pavel Machek <pavel@ucw.cz>,
         Daniel Vetter <daniel.vetter@intel.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Sam Ravnborg <sam@ravnborg.org>
-References: <20220119110839.33187-1-deller@gmx.de>
- <20220119110839.33187-3-deller@gmx.de> <YelyGDNDTn1Aq/hm@phenom.ffwll.local>
- <6c000477-002b-d125-b945-2c4831bad8a5@gmx.de>
- <20220121072006.ylw2hdl7jbkbwnre@sirius.home.kraxel.org>
- <64fd46cb-9746-3fd0-ec92-c64dba76875a@gmx.de>
- <d23800b4-503c-a6e2-2c51-2c07a736dffc@suse.de>
- <2fc200bb-4b40-7833-31c9-90a78512b601@redhat.com>
- <de6e06e1-f293-1c98-7898-b5d52c400b59@gmx.de>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <de6e06e1-f293-1c98-7898-b5d52c400b59@gmx.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------IeSeuErc0VVP0phaSXoIJUST"
+        Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------IeSeuErc0VVP0phaSXoIJUST
-Content-Type: multipart/mixed; boundary="------------gPnb1oZ4LzJSJF0ihXEV4I8o";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Helge Deller <deller@gmx.de>,
- Javier Martinez Canillas <javierm@redhat.com>,
- Gerd Hoffmann <kraxel@redhat.com>
-Cc: linux-fbdev@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Sven Schnelle <svens@stackframe.org>, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Tomi Valkeinen <tomi.valkeinen@ti.com>, Claudio Suarez <cssk@net-c.es>,
- Pavel Machek <pavel@ucw.cz>, Daniel Vetter <daniel.vetter@intel.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>
-Message-ID: <6b41c8cf-8ab6-7224-8af2-c8c77a6f5d3b@suse.de>
-Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
-References: <20220119110839.33187-1-deller@gmx.de>
- <20220119110839.33187-3-deller@gmx.de> <YelyGDNDTn1Aq/hm@phenom.ffwll.local>
- <6c000477-002b-d125-b945-2c4831bad8a5@gmx.de>
- <20220121072006.ylw2hdl7jbkbwnre@sirius.home.kraxel.org>
- <64fd46cb-9746-3fd0-ec92-c64dba76875a@gmx.de>
- <d23800b4-503c-a6e2-2c51-2c07a736dffc@suse.de>
- <2fc200bb-4b40-7833-31c9-90a78512b601@redhat.com>
- <de6e06e1-f293-1c98-7898-b5d52c400b59@gmx.de>
-In-Reply-To: <de6e06e1-f293-1c98-7898-b5d52c400b59@gmx.de>
+Hi Helge,
 
---------------gPnb1oZ4LzJSJF0ihXEV4I8o
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On Mon, Jan 24, 2022 at 4:30 PM Helge Deller <deller@gmx.de> wrote:
+> On 1/24/22 12:50, Javier Martinez Canillas wrote:
+> > On 1/24/22 12:33, Thomas Zimmermann wrote:
+> >
+> > [snip]
+> >
+> >>> Thoughts?
+> >>
+> >> I can't say I approve keeping fbdev alive, but...
+> >>
+> >> With fbdev emulation, every DRM driver is an fbdev driver too. So
+> >> CONFIG_FB_DRIVER is somewhat misleading. Better add an option like
+> >> CONFIG_FBCON_HW_SCROLLING and have it selected by the fbdev drivers that
+> >> absolutely need HW acceleration. That option would then protect the rsp
+> >> code.
+>
+> I'm not a fan of something like CONFIG_FBCON_HW_SCROLLING, but I'm not
+> against it either.
+> For me it sounds that this is not the real direction you want to go,
+> which is to prevent that any other drivers take the framebuffer before
+> you take it with simpledrm or similiar.
+> CONFIG_FBCON_HW_SCROLLING IMHO just disables the (from your POV) neglectable accleration part.
+> With an option like CONFIG_FB_DRIVER (maybe better: CONFIG_FB_LEGACY_DRIVERS)
+> it's an easy option for distros to disable all of the legacy drivers
+> from being built & shipped.
+>
+> Instead of CONFIG_FBCON_HW_SCROLLING we could also choose
+> CONFIG_FBCON_LEGACY_ACCELERATION, because it includes fillrect() as well...
 
-SGkNCg0KQW0gMjQuMDEuMjIgdW0gMTY6Mjkgc2NocmllYiBIZWxnZSBEZWxsZXI6DQo+IE9u
-IDEvMjQvMjIgMTI6NTAsIEphdmllciBNYXJ0aW5leiBDYW5pbGxhcyB3cm90ZToNCj4+IE9u
-IDEvMjQvMjIgMTI6MzMsIFRob21hcyBaaW1tZXJtYW5uIHdyb3RlOg0KPj4NCj4+IFtzbmlw
-XQ0KPj4NCj4+Pj4gVGhvdWdodHM/DQo+Pj4NCj4+PiBJIGNhbid0IHNheSBJIGFwcHJvdmUg
-a2VlcGluZyBmYmRldiBhbGl2ZSwgYnV0Li4uDQo+Pj4NCj4+PiBXaXRoIGZiZGV2IGVtdWxh
-dGlvbiwgZXZlcnkgRFJNIGRyaXZlciBpcyBhbiBmYmRldiBkcml2ZXIgdG9vLiBTbw0KPj4+
-IENPTkZJR19GQl9EUklWRVIgaXMgc29tZXdoYXQgbWlzbGVhZGluZy4gQmV0dGVyIGFkZCBh
-biBvcHRpb24gbGlrZQ0KPj4+IENPTkZJR19GQkNPTl9IV19TQ1JPTExJTkcgYW5kIGhhdmUg
-aXQgc2VsZWN0ZWQgYnkgdGhlIGZiZGV2IGRyaXZlcnMgdGhhdA0KPj4+IGFic29sdXRlbHkg
-bmVlZCBIVyBhY2NlbGVyYXRpb24uIFRoYXQgb3B0aW9uIHdvdWxkIHRoZW4gcHJvdGVjdCB0
-aGUgcnNwDQo+Pj4gY29kZS4NCj4gDQo+IEknbSBub3QgYSBmYW4gb2Ygc29tZXRoaW5nIGxp
-a2UgQ09ORklHX0ZCQ09OX0hXX1NDUk9MTElORywgYnV0IEknbSBub3QNCj4gYWdhaW5zdCBp
-dCBlaXRoZXIuDQo+IEZvciBtZSBpdCBzb3VuZHMgdGhhdCB0aGlzIGlzIG5vdCB0aGUgcmVh
-bCBkaXJlY3Rpb24geW91IHdhbnQgdG8gZ28sDQo+IHdoaWNoIGlzIHRvIHByZXZlbnQgdGhh
-dCBhbnkgb3RoZXIgZHJpdmVycyB0YWtlIHRoZSBmcmFtZWJ1ZmZlciBiZWZvcmUNCj4geW91
-IHRha2UgaXQgd2l0aCBzaW1wbGVkcm0gb3Igc2ltaWxpYXIuDQo+IENPTkZJR19GQkNPTl9I
-V19TQ1JPTExJTkcgSU1ITyBqdXN0IGRpc2FibGVzIHRoZSAoZnJvbSB5b3VyIFBPVikgbmVn
-bGVjdGFibGUgYWNjbGVyYXRpb24gcGFydC4NCj4gV2l0aCBhbiBvcHRpb24gbGlrZSBDT05G
-SUdfRkJfRFJJVkVSIChtYXliZSBiZXR0ZXI6IENPTkZJR19GQl9MRUdBQ1lfRFJJVkVSUykN
-Cj4gaXQncyBhbiBlYXN5IG9wdGlvbiBmb3IgZGlzdHJvcyB0byBkaXNhYmxlIGFsbCBvZiB0
-aGUgbGVnYWN5IGRyaXZlcnMNCj4gZnJvbSBiZWluZyBidWlsdCAmIHNoaXBwZWQuDQoNClRo
-ZXNlIGRyaXZlcnMgaGF2ZSBiZWVuIGRpc2FibGVkIGJ5IG1vc3QgZGlzdHJvcyBhIGxvbmcg
-dGltZSBhZ28uIFRob3NlIA0KdGhhdCBzdGlsbCByZW1haW4gYXJlIHRoZSBnZW5lcmljLCBz
-b29uIHRvIGJlIHJlcGxhY2VkLCBvbmVzOyBhbmQgDQpkcml2ZXJzIGZvciBuaWNoZSBhcmNo
-aXRlY3R1cmVzIHdoZXJlIG5vIERSTS1iYXNlZCByZXBsYWNlbWVudCBleGlzdHMuDQoNCklm
-IEkgcnVuIERSTSB3aXRoIGZiZGV2IGVtdWxhdGlvbiwgSFcgc2Nyb2xsaW5nIGlzIHVudXNl
-ZCwgcG9zc2libHkgDQpidWdneSwgYW5kIEknZCB3YW50IHRvIG5vdCBidWlsdCBpdCBpZiBw
-b3NzaWJsZS4gSSBndWVzcyB0aGF0J3Mgd2hhdCANCm1vc3QgZGlzdHJvcyB3b3VsZCB3YW50
-IGFzIHdlbGwuIFRoYXQncyB0aGUgdXNlIGNhc2UgZm9yIEZCQ09OX0hXX1NDUk9MTElORy4N
-Cg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpH
-cmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJt
-YW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhS
-QiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
+As this is about resurrecting features indicated by the various
+FBINFO_HWACCEL_* flags, what about CONFIG_FB_HWACCEL?
 
+Gr{oetje,eeting}s,
 
---------------gPnb1oZ4LzJSJF0ihXEV4I8o--
+                        Geert
 
---------------IeSeuErc0VVP0phaSXoIJUST
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmHuyYIFAwAAAAAACgkQlh/E3EQov+Az
-SA//Yl/UY00KzpZCWws1qNJy9HqODzkgFTdiLp74CpcBlnaYYRqu0OVBYEeWpyv3SyXj4hEF1Jjl
-ltAgNpgskoU6Nuxw1geABqqqmVAj4xFSorto3ieJsImx1PfVorwqGcRH4lZE+mtQigvRfjYfwEOf
-ZVItvKQYNKAFx42XLbpHMZsvsgP9KwbmCU0pH68GZ4aIDevICeyNj8da9kQvKF1gLBE0ZlLc3svp
-lWQ/eST2gCrK9J/VEZ2G2C3WEqZFiyFSaDXSU8IMuZ2tke/awK/k21a6vev342wxKw+2qb+ct+tf
-Ica3Y/gU6Ds8aCtP4rosx4lU0i1Rv1+z7K+YgXC8gCBZVJfjXt7DSaNB1UXUgDyetqHub5nt5W/T
-TIKRMQFF1IAvGYpMwJN3Al4DpcmOQzCOaHdOUxABIVsGgq/+ONLuKzcJZf5vWkY2DHfGwA+m0yV/
-Sofi8pflDvIVtjkL4iXDgPAIwiM3EnWqqbEJCkuLq+exEnl4NPnuV+mfBviJfhsMivONRTqCjr8D
-jLS8xrxsxPgToWruKg6hZRTrcpQMOAIO4P+HqjcPT2PQ02PfhCQ606wjSiqPfjo67Y/9PRgKU94L
-UXcYKuPJMoQGIY5QBtrHWbePXSN65HBFx9ZYsfN8x8Na7PQYhZNjlFFsm2q4xYp3jlnJtkv9Lcxb
-zx8=
-=YaJW
------END PGP SIGNATURE-----
-
---------------IeSeuErc0VVP0phaSXoIJUST--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

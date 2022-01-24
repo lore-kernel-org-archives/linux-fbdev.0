@@ -2,159 +2,92 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64A5FC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 16:11:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 904ABC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 18:04:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235437AbiAXQLt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 11:11:49 -0500
-Received: from smtp-out1.suse.de ([195.135.220.28]:41628 "EHLO
-        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235357AbiAXQLt (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 11:11:49 -0500
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 4FF63218A9;
-        Mon, 24 Jan 2022 16:11:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1643040708; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=XnUfGUPPVAeHs0amZ7Fk81HAoAs/nV9B8a9/MAM6+GE=;
-        b=HrLQ48iTRJwyE4u/wzcSUc5thP1maYKA8TBvLJGV1UGqz9RPMRVNk6nX9bVIzTY2/jyeor
-        VLHQkTEy1o+itKC5xvyvKwKvpyVrrIxBifxXxXYu/4L67EfWIs2lTBKLMbT+E95+R+4MMd
-        sb9h2nVqSmipGena65kDM8j0F3Qx3Ks=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1643040708;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=XnUfGUPPVAeHs0amZ7Fk81HAoAs/nV9B8a9/MAM6+GE=;
-        b=HC0Ug3+l5f/rRZz3tWdCwypFxNfPOiKNmakE81z0ZwOcW4nlKa9RsavmN48AUJcaw9s91r
-        IFaLPDgBllMIW+Cg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E477B13C33;
-        Mon, 24 Jan 2022 16:11:47 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id f1ORNcPP7mGINgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 24 Jan 2022 16:11:47 +0000
-Message-ID: <2d608d02-54ec-94b6-83c4-9f6c29c34c27@suse.de>
-Date:   Mon, 24 Jan 2022 17:11:46 +0100
+        id S244872AbiAXSEH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 13:04:07 -0500
+Received: from mga07.intel.com ([134.134.136.100]:37145 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S241599AbiAXSEF (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 24 Jan 2022 13:04:05 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1643047445; x=1674583445;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=OYmRkE6V3p9QrcyPrJBbLnZSuFH1gmWgXsZXCzijVQU=;
+  b=hxotyViaIw/IvKY05yP3zyWyauFGtKTWRMQrn0fxkOh8yck/iFs2Ov9c
+   ycbSITN5OPHcceSanmVtlHoXIbX3dtak7xBxHJkU+LeN9XVnZ1dlX51wz
+   WSERPpVKn10vFsknt8FrM+A7OH01GXZRJQk0RjkGgwoVAhJ8/QCca4Y6Q
+   m8cFQE2744VgeLepK0T0aGN10dYPad+LhEcR0TvoeyUSpNoDQlyFUJuRW
+   y/1rQiS60BVKXq1wOEgByzCo24NiF0rjiaFT+N2sBiu6tng34W7pOJXaq
+   2diB7k9nuQf3P71I1g3ElsoBhuBru/MvgNgamqD3U3WmpmiMg/pJOelZe
+   w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10237"; a="309429841"
+X-IronPort-AV: E=Sophos;i="5.88,311,1635231600"; 
+   d="scan'208";a="309429841"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jan 2022 10:04:05 -0800
+X-IronPort-AV: E=Sophos;i="5.88,311,1635231600"; 
+   d="scan'208";a="494704523"
+Received: from smile.fi.intel.com ([10.237.72.61])
+  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jan 2022 10:04:03 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.95)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1nC3g8-00Dz4t-FG;
+        Mon, 24 Jan 2022 20:02:56 +0200
+Date:   Mon, 24 Jan 2022 20:02:56 +0200
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Wei Ming Chen <jj251510319013@gmail.com>,
+        Helge Deller <deller@gmx.de>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        tzimmermann@suse.de, robh@kernel.org, maxime@cerno.tech
+Subject: Re: [PATCH] fbdev: Fix file path that does not exist
+Message-ID: <Ye7p0Ccmy+lHaRM1@smile.fi.intel.com>
+References: <20211208144631.3710-1-jj251510319013@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Helge Deller <deller@gmx.de>, Gerd Hoffmann <kraxel@redhat.com>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Sven Schnelle <svens@stackframe.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Claudio Suarez <cssk@net-c.es>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>
-References: <20220119110839.33187-1-deller@gmx.de>
- <20220119110839.33187-3-deller@gmx.de> <YelyGDNDTn1Aq/hm@phenom.ffwll.local>
- <6c000477-002b-d125-b945-2c4831bad8a5@gmx.de>
- <20220121072006.ylw2hdl7jbkbwnre@sirius.home.kraxel.org>
- <64fd46cb-9746-3fd0-ec92-c64dba76875a@gmx.de>
- <d23800b4-503c-a6e2-2c51-2c07a736dffc@suse.de>
- <CAMuHMdXu_paBcNhevgxXzr1pEes7qWtD=RHXTrqP=hxNBkupnw@mail.gmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <CAMuHMdXu_paBcNhevgxXzr1pEes7qWtD=RHXTrqP=hxNBkupnw@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------iRTp0NFwBh9eHcTGeU1Z5eDJ"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20211208144631.3710-1-jj251510319013@gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------iRTp0NFwBh9eHcTGeU1Z5eDJ
-Content-Type: multipart/mixed; boundary="------------PimFI8AXsGXVPasze1EMNbqT";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Helge Deller <deller@gmx.de>, Gerd Hoffmann <kraxel@redhat.com>,
- Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
- Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Sven Schnelle <svens@stackframe.org>,
- Javier Martinez Canillas <javierm@redhat.com>,
- DRI Development <dri-devel@lists.freedesktop.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Claudio Suarez <cssk@net-c.es>, Tomi Valkeinen <tomi.valkeinen@ti.com>,
- Daniel Vetter <daniel.vetter@intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>
-Message-ID: <2d608d02-54ec-94b6-83c4-9f6c29c34c27@suse.de>
-Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
-References: <20220119110839.33187-1-deller@gmx.de>
- <20220119110839.33187-3-deller@gmx.de> <YelyGDNDTn1Aq/hm@phenom.ffwll.local>
- <6c000477-002b-d125-b945-2c4831bad8a5@gmx.de>
- <20220121072006.ylw2hdl7jbkbwnre@sirius.home.kraxel.org>
- <64fd46cb-9746-3fd0-ec92-c64dba76875a@gmx.de>
- <d23800b4-503c-a6e2-2c51-2c07a736dffc@suse.de>
- <CAMuHMdXu_paBcNhevgxXzr1pEes7qWtD=RHXTrqP=hxNBkupnw@mail.gmail.com>
-In-Reply-To: <CAMuHMdXu_paBcNhevgxXzr1pEes7qWtD=RHXTrqP=hxNBkupnw@mail.gmail.com>
++Cc: maintainer
 
---------------PimFI8AXsGXVPasze1EMNbqT
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On Wed, Dec 08, 2021 at 10:46:31PM +0800, Wei Ming Chen wrote:
+> pvr2fb.c should be under drivers/video/fbdev/
+> instead of drivers/video/
 
-SGkNCg0KQW0gMjQuMDEuMjIgdW0gMTY6NTAgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
-DQo+IE9uIE1vbiwgSmFuIDI0LCAyMDIyIGF0IDEyOjMzIFBNIFRob21hcyBaaW1tZXJtYW5u
-IDx0emltbWVybWFubkBzdXNlLmRlPiB3cm90ZToNCj4+IFdpdGggZmJkZXYgZW11bGF0aW9u
-LCBldmVyeSBEUk0gZHJpdmVyIGlzIGFuIGZiZGV2IGRyaXZlciB0b28uIFNvDQo+IA0KPiBT
-b21lIGFyZSBldmVuIHdpdGhvdXQ/DQo+IA0KPiBkcml2ZXJzL2dwdS9kcm0vdm13Z2Z4L3Zt
-d2dmeF9mYi5jOiAgICAgcmV0ID0gcmVnaXN0ZXJfZnJhbWVidWZmZXIoaW5mbyk7DQoNCldl
-bGwsIEkgY291bnRlZCB0aGlzIGFzICdlbXVsYXRpb24nIGFzIHdlbGwuIFRoZXJlJ3MgZnVs
-bHkgDQpkcml2ZXItYWdub3N0aWMgZmJkZXYgc3VwcG9ydCBpbiBEUk0sIGJ1dCBzb21lIGRy
-aXZlcnMgc3RpbGwgcnVuIHRoZWlyIA0Kb3duLiBBdCBzb21lIHBvaW50LCB3ZSB3YW50IGFs
-bCBkcml2ZXJzIHRvIHVzZSBEUk0ncyBnZW5lcmljIHNvbHV0aW9uLg0KDQpCZXN0IHJlZ2Fy
-ZHMNClRob21hcw0KDQo+IA0KPiBHcntvZXRqZSxlZXRpbmd9cywNCj4gDQo+ICAgICAgICAg
-ICAgICAgICAgICAgICAgICBHZWVydA0KPiANCj4gLS0NCj4gR2VlcnQgVXl0dGVyaG9ldmVu
-IC0tIFRoZXJlJ3MgbG90cyBvZiBMaW51eCBiZXlvbmQgaWEzMiAtLSBnZWVydEBsaW51eC1t
-NjhrLm9yZw0KPiANCj4gSW4gcGVyc29uYWwgY29udmVyc2F0aW9ucyB3aXRoIHRlY2huaWNh
-bCBwZW9wbGUsIEkgY2FsbCBteXNlbGYgYSBoYWNrZXIuIEJ1dA0KPiB3aGVuIEknbSB0YWxr
-aW5nIHRvIGpvdXJuYWxpc3RzIEkganVzdCBzYXkgInByb2dyYW1tZXIiIG9yIHNvbWV0aGlu
-ZyBsaWtlIHRoYXQuDQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC0tIExp
-bnVzIFRvcnZhbGRzDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZl
-ciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4
-ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBO
-w7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+LGTM,
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
---------------PimFI8AXsGXVPasze1EMNbqT--
+> Signed-off-by: Wei Ming Chen <jj251510319013@gmail.com>
+> ---
+>  drivers/video/fbdev/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index 6ed5e608dd04..93b8d84c34cf 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -829,7 +829,7 @@ config FB_PVR2
+>  	  You can pass several parameters to the driver at boot time or at
+>  	  module load time.  The parameters look like "video=pvr2:XXX", where
+>  	  the meaning of XXX can be found at the end of the main source file
+> -	  (<file:drivers/video/pvr2fb.c>). Please see the file
+> +	  (<file:drivers/video/fbdev/pvr2fb.c>). Please see the file
+>  	  <file:Documentation/fb/pvr2fb.rst>.
+>  
+>  config FB_OPENCORES
+> -- 
+> 2.25.1
+> 
 
---------------iRTp0NFwBh9eHcTGeU1Z5eDJ
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+-- 
+With Best Regards,
+Andy Shevchenko
 
------BEGIN PGP SIGNATURE-----
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmHuz8IFAwAAAAAACgkQlh/E3EQov+C9
-Tw/+NyQbUldd1/42Fkul2EglrD9sAbWlKeCb0x6HKCZpPW1GYCuDlHRbnwPmmLn36ehXBIDJRFKH
-ezOAWdmK1YKGeYgxbDJThYVJIUvcy0KzZe3PmpDkV+wziI5AUByQP+O1muGPFRT8Aea2VmPB9Ab7
-iBirH36B/i6BuxtWdx45zbHi/zmTpIiEFvOVKOOHsNRJDeS9TjVWElOOzDuHYcUobfWa6LED5Ymn
-PTuScP7QA70RkhgGfLEotne9ReGQzt/uEIDpBoYSzgMMdYya9lg73jZU/HcDG9ENYoOg04TicfTQ
-p5zJ/1q+K6jMHQ5GQp6TJrp3yeHitUwcW+cmemiT3Nxg4umulUVK//pXnz/IVydbPzhza/j4s23z
-dM6UiGZROCfnjjz3y7UeMpBHnJE9jLpmZ49mhZU6jMrTwia4ogsYwRTKZepwyNVp+6jL8Hb/mVGp
-ddSdJJDLwKlPz3yYpvamngZPGrP5CXC6oHL1sh8zI+xHp5hPh6RDPgUMJdSa5R1IC2CMmSB49687
-SaOUTvsnpK8AOhV9Dkeh1GisOYSfdSRsnuqKRpJto5gNUJcSMZzgSopOvBK+iisZ6mh4MwihqAes
-8BVgCYGXP/SyX9FIcqzZoSj2Oa5rQbyT8MWx0xeiSO3m0LOG2zFqpvVau8SD0Yhz84B7Puc9Co0m
-bFs=
-=5Ca6
------END PGP SIGNATURE-----
-
---------------iRTp0NFwBh9eHcTGeU1Z5eDJ--

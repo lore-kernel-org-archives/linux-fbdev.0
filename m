@@ -2,133 +2,165 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 383F1C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 14:23:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA017C433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 14:25:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237478AbiAXOXG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 09:23:06 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:45550 "EHLO
+        id S238111AbiAXOZH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 09:25:07 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:24294 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S233777AbiAXOXG (ORCPT
+        by vger.kernel.org with ESMTP id S238153AbiAXOZF (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 09:23:06 -0500
+        Mon, 24 Jan 2022 09:25:05 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643034185;
+        s=mimecast20190719; t=1643034304;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=cs88OS8ntrHeBIPi6HCjuIRnxV3UU2trcG+6nvyi6gs=;
-        b=i8wmV0rMniJmZrdBrMkLUmMwe0WHQshdNqR+Cr6UjYoYNkhtH9N78D7KqRQw4SKQexsqCS
-        +cLMej3Vbo3ioM7zE+hvMKaxR8CdtnGlQ/GYpBfPW+pIQyk4+MlXcFB9NmlJ0YnZTNQUWy
-        KJ/ORTERQILeotl6dFBDKZBiTPuBpzA=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=91cTvYR6VviS4cvZOL3VWGIO3cvGdjNjxXc1MdKYof4=;
+        b=AolzVCmGjoJ1yXTYMpv5WqUtYv3AAtmp+DIFCxJ1hbros9+5EshsRpvm+IfmWFSIdFbqSU
+        uwBDJuD5Wx1ToLnAlwp7e5fGlwy74jlkSQKkkeqQmQwxSV0trPtF0OcfZWltp+iLNmNwrI
+        xWGeMZLCNbEg+IbTlmhxYnmnWKllp58=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-610-Krcxh6yTPJCYCi7MqHRdqg-1; Mon, 24 Jan 2022 09:23:04 -0500
-X-MC-Unique: Krcxh6yTPJCYCi7MqHRdqg-1
-Received: by mail-wr1-f72.google.com with SMTP id g17-20020adfa591000000b001da86c91c22so816515wrc.5
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 06:23:04 -0800 (PST)
+ us-mta-90-MWSdzNHENkifgryf4UCGog-1; Mon, 24 Jan 2022 09:25:02 -0500
+X-MC-Unique: MWSdzNHENkifgryf4UCGog-1
+Received: by mail-wm1-f69.google.com with SMTP id b134-20020a1c1b8c000000b0034e0874e828so3888422wmb.4
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 06:25:02 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=cs88OS8ntrHeBIPi6HCjuIRnxV3UU2trcG+6nvyi6gs=;
-        b=ynhvTOl2opG2ljDWFi6lRIOWXh5AUIpCp/SY43BNNqUaYbngQ4IllyXLVzwOynaNnM
-         IKWOCiGpCIe6RJ6conEh1pAxwt/pPQ0xnQlDh9veFao72WNTeTKO2OTbSx4pCW67jLon
-         bs1DM7zqc4BOGhzIdXJdMIclZJyig5rqxxRfg4ovABuq4ybffd2Sw9GDepV+WDYGVtUa
-         7DYQ5xRms5IN6nmCJo7YEtbdmRcVIk4i/7kgMcjyY3RIN0Ikk7MLB9a2eRpUXAeOQcHs
-         xpeFNilO4mWwuVNIkSYnAluiZeyh+BussHejfs7LkgwMkBkTuNU7SucqA2KQvK006auL
-         ZmeQ==
-X-Gm-Message-State: AOAM532v+7A06ZoHH9NrkYSXAML5Q4+y111eM6GesJMAI9/6q+13aSbq
-        Xa7qlkadF/V+6iyuJHZcX/52ri2PqtezvkqORh2GlT1QPfM6+weNVKLY9SiNsIZ9ZulOden2VJ3
-        1DEykndKzM7xyqJhis0q8gT8=
-X-Received: by 2002:a5d:6da2:: with SMTP id u2mr3236182wrs.410.1643034183538;
-        Mon, 24 Jan 2022 06:23:03 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJz1B9bMdw7KWzqCPgCXI5UiRxAg4SRlxhbTFcyTAgjjrPAcK8XbeRhoAQcwKWpMrNIpiD4sZg==
-X-Received: by 2002:a5d:6da2:: with SMTP id u2mr3236164wrs.410.1643034183321;
-        Mon, 24 Jan 2022 06:23:03 -0800 (PST)
-Received: from ?IPV6:2a01:e0a:c:37e0:f4b2:2105:b039:7367? ([2a01:e0a:c:37e0:f4b2:2105:b039:7367])
-        by smtp.gmail.com with ESMTPSA id m11sm13864188wmi.16.2022.01.24.06.23.02
+        bh=91cTvYR6VviS4cvZOL3VWGIO3cvGdjNjxXc1MdKYof4=;
+        b=xBtsFqoev7bkuWTDIFVmIwOXBpRXnXqCsxqur0F7ja4FpQFzKQnVsm9R4caFJ27uK0
+         NCQDACe+1/qiOhGVMc1O1ljxxCStv4GQxaouSX+aZy+48No6a1fQEepbESQrdM8BXXfo
+         9tBZIyMHmA//4b1ZRcq3uU5J+fuPshxLc5J/hw9l2X9GbtbyxqZBV+q8togE8sTOLgbY
+         2SteZEu0VVSV/6feCjsMsmwpbU67LOjs2OrWrTkRI4KxlhEfypKiyXWyBzcUfsorLyxU
+         3Cxv2I0fySNzSuFoXC1tiIaxbdP/A2Iqf8jSoYddNe61+lwHJqAXyem8WcDiLoU2hV9H
+         LLKQ==
+X-Gm-Message-State: AOAM533g40elrhrHWM72l0GmkesU7gQoMXfw6SIP991h7hBxELLJVwH0
+        1fO6gGwjf11glkvR2/aa3DORHX+MJX6CHW79NYpXAGv26vBK1c9sBI5sESHRja+urzklumOPrwv
+        11LkrRUx7u1yQE7GtvwCFo3M=
+X-Received: by 2002:a05:6000:18cb:: with SMTP id w11mr14541885wrq.292.1643034300976;
+        Mon, 24 Jan 2022 06:25:00 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwmWslUSCIQ+qncoCgTI5lmk7SOHrCyzcbudBaXHcrJ5iGS3O9vUleQ3fDfvk+y32ZNBPCVyw==
+X-Received: by 2002:a05:6000:18cb:: with SMTP id w11mr14541862wrq.292.1643034300730;
+        Mon, 24 Jan 2022 06:25:00 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id m15sm35221wms.1.2022.01.24.06.24.59
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Jan 2022 06:23:02 -0800 (PST)
-Message-ID: <bede759f-23c2-a87e-abde-108196e36fde@redhat.com>
-Date:   Mon, 24 Jan 2022 15:23:01 +0100
+        Mon, 24 Jan 2022 06:25:00 -0800 (PST)
+Message-ID: <ef39d2c9-4825-9d40-100d-6461f71ee67e@redhat.com>
+Date:   Mon, 24 Jan 2022 15:24:59 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.4.0
-Subject: Re: [PATCH 3/5] drm/simpledrm: Request memory region in driver
+Subject: Re: [PATCH 4/5] fbdev/simplefb: Request memory region in driver
 Content-Language: en-US
 To:     Thomas Zimmermann <tzimmermann@suse.de>, zackr@vmware.com,
-        javierm@redhat.com, maarten.lankhorst@linux.intel.com,
-        mripard@kernel.org, airlied@linux.ie, daniel@ffwll.ch,
-        deller@gmx.de, hdegoede@redhat.com
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de,
+        hdegoede@redhat.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 References: <20220124123659.4692-1-tzimmermann@suse.de>
- <20220124123659.4692-4-tzimmermann@suse.de>
-From:   Jocelyn Falempe <jfalempe@redhat.com>
-In-Reply-To: <20220124123659.4692-4-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ <20220124123659.4692-5-tzimmermann@suse.de>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <20220124123659.4692-5-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 24/01/2022 13:36, Thomas Zimmermann wrote:
+On 1/24/22 13:36, Thomas Zimmermann wrote:
 > Requesting the framebuffer memory in simpledrm marks the memory
 > range as busy. This used to be done by the firmware sysfb code,
 > but the driver is the correct place.
 > 
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
->   drivers/gpu/drm/tiny/simpledrm.c | 20 +++++++++++++++-----
->   1 file changed, 15 insertions(+), 5 deletions(-)
+>  drivers/video/fbdev/simplefb.c | 59 ++++++++++++++++++++++++----------
+>  1 file changed, 42 insertions(+), 17 deletions(-)
 > 
-> diff --git a/drivers/gpu/drm/tiny/simpledrm.c b/drivers/gpu/drm/tiny/simpledrm.c
-> index 04146da2d1d8..f72b71511a65 100644
-> --- a/drivers/gpu/drm/tiny/simpledrm.c
-> +++ b/drivers/gpu/drm/tiny/simpledrm.c
-> @@ -526,21 +526,31 @@ static int simpledrm_device_init_mm(struct simpledrm_device *sdev)
->   {
->   	struct drm_device *dev = &sdev->dev;
->   	struct platform_device *pdev = sdev->pdev;
-> -	struct resource *mem;
-> +	struct resource *res, *mem;
->   	void __iomem *screen_base;
->   	int ret;
->   
-> -	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (!mem)
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (!res)
->   		return -EINVAL;
->   
-> -	ret = devm_aperture_acquire_from_firmware(dev, mem->start, resource_size(mem));
-> +	ret = devm_aperture_acquire_from_firmware(dev, res->start, resource_size(res));
->   	if (ret) {
->   		drm_err(dev, "could not acquire memory range %pr: error %d\n",
-> -			mem, ret);
-> +			res, ret);
->   		return ret;
->   	}
->   
-> +	mem = devm_request_mem_region(&pdev->dev, res->start, resource_size(res),
-> +				      sdev->dev.driver->name);
-> +	if (!mem) {
-> +		/*
-> +		 * We cannot make this fatal. Sometimes this comes from magic
-> +		 * spaces our resource handlers simply don't know about
-> +		 */
-> +		drm_warn(dev, "could not acquire memory region %pr\n", res);
-> +	}
+> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+> index 57541887188b..84452028ecc9 100644
+> --- a/drivers/video/fbdev/simplefb.c
+> +++ b/drivers/video/fbdev/simplefb.c
+> @@ -66,16 +66,36 @@ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+>  	return 0;
+>  }
+>  
+> -struct simplefb_par;
+> +struct simplefb_par {
+> +	u32 palette[PSEUDO_PALETTE_SIZE];
+> +#if defined CONFIG_OF && defined CONFIG_COMMON_CLK
+> +	bool clks_enabled;
+> +	unsigned int clk_count;
+> +	struct clk **clks;
+> +#endif
+> +#if defined CONFIG_OF && defined CONFIG_REGULATOR
+> +	bool regulators_enabled;
+> +	u32 regulator_count;
+> +	struct regulator **regulators;
+> +#endif
+> +	bool release_mem_region;
+
+Maybe instead you could have:
+
+	struct resource *mem; 
+
+that would be more consistent with the fields for the other
+resources like clocks, regulators, etc.
+
+> +};
 > +
->   	screen_base = devm_ioremap_wc(&pdev->dev, mem->start,
->   				      resource_size(mem));
+>  static void simplefb_clocks_destroy(struct simplefb_par *par);
+>  static void simplefb_regulators_destroy(struct simplefb_par *par);
+>  
+>  static void simplefb_destroy(struct fb_info *info)
+>  {
+> +	struct simplefb_par *par = info->par;
+> +
+>  	simplefb_regulators_destroy(info->par);
+>  	simplefb_clocks_destroy(info->par);
+>  	if (info->screen_base)
+>  		iounmap(info->screen_base);
+> +
+> +	if (par->release_mem_region)
+> +		release_mem_region(info->apertures->ranges[0].base,
+> +				   info->apertures->ranges[0].size);
 
-if mem is NULL, accessing mem->start will segfault after the warning.
-I think you renamed "mem" to "res" so probably it should be renamed here 
-too ?
+and here you could instead use the pointer to the resource:
 
->   	if (!screen_base)
+	if (par->mem)
+		release_mem_region(par->mem->start, resource_size(par->mem));
+
+[snip]
+
+>  static int simplefb_probe(struct platform_device *pdev)
+>  {
+> +	bool request_mem_succeeded = false;
+>  	int ret;
+>  	struct simplefb_params params;
+>  	struct fb_info *info;
+> @@ -436,9 +443,22 @@ static int simplefb_probe(struct platform_device *pdev)
+>  		return -EINVAL;
+>  	}
+>  
+> +	if (request_mem_region(mem->start, resource_size(mem), "simplefb")) {
+> +		request_mem_succeeded = true;
+
+and if you do the request_mem_region() after the struct fb_info allocation then
+this could just be:
+
+		par->mem = mem;
+
+Best regards,
+-- 
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 

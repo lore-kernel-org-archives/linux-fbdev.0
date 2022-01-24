@@ -2,92 +2,147 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 904ABC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 18:04:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EED1DC4332F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 18:27:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244872AbiAXSEH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 13:04:07 -0500
-Received: from mga07.intel.com ([134.134.136.100]:37145 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S241599AbiAXSEF (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 13:04:05 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1643047445; x=1674583445;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=OYmRkE6V3p9QrcyPrJBbLnZSuFH1gmWgXsZXCzijVQU=;
-  b=hxotyViaIw/IvKY05yP3zyWyauFGtKTWRMQrn0fxkOh8yck/iFs2Ov9c
-   ycbSITN5OPHcceSanmVtlHoXIbX3dtak7xBxHJkU+LeN9XVnZ1dlX51wz
-   WSERPpVKn10vFsknt8FrM+A7OH01GXZRJQk0RjkGgwoVAhJ8/QCca4Y6Q
-   m8cFQE2744VgeLepK0T0aGN10dYPad+LhEcR0TvoeyUSpNoDQlyFUJuRW
-   y/1rQiS60BVKXq1wOEgByzCo24NiF0rjiaFT+N2sBiu6tng34W7pOJXaq
-   2diB7k9nuQf3P71I1g3ElsoBhuBru/MvgNgamqD3U3WmpmiMg/pJOelZe
-   w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10237"; a="309429841"
-X-IronPort-AV: E=Sophos;i="5.88,311,1635231600"; 
-   d="scan'208";a="309429841"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jan 2022 10:04:05 -0800
-X-IronPort-AV: E=Sophos;i="5.88,311,1635231600"; 
-   d="scan'208";a="494704523"
-Received: from smile.fi.intel.com ([10.237.72.61])
-  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Jan 2022 10:04:03 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.95)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nC3g8-00Dz4t-FG;
-        Mon, 24 Jan 2022 20:02:56 +0200
-Date:   Mon, 24 Jan 2022 20:02:56 +0200
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Wei Ming Chen <jj251510319013@gmail.com>,
-        Helge Deller <deller@gmx.de>
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        tzimmermann@suse.de, robh@kernel.org, maxime@cerno.tech
-Subject: Re: [PATCH] fbdev: Fix file path that does not exist
-Message-ID: <Ye7p0Ccmy+lHaRM1@smile.fi.intel.com>
-References: <20211208144631.3710-1-jj251510319013@gmail.com>
+        id S241827AbiAXS1o (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 13:27:44 -0500
+Received: from mail-ua1-f52.google.com ([209.85.222.52]:35463 "EHLO
+        mail-ua1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S245255AbiAXS1n (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 24 Jan 2022 13:27:43 -0500
+Received: by mail-ua1-f52.google.com with SMTP id m90so32769265uam.2
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 10:27:43 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=7SqmZ9f0RWasCXhWlrSx2cD/L8oAGqPWnnkFJLcnjm4=;
+        b=mPX1q170eo2f0lJqiJASjt5FHR+1f8r5w6bjDswsOXA1wtlCOj2osdfuJsTPf8v7Hd
+         NmfMyu3jDqHle/GZ1QAaELIh6g364dpNA+n+Atoo0UB2wRbnUvce2MLb2qTxnOME1n0T
+         3Z8PUH156RrpigT6sHkJ5xysVAGRdeexKYok57bb1MDaUZEuW/eLbH3xjDrSbpQuHz4M
+         Le0c/aJrZNpQtQh7ovYh2adzSBdE/BZbR1zQnnJ9TGwfrNUypjCObYQwPPvP1knRY04A
+         vWCLmOMnZ0VfNr+ZmBOykFEGewZm8jFMRweFndMcwVrVrPsXBW8uvGk/zWWAwnLyehmJ
+         Ipsw==
+X-Gm-Message-State: AOAM530TISGCJ75y4XNJUqHYlAF2fPQmokIjAzu5pHHhhNrsYBchkP0l
+        cLHq1l88kdHm8C0vqPtKYkYiTZVHivADrw==
+X-Google-Smtp-Source: ABdhPJwLFOPPdZrzxCg7AnVWuA+mGXhLUu1LsoG7DiYS7XtdAfHnI2KaZp2XTLY0vP6/4sdeMDVUKg==
+X-Received: by 2002:a67:2f90:: with SMTP id v138mr2258803vsv.27.1643048862891;
+        Mon, 24 Jan 2022 10:27:42 -0800 (PST)
+Received: from mail-vk1-f175.google.com (mail-vk1-f175.google.com. [209.85.221.175])
+        by smtp.gmail.com with ESMTPSA id k16sm291313vsr.8.2022.01.24.10.27.42
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Jan 2022 10:27:42 -0800 (PST)
+Received: by mail-vk1-f175.google.com with SMTP id 48so7608865vki.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 10:27:42 -0800 (PST)
+X-Received: by 2002:a1f:1b46:: with SMTP id b67mr3291125vkb.20.1643048862175;
+ Mon, 24 Jan 2022 10:27:42 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20211208144631.3710-1-jj251510319013@gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <feea8303-2b83-fc36-972c-4fc8ad723bde@gmx.de> <87zgnz71ic.fsf@x1.stackframe.org>
+ <Yegwl/rwRhjROxcy@phenom.ffwll.local>
+In-Reply-To: <Yegwl/rwRhjROxcy@phenom.ffwll.local>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 24 Jan 2022 19:27:31 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVBFgo6ryq=h8e6mZZmnxnChZVP924yeX+C-KwghKx3tA@mail.gmail.com>
+Message-ID: <CAMuHMdVBFgo6ryq=h8e6mZZmnxnChZVP924yeX+C-KwghKx3tA@mail.gmail.com>
+Subject: Re: fbdev: Garbage collect fbdev scrolling acceleration
+To:     Daniel Vetter <daniel@ffwll.ch>
+Cc:     Sven Schnelle <svens@stackframe.org>, Helge Deller <deller@gmx.de>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Hamza Mahfooz <someguy@effective-light.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-+Cc: maintainer
+Hi Daniel et al,
 
-On Wed, Dec 08, 2021 at 10:46:31PM +0800, Wei Ming Chen wrote:
-> pvr2fb.c should be under drivers/video/fbdev/
-> instead of drivers/video/
+On Wed, Jan 19, 2022 at 4:39 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+> On Thu, Jan 13, 2022 at 10:46:03PM +0100, Sven Schnelle wrote:
+> > Helge Deller <deller@gmx.de> writes:
+> > > I may have missed some discussions, but I'm objecting against this patch:
+> > >
+> > >     b3ec8cdf457e5 ("fbdev: Garbage collect fbdev scrolling acceleration, part 1 (from TODO list)")
+> > >
+> > > Can we please (partly) revert it and restore the scrolling behaviour,
+> > > where fbcon uses fb_copyarea() to copy the screen contents instead of
+> > > redrawing the whole screen?
+> > >
+> > > I'm fine with dropping the ypan-functionality.
+> > >
+> > > Maybe on fast new x86 boxes the performance difference isn't huge,
+> > > but for all old systems, or when emulated in qemu, this makes
+> > > a big difference.
+> > >
+> > > Helge
+> >
+> > I second that. For most people, the framebuffer isn't important as
+> > they're mostly interested in getting to X11/wayland as fast as possible.
+> > But for systems like servers without X11 it's nice to have a fast
+> > console.
+>
+> Fast console howto:
+> - shadow buffer in cached memory
+> - timer based upload of changed areas to the real framebuffer
+>
+> This one is actually fast, instead of trying to use hw bltcopy and having
+> the most terrible fallback path if that's gone. Yes drm fbdev helpers has
+> this (but not enabled on most drivers because very, very few people care).
 
-LGTM,
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+That depends on the hardware, and the balance between CPU-to-RAM,
+CPU-to-VRAM, and GPU-to-VRAM bandwidths, and CPU and GPU performance.
 
-> Signed-off-by: Wei Ming Chen <jj251510319013@gmail.com>
-> ---
->  drivers/video/fbdev/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> index 6ed5e608dd04..93b8d84c34cf 100644
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -829,7 +829,7 @@ config FB_PVR2
->  	  You can pass several parameters to the driver at boot time or at
->  	  module load time.  The parameters look like "video=pvr2:XXX", where
->  	  the meaning of XXX can be found at the end of the main source file
-> -	  (<file:drivers/video/pvr2fb.c>). Please see the file
-> +	  (<file:drivers/video/fbdev/pvr2fb.c>). Please see the file
->  	  <file:Documentation/fb/pvr2fb.rst>.
->  
->  config FB_OPENCORES
-> -- 
-> 2.25.1
-> 
+When scrolling, the fastest copy is the copy that doesn't need to copy
+much.  So that's why fbcon supports (or supported :-( many strategies:
+scrolling by wrapping, panning, copying (either by CPU or by (simple)
+GPU), re-rendering (useful for a GPU with bitmap expansion).  So forcing
+everybody to render into a fully cached shadow buffer and upload changed
+areas is not the silver bullet.
 
--- 
-With Best Regards,
-Andy Shevchenko
+Whether text output is rendered immediately or not is completely
+orthogonal to this.  While timer-based updates would speed up printing
+of large hunks of text (where no one actually reads what was printed at
+the top), that would have almost no impact on actual interactive console
+work: it may still take 0.5s to scroll the screen if you press "enter"
+when your cursor is positioned on the last line.
+BTW, implementing timer-based updates would make measuring real-world
+performance more difficult, as we would have to use a different
+benchmark than "time dmesg" ;-)
 
+Both Daniel and Thomas said: fbdev is not suitable for modern hardware.
+Fine, we do not debate that, and do not want to prevent you from using
+DRM for modern hardware.  Then please accept us saying that DRM (in its
+current form) is not suitable for other types of graphics hardware.
+Still, even modern (embedded) hardware may have small low-color
+displays.
 
+For the last +5 years, we've been pointed to the tinydrm drivers, to
+serve as examples for converting existing fbdev drivers to drm drivers.
+All but one of them are drivers for hi-color or better hardware, thus
+surpassing the capabilities of lots of hardware driven by fbdev drivers.
+The other one is an e-ink driver that exposes an XRGB8888 shadow frame
+buffer, and converts that in a two-step process, first to 8-bit
+grayscale, second to 1-bit monochrome.  If that is considered a good
+example, should I be impressed?
+Compare that to other subsystems boasting about zero-copy...
+
+Furthermore, for a contemporary e-ink device like[1], the shadow buffer
+would consume 10 MiB.  Of course this device has 4 GiB of RAM, and quad
+Cortex-A55 CPU cores, but not all systems have 10 MiB to spare...
+
+[1] https://linuxgizmos.com/rk3566-based-pinenote-e-ink-tablet-ships-at-399/
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

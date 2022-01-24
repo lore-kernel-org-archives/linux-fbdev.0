@@ -2,114 +2,88 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8ABA1C4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 13:56:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6D30C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 14:00:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237379AbiAXN4w (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 08:56:52 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:51735 "EHLO
+        id S237962AbiAXOAb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 09:00:31 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:25608 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S229696AbiAXN4t (ORCPT
+        by vger.kernel.org with ESMTP id S237965AbiAXOAY (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 08:56:49 -0500
+        Mon, 24 Jan 2022 09:00:24 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643032609;
+        s=mimecast20190719; t=1643032823;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=YSqLQTi0kpug+gxLseY0EO7WdkGc2b3LlDQDn6WfK9k=;
-        b=R6XP12qv4pk3MQnZXLoGx72kqdigQ3CAY+b+dTZb4qY6V47ro7yU/R9edHWVz6z+dK3c/M
-        hmIRkBhrZXHpjD1LtJSSbh23097DwNE79ivOtYjB6Zcs++fNZ2f25Qn7D2/V/vXQVkEJAr
-        Z9d55qJl5NVszGCNdK3Hp9zzWy4/Vfw=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=rktM0S0usSPLY5LvkfsWofVmD3HAzupt/hqZRguzdL4=;
+        b=Wo6Wb5wQfh0zwtlwLdUnY5CDQ+uW01XgiMulT4lQECk9cblFRonlt+7BHuGK4RT2M/tZmp
+        V3Db+fY4R6QWshssSUliR6yiNxMOCKYa6PBikZlQHMUnG8FKF6U0j869qLGc7bpkPsNuxg
+        411PidehjAwFtP8uvf5ANZI1sRkUDpc=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-425-7ThO5fNaObqlOd_OxhimbQ-1; Mon, 24 Jan 2022 08:56:48 -0500
-X-MC-Unique: 7ThO5fNaObqlOd_OxhimbQ-1
-Received: by mail-wr1-f70.google.com with SMTP id g6-20020adfbc86000000b001a2d62be244so1906429wrh.23
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 05:56:47 -0800 (PST)
+ us-mta-634-R8eRxS5WO4OBn3H1NOhHaw-1; Mon, 24 Jan 2022 09:00:22 -0500
+X-MC-Unique: R8eRxS5WO4OBn3H1NOhHaw-1
+Received: by mail-wm1-f70.google.com with SMTP id c16-20020a1c9a10000000b0034dd409329eso9650075wme.3
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 06:00:21 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:from:to:cc:references:in-reply-to
+         :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=YSqLQTi0kpug+gxLseY0EO7WdkGc2b3LlDQDn6WfK9k=;
-        b=VlM5P73HpaNLfqZQXvXsfHqSSrW1Fq4N08WeWfK8p7S8NDEwiJZr/Y4zwOjC0MY/NZ
-         ECJQONACrFfnvpXTRmPVXaiwJb/ffeelY9YwG+ZfPLGoHiyKopTlq2Ac1oc9Z75eVkZv
-         QbXVwSz5uotO2/zrQSkB8YVmm0gS7NRBVEAgiHGCbGL+B9YgZiBZSrdnG7oVICnOrVIp
-         CnSQGuRp90LptBMy8pXT5gktrDXODwvRkocIVY266MgVR0Fg+f8i0703w1klYxF7tCSM
-         kJp+6ohRVyX4ensX8+ua9b1Gvmk0r5BDx9EXkvr+1ICj9KNSA3DXLwwK7z3ced1qCbjY
-         S6Jw==
-X-Gm-Message-State: AOAM533p9DBW9lvExvVsIhRo6VDoad1ICDYDSF606n/9SPbR4ExJebKQ
-        VkEOXTVUIDMYZH8v9pj7DIEFWWNi8OtJAEqEadFBG3zjxtwYDyolMdO8RfyH+8BBJ6EyxHb/ym5
-        zmFMvM4XCB4PG5ddDb4BxtPM=
-X-Received: by 2002:a5d:61c6:: with SMTP id q6mr7199317wrv.667.1643032606856;
-        Mon, 24 Jan 2022 05:56:46 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJypkYfrulJD9zvGIs/3jSlnpWz+2/2XmXFRuwYQuHQ2tcE8GsQEKRgQ0vh9JaRMpuCjkZXoOA==
-X-Received: by 2002:a5d:61c6:: with SMTP id q6mr7199304wrv.667.1643032606631;
-        Mon, 24 Jan 2022 05:56:46 -0800 (PST)
+        bh=rktM0S0usSPLY5LvkfsWofVmD3HAzupt/hqZRguzdL4=;
+        b=51o7HNnVV6JrjPch+2Yp4GHlh4V/bC9MEmZSKfg0d6UVdmK+VysBt4Lbfsua351X7r
+         DsLKDDRjrJCBiE5Ax3VoesXxYsW1Ce/Q2dHUdj8G4wT6KNXB5BD30U0jSxm1ltM+w1Nq
+         0Fj6pc+OF23Jqp2D+4ar3QMPoGyIaaNGKaYGDl0hZqMsO9NXyMpI3BbQiIkvcrX6FbQd
+         OJixQSR+JNdcdlzgZvewCzMp/3WztfRQAgVcPSJ+pFxDKWNSq5LblHfp5YPHEWP3r1Ct
+         BCsRwSXsE4NWruMc8eyYctV3qgc5kJbNaQR2OyzL4hpDGAQb4b+SFr+kHyA1OyjAPKT7
+         gpkA==
+X-Gm-Message-State: AOAM5317STbiIsuL4+Mk3jEb9G+FGtcCFPTRoKOMMt5lVqYgkXoLm7fk
+        vvqHEFZccrGFoOLHkLw/xZ93EJWv1wnynoDzQw9xbgtzmdIaMfSPpLAh/aOjt9D2r/ak4HdIwnZ
+        JrJTK6Jm9+EtTz0JV3S4qsAo=
+X-Received: by 2002:a5d:457b:: with SMTP id a27mr9200347wrc.86.1643032820867;
+        Mon, 24 Jan 2022 06:00:20 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJytZhOKI7fYVQiuKsKaaK1W6CiHUlA4X/OwcDEUpQv/bAfKFUv01YVhuawIMIM4PyYrfjRyjg==
+X-Received: by 2002:a5d:457b:: with SMTP id a27mr9200329wrc.86.1643032820652;
+        Mon, 24 Jan 2022 06:00:20 -0800 (PST)
 Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id l13sm20189582wmq.22.2022.01.24.05.56.45
+        by smtp.gmail.com with ESMTPSA id p26sm5181839wms.2.2022.01.24.06.00.19
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Jan 2022 05:56:46 -0800 (PST)
-Message-ID: <b88309c2-7c22-3bcb-3f37-ade3e7d89617@redhat.com>
-Date:   Mon, 24 Jan 2022 14:56:45 +0100
+        Mon, 24 Jan 2022 06:00:20 -0800 (PST)
+Message-ID: <91872b43-042e-3b8a-0dbb-f9ddebfadea0@redhat.com>
+Date:   Mon, 24 Jan 2022 15:00:18 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.4.0
-Subject: Re: [PATCH 1/5] fbdev: Hot-unplug firmware fb devices on forced
- removal
+Subject: Re: [PATCH 3/5] drm/simpledrm: Request memory region in driver
 Content-Language: en-US
-From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     Thomas Zimmermann <tzimmermann@suse.de>, zackr@vmware.com,
         maarten.lankhorst@linux.intel.com, mripard@kernel.org,
         airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de,
         hdegoede@redhat.com
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        stable@vger.kernel.org
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 References: <20220124123659.4692-1-tzimmermann@suse.de>
- <20220124123659.4692-2-tzimmermann@suse.de>
- <508e6735-d5f0-610c-d4ca-b1abc093f63c@redhat.com>
-In-Reply-To: <508e6735-d5f0-610c-d4ca-b1abc093f63c@redhat.com>
+ <20220124123659.4692-4-tzimmermann@suse.de>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <20220124123659.4692-4-tzimmermann@suse.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/24/22 14:52, Javier Martinez Canillas wrote:
+On 1/24/22 13:36, Thomas Zimmermann wrote:
+> Requesting the framebuffer memory in simpledrm marks the memory
+> range as busy. This used to be done by the firmware sysfb code,
+> but the driver is the correct place.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
 
-[snip]
-
->> @@ -1898,9 +1917,13 @@ EXPORT_SYMBOL(register_framebuffer);
->>  void
->>  unregister_framebuffer(struct fb_info *fb_info)
->>  {
->> -	mutex_lock(&registration_lock);
->> +	bool forced_out = fb_info->forced_out;
->> +
->> +	if (!forced_out)
->> +		mutex_lock(&registration_lock);
->>  	do_unregister_framebuffer(fb_info);
->> -	mutex_unlock(&registration_lock);
->> +	if (!forced_out)
->> +		mutex_unlock(&registration_lock);
->>  }
-> 
-> I'm not sure to follow the logic here. The forced_out bool is set when the
-> platform device is unregistered in do_remove_conflicting_framebuffers(),
-> but shouldn't the struct platform_driver .remove callback be executed even
-> in this case ?
-> 
-> That is, the platform_device_unregister() will trigger the call to the
-> .remove callback that in turn will call unregister_framebuffer().
-> 
-> Shouldn't we always hold the mutex when calling do_unregister_framebuffer() ?
-> 
-
-Scratch that, I got it now. That's exactly the reason why you skip the
-mutext_lock(). After adding the check for dev, feel free to add:
+Looks good to me.
 
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 

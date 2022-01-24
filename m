@@ -2,90 +2,184 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F6FBC433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 18:52:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D47A5C433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 19:07:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245594AbiAXSwJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 13:52:09 -0500
-Received: from mail-vk1-f176.google.com ([209.85.221.176]:46770 "EHLO
-        mail-vk1-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343626AbiAXSvM (ORCPT
+        id S229517AbiAXTHi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 14:07:38 -0500
+Received: from smtp-out2.suse.de ([195.135.220.29]:51092 "EHLO
+        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1346409AbiAXTFb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 13:51:12 -0500
-Received: by mail-vk1-f176.google.com with SMTP id z15so7553837vkp.13;
-        Mon, 24 Jan 2022 10:51:12 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=8n04RRQ8nE0niJsTycmRfUY892P4sQ+KhPXgYoCzt8o=;
-        b=7MLIGWq94Ge3rxjwb2jdRs5bhcDTpVVVyXWDRPmoKU1cu/J193IVv5t1ofIN4hTIbG
-         xgATFTnMfNFYKUimOuXbvU7XHHC8JVileTih0Xt0o1sef2p4nuUrOktaZw110rQMMZ80
-         46o1G9n6njd95o6/Bv5hS4kPSYVpr7F4cS1YT/mWQN/d9mtSQDjdbHWy4RpV4DIsnGG1
-         60zsTzZp3cC1T+56IbWUnTMDsPwORqDdDAqjpZh0xNjU8rGY7TKxufEynEwQUze8Y5iD
-         mzSSsuJkpk54XJFqwu8JK5Kv7eYlN/zi/Lq/0WNc5qvbwaWptjVig/ENW8FRBabrZ9JJ
-         KxqQ==
-X-Gm-Message-State: AOAM5325bPXUNxtiSiBUmouae62+Ma4I8iTT+yiTo7YIgjTSDDb7gabu
-        ymtDsot3fBI+oZGGX0IeeWNj9Wjl/H351A==
-X-Google-Smtp-Source: ABdhPJwVhHjTNewS5EYqEjs8Eoxsq/6qMT6hcOYHUMuC+1I6MzQhZHdxsVc5P2D85vzYmRegJ3TAqw==
-X-Received: by 2002:a1f:56c2:: with SMTP id k185mr6760810vkb.19.1643050271469;
-        Mon, 24 Jan 2022 10:51:11 -0800 (PST)
-Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com. [209.85.222.43])
-        by smtp.gmail.com with ESMTPSA id h189sm3049636vka.52.2022.01.24.10.51.10
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Jan 2022 10:51:10 -0800 (PST)
-Received: by mail-ua1-f43.google.com with SMTP id c36so32780051uae.13;
-        Mon, 24 Jan 2022 10:51:10 -0800 (PST)
-X-Received: by 2002:a9f:3d89:: with SMTP id c9mr6321567uai.78.1643050270149;
- Mon, 24 Jan 2022 10:51:10 -0800 (PST)
+        Mon, 24 Jan 2022 14:05:31 -0500
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 6A6AE1F37D;
+        Mon, 24 Jan 2022 19:05:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1643051130; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=1zh59/pJI7EaZBSgzjE5vvArmlZWtdoTZrOJLYIPIsU=;
+        b=Pk3svNQ7HXYj9CSh1aWZrVtmLbzozIt3PXt69SBUuUEuve8xC4GnjYTak4jPAW8Zsat5Yj
+        0E6Ns6stnBIY34sHjQDvOUBdYOca9TBjWtDchyjdXr8elbNe3/t0c1gUTWgUt+NtORtMM/
+        9IC1AxyyQN7lbseU13WeHPYLQL9Q7PI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1643051130;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=1zh59/pJI7EaZBSgzjE5vvArmlZWtdoTZrOJLYIPIsU=;
+        b=reN9RPjKoyPeBOWqqtL+vOJ/OE3wnPZwH8OgDwl/OMWVp5Xbh7/KTcZpsCCdrpB2dueCBs
+        b3dBbhZKjR8KqcAA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 2810B13C97;
+        Mon, 24 Jan 2022 19:05:30 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id pMVNCHr47mEwDwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 24 Jan 2022 19:05:30 +0000
+Message-ID: <de46f070-3923-8bf3-c010-9ff4fcabcb23@suse.de>
+Date:   Mon, 24 Jan 2022 20:05:29 +0100
 MIME-Version: 1.0
-References: <YeG8ydoJNWWkGrTb@ls3530> <c48ad8ae-aea5-43fa-882f-dccb90dde9a4@suse.de>
- <87bl0amc6s.fsf@x1.stackframe.org> <20220118103323.4bae3a7d@eldfell>
- <20220118095352.xsb6fqacw4p276c5@sirius.home.kraxel.org> <CAMuHMdWV+-+Jr7HggbfH_GEDcdep4pJLiMG+15jxBvQ91BCS0w@mail.gmail.com>
- <CAKMK7uEOFg3z2btFERQ5XBQ7hqex6bXCb9X=SdwCjeLfX_SdFw@mail.gmail.com>
- <CAMuHMdVjv1+UNeXkCBE+80tdtLuNg=5d6N12hNLgJdaS-jxERg@mail.gmail.com> <CAKMK7uEwDdaR7kDVi9Oah0w8qFEoAywp_wj2eH7DtttVD2L00A@mail.gmail.com>
-In-Reply-To: <CAKMK7uEwDdaR7kDVi9Oah0w8qFEoAywp_wj2eH7DtttVD2L00A@mail.gmail.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 24 Jan 2022 19:50:58 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdUyHEExOCtH-hKh0HmZzadmfZaR=vAVYJkTvphfzs3Xiw@mail.gmail.com>
-Message-ID: <CAMuHMdUyHEExOCtH-hKh0HmZzadmfZaR=vAVYJkTvphfzs3Xiw@mail.gmail.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
 Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     Gerd Hoffmann <kraxel@redhat.com>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Daniel Vetter <daniel@ffwll.ch>
+Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
         Helge Deller <deller@gmx.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         DRI Development <dri-devel@lists.freedesktop.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Gerd Hoffmann <kraxel@redhat.com>,
         Sven Schnelle <svens@stackframe.org>
-Content-Type: text/plain; charset="UTF-8"
+References: <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
+ <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
+ <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de>
+ <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
+ <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de>
+ <CAKMK7uE7jnTtetB5ovGeyPxHq4ymhbWmQXWmSVw-V1vP3iNAKQ@mail.gmail.com>
+ <b32ffceb-ea90-3d26-f20e-29ae21c68fcf@gmx.de>
+ <20220118062947.6kfuam6ah63z5mmn@sirius.home.kraxel.org>
+ <CAMuHMdWXWA2h7zrZa_nnqR_qNdsOdHJS=Vf1YExhvs08KukoNg@mail.gmail.com>
+ <3f96f393-e59d-34ac-c98b-46180e2225cd@suse.de>
+ <20220120125015.sx5n7ziq3765rwyo@sirius.home.kraxel.org>
+ <CAKMK7uF-V20qWTxQLvTC6GjC8Sg+Pst+UJ3pWCLQ4Q7Khgy62g@mail.gmail.com>
+ <CAMuHMdWS3rYUUB8HQcpjq0pY28cLiPMGrYEXeSPVtr-a_rrQvQ@mail.gmail.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <CAMuHMdWS3rYUUB8HQcpjq0pY28cLiPMGrYEXeSPVtr-a_rrQvQ@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------OpjrWj9Nm7LGfAEzHGR8ZLZv"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------OpjrWj9Nm7LGfAEzHGR8ZLZv
+Content-Type: multipart/mixed; boundary="------------JvGXEhTBESSSiUWwPPOuocIu";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Daniel Vetter <daniel@ffwll.ch>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Helge Deller
+ <deller@gmx.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ DRI Development <dri-devel@lists.freedesktop.org>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ Gerd Hoffmann <kraxel@redhat.com>, Sven Schnelle <svens@stackframe.org>
+Message-ID: <de46f070-3923-8bf3-c010-9ff4fcabcb23@suse.de>
+Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
+References: <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
+ <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
+ <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de>
+ <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
+ <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de>
+ <CAKMK7uE7jnTtetB5ovGeyPxHq4ymhbWmQXWmSVw-V1vP3iNAKQ@mail.gmail.com>
+ <b32ffceb-ea90-3d26-f20e-29ae21c68fcf@gmx.de>
+ <20220118062947.6kfuam6ah63z5mmn@sirius.home.kraxel.org>
+ <CAMuHMdWXWA2h7zrZa_nnqR_qNdsOdHJS=Vf1YExhvs08KukoNg@mail.gmail.com>
+ <3f96f393-e59d-34ac-c98b-46180e2225cd@suse.de>
+ <20220120125015.sx5n7ziq3765rwyo@sirius.home.kraxel.org>
+ <CAKMK7uF-V20qWTxQLvTC6GjC8Sg+Pst+UJ3pWCLQ4Q7Khgy62g@mail.gmail.com>
+ <CAMuHMdWS3rYUUB8HQcpjq0pY28cLiPMGrYEXeSPVtr-a_rrQvQ@mail.gmail.com>
+In-Reply-To: <CAMuHMdWS3rYUUB8HQcpjq0pY28cLiPMGrYEXeSPVtr-a_rrQvQ@mail.gmail.com>
 
-On Thu, Jan 20, 2022 at 1:33 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> But reading code&docs is too hard I guess, safer to assume it's just
-> broken and not supported.
+--------------JvGXEhTBESSSiUWwPPOuocIu
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-I confirm there's lots of documentation (and even more code ;-),
-which is always great!
-But both are intimidating to me, and most of the documentation covers
-features I'm not interested in, as they're only applicable to fancy
-modern truecolor 3D-capable multi-buffer and multi-head hardware, while
-what I am looking for is usually not documented.  E.g. I had a hard
-time to discover how color look-up tables work (gamma_{store,size}!),
-as this is not covered in https://docs.kernel.org/gpu/index.html,
-and none of the tinydrm drivers support CLUT modes.
+SGkNCg0KQW0gMjQuMDEuMjIgdW0gMTk6Mzggc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
+DQo+IEhpIERhbmllbCwNCj4gDQo+IE9uIEZyaSwgSmFuIDIxLCAyMDIyIGF0IDk6NTUgQU0g
+RGFuaWVsIFZldHRlciA8ZGFuaWVsQGZmd2xsLmNoPiB3cm90ZToNCj4+IEp1c3QgdG8gY2xh
+cmlmeSwgc2luY2Ugd2UgaGFkIGxvdHMgb2Ygc21hbGxlciBhbmQgYmlnZ2VyDQo+PiBtaXN1
+bmRlcnN0YW5kaW5ncyBpbiB0aGUgdGhyZWFkIHRodXMgZmFyOiBEUk1fRk9STUFUX1JHQjMz
+MiBleGlzdHMsIHNvDQo+PiBkcm0gc3VwcG9ydCB0aGF0IGFscmVhZHkuIFRoZSBmYmRldiBl
+bXVsYXRpb24gZG9lc24ndCB5ZXQsIGJ1dCBhbGwNCj4+IHRoYXQncyBuZWVkZWQgZm9yIHRo
+YXQgaXMgZmlsbGluZyBvdXQgdGhlIGNvZGUgdG8gcmVtYXAgdGhlIGRybQ0KPj4gZGVzY3Jp
+cHRpb24gdG8gdGhlIGZiZGV2IGZvcm1hdCBkZXNjcmlwdGlvbiBmb3IgdGhpcyBjYXNlLiBQ
+bHVzDQo+PiB0ZXN0aW5nIGl0IGFsbCB3b3JrcyBvZmMgd2l0aCBmYmNvbiBhbmQgd2hhdGVs
+c2UuIE5vdGUgdGhhdCBSR0IzMzIgIGlzDQo+PiBhIGJpdCBtb3JlIHdvcmsgdGhhbiBlLmcu
+IEM0LCBzaW5jZSBhdG0gZmJkZXYgc3RpbGwgdXNlcyBvbmx5IGJwcCB0bw0KPj4gaWRlbnRp
+ZnkgZm9ybWF0cywgc28gd291bGQgbmVlZCB0byBiZSBzd2l0Y2ggb3ZlciB0byBkcm1fZm91
+cmNjIGZpcnN0DQo+PiBiZWZvcmUgYWRkaW5nIGFueXRoaW5nIHdoaWNoIGFsaWFzZXMgd2l0
+aCBzb21ldGhpbmcgZXhpc3RpbmcgKHdlIGhhdmUNCj4+IEM4IGFscmVhZHkgd2lyZWQgdXAp
+Lg0KPiANCj4gSSBkb3VidCB0aGF0IFJHQjMzMiB3b3VsZCBiZSBhIGJpdCBtb3JlIHdvcmsg
+dGhhbiBDNCwgYXMgUkdCMzMyIGlzIHN0aWxsDQo+IDggYnBwLCB3aGlsZSBDNCBpcyBsZXNz
+LiAgVG8gc3VwcG9ydCBDNCwgYWxsIERSTSBjb2RlIHRoYXQgY2Fubm90DQo+IGhhbmRsZSBm
+b3JtYXQtPmNwcFswXSA8IDEgb3IgZHJtX2Zvcm1hdF9pbmZvX2Jsb2NrX3dpZHRoKCkgPiAx
+IGhhcyB0byBiZQ0KPiBmaXhlZCBmaXJzdC4NCj4gDQo+IE9uIHRoZSBwbHVzIHNpZGUsIEkg
+ZmluYWxseSBnb3QgbXkgcHJvb2Ytb2YtY29uY2VwdCBBdGFyaSBEUk0gZHJpdmVyDQo+IHdv
+cmtpbmcgd2l0aCBmYmNvbiBvbiBBUkFueU0uICBNYXBwaW5nIC9kZXYvZmIwIGZyb20gdXNl
+cnNwYWNlIGRvZXNuJ3QNCj4gd29yayAoZmJ0ZXN0IFNFR1ZzIHdoaWxlIHJlYWRpbmcgZnJv
+bSB0aGUgbWFwcGVkIGZyYW1lIGJ1ZmZlcikuICBJIGRvbid0DQo+IGtub3cgeWV0IGlmIHRo
+aXMgaXMgYSBnZW5lcmFsIGlzc3VlIHdpdGhvdXQgZGVmZXJyZWQgSS9PIGluIHY1LjE3LXJj
+MSwNCj4gb3IgYSBidWcgaW4gdGhlIG02OGsgTU0gY29kZS4uLg0KPiANCj4gU28gZmFyIGl0
+IHN1cHBvcnRzIEM4IG9ubHksIGJ1dCBJIGhvcGUgdG8gdGFja2xlIEM0IGFuZCBtb25vY2hy
+b21lIHNvb24uDQo+IFdoZXRoZXIgdGhlIGVuZCByZXN1bHQgd2lsbCBiZSB1c2FibGUgb24g
+cmVhbCBoYXJkd2FyZSBpcyBzdGlsbCB0byBiZQ0KPiBzZWVuLCBidXQgYXQgbGVhc3QgSSBo
+b3BlIHRvIGdldCBzb21lIERSTSBjb2RlIHdyaXR0ZW4uLi4NCg0KVGhhdCBzb3VuZHMgcHJl
+dHR5IGNvb2wuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+IEdye29ldGplLGVl
+dGluZ31zLA0KPiANCj4gICAgICAgICAgICAgICAgICAgICAgICAgIEdlZXJ0DQo+IA0KPiAt
+LQ0KPiBHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9u
+ZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02OGsub3JnDQo+IA0KPiBJbiBwZXJzb25hbCBjb252
+ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tl
+ci4gQnV0DQo+IHdoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNheSAi
+cHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4NCj4gICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgLS0gTGludXMgVG9ydmFsZHMNCg0KLS0gDQpUaG9tYXMgWmlt
+bWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1
+dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdl
+cm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJ
+dm8gVG90ZXYNCg==
 
-Gr{oetje,eeting}s,
+--------------JvGXEhTBESSSiUWwPPOuocIu--
 
-                        Geert
+--------------OpjrWj9Nm7LGfAEzHGR8ZLZv
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+-----BEGIN PGP SIGNATURE-----
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmHu+HkFAwAAAAAACgkQlh/E3EQov+CX
+DA/+MW6H0j0pJpSJgfJuknECceCVp+GaPro9vc1NYQwzt8QwKf0VRBT4P3oMY2hIQXG5jepiinER
+0pBtY8CnGKllZXDLVioWa4HtHMQlNQuQq3H3OhQwgxhBAzAxo0du6rWLZVGa4pCsC6MBdkkMO+47
+G4h0yfAxCm7mPh6mqI4WE07+fJAZ71XOcgunh9+ZbTq/bnq2DIHayLf/rLcJhTxArCWD6EuX2D78
+5eV+E0nUfxQLdqoZB1SQsrAzPHKJwJRqBcfkOpwy0SRjKWwpnD9ZZjbOqo+U+Sqg7KicjlbLFeq2
+meNeKk+o1PaHn01EFYSHnwIPXzVoo1AUB8hoWNQ6KntzN91bzOlAo2RfNtvKxSfxDkQtZwTsPkcb
+Zm2qM9eKmUIqC7Cn1dg2RWzcjNezwYHQFQqXnOF/4Okb97o4iKZ8KKdMc0v79DIXZ15U7UMJHi/E
+OABmEJMwK2Tt8F8cckc5AH3eLrQBUBpI+nj2QYaf864dSIv4+msGmutLgcP7rYg+RDMsiD+P8ttP
+y3ntUESXd8y30LnX57sUaRjJMRQoRtPVGN7Er145AmZd/byftjvHLkI8z3ptXvWZJq8bscN7ZePI
+fRlQwqxKQ4m42uRBK7gT3L0KP3m0l1n0mVO5W1hfIZCCIH5RoJRw3dhhAy7X28+WMC1pg5SNXEgt
+u8o=
+=acXS
+-----END PGP SIGNATURE-----
+
+--------------OpjrWj9Nm7LGfAEzHGR8ZLZv--

@@ -2,123 +2,119 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 387ADC433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 14:31:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC161C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 15:31:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240041AbiAXObb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 09:31:31 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:46649 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S240162AbiAXObS (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 09:31:18 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643034677;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=zxE7EvkvbZeBgieiSQDMIGsZ0T4S1HBB7kM1x7CeSqM=;
-        b=PGPqBtXhHaXaYgAF+Q33SRBEUbAH24BA5k9YVRjKMUje+ra+0PdCdQbibSPjciUCQcC8i8
-        dEJHG08n2oj8o8RBg8W44ntyeops4QVKpLSPIrie9Z2Xf3FOpa3L6193je3zd8xigmTQuM
-        +mevsOkuSGmvLbfB9Mh2vuneykaglDw=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-593-cpk3bwY6OyOk222gIsYaZw-1; Mon, 24 Jan 2022 09:31:16 -0500
-X-MC-Unique: cpk3bwY6OyOk222gIsYaZw-1
-Received: by mail-wm1-f72.google.com with SMTP id o193-20020a1ca5ca000000b0034d78423625so13776418wme.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 06:31:16 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=zxE7EvkvbZeBgieiSQDMIGsZ0T4S1HBB7kM1x7CeSqM=;
-        b=Tiz3sn160YCvnPzNBrpXEUVczWrCLZcoWpylZZg2iCmlD3/AajPitxqUqMy0ZBaJAJ
-         ZzsJOgP1FyF8mb1Xj4p8LDZ+MFEKPzfmo6tHBTb8yG7tmnF80kUGW3dankt07/6HxT2T
-         8e/w4RDUiklsQxj6UxP8cxETJANVOFPRJo3+61J0BOfFhukwlHyGblYiJmzKY7dtAnq/
-         2C1QRFlv+u47s6g0yRkarcH5m5mPJIR0+s722RIXKQHR7lmahpeBN5Ev5Qivb3beO4OZ
-         O8u1sEFjusvpft0wm1KM4uCtDB+Uzv6yBQZNnAjYYw9a3Y9AWuuChKVq6X3OLpyde+z7
-         RqEw==
-X-Gm-Message-State: AOAM530X53HAOuKLdF9UDliKfQpMBxqlaQE1zc2Uum32mtMbjDifIubC
-        BLbDb+oSirCeGGNW031BLmjzXsk0BtbV85lw31hKiSdYh5menG1K6tw3e0iNN0N+pnpR5J9b5hm
-        qRvRVupBJS3KtTZ5MzXDoee8=
-X-Received: by 2002:a05:600c:220f:: with SMTP id z15mr2034794wml.145.1643034675428;
-        Mon, 24 Jan 2022 06:31:15 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJyNP4ZAtPsdcV8SnRzGwBs1899+aHYQ2TZybxbvsvLRSnQQQ+MXblK00rIvHsobSdQm9xgCoQ==
-X-Received: by 2002:a05:600c:220f:: with SMTP id z15mr2034772wml.145.1643034675247;
-        Mon, 24 Jan 2022 06:31:15 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id m17sm19337448wmq.35.2022.01.24.06.31.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Jan 2022 06:31:14 -0800 (PST)
-Message-ID: <410efcd1-c104-313b-aee8-950c4f499405@redhat.com>
-Date:   Mon, 24 Jan 2022 15:31:13 +0100
+        id S240343AbiAXPbE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 10:31:04 -0500
+Received: from mout.gmx.net ([212.227.15.18]:46439 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S239105AbiAXPbC (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 24 Jan 2022 10:31:02 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1643038243;
+        bh=0HDaa8ybzAU3WahzXsoJL/1AGix1sCiymZJmVtib/YY=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=POJNcweazGJQnB5ck0iuQoSUgsdehlB/3SIXnB4wz21ejzxlWPRsItBs6aIX4W2Gl
+         XDnr3olJnJRp/aI/73nPJ4ma2jeZJ52Buzayrv9bmlxIXv76ndOK3k7EIr5PO83S4h
+         CDDhZ3IS6Dsuc1hTsgw60xipLp3c9mXHrvQ+4aZQ=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.165.96]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MZTmO-1moLe12XbC-00WY0w; Mon, 24
+ Jan 2022 16:30:43 +0100
+Message-ID: <de6e06e1-f293-1c98-7898-b5d52c400b59@gmx.de>
+Date:   Mon, 24 Jan 2022 16:29:34 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.0
-Subject: Re: [PATCH 1/5] fbdev: Hot-unplug firmware fb devices on forced
- removal
+ Thunderbird/91.3.0
+Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, zackr@vmware.com,
-        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
-        airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de,
-        hdegoede@redhat.com
-Cc:     linux-fbdev@vger.kernel.org, stable@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-References: <20220124123659.4692-1-tzimmermann@suse.de>
- <20220124123659.4692-2-tzimmermann@suse.de>
- <508e6735-d5f0-610c-d4ca-b1abc093f63c@redhat.com>
- <77e52472-4af7-c03f-f6e4-45ec820f2778@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <77e52472-4af7-c03f-f6e4-45ec820f2778@suse.de>
+To:     Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Gerd Hoffmann <kraxel@redhat.com>
+Cc:     linux-fbdev@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Sven Schnelle <svens@stackframe.org>,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Claudio Suarez <cssk@net-c.es>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>
+References: <20220119110839.33187-1-deller@gmx.de>
+ <20220119110839.33187-3-deller@gmx.de> <YelyGDNDTn1Aq/hm@phenom.ffwll.local>
+ <6c000477-002b-d125-b945-2c4831bad8a5@gmx.de>
+ <20220121072006.ylw2hdl7jbkbwnre@sirius.home.kraxel.org>
+ <64fd46cb-9746-3fd0-ec92-c64dba76875a@gmx.de>
+ <d23800b4-503c-a6e2-2c51-2c07a736dffc@suse.de>
+ <2fc200bb-4b40-7833-31c9-90a78512b601@redhat.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <2fc200bb-4b40-7833-31c9-90a78512b601@redhat.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:D47fAUTkxrhoBsLC8ZEQMrVPeldhoeO7xA5iYubuNtsUdu1RaLF
+ H0nJStLonxAyXhSltp94/rMAgm6y95mtSV7oDmrh0n8LwBx1JTcQvFn8LsYlmpmOPljOu8/
+ KXIlPqXLduRe0mLga9vA7uo6N7+w+dfzffUVJySwGQo9fCywOWrP+AB+VXMtJFR0BHW+i7d
+ YHAcXKSZPcnZUUzbtNdUw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:PpnOdBYXFhY=:5S8n7Yl+ZL6mBPKg1QS35L
+ F2iXhWM+VfhCnsQ8ESinVeG/5FXG8USbAATlwo1jDSpeAhOcS2hj5kE949+WcQkJfH3a+94fk
+ iRJDDYLyuKkexkng0yEkD+NRMdNjlBLvHtoi9LLYqHq35el/ZDOotqrjbIawnVKScth3ciul8
+ iKni7/XdEOeEGQ3zM/v4Xu68XMkLp/uWkL2bFhuXPSRzB+5+Ptk+T14AjY4r3q6JFG1q1Un9q
+ 3TC9T/9LBIMyLGomWXOt/L864pbd87W1IpqT0FbZ/Y7FdVeH8ZZpcfqOaxLQNJXSeMzN+FVkt
+ 0WqkxFfpMqt2iPIkjajeouCYPAEajn6Hmcb3t//MrMojYnqTeySNofoOstEWgqJdYykGCrV8P
+ cKeoZayK4l4GyyVdqOC0sf1B9MEZfoudA7uvNY88+dfkPT8/kz4kNwZ0AuFwHtycxFhFHcyci
+ /cLJ1AAkZ6/HcOEKn/+ueZ0yIUYtexIY8AE7FR3Tpt06mGXd4OeUp4BiJmDC31jUHvyKzpg7u
+ wIhQBz64p8X7zHrGEWvWk+xz5V8Vb60oJgyuBNpEtBYvxpQNpCHKqYLWWQ6uEFFPMh9imeqDK
+ zEcr92JRH4B3umFFqI/NdIP3dCLndpABxN9RMkPm0EQf+snyaSym9Ita8noPhSfhZQU3vkO9R
+ 0lB9/oAleQI7y+1BBdRrAGY4LDgwWFfPhPKvO17HGJdF69HNqW4o4hzOAUdY5TQ7ujtFqsB6i
+ aqPZVUh+ELrJXMd1ADKbmZ5jWX1fbxDS/rapwWbO51Z/NWwM2Wjpa4UYGNpMlBfFcVedABHT9
+ 2mcBH6T3/pz+L0suKh1xwcu/9RHG7NzcS8CdL2xJ9aht8j8i1NnZ2Hq8sqmSi9jRQj7MZZJ2c
+ u5vKZ8JJD78VZjRsbv6jIU5JoTS8jrpyh1yanMC92SHTs1SmWeXHAAbye0KCnUwzqfm/Y9Sm0
+ xWc/CqiMJEt/Oa3pui/5KbxPxpjwiN7pq07snWc7GLZeyMpFT4nOCP+TDV+KJwh2MjKJeyQWh
+ mW07wSCMBPW7feiccCtPq2dRUV9oJbTNhV0bz15kM2J7BzdGLbZOK/ifJB0OKLU4r1LXI2b2S
+ eyKJkPT3Gg03gw=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/24/22 15:19, Thomas Zimmermann wrote:
-
-[snip]
-
->>> +			if (dev_is_platform(dev)) {
->>
->> In do_register_framebuffer() creating the fb%d is not a fatal error. It would
->> be safer to do if (!IS_ERR_OR_NULL(dev) && dev_is_platform(dev)) instead here.
->>
->> https://elixir.bootlin.com/linux/latest/source/drivers/video/fbdev/core/fbmem.c#L1605
-> 
-> 'dev' here refers to 'fb_info->device', which is the underlying device 
-> created by the sysfb code.  fb_info->dev is something different.
+On 1/24/22 12:50, Javier Martinez Canillas wrote:
+> On 1/24/22 12:33, Thomas Zimmermann wrote:
 >
-
-oh, indeed. I conflated the two.
-
-Maybe the local variable could be renamed to 'device' just to avoid confusion ?
-
-[snip]
-
->> I'm not sure to follow the logic here. The forced_out bool is set when the
->> platform device is unregistered in do_remove_conflicting_framebuffers(),
->> but shouldn't the struct platform_driver .remove callback be executed even
->> in this case ?
->>
->> That is, the platform_device_unregister() will trigger the call to the
->> .remove callback that in turn will call unregister_framebuffer().
->>
->> Shouldn't we always hold the mutex when calling do_unregister_framebuffer() ?
-> 
-> Doing the hot-unplug will end up in unregister_framebuffer(), but we 
-> already hold the lock from the do_remove_conflicting_framebuffer() code.
+> [snip]
 >
+>>> Thoughts?
+>>
+>> I can't say I approve keeping fbdev alive, but...
+>>
+>> With fbdev emulation, every DRM driver is an fbdev driver too. So
+>> CONFIG_FB_DRIVER is somewhat misleading. Better add an option like
+>> CONFIG_FBCON_HW_SCROLLING and have it selected by the fbdev drivers tha=
+t
+>> absolutely need HW acceleration. That option would then protect the rsp
+>> code.
 
-Yes, I realized that just after sending the first email. Sorry for the noise.
- 
-Best regards,
--- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+I'm not a fan of something like CONFIG_FBCON_HW_SCROLLING, but I'm not
+against it either.
+For me it sounds that this is not the real direction you want to go,
+which is to prevent that any other drivers take the framebuffer before
+you take it with simpledrm or similiar.
+CONFIG_FBCON_HW_SCROLLING IMHO just disables the (from your POV) neglectab=
+le accleration part.
+With an option like CONFIG_FB_DRIVER (maybe better: CONFIG_FB_LEGACY_DRIVE=
+RS)
+it's an easy option for distros to disable all of the legacy drivers
+from being built & shipped.
 
+Instead of CONFIG_FBCON_HW_SCROLLING we could also choose
+CONFIG_FBCON_LEGACY_ACCELERATION, because it includes fillrect() as well..=
+.
+
+> Agreed that this option would be better and allow distros
+> to disable the code that was reverted.
+
+Yes, but IMHO it doesn't hurt either to leave it in.
+It doesn't break anything at least.
+Anyway...
+
+Helge

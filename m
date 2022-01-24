@@ -2,65 +2,66 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E26CDC433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 13:52:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8ABA1C4332F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 13:56:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234734AbiAXNwT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 08:52:19 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:60838 "EHLO
+        id S237379AbiAXN4w (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 08:56:52 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:51735 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S234710AbiAXNwS (ORCPT
+        by vger.kernel.org with ESMTP id S229696AbiAXN4t (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 08:52:18 -0500
+        Mon, 24 Jan 2022 08:56:49 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643032338;
+        s=mimecast20190719; t=1643032609;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=dcH+SfsvP5MVlFt1sQV6vZL5+L7ExRjAg1lobGo/RcU=;
-        b=OP5catVFkgqa8vwc6ggLbZJpP1u5HYOkLmqnqz/J0eN/Dx1ImOxbD1IF0MKkHLbaxUxUAh
-        sAGk3gV1S81gJOLsknUNkzz4LkSQXzvZbO2uAAwuEkMTmk/L1P+GueFHois9Z5+butxxlW
-        2SW+c+dBcgNaoIkzKR+/q/329jHPhkU=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=YSqLQTi0kpug+gxLseY0EO7WdkGc2b3LlDQDn6WfK9k=;
+        b=R6XP12qv4pk3MQnZXLoGx72kqdigQ3CAY+b+dTZb4qY6V47ro7yU/R9edHWVz6z+dK3c/M
+        hmIRkBhrZXHpjD1LtJSSbh23097DwNE79ivOtYjB6Zcs++fNZ2f25Qn7D2/V/vXQVkEJAr
+        Z9d55qJl5NVszGCNdK3Hp9zzWy4/Vfw=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-522-01KrhX1hPv-M2zjzMGL3Kg-1; Mon, 24 Jan 2022 08:52:16 -0500
-X-MC-Unique: 01KrhX1hPv-M2zjzMGL3Kg-1
-Received: by mail-wm1-f71.google.com with SMTP id o193-20020a1ca5ca000000b0034d78423625so13717237wme.3
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 05:52:16 -0800 (PST)
+ us-mta-425-7ThO5fNaObqlOd_OxhimbQ-1; Mon, 24 Jan 2022 08:56:48 -0500
+X-MC-Unique: 7ThO5fNaObqlOd_OxhimbQ-1
+Received: by mail-wr1-f70.google.com with SMTP id g6-20020adfbc86000000b001a2d62be244so1906429wrh.23
+        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 05:56:47 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
+         :content-language:from:to:cc:references:in-reply-to
          :content-transfer-encoding;
-        bh=dcH+SfsvP5MVlFt1sQV6vZL5+L7ExRjAg1lobGo/RcU=;
-        b=jF9/CvV2HKuuuQzv3hwCRKkLExrfWUrUv1SHtsehzXYqt98odOIyAgjvlQBl2d6okV
-         hYFezlLHY+jDlb2PB8T7Xbwl3aiAA3c4n4tkGgrmpVEATvJxlDESeRBVKdgqChPVJMF+
-         bctARNIrq1fuMCjQpVpsXzwt77IDRJG/08wrmwpDM46bgMaPSSZxtZcCiqdYMHU3Z+7n
-         VIZQ9VkwbjSobaLLp40b89dKfxxR/7pyTIXsu/qVqq3txbQLbxURiMvdLix4mEVzhWLD
-         FZjdzq0yb2wc9y0k7qLZCuGnbGz0w9s6nrtoDTwON0xCHPQfd9d3a5he62W3YbEk7gBR
-         JAeQ==
-X-Gm-Message-State: AOAM531cz0HrUJUY3CytB420TepfQ7aaB5TdbGJgV3mfLooHC4IUkga6
-        mh0JPTZMuDwrJrz0JZMJ9X7WEMPlxjeICTsaL85FCAtQPXcIgAUyEQsQEp89IzUIp+DSN1CokPB
-        AvYlMyLbxD6O0NkdjyJfH604=
-X-Received: by 2002:adf:fad0:: with SMTP id a16mr14081404wrs.639.1643032335393;
-        Mon, 24 Jan 2022 05:52:15 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxUEEf0g35eX/kqNsGvNrpAb4NzSv/3akOkhZE+WKiKQpWriDRlssLoWL68dqU9Q64QMCS/Vg==
-X-Received: by 2002:adf:fad0:: with SMTP id a16mr14081384wrs.639.1643032335101;
-        Mon, 24 Jan 2022 05:52:15 -0800 (PST)
+        bh=YSqLQTi0kpug+gxLseY0EO7WdkGc2b3LlDQDn6WfK9k=;
+        b=VlM5P73HpaNLfqZQXvXsfHqSSrW1Fq4N08WeWfK8p7S8NDEwiJZr/Y4zwOjC0MY/NZ
+         ECJQONACrFfnvpXTRmPVXaiwJb/ffeelY9YwG+ZfPLGoHiyKopTlq2Ac1oc9Z75eVkZv
+         QbXVwSz5uotO2/zrQSkB8YVmm0gS7NRBVEAgiHGCbGL+B9YgZiBZSrdnG7oVICnOrVIp
+         CnSQGuRp90LptBMy8pXT5gktrDXODwvRkocIVY266MgVR0Fg+f8i0703w1klYxF7tCSM
+         kJp+6ohRVyX4ensX8+ua9b1Gvmk0r5BDx9EXkvr+1ICj9KNSA3DXLwwK7z3ced1qCbjY
+         S6Jw==
+X-Gm-Message-State: AOAM533p9DBW9lvExvVsIhRo6VDoad1ICDYDSF606n/9SPbR4ExJebKQ
+        VkEOXTVUIDMYZH8v9pj7DIEFWWNi8OtJAEqEadFBG3zjxtwYDyolMdO8RfyH+8BBJ6EyxHb/ym5
+        zmFMvM4XCB4PG5ddDb4BxtPM=
+X-Received: by 2002:a5d:61c6:: with SMTP id q6mr7199317wrv.667.1643032606856;
+        Mon, 24 Jan 2022 05:56:46 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJypkYfrulJD9zvGIs/3jSlnpWz+2/2XmXFRuwYQuHQ2tcE8GsQEKRgQ0vh9JaRMpuCjkZXoOA==
+X-Received: by 2002:a5d:61c6:: with SMTP id q6mr7199304wrv.667.1643032606631;
+        Mon, 24 Jan 2022 05:56:46 -0800 (PST)
 Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id k10sm8745370wmi.1.2022.01.24.05.52.14
+        by smtp.gmail.com with ESMTPSA id l13sm20189582wmq.22.2022.01.24.05.56.45
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Jan 2022 05:52:14 -0800 (PST)
-Message-ID: <508e6735-d5f0-610c-d4ca-b1abc093f63c@redhat.com>
-Date:   Mon, 24 Jan 2022 14:52:13 +0100
+        Mon, 24 Jan 2022 05:56:46 -0800 (PST)
+Message-ID: <b88309c2-7c22-3bcb-3f37-ade3e7d89617@redhat.com>
+Date:   Mon, 24 Jan 2022 14:56:45 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.4.0
 Subject: Re: [PATCH 1/5] fbdev: Hot-unplug firmware fb devices on forced
  removal
 Content-Language: en-US
+From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     Thomas Zimmermann <tzimmermann@suse.de>, zackr@vmware.com,
         maarten.lankhorst@linux.intel.com, mripard@kernel.org,
         airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de,
@@ -69,129 +70,48 @@ Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         stable@vger.kernel.org
 References: <20220124123659.4692-1-tzimmermann@suse.de>
  <20220124123659.4692-2-tzimmermann@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220124123659.4692-2-tzimmermann@suse.de>
+ <508e6735-d5f0-610c-d4ca-b1abc093f63c@redhat.com>
+In-Reply-To: <508e6735-d5f0-610c-d4ca-b1abc093f63c@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Thomas,
+On 1/24/22 14:52, Javier Martinez Canillas wrote:
 
-Thanks for the patch.
+[snip]
 
-On 1/24/22 13:36, Thomas Zimmermann wrote:
-> Hot-unplug all firmware-framebuffer devices as part of removing
-> them via remove_conflicting_framebuffers() et al. Releases all
-> memory regions to be acquired by native drivers.
+>> @@ -1898,9 +1917,13 @@ EXPORT_SYMBOL(register_framebuffer);
+>>  void
+>>  unregister_framebuffer(struct fb_info *fb_info)
+>>  {
+>> -	mutex_lock(&registration_lock);
+>> +	bool forced_out = fb_info->forced_out;
+>> +
+>> +	if (!forced_out)
+>> +		mutex_lock(&registration_lock);
+>>  	do_unregister_framebuffer(fb_info);
+>> -	mutex_unlock(&registration_lock);
+>> +	if (!forced_out)
+>> +		mutex_unlock(&registration_lock);
+>>  }
 > 
-> Firmware, such as EFI, install a framebuffer while posting the
-> computer. After removing the firmware-framebuffer device from fbdev,
-> a native driver takes over the hardware and the firmware framebuffer
-> becomes invalid.
+> I'm not sure to follow the logic here. The forced_out bool is set when the
+> platform device is unregistered in do_remove_conflicting_framebuffers(),
+> but shouldn't the struct platform_driver .remove callback be executed even
+> in this case ?
 > 
-> Firmware-framebuffer drivers, specifically simplefb, don't release
-> their device from Linux' device hierarchy. It still owns the firmware
-> framebuffer and blocks the native drivers from loading. This has been
-> observed in the vmwgfx driver. [1]
+> That is, the platform_device_unregister() will trigger the call to the
+> .remove callback that in turn will call unregister_framebuffer().
 > 
-> Initiating a device removal (i.e., hot unplug) as part of
-> remove_conflicting_framebuffers() removes the underlying device and
-> returns the memory range to the system.
-> 
-> [1] https://lore.kernel.org/dri-devel/20220117180359.18114-1-zack@kde.org/
+> Shouldn't we always hold the mutex when calling do_unregister_framebuffer() ?
 > 
 
-I would add a Reported-by tag here for Zack.
+Scratch that, I got it now. That's exactly the reason why you skip the
+mutext_lock(). After adding the check for dev, feel free to add:
 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> CC: stable@vger.kernel.org # v5.11+
-> ---
->  drivers/video/fbdev/core/fbmem.c | 29 ++++++++++++++++++++++++++---
->  include/linux/fb.h               |  1 +
->  2 files changed, 27 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> index 0fa7ede94fa6..f73f8415b8cb 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -25,6 +25,7 @@
->  #include <linux/init.h>
->  #include <linux/linux_logo.h>
->  #include <linux/proc_fs.h>
-> +#include <linux/platform_device.h>
->  #include <linux/seq_file.h>
->  #include <linux/console.h>
->  #include <linux/kmod.h>
-> @@ -1557,18 +1558,36 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
->  	/* check all firmware fbs and kick off if the base addr overlaps */
->  	for_each_registered_fb(i) {
->  		struct apertures_struct *gen_aper;
-> +		struct device *dev;
->  
->  		if (!(registered_fb[i]->flags & FBINFO_MISC_FIRMWARE))
->  			continue;
->  
->  		gen_aper = registered_fb[i]->apertures;
-> +		dev = registered_fb[i]->device;
->  		if (fb_do_apertures_overlap(gen_aper, a) ||
->  			(primary && gen_aper && gen_aper->count &&
->  			 gen_aper->ranges[0].base == VGA_FB_PHYS)) {
->  
->  			printk(KERN_INFO "fb%d: switching to %s from %s\n",
->  			       i, name, registered_fb[i]->fix.id);
-> -			do_unregister_framebuffer(registered_fb[i]);
-> +
-> +			/*
-> +			 * If we kick-out a firmware driver, we also want to remove
-> +			 * the underlying platform device, such as simple-framebuffer,
-> +			 * VESA, EFI, etc. A native driver will then be able to
-> +			 * allocate the memory range.
-> +			 *
-> +			 * If it's not a platform device, at least print a warning. A
-> +			 * fix would add code to remove the device from the system.
-> +			 */
-> +			if (dev_is_platform(dev)) {
-
-In do_register_framebuffer() creating the fb%d is not a fatal error. It would
-be safer to do if (!IS_ERR_OR_NULL(dev) && dev_is_platform(dev)) instead here.
-
-https://elixir.bootlin.com/linux/latest/source/drivers/video/fbdev/core/fbmem.c#L1605
-
-> +				registered_fb[i]->forced_out = true;
-> +				platform_device_unregister(to_platform_device(dev));
-> +			} else {
-> +				pr_warn("fb%d: cannot remove device\n", i);
-> +				do_unregister_framebuffer(registered_fb[i]);
-> +			}
->  		}
->  	}
->  }
-> @@ -1898,9 +1917,13 @@ EXPORT_SYMBOL(register_framebuffer);
->  void
->  unregister_framebuffer(struct fb_info *fb_info)
->  {
-> -	mutex_lock(&registration_lock);
-> +	bool forced_out = fb_info->forced_out;
-> +
-> +	if (!forced_out)
-> +		mutex_lock(&registration_lock);
->  	do_unregister_framebuffer(fb_info);
-> -	mutex_unlock(&registration_lock);
-> +	if (!forced_out)
-> +		mutex_unlock(&registration_lock);
->  }
-
-I'm not sure to follow the logic here. The forced_out bool is set when the
-platform device is unregistered in do_remove_conflicting_framebuffers(),
-but shouldn't the struct platform_driver .remove callback be executed even
-in this case ?
-
-That is, the platform_device_unregister() will trigger the call to the
-.remove callback that in turn will call unregister_framebuffer().
-
-Shouldn't we always hold the mutex when calling do_unregister_framebuffer() ?
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
 Best regards,
 -- 

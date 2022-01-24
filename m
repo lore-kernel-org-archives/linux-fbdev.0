@@ -2,122 +2,53 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 196B1C433EF
-	for <linux-fbdev@archiver.kernel.org>; Sun, 23 Jan 2022 22:30:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AFE8C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 09:11:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240347AbiAWWae (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 23 Jan 2022 17:30:34 -0500
-Received: from mail-wm1-f47.google.com ([209.85.128.47]:40845 "EHLO
-        mail-wm1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230345AbiAWWae (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 23 Jan 2022 17:30:34 -0500
-Received: by mail-wm1-f47.google.com with SMTP id r132-20020a1c448a000000b0034e043aaac7so9014143wma.5;
-        Sun, 23 Jan 2022 14:30:33 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=qMH3aROspB/kgllwn4/SStZwIDe9KDuajbHnkcsYmUQ=;
-        b=giK/dYEJjhuERGZ6h4zgx9yD6xZJ69QgyAcsd2BF30WmN3n++agcOLFnJuIo0xgAH5
-         Db3rYSM8S0CQZhee7TK/3TzhUQrbqJ3+pRGqij+6XeyvtKJwsKm4IG/+QFktB53A+fRg
-         H9W0EJZPf/ibgzrgw+ib1DnqyGtTuP/Lbt8kCXtEGyPCDqJ20FvInteXArP0S8HkZjM9
-         N4w3crXkV2NC506uJivEPC1TGgDTPRT4FCmgGisUVdNaYsrTyoyI5TC9hMsGKlL40SI+
-         U5W198+NqxYlMDAS+XGnCfj7t18tkbc9pgBtZaLx95mgyPQIAKbilgV37kM/KeL2bA1f
-         rq9A==
-X-Gm-Message-State: AOAM5314cxGISZeKK3vRT6t1SnlhR4KCwhoRoCsLbXQb/jAgoPoAej94
-        e7MT3SxFCS6XTchZxFcUg1w=
-X-Google-Smtp-Source: ABdhPJw9NDCc2PhiY0fqwi7UBdUEmkYOshWw6VstDZdEF0SSKkrBdnOtRGFJx0y/nPspBxYjZZpipw==
-X-Received: by 2002:a1c:7402:: with SMTP id p2mr9217508wmc.53.1642977032623;
-        Sun, 23 Jan 2022 14:30:32 -0800 (PST)
-Received: from liuwe-devbox-debian-v2 ([51.145.34.42])
-        by smtp.gmail.com with ESMTPSA id y14sm6165356wrd.91.2022.01.23.14.30.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 23 Jan 2022 14:30:32 -0800 (PST)
-Date:   Sun, 23 Jan 2022 22:30:30 +0000
-From:   Wei Liu <wei.liu@kernel.org>
-To:     "Michael Kelley (LINUX)" <mikelley@microsoft.com>
-Cc:     Wei Liu <wei.liu@kernel.org>,
-        Haiyang Zhang <haiyangz@microsoft.com>,
-        KY Srinivasan <kys@microsoft.com>,
-        Stephen Hemminger <sthemmin@microsoft.com>,
-        Wei Hu <weh@microsoft.com>, Dexuan Cui <decui@microsoft.com>,
-        "drawat.floss@gmail.com" <drawat.floss@gmail.com>,
-        hhei <hhei@redhat.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
-Subject: Re: [PATCH 1/1] video: hyperv_fb: Fix validation of screen resolution
-Message-ID: <20220123223030.ijdzrunduww76jiq@liuwe-devbox-debian-v2>
-References: <1642360711-2335-1-git-send-email-mikelley@microsoft.com>
- <MN2PR21MB1295CE3BD15D4EB257A158DCCA569@MN2PR21MB1295.namprd21.prod.outlook.com>
- <20220123215606.fzycryooluavtar4@liuwe-devbox-debian-v2>
- <MWHPR21MB1593ED650DA82BC3009F66CED75D9@MWHPR21MB1593.namprd21.prod.outlook.com>
+        id S242652AbiAXJLe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 04:11:34 -0500
+Received: from mail.portyid.pl ([192.36.61.58]:52128 "EHLO mail.portyid.pl"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S242600AbiAXJLb (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 24 Jan 2022 04:11:31 -0500
+Received: by mail.portyid.pl (Postfix, from userid 1001)
+        id 0ECD241435; Mon, 24 Jan 2022 10:11:10 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=portyid.pl; s=mail;
+        t=1643015487; bh=+PMi7irkA4XlRgpdW2HqpqcJeZNxKGysf407T0katTE=;
+        h=Date:From:To:Subject:From;
+        b=zk4Uc6dQWu5q8CeFWjdAk0qcZlZn5wzXtpCEZqXqlbArodNj5Syc52YGBIcopyjs6
+         XnVEFc/Ma2QPuN/8lH6PUz2t04m4A2HjXVpuAul9AoMRDRGUwy1l37a/XoYmY34J+2
+         czSbmIO8ya4u4Ef45QWGiDejyhZnwR0leeUD5jNG6WSaELHmZW83CcmCZzx2y8B4gE
+         5jc+RbgKkSMABMKvvYg3YbhMVTgKdklMi6qZYZ3ZepfyRA8jlhv6tSDIm//syvXE0J
+         JK9RqbWULSOFJUpZg0Mpk6dtoQfYSYjI4iJtTj/US35hBtobiFXcVvqW1FFRtijgWZ
+         01FmgEVIg3znQ==
+Received: by mail.portyid.pl for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 09:11:00 GMT
+Message-ID: <20220124084500-0.1.1b.5fl4.0.rccfyi3cba@portyid.pl>
+Date:   Mon, 24 Jan 2022 09:11:00 GMT
+From:   =?UTF-8?Q? "Pawe=C5=82_Jasi=C5=84ski" ?= 
+        <pawel.jasinski@portyid.pl>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: Fotowoltaika - nowe warunki
+X-Mailer: mail.portyid.pl
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <MWHPR21MB1593ED650DA82BC3009F66CED75D9@MWHPR21MB1593.namprd21.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Jan 23, 2022 at 10:27:56PM +0000, Michael Kelley (LINUX) wrote:
-> From: Wei Liu <wei.liu@kernel.org> Sent: Sunday, January 23, 2022 1:56 PM
-> > 
-> > On Sun, Jan 16, 2022 at 09:53:06PM +0000, Haiyang Zhang wrote:
-> > >
-> > >
-> > > > -----Original Message-----
-> > > > From: Michael Kelley (LINUX) <mikelley@microsoft.com>
-> > > > Sent: Sunday, January 16, 2022 2:19 PM
-> > > > To: KY Srinivasan <kys@microsoft.com>; Haiyang Zhang
-> > <haiyangz@microsoft.com>; Stephen
-> > > > Hemminger <sthemmin@microsoft.com>; wei.liu@kernel.org; Wei Hu
-> > <weh@microsoft.com>; Dexuan
-> > > > Cui <decui@microsoft.com>; drawat.floss@gmail.com; hhei <hhei@redhat.com>;
-> > linux-
-> > > > kernel@vger.kernel.org; linux-hyperv@vger.kernel.org; linux-
-> > fbdev@vger.kernel.org; dri-
-> > > > devel@lists.freedesktop.org
-> > > > Cc: Michael Kelley (LINUX) <mikelley@microsoft.com>
-> > > > Subject: [PATCH 1/1] video: hyperv_fb: Fix validation of screen resolution
-> > > >
-> > > > In the WIN10 version of the Synthetic Video protocol with Hyper-V,
-> > > > Hyper-V reports a list of supported resolutions as part of the protocol
-> > > > negotiation. The driver calculates the maximum width and height from
-> > > > the list of resolutions, and uses those maximums to validate any screen
-> > > > resolution specified in the video= option on the kernel boot line.
-> > > >
-> > > > This method of validation is incorrect. For example, the list of
-> > > > supported resolutions could contain 1600x1200 and 1920x1080, both of
-> > > > which fit in an 8 Mbyte frame buffer.  But calculating the max width
-> > > > and height yields 1920 and 1200, and 1920x1200 resolution does not fit
-> > > > in an 8 Mbyte frame buffer.  Unfortunately, this resolution is accepted,
-> > > > causing a kernel fault when the driver accesses memory outside the
-> > > > frame buffer.
-> > > >
-> > > > Instead, validate the specified screen resolution by calculating
-> > > > its size, and comparing against the frame buffer size.  Delete the
-> > > > code for calculating the max width and height from the list of
-> > > > resolutions, since these max values have no use.  Also add the
-> > > > frame buffer size to the info message to aid in understanding why
-> > > > a resolution might be rejected.
-> > > >
-> > > > Fixes: 67e7cdb4829d ("video: hyperv: hyperv_fb: Obtain screen resolution from Hyper-V
-> > > > host")
-> > > > Signed-off-by: Michael Kelley <mikelley@microsoft.com>
-> > [...]
-> > >
-> > > Reviewed-by: Haiyang Zhang <haiyangz@microsoft.com>
-> > >
-> > 
-> > Applied to hyperv-fixes. Thanks.
-> 
-> This fix got pulled into the fbdev/for-next tree by a new maintainer, Helge Deller.
-> See https://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git/commit/?h=for-next&id=bcc48f8d980b12e66a3d59dfa1041667db971d86
+Dzie=C5=84 dobry,
 
-OK. I will drop it from hyperv-fixes. Thanks for letting me know!
+jeszcze w pierwszej po=C5=82owie 2022 roku wzrosn=C4=85 ceny za wykup ene=
+rgii dla posiadaczy fotowoltaiki.=20
 
-> 
-> Michael
+Aby unikn=C4=85=C4=87 umowy na nowych zasadach trzeba zdecydowa=C4=87 si=C4=
+=99 na instalacj=C4=99 paneli PV do ko=C5=84ca marca.=20
+
+Jako firma specjalizuj=C4=85ca si=C4=99 w monta=C5=BCu i serwisie fotowol=
+taiki ch=C4=99tnie podejmiemy si=C4=99 realizacji ca=C5=82ego projektu. S=
+=C4=85 Pa=C5=84stwo zainteresowani?
+
+
+Pozdrawiam
+Pawe=C5=82 Jasi=C5=84ski

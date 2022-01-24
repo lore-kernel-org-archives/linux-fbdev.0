@@ -2,139 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EED1DC4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 18:27:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35888C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 18:39:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241827AbiAXS1o (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 13:27:44 -0500
-Received: from mail-ua1-f52.google.com ([209.85.222.52]:35463 "EHLO
-        mail-ua1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245255AbiAXS1n (ORCPT
+        id S241475AbiAXSjI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 13:39:08 -0500
+Received: from mail-ua1-f43.google.com ([209.85.222.43]:41630 "EHLO
+        mail-ua1-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229593AbiAXSjH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 13:27:43 -0500
-Received: by mail-ua1-f52.google.com with SMTP id m90so32769265uam.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 10:27:43 -0800 (PST)
+        Mon, 24 Jan 2022 13:39:07 -0500
+Received: by mail-ua1-f43.google.com with SMTP id l1so30893551uap.8;
+        Mon, 24 Jan 2022 10:39:07 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=7SqmZ9f0RWasCXhWlrSx2cD/L8oAGqPWnnkFJLcnjm4=;
-        b=mPX1q170eo2f0lJqiJASjt5FHR+1f8r5w6bjDswsOXA1wtlCOj2osdfuJsTPf8v7Hd
-         NmfMyu3jDqHle/GZ1QAaELIh6g364dpNA+n+Atoo0UB2wRbnUvce2MLb2qTxnOME1n0T
-         3Z8PUH156RrpigT6sHkJ5xysVAGRdeexKYok57bb1MDaUZEuW/eLbH3xjDrSbpQuHz4M
-         Le0c/aJrZNpQtQh7ovYh2adzSBdE/BZbR1zQnnJ9TGwfrNUypjCObYQwPPvP1knRY04A
-         vWCLmOMnZ0VfNr+ZmBOykFEGewZm8jFMRweFndMcwVrVrPsXBW8uvGk/zWWAwnLyehmJ
-         Ipsw==
-X-Gm-Message-State: AOAM530TISGCJ75y4XNJUqHYlAF2fPQmokIjAzu5pHHhhNrsYBchkP0l
-        cLHq1l88kdHm8C0vqPtKYkYiTZVHivADrw==
-X-Google-Smtp-Source: ABdhPJwLFOPPdZrzxCg7AnVWuA+mGXhLUu1LsoG7DiYS7XtdAfHnI2KaZp2XTLY0vP6/4sdeMDVUKg==
-X-Received: by 2002:a67:2f90:: with SMTP id v138mr2258803vsv.27.1643048862891;
-        Mon, 24 Jan 2022 10:27:42 -0800 (PST)
-Received: from mail-vk1-f175.google.com (mail-vk1-f175.google.com. [209.85.221.175])
-        by smtp.gmail.com with ESMTPSA id k16sm291313vsr.8.2022.01.24.10.27.42
-        for <linux-fbdev@vger.kernel.org>
+        bh=e8r8scPQjT8uH8pXGowu/+E5c7EtaUCFQ6Gv6NPqtrM=;
+        b=CYiuf8EyVTvsGjFuaR/f6AR0zk/zDLJWz90XbzEF5WnuR5YDuk4vucQxJucWLb3pDJ
+         Yxu/Uu/C1seXaBhn+/cIBGB3T5jgRHwfkFyUp1Lkpwya4gLJdztkQYwPJZf0pE1AAmQn
+         dba6dXRPMB43EDxKZRvYhHP6NJOwyHs/5g4V7faGHSrAlwCqdp6daFxCbXXb3JvBigv9
+         M2ifRckiv3YuSsiQM85xKWTQ8Ei9ydRqLNvTkpjqP8ehAbCjxFtODvjWLpbf8uuRnv9u
+         SJFXvmD1Hqwa7mOb2qM1XzUnp8J9UR/SNOHDhNH4owJdJBVq1c6pLSLvJgxbHwNh+1kc
+         N5xw==
+X-Gm-Message-State: AOAM533TJt6S0s8+SBDUmx2pc2bh82QNNFjQPCeaIcFyZ7kCffzi+ZKo
+        IspSzcVjeYYt6LlJhzj8hs4Phzs5ai1ziw==
+X-Google-Smtp-Source: ABdhPJwaSLswTK8d7GpAwtydmeDIhX+9HKkpmjVZsL17aGPTKWx7GKnJMa1/vgD5f36BT9r+dZqE9Q==
+X-Received: by 2002:a67:dc03:: with SMTP id x3mr5450574vsj.37.1643049546829;
+        Mon, 24 Jan 2022 10:39:06 -0800 (PST)
+Received: from mail-vk1-f180.google.com (mail-vk1-f180.google.com. [209.85.221.180])
+        by smtp.gmail.com with ESMTPSA id q6sm1943489vkd.50.2022.01.24.10.39.06
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Jan 2022 10:27:42 -0800 (PST)
-Received: by mail-vk1-f175.google.com with SMTP id 48so7608865vki.0
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 10:27:42 -0800 (PST)
-X-Received: by 2002:a1f:1b46:: with SMTP id b67mr3291125vkb.20.1643048862175;
- Mon, 24 Jan 2022 10:27:42 -0800 (PST)
+        Mon, 24 Jan 2022 10:39:06 -0800 (PST)
+Received: by mail-vk1-f180.google.com with SMTP id b77so10741774vka.11;
+        Mon, 24 Jan 2022 10:39:06 -0800 (PST)
+X-Received: by 2002:a05:6122:ca1:: with SMTP id ba33mr1920131vkb.39.1643049546088;
+ Mon, 24 Jan 2022 10:39:06 -0800 (PST)
 MIME-Version: 1.0
-References: <feea8303-2b83-fc36-972c-4fc8ad723bde@gmx.de> <87zgnz71ic.fsf@x1.stackframe.org>
- <Yegwl/rwRhjROxcy@phenom.ffwll.local>
-In-Reply-To: <Yegwl/rwRhjROxcy@phenom.ffwll.local>
+References: <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
+ <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
+ <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de> <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
+ <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de> <CAKMK7uE7jnTtetB5ovGeyPxHq4ymhbWmQXWmSVw-V1vP3iNAKQ@mail.gmail.com>
+ <b32ffceb-ea90-3d26-f20e-29ae21c68fcf@gmx.de> <20220118062947.6kfuam6ah63z5mmn@sirius.home.kraxel.org>
+ <CAMuHMdWXWA2h7zrZa_nnqR_qNdsOdHJS=Vf1YExhvs08KukoNg@mail.gmail.com>
+ <3f96f393-e59d-34ac-c98b-46180e2225cd@suse.de> <20220120125015.sx5n7ziq3765rwyo@sirius.home.kraxel.org>
+ <CAKMK7uF-V20qWTxQLvTC6GjC8Sg+Pst+UJ3pWCLQ4Q7Khgy62g@mail.gmail.com>
+In-Reply-To: <CAKMK7uF-V20qWTxQLvTC6GjC8Sg+Pst+UJ3pWCLQ4Q7Khgy62g@mail.gmail.com>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 24 Jan 2022 19:27:31 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVBFgo6ryq=h8e6mZZmnxnChZVP924yeX+C-KwghKx3tA@mail.gmail.com>
-Message-ID: <CAMuHMdVBFgo6ryq=h8e6mZZmnxnChZVP924yeX+C-KwghKx3tA@mail.gmail.com>
-Subject: Re: fbdev: Garbage collect fbdev scrolling acceleration
+Date:   Mon, 24 Jan 2022 19:38:54 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWS3rYUUB8HQcpjq0pY28cLiPMGrYEXeSPVtr-a_rrQvQ@mail.gmail.com>
+Message-ID: <CAMuHMdWS3rYUUB8HQcpjq0pY28cLiPMGrYEXeSPVtr-a_rrQvQ@mail.gmail.com>
+Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
 To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     Sven Schnelle <svens@stackframe.org>, Helge Deller <deller@gmx.de>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
+Cc:     Gerd Hoffmann <kraxel@redhat.com>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Hamza Mahfooz <someguy@effective-light.com>
+        Helge Deller <deller@gmx.de>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Sven Schnelle <svens@stackframe.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel et al,
+Hi Daniel,
 
-On Wed, Jan 19, 2022 at 4:39 PM Daniel Vetter <daniel@ffwll.ch> wrote:
-> On Thu, Jan 13, 2022 at 10:46:03PM +0100, Sven Schnelle wrote:
-> > Helge Deller <deller@gmx.de> writes:
-> > > I may have missed some discussions, but I'm objecting against this patch:
-> > >
-> > >     b3ec8cdf457e5 ("fbdev: Garbage collect fbdev scrolling acceleration, part 1 (from TODO list)")
-> > >
-> > > Can we please (partly) revert it and restore the scrolling behaviour,
-> > > where fbcon uses fb_copyarea() to copy the screen contents instead of
-> > > redrawing the whole screen?
-> > >
-> > > I'm fine with dropping the ypan-functionality.
-> > >
-> > > Maybe on fast new x86 boxes the performance difference isn't huge,
-> > > but for all old systems, or when emulated in qemu, this makes
-> > > a big difference.
-> > >
-> > > Helge
-> >
-> > I second that. For most people, the framebuffer isn't important as
-> > they're mostly interested in getting to X11/wayland as fast as possible.
-> > But for systems like servers without X11 it's nice to have a fast
-> > console.
->
-> Fast console howto:
-> - shadow buffer in cached memory
-> - timer based upload of changed areas to the real framebuffer
->
-> This one is actually fast, instead of trying to use hw bltcopy and having
-> the most terrible fallback path if that's gone. Yes drm fbdev helpers has
-> this (but not enabled on most drivers because very, very few people care).
+On Fri, Jan 21, 2022 at 9:55 AM Daniel Vetter <daniel@ffwll.ch> wrote:
+> Just to clarify, since we had lots of smaller and bigger
+> misunderstandings in the thread thus far: DRM_FORMAT_RGB332 exists, so
+> drm support that already. The fbdev emulation doesn't yet, but all
+> that's needed for that is filling out the code to remap the drm
+> description to the fbdev format description for this case. Plus
+> testing it all works ofc with fbcon and whatelse. Note that RGB332  is
+> a bit more work than e.g. C4, since atm fbdev still uses only bpp to
+> identify formats, so would need to be switch over to drm_fourcc first
+> before adding anything which aliases with something existing (we have
+> C8 already wired up).
 
-That depends on the hardware, and the balance between CPU-to-RAM,
-CPU-to-VRAM, and GPU-to-VRAM bandwidths, and CPU and GPU performance.
+I doubt that RGB332 would be a bit more work than C4, as RGB332 is still
+8 bpp, while C4 is less.  To support C4, all DRM code that cannot
+handle format->cpp[0] < 1 or drm_format_info_block_width() > 1 has to be
+fixed first.
 
-When scrolling, the fastest copy is the copy that doesn't need to copy
-much.  So that's why fbcon supports (or supported :-( many strategies:
-scrolling by wrapping, panning, copying (either by CPU or by (simple)
-GPU), re-rendering (useful for a GPU with bitmap expansion).  So forcing
-everybody to render into a fully cached shadow buffer and upload changed
-areas is not the silver bullet.
+On the plus side, I finally got my proof-of-concept Atari DRM driver
+working with fbcon on ARAnyM.  Mapping /dev/fb0 from userspace doesn't
+work (fbtest SEGVs while reading from the mapped frame buffer).  I don't
+know yet if this is a general issue without deferred I/O in v5.17-rc1,
+or a bug in the m68k MM code...
 
-Whether text output is rendered immediately or not is completely
-orthogonal to this.  While timer-based updates would speed up printing
-of large hunks of text (where no one actually reads what was printed at
-the top), that would have almost no impact on actual interactive console
-work: it may still take 0.5s to scroll the screen if you press "enter"
-when your cursor is positioned on the last line.
-BTW, implementing timer-based updates would make measuring real-world
-performance more difficult, as we would have to use a different
-benchmark than "time dmesg" ;-)
-
-Both Daniel and Thomas said: fbdev is not suitable for modern hardware.
-Fine, we do not debate that, and do not want to prevent you from using
-DRM for modern hardware.  Then please accept us saying that DRM (in its
-current form) is not suitable for other types of graphics hardware.
-Still, even modern (embedded) hardware may have small low-color
-displays.
-
-For the last +5 years, we've been pointed to the tinydrm drivers, to
-serve as examples for converting existing fbdev drivers to drm drivers.
-All but one of them are drivers for hi-color or better hardware, thus
-surpassing the capabilities of lots of hardware driven by fbdev drivers.
-The other one is an e-ink driver that exposes an XRGB8888 shadow frame
-buffer, and converts that in a two-step process, first to 8-bit
-grayscale, second to 1-bit monochrome.  If that is considered a good
-example, should I be impressed?
-Compare that to other subsystems boasting about zero-copy...
-
-Furthermore, for a contemporary e-ink device like[1], the shadow buffer
-would consume 10 MiB.  Of course this device has 4 GiB of RAM, and quad
-Cortex-A55 CPU cores, but not all systems have 10 MiB to spare...
-
-[1] https://linuxgizmos.com/rk3566-based-pinenote-e-ink-tablet-ships-at-399/
+So far it supports C8 only, but I hope to tackle C4 and monochrome soon.
+Whether the end result will be usable on real hardware is still to be
+seen, but at least I hope to get some DRM code written...
 
 Gr{oetje,eeting}s,
 

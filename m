@@ -2,111 +2,103 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F1A7C433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 11:50:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D537C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 12:37:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238002AbiAXLu5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 06:50:57 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:24458 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S237927AbiAXLu0 (ORCPT
+        id S241420AbiAXMhH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 07:37:07 -0500
+Received: from smtp-out1.suse.de ([195.135.220.28]:47892 "EHLO
+        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238400AbiAXMhG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 06:50:26 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643025025;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=SnozPUrejpB8IY9KHbWAe0uFCpl2C3OVRF4UKq2Q7OA=;
-        b=JVTEjfW/LMZ7ET7+DToX28Y9KUrB0pHMR2Si9QwtKiOtVZXKU8dQ4/Tu1SU3qwnaK568rf
-        2cjMT1E1bxNKwxaoTyqLhdI5dbYh+qTntTW912HUVojVZvnd0e3pc7IXRWpUTm+ZUpt/2v
-        Fn0bty+/AahGfeTKUHr+RUlnYsVFNZ0=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-564-W-WodtwfNWu4mlTJXcxllA-1; Mon, 24 Jan 2022 06:50:24 -0500
-X-MC-Unique: W-WodtwfNWu4mlTJXcxllA-1
-Received: by mail-wm1-f69.google.com with SMTP id z2-20020a05600c220200b0034d2eb95f27so10620047wml.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 03:50:23 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=SnozPUrejpB8IY9KHbWAe0uFCpl2C3OVRF4UKq2Q7OA=;
-        b=ERjS4OC7wvij1UgMmuUuVdqZxpclotxWig5GOgJdNMz+2g5jA7F/ySrg9cEDcsDCkU
-         CsXcdJvmypbd6VnBPUPws9sltKfLHFanCZ/GOav0zuQIKI07myM+IEGoNgALDAb+DbhE
-         6CKtKnP1qKDcF1gMF6pJE3zUd+Sk+h6YSvALmNvFiRT3E5nnMqPRmcKp4S1FOyUzi7AS
-         o82gJm5W2bMtMfFzWC53NzXCOR2oUFoStcMiS1XwRwJ+icGxcu+VRrONZEgKtG8v9Gmb
-         rPbVmeRCg5D4aws98bZm707Ql38OZksd5nLiSVZi3hhRQyizlt5AOF34OZ39rxEMT92V
-         Y4QQ==
-X-Gm-Message-State: AOAM531Mr9WjmxhZaQHTAfiaHZ9DSnnjZu9u/epaUZE5jx4gxz3o9vPD
-        JslZN+wpIfAXzQbbpKaaKlDcU4GtT/MDfwUdVos0y1rUuEcVciU6cibHaYtzAb5Bj2gnQcOP3ou
-        X6YGndI3tsaCr9f5YAPUeNxs=
-X-Received: by 2002:a5d:588d:: with SMTP id n13mr14154325wrf.153.1643025022926;
-        Mon, 24 Jan 2022 03:50:22 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwc+T8f2EA0pQatiSUAYWsweg14f3Fap55QqOPYFQTgJZjANOOALIERHOvplEdlRysuwhZ5oQ==
-X-Received: by 2002:a5d:588d:: with SMTP id n13mr14154313wrf.153.1643025022753;
-        Mon, 24 Jan 2022 03:50:22 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id o12sm6904445wry.115.2022.01.24.03.50.21
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Jan 2022 03:50:22 -0800 (PST)
-Message-ID: <2fc200bb-4b40-7833-31c9-90a78512b601@redhat.com>
-Date:   Mon, 24 Jan 2022 12:50:20 +0100
+        Mon, 24 Jan 2022 07:37:06 -0500
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id AB8C8212B7;
+        Mon, 24 Jan 2022 12:37:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1643027825; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=mTIBZHMlvugjDJFX7BwroyoTZJMWkdOfb0O7uFauqM4=;
+        b=lJ1I6Szf0cfwtsUK3kuVqDMVsK7EUN4/WPEjpdIUFQa1vfnDR/4JsZErwl/eKsxy/o+rLe
+        Al5hWpU+q3xS9X67EcXhYsnPOJjZtTgglHKHosWxRaKr9TzwRTx77x8E+Lc4QBas8/lyrd
+        MID3n2YpQ448xP1ghrE4LeC5dxGHgSc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1643027825;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=mTIBZHMlvugjDJFX7BwroyoTZJMWkdOfb0O7uFauqM4=;
+        b=5ur3pY++tRDAFa1Jiu4OoCzEQfCjFmYHI4YEHNIUxQDHobZfk1u5Nw5J0Jlq+MuY22Nb10
+        HM+e2wY67s1/XcCA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7085613B97;
+        Mon, 24 Jan 2022 12:37:05 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id NvqJGnGd7mFyNQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 24 Jan 2022 12:37:05 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     zackr@vmware.com, javierm@redhat.com,
+        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de,
+        hdegoede@redhat.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 0/5] sysfb: Fix memory-region management
+Date:   Mon, 24 Jan 2022 13:36:54 +0100
+Message-Id: <20220124123659.4692-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.0
-Subject: Re: [PATCH 2/2] Revert "fbcon: Disable accelerated scrolling"
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Helge Deller <deller@gmx.de>, Gerd Hoffmann <kraxel@redhat.com>
-Cc:     linux-fbdev@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Sven Schnelle <svens@stackframe.org>,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        Claudio Suarez <cssk@net-c.es>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>
-References: <20220119110839.33187-1-deller@gmx.de>
- <20220119110839.33187-3-deller@gmx.de> <YelyGDNDTn1Aq/hm@phenom.ffwll.local>
- <6c000477-002b-d125-b945-2c4831bad8a5@gmx.de>
- <20220121072006.ylw2hdl7jbkbwnre@sirius.home.kraxel.org>
- <64fd46cb-9746-3fd0-ec92-c64dba76875a@gmx.de>
- <d23800b4-503c-a6e2-2c51-2c07a736dffc@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <d23800b4-503c-a6e2-2c51-2c07a736dffc@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/24/22 12:33, Thomas Zimmermann wrote:
+Request framebuffer memory in simpledrm and simplefb. Do a hot-unplug
+operation when removing fbdev firmware drivers.
 
-[snip]
+After being unloaded by a hardware driver, simplefb leaves behind the
+firmware framebuffer's platform device. This prevents other drivers
+from acquiring the memory as reported at [1].
 
->> Thoughts?
-> 
-> I can't say I approve keeping fbdev alive, but...
-> 
-> With fbdev emulation, every DRM driver is an fbdev driver too. So 
-> CONFIG_FB_DRIVER is somewhat misleading. Better add an option like 
-> CONFIG_FBCON_HW_SCROLLING and have it selected by the fbdev drivers that 
-> absolutely need HW acceleration. That option would then protect the rsp 
-> code.
->
+Patch 1 changes the removal code of remove_conflicting_framebuffers()
+to remove the underlying device and the rsp memory region.
 
-Agreed that this option would be better and allow distros
-to disable the code that was reverted.
- 
-Best regards,
+Patches 2 to 4 update sysfb and its drivers. The sysfb code does no
+longer mark the framebuffer memory with IORESOURCE_BUSY. Instead, the
+device drivers acquire the memory when they probe the device.
+
+Patch 5 adds a todo item to acquire memory regions in all DRM drivers.
+
+Tested with simpledrm and simplefb.
+
+[1] https://lore.kernel.org/dri-devel/20220117180359.18114-1-zack@kde.org/
+
+Javier Martinez Canillas (1):
+  drivers/firmware: Don't mark as busy the simple-framebuffer IO
+    resource
+
+Thomas Zimmermann (4):
+  fbdev: Hot-unplug firmware fb devices on forced removal
+  drm/simpledrm: Request memory region in driver
+  fbdev/simplefb: Request memory region in driver
+  drm: Add TODO item for requesting memory regions
+
+ Documentation/gpu/todo.rst        | 15 ++++++++
+ drivers/firmware/sysfb_simplefb.c |  2 +-
+ drivers/gpu/drm/tiny/simpledrm.c  | 20 ++++++++---
+ drivers/video/fbdev/core/fbmem.c  | 29 +++++++++++++--
+ drivers/video/fbdev/simplefb.c    | 59 ++++++++++++++++++++++---------
+ include/linux/fb.h                |  1 +
+ 6 files changed, 100 insertions(+), 26 deletions(-)
+
+
+base-commit: 0bb81b5d6db5f689b67f9d8b35323235c45e890f
 -- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+2.34.1
 

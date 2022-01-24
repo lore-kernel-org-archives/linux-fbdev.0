@@ -2,120 +2,90 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 283FFC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 18:52:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F6FBC433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 24 Jan 2022 18:52:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343819AbiAXSwI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 24 Jan 2022 13:52:08 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42590 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245480AbiAXSvL (ORCPT
+        id S245594AbiAXSwJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 24 Jan 2022 13:52:09 -0500
+Received: from mail-vk1-f176.google.com ([209.85.221.176]:46770 "EHLO
+        mail-vk1-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1343626AbiAXSvM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 24 Jan 2022 13:51:11 -0500
-Received: from mail-ot1-x335.google.com (mail-ot1-x335.google.com [IPv6:2607:f8b0:4864:20::335])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 210B8C0617AA
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 10:50:50 -0800 (PST)
-Received: by mail-ot1-x335.google.com with SMTP id o9-20020a9d7189000000b0059ee49b4f0fso6395993otj.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 24 Jan 2022 10:50:50 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=0csA6moKKYq3fSs9USPuSGlU/kYiU1Lp2B669qtC3bY=;
-        b=UYTza7tSTELle6ZPRVA1VKcMdcn84stFawhGizZU7n+y0rXvx9W2wb6J2B4SG+jOkm
-         HEXpxM0Jevqy6RKBvqcFHojq7RYiqe/b7mwqlXtDa4xRoJ2jaXH04rtKlwpaCahS/RLr
-         YlIvXMiX2HOHKsmsnuOlPn5Uw8lj69D/E4iL4=
+        Mon, 24 Jan 2022 13:51:12 -0500
+Received: by mail-vk1-f176.google.com with SMTP id z15so7553837vkp.13;
+        Mon, 24 Jan 2022 10:51:12 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=0csA6moKKYq3fSs9USPuSGlU/kYiU1Lp2B669qtC3bY=;
-        b=cw4q8wQcuUiDnmLvqKET3WVATqo3ztHRs2OgFNiDpU4jJUe1o0VU2XY7/Nw2lzTD/e
-         VH715kiWwf5wKRkBO4eSxGJ2lMVEPSyOyIZHUa89fxfQQ9ziyQj/v2AMv5+SCJSb/+HX
-         NZ07UjJBRI8gVNatBbf3o7jOHj4kQEvjscKFaHMh+W2Y8zTGqRthphziOhMz/GHrdMgj
-         KbnNwgZLog4sIGO0Kuzp+uMdEHfzhZZuj24Rhx/xVk36H4v+xr26xr/E2ua1tdKQsBRy
-         QeV4IGBGdQT8XB10IDatRKYL3fbXz3ksfu0ZZWqnq2W/WxC15msllCToliMJxl/6AA7l
-         DLpQ==
-X-Gm-Message-State: AOAM533XlFlOZHVG0upMedTSeqkB9D43c+74jipP+9uDysG1DGzHIacL
-        yNm6gJ3z8o34I4UgNWedkCpqrZado25faKGPdft/0Q==
-X-Google-Smtp-Source: ABdhPJw9kf0DB3au21XZBm8wAwVW+KBJNbxB/qjlpc+1/4Zpj18s6ohExWsveetehPvUTUdQCrdqVXsrDoX0olfQvpI=
-X-Received: by 2002:a05:6830:1e76:: with SMTP id m22mr7594921otr.75.1643050249475;
- Mon, 24 Jan 2022 10:50:49 -0800 (PST)
+        bh=8n04RRQ8nE0niJsTycmRfUY892P4sQ+KhPXgYoCzt8o=;
+        b=7MLIGWq94Ge3rxjwb2jdRs5bhcDTpVVVyXWDRPmoKU1cu/J193IVv5t1ofIN4hTIbG
+         xgATFTnMfNFYKUimOuXbvU7XHHC8JVileTih0Xt0o1sef2p4nuUrOktaZw110rQMMZ80
+         46o1G9n6njd95o6/Bv5hS4kPSYVpr7F4cS1YT/mWQN/d9mtSQDjdbHWy4RpV4DIsnGG1
+         60zsTzZp3cC1T+56IbWUnTMDsPwORqDdDAqjpZh0xNjU8rGY7TKxufEynEwQUze8Y5iD
+         mzSSsuJkpk54XJFqwu8JK5Kv7eYlN/zi/Lq/0WNc5qvbwaWptjVig/ENW8FRBabrZ9JJ
+         KxqQ==
+X-Gm-Message-State: AOAM5325bPXUNxtiSiBUmouae62+Ma4I8iTT+yiTo7YIgjTSDDb7gabu
+        ymtDsot3fBI+oZGGX0IeeWNj9Wjl/H351A==
+X-Google-Smtp-Source: ABdhPJwVhHjTNewS5EYqEjs8Eoxsq/6qMT6hcOYHUMuC+1I6MzQhZHdxsVc5P2D85vzYmRegJ3TAqw==
+X-Received: by 2002:a1f:56c2:: with SMTP id k185mr6760810vkb.19.1643050271469;
+        Mon, 24 Jan 2022 10:51:11 -0800 (PST)
+Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com. [209.85.222.43])
+        by smtp.gmail.com with ESMTPSA id h189sm3049636vka.52.2022.01.24.10.51.10
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Jan 2022 10:51:10 -0800 (PST)
+Received: by mail-ua1-f43.google.com with SMTP id c36so32780051uae.13;
+        Mon, 24 Jan 2022 10:51:10 -0800 (PST)
+X-Received: by 2002:a9f:3d89:: with SMTP id c9mr6321567uai.78.1643050270149;
+ Mon, 24 Jan 2022 10:51:10 -0800 (PST)
 MIME-Version: 1.0
-References: <20220117125716.yjwxsze35j2ndn2i@sirius.home.kraxel.org>
- <CAMuHMdW=Zpp2mHbrBx7i0WN8PqY3XpK5qpyAyYxgf9n88edpug@mail.gmail.com>
- <70530b62-7b3f-db88-7f1a-f89b824e5825@suse.de> <CAMuHMdW5M=zEuGEnQQc3JytDhoxCKRiq0QFw+HOPp0YMORzidw@mail.gmail.com>
- <57d276d3-aa12-fa40-6f90-dc19ef393679@gmx.de> <CAKMK7uE7jnTtetB5ovGeyPxHq4ymhbWmQXWmSVw-V1vP3iNAKQ@mail.gmail.com>
- <b32ffceb-ea90-3d26-f20e-29ae21c68fcf@gmx.de> <20220118062947.6kfuam6ah63z5mmn@sirius.home.kraxel.org>
- <CAMuHMdWXWA2h7zrZa_nnqR_qNdsOdHJS=Vf1YExhvs08KukoNg@mail.gmail.com>
- <3f96f393-e59d-34ac-c98b-46180e2225cd@suse.de> <20220120125015.sx5n7ziq3765rwyo@sirius.home.kraxel.org>
- <CAKMK7uF-V20qWTxQLvTC6GjC8Sg+Pst+UJ3pWCLQ4Q7Khgy62g@mail.gmail.com> <CAMuHMdWS3rYUUB8HQcpjq0pY28cLiPMGrYEXeSPVtr-a_rrQvQ@mail.gmail.com>
-In-Reply-To: <CAMuHMdWS3rYUUB8HQcpjq0pY28cLiPMGrYEXeSPVtr-a_rrQvQ@mail.gmail.com>
-From:   Daniel Vetter <daniel@ffwll.ch>
-Date:   Mon, 24 Jan 2022 19:50:37 +0100
-Message-ID: <CAKMK7uGdS7hSK2DWGrQZ3DT69Qp_m6h1UFnbT_A7T+Tptq6vYg@mail.gmail.com>
+References: <YeG8ydoJNWWkGrTb@ls3530> <c48ad8ae-aea5-43fa-882f-dccb90dde9a4@suse.de>
+ <87bl0amc6s.fsf@x1.stackframe.org> <20220118103323.4bae3a7d@eldfell>
+ <20220118095352.xsb6fqacw4p276c5@sirius.home.kraxel.org> <CAMuHMdWV+-+Jr7HggbfH_GEDcdep4pJLiMG+15jxBvQ91BCS0w@mail.gmail.com>
+ <CAKMK7uEOFg3z2btFERQ5XBQ7hqex6bXCb9X=SdwCjeLfX_SdFw@mail.gmail.com>
+ <CAMuHMdVjv1+UNeXkCBE+80tdtLuNg=5d6N12hNLgJdaS-jxERg@mail.gmail.com> <CAKMK7uEwDdaR7kDVi9Oah0w8qFEoAywp_wj2eH7DtttVD2L00A@mail.gmail.com>
+In-Reply-To: <CAKMK7uEwDdaR7kDVi9Oah0w8qFEoAywp_wj2eH7DtttVD2L00A@mail.gmail.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 24 Jan 2022 19:50:58 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdUyHEExOCtH-hKh0HmZzadmfZaR=vAVYJkTvphfzs3Xiw@mail.gmail.com>
+Message-ID: <CAMuHMdUyHEExOCtH-hKh0HmZzadmfZaR=vAVYJkTvphfzs3Xiw@mail.gmail.com>
 Subject: Re: [PATCH] MAINTAINERS: Add Helge as fbdev maintainer
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
+To:     Daniel Vetter <daniel@ffwll.ch>
 Cc:     Gerd Hoffmann <kraxel@redhat.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Helge Deller <deller@gmx.de>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Sven Schnelle <svens@stackframe.org>,
+        Helge Deller <deller@gmx.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         DRI Development <dri-devel@lists.freedesktop.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sven Schnelle <svens@stackframe.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jan 24, 2022 at 7:39 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> Hi Daniel,
->
-> On Fri, Jan 21, 2022 at 9:55 AM Daniel Vetter <daniel@ffwll.ch> wrote:
-> > Just to clarify, since we had lots of smaller and bigger
-> > misunderstandings in the thread thus far: DRM_FORMAT_RGB332 exists, so
-> > drm support that already. The fbdev emulation doesn't yet, but all
-> > that's needed for that is filling out the code to remap the drm
-> > description to the fbdev format description for this case. Plus
-> > testing it all works ofc with fbcon and whatelse. Note that RGB332  is
-> > a bit more work than e.g. C4, since atm fbdev still uses only bpp to
-> > identify formats, so would need to be switch over to drm_fourcc first
-> > before adding anything which aliases with something existing (we have
-> > C8 already wired up).
->
-> I doubt that RGB332 would be a bit more work than C4, as RGB332 is still
-> 8 bpp, while C4 is less.  To support C4, all DRM code that cannot
-> handle format->cpp[0] < 1 or drm_format_info_block_width() > 1 has to be
-> fixed first.
+Hi Daniel,
 
-Hm what's broken with it? Current code means it cannot support odd
-width for C4 (because to make C4 fit into bytes you need 2 pixels),
-but otherwise this should all work. Iirc we have formats with "5
-pixels in 4 bytes" and fun stuff like that. Note that stride and also
-the actual window you scan out are all separate, so even if your hw
-needs an odd stride or you have an odd resolution it should still all
-work out for C4 with the existing infra.
+On Thu, Jan 20, 2022 at 1:33 PM Daniel Vetter <daniel@ffwll.ch> wrote:
+> But reading code&docs is too hard I guess, safer to assume it's just
+> broken and not supported.
 
-RGB322 is more work because in the fbdev code this aliases with bpp=8
-which is C8, because no one has yet moved the fbdev emulation code
-forward into the drm_fourcc world.
+I confirm there's lots of documentation (and even more code ;-),
+which is always great!
+But both are intimidating to me, and most of the documentation covers
+features I'm not interested in, as they're only applicable to fancy
+modern truecolor 3D-capable multi-buffer and multi-head hardware, while
+what I am looking for is usually not documented.  E.g. I had a hard
+time to discover how color look-up tables work (gamma_{store,size}!),
+as this is not covered in https://docs.kernel.org/gpu/index.html,
+and none of the tinydrm drivers support CLUT modes.
 
-> On the plus side, I finally got my proof-of-concept Atari DRM driver
-> working with fbcon on ARAnyM.  Mapping /dev/fb0 from userspace doesn't
-> work (fbtest SEGVs while reading from the mapped frame buffer).  I don't
-> know yet if this is a general issue without deferred I/O in v5.17-rc1,
-> or a bug in the m68k MM code...
->
-> So far it supports C8 only, but I hope to tackle C4 and monochrome soon.
-> Whether the end result will be usable on real hardware is still to be
-> seen, but at least I hope to get some DRM code written...
+Gr{oetje,eeting}s,
 
-Yay, this sounds interesting!
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

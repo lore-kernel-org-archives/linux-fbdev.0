@@ -2,140 +2,259 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7677FC433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jan 2022 15:36:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7E96C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jan 2022 19:12:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1356380AbiAYPg3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 25 Jan 2022 10:36:29 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:37027 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1356305AbiAYPeZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Jan 2022 10:34:25 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643124849;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=gYJM0P1mp5NgX5FuvA0vc0pACL34+rgEJ9Vi+JjrcqU=;
-        b=ezqerXJ02Pz3etYKGYh0hyTjhCfzr4h4fgWOTbhUvQ/B5Ev5RsXTe0mvRonziFKw6U4uoZ
-        dMwot4Y3eSHHO/op42wzT8tKm+Jj9j3QeCRtTTlqUcmi2+S+xoST0M8xJQroVLhQyunA9l
-        sai3cs8my0BEHIFLCkXarOOy3QtNRjo=
-Received: from mail-ed1-f70.google.com (mail-ed1-f70.google.com
- [209.85.208.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-360-3KWFtAvSO2yRnTTjLGQXqQ-1; Tue, 25 Jan 2022 10:34:08 -0500
-X-MC-Unique: 3KWFtAvSO2yRnTTjLGQXqQ-1
-Received: by mail-ed1-f70.google.com with SMTP id v15-20020a50a44f000000b004094f4a8f3bso530244edb.0
-        for <linux-fbdev@vger.kernel.org>; Tue, 25 Jan 2022 07:34:07 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=gYJM0P1mp5NgX5FuvA0vc0pACL34+rgEJ9Vi+JjrcqU=;
-        b=xcz2BP7Jp7f4DqGZNPUm4WX/2V/sgsuFRQypwT3mihtloGSMWm5kiitzQEjLgNK5c6
-         IsZDQR7Tx7j0Et9FndYdberiaO4yjoaJnhjfEt7eWT3hX0nyXt12irKacvDMi6U1SBqb
-         b4NlIyVA07A34JqwYFLyCIFcUKyEQDu28Qo9wqvDwiKeMthCAfNAekZsmAU0O6OFbq6L
-         jbGc7aQjRPrZHR2PURumKKuvq2YCF/B4gVrAx1+s3k3fExLl5uHt6VkECoGDzs0xidLR
-         CBu3qdRay7oN/6ONgiHPQ9I8WMOY6TfmaaFWQ1xoEl8pJNNbUNdr4n8xVe5EMgdJD9cN
-         DnMA==
-X-Gm-Message-State: AOAM5304kPxognE9rOKXpF78GA7P4Fh6IyzPWs9SOCsSEhED3Rhj66xk
-        h3SfDVkI+XftmymKAbTx9QS3CwpFZ3JukSAtdAqZp5u/ijBwNqTre7CwqEeG3F+hD7bGXYjnWPv
-        oTa4cqXCKLd4VKFBoTp5Sd5g=
-X-Received: by 2002:a17:907:94d4:: with SMTP id dn20mr1803380ejc.77.1643124846819;
-        Tue, 25 Jan 2022 07:34:06 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxWVbzv4cJi6N1cXVjMID/2VItL7lLUsXMZqk6fcGrT+747KuQr+V0NKS0IMkQOYCGfVsrZEg==
-X-Received: by 2002:a17:907:94d4:: with SMTP id dn20mr1803357ejc.77.1643124846605;
-        Tue, 25 Jan 2022 07:34:06 -0800 (PST)
-Received: from ?IPV6:2001:1c00:c1e:bf00:1db8:22d3:1bc9:8ca1? (2001-1c00-0c1e-bf00-1db8-22d3-1bc9-8ca1.cable.dynamic.v6.ziggo.nl. [2001:1c00:c1e:bf00:1db8:22d3:1bc9:8ca1])
-        by smtp.gmail.com with ESMTPSA id c5sm8455216edk.43.2022.01.25.07.34.05
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 25 Jan 2022 07:34:06 -0800 (PST)
-Message-ID: <16f9e064-99cc-4205-d03e-ae41ed034309@redhat.com>
-Date:   Tue, 25 Jan 2022 16:34:05 +0100
+        id S229641AbiAYTMV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Jan 2022 14:12:21 -0500
+Received: from mout.gmx.net ([212.227.17.22]:53697 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229626AbiAYTMR (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 25 Jan 2022 14:12:17 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1643137931;
+        bh=iKlAQrkzi2Hi0Nb0738k8LVeYWb5SMaZI+WvY2hsrAw=;
+        h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
+        b=Pi7FviEFbxilpIZrFE45qwmXBp0Xe+ivJ4KyMJQlxoqKhuA49BlcUI2eInSS0p32G
+         PvLHGcBqpv2v6hKX/tsljgnJqQXJzhkfpSsq0NVWKqJEUjDcDbFPW26s7dgW6EHDXp
+         qsJP1QLMPDIV6e041gcBl0whrWqrcFXdC5NF9Qmw=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from p100 ([92.116.165.229]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1M1ps8-1nEd5n2iYi-002EEE; Tue, 25
+ Jan 2022 20:12:11 +0100
+Date:   Tue, 25 Jan 2022 20:12:09 +0100
+From:   Helge Deller <deller@gmx.de>
+To:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc:     Daniel Vetter <daniel@ffwll.ch>
+Subject: [PATCH] [RFC] fbcon: Add option to enable legacy hardware
+ acceleration
+Message-ID: <YfBLiUMokw6tLq0O@p100>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [PATCH 0/5] sysfb: Fix memory-region management
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, zackr@vmware.com,
-        javierm@redhat.com, jfalempe@redhat.com,
-        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
-        airlied@linux.ie, daniel@ffwll.ch, deller@gmx.de
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20220125091222.21457-1-tzimmermann@suse.de>
-From:   Hans de Goede <hdegoede@redhat.com>
-In-Reply-To: <20220125091222.21457-1-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Provags-ID: V03:K1:x0vnOcIlIf31efl4HnVd6aGOkd98gXd6LXjnteoPBppzlET4fr8
+ XkXaw2G/iv1vWBBgNicNPIVutwLmommGUn84xyTYYP6lD5BCPQ2NCmOSp8goEAKrFhHT4X2
+ lsqcGPNOe0VcS5vH4CCAiOHmhNYLaaLIpGyGJHo1e2hslJ3jJtxd8m376PtB1E1W3A9gCZ7
+ 254uBRFau3Uz5dzLiMDpw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:zjykn0/sYI4=:/rR1QJQO/5V732tV5iLJfN
+ Coe/suHHtjasdnCa2N6AgWGH3FAdkfhPRKIVr6KEWHjLcl+9F0EwY6IC242CoaP/mAggpt7Nq
+ mcRNe99aop9fJUiGDSB9l5iccYebKkNjg5Q8UCX/NUkSqoP4WA81+SmtrnqmMgUePaQXgMlwz
+ Bu8EzPfV2s28a0GPjRE485EGrX8PdSqdlufe4nGDl9CYFPpBIDhODUpOxQwMTnTEDO68dLM25
+ 7KuQWDd9nnjisPdBavBzSIFag4+aM4ll+p/XQq7k9Fu2rZ62iSWCbob4AzrP/2zKpmd9L9Kt6
+ IdW5OofzdLmXZW3r6q0qStovCuGfFT47QxufeNxp1kRzHq3AqsH2XsGUqNqLZp4JTfkxZPH1C
+ IkQ45Lx5s9LhX5PWg2W9r+lKcZ+uDZjm61k+Z5I2ODeM8KjPabgvpG70k6Oq5O4j4BchMVNYy
+ 5sDD6rzwV3V1+QphNJkoCkC3rVdpA53esVONKoOygCdUSVGgFhMvZXy6Km1uIlaLB1t6uo6cf
+ RDDFfmJlvvyMpyhcGObKu5Fh/Bj5g5P7EhR4S8N+WFeTs9BQV+7u3YStxQgoWLYkGrRAD3tRL
+ kQ+FkGITQG8/7iPNe0OHGkTP/jwf5M2PB394Ajiia8u8XcwbZRa3RezPTA2ln6Fri2IqnpoIB
+ F5rT5+e6wxfd30HnZ+N8UBp91m5Bl+1tMKlBrX9MRAZ+A4kMBtsLUki8MBDqEyo3TkQDgN9QQ
+ 0BebhbElSwcggQoXoTljNXcW08KKWbuBnAGYlgZhvnZL0VphgPOVyv1rgMashrC+8QqwwoODI
+ jEh8MUVWnk/soTB0WVuWVSXm5Koj6k83y5SjSYOx4R/m876gtkFH89LrOX3PAyuBR3GLCQiut
+ yKMHFIU0ssZynTzA6TDFLVhnAi26GwDuiPM1yS1LgoSbVmL5XwW2qxvGO2rE0ckRR8cO7GoNy
+ YiWmSQ1pEsR982zHjy3tVZskbf68Tg4oCCMb91YSa5rVXU4pf85Z31SQpLdYQgArpQkW7LPyy
+ NXpxyTZNcdeeSDh3ypY0o/ZIOwS2qt4dCfxC+CsplYSHa6p0Vxj4cRAIXMd9CmHV+ZxT2h+wF
+ aidCfYRLTQOr84=
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+Add a config option CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION to
+enable bitblt and fillrect hardware acceleration in the framebuffer
+console. If disabled, such acceleration will not be used, even if it is
+supported by the graphics hardware driver.
 
-On 1/25/22 10:12, Thomas Zimmermann wrote:
-> Request framebuffer memory in simpledrm and simplefb. Do a hot-unplug
-> operation when removing fbdev firmware drivers.
-> 
-> After being unloaded by a hardware driver, simplefb leaves behind the
-> firmware framebuffer's platform device. This prevents other drivers
-> from acquiring the memory as reported at [1].
-> 
-> Patch 1 changes the removal code of remove_conflicting_framebuffers()
-> to remove the underlying device and the rsp memory region.
-> 
-> Patches 2 to 4 update sysfb and its drivers. The sysfb code does no
-> longer mark the framebuffer memory with IORESOURCE_BUSY. Instead, the
-> device drivers acquire the memory when they probe the device.
-> 
-> Patch 5 adds a todo item to acquire memory regions in all DRM drivers.
-> 
-> Tested with simpledrm and simplefb.
-> 
-> [1] https://lore.kernel.org/dri-devel/20220117180359.18114-1-zack@kde.org/
-> 
-> v2:
-> 	* fix possible NULL deref in simpledrm (Jocelyn)
-> 	* various style fixes (Javier)
+If you plan to use DRM as your main graphics output system, you should
+disable this option since it will prevent compiling in code which isn't
+used later on when DRM takes over.
+
+For all other configurations, e.g. if none of your graphic cards support
+DRM (yet), DRM isn't available for your architecture, or you can't be
+sure that the graphic card in the target system will support DRM, you
+most likely want to enable this option.
 
 
-The entire series looks good to me:
-
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-
-for the series.
-
-Regards,
-
-Hans
+This patch is the first RFC.
 
 
-> 
-> Javier Martinez Canillas (1):
->   drivers/firmware: Don't mark as busy the simple-framebuffer IO
->     resource
-> 
-> Thomas Zimmermann (4):
->   fbdev: Hot-unplug firmware fb devices on forced removal
->   drm/simpledrm: Request memory region in driver
->   fbdev/simplefb: Request memory region in driver
->   drm: Add TODO item for requesting memory regions
-> 
->  Documentation/gpu/todo.rst        | 15 +++++++
->  drivers/firmware/sysfb_simplefb.c |  2 +-
->  drivers/gpu/drm/tiny/simpledrm.c  | 22 ++++++++---
->  drivers/video/fbdev/core/fbmem.c  | 29 ++++++++++++--
->  drivers/video/fbdev/simplefb.c    | 65 +++++++++++++++++++++----------
->  include/linux/fb.h                |  1 +
->  6 files changed, 105 insertions(+), 29 deletions(-)
-> 
-> 
-> base-commit: 0bb81b5d6db5f689b67f9d8b35323235c45e890f
-> prerequisite-patch-id: c2b2f08f0eccc9f5df0c0da49fa1d36267deb11d
-> prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
-> prerequisite-patch-id: 8e52143a6cd7b8fb789e656208f6edde71d0f499
-> 
+Independed of this patch I did some timing experiments with a qemu
+virtual machine running a PA-RISC Debian Linux installation with a
+screen resolution of 2048x1024 with 8bpp. In that case qemu emulated the
+graphics hardware bitblt and fillrect acceleration by using the native
+(x86) CPU.
 
+It was a simple testcase which was to run "time dmesg", where the syslog
+had 284 lines. The results showed a huge speedup:
+a) time dmesg (without acceleration):
+   -> 19.0 seconds
+b) time dmesg (with acceleration):
+   ->  2.6 seconds
+
+Signed-off-by: Helge Deller <deller@gmx.de>
+
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 840d9813b0bc..da84d1c21c21 100644
+=2D-- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -78,6 +78,17 @@ config FRAMEBUFFER_CONSOLE
+ 	help
+ 	  Low-level framebuffer-based console driver.
+
++config FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
++	bool "Framebuffer Console hardware acceleration support"
++	depends on FRAMEBUFFER_CONSOLE
++	default y if !DRM
++	default y if !(X86 || ARM)
++	help
++	  If you use a system on which DRM is fully supported you usually want t=
+o say N,
++	  otherwise you probably want to enable this option.
++	  If enabled the framebuffer console will utilize the hardware accelerat=
+ion
++	  of your graphics card by using hardware bitblt and fillrect features.
++
+ config FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+        bool "Map the console to the primary display device"
+        depends on FRAMEBUFFER_CONSOLE
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/f=
+bcon.c
+index b813985f1403..f7b7d35953e8 100644
+=2D-- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -1136,11 +1136,13 @@ static void fbcon_init(struct vc_data *vc, int ini=
+t)
+
+ 	ops->graphics =3D 0;
+
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+ 	if ((cap & FBINFO_HWACCEL_COPYAREA) &&
+ 	    !(cap & FBINFO_HWACCEL_DISABLED))
+ 		p->scrollmode =3D SCROLL_MOVE;
+ 	else /* default to something safe */
+ 		p->scrollmode =3D SCROLL_REDRAW;
++#endif
+
+ 	/*
+ 	 *  ++guenther: console.c:vc_allocate() relies on initializing
+@@ -1705,7 +1707,7 @@ static bool fbcon_scroll(struct vc_data *vc, unsigne=
+d int t, unsigned int b,
+ 			count =3D vc->vc_rows;
+ 		if (logo_shown >=3D 0)
+ 			goto redraw_up;
+-		switch (p->scrollmode) {
++		switch (fb_scrollmode(p)) {
+ 		case SCROLL_MOVE:
+ 			fbcon_redraw_blit(vc, info, p, t, b - t - count,
+ 				     count);
+@@ -1795,7 +1797,7 @@ static bool fbcon_scroll(struct vc_data *vc, unsigne=
+d int t, unsigned int b,
+ 			count =3D vc->vc_rows;
+ 		if (logo_shown >=3D 0)
+ 			goto redraw_down;
+-		switch (p->scrollmode) {
++		switch (fb_scrollmode(p)) {
+ 		case SCROLL_MOVE:
+ 			fbcon_redraw_blit(vc, info, p, b - 1, b - t - count,
+ 				     -count);
+@@ -1946,12 +1948,12 @@ static void fbcon_bmove_rec(struct vc_data *vc, st=
+ruct fbcon_display *p, int sy,
+ 		   height, width);
+ }
+
+-static void updatescrollmode(struct fbcon_display *p,
++static void updatescrollmode_accel(struct fbcon_display *p,
+ 					struct fb_info *info,
+ 					struct vc_data *vc)
+ {
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+ 	struct fbcon_ops *ops =3D info->fbcon_par;
+-	int fh =3D vc->vc_font.height;
+ 	int cap =3D info->flags;
+ 	u16 t =3D 0;
+ 	int ypan =3D FBCON_SWAP(ops->rotate, info->fix.ypanstep,
+@@ -1972,12 +1974,6 @@ static void updatescrollmode(struct fbcon_display *=
+p,
+ 	int fast_imageblit =3D (cap & FBINFO_HWACCEL_IMAGEBLIT) &&
+ 		!(cap & FBINFO_HWACCEL_DISABLED);
+
+-	p->vrows =3D vyres/fh;
+-	if (yres > (fh * (vc->vc_rows + 1)))
+-		p->vrows -=3D (yres - (fh * vc->vc_rows)) / fh;
+-	if ((yres % fh) && (vyres % fh < yres % fh))
+-		p->vrows--;
+-
+ 	if (good_wrap || good_pan) {
+ 		if (reading_fast || fast_copyarea)
+ 			p->scrollmode =3D good_wrap ?
+@@ -1991,6 +1987,27 @@ static void updatescrollmode(struct fbcon_display *=
+p,
+ 		else
+ 			p->scrollmode =3D SCROLL_REDRAW;
+ 	}
++#endif
++}
++
++static void updatescrollmode(struct fbcon_display *p,
++					struct fb_info *info,
++					struct vc_data *vc)
++{
++	struct fbcon_ops *ops =3D info->fbcon_par;
++	int fh =3D vc->vc_font.height;
++	int yres =3D FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
++	int vyres =3D FBCON_SWAP(ops->rotate, info->var.yres_virtual,
++				   info->var.xres_virtual);
++
++	p->vrows =3D vyres/fh;
++	if (yres > (fh * (vc->vc_rows + 1)))
++		p->vrows -=3D (yres - (fh * vc->vc_rows)) / fh;
++	if ((yres % fh) && (vyres % fh < yres % fh))
++		p->vrows--;
++
++	/* update scrollmode in case hardware acceleration is used */
++	updatescrollmode_accel(p, info, vc);
+ }
+
+ #define PITCH(w) (((w) + 7) >> 3)
+@@ -2148,7 +2165,7 @@ static int fbcon_switch(struct vc_data *vc)
+
+ 	updatescrollmode(p, info, vc);
+
+-	switch (p->scrollmode) {
++	switch (fb_scrollmode(p)) {
+ 	case SCROLL_WRAP_MOVE:
+ 		scrollback_phys_max =3D p->vrows - vc->vc_rows;
+ 		break;
+diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/f=
+bcon.h
+index 9315b360c898..c5c043f38162 100644
+=2D-- a/drivers/video/fbdev/core/fbcon.h
++++ b/drivers/video/fbdev/core/fbcon.h
+@@ -29,7 +29,9 @@ struct fbcon_display {
+     /* Filled in by the low-level console driver */
+     const u_char *fontdata;
+     int userfont;                   /* !=3D 0 if fontdata kmalloc()ed */
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+     u_short scrollmode;             /* Scroll Method */
++#endif
+     u_short inverse;                /* !=3D 0 text black on white as defa=
+ult */
+     short yscroll;                  /* Hardware scrolling */
+     int vrows;                      /* number of virtual rows */
+@@ -208,6 +210,17 @@ static inline int attr_col_ec(int shift, struct vc_da=
+ta *vc,
+ #define SCROLL_REDRAW	   0x004
+ #define SCROLL_PAN_REDRAW  0x005
+
++static inline u_short fb_scrollmode(struct fbcon_display *fb)
++{
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
++	return fb->scrollmode;
++#else
++	/* hardcoded to SCROLL_REDRAW if acceleration was disabled. */
++	return SCROLL_REDRAW;
++#endif
++}
++
++
+ #ifdef CONFIG_FB_TILEBLITTING
+ extern void fbcon_set_tileops(struct vc_data *vc, struct fb_info *info);
+ #endif

@@ -2,44 +2,43 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B25DBC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jan 2022 20:21:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B852DC433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jan 2022 20:40:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231918AbiAYUVj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 25 Jan 2022 15:21:39 -0500
-Received: from mga18.intel.com ([134.134.136.126]:32383 "EHLO mga18.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229565AbiAYUVZ (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Jan 2022 15:21:25 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1643142085; x=1674678085;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=6zue4ppucen/ANYQA3c/xAkoOYydv3PMPDvmLNWSzoI=;
-  b=fMS+0UxDVKq//sO/sdRxpq48Q8rVPiOX9LD+IVeW/mHte5hE71TX20ms
-   AX8SJhHaQIUDbI9coQ5+orYdnD59rOO1dI2lvIXCI9477/592ZgXAWKiZ
-   mUhwAswuWDEFHQLV7tyqWM2fny061Jdk13GG5c1DletZItgVDFMxx3gZV
-   Bowk0JHhPh0LFFb4uFmkBRscKLYBpxe8D3xDz3GZwfcpnTIb6JJiyW57F
-   eXTMWMlTYuJZS605ZQN52ttN4Y7uHvB1fP92DJHEsJlPyJI2CeIMy+EmK
-   qhJVCLwGNljiehqqyaJKeMOmwoJps9DVWB64FGD8Nm1nfuFMl8qOJSNOP
-   A==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10238"; a="229983923"
-X-IronPort-AV: E=Sophos;i="5.88,315,1635231600"; 
-   d="scan'208";a="229983923"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jan 2022 12:21:13 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.88,315,1635231600"; 
-   d="scan'208";a="495130326"
-Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga002.jf.intel.com with ESMTP; 25 Jan 2022 12:21:09 -0800
-Received: by black.fi.intel.com (Postfix, from userid 1003)
-        id 67655B9; Tue, 25 Jan 2022 22:21:22 +0200 (EET)
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        id S232324AbiAYUkg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Jan 2022 15:40:36 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39082 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232290AbiAYUkd (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 25 Jan 2022 15:40:33 -0500
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 185C5C06173B;
+        Tue, 25 Jan 2022 12:40:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
+        :In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
+        Sender:Reply-To:Content-ID:Content-Description;
+        bh=mvUJSAebKkRB+lgViRYbpCTTlvrAohmMaeU/GWRYPN8=; b=YTwMSEuPR7d+zRgdkpSBHn3QOM
+        8N8N7raV22tIBHgVeYcKS0NQ2nKGsd6UTLl6e1WeveHS/ETV9KPODONVoNc2mF/EEYuw8YICsylAM
+        RI8knU3CXNCS9QvuEXRmdU+w1ytqSDLg3y34FZ0p1EXrq9wIJ5KHNqLgFIEINHwY3ugv8kAUR0jbN
+        XmpvyAxG1bw6XKVkZJNdTu8gk5dzB4iPa5K72YbrLjNq5FVClIo7RBJ3w5zo4/rJ9Y+fNwKcAb5ku
+        c+JuGGiW+PCmjY/t+VVX8BJv1XsbdhS+F2i5PFLLlP9+LWN9JMzFE99PImgIAQny0AbjtHrL2Cbpb
+        QvfHYGcg==;
+Received: from [2601:1c0:6280:3f0::aa0b]
+        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+        id 1nCSbz-003Ywk-Pp; Tue, 25 Jan 2022 20:40:20 +0000
+Message-ID: <34f76f2a-1e41-d7ef-d135-7be56dba88ae@infradead.org>
+Date:   Tue, 25 Jan 2022 12:40:14 -0800
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v1 4/4] fbtft: Replace 'depends on FB_TFT' by 'if FB_TFT
+ ... endif'
+Content-Language: en-US
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Phillip Potter <phil@philpotter.co.uk>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Lee Jones <lee.jones@linaro.org>,
         Heiner Kallweit <hkallweit1@gmail.com>,
         Carlis <zhangxuezhi1@yulong.com>, linux-kernel@vger.kernel.org,
@@ -47,42 +46,37 @@ To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         dri-devel@lists.freedesktop.org
 Cc:     Michael Hennerich <michael.hennerich@analog.com>,
         Helge Deller <deller@gmx.de>, Andy Shevchenko <andy@kernel.org>
-Subject: [PATCH v1 1/4] fbtft: Unorphan the driver
-Date:   Tue, 25 Jan 2022 22:21:14 +0200
-Message-Id: <20220125202118.63362-2-andriy.shevchenko@linux.intel.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
 References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ <20220125202118.63362-5-andriy.shevchenko@linux.intel.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20220125202118.63362-5-andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Let's maintain occasional fixes to the fbtft driver.
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- MAINTAINERS | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index ea3e6c914384..16e614606ac1 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7372,9 +7372,11 @@ F:	Documentation/fault-injection/
- F:	lib/fault-inject.c
- 
- FBTFT Framebuffer drivers
-+M:	Andy Shevchenko <andy@kernel.org>
- L:	dri-devel@lists.freedesktop.org
- L:	linux-fbdev@vger.kernel.org
--S:	Orphan
-+S:	Maintained
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/andy/linux-fbtft.git
- F:	drivers/staging/fbtft/
- 
- FC0011 TUNER DRIVER
+On 1/25/22 12:21, Andy Shevchenko wrote:
+> Replace 'depends on FB_TFT' by 'if FB_TFT ... endif'
+> for the sake of deduplication.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  drivers/video/fbtft/Kconfig | 33 ++++-----------------------------
+>  1 file changed, 4 insertions(+), 29 deletions(-)
+> 
+> diff --git a/drivers/video/fbtft/Kconfig b/drivers/video/fbtft/Kconfig
+> index 4d29e8c1014e..14ea3c6a60da 100644
+> --- a/drivers/video/fbtft/Kconfig
+> +++ b/drivers/video/fbtft/Kconfig
+> @@ -10,87 +10,75 @@ menuconfig FB_TFT
+
+
+Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
+
+thanks.
+
 -- 
-2.34.1
-
+~Randy

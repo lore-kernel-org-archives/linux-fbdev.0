@@ -2,40 +2,40 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EFAAC433F5
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D325C4332F
 	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jan 2022 20:21:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231738AbiAYUVV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S231663AbiAYUVV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Tue, 25 Jan 2022 15:21:21 -0500
-Received: from mga04.intel.com ([192.55.52.120]:36582 "EHLO mga04.intel.com"
+Received: from mga03.intel.com ([134.134.136.65]:16186 "EHLO mga03.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231644AbiAYUVR (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Jan 2022 15:21:17 -0500
+        id S231687AbiAYUVU (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 25 Jan 2022 15:21:20 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1643142077; x=1674678077;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=lUZK4l/4nhTIU+qINgzNeJUNGAB8cORP+SXj5e08x/Q=;
-  b=cm5lmuG08guK0GzOD3YxxZ5jOxfg1Ebf4HugO4WvR6xyJOuv8CpfRaur
-   wlBJCgHVty75MA2FjDGANvkU2AKcN2yLb0NWm3t1W9NwfO+TbAZc1X7NV
-   GqDmkERCnSTrnHRIBeALT+UJuE3J/HD55XFUeM+gN2PUcUJ+OheMQJEW4
-   kH0HI83hR5u9XQEzNuJeI8Awga62gYb7Gw2U0Dpm1Mwun62D1AEpNM3Cr
-   r9Lf5I2btZdsiepxWrhC7LmVmYG3vJbtPbvWVuVITQMKUHAJTXPWJrlNe
-   M4wqsB0WNpYX+mhv1VGR9bUU368zwhrYQM3BIfNLSZrLcv6hRRlvU0+At
+  t=1643142080; x=1674678080;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=5bzSfljY1YSz8887v/yq7xlM6sikYIoDRsSS5+W86wQ=;
+  b=PwurqGaDbIUN6c3pVDM4Tpx0bSEGFG41pElQeFEs70aQwxdlcL/cXtjl
+   YbmIWuksrBakBWKelrxxeSrTejIqPg6e7MoBKuJJ8AqxF2GCCUG7cqZ4h
+   RAZYFGX1KbYKqAqMv4qzTii03L7n/FB8mbEytEfMVL68VQVCKmLW/q3Zk
+   lgoXvhAjNZF5Ew0hOyB4p9s4Dsx1WMkZ6die+h8pVqRw0dIpqfD3opXkz
+   mpeHaD9vDmvLieASYMsLtM2K3Nk1nn6cOTb+7Z2KHwq1VBrv+JT0/6rt5
+   OHnBCcmtv/1co7YHlTEeUEoKIh98Qhtx0rfnvVWHQ2FokX3E4Y9nLBefD
    w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10238"; a="245242267"
+X-IronPort-AV: E=McAfee;i="6200,9189,10238"; a="246353990"
 X-IronPort-AV: E=Sophos;i="5.88,315,1635231600"; 
-   d="scan'208";a="245242267"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jan 2022 12:21:13 -0800
+   d="scan'208";a="246353990"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Jan 2022 12:21:13 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.88,315,1635231600"; 
-   d="scan'208";a="477249110"
+   d="scan'208";a="624600071"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga003.jf.intel.com with ESMTP; 25 Jan 2022 12:21:09 -0800
+  by fmsmga002.fm.intel.com with ESMTP; 25 Jan 2022 12:21:09 -0800
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-        id 5E917FD; Tue, 25 Jan 2022 22:21:22 +0200 (EET)
+        id 83E2F287; Tue, 25 Jan 2022 22:21:22 +0200 (EET)
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Phillip Potter <phil@philpotter.co.uk>,
@@ -47,122 +47,216 @@ To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         dri-devel@lists.freedesktop.org
 Cc:     Michael Hennerich <michael.hennerich@analog.com>,
         Helge Deller <deller@gmx.de>, Andy Shevchenko <andy@kernel.org>
-Subject: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
-Date:   Tue, 25 Jan 2022 22:21:13 +0200
-Message-Id: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 4/4] fbtft: Replace 'depends on FB_TFT' by 'if FB_TFT ... endif'
+Date:   Tue, 25 Jan 2022 22:21:17 +0200
+Message-Id: <20220125202118.63362-5-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
+References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Since we got a maintainer for fbdev, I would like to
-unorphan fbtft (with the idea of sending PRs to Helge)
-and move it out of staging since there is no more clean
-up work expected and no more drivers either.
+Replace 'depends on FB_TFT' by 'if FB_TFT ... endif'
+for the sake of deduplication.
 
-Thoughts?
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/video/fbtft/Kconfig | 33 ++++-----------------------------
+ 1 file changed, 4 insertions(+), 29 deletions(-)
 
-Andy Shevchenko (4):
-  fbtft: Unorphan the driver
-  fbtft: Move driver out from staging
-  fbtft: Kill outdated documentation
-  fbtft: Replace 'depends on FB_TFT' by 'if FB_TFT ... endif'
-
- MAINTAINERS                                   |  6 ++--
- drivers/staging/Kconfig                       |  2 --
- drivers/staging/Makefile                      |  1 -
- drivers/staging/fbtft/README                  | 32 ------------------
- drivers/staging/fbtft/TODO                    |  3 --
- drivers/video/Kconfig                         |  1 +
- drivers/video/Makefile                        |  1 +
- drivers/{staging => video}/fbtft/Kconfig      | 33 +++----------------
- drivers/{staging => video}/fbtft/Makefile     |  0
- .../{staging => video}/fbtft/fb_agm1264k-fl.c |  0
- .../{staging => video}/fbtft/fb_bd663474.c    |  0
- .../{staging => video}/fbtft/fb_hx8340bn.c    |  0
- drivers/{staging => video}/fbtft/fb_hx8347d.c |  0
- drivers/{staging => video}/fbtft/fb_hx8353d.c |  0
- drivers/{staging => video}/fbtft/fb_hx8357d.c |  0
- drivers/{staging => video}/fbtft/fb_hx8357d.h |  0
- drivers/{staging => video}/fbtft/fb_ili9163.c |  0
- drivers/{staging => video}/fbtft/fb_ili9320.c |  0
- drivers/{staging => video}/fbtft/fb_ili9325.c |  0
- drivers/{staging => video}/fbtft/fb_ili9340.c |  0
- drivers/{staging => video}/fbtft/fb_ili9341.c |  0
- drivers/{staging => video}/fbtft/fb_ili9481.c |  0
- drivers/{staging => video}/fbtft/fb_ili9486.c |  0
- drivers/{staging => video}/fbtft/fb_pcd8544.c |  0
- drivers/{staging => video}/fbtft/fb_ra8875.c  |  0
- drivers/{staging => video}/fbtft/fb_s6d02a1.c |  0
- drivers/{staging => video}/fbtft/fb_s6d1121.c |  0
- drivers/{staging => video}/fbtft/fb_seps525.c |  0
- drivers/{staging => video}/fbtft/fb_sh1106.c  |  0
- drivers/{staging => video}/fbtft/fb_ssd1289.c |  0
- drivers/{staging => video}/fbtft/fb_ssd1305.c |  0
- drivers/{staging => video}/fbtft/fb_ssd1306.c |  0
- drivers/{staging => video}/fbtft/fb_ssd1325.c |  0
- drivers/{staging => video}/fbtft/fb_ssd1331.c |  0
- drivers/{staging => video}/fbtft/fb_ssd1351.c |  0
- drivers/{staging => video}/fbtft/fb_st7735r.c |  0
- drivers/{staging => video}/fbtft/fb_st7789v.c |  0
- drivers/{staging => video}/fbtft/fb_tinylcd.c |  0
- drivers/{staging => video}/fbtft/fb_tls8204.c |  0
- drivers/{staging => video}/fbtft/fb_uc1611.c  |  0
- drivers/{staging => video}/fbtft/fb_uc1701.c  |  0
- .../{staging => video}/fbtft/fb_upd161704.c   |  0
- drivers/{staging => video}/fbtft/fbtft-bus.c  |  0
- drivers/{staging => video}/fbtft/fbtft-core.c |  0
- drivers/{staging => video}/fbtft/fbtft-io.c   |  0
- .../{staging => video}/fbtft/fbtft-sysfs.c    |  0
- drivers/{staging => video}/fbtft/fbtft.h      |  0
- drivers/{staging => video}/fbtft/internal.h   |  0
- 48 files changed, 10 insertions(+), 69 deletions(-)
- delete mode 100644 drivers/staging/fbtft/README
- delete mode 100644 drivers/staging/fbtft/TODO
- rename drivers/{staging => video}/fbtft/Kconfig (89%)
- rename drivers/{staging => video}/fbtft/Makefile (100%)
- rename drivers/{staging => video}/fbtft/fb_agm1264k-fl.c (100%)
- rename drivers/{staging => video}/fbtft/fb_bd663474.c (100%)
- rename drivers/{staging => video}/fbtft/fb_hx8340bn.c (100%)
- rename drivers/{staging => video}/fbtft/fb_hx8347d.c (100%)
- rename drivers/{staging => video}/fbtft/fb_hx8353d.c (100%)
- rename drivers/{staging => video}/fbtft/fb_hx8357d.c (100%)
- rename drivers/{staging => video}/fbtft/fb_hx8357d.h (100%)
- rename drivers/{staging => video}/fbtft/fb_ili9163.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ili9320.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ili9325.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ili9340.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ili9341.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ili9481.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ili9486.c (100%)
- rename drivers/{staging => video}/fbtft/fb_pcd8544.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ra8875.c (100%)
- rename drivers/{staging => video}/fbtft/fb_s6d02a1.c (100%)
- rename drivers/{staging => video}/fbtft/fb_s6d1121.c (100%)
- rename drivers/{staging => video}/fbtft/fb_seps525.c (100%)
- rename drivers/{staging => video}/fbtft/fb_sh1106.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ssd1289.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ssd1305.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ssd1306.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ssd1325.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ssd1331.c (100%)
- rename drivers/{staging => video}/fbtft/fb_ssd1351.c (100%)
- rename drivers/{staging => video}/fbtft/fb_st7735r.c (100%)
- rename drivers/{staging => video}/fbtft/fb_st7789v.c (100%)
- rename drivers/{staging => video}/fbtft/fb_tinylcd.c (100%)
- rename drivers/{staging => video}/fbtft/fb_tls8204.c (100%)
- rename drivers/{staging => video}/fbtft/fb_uc1611.c (100%)
- rename drivers/{staging => video}/fbtft/fb_uc1701.c (100%)
- rename drivers/{staging => video}/fbtft/fb_upd161704.c (100%)
- rename drivers/{staging => video}/fbtft/fbtft-bus.c (100%)
- rename drivers/{staging => video}/fbtft/fbtft-core.c (100%)
- rename drivers/{staging => video}/fbtft/fbtft-io.c (100%)
- rename drivers/{staging => video}/fbtft/fbtft-sysfs.c (100%)
- rename drivers/{staging => video}/fbtft/fbtft.h (100%)
- rename drivers/{staging => video}/fbtft/internal.h (100%)
-
+diff --git a/drivers/video/fbtft/Kconfig b/drivers/video/fbtft/Kconfig
+index 4d29e8c1014e..14ea3c6a60da 100644
+--- a/drivers/video/fbtft/Kconfig
++++ b/drivers/video/fbtft/Kconfig
+@@ -10,87 +10,75 @@ menuconfig FB_TFT
+ 	select FB_DEFERRED_IO
+ 	select FB_BACKLIGHT
+ 
++if FB_TFT
++
+ config FB_TFT_AGM1264K_FL
+ 	tristate "FB driver for the AGM1264K-FL LCD display"
+-	depends on FB_TFT
+ 	help
+ 	  Framebuffer support for the AGM1264K-FL LCD display (two Samsung KS0108 compatible chips)
+ 
+ config FB_TFT_BD663474
+ 	tristate "FB driver for the BD663474 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for BD663474
+ 
+ config FB_TFT_HX8340BN
+ 	tristate "FB driver for the HX8340BN LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for HX8340BN
+ 
+ config FB_TFT_HX8347D
+ 	tristate "FB driver for the HX8347D LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for HX8347D
+ 
+ config FB_TFT_HX8353D
+ 	tristate "FB driver for the HX8353D LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for HX8353D
+ 
+ config FB_TFT_HX8357D
+ 	tristate "FB driver for the HX8357D LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for HX8357D
+ 
+ config FB_TFT_ILI9163
+ 	tristate "FB driver for the ILI9163 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for ILI9163
+ 
+ config FB_TFT_ILI9320
+ 	tristate "FB driver for the ILI9320 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for ILI9320
+ 
+ config FB_TFT_ILI9325
+ 	tristate "FB driver for the ILI9325 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for ILI9325
+ 
+ config FB_TFT_ILI9340
+ 	tristate "FB driver for the ILI9340 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for ILI9340
+ 
+ config FB_TFT_ILI9341
+ 	tristate "FB driver for the ILI9341 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for ILI9341
+ 
+ config FB_TFT_ILI9481
+ 	tristate "FB driver for the ILI9481 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for ILI9481
+ 
+ config FB_TFT_ILI9486
+ 	tristate "FB driver for the ILI9486 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for ILI9486
+ 
+ config FB_TFT_PCD8544
+ 	tristate "FB driver for the PCD8544 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for PCD8544
+ 
+@@ -108,62 +96,52 @@ config FB_TFT_S6D02A1
+ 
+ config FB_TFT_S6D1121
+ 	tristate "FB driver for the S6D1211 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for S6D1121
+ 
+ config FB_TFT_SEPS525
+ 	tristate "FB driver for the SEPS525 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for SEPS525
+ 	  Say Y if you have such a display that utilizes this controller.
+ 
+ config FB_TFT_SH1106
+ 	tristate "FB driver for the SH1106 OLED Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Framebuffer support for SH1106
+ 
+ config FB_TFT_SSD1289
+ 	tristate "FB driver for the SSD1289 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Framebuffer support for SSD1289
+ 
+ config FB_TFT_SSD1305
+ 	tristate "FB driver for the SSD1305 OLED Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Framebuffer support for SSD1305
+ 
+ config FB_TFT_SSD1306
+ 	tristate "FB driver for the SSD1306 OLED Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Framebuffer support for SSD1306
+ 
+ config FB_TFT_SSD1331
+ 	tristate "FB driver for the SSD1331 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Framebuffer support for SSD1331
+ 
+ config FB_TFT_SSD1351
+ 	tristate "FB driver for the SSD1351 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Framebuffer support for SSD1351
+ 
+ config FB_TFT_ST7735R
+ 	tristate "FB driver for the ST7735R LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for ST7735R
+ 
+ config FB_TFT_ST7789V
+ 	tristate "FB driver for the ST7789V LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  This enables generic framebuffer support for the Sitronix ST7789V
+ 	  display controller. The controller is intended for small color
+@@ -173,30 +151,27 @@ config FB_TFT_ST7789V
+ 
+ config FB_TFT_TINYLCD
+ 	tristate "FB driver for tinylcd.com display"
+-	depends on FB_TFT
+ 	help
+ 	  Custom Framebuffer support for tinylcd.com display
+ 
+ config FB_TFT_TLS8204
+ 	tristate "FB driver for the TLS8204 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for TLS8204
+ 
+ config FB_TFT_UC1611
+ 	tristate "FB driver for the UC1611 LCD controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for UC1611
+ 
+ config FB_TFT_UC1701
+ 	tristate "FB driver for the UC1701 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for UC1701
+ 
+ config FB_TFT_UPD161704
+ 	tristate "FB driver for the uPD161704 LCD Controller"
+-	depends on FB_TFT
+ 	help
+ 	  Generic Framebuffer support for uPD161704
++
++endif
 -- 
 2.34.1
 

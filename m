@@ -2,37 +2,57 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62C53C5DF62
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 11:26:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87136C28CF5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 11:27:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233677AbiAZL0m (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jan 2022 06:26:42 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43670 "EHLO
+        id S240706AbiAZL1c (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jan 2022 06:27:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43876 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233549AbiAZL0m (ORCPT
+        with ESMTP id S240704AbiAZL1b (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jan 2022 06:26:42 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A32FC06161C;
-        Wed, 26 Jan 2022 03:26:42 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id CBF0EB81CA9;
-        Wed, 26 Jan 2022 11:26:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B96D4C340E3;
-        Wed, 26 Jan 2022 11:26:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1643196399;
-        bh=W4uxImZLdrohuxm9pLlvYSNpJJ+YoX/JL5nvs5LsGGU=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=pvsrKDU1u3Sren1+ay3QGc5gg9cbn4i8dEZFwaquE5nJuqgl51YDKDxlDmfo+bRhI
-         mpW50d2iH//5w5Tu8FwvqTax6yYT5TkuFHePsFIhqnuTNgb+4fV7ksLlqznS3rBBce
-         7o5vpCCOH3s1iPJmPw0ZSS7Z+mxjIY34MBWr5Xok=
-Date:   Wed, 26 Jan 2022 12:26:36 +0100
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+        Wed, 26 Jan 2022 06:27:31 -0500
+Received: from mail-ot1-x32d.google.com (mail-ot1-x32d.google.com [IPv6:2607:f8b0:4864:20::32d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72D07C061744
+        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jan 2022 03:27:31 -0800 (PST)
+Received: by mail-ot1-x32d.google.com with SMTP id b17-20020a9d4791000000b005a17fc2dfc1so1630882otf.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jan 2022 03:27:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=u5fcmue9JGNrEVQdtBVNPmwhwIAf9whpXHVpHXm1fCU=;
+        b=SHtAmyZuexHqrBpkdQYeSiAPX3PE0nXKd+pvvyI8W89oj62lBtQlmtZoxceAaa6Dv+
+         7kLLvdsuuoluD7C1zZw4yX0wbdmq9Ua3QwPKtHkcZVIm8J1QgQmeReb06gB50ellmHRw
+         lse6y/lSQaLbcTyfPFfWw6P5QvC9HZkjVobUs=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=u5fcmue9JGNrEVQdtBVNPmwhwIAf9whpXHVpHXm1fCU=;
+        b=TYyVaD665PODzNbXCQuBwOhe6qLqogRtTYTOA1rEGamC80n8U4Sej5RGgt4eeyWhLB
+         8DvnK7bk4N4JbdyLQYpKS//pJuTYCcdBUbNgGgbfNxtsb3O4Y1uYQnLyrO9MQfPmYo0K
+         kLe4JcqLk0ravceKzB4Zc7aYUc1PePEoFzFaYEkU56gjdA47gVEDChuE/XpFxTzu5Z3s
+         XWlYbz1h5BprWayCowcP5MzUGZwJs4xv+6y/hMz2LgnZScjrEeCdzif1rtOoMwMhItUr
+         FHtkXpjima9PVj3omiwN2/t4WNsMOHCqdluQAwW1r60YfXX18RoMyWbIs3+mtMvwmmop
+         sccg==
+X-Gm-Message-State: AOAM530O4BsRYeUBCr1pzFmUZ4hVYb8DGPqV4RnGig5zhFIUwAb0hjlW
+        fej1Il0RdIR/uKmguKkHwd3DHObGM6RemFQ9WdQRW5qeZpk=
+X-Google-Smtp-Source: ABdhPJzxBwXr2/Lo6sUntBiprCyVHs6MlzSJluy1t2ZYT92MpqbH6loH8t5dyGrpDiZ9+sIH4Ever+tG43xhIM66Auk=
+X-Received: by 2002:a05:6830:1e76:: with SMTP id m22mr12004649otr.75.1643196450752;
+ Wed, 26 Jan 2022 03:27:30 -0800 (PST)
+MIME-Version: 1.0
+References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
+ <20220125202118.63362-2-andriy.shevchenko@linux.intel.com>
+ <YfEG2qVO9K9G+g1d@kroah.com> <CAKMK7uGoRC9a4cMCADTipV67oivfWvTw=6RYm2kOthB_bhWnXQ@mail.gmail.com>
+ <f671a112-880d-1526-a395-360947b40c5a@gmx.de>
+In-Reply-To: <f671a112-880d-1526-a395-360947b40c5a@gmx.de>
+From:   Daniel Vetter <daniel@ffwll.ch>
+Date:   Wed, 26 Jan 2022 12:27:19 +0100
+Message-ID: <CAKMK7uFhJPpiHqL-040ozbCM=QxiWNrFHp1gOEUvpEUjxbwAQQ@mail.gmail.com>
+Subject: Re: [PATCH v1 1/4] fbtft: Unorphan the driver
 To:     Helge Deller <deller@gmx.de>
-Cc:     Daniel Vetter <daniel@ffwll.ch>,
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
         Michael Hennerich <michael.hennerich@analog.com>,
@@ -42,22 +62,13 @@ Cc:     Daniel Vetter <daniel@ffwll.ch>,
         Carlis <zhangxuezhi1@yulong.com>,
         Lee Jones <lee.jones@linaro.org>,
         Heiner Kallweit <hkallweit1@gmail.com>
-Subject: Re: [PATCH v1 1/4] fbtft: Unorphan the driver
-Message-ID: <YfEv7OQs98O9wJdJ@kroah.com>
-References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
- <20220125202118.63362-2-andriy.shevchenko@linux.intel.com>
- <YfEG2qVO9K9G+g1d@kroah.com>
- <CAKMK7uGoRC9a4cMCADTipV67oivfWvTw=6RYm2kOthB_bhWnXQ@mail.gmail.com>
- <f671a112-880d-1526-a395-360947b40c5a@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f671a112-880d-1526-a395-360947b40c5a@gmx.de>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jan 26, 2022 at 12:17:08PM +0100, Helge Deller wrote:
+On Wed, Jan 26, 2022 at 12:18 PM Helge Deller <deller@gmx.de> wrote:
+>
 > On 1/26/22 11:31, Daniel Vetter wrote:
 > > On Wed, Jan 26, 2022 at 9:31 AM Greg Kroah-Hartman
 > > <gregkh@linuxfoundation.org> wrote:
@@ -104,21 +115,19 @@ On Wed, Jan 26, 2022 at 12:17:08PM +0100, Helge Deller wrote:
 > > such hardware can put in the little bit of work needed ...
 > >
 > > I don't get this.
-> 
+>
 > You are describing a transitioning over to DRM - which is Ok.
 > But on that way there is no need to ignore, deny or even kill usage scenarios
 > which are different compared to your usage scenarios (e.g. embedded devices,
 > old platforms, slow devices, slow busses, no 3D hardware features,
 > low-color devices, ...).
 
-All of those should be handled by the drm layer, as Daniel keeps
-pointing out.  If not, then the tinydrm layer needs to be enhanced to do
-so.
+This patchset isn't about killing existing support.
 
-Anyone have a pointer to hardware I can buy that is one of these fbtft
-drivers that I could do a port to drm to see just how much work is
-really needed here?
-
-thanks,
-
-greg k-h
+This is about adding new drivers to a subsystem where consensus the
+past 6 years or so was that it's closed for new drivers.
+-Daniel
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

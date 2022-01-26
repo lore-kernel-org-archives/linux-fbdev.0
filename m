@@ -2,39 +2,41 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8635C2BA4C
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 11:33:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53922C28CF5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 11:38:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240740AbiAZLdJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jan 2022 06:33:09 -0500
-Received: from mout.gmx.net ([212.227.17.20]:56729 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233650AbiAZLdH (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jan 2022 06:33:07 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1643196752;
-        bh=ueVSIcxpI4wb87mye8wIz8iKVZJedVj2OTFb34Zb6YY=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=iDR5QdDImtHs4b+EWGN4Zlac4jhNsWxQW2CHzY244RoHnNlw1Kfnvtr355ihZwCkO
-         D1Pk2jxF20/VBlvONGeoKlzInC9SXwQHJxGM2yJurYSTFMPVuVN9jgxUOXB+7mwBz+
-         3DvzE9/k23CnCZtWBzSX2zV6BUeH4X1807J+4pcc=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.143.57]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MRmfi-1mp57i2cag-00TGEp; Wed, 26
- Jan 2022 12:32:32 +0100
-Message-ID: <6f508ff0-1807-7665-6c93-7f3eea4a1bdd@gmx.de>
-Date:   Wed, 26 Jan 2022 12:31:21 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>,
+        id S233816AbiAZLiP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jan 2022 06:38:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46366 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233728AbiAZLiO (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 26 Jan 2022 06:38:14 -0500
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DEC1CC06161C;
+        Wed, 26 Jan 2022 03:38:14 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 7BEA361941;
+        Wed, 26 Jan 2022 11:38:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35675C340E3;
+        Wed, 26 Jan 2022 11:38:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1643197093;
+        bh=NbMdEef+dcTCJiNJcepcY4CmtP6BmSIKQx1yeExMhiM=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=E6wWv+faQ+JhOlf+PE7InekCywG5iOeJhvsC9nqP2DRExDvzqxnm18/VhZeqk0hzA
+         G3NUFehT0e/PvRl33jxB72CrpusuMJuo3DMYZXpLy2Df22kFc8elPB1FnAkQ0iiwoa
+         RbRr2OuRUXTY6Q6v2D+RocHjfBrFqiV3+mv3djBM=
+Date:   Wed, 26 Jan 2022 12:38:11 +0100
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Javier Martinez Canillas <javierm@redhat.com>,
         Andy Shevchenko <andy.shevchenko@gmail.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
         Michael Hennerich <michael.hennerich@analog.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
         dri-devel@lists.freedesktop.org,
         Phillip Potter <phil@philpotter.co.uk>,
@@ -42,78 +44,55 @@ Cc:     Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Lee Jones <lee.jones@linaro.org>,
         Heiner Kallweit <hkallweit1@gmail.com>
+Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
+Message-ID: <YfEyo2xxfFyl2ADI@kroah.com>
 References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
  <991e988b-7225-881b-a59a-33c3eae044be@suse.de>
  <CAHp75Vc2cjHkJwNSiJ-HSWBG=DYy68uvD7QQzNdRp3mQxoY1nw@mail.gmail.com>
  <3877516e-3db3-f732-b44f-7fe12b175226@gmx.de>
  <b13c0634-e766-74db-ab1f-672f5d0c04d6@redhat.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <b13c0634-e766-74db-ab1f-672f5d0c04d6@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:4HZA8Qd20gmrmhW2cpUf8m+vF9K5egFJXwowyq7nggCgVsSvkVX
- tPf8ABG1TX7j0jk6Ed7SW/E9sDrSMdvJUwy62XuqffmOcS9Vlgi96RiwbEIGs7zq3v0KabM
- Khfh4zMbE+MPXnKyCRBqnEwaPoRxSJN3Fin1OQU4D5C2JmA6cgw/CMquGJwW5c5KxMseV6Y
- vnG0xxDTiukhiSyrKNzwg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:Dpvrygk+4eI=:fJrjPI5s8+iZM9bBt9xy71
- RkTAg+MmJ/clyv2eDy/O5ilyfJD7lhdTeMmV/YqDaAvE2qCQCQ8J7hDqOuQfHt9cw9P13V177
- HXDQym0myRQptV3yXW06Ggyl2t6W58ecl9jyxPgL5Zy8xXfJU2dZp+XAAcbY7jyMDapSAnnKK
- 2Jz0JUdjHS1I1TwkpWxZVUbIT6AgNc6C1OGN7wejb4rot/CtAjZLBWVr+55gyNQfVk0fE5r7E
- auBYm3ronpYAs7LmyWl00bUVLFn3xnHrpeI1r55HVnYUUcfS08xv0kEoDWSevlXg1ZdTHbBYW
- AQlIkQLBV3vIdACrPt80JQI73+mxD9tkWt7+TlBqHdgW8LQohHGlwqte+/FNTUfY2vdZ/eqiv
- hvFV0FvSyBmc44ZzSKDHLCeUax3i/MLrvu6t74+xSl/gbowszAQGjsocY+SrOqZDdo5bTh5Un
- PGtIqDjvYBm4YJKqGRFotv5M/OtLwJ7jOVxhczyy/j2EEs/WoOu9on923QehNJY2waeZKkGVT
- EXuH+cSvT5jSNTLbNx7ILxvZ2W6rKJWT9KNeVGY5OmF4sgI0rbvEsfdOOmnnNew42zGCU8t+I
- Uql8KEQUOqJmRHX98KanolZzF7JcuGTLZOt0C41wPkMyk11GbobIMyg7b1R4TDDC69PIoyM0C
- P2u22f+nh0Bruq0ij5jwmcyvpQ0iOkTJJJv2q2yg40mkXXVM8M+T2a3JFkUD2vEdsIMxzAT4T
- IMzbu7dl7yNBbncfiYHc9XvAWqHC9U4fNtmVzECGap5rG1y2e7NV7X1JHrfsGU92+/YRCHvy3
- d9uE37ZPIegM8pQKYLvpT+TTGVhb9HiNEIgUi+GxW4X1nGS39+1vzjl0UBepYnrgsKEkgu6RJ
- DQ5GhNrIYKFxUynvCkZf/Co3ItER4DnoeE+wRw17PLKN2UGWunq0J1wB5Hd0P1tiOA862SMQx
- qbbPTxfAqEtkgFjoFr/OEVbbhVc1ahDNQ7RqPtIR917k2biWwl8T3pAWTONDhBJUW9yBVAdTf
- O1xZXT8RPaqy/MtUwux8QMyunc4OTUisOTsDDRFTmHlhVYJMTo3p1WpHXKdreNqJk1W/GXXNR
- NKdyWyFoZRbM8E=
+ <6f508ff0-1807-7665-6c93-7f3eea4a1bdd@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6f508ff0-1807-7665-6c93-7f3eea4a1bdd@gmx.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/26/22 12:18, Javier Martinez Canillas wrote:
-> On 1/26/22 11:59, Helge Deller wrote:
->> On 1/26/22 11:02, Andy Shevchenko wrote:
->
-> [snip]
->
->>> P.S. For the record, I will personally NAK any attempts to remove that
->>> driver from the kernel. And this is another point why it's better not
->>> to be under the staging.
->>
->> I agree. Same as for me to NAK the disabling of fbcon's acceleration
->> features or even attempting to remove fbdev altogether (unless all
->> relevant drivers are ported to DRM).
->>
->
-> But that will never happen if we keep moving the goal post.
->
-> At some point new fbdev drivers should not be added anymore, otherwise
-> the number of existing drivers that need conversion will keep growing.
+On Wed, Jan 26, 2022 at 12:31:21PM +0100, Helge Deller wrote:
+> On 1/26/22 12:18, Javier Martinez Canillas wrote:
+> > On 1/26/22 11:59, Helge Deller wrote:
+> >> On 1/26/22 11:02, Andy Shevchenko wrote:
+> >
+> > [snip]
+> >
+> >>> P.S. For the record, I will personally NAK any attempts to remove that
+> >>> driver from the kernel. And this is another point why it's better not
+> >>> to be under the staging.
+> >>
+> >> I agree. Same as for me to NAK the disabling of fbcon's acceleration
+> >> features or even attempting to remove fbdev altogether (unless all
+> >> relevant drivers are ported to DRM).
+> >>
+> >
+> > But that will never happen if we keep moving the goal post.
+> >
+> > At some point new fbdev drivers should not be added anymore, otherwise
+> > the number of existing drivers that need conversion will keep growing.
+> 
+> Good point, and yes you are right!
+> 
+> I think the rule should be something like:
+> 
+> New graphics devices (e.g. max. 3 years old from now) usually are
+> capable to be ported to DRM.
+> For those graphics cards we should put a hard stop and not include them
+> as new driver into the fbdev framework. Inclusion for those will only
+> happen as DRM driver.
 
-Good point, and yes you are right!
+We made this rule 6 years ago already.
 
-I think the rule should be something like:
+thanks,
 
-New graphics devices (e.g. max. 3 years old from now) usually are
-capable to be ported to DRM.
-For those graphics cards we should put a hard stop and not include them
-as new driver into the fbdev framework. Inclusion for those will only
-happen as DRM driver.
-
-In the same manner there are old graphic cards or very specific devices
-(e.g. more than 3 years old or only used in niche-use cases)
-which have limitations and thus can't easily be ported to DRM.
-For those it's still acceptable to include them as legacy fbdev driver,
-because the work needed in DRM to support such cards or to be able that
-they run fast enough with DRM just doesn't pay off the efforts which are
-needed to keep them as DRM driver.
-
-Would that be acceptable?
-
-Helge
+greg k-h

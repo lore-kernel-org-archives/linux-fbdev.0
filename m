@@ -2,79 +2,107 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38530C28CF5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 09:18:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80EBEC28CF5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 10:03:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231734AbiAZJSb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jan 2022 04:18:31 -0500
-Received: from mail-ua1-f47.google.com ([209.85.222.47]:37444 "EHLO
-        mail-ua1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238938AbiAZJSb (ORCPT
+        id S233293AbiAZKDP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jan 2022 05:03:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52030 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S233188AbiAZKDO (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jan 2022 04:18:31 -0500
-Received: by mail-ua1-f47.google.com with SMTP id b16so42232851uaq.4
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jan 2022 01:18:31 -0800 (PST)
+        Wed, 26 Jan 2022 05:03:14 -0500
+Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 56D43C06161C;
+        Wed, 26 Jan 2022 02:03:14 -0800 (PST)
+Received: by mail-ed1-x534.google.com with SMTP id a18so68006258edj.7;
+        Wed, 26 Jan 2022 02:03:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=88bX5phc4QD5WEP/ZiuDpl6z06FPpsvQ8tmIbTmmvfM=;
+        b=JOOHPlvVkJI+l+SLmq8YHGPbVPhSP3jpctav1+zJyTBAuPq51FLOHTC6iu25uqbpk1
+         gZ8UPPYNfw73crMI36sEKutbnpdbV1g61rwjWNBVY9SZ5PRXhNz2IMQqIcUw4mOIaHCh
+         mwiQbl8mGpViRBfEgExjk48q+7kftZCnX5g4JrcCwTk4KwDkiv5ZN+RoSdz0xCCFTivp
+         WTxX/fc1xqEDI6EXkK8niYFj0CUFtj9xsSS0vYAWk7c7FC9FpOJ0g8e2ZVQWwnMO+80a
+         GC0uDztgNMPagLsCnlVtvAWVXh/fsxIS3JswqES6Y1jwWtcAc/HuwC7Iarha0ZnNGrKo
+         3mKg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=iVQo5xJJ/rNNBYzWD/qigNmjGp1Z3TpstaJHdpdr+7s=;
-        b=aGLpdZgeG16Afyv8ixgZpmksSHXMRHRLKaXwCzoaFjAyqejthcZA/JehwD6c0vqDhA
-         HpdKg2ratorJbICBH+7ORdVdxuJPg7+6Ua8wlqV8PF2ZRhbR1dycsx2iqHOaQcvxoB9Y
-         /ZIK/5CYuJRw+RWo/h9rl6VWS63wekwztry43stnm3WOsac4ogvIYw6yYYYJwcttycW7
-         5b/AGmz8ZX7Ly039B9h610zWjfm0ANzITdU517LZToYQ0pB3X7EZDIYkuLNxjxd40+xx
-         k35Xv2YPiXpS9Yh0wUle+RR07OSnp+tyCNtnmqi/tt7yIpOt82zYf5ZRZRr1H2wNXXmP
-         Suyw==
-X-Gm-Message-State: AOAM533S2VJceq27dJuizcioEuxc+c3HymdctC//BWiRvmumlbxVc8d2
-        PfMfwkomGeTqA761wtb9xhDOOC9wlMnxgcSY
-X-Google-Smtp-Source: ABdhPJxhX5mFCi6IwEv0WNmvDVQRR37aV5J8kTqRFIWolFAR46GU6k1bzWqM9URTFlTD3IJPM7JRxQ==
-X-Received: by 2002:a05:6102:f0d:: with SMTP id v13mr9735890vss.51.1643188710721;
-        Wed, 26 Jan 2022 01:18:30 -0800 (PST)
-Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com. [209.85.221.182])
-        by smtp.gmail.com with ESMTPSA id 4sm2374795vkx.4.2022.01.26.01.18.30
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 26 Jan 2022 01:18:30 -0800 (PST)
-Received: by mail-vk1-f182.google.com with SMTP id w17so9877156vko.9
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jan 2022 01:18:30 -0800 (PST)
-X-Received: by 2002:a1f:5702:: with SMTP id l2mr9138419vkb.33.1643188710217;
- Wed, 26 Jan 2022 01:18:30 -0800 (PST)
+        bh=88bX5phc4QD5WEP/ZiuDpl6z06FPpsvQ8tmIbTmmvfM=;
+        b=ZiqJ3T4sFtb3o4/ehgpLNnbNy9La/dfI5Sd+TiBlLLpfVEjQrIpBpazp2PaBXIlUPf
+         sWjy0R7fCtNNkox9gj3wwnyDx/Nt9cHvI+i8FhDS7pwS51Nt+wqL1AWcuXgVIEDuctUI
+         p/XRgcuPs0UXfTSl1CabnvzaG5ggaRzYT1zVOjS70ucCfjrcLlagiSquuRtWTau7fbN7
+         RIlj1rkGTUPdmo3kyJYMoZpnAEoG9dnqPyU2z5hg4FAWxgSeY4mayXJ0wf2OPqCyfXpI
+         NyRsLYdQqi34ygl/3H49x4OfQpb6j/HYn5c22jkzCQggg5Q06PbZjCsvhf9GlcwaK1WN
+         jzOA==
+X-Gm-Message-State: AOAM533n0wbLzisAZpI0vwagz4wm5UbR07saGMJVm4RjCldYlZMPIav9
+        M4WXZ/xFxCEMnzIiNu08fgGIvAYtLoW5g72QB7o=
+X-Google-Smtp-Source: ABdhPJw72+G5oWbFGdfMsLrwcGS/NyTH58SB7avPo0MWV7s1x0/JTHE5M0LGJ1I+tXGIVrnFSz5eE4YPZHT8G6BfGm0=
+X-Received: by 2002:aa7:cf0e:: with SMTP id a14mr24216028edy.296.1643191392761;
+ Wed, 26 Jan 2022 02:03:12 -0800 (PST)
 MIME-Version: 1.0
-References: <YfBLiUMokw6tLq0O@p100>
-In-Reply-To: <YfBLiUMokw6tLq0O@p100>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 26 Jan 2022 10:18:19 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWHoa2zGDr3YWa4PDhr+SqEVtdKhh3oeONVv6V1hBxfjQ@mail.gmail.com>
-Message-ID: <CAMuHMdWHoa2zGDr3YWa4PDhr+SqEVtdKhh3oeONVv6V1hBxfjQ@mail.gmail.com>
-Subject: Re: [PATCH] [RFC] fbcon: Add option to enable legacy hardware acceleration
-To:     Helge Deller <deller@gmx.de>
-Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Daniel Vetter <daniel@ffwll.ch>
+References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com> <991e988b-7225-881b-a59a-33c3eae044be@suse.de>
+In-Reply-To: <991e988b-7225-881b-a59a-33c3eae044be@suse.de>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Wed, 26 Jan 2022 12:02:36 +0200
+Message-ID: <CAHp75Vc2cjHkJwNSiJ-HSWBG=DYy68uvD7QQzNdRp3mQxoY1nw@mail.gmail.com>
+Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Phillip Potter <phil@philpotter.co.uk>,
+        Lee Jones <lee.jones@linaro.org>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Carlis <zhangxuezhi1@yulong.com>, linux-kernel@vger.kernel.org,
+        linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Michael Hennerich <michael.hennerich@analog.com>,
+        Helge Deller <deller@gmx.de>, Andy Shevchenko <andy@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Helge,
+On Wed, Jan 26, 2022 at 10:52 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+>
+> Hi
+>
+> Am 25.01.22 um 21:21 schrieb Andy Shevchenko:
+> > Since we got a maintainer for fbdev, I would like to
+> > unorphan fbtft (with the idea of sending PRs to Helge)
+> > and move it out of staging since there is no more clean
+> > up work expected and no more drivers either.
+> >
+> > Thoughts?
 
-Thanks for your patch!
+Thanks for sharing yours, my answers below.
 
-On Wed, Jan 26, 2022 at 8:20 AM Helge Deller <deller@gmx.de> wrote:
-> Add a config option CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION to
-> enable bitblt and fillrect hardware acceleration in the framebuffer
-> console. If disabled, such acceleration will not be used, even if it is
-> supported by the graphics hardware driver.
+> But why? We already have DRM drivers for some of these devices.
 
-Note that acceleration also includes ypan and ywrap.
+No, we do not (only a few are available).
 
-Gr{oetje,eeting}s,
+> Porting
+> the others to DRM is such a better long-term plan.  OTOH, as no one has
+> shown up and converted them, maybe they should be left dead or removed
+> entirely.
 
-                        Geert
+As I mentioned above there are devices that nobody will take time to
+port to a way too complex DRM subsystem. But the devices are cheap and
+quite widespread in the embedded world. I'm in possession of 3 or 4
+different models and only 1 is supported by tiny DRM.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+On top of that the subtle fact people forgot about FBTFT is that it
+does support parallel interface (yes, I know that it's not performant,
+but one of the displays I have is with that type of interface).
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+P.S. For the record, I will personally NAK any attempts to remove that
+driver from the kernel. And this is another point why it's better not
+to be under the staging.
+
+-- 
+With Best Regards,
+Andy Shevchenko

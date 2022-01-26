@@ -2,96 +2,79 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26CE7C28CF5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 09:04:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38530C28CF5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 09:18:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231388AbiAZJEE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jan 2022 04:04:04 -0500
-Received: from relay037.a.hostedemail.com ([64.99.140.37]:23685 "EHLO
-        relay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S231286AbiAZJEC (ORCPT
+        id S231734AbiAZJSb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jan 2022 04:18:31 -0500
+Received: from mail-ua1-f47.google.com ([209.85.222.47]:37444 "EHLO
+        mail-ua1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238938AbiAZJSb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jan 2022 04:04:02 -0500
-X-Greylist: delayed 567 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Jan 2022 04:04:02 EST
-Received: from omf03.hostedemail.com (a10.router.float.18 [10.200.18.1])
-        by unirelay11.hostedemail.com (Postfix) with ESMTP id 3476880F26;
-        Wed, 26 Jan 2022 08:54:22 +0000 (UTC)
-Received: from [HIDDEN] (Authenticated sender: joe@perches.com) by omf03.hostedemail.com (Postfix) with ESMTPA id 27CD060010;
-        Wed, 26 Jan 2022 08:53:56 +0000 (UTC)
-Message-ID: <e12b11d20e22123736e5d8728286947e971c489f.camel@perches.com>
-Subject: Re: [PATCH v1 4/4] fbtft: Replace 'depends on FB_TFT' by 'if FB_TFT
- ... endif'
-From:   Joe Perches <joe@perches.com>
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Phillip Potter <phil@philpotter.co.uk>,
-        Lee Jones <lee.jones@linaro.org>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Carlis <zhangxuezhi1@yulong.com>, linux-kernel@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     Michael Hennerich <michael.hennerich@analog.com>,
-        Helge Deller <deller@gmx.de>, Andy Shevchenko <andy@kernel.org>
-Date:   Wed, 26 Jan 2022 00:54:13 -0800
-In-Reply-To: <20220125202118.63362-5-andriy.shevchenko@linux.intel.com>
-References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
-         <20220125202118.63362-5-andriy.shevchenko@linux.intel.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.40.4-1ubuntu2 
+        Wed, 26 Jan 2022 04:18:31 -0500
+Received: by mail-ua1-f47.google.com with SMTP id b16so42232851uaq.4
+        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jan 2022 01:18:31 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=iVQo5xJJ/rNNBYzWD/qigNmjGp1Z3TpstaJHdpdr+7s=;
+        b=aGLpdZgeG16Afyv8ixgZpmksSHXMRHRLKaXwCzoaFjAyqejthcZA/JehwD6c0vqDhA
+         HpdKg2ratorJbICBH+7ORdVdxuJPg7+6Ua8wlqV8PF2ZRhbR1dycsx2iqHOaQcvxoB9Y
+         /ZIK/5CYuJRw+RWo/h9rl6VWS63wekwztry43stnm3WOsac4ogvIYw6yYYYJwcttycW7
+         5b/AGmz8ZX7Ly039B9h610zWjfm0ANzITdU517LZToYQ0pB3X7EZDIYkuLNxjxd40+xx
+         k35Xv2YPiXpS9Yh0wUle+RR07OSnp+tyCNtnmqi/tt7yIpOt82zYf5ZRZRr1H2wNXXmP
+         Suyw==
+X-Gm-Message-State: AOAM533S2VJceq27dJuizcioEuxc+c3HymdctC//BWiRvmumlbxVc8d2
+        PfMfwkomGeTqA761wtb9xhDOOC9wlMnxgcSY
+X-Google-Smtp-Source: ABdhPJxhX5mFCi6IwEv0WNmvDVQRR37aV5J8kTqRFIWolFAR46GU6k1bzWqM9URTFlTD3IJPM7JRxQ==
+X-Received: by 2002:a05:6102:f0d:: with SMTP id v13mr9735890vss.51.1643188710721;
+        Wed, 26 Jan 2022 01:18:30 -0800 (PST)
+Received: from mail-vk1-f182.google.com (mail-vk1-f182.google.com. [209.85.221.182])
+        by smtp.gmail.com with ESMTPSA id 4sm2374795vkx.4.2022.01.26.01.18.30
+        for <linux-fbdev@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 26 Jan 2022 01:18:30 -0800 (PST)
+Received: by mail-vk1-f182.google.com with SMTP id w17so9877156vko.9
+        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jan 2022 01:18:30 -0800 (PST)
+X-Received: by 2002:a1f:5702:: with SMTP id l2mr9138419vkb.33.1643188710217;
+ Wed, 26 Jan 2022 01:18:30 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-Stat-Signature: em88uec87srrhrfjxjnjwiqf8orq9fet
-X-Rspamd-Server: rspamout05
-X-Rspamd-Queue-Id: 27CD060010
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-Session-ID: U2FsdGVkX19Vno09lLkNwZ/zyG+OKu9T1j1sTiaf0bM=
-X-HE-Tag: 1643187236-759005
+References: <YfBLiUMokw6tLq0O@p100>
+In-Reply-To: <YfBLiUMokw6tLq0O@p100>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed, 26 Jan 2022 10:18:19 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWHoa2zGDr3YWa4PDhr+SqEVtdKhh3oeONVv6V1hBxfjQ@mail.gmail.com>
+Message-ID: <CAMuHMdWHoa2zGDr3YWa4PDhr+SqEVtdKhh3oeONVv6V1hBxfjQ@mail.gmail.com>
+Subject: Re: [PATCH] [RFC] fbcon: Add option to enable legacy hardware acceleration
+To:     Helge Deller <deller@gmx.de>
+Cc:     Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Daniel Vetter <daniel@ffwll.ch>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, 2022-01-25 at 22:21 +0200, Andy Shevchenko wrote:
-> Replace 'depends on FB_TFT' by 'if FB_TFT ... endif'
-> for the sake of deduplication.
-[]
-> diff --git a/drivers/video/fbtft/Kconfig b/drivers/video/fbtft/Kconfig
-[]
-> @@ -10,87 +10,75 @@ menuconfig FB_TFT
->  	select FB_DEFERRED_IO
->  	select FB_BACKLIGHT
->  
-> +if FB_TFT
-> +
-[]
->  config FB_TFT_PCD8544
->  	tristate "FB driver for the PCD8544 LCD Controller"
-> -	depends on FB_TFT
->  	help
->  	  Generic Framebuffer support for PCD8544
->  
-> @@ -108,62 +96,52 @@ config FB_TFT_S6D02A1
+Hi Helge,
 
-Looks like you missed a couple.
----
- drivers/video/fbtft/Kconfig | 2 --
- 1 file changed, 2 deletions(-)
+Thanks for your patch!
 
-diff --git a/drivers/video/fbtft/Kconfig b/drivers/video/fbtft/Kconfig
-index 14ea3c6a60da0..4a02871f2cc71 100644
---- a/drivers/video/fbtft/Kconfig
-+++ b/drivers/video/fbtft/Kconfig
-@@ -84,13 +84,11 @@ config FB_TFT_PCD8544
- 
- config FB_TFT_RA8875
- 	tristate "FB driver for the RA8875 LCD Controller"
--	depends on FB_TFT
- 	help
- 	  Generic Framebuffer support for RA8875
- 
- config FB_TFT_S6D02A1
- 	tristate "FB driver for the S6D02A1 LCD Controller"
--	depends on FB_TFT
- 	help
- 	  Generic Framebuffer support for S6D02A1
- 
+On Wed, Jan 26, 2022 at 8:20 AM Helge Deller <deller@gmx.de> wrote:
+> Add a config option CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION to
+> enable bitblt and fillrect hardware acceleration in the framebuffer
+> console. If disabled, such acceleration will not be used, even if it is
+> supported by the graphics hardware driver.
 
+Note that acceleration also includes ypan and ywrap.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

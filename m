@@ -2,75 +2,102 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1E5AC2BA4C
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 17:34:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F43DC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 22:31:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243787AbiAZReX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jan 2022 12:34:23 -0500
-Received: from mga04.intel.com ([192.55.52.120]:31882 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S243769AbiAZReW (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jan 2022 12:34:22 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1643218462; x=1674754462;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version;
-  bh=K129hl5RytW5ura24/yx7HTDJHZL++ViTWK4Ed5BQCk=;
-  b=NrxADOJzzBssggdR/hkBY8P7s1z2d6nq6xu571XAoMcfz+yvPCXJKE7F
-   CsD1mn46zIuFy7pcX324McLQCmZD22zGmgE0kNCK3nzmyj0SZyUJkBd6u
-   O86OvCZgtMLNssMd/aFMcuxthgBxi0FLnQe5BMUthNZslw8ypy8q5C4CW
-   32yTGIHYBGdMpWv9fst6v2XUZVRhczbqoBpcKr7Zx+3MMHTG++Sd0C8qC
-   5AaNuD6Nsf3C/iKmHQcMXpgDto0j+W15srt29+9ZlT8BhQGJLRLnIstgh
-   LwTCj1+cKeKdU2dEJlnmwozSTWE7YB5FfUNRhofkRzdg55vs3h7y2sDgk
-   A==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10238"; a="245438929"
-X-IronPort-AV: E=Sophos;i="5.88,318,1635231600"; 
-   d="scan'208";a="245438929"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 09:34:21 -0800
-X-IronPort-AV: E=Sophos;i="5.88,318,1635231600"; 
-   d="scan'208";a="624901254"
-Received: from nbasu-mobl.ger.corp.intel.com (HELO localhost) ([10.252.16.197])
-  by fmsmga002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 09:34:16 -0800
-From:   Jani Nikula <jani.nikula@linux.intel.com>
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
+        id S229617AbiAZWbP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jan 2022 17:31:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58240 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229529AbiAZWbP (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 26 Jan 2022 17:31:15 -0500
+Received: from mail-ot1-x329.google.com (mail-ot1-x329.google.com [IPv6:2607:f8b0:4864:20::329])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 784C1C06161C
+        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jan 2022 14:31:14 -0800 (PST)
+Received: by mail-ot1-x329.google.com with SMTP id q19-20020a056830441300b0059a54d66106so790090otv.0
+        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jan 2022 14:31:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=cspukaFlNuPpy4+8Cpeu4TXQ6/rweaZWRIglmARlXtI=;
+        b=HKCNnx+jGJJkADStNKMs4G9pgWeOHv9cJloYZfNPZggjJ50vn6T4vNRKuHrgq1/Npu
+         IjUM1bKfceM0gOV10gxAzfz16RUhXSTB4OmNMI3psbedk66R8L9slNMWIi5sdTZ/DKzC
+         WPOX46tSKJx4Zh5CMaSt5jaynDyQl4p76rTrs=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=cspukaFlNuPpy4+8Cpeu4TXQ6/rweaZWRIglmARlXtI=;
+        b=eOk23ilJt8u4iPEWjNiQ92nJCr7SHT4aM3DecO6j/az4UyOrv7sIjj5wWxoE9KlHTQ
+         W009JpOsvtldeQhLVaywD57tVZqc8lUE8MfD3UJS/o/KVsaH4aiv3EEWZgyDD6c8bBHx
+         HAVBU+iLEa5EnxNoTTfCF3bQWhsh1OjkWCkT+fY8mB5Da4zL3gpbpOiq8mCWQlYEk/oG
+         zK9UXN1OBXqYtlOGCSJhyO25nalBR67UjboPIkXlEu5QrsK3moeoV2sJXBigJseciUoQ
+         8g3kkwa2L0e4BTKpiANLb8VPlfEpx8YcsJlZ0919Ngdt+fVBCM3Ds5QpHGMUTzIoSmXR
+         huFQ==
+X-Gm-Message-State: AOAM532EPm+PnTNgUEidVNXcLuClayMbrZ552voj/1r1O7SlVobAgHKD
+        adM0lRS9pWAF8f8hbXv/VVsG0Y9M3OQzNcVOvP25Pg==
+X-Google-Smtp-Source: ABdhPJwFd4e23GnR4SX0gCqw43jALR8CbpTM+5jsdmpC+ksI6IzORmC0SPijyruIE5/dthHYq1aiZgd2e6JbzaOqHxg=
+X-Received: by 2002:a05:6830:2b25:: with SMTP id l37mr533241otv.323.1643236273720;
+ Wed, 26 Jan 2022 14:31:13 -0800 (PST)
+MIME-Version: 1.0
+References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
+ <991e988b-7225-881b-a59a-33c3eae044be@suse.de> <CAHp75Vc2cjHkJwNSiJ-HSWBG=DYy68uvD7QQzNdRp3mQxoY1nw@mail.gmail.com>
+ <3877516e-3db3-f732-b44f-7fe12b175226@gmx.de> <b13c0634-e766-74db-ab1f-672f5d0c04d6@redhat.com>
+ <YfFMSkhbvHaR0YNE@smile.fi.intel.com> <f6ffe9bb-8683-4061-c876-1d559267ebae@redhat.com>
+ <YfFWmmJFtEB93jUi@smile.fi.intel.com> <3430838d-1c63-da49-b774-c5a883e7085f@redhat.com>
+ <YfFZkgE3wfPXLpYA@kroah.com> <20220126144524.GB1951@kadam>
+In-Reply-To: <20220126144524.GB1951@kadam>
+From:   Daniel Vetter <daniel@ffwll.ch>
+Date:   Wed, 26 Jan 2022 23:31:02 +0100
+Message-ID: <CAKMK7uGEFW4nd+W6PiT=uwSPz=pA6HKZXj6ePcdsAGiMDb3BxA@mail.gmail.com>
+Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
+To:     Dan Carpenter <dan.carpenter@oracle.com>,
+        Dmitry Vyukov <dvyukov@google.com>,
+        syzkaller-bugs <syzkaller-bugs@googlegroups.com>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
         Michael Hennerich <michael.hennerich@analog.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Helge Deller <deller@gmx.de>, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Phillip Potter <phil@philpotter.co.uk>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
         Carlis <zhangxuezhi1@yulong.com>,
+        Phillip Potter <phil@philpotter.co.uk>,
         Lee Jones <lee.jones@linaro.org>,
         Heiner Kallweit <hkallweit1@gmail.com>
-Subject: Re: [PATCH v1 1/4] fbtft: Unorphan the driver
-In-Reply-To: <YfFV4EJosayH+e6C@smile.fi.intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
- <20220125202118.63362-2-andriy.shevchenko@linux.intel.com>
- <YfEG2qVO9K9G+g1d@kroah.com>
- <CAKMK7uGoRC9a4cMCADTipV67oivfWvTw=6RYm2kOthB_bhWnXQ@mail.gmail.com>
- <f671a112-880d-1526-a395-360947b40c5a@gmx.de> <YfEv7OQs98O9wJdJ@kroah.com>
- <YfFIpBb7lL4ukWjm@smile.fi.intel.com>
- <b8eb7111-43aa-cc8a-a1bc-f08e0f2987ed@redhat.com>
- <YfFV4EJosayH+e6C@smile.fi.intel.com>
-Date:   Wed, 26 Jan 2022 19:34:13 +0200
-Message-ID: <87v8y6xuy2.fsf@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 26 Jan 2022, Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
-> And basically create a MIPI based driver for I2C.
+dOn Wed, Jan 26, 2022 at 3:46 PM Dan Carpenter <dan.carpenter@oracle.com> wrote:
+>
+> The other advantage of staging is the I don't think syzbot enables it.
+> I guess it's easier to persuade Dmitry to ignore STAGING than it was to
+> get him to disable FBDEV.  :P
+>
+> The memory corruption in fbdev was a real headache for everyone because
+> the stack traces ended up all over the kernel.
 
-What does that even mean?
+Uh Dmitry disabled all of FBDEV? That's a bit too much, since there's
+still a lot of distros shipping things. I don't recommend enabling
+neither fbdev nor fbcon and some hardening checks look for these
+(forgot which one). But if syzbot stops checking fbcon and fbdev stuff
+on top of drm drivers (where most of the problems should be gone
+because you can't change the resolution through the current fbdev
+emulation) then that essentially means fbdev really needs to be
+disabled in distros asap.
 
-BR,
-Jani.
+Disabling the entire pile of hw drivers makes sense, because that's
+pretty hopeless imo.
 
--- 
-Jani Nikula, Intel Open Source Graphics Center
+Adding Dmitry to confirm.
+
+-Daniel
+--
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

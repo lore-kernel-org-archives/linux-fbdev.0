@@ -2,37 +2,67 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2547C2BA4C
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 14:24:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17268C2BA4C
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 14:46:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241653AbiAZOYZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jan 2022 09:24:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57664 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234663AbiAZOYW (ORCPT
+        id S242272AbiAZOqX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jan 2022 09:46:23 -0500
+Received: from mx0a-00069f02.pphosted.com ([205.220.165.32]:18492 "EHLO
+        mx0a-00069f02.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S235643AbiAZOqW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jan 2022 09:24:22 -0500
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8051CC06161C;
-        Wed, 26 Jan 2022 06:24:22 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 27E7D6177F;
-        Wed, 26 Jan 2022 14:24:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A9E16C340E3;
-        Wed, 26 Jan 2022 14:24:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1643207061;
-        bh=ukl36IdEnUA37wQdeyxEyI6HSFV992E6U+2myU8xcr0=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=x53+f4g3yOT+nEU5vLNo9kHzYgdmL+LL93j9GTfssW9uKB02qk6YhiE2glb7JjNbE
-         oXx7BzTA2BsxDQBKhLGZR/HUpBN/88l4YXinjEWziK8c2pYgq0Zl+tLeAfL1yj4vXG
-         wGjksxAtxILDCOx7WQWcnBl0Nm4UYA3ezxBxF/EA=
-Date:   Wed, 26 Jan 2022 15:24:18 +0100
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Wed, 26 Jan 2022 09:46:22 -0500
+Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
+        by mx0b-00069f02.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20QEdIXL001977;
+        Wed, 26 Jan 2022 14:45:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
+ : subject : message-id : references : content-type : in-reply-to :
+ mime-version; s=corp-2021-07-09;
+ bh=EEy8oOuohWR1+LkL4kJNMqGmCVNyj4KxvdYhg55gNWM=;
+ b=UPqblIKNasF91cngBHn4jsA1VuJtc0UG2l96ldWa34GV0elLjpBhDShnLD7i/8dYtVW4
+ oqHiNMfW6ZdfTWR2L+wYlucyRW30DlGgz7AjRQ19h5BuIM8/9o6W0AwfhRNH+g/+kj6n
+ I/4Xkucr0Y20Nt62cmDun76GNM9VtvN6tJgG9EEqba0adfceLys6IgxeN2VyX/n1tHPn
+ fgj2HLt6cBih0Nn+5qF8aQ7ulcSIbrRPY8lzD7XMsLHfeo1f5hrMCv4PLkDUdOz6nWXZ
+ 8tP2VL9/WB/qy4Rv2YZW/s+MzNmRWt2FaLk6wcSIz/YZrqPmA25osemjK8E0RzYtzy6S HA== 
+Received: from userp3030.oracle.com (userp3030.oracle.com [156.151.31.80])
+        by mx0b-00069f02.pphosted.com with ESMTP id 3dswh9phy2-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 26 Jan 2022 14:45:56 +0000
+Received: from pps.filterd (userp3030.oracle.com [127.0.0.1])
+        by userp3030.oracle.com (8.16.1.2/8.16.1.2) with SMTP id 20QEb2hC176180;
+        Wed, 26 Jan 2022 14:45:51 GMT
+Received: from nam10-bn7-obe.outbound.protection.outlook.com (mail-bn7nam10lp2100.outbound.protection.outlook.com [104.47.70.100])
+        by userp3030.oracle.com with ESMTP id 3dr721absx-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 26 Jan 2022 14:45:51 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=A1zR+7Uev3WtJ88Y8PdayQaWvj1QSWf7iyzANCTmc0mnGg4p3R4D1E8j10sGB6Aa0q6oyJoRilRkIZRlR2Qj/XzDWBWDppuVo/gwoRxKmen94lxzPGY6XxOkaqJuEv8p+VCITYMjlROH7X7iNoT3QckVj9aM1DUwHJ09DK578CJaEh11ibb2xsODuZrrmCVtfu4nCSqYEYHRm4DkPjC6sqDUBp1vVEE2/sF9twbPyGu8wCszKBADfOH1P04yg8OdAlIGtvv0MzJPxd3CJHie7qaIh5b1rAx8NDPJn6/N2UHP5smPow54XQhbVLIts5VQ2VlTx0MTHdkKaZLKWUVvdg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=EEy8oOuohWR1+LkL4kJNMqGmCVNyj4KxvdYhg55gNWM=;
+ b=IhhTscIZ3ZflAJtaom/AnIXLMk8NTtDp9LF59+lh0mTmlH3oEYLOeKlrSVfdU7Rm7jgViNXw3MLe8Y3IMjZdrDzRisoNFH1sNjGuK2UZIG3xqMpHJsqR5gdHXe4lmM0kTzkpjxTEknmoTTAA/ymaJndGfD7IjaXHuq85gymZpIe8rtH8VHkueIujSTAJSAn3V7bBH/1s8Vw7RCgWiVtFyiaXoAjHm7pGf1EIMn4rNBGIMwq0xUptW3uHoBPpqpzlInpG1z5M2kaGcSyrokUMQ63fH4OgaGWmbp/OaxAxomLxyfKd4oWwW2HbEhuEZkcKpHAQyYOc1qbQUBDpVBDEDQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=EEy8oOuohWR1+LkL4kJNMqGmCVNyj4KxvdYhg55gNWM=;
+ b=pgwhg/vtxnWYH6RKP0nR/pTIEm/QXUmb5aBAAmDb8RVHFCYGVX3lJ8NO0VnSURlH9EdD3bB4mSRRcJS4SDKcLa/5Kkd0+tTRdilHFT3xpqxIb2gNdEQEV2WyoUolp1lP7aW17Vxkk5j9tA+aYBEkKNZ6qf06KTy+jVv1n11c6Qk=
+Received: from MWHPR1001MB2365.namprd10.prod.outlook.com
+ (2603:10b6:301:2d::28) by SA1PR10MB5685.namprd10.prod.outlook.com
+ (2603:10b6:806:23d::5) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4909.10; Wed, 26 Jan
+ 2022 14:45:49 +0000
+Received: from MWHPR1001MB2365.namprd10.prod.outlook.com
+ ([fe80::c13b:5812:a403:6d96]) by MWHPR1001MB2365.namprd10.prod.outlook.com
+ ([fe80::c13b:5812:a403:6d96%6]) with mapi id 15.20.4909.019; Wed, 26 Jan 2022
+ 14:45:49 +0000
+Date:   Wed, 26 Jan 2022 17:45:24 +0300
+From:   Dan Carpenter <dan.carpenter@oracle.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Javier Martinez Canillas <javierm@redhat.com>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
         Helge Deller <deller@gmx.de>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
@@ -44,7 +74,7 @@ Cc:     Andy Shevchenko <andy.shevchenko@gmail.com>,
         Lee Jones <lee.jones@linaro.org>,
         Heiner Kallweit <hkallweit1@gmail.com>
 Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
-Message-ID: <YfFZkgE3wfPXLpYA@kroah.com>
+Message-ID: <20220126144524.GB1951@kadam>
 References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
  <991e988b-7225-881b-a59a-33c3eae044be@suse.de>
  <CAHp75Vc2cjHkJwNSiJ-HSWBG=DYy68uvD7QQzNdRp3mQxoY1nw@mail.gmail.com>
@@ -54,49 +84,83 @@ References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
  <f6ffe9bb-8683-4061-c876-1d559267ebae@redhat.com>
  <YfFWmmJFtEB93jUi@smile.fi.intel.com>
  <3430838d-1c63-da49-b774-c5a883e7085f@redhat.com>
-MIME-Version: 1.0
+ <YfFZkgE3wfPXLpYA@kroah.com>
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3430838d-1c63-da49-b774-c5a883e7085f@redhat.com>
+In-Reply-To: <YfFZkgE3wfPXLpYA@kroah.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-ClientProxiedBy: JN2P275CA0043.ZAFP275.PROD.OUTLOOK.COM (2603:1086:0:2::31)
+ To MWHPR1001MB2365.namprd10.prod.outlook.com (2603:10b6:301:2d::28)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: f2a89e6a-ba28-4ca3-50a5-08d9e0da8acc
+X-MS-TrafficTypeDiagnostic: SA1PR10MB5685:EE_
+X-Microsoft-Antispam-PRVS: <SA1PR10MB568521F07EAE7275F176476E8E209@SA1PR10MB5685.namprd10.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:7219;
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: Tbi8hVnqtJaLAVZ0NXiFu0b1GrYpzQNyYBUP3TyNvCTfTy7Dh1bVCEZ7nT7/OletIHXTPBnP6Yxcyyf7gwGHevul3+AsL3M49NRwQ3v0JhR3SBAGnSCtV3YNvEmPOySLqSc5IbuAM2Lu1OE6336zqDcseSNhE7x2XrfOBqmgpFOv7RqHrsRJlDv9jl2VHByDaa2lX//ArmcIgU8dlYSjRHKTYEf90NYYM2VZV8BB8WY517ezwrtUL9WzMM2iTX3e0P5qjdxzieLlgdqoAQv4G1qZ+ZnamaKWiH1i7cYMEq02Z7r/Z8S7PsO7vUcSHYXaiiYYEVernKG8369XEd4B+u9JRg0pHPEmotJ5pAStFKDyEKDOpEvAxw4XoJnrvTn8tl5l/FGYQOweRGE58cZ9WLA/V+AVVvbhW0piDnMCVnDtm2PhyFeBtfLGs7gcfWBoTeTeQW29qpTd8Iu/APO/6ZPjeHrDXKB4yXbKGPSbxG+N78uWkVrfDBX+6z60jjvnwgusYyb8+z1/idqIbnDEq+lbW61SZrzwsBj1CHWfMVPAyD1hC23AnHM1ggZhSJuoaf6EdzfXNM2kLQaXQP0ikZWelr0FuEXGABYw/3kFoZhdl8ZgneVUtwfDeOpzjtCw8yzgc1xEc7J/RjSNMMS90xPWJ+ykV3P7HWrLa7ZQyiy/qHpR9dgNpwvpPwsLFaPWN4L1imUfxw5BH9WHDfTGXQ==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MWHPR1001MB2365.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(7916004)(366004)(6916009)(66556008)(4326008)(5660300002)(66476007)(86362001)(6486002)(6506007)(7416002)(6666004)(33716001)(1076003)(9686003)(2906002)(54906003)(8676002)(38350700002)(6512007)(66946007)(316002)(8936002)(38100700002)(44832011)(33656002)(52116002)(4744005)(186003)(26005)(508600001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?Ri2nEo1EY6CLHQ7kbapOrgFrkaNaHOJNbRxf8ruhKpVnGt3SpfcynSxZslIP?=
+ =?us-ascii?Q?lWNVworNdua0mJHWwQtVWBtP5C59qYA70geCI+PY5K7WIdOf0302OED//2WZ?=
+ =?us-ascii?Q?i86b9EQHYskBM12w5ni9jNTYtJvViRbEbW592LeeD3QD+gs/F6kE/YxZZESp?=
+ =?us-ascii?Q?OLH1nRB0ZK9Vq5J7Rxl7pZjl40pT8pxLWc2/ZFD9f9MtniJ/vUIFGS6pCI4z?=
+ =?us-ascii?Q?m3wBIXCH25DgCQ2ogSra23sjBq9xNWb6XbA7DJGP8BtyLd5gnDTXFVXkmc7h?=
+ =?us-ascii?Q?UBLOzMnci6kguamxssKJqiKbzn0Olw0FvNgzhC1YGw0EAi3nFzIyYmpBlJ2f?=
+ =?us-ascii?Q?PVTNUY+iyrClKda+KXwinU25Pvj2wAkB2wMjUkaEpcGgtp3q9BR5IB7TqyZl?=
+ =?us-ascii?Q?x9Uf4eWpsaXodTBTWEWTT5JIqNrB6sW+SU0vCwH2QvqugqS5avreMHiOBdPg?=
+ =?us-ascii?Q?VMDvMnGBlJ5sxz8qgrEVlyvuzSHSC17XMTxKN8iFCq0NM3v+8susNPlBwuJr?=
+ =?us-ascii?Q?SNvD6ExULAnZw89UWbS2FId7r7vRYbke91mZFvGAPLNkttRWJ6UexRw9ch4j?=
+ =?us-ascii?Q?L3bUq/lLRUZpzqltLO8uUoVF241knivtN8MjFmP7auxyVZhjZ/hfAuCqG+rZ?=
+ =?us-ascii?Q?gczHccdwyM+ZE6Slw9uOqQ1pba6ZkvjcY3N0QUcWC7mfdwyUvyUiXuoP3jgT?=
+ =?us-ascii?Q?dd+PG7HQJ6OMbV4dP9H/mabfqk2rVWPJC+xgY63VhU3clm/S7d/eee8UmyN9?=
+ =?us-ascii?Q?UGNic6lGyx+gWZEMHb6Bc0/hO6x5Wv8ZEox9bUTI+JrG2z0IfgL6b6oq9mhH?=
+ =?us-ascii?Q?wh+0Xqw21bvyqNt4rvE3FOQJMHaD3yNu2gzRj14D3FSxjnij2vs0h5gGcSpU?=
+ =?us-ascii?Q?MjbXMLGBMk2w/nvsumUEA4Y6yQnlG3XLW4oCEugKNMURQU/86SzpHomuB9m0?=
+ =?us-ascii?Q?RqfHq7DNl6v12qCiVFlFNNLjv3GD2YqcKn/fokJKgDq0+tgrN2xwl1Bsnnig?=
+ =?us-ascii?Q?Xr8IXyQRLhkFWeOyx0su8M6PPdWWL4vHgJg2fkVAYSWfRkX3BAJX+UE5CTTp?=
+ =?us-ascii?Q?qK9gfxDkpPtROkIw12JvC2Xup0kf53624yA7l5yMj0yrxR1e+nGPn/Cdd0Vs?=
+ =?us-ascii?Q?6W+WpZzkWuaOjmvUb5EYwQj4ChqlygXAfDQSncDyJohDtp3zFkHehkFMnDHg?=
+ =?us-ascii?Q?LmTTYAD4pdqatPwuZJNHIrrhAACMYSWrisZ14+TrfzkB+jGF+NMA/KBBRAEE?=
+ =?us-ascii?Q?7ZEt87U45VwznzzBOYnMrh6uIlhzPgXYKIxyjtSLQugK7qMSlMWYO0ZIwyRo?=
+ =?us-ascii?Q?CMXiRH5ntu79RFOSyUOe0Xtkt9gpxj8ZqEP1nGt5xa0E1YVHGWXQwj3lNIHO?=
+ =?us-ascii?Q?q/muO8vV24GTtbKlsbXDAoUZ6ww5c4ParIzRLQso6RQeV15VgQ2We3S924l0?=
+ =?us-ascii?Q?Y7VNAIMOUHADOLlvn4727Cr/LeuxEAPb+GeH7f+syMwU/HGqJwCFzNk5ifgh?=
+ =?us-ascii?Q?U3Qs0U5rmVwhC1KLXPRpEmfMYxG6FRYrXsodXnoxjOZ2K1Vxzrn2OGlysnw9?=
+ =?us-ascii?Q?cQKP1QMmUfn7yHkhJqGp89llkD2T14jzwuoqI9x+6upHVAAex5gdvnM4t4NK?=
+ =?us-ascii?Q?d7+9ggqPyd7v7Ren98aieiG/JJeLrB0aqM+dprpmQENWdsjC8LlNToRsisjU?=
+ =?us-ascii?Q?bazkNTDaIvXy9CQd84Fs78Rzj7o=3D?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f2a89e6a-ba28-4ca3-50a5-08d9e0da8acc
+X-MS-Exchange-CrossTenant-AuthSource: MWHPR1001MB2365.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Jan 2022 14:45:48.9367
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: EWeXmkxydg10MD0rfywYwmvgvfNAcLTqLMvaPQvhwz0OZPj5EFyfAp0YjCIp3mpTNYriJ8RwXjHeu5fQa6HihBG3fjv2dYVXC3Jh8vW7AUg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR10MB5685
+X-Proofpoint-Virus-Version: vendor=nai engine=6300 definitions=10238 signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 mlxlogscore=999
+ adultscore=0 spamscore=0 bulkscore=0 mlxscore=0 phishscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2201110000 definitions=main-2201260090
+X-Proofpoint-ORIG-GUID: r6Kre-BZQCrzSLx5z9NnBCqtzgJ2Fz-Z
+X-Proofpoint-GUID: r6Kre-BZQCrzSLx5z9NnBCqtzgJ2Fz-Z
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jan 26, 2022 at 03:18:14PM +0100, Javier Martinez Canillas wrote:
-> On 1/26/22 15:11, Andy Shevchenko wrote:
-> > On Wed, Jan 26, 2022 at 02:47:33PM +0100, Javier Martinez Canillas wrote:
-> >> On 1/26/22 14:27, Andy Shevchenko wrote:
-> >>> On Wed, Jan 26, 2022 at 12:18:30PM +0100, Javier Martinez Canillas wrote:
-> >>>> On 1/26/22 11:59, Helge Deller wrote:
-> >>>>> On 1/26/22 11:02, Andy Shevchenko wrote:
-> > 
-> > ...
-> > 
-> >>>>>> P.S. For the record, I will personally NAK any attempts to remove that
-> >>>>>> driver from the kernel. And this is another point why it's better not
-> >>>>>> to be under the staging.
-> >>>>>
-> >>>>> I agree. Same as for me to NAK the disabling of fbcon's acceleration
-> >>>>> features or even attempting to remove fbdev altogether (unless all
-> >>>>> relevant drivers are ported to DRM).
-> >>>>
-> >>>> But that will never happen if we keep moving the goal post.
-> >>>>
-> >>>> At some point new fbdev drivers should not be added anymore, otherwise
-> >>>> the number of existing drivers that need conversion will keep growing.
-> >>>
-> >>> This thread is not about adding a new driver.
-> >>
-> >> It was about adding a new drivers to drivers/video/ (taken from staging).
-> > 
-> > Does it mean gates are open to take any new fbdev drivers to the staging?
-> > If not, I do not see a point here.
-> > 
-> 
-> Good question. I don't know really.
-> 
-> But staging has always been more flexible in what's accepted there and
-> that's why some distros avoid to enable CONFIG_STAGING=y in the kernel.
+The other advantage of staging is the I don't think syzbot enables it.
+I guess it's easier to persuade Dmitry to ignore STAGING than it was to
+get him to disable FBDEV.  :P
 
-And that's why if you load a staging driver, it enables TAINT_CRAP in
-your runtime flags :)
+The memory corruption in fbdev was a real headache for everyone because
+the stack traces ended up all over the kernel.
+
+regards,
+dan carpenter
+

@@ -2,68 +2,73 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 743DDC2BA4C
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 13:34:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F855C63684
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 13:38:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234962AbiAZNeF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jan 2022 08:34:05 -0500
-Received: from mga02.intel.com ([134.134.136.20]:59403 "EHLO mga02.intel.com"
+        id S235171AbiAZNiN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jan 2022 08:38:13 -0500
+Received: from mga01.intel.com ([192.55.52.88]:35732 "EHLO mga01.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230472AbiAZNeE (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jan 2022 08:34:04 -0500
-X-IronPort-AV: E=McAfee;i="6200,9189,10238"; a="233924425"
+        id S240390AbiAZNiM (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 26 Jan 2022 08:38:12 -0500
+X-IronPort-AV: E=McAfee;i="6200,9189,10238"; a="271000586"
 X-IronPort-AV: E=Sophos;i="5.88,318,1635231600"; 
-   d="scan'208";a="233924425"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:34:04 -0800
+   d="scan'208";a="271000586"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:38:07 -0800
 X-IronPort-AV: E=Sophos;i="5.88,318,1635231600"; 
-   d="scan'208";a="597463395"
+   d="scan'208";a="767133033"
 Received: from smile.fi.intel.com ([10.237.72.61])
-  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:34:01 -0800
+  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:38:03 -0800
 Received: from andy by smile.fi.intel.com with local (Exim 4.95)
         (envelope-from <andy.shevchenko@gmail.com>)
-        id 1nCiPu-00EbuP-G0;
-        Wed, 26 Jan 2022 15:32:54 +0200
-Date:   Wed, 26 Jan 2022 15:32:54 +0200
+        id 1nCiTo-00Ebxc-Qb;
+        Wed, 26 Jan 2022 15:36:56 +0200
+Date:   Wed, 26 Jan 2022 15:36:56 +0200
 From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Helge Deller <deller@gmx.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Phillip Potter <phil@philpotter.co.uk>,
-        Lee Jones <lee.jones@linaro.org>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Carlis <zhangxuezhi1@yulong.com>, linux-kernel@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Dan Carpenter <dan.carpenter@oracle.com>,
+        Andy Shevchenko <andy@kernel.org>,
+        "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
         Michael Hennerich <michael.hennerich@analog.com>,
-        Andy Shevchenko <andy@kernel.org>
+        Helge Deller <deller@gmx.de>, linux-staging@lists.linux.dev,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Phillip Potter <phil@philpotter.co.uk>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Carlis <zhangxuezhi1@yulong.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Heiner Kallweit <hkallweit1@gmail.com>
 Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
-Message-ID: <YfFNhsPr4kS2/LXa@smile.fi.intel.com>
+Message-ID: <YfFOeLKfJ3oGXtyK@smile.fi.intel.com>
 References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
  <991e988b-7225-881b-a59a-33c3eae044be@suse.de>
  <CAHp75Vc2cjHkJwNSiJ-HSWBG=DYy68uvD7QQzNdRp3mQxoY1nw@mail.gmail.com>
- <3877516e-3db3-f732-b44f-7fe12b175226@gmx.de>
- <75a10e6f-ade7-01d9-9523-9a1936f8a2cc@suse.de>
+ <CAHp75Vd7oaYPKx6bxjCqNnm6fieeQFrtq5K4YYrxYbXoXFy=+Q@mail.gmail.com>
+ <20220126102858.GX1951@kadam>
+ <1b665bb8-7acb-519b-0a02-ef0f2dd4b524@redhat.com>
+ <YfFE61IQus3SMQRZ@kroah.com>
+ <afb68b5c-8d1a-17c4-a62b-be985c5bc613@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <75a10e6f-ade7-01d9-9523-9a1936f8a2cc@suse.de>
+In-Reply-To: <afb68b5c-8d1a-17c4-a62b-be985c5bc613@redhat.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jan 26, 2022 at 12:41:41PM +0100, Thomas Zimmermann wrote:
-> Am 26.01.22 um 11:59 schrieb Helge Deller:
+On Wed, Jan 26, 2022 at 02:19:37PM +0100, Javier Martinez Canillas wrote:
+> On 1/26/22 13:56, Greg Kroah-Hartman wrote:
 
-...
+> >>    fb_ili9341.c (DRM driver in drivers/gpu/drm/tiny/mi0283qt.c ?)
+> 
+> This was a copy and paste error. It should had been:
+> 
+>                    (DRM driver in drivers/gpu/drm/tiny/ili9341.c)
 
-
-> It's always for the same reason: the hw is old and devs have moved on.
-
-It's pity to have a working system with an old hardware that no one in
-the kernel community gives a shit about because simply they are not in
-the same boat. Try to be on the people's position...
+They both fit.
 
 -- 
 With Best Regards,

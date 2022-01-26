@@ -2,93 +2,107 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1510FC2BA4C
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 13:03:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E57E1C2BA4C
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 13:08:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231927AbiAZNDv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jan 2022 08:03:51 -0500
-Received: from mga09.intel.com ([134.134.136.24]:42709 "EHLO mga09.intel.com"
+        id S235728AbiAZNIC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jan 2022 08:08:02 -0500
+Received: from mga07.intel.com ([134.134.136.100]:42168 "EHLO mga07.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S231904AbiAZNDv (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jan 2022 08:03:51 -0500
+        id S234333AbiAZNIC (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 26 Jan 2022 08:08:02 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1643202231; x=1674738231;
+  t=1643202482; x=1674738482;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=mSnFOYWb2NTAiZJ6gl/F22Fq/rOFI1cKTn49lNqjzw4=;
-  b=SOoxsq2mC+ryPptauJSMGHYP81Tt1KfoTTiDalzjDodfpxrl+Jg0F4eM
-   mAuCcOcb0KLCsY/8CdkgUmbrhOMTH6cQPePOeWqATOUmb1Dm+Ynt7KMUB
-   su1CtRxgk2xzd8v55A34UQM9lHxfp0fm17NMcAlV1Vlpbxz8fzc2jVE4X
-   gNi6EK0KqcZrKDuQJsHAxrwCFHuQR3tEzfgSYyp9dgtNPJgAkS2Xt3WhE
-   R3E/fhsswUAW7mruWSkzICKkaVp3VmFj/m1UL+vxn0k1L+DQInQdkb1rO
-   Wo+BhZy40XzmPs8KHc5QdvmFtf4sKt81PUcxsDPTQFMsNpOPnBuKpM3fI
-   Q==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10238"; a="246322107"
+  bh=ufV8tnp4+s0eKaTq+EbumSk5nBwGFfL7ygpVjn/q6M8=;
+  b=XW8EqB9705Brt0muiI9bsFX5yR0+zL+dc0c5NqXPjTqdjlFv1Wsrv8/1
+   Z6WfjGqEU8lZV6TBOF9cCdbe1DzqoQ5bmntGFVVDH91m1U8M1l5vUMw0e
+   h+drQ/sdSuOYWwA7lBcCgTsEUZO7+qCOiczdWh1gcbktej8R7BLaZs1Dp
+   +mVgvCbkdbXTrlZXhR2fVgCB+ObCdh5kHfCT4v0oc94Z7X7BsH1VfVsyY
+   CttIH1TUaMTA+CQYFuGjl53sAmWgPtKN5Iz+FYKYsLlgmjvHD4PhxR3W1
+   1JgzHkWvNGrkRfZZWCqFtVdDrAa5nAytXYXsqorRWP9KAKOjNTcncXjZm
+   g==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10238"; a="309858908"
 X-IronPort-AV: E=Sophos;i="5.88,318,1635231600"; 
-   d="scan'208";a="246322107"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:03:50 -0800
+   d="scan'208";a="309858908"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:08:01 -0800
 X-IronPort-AV: E=Sophos;i="5.88,318,1635231600"; 
-   d="scan'208";a="617957353"
+   d="scan'208";a="581098861"
 Received: from smile.fi.intel.com ([10.237.72.61])
-  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:03:47 -0800
+  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:07:58 -0800
 Received: from andy by smile.fi.intel.com with local (Exim 4.95)
         (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nChwe-00EbPb-NL;
-        Wed, 26 Jan 2022 15:02:40 +0200
-Date:   Wed, 26 Jan 2022 15:02:40 +0200
+        id 1nCi0h-00EbS3-GQ;
+        Wed, 26 Jan 2022 15:06:51 +0200
+Date:   Wed, 26 Jan 2022 15:06:51 +0200
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Joe Perches <joe@perches.com>
+To:     Daniel Vetter <daniel@ffwll.ch>
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Phillip Potter <phil@philpotter.co.uk>,
-        Lee Jones <lee.jones@linaro.org>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Carlis <zhangxuezhi1@yulong.com>, linux-kernel@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
+        Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
         Michael Hennerich <michael.hennerich@analog.com>,
-        Helge Deller <deller@gmx.de>, Andy Shevchenko <andy@kernel.org>
-Subject: Re: [PATCH v1 4/4] fbtft: Replace 'depends on FB_TFT' by 'if FB_TFT
- ... endif'
-Message-ID: <YfFGcEDnQwdDSwOx@smile.fi.intel.com>
+        Helge Deller <deller@gmx.de>, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Phillip Potter <phil@philpotter.co.uk>,
+        Carlis <zhangxuezhi1@yulong.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Heiner Kallweit <hkallweit1@gmail.com>
+Subject: Re: [PATCH v1 1/4] fbtft: Unorphan the driver
+Message-ID: <YfFHa3ayE9wtil9Q@smile.fi.intel.com>
 References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
- <20220125202118.63362-5-andriy.shevchenko@linux.intel.com>
- <e12b11d20e22123736e5d8728286947e971c489f.camel@perches.com>
+ <20220125202118.63362-2-andriy.shevchenko@linux.intel.com>
+ <YfEG2qVO9K9G+g1d@kroah.com>
+ <CAKMK7uGoRC9a4cMCADTipV67oivfWvTw=6RYm2kOthB_bhWnXQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <e12b11d20e22123736e5d8728286947e971c489f.camel@perches.com>
+In-Reply-To: <CAKMK7uGoRC9a4cMCADTipV67oivfWvTw=6RYm2kOthB_bhWnXQ@mail.gmail.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jan 26, 2022 at 12:54:13AM -0800, Joe Perches wrote:
-> On Tue, 2022-01-25 at 22:21 +0200, Andy Shevchenko wrote:
-> > Replace 'depends on FB_TFT' by 'if FB_TFT ... endif'
-> > for the sake of deduplication.
-> []
-> > diff --git a/drivers/video/fbtft/Kconfig b/drivers/video/fbtft/Kconfig
-> []
-> > @@ -10,87 +10,75 @@ menuconfig FB_TFT
-> >  	select FB_DEFERRED_IO
-> >  	select FB_BACKLIGHT
-> >  
-> > +if FB_TFT
-> > +
-> []
-> >  config FB_TFT_PCD8544
-> >  	tristate "FB driver for the PCD8544 LCD Controller"
-> > -	depends on FB_TFT
-> >  	help
-> >  	  Generic Framebuffer support for PCD8544
-> >  
-> > @@ -108,62 +96,52 @@ config FB_TFT_S6D02A1
-> 
-> Looks like you missed a couple.
+On Wed, Jan 26, 2022 at 11:31:45AM +0100, Daniel Vetter wrote:
+> On Wed, Jan 26, 2022 at 9:31 AM Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
+> > On Tue, Jan 25, 2022 at 10:21:14PM +0200, Andy Shevchenko wrote:
 
-Thanks! I'll incorporate it, if the series has a continuation.
+...
+
+> > I'm ok with the files moving if the dri developers agree with it.  It's
+> > up to them, not me.
+> 
+> On one hand I'm happy anytime someone volunteers to help out.
+> 
+> On the other hand ... why does it have to be resurrecting fbdev?
+> There's an entire community of people who really know graphics and
+> display and spent considerable amount of effort on creating useful and
+> documented helpers for pretty much anything you might ever want to do.
+
+Why nobody has converted these drivers to be DRM based?
+
+For all these years no new conversion happens except couple, which
+I don't even have a hardware to see. But I have the hardware that
+is supported exclusively by fbtft driver.
+
+> And somehow we have to go back to typing out things the hard way, with
+> full verbosity, for an uapi that distros are abandoning (e.g. even for
+> sdl the direction is to run it on top of drm with a compat layer,
+> afaiui fedora is completely ditching any userspace that still even
+> uses /dev/fb/0). And yes I know there's still some gaps in drm,
+> largely for display features which were really en vogue about 20 years
+> ago. And we're happy to add that support, if someone who still has
+> such hardware can put in the little bit of work needed ...
+> 
+> I don't get this.
+
+I don't get how Fedora is related here.
+
+It's not useful to bury the /dev/fbX out for the devices that
+the use of are black-and-white output on small embedded systems.
+
 
 -- 
 With Best Regards,

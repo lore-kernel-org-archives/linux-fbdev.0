@@ -2,119 +2,109 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36A8FC28CF5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 13:47:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 526F9C28CF5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 14:09:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241533AbiAZNrj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jan 2022 08:47:39 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:20494 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S241628AbiAZNri (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jan 2022 08:47:38 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643204857;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=xq9qXfs6mYq/UfTYZlfXKoJk7bb8Idtqn7KKr27tJeY=;
-        b=bONizZyyC0bqldXQ+kQWfVadWSdBtWVCsGeCwthShSsmCqf8yDxPQwrnUdKRhSpRp7IwED
-        SZhUzDu7E8ved0F/j6YK1Ec4ljsEAxhc/qiFroHjkTmKzJg6kvvToaZRBsIH4Kca2VXfnm
-        dN4pmZqTgF798E9FCndcEbn+kXclC/g=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-265-oz5wO9e3OQ2HpdqwAAw1bg-1; Wed, 26 Jan 2022 08:47:36 -0500
-X-MC-Unique: oz5wO9e3OQ2HpdqwAAw1bg-1
-Received: by mail-wr1-f70.google.com with SMTP id b3-20020a5d4b83000000b001d676462248so4351995wrt.17
-        for <linux-fbdev@vger.kernel.org>; Wed, 26 Jan 2022 05:47:35 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=xq9qXfs6mYq/UfTYZlfXKoJk7bb8Idtqn7KKr27tJeY=;
-        b=xnO+RTvi0SGFwERohjd1kGZzKKbZnhtRpVjUGHJ0kq252Ylw0mtSij/OEo1ylI6hCl
-         RS2HD3wXJMmlU9vNqOF7xtK/mKG4Qqyiiad5edFLgr6A7LDuGyU6sQ/YVvZiiDgHyaw7
-         nDA+zWI+2fWCMYfDbxwPRIAKH3aQno9Adr3g81hU2gN6kud6LNfp8qohvpyxHaVDkWgi
-         tLe9OuAs/nKJAQCqlyNNVOAX6niax/Fcyos7fA6YqBurW+rIs7eytI5ToNjkARrVVtXO
-         0unaCUOvH1GPxJpTTqHCyEA9Qc5M3/tNsrqPYyIoA94RlhXOBoIalq7oThiBzZPXGm/a
-         BfeA==
-X-Gm-Message-State: AOAM530ErLtRzHRTjLMysVAhzpMjrkVcDCPenv3/C54RMwrx4cTpjuFS
-        Pf9eNCoK3Aw0nEaxSStI1uVPalXSalSpMohlky6ap1HlZnaJYiuvq5gNkOfhxtLc2SrVC7wnjh7
-        2ZX75mmJlnPo56xFnWycSprU=
-X-Received: by 2002:a1c:f404:: with SMTP id z4mr7537089wma.165.1643204854941;
-        Wed, 26 Jan 2022 05:47:34 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxs81KYxiPF/pMoFmGo74Ky9xgWpfukUAN7+fK2cyeIPPH1/2P88Q/Z9OzeoSa7tZySgGcZpA==
-X-Received: by 2002:a1c:f404:: with SMTP id z4mr7537069wma.165.1643204854684;
-        Wed, 26 Jan 2022 05:47:34 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id n2sm22869132wrw.63.2022.01.26.05.47.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 26 Jan 2022 05:47:34 -0800 (PST)
-Message-ID: <f6ffe9bb-8683-4061-c876-1d559267ebae@redhat.com>
-Date:   Wed, 26 Jan 2022 14:47:33 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.0
-Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
-Content-Language: en-US
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     Helge Deller <deller@gmx.de>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
+        id S241737AbiAZOJo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jan 2022 09:09:44 -0500
+Received: from mga07.intel.com ([134.134.136.100]:46235 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S233834AbiAZOJn (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 26 Jan 2022 09:09:43 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1643206183; x=1674742183;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=+bpZlvDIlAqOTrKi8qQY7oqDaN358NSulwLrW+ejnTU=;
+  b=cN4OVl5BU86577/2bbBE5xvGU4lRlgfc+4wCdkAN2CNpoYbqFlIzCFxe
+   AC8KzvBty3GAbRdtEXkXHYTQBV5rgY6m0pCpCM7fufwrOL1r5un7hhgRW
+   rHCqNwolv25gxPTN67jWSWQaMF4auoZYwEI4F4uID58A0pH9oIDXgY+H5
+   36vr5gmADE+X5oBikmxpzQAECb7oEKkblvn2sXH5z3bjP4Klq61oW8DTL
+   3/vayOwfFG4Ocz94gTxjixZqx56qopkied73kpVQwG2XlLcFphZ4EG0q6
+   AZpSr5FYGTiRee/dkYm0Df7WeRTZEIv0W6d46qkHuLSsTTZYDBjYSltG/
+   A==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10238"; a="309869018"
+X-IronPort-AV: E=Sophos;i="5.88,318,1635231600"; 
+   d="scan'208";a="309869018"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 06:09:42 -0800
+X-IronPort-AV: E=Sophos;i="5.88,318,1635231600"; 
+   d="scan'208";a="581113085"
+Received: from smile.fi.intel.com ([10.237.72.61])
+  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 06:09:39 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.95)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1nCiyO-00EcSP-TH;
+        Wed, 26 Jan 2022 16:08:32 +0200
+Date:   Wed, 26 Jan 2022 16:08:32 +0200
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
         Michael Hennerich <michael.hennerich@analog.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
+        Helge Deller <deller@gmx.de>, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Phillip Potter <phil@philpotter.co.uk>,
         Carlis <zhangxuezhi1@yulong.com>,
         Lee Jones <lee.jones@linaro.org>,
         Heiner Kallweit <hkallweit1@gmail.com>
+Subject: Re: [PATCH v1 1/4] fbtft: Unorphan the driver
+Message-ID: <YfFV4EJosayH+e6C@smile.fi.intel.com>
 References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
- <991e988b-7225-881b-a59a-33c3eae044be@suse.de>
- <CAHp75Vc2cjHkJwNSiJ-HSWBG=DYy68uvD7QQzNdRp3mQxoY1nw@mail.gmail.com>
- <3877516e-3db3-f732-b44f-7fe12b175226@gmx.de>
- <b13c0634-e766-74db-ab1f-672f5d0c04d6@redhat.com>
- <YfFMSkhbvHaR0YNE@smile.fi.intel.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <YfFMSkhbvHaR0YNE@smile.fi.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <20220125202118.63362-2-andriy.shevchenko@linux.intel.com>
+ <YfEG2qVO9K9G+g1d@kroah.com>
+ <CAKMK7uGoRC9a4cMCADTipV67oivfWvTw=6RYm2kOthB_bhWnXQ@mail.gmail.com>
+ <f671a112-880d-1526-a395-360947b40c5a@gmx.de>
+ <YfEv7OQs98O9wJdJ@kroah.com>
+ <YfFIpBb7lL4ukWjm@smile.fi.intel.com>
+ <b8eb7111-43aa-cc8a-a1bc-f08e0f2987ed@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b8eb7111-43aa-cc8a-a1bc-f08e0f2987ed@redhat.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/26/22 14:27, Andy Shevchenko wrote:
-> On Wed, Jan 26, 2022 at 12:18:30PM +0100, Javier Martinez Canillas wrote:
->> On 1/26/22 11:59, Helge Deller wrote:
->>> On 1/26/22 11:02, Andy Shevchenko wrote:
->>
->> [snip]
->>
->>>> P.S. For the record, I will personally NAK any attempts to remove that
->>>> driver from the kernel. And this is another point why it's better not
->>>> to be under the staging.
->>>
->>> I agree. Same as for me to NAK the disabling of fbcon's acceleration
->>> features or even attempting to remove fbdev altogether (unless all
->>> relevant drivers are ported to DRM).
->>>
->>
->> But that will never happen if we keep moving the goal post.
->>
->> At some point new fbdev drivers should not be added anymore, otherwise
->> the number of existing drivers that need conversion will keep growing.
+On Wed, Jan 26, 2022 at 02:46:08PM +0100, Javier Martinez Canillas wrote:
+> On 1/26/22 14:12, Andy Shevchenko wrote:
+> > On Wed, Jan 26, 2022 at 12:26:36PM +0100, Greg Kroah-Hartman wrote:
+> >> On Wed, Jan 26, 2022 at 12:17:08PM +0100, Helge Deller wrote:
+> >>> On 1/26/22 11:31, Daniel Vetter wrote:
+> > 
+> > ...
+> > 
+> >>> You are describing a transitioning over to DRM - which is Ok.
+> >>> But on that way there is no need to ignore, deny or even kill usage scenarios
+> >>> which are different compared to your usage scenarios (e.g. embedded devices,
+> >>> old platforms, slow devices, slow busses, no 3D hardware features,
+> >>> low-color devices, ...).
+> >>
+> >> All of those should be handled by the drm layer, as Daniel keeps
+> >> pointing out.  If not, then the tinydrm layer needs to be enhanced to do
+> >> so.
+> >>
+> >> Anyone have a pointer to hardware I can buy that is one of these fbtft
+> >> drivers that I could do a port to drm to see just how much work is
+> >> really needed here?
+> > 
+> > I have bought myself (for other purposes, I mean not to convert the driver(s))
+> > SSD1306 based display (SPI), SSD1331 (SPI), HX88347d (parallel).
+> >
 > 
-> This thread is not about adding a new driver.
-> 
+> I've just bought a SSD1306 (I2C) based one and will attempt to write a DRM
+> driver using drivers/staging/fbtft/fb_ssd1306.c as a reference.
 
-It was about adding a new drivers to drivers/video/ (taken from staging).
+You should take ssd1307fb.c instead. And basically create a MIPI based driver
+for I2C. Then we won't go same road again for other similar devices.
 
-Best regards,
+> I didn't find one with a SPI interface but we can later add a transport for
+> that if I succeed.
+
 -- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+With Best Regards,
+Andy Shevchenko
+
 

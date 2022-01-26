@@ -2,46 +2,45 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FA44C2BA4C
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 13:15:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1695EC28CF5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 13:15:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234991AbiAZNPO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jan 2022 08:15:14 -0500
-Received: from mga06.intel.com ([134.134.136.31]:25921 "EHLO mga06.intel.com"
+        id S234549AbiAZNP0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jan 2022 08:15:26 -0500
+Received: from mga09.intel.com ([134.134.136.24]:43515 "EHLO mga09.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234520AbiAZNPN (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jan 2022 08:15:13 -0500
+        id S234520AbiAZNP0 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 26 Jan 2022 08:15:26 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1643202913; x=1674738913;
+  t=1643202926; x=1674738926;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=jvn1DT8hkIC9aHCBN88BfzW6xWKdrEbGQoRpjkz2lt4=;
-  b=jodYnQlA0gn+YmW3inc+Gbg3xO/VpLOOx57Fe9doyytS6VeT6CV3hhGA
-   GIykQJtXYtr5RWYWT5XBPyqJMHjpR1PRVn4C2fSVPTL3h8T/g8mS9ohhd
-   Rae6EgSlLsWwQmF/fyBk2xKnASA9arZlp/qG8BC6QtcHycTi2Or8nCGRy
-   XSOGLwoq/WMphOOzF3kSh+K/M1FuyQpfI/n9DYxfM4bXdePRq4FZUmMLq
-   mbNrwVyJk9x2QIOlKl321CD/Gd1N+mJDGBHlFs/avL0CXUK/iSTRrkrhY
-   WXjP882sRjZuTqF0r1SYhKTJjkmT4jkuxRa/mDqkisCk5UuSlN8XMwh81
-   Q==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10238"; a="307260494"
+  bh=5iUtFO+EhpHndQGOg3UJPsNAroHVFCQnJAjNbMjiMGc=;
+  b=RBh8k1PrR7YqKwEVSOe+Nlf5Vn3jmCWw/xqCDmWK4jQia3nG8xLgldQz
+   ici/3UHd7DlrGBc1zIHS+6eTMMiU6U4SDD4RCVu81mWzD29XLVHlSyYCE
+   4tHTNESFOti4cI8opOkYa1576uzW3XxyC0fBAEXM2f1L3AvDIpxOH0uHy
+   hFUpMByxVrc84MHMThWVUjEeXPq/Yi88EYW/lRO2/azdopbwFDTXqI/im
+   ZQjF/wks57Mqk0Uv0fuJ1CpC20cQjNSdVdPHYf36bvHnFpfy4Rn0XIS1D
+   XBcRv9kzwkcO9fWAVslbt72aaAhL5liKgCL9TaXezc3mJ+/y9m2tFGh9O
+   A==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10238"; a="246324068"
 X-IronPort-AV: E=Sophos;i="5.88,318,1635231600"; 
-   d="scan'208";a="307260494"
+   d="scan'208";a="246324068"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:15:12 -0800
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:15:25 -0800
 X-IronPort-AV: E=Sophos;i="5.88,318,1635231600"; 
-   d="scan'208";a="597459201"
+   d="scan'208";a="597459271"
 Received: from smile.fi.intel.com ([10.237.72.61])
-  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:15:09 -0800
+  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jan 2022 05:15:22 -0800
 Received: from andy by smile.fi.intel.com with local (Exim 4.95)
         (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nCi7f-00EbZf-0w;
-        Wed, 26 Jan 2022 15:14:03 +0200
-Date:   Wed, 26 Jan 2022 15:14:02 +0200
+        id 1nCi5k-00EbXE-U5;
+        Wed, 26 Jan 2022 15:12:04 +0200
+Date:   Wed, 26 Jan 2022 15:12:04 +0200
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Daniel Vetter <daniel@ffwll.ch>
-Cc:     Helge Deller <deller@gmx.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
         Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
         Michael Hennerich <michael.hennerich@analog.com>,
         linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
@@ -51,24 +50,24 @@ Cc:     Helge Deller <deller@gmx.de>,
         Lee Jones <lee.jones@linaro.org>,
         Heiner Kallweit <hkallweit1@gmail.com>
 Subject: Re: [PATCH v1 1/4] fbtft: Unorphan the driver
-Message-ID: <YfFJGrfMi0E1ySmH@smile.fi.intel.com>
+Message-ID: <YfFIpBb7lL4ukWjm@smile.fi.intel.com>
 References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
  <20220125202118.63362-2-andriy.shevchenko@linux.intel.com>
  <YfEG2qVO9K9G+g1d@kroah.com>
  <CAKMK7uGoRC9a4cMCADTipV67oivfWvTw=6RYm2kOthB_bhWnXQ@mail.gmail.com>
  <f671a112-880d-1526-a395-360947b40c5a@gmx.de>
- <CAKMK7uFhJPpiHqL-040ozbCM=QxiWNrFHp1gOEUvpEUjxbwAQQ@mail.gmail.com>
+ <YfEv7OQs98O9wJdJ@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAKMK7uFhJPpiHqL-040ozbCM=QxiWNrFHp1gOEUvpEUjxbwAQQ@mail.gmail.com>
+In-Reply-To: <YfEv7OQs98O9wJdJ@kroah.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Jan 26, 2022 at 12:27:19PM +0100, Daniel Vetter wrote:
-> On Wed, Jan 26, 2022 at 12:18 PM Helge Deller <deller@gmx.de> wrote:
+On Wed, Jan 26, 2022 at 12:26:36PM +0100, Greg Kroah-Hartman wrote:
+> On Wed, Jan 26, 2022 at 12:17:08PM +0100, Helge Deller wrote:
 > > On 1/26/22 11:31, Daniel Vetter wrote:
 
 ...
@@ -79,12 +78,19 @@ On Wed, Jan 26, 2022 at 12:27:19PM +0100, Daniel Vetter wrote:
 > > old platforms, slow devices, slow busses, no 3D hardware features,
 > > low-color devices, ...).
 > 
-> This patchset isn't about killing existing support.
+> All of those should be handled by the drm layer, as Daniel keeps
+> pointing out.  If not, then the tinydrm layer needs to be enhanced to do
+> so.
 > 
-> This is about adding new drivers to a subsystem where consensus the
-> past 6 years or so was that it's closed for new drivers.
+> Anyone have a pointer to hardware I can buy that is one of these fbtft
+> drivers that I could do a port to drm to see just how much work is
+> really needed here?
 
-You mean fbdev?
+I have bought myself (for other purposes, I mean not to convert the driver(s))
+SSD1306 based display (SPI), SSD1331 (SPI), HX88347d (parallel).
+
+Each of them costed less than $10 with delivery to EU (nowadays maybe a bit
+more expensive). I believe it's very easy to find the links on AliExpress.
 
 -- 
 With Best Regards,

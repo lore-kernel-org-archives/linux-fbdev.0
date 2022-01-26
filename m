@@ -2,185 +2,126 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95BA7C2BA4C
-	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 11:41:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D6CFC2BA4C
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 11:45:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233864AbiAZLlo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 26 Jan 2022 06:41:44 -0500
-Received: from smtp-out2.suse.de ([195.135.220.29]:35066 "EHLO
-        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233852AbiAZLln (ORCPT
+        id S240919AbiAZLpm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 26 Jan 2022 06:45:42 -0500
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:43760 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S240933AbiAZLpk (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 26 Jan 2022 06:41:43 -0500
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 59D031F396;
-        Wed, 26 Jan 2022 11:41:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1643197302; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=EVy/lJnzFPtdhzlf+AMRGSrpqoRidNBqhqETWPdAk2k=;
-        b=Jdt02zjRukxWFhN5TNlKIEIt7p7FSck1p9BRy9jqL0acAKxXpr7ZHEP2m24IjW7l72nsC4
-        l92Kh21aX9erprxmAatIT+pM0rV9rmpdtseFWe923zpo9twD8SxoVV1Fg4EA2jiWIRxRlf
-        GERioANfC6WJEAaESN8mPqi/VGpAnE4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1643197302;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=EVy/lJnzFPtdhzlf+AMRGSrpqoRidNBqhqETWPdAk2k=;
-        b=OtDB4TAryW6a0qql7Y9EXRxM7BGlGUrCTYXuaE1Tj/9zFmjSi+Mj1kdACXqy3CuCS6xudU
-        OvIqnoG4pI8pQLBQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0719413BA2;
-        Wed, 26 Jan 2022 11:41:42 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id 7/xnAHYz8WHyGQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Wed, 26 Jan 2022 11:41:42 +0000
-Message-ID: <75a10e6f-ade7-01d9-9523-9a1936f8a2cc@suse.de>
-Date:   Wed, 26 Jan 2022 12:41:41 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
-Content-Language: en-US
-To:     Helge Deller <deller@gmx.de>,
-        Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Phillip Potter <phil@philpotter.co.uk>,
-        Lee Jones <lee.jones@linaro.org>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Carlis <zhangxuezhi1@yulong.com>, linux-kernel@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
+        Wed, 26 Jan 2022 06:45:40 -0500
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.1.2/8.16.1.2) with SMTP id 20QBfa3P018405;
+        Wed, 26 Jan 2022 11:45:29 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : references : date : in-reply-to : message-id : mime-version :
+ content-type; s=pp1; bh=lVqDhrvnWrGuSL53mC1c1JVNCqrWUAZFD8NYSkNdxZ8=;
+ b=ZR5diKuuG4vsmtZG11w0wcV2DhbnMee0WUa0chyJptnoKjvvqR/vFPe8SfdaokINFRve
+ 89i0z4eBZIrna1YlWgvhLV0AcHeV2xyNWvn/7qZZ//Wod3doHmreSKcCEsqbOzJV/mT/
+ Gs/0m9LVbfpWo5lHtJRMSCaWr3U2KsF2b+Maf3uZmwIJiY5d99j5zkIcTz/s70/SC8BH
+ Hk6QR10lom7J+rHkAS9UupWdDE6+RyDgBwnEPMg1w+aeX8tk1eXeucuYhfNz1sv7HDB4
+ +u4NMHS79RjRadzZ1oHeHS0C1x2vOUk4rT3Cwgw5Lh/L3pQfCGMgE8rOI372XaDfUISE xw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 3du5n401ua-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 26 Jan 2022 11:45:29 +0000
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+        by pps.reinject (8.16.0.43/8.16.0.43) with SMTP id 20QBhOq6025478;
+        Wed, 26 Jan 2022 11:45:28 GMT
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 3du5n401tu-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 26 Jan 2022 11:45:28 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+        by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 20QBh3r9021698;
+        Wed, 26 Jan 2022 11:45:26 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+        by ppma04fra.de.ibm.com with ESMTP id 3dr9j9kt9u-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 26 Jan 2022 11:45:26 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com [9.149.105.58])
+        by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 20QBjOoh44368276
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 26 Jan 2022 11:45:24 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 0DC314C04A;
+        Wed, 26 Jan 2022 11:45:24 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 88B744C052;
+        Wed, 26 Jan 2022 11:45:23 +0000 (GMT)
+Received: from tuxmaker.linux.ibm.com (unknown [9.152.85.9])
+        by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+        Wed, 26 Jan 2022 11:45:23 +0000 (GMT)
+From:   Sven Schnelle <svens@linux.ibm.com>
+To:     Helge Deller <deller@gmx.de>
+Cc:     Daniel Vetter <daniel@ffwll.ch>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
         Michael Hennerich <michael.hennerich@analog.com>,
-        Andy Shevchenko <andy@kernel.org>
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        Phillip Potter <phil@philpotter.co.uk>,
+        Carlis <zhangxuezhi1@yulong.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Heiner Kallweit <hkallweit1@gmail.com>
+Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
 References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
- <991e988b-7225-881b-a59a-33c3eae044be@suse.de>
- <CAHp75Vc2cjHkJwNSiJ-HSWBG=DYy68uvD7QQzNdRp3mQxoY1nw@mail.gmail.com>
- <3877516e-3db3-f732-b44f-7fe12b175226@gmx.de>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <3877516e-3db3-f732-b44f-7fe12b175226@gmx.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------FMGu0nSHisxtDBmT5BSNd3eL"
+        <991e988b-7225-881b-a59a-33c3eae044be@suse.de>
+        <CAHp75Vc2cjHkJwNSiJ-HSWBG=DYy68uvD7QQzNdRp3mQxoY1nw@mail.gmail.com>
+        <3877516e-3db3-f732-b44f-7fe12b175226@gmx.de>
+        <b13c0634-e766-74db-ab1f-672f5d0c04d6@redhat.com>
+        <CAKMK7uEqwyZuVheqyNG33Un4WK1cd1B+WBYbCmi20fZi0qVG2w@mail.gmail.com>
+        <88ea01b8-3fdd-72cc-c3d8-e2890c68533b@gmx.de>
+Date:   Wed, 26 Jan 2022 12:45:23 +0100
+In-Reply-To: <88ea01b8-3fdd-72cc-c3d8-e2890c68533b@gmx.de> (Helge Deller's
+        message of "Wed, 26 Jan 2022 12:38:09 +0100")
+Message-ID: <yt9d35lara98.fsf@linux.ibm.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/28.0.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: KhTGlHgQGrGYCalPGTfk1eZo6K604Rli
+X-Proofpoint-GUID: RJBF4AwI7_gWpF38_Wai-x95Bwn9_1-D
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.816,Hydra:6.0.425,FMLib:17.11.62.513
+ definitions=2022-01-26_03,2022-01-26_01,2021-12-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011
+ priorityscore=1501 mlxscore=0 bulkscore=0 lowpriorityscore=0 spamscore=0
+ adultscore=0 mlxlogscore=999 suspectscore=0 phishscore=0 malwarescore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2201110000 definitions=main-2201260068
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------FMGu0nSHisxtDBmT5BSNd3eL
-Content-Type: multipart/mixed; boundary="------------SFdg6HIZAysgnDaOZyDvGKX2";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Helge Deller <deller@gmx.de>, Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Phillip Potter <phil@philpotter.co.uk>, Lee Jones <lee.jones@linaro.org>,
- Heiner Kallweit <hkallweit1@gmail.com>, Carlis <zhangxuezhi1@yulong.com>,
- linux-kernel@vger.kernel.org, linux-staging@lists.linux.dev,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
- Michael Hennerich <michael.hennerich@analog.com>,
- Andy Shevchenko <andy@kernel.org>
-Message-ID: <75a10e6f-ade7-01d9-9523-9a1936f8a2cc@suse.de>
-Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
-References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
- <991e988b-7225-881b-a59a-33c3eae044be@suse.de>
- <CAHp75Vc2cjHkJwNSiJ-HSWBG=DYy68uvD7QQzNdRp3mQxoY1nw@mail.gmail.com>
- <3877516e-3db3-f732-b44f-7fe12b175226@gmx.de>
-In-Reply-To: <3877516e-3db3-f732-b44f-7fe12b175226@gmx.de>
+Helge Deller <deller@gmx.de> writes:
 
---------------SFdg6HIZAysgnDaOZyDvGKX2
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+> On 1/26/22 12:24, Daniel Vetter wrote:
+>> And that point was about 5 years ago, and has been discussed at some
+>> plumbers meanwhile, resulting in the staging TODO patches to make
+>> these drm drivers to destage them.
+>>
+>> Fixing bugs in fbdev is all fine, reopening it for merging new drivers is not.
+>
+> We are on the same page!
+> I'm not at all proposing to include new drivers for (relatively) new
+> hardware into fbdev, which is capable to be written as DRM driver.
 
-SGkNCg0KQW0gMjYuMDEuMjIgdW0gMTE6NTkgc2NocmllYiBIZWxnZSBEZWxsZXI6DQo+IE9u
-IDEvMjYvMjIgMTE6MDIsIEFuZHkgU2hldmNoZW5rbyB3cm90ZToNCj4+IE9uIFdlZCwgSmFu
-IDI2LCAyMDIyIGF0IDEwOjUyIEFNIFRob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBz
-dXNlLmRlPiB3cm90ZToNCj4+PiBBbSAyNS4wMS4yMiB1bSAyMToyMSBzY2hyaWViIEFuZHkg
-U2hldmNoZW5rbzoNCj4+Pj4gU2luY2Ugd2UgZ290IGEgbWFpbnRhaW5lciBmb3IgZmJkZXYs
-IEkgd291bGQgbGlrZSB0bw0KPj4+PiB1bm9ycGhhbiBmYnRmdCAod2l0aCB0aGUgaWRlYSBv
-ZiBzZW5kaW5nIFBScyB0byBIZWxnZSkNCj4+Pj4gYW5kIG1vdmUgaXQgb3V0IG9mIHN0YWdp
-bmcgc2luY2UgdGhlcmUgaXMgbm8gbW9yZSBjbGVhbg0KPj4+PiB1cCB3b3JrIGV4cGVjdGVk
-IGFuZCBubyBtb3JlIGRyaXZlcnMgZWl0aGVyLg0KPj4+Pg0KPj4+PiBUaG91Z2h0cz8NCj4g
-DQo+IFBlcnNvbmFsbHkgSSdtIGluIGZhdm91ciBvZiB0aGlzIHByb3Bvc2FsIGFuZCB3b3Vs
-ZCBiZSBoYXBweQ0KPiB0byB0YWtlIHBhdGNoZXMgZm9yIGl0IHRocm91Z2ggdGhlIGZiZGV2
-IGdpdCB0cmVlLg0KPiBSZWFzb25pbmcgYmVsb3cuLi4NCj4gDQo+Pj4gQnV0IHdoeT8gV2Ug
-YWxyZWFkeSBoYXZlIERSTSBkcml2ZXJzIGZvciBzb21lIG9mIHRoZXNlIGRldmljZXMuDQo+
-Pg0KPj4gTm8sIHdlIGRvIG5vdCAob25seSBhIGZldyBhcmUgYXZhaWxhYmxlKS4NCj4gDQo+
-IHNlZW1zIHRvIGJlIDIgb3V0IG9mIDEwIChhY2NvcmRpbmcgdG8gdGhlIG90aGVyIG1haWxz
-KQ0KDQpGWUkgaXQncyBpbGk5MTYzIGFuZCBoeDgzNTdkLiBCb3RoIG9mIHRob3NlIGFyZSBv
-ZiB0aGUgc2FtZSBzaXplICgnd2MgDQotbCcpIG9uIERSTSBhbmQgZmJkZXY6IDIwMCB0byAz
-MDAgbG9jLg0KDQo+Pj4gUG9ydGluZyB0aGUgb3RoZXJzIHRvIERSTSBpcyBzdWNoIGEgYmV0
-dGVyIGxvbmctdGVybSBwbGFuLiAgT1RPSCwNCj4+PiBhcyBubyBvbmUgaGFzIHNob3duIHVw
-IGFuZCBjb252ZXJ0ZWQgdGhlbSwgbWF5YmUgdGhleSBzaG91bGQgYmUNCj4+PiBsZWZ0IGRl
-YWQgb3IgcmVtb3ZlZCBlbnRpcmVseS4NCj4+DQo+PiBBcyBJIG1lbnRpb25lZCBhYm92ZSB0
-aGVyZSBhcmUgZGV2aWNlcyB0aGF0IG5vYm9keSB3aWxsIHRha2UgdGltZSB0bw0KPj4gcG9y
-dCB0byBhIHdheSB0b28gY29tcGxleCBEUk0gc3Vic3lzdGVtLiBCdXQgdGhlIGRldmljZXMg
-YXJlIGNoZWFwIGFuZA0KPj4gcXVpdGUgd2lkZXNwcmVhZCBpbiB0aGUgZW1iZWRkZWQgd29y
-bGQuIEknbSBpbiBwb3NzZXNzaW9uIG9mIDMgb3IgNA0KPj4gZGlmZmVyZW50IG1vZGVscyBh
-bmQgb25seSAxIGlzIHN1cHBvcnRlZCBieSB0aW55IERSTS4NCj4+DQo+PiBPbiB0b3Agb2Yg
-dGhhdCB0aGUgc3VidGxlIGZhY3QgcGVvcGxlIGZvcmdvdCBhYm91dCBGQlRGVCBpcyB0aGF0
-IGl0DQo+PiBkb2VzIHN1cHBvcnQgcGFyYWxsZWwgaW50ZXJmYWNlICh5ZXMsIEkga25vdyB0
-aGF0IGl0J3Mgbm90IHBlcmZvcm1hbnQsDQo+PiBidXQgb25lIG9mIHRoZSBkaXNwbGF5cyBJ
-IGhhdmUgaXMgd2l0aCB0aGF0IHR5cGUgb2YgaW50ZXJmYWNlKS4NCj4gDQo+IEkgZG9uJ3Qg
-a25vdyB0aG9zZSBkZXZpY2VzLCBidXQgaXQgc2VlbXMgdGhleSBhcmUgc3RpbGwgYmVpbmcg
-dXNlZC4NCj4gDQo+IEFuZCB0aGUgcmVhc29ucyB3aHkgdGhleSBoYXZlIG5vdCBiZWVuIHBv
-cnRlZCB0byBEUk0geWV0IGlzDQo+IGxpa2VseSBiZWNhdXNlIGVpdGhlciBsYWNrIG9mIG1h
-bi1wb3dlciwgYSBzbG93LWRvd24gd2l0aCBEUk0gKGR1ZSB0bw0KPiBzbG93IGJ1cyBjb25u
-ZWN0aW9ucyBvciBpbmNyZWFzZWQgbWVtb3J5IHVzYWdlIHdpdGggRFJNKSwgb3INCj4gc2lt
-cGx5IHRoYXQgaXQncyB1c2VkIGluIGVtYmVkZGVkLWxpa2Ugc2NlbmFyaW9zIHdpdGggYSBs
-aW1pdGVkDQo+IHNldCBvZiB1c2Vyc3BhY2UgYXBwbGljYXRpb25zIGZvciB3aGljaCBleGlz
-dGluZyBmYmRldiBhY2Nlc3MgaXMgc3VmZmljaWVudC4NCj4gDQo+IEFnYWluLCBJIGRvbid0
-IGtub3cgdGhlIHJlYXNvbiBmb3IgdGhpcyBzcGVjaWZpYyBkZXZpY2VzLCBidXQgSSBrbm93
-DQo+IG9mIG90aGVyIGRldmljZXMgZm9yIHdoaWNoIHRob3NlIHJlYXNvbnMgYWJvdmUgYXJl
-IHZhbGlkLg0KPiBKdXN0IHRoZSBleGFtcGxlIEkgcG9zdGVkIHllc3RlcmRheSB3aGVyZSBh
-IHNpbXBsZSAidGltZSBkbWVzZyIgbmVlZGVkDQo+IHVuYWNjZWxlcmF0ZWQgMTkgc2Vjb25k
-cyBjb21wYXJlZCB0byAyIHNlY29uZHMgd2l0aCBhY2NlbGVyYXRpb24uDQo+IFNvLCBhcyBs
-b25nIGFzIGFjY2VsZXJhdGlvbiBpc24ndCBwb3NzaWJsZSB3aXRoIHRoYXQgZHJpdmVyIGlu
-DQo+IERSTSwgRFJNIGlzbid0IGEgcHJlZmVycmVkIHRhcmdldCB3aGVyZSB0aGUgZHJpdmVy
-IHNob3VsZCBiZSBwb3J0ZWQuDQo+IA0KPiBTbywgSSdkIGJlIGZpbmUgdG8gdGFrZSBpdCBp
-bnRvIGZiZGV2IHRyZWUuDQo+IA0KPiBJbnRlcmVzdGluZ2x5IHRoZXJlIGlzIGFub3RoZXIg
-ZmJkZXYgZHJpdmVyIGluIHN0YWdpbmcgKHNtNzUwZmIpIHdpdGgNCj4gc2ltaWxpYXIgaXNz
-dWVzLiBUaGUgVE9ETyBtZW50aW9ucyBhIHBvcnRpbmcgdG8gRFJNIHdoaWNoIGhhcHBlbnMg
-YXQNCj4gaHR0cHM6Ly9naXRsYWIuY29tL3N1ZGlwbS9zbTc1MC90cmVlL3NtNzUwDQo+IGJ1
-dCB0aGUgbGFzdCBjb21taXQgdGhlcmUgaXMgMyB5ZWFycyBhZ28uIEkgZG9uJ3Qga25vdyB3
-aHkgaXQgd2Fzbid0DQo+IGNvbnRpbnVlZCB5ZXQuDQoNCkl0J3MgYWx3YXlzIGZvciB0aGUg
-c2FtZSByZWFzb246IHRoZSBodyBpcyBvbGQgYW5kIGRldnMgaGF2ZSBtb3ZlZCBvbi4NCg0K
-QmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhp
-Y3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBH
-bWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4
-MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
+In my opinion that should be decided depending on the main usecase: If
+it's X11 or similar, it should go to DRM. If its main use case is kernel
+text console, it should go to fbdev.
 
---------------SFdg6HIZAysgnDaOZyDvGKX2--
+I think the main concern/trouble about fbdev is the userspace interface,
+and i personally would be totally fine seeing that go away (except the
+ability to change video mode with fbset). For me its important as kernel
+console for old systems, and don't want to run X11 on them.
 
---------------FMGu0nSHisxtDBmT5BSNd3eL
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmHxM3UFAwAAAAAACgkQlh/E3EQov+Dq
-aA/+NqIYjpyQCBoaYlZ9v9rY1ftCAGoiEIHZDzNBLya11KHZmvBMrHbY8JBFZZEqLJnAfgJXzDqC
-XgRL+OR1vE8jllNfFFF0pZvZyBFk+Ctunz/7xbN+Ti+a+x1bMG/BXBKbnpYrzfDolhTt78bQKbNO
-ZIADh5ETWSa/ORD6J20KUui0rX6UiY8sJ2EKPLbp5RsWiY16Oac73uv+FoMEiXRbSsaq7YXsgg13
-BLZj23pf+VwH7650UWjJUwpn119mxCOK2e8Cmn21XCX3MKB0n3FK1YB0mSe+rGLkzzX993+brnr1
-E5WXRmUu7TRmecnWgCYT9GM7ph6oIvR325yjqteUCePxUZvpdJ1FYZ0SjdZpLfGSxj1OaK3CAL/W
-TmFzMAdeyGAysCTTMC3En423mZVslmGuxybkR39T1rA6y4XTYWrFc6poNbJZ5adojh8CS6KjAQUS
-z63/JMKfKUq3QZHMi4b7yc6BrzVgpuFpFOk2F9u7TPWsLChjB5exMNK30YXkSD1Mw/Lsbd7ElvKF
-jA/s0h8rwqdi/92v1cEsKx8Y5ZJ9mNdX1A9a3AVZedvLXD3uDaby1C/nCJIfZzHvXMJhlUJzMwmq
-wDaTAFlyRBLIHh1FwtlkRfNXanT/MzTL5+R1QoXXRoxMolWZzWlgiKcStEF+4td2aQI8LIwxkeWR
-st4=
-=UZeu
------END PGP SIGNATURE-----
-
---------------FMGu0nSHisxtDBmT5BSNd3eL--
+Given the ongoing discussion about performance and drm, i don't expect
+DRM gaining HW acceleration capabilities for text consoles. So i think
+both should exist, just for different usecases.

@@ -2,81 +2,239 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B852DC433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 25 Jan 2022 20:40:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1909CC5AC75
+	for <linux-fbdev@archiver.kernel.org>; Wed, 26 Jan 2022 00:33:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232324AbiAYUkg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 25 Jan 2022 15:40:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39082 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232290AbiAYUkd (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 25 Jan 2022 15:40:33 -0500
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 185C5C06173B;
-        Tue, 25 Jan 2022 12:40:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=desiato.20200630; h=Content-Transfer-Encoding:Content-Type
-        :In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:
-        Sender:Reply-To:Content-ID:Content-Description;
-        bh=mvUJSAebKkRB+lgViRYbpCTTlvrAohmMaeU/GWRYPN8=; b=YTwMSEuPR7d+zRgdkpSBHn3QOM
-        8N8N7raV22tIBHgVeYcKS0NQ2nKGsd6UTLl6e1WeveHS/ETV9KPODONVoNc2mF/EEYuw8YICsylAM
-        RI8knU3CXNCS9QvuEXRmdU+w1ytqSDLg3y34FZ0p1EXrq9wIJ5KHNqLgFIEINHwY3ugv8kAUR0jbN
-        XmpvyAxG1bw6XKVkZJNdTu8gk5dzB4iPa5K72YbrLjNq5FVClIo7RBJ3w5zo4/rJ9Y+fNwKcAb5ku
-        c+JuGGiW+PCmjY/t+VVX8BJv1XsbdhS+F2i5PFLLlP9+LWN9JMzFE99PImgIAQny0AbjtHrL2Cbpb
-        QvfHYGcg==;
-Received: from [2601:1c0:6280:3f0::aa0b]
-        by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-        id 1nCSbz-003Ywk-Pp; Tue, 25 Jan 2022 20:40:20 +0000
-Message-ID: <34f76f2a-1e41-d7ef-d135-7be56dba88ae@infradead.org>
-Date:   Tue, 25 Jan 2022 12:40:14 -0800
+        id S235305AbiAZAdT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 25 Jan 2022 19:33:19 -0500
+Received: from foss.arm.com ([217.140.110.172]:54438 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S235301AbiAZAdT (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 25 Jan 2022 19:33:19 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 41BBF113E;
+        Tue, 25 Jan 2022 16:33:18 -0800 (PST)
+Received: from [10.57.68.26] (unknown [10.57.68.26])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9CABA3F766;
+        Tue, 25 Jan 2022 16:33:17 -0800 (PST)
+Message-ID: <5c154629-98ef-8de4-7018-b31f8763a582@arm.com>
+Date:   Wed, 26 Jan 2022 00:33:13 +0000
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
-Subject: Re: [PATCH v1 4/4] fbtft: Replace 'depends on FB_TFT' by 'if FB_TFT
- ... endif'
-Content-Language: en-US
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Phillip Potter <phil@philpotter.co.uk>,
-        Lee Jones <lee.jones@linaro.org>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Carlis <zhangxuezhi1@yulong.com>, linux-kernel@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org,
+Subject: Re: [PATCH] [RFC] fbcon: Add option to enable legacy hardware
+ acceleration
+Content-Language: en-GB
+To:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Cc:     Michael Hennerich <michael.hennerich@analog.com>,
-        Helge Deller <deller@gmx.de>, Andy Shevchenko <andy@kernel.org>
-References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
- <20220125202118.63362-5-andriy.shevchenko@linux.intel.com>
-From:   Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20220125202118.63362-5-andriy.shevchenko@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
+References: <YfBLiUMokw6tLq0O@p100>
+From:   Robin Murphy <robin.murphy@arm.com>
+In-Reply-To: <YfBLiUMokw6tLq0O@p100>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-
-
-On 1/25/22 12:21, Andy Shevchenko wrote:
-> Replace 'depends on FB_TFT' by 'if FB_TFT ... endif'
-> for the sake of deduplication.
+On 2022-01-25 19:12, Helge Deller wrote:
+> Add a config option CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION to
+> enable bitblt and fillrect hardware acceleration in the framebuffer
+> console. If disabled, such acceleration will not be used, even if it is
+> supported by the graphics hardware driver.
 > 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->  drivers/video/fbtft/Kconfig | 33 ++++-----------------------------
->  1 file changed, 4 insertions(+), 29 deletions(-)
+> If you plan to use DRM as your main graphics output system, you should
+> disable this option since it will prevent compiling in code which isn't
+> used later on when DRM takes over.
 > 
-> diff --git a/drivers/video/fbtft/Kconfig b/drivers/video/fbtft/Kconfig
-> index 4d29e8c1014e..14ea3c6a60da 100644
-> --- a/drivers/video/fbtft/Kconfig
-> +++ b/drivers/video/fbtft/Kconfig
-> @@ -10,87 +10,75 @@ menuconfig FB_TFT
+> For all other configurations, e.g. if none of your graphic cards support
+> DRM (yet), DRM isn't available for your architecture, or you can't be
+> sure that the graphic card in the target system will support DRM, you
+> most likely want to enable this option.
+> 
+> 
+> This patch is the first RFC.
+> 
+> 
+> Independed of this patch I did some timing experiments with a qemu
+> virtual machine running a PA-RISC Debian Linux installation with a
+> screen resolution of 2048x1024 with 8bpp. In that case qemu emulated the
+> graphics hardware bitblt and fillrect acceleration by using the native
+> (x86) CPU.
+> 
+> It was a simple testcase which was to run "time dmesg", where the syslog
+> had 284 lines. The results showed a huge speedup:
+> a) time dmesg (without acceleration):
+>     -> 19.0 seconds
+> b) time dmesg (with acceleration):
+>     ->  2.6 seconds
+> 
+> Signed-off-by: Helge Deller <deller@gmx.de>
+> 
+> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+> index 840d9813b0bc..da84d1c21c21 100644
+> --- a/drivers/video/console/Kconfig
+> +++ b/drivers/video/console/Kconfig
+> @@ -78,6 +78,17 @@ config FRAMEBUFFER_CONSOLE
+>   	help
+>   	  Low-level framebuffer-based console driver.
+> 
+> +config FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+> +	bool "Framebuffer Console hardware acceleration support"
+> +	depends on FRAMEBUFFER_CONSOLE
+> +	default y if !DRM
+> +	default y if !(X86 || ARM)
 
+You probably mean ARM64 there, if you're trying to encapsulate "modern 
+systems where this really isn't relevant". Some supported ARM platforms 
+do date back to the days of weird and wonderful fbdev hardware.
 
-Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
+Conversely I recently cobbled an ancient PCI VGA card into an arm64 
+machine and was slightly disappointed that there didn't seem to be any 
+driver that was usable straight off :)
 
-thanks.
+(Yes, I might give v86d + uvesafb a go at some point...)
 
--- 
-~Randy
+Robin.
+
+> +	help
+> +	  If you use a system on which DRM is fully supported you usually want to say N,
+> +	  otherwise you probably want to enable this option.
+> +	  If enabled the framebuffer console will utilize the hardware acceleration
+> +	  of your graphics card by using hardware bitblt and fillrect features.
+> +
+>   config FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+>          bool "Map the console to the primary display device"
+>          depends on FRAMEBUFFER_CONSOLE
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index b813985f1403..f7b7d35953e8 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -1136,11 +1136,13 @@ static void fbcon_init(struct vc_data *vc, int init)
+> 
+>   	ops->graphics = 0;
+> 
+> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+>   	if ((cap & FBINFO_HWACCEL_COPYAREA) &&
+>   	    !(cap & FBINFO_HWACCEL_DISABLED))
+>   		p->scrollmode = SCROLL_MOVE;
+>   	else /* default to something safe */
+>   		p->scrollmode = SCROLL_REDRAW;
+> +#endif
+> 
+>   	/*
+>   	 *  ++guenther: console.c:vc_allocate() relies on initializing
+> @@ -1705,7 +1707,7 @@ static bool fbcon_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
+>   			count = vc->vc_rows;
+>   		if (logo_shown >= 0)
+>   			goto redraw_up;
+> -		switch (p->scrollmode) {
+> +		switch (fb_scrollmode(p)) {
+>   		case SCROLL_MOVE:
+>   			fbcon_redraw_blit(vc, info, p, t, b - t - count,
+>   				     count);
+> @@ -1795,7 +1797,7 @@ static bool fbcon_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
+>   			count = vc->vc_rows;
+>   		if (logo_shown >= 0)
+>   			goto redraw_down;
+> -		switch (p->scrollmode) {
+> +		switch (fb_scrollmode(p)) {
+>   		case SCROLL_MOVE:
+>   			fbcon_redraw_blit(vc, info, p, b - 1, b - t - count,
+>   				     -count);
+> @@ -1946,12 +1948,12 @@ static void fbcon_bmove_rec(struct vc_data *vc, struct fbcon_display *p, int sy,
+>   		   height, width);
+>   }
+> 
+> -static void updatescrollmode(struct fbcon_display *p,
+> +static void updatescrollmode_accel(struct fbcon_display *p,
+>   					struct fb_info *info,
+>   					struct vc_data *vc)
+>   {
+> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+>   	struct fbcon_ops *ops = info->fbcon_par;
+> -	int fh = vc->vc_font.height;
+>   	int cap = info->flags;
+>   	u16 t = 0;
+>   	int ypan = FBCON_SWAP(ops->rotate, info->fix.ypanstep,
+> @@ -1972,12 +1974,6 @@ static void updatescrollmode(struct fbcon_display *p,
+>   	int fast_imageblit = (cap & FBINFO_HWACCEL_IMAGEBLIT) &&
+>   		!(cap & FBINFO_HWACCEL_DISABLED);
+> 
+> -	p->vrows = vyres/fh;
+> -	if (yres > (fh * (vc->vc_rows + 1)))
+> -		p->vrows -= (yres - (fh * vc->vc_rows)) / fh;
+> -	if ((yres % fh) && (vyres % fh < yres % fh))
+> -		p->vrows--;
+> -
+>   	if (good_wrap || good_pan) {
+>   		if (reading_fast || fast_copyarea)
+>   			p->scrollmode = good_wrap ?
+> @@ -1991,6 +1987,27 @@ static void updatescrollmode(struct fbcon_display *p,
+>   		else
+>   			p->scrollmode = SCROLL_REDRAW;
+>   	}
+> +#endif
+> +}
+> +
+> +static void updatescrollmode(struct fbcon_display *p,
+> +					struct fb_info *info,
+> +					struct vc_data *vc)
+> +{
+> +	struct fbcon_ops *ops = info->fbcon_par;
+> +	int fh = vc->vc_font.height;
+> +	int yres = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
+> +	int vyres = FBCON_SWAP(ops->rotate, info->var.yres_virtual,
+> +				   info->var.xres_virtual);
+> +
+> +	p->vrows = vyres/fh;
+> +	if (yres > (fh * (vc->vc_rows + 1)))
+> +		p->vrows -= (yres - (fh * vc->vc_rows)) / fh;
+> +	if ((yres % fh) && (vyres % fh < yres % fh))
+> +		p->vrows--;
+> +
+> +	/* update scrollmode in case hardware acceleration is used */
+> +	updatescrollmode_accel(p, info, vc);
+>   }
+> 
+>   #define PITCH(w) (((w) + 7) >> 3)
+> @@ -2148,7 +2165,7 @@ static int fbcon_switch(struct vc_data *vc)
+> 
+>   	updatescrollmode(p, info, vc);
+> 
+> -	switch (p->scrollmode) {
+> +	switch (fb_scrollmode(p)) {
+>   	case SCROLL_WRAP_MOVE:
+>   		scrollback_phys_max = p->vrows - vc->vc_rows;
+>   		break;
+> diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
+> index 9315b360c898..c5c043f38162 100644
+> --- a/drivers/video/fbdev/core/fbcon.h
+> +++ b/drivers/video/fbdev/core/fbcon.h
+> @@ -29,7 +29,9 @@ struct fbcon_display {
+>       /* Filled in by the low-level console driver */
+>       const u_char *fontdata;
+>       int userfont;                   /* != 0 if fontdata kmalloc()ed */
+> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+>       u_short scrollmode;             /* Scroll Method */
+> +#endif
+>       u_short inverse;                /* != 0 text black on white as default */
+>       short yscroll;                  /* Hardware scrolling */
+>       int vrows;                      /* number of virtual rows */
+> @@ -208,6 +210,17 @@ static inline int attr_col_ec(int shift, struct vc_data *vc,
+>   #define SCROLL_REDRAW	   0x004
+>   #define SCROLL_PAN_REDRAW  0x005
+> 
+> +static inline u_short fb_scrollmode(struct fbcon_display *fb)
+> +{
+> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+> +	return fb->scrollmode;
+> +#else
+> +	/* hardcoded to SCROLL_REDRAW if acceleration was disabled. */
+> +	return SCROLL_REDRAW;
+> +#endif
+> +}
+> +
+> +
+>   #ifdef CONFIG_FB_TILEBLITTING
+>   extern void fbcon_set_tileops(struct vc_data *vc, struct fb_info *info);
+>   #endif

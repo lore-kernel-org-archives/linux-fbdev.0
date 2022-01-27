@@ -2,164 +2,98 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81E29C433FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Jan 2022 09:18:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B567C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Jan 2022 10:33:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235080AbiA0JS3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 27 Jan 2022 04:18:29 -0500
-Received: from new2-smtp.messagingengine.com ([66.111.4.224]:36101 "EHLO
-        new2-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S235076AbiA0JS3 (ORCPT
+        id S239513AbiA0KdL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 27 Jan 2022 05:33:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49982 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239067AbiA0KdK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 27 Jan 2022 04:18:29 -0500
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-        by mailnew.nyi.internal (Postfix) with ESMTP id B34C3580350;
-        Thu, 27 Jan 2022 04:18:24 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute3.internal (MEProxy); Thu, 27 Jan 2022 04:18:24 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
-        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to; s=fm2; bh=9T5RBslyEteXBKTxiCWnHx41KnlmqwYF4wb/qh
-        g+Kfg=; b=gz+NlBbawCZK1DOG8BwUgjYruyApOVSjjeHVkn+AL3/CIensP0iSQ0
-        Rd+MylVBNFZhuwZRNyQJPI22klaptWVx+Ke76gBeDBKxxALr2uXnsK4yqSufobI6
-        18c62w3cpYF7m/7BBgBEF5GLvaHA4fDc+xATeQDui1OBi3Qi212dzHsgdALHZ4zu
-        tmnMogAbIE90VT3xvjmGb/PHm4zemnbAS78AIuQKqpnjteHFXYbJnbtQvEosFGwk
-        4hidLsUztQfOlj1hCFlm+3mhDmfXdlsk6gC6LgPtZZomwz0qdpp8C+OSZJ+fD/Xn
-        yhSbUVXWNYbBmtF5GOh8NEPdTj6q672g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:date:date:from:from
-        :in-reply-to:in-reply-to:message-id:mime-version:references
-        :reply-to:sender:subject:subject:to:to:x-me-proxy:x-me-proxy
-        :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=9T5RBslyEteXBKTxi
-        CWnHx41KnlmqwYF4wb/qhg+Kfg=; b=ACiwWx8nT9UVs9xnAW0muyPmcsBAC2dPO
-        JpXc7uZ7dyY8wguF+ciWCKDLCKNqRcScZoGIE7FC+PZnQFG0VrbZaPLpSaIRC9Xj
-        b9iA3FXvOC109ykhFCi8ZGTqC+w06j/CshCbaQQ3X5yZfFCu88Def2K49lwr+msn
-        q6P7NjCrY2CExOy2vXl82y28QfAsuZOSxQmoMe2AqAtPZ1LHHxjRIvSZNJDCgezu
-        AuUOQYEc6aFfFMxE7Wsf4l7ee0MEdCxQWszyL9vfxZIxhKkVE0kzeHKmPw/EY17h
-        yZoTwQ1nty4pkwknp405/NAjqG9kyOLkou9sYh9d3Zda+S0f28TuQ==
-X-ME-Sender: <xms:X2PyYbLBPspeccnceI5EyotcWrDez0Er1EeK0U6mLBZS7Y1tzL-vUg>
-    <xme:X2PyYfKAzLKk4_N93TADPVjpZpwF2PH3rJTjs5zYHtJzRYKo1uRrw5Ijfk2VlJ9Mo
-    u8vpGzMTZxCJgkqmmA>
-X-ME-Received: <xmr:X2PyYTurZI9jh1UFmTno-fXD87QF3Ty5NnSjylTQGZVClGDXtXRNVgF8KFETLq7N9OydaJxKxTvH0_dyzvrlaLO2Xf0ERYHzqEhr0lk>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvvddrfeefgddtvdcutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpeffhffvuffkfhggtggujgesghdtreertddtvdenucfhrhhomhepofgrgihimhgv
-    ucftihhprghrugcuoehmrgigihhmvgestggvrhhnohdrthgvtghhqeenucggtffrrghtth
-    gvrhhnpeelkeeghefhuddtleejgfeljeffheffgfeijefhgfeufefhtdevteegheeiheeg
-    udenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehmrg
-    igihhmvgestggvrhhnohdrthgvtghh
-X-ME-Proxy: <xmx:YGPyYUZW-8g1zq-063gLSVyVcl6WlxMRjeGQKi6S8ZM180q-N6hMeQ>
-    <xmx:YGPyYSZkUtufYmK49t1ULhao90Xx3BOxnMvPLx1S-jxkzdtF1myjGg>
-    <xmx:YGPyYYBk_S9-JMyegb5ZcRJL-84ce5knLm0zcJn2c_y2RXrIrM88Xw>
-    <xmx:YGPyYappdGraeNojxsp8qu34-f6YX7-sefGEkD9pbkkSIvDjGas5VQ>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 27 Jan 2022 04:18:23 -0500 (EST)
-Date:   Thu, 27 Jan 2022 10:18:20 +0100
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     Helge Deller <deller@gmx.de>, Andy Shevchenko <andy@kernel.org>,
-        linux-fbdev@vger.kernel.org,
-        Michael Hennerich <michael.hennerich@analog.com>,
+        Thu, 27 Jan 2022 05:33:10 -0500
+Received: from mail-oi1-x233.google.com (mail-oi1-x233.google.com [IPv6:2607:f8b0:4864:20::233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 915D0C061714
+        for <linux-fbdev@vger.kernel.org>; Thu, 27 Jan 2022 02:33:10 -0800 (PST)
+Received: by mail-oi1-x233.google.com with SMTP id g205so5023192oif.5
+        for <linux-fbdev@vger.kernel.org>; Thu, 27 Jan 2022 02:33:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=M9lbSU/ybc6OppgRIX8ZBQPJXb4PzkNkIkqyzEe4vsM=;
+        b=h5X8KiOAwvCCoeask1zcBMENoSVPTMzB0G9oA/mLHo88nDVixWpSb7px6ea/B1fPEL
+         PkvItn1CwvuTQktdczAAqHeDGBXOYOfOrLz2U+mxe7iuVSUwVTaAEcOAqnvnrVcvfqS1
+         h5tS2oE1tTYgRY7YfjUQIijdf9VNx0qvTN4IJLLVTFntzU7jOJfQDSa01XLgSnH3EvZ3
+         pEmGFTmgQZT7p4xg7+zEOjpe66HJFk76oAeJhm0Gi1hrITnqHwkuyechpuEh0xvKNaac
+         3mMOk3jpmNiwzprGnlDdUxUkeGeterETUL3Z6t7fc3PHj58yCj3ZowkQVhwGMfoI1SQt
+         b/4g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=M9lbSU/ybc6OppgRIX8ZBQPJXb4PzkNkIkqyzEe4vsM=;
+        b=GcF2NQ2toxacwa8Dr1kGf1WZHFNOOguKoOOSpLaxU80lQucDM51cgUG8/NP/wBpyMT
+         iT6bqTxQHSPGm7n3JGEB+nxWjQwhPWtNGdfZaLSKLChb+WU/J6s00hwsBNyp5Pj9PT2Y
+         RrbcLLjqRcPfpBntamgVUrUgN9Tqmf6ohOCuoO05XDqNYFAnqtsMEnGK/Kqz5hrrHHfr
+         4xb+O4Fhlq/v1XN/v2o6Rp6aolVByzvGKPR1M48eyCwaFCqLKvp/uBLL9T1Tf8TwRXGh
+         uXLg5k9eyextp8Y9OBS2YU8c4l8bkY/+SvIzU3yRHlsKHymUrcVrsGHyL4fayufPJfq3
+         HGdg==
+X-Gm-Message-State: AOAM530x3WfCA6GOt7+6gW/Qk9KrHDdjyH3RGJlK1rTGzjnwlePgVbz8
+        uhxxG1KzKS1ui1NK7XXBkGYarcD+0oV5xzXJzGThLw==
+X-Google-Smtp-Source: ABdhPJy01OZg2SzTN7RAjLIdxIQiBfvVYOOHfj92G4lxP3BuUPFrtmf9Vh+t5p9LhrGQAJTdPvmIkkVRVunGv9b2WW0=
+X-Received: by 2002:a05:6808:b10:: with SMTP id s16mr1773942oij.307.1643279589694;
+ Thu, 27 Jan 2022 02:33:09 -0800 (PST)
+MIME-Version: 1.0
+References: <CAHp75Vc2cjHkJwNSiJ-HSWBG=DYy68uvD7QQzNdRp3mQxoY1nw@mail.gmail.com>
+ <3877516e-3db3-f732-b44f-7fe12b175226@gmx.de> <b13c0634-e766-74db-ab1f-672f5d0c04d6@redhat.com>
+ <YfFMSkhbvHaR0YNE@smile.fi.intel.com> <f6ffe9bb-8683-4061-c876-1d559267ebae@redhat.com>
+ <YfFWmmJFtEB93jUi@smile.fi.intel.com> <3430838d-1c63-da49-b774-c5a883e7085f@redhat.com>
+ <YfFZkgE3wfPXLpYA@kroah.com> <20220126144524.GB1951@kadam>
+ <CAKMK7uGEFW4nd+W6PiT=uwSPz=pA6HKZXj6ePcdsAGiMDb3BxA@mail.gmail.com> <20220127062945.GC1951@kadam>
+In-Reply-To: <20220127062945.GC1951@kadam>
+From:   Dmitry Vyukov <dvyukov@google.com>
+Date:   Thu, 27 Jan 2022 11:32:58 +0100
+Message-ID: <CACT4Y+bWMFK40o1gw6Ze7vkSKjAyBPNecjEBw+g7sMFbUZyXXA@mail.gmail.com>
+Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
+To:     Dan Carpenter <dan.carpenter@oracle.com>
+Cc:     Daniel Vetter <daniel@ffwll.ch>,
+        syzkaller-bugs <syzkaller-bugs@googlegroups.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-staging@lists.linux.dev,
+        Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
+        Michael Hennerich <michael.hennerich@analog.com>,
+        Helge Deller <deller@gmx.de>, linux-staging@lists.linux.dev,
         Javier Martinez Canillas <javierm@redhat.com>,
         dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Carlis <zhangxuezhi1@yulong.com>,
         Phillip Potter <phil@philpotter.co.uk>,
         Lee Jones <lee.jones@linaro.org>,
-        Heiner Kallweit <hkallweit1@gmail.com>
-Subject: Re: [PATCH v1 0/4] fbtft: Unorphan the driver for maintenance
-Message-ID: <20220127091820.5ktfbovvw5bnef2e@houat>
-References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
- <991e988b-7225-881b-a59a-33c3eae044be@suse.de>
- <CAHp75Vc2cjHkJwNSiJ-HSWBG=DYy68uvD7QQzNdRp3mQxoY1nw@mail.gmail.com>
- <3877516e-3db3-f732-b44f-7fe12b175226@gmx.de>
- <b13c0634-e766-74db-ab1f-672f5d0c04d6@redhat.com>
- <CAKMK7uEqwyZuVheqyNG33Un4WK1cd1B+WBYbCmi20fZi0qVG2w@mail.gmail.com>
- <88ea01b8-3fdd-72cc-c3d8-e2890c68533b@gmx.de>
- <YfFM+6pvJLmtY0Zg@smile.fi.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="xbrmyhidxdqgdgca"
-Content-Disposition: inline
-In-Reply-To: <YfFM+6pvJLmtY0Zg@smile.fi.intel.com>
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        syzkaller <syzkaller@googlegroups.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-
---xbrmyhidxdqgdgca
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Jan 26, 2022 at 03:30:35PM +0200, Andy Shevchenko wrote:
-> On Wed, Jan 26, 2022 at 12:38:09PM +0100, Helge Deller wrote:
-> > On 1/26/22 12:24, Daniel Vetter wrote:
-> > > On Wed, Jan 26, 2022 at 12:18 PM Javier Martinez Canillas
-> > > <javierm@redhat.com> wrote:
-> > >> On 1/26/22 11:59, Helge Deller wrote:
-> > >>> On 1/26/22 11:02, Andy Shevchenko wrote:
->=20
-> ...
->=20
-> > >>>> P.S. For the record, I will personally NAK any attempts to remove =
-that
-> > >>>> driver from the kernel. And this is another point why it's better =
-not
-> > >>>> to be under the staging.
-> > >>>
-> > >>> I agree. Same as for me to NAK the disabling of fbcon's acceleration
-> > >>> features or even attempting to remove fbdev altogether (unless all
-> > >>> relevant drivers are ported to DRM).
-> > >>
-> > >> But that will never happen if we keep moving the goal post.
-> > >>
-> > >> At some point new fbdev drivers should not be added anymore, otherwi=
-se
-> > >> the number of existing drivers that need conversion will keep growin=
-g.
+On Thu, 27 Jan 2022 at 07:30, Dan Carpenter <dan.carpenter@oracle.com> wrote:
+>
+> On Wed, Jan 26, 2022 at 11:31:02PM +0100, Daniel Vetter wrote:
+> > dOn Wed, Jan 26, 2022 at 3:46 PM Dan Carpenter <dan.carpenter@oracle.com> wrote:
 > > >
-> > > And that point was about 5 years ago, and has been discussed at some
-> > > plumbers meanwhile, resulting in the staging TODO patches to make
-> > > these drm drivers to destage them.
+> > > The other advantage of staging is the I don't think syzbot enables it.
+> > > I guess it's easier to persuade Dmitry to ignore STAGING than it was to
+> > > get him to disable FBDEV.  :P
 > > >
-> > > Fixing bugs in fbdev is all fine, reopening it for merging new driver=
-s is not.
-> >=20
-> > We are on the same page!
-> > I'm not at all proposing to include new drivers for (relatively) new
-> > hardware into fbdev, which is capable to be written as DRM driver.
->=20
-> Agree. The point here is neither in opening it for new comers nor for
-> expanding, the drivers in question are all in the kernel in different fol=
-der
-> that is not suitable for them, but I gave up. I see that nobody wants
-> maintainers to be appearing for the old _working_ code, as it was shown
-> already by the DVB case few month ago.
+> > > The memory corruption in fbdev was a real headache for everyone because
+> > > the stack traces ended up all over the kernel.
+> >
+> > Uh Dmitry disabled all of FBDEV?
+>
+> No that's the opposite of what I meant.  STAGING is disabled in syzbot
+> and FBDEV is enabled.
 
-I mean, the main reason fbtft was in staging all this time has never
-been about fbdev. It was about the device tree bindings that have never
-been documented, reviewed and agreed upon. And given its bindings, we're
-very far from it.
-
-That's what Noralf has been mostly working on all this time, and yeah,
-it takes time but we're getting there.
-
-Maxime
-
---xbrmyhidxdqgdgca
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYfJjXAAKCRDj7w1vZxhR
-xULNAQCrENDC07h9aXPXO4Zo9zV4kHn9oaiD/6+T+S3Kdu4ccwD+L9kAd89Qtw9V
-5/R0wrL1Cozn+TiEGqlFRMfAAuNuJwY=
-=Dqiz
------END PGP SIGNATURE-----
-
---xbrmyhidxdqgdgca--
+Is there still any problem with syzbot config?
+syzbot configs are stored here:
+https://github.com/google/syzkaller/tree/master/dashboard/config/linux

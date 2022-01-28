@@ -2,34 +2,34 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81400C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 27 Jan 2022 21:36:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C3DEC433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Jan 2022 07:17:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240798AbiA0Vga (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 27 Jan 2022 16:36:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36878 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240790AbiA0Vga (ORCPT
+        id S242800AbiA1HRF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Jan 2022 02:17:05 -0500
+Received: from ams.source.kernel.org ([145.40.68.75]:52004 "EHLO
+        ams.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S230226AbiA1HRE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 27 Jan 2022 16:36:30 -0500
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E7BFC061714
-        for <linux-fbdev@vger.kernel.org>; Thu, 27 Jan 2022 13:36:30 -0800 (PST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1nDCRC-0006Rf-Ku; Thu, 27 Jan 2022 22:36:14 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1nDCRB-00CpYf-FH; Thu, 27 Jan 2022 22:36:12 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1nDCRA-001olD-2d; Thu, 27 Jan 2022 22:36:12 +0100
-Date:   Thu, 27 Jan 2022 22:36:07 +0100
-From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+        Fri, 28 Jan 2022 02:17:04 -0500
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 5FFA2B824C0;
+        Fri, 28 Jan 2022 07:17:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A656DC340E0;
+        Fri, 28 Jan 2022 07:17:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+        s=korg; t=1643354222;
+        bh=+CQJj+Wy3FyhSrLEQk/MoP9KSnO3ECMLEzZsREv0YV4=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=U0RXEHZmQYrEOPIZ8T9JblN8HxHUbsBq9lYybraKlnLmvNw4CmQOJP7o1ZHF4pVHS
+         byDvoCAIUMMHQ1J9DHwhkDM4C4r6Qj6jWYkslT1jQmINiqHMUEpkNre2SFwQq6Ov03
+         f73drERTeNKmbGVB8ldMK92USjuiM53p8dUhR0YA=
+Date:   Fri, 28 Jan 2022 08:16:59 +0100
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>
 Cc:     Mark Brown <broonie@kernel.org>, linux-fbdev@vger.kernel.org,
         Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
         Noralf Tronnes <notro@tronnes.org>,
@@ -38,79 +38,58 @@ Cc:     Mark Brown <broonie@kernel.org>, linux-fbdev@vger.kernel.org,
         kernel@pengutronix.de, Heiner Kallweit <hkallweit1@gmail.com>
 Subject: Re: [PATCH 2/5] staging: fbtft: Deduplicate driver registration
  macros
-Message-ID: <20220127213607.xbggvbm454u7qfid@pengutronix.de>
+Message-ID: <YfOYa/vX8cYKQxgo@kroah.com>
 References: <20220123175201.34839-1-u.kleine-koenig@pengutronix.de>
  <20220123175201.34839-3-u.kleine-koenig@pengutronix.de>
+ <20220127213607.xbggvbm454u7qfid@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="67mr4ifnx6prswud"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20220123175201.34839-3-u.kleine-koenig@pengutronix.de>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220127213607.xbggvbm454u7qfid@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On Thu, Jan 27, 2022 at 10:36:07PM +0100, Uwe Kleine-König wrote:
+> Hello Greg,
+> 
+> On Sun, Jan 23, 2022 at 06:51:58PM +0100, Uwe Kleine-König wrote:
+> > The two macros FBTFT_REGISTER_DRIVER and FBTFT_REGISTER_SPI_DRIVER
+> > contain quite some duplication: Both define an spi driver and an of device
+> > table and the differences are quite subtle.
+> > 
+> > So create two new macros and use both twice.
+> > 
+> > Link: https://lore.kernel.org/r/20220118181338.207943-2-u.kleine-koenig@pengutronix.de
+> > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> 
+> You picked this patch into your staging-next branch, I guess from the
+> original submission. Not sure how Mark wants to continue with the series
+> from this thread, but at least my plan was that he will create an
+> immutable branch on top of 5.17-rc2 (assuming 5.17-rc2 will contain
+> "staging: fbtft: Fix error path in fbtft_driver_module_init()") with the
+> remaining 4 patches in this series.
 
---67mr4ifnx6prswud
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+That's fine, I can pull from that.
 
-Hello Greg,
+> In a private mail you agreed to this procedure, but this didn't stop you
+> taking this patch?! What is your plan here? The obvious (to me) options
+> are:
+> 
+>  - Delay this series until after the next merge window.
+>  - You back out this patch from staging-next and ack here for Mark to
+>    apply it to an immutable branch.
+>  - You keep this patch in staging-next and still ack here for Mark to
+>    apply it to an immutable branch. Then the patch would be included
+>    twice.
 
-On Sun, Jan 23, 2022 at 06:51:58PM +0100, Uwe Kleine-K=F6nig wrote:
-> The two macros FBTFT_REGISTER_DRIVER and FBTFT_REGISTER_SPI_DRIVER
-> contain quite some duplication: Both define an spi driver and an of device
-> table and the differences are quite subtle.
->=20
-> So create two new macros and use both twice.
->=20
-> Link: https://lore.kernel.org/r/20220118181338.207943-2-u.kleine-koenig@p=
-engutronix.de
-> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+Included twice is fine, or I can revert it in the staging tree.
 
-You picked this patch into your staging-next branch, I guess from the
-original submission. Not sure how Mark wants to continue with the series
-=66rom this thread, but at least my plan was that he will create an
-immutable branch on top of 5.17-rc2 (assuming 5.17-rc2 will contain
-"staging: fbtft: Fix error path in fbtft_driver_module_init()") with the
-remaining 4 patches in this series.
+Don't let staging tree issues prevent you from doing real work in the
+other part of the kernel, I can manage merges and other issues like this
+very easily.
 
-In a private mail you agreed to this procedure, but this didn't stop you
-taking this patch?! What is your plan here? The obvious (to me) options
-are:
+thanks,
 
- - Delay this series until after the next merge window.
- - You back out this patch from staging-next and ack here for Mark to
-   apply it to an immutable branch.
- - You keep this patch in staging-next and still ack here for Mark to
-   apply it to an immutable branch. Then the patch would be included
-   twice.
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---67mr4ifnx6prswud
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmHzEEQACgkQwfwUeK3K
-7AkdBQf/QYxLjRjjSpz8FTj3K6vGIxGPAC7hZKjN9Sekvmf8ql2qAJ0veXMox5Hs
-AVo6BooWW8n6qnIE6j05wMMcJz16iBdVNo5kOSFo1vt7rP0sXbp/i1UIiU1hBcTT
-Mt/oYvsLpnwdh0OyI7h3ZfOdHo05HG8l/fjCBsHMozW1wuGvVIHnbN9zMyLEClyC
-58/88JKuKUU0REoLty0vkSjzfwmbQoXTbrkXgGHUkUyzk5g4JekV2R+xIkhmVWp6
-49EtKM6Xg8ykJKh51BNltCBDtrvNRuw/oKa5atlrCgKAfhynZv29X/oPNg4jXVPw
-k3jTHuwnI9NtkZxvtNMmRylFxVvrtw==
-=JziW
------END PGP SIGNATURE-----
-
---67mr4ifnx6prswud--
+greg k-h

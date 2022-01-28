@@ -2,94 +2,76 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C3DEC433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Jan 2022 07:17:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 857C9C4332F
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Jan 2022 17:30:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242800AbiA1HRF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Jan 2022 02:17:05 -0500
-Received: from ams.source.kernel.org ([145.40.68.75]:52004 "EHLO
-        ams.source.kernel.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230226AbiA1HRE (ORCPT
+        id S1343610AbiA1RaN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Jan 2022 12:30:13 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57172 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1343672AbiA1RaM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Jan 2022 02:17:04 -0500
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 5FFA2B824C0;
-        Fri, 28 Jan 2022 07:17:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A656DC340E0;
-        Fri, 28 Jan 2022 07:17:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1643354222;
-        bh=+CQJj+Wy3FyhSrLEQk/MoP9KSnO3ECMLEzZsREv0YV4=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=U0RXEHZmQYrEOPIZ8T9JblN8HxHUbsBq9lYybraKlnLmvNw4CmQOJP7o1ZHF4pVHS
-         byDvoCAIUMMHQ1J9DHwhkDM4C4r6Qj6jWYkslT1jQmINiqHMUEpkNre2SFwQq6Ov03
-         f73drERTeNKmbGVB8ldMK92USjuiM53p8dUhR0YA=
-Date:   Fri, 28 Jan 2022 08:16:59 +0100
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-Cc:     Mark Brown <broonie@kernel.org>, linux-fbdev@vger.kernel.org,
-        Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-        Noralf Tronnes <notro@tronnes.org>,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-spi@vger.kernel.org,
-        kernel@pengutronix.de, Heiner Kallweit <hkallweit1@gmail.com>
-Subject: Re: [PATCH 2/5] staging: fbtft: Deduplicate driver registration
- macros
-Message-ID: <YfOYa/vX8cYKQxgo@kroah.com>
-References: <20220123175201.34839-1-u.kleine-koenig@pengutronix.de>
- <20220123175201.34839-3-u.kleine-koenig@pengutronix.de>
- <20220127213607.xbggvbm454u7qfid@pengutronix.de>
+        Fri, 28 Jan 2022 12:30:12 -0500
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D9A7DC06173B
+        for <linux-fbdev@vger.kernel.org>; Fri, 28 Jan 2022 09:30:11 -0800 (PST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:3999:e79d:cb59:f2ec])
+        by xavier.telenet-ops.be with bizsmtp
+        id oHW92600704fKGS01HW9pQ; Fri, 28 Jan 2022 18:30:09 +0100
+Received: from rox.of.borg ([192.168.97.57])
+        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1nDV4a-00C0CU-Vh; Fri, 28 Jan 2022 18:30:08 +0100
+Received: from geert by rox.of.borg with local (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1nDV4a-007BhB-EK; Fri, 28 Jan 2022 18:30:08 +0100
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+To:     linux-m68k@lists.linux-m68k.org
+Cc:     Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] m68k: mm: Remove check for VM_IO to fix deferred I/O
+Date:   Fri, 28 Jan 2022 18:30:06 +0100
+Message-Id: <20220128173006.1713210-1-geert@linux-m68k.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20220127213607.xbggvbm454u7qfid@pengutronix.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Jan 27, 2022 at 10:36:07PM +0100, Uwe Kleine-König wrote:
-> Hello Greg,
-> 
-> On Sun, Jan 23, 2022 at 06:51:58PM +0100, Uwe Kleine-König wrote:
-> > The two macros FBTFT_REGISTER_DRIVER and FBTFT_REGISTER_SPI_DRIVER
-> > contain quite some duplication: Both define an spi driver and an of device
-> > table and the differences are quite subtle.
-> > 
-> > So create two new macros and use both twice.
-> > 
-> > Link: https://lore.kernel.org/r/20220118181338.207943-2-u.kleine-koenig@pengutronix.de
-> > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> 
-> You picked this patch into your staging-next branch, I guess from the
-> original submission. Not sure how Mark wants to continue with the series
-> from this thread, but at least my plan was that he will create an
-> immutable branch on top of 5.17-rc2 (assuming 5.17-rc2 will contain
-> "staging: fbtft: Fix error path in fbtft_driver_module_init()") with the
-> remaining 4 patches in this series.
+When an application accesses a mapped frame buffer backed by deferred
+I/O, it receives a segmentation fault.  Fix this by removing the check
+for VM_IO in do_page_fault().
 
-That's fine, I can pull from that.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+This check was never present in a fault handler on any other
+architecture than m68k.
+Some digging revealed that it was added in v2.1.106, but I couldn't find
+an email with a patch adding it.  That same kernel version extended the
+use of the hwreg_present() helper to HP9000/300, so the check might have
+been needed there, perhaps only during development?
+The Atari kernel relies heavily on hwreg_present() (both the success and
+failure cases), and these still work, at least on ARAnyM.
+---
+ arch/m68k/mm/fault.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-> In a private mail you agreed to this procedure, but this didn't stop you
-> taking this patch?! What is your plan here? The obvious (to me) options
-> are:
-> 
->  - Delay this series until after the next merge window.
->  - You back out this patch from staging-next and ack here for Mark to
->    apply it to an immutable branch.
->  - You keep this patch in staging-next and still ack here for Mark to
->    apply it to an immutable branch. Then the patch would be included
->    twice.
+diff --git a/arch/m68k/mm/fault.c b/arch/m68k/mm/fault.c
+index 1493cf5eac1e7a39..71aa9f6315dc8028 100644
+--- a/arch/m68k/mm/fault.c
++++ b/arch/m68k/mm/fault.c
+@@ -93,8 +93,6 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	vma = find_vma(mm, address);
+ 	if (!vma)
+ 		goto map_err;
+-	if (vma->vm_flags & VM_IO)
+-		goto acc_err;
+ 	if (vma->vm_start <= address)
+ 		goto good_area;
+ 	if (!(vma->vm_flags & VM_GROWSDOWN))
+-- 
+2.25.1
 
-Included twice is fine, or I can revert it in the staging tree.
-
-Don't let staging tree issues prevent you from doing real work in the
-other part of the kernel, I can manage merges and other issues like this
-very easily.
-
-thanks,
-
-greg k-h

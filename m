@@ -2,118 +2,83 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07334C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Jan 2022 21:26:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65DA4C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 28 Jan 2022 23:55:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239555AbiA1V0J (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 28 Jan 2022 16:26:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54200 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232623AbiA1V0I (ORCPT
+        id S1344571AbiA1Xzg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 28 Jan 2022 18:55:36 -0500
+Received: from out3-smtp.messagingengine.com ([66.111.4.27]:47823 "EHLO
+        out3-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1344804AbiA1Xzg (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 28 Jan 2022 16:26:08 -0500
-Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8C25FC061714;
-        Fri, 28 Jan 2022 13:26:08 -0800 (PST)
-Received: by mail-pj1-x102d.google.com with SMTP id o11so7637648pjf.0;
-        Fri, 28 Jan 2022 13:26:08 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=subject:to:references:cc:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-transfer-encoding;
-        bh=cfMRAmoR1rDJZPsZIg2Mf9Md2XIapwAEopIEQIY7W8o=;
-        b=D/F0HH3RAZHiHTuozAEIgdDuk7xHYPKxs8Vsjpdy/MFb1HGPaFzlxZb8fCK4DdpA8y
-         pI45IeTGmWtsXn4dIC4UhI8jozVDWvoR+1B0XR/i5lZbVC8jHYh7vs45sQxt4r0iRhtJ
-         l2GxQmIkfwFexUzY10Weo1sC04Y334JFLOTIGroXmvc+ic+mUqpxZAXCbYzE/u3M8QBo
-         njNyaDcokUOJ6Dy5OY+Zc5CRNOc9mA6k80CI5QeI2UXk8udpMWloPkXMBTFHUfAxHe5k
-         nsqPYWSxJ3Ga/azdEdsaIFTfQJW78K3dc3tAuRx++vURQpeh4rYNNc6m1GBHG/dvQYjt
-         Hf2A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:references:cc:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding;
-        bh=cfMRAmoR1rDJZPsZIg2Mf9Md2XIapwAEopIEQIY7W8o=;
-        b=IKpjN3pj0qH8sJ7yrqkAa6ym+NVcec57azWskxtnsJ05pH2f2LJGlQsu9tl/k6y9BR
-         2QVEHrUNpDHGnqv3/cuWPnQsnwpNaVxOaEWubAofJZJssQ1EEffIWd0I+4Am/AwTH/2i
-         XvHQvLonXUP8nz3zmoVVtdxzdt77s007bKxydrSU7Ocp1E+XHqzVmXnqnFqhnWJ5HHvu
-         +ociCAICC9w6IBsdDRIn4RFGdfJoUXaCrnrG0bj2d39wIrgg7YNfj16YcY0CpqcG8SYS
-         DiwL0qhMlUrm+6Hm1H7SgdXX3G4Q2qwLM61EUO3Sjf4klD2AjuDTpQ/Uny2CAZCVHY67
-         o/qw==
-X-Gm-Message-State: AOAM532i+rXZYtEVBMnBRzEpSuLIQ6rWr2pqav3jdxJsucMw4zqQ2S82
-        ID1Xxxv6kIzEOYNLe9jkrmA=
-X-Google-Smtp-Source: ABdhPJw2AbvTvknknuXeuDh9LX3olrj3jJ7bS4VvE9PCD9vElbzT59DmeU04zqG8l/DJMEQy7+q2ig==
-X-Received: by 2002:a17:902:ecd0:: with SMTP id a16mr9965255plh.64.1643405167909;
-        Fri, 28 Jan 2022 13:26:07 -0800 (PST)
-Received: from [10.1.1.24] (222-155-5-102-adsl.sparkbb.co.nz. [222.155.5.102])
-        by smtp.gmail.com with ESMTPSA id u18sm10656761pfk.14.2022.01.28.13.26.03
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Fri, 28 Jan 2022 13:26:07 -0800 (PST)
+        Fri, 28 Jan 2022 18:55:36 -0500
+Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
+        by mailout.nyi.internal (Postfix) with ESMTP id 2A9315C0130;
+        Fri, 28 Jan 2022 18:55:35 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute4.internal (MEProxy); Fri, 28 Jan 2022 18:55:35 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-type:date:date:from:from
+        :in-reply-to:in-reply-to:message-id:mime-version:references
+        :reply-to:sender:subject:subject:to:to:x-me-proxy:x-me-proxy
+        :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=IAiBb3iTel7sOiRdw
+        6MfRt20zX3HUdwmOXMp6GDvEpU=; b=cig2R3CaUhMoy4WwozeM67nHdEaM5ShHx
+        g1kv//Sfm149/LmlIe/2209l+15hFdFO7J9BwhlHxm2Qp1nMX1Gb60tFmG4dkWhX
+        tRZ/ZIUsIlax8caE99fRXYMQ720F1Oe0a7XpUKLq//pwuMJNzZ625mkm7yaS419f
+        u+kkbymqczUY3j3DK116WRgempc8PhVJtdHupWWeQ0olb+JW3/uvvVtxrXLXdvtf
+        PamF+TboD47egkgXrGZijKE64qMsPhTBc5XRTcvZ4tOkndmFdlWflbOps1IV25/2
+        AA3gQu+xIeAsAe2q5UE0b9pwd4AiKMRp6ka2lEBI0UTmIrBmiGt2w==
+X-ME-Sender: <xms:doL0YXjrRxw-QVyH7H9T3zsawcnnjdcrocMYzVaWyA1PIZLIFBi2qQ>
+    <xme:doL0YUAuwxIBgK6L6VOKhvHdLYs8bWpsBpxF9UT3GGHhhsrmEocjmaXARSzYy7o_t
+    dFXTSddGiCHqDcuT9Q>
+X-ME-Received: <xmr:doL0YXGJCHOLwxHbM2mtZX7I9HW5_5Swr47WuioaEagea4PEiKKpUmc4cdHpjLplb1jAY0ZgLsrG4gzHS6daNiRfmE3L2Gr4bns>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvvddrfeeigdduhecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpeffhffvufgjkfhfgggtsehttdertddttddvnecuhfhrohhmpefhihhnnhcuvfhh
+    rghinhcuoehfthhhrghinheslhhinhhugidqmheikehkrdhorhhgqeenucggtffrrghtth
+    gvrhhnpeffudfhgeefvdeitedugfelueegheekkeefveffhfeiveetledvhfdtveffteeu
+    udenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehfth
+    hhrghinheslhhinhhugidqmheikehkrdhorhhg
+X-ME-Proxy: <xmx:doL0YUR3LZ0Oev1PpD-WOfcEiL8hnJ56AvjAhj47QAKpuBeOF7djUw>
+    <xmx:doL0YUykduxY3XKMhGHYYOWaiyFk2ENm8bzdpuZNysxQU_tr9pzSSQ>
+    <xmx:doL0Ya7YFiUdxbn5MLYnJYWE-CUOaKNuYGg81e0yCsJXOibNQUzNgA>
+    <xmx:d4L0YeuNCJVRFH24Gul8XgjdZLofo3M0OetKkvlJvrDFHsqIXVWv7Q>
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
+ 28 Jan 2022 18:55:33 -0500 (EST)
+Date:   Sat, 29 Jan 2022 10:55:30 +1100 (AEDT)
+From:   Finn Thain <fthain@linux-m68k.org>
+To:     Michael Schmitz <schmitzmic@gmail.com>
+cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        linux-m68k@lists.linux-m68k.org,
+        Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] m68k: mm: Remove check for VM_IO to fix deferred I/O
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        linux-m68k@lists.linux-m68k.org
-References: <20220128173006.1713210-1-geert@linux-m68k.org>
-Cc:     Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Finn Thain <fthain@linux-m68k.org>
-From:   Michael Schmitz <schmitzmic@gmail.com>
-Message-ID: <b1cd50eb-e476-b4bd-0b2f-b4a8699660f6@gmail.com>
-Date:   Sat, 29 Jan 2022 10:26:01 +1300
-User-Agent: Mozilla/5.0 (X11; Linux ppc; rv:45.0) Gecko/20100101
- Icedove/45.4.0
+In-Reply-To: <b1cd50eb-e476-b4bd-0b2f-b4a8699660f6@gmail.com>
+Message-ID: <4d65d2e1-5fb3-456-3cc5-fbd3167d06c@linux-m68k.org>
+References: <20220128173006.1713210-1-geert@linux-m68k.org> <b1cd50eb-e476-b4bd-0b2f-b4a8699660f6@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20220128173006.1713210-1-geert@linux-m68k.org>
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Geert,
+On Sat, 29 Jan 2022, Michael Schmitz wrote:
 
-for hwregs_present(), the exception fixup will handle any access error 
-(through send_fault_sig()), so this should continue to work.
+> Hi Geert,
+> 
+> for hwregs_present(), the exception fixup will handle any access error 
+> (through send_fault_sig()), so this should continue to work.
+> 
+> Why the special handling of VM_IO pages? Maybe hp300 had marked all IO 
+> register pages VM_IO to distinguish IO faults from VM faults...
+> 
+> The only other area I can imagine this might have an impact is the Mac's 
+> pseudo-DMA - FInn might want to give this some testing.
+> 
 
-Why the special handling of VM_IO pages? Maybe hp300 had marked all IO 
-register pages VM_IO to distinguish IO faults from VM faults...
+mac_scsi.c and mac_esp.c don't use ioremap(). They rely on head.S:
 
-The only other area I can imagine this might have an impact is the Mac's 
-pseudo-DMA - FInn might want to give this some testing.
+        mmu_map_eq      #0x50000000,#0x03000000,%d3
 
-Cheers,
-
-	Michael
-
-
-Am 29.01.2022 um 06:30 schrieb Geert Uytterhoeven:
-> When an application accesses a mapped frame buffer backed by deferred
-> I/O, it receives a segmentation fault.  Fix this by removing the check
-> for VM_IO in do_page_fault().
->
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
-> This check was never present in a fault handler on any other
-> architecture than m68k.
-> Some digging revealed that it was added in v2.1.106, but I couldn't find
-> an email with a patch adding it.  That same kernel version extended the
-> use of the hwreg_present() helper to HP9000/300, so the check might have
-> been needed there, perhaps only during development?
-> The Atari kernel relies heavily on hwreg_present() (both the success and
-> failure cases), and these still work, at least on ARAnyM.
-> ---
->  arch/m68k/mm/fault.c | 2 --
->  1 file changed, 2 deletions(-)
->
-> diff --git a/arch/m68k/mm/fault.c b/arch/m68k/mm/fault.c
-> index 1493cf5eac1e7a39..71aa9f6315dc8028 100644
-> --- a/arch/m68k/mm/fault.c
-> +++ b/arch/m68k/mm/fault.c
-> @@ -93,8 +93,6 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
->  	vma = find_vma(mm, address);
->  	if (!vma)
->  		goto map_err;
-> -	if (vma->vm_flags & VM_IO)
-> -		goto acc_err;
->  	if (vma->vm_start <= address)
->  		goto good_area;
->  	if (!(vma->vm_flags & VM_GROWSDOWN))
->
+Having said that, I will run some tests if you still think it necessary.

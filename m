@@ -2,131 +2,154 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15A0EC4332F
-	for <linux-fbdev@archiver.kernel.org>; Sun, 30 Jan 2022 06:57:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43BFFC433F5
+	for <linux-fbdev@archiver.kernel.org>; Sun, 30 Jan 2022 21:06:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354251AbiA3G5r (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 30 Jan 2022 01:57:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41892 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354238AbiA3G5m (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 30 Jan 2022 01:57:42 -0500
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 145F9C06173B;
-        Sat, 29 Jan 2022 22:57:42 -0800 (PST)
-Received: by mail-pl1-x636.google.com with SMTP id d18so9838822plg.2;
-        Sat, 29 Jan 2022 22:57:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=subject:to:references:cc:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-transfer-encoding;
-        bh=fM8q32grWZEZw0oluXIqvQZO4Mr5xfE86zn2yqSxGvI=;
-        b=UgmUEAmno7gCdw3heMWy+S1n5AcBNQlLLAqPVtZtvbxtbRE2SaZVKIwzglsgdYdWW/
-         9/u1vWPcu7Ee6fiCsP/qee/IBUdWiCjAn3doDwhBiWCI+O0Qh9BSOS9KwjlXEUlt+5gC
-         yaEeDnz8tf+cdlCbfH9PcGXTaNpoH5IskOj+jUcQj0v6MheGW4YByKEMO4IZWjR8YJw5
-         FbP7VE+y0C9v4VWibsNam3w1vaZ2Fsra2Tc+DoNGoDbCINdUx1R3+e3wzk4iP+Kcejs1
-         cfJBYRId7FtK0ve96jRArRmXbXRONqSVVCE8ECIUTkqOeMGt5mB5I8V/Lq5i0Xe5l2Xr
-         Lb6A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:subject:to:references:cc:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding;
-        bh=fM8q32grWZEZw0oluXIqvQZO4Mr5xfE86zn2yqSxGvI=;
-        b=FS+eMB4gTYoP/GjNOd+8ZkU7a0RzXAH8Hw/djhe5afaQ0AIqC4jrDaaBPlRUi/pl6I
-         j2l3huyl6T20epgMy5EsGQpaneNHMr5T9tX+5E2mfrfssckKWPhOI172wixMmx34LT3H
-         dVjbA1644a4Ah4UhugQrE/BBHE1gJNDtMyiK5hNX82HejeHSt80jRq9+HkoxbybIM/Lo
-         VJHC8TgO9bUfB+CIdBL6JjwBp+I0bFZIgxgP9+qh64vdM9+B+EBcox/nPu11ANrDmfGq
-         C0dw161+23IUSyyNKzgDbQ8AJq67KdofKGd8co1PNRkt796vjhKAW3O+ZZlbIdlLf4xI
-         ZkaA==
-X-Gm-Message-State: AOAM532zACxeL/DDEefWWAklb3uSRDmORUqpQAtGVO9YSKUV9Qu+odGS
-        vnZEcEwCUUIZOxRDC3vrYfjw42PDsYQ=
-X-Google-Smtp-Source: ABdhPJwOYscoSEhgZUw8VpKbyZ3DBjJeYIK+Rpi3YjORDvuU4L9mDd6LB3pqIxf2uUJ+uPSSsAnfZA==
-X-Received: by 2002:a17:90b:3907:: with SMTP id ob7mr24092447pjb.193.1643525861276;
-        Sat, 29 Jan 2022 22:57:41 -0800 (PST)
-Received: from [10.1.1.24] (222-155-5-102-adsl.sparkbb.co.nz. [222.155.5.102])
-        by smtp.gmail.com with ESMTPSA id z7sm14745441pfe.49.2022.01.29.22.57.37
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Sat, 29 Jan 2022 22:57:40 -0800 (PST)
-Subject: Re: [PATCH] m68k: mm: Remove check for VM_IO to fix deferred I/O
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        linux-m68k@lists.linux-m68k.org
-References: <20220128173006.1713210-1-geert@linux-m68k.org>
- <63c80eba-7c55-2a92-8078-c63cec3c9efb@gmail.com>
-Cc:     Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-From:   Michael Schmitz <schmitzmic@gmail.com>
-Message-ID: <8913a0a2-9496-143c-18c2-f3023fd37ba0@gmail.com>
-Date:   Sun, 30 Jan 2022 19:57:34 +1300
-User-Agent: Mozilla/5.0 (X11; Linux ppc; rv:45.0) Gecko/20100101
- Icedove/45.4.0
+        id S1356397AbiA3VG6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 30 Jan 2022 16:06:58 -0500
+Received: from mout.gmx.net ([212.227.17.21]:48505 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S238044AbiA3VG6 (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Sun, 30 Jan 2022 16:06:58 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1643576814;
+        bh=qSVMf7chVzMagzN/bacdMfHBC86sKSIqr4jBC0qTajU=;
+        h=X-UI-Sender-Class:Date:To:From:Subject;
+        b=Udp1Exmia+qZE4zi3IZ055ESP7CgAmGVCK+W+XlNYCIiZWpHCOL/16SmcA8dLUJZz
+         yBsGLf2ITkkxOSpE4dXqCuEygUr1NRNhOsikSK7Wya9BVhDT7rSOGxNSXCWl5bdZOS
+         2gVTOAwKdtYwIm2fhkPe5rq3+9buHIe6VDgx35S0=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.133.128]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Ml6qC-1mXCHQ3Wsm-00lUnD; Sun, 30
+ Jan 2022 22:06:54 +0100
+Message-ID: <e1e5b7d1-ea09-6e28-9c39-45b983734a85@gmx.de>
+Date:   Sun, 30 Jan 2022 22:05:39 +0100
 MIME-Version: 1.0
-In-Reply-To: <63c80eba-7c55-2a92-8078-c63cec3c9efb@gmail.com>
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+To:     linux-fbdev@vger.kernel.org,
+        DRI Development <dri-devel@lists.freedesktop.org>
+Content-Language: en-US
+From:   Helge Deller <deller@gmx.de>
+Subject: fbdev git tree update
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V03:K1:Dcux0DNKKNw6RIKgK0IHtd3G0/ad1L27Ms5kiww8liz2M8DuaxX
+ 7pCa6KoAJADYin9fwfvrk2h6tVjJhI92CCbN6Ddjy+flCZsttJJWkV9q6kFByPeF3huGbKS
+ hUFo8zvAOm99b7rNDJk1sudRuHlPt1r6MKhQiLGJkz+Uvtfw29v5Qg9WZrEg8X6dltHin/P
+ IFrTbcdoxUn3sRBiW0nbA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:LJiB3E+4EJ4=:jHpckpb1vPDxfjVFpb9KGJ
+ IjhX+4Ce37eVrMC397SvTdY4dehAeS7SnQBjEkzl9ubMHTEbUHcZe5j72IjvsoB2lR1NrGzN4
+ B/An5DKbuN1mVNQHALdy70TyvbRTo1acIItLTytrksa5cjAsivQv+vwoyo41XO3TCZDBBhyHm
+ RZuNtwnblO3mzAq8+42h0Uq3P4/wia4iEDVqdDpdBZsebAfIYqslKSkpAdjiY8zaJXTMwOk/p
+ VC1E9wn+QFm05A1OHbSpA3owH5Uj7OgTODLp/15rok8bEvNILQGAgVx7+gSXmExpKPEyFfPeO
+ Nmi8xasX0ZNfBp+dIf0NE36u3Hc77B6xGO5CUoF+mjQ3FoEdD735Z6EQ7iI+YfYV8u8OweCmy
+ 5LIxVIr18kwZnJ3haKJjRugfE2hRtwPO0INwif80OmbZ7M/Z1MK9gl99Ho8EuATrAoaqudRf8
+ rTq37tUEfCx9xwdxYLTmA/4xFgcys+rm16jb8j7WECdjmChqeHS3ZmBIRnirbihnWxEkds6QJ
+ CMrW4QE398eg3HOYvQpXdN9PCxsTvp4HCnBmNwnjZqhe4r6rIs0reMtNm1Dv52j9IRTqt1sCY
+ HpOaoyl+VpdHe3W+EWPJOdQS2TOovlJWceufF3diafAPmcxqs1Q94r/xJOIe1ptoLsKtu2Z5B
+ VOHcxIN1thjH0EsAO79RXaZrbuCLjWj4iphK0IVZwpCiRUZ9INcc2sKi70LHDGwRiRqpCQx6S
+ OZQtVPVnHy+eMCONAg7+KHjuImCuVXP8egAZcE4z+xfu+EdH1SC9EkM7su4G3sJzD0Fmngvbq
+ YgNBqZfbefbfiuCwkgeFowlc4yaY+hOAadL/KJ98PxMaBjWykeSIzKtc2GKcZL6TdzqMkmL1J
+ nxrjLbZ57WKvWEccDdIyp773XWt43LZ3bD46oK9BrDz7zGO9K6MaXA9jEvw1YuutKh4fAoCWS
+ nuDoO9D1vYaOvPNQyKH6A5g9gs6/OG9kZpA8q/Rn5ksSIvWVMIFCnrDB6cyaS0a4QJVa+AfUP
+ 7m4uFiH3GyTuK1Mh9wOTITZt8CennGGTTF8nKvBtq/5L/lf6SAPe5vJJ/Q5EsfJ245vfMp74J
+ FmnLL/1Tio3lLQ=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Geert,
+Hello DRI and fbdev developers,
 
-Am 30.01.2022 um 13:32 schrieb Michael Schmitz:
-> Hi Geert,
->
-> testing this patch on my Falcon 030, I'm seeing a weird error checking
-> and mounting the root filesystem (pata-falcon). The system appears to
-> sit idle, never completing the journal recovery and mount. Still
-> investigating that.
+I've now mostly checked all queued-up patches on the fbdev mailing list:
+https://patchwork.kernel.org/project/linux-fbdev/list/
 
-Belay that - not related to your patch, must be some other regression 
-since v5.16 that I'm seeing there.
+and applied the ones which seemed appropriate.
+IMHO there is nothing really critical/important/conflicting in there.
+Shortlog is below, the git "fbdev for-next" branch is here:
+https://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git/log/?h=for-next
 
-Just ignore the noise ...
+If you see critical things in there or want me to drop (or add) something,
+just please let me know.
+If everything goes well I plan to send a pull request when the
+merge window for kernel v5.18 opens.
 
-Cheers,
+Helge
 
-	Michael
+----------------------------------------------------------------
+Arnd Bergmann (1):
+      agp: define proper stubs for empty helpers
 
+Cai Huoqing (11):
+      video: fbdev: au1200fb: Make use of dma_mmap_coherent()
+      video: fbdev: omapfb: panel-lgphilips-lb035q02: Make use of the helper function dev_err_probe()
+      video: fbdev: omapfb: lcd_ams_delta: Make use of the helper function dev_err_probe()
+      video: fbdev: omapfb: panel-sharp-ls037v7dw01: Make use of the helper function dev_err_probe()
+      video: fbdev: omapfb: panel-tpo-td043mtea1: Make use of the helper function dev_err_probe()
+      video: fbdev: da8xx-fb: Make use of the helper function dev_err_probe()
+      video: fbdev: pxa168fb: Make use of the helper function dev_err_probe()
+      video: fbdev: pxa3xx-gcu: Make use of the helper function dev_err_probe()
+      video: fbdev: ssd1307fb: Make use of the helper function dev_err_probe()
+      video: fbdev: s3c-fb: Make use of the helper function dev_err_probe()
+      video: fbdev: mmp: Make use of the helper function dev_err_probe()
 
-> Can't see how that would be caused by your patch, just saying I could
-> not yet test it.
->
-> Cheers,
->
->     Michael
->
->
-> Am 29.01.2022 um 06:30 schrieb Geert Uytterhoeven:
->> When an application accesses a mapped frame buffer backed by deferred
->> I/O, it receives a segmentation fault.  Fix this by removing the check
->> for VM_IO in do_page_fault().
->>
->> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->> ---
->> This check was never present in a fault handler on any other
->> architecture than m68k.
->> Some digging revealed that it was added in v2.1.106, but I couldn't find
->> an email with a patch adding it.  That same kernel version extended the
->> use of the hwreg_present() helper to HP9000/300, so the check might have
->> been needed there, perhaps only during development?
->> The Atari kernel relies heavily on hwreg_present() (both the success and
->> failure cases), and these still work, at least on ARAnyM.
->> ---
->>  arch/m68k/mm/fault.c | 2 --
->>  1 file changed, 2 deletions(-)
->>
->> diff --git a/arch/m68k/mm/fault.c b/arch/m68k/mm/fault.c
->> index 1493cf5eac1e7a39..71aa9f6315dc8028 100644
->> --- a/arch/m68k/mm/fault.c
->> +++ b/arch/m68k/mm/fault.c
->> @@ -93,8 +93,6 @@ int do_page_fault(struct pt_regs *regs, unsigned
->> long address,
->>      vma = find_vma(mm, address);
->>      if (!vma)
->>          goto map_err;
->> -    if (vma->vm_flags & VM_IO)
->> -        goto acc_err;
->>      if (vma->vm_start <= address)
->>          goto good_area;
->>      if (!(vma->vm_flags & VM_GROWSDOWN))
->>
+Changcheng Deng (1):
+      video: fbmem: use swap() to make code cleaner in fb_rotate_logo()
+
+Chunyang Zhong (1):
+      video: fbdev: ocfb: add const to of_device_id
+
+Colin Ian King (6):
+      video: fbdev: aty128fb: make some arrays static const
+      video: fbdev: mb862xx: remove redundant assignment to pointer ptr
+      video: fbdev: via: Fix spelling mistake "bellow" -> "below"
+      video: fbdev: atyfb: Remove assigned but never used variable statements
+      video: fbdev: asiliantfb: remove redundant assignment to variable Ftarget
+      video: fbdev: pxa168fb: Initialize pointers with NULL and not plain integer 0
+
+Dan Carpenter (3):
+      video: fbdev: savagefb: make a variable local
+      video: fbdev: atmel_lcdfb: fix an error code in atmel_lcdfb_probe()
+      video: fbdev: fbcvt.c: fix printing in fb_cvt_print_name()
+
+Evgeny Novikov (1):
+      video: fbdev: w100fb: Reset global state
+
+George Kennedy (1):
+      video: fbdev: cirrusfb: check pixclock to avoid divide by zero
+
+Greg Kroah-Hartman (1):
+      video: fbdev: omapfb: use default_groups in kobj_type
+
+Jiasheng Jiang (1):
+      video: fbdev: imxfb: Check for null res pointer
+
+Krzysztof Kozlowski (1):
+      video: fbdev: s3c-fb: drop unneeded MODULE_ALIAS
+
+Luca Weiss (2):
+      backlight: qcom-wled: Add PM6150L compatible
+      dt-bindings: simple-framebuffer: allow standalone compatible
+
+Minghao Chi (1):
+      video: fbdev: mach64_ct: remove redundant res variable
+
+Tim Gardner (1):
+      video: fbdev: nvidiafb: Use strscpy() to prevent buffer overflow
+
+Wang Hai (1):
+      video: fbdev: smscufx: Fix null-ptr-deref in ufx_usb_probe()
+
+Xu Wang (2):
+      backlight: lm3630a_bl: Remove redundant 'flush_workqueue()' calls
+      video: fbdev: omapfb: Remove redundant 'flush_workqueue()' calls
+
+Yang Guang (2):
+      video: fbdev: sis: use swap() to make code cleaner
+      video: fbdev: omapfb: acx565akm: replace snprintf with sysfs_emit
+
+YueHaibing (1):
+      video: fbdev: controlfb: Fix COMPILE_TEST build
+
+Z. Liu (1):
+      video: fbdev: matroxfb: set maxvram of vbG200eW to the same as vbG200 to avoid black screen

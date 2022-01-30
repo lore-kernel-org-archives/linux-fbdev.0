@@ -2,71 +2,116 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28A93C433EF
-	for <linux-fbdev@archiver.kernel.org>; Sat, 29 Jan 2022 14:07:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A78B4C433FE
+	for <linux-fbdev@archiver.kernel.org>; Sun, 30 Jan 2022 00:32:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235041AbiA2OHK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 29 Jan 2022 09:07:10 -0500
-Received: from mail-io1-f71.google.com ([209.85.166.71]:55944 "EHLO
-        mail-io1-f71.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233790AbiA2OHK (ORCPT
+        id S1353598AbiA3Aco (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 29 Jan 2022 19:32:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43312 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1353593AbiA3Acn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 29 Jan 2022 09:07:10 -0500
-Received: by mail-io1-f71.google.com with SMTP id y23-20020a5e8717000000b0060fd92726cbso6436773ioj.22
-        for <linux-fbdev@vger.kernel.org>; Sat, 29 Jan 2022 06:07:10 -0800 (PST)
+        Sat, 29 Jan 2022 19:32:43 -0500
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 614C2C06173B;
+        Sat, 29 Jan 2022 16:32:43 -0800 (PST)
+Received: by mail-pg1-x535.google.com with SMTP id p125so8728516pga.2;
+        Sat, 29 Jan 2022 16:32:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=subject:to:references:cc:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-transfer-encoding;
+        bh=lgImJfjptdc33ZuQjXSFN+7hVN4hLMNWcHtJCWzb0jk=;
+        b=YubEnvHsv/crv/QQxQbzdWy0fDh/hJi6DsG2ALzDJKTtR10XIsakvC9+nkSBu1WdFS
+         XfBSh5P7XJHrytzbkcalqUKunVx5cQEUyPOPrz7Foy7uO20XFrYo7EtDG3LugITf17AC
+         AYleJTKTWeKFiuXWKvStwRibqsv9HkDM4jwplWgBMRdecMIqQTmO8gE1ChALqDUj4LhF
+         4pFCmA1nM7cfyYc+DyPSCoNE1L8X3JnagmHmt7vAsHpJjH0wLoL/4tbPQubzSixnmDFV
+         YVmTfxmRg9qD9eGkQhnQPp2SfFDTDyrxatjk+n/xE8IVQn59h20dXLwoCc8gVsVwBX8E
+         slUQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:date:in-reply-to:message-id:subject
-         :from:to;
-        bh=0yID9FBNEnlHIDDPVExH7+jnkGuixmiFgWV9iVk8uAw=;
-        b=sVW9pKBXjFouf7t5de3qpgTYITO91nStNvAYfg3sPlVI1Fk2rd2vPNWpDkIkIyxj2B
-         B0csDbFAMtb66G7UVU7tk7UwXA34lWrcTW5Q8eL5RvypMLlwQ7UwZmVhMkH1VInFgX/3
-         e/4mR3TaLu1gUcrUa8bWGPplu1jAX9GOiwfeicr79/sKDNtOFl+pER+aVQKfzIrL5XMC
-         ovqDYD5gig8sc45IA3Y4hnd7nhQr0/qxGBZmeMMJrUFPoldlhfKzCA/IqGtocmc7NBp4
-         6QgktwBCOoOsNxY+Y7shpa7UEwFfvx9a6G4KZC/HxN2ikswGHjc/OKQuiG5kHIj33Nnz
-         9IGw==
-X-Gm-Message-State: AOAM533WGpkUHlA7fhV8PgzC3DzPoQ6WVG0P5DHbEsEbrHb93yU+fPlP
-        LRj9AheIKBHA9SUefXuMAY1mpnukzTqHlL7Ca2gczEsLFz0F
-X-Google-Smtp-Source: ABdhPJys2smNcd54wqnufpsY+9aFghoE3qs6+teGCIqgvZBHcvUKkSP+xokUF3PxNaUW5iPcGnSHcmzTLIMObGaNGwv6yrAlWEs8
+        h=x-gm-message-state:subject:to:references:cc:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-transfer-encoding;
+        bh=lgImJfjptdc33ZuQjXSFN+7hVN4hLMNWcHtJCWzb0jk=;
+        b=AI6W3+ZpzbKe46j0I0wyfRtV98R4HIwXttI1sZ5jUcZo5bdhQuchdY2hZUx9vg19IF
+         OhtA9cwJ83mLBsLSCjruAuwbeg7p1ptLY/rYHVizB1IGl76eRaa/mN0GH8/YuETMsAuw
+         c7UmeYsfyoCaUiU+LaEssYZfrwxyxGKmNKDUROONehCqCsH1eibXDcU5mj9DiSV3PEJt
+         3axMosciPKqR4fkcoLVyMnTj+EHTJ1pnXwhfIQYSVkkHV56OYRgcaqmDTvZHBd9fOuG1
+         BBHDUDZ078FXEcn+13pYTTBGdy3aWnlLoC/cgD9QEI6pv62lAjyXnLvNDBCNbqCjPAjT
+         OShg==
+X-Gm-Message-State: AOAM530W3YlhXes3DEi6PGzKp/3CWJcvKv4kubYWpn677Pvh4JQAAOqN
+        gt/viLEsWJtWadoov18JnPyIPcY0DnI=
+X-Google-Smtp-Source: ABdhPJzEPfsjnGSZFRUq5OlVjEdAYdbrAKC61FZ5zRV/iwdi8PN7s751/DKYpysmpUagxm8TfPMiQA==
+X-Received: by 2002:a63:6a87:: with SMTP id f129mr2144667pgc.0.1643502762598;
+        Sat, 29 Jan 2022 16:32:42 -0800 (PST)
+Received: from [10.1.1.24] (222-155-5-102-adsl.sparkbb.co.nz. [222.155.5.102])
+        by smtp.gmail.com with ESMTPSA id l4sm14120413pfu.90.2022.01.29.16.32.37
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sat, 29 Jan 2022 16:32:41 -0800 (PST)
+Subject: Re: [PATCH] m68k: mm: Remove check for VM_IO to fix deferred I/O
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        linux-m68k@lists.linux-m68k.org
+References: <20220128173006.1713210-1-geert@linux-m68k.org>
+Cc:     Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+From:   Michael Schmitz <schmitzmic@gmail.com>
+Message-ID: <63c80eba-7c55-2a92-8078-c63cec3c9efb@gmail.com>
+Date:   Sun, 30 Jan 2022 13:32:35 +1300
+User-Agent: Mozilla/5.0 (X11; Linux ppc; rv:45.0) Gecko/20100101
+ Icedove/45.4.0
 MIME-Version: 1.0
-X-Received: by 2002:a6b:3b8a:: with SMTP id i132mr7981765ioa.85.1643465229580;
- Sat, 29 Jan 2022 06:07:09 -0800 (PST)
-Date:   Sat, 29 Jan 2022 06:07:09 -0800
-In-Reply-To: <000000000000ab6df705b453993a@google.com>
-X-Google-Appengine-App-Id: s~syzkaller
-X-Google-Appengine-App-Id-Alias: syzkaller
-Message-ID: <00000000000035befb05d6b91185@google.com>
-Subject: Re: [syzbot] BUG: unable to handle kernel paging request in
- bitfill_aligned (2)
-From:   syzbot <syzbot+a4edd73d589b0b7efbeb@syzkaller.appspotmail.com>
-To:     b.zolnierkie@samsung.com, bugs-a21@moonlit-rail.com,
-        dri-devel@lists.freedesktop.org, javierm@redhat.com,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        maxime@cerno.tech, ngraniel@cocobongo.net,
-        syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20220128173006.1713210-1-geert@linux-m68k.org>
+Content-Type: text/plain; charset=iso-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-syzbot suspects this issue was fixed by commit:
+Hi Geert,
 
-commit 0499f419b76f94ede08304aad5851144813ac55c
-Author: Javier Martinez Canillas <javierm@redhat.com>
-Date:   Mon Jan 10 09:56:25 2022 +0000
+testing this patch on my Falcon 030, I'm seeing a weird error checking 
+and mounting the root filesystem (pata-falcon). The system appears to 
+sit idle, never completing the journal recovery and mount. Still 
+investigating that.
 
-    video: vga16fb: Only probe for EGA and VGA 16 color graphic cards
+Can't see how that would be caused by your patch, just saying I could 
+not yet test it.
 
-bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=1752f5c0700000
-start commit:   2a987e65025e Merge tag 'perf-tools-fixes-for-v5.16-2021-12..
-git tree:       upstream
-kernel config:  https://syzkaller.appspot.com/x/.config?x=7d5e878e3399b6cc
-dashboard link: https://syzkaller.appspot.com/bug?extid=a4edd73d589b0b7efbeb
-syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16671badb00000
-C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=122beabdb00000
+Cheers,
 
-If the result looks correct, please mark the issue as fixed by replying with:
+	Michael
 
-#syz fix: video: vga16fb: Only probe for EGA and VGA 16 color graphic cards
 
-For information about bisection process see: https://goo.gl/tpsmEJ#bisection
+Am 29.01.2022 um 06:30 schrieb Geert Uytterhoeven:
+> When an application accesses a mapped frame buffer backed by deferred
+> I/O, it receives a segmentation fault.  Fix this by removing the check
+> for VM_IO in do_page_fault().
+>
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+> This check was never present in a fault handler on any other
+> architecture than m68k.
+> Some digging revealed that it was added in v2.1.106, but I couldn't find
+> an email with a patch adding it.  That same kernel version extended the
+> use of the hwreg_present() helper to HP9000/300, so the check might have
+> been needed there, perhaps only during development?
+> The Atari kernel relies heavily on hwreg_present() (both the success and
+> failure cases), and these still work, at least on ARAnyM.
+> ---
+>  arch/m68k/mm/fault.c | 2 --
+>  1 file changed, 2 deletions(-)
+>
+> diff --git a/arch/m68k/mm/fault.c b/arch/m68k/mm/fault.c
+> index 1493cf5eac1e7a39..71aa9f6315dc8028 100644
+> --- a/arch/m68k/mm/fault.c
+> +++ b/arch/m68k/mm/fault.c
+> @@ -93,8 +93,6 @@ int do_page_fault(struct pt_regs *regs, unsigned long address,
+>  	vma = find_vma(mm, address);
+>  	if (!vma)
+>  		goto map_err;
+> -	if (vma->vm_flags & VM_IO)
+> -		goto acc_err;
+>  	if (vma->vm_start <= address)
+>  		goto good_area;
+>  	if (!(vma->vm_flags & VM_GROWSDOWN))
+>

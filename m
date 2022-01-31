@@ -2,103 +2,152 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C961C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jan 2022 14:14:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ACC4C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jan 2022 20:12:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1358685AbiAaOOI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jan 2022 09:14:08 -0500
-Received: from mga04.intel.com ([192.55.52.120]:15656 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1346623AbiAaOOH (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jan 2022 09:14:07 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1643638447; x=1675174447;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=u2/KL+QczLeO5HW7c5Ow6qXPV61IYgm4mFoJmsrc6Pk=;
-  b=Vr5oMS7JT33lYcvuyj5IVHJGCiwrNOSIpwCdaT7VtOWutQyKwm24hdl1
-   YFQlH13tn2o/g8HvDl3x9e1ylZeJRXibHS3XlaWuguiZw7cLAAaqKWtlw
-   aXmxQ8vy3o5GW7MXwZc6M55xEB6PQQ8MHgfKl78aq6WMBsg6iN3b/Abny
-   Zq9WtY66KqdfSwCp0syc8+t7z8Rmld4ZVC28Bm63LDL06vZ7ntjjHK4Zd
-   gme+kuRHfyXD5zLBkTCKi5hDtZ90OiO3F0TlCVktpGFW2UEi43dP0RYdo
-   DCWM3BYaVLMHY3DoCsSeSbZaV3bv62hesd5O0NKk/ffdqKVXZGfLqACyZ
-   A==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10243"; a="246300424"
-X-IronPort-AV: E=Sophos;i="5.88,331,1635231600"; 
-   d="scan'208";a="246300424"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jan 2022 06:07:18 -0800
-X-IronPort-AV: E=Sophos;i="5.88,331,1635231600"; 
-   d="scan'208";a="522665965"
-Received: from smile.fi.intel.com ([10.237.72.61])
-  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jan 2022 06:07:14 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.95)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nEXJq-00GtM0-Jq;
-        Mon, 31 Jan 2022 16:06:10 +0200
-Date:   Mon, 31 Jan 2022 16:06:10 +0200
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Andy Shevchenko <andy@kernel.org>, linux-fbdev@vger.kernel.org,
-        Michael Hennerich <michael.hennerich@analog.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Helge Deller <deller@gmx.de>, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Phillip Potter <phil@philpotter.co.uk>,
-        Carlis <zhangxuezhi1@yulong.com>,
+        id S1350569AbiAaUMt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jan 2022 15:12:49 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:31857 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1378097AbiAaUMm (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 31 Jan 2022 15:12:42 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1643659961;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=cCZTFH2Jz9n7CnT5wyJgHCMwnAI//gCfT+1J887Hbp8=;
+        b=g0mU89ESmBFNkHs22z4mDbzViGppeC7QfXUl7QUk4gBQ6LAuePlh3Xl5xyHSmtBJZijFUW
+        OaIlHJ0O+77Tg2q4F+tsomPNTwXH/hm5l04TW/bOEryBJ5tUJoiW8/aHrxug8yy+qdX3C8
+        CHSSHxkmqxhRqNYsqjs8OVEDGdd7mgY=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-631-1oOduU-UMg-bLpDNTHB6Nw-1; Mon, 31 Jan 2022 15:12:39 -0500
+X-MC-Unique: 1oOduU-UMg-bLpDNTHB6Nw-1
+Received: by mail-wm1-f71.google.com with SMTP id q71-20020a1ca74a000000b003507f38e330so114584wme.9
+        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jan 2022 12:12:39 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=cCZTFH2Jz9n7CnT5wyJgHCMwnAI//gCfT+1J887Hbp8=;
+        b=BqYFggNQvaAAXsO1Cr+/aL1ZIQOTPVuww34VesYf1jnuwB6P7BoNszbiDAYK6pqEIU
+         eQFs5+Hw+UFfoXixyRUCknm4xmtDtylxd2fFYFM+HQOAKRcygK5kW+bsXAchXV47o/f+
+         R41BWXyKO2BX1mRXNDtyCsoqjpgAvyfxzUiFkdTL8kzD+ZFnMmQX9nSHIoZcPvUseFmQ
+         pPwW3ocDZxnAtjKXaeFFJL7FG7sQKsJfB1QMEr084s3QT8JDdqtV/oP4LJv7VHXWQstL
+         HNOGn6oXUL9UVjxQZQzAkGgrC4aSI1U4hkGXl6jpbGVUJ9MOvjGijVc0v4v1CMlWhzKt
+         CZSg==
+X-Gm-Message-State: AOAM5309MRVZLEDIShAUyhaQQVfMkyygMF5CSuTBYQCRfaR//6VCSVll
+        ji6UVsCsmDhd5e7UHk1t1mJ8gu9X8Cz/CH07DNlzqyAEMF7ueWxVjP7/f8WEBeelgGjggUzVayp
+        TaD0UdfvG+S2RmMLCIwY3ukk=
+X-Received: by 2002:a05:600c:358d:: with SMTP id p13mr8847540wmq.107.1643659958794;
+        Mon, 31 Jan 2022 12:12:38 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJyVR5gg/GkWjplwAp2GCFjYULewNFaqtbWuaY9/kEdRUVdrcLHpHcgr6Utqd0EVs24QXTKHkA==
+X-Received: by 2002:a05:600c:358d:: with SMTP id p13mr8847515wmq.107.1643659958507;
+        Mon, 31 Jan 2022 12:12:38 -0800 (PST)
+Received: from minerva.home ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id i9sm15124660wry.32.2022.01.31.12.12.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 31 Jan 2022 12:12:38 -0800 (PST)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     linux-fbdev@vger.kernel.org, Maxime Ripard <maxime@cerno.tech>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        dri-devel@lists.freedesktop.org,
+        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
         Lee Jones <lee.jones@linaro.org>,
-        Heiner Kallweit <hkallweit1@gmail.com>
-Subject: Re: [PATCH v1 1/4] fbtft: Unorphan the driver
-Message-ID: <Yffs0nuG3ElH1bNE@smile.fi.intel.com>
-References: <YfFIpBb7lL4ukWjm@smile.fi.intel.com>
- <b8eb7111-43aa-cc8a-a1bc-f08e0f2987ed@redhat.com>
- <YfFV4EJosayH+e6C@smile.fi.intel.com>
- <YfFWPmG2D093gz4N@smile.fi.intel.com>
- <6e74d4cc-655a-e38e-0856-a59e4e6deb36@redhat.com>
- <c423a2f0-e7be-3884-3568-7629c7e9104e@redhat.com>
- <YffJujbpUGUqpIk/@smile.fi.intel.com>
- <5a3fffc8-b2d8-6ac3-809e-e8e71b66a8ea@redhat.com>
- <YffiwCiFnqF1X1pD@smile.fi.intel.com>
- <29ab99fb-d906-907b-e922-251ac72b25ef@redhat.com>
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Mark Brown <broonie@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>, linux-pwm@vger.kernel.org
+Subject: [PATCH 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED displays
+Date:   Mon, 31 Jan 2022 21:12:20 +0100
+Message-Id: <20220131201225.2324984-1-javierm@redhat.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <29ab99fb-d906-907b-e922-251ac72b25ef@redhat.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jan 31, 2022 at 02:55:21PM +0100, Javier Martinez Canillas wrote:
-> On 1/31/22 14:23, Andy Shevchenko wrote:
-> > On Mon, Jan 31, 2022 at 01:08:32PM +0100, Javier Martinez Canillas wrote:
+This patch series adds a DRM driver for the Solomon OLED SSD1305, SSD1306,
+SSD1307 and SSD1309 displays. It is a port of the ssd1307fb fbdev driver.
 
-...
+Using the DRM fb emulation, all the tests from Geert Uytterhoeven's fbtest
+(https://git.kernel.org/pub/scm/linux/kernel/git/geert/fbtest.git) passes:
 
-> > The tricky part is the PRP0001
-> > ACPI PNP ID that allows to reuse it on ACPI-based platforms.
-> 
-> Oh, I wasn't aware about PRP0001. I've read about it at:
-> 
-> https://www.kernel.org/doc/Documentation/acpi/enumeration.txt
+     ./fbtest -f /dev/fb1
+    Using drawops cfb32 (32 bpp packed pixels)
+    Available visuals:
+      Monochrome
+      Grayscale 256
+      Truecolor 8:8:8:0
+    Using visops truecolor
+    Running all tests
+    test001: PASSED
+    test002: PASSED
+    test003: PASSED
+    test004: PASSED
+    test005: PASSED
+    test006: PASSED
+    test008: PASSED
+    test009: PASSED
+    test010: PASSED
+    Benchmarking... 10x10 squares: 412.99 Mpixels/s
+    Benchmarking... 20x20 squares: 857.46 Mpixels/s
+    Benchmarking... 50x50 squares: 1593.51 Mpixels/s
+    test012: PASSED
+    Benchmarking... R5 circles: 237.07 Mpixels/s
+    Benchmarking... R10 circles: 501.24 Mpixels/s
+    Benchmarking... R25 circles: 947.86 Mpixels/s
+    test013: PASSED
 
-Yep!
+Patch #1 adds an I2C connector type since currently there isn't one and
+I2C drivers use DRM_MODE_CONNECTOR_Unknown or DRM_MODE_CONNECTOR_VIRTUAL.
 
-The idea is that new drivers for discrete (and sometimes even on-SoC)
-components should be platform-agnostic (means no strict OF / ACPI
-dependencies), so anybody can prototype devices on either of the
-platforms.
+Patch #2 adds a drm_fb_gray8_to_mono_reversed() DRM format helper since
+most DRM/KMS user-space don't support bpp 1 displays, so drivers expose
+a common format that's converted to greyscale and then to monochrome.
 
-As a matter of fact IIO subsystem is leading in this by cleaning up
-most of the drivers towards that goal.
+Patch #3 adds the driver. The name ssd1307 was used instead of ssd130x
+(which would be more accurate) to avoid confusion for users who want to
+migrate from the existing ssd1307fb fbdev driver.
 
-OF/ACPI explicit dependency makes sense when we 100+% sure that
-IP in question won't ever appear on the other type of platform
-(which I believe is very rare nowadays for most of the components).
+Patch #4 just adds a MAINTAINERS entry for this new DRM driver.
+
+Best regards,
+Javier
+
+
+Javier Martinez Canillas (4):
+  drm: Add I2C connector type
+  drm/format-helper: Add drm_fb_gray8_to_mono_reversed()
+  drm/tiny: Add driver for Solomon SSD1307 OLED displays
+  MAINTAINERS: Add entry for Solomon SSD1307 OLED displays DRM driver
+
+ MAINTAINERS                         |   7 +
+ drivers/gpu/drm/drm_connector.c     |   1 +
+ drivers/gpu/drm/drm_format_helper.c |  35 +
+ drivers/gpu/drm/tiny/Kconfig        |  12 +
+ drivers/gpu/drm/tiny/Makefile       |   1 +
+ drivers/gpu/drm/tiny/ssd1307.c      | 976 ++++++++++++++++++++++++++++
+ include/drm/drm_format_helper.h     |   2 +
+ include/uapi/drm/drm_mode.h         |   1 +
+ 8 files changed, 1035 insertions(+)
+ create mode 100644 drivers/gpu/drm/tiny/ssd1307.c
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.34.1
 

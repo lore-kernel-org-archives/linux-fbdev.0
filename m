@@ -2,151 +2,125 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38EFDC433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jan 2022 21:08:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DA88C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jan 2022 23:21:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1381279AbiAaVI5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jan 2022 16:08:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44014 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1380657AbiAaVHM (ORCPT
+        id S238137AbiAaXVr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jan 2022 18:21:47 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:37955 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S238117AbiAaXVr (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jan 2022 16:07:12 -0500
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A754C061772
-        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jan 2022 13:06:55 -0800 (PST)
-Received: by mail-wr1-x435.google.com with SMTP id w11so27877975wra.4
-        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jan 2022 13:06:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=FxNR4P5lDXdqDoRY6o7wMDtTBWXikuXUtP+0kdBf7FQ=;
-        b=Lo4AW9guvOF81u6WGQBXjsTZUvFuBcQIdzBj2fKuxIY0ijvWI/WKVVcAEew+wpAmNv
-         T9o5T51UXeGAC8PY0e/dJSsEAeJCL79CCkRMNfyQnjXBUsH8+RxF6XddMCurXVkMGdfT
-         UwQJSGBW+iiRzyYdMPsOrpy+yu64udBa1ILAk=
+        Mon, 31 Jan 2022 18:21:47 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1643671306;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=PrT+G3tPg9tF+5XuIAQ32IRnOTQfqMCqOg72JDwqGHg=;
+        b=az5rQSicjcNnkTP+5PCfY0d/hlIeIXcmwsiHxr7eKNMPJLB4Bd/QAE4NpiczzZvNwAYdSA
+        CPp11YGb0aiMdAQOD/no0or3IZ14ouGX8cFTXB6rrSKrnA8WBks3dQM0yYMRMGnpI8tx2U
+        gLzqD1QJv37GPvpOAmjbE37eWDze8O0=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-163-NWq-4y2ePQqKMMvkpE_6qQ-1; Mon, 31 Jan 2022 18:21:44 -0500
+X-MC-Unique: NWq-4y2ePQqKMMvkpE_6qQ-1
+Received: by mail-wm1-f70.google.com with SMTP id s1-20020a1ca901000000b0034ece94dd8cso419500wme.5
+        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jan 2022 15:21:44 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=FxNR4P5lDXdqDoRY6o7wMDtTBWXikuXUtP+0kdBf7FQ=;
-        b=tRZ2roRF5qqcS5NHVBk0R22tvDELSmT1C3nZ77J5crSrMuxrWoeTBuveCltzkq3be9
-         +BX2lkv9atvBvIPBuYiQWv/FPOaOh7bqxWIQuGjRrLK3xHYuCWciCifgY00Dm28rrtpS
-         MtQl1VbHPUwOHDvHtwqYeobJXEzcFoVJ2YhdJwjdyQWhDIzKnJZqJGSC0e9NKQscGPUA
-         fPjXmqRHS7DOmqlRbne3SMHsiwpFY2YuedbmaGiwksIxOdfQk7nd917IP+GaWK9bq2cD
-         Cwf59kvCM0n5HmU2dItgifPr6re7gMxbP8lP8WLOjdgjX6YFwVxcgiNj1coDyjCgJqhC
-         K5LA==
-X-Gm-Message-State: AOAM532b/TVPVoOrLUKpMMMTKtNFHBSwwED/mJaYP9sZIgfUaSMU9EyE
-        393266hXskIm0y8I6xWoP53duQ==
-X-Google-Smtp-Source: ABdhPJwF2QvK4hmf/7QGpz8EsMBpbsf23W007iTEYAPXtLNPFXTESQvIlo2rylKpGsmivnZGCNYQaQ==
-X-Received: by 2002:adf:e8ce:: with SMTP id k14mr10214483wrn.284.1643663214293;
-        Mon, 31 Jan 2022 13:06:54 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id b11sm314961wmq.46.2022.01.31.13.06.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 Jan 2022 13:06:53 -0800 (PST)
-From:   Daniel Vetter <daniel.vetter@ffwll.ch>
-To:     DRI Development <dri-devel@lists.freedesktop.org>
-Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
-        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Jens Frederich <jfrederich@gmail.com>,
-        Jon Nettleton <jon.nettleton@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-staging@lists.linux.dev,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Matthew Wilcox <willy@infradead.org>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        Zheyu Ma <zheyuma97@gmail.com>,
-        Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH 21/21] fbdev: Make registered_fb[] private to fbmem.c
-Date:   Mon, 31 Jan 2022 22:05:52 +0100
-Message-Id: <20220131210552.482606-22-daniel.vetter@ffwll.ch>
-X-Mailer: git-send-email 2.33.0
-In-Reply-To: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
-References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=PrT+G3tPg9tF+5XuIAQ32IRnOTQfqMCqOg72JDwqGHg=;
+        b=2WtRNC8T7Ga4qcyBpATOA1PW4AUP4t4ycNVZe7jfVxo5iiuQP1zabdEbiVtsUH7M8E
+         mU8Puim6rbjdwh8QSIBt0Z/XamSR+JxjWLsrEhxb5w2vep+WTYsMkwk90g9mQ1SywnZy
+         XfSokvnS3Gu0YfHoR5FQ/JuCw+xV7akgqW0Wr8DM/6ygNsqlMlLtYpUBarQW5uL4neTP
+         HGrtMH/PVRQO57VRJ9zeOO4PrSGJo/PcUBWmzPbfnGpkjksMsLYu205weFIMevramg0E
+         9NxlGcOGQzQpdouKsWQ14x4re2H9JLLFF6VEbDPOfrc7gPh//4PXuOxNKbm/vJS47+P9
+         Mepw==
+X-Gm-Message-State: AOAM532B5YXkLJannSozlbMGeanPnW48KGYqyJ5hXkfT3FKNchwvT0+F
+        UhH7MWSKnymG6xA86I+0QeygND9OICUS6gRIggO0/NwoCbt7LkA32uW7J/6qyRxXa0T79UyS4dU
+        KtBzxC6na2SO2iZJwoFDmWuc=
+X-Received: by 2002:a7b:c44d:: with SMTP id l13mr28332776wmi.46.1643671303289;
+        Mon, 31 Jan 2022 15:21:43 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJz+5Kta65CM2LqtBZ8N7f7NRu724ZDFebRcaJ9B9wuQH3sMcUBfk67n6fa4xazee4fo9ruHBg==
+X-Received: by 2002:a7b:c44d:: with SMTP id l13mr28332767wmi.46.1643671303032;
+        Mon, 31 Jan 2022 15:21:43 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id p3sm515814wmq.40.2022.01.31.15.21.41
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 31 Jan 2022 15:21:42 -0800 (PST)
+Message-ID: <c7818782-ab41-b526-9e81-e769259baa52@redhat.com>
+Date:   Tue, 1 Feb 2022 00:21:41 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED
+ displays
+Content-Language: en-US
+To:     Simon Ser <contact@emersion.fr>
+Cc:     linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org,
+        linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Mark Brown <broonie@kernel.org>,
+        dri-devel@lists.freedesktop.org,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Lee Jones <lee.jones@linaro.org>
+References: <20220131201225.2324984-1-javierm@redhat.com>
+ <tIMIWqepcZGntnez-1ss4Kn4K8btXnzDRL7EWd19-745WK90YIC19E_4di9RNvB3gtx-PzWEjBEGQLPNJE_x0T1yyyaWFCoFcCiG4StR9RU=@emersion.fr>
+ <wuXPJN-K-rvjoV51c4EBmTBScov8rcJTPoYmlfHe04_-4wD1khVxo9HnUsP7UFd5m4AkzGSw2hXe_c77jbSRhjEJ0JZIYwuvuIkcv_KsR-Y=@emersion.fr>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <wuXPJN-K-rvjoV51c4EBmTBScov8rcJTPoYmlfHe04_-4wD1khVxo9HnUsP7UFd5m4AkzGSw2hXe_c77jbSRhjEJ0JZIYwuvuIkcv_KsR-Y=@emersion.fr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Well except when the olpc dcon fbdev driver is enabled, that thing
-digs around in there in rather unfixable ways.
+Hello Simon,
 
-Cc oldc_dcon maintainers as fyi.
+Thanks for your feedback.
 
-Cc: Jens Frederich <jfrederich@gmail.com>
-Cc: Jon Nettleton <jon.nettleton@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-staging@lists.linux.dev
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: Zhen Lei <thunder.leizhen@huawei.com>
-Cc: Alex Deucher <alexander.deucher@amd.com>
-Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Zheyu Ma <zheyuma97@gmail.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
----
- drivers/video/fbdev/core/fbmem.c | 8 ++++++--
- include/linux/fb.h               | 7 +++----
- 2 files changed, 9 insertions(+), 6 deletions(-)
+On 1/31/22 21:39, Simon Ser wrote:
+> On Monday, January 31st, 2022 at 21:36, Simon Ser <contact@emersion.fr> wrote:
+> 
+>> This driver only advertises XRGB8888 in ssd1307_formats. It would be nice to
+>> expose R8 as well so that user-space can directly produce suitable buffers.
+>> It would also be nice to have some kind of preferred format, so that user-space
+>> knows R8 is preferred over XRGB8888.
+> 
+> Hm, since the format used by the hw is actually R1, adding that to drm_fourcc.h
+> would be even better.
+> 
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 904ef1250677..dad6572942fa 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -48,10 +48,14 @@
- static DEFINE_MUTEX(registration_lock);
- 
- struct fb_info *registered_fb[FB_MAX] __read_mostly;
--EXPORT_SYMBOL(registered_fb);
--
- int num_registered_fb __read_mostly;
-+#if IS_ENABLED(CONFIG_OLPC_DCON)
-+EXPORT_SYMBOL(registered_fb);
- EXPORT_SYMBOL(num_registered_fb);
-+#endif
-+#define for_each_registered_fb(i)		\
-+	for (i = 0; i < FB_MAX; i++)		\
-+		if (!registered_fb[i]) {} else
- 
- bool fb_center_logo __read_mostly;
- 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index a8a00d2ba1f3..e236817502c2 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -622,16 +622,15 @@ extern int fb_get_color_depth(struct fb_var_screeninfo *var,
- extern int fb_get_options(const char *name, char **option);
- extern int fb_new_modelist(struct fb_info *info);
- 
-+#if IS_ENABLED(CONFIG_OLPC_DCON)
- extern struct fb_info *registered_fb[FB_MAX];
-+
- extern int num_registered_fb;
-+#endif
- extern bool fb_center_logo;
- extern int fb_logo_count;
- extern struct class *fb_class;
- 
--#define for_each_registered_fb(i)		\
--	for (i = 0; i < FB_MAX; i++)		\
--		if (!registered_fb[i]) {} else
--
- static inline void lock_fb_info(struct fb_info *info)
- {
- 	mutex_lock(&info->lock);
+Yes, agreed that would be nice. We discussed this already with Thomas and my
+suggestion was to land the driver as is, advertising XRGB8888. Which is also
+what the other driver using monochrome does (drivers/gpu/drm/tiny/repaper.c):
+
+https://www.spinics.net/lists/dri-devel/msg331328.html
+
+As a follow-up we can wire up al the needed bits to have a DRM/KMS driver that
+could expose a R1 format.
+
+> Let me know if you want me to type up any of the user-space bits.
+> 
+
+Thanks! I also could help to add the needed support in the user-space stack.
+
+Best reagards,
 -- 
-2.33.0
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 

@@ -2,112 +2,125 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 674DCC433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jan 2022 23:26:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 690C8C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jan 2022 23:32:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229541AbiAaX03 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jan 2022 18:26:29 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:20067 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S229519AbiAaX03 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jan 2022 18:26:29 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643671588;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=YoObquMC1Y099gjHiKrPd1NW4/MPXx5uArpEcPqAfgo=;
-        b=SPVXVCFRbu3o/BAfrB9eB/IIHLwWnrBtM8ghgKXoWRx2qWbax/mDf4einrW/uWbzAzZTVD
-        BaYC7XtxARL1BCviJFXzaDcm3xAALKODHhKN4P0xkgXhVT9ihtHTUW0YE58qb2/HT0vwo4
-        jX7dvSrTmpnLl9fHi/74lJ4HpJsBxZ0=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-665-qhEv1soPNyGVIOrbQ8vTyA-1; Mon, 31 Jan 2022 18:26:24 -0500
-X-MC-Unique: qhEv1soPNyGVIOrbQ8vTyA-1
-Received: by mail-wm1-f70.google.com with SMTP id f7-20020a1cc907000000b0034b63f314ccso278217wmb.6
-        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jan 2022 15:26:24 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=YoObquMC1Y099gjHiKrPd1NW4/MPXx5uArpEcPqAfgo=;
-        b=i/7ypt+XfA91ZIHlcda1PN1Sp8tRpbH0GBy6GbaeWhNmTuPvKg68AG3eR+8ayNyto1
-         HrPczD/nXIf3eikZ9Rg2N/LdDp+C53NWfGBBEIX+Fmp619ABoFb5FKfIlHz9kF9jlI+C
-         9IPEkykLTx9q1CCOdC8ZpW20zyXHtCWfIbLAIoxV6FBL2UvVB0J4FEDiR7JK0FKYHiFc
-         H7Y7syxiOdgQ6HRrk3po/y2rE3iMCtGNkP1ELNVNs9apOvrJ1jxwtw2YY69f0DOKvxEq
-         qz59xlaEr9x3AISl+isyEuKaWJoid7KR8dDM6005J/COLyXZ/1CrUGtYPrG5/waqbv8P
-         PsAQ==
-X-Gm-Message-State: AOAM530AsxBtoR45HuiR6o4XNJyqFFcNRzJ68IdGPBc6bt7YpE1YJ3fD
-        rC8OH9txqeXI/5zigtPT0GtUiCMQxpNqxt26wyeuD3zC/1WpT/rgZikfVOGBWi8TXIeXrCMqiF0
-        NIVtJ6apHb8aSmBl5o6/fQj0=
-X-Received: by 2002:a1c:440a:: with SMTP id r10mr20863800wma.142.1643671583666;
-        Mon, 31 Jan 2022 15:26:23 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJzvDyBUYLTU/L1b51CS4uxvaGJqLeLCo2c7D1CjSfutkqldhTLTiY2yHFXAdgxPYSuz6ErDnQ==
-X-Received: by 2002:a1c:440a:: with SMTP id r10mr20863790wma.142.1643671583508;
-        Mon, 31 Jan 2022 15:26:23 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id h4sm15500586wre.0.2022.01.31.15.26.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 31 Jan 2022 15:26:23 -0800 (PST)
-Message-ID: <03ffaaa6-1a8c-68fa-dd17-1e6d0e1e4868@redhat.com>
-Date:   Tue, 1 Feb 2022 00:26:22 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 1/4] drm: Add I2C connector type
-Content-Language: en-US
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        id S229594AbiAaXcF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jan 2022 18:32:05 -0500
+Received: from mga05.intel.com ([192.55.52.43]:20760 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229584AbiAaXcF (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 31 Jan 2022 18:32:05 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1643671925; x=1675207925;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=s4qd5/3eVmC0zxoBFfHu2I1L/M6RmoRcjQxyASVjkfo=;
+  b=So4zsVcqnLyA8lFoQShkBZIiD7439TkRwF4XyAbo/XX010aTjNE9Lird
+   zEycTfPSJOaav3kLYVupqEywObsOKLWupKMqcwUa0mOeJKAOsbb/6WvfO
+   i08aoQgylRcpxqy+o6SDpgNkXVOfGmDhqpaLszpWutsHWBSP7jcREjrkz
+   jM9dKlXV4OtFZoHQ+p3XND+ZYZScpbaxtfpGCWO1TTuppRkrzG6POO0hG
+   /sNtohPn7CIKyBoLA0lt2MzCpKTFmsV7nO6GoQK5YH+cA7Urw27ySH8FX
+   iIP/ZIkT5ysR33EVHjMZt21FWPSfLFdPTZp5Pa4rDqNhnpyS5GrUOvJwT
+   g==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10244"; a="333931316"
+X-IronPort-AV: E=Sophos;i="5.88,332,1635231600"; 
+   d="scan'208";a="333931316"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jan 2022 15:32:01 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.88,332,1635231600"; 
+   d="scan'208";a="619554614"
+Received: from lkp-server01.sh.intel.com (HELO 276f1b88eecb) ([10.239.97.150])
+  by FMSMGA003.fm.intel.com with ESMTP; 31 Jan 2022 15:31:54 -0800
+Received: from kbuild by 276f1b88eecb with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1nEg9K-000SSc-AF; Mon, 31 Jan 2022 23:31:54 +0000
+Date:   Tue, 1 Feb 2022 07:31:43 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        DRI Development <dri-devel@lists.freedesktop.org>
+Cc:     kbuild-all@lists.01.org, linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
+        Du Cheng <ducheng2@gmail.com>,
+        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        dri-devel@lists.freedesktop.org,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-References: <20220131201225.2324984-1-javierm@redhat.com>
- <20220131201225.2324984-2-javierm@redhat.com> <YfhMESTylI1NTKDg@ravnborg.org>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <YfhMESTylI1NTKDg@ravnborg.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [Intel-gfx] [PATCH 13/21] fbcon: move more common code into
+ fb_open()
+Message-ID: <202202010613.HT19HztX-lkp@intel.com>
+References: <20220131210552.482606-14-daniel.vetter@ffwll.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220131210552.482606-14-daniel.vetter@ffwll.ch>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/31/22 21:52, Sam Ravnborg wrote:
-> On Mon, Jan 31, 2022 at 09:12:21PM +0100, Javier Martinez Canillas wrote:
->> There isn't a connector type for display controllers accesed through I2C,
->> most drivers use DRM_MODE_CONNECTOR_Unknown or DRM_MODE_CONNECTOR_VIRTUAL.
->>
->> Add an I2C connector type to match the actual connector.
->>
->> As Noralf Trønnes mentions in commit fc06bf1d76d6 ("drm: Add SPI connector
->> type"), user-space should be able to cope with a connector type that does
->> not yet understand.
->>
->> Tested with `modetest -M ssd1307 -c` and shows the connector as unknown-1.
-> I had expected unknown-21??
->
+Hi Daniel,
 
-As you pointed out in patch 3/4, I forgot to change DRM_MODE_CONNECTOR_Unknown
-to DRM_MODE_CONNECTOR_I2C after adding this patch...
- 
->>
->> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-> Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
->> ---
+I love your patch! Perhaps something to improve:
 
-Thanks!
+[auto build test WARNING on tegra-drm/drm/tegra/for-next]
+[also build test WARNING on drm/drm-next linus/master v5.17-rc2 next-20220131]
+[cannot apply to airlied/drm-next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
 
-Best regards,
--- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+url:    https://github.com/0day-ci/linux/commits/Daniel-Vetter/some-fbcon-patches-mostly-locking/20220201-050907
+base:   git://anongit.freedesktop.org/tegra/linux.git drm/tegra/for-next
+config: mips-allyesconfig (https://download.01.org/0day-ci/archive/20220201/202202010613.HT19HztX-lkp@intel.com/config)
+compiler: mips-linux-gcc (GCC) 11.2.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/7a27c0ce71acfa8b67787d298de9836376fcc323
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Daniel-Vetter/some-fbcon-patches-mostly-locking/20220201-050907
+        git checkout 7a27c0ce71acfa8b67787d298de9836376fcc323
+        # save the config file to linux build tree
+        mkdir build_dir
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=mips SHELL=/bin/bash drivers/video/fbdev/core/
 
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All warnings (new ones prefixed by >>):
+
+   drivers/video/fbdev/core/fbcon.c: In function 'con2fb_acquire_newinfo':
+>> drivers/video/fbdev/core/fbcon.c:721:27: warning: variable 'ops' set but not used [-Wunused-but-set-variable]
+     721 |         struct fbcon_ops *ops = NULL;
+         |                           ^~~
+
+
+vim +/ops +721 drivers/video/fbdev/core/fbcon.c
+
+^1da177e4c3f415 drivers/video/console/fbcon.c    Linus Torvalds     2005-04-16  717  
+^1da177e4c3f415 drivers/video/console/fbcon.c    Linus Torvalds     2005-04-16  718  static int con2fb_acquire_newinfo(struct vc_data *vc, struct fb_info *info,
+7a27c0ce71acfa8 drivers/video/fbdev/core/fbcon.c Daniel Vetter      2022-01-31  719  				  int unit)
+^1da177e4c3f415 drivers/video/console/fbcon.c    Linus Torvalds     2005-04-16  720  {
+^1da177e4c3f415 drivers/video/console/fbcon.c    Linus Torvalds     2005-04-16 @721  	struct fbcon_ops *ops = NULL;
+ba35a78b17408b6 drivers/video/fbdev/core/fbcon.c Daniel Vetter      2022-01-31  722  	int err;
+^1da177e4c3f415 drivers/video/console/fbcon.c    Linus Torvalds     2005-04-16  723  
+ba35a78b17408b6 drivers/video/fbdev/core/fbcon.c Daniel Vetter      2022-01-31  724  	err = fbcon_open(info);
+ba35a78b17408b6 drivers/video/fbdev/core/fbcon.c Daniel Vetter      2022-01-31  725  	if (err)
+ba35a78b17408b6 drivers/video/fbdev/core/fbcon.c Daniel Vetter      2022-01-31  726  		return err;
+^1da177e4c3f415 drivers/video/console/fbcon.c    Linus Torvalds     2005-04-16  727  
+7a27c0ce71acfa8 drivers/video/fbdev/core/fbcon.c Daniel Vetter      2022-01-31  728  	ops = info->fbcon_par;
+d1baa4ffa677bf6 drivers/video/console/fbcon.c    Antonino A. Daplas 2007-07-17  729  
+d1baa4ffa677bf6 drivers/video/console/fbcon.c    Antonino A. Daplas 2007-07-17  730  	if (vc)
+b73deed32d08740 drivers/video/console/fbcon.c    Antonino A. Daplas 2006-01-09  731  		set_blitting_type(vc, info);
+^1da177e4c3f415 drivers/video/console/fbcon.c    Linus Torvalds     2005-04-16  732  
+^1da177e4c3f415 drivers/video/console/fbcon.c    Linus Torvalds     2005-04-16  733  	return err;
+^1da177e4c3f415 drivers/video/console/fbcon.c    Linus Torvalds     2005-04-16  734  }
+^1da177e4c3f415 drivers/video/console/fbcon.c    Linus Torvalds     2005-04-16  735  
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org

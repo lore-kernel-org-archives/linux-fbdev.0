@@ -2,53 +2,53 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93CFFC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jan 2022 10:56:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8426C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 31 Jan 2022 11:40:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233361AbiAaK4Y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 31 Jan 2022 05:56:24 -0500
-Received: from mga04.intel.com ([192.55.52.120]:2925 "EHLO mga04.intel.com"
+        id S1350873AbiAaLk2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 31 Jan 2022 06:40:28 -0500
+Received: from mga12.intel.com ([192.55.52.136]:14311 "EHLO mga12.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S239344AbiAaK4X (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 31 Jan 2022 05:56:23 -0500
+        id S1378207AbiAaLhu (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Mon, 31 Jan 2022 06:37:50 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1643626583; x=1675162583;
+  t=1643629070; x=1675165070;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=OuO1IfCUQIyBRQpisujqsE19OD9uCQ6nnnGF+2ZPWvc=;
-  b=kJLj/JFZoBuNapXXAhscC6qMeouzCIhRxSYYL29DDmO2Z6OQBp/F2cv7
-   iSt/o1MYFHGnNgyFf9MwmPdhyfYF9TxmHNrDu9ef0oNaV898VvqZLO35p
-   a9dGbXHbdtxfqMDhFBH1VLMHrAp0W8QX8+jwXbv7yB9lknqftjy9DVZYP
-   J72EOAyWk670Bj9855XUX/mffMHxkFwdsJcy+y4vqI1WMvSX9lxz2DC59
-   vsi7ZmiObGj7dYeDmOg4wOp5/ot5+PINVJj6ik5rs7kQ/NUJ2jTO6oSw2
-   kio41ovwfqt+yBpEgXM30PBYle0+9I8buL744aSz8sF4S4oBUliQR9KrX
-   Q==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10243"; a="246271982"
+  bh=YH9mnECyA607HZu3Pb+ZC9SZcUp5u25AqmDHnTVCQu8=;
+  b=YeJg7Yc1ioMCoQySEvmmczpaqMWrj+Tcn8+ptKsAW71DPxCzDa59Kzgf
+   amVPeQrCjJS2WXL3t7lri6CdRnicYxRGi0FYnQpY0U9b5wCd9ZWAnvKwQ
+   K2ESAMk8R6IwmDrdNhpHesLrAnO63zE16Yc0CFcKjfdDYEAmVdOv1ALJi
+   Ay+Fla+rCHjz/RsT56kCdC3vdW7+/oRDwEBwP0lx3e5leWbuD2Zqc9usx
+   AokwAaDPzjHys5HO/jiL266BMYV65WNEIzNbIoW59PEDW+a7oAMAU55AQ
+   kFtawqi+hSYzSH3UH63mqCAd5thcveA4zCnZ7ZPYFjAwLmszIl9EdnM89
+   A==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10243"; a="227414370"
 X-IronPort-AV: E=Sophos;i="5.88,330,1635231600"; 
-   d="scan'208";a="246271982"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jan 2022 02:56:23 -0800
+   d="scan'208";a="227414370"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jan 2022 03:37:25 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.88,330,1635231600"; 
-   d="scan'208";a="675691815"
+   d="scan'208";a="564953337"
 Received: from lkp-server01.sh.intel.com (HELO 276f1b88eecb) ([10.239.97.150])
-  by fmsmga001.fm.intel.com with ESMTP; 31 Jan 2022 02:56:20 -0800
+  by orsmga001.jf.intel.com with ESMTP; 31 Jan 2022 03:37:22 -0800
 Received: from kbuild by 276f1b88eecb with local (Exim 4.92)
         (envelope-from <lkp@intel.com>)
-        id 1nEUM7-000Rnz-MA; Mon, 31 Jan 2022 10:56:19 +0000
-Date:   Mon, 31 Jan 2022 18:55:39 +0800
+        id 1nEUzq-000Rr1-3I; Mon, 31 Jan 2022 11:37:22 +0000
+Date:   Mon, 31 Jan 2022 19:36:23 +0800
 From:   kernel test robot <lkp@intel.com>
 To:     Yizhuo Zhai <yzhai003@ucr.edu>
-Cc:     llvm@lists.linux.dev, kbuild-all@lists.01.org,
-        linux-fbdev@vger.kernel.org, Xiyu Yang <xiyuyang19@fudan.edu.cn>,
+Cc:     kbuild-all@lists.01.org, linux-fbdev@vger.kernel.org,
+        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
         Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         Helge Deller <deller@gmx.de>, Zheyu Ma <zheyuma97@gmail.com>,
         linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>,
         Yizhuo Zhai <yzhai003@ucr.edu>, dri-devel@lists.freedesktop.org
 Subject: Re: [PATCH] fbdev: fbmem: Fix the implicit type casting
-Message-ID: <202201311810.zlRDWfNU-lkp@intel.com>
+Message-ID: <202201311936.5edxEvQY-lkp@intel.com>
 References: <20220131065719.1552958-1-yzhai003@ucr.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -71,8 +71,8 @@ https://git-scm.com/docs/git-format-patch]
 
 url:    https://github.com/0day-ci/linux/commits/Yizhuo-Zhai/fbdev-fbmem-Fix-the-implicit-type-casting/20220131-150528
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 26291c54e111ff6ba87a164d85d4a4e134b7315c
-config: x86_64-randconfig-a013-20220131 (https://download.01.org/0day-ci/archive/20220131/202201311810.zlRDWfNU-lkp@intel.com/config)
-compiler: clang version 14.0.0 (https://github.com/llvm/llvm-project 2cdbaca3943a4d6259119f185656328bd3805b68)
+config: riscv-randconfig-r042-20220130 (https://download.01.org/0day-ci/archive/20220131/202201311936.5edxEvQY-lkp@intel.com/config)
+compiler: riscv64-linux-gcc (GCC) 11.2.0
 reproduce (this is a W=1 build):
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
@@ -82,23 +82,56 @@ reproduce (this is a W=1 build):
         git checkout b8f540468e70290c8278fc2611adc2f9b38f821f
         # save the config file to linux build tree
         mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=riscv SHELL=/bin/bash drivers/video/
 
 If you fix the issue, kindly add following tag as appropriate
 Reported-by: kernel test robot <lkp@intel.com>
 
 All errors (new ones prefixed by >>):
 
->> drivers/video/fbdev/core/fbmem.c:1067:1: error: conflicting types for 'fb_blank'
-   fb_blank(struct fb_info *info, unsigned long blank)
-   ^
-   include/linux/fb.h:591:12: note: previous declaration is here
-   extern int fb_blank(struct fb_info *info, int blank);
-              ^
-   1 error generated.
+>> drivers/video/fbdev/core/fbmem.c:1067:1: error: conflicting types for 'fb_blank'; have 'int(struct fb_info *, long unsigned int)'
+    1067 | fb_blank(struct fb_info *info, unsigned long blank)
+         | ^~~~~~~~
+   In file included from drivers/video/fbdev/core/fbmem.c:34:
+   include/linux/fb.h:591:12: note: previous declaration of 'fb_blank' with type 'int(struct fb_info *, int)'
+     591 | extern int fb_blank(struct fb_info *info, int blank);
+         |            ^~~~~~~~
+   In file included from include/linux/linkage.h:7,
+                    from include/linux/kernel.h:17,
+                    from include/linux/cpumask.h:10,
+                    from include/linux/smp.h:13,
+                    from arch/riscv/include/asm/mmiowb.h:12,
+                    from arch/riscv/include/asm/mmio.h:15,
+                    from arch/riscv/include/asm/clint.h:10,
+                    from arch/riscv/include/asm/timex.h:15,
+                    from include/linux/timex.h:65,
+                    from include/linux/time32.h:13,
+                    from include/linux/time.h:60,
+                    from include/linux/stat.h:19,
+                    from include/linux/module.h:13,
+                    from drivers/video/fbdev/core/fbmem.c:14:
+   drivers/video/fbdev/core/fbmem.c:1086:15: error: conflicting types for 'fb_blank'; have 'int(struct fb_info *, long unsigned int)'
+    1086 | EXPORT_SYMBOL(fb_blank);
+         |               ^~~~~~~~
+   include/linux/export.h:98:28: note: in definition of macro '___EXPORT_SYMBOL'
+      98 |         extern typeof(sym) sym;                                                 \
+         |                            ^~~
+   include/linux/export.h:160:41: note: in expansion of macro '__EXPORT_SYMBOL'
+     160 | #define _EXPORT_SYMBOL(sym, sec)        __EXPORT_SYMBOL(sym, sec, "")
+         |                                         ^~~~~~~~~~~~~~~
+   include/linux/export.h:163:41: note: in expansion of macro '_EXPORT_SYMBOL'
+     163 | #define EXPORT_SYMBOL(sym)              _EXPORT_SYMBOL(sym, "")
+         |                                         ^~~~~~~~~~~~~~
+   drivers/video/fbdev/core/fbmem.c:1086:1: note: in expansion of macro 'EXPORT_SYMBOL'
+    1086 | EXPORT_SYMBOL(fb_blank);
+         | ^~~~~~~~~~~~~
+   In file included from drivers/video/fbdev/core/fbmem.c:34:
+   include/linux/fb.h:591:12: note: previous declaration of 'fb_blank' with type 'int(struct fb_info *, int)'
+     591 | extern int fb_blank(struct fb_info *info, int blank);
+         |            ^~~~~~~~
 
 
-vim +/fb_blank +1067 drivers/video/fbdev/core/fbmem.c
+vim +1067 drivers/video/fbdev/core/fbmem.c
 
   1065	
   1066	int

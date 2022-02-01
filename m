@@ -2,123 +2,103 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 335C5C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 17:06:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE32CC433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 19:00:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231877AbiBARGq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 12:06:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33440 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241433AbiBARGq (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 12:06:46 -0500
-Received: from mail-oi1-x233.google.com (mail-oi1-x233.google.com [IPv6:2607:f8b0:4864:20::233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF6D4C06173B
-        for <linux-fbdev@vger.kernel.org>; Tue,  1 Feb 2022 09:06:45 -0800 (PST)
-Received: by mail-oi1-x233.google.com with SMTP id b186so28373889oif.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 01 Feb 2022 09:06:45 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=RdQTcqQ9Qr4h0L2NlLlM99qGIKmmmXyVpgAfVQlyXvw=;
-        b=aBXJGsBy39GcwPGw1gQwRkkKV6thDHpcyarDrmkoubQM6M8m7KheFYLmVcR/iba2MT
-         ++t5VYXBHifuxfZgt0rPdm2eEQIi4to/6t4QII6YDcjxIphQkcY9ydqlzF1HGNKaSs9V
-         IvfM1MNQmBgOqUNJRefzdJIahGbbWzxTo2tEE=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=RdQTcqQ9Qr4h0L2NlLlM99qGIKmmmXyVpgAfVQlyXvw=;
-        b=NHKGSF15pPZIUcAdrIPIVWYo2n9B3+Miox5V7/zVwkQZhomWvx064vNhaqteVpJ1a8
-         3zduk0QYL9QevwR28KenK1qiStut3yIvW3sEWr44sNAeyRHZwW0LEmGTiRsoS//VAFiI
-         /xnNmkBKMwyl4ppvWzctKeRYuskU617Jv2GqBTNIQfzDWDjcy9yMbadw21PZtpg1LFnv
-         5qZNeR/J0xy+/CFzCYf2bXZuTpxNkKTRzBk0vbHa+fb8SqWAv/6OGEHpGACvOOxfdnDS
-         zuD7+2f8oUyNRWpuIzeJfrYOgWm0o4cspKVMl4n+zbKp+9eWEcWcQOm5uQWm8H/qhTSU
-         lyDQ==
-X-Gm-Message-State: AOAM533GohiI0Crzoft1ApAkNkFKr9yWpr4u0yCUkobYyyl5x3E7DjsR
-        acwERld9jBjy+uhwE26cvjXR1ut2DtxO8/7BZXHfdg==
-X-Google-Smtp-Source: ABdhPJxmJTT10BhmESxaD9wSsaXi2TyqjKpx8TF/TQp9so++NA/uk65aK3wvzaI2XbQCX3/1SL7QYNE/AkpMguwVMkA=
-X-Received: by 2002:a05:6808:1641:: with SMTP id az1mr1928959oib.278.1643735204982;
- Tue, 01 Feb 2022 09:06:44 -0800 (PST)
+        id S242168AbiBATAF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 14:00:05 -0500
+Received: from mout.gmx.net ([212.227.17.20]:41271 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S230417AbiBATAF (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Feb 2022 14:00:05 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1643741996;
+        bh=d2IztvFiozX9ikhPD2+aEcoaHd/2PejNuetOnFWjSAc=;
+        h=X-UI-Sender-Class:From:To:Cc:Subject:Date;
+        b=JXbdahizytzLhrg4cTc6zH+bWwVy6d0whn8StbX2ptCJBrUsuFjAxvrHOUGDaDYdL
+         oaEQ8UUbgZN139YUMpBRr2j4fXounTHzCUyeTIxBAE8iDuRgWi3CRqJQsQf+FZHsCs
+         st9vIhFZQ3tDspClJFUjOYgpkFnO92A6xposou7U=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from p100.fritz.box ([92.116.146.124]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1M59C8-1nG4qG0UIm-001EP7; Tue, 01
+ Feb 2022 19:59:56 +0100
+From:   Helge Deller <deller@gmx.de>
+To:     DRI Development <dri-devel@lists.freedesktop.org>,
+        linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc:     James Bottomley <James.Bottomley@HansenPartnership.com>,
+        John David Anglin <dave.anglin@bell.net>
+Subject: [PATCH v3 0/3] Fix regression introduced by disabling accelerated scrolling in fbcon
+Date:   Tue,  1 Feb 2022 19:59:51 +0100
+Message-Id: <20220201185954.169768-1-deller@gmx.de>
+X-Mailer: git-send-email 2.34.1
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-References: <20220125202118.63362-1-andriy.shevchenko@linux.intel.com>
- <20220125202118.63362-2-andriy.shevchenko@linux.intel.com>
- <YfEG2qVO9K9G+g1d@kroah.com> <CAKMK7uGoRC9a4cMCADTipV67oivfWvTw=6RYm2kOthB_bhWnXQ@mail.gmail.com>
- <f671a112-880d-1526-a395-360947b40c5a@gmx.de> <YfEv7OQs98O9wJdJ@kroah.com>
- <YfFIpBb7lL4ukWjm@smile.fi.intel.com> <b8eb7111-43aa-cc8a-a1bc-f08e0f2987ed@redhat.com>
- <YfFV4EJosayH+e6C@smile.fi.intel.com> <YfFWPmG2D093gz4N@smile.fi.intel.com>
- <6e74d4cc-655a-e38e-0856-a59e4e6deb36@redhat.com> <c423a2f0-e7be-3884-3568-7629c7e9104e@redhat.com>
- <ddb0f354-be19-92fe-20b3-56b00c9304ab@suse.de> <840ec74d-60c6-9480-709c-8cd597c6f5b0@redhat.com>
- <e7fbef3c-2f87-15f9-b24d-34ffaa5a2853@suse.de> <CAMuHMdXnn+JcyMAV_Vbb4Yj8hJmae=Snc2R2fLviq67UYXg7Ew@mail.gmail.com>
-In-Reply-To: <CAMuHMdXnn+JcyMAV_Vbb4Yj8hJmae=Snc2R2fLviq67UYXg7Ew@mail.gmail.com>
-From:   Daniel Vetter <daniel@ffwll.ch>
-Date:   Tue, 1 Feb 2022 18:06:33 +0100
-Message-ID: <CAKMK7uEPuw1+-=h7gvSyCxW4zNuTK3UNZP6yjpP6MPV17sAasQ@mail.gmail.com>
-Subject: Re: [PATCH v1 1/4] fbtft: Unorphan the driver
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Andy Shevchenko <andy@kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Michael Hennerich <michael.hennerich@analog.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Helge Deller <deller@gmx.de>, linux-staging@lists.linux.dev,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Carlis <zhangxuezhi1@yulong.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Phillip Potter <phil@philpotter.co.uk>,
-        Heiner Kallweit <hkallweit1@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:qPvm+cPnCkp5vT9++/v4GQfSPVJnSRf0zFa4GEm8zKIGhM5meJk
+ tAHuvYDRhc5aCbrPQGeToT/eOSt1j7jiHwhO3T5X6m9Agbsyt23eBJZlguNxg6m2r3lI5ES
+ z3UqZ3XvN7Fdwn2LrQiZwedJmN7q65YYE/GPqV+aABLeg2CIKOfuo+6xAJJ7L8pLZTa0ovn
+ M7wAfJmIqeZ1OC4ejY0rA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:955qTNaf9as=:+DzSxYCUeiqpBth/q0SAxK
+ ZE8bOby63cYfSf8PWUVom5/cen/frCfUIoP77fPwQQJuFGjxYCaEANUl+AgsCS2NFkw8Li1t8
+ AmiYTGXhllCFeHmWui74HoCkIPGgnMsvSv6bTrP+aVE2kip62/Ljz6oLnOKyiEmjUZMBixs1r
+ hwf/pFUObC6SuXY6Ss+m/ld3lCCGY6RllJV6XyTU6D57IMqIZJbW7CvU7YyZ98UnoxpORH2CL
+ L3FNdpHGW7vfOLIBHIHZktRB7u3jFsx8IeGNuyLUMlRnI0r1006gKik0E5CI3VRNbiIL0Wd5i
+ UQgGSgYBf4LolVxLpnofTK+BcnTaZtiO/VGb0kXHo+ElR2sYZHZzncoO+r8Y3XSyi+vZKfFh5
+ TAlF1iIAyxE7jNPfl8XzB2eeCVsyQx087XB+XOnsx2ct/RPqA7c8CG1HIcoXzTY0PZukqmeP6
+ uCEAnwFt/ymxP/dJn5oo22M0s8emXxzKwDabaUt4WbLwwZUSjRi9ex8zlsiVIA0zOoTCR3CwS
+ iWTP7XmcfxJflmi6WewA+3iIw+BE0OzkZiva5FfXXmlJouQutpkKtl87ou4iUQmCECIIUNO4g
+ PrglTU+Z8XgqXhSd+OFwODGQWQdYbeYHXtoiBjYAZXAXQzvxadh5MhHPbjYev1IgAQdv8z8Lo
+ UtLr3FgDCpbv6mboUV/3T726yUNhMk0xOfBKgCrsThMna/Wu3a1IHGiTrqzaAWXwUHeZiPKjp
+ dHy6thkqHzHeyD1ooypfuAqKqyuzndO9M4VbAAaIRPU2g+J7i8OhlMYj/dpR5kTO/rN/IOtuJ
+ iO8NlqfjiAo8d9F8M/X61z5Dudw+gXmvzwlOS+IMa6N0zWsVIPq2S23CQUCdff3QWUl0k5fyb
+ RnoH0BJR+za7CNCZ7uaCBCUIHvnZgpz+yaTi9wAUSTbjKTNktFDFXZvxLH+GgOU+Vg5VdANDf
+ IbygF2r92zaYxf4w1VGW0UQ9Zbw9+wt4UchULCIZ1qWbMsPvRLz49ekNY26rQhFt2nn80FEoe
+ Pt0Nxxi2BXcyWdTKrMl+Oi4xtH8M1K40FwHQerCavsF+uzIR3h8tPPGSLGcdjRoylnNgHJkoj
+ kWaPUpHzcZMYwE=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Feb 1, 2022 at 6:01 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> Hi Thomas,
->
-> On Tue, Feb 1, 2022 at 5:16 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> > Am 31.01.22 um 11:18 schrieb Javier Martinez Canillas:
-> > > Another thing that's missing is a DRM_MODE_CONNECTOR_I2C, because I used for
-> > > now a DRM_MODE_CONNECTOR_Unknown.
-> >
-> > That might have implications on userspace. Maybe ask around. (Not that
-> > we actually run userspace on the device).
->
-> Looking at the list of connector types (and wondering if we're gonna
-> need more when converting existing fbdev drivers to drm drivers),
-> there seem to be two different families of connector types, for
->   1. transports between CRTC and display (e.g. VGA, DVID, HDMI),
->   2. transports between CPU and CRTC (e.g. SPI, possibly USB, and
->      the proposed I2C)?
-
-I was trying to argue for a panel connector type and stop doing all
-these internal things because like you point out, it kinda doesn't,
-only the external connectors are relevant to users. But it didn't
-stick anywhere yet, we keep adding more connector types and then
-having to update userspace, which should map these all to "it's the
-panel" or something like that. But also since various technicolor
-abbreviations are about as useful to end-users as "unknown" it really
-doesn't matter, so I'm happy to let this bikeshed get a tad fancier
-every year :-)
--Daniel
-
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
-
-
-
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+This series reverts two patches which disabled scrolling acceleration in=0D
+fbcon/fbdev. Those patches introduced a regression for fbdev-supported grap=
+hic=0D
+cards because of the performance penalty by doing screen scrolling by softw=
+are=0D
+instead of using existing 2D hardware acceleration.=0D
+=0D
+The third patch introduces a new config option=0D
+CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION, which -if enabled- switches=
+=0D
+fbcon to utilize the bitblt and fillrect hardware acceleration in the=0D
+framebuffer console. If disabled, such acceleration will not be used, even =
+if=0D
+it is supported by the graphics hardware driver.=0D
+=0D
+This series is being discussed on linux-fbdev and dri-devel mailing lists.=
+=0D
+=0D
+Helge=0D
+=0D
+Helge Deller (3):=0D
+  Revert "fbdev: Garbage collect fbdev scrolling acceleration, part 1=0D
+    (from TODO list)"=0D
+  Revert "fbcon: Disable accelerated scrolling"=0D
+  fbcon: Add option to enable legacy hardware acceleration=0D
+=0D
+ Documentation/gpu/todo.rst              |  24 -=0D
+ drivers/video/console/Kconfig           |  11 +=0D
+ drivers/video/fbdev/core/bitblit.c      |  16 +=0D
+ drivers/video/fbdev/core/fbcon.c        | 557 +++++++++++++++++++++++-=0D
+ drivers/video/fbdev/core/fbcon.h        |  72 +++=0D
+ drivers/video/fbdev/core/fbcon_ccw.c    |  28 +-=0D
+ drivers/video/fbdev/core/fbcon_cw.c     |  28 +-=0D
+ drivers/video/fbdev/core/fbcon_rotate.h |   9 +=0D
+ drivers/video/fbdev/core/fbcon_ud.c     |  37 +-=0D
+ drivers/video/fbdev/core/tileblit.c     |  16 +=0D
+ drivers/video/fbdev/skeletonfb.c        |  12 +-=0D
+ include/linux/fb.h                      |   2 +-=0D
+ 12 files changed, 744 insertions(+), 68 deletions(-)=0D
+=0D
+-- =0D
+2.34.1=0D
+=0D

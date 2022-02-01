@@ -2,88 +2,60 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7316AC433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 05:21:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19D12C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 06:26:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234153AbiBAFVa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 00:21:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42414 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233713AbiBAFUn (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 00:20:43 -0500
-Received: from mail-ot1-x32b.google.com (mail-ot1-x32b.google.com [IPv6:2607:f8b0:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DF62AC06176D
-        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jan 2022 21:20:42 -0800 (PST)
-Received: by mail-ot1-x32b.google.com with SMTP id x52-20020a05683040b400b0059ea92202daso15145372ott.7
-        for <linux-fbdev@vger.kernel.org>; Mon, 31 Jan 2022 21:20:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=AxUIbjg3SvCLBVXCrv9jIsGx71GsTQ6qIWnsAt6VTbY=;
-        b=BiSXSMEsNtBTkDinyXlJ67kpwdj31ar6lPoZA/5iikJbtUTbyv+x8iSa7vv7ZCPYq6
-         R7Nv0ANSJk6YgAKMwKENalGwcFVeYxJ7V2bekO9F5h1eAxArRCkEJ+lG56yEr9XWpOxd
-         j2UrqPc78k5N69ULMd+CcgKOfYHmCINMvzaZAjVplmKnLYhCFakcrm4CQledQ5fmW064
-         2J0OepZDuPZHszaOu2m/zgWix3+PDZZGPT2LMzNHLZVSXKE7Jp/jdpgT+cVMmsIampR7
-         hre70NoxFVAjnX75mUVPc1J863wP7tru5EaM0vZP9LKpUoOAE8n6/QQyI2vekIi4LFOB
-         I8cw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=AxUIbjg3SvCLBVXCrv9jIsGx71GsTQ6qIWnsAt6VTbY=;
-        b=lhMQ+4Qebi4hDBvvq+1h6psFLWewTDj4wNDTtUEaEp4mKYZKUDIJ3HhsaPGr3lW9en
-         U8rpONYUNsYBxYs9jd39Z10D8wWPCsaHysz7puqV9j5Lg64J/7f899rJweCxRF6/kxUM
-         j0dBKGpWlpDOf2gHnyWihRwvjx1pXUISVVsZkbJyehdfYZr6rdSfgUDFcm59QCaRJM3M
-         5ztfnb/xoVYDsnPmlhXa+N0IpmMiTNPjxZ5bjVNgm/Tt/UC89R/PXyHbqFNcK8j+sVvb
-         FYX6ID8vFtCcuDfhZNwFRJJr+lFk3fJISRdo1t9X8IMaCg+5fHgtEsAzIIHqiSCEiBmU
-         S34Q==
-X-Gm-Message-State: AOAM530OS627sux73YRt4Y+PS9yzdPlYNhgTS6mPbKl6bARnJBnRHsBY
-        I+Ni5AXhQO6RUKpFWYe+G8sykA==
-X-Google-Smtp-Source: ABdhPJz7xSZzfdlELJEKFP+8VoUH7pamHFIqMvwPRNtJNI8E/x0hnVAHOllmRicnrMtz2Q1gMZswNw==
-X-Received: by 2002:a05:6830:1084:: with SMTP id y4mr9564994oto.42.1643692842301;
-        Mon, 31 Jan 2022 21:20:42 -0800 (PST)
-Received: from builder.lan ([2600:1700:a0:3dc8:3697:f6ff:fe85:aac9])
-        by smtp.gmail.com with ESMTPSA id u3sm8193107ooh.19.2022.01.31.21.20.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 Jan 2022 21:20:41 -0800 (PST)
-From:   Bjorn Andersson <bjorn.andersson@linaro.org>
-To:     linux-arm-msm@vger.kernel.org,
-        Luca Weiss <luca.weiss@fairphone.com>
-Cc:     dri-devel@lists.freedesktop.org, phone-devel@vger.kernel.org,
-        linux-leds@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, ~postmarketos/upstreaming@lists.sr.ht,
-        linux-kernel@vger.kernel.org, Kiran Gunda <kgunda@codeaurora.org>
-Subject: Re: (subset) [PATCH 0/4] Enable display backlight on Fairphone 4
-Date:   Mon, 31 Jan 2022 23:19:51 -0600
-Message-Id: <164369277344.3095904.11289204126111973872.b4-ty@linaro.org>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20211229170358.2457006-1-luca.weiss@fairphone.com>
-References: <20211229170358.2457006-1-luca.weiss@fairphone.com>
+        id S231318AbiBAG0i (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 01:26:38 -0500
+Received: from out30-56.freemail.mail.aliyun.com ([115.124.30.56]:55733 "EHLO
+        out30-56.freemail.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S233963AbiBAG0h (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Feb 2022 01:26:37 -0500
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R601e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04407;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=6;SR=0;TI=SMTPD_---0V3MiMFH_1643696794;
+Received: from localhost(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0V3MiMFH_1643696794)
+          by smtp.aliyun-inc.com(127.0.0.1);
+          Tue, 01 Feb 2022 14:26:35 +0800
+From:   Yang Li <yang.lee@linux.alibaba.com>
+To:     deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, Yang Li <yang.lee@linux.alibaba.com>,
+        Abaci Robot <abaci@linux.alibaba.com>
+Subject: [PATCH -next 1/2] video: fbdev: pxa168fb: Remove unnecessary print function dev_err()
+Date:   Tue,  1 Feb 2022 14:26:32 +0800
+Message-Id: <20220201062633.102519-1-yang.lee@linux.alibaba.com>
+X-Mailer: git-send-email 2.20.1.7.g153144c
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 29 Dec 2021 18:03:54 +0100, Luca Weiss wrote:
-> Add and enable PM6150L wled which is used for controlling the display
-> backlight on Fairphone 4.
-> 
-> This series depends on the recent wled series by Marijn Suijten,
-> currently applied in the for-backlight-next branch of
-> kernel/git/lee/backlight.git (or linux-next).
-> 
-> [...]
+The print function dev_err() is redundant because platform_get_irq()
+already prints an error.
 
-Applied, thanks!
+Eliminate the follow coccicheck warning:
+./drivers/video/fbdev/pxa168fb.c:621:2-9: line 621 is redundant because
+platform_get_irq() already prints an error
 
-[3/4] arm64: dts: qcom: pm6150l: Add wled node
-      commit: fe508ced49dd51a700c0f9ec7826d523cfe621b2
-[4/4] arm64: dts: qcom: sm7225-fairphone-fp4: Configure WLED
-      commit: 7a52967d9050f3e430373bc51c56865b49a38573
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+---
+ drivers/video/fbdev/pxa168fb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-Best regards,
+diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
+index c25739f6934d..d533c0bf7031 100644
+--- a/drivers/video/fbdev/pxa168fb.c
++++ b/drivers/video/fbdev/pxa168fb.c
+@@ -618,7 +618,6 @@ static int pxa168fb_probe(struct platform_device *pdev)
+ 
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0) {
+-		dev_err(&pdev->dev, "no IRQ defined\n");
+ 		return -ENOENT;
+ 	}
+ 
 -- 
-Bjorn Andersson <bjorn.andersson@linaro.org>
+2.20.1.7.g153144c
+

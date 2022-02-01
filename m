@@ -2,99 +2,109 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F1D7C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 11:34:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E072C433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 11:41:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237293AbiBALej (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 06:34:39 -0500
-Received: from mout.gmx.net ([212.227.17.22]:50575 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233560AbiBALej (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Feb 2022 06:34:39 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1643715270;
-        bh=4T9RDTLAr0KcpEvaIH55Bk1wM7UlBol83f6Gumr1oQc=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=aQ7cVv7O6Bql8HHixoJaMPIfib4BrLNPDMLB3e5mLTZQsZRHvtipBrHszj430jBzo
-         uofR8PJosaIiI4AikVkLooCk07g0A097724LAXpLtbkxNvlHROvfhqDTFCcp0+9AY5
-         EPKGVkAUy3JI6QQFnjcMWEDNlI9cmsTKuHjkdIBw=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.146.124]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MZCfJ-1mjsIB2eK9-00V5UA; Tue, 01
- Feb 2022 12:34:30 +0100
-Message-ID: <dd999255-5a3e-80fa-6c13-287ba6aa7bcb@gmx.de>
-Date:   Tue, 1 Feb 2022 12:34:28 +0100
+        id S231325AbiBALlB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 06:41:01 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:32929 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S237324AbiBALlB (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Feb 2022 06:41:01 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1643715660;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=7n48rOVqWezIHqWx+2qepywQmYqWs41wlRyqhhm8ye8=;
+        b=FOMXSp36NRAkjC4bAljQYIZl0j1AkpcxoXIeTDkWn5hQ8tMueoWZiX6HmnQzJHrVSvgyuU
+        dkbn9WoDJ6OZpKCjRS3kwAx8gvFQ/JP/OYy0tqJ83CcqySmYPQ1IZbiAjKMu9A7+0NMdQb
+        uqu/3sXzsHAtblDeBlakVHpRXfKh9Z0=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-463-OxCp4vjlPfiTTdOjpocfjQ-1; Tue, 01 Feb 2022 06:40:59 -0500
+X-MC-Unique: OxCp4vjlPfiTTdOjpocfjQ-1
+Received: by mail-wr1-f70.google.com with SMTP id v28-20020adfa1dc000000b001dd1cb24081so5900291wrv.10
+        for <linux-fbdev@vger.kernel.org>; Tue, 01 Feb 2022 03:40:58 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=7n48rOVqWezIHqWx+2qepywQmYqWs41wlRyqhhm8ye8=;
+        b=5KCwDQwvIIhKXqSmXcYF4xXBbs7DYsX1cOMjRiHDzCQ8I9eNatm6qFdVHwb+B4bEcZ
+         /XBUDUgHrglKGc0mTyv+ZCuH8c9PvH6LYYMo8mWq6Tm8YdtaNdrb9thkZC7a/O/z+qzH
+         JTrV1/EITR2HjTj8mMepWGV0FYbaRWvsDc4VGZ6ATFS9nR9FhlsppSltcztS4ZzsX4eo
+         saas+E81Pt4BAGQbInxpjn8SMtUrn8VzGO/yo2ygCD4Nha/kFZLYoyXRPt+L6HHCwgmO
+         3dqn8CKyB9wrU6Eu8zbQ6LQpLm/rEbXq3osxnAGucaZfXq4K7z2507YBca3ZyHCFtDHR
+         e06g==
+X-Gm-Message-State: AOAM533zU90lKue1g01UP47BXsYOWep3IPHY6QoZdEUiEwp2mHkHoSSD
+        XNijGcrEhWILM4yeebORA34vDjqGuFEXjozQooTA4Ghd07Xp5om3G69jVX4UqDq6sRBDfi4aCAx
+        L6OS2ZGSjaOR6BNy/VzpOcdc=
+X-Received: by 2002:a05:600c:2948:: with SMTP id n8mr1423322wmd.61.1643715657861;
+        Tue, 01 Feb 2022 03:40:57 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJytv6sGg27WWm9E+KaEvFVIzBmnh6PhhKvD74OMrypWaCif9Pxmpddbk3kfATQH4MU5jJX8rw==
+X-Received: by 2002:a05:600c:2948:: with SMTP id n8mr1423309wmd.61.1643715657640;
+        Tue, 01 Feb 2022 03:40:57 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id c13sm14555734wrv.24.2022.02.01.03.40.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 01 Feb 2022 03:40:57 -0800 (PST)
+Message-ID: <7f4569d5-2b67-fd98-9a0e-03a2025ddcce@redhat.com>
+Date:   Tue, 1 Feb 2022 12:40:56 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [PATCH -next 1/2] video: fbdev: pxa168fb: Remove unnecessary
- print function dev_err()
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 3/4] drm/tiny: Add driver for Solomon SSD1307 OLED
+ displays
 Content-Language: en-US
-To:     Yang Li <yang.lee@linux.alibaba.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, Abaci Robot <abaci@linux.alibaba.com>
-References: <20220201062633.102519-1-yang.lee@linux.alibaba.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220201062633.102519-1-yang.lee@linux.alibaba.com>
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Sam Ravnborg <sam@ravnborg.org>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        dri-devel@lists.freedesktop.org,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maxime Ripard <maxime@cerno.tech>
+References: <20220131202916.2374502-1-javierm@redhat.com>
+ <YfhVBtv1UIA7bJja@ravnborg.org> <YfkAOiSlIMZrKXyl@smile.fi.intel.com>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <YfkAOiSlIMZrKXyl@smile.fi.intel.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:7TIhoWnCFwcYD+6lyAPYwUlkSAKdBfZg9gO2QgIrAzZn4YrMuQi
- 2Mz6h3koks5vciCXOer/qt4qcsd51ayCFRB3osBzV+AZzEDi2v1X+GTKDzlkhzsnDJkwqmx
- CS9LXZUZuuRffPhp0hD4km8xBaRpb0QDCvxFCECMYIOf742PhGyzvDgP3FXOxD8gWRY2elU
- Vc2Oacl2jPfDIZrVy0wFQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:ckmF39JFUTw=:JYMFqTl+/vuUllTRQqe7mN
- wfKWqR+TRfoarZ0DVwFxOTUj0GPYEhid8ruhDW61RJ+4wG/8uADZk8De1/HJwJM4RrDN5KvWK
- PglIKzQ8f1vgVSLD9ZFgSpXylGU1TVUgwq3GvAMs/FJ969UzpqjgqlTb+MPSnRwDugByX1gHq
- gJRe33JaFKmBlsG1cUOvn4GXM0KWquABorRAIZbUfsDiDUp8Jhrl/YUMiIi7BiFFLZd99LAic
- YTjBna2HhoahW3W8S3okg2Nx2SRbU4VmeCSPYtWKaEb7A6+6tsqDSO0tigsS8U52N7S1Ruwpx
- y1+RtP4gSFxw8nWi9kvaJT3YLyX8uqbyCaEKAygCJEkL9/TMl2iAzI9UlAbmAcwCKAcoJbKVg
- zuX8jB+Tel8vbiDlDHfoAdc0/Gghqqtad2Z+uA0QWWUWj2kfwKYE2gyR0D58cpBQpIKYD5lv1
- lKM/a90AlZEkr0X9d2OPfceAVmXNf7ds9dpdTXeH44TuOMJfuT4CKeECxtjZqUaZPoRieIWs7
- o3QnfnC99XwH+JYdF0cb/72WcKicQKfVV3rsAGpDeYFxyyVj4AhSpYBajXCT0EhJYWLIPzb1x
- 0/FR7SpU2SyKic6J2o68vyIdb3SkcC1tituX/1fCIiwQapqZ5VWeQmU2ZOqxoEn1qCrqQox31
- OdFZN8cKc15xXjoQqEnfSBWF+Yk4defv6AZNfcfRi65jK+HK+zxGiQLjvrXveFjOQDwoMrw+I
- oa52w+8590vnLHqesOMLGVGLTopMGjwXIhkmoRvDSzi1KMHksjNkAljtySaxRgqykyaM2zTad
- ANKDg55mHirrKqxpBZmqtAupDhZK3P7k5JRZmjgw7jGK91vlmSjVGkKnE/CL+UhSpo2Jbwdkb
- TcstBKS86NC5DbAQXXElwh2AI8/dyK8H7NV+KiQCGNxQoeNeXT1D8fsmOUuuIiqJh4kN8D0wy
- rIOW7ABCtt2zuwfZMKEiuQvSoPOMIvBV1IUll3mkyljeR5S8UVYkBi9DG1HJyXZfgDIiKy5bw
- DktfRqWJ25Lr3lekoTkHgXN7+TGCooCzoXgmHlr2cHdmPY4185EiW1bVgxfvBFUHWUQknPLRg
- hhBfMySA3fKWzk=
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2/1/22 07:26, Yang Li wrote:
-> The print function dev_err() is redundant because platform_get_irq()
-> already prints an error.
+On 2/1/22 10:41, Andy Shevchenko wrote:
+> On Mon, Jan 31, 2022 at 10:30:46PM +0100, Sam Ravnborg wrote:
+>> On Mon, Jan 31, 2022 at 09:29:16PM +0100, Javier Martinez Canillas wrote:
+> 
+> ...
+> 
+>>> +config TINYDRM_SSD1307
+>>> +	tristate "DRM support for Solomon SSD1307 OLED displays"
+>> Use SSD130X here - so SSD1306 users can find it.
+> 
+> It's better to list them all in the "help". How user would grep this?
+> 
+> `git grep -n -i ssd1306` ==> no match.
 >
-> Eliminate the follow coccicheck warning:
-> ./drivers/video/fbdev/pxa168fb.c:621:2-9: line 621 is redundant because
-> platform_get_irq() already prints an error
->
-> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
-> ---
->  drivers/video/fbdev/pxa168fb.c | 1 -
->  1 file changed, 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168=
-fb.c
-> index c25739f6934d..d533c0bf7031 100644
-> --- a/drivers/video/fbdev/pxa168fb.c
-> +++ b/drivers/video/fbdev/pxa168fb.c
-> @@ -618,7 +618,6 @@ static int pxa168fb_probe(struct platform_device *pd=
-ev)
->
->  	irq =3D platform_get_irq(pdev, 0);
->  	if (irq < 0) {
-> -		dev_err(&pdev->dev, "no IRQ defined\n");
->  		return -ENOENT;
->  	}
 
-Please drop the surrounding braces then as well in both of your patches, e=
-.g.
+That's already the case :)
 
-	if (irq < 0)
-		return -ENOENT;
+$ git grep -n -i ssd1306 drivers/gpu/drm/
+drivers/gpu/drm/tiny/Kconfig:167:         DRM driver for the SSD1305, SSD1306, SSD1307 and SSD1309 Solomon
+drivers/gpu/drm/tiny/ssd1307.c:922:static struct ssd1307_deviceinfo ssd1307_ssd1306_deviceinfo = {
+drivers/gpu/drm/tiny/ssd1307.c:948:             .compatible = "solomon,ssd1306fb-i2c",
+drivers/gpu/drm/tiny/ssd1307.c:949:             .data = (void *)&ssd1307_ssd1306_deviceinfo,
+ 
+Best regards,
+-- 
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 
-Helge

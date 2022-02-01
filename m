@@ -2,154 +2,200 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC988C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 11:07:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3670C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 11:14:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237077AbiBALHX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 06:07:23 -0500
-Received: from mail-vs1-f53.google.com ([209.85.217.53]:45975 "EHLO
-        mail-vs1-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235963AbiBALHW (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 06:07:22 -0500
-Received: by mail-vs1-f53.google.com with SMTP id t20so15551652vsq.12;
-        Tue, 01 Feb 2022 03:07:22 -0800 (PST)
+        id S236807AbiBALOA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 06:14:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36872 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S235491AbiBALN7 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 06:13:59 -0500
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 59005C061714;
+        Tue,  1 Feb 2022 03:13:59 -0800 (PST)
+Received: by mail-lf1-x12a.google.com with SMTP id k13so772469lfg.9;
+        Tue, 01 Feb 2022 03:13:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :mime-version;
+        bh=ZLYZfziVY8pFIn1AwlQRyIsot8ffWyZ6aY97MmqYPzA=;
+        b=A1mXrWYeowDBUt8KZk4/ZUX0bARtJRkY7vu0JsIKVdSqPM1XFiZkvJm6qaBKFEPWaR
+         IVmyKFdpCPfyl9D0Ym68nl0gprAyQqbew0ZJJPLeT2t9m9CoEIy07EW57kJ8zle8HJjc
+         PLil9LfZVFUVm9axV33gEKG1L2uZgzt/dk7TN2RU0y5/1rqPLTx39z0lBJmHDk+k+CGP
+         O5iDgGDnFldkqGxHOWfkNVYErACZv96QSjizeSD5w6MitJDNB5eNSM9uRQ4UE+ROfH5O
+         bWZq2kUrcRQsP+EFFhdeGRouSMLCl6iFGIdP5vO6fuqDVJXyosD9rNzkUf53ZoKfYgqC
+         YTyw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=UFAIMQcU3dCvJZn8Zuan8C8Op7u0lxfrOEd/qthi1mk=;
-        b=ucvHtK9PqGQQfJX0hCsx68e3hYRn3gZ/T+h/5DS3mFb11EECKG1kBxk5RTBuA04Dgu
-         nyQY5aGyHEHRKel1UOP42r/bCBPAskWGjuGojQlC+8uLm55d0mlT9elnr1wJ6RqDp8sR
-         DTqkeo4qA1z5gQeUR5o74ayGCYotZpO849nnpVE+4KgB+zD2T+2iaxkR42KlGVijl8rF
-         blh5inicg4psEm3HUeij3DyPZdOPXDYA1sJLGuA6u52FXIK799HshG8K9VSg6+mp5s/Z
-         j+HFvPKwONsNQhakKlqFWEpw8yvUq0ONi60PVxlG1Gx+NQHdfDU1mbpD0HzQJpA33uqE
-         3scw==
-X-Gm-Message-State: AOAM530ToXK0xyR1Xf/ofbTFZMePPRLKWrKktDbu1060cn/3Ovsa9him
-        LjXhlnCMb8NUycWjNH0tv12DP93fLJvuyDG6
-X-Google-Smtp-Source: ABdhPJx+xkNm7hytdvBRIhna3Z7B6rmrGIs08GfKfcPgilpnOmLHrXk4lNL8qq9Uby9pumW5uyD/9g==
-X-Received: by 2002:a67:ee01:: with SMTP id f1mr9737221vsp.0.1643713642079;
-        Tue, 01 Feb 2022 03:07:22 -0800 (PST)
-Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com. [209.85.217.50])
-        by smtp.gmail.com with ESMTPSA id p2sm4993584uao.1.2022.02.01.03.07.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Feb 2022 03:07:20 -0800 (PST)
-Received: by mail-vs1-f50.google.com with SMTP id g10so15552702vss.1;
-        Tue, 01 Feb 2022 03:07:19 -0800 (PST)
-X-Received: by 2002:a67:b00e:: with SMTP id z14mr9303063vse.57.1643713639387;
- Tue, 01 Feb 2022 03:07:19 -0800 (PST)
-MIME-Version: 1.0
-References: <20220131201225.2324984-1-javierm@redhat.com> <tIMIWqepcZGntnez-1ss4Kn4K8btXnzDRL7EWd19-745WK90YIC19E_4di9RNvB3gtx-PzWEjBEGQLPNJE_x0T1yyyaWFCoFcCiG4StR9RU=@emersion.fr>
- <wuXPJN-K-rvjoV51c4EBmTBScov8rcJTPoYmlfHe04_-4wD1khVxo9HnUsP7UFd5m4AkzGSw2hXe_c77jbSRhjEJ0JZIYwuvuIkcv_KsR-Y=@emersion.fr>
- <CAMuHMdXKZ=BkvVqdpiNPNJgxm9SzQ3Z0n4SqV2-4oPRveybd6g@mail.gmail.com>
- <qmhzv6kqs6QdAOP3bNB39glOpc8eeJ6flgjfjcaBniT-shDKZkxo5uB71weGOUKxPE6dq_WBhtHmY5vMmuYwqMoHgtMWnX0ESE5R1Y5g5F8=@emersion.fr>
- <CAKMK7uGPuhrDf8fdDgfuPt5rzO30Rm54T7GvWb203NRbVoVDgw@mail.gmail.com>
- <b0788b3d-9c77-0e96-0969-380d21663909@redhat.com> <20220201124208.39c31e59@eldfell>
-In-Reply-To: <20220201124208.39c31e59@eldfell>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 1 Feb 2022 12:07:07 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdX_uyEznHy5vYwS8Q=+bBKPddeJa41KTWi4Fwh3tjX+zQ@mail.gmail.com>
-Message-ID: <CAMuHMdX_uyEznHy5vYwS8Q=+bBKPddeJa41KTWi4Fwh3tjX+zQ@mail.gmail.com>
-Subject: Re: [PATCH 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED displays
-To:     Pekka Paalanen <ppaalanen@gmail.com>
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:mime-version;
+        bh=ZLYZfziVY8pFIn1AwlQRyIsot8ffWyZ6aY97MmqYPzA=;
+        b=wx2OGlYomXwyo38YghGE0WZYjjTM5NZ8K6P7PT/iyLrEhPby4AC+viAkKgaN6U8Kuu
+         VcPQq0LOIYBYiu8S90hpBvbdihmE8jdqm3U43JBlnzgwbxfOr3vTKAxsrH3VhrVurL1T
+         4KQFxmpVE+rcvINOoHgq3L20b8bvu8VwSBcT6qmTGSu3uEk0ZZpq4ILiJFxfsyfyFohq
+         o6ZBrtMElLxrafmzJlPE3getGS5T6gqNnIfiJRSziVWiYWMiui4aX2740LHrUcaiw7ad
+         z/NetrZ3yh8cB6B4aBN4vtKjyW8jtTcJ38vKDF176Ljt4apua4Ss2MyA+677Rij/v7Y2
+         kg5A==
+X-Gm-Message-State: AOAM530h7WEF75q+kKf8tKF/SRPZeYIqxU03ytG9oJmDGLajlFRKFrnw
+        LPO5b+zWXeIBvIMTlJjsDyk=
+X-Google-Smtp-Source: ABdhPJwHcLQnCeVCs6tFlKt2rjNiLnX1ifC0fhaynlqlF+0iVAOqMHmfof1sASzTBbfiBNi4WcUNXA==
+X-Received: by 2002:a05:6512:e86:: with SMTP id bi6mr19223352lfb.321.1643714037544;
+        Tue, 01 Feb 2022 03:13:57 -0800 (PST)
+Received: from eldfell ([194.136.85.206])
+        by smtp.gmail.com with ESMTPSA id f22sm4033821lfj.261.2022.02.01.03.13.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 01 Feb 2022 03:13:57 -0800 (PST)
+Date:   Tue, 1 Feb 2022 13:13:54 +0200
+From:   Pekka Paalanen <ppaalanen@gmail.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
 Cc:     Javier Martinez Canillas <javierm@redhat.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Simon Ser <contact@emersion.fr>,
-        Linux PWM List <linux-pwm@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
         David Airlie <airlied@linux.ie>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        dri-devel@lists.freedesktop.org,
+        Noralf =?UTF-8?B?VHLDuG5uZXM=?= <noralf@tronnes.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
         Maxime Ripard <maxime@cerno.tech>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Lee Jones <lee.jones@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH 2/4] drm/format-helper: Add
+ drm_fb_gray8_to_mono_reversed()
+Message-ID: <20220201131354.26ccae23@eldfell>
+In-Reply-To: <e52560f0-bd0c-b51b-af1b-bd4be2df8702@suse.de>
+References: <20220131201225.2324984-1-javierm@redhat.com>
+        <20220131201225.2324984-3-javierm@redhat.com>
+        <e52560f0-bd0c-b51b-af1b-bd4be2df8702@suse.de>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/Wm1.Z9QEq88r=0UglNQ17h8";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Pekka,
+--Sig_/Wm1.Z9QEq88r=0UglNQ17h8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Feb 1, 2022 at 11:42 AM Pekka Paalanen <ppaalanen@gmail.com> wrote:
-> On Tue, 1 Feb 2022 10:49:03 +0100
-> Javier Martinez Canillas <javierm@redhat.com> wrote:
-> > On 2/1/22 09:38, Daniel Vetter wrote:
-> > > On Tue, Feb 1, 2022 at 9:34 AM Simon Ser <contact@emersion.fr> wrote:
-> > >> On Tuesday, February 1st, 2022 at 09:26, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > >>> What's the story with the Rn formats?
-> > >>>
-> > >>> The comments say "n bpp Red", while this is a monochrome (even
-> > >>> inverted) display?
-> > >>
-> > >> I don't think the color matters that much. "Red" was picked just because it was
-> > >> an arbitrary color, to make the difference with e.g. C8. Or am I mistaken?
-> > >
-> > > The red comes from gl, where with shaders it really doesn't matter
-> > > what meaning you attach to channels, but really just how many you
-> > > have. So 2-channel formats are called RxGx, 3-channel RxGxBx,
-> > > 4-channel RxGxBxAx and single-channel Rx. And we use drm_fourcc for
-> > > interop in general, hence why these exist.
-> > >
-> > > We should probably make a comment that this really isn't a red channel
-> > > when used for display it's a greyscale/intensity format. Aside from
-> > > that documentation gap I think reusing Rx formats for
-> > > greyscale/intensity for display makes perfect sense.
-> > > -Daniel
-> >
-> > To sump up the conversation in the #dri-devel channel, these drivers
-> > should support the following formats:
-> >
-> > 1) Dx (Daniel suggested that for darkness, but inverted mono)
->
-> Did you consider format C1 instead?
+On Tue, 1 Feb 2022 10:59:43 +0100
+Thomas Zimmermann <tzimmermann@suse.de> wrote:
 
-That would be a 2-color display, which is not necessarily black
-and white. Cfr. Amiga or Atari bit planes with bpp=1.
-That's why fbdev has separate visuals for monochrome.
+> Hi
+>=20
+> Am 31.01.22 um 21:12 schrieb Javier Martinez Canillas:
+> > Add support to convert 8-bit grayscale to reversed monochrome for drive=
+rs
+> > that control monochromatic displays, that only have 1 bit per pixel dep=
+th.
+> >=20
+> > This helper function was based on repaper_gray8_to_mono_reversed() from
+> > the drivers/gpu/drm/tiny/repaper.c driver. =20
+>=20
+> You could convert repaper to the new helper.
+>=20
+> >=20
+> > Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+> > ---
+> >=20
+> >   drivers/gpu/drm/drm_format_helper.c | 35 +++++++++++++++++++++++++++++
+> >   include/drm/drm_format_helper.h     |  2 ++
+> >   2 files changed, 37 insertions(+)
+> >=20
+> > diff --git a/drivers/gpu/drm/drm_format_helper.c b/drivers/gpu/drm/drm_=
+format_helper.c
+> > index 0f28dd2bdd72..bf477c136082 100644
+> > --- a/drivers/gpu/drm/drm_format_helper.c
+> > +++ b/drivers/gpu/drm/drm_format_helper.c
+> > @@ -584,3 +584,38 @@ int drm_fb_blit_toio(void __iomem *dst, unsigned i=
+nt dst_pitch, uint32_t dst_for
+> >   	return -EINVAL;
+> >   }
+> >   EXPORT_SYMBOL(drm_fb_blit_toio);
+> > +
+> > +/**
+> > + * drm_fb_gray8_to_mono_reversed - Convert grayscale to reversed monoc=
+hrome
+> > + * @dst: reversed monochrome destination buffer
+> > + * @src: 8-bit grayscale source buffer
+> > + * @clip: Clip rectangle area to copy
+> > + *
+> > + * DRM doesn't have native monochrome or grayscale support.
+> > + * Such drivers can announce the commonly supported XR24 format to use=
+rspace
+> > + * and use drm_fb_xrgb8888_to_gray8() to convert to grayscale and then=
+ this
+> > + * helper function to convert to the native format.
+> > + */
+> > +void drm_fb_gray8_to_mono_reversed(void *dst, void *src, const struct =
+drm_rect *clip) =20
+>=20
+> IMHO it would be better to have a function that converts xrgb8888 to=20
+> mono and let it handle the intermediate step of gray8.
+>=20
+> > +{
+> > +	size_t width =3D drm_rect_width(clip);
+> > +	size_t height =3D drm_rect_width(clip);
+> > +
+> > +	u8 *mono =3D dst, *gray8 =3D src;
+> > +	unsigned int y, xb, i;
+> > +
+> > +	for (y =3D 0; y < height; y++)
+> > +		for (xb =3D 0; xb < width / 8; xb++) { =20
+>=20
+> The inner loop should probably go into a separate helper function. See=20
+> the drm_fb_*_line() helpers in this file
+>=20
+> At some point, we's want to have a single blit helper that takes source=20
+> and destination formats/buffers. It would then pick the correct per-line=
+=20
+> helper for the conversion. So yeah, we'd want something composable.
 
-> I have no idea how this would map to fbdev API though.
+Btw. VKMS is going to do blending, and it needs to support various
+formats, so the latest patches from Igor probably do something similar.
 
-    #define FB_VISUAL_MONO01                0       /* Monochr.
-1=Black 0=White */
-    #define FB_VISUAL_MONO10                1       /* Monochr.
-1=White 0=Black */
-    #define FB_VISUAL_TRUECOLOR             2       /* True color   */
 
-The above is RGB (or grayscale, see below).
+Thanks,
+pq
 
-    #define FB_VISUAL_PSEUDOCOLOR           3       /* Pseudo color
-(like atari) */
 
-Palette
+>=20
+> Best regards
+> Thomas
+>=20
+> > +			u8 byte =3D 0x00;
+> > +
+> > +			for (i =3D 0; i < 8; i++) {
+> > +				int x =3D xb * 8 + i;
+> > +
+> > +				byte >>=3D 1;
+> > +				if (gray8[y * width + x] >> 7)
+> > +					byte |=3D BIT(7);
+> > +			}
+> > +			*mono++ =3D byte;
+> > +		}
+> > +}
+> > +EXPORT_SYMBOL(drm_fb_gray8_to_mono_reversed);
 
-    #define FB_VISUAL_DIRECTCOLOR           4       /* Direct color */
+--Sig_/Wm1.Z9QEq88r=0UglNQ17h8
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
-Usually used as RGB with gamma correction, but the actual hardware
-is more flexible.
+-----BEGIN PGP SIGNATURE-----
 
-    #define FB_VISUAL_STATIC_PSEUDOCOLOR    5       /* Pseudo color readonly */
+iQIzBAEBCAAdFiEEJQjwWQChkWOYOIONI1/ltBGqqqcFAmH5FfIACgkQI1/ltBGq
+qqfehw//fDufH9R+Ixm9EtaZ0PihGdoA1VzB7XlyX7BAcSMRdGn9/VkWbeIR6ocQ
+hgYInmKfKgYazvVaqTwSsTfa3Img4aOeEYhzSSokchH0OCsPPBH4uCH1+eL9nLEq
+nHD10TYg7T9nRmRvCRCAdIlkwUz/20tFCLANrB5stAVob1NkwVwlTekqAbo9tbIC
+EWe39C9DbztfLSjOvkdjKCgqmP4TXZDZRf7dJmrIpvSPBMRwopymWLszq0rgp/RK
+lI5uJHi0r6mdvaQ3sf2NRGjFOegng36bsKjUmrc8rQms8fIrnon+XIR3zHew9EhS
+u4pW29Y9CEV2P7EDqyl6RdODm0cm11N3X/YWjQO0IgJkN9/5/66a9GnQRDM+ea1H
+3ObrPOLRRtQtzN1vQC6+KPkBqv8LpbC+Gf/LGaZwV/UZ/cO6fMCYAHI5heOVj6bu
+qp9PZgX4lRGA0raMnAAQPy4Sh7uNZsqwvDF8eL8gs8dmktMgr15Fh97hfU0+lED9
+G+EAo+RThIRcaEUMl0AaLVzjjWnBT9NIrNyXNObgH2PGTcnTfBOTDnX4iwwwtqgH
+/JYZwuj/kxFDC/aSUlar/azuKC8XDHYqBPbrQgmvp5vDA3Iti1UoNf0uOt6Skty0
+wBuz9y+eFIT5VOrm00+rdUI6+7zWd9EYPgNFTPmoGnJMZSJkt34=
+=fmbL
+-----END PGP SIGNATURE-----
 
-Fixed palette
-
-And:
-
-    struct fb_var_screeninfo {
-            ...
-            __u32 grayscale;                /* 0 = color, 1 = grayscale,    */
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--Sig_/Wm1.Z9QEq88r=0UglNQ17h8--

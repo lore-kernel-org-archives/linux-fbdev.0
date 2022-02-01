@@ -2,122 +2,128 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9C00C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 15:03:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B891CC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 15:10:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239712AbiBAPDf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 10:03:35 -0500
-Received: from mout.gmx.net ([212.227.17.22]:43617 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S239685AbiBAPDe (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Feb 2022 10:03:34 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1643727768;
-        bh=nvs4NamF8w3PSAtLVFdwadPiUvfzFg613upYNZ/yXSg=;
-        h=X-UI-Sender-Class:Date:To:Cc:References:From:Subject:In-Reply-To;
-        b=Ig2IPZ5zKlouxpflVVmYYGrUePr/LI8+qLrp7aZA4uucD+2hXbYwRZLq855afcj7/
-         1C1nsPz7s9e8i+8N7F1wnisBRN0mfKm2sAbMpx8DRuRWuiFg04oBnMytrkdwEQpEIQ
-         DQTyXsVmllotv/hXvaZbbuOUiJ+3eYZuhKq4mj3U=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.146.124]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MwQXN-1mP0sn1g4j-00sNis; Tue, 01
- Feb 2022 16:02:48 +0100
-Message-ID: <b1c1f68d-4620-2429-66bd-33d806d31457@gmx.de>
-Date:   Tue, 1 Feb 2022 16:02:40 +0100
+        id S239827AbiBAPKy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 10:10:54 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:23088 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S234200AbiBAPKx (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Feb 2022 10:10:53 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1643728253;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=Xahi6KlHV6F4VQ/xZVlvC1YTaLt1tqgz8laoIFbavo4=;
+        b=KnJs+m9WmWD2cDEpzquJb6QH4bop2cYJVnN632+2P9VWFq9NWNzZ5Op+rPk6E0y9R3F2U2
+        x2WnzoW28rSIMkN2VssIXC/x40w0osyTmXQJZrZQnVcQc1Og8BysD4zTcqg3HQmHorh5B3
+        gq4vmj+YWHKe1hhIKWJUo9f+sTBtj5c=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-665-ZGsKlv9tP1mCTfiobFf88g-1; Tue, 01 Feb 2022 10:10:51 -0500
+X-MC-Unique: ZGsKlv9tP1mCTfiobFf88g-1
+Received: by mail-wm1-f70.google.com with SMTP id l20-20020a05600c1d1400b0035153bf34c3so1769755wms.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 01 Feb 2022 07:10:51 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=Xahi6KlHV6F4VQ/xZVlvC1YTaLt1tqgz8laoIFbavo4=;
+        b=6gW5yLnv8+AdY44HQ4sdXvP+RnpcMcxcqDw4xtZP5PIK0vu7fgBuVTX+5d9HCQO5VP
+         OR3M4PLYawl+cgdErX81fvGRKU+e/760qP1l+rVpzTktKjB8lkYnzvVcFmGyUZh+z3Z0
+         SmUZZ2oL0z3sw0HUJdIv3Li69jwPaku6YwRBSGMKegtEBXR+lAz30C7DZR6cezzbQLVN
+         xju5OuQoejpKNnIC0hN3xWtGQH17QuUFNHi13GHDvwouRYnc3ciOVHq3mgDTc1UfW4+5
+         nzvBb1z2zH3ZlAQRC8pzvP+b7tJqXmHzxWxA/Lk0Azw8RJWtXBn/17eFHZPXQoV239MB
+         +fZg==
+X-Gm-Message-State: AOAM532ZU6lacxMwNSxYlKk7Vpyp911dsxkovqr+0tyQvU8D6VPP5be4
+        tJuJKEObR6Q9hi4jSSQ04RhadPebRkV0ZHRvhIF43mapyFkPazonAvZ5JsDMAHvS0tKXt05mfqu
+        ZXLdvkiFbhEBX/LCdTA5XRh4=
+X-Received: by 2002:a05:6000:1a8c:: with SMTP id f12mr11663239wry.153.1643728250668;
+        Tue, 01 Feb 2022 07:10:50 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJxdwGp2Pak+qnkxqFSHlJ5WHAuF3l8gqYjbIl9n8aNA5CLl+rlgxDBFzggA+hPhyEXVYtJztA==
+X-Received: by 2002:a05:6000:1a8c:: with SMTP id f12mr11663221wry.153.1643728250430;
+        Tue, 01 Feb 2022 07:10:50 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id x4sm15296308wrp.13.2022.02.01.07.10.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 01 Feb 2022 07:10:50 -0800 (PST)
+Message-ID: <b4fe0d36-c4ef-6f7e-e47d-f98f6055ea92@redhat.com>
+Date:   Tue, 1 Feb 2022 16:10:49 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 3/4] drm/tiny: Add driver for Solomon SSD1307 OLED
+ displays
 Content-Language: en-US
-To:     Yizhuo Zhai <yzhai003@ucr.edu>
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Matthew Wilcox <willy@infradead.org>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Zheyu Ma <zheyuma97@gmail.com>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20220131065719.1552958-1-yzhai003@ucr.edu>
-From:   Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH] fbdev: fbmem: Fix the implicit type casting
-In-Reply-To: <20220131065719.1552958-1-yzhai003@ucr.edu>
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc:     Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+        linux-fbdev@vger.kernel.org,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        dri-devel@lists.freedesktop.org,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maxime Ripard <maxime@cerno.tech>
+References: <20220131202916.2374502-1-javierm@redhat.com>
+ <YfhVBtv1UIA7bJja@ravnborg.org>
+ <3aac291a-b30e-2775-336f-66dd08d634e2@redhat.com>
+ <YfkA4ER/52I2v1JP@smile.fi.intel.com>
+ <9ddd8a8c-4aa9-bc4a-5637-66197a7342d1@redhat.com>
+ <Yfk9fuazUSgI6C9n@smile.fi.intel.com>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <Yfk9fuazUSgI6C9n@smile.fi.intel.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:8rcnp3IDWKRjEYPQV485Zi+kFbcxjfN0d1QI0X2MU7OVul75bod
- eQuXX8jdrKjMIB2fbFNnodmCyPeknr4i/kfQBcukaVrSA3NwBE0B1kXD4gZR7qZqfK6SHW+
- P5Z3tyGBWi0S9W4OBNjklGZGQ+uS0XMCezCx8oxze65ATS7BFRkOph2vBGq3QOogmBUJFqh
- HohuYWpL/6NFwDvUyuDtA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:8Rn0yXCvoSI=:wCSp2dm5E03DqfVW0te626
- y3QbpDpBUuTKWhC/2BhKHIV114JvdTj7FO7RgQjiIh0KVHFyDX7evBCCP7F7QZ1ym7TRzJ9Zd
- n0RjjMB5hei2NBwh1vXhjC7GF+gyG1PwKcEiNrYRjEgeDHRQ3HYYmyJK03F0F6HzWx7tmBnyL
- B6cNR7yC4WT0uB/OkuthjxwrEOL2HALsrdV74B6i4dvAfRLdet1ddKocbBqLpW0o6LQG1k3AD
- SQyeaSEztHEG2F9zKvC0uEaJjKPaiSTZuMyXeXiOIOW9jDiLM56Q2vKR0WnnRDH659abnY4o9
- nE+nlgTcCp78zrEd8D3r+tG1yBMKLhid/cVKvlQM4s+xZ9PIbZX0yAxyj6HVQYyGKtCaOmpu0
- Np4Jw35NnT7pfFo7vih+wmRc+D6K7Q2O0DxWgT60fwt1ia7v40fq40xZJXAO6XyWHPyCw9v2g
- Zb4rs/ro/DKlt4r/+Zk0470cy5Hj+wiuAXftlxMUp3E4naFS8ah1YPILH7JfRn3XI5/QXz3hn
- Uo6mWMn///bBb6RBSCUawnYKSuFTvUqztCr8NUuW0+vt0kO7OM/L9HpoGijp5Q14kpISNLVbr
- 4F8o9A5rGgdNMHHiLwZmxst6Ir+m9e7X6xyjdEUcbhe7fma3wWzba54WQwIbRk33qAHWeFFyK
- h++uWp0yaOiYo05cMbaoIUdpcKB41YSD5638kF6NQtSuYHu9wGHHRnsI36i1JzJ17XZ9tLDaJ
- wnxL2qRxBLK5bLLioFBPKq0l17iOm+T47NgBa9+RGUmRM6a6iUf+OoTcMRATCSnMkG1F2Swi6
- Qj9e+XDFcZi1I1Iew5pDjzvtJxsdKTIdUArCPaUpEJ3i8vIhRLoEU3YQDKVxPIbdzndhvxM95
- nQ/6MMGob1zcMXn7AOZ4Cfj5u5zbl6h0IIYogZeAs73GQeVem2p1FdITwZYy4085v2MfB4pjl
- yvF1AdneaI+JZcr9OjM31zQrRW9vIB77/i+g4VHydbDZewVNxBqXlAmw6mac2FmS0IgQ65bxc
- Y4CO9SIvE/gKzU627zJIG1jMzE7BxSwIfLv4kDuxuQ6tR7KfNZSn+3EBl6f1LBos4J2aWdf4M
- /gNvQFfC3+A13s=
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/31/22 07:57, Yizhuo Zhai wrote:
-> In function do_fb_ioctl(), the "arg" is the type of unsigned long,
-
-yes, because it comes from the ioctl framework...
-
-> and in "case FBIOBLANK:" this argument is casted into an int before
-> passig to fb_blank().
-
-which makes sense IMHO.
-
-> In fb_blank(), the comparision if (blank > FB_BLANK_POWERDOWN) would
-> be bypass if the original "arg" is a large number, which is possible
-> because it comes from the user input.
-
-The main problem I see with your patch is that you change the behaviour.
-Let's assume someone passes in -1UL.
-With your patch applied, this means the -1 (which is e.g. 0xffffffff on 32=
-bit)
-is converted to a positive integer and will be capped to FB_BLANK_POWERDOW=
-N.
-Since most blank functions just check and react on specific values, you ch=
-anged
-the behaviour that the screen now gets blanked at -1, while it wasn't befo=
-re.
-
-One could now argue, that it's undefined behaviour if people
-pass in wrong values, but anyway, it's different now.
-
-So, your patch isn't wrong. I'm just not sure if this is what we want...
-
-Helge
-
-
-> Signed-off-by: Yizhuo Zhai <yzhai003@ucr.edu>
-> ---
->  drivers/video/fbdev/core/fbmem.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On 2/1/22 15:02, Andy Shevchenko wrote:
+> On Tue, Feb 01, 2022 at 12:45:53PM +0100, Javier Martinez Canillas wrote:
+>> On 2/1/22 10:44, Andy Shevchenko wrote:
+>>> On Tue, Feb 01, 2022 at 01:14:22AM +0100, Javier Martinez Canillas wrote:
+> 
+> ...
+> 
+>>> The problem with no backward compatibility means that removal of old driver
+>>> makes users unhappy since DT is kinda ABI and we do not break it.
+>>>
+>>
+>> I think that's the crux of the issue. Do we want people to update their
+>> kernel but using their existing Device Tree and be able to switch to the
+>> DRM driver ?
+>>
+>> My take is that we should and that's why I kept the backward compatibility.
+>>
+>> Maybe we could do that in the meantime and at some point introduce new DT
+>> bindings (with a different compatible string) that would use the latest
+>> and greatest conventions in DT ? That seems to be a good compromise.
+> 
+> I have over-read in this discussion that current binding is not fully
+> correct from hw perspective. If it's indeed the case (and I believe it's),
+> then probably we should come with brand new driver with ssd130x name and
+> incompatible bindingas (*).
 >
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core=
-/fbmem.c
-> index 0fa7ede94fa6..a5f71c191122 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -1064,7 +1064,7 @@ fb_set_var(struct fb_info *info, struct fb_var_scr=
-eeninfo *var)
->  EXPORT_SYMBOL(fb_set_var);
+> Otherwise in this driver we continue to be incorrect in them.
 >
->  int
-> -fb_blank(struct fb_info *info, int blank)
-> +fb_blank(struct fb_info *info, unsigned long blank)
->  {
+
+See the comment from Geert. I believe we should use the existing binding.
+ 
+> *) But even though I think it would be good if you take the old one under your
+>    maintainership.
+>
+
+Sure, now that I got familiar with the ssd130x devices, I'll be happy to
+help with the ssd1307fb driver maintainership.
+
+Best regards,
+-- 
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
+

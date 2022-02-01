@@ -2,112 +2,128 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDAB9C4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 14:20:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97A5CC433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 14:36:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237687AbiBAOUX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 09:20:23 -0500
-Received: from mail-pf1-f180.google.com ([209.85.210.180]:36725 "EHLO
-        mail-pf1-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239168AbiBAOUW (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 09:20:22 -0500
-Received: by mail-pf1-f180.google.com with SMTP id 192so16021188pfz.3;
-        Tue, 01 Feb 2022 06:20:21 -0800 (PST)
+        id S239375AbiBAOgK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 09:36:10 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:34280 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S239374AbiBAOgJ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Feb 2022 09:36:09 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1643726169;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=c1qqBdKQoPCwA2ePd7jBkicuBscZF3IvkLQTjtTxA/c=;
+        b=a7eUnWPrmga2Ef1jvyEh5tApsmsNQau8UJgN5MSkVmy1zwkTBbrBQVQvPWbL8xdY75qW1O
+        VdJha6Ou0d7DIpw6JJMp/Ug627tJJPqxDM8e1gach61p//QccvK3JMTVXkLzbUg49pbvCR
+        7EgVn5nb2LNVH87+dhEMaNwYn++iaIg=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-53-E755Wvz6O_O0ADQiETn6rg-1; Tue, 01 Feb 2022 09:36:08 -0500
+X-MC-Unique: E755Wvz6O_O0ADQiETn6rg-1
+Received: by mail-wm1-f70.google.com with SMTP id o194-20020a1ca5cb000000b00350b177fb22so1711976wme.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 01 Feb 2022 06:36:07 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=6JTo8Sy9jsMuY9se9GPF3GJU4ezrpNEbpV0Rieuvz5M=;
-        b=3A+egGLO2Hj12855kPGUmSOtyLxq2qLtaLB1MJ6mLMxkyoJwgmuvzB6Wo0FW548KZ6
-         HNhgBaO92dCips+3WdwTcqAla6WvtJpcQTUu78+uqD924J2OCudfA4azV7mYEN3fZjlD
-         bgB86i8uItUThbxL1T52Zfol/Wy9BIrcGITfThXHIm5Mh+IuHQVb3bpzPMzpZoxCvWyE
-         g0JQ8oZayD6EQ/4w8Tq/ZGsUrbeWefrNkYJ78Iu5QfZuZk1cHxcqB4/Sfp5rvTT2rnL2
-         cpBzb/pbfntOHHQqyy3yiBqeZ6BJNfil27FbN09MpNZ3WrghCRUeTD4KnpZ327uLe4V8
-         Dmmw==
-X-Gm-Message-State: AOAM530n+L8qrn1PnyFuPfX22ssupwFuzDIjGu9dX4Hfwtv+KI8plqyo
-        Pfk7RdgJt2xy3dAkc2v2kIKvkf9YebCMBFJw
-X-Google-Smtp-Source: ABdhPJywTWEkHeB/ezAPrPHuasVqZp1UUdqA+Lida8AD9HD01NAPu8IVT3VSdza4ZHv2UJWpI6mxpg==
-X-Received: by 2002:a63:9d84:: with SMTP id i126mr20757638pgd.617.1643725221235;
-        Tue, 01 Feb 2022 06:20:21 -0800 (PST)
-Received: from mail-pl1-f182.google.com (mail-pl1-f182.google.com. [209.85.214.182])
-        by smtp.gmail.com with ESMTPSA id m7sm9762881pfb.80.2022.02.01.06.20.20
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=c1qqBdKQoPCwA2ePd7jBkicuBscZF3IvkLQTjtTxA/c=;
+        b=y5qpdXaSRYi+3rXxwdW/3lhpOQFb/6Yqkt6SUyYHJMFQJ6ylGzF9daIPbuxbZV6f+R
+         Jm38Z6NsWMLZ/LrZs6GGjmdiB1dgKWac9FmKeop+Ts1VSa4eypf85coSzdOP5+1ZYJrb
+         67DqJega4j3klo5WGYfBjiiObrbcPZAq92R2fc3oMeITHS8TuiThStSh3eioODqAMpsN
+         I9kjpAwVln+dWykFpEAj0bKDAaaNfwajYSaS/t2+EB9FSmkz/T4W5fEjQ6lRObKB1OQu
+         tDH8dbYQV4vPJtCbGl4mczoo8KJtcTFLD1il8hAmERg8FDg/bZC08yBW/ORRHdEbyNKI
+         Wqkw==
+X-Gm-Message-State: AOAM530pZdjMJSOmQT8CwfA0w9X8lWR60iWj+NL/27oh3witf0eE2jIl
+        YPD6AoZrqDFQ12V5XNu3EDA56X6JigzfzAEYXezSPAqWk0f7gOS5U6mqgTUuNKqfZY0aRg2Vubw
+        rtZ1I0Kz7vUYAn9PyD6DfFYA=
+X-Received: by 2002:a7b:c003:: with SMTP id c3mr2022319wmb.80.1643726166848;
+        Tue, 01 Feb 2022 06:36:06 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJyWEsVQ1UNLWnla5O+uQQySFc68PN6z96VL15rWk5+1TFXROa0fVwYLO5ACOVmJk7fJj5i8fA==
+X-Received: by 2002:a7b:c003:: with SMTP id c3mr2022299wmb.80.1643726166675;
+        Tue, 01 Feb 2022 06:36:06 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id h18sm17864523wro.9.2022.02.01.06.36.05
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Feb 2022 06:20:21 -0800 (PST)
-Received: by mail-pl1-f182.google.com with SMTP id x11so15508197plg.6;
-        Tue, 01 Feb 2022 06:20:20 -0800 (PST)
-X-Received: by 2002:a67:5f83:: with SMTP id t125mr9456510vsb.68.1643724868281;
- Tue, 01 Feb 2022 06:14:28 -0800 (PST)
+        Tue, 01 Feb 2022 06:36:06 -0800 (PST)
+Message-ID: <3df2add7-6034-0527-825a-74e62e76dace@redhat.com>
+Date:   Tue, 1 Feb 2022 15:36:04 +0100
 MIME-Version: 1.0
-References: <20220131201225.2324984-1-javierm@redhat.com> <YfhM97cVH3+lJKg0@ravnborg.org>
- <Yfj/XGRRDNABsLPm@smile.fi.intel.com> <f8d71acb-5c8b-ac4e-0c32-38eb66af04c3@redhat.com>
- <CAMuHMdVP6ER119r2KAegjZes1a=KWZ47z6j=kgQ0oNx1oeUJ+w@mail.gmail.com> <51f54519-bb8b-f108-1c1e-4fed101ca5ef@redhat.com>
-In-Reply-To: <51f54519-bb8b-f108-1c1e-4fed101ca5ef@redhat.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 1 Feb 2022 15:14:17 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVwUfv7pXhPazsgG6t=X=aVtDQkFUk_=mUuFH8Fscx8wg@mail.gmail.com>
-Message-ID: <CAMuHMdVwUfv7pXhPazsgG6t=X=aVtDQkFUk_=mUuFH8Fscx8wg@mail.gmail.com>
-Subject: Re: [PATCH 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED displays
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Sam Ravnborg <sam@ravnborg.org>,
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 3/4] drm/tiny: Add driver for Solomon SSD1307 OLED
+ displays
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PWM List <linux-pwm@vger.kernel.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Mark Brown <broonie@kernel.org>,
         DRI Development <dri-devel@lists.freedesktop.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
         Maxime Ripard <maxime@cerno.tech>,
-        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Lee Jones <lee.jones@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+References: <20220131202916.2374502-1-javierm@redhat.com>
+ <cc093cd5-fba1-5d84-5894-81a6e1d039ff@suse.de>
+ <73dbc5c7-b9e2-a260-49a6-0b96f342391e@redhat.com>
+ <CAMuHMdUJpoG=XChpqNotfEDrWCxFUqyhjW2JW1ckAyKcWXvAUw@mail.gmail.com>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <CAMuHMdUJpoG=XChpqNotfEDrWCxFUqyhjW2JW1ckAyKcWXvAUw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Javier,
-
-On Tue, Feb 1, 2022 at 2:09 PM Javier Martinez Canillas
-<javierm@redhat.com> wrote:
-> On 2/1/22 12:38, Geert Uytterhoeven wrote:
-> >> Since the current binding has a compatible "ssd1305fb-i2c", we could make the
-> >> new one "ssd1305drm-i2c" or better, just "ssd1305-i2c".
-> >
-> > DT describes hardware, not software policy.
-> > If the hardware is the same, the DT bindings should stay the same.
-> >
+On 2/1/22 15:05, Geert Uytterhoeven wrote:
+> Hi Javier,
+> 
+> On Tue, Feb 1, 2022 at 2:02 PM Javier Martinez Canillas
+> <javierm@redhat.com> wrote:
+>> On 2/1/22 10:33, Thomas Zimmermann wrote:
+>>>> +{
+>>>> +    u8 col_end = col_start + cols - 1;
+>>>> +    int ret;
+>>>> +
+>>>> +    if (col_start == ssd1307->col_start && col_end == ssd1307->col_end)
+>>>> +            return 0;
+>>>> +
+>>>> +    ret = ssd1307_write_cmd(ssd1307->client, SSD1307_SET_COL_RANGE);
+>>>> +    if (ret < 0)
+>>>> +            return ret;
+>>>> +
+>>>> +    ret = ssd1307_write_cmd(ssd1307->client, col_start);
+>>>> +    if (ret < 0)
+>>>> +            return ret;
+>>>> +
+>>>> +    ret = ssd1307_write_cmd(ssd1307->client, col_end);
+>>>> +    if (ret < 0)
+>>>> +            return ret;
+>>>
+>>> Can you write these cmds in one step, such as setting up an array and
+>>> sending it with ssd1307_write_array?
+>>
+>> I don't think so because the commands are different. But I'll check the
+>> ssd1306 datasheet again to confirma that's the case.
+> 
+> IIRC, I tried that while working on the optimizations for ssd1307fb,
+> and it didn't work.
 >
-> Yes I know that but the thing is that the current binding don't describe
-> the hardware correctly. For instance, don't use a backlight DT node as a
-> property of the panel and have this "fb" suffix in the compatible strings.
->
-> Having said that, my opinion is that we should just keep with the existing
-> bindings and make compatible to that even if isn't completely correct.
->
-> Since that will ease adoption of the new DRM driver and allow users to use
-> it without the need to update their DTBs.
 
-To me it looks like the pwms property is not related to the backlight
-at all, and only needed for some variants?
+That's what I would had expected by reading the datasheet. Thanks a
+lot for confirming my assumption.
+ 
 
-And the actual backlight code seems to be about internal contrast
-adjustment?
+Best regards,
+-- 
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 
-So if the pwms usage is OK, what other reasons are there to break
-DT compatibility? IMHO just the "fb" suffix is not a good reason.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

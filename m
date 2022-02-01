@@ -2,181 +2,164 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C349DC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 10:16:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C903AC433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 10:17:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236436AbiBAKQg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 05:16:36 -0500
-Received: from mout.gmx.net ([212.227.17.20]:44839 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S235682AbiBAKQf (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Feb 2022 05:16:35 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1643710568;
-        bh=rhMjI8y3jysXslMLlHfAxQLeYg7orlmWhVUeBoVQ60g=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=fxdLTg4rTUaOYA/wUN46weV7NRYt+FMsIS8hlM+rRjs7sfFTPQ6CF4+sSnX47osqd
-         MeTa+cKEXTf2+oqBdlu6xTKcDvfFJ248igtd8piO6BlCQbcv9GXoIW2bTdxdOJhJPD
-         eU6I8whctwzlZ6HShytcRNMCELtsZfabYIeEuIZ8=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.146.124]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mof9F-1mQ9RW4Ayf-00p4Jh; Tue, 01
- Feb 2022 11:16:08 +0100
-Message-ID: <9c22b709-cbcf-6a29-a45e-5a57ba0b9c14@gmx.de>
-Date:   Tue, 1 Feb 2022 11:16:04 +0100
+        id S236465AbiBAKR3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 05:17:29 -0500
+Received: from smtp-out2.suse.de ([195.135.220.29]:39988 "EHLO
+        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236455AbiBAKR2 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 05:17:28 -0500
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id D1AA01F380;
+        Tue,  1 Feb 2022 10:17:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1643710646; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=lN5Bj4ODW/k5Aex5ROPL2/y1svMh2OVOB2Q/9nurJMU=;
+        b=wnl4XfayhbfWy2iFg5JKTxtnOybGU9t1WDqp60+c7ViF0rxoBJPcdjLKxiYEpW1M2zxK7D
+        zixcg1TRf9itNipVWSWscehaLvIySwt8pe1SShLlOWzIwZnxOPlTRze8U4mIuGstSrzooI
+        28lHIXwulZO6I4Pw0jEmga+uNPF6Wr8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1643710646;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=lN5Bj4ODW/k5Aex5ROPL2/y1svMh2OVOB2Q/9nurJMU=;
+        b=4PRexQKBgM/A1jyK/4nwGqBPhMr/d6So7KLk3bfYRXLk5SaAtsBT51BNaBwxtfUy7vBmHe
+        GHx79BNj8JbZzFDA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7A34E13B3D;
+        Tue,  1 Feb 2022 10:17:26 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id BP+eHLYI+WF/CgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Tue, 01 Feb 2022 10:17:26 +0000
+Message-ID: <561104af-33c5-f9af-1047-ecef4fe01189@suse.de>
+Date:   Tue, 1 Feb 2022 11:17:25 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [PATCH 03/21] fbcon: Restore fbcon scrolling acceleration
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED
+ displays
 Content-Language: en-US
-To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        DRI Development <dri-devel@lists.freedesktop.org>
-Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
-        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        stable@vger.kernel.org, Claudio Suarez <cssk@net-c.es>,
-        Dave Airlie <airlied@gmail.com>,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+To:     Simon Ser <contact@emersion.fr>
+Cc:     Linux PWM List <linux-pwm@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Mark Brown <broonie@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
         Javier Martinez Canillas <javierm@redhat.com>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Sven Schnelle <svens@stackframe.org>,
-        Gerd Hoffmann <kraxel@redhat.com>
-References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
- <20220131210552.482606-4-daniel.vetter@ffwll.ch>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220131210552.482606-4-daniel.vetter@ffwll.ch>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:jflhoCckVNnaLnLLGcsVr23sboAIiW9Oegx+vqwH4cE9RiJn0so
- xERIAfckdKuldjuruwmA2wOLubXdgZ3NtxcE+TMECbSWiMLqDLTTbt3bRgJwxZc5Z9rPY4z
- sZNAgJgYGcwPZx+Do1gWwD2BpeKgoQIPwNq514BedbfSk7eNeKR3F0rCRCiM6qYjXB1hP1c
- hJUm8fT1IUjX8yDqBslZg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:jC93FT332v4=:mbjrryMElmMicajewnajtW
- A3wryM+Me6j2PI1I+7uO1Z5cpsnDemcqgEN2IbYK9DhEI8pDMtzb8enz6LihWxw2p0J4mBXND
- OJ7pVTyPuHI26/dBFyIP27XwWy69yYSaG4TAjTmtcW2HdJGA68+alSPS74IvO7SKem+zl9gnw
- neZbU66sZzz4sioEMB0bTvAf8MbkvX66RGK/S19bva1LMZTyVICJCzM9nV5Ij2qbTeWRi9+VT
- B6DQviWW45GMtlUgwKLj42RexUtC98KFKPNOlCF8bOYZf3qqrsTApvlmxlyeCMdANbAy/IiW6
- 0NkxJaBKWkAWGhWrypoNBUjlW/wik1EqNa7k13ifgIgC/wqWElu8L3c+8FOxHonnx7KJBO6sY
- T5kVAoKz2gYqXmnoiTJ63iBgMcgAqozXVLpv2EAROU2ADB7LtkoyMX4o8zxVtaJtqbR2XDly/
- fo4+DEuIYYLkwdkn3VFCFXOaEBamMQnbVXqibG14F0dZ8kk5rumE8S7pgXuDGvjoZgrOlhXkL
- r6nwhXhLTDb2qAgG8u5WL9+YY9Jkc12XQPEeU9XCHvPwyOtRvNtPzz60KBPwluX+Cq+hFmAzz
- iuDiPBbD05tgb64cNps+2szctWnRbBuvEwgVoaIzIwkdUu2nL/ITycCO8YfAb+Zbl3ih1mna9
- PsJBb9K/cumdiqj/8NtwK1KCnsf1xtRoE/ex1v47TSTO89XWeHQXAv7eNjhBnr0Qma6ynDePn
- N3nsEGwKf49LFefQ+9eL/SzZKJkS+gCnzSxQ4hyuw08n6swf3wQKl0wawQhaCjJgnbizji73W
- TKMd8iutPgm1tFD5HJ2WHxu+DQp+zAuVrYV5y6lRNb2bB/ipPW4QC0448R2d1hobm07cjR/uw
- qlDDpda547Nm+E8HalzgExRKyBA1I+3oweC+CUVgaRj7aj90T1pKxjcp2S2bPCn7zXqrAr7Pc
- NT5IvWjaOpPl5yhVIpT0G7Db+m1KOnlauqWRQxvhryECTTZoc0OL8yyG6FF1pdwSfD2cDC/92
- jMinnuZMxhUB9StFM3xfmt4t648XGYu3BdqlQDzOs6oczwlT6Dmoh5PWWAEBE8c8Me9cdzAbr
- KkwYp/3WxzhUYk=
+        Maxime Ripard <maxime@cerno.tech>,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20220131201225.2324984-1-javierm@redhat.com>
+ <tIMIWqepcZGntnez-1ss4Kn4K8btXnzDRL7EWd19-745WK90YIC19E_4di9RNvB3gtx-PzWEjBEGQLPNJE_x0T1yyyaWFCoFcCiG4StR9RU=@emersion.fr>
+ <wuXPJN-K-rvjoV51c4EBmTBScov8rcJTPoYmlfHe04_-4wD1khVxo9HnUsP7UFd5m4AkzGSw2hXe_c77jbSRhjEJ0JZIYwuvuIkcv_KsR-Y=@emersion.fr>
+ <CAMuHMdXKZ=BkvVqdpiNPNJgxm9SzQ3Z0n4SqV2-4oPRveybd6g@mail.gmail.com>
+ <qmhzv6kqs6QdAOP3bNB39glOpc8eeJ6flgjfjcaBniT-shDKZkxo5uB71weGOUKxPE6dq_WBhtHmY5vMmuYwqMoHgtMWnX0ESE5R1Y5g5F8=@emersion.fr>
+ <CAMuHMdUHhUkPhq8M0d=p5EgH8bBz6EtH4drajKtQHE0121V1uQ@mail.gmail.com>
+ <ce283de9-7412-472e-f72c-cb6a35ede426@suse.de>
+ <csqnu2U_Kr-XE5p7ObjXsYbWDrfxh-j9CQE60lMJSxK0tF0SjlbZQkdjmAWpPRKYJoRLOCKtBgY-0AeIGdbr-SKjuyDKUTOTcI_PPV_bsWk=@emersion.fr>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <csqnu2U_Kr-XE5p7ObjXsYbWDrfxh-j9CQE60lMJSxK0tF0SjlbZQkdjmAWpPRKYJoRLOCKtBgY-0AeIGdbr-SKjuyDKUTOTcI_PPV_bsWk=@emersion.fr>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------ux3AJwUqXAdtHOzuRSJy9fxH"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/31/22 22:05, Daniel Vetter wrote:
-> This functionally undoes 39aead8373b3 ("fbcon: Disable accelerated
-> scrolling"), but behind the FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
-> option.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------ux3AJwUqXAdtHOzuRSJy9fxH
+Content-Type: multipart/mixed; boundary="------------EqnCunEa0tneKEUu8EEBCQtD";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Simon Ser <contact@emersion.fr>
+Cc: Linux PWM List <linux-pwm@vger.kernel.org>,
+ Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ David Airlie <airlied@linux.ie>, Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
+ DRI Development <dri-devel@lists.freedesktop.org>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Maxime Ripard
+ <maxime@cerno.tech>, =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?=
+ <u.kleine-koenig@pengutronix.de>, Thierry Reding <thierry.reding@gmail.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Lee Jones <lee.jones@linaro.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-ID: <561104af-33c5-f9af-1047-ecef4fe01189@suse.de>
+Subject: Re: [PATCH 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED
+ displays
+References: <20220131201225.2324984-1-javierm@redhat.com>
+ <tIMIWqepcZGntnez-1ss4Kn4K8btXnzDRL7EWd19-745WK90YIC19E_4di9RNvB3gtx-PzWEjBEGQLPNJE_x0T1yyyaWFCoFcCiG4StR9RU=@emersion.fr>
+ <wuXPJN-K-rvjoV51c4EBmTBScov8rcJTPoYmlfHe04_-4wD1khVxo9HnUsP7UFd5m4AkzGSw2hXe_c77jbSRhjEJ0JZIYwuvuIkcv_KsR-Y=@emersion.fr>
+ <CAMuHMdXKZ=BkvVqdpiNPNJgxm9SzQ3Z0n4SqV2-4oPRveybd6g@mail.gmail.com>
+ <qmhzv6kqs6QdAOP3bNB39glOpc8eeJ6flgjfjcaBniT-shDKZkxo5uB71weGOUKxPE6dq_WBhtHmY5vMmuYwqMoHgtMWnX0ESE5R1Y5g5F8=@emersion.fr>
+ <CAMuHMdUHhUkPhq8M0d=p5EgH8bBz6EtH4drajKtQHE0121V1uQ@mail.gmail.com>
+ <ce283de9-7412-472e-f72c-cb6a35ede426@suse.de>
+ <csqnu2U_Kr-XE5p7ObjXsYbWDrfxh-j9CQE60lMJSxK0tF0SjlbZQkdjmAWpPRKYJoRLOCKtBgY-0AeIGdbr-SKjuyDKUTOTcI_PPV_bsWk=@emersion.fr>
+In-Reply-To: <csqnu2U_Kr-XE5p7ObjXsYbWDrfxh-j9CQE60lMJSxK0tF0SjlbZQkdjmAWpPRKYJoRLOCKtBgY-0AeIGdbr-SKjuyDKUTOTcI_PPV_bsWk=@emersion.fr>
 
-you have two trivial copy-n-paste errors in this patch which still prevent=
- the
-console acceleration.
+--------------EqnCunEa0tneKEUu8EEBCQtD
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core=
-/fbcon.c
-> index 2ff90061c7f3..39dc18a5de86 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -1125,13 +1125,15 @@ static void fbcon_init(struct vc_data *vc, int i=
-nit)
->
->  	ops->graphics =3D 0;
->
-> -	/*
-> -	 * No more hw acceleration for fbcon.
-> -	 *
-> -	 * FIXME: Garbage collect all the now dead code after sufficient time
-> -	 * has passed.
-> -	 */
-> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_ROTATION
+SGkNCg0KQW0gMDEuMDIuMjIgdW0gMTE6MTEgc2NocmllYiBTaW1vbiBTZXI6DQo+IE9uIFR1
+ZXNkYXksIEZlYnJ1YXJ5IDFzdCwgMjAyMiBhdCAxMTowOCwgVGhvbWFzIFppbW1lcm1hbm4g
+PHR6aW1tZXJtYW5uQHN1c2UuZGU+IHdyb3RlOg0KPiANCj4+IEFtIDAxLjAyLjIyIHVtIDA5
+OjM2IHNjaHJpZWIgR2VlcnQgVXl0dGVyaG9ldmVuOg0KPj4NCj4+PiBJJ2QgZXhwZWN0IDgt
+Yml0IGdyYXlzY2FsZSB0byBiZSBZOCBpbnN0ZWFkLg0KPj4NCj4+IEkgbGlrZSB0aGlzIG5h
+bWluZywgYnV0IERSTV9GT1JNQVRfUjggaXMgdWFwaSBhbHJlYWR5LiA6LyBJZiBhbnl0aGlu
+ZywNCj4+IHdlIGNvdWxkIGFkZCBZbiBmb3JtYXRzIGluIGFkZGl0aW9uIHRvIGV4aXN0aW5n
+IFJuIGZvcm1hdHMuDQo+IA0KPiBOZWVkIHRvIGJlIGEgYml0IGNhcmVmdWwsIGUuZy4gWTIx
+MCBleGlzdHMgYW5kIGlzbid0IGEgZ3JheXNjYWxlIGZvcm1hdC4NCj4gVGhpcyBjb3VsZCBi
+ZSBjb25mdXNpbmcuDQoNCldlbGwsIG9rLiAgSG93IGFib3V0ICdJJyBhcyBpbiAnaW50ZW5z
+aXR5Jz8gVGhlcmUgYXJlbid0IHRvbyBtYW55IA0KZHJpdmVycyBzdXBwb3J0aW5nIHRoaXMg
+eWV0LiBTbyBpZiB3ZSB3YW50IHRvIGZpbmQgYSBiZXR0ZXIgbmFtZSwgbm93J3MgDQp0aGUg
+dGltZS4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KDQotLSANClRob21hcyBaaW1tZXJt
+YW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9u
+cyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFu
+eQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBU
+b3Rldg0K
 
-should be:
-#ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+--------------EqnCunEa0tneKEUu8EEBCQtD--
 
+--------------ux3AJwUqXAdtHOzuRSJy9fxH
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-> +	if ((info->flags & FBINFO_HWACCEL_COPYAREA) &&
-> +	    !(info->flags & FBINFO_HWACCEL_DISABLED))
-> +		p->scrollmode =3D SCROLL_MOVE;
-> +	else /* default to something safe */
-> +		p->scrollmode =3D SCROLL_REDRAW;
-> +#else
->  	p->scrollmode =3D SCROLL_REDRAW;
-> +#endif
->
->  	/*
->  	 *  ++guenther: console.c:vc_allocate() relies on initializing
-> @@ -1971,15 +1973,49 @@ static void updatescrollmode(struct fbcon_displa=
-y *p,
->  {
->  	struct fbcon_ops *ops =3D info->fbcon_par;
->  	int fh =3D vc->vc_font.height;
-> +	int cap =3D info->flags;
-> +	u16 t =3D 0;
-> +	int ypan =3D FBCON_SWAP(ops->rotate, info->fix.ypanstep,
-> +			      info->fix.xpanstep);
-> +	int ywrap =3D FBCON_SWAP(ops->rotate, info->fix.ywrapstep, t);
->  	int yres =3D FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
->  	int vyres =3D FBCON_SWAP(ops->rotate, info->var.yres_virtual,
->  				   info->var.xres_virtual);
-> +	int good_pan =3D (cap & FBINFO_HWACCEL_YPAN) &&
-> +		divides(ypan, vc->vc_font.height) && vyres > yres;
-> +	int good_wrap =3D (cap & FBINFO_HWACCEL_YWRAP) &&
-> +		divides(ywrap, vc->vc_font.height) &&
-> +		divides(vc->vc_font.height, vyres) &&
-> +		divides(vc->vc_font.height, yres);
-> +	int reading_fast =3D cap & FBINFO_READS_FAST;
-> +	int fast_copyarea =3D (cap & FBINFO_HWACCEL_COPYAREA) &&
-> +		!(cap & FBINFO_HWACCEL_DISABLED);
-> +	int fast_imageblit =3D (cap & FBINFO_HWACCEL_IMAGEBLIT) &&
-> +		!(cap & FBINFO_HWACCEL_DISABLED);
->
->  	p->vrows =3D vyres/fh;
->  	if (yres > (fh * (vc->vc_rows + 1)))
->  		p->vrows -=3D (yres - (fh * vc->vc_rows)) / fh;
->  	if ((yres % fh) && (vyres % fh < yres % fh))
->  		p->vrows--;
-> +
-> +	if (good_wrap || good_pan) {
-> +		if (reading_fast || fast_copyarea)
-> +			p->scrollmode =3D good_wrap ?
-> +				SCROLL_WRAP_MOVE : SCROLL_PAN_MOVE;
-> +		else
-> +			p->scrollmode =3D good_wrap ? SCROLL_REDRAW :
-> +				SCROLL_PAN_REDRAW;
-> +	} else {
-> +		if (reading_fast || (fast_copyarea && !fast_imageblit))
-> +			p->scrollmode =3D SCROLL_MOVE;
-> +		else
-> +			p->scrollmode =3D SCROLL_REDRAW;
-> +	}
-> +
-> +#ifndef CONFIG_FRAMEBUFFER_CONSOLE_ROTATION
+-----BEGIN PGP SIGNATURE-----
 
-same here... it needs to be:
-#ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmH5CLUFAwAAAAAACgkQlh/E3EQov+Cu
+LRAAgjI1gDkkO+vJTYvGJwx9f9mWQJRiaH2vRAa1o9EcsC3D9dpdSUkCI86AVJA8dKvQwEeVC0Zt
+TTuXsQ9rh3iCItU0DedMKddlfFE4PVR1mduxjegwVzzSQR1wxQDx6bpHZ7MEgpo6WN52P9miAzYk
+GTva9Q3dX1HM9KxFSjHP9JqqGWGaO1Il8qGCPhCZSwPi46UHe+ZUjy4+Z4kGqwBfymTaOviNAvlY
+lVOUlP1oe1QtMEQkmXjlNaCM5Mke3ddLffQC9B8ek1hOBJJnfsf5hnlReT3ZVoUh04jCyu4Uccg2
+jHNswjxktkHpIu9i0tQ6DFTxh3VpI5Ivfdynxm5HpU4xgKyQdmY83SYTXjiH2D42ncc2wt652vBK
+LLUpGxvVqyzb3UlKSWaVydC83UEahsO6eURXDqn/HZqOVmXMQrEZ7WrmtPjT56rd1MTVn/eMihLQ
+L9RJRJAvnfhA3MaBV2SuP+Uxbpog7ax8/VWRljp3BtPSZxL2AtHv9VVBYPlhlMMioyX9VXVGSe6y
+KDsR5HkIjbojhujFUcf2gemkfdkoXAIog7TUIRHoDB0w4Hwsc2zkKrqlyCvEB6TtY0jPyVZJs646
+w2Zfbt0eDpdA2HLBQntgab+zLKDQtIldL6IslJhB9FD8XluUE8WqD67FLKT/SbGhJ4nLHqikQTar
+3lQ=
+=hIZq
+-----END PGP SIGNATURE-----
 
-
-> +	p->scrollmode =3D SCROLL_REDRAW;
-> +#endif
->  }
->
->  #define PITCH(w) (((w) + 7) >> 3)
->
-
-still reviewing the other patches...
-
-Helge
+--------------ux3AJwUqXAdtHOzuRSJy9fxH--

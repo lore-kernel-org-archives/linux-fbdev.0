@@ -2,67 +2,85 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28BFCC433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 09:27:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E050EC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 09:33:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235806AbiBAJ1O (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 04:27:14 -0500
-Received: from mail-4022.proton.ch ([185.70.40.22]:43545 "EHLO
-        mail-4022.proton.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234437AbiBAJ1O (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 04:27:14 -0500
-Date:   Tue, 01 Feb 2022 09:27:09 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=emersion.fr;
-        s=protonmail2; t=1643707632;
-        bh=+2uWf9UcTSR/4vvg3PtafoJ+NVCgHeC107J37zjRulA=;
-        h=Date:To:From:Cc:Reply-To:Subject:Message-ID:In-Reply-To:
-         References:From:To:Cc;
-        b=Y0Y1+ad8uEfmUqJMBEcm/DxKnTKzc8w+TsPzUnwM7iDeV9frOGDKlS9yjM1gCzu00
-         qiHn2n2xP+M8Y5SLDbZvpRlEcKXvBPb7kPiTOJIBDzCgYVZ37VH0ss345F8nsIHmVL
-         zgVoZndkLKuZi9ksnBzCGNxQLrSqXqm7AVVhhmAr3TzLboobsy4ei2qt2xS3+8gPoK
-         TeDs52GoaC+BzhFh7QMFC7g4iHW1kFJRVZcIIzH8oRSE7A2ZxjJ5WIN/N8lXseFnbQ
-         3cDt89/maaKcSSW5Pv0yrB7ZMmkPORTrzpU7cR0ZLPbybazxaJWEOXUxtdtTZV7yeS
-         iT0n+gc8PNS8g==
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-From:   Simon Ser <contact@emersion.fr>
-Cc:     Javier Martinez Canillas <javierm@redhat.com>,
-        Linux PWM List <linux-pwm@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
+        id S235998AbiBAJdL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 04:33:11 -0500
+Received: from mga06.intel.com ([134.134.136.31]:55429 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S235894AbiBAJdK (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Feb 2022 04:33:10 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1643707990; x=1675243990;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=ziky2M7C1UqU0dFMGza2JJFco5ugvRYxY1sxp7+XL7I=;
+  b=SvNilgu0fpV7BpyUG9gauTVRsEsdLwVUAEQ3uot3V9ohupZnfPE+Lod5
+   UnSzzmBv281ZkKmV9Anc0I1/X+BFKXcwA5BIrutJa37DK2uREooNQWV+N
+   DohdebA9rj0IhFpE0tOJCY0nmePhBkaWuRtun99ezKLRn/pjrxzjb2Fi4
+   R66Pz73jTiuV87widb41opai91dzhnh3vWZVg/G3IW/6QHapJ9DIoRUO5
+   8L8ien+6AE1fbgz2fvKLqjvmsTHeJ20bNCVtMWniRaloWXfGzlmErbKmp
+   FURVvEpg6pna25gA3pUWrBrm+iKyT2/GpUGdhwGSrDS5bKgJ6mftLNm4X
+   g==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10244"; a="308385758"
+X-IronPort-AV: E=Sophos;i="5.88,333,1635231600"; 
+   d="scan'208";a="308385758"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Feb 2022 01:33:09 -0800
+X-IronPort-AV: E=Sophos;i="5.88,333,1635231600"; 
+   d="scan'208";a="626677567"
+Received: from smile.fi.intel.com ([10.237.72.61])
+  by fmsmga002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Feb 2022 01:33:07 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.95)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1nEpW8-00HFId-SB;
+        Tue, 01 Feb 2022 11:32:04 +0200
+Date:   Tue, 1 Feb 2022 11:32:04 +0200
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     linux-kernel@vger.kernel.org,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Mark Brown <broonie@kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        =?utf-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
         Maxime Ripard <maxime@cerno.tech>,
-        =?utf-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Lee Jones <lee.jones@linaro.org>
-Reply-To: Simon Ser <contact@emersion.fr>
-Subject: Re: [PATCH 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED displays
-Message-ID: <8vOr78Nu7IEcITxWHXWTru7vu_VE9g-5v_8eotyLeJjbI-czksMS57WV2knv6sd3cMMaJSYrnPAOfnHQkj7iK-R_YYHfOvJjCCkE48dW_qQ=@emersion.fr>
-In-Reply-To: <CAMuHMdXMayLLRavAJJujmPqT+Vd11dPfycqXie3w_pOkS8i9eA@mail.gmail.com>
-References: <20220131201225.2324984-1-javierm@redhat.com> <CAMuHMdXMayLLRavAJJujmPqT+Vd11dPfycqXie3w_pOkS8i9eA@mail.gmail.com>
+        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH 4/4] MAINTAINERS: Add entry for Solomon SSD1307 OLED
+ displays DRM driver
+Message-ID: <Yfj+FOELlbtdhvRa@smile.fi.intel.com>
+References: <20220131201537.2325487-1-javierm@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220131201537.2325487-1-javierm@redhat.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tuesday, February 1st, 2022 at 09:43, Geert Uytterhoeven <geert@linux-m6=
-8k.org> wrote:
+On Mon, Jan 31, 2022 at 09:15:37PM +0100, Javier Martinez Canillas wrote:
+> To make sure that tools like the get_maintainer.pl script will suggest
+> to Cc me if patches are posted for this driver.
+> 
+> Also include the Device Tree binding for the old ssd1307fb fbdev driver
+> since the new DRM driver was made compatible with the existing binding.
 
-> Does there exist another simple test program for showing something
-> using the DRM API?
+Dunno why you have patches 3 and 4 missed references (in terms of email
+thread).
 
-If you're fine with going low-level, there's tentative [1] which can apply =
-an
-arbitrary KMS state. See for instance [2] for basic mode-setting.
+> +DRM DRIVER FOR SOLOMON SSD1307 OLED DISPLAYS
+> +M:	Javier Martinez Canillas <javierm@redhat.com>
+> +S:	Maintained
+> +T:	git git://anongit.freedesktop.org/drm/drm-misc
+> +F:	Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
+> +F:	drivers/gpu/drm/tiny/ssd1307.c
 
-[1]: https://git.sr.ht/~emersion/tentative
-[2]: https://git.sr.ht/~emersion/tentative/tree/master/item/examples/modese=
-t
+I think it makes sense to add ssd1307fb as well. At least you may point out
+people patching old driver about new one until it's gone completely.
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+

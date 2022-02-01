@@ -2,135 +2,136 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58F56C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 13:45:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CE17C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 13:55:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238841AbiBANp3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 08:45:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43306 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238809AbiBANp2 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 08:45:28 -0500
-Received: from mail-ot1-x32f.google.com (mail-ot1-x32f.google.com [IPv6:2607:f8b0:4864:20::32f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC5A9C06173B
-        for <linux-fbdev@vger.kernel.org>; Tue,  1 Feb 2022 05:45:28 -0800 (PST)
-Received: by mail-ot1-x32f.google.com with SMTP id b17-20020a9d4791000000b005a17fc2dfc1so16275460otf.1
-        for <linux-fbdev@vger.kernel.org>; Tue, 01 Feb 2022 05:45:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=2/6KNv9/sT6GkrKOK9WEHCnafWs+1/uASbFZJ68bfvw=;
-        b=g5/k9Xnyqr4hCFjiKV9VdFUS0An5UbQmLXEd7/TNbrj3V41u9lCYKOgsPddlPSzOpE
-         5eqbEqANjmcVoZeGc/sV7FiuBIFY1wnxkZxKtGkWuM2niUacHpSeS+rYvK+OTJxP7yfd
-         /DTGhTzkjZ+3FIkC1a5uMQ1BeznnJ9geArMzY=
+        id S235592AbiBANzx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 08:55:53 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:29338 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S235148AbiBANzx (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Tue, 1 Feb 2022 08:55:53 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1643723752;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=fiDgurBW1NwAiqY2GLiQR5aJEIehzQmgOw53j3Z2hSA=;
+        b=EKGUZtDSrQ5uDy7Ds7FTLb9ZRY5FpT9aBjk1yygwYkROtI8n2iATiKY9p5EFY2rKBCbhtH
+        4eLsRhBJVQU3cGMHLT7HQHG97/obydURx1rUvDa+9JgdQ5r08dst020ttoponhjSQCbfaQ
+        +Iow6dN3/VeDGBPtpwWE7yUGlOPu7m4=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-639-1OSJNlshOXWJoV11_Z_gSQ-1; Tue, 01 Feb 2022 08:55:51 -0500
+X-MC-Unique: 1OSJNlshOXWJoV11_Z_gSQ-1
+Received: by mail-wr1-f70.google.com with SMTP id x4-20020adfbb44000000b001d83e815683so6012853wrg.8
+        for <linux-fbdev@vger.kernel.org>; Tue, 01 Feb 2022 05:55:51 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=2/6KNv9/sT6GkrKOK9WEHCnafWs+1/uASbFZJ68bfvw=;
-        b=6COTeQLykFZbNmmi0mIMbS965D1hxQvGKt/JHLgsCkg4naRX9SNvsjE7BJnb3tWYt/
-         BJXfqCgPce4gkgvJnJcTtVWgDYpzABbfnbInlWKgQ5BzDn4F5jL+S+2PwMLwxYKd6ukK
-         toWKL461MV7wvLLOoaq1Eibqs0oV1VUyHSlF5/WkpojTJTHXxKsDq+f/sVGL7JvgyNIG
-         +Yw7xpJziQQmlavpGsm725c89I2cO2jmPMtqK+/4UpA/nySnlmR64EEr0e0M4k7eU5CP
-         2SD5+WzCnkyYOwNSEyQI/uC4QMYgAsmu9ksP1JhK+WoQfFnrM/Du3ob5TnHOnbTrbcWx
-         92YA==
-X-Gm-Message-State: AOAM531YGF1G4c7Vw+MhFmC+I83qEfTB1FY3KQo894ZOiOHCOnONs+6f
-        T/21ugbQ4VUpoveZZTU83z8Z5ydKOmy/1kr6/cKwKQ==
-X-Google-Smtp-Source: ABdhPJyiUj0c4GiekrFNbqyjKRt2R7hyjIozmCDshxUT1STqLVwWfIk54gQfCldA3xLyzL/9RMHmTB93woo3MVX5US8=
-X-Received: by 2002:a05:6830:1153:: with SMTP id x19mr13573050otq.321.1643723128054;
- Tue, 01 Feb 2022 05:45:28 -0800 (PST)
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=fiDgurBW1NwAiqY2GLiQR5aJEIehzQmgOw53j3Z2hSA=;
+        b=cIKPO9lUxpu0Kk50aigruwErlmNLwjNgrSawBGNzV/E5/8WEfJsk5OnXf9I7vwr5dz
+         Yazkdw9GfzeO7SkPBW6WL7ii9NR4LN6VBSK5a5b40dEhZygsGp64Jae5Ns6vY6iE2mZy
+         OgHKVwrfEKwAjU+FZt8SDX6DKA3g4LZS5nDntr0qXJDVi8EbU0s7C5ZOdb2vcXA0Bgfi
+         CT4FjV4tz45igz19TaetU6W+k+pgABecZhShQiWagOUPZZcb/bfUyf1nFd0tOYsWaPey
+         bl90yEJuAe2z8WCzUzyQ+CYOlR2i1W52/a+fQY9u3oZikLqqMTQuObuv0Y5LihaJDc+/
+         KZjA==
+X-Gm-Message-State: AOAM533pgUMrDxJK3cpGbNA0QQkCNE2jNYcgq9xF8D3Q4a5oQyNWrWTr
+        dTG8WL9hLIdviNRKHXXtkUfpGTz0VqJ04o+Rzby0kR6k8ZtsbrN/QsFmHBe7220k8GIoDp1QFC+
+        0i6wXoHtqFapuTn7RV7kThbY=
+X-Received: by 2002:a05:600c:308:: with SMTP id q8mr1920547wmd.118.1643723750415;
+        Tue, 01 Feb 2022 05:55:50 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwiMcaMwXhPvSvseRwur0kl1vzm4WxKS+ITQZ4fi35QJL+D2oLFM2CJItTZMN0+Csgh1HP6Iw==
+X-Received: by 2002:a05:600c:308:: with SMTP id q8mr1920525wmd.118.1643723750213;
+        Tue, 01 Feb 2022 05:55:50 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id y14sm16638445wrd.91.2022.02.01.05.55.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 01 Feb 2022 05:55:49 -0800 (PST)
+Message-ID: <f1c3557a-a24b-9764-ff3f-9df352e37188@redhat.com>
+Date:   Tue, 1 Feb 2022 14:55:48 +0100
 MIME-Version: 1.0
-References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
- <20220131210552.482606-4-daniel.vetter@ffwll.ch> <9c22b709-cbcf-6a29-a45e-5a57ba0b9c14@gmx.de>
- <CAKMK7uGvOVe8kkJCTkQBEFw+3i2iAMANsyG9vGqZkcROZ9he4A@mail.gmail.com> <63018892-68e8-01b6-1e8f-853892e15c97@gmx.de>
-In-Reply-To: <63018892-68e8-01b6-1e8f-853892e15c97@gmx.de>
-From:   Daniel Vetter <daniel.vetter@ffwll.ch>
-Date:   Tue, 1 Feb 2022 14:45:16 +0100
-Message-ID: <CAKMK7uHPn77GA12fFjmvkRUDQXSBkbYK5X=rJp8sfO_xarys_g@mail.gmail.com>
-Subject: Re: [PATCH 03/21] fbcon: Restore fbcon scrolling acceleration
-To:     Helge Deller <deller@gmx.de>
-Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
-        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
-        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        stable@vger.kernel.org, Claudio Suarez <cssk@net-c.es>,
-        Dave Airlie <airlied@gmail.com>,
-        Jani Nikula <jani.nikula@linux.intel.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 1/4] drm: Add I2C connector type
+Content-Language: en-US
+To:     =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Sam Ravnborg <sam@ravnborg.org>
+Cc:     linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Emil Velikov <emil.l.velikov@gmail.com>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maxime Ripard <maxime@cerno.tech>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Sven Schnelle <svens@stackframe.org>,
-        Gerd Hoffmann <kraxel@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+References: <20220131201225.2324984-1-javierm@redhat.com>
+ <20220131201225.2324984-2-javierm@redhat.com> <YfhMESTylI1NTKDg@ravnborg.org>
+ <4d9a56a7-da25-b411-61cc-372c6fa9011d@tronnes.org>
+ <4322f58b-dbeb-b90f-2770-d6881f8005b4@redhat.com>
+ <a6f267ea-7617-7d0e-06cd-7ec9c88576c3@tronnes.org>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <a6f267ea-7617-7d0e-06cd-7ec9c88576c3@tronnes.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Feb 1, 2022 at 12:01 PM Helge Deller <deller@gmx.de> wrote:
-> On 2/1/22 11:36, Daniel Vetter wrote:
-> > On Tue, Feb 1, 2022 at 11:16 AM Helge Deller <deller@gmx.de> wrote:
-> >>
-> >> On 1/31/22 22:05, Daniel Vetter wrote:
-> >>> This functionally undoes 39aead8373b3 ("fbcon: Disable accelerated
-> >>> scrolling"), but behind the FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
-> >>> option.
-> >>
-> >> you have two trivial copy-n-paste errors in this patch which still prevent the
-> >> console acceleration.
-> >
-> > Duh :-(
-> >
-> > But before we dig into details I think the big picture would be
-> > better. I honestly don't like the #ifdef pile here that much.
->
-> Me neither.
-> The ifdefs give a better separation, but prevents that the compiler
-> checks the various paths when building.
->
-> > I wonder whether your approach, also with GETVX/YRES adjusted
-> > somehow, wouldn't look cleaner?
-> I think so.
-> You wouldn't even need to touch GETVX/YRES because the compiler
-> will optimize/reduce it from
->
-> #define GETVYRES(s,i) ({                           \
->         (s == SCROLL_REDRAW || s == SCROLL_MOVE) ? \
->         (i)->var.yres : (i)->var.yres_virtual; })
->
-> to just become:
->
-> #define GETVYRES(s,i) ((i)->var.yres)
+On 2/1/22 14:20, Noralf Trønnes wrote:
+> 
+> 
+> Den 01.02.2022 14.06, skrev Javier Martinez Canillas:
+>> Hello Noralf,
+>>
+>> On 2/1/22 13:58, Noralf Trønnes wrote:
+>>>
+>>>
+>>> Den 31.01.2022 21.52, skrev Sam Ravnborg:
+>>>> On Mon, Jan 31, 2022 at 09:12:21PM +0100, Javier Martinez Canillas wrote:
+>>>>> There isn't a connector type for display controllers accesed through I2C,
+>>>>> most drivers use DRM_MODE_CONNECTOR_Unknown or DRM_MODE_CONNECTOR_VIRTUAL.
+>>>>>
+>>>>> Add an I2C connector type to match the actual connector.
+>>>>>
+>>>>> As Noralf Trønnes mentions in commit fc06bf1d76d6 ("drm: Add SPI connector
+>>>>> type"), user-space should be able to cope with a connector type that does
+>>>>> not yet understand.
+>>>>>
+>>>
+>>> It turned out that I wasn't entirely correct here, mpv didn't cope with
+>>> unknown types. In the PR to add support Emil Velikov wondered if libdrm
+>>> should handle these connector names:
+>>> https://github.com/mpv-player/mpv/pull/8989#issuecomment-879187711
+>>>
+>>
+>> I see, thanks for the information. What should we do then, just use the type
+>> DRM_MODE_CONNECTOR_Unknown then ?
+>>
+> 
+> Not really, I just wanted to point out that it could be that not all
+> userspace will handle an unknown connector type (I just checked the DE's
+> at the time). I haven't seen any issues after adding the SPI type so it
+> can't be that many apps that has problems. Adding to that a tiny
+> monochrome display is limited in which applications it will encounter I
+> guess :) It was after adding the USB type that I discovered that mpv
+> didn't work.
+> 
 
-Yeah, but you need to roll out your helper to all the callsites. But
-since you #ifdef out info->scrollmode we should catch them all I
-guess.
+Anything we do for this rather obscure hardware certainly won't be an
+issue for most applications :)
 
-> > Like I said in the cover letter I got mostly distracted with fbcon
-> > locking last week, not really with this one here at all, so maybe
-> > going with your 4 (or 2 if we squash them like I did here) patches is
-> > neater?
->
-> The benefit of my patch series was, that it could be easily backported first,
-> and then cleaned up afterwards. Even a small additional backport patch to disable
-> the fbcon acceleration for DRM in the old releases would be easy.
-> But I'm not insisting on backporting the patches, if we find good way forward.
->
-> So, either with the 4 (or 2) patches would be OK for me (or even your approach).
+But I wasn't sure if your previous comment meant that you were nacking
+$subject. Glad that we can go ahead and describe the correct type then.
 
-The idea behind the squash was that it's then impossible to backport
-without the Kconfig, and so we'll only enable this code when people
-intentionally want it. Maybe I'm too paranoid?
-
-Anyway, you feel like finishing off your approach? Or should I send
-out v2 of this with the issues fixed you spotted? Like I said either
-is fine with me.
--Daniel
+Best regards,
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
+

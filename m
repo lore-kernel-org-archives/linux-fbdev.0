@@ -2,104 +2,75 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1AFFC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 14:05:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B064CC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 14:20:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239029AbiBAOFc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 09:05:32 -0500
-Received: from mail-vs1-f42.google.com ([209.85.217.42]:34544 "EHLO
-        mail-vs1-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235891AbiBAOFb (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 09:05:31 -0500
-Received: by mail-vs1-f42.google.com with SMTP id g10so16198632vss.1;
-        Tue, 01 Feb 2022 06:05:30 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=tSPo3aBmqMYxhq4BWMLe/VmrA5tIsKRk8/D0WbRUEX0=;
-        b=E469wnrglsv/5lUnnjwNHsuo0i/nqaCZWJBvZ/jmUKChi199tWT+p0UDVmeYxl9m4h
-         HudXTF7Jmaa7KYXO6n7LGjZw/XLnnbbEyaWbY3SmsIVhBz4SpCe5/rAQrWBcLwUnahCP
-         0Ai7lebpPaY1gL9jba/fr0dvgnCd2on/DHnIiUVj30rfgdjdXbe5mOuTyzl+y+8hl9yX
-         Ei4K8c9py61aemhQt7lM0MoAI3UArAZZoroc/m7ah66Hc3PxwUohSZy0fu46rjpXuTUR
-         9ruu1AbH/KZuoRaXKQjrhB4+p6PI8PhfqHBgXjzTApnfM8hnhLCUvrXLM33wWX6QmSO6
-         WP/w==
-X-Gm-Message-State: AOAM533ink1/fkuKZC6uZ3R2KMwQ6Lhi1RioUMx62+KwZky4rTSJ4U4E
-        Cddan8ZwdmR8ROMFDzY7DO/hnHlJ0aKz3g==
-X-Google-Smtp-Source: ABdhPJx96EuRHP9t8PKBo0FLoPjfnlqNdEsQDKOd+RhryytPVh4xP6KsOqKyjWqoOntttfe/kDr08A==
-X-Received: by 2002:a67:3285:: with SMTP id y127mr10180336vsy.37.1643724330082;
-        Tue, 01 Feb 2022 06:05:30 -0800 (PST)
-Received: from mail-vs1-f44.google.com (mail-vs1-f44.google.com. [209.85.217.44])
-        by smtp.gmail.com with ESMTPSA id g22sm4294795vsk.26.2022.02.01.06.05.29
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Feb 2022 06:05:29 -0800 (PST)
-Received: by mail-vs1-f44.google.com with SMTP id v6so16200097vsp.11;
-        Tue, 01 Feb 2022 06:05:29 -0800 (PST)
-X-Received: by 2002:a67:c198:: with SMTP id h24mr10246425vsj.5.1643724329652;
- Tue, 01 Feb 2022 06:05:29 -0800 (PST)
+        id S239175AbiBAOUW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 09:20:22 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51282 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239169AbiBAOUW (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 09:20:22 -0500
+Received: from smtp.domeneshop.no (smtp.domeneshop.no [IPv6:2a01:5b40:0:3005::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AB7CC061714;
+        Tue,  1 Feb 2022 06:20:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=tronnes.org
+        ; s=ds202112; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
+        References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
+        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+        List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=vv+M0c9/+vvHAR+4n1g8BIf5PSlzor1xcAvAWfIItfU=; b=SIxfSMxadV7NfMVsEZAOlZ7bqW
+        8fFHaUAUne5GMPC6IEFf0JbJR69XkvYTs1lL5EzV3yCFQrtw0lj4Vzvl/Oblw0tm0In6LehDamWKg
+        s7rRXO8qZAT0pTx8zO8AZ+1PHCkn3b0Q8/UA9iRPkzqvDqjVxBKzHj/1B98iiaAhOWW6VQC39cRYl
+        2Bo8RqqQJvdXqY25oZWfA598J5HIJ+YLo37iUHyuvr+n0nVJuIc/e6Nwv9N5SYIFv6VV0k0B5Qa/r
+        ZSZxLINoAjamzhzq6vJJkfFxUU+C/qxQeYGnM1rGo68tXb2Dwhld3ctf8ss8Sx/WntMYIG/BbVIC1
+        QJ8zLzWw==;
+Received: from [2a01:799:95e:a400:5d05:6ef3:cded:ad3] (port=55645)
+        by smtp.domeneshop.no with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <noralf@tronnes.org>)
+        id 1nEu14-00029Z-BL; Tue, 01 Feb 2022 15:20:18 +0100
+Message-ID: <fb821f7c-ef35-5351-ebab-2801cd9bba2e@tronnes.org>
+Date:   Tue, 1 Feb 2022 15:20:15 +0100
 MIME-Version: 1.0
-References: <20220131202916.2374502-1-javierm@redhat.com> <cc093cd5-fba1-5d84-5894-81a6e1d039ff@suse.de>
- <73dbc5c7-b9e2-a260-49a6-0b96f342391e@redhat.com>
-In-Reply-To: <73dbc5c7-b9e2-a260-49a6-0b96f342391e@redhat.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 1 Feb 2022 15:05:18 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdUJpoG=XChpqNotfEDrWCxFUqyhjW2JW1ckAyKcWXvAUw@mail.gmail.com>
-Message-ID: <CAMuHMdUJpoG=XChpqNotfEDrWCxFUqyhjW2JW1ckAyKcWXvAUw@mail.gmail.com>
-Subject: Re: [PATCH 3/4] drm/tiny: Add driver for Solomon SSD1307 OLED displays
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 1/4] drm: Add I2C connector type
+To:     Simon Ser <contact@emersion.fr>
+Cc:     Sam Ravnborg <sam@ravnborg.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Emil Velikov <emil.l.velikov@gmail.com>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
         Maxime Ripard <maxime@cerno.tech>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
+References: <20220131201225.2324984-1-javierm@redhat.com>
+ <20220131201225.2324984-2-javierm@redhat.com> <YfhMESTylI1NTKDg@ravnborg.org>
+ <4d9a56a7-da25-b411-61cc-372c6fa9011d@tronnes.org>
+ <vbOCbsYZGDCHDj8wKOHAZ1u2HMTc_UKM5umAyMug7KZn5ABy4sDMMdNOtwLI5kH_ifctnfmzQejqC_HP1vhXNt6k7vEU0WqFVNUwKnibIn4=@emersion.fr>
+From:   =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
+In-Reply-To: <vbOCbsYZGDCHDj8wKOHAZ1u2HMTc_UKM5umAyMug7KZn5ABy4sDMMdNOtwLI5kH_ifctnfmzQejqC_HP1vhXNt6k7vEU0WqFVNUwKnibIn4=@emersion.fr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Javier,
 
-On Tue, Feb 1, 2022 at 2:02 PM Javier Martinez Canillas
-<javierm@redhat.com> wrote:
-> On 2/1/22 10:33, Thomas Zimmermann wrote:
-> >> +{
-> >> +    u8 col_end = col_start + cols - 1;
-> >> +    int ret;
-> >> +
-> >> +    if (col_start == ssd1307->col_start && col_end == ssd1307->col_end)
-> >> +            return 0;
-> >> +
-> >> +    ret = ssd1307_write_cmd(ssd1307->client, SSD1307_SET_COL_RANGE);
-> >> +    if (ret < 0)
-> >> +            return ret;
-> >> +
-> >> +    ret = ssd1307_write_cmd(ssd1307->client, col_start);
-> >> +    if (ret < 0)
-> >> +            return ret;
-> >> +
-> >> +    ret = ssd1307_write_cmd(ssd1307->client, col_end);
-> >> +    if (ret < 0)
-> >> +            return ret;
-> >
-> > Can you write these cmds in one step, such as setting up an array and
-> > sending it with ssd1307_write_array?
->
-> I don't think so because the commands are different. But I'll check the
-> ssd1306 datasheet again to confirma that's the case.
 
-IIRC, I tried that while working on the optimizations for ssd1307fb,
-and it didn't work.
+Den 01.02.2022 14.38, skrev Simon Ser:
+> 
+> On Tuesday, February 1st, 2022 at 13:58, Noralf Trønnes <noralf@tronnes.org> wrote:
+> 
+>> It turned out that I wasn't entirely correct here, mpv didn't cope with
+>> unknown types. In the PR to add support Emil Velikov wondered if libdrm
+>> should handle these connector names:
+> 
+> Opened this MR to try to make things easier for user-space:
+> https://gitlab.freedesktop.org/mesa/drm/-/merge_requests/222
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks Simon!

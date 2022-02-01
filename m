@@ -2,183 +2,232 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D21FBC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 10:37:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F83CC4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 10:42:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236556AbiBAKhk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 05:37:40 -0500
-Received: from smtp-out1.suse.de ([195.135.220.28]:50472 "EHLO
-        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236659AbiBAKhk (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 05:37:40 -0500
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id D9D4E210F5;
-        Tue,  1 Feb 2022 10:37:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1643711858; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=ucOSE/khhWXaiCP2YLiLU6ZnEjJtK5wnKj89bfNOk8g=;
-        b=yWZp6oNvvYGJV8SYyO2CZ/G9EhOinB0pB/3BINzQZ6tvYWqajIiN0YB0yQj/RpAJWa3wiv
-        Pnnl6TPplVTFoCFpyicOjlJbP2vbg1E/dLZFZqa+0+Ba/kTguop8pkSAQNg9qRBuZHSAF2
-        ZTQt6UddUR6ZEwKUvU/Zt7D1s5GFQOc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1643711858;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=ucOSE/khhWXaiCP2YLiLU6ZnEjJtK5wnKj89bfNOk8g=;
-        b=1m4q5O69lEjqilNVlI1WJ+i+3qiIsClkB5+Qn5a6r6PcYmaaTYJglGlHKOBgaDyF5OfBC8
-        n1xGIHn1+m4DB5CQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A019313D54;
-        Tue,  1 Feb 2022 10:37:38 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id Qw4aJnIN+WH+FAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 01 Feb 2022 10:37:38 +0000
-Message-ID: <723422bf-eb13-095f-66c5-e4011653e21d@suse.de>
-Date:   Tue, 1 Feb 2022 11:37:38 +0100
+        id S230096AbiBAKmP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 05:42:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57820 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229752AbiBAKmO (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 05:42:14 -0500
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20CC5C061714;
+        Tue,  1 Feb 2022 02:42:14 -0800 (PST)
+Received: by mail-lf1-x12c.google.com with SMTP id i34so12574441lfv.2;
+        Tue, 01 Feb 2022 02:42:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :mime-version;
+        bh=NfgyCFDAeK3WhiTxa0pFdQjhu2x7hx0LuMmE0ZH5CP8=;
+        b=cf9B6QwBtjcxGtBI7AtuY4I7GEhh0IJAHhBv7V0OQfk96rX4WAS71GdQl0zY8m58St
+         +goLrnFY9rd8zWo4ke8oLJQMKuVxNY/Sejh90ToP3xL7wkltc/IoKAk5StKbr8beS2uC
+         nb9sesuHsSWPmaymVtV+Ewa+rkoRVzZRbiDjAE1Y3XJC8IzjAl9o175kWWZrk/QN8oFj
+         7EgY+CnT/6cOxXqhXs2mhSue1xo3FEtYFYWwes6FyRDPWLKCO4gqGRUPi4nCG6qeOUdp
+         IOVdkDuHzKgKmVV/7EmlD3u84l1dSAneOvOJbj86Z1GuPyfTruahHAlpUjUgjufHlE7w
+         p5Gw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:mime-version;
+        bh=NfgyCFDAeK3WhiTxa0pFdQjhu2x7hx0LuMmE0ZH5CP8=;
+        b=TGJV7+4oAfcpQ7AjyvB0Sa4ymBmk9jWaHQl5QzukoNltHdiKabdcQQisdqMGfwNK9c
+         ibGNCA14NRTbn0miiwNVNVWCjVJR4r9WpqAogRbQLsDF26eqdje03oC2zVBFP5xv3elK
+         DwrDiP4Lt8KvsAjhAHeyr4jC9Qt7irTx2sy6dQw3667yr6bDa9RTQKPghqiJ1nFyxf0L
+         03efEPf1AFv9KxDwxiGP6zvBhntOOOmt8iwlyYwkintR/lSc48zECw7YMXCIA++XNY5Q
+         egQva7P/gTKkHaYNECvYyQDWW/E3VjEtPEMZiZgeSdynIjEibjHviN2uMy2kVm/7W3j0
+         JzKw==
+X-Gm-Message-State: AOAM532K787y6ty+nNmfTVXWjWwChkcZZSLYFTMJv0bVi4SsYZffvm0Z
+        TcRPYIAdrhZjvGkBLf+3G6w=
+X-Google-Smtp-Source: ABdhPJwwKjPurKGXxcuYSvTBMCWOu2f+u6c+35tZD+1zP/+Hz905wxI2CDdpZtM0O2PZBJrjv0sjig==
+X-Received: by 2002:ac2:5e7b:: with SMTP id a27mr18758785lfr.417.1643712132165;
+        Tue, 01 Feb 2022 02:42:12 -0800 (PST)
+Received: from eldfell ([194.136.85.206])
+        by smtp.gmail.com with ESMTPSA id o7sm3291960lfu.37.2022.02.01.02.42.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 01 Feb 2022 02:42:11 -0800 (PST)
+Date:   Tue, 1 Feb 2022 12:42:08 +0200
+From:   Pekka Paalanen <ppaalanen@gmail.com>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Simon Ser <contact@emersion.fr>,
+        Linux PWM List <linux-pwm@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Noralf =?UTF-8?B?VHLDuG5uZXM=?= <noralf@tronnes.org>,
+        David Airlie <airlied@linux.ie>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= 
+        <u.kleine-koenig@pengutronix.de>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED
+ displays
+Message-ID: <20220201124208.39c31e59@eldfell>
+In-Reply-To: <b0788b3d-9c77-0e96-0969-380d21663909@redhat.com>
+References: <20220131201225.2324984-1-javierm@redhat.com>
+        <tIMIWqepcZGntnez-1ss4Kn4K8btXnzDRL7EWd19-745WK90YIC19E_4di9RNvB3gtx-PzWEjBEGQLPNJE_x0T1yyyaWFCoFcCiG4StR9RU=@emersion.fr>
+        <wuXPJN-K-rvjoV51c4EBmTBScov8rcJTPoYmlfHe04_-4wD1khVxo9HnUsP7UFd5m4AkzGSw2hXe_c77jbSRhjEJ0JZIYwuvuIkcv_KsR-Y=@emersion.fr>
+        <CAMuHMdXKZ=BkvVqdpiNPNJgxm9SzQ3Z0n4SqV2-4oPRveybd6g@mail.gmail.com>
+        <qmhzv6kqs6QdAOP3bNB39glOpc8eeJ6flgjfjcaBniT-shDKZkxo5uB71weGOUKxPE6dq_WBhtHmY5vMmuYwqMoHgtMWnX0ESE5R1Y5g5F8=@emersion.fr>
+        <CAKMK7uGPuhrDf8fdDgfuPt5rzO30Rm54T7GvWb203NRbVoVDgw@mail.gmail.com>
+        <b0788b3d-9c77-0e96-0969-380d21663909@redhat.com>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 09/21] fbcon: Replace FBCON_FLAGS_INIT with a boolean
-Content-Language: en-US
-To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        DRI Development <dri-devel@lists.freedesktop.org>
-Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
-        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Du Cheng <ducheng2@gmail.com>, Claudio Suarez <cssk@net-c.es>
-References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
- <20220131210552.482606-10-daniel.vetter@ffwll.ch>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20220131210552.482606-10-daniel.vetter@ffwll.ch>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------p38YX7IZ0Eb4SpD5Fdiu14aQ"
+Content-Type: multipart/signed; boundary="Sig_/Sxz7U9Ufs9HWN7B5No+lEp2";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------p38YX7IZ0Eb4SpD5Fdiu14aQ
-Content-Type: multipart/mixed; boundary="------------ZuqnsJBSz9brMpRJ7r9KWedE";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Daniel Vetter <daniel.vetter@ffwll.ch>,
- DRI Development <dri-devel@lists.freedesktop.org>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
- linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- Daniel Vetter <daniel.vetter@intel.com>, Daniel Vetter <daniel@ffwll.ch>,
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Du Cheng <ducheng2@gmail.com>, Claudio Suarez <cssk@net-c.es>
-Message-ID: <723422bf-eb13-095f-66c5-e4011653e21d@suse.de>
-Subject: Re: [PATCH 09/21] fbcon: Replace FBCON_FLAGS_INIT with a boolean
-References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
- <20220131210552.482606-10-daniel.vetter@ffwll.ch>
-In-Reply-To: <20220131210552.482606-10-daniel.vetter@ffwll.ch>
+--Sig_/Sxz7U9Ufs9HWN7B5No+lEp2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
---------------ZuqnsJBSz9brMpRJ7r9KWedE
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On Tue, 1 Feb 2022 10:49:03 +0100
+Javier Martinez Canillas <javierm@redhat.com> wrote:
 
-DQoNCkFtIDMxLjAxLjIyIHVtIDIyOjA1IHNjaHJpZWIgRGFuaWVsIFZldHRlcjoNCj4gSXQn
-cyBvbmx5IG9uZSBmbGFnIGFuZCBzbGlnaHRseSB0aWRpZXIgY29kZS4NCj4gDQo+IFNpZ25l
-ZC1vZmYtYnk6IERhbmllbCBWZXR0ZXIgPGRhbmllbC52ZXR0ZXJAaW50ZWwuY29tPg0KPiBD
-YzogRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZmd2xsLmNoPg0KPiBDYzogVGV0c3VvIEhhbmRh
-IDxwZW5ndWluLWtlcm5lbEBJLWxvdmUuU0FLVVJBLm5lLmpwPg0KPiBDYzogR3JlZyBLcm9h
-aC1IYXJ0bWFuIDxncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZz4NCj4gQ2M6IER1IENoZW5n
-IDxkdWNoZW5nMkBnbWFpbC5jb20+DQo+IENjOiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1l
-cm1hbm5Ac3VzZS5kZT4NCj4gQ2M6IENsYXVkaW8gU3VhcmV6IDxjc3NrQG5ldC1jLmVzPg0K
-DQpBY2tlZC1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+DQoN
-Cj4gLS0tDQo+ICAgZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMgfCAxMSArKysr
-Ky0tLS0tLQ0KPiAgIGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5oIHwgIDQgKy0t
-LQ0KPiAgIDIgZmlsZXMgY2hhbmdlZCwgNiBpbnNlcnRpb25zKCspLCA5IGRlbGV0aW9ucygt
-KQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5j
-IGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMNCj4gaW5kZXggYWZmYjQwNjU4
-ZmVlLi5mYTMwZTE5MDkxNjQgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYv
-Y29yZS9mYmNvbi5jDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5j
-DQo+IEBAIC03NzMsNyArNzczLDcgQEAgc3RhdGljIHZvaWQgY29uMmZiX2luaXRfZGlzcGxh
-eShzdHJ1Y3QgdmNfZGF0YSAqdmMsIHN0cnVjdCBmYl9pbmZvICppbmZvLA0KPiAgIA0KPiAg
-IAlvcHMtPmN1cnJjb24gPSBmZ19jb25zb2xlOw0KPiAgIA0KPiAtCWlmIChpbmZvLT5mYm9w
-cy0+ZmJfc2V0X3BhciAmJiAhKG9wcy0+ZmxhZ3MgJiBGQkNPTl9GTEFHU19JTklUKSkgew0K
-PiArCWlmIChpbmZvLT5mYm9wcy0+ZmJfc2V0X3BhciAmJiAhb3BzLT5pbml0aWFsaXplZCkg
-ew0KPiAgIAkJcmV0ID0gaW5mby0+ZmJvcHMtPmZiX3NldF9wYXIoaW5mbyk7DQo+ICAgDQo+
-ICAgCQlpZiAocmV0KQ0KPiBAQCAtNzgyLDcgKzc4Miw3IEBAIHN0YXRpYyB2b2lkIGNvbjJm
-Yl9pbml0X2Rpc3BsYXkoc3RydWN0IHZjX2RhdGEgKnZjLCBzdHJ1Y3QgZmJfaW5mbyAqaW5m
-bywNCj4gICAJCQkJImVycm9yIGNvZGUgJWRcbiIsIHJldCk7DQo+ICAgCX0NCj4gICANCj4g
-LQlvcHMtPmZsYWdzIHw9IEZCQ09OX0ZMQUdTX0lOSVQ7DQo+ICsJb3BzLT5pbml0aWFsaXpl
-ZCA9IHRydWU7DQo+ICAgCW9wcy0+Z3JhcGhpY3MgPSAwOw0KPiAgIAlmYmNvbl9zZXRfZGlz
-cChpbmZvLCAmaW5mby0+dmFyLCB1bml0KTsNCj4gICANCj4gQEAgLTExMDEsOCArMTEwMSw3
-IEBAIHN0YXRpYyB2b2lkIGZiY29uX2luaXQoc3RydWN0IHZjX2RhdGEgKnZjLCBpbnQgaW5p
-dCkNCj4gICAJICogV2UgbmVlZCB0byBkbyBpdCBpbiBmYmNvbl9pbml0KCkgdG8gcHJldmVu
-dCBzY3JlZW4gY29ycnVwdGlvbi4NCj4gICAJICovDQo+ICAgCWlmIChjb25faXNfdmlzaWJs
-ZSh2YykgJiYgdmMtPnZjX21vZGUgPT0gS0RfVEVYVCkgew0KPiAtCQlpZiAoaW5mby0+ZmJv
-cHMtPmZiX3NldF9wYXIgJiYNCj4gLQkJICAgICEob3BzLT5mbGFncyAmIEZCQ09OX0ZMQUdT
-X0lOSVQpKSB7DQo+ICsJCWlmIChpbmZvLT5mYm9wcy0+ZmJfc2V0X3BhciAmJiAhb3BzLT5p
-bml0aWFsaXplZCkgew0KPiAgIAkJCXJldCA9IGluZm8tPmZib3BzLT5mYl9zZXRfcGFyKGlu
-Zm8pOw0KPiAgIA0KPiAgIAkJCWlmIChyZXQpDQo+IEBAIC0xMTExLDcgKzExMTAsNyBAQCBz
-dGF0aWMgdm9pZCBmYmNvbl9pbml0KHN0cnVjdCB2Y19kYXRhICp2YywgaW50IGluaXQpDQo+
-ICAgCQkJCQkiZXJyb3IgY29kZSAlZFxuIiwgcmV0KTsNCj4gICAJCX0NCj4gICANCj4gLQkJ
-b3BzLT5mbGFncyB8PSBGQkNPTl9GTEFHU19JTklUOw0KPiArCQlvcHMtPmluaXRpYWxpemVk
-ID0gdHJ1ZTsNCj4gICAJfQ0KPiAgIA0KPiAgIAlvcHMtPmdyYXBoaWNzID0gMDsNCj4gQEAg
-LTExODYsNyArMTE4NSw3IEBAIHN0YXRpYyB2b2lkIGZiY29uX2RlaW5pdChzdHJ1Y3QgdmNf
-ZGF0YSAqdmMpDQo+ICAgCWlmIChjb25faXNfdmlzaWJsZSh2YykpDQo+ICAgCQlmYmNvbl9k
-ZWxfY3Vyc29yX3dvcmsoaW5mbyk7DQo+ICAgDQo+IC0Jb3BzLT5mbGFncyAmPSB+RkJDT05f
-RkxBR1NfSU5JVDsNCj4gKwlvcHMtPmluaXRpYWxpemVkID0gZmFsc2U7DQo+ICAgZmluaXNo
-ZWQ6DQo+ICAgDQo+ICAgCWZiY29uX2ZyZWVfZm9udChwLCBmcmVlX2ZvbnQpOw0KPiBkaWZm
-IC0tZ2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmggYi9kcml2ZXJzL3Zp
-ZGVvL2ZiZGV2L2NvcmUvZmJjb24uaA0KPiBpbmRleCBkY2U1Y2U0MTA5M2UuLmIxOGQwY2Jm
-NzNiNiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmgN
-Cj4gKysrIGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmgNCj4gQEAgLTE4LDgg
-KzE4LDYgQEANCj4gICANCj4gICAjaW5jbHVkZSA8YXNtL2lvLmg+DQo+ICAgDQo+IC0jZGVm
-aW5lIEZCQ09OX0ZMQUdTX0lOSVQgICAgICAgICAxDQo+IC0NCj4gICAgICAvKg0KPiAgICAg
-ICAqICAgIFRoaXMgaXMgdGhlIGludGVyZmFjZSBiZXR3ZWVuIHRoZSBsb3ctbGV2ZWwgY29u
-c29sZSBkcml2ZXIgYW5kIHRoZQ0KPiAgICAgICAqICAgIGxvdy1sZXZlbCBmcmFtZSBidWZm
-ZXIgZGV2aWNlDQo+IEBAIC03Nyw3ICs3NSw3IEBAIHN0cnVjdCBmYmNvbl9vcHMgew0KPiAg
-IAlpbnQgICAgYmxhbmtfc3RhdGU7DQo+ICAgCWludCAgICBncmFwaGljczsNCj4gICAJaW50
-ICAgIHNhdmVfZ3JhcGhpY3M7IC8qIGZvciBkZWJ1ZyBlbnRlci9sZWF2ZSAqLw0KPiAtCWlu
-dCAgICBmbGFnczsNCj4gKwlib29sICAgaW5pdGlhbGl6ZWQ7DQoNClRoaXMgd2lsbCBhZGQg
-MyBieXRlcyBvZiBwYWRkaW5nLiBNYXliZSB5b3UgY2FuIHB1dCB0aGUgYm9vbCBlbHNld2hl
-cmUuDQoNCj4gICAJaW50ICAgIHJvdGF0ZTsNCj4gICAJaW50ICAgIGN1cl9yb3RhdGU7DQo+
-ICAgCWNoYXIgICpjdXJzb3JfZGF0YTsNCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3Jh
-cGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFu
-eSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIg
-MzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
+> On 2/1/22 09:38, Daniel Vetter wrote:
+> > On Tue, Feb 1, 2022 at 9:34 AM Simon Ser <contact@emersion.fr> wrote: =
+=20
+> >>
+> >> On Tuesday, February 1st, 2022 at 09:26, Geert Uytterhoeven <geert@lin=
+ux-m68k.org> wrote:
+> >> =20
+> >>> What's the story with the Rn formats?
+> >>>
+> >>> The comments say "n bpp Red", while this is a monochrome (even
+> >>> inverted) display? =20
+> >>
+> >> I don't think the color matters that much. "Red" was picked just becau=
+se it was
+> >> an arbitrary color, to make the difference with e.g. C8. Or am I mista=
+ken? =20
+> >=20
+> > The red comes from gl, where with shaders it really doesn't matter
+> > what meaning you attach to channels, but really just how many you
+> > have. So 2-channel formats are called RxGx, 3-channel RxGxBx,
+> > 4-channel RxGxBxAx and single-channel Rx. And we use drm_fourcc for
+> > interop in general, hence why these exist.
+> >=20
+> > We should probably make a comment that this really isn't a red channel
+> > when used for display it's a greyscale/intensity format. Aside from
+> > that documentation gap I think reusing Rx formats for
+> > greyscale/intensity for display makes perfect sense.
+> > -Daniel =20
+>=20
+> To sump up the conversation in the #dri-devel channel, these drivers
+> should support the following formats:
+>=20
+> 1) Dx (Daniel suggested that for darkness, but inverted mono)
+
+Did you consider format C1 instead?
+
+To my understanding, the C formats are paletted, which would also fit
+very nicely semantically. You have an enumerated list of pixel values
+and each of them produces some arbitrary color on screen. This would
+fit e.g. blue/white LCD panels nicely.
+
+The little problem there is the palette.
+
+C8 format is traditionally translated to RGB triplets through GAMMA LUT.
+Therefore the display itself is still three-channel, it's just the
+framebuffer format that is single-channel. But now, we are dealing
+with truly paletted displays. Furthermore, the palette is fixed,
+ingrained in the panel hardware.
+
+So we would probably need a new KMS property for the fixed palette of
+the panel. What would it be called? Would it be a connector property?
+
+The property would be a read-only blob, an array that maps Cx values to
+"colors". How do we represent "colors"? How do we accommodate C1, C2,
+C4 and C8 with the same blob?
+
+Since the blob is a mapping from color index to "color", and the array
+in the blob has N entries, we could simply say that Cx integer value is
+the color index. If the Cx you use does not go up to N, then you miss
+some colors. If the Cx you use can go higher than N, then Cx values >=3D
+N will clamp to N-1, for example. Of course, if your panel palette has
+only 4 entries, you can expose C1 and C2 and have no reason to expose
+C4 or C8, avoiding the Cx >=3D N issue.
+
+How do we define the array contents then, the "colors"... plain old RGB
+triplets do not mean much[1], but that would be better than nothing. I
+also suppose that people would not be keen on seeing something like CIE
+1931 XYZ or Lab values, even though those would probably have the most
+useful definition. Coming up with those values properly would require a
+colorimeter. As a compromise, maybe we could use an RGB triplet, and
+assume sRGB SDR color space and transfer function, just like we do with
+all displays whether they are that or not. If someone needs to know
+better, then they can profile the display. sRGB triplets would likely
+give enough intuition to what color the indices result in, that it
+could be used in automated color conversions or quantizations from
+larger color spaces like sRGB with some rough degree of color
+similarity.
+
+It is a lot of hassle, but it would have a clear benefit: userspace
+would know very well how the display behaves (what colors it shows,
+roughly), and you could use Cx formats to drive a panel in its "native"
+format.
+
+Possible problems are around interactions with the old GAMMA property,
+which is traditionally used for the C8 palette. But if you have a
+fixed-palette panel, then maybe you wouldn't expose GAMMA property on
+the CRTC at all?
+
+I have no idea how this would map to fbdev API though.
 
 
---------------ZuqnsJBSz9brMpRJ7r9KWedE--
+[1] https://gitlab.freedesktop.org/pq/color-and-hdr/-/blob/main/doc/pixels_=
+color.md
 
---------------p38YX7IZ0Eb4SpD5Fdiu14aQ
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Thanks,
+pq
+
+
+> 2) Rx (single-channel for grayscale)
+> 3) RxGxBxAx (4-channel fake 32-bpp truecolor)
+>=20
+> The format preference will be in that order, so if user-space is able
+> to use Dx then there won't be a need for any conversion and just the
+> native format will be used.
+>=20
+> If using Rx then only a Rx -> Dx conversion will happen and the last
+> format will require the less performant RxGxBxAx -> Rx -> Dx path.
+>=20
+> But we still need RxGxBxAx as a fallback for compatibility with the
+> existing user-space, so all this could be done as a follow-up as an
+> optimization and shouldn't block monochromatic panel drivers IMO.
+>=20
+> Best regards,
+
+
+--Sig_/Sxz7U9Ufs9HWN7B5No+lEp2
+Content-Type: application/pgp-signature
 Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
 
 -----BEGIN PGP SIGNATURE-----
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmH5DXIFAwAAAAAACgkQlh/E3EQov+DM
-xRAAxH0KevinZZlD+cEaLyw1UbwhP9162A/N4UqiBvmTzhj/xTTk78RzNeltsslkDhdIRiBi2IEF
-DfV0GxGx8CgxRcajZOBDs2a0utAkQf8kLVYRufvmxI6K/nwzaLGyPgFcrFaLWF6gH3PbzfWIf6z/
-AZswoedhr0vPl0cp6f2CedyH4ZXGhslyO7uuJgdB3rYMEQPnLKZeO7KbWuWjy8+Jo7hjHrfkiQsv
-GIuMvlTS7hhvLIhTtTitR4E1IngqfV7anWG6WIS5sNOeWquxvMz/hTxcton1M6k48u/Trfb+eeyN
-FMPzebRfYcOBaTbz1ac/mFMy/8DX+9FBA9zXyINeRfgfGD4hMfUUAkdj7P0coiDMY7SfatJKRiLK
-zruMsGx9kGYsGxdIX3qCFsWIcaiHVpfMDOZc4riqccDhOb29RD0S/TdVdMhECPPTbyv8HfiO0N/0
-K1CrcNULzV9dYiJkA8sEZC7hzBOeEHhYXGzdpPlQblYOnT2hIZnWCGK74sWDNky7rXrTG/7FzCnQ
-/X2HlCM76x1LQ0vh6MfSLz9FkiFx+tvaUAZyjqmrT8ATP3iagWv4a/Yf1d0CULyrKY1D3CYpAMVB
-nU/JETGsBBig35pIhA3V2Sct6X5kg9iEuaU3myrRc05TueL3Fj3OXgApsUgz9KOBkLFFSPL6n69H
-4cI=
-=geDa
+iQIzBAEBCAAdFiEEJQjwWQChkWOYOIONI1/ltBGqqqcFAmH5DoAACgkQI1/ltBGq
+qqdQHRAAsEi+6XySVlxhsY0CtJOqClHhuaE+2ObdFY28PqLOtmpM6sHJgP/3kn0b
+kROfNch8c/Bxv28Jg3EMdcBav3oLC/hNotHK9OiUxm7C2NFMNCyulX/jv/0VerNY
+pC5r9V9AeENihHmY1mzxn+D9MbCyL7nkWc1zcnZ0ga/4hmUr7GQqdC08FmnO8vXz
+aeRBY2TG5sNePTxby7cM3yCFtVAqaIU8zx8uMPC0A+KFmVTLh2gaE0EjX6I0kfRQ
+Qj09BIMMwNMYLfn5J7wLs+qbUSNBEx2Ro5YBYky/cXfjQNqL217zjmXkL6bHS7hF
+mUGvwr88PVcsGL9g8TEuc6sXgdh3ut59gdXNAswhrBqbPPqqwgSkxn7U5Ep02Crm
+HppqDcoD5PXcASJ/5X9YXlq9IFI9tzub/aW6DEPImx+5scJnxBk8VNVOa69tirKF
+XkuUFvD7oDxenr9hV/ZmyVHy3pjO/Bi0+zatoNTBqPCzyheVGKAqPHy4z0cji5aD
+mz8c6n7T5DOTFLHS2Yk8jZn2PD0oxNDVtTTkWgk1ocptwWRtCYKtfpbf62wFtFcn
+PO+/UiHWwA+6OUounMjQfQqWRpDIH/WGvEWmh1r+j8e+ApjSRGeM202VGnBvffyW
+4yDqnjMBJSzS2QxRT0yp9Fg4qAIk4tpz6K0MgATgFrkgghBkEs4=
+=PuLM
 -----END PGP SIGNATURE-----
 
---------------p38YX7IZ0Eb4SpD5Fdiu14aQ--
+--Sig_/Sxz7U9Ufs9HWN7B5No+lEp2--

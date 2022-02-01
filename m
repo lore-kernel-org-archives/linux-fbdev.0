@@ -2,128 +2,163 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B891CC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 15:10:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 822B8C4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 16:30:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239827AbiBAPKy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 10:10:54 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:23088 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S234200AbiBAPKx (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Feb 2022 10:10:53 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643728253;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=Xahi6KlHV6F4VQ/xZVlvC1YTaLt1tqgz8laoIFbavo4=;
-        b=KnJs+m9WmWD2cDEpzquJb6QH4bop2cYJVnN632+2P9VWFq9NWNzZ5Op+rPk6E0y9R3F2U2
-        x2WnzoW28rSIMkN2VssIXC/x40w0osyTmXQJZrZQnVcQc1Og8BysD4zTcqg3HQmHorh5B3
-        gq4vmj+YWHKe1hhIKWJUo9f+sTBtj5c=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-665-ZGsKlv9tP1mCTfiobFf88g-1; Tue, 01 Feb 2022 10:10:51 -0500
-X-MC-Unique: ZGsKlv9tP1mCTfiobFf88g-1
-Received: by mail-wm1-f70.google.com with SMTP id l20-20020a05600c1d1400b0035153bf34c3so1769755wms.2
-        for <linux-fbdev@vger.kernel.org>; Tue, 01 Feb 2022 07:10:51 -0800 (PST)
+        id S241090AbiBAQat (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 11:30:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53382 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S241089AbiBAQas (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 11:30:48 -0500
+Received: from mail-oi1-x22c.google.com (mail-oi1-x22c.google.com [IPv6:2607:f8b0:4864:20::22c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55423C06173D
+        for <linux-fbdev@vger.kernel.org>; Tue,  1 Feb 2022 08:30:48 -0800 (PST)
+Received: by mail-oi1-x22c.google.com with SMTP id e81so34328684oia.6
+        for <linux-fbdev@vger.kernel.org>; Tue, 01 Feb 2022 08:30:48 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=SmoAfGUcv3WuX5MTMsQtLDuakLAcJhTCCEdC4MKfCJU=;
+        b=hE0dHoYE2FXofMs4e1RcU8c6vfA8rv8R3XWFaQ0os1A+wPd9bM/1RxDIdOUGSJs44C
+         IbvTPs4DM04VagcMezxMBUFH8mDLy9QtjjQblNkO/XUP+kEMmcvVuSs6Ghbzv6BTRJkJ
+         xLtV9OHhTOddvn0QXAX7viusKmGqEOG1wVJo8=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=Xahi6KlHV6F4VQ/xZVlvC1YTaLt1tqgz8laoIFbavo4=;
-        b=6gW5yLnv8+AdY44HQ4sdXvP+RnpcMcxcqDw4xtZP5PIK0vu7fgBuVTX+5d9HCQO5VP
-         OR3M4PLYawl+cgdErX81fvGRKU+e/760qP1l+rVpzTktKjB8lkYnzvVcFmGyUZh+z3Z0
-         SmUZZ2oL0z3sw0HUJdIv3Li69jwPaku6YwRBSGMKegtEBXR+lAz30C7DZR6cezzbQLVN
-         xju5OuQoejpKNnIC0hN3xWtGQH17QuUFNHi13GHDvwouRYnc3ciOVHq3mgDTc1UfW4+5
-         nzvBb1z2zH3ZlAQRC8pzvP+b7tJqXmHzxWxA/Lk0Azw8RJWtXBn/17eFHZPXQoV239MB
-         +fZg==
-X-Gm-Message-State: AOAM532ZU6lacxMwNSxYlKk7Vpyp911dsxkovqr+0tyQvU8D6VPP5be4
-        tJuJKEObR6Q9hi4jSSQ04RhadPebRkV0ZHRvhIF43mapyFkPazonAvZ5JsDMAHvS0tKXt05mfqu
-        ZXLdvkiFbhEBX/LCdTA5XRh4=
-X-Received: by 2002:a05:6000:1a8c:: with SMTP id f12mr11663239wry.153.1643728250668;
-        Tue, 01 Feb 2022 07:10:50 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxdwGp2Pak+qnkxqFSHlJ5WHAuF3l8gqYjbIl9n8aNA5CLl+rlgxDBFzggA+hPhyEXVYtJztA==
-X-Received: by 2002:a05:6000:1a8c:: with SMTP id f12mr11663221wry.153.1643728250430;
-        Tue, 01 Feb 2022 07:10:50 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id x4sm15296308wrp.13.2022.02.01.07.10.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Feb 2022 07:10:50 -0800 (PST)
-Message-ID: <b4fe0d36-c4ef-6f7e-e47d-f98f6055ea92@redhat.com>
-Date:   Tue, 1 Feb 2022 16:10:49 +0100
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=SmoAfGUcv3WuX5MTMsQtLDuakLAcJhTCCEdC4MKfCJU=;
+        b=TF5xLYzGrSpThmkUp/NfUrLwC7RSIO8btS/6ZVSrIb5QXhZlGKNCvUYhundTy9Tb7N
+         9PxZJvKOjg6N+xjDyCZsn178BNv5G9G9ZmmVVZAxING+nzJrYkbzfJBfjTid1lKBtApR
+         kdtSj2V7dKewMaUmTiYxga6eyJC8YlPWQtxWf31Mo0dGhJSOgnVsbMi0M1MbxMJwKDNe
+         P19zLn73cFYdP3igIStRK5jv20jrCBw6BSc/BuPgL+JjPx95lNCUvEUy0sGtBDVi3EUb
+         GQ47OZu84JGefYMuMA9B1KD98OJybijkgRcqnZ+HN/G/lq5kj4kG1ZdIbwDkNOt3CgnM
+         wcsw==
+X-Gm-Message-State: AOAM531FtLMGbiUckGPDoKku9dS3v9fvzLGIIflwTIF8w2yCnVgFBXdg
+        PouzY4yyTwDOeqP3hRSOkqTi0t5WtCt5qZa75PoZEqfwJVw=
+X-Google-Smtp-Source: ABdhPJz3JayTHVyC51m4kdAPGDzLvlPbnDnx2e6c/T0JZ7beOtPGbdiv2N+Jc7yrinJz0jrqaKDfzGNAZgBoR3v4+Ao=
+X-Received: by 2002:a54:4803:: with SMTP id j3mr1774572oij.279.1643733047225;
+ Tue, 01 Feb 2022 08:30:47 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 3/4] drm/tiny: Add driver for Solomon SSD1307 OLED
- displays
-Content-Language: en-US
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc:     Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-        linux-fbdev@vger.kernel.org,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        dri-devel@lists.freedesktop.org,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
+ <20220131210552.482606-4-daniel.vetter@ffwll.ch> <9c22b709-cbcf-6a29-a45e-5a57ba0b9c14@gmx.de>
+ <CAKMK7uGvOVe8kkJCTkQBEFw+3i2iAMANsyG9vGqZkcROZ9he4A@mail.gmail.com>
+ <63018892-68e8-01b6-1e8f-853892e15c97@gmx.de> <CAKMK7uHPn77GA12fFjmvkRUDQXSBkbYK5X=rJp8sfO_xarys_g@mail.gmail.com>
+ <313c4c72-364b-1d61-09c1-e4a83cbefe6a@gmx.de>
+In-Reply-To: <313c4c72-364b-1d61-09c1-e4a83cbefe6a@gmx.de>
+From:   Daniel Vetter <daniel.vetter@ffwll.ch>
+Date:   Tue, 1 Feb 2022 17:30:36 +0100
+Message-ID: <CAKMK7uE5A6+s6=yaCUsKN0XrMAESLKNwz2_bJR9YL3S7YeDzMw@mail.gmail.com>
+Subject: Re: [PATCH 03/21] fbcon: Restore fbcon scrolling acceleration
+To:     Helge Deller <deller@gmx.de>
+Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
+        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+        stable@vger.kernel.org, Claudio Suarez <cssk@net-c.es>,
+        Dave Airlie <airlied@gmail.com>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
-        Maxime Ripard <maxime@cerno.tech>
-References: <20220131202916.2374502-1-javierm@redhat.com>
- <YfhVBtv1UIA7bJja@ravnborg.org>
- <3aac291a-b30e-2775-336f-66dd08d634e2@redhat.com>
- <YfkA4ER/52I2v1JP@smile.fi.intel.com>
- <9ddd8a8c-4aa9-bc4a-5637-66197a7342d1@redhat.com>
- <Yfk9fuazUSgI6C9n@smile.fi.intel.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <Yfk9fuazUSgI6C9n@smile.fi.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Sven Schnelle <svens@stackframe.org>,
+        Gerd Hoffmann <kraxel@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2/1/22 15:02, Andy Shevchenko wrote:
-> On Tue, Feb 01, 2022 at 12:45:53PM +0100, Javier Martinez Canillas wrote:
->> On 2/1/22 10:44, Andy Shevchenko wrote:
->>> On Tue, Feb 01, 2022 at 01:14:22AM +0100, Javier Martinez Canillas wrote:
-> 
-> ...
-> 
->>> The problem with no backward compatibility means that removal of old driver
->>> makes users unhappy since DT is kinda ABI and we do not break it.
->>>
->>
->> I think that's the crux of the issue. Do we want people to update their
->> kernel but using their existing Device Tree and be able to switch to the
->> DRM driver ?
->>
->> My take is that we should and that's why I kept the backward compatibility.
->>
->> Maybe we could do that in the meantime and at some point introduce new DT
->> bindings (with a different compatible string) that would use the latest
->> and greatest conventions in DT ? That seems to be a good compromise.
-> 
-> I have over-read in this discussion that current binding is not fully
-> correct from hw perspective. If it's indeed the case (and I believe it's),
-> then probably we should come with brand new driver with ssd130x name and
-> incompatible bindingas (*).
+On Tue, Feb 1, 2022 at 3:52 PM Helge Deller <deller@gmx.de> wrote:
 >
-> Otherwise in this driver we continue to be incorrect in them.
+> On 2/1/22 14:45, Daniel Vetter wrote:
+> > On Tue, Feb 1, 2022 at 12:01 PM Helge Deller <deller@gmx.de> wrote:
+> >> On 2/1/22 11:36, Daniel Vetter wrote:
+> >>> On Tue, Feb 1, 2022 at 11:16 AM Helge Deller <deller@gmx.de> wrote:
+> >>>>
+> >>>> On 1/31/22 22:05, Daniel Vetter wrote:
+> >>>>> This functionally undoes 39aead8373b3 ("fbcon: Disable accelerated
+> >>>>> scrolling"), but behind the FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+> >>>>> option.
+> >>>>
+> >>>> you have two trivial copy-n-paste errors in this patch which still prevent the
+> >>>> console acceleration.
+> >>>
+> >>> Duh :-(
+> >>>
+> >>> But before we dig into details I think the big picture would be
+> >>> better. I honestly don't like the #ifdef pile here that much.
+> >>
+> >> Me neither.
+> >> The ifdefs give a better separation, but prevents that the compiler
+> >> checks the various paths when building.
+> >>
+> >>> I wonder whether your approach, also with GETVX/YRES adjusted
+> >>> somehow, wouldn't look cleaner?
+> >> I think so.
+> >> You wouldn't even need to touch GETVX/YRES because the compiler
+> >> will optimize/reduce it from
+> >>
+> >> #define GETVYRES(s,i) ({                           \
+> >>         (s == SCROLL_REDRAW || s == SCROLL_MOVE) ? \
+> >>         (i)->var.yres : (i)->var.yres_virtual; })
+> >>
+> >> to just become:
+> >>
+> >> #define GETVYRES(s,i) ((i)->var.yres)
+> >
+> > Yeah, but you need to roll out your helper to all the callsites. But
+> > since you #ifdef out info->scrollmode we should catch them all I
+> > guess.
 >
-
-See the comment from Geert. I believe we should use the existing binding.
- 
-> *) But even though I think it would be good if you take the old one under your
->    maintainership.
+> Right. That was the only reason why I ifdef'ed it out.
+> Technically we don't need that ifdef.
 >
+> >>> Like I said in the cover letter I got mostly distracted with fbcon
+> >>> locking last week, not really with this one here at all, so maybe
+> >>> going with your 4 (or 2 if we squash them like I did here) patches is
+> >>> neater?
+> >>
+> >> The benefit of my patch series was, that it could be easily backported first,
+> >> and then cleaned up afterwards. Even a small additional backport patch to disable
+> >> the fbcon acceleration for DRM in the old releases would be easy.
+> >> But I'm not insisting on backporting the patches, if we find good way forward.
+> >>
+> >> So, either with the 4 (or 2) patches would be OK for me (or even your approach).
+> >
+> > The idea behind the squash was that it's then impossible to backport
+> > without the Kconfig,
+>
+> Yes, my proposal was to simply revert the 2 patches and immediatly send
+> the Kconfig patch to disable it again.
+>
+> > and so we'll only enable this code when people
+> > intentionally want it. Maybe I'm too paranoid?
+>
+> I think you are too paranoid :-)
+> If all patches incl. the Kconfig patch are backported then people shouldn't
+> do it wrong.
+>
+> > Anyway, you feel like finishing off your approach? Or should I send
+> > out v2 of this with the issues fixed you spotted? Like I said either
+> > is fine with me.
+>
+> Ok, then let me try to finish my approach until tomorrow, and then you
+> check if you can and want to add your locking and other patches on top of it.
+> In the end I leave the decision which approach to take to you.
+> Ok?
 
-Sure, now that I got familiar with the ssd130x devices, I'll be happy to
-help with the ssd1307fb driver maintainership.
+Sounds good, and yeah rough idea is that the maintainers + revert +
+Kconfig should go in for rc3 or rc4 if we hit another bump, and the
+locking stuff then in for -next (since it needs a backmerge and is
+defo tricky stuff).
 
-Best regards,
+Cheers, Daniel
 -- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

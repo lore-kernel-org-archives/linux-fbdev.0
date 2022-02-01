@@ -2,163 +2,122 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50A6AC433F5
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9C00C433EF
 	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 15:03:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239713AbiBAPDf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S239712AbiBAPDf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Tue, 1 Feb 2022 10:03:35 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:57539 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S239692AbiBAPDe (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
+Received: from mout.gmx.net ([212.227.17.22]:43617 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S239685AbiBAPDe (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
         Tue, 1 Feb 2022 10:03:34 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643727814;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=wPLTvSXEJtxG27SsdT3y+GsVxpcB9uraDlu1oQaaT6o=;
-        b=FctOW/9QgpLr6G1TVeutqJT5b1zOFRU2ZP5GrGpU45xkiWxtXhujMFAR9g/L15b76qYc4u
-        NC2AgTxLCUWqGJxtTDwWbrSx7TwuMPL+1gNn5Uo3QrTZrqi58XuGYn3EZP3Fu5ho5j7Fkk
-        3qKV4GG84DPc40AiyfkKRIggP1JY+L8=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-553-Gpu670o8OpKsu95cV9uprQ-1; Tue, 01 Feb 2022 10:03:33 -0500
-X-MC-Unique: Gpu670o8OpKsu95cV9uprQ-1
-Received: by mail-wr1-f69.google.com with SMTP id z1-20020adfbbc1000000b001df54394cebso5280640wrg.20
-        for <linux-fbdev@vger.kernel.org>; Tue, 01 Feb 2022 07:03:33 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=wPLTvSXEJtxG27SsdT3y+GsVxpcB9uraDlu1oQaaT6o=;
-        b=4uKeMysu4OangcoGHUbIHnqEJebykUSYRpqm114+fHh7OLO9y4NdALtOXBs0LPykxL
-         ebeGDUJLame545OoAvIzcNR+zEgU4RLCxf0O0U3ffcm+biveidfQXL11UOYhXQjrJKN8
-         j0+wzROllDIfudsyvtlCD9GRq2FLaTjoPgZ3Oo0rB3+xl1YxyVdWLkqpn1w0CF+nUObj
-         jpk3XuzD2ITZ3FJbby7o8NT09WwA0YIP0tl6GthNns1+iFhhkM/Dh7JuR++oxb+OFQrh
-         FFdCZOaE+U36f8knNOMChQD2kWHCFDLjRFFq0KtVziFzuap8n+s+QsAa2123V9IDaCXg
-         qrDA==
-X-Gm-Message-State: AOAM533V3UFXyL4phWC7o1qtTeiyZDbBAkIP69o8lN9vddsYew6Qs9tQ
-        NHQbXh8d5D77BUp9f1lGVm5hnwP60gH6JmrAWgn/i2e095kxN5B2zqnzasYmS6Lw6ERO/Hvin72
-        UcoY+dSelEYRXihcjx1B4rp0=
-X-Received: by 2002:adf:f701:: with SMTP id r1mr21141486wrp.557.1643727812093;
-        Tue, 01 Feb 2022 07:03:32 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJyD7IWYf2w/UYRoUr7WHXdQ9VbX1SC5Yn+ZVdm0j1WeFTSfMhrKanoXWWOixVKguyUocjP+4A==
-X-Received: by 2002:adf:f701:: with SMTP id r1mr21141458wrp.557.1643727811754;
-        Tue, 01 Feb 2022 07:03:31 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id o12sm17764493wry.115.2022.02.01.07.03.30
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Feb 2022 07:03:31 -0800 (PST)
-Message-ID: <abf63995-a529-1e80-18c3-df473a3e7a9c@redhat.com>
-Date:   Tue, 1 Feb 2022 16:03:30 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1643727768;
+        bh=nvs4NamF8w3PSAtLVFdwadPiUvfzFg613upYNZ/yXSg=;
+        h=X-UI-Sender-Class:Date:To:Cc:References:From:Subject:In-Reply-To;
+        b=Ig2IPZ5zKlouxpflVVmYYGrUePr/LI8+qLrp7aZA4uucD+2hXbYwRZLq855afcj7/
+         1C1nsPz7s9e8i+8N7F1wnisBRN0mfKm2sAbMpx8DRuRWuiFg04oBnMytrkdwEQpEIQ
+         DQTyXsVmllotv/hXvaZbbuOUiJ+3eYZuhKq4mj3U=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.146.124]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MwQXN-1mP0sn1g4j-00sNis; Tue, 01
+ Feb 2022 16:02:48 +0100
+Message-ID: <b1c1f68d-4620-2429-66bd-33d806d31457@gmx.de>
+Date:   Tue, 1 Feb 2022 16:02:40 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED
- displays
+ Thunderbird/91.3.0
 Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+To:     Yizhuo Zhai <yzhai003@ucr.edu>
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Sam Ravnborg <sam@ravnborg.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PWM List <linux-pwm@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Mark Brown <broonie@kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Lee Jones <lee.jones@linaro.org>
-References: <20220131201225.2324984-1-javierm@redhat.com>
- <YfhM97cVH3+lJKg0@ravnborg.org> <Yfj/XGRRDNABsLPm@smile.fi.intel.com>
- <f8d71acb-5c8b-ac4e-0c32-38eb66af04c3@redhat.com>
- <CAMuHMdVP6ER119r2KAegjZes1a=KWZ47z6j=kgQ0oNx1oeUJ+w@mail.gmail.com>
- <51f54519-bb8b-f108-1c1e-4fed101ca5ef@redhat.com>
- <CAMuHMdVwUfv7pXhPazsgG6t=X=aVtDQkFUk_=mUuFH8Fscx8wg@mail.gmail.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <CAMuHMdVwUfv7pXhPazsgG6t=X=aVtDQkFUk_=mUuFH8Fscx8wg@mail.gmail.com>
+        Matthew Wilcox <willy@infradead.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
+        Zheyu Ma <zheyuma97@gmail.com>,
+        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20220131065719.1552958-1-yzhai003@ucr.edu>
+From:   Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH] fbdev: fbmem: Fix the implicit type casting
+In-Reply-To: <20220131065719.1552958-1-yzhai003@ucr.edu>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:8rcnp3IDWKRjEYPQV485Zi+kFbcxjfN0d1QI0X2MU7OVul75bod
+ eQuXX8jdrKjMIB2fbFNnodmCyPeknr4i/kfQBcukaVrSA3NwBE0B1kXD4gZR7qZqfK6SHW+
+ P5Z3tyGBWi0S9W4OBNjklGZGQ+uS0XMCezCx8oxze65ATS7BFRkOph2vBGq3QOogmBUJFqh
+ HohuYWpL/6NFwDvUyuDtA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:8Rn0yXCvoSI=:wCSp2dm5E03DqfVW0te626
+ y3QbpDpBUuTKWhC/2BhKHIV114JvdTj7FO7RgQjiIh0KVHFyDX7evBCCP7F7QZ1ym7TRzJ9Zd
+ n0RjjMB5hei2NBwh1vXhjC7GF+gyG1PwKcEiNrYRjEgeDHRQ3HYYmyJK03F0F6HzWx7tmBnyL
+ B6cNR7yC4WT0uB/OkuthjxwrEOL2HALsrdV74B6i4dvAfRLdet1ddKocbBqLpW0o6LQG1k3AD
+ SQyeaSEztHEG2F9zKvC0uEaJjKPaiSTZuMyXeXiOIOW9jDiLM56Q2vKR0WnnRDH659abnY4o9
+ nE+nlgTcCp78zrEd8D3r+tG1yBMKLhid/cVKvlQM4s+xZ9PIbZX0yAxyj6HVQYyGKtCaOmpu0
+ Np4Jw35NnT7pfFo7vih+wmRc+D6K7Q2O0DxWgT60fwt1ia7v40fq40xZJXAO6XyWHPyCw9v2g
+ Zb4rs/ro/DKlt4r/+Zk0470cy5Hj+wiuAXftlxMUp3E4naFS8ah1YPILH7JfRn3XI5/QXz3hn
+ Uo6mWMn///bBb6RBSCUawnYKSuFTvUqztCr8NUuW0+vt0kO7OM/L9HpoGijp5Q14kpISNLVbr
+ 4F8o9A5rGgdNMHHiLwZmxst6Ir+m9e7X6xyjdEUcbhe7fma3wWzba54WQwIbRk33qAHWeFFyK
+ h++uWp0yaOiYo05cMbaoIUdpcKB41YSD5638kF6NQtSuYHu9wGHHRnsI36i1JzJ17XZ9tLDaJ
+ wnxL2qRxBLK5bLLioFBPKq0l17iOm+T47NgBa9+RGUmRM6a6iUf+OoTcMRATCSnMkG1F2Swi6
+ Qj9e+XDFcZi1I1Iew5pDjzvtJxsdKTIdUArCPaUpEJ3i8vIhRLoEU3YQDKVxPIbdzndhvxM95
+ nQ/6MMGob1zcMXn7AOZ4Cfj5u5zbl6h0IIYogZeAs73GQeVem2p1FdITwZYy4085v2MfB4pjl
+ yvF1AdneaI+JZcr9OjM31zQrRW9vIB77/i+g4VHydbDZewVNxBqXlAmw6mac2FmS0IgQ65bxc
+ Y4CO9SIvE/gKzU627zJIG1jMzE7BxSwIfLv4kDuxuQ6tR7KfNZSn+3EBl6f1LBos4J2aWdf4M
+ /gNvQFfC3+A13s=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Geert,
+On 1/31/22 07:57, Yizhuo Zhai wrote:
+> In function do_fb_ioctl(), the "arg" is the type of unsigned long,
 
-On 2/1/22 15:14, Geert Uytterhoeven wrote:
-> Hi Javier,
-> 
-> On Tue, Feb 1, 2022 at 2:09 PM Javier Martinez Canillas
-> <javierm@redhat.com> wrote:
->> On 2/1/22 12:38, Geert Uytterhoeven wrote:
->>>> Since the current binding has a compatible "ssd1305fb-i2c", we could make the
->>>> new one "ssd1305drm-i2c" or better, just "ssd1305-i2c".
->>>
->>> DT describes hardware, not software policy.
->>> If the hardware is the same, the DT bindings should stay the same.
->>>
->>
->> Yes I know that but the thing is that the current binding don't describe
->> the hardware correctly. For instance, don't use a backlight DT node as a
->> property of the panel and have this "fb" suffix in the compatible strings.
->>
->> Having said that, my opinion is that we should just keep with the existing
->> bindings and make compatible to that even if isn't completely correct.
->>
->> Since that will ease adoption of the new DRM driver and allow users to use
->> it without the need to update their DTBs.
-> 
-> To me it looks like the pwms property is not related to the backlight
-> at all, and only needed for some variants?
+yes, because it comes from the ioctl framework...
+
+> and in "case FBIOBLANK:" this argument is casted into an int before
+> passig to fb_blank().
+
+which makes sense IMHO.
+
+> In fb_blank(), the comparision if (blank > FB_BLANK_POWERDOWN) would
+> be bypass if the original "arg" is a large number, which is possible
+> because it comes from the user input.
+
+The main problem I see with your patch is that you change the behaviour.
+Let's assume someone passes in -1UL.
+With your patch applied, this means the -1 (which is e.g. 0xffffffff on 32=
+bit)
+is converted to a positive integer and will be capped to FB_BLANK_POWERDOW=
+N.
+Since most blank functions just check and react on specific values, you ch=
+anged
+the behaviour that the screen now gets blanked at -1, while it wasn't befo=
+re.
+
+One could now argue, that it's undefined behaviour if people
+pass in wrong values, but anyway, it's different now.
+
+So, your patch isn't wrong. I'm just not sure if this is what we want...
+
+Helge
+
+
+> Signed-off-by: Yizhuo Zhai <yzhai003@ucr.edu>
+> ---
+>  drivers/video/fbdev/core/fbmem.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-
-I was reading the datasheets of the ssd1305, ssd1306 and ssd1307. Only the
-first one mentions anything about a PWM and says:
-
-  In phase 3, the OLED driver switches to use current source to drive the
-  OLED pixels and this is the current drive stage. SSD1305 employs PWM
-  (Pulse Width Modulation) method to control the brightness of area color
-  A, B, C, D color individually. The longer the waveform in current drive
-  stage is, the brighter is the pixel and vice versa.
-
-  After finishing phase 3, the driver IC will go back to phase 1 to display
-  the next row image data. This threestep cycle is run continuously to refresh
-  image display on OLED panel. 
-
-The way I understand this is that the PWM isn't used for the backlight
-but instead to power the IC and allow to display the actual pixels ?
-
-And this matches what Maxime mentioned in this patch:
-
-https://linux-arm-kernel.infradead.narkive.com/5i44FnQ8/patch-1-2-video-ssd1307fb-add-support-for-ssd1306-oled-controller
-
-  The Solomon SSD1306 OLED controller is very similar to the SSD1307,
-  except for the fact that the power is given through an external PWM for
-  the 1307, and while the 1306 can generate its own power without any PWM. 
-
-> And the actual backlight code seems to be about internal contrast
-> adjustment?
-> 
-> So if the pwms usage is OK, what other reasons are there to break
-> DT compatibility? IMHO just the "fb" suffix is not a good reason.
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core=
+/fbmem.c
+> index 0fa7ede94fa6..a5f71c191122 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -1064,7 +1064,7 @@ fb_set_var(struct fb_info *info, struct fb_var_scr=
+eeninfo *var)
+>  EXPORT_SYMBOL(fb_set_var);
 >
-
-Absolutely agreed with you on this. It seems we should just use the existing
-binding and make the driver compatible with that. The only value is that the
-drm_panel infrastructure could be used, but making it backward compatible is
-more worthy IMO.
-
-Best regards, -- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+>  int
+> -fb_blank(struct fb_info *info, int blank)
+> +fb_blank(struct fb_info *info, unsigned long blank)
+>  {

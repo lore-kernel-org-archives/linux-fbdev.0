@@ -2,170 +2,192 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A239EC433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 10:36:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6990C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 10:36:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236680AbiBAKgx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 05:36:53 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:24461 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S236363AbiBAKgw (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Feb 2022 05:36:52 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643711812;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=kaqBrIFOHvMLEnJtoyzrnK2gwLgrZ2ScPtfEFGlgxAY=;
-        b=UTlJo8OdsCAk5giON9iSJqA41YHNOkiVF7bKoCiHubF1VzcstSpz0D7EEtkoELp1Y6PoIb
-        CtbcVuXlP+ZjcpWhIibsFG1MgCjoBuiET1ZZyX3iv7v58tTetPnmAnQRe54hehO4MYepap
-        J6oy1UaNMJ1Svs8CEgE8Rx6aXnle3iM=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-164-GdbsvGhfNgu1j4PPor_LPQ-1; Tue, 01 Feb 2022 05:36:51 -0500
-X-MC-Unique: GdbsvGhfNgu1j4PPor_LPQ-1
-Received: by mail-wr1-f69.google.com with SMTP id g6-20020adfbc86000000b001a2d62be244so5787673wrh.23
-        for <linux-fbdev@vger.kernel.org>; Tue, 01 Feb 2022 02:36:51 -0800 (PST)
+        id S236694AbiBAKg5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Feb 2022 05:36:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56642 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236707AbiBAKg5 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Feb 2022 05:36:57 -0500
+Received: from mail-oi1-x233.google.com (mail-oi1-x233.google.com [IPv6:2607:f8b0:4864:20::233])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA22BC06173E
+        for <linux-fbdev@vger.kernel.org>; Tue,  1 Feb 2022 02:36:56 -0800 (PST)
+Received: by mail-oi1-x233.google.com with SMTP id t199so15737720oie.10
+        for <linux-fbdev@vger.kernel.org>; Tue, 01 Feb 2022 02:36:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=thQSKAMpg3vonVejk+upRRfxFVRMJlvDC8QT1+vvLTE=;
+        b=BjysRH1/UjWKl4SwTWns+a3iySdYESImlXYI7dzIfcW5U3YKan1zfT4PIm9Yg1CO+i
+         UeBzRv66NeNKkAxDGEvzfZAO0hDDWZu37G4sPsJ0qidfgez8DuvVdkYwSyJc/ruD4Unm
+         v10dtEg3+JZQA08R+oq5qhyMzzEa33iBiE/uo=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=kaqBrIFOHvMLEnJtoyzrnK2gwLgrZ2ScPtfEFGlgxAY=;
-        b=IcuFRuiQtNIy/PNRSndFsaMyJmGFOv1rIcosWHE7hZ/4JoKJhPGubYUrm2udrPfryo
-         zJ4nJxE8zDWZXvQBxCsRzADBE+oxPJg+G7f5FKfUxZzncvt6SE42iXcMGfRpHKUKjCiN
-         iUu7743NZe/goIZDN+gSEczaTXVgs1ag/UrkrbvM5oebu14OrmjMiPgVuegjZKJhz3kf
-         MGgbznfAhYIrl9fmo773hLCeHY5Xx+O0G5SzrQZa6Z5tpxdiEauge2Gekb2VZxT+67D4
-         yyf6M1/cHO8svrBYxjzKbZP5ygrhmfn74fbxKIloVY5t1KJ1shLGxj0BXJpW7AVjecIW
-         TXPg==
-X-Gm-Message-State: AOAM531V3xWkxRrecySqUBoCv28/8lDZnzr14m4BQX5Xr/dEuIDRWtms
-        ItX3MHXtTvsuhtyfnTru3npBM43p6xlrDjfsxpcvlILHFKH67uAluhoZ/4S9LaVlWjglKhZkTed
-        WZt1CQvnYrpQdCvTkhkp6uZc=
-X-Received: by 2002:a7b:c44e:: with SMTP id l14mr1191960wmi.185.1643711810161;
-        Tue, 01 Feb 2022 02:36:50 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwIelI3cz+7Zacd+5ZQQgX/8LYNpRzY3LsR8zgGmcKlb1QIdL+Q4hi84F8M/23d0R26+66jvw==
-X-Received: by 2002:a7b:c44e:: with SMTP id l14mr1191934wmi.185.1643711809893;
-        Tue, 01 Feb 2022 02:36:49 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id k25sm1751285wms.23.2022.02.01.02.36.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Feb 2022 02:36:49 -0800 (PST)
-Message-ID: <1a49a91a-1f6d-51c0-561b-5e5a519f3b49@redhat.com>
-Date:   Tue, 1 Feb 2022 11:36:48 +0100
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=thQSKAMpg3vonVejk+upRRfxFVRMJlvDC8QT1+vvLTE=;
+        b=IpvfhlU+tYytm5W8da1gJ/1jk47Pz8Np7Pdv7/jbAPFZg7NirVD0ClvJi2psEF03Fl
+         1b8i+v0byMlK8MFZZ/pXADTZYwyKCVoahw/fabsPl1cL6nnVa6bXyfQLdWJ2Lw03sR6L
+         Pp+EtxyY8yDrc8ArksuIuN6sbzzPzcAxLXyEz8zu18jW+Nj9v0x1xBCqtGFkvwowPUVf
+         p8p7b0lBCyGuoMN5R3QhfhW0giSZb8FckRw+rrovp/cTK3GXN6GXNQ1QdMOA+flISuGm
+         1XfVfkOVBz710B9ftv6Lz308EphksdOv36TSoQT9otZQqfwekz6mjYkMoxbx3OKu/bDA
+         ogtQ==
+X-Gm-Message-State: AOAM533a6UPU+Hu3B9bfrWMj4/NbgN3teodoibvQjrTt0jBFvpo/G2IE
+        bWEC1hGD5pLorQuA8sOtM5qMBZZ++7p0F8qgLcLhRw==
+X-Google-Smtp-Source: ABdhPJyRYjaTjIpRbmzrzjkG0kQCosoH7kxsVtTm5JDqQlhuefr1UAJQF2kq5O9RD6DgxMJ94sRyCMJm8h5u3PghwEM=
+X-Received: by 2002:a54:4803:: with SMTP id j3mr745297oij.279.1643711816234;
+ Tue, 01 Feb 2022 02:36:56 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED
- displays
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
-        Lee Jones <lee.jones@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Mark Brown <broonie@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
+References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
+ <20220131210552.482606-4-daniel.vetter@ffwll.ch> <9c22b709-cbcf-6a29-a45e-5a57ba0b9c14@gmx.de>
+In-Reply-To: <9c22b709-cbcf-6a29-a45e-5a57ba0b9c14@gmx.de>
+From:   Daniel Vetter <daniel.vetter@ffwll.ch>
+Date:   Tue, 1 Feb 2022 11:36:44 +0100
+Message-ID: <CAKMK7uGvOVe8kkJCTkQBEFw+3i2iAMANsyG9vGqZkcROZ9he4A@mail.gmail.com>
+Subject: Re: [PATCH 03/21] fbcon: Restore fbcon scrolling acceleration
+To:     Helge Deller <deller@gmx.de>
+Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
+        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+        stable@vger.kernel.org, Claudio Suarez <cssk@net-c.es>,
+        Dave Airlie <airlied@gmail.com>,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Linux PWM List <linux-pwm@vger.kernel.org>
-References: <20220131201225.2324984-1-javierm@redhat.com>
- <CAMuHMdXMayLLRavAJJujmPqT+Vd11dPfycqXie3w_pOkS8i9eA@mail.gmail.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <CAMuHMdXMayLLRavAJJujmPqT+Vd11dPfycqXie3w_pOkS8i9eA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Sven Schnelle <svens@stackframe.org>,
+        Gerd Hoffmann <kraxel@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Geert,
-
-On 2/1/22 09:43, Geert Uytterhoeven wrote:
-> Hi Javier,
-> 
-> On Mon, Jan 31, 2022 at 9:12 PM Javier Martinez Canillas
-> <javierm@redhat.com> wrote:
->> This patch series adds a DRM driver for the Solomon OLED SSD1305, SSD1306,
->> SSD1307 and SSD1309 displays. It is a port of the ssd1307fb fbdev driver.
-> 
-> Thanks for your series!
-> 
-> I'll give it a try on an Adafruit FeatherWing 128x32 OLED, connected
-> to an OrangeCrab ECP5 FPGA board running a 64 MHz VexRiscv RISC-V
-> softcore.
+On Tue, Feb 1, 2022 at 11:16 AM Helge Deller <deller@gmx.de> wrote:
 >
-
-Awesome! let me know if you have any issues. I keep an update-to-date version
-at https://github.com/martinezjavier/linux/tree/ssd1307
-
->> Using the DRM fb emulation, all the tests from Geert Uytterhoeven's fbtest
->> (https://git.kernel.org/pub/scm/linux/kernel/git/geert/fbtest.git) passes:
->>
->>      ./fbtest -f /dev/fb1
->>     Using drawops cfb32 (32 bpp packed pixels)
->>     Available visuals:
->>       Monochrome
->>       Grayscale 256
->>       Truecolor 8:8:8:0
-> 
-> Oh, fake 32-bpp truecolor ;-)
+> On 1/31/22 22:05, Daniel Vetter wrote:
+> > This functionally undoes 39aead8373b3 ("fbcon: Disable accelerated
+> > scrolling"), but behind the FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+> > option.
 >
+> you have two trivial copy-n-paste errors in this patch which still prevent the
+> console acceleration.
 
-Yes :) that's what the repaper drivers does to have maximum compatibility
-with existing user-space and I followed the same.
- 
-> Does it run modetest, too?
+Duh :-(
+
+But before we dig into details I think the big picture would be
+better. I honestly don't like the #ifdef pile here that much. I wonder
+whether your approach, also with GETVX/YRES adjusted somehow, wouldn't
+look cleaner? Like I said in the cover letter I got mostly distracted
+with fbcon locking last week, not really with this one here at all, so
+maybe going with your 4 (or 2 if we squash them like I did here)
+patches is neater?
+
+Cheers, Daniel
+
 >
-
-It does, yes. And for example `modetest -M ssd1307` will print all the
-info about encoders, connectors, CRTs, etc.
- 
-> I'm trying to get modetest working on my atari DRM driver.
-> Comparing to the cirrus driver doesn't help much, as modetest doesn't
-> seem to work with the cirrus driver (modified to not do hardware
-> access, as I don't have cirrus hardware):
-> 
->     # modetest -M cirrus -s 31:1024x768-60Hz
->     setting mode 1024x768-60.00Hz on connectors 31, crtc 34
->     failed to set gamma: Function not implemented
+> > diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> > index 2ff90061c7f3..39dc18a5de86 100644
+> > --- a/drivers/video/fbdev/core/fbcon.c
+> > +++ b/drivers/video/fbdev/core/fbcon.c
+> > @@ -1125,13 +1125,15 @@ static void fbcon_init(struct vc_data *vc, int init)
+> >
+> >       ops->graphics = 0;
+> >
+> > -     /*
+> > -      * No more hw acceleration for fbcon.
+> > -      *
+> > -      * FIXME: Garbage collect all the now dead code after sufficient time
+> > -      * has passed.
+> > -      */
+> > +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_ROTATION
 >
-
-# modetest -M ssd1307 -c -s 31:128x64-0.12Hz
-...
-setting mode 128x64-0.12Hz on connectors 31, crtc 33
-failed to set gamma: Function not implemented
-
-this seems to be a bug in modetest. I found a patch posted some time ago
-but never landed: https://www.spinics.net/lists/dri-devel/msg251356.html
- 
-> Does there exist another simple test program for showing something
-> using the DRM API?
+> should be:
+> #ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
 >
+>
+> > +     if ((info->flags & FBINFO_HWACCEL_COPYAREA) &&
+> > +         !(info->flags & FBINFO_HWACCEL_DISABLED))
+> > +             p->scrollmode = SCROLL_MOVE;
+> > +     else /* default to something safe */
+> > +             p->scrollmode = SCROLL_REDRAW;
+> > +#else
+> >       p->scrollmode = SCROLL_REDRAW;
+> > +#endif
+> >
+> >       /*
+> >        *  ++guenther: console.c:vc_allocate() relies on initializing
+> > @@ -1971,15 +1973,49 @@ static void updatescrollmode(struct fbcon_display *p,
+> >  {
+> >       struct fbcon_ops *ops = info->fbcon_par;
+> >       int fh = vc->vc_font.height;
+> > +     int cap = info->flags;
+> > +     u16 t = 0;
+> > +     int ypan = FBCON_SWAP(ops->rotate, info->fix.ypanstep,
+> > +                           info->fix.xpanstep);
+> > +     int ywrap = FBCON_SWAP(ops->rotate, info->fix.ywrapstep, t);
+> >       int yres = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
+> >       int vyres = FBCON_SWAP(ops->rotate, info->var.yres_virtual,
+> >                                  info->var.xres_virtual);
+> > +     int good_pan = (cap & FBINFO_HWACCEL_YPAN) &&
+> > +             divides(ypan, vc->vc_font.height) && vyres > yres;
+> > +     int good_wrap = (cap & FBINFO_HWACCEL_YWRAP) &&
+> > +             divides(ywrap, vc->vc_font.height) &&
+> > +             divides(vc->vc_font.height, vyres) &&
+> > +             divides(vc->vc_font.height, yres);
+> > +     int reading_fast = cap & FBINFO_READS_FAST;
+> > +     int fast_copyarea = (cap & FBINFO_HWACCEL_COPYAREA) &&
+> > +             !(cap & FBINFO_HWACCEL_DISABLED);
+> > +     int fast_imageblit = (cap & FBINFO_HWACCEL_IMAGEBLIT) &&
+> > +             !(cap & FBINFO_HWACCEL_DISABLED);
+> >
+> >       p->vrows = vyres/fh;
+> >       if (yres > (fh * (vc->vc_rows + 1)))
+> >               p->vrows -= (yres - (fh * vc->vc_rows)) / fh;
+> >       if ((yres % fh) && (vyres % fh < yres % fh))
+> >               p->vrows--;
+> > +
+> > +     if (good_wrap || good_pan) {
+> > +             if (reading_fast || fast_copyarea)
+> > +                     p->scrollmode = good_wrap ?
+> > +                             SCROLL_WRAP_MOVE : SCROLL_PAN_MOVE;
+> > +             else
+> > +                     p->scrollmode = good_wrap ? SCROLL_REDRAW :
+> > +                             SCROLL_PAN_REDRAW;
+> > +     } else {
+> > +             if (reading_fast || (fast_copyarea && !fast_imageblit))
+> > +                     p->scrollmode = SCROLL_MOVE;
+> > +             else
+> > +                     p->scrollmode = SCROLL_REDRAW;
+> > +     }
+> > +
+> > +#ifndef CONFIG_FRAMEBUFFER_CONSOLE_ROTATION
+>
+> same here... it needs to be:
+> #ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+>
+>
+> > +     p->scrollmode = SCROLL_REDRAW;
+> > +#endif
+> >  }
+> >
+> >  #define PITCH(w) (((w) + 7) >> 3)
+> >
+>
+> still reviewing the other patches...
+>
+> Helge
 
-I tested with plymouth and gdm that make use of the DRM API, they do
-start and I see something on the screen but don't really handle that
-well the fact that's a 128x64 resolution.
 
-I didn't test with more DRM programs because was mostly interested in
-making sure that the fbdev emulation was working correctly.
 
-Noticed that Simon shared some simple examples, I'll give them a try. 
-
-Best regards,
 -- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

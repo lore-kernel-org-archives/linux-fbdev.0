@@ -2,94 +2,118 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB2FBC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 18:49:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C5F5C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 23:17:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346750AbiBBSte (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Feb 2022 13:49:34 -0500
-Received: from mout.gmx.net ([212.227.15.19]:33327 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1346631AbiBBStd (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 2 Feb 2022 13:49:33 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1643827768;
-        bh=cRz8qbHdrWP6Wqf9ZBWf6XGW8RcaJPDmLj3QbU1FZew=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=jTSj/nkFAbPxs4ZCVbMoPu30266cTpPDV5mUvHH+eKriIsmFRBdiTKy+57cqn0Bhm
-         hrj/Nd3LiQpP/ph7dr1zld5TLRTLugMvvodzsvlGGMOnWAwm7FLNSruBj7NXlc7Wc6
-         rxUtyUyU9P//QB3Pu34BJm1204OIDW7LMAia3V9o=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.163.171]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MirjS-1mcgYF3W0i-00etwB; Wed, 02
- Feb 2022 19:49:27 +0100
-Message-ID: <308b274b-3783-6e33-f956-e5d026e6681b@gmx.de>
-Date:   Wed, 2 Feb 2022 19:49:24 +0100
+        id S1348051AbiBBXR0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Feb 2022 18:17:26 -0500
+Received: from mx-lax3-1.ucr.edu ([169.235.156.35]:5130 "EHLO
+        mx-lax3-1.ucr.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1348050AbiBBXRZ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Feb 2022 18:17:25 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=ucr.edu; i=@ucr.edu; q=dns/txt; s=selector3;
+  t=1643843845; x=1675379845;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=XA4HzDe0AEvwI/VRCaorqRe1KBJyowOMBeCxGfa6hn4=;
+  b=RYGSZ8zv3ITIOjgDjJ8slDBjBbOHHtZ5odt60X8gi+e1dtGoJ5RIZh0X
+   cgmLQ999y6X2IFhJTdYtfpwqgxvvlnL0Cv0ys+R7Bfot0DIbyGbjevw81
+   0bvk9056Rj3HZNeCqF4VEOrcunbJ8EpvDuhcFwJyhO91brrNYi2gizOdE
+   +KMWR9u21R4W4syKY3PwrEmewj9kpmrl0aJLwpY5o6XTzzrO3kttMPXjD
+   c7FpydZLEyzCbTsk8oR3cdcxkJV7zIQfYQ6Lx63zNPqSovKNAKFhGzp9o
+   mFmyx22mze0Nse9XJQIQ1sx8evyr1r7SNZm3q8PxoiRI7v3zYoXFBz6va
+   g==;
+X-IronPort-AV: E=Sophos;i="5.88,338,1635231600"; 
+   d="scan'208";a="102019924"
+Received: from mail-pl1-f199.google.com ([209.85.214.199])
+  by smtp-lax3-1.ucr.edu with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 02 Feb 2022 15:17:25 -0800
+Received: by mail-pl1-f199.google.com with SMTP id e3-20020a170902ed8300b0014b46561c92so139834plj.15
+        for <linux-fbdev@vger.kernel.org>; Wed, 02 Feb 2022 15:17:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ucr.edu; s=rmail;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=x0gpjDLXaul+KimMP/te05qJYZBYJvmQ+lbw67iuhZI=;
+        b=FLTFy7FMQp58INHLttCuIHz294nTMtd3aPRvSF4FjqWZkgzHuAVT593n57gr6D3wr9
+         4So2/UsjM0gDmRsmqeuunUSEgE4Kov61tpxCHiUoF4ry6ArVAmuwNLKe8BL9PEdP3Ru3
+         MjqLnU4S6ttaaqm14Expc2Ep0ssiU9Ny3LUTM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=x0gpjDLXaul+KimMP/te05qJYZBYJvmQ+lbw67iuhZI=;
+        b=stswY8Jod1D3KLSs4WMvrPw243iB7hDnA4eZYYFYbFyHfAYVNBP8/ooiT38/iLOC32
+         iqQ7D8bKbHwrKAN49TatLs23bAVEpGmfD46+xp3bEBPP35LsoeX13mkRHMVhBD4vxlJ3
+         ap8bZbsI1XK65iKeq0/oAN7ZKppt9epby0Vvob//2j4jVFjbCtBcMe8vs8o91R0rEPQl
+         qH6CdFOP+waqt9YVteHWW6O8F7Gxxq1KEakvTVpXAdR7VEy2L6pb4AQ5vP8JzezvsYMr
+         KzAism7GTdkatHRK3rLDYi+mgV53VE9i1QLOd5b0n6jTfTPaCl09x7aiACCCF7H3FGSj
+         AoBA==
+X-Gm-Message-State: AOAM53332U2rDJuWKyxYZk/7N+rNui2q76biO7+BH/RFJbAlP7hQITsX
+        1fsd9o8HaRPLGPkcQN9fACd1Waxd12QiHFKBmlI750+RUN+fn7cgxqtQE2SzHbUBNaS48gPlbHo
+        QmkfG+Tjnk3UKV7yxfwwfBlOS
+X-Received: by 2002:a17:903:2307:: with SMTP id d7mr34166963plh.52.1643843844240;
+        Wed, 02 Feb 2022 15:17:24 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJxysLdmzckR8L/Q+cSNZ4JMxUGdQpQyEn+58bq1m8yYLz88d/OhDa7N65YARWKJRnqVgxOtgA==
+X-Received: by 2002:a17:903:2307:: with SMTP id d7mr34166950plh.52.1643843844033;
+        Wed, 02 Feb 2022 15:17:24 -0800 (PST)
+Received: from kq.cs.ucr.edu (kq.cs.ucr.edu. [169.235.27.223])
+        by smtp.googlemail.com with ESMTPSA id j14sm27383525pfj.218.2022.02.02.15.17.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 02 Feb 2022 15:17:23 -0800 (PST)
+From:   Yizhuo Zhai <yzhai003@ucr.edu>
+Cc:     Yizhuo Zhai <yzhai003@ucr.edu>, Helge Deller <deller@gmx.de>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Matthew Wilcox <willy@infradead.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Zheyu Ma <zheyuma97@gmail.com>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
+        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v4] fbdev: fbmem: Fix the implicit type casting
+Date:   Wed,  2 Feb 2022 15:16:34 -0800
+Message-Id: <20220202231636.1433050-2-yzhai003@ucr.edu>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220202231636.1433050-1-yzhai003@ucr.edu>
+References: <882bfe4e-a5b6-2b2c-167b-eda8c08419e3@gmx.de>
+ <20220202231636.1433050-1-yzhai003@ucr.edu>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: fbdev git tree update
-Content-Language: en-US
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     linux-fbdev@vger.kernel.org,
-        DRI Development <dri-devel@lists.freedesktop.org>
-References: <e1e5b7d1-ea09-6e28-9c39-45b983734a85@gmx.de>
- <YfrFvfZuZM1N9frh@ravnborg.org> <76ed4203-1ddc-1bbf-39c8-7cb62de7f4e9@gmx.de>
- <YfrP5AELHkN85/z4@ravnborg.org>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <YfrP5AELHkN85/z4@ravnborg.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:2U8eGnmLG5oNZ86SNf4jNJq1Aw5MViF1A5BkQi9aELSbeh/uVlo
- gg3cXxGUxS2yYzmufwJMGAv/W7z8x0KRIptIBjTXyiIY9LfLai7p+ZbWXJ7z4e4eejIeaZx
- w+spCzK43jacgxpklk/IBJIdsRTeUteo9Tlol3BlDOK1FQ7BumoJC7tfe1C8la3jvNoh3fW
- PgNrzwlAnsiGXJlhw6tJg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:ktm7gmbKTWM=:FFK0/GtW2nq4rPcqP8LDl7
- kZiDTOHV+k9ralDaI2DhsK2fJl6YqsuqhzjQ/ZqrACvBppBCkarZ/tFUngx4P9LYpcjBx9ebb
- Wurdrawr2Txki5kTkfSrgJxM6E0DuvPRQmSHY1OyVdceZPJxFzmVhXv2sb1pGAdkGqKVEAw7+
- hgHhG8hR9nlCsL1pUK5mkHQ7DS9eByg7qihKU8l4WAfmNgm0rJShKxZsuq+SxNYr8h4IFebiN
- XUNhfOozXLlH2fQdcUkwz03Lwyi3bC7wkjN9WOi5CdvkrREX1GPfstRyEbbwk8HsRhqJFGSyf
- Ar360ItxhF1KbdIANEdMKZzFGajmiKMbwnwcJ9DvfRfJETCXtsJ4Sim/eHKvyf/e5Is5vGsgf
- LsLv/y32+se1zPyx2iI9BKBGMe08o0cLObwtHOq7YWWj2kc+f/ZM5L0SMh3y/sZeakU08hMAE
- MvVcN1gCwXYcUDz3kGhNL0EfN6h73We8TX3D1Lnop7jtV2JIB7UJvNY4Jr8TJTz9+4eeeOlwF
- RU+xG4yC01V78f2Tk3Nv/bs3hxYwcjz0wZah7jgVV92CtSV88aDrjzypiBNtBAEMoBGHafEaO
- 3FkX67jnD1pJjE/mgFA8JL8+Q2GH62Q90Yv7yhPlN5HWnbhytFZcrZtmaLm2g49z5N9/DPXG9
- DVrM+ZvX8h5DpJD4Pr/RQMxme+2mSrntx2vbOFU2yMtkk3I48TP8VIjRR/AQ7jiEspH+JvszA
- mzwKAJ7Chkwsq/Q4gFgwBlqA83GGXt8WRlbbb0LRnR0PPsQfAoKsVc3vFH1y+w1qKHSt6n4lp
- ClU7NmxX2mSgfjbXRGXO9hGnZLzrYU8SgEX0ZPJ/oquMVeQOW0dfm1YShM1xPVaOTI0eAkGp2
- QWrPR8DenahAzrG0qAwQQseAzKKmXghsZqSjCAICp72uNpjYjxB+ZcDvnyfxd7JqPSwY7Vaeq
- LMyuTsGgyKbkHrIz1HJG+xTlHW0Vm9JCRdZu4hd+5ExGmsP/bFXmpJM1jwmNsfL0lujhcik0l
- Bvr+Mu8Y/jwPDL/gQZz5mnbjQSvpDsA33qBoBFIi3cU4EoU6z8iT/8TtOBkBW2ZC3zSrxE5gt
- oCbyVii8mvFG+U=
+Content-Transfer-Encoding: 8bit
+To:     unlisted-recipients:; (no To-header on input)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Sam,
+In function do_fb_ioctl(), the "arg" is the type of unsigned long,
+and in "case FBIOBLANK:" this argument is casted into an int before
+passig to fb_blank(). In fb_blank(), the comparision
+if (blank > FB_BLANK_POWERDOWN) would be bypass if the original
+"arg" is a large number, which is possible because it comes from
+the user input. Fix this by adding the check before the function
+call.
 
-On 2/2/22 19:39, Sam Ravnborg wrote:
-> Hi Helge,
->>
->>> How come there are backlight, dt-bindings
->>
->> I didn't know, and I picked up those at the beginning.
->> I did agreed with the backlight maintainers that I should
->> keep those which are already in my tree, and that I will ignore
->> any upcoming new ones.
-> Fine, just include this in the cover letter to explain it.
+Signed-off-by: Yizhuo Zhai <yzhai003@ucr.edu>
+---
+ drivers/video/fbdev/core/fbmem.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Ok, I'll do.
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 0fa7ede94fa6..b3352e23caaa 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1162,6 +1162,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 	case FBIOBLANK:
+ 		console_lock();
+ 		lock_fb_info(info);
++		if (arg > FB_BLANK_POWERDOWN)
++			return -EINVAL;
+ 		ret = fb_blank(info, arg);
+ 		/* might again call into fb_blank */
+ 		fbcon_fb_blanked(info, arg);
+-- 
+2.25.1
 
->>> and agp in between the fbdev patches?
->>
->> It wasn't picked up yet, agp somehow belongs to fbdev and as
->> maintainer for parisc I was somehow involved as well.
->> I'm happy to drop it if you think it belongs somewhere else...
->
-> I see no point in dropping as you are involved and patch seems relevant.
-> But please explain this in the cover letter so readers are not left
-> wondering.
-
-Ok.
-
-Thanks a lot for your feedback !
-Helge

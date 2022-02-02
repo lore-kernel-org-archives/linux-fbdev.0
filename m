@@ -2,84 +2,86 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC85FC433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 23:33:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D9B7C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 23:34:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348078AbiBBXd5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Feb 2022 18:33:57 -0500
+        id S1344512AbiBBXeB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Feb 2022 18:34:01 -0500
 Received: from mx-lax3-2.ucr.edu ([169.235.156.37]:60219 "EHLO
         mx-lax3-2.ucr.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347732AbiBBXd4 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Feb 2022 18:33:56 -0500
+        with ESMTP id S1348099AbiBBXeA (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Feb 2022 18:34:00 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=ucr.edu; i=@ucr.edu; q=dns/txt; s=selector3;
-  t=1643844836; x=1675380836;
+  t=1643844840; x=1675380840;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
   bh=uavpFDxmGoKjrnyH0fVmnFMq2r7aGr052ubiJDv8DR8=;
-  b=ZsxCq6VOaQejAGfXqnHIWmlwIuEB4pxItn+JB1W4ncCaPhZ2r2IBXdh4
-   2kZteC8ShzrpOIU9vHkDHQ7n2Bdn2sldRgIKGJQmkfp7sV3d3Et63NvKO
-   8pszNq3npGUncSCLRbHO63Rcedsyob3CCFOpEYOHZtp0wVFJtbvKZ3/mx
-   INZ9pL0UhkI62EGNbEmqa77Gg2ZpX3mNDJGO5yAfsJWFHtPVuE6BgkbI5
-   bZUj951b8czRPlvVmXulBRxA66yzhYIcPdpO/ZaT0ethyWvPV+mXAxqWi
-   PeoS+8BnJ9menTwL4hSSOuKjjfgvUo6H9UMKIO+ioZCVdiEa17R8+a0/O
-   Q==;
+  b=dCWRywTQq0xKthzSJakoV4dzKPy9VPUC+xAWTzqyfDN7THLTayjBWw6A
+   xdXXHAiGxKh3heuoGZZUrUlMsU8AcaGP5inAY8exTio1gm48nWrvrsbAa
+   +pOeAgSnUYfHT/kc01kBfNISvKw8KWKKMC/hPnjCxQigl8uZXIcm8+SdW
+   AndyqnxnKHdej8e/iIQxA6d561yAwV9q3QudwF+i96I7k1VWG2WtWTYbT
+   1k+ULxwKmUObOkkNQSknNZnr3au9DnGZHnKzr649Oh/W8NlVNJvZDlWbg
+   fWrRmuEPGG2gIKzAxslIM0uPYpWPXOxxJbpp9Su14fZQg+bHn63KDHN6p
+   g==;
 X-IronPort-AV: E=Sophos;i="5.88,338,1635231600"; 
-   d="scan'208";a="102067139"
-Received: from mail-pj1-f69.google.com ([209.85.216.69])
-  by smtp-lax3-2.ucr.edu with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 02 Feb 2022 15:33:55 -0800
-Received: by mail-pj1-f69.google.com with SMTP id mg17-20020a17090b371100b001b816f127e0so4710927pjb.9
-        for <linux-fbdev@vger.kernel.org>; Wed, 02 Feb 2022 15:33:56 -0800 (PST)
+   d="scan'208";a="102067173"
+Received: from mail-pl1-f197.google.com ([209.85.214.197])
+  by smtp-lax3-2.ucr.edu with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 02 Feb 2022 15:33:59 -0800
+Received: by mail-pl1-f197.google.com with SMTP id h11-20020a170902eecb00b0014cc91d4bc4so158736plb.16
+        for <linux-fbdev@vger.kernel.org>; Wed, 02 Feb 2022 15:34:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ucr.edu; s=rmail;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
         bh=LoPhiSf2j9AFlf81eKG6xH4TR1F1QmboBbxydv3xQ7Y=;
-        b=xDmZHe7b0lAJqRV03cgiwQiq8aVyFS9aT+B3OaOw+dR+d9mfsO5WhWIS1hey9PxQ/8
-         pnHAutlDAUGni9R+QOz9ct54DuHYBVVF5lAGy+MaQvBMrHnR7tpJyTD+Ji0/d05HnW3U
-         zPGVsGrgSzCJ8Zj7ELBZ7A+GpZsIoy7zxD5Ms=
+        b=Vi+u9jBD+QVIbMUO77wQyOqhnpPIQvWmztX0ACI8XT+Izg3ej/xW05bi3EpXKQmC5b
+         n2YPYxIV9U/xOb7ZmjQpv3qNoS/YYE8CzEdnpG+tSda1iqZ+zUfQ64mA8a+I0O/SBnbh
+         Q5tT4F4wSPQgCi1arxRFL3Dhz5HXvtylb9o7M=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
         bh=LoPhiSf2j9AFlf81eKG6xH4TR1F1QmboBbxydv3xQ7Y=;
-        b=4woc++xisrQTisd2SgLXSP7YKMn/we6G+cHmFgEFUg0wPS234rlyluy9VvCceZuGWz
-         DuMJNBvf4Tfy2900Qg1a3cbgY6+L6k10DiigqrXms1JI8smJ2ymFn1NvIYhzRdIt99ul
-         2j6wxIliFe+BwqNU5dbodliBk1D4Yx9NgRlit6st6UZzn1NAfC05Pn6ZLPKobK4KwUrV
-         U9PZGD/9KypyM0tiP8W5FLPdBYgHV/XzMEZCApPvvTnVMgu0W6bM6x1G4z1xkGtuDw2X
-         HmEomGrlb59b2oUL4Cg1UIK1I1ulUwLThlFcqbWYycXLn9Wl8oO7doz6HxiiGLypppA0
-         lmjQ==
-X-Gm-Message-State: AOAM530WgYDRKXMOTMuUqpXgXdjORqQriuBsxCkoNMy9cL+LMtaMkrM2
-        5oKHWmfA/xlyeqTj+TJ0tAHMMKPcuMbTpeaKFe3uTlNUjhP+104CfxWYAypr3NIs90wskdDxRbT
-        wFa5Fr2UOrVsmmQ8dkI2Q3gNY
-X-Received: by 2002:a17:90b:3841:: with SMTP id nl1mr10901906pjb.50.1643844835697;
-        Wed, 02 Feb 2022 15:33:55 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwKw43I55RvXKUF5Oc0gQfOIu6GaU+jb9Uz6QfMkQXdHo2WKNl3sIP6kqSgU/6tvpMjh2bLug==
-X-Received: by 2002:a17:90b:3841:: with SMTP id nl1mr10901883pjb.50.1643844835458;
-        Wed, 02 Feb 2022 15:33:55 -0800 (PST)
+        b=WewnpK9CZYHwmdwLBln9DRsePbPj/yX+LaQPA9aflY+ffRhwcgPJNnsbf9eQ6P3etg
+         L6N/ZP4C74hIvJZ718ZGAqdhMvmABe5AUOildccPmG6oDOS8rGDZ+ehh/lzacMZmq+yS
+         zNiZIov0SGIls1KAZ9lt6LuDrENq9FBVPFuS4Z02fOLsq2ejpCGZVnUMmZB2+ARxuG5A
+         n7PQPGKxEMP56pZB+Ll1bbHcoy8hLhNW49f/XjD36FExW68ekLRMQTJgbTqH2nNhlixd
+         Ef3PdSXYV3umg2iwpI3ZdbCrfkxtcd39ciyb1lKdq9FHVgCEOHguD1rXr/Q08w8KxShQ
+         pmlg==
+X-Gm-Message-State: AOAM530OTks/y2WH1jXEmYo2De9Djpt0WwzJ5WyicwCiYRV5J33UpjSv
+        j5iuURB/qT5QOsaPmslJWorXNYn/Xek6+S9V8dQYX2ldwaCq3TSGPEVrPWlcn/ORTsfjSZp4w8z
+        SUQTeiy2wcPofhPyJHTkZ7SUT
+X-Received: by 2002:a17:903:2283:: with SMTP id b3mr31859672plh.0.1643844839718;
+        Wed, 02 Feb 2022 15:33:59 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwz4/x8nWtBV0nXYgv98co1MlqgYrtI6GhpsU/PIcCVgrAG4WdSIF+YKtELNEJg4IP2qcHSQQ==
+X-Received: by 2002:a17:903:2283:: with SMTP id b3mr31859649plh.0.1643844839488;
+        Wed, 02 Feb 2022 15:33:59 -0800 (PST)
 Received: from kq.cs.ucr.edu (kq.cs.ucr.edu. [169.235.27.223])
-        by smtp.googlemail.com with ESMTPSA id s2sm26380387pgq.38.2022.02.02.15.33.54
+        by smtp.googlemail.com with ESMTPSA id s2sm26380387pgq.38.2022.02.02.15.33.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 02 Feb 2022 15:33:55 -0800 (PST)
+        Wed, 02 Feb 2022 15:33:59 -0800 (PST)
 From:   Yizhuo Zhai <yzhai003@ucr.edu>
 Cc:     Yizhuo Zhai <yzhai003@ucr.edu>, Helge Deller <deller@gmx.de>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Matthew Wilcox <willy@infradead.org>,
         Sam Ravnborg <sam@ravnborg.org>,
+        Matthew Wilcox <willy@infradead.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        William Kucharski <william.kucharski@oracle.com>,
         Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
         Zheyu Ma <zheyuma97@gmail.com>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
         Alex Deucher <alexander.deucher@amd.com>,
         Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        Guenter Roeck <linux@roeck-us.net>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org
 Subject: [PATCH v5] fbdev: fbmem: Fix the implicit type casting
-Date:   Wed,  2 Feb 2022 15:33:58 -0800
-Message-Id: <20220202233402.1477864-1-yzhai003@ucr.edu>
+Date:   Wed,  2 Feb 2022 15:33:59 -0800
+Message-Id: <20220202233402.1477864-2-yzhai003@ucr.edu>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <83e46d8d-ec7a-6cbd-010e-7f50f88dcf96@I-love.SAKURA.ne.jp>
+In-Reply-To: <20220202233402.1477864-1-yzhai003@ucr.edu>
 References: <83e46d8d-ec7a-6cbd-010e-7f50f88dcf96@I-love.SAKURA.ne.jp>
+ <20220202233402.1477864-1-yzhai003@ucr.edu>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 To:     unlisted-recipients:; (no To-header on input)

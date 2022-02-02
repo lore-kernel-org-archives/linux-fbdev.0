@@ -2,234 +2,171 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 990E6C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue,  1 Feb 2022 22:52:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30DDCC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 08:23:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242071AbiBAWw0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 1 Feb 2022 17:52:26 -0500
-Received: from mout.gmx.net ([212.227.17.20]:54893 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S241098AbiBAWwZ (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 1 Feb 2022 17:52:25 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1643755941;
-        bh=RCD65NhYXOFlzyNe/FeS9DBnn5ix6Eu1bg/rYHyJd1I=;
-        h=X-UI-Sender-Class:Date:To:Cc:References:From:Subject:In-Reply-To;
-        b=RJDDovGgu4o2gaMW/lO3OIQpklc5hxOLy2eDNP8Tg1jUSCGtWsbqBdbP27v99V1ld
-         UcnWPwy0W92qsaxzc0GYBKNw0Bt0bMSk1t3O3KQNvyRAvcRYFUJfmgkx46XlkEo/CM
-         Cw+vFlAda4ipQNH3BGfRdJ4ATB+zswIxJp+e0CEM=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.146.124]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MEFvp-1n71eK0rDh-00AE5s; Tue, 01
- Feb 2022 23:52:21 +0100
-Message-ID: <dd186ce6-56b3-fe68-daad-249b18ebd627@gmx.de>
-Date:   Tue, 1 Feb 2022 23:52:18 +0100
+        id S240949AbiBBIXK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Feb 2022 03:23:10 -0500
+Received: from smtp-out1.suse.de ([195.135.220.28]:57626 "EHLO
+        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S238841AbiBBIXJ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Feb 2022 03:23:09 -0500
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 2981C21126;
+        Wed,  2 Feb 2022 08:23:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1643790188; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=LVf1+FCkij+IfM22HKlKn+GHDND82cODe48QSI9u+x0=;
+        b=J+BLinrWFeb6BY16seJl5XwMOuvqiz5jHuHc9/ZTPpyd6MVilRUw9wCChscPlNaQ64zmid
+        0RxWk9Otp98oKlzts7r0Qa4xjG2wKmGwg7Jjzi4FjYrH7DYijlRf+l+jKqlYErG3coUlwK
+        2en6v0RCMWoSCFHBdS/hO2T3cqM3MRg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1643790188;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=LVf1+FCkij+IfM22HKlKn+GHDND82cODe48QSI9u+x0=;
+        b=vIAeXRk0vEnB95Cxy3jJzQMcAWiRuu08RSFKuzoR+BisJ7Z4FvMtfdj9G9kZeop/nNlotZ
+        Ws2wAUkUxNOIJSCw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E6E4C13BA2;
+        Wed,  2 Feb 2022 08:23:07 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id YAdTN2s/+mEbIwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 02 Feb 2022 08:23:07 +0000
+Message-ID: <946f8fbb-cd64-12d0-ecd9-13af18a00590@suse.de>
+Date:   Wed, 2 Feb 2022 09:23:07 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 3/4] drm/tiny: Add driver for Solomon SSD1307 OLED
+ displays
 Content-Language: en-US
-To:     Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
-        linux-fbdev@vger.kernel.org
-References: <20220201185954.169768-1-deller@gmx.de>
- <20220201185954.169768-4-deller@gmx.de>
- <CAKMK7uFmMcC4p_zDq5G1Rpvjeg0zOz7v38mTj57JDZEis9fGAA@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH v3 3/3] fbcon: Add option to enable legacy hardware
- acceleration
-In-Reply-To: <CAKMK7uFmMcC4p_zDq5G1Rpvjeg0zOz7v38mTj57JDZEis9fGAA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:PY6+MV2CfpN47XnVmSm28qZi//5LbpWrKFh1sF5MW5wp4z8RNUc
- qz54Rl1tmpazkJxHVXnY1N4FtFDP6KOM8VKKWzSdu5lNDE7BklXYDGWXdMDcpSV7rqv2w6j
- y3l+E8W6uMY+Je9qNghR6V+TnM9pj7q/RUZHDgr7SGr6s+3HXw6ugNjNtfzNE6F3J3fwPXB
- fGR25EXot/JjMyWTLICJw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:yTquaLbApA8=:n0B/7fiKt79wtz7WFnhVHK
- Wm+6+CRH4y0j5wdt6GdZWPHKCFx+2q6P6uRp/GNcNoEXEprY8ZK3WV6BF7I54amLICjoj34YX
- MCivoBJeVsATBq0tC6M2dhnkpD/aPiYq9LzSmJs/xpzjEQvTmW6xnvDAZyJ2p/bWziEyaaaV0
- t/jL3gzbNQfyaiHPZSnOdEAhsaA9hGuppOEFtkmCDo5AbyOiWisSLQwgOoo4MvH6Uzxb+IAYc
- eoqk/kHsMwqV9LaD+T84Qd7YooG9xbj7nnUo2/grZH5qUmV0Mmg4obsMlESN0IbcM6b7fHtsB
- mCtFNcJuOZ3viLE3iD1rsKY6Rt5jwN89qA/g5SuW3fs/MfqzHaO1dAJq3dO4bWE89BFEDNppz
- iD2ByFdyJROirsvIbrgeD5M9noZH1Ngdoo9+43kfTTxPLx9x6oftKATXAmd+8P/NeClQ5/1X9
- sMuxoWcrbBH2T+L51cPp2uRJDpZ02meSkB+kfXARe68uw0bSOra6LhP6pRDBkbWXaKS0Rti0l
- w2HxiKrJ/2ynaAOvD3/LkyyssF8q07IxyfNfPmlg0Re120XHj+Pabkg52aV3PbrZ7DEVZ9F8s
- Zu73Ot+rx76Z3+10j0LGUvzY3o69Y3GKFe7aMEPXf+ZIQrR3CWoxWrNoQYrh490kO9qSkU9Om
- Zvj/yh0SPTP+nNb6ZeuWGtQUP/r07v7Wkmbp/tJScc0bK51FnHB8qdjdrnNWNE7FYw8bQRjKO
- valFat04bW85qPYeeo3weG3Z9T/OeeY8Gdm7FNsWY8MIHPgUUseGhGIwnCb7mjBqgKqS8deFh
- InAZFt2GxEghB/4pWiDfOdgXyqRVSmz9T1p+0mGVaE+d9ddb6kVJV5+7d2zKFACHOTKZ1Ltdd
- 5tjAjodRXQmDNjbQo7W0VEVJNjfdHYye7xEGO3YW72uXUle6wQCP6c8sx9ZtTvXKj3KCX1ewW
- grD7AJIncY7QnebeLw5rX+DfFlzyn9v9s8Zf1uAf/kp4OIvKTPYqlJeW7gRKpU+RiEpv09FbK
- Fpi+gaaOa4j4CE/UFqVefQhOMxCt8MH1vi5xu3J/jI222pSb1j8WwHWyY6i3faIUfxeLl+w74
- NECwK9obxoGsaw=
+To:     Javier Martinez Canillas <javierm@redhat.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+References: <20220131202916.2374502-1-javierm@redhat.com>
+ <cc093cd5-fba1-5d84-5894-81a6e1d039ff@suse.de>
+ <73dbc5c7-b9e2-a260-49a6-0b96f342391e@redhat.com>
+ <CAMuHMdUJpoG=XChpqNotfEDrWCxFUqyhjW2JW1ckAyKcWXvAUw@mail.gmail.com>
+ <3df2add7-6034-0527-825a-74e62e76dace@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <3df2add7-6034-0527-825a-74e62e76dace@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------cVusIXqEygqVbwTewwGspTdY"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Daniel,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------cVusIXqEygqVbwTewwGspTdY
+Content-Type: multipart/mixed; boundary="------------b1k0yJmYqaKqqVDGYx3TQ6ki";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>,
+ DRI Development <dri-devel@lists.freedesktop.org>,
+ =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+ Maxime Ripard <maxime@cerno.tech>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Message-ID: <946f8fbb-cd64-12d0-ecd9-13af18a00590@suse.de>
+Subject: Re: [PATCH 3/4] drm/tiny: Add driver for Solomon SSD1307 OLED
+ displays
+References: <20220131202916.2374502-1-javierm@redhat.com>
+ <cc093cd5-fba1-5d84-5894-81a6e1d039ff@suse.de>
+ <73dbc5c7-b9e2-a260-49a6-0b96f342391e@redhat.com>
+ <CAMuHMdUJpoG=XChpqNotfEDrWCxFUqyhjW2JW1ckAyKcWXvAUw@mail.gmail.com>
+ <3df2add7-6034-0527-825a-74e62e76dace@redhat.com>
+In-Reply-To: <3df2add7-6034-0527-825a-74e62e76dace@redhat.com>
 
-On 2/1/22 21:11, Daniel Vetter wrote:
-> On Tue, Feb 1, 2022 at 7:59 PM Helge Deller <deller@gmx.de> wrote:
->>
->> Add a config option CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION to
->> enable bitblt and fillrect hardware acceleration in the framebuffer
->> console. If disabled, such acceleration will not be used, even if it is
->> supported by the graphics hardware driver.
->>
->> If you plan to use DRM as your main graphics output system, you should
->> disable this option since it will prevent compiling in code which isn't
->> used later on when DRM takes over.
->>
->> For all other configurations, e.g. if none of your graphic cards suppor=
-t
->> DRM (yet), DRM isn't available for your architecture, or you can't be
->> sure that the graphic card in the target system will support DRM, you
->> most likely want to enable this option.
->>
->> In the non-accelerated case (e.g. when DRM is used), the inlined
->> fb_scrollmode() function is hardcoded to return SCROLL_REDRAW and as su=
-ch the
->> compiler is able to optimize much unneccesary code away.
->>
->> In this v3 patch version I additionally changed the GETVYRES() and GETV=
-XRES()
->> macros to take a pointer to the fbcon_display struct. This fixes the bu=
-ild when
->> console rotation is enabled and helps the compiler again to optimize ou=
-t code.
->>
->> Signed-off-by: Helge Deller <deller@gmx.de>
->> Cc: stable@vger.kernel.org # v5.10+
->> Signed-off-by: Helge Deller <deller@gmx.de>
->> ---
->>  drivers/video/console/Kconfig           | 11 +++++++
->>  drivers/video/fbdev/core/fbcon.c        | 39 ++++++++++++++++++-------
->>  drivers/video/fbdev/core/fbcon.h        | 15 +++++++++-
->>  drivers/video/fbdev/core/fbcon_ccw.c    | 10 +++----
->>  drivers/video/fbdev/core/fbcon_cw.c     | 10 +++----
->>  drivers/video/fbdev/core/fbcon_rotate.h |  4 +--
->>  drivers/video/fbdev/core/fbcon_ud.c     | 20 ++++++-------
->>  7 files changed, 75 insertions(+), 34 deletions(-)
->>
->> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kcon=
-fig
->> index 840d9813b0bc..6029fd41d7d0 100644
->> --- a/drivers/video/console/Kconfig
->> +++ b/drivers/video/console/Kconfig
->> @@ -78,6 +78,17 @@ config FRAMEBUFFER_CONSOLE
->>         help
->>           Low-level framebuffer-based console driver.
->>
->> +config FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
->> +       bool "Framebuffer Console hardware acceleration support"
->> +       depends on FRAMEBUFFER_CONSOLE
->> +       default n if DRM
->> +       default y
->> +       help
->> +         If you use a system on which DRM is fully supported you usual=
-ly want to say N,
->> +         otherwise you probably want to enable this option.
->> +         If enabled the framebuffer console will utilize the hardware =
-acceleration
->> +         of your graphics card by using hardware bitblt and fillrect f=
-eatures.
->
-> This really doesn't have much to do with DRM but more about running
-> questionable code. That's why I went with the generalized stern
-> warning and default n, and explained when it's ok to do this (single
-> user and you care more about fbcon performance than potential issues
-> because you only run trusted stuff with access to your vt and fbdev
-> /dev node).
+--------------b1k0yJmYqaKqqVDGYx3TQ6ki
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-I think this is something we both will keep to have different opinion abou=
-t :-)
+SGkNCg0KQW0gMDEuMDIuMjIgdW0gMTU6MzYgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
+aWxsYXM6DQo+IE9uIDIvMS8yMiAxNTowNSwgR2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOg0K
+Pj4gSGkgSmF2aWVyLA0KPj4NCj4+IE9uIFR1ZSwgRmViIDEsIDIwMjIgYXQgMjowMiBQTSBK
+YXZpZXIgTWFydGluZXogQ2FuaWxsYXMNCj4+IDxqYXZpZXJtQHJlZGhhdC5jb20+IHdyb3Rl
+Og0KPj4+IE9uIDIvMS8yMiAxMDozMywgVGhvbWFzIFppbW1lcm1hbm4gd3JvdGU6DQo+Pj4+
+PiArew0KPj4+Pj4gKyAgICB1OCBjb2xfZW5kID0gY29sX3N0YXJ0ICsgY29scyAtIDE7DQo+
+Pj4+PiArICAgIGludCByZXQ7DQo+Pj4+PiArDQo+Pj4+PiArICAgIGlmIChjb2xfc3RhcnQg
+PT0gc3NkMTMwNy0+Y29sX3N0YXJ0ICYmIGNvbF9lbmQgPT0gc3NkMTMwNy0+Y29sX2VuZCkN
+Cj4+Pj4+ICsgICAgICAgICAgICByZXR1cm4gMDsNCj4+Pj4+ICsNCj4+Pj4+ICsgICAgcmV0
+ID0gc3NkMTMwN193cml0ZV9jbWQoc3NkMTMwNy0+Y2xpZW50LCBTU0QxMzA3X1NFVF9DT0xf
+UkFOR0UpOw0KPj4+Pj4gKyAgICBpZiAocmV0IDwgMCkNCj4+Pj4+ICsgICAgICAgICAgICBy
+ZXR1cm4gcmV0Ow0KPj4+Pj4gKw0KPj4+Pj4gKyAgICByZXQgPSBzc2QxMzA3X3dyaXRlX2Nt
+ZChzc2QxMzA3LT5jbGllbnQsIGNvbF9zdGFydCk7DQo+Pj4+PiArICAgIGlmIChyZXQgPCAw
+KQ0KPj4+Pj4gKyAgICAgICAgICAgIHJldHVybiByZXQ7DQo+Pj4+PiArDQo+Pj4+PiArICAg
+IHJldCA9IHNzZDEzMDdfd3JpdGVfY21kKHNzZDEzMDctPmNsaWVudCwgY29sX2VuZCk7DQo+
+Pj4+PiArICAgIGlmIChyZXQgPCAwKQ0KPj4+Pj4gKyAgICAgICAgICAgIHJldHVybiByZXQ7
+DQo+Pj4+DQo+Pj4+IENhbiB5b3Ugd3JpdGUgdGhlc2UgY21kcyBpbiBvbmUgc3RlcCwgc3Vj
+aCBhcyBzZXR0aW5nIHVwIGFuIGFycmF5IGFuZA0KPj4+PiBzZW5kaW5nIGl0IHdpdGggc3Nk
+MTMwN193cml0ZV9hcnJheT8NCj4+Pg0KPj4+IEkgZG9uJ3QgdGhpbmsgc28gYmVjYXVzZSB0
+aGUgY29tbWFuZHMgYXJlIGRpZmZlcmVudC4gQnV0IEknbGwgY2hlY2sgdGhlDQo+Pj4gc3Nk
+MTMwNiBkYXRhc2hlZXQgYWdhaW4gdG8gY29uZmlybWEgdGhhdCdzIHRoZSBjYXNlLg0KPj4N
+Cj4+IElJUkMsIEkgdHJpZWQgdGhhdCB3aGlsZSB3b3JraW5nIG9uIHRoZSBvcHRpbWl6YXRp
+b25zIGZvciBzc2QxMzA3ZmIsDQo+PiBhbmQgaXQgZGlkbid0IHdvcmsuDQo+Pg0KPiANCj4g
+VGhhdCdzIHdoYXQgSSB3b3VsZCBoYWQgZXhwZWN0ZWQgYnkgcmVhZGluZyB0aGUgZGF0YXNo
+ZWV0LiBUaGFua3MgYQ0KPiBsb3QgZm9yIGNvbmZpcm1pbmcgbXkgYXNzdW1wdGlvbi4NCg0K
+VGhhbmtzIHRvIGJvdGggb2YgeW91LiBJIHdhcyBhc2tpbmcgYmVjYXVzZSBJIGZvdW5kIHRo
+ZSBjb2RlIHRvIGJlIA0KcmVwZXRpdGl2ZSBhbmQgaXQncyBub3QgY2xlYXIgdGhhdCB0aGVz
+ZSAzIHN0YXRlbWVudHMgYmVsb25nIHRvZ2V0aGVyLg0KDQpJJ2QgbGlrZSB0byBzdWdnZXN0
+IHRvIGFkZCBhIGZ1bmN0aW9uDQoNCiAgIHNzZDEzMDdfd3JpdGVfY21kcyhjbGllbnQsIGxl
+biwgY29uc3QgdTggKmNtZHMpDQoNCnRoYXQgbG9vcHMgdGhyb3VnaCBjbWRzIGFuZCBzZW5k
+cyB0aGUgdmFsdWVzIG9uZSBieSBvbmUuIEEgY2FsbCB3b3VsZCANCmxvb2sgbGlrZSB0aGlz
+Og0KDQogICBjb25zdCB1OCBzZXRfY29sX3JhbmdlW10gPSB7DQogICAgIFNTRDEzMDdfU0VU
+X0NPTF9SQU5HRSwNCiAgICAgY29sX3N0YXJ0LA0KICAgICBjb2xfZW5kDQogICB9Ow0KDQog
+ICBzc2QxMzA3X3dyaXRlX2NtZHMoY2xpZW50LCBBUlJBWV9TSVpFKHNldF9jb2xfcmFuZ2Up
+LCBzZXRfY29sX3JhbmdlKTsNCg0KQU5EL09SDQoNCllvdSBjb3VsZCBoYXZlIGZ1bmN0aW9u
+cyB0aGF0IHRha2UgYSBjb21tYW5kIHdpdGggYXJndW1lbnRzOyBlaXRoZXIgYXMgDQp2YV9h
+cmdzIG9yIHdpdGggb25lIGZ1bmN0aW9uIHBlciBudW1iZXIgb2YgYXJndW1lbnRzLiBPciB5
+b3UgY291bGQgDQpjb21iaW5lIGFsbCB0aGVzZSBzb21laG93Lg0KDQpCZXN0IHJlZ2FyZHMN
+ClRob21hcw0KDQo+ICAgDQo+IA0KPiBCZXN0IHJlZ2FyZHMsDQoNCi0tIA0KVGhvbWFzIFpp
+bW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29s
+dXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBH
+ZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjog
+SXZvIFRvdGV2DQo=
 
-This console acceleration code is not exported or visible to userspace,
-e.g. you can't access or trigger it via /dev/fb0.
-It's only called internally from inside fbcon, so it's independed if
-it's a single- or multi-user system.
-The only way to "access" it is via standard stdio, where fbcon then
-either scrolls the screen via redrawing characters at new positions
-or by using hardware bitblt to move screen contents.
-IMHO there is nothing which is critical here.
-Even when I analyzed the existing bug reports, there was none which
-affected that specific code.
+--------------b1k0yJmYqaKqqVDGYx3TQ6ki--
 
-Anyway, let's look at that part in your patch:
+--------------cVusIXqEygqVbwTewwGspTdY
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-+       bool "Enable legacy fbcon code for hw acceleration"
-+       depends on FRAMEBUFFER_CONSOLE
-+       default n
-+       help
-+        Only enable this options if you are in full control of machine si=
-nce
-+        the fbcon acceleration code is essentially unmaintained and known
-+        problematic.
-+
-+        If unsure, select n.
+-----BEGIN PGP SIGNATURE-----
 
-Since I'm willing to maintain that scrolling/panning code, I'd like to
-drop the "is essentially unmaintained" part.
-And the "known problematic" part is up to now just speculative (which woul=
-d be
-valid for other parts of the kernel too, btw).
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmH6P2sFAwAAAAAACgkQlh/E3EQov+Bi
+ExAA0H8Momk/5syGvVfUO1UWqR7CmrCPDdLxxThqbUKHZ89nexD69olANacyJTLhO4QKPU94d++i
+u1T91nilLberWFneTA+yfSZbJyHWYQ4MWyhQm7vM4SQ3FPYh9DPzIAOrd1oQlj+8WGpn/SV6zbBR
+Fq0AGiJ25bKck7zCcGD7wK8Kc0DPChZ6TuhzOfXCOdg5kzDbinrIFjgNWJjOvgfYyhHF9KTRxLQA
+uLtixSEjcM0GBKzFQzLpj3MPzdOM8EYFgUWlqNJ5PRY4QLyFh3WSUcZ33IGklqBsuQ0z/dhyBNqj
+sN1w72zLBRYWaOLG7n+kSE6iVfa1RfQhzMX868gmlQDdpVURG8v906WI7WOlG3fN8om1WHwwnBTQ
+IS7gqv52mRxi+5dRUzHLj6B6DbUhgtTZW/Ayg0zHXK6g6m8VRzjfpMjMMW/jpuuDg0TBqYZJTHB6
+L0yZ8FMKQeFD5u9dRqYn0eI/w6/DfDwe50ALp8m4sRSDxPJNP6wSyFQY2USS2YGnMA8HOeBjsNGU
+GUmTt7ddRUCoM4fzOOlmZ8Fa9JkaYTVJHImSd4qthvo5lkCS/W+eC2uC4WgYKJJyBbGCpgoqD7sG
+NVBYgKtz6qhcNT5+8YSBrsxaWVVJ70p5AJX11VFMOqsgtLesqc3yfHy+Cfh4BfTZ9YiviJAhNEni
+j4E=
+=ZlY8
+-----END PGP SIGNATURE-----
 
-As this whole disussions showed, there are some few architectures/platform=
-s
-which really still need this acceleration, while others don't.
-So, why not leave the decision up to the arch maintainers, which may opt-i=
-n
-or opt-out, while keeping the default on "n"?
-
-With that, here is a new proposal:
-
-+config FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
-+       bool "Enable legacy fbcon hardware acceleration code"
-+       depends on FRAMEBUFFER_CONSOLE
-+       default y if (PARISC) # a few other arches may want to be listed h=
-ere too...
-+       default n
-+       help
-+         This option enables the fbcon (framebuffer text-based) hardware =
-acceleration for
-+	  graphics drivers which were written for the fbdev graphics interface.
-+
-+	  On modern machines, on mainstream machines (like x86-64) or when using=
- a modern
-+	  Linux distribution those fbdev drivers usually aren't used.
-+	  So enabling this option wouldn't have any effect, which is why you wan=
-t
-+	  to disable this option on such newer machines.
-+
-+	  If you compile this kernel for older machines which still require the =
-fbdev
-+	  drivers, you may want to say Y.
-+
-+         If unsure, select n.
-
-Would that be acceptable?
-
-Arch maintainers may then later send (or reply now with) patches, e.g.:
-+       default y if (M68K && XYZ)
-...
-
-
-> Also you didn't keep any todo entry for removing DRM accel code,
-
-That wasn't intentional.
-I just sent 2 revert-patches and an fbcon-accel-enabling-patch.
-I'll look up what you had in your patch series and add it as seperate patc=
-h.
-
-> and iirc some nouveau folks also complained that they at least
-> once had some kind of accel, so that's another reason to not tie this
-> to DRM.
-
-The above proposal to add additional "default y if XYZ" would enable
-them to opt-in.
-
-> Anyway aside from this looks reasonable, can you pls respin with a
-> more cautious Kconfig text?
-
-Sure, I'll do as soon as we have a decision on the above Kconfig text.
-
-Helge
+--------------cVusIXqEygqVbwTewwGspTdY--

@@ -2,28 +2,28 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A15FFC433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 18:29:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB2FBC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 18:49:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233830AbiBBS3c (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Feb 2022 13:29:32 -0500
-Received: from mout.gmx.net ([212.227.15.18]:46211 "EHLO mout.gmx.net"
+        id S1346750AbiBBSte (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Feb 2022 13:49:34 -0500
+Received: from mout.gmx.net ([212.227.15.19]:33327 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S233050AbiBBS3b (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 2 Feb 2022 13:29:31 -0500
+        id S1346631AbiBBStd (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 2 Feb 2022 13:49:33 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1643826563;
-        bh=2IdI1RHS3u/emx2pDEg/QOEg9hVudfhqAtuvwsuqAvA=;
+        s=badeba3b8450; t=1643827768;
+        bh=cRz8qbHdrWP6Wqf9ZBWf6XGW8RcaJPDmLj3QbU1FZew=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=CVdOVNz6PENYpqva50O8zsrHraxxFRMr3t1Edeav11ki/xEIawnJkGD6BMEAuYs6P
-         7N//uFbi+wnOnuIsJrVQzGYNy0lAT+QgHLII8Gp23TdqBGkkzoKTCyknabwXpbgkfe
-         ssI3lfNnJJ0dZvVmV6v4AYt+Sr/14rLdPOqcfO2k=
+        b=jTSj/nkFAbPxs4ZCVbMoPu30266cTpPDV5mUvHH+eKriIsmFRBdiTKy+57cqn0Bhm
+         hrj/Nd3LiQpP/ph7dr1zld5TLRTLugMvvodzsvlGGMOnWAwm7FLNSruBj7NXlc7Wc6
+         rxUtyUyU9P//QB3Pu34BJm1204OIDW7LMAia3V9o=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from [192.168.20.60] ([92.116.163.171]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MMGN2-1myCyD1QSU-00JMe8; Wed, 02
- Feb 2022 19:29:23 +0100
-Message-ID: <76ed4203-1ddc-1bbf-39c8-7cb62de7f4e9@gmx.de>
-Date:   Wed, 2 Feb 2022 19:29:14 +0100
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MirjS-1mcgYF3W0i-00etwB; Wed, 02
+ Feb 2022 19:49:27 +0100
+Message-ID: <308b274b-3783-6e33-f956-e5d026e6681b@gmx.de>
+Date:   Wed, 2 Feb 2022 19:49:24 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.3.0
@@ -33,99 +33,63 @@ To:     Sam Ravnborg <sam@ravnborg.org>
 Cc:     linux-fbdev@vger.kernel.org,
         DRI Development <dri-devel@lists.freedesktop.org>
 References: <e1e5b7d1-ea09-6e28-9c39-45b983734a85@gmx.de>
- <YfrFvfZuZM1N9frh@ravnborg.org>
+ <YfrFvfZuZM1N9frh@ravnborg.org> <76ed4203-1ddc-1bbf-39c8-7cb62de7f4e9@gmx.de>
+ <YfrP5AELHkN85/z4@ravnborg.org>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <YfrFvfZuZM1N9frh@ravnborg.org>
+In-Reply-To: <YfrP5AELHkN85/z4@ravnborg.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:LnWdKf8vSjQxPtwaH4S3XPwJbXCinbROTaGQqvzIDzS6NKtj/PZ
- w6Nb3Dpg5DZmJKV7ZyImf2Gx/BBSlJHma5aDMfr7PQUpfXEz7kG6990qCjy+RFmRihvtpVe
- nyftA17pDgJfHTcCb9Wt/hCIM6hjExXm+acPxD8+gwUAM44kT7ZvwJ/nNS/n5HWDTUbQ9kI
- fjpPToZqMzUA6F3Tobyaw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:8LXCXCcIGfI=:C70FzneTEw1oVK3a6I8n5z
- YiPiS5ywi87cvGbGowawWYeCMUJLuwMFdNC8ZzM3MaMNlp/btAjUjkTsiawyd3GUYc/IUd+n4
- pVKa07iN8DOTjY11Ra4nIw9HL2+KGBdzpWcbdkd6a52J1DjWkfHLPeD+kvKvC4499l/YrhTlR
- Dh8btNTI5PhvRUKuasHhNn62BvgMRQScddPP39XOf4HM9jBt8XI1N8DCVM0bavGxmDkr4s0qn
- bWJoLlPAyenLmKyhvLpFm6n8831nTWvPVrYZYMSTJ5flOkccBVp4oV4C+iz+XkdRkOT8dxaHc
- VXivLVcmD0SNmjVRRBqK/d3FZl50ud2UU7NhnNO8dlVO9bibb4p3aijUeaVzVNFU3LxPDG6aE
- RcBdgKzx7VTcuB+JKnW4/SrmtzJHbA9tS0saCSOffkqmULzg6czE7KyUhyXli2e0unHn8KvO7
- 4WeARI+gWORXlktOv9Z0t7KmrR+g8U0eo/eY4hQsyfaKkJ75i9piKs14HfTKBQrZMc3c3oVjy
- 7dv+nJ5oJbXZHZvXdePQbksqZKWzHnWxp1eIvAxgHrF5l+hTfNV2jAClRwRbeorQR7YNndb3+
- XnYbUnnELAngU2M2kAGX4btpfqy3J4WQHmrwd37eJzjvffwywoJn7+rRr5fBhuZdfXL1aR/Mi
- Tx3l4x+2+oDOJwYxNrzPwuX5HRXpW8tgqkLmsOHNYgLCCqpuTqes5l6LG5D22vECtdBqIgaXU
- /oTLDCAgtgP6+Aehnrq1OJPRvEKVjwArc5lST8wxhRQBrp4L8HAstudMgZqpvxv3NKub20s9s
- 3eyMvQVd6Pg//+sr3038g50TJVOHUIQbao1PcrEcNmX4c/XtlQMVvpvBK6S+jMRc7rVwA+mea
- Q5vBX6BH72r/sFjj9hTATHTqtkoBBZAepqO8R23lazJIlCy+Jo5Wth5wNJmGpw7N8cVxO82nR
- BZU3yX7QO9cVa6O1R3nGoeLHjBPQI7YcYh5Uu4agCq0fcnlaekseZnSf/XwWVT6fKD6fZmLoc
- 6P2/xTG05OOKjAXlepITgQTrUiuGs1OMP+glgF660iP85oZzJbjaiLxfmrLKwfuGWhBrbNlZO
- LI/rGRdv4ccDKg=
+X-Provags-ID: V03:K1:2U8eGnmLG5oNZ86SNf4jNJq1Aw5MViF1A5BkQi9aELSbeh/uVlo
+ gg3cXxGUxS2yYzmufwJMGAv/W7z8x0KRIptIBjTXyiIY9LfLai7p+ZbWXJ7z4e4eejIeaZx
+ w+spCzK43jacgxpklk/IBJIdsRTeUteo9Tlol3BlDOK1FQ7BumoJC7tfe1C8la3jvNoh3fW
+ PgNrzwlAnsiGXJlhw6tJg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:ktm7gmbKTWM=:FFK0/GtW2nq4rPcqP8LDl7
+ kZiDTOHV+k9ralDaI2DhsK2fJl6YqsuqhzjQ/ZqrACvBppBCkarZ/tFUngx4P9LYpcjBx9ebb
+ Wurdrawr2Txki5kTkfSrgJxM6E0DuvPRQmSHY1OyVdceZPJxFzmVhXv2sb1pGAdkGqKVEAw7+
+ hgHhG8hR9nlCsL1pUK5mkHQ7DS9eByg7qihKU8l4WAfmNgm0rJShKxZsuq+SxNYr8h4IFebiN
+ XUNhfOozXLlH2fQdcUkwz03Lwyi3bC7wkjN9WOi5CdvkrREX1GPfstRyEbbwk8HsRhqJFGSyf
+ Ar360ItxhF1KbdIANEdMKZzFGajmiKMbwnwcJ9DvfRfJETCXtsJ4Sim/eHKvyf/e5Is5vGsgf
+ LsLv/y32+se1zPyx2iI9BKBGMe08o0cLObwtHOq7YWWj2kc+f/ZM5L0SMh3y/sZeakU08hMAE
+ MvVcN1gCwXYcUDz3kGhNL0EfN6h73We8TX3D1Lnop7jtV2JIB7UJvNY4Jr8TJTz9+4eeeOlwF
+ RU+xG4yC01V78f2Tk3Nv/bs3hxYwcjz0wZah7jgVV92CtSV88aDrjzypiBNtBAEMoBGHafEaO
+ 3FkX67jnD1pJjE/mgFA8JL8+Q2GH62Q90Yv7yhPlN5HWnbhytFZcrZtmaLm2g49z5N9/DPXG9
+ DVrM+ZvX8h5DpJD4Pr/RQMxme+2mSrntx2vbOFU2yMtkk3I48TP8VIjRR/AQ7jiEspH+JvszA
+ mzwKAJ7Chkwsq/Q4gFgwBlqA83GGXt8WRlbbb0LRnR0PPsQfAoKsVc3vFH1y+w1qKHSt6n4lp
+ ClU7NmxX2mSgfjbXRGXO9hGnZLzrYU8SgEX0ZPJ/oquMVeQOW0dfm1YShM1xPVaOTI0eAkGp2
+ QWrPR8DenahAzrG0qAwQQseAzKKmXghsZqSjCAICp72uNpjYjxB+ZcDvnyfxd7JqPSwY7Vaeq
+ LMyuTsGgyKbkHrIz1HJG+xTlHW0Vm9JCRdZu4hd+5ExGmsP/bFXmpJM1jwmNsfL0lujhcik0l
+ Bvr+Mu8Y/jwPDL/gQZz5mnbjQSvpDsA33qBoBFIi3cU4EoU6z8iT/8TtOBkBW2ZC3zSrxE5gt
+ oCbyVii8mvFG+U=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hello Sam,
 
-On 2/2/22 18:56, Sam Ravnborg wrote:
+On 2/2/22 19:39, Sam Ravnborg wrote:
 > Hi Helge,
->
-> On Sun, Jan 30, 2022 at 10:05:39PM +0100, Helge Deller wrote:
->> Hello DRI and fbdev developers,
 >>
->> I've now mostly checked all queued-up patches on the fbdev mailing list=
-:
->> https://patchwork.kernel.org/project/linux-fbdev/list/
+>>> How come there are backlight, dt-bindings
+>>
+>> I didn't know, and I picked up those at the beginning.
+>> I did agreed with the backlight maintainers that I should
+>> keep those which are already in my tree, and that I will ignore
+>> any upcoming new ones.
+> Fine, just include this in the cover letter to explain it.
+
+Ok, I'll do.
+
+>>> and agp in between the fbdev patches?
+>>
+>> It wasn't picked up yet, agp somehow belongs to fbdev and as
+>> maintainer for parisc I was somehow involved as well.
+>> I'm happy to drop it if you think it belongs somewhere else...
 >
-> Nice to see all the pending fbdev patches processed.
+> I see no point in dropping as you are involved and patch seems relevant.
+> But please explain this in the cover letter so readers are not left
+> wondering.
 
-Thanks!
+Ok.
 
-> I do not see why most of them are applied - why bother with
-> dev_err_probe or spelling fixes in old drivers that does not see any
-> active development. But that's your call.
-
-Doesn't for every driver at some point the development ceases?
-Reasons might be that it's not used anymore, or simply because it
-does what it should do.
-
-> How come there are backlight, dt-bindings
-
-I didn't know, and I picked up those at the beginning.
-I did agreed with the backlight maintainers that I should
-keep those which are already in my tree, and that I will ignore
-any upcoming new ones.
-
-> and agp in between the fbdev patches?
-
-It wasn't picked up yet, agp somehow belongs to fbdev and as
-maintainer for parisc I was somehow involved as well.
-I'm happy to drop it if you think it belongs somewhere else...
-
-> It would be nice to be able to trust that if the fbdev tree has patches
-> then it is mentioned when the tree touches files outside the fbdev
-> dir.
-
-Sure. Usually I also send out the diffstat.
-
-
+Thanks a lot for your feedback !
 Helge
-
->
->
-> These are the patches that caught my eye:
->
->> Arnd Bergmann (1):
->>       agp: define proper stubs for empty helpers
->>
->> Luca Weiss (2):
->>       backlight: qcom-wled: Add PM6150L compatible
->>       dt-bindings: simple-framebuffer: allow standalone compatible
->>
->> Xu Wang (2):
->>       backlight: lm3630a_bl: Remove redundant 'flush_workqueue()' calls
->
-> If this was mentioned then fine - but now it looks like patches that do
-> not belong here.
->
-> 	Sam
->
-

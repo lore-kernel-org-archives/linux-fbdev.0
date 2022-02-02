@@ -2,120 +2,130 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 572CAC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 17:37:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A15FFC433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 18:29:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229937AbiBBRhH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Feb 2022 12:37:07 -0500
-Received: from mout.gmx.net ([212.227.15.19]:55535 "EHLO mout.gmx.net"
+        id S233830AbiBBS3c (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Feb 2022 13:29:32 -0500
+Received: from mout.gmx.net ([212.227.15.18]:46211 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S229588AbiBBRhH (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 2 Feb 2022 12:37:07 -0500
+        id S233050AbiBBS3b (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 2 Feb 2022 13:29:31 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1643823377;
-        bh=nuthtyGtekh1QQHr3+HkARKWphnDMvJGe0AUmpkrc7A=;
+        s=badeba3b8450; t=1643826563;
+        bh=2IdI1RHS3u/emx2pDEg/QOEg9hVudfhqAtuvwsuqAvA=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=UgorUlyfz1L7WX1XD13Rv/Kw0rRnC9vqv2dHLJvt/P/wv1/f+JJtRmZjPr04+y3pj
-         FIQDAjc1uBefyweGFLCsd0LpgYX8qFACQ9ZHgdeGgMn5hNN+rfopzVyDjBsmgPYdqo
-         pcxVJwU+35jRbzkqIZdGBMA/Jx3omzQ7H56ifRck=
+        b=CVdOVNz6PENYpqva50O8zsrHraxxFRMr3t1Edeav11ki/xEIawnJkGD6BMEAuYs6P
+         7N//uFbi+wnOnuIsJrVQzGYNy0lAT+QgHLII8Gp23TdqBGkkzoKTCyknabwXpbgkfe
+         ssI3lfNnJJ0dZvVmV6v4AYt+Sr/14rLdPOqcfO2k=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.163.171]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MWRRZ-1mi2Bu1TXH-00XvtJ; Wed, 02
- Feb 2022 18:36:17 +0100
-Message-ID: <882bfe4e-a5b6-2b2c-167b-eda8c08419e3@gmx.de>
-Date:   Wed, 2 Feb 2022 18:36:10 +0100
+Received: from [192.168.20.60] ([92.116.163.171]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MMGN2-1myCyD1QSU-00JMe8; Wed, 02
+ Feb 2022 19:29:23 +0100
+Message-ID: <76ed4203-1ddc-1bbf-39c8-7cb62de7f4e9@gmx.de>
+Date:   Wed, 2 Feb 2022 19:29:14 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.3.0
-Subject: Re: [PATCH] fbdev: fbmem: Fix the implicit type casting
+Subject: Re: fbdev git tree update
 Content-Language: en-US
 To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     Yizhuo Zhai <yzhai003@ucr.edu>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Matthew Wilcox <willy@infradead.org>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Zheyu Ma <zheyuma97@gmail.com>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20220131065719.1552958-1-yzhai003@ucr.edu>
- <b1c1f68d-4620-2429-66bd-33d806d31457@gmx.de> <Yfq+/dVOgDVbhjRJ@ravnborg.org>
+Cc:     linux-fbdev@vger.kernel.org,
+        DRI Development <dri-devel@lists.freedesktop.org>
+References: <e1e5b7d1-ea09-6e28-9c39-45b983734a85@gmx.de>
+ <YfrFvfZuZM1N9frh@ravnborg.org>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <Yfq+/dVOgDVbhjRJ@ravnborg.org>
+In-Reply-To: <YfrFvfZuZM1N9frh@ravnborg.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:VX0YPkte7zZH09cDCCwSMR6sYdUsNWLLA8YgeJOkgJgQF/e0Hdr
- ulgvAE4VODuPwDya1YKqtltqlyixywIGsh3K/ABDEZWxl2aUbWw7MesYYL0dyZsEFoyBzY4
- fMXhQKFj6nB7PIZMmz0F44mQGcF3UKOml4d/JksZQguJNYL4ityt/xqwcFWn46dkY8dISrc
- k4ju0v0v+e5pmBFX/T6UA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:S5DAjWZKd3M=:+qoyAW62vM1CXB8ZyHhb5o
- oIVMSe7TaTUcNwMjlf9qGfxSkF3iJc4s8xuXYgd/Yap6jWcNAIdZBj055VI5t2AbHFZpyF3pq
- N0A35aRyx6odqViUui0AvTYshmX6/XXAUW+eFNp3NNbLsV4vqPXMqOGO5ZxA7Ue+L0ebIfCIv
- wIvlxM95WA8nCtjKnBBA1L6opujM+lSm4pOleyGcSPjngL8daqTf5B92k/ViuoAnM9A+wilTU
- tFu4F3E/KKhp3hf3wnJHhcQEjeT7c9k1jjDnwu4U9/pB1XI5Ymvog/TYf+PtCRPpH1rQhn2de
- OZ8S6bMjaJPT7OW+nwSIefQpFsbVMdrdu5BDgaplKIaYf8G8ZbTkKx0ZQybl/lAnBbo89Z0xm
- GMCMH3mC/ef8l+1/uFgOpruVJrPXR3eLEKwzkwsyQjwGXCnsktx1C8Eqfm5XIW52sV0PkoecA
- TkxrhiQ7kQt4M4Ks7RoXZPtevYsp91w/9ewt1J0k2YwTfiz59mLDmw1IkaNlzkqRsQbuW1+C/
- 2CvyQt42GZlq7zAbYFrYbiRwb5K3pRiFq/O1dgPN9ajWt6l3I+CGO6JZAF9IpcaOHswXnTnKo
- /U49eL7/FgAicyIH94BNBXmqyi9XrRXgS1PA4PkheWFcVyv0Oo4xIQd95JREfCfLNhdRF5L3Z
- Ew1y6ISsL/nZ7LX7Y3VjjOa8w0zzA5Q5zCXYZXxE+zeo1AlF+hOCWLOdDqtEGQms2E5FD9Inn
- s2AuwWgDsGzvWkIxkVJrD4rtvnpXNqb/8k0aqvOINQ5USEkJd6s7m3rgX7m8DvtNrUidJbIce
- ZDHI4XDjGn+WMu+pXjkujVKhF4e0qSyWa/lBIsnEk3El0TLakOQrb/Vl27M+COledZTvZ5u4/
- ++5D3tz+daxmrNzfEFPeuXTaZ3lF2+EfvCgLuZoSfZJKSma7KO85IdB6QoJNXgHY9nhMOpOMM
- k8c5lfcYekwgp8rrTPug1FrW3aCRLK0GII3tpxAfTEWj+fTOebogrXHinEb5ikVdxVypZm/XI
- RAyQKkVgoQ0N2h4Dxu/T33Q7+QykG8WGD/xnjLJ1nLXBBpaQcVj3v3BGBPOV+kX6V9BwLTlYr
- Hi7AoBrK2dfhN4=
+X-Provags-ID: V03:K1:LnWdKf8vSjQxPtwaH4S3XPwJbXCinbROTaGQqvzIDzS6NKtj/PZ
+ w6Nb3Dpg5DZmJKV7ZyImf2Gx/BBSlJHma5aDMfr7PQUpfXEz7kG6990qCjy+RFmRihvtpVe
+ nyftA17pDgJfHTcCb9Wt/hCIM6hjExXm+acPxD8+gwUAM44kT7ZvwJ/nNS/n5HWDTUbQ9kI
+ fjpPToZqMzUA6F3Tobyaw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:8LXCXCcIGfI=:C70FzneTEw1oVK3a6I8n5z
+ YiPiS5ywi87cvGbGowawWYeCMUJLuwMFdNC8ZzM3MaMNlp/btAjUjkTsiawyd3GUYc/IUd+n4
+ pVKa07iN8DOTjY11Ra4nIw9HL2+KGBdzpWcbdkd6a52J1DjWkfHLPeD+kvKvC4499l/YrhTlR
+ Dh8btNTI5PhvRUKuasHhNn62BvgMRQScddPP39XOf4HM9jBt8XI1N8DCVM0bavGxmDkr4s0qn
+ bWJoLlPAyenLmKyhvLpFm6n8831nTWvPVrYZYMSTJ5flOkccBVp4oV4C+iz+XkdRkOT8dxaHc
+ VXivLVcmD0SNmjVRRBqK/d3FZl50ud2UU7NhnNO8dlVO9bibb4p3aijUeaVzVNFU3LxPDG6aE
+ RcBdgKzx7VTcuB+JKnW4/SrmtzJHbA9tS0saCSOffkqmULzg6czE7KyUhyXli2e0unHn8KvO7
+ 4WeARI+gWORXlktOv9Z0t7KmrR+g8U0eo/eY4hQsyfaKkJ75i9piKs14HfTKBQrZMc3c3oVjy
+ 7dv+nJ5oJbXZHZvXdePQbksqZKWzHnWxp1eIvAxgHrF5l+hTfNV2jAClRwRbeorQR7YNndb3+
+ XnYbUnnELAngU2M2kAGX4btpfqy3J4WQHmrwd37eJzjvffwywoJn7+rRr5fBhuZdfXL1aR/Mi
+ Tx3l4x+2+oDOJwYxNrzPwuX5HRXpW8tgqkLmsOHNYgLCCqpuTqes5l6LG5D22vECtdBqIgaXU
+ /oTLDCAgtgP6+Aehnrq1OJPRvEKVjwArc5lST8wxhRQBrp4L8HAstudMgZqpvxv3NKub20s9s
+ 3eyMvQVd6Pg//+sr3038g50TJVOHUIQbao1PcrEcNmX4c/XtlQMVvpvBK6S+jMRc7rVwA+mea
+ Q5vBX6BH72r/sFjj9hTATHTqtkoBBZAepqO8R23lazJIlCy+Jo5Wth5wNJmGpw7N8cVxO82nR
+ BZU3yX7QO9cVa6O1R3nGoeLHjBPQI7YcYh5Uu4agCq0fcnlaekseZnSf/XwWVT6fKD6fZmLoc
+ 6P2/xTG05OOKjAXlepITgQTrUiuGs1OMP+glgF660iP85oZzJbjaiLxfmrLKwfuGWhBrbNlZO
+ LI/rGRdv4ccDKg=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2/2/22 18:27, Sam Ravnborg wrote:
+Hello Sam,
+
+On 2/2/22 18:56, Sam Ravnborg wrote:
 > Hi Helge,
 >
-> On Tue, Feb 01, 2022 at 04:02:40PM +0100, Helge Deller wrote:
->> On 1/31/22 07:57, Yizhuo Zhai wrote:
->>> In function do_fb_ioctl(), the "arg" is the type of unsigned long,
+> On Sun, Jan 30, 2022 at 10:05:39PM +0100, Helge Deller wrote:
+>> Hello DRI and fbdev developers,
 >>
->> yes, because it comes from the ioctl framework...
->>
->>> and in "case FBIOBLANK:" this argument is casted into an int before
->>> passig to fb_blank().
->>
->> which makes sense IMHO.
->>
->>> In fb_blank(), the comparision if (blank > FB_BLANK_POWERDOWN) would
->>> be bypass if the original "arg" is a large number, which is possible
->>> because it comes from the user input.
->>
->> The main problem I see with your patch is that you change the behaviour=
-.
->> Let's assume someone passes in -1UL.
->> With your patch applied, this means the -1 (which is e.g. 0xffffffff on=
- 32bit)
->> is converted to a positive integer and will be capped to FB_BLANK_POWER=
-DOWN.
->> Since most blank functions just check and react on specific values, you=
- changed
->> the behaviour that the screen now gets blanked at -1, while it wasn't b=
-efore.
->>
->> One could now argue, that it's undefined behaviour if people
->> pass in wrong values, but anyway, it's different now.
+>> I've now mostly checked all queued-up patches on the fbdev mailing list=
+:
+>> https://patchwork.kernel.org/project/linux-fbdev/list/
 >
-> We should just plug this hole and in case an illegal value is passed
-> then return -EINVAL.
->
-> Acceptable values are FB_BLANK_UNBLANK..FB_BLANK_POWERDOWN,
-> anything less than or greater than should result in -EINVAL.
+> Nice to see all the pending fbdev patches processed.
 
-Yes, that's the best solution.
-Yizhuo Zhai, would you mind to resend with that solution?
+Thanks!
+
+> I do not see why most of them are applied - why bother with
+> dev_err_probe or spelling fixes in old drivers that does not see any
+> active development. But that's your call.
+
+Doesn't for every driver at some point the development ceases?
+Reasons might be that it's not used anymore, or simply because it
+does what it should do.
+
+> How come there are backlight, dt-bindings
+
+I didn't know, and I picked up those at the beginning.
+I did agreed with the backlight maintainers that I should
+keep those which are already in my tree, and that I will ignore
+any upcoming new ones.
+
+> and agp in between the fbdev patches?
+
+It wasn't picked up yet, agp somehow belongs to fbdev and as
+maintainer for parisc I was somehow involved as well.
+I'm happy to drop it if you think it belongs somewhere else...
+
+> It would be nice to be able to trust that if the fbdev tree has patches
+> then it is mentioned when the tree touches files outside the fbdev
+> dir.
+
+Sure. Usually I also send out the diffstat.
+
 
 Helge
 
-> We miss this kind or early checks in many places, and we see the effect
-> of this in some drivers where they do it locally for no good.
+>
+>
+> These are the patches that caught my eye:
+>
+>> Arnd Bergmann (1):
+>>       agp: define proper stubs for empty helpers
+>>
+>> Luca Weiss (2):
+>>       backlight: qcom-wled: Add PM6150L compatible
+>>       dt-bindings: simple-framebuffer: allow standalone compatible
+>>
+>> Xu Wang (2):
+>>       backlight: lm3630a_bl: Remove redundant 'flush_workqueue()' calls
+>
+> If this was mentioned then fine - but now it looks like patches that do
+> not belong here.
 >
 > 	Sam
+>
+

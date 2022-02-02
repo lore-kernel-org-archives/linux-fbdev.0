@@ -2,35 +2,66 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D745C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 11:18:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C618C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 11:31:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229800AbiBBLSu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Feb 2022 06:18:50 -0500
-Received: from perceval.ideasonboard.com ([213.167.242.64]:53776 "EHLO
-        perceval.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230163AbiBBLSt (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Feb 2022 06:18:49 -0500
-Received: from [192.168.1.111] (91-156-85-209.elisa-laajakaista.fi [91.156.85.209])
-        by perceval.ideasonboard.com (Postfix) with ESMTPSA id 705492F3;
-        Wed,  2 Feb 2022 12:18:47 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-        s=mail; t=1643800728;
-        bh=Fze3IjD9I12d7wjCEcEq9u8vjeNKqEjIfhxOdCPyiIc=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=t2W1deen/IXaDZlIuuEyTvRmRkM7qZ2GIPbaEEVSJg5ZRykeGHTApODbTGRMTijlS
-         DXacsSebe0jButuW3K4bqD7eh9DME8ZhudAMR5My5jUfIHtazf+iJ41GhuoAUqIw5c
-         lM9xWE6k1HIwIvax4CWuoQcW0tgygUO6G9sf5CXU=
-Message-ID: <801ccc6c-a70b-abe6-bab3-baa75a1203f1@ideasonboard.com>
-Date:   Wed, 2 Feb 2022 13:18:44 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 01/21] MAINTAINERS: Add entry for fbdev core
-Content-Language: en-US
-To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        DRI Development <dri-devel@lists.freedesktop.org>
-Cc:     linux-fbdev@vger.kernel.org,
+        id S1343920AbiBBLbd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Feb 2022 06:31:33 -0500
+Received: from wnew4-smtp.messagingengine.com ([64.147.123.18]:57621 "EHLO
+        wnew4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S245225AbiBBLbc (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 2 Feb 2022 06:31:32 -0500
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+        by mailnew.west.internal (Postfix) with ESMTP id 168362B00949;
+        Wed,  2 Feb 2022 06:31:31 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute3.internal (MEProxy); Wed, 02 Feb 2022 06:31:32 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
+        :cc:content-transfer-encoding:content-type:date:date:from:from
+        :in-reply-to:in-reply-to:message-id:mime-version:references
+        :reply-to:sender:subject:subject:to:to; s=fm2; bh=s+xzvHlh5mml7Y
+        epjnQMHIC86SIHC20vVql/uYjQsSI=; b=HqO5YJBpXUdEVM3OC0JD7cnoQXtL2U
+        5XYV6/ILtpYHhITzZwjyg/6oPIh201uveyOhRfsEfx6XvTcK4WZXb05D6Dm7IqhG
+        YICSWmdEI+E2A5ft1Xw6KI8FwB00OckhAQR0nvny/jGo+0EfQf87maHxqL6Oe6At
+        JUcAOxnDqYZvBblBII/EVgxMFsht700O0qLrh5426vb26idMF5w+Xrd2dG9ky+mN
+        YumA+XVZpgMtbwVlCJ+0bnMEVbsd0+RdOr95eSQqp74puKvTaT/zKhW5DCFAYMRf
+        9pSDB7rM4pXsjon6e/GHvpy/EpQtWudxtRY/NoJM0PdHk2SqqpDpCHcg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:cc:content-transfer-encoding
+        :content-type:date:date:from:from:in-reply-to:in-reply-to
+        :message-id:mime-version:references:reply-to:sender:subject
+        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+        :x-sasl-enc; s=fm2; bh=s+xzvHlh5mml7YepjnQMHIC86SIHC20vVql/uYjQs
+        SI=; b=m41hyTiTMtqWUuyooz2/wKDf5xEh5yyJ7z8sS14WmLgr9RSghA/TnciXE
+        6U5lLeKUgCacrmwt4mUBmoJwncqu+kPhkjh5aQOuWfCJsaAjhzEitWK3ljeSbGmp
+        82wsuNvqgan+hMOmYn4h/m0R/XZGW8r/HetnB3dTy6Mt0nplBT7shHFx6CS79mY+
+        54bA9w0IVw4rTYppwt3Hy+8Zhkx8+tFbFXYXABpd4paQq4jWYGXV61W+Uwx3WYml
+        +u5fnuvNnDGjHLwNRdWGOGdQiP8croahNGvM/Zhb9fRsLUYLx7WtZOBa9JbKz4FJ
+        TavDjimST4Jg/OJ77aslL5TtmfklQ==
+X-ME-Sender: <xms:kWv6YbCpOWwbjo2fEEuZPQXR6fWs8WJ1txn3dnI23fPvR_jEq6BtYA>
+    <xme:kWv6YRh8NznxWsAQ0qT2a5VakvdP6rhEGxnbBiBpTPUyyd_ed0xtLh1qh1gWdi2o1
+    RYsPJ-ST-5zYXxEbzE>
+X-ME-Received: <xmr:kWv6YWm-nWM_bt1-HKUi0q0IXtnpvYgFdHhaqec5bvACze8gY3lsuD44_1voiOzGykZEhEfStHDo6MwtJ9AIE_N6Uz7gG4w6BdAI5Lg>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvvddrgeehgddvlecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpeffhffvuffkfhggtggugfgjsehtqhertddttddvnecuhfhrohhmpeforgigihhm
+    vgcutfhiphgrrhguuceomhgrgihimhgvsegtvghrnhhordhtvggthheqnecuggftrfgrth
+    htvghrnhepgfejtedtjefggfffvdetuedthedtheegheeuteekfeeghfdtteejkeeludeg
+    vddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepmh
+    grgihimhgvsegtvghrnhhordhtvggthh
+X-ME-Proxy: <xmx:kWv6YdzU6_6XRI4ekXyhAC8YzPWi1m1xNUunpLwP_xM4f5se8A8_VQ>
+    <xmx:kWv6YQQOu6pQ-o8B5aZQ677z9Y2qiH_PDo09C_Wv5_V5NMXjRAbgAA>
+    <xmx:kWv6YQYs06Q3gCfuX_p_bffS9DRDIzXjyoge9q2TNCQJjM_hV0gSyQ>
+    <xmx:kmv6Ydj-2Ue1nKfs8umtoxrCpvUcJB1846mQ3s7l53Sz1eZ2oWHDrrYys-k>
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 2 Feb 2022 06:31:28 -0500 (EST)
+Date:   Wed, 2 Feb 2022 12:31:26 +0100
+From:   Maxime Ripard <maxime@cerno.tech>
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
+        linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Sam Ravnborg <sam@ravnborg.org>,
         Daniel Vetter <daniel.vetter@intel.com>,
@@ -44,28 +75,31 @@ Cc:     linux-fbdev@vger.kernel.org,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         Sven Schnelle <svens@stackframe.org>
+Subject: Re: [PATCH 01/21] MAINTAINERS: Add entry for fbdev core
+Message-ID: <20220202113126.3rgzqkhnorrbfj6b@houat>
 References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
  <20220131210552.482606-2-daniel.vetter@ffwll.ch>
-From:   Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 In-Reply-To: <20220131210552.482606-2-daniel.vetter@ffwll.ch>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 31/01/2022 23:05, Daniel Vetter wrote:
+On Mon, Jan 31, 2022 at 10:05:32PM +0100, Daniel Vetter wrote:
 > Ever since Tomi extracted the core code in 2014 it's been defacto me
 > maintaining this, with help from others from dri-devel and sometimes
 > Linus (but those are mostly merge conflicts):
-> 
+>=20
 > $ git shortlog -ns  drivers/video/fbdev/core/ | head -n5
->      35  Daniel Vetter
->      23  Linus Torvalds
->      10  Hans de Goede
->       9  Dave Airlie
->       6  Peter Rosin
-> 
+>     35  Daniel Vetter
+>     23  Linus Torvalds
+>     10  Hans de Goede
+>      9  Dave Airlie
+>      6  Peter Rosin
+>=20
 > I think ideally we'd also record that the various firmware fb drivers
 > (efifb, vesafb, ...) are also maintained in drm-misc because for the
 > past few years the patches have either been to fix handover issues
@@ -76,14 +110,32 @@ On 31/01/2022 23:05, Daniel Vetter wrote:
 > And furthermore distros are now adopting simpledrm as the firmware fb
 > driver, so hopefully the need to care about the fbdev firmware drivers
 > will go down going forward.
-> 
+>=20
 > Note that drm-misc is group maintained, I expect that to continue like
 > we've done before, so no new expectations that patches all go through
 > my hands. That would be silly. This also means I'm happy to put any
 > other volunteer's name in the M: line, but otherwise git log says I'm
 > the one who's stuck with this.
+>=20
+> Cc: Dave Airlie <airlied@gmail.com>
+> Cc: Jani Nikula <jani.nikula@linux.intel.com>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Javier Martinez Canillas <javierm@redhat.com>
+> Cc: DRI Development <dri-devel@lists.freedesktop.org>
+> Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+> Cc: Claudio Suarez <cssk@net-c.es>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Daniel Vetter <daniel.vetter@intel.com>
+> Cc: Sven Schnelle <svens@stackframe.org>
+> Cc: Gerd Hoffmann <kraxel@redhat.com>
+> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Acked-by: Maxime Ripard <maxime@cerno.tech>
 
-  Tomi
-
+Maxime

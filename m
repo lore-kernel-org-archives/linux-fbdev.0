@@ -2,105 +2,112 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32F5DC433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 15:30:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BDDAC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 16:00:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242552AbiBBPao (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Feb 2022 10:30:44 -0500
-Received: from mout.gmx.net ([212.227.15.19]:42759 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S230120AbiBBPan (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 2 Feb 2022 10:30:43 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1643815839;
-        bh=33azkICBgshgS1Tf2UER961Zzm2Cp9CwAIA7CuVafEQ=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=LiiBRq9gwPkRXPQ4Rtrl1V+5Rv6PF9GiMpSlIT6lnZEc/53u7GIihDZ+Rexv+0T1K
-         gO8D473F2ItBMSM5CAYH7bqwk6bMIZIqtbxtuKKE7lZpzS26EvDBe1UarXWMmPDTXz
-         Mhp9MV+Tlm8crNHZMTXq5YHbXt72hUXdR7vHPpOQ=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.163.171]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M4b1o-1nFpov0TVG-001ghf; Wed, 02
- Feb 2022 16:30:39 +0100
-Message-ID: <5f49a79b-bbbe-6e77-2afe-29731073748b@gmx.de>
-Date:   Wed, 2 Feb 2022 16:30:35 +0100
+        id S242710AbiBBQAM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Feb 2022 11:00:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34756 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232735AbiBBQAL (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Feb 2022 11:00:11 -0500
+Received: from smtp.domeneshop.no (smtp.domeneshop.no [IPv6:2a01:5b40:0:3005::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 18DA4C061714;
+        Wed,  2 Feb 2022 08:00:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=tronnes.org
+        ; s=ds202112; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
+        References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
+        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+        List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=HjIuj8tK/i3bU/jTctNAzn1hnRcxPQQLduo2krywtkU=; b=EH3rg7kdaPqsCQ5aP0CO20CfG5
+        Nr+UWWGO7Y6S66ksZxEMOoGILOR1bK+G9d42uuu6ambVde60Hc7LD81TgLh2TObm2TVCRfUkG7ihu
+        YXdwsmMZ5CDcWrkl3HdRzDoHqm5JK0pmNBJz+NdYnExIGn3Jd4U3louPhjPJ6NhC4bZc6ZFgOnC1P
+        U8F/sqnpOAZ0jum9Po/llG943XMqWBeUDicmOiKZn64jsReQh71GwLPdSJqHFTsK/Kbnhr2bI2MrL
+        /lLlAFOowI7vH218ri6Bsr7CpotdaR6QA5afJF6O/fHegYBvp6wFJ/Dcu9rfrlOO9na7n3Ilb54oL
+        cHC6hYSw==;
+Received: from [2a01:799:95e:a400:cca0:57ac:c55d:a485] (port=60100)
+        by smtp.domeneshop.no with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <noralf@tronnes.org>)
+        id 1nFI3E-0000np-3N; Wed, 02 Feb 2022 17:00:08 +0100
+Message-ID: <7eb83dae-7dd9-1ffc-93ce-b47429ec510b@tronnes.org>
+Date:   Wed, 2 Feb 2022 17:00:05 +0100
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [PATCH] fbdev: Fix file path that does not exist
-Content-Language: en-US
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Wei Ming Chen <jj251510319013@gmail.com>
-Cc:     linux-fbdev@vger.kernel.org
-References: <20211208144631.3710-1-jj251510319013@gmail.com>
- <Ye7p0Ccmy+lHaRM1@smile.fi.intel.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <Ye7p0Ccmy+lHaRM1@smile.fi.intel.com>
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 1/4] drm: Add I2C connector type
+To:     Pekka Paalanen <ppaalanen@gmail.com>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Emil Velikov <emil.l.velikov@gmail.com>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+References: <20220131201225.2324984-1-javierm@redhat.com>
+ <20220131201225.2324984-2-javierm@redhat.com> <YfhMESTylI1NTKDg@ravnborg.org>
+ <4d9a56a7-da25-b411-61cc-372c6fa9011d@tronnes.org>
+ <4966d03e-ee0c-5130-3819-05a90a8f6d06@suse.de>
+ <c6100ec3-b511-17cf-c542-e124c14fb334@tronnes.org>
+ <20220202170455.3eece5a3@eldfell>
+From:   =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
+In-Reply-To: <20220202170455.3eece5a3@eldfell>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:zeF/QOxQb4ekRle1e1HsnPLajMAfmkqHB/EcwJs80SRiogRKzSk
- 2MbLGEM09KZv8hAUMMLpQ8hf2gWUIP00gScstfBDPV+jGz/33MKAo2zacc7qK/f7Tyko28/
- T1Eq7hwkKEM2OA6Gno+3aaDkBCjvFi8imWEHfStiqvyC+NXdDJzHU6iohT70q2fivOKXDzp
- fZgzphu2zM5kY88kHFyUQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:ivBTrJ8XyAw=:Zpx2OmMyuTwNtbMKZ8EuII
- 0oUZ86J/jZXJ/gNkjJd5mRUjESNV8Y0OufHz0E782dDU7IBDv9htAXEC8MFuzIpdUpV9lwUkp
- q360slLgVc6S4cwYuX11s6ZxdaGBxifqdeU2i0cXCsPg3fIUhyEBQOzAzAA0MJLu2JVcJF/Jh
- Qm3xUbw8ZvC5C60atMVzXoXk/8cCeC8K0vkvCsW4QCaHeSTyOsIRONR3UCFSlqMtuKFiZuYEF
- rAPsNkd5T5ZfK8vxdkaM2XuMJ7gxsuhF2CRz2C7gW15DKZqblMrLvlQEtZiq7KWFaFDM6UTy3
- oQzo/fMasAmWsaIT0OE8jA7FE0OIhIm96WZ3QZmE7iBNzqRzOYDD3yiH1sIBMM+mzPOi6scgR
- 1QU4vGfPcmJgDLjY/SXu71O4y7ca7stZZ3MLyVxK4xgcNcM1o+/0pumQfIaPqmopjMGsVNs8e
- ZgyY+VfkriaGVAG2rlmTpLeB8eNo/BqZUu/dUi7JKv6V1VmAYYpt90L111fNe58sD1fAzugaY
- IyQdjsElGxaKnBb7KrLBCAjttGqh9omCXD6TiOKxUuoXk7VtI7F5pARzBG0TKIF6CWEwy6hKf
- q3K4DAPLxKMwaKrQcrzh02XdzfWEj9fAp3qtw3w5M/s6epB3VmwiRGfNKuEaIbynD6rt+cM8Y
- m4m1f78DCiISN8vNMzxhtiWIuXKb+jrptIzWbat5pavXSNc5Bk+TiAlT0zv+qEXVsDYdcjjk0
- VGX1FFrOdOtBleTIl2PcOB0b+2MizFwGlSNmT4bKeH1oAWmMuAIyh/rh8ZOnOlyWSnHG5HI/R
- mbq3IIbmmoMmJIIJf5kPnAg3rbaoW2Phq53mN/9G8p+TzH5FHoZwSQwbqF3b1B9QjNIw+SZHn
- IHXfIvg2vkcAnmhATDTAPfOVTKEYaT0GTqZdZj5yfE0AfzTHDonL036X4AQAuWZUQFUdhDUL2
- M0FzLjkvtwiS9emGNldAtFoKY76K295G/VLo8L3PNyWSd0s8e2KGGnqFlCfMMmzUEKTEjtcF1
- KFm6ATnP9SPZRRRGWOQm9gUnFPI7r7KFmPr4FC9Qxhwqch2p9p3FI//dRG0avT7vgE4wdy0OW
- MyAT8iCahVgUx4=
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 1/24/22 19:02, Andy Shevchenko wrote:
-> +Cc: maintainer
->
-> On Wed, Dec 08, 2021 at 10:46:31PM +0800, Wei Ming Chen wrote:
->> pvr2fb.c should be under drivers/video/fbdev/
->> instead of drivers/video/
->
-> LGTM,
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
->
->> Signed-off-by: Wei Ming Chen <jj251510319013@gmail.com>
-
-applied to the fbdev-next tree.
-
-Thanks!
-Helge
 
 
->> ---
->>  drivers/video/fbdev/Kconfig | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
+Den 02.02.2022 16.04, skrev Pekka Paalanen:
+> On Wed, 2 Feb 2022 10:45:42 +0100
+> Noralf Trønnes <noralf@tronnes.org> wrote:
+> 
+>> Den 02.02.2022 10.14, skrev Thomas Zimmermann:
+>>> Hi Noralf,
+>>>
+>>> since you're here, I'll just hijack the discussion to ask something only
+>>> semi-related.
+>>>
+>>> IIRC the gud driver doesn't update the display immediately during atomic
+>>> commits. Instead, it instructs a helper thread to do the update. What's
+>>> the rational behind this design? Is that something we should adopt for
+>>> other drivers that operate over slow buses (USB, I2C, etc)? Would this
+>>> be relevant for the ssd1307 driver?
+>>>   
 >>
->> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
->> index 6ed5e608dd04..93b8d84c34cf 100644
->> --- a/drivers/video/fbdev/Kconfig
->> +++ b/drivers/video/fbdev/Kconfig
->> @@ -829,7 +829,7 @@ config FB_PVR2
->>  	  You can pass several parameters to the driver at boot time or at
->>  	  module load time.  The parameters look like "video=3Dpvr2:XXX", whe=
-re
->>  	  the meaning of XXX can be found at the end of the main source file
->> -	  (<file:drivers/video/pvr2fb.c>). Please see the file
->> +	  (<file:drivers/video/fbdev/pvr2fb.c>). Please see the file
->>  	  <file:Documentation/fb/pvr2fb.rst>.
->>
->>  config FB_OPENCORES
->> --
->> 2.25.1
->>
->
+>> Async flushing is only necessary on multi display setups where there's
+>> only one rendering loop for all the displays. I saw what tiny/gm12u320.c
+>> did and Hans gave me the rationale. The SPI drivers run flushing inline.
+>> Info on the gud wiki:
+>> https://github.com/notro/gud/wiki/Linux-Host-Driver#asynchronous-flushing
+> 
+> Hi,
+> 
+> please also consider that userspace may throttle to the KMS pageflip
+> events. If the pageflip event is immediate from submitting a flip, that
+> could mean userspace will be repainting in a busy-loop, like 1 kHz.
+> However, I remember something about virtual KMS drivers doing exactly
+> this, and there being something that tells userspace to throttle itself
+> instead of depending on pageflip completions. I just forget how that is
+> supposed to work, and I'm fairly sure that e.g. Weston does not behave
+> well there.
+> 
+> Unfortunately, the pageflip event is also what synchronises FB usage.
+> Once flipping in a new FB completed, the old FB is free for re-use.
+> But, if the kernel is still copying out from the old FB, userspace may
+> partially overwrite the contents, temporarily leading to an incomplete
+> or too new image on screen. Do you have anything to prevent that?
+> 
 
+Unfortunately not. One solution would be to make a buffer copy during
+the flip and do the USB transfer async but I haven't looked into that.
+My plan is to wait and see what problems users report back before trying
+to fix anything.
+
+Noralf.

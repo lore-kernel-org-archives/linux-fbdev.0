@@ -2,112 +2,120 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BDDAC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 16:00:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 572CAC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 17:37:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242710AbiBBQAM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Feb 2022 11:00:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34756 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232735AbiBBQAL (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Feb 2022 11:00:11 -0500
-Received: from smtp.domeneshop.no (smtp.domeneshop.no [IPv6:2a01:5b40:0:3005::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 18DA4C061714;
-        Wed,  2 Feb 2022 08:00:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=tronnes.org
-        ; s=ds202112; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
-        References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
-        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-        List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=HjIuj8tK/i3bU/jTctNAzn1hnRcxPQQLduo2krywtkU=; b=EH3rg7kdaPqsCQ5aP0CO20CfG5
-        Nr+UWWGO7Y6S66ksZxEMOoGILOR1bK+G9d42uuu6ambVde60Hc7LD81TgLh2TObm2TVCRfUkG7ihu
-        YXdwsmMZ5CDcWrkl3HdRzDoHqm5JK0pmNBJz+NdYnExIGn3Jd4U3louPhjPJ6NhC4bZc6ZFgOnC1P
-        U8F/sqnpOAZ0jum9Po/llG943XMqWBeUDicmOiKZn64jsReQh71GwLPdSJqHFTsK/Kbnhr2bI2MrL
-        /lLlAFOowI7vH218ri6Bsr7CpotdaR6QA5afJF6O/fHegYBvp6wFJ/Dcu9rfrlOO9na7n3Ilb54oL
-        cHC6hYSw==;
-Received: from [2a01:799:95e:a400:cca0:57ac:c55d:a485] (port=60100)
-        by smtp.domeneshop.no with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <noralf@tronnes.org>)
-        id 1nFI3E-0000np-3N; Wed, 02 Feb 2022 17:00:08 +0100
-Message-ID: <7eb83dae-7dd9-1ffc-93ce-b47429ec510b@tronnes.org>
-Date:   Wed, 2 Feb 2022 17:00:05 +0100
+        id S229937AbiBBRhH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Feb 2022 12:37:07 -0500
+Received: from mout.gmx.net ([212.227.15.19]:55535 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S229588AbiBBRhH (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Wed, 2 Feb 2022 12:37:07 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1643823377;
+        bh=nuthtyGtekh1QQHr3+HkARKWphnDMvJGe0AUmpkrc7A=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=UgorUlyfz1L7WX1XD13Rv/Kw0rRnC9vqv2dHLJvt/P/wv1/f+JJtRmZjPr04+y3pj
+         FIQDAjc1uBefyweGFLCsd0LpgYX8qFACQ9ZHgdeGgMn5hNN+rfopzVyDjBsmgPYdqo
+         pcxVJwU+35jRbzkqIZdGBMA/Jx3omzQ7H56ifRck=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.163.171]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MWRRZ-1mi2Bu1TXH-00XvtJ; Wed, 02
+ Feb 2022 18:36:17 +0100
+Message-ID: <882bfe4e-a5b6-2b2c-167b-eda8c08419e3@gmx.de>
+Date:   Wed, 2 Feb 2022 18:36:10 +0100
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 1/4] drm: Add I2C connector type
-To:     Pekka Paalanen <ppaalanen@gmail.com>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+Subject: Re: [PATCH] fbdev: fbmem: Fix the implicit type casting
+Content-Language: en-US
+To:     Sam Ravnborg <sam@ravnborg.org>
+Cc:     Yizhuo Zhai <yzhai003@ucr.edu>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Emil Velikov <emil.l.velikov@gmail.com>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-References: <20220131201225.2324984-1-javierm@redhat.com>
- <20220131201225.2324984-2-javierm@redhat.com> <YfhMESTylI1NTKDg@ravnborg.org>
- <4d9a56a7-da25-b411-61cc-372c6fa9011d@tronnes.org>
- <4966d03e-ee0c-5130-3819-05a90a8f6d06@suse.de>
- <c6100ec3-b511-17cf-c542-e124c14fb334@tronnes.org>
- <20220202170455.3eece5a3@eldfell>
-From:   =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
-In-Reply-To: <20220202170455.3eece5a3@eldfell>
+        Matthew Wilcox <willy@infradead.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
+        Zheyu Ma <zheyuma97@gmail.com>,
+        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <20220131065719.1552958-1-yzhai003@ucr.edu>
+ <b1c1f68d-4620-2429-66bd-33d806d31457@gmx.de> <Yfq+/dVOgDVbhjRJ@ravnborg.org>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <Yfq+/dVOgDVbhjRJ@ravnborg.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:VX0YPkte7zZH09cDCCwSMR6sYdUsNWLLA8YgeJOkgJgQF/e0Hdr
+ ulgvAE4VODuPwDya1YKqtltqlyixywIGsh3K/ABDEZWxl2aUbWw7MesYYL0dyZsEFoyBzY4
+ fMXhQKFj6nB7PIZMmz0F44mQGcF3UKOml4d/JksZQguJNYL4ityt/xqwcFWn46dkY8dISrc
+ k4ju0v0v+e5pmBFX/T6UA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:S5DAjWZKd3M=:+qoyAW62vM1CXB8ZyHhb5o
+ oIVMSe7TaTUcNwMjlf9qGfxSkF3iJc4s8xuXYgd/Yap6jWcNAIdZBj055VI5t2AbHFZpyF3pq
+ N0A35aRyx6odqViUui0AvTYshmX6/XXAUW+eFNp3NNbLsV4vqPXMqOGO5ZxA7Ue+L0ebIfCIv
+ wIvlxM95WA8nCtjKnBBA1L6opujM+lSm4pOleyGcSPjngL8daqTf5B92k/ViuoAnM9A+wilTU
+ tFu4F3E/KKhp3hf3wnJHhcQEjeT7c9k1jjDnwu4U9/pB1XI5Ymvog/TYf+PtCRPpH1rQhn2de
+ OZ8S6bMjaJPT7OW+nwSIefQpFsbVMdrdu5BDgaplKIaYf8G8ZbTkKx0ZQybl/lAnBbo89Z0xm
+ GMCMH3mC/ef8l+1/uFgOpruVJrPXR3eLEKwzkwsyQjwGXCnsktx1C8Eqfm5XIW52sV0PkoecA
+ TkxrhiQ7kQt4M4Ks7RoXZPtevYsp91w/9ewt1J0k2YwTfiz59mLDmw1IkaNlzkqRsQbuW1+C/
+ 2CvyQt42GZlq7zAbYFrYbiRwb5K3pRiFq/O1dgPN9ajWt6l3I+CGO6JZAF9IpcaOHswXnTnKo
+ /U49eL7/FgAicyIH94BNBXmqyi9XrRXgS1PA4PkheWFcVyv0Oo4xIQd95JREfCfLNhdRF5L3Z
+ Ew1y6ISsL/nZ7LX7Y3VjjOa8w0zzA5Q5zCXYZXxE+zeo1AlF+hOCWLOdDqtEGQms2E5FD9Inn
+ s2AuwWgDsGzvWkIxkVJrD4rtvnpXNqb/8k0aqvOINQ5USEkJd6s7m3rgX7m8DvtNrUidJbIce
+ ZDHI4XDjGn+WMu+pXjkujVKhF4e0qSyWa/lBIsnEk3El0TLakOQrb/Vl27M+COledZTvZ5u4/
+ ++5D3tz+daxmrNzfEFPeuXTaZ3lF2+EfvCgLuZoSfZJKSma7KO85IdB6QoJNXgHY9nhMOpOMM
+ k8c5lfcYekwgp8rrTPug1FrW3aCRLK0GII3tpxAfTEWj+fTOebogrXHinEb5ikVdxVypZm/XI
+ RAyQKkVgoQ0N2h4Dxu/T33Q7+QykG8WGD/xnjLJ1nLXBBpaQcVj3v3BGBPOV+kX6V9BwLTlYr
+ Hi7AoBrK2dfhN4=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-
-
-Den 02.02.2022 16.04, skrev Pekka Paalanen:
-> On Wed, 2 Feb 2022 10:45:42 +0100
-> Noralf Trønnes <noralf@tronnes.org> wrote:
-> 
->> Den 02.02.2022 10.14, skrev Thomas Zimmermann:
->>> Hi Noralf,
->>>
->>> since you're here, I'll just hijack the discussion to ask something only
->>> semi-related.
->>>
->>> IIRC the gud driver doesn't update the display immediately during atomic
->>> commits. Instead, it instructs a helper thread to do the update. What's
->>> the rational behind this design? Is that something we should adopt for
->>> other drivers that operate over slow buses (USB, I2C, etc)? Would this
->>> be relevant for the ssd1307 driver?
->>>   
+On 2/2/22 18:27, Sam Ravnborg wrote:
+> Hi Helge,
+>
+> On Tue, Feb 01, 2022 at 04:02:40PM +0100, Helge Deller wrote:
+>> On 1/31/22 07:57, Yizhuo Zhai wrote:
+>>> In function do_fb_ioctl(), the "arg" is the type of unsigned long,
 >>
->> Async flushing is only necessary on multi display setups where there's
->> only one rendering loop for all the displays. I saw what tiny/gm12u320.c
->> did and Hans gave me the rationale. The SPI drivers run flushing inline.
->> Info on the gud wiki:
->> https://github.com/notro/gud/wiki/Linux-Host-Driver#asynchronous-flushing
-> 
-> Hi,
-> 
-> please also consider that userspace may throttle to the KMS pageflip
-> events. If the pageflip event is immediate from submitting a flip, that
-> could mean userspace will be repainting in a busy-loop, like 1 kHz.
-> However, I remember something about virtual KMS drivers doing exactly
-> this, and there being something that tells userspace to throttle itself
-> instead of depending on pageflip completions. I just forget how that is
-> supposed to work, and I'm fairly sure that e.g. Weston does not behave
-> well there.
-> 
-> Unfortunately, the pageflip event is also what synchronises FB usage.
-> Once flipping in a new FB completed, the old FB is free for re-use.
-> But, if the kernel is still copying out from the old FB, userspace may
-> partially overwrite the contents, temporarily leading to an incomplete
-> or too new image on screen. Do you have anything to prevent that?
-> 
+>> yes, because it comes from the ioctl framework...
+>>
+>>> and in "case FBIOBLANK:" this argument is casted into an int before
+>>> passig to fb_blank().
+>>
+>> which makes sense IMHO.
+>>
+>>> In fb_blank(), the comparision if (blank > FB_BLANK_POWERDOWN) would
+>>> be bypass if the original "arg" is a large number, which is possible
+>>> because it comes from the user input.
+>>
+>> The main problem I see with your patch is that you change the behaviour=
+.
+>> Let's assume someone passes in -1UL.
+>> With your patch applied, this means the -1 (which is e.g. 0xffffffff on=
+ 32bit)
+>> is converted to a positive integer and will be capped to FB_BLANK_POWER=
+DOWN.
+>> Since most blank functions just check and react on specific values, you=
+ changed
+>> the behaviour that the screen now gets blanked at -1, while it wasn't b=
+efore.
+>>
+>> One could now argue, that it's undefined behaviour if people
+>> pass in wrong values, but anyway, it's different now.
+>
+> We should just plug this hole and in case an illegal value is passed
+> then return -EINVAL.
+>
+> Acceptable values are FB_BLANK_UNBLANK..FB_BLANK_POWERDOWN,
+> anything less than or greater than should result in -EINVAL.
 
-Unfortunately not. One solution would be to make a buffer copy during
-the flip and do the USB transfer async but I haven't looked into that.
-My plan is to wait and see what problems users report back before trying
-to fix anything.
+Yes, that's the best solution.
+Yizhuo Zhai, would you mind to resend with that solution?
 
-Noralf.
+Helge
+
+> We miss this kind or early checks in many places, and we see the effect
+> of this in some drivers where they do it locally for no good.
+>
+> 	Sam

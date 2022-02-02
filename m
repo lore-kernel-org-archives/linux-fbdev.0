@@ -2,107 +2,137 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EF88C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 09:02:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95BDCC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 09:14:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231126AbiBBJC6 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Feb 2022 04:02:58 -0500
-Received: from eu-smtp-delivery-151.mimecast.com ([185.58.85.151]:50255 "EHLO
-        eu-smtp-delivery-151.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S242496AbiBBJC5 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 2 Feb 2022 04:02:57 -0500
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- uk-mta-286-fMc-AKToMMKAIaDfh45yHg-1; Wed, 02 Feb 2022 09:02:54 +0000
-X-MC-Unique: fMc-AKToMMKAIaDfh45yHg-1
-Received: from AcuMS.Aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) by
- AcuMS.aculab.com (fd9f:af1c:a25b:0:994c:f5c2:35d6:9b65) with Microsoft SMTP
- Server (TLS) id 15.0.1497.28; Wed, 2 Feb 2022 09:02:52 +0000
-Received: from AcuMS.Aculab.com ([fe80::994c:f5c2:35d6:9b65]) by
- AcuMS.aculab.com ([fe80::994c:f5c2:35d6:9b65%12]) with mapi id
- 15.00.1497.028; Wed, 2 Feb 2022 09:02:52 +0000
-From:   David Laight <David.Laight@ACULAB.COM>
-To:     'Yizhuo Zhai' <yzhai003@ucr.edu>
-CC:     Helge Deller <deller@gmx.de>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Matthew Wilcox <willy@infradead.org>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        "Zhen Lei" <thunder.leizhen@huawei.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Zheyu Ma <zheyuma97@gmail.com>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v2] fbdev: fbmem: Fix the implicit type casting
-Thread-Topic: [PATCH v2] fbdev: fbmem: Fix the implicit type casting
-Thread-Index: AQHYFxVn+cS+fUmzMESHo6Syg/F7Wqx/+Mmg
-Date:   Wed, 2 Feb 2022 09:02:52 +0000
-Message-ID: <5286c6acac7c4ee598f6fa4a7ea04b86@AcuMS.aculab.com>
-References: <202201311943.VXU6K1gH-lkp@intel.com>
- <20220201023559.2622144-1-yzhai003@ucr.edu>
-In-Reply-To: <20220201023559.2622144-1-yzhai003@ucr.edu>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+        id S237985AbiBBJOI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Feb 2022 04:14:08 -0500
+Received: from smtp-out2.suse.de ([195.135.220.29]:58612 "EHLO
+        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S232358AbiBBJOI (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Feb 2022 04:14:08 -0500
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 5F5F31F383;
+        Wed,  2 Feb 2022 09:14:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1643793247; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=VGaEopolAvl1vay+2D2pXDxvd4KCA4P6ayFyqkb1R0I=;
+        b=CO4VaGHa+kSZrOZqdEskiYP36IG5XmodUKi2GeCohPY0uM789V2DgfZhC9XAemSW8oJu2u
+        RRdOpVTvNR+KPyqzTGA4yB+k3XSp+2kd/+AIKH+BZv8mgZ5QnMlCMTLnPPigwNTBbcDYc6
+        ZHUdBmO58pd6mMVM2YWj+Lzcywb3zgY=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1643793247;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=VGaEopolAvl1vay+2D2pXDxvd4KCA4P6ayFyqkb1R0I=;
+        b=SoY7nsu6xVyAmtRg9p7bYmpLCMMa3/Yee7IHY2JVOpbX6U7VKcA86x43qB/MozPeoUhl92
+        2RvM/eOioY4JErBw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1A32013DF0;
+        Wed,  2 Feb 2022 09:14:07 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id ehdCBV9L+mFkPQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 02 Feb 2022 09:14:07 +0000
+Message-ID: <4966d03e-ee0c-5130-3819-05a90a8f6d06@suse.de>
+Date:   Wed, 2 Feb 2022 10:14:06 +0100
 MIME-Version: 1.0
-Authentication-Results: relay.mimecast.com;
-        auth=pass smtp.auth=C51A453 smtp.mailfrom=david.laight@aculab.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 1/4] drm: Add I2C connector type
 Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To:     =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Javier Martinez Canillas <javierm@redhat.com>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        dri-devel@lists.freedesktop.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Emil Velikov <emil.l.velikov@gmail.com>
+References: <20220131201225.2324984-1-javierm@redhat.com>
+ <20220131201225.2324984-2-javierm@redhat.com> <YfhMESTylI1NTKDg@ravnborg.org>
+ <4d9a56a7-da25-b411-61cc-372c6fa9011d@tronnes.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <4d9a56a7-da25-b411-61cc-372c6fa9011d@tronnes.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------FndkqVO09pyI4e7xoz9safGT"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Yizhuo Zhai
-> Sent: 01 February 2022 02:36
-> 
-> In function do_fb_ioctl(), the "arg" is the type of unsigned long,
-> and in "case FBIOBLANK:" this argument is casted into an int before
-> passig to fb_blank(). In fb_blank(), the comparision
-> if (blank > FB_BLANK_POWERDOWN) would be bypass if the original
-> "arg" is a large number, which is possible because it comes from
-> the user input. Fix this by adding the check before the function
-> call.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------FndkqVO09pyI4e7xoz9safGT
+Content-Type: multipart/mixed; boundary="------------wnU0sWHf0kqwXpNJOmXZj0A8";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+ Sam Ravnborg <sam@ravnborg.org>,
+ Javier Martinez Canillas <javierm@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, Daniel Vetter <daniel.vetter@ffwll.ch>,
+ dri-devel@lists.freedesktop.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Maxime Ripard <maxime@cerno.tech>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Emil Velikov <emil.l.velikov@gmail.com>
+Message-ID: <4966d03e-ee0c-5130-3819-05a90a8f6d06@suse.de>
+Subject: Re: [PATCH 1/4] drm: Add I2C connector type
+References: <20220131201225.2324984-1-javierm@redhat.com>
+ <20220131201225.2324984-2-javierm@redhat.com> <YfhMESTylI1NTKDg@ravnborg.org>
+ <4d9a56a7-da25-b411-61cc-372c6fa9011d@tronnes.org>
+In-Reply-To: <4d9a56a7-da25-b411-61cc-372c6fa9011d@tronnes.org>
 
-Doesn't this convert invalid values (> FB_BLANK_POWERDOWN)
-that should generate errors into valid requests?
+--------------wnU0sWHf0kqwXpNJOmXZj0A8
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-	David
+SGkgTm9yYWxmLA0KDQpzaW5jZSB5b3UncmUgaGVyZSwgSSdsbCBqdXN0IGhpamFjayB0aGUg
+ZGlzY3Vzc2lvbiB0byBhc2sgc29tZXRoaW5nIG9ubHkgDQpzZW1pLXJlbGF0ZWQuDQoNCklJ
+UkMgdGhlIGd1ZCBkcml2ZXIgZG9lc24ndCB1cGRhdGUgdGhlIGRpc3BsYXkgaW1tZWRpYXRl
+bHkgZHVyaW5nIGF0b21pYyANCmNvbW1pdHMuIEluc3RlYWQsIGl0IGluc3RydWN0cyBhIGhl
+bHBlciB0aHJlYWQgdG8gZG8gdGhlIHVwZGF0ZS4gV2hhdCdzIA0KdGhlIHJhdGlvbmFsIGJl
+aGluZCB0aGlzIGRlc2lnbj8gSXMgdGhhdCBzb21ldGhpbmcgd2Ugc2hvdWxkIGFkb3B0IGZv
+ciANCm90aGVyIGRyaXZlcnMgdGhhdCBvcGVyYXRlIG92ZXIgc2xvdyBidXNlcyAoVVNCLCBJ
+MkMsIGV0Yyk/IFdvdWxkIHRoaXMgDQpiZSByZWxldmFudCBmb3IgdGhlIHNzZDEzMDcgZHJp
+dmVyPw0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQotLSANClRob21hcyBaaW1tZXJtYW5u
+DQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBH
+ZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0K
+KEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rl
+dg0K
 
-> 
-> Signed-off-by: Yizhuo Zhai <yzhai003@ucr.edu>
-> ---
->  drivers/video/fbdev/core/fbmem.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> index 0fa7ede94fa6..f08326efff54 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -1162,6 +1162,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
->  	case FBIOBLANK:
->  		console_lock();
->  		lock_fb_info(info);
-> +		if (blank > FB_BLANK_POWERDOWN)
-> +			blank = FB_BLANK_POWERDOWN;
->  		ret = fb_blank(info, arg);
->  		/* might again call into fb_blank */
->  		fbcon_fb_blanked(info, arg);
-> --
-> 2.25.1
+--------------wnU0sWHf0kqwXpNJOmXZj0A8--
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
-Registration No: 1397386 (Wales)
+--------------FndkqVO09pyI4e7xoz9safGT
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmH6S14FAwAAAAAACgkQlh/E3EQov+B2
+dhAAmUk7hZVbh7kpyuDZLO5lLjg3IGDxYwEDbQBD96KxgxbrM2yYyx4mSysTqgUYek775ZfvdMbV
+aFoQMt8142Fxvva+jXPER6kZN7IPSUTc6ViH1pocYPK/kkqRjG27+fIXmr0gjVb492CBJ0CrVpGo
+vxIyhpv9yPnctVYMuyPE65S5WZmAew+4r17iaOVs2wPzxB5Vshgjhzv0F1qh+0UERqvVKVXriOaf
+aExR57kR0t+tHBWOHsC9WtWa2xaFSWREqhZVoyxVB7K3ZjVceIlbAalqmF+i/zHQ2Slp1gqnpMTz
+BuqKlgxOzgCTlWrA7cWd479lu65+kcwoaVqRufvPde8ANKSr9veDyHFgqWKlOEYwZFUdn+zsNyON
+R7OSfUmiZwZZpjLl3xNd7fnlNv3dy9K/7Pqdmnd4IZ4BRIsW+TzPuetdkC8J+KAI/kGfrGSLdtHQ
+fhpQZa+xH8rOcAzPOvvGL6gYXvinSucKdWHRmNKv89R6C77QuCRPLDJdSeOylgJQHU9gCxtwJOu/
+xrCV2CUcussh2SmhM9HszrRe5VkB4vAaVZCHHROXAFypKSoqRV26RwXM8TxfTgYwSsu4WsPzYzv+
+glzuSIa7mzinC2LwPgmsKMOno2lQjzRhj3C5bkgGelwTMVkJbIY3dWw+5rBuByzGhqORN7maHvHP
+8gQ=
+=g4mF
+-----END PGP SIGNATURE-----
+
+--------------FndkqVO09pyI4e7xoz9safGT--

@@ -2,142 +2,116 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FF63C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Feb 2022 12:51:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A69DC433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Feb 2022 13:47:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232067AbiBCMv7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 3 Feb 2022 07:51:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35182 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236476AbiBCMv6 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Feb 2022 07:51:58 -0500
-Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0F320C061714
-        for <linux-fbdev@vger.kernel.org>; Thu,  3 Feb 2022 04:51:58 -0800 (PST)
-Received: by mail-wr1-x42a.google.com with SMTP id w11so4875239wra.4
-        for <linux-fbdev@vger.kernel.org>; Thu, 03 Feb 2022 04:51:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=FUPIfszd+Y3hE4MXZ9LvXmC172Tu1YsDIDX0pVslV88=;
-        b=SJbg68NvUvUz6JlqQSaxOonhT4mAOvcKWl24+3aeEkN/C1Eq4jUsGwuuNVnT5r4ShQ
-         S4CCpbZnnReNr3hL8OgVf8+pJQP8m0GXazEV2XbfsHcM1B0QmoGYx8H2/uxUKFWlCYFG
-         DcGR2UQ+XzHZwSvyV97uns+/wwZu3yj1ECS6I=
+        id S230098AbiBCNr1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 3 Feb 2022 08:47:27 -0500
+Received: from mail-ua1-f47.google.com ([209.85.222.47]:45031 "EHLO
+        mail-ua1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S229927AbiBCNr1 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Feb 2022 08:47:27 -0500
+Received: by mail-ua1-f47.google.com with SMTP id p26so5190513uaa.11;
+        Thu, 03 Feb 2022 05:47:27 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to;
-        bh=FUPIfszd+Y3hE4MXZ9LvXmC172Tu1YsDIDX0pVslV88=;
-        b=pWCfYIPY19eRzyU5OWKGfgHd6O4Tmdit8teDxmAD0odA28KdcRUje25nID6ss7KGXv
-         oqu89lppxy4p1HOC+nld3CQOyUQwPLkgdq/8622knMnDDC0ej3LvFRXuoXenOrNNwg0o
-         RUirq228vU7OEHB3pB5jHRxlOjo9/clQFaEIXmIPooO/1TG+jUdnvilHfX+6FJjyKR0o
-         tRQvc8xG/3D7jEWFnufPgWKHf0qAkcSpKkGZIgOb+PnoDDWJBZ35DIyUWQUn7CKM8qTp
-         0yK2tHhZHp++BJipYK8HHQEkAAox0r2Lk5tRWV+eT38cUPNOEeugjxEhmhtBUHJ/DNO6
-         YAFQ==
-X-Gm-Message-State: AOAM532+sLqAKpVFHrxGMaJzV6S5nXF+IiRhGT9WJO8ySLOpdG6PusH+
-        Rms+FFXI1d4tyRGA2IwB4m7f2Q==
-X-Google-Smtp-Source: ABdhPJzR42nAMyZ79Y6xhTnIHIKTFzdFNj0PSIWQX50mORQVSDsydvIvPCxezSwwDXLYrXyM95hc9Q==
-X-Received: by 2002:a5d:5887:: with SMTP id n7mr29040764wrf.116.1643892716648;
-        Thu, 03 Feb 2022 04:51:56 -0800 (PST)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id v124sm7290459wme.30.2022.02.03.04.51.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Feb 2022 04:51:56 -0800 (PST)
-Date:   Thu, 3 Feb 2022 13:51:54 +0100
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Helge Deller <deller@gmx.de>
-Cc:     Sam Ravnborg <sam@ravnborg.org>, Yizhuo Zhai <yzhai003@ucr.edu>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Matthew Wilcox <willy@infradead.org>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Xin Tan <tanxin.ctf@gmail.com>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Zheyu Ma <zheyuma97@gmail.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6] fbdev: fbmem: Fix the implicit type casting
-Message-ID: <YfvP6s+EByLAqL9K@phenom.ffwll.local>
-Mail-Followup-To: Helge Deller <deller@gmx.de>,
-        Sam Ravnborg <sam@ravnborg.org>, Yizhuo Zhai <yzhai003@ucr.edu>,
-        Matthew Wilcox <willy@infradead.org>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Xin Tan <tanxin.ctf@gmail.com>, Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Zheyu Ma <zheyuma97@gmail.com>, Guenter Roeck <linux@roeck-us.net>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <f3b28143-5f59-ad77-f2b8-6274a6edbfdc@roeck-us.net>
- <20220202235811.1621017-1-yzhai003@ucr.edu>
- <Yft4qf3Hw7ntxc98@ravnborg.org>
- <d323261d-b123-27e5-b629-559ca892163d@gmx.de>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=YMvPdu1FDdP95BRsv+5Teh17OUBAE/eVt5OmqC+P+NU=;
+        b=p6uTcMomaYfMRVHqw4AlDMn8L9ODGmvx/+13AWgn82M+O/GgYp0hwOP9aG3yANvFAW
+         GNSMOagcum4HI5XU5duIhWP+cHiuGsHaLt7cxL7EWGp9z3f+jsl1UsVCTyveVILLnddi
+         s3bekcV32orNdnNUbm7rFeBBvO5uNs++K+qwEy3tUDsLHy/eh4NF7pOtZQJlPXq3VtYC
+         N4wNdrCPY0Vdn8b8v2XwcLnjNbTy1h2LTTiPw/ymGBfJyHKMjPTGgkqiVC4RCyPPub03
+         qEiqujKIgJq3M/ocR0QtEnhea0/9rYZBaevNR1PMhRQjGXmUFMfoso5dH+r749I6s6YH
+         P2mQ==
+X-Gm-Message-State: AOAM530Thr7vjodxCWtayUvRitFpT1W7+lmOFGjStN3ZK/vHLYmJ7d1W
+        KCg8ztq1jLx/uADc1FX/u8iburoXilxzZg==
+X-Google-Smtp-Source: ABdhPJy5bn1nh4JiCdsmgneGnr552U2kOXAgwIKliNEbLMQHv06r6sRArU1sbJaXxEUlgzk1Uhyl5Q==
+X-Received: by 2002:a67:e901:: with SMTP id c1mr13975103vso.38.1643896046807;
+        Thu, 03 Feb 2022 05:47:26 -0800 (PST)
+Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com. [209.85.222.43])
+        by smtp.gmail.com with ESMTPSA id g22sm5625844vsk.26.2022.02.03.05.47.25
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 03 Feb 2022 05:47:25 -0800 (PST)
+Received: by mail-ua1-f43.google.com with SMTP id u76so5288058uau.3;
+        Thu, 03 Feb 2022 05:47:25 -0800 (PST)
+X-Received: by 2002:a67:5f83:: with SMTP id t125mr13059550vsb.68.1643896045081;
+ Thu, 03 Feb 2022 05:47:25 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d323261d-b123-27e5-b629-559ca892163d@gmx.de>
-X-Operating-System: Linux phenom 5.10.0-8-amd64 
+References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
+ <20220131210552.482606-10-daniel.vetter@ffwll.ch> <723422bf-eb13-095f-66c5-e4011653e21d@suse.de>
+In-Reply-To: <723422bf-eb13-095f-66c5-e4011653e21d@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Thu, 3 Feb 2022 14:47:13 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVa2hL4ctCnd1iY68LcB4Udz1Z+oZ9rTobbkM-K-yJ5og@mail.gmail.com>
+Message-ID: <CAMuHMdVa2hL4ctCnd1iY68LcB4Udz1Z+oZ9rTobbkM-K-yJ5og@mail.gmail.com>
+Subject: Re: [PATCH 09/21] fbcon: Replace FBCON_FLAGS_INIT with a boolean
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Du Cheng <ducheng2@gmail.com>, Claudio Suarez <cssk@net-c.es>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Feb 03, 2022 at 09:18:30AM +0100, Helge Deller wrote:
-> On 2/3/22 07:39, Sam Ravnborg wrote:
-> > Hi Daniel,
+On Wed, Feb 2, 2022 at 10:25 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Am 31.01.22 um 22:05 schrieb Daniel Vetter:
+> > It's only one flag and slightly tidier code.
 > >
-> > I assume you will take this.
-> >
-> > Patch is:
-> > Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-> 
-> 
-> Acked-by: Helge Deller <deller@gmx.de>
+> > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+> > Cc: Daniel Vetter <daniel@ffwll.ch>
+> > Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Cc: Du Cheng <ducheng2@gmail.com>
+> > Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> > Cc: Claudio Suarez <cssk@net-c.es>
+>
+> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-Pushed to drm-misc-fixes, thanks for patch&review.
--Daniel
-
-> 
-> Helge
-> 
+> > +++ b/drivers/video/fbdev/core/fbcon.h
+> > @@ -18,8 +18,6 @@
 > >
-> > 	Sam
+> >   #include <asm/io.h>
 > >
-> > On Wed, Feb 02, 2022 at 03:58:08PM -0800, Yizhuo Zhai wrote:
-> >> In function do_fb_ioctl(), the "arg" is the type of unsigned long,
-> >> and in "case FBIOBLANK:" this argument is casted into an int before
-> >> passig to fb_blank(). In fb_blank(), the comparision
-> >> if (blank > FB_BLANK_POWERDOWN) would be bypass if the original
-> >> "arg" is a large number, which is possible because it comes from
-> >> the user input. Fix this by adding the check before the function
-> >> call.
-> >>
-> >> Signed-off-by: Yizhuo Zhai <yzhai003@ucr.edu>
-> >> ---
-> >>  drivers/video/fbdev/core/fbmem.c | 2 ++
-> >>  1 file changed, 2 insertions(+)
-> >>
-> >> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> >> index 0fa7ede94fa6..13083ad8d751 100644
-> >> --- a/drivers/video/fbdev/core/fbmem.c
-> >> +++ b/drivers/video/fbdev/core/fbmem.c
-> >> @@ -1160,6 +1160,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
-> >>  		ret = fbcon_set_con2fb_map_ioctl(argp);
-> >>  		break;
-> >>  	case FBIOBLANK:
-> >> +		if (arg > FB_BLANK_POWERDOWN)
-> >> +			return -EINVAL;
-> >>  		console_lock();
-> >>  		lock_fb_info(info);
-> >>  		ret = fb_blank(info, arg);
-> >> --
-> >> 2.25.1
-> 
+> > -#define FBCON_FLAGS_INIT         1
+> > -
+> >      /*
+> >       *    This is the interface between the low-level console driver and the
+> >       *    low-level frame buffer device
+> > @@ -77,7 +75,7 @@ struct fbcon_ops {
+> >       int    blank_state;
+> >       int    graphics;
+> >       int    save_graphics; /* for debug enter/leave */
+> > -     int    flags;
+> > +     bool   initialized;
+>
+> This will add 3 bytes of padding. Maybe you can put the bool elsewhere.
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Several of the int variables are used as boolean flags, too.
+Perhaps convert them all to bitfields?
+
+    unsigned int initialized : 1;
+    ...
+
+> >       int    rotate;
+> >       int    cur_rotate;
+> >       char  *cursor_data;
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

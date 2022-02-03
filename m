@@ -2,117 +2,112 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 715F1C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Feb 2022 23:58:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B563C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Feb 2022 01:07:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1348207AbiBBX6N (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Feb 2022 18:58:13 -0500
-Received: from mx.ucr.edu ([138.23.62.3]:5064 "EHLO mx2.ucr.edu"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1348206AbiBBX6L (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 2 Feb 2022 18:58:11 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=ucr.edu; i=@ucr.edu; q=dns/txt; s=selector3;
-  t=1643846292; x=1675382292;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=xYvx8fe8wRHtOQTQUEuPl7xZb+NEUT35cy+DHSkqPn4=;
-  b=h1wT+Q22xVIBdeTDaV9zETxtCvj7mlzMMxMgNQ32DnMpq5rtlzmuaneg
-   DVbvF0qGSJG3Rggws5GZ71Eg7HmU3gvdbpzyBgxonP8poWRPgkUqwnP7q
-   h88L/O+SUUoaM2auawhkd73pRo2mKB+iWfKCIsGOyUNX74VfdJ5VNLWhy
-   6UmwbNdPAYXmVMb3E/m2Ftm81GsXOqjg873I8JdDMyPNsXbQop+5FBeJJ
-   Zy06TkdY5YsWBrQ4HBr57MAy5kEADbMhUZEou7CaQAVdIUn7rT6FHNwmf
-   CcGbjjCDoclrdsHRnn/aUpZ6ycbs8+eezL2WWmVvU/D+UHIbOEQAEvMLX
-   A==;
-X-IronPort-AV: E=Sophos;i="5.88,338,1635231600"; 
-   d="scan'208";a="217257636"
-Received: from mail-pj1-f70.google.com ([209.85.216.70])
-  by smtp2.ucr.edu with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 02 Feb 2022 15:58:12 -0800
-Received: by mail-pj1-f70.google.com with SMTP id p14-20020a17090a2c4e00b001b54165bffeso719959pjm.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 02 Feb 2022 15:58:11 -0800 (PST)
+        id S1348757AbiBCBHl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Feb 2022 20:07:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47904 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239803AbiBCBHk (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Feb 2022 20:07:40 -0500
+Received: from mail-oi1-x22a.google.com (mail-oi1-x22a.google.com [IPv6:2607:f8b0:4864:20::22a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1037CC06173E;
+        Wed,  2 Feb 2022 17:07:40 -0800 (PST)
+Received: by mail-oi1-x22a.google.com with SMTP id e81so1662733oia.6;
+        Wed, 02 Feb 2022 17:07:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ucr.edu; s=rmail;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=GUOM8bvwC+la2NKqFvk2uI9Asw+K/wrTaRpdb2Kdz7U=;
-        b=TOKLi1xV2VoAfEWpE5V83okRjedJuomWMncW4lik6VyhjCpHVot4ZXMBqgkJnTxt/b
-         oXGo5UlO9ifjfReoAtoPe2/Nvn8No/cP8rGA+LA1D7RxUjku7PBWdN1Jjc6qECBlrFcO
-         rjctdWIycnceaqeE20k2mgo8clQ4zuEqIjG90=
+        d=gmail.com; s=20210112;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=3/2gr7P7TIioSsDPZqtUEHSC/S0NWVJIhuBQUzqg5s8=;
+        b=n9WlvJIYgvnX5s9E2Jwr/ZPDLPuRFfX3txro5PAcZTzBjBh0xUsP8cPSVLQ/pQ6ESt
+         uQ5JMbpx7srsQ1m3zPmv2LdQVFGhqAVMbluoK2+Lu9BjrEg3KnwXdxCDtTCinJQUUg2e
+         OvJg7W9ExztLW0R4M0wsdRENlZTxqVkoGf3qvQXozC4WdGO1hRToBOoOkJrnlhlPbfiZ
+         3NoXmk3WVZvrMV0794ZbVKexYgfoESZPoe5t80LEHEuqShhI//Bltoo8HSBTAFYzlLFM
+         91dn4kzlMX/UrbOyZ9CeVAlpyDonFUmTD2lDGihP31yZM4u9lHywW0Slsk4bu1j+7Lw1
+         SxHw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=GUOM8bvwC+la2NKqFvk2uI9Asw+K/wrTaRpdb2Kdz7U=;
-        b=8LT/NyexA7+NZWSSrj8fn+Ela22So0udGDa7923oc+BtFEaxouqOPdWL4ETRqHY1I1
-         y4yrpAewHREOrtLUa4/GaLmkRsCTlLqDLjrDN3yjO5U/M04e2vV5eM31z1uNDsfz5+MQ
-         bkOto9V60Q+lTgMbcAF2C+epnD4O3ZSWyN55IwEBmMVS9QhaLAScGj1I7MgPNzlqi+Rm
-         ccCSxBaIaddub0PqSUWphdikp3mpDA2UrWZ8xmIWfIBWD3EbtblQR/dBO+BAYZQp4HjC
-         pNMAtl3/DkIY5WoYp7PLnp/TyVb8smja6xg1zoXww+2t//2m9mFWuL3wA/MEMFjeDq2v
-         ROvA==
-X-Gm-Message-State: AOAM531JsJ8UaJIFktLab8TDXUIWBz56dHiHxzi7xCZnQTPNWnCkfTH3
-        J5kWCYIXpLgA88CI+x6NXF5CV7lYzZotAo9NtODhmumXobluwVUpzMqA0nAJSyr1iJ0+CUp12bT
-        f8t+1zwBLQ2Wd3AbELLC/knLs
-X-Received: by 2002:a05:6a00:1256:: with SMTP id u22mr32510706pfi.82.1643846290846;
-        Wed, 02 Feb 2022 15:58:10 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJz/rk+2PWsZGJZmsMuI52ixNCJbvxxZXhGBloxQkqqxkDky7OrWs3+DwSaQCwm+soYe+VmaFw==
-X-Received: by 2002:a05:6a00:1256:: with SMTP id u22mr32510685pfi.82.1643846290619;
-        Wed, 02 Feb 2022 15:58:10 -0800 (PST)
-Received: from kq.cs.ucr.edu (kq.cs.ucr.edu. [169.235.27.223])
-        by smtp.googlemail.com with ESMTPSA id b22sm27854781pfl.121.2022.02.02.15.58.09
+        h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+         :references:mime-version:content-disposition:in-reply-to;
+        bh=3/2gr7P7TIioSsDPZqtUEHSC/S0NWVJIhuBQUzqg5s8=;
+        b=I9Xg7Qtp1uNvZTFMm10JSAWRY8hrTdv6s5NMCxXOpH0Xc/9CJ7+hLz91V8QmAW77zo
+         0hKy7Q+9Vj9celRJlVO4si/ik8pmN6b45bZHKVMeUDlvnyKmAcex8AaN/3ssUExEQmGT
+         K9iMbGKmViSxK1l69vt602Ij/YojqjDbZGMZEXPQ+Dr0CNqpFl/GpXR8C1ZfFw4jv+6d
+         Ja4XmguKcJpppE4XFw9Q6Nl1S4Zw9Can/x9mlmfRRPymESuGfNOxpMFFsEHlPVUdGxNe
+         dQD/ePPLShSfDzbtfTswrSnvu3uktmGSFVPwlGQOyYlRl1dsC5TSt7CsKmSEvd41aR1O
+         tXKw==
+X-Gm-Message-State: AOAM532NmX5e1ejTePK8PJaMGbrmNA3EbT4J/T2xqhe/u3DssArHQtq8
+        WZBST2pFoOkKlb238OA9Tdw=
+X-Google-Smtp-Source: ABdhPJxv07d1xSlLJoA8oCdawgQbico73dhVB2TOBe+Cu76BVRLpQ2jagVv5QaP8K81yyFA+0SLWsw==
+X-Received: by 2002:a05:6808:d4f:: with SMTP id w15mr6402342oik.42.1643850459390;
+        Wed, 02 Feb 2022 17:07:39 -0800 (PST)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id m26sm15033837ooa.36.2022.02.02.17.07.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 02 Feb 2022 15:58:10 -0800 (PST)
-From:   Yizhuo Zhai <yzhai003@ucr.edu>
-Cc:     Yizhuo Zhai <yzhai003@ucr.edu>, Helge Deller <deller@gmx.de>,
+        Wed, 02 Feb 2022 17:07:38 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date:   Wed, 2 Feb 2022 17:07:37 -0800
+From:   Guenter Roeck <linux@roeck-us.net>
+To:     Yizhuo Zhai <yzhai003@ucr.edu>
+Cc:     Helge Deller <deller@gmx.de>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         Matthew Wilcox <willy@infradead.org>,
         Sam Ravnborg <sam@ravnborg.org>,
         Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        Guenter Roeck <linux@roeck-us.net>,
         Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
         Alex Deucher <alexander.deucher@amd.com>,
         Zhen Lei <thunder.leizhen@huawei.com>,
         Zheyu Ma <zheyuma97@gmail.com>, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v6] fbdev: fbmem: Fix the implicit type casting
-Date:   Wed,  2 Feb 2022 15:58:09 -0800
-Message-Id: <20220202235811.1621017-2-yzhai003@ucr.edu>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220202235811.1621017-1-yzhai003@ucr.edu>
+Subject: Re: [PATCH v6] fbdev: fbmem: Fix the implicit type casting
+Message-ID: <20220203010737.GB2544812@roeck-us.net>
 References: <f3b28143-5f59-ad77-f2b8-6274a6edbfdc@roeck-us.net>
  <20220202235811.1621017-1-yzhai003@ucr.edu>
+ <20220202235811.1621017-2-yzhai003@ucr.edu>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220202235811.1621017-2-yzhai003@ucr.edu>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-In function do_fb_ioctl(), the "arg" is the type of unsigned long,
-and in "case FBIOBLANK:" this argument is casted into an int before
-passig to fb_blank(). In fb_blank(), the comparision
-if (blank > FB_BLANK_POWERDOWN) would be bypass if the original
-"arg" is a large number, which is possible because it comes from
-the user input. Fix this by adding the check before the function
-call.
+On Wed, Feb 02, 2022 at 03:58:09PM -0800, Yizhuo Zhai wrote:
+> In function do_fb_ioctl(), the "arg" is the type of unsigned long,
+> and in "case FBIOBLANK:" this argument is casted into an int before
+> passig to fb_blank(). In fb_blank(), the comparision
+> if (blank > FB_BLANK_POWERDOWN) would be bypass if the original
+> "arg" is a large number, which is possible because it comes from
+> the user input. Fix this by adding the check before the function
+> call.
+> 
+> Signed-off-by: Yizhuo Zhai <yzhai003@ucr.edu>
 
-Signed-off-by: Yizhuo Zhai <yzhai003@ucr.edu>
----
- drivers/video/fbdev/core/fbmem.c | 2 ++
- 1 file changed, 2 insertions(+)
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 0fa7ede94fa6..13083ad8d751 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1160,6 +1160,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		ret = fbcon_set_con2fb_map_ioctl(argp);
- 		break;
- 	case FBIOBLANK:
-+		if (arg > FB_BLANK_POWERDOWN)
-+			return -EINVAL;
- 		console_lock();
- 		lock_fb_info(info);
- 		ret = fb_blank(info, arg);
--- 
-2.25.1
+On a side note, change logs would be useful.
 
+Guenter
+
+> ---
+>  drivers/video/fbdev/core/fbmem.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> index 0fa7ede94fa6..13083ad8d751 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -1160,6 +1160,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+>  		ret = fbcon_set_con2fb_map_ioctl(argp);
+>  		break;
+>  	case FBIOBLANK:
+> +		if (arg > FB_BLANK_POWERDOWN)
+> +			return -EINVAL;
+>  		console_lock();
+>  		lock_fb_info(info);
+>  		ret = fb_blank(info, arg);
+> -- 
+> 2.25.1
+> 

@@ -2,70 +2,67 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2EA9C433EF
-	for <linux-fbdev@archiver.kernel.org>; Sun,  6 Feb 2022 00:42:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6B88C433F5
+	for <linux-fbdev@archiver.kernel.org>; Sun,  6 Feb 2022 00:43:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245106AbiBFAmL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 5 Feb 2022 19:42:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46198 "EHLO
+        id S1344905AbiBFAnt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 5 Feb 2022 19:43:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46750 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229454AbiBFAmL (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 5 Feb 2022 19:42:11 -0500
+        with ESMTP id S240230AbiBFAnr (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 5 Feb 2022 19:43:47 -0500
 Received: from mx2.smtp.larsendata.com (mx2.smtp.larsendata.com [91.221.196.228])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 754C6C061348
-        for <linux-fbdev@vger.kernel.org>; Sat,  5 Feb 2022 16:42:10 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39DD9C061355
+        for <linux-fbdev@vger.kernel.org>; Sat,  5 Feb 2022 16:43:47 -0800 (PST)
 Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
         by mx2.smtp.larsendata.com (Halon) with ESMTPS
-        id 02d5ae26-8538-11ec-ac19-0050568cd888;
-        Thu, 03 Feb 2022 21:26:55 +0000 (UTC)
+        id 3e0f2c91-8538-11ec-ac19-0050568cd888;
+        Thu, 03 Feb 2022 21:28:34 +0000 (UTC)
 Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
         (Authenticated sender: sam@ravnborg.org)
-        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 1DC39194B78;
-        Thu,  3 Feb 2022 22:25:55 +0100 (CET)
-Date:   Thu, 3 Feb 2022 22:25:52 +0100
+        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 42F4D194B78;
+        Thu,  3 Feb 2022 22:27:34 +0100 (CET)
+Date:   Thu, 3 Feb 2022 22:27:31 +0100
 X-Report-Abuse-To: abuse@mxhotel.dk
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
         linux-fbdev@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Du Cheng <ducheng2@gmail.com>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
         Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
         LKML <linux-kernel@vger.kernel.org>,
-        Claudio Suarez <cssk@net-c.es>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Qing Wang <wangqing@vivo.com>,
         Daniel Vetter <daniel.vetter@intel.com>,
         Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 05/21] fbcon: Introduce wrapper for console->fb_info
- lookup
-Message-ID: <YfxIYAKE1RIVUT+9@ravnborg.org>
+Subject: Re: [PATCH 07/21] fbdev/sysfs: Fix locking
+Message-ID: <YfxIw83tbU4lrpKj@ravnborg.org>
 References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
- <20220131210552.482606-6-daniel.vetter@ffwll.ch>
+ <20220131210552.482606-8-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220131210552.482606-6-daniel.vetter@ffwll.ch>
+In-Reply-To: <20220131210552.482606-8-daniel.vetter@ffwll.ch>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jan 31, 2022 at 10:05:36PM +0100, Daniel Vetter wrote:
-> Half of it is protected by console_lock, but the other half is a lot
-> more awkward: Registration/deregistration of fbdev are serialized, but
-> we don't really clear out anything in con2fb_map and so there's
-> potential for use-after free mixups.
+On Mon, Jan 31, 2022 at 10:05:38PM +0100, Daniel Vetter wrote:
+> fb_set_var requires we hold the fb_info lock. Or at least this now
+> matches what the ioctl does ...
 > 
-> First step is to encapsulate the lookup.
+> Note that ps3fb and sh_mobile_lcdcfb are busted in different ways here,
+> but I will not fix them up.
+> 
+> Also in practice this isn't a big deal, because really variable fbdev
+> state is actually protected by console_lock (because fbcon just
+> doesn't bother with lock_fb_info() at all), and lock_fb_info
+> protecting anything is really just a neat lie. But that's a much
+> bigger fish to fry.
 > 
 > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 > Cc: Helge Deller <deller@gmx.de>
 > Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> Cc: Du Cheng <ducheng2@gmail.com>
-> Cc: Claudio Suarez <cssk@net-c.es>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Qing Wang <wangqing@vivo.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
 Acked-by: Sam Ravnborg <sam@ravnborg.org>

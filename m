@@ -2,176 +2,130 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A132BC433EF
-	for <linux-fbdev@archiver.kernel.org>; Sat,  5 Feb 2022 05:56:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2748DC433F5
+	for <linux-fbdev@archiver.kernel.org>; Sat,  5 Feb 2022 06:01:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343938AbiBEF4r (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 5 Feb 2022 00:56:47 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34712 "EHLO
+        id S1346171AbiBEGBp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 5 Feb 2022 01:01:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36024 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343878AbiBEF4n (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 5 Feb 2022 00:56:43 -0500
+        with ESMTP id S235094AbiBEGBo (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 5 Feb 2022 01:01:44 -0500
 Received: from mx1.smtp.larsendata.com (mx1.smtp.larsendata.com [91.221.196.215])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5F44C061346
-        for <linux-fbdev@vger.kernel.org>; Fri,  4 Feb 2022 21:56:41 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12452C061347
+        for <linux-fbdev@vger.kernel.org>; Fri,  4 Feb 2022 22:01:42 -0800 (PST)
 Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
         by mx1.smtp.larsendata.com (Halon) with ESMTPS
-        id 4b8b6b7d-839f-11ec-b20b-0050568c148b;
-        Tue, 01 Feb 2022 20:41:13 +0000 (UTC)
+        id 5edcb8cc-8532-11ec-b20b-0050568c148b;
+        Thu, 03 Feb 2022 20:46:32 +0000 (UTC)
 Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
         (Authenticated sender: sam@ravnborg.org)
-        by mail01.mxhotel.dk (Postfix) with ESMTPSA id AFE1A194B9E;
-        Tue,  1 Feb 2022 21:40:13 +0100 (CET)
-Date:   Tue, 1 Feb 2022 21:40:09 +0100
+        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 4BF6A194B90;
+        Thu,  3 Feb 2022 21:45:32 +0100 (CET)
+Date:   Thu, 3 Feb 2022 21:45:29 +0100
 X-Report-Abuse-To: abuse@mxhotel.dk
 From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PWM List <linux-pwm@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Mark Brown <broonie@kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED
- displays
-Message-ID: <YfmaqUBqCrgp0QdO@ravnborg.org>
-References: <20220131201225.2324984-1-javierm@redhat.com>
- <YfhM97cVH3+lJKg0@ravnborg.org>
- <Yfj/XGRRDNABsLPm@smile.fi.intel.com>
- <f8d71acb-5c8b-ac4e-0c32-38eb66af04c3@redhat.com>
- <CAMuHMdVP6ER119r2KAegjZes1a=KWZ47z6j=kgQ0oNx1oeUJ+w@mail.gmail.com>
- <51f54519-bb8b-f108-1c1e-4fed101ca5ef@redhat.com>
- <CAMuHMdVwUfv7pXhPazsgG6t=X=aVtDQkFUk_=mUuFH8Fscx8wg@mail.gmail.com>
- <abf63995-a529-1e80-18c3-df473a3e7a9c@redhat.com>
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
+        linux-fbdev@vger.kernel.org, Du Cheng <ducheng2@gmail.com>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Claudio Suarez <cssk@net-c.es>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH 06/21] fbcon: delete delayed loading code
+Message-ID: <Yfw+6VUOX6xcf664@ravnborg.org>
+References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
+ <20220131210552.482606-7-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <abf63995-a529-1e80-18c3-df473a3e7a9c@redhat.com>
+In-Reply-To: <20220131210552.482606-7-daniel.vetter@ffwll.ch>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Javier,
+Hi Daniel,
 
-On Tue, Feb 01, 2022 at 04:03:30PM +0100, Javier Martinez Canillas wrote:
-> Hello Geert,
+On Mon, Jan 31, 2022 at 10:05:37PM +0100, Daniel Vetter wrote:
+> Before
 > 
-> On 2/1/22 15:14, Geert Uytterhoeven wrote:
-> > Hi Javier,
-> > 
-> > On Tue, Feb 1, 2022 at 2:09 PM Javier Martinez Canillas
-> > <javierm@redhat.com> wrote:
-> >> On 2/1/22 12:38, Geert Uytterhoeven wrote:
-> >>>> Since the current binding has a compatible "ssd1305fb-i2c", we could make the
-> >>>> new one "ssd1305drm-i2c" or better, just "ssd1305-i2c".
-> >>>
-> >>> DT describes hardware, not software policy.
-> >>> If the hardware is the same, the DT bindings should stay the same.
-Only if the bindings describe the HW in a correct way that is.
-
-> >>>
-> >>
-> >> Yes I know that but the thing is that the current binding don't describe
-> >> the hardware correctly. For instance, don't use a backlight DT node as a
-> >> property of the panel and have this "fb" suffix in the compatible strings.
-> >>
-> >> Having said that, my opinion is that we should just keep with the existing
-> >> bindings and make compatible to that even if isn't completely correct.
-> >>
-> >> Since that will ease adoption of the new DRM driver and allow users to use
-> >> it without the need to update their DTBs.
-> > 
-> > To me it looks like the pwms property is not related to the backlight
-> > at all, and only needed for some variants?
-> >
+> commit 6104c37094e729f3d4ce65797002112735d49cd1
+> Author: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Date:   Tue Aug 1 17:32:07 2017 +0200
 > 
-> I was reading the datasheets of the ssd1305, ssd1306 and ssd1307. Only the
-> first one mentions anything about a PWM and says:
+>     fbcon: Make fbcon a built-time depency for fbdev
 > 
->   In phase 3, the OLED driver switches to use current source to drive the
->   OLED pixels and this is the current drive stage. SSD1305 employs PWM
->   (Pulse Width Modulation) method to control the brightness of area color
->   A, B, C, D color individually. The longer the waveform in current drive
->   stage is, the brighter is the pixel and vice versa.
+> it was possible to load fbcon and fbdev drivers in any order, which
+> means that fbcon init had to handle the case where fbdev drivers where
+> already registered.
 > 
->   After finishing phase 3, the driver IC will go back to phase 1 to display
->   the next row image data. This threestep cycle is run continuously to refresh
->   image display on OLED panel. 
+> This is no longer possible, hence delete that code.
 > 
-> The way I understand this is that the PWM isn't used for the backlight
-> but instead to power the IC and allow to display the actual pixels ?
+> Note that the exit case is a bit more complex and will be done in a
+> separate patch.
 > 
-> And this matches what Maxime mentioned in this patch:
+> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: Daniel Vetter <daniel@ffwll.ch>
+> Cc: Claudio Suarez <cssk@net-c.es>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Cc: Du Cheng <ducheng2@gmail.com>
+> ---
+>  drivers/video/fbdev/core/fbcon.c | 13 +------------
+>  1 file changed, 1 insertion(+), 12 deletions(-)
 > 
-> https://linux-arm-kernel.infradead.narkive.com/5i44FnQ8/patch-1-2-video-ssd1307fb-add-support-for-ssd1306-oled-controller
-> 
->   The Solomon SSD1306 OLED controller is very similar to the SSD1307,
->   except for the fact that the power is given through an external PWM for
->   the 1307, and while the 1306 can generate its own power without any PWM.
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index 8f971de35885..814b648e8f09 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -942,7 +942,7 @@ static const char *fbcon_startup(void)
+>  		return display_desc;
+>  	/*
+>  	 * Instead of blindly using registered_fb[0], we use info_idx, set by
+> -	 * fb_console_init();
+> +	 * fbcon_fb_registered();
+>  	 */
+This comment change looks like it does not belong in this patch.
+Also, the comment is wrong as info_idx is set in several places.
+Like set_con2fb_map(), fbcon_remap_all(), and more.
 
-I took a look at the datasheets - and all ssd1305, ssd1306 and ssd1307
-are the same. They have timing constrains on the Vcc.
-The random schematic I found on the net showed me that a PWM was used to
-control the Vcc voltage - which again is used to control the brightness.
+Though it is not set by fb_console_init - so partly OK.
 
-All the above has nothing to do with backlight - I had this mixed up in
-my head.
+With the comment adjustment dropped.
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-So my current understanding:
-- solomon,ssd1307fb.yaml should NOT include a backlight node - because
-  the backlight is something included in the ssd130x device and not
-  something separate.
-- 1305, 1306, and 1307 (I did not check 1309) all requires a Vcc
-  supply that shall be turned on/off according to the datasheet.
-  This implies that we need a regulaator for Vcc - and the regulator
-  could be a pwm based regulator or something else - the HW do not care.
-- But I can see that several design connect Vcc to a fixed voltage,
-  so I am not too sure about this part.
-
-I think the correct binding would have
-
-    ssd1307 => regulator => pwm
-
-So the ssd1307 binding references a regulator, and the regulator
-may use an pwm or may use something else.
-
-The current binding references a vbat supply - but the datasheet do not
-mention any vbat. It is most likely modelling the Vdd supply.
-
-Right now my take is to go the simple route:
-- Keep the binding as is and just use the pwm as already implemented
-- Likewise keep the backlight as is
-
-Last I recommend to drop the fbdev variant - if the drm driver has any
-regressions we can fix them. And I do not see any other way to move
-users over. Unless their setup breaks then they do not change.
-
-> 
-> > And the actual backlight code seems to be about internal contrast
-> > adjustment?
-> > 
-> > So if the pwms usage is OK, what other reasons are there to break
-> > DT compatibility? IMHO just the "fb" suffix is not a good reason.
-> >
-> 
-> Absolutely agreed with you on this. It seems we should just use the existing
-> binding and make the driver compatible with that. The only value is that the
-> drm_panel infrastructure could be used, but making it backward compatible is
-> more worthy IMO.
-Using drm_panel here would IMO just complicate things - it is not that
-we will see many different panels (I think).
+at least the code deletion looked OK, I failed to follow all the logic.
+So would be good if someone else could ack it too.
 
 	Sam
+
+
+
+>  	info = registered_fb[info_idx];
+>  	if (!info)
+> @@ -3316,17 +3316,6 @@ static void fbcon_start(void)
+>  		return;
+>  	}
+>  #endif
+> -
+> -	if (num_registered_fb) {
+> -		int i;
+> -
+> -		for_each_registered_fb(i) {
+> -			info_idx = i;
+> -			break;
+> -		}
+> -
+> -		do_fbcon_takeover(0);
+> -	}
+>  }
+>  
+>  static void fbcon_exit(void)
+> -- 
+> 2.33.0

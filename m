@@ -2,67 +2,69 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6B88C433F5
-	for <linux-fbdev@archiver.kernel.org>; Sun,  6 Feb 2022 00:43:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13D1AC433EF
+	for <linux-fbdev@archiver.kernel.org>; Sun,  6 Feb 2022 00:46:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344905AbiBFAnt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 5 Feb 2022 19:43:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46750 "EHLO
+        id S1348427AbiBFAqc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 5 Feb 2022 19:46:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47552 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240230AbiBFAnr (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 5 Feb 2022 19:43:47 -0500
+        with ESMTP id S244400AbiBFAqc (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 5 Feb 2022 19:46:32 -0500
 Received: from mx2.smtp.larsendata.com (mx2.smtp.larsendata.com [91.221.196.228])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 39DD9C061355
-        for <linux-fbdev@vger.kernel.org>; Sat,  5 Feb 2022 16:43:47 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C99D8C061355
+        for <linux-fbdev@vger.kernel.org>; Sat,  5 Feb 2022 16:46:31 -0800 (PST)
 Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
         by mx2.smtp.larsendata.com (Halon) with ESMTPS
-        id 3e0f2c91-8538-11ec-ac19-0050568cd888;
-        Thu, 03 Feb 2022 21:28:34 +0000 (UTC)
+        id a007edfb-8538-11ec-ac19-0050568cd888;
+        Thu, 03 Feb 2022 21:31:19 +0000 (UTC)
 Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
         (Authenticated sender: sam@ravnborg.org)
-        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 42F4D194B78;
-        Thu,  3 Feb 2022 22:27:34 +0100 (CET)
-Date:   Thu, 3 Feb 2022 22:27:31 +0100
+        by mail01.mxhotel.dk (Postfix) with ESMTPSA id C808B194B8C;
+        Thu,  3 Feb 2022 22:30:18 +0100 (CET)
+Date:   Thu, 3 Feb 2022 22:30:16 +0100
 X-Report-Abuse-To: abuse@mxhotel.dk
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
         linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Du Cheng <ducheng2@gmail.com>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
         Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
         LKML <linux-kernel@vger.kernel.org>,
-        Qing Wang <wangqing@vivo.com>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 07/21] fbdev/sysfs: Fix locking
-Message-ID: <YfxIw83tbU4lrpKj@ravnborg.org>
+        Claudio Suarez <cssk@net-c.es>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Daniel Vetter <daniel.vetter@intel.com>
+Subject: Re: [PATCH 09/21] fbcon: Replace FBCON_FLAGS_INIT with a boolean
+Message-ID: <YfxJaN7fG8esihZl@ravnborg.org>
 References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
- <20220131210552.482606-8-daniel.vetter@ffwll.ch>
+ <20220131210552.482606-10-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220131210552.482606-8-daniel.vetter@ffwll.ch>
+In-Reply-To: <20220131210552.482606-10-daniel.vetter@ffwll.ch>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jan 31, 2022 at 10:05:38PM +0100, Daniel Vetter wrote:
-> fb_set_var requires we hold the fb_info lock. Or at least this now
-> matches what the ioctl does ...
-> 
-> Note that ps3fb and sh_mobile_lcdcfb are busted in different ways here,
-> but I will not fix them up.
-> 
-> Also in practice this isn't a big deal, because really variable fbdev
-> state is actually protected by console_lock (because fbcon just
-> doesn't bother with lock_fb_info() at all), and lock_fb_info
-> protecting anything is really just a neat lie. But that's a much
-> bigger fish to fry.
+On Mon, Jan 31, 2022 at 10:05:40PM +0100, Daniel Vetter wrote:
+> It's only one flag and slightly tidier code.
 > 
 > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> Cc: Helge Deller <deller@gmx.de>
 > Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: Qing Wang <wangqing@vivo.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Du Cheng <ducheng2@gmail.com>
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Claudio Suarez <cssk@net-c.es>
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
+
+Next step is to convert some of the int flags to bool - so it is obvious
+this is bool and not an int.
+I do not like bitfields for bools when there is no big win in memory
+usage - so not fan of that suggestion.
+
+	Sam

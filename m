@@ -2,108 +2,97 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A69DC433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Feb 2022 13:47:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F39FC433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Feb 2022 08:31:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230098AbiBCNr1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 3 Feb 2022 08:47:27 -0500
-Received: from mail-ua1-f47.google.com ([209.85.222.47]:45031 "EHLO
-        mail-ua1-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229927AbiBCNr1 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Feb 2022 08:47:27 -0500
-Received: by mail-ua1-f47.google.com with SMTP id p26so5190513uaa.11;
-        Thu, 03 Feb 2022 05:47:27 -0800 (PST)
+        id S1356372AbiBDIbJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 4 Feb 2022 03:31:09 -0500
+Received: from mail-ua1-f54.google.com ([209.85.222.54]:41793 "EHLO
+        mail-ua1-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1354453AbiBDIbJ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 4 Feb 2022 03:31:09 -0500
+Received: by mail-ua1-f54.google.com with SMTP id w18so6282680uar.8;
+        Fri, 04 Feb 2022 00:31:09 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=YMvPdu1FDdP95BRsv+5Teh17OUBAE/eVt5OmqC+P+NU=;
-        b=p6uTcMomaYfMRVHqw4AlDMn8L9ODGmvx/+13AWgn82M+O/GgYp0hwOP9aG3yANvFAW
-         GNSMOagcum4HI5XU5duIhWP+cHiuGsHaLt7cxL7EWGp9z3f+jsl1UsVCTyveVILLnddi
-         s3bekcV32orNdnNUbm7rFeBBvO5uNs++K+qwEy3tUDsLHy/eh4NF7pOtZQJlPXq3VtYC
-         N4wNdrCPY0Vdn8b8v2XwcLnjNbTy1h2LTTiPw/ymGBfJyHKMjPTGgkqiVC4RCyPPub03
-         qEiqujKIgJq3M/ocR0QtEnhea0/9rYZBaevNR1PMhRQjGXmUFMfoso5dH+r749I6s6YH
-         P2mQ==
-X-Gm-Message-State: AOAM530Thr7vjodxCWtayUvRitFpT1W7+lmOFGjStN3ZK/vHLYmJ7d1W
-        KCg8ztq1jLx/uADc1FX/u8iburoXilxzZg==
-X-Google-Smtp-Source: ABdhPJy5bn1nh4JiCdsmgneGnr552U2kOXAgwIKliNEbLMQHv06r6sRArU1sbJaXxEUlgzk1Uhyl5Q==
-X-Received: by 2002:a67:e901:: with SMTP id c1mr13975103vso.38.1643896046807;
-        Thu, 03 Feb 2022 05:47:26 -0800 (PST)
-Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com. [209.85.222.43])
-        by smtp.gmail.com with ESMTPSA id g22sm5625844vsk.26.2022.02.03.05.47.25
+        bh=5LkLCh9tgcGFKu8QRYGFG/lHSI3FKQNh68/jvHDjNJA=;
+        b=sMXCtkZXutuXmeiaaxfsOfjVniAGJ5s18B0hci7ExQE5kXuR/6jZpTe6GJL0yT+LSM
+         4prTI6h3nju0sTAvvHZfYejA8QHxBZojreeAZFgD4gm2tyu6sKkZrJJVaOLgD2K0Lm/N
+         Rt0/bbFrGmqxRTugq7YPSopY54A0O+j6s6USe7ePIVoDKFLMm033pd+maCUUB71Re8+Q
+         Qx2JTjTKlg1y9foAmRL2AXola6s2FQIqT+XGnqmxxycV7fpkm7bwHD32Q5Um5AGGrB2r
+         cblZPuhqGnDohe2ap2ImUPtsbdA7l+YAJsfy4NmzEkPHlnMUoZLsrul2V3kMUN9xSObX
+         tBdQ==
+X-Gm-Message-State: AOAM532mlycewycQLrw4mU5xgoNDkn9n4OZ1tWtiZHPkU05d53TyxQNN
+        1cUedLpmqliYP1PTF2UcsIQF0kGZ2VoVLA==
+X-Google-Smtp-Source: ABdhPJyqLxW8X3j6VxHi8x73kcHaqhyjAl1kxYi0XIdlpRNnIl6vtyuKsYTRGj8uLQVBcecsonyxKA==
+X-Received: by 2002:ab0:2411:: with SMTP id f17mr542585uan.125.1643963468424;
+        Fri, 04 Feb 2022 00:31:08 -0800 (PST)
+Received: from mail-ua1-f53.google.com (mail-ua1-f53.google.com. [209.85.222.53])
+        by smtp.gmail.com with ESMTPSA id n10sm267711vso.34.2022.02.04.00.31.07
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 03 Feb 2022 05:47:25 -0800 (PST)
-Received: by mail-ua1-f43.google.com with SMTP id u76so5288058uau.3;
-        Thu, 03 Feb 2022 05:47:25 -0800 (PST)
-X-Received: by 2002:a67:5f83:: with SMTP id t125mr13059550vsb.68.1643896045081;
- Thu, 03 Feb 2022 05:47:25 -0800 (PST)
+        Fri, 04 Feb 2022 00:31:08 -0800 (PST)
+Received: by mail-ua1-f53.google.com with SMTP id p7so9621745uao.6;
+        Fri, 04 Feb 2022 00:31:07 -0800 (PST)
+X-Received: by 2002:a67:c198:: with SMTP id h24mr484417vsj.5.1643963467627;
+ Fri, 04 Feb 2022 00:31:07 -0800 (PST)
 MIME-Version: 1.0
-References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
- <20220131210552.482606-10-daniel.vetter@ffwll.ch> <723422bf-eb13-095f-66c5-e4011653e21d@suse.de>
-In-Reply-To: <723422bf-eb13-095f-66c5-e4011653e21d@suse.de>
+References: <20220131210552.482606-1-daniel.vetter@ffwll.ch> <20220131210552.482606-22-daniel.vetter@ffwll.ch>
+In-Reply-To: <20220131210552.482606-22-daniel.vetter@ffwll.ch>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 3 Feb 2022 14:47:13 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVa2hL4ctCnd1iY68LcB4Udz1Z+oZ9rTobbkM-K-yJ5og@mail.gmail.com>
-Message-ID: <CAMuHMdVa2hL4ctCnd1iY68LcB4Udz1Z+oZ9rTobbkM-K-yJ5og@mail.gmail.com>
-Subject: Re: [PATCH 09/21] fbcon: Replace FBCON_FLAGS_INIT with a boolean
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
+Date:   Fri, 4 Feb 2022 09:30:56 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdUm76tT6u+i=A50ffh=k8hX5kgoMqH=t_wfHqH95nVOPA@mail.gmail.com>
+Message-ID: <CAMuHMdUm76tT6u+i=A50ffh=k8hX5kgoMqH=t_wfHqH95nVOPA@mail.gmail.com>
+Subject: Re: [PATCH 21/21] fbdev: Make registered_fb[] private to fbmem.c
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
         Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Jens Frederich <jfrederich@gmail.com>,
+        Jon Nettleton <jon.nettleton@gmail.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Du Cheng <ducheng2@gmail.com>, Claudio Suarez <cssk@net-c.es>
+        linux-staging@lists.linux.dev,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Matthew Wilcox <willy@infradead.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
+        Zheyu Ma <zheyuma97@gmail.com>,
+        Guenter Roeck <linux@roeck-us.net>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Feb 2, 2022 at 10:25 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Am 31.01.22 um 22:05 schrieb Daniel Vetter:
-> > It's only one flag and slightly tidier code.
-> >
-> > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> > Cc: Daniel Vetter <daniel@ffwll.ch>
-> > Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Cc: Du Cheng <ducheng2@gmail.com>
-> > Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> > Cc: Claudio Suarez <cssk@net-c.es>
+Hi Daniel,
+
+Thanks for your patch!
+
+On Tue, Feb 1, 2022 at 9:50 PM Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
+> Well except when the olpc dcon fbdev driver is enabled, that thing
+> digs around in there in rather unfixable ways.
+
+Can't the actual frame buffer driver (which one?) used on olpc export
+a pointer to its fb_info?
+
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -48,10 +48,14 @@
+>  static DEFINE_MUTEX(registration_lock);
 >
-> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
+>  struct fb_info *registered_fb[FB_MAX] __read_mostly;
+> -EXPORT_SYMBOL(registered_fb);
+> -
+>  int num_registered_fb __read_mostly;
+> +#if IS_ENABLED(CONFIG_OLPC_DCON)
 
-> > +++ b/drivers/video/fbdev/core/fbcon.h
-> > @@ -18,8 +18,6 @@
-> >
-> >   #include <asm/io.h>
-> >
-> > -#define FBCON_FLAGS_INIT         1
-> > -
-> >      /*
-> >       *    This is the interface between the low-level console driver and the
-> >       *    low-level frame buffer device
-> > @@ -77,7 +75,7 @@ struct fbcon_ops {
-> >       int    blank_state;
-> >       int    graphics;
-> >       int    save_graphics; /* for debug enter/leave */
-> > -     int    flags;
-> > +     bool   initialized;
->
-> This will add 3 bytes of padding. Maybe you can put the bool elsewhere.
-
-Several of the int variables are used as boolean flags, too.
-Perhaps convert them all to bitfields?
-
-    unsigned int initialized : 1;
-    ...
-
-> >       int    rotate;
-> >       int    cur_rotate;
-> >       char  *cursor_data;
+CONFIG_FB_OLPC_DCON (everywhere), cfr. the build failure reported
+by the robot.
 
 Gr{oetje,eeting}s,
 

@@ -2,195 +2,98 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26B2FC433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Feb 2022 16:00:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94C45C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Feb 2022 17:31:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240192AbiBDQAS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 4 Feb 2022 11:00:18 -0500
-Received: from smtp-out2.suse.de ([195.135.220.29]:46554 "EHLO
-        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351844AbiBDQAS (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 4 Feb 2022 11:00:18 -0500
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 207B71F38F;
-        Fri,  4 Feb 2022 16:00:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1643990417; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=2M3BfZySCU3GhkOTg/qWB9negQk+U4Xuhd8ksmzvsyQ=;
-        b=RWF8wAE6L9ydFCZaY5vKQn4h2s2cYS/5AOB5shlZVn5PByU5hPly8UB/YFdUljBSorr9iO
-        Y8kosYrA1DJCMkpxmuu2ljsEqRxwnGEoMLA7m/2cb2JIL5eDIa0CiseVqhlYVn7ZVOr7Ai
-        HSwUdV9khVJLJLHd9kHgB2megroPHgI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1643990417;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=2M3BfZySCU3GhkOTg/qWB9negQk+U4Xuhd8ksmzvsyQ=;
-        b=CAQluhTxJpv9o2O9L/ZGgyKGlXHGjyWOdAUl4eQ3JYMg4nAFaZ/2DyK4r9+Z0XnrYS9WJ6
-        ojK7WjNRyRygvABw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D833613AE2;
-        Fri,  4 Feb 2022 16:00:16 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id yR7mM5BN/WFrOQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 04 Feb 2022 16:00:16 +0000
-Message-ID: <22cf9951-dc85-18b1-94fb-8387f76a94ab@suse.de>
-Date:   Fri, 4 Feb 2022 17:00:16 +0100
+        id S235531AbiBDRbs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 4 Feb 2022 12:31:48 -0500
+Received: from mout.gmx.net ([212.227.15.19]:54581 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S234250AbiBDRbs (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 4 Feb 2022 12:31:48 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1643995903;
+        bh=K9vYJ4Z0wQ3bmff5arWtA3wK6fAgdN2CVw47Zm1w0tA=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=fhgfzqftvaiTA/QXEvDINOcKjkN56pSjouprienVeSM0FFUR/k/e6NjYcJxriV28y
+         CNhFRgkl7xByQstWXX84adL91nOn2Z0JFiKzPMZC0mkkh7fcWZR814HFYMLdWdwde9
+         o7orK0gyeAKEpkn5i8zEv/Z4RGsTydFo+Y737+CY=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.130.18]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1Ml6mE-1mUrAZ02Zg-00lSqW; Fri, 04
+ Feb 2022 18:31:43 +0100
+Message-ID: <47416fc1-bc1d-1a25-2e30-d87e901b336a@gmx.de>
+Date:   Fri, 4 Feb 2022 18:31:41 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v2 1/4] drm/format-helper: Add
- drm_fb_{xrgb8888,gray8}_to_mono_reversed()
+ Thunderbird/91.3.0
+Subject: Re: [PATCH v4 3/3] fbcon: Add option to enable legacy hardware
+ acceleration
 Content-Language: en-US
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     Javier Martinez Canillas <javierm@redhat.com>,
-        linux-kernel@vger.kernel.org
-Cc:     linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        dri-devel@lists.freedesktop.org,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Sam Ravnborg <sam@ravnborg.org>
-References: <20220204134347.1187749-1-javierm@redhat.com>
- <20220204134347.1187749-2-javierm@redhat.com>
- <47100413-db63-1efa-45e9-028dfc430b7e@suse.de>
-In-Reply-To: <47100413-db63-1efa-45e9-028dfc430b7e@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------uKvC4ebQRAJ1axQI7V0U11rO"
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>
+References: <20220202135531.92183-1-deller@gmx.de>
+ <20220202135531.92183-4-deller@gmx.de>
+ <CAMuHMdWTuFt12faj58sLv3H9rN0xK-+CCTkFeEiKdLSQTU2Lmg@mail.gmail.com>
+ <ee851128-1080-d0ae-6c55-e1816bc89e74@gmx.de>
+ <CAMuHMdWAs9RC843oL0ME+yJSrSdVVM0Ua+T-KcrX1QTjsO1DZQ@mail.gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <CAMuHMdWAs9RC843oL0ME+yJSrSdVVM0Ua+T-KcrX1QTjsO1DZQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:tGtGgjiFkwAzVJSDTfPXM6zaoyGG29VK2i8+grG9iHRBlBukAsr
+ rEA+UCYLwgIgxhJ/WbQrsBNE7QGdxcz/y7MBuDNQvqzu3aSPYYRmS9mc87gGjuPWELASrbW
+ Vpp4AVuL6NLA/coalqCrXOSAhny31c/Nbh9pNUDEFdIdnoxNWW+VaK+X5Sq4NbHDlo0aOhD
+ wNLNVNPGZWUUCG8iDNswA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:xOis7iW2H68=:ds4/U5CgZ0KoAx+wwO174G
+ m0HnBR7xERoa3wuHm/nRX13AaC9k8IR+7zHoyIcpJd6fV6KrMtt67Alf02EAb4hsGAoFlV/gX
+ SDzFzFyePjW/w0VuW5KUrJwcAD/2OFCdJHsTCo5qnxExJtnFVfgsX3r8TXtmdwks/BytACk0c
+ ZXa+y8WFVptbXfbUZm7vMEsnfATPhLg2+gZZJBibNlMYLAqNB6hSJ/alNm5L2CYMrjyq/zKeg
+ rffjhXHCnaqRjt5MTeemakiqH0V/tTFhIxCxo2EPVypkvj2AUW3P/kmerXI6QEnb9s7iLBT6T
+ I0bucx2kPslDzplkMc8cbVOhO3VkUZ/Hw4dV1xPQWiLkYUMMrUkb1q87jWcGKr51OwrfkAzIC
+ HiFbIWPZzXR+oi67DuoiLvIj49e1JaMsslYcOXMPDPPUcfrKD574CbOVT9llCn2mY0ODlSvEc
+ T26FAN7uvU4pZxZwqJIX8oc7tmC322ApDeQ2SnKH/xqCwtG7kxnC5urT7bBal1m+6Xw/7bZjI
+ ypZmqQLf2KkdDajQ//OyVrpNyT3h42BceHSEibFkXkbLIpx7ZQuE+J+w+vBa55lMzOtN2Izvu
+ nUUeVlfil8OGaiWdULcm378DK/01tU6Th0RKeJhDE9q+wIOxRI9n+5YUt1oXZF62VmbIiJApp
+ CDzxyxoRWTFRn10QENsBQ/OkPjn1MLVHR08wP26UETo3L5VnAn3Cng4kGhqSWFX++z2cwZpu+
+ G+e1FUJyJN0ab1v1QBjk21UUtN0XpkiZ2hp3ffFPT978u1tR6I4jWaorRyPp9/OrHFlglaGT5
+ X7Uc+wECcr2OgyCgAH6tmPrPgUgZmAt0EJRuREeahXDdLKdd2LMv0KZYUaTLIpOnnbVA9enez
+ 6B5I+MssbBjEM2ejrQ1j8nFAY22jvVtvz/SJmdfuTION+QsWDOzKan6g/EAwRQMlO+C09L7/o
+ Fu/1I1zn48lCBrIxOj1n3kmA3n6UKQuUSkJUI3NbPvaMXxbxKoAI1lEibVEwalcfVzNV1lUFD
+ ZWuzRW1PP+QF/9HcLWcHTAc9ZbOfuniODmuTl/WU/QNjb3EagL2dlWoqDGdVoVkYNCcO0mgah
+ lmykPJ6O4Amt9s=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------uKvC4ebQRAJ1axQI7V0U11rO
-Content-Type: multipart/mixed; boundary="------------Fyl6dR7v07pMrP2NZSYgcqjU";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Javier Martinez Canillas <javierm@redhat.com>,
- linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
- Daniel Vetter <daniel.vetter@ffwll.ch>, dri-devel@lists.freedesktop.org,
- =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Maxime Ripard
- <maxime@cerno.tech>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Sam Ravnborg <sam@ravnborg.org>
-Message-ID: <22cf9951-dc85-18b1-94fb-8387f76a94ab@suse.de>
-Subject: Re: [PATCH v2 1/4] drm/format-helper: Add
- drm_fb_{xrgb8888,gray8}_to_mono_reversed()
-References: <20220204134347.1187749-1-javierm@redhat.com>
- <20220204134347.1187749-2-javierm@redhat.com>
- <47100413-db63-1efa-45e9-028dfc430b7e@suse.de>
-In-Reply-To: <47100413-db63-1efa-45e9-028dfc430b7e@suse.de>
+Hi Geert,
 
---------------Fyl6dR7v07pMrP2NZSYgcqjU
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On 2/4/22 11:24, Geert Uytterhoeven wrote:
+> On Fri, Feb 4, 2022 at 11:17 AM Helge Deller <deller@gmx.de> wrote:
+>> On 2/4/22 09:37, Geert Uytterhoeven wrote:
+>>> On Wed, Feb 2, 2022 at 8:05 PM Helge Deller <deller@gmx.de> wrote:
+>>>> Add a config option CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION to
+>>>> enable bitblt and fillrect hardware acceleration in the framebuffer
+>>>> console. If disabled, such acceleration will not be used, even if it =
+is
+>>>> supported by the graphics hardware driver.
+>>>
+>>> Note that this also applies to vertical panning and wrapping.
+>>
+>> That's correct.
+>> Would you mind to send a patch which adds this info?
+>
+> To add it where? "bitblt and fillrect" are only mentioned in the patch
+> description.
+>
+> The Kconfig help entry just talks about "hardware acceleration",
+> which can mean any trick supported by the hardware.
 
-DQpBbSAwNC4wMi4yMiB1bSAxNjo1MiBzY2hyaWViIFRob21hcyBaaW1tZXJtYW5uOg0KWy4u
-Ll0NCj4+ICsvKioNCj4+ICsgKiBkcm1fZmJfeHJnYjg4ODhfdG9fbW9ub19yZXZlcnNlZCAt
-IENvbnZlcnQgWFJHQjg4ODggdG8gcmV2ZXJzZWQgDQo+PiBtb25vY2hyb21lDQo+PiArICog
-QGRzdDogcmV2ZXJzZWQgbW9ub2Nocm9tZSBkZXN0aW5hdGlvbiBidWZmZXINCj4+ICsgKiBA
-ZHN0X3BpdGNoOiBOdW1iZXIgb2YgYnl0ZXMgYmV0d2VlbiB0d28gY29uc2VjdXRpdmUgc2Nh
-bmxpbmVzIA0KPj4gd2l0aGluIGRzdA0KPj4gKyAqIEBzcmM6IFhSR0I4ODg4IHNvdXJjZSBi
-dWZmZXINCj4+ICsgKiBAZmI6IERSTSBmcmFtZWJ1ZmZlcg0KPj4gKyAqIEBjbGlwOiBDbGlw
-IHJlY3RhbmdsZSBhcmVhIHRvIGNvcHkNCj4+ICsgKg0KPj4gKyAqIERSTSBkb2Vzbid0IGhh
-dmUgbmF0aXZlIG1vbm9jaHJvbWUgc3VwcG9ydC4NCj4+ICsgKiBTdWNoIGRyaXZlcnMgY2Fu
-IGFubm91bmNlIHRoZSBjb21tb25seSBzdXBwb3J0ZWQgWFIyNCBmb3JtYXQgdG8gDQo+PiB1
-c2Vyc3BhY2UNCj4+ICsgKiBhbmQgdXNlIHRoaXMgZnVuY3Rpb24gdG8gY29udmVydCB0byB0
-aGUgbmF0aXZlIGZvcm1hdC4NCj4+ICsgKg0KPj4gKyAqIFRoaXMgZnVuY3Rpb24gdXNlcyBk
-cm1fZmJfeHJnYjg4ODhfdG9fZ3JheTgoKSB0byBjb252ZXJ0IHRvIA0KPj4gZ3JheXNjYWxl
-IGFuZA0KPj4gKyAqIHRoZW4gdGhlIHJlc3VsdCBpcyBjb252ZXJ0ZWQgZnJvbSBncmF5c2Nh
-bGUgdG8gcmV2ZXJzZWQgbW9ub2hyb21lLg0KPj4gKyAqLw0KPj4gK3ZvaWQgZHJtX2ZiX3hy
-Z2I4ODg4X3RvX21vbm9fcmV2ZXJzZWQodm9pZCAqZHN0LCB1bnNpZ25lZCBpbnQgDQo+PiBk
-c3RfcGl0Y2gsIGNvbnN0IHZvaWQgKnNyYywNCj4+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqAgY29uc3Qgc3RydWN0IGRybV9mcmFtZWJ1ZmZlciAqZmIs
-DQo+PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIGNvbnN0
-IHN0cnVjdCBkcm1fcmVjdCAqY2xpcCkNCj4+ICt7DQo+PiArwqDCoMKgIGlmIChXQVJOX09O
-KGZiLT5mb3JtYXQtPmZvcm1hdCAhPSBEUk1fRk9STUFUX1hSR0I4ODg4KSkNCj4+ICvCoMKg
-wqDCoMKgwqDCoCByZXR1cm47DQo+PiArDQo+PiArwqDCoMKgIGlmICghZHN0X3BpdGNoKQ0K
-Pj4gK8KgwqDCoMKgwqDCoMKgIGRzdF9waXRjaCA9IGRybV9yZWN0X3dpZHRoKGNsaXApOw0K
-Pj4gKw0KPj4gK8KgwqDCoCBkcm1fZmJfeHJnYjg4ODhfdG9fZ3JheTgoZHN0LCBkc3RfcGl0
-Y2gsIHNyYywgZmIsIGNsaXApOw0KPj4gK8KgwqDCoCBkcm1fZmJfZ3JheThfdG9fbW9ub19y
-ZXZlcnNlZChkc3QsIGRzdF9waXRjaCwgZHN0LCBmYiwgY2xpcCk7DQo+IA0KPiBDb252ZXJ0
-aW5nIGZyb20gZHN0IGludG8gZHN0IGNhbiBnaXZlIGluY29ycmVjdCByZXN1bHRzLiBBdCBz
-b21lIHBvaW50IA0KPiB3ZSBwcm9iYWJseSB3YW50IHRvIGFkZCByZXN0cmljdCBxdWFsaWZp
-ZXJzIHRvIHRoZXNlIHBvaW50ZXJzLCB0byBoZWxwIA0KPiB0aGUgY29tcGlsZXIgd2l0aCBv
-cHRpbWl6aW5nLg0KPiANCj4gQSBiZXR0ZXIgYXBwcm9hY2ggaGVyZSBpcyB0byBwdWxsIHRo
-ZSBwZXItbGluZSBjb252ZXJzaW9uIGZyb20gDQo+IGRybV9mYl94cmdiODg4OF90b19ncmF5
-OCgpIGludG8gYSBzZXBhcmF0ZSBoZWxwZXIgYW5kIGltcGxlbWVudCBhIA0KPiBsaW5lLWJ5
-LWxpbmUgY29udmVyc2lvbiBoZXJlLiBzb21ldGhpbmcgbGlrZSB0aGlzOg0KPiANCj4gIMKg
-IGRybV9mYl94cmdiODg4OF90b19tb25vX3JldmVyc2VkKCkNCj4gIMKgIHsNCj4gIMKgwqDC
-oCBjaGFyICp0bXAgPSBrbWFsbG9jKHNpemUgb2YgYSBzaW5nbGUgbGluZSBvZiBncmF5OCkN
-Cj4gDQo+ICDCoMKgwqAgZm9yIChoZWlndGgpIHsNCj4gIMKgwqDCoMKgwqDCoCBkcm1fZmJf
-eHJnYjg4ODhfdG9fZ3JheThfbGluZSh0bXAsIC4uLiwgc3JjLCAuLi4pOw0KPiAgwqDCoMKg
-wqDCoMKgIGRybV9mYl9ncmF5OF90b19tb25vX3JldmVyc2VkKGRzdCwgLi4uLCB0bXAsIC4u
-Lik7DQoNCkhlcmUsIEkgbWVhbnQgJ2RybV9mYl9ncmF5OF90b19tb25vX3JldmVyc2VkX2xp
-bmUoKScNCg0KPiANCj4gIMKgwqDCoMKgwqDCoCBzcmMgKz0gZmItPnBpdGNoZXNbMF0NCj4g
-IMKgwqDCoMKgwqDCoCBkc3QgKz0gZHN0X3BpdGNoOw0KPiAgwqDCoMKgIH0NCj4gDQo+ICDC
-oMKgwqAga2ZyZWUodG1wKTsNCj4gIMKgIH0NCg0KVG8gZWxhYm9yYXRlLCB0aGlzIGlzIGFu
-IGV4YW1wbGUgb2Ygd2hhdCBJIG1lYW50IGJ5IGNvbXBvc2FibGUuIEluIHRoZSANCmZ1dHVy
-ZSwgd2UgY2FuIGdlbmVyYWxpemUgdGhpcyBmdW5jdGlvbiBhbmQgaGFuZC1pbiAyIGZ1bmN0
-aW9uIHBvaW50ZXJzIA0KdGhlIGRvIHRoZSBjb252ZXJzaW9uIHdpdGggdG1wIGFzIGludGVy
-bWVkaWF0ZSBidWZmZXIuIFRoYXQgd291bGQgd29yayANCmZvciBhbnkgY29tYmluYXRpb24g
-b2YgZm9ybWF0cyB0aGF0IGhhdmUgYSBjb21tb24gaW50ZXJtZWRpYXRlIGZvcm1hdC4NCg0K
-PiANCj4gQmVzdCByZWdhcmRzDQo+IFRob21hcw0KPiANCj4+ICt9DQo+PiArRVhQT1JUX1NZ
-TUJPTChkcm1fZmJfeHJnYjg4ODhfdG9fbW9ub19yZXZlcnNlZCk7DQo+PiBkaWZmIC0tZ2l0
-IGEvaW5jbHVkZS9kcm0vZHJtX2Zvcm1hdF9oZWxwZXIuaCANCj4+IGIvaW5jbHVkZS9kcm0v
-ZHJtX2Zvcm1hdF9oZWxwZXIuaA0KPj4gaW5kZXggYjMwZWQ1ZGUwYTMzLi44NWU1NTFhNWNi
-ZTYgMTAwNjQ0DQo+PiAtLS0gYS9pbmNsdWRlL2RybS9kcm1fZm9ybWF0X2hlbHBlci5oDQo+
-PiArKysgYi9pbmNsdWRlL2RybS9kcm1fZm9ybWF0X2hlbHBlci5oDQo+PiBAQCAtNDMsNCAr
-NDMsMTEgQEAgaW50IGRybV9mYl9ibGl0X3RvaW8odm9pZCBfX2lvbWVtICpkc3QsIHVuc2ln
-bmVkIA0KPj4gaW50IGRzdF9waXRjaCwgdWludDMyX3QgZHN0X2Zvcg0KPj4gwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoCBjb25zdCB2b2lkICp2bWFwLCBjb25zdCBzdHJ1Y3QgZHJt
-X2ZyYW1lYnVmZmVyICpmYiwNCj4+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgY29u
-c3Qgc3RydWN0IGRybV9yZWN0ICpyZWN0KTsNCj4+ICt2b2lkIGRybV9mYl9ncmF5OF90b19t
-b25vX3JldmVyc2VkKHZvaWQgKmRzdCwgdW5zaWduZWQgaW50IGRzdF9waXRjaCwgDQo+PiBj
-b25zdCB2b2lkICpzcmMsDQo+PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgIGNvbnN0IHN0cnVjdCBkcm1fcmVjdCAqY2xpcCk7DQo+PiArDQo+PiArdm9pZCBkcm1f
-ZmJfeHJnYjg4ODhfdG9fbW9ub19yZXZlcnNlZCh2b2lkICpkc3QsIHVuc2lnbmVkIGludCAN
-Cj4+IGRzdF9waXRjaCwgY29uc3Qgdm9pZCAqc3JjLA0KPj4gK8KgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBjb25zdCBzdHJ1Y3QgZHJtX2ZyYW1lYnVmZmVy
-ICpmYiwNCj4+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAg
-Y29uc3Qgc3RydWN0IGRybV9yZWN0ICpjbGlwKTsNCj4+ICsNCj4+IMKgICNlbmRpZiAvKiBf
-X0xJTlVYX0RSTV9GT1JNQVRfSEVMUEVSX0ggKi8NCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1l
-cm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRp
-b25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJt
-YW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZv
-IFRvdGV2DQo=
+Yes, I thought about extending the Kconfig help entry text to
+mention vertical panning and wrapping as well.
+If you have an idea how that should be phrased, I think it
+makes sense to add it.
 
---------------Fyl6dR7v07pMrP2NZSYgcqjU--
-
---------------uKvC4ebQRAJ1axQI7V0U11rO
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmH9TZAFAwAAAAAACgkQlh/E3EQov+DD
-EA//XW1T5dlPdP+FgnzNjCMeveK9sg+O/IhpF0REJ6TZu/ksWP8nElDjulwxrEl2mg2wdrRJiaD5
-aT5fZ8oAUfbEu3KM+q1hEoQHVTCt4yDPHEReZHXC3xvMRGO4/8bNgCrTonvVnL1RjKIbqtJDy7C+
-2IokNfG7CmPkDOjzPD6fegEOfw+XyDQd5lTo4APyBryCXDurlSf/GMsvFzvuRQ1BFdfHspxcqZSY
-GtQJ2v4u5VfXiVyST/0/uWQ3HJJ3WQwnuLoEbVs+ugvq6A/TvgIe6pQz+PkL1yRKhpptn2siiMSI
-UqMH+5e8hoiFltGG1tjSfJaep7X7xW/bNQxp+0M46o21OowKUEE+8nS3SoX497VZhj3j6XezZNZf
-aI+LCyk60sVbCPHDW8IvYu/ziRco+W4yK137xME5T+/V07fFv6BqccpB6ZbrNah1NVjI9yDOXKcT
-iMG+tYN4IkavtWraOmRpOryYnsxXTllfZWGRkMfjIJIUaeHaK34DacgHjpUl2txhpy0QFSmj2U4I
-kgUbkL6ilDbeEmOos2zqRjhepGjarqvZxGa0aiaHlt9SaDW4GY/LA7obZtVtS8v1rVvoHT2T2WcA
-/8DbTV/wqFa9aDuvOjvYwdT+EYO5Xy+cn+OLHlxVjaAEKdox36J2gt4AUE2aG7XCLfB+uNdCK77T
-Xs8=
-=yBos
------END PGP SIGNATURE-----
-
---------------uKvC4ebQRAJ1axQI7V0U11rO--
+Helge

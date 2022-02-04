@@ -2,98 +2,399 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94C45C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Feb 2022 17:31:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6EF9C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Feb 2022 19:19:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235531AbiBDRbs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 4 Feb 2022 12:31:48 -0500
-Received: from mout.gmx.net ([212.227.15.19]:54581 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S234250AbiBDRbs (ORCPT <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 4 Feb 2022 12:31:48 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1643995903;
-        bh=K9vYJ4Z0wQ3bmff5arWtA3wK6fAgdN2CVw47Zm1w0tA=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=fhgfzqftvaiTA/QXEvDINOcKjkN56pSjouprienVeSM0FFUR/k/e6NjYcJxriV28y
-         CNhFRgkl7xByQstWXX84adL91nOn2Z0JFiKzPMZC0mkkh7fcWZR814HFYMLdWdwde9
-         o7orK0gyeAKEpkn5i8zEv/Z4RGsTydFo+Y737+CY=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.130.18]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1Ml6mE-1mUrAZ02Zg-00lSqW; Fri, 04
- Feb 2022 18:31:43 +0100
-Message-ID: <47416fc1-bc1d-1a25-2e30-d87e901b336a@gmx.de>
-Date:   Fri, 4 Feb 2022 18:31:41 +0100
+        id S231898AbiBDTTS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 4 Feb 2022 14:19:18 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:28525 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S232315AbiBDTTQ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Fri, 4 Feb 2022 14:19:16 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1644002356;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=1SmAWoGG3rpqZKZcFe80PxRS+gWlMoV37ErpIWQkO2c=;
+        b=S+9uSaBeFPdGpG6MFsK96INcbOBc6+xgbVAZyvTaFqcwFgs2E5YXp94JDTWtoTIbXoahVG
+        SCxoLmvgzV/Q8l6mE5643Cn9Y6I6bcsHH/qjPvhK4Sa6ZLQrbpkikw7Bk2uXK9ccHxrI/n
+        m8k429AdpTO56fZtg7g48eE9Mkz+9Io=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-616-kDYrBW8nN32Wb6l7yNFGpQ-1; Fri, 04 Feb 2022 14:19:15 -0500
+X-MC-Unique: kDYrBW8nN32Wb6l7yNFGpQ-1
+Received: by mail-wr1-f71.google.com with SMTP id r2-20020adfa142000000b001e176ac1ec3so2429359wrr.3
+        for <linux-fbdev@vger.kernel.org>; Fri, 04 Feb 2022 11:19:15 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=1SmAWoGG3rpqZKZcFe80PxRS+gWlMoV37ErpIWQkO2c=;
+        b=PPlK6GzJpjLZFoIiU3oj+EHbwC87qGspY7xfQDnQj9yvRcGoLvwzf04Ym5OzgP7dtb
+         dQP9VsDrjSeTdplShSEbkWr5DbSZl7RB8UiedoJTPaHGAMhttn/5qKvXM9SSc0zLUkhe
+         i/13adpFL2EJcow3ntxRjetiXi9bnvifjLuZzCx3esS2e7bXVSWo8ds6gMr2vqbUADGk
+         2SgLxuK8KU5yuW7qpOrOji4Iz4Y1RvMT9FLeN+Dupc6hkwq5cju61f7feb/fOUY3xnOT
+         Br7bDE1Zf18JrHcbrz4axxhtZP9SaFBeET9tG42ZfaTxzQmr+u70TwcPW2rxOi0aYwc9
+         h+Kw==
+X-Gm-Message-State: AOAM533ofpqyRVDCXC21ALiXXoBzN6eWW/6xVuIE7brvory+VsD8mMt3
+        R8qzQU+Z5wEtTxZY8yPTCEU3zlDW1PrEThbjiv8cJF+98UvFUzefNbVpKm1JgT57BsX9EoZodRa
+        H5OQNQiUVx3GwB1/Pp3YGOYQ=
+X-Received: by 2002:a5d:47ae:: with SMTP id 14mr285298wrb.579.1644002354017;
+        Fri, 04 Feb 2022 11:19:14 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJzPVEChhH2BIVt4abopCyjtBiEW3BtBxNXFj39pjkOolzuEHz/zA5giC+MmJkCFq0OZIBFvhA==
+X-Received: by 2002:a5d:47ae:: with SMTP id 14mr285277wrb.579.1644002353738;
+        Fri, 04 Feb 2022 11:19:13 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id o8sm2089562wmc.46.2022.02.04.11.19.12
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 04 Feb 2022 11:19:13 -0800 (PST)
+Message-ID: <d4e8c16c-5586-3233-0b99-be15a4c0f7aa@redhat.com>
+Date:   Fri, 4 Feb 2022 20:19:12 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [PATCH v4 3/3] fbcon: Add option to enable legacy hardware
- acceleration
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v2 2/4] drm/tiny: Add driver for Solomon SSD130X OLED
+ displays
 Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>
-References: <20220202135531.92183-1-deller@gmx.de>
- <20220202135531.92183-4-deller@gmx.de>
- <CAMuHMdWTuFt12faj58sLv3H9rN0xK-+CCTkFeEiKdLSQTU2Lmg@mail.gmail.com>
- <ee851128-1080-d0ae-6c55-e1816bc89e74@gmx.de>
- <CAMuHMdWAs9RC843oL0ME+yJSrSdVVM0Ua+T-KcrX1QTjsO1DZQ@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAMuHMdWAs9RC843oL0ME+yJSrSdVVM0Ua+T-KcrX1QTjsO1DZQ@mail.gmail.com>
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc:     linux-kernel@vger.kernel.org,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linux-fbdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel@lists.freedesktop.org,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Lee Jones <lee.jones@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        linux-pwm@vger.kernel.org
+References: <20220204134347.1187749-1-javierm@redhat.com>
+ <20220204134347.1187749-3-javierm@redhat.com>
+ <Yf03sCSuQwHKvgA9@smile.fi.intel.com>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <Yf03sCSuQwHKvgA9@smile.fi.intel.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:tGtGgjiFkwAzVJSDTfPXM6zaoyGG29VK2i8+grG9iHRBlBukAsr
- rEA+UCYLwgIgxhJ/WbQrsBNE7QGdxcz/y7MBuDNQvqzu3aSPYYRmS9mc87gGjuPWELASrbW
- Vpp4AVuL6NLA/coalqCrXOSAhny31c/Nbh9pNUDEFdIdnoxNWW+VaK+X5Sq4NbHDlo0aOhD
- wNLNVNPGZWUUCG8iDNswA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:xOis7iW2H68=:ds4/U5CgZ0KoAx+wwO174G
- m0HnBR7xERoa3wuHm/nRX13AaC9k8IR+7zHoyIcpJd6fV6KrMtt67Alf02EAb4hsGAoFlV/gX
- SDzFzFyePjW/w0VuW5KUrJwcAD/2OFCdJHsTCo5qnxExJtnFVfgsX3r8TXtmdwks/BytACk0c
- ZXa+y8WFVptbXfbUZm7vMEsnfATPhLg2+gZZJBibNlMYLAqNB6hSJ/alNm5L2CYMrjyq/zKeg
- rffjhXHCnaqRjt5MTeemakiqH0V/tTFhIxCxo2EPVypkvj2AUW3P/kmerXI6QEnb9s7iLBT6T
- I0bucx2kPslDzplkMc8cbVOhO3VkUZ/Hw4dV1xPQWiLkYUMMrUkb1q87jWcGKr51OwrfkAzIC
- HiFbIWPZzXR+oi67DuoiLvIj49e1JaMsslYcOXMPDPPUcfrKD574CbOVT9llCn2mY0ODlSvEc
- T26FAN7uvU4pZxZwqJIX8oc7tmC322ApDeQ2SnKH/xqCwtG7kxnC5urT7bBal1m+6Xw/7bZjI
- ypZmqQLf2KkdDajQ//OyVrpNyT3h42BceHSEibFkXkbLIpx7ZQuE+J+w+vBa55lMzOtN2Izvu
- nUUeVlfil8OGaiWdULcm378DK/01tU6Th0RKeJhDE9q+wIOxRI9n+5YUt1oXZF62VmbIiJApp
- CDzxyxoRWTFRn10QENsBQ/OkPjn1MLVHR08wP26UETo3L5VnAn3Cng4kGhqSWFX++z2cwZpu+
- G+e1FUJyJN0ab1v1QBjk21UUtN0XpkiZ2hp3ffFPT978u1tR6I4jWaorRyPp9/OrHFlglaGT5
- X7Uc+wECcr2OgyCgAH6tmPrPgUgZmAt0EJRuREeahXDdLKdd2LMv0KZYUaTLIpOnnbVA9enez
- 6B5I+MssbBjEM2ejrQ1j8nFAY22jvVtvz/SJmdfuTION+QsWDOzKan6g/EAwRQMlO+C09L7/o
- Fu/1I1zn48lCBrIxOj1n3kmA3n6UKQuUSkJUI3NbPvaMXxbxKoAI1lEibVEwalcfVzNV1lUFD
- ZWuzRW1PP+QF/9HcLWcHTAc9ZbOfuniODmuTl/WU/QNjb3EagL2dlWoqDGdVoVkYNCcO0mgah
- lmykPJ6O4Amt9s=
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Geert,
+Hello Andy,
 
-On 2/4/22 11:24, Geert Uytterhoeven wrote:
-> On Fri, Feb 4, 2022 at 11:17 AM Helge Deller <deller@gmx.de> wrote:
->> On 2/4/22 09:37, Geert Uytterhoeven wrote:
->>> On Wed, Feb 2, 2022 at 8:05 PM Helge Deller <deller@gmx.de> wrote:
->>>> Add a config option CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION to
->>>> enable bitblt and fillrect hardware acceleration in the framebuffer
->>>> console. If disabled, such acceleration will not be used, even if it =
-is
->>>> supported by the graphics hardware driver.
->>>
->>> Note that this also applies to vertical panning and wrapping.
+Thanks for your feedback.
+
+On 2/4/22 15:26, Andy Shevchenko wrote:
+> On Fri, Feb 04, 2022 at 02:43:45PM +0100, Javier Martinez Canillas wrote:
+>> Add a DRM driver for SSD1305, SSD1306, SSD1307 and SSD1309 Solomon OLED
+>> controllers that can be programmed via an I2C interface. This is a port
+>> of the ssd1307fb driver that already supports these devices.
 >>
->> That's correct.
->> Would you mind to send a patch which adds this info?
+>> A Device Tree binding is not added because the DRM driver is compatible
+>> with the existing binding for the ssd1307fb driver.
+> 
+> ...
+> 
+>> +/*
+>> + * DRM driver for Solomon SSD130X OLED displays
+>> + *
+>> + * Copyright 2022 Red Hat Inc.
+>> + *
+>> + * Based on drivers/video/fbdev/ssd1307fb.c
+>> + * Copyright 2012 Free Electrons
+> 
+>> + *
+> 
+> No need for this blank line.
 >
-> To add it where? "bitblt and fillrect" are only mentioned in the patch
-> description.
+
+Ok.
+ 
+>> + */
+> 
+> ...
+> 
+>> +struct ssd130x_device {
+>> +	struct drm_device drm;
+>> +	struct drm_simple_display_pipe pipe;
+>> +	struct drm_display_mode mode;
+>> +	struct drm_connector connector;
+> 
+> 
+>> +	struct i2c_client *client;
+> 
+> Can we logically separate hw protocol vs hw interface from day 1, please?
+> This will allow to add SPI support for this panel much easier.
+> 
+> Technically I would like to see here
+> 
+> 	struct device *dev;
 >
-> The Kconfig help entry just talks about "hardware acceleration",
-> which can mean any trick supported by the hardware.
+> and probably (I haven't looked into design)
+> 
+> 	struct ssd130x_ops *ops;
+> 
+> or something alike.
+>
 
-Yes, I thought about extending the Kconfig help entry text to
-mention vertical panning and wrapping as well.
-If you have an idea how that should be phrased, I think it
-makes sense to add it.
+Sure. I wanted to keep the driver simple, making the writes bus agnostic and
+adding a level of indirection would make it more complex. But I agree that
+it will also make easier to add more buses later. I will do that for v3.
 
-Helge
+[snip]
+
+> 
+>> +static inline int ssd130x_write_value(struct i2c_client *client, u8 value)
+> 
+> Not sure inline does anything useful here.
+> Ditto for the rest similar cases.
+>
+
+Ok, I'll drop them.
+ 
+> ...
+> 
+>> +static inline int ssd130x_write_cmd(struct i2c_client *client, int count,
+>> +				    /* u8 cmd, u8 value, ... */...)
+>> +{
+>> +	va_list ap;
+>> +	u8 value;
+>> +	int ret;
+>> +
+>> +	va_start(ap, count);
+> 
+>> +	while (count--) {
+>> +		value = va_arg(ap, int);
+>> +		ret = ssd130x_write_value(client, (u8)value);
+>> +		if (ret)
+>> +			goto out_end;
+>> +	}
+> 
+> I'm wondering if this can be written in a form
+> 
+> 	do {
+> 		...
+> 	} while (--count);
+> 
+> In this case it will give a hint that count can't be 0.
+>
+
+Sure, I don't have a strong preference. I will change it.
+
+[snip]
+ 
+>> +	ssd130x->pwm = pwm_get(dev, NULL);
+>> +	if (IS_ERR(ssd130x->pwm)) {
+>> +		dev_err(dev, "Could not get PWM from device tree!\n");
+> 
+> "device tree" is a bit confusing here if I run this on ACPI.
+> Maybe something like "firmware description"?
+>
+
+Indeed.
+ 
+>> +		return PTR_ERR(ssd130x->pwm);
+>> +	}
+> 
+> ...
+> 
+>> +	/* Set initial contrast */
+>> +	ret = ssd130x_write_cmd(ssd130x->client, 2, SSD130X_CONTRAST, ssd130x->contrast);
+> 
+> Creating a local variable for client allows to:
+> - make lines shorter and might even be less LOCs
+> - allow to convert struct device to client in one place
+>   (as per my above comment)
+> 
+> Ditto for other similar cases.
+>
+
+Ok.
+ 
+[snip]
+
+>> +	/* Switch to horizontal addressing mode */
+>> +	ret = ssd130x_write_cmd(ssd130x->client, 2, SSD130X_SET_ADDRESS_MODE,
+>> +				SSD130X_SET_ADDRESS_MODE_HORIZONTAL);
+>> +	if (ret < 0)
+>> +		return ret;
+>> +
+>> +	return 0;
+> 
+> Can it be
+> 
+> 	return ssd130x_write_cmd(...);
+> 
+> ?
+> 
+> ...
+>
+
+Yes.
+
+>> +	unsigned int line_length = DIV_ROUND_UP(width, 8);
+>> +	unsigned int pages = DIV_ROUND_UP(height, 8);
+> 
+> For power of two there are more efficient roundup()/rounddown()
+> (or with _ in the names, I don't remember by heart).
+>
+
+Oh, I didn't know about round_{up,down}(). Thanks a lot for the pointer.
+
+> ...
+> 
+>> +			for (k = 0; k < m; k++) {
+> 
+>> +				u8 byte = buf[(8 * i + k) * line_length +
+>> +					       j / 8];
+> 
+> One line?
+>
+
+Yes.
+
+>> +				u8 bit = (byte >> (j % 8)) & 1;
+>> +
+>> +				data |= bit << k;
+>> +			}
+> 
+> ...
+> 
+>> +static int ssd130x_display_pipe_mode_valid(struct drm_simple_display_pipe *pipe,
+>> +					   const struct drm_display_mode *mode)
+>> +{
+>> +	struct ssd130x_device *ssd130x = drm_to_ssd130x(pipe->crtc.dev);
+>> +
+>> +	if (mode->hdisplay != ssd130x->mode.hdisplay &&
+>> +	    mode->vdisplay != ssd130x->mode.vdisplay)
+>> +		return MODE_ONE_SIZE;
+> 
+>> +	else if (mode->hdisplay != ssd130x->mode.hdisplay)
+>> +		return MODE_ONE_WIDTH;
+>> +	else if (mode->vdisplay != ssd130x->mode.vdisplay)
+>> +		return MODE_ONE_HEIGHT;
+> 
+> 'else' in both cases is redundant.
+>
+
+Indeed.
+ 
+>> +	return MODE_OK;
+>> +}
+> 
+> ...
+> 
+>> +poweroff:
+> 
+> out_power_off: ?
+>
+
+Ok.
+ 
+> ...
+> 
+>> +	if (!fb)
+>> +		return;
+> 
+> Can it happen?
+>
+
+I don't know, but saw that the handler of other drivers checked for this so
+preferred to play safe and do the same.
+ 
+> ...
+> 
+>> +	drm_mode_probed_add(connector, mode);
+>> +	drm_set_preferred_mode(connector, mode->hdisplay, mode->vdisplay);
+>> +
+>> +	return 1;
+> 
+> Positive code, what is the meaning of it?
+>
+
+It's the number of connector modes. The driver only supports 1.
+ 
+> ...
+> 
+>> +	if (device_property_read_u32(dev, "solomon,prechargep2", &ssd130x->prechargep2))
+>> +		ssd130x->prechargep2 = 2;
+> 
+> You can drop conditionals for the optional properties
+>
+
+
+ 
+> 	ssd130x->prechargep2 = 2;
+> 	device_property_read_u32(dev, "solomon,prechargep2", &ssd130x->prechargep2);
+> 
+> and so on for the similar.
+>
+
+Ok.
+ 
+> ...
+> 
+>> +	ssd130x->reset = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_LOW);
+>> +	if (IS_ERR(ssd130x->reset)) {
+> 
+>> +		ret = PTR_ERR(ssd130x->reset);
+>> +		dev_err(dev, "Failed to get reset gpio: %d\n", ret);
+>> +		return ret;
+> 
+> Why not
+> 
+> 	return dev_err_probe()?
+> 
+> Each time you call it for deferred probe, it will spam logs.
+>
+
+Right. I'll change in all the places you pointed out.
+
+[snip] 
+
+> ...
+> 
+>> +	{},
+> 
+> Comma is not needed in terminator entry.
+>
+
+Right.
+ 
+> ...
+> 
+>> +static struct i2c_driver ssd130x_i2c_driver = {
+>> +	.driver = {
+>> +		.name = DRIVER_NAME,
+>> +		.of_match_table = ssd130x_of_match,
+>> +	},
+>> +	.probe_new = ssd130x_probe,
+>> +	.remove = ssd130x_remove,
+>> +	.shutdown = ssd130x_shutdown,
+>> +};
+> 
+>> +
+> 
+> Redundant blank line.
+>
+
+Ok.
+ 
+>> +module_i2c_driver(ssd130x_i2c_driver);
+> 
+
+Best regards,
+-- 
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
+

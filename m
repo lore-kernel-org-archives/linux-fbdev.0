@@ -2,184 +2,209 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D72CAC433EF
-	for <linux-fbdev@archiver.kernel.org>; Sat,  5 Feb 2022 17:40:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C17BCC433F5
+	for <linux-fbdev@archiver.kernel.org>; Sat,  5 Feb 2022 22:51:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1380773AbiBERkN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 5 Feb 2022 12:40:13 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:36688 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1380770AbiBERkM (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 5 Feb 2022 12:40:12 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644082812;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=s+XMIPONIeda9RhSsJc9ELak7yslDV8zLw8dyCY9WO4=;
-        b=fG5PTKOJ/arSXnaYo++JCScHX9yaLlmWtUtOjmf0dhGQPz+sm03tn4ib/mRfDc/PUQn5q/
-        /sRwWWnsn24V599rbe1MFDa3acsFS9pxoE1xewQuYq2sWG972RWDe0+kk8fuxvrWDEpitr
-        NKW77KO6xHQhtYoHOPyTK6iW0Xkt6Co=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-488-pvV4hEAmO4m2yTeCGb8GnQ-1; Sat, 05 Feb 2022 12:40:11 -0500
-X-MC-Unique: pvV4hEAmO4m2yTeCGb8GnQ-1
-Received: by mail-wm1-f72.google.com with SMTP id c7-20020a1c3507000000b0034a0dfc86aaso9030855wma.6
-        for <linux-fbdev@vger.kernel.org>; Sat, 05 Feb 2022 09:40:11 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=s+XMIPONIeda9RhSsJc9ELak7yslDV8zLw8dyCY9WO4=;
-        b=ZkcD4Cq/MvT0mTlSWPoGpteCyclp7R+j2nOGbrl/NDcBUsAQNOPjtXtWTdQgzEwgSL
-         aDyRPnBEDEkKncdYeURX+2dv9RBzbtub62CQdGXcGrks0v9nLBI5dCzsd0fXOyiv9GjE
-         qlkNg/mInNGjqZUbt4rGu1fVP7U1DgB737vIkMRbQyR7L1P4LJBpvKYryy1GDsycppgS
-         +t5otocQMoJl/CFJj4SqPY5FpcMxcWYvd5FI42panh2Ospn7ZRK7PTGg0jnYMTyjc3Y7
-         9sfDteICIGZqQitTfLQMDWwIZw87hGZwW6rOzlPV22VtuftlhwjZDKev69u7qdrNuGGu
-         GPHg==
-X-Gm-Message-State: AOAM533PqU6DPCXtB7Eb/aQEsFT5lJJfS8J5uPHZiJAFsjAYTHXxzSjb
-        pEW5tkmO6Vo813VzxuAn//DsoVW8W3TkIPzVH74dc6XVo6dy5XbTdS99VrFEJz2n/RxwpGAfbGC
-        +kkryptjhlgK5hliMc6M0zmM=
-X-Received: by 2002:adf:eacc:: with SMTP id o12mr3614257wrn.576.1644082809878;
-        Sat, 05 Feb 2022 09:40:09 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJzwOCtnvSr9+0ruFVwU6XWZ8NVfXJZicBayON9c+Gj34T6iN20u+eYDTxD526vsLX81bmpGlg==
-X-Received: by 2002:adf:eacc:: with SMTP id o12mr3614243wrn.576.1644082809582;
-        Sat, 05 Feb 2022 09:40:09 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id ay29sm4452119wmb.38.2022.02.05.09.40.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 05 Feb 2022 09:40:09 -0800 (PST)
-Message-ID: <8b87cbc8-4878-b320-9460-dac751f6f0d6@redhat.com>
-Date:   Sat, 5 Feb 2022 18:40:08 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v2 2/4] drm/tiny: Add driver for Solomon SSD130X OLED
- displays
-Content-Language: en-US
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc:     linux-kernel@vger.kernel.org,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linux-fbdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-        dri-devel@lists.freedesktop.org,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        id S1380757AbiBEWvx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 5 Feb 2022 17:51:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46052 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S236017AbiBEWvx (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 5 Feb 2022 17:51:53 -0500
+Received: from mx1.smtp.larsendata.com (mx1.smtp.larsendata.com [91.221.196.215])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE215C061348
+        for <linux-fbdev@vger.kernel.org>; Sat,  5 Feb 2022 14:51:50 -0800 (PST)
+Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
+        by mx1.smtp.larsendata.com (Halon) with ESMTPS
+        id c5bc346a-85f1-11ec-b20b-0050568c148b;
+        Fri, 04 Feb 2022 19:36:39 +0000 (UTC)
+Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: sam@ravnborg.org)
+        by mail01.mxhotel.dk (Postfix) with ESMTPSA id DD5A1194B91;
+        Fri,  4 Feb 2022 20:35:34 +0100 (CET)
+Date:   Fri, 4 Feb 2022 20:35:31 +0100
+X-Report-Abuse-To: abuse@mxhotel.dk
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
+        linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
-        Lee Jones <lee.jones@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        linux-pwm@vger.kernel.org
-References: <20220204134347.1187749-1-javierm@redhat.com>
- <20220204134347.1187749-3-javierm@redhat.com>
- <Yf03sCSuQwHKvgA9@smile.fi.intel.com>
- <d4e8c16c-5586-3233-0b99-be15a4c0f7aa@redhat.com>
- <Yf511hhojzIXcNXp@smile.fi.intel.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <Yf511hhojzIXcNXp@smile.fi.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        Du Cheng <ducheng2@gmail.com>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Claudio Suarez <cssk@net-c.es>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Daniel Vetter <daniel.vetter@intel.com>
+Subject: Re: [PATCH 13/21] fbcon: move more common code into fb_open()
+Message-ID: <Yf2AAx9rlIsh/h8I@ravnborg.org>
+References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
+ <20220131210552.482606-14-daniel.vetter@ffwll.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220131210552.482606-14-daniel.vetter@ffwll.ch>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2/5/22 14:04, Andy Shevchenko wrote:
-> On Fri, Feb 04, 2022 at 08:19:12PM +0100, Javier Martinez Canillas wrote:
->> On 2/4/22 15:26, Andy Shevchenko wrote:
->>> On Fri, Feb 04, 2022 at 02:43:45PM +0100, Javier Martinez Canillas wrote:
+On Mon, Jan 31, 2022 at 10:05:44PM +0100, Daniel Vetter wrote:
+> No idea why con2fb_acquire_newinfo() initializes much less than
+> fbcon_startup(), but so be it. From a quick look most of the
+> un-initialized stuff should be fairly harmless, but who knows.
 > 
-> ...
+> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+> Cc: Daniel Vetter <daniel@ffwll.ch>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Cc: Claudio Suarez <cssk@net-c.es>
+> Cc: Du Cheng <ducheng2@gmail.com>
+> ---
+>  drivers/video/fbdev/core/fbcon.c | 74 +++++++++++++-------------------
+>  1 file changed, 31 insertions(+), 43 deletions(-)
 > 
->>>> +struct ssd130x_device {
->>>> +	struct drm_device drm;
->>>> +	struct drm_simple_display_pipe pipe;
->>>> +	struct drm_display_mode mode;
->>>> +	struct drm_connector connector;
->>>
->>>
->>>> +	struct i2c_client *client;
->>>
->>> Can we logically separate hw protocol vs hw interface from day 1, please?
->>> This will allow to add SPI support for this panel much easier.
->>>
->>> Technically I would like to see here
->>>
->>> 	struct device *dev;
->>>
->>> and probably (I haven't looked into design)
->>>
->>> 	struct ssd130x_ops *ops;
->>>
->>> or something alike.
->>
->> Sure. I wanted to keep the driver simple, making the writes bus agnostic and
->> adding a level of indirection would make it more complex. But I agree that
->> it will also make easier to add more buses later. I will do that for v3.
-> 
-> I have SSD1306 display with SPI interface and I'm not able to test your series.
-> With the above it at least gives me a point to consider helping (coding and
-> testing)  with SPI one.
->
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index b83a5a77d8a8..5a3391ff038d 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -680,8 +680,18 @@ static int fbcon_invalid_charcount(struct fb_info *info, unsigned charcount)
+>  
+>  #endif /* CONFIG_MISC_TILEBLITTING */
+>  
+> +static void fbcon_release(struct fb_info *info)
+> +{
+> +	if (info->fbops->fb_release)
+> +		info->fbops->fb_release(info, 0);
+> +
+> +	module_put(info->fbops->owner);
+> +}
+> +
+>  static int fbcon_open(struct fb_info *info)
+>  {
+> +	struct fbcon_ops *ops;
+> +
+>  	if (!try_module_get(info->fbops->owner))
+>  		return -ENODEV;
+>  
+> @@ -691,19 +701,22 @@ static int fbcon_open(struct fb_info *info)
+>  		return -ENODEV;
+>  	}
+>  
+> -	return 0;
+> -}
+> +	ops = kzalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
+> +	if (!ops) {
+> +		fbcon_release(info);
+> +		return -ENOMEM;
+> +	}
+>  
+> -static void fbcon_release(struct fb_info *info)
+> -{
+> -	if (info->fbops->fb_release)
+> -		info->fbops->fb_release(info, 0);
+> +	INIT_DELAYED_WORK(&ops->cursor_work, fb_flashcursor);
+> +	ops->info = info;
+> +	info->fbcon_par = ops;
+> +	ops->cur_blink_jiffies = HZ / 5;
+>  
+> -	module_put(info->fbops->owner);
+> +	return 0;
+>  }
+>  
+>  static int con2fb_acquire_newinfo(struct vc_data *vc, struct fb_info *info,
+> -				  int unit, int oldidx)
+> +				  int unit)
+>  {
+>  	struct fbcon_ops *ops = NULL;
+>  	int err;
+> @@ -712,27 +725,10 @@ static int con2fb_acquire_newinfo(struct vc_data *vc, struct fb_info *info,
+>  	if (err)
+>  		return err;
+>  
+> -	if (!err) {
+> -		ops = kzalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
+> -		if (!ops)
+> -			err = -ENOMEM;
+> -
+> -		INIT_DELAYED_WORK(&ops->cursor_work, fb_flashcursor);
+> -	}
+> -
+> -	if (!err) {
+> -		ops->cur_blink_jiffies = HZ / 5;
+> -		ops->info = info;
+> -		info->fbcon_par = ops;
+> -
+> -		if (vc)
+> -			set_blitting_type(vc, info);
+> -	}
+> +	ops = info->fbcon_par;
+>  
+> -	if (err) {
+> -		con2fb_map[unit] = oldidx;
+> -		fbcon_release(info);
+> -	}
+> +	if (vc)
+> +		set_blitting_type(vc, info);
+>  
+>  	return err;
+>  }
+> @@ -840,9 +836,11 @@ static int set_con2fb_map(int unit, int newidx, int user)
+>  
+>  	found = search_fb_in_map(newidx);
+>  
+> -	con2fb_map[unit] = newidx;
+> -	if (!err && !found)
+> -		err = con2fb_acquire_newinfo(vc, info, unit, oldidx);
+> +	if (!err && !found) {
+> +		err = con2fb_acquire_newinfo(vc, info, unit);
+> +		if (!err)
+> +			con2fb_map[unit] = newidx;
+> +	}
+This looks like an unintentional change of functionality as con2fb_map[unit] is
+only assigned when we do a con2fb_acquire_newinfo().
 
-Yes, I understand that. On the other hand, I only have a SSD1306 with an I2C
-interface so I'm interested in supporting that. Then someone could extend to
-support other buses :)
+Staring at the code I could not say it is wrong, but not nice to hide
+the change in this patch.
 
-But I agree with you that making the driver easier to extend and using regmap
-would be desirable. In fact, since I will add the level of indirection I can
-got ahead and attempt to add the SPI support as well.
+	Sam
 
-I won't be able to test but I can use drivers/staging/fbtft/fb_ssd1306.c as a
-reference for this.
 
-> ...
-> 
->>>> +	if (!fb)
->>>> +		return;
->>>
->>> Can it happen?
->>
->> I don't know, but saw that the handler of other drivers checked for this so
->> preferred to play safe and do the same.
-> 
-> So, either cargo-cult or indeed it may happen. Somebody may conduct a research
-> on this...
->
-
-Someone familiar with the simple display pipe helpers should chime in, I tried
-to grep around but couldn't figure out whether it was safe or not to assume the
-struct drm_framebuffer won't ever be NULL in a struct drm_shadow_plane_state.
-
-As mentioned other drivers were doing and I preferred to be defensive rather
-than leading to a possible NULL pointer dereference.
- 
-> ...
-> 
->>>> +	drm_mode_probed_add(connector, mode);
->>>> +	drm_set_preferred_mode(connector, mode->hdisplay, mode->vdisplay);
->>>> +
->>>> +	return 1;
->>>
->>> Positive code, what is the meaning of it?
->>
->> It's the number of connector modes. The driver only supports 1.
-> 
-> A comment then?
-> 
-
-Yes, that makes sense.
-
-Best regards,
--- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+>  
+>  	/*
+>  	 * If old fb is not mapped to any of the consoles,
+> @@ -939,20 +937,10 @@ static const char *fbcon_startup(void)
+>  	if (fbcon_open(info))
+>  		return NULL;
+>  
+> -	ops = kzalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
+> -	if (!ops) {
+> -		fbcon_release(info);
+> -		return NULL;
+> -	}
+> -
+> -	INIT_DELAYED_WORK(&ops->cursor_work, fb_flashcursor);
+> -
+> +	ops = info->fbcon_par;
+>  	ops->currcon = -1;
+>  	ops->graphics = 1;
+>  	ops->cur_rotate = -1;
+> -	ops->cur_blink_jiffies = HZ / 5;
+> -	ops->info = info;
+> -	info->fbcon_par = ops;
+>  
+>  	p->con_rotate = initial_rotation;
+>  	if (p->con_rotate == -1)
+> @@ -1022,7 +1010,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+>  		return;
+>  
+>  	if (!info->fbcon_par)
+> -		con2fb_acquire_newinfo(vc, info, vc->vc_num, -1);
+> +		con2fb_acquire_newinfo(vc, info, vc->vc_num);
+>  
+>  	/* If we are not the first console on this
+>  	   fb, copy the font from that console */
+> -- 
+> 2.33.0

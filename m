@@ -2,136 +2,239 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E966C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Feb 2022 14:37:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96E87C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Feb 2022 15:53:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1359354AbiBDOh3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 4 Feb 2022 09:37:29 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:37827 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S233084AbiBDOh2 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 4 Feb 2022 09:37:28 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643985448;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
+        id S1376287AbiBDPw7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 4 Feb 2022 10:52:59 -0500
+Received: from smtp-out2.suse.de ([195.135.220.29]:45718 "EHLO
+        smtp-out2.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1376294AbiBDPw5 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 4 Feb 2022 10:52:57 -0500
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id D64041F382;
+        Fri,  4 Feb 2022 15:52:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1643989975; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=YjU7W9LODb2lvWvbKWQ9iW4O2+zTIEYm3yk17PblSiY=;
-        b=ehpr7zw2HdOr1dhp424V9c+8erpRjCIZr1kiIR1X69YM0liYg60eUJkLK9BEe8y/ptY3rf
-        R0CM16rYjahREvPJBjWw4tjOgzNNWkUotpCgYSZ4FlFzvSF4gJ2dkYPWg/2ZKDWCTIs6a5
-        2U+6UCIAQHIKTLUdQ8nuYqDn66y8IWg=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-671-B8nzrPZ_Mx2yMpgr4j4YvA-1; Fri, 04 Feb 2022 09:37:27 -0500
-X-MC-Unique: B8nzrPZ_Mx2yMpgr4j4YvA-1
-Received: by mail-wr1-f70.google.com with SMTP id d25-20020adf9b99000000b001e298eecb85so2003572wrc.19
-        for <linux-fbdev@vger.kernel.org>; Fri, 04 Feb 2022 06:37:27 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=YjU7W9LODb2lvWvbKWQ9iW4O2+zTIEYm3yk17PblSiY=;
-        b=z7vN1A/XH78mlEZaMJETZ4Ivviao8XTdYvs21l5BXYM5U6b+VfxPoRwHViYrqLSJqP
-         DXsdk2rOMnNO0pTygP+mm/U+rT9MZxoVUBIMR21bAj01wecUYZuCwgVuMw2J0ZoQNrVO
-         WUJr2lfMUVVp4P/EEVN+ngrj6NSP8qYG/m3DO438Dr2iduv0VBBHol9T0SebEgxT41eO
-         u+Fxc1FGn1IwcNaaKBhw2sb1d81HgSoUDiDqBoOxsZVB2YxrHsaBLTyKYry1P051/PqY
-         u5tl/EbOpeD09w4HdAYJYJp5b340Gs+Wm1OCW5ZhXk6lFeD0L23icoXPZPdzkh7Q4TTe
-         M3/A==
-X-Gm-Message-State: AOAM531aFAgLdNkHWIwxXdsXIi6jAQYL5G/CQ0s9Miubx+GtwOw9Kq/S
-        242hEJM1IUIzu4s2TnNIp/7AVDY2REod6BL09D8BYuOVvFSk30CUUuohLyqrn6JF+lZuMUDa7jO
-        nyCvoop7lKOW7d255GV0OPBo=
-X-Received: by 2002:a05:600c:434c:: with SMTP id r12mr2489888wme.140.1643985446208;
-        Fri, 04 Feb 2022 06:37:26 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxkGFdJ6hDsKtVrBob4zscnjoipPqd5Nz/eKLnnFx09MVW96jWfTBPMl2XcPzkr/EqQQfzppA==
-X-Received: by 2002:a05:600c:434c:: with SMTP id r12mr2489866wme.140.1643985446002;
-        Fri, 04 Feb 2022 06:37:26 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id c8sm2004710wmq.34.2022.02.04.06.37.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 04 Feb 2022 06:37:25 -0800 (PST)
-Message-ID: <f81d3d89-c892-9397-71d0-3d0ab99dd479@redhat.com>
-Date:   Fri, 4 Feb 2022 15:37:24 +0100
+        bh=vUgYd4/d+/p6OH36Nj7N04clDus9+vNQS9D96mb7CBI=;
+        b=Kg9Y1c88irAJBV1rKPvY/Ih0I9VkEFe/oNPNNgPBoltmkStWbFbsjjDLSm+eJNsIXseEpd
+        QltpP4d5tPWAccXnQvAQW4lA1XQfZ9uul50BsXWtS7gdPdcZboL7r0IuD+ncNbBpVmbN/c
+        /2TWQRHfKy9QPlKPOpBuS2c8d/W6+4Y=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1643989975;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=vUgYd4/d+/p6OH36Nj7N04clDus9+vNQS9D96mb7CBI=;
+        b=vWZndw5T7meTpxAqi3qSKzjMsAdGtXlx/UpWr4Pqrx6yC192m4e3ytemmB7Piieihqq22Z
+        AxzI6S4YCsdOhFCg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 90BC413B29;
+        Fri,  4 Feb 2022 15:52:55 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id 84dgItdL/WELNgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 04 Feb 2022 15:52:55 +0000
+Message-ID: <47100413-db63-1efa-45e9-028dfc430b7e@suse.de>
+Date:   Fri, 4 Feb 2022 16:52:54 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
-Subject: Re: [PATCH v2 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED
- displays
+Subject: Re: [PATCH v2 1/4] drm/format-helper: Add
+ drm_fb_{xrgb8888,gray8}_to_mono_reversed()
 Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+To:     Javier Martinez Canillas <javierm@redhat.com>,
+        linux-kernel@vger.kernel.org
+Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linux-fbdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel@lists.freedesktop.org,
         =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
         Maxime Ripard <maxime@cerno.tech>,
         Daniel Vetter <daniel@ffwll.ch>,
         David Airlie <airlied@linux.ie>,
-        Lee Jones <lee.jones@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Mark Brown <broonie@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        Linux PWM List <linux-pwm@vger.kernel.org>
+        Maxime Ripard <mripard@kernel.org>
 References: <20220204134347.1187749-1-javierm@redhat.com>
- <CAMuHMdWoBc8amsg009oQGqUST8bN=8WqPM96SkUzcv=P1uRbfA@mail.gmail.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <CAMuHMdWoBc8amsg009oQGqUST8bN=8WqPM96SkUzcv=P1uRbfA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <20220204134347.1187749-2-javierm@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20220204134347.1187749-2-javierm@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------cnRQyZpb1bvRM6Q8hsnbuR1K"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Geert,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------cnRQyZpb1bvRM6Q8hsnbuR1K
+Content-Type: multipart/mixed; boundary="------------GzDANQ6HuGgccvj5HkcZZVu8";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ linux-kernel@vger.kernel.org
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org,
+ Sam Ravnborg <sam@ravnborg.org>, dri-devel@lists.freedesktop.org,
+ =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+ Maxime Ripard <maxime@cerno.tech>, Daniel Vetter <daniel@ffwll.ch>,
+ David Airlie <airlied@linux.ie>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>
+Message-ID: <47100413-db63-1efa-45e9-028dfc430b7e@suse.de>
+Subject: Re: [PATCH v2 1/4] drm/format-helper: Add
+ drm_fb_{xrgb8888,gray8}_to_mono_reversed()
+References: <20220204134347.1187749-1-javierm@redhat.com>
+ <20220204134347.1187749-2-javierm@redhat.com>
+In-Reply-To: <20220204134347.1187749-2-javierm@redhat.com>
 
-On 2/4/22 15:31, Geert Uytterhoeven wrote:
-> Hi Javier,
-> 
-> On Fri, Feb 4, 2022 at 2:43 PM Javier Martinez Canillas
-> <javierm@redhat.com> wrote:
->> This patch series adds a DRM driver for the Solomon OLED SSD1305, SSD1306,
->> SSD1307 and SSD1309 displays. It is a port of the ssd1307fb fbdev driver.
-> 
-> [...]
-> 
->> This is a v2 that addresses all the issues pointed in v1, thanks a lot
->> to everyone that gave me feedback and reviews. I tried to not miss any
->> comment, but there were a lot so forgive me if something is not there.
-> 
-> Thanks for the update!
->
+--------------GzDANQ6HuGgccvj5HkcZZVu8
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-You are welcome!
- 
->> Changes in v2:
-> 
-> [...]
-> 
-> Note that the individual patches say "(no changes since v1)"?
-> 
+SGkNCg0KQW0gMDQuMDIuMjIgdW0gMTQ6NDMgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
+aWxsYXM6DQo+IEFkZCBzdXBwb3J0IHRvIGNvbnZlcnQgWFIyNCBhbmQgOC1iaXQgZ3JheXNj
+YWxlIHRvIHJldmVyc2VkIG1vbm9jaHJvbWUgZm9yDQo+IGRyaXZlcnMgdGhhdCBjb250cm9s
+IG1vbm9jaHJvbWF0aWMgcGFuZWxzLCB0aGF0IG9ubHkgaGF2ZSAxIGJpdCBwZXIgcGl4ZWwu
+DQo+IA0KPiBUaGUgZHJtX2ZiX2dyYXk4X3RvX21vbm9fcmV2ZXJzZWQoKSBoZWxwZXIgd2Fz
+IGJhc2VkIG9uIHRoZSBmdW5jdGlvbiB0aGF0DQo+IGRvZXMgdGhlIHNhbWUgaW4gdGhlIGRy
+aXZlcnMvZ3B1L2RybS90aW55L3JlcGFwZXIuYyBkcml2ZXIuDQo+IA0KPiBTaWduZWQtb2Zm
+LWJ5OiBKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllcm1AcmVkaGF0LmNvbT4NCj4g
+LS0tDQo+IA0KPiAobm8gY2hhbmdlcyBzaW5jZSB2MSkNCj4gDQo+ICAgZHJpdmVycy9ncHUv
+ZHJtL2RybV9mb3JtYXRfaGVscGVyLmMgfCA4MCArKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKw0KPiAgIGluY2x1ZGUvZHJtL2RybV9mb3JtYXRfaGVscGVyLmggICAgIHwgIDcgKysr
+DQo+ICAgMiBmaWxlcyBjaGFuZ2VkLCA4NyBpbnNlcnRpb25zKCspDQo+IA0KPiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9ncHUvZHJtL2RybV9mb3JtYXRfaGVscGVyLmMgYi9kcml2ZXJzL2dw
+dS9kcm0vZHJtX2Zvcm1hdF9oZWxwZXIuYw0KPiBpbmRleCAwZjI4ZGQyYmRkNzIuLmNkY2U0
+YjdjMjVkOSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL2RybV9mb3JtYXRfaGVs
+cGVyLmMNCj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL2RybV9mb3JtYXRfaGVscGVyLmMNCj4g
+QEAgLTU4NCwzICs1ODQsODMgQEAgaW50IGRybV9mYl9ibGl0X3RvaW8odm9pZCBfX2lvbWVt
+ICpkc3QsIHVuc2lnbmVkIGludCBkc3RfcGl0Y2gsIHVpbnQzMl90IGRzdF9mb3INCj4gICAJ
+cmV0dXJuIC1FSU5WQUw7DQo+ICAgfQ0KPiAgIEVYUE9SVF9TWU1CT0woZHJtX2ZiX2JsaXRf
+dG9pbyk7DQo+ICsNCj4gK3N0YXRpYyB2b2lkIGRybV9mYl9ncmF5OF90b19tb25vX3JldmVy
+c2VkX2xpbmUodTggKmRzdCwgY29uc3QgdTggKnNyYywgc2l6ZV90IHBpeGVscykNCj4gK3sN
+Cj4gKwl1bnNpZ25lZCBpbnQgeGIsIGk7DQo+ICsNCj4gKwlmb3IgKHhiID0gMDsgeGIgPCBw
+aXhlbHMgLyA4OyB4YisrKSB7DQoNCkluIHByYWN0aWNlLCBhbGwgbW9kZSB3aWR0aHMgYXJl
+IG11bHRpcGxlcyBvZiA4IGJlY2F1c2UgVkdBIG1hbmRhdGVkIGl0LiANClNvIGl0J3Mgb2st
+aXNoIHRvIGFzc3VtZSB0aGlzIGhlcmUuIFlvdSBzaG91bGQgcHJvYmFibHkgYXQgbGVhc3Qg
+cHJpbnQgYSANCndhcm5pbmcgc29tZXdoZXJlIGlmIChwaXhlbHMgJSA4ICE9IDApDQoNCg0K
+PiArCQl1OCBieXRlID0gMHgwMDsNCj4gKw0KPiArCQlmb3IgKGkgPSAwOyBpIDwgODsgaSsr
+KSB7DQo+ICsJCQlpbnQgeCA9IHhiICogOCArIGk7DQo+ICsNCj4gKwkJCWJ5dGUgPj49IDE7
+DQo+ICsJCQlpZiAoc3JjW3hdID4+IDcpDQo+ICsJCQkJYnl0ZSB8PSBCSVQoNyk7DQo+ICsJ
+CX0NCj4gKwkJKmRzdCsrID0gYnl0ZTsNCj4gKwl9DQo+ICt9DQo+ICsNCj4gKy8qKg0KPiAr
+ICogZHJtX2ZiX2dyYXk4X3RvX21vbm9fcmV2ZXJzZWQgLSBDb252ZXJ0IGdyYXlzY2FsZSB0
+byByZXZlcnNlZCBtb25vY2hyb21lDQo+ICsgKiBAZHN0OiByZXZlcnNlZCBtb25vY2hyb21l
+IGRlc3RpbmF0aW9uIGJ1ZmZlcg0KPiArICogQGRzdF9waXRjaDogTnVtYmVyIG9mIGJ5dGVz
+IGJldHdlZW4gdHdvIGNvbnNlY3V0aXZlIHNjYW5saW5lcyB3aXRoaW4gZHN0DQo+ICsgKiBA
+c3JjOiA4LWJpdCBncmF5c2NhbGUgc291cmNlIGJ1ZmZlcg0KPiArICogQGNsaXA6IENsaXAg
+cmVjdGFuZ2xlIGFyZWEgdG8gY29weQ0KPiArICoNCj4gKyAqIERSTSBkb2Vzbid0IGhhdmUg
+bmF0aXZlIG1vbm9jaHJvbWUgb3IgZ3JheXNjYWxlIHN1cHBvcnQuDQo+ICsgKiBTdWNoIGRy
+aXZlcnMgY2FuIGFubm91bmNlIHRoZSBjb21tb25seSBzdXBwb3J0ZWQgWFIyNCBmb3JtYXQg
+dG8gdXNlcnNwYWNlDQo+ICsgKiBhbmQgdXNlIGRybV9mYl94cmdiODg4OF90b19ncmF5OCgp
+IHRvIGNvbnZlcnQgdG8gZ3JheXNjYWxlIGFuZCB0aGVuIHRoaXMNCj4gKyAqIGhlbHBlciBm
+dW5jdGlvbiB0byBjb252ZXJ0IHRvIHRoZSBuYXRpdmUgZm9ybWF0Lg0KPiArICovDQo+ICt2
+b2lkIGRybV9mYl9ncmF5OF90b19tb25vX3JldmVyc2VkKHZvaWQgKmRzdCwgdW5zaWduZWQg
+aW50IGRzdF9waXRjaCwgY29uc3Qgdm9pZCAqc3JjLA0KPiArCQkJCSAgIGNvbnN0IHN0cnVj
+dCBkcm1fcmVjdCAqY2xpcCkNCg0KVGhlcmUncyBhIGJ1ZyBoZXJlLiBZb3Ugd2FudCB0byBw
+YXNzIGluIGEgZHJtX2ZyYW1lYnVmZmVyIGFzIGZvdXJ0aCANCmFyZ3VtZW50Lg0KDQo+ICt7
+DQo+ICsNCj4gKwlzaXplX3QgaGVpZ2h0ID0gZHJtX3JlY3RfaGVpZ2h0KGNsaXApOw0KPiAr
+CXNpemVfdCB3aWR0aCA9IGRybV9yZWN0X3dpZHRoKGNsaXApOw0KPiArCXVuc2lnbmVkIGlu
+dCB5Ow0KPiArCWNvbnN0IHU4ICpncmF5OCA9IHNyYzsNCj4gKwl1OCAqbW9ubyA9IGRzdDsN
+Cj4gKw0KPiArCWlmICghZHN0X3BpdGNoKQ0KPiArCQlkc3RfcGl0Y2ggPSB3aWR0aDsNCg0K
+VGhlIGRzdF9waXRjaCBpcyBnaXZlbiBpbiBieXRlcy4gWW91IGhhdmUgdG8gZGV2aWNlIGJ5
+IDguIEhlcmUgd291bGQgYmUgDQphIGdvb2QgcGxhY2UgdG8gd2FybiBpZiAod2lkdGggJSA4
+ICE9IDApLg0KDQo+ICsNCj4gKwlmb3IgKHkgPSAwOyB5IDwgaGVpZ2h0OyB5KyspIHsNCj4g
+KwkJZHJtX2ZiX2dyYXk4X3RvX21vbm9fcmV2ZXJzZWRfbGluZShtb25vLCBncmF5OCwgZHN0
+X3BpdGNoKTsNCj4gKwkJbW9ubyArPSAoZHN0X3BpdGNoIC8gOCk7DQoNClRoZSBkc3RfcGl0
+Y2ggaXMgYWxyZWFkeSBnaXZlbiBpbiBieXRlcy4NCg0KPiArCQlncmF5OCArPSBkc3RfcGl0
+Y2g7DQoNCidncmF5OCArPSBmYi0+cGl0Y2hlc1swXScgd291bGQgYmUgY29ycmVjdC4NCg0K
+PiArCX0NCj4gK30NCj4gKw0KPiArLyoqDQo+ICsgKiBkcm1fZmJfeHJnYjg4ODhfdG9fbW9u
+b19yZXZlcnNlZCAtIENvbnZlcnQgWFJHQjg4ODggdG8gcmV2ZXJzZWQgbW9ub2Nocm9tZQ0K
+PiArICogQGRzdDogcmV2ZXJzZWQgbW9ub2Nocm9tZSBkZXN0aW5hdGlvbiBidWZmZXINCj4g
+KyAqIEBkc3RfcGl0Y2g6IE51bWJlciBvZiBieXRlcyBiZXR3ZWVuIHR3byBjb25zZWN1dGl2
+ZSBzY2FubGluZXMgd2l0aGluIGRzdA0KPiArICogQHNyYzogWFJHQjg4ODggc291cmNlIGJ1
+ZmZlcg0KPiArICogQGZiOiBEUk0gZnJhbWVidWZmZXINCj4gKyAqIEBjbGlwOiBDbGlwIHJl
+Y3RhbmdsZSBhcmVhIHRvIGNvcHkNCj4gKyAqDQo+ICsgKiBEUk0gZG9lc24ndCBoYXZlIG5h
+dGl2ZSBtb25vY2hyb21lIHN1cHBvcnQuDQo+ICsgKiBTdWNoIGRyaXZlcnMgY2FuIGFubm91
+bmNlIHRoZSBjb21tb25seSBzdXBwb3J0ZWQgWFIyNCBmb3JtYXQgdG8gdXNlcnNwYWNlDQo+
+ICsgKiBhbmQgdXNlIHRoaXMgZnVuY3Rpb24gdG8gY29udmVydCB0byB0aGUgbmF0aXZlIGZv
+cm1hdC4NCj4gKyAqDQo+ICsgKiBUaGlzIGZ1bmN0aW9uIHVzZXMgZHJtX2ZiX3hyZ2I4ODg4
+X3RvX2dyYXk4KCkgdG8gY29udmVydCB0byBncmF5c2NhbGUgYW5kDQo+ICsgKiB0aGVuIHRo
+ZSByZXN1bHQgaXMgY29udmVydGVkIGZyb20gZ3JheXNjYWxlIHRvIHJldmVyc2VkIG1vbm9o
+cm9tZS4NCj4gKyAqLw0KPiArdm9pZCBkcm1fZmJfeHJnYjg4ODhfdG9fbW9ub19yZXZlcnNl
+ZCh2b2lkICpkc3QsIHVuc2lnbmVkIGludCBkc3RfcGl0Y2gsIGNvbnN0IHZvaWQgKnNyYywN
+Cj4gKwkJCQkgICAgICBjb25zdCBzdHJ1Y3QgZHJtX2ZyYW1lYnVmZmVyICpmYiwNCj4gKwkJ
+CQkgICAgICBjb25zdCBzdHJ1Y3QgZHJtX3JlY3QgKmNsaXApDQo+ICt7DQo+ICsJaWYgKFdB
+Uk5fT04oZmItPmZvcm1hdC0+Zm9ybWF0ICE9IERSTV9GT1JNQVRfWFJHQjg4ODgpKQ0KPiAr
+CQlyZXR1cm47DQo+ICsNCj4gKwlpZiAoIWRzdF9waXRjaCkNCj4gKwkJZHN0X3BpdGNoID0g
+ZHJtX3JlY3Rfd2lkdGgoY2xpcCk7DQo+ICsNCj4gKwlkcm1fZmJfeHJnYjg4ODhfdG9fZ3Jh
+eTgoZHN0LCBkc3RfcGl0Y2gsIHNyYywgZmIsIGNsaXApOw0KPiArCWRybV9mYl9ncmF5OF90
+b19tb25vX3JldmVyc2VkKGRzdCwgZHN0X3BpdGNoLCBkc3QsIGZiLCBjbGlwKTsNCg0KQ29u
+dmVydGluZyBmcm9tIGRzdCBpbnRvIGRzdCBjYW4gZ2l2ZSBpbmNvcnJlY3QgcmVzdWx0cy4g
+QXQgc29tZSBwb2ludCANCndlIHByb2JhYmx5IHdhbnQgdG8gYWRkIHJlc3RyaWN0IHF1YWxp
+ZmllcnMgdG8gdGhlc2UgcG9pbnRlcnMsIHRvIGhlbHAgDQp0aGUgY29tcGlsZXIgd2l0aCBv
+cHRpbWl6aW5nLg0KDQpBIGJldHRlciBhcHByb2FjaCBoZXJlIGlzIHRvIHB1bGwgdGhlIHBl
+ci1saW5lIGNvbnZlcnNpb24gZnJvbSANCmRybV9mYl94cmdiODg4OF90b19ncmF5OCgpIGlu
+dG8gYSBzZXBhcmF0ZSBoZWxwZXIgYW5kIGltcGxlbWVudCBhIA0KbGluZS1ieS1saW5lIGNv
+bnZlcnNpb24gaGVyZS4gc29tZXRoaW5nIGxpa2UgdGhpczoNCg0KICAgZHJtX2ZiX3hyZ2I4
+ODg4X3RvX21vbm9fcmV2ZXJzZWQoKQ0KICAgew0KICAgICBjaGFyICp0bXAgPSBrbWFsbG9j
+KHNpemUgb2YgYSBzaW5nbGUgbGluZSBvZiBncmF5OCkNCg0KICAgICBmb3IgKGhlaWd0aCkg
+ew0KICAgICAgICBkcm1fZmJfeHJnYjg4ODhfdG9fZ3JheThfbGluZSh0bXAsIC4uLiwgc3Jj
+LCAuLi4pOw0KICAgICAgICBkcm1fZmJfZ3JheThfdG9fbW9ub19yZXZlcnNlZChkc3QsIC4u
+LiwgdG1wLCAuLi4pOw0KDQogICAgICAgIHNyYyArPSBmYi0+cGl0Y2hlc1swXQ0KICAgICAg
+ICBkc3QgKz0gZHN0X3BpdGNoOw0KICAgICB9DQoNCiAgICAga2ZyZWUodG1wKTsNCiAgIH0N
+Cg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiArfQ0KPiArRVhQT1JUX1NZTUJPTChkcm1f
+ZmJfeHJnYjg4ODhfdG9fbW9ub19yZXZlcnNlZCk7DQo+IGRpZmYgLS1naXQgYS9pbmNsdWRl
+L2RybS9kcm1fZm9ybWF0X2hlbHBlci5oIGIvaW5jbHVkZS9kcm0vZHJtX2Zvcm1hdF9oZWxw
+ZXIuaA0KPiBpbmRleCBiMzBlZDVkZTBhMzMuLjg1ZTU1MWE1Y2JlNiAxMDA2NDQNCj4gLS0t
+IGEvaW5jbHVkZS9kcm0vZHJtX2Zvcm1hdF9oZWxwZXIuaA0KPiArKysgYi9pbmNsdWRlL2Ry
+bS9kcm1fZm9ybWF0X2hlbHBlci5oDQo+IEBAIC00Myw0ICs0MywxMSBAQCBpbnQgZHJtX2Zi
+X2JsaXRfdG9pbyh2b2lkIF9faW9tZW0gKmRzdCwgdW5zaWduZWQgaW50IGRzdF9waXRjaCwg
+dWludDMyX3QgZHN0X2Zvcg0KPiAgIAkJICAgICBjb25zdCB2b2lkICp2bWFwLCBjb25zdCBz
+dHJ1Y3QgZHJtX2ZyYW1lYnVmZmVyICpmYiwNCj4gICAJCSAgICAgY29uc3Qgc3RydWN0IGRy
+bV9yZWN0ICpyZWN0KTsNCj4gICANCj4gK3ZvaWQgZHJtX2ZiX2dyYXk4X3RvX21vbm9fcmV2
+ZXJzZWQodm9pZCAqZHN0LCB1bnNpZ25lZCBpbnQgZHN0X3BpdGNoLCBjb25zdCB2b2lkICpz
+cmMsDQo+ICsJCQkJICAgY29uc3Qgc3RydWN0IGRybV9yZWN0ICpjbGlwKTsNCj4gKw0KPiAr
+dm9pZCBkcm1fZmJfeHJnYjg4ODhfdG9fbW9ub19yZXZlcnNlZCh2b2lkICpkc3QsIHVuc2ln
+bmVkIGludCBkc3RfcGl0Y2gsIGNvbnN0IHZvaWQgKnNyYywNCj4gKwkJCQkgICAgICBjb25z
+dCBzdHJ1Y3QgZHJtX2ZyYW1lYnVmZmVyICpmYiwNCj4gKwkJCQkgICAgICBjb25zdCBzdHJ1
+Y3QgZHJtX3JlY3QgKmNsaXApOw0KPiArDQo+ICAgI2VuZGlmIC8qIF9fTElOVVhfRFJNX0ZP
+Uk1BVF9IRUxQRVJfSCAqLw0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBE
+cml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgN
+Ck1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwg
+QUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
-That's due patman (the tool I use to post patches) not being that smart.
+--------------GzDANQ6HuGgccvj5HkcZZVu8--
 
-I only added the v2 changelog in the cover letter and not the individual
-patches to avoid adding noise, since there are a lot of changes since v1.
+--------------cnRQyZpb1bvRM6Q8hsnbuR1K
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-But patman then thought that means individual patches had no changes...
+-----BEGIN PGP SIGNATURE-----
 
-Best regards,
--- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmH9S9cFAwAAAAAACgkQlh/E3EQov+Ct
+Kw/+L/fX7QIUwPNkc5LLnT66GVChReTV+QwSFzr10TWoa6JbWi9bfz/RaleiVpCUUjtRPg1M/BHB
+bsZYZy81aUEAHQL/C6zJ4TreC6dMMsqTE/tUBCGTep0ctzzV4ou4Rjf0iDxGvdH5peisTQ6ltMlt
+MW2YIg7BkEcwoXjRPDYjbZBDwv7JKTDQboDZ42M8kcQwk73zULbncPCQVjm368pAL3CdTPzAU6Cv
+MZMozHtfgrTW+s0oiSx6fvg11UCo5wDf3fH+GkBnWKwkYnfQ6Ztm0RWNZTzIEsa+8xXCkub3f0ln
+aT+Fw6fH3RZy8F2/6yszqnOJmZHKfxtyOD5Y0XnMtGYtlsiKMxBOtrKxrTcGDwpJc9L5NY6QATB7
+q9fJFod37BQ+m0pcqLsrYa1DnX7/u/brbjU5f9gt6ghrR3q1wZ1Fkt8NZ4Bqwo5bgAVVa9eXxU6R
+kO62Ff1eBJ/KzgPR7ArXewBY6nz5EgOU54OhqX3eojFd3/q07TqeA86bvn/XS4guJf9zDE83TRKE
+N3IgIPj3kCjqO1o+vfsZQT+a7gqnFY656E9BIHzpMWIrOpdOh5oCDutuB8F8H/hXag9Sx7af0ZSn
+DIbpIqx5BDofw0/e6rD/EeWPIxkYcgoir5RWe5vjuGWl1zRtmtfHBKtZjWhFZKEJgL/e2cMNiTXG
+5J4=
+=L/jW
+-----END PGP SIGNATURE-----
 
+--------------cnRQyZpb1bvRM6Q8hsnbuR1K--

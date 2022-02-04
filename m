@@ -2,94 +2,102 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 406BEC433F5
-	for <linux-fbdev@archiver.kernel.org>; Sat,  5 Feb 2022 22:55:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 866C7C433F5
+	for <linux-fbdev@archiver.kernel.org>; Sat,  5 Feb 2022 23:02:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1381098AbiBEWzR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 5 Feb 2022 17:55:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46978 "EHLO
+        id S240978AbiBEXCA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 5 Feb 2022 18:02:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48644 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234408AbiBEWzP (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 5 Feb 2022 17:55:15 -0500
+        with ESMTP id S232852AbiBEXB7 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 5 Feb 2022 18:01:59 -0500
 Received: from mx1.smtp.larsendata.com (mx1.smtp.larsendata.com [91.221.196.215])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 60B94C061353
-        for <linux-fbdev@vger.kernel.org>; Sat,  5 Feb 2022 14:55:14 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8BC49C061353
+        for <linux-fbdev@vger.kernel.org>; Sat,  5 Feb 2022 15:01:58 -0800 (PST)
 Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
         by mx1.smtp.larsendata.com (Halon) with ESMTPS
-        id 41731055-85f2-11ec-b20b-0050568c148b;
-        Fri, 04 Feb 2022 19:40:06 +0000 (UTC)
+        id 31c0cf47-85f3-11ec-b20b-0050568c148b;
+        Fri, 04 Feb 2022 19:46:49 +0000 (UTC)
 Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
         (Authenticated sender: sam@ravnborg.org)
-        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 17211194B8B;
-        Fri,  4 Feb 2022 20:39:03 +0100 (CET)
-Date:   Fri, 4 Feb 2022 20:39:00 +0100
+        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 37B32194B91;
+        Fri,  4 Feb 2022 20:45:49 +0100 (CET)
+Date:   Fri, 4 Feb 2022 20:45:46 +0100
 X-Report-Abuse-To: abuse@mxhotel.dk
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
         linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
         Du Cheng <ducheng2@gmail.com>,
         Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
         Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
-        Zheyu Ma <zheyuma97@gmail.com>,
         LKML <linux-kernel@vger.kernel.org>,
-        Matthew Wilcox <willy@infradead.org>,
-        William Kucharski <william.kucharski@oracle.com>,
         Claudio Suarez <cssk@net-c.es>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Zhen Lei <thunder.leizhen@huawei.com>
-Subject: Re: [PATCH 14/21] fbcon: use lock_fb_info in fbcon_open/release
-Message-ID: <Yf2A1GN0Mg9aotUY@ravnborg.org>
+        Daniel Vetter <daniel.vetter@intel.com>
+Subject: Re: [PATCH 15/21] fbcon: Consistently protect deferred_takeover with
+ console_lock()
+Message-ID: <Yf2CajIWrEEcA//9@ravnborg.org>
 References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
- <20220131210552.482606-15-daniel.vetter@ffwll.ch>
+ <20220131210552.482606-16-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220131210552.482606-15-daniel.vetter@ffwll.ch>
+In-Reply-To: <20220131210552.482606-16-daniel.vetter@ffwll.ch>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Jan 31, 2022 at 10:05:45PM +0100, Daniel Vetter wrote:
-> Now we get to the real motiviation, because fbmem.c insists that
-> that's the right lock for these.
-> 
-> Ofc fbcon.c has a lot more places where it probably should call
-> lock_fb_info(). But looking at fbmem.c at least most of these seem to
-> be protected by console_lock() too, which is probably what papers over
-> any issues.
-> 
-> Note that this means we're shuffling around a bit the locking sections
-> for some of the console takeover and unbind paths, but not all:
-> - console binding/unbinding from the console layer never with
-> lock_fb_info
-> - unbind (as opposed to unlink) never bother with lock_fb_info
-> 
-> Also the real serialization against set_par and set_pan are still
-> doing by wrapping the entire ioctl code in console_lock(). So this
-> shuffling shouldn't be worse than what we had from a "can you trigger
-> races?" pov, but it's at least clearer.
+On Mon, Jan 31, 2022 at 10:05:46PM +0100, Daniel Vetter wrote:
+> This shouldn't be a problem in practice since until we've actually
+> taken over the console there's nothing we've registered with the
+> console/vt subsystem, so the exit/unbind path that check this can't
+> do the wrong thing. But it's confusing, so fix it by moving it a tad
+> later.
 > 
 > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 > Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: Claudio Suarez <cssk@net-c.es>
-> Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 > Cc: Du Cheng <ducheng2@gmail.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Matthew Wilcox <willy@infradead.org>
-> Cc: William Kucharski <william.kucharski@oracle.com>
-> Cc: Alex Deucher <alexander.deucher@amd.com>
-> Cc: Zheyu Ma <zheyuma97@gmail.com>
-> Cc: Zhen Lei <thunder.leizhen@huawei.com>
-> Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+> Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Cc: Claudio Suarez <cssk@net-c.es>
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
 
-Well, the patch does what the commit log says.
+It had helped me if the commitlog was explicit that the
+deferred_takeover falg is moved to the worker function to reset it as
+late as possible.
+
+With the commit log updated:
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
+
+
+> ---
+>  drivers/video/fbdev/core/fbcon.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index 496bc5f2133e..11b9f962af6f 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -3247,6 +3247,9 @@ static void fbcon_register_existing_fbs(struct work_struct *work)
+>  
+>  	console_lock();
+>  
+> +	deferred_takeover = false;
+> +	logo_shown = FBCON_LOGO_DONTSHOW;
+> +
+>  	for_each_registered_fb(i)
+>  		fbcon_fb_registered(registered_fb[i]);
+>  
+> @@ -3264,8 +3267,6 @@ static int fbcon_output_notifier(struct notifier_block *nb,
+>  	pr_info("fbcon: Taking over console\n");
+>  
+>  	dummycon_unregister_output_notifier(&fbcon_output_nb);
+> -	deferred_takeover = false;
+> -	logo_shown = FBCON_LOGO_DONTSHOW;
+>  
+>  	/* We may get called in atomic context */
+>  	schedule_work(&fbcon_deferred_takeover_work);
+> -- 
+> 2.33.0

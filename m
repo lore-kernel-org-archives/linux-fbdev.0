@@ -2,55 +2,56 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ACA4C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Feb 2022 13:43:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2845C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Feb 2022 13:44:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351478AbiBDNnz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 4 Feb 2022 08:43:55 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.129.124]:24007 "EHLO
+        id S1358600AbiBDNoA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 4 Feb 2022 08:44:00 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:49688 "EHLO
         us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S237678AbiBDNnz (ORCPT
+        by vger.kernel.org with ESMTP id S240545AbiBDNn5 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 4 Feb 2022 08:43:55 -0500
+        Fri, 4 Feb 2022 08:43:57 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1643982234;
+        s=mimecast20190719; t=1643982237;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=H5esco7azdiruVAyvRxpYC4oCr4WW6uFBnyTeQyuFsU=;
-        b=PWPKgudlRqdc4Cf5zsJ+QBoMXbfPQiXuzTGprLVjnO1ifAKOQ1Cd6JdpZyRDvYO+HpE5Zf
-        ySP3mJMZmFcB/pI/yRc/A0Ft9//8l8uDGLvJ4LorSO8+ms6l6/gRFLHkjn5mdUXGHDmUmz
-        YzbP0AcEZmW3khbfZZt0Qkg/OJ4H6sU=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=gsCZ0vamCvMedkmFYkO3ZNEjaPZGxukH+BWgq2BQ6do=;
+        b=FPCkJfLoTXFM70QKlOy+CvlA6vFVt/7Os16mjJ2Ubn4YVRSYWkZZkOz6PbMglIUfBDZlhc
+        vg5Wc8fDybLI5Mgvj0aAfov/3vPB8rD1wY2XqQQgAd+F5aYtdjrslylidwt8ZiRDEfXRtf
+        8m0U+iceUUUJD5JHe5SUQZiC0z0nFj0=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-479-hLEoXnTkMHixMzRsl1NRsw-1; Fri, 04 Feb 2022 08:43:53 -0500
-X-MC-Unique: hLEoXnTkMHixMzRsl1NRsw-1
-Received: by mail-wm1-f71.google.com with SMTP id n7-20020a1c7207000000b0034ec3d8ce0aso2395293wmc.8
-        for <linux-fbdev@vger.kernel.org>; Fri, 04 Feb 2022 05:43:53 -0800 (PST)
+ us-mta-534-bo_bvbRpMnSK8Yb8YV-j3g-1; Fri, 04 Feb 2022 08:43:55 -0500
+X-MC-Unique: bo_bvbRpMnSK8Yb8YV-j3g-1
+Received: by mail-wr1-f70.google.com with SMTP id c10-20020adfa30a000000b001d79c73b64bso2048995wrb.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 04 Feb 2022 05:43:55 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=H5esco7azdiruVAyvRxpYC4oCr4WW6uFBnyTeQyuFsU=;
-        b=dToZfvL5gN5tt2n5LC1kdAcNcYzxc4jb/f/k0j0OCmvLUqRhh0iLlkL5j2ingUGDSR
-         BMU1nG7k9/d6l0BasCajgGlqbfvJiowTrX5UhbJk8vlOrf6XT7371yyo4FOgcMsSRwcV
-         ahBqWwA4MBFE0oFME5ZgYmMF1tTA4Jc7l2TCkPk6z3Xr7j436r6j4CFiAXAsvfBw2jNO
-         yhQUSjdOb/Ez9YcUQBHykxv/Pqi0mkV2PHZzSzcpnUYeL9QB5gATtspybdmSLt3pYWtS
-         7EnZnDOQ4nOOhyIwS/ga/hjjwWeeCK6KTNmHKFaNuY1AT+dzTyr7T2Cu7jycLHg3x3Y4
-         53PQ==
-X-Gm-Message-State: AOAM531kzwi7TlJ/KK8mT1Dw/IwNt1rynKleA/4bILDUYVN7PDncEfpW
-        9/K1Q5PhOJ7YoaKgCU3W7IrLxetkFW+oqxKxcTDD3sH1DvlDuMh7K55S7q7gnQWpbijvKXwPOPv
-        ZmBAM2Fc9GvxceZSDu7g/d6k=
-X-Received: by 2002:a5d:4703:: with SMTP id y3mr2602621wrq.277.1643982232515;
-        Fri, 04 Feb 2022 05:43:52 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxNEVPxf9D3BSc9PXf0lMOYyEHkzq9ZzRZkaw2OBYe/H95+tszrYIazMw6ofG8uiI7auodIxA==
-X-Received: by 2002:a5d:4703:: with SMTP id y3mr2602606wrq.277.1643982232280;
-        Fri, 04 Feb 2022 05:43:52 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=gsCZ0vamCvMedkmFYkO3ZNEjaPZGxukH+BWgq2BQ6do=;
+        b=5Uoue2mkY4F29SzWBhh8xM1s3/uYw19BuzeyBBbE4cgPEJavjuK4F4WvgkRNpwn5NA
+         cL0oCklmXB5NzI1csfnRElgbfBvdCQdseRZE5RXp7Ky3eIZXhmrlaNR2hvBzMBlzLUWH
+         9fixEd6cCLb9HugrEuoUMxMpZXACiuGdx+iFOLsKmv7lF4rZwVa1grM2QkDyEAdIshlo
+         WqK7qTWPiMxyXk+Bvg9cgk1BL4s0ies9KWEcY2rmOny+AMUMOSB3giUudwz+cKTRpcZY
+         djqLm7nD2seewowaChFMiuRBaknjTPcbwDzkeOf0otzh1583G/EVAA81zucXhMAqnNg/
+         wkRA==
+X-Gm-Message-State: AOAM533jgDz0aRwp28nozhVpcjl0VmcaOQqkHkyFr3NVzFjTwSZiP+lq
+        Tdt+OY4s9Y8Vn8HjoQele2SnOpf0PK/H715Z+xWhIn2JGSXqsK35dbIS1/xtRE+VwmzD7M7gNEv
+        A04noAkuW9cBL59zZK0jB/Vw=
+X-Received: by 2002:a5d:64a9:: with SMTP id m9mr2454492wrp.661.1643982234674;
+        Fri, 04 Feb 2022 05:43:54 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwlXexVQP8cfpmjMdMsb00GdG9twKe+Dfe6NJ6PFq21cUefB7/9Y6OdbGzVDbpRhtxvxM4R3Q==
+X-Received: by 2002:a5d:64a9:: with SMTP id m9mr2454469wrp.661.1643982234457;
+        Fri, 04 Feb 2022 05:43:54 -0800 (PST)
 Received: from minerva.home ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id r3sm1871692wrt.102.2022.02.04.05.43.50
+        by smtp.gmail.com with ESMTPSA id r3sm1871692wrt.102.2022.02.04.05.43.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 04 Feb 2022 05:43:51 -0800 (PST)
+        Fri, 04 Feb 2022 05:43:54 -0800 (PST)
 From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
@@ -64,124 +65,139 @@ Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Javier Martinez Canillas <javierm@redhat.com>,
         Daniel Vetter <daniel@ffwll.ch>,
         David Airlie <airlied@linux.ie>,
-        Lee Jones <lee.jones@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Mark Brown <broonie@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, devicetree@vger.kernel.org,
-        linux-pwm@vger.kernel.org
-Subject: [PATCH v2 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED displays
-Date:   Fri,  4 Feb 2022 14:43:43 +0100
-Message-Id: <20220204134347.1187749-1-javierm@redhat.com>
+        Maxime Ripard <mripard@kernel.org>
+Subject: [PATCH v2 1/4] drm/format-helper: Add drm_fb_{xrgb8888,gray8}_to_mono_reversed()
+Date:   Fri,  4 Feb 2022 14:43:44 +0100
+Message-Id: <20220204134347.1187749-2-javierm@redhat.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220204134347.1187749-1-javierm@redhat.com>
+References: <20220204134347.1187749-1-javierm@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This patch series adds a DRM driver for the Solomon OLED SSD1305, SSD1306,
-SSD1307 and SSD1309 displays. It is a port of the ssd1307fb fbdev driver.
+Add support to convert XR24 and 8-bit grayscale to reversed monochrome for
+drivers that control monochromatic panels, that only have 1 bit per pixel.
 
-Using the DRM fb emulation, all the tests from Geert Uytterhoeven's fbtest
-(https://git.kernel.org/pub/scm/linux/kernel/git/geert/fbtest.git) passes:
+The drm_fb_gray8_to_mono_reversed() helper was based on the function that
+does the same in the drivers/gpu/drm/tiny/repaper.c driver.
 
-    ./fbtest -f /dev/fb1
-    Using drawops cfb32 (32 bpp packed pixels)
-    Available visuals:
-      Monochrome
-      Grayscale 256
-      Truecolor 8:8:8:0
-    Using visops truecolor
-    Running all tests
-    test001: PASSED
-    test002: PASSED
-    test003: PASSED
-    test004: PASSED
-    test005: PASSED
-    test006: PASSED
-    test008: PASSED
-    Screen size too small for this test
-    test010: PASSED
-    Benchmarking... 10x10 squares: 414.41 Mpixels/s
-    Benchmarking... 20x20 squares: 858.31 Mpixels/s
-    Benchmarking... 50x50 squares: 1586.33 Mpixels/s
-    test012: PASSED
-    Benchmarking... R5 circles: 234.68 Mpixels/s
-    Benchmarking... R10 circles: 498.24 Mpixels/s
-    Benchmarking... R25 circles: 942.34 Mpixels/s
-    test013: PASSED
+Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+---
 
-This is a v2 that addresses all the issues pointed in v1, thanks a lot
-to everyone that gave me feedback and reviews. I tried to not miss any
-comment, but there were a lot so forgive me if something is not there.
+(no changes since v1)
 
-Patch #1 adds two new helpers, drm_fb_gray8_to_mono_reversed() to convert
-from grayscale to monochrome and a drm_fb_xrgb8888_to_mono_reversed() to
-convert from XR24 to monochrome. The latter internally use thes former.
+ drivers/gpu/drm/drm_format_helper.c | 80 +++++++++++++++++++++++++++++
+ include/drm/drm_format_helper.h     |  7 +++
+ 2 files changed, 87 insertions(+)
 
-Patch #2 adds the driver. The name ssd130x was used instead of ssd1307fb
-to denote that this driver is not only for SSD1307, but also for other
-displays from the same chip family.
-
-Patch #3 just adds a MAINTAINERS entry for the DRM driver and patch #4
-adds myself as a co-maintainer of the existing Device Tree binding for
-ssd1307fb, since the same is shared between the fbdev and DRM drivers.
-
-Best regards,
-Javier
-
-Changes in v2:
-- Drop patch that was adding a DRM_MODE_CONNECTOR_I2C type.
-- Invert order of backlight {en,dis}able and display {on,off} (Sam Ravnborg)
-- Don't clear the screen and turn on display on probe (Sam Ravnborg)
-- Use backlight_get_brightness() macro to get BL brightness (Sam Ravnborg)
-- Use dev managed version of devm_backlight_device_register() (Sam Ravnborg)
-- Use dev_name(dev) for backlight name instead of an array (Sam Ravnborg)
-- Drop the .get_brightness callback since isn't needed  (Sam Ravnborg)
-- Add myself as co-maintainer of the ssd1370fb DT binding (Sam Ravnborg)
-- Add Sam Ravnborg's acked-by tag to patch 3/4.
-- Rename driver to ssd130x since supports a display family (Thomas Zimmermann)
-- Drop the TINY prefix from the Kconfig symbol (Thomas Zimmermann)
-- Sort the Kconfig symbol dependencies alphabetically (Thomas Zimmermann)
-- Rename struct ssd130x_array to struct ssd130x_i2c_msg (Thomas Zimmermann)
-- Rename struct ssd130x_i2c_msg .type member to .cmd (Thomas Zimmermann)
-- Use sizeof(*foo) instead of sizeof(struct foo) (Thomas Zimmermann)
-- Use struct_size() macro to calculate sizeof(*foo) + len (Thomas Zimmermann)
-- Use kcalloc() instead of kmalloc_array() + memset() (Thomas Zimmermann)
-- Use shadow plane helpers virtual screen support (Thomas Zimmermann)
-- Remove unused goto label in ssd1307_fb_blit_rect() (Thomas Zimmermann)
-- Use drm_set_preferred_mode() inset of manually set (Thomas Zimmermann)
-- Use shadow plane helpers virtual screen support (Thomas Zimmermann)
-- Remove unused goto label in ssd1307_fb_blit_rect() (Thomas Zimmermann)
-- Use drm_set_preferred_mode() inset of manually set (Thomas Zimmermann)
-- Reorganize code in probe to make it more legible (Thomas Zimmermann)
-- ssd130x_write_cmd() uses varargs to simplify I2C code (Thomas Zimmermann)
-- Move regulator/pwm init logic to display pipe enable callback.
-- Also add a drm_fb_xrgb8888_to_mono_reversed() helper (Thomas Zimmermann)
-- Add a drm_fb_gray8_to_mono_reversed_line() helper (Thomas Zimmermann)
-
-Javier Martinez Canillas (4):
-  drm/format-helper: Add drm_fb_{xrgb8888,gray8}_to_mono_reversed()
-  drm/tiny: Add driver for Solomon SSD130X OLED displays
-  MAINTAINERS: Add entry for Solomon SSD130X OLED displays DRM driver
-  dt-bindings: display: ssd1307fb: Add myself as binding co-maintainer
-
- .../bindings/display/solomon,ssd1307fb.yaml   |   1 +
- MAINTAINERS                                   |   7 +
- drivers/gpu/drm/drm_format_helper.c           |  80 ++
- drivers/gpu/drm/tiny/Kconfig                  |  12 +
- drivers/gpu/drm/tiny/Makefile                 |   1 +
- drivers/gpu/drm/tiny/ssd130x.c                | 971 ++++++++++++++++++
- include/drm/drm_format_helper.h               |   7 +
- 7 files changed, 1079 insertions(+)
- create mode 100644 drivers/gpu/drm/tiny/ssd130x.c
-
+diff --git a/drivers/gpu/drm/drm_format_helper.c b/drivers/gpu/drm/drm_format_helper.c
+index 0f28dd2bdd72..cdce4b7c25d9 100644
+--- a/drivers/gpu/drm/drm_format_helper.c
++++ b/drivers/gpu/drm/drm_format_helper.c
+@@ -584,3 +584,83 @@ int drm_fb_blit_toio(void __iomem *dst, unsigned int dst_pitch, uint32_t dst_for
+ 	return -EINVAL;
+ }
+ EXPORT_SYMBOL(drm_fb_blit_toio);
++
++static void drm_fb_gray8_to_mono_reversed_line(u8 *dst, const u8 *src, size_t pixels)
++{
++	unsigned int xb, i;
++
++	for (xb = 0; xb < pixels / 8; xb++) {
++		u8 byte = 0x00;
++
++		for (i = 0; i < 8; i++) {
++			int x = xb * 8 + i;
++
++			byte >>= 1;
++			if (src[x] >> 7)
++				byte |= BIT(7);
++		}
++		*dst++ = byte;
++	}
++}
++
++/**
++ * drm_fb_gray8_to_mono_reversed - Convert grayscale to reversed monochrome
++ * @dst: reversed monochrome destination buffer
++ * @dst_pitch: Number of bytes between two consecutive scanlines within dst
++ * @src: 8-bit grayscale source buffer
++ * @clip: Clip rectangle area to copy
++ *
++ * DRM doesn't have native monochrome or grayscale support.
++ * Such drivers can announce the commonly supported XR24 format to userspace
++ * and use drm_fb_xrgb8888_to_gray8() to convert to grayscale and then this
++ * helper function to convert to the native format.
++ */
++void drm_fb_gray8_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *src,
++				   const struct drm_rect *clip)
++{
++
++	size_t height = drm_rect_height(clip);
++	size_t width = drm_rect_width(clip);
++	unsigned int y;
++	const u8 *gray8 = src;
++	u8 *mono = dst;
++
++	if (!dst_pitch)
++		dst_pitch = width;
++
++	for (y = 0; y < height; y++) {
++		drm_fb_gray8_to_mono_reversed_line(mono, gray8, dst_pitch);
++		mono += (dst_pitch / 8);
++		gray8 += dst_pitch;
++	}
++}
++
++/**
++ * drm_fb_xrgb8888_to_mono_reversed - Convert XRGB8888 to reversed monochrome
++ * @dst: reversed monochrome destination buffer
++ * @dst_pitch: Number of bytes between two consecutive scanlines within dst
++ * @src: XRGB8888 source buffer
++ * @fb: DRM framebuffer
++ * @clip: Clip rectangle area to copy
++ *
++ * DRM doesn't have native monochrome support.
++ * Such drivers can announce the commonly supported XR24 format to userspace
++ * and use this function to convert to the native format.
++ *
++ * This function uses drm_fb_xrgb8888_to_gray8() to convert to grayscale and
++ * then the result is converted from grayscale to reversed monohrome.
++ */
++void drm_fb_xrgb8888_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *src,
++				      const struct drm_framebuffer *fb,
++				      const struct drm_rect *clip)
++{
++	if (WARN_ON(fb->format->format != DRM_FORMAT_XRGB8888))
++		return;
++
++	if (!dst_pitch)
++		dst_pitch = drm_rect_width(clip);
++
++	drm_fb_xrgb8888_to_gray8(dst, dst_pitch, src, fb, clip);
++	drm_fb_gray8_to_mono_reversed(dst, dst_pitch, dst, fb, clip);
++}
++EXPORT_SYMBOL(drm_fb_xrgb8888_to_mono_reversed);
+diff --git a/include/drm/drm_format_helper.h b/include/drm/drm_format_helper.h
+index b30ed5de0a33..85e551a5cbe6 100644
+--- a/include/drm/drm_format_helper.h
++++ b/include/drm/drm_format_helper.h
+@@ -43,4 +43,11 @@ int drm_fb_blit_toio(void __iomem *dst, unsigned int dst_pitch, uint32_t dst_for
+ 		     const void *vmap, const struct drm_framebuffer *fb,
+ 		     const struct drm_rect *rect);
+ 
++void drm_fb_gray8_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *src,
++				   const struct drm_rect *clip);
++
++void drm_fb_xrgb8888_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *src,
++				      const struct drm_framebuffer *fb,
++				      const struct drm_rect *clip);
++
+ #endif /* __LINUX_DRM_FORMAT_HELPER_H */
 -- 
 2.34.1
 

@@ -2,66 +2,56 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56837C4332F
-	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Feb 2022 19:31:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A322C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Feb 2022 20:35:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233647AbiBDTbn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 4 Feb 2022 14:31:43 -0500
-Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124]:29733 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S233868AbiBDTbn (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 4 Feb 2022 14:31:43 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644003102;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
+        id S239617AbiBDUfY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 4 Feb 2022 15:35:24 -0500
+Received: from smtp-out1.suse.de ([195.135.220.28]:46430 "EHLO
+        smtp-out1.suse.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S239890AbiBDUfH (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 4 Feb 2022 15:35:07 -0500
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 5BEB1210ED;
+        Fri,  4 Feb 2022 20:35:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1644006906; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=XB7EqmHX3QJchDoebIRUn45wKZyDtzMRU7LbvShZrmI=;
-        b=BzGoiEmZpEMz7tZOUWNbbNcixiAyjk538Xryzk3cjfVLhq/JxZ/E7KfWcxai2MF4gLvfZP
-        xkB3NM1u2Ggp6KzC6xTgYeob/nhNEbxjr44t1YDOb2Z6eb8tzj/NSef0bVCIgLRIprwS6k
-        ScjsP18kjtTZcv4785pHwGqa2GdlUCI=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-118-3MX4Fr51P52pNl-BQcIFCg-1; Fri, 04 Feb 2022 14:31:39 -0500
-X-MC-Unique: 3MX4Fr51P52pNl-BQcIFCg-1
-Received: by mail-wr1-f72.google.com with SMTP id d25-20020adf9b99000000b001e298eecb85so2331479wrc.19
-        for <linux-fbdev@vger.kernel.org>; Fri, 04 Feb 2022 11:31:39 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=XB7EqmHX3QJchDoebIRUn45wKZyDtzMRU7LbvShZrmI=;
-        b=DbI+0dyJEH24Sq3+vo5UTSXnDjU8ln+jDcz7Eavx+IlF7zut4IEhCShOsGTeHSBWXi
-         4CySIYZnWw9jHgQptubkWoebjFadpJhExLDsKDjdmHriLFQfb0mQwcIJhKI+U46VrDUR
-         2VN09dItstR5fSeLVAfI4nd9+rEDv4eqELKnTUSKu9URpji9dWdwubS2/QWYmC3QZX2a
-         zWFNUr7du6z92eMVwhJQbrHDfvPw8dsoeCB3QLkndwz+qjZbhEIdTACfwV6Z3g/cQ20f
-         pi5PVD9fWt2lqmhR6oA6FQO601V7SWaVilhF1Ps4hJY4t1BzLLC9aqqLmzqy5ArGHOD4
-         4RAw==
-X-Gm-Message-State: AOAM533I+w0CLPHHvJZh1k5z0jiqG9qk8dpFCSVKChmKW4pJiocdPjHJ
-        RPnkQiy5sSuOYxgj8ZCXAr9MDPu15s8F4Gid9T1uy1CgD1+PqnCUvAP5evqv88PDVSanbbJsNBk
-        /62GXKYgLMsW6H2NvPLW6ixw=
-X-Received: by 2002:a05:600c:308:: with SMTP id q8mr227579wmd.118.1644003098413;
-        Fri, 04 Feb 2022 11:31:38 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwnUrl7L5DUkWi88NA0XDtQhKrbGlFf75d9R565igNT1eWA/BV6uT/4ED51bA6rarcBe+VNVg==
-X-Received: by 2002:a05:600c:308:: with SMTP id q8mr227567wmd.118.1644003098213;
-        Fri, 04 Feb 2022 11:31:38 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id y14sm3081929wrd.91.2022.02.04.11.31.37
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 04 Feb 2022 11:31:37 -0800 (PST)
-Message-ID: <b388f295-920a-b4fc-41ef-d090bdcd69e2@redhat.com>
-Date:   Fri, 4 Feb 2022 20:31:36 +0100
+        bh=4XLvxFjk3vfoV26zPMkeC1hWae135E+dxL0ihTcmG8s=;
+        b=kKtLDOM3c2iJBCAgTydS3JGT4h5uzdrmgM2YhX5x/kWnrwTHtzqs/ZlsKAC7VKg6qbcjaM
+        AmGGPxtOdY2ssV1PVYqAYZYDvytIzmXEDAwQNFfr2j6AWkR3rQLdmb6OJRwKwIZvf4b0sR
+        h2EVDuPy664cl1icjkkX346/DHxUM1s=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1644006906;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=4XLvxFjk3vfoV26zPMkeC1hWae135E+dxL0ihTcmG8s=;
+        b=kvAPU0FQJ4RJxefwLOYfFm23CYWa/SK7N5Y0QpJOBQ3VTafGO0Wj4OEDcoqNsMVwuyMSft
+        lEQ69FTPwda2vbAA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1577913AE7;
+        Fri,  4 Feb 2022 20:35:06 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id mCdABPqN/WGFIAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 04 Feb 2022 20:35:06 +0000
+Message-ID: <de99712a-55d1-8910-e8a6-6a6254f58724@suse.de>
+Date:   Fri, 4 Feb 2022 21:35:05 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
 Subject: Re: [PATCH v2 1/4] drm/format-helper: Add
  drm_fb_{xrgb8888,gray8}_to_mono_reversed()
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
+To:     Javier Martinez Canillas <javierm@redhat.com>,
         linux-kernel@vger.kernel.org
 Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
@@ -77,130 +67,145 @@ Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 References: <20220204134347.1187749-1-javierm@redhat.com>
  <20220204134347.1187749-2-javierm@redhat.com>
  <47100413-db63-1efa-45e9-028dfc430b7e@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <47100413-db63-1efa-45e9-028dfc430b7e@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <b388f295-920a-b4fc-41ef-d090bdcd69e2@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <b388f295-920a-b4fc-41ef-d090bdcd69e2@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------DEQR8zn2W8WC7kLL1kyzY0X3"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Thomas,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------DEQR8zn2W8WC7kLL1kyzY0X3
+Content-Type: multipart/mixed; boundary="------------t6O902HTgJVaGCMs1dEndN9V";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ linux-kernel@vger.kernel.org
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org,
+ Sam Ravnborg <sam@ravnborg.org>, dri-devel@lists.freedesktop.org,
+ =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+ Maxime Ripard <maxime@cerno.tech>, Daniel Vetter <daniel@ffwll.ch>,
+ David Airlie <airlied@linux.ie>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>
+Message-ID: <de99712a-55d1-8910-e8a6-6a6254f58724@suse.de>
+Subject: Re: [PATCH v2 1/4] drm/format-helper: Add
+ drm_fb_{xrgb8888,gray8}_to_mono_reversed()
+References: <20220204134347.1187749-1-javierm@redhat.com>
+ <20220204134347.1187749-2-javierm@redhat.com>
+ <47100413-db63-1efa-45e9-028dfc430b7e@suse.de>
+ <b388f295-920a-b4fc-41ef-d090bdcd69e2@redhat.com>
+In-Reply-To: <b388f295-920a-b4fc-41ef-d090bdcd69e2@redhat.com>
 
-Thanks a lot for your feedback.
+--------------t6O902HTgJVaGCMs1dEndN9V
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-On 2/4/22 16:52, Thomas Zimmermann wrote:
+SGkNCg0KQW0gMDQuMDIuMjIgdW0gMjA6MzEgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
+aWxsYXM6DQo+IEhlbGxvIFRob21hcywNCj4gDQo+IFRoYW5rcyBhIGxvdCBmb3IgeW91ciBm
+ZWVkYmFjay4NCj4gDQo+IE9uIDIvNC8yMiAxNjo1MiwgVGhvbWFzIFppbW1lcm1hbm4gd3Jv
+dGU6DQo+IA0KPiBbc25pcF0NCj4gDQo+Pj4gK3N0YXRpYyB2b2lkIGRybV9mYl9ncmF5OF90
+b19tb25vX3JldmVyc2VkX2xpbmUodTggKmRzdCwgY29uc3QgdTggKnNyYywgc2l6ZV90IHBp
+eGVscykNCj4+PiArew0KPj4+ICsJdW5zaWduZWQgaW50IHhiLCBpOw0KPj4+ICsNCj4+PiAr
+CWZvciAoeGIgPSAwOyB4YiA8IHBpeGVscyAvIDg7IHhiKyspIHsNCj4+DQo+PiBJbiBwcmFj
+dGljZSwgYWxsIG1vZGUgd2lkdGhzIGFyZSBtdWx0aXBsZXMgb2YgOCBiZWNhdXNlIFZHQSBt
+YW5kYXRlZCBpdC4NCj4+IFNvIGl0J3Mgb2staXNoIHRvIGFzc3VtZSB0aGlzIGhlcmUuIFlv
+dSBzaG91bGQgcHJvYmFibHkgYXQgbGVhc3QgcHJpbnQgYQ0KPj4gd2FybmluZyBzb21ld2hl
+cmUgaWYgKHBpeGVscyAlIDggIT0gMCkNCj4+DQo+IA0KPiBBZ3JlZWQuDQoNCkFmdGVyIHNl
+bmRpbmcgdGhlIG1haWwsIEkgcmVhbGl6ZWQgdGhhdCBzb21lIGNvZGUgY29waWVzIG9ubHkg
+cGFydHMgb2YgDQp0aGUgc291cmNlIGFyb3VuZDsgc3BlY2lmaWNhbGx5IGZvciBkYW1hZ2Ug
+aGFuZGxpbmcuIE5vbmUgb2YgdGhpcyBpcyANCmFsaWduZWQgdG8gbXVsdGlwbGUgb2YgOC4g
+U28gdGhlIGNvcHlpbmcgY291bGQgc3RhcnQgYW5kIGVuZCBpbiB0aGUgDQptaWRkbGUgb2Yg
+Ynl0ZXMuIFlvdSdkIG5lZWQgYSBwaXhlbC1vZmZzZXQgdmFsdWUgb2Ygc29tZSBzb3J0Lg0K
+DQpJZiB5b3UgZG9uJ3Qgd2FudCB0byBoYW5kbGUgdGhpcyBub3csIG1heWJlIGF0IGxlYXN0
+IGRldGVjdCB0aGlzIGNhc2UgDQphbmQgcHV0IGEgd2FybmluZyBzb21ld2hlcmUuDQoNCj4g
+ICANCj4gW3NuaXBdDQo+IA0KPj4+ICsgKiBEUk0gZG9lc24ndCBoYXZlIG5hdGl2ZSBtb25v
+Y2hyb21lIG9yIGdyYXlzY2FsZSBzdXBwb3J0Lg0KPj4+ICsgKiBTdWNoIGRyaXZlcnMgY2Fu
+IGFubm91bmNlIHRoZSBjb21tb25seSBzdXBwb3J0ZWQgWFIyNCBmb3JtYXQgdG8gdXNlcnNw
+YWNlDQo+Pj4gKyAqIGFuZCB1c2UgZHJtX2ZiX3hyZ2I4ODg4X3RvX2dyYXk4KCkgdG8gY29u
+dmVydCB0byBncmF5c2NhbGUgYW5kIHRoZW4gdGhpcw0KPj4+ICsgKiBoZWxwZXIgZnVuY3Rp
+b24gdG8gY29udmVydCB0byB0aGUgbmF0aXZlIGZvcm1hdC4NCj4+PiArICovDQo+Pj4gK3Zv
+aWQgZHJtX2ZiX2dyYXk4X3RvX21vbm9fcmV2ZXJzZWQodm9pZCAqZHN0LCB1bnNpZ25lZCBp
+bnQgZHN0X3BpdGNoLCBjb25zdCB2b2lkICpzcmMsDQo+Pj4gKwkJCQkgICBjb25zdCBzdHJ1
+Y3QgZHJtX3JlY3QgKmNsaXApDQo+Pg0KPj4gVGhlcmUncyBhIGJ1ZyBoZXJlLiBZb3Ugd2Fu
+dCB0byBwYXNzIGluIGEgZHJtX2ZyYW1lYnVmZmVyIGFzIGZvdXJ0aA0KPj4gYXJndW1lbnQu
+DQo+Pg0KPj4+ICt7DQo+Pj4gKw0KPj4+ICsJc2l6ZV90IGhlaWdodCA9IGRybV9yZWN0X2hl
+aWdodChjbGlwKTsNCj4+PiArCXNpemVfdCB3aWR0aCA9IGRybV9yZWN0X3dpZHRoKGNsaXAp
+Ow0KPj4+ICsJdW5zaWduZWQgaW50IHk7DQo+Pj4gKwljb25zdCB1OCAqZ3JheTggPSBzcmM7
+DQo+Pj4gKwl1OCAqbW9ubyA9IGRzdDsNCj4+PiArDQo+Pj4gKwlpZiAoIWRzdF9waXRjaCkN
+Cj4+PiArCQlkc3RfcGl0Y2ggPSB3aWR0aDsNCj4+DQo+PiBUaGUgZHN0X3BpdGNoIGlzIGdp
+dmVuIGluIGJ5dGVzLiBZb3UgaGF2ZSB0byBkZXZpY2UgYnkgOC4gSGVyZSB3b3VsZCBiZQ0K
+Pj4gYSBnb29kIHBsYWNlIHRvIHdhcm4gaWYgKHdpZHRoICUgOCAhPSAwKS4NCj4+DQo+IA0K
+PiBPay4NCj4gICANCj4+PiArDQo+Pj4gKwlmb3IgKHkgPSAwOyB5IDwgaGVpZ2h0OyB5Kysp
+IHsNCj4+PiArCQlkcm1fZmJfZ3JheThfdG9fbW9ub19yZXZlcnNlZF9saW5lKG1vbm8sIGdy
+YXk4LCBkc3RfcGl0Y2gpOw0KPj4+ICsJCW1vbm8gKz0gKGRzdF9waXRjaCAvIDgpOw0KPj4N
+Cj4+IFRoZSBkc3RfcGl0Y2ggaXMgYWxyZWFkeSBnaXZlbiBpbiBieXRlcy4NCj4+DQo+IA0K
+PiBZZXMsIEkga25vdyBidXQgZm9yIHJldmVyc2VkIG1vbm8gd2Ugd2FudCBvbmx5IDEvOCBv
+ZiB0aGUgd2lkdGggc2luY2Ugd2UNCj4gYXJlIGNvbnZlcnRpbmcgZnJvbSA4IGJpdHMgcGVy
+IHBpeGVsIGdyZXlzY2FsZSB0byAxIGJpdCBwZXIgcGl4ZWwgbW9uby4NCj4gDQo+IE9yIGFt
+IEkgbWlzdW5kZXJzdGFuZGluZyB3aGF0IHlvdSBtZWFudCA/DQoNCkkgbWVhbiB0aGF0IGlm
+IHRoZXJlIGFyZSA4MCBwaXhlbCBvbiBhIHNjYW5saW5lLCB0aGUgdmFsdWUgb2YgZHN0X3Bp
+dGNoIA0KaXMgYWxyZWFkeSAxMC4gVGhlc2UgcGl0Y2ggdmFsdWVzIGFyZSBhbHdheXMgZ2l2
+ZW4gaW4gYnl0ZXMuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+Pj4gKwkJZ3Jh
+eTggKz0gZHN0X3BpdGNoOw0KPj4NCj4+ICdncmF5OCArPSBmYi0+cGl0Y2hlc1swXScgd291
+bGQgYmUgY29ycmVjdC4NCj4+DQo+IA0KPiBPay4NCj4gICANCj4gW3NuaXBdDQo+IA0KPj4+
+ICsgKi8NCj4+PiArdm9pZCBkcm1fZmJfeHJnYjg4ODhfdG9fbW9ub19yZXZlcnNlZCh2b2lk
+ICpkc3QsIHVuc2lnbmVkIGludCBkc3RfcGl0Y2gsIGNvbnN0IHZvaWQgKnNyYywNCj4+PiAr
+CQkJCSAgICAgIGNvbnN0IHN0cnVjdCBkcm1fZnJhbWVidWZmZXIgKmZiLA0KPj4+ICsJCQkJ
+ICAgICAgY29uc3Qgc3RydWN0IGRybV9yZWN0ICpjbGlwKQ0KPj4+ICt7DQo+Pj4gKwlpZiAo
+V0FSTl9PTihmYi0+Zm9ybWF0LT5mb3JtYXQgIT0gRFJNX0ZPUk1BVF9YUkdCODg4OCkpDQo+
+Pj4gKwkJcmV0dXJuOw0KPj4+ICsNCj4+PiArCWlmICghZHN0X3BpdGNoKQ0KPj4+ICsJCWRz
+dF9waXRjaCA9IGRybV9yZWN0X3dpZHRoKGNsaXApOw0KPj4+ICsNCj4+PiArCWRybV9mYl94
+cmdiODg4OF90b19ncmF5OChkc3QsIGRzdF9waXRjaCwgc3JjLCBmYiwgY2xpcCk7DQo+Pj4g
+Kwlkcm1fZmJfZ3JheThfdG9fbW9ub19yZXZlcnNlZChkc3QsIGRzdF9waXRjaCwgZHN0LCBm
+YiwgY2xpcCk7DQo+Pg0KPj4gQ29udmVydGluZyBmcm9tIGRzdCBpbnRvIGRzdCBjYW4gZ2l2
+ZSBpbmNvcnJlY3QgcmVzdWx0cy4gQXQgc29tZSBwb2ludA0KPj4gd2UgcHJvYmFibHkgd2Fu
+dCB0byBhZGQgcmVzdHJpY3QgcXVhbGlmaWVycyB0byB0aGVzZSBwb2ludGVycywgdG8gaGVs
+cA0KPj4gdGhlIGNvbXBpbGVyIHdpdGggb3B0aW1pemluZy4NCj4+DQo+PiBBIGJldHRlciBh
+cHByb2FjaCBoZXJlIGlzIHRvIHB1bGwgdGhlIHBlci1saW5lIGNvbnZlcnNpb24gZnJvbQ0K
+Pj4gZHJtX2ZiX3hyZ2I4ODg4X3RvX2dyYXk4KCkgaW50byBhIHNlcGFyYXRlIGhlbHBlciBh
+bmQgaW1wbGVtZW50IGENCj4+IGxpbmUtYnktbGluZSBjb252ZXJzaW9uIGhlcmUuIHNvbWV0
+aGluZyBsaWtlIHRoaXM6DQo+Pg0KPj4gICAgIGRybV9mYl94cmdiODg4OF90b19tb25vX3Jl
+dmVyc2VkKCkNCj4+ICAgICB7DQo+PiAgICAgICBjaGFyICp0bXAgPSBrbWFsbG9jKHNpemUg
+b2YgYSBzaW5nbGUgbGluZSBvZiBncmF5OCkNCj4+DQo+PiAgICAgICBmb3IgKGhlaWd0aCkg
+ew0KPj4gICAgICAgICAgZHJtX2ZiX3hyZ2I4ODg4X3RvX2dyYXk4X2xpbmUodG1wLCAuLi4s
+IHNyYywgLi4uKTsNCj4+ICAgICAgICAgIGRybV9mYl9ncmF5OF90b19tb25vX3JldmVyc2Vk
+KGRzdCwgLi4uLCB0bXAsIC4uLik7DQo+Pg0KPj4gICAgICAgICAgc3JjICs9IGZiLT5waXRj
+aGVzWzBdDQo+PiAgICAgICAgICBkc3QgKz0gZHN0X3BpdGNoOw0KPj4gICAgICAgfQ0KPj4N
+Cj4+ICAgICAgIGtmcmVlKHRtcCk7DQo+PiAgICAgfQ0KPj4NCj4gDQo+IEkgc2VlLiBZZXMs
+IHRoYXQgc291bmRzIGEgbXVjaCBiZXR0ZXIgYXBwcm9hY2guIEknbGwgY2hhbmdlIGl0IGlu
+IHYzLg0KPiAgIA0KPiBCZXN0IHJlZ2FyZHMsDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4N
+CkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdl
+cm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQoo
+SFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2
+DQo=
 
-[snip]
+--------------t6O902HTgJVaGCMs1dEndN9V--
 
->> +static void drm_fb_gray8_to_mono_reversed_line(u8 *dst, const u8 *src, size_t pixels)
->> +{
->> +	unsigned int xb, i;
->> +
->> +	for (xb = 0; xb < pixels / 8; xb++) {
-> 
-> In practice, all mode widths are multiples of 8 because VGA mandated it. 
-> So it's ok-ish to assume this here. You should probably at least print a 
-> warning somewhere if (pixels % 8 != 0)
->
+--------------DEQR8zn2W8WC7kLL1kyzY0X3
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-Agreed.
- 
-[snip]
+-----BEGIN PGP SIGNATURE-----
 
->> + * DRM doesn't have native monochrome or grayscale support.
->> + * Such drivers can announce the commonly supported XR24 format to userspace
->> + * and use drm_fb_xrgb8888_to_gray8() to convert to grayscale and then this
->> + * helper function to convert to the native format.
->> + */
->> +void drm_fb_gray8_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *src,
->> +				   const struct drm_rect *clip)
-> 
-> There's a bug here. You want to pass in a drm_framebuffer as fourth 
-> argument.
->
->> +{
->> +
->> +	size_t height = drm_rect_height(clip);
->> +	size_t width = drm_rect_width(clip);
->> +	unsigned int y;
->> +	const u8 *gray8 = src;
->> +	u8 *mono = dst;
->> +
->> +	if (!dst_pitch)
->> +		dst_pitch = width;
-> 
-> The dst_pitch is given in bytes. You have to device by 8. Here would be 
-> a good place to warn if (width % 8 != 0).
->
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmH9jfkFAwAAAAAACgkQlh/E3EQov+BB
+lRAAlInAUUc/WwDPMBSE2um3OnFOi3PF13U+MPJR9eoVCoFQyrFdnw4ZlQwxcOUGUnZy+6rob2PD
+yfMIyc84C8SjPLOlTwtAgwYd+9JXeH8OvCZeu/YfyzNzBeAPttEdra1ZwKYjXC1zjKfvDfvqSZLW
+N7agz34xOQ25AnJxi8z3++PN6BSqOx/EzikLMbQibbH7OiryfTBuwbZbaBxGSynClyo4lL3lge+C
+PE0FURQI1aqU2wTeNknU8n1jS2dDZgxfiNOHwais3FoDTPUZb4cCZFp1NWGNXqCnKpKpgi9iZhmp
+daLSEfwrOHa9YLUIdvqQ0RxT2YCVMP/jVgUBAvKcozX7WDSGsVjEhSzJe8YDjxbZjxBwIXmB+2HD
+LPx8su3Ak7sg2xuMfx7OdCY/DLWGDBL1DJHpwtjAlvCeGXgehYdb/5cGWGgFpJHXw5r+XqeRkdBA
+just2aGa+hagltBJM4rZmW9woAxWIUfB7rflf8Rlp36U1UuEZyiicNTRPEk3pudWrPgiRHmgc8j+
+DoKOKZyToWF7NMXbBxnD1h0/dfPzLYYJK/Tlq8U5F1z/xYHF35MU3/IvXVREmqJz9wCejw9m5aqu
+8sj9Wf5dAIj18YuYOAJSU8cGZA1hoeyZcteC6QO2fKy3l76oyb9Rq8jmfDTZUBgi+fU1B7o3pApT
+r7A=
+=UUW9
+-----END PGP SIGNATURE-----
 
-Ok.
- 
->> +
->> +	for (y = 0; y < height; y++) {
->> +		drm_fb_gray8_to_mono_reversed_line(mono, gray8, dst_pitch);
->> +		mono += (dst_pitch / 8);
-> 
-> The dst_pitch is already given in bytes.
->
-
-Yes, I know but for reversed mono we want only 1/8 of the width since we
-are converting from 8 bits per pixel greyscale to 1 bit per pixel mono.
-
-Or am I misunderstanding what you meant ?
-
->> +		gray8 += dst_pitch;
-> 
-> 'gray8 += fb->pitches[0]' would be correct.
->
-
-Ok.
- 
-[snip]
-
->> + */
->> +void drm_fb_xrgb8888_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *src,
->> +				      const struct drm_framebuffer *fb,
->> +				      const struct drm_rect *clip)
->> +{
->> +	if (WARN_ON(fb->format->format != DRM_FORMAT_XRGB8888))
->> +		return;
->> +
->> +	if (!dst_pitch)
->> +		dst_pitch = drm_rect_width(clip);
->> +
->> +	drm_fb_xrgb8888_to_gray8(dst, dst_pitch, src, fb, clip);
->> +	drm_fb_gray8_to_mono_reversed(dst, dst_pitch, dst, fb, clip);
-> 
-> Converting from dst into dst can give incorrect results. At some point 
-> we probably want to add restrict qualifiers to these pointers, to help 
-> the compiler with optimizing.
-> 
-> A better approach here is to pull the per-line conversion from 
-> drm_fb_xrgb8888_to_gray8() into a separate helper and implement a 
-> line-by-line conversion here. something like this:
-> 
->    drm_fb_xrgb8888_to_mono_reversed()
->    {
->      char *tmp = kmalloc(size of a single line of gray8)
-> 
->      for (heigth) {
->         drm_fb_xrgb8888_to_gray8_line(tmp, ..., src, ...);
->         drm_fb_gray8_to_mono_reversed(dst, ..., tmp, ...);
-> 
->         src += fb->pitches[0]
->         dst += dst_pitch;
->      }
-> 
->      kfree(tmp);
->    }
->
-
-I see. Yes, that sounds a much better approach. I'll change it in v3.
- 
-Best regards,
--- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+--------------DEQR8zn2W8WC7kLL1kyzY0X3--

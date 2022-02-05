@@ -2,130 +2,79 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2748DC433F5
-	for <linux-fbdev@archiver.kernel.org>; Sat,  5 Feb 2022 06:01:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36113C433F5
+	for <linux-fbdev@archiver.kernel.org>; Sat,  5 Feb 2022 07:40:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346171AbiBEGBp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 5 Feb 2022 01:01:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36024 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235094AbiBEGBo (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 5 Feb 2022 01:01:44 -0500
-Received: from mx1.smtp.larsendata.com (mx1.smtp.larsendata.com [91.221.196.215])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12452C061347
-        for <linux-fbdev@vger.kernel.org>; Fri,  4 Feb 2022 22:01:42 -0800 (PST)
-Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
-        by mx1.smtp.larsendata.com (Halon) with ESMTPS
-        id 5edcb8cc-8532-11ec-b20b-0050568c148b;
-        Thu, 03 Feb 2022 20:46:32 +0000 (UTC)
-Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        (Authenticated sender: sam@ravnborg.org)
-        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 4BF6A194B90;
-        Thu,  3 Feb 2022 21:45:32 +0100 (CET)
-Date:   Thu, 3 Feb 2022 21:45:29 +0100
-X-Report-Abuse-To: abuse@mxhotel.dk
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
-        linux-fbdev@vger.kernel.org, Du Cheng <ducheng2@gmail.com>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Claudio Suarez <cssk@net-c.es>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 06/21] fbcon: delete delayed loading code
-Message-ID: <Yfw+6VUOX6xcf664@ravnborg.org>
-References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
- <20220131210552.482606-7-daniel.vetter@ffwll.ch>
+        id S1379590AbiBEHkx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 5 Feb 2022 02:40:53 -0500
+Received: from smtp06.smtpout.orange.fr ([80.12.242.128]:54521 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1379591AbiBEHkw (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 5 Feb 2022 02:40:52 -0500
+Received: from pop-os.home ([90.126.236.122])
+        by smtp.orange.fr with ESMTPA
+        id GFggn1Io9IQAdGFggnd94L; Sat, 05 Feb 2022 08:40:51 +0100
+X-ME-Helo: pop-os.home
+X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
+X-ME-Date: Sat, 05 Feb 2022 08:40:51 +0100
+X-ME-IP: 90.126.236.122
+From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
+Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+Subject: [PATCH] backlight: pwm_bl: Avoid open coded arithmetic in memory allocation
+Date:   Sat,  5 Feb 2022 08:40:48 +0100
+Message-Id: <bd3d74acfa58d59f6f5f81fc5a9fb409edb8d747.1644046817.git.christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.32.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220131210552.482606-7-daniel.vetter@ffwll.ch>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel,
+kmalloc_array()/kcalloc() should be used to avoid potential overflow when
+a multiplication is needed to compute the size of the requested memory.
 
-On Mon, Jan 31, 2022 at 10:05:37PM +0100, Daniel Vetter wrote:
-> Before
-> 
-> commit 6104c37094e729f3d4ce65797002112735d49cd1
-> Author: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Date:   Tue Aug 1 17:32:07 2017 +0200
-> 
->     fbcon: Make fbcon a built-time depency for fbdev
-> 
-> it was possible to load fbcon and fbdev drivers in any order, which
-> means that fbcon init had to handle the case where fbdev drivers where
-> already registered.
-> 
-> This is no longer possible, hence delete that code.
-> 
-> Note that the exit case is a bit more complex and will be done in a
-> separate patch.
-> 
-> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: Claudio Suarez <cssk@net-c.es>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> Cc: Du Cheng <ducheng2@gmail.com>
-> ---
->  drivers/video/fbdev/core/fbcon.c | 13 +------------
->  1 file changed, 1 insertion(+), 12 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index 8f971de35885..814b648e8f09 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -942,7 +942,7 @@ static const char *fbcon_startup(void)
->  		return display_desc;
->  	/*
->  	 * Instead of blindly using registered_fb[0], we use info_idx, set by
-> -	 * fb_console_init();
-> +	 * fbcon_fb_registered();
->  	 */
-This comment change looks like it does not belong in this patch.
-Also, the comment is wrong as info_idx is set in several places.
-Like set_con2fb_map(), fbcon_remap_all(), and more.
+So turn a kzalloc()+explicit size computation into an equivalent kcalloc().
 
-Though it is not set by fb_console_init - so partly OK.
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+ drivers/video/backlight/pwm_bl.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-With the comment adjustment dropped.
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 8d8959a70e44..c0523a0269ee 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -263,9 +263,8 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 
+ 	/* read brightness levels from DT property */
+ 	if (num_levels > 0) {
+-		size_t size = sizeof(*data->levels) * num_levels;
+-
+-		data->levels = devm_kzalloc(dev, size, GFP_KERNEL);
++		data->levels = devm_kcalloc(dev, num_levels,
++					    sizeof(*data->levels), GFP_KERNEL);
+ 		if (!data->levels)
+ 			return -ENOMEM;
+ 
+@@ -320,8 +319,8 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 			 * Create a new table of brightness levels with all the
+ 			 * interpolated steps.
+ 			 */
+-			size = sizeof(*table) * num_levels;
+-			table = devm_kzalloc(dev, size, GFP_KERNEL);
++			table = devm_kcalloc(dev, num_levels, sizeof(*table),
++					     GFP_KERNEL);
+ 			if (!table)
+ 				return -ENOMEM;
+ 			/*
+-- 
+2.32.0
 
-at least the code deletion looked OK, I failed to follow all the logic.
-So would be good if someone else could ack it too.
-
-	Sam
-
-
-
->  	info = registered_fb[info_idx];
->  	if (!info)
-> @@ -3316,17 +3316,6 @@ static void fbcon_start(void)
->  		return;
->  	}
->  #endif
-> -
-> -	if (num_registered_fb) {
-> -		int i;
-> -
-> -		for_each_registered_fb(i) {
-> -			info_idx = i;
-> -			break;
-> -		}
-> -
-> -		do_fbcon_takeover(0);
-> -	}
->  }
->  
->  static void fbcon_exit(void)
-> -- 
-> 2.33.0

@@ -2,174 +2,116 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68623C433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 984C5C43217
 	for <linux-fbdev@archiver.kernel.org>; Mon,  7 Feb 2022 13:29:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1376342AbiBGN2o (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S1346689AbiBGN2o (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Mon, 7 Feb 2022 08:28:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50438 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47268 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1343547AbiBGMog (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 7 Feb 2022 07:44:36 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2E217C043181;
-        Mon,  7 Feb 2022 04:44:34 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id C8A6C210FA;
-        Mon,  7 Feb 2022 12:44:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1644237872; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=Fm3Hca/uzXhbYie979FgZfnFphMe3Z7RRg4zd6rl6XA=;
-        b=fZVCs+CMytbezBVuxQehYFx4LZrjEXf2Vcpr7JlQW/9jUJbBYX5Y7zlL+D3XW9WcU9naGp
-        OA66/Xo0GbPlqvY9+buTsXIa1/DJay1EK+DHrPkCkOASTC0iIGC5y4oLqRCQ+sLO2Lh39A
-        XUyP8msmynKa0nRxQav8fPjk7ejhwcE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1644237872;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=Fm3Hca/uzXhbYie979FgZfnFphMe3Z7RRg4zd6rl6XA=;
-        b=UvY0vJmR3xSPxee9tQ9XceFUY5Dv1cs4AwxnMCImFrerWtJLkHzLbJ/ZQU3S2y8lePP7R3
-        HzH2+lRzuwMx87Bw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 7E21013BF5;
-        Mon,  7 Feb 2022 12:44:32 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id +0SOHTAUAWLZCgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 07 Feb 2022 12:44:32 +0000
-Message-ID: <11d3b6d4-3e31-05cc-c021-22e1497f02d1@suse.de>
-Date:   Mon, 7 Feb 2022 13:44:31 +0100
+        with ESMTP id S1448277AbiBGNKO (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 7 Feb 2022 08:10:14 -0500
+Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [IPv6:2a02:1800:110:4::f00:19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A392AC043181
+        for <linux-fbdev@vger.kernel.org>; Mon,  7 Feb 2022 05:10:13 -0800 (PST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:8923:c5e0:fe66:f22f])
+        by laurent.telenet-ops.be with bizsmtp
+        id sDAB2600F2zxJMx01DABvF; Mon, 07 Feb 2022 14:10:11 +0100
+Received: from rox.of.borg ([192.168.97.57])
+        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1nH3mU-0004SC-OS; Mon, 07 Feb 2022 14:10:10 +0100
+Received: from geert by rox.of.borg with local (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1nH3mU-009F6e-7W; Mon, 07 Feb 2022 14:10:10 +0100
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+To:     linux-m68k@lists.linux-m68k.org
+Cc:     linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] m68k: defconfig: Update defconfigs for v5.17-rc3
+Date:   Mon,  7 Feb 2022 14:10:08 +0100
+Message-Id: <20220207131008.2202977-1-geert@linux-m68k.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v2 1/4] drm/format-helper: Add drm_fb_{xrgb8888,
- gray8}_to_mono_reversed()
-Content-Language: en-US
-To:     Ilia Mirkin <imirkin@alum.mit.edu>
-Cc:     linux-fbdev <linux-fbdev@vger.kernel.org>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Sam Ravnborg <sam@ravnborg.org>
-References: <20220204134347.1187749-1-javierm@redhat.com>
- <20220204134347.1187749-2-javierm@redhat.com>
- <47100413-db63-1efa-45e9-028dfc430b7e@suse.de>
- <CAKb7UvgxhLFT4aqYSE+=dpqfuTkvr62tsGmQP5H46mAytaQBRg@mail.gmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <CAKb7UvgxhLFT4aqYSE+=dpqfuTkvr62tsGmQP5H46mAytaQBRg@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------tfQqrAesgLp1qKiU02HjQVFV"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------tfQqrAesgLp1qKiU02HjQVFV
-Content-Type: multipart/mixed; boundary="------------DQMouTCacmkGVTRyTTuQE7rM";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Ilia Mirkin <imirkin@alum.mit.edu>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, David Airlie
- <airlied@linux.ie>, Daniel Vetter <daniel.vetter@ffwll.ch>,
- Javier Martinez Canillas <javierm@redhat.com>,
- dri-devel <dri-devel@lists.freedesktop.org>,
- LKML <linux-kernel@vger.kernel.org>, =?UTF-8?Q?Noralf_Tr=c3=b8nnes?=
- <noralf@tronnes.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Maxime Ripard <maxime@cerno.tech>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Sam Ravnborg <sam@ravnborg.org>
-Message-ID: <11d3b6d4-3e31-05cc-c021-22e1497f02d1@suse.de>
-Subject: Re: [PATCH v2 1/4] drm/format-helper: Add drm_fb_{xrgb8888,
- gray8}_to_mono_reversed()
-References: <20220204134347.1187749-1-javierm@redhat.com>
- <20220204134347.1187749-2-javierm@redhat.com>
- <47100413-db63-1efa-45e9-028dfc430b7e@suse.de>
- <CAKb7UvgxhLFT4aqYSE+=dpqfuTkvr62tsGmQP5H46mAytaQBRg@mail.gmail.com>
-In-Reply-To: <CAKb7UvgxhLFT4aqYSE+=dpqfuTkvr62tsGmQP5H46mAytaQBRg@mail.gmail.com>
+  - Enable the new option for legacy fbcon hardware acceleration code on
+    all platforms that have a frame buffer device that can make use of
+    this.
 
---------------DQMouTCacmkGVTRyTTuQE7rM
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+The following drivers set
+FBINFO_HWACCEL_(COPYAREA|FILLRECT|IMAGEBLIT|ROTATE|XPAN|YPAN|YWRAP):
+  - FB_AMIGA,
+  - FB_ATY (not enabled in atari_defconfig, hence ignored),
+  - FB_CIRRUS,
+  - FB_68328 (nommu, hence ignored).
 
-SGkNCg0KQW0gMDQuMDIuMjIgdW0gMjI6MDIgc2NocmllYiBJbGlhIE1pcmtpbjoNCj4gT24g
-RnJpLCBGZWIgNCwgMjAyMiBhdCAxMDo1MyBBTSBUaG9tYXMgWmltbWVybWFubiA8dHppbW1l
-cm1hbm5Ac3VzZS5kZT4gd3JvdGU6DQo+Pg0KPj4gSGkNCj4+DQo+PiBBbSAwNC4wMi4yMiB1
-bSAxNDo0MyBzY2hyaWViIEphdmllciBNYXJ0aW5leiBDYW5pbGxhczoNCj4+PiBBZGQgc3Vw
-cG9ydCB0byBjb252ZXJ0IFhSMjQgYW5kIDgtYml0IGdyYXlzY2FsZSB0byByZXZlcnNlZCBt
-b25vY2hyb21lIGZvcg0KPj4+IGRyaXZlcnMgdGhhdCBjb250cm9sIG1vbm9jaHJvbWF0aWMg
-cGFuZWxzLCB0aGF0IG9ubHkgaGF2ZSAxIGJpdCBwZXIgcGl4ZWwuDQo+Pj4NCj4+PiBUaGUg
-ZHJtX2ZiX2dyYXk4X3RvX21vbm9fcmV2ZXJzZWQoKSBoZWxwZXIgd2FzIGJhc2VkIG9uIHRo
-ZSBmdW5jdGlvbiB0aGF0DQo+Pj4gZG9lcyB0aGUgc2FtZSBpbiB0aGUgZHJpdmVycy9ncHUv
-ZHJtL3RpbnkvcmVwYXBlci5jIGRyaXZlci4NCj4+Pg0KPj4+IFNpZ25lZC1vZmYtYnk6IEph
-dmllciBNYXJ0aW5leiBDYW5pbGxhcyA8amF2aWVybUByZWRoYXQuY29tPg0KPj4+IC0tLQ0K
-Pj4+DQo+Pj4gKG5vIGNoYW5nZXMgc2luY2UgdjEpDQo+Pj4NCj4+PiAgICBkcml2ZXJzL2dw
-dS9kcm0vZHJtX2Zvcm1hdF9oZWxwZXIuYyB8IDgwICsrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrDQo+Pj4gICAgaW5jbHVkZS9kcm0vZHJtX2Zvcm1hdF9oZWxwZXIuaCAgICAgfCAg
-NyArKysNCj4+PiAgICAyIGZpbGVzIGNoYW5nZWQsIDg3IGluc2VydGlvbnMoKykNCj4+Pg0K
-Pj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vZHJtX2Zvcm1hdF9oZWxwZXIuYyBi
-L2RyaXZlcnMvZ3B1L2RybS9kcm1fZm9ybWF0X2hlbHBlci5jDQo+Pj4gaW5kZXggMGYyOGRk
-MmJkZDcyLi5jZGNlNGI3YzI1ZDkgMTAwNjQ0DQo+Pj4gLS0tIGEvZHJpdmVycy9ncHUvZHJt
-L2RybV9mb3JtYXRfaGVscGVyLmMNCj4+PiArKysgYi9kcml2ZXJzL2dwdS9kcm0vZHJtX2Zv
-cm1hdF9oZWxwZXIuYw0KPj4+IEBAIC01ODQsMyArNTg0LDgzIEBAIGludCBkcm1fZmJfYmxp
-dF90b2lvKHZvaWQgX19pb21lbSAqZHN0LCB1bnNpZ25lZCBpbnQgZHN0X3BpdGNoLCB1aW50
-MzJfdCBkc3RfZm9yDQo+Pj4gICAgICAgIHJldHVybiAtRUlOVkFMOw0KPj4+ICAgIH0NCj4+
-PiAgICBFWFBPUlRfU1lNQk9MKGRybV9mYl9ibGl0X3RvaW8pOw0KPj4+ICsNCj4+PiArc3Rh
-dGljIHZvaWQgZHJtX2ZiX2dyYXk4X3RvX21vbm9fcmV2ZXJzZWRfbGluZSh1OCAqZHN0LCBj
-b25zdCB1OCAqc3JjLCBzaXplX3QgcGl4ZWxzKQ0KPj4+ICt7DQo+Pj4gKyAgICAgdW5zaWdu
-ZWQgaW50IHhiLCBpOw0KPj4+ICsNCj4+PiArICAgICBmb3IgKHhiID0gMDsgeGIgPCBwaXhl
-bHMgLyA4OyB4YisrKSB7DQo+Pg0KPj4gSW4gcHJhY3RpY2UsIGFsbCBtb2RlIHdpZHRocyBh
-cmUgbXVsdGlwbGVzIG9mIDggYmVjYXVzZSBWR0EgbWFuZGF0ZWQgaXQuDQo+PiBTbyBpdCdz
-IG9rLWlzaCB0byBhc3N1bWUgdGhpcyBoZXJlLiBZb3Ugc2hvdWxkIHByb2JhYmx5IGF0IGxl
-YXN0IHByaW50IGENCj4+IHdhcm5pbmcgc29tZXdoZXJlIGlmIChwaXhlbHMgJSA4ICE9IDAp
-DQo+IA0KPiBOb3Qgc3VyZSBpZiBpdCdzIHJlbGV2YW50LCBidXQgMTM2Nng3Njggd2FzIGEg
-ZmFpcmx5IHBvcHVsYXIgbGFwdG9wDQo+IHJlc29sdXRpb24uIFRoZXJlJ3MgZXZlbiBhIGRl
-ZGljYXRlZCBkcm1fbW9kZV9maXh1cF8xMzY2eDc2OCBpbg0KPiBkcm1fZWRpZC5jLiAoV291
-bGQgaXQgaGF2ZSBraWxsZWQgdGhlbSB0byBhZGQgMiBtb3JlIGhvcml6b250YWwNCj4gcGl4
-ZWxzPyBBcHBhcmVudGx5LikNCg0KRCdvaCENCg0KRG8geW91IGtub3cgaG93IHRoZSB0ZXh0
-IGNvbnNvbGUgbG9va3MgaW4gdGhpcyBtb2RlPyBGb250cyBzdGlsbCBleHBlY3QgDQphIG11
-bHRpcGxlIG9mIDguDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+IENoZWVycywN
-Cj4gDQo+ICAgIC1pbGlhDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERy
-aXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0K
-TWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBB
-RyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+The following drivers implement hardware acceleration, but do not set
+any of the FBINFO_HWACCEL_* flags:
+  - FB_APOLLO,
+  - FB_HP300.
+Probably they should be updated to set the appropriate flags?
+---
+ arch/m68k/configs/amiga_defconfig  | 1 +
+ arch/m68k/configs/apollo_defconfig | 1 +
+ arch/m68k/configs/hp300_defconfig  | 1 +
+ arch/m68k/configs/multi_defconfig  | 1 +
+ 4 files changed, 4 insertions(+)
 
---------------DQMouTCacmkGVTRyTTuQE7rM--
+diff --git a/arch/m68k/configs/amiga_defconfig b/arch/m68k/configs/amiga_defconfig
+index eb930b9633602aff..49f301c57df5fb06 100644
+--- a/arch/m68k/configs/amiga_defconfig
++++ b/arch/m68k/configs/amiga_defconfig
+@@ -432,6 +432,7 @@ CONFIG_FB_AMIGA_ECS=y
+ CONFIG_FB_AMIGA_AGA=y
+ CONFIG_FB_FM2=y
+ CONFIG_FRAMEBUFFER_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION=y
+ CONFIG_LOGO=y
+ CONFIG_SOUND=m
+ CONFIG_DMASOUND_PAULA=m
+diff --git a/arch/m68k/configs/apollo_defconfig b/arch/m68k/configs/apollo_defconfig
+index 5acd495c83ceb756..405997b614472b80 100644
+--- a/arch/m68k/configs/apollo_defconfig
++++ b/arch/m68k/configs/apollo_defconfig
+@@ -390,6 +390,7 @@ CONFIG_PTP_1588_CLOCK=m
+ # CONFIG_HWMON is not set
+ CONFIG_FB=y
+ CONFIG_FRAMEBUFFER_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION=y
+ CONFIG_LOGO=y
+ # CONFIG_LOGO_LINUX_VGA16 is not set
+ # CONFIG_LOGO_LINUX_CLUT224 is not set
+diff --git a/arch/m68k/configs/hp300_defconfig b/arch/m68k/configs/hp300_defconfig
+index 89dd800e7ad24354..048d9b114eb43489 100644
+--- a/arch/m68k/configs/hp300_defconfig
++++ b/arch/m68k/configs/hp300_defconfig
+@@ -392,6 +392,7 @@ CONFIG_PTP_1588_CLOCK=m
+ # CONFIG_HWMON is not set
+ CONFIG_FB=y
+ CONFIG_FRAMEBUFFER_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION=y
+ CONFIG_LOGO=y
+ # CONFIG_LOGO_LINUX_MONO is not set
+ # CONFIG_LOGO_LINUX_VGA16 is not set
+diff --git a/arch/m68k/configs/multi_defconfig b/arch/m68k/configs/multi_defconfig
+index 00757de800b62c90..7df61e743591a028 100644
+--- a/arch/m68k/configs/multi_defconfig
++++ b/arch/m68k/configs/multi_defconfig
+@@ -494,6 +494,7 @@ CONFIG_FB_ATARI=y
+ CONFIG_FB_VALKYRIE=y
+ CONFIG_FB_MAC=y
+ CONFIG_FRAMEBUFFER_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION=y
+ CONFIG_LOGO=y
+ CONFIG_SOUND=m
+ CONFIG_DMASOUND_ATARI=m
+-- 
+2.25.1
 
---------------tfQqrAesgLp1qKiU02HjQVFV
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIBFC8FAwAAAAAACgkQlh/E3EQov+B+
-0BAAw+HwjL96CAPp6PCfz73k3/HGoFK8bVBoBvx6P8FLvNiqC46JHBXy00kTJ6kA2UZGFkwilhdH
-tTuUXWgKrRlU3xpSV6CZkkaxsoSBozAOIiVCTNXs8OLLErtHJ5WEvEiYsqqaG46agM0ij67KC8t7
-E1uNtdi3CacDAUr/255+vq8Sk7B3z+5GTgIKJ9wH3AaZn0un41HzncQ3ouEFY0p5S4hCDINt6O+u
-OmTtqO5NXZePZP33vhsLOq0F3uu3QLfk4NjB28Xq2xBzW9gEhKsnIHz4wr8ReYOveQK5u8+NehXR
-BulND7Bura3Lia+wTk6Xk8h0NGhP8YxCD/kEznskX4dsVNgdga9Auxwtm9uk5F73bCTlciSAOihW
-YwsV1rX0VSk5iRUOll9ROwmxJpZYbwjQf3jv0DP3Mql3IC9KUipzTIML7Evhe67+gZ04y77uJo5i
-Bv8PsFAp6Qn+T+eUK2wCryJTcg5NZec8AGBwe46KAp8pjm0oAEc98WPinnZn7DZQiCXGZYEU5/ZE
-cMDsRNmbLnvCh70FkRg8cr61PX4/IzKVF54oOldLhd/490a28ISosBWNH9+L/pRxuDerc9Tkr0JM
-w2N8VTlri5V16mQeTI3A/OgnY7gCuS5FKakCirKHqxzTxHHjgs2/DH4cfeHBmgLhX4UONDWrtltZ
-BcY=
-=w1Rr
------END PGP SIGNATURE-----
-
---------------tfQqrAesgLp1qKiU02HjQVFV--

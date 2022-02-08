@@ -2,70 +2,63 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B53C5C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Feb 2022 22:23:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C345C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Feb 2022 22:23:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1386941AbiBHWXc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 8 Feb 2022 17:23:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35400 "EHLO
+        id S1387144AbiBHWXi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Feb 2022 17:23:38 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35496 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1386730AbiBHVIw (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Feb 2022 16:08:52 -0500
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C3742C0612BA
-        for <linux-fbdev@vger.kernel.org>; Tue,  8 Feb 2022 13:08:51 -0800 (PST)
-Received: by mail-wr1-x436.google.com with SMTP id s18so572850wrv.7
-        for <linux-fbdev@vger.kernel.org>; Tue, 08 Feb 2022 13:08:51 -0800 (PST)
+        with ESMTP id S1386758AbiBHVI7 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Feb 2022 16:08:59 -0500
+Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAF90C0612BA
+        for <linux-fbdev@vger.kernel.org>; Tue,  8 Feb 2022 13:08:58 -0800 (PST)
+Received: by mail-wr1-x433.google.com with SMTP id i15so610019wrb.3
+        for <linux-fbdev@vger.kernel.org>; Tue, 08 Feb 2022 13:08:58 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ffwll.ch; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=4vhsaJLRuFd4cLY+OipxjxgQ9+hkB2eOCoIWIkwzsX4=;
-        b=hSTzBYbk+EsRstvMat5gULyq5OnxonnqMQZDYW4OJ03WdVZriqwshzqAMnR7z6Mxs/
-         W6MTAgwmuJNCwpePfGNu5wjMP+TCcIEb/7e82sC/9tyzHPsI/T9dN7TU5AUq23/yggHX
-         dBWuat8BzdR3DTzRrJ0Hynpwp08gs8C0OyboY=
+        bh=rydNRJgI2Eov1WWIN57pE5aUhiOSvoU+VTOBFAHrkb4=;
+        b=F+hzmxnzOc+718goX4Cs58QWOUfTIDiKrkUB1v+ufkg3+6n7DOvGRg91mu8FfXCAMf
+         FGj9W8B++N5wBz1YYmQT7i0CVcluacCT4V2Jc/ZISCEMgByjOv4cyK77LyJT/v7Slbjx
+         Q/yRK4s31cta8TArkXSJ37qhNy2sB4V2Oyxa8=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=4vhsaJLRuFd4cLY+OipxjxgQ9+hkB2eOCoIWIkwzsX4=;
-        b=ewnXJeUoy3kRIIlx0cI9Zj1Rl1MmnrFFXI+v/MOy7iB7lv8HcQ1GDnfL/d9itvcohY
-         YCkOadEcAsRUo/NZ1t21FWJWeNvNg3TqjxR8z83NMMaGJnCfhnhmi10aElTQlVvPK0QG
-         rGQbEquEMxyHgBQ/PDBUPLmlFD6GCZQEPkiBIBSFzJi6UavlbmQ8rpfNrDTGZjEiqtIC
-         6dYriKssi+X6sKKjoXadud1QxZ3fj/zZxvXzdxbRLCfyMGzv86r93j9NxvvOk0N9wGRr
-         qljsJDuzFEV9XhTIuqnXMDH+JWKqwfO1f4VdQwRSH3ykzC6IrFDNraWqhq91QPlsZyfu
-         C9Cg==
-X-Gm-Message-State: AOAM530dFqagxj2ftrp3R+0lcasrcoDdBA+bJCNk2W/gWKg15ThZKAdO
-        fnjXNvrdw7liBl529tQwb1LaXw==
-X-Google-Smtp-Source: ABdhPJx34FaRILEJCtAru2c7l4UL1l3tfbLxaWVDlH2pbi+Y5VD+HSoJSIbcO7Y6315RPOWA+MZjag==
-X-Received: by 2002:a5d:5246:: with SMTP id k6mr4924929wrc.89.1644354530369;
-        Tue, 08 Feb 2022 13:08:50 -0800 (PST)
+        bh=rydNRJgI2Eov1WWIN57pE5aUhiOSvoU+VTOBFAHrkb4=;
+        b=Dmil9eJHzBBOkEh2l+wJanum1AaUSOyjo8+Z1BNv28pLvBd8f/a0EWmZ3pr1mViN0C
+         cNIrGjT+NPwodwrqcfVkXtdUgND0/oskyUqb4D3CZ+qeA7mhFEEFw6fFrx/warbE8JaM
+         UxzGlCzQ6ebG+GnarOCU7mR+AFfKjCxWi7ofDTOzgFgih7c89/SXuHu7AuO37PTjBM6K
+         6H8AVaPKxzQrX5HykH4CSCzq2nvjw9iD2duuC3xu1osUctpyoiiUuKfXscDayB1VpMgd
+         qdiMTMgxHMxLQbKuro/6yuB5cH8QSLkCj7q0l+CAKdAL+IZrIfCe9WvGsaINH5uHnbUR
+         jkzw==
+X-Gm-Message-State: AOAM530I3ZyxuRpdZ7/6WeEaoRldhqEbkmpjKvO8C5fCVWu4bSkulFQH
+        8DUvsR42ZK9BARfLL3LYAaSzdw==
+X-Google-Smtp-Source: ABdhPJzxKjz/b2hfgAxYxrOdvg7rGwL2KTseqSZXjP4oQ90LBl4N2T/XH7Zn2NUo7poLdZ1hEUURuQ==
+X-Received: by 2002:a5d:6da8:: with SMTP id u8mr5135544wrs.362.1644354537326;
+        Tue, 08 Feb 2022 13:08:57 -0800 (PST)
 Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id o14sm3033561wmr.3.2022.02.08.13.08.49
+        by smtp.gmail.com with ESMTPSA id o14sm3033561wmr.3.2022.02.08.13.08.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Feb 2022 13:08:49 -0800 (PST)
+        Tue, 08 Feb 2022 13:08:56 -0800 (PST)
 From:   Daniel Vetter <daniel.vetter@ffwll.ch>
 To:     DRI Development <dri-devel@lists.freedesktop.org>
 Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
         linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Claudio Suarez <cssk@net-c.es>,
-        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Du Cheng <ducheng2@gmail.com>,
-        Matthew Wilcox <willy@infradead.org>,
-        William Kucharski <william.kucharski@oracle.com>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Zheyu Ma <zheyuma97@gmail.com>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>
-Subject: [PATCH v2 12/19] fbcon: use lock_fb_info in fbcon_open/release
-Date:   Tue,  8 Feb 2022 22:08:17 +0100
-Message-Id: <20220208210824.2238981-13-daniel.vetter@ffwll.ch>
+        Zack Rusin <zackr@vmware.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Ilya Trukhanov <lahvuun@gmail.com>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Peter Jones <pjones@redhat.com>
+Subject: [PATCH v2 18/19] Revert "fbdev: Prevent probing generic drivers if a FB is already registered"
+Date:   Tue,  8 Feb 2022 22:08:23 +0100
+Message-Id: <20220208210824.2238981-19-daniel.vetter@ffwll.ch>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220208210824.2238981-1-daniel.vetter@ffwll.ch>
 References: <20220208210824.2238981-1-daniel.vetter@ffwll.ch>
@@ -75,98 +68,77 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Now we get to the real motiviation, because fbmem.c insists that
-that's the right lock for these.
+This reverts commit fb561bf9abde49f7e00fdbf9ed2ccf2d86cac8ee.
 
-Ofc fbcon.c has a lot more places where it probably should call
-lock_fb_info(). But looking at fbmem.c at least most of these seem to
-be protected by console_lock() too, which is probably what papers over
-any issues.
+With
 
-Note that this means we're shuffling around a bit the locking sections
-for some of the console takeover and unbind paths, but not all:
-- console binding/unbinding from the console layer never with
-lock_fb_info
-- unbind (as opposed to unlink) never bother with lock_fb_info
+commit 27599aacbaefcbf2af7b06b0029459bbf682000d
+Author: Thomas Zimmermann <tzimmermann@suse.de>
+Date:   Tue Jan 25 10:12:18 2022 +0100
 
-Also the real serialization against set_par and set_pan are still
-doing by wrapping the entire ioctl code in console_lock(). So this
-shuffling shouldn't be worse than what we had from a "can you trigger
-races?" pov, but it's at least clearer.
+    fbdev: Hot-unplug firmware fb devices on forced removal
 
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: Claudio Suarez <cssk@net-c.es>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+this should be fixed properly and we can remove this somewhat hackish
+check here (e.g. this won't catch drm drivers if fbdev emulation isn't
+enabled).
+
 Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Du Cheng <ducheng2@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: William Kucharski <william.kucharski@oracle.com>
-Cc: Alex Deucher <alexander.deucher@amd.com>
-Cc: Zheyu Ma <zheyuma97@gmail.com>
-Cc: Zhen Lei <thunder.leizhen@huawei.com>
-Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>
+Cc: Zack Rusin <zackr@vmware.com>
+Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Zack Rusin <zackr@vmware.com>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Ilya Trukhanov <lahvuun@gmail.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Cc: Peter Jones <pjones@redhat.com>
+Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/video/fbdev/core/fbcon.c | 5 +++++
- drivers/video/fbdev/core/fbmem.c | 4 ----
- 2 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/efifb.c    | 11 -----------
+ drivers/video/fbdev/simplefb.c | 11 -----------
+ 2 files changed, 22 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index f0213a0e3870..cc960bf49991 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -684,8 +684,10 @@ static int fbcon_invalid_charcount(struct fb_info *info, unsigned charcount)
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index ea42ba6445b2..edca3703b964 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -351,17 +351,6 @@ static int efifb_probe(struct platform_device *dev)
+ 	char *option = NULL;
+ 	efi_memory_desc_t md;
  
- static void fbcon_release(struct fb_info *info)
- {
-+	lock_fb_info(info);
- 	if (info->fbops->fb_release)
- 		info->fbops->fb_release(info, 0);
-+	unlock_fb_info(info);
- 
- 	module_put(info->fbops->owner);
- }
-@@ -697,11 +699,14 @@ static int fbcon_open(struct fb_info *info)
- 	if (!try_module_get(info->fbops->owner))
+-	/*
+-	 * Generic drivers must not be registered if a framebuffer exists.
+-	 * If a native driver was probed, the display hardware was already
+-	 * taken and attempting to use the system framebuffer is dangerous.
+-	 */
+-	if (num_registered_fb > 0) {
+-		dev_err(&dev->dev,
+-			"efifb: a framebuffer is already registered\n");
+-		return -EINVAL;
+-	}
+-
+ 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI || pci_dev_disabled)
  		return -ENODEV;
  
-+	lock_fb_info(info);
- 	if (info->fbops->fb_open &&
- 	    info->fbops->fb_open(info, 0)) {
-+		unlock_fb_info(info);
- 		module_put(info->fbops->owner);
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 94fc9c6d0411..0ef41173325a 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -413,17 +413,6 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	struct simplefb_par *par;
+ 	struct resource *res, *mem;
+ 
+-	/*
+-	 * Generic drivers must not be registered if a framebuffer exists.
+-	 * If a native driver was probed, the display hardware was already
+-	 * taken and attempting to use the system framebuffer is dangerous.
+-	 */
+-	if (num_registered_fb > 0) {
+-		dev_err(&pdev->dev,
+-			"simplefb: a framebuffer is already registered\n");
+-		return -EINVAL;
+-	}
+-
+ 	if (fb_get_options("simplefb", NULL))
  		return -ENODEV;
- 	}
-+	unlock_fb_info(info);
- 
- 	ops = kzalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
- 	if (!ops) {
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index ad9aac06427a..37656883e7bd 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1674,9 +1674,7 @@ static int do_register_framebuffer(struct fb_info *fb_info)
- 		console_lock();
- 	else
- 		atomic_inc(&ignore_console_lock_warning);
--	lock_fb_info(fb_info);
- 	ret = fbcon_fb_registered(fb_info);
--	unlock_fb_info(fb_info);
- 
- 	if (!lockless_register_fb)
- 		console_unlock();
-@@ -1693,9 +1691,7 @@ static void unbind_console(struct fb_info *fb_info)
- 		return;
- 
- 	console_lock();
--	lock_fb_info(fb_info);
- 	fbcon_fb_unbind(fb_info);
--	unlock_fb_info(fb_info);
- 	console_unlock();
- }
  
 -- 
 2.34.1

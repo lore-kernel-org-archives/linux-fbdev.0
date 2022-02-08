@@ -2,143 +2,253 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84B44C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Feb 2022 19:01:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 907EBC433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Feb 2022 22:23:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1385576AbiBHTA6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 8 Feb 2022 14:00:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51802 "EHLO
+        id S1386238AbiBHWXL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Feb 2022 17:23:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35212 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1385782AbiBHTAr (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Feb 2022 14:00:47 -0500
-Received: from mx2.smtp.larsendata.com (mx2.smtp.larsendata.com [91.221.196.228])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 090FAC0612C0
-        for <linux-fbdev@vger.kernel.org>; Tue,  8 Feb 2022 11:00:45 -0800 (PST)
-Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
-        by mx2.smtp.larsendata.com (Halon) with ESMTPS
-        id 90d0ca10-8911-11ec-ac19-0050568cd888;
-        Tue, 08 Feb 2022 19:01:47 +0000 (UTC)
-Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        (Authenticated sender: sam@ravnborg.org)
-        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 3DFC3194B5C;
-        Tue,  8 Feb 2022 20:00:41 +0100 (CET)
-Date:   Tue, 8 Feb 2022 20:00:38 +0100
-X-Report-Abuse-To: abuse@mxhotel.dk
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
-        linux-fbdev@vger.kernel.org, Zheyu Ma <zheyuma97@gmail.com>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        Jens Frederich <jfrederich@gmail.com>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
-        linux-staging@lists.linux.dev, LKML <linux-kernel@vger.kernel.org>,
-        Matthew Wilcox <willy@infradead.org>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Alex Deucher <alexander.deucher@amd.com>,
+        with ESMTP id S1386697AbiBHVIe (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Feb 2022 16:08:34 -0500
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC3CDC0612B8
+        for <linux-fbdev@vger.kernel.org>; Tue,  8 Feb 2022 13:08:32 -0800 (PST)
+Received: by mail-wr1-x42b.google.com with SMTP id e3so673553wra.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 08 Feb 2022 13:08:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=gIPhliOnck3yOxw+Dv+3394kB7U1re82IdjUQLdsD7g=;
+        b=Z8I9ZWk9KMGjtYjkOSq4opEZfrkrnm27stq7L+c8hIZk05qksyUdm4+sUlt0rBndyT
+         DQX+SOTc8GS9LeEBc6pi7uSkAVol2kWAn54PJoRSgOd/ccDFsbs79VlWsrIJgy+5UY4z
+         adq/p7y0DkEQ++cwOVxs6Wiyy9rvfDf9eMg00=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=gIPhliOnck3yOxw+Dv+3394kB7U1re82IdjUQLdsD7g=;
+        b=bo0LrRJvwdYelbp5SNVf8zkCuJfRZiNV553ZY77h2gmPnaNJ4Tx0VpZMOMfnsWU96r
+         Nya/0QSHOR9/RiiD7uDVTSstnW8D7gayjpkWIq56UweC2okLcLSyHW9GSJi9mvUPM6AK
+         Vxvyra0O0gsPs30TMlt8OXrOXMzKFVW7Ra1llwOmoZHC6M7fHtjj5xloQqtn1LcoXTEz
+         0ew8VF0PT5Ywu1QAQncrYD4K3Mc+39SwJJlIgedsBPpYSm0//1OeI3ryayTdh0myCpzJ
+         KMa9YJR57i9vCsoQ3dBy/ZCW4DQlP6N1qFEmXsUnmgCm8/q/xMmA/UwjcaB33xOKKUHk
+         Enow==
+X-Gm-Message-State: AOAM5303SD0eI7AvkumeDP4pcyn895THDYt/iTrbh4vj2rm7ezXP3SVM
+        xaVRnLgsvbHVRUPURPsYy5kVJw==
+X-Google-Smtp-Source: ABdhPJyfRPn4N3kWII/WebNvQR+2lSObKOj91UPPo9uSAdMr7ixXbhsF1UhRz3GGz4BQn3bFDSUu7A==
+X-Received: by 2002:a5d:64c1:: with SMTP id f1mr4878344wri.5.1644354511285;
+        Tue, 08 Feb 2022 13:08:31 -0800 (PST)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id o14sm3033561wmr.3.2022.02.08.13.08.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Feb 2022 13:08:30 -0800 (PST)
+From:   Daniel Vetter <daniel.vetter@ffwll.ch>
+To:     DRI Development <dri-devel@lists.freedesktop.org>
+Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
         Daniel Vetter <daniel.vetter@intel.com>,
-        Jon Nettleton <jon.nettleton@gmail.com>,
-        Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 21/21] fbdev: Make registered_fb[] private to fbmem.c
-Message-ID: <YgK91i6zHWPBwYOq@ravnborg.org>
-References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
- <20220131210552.482606-22-daniel.vetter@ffwll.ch>
+        Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Du Cheng <ducheng2@gmail.com>,
+        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+        Claudio Suarez <cssk@net-c.es>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH v2 02/19] fbcon: Move fbcon_bmove(_rec) functions
+Date:   Tue,  8 Feb 2022 22:08:07 +0100
+Message-Id: <20220208210824.2238981-3-daniel.vetter@ffwll.ch>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220208210824.2238981-1-daniel.vetter@ffwll.ch>
+References: <20220208210824.2238981-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220131210552.482606-22-daniel.vetter@ffwll.ch>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Daniel,
+Avoids two forward declarations, and more importantly, matches what
+I've done in my fbcon scrolling restore patches - so I need this to
+avoid a bunch of conflicts in rebasing since we ended up merging
+Helge's series instead.
 
-On Mon, Jan 31, 2022 at 10:05:52PM +0100, Daniel Vetter wrote:
-> Well except when the olpc dcon fbdev driver is enabled, that thing
-> digs around in there in rather unfixable ways.
-> 
-> Cc oldc_dcon maintainers as fyi.
-> 
-> Cc: Jens Frederich <jfrederich@gmail.com>
-> Cc: Jon Nettleton <jon.nettleton@gmail.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: linux-staging@lists.linux.dev
-> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: Matthew Wilcox <willy@infradead.org>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-> Cc: Zhen Lei <thunder.leizhen@huawei.com>
-> Cc: Alex Deucher <alexander.deucher@amd.com>
-> Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Zheyu Ma <zheyuma97@gmail.com>
-> Cc: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Du Cheng <ducheng2@gmail.com>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: Claudio Suarez <cssk@net-c.es>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/video/fbdev/core/fbcon.c | 134 +++++++++++++++----------------
+ 1 file changed, 65 insertions(+), 69 deletions(-)
 
-with the build thingy fixed:
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 235eaab37d84..e925bb608e25 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -164,15 +164,11 @@ static int fbcon_cursor_noblink;
+  */
+ 
+ static void fbcon_clear_margins(struct vc_data *vc, int bottom_only);
+-static void fbcon_bmove(struct vc_data *vc, int sy, int sx, int dy, int dx,
+-			int height, int width);
+ static void fbcon_set_palette(struct vc_data *vc, const unsigned char *table);
+ 
+ /*
+  *  Internal routines
+  */
+-static void fbcon_bmove_rec(struct vc_data *vc, struct fbcon_display *p, int sy, int sx,
+-			    int dy, int dx, int height, int width, u_int y_break);
+ static void fbcon_set_disp(struct fb_info *info, struct fb_var_screeninfo *var,
+ 			   int unit);
+ static void fbcon_redraw_move(struct vc_data *vc, struct fbcon_display *p,
+@@ -1667,6 +1663,71 @@ static void fbcon_redraw(struct vc_data *vc, struct fbcon_display *p,
+ 	}
+ }
+ 
++static void fbcon_bmove_rec(struct vc_data *vc, struct fbcon_display *p, int sy, int sx,
++			    int dy, int dx, int height, int width, u_int y_break)
++{
++	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
++	struct fbcon_ops *ops = info->fbcon_par;
++	u_int b;
++
++	if (sy < y_break && sy + height > y_break) {
++		b = y_break - sy;
++		if (dy < sy) {	/* Avoid trashing self */
++			fbcon_bmove_rec(vc, p, sy, sx, dy, dx, b, width,
++					y_break);
++			fbcon_bmove_rec(vc, p, sy + b, sx, dy + b, dx,
++					height - b, width, y_break);
++		} else {
++			fbcon_bmove_rec(vc, p, sy + b, sx, dy + b, dx,
++					height - b, width, y_break);
++			fbcon_bmove_rec(vc, p, sy, sx, dy, dx, b, width,
++					y_break);
++		}
++		return;
++	}
++
++	if (dy < y_break && dy + height > y_break) {
++		b = y_break - dy;
++		if (dy < sy) {	/* Avoid trashing self */
++			fbcon_bmove_rec(vc, p, sy, sx, dy, dx, b, width,
++					y_break);
++			fbcon_bmove_rec(vc, p, sy + b, sx, dy + b, dx,
++					height - b, width, y_break);
++		} else {
++			fbcon_bmove_rec(vc, p, sy + b, sx, dy + b, dx,
++					height - b, width, y_break);
++			fbcon_bmove_rec(vc, p, sy, sx, dy, dx, b, width,
++					y_break);
++		}
++		return;
++	}
++	ops->bmove(vc, info, real_y(p, sy), sx, real_y(p, dy), dx,
++		   height, width);
++}
++
++static void fbcon_bmove(struct vc_data *vc, int sy, int sx, int dy, int dx,
++			int height, int width)
++{
++	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
++	struct fbcon_display *p = &fb_display[vc->vc_num];
++
++	if (fbcon_is_inactive(vc, info))
++		return;
++
++	if (!width || !height)
++		return;
++
++	/*  Split blits that cross physical y_wrap case.
++	 *  Pathological case involves 4 blits, better to use recursive
++	 *  code rather than unrolled case
++	 *
++	 *  Recursive invocations don't need to erase the cursor over and
++	 *  over again, so we use fbcon_bmove_rec()
++	 */
++	fbcon_bmove_rec(vc, p, sy, sx, dy, dx, height, width,
++			p->vrows - p->yscroll);
++}
++
+ static bool fbcon_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
+ 		enum con_scroll dir, unsigned int count)
+ {
+@@ -1867,71 +1928,6 @@ static bool fbcon_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
+ }
+ 
+ 
+-static void fbcon_bmove(struct vc_data *vc, int sy, int sx, int dy, int dx,
+-			int height, int width)
+-{
+-	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+-	struct fbcon_display *p = &fb_display[vc->vc_num];
+-
+-	if (fbcon_is_inactive(vc, info))
+-		return;
+-
+-	if (!width || !height)
+-		return;
+-
+-	/*  Split blits that cross physical y_wrap case.
+-	 *  Pathological case involves 4 blits, better to use recursive
+-	 *  code rather than unrolled case
+-	 *
+-	 *  Recursive invocations don't need to erase the cursor over and
+-	 *  over again, so we use fbcon_bmove_rec()
+-	 */
+-	fbcon_bmove_rec(vc, p, sy, sx, dy, dx, height, width,
+-			p->vrows - p->yscroll);
+-}
+-
+-static void fbcon_bmove_rec(struct vc_data *vc, struct fbcon_display *p, int sy, int sx,
+-			    int dy, int dx, int height, int width, u_int y_break)
+-{
+-	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+-	struct fbcon_ops *ops = info->fbcon_par;
+-	u_int b;
+-
+-	if (sy < y_break && sy + height > y_break) {
+-		b = y_break - sy;
+-		if (dy < sy) {	/* Avoid trashing self */
+-			fbcon_bmove_rec(vc, p, sy, sx, dy, dx, b, width,
+-					y_break);
+-			fbcon_bmove_rec(vc, p, sy + b, sx, dy + b, dx,
+-					height - b, width, y_break);
+-		} else {
+-			fbcon_bmove_rec(vc, p, sy + b, sx, dy + b, dx,
+-					height - b, width, y_break);
+-			fbcon_bmove_rec(vc, p, sy, sx, dy, dx, b, width,
+-					y_break);
+-		}
+-		return;
+-	}
+-
+-	if (dy < y_break && dy + height > y_break) {
+-		b = y_break - dy;
+-		if (dy < sy) {	/* Avoid trashing self */
+-			fbcon_bmove_rec(vc, p, sy, sx, dy, dx, b, width,
+-					y_break);
+-			fbcon_bmove_rec(vc, p, sy + b, sx, dy + b, dx,
+-					height - b, width, y_break);
+-		} else {
+-			fbcon_bmove_rec(vc, p, sy + b, sx, dy + b, dx,
+-					height - b, width, y_break);
+-			fbcon_bmove_rec(vc, p, sy, sx, dy, dx, b, width,
+-					y_break);
+-		}
+-		return;
+-	}
+-	ops->bmove(vc, info, real_y(p, sy), sx, real_y(p, dy), dx,
+-		   height, width);
+-}
+-
+ static void updatescrollmode_accel(struct fbcon_display *p,
+ 					struct fb_info *info,
+ 					struct vc_data *vc)
+-- 
+2.34.1
 
-I do wonder if there is a more clean way to trigger a blank
-in the main fbdev driver from the olpc driver.
-
-The current hack is not nice and it would be good to see it gone.
-
-	Sam
-
-> ---
->  drivers/video/fbdev/core/fbmem.c | 8 ++++++--
->  include/linux/fb.h               | 7 +++----
->  2 files changed, 9 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> index 904ef1250677..dad6572942fa 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -48,10 +48,14 @@
->  static DEFINE_MUTEX(registration_lock);
->  
->  struct fb_info *registered_fb[FB_MAX] __read_mostly;
-> -EXPORT_SYMBOL(registered_fb);
-> -
->  int num_registered_fb __read_mostly;
-> +#if IS_ENABLED(CONFIG_OLPC_DCON)
-> +EXPORT_SYMBOL(registered_fb);
->  EXPORT_SYMBOL(num_registered_fb);
-> +#endif
-> +#define for_each_registered_fb(i)		\
-> +	for (i = 0; i < FB_MAX; i++)		\
-> +		if (!registered_fb[i]) {} else
->  
->  bool fb_center_logo __read_mostly;
->  
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index a8a00d2ba1f3..e236817502c2 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -622,16 +622,15 @@ extern int fb_get_color_depth(struct fb_var_screeninfo *var,
->  extern int fb_get_options(const char *name, char **option);
->  extern int fb_new_modelist(struct fb_info *info);
->  
-> +#if IS_ENABLED(CONFIG_OLPC_DCON)
->  extern struct fb_info *registered_fb[FB_MAX];
-> +
->  extern int num_registered_fb;
-> +#endif
->  extern bool fb_center_logo;
->  extern int fb_logo_count;
->  extern struct class *fb_class;
->  
-> -#define for_each_registered_fb(i)		\
-> -	for (i = 0; i < FB_MAX; i++)		\
-> -		if (!registered_fb[i]) {} else
-> -
->  static inline void lock_fb_info(struct fb_info *info)
->  {
->  	mutex_lock(&info->lock);
-> -- 
-> 2.33.0

@@ -2,82 +2,113 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 507C7C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon,  7 Feb 2022 16:33:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C139AC433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Feb 2022 08:44:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230336AbiBGQcW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 7 Feb 2022 11:32:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58356 "EHLO
+        id S1351922AbiBHIoA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Feb 2022 03:44:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40082 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345751AbiBGQVN (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 7 Feb 2022 11:21:13 -0500
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79906C0401D1
-        for <linux-fbdev@vger.kernel.org>; Mon,  7 Feb 2022 08:21:11 -0800 (PST)
-Received: by mail-wr1-x435.google.com with SMTP id c19so11031047wrb.10
-        for <linux-fbdev@vger.kernel.org>; Mon, 07 Feb 2022 08:21:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=Np4LH/PHz6uNkDpTZmQ/zoxgwDp96GbmnvDa2V7nWjk=;
-        b=QgufGM+1w3bsYZSJ9xlKRmy3+TsigV3ZsM/lqCkrk+2PFrRq2qAxjaRIcbaZ6XTMpd
-         dHN3csVfUdJlhnr4ISuVdfwWYthqcjlVkwEKaIzb9ohnAgPPPEnUh8ZXbwWBB4FE5VTD
-         v4qiUp1+V61ZK9GFt06cQBjo9kwCIXouNxnx1dWjOOpSi6rvXPFsU0oBn2JtQQ8qDYSE
-         JTzdjg3Q550FQW+DQ/yUhMrzvS9yoNZmt/a2M2/z7siYRPqcfv6jjVIuNkLoSpWuQ8d/
-         sOwBN4knqfQHkxWpOzloC+DeoSvsFYb63wY9gAxv2vVkHqYOCumGB9afLCGKIFbX2MJ5
-         xl2Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=Np4LH/PHz6uNkDpTZmQ/zoxgwDp96GbmnvDa2V7nWjk=;
-        b=e/FAgVtAMdu2ByFLMkdHOewTNe9NmJo2ZW9Jdgm9fDCBbNIJtVcLVEO4wRuxw8lYLf
-         aosSf1nj9cTS2ZvkoJHF5N8OVYRCRQQuR2BzjrWyd+WNw8x7Yq3bGVMJjR2GbQk4JQH4
-         zwiZqUtzd2ywxxXDxiUwl8F/0yIGfEXvK7xmlS0XfSzV4FaRNnQjS7cdamXeSX1BWFca
-         bnwPhWOvmecIgCIniPPMb1O9z0U9+DHG3lnGYMOm6Pp6aFEJd3s5uhx6MWHpJ+BqiADM
-         lDC5tsgRE5D3GCeI+p4N6Mw+/3Q/H5nfk9w+z9G39HgQsK1Dc2/JlAgofnY1qk7Hd51G
-         0RkA==
-X-Gm-Message-State: AOAM531iVAAxCDrMNx4gsl9pSA/RdbwBiZqXaInjfNztMJeGcRKDYUKz
-        Yvtrtsfq4ZNO+y9prUl8jVJAIpibQUNOO8qQ
-X-Google-Smtp-Source: ABdhPJx9cikXNjt/6MFPqIqkMx5U5Ng8Uv5wYgVhdvs4xghr+YQWYDB7vr7F/zL+84q9GXPE6QDA6w==
-X-Received: by 2002:a5d:50c2:: with SMTP id f2mr173218wrt.694.1644250870003;
-        Mon, 07 Feb 2022 08:21:10 -0800 (PST)
-Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
-        by smtp.gmail.com with ESMTPSA id k9sm9789271wrv.81.2022.02.07.08.21.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Feb 2022 08:21:09 -0800 (PST)
-Date:   Mon, 7 Feb 2022 16:21:07 +0000
-From:   Daniel Thompson <daniel.thompson@linaro.org>
-To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>,
+        with ESMTP id S1352111AbiBHInp (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Feb 2022 03:43:45 -0500
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6EA1FC03F93F
+        for <linux-fbdev@vger.kernel.org>; Tue,  8 Feb 2022 00:43:33 -0800 (PST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+        by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.92)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1nHM5r-0002Xc-Q8; Tue, 08 Feb 2022 09:43:23 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+        by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1nHM5q-00FGOF-Re; Tue, 08 Feb 2022 09:43:22 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+        (envelope-from <ukl@pengutronix.de>)
+        id 1nHM5o-00Bgwf-VR; Tue, 08 Feb 2022 09:43:20 +0100
+Date:   Tue, 8 Feb 2022 09:43:18 +0100
+From:   Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>,
         Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
         kernel-janitors@vger.kernel.org, linux-pwm@vger.kernel.org,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 Subject: Re: [PATCH] backlight: pwm_bl: Avoid open coded arithmetic in memory
  allocation
-Message-ID: <20220207162107.eblu6rxyhkuyyqnf@maple.lan>
+Message-ID: <20220208084318.pkfs6xtpe4cz77sd@pengutronix.de>
 References: <bd3d74acfa58d59f6f5f81fc5a9fb409edb8d747.1644046817.git.christophe.jaillet@wanadoo.fr>
+ <20220207080128.xmvommcddjfgz7ey@pengutronix.de>
+ <YgDm1FWtlneMLCTS@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="pdixcmr5l2jhzb4h"
 Content-Disposition: inline
-In-Reply-To: <bd3d74acfa58d59f6f5f81fc5a9fb409edb8d747.1644046817.git.christophe.jaillet@wanadoo.fr>
+In-Reply-To: <YgDm1FWtlneMLCTS@google.com>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-fbdev@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Feb 05, 2022 at 08:40:48AM +0100, Christophe JAILLET wrote:
-> kmalloc_array()/kcalloc() should be used to avoid potential overflow when
-> a multiplication is needed to compute the size of the requested memory.
-> 
-> So turn a kzalloc()+explicit size computation into an equivalent kcalloc().
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+--pdixcmr5l2jhzb4h
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, Feb 07, 2022 at 09:31:00AM +0000, Lee Jones wrote:
+> On Mon, 07 Feb 2022, Uwe Kleine-K=F6nig wrote:
+>=20
+> > On Sat, Feb 05, 2022 at 08:40:48AM +0100, Christophe JAILLET wrote:
+> > > kmalloc_array()/kcalloc() should be used to avoid potential overflow =
+when
+> > > a multiplication is needed to compute the size of the requested memor=
+y.
+> > >=20
+> > > So turn a kzalloc()+explicit size computation into an equivalent kcal=
+loc().
+> > >=20
+> > > Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> >=20
+> > LGTM
+> >=20
+> > Acked-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> >=20
+> > Thanks
+> > Uwe
+>=20
+> I am totally confused!
 
-Daniel.
+An rightfully so. Copy-paste-fail, this was supposed to be
+
+Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+
+Sorry!
+
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--pdixcmr5l2jhzb4h
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmICLSMACgkQwfwUeK3K
+7AkbYgf/RNIxNrujniat17dztKQmOsg7ALfQgtXaD7tJg70b7hHEABMPGSfUeTD4
+NmvXDBOnN1LiF8tOP/wJQlsM+vQzWJfIT4IQkiravbjwlUW4dgP7791/tH96r0uk
+S5Cz5KuSYksD6aj/RnsSC5lGtXQzjX2u7zC/H0oIMdOQ7VotZMSsKYVkkayAukP4
+HY6htMhSXDfTLemlM0oVWGOwMzO+LvG1szPEKsUdaOTiT0qMMozlRBd+gt/4Panz
+OnodFwSXAmgEH9IH+s/wH8xsVe5TYibaqhPnsj9JBaMRjGVNnCf7ziwL+BSC3P1m
+6guPRpOxNHkPy8j+kGt+RekqdmL/QQ==
+=Iulx
+-----END PGP SIGNATURE-----
+
+--pdixcmr5l2jhzb4h--

@@ -2,87 +2,84 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 681B0C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Feb 2022 08:54:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB6F2C4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Feb 2022 09:24:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235870AbiBHIyH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 8 Feb 2022 03:54:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47028 "EHLO
+        id S1346207AbiBHJYY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Feb 2022 04:24:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35426 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1352167AbiBHIyF (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Feb 2022 03:54:05 -0500
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2947C03FEC5
-        for <linux-fbdev@vger.kernel.org>; Tue,  8 Feb 2022 00:54:00 -0800 (PST)
-Received: by mail-wm1-x335.google.com with SMTP id j5-20020a05600c1c0500b0034d2e956aadso1069972wms.4
-        for <linux-fbdev@vger.kernel.org>; Tue, 08 Feb 2022 00:54:00 -0800 (PST)
+        with ESMTP id S232068AbiBHJYX (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Feb 2022 04:24:23 -0500
+Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05163C03FEC1
+        for <linux-fbdev@vger.kernel.org>; Tue,  8 Feb 2022 01:24:22 -0800 (PST)
+Received: by mail-wm1-x330.google.com with SMTP id bg21-20020a05600c3c9500b0035283e7a012so1164859wmb.0
+        for <linux-fbdev@vger.kernel.org>; Tue, 08 Feb 2022 01:24:21 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=TwOpOhCkewurBTdSPeNG/7ZJDIatq7Dw8T+vkk/TtIs=;
-        b=lW/GiqdU3VVDp/fM92/DOGcQiYkmHr49MJ8+ldaZtWG+Rz0AGaKzffcSP6e7mKYNtp
-         49/IjQdY63rG2pETJUo630qcGPZsdVPQIJj873h1TvLczfsWYqMZ38inMSLfNaQihw9x
-         LhQvvvpv/jIbjn+KTCIi6iLEIN8lvzm/6z25rtRwYmtebnh9Sej2ZI4P16dbsIDlL9mh
-         weGZIiRJ4jqQDxuxM3tk44SqZbaAO/aFwlinYdFKoqsb7UiI8wm+hdy5UPdESAp0DOyB
-         bO2AMyvRX9Z6EXZ6UNE/DXSiy8BmQ9npowQ8ZGmqcoPgFy3Y+1vOh8MWE6YKaPeRtFOk
-         ZR6Q==
+        bh=U4eTC6qoUMprkOAPi/nq4R8RnDpnU3YMicKdHmccZLQ=;
+        b=OjSkWWAHIdktAsoxsPi8byPQ2FeJ3bEHJsUZ77uP4OKAnFUO5xzu8gJgEUWd9BJvBz
+         aO9juV01Jl+Jg51nPtatv0IZ7mhfSBtVI2MgFLAD7hRQhDhCKaCghTlC7XJOB4AytX2/
+         UAC8qQsvDpuYIsar6dqeLQttRFVBOCGRSP/kOjCVp0iPeQVX5eWrBKnmGyMClgEKMPaQ
+         uRN+U37PNeVifs+mA5ddKOWgc4VOK+8xIYZhqyAJQgcBY5ZQN+1I5Ajxr+QzVIjxBQax
+         q7lAMPJoX4Cm4+OenG6xR9SaqiNfcTMbrnGzlg7YTuXhm7VnbLDUwDnsqIjtdsDoePeS
+         agyQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:content-transfer-encoding
          :in-reply-to;
-        bh=TwOpOhCkewurBTdSPeNG/7ZJDIatq7Dw8T+vkk/TtIs=;
-        b=ZZHgGqut0ztVFADNHrwsdxMXcP7APzs+9bjWy4qBPQM1npRhnQ1vaQxj4/cXc1zV1/
-         Crq+HEWlCYrU7r3sLMvdCw19bGtQjZiB0MONW80htmQavsvnFurCRuskQAEFm6vjZUsS
-         FWpfF1CNcxe/RngoNVBMPEmwPCXWIeBS5LVbskTzMZKnT6xy2USRcDLQyEGFUhxSCGzC
-         J5HH3DodygcCOhVCStGWLei6KKSoridwE7xn5/SEOp/TCSL4mX4cshc8s584Um4AKftU
-         hVHtPc9VznDKd8IoWlXDACgif2vk3Iqp5k/szd8f+a9gKDdkq4vkAhhCsH+cN3ywYlvz
-         HnyQ==
-X-Gm-Message-State: AOAM532DWyrJtc7OQKYcRKI1IydfMFY5XY9qp8z54EPRk/Iina4DmujG
-        6lJTabO/7EorIKMievk/Hysm6g==
-X-Google-Smtp-Source: ABdhPJyOewoFyg7DILHZmhtw2fzDp/fVpk8M5K4TsGNIZ1zInW2wlEQgwVzk/ZuITeCHKUQCDC3Q7w==
-X-Received: by 2002:a1c:a595:: with SMTP id o143mr191510wme.78.1644310439409;
-        Tue, 08 Feb 2022 00:53:59 -0800 (PST)
+        bh=U4eTC6qoUMprkOAPi/nq4R8RnDpnU3YMicKdHmccZLQ=;
+        b=B8h8z2hvDITvCn14OkqlNthLnwX8tZftbLbSgK3vrHCrp41fdVBfAE1Zs2xFiJ5D9I
+         zmLf+kTJBakC1VRkyGt/0lhHvOVlTNh3KgwNCK5MM6O7mvElgKNM2xjuXHJ9M90hIvsc
+         YyNGwd9RwXns2wmjLqZaJmsyFBw9voCRRebqr1S/6x1mCHF+hBetSxlU++ql8qZHCeID
+         NsyRRqiFyd0RlDkKM08sq3xjTjtqFUQoRslSfwOyvyRBQlHhW02gtbEnhJ6gF0m4Ic1X
+         IqJgfNU9bB1YR0s2OTeMmb4vNJ8wYVQKFaqIW82JUqL0L8zQ8WUuGarDTt8ajT0RKdA7
+         X17Q==
+X-Gm-Message-State: AOAM533C+NLOijmkpwRvpcvUE0wdlNBwCGEgNNI3vaDRNL002xzcymI4
+        K/iqeALDrqpf1z+cfStGowA+Lw==
+X-Google-Smtp-Source: ABdhPJyETs0h54mjP52R9i4urCVEkYxAlnNZHIWK+XSjvKFVpOSKSwgint1uilZINo2Imx/EJawJvw==
+X-Received: by 2002:a05:600c:4e90:: with SMTP id f16mr274231wmq.175.1644312260622;
+        Tue, 08 Feb 2022 01:24:20 -0800 (PST)
 Received: from google.com (cpc155339-bagu17-2-0-cust87.1-3.cable.virginm.net. [86.27.177.88])
-        by smtp.gmail.com with ESMTPSA id o10sm7645041wri.69.2022.02.08.00.53.58
+        by smtp.gmail.com with ESMTPSA id j46sm27994wrj.58.2022.02.08.01.24.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Feb 2022 00:53:58 -0800 (PST)
-Date:   Tue, 8 Feb 2022 08:53:56 +0000
+        Tue, 08 Feb 2022 01:24:19 -0800 (PST)
+Date:   Tue, 8 Feb 2022 09:24:17 +0000
 From:   Lee Jones <lee.jones@linaro.org>
-To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
+To:     Luca Weiss <luca.weiss@fairphone.com>
+Cc:     linux-arm-msm@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht, phone-devel@vger.kernel.org,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
         Daniel Thompson <daniel.thompson@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>, linux-kernel@vger.kernel.org,
-        kernel-janitors@vger.kernel.org, linux-pwm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH] backlight: pwm_bl: Avoid open coded arithmetic in memory
- allocation
-Message-ID: <YgIvpFp8igFkVsP+@google.com>
-References: <bd3d74acfa58d59f6f5f81fc5a9fb409edb8d747.1644046817.git.christophe.jaillet@wanadoo.fr>
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] backlight: qcom-wled: Add PM6150L compatible
+Message-ID: <YgI2wXYHjrcsF40f@google.com>
+References: <20211229170358.2457006-1-luca.weiss@fairphone.com>
+ <20211229170358.2457006-3-luca.weiss@fairphone.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <bd3d74acfa58d59f6f5f81fc5a9fb409edb8d747.1644046817.git.christophe.jaillet@wanadoo.fr>
+In-Reply-To: <20211229170358.2457006-3-luca.weiss@fairphone.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, 05 Feb 2022, Christophe JAILLET wrote:
+On Wed, 29 Dec 2021, Luca Weiss wrote:
 
-> kmalloc_array()/kcalloc() should be used to avoid potential overflow when
-> a multiplication is needed to compute the size of the requested memory.
+> PM6150L contains WLED of version 5. Add support ofr it to the driver.
 > 
-> So turn a kzalloc()+explicit size computation into an equivalent kcalloc().
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> Signed-off-by: Luca Weiss <luca.weiss@fairphone.com>
 > ---
->  drivers/video/backlight/pwm_bl.c | 9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
+>  drivers/video/backlight/qcom-wled.c | 1 +
+>  1 file changed, 1 insertion(+)
 
 Applied, thanks.
 

@@ -2,29 +2,29 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BA67C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Feb 2022 18:27:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7746AC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Feb 2022 18:55:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346398AbiBHS1h (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 8 Feb 2022 13:27:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57602 "EHLO
+        id S1385533AbiBHSze (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Feb 2022 13:55:34 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47498 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240945AbiBHS1h (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Feb 2022 13:27:37 -0500
+        with ESMTP id S240806AbiBHSzc (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Feb 2022 13:55:32 -0500
 Received: from mx1.smtp.larsendata.com (mx1.smtp.larsendata.com [91.221.196.215])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DC4DC061578
-        for <linux-fbdev@vger.kernel.org>; Tue,  8 Feb 2022 10:27:36 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D41AC0612C0
+        for <linux-fbdev@vger.kernel.org>; Tue,  8 Feb 2022 10:55:30 -0800 (PST)
 Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
         by mx1.smtp.larsendata.com (Halon) with ESMTPS
-        id eed6468f-890c-11ec-b20b-0050568c148b;
-        Tue, 08 Feb 2022 18:28:38 +0000 (UTC)
+        id d4e32d3c-8910-11ec-b20b-0050568c148b;
+        Tue, 08 Feb 2022 18:56:32 +0000 (UTC)
 Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
         (Authenticated sender: sam@ravnborg.org)
-        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 0370B194B43;
-        Tue,  8 Feb 2022 19:27:34 +0100 (CET)
-Date:   Tue, 8 Feb 2022 19:27:32 +0100
+        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 26746194B43;
+        Tue,  8 Feb 2022 19:55:29 +0100 (CET)
+Date:   Tue, 8 Feb 2022 19:55:26 +0100
 X-Report-Abuse-To: abuse@mxhotel.dk
 From:   Sam Ravnborg <sam@ravnborg.org>
 To:     DRI Development <dri-devel@lists.freedesktop.org>,
@@ -35,164 +35,71 @@ To:     DRI Development <dri-devel@lists.freedesktop.org>,
         Claudio Suarez <cssk@net-c.es>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Daniel Vetter <daniel.vetter@intel.com>
-Subject: Re: [PATCH 18/21] fbcon: untangle fbcon_exit
-Message-ID: <YgK2FMXAkOQqQV4h@ravnborg.org>
+Subject: Re: [PATCH 19/21] fbcon: Maintain a private array of fb_info
+Message-ID: <YgK8nugB7HO2d6r1@ravnborg.org>
 References: <20220131210552.482606-1-daniel.vetter@ffwll.ch>
- <20220131210552.482606-19-daniel.vetter@ffwll.ch>
- <Yf2HTungn5DFhAPa@ravnborg.org>
- <YgJ2/f/JkKlyTJdh@phenom.ffwll.local>
+ <20220131210552.482606-20-daniel.vetter@ffwll.ch>
+ <Yf2JbCP6dtHVZS3c@ravnborg.org>
+ <YgJ4MC1IJL7AOgSK@phenom.ffwll.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <YgJ2/f/JkKlyTJdh@phenom.ffwll.local>
+In-Reply-To: <YgJ4MC1IJL7AOgSK@phenom.ffwll.local>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Tue, Feb 08, 2022 at 02:58:21PM +0100, Daniel Vetter wrote:
-> On Fri, Feb 04, 2022 at 09:06:38PM +0100, Sam Ravnborg wrote:
+Hi Daniel,
+
+On Tue, Feb 08, 2022 at 03:03:28PM +0100, Daniel Vetter wrote:
+> On Fri, Feb 04, 2022 at 09:15:40PM +0100, Sam Ravnborg wrote:
 > > Hi Daniel,
 > > 
-> > On Mon, Jan 31, 2022 at 10:05:49PM +0100, Daniel Vetter wrote:
-> > > There's a bunch of confusions going on here:
-> > > - The deferred fbcon setup notifier should only be cleaned up from
-> > >   fb_console_exit(), to be symmetric with fb_console_init()
-> > > - We also need to make sure we don't race with the work, which means
-> > >   temporarily dropping the console lock (or we can deadlock)
-> > > - That also means no point in clearing deferred_takeover, we are
-> > >   unloading everything anyway.
-> > > - Finally rename fbcon_exit to fbcon_release_all and move it, since
-> > >   that's what's it doing when being called from consw->con_deinit
-> > >   through fbcon_deinit.
-> > > 
-> > > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> > > Cc: Daniel Vetter <daniel@ffwll.ch>
-> > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > > Cc: Claudio Suarez <cssk@net-c.es>
-> > > Cc: Du Cheng <ducheng2@gmail.com>
-> > > Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> > > ---
-> > >  drivers/video/fbdev/core/fbcon.c | 63 ++++++++++++++++----------------
-> > >  1 file changed, 32 insertions(+), 31 deletions(-)
-> > > 
-> > > diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> > > index 5c14e24d14a1..22581952b4fd 100644
-> > > --- a/drivers/video/fbdev/core/fbcon.c
-> > > +++ b/drivers/video/fbdev/core/fbcon.c
-> > > @@ -185,7 +185,6 @@ static void fbcon_set_disp(struct fb_info *info, struct fb_var_screeninfo *var,
-> > >  			   int unit);
-> > >  static void fbcon_modechanged(struct fb_info *info);
-> > >  static void fbcon_set_all_vcs(struct fb_info *info);
-> > > -static void fbcon_exit(void);
-> > >  
-> > >  static struct device *fbcon_device;
-> > >  
-> > > @@ -1149,6 +1148,27 @@ static void fbcon_free_font(struct fbcon_display *p, bool freefont)
-> > >  
-> > >  static void set_vc_hi_font(struct vc_data *vc, bool set);
-> > >  
-> > > +static void fbcon_release_all(void)
-> > > +{
-> > > +	struct fb_info *info;
-> > > +	int i, j, mapped;
-> > > +
-> > > +	for_each_registered_fb(i) {
-> > > +		mapped = 0;
-> > > +		info = registered_fb[i];
-> > > +
-> > > +		for (j = first_fb_vc; j <= last_fb_vc; j++) {
-> > > +			if (con2fb_map[j] == i) {
-> > > +				mapped = 1;
-> > > +				con2fb_map[j] = -1;
-> > > +			}
-> > > +		}
-> > > +
-> > > +		if (mapped)
-> > > +			fbcon_release(info);
-> > > +	}
-> > > +}
-> > > +
-> > >  static void fbcon_deinit(struct vc_data *vc)
-> > >  {
-> > >  	struct fbcon_display *p = &fb_display[vc->vc_num];
-> > > @@ -1188,7 +1208,7 @@ static void fbcon_deinit(struct vc_data *vc)
-> > >  		set_vc_hi_font(vc, false);
-> > >  
-> > >  	if (!con_is_bound(&fb_con))
-> > > -		fbcon_exit();
-> > > +		fbcon_release_all();
-> > >  
-> > >  	if (vc->vc_num == logo_shown)
-> > >  		logo_shown = FBCON_LOGO_CANSHOW;
-> > > @@ -3316,34 +3336,6 @@ static void fbcon_start(void)
-> > >  #endif
-> > >  }
-> > >  
-> > > -static void fbcon_exit(void)
-> > > -{
-> > > -	struct fb_info *info;
-> > > -	int i, j, mapped;
-> > > -
-> > > -#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
-> > > -	if (deferred_takeover) {
-> > > -		dummycon_unregister_output_notifier(&fbcon_output_nb);
-> > > -		deferred_takeover = false;
-> > > -	}
-> > > -#endif
-> > > -
-> > > -	for_each_registered_fb(i) {
-> > > -		mapped = 0;
-> > > -		info = registered_fb[i];
-> > > -
-> > > -		for (j = first_fb_vc; j <= last_fb_vc; j++) {
-> > > -			if (con2fb_map[j] == i) {
-> > > -				mapped = 1;
-> > > -				con2fb_map[j] = -1;
-> > > -			}
-> > > -		}
-> > > -
-> > > -		if (mapped)
-> > > -			fbcon_release(info);
-> > > -	}
-> > > -}
-> > > -
-> > >  void __init fb_console_init(void)
-> > >  {
-> > >  	int i;
-> > > @@ -3383,10 +3375,19 @@ static void __exit fbcon_deinit_device(void)
-> > >  
-> > >  void __exit fb_console_exit(void)
-> > >  {
-> > > +#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
-> > > +	console_lock();
-> > > +	if (deferred_takeover)
-> > > +		dummycon_unregister_output_notifier(&fbcon_output_nb);
-> > > +	console_unlock();
-> > > +
-> > > +	cancel_work_sync(&fbcon_deferred_takeover_work);
-> > > +#endif
-> > > +
-> > >  	console_lock();
-> > >  	fbcon_deinit_device();
-> > >  	device_destroy(fb_class, MKDEV(0, 0));
-> > > -	fbcon_exit();
-> > > +
-> > We loose the call to fbcon_release_all() here.
-> > We have part of the old fbcon_exit() above, but miss the release parts.
+> > On Mon, Jan 31, 2022 at 10:05:50PM +0100, Daniel Vetter wrote:
+> > > Accessing the one in fbmem.c without taking the right locks is a bad
+> > > idea. Instead maintain our own private copy, which is fully protected
+> > > by console_lock() (like everything else in fbcon.c). That copy is
+> > > serialized through fbcon_fb_registered/unregistered() calls.
 > > 
-> > Maybe I missed something obvious?
+> > I fail to see why we can make a private copy of registered_fb
+> > just like that - are they not somehow shared between fbcon and fbmem.
+> > So when fbmem updates it, then fbcon will use the entry or such?
+> > 
+> > I guess I am just ignorant of how registered_fb is used - but please
+> > explain.
 > 
-> Ah yes that's the entire point of this change. The release_all in the
-> fbcon exit path was only needed when fbcon was a separate module
-> indepedent from core fb.ko. Which means it was possible to unload fbcon
-> while having fbdev drivers registered.
+> The private copy is protected under console_lock, and hence safe to access
+> from fbcon.c code.
 > 
-> But since we've merged them that has become impossible, so by the time the
-> fb.ko module can be unloaded, there's guaranteed to be no fbdev drivers
-> left. And hence removing them is pointless.
-Makes sense, thanks for the explanation.
+> The main registered_fb array is protected by a different mutex, so we
+> could indeed end up with hilarious corruption because the value is
+> inconsistent while we try to access it (e.g. we check for !NULL, but later
+> on gcc decides to reload the value and now it's suddenly become NULL and
+> we blow up).
+> 
+> The two are synchronized by fbmem.c calling fbcon_register/unregister, so
+> aside from the different locks if there's no race going on, they will
+> always be identical.
+IT was this part that I missed, and it is already spelled out in the
+commit message.
 
 > 
+> Other option would be to roll out get_fb_info() to fbcon.c, but since
+> fbcon.c is fully protected by console_lock that would add complexity in
+> the code flow that we don't really need. And we'd have to wire fb_info
+> through all call chains, since the right way to use get_fb_info is to look
+> it up once and then only drop it when your callback has finished.
+> 
+> Since the current code just assume it's all protected by console_lock and
+> we never drop that during a callback this would mean major surgery and
+> essentially refactoring all of fbcon.c to only access the fbcon stuff
+> through fb_info, i.e. to get rid of _all_ the global arrays we have more
+> or less. I'm not volunteering for that (despite that really this would be
+> the right thing to do if we'd have infinite engineering time).
+> 
 > Ack with that explainer added to the commit message?
-Yes, then it is
+
+I consider the current commit message fine - it helps when you actually
+read it.
+
 Acked-by: Sam Ravnborg <sam@ravnborg.org>

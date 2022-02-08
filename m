@@ -2,135 +2,137 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCAC4C4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Feb 2022 15:40:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82ED1C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Feb 2022 16:23:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345869AbiBHPkU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 8 Feb 2022 10:40:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51690 "EHLO
+        id S1383127AbiBHQXu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Feb 2022 11:23:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1381328AbiBHPkS (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Feb 2022 10:40:18 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id A31E4C06129A
-        for <linux-fbdev@vger.kernel.org>; Tue,  8 Feb 2022 07:40:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644334816;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=R3+ygx7WT3LgjARaNLFe1zhALwKjcISILkzjd4t3g78=;
-        b=QrBnP80borMCiE9iMIYH0/RL+5dFSfYpD2wxs02qMZFaeCYJRgeAuHDrlEpf8YzRGS2Y0T
-        +jgpSyp+MOifsvLvBjyA+TvQCSoSjXRkKHGPvFMUNEGDrGXTiVsONPs/yz7yChXnMvjEAS
-        9nF+157J6zhEEr8TrSh2SjNhn0OF0z0=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-557-wNDUUlMeMYa3Pkod9gu6jg-1; Tue, 08 Feb 2022 10:40:15 -0500
-X-MC-Unique: wNDUUlMeMYa3Pkod9gu6jg-1
-Received: by mail-wr1-f69.google.com with SMTP id g6-20020adfbc86000000b001a2d62be244so6205939wrh.23
-        for <linux-fbdev@vger.kernel.org>; Tue, 08 Feb 2022 07:40:15 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=R3+ygx7WT3LgjARaNLFe1zhALwKjcISILkzjd4t3g78=;
-        b=gP0icNdj9ONkEtytnrA7mhoNr4bewOdltf7hLNjU5WRxS0KFQ8Lb4yOGg+fuMoCuIA
-         khXUtWyb8gQScbo+vjljm0U4AR08c5zgbVmLyHSJGTyAcCOZRIhm5vY42egs5QYYrBKr
-         rgRn22ghrWUm93u9D362hE2bKWx+TdyGqavHdf9Z3JCC9wGQy9xcToIfHX0oIyAL6rf+
-         L0oEQIZEnXacbaiEGTQXaBaNe8Zq5FYckJKwVJ8OvrENBOMWfYCTjD0Tr4n0SyO4OCyw
-         jQl6rF483M8aMerc4AULt1Um9PrmYh6kPC9XbtF5Y3l0xmjICya6gfw7mAGjS1BQJCZ0
-         xZNg==
-X-Gm-Message-State: AOAM533Am2K1vs4p9H0Zw3zhXhoGCWwTBzSK/jTiHyLxgDefwqRwHsS8
-        ikZ8o7qi5rkiySIKr67/icsbgzMm+mAkPmC6zMYnlBMIVZQLFnokGh3IqcUGDxkvF5HXJvYva/U
-        AcI3ikqdsSroNf9syhOnwwvU=
-X-Received: by 2002:a5d:588e:: with SMTP id n14mr4244932wrf.45.1644334814514;
-        Tue, 08 Feb 2022 07:40:14 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwgsRW+lrC/D9yn6NeNRRQqunCaYEb9CMC26g+Mn3KPfiRrXRhLKFGC8C3j1dq2BkDZsEKSLg==
-X-Received: by 2002:a5d:588e:: with SMTP id n14mr4244901wrf.45.1644334814281;
-        Tue, 08 Feb 2022 07:40:14 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id v18sm9972089wrm.105.2022.02.08.07.40.12
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 08 Feb 2022 07:40:14 -0800 (PST)
-Message-ID: <02d5b225-e1a8-77f6-7e4e-18d6a1df5e48@redhat.com>
-Date:   Tue, 8 Feb 2022 16:40:12 +0100
+        with ESMTP id S1352165AbiBHQXt (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Feb 2022 11:23:49 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4247BC061578
+        for <linux-fbdev@vger.kernel.org>; Tue,  8 Feb 2022 08:23:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1644337422;
+        bh=XThKsYT3SSJDiqTd/cXFxOMEVDw/FGebkK8AA7t32ug=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=K2SOJjhU59b23DveJCHOw764L56MQasqumPLcGm3vm2YIF0gjPf4YMxNDhDDjNGwQ
+         Okr949Bh9eOJztAT4bIKt85W8aU0lfJurJUKWOQtY+M1MYUw+gTSSUdPbbaGnu0jvV
+         1qGktZ12jXKqOxSdXaVy1CY5eV9t/lJe4ljZjAvQ=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.144.255]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1Md6Qr-1nqG452Sfr-00aGEU; Tue, 08
+ Feb 2022 17:23:42 +0100
+Message-ID: <ac128a97-a886-640a-243d-d0af97386655@gmx.de>
+Date:   Tue, 8 Feb 2022 17:23:39 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v2 0/4] drm/tiny: Add driver for Solomon SSD1307 OLED
- displays
+ Thunderbird/91.3.0
+Subject: Re: [PATCH] fbcon: Avoid 'cap' set but not used warning
 Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux PWM List <linux-pwm@vger.kernel.org>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Mark Brown <broonie@kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Lee Jones <lee.jones@linaro.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Sam Ravnborg <sam@ravnborg.org>
-References: <20220204134347.1187749-1-javierm@redhat.com>
- <CAMuHMdVTVX7LFay-rfv=oW96dMA24duMUVGRE62jQSNkrKtyMg@mail.gmail.com>
- <f178de92-7cb1-dcc5-1f60-9ccfc56bc0a4@redhat.com>
- <CAMuHMdWvrJip+W6ZZoO2ZURLc5CYmFno3=Sa2mL4xJE8gMzFqg@mail.gmail.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <CAMuHMdWvrJip+W6ZZoO2ZURLc5CYmFno3=Sa2mL4xJE8gMzFqg@mail.gmail.com>
+To:     Daniel Vetter <daniel@ffwll.ch>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <YgFB4xqI+As196FR@p100> <YgJzohA7S7itGVe+@phenom.ffwll.local>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <YgJzohA7S7itGVe+@phenom.ffwll.local>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:DQ2UQXaPHNaHX/KiSwR0UEXxisFLIzTQ0pBVIxjm5rk3yggZHL3
+ FHxFS8iYdWCceejT54iamAISAI+hoPUkzoO2lsgW+qzFTf4XPq2dMeBP7i8Utx4tw1xAcah
+ qEghjTTBYsUpPCjF4iPGwgw+1zYOtwiIX4ar63uv37V574oiKkChSkr16+m39J98enj2nED
+ +C3GK72yGxEVa04UuDTAA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:9RDiH95oPoY=:1rtdMUUt231M2W8wexZuiv
+ YyVIw/Yo6SVf09sMfwYZvpRTEMO7aj5vc/fWJHrRct9ubY/U8sBIQPBnWtubKyW9suww66X6A
+ zcPOc/GJKXzvEUDPt2HLYntTyUaE1vhL9YVXjdiwaS7V12q9FClrxU4WhaWZWJBJWIKG2QDPT
+ 1ks41A9xd3MqVLePZOH5odmWRGKeEkD3M9dB4pbRXazL3dxPzJ3A0z3yPJyur5440hsg1gKoM
+ epWMQkcUSMXIDxoXwggHRIygQpaza78daK+nepdsb1FbRUiO5Hh+aiEFUsRT0A1IW0mvrn1pc
+ x0qgHRr/muDqzX+FEB0cfFO8P34tKU064Db4yc8B2qBBEsSLUUp9FWt71WkZmyD3POvr4z5pI
+ YU4EPY7wVriW2sbST4JO/YPrqLwbnbIOP4cRwTURytYlMWkIqvL1fOcEXJIZRAaHoTjSQfk14
+ uKhY+vjzNsi3Rd6RQSE69uxpHLVi1a+YGVLqmr7gKlus1DU1LDx500pyP7WJjFOHZ9vbGBPo5
+ L2LpLh/ZN2ij3N06f76A1ZE+njPNgOKfM0HlM7eTo0ycwyozroij9SwEf67c1fU6ewp5Kbgbm
+ QjA2jkgeEFpqCyACPFyd+G4F955EIpALcJNtQpCNnwK0ew8dTW1CYuQYhDJ2xaV0KvxHJUK9v
+ XIVombNiCYKvj6+bhVMW28Bgm66NzMbRiMZ7MSpYrF4ki+5Wws8zw1Pg6UcY0dV7xkjw2gJ/h
+ 1mPPeyijQwYwRIvSwdOo/4nouNZuQdeDPGrpTnbE/LkMe/hTXwiKOFIDrON0gdb8be/JrXTpX
+ 1KzF0eUSpiEzOoici7UGUiMyQtbM/EvIBcVI/XmHtSbTRGv4GCgD6H2yjbgVBFIbLX6eU4iP5
+ t+EPWS3xIMUxkUUoZcYpeWw5q8n1/nlv9pvMCRDljKKYOr5bMkEnUEn6Wk4Ygf8p8l8/QI7uD
+ a2Exyf1ULUfmJqvs4ONVoNb/5MyJGgY5IibYRpJV5ZvSfd2ECyfaeGmb6MBb0b6rH1ZsTmF58
+ cpm4+9cjZsIlbwKyNO3ay0jw6gxdo0gjhitZfaZ8bcb/00zmjsU7Z2wEegGiTxMLlg==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2/8/22 16:23, Geert Uytterhoeven wrote:
-
-[snip]
-
->>>   - The logo (I have a custom monochrome logo enabled) is no longer shown.
+On 2/8/22 14:44, Daniel Vetter wrote:
+> On Mon, Feb 07, 2022 at 04:59:31PM +0100, Helge Deller wrote:
+>> Fix this kernel test robot warning:
 >>
->> I was able to display your tux monochrome with ./fbtest -f /dev/fb1 test004
-> 
-> I meant the kernel's logo (FB_LOGO_*),. Obviously you need to enable
-> a smaller one, as the default 80x80 logo is too large, and thus can't
-> be drawn on your 128x64 or my 128x32 display.
+>>   drivers/video/fbdev/core/fbcon.c: In function 'fbcon_init':
+>>   drivers/video/fbdev/core/fbcon.c:1028:6: warning: variable 'cap' set =
+but not used [-Wunused-but-set-variable]
+>>
+>> The cap variable is only used when CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_AC=
+CELERATION
+>> is enabled. Drop the temporary variable and use info->flags instead.
+>>
+>> Fixes: 87ab9f6b7417 ("Revert "fbcon: Disable accelerated scrolling")
+>> Reported-by: kernel test robot <lkp@intel.com>
+>> Signed-off-by: Helge Deller <deller@gmx.de>
 >
+> Applied to drm-misc-fixes.
 
-That makes sense.
- 
->>>   - The screen is empty, with a (very very slow) flashing cursor in the
->>>     middle of the screen, with a bogus long line next to it, which I can
->>>     see being redrawn.
->>>   - Writing text (e.g. hello) to /dev/tty0, I first see the text,
->>>     followed by an enlargement of some of the characters.
->>
->> So far I was mostly testing using your fbtest repo tests and all of them
->> (modulo test009 that says "Screen size too small for this test").
->>
->> But I've tried now using as a VT and I see the same visual artifacts. I
->> wonder what's the difference between fbcon and the way your tests use
->> the fbdev API.
-> 
-> Fbcon does small writes to the shadow frame buffer, while fbtest
-> writes to the mmap()ed /dev/fbX, causing a full page to be updated.
+Thanks!
+
+> btw I think would still make sense to grab drm-misc commit rights for yo=
+u,
+> so you can push stuff like this directly.
+
+Yes, for such trivial patches to e.g. fbcon it makes sense to have git-pus=
+h rights.
+I've just created a ticket for this:
+https://gitlab.freedesktop.org/freedesktop/freedesktop/-/issues/417
+
+Thanks!
+Helge
+
+> Thanks, Daniel
 >
-
-I see. Thanks for the information.
-
-Best regards, -- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+>>
+>> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/cor=
+e/fbcon.c
+>> index f36829eeb5a9..2fc1b80a26ad 100644
+>> --- a/drivers/video/fbdev/core/fbcon.c
+>> +++ b/drivers/video/fbdev/core/fbcon.c
+>> @@ -1025,7 +1025,7 @@ static void fbcon_init(struct vc_data *vc, int in=
+it)
+>>  	struct vc_data *svc =3D *default_mode;
+>>  	struct fbcon_display *t, *p =3D &fb_display[vc->vc_num];
+>>  	int logo =3D 1, new_rows, new_cols, rows, cols;
+>> -	int cap, ret;
+>> +	int ret;
+>>
+>>  	if (WARN_ON(info_idx =3D=3D -1))
+>>  	    return;
+>> @@ -1034,7 +1034,6 @@ static void fbcon_init(struct vc_data *vc, int in=
+it)
+>>  		con2fb_map[vc->vc_num] =3D info_idx;
+>>
+>>  	info =3D registered_fb[con2fb_map[vc->vc_num]];
+>> -	cap =3D info->flags;
+>>
+>>  	if (logo_shown < 0 && console_loglevel <=3D CONSOLE_LOGLEVEL_QUIET)
+>>  		logo_shown =3D FBCON_LOGO_DONTSHOW;
+>> @@ -1137,8 +1136,8 @@ static void fbcon_init(struct vc_data *vc, int in=
+it)
+>>  	ops->graphics =3D 0;
+>>
+>>  #ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
+>> -	if ((cap & FBINFO_HWACCEL_COPYAREA) &&
+>> -	    !(cap & FBINFO_HWACCEL_DISABLED))
+>> +	if ((info->flags & FBINFO_HWACCEL_COPYAREA) &&
+>> +	    !(info->flags & FBINFO_HWACCEL_DISABLED))
+>>  		p->scrollmode =3D SCROLL_MOVE;
+>>  	else /* default to something safe */
+>>  		p->scrollmode =3D SCROLL_REDRAW;
+>
 

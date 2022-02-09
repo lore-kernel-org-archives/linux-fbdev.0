@@ -2,64 +2,60 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03908C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 12:22:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86B07C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 12:26:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233116AbiBIMWa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Feb 2022 07:22:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42194 "EHLO
+        id S232784AbiBIM0A (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Feb 2022 07:26:00 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49328 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232977AbiBIMWR (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 07:22:17 -0500
-Received: from mail-vk1-f175.google.com (mail-vk1-f175.google.com [209.85.221.175])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACF66C050CD6;
-        Wed,  9 Feb 2022 04:21:20 -0800 (PST)
-Received: by mail-vk1-f175.google.com with SMTP id n14so1041071vkk.6;
-        Wed, 09 Feb 2022 04:21:20 -0800 (PST)
+        with ESMTP id S232760AbiBIMZ7 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 07:25:59 -0500
+Received: from mail-vs1-f52.google.com (mail-vs1-f52.google.com [209.85.217.52])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24685C05CB86;
+        Wed,  9 Feb 2022 04:26:00 -0800 (PST)
+Received: by mail-vs1-f52.google.com with SMTP id g10so2378263vss.1;
+        Wed, 09 Feb 2022 04:26:00 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=Qpoc5vmMmNDH+SrdCpaRcSXbVfsZOqQW8hec7Ijd/W8=;
-        b=ArD4G//zP3yLwuMGcWoJ2B3IVTAR8qSew1W2MVeIxkwE+hWsLncpqv87lPNyYy+Wcz
-         P8fma/r/mGhnh0lagdPEeBorD5nGn+D5Oc94NLH3rF/+rp2SVj3PoTwOJuxRV5mqvJ0U
-         SBIJRDCSwDmo0+4Rqw8KHj/aGiRxC5vB6y/1Pn8zbm1PDW98ZqOQ/1BTxEfGuM1L92IK
-         MmRE8aCUj9WyJ/Yrqd+/xPxLagy7Af1MXR+2LJ8vxhMTMadHYNCREBHu8gOPRBbBDvV5
-         fh4zZdNmmyTcaM9PkqmX/Q1w0+eBmyMGgffmynR06VnJw2dpM/AqvYNATsTluuNUuKYi
-         ksJA==
-X-Gm-Message-State: AOAM5316/DP3e8Yck+xnsgA2Gcr/OgC/+Pfp78XU9lCVFQYxfSc9yVZK
-        oVmV+XxN+c8vDOBE7orSGrbD5VAumbeLAw==
-X-Google-Smtp-Source: ABdhPJzA8Nb5Ynlu3dxmAEFYqo4HjgeFecHCEbGvMRuN2IdMaKoLz/CP4fa2jkVRTUw+wuBwx+sDBQ==
-X-Received: by 2002:a1f:e745:: with SMTP id e66mr693844vkh.24.1644409279633;
-        Wed, 09 Feb 2022 04:21:19 -0800 (PST)
-Received: from mail-vs1-f47.google.com (mail-vs1-f47.google.com. [209.85.217.47])
-        by smtp.gmail.com with ESMTPSA id r14sm1517652vke.20.2022.02.09.04.21.19
+        bh=G5WVmydqJCvKG/B3ZDDRDsVd5anO+fEWBRVMVdA65vE=;
+        b=QcUf41XJq8Z8BFLAEmDOOkhmrGcfpwV+uPLzT++8MceQMrnwx1OsKAsi/9QRQUk0lT
+         wO6vURirwXkdRG5hKamE6bZzeELeeTbpEQMe+7iCk4d3z4hW0RDOt/1C5nIIf2O1vVCa
+         80PlBuHAeajC2yTafwUtv9652VrBz9T/Z7Z5ZqW6Kb3VhhyFVV4MuwGPnNufR6kJF3zG
+         1mlgvYfyunsvHekb/XFml+tD/pW8clcTU0aL0OcIksPPh5k+jgpQAB1cbKDGU/ryCKP1
+         bHEJo5hRxnYKuZsKOnvAMXcYwLiuMu6ldhwAk0joe9TVOIiw9NkZcS9/l4/Ms7hVVFp4
+         /jtg==
+X-Gm-Message-State: AOAM532VJdIIyHBtCJeR42MFoPWBOay+EWy/i3VUxFLQx9bJHLeJ+G5I
+        uBOlH3vuyrbPDIxv+6PtD5bVXVtCIq8mTA==
+X-Google-Smtp-Source: ABdhPJz1VK8vRtw1kC05gajhhDEp97Q9lPjlFKkuixUSYZCn9yBDt3n0/oaMYm0o0k45XAsttUSKeA==
+X-Received: by 2002:a05:6102:364:: with SMTP id f4mr530268vsa.21.1644409558964;
+        Wed, 09 Feb 2022 04:25:58 -0800 (PST)
+Received: from mail-vk1-f180.google.com (mail-vk1-f180.google.com. [209.85.221.180])
+        by smtp.gmail.com with ESMTPSA id k20sm3039188vsg.14.2022.02.09.04.25.58
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Feb 2022 04:21:19 -0800 (PST)
-Received: by mail-vs1-f47.google.com with SMTP id j26so881462vso.12;
-        Wed, 09 Feb 2022 04:21:19 -0800 (PST)
-X-Received: by 2002:a67:a401:: with SMTP id n1mr553685vse.38.1644409278954;
- Wed, 09 Feb 2022 04:21:18 -0800 (PST)
+        Wed, 09 Feb 2022 04:25:58 -0800 (PST)
+Received: by mail-vk1-f180.google.com with SMTP id n14so1047263vkk.6;
+        Wed, 09 Feb 2022 04:25:58 -0800 (PST)
+X-Received: by 2002:a1f:294c:: with SMTP id p73mr691592vkp.0.1644409557884;
+ Wed, 09 Feb 2022 04:25:57 -0800 (PST)
 MIME-Version: 1.0
-References: <20220209090314.2511959-1-javierm@redhat.com> <20220209090314.2511959-5-javierm@redhat.com>
-In-Reply-To: <20220209090314.2511959-5-javierm@redhat.com>
+References: <20220209090314.2511959-1-javierm@redhat.com> <20220209091204.2513437-1-javierm@redhat.com>
+In-Reply-To: <20220209091204.2513437-1-javierm@redhat.com>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 9 Feb 2022 13:21:07 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXOfz94gD+SpGRS7HazxA_PN3n2D=Q04CPm-eEMb_CkEw@mail.gmail.com>
-Message-ID: <CAMuHMdXOfz94gD+SpGRS7HazxA_PN3n2D=Q04CPm-eEMb_CkEw@mail.gmail.com>
-Subject: Re: [PATCH v3 4/7] drm/solomon: Add SSD130X OLED displays I2C support
+Date:   Wed, 9 Feb 2022 13:25:46 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWSDBjpYJv6JtgvyaKiFKh_eqbvH78TR6VBtpDeFJvqFQ@mail.gmail.com>
+Message-ID: <CAMuHMdWSDBjpYJv6JtgvyaKiFKh_eqbvH78TR6VBtpDeFJvqFQ@mail.gmail.com>
+Subject: Re: [PATCH v3 5/7] (WIP) drm/solomon: Add SSD130X OLED displays SPI support
 To:     Javier Martinez Canillas <javierm@redhat.com>
 Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
         DRI Development <dri-devel@lists.freedesktop.org>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@linux.ie>
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
@@ -67,41 +63,50 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hi Javier,
 
-On Wed, Feb 9, 2022 at 10:03 AM Javier Martinez Canillas
+On Wed, Feb 9, 2022 at 10:12 AM Javier Martinez Canillas
 <javierm@redhat.com> wrote:
 > The ssd130x driver only provides the core support for these devices but it
-> does not have any bus transport logic. Add a driver to interface over I2C.
+> does not have any bus transport logic. Add a driver to interface over SPI.
 >
 > Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 
 Thanks for your patch!
 
 > --- /dev/null
-> +++ b/drivers/gpu/drm/solomon/ssd130x-i2c.c
+> +++ b/drivers/gpu/drm/solomon/ssd130x-spi.c
 
 > +static const struct of_device_id ssd130x_of_match[] = {
 > +       {
-> +               .compatible = "solomon,ssd1305fb-i2c",
+> +               .compatible = "solomon,ssd1305fb-spi",
+
+This needs an update to the DT bindings.
+Hence this may be a good time to deprecate the existing
+"solomon,ssd130*fb-i2c" compatible values, and switch to
+"solomon,ssd130*fb" instead, for both I2C and SPI.
+Of course the I2C subdriver still has to bind against the old values,
+too, for backwards compatibility.
+
 > +               .data = (void *)&ssd130x_ssd1305_deviceinfo,
 
 The casts are not needed.
 
 > +       },
 > +       {
-> +               .compatible = "solomon,ssd1306fb-i2c",
+> +               .compatible = "solomon,ssd1306fb-spi",
 > +               .data = (void *)&ssd130x_ssd1306_deviceinfo,
 > +       },
 > +       {
-> +               .compatible = "solomon,ssd1307fb-i2c",
+> +               .compatible = "solomon,ssd1307fb-spi",
 > +               .data = (void *)&ssd130x_ssd1307_deviceinfo,
 > +       },
 > +       {
-> +               .compatible = "solomon,ssd1309fb-i2c",
+> +               .compatible = "solomon,ssd1309fb-spi",
 > +               .data = (void *)&ssd130x_ssd1309_deviceinfo,
 > +       },
 > +       { /* sentinel */ },
 > +};
 > +MODULE_DEVICE_TABLE(of, ssd130x_of_match);
+> +
 
 Gr{oetje,eeting}s,
 

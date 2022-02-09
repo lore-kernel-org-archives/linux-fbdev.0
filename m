@@ -2,85 +2,74 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD0C9C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 10:31:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B1E2C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 11:11:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230181AbiBIKbo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Feb 2022 05:31:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52706 "EHLO
+        id S230353AbiBILLx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Feb 2022 06:11:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37706 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229549AbiBIKbn (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 05:31:43 -0500
+        with ESMTP id S230351AbiBILLw (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 06:11:52 -0500
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E21A3E1397D9
-        for <linux-fbdev@vger.kernel.org>; Wed,  9 Feb 2022 02:22:06 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 67E8AE0FF0CD
+        for <linux-fbdev@vger.kernel.org>; Wed,  9 Feb 2022 02:07:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644402121;
+        s=mimecast20190719; t=1644400921;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=4eeYHOMbfBp5aJX22HSUQ/DkBidHbSNtGBPohb4rodE=;
-        b=QKgFXQn7Rglgw+RlJltWlu9tGbJ9kKAdhz4NBlnaUY1UcGU7eadAFZymyJvX37358vsW13
-        hhWl8KkDd17rJegJHTPyPWTA1NmH7WXNkozUITgvvxVLOjQCFtMdg/KzmvkAVCYFMU3EB5
-        V27cvTkjEkxfGUJ3ptB0v4+R2Nt+/BE=
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=HkjkJCV3RnHyv5DSE+jtNb73ClQ4fv7HXl/dV01kYKA=;
+        b=CdX997cvtc40f6ggRkbbs82BXqb7/vURvmz37R5BqdY0jCPjPaeRktObP4qXwh5qDmzM9q
+        B1D0NrF2wiPJH/vOQyeYtjlPviItw3AyJvJKrcuMIYpHFYBxsq1P0nd+iRokhTag1MqxWb
+        C/nPwF8H883EYCkCCFhlSaIiJCEiVSA=
 Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
  [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-626-hTbcKW2IOCu50Q_BrsOnvQ-1; Wed, 09 Feb 2022 04:03:26 -0500
-X-MC-Unique: hTbcKW2IOCu50Q_BrsOnvQ-1
-Received: by mail-wm1-f71.google.com with SMTP id p24-20020a05600c1d9800b0037be98d03a1so1761585wms.0
-        for <linux-fbdev@vger.kernel.org>; Wed, 09 Feb 2022 01:03:26 -0800 (PST)
+ us-mta-56-9750bC9nMzmxsyb5OO_jjQ-1; Wed, 09 Feb 2022 04:13:57 -0500
+X-MC-Unique: 9750bC9nMzmxsyb5OO_jjQ-1
+Received: by mail-wm1-f71.google.com with SMTP id v185-20020a1cacc2000000b0034906580813so2364523wme.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 09 Feb 2022 01:13:56 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=4eeYHOMbfBp5aJX22HSUQ/DkBidHbSNtGBPohb4rodE=;
-        b=M71ggx1xBnSOdNuLI8s42lp0gqE88HruWCscMnBNQ2hwVfHuE1K2W0ql/3/zq5GWYd
-         x/9AAtA1JtiTVzS1UMo5JyYbGNYqKeabEjmO3bLvls6u9jDRA0rxsemOHOIINrmygYmR
-         H+P5fNDcsVvo/zT/zKldIDlFw3r5yyGeJIgYplUKLZ0lRYA4JqHcrdLRpzoBMIREW5Of
-         Hz7iU6sNn1+92htlIpX/yVO7HHrsrtJHZtiyDgyU0E133WxVBkKudmyhOQ+WwxzmSSyn
-         mhddAtDvQ+mkiK/XMp/0z0GEzdoQmDpqqaA04OdxpAHC9RUBWbyF4fWzbK1l6dtwGUEY
-         C63g==
-X-Gm-Message-State: AOAM533HFEWmaS0p6Zbob6fjrXxwoPyJgOWJTPkpS6RHyBN7H1km480+
-        PsCaGqN2ZIvGBEqfL02MRizf1T4LFfit4PDj7TA660JBMueaJOCnsucuBgPAN5NZobCZB8m3xe/
-        ennOogFf0srDcSz0lt5SCkfA=
-X-Received: by 2002:adf:e94c:: with SMTP id m12mr1188865wrn.383.1644397404832;
-        Wed, 09 Feb 2022 01:03:24 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJyGce9tpVO3qLOEdvm/oHaTzszOq6dg27pXCBKFJe+wFhoSKZTbcd2S+PJ9oFnd0L2GTF8TAA==
-X-Received: by 2002:adf:e94c:: with SMTP id m12mr1188836wrn.383.1644397404569;
-        Wed, 09 Feb 2022 01:03:24 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=HkjkJCV3RnHyv5DSE+jtNb73ClQ4fv7HXl/dV01kYKA=;
+        b=1CwPqxk7JWY5B/m33wiRvxP3rjuf92Fc7HIwLvUxtieklb9l2J0oUaYPvY7so3xXU/
+         Wgdw+PsAB38HO9HMdMeSeP5XryuyIDIyc3cISQwKL+qfpEyZMoTt2oJg2t+Q+X1HVHGG
+         czfyZrLWT++UFMVpwIpnWISewVtNUqy1BARDkLWg4tCp8ysONvzIQADUxK2bt+ppZK3O
+         flvBeV6jWU25eGM7h8DlUP5WXIdTD73SLt6jbRo1GrZB7z5JNX5vxyBuUNAbU6POUFY6
+         azK/KKEWwveUAM6K5paJ7mYV+QcrigRUCyNNgBZYN/HgZ+UHaDeRPul55fBMgO6enpZx
+         TmCA==
+X-Gm-Message-State: AOAM531uL9UVaS5w6nVQgEg1+y9TOn97H8b26lH5cJcK+RYNJ8bkjFWa
+        bvQAzAmwP2oe2zARWo1jFAvGe3uM9nIm+n7vbON975yJ+wNB7txWXkxf4QYVUcft5jYNZjjQUoP
+        /c6aakJDak2BvKaPSMDSQGFw=
+X-Received: by 2002:a5d:53c9:: with SMTP id a9mr1221610wrw.672.1644398035775;
+        Wed, 09 Feb 2022 01:13:55 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwN9IG1QALjH1ZUKqnf6ckKETjeoTD+yjoTXUPxM8Hq+sCkIBChwrk3c3nzhT8/h+bVv4FVsQ==
+X-Received: by 2002:a5d:53c9:: with SMTP id a9mr1221588wrw.672.1644398035459;
+        Wed, 09 Feb 2022 01:13:55 -0800 (PST)
 Received: from minerva.home ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id z1sm4058866wmk.32.2022.02.09.01.03.23
+        by smtp.gmail.com with ESMTPSA id w6sm13557623wrp.51.2022.02.09.01.13.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Feb 2022 01:03:24 -0800 (PST)
+        Wed, 09 Feb 2022 01:13:55 -0800 (PST)
 From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linux-fbdev@vger.kernel.org,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        dri-devel@lists.freedesktop.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         Javier Martinez Canillas <javierm@redhat.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
-        Lee Jones <lee.jones@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Mark Brown <broonie@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>, devicetree@vger.kernel.org,
-        linux-pwm@vger.kernel.org
-Subject: [PATCH v3 0/7] drm: Add driver for Solomon SSD130X OLED displays
-Date:   Wed,  9 Feb 2022 10:03:07 +0100
-Message-Id: <20220209090314.2511959-1-javierm@redhat.com>
+        Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH v3 7/7] dt-bindings: display: ssd1307fb: Add myself as binding co-maintainer
+Date:   Wed,  9 Feb 2022 10:13:44 +0100
+Message-Id: <20220209091344.2513662-1-javierm@redhat.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220209090314.2511959-1-javierm@redhat.com>
+References: <20220209090314.2511959-1-javierm@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -88,121 +77,37 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This patch series adds a DRM driver for the Solomon OLED SSD1305, SSD1306,
-SSD1307 and SSD1309 displays. It is a port of the ssd1307fb fbdev driver.
+The ssd130x DRM driver also makes use of this Device Tree binding to allow
+existing users of the fbdev driver to migrate without the need to change
+their Device Trees.
 
-Using the DRM fb emulation, all the tests from Geert Uytterhoeven's fbtest
-(https://git.kernel.org/pub/scm/linux/kernel/git/geert/fbtest.git) passes.
+Add myself as another maintainer of the binding, to make sure that I will
+be on Cc when patches are proposed for it.
 
-I've also tested it using the display as a VT output and even though fbcon
-seems to work, it is mostly unusable on a 128x64 SSD1306 display.
+Suggested-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+---
 
-This is a v3 that addresses all the issues pointed in v2. Thanks a lot
-to everyone that gave me feedback and reviews.
-
-Patch #1 splits per-line conversion logic in drm_fb_xrgb8888_to_gray8() to
-a separate drm_fb_xrgb8888_to_gray8_line() helper function.
-
-Patch #2 adds two new helpers, drm_fb_gray8_to_mono_reversed() to convert
-from grayscale to monochrome and a drm_fb_xrgb8888_to_mono_reversed() to
-convert from XR24 to monochrome. The latter internally converts each line
-first to gray8 and then to reversed monochrome.
-
-Patch #3 adds the driver. This only has the core support but doesn't have
-any bus specific code, separate drivers are needed for the transport used.
-
-Patch #4 adds a driver to use the I2C bus to communicate with the device
-and patch #5 adds a similar driver for SPI. This one is a WIP and wasn't
-tested. I'm including for people to test and modify for their displays.
-
-Patch #6 just adds a MAINTAINERS entry for the DRM driver and patch #7
-adds myself as a co-maintainer of the existing Device Tree binding for
-ssd1307fb, since the same is shared between the fbdev and DRM drivers.
-
-Best regards,
-Javier
-
-Changes in v3:
-- Add a drm_fb_xrgb8888_to_gray8_line() helper function (Thomas Zimmermann)
-- Also add a drm_fb_xrgb8888_to_mono_reversed() helper (Thomas Zimmermann)
-- Split lines copy to drm_fb_gray8_to_mono_reversed_line() (Thomas Zimmermann)
-- Handle case where the source buffer is not aligned to 8 (Thomas Zimmermann)
-- Move driver from tiny sub-dir to drivers/gpu/drm/solomon (Sam Ravnborg)
-- Split driver in a bus agnostic core and bus specific (Andy Shevchenko)
-- Use regmap to access the chip registers (Andy Shevchenko)
-- Remove unnecessary blank lines (Andy Shevchenko)
-- Remove unneeded inline specifier in functions (Andy Shevchenko)
-- Add a comment about always returning a single mode (Andy Shevchenko)
-- Change write command logic to use do while loop (Andy Shevchenko)
-- Use "firmware description" instead of "device tree" (Andy Shevchenko)
-- Use return foo() instead of returning the return value (Andy Shevchenko)
-- Don't split lines longer than 80 chars if makes less readable (Andy Shevchenko)
-- Remove redundant else statements in .mode_valid callback (Andy Shevchenko)
-- Rename powero{n,ff}() functions to power_o{n,ff)() (Andy Shevchenko)
-- Use dev_err_probe() to prevent spam logs on probe deferral (Andy Shevchenko)
-- Remove ',' after sentinel terminator in array (Andy Shevchenko)
-- Fix a bug when doing partial updates (Geert Uytterhoeven)
-- Add a separate driver for SSD130X chips I2C support (Andy Shevchenko)
-- Add a separate driver for SSD130X chips SPI support (Andy Shevchenko)
-- Adapt MAINTAINERS entry to point to the new drivers/gpu/drm/solomon directory.
+(no changes since v2)
 
 Changes in v2:
-- Drop patch that was adding a DRM_MODE_CONNECTOR_I2C type.
-- Invert order of backlight {en,dis}able and display {on,off} (Sam Ravnborg)
-- Don't clear the screen and turn on display on probe (Sam Ravnborg)
-- Use backlight_get_brightness() macro to get BL brightness (Sam Ravnborg)
-- Use dev managed version of devm_backlight_device_register() (Sam Ravnborg)
-- Use dev_name(dev) for backlight name instead of an array (Sam Ravnborg)
-- Drop the .get_brightness callback since isn't needed  (Sam Ravnborg)
-- Rename driver to ssd130x since supports a display family (Thomas Zimmermann)
-- Drop the TINY prefix from the Kconfig symbol (Thomas Zimmermann)
-- Sort the Kconfig symbol dependencies alphabetically (Thomas Zimmermann)
-- Rename struct ssd130x_array to struct ssd130x_i2c_msg (Thomas Zimmermann)
-- Rename struct ssd130x_i2c_msg .type member to .cmd (Thomas Zimmermann)
-- Use sizeof(*foo) instead of sizeof(struct foo) (Thomas Zimmermann)
-- Use struct_size() macro to calculate sizeof(*foo) + len (Thomas Zimmermann)
-- Use kcalloc() instead of kmalloc_array() + memset() (Thomas Zimmermann)
-- Use shadow plane helpers virtual screen support (Thomas Zimmermann)
-- Remove unused goto label in ssd1307_fb_blit_rect() (Thomas Zimmermann)
-- Use drm_set_preferred_mode() inset of manually set (Thomas Zimmermann)
-- Use shadow plane helpers virtual screen support (Thomas Zimmermann)
-- Remove unused goto label in ssd1307_fb_blit_rect() (Thomas Zimmermann)
-- Use drm_set_preferred_mode() inset of manually set (Thomas Zimmermann)
-- Reorganize code in probe to make it more legible (Thomas Zimmermann)
-- ssd130x_write_cmd() uses varargs to simplify I2C code (Thomas Zimmermann)
-- Move regulator/pwm init logic to display pipe enable callback.
-- Add Sam Ravnborg's acked-by to patch adding a MAINTAINERS entry (Sam Ravnborg)
 - Add myself as co-maintainer of the ssd1370fb DT binding (Sam Ravnborg).
 
-Javier Martinez Canillas (7):
-  drm/format-helper: Add drm_fb_xrgb8888_to_gray8_line()
-  drm/format-helper: Add drm_fb_{xrgb8888,gray8}_to_mono_reversed()
-  drm: Add driver for Solomon SSD130X OLED displays
-  drm/solomon: Add SSD130X OLED displays I2C support
-  (WIP) drm/solomon: Add SSD130X OLED displays SPI support
-  MAINTAINERS: Add entry for Solomon SSD130X OLED displays DRM driver
-  dt-bindings: display: ssd1307fb: Add myself as binding co-maintainer
+ Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
- .../bindings/display/solomon,ssd1307fb.yaml   |   1 +
- MAINTAINERS                                   |   7 +
- drivers/gpu/drm/Kconfig                       |   2 +
- drivers/gpu/drm/Makefile                      |   1 +
- drivers/gpu/drm/drm_format_helper.c           | 188 +++-
- drivers/gpu/drm/solomon/Kconfig               |  30 +
- drivers/gpu/drm/solomon/Makefile              |   3 +
- drivers/gpu/drm/solomon/ssd130x-i2c.c         | 117 +++
- drivers/gpu/drm/solomon/ssd130x-spi.c         | 114 +++
- drivers/gpu/drm/solomon/ssd130x.c             | 823 ++++++++++++++++++
- drivers/gpu/drm/solomon/ssd130x.h             |  76 ++
- include/drm/drm_format_helper.h               |   8 +
- 12 files changed, 1358 insertions(+), 12 deletions(-)
- create mode 100644 drivers/gpu/drm/solomon/Kconfig
- create mode 100644 drivers/gpu/drm/solomon/Makefile
- create mode 100644 drivers/gpu/drm/solomon/ssd130x-i2c.c
- create mode 100644 drivers/gpu/drm/solomon/ssd130x-spi.c
- create mode 100644 drivers/gpu/drm/solomon/ssd130x.c
- create mode 100644 drivers/gpu/drm/solomon/ssd130x.h
-
+diff --git a/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
+index 2ed2a7d0ca2f..9baafd0c42dd 100644
+--- a/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
++++ b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
+@@ -8,6 +8,7 @@ title: Solomon SSD1307 OLED Controller Framebuffer
+ 
+ maintainers:
+   - Maxime Ripard <mripard@kernel.org>
++  - Javier Martinez Canillas <javierm@redhat.com>
+ 
+ properties:
+   compatible:
 -- 
 2.34.1
 

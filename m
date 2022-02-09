@@ -2,413 +2,96 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BC14C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 15:54:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A5F1C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 16:06:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236367AbiBIPyG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Feb 2022 10:54:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34328 "EHLO
+        id S233209AbiBIQF4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Feb 2022 11:05:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40600 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236364AbiBIPyF (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 10:54:05 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 459E0C061355
-        for <linux-fbdev@vger.kernel.org>; Wed,  9 Feb 2022 07:54:07 -0800 (PST)
+        with ESMTP id S236534AbiBIQFz (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 11:05:55 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 064D2C05CB82
+        for <linux-fbdev@vger.kernel.org>; Wed,  9 Feb 2022 08:05:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644422046;
+        s=mimecast20190719; t=1644422757;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=NtqH0xaWq+3l32cscdAy7mIdMW7E2NuYONnZUKRcir0=;
-        b=As3Zpll3zzWnOKzxAKY4ruoC1ZRKwMhhbf2GESGdD1TGuxkElip2wTil7BVnmd3evOn0qx
-        bukTG71579QEFgB7315ITgG1996gAQ/LX2WuZ/8zcarGtdd956wn37Fw24Ew51vyy3xRtV
-        RyW+frdRMJ6gZMfCw1ujooLpmg43rLM=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=5TAmHdeWTvg28aUVJ1ETzsjk2tMW9UdCMcB5C9Mn4Tw=;
+        b=VzOMnX0+TH8tk+uKw/VUJY4XcNv63/vRLop6sZI71RCwg75tnGihYZKet8ZUBhcAZa8byp
+        3vpe0/n/xRJNIQPwA65hBQjWl+9d68yNkMbLk7tKR52X0fgF1WpvYf2HRgFHZiKaaYw/da
+        A4R5IM+/QMNQ3QKxaEt99Qg3r5+YWMc=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-358-jWX-rE4ePc2QLHi_vfn3bg-1; Wed, 09 Feb 2022 10:54:05 -0500
-X-MC-Unique: jWX-rE4ePc2QLHi_vfn3bg-1
-Received: by mail-wr1-f69.google.com with SMTP id b8-20020adfc748000000b001e333edbe40so1269421wrh.6
-        for <linux-fbdev@vger.kernel.org>; Wed, 09 Feb 2022 07:54:04 -0800 (PST)
+ us-mta-411-Q2LizBDBMmawzM5nR28cKQ-1; Wed, 09 Feb 2022 11:05:56 -0500
+X-MC-Unique: Q2LizBDBMmawzM5nR28cKQ-1
+Received: by mail-wm1-f69.google.com with SMTP id v190-20020a1cacc7000000b0034657bb6a66so253163wme.6
+        for <linux-fbdev@vger.kernel.org>; Wed, 09 Feb 2022 08:05:55 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=NtqH0xaWq+3l32cscdAy7mIdMW7E2NuYONnZUKRcir0=;
-        b=m10UuV4bytM6+dwxD9dwRmtZFOmDu/itgz7rrxs79xOBIZk/g/8G59A+q8h9y/dr1R
-         bLpNJiG58EuHkkRoZAmv+g4yuIkJ4CrL5+T8Qc8pNI/tLm1/0F2ujsFoUrG4oNNZPgi3
-         Hoj4sYuT6un2SPGrnZaTXBhVS0R9E0AOjTt6G7Y/1imsxs6bAnHYgu8PfO7omIp9XeUc
-         9ZzogRLWTfZH6sPW6O1ysmU/Mqw0Y4B9no06z2YaghyVXoemDzXjV6dhvpvgZRD1/XvF
-         jDLwQlGIByg1TMf/hDipwPZoX5uk0v6FNUik+q/uwjhnbqZ+qNDPQG5ZRf62M0Bjl+J1
-         Ujpg==
-X-Gm-Message-State: AOAM532ekEH3Rjm2B9yTbkyfj2NtY+QANGtv6pNVeuMABoSfQ4b3HbIz
-        C07wuQnbhvBCLnBds+08/eZ3Quc6SzyJd1d1YRtc8gRblvBwX5oe13/67eb+WnE+I7uNpkyX2sQ
-        5iEEtB7YH6sbUY6qaTNhvOHk=
-X-Received: by 2002:a5d:5052:: with SMTP id h18mr2514615wrt.589.1644422043936;
-        Wed, 09 Feb 2022 07:54:03 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJy750xCBUNUT8acyK0Kr4KBhlDeP6lCING9wODeSrTZT0Xpfk1tiDcdfRqqZCkX+LTBGrpzDg==
-X-Received: by 2002:a5d:5052:: with SMTP id h18mr2514593wrt.589.1644422043673;
-        Wed, 09 Feb 2022 07:54:03 -0800 (PST)
+        bh=5TAmHdeWTvg28aUVJ1ETzsjk2tMW9UdCMcB5C9Mn4Tw=;
+        b=HUOq3d/6k+8jb4/uQbbBI1/DHgZ/icSseDDbrMGDIfWOcCfMAmIOgfV6kVzmfbnBVD
+         RTXTvqejLXnsvv13toAL+R8ZrwbdzvGINzXa1c8se/MVu+ciQqPdrD+Gas9zTso4dzwq
+         5Cb/4ImMo8Th4o9BEyr0mgmuKhn6xtC18h+jrjZAqVWMolqeaF85J+PB6EOG1BtDI4fK
+         tVUfgBfGtmVDGHamgoj9r/MBa7wE0kUrvMfubTSSjX5+MPfYmgBwM/3lzS4Zcl3Faz0x
+         lgv+IuzmG0DLj6BC+HI1TDn3uezVhnBmf12PYGk4htKDAMyr/dPMLO60yZk3NYG/T8rX
+         gqDg==
+X-Gm-Message-State: AOAM532NHjrsTwJWk9W1ReCjqHEhBvPazvV5lu13ei1dcVCVZNWnj+O5
+        qOCKAt/neljSFMv++UiQBM1RJW2dxs8h96zEfh2GtCrTzPC+Cu1dPDshLyoe4n62wyzi3huPdtq
+        xoSKAqUAQIiBZRJ34XslbXRQ=
+X-Received: by 2002:adf:ffca:: with SMTP id x10mr2725665wrs.248.1644422754731;
+        Wed, 09 Feb 2022 08:05:54 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJyQmH0hF86x5L3n3fUWIlDsIruVfpsZiFRZH6CEakA0J830BtIAGYu0zKtjzdbc8XMHNPqYCg==
+X-Received: by 2002:adf:ffca:: with SMTP id x10mr2725648wrs.248.1644422754526;
+        Wed, 09 Feb 2022 08:05:54 -0800 (PST)
 Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id i6sm17583376wry.33.2022.02.09.07.54.02
+        by smtp.gmail.com with ESMTPSA id r2sm19113350wrz.76.2022.02.09.08.05.53
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Feb 2022 07:54:03 -0800 (PST)
-Message-ID: <e29eaccc-863a-21d4-e669-0b708604d723@redhat.com>
-Date:   Wed, 9 Feb 2022 16:54:01 +0100
+        Wed, 09 Feb 2022 08:05:54 -0800 (PST)
+Message-ID: <af9959db-96cc-8d53-27c7-9a0db1bbfdbe@redhat.com>
+Date:   Wed, 9 Feb 2022 17:05:53 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
-Subject: Re: [PATCH v3 3/7] drm: Add driver for Solomon SSD130X OLED displays
+Subject: Re: [PATCH v3 5/7] (WIP) drm/solomon: Add SSD130X OLED displays SPI
+ support
 Content-Language: en-US
 To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Cc:     linux-kernel@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linux-fbdev@vger.kernel.org,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        dri-devel@lists.freedesktop.org, Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
-        Lee Jones <lee.jones@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Mark Brown <broonie@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        linux-pwm@vger.kernel.org
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 References: <20220209090314.2511959-1-javierm@redhat.com>
- <20220209090314.2511959-4-javierm@redhat.com>
- <YgPZ3W0e7N7JQ1dT@smile.fi.intel.com>
+ <20220209091204.2513437-1-javierm@redhat.com>
+ <YgPa2AD727QnlRWW@smile.fi.intel.com>
 From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <YgPZ3W0e7N7JQ1dT@smile.fi.intel.com>
+In-Reply-To: <YgPa2AD727QnlRWW@smile.fi.intel.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Andy,
-
-Thanks for your feedback.
-
-On 2/9/22 16:12, Andy Shevchenko wrote:
-> On Wed, Feb 09, 2022 at 10:03:10AM +0100, Javier Martinez Canillas wrote:
->> This adds a DRM driver for SSD1305, SSD1306, SSD1307 and SSD1309 Solomon
->> OLED display controllers.
->>
->> It's only the core part of the driver and a bus specific driver is needed
->> for each transport interface supported by the display controllers.
+On 2/9/22 16:16, Andy Shevchenko wrote:
+> On Wed, Feb 09, 2022 at 10:12:04AM +0100, Javier Martinez Canillas wrote:
+>> The ssd130x driver only provides the core support for these devices but it
+>> does not have any bus transport logic. Add a driver to interface over SPI.
 > 
-> Thank you for the update, my comments below.
+> Thanks!
 > 
-> ...
-> 
->>  source "drivers/gpu/drm/sprd/Kconfig"
->>  
->> +source "drivers/gpu/drm/solomon/Kconfig"
->
-> 'o' before 'p' ?
->
-
-The Kconfig was not sorted alphabetically so I just added it at
-the end. Same for the Makefile. But I will change it in v4 just
-to not keep adding unsorted entries.
-
-[snip]
-
->> +/*
->> + * DRM driver for Solomon SSD130X OLED displays
-> 
-> Solomon SSD130x (with lower letter it's easy to read and realize that it's
-> not a model name).
->
-
-Ok.
- 
->> + * Copyright 2022 Red Hat Inc.
->> + * Authors: Javier Martinez Canillas <javierm@redhat.com>
->> + *
->> + * Based on drivers/video/fbdev/ssd1307fb.c
->> + * Copyright 2012 Free Electrons
->> + */
-> 
->> +#include <linux/backlight.h>
->> +#include <linux/delay.h>
->> +#include <linux/gpio/consumer.h>
->> +#include <linux/property.h>
->> +#include <linux/pwm.h>
->> +#include <linux/regulator/consumer.h>
-> 
-> ...
-> 
->> +#define DRIVER_NAME	"ssd130x"
->> +#define DRIVER_DESC	"DRM driver for Solomon SSD130X OLED displays"
->> +#define DRIVER_DATE	"20220131"
->> +#define DRIVER_MAJOR	1
->> +#define DRIVER_MINOR	0
-> 
-> Not sure it has a value when being defined. Only one string is reused and even
-> if hard coded twice linker will optimize it.
->
-
-I like to have all this at the beginning, it makes easier to read IMO.
-
-[snip]
-
->> +
->> +	do {
->> +		value = va_arg(ap, int);
->> +		ret = regmap_write(ssd130x->regmap, SSD130X_COMMAND, (u8)value);
->> +		if (ret)
->> +			goto out_end;
->> +	} while (--count);
->> +
->> +out_end:
->> +	va_end(ap);
->> +
->> +	return ret;
-> 
-> Can bulk operation be used in the callers instead?
->
-
-I'm using bulk writes for the data but not for the commands. Because I
-tried to do that before and didn't work. But I'll give it a try again
-now that I switched to regmap. Maybe it was some mistake on my end.
- 
-> I have noticed that all of the callers are using
-> - 1 -- makes no sense at all, can be replaced with regmap_write()
-
-Yes, I just used for consistency. That way all the places sending a
-command would use the same function call.
-
-> - 2
-> - 3
-> 
-> Can be helpers for two and three arguments, with use of bulk call.
-> 
-> What do you think?
+> Same set of comments as per I²C patch.
 > 
 
-Agreed, as mentioned I'll give it a try to sending all the data as a
-bulk write with regmap.
-
->> +}
-> 
-> ...
-> 
->> +static void ssd130x_reset(struct ssd130x_device *ssd130x)
->> +{
->> +	/* Reset the screen */
->> +	gpiod_set_value_cansleep(ssd130x->reset, 1);
->> +	udelay(4);
->> +	gpiod_set_value_cansleep(ssd130x->reset, 0);
->> +	udelay(4);
-> 
-> I don't remember if reset pin is mandatory. fbtft does
-> 
-> 	if (!gpiod->reset)
-> 		return;
-> 
-> 	...do reset...
-> 
->> +}
-> 
-> ...
-> 
->> +	if (ssd130x->reset)
-> 
-> A-ha, why not in the callee?
->
-
-I think is easier to read when doing it in the caller, specially since there
-is only a single call. Than calling it unconditionally and making it a no-op
-if there isn't a reset GPIO.
-
->> +		ssd130x_reset(ssd130x);
-> 
-> ...
-> 
->> +	/* Set COM direction */
->> +	com_invdir = 0xc0 | ssd130x->com_invdir << 3;
-> 
-> Can 0xc0 and 3 be GENMASK()'ed and defined?
->
-
-Ok.
- 
-> ...
-> 
->> +	/* Set clock frequency */
->> +	dclk = ((ssd130x->dclk_div - 1) & 0xf) | (ssd130x->dclk_frq & 0xf) << 4;
-> 
-> GENMASK() ?
->
-
-Ok.
- 
-> ...
-> 
->> +		u32 mode = ((ssd130x->area_color_enable ? 0x30 : 0) |
->> +			    (ssd130x->low_power ? 5 : 0));
-> 
-> With if's it will look better.
-> 
-> 		u32 mode = 0;
-> 
-> 		if (ssd130x->area_color_enable)
-> 			mode |= 0x30;
-> 		if (ssd130x->low_power)
-> 			mode |= 5;
->
-
-Sure.
- 
-> ...
-> 
->> +	/* Turn on the DC-DC Charge Pump */
->> +	chargepump = BIT(4) | (ssd130x->device_info->need_chargepump ? BIT(2) : 0);
-> 
-> Ditto.
->
-
-Ok.
- 
-> ...
-> 
->> +		for (i = 0; i < ARRAY_SIZE(ssd130x->lookup_table); ++i) {
-> 
-> i++ should work as well.
->
-
-Yeah.
- 
->> +			u8 val = ssd130x->lookup_table[i];
->> +
->> +			if (val < 31 || val > 63)
->> +				dev_warn(ssd130x->dev,
->> +					 "lookup table index %d value out of range 31 <= %d <= 63\n",
->> +					 i, val);
->> +			ret = ssd130x_write_cmd(ssd130x, 1, val);
->> +			if (ret < 0)
->> +				return ret;
->> +		}
-> 
-> ...
-> 
->> +	u8 *buf = NULL;
->
->> +
->
-> Redundant blank line, not sure if checkpatch catches this.
->
-
-Agreed.
- 
->> +	struct drm_rect fullscreen = {
->> +		.x1 = 0,
->> +		.x2 = ssd130x->width,
->> +		.y1 = 0,
->> +		.y2 = ssd130x->height,
->> +	};
-> 
-> ...
-> 
->> +power_off:
-> 
-> out_power_off: ?
->
-
-Ok.
- 
-> ...
-> 
->> +		ret = PTR_ERR(ssd130x->vbat_reg);
->> +		if (ret == -ENODEV)
->> +			ssd130x->vbat_reg = NULL;
->> +		else
->> +			return dev_err_probe(dev, ret, "Failed to get VBAT regulator\n");
-> 
-> Can it be
-> 
-> 		ret = PTR_ERR(ssd130x->vbat_reg);
-> 		if (ret != -ENODEV)
-> 			return dev_err_probe(dev, ret, "Failed to get VBAT regulator\n");
-> 
-> 		ssd130x->vbat_reg = NULL;
->
-> ?
-> 
-
-Mark mentioned that the regulator shouldn't really be optional.
-So half of this part is going away.
-
-> ...
-> 
->> +	ssd130x = devm_drm_dev_alloc(dev, &ssd130x_drm_driver,
->> +				     struct ssd130x_device, drm);
->> +	if (IS_ERR(ssd130x)) {
-> 
->> +		dev_err(dev, "Failed to allocate DRM device: %d\n", ret);
->> +		return ssd130x;
-> 
-> return dev_err_probe() ?
->
-
-No, because this isn't a resource provided by other driver. If this
-failed is mostly due a memory allocation error.
- 
->> +	}
-> 
-> ...
-> 
->> +	bl = devm_backlight_device_register(dev, dev_name(dev), dev, ssd130x,
->> +					    &ssd130xfb_bl_ops, NULL);
->> +	if (IS_ERR(bl)) {
->> +		ret = PTR_ERR(bl);
->> +		dev_err(dev, "Unable to register backlight device: %d\n", ret);
->> +		return ERR_PTR(ret);
-> 
-> Ditto.
->
-
-Same. This is an error and not a reason to defer the probe.
-
->> +	}
-> 
-> ...
-> 
->> +	ret = drm_dev_register(drm, 0);
->> +	if (ret) {
->> +		dev_err(dev, "DRM device register failed: %d\n", ret);
->> +		return ERR_PTR(ret);
-> 
-> Ditto.
->
-
-And same.
- 
->> +	}
-> 
-> ...
-> 
-> I have feelings that half of my comments were ignored...
-> Maybe I missed the discussion(s).
-> 
-
-I assure you that no comments from you or anyone were ignored.
-
-I may had missed something but if if I did was a mistake and
-not intentionally. I keep a changelog for each revision in
-the patches with the name of the reviewer so people can check
-and compare.
-
-If something that you mentioned is not there, I apologize and
-please point me out so I can address it in v4.
+Sure, thanks for your feedback!
 
 Best regards,
 -- 

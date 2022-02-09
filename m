@@ -2,157 +2,110 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AB3DC433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 11:23:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8AF3C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 12:22:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229731AbiBILXj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Feb 2022 06:23:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51372 "EHLO
+        id S229893AbiBIMWQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Feb 2022 07:22:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42194 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230357AbiBILXh (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 06:23:37 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id B1603E128B97
-        for <linux-fbdev@vger.kernel.org>; Wed,  9 Feb 2022 02:17:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644401762;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=X6Mi9ajTPAaH4GRgHowugsZMJXzFkvUakKFgNQa4uWk=;
-        b=KjoYmQzj5d/h9EkwkwWIKv3s8Cjn5wR2tHK+CEmyqAPHdqzX/ihulnHuvlmWWVBlv2MhXs
-        F3FR464BQd4DO4jzS9JGHKKxvFMCAGot3XKDkCF642kNwk1mdzHqARbM0FS5A/TY9TpK5z
-        jQvAXCq1/QtO2zywqrcpY5tUbc40CuU=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-622-CPmPxxEMO9q39a3UJL9-qw-1; Wed, 09 Feb 2022 04:03:27 -0500
-X-MC-Unique: CPmPxxEMO9q39a3UJL9-qw-1
-Received: by mail-wm1-f71.google.com with SMTP id n3-20020a05600c294300b0037bc685b717so215915wmd.8
-        for <linux-fbdev@vger.kernel.org>; Wed, 09 Feb 2022 01:03:27 -0800 (PST)
+        with ESMTP id S233161AbiBIMVv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 07:21:51 -0500
+Received: from mail-vk1-f170.google.com (mail-vk1-f170.google.com [209.85.221.170])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0AB7C03BFDD;
+        Wed,  9 Feb 2022 04:19:13 -0800 (PST)
+Received: by mail-vk1-f170.google.com with SMTP id b2so1054269vkl.1;
+        Wed, 09 Feb 2022 04:19:13 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=X6Mi9ajTPAaH4GRgHowugsZMJXzFkvUakKFgNQa4uWk=;
-        b=3nd8kSAa4mM48dAKJzB2ttNKwod/PleOGjJmSu0xfk7YwOEg/WVWny4pvj6r2Gr60N
-         3qbbDMdee1K0vyv1nt4uVGxY/vUwZhlsmdjzhTWF7DDP8s/8AKT4+AnCTszlDvis9kaw
-         9gDi1PgxMpCFQgQGhri6XpzUDG661cYhC7xiJHGah8GUUVPYdxXLTevj+zMUDJP5grGE
-         yHqbfyDo56nNZ0MCi01rVFGPPskUXJw/DMUSNFPQ+1j6oAEePD5qVo0weIpzPvSHNCCX
-         j7qNbaN4vdYwM4JYWUe/G7qshbBH1YvgxnRwsA228jixGaRwOO1z0kRmGd1JuVrvFk/F
-         T8pw==
-X-Gm-Message-State: AOAM533JQmRU7f6ByQJo7nKUKofSIgG++fkcEWXvjGKNBfUm7zecB3ID
-        uNJ6xHV1DMUvsqmZZsC33mCbryeV/YXLFq6c0fZ4eufpa7gwPRFNMnmmmLUD7pHseT77EH951lK
-        wHU9n36nb8J1mrSpWCkpY/Ac=
-X-Received: by 2002:a5d:6549:: with SMTP id z9mr1223132wrv.420.1644397406033;
-        Wed, 09 Feb 2022 01:03:26 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxyAoxcw7jgi7SZI0lZuE3Ts1yz6KYfW12uWxaTagcv05Vtrjuw9CQlAfWSnk+ZHtktaUn1mg==
-X-Received: by 2002:a5d:6549:: with SMTP id z9mr1223114wrv.420.1644397405788;
-        Wed, 09 Feb 2022 01:03:25 -0800 (PST)
-Received: from minerva.home ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id z1sm4058866wmk.32.2022.02.09.01.03.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Feb 2022 01:03:25 -0800 (PST)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=gm3cukjz1mz6yI7/iDNj2u6cqTBPO6YHmLIpXAkxQ1U=;
+        b=EFxrvIqYtJbPBxeheCqBayPErekNhlAdJ5gR44vBOXfELJPNREL8+mehhiS9aTpSFK
+         70qbZWQuWXW6au82vdh+CO2VUspt4QE/SsPFP9oq1hQvfo26fkNC1G6w7ColvQpOR96j
+         Wh8CdFERppWyldr7sgZdWpz3bgJ2/wc1ozywlQuRPj4BGpaZNwIxlRGL9g8LWH40Apsc
+         bRtQ7Y/bHhl/72LdTpfLbbkStIJxhJyhQjgGhwDDlxfoEbYQExaYC0H5lSd/DldWc04/
+         FQIXGhkZ243WMp8/9AG3YMCvneJFJOsdOZDJrPnUhd/pfzl2vId917GyZZqYvcDZudI/
+         stjg==
+X-Gm-Message-State: AOAM532Qc7m8YwajsgIiiFoU7G3Cp60ZsOp3AwU825oEILqJa1JigngC
+        wOmnHwzneGE+SF31MuKWaEfyTMRPtWKUig==
+X-Google-Smtp-Source: ABdhPJyOwP07a6rwLpDizJUhCR3UH6FuGZnQxyNuvk7/+RVtD7/gjatbx0ryvy4oHhV8hMcq0D98Dg==
+X-Received: by 2002:a05:6122:886:: with SMTP id 6mr664626vkf.37.1644409152985;
+        Wed, 09 Feb 2022 04:19:12 -0800 (PST)
+Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com. [209.85.217.50])
+        by smtp.gmail.com with ESMTPSA id l187sm3294991vke.6.2022.02.09.04.19.12
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 09 Feb 2022 04:19:12 -0800 (PST)
+Received: by mail-vs1-f50.google.com with SMTP id b2so2300398vso.9;
+        Wed, 09 Feb 2022 04:19:12 -0800 (PST)
+X-Received: by 2002:a67:c198:: with SMTP id h24mr600764vsj.5.1644409151869;
+ Wed, 09 Feb 2022 04:19:11 -0800 (PST)
+MIME-Version: 1.0
+References: <20220209090314.2511959-1-javierm@redhat.com>
+In-Reply-To: <20220209090314.2511959-1-javierm@redhat.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed, 9 Feb 2022 13:19:00 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVs750iE=kP1vabwgsGOb8sHc8aC5k=HwCU32CURnYktw@mail.gmail.com>
+Message-ID: <CAMuHMdVs750iE=kP1vabwgsGOb8sHc8aC5k=HwCU32CURnYktw@mail.gmail.com>
+Subject: Re: [PATCH v3 0/7] drm: Add driver for Solomon SSD130X OLED displays
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Thomas Zimmermann <tzimmermann@suse.de>,
-        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
         Maxime Ripard <maxime@cerno.tech>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linux-fbdev@vger.kernel.org,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         Sam Ravnborg <sam@ravnborg.org>,
-        dri-devel@lists.freedesktop.org,
-        Javier Martinez Canillas <javierm@redhat.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
         Daniel Vetter <daniel@ffwll.ch>,
         David Airlie <airlied@linux.ie>,
+        Lee Jones <lee.jones@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>
-Subject: [PATCH v3 1/7] drm/format-helper: Add drm_fb_xrgb8888_to_gray8_line()
-Date:   Wed,  9 Feb 2022 10:03:08 +0100
-Message-Id: <20220209090314.2511959-2-javierm@redhat.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220209090314.2511959-1-javierm@redhat.com>
-References: <20220209090314.2511959-1-javierm@redhat.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        Mark Brown <broonie@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        Linux PWM List <linux-pwm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Pull the per-line conversion logic into a separate helper function.
+Hi Javier,
 
-This will allow to do line-by-line conversion in other helpers that
-convert to a gray8 format.
+On Wed, Feb 9, 2022 at 10:03 AM Javier Martinez Canillas
+<javierm@redhat.com> wrote:
+> This patch series adds a DRM driver for the Solomon OLED SSD1305, SSD1306,
+> SSD1307 and SSD1309 displays. It is a port of the ssd1307fb fbdev driver.
 
-Suggested-by: Thomas Zimmermann <tzimmermann@suse.de>
-Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
----
+[...]
 
-Changes in v3:
-- Add a drm_fb_xrgb8888_to_gray8_line() helper function (Thomas Zimmermann)
+> - Fix a bug when doing partial updates (Geert Uytterhoeven)
 
- drivers/gpu/drm/drm_format_helper.c | 31 ++++++++++++++++++-----------
- 1 file changed, 19 insertions(+), 12 deletions(-)
+Thanks, the text console is now more or less working as expected.
+There is still an issue with the cursor, though.
+After doing "echo hello > /dev/tty0", the text appears, but the cursor
+is gone. "clear > /dev/tty0" brings it back.
 
-diff --git a/drivers/gpu/drm/drm_format_helper.c b/drivers/gpu/drm/drm_format_helper.c
-index 0f28dd2bdd72..b981712623d3 100644
---- a/drivers/gpu/drm/drm_format_helper.c
-+++ b/drivers/gpu/drm/drm_format_helper.c
-@@ -464,6 +464,21 @@ void drm_fb_xrgb8888_to_xrgb2101010_toio(void __iomem *dst,
- }
- EXPORT_SYMBOL(drm_fb_xrgb8888_to_xrgb2101010_toio);
- 
-+static void drm_fb_xrgb8888_to_gray8_line(u8 *dst, const u32 *src, unsigned int pixels)
-+{
-+	unsigned int x;
-+
-+	for (x = 0; x < pixels; x++) {
-+		u8 r = (*src & 0x00ff0000) >> 16;
-+		u8 g = (*src & 0x0000ff00) >> 8;
-+		u8 b =  *src & 0x000000ff;
-+
-+		/* ITU BT.601: Y = 0.299 R + 0.587 G + 0.114 B */
-+		*dst++ = (3 * r + 6 * g + b) / 10;
-+		src++;
-+	}
-+}
-+
- /**
-  * drm_fb_xrgb8888_to_gray8 - Convert XRGB8888 to grayscale
-  * @dst: 8-bit grayscale destination buffer
-@@ -484,8 +499,9 @@ EXPORT_SYMBOL(drm_fb_xrgb8888_to_xrgb2101010_toio);
- void drm_fb_xrgb8888_to_gray8(void *dst, unsigned int dst_pitch, const void *vaddr,
- 			      const struct drm_framebuffer *fb, const struct drm_rect *clip)
- {
--	unsigned int len = (clip->x2 - clip->x1) * sizeof(u32);
--	unsigned int x, y;
-+	unsigned int linepixels = clip->x2 - clip->x1;
-+	unsigned int len = linepixels * sizeof(u32);
-+	unsigned int y;
- 	void *buf;
- 	u8 *dst8;
- 	u32 *src32;
-@@ -508,16 +524,7 @@ void drm_fb_xrgb8888_to_gray8(void *dst, unsigned int dst_pitch, const void *vad
- 	for (y = clip->y1; y < clip->y2; y++) {
- 		dst8 = dst;
- 		src32 = memcpy(buf, vaddr, len);
--		for (x = clip->x1; x < clip->x2; x++) {
--			u8 r = (*src32 & 0x00ff0000) >> 16;
--			u8 g = (*src32 & 0x0000ff00) >> 8;
--			u8 b =  *src32 & 0x000000ff;
--
--			/* ITU BT.601: Y = 0.299 R + 0.587 G + 0.114 B */
--			*dst8++ = (3 * r + 6 * g + b) / 10;
--			src32++;
--		}
--
-+		drm_fb_xrgb8888_to_gray8_line(dst8, src32, linepixels);
- 		vaddr += fb->pitches[0];
- 		dst += dst_pitch;
- 	}
--- 
-2.34.1
+The execution time of "time ls" has improved. It now takes 1.21s
+(0.86s with ssd1306fb).
 
+The logo is not shown, even when I create a 16-color or 224-color
+version of the small monochrome logo I'm using.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

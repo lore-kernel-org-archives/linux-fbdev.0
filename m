@@ -2,70 +2,70 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 069CFC433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 16:56:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F215C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 17:05:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237549AbiBIQ4q (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Feb 2022 11:56:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59246 "EHLO
+        id S237916AbiBIRFU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Feb 2022 12:05:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37968 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237545AbiBIQ4p (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 11:56:45 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 20803C05CB82
-        for <linux-fbdev@vger.kernel.org>; Wed,  9 Feb 2022 08:56:48 -0800 (PST)
+        with ESMTP id S237917AbiBIRE4 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 12:04:56 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 85258C050CD3
+        for <linux-fbdev@vger.kernel.org>; Wed,  9 Feb 2022 09:04:59 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644425807;
+        s=mimecast20190719; t=1644426298;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=NF4y/kDlFrpmc3X7z6yz1NwYmNGUE/++zNAflGm554Q=;
-        b=IlGS460DWmSaz6z/y9PMFsHZdOORz8NERMD0H0LU4Few3Km70vq4xQ8uBLBlI/l8peBTxT
-        FDn3XzHuOmhbONPHveMOHodOHmjAEpFXfsz8hDf6tyt4CXpWLBrf59j2t5W6aL8hwx/D/G
-        C0P1Cwm7a7OWAsvOmDK0AIBx7JpfeIk=
+        bh=5nGt1sk91AWrErDudwLdxz09p1Z/A3GC5vPQgc/7QHA=;
+        b=fn4rjVms3TvKhIry+agCcOHNRr3YekAFd0CIcsuMyFVdM8OolKRvpopPix+62dxTCmUVNo
+        d3RR2NdXXOS22ES1z6RdcQzingKRM9IwxAXM7wcyq/le+8kt11Z55ZwML/kE63EM9Iau1E
+        kcingd9mpXqG5FQcMZvt0jjAMEnuXM0=
 Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
  [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-642-SzmkZnnYN0S03HFkZdMhRQ-1; Wed, 09 Feb 2022 11:56:44 -0500
-X-MC-Unique: SzmkZnnYN0S03HFkZdMhRQ-1
-Received: by mail-wm1-f69.google.com with SMTP id bg16-20020a05600c3c9000b0034bea12c043so2930007wmb.7
-        for <linux-fbdev@vger.kernel.org>; Wed, 09 Feb 2022 08:56:44 -0800 (PST)
+ us-mta-505-c9QxX-W6N0KSiLbTp5yUJw-1; Wed, 09 Feb 2022 12:04:57 -0500
+X-MC-Unique: c9QxX-W6N0KSiLbTp5yUJw-1
+Received: by mail-wm1-f69.google.com with SMTP id g22-20020a1c4e16000000b0037bc7a977b3so284093wmh.5
+        for <linux-fbdev@vger.kernel.org>; Wed, 09 Feb 2022 09:04:57 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=NF4y/kDlFrpmc3X7z6yz1NwYmNGUE/++zNAflGm554Q=;
-        b=u1qP14p1F7HJ2pRSj3+wWg6rcfvsKD33FxpWPA9FUpZmaKNR+skY7knMXQRS1CigLA
-         mZqzaKUwxJWyEOhXZRk/MBg77+VWR7CT8yJ5B6bep+bubhotT2ERcHeY7S92vQdqd0c+
-         zfzZ/XIV5fB3qZwHRiOXY5waCmenS4BqF4KxAjIs3hiIWsDTj4AHPqii0zxMVmdEOrkF
-         RIpttCsApTumwa8aqdSJG4oU5GqWTzC9Z8nmC7cg1XZCRaAmcsL+TY4OqiWY3K5+hv+3
-         DWvKENNb3ZHoUmJcVKjmQ5gQScdDwZt6sOHuWGaOhou7a4yHWPsK2F53tt+MtijTOppX
-         A+mg==
-X-Gm-Message-State: AOAM531EkVqsHEFEku66bk94Pzu6yTeBqIqBNZuvbrMgGQIa66VQpWld
-        g61pr+G1830j4nKLz3NID/n/jgw4nEg8TLS98DKlMaMItX2VcDpUqMAxcdSf/9Dnv+Xg/3yGVAn
-        nqOP/q5BpnOLWJqdrPMAnTuY=
-X-Received: by 2002:adf:eed0:: with SMTP id a16mr2962476wrp.111.1644425802938;
-        Wed, 09 Feb 2022 08:56:42 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJzinGZKjDeX2e13vtBZIJDB6Ck7kPmvDuXfLhGPTUgL7ZxsGDbolfCOb1HhpSRjf+ktdR1Trw==
-X-Received: by 2002:adf:eed0:: with SMTP id a16mr2962461wrp.111.1644425802702;
-        Wed, 09 Feb 2022 08:56:42 -0800 (PST)
+        bh=5nGt1sk91AWrErDudwLdxz09p1Z/A3GC5vPQgc/7QHA=;
+        b=kr98TqiAQ3NDFVnkRit0gnN/zPIzdsPlERxYxxkwOrjmXrs2S1/hihRBJzkeSTg3P5
+         y+SvUlqTqo4oMjBEoSFDPG3ApOkeaUvtlul2DDXfDcQNJns5PFBrbbJaRJiqYjw+Wo7W
+         zAy/AbB5wH94hKGkLUADOvBmQRx18mxmvHsGHmQ7fqOWdB3DO3OAdU3TSsKrDepqVpH/
+         Wtbu4rKLvj7+jrpI/bm7XtKAvWbaxvJJu6/OiBkBYUOhq2ZuIlW04qM7uKxI8IAd4Tgd
+         2mBMooZist6SJSrn2s5Vn+9z/Y5snwk0st6AU7rdicuD/YGSjkM/Z8IRzl9oxqLOzW4w
+         STOA==
+X-Gm-Message-State: AOAM533h13QqObfzjZlqsE9Zj4q7YsoRWtm0gj+os9ampGoxCtTLWhCM
+        NZhdyvfWcUDW9VFBEh9klE20dxX04fuia9WADtWM6GZvmN5P93DU5JkiVZMFO/AiM7kdB+nXKZ8
+        8o0RLyxaLhDr2xCtfgOgFUZQ=
+X-Received: by 2002:a5d:52c9:: with SMTP id r9mr2859440wrv.449.1644426296219;
+        Wed, 09 Feb 2022 09:04:56 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJxz9gThGzXLX/giWr/W1JvBYUZrrvATgUCuQX0yG/Chw7zuZKfaPye67aCPQ6VfuNzsiGcx7w==
+X-Received: by 2002:a5d:52c9:: with SMTP id r9mr2859414wrv.449.1644426295970;
+        Wed, 09 Feb 2022 09:04:55 -0800 (PST)
 Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id o16sm4822975wrn.87.2022.02.09.08.56.41
+        by smtp.gmail.com with ESMTPSA id o14sm5276066wmr.3.2022.02.09.09.04.55
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Feb 2022 08:56:42 -0800 (PST)
-Message-ID: <b8ec21bc-91d4-0f41-2500-db712819fae3@redhat.com>
-Date:   Wed, 9 Feb 2022 17:56:41 +0100
+        Wed, 09 Feb 2022 09:04:55 -0800 (PST)
+Message-ID: <46b671fd-3929-4cf0-1e0d-5f6305464238@redhat.com>
+Date:   Wed, 9 Feb 2022 18:04:54 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
 Subject: Re: [PATCH v3 5/7] (WIP) drm/solomon: Add SSD130X OLED displays SPI
  support
 Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         Maxime Ripard <maxime@cerno.tech>,
         =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
@@ -77,96 +77,30 @@ References: <20220209090314.2511959-1-javierm@redhat.com>
  <YgPbAL0I8Wn7nnNb@smile.fi.intel.com>
  <d32c731b-c06f-2dcb-5a6d-1a84351719b2@redhat.com>
  <CAMuHMdXsAyp18ivtSe-ZVmu6xbBBnvjMuZ=H1w9Gk=Ys4rkCeg@mail.gmail.com>
+ <YgPuy1QVv9A7rcCh@smile.fi.intel.com>
 From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <CAMuHMdXsAyp18ivtSe-ZVmu6xbBBnvjMuZ=H1w9Gk=Ys4rkCeg@mail.gmail.com>
+In-Reply-To: <YgPuy1QVv9A7rcCh@smile.fi.intel.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Sorry for the long reply but I don't really know how to make it shorter.
-
-On 2/9/22 17:25, Geert Uytterhoeven wrote:
-> Hi Javier,
-
-[snip]
-
->> Did you see my comment about automatic module loading ? I think
->> that would be an issue if we use the same compatible for both
->> I2C and SPI drivers.
+On 2/9/22 17:41, Andy Shevchenko wrote:
+> On Wed, Feb 09, 2022 at 05:25:03PM +0100, Geert Uytterhoeven wrote:
+>> On Wed, Feb 9, 2022 at 5:07 PM Javier Martinez Canillas
+>> <javierm@redhat.com> wrote:
 > 
-> We have several drivers that have a core and separate i2c and spi
-> wrappers, see e.g.
+> ...
 > 
-> $ git grep -w ltc2947_of_match
-> drivers/hwmon/ltc2947-core.c:const struct of_device_id ltc2947_of_match[] = {
-> drivers/hwmon/ltc2947-core.c:EXPORT_SYMBOL_GPL(ltc2947_of_match);
-> drivers/hwmon/ltc2947-core.c:MODULE_DEVICE_TABLE(of, ltc2947_of_match);
-> drivers/hwmon/ltc2947-i2c.c:            .of_match_table = ltc2947_of_match,
-> drivers/hwmon/ltc2947-spi.c:            .of_match_table = ltc2947_of_match,
-> drivers/hwmon/ltc2947.h:extern const struct of_device_id ltc2947_of_match[];
+>> Are they all broken?
 > 
-> Are they all broken?
->
+> I guess it's incorrect question. The one we need to ask is is OF code broken?
+> B/c ACPI can easily cope with this (they are different buses, can't clash).
+> 
 
-It doesn't have an easy answer. It depends on what device ID tables have to
-match, what modalias are present in the kernel modules and for what buses
-are since not all subsystem reports the modalias uevent in the same manner.
-
-Let's take this particular driver for example, the module aliases are the
-following for each kernel module:
-
-$ modinfo drivers/hwmon/ltc2947-core.ko | grep alias
-alias:          of:N*T*Cadi,ltc2947C*
-alias:          of:N*T*Cadi,ltc2947
-
-$ modinfo drivers/hwmon/ltc2947-i2c.ko | grep alias
-alias:          i2c:ltc2947
-
-$ modinfo drivers/hwmon/ltc2947-spi.ko | grep alias
-alias:          spi:ltc2947
-
-The DT node will just contain a node with compatible = "adi,ltc2947", and
-depending if the device is on a I2C or SPI bus, the OF subsystem will do
-a device registration with the proper bus_type.
-
-If is SPI, the subsystem always report a modalias uevent of the type
-"spi:ltc2947", even if the device was registered by OF. So for SPI the
-proper module will be loaded since it contains an alias "spi:ltc2947".
-
-But I2C does report a proper OF modalias, so it will report instead
-"of:N*T*Cadi,ltc2947" which will match the core module but not the I2C.
-
-The I2C ltc2947-i2c.ko module is missing a "of:N*T*Cadi,ltc2947" alias
-and the module loading likely isn't working and needs to be done manually.
-
-Conversely, if ltc2947-spi.ko only add "of:N*T*Cadi,ltc2947", then the
-automatic module loading wouldn't work because the modalias uevent will
-be "spi:ltc2947" which won't match "of:N*T*Cadi,ltc2947". So everything
-is really fragile.
-
-Note also that the "T*" in the alias, that's to denote the device type
-according to the ePAPR spec but that's only filled in the DT node has a
-device_type DT property, and most DT nodes don't fill this.
-
-So the driver module is greedy and will match any device type. And also
-the modalias reported by the kernel won't set this, i.e:
-
-$ cat /sys/bus/i2c/drivers/ssd130x-i2c/1-003c/modalias 
-of:NoledT(null)Csolomon,ssd1306fb-i2c
-
-The only way I found to make this robust and always working is with each
-driver to define its own tables depending on what is used to match and
-report the modalias to user-space. That means having an of_device_id and
-spi_device_id (just for modalias reporting and alias table in module) for
-SPI and a of_device_id table for I2C and platform devices.
-
-And also having different compatible strings with a "-i2c" and "-spi" as
-suffixes to allow kmod / udev to differentiate and match the modules.
-
-Otherwise you will get "of:N(null)T(null)Cadi,ltc2947" in both cases and
-user-space won't be able to figure out which module to match AFAICT.
+Yes, it's a problem specific to OF. It works correctly with both ACPI
+and legacy platform code.
 
 Best regards,
 -- 

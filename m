@@ -2,90 +2,83 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D859C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 12:38:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C608AC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 12:41:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233263AbiBIMhz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Feb 2022 07:37:55 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37102 "EHLO
+        id S232649AbiBIMlT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Feb 2022 07:41:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233295AbiBIMhx (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 07:37:53 -0500
+        with ESMTP id S233517AbiBIMlT (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 07:41:19 -0500
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id AB467C05CBAB
-        for <linux-fbdev@vger.kernel.org>; Wed,  9 Feb 2022 04:37:56 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id CA8E2C05CB96
+        for <linux-fbdev@vger.kernel.org>; Wed,  9 Feb 2022 04:41:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644410275;
+        s=mimecast20190719; t=1644410482;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=yv06k0qcIVzfebmQao0F8lU/DvXpAPuqfxT+fivD3r4=;
-        b=ZZlWb2bWOJA/YRe6waWsCNKNEeE0XUgDMxeO6QzMqjDa/E9IseV8snOkWI8cR7uGQZFcvP
-        MnZAyS9LzOW7JOsDGS71a+zKanbTRmokx4BvGHpdPjX6d937Z8EKeTCN71tZBCOLyxpPBx
-        GSvlmkaEAaFWc2B0HD2RaO0I333MbKs=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=2T/ZX315dLjrEaKbTpQjrwkLEmj/39CedeR+myw2pnM=;
+        b=TKFMDoOM9aKBd4xApx2XssVsggMt/8CQAFxj9otRZOITcutpgqeRTCnTCDZFjm5cPNj+SU
+        c+9rU3BYuUgw5YZUPDgytnuWWIx+C5jY3eU/g/Ue6uKo6OyWOZONC8cIGvHvSZH7IjYfNs
+        hogfAFo2zkx9FXvzjfAErU/xqbgxFdg=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-352-Bmsd93lYNEij6lQRNL6qSw-1; Wed, 09 Feb 2022 07:37:54 -0500
-X-MC-Unique: Bmsd93lYNEij6lQRNL6qSw-1
-Received: by mail-wm1-f71.google.com with SMTP id t2-20020a7bc3c2000000b003528fe59cb9so441294wmj.5
-        for <linux-fbdev@vger.kernel.org>; Wed, 09 Feb 2022 04:37:54 -0800 (PST)
+ us-mta-534-KU3nEjM_PUeaSCx8SIW8Iw-1; Wed, 09 Feb 2022 07:41:20 -0500
+X-MC-Unique: KU3nEjM_PUeaSCx8SIW8Iw-1
+Received: by mail-wr1-f72.google.com with SMTP id r2-20020adfa142000000b001e176ac1ec3so1069882wrr.3
+        for <linux-fbdev@vger.kernel.org>; Wed, 09 Feb 2022 04:41:20 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=yv06k0qcIVzfebmQao0F8lU/DvXpAPuqfxT+fivD3r4=;
-        b=lMyHqDpG02UL8vTi2CA4PdoyhjuLaXnqDMHIMDXiMVobqqA3MXfSgu5EqC57IsmVsD
-         0mWqR73fx2JkNqGbx3IgXFfjEIoKfeqI4oO9LgyPTtEVSbTutOSEiz41f6MSbaIVQaTS
-         MLeVqAqGRKLKdWtJKf2nLSrT8kPNe0GQJ1Jiq4IdElRySpG34URJhakdV7aYp2S70pN5
-         4K3mVRAJUZMMsIobHAnONdEKW3dert8V2916D8VyU0hsgiLw+Iy4V4e0+NzrJs/fibah
-         s65ddfb20w3PGa+UeIPqF19x8RdvJ4bJMDIF9TErN7XyHg5ROcL/wRZSujnsATXRtyTj
-         JOog==
-X-Gm-Message-State: AOAM530YCmQiIgusAcdgwZAsWa5aOEgz/8RCRVBi1unvZM5kuzk7lpo9
-        vRoI4HYQ37writ5FAwSIMhrIfLHekLK5WQPFs8XmgtpgYT09u/aFQeo6tuCbsmelQaBfWiWIa+N
-        u+o0wlTLVQJKF5I18d0JqDjU=
-X-Received: by 2002:a05:600c:4fc2:: with SMTP id o2mr1884060wmq.145.1644410273539;
-        Wed, 09 Feb 2022 04:37:53 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJzmjpeXcKAGK2lwWC20JlgA2fV6RbEkugJVOCgWV8vBNqH8VPABqTYOsxX7qWXxzkqn+qGm5A==
-X-Received: by 2002:a05:600c:4fc2:: with SMTP id o2mr1884035wmq.145.1644410273273;
-        Wed, 09 Feb 2022 04:37:53 -0800 (PST)
+        bh=2T/ZX315dLjrEaKbTpQjrwkLEmj/39CedeR+myw2pnM=;
+        b=Ik0zOcKHo9AmsDvYoOxBJP636gd2Y1quAYc16VZWNuOhE0JZEdtXIjEbFglepJI7eG
+         PrCRZvYzdl1wrZFCufTX21NnWJg87clAiDVP7CLqAwV8FM1OD8PfIVxhFM+pDaQqOFsy
+         Kc/2e+8eIDMsyUnq9+JJ2mPPJl11SZV9GeWo/AAMvtrKG3rX3sq0QN59VqqpS3Q48kTR
+         2ajmfpG+VFFd4yaZApLBPITNxJ2wfOCW83r+NgU2/qW9tst8ud1Al8uP4AwjPxD5dFut
+         e5S4CI7BGAI2KdxHWlb67ad2fFjJolpmzBotsP840I9SPANhiK4DVmIdcHqUoHLPPWdF
+         qU3g==
+X-Gm-Message-State: AOAM530IDe8pW0x75gowZZRsAS4lYPSXTtgG66INnjYcl/dRQx0y7q9u
+        oGubLvNflJJFRIsFScYDtKXk8t8NowK5hxmZukHcLmSA8mNrXGuBUtwD44/yTzLNDM+xZ/z1mYg
+        nq1RgZmDHRkmMEm9OmAUZbpM=
+X-Received: by 2002:a5d:64af:: with SMTP id m15mr1973595wrp.478.1644410479717;
+        Wed, 09 Feb 2022 04:41:19 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJxPYKui1CF0MIpN4jnFuKlY7TO7NxCK4qlra0MJS9GiBFjcirpTBRptBCzbYbNupz5K+sxp5g==
+X-Received: by 2002:a5d:64af:: with SMTP id m15mr1973587wrp.478.1644410479500;
+        Wed, 09 Feb 2022 04:41:19 -0800 (PST)
 Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id l28sm14096444wrz.90.2022.02.09.04.37.51
+        by smtp.gmail.com with ESMTPSA id p3sm5299211wmq.40.2022.02.09.04.41.18
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Feb 2022 04:37:52 -0800 (PST)
-Message-ID: <58ebacd2-d44d-c7e9-e752-de7815dd4cc1@redhat.com>
-Date:   Wed, 9 Feb 2022 13:37:51 +0100
+        Wed, 09 Feb 2022 04:41:19 -0800 (PST)
+Message-ID: <29312c12-5684-b134-3e0f-e02240c574c6@redhat.com>
+Date:   Wed, 9 Feb 2022 13:41:17 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
-Subject: Re: [PATCH v3 0/7] drm: Add driver for Solomon SSD130X OLED displays
+Subject: Re: [PATCH v3 4/7] drm/solomon: Add SSD130X OLED displays I2C support
 Content-Language: en-US
 To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Linux PWM List <linux-pwm@vger.kernel.org>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Mark Brown <broonie@kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Lee Jones <lee.jones@linaro.org>,
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Sam Ravnborg <sam@ravnborg.org>
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@linux.ie>
 References: <20220209090314.2511959-1-javierm@redhat.com>
- <CAMuHMdVs750iE=kP1vabwgsGOb8sHc8aC5k=HwCU32CURnYktw@mail.gmail.com>
+ <20220209090314.2511959-5-javierm@redhat.com>
+ <CAMuHMdXOfz94gD+SpGRS7HazxA_PN3n2D=Q04CPm-eEMb_CkEw@mail.gmail.com>
 From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <CAMuHMdVs750iE=kP1vabwgsGOb8sHc8aC5k=HwCU32CURnYktw@mail.gmail.com>
+In-Reply-To: <CAMuHMdXOfz94gD+SpGRS7HazxA_PN3n2D=Q04CPm-eEMb_CkEw@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -94,43 +87,22 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Hello Geert,
 
-On 2/9/22 13:19, Geert Uytterhoeven wrote:
-> Hi Javier,
+Thanks for your feedback.
+
+On 2/9/22 13:21, Geert Uytterhoeven wrote:
+
+[snip]
+
 > 
-> On Wed, Feb 9, 2022 at 10:03 AM Javier Martinez Canillas
-> <javierm@redhat.com> wrote:
->> This patch series adds a DRM driver for the Solomon OLED SSD1305, SSD1306,
->> SSD1307 and SSD1309 displays. It is a port of the ssd1307fb fbdev driver.
+>> +static const struct of_device_id ssd130x_of_match[] = {
+>> +       {
+>> +               .compatible = "solomon,ssd1305fb-i2c",
+>> +               .data = (void *)&ssd130x_ssd1305_deviceinfo,
 > 
-> [...]
+> The casts are not needed.
 > 
->> - Fix a bug when doing partial updates (Geert Uytterhoeven)
-> 
-> Thanks, the text console is now more or less working as expected.
 
-Thanks for giving it a try to this version too! Glad to know that
-is working better now.
-
-> There is still an issue with the cursor, though.
-> After doing "echo hello > /dev/tty0", the text appears, but the cursor
-> is gone. "clear > /dev/tty0" brings it back.
->
-
-Hmm, I was able to reproduce this too. Thanks for pointing it out,
-I'll investigate what the problem is.
- 
-> The execution time of "time ls" has improved. It now takes 1.21s
-> (0.86s with ssd1306fb).
->
-
-Yes, I believe that was due the bug I mentioned that partial updates
-weren't done but a full screen update instead.
- 
-> The logo is not shown, even when I create a 16-color or 224-color
-> version of the small monochrome logo I'm using.
->
-
-I'll also dig into this.
+Right. I copied the table from the ssd1307fb driver verbatim. I'll clean it up.
 
 Best regards,
 -- 

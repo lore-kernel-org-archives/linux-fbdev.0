@@ -2,209 +2,102 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00AD3C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 13:26:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43588C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 13:43:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232440AbiBIN0X (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Feb 2022 08:26:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39642 "EHLO
+        id S234384AbiBINnU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Feb 2022 08:43:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35940 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232366AbiBIN0W (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 08:26:22 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 46883C0613C9
-        for <linux-fbdev@vger.kernel.org>; Wed,  9 Feb 2022 05:26:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644413184;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=gj7EYe83fjjc2pVbDvN8nW0XXrWOw/vijRlZTRlTyb4=;
-        b=Mcxz1mnVrIozmkuFD7qWJpNXslM5gzAlx88KnH97p0YvXfWuVseCEeZQFElb3f5skeedOI
-        Xck1054Q0FdDVMqM2y/t3yL5vVSBUMWaQhCV4/oC5GAn45VtascEfG+/UZvv6R2DI9LUn0
-        5tAEaOnE4JqZY9GKK6RghOfo4gRM7Fg=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-135-K-rSbRESN6O3veee3IzA4w-1; Wed, 09 Feb 2022 08:26:23 -0500
-X-MC-Unique: K-rSbRESN6O3veee3IzA4w-1
-Received: by mail-wr1-f70.google.com with SMTP id g17-20020adfa591000000b001da86c91c22so1114901wrc.5
-        for <linux-fbdev@vger.kernel.org>; Wed, 09 Feb 2022 05:26:23 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=gj7EYe83fjjc2pVbDvN8nW0XXrWOw/vijRlZTRlTyb4=;
-        b=L0A2K3PSfd6OHwuJLD5k02Z2vBpJ+UNBxiYLWYmzxC0OHaGZNB4R5rqne/913VAyDX
-         nbKTbUJ6QsjPD5EurY9hfkxXBViT/nfClTxd9XeMW9KqooG2J2UzEEqJSTrNTuLwMdCc
-         EKnTHGxxMg3A9G6MqCEaXFvRXj056HlpDQIuYoefrNcaTc2JO4yDUObh+2IlNt5fGmdH
-         u9Td2JurDmM+X9rHCunMxsQNbcaTbcAcB/cYCOC36cS7b6NB2F/Q48HwW/c18XBXuqQg
-         w48SdYrvoZ6crB3x7obZTjoZbavC30Oq7bl0mTMeLh3aUa2LtF2wvgq6Avv3j5M9jkBT
-         ihZg==
-X-Gm-Message-State: AOAM531GvNxW8/qNO64zFlC72d2jg50S6vRYdUYwKTmgDOrq5it4Vl83
-        7+M3q5KbSL+/KKZloa/CVGY3rwyq2+NN0h/DEB4fR4ZSVtrHMyWmYuJe40+4aZPE4WPRILVIamd
-        QZC0pzQ7+o+OS7g8ziaw0uAE=
-X-Received: by 2002:a05:600c:22d3:: with SMTP id 19mr2067408wmg.178.1644413182034;
-        Wed, 09 Feb 2022 05:26:22 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJyFKrknf35Xf2LefmXXuc7aRIfezVH3jBJsgn4R4Bvho+wSQI39jFu6aG9bFdzQzoX5XOf93w==
-X-Received: by 2002:a05:600c:22d3:: with SMTP id 19mr2067383wmg.178.1644413181828;
-        Wed, 09 Feb 2022 05:26:21 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id m6sm5678550wmq.6.2022.02.09.05.26.20
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Feb 2022 05:26:21 -0800 (PST)
-Message-ID: <f75a1544-5a3e-e49f-7eab-5dd5c72584b9@redhat.com>
-Date:   Wed, 9 Feb 2022 14:26:20 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v3 2/7] drm/format-helper: Add drm_fb_{xrgb8888,
- gray8}_to_mono_reversed()
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-kernel@vger.kernel.org
-Cc:     linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        dri-devel@lists.freedesktop.org,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Maxime Ripard <maxime@cerno.tech>,
+        with ESMTP id S233245AbiBINnT (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 08:43:19 -0500
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2957DC061355;
+        Wed,  9 Feb 2022 05:43:23 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id CC202B821A0;
+        Wed,  9 Feb 2022 13:43:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CEF5C340E7;
+        Wed,  9 Feb 2022 13:43:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1644414200;
+        bh=37OR1ffupD9w9dKrsD/tXWDzbP9itwcwvYTx3uXtOps=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=fUge2DMeusx+jhrGmSAodUdP1Qlf9acOZcs8TjQf49xFNLNknrvgg4CY0s7fVgCF8
+         Cix15WePuCE8YLeekKTb76Y/rXKbN1SD+6r0LxYI3H0d/imAIpMAl6lJgmm/jNVjzA
+         WVB148FwaqUS5h6YKprZT6lPNyNuX5vPGeT9sQsgVI6BSEAJ4IQISslWPIRma9Al4A
+         lAP9PBsiTlNG9LvPNdqJ/cdlV9LQad+75PzzcBLAgtfl1lKk9+d9kbJDxHLGVt79qY
+         AWui1oqCXtrqDGBpfykYd4GAzGL+a/BPqHb5kqhe2BYye1Vu+IpQlkWBJ40Wul6tk1
+         Pxlei95pitoIQ==
+Date:   Wed, 9 Feb 2022 13:43:13 +0000
+From:   Mark Brown <broonie@kernel.org>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     linux-kernel@vger.kernel.org,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Sam Ravnborg <sam@ravnborg.org>
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linux-fbdev@vger.kernel.org,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel@lists.freedesktop.org, Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Lee Jones <lee.jones@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>, linux-pwm@vger.kernel.org
+Subject: Re: [PATCH v3 3/7] drm: Add driver for Solomon SSD130X OLED displays
+Message-ID: <YgPE8Z7HxU2wv7J/@sirena.org.uk>
 References: <20220209090314.2511959-1-javierm@redhat.com>
- <20220209090314.2511959-3-javierm@redhat.com>
- <6df9c28d-968d-ff16-988e-8e88e4734e49@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <6df9c28d-968d-ff16-988e-8e88e4734e49@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <20220209090314.2511959-4-javierm@redhat.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="hG/Egg4kkWequsOJ"
+Content-Disposition: inline
+In-Reply-To: <20220209090314.2511959-4-javierm@redhat.com>
+X-Cookie: Disc space -- the final frontier!
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Thomas,
 
-Thanks a lot for your feedback.
+--hG/Egg4kkWequsOJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On 2/9/22 13:51, Thomas Zimmermann wrote:
-> Hi
-> 
+On Wed, Feb 09, 2022 at 10:03:10AM +0100, Javier Martinez Canillas wrote:
 
-[snip]
+> +	if (ssd130x->vbat_reg) {
+> +		ret = regulator_enable(ssd130x->vbat_reg);
+> +		if (ret) {
+> +			dev_err(dev, "Failed to enable VBAT: %d\n", ret);
+> +			return ret;
+> +		}
+> +	}
 
->> +
->> +		if (xb == pixels - 1 && end_offset)
->> +			end = end_offset;
-> 
-> end_offset should be called end_len, because it is the number of bits in
-> the final byte; but not the offset of the final bit.
->
+Unless the device supports power being physically omitted regulator
+usage should not be optional, it's just more code and a recipie for poor
+error handling.
 
-Indeed.
+--hG/Egg4kkWequsOJ
+Content-Type: application/pgp-signature; name="signature.asc"
 
-[snip]
+-----BEGIN PGP SIGNATURE-----
 
->> +void drm_fb_gray8_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *vaddr,
->> +				   const struct drm_framebuffer *fb,
->> +				   const struct drm_rect *clip)
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmIDxPAACgkQJNaLcl1U
+h9BlsAf8DXkDpBzNae52DdUZC+O3yzYIWFFywhEjjDbPX9wmJ4924EI/wjD/igl6
+YeYnHYx0kj0SLfHYbpBFUehzykJQ/puIGOnDJ6FpE0SEtcl6fRWcLyKOuhvl+bHr
+2vaJbS/pQ53i53EbMU5Zg5PXsZ18GkuDd+9zgz3aC3wSJAOr4LkPIpLe8sQpfSUM
+O6QgrmffoUFahtVadrpjAd+We/dGDUuLvcJCrO184AWXoi3pHtpnzhI0k2/GHBfm
+qJghua+CfAPUdSthNyVYVZ/YAB+QLAS5NLfW+QX2Ot0XctA6Lk006jjJ+H8LxFWM
+BoGgjBzeIw+303F+wx4Ep1mBFYA2DA==
+=MgLt
+-----END PGP SIGNATURE-----
 
-[snip]
-
-> 
-> Do you really need that function. It's not exported and if it's not 
-> otherwise used, I'd just remove it.  We don't keep unused interfaces around.
->
-
-At the end after your suggestion of doing line-per-line conversions it is not
-needed, but since I already typed it and we were talking about adding other
-formats besides the fake XRGB8888 as an optimization (R8 for grayscale and
-Dx or something like that for reversed mono), I thought that would be useful
-to have it as a helper.
-
-Also other drivers that want to advertise a R8 format could just use it and
-not having to add their own helper. But I'm happy to drop it in v4 if you
-think that's better to not have unused helpers. 
-
-It could be taken from this patch-set anyways if someone wants to wire the
-needed support for R8.
-
-[snip]
-
->> +
->> +	/*
->> +	 * The reversed mono destination buffer contains 1 bit per pixel
->> +	 * and destination scanlines have to be in multiple of 8 pixels.
->> +	 */
->> +	if (!dst_pitch)
->> +		dst_pitch = DIV_ROUND_UP(linepixels, 8);
-> 
-> I'd do a warn_once if (dst_pitch % 8 != 0).
->
-
-Agreed. I'll add a warning an mention that will be rounded up.
-
-> 
->> +
->> +	/*
->> +	 * The cma memory is write-combined so reads are uncached.
->> +	 * Speed up by fetching one line at a time.
-> 
-> I once had a patchset that adds caching information to struct 
-> dma_buf_map (soon to be named struct iosys_map).  Blitting helpers would 
-> be able to enable/disable this optimization as needed.
-> 
-> However, your driver doesn't use CMA. It's backed by SHMEM. Do you 
-> really want to keep that code in?
->
-
-It doesn't but the repaper does. And since the plan was to make that driver
-to use the helper instead of having their own, I wanted to also make sure
-that would work well with CMA.
-
-> 
->> +	 */
->> +	src32 = kmalloc(len_src32, GFP_KERNEL);
->> +	if (!src32)
->> +		return;
->> +
->> +	/*
->> +	 * Copies are done line-by-line, allocate an intermediate
->> +	 * buffer to copy the gray8 lines and then convert to mono.
->> +	 */
->> +	gray8 = kmalloc(linepixels, GFP_KERNEL);
->> +	if (!gray8)
->> +		goto free_src32;
-> 
-> If might be faster to allocate both buffers in one step and set the 
-> pointers into the allocated buffer.
->
-
-Not sure I got this. Do you mean to have a single buffer with length
-linepixels + len_src32 and point src32 and gray8 to the same buffer ?
-
->> +
->> +	/*
->> +	 * For damage handling, it is possible that only parts of the source
->> +	 * buffer is copied and this could lead to start and end pixels that
->> +	 * are not aligned to multiple of 8.
->> +	 *
->> +	 * Calculate if the start and end pixels are not aligned and set the
->> +	 * offsets for the reversed mono line conversion function to adjust.
->> +	 */
->> +	start_offset = clip->x1 % 8;
->> +	end_offset = clip->x2 % 8;
-> 
-> end_len, again. If you have 1 single bit set in the final byte, the
-> offset is 0, but the length is 1.
->
-
-Agreed, will change it too.
-
-Best regards,
--- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+--hG/Egg4kkWequsOJ--

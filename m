@@ -2,139 +2,189 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD8F1C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Feb 2022 09:00:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50EB0C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Feb 2022 11:17:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238134AbiBJJAi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 10 Feb 2022 04:00:38 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:36612 "EHLO
+        id S240712AbiBJLRF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 10 Feb 2022 06:17:05 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:49826 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238141AbiBJJAg (ORCPT
+        with ESMTP id S237619AbiBJLRE (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 10 Feb 2022 04:00:36 -0500
-Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on2049.outbound.protection.outlook.com [40.107.22.49])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F2C41091;
-        Thu, 10 Feb 2022 01:00:38 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=EjO4LK+SjgjADEdKSe2R39+znUyU7PDmXRfl0ElIuMDdL1iKcgoxnbzQ537rPMLm6YSRKixFXWbDBLNTZmaWJdrTm/o3fRHxqzfj+8Md+qiyW2SaZWGM8FTLxGFuuN73NUw+NRkvQUeoPjtRHcTc2y+J2tbgy+Fll7VcsX2hj4dUFMfkUwxzSP2hbjjA9hzyTVyqwLLfkv3BgnH2aoiEvFrLVW6zgha6mw5Td6/a+Hcl3q32Cj2FqCXDVKH03uph9Sb8T0naEmyVpuLnxMujdcTabGBZQM/d8UA8oYV5GVYsn8o7g9dgGmXTEybO+rnW1DFSCWCDZVmq44JAZ0IlUw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=4Be+nfvf4zKqJtYrrcYAY736iNotKqaVy2D5KpGCPUc=;
- b=ahHRvBN+1y64dBjuNAbPMDkIP8OnrnGJUaxFNW7AhBJiT76mHPLqZQpHGZDCcIXf7EVH/Q5b2xkccoQE3sYTzUr0HOFP2OGshMexCM9dl5KGKDIkHzh60HAUw7R+pm5Sfc6rMB/sagfElTVGfGbL5Rd9hSckMKDyvTR4mEvye3cmv6FrBGABAb1mE0q10+55gGYzZUZqQspSuLkEgWct82l2sLlCl9dN2BjIrKgi/YnwG1gAFgCxwiBc/qxjzkpUpScYBc3nNFF7Ra1fW77wfkJ3aHzIkQP9pEoNNinc9BdzIff/o/gt7EK7HPajT94ifFkh+MEdGm4uigitzf5GzQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=KoCoConnector.onmicrosoft.com; s=selector2-KoCoConnector-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=4Be+nfvf4zKqJtYrrcYAY736iNotKqaVy2D5KpGCPUc=;
- b=j9GdRxaUCvhB0WcuTbwGqH5tsHB9gg0lbCyEnB0KoUHnZSH6TVVOEsJGrh1BKj2j60mimZccPKXwD/104Z8mGy2d7xJW8+Fuln8KeUjqXNAvFowvgKFYzDyvlsdiZ6AbOlSbOB4X6Jfgq0WwWXEJ9UhCrEQlUel6x0eywgNzDz0=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=kococonnector.com;
-Received: from AM9PR09MB4884.eurprd09.prod.outlook.com (2603:10a6:20b:281::9)
- by VI1PR0902MB1869.eurprd09.prod.outlook.com (2603:10a6:800:e8::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4951.12; Thu, 10 Feb
- 2022 09:00:35 +0000
-Received: from AM9PR09MB4884.eurprd09.prod.outlook.com
- ([fe80::3c7a:2af6:3623:4c3d]) by AM9PR09MB4884.eurprd09.prod.outlook.com
- ([fe80::3c7a:2af6:3623:4c3d%7]) with mapi id 15.20.4975.011; Thu, 10 Feb 2022
- 09:00:35 +0000
-From:   Oliver Graute <oliver.graute@kococonnector.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Dennis Menschel <menschel-d@posteo.de>
-Cc:     Oliver Graute <oliver.graute@kococonnector.com>,
-        stable@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v1] staging: fbtft: fb_st7789v: reset display before initialization
-Date:   Thu, 10 Feb 2022 09:53:22 +0100
-Message-Id: <20220210085322.15676-1-oliver.graute@kococonnector.com>
-X-Mailer: git-send-email 2.17.1
-Content-Type: text/plain
-X-ClientProxiedBy: AM0PR02CA0156.eurprd02.prod.outlook.com
- (2603:10a6:20b:28d::23) To AM9PR09MB4884.eurprd09.prod.outlook.com
- (2603:10a6:20b:281::9)
+        Thu, 10 Feb 2022 06:17:04 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B1631CED;
+        Thu, 10 Feb 2022 03:17:04 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 5790E1F38A;
+        Thu, 10 Feb 2022 11:17:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1644491823; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Qaooyu4Nb81yGZ9DFfBDmT32pNnVNgtVFQXDFuQbTA4=;
+        b=hN+nLrL1PalurFF1yrllCaO7m2K1R2oXDoYf8Gjfy2xlTmmhH52gsseq/gQq6kLhtgebEd
+        1AKq02wXfHEcJ5O04DYN2BsKqlgODyu/5txcawihe+lGIjAmyyuUnnyDW0V82+VnbJCuVA
+        0/K1Veq9+TRRjn18RyKRV38BKlcHmEE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1644491823;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Qaooyu4Nb81yGZ9DFfBDmT32pNnVNgtVFQXDFuQbTA4=;
+        b=enUuOAnfG8kKL9D3WUqhSyV8sgzGDmVRlfZLiLIrlCRH7Adv65mZxtgGdUHIY1MhIYFzUm
+        r56A6bZv04MnMEDw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 00EC613B43;
+        Thu, 10 Feb 2022 11:17:02 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id z2ebOi70BGJdCAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 10 Feb 2022 11:17:02 +0000
+Message-ID: <03daab0b-979b-0a8d-3a80-514de646b2d0@suse.de>
+Date:   Thu, 10 Feb 2022 12:17:02 +0100
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 7a728f69-9297-4913-bf6d-08d9ec73cd04
-X-MS-TrafficTypeDiagnostic: VI1PR0902MB1869:EE_
-X-Microsoft-Antispam-PRVS: <VI1PR0902MB1869E881F7B1746E44FC93CAEB2F9@VI1PR0902MB1869.eurprd09.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:5236;
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 1inGot3X1lVcBZPjdDPCM6JP4zeX0HQO/3mnEXzHVQScGvSQUnxIdc5bOsZxVFZxNZ2Iqec3tJ93NwSG2o3cg+7lUor6u2HE/YB32w10W7rKOBqOwyQr/1F/UZSrmwoIVeDxNEtl8EzDjsD+pU3ol088bf5xqJQzXa7ScCqkZSo2e/8LjTzIRo86088d4ZKRQeZOoNYNjJfqUDk2aXJeKc4UI7hTKWtZrX24uF9y8WsDdvRbpJkvkCI1LbgUlPdAp/UO8gKCI5uEB5VW5o/bhYuCxbwmADnFglSagzwor3fAlhhyfLLm3BL29Jiw8HyiNWp6f14H/CdisVSIqXSDz+AmW/Q7BYZqhj78Z9/uFbtvN+Kn8mjTLwPg1HsInQwODRhpEMe1dcuB902zwGON92f93ADw43SqPearTHE+U11BcPnpCHIDswvs1LZxUa5Is+1U4cZPggFHiCjKp6jcsmr80Lxr8ILGbt1cPghCg4Rv5q8EC9rFrIxogyT/sCL3xwlGM15pKMjKC9mMdRVjyu2e4wbeUKNzEg6QgmfLZkjFvPwluCA0WedS7in1ICiODcsqYA3VACJ/A07AwbccsRglVv0kmt8t+yJoE+LraIU+dfZ9mAtkw6Ze9Doa7fDT2YQ58VyAUjHjf0gP/aNtHJWTm+myt1gZXxqta+jobPXy6o6UhwNGvPlrIxJcBLAr/WkqQQYw/rn9veGVxPIKJQ==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM9PR09MB4884.eurprd09.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(346002)(136003)(396003)(366004)(39840400004)(376002)(508600001)(2906002)(4744005)(1076003)(2616005)(38350700002)(186003)(6486002)(26005)(5660300002)(38100700002)(6512007)(52116002)(66476007)(66556008)(66946007)(316002)(86362001)(110136005)(36756003)(8676002)(44832011)(8936002)(6666004)(4326008)(6506007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?rSG/3dJMxalCLaywmxTZbdYHmKa74/Ogl+drNMPWnzMZ8VyH2DUwY4qBiN9+?=
- =?us-ascii?Q?mYd7rT8JbSIf7G12+mnbfN7oCh2fR7DXcxxk8CNGc+4jfR/1yAe8qh1GDj0P?=
- =?us-ascii?Q?BUEX33nDqTNS33zSS2Ap46BHOIrBqY4q1dykjwUNQZSRZ1Jn//2Y2pRSzJ36?=
- =?us-ascii?Q?yCqCnke9xgbjim/Y7H3TMD9Vb5Dooz2JMZC5eop2LOn5EfNhseUkOA3Y5iV+?=
- =?us-ascii?Q?VQjOED5xQ+MbkTqGBP0Kmv7s0ekLfVloAct8YGfsdKT2zF5z7j7sWCffBMZU?=
- =?us-ascii?Q?0kxI2wLUwQl7XzxESC462+vow84rTRN401RW2rCtPx+nk7g875uxm7laRD+T?=
- =?us-ascii?Q?wmAxIfmGof3gfxPAg4y757xH/LUzXMs09tWx7L8N4QqFyTPgZX3RSj5ti+hb?=
- =?us-ascii?Q?5+ryPrBmRt5M24AZSjlBTVH7B9O+KlUU2eHG6Io6YYI7BMnqOsMnyMorneNE?=
- =?us-ascii?Q?4dqWHxC0A+9chxzPS1iapJ4URy2IXDdS3BzTQgcEbR9uennaqwQEf/UYarYn?=
- =?us-ascii?Q?hlKaie0Kuq44dJXiOdRteS9v7yhowm/AVxs0+K+Ggby8h/WY9Zr432uSa463?=
- =?us-ascii?Q?Budz+1jo+08LUoHPkf7whGx/v6GmSf7oJaVEz1R6rspVhWCoE8lrW6b5RlFT?=
- =?us-ascii?Q?KL6wGYOpZfzLcvMkQcn94vfIduk89xCgUvM35LpIhkMU7zD4oZui4BTlZ6Ap?=
- =?us-ascii?Q?koilOzEZ+oreKDzS+5U2Jbo7Jx/aivU5WVtExDGHYITLD/Lck24BWmCOPqO7?=
- =?us-ascii?Q?E2Ig0YGeFrL1RDo2cC681eWrFcWSCRwVEuuhcbFEllbnY0tnSoxgu7QitclL?=
- =?us-ascii?Q?90WyrH/0wiANdu840lLa8UKyKl/+HahYkYI8nREAUhQoBXMdWq7kfrSmW4ri?=
- =?us-ascii?Q?EnjJVgjbT+E2gwDQqn7OJTtRi2L1kqSMEQgHqvW1CTt4/Geh8UKUZoZQkMJ1?=
- =?us-ascii?Q?gZvNE5ThfPF4UQ5eE+Yc0/qhz3biHE1hwtUzDGIdFELktmvHsPgFO/+rNZaU?=
- =?us-ascii?Q?5An0ROlM+LL1xTox7xy7oqrezDsECn8Ng7E0MlweLp5vRf5CwEJXNQEgTmQd?=
- =?us-ascii?Q?QDfti/Asbjn1n0esYKRb92ZzpZhLEM4xxwH8Ie6Mj3GGdv6v07f8K+wmN/eZ?=
- =?us-ascii?Q?NJdVRFlUh/zeAP9a8i8uHvCLXUR6Q0k67ESO7e99SSRyLdMh4jaqedN0re+z?=
- =?us-ascii?Q?c39h0vlFVsO3xrxBtEB9GrV5dj/phsYHdj7kGWHh45wwfWVkKwuA7wAjhou5?=
- =?us-ascii?Q?hTttL7N7dl151ZGSTrwoIdRc5NcYpzMxLu1jeDT+t5VnkHTVt7yWFFSSsCHu?=
- =?us-ascii?Q?hV+tiy3wzSiAxAxMq3TsKu9Mx3+OsR0p9zXzMltxNnjTLHkMcd40P0VJUC5m?=
- =?us-ascii?Q?3FCcj6it0I2q3jVQoApXT++J/HPaR/di8VsRH4cpFqH8gZEaGqi1jexcCF5J?=
- =?us-ascii?Q?VCmqqPzJedeXzvlzDRSUrquFvyzhQ/1j3cVM/4Rxqw4v1I7oAZEKh9Eu5gVB?=
- =?us-ascii?Q?8zKT25fUZHAQOk0EboW087brhSX+cdmSm13Gii+5uDEbcjLy0QUKMtmlz8F/?=
- =?us-ascii?Q?8p0ErpyqzeMvk4AjN0OPBmfAE677mlL0pshhkNlWYDYVj7u5BaI1wWWlcwYN?=
- =?us-ascii?Q?hWLI2wEFIv9j5Tx7Imsj5Htw0oa7yzCOHMVc7R1lFLHpfG7ZGqlANACQcv+p?=
- =?us-ascii?Q?dqoAqA=3D=3D?=
-X-OriginatorOrg: kococonnector.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7a728f69-9297-4913-bf6d-08d9ec73cd04
-X-MS-Exchange-CrossTenant-AuthSource: AM9PR09MB4884.eurprd09.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Feb 2022 09:00:35.6388
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 59845429-0644-4099-bd7e-17fba65a2f2b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Ixmy4AJ2EUN2Fq2Z/VnpoQLTZBacTg37gCdvvPDEUZ6NxHjnFLJvVULdSUOzpJBFtVPJKPPLImmw3+BLaFe9TgzWFlf1bOhlMHMP2CRlmsw=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0902MB1869
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v2 01/19] fbcon: delete a few unneeded forward decl
+Content-Language: en-US
+To:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        DRI Development <dri-devel@lists.freedesktop.org>
+Cc:     Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Helge Deller <deller@gmx.de>, Daniel Vetter <daniel@ffwll.ch>,
+        Du Cheng <ducheng2@gmail.com>,
+        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+        Claudio Suarez <cssk@net-c.es>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <20220208210824.2238981-1-daniel.vetter@ffwll.ch>
+ <20220208210824.2238981-2-daniel.vetter@ffwll.ch>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20220208210824.2238981-2-daniel.vetter@ffwll.ch>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------cEN1KyUBu0mcocQ9omzXEtbb"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-In rare cases the display is flipped or mirrored. This was observed more
-often in a low temperature environment. A clean reset on init_display()
-should help to get registers in a sane state.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------cEN1KyUBu0mcocQ9omzXEtbb
+Content-Type: multipart/mixed; boundary="------------aSh4Fex3IobC0EHWCJhrYAFh";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Daniel Vetter <daniel.vetter@ffwll.ch>,
+ DRI Development <dri-devel@lists.freedesktop.org>
+Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+ linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ Sam Ravnborg <sam@ravnborg.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Daniel Vetter <daniel.vetter@intel.com>, Helge Deller <deller@gmx.de>,
+ Daniel Vetter <daniel@ffwll.ch>, Du Cheng <ducheng2@gmail.com>,
+ Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+ Claudio Suarez <cssk@net-c.es>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Message-ID: <03daab0b-979b-0a8d-3a80-514de646b2d0@suse.de>
+Subject: Re: [PATCH v2 01/19] fbcon: delete a few unneeded forward decl
+References: <20220208210824.2238981-1-daniel.vetter@ffwll.ch>
+ <20220208210824.2238981-2-daniel.vetter@ffwll.ch>
+In-Reply-To: <20220208210824.2238981-2-daniel.vetter@ffwll.ch>
 
-Fixes: ef8f317795da (staging: fbtft: use init function instead of init sequence)
-Cc: stable@vger.kernel.org
-Signed-off-by: Oliver Graute <oliver.graute@kococonnector.com>
----
- drivers/staging/fbtft/fb_st7789v.c | 2 ++
- 1 file changed, 2 insertions(+)
+--------------aSh4Fex3IobC0EHWCJhrYAFh
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-diff --git a/drivers/staging/fbtft/fb_st7789v.c b/drivers/staging/fbtft/fb_st7789v.c
-index 3a280cc1892c..0a2dbed9ffc7 100644
---- a/drivers/staging/fbtft/fb_st7789v.c
-+++ b/drivers/staging/fbtft/fb_st7789v.c
-@@ -82,6 +82,8 @@ enum st7789v_command {
- {
- 	int rc;
+DQoNCkFtIDA4LjAyLjIyIHVtIDIyOjA4IHNjaHJpZWIgRGFuaWVsIFZldHRlcjoNCj4gSSBk
+aWRuJ3QgYm90aGVyIHdpdGggYW55IGNvZGUgbW92ZW1lbnQgdG8gZml4IHRoZSBvdGhlcnMs
+IHRoZXNlIGp1c3QNCj4gZ290IGEgYml0IGluIHRoZSB3YXkuDQo+IA0KPiB2MjogUmViYXNl
+IG9uIHRvcCBvZiBIZWxnZSdzIHJldmVydHMuDQo+IA0KPiBBY2tlZC1ieTogU2FtIFJhdm5i
+b3JnIDxzYW1AcmF2bmJvcmcub3JnPiAodjEpDQo+IFJldmlld2VkLWJ5OiBHZWVydCBVeXR0
+ZXJob2V2ZW4gPGdlZXJ0QGxpbnV4LW02OGsub3JnPiAodjEpDQo+IFNpZ25lZC1vZmYtYnk6
+IERhbmllbCBWZXR0ZXIgPGRhbmllbC52ZXR0ZXJAaW50ZWwuY29tPg0KPiBDYzogSGVsZ2Ug
+RGVsbGVyIDxkZWxsZXJAZ214LmRlPg0KPiBDYzogRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZm
+d2xsLmNoPg0KPiBDYzogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+
+DQo+IENjOiBEdSBDaGVuZyA8ZHVjaGVuZzJAZ21haWwuY29tPg0KPiBDYzogVGV0c3VvIEhh
+bmRhIDxwZW5ndWluLWtlcm5lbEBJLWxvdmUuU0FLVVJBLm5lLmpwPg0KPiBDYzogQ2xhdWRp
+byBTdWFyZXogPGNzc2tAbmV0LWMuZXM+DQo+IENjOiBHcmVnIEtyb2FoLUhhcnRtYW4gPGdy
+ZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPg0KDQpBY2tlZC1ieTogVGhvbWFzIFppbW1lcm1h
+bm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+DQoNCj4gLS0tDQo+ICAgZHJpdmVycy92aWRlby9m
+YmRldi9jb3JlL2ZiY29uLmMgfCAxNyArLS0tLS0tLS0tLS0tLS0tLQ0KPiAgIDEgZmlsZSBj
+aGFuZ2VkLCAxIGluc2VydGlvbigrKSwgMTYgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMgYi9kcml2ZXJzL3ZpZGVv
+L2ZiZGV2L2NvcmUvZmJjb24uYw0KPiBpbmRleCAyZmMxYjgwYTI2YWQuLjIzNWVhYWIzN2Q4
+NCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMNCj4g
+KysrIGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMNCj4gQEAgLTE2MywyOSAr
+MTYzLDE0IEBAIHN0YXRpYyBpbnQgZmJjb25fY3Vyc29yX25vYmxpbms7DQo+ICAgICogIElu
+dGVyZmFjZSB1c2VkIGJ5IHRoZSB3b3JsZA0KPiAgICAqLw0KPiAgIA0KPiAtc3RhdGljIGNv
+bnN0IGNoYXIgKmZiY29uX3N0YXJ0dXAodm9pZCk7DQo+IC1zdGF0aWMgdm9pZCBmYmNvbl9p
+bml0KHN0cnVjdCB2Y19kYXRhICp2YywgaW50IGluaXQpOw0KPiAtc3RhdGljIHZvaWQgZmJj
+b25fZGVpbml0KHN0cnVjdCB2Y19kYXRhICp2Yyk7DQo+IC1zdGF0aWMgdm9pZCBmYmNvbl9j
+bGVhcihzdHJ1Y3QgdmNfZGF0YSAqdmMsIGludCBzeSwgaW50IHN4LCBpbnQgaGVpZ2h0LA0K
+PiAtCQkJaW50IHdpZHRoKTsNCj4gLXN0YXRpYyB2b2lkIGZiY29uX3B1dGMoc3RydWN0IHZj
+X2RhdGEgKnZjLCBpbnQgYywgaW50IHlwb3MsIGludCB4cG9zKTsNCj4gLXN0YXRpYyB2b2lk
+IGZiY29uX3B1dGNzKHN0cnVjdCB2Y19kYXRhICp2YywgY29uc3QgdW5zaWduZWQgc2hvcnQg
+KnMsDQo+IC0JCQlpbnQgY291bnQsIGludCB5cG9zLCBpbnQgeHBvcyk7DQo+ICAgc3RhdGlj
+IHZvaWQgZmJjb25fY2xlYXJfbWFyZ2lucyhzdHJ1Y3QgdmNfZGF0YSAqdmMsIGludCBib3R0
+b21fb25seSk7DQo+IC1zdGF0aWMgdm9pZCBmYmNvbl9jdXJzb3Ioc3RydWN0IHZjX2RhdGEg
+KnZjLCBpbnQgbW9kZSk7DQo+ICAgc3RhdGljIHZvaWQgZmJjb25fYm1vdmUoc3RydWN0IHZj
+X2RhdGEgKnZjLCBpbnQgc3ksIGludCBzeCwgaW50IGR5LCBpbnQgZHgsDQo+ICAgCQkJaW50
+IGhlaWdodCwgaW50IHdpZHRoKTsNCj4gLXN0YXRpYyBpbnQgZmJjb25fc3dpdGNoKHN0cnVj
+dCB2Y19kYXRhICp2Yyk7DQo+IC1zdGF0aWMgaW50IGZiY29uX2JsYW5rKHN0cnVjdCB2Y19k
+YXRhICp2YywgaW50IGJsYW5rLCBpbnQgbW9kZV9zd2l0Y2gpOw0KPiAgIHN0YXRpYyB2b2lk
+IGZiY29uX3NldF9wYWxldHRlKHN0cnVjdCB2Y19kYXRhICp2YywgY29uc3QgdW5zaWduZWQg
+Y2hhciAqdGFibGUpOw0KPiAgIA0KPiAgIC8qDQo+ICAgICogIEludGVybmFsIHJvdXRpbmVz
+DQo+ICAgICovDQo+IC1zdGF0aWMgX19pbmxpbmVfXyB2b2lkIHl3cmFwX3VwKHN0cnVjdCB2
+Y19kYXRhICp2YywgaW50IGNvdW50KTsNCj4gLXN0YXRpYyBfX2lubGluZV9fIHZvaWQgeXdy
+YXBfZG93bihzdHJ1Y3QgdmNfZGF0YSAqdmMsIGludCBjb3VudCk7DQo+IC1zdGF0aWMgX19p
+bmxpbmVfXyB2b2lkIHlwYW5fdXAoc3RydWN0IHZjX2RhdGEgKnZjLCBpbnQgY291bnQpOw0K
+PiAtc3RhdGljIF9faW5saW5lX18gdm9pZCB5cGFuX2Rvd24oc3RydWN0IHZjX2RhdGEgKnZj
+LCBpbnQgY291bnQpOw0KPiAgIHN0YXRpYyB2b2lkIGZiY29uX2Jtb3ZlX3JlYyhzdHJ1Y3Qg
+dmNfZGF0YSAqdmMsIHN0cnVjdCBmYmNvbl9kaXNwbGF5ICpwLCBpbnQgc3ksIGludCBzeCwN
+Cj4gICAJCQkgICAgaW50IGR5LCBpbnQgZHgsIGludCBoZWlnaHQsIGludCB3aWR0aCwgdV9p
+bnQgeV9icmVhayk7DQo+ICAgc3RhdGljIHZvaWQgZmJjb25fc2V0X2Rpc3Aoc3RydWN0IGZi
+X2luZm8gKmluZm8sIHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFyLA0KPiBAQCAtMTk0
+LDggKzE3OSw4IEBAIHN0YXRpYyB2b2lkIGZiY29uX3JlZHJhd19tb3ZlKHN0cnVjdCB2Y19k
+YXRhICp2Yywgc3RydWN0IGZiY29uX2Rpc3BsYXkgKnAsDQo+ICAgCQkJICAgICAgaW50IGxp
+bmUsIGludCBjb3VudCwgaW50IGR5KTsNCj4gICBzdGF0aWMgdm9pZCBmYmNvbl9tb2RlY2hh
+bmdlZChzdHJ1Y3QgZmJfaW5mbyAqaW5mbyk7DQo+ICAgc3RhdGljIHZvaWQgZmJjb25fc2V0
+X2FsbF92Y3Moc3RydWN0IGZiX2luZm8gKmluZm8pOw0KPiAtc3RhdGljIHZvaWQgZmJjb25f
+c3RhcnQodm9pZCk7DQo+ICAgc3RhdGljIHZvaWQgZmJjb25fZXhpdCh2b2lkKTsNCj4gKw0K
+PiAgIHN0YXRpYyBzdHJ1Y3QgZGV2aWNlICpmYmNvbl9kZXZpY2U7DQo+ICAgDQo+ICAgI2lm
+ZGVmIENPTkZJR19GUkFNRUJVRkZFUl9DT05TT0xFX1JPVEFUSU9ODQoNCi0tIA0KVGhvbWFz
+IFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUg
+U29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJn
+LCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJl
+cjogSXZvIFRvdGV2DQo=
 
-+	par->fbtftops.reset(par);
-+
- 	rc = init_tearing_effect_line(par);
- 	if (rc)
- 		return rc;
--- 
-2.17.1
+--------------aSh4Fex3IobC0EHWCJhrYAFh--
 
+--------------cEN1KyUBu0mcocQ9omzXEtbb
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIE9C4FAwAAAAAACgkQlh/E3EQov+BE
+cQ//Q2CaZBkIceF3bUoO9v3HwBzBvjDXynz1Z4g+9Lf9yY8avg8SSqYarwhXmwxBKgPDrpuvaFwt
+QH+Tc8IbNxgpMF+6Qc2E11bBL//ux3NS4xHqbUxahepzMgai7AuluoEoik3x5LPMlr00CgPmFHDn
+gcvlLvA+RgmGe2/O4prZFZlT1dT39bZRz5qq/8Ji9bt8mC1eK0jMz0vvb1PMPwfJHeW05URL+UVW
+72gtN7HfMkXZxGqs0LojkSsH5sfNwex8Nw+fZlWUHCojdsIyuj1s/antcd2fMmeqbE1GTbEnWVQL
+oHEbPzYzi2pG8jjv4D50QEVQiUBb6K3nIEwAWR01Z+usih7Fgi3Y+gVkedN4CoKugtdRShrN7b0Q
+IKX011fQR8OblydwUoRcUBRKmLejvu72ivbtZP8DdETCmf+0OV59SwvLI2hmakeNY3N97k5BesjB
+HP0SAI1go19iP6BByLYvC1zEflImpFvCvn81su1gcPS/d82eJZicA0Y6OuSJTQVYkv8XFf5JZ/Yr
+M0RjemnAILfLbXPU386UpypkS6v1PgpPDLM87DREpbwlkuLNjZXorlLOFrl6bUdLc0ea2Ht6YVjR
+ogMnjgjAHUiefCCO6AM8kuitxzbFpyEQAQnVmq4W0sB1tbrPpKSNEXnreQa1LyATschb7L7AY6cB
+jIU=
+=FdDm
+-----END PGP SIGNATURE-----
+
+--------------cEN1KyUBu0mcocQ9omzXEtbb--

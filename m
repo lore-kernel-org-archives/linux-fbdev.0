@@ -2,86 +2,105 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CE66C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Feb 2022 22:14:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98414C433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Feb 2022 06:58:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235129AbiBIWOU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Feb 2022 17:14:20 -0500
-Received: from gmail-smtp-in.l.google.com ([23.128.96.19]:36598 "EHLO
+        id S235769AbiBJG6p (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 10 Feb 2022 01:58:45 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:59150 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235126AbiBIWOO (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Feb 2022 17:14:14 -0500
-Received: from mail-oi1-f176.google.com (mail-oi1-f176.google.com [209.85.167.176])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC541E015253;
-        Wed,  9 Feb 2022 14:14:13 -0800 (PST)
-Received: by mail-oi1-f176.google.com with SMTP id m10so4063960oie.2;
-        Wed, 09 Feb 2022 14:14:13 -0800 (PST)
+        with ESMTP id S232769AbiBJG6p (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>);
+        Thu, 10 Feb 2022 01:58:45 -0500
+Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D683E10A6;
+        Wed,  9 Feb 2022 22:58:46 -0800 (PST)
+Received: by mail-wr1-x433.google.com with SMTP id s18so7762254wrv.7;
+        Wed, 09 Feb 2022 22:58:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=u78B18o9gcsc4cL6IkzErLE1PeBzNrlXsUNhAfo/eQA=;
+        b=Z+CyvLG7KD/HpWPAArX/wKn2XNrlxk7iy8frG7an2ljCw2UYm4L+d2nlDwDzVHi3lP
+         jFbwovb1dRqTM/2101G1HUM/8mtO8uLvQ0gVqEf3ulnKJeMOY6IJVtgcy35mntS9byQy
+         alpXiBuP+DJ5fBtj4gakO1YdgI1d2qoUG5bvX2ecVuzvRQZkkl7FOGaxxOeyvuAXZpsa
+         Cmss2vfY1cWUZu/F+ggYvG6vOhgeVCyXVfM820UicCMYzO15VyUl9/aH3zciHnzreBM6
+         GuOrzWPgzGxeROCjQqdoDth5TVAsYGaY6KRNT/CU6VNNsoVZsMWbHG4/qIdEXwyFqVcQ
+         zIVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=5w3QoXmnLsihgEA/Et9MpIi6nloh2mbWHhlRSc4SJVU=;
-        b=fMz3x7ZDfNsSK72Zh3Qd99TfJ4MsQ1hMucgMv9K4hnnBsqACcDPJPFNERj8ElEkO22
-         JvWzLwwHs1Sw3FtypybNyb9DMYsZhs6gN3JkFFv7E9BWqsGOZ8/OcjpafCTCSjZeLqP4
-         96t7qpkueIs2SNKlcPpFVqZqr/LfGuoa+cO4CR3pspRvZHv6Pyk8sqbi+Kz4X0TJNFp+
-         mbtl56pLWiZfNcAQ6rue9Oy1vZvDwsZTrdhY6cMHCTlVo3X+TfwwwygMuPDaj3wMTfzh
-         2M24rpHZEJ/MFqTjmXLa5uQHsfYRoP4A9hqasluzUpZPvkRKWrOuVYo1qFws80UEge06
-         GfsA==
-X-Gm-Message-State: AOAM533p1Zyy1F5F5iGchp132iCXFB1yaucjvvFDPq4nUaFQcem+rVw+
-        YZr2c/3i3JIZErOg+Wn2Bg==
-X-Google-Smtp-Source: ABdhPJzweqXLNVP7+tC8UIOfrH2IH0wKhXWBXS/zBWs578C+quPBmzcGsHsOdY/vYUi67D0BCYkOXw==
-X-Received: by 2002:a54:488c:: with SMTP id r12mr2027834oic.104.1644444852983;
-        Wed, 09 Feb 2022 14:14:12 -0800 (PST)
-Received: from robh.at.kernel.org (66-90-148-213.dyn.grandenetworks.net. [66.90.148.213])
-        by smtp.gmail.com with ESMTPSA id f21sm7069506otq.4.2022.02.09.14.14.11
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=u78B18o9gcsc4cL6IkzErLE1PeBzNrlXsUNhAfo/eQA=;
+        b=7hQC74p9wrnPHl090WuYi3ahoM5g4Z96XBRKq3MA8yWl8ASFqKZABGB8ab1ajuFKtq
+         L4abT5xbAtG3CvnKVgoOBhXDpm24bLzT3oWCvWkbCRYRsEKEfJXBR2osEOFnx2zDKE+/
+         f9f3GphJEVuYgvbpDgCp5LZvwUHWjp1mdNCxFs4gRaWKdBZJWLu72EPOoAmmpg4fMEJj
+         VoOZeFOak1U5u4Tpqnkd5vfIOE4lR9rS7VudbTskFLy6y4GI5qNTXr4j622/wbI0UHlj
+         Xze8dThYKTyTtvE5aVpUyrySCeKQSSq59lkrQiZvp1AbMH57url3FeFAI9/Kx4s9V7k9
+         a7Cg==
+X-Gm-Message-State: AOAM5306zu3pR1xbwZx03Am2sUF4IfcgqjoPmIQkrZOadUltZPhohb1L
+        0gPfqh0apENiWffzl99RW3+JqztSp33T7q4R
+X-Google-Smtp-Source: ABdhPJwe+XGoIjBrzTJSHQ7oKv5mlppiFkBHW6003ML4aU0ugi6ehTht+78ijXA2D7tO+Ul/JUwQrA==
+X-Received: by 2002:a05:6000:178f:: with SMTP id e15mr5133719wrg.439.1644476324368;
+        Wed, 09 Feb 2022 22:58:44 -0800 (PST)
+Received: from localhost.localdomain ([64.64.123.24])
+        by smtp.gmail.com with ESMTPSA id v9sm6621456wrw.84.2022.02.09.22.58.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Feb 2022 14:14:12 -0800 (PST)
-Received: (nullmailer pid 1028963 invoked by uid 1000);
-        Wed, 09 Feb 2022 22:14:11 -0000
-Date:   Wed, 9 Feb 2022 16:14:11 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-fbdev@vger.kernel.org, Maxime Ripard <maxime@cerno.tech>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Daniel Vetter <daniel@ffwll.ch>, linux-kernel@vger.kernel.org,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
-        David Airlie <airlied@linux.ie>,
-        Maxime Ripard <mripard@kernel.org>, devicetree@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v2 4/4] dt-bindings: display: ssd1307fb: Add myself as
- binding co-maintainer
-Message-ID: <YgQ8s5S3mqYMPyqW@robh.at.kernel.org>
-References: <20220204134347.1187749-1-javierm@redhat.com>
- <20220204134347.1187749-5-javierm@redhat.com>
+        Wed, 09 Feb 2022 22:58:44 -0800 (PST)
+From:   Zhouyi Zhou <zhouzhouyi@gmail.com>
+To:     daniel@ffwll.ch, deller@gmx.de, sam@ravnborg.org,
+        linux@roeck-us.net, willy@infradead.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, paulmck@kernel.org,
+        rcu@vger.kernel.org, pmenzel@molgen.mpg.de
+Cc:     Zhouyi Zhou <zhouzhouyi@gmail.com>
+Subject: [PATCH linux-next] video: fbdev: fbmem: fix pointer reference to null device field
+Date:   Thu, 10 Feb 2022 14:58:24 +0800
+Message-Id: <20220210065824.368355-1-zhouzhouyi@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220204134347.1187749-5-javierm@redhat.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, 04 Feb 2022 14:43:47 +0100, Javier Martinez Canillas wrote:
-> The ssd130x DRM driver also makes use of this Device Tree binding to allow
-> existing users of the fbdev driver to migrate without the need to change
-> their Device Trees.
-> 
-> Add myself as another maintainer of the binding, to make sure that I will
-> be on Cc when patches are proposed for it.
-> 
-> Suggested-by: Sam Ravnborg <sam@ravnborg.org>
-> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-> ---
-> 
-> (no changes since v1)
-> 
->  Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml | 1 +
->  1 file changed, 1 insertion(+)
-> 
+In function do_remove_conflicting_framebuffers, if device is NULL, there
+will be null pointer reference. The patch add a check to the if expression.
 
-Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Zhouyi Zhou <zhouzhouyi@gmail.com>
+---
+Dear Linux folks
+
+I discover this bug in the PowerPC VM provided by
+Open source lab of Oregon State University:
+
+https://lkml.org/lkml/2022/2/8/1145
+
+I found that the root cause of null device field is in offb_init_fb:
+info = framebuffer_alloc(sizeof(u32) * 16, NULL);
+
+I have tested the patch in the PowerPC VM. Hope my patch can be correct.
+
+Many Thanks
+Zhouyi
+--
+ drivers/video/fbdev/core/fbmem.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 34d6bb1bf82e..422b1fc01722 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1579,7 +1579,7 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
+ 			 * If it's not a platform device, at least print a warning. A
+ 			 * fix would add code to remove the device from the system.
+ 			 */
+-			if (dev_is_platform(device)) {
++			if (device && dev_is_platform(device)) {
+ 				registered_fb[i]->forced_out = true;
+ 				platform_device_unregister(to_platform_device(device));
+ 			} else {
+-- 
+2.25.1
+

@@ -2,141 +2,156 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA091C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 15:56:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD197C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 15:59:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349523AbiBKP4m (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Feb 2022 10:56:42 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:33368 "EHLO
+        id S239711AbiBKP7s (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Feb 2022 10:59:48 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:34578 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240763AbiBKP4m (ORCPT
+        with ESMTP id S1344108AbiBKP7s (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Feb 2022 10:56:42 -0500
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8786CD47;
-        Fri, 11 Feb 2022 07:56:40 -0800 (PST)
+        Fri, 11 Feb 2022 10:59:48 -0500
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB9BB1CF;
+        Fri, 11 Feb 2022 07:59:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1644595000; x=1676131000;
+  t=1644595186; x=1676131186;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=G2nMVmGnVC61HKINS0KX3x16eUy0vrSIWj0awqxztAE=;
-  b=b17rTmxjYNqltc0do0gi8nXEMgsVcCjUrnYD9OZdUlxFLigVeTZwPhNX
-   tZbBe+dqjBFw5IIBGlaanojkKjqiTKzk5kG61Vc5DWro3CvZ3x5lD57pq
-   06jj8BkJw2b/KZhfnCfzrW9CoOkbiBTwO9vwbaiZ6TiOdQA4nC7CLkPnH
-   td6IWTxZCDewh7K9QLU6+R9D9UL3Cv2Ki4ajcBtB9LrvzMHEL8qMhDiZu
-   NlqkuG6a8SW/JqlXcXQ/eTDdgkqfa9KiqZ+aTausgQ7LY+P/1gkcio7NQ
-   UsC6/fmhbqU1ZrIYPYgOdWUonHhAOOZAnyRpe/04E/eUPVdRdu6K5xzxo
-   w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="313035650"
+  bh=RDag2sLQw7yjw60O76iuryrZarkSSGzwMGlkJnfbYWw=;
+  b=g9ZG3QMwssXFJ0XuzgaOpM5c/OoRNJfWjEae1lvjiNg2a8MPRsXTCNQ9
+   epa4HbMIZuvD6LMyPyns1ajK/AO6G92NgCQruPhMgiwzUdRIXou0JlQ2p
+   4PHyJXUEP5ODVw6wLLG9L2Va8utMZ+sUMd+uhEA8HjLGN8gceTqDzUect
+   uC3jWm1422rmf0vXGWkOLOTXb40xJrudg81dBqucJp2IUd8ohTh12S4oU
+   gpEohKCQJySDO1YI7axbqiqjKwHuBgqoRQ7oyxSZjf0Ek6pLJUsZGBhvl
+   YJ7uF4CKPghEFh+Igju9fOK9g54os0Aq0F+e9FbfdK8hjzAKbf1bRL3eU
+   g==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="233308011"
 X-IronPort-AV: E=Sophos;i="5.88,361,1635231600"; 
-   d="scan'208";a="313035650"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 07:56:37 -0800
+   d="scan'208";a="233308011"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 07:59:45 -0800
 X-IronPort-AV: E=Sophos;i="5.88,361,1635231600"; 
-   d="scan'208";a="634130120"
+   d="scan'208";a="602407145"
 Received: from smile.fi.intel.com ([10.237.72.61])
-  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 07:56:33 -0800
+  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 07:59:42 -0800
 Received: from andy by smile.fi.intel.com with local (Exim 4.95)
         (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nIYGm-003UpL-57;
-        Fri, 11 Feb 2022 17:55:36 +0200
-Date:   Fri, 11 Feb 2022 17:55:35 +0200
+        id 1nIYJo-003Usa-NZ;
+        Fri, 11 Feb 2022 17:58:44 +0200
+Date:   Fri, 11 Feb 2022 17:58:44 +0200
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Maxime Ripard <maxime@cerno.tech>,
+Cc:     linux-kernel@vger.kernel.org,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
+        linux-fbdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+        Maxime Ripard <maxime@cerno.tech>,
         dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Sam Ravnborg <sam@ravnborg.org>,
         Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
         Daniel Vetter <daniel@ffwll.ch>,
         David Airlie <airlied@linux.ie>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>
-Subject: Re: [PATCH v4 2/6] drm/format-helper: Add
- drm_fb_xrgb8888_to_mono_reversed()
-Message-ID: <YgaG98O12Fg7WmQJ@smile.fi.intel.com>
-References: <20220211091927.2988283-1-javierm@redhat.com>
- <20220211091927.2988283-3-javierm@redhat.com>
- <YgZEPo0ERFRloDyA@smile.fi.intel.com>
- <00616642-1c95-9258-ab6e-b08116b36d21@redhat.com>
+Subject: Re: [PATCH v5 1/6] drm/format-helper: Add
+ drm_fb_xrgb8888_to_gray8_line()
+Message-ID: <YgaHtHZws8GOUPAk@smile.fi.intel.com>
+References: <20220211143358.3112958-1-javierm@redhat.com>
+ <20220211143358.3112958-2-javierm@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <00616642-1c95-9258-ab6e-b08116b36d21@redhat.com>
+In-Reply-To: <20220211143358.3112958-2-javierm@redhat.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Feb 11, 2022 at 12:50:04PM +0100, Javier Martinez Canillas wrote:
-> On 2/11/22 12:10, Andy Shevchenko wrote:
-
-...
-
-> >> +	for (xb = 0; xb < pixels; xb++) {
-> >> +		unsigned int start = 0, end = 8;
-> >> +		u8 byte = 0x00;
-> > 
-> >> +		if (xb == 0 && start_offset)
-> >> +			start = start_offset;
-> > 
-> > This is invariant to the loop, can be moved out.
-> > 
-> >> +		if (xb == pixels - 1 && end_len)
-> >> +			end = end_len;
-> > 
-> > Ditto. However it may require to factor out the following loop to a helper.
+On Fri, Feb 11, 2022 at 03:33:53PM +0100, Javier Martinez Canillas wrote:
+> Pull the per-line conversion logic into a separate helper function.
 > 
-> Not sure I'm following, it's not invariant since it depends on the
-> loop iterator value. It only applies to the first and last pixels.
+> This will allow to do line-by-line conversion in other helpers that
+> convert to a gray8 format.
 
-It's. You simply does it at the last iteration which may be perfectly done
-outside of the main (aligned) loop.
+for-loop vs. while-loop is not critical, so
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-...
-
-> >> +		dst_pitch = DIV_ROUND_UP(linepixels, 8);
-> > 
-> > round_up() ?
+> Suggested-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
 > 
-> But it's not a round up operation but a div and round up.
-
-Indeed.
-
-...
-
-> >> +	WARN_ONCE(dst_pitch % 8 != 0, "dst_pitch is not a multiple of 8\n");
-> > 
-> > 
-> > I would move this to the if conditional, i.e.
-> > 
-> > 	if (dst_pitch)
-> > 		WARN_ONCE(dst_pitch % 8 != 0, "dst_pitch is not a multiple of 8\n");
-> > 	else
-> > 		dst_pitch = round_up(linepixels, 8);
+> Changes in v5:
+> - Add Thomas Zimmermann's Reviewed-by to patch #1.
 > 
-> No, because we always need to div and round up. The warning is just printed to
-> let know that the dst pitch is not a multiple of 8 as it should be. So callers
-> could be fixed.
-
-Okay, you expect that linepixels to be multiple of 64? Otherwise I didn't get
-what's going on with this warning.
-
-...
-
-> >> +	start_offset = clip->x1 % 8;
-> >> +	end_len = clip->x2 % 8;
-> > 
-> > ALIGN() ?
+> Changes in v3:
+> - Add a drm_fb_xrgb8888_to_gray8_line() helper function (Thomas Zimmermann)
 > 
-> But we don't want to align here but to know what's the start and end if is
-> not aligned since that would mean converting to mono in the middle of a byte.
-
-Indeed. Somehow I missed that it's a complimentary to ALIGN().
+>  drivers/gpu/drm/drm_format_helper.c | 31 ++++++++++++++++++-----------
+>  1 file changed, 19 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/drm_format_helper.c b/drivers/gpu/drm/drm_format_helper.c
+> index 0f28dd2bdd72..b981712623d3 100644
+> --- a/drivers/gpu/drm/drm_format_helper.c
+> +++ b/drivers/gpu/drm/drm_format_helper.c
+> @@ -464,6 +464,21 @@ void drm_fb_xrgb8888_to_xrgb2101010_toio(void __iomem *dst,
+>  }
+>  EXPORT_SYMBOL(drm_fb_xrgb8888_to_xrgb2101010_toio);
+>  
+> +static void drm_fb_xrgb8888_to_gray8_line(u8 *dst, const u32 *src, unsigned int pixels)
+> +{
+> +	unsigned int x;
+> +
+> +	for (x = 0; x < pixels; x++) {
+> +		u8 r = (*src & 0x00ff0000) >> 16;
+> +		u8 g = (*src & 0x0000ff00) >> 8;
+> +		u8 b =  *src & 0x000000ff;
+> +
+> +		/* ITU BT.601: Y = 0.299 R + 0.587 G + 0.114 B */
+> +		*dst++ = (3 * r + 6 * g + b) / 10;
+> +		src++;
+> +	}
+> +}
+> +
+>  /**
+>   * drm_fb_xrgb8888_to_gray8 - Convert XRGB8888 to grayscale
+>   * @dst: 8-bit grayscale destination buffer
+> @@ -484,8 +499,9 @@ EXPORT_SYMBOL(drm_fb_xrgb8888_to_xrgb2101010_toio);
+>  void drm_fb_xrgb8888_to_gray8(void *dst, unsigned int dst_pitch, const void *vaddr,
+>  			      const struct drm_framebuffer *fb, const struct drm_rect *clip)
+>  {
+> -	unsigned int len = (clip->x2 - clip->x1) * sizeof(u32);
+> -	unsigned int x, y;
+> +	unsigned int linepixels = clip->x2 - clip->x1;
+> +	unsigned int len = linepixels * sizeof(u32);
+> +	unsigned int y;
+>  	void *buf;
+>  	u8 *dst8;
+>  	u32 *src32;
+> @@ -508,16 +524,7 @@ void drm_fb_xrgb8888_to_gray8(void *dst, unsigned int dst_pitch, const void *vad
+>  	for (y = clip->y1; y < clip->y2; y++) {
+>  		dst8 = dst;
+>  		src32 = memcpy(buf, vaddr, len);
+> -		for (x = clip->x1; x < clip->x2; x++) {
+> -			u8 r = (*src32 & 0x00ff0000) >> 16;
+> -			u8 g = (*src32 & 0x0000ff00) >> 8;
+> -			u8 b =  *src32 & 0x000000ff;
+> -
+> -			/* ITU BT.601: Y = 0.299 R + 0.587 G + 0.114 B */
+> -			*dst8++ = (3 * r + 6 * g + b) / 10;
+> -			src32++;
+> -		}
+> -
+> +		drm_fb_xrgb8888_to_gray8_line(dst8, src32, linepixels);
+>  		vaddr += fb->pitches[0];
+>  		dst += dst_pitch;
+>  	}
+> -- 
+> 2.34.1
+> 
 
 -- 
 With Best Regards,

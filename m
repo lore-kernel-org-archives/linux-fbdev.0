@@ -2,46 +2,46 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD197C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 15:59:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9301C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 16:05:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239711AbiBKP7s (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Feb 2022 10:59:48 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:34578 "EHLO
+        id S1349919AbiBKQFP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Feb 2022 11:05:15 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:37346 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344108AbiBKP7s (ORCPT
+        with ESMTP id S1349786AbiBKQFP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Feb 2022 10:59:48 -0500
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB9BB1CF;
-        Fri, 11 Feb 2022 07:59:46 -0800 (PST)
+        Fri, 11 Feb 2022 11:05:15 -0500
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D983812C;
+        Fri, 11 Feb 2022 08:05:13 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1644595186; x=1676131186;
+  t=1644595513; x=1676131513;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=RDag2sLQw7yjw60O76iuryrZarkSSGzwMGlkJnfbYWw=;
-  b=g9ZG3QMwssXFJ0XuzgaOpM5c/OoRNJfWjEae1lvjiNg2a8MPRsXTCNQ9
-   epa4HbMIZuvD6LMyPyns1ajK/AO6G92NgCQruPhMgiwzUdRIXou0JlQ2p
-   4PHyJXUEP5ODVw6wLLG9L2Va8utMZ+sUMd+uhEA8HjLGN8gceTqDzUect
-   uC3jWm1422rmf0vXGWkOLOTXb40xJrudg81dBqucJp2IUd8ohTh12S4oU
-   gpEohKCQJySDO1YI7axbqiqjKwHuBgqoRQ7oyxSZjf0Ek6pLJUsZGBhvl
-   YJ7uF4CKPghEFh+Igju9fOK9g54os0Aq0F+e9FbfdK8hjzAKbf1bRL3eU
+  bh=pTgOuzm7jCaTfwCYp5a9jm8xnylwK40ORkaUjtK0E8Y=;
+  b=kN/YkMu85heGD3bXcZuGqY6z1dtqZI4xa8w0JVXPOTqrF6GN5pwC36wI
+   mxIzCoDX+fmNFvJ/e1gu1iirJ1kPR/hvOxmlHd+KWxGbyiuy2+1NqhkBX
+   sH/BBeOatzMdp0rbAp/hIm90hh+bQngolHkOeYHbM/9Lzwhp4b7hDDXXK
+   cIEG6tt87coJIDdXGiXEnaJ0cbYAH8Q0mz/zefbSMLwU3MBD97lqxNOIn
+   Ja64W38NxDRBAqtZIdFig+z0RBoo+jW0b/l7zdolq2vCVh+fhXYOv/Lcc
+   HP31EFWDOzJBTKWfD2S8rzjWXSQylS5NBvu0Ms+E8S2WO586B4dmjfN8I
    g==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="233308011"
+X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="249504903"
 X-IronPort-AV: E=Sophos;i="5.88,361,1635231600"; 
-   d="scan'208";a="233308011"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 07:59:45 -0800
+   d="scan'208";a="249504903"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 08:05:13 -0800
 X-IronPort-AV: E=Sophos;i="5.88,361,1635231600"; 
-   d="scan'208";a="602407145"
+   d="scan'208";a="500817793"
 Received: from smile.fi.intel.com ([10.237.72.61])
-  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 07:59:42 -0800
+  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 08:05:10 -0800
 Received: from andy by smile.fi.intel.com with local (Exim 4.95)
         (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nIYJo-003Usa-NZ;
-        Fri, 11 Feb 2022 17:58:44 +0200
-Date:   Fri, 11 Feb 2022 17:58:44 +0200
+        id 1nIYP6-003Uy5-Hr;
+        Fri, 11 Feb 2022 18:04:12 +0200
+Date:   Fri, 11 Feb 2022 18:04:12 +0200
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To:     Javier Martinez Canillas <javierm@redhat.com>
 Cc:     linux-kernel@vger.kernel.org,
@@ -56,99 +56,205 @@ Cc:     linux-kernel@vger.kernel.org,
         David Airlie <airlied@linux.ie>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>
-Subject: Re: [PATCH v5 1/6] drm/format-helper: Add
- drm_fb_xrgb8888_to_gray8_line()
-Message-ID: <YgaHtHZws8GOUPAk@smile.fi.intel.com>
+Subject: Re: [PATCH v5 2/6] drm/format-helper: Add
+ drm_fb_xrgb8888_to_mono_reversed()
+Message-ID: <YgaI/Kz8hl1Nut+V@smile.fi.intel.com>
 References: <20220211143358.3112958-1-javierm@redhat.com>
- <20220211143358.3112958-2-javierm@redhat.com>
+ <20220211143358.3112958-3-javierm@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220211143358.3112958-2-javierm@redhat.com>
+In-Reply-To: <20220211143358.3112958-3-javierm@redhat.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Feb 11, 2022 at 03:33:53PM +0100, Javier Martinez Canillas wrote:
-> Pull the per-line conversion logic into a separate helper function.
+On Fri, Feb 11, 2022 at 03:33:54PM +0100, Javier Martinez Canillas wrote:
+> Add support to convert from XR24 to reversed monochrome for drivers that
+> control monochromatic display panels, that only have 1 bit per pixel.
 > 
-> This will allow to do line-by-line conversion in other helpers that
-> convert to a gray8 format.
+> The function does a line-by-line conversion doing an intermediate step
+> first from XR24 to 8-bit grayscale and then to reversed monochrome.
+> 
+> The drm_fb_gray8_to_mono_reversed_line() helper was based on code from
+> drivers/gpu/drm/tiny/repaper.c driver.
 
-for-loop vs. while-loop is not critical, so
+
+I believe there is enough room for (micro-)optimizations (like moving out
+invariant conditionals from the loop), but since it's almost a direct copy
+of the existing code let's improve it later on.
+
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-> Suggested-by: Thomas Zimmermann <tzimmermann@suse.de>
 > Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 > Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
 > 
 > Changes in v5:
-> - Add Thomas Zimmermann's Reviewed-by to patch #1.
+> - Use drm_WARN_ON* macros instead of deprecated ones (Thomas Zimmermann)
+> 
+> Changes in v4:
+> - Rename end_offset to end_len (Thomas Zimmermann)
+> - Warn once if dst_pitch is not a multiple of 8 (Thomas Zimmermann)
+> - Drop drm_fb_gray8_to_mono_reversed() that's not used (Thomas Zimmermann)
+> - Allocate single buffer for both copy cma memory and gray8 (Thomas Zimmermann)
+> - Add Thomas Zimmermann Reviewed-by tag to patch adding XR24 -> mono helper.
 > 
 > Changes in v3:
-> - Add a drm_fb_xrgb8888_to_gray8_line() helper function (Thomas Zimmermann)
+> - Also add a drm_fb_xrgb8888_to_mono_reversed() helper (Thomas Zimmermann)
+> - Split lines copy to drm_fb_gray8_to_mono_reversed_line() (Thomas Zimmermann)
+> - Handle case where the source buffer is not aligned to 8 (Thomas Zimmermann)
 > 
->  drivers/gpu/drm/drm_format_helper.c | 31 ++++++++++++++++++-----------
->  1 file changed, 19 insertions(+), 12 deletions(-)
+>  drivers/gpu/drm/drm_format_helper.c | 110 ++++++++++++++++++++++++++++
+>  include/drm/drm_format_helper.h     |   4 +
+>  2 files changed, 114 insertions(+)
 > 
 > diff --git a/drivers/gpu/drm/drm_format_helper.c b/drivers/gpu/drm/drm_format_helper.c
-> index 0f28dd2bdd72..b981712623d3 100644
+> index b981712623d3..bc0f49773868 100644
 > --- a/drivers/gpu/drm/drm_format_helper.c
 > +++ b/drivers/gpu/drm/drm_format_helper.c
-> @@ -464,6 +464,21 @@ void drm_fb_xrgb8888_to_xrgb2101010_toio(void __iomem *dst,
->  }
->  EXPORT_SYMBOL(drm_fb_xrgb8888_to_xrgb2101010_toio);
+> @@ -12,9 +12,11 @@
+>  #include <linux/slab.h>
+>  #include <linux/io.h>
 >  
-> +static void drm_fb_xrgb8888_to_gray8_line(u8 *dst, const u32 *src, unsigned int pixels)
+> +#include <drm/drm_device.h>
+>  #include <drm/drm_format_helper.h>
+>  #include <drm/drm_framebuffer.h>
+>  #include <drm/drm_fourcc.h>
+> +#include <drm/drm_print.h>
+>  #include <drm/drm_rect.h>
+>  
+>  static unsigned int clip_offset(const struct drm_rect *clip, unsigned int pitch, unsigned int cpp)
+> @@ -591,3 +593,111 @@ int drm_fb_blit_toio(void __iomem *dst, unsigned int dst_pitch, uint32_t dst_for
+>  	return -EINVAL;
+>  }
+>  EXPORT_SYMBOL(drm_fb_blit_toio);
+> +
+> +static void drm_fb_gray8_to_mono_reversed_line(u8 *dst, const u8 *src, unsigned int pixels,
+> +					       unsigned int start_offset, unsigned int end_len)
 > +{
-> +	unsigned int x;
+> +	unsigned int xb, i;
 > +
-> +	for (x = 0; x < pixels; x++) {
-> +		u8 r = (*src & 0x00ff0000) >> 16;
-> +		u8 g = (*src & 0x0000ff00) >> 8;
-> +		u8 b =  *src & 0x000000ff;
+> +	for (xb = 0; xb < pixels; xb++) {
+> +		unsigned int start = 0, end = 8;
+> +		u8 byte = 0x00;
+
+> +		if (xb == 0 && start_offset)
+> +			start = start_offset;
+
+Just to point out again, this is 100% invariant and may be moved out.
+
+> +		if (xb == pixels - 1 && end_len)
+> +			end = end_len;
+
+This one almost, can be moved out after refactoring.
+
+> +		for (i = start; i < end; i++) {
+> +			unsigned int x = xb * 8 + i;
 > +
-> +		/* ITU BT.601: Y = 0.299 R + 0.587 G + 0.114 B */
-> +		*dst++ = (3 * r + 6 * g + b) / 10;
-> +		src++;
+> +			byte >>= 1;
+> +			if (src[x] >> 7)
+> +				byte |= BIT(7);
+> +		}
+> +		*dst++ = byte;
 > +	}
 > +}
 > +
->  /**
->   * drm_fb_xrgb8888_to_gray8 - Convert XRGB8888 to grayscale
->   * @dst: 8-bit grayscale destination buffer
-> @@ -484,8 +499,9 @@ EXPORT_SYMBOL(drm_fb_xrgb8888_to_xrgb2101010_toio);
->  void drm_fb_xrgb8888_to_gray8(void *dst, unsigned int dst_pitch, const void *vaddr,
->  			      const struct drm_framebuffer *fb, const struct drm_rect *clip)
->  {
-> -	unsigned int len = (clip->x2 - clip->x1) * sizeof(u32);
-> -	unsigned int x, y;
-> +	unsigned int linepixels = clip->x2 - clip->x1;
-> +	unsigned int len = linepixels * sizeof(u32);
+> +/**
+> + * drm_fb_xrgb8888_to_mono_reversed - Convert XRGB8888 to reversed monochrome
+> + * @dst: reversed monochrome destination buffer
+> + * @dst_pitch: Number of bytes between two consecutive scanlines within dst
+> + * @src: XRGB8888 source buffer
+> + * @fb: DRM framebuffer
+> + * @clip: Clip rectangle area to copy
+> + *
+> + * DRM doesn't have native monochrome support.
+> + * Such drivers can announce the commonly supported XR24 format to userspace
+> + * and use this function to convert to the native format.
+> + *
+> + * This function uses drm_fb_xrgb8888_to_gray8() to convert to grayscale and
+> + * then the result is converted from grayscale to reversed monohrome.
+> + */
+> +void drm_fb_xrgb8888_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *vaddr,
+> +				      const struct drm_framebuffer *fb, const struct drm_rect *clip)
+> +{
+> +	unsigned int linepixels = drm_rect_width(clip);
+> +	unsigned int lines = clip->y2 - clip->y1;
+> +	unsigned int cpp = fb->format->cpp[0];
+> +	unsigned int len_src32 = linepixels * cpp;
+> +	struct drm_device *dev = fb->dev;
+> +	unsigned int start_offset, end_len;
 > +	unsigned int y;
->  	void *buf;
->  	u8 *dst8;
->  	u32 *src32;
-> @@ -508,16 +524,7 @@ void drm_fb_xrgb8888_to_gray8(void *dst, unsigned int dst_pitch, const void *vad
->  	for (y = clip->y1; y < clip->y2; y++) {
->  		dst8 = dst;
->  		src32 = memcpy(buf, vaddr, len);
-> -		for (x = clip->x1; x < clip->x2; x++) {
-> -			u8 r = (*src32 & 0x00ff0000) >> 16;
-> -			u8 g = (*src32 & 0x0000ff00) >> 8;
-> -			u8 b =  *src32 & 0x000000ff;
-> -
-> -			/* ITU BT.601: Y = 0.299 R + 0.587 G + 0.114 B */
-> -			*dst8++ = (3 * r + 6 * g + b) / 10;
-> -			src32++;
-> -		}
-> -
-> +		drm_fb_xrgb8888_to_gray8_line(dst8, src32, linepixels);
->  		vaddr += fb->pitches[0];
->  		dst += dst_pitch;
->  	}
+> +	u8 *mono = dst, *gray8;
+> +	u32 *src32;
+> +
+> +	if (drm_WARN_ON(dev, fb->format->format != DRM_FORMAT_XRGB8888))
+> +		return;
+> +
+> +	/*
+> +	 * The reversed mono destination buffer contains 1 bit per pixel
+> +	 * and destination scanlines have to be in multiple of 8 pixels.
+> +	 */
+> +	if (!dst_pitch)
+> +		dst_pitch = DIV_ROUND_UP(linepixels, 8);
+> +
+> +	drm_WARN_ONCE(dev, dst_pitch % 8 != 0, "dst_pitch is not a multiple of 8\n");
+> +
+> +	/*
+> +	 * The cma memory is write-combined so reads are uncached.
+> +	 * Speed up by fetching one line at a time.
+> +	 *
+> +	 * Also, format conversion from XR24 to reversed monochrome
+> +	 * are done line-by-line but are converted to 8-bit grayscale
+> +	 * as an intermediate step.
+> +	 *
+> +	 * Allocate a buffer to be used for both copying from the cma
+> +	 * memory and to store the intermediate grayscale line pixels.
+> +	 */
+> +	src32 = kmalloc(len_src32 + linepixels, GFP_KERNEL);
+> +	if (!src32)
+> +		return;
+> +
+> +	gray8 = (u8 *)src32 + len_src32;
+> +
+> +	/*
+> +	 * For damage handling, it is possible that only parts of the source
+> +	 * buffer is copied and this could lead to start and end pixels that
+> +	 * are not aligned to multiple of 8.
+> +	 *
+> +	 * Calculate if the start and end pixels are not aligned and set the
+> +	 * offsets for the reversed mono line conversion function to adjust.
+> +	 */
+> +	start_offset = clip->x1 % 8;
+> +	end_len = clip->x2 % 8;
+> +
+> +	vaddr += clip_offset(clip, fb->pitches[0], cpp);
+> +	for (y = 0; y < lines; y++) {
+> +		src32 = memcpy(src32, vaddr, len_src32);
+> +		drm_fb_xrgb8888_to_gray8_line(gray8, src32, linepixels);
+> +		drm_fb_gray8_to_mono_reversed_line(mono, gray8, dst_pitch,
+> +						   start_offset, end_len);
+> +		vaddr += fb->pitches[0];
+> +		mono += dst_pitch;
+> +	}
+> +
+> +	kfree(src32);
+> +}
+> +EXPORT_SYMBOL(drm_fb_xrgb8888_to_mono_reversed);
+> diff --git a/include/drm/drm_format_helper.h b/include/drm/drm_format_helper.h
+> index b30ed5de0a33..0b0937c0b2f6 100644
+> --- a/include/drm/drm_format_helper.h
+> +++ b/include/drm/drm_format_helper.h
+> @@ -43,4 +43,8 @@ int drm_fb_blit_toio(void __iomem *dst, unsigned int dst_pitch, uint32_t dst_for
+>  		     const void *vmap, const struct drm_framebuffer *fb,
+>  		     const struct drm_rect *rect);
+>  
+> +void drm_fb_xrgb8888_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *src,
+> +				      const struct drm_framebuffer *fb,
+> +				      const struct drm_rect *clip);
+> +
+>  #endif /* __LINUX_DRM_FORMAT_HELPER_H */
 > -- 
 > 2.34.1
 > 

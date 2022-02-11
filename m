@@ -2,46 +2,46 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F9EEC433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 11:35:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2864C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 11:36:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241092AbiBKLfx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Feb 2022 06:35:53 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:50234 "EHLO
+        id S237442AbiBKLgE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Feb 2022 06:36:04 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:50412 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237442AbiBKLfv (ORCPT
+        with ESMTP id S1349469AbiBKLgD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Feb 2022 06:35:51 -0500
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C35AAE76;
-        Fri, 11 Feb 2022 03:35:50 -0800 (PST)
+        Fri, 11 Feb 2022 06:36:03 -0500
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7182E9A;
+        Fri, 11 Feb 2022 03:36:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1644579350; x=1676115350;
+  t=1644579362; x=1676115362;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=oKU+556CH19q9JkpqQw/lSP+Woo1fSuxfhrkttxrgN8=;
-  b=BLxMtsMfzYXuG1mmnnkA1tFnvwtM4/yzB42o+WUOdKUhg4M7u1EBB/ly
-   +7Qah/b0c+1+0BD32ncdTHNqLzy4WwkeOqNs1qcncgdVyC0bco4YuKzY/
-   COs+pteAa5oS0iZsBBWFtlDFlma2fnaiBa4H5UD2eYicoyFdcyepFL5Xy
-   qNQDDBqraeqa/dcEY/Zl0R6BOKK5dZWOn9sA4UG/+IK2hY2+7Wd4sbOkp
-   dms7uRM81HfF3/pafT2gFzJF8Tr3+RdcCLX0ecwiEwgroknJjALaK4u6p
-   tPOX40v1M75PK7MqDLuxQG1UK05ZseLvLE02MOCDcYSUDXRr++edFuDVL
-   Q==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="248548341"
+  bh=bTdjHFPr4nUGXu4pkdc+I1g9MpzgJ+mPYB+7OmSpI0M=;
+  b=kUmus4ZgUHJybwx9oGpA7n5rWQbC0XkmCMJnmdpam9V7xIiMpuqmU8Jc
+   qllVEuhGnUBwdXzOztoiaFkRACCBgoAnsHeC9RQ2nGeflCUwu05S/3wfS
+   UTkkajLoOl9ilvlSqyShMwCmPAhWNezEdj9OidyoEC00Htsh4Sa+lirdv
+   3s6drvE5Z3xihd7ZT+0vq8l9QThOTDqmLfgQFV7k5cYuSwn6rWBujgUBy
+   qrcBYNHRxvKqAhwtFowyT6fu9f9iBmO0ffKgeOIel8kszWGhiuQrRcdL7
+   1JLJEnSxZQE8EAJjgzOWU21sjeo3xPYndb/vYfDtY3WK26BzM3kaqXGYs
+   g==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="249924371"
 X-IronPort-AV: E=Sophos;i="5.88,360,1635231600"; 
-   d="scan'208";a="248548341"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 03:35:50 -0800
+   d="scan'208";a="249924371"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 03:36:02 -0800
 X-IronPort-AV: E=Sophos;i="5.88,360,1635231600"; 
-   d="scan'208";a="542052949"
+   d="scan'208";a="500756801"
 Received: from smile.fi.intel.com ([10.237.72.61])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 03:35:47 -0800
+  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 03:36:00 -0800
 Received: from andy by smile.fi.intel.com with local (Exim 4.95)
         (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nIUCQ-003QO6-FQ;
-        Fri, 11 Feb 2022 13:34:50 +0200
-Date:   Fri, 11 Feb 2022 13:34:50 +0200
+        id 1nIUCc-003QOI-Io;
+        Fri, 11 Feb 2022 13:35:02 +0200
+Date:   Fri, 11 Feb 2022 13:35:02 +0200
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To:     Javier Martinez Canillas <javierm@redhat.com>
 Cc:     linux-kernel@vger.kernel.org,
@@ -50,63 +50,57 @@ Cc:     linux-kernel@vger.kernel.org,
         Maxime Ripard <maxime@cerno.tech>,
         Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v4 5/6] MAINTAINERS: Add entry for Solomon SSD130x OLED
- displays DRM driver
-Message-ID: <YgZJ2sV956zg9IXO@smile.fi.intel.com>
+        Sam Ravnborg <sam@ravnborg.org>, Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 6/6] dt-bindings: display: ssd1307fb: Add myself as
+ binding co-maintainer
+Message-ID: <YgZJ5jX9BUZ4/0Ed@smile.fi.intel.com>
 References: <20220211091927.2988283-1-javierm@redhat.com>
- <20220211092157.2988713-1-javierm@redhat.com>
+ <20220211092253.2988843-1-javierm@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220211092157.2988713-1-javierm@redhat.com>
+In-Reply-To: <20220211092253.2988843-1-javierm@redhat.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Feb 11, 2022 at 10:21:57AM +0100, Javier Martinez Canillas wrote:
-> To make sure that tools like the get_maintainer.pl script will suggest
-> to Cc me if patches are posted for this driver.
+On Fri, Feb 11, 2022 at 10:22:53AM +0100, Javier Martinez Canillas wrote:
+> The ssd130x DRM driver also makes use of this Device Tree binding to allow
+> existing users of the fbdev driver to migrate without the need to change
+> their Device Trees.
 > 
-> Also include the Device Tree binding for the old ssd1307fb fbdev driver
-> since the new DRM driver was made compatible with the existing binding.
+> Add myself as another maintainer of the binding, to make sure that I will
+> be on Cc when patches are proposed for it.
 
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
+> Suggested-by: Sam Ravnborg <sam@ravnborg.org>
 > Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> Acked-by: Rob Herring <robh@kernel.org>
 > ---
 > 
-> (no changes since v3)
-> 
-> Changes in v3:
-> - Adapt MAINTAINERS entry to point to the new drivers/gpu/drm/solomon directory.
+> Changes in v4:
+> - Add Rob Herring Acked-by tag to patch adding as DT binding co-maintainer.
 > 
 > Changes in v2:
-> - Add Sam Ravnborg's acked-by to patch adding a MAINTAINERS entry (Sam Ravnborg)
+> - Add myself as co-maintainer of the ssd1370fb DT binding (Sam Ravnborg).
 > 
->  MAINTAINERS | 7 +++++++
->  1 file changed, 7 insertions(+)
+>  Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index d03ad8da1f36..05c306986ab0 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6102,6 +6102,13 @@ T:	git git://anongit.freedesktop.org/drm/drm-misc
->  F:	Documentation/devicetree/bindings/display/repaper.txt
->  F:	drivers/gpu/drm/tiny/repaper.c
+> diff --git a/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
+> index 2ed2a7d0ca2f..9baafd0c42dd 100644
+> --- a/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
+> +++ b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
+> @@ -8,6 +8,7 @@ title: Solomon SSD1307 OLED Controller Framebuffer
 >  
-> +DRM DRIVER FOR SOLOMON SSD130X OLED DISPLAYS
-> +M:	Javier Martinez Canillas <javierm@redhat.com>
-> +S:	Maintained
-> +T:	git git://anongit.freedesktop.org/drm/drm-misc
-> +F:	Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
-> +F:	drivers/gpu/drm/solomon/ssd130x*
-> +
->  DRM DRIVER FOR QEMU'S CIRRUS DEVICE
->  M:	Dave Airlie <airlied@redhat.com>
->  M:	Gerd Hoffmann <kraxel@redhat.com>
+>  maintainers:
+>    - Maxime Ripard <mripard@kernel.org>
+> +  - Javier Martinez Canillas <javierm@redhat.com>
+>  
+>  properties:
+>    compatible:
 > -- 
 > 2.34.1
 > 

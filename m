@@ -2,127 +2,120 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBBA9C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 12:11:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 319E0C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 12:24:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349852AbiBKMLc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Feb 2022 07:11:32 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:54052 "EHLO
+        id S243580AbiBKMYJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Feb 2022 07:24:09 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:33012 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349830AbiBKMLb (ORCPT
+        with ESMTP id S229863AbiBKMYI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Feb 2022 07:11:31 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E249BD5A
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Feb 2022 04:11:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644581490;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=rbeS5Q0QdhSeqbBe2L7Sp2F6l+GpdK7iWbNe2W3yu0w=;
-        b=Jkk5JIUtiTJQ91JlidV11G+xGEvtzGNzpGHKfueu9qRFskfvcuBwAYnP7K2ULgYJsBiAtQ
-        yClh4gzwRfWiv4DgZZzGLEMNjDxSwRxC6CcM+p82FEql4cKpAVOpTSEy/D/+tMDWSSy5cO
-        5AMhE7pVIuzVp2L/7iT1VFn0FPWmOdw=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-659-3vLr4AzFNlqnD5fqnVmLyA-1; Fri, 11 Feb 2022 07:11:28 -0500
-X-MC-Unique: 3vLr4AzFNlqnD5fqnVmLyA-1
-Received: by mail-wm1-f70.google.com with SMTP id t2-20020a7bc3c2000000b003528fe59cb9so2429527wmj.5
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Feb 2022 04:11:28 -0800 (PST)
+        Fri, 11 Feb 2022 07:24:08 -0500
+Received: from mail-vs1-f52.google.com (mail-vs1-f52.google.com [209.85.217.52])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E94B5DC3;
+        Fri, 11 Feb 2022 04:24:07 -0800 (PST)
+Received: by mail-vs1-f52.google.com with SMTP id u134so5221540vsu.8;
+        Fri, 11 Feb 2022 04:24:07 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=rbeS5Q0QdhSeqbBe2L7Sp2F6l+GpdK7iWbNe2W3yu0w=;
-        b=MnY9nwVadaABSP/C28n+Sye/I3GuZhndIFa+W22MFoFbzCLoegTTQljhz6ywMhXGLf
-         w3nlA9wcUfNXeD+5H6o+qxvqf5JpJSipYXPG5y2mZxhieFIA2Gh/ZYuRRtrJdZrJ6td1
-         3wJEOOnJtdmcYXuRWWr0Jewxq/bRTX/ri0n3rA8Kl+QUe62FRqu92sWGlBL91FvdKCCr
-         KwSt1fNwUtojeZ3diUDl1Yf4QyCHM+DP7AcP5VUirvXHHMcdy0niOOAxrRZ5y3ezAypQ
-         6WLoGiNgdSWHmCD4QqCoSdjrx7TXyNs0Sxrp4ULiyodfHPynS6hOzmzPoNpJtdLBEHLU
-         D6Lw==
-X-Gm-Message-State: AOAM532QICw/uBT/myUjvHCvwbgz2IiNnFJZNbgZmhjr0HNxQdaq1Q02
-        a5kxWbzNP3hOLE5JAt/0OUlwlZhsZ/HKIB4c+3SeC/RH/Ji9eNzVCCD3dupjDSrhK1UUKTl4TQs
-        l+WQ8ElbYMM+1BZJsOvpktlY=
-X-Received: by 2002:a5d:6d09:: with SMTP id e9mr1244669wrq.2.1644581487725;
-        Fri, 11 Feb 2022 04:11:27 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJySb3y5ME4crlsH+b8xOVBwDu7OcH0jhhdufGAdmsHfpAHWgWr7LCf0VAonkSs7ThGU8Oo4sg==
-X-Received: by 2002:a5d:6d09:: with SMTP id e9mr1244650wrq.2.1644581487542;
-        Fri, 11 Feb 2022 04:11:27 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id v9sm9980052wrw.84.2022.02.11.04.11.26
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Sjk1d99Bi6DMu1w/ZtC6Jgj+o43T7072qer7CkYT+IA=;
+        b=IDABzAEuvUOqXcg6I85tbruXJ19fIP61nHjenawqclCfSdCmqPTMNw/3hr2NW0fSHS
+         ImFmewrguVdCj9iXeA/nAUwjeTLNckHcpJoKYpej2DaXMETwrx7kUD6URnuQstRcUr/w
+         KiKqcuWY5M2QcwJkVag29Lkqq7EQS9lmvPzkalau29ucOaM8l13pyiM6zEYXorVGuu1I
+         UmtHHiqzzQRT48QecoiaX4dmTxWIiCahwZ3lmDGBbxgCi2E0JIgsbmGcFB3mvKzVUYsq
+         yWtEIoMoqtAFNKERrMj2lmBq1EKAxOyBEWIo7wAyrDLdA+dehdCR0So8N6+BknmrOUfT
+         tZPQ==
+X-Gm-Message-State: AOAM532H3N22AfzrYdtCKIjoHVPm2IXXejYiypJIgLVgJmSM8AUqac3i
+        i3JD0H0kl6tR0aa7Cpsu9CqngZbP2OUf7w==
+X-Google-Smtp-Source: ABdhPJwVHpEBkAd9vScaAcxXnkM22TrJn7k/6UfPWEbnsOWwSM3nT0qh/PIGbcQvFVQPmV+ukuFBEA==
+X-Received: by 2002:a67:d704:: with SMTP id p4mr405397vsj.4.1644582246736;
+        Fri, 11 Feb 2022 04:24:06 -0800 (PST)
+Received: from mail-ua1-f48.google.com (mail-ua1-f48.google.com. [209.85.222.48])
+        by smtp.gmail.com with ESMTPSA id i17sm146214vkk.35.2022.02.11.04.24.05
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 11 Feb 2022 04:11:27 -0800 (PST)
-Message-ID: <431f26fb-5943-eb58-9ad5-eda787966ad2@redhat.com>
-Date:   Fri, 11 Feb 2022 13:11:25 +0100
+        Fri, 11 Feb 2022 04:24:06 -0800 (PST)
+Received: by mail-ua1-f48.google.com with SMTP id g18so4602748uak.5;
+        Fri, 11 Feb 2022 04:24:05 -0800 (PST)
+X-Received: by 2002:ab0:384c:: with SMTP id h12mr396518uaw.122.1644582245661;
+ Fri, 11 Feb 2022 04:24:05 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v4 1/6] drm/format-helper: Add
- drm_fb_xrgb8888_to_gray8_line()
-Content-Language: en-US
-To:     Jani Nikula <jani.nikula@linux.intel.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc:     linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
+References: <20220211091927.2988283-1-javierm@redhat.com> <20220211091927.2988283-4-javierm@redhat.com>
+ <YgZJpi4llqr93U9Y@smile.fi.intel.com> <eed8200c-7716-ce4f-dac5-bd6f0345b631@redhat.com>
+In-Reply-To: <eed8200c-7716-ce4f-dac5-bd6f0345b631@redhat.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Fri, 11 Feb 2022 13:23:54 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVLmUwgCWui4OiZqvqpVWzA-d9QhjZLa_idgC19XeEEjA@mail.gmail.com>
+Message-ID: <CAMuHMdVLmUwgCWui4OiZqvqpVWzA-d9QhjZLa_idgC19XeEEjA@mail.gmail.com>
+Subject: Re: [PATCH v4 3/6] drm: Add driver for Solomon SSD130x OLED displays
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         Maxime Ripard <maxime@cerno.tech>,
-        Sam Ravnborg <sam@ravnborg.org>
-References: <20220211091927.2988283-1-javierm@redhat.com>
- <20220211091927.2988283-2-javierm@redhat.com>
- <YgY6OqN+guBlt/ED@smile.fi.intel.com>
- <4fa465d9-4fac-4199-9a04-d8e09d164308@redhat.com>
- <YgZEuXvJ2ZiOyNS+@smile.fi.intel.com>
- <7560cd10-0a7c-3fda-da83-9008833e3901@suse.de> <87pmnt7gm3.fsf@intel.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <87pmnt7gm3.fsf@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Lee Jones <lee.jones@linaro.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        Linux PWM List <linux-pwm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Jani,
+Hi Javier,
 
-On 2/11/22 13:05, Jani Nikula wrote:
+On Fri, Feb 11, 2022 at 1:06 PM Javier Martinez Canillas
+<javierm@redhat.com> wrote:
+> On 2/11/22 12:33, Andy Shevchenko wrote:
+> > On Fri, Feb 11, 2022 at 10:19:24AM +0100, Javier Martinez Canillas wrote:
+> >> This adds a DRM driver for SSD1305, SSD1306, SSD1307 and SSD1309 Solomon
+> >> OLED display controllers.
+> >>
+> >> It's only the core part of the driver and a bus specific driver is needed
+> >> for each transport interface supported by the display controllers.
 
-[snip]
-
->>>> I don't see why a while loop would be an improvement here TBH.
->>>
->>> Less letters to parse when reading the code.
->>
->> It's a simple refactoring of code that has worked well so far. Let's 
->> leave it as-is for now.
-> 
-> IMO *always* prefer a for loop over while or do-while.
-> 
-> The for (i = 0; i < N; i++) is such a strong paradigm in C. You
-> instantly know how many times you're going to loop, at a glance. Not so
-> with with the alternatives, which should be used sparingly.
-> 
-> And yes, the do-while suggested above is buggy, and you actually need to
-> stop and think to see why.
+> >> +    bl = devm_backlight_device_register(dev, dev_name(dev), dev, ssd130x,
+> >> +                                        &ssd130xfb_bl_ops, NULL);
+> >> +    if (IS_ERR(bl)) {
+> >
+> >> +            ret = PTR_ERR(bl);
+> >> +            dev_err_probe(dev, ret, "Unable to register backlight device\n");
+> >> +            return ERR_PTR(ret);
+> >
+> >               dev_err_probe(dev, PTR_ERR(bl), "Unable to register backlight device\n");
+> >               return bl;
+> >
+> > ?
 >
+> No, because this function's return value is a struct ssd130x_device pointer,
+> not a struct backlight_device pointer.
 
-Absolutely agree.
+Hence
 
-These format conversion helpers are not trivial to read and understand (at
-least for me). In my opinion the code should be written in a way that ease
-readability and make as robust and less error prone as possible.
- 
-> 
-> BR,
-> Jani.
-Best regards,
--- 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+    return ERR_PTR(dev_err_probe(dev, PTR_ERR(bl),
+                                 "Unable to register backlight device\n"));
 
+?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

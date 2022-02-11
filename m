@@ -2,183 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A48DDC433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Feb 2022 21:16:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79762C4332F
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 01:26:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236222AbiBJVQv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 10 Feb 2022 16:16:51 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:42450 "EHLO
+        id S1346818AbiBKB0W (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 10 Feb 2022 20:26:22 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:40084 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344566AbiBJVQv (ORCPT
+        with ESMTP id S1346084AbiBKB0W (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 10 Feb 2022 16:16:51 -0500
-Received: from mx2.smtp.larsendata.com (mx2.smtp.larsendata.com [91.221.196.228])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1D01C26C9
-        for <linux-fbdev@vger.kernel.org>; Thu, 10 Feb 2022 13:16:50 -0800 (PST)
-Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
-        by mx2.smtp.larsendata.com (Halon) with ESMTPS
-        id ca444ea8-8ab6-11ec-b2df-0050568cd888;
-        Thu, 10 Feb 2022 21:17:02 +0000 (UTC)
-Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
+        Thu, 10 Feb 2022 20:26:22 -0500
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92BED267F;
+        Thu, 10 Feb 2022 17:26:22 -0800 (PST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        (Authenticated sender: sam@ravnborg.org)
-        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 3615B194B55;
-        Thu, 10 Feb 2022 22:16:48 +0100 (CET)
-Date:   Thu, 10 Feb 2022 22:16:45 +0100
-X-Report-Abuse-To: abuse@mxhotel.dk
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     daniel@ffwll.ch, javierm@redhat.com, noralf@tronnes.org,
-        andriy.shevchenko@linux.intel.com, deller@gmx.de,
-        bernie@plugable.com, jayalk@intworks.biz,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 2/2] fbdev: Don't sort deferred-I/O pages by default
-Message-ID: <YgWAvXF+WClk/fyk@ravnborg.org>
-References: <20220210141111.5231-1-tzimmermann@suse.de>
- <20220210141111.5231-3-tzimmermann@suse.de>
+        by sin.source.kernel.org (Postfix) with ESMTPS id E0095CE25E4;
+        Fri, 11 Feb 2022 01:26:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 078B3C004E1;
+        Fri, 11 Feb 2022 01:26:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1644542779;
+        bh=RIkLyIEnDnAtAvgTMBO+mKp45fPhtgteavEWXrg4euw=;
+        h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
+        b=aB890eTXzZCpBszQDfR46CLeerYfBHc5bLDOkAywlVEA1WljJIWndIonbdQAIba26
+         xG113oP2lThwHHoe3M83ctVw/pUHspye+lYttVTGEciEE2qKeAGQt44DX6MWPK76bC
+         4bZ8cY/axNQM1EhhtLpK2pntYohJevqYDVeVvtfsH7p2kD769D1r9BY/9qwzgqILWH
+         9T7CxFLnujhP2sBHaTeXDX5N9xS8K6GbyialzD4zrGZUz7UbVP8LMbXNoU0eR/VpOi
+         gMM1QtiUldaL3aWS5FPDP+KW+DUfS/OGszuunc33ihXBpbbiqy0yewrE2xupzGc9Mi
+         W+nVS9hpc6EHA==
+Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
+        id A8E2E5C0165; Thu, 10 Feb 2022 17:26:18 -0800 (PST)
+Date:   Thu, 10 Feb 2022 17:26:18 -0800
+From:   "Paul E. McKenney" <paulmck@kernel.org>
+To:     Zhouyi Zhou <zhouzhouyi@gmail.com>
+Cc:     daniel@ffwll.ch, deller@gmx.de, sam@ravnborg.org,
+        linux@roeck-us.net, willy@infradead.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, rcu@vger.kernel.org,
+        pmenzel@molgen.mpg.de
+Subject: Re: [PATCH linux-next] video: fbdev: fbmem: fix pointer reference to
+ null device field
+Message-ID: <20220211012618.GA4285@paulmck-ThinkPad-P17-Gen-1>
+Reply-To: paulmck@kernel.org
+References: <20220210065824.368355-1-zhouzhouyi@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220210141111.5231-3-tzimmermann@suse.de>
+In-Reply-To: <20220210065824.368355-1-zhouzhouyi@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
-
-On Thu, Feb 10, 2022 at 03:11:13PM +0100, Thomas Zimmermann wrote:
-> Fbdev's deferred I/O sorts all dirty pages by default, which incurs a
-> significant overhead. Make the sorting step optional and update the few
-> drivers that require it. Use a FIFO list by default.
+On Thu, Feb 10, 2022 at 02:58:24PM +0800, Zhouyi Zhou wrote:
+> In function do_remove_conflicting_framebuffers, if device is NULL, there
+> will be null pointer reference. The patch add a check to the if expression.
 > 
-> Sorting pages by memory offset for deferred I/O performs an implicit
-> bubble-sort step on the list of dirty pages. The algorithm goes through
-> the list of dirty pages and inserts each new page according to its
-> index field. Even worse, list traversal always starts at the first
-> entry. As video memory is most likely updated scanline by scanline, the
-> algorithm traverses through the complete list for each updated page.
-> 
-> For example, with 1024x768x32bpp a page covers exactly one scanline.
-> Writing a single screen update from top to bottom requires updating
-> 768 pages. With an average list length of 384 entries, a screen update
-> creates (768 * 384 =) 294912 compare operation.
-> 
-> Fix this by making the sorting step opt-in and update the few drivers
-> that require it. All other drivers work with unsorted page lists. Pages
-> are appended to the list. Therefore, in the common case of writing the
-> framebuffer top to bottom, pages are still sorted by offset, which may
-> have a positive effect on performance.
-> 
-> Playing a video [1] in mplayer's benchmark mode shows the difference
-> (i7-4790, FullHD, simpledrm, kernel with debugging).
-> 
->   mplayer -benchmark -nosound -vo fbdev ./big_buck_bunny_720p_stereo.ogg
-> 
-> With sorted page lists:
-> 
->   BENCHMARKs: VC:  32.960s VO:  73.068s A:   0.000s Sys:   2.413s =  108.441s
->   BENCHMARK%: VC: 30.3947% VO: 67.3802% A:  0.0000% Sys:  2.2251% = 100.0000%
-> 
-> With unsorted page lists:
-> 
->   BENCHMARKs: VC:  31.005s VO:  42.889s A:   0.000s Sys:   2.256s =   76.150s
->   BENCHMARK%: VC: 40.7156% VO: 56.3219% A:  0.0000% Sys:  2.9625% = 100.0000%
-> 
-> VC shows the overhead of video decoding, VO shows the overhead of the
-> video output. Using unsorted page lists reduces the benchmark's run time
-> by ~32s/~25%.
-Nice!
-
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Link: https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_720p_stereo.ogg # [1]
+> Signed-off-by: Zhouyi Zhou <zhouzhouyi@gmail.com>
 > ---
->  drivers/staging/fbtft/fbtft-core.c  |  1 +
->  drivers/video/fbdev/broadsheetfb.c  |  1 +
->  drivers/video/fbdev/core/fb_defio.c | 19 ++++++++++++-------
->  drivers/video/fbdev/metronomefb.c   |  1 +
->  drivers/video/fbdev/udlfb.c         |  1 +
->  include/linux/fb.h                  |  1 +
->  6 files changed, 17 insertions(+), 7 deletions(-)
+> Dear Linux folks
 > 
-> diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-> index f2684d2d6851..4a35347b3020 100644
-> --- a/drivers/staging/fbtft/fbtft-core.c
-> +++ b/drivers/staging/fbtft/fbtft-core.c
-> @@ -654,6 +654,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
->  	fbops->fb_blank     =      fbtft_fb_blank;
->  
->  	fbdefio->delay =           HZ / fps;
-> +	fbdefio->sort_pagelist =   true;
->  	fbdefio->deferred_io =     fbtft_deferred_io;
->  	fb_deferred_io_init(info);
->  
-> diff --git a/drivers/video/fbdev/broadsheetfb.c b/drivers/video/fbdev/broadsheetfb.c
-> index fd66f4d4a621..b9054f658838 100644
-> --- a/drivers/video/fbdev/broadsheetfb.c
-> +++ b/drivers/video/fbdev/broadsheetfb.c
-> @@ -1059,6 +1059,7 @@ static const struct fb_ops broadsheetfb_ops = {
->  
->  static struct fb_deferred_io broadsheetfb_defio = {
->  	.delay		= HZ/4,
-> +	.sort_pagelist	= true,
->  	.deferred_io	= broadsheetfb_dpy_deferred_io,
->  };
->  
-> diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-> index 3727b1ca87b1..1f672cf253b2 100644
-> --- a/drivers/video/fbdev/core/fb_defio.c
-> +++ b/drivers/video/fbdev/core/fb_defio.c
-> @@ -132,15 +132,20 @@ static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
->  	if (!list_empty(&page->lru))
->  		goto page_already_added;
->  
-> -	/* we loop through the pagelist before adding in order
-> -	to keep the pagelist sorted */
-> -	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
-> -		if (cur->index > page->index)
-> -			break;
-> +	if (fbdefio->sort_pagelist) {
-> +		/*
-> +		 * We loop through the pagelist before adding in order
-> +		 * to keep the pagelist sorted.
-> +		 */
-> +		list_for_each_entry(cur, &fbdefio->pagelist, lru) {
-> +			if (cur->index > page->index)
-> +				break;
-> +		}
-> +		list_add_tail(&page->lru, &cur->lru);
-> +	} else {
-> +		list_add_tail(&page->lru, &fbdefio->pagelist);
->  	}
-Bikeshedding - my personal style is to have the likely part first.
-This makes reading the code easier.
+> I discover this bug in the PowerPC VM provided by
+> Open source lab of Oregon State University:
+> 
+> https://lkml.org/lkml/2022/2/8/1145
+> 
+> I found that the root cause of null device field is in offb_init_fb:
+> info = framebuffer_alloc(sizeof(u32) * 16, NULL);
+> 
+> I have tested the patch in the PowerPC VM. Hope my patch can be correct.
 
+This looks plausible to me, but I am quite unfamiliar with this code.
 
-The following drivers uses deferred io but are not listed as
-they need the page list sorted:
+						Thanx, Paul
 
-- hecubafb
-- hyperv_fb
-- sh_mobile_lcdcfb
-- smscufx
-- ssd1307fb 
-- xen-fbfront
-
-It would be nice with some info in the commit log that they do not need
-the pages sorted.
-To make the list complete include the drm stuff too.
-
-It did not jump to me why they did not need sorted pages,
-so some sort of reassurance that they have been checked would be nice.
-
-With the following addressed:
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-
-I hope someone else looks that can verify that the list of drivers
-without sort_pagelist is correct so someone knowledgeable have looked
-too.
-
-	Sam
+> Many Thanks
+> Zhouyi
+> --
+>  drivers/video/fbdev/core/fbmem.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> index 34d6bb1bf82e..422b1fc01722 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -1579,7 +1579,7 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
+>  			 * If it's not a platform device, at least print a warning. A
+>  			 * fix would add code to remove the device from the system.
+>  			 */
+> -			if (dev_is_platform(device)) {
+> +			if (device && dev_is_platform(device)) {
+>  				registered_fb[i]->forced_out = true;
+>  				platform_device_unregister(to_platform_device(device));
+>  			} else {
+> -- 
+> 2.25.1
+> 

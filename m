@@ -2,190 +2,141 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BB22C4332F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 16:14:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 385BDC433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 16:25:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236395AbiBKQOS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Feb 2022 11:14:18 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:43494 "EHLO
+        id S242142AbiBKQZ0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Feb 2022 11:25:26 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:53616 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350602AbiBKQOQ (ORCPT
+        with ESMTP id S229522AbiBKQZ0 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Feb 2022 11:14:16 -0500
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9DF2D4F;
-        Fri, 11 Feb 2022 08:14:15 -0800 (PST)
+        Fri, 11 Feb 2022 11:25:26 -0500
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DBBBF38C;
+        Fri, 11 Feb 2022 08:25:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1644596055; x=1676132055;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=2sObmrIIJ6u7JgxEqMuhXgNJQeFbV1/jHHnxLE325BM=;
-  b=Ho2Z1vLaSXw9C3ZYUNKHXqJ949xAeGMTE5ncjC6IO5sRzALyGeeNaGBa
-   9M8FL6SQmLdhRgLXrg8LSrWh7jlrcbMMBlpppKiSmEBQmI8eIBvDTL4PG
-   jkrGDS35uv1yF8Me5sfSd9GTC/MvJQwD5I0QFH6WgqcDFrSxpYFhHBSLU
-   hpNXwzhWn5Ylim4qjpNHfCMkRl4HRlu0W40f48seWA40EkZPmrv85ttKR
-   7+NsFcznypY5cG2plQar28tFA5zytFpsSIrWYqzG/9jxtwRsrdp1PEG/W
-   71crS0SqP11Jedr3xCbjyYR1/r6ZZv/PgJoHZ7m984VBWAJTOeybg+axd
-   w==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="230400142"
+  t=1644596724; x=1676132724;
+  h=from:to:cc:subject:in-reply-to:references:date:
+   message-id:mime-version;
+  bh=M1mHs7WEgatmlRjx4H6HCF+8F6e5ANVvjld7uTPgqFk=;
+  b=JbHa6SfIrrmKG1LZ84MMoG7JLgIHx3nHidHKyaxsdpXs75fhydMFy7at
+   cKVR+OhQWD2Jd8mJP1WWlZZD2Gg7k04bZO9Ob3cPcRUiYKGLfvFrehPxs
+   Z1F9FCcK02YSeirLueXWPZKuBM87VVN2k+8KThThCv2YXGvRg3p8ELAPq
+   zrXrrEdWLeFbWWc+pbsmZW4YebRdU1mnmaggveanPjCLKI1l0ovsNSRui
+   H7cbwTxWUnaMFwME0GpHXSf65sf2uJFsR/S2d/QX5UQV1QvWxI/3+bOJL
+   dMlqbH/jz9ZCWNJjD8OEWCpzxlPlv6P3qhdFDLs/Cgde6+C5+dMaeaCzK
+   g==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="229725979"
 X-IronPort-AV: E=Sophos;i="5.88,361,1635231600"; 
-   d="scan'208";a="230400142"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 08:14:15 -0800
+   d="scan'208";a="229725979"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 08:25:24 -0800
 X-IronPort-AV: E=Sophos;i="5.88,361,1635231600"; 
-   d="scan'208";a="483479902"
-Received: from smile.fi.intel.com ([10.237.72.61])
-  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 08:14:10 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.95)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nIYXo-003V6e-FM;
-        Fri, 11 Feb 2022 18:13:12 +0200
-Date:   Fri, 11 Feb 2022 18:13:12 +0200
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-kernel@vger.kernel.org,
+   d="scan'208";a="527010658"
+Received: from rriverox-mobl.ger.corp.intel.com (HELO localhost) ([10.252.19.108])
+  by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 08:25:20 -0800
+From:   Jani Nikula <jani.nikula@linux.intel.com>
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        linux-fbdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        dri-devel@lists.freedesktop.org,
-        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Noralf =?utf-8?Q?Tr=C3=B8nnes?= <noralf@tronnes.org>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
-        Lee Jones <lee.jones@linaro.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>, linux-pwm@vger.kernel.org
-Subject: Re: [PATCH v5 3/6] drm: Add driver for Solomon SSD130x OLED displays
-Message-ID: <YgaLGDVscXlANxcZ@smile.fi.intel.com>
-References: <20220211143358.3112958-1-javierm@redhat.com>
- <20220211143358.3112958-4-javierm@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220211143358.3112958-4-javierm@redhat.com>
+        Maxime Ripard <maxime@cerno.tech>,
+        Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH v4 1/6] drm/format-helper: Add
+ drm_fb_xrgb8888_to_gray8_line()
+In-Reply-To: <YgaDj6Wld4b7S6DF@smile.fi.intel.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <20220211091927.2988283-1-javierm@redhat.com>
+ <20220211091927.2988283-2-javierm@redhat.com>
+ <YgY6OqN+guBlt/ED@smile.fi.intel.com>
+ <4fa465d9-4fac-4199-9a04-d8e09d164308@redhat.com>
+ <YgZEuXvJ2ZiOyNS+@smile.fi.intel.com>
+ <7560cd10-0a7c-3fda-da83-9008833e3901@suse.de> <87pmnt7gm3.fsf@intel.com>
+ <YgaDj6Wld4b7S6DF@smile.fi.intel.com>
+Date:   Fri, 11 Feb 2022 18:25:17 +0200
+Message-ID: <87fsop74lu.fsf@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Feb 11, 2022 at 03:33:55PM +0100, Javier Martinez Canillas wrote:
-> This adds a DRM driver for SSD1305, SSD1306, SSD1307 and SSD1309 Solomon
-> OLED display controllers.
-> 
-> It's only the core part of the driver and a bus specific driver is needed
-> for each transport interface supported by the display controllers.
+On Fri, 11 Feb 2022, Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
+> On Fri, Feb 11, 2022 at 02:05:56PM +0200, Jani Nikula wrote:
+>> On Fri, 11 Feb 2022, Thomas Zimmermann <tzimmermann@suse.de> wrote:
+>> > Am 11.02.22 um 12:12 schrieb Andy Shevchenko:
+>> >> On Fri, Feb 11, 2022 at 11:40:13AM +0100, Javier Martinez Canillas wrote:
+>> >>> On 2/11/22 11:28, Andy Shevchenko wrote:
+>> >>>> On Fri, Feb 11, 2022 at 10:19:22AM +0100, Javier Martinez Canillas wrote:
+>
+> ...
+>
+>> >>>>> +static void drm_fb_xrgb8888_to_gray8_line(u8 *dst, const u32 *src, unsigned int pixels)
+>> >>>>> +{
+>> >>>>> +	unsigned int x;
+>> >>>>> +
+>> >>>>> +	for (x = 0; x < pixels; x++) {
+>> >>>>> +		u8 r = (*src & 0x00ff0000) >> 16;
+>> >>>>> +		u8 g = (*src & 0x0000ff00) >> 8;
+>> >>>>> +		u8 b =  *src & 0x000000ff;
+>> >>>>> +
+>> >>>>> +		/* ITU BT.601: Y = 0.299 R + 0.587 G + 0.114 B */
+>> >>>>> +		*dst++ = (3 * r + 6 * g + b) / 10;
+>> >>>>> +		src++;
+>> >>>>> +	}
+>> >>>>
+>> >>>> Can be done as
+>> >>>>
+>> >>>> 	while (pixels--) {
+>> >>>> 		...
+>> >>>> 	}
+>> >>>>
+>> >>>> or
+>> >>>>
+>> >>>> 	do {
+>> >>>> 		...
+>> >>>> 	} while (--pixels);
+>> >>>>
+>> >>>
+>> >>> I don't see why a while loop would be an improvement here TBH.
+>> >> 
+>> >> Less letters to parse when reading the code.
+>> >
+>> > It's a simple refactoring of code that has worked well so far. Let's 
+>> > leave it as-is for now.
+>> 
+>> IMO *always* prefer a for loop over while or do-while.
+>> 
+>> The for (i = 0; i < N; i++) is such a strong paradigm in C. You
+>> instantly know how many times you're going to loop, at a glance. Not so
+>> with with the alternatives, which should be used sparingly.
+>
+> while () {}  _is_ a paradigm, for-loop is syntax sugar on top of it.
 
-...
+And while() is just syntax sugar for goto. :p
 
-> +#define SSD130X_SET_CLOCK_DIV_MASK		GENMASK(3, 0)
-> +#define SSD130X_SET_CLOCK_DIV_SET(val)		FIELD_PREP(SSD130X_SET_CLOCK_DIV_MASK, (val))
-> +#define SSD130X_SET_CLOCK_FREQ_MASK		GENMASK(7, 4)
-> +#define SSD130X_SET_CLOCK_FREQ_SET(val)		FIELD_PREP(SSD130X_SET_CLOCK_FREQ_MASK, (val))
-> +#define SSD130X_SET_PRECHARGE_PERIOD1_MASK	GENMASK(3, 0)
-> +#define SSD130X_SET_PRECHARGE_PERIOD1_SET(val)	FIELD_PREP(SSD130X_SET_PRECHARGE_PERIOD1_MASK, (val))
-> +#define SSD130X_SET_PRECHARGE_PERIOD2_MASK	GENMASK(7, 4)
-> +#define SSD130X_SET_PRECHARGE_PERIOD2_SET(val)	FIELD_PREP(SSD130X_SET_PRECHARGE_PERIOD2_MASK, (val))
+The for loop written as for (i = 0; i < N; i++) is hands down the most
+obvious counting loop pattern there is in C.
 
-> +#define SSD130X_SET_COM_PINS_CONFIG1_MASK	GENMASK(4, 4)
+>> And yes, the do-while suggested above is buggy, and you actually need to
+>> stop and think to see why.
+>
+> It depends if pixels can be 0 or not and if it's not, then does it contain last
+> or number.
+>
+> The do {} while (--pixels); might be buggy iff pixels may be 0.
 
-BIT(4)
-
-> +#define SSD130X_SET_COM_PINS_CONFIG1_SET(val)	FIELD_PREP(SSD130X_SET_COM_PINS_CONFIG1_MASK, (!val))
-> +#define SSD130X_SET_COM_PINS_CONFIG2_MASK	GENMASK(5, 5)
-
-BIT(5)
-
-> +#define SSD130X_SET_COM_PINS_CONFIG2_SET(val)	FIELD_PREP(SSD130X_SET_COM_PINS_CONFIG2_MASK, (val))
-
-I would put GENMASK() directly into FIELD(), but it's up to you
-(and I haven't checked the use of *_MASK anyway).
+Yeah. And how long does it take to figure that out?
 
 
-...
-
-> +static int ssd130x_write_data(struct ssd130x_device *ssd130x, u8 *values, int count)
-> +{
-> +	int ret;
-> +
-> +	ret = regmap_bulk_write(ssd130x->regmap, SSD130X_DATA, values, count);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return 0;
-
-return regmap_bulk_write(...);
-
-> +}
-
-...
-
-> +/*
-> + * Helper to write command (SSD130X_COMMAND). The fist variadic argument
-> + * is the command to write and the following are the command options.
-> + *
-> + * Note that the ssd130x protocol requires each command and option to be
-> + * written as a SSD130X_COMMAND device register value. That is why a call
-> + * to regmap_write(..., SSD130X_COMMAND, ...) is done for each argument.
-> + */
-
-Thanks!
-
-> +static int ssd130x_write_cmd(struct ssd130x_device *ssd130x, int count,
-> +				    /* u8 cmd, u8 option, ... */...)
-> +{
-> +	va_list ap;
-> +	u8 value;
-> +	int ret;
-> +
-> +	va_start(ap, count);
-> +
-> +	do {
-> +		value = va_arg(ap, int);
-> +		ret = regmap_write(ssd130x->regmap, SSD130X_COMMAND, (u8)value);
-
-Wondering if you really need this casting. value is u8 by definition.
-
-> +		if (ret)
-> +			goto out_end;
-> +	} while (--count);
-> +
-> +out_end:
-> +	va_end(ap);
-> +
-> +	return ret;
-> +}
-
-...
-
-> +	ssd130x = devm_drm_dev_alloc(dev, &ssd130x_drm_driver,
-> +				     struct ssd130x_device, drm);
-> +	if (IS_ERR(ssd130x)) {
-
-> +		dev_err_probe(dev, PTR_ERR(ssd130x),
-> +			      "Failed to allocate DRM device\n");
-> +		return ssd130x;
-
-This...
-
-> +	}
-
-...
-
-> +	bl = devm_backlight_device_register(dev, dev_name(dev), dev, ssd130x,
-> +					    &ssd130xfb_bl_ops, NULL);
-> +	if (IS_ERR(bl))
-> +		return ERR_PTR(dev_err_probe(dev, PTR_ERR(bl),
-> +					     "Unable to register backlight device\n"));
-
-Can be consistent with this then.
+BR,
+Jani.
 
 -- 
-With Best Regards,
-Andy Shevchenko
-
-
+Jani Nikula, Intel Open Source Graphics Center

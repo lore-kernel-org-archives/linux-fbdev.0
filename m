@@ -2,134 +2,124 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ACE1C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 15:42:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0ADD0C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 15:50:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238786AbiBKPmG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Feb 2022 10:42:06 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:53856 "EHLO
+        id S242731AbiBKPuM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Feb 2022 10:50:12 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:59236 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231338AbiBKPmG (ORCPT
+        with ESMTP id S229967AbiBKPuL (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Feb 2022 10:42:06 -0500
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B50B13A;
-        Fri, 11 Feb 2022 07:42:05 -0800 (PST)
+        Fri, 11 Feb 2022 10:50:11 -0500
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 07F9521F;
+        Fri, 11 Feb 2022 07:50:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1644594125; x=1676130125;
+  t=1644594609; x=1676130609;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=T3ef5F65PJmfBcchWNRaBxXxdQ77ulKuIvsCxJQZ99I=;
-  b=bVKeKt28Y6DD5975ETB7oi+mvVF0r3Ik06C3lwQRmhAvmiK9nGWaoDVK
-   jF9Yra0BpEZQ2TUnevCQty8DkB3FNtHotwc7V7brfe1ozV02sSoWHubcp
-   qd9kWQC9DbJbubhN9tHYxAH6dSj3ImNsMWenWg2uLuglr7K/S73sc/68j
-   quLG47Yjh4PaGXyO3VdYnhlVFG1cFvTnsq1II71Y1uxlDzeXzQ9tqEVeH
-   e7pixcBtzp0fdw0Q0Z0ANOp2UOqr8fjclZzSD5NfbX/MmTdrHylHW+LxZ
-   OkLW23uSVR8Vc3Rup2cog/Fd9wmk2/olsy0bM0sjV1VGvzJuSUi9H++pu
+  bh=6+rMHPS4MzlHYwF2LNkcbdQXAv9bTBqR5fbIX4yipko=;
+  b=F5fMBW/BP+c7orAvtr93n1Cg6cU5LlUFXjw3BQmsodWLQtwL/S56/zRL
+   TSSUFAWIsVp06zyt6r4jVLFXQlHF40cKQTWMOQZLuF7dPlOA2hK91qJGo
+   8nEBm1aJ1vvFEX1D8xC2BAK8KdnfvTK6nQHSbRZB9IkSTD/CFrLvZjdL8
+   2jHZUmJ6i7iEzLmM7CJDY3u0RyN6JHW/wqVe3xqkHZi4EuRn8BqXQ+dMT
+   6k66d6iBx7T8UlXJ0ViqtiV0v/SfBye3lnNolR5gQ6y/YjPqh+aN3htxs
+   A4RMSsdsbIQ1KX8pfm6hXadwbfwzKtocP+P1nc3giZBfnT9VcNNSBvlXF
    g==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="247344181"
+X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="336175556"
 X-IronPort-AV: E=Sophos;i="5.88,361,1635231600"; 
-   d="scan'208";a="247344181"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 07:42:04 -0800
+   d="scan'208";a="336175556"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 07:50:09 -0800
 X-IronPort-AV: E=Sophos;i="5.88,361,1635231600"; 
-   d="scan'208";a="488056186"
+   d="scan'208";a="772124467"
 Received: from smile.fi.intel.com ([10.237.72.61])
-  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 07:42:01 -0800
+  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 07:50:05 -0800
 Received: from andy by smile.fi.intel.com with local (Exim 4.95)
         (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nIY2i-003UaW-0O;
-        Fri, 11 Feb 2022 17:41:04 +0200
-Date:   Fri, 11 Feb 2022 17:41:03 +0200
+        id 1nIYAV-003UjX-Jt;
+        Fri, 11 Feb 2022 17:49:07 +0200
+Date:   Fri, 11 Feb 2022 17:49:07 +0200
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Jani Nikula <jani.nikula@linux.intel.com>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         Maxime Ripard <maxime@cerno.tech>,
-        Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v4 1/6] drm/format-helper: Add
- drm_fb_xrgb8888_to_gray8_line()
-Message-ID: <YgaDj6Wld4b7S6DF@smile.fi.intel.com>
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        dri-devel@lists.freedesktop.org,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Lee Jones <lee.jones@linaro.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>, linux-pwm@vger.kernel.org
+Subject: Re: [PATCH v4 3/6] drm: Add driver for Solomon SSD130x OLED displays
+Message-ID: <YgaFc++EP3/hv+iA@smile.fi.intel.com>
 References: <20220211091927.2988283-1-javierm@redhat.com>
- <20220211091927.2988283-2-javierm@redhat.com>
- <YgY6OqN+guBlt/ED@smile.fi.intel.com>
- <4fa465d9-4fac-4199-9a04-d8e09d164308@redhat.com>
- <YgZEuXvJ2ZiOyNS+@smile.fi.intel.com>
- <7560cd10-0a7c-3fda-da83-9008833e3901@suse.de>
- <87pmnt7gm3.fsf@intel.com>
+ <20220211091927.2988283-4-javierm@redhat.com>
+ <YgZJpi4llqr93U9Y@smile.fi.intel.com>
+ <eed8200c-7716-ce4f-dac5-bd6f0345b631@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87pmnt7gm3.fsf@intel.com>
+In-Reply-To: <eed8200c-7716-ce4f-dac5-bd6f0345b631@redhat.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Feb 11, 2022 at 02:05:56PM +0200, Jani Nikula wrote:
-> On Fri, 11 Feb 2022, Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> > Am 11.02.22 um 12:12 schrieb Andy Shevchenko:
-> >> On Fri, Feb 11, 2022 at 11:40:13AM +0100, Javier Martinez Canillas wrote:
-> >>> On 2/11/22 11:28, Andy Shevchenko wrote:
-> >>>> On Fri, Feb 11, 2022 at 10:19:22AM +0100, Javier Martinez Canillas wrote:
+On Fri, Feb 11, 2022 at 01:05:57PM +0100, Javier Martinez Canillas wrote:
+> On 2/11/22 12:33, Andy Shevchenko wrote:
+> > On Fri, Feb 11, 2022 at 10:19:24AM +0100, Javier Martinez Canillas wrote:
 
 ...
 
-> >>>>> +static void drm_fb_xrgb8888_to_gray8_line(u8 *dst, const u32 *src, unsigned int pixels)
-> >>>>> +{
-> >>>>> +	unsigned int x;
-> >>>>> +
-> >>>>> +	for (x = 0; x < pixels; x++) {
-> >>>>> +		u8 r = (*src & 0x00ff0000) >> 16;
-> >>>>> +		u8 g = (*src & 0x0000ff00) >> 8;
-> >>>>> +		u8 b =  *src & 0x000000ff;
-> >>>>> +
-> >>>>> +		/* ITU BT.601: Y = 0.299 R + 0.587 G + 0.114 B */
-> >>>>> +		*dst++ = (3 * r + 6 * g + b) / 10;
-> >>>>> +		src++;
-> >>>>> +	}
-> >>>>
-> >>>> Can be done as
-> >>>>
-> >>>> 	while (pixels--) {
-> >>>> 		...
-> >>>> 	}
-> >>>>
-> >>>> or
-> >>>>
-> >>>> 	do {
-> >>>> 		...
-> >>>> 	} while (--pixels);
-> >>>>
-> >>>
-> >>> I don't see why a while loop would be an improvement here TBH.
-> >> 
-> >> Less letters to parse when reading the code.
+> >> + * Helper to write command (SSD130X_COMMAND). The fist variadic argument
+> >> + * is the command to write and the following are the command options.
+> > 
+> > This is not correct explanation. Please, rephrase to show that _each_ of the
+> > options is sent with a preceding command.
 > >
-> > It's a simple refactoring of code that has worked well so far. Let's 
-> > leave it as-is for now.
 > 
-> IMO *always* prefer a for loop over while or do-while.
+> It's a correct explanation IMO from the caller point of view. The first argument
+> is the command sent (i.e: SSD130X_SET_ADDRESS_MODE) and the next ones are the
+> the command options (i.e: SSD130X_SET_ADDRESS_MODE_HORIZONTAL).
 > 
-> The for (i = 0; i < N; i++) is such a strong paradigm in C. You
-> instantly know how many times you're going to loop, at a glance. Not so
-> with with the alternatives, which should be used sparingly.
+> The fact that each command and options are preceding with a SSD130X_COMMAND
+> value is part of the protocol of the device and a detail that's abstracted
+> away by this helper function to the callers.
 
-while () {}  _is_ a paradigm, for-loop is syntax sugar on top of it.
+My previous suggestion about bulk transaction was purely based on this
+(misinterpreted) description. Can we make sure somehow that another reader
+don't trap into the same?
 
-> And yes, the do-while suggested above is buggy, and you actually need to
-> stop and think to see why.
+...
 
-It depends if pixels can be 0 or not and if it's not, then does it contain last
-or number.
 
-The do {} while (--pixels); might be buggy iff pixels may be 0.
+> >> +	bl = devm_backlight_device_register(dev, dev_name(dev), dev, ssd130x,
+> >> +					    &ssd130xfb_bl_ops, NULL);
+> >> +	if (IS_ERR(bl)) {
+> > 
+> >> +		ret = PTR_ERR(bl);
+> >> +		dev_err_probe(dev, ret, "Unable to register backlight device\n");
+> >> +		return ERR_PTR(ret);
+> > 
+> > 		dev_err_probe(dev, PTR_ERR(bl), "Unable to register backlight device\n");
+> > 		return bl;
+> > 
+> > ?
+> 
+> No, because this function's return value is a struct ssd130x_device pointer,
+> not a struct backlight_device pointer.
+
+	return ERR_CAST(bl);
 
 -- 
 With Best Regards,

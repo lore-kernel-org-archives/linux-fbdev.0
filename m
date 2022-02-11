@@ -2,161 +2,120 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46ACFC433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 08:26:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FA48C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 08:46:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229631AbiBKI0A (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Feb 2022 03:26:00 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:55324 "EHLO
+        id S1348106AbiBKIqB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Feb 2022 03:46:01 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:37282 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235852AbiBKIZ7 (ORCPT
+        with ESMTP id S244156AbiBKIqA (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Feb 2022 03:25:59 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5283E4A
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Feb 2022 00:25:57 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 43F112112A;
-        Fri, 11 Feb 2022 08:25:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1644567956; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
+        Fri, 11 Feb 2022 03:46:00 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 6434BE68
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Feb 2022 00:45:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1644569157;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=0+eO8+4tpOXkqllU1xmcoikA4y/S1GiEE4M/BHxC0sI=;
-        b=qXcVL2Zu9p5iDYT8nouVucyWDKatqOQn+eb1pm6D4Jk2e8IItiNG2p3EWkv32ZWnJXLazc
-        cj6pHM2+XOUdIEz6897QzK3WWoMJItJ8Nf3IQ30FgT13PcEzAvvUOe1qZYZ6Py23vF4b+Y
-        l59w5v8unCzHDMQYKi4FZdwGHc6G6Fc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1644567956;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=0+eO8+4tpOXkqllU1xmcoikA4y/S1GiEE4M/BHxC0sI=;
-        b=xB83RDXxT/MPa5ZBP6Dr5tstit0lxR36klri/awDnS8hRLcOXyhc8JUnclLEUsJXAUOOrg
-        5PhececFRFvVEZAA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 09D1013B59;
-        Fri, 11 Feb 2022 08:25:56 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id 7ZhlAZQdBmLidQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 11 Feb 2022 08:25:56 +0000
-Message-ID: <96539edd-4b78-e460-786d-db9581eccdee@suse.de>
-Date:   Fri, 11 Feb 2022 09:25:55 +0100
+        bh=yhiejNdZNc9V7Q57Z4FGfEE9W4EtgIkRByXMCdx4jhQ=;
+        b=jMniQzghdCSnuvlxHcu49FP/Obyx5NWFaPwcyzzfZdjxyooE8BajYvjCf1xUbnQO8F8ju5
+        pcksNg21DA5dsfClrrEk6z6jgEmqdInXVwNh66SXER1+m99CNDJ/6SfYrSzCW5EaaIe6L4
+        OpEEFD18jFoE4lIPWJk3cvN/ondEI+Q=
+Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
+ [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-656-ctRb1SqEP9qIcER4DA0Kiw-1; Fri, 11 Feb 2022 03:45:55 -0500
+X-MC-Unique: ctRb1SqEP9qIcER4DA0Kiw-1
+Received: by mail-wr1-f69.google.com with SMTP id v9-20020adfa1c9000000b001e33e5dbd5fso3600907wrv.17
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Feb 2022 00:45:55 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:from:to:cc:references:in-reply-to
+         :content-transfer-encoding;
+        bh=yhiejNdZNc9V7Q57Z4FGfEE9W4EtgIkRByXMCdx4jhQ=;
+        b=MmtUvMWqsm6fRI2px6OGB1N4cfKiVIpdMDmuqSI2AeJJZ6lrBhVuaOwQfBT1mql+qS
+         6Ripsd4TErEV5z5rKTJUf6G/Y5MwrqttVVVpLsmggwVukgJc4LqoLtpJKzzQsgEvV7aW
+         CQjl7bmsqt7N/itArwKomVxX0D5Lb9LCSFjb5CNCF36YKso+i+xAucGztaE2fn+c5Si1
+         6NLqst4sLMZMPL5PkGHrW4zuT02Vo/Se1RH3aWVCaKiGJD24D3OdSNJkl4Q/gvC4LUpD
+         pLPa1Aca9mzDW0BdUUtc7aRDyK99w0Y0zPLi+5M8pGDqUCZn8pCrUaU6bKCBDYiRUdRQ
+         wCdw==
+X-Gm-Message-State: AOAM530cLU7fYM13Dp612AShKIt/Oat5AubDeFeopSU0ppWOF46zKcg1
+        TSuWIR4H03xylTB3DLzI+r7k4ijKUMwrql60nqoF0wmY13nXcWWMcxbZ1p/roOMvcWSHNDcQIez
+        NZDo+vEv4qVMkC1v9RJunbr4=
+X-Received: by 2002:adf:edc9:: with SMTP id v9mr470914wro.135.1644569154549;
+        Fri, 11 Feb 2022 00:45:54 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJydD7roXdtXZjQWp72Wo5fcJQ6eNKNYHlSPNx2dupK8zLBlB9eyylPxhSvKDBOJgfjPqx/X3w==
+X-Received: by 2002:adf:edc9:: with SMTP id v9mr470898wro.135.1644569154333;
+        Fri, 11 Feb 2022 00:45:54 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id az21sm3460772wmb.11.2022.02.11.00.45.52
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 11 Feb 2022 00:45:53 -0800 (PST)
+Message-ID: <9ee28446-2dda-7015-1a0a-44dc8385002e@redhat.com>
+Date:   Fri, 11 Feb 2022 09:45:52 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
-Subject: Re: [PATCH 2/2] fbdev: Don't sort deferred-I/O pages by default
+Subject: Re: [PATCH v3 0/7] drm: Add driver for Solomon SSD130X OLED displays
 Content-Language: en-US
-To:     Dan Carpenter <dan.carpenter@oracle.com>,
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux PWM List <linux-pwm@vger.kernel.org>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Mark Brown <broonie@kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        Lee Jones <lee.jones@linaro.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Sam Ravnborg <sam@ravnborg.org>
-Cc:     linux-fbdev@vger.kernel.org, deller@gmx.de,
-        linux-staging@lists.linux.dev, javierm@redhat.com,
-        dri-devel@lists.freedesktop.org, bernie@plugable.com,
-        noralf@tronnes.org, andriy.shevchenko@linux.intel.com,
-        jayalk@intworks.biz
-References: <20220210141111.5231-1-tzimmermann@suse.de>
- <20220210141111.5231-3-tzimmermann@suse.de> <YgWAvXF+WClk/fyk@ravnborg.org>
- <20220211075844.GM1951@kadam>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20220211075844.GM1951@kadam>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------nqeWFxU6sPRitacyv3XegykW"
+References: <20220209090314.2511959-1-javierm@redhat.com>
+ <CAMuHMdVs750iE=kP1vabwgsGOb8sHc8aC5k=HwCU32CURnYktw@mail.gmail.com>
+ <58ebacd2-d44d-c7e9-e752-de7815dd4cc1@redhat.com>
+In-Reply-To: <58ebacd2-d44d-c7e9-e752-de7815dd4cc1@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------nqeWFxU6sPRitacyv3XegykW
-Content-Type: multipart/mixed; boundary="------------VpSHW5hRCT4H9SfVFQOw8LFq";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Dan Carpenter <dan.carpenter@oracle.com>, Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-fbdev@vger.kernel.org, deller@gmx.de,
- linux-staging@lists.linux.dev, javierm@redhat.com,
- dri-devel@lists.freedesktop.org, bernie@plugable.com, noralf@tronnes.org,
- andriy.shevchenko@linux.intel.com, jayalk@intworks.biz
-Message-ID: <96539edd-4b78-e460-786d-db9581eccdee@suse.de>
-Subject: Re: [PATCH 2/2] fbdev: Don't sort deferred-I/O pages by default
-References: <20220210141111.5231-1-tzimmermann@suse.de>
- <20220210141111.5231-3-tzimmermann@suse.de> <YgWAvXF+WClk/fyk@ravnborg.org>
- <20220211075844.GM1951@kadam>
-In-Reply-To: <20220211075844.GM1951@kadam>
+On 2/9/22 13:37, Javier Martinez Canillas wrote:
 
---------------VpSHW5hRCT4H9SfVFQOw8LFq
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+[snip]
 
-SGkNCg0KQW0gMTEuMDIuMjIgdW0gMDg6NTggc2NocmllYiBEYW4gQ2FycGVudGVyOg0KPiBP
-biBUaHUsIEZlYiAxMCwgMjAyMiBhdCAxMDoxNjo0NVBNICswMTAwLCBTYW0gUmF2bmJvcmcg
-d3JvdGU6DQo+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYl9k
-ZWZpby5jIGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiX2RlZmlvLmMNCj4+PiBpbmRl
-eCAzNzI3YjFjYTg3YjEuLjFmNjcyY2YyNTNiMiAxMDA2NDQNCj4+PiAtLS0gYS9kcml2ZXJz
-L3ZpZGVvL2ZiZGV2L2NvcmUvZmJfZGVmaW8uYw0KPj4+ICsrKyBiL2RyaXZlcnMvdmlkZW8v
-ZmJkZXYvY29yZS9mYl9kZWZpby5jDQo+Pj4gQEAgLTEzMiwxNSArMTMyLDIwIEBAIHN0YXRp
-YyB2bV9mYXVsdF90IGZiX2RlZmVycmVkX2lvX21rd3JpdGUoc3RydWN0IHZtX2ZhdWx0ICp2
-bWYpDQo+Pj4gICAJaWYgKCFsaXN0X2VtcHR5KCZwYWdlLT5scnUpKQ0KPj4+ICAgCQlnb3Rv
-IHBhZ2VfYWxyZWFkeV9hZGRlZDsNCj4+PiAgIA0KPj4+IC0JLyogd2UgbG9vcCB0aHJvdWdo
-IHRoZSBwYWdlbGlzdCBiZWZvcmUgYWRkaW5nIGluIG9yZGVyDQo+Pj4gLQl0byBrZWVwIHRo
-ZSBwYWdlbGlzdCBzb3J0ZWQgKi8NCj4+PiAtCWxpc3RfZm9yX2VhY2hfZW50cnkoY3VyLCAm
-ZmJkZWZpby0+cGFnZWxpc3QsIGxydSkgew0KPj4+IC0JCWlmIChjdXItPmluZGV4ID4gcGFn
-ZS0+aW5kZXgpDQo+Pj4gLQkJCWJyZWFrOw0KPj4+ICsJaWYgKGZiZGVmaW8tPnNvcnRfcGFn
-ZWxpc3QpIHsNCj4+PiArCQkvKg0KPj4+ICsJCSAqIFdlIGxvb3AgdGhyb3VnaCB0aGUgcGFn
-ZWxpc3QgYmVmb3JlIGFkZGluZyBpbiBvcmRlcg0KPj4+ICsJCSAqIHRvIGtlZXAgdGhlIHBh
-Z2VsaXN0IHNvcnRlZC4NCj4+PiArCQkgKi8NCj4+PiArCQlsaXN0X2Zvcl9lYWNoX2VudHJ5
-KGN1ciwgJmZiZGVmaW8tPnBhZ2VsaXN0LCBscnUpIHsNCj4+PiArCQkJaWYgKGN1ci0+aW5k
-ZXggPiBwYWdlLT5pbmRleCkNCj4+PiArCQkJCWJyZWFrOw0KPj4+ICsJCX0NCj4+PiArCQls
-aXN0X2FkZF90YWlsKCZwYWdlLT5scnUsICZjdXItPmxydSk7DQo+Pj4gKwl9IGVsc2Ugew0K
-Pj4+ICsJCWxpc3RfYWRkX3RhaWwoJnBhZ2UtPmxydSwgJmZiZGVmaW8tPnBhZ2VsaXN0KTsN
-Cj4+PiAgIAl9DQo+PiBCaWtlc2hlZGRpbmcgLSBteSBwZXJzb25hbCBzdHlsZSBpcyB0byBo
-YXZlIHRoZSBsaWtlbHkgcGFydCBmaXJzdC4NCj4+IFRoaXMgbWFrZXMgcmVhZGluZyB0aGUg
-Y29kZSBlYXNpZXIuDQo+IA0KPiBJJ3ZlIHRob3VnaHQgYWJvdXQgdGhpcyBxdWl0ZSBhIGJp
-dC4uLiAgSSBndWVzcyBteSBydWxlIGlzIHRvIGF2b2lkDQo+IG5lZ2F0aXZlcyBhcyBtdWNo
-IGFzIHBvc3NpYmxlIHNvIEkgcHJlZmVyIHRoZSBvcmlnaW5hbCBjb2RlLiAgTXkgcnVsZXMN
-Cj4gcmlnaHQgbm93IGFyZToNCj4gDQo+IDEpIEFsd2F5cyBkbyBlcnJvciBoYW5kbGluZy4g
-IERvbid0IGRvIHN1Y2Nlc3MgaGFuZGxpbmcuDQo+IDIpIFJldHVybiBhcyBxdWlja2x5IGFz
-IHBvc3NpYmxlIGFuZCBwdWxsIHRoZSBjb2RlIGluIGFuIGluZGVudC4NCj4gMykgQXZvaWQg
-bmVnYXRpdmVzLiAgTmV2ZXIgaGFkIG5lZ2F0aXZlcyBpbiB0aGUgdmFyaWFibGUgbmFtZXMu
-DQoNCiBGcm9tIHdoYXQgSSBrbm93LCBDUFVzJyBicmFuY2ggcHJlZGljdGlvbiBwcmVmZXJz
-IGJhY2t3YXJkIGp1bXBzIChlLmcuLCANCmxvb3BzKSBidXQgYXZvaWRzIGZvcndhcmQganVt
-cHMuIENvbXBpbGVycyBhcnJhbmdlIHRoZSBjb2RlIHRvIG9wdGltaXplIA0KZm9yIHRoaXMg
-cGF0dGVybi4gU28gSSB0ZW5kIHRvIHB1dCB0aGUgZXhjZXB0aW9uIG9yIGVycm9yIGhhbmRs
-aW5nIGludG8gDQp0aGUgaWYgYnJhbmNoLiAgQnV0IEkgaGF2ZSBubyBpZGVhIGlmIHRoYXQg
-cmVhbGx5IG1ha2VzIGEgZGlmZmVyZW5jZSBhdCANCnJ1bnRpbWUuDQoNCkJlc3QgcmVnYXJk
-cw0KVGhvbWFzDQoNCj4gDQo+IHJlZ2FyZHMsDQo+IGRhbiBjYXJwZW50ZXINCg0KLS0gDQpU
-aG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0
-d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xy
-bmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNm
-w7xocmVyOiBJdm8gVG90ZXYNCg==
+> 
+>> There is still an issue with the cursor, though.
+>> After doing "echo hello > /dev/tty0", the text appears, but the cursor
+>> is gone. "clear > /dev/tty0" brings it back.
+>>
+> 
+> Hmm, I was able to reproduce this too. Thanks for pointing it out,
+> I'll investigate what the problem is.
+>
 
---------------VpSHW5hRCT4H9SfVFQOw8LFq--
+I still didn't have time to dig on this for v4. But I think that the
+driver works well enough to be merged and we can then fix the issues
+that are still present in the fbdev emulation and fbcon interaction
+as a follow-up.
 
---------------nqeWFxU6sPRitacyv3XegykW
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Best regards,
+-- 
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIGHZMFAwAAAAAACgkQlh/E3EQov+CW
-UA/8CNEy5v/BG4UxJaMHwoVtKafTO75jNQR6k1lLBJ90XBOqN6ET0eUbXltXgAVLmRw/Cggs9ngf
-OwQP8IAwWhks8pRaYYUHAfx82XeWJFsTXv5MIyVUdlsD2Hduwdy/hD3yHJfVqS2UiaOEg4kYigQQ
-gwodIFk+m8STPPDmvHcZsS2w2Jr97Q9H2FWAaF4ApL65O7sKEtn9W9gStZghpKdkQoUAttdha4Uk
-Oxtyk3TmoFMy0uo0DiBPIKQV9uWZ1CrbH1VnrWCww0ZXXfd9rcEfHi9RR09dKXFurukzRpz5mFsf
-Zaq327VjIlUr5aWWsqVGyjFrJp87p79i4WgN7rV40Soe3i6d8BvAQKMCZsV41/f+RugZERzyJ+Fr
-mlgNak/iBFgx1k6cP6DOzT7UywWv9QFlqg7VXzo7QCpKoF8EQnZ/y38fzq91UGNlo1Oadqc67Fdo
-XT9Ph4r9uyAVum+4WU0pM4GLKh8ptURyh4tTGUttyijwEE+zHQ5RhVI2j0iF5DdQaYNtIzfQ5BrY
-/CdsiBg0QbfGRCIMGi2kZNFs5K52CoUDCnAxSuwz8DhrIcifIxhT1nsYupEMa8ugn4w7l47GtZqq
-SdnPEztIczzK+ySSrRXmPoU2KgJkX8PhC+fpETHkx160A8OpYWONw5B60kHpOlV4HtDTWhxAG9lI
-How=
-=co/r
------END PGP SIGNATURE-----
-
---------------nqeWFxU6sPRitacyv3XegykW--

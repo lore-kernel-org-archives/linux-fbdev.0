@@ -2,46 +2,46 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9301C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 16:05:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BB22C4332F
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 16:14:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349919AbiBKQFP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Feb 2022 11:05:15 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:37346 "EHLO
+        id S236395AbiBKQOS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Feb 2022 11:14:18 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:43494 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349786AbiBKQFP (ORCPT
+        with ESMTP id S1350602AbiBKQOQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Feb 2022 11:05:15 -0500
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D983812C;
-        Fri, 11 Feb 2022 08:05:13 -0800 (PST)
+        Fri, 11 Feb 2022 11:14:16 -0500
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B9DF2D4F;
+        Fri, 11 Feb 2022 08:14:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1644595513; x=1676131513;
+  t=1644596055; x=1676132055;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=pTgOuzm7jCaTfwCYp5a9jm8xnylwK40ORkaUjtK0E8Y=;
-  b=kN/YkMu85heGD3bXcZuGqY6z1dtqZI4xa8w0JVXPOTqrF6GN5pwC36wI
-   mxIzCoDX+fmNFvJ/e1gu1iirJ1kPR/hvOxmlHd+KWxGbyiuy2+1NqhkBX
-   sH/BBeOatzMdp0rbAp/hIm90hh+bQngolHkOeYHbM/9Lzwhp4b7hDDXXK
-   cIEG6tt87coJIDdXGiXEnaJ0cbYAH8Q0mz/zefbSMLwU3MBD97lqxNOIn
-   Ja64W38NxDRBAqtZIdFig+z0RBoo+jW0b/l7zdolq2vCVh+fhXYOv/Lcc
-   HP31EFWDOzJBTKWfD2S8rzjWXSQylS5NBvu0Ms+E8S2WO586B4dmjfN8I
-   g==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="249504903"
+  bh=2sObmrIIJ6u7JgxEqMuhXgNJQeFbV1/jHHnxLE325BM=;
+  b=Ho2Z1vLaSXw9C3ZYUNKHXqJ949xAeGMTE5ncjC6IO5sRzALyGeeNaGBa
+   9M8FL6SQmLdhRgLXrg8LSrWh7jlrcbMMBlpppKiSmEBQmI8eIBvDTL4PG
+   jkrGDS35uv1yF8Me5sfSd9GTC/MvJQwD5I0QFH6WgqcDFrSxpYFhHBSLU
+   hpNXwzhWn5Ylim4qjpNHfCMkRl4HRlu0W40f48seWA40EkZPmrv85ttKR
+   7+NsFcznypY5cG2plQar28tFA5zytFpsSIrWYqzG/9jxtwRsrdp1PEG/W
+   71crS0SqP11Jedr3xCbjyYR1/r6ZZv/PgJoHZ7m984VBWAJTOeybg+axd
+   w==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10254"; a="230400142"
 X-IronPort-AV: E=Sophos;i="5.88,361,1635231600"; 
-   d="scan'208";a="249504903"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 08:05:13 -0800
+   d="scan'208";a="230400142"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 08:14:15 -0800
 X-IronPort-AV: E=Sophos;i="5.88,361,1635231600"; 
-   d="scan'208";a="500817793"
+   d="scan'208";a="483479902"
 Received: from smile.fi.intel.com ([10.237.72.61])
-  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 08:05:10 -0800
+  by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Feb 2022 08:14:10 -0800
 Received: from andy by smile.fi.intel.com with local (Exim 4.95)
         (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nIYP6-003Uy5-Hr;
-        Fri, 11 Feb 2022 18:04:12 +0200
-Date:   Fri, 11 Feb 2022 18:04:12 +0200
+        id 1nIYXo-003V6e-FM;
+        Fri, 11 Feb 2022 18:13:12 +0200
+Date:   Fri, 11 Feb 2022 18:13:12 +0200
 From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To:     Javier Martinez Canillas <javierm@redhat.com>
 Cc:     linux-kernel@vger.kernel.org,
@@ -54,210 +54,135 @@ Cc:     linux-kernel@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Daniel Vetter <daniel@ffwll.ch>,
         David Airlie <airlied@linux.ie>,
+        Lee Jones <lee.jones@linaro.org>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>
-Subject: Re: [PATCH v5 2/6] drm/format-helper: Add
- drm_fb_xrgb8888_to_mono_reversed()
-Message-ID: <YgaI/Kz8hl1Nut+V@smile.fi.intel.com>
+        Maxime Ripard <mripard@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+        <u.kleine-koenig@pengutronix.de>, linux-pwm@vger.kernel.org
+Subject: Re: [PATCH v5 3/6] drm: Add driver for Solomon SSD130x OLED displays
+Message-ID: <YgaLGDVscXlANxcZ@smile.fi.intel.com>
 References: <20220211143358.3112958-1-javierm@redhat.com>
- <20220211143358.3112958-3-javierm@redhat.com>
+ <20220211143358.3112958-4-javierm@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220211143358.3112958-3-javierm@redhat.com>
+In-Reply-To: <20220211143358.3112958-4-javierm@redhat.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, Feb 11, 2022 at 03:33:54PM +0100, Javier Martinez Canillas wrote:
-> Add support to convert from XR24 to reversed monochrome for drivers that
-> control monochromatic display panels, that only have 1 bit per pixel.
+On Fri, Feb 11, 2022 at 03:33:55PM +0100, Javier Martinez Canillas wrote:
+> This adds a DRM driver for SSD1305, SSD1306, SSD1307 and SSD1309 Solomon
+> OLED display controllers.
 > 
-> The function does a line-by-line conversion doing an intermediate step
-> first from XR24 to 8-bit grayscale and then to reversed monochrome.
-> 
-> The drm_fb_gray8_to_mono_reversed_line() helper was based on code from
-> drivers/gpu/drm/tiny/repaper.c driver.
+> It's only the core part of the driver and a bus specific driver is needed
+> for each transport interface supported by the display controllers.
+
+...
+
+> +#define SSD130X_SET_CLOCK_DIV_MASK		GENMASK(3, 0)
+> +#define SSD130X_SET_CLOCK_DIV_SET(val)		FIELD_PREP(SSD130X_SET_CLOCK_DIV_MASK, (val))
+> +#define SSD130X_SET_CLOCK_FREQ_MASK		GENMASK(7, 4)
+> +#define SSD130X_SET_CLOCK_FREQ_SET(val)		FIELD_PREP(SSD130X_SET_CLOCK_FREQ_MASK, (val))
+> +#define SSD130X_SET_PRECHARGE_PERIOD1_MASK	GENMASK(3, 0)
+> +#define SSD130X_SET_PRECHARGE_PERIOD1_SET(val)	FIELD_PREP(SSD130X_SET_PRECHARGE_PERIOD1_MASK, (val))
+> +#define SSD130X_SET_PRECHARGE_PERIOD2_MASK	GENMASK(7, 4)
+> +#define SSD130X_SET_PRECHARGE_PERIOD2_SET(val)	FIELD_PREP(SSD130X_SET_PRECHARGE_PERIOD2_MASK, (val))
+
+> +#define SSD130X_SET_COM_PINS_CONFIG1_MASK	GENMASK(4, 4)
+
+BIT(4)
+
+> +#define SSD130X_SET_COM_PINS_CONFIG1_SET(val)	FIELD_PREP(SSD130X_SET_COM_PINS_CONFIG1_MASK, (!val))
+> +#define SSD130X_SET_COM_PINS_CONFIG2_MASK	GENMASK(5, 5)
+
+BIT(5)
+
+> +#define SSD130X_SET_COM_PINS_CONFIG2_SET(val)	FIELD_PREP(SSD130X_SET_COM_PINS_CONFIG2_MASK, (val))
+
+I would put GENMASK() directly into FIELD(), but it's up to you
+(and I haven't checked the use of *_MASK anyway).
 
 
-I believe there is enough room for (micro-)optimizations (like moving out
-invariant conditionals from the loop), but since it's almost a direct copy
-of the existing code let's improve it later on.
+...
 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-
-> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
-> 
-> Changes in v5:
-> - Use drm_WARN_ON* macros instead of deprecated ones (Thomas Zimmermann)
-> 
-> Changes in v4:
-> - Rename end_offset to end_len (Thomas Zimmermann)
-> - Warn once if dst_pitch is not a multiple of 8 (Thomas Zimmermann)
-> - Drop drm_fb_gray8_to_mono_reversed() that's not used (Thomas Zimmermann)
-> - Allocate single buffer for both copy cma memory and gray8 (Thomas Zimmermann)
-> - Add Thomas Zimmermann Reviewed-by tag to patch adding XR24 -> mono helper.
-> 
-> Changes in v3:
-> - Also add a drm_fb_xrgb8888_to_mono_reversed() helper (Thomas Zimmermann)
-> - Split lines copy to drm_fb_gray8_to_mono_reversed_line() (Thomas Zimmermann)
-> - Handle case where the source buffer is not aligned to 8 (Thomas Zimmermann)
-> 
->  drivers/gpu/drm/drm_format_helper.c | 110 ++++++++++++++++++++++++++++
->  include/drm/drm_format_helper.h     |   4 +
->  2 files changed, 114 insertions(+)
-> 
-> diff --git a/drivers/gpu/drm/drm_format_helper.c b/drivers/gpu/drm/drm_format_helper.c
-> index b981712623d3..bc0f49773868 100644
-> --- a/drivers/gpu/drm/drm_format_helper.c
-> +++ b/drivers/gpu/drm/drm_format_helper.c
-> @@ -12,9 +12,11 @@
->  #include <linux/slab.h>
->  #include <linux/io.h>
->  
-> +#include <drm/drm_device.h>
->  #include <drm/drm_format_helper.h>
->  #include <drm/drm_framebuffer.h>
->  #include <drm/drm_fourcc.h>
-> +#include <drm/drm_print.h>
->  #include <drm/drm_rect.h>
->  
->  static unsigned int clip_offset(const struct drm_rect *clip, unsigned int pitch, unsigned int cpp)
-> @@ -591,3 +593,111 @@ int drm_fb_blit_toio(void __iomem *dst, unsigned int dst_pitch, uint32_t dst_for
->  	return -EINVAL;
->  }
->  EXPORT_SYMBOL(drm_fb_blit_toio);
-> +
-> +static void drm_fb_gray8_to_mono_reversed_line(u8 *dst, const u8 *src, unsigned int pixels,
-> +					       unsigned int start_offset, unsigned int end_len)
+> +static int ssd130x_write_data(struct ssd130x_device *ssd130x, u8 *values, int count)
 > +{
-> +	unsigned int xb, i;
+> +	int ret;
 > +
-> +	for (xb = 0; xb < pixels; xb++) {
-> +		unsigned int start = 0, end = 8;
-> +		u8 byte = 0x00;
-
-> +		if (xb == 0 && start_offset)
-> +			start = start_offset;
-
-Just to point out again, this is 100% invariant and may be moved out.
-
-> +		if (xb == pixels - 1 && end_len)
-> +			end = end_len;
-
-This one almost, can be moved out after refactoring.
-
-> +		for (i = start; i < end; i++) {
-> +			unsigned int x = xb * 8 + i;
+> +	ret = regmap_bulk_write(ssd130x->regmap, SSD130X_DATA, values, count);
+> +	if (ret)
+> +		return ret;
 > +
-> +			byte >>= 1;
-> +			if (src[x] >> 7)
-> +				byte |= BIT(7);
-> +		}
-> +		*dst++ = byte;
-> +	}
+> +	return 0;
+
+return regmap_bulk_write(...);
+
 > +}
-> +
-> +/**
-> + * drm_fb_xrgb8888_to_mono_reversed - Convert XRGB8888 to reversed monochrome
-> + * @dst: reversed monochrome destination buffer
-> + * @dst_pitch: Number of bytes between two consecutive scanlines within dst
-> + * @src: XRGB8888 source buffer
-> + * @fb: DRM framebuffer
-> + * @clip: Clip rectangle area to copy
+
+...
+
+> +/*
+> + * Helper to write command (SSD130X_COMMAND). The fist variadic argument
+> + * is the command to write and the following are the command options.
 > + *
-> + * DRM doesn't have native monochrome support.
-> + * Such drivers can announce the commonly supported XR24 format to userspace
-> + * and use this function to convert to the native format.
-> + *
-> + * This function uses drm_fb_xrgb8888_to_gray8() to convert to grayscale and
-> + * then the result is converted from grayscale to reversed monohrome.
+> + * Note that the ssd130x protocol requires each command and option to be
+> + * written as a SSD130X_COMMAND device register value. That is why a call
+> + * to regmap_write(..., SSD130X_COMMAND, ...) is done for each argument.
 > + */
-> +void drm_fb_xrgb8888_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *vaddr,
-> +				      const struct drm_framebuffer *fb, const struct drm_rect *clip)
+
+Thanks!
+
+> +static int ssd130x_write_cmd(struct ssd130x_device *ssd130x, int count,
+> +				    /* u8 cmd, u8 option, ... */...)
 > +{
-> +	unsigned int linepixels = drm_rect_width(clip);
-> +	unsigned int lines = clip->y2 - clip->y1;
-> +	unsigned int cpp = fb->format->cpp[0];
-> +	unsigned int len_src32 = linepixels * cpp;
-> +	struct drm_device *dev = fb->dev;
-> +	unsigned int start_offset, end_len;
-> +	unsigned int y;
-> +	u8 *mono = dst, *gray8;
-> +	u32 *src32;
+> +	va_list ap;
+> +	u8 value;
+> +	int ret;
 > +
-> +	if (drm_WARN_ON(dev, fb->format->format != DRM_FORMAT_XRGB8888))
-> +		return;
+> +	va_start(ap, count);
 > +
-> +	/*
-> +	 * The reversed mono destination buffer contains 1 bit per pixel
-> +	 * and destination scanlines have to be in multiple of 8 pixels.
-> +	 */
-> +	if (!dst_pitch)
-> +		dst_pitch = DIV_ROUND_UP(linepixels, 8);
+> +	do {
+> +		value = va_arg(ap, int);
+> +		ret = regmap_write(ssd130x->regmap, SSD130X_COMMAND, (u8)value);
+
+Wondering if you really need this casting. value is u8 by definition.
+
+> +		if (ret)
+> +			goto out_end;
+> +	} while (--count);
 > +
-> +	drm_WARN_ONCE(dev, dst_pitch % 8 != 0, "dst_pitch is not a multiple of 8\n");
+> +out_end:
+> +	va_end(ap);
 > +
-> +	/*
-> +	 * The cma memory is write-combined so reads are uncached.
-> +	 * Speed up by fetching one line at a time.
-> +	 *
-> +	 * Also, format conversion from XR24 to reversed monochrome
-> +	 * are done line-by-line but are converted to 8-bit grayscale
-> +	 * as an intermediate step.
-> +	 *
-> +	 * Allocate a buffer to be used for both copying from the cma
-> +	 * memory and to store the intermediate grayscale line pixels.
-> +	 */
-> +	src32 = kmalloc(len_src32 + linepixels, GFP_KERNEL);
-> +	if (!src32)
-> +		return;
-> +
-> +	gray8 = (u8 *)src32 + len_src32;
-> +
-> +	/*
-> +	 * For damage handling, it is possible that only parts of the source
-> +	 * buffer is copied and this could lead to start and end pixels that
-> +	 * are not aligned to multiple of 8.
-> +	 *
-> +	 * Calculate if the start and end pixels are not aligned and set the
-> +	 * offsets for the reversed mono line conversion function to adjust.
-> +	 */
-> +	start_offset = clip->x1 % 8;
-> +	end_len = clip->x2 % 8;
-> +
-> +	vaddr += clip_offset(clip, fb->pitches[0], cpp);
-> +	for (y = 0; y < lines; y++) {
-> +		src32 = memcpy(src32, vaddr, len_src32);
-> +		drm_fb_xrgb8888_to_gray8_line(gray8, src32, linepixels);
-> +		drm_fb_gray8_to_mono_reversed_line(mono, gray8, dst_pitch,
-> +						   start_offset, end_len);
-> +		vaddr += fb->pitches[0];
-> +		mono += dst_pitch;
-> +	}
-> +
-> +	kfree(src32);
+> +	return ret;
 > +}
-> +EXPORT_SYMBOL(drm_fb_xrgb8888_to_mono_reversed);
-> diff --git a/include/drm/drm_format_helper.h b/include/drm/drm_format_helper.h
-> index b30ed5de0a33..0b0937c0b2f6 100644
-> --- a/include/drm/drm_format_helper.h
-> +++ b/include/drm/drm_format_helper.h
-> @@ -43,4 +43,8 @@ int drm_fb_blit_toio(void __iomem *dst, unsigned int dst_pitch, uint32_t dst_for
->  		     const void *vmap, const struct drm_framebuffer *fb,
->  		     const struct drm_rect *rect);
->  
-> +void drm_fb_xrgb8888_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *src,
-> +				      const struct drm_framebuffer *fb,
-> +				      const struct drm_rect *clip);
-> +
->  #endif /* __LINUX_DRM_FORMAT_HELPER_H */
-> -- 
-> 2.34.1
-> 
+
+...
+
+> +	ssd130x = devm_drm_dev_alloc(dev, &ssd130x_drm_driver,
+> +				     struct ssd130x_device, drm);
+> +	if (IS_ERR(ssd130x)) {
+
+> +		dev_err_probe(dev, PTR_ERR(ssd130x),
+> +			      "Failed to allocate DRM device\n");
+> +		return ssd130x;
+
+This...
+
+> +	}
+
+...
+
+> +	bl = devm_backlight_device_register(dev, dev_name(dev), dev, ssd130x,
+> +					    &ssd130xfb_bl_ops, NULL);
+> +	if (IS_ERR(bl))
+> +		return ERR_PTR(dev_err_probe(dev, PTR_ERR(bl),
+> +					     "Unable to register backlight device\n"));
+
+Can be consistent with this then.
 
 -- 
 With Best Regards,

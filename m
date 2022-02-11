@@ -2,59 +2,59 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CAA8C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 09:22:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 946A0C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 09:23:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245156AbiBKJWV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 11 Feb 2022 04:22:21 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:35096 "EHLO
+        id S1348526AbiBKJXI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 11 Feb 2022 04:23:08 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:37766 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235983AbiBKJWU (ORCPT
+        with ESMTP id S242601AbiBKJXH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 11 Feb 2022 04:22:20 -0500
+        Fri, 11 Feb 2022 04:23:07 -0500
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 626FC102A
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Feb 2022 01:22:19 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 76668BAA
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Feb 2022 01:23:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644571338;
+        s=mimecast20190719; t=1644571385;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=/bi42S9VA+rXZukavob2heYyTf52jS05inWB/COJe28=;
-        b=KHQOcee2iNrMmFYpaA6imqsaJLhUo1uBQEQ48M4EBPYRT3QG/w1kolyxEidwD4kDxzNdYf
-        YZbMF+gmdDY9pLFsGqzhwh4YnSAyRKLacoLVMO5WioFSP2BDglZ5fUVAct05rFLgnleg0l
-        9wPG/V5Vfexeq7Av22HMUhDioQmVOGY=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=Qo5tt7qfqFuuHdwxRe62Yd9mxK2KKNk3oIAuQuMoJM4=;
+        b=Sy+o/8Nb7AXJcnWtOoJ0WjDi054AlMwhvTCV1BEbX2NeLGmlxcNb3LncJCN4k6IYbHBGAt
+        IHtpCSb+WnwTiDNHhkId4QfJWvxKFvFx9CU6y+Ft1/+vn8w++U9PRRr2ZogdIS4+h/24J9
+        soonKFcftUaO1Jjw70D1zztT1JJoqlQ=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-351-iSk3jbqVN5KSYz7UJcV3eg-1; Fri, 11 Feb 2022 04:22:17 -0500
-X-MC-Unique: iSk3jbqVN5KSYz7UJcV3eg-1
-Received: by mail-wm1-f72.google.com with SMTP id 125-20020a1c0283000000b0037bf720e6a8so3261168wmc.8
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Feb 2022 01:22:16 -0800 (PST)
+ us-mta-439-Hpb9MpzfPfy7Ro_YrrqVHQ-1; Fri, 11 Feb 2022 04:23:02 -0500
+X-MC-Unique: Hpb9MpzfPfy7Ro_YrrqVHQ-1
+Received: by mail-wm1-f69.google.com with SMTP id 22-20020a05600c229600b0037be079ebf6so796971wmf.9
+        for <linux-fbdev@vger.kernel.org>; Fri, 11 Feb 2022 01:23:01 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=/bi42S9VA+rXZukavob2heYyTf52jS05inWB/COJe28=;
-        b=gpMBi0XnsT3slii20mK35orcpyEs1MVmqnZ8O+5dnuzS6MwbpHOQi7lF1LRkVCkUoS
-         5J/SwP+6+0EZ/RMb9yD6UNcHDzPq9XjEt8g0hTZLBcUpc3M2WfDxHf3JcjVTmpmPctz6
-         h+DHPWbHuB3qCeNUZWm3XqdY8A+WR6E8ss/XtwH2ZcorI19K/dkww72ndK8DF2DD/Z6N
-         gO+xDwO7nTs+lEKlsXVlI0vpgCZtpSvDVAMGU4XTe51yc/p6y/2mSUV4pvRLNhxixP1c
-         tiVa3Olumjf83g4fHebvaN83A2o+uwVdpnFHDBZLUpeEWr/HGOIru4UioVleT2iafiT5
-         MWqg==
-X-Gm-Message-State: AOAM531VbJjDt+6pZ+k0iFABUp1WsgIpwgwnL0YPFc/8+3qt+WXrTdhX
-        lgvkiECGhQZ5NUflKXlB+M5v5FlEOtpkUt3XgZoZ3ss5i3sx2ZLIXsbPiBCF0FZVMWXq3bENBG9
-        lKEfGYd1mfXNEz5TfKeyfgzI=
-X-Received: by 2002:a7b:cbd7:: with SMTP id n23mr1369737wmi.76.1644571335924;
-        Fri, 11 Feb 2022 01:22:15 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxVyNwlqjVh91bNTF7uCkHKI+vxIB6I7J+ATyw7Om9fonGEf2KmhkFvJu7P23thXV+nsQsQLg==
-X-Received: by 2002:a7b:cbd7:: with SMTP id n23mr1369727wmi.76.1644571335738;
-        Fri, 11 Feb 2022 01:22:15 -0800 (PST)
+        bh=Qo5tt7qfqFuuHdwxRe62Yd9mxK2KKNk3oIAuQuMoJM4=;
+        b=I56QBkV9fLmev0sqb/e/SPTNliJZVm3Ci/aj6v4YeaHHICK4hw8aUe+iJo5y5WjUTp
+         lrlGKqTXdG5vIDvb4rhGlMhwUNO9R5ixaZWVrtfVU3uSJ1F4uvf9p/VkWWOMIQAq72vQ
+         nbPV0wTa/O7B97ASuF8+4LR8PRiQgMrPDVUVCzEFM5AYwoAOCBrVsQ688UfGrT8PAOKH
+         oaFtn6tD8J2wilsFsLkjDZcYsmsiiDxafNkgg1QYCkHhhieIVV2KLeSKBHxb+gRZYgnL
+         rGIFJOj6agPGEOrNRvTs2wCbAgEblBW9EIRT/oKUwqakY+4XZu61fvJV83YDLOPj7NX/
+         i4lQ==
+X-Gm-Message-State: AOAM5321wFNz4OHnV4Zy/7lsz4k3DtDdy7WG4NEca2mdGIUE63LyghHd
+        6C+B2DDFASXc4HWLU3acAr8kvJmN/oCItT2GbqBE3B4UGUROjFmMMTr/eDJa4ipU2x288lGGUDV
+        KuQ4nvDyC7Ci5VLQTuQt8EaE=
+X-Received: by 2002:a5d:4910:: with SMTP id x16mr617225wrq.360.1644571380928;
+        Fri, 11 Feb 2022 01:23:00 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJwQmkhSio3XmknDv+U+BFj72PJlq29Q9DPCbv2FXY27W3811LtmWuIDulWlfqEUKhTodynTLQ==
+X-Received: by 2002:a5d:4910:: with SMTP id x16mr617195wrq.360.1644571380540;
+        Fri, 11 Feb 2022 01:23:00 -0800 (PST)
 Received: from minerva.home ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id z5sm4237804wmp.10.2022.02.11.01.22.14
+        by smtp.gmail.com with ESMTPSA id q76sm3795124wme.1.2022.02.11.01.22.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Feb 2022 01:22:15 -0800 (PST)
+        Fri, 11 Feb 2022 01:23:00 -0800 (PST)
 From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
@@ -64,58 +64,53 @@ Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
         dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         Javier Martinez Canillas <javierm@redhat.com>,
-        Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH v4 5/6] MAINTAINERS: Add entry for Solomon SSD130x OLED displays DRM driver
-Date:   Fri, 11 Feb 2022 10:21:57 +0100
-Message-Id: <20220211092157.2988713-1-javierm@redhat.com>
+        Sam Ravnborg <sam@ravnborg.org>, Rob Herring <robh@kernel.org>
+Subject: [PATCH v4 6/6] dt-bindings: display: ssd1307fb: Add myself as binding co-maintainer
+Date:   Fri, 11 Feb 2022 10:22:53 +0100
+Message-Id: <20220211092253.2988843-1-javierm@redhat.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220211091927.2988283-1-javierm@redhat.com>
 References: <20220211091927.2988283-1-javierm@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-To make sure that tools like the get_maintainer.pl script will suggest
-to Cc me if patches are posted for this driver.
+The ssd130x DRM driver also makes use of this Device Tree binding to allow
+existing users of the fbdev driver to migrate without the need to change
+their Device Trees.
 
-Also include the Device Tree binding for the old ssd1307fb fbdev driver
-since the new DRM driver was made compatible with the existing binding.
+Add myself as another maintainer of the binding, to make sure that I will
+be on Cc when patches are proposed for it.
 
+Suggested-by: Sam Ravnborg <sam@ravnborg.org>
 Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
 
-(no changes since v3)
-
-Changes in v3:
-- Adapt MAINTAINERS entry to point to the new drivers/gpu/drm/solomon directory.
+Changes in v4:
+- Add Rob Herring Acked-by tag to patch adding as DT binding co-maintainer.
 
 Changes in v2:
-- Add Sam Ravnborg's acked-by to patch adding a MAINTAINERS entry (Sam Ravnborg)
+- Add myself as co-maintainer of the ssd1370fb DT binding (Sam Ravnborg).
 
- MAINTAINERS | 7 +++++++
- 1 file changed, 7 insertions(+)
+ Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index d03ad8da1f36..05c306986ab0 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6102,6 +6102,13 @@ T:	git git://anongit.freedesktop.org/drm/drm-misc
- F:	Documentation/devicetree/bindings/display/repaper.txt
- F:	drivers/gpu/drm/tiny/repaper.c
+diff --git a/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
+index 2ed2a7d0ca2f..9baafd0c42dd 100644
+--- a/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
++++ b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
+@@ -8,6 +8,7 @@ title: Solomon SSD1307 OLED Controller Framebuffer
  
-+DRM DRIVER FOR SOLOMON SSD130X OLED DISPLAYS
-+M:	Javier Martinez Canillas <javierm@redhat.com>
-+S:	Maintained
-+T:	git git://anongit.freedesktop.org/drm/drm-misc
-+F:	Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
-+F:	drivers/gpu/drm/solomon/ssd130x*
-+
- DRM DRIVER FOR QEMU'S CIRRUS DEVICE
- M:	Dave Airlie <airlied@redhat.com>
- M:	Gerd Hoffmann <kraxel@redhat.com>
+ maintainers:
+   - Maxime Ripard <mripard@kernel.org>
++  - Javier Martinez Canillas <javierm@redhat.com>
+ 
+ properties:
+   compatible:
 -- 
 2.34.1
 

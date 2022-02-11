@@ -2,100 +2,95 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79762C4332F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 01:26:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF9CBC433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 11 Feb 2022 03:30:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1346818AbiBKB0W (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 10 Feb 2022 20:26:22 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:40084 "EHLO
+        id S232498AbiBKDaI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 10 Feb 2022 22:30:08 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:48398 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1346084AbiBKB0W (ORCPT
+        with ESMTP id S229534AbiBKDaI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 10 Feb 2022 20:26:22 -0500
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92BED267F;
-        Thu, 10 Feb 2022 17:26:22 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by sin.source.kernel.org (Postfix) with ESMTPS id E0095CE25E4;
-        Fri, 11 Feb 2022 01:26:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 078B3C004E1;
-        Fri, 11 Feb 2022 01:26:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1644542779;
-        bh=RIkLyIEnDnAtAvgTMBO+mKp45fPhtgteavEWXrg4euw=;
-        h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
-        b=aB890eTXzZCpBszQDfR46CLeerYfBHc5bLDOkAywlVEA1WljJIWndIonbdQAIba26
-         xG113oP2lThwHHoe3M83ctVw/pUHspye+lYttVTGEciEE2qKeAGQt44DX6MWPK76bC
-         4bZ8cY/axNQM1EhhtLpK2pntYohJevqYDVeVvtfsH7p2kD769D1r9BY/9qwzgqILWH
-         9T7CxFLnujhP2sBHaTeXDX5N9xS8K6GbyialzD4zrGZUz7UbVP8LMbXNoU0eR/VpOi
-         gMM1QtiUldaL3aWS5FPDP+KW+DUfS/OGszuunc33ihXBpbbiqy0yewrE2xupzGc9Mi
-         W+nVS9hpc6EHA==
-Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
-        id A8E2E5C0165; Thu, 10 Feb 2022 17:26:18 -0800 (PST)
-Date:   Thu, 10 Feb 2022 17:26:18 -0800
-From:   "Paul E. McKenney" <paulmck@kernel.org>
-To:     Zhouyi Zhou <zhouzhouyi@gmail.com>
-Cc:     daniel@ffwll.ch, deller@gmx.de, sam@ravnborg.org,
-        linux@roeck-us.net, willy@infradead.org,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, rcu@vger.kernel.org,
-        pmenzel@molgen.mpg.de
-Subject: Re: [PATCH linux-next] video: fbdev: fbmem: fix pointer reference to
- null device field
-Message-ID: <20220211012618.GA4285@paulmck-ThinkPad-P17-Gen-1>
-Reply-To: paulmck@kernel.org
-References: <20220210065824.368355-1-zhouzhouyi@gmail.com>
+        Thu, 10 Feb 2022 22:30:08 -0500
+X-Greylist: delayed 63 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 10 Feb 2022 19:30:07 PST
+Received: from qq.com (smtpbg464.qq.com [59.36.132.32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 301972710
+        for <linux-fbdev@vger.kernel.org>; Thu, 10 Feb 2022 19:30:06 -0800 (PST)
+X-QQ-mid: bizesmtp50t1644550079to65l9oo
+Received: from localhost.localdomain (unknown [123.114.60.34])
+        by bizesmtp.qq.com (ESMTP) with 
+        id ; Fri, 11 Feb 2022 11:27:57 +0800 (CST)
+X-QQ-SSF: 01400000000000B0L000B00A0000000
+X-QQ-FEAT: F3yR32iATbh2oLBgY04bLCEUrugK2eYu4uqKzn4vZXr8M3FhjTaXhTsqQBEGA
+        1bFiRILN7D7WuAlXkxS9K6wuxbIdfTOvRUPUc//342iGA4AzJ2ggNOHQyQjx1WOpFSfWPIB
+        GGlRpicv3TZMkOyuYQSiWFlgtLY9vw69udozN1/DwrdX+yChhQq9zOyjzn2BkEjIJ2z1Sqi
+        r7vsbqLo42piW5VVPu0IQRh6GyHruikoqHcT/Xr4HNvJUOSulO8P+8FF9oE9M9DsW6UGuB9
+        yGbEJuu2gF7uT5B9RxzK4jb12w8Deol0kDfhrhTxBePHSsfuGRryHcQtSIC5aVaOZnvyF7I
+        +eBXrlcM4Y2JsmK3VT4FW26RuQqwyXUlO0hVF4S
+X-QQ-GoodBg: 2
+From:   zhaoxiao <zhaoxiao@uniontech.com>
+To:     jingoohan1@gmail.com, deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, zhaoxiao <zhaoxiao@uniontech.com>
+Subject: [PATCH] video: s3c-fb: Use platform_get_irq() to get the interrupt
+Date:   Fri, 11 Feb 2022 11:27:55 +0800
+Message-Id: <20220211032755.2271-1-zhaoxiao@uniontech.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220210065824.368355-1-zhouzhouyi@gmail.com>
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:uniontech.com:qybgforeign:qybgforeign7
+X-QQ-Bgrelay: 1
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Feb 10, 2022 at 02:58:24PM +0800, Zhouyi Zhou wrote:
-> In function do_remove_conflicting_framebuffers, if device is NULL, there
-> will be null pointer reference. The patch add a check to the if expression.
-> 
-> Signed-off-by: Zhouyi Zhou <zhouzhouyi@gmail.com>
-> ---
-> Dear Linux folks
-> 
-> I discover this bug in the PowerPC VM provided by
-> Open source lab of Oregon State University:
-> 
-> https://lkml.org/lkml/2022/2/8/1145
-> 
-> I found that the root cause of null device field is in offb_init_fb:
-> info = framebuffer_alloc(sizeof(u32) * 16, NULL);
-> 
-> I have tested the patch in the PowerPC VM. Hope my patch can be correct.
+platform_get_resource(pdev, IORESOURCE_IRQ, ..) relies on static
+allocation of IRQ resources in DT core code, this causes an issue
+when using hierarchical interrupt domains using "interrupts" property
+in the node as this bypassed the hierarchical setup and messed up the
+irq chaining.
 
-This looks plausible to me, but I am quite unfamiliar with this code.
+In preparation for removal of static setup of IRQ resource from DT core
+code use platform_get_irq().
 
-						Thanx, Paul
+Signed-off-by: zhaoxiao <zhaoxiao@uniontech.com>
+---
+ drivers/video/fbdev/s3c-fb.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-> Many Thanks
-> Zhouyi
-> --
->  drivers/video/fbdev/core/fbmem.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> index 34d6bb1bf82e..422b1fc01722 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -1579,7 +1579,7 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
->  			 * If it's not a platform device, at least print a warning. A
->  			 * fix would add code to remove the device from the system.
->  			 */
-> -			if (dev_is_platform(device)) {
-> +			if (device && dev_is_platform(device)) {
->  				registered_fb[i]->forced_out = true;
->  				platform_device_unregister(to_platform_device(device));
->  			} else {
-> -- 
-> 2.25.1
-> 
+diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
+index 3b134e1bbc38..6ead7d3e2312 100644
+--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -1360,7 +1360,6 @@ static int s3c_fb_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct s3c_fb_platdata *pd;
+ 	struct s3c_fb *sfb;
+-	struct resource *res;
+ 	int win;
+ 	int ret = 0;
+ 	u32 reg;
+@@ -1418,13 +1417,13 @@ static int s3c_fb_probe(struct platform_device *pdev)
+ 		goto err_lcd_clk;
+ 	}
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+-	if (!res) {
++	sfb->irq_no = platform_get_irq(pdev, 0);
++	if (sfb->irq_no < 0) {
+ 		dev_err(dev, "failed to acquire irq resource\n");
+ 		ret = -ENOENT;
+ 		goto err_lcd_clk;
+ 	}
+-	sfb->irq_no = res->start;
++
+ 	ret = devm_request_irq(dev, sfb->irq_no, s3c_fb_irq,
+ 			  0, "s3c_fb", sfb);
+ 	if (ret) {
+-- 
+2.20.1
+
+
+ÿÿÿÿÿÿÿ¡
+

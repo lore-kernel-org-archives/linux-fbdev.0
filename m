@@ -2,124 +2,135 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7573FC433F5
-	for <linux-fbdev@archiver.kernel.org>; Sat, 12 Feb 2022 05:37:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0B7DC433EF
+	for <linux-fbdev@archiver.kernel.org>; Sat, 12 Feb 2022 12:00:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230094AbiBLFhu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 12 Feb 2022 00:37:50 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:53196 "EHLO
+        id S234347AbiBLMAH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 12 Feb 2022 07:00:07 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:51906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229593AbiBLFht (ORCPT
+        with ESMTP id S234295AbiBLMAG (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 12 Feb 2022 00:37:49 -0500
-Received: from m12-11.163.com (m12-11.163.com [220.181.12.11])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C23F828E11
-        for <linux-fbdev@vger.kernel.org>; Fri, 11 Feb 2022 21:37:46 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-        s=s110527; h=From:Subject:Date:Message-Id; bh=+rkLnFEw/F72LXvQmH
-        YzCB1m1Q8pCUyXlsVR+D9N1Ek=; b=ZvrJpF6InV9uNFn/Z9rp2/B08htqfd3z0r
-        RxQHGzGKqFz7FHwEY/zWuOnfMdzWlX2urmhTpcGIyQmttSPtLMIPl8fC5eJq+Jkr
-        erb8hyvdnUj7Dph3SnMDtSVrRm2x7XEwjM557z36RBMeAJndTLQCzaMfuYc4V2p2
-        FfVb2MC8E=
-Received: from localhost.localdomain (unknown [218.201.129.19])
-        by smtp7 (Coremail) with SMTP id C8CowAD3yyCJRwdiTaJ8Cg--.28180S2;
-        Sat, 12 Feb 2022 13:37:14 +0800 (CST)
-From:   qianfanguijin@163.com
-To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc:     preid@electromag.com.au, andriy.shevchenko@linux.intel.com,
-        qianfan Zhao <qianfanguijin@163.com>
-Subject: [PATCH] drivers: fbtft: Add property 'keep-bootlogo'
-Date:   Sat, 12 Feb 2022 13:37:11 +0800
-Message-Id: <20220212053711.26481-1-qianfanguijin@163.com>
-X-Mailer: git-send-email 2.17.1
-X-CM-TRANSID: C8CowAD3yyCJRwdiTaJ8Cg--.28180S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxWw1fJr4kuFyrArW8GF1fCrg_yoW5Cw18pa
-        yUJay5K3y8KFWq9w1UWr4UuFy3Ga4UZF1kK3sxKw1FqFn7XrZ5Xr1rGFyqy3ZYqrZ3Aa40
-        kF18GrsFg3yDGr7anT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-        9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zMjgxUUUUUU=
-X-Originating-IP: [218.201.129.19]
-X-CM-SenderInfo: htld0w5dqj3xxmlqqiywtou0bp/xtbB2AOl7WBHIrLMfAACsW
+        Sat, 12 Feb 2022 07:00:06 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E70E72657A
+        for <linux-fbdev@vger.kernel.org>; Sat, 12 Feb 2022 04:00:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1644667202;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=jK813oefzdJ0/6NSnx2Rn+uJkfooQvk/5JjGhJEhjG4=;
+        b=M5cSn+lbzAwUUNA3X6M13PUh/jnYhepGRkA+ttNY2lxgINVLH3yg8r2U1KUP5SwVTiqR8i
+        zL+GZdyLUpvidUzgtq+Gi93FZOgOI6qrLiUs4LHAN8HkxxXrt0nwXmXgl5ZK5Bg4z3tke6
+        V6L5+LqTQLj0LN0HN3LVnmehDhoQeCM=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-261-dpbtpJBzNHiFwYaxb-fR2Q-1; Sat, 12 Feb 2022 07:00:00 -0500
+X-MC-Unique: dpbtpJBzNHiFwYaxb-fR2Q-1
+Received: by mail-wm1-f71.google.com with SMTP id ay41-20020a05600c1e2900b0037c5168b3c4so981040wmb.7
+        for <linux-fbdev@vger.kernel.org>; Sat, 12 Feb 2022 04:00:00 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:from:to:cc:references:in-reply-to
+         :content-transfer-encoding;
+        bh=jK813oefzdJ0/6NSnx2Rn+uJkfooQvk/5JjGhJEhjG4=;
+        b=0r4wJO+oxu5fjKo65o/XsIzYrFRr+D1Cyfx5MzVX8zTUXrxL+0Pi4CmG7hSfMPsVR7
+         JtOx92V6Qobw1k6Sb73m9hqdrO8OO8jvkT//P0gwBwZiMPjyx47xkYNRWeClGUD5xKzw
+         FRfSHbe3h94MZFpmmpk7iqOU5d88DohOrndhiyDgBrrHhnLO62xEM8j/phEhpgQ/kUtu
+         d7PStkO68Z7wTyYOGgH9d0yw8s9QPsH/Iz0z9/g/GHi4Qgr2AFYpzU5rJa27IkXbZnwO
+         8E8RyaM7vt4szb2YpGLAqxysnweIfZAjZOK+6pbRsZ4Z72vRmeMVWAq92NeucoOwxCWU
+         MHAA==
+X-Gm-Message-State: AOAM531+5cTgy4gpbUwOYuZvtw70HogZDkenphvO+avqe7s7dSNDS+Rj
+        OfaWjwsfGLIXoh6FwYt+pQ4mZuxg8kIN6tQJY/mb1EGjyvYSUvKx+xvELkcF6rRex27ipuhjBUF
+        ayjZVScItC29W0BYeRlJHrhs=
+X-Received: by 2002:a1c:f719:: with SMTP id v25mr4009108wmh.76.1644667199564;
+        Sat, 12 Feb 2022 03:59:59 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJxqcd4dGlKYOI049Do/ZHhERD6/7Hy1dVWu5MU99kNymZnm7xY+hxKOCJB2SsFLPO7HLwF65A==
+X-Received: by 2002:a1c:f719:: with SMTP id v25mr4009079wmh.76.1644667199249;
+        Sat, 12 Feb 2022 03:59:59 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id m6sm27501060wrw.54.2022.02.12.03.59.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 12 Feb 2022 03:59:58 -0800 (PST)
+Message-ID: <3e749d3b-a307-2c9e-be0a-2d2fc4647dd5@redhat.com>
+Date:   Sat, 12 Feb 2022 12:59:56 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v5 3/6] drm: Add driver for Solomon SSD130x OLED displays
+Content-Language: en-US
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc:     linux-kernel@vger.kernel.org,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        linux-fbdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        dri-devel@lists.freedesktop.org,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Lee Jones <lee.jones@linaro.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        linux-pwm@vger.kernel.org
+References: <20220211143358.3112958-1-javierm@redhat.com>
+ <20220211143358.3112958-4-javierm@redhat.com>
+ <YgaLGDVscXlANxcZ@smile.fi.intel.com>
+ <001ee392-d457-31e5-0087-272ef82afd12@redhat.com>
+In-Reply-To: <001ee392-d457-31e5-0087-272ef82afd12@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: qianfan Zhao <qianfanguijin@163.com>
+On 2/11/22 20:19, Javier Martinez Canillas wrote:
 
-Keep the logo draw by bootloader
+[snip]
 
-Signed-off-by: qianfan Zhao <qianfanguijin@163.com>
----
- drivers/staging/fbtft/fbtft-core.c | 6 ++++--
- drivers/staging/fbtft/fbtft.h      | 4 ++++
- 2 files changed, 8 insertions(+), 2 deletions(-)
+>> I would put GENMASK() directly into FIELD(), but it's up to you
+>> (and I haven't checked the use of *_MASK anyway).
+>>
+> 
+> Same. I also considered just using GENMASK() directly, but since I was
+> already reworking these, I thought that having the _MASK constant macros
+> would make the code more explicit about these being masks and what for.
+>
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 37548848af99..d683c2c54131 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -713,6 +713,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	par->buf = buf;
- 	spin_lock_init(&par->dirty_lock);
- 	par->bgr = pdata->bgr;
-+	par->keep_bootlogo = pdata->keep_bootlogo;
- 	par->startbyte = pdata->startbyte;
- 	par->init_sequence = init_sequence;
- 	par->gamma.curves = gamma_curves;
-@@ -838,8 +839,8 @@ int fbtft_register_framebuffer(struct fb_info *fb_info)
- 			goto reg_fail;
- 	}
- 
--	/* update the entire display */
--	par->fbtftops.update_display(par, 0, par->info->var.yres - 1);
-+	if (!par->keep_bootlogo) /* update the entire display */
-+		par->fbtftops.update_display(par, 0, par->info->var.yres - 1);
- 
- 	if (par->fbtftops.set_gamma && par->gamma.curves) {
- 		ret = par->fbtftops.set_gamma(par, par->gamma.curves);
-@@ -1176,6 +1177,7 @@ static struct fbtft_platform_data *fbtft_properties_read(struct device *dev)
- 	pdata->display.debug = fbtft_property_value(dev, "debug");
- 	pdata->rotate = fbtft_property_value(dev, "rotate");
- 	pdata->bgr = device_property_read_bool(dev, "bgr");
-+	pdata->keep_bootlogo = device_property_read_bool(dev, "keep-bootlogo");
- 	pdata->fps = fbtft_property_value(dev, "fps");
- 	pdata->txbuflen = fbtft_property_value(dev, "txbuflen");
- 	pdata->startbyte = fbtft_property_value(dev, "startbyte");
-diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index 6751c129df4d..6232e203544a 100644
---- a/drivers/staging/fbtft/fbtft.h
-+++ b/drivers/staging/fbtft/fbtft.h
-@@ -126,6 +126,7 @@ struct fbtft_display {
-  * @gpios: Pointer to an array of pinname to gpio mappings
-  * @rotate: Display rotation angle
-  * @bgr: LCD Controller BGR bit
-+ * @keep_bootlogo: Keep the logo draw by bootloader
-  * @fps: Frames per second (this will go away, use @fps in @fbtft_display)
-  * @txbuflen: Size of transmit buffer
-  * @startbyte: When set, enables use of Startbyte in transfers
-@@ -136,6 +137,7 @@ struct fbtft_platform_data {
- 	struct fbtft_display display;
- 	unsigned int rotate;
- 	bool bgr;
-+	bool keep_bootlogo;
- 	unsigned int fps;
- 	int txbuflen;
- 	u8 startbyte;
-@@ -186,6 +188,7 @@ struct fbtft_platform_data {
-  * @first_update_done: Used to only time the first display update
-  * @update_time: Used to calculate 'fps' in debug output
-  * @bgr: BGR mode/\n
-+ * @keep_bootlogo: Keep the logo draw by bootloader
-  * @extra: Extra info needed by driver
-  */
- struct fbtft_par {
-@@ -227,6 +230,7 @@ struct fbtft_par {
- 	bool first_update_done;
- 	ktime_t update_time;
- 	bool bgr;
-+	bool keep_bootlogo;
- 	void *extra;
- };
- 
+Just to make clear, I prefer to keep the GENMASK(n, n) and *_MASK here.
+
+[snip]
+
+>>
+>>> +	bl = devm_backlight_device_register(dev, dev_name(dev), dev, ssd130x,
+>>> +					    &ssd130xfb_bl_ops, NULL);
+>>> +	if (IS_ERR(bl))
+>>> +		return ERR_PTR(dev_err_probe(dev, PTR_ERR(bl),
+>>> +					     "Unable to register backlight device\n"));
+>>
+>> Can be consistent with this then.
+>>
+> 
+> Yes. I meant to change it everywhere but seems that one slipped it through.
+> 
+> It's not worth to send a v6 just for the changes you mentioned but I can do
+> them before pushing the patches to drm-misc (once I get ack for this patch).
+> 
+
+Another option is to post a v6 only for patch 3/6 instead of all the patch-set.
+Let me know what you prefer.
+
+Best regards,
 -- 
-2.17.1
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 

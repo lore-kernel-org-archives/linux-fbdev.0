@@ -2,85 +2,108 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02B2AC433FE
-	for <linux-fbdev@archiver.kernel.org>; Sun, 13 Feb 2022 07:41:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1304C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Feb 2022 06:12:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234206AbiBMHlv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 13 Feb 2022 02:41:51 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:54118 "EHLO
+        id S240785AbiBNGM4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Feb 2022 01:12:56 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:52838 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234070AbiBMHlv (ORCPT
+        with ESMTP id S240750AbiBNGMk (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 13 Feb 2022 02:41:51 -0500
-Received: from smtp.smtpout.orange.fr (smtp07.smtpout.orange.fr [80.12.242.129])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 671F323BC7
-        for <linux-fbdev@vger.kernel.org>; Sat, 12 Feb 2022 23:41:44 -0800 (PST)
-Received: from pop-os.home ([90.126.236.122])
-        by smtp.orange.fr with ESMTPA
-        id J9VsnUjWKSDrIJ9VtnIP2o; Sun, 13 Feb 2022 08:41:42 +0100
-X-ME-Helo: pop-os.home
-X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
-X-ME-Date: Sun, 13 Feb 2022 08:41:42 +0100
-X-ME-IP: 90.126.236.122
-From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To:     Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>
-Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH] backlight: backlight: Slighly simplify devm_of_find_backlight()
-Date:   Sun, 13 Feb 2022 08:41:39 +0100
-Message-Id: <f998a4291d865273afa0d1f85764a9ac7fbc1b64.1644738084.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.32.0
+        Mon, 14 Feb 2022 01:12:40 -0500
+Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A6845622D;
+        Sun, 13 Feb 2022 22:12:22 -0800 (PST)
+X-UUID: 532b5e9ab4954fe3a190f813a1171ddb-20220214
+X-UUID: 532b5e9ab4954fe3a190f813a1171ddb-20220214
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw02.mediatek.com
+        (envelope-from <yong.wu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1068203619; Mon, 14 Feb 2022 14:12:16 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ 15.2.792.15; Mon, 14 Feb 2022 14:12:15 +0800
+Received: from localhost.localdomain (10.17.3.154) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Mon, 14 Feb 2022 14:12:13 +0800
+From:   Yong Wu <yong.wu@mediatek.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        <dri-devel@lists.freedesktop.org>
+CC:     James Wang <james.qian.wang@arm.com>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        <iommu@lists.linux-foundation.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        <linux-kernel@vger.kernel.org>, "Joerg Roedel" <joro@8bytes.org>,
+        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        <linux-mediatek@lists.infradead.org>,
+        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        "Stephen Boyd" <sboyd@kernel.org>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        Hsin-Yi Wang <hsinyi@chromium.org>,
+        Robin Murphy <robin.murphy@arm.com>,
+        Tomasz Figa <tfiga@chromium.org>,
+        <srv_heupstream@mediatek.com>, Rob Clark <robdclark@gmail.com>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Yong Wu <yong.wu@mediatek.com>, "Helge Deller" <deller@gmx.de>,
+        <linux-omap@vger.kernel.org>, <linux-fbdev@vger.kernel.org>
+Subject: [PATCH 22/23] video: omapfb: dss: Make use of the helper component_compare_dev
+Date:   Mon, 14 Feb 2022 14:08:18 +0800
+Message-ID: <20220214060819.7334-23-yong.wu@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20220214060819.7334-1-yong.wu@mediatek.com>
+References: <20220214060819.7334-1-yong.wu@mediatek.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Use devm_add_action_or_reset() instead of devm_add_action()+hand writing
-what is done in the release function, should an error occur.
+Use the common compare helper from component.
 
-This is more straightforward and saves a few lines of code.
-
-While at it, remove a useless test in devm_backlight_release(). 'data' is
-known to be not NULL when this function is called.
-
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Yong Wu <yong.wu@mediatek.com>
 ---
- drivers/video/backlight/backlight.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index 4ae6fae94ac2..b788ff3d0f45 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -710,8 +710,7 @@ static void devm_backlight_release(void *data)
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+index a6b1c1598040..45b9d3cf3860 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+@@ -1193,12 +1193,6 @@ static const struct component_master_ops dss_component_ops = {
+ 	.unbind = dss_unbind,
+ };
+ 
+-static int dss_component_compare(struct device *dev, void *data)
+-{
+-	struct device *child = data;
+-	return dev == child;
+-}
+-
+ static int dss_add_child_component(struct device *dev, void *data)
  {
- 	struct backlight_device *bd = data;
+ 	struct component_match **match = data;
+@@ -1212,7 +1206,7 @@ static int dss_add_child_component(struct device *dev, void *data)
+ 	if (strstr(dev_name(dev), "rfbi"))
+ 		return 0;
  
--	if (bd)
--		put_device(&bd->dev);
-+	put_device(&bd->dev);
- }
+-	component_match_add(dev->parent, match, dss_component_compare, dev);
++	component_match_add(dev->parent, match, component_compare_dev, dev);
  
- /**
-@@ -737,11 +736,10 @@ struct backlight_device *devm_of_find_backlight(struct device *dev)
- 	bd = of_find_backlight(dev);
- 	if (IS_ERR_OR_NULL(bd))
- 		return bd;
--	ret = devm_add_action(dev, devm_backlight_release, bd);
--	if (ret) {
--		put_device(&bd->dev);
-+	ret = devm_add_action_or_reset(dev, devm_backlight_release, bd);
-+	if (ret)
- 		return ERR_PTR(ret);
--	}
-+
- 	return bd;
+ 	return 0;
  }
- EXPORT_SYMBOL(devm_of_find_backlight);
 -- 
-2.32.0
+2.18.0
 

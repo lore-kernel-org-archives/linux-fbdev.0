@@ -2,121 +2,126 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89485C433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Feb 2022 13:39:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 748E4C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Feb 2022 14:00:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354414AbiBNNjw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Feb 2022 08:39:52 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:52954 "EHLO
+        id S1352173AbiBNOAd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Feb 2022 09:00:33 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:40186 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354395AbiBNNju (ORCPT
+        with ESMTP id S245234AbiBNOAd (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Feb 2022 08:39:50 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7C15D55499
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Feb 2022 05:39:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1644845981;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=Etof0neSgRXt027GXsgMkq+0wQ1AzPcD2BHFX9AFsyc=;
-        b=bd1v2bS/soZIYMR2fHFdXMHG4K22IGIoMeOCdOOBLqcxQnwz1l5pCZ3TblCtuQr+ncQBdG
-        VZ4VrhnbGExpQk08AcSnw0RtKndrlSL/Yhe03XawdnLNhBM91QB0hL8l7w6voztglSxgcX
-        MBmwUXNgQ5qXA4BkCG0NH067ZxcMc1o=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-618-v5yWgXujPVmJPZynNMbevw-1; Mon, 14 Feb 2022 08:39:40 -0500
-X-MC-Unique: v5yWgXujPVmJPZynNMbevw-1
-Received: by mail-wr1-f69.google.com with SMTP id e11-20020adf9bcb000000b001e316b01456so6906820wrc.21
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Feb 2022 05:39:40 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=Etof0neSgRXt027GXsgMkq+0wQ1AzPcD2BHFX9AFsyc=;
-        b=77n1BkPomx5pFbcad7p9vujdb7/eUSpv+vycwkZO0jWCOry/+EyUXnFiN+Q1uo/NV8
-         MWqUk3bOuxuyx2uzZQxjr32pe6bjsP+2z+0FnEiD1XLr2liaS9E1RH0RXkJPj1ty6I3b
-         W82D/PF0vNkQDNs6v7R+YEOJVn0oXT6uSuOM5HeV7xR38J8hZL/1VyWODbJ2xvoilVIP
-         IX/5RB4KtfaJW0rFReBnAi2o/OSzfFa2xG+IL67Gzjblj9Ji5COArecK9flB0rg3JlTJ
-         QHc6YQ/wvcm2JkNMLyHoK1i6fND2TpAd9JPL3CY7J4AIIljpvjMYGkrot9aFnKnXxagr
-         3ysQ==
-X-Gm-Message-State: AOAM5306Q/4ajto3xjJLol/hF9h5+0eLdqW9u8NYHKbY+dUo6L2cTWcc
-        ZiEWjP7BGkLzT1wUyy58YoK74Kfep3xCrQlIcE9+jy+qEZ8UU6AmWYx9MFGvYh33ll9Y4jRvByH
-        /m0Cypw+a4V0zuGu9UMcnDzY=
-X-Received: by 2002:a5d:4411:: with SMTP id z17mr10986766wrq.384.1644845979248;
-        Mon, 14 Feb 2022 05:39:39 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJx3m0kF1+a4nMfmlEayb8F11MLh6Npr5zmIcoMfkIl8FoBO9TtWTVfjOMLjIXuY3s4cdKK7qA==
-X-Received: by 2002:a5d:4411:: with SMTP id z17mr10986751wrq.384.1644845979070;
-        Mon, 14 Feb 2022 05:39:39 -0800 (PST)
-Received: from minerva.home ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id l15sm11826697wmi.29.2022.02.14.05.39.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Feb 2022 05:39:38 -0800 (PST)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Mon, 14 Feb 2022 09:00:33 -0500
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F2D613EA2;
+        Mon, 14 Feb 2022 06:00:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1644847224; x=1676383224;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=qW3sr4UpfHOJBkGebrV5Id5bVpujcOv1DgqT7fTbuks=;
+  b=B0M9RtAOhQSXR5psybe+1DAicJnW+gDno4ewYWOLd7wIzVyghvFB7Qrd
+   r+xbTN8X4keZ9mO6EKG3vkxVhdhF5gC/VoW2GWc04uJ+ywxpR2U6okl/m
+   OW6ZJh1cNlAKtFUZ66HHY9ECW7uSDcnKXpI6JcSCNlC11izXvEzSIprNB
+   x3Ts1ZPJaUFJ10DlmmdycJqHqqoRPYkfVFtM5F7EGHX7lJxgEYZ3iKy5Z
+   fel1/XRsF+ruItprK8FrKk2Pm/KzKPhDh1Bt0YV9Fso9IXbjippa055Z5
+   ZETDQr20ks3CrsIB3r4ZYDy4JEXdC2foWZM6Ej3fLVERFWGmhdUbA+sJc
+   Q==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10257"; a="248924542"
+X-IronPort-AV: E=Sophos;i="5.88,368,1635231600"; 
+   d="scan'208";a="248924542"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2022 06:00:24 -0800
+X-IronPort-AV: E=Sophos;i="5.88,368,1635231600"; 
+   d="scan'208";a="632157823"
+Received: from unknown (HELO smile.fi.intel.com) ([10.237.72.59])
+  by fmsmga002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2022 06:00:21 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.95)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1nJbsz-004Yhy-62;
+        Mon, 14 Feb 2022 15:59:25 +0200
+Date:   Mon, 14 Feb 2022 15:59:24 +0200
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Jani Nikula <jani.nikula@linux.intel.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
         Maxime Ripard <maxime@cerno.tech>,
-        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Sam Ravnborg <sam@ravnborg.org>, Rob Herring <robh@kernel.org>
-Subject: [PATCH v6 6/6] dt-bindings: display: ssd1307fb: Add myself as binding co-maintainer
-Date:   Mon, 14 Feb 2022 14:39:35 +0100
-Message-Id: <20220214133935.3278933-1-javierm@redhat.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220214133710.3278506-1-javierm@redhat.com>
-References: <20220214133710.3278506-1-javierm@redhat.com>
+        Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH v4 1/6] drm/format-helper: Add
+ drm_fb_xrgb8888_to_gray8_line()
+Message-ID: <YgpgPCT7XVLvwTnr@smile.fi.intel.com>
+References: <20220211091927.2988283-2-javierm@redhat.com>
+ <YgY6OqN+guBlt/ED@smile.fi.intel.com>
+ <4fa465d9-4fac-4199-9a04-d8e09d164308@redhat.com>
+ <YgZEuXvJ2ZiOyNS+@smile.fi.intel.com>
+ <7560cd10-0a7c-3fda-da83-9008833e3901@suse.de>
+ <87pmnt7gm3.fsf@intel.com>
+ <YgaDj6Wld4b7S6DF@smile.fi.intel.com>
+ <f87ce2fa-6b18-f985-eb86-506ce7103db3@suse.de>
+ <YgoxFBGNsrezVxmi@smile.fi.intel.com>
+ <5ee24960-7843-827a-2c47-b93a4b4798e3@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5ee24960-7843-827a-2c47-b93a4b4798e3@suse.de>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The ssd130x DRM driver also makes use of this Device Tree binding to allow
-existing users of the fbdev driver to migrate without the need to change
-their Device Trees.
+On Mon, Feb 14, 2022 at 01:12:48PM +0100, Thomas Zimmermann wrote:
+> Am 14.02.22 um 11:38 schrieb Andy Shevchenko:
+> > On Mon, Feb 14, 2022 at 10:03:53AM +0100, Thomas Zimmermann wrote:
+> > > Am 11.02.22 um 16:41 schrieb Andy Shevchenko:
 
-Add myself as another maintainer of the binding, to make sure that I will
-be on Cc when patches are proposed for it.
+...
 
-Suggested-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-Acked-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
+> > > > > IMO *always* prefer a for loop over while or do-while.
+> > > > > 
+> > > > > The for (i = 0; i < N; i++) is such a strong paradigm in C. You
+> > > > > instantly know how many times you're going to loop, at a glance. Not so
+> > > > > with with the alternatives, which should be used sparingly.
+> > > > 
+> > > > while () {}  _is_ a paradigm, for-loop is syntax sugar on top of it.
+> > > 
+> > > Naw, that's not true.
+> > 
+> > In the section 3.5 "Loops - While and For" in "The C Programming
+> > Language" 2nd by K&R, the authors said:
+> 
+> Year of publication: 1988 . It's not the most up-to-date reference for C
+> programming.
 
-(no changes since v5)
+Yet this makes your above remark invalid, i.e. `for` _is_ syntax sugar despite
+what you think it's idiomatic _nowadays_.
 
-Changes in v5:
-- Add Andy Shevchenko's Reviewed-by tag to patch #6.
+> > 	The for statement ... is equivalent to ... while..."
+> > 
+> > They said that for is equivalent to while, and not otherwise.
+> 
+> Even leaving readability aside, it's not equivalent. You can declare
+> variables as part of the for statement. (I know it's not the kernel's
+> style.) Also, 'continue' statements are not well-suited in for loops,
+> because it's non-obvious if the loop's update statement is being executed.
+> (It isn't.)
 
-Changes in v4:
-- Add Rob Herring Acked-by tag to patch adding as DT binding co-maintainer.
+It's also written in the book :-)
 
-Changes in v2:
-- Add myself as co-maintainer of the ssd1370fb DT binding (Sam Ravnborg).
+> > Also, syntax sugar by definition declares something that can be written as
+> > a single line of code, which usually is done using more (not always).
+> 
+> The discussion has entered the phase of hair splitting. Good.
 
- Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml | 1 +
- 1 file changed, 1 insertion(+)
+I don't know why we are adding an oil into the flames...
 
-diff --git a/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
-index 2ed2a7d0ca2f..9baafd0c42dd 100644
---- a/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
-+++ b/Documentation/devicetree/bindings/display/solomon,ssd1307fb.yaml
-@@ -8,6 +8,7 @@ title: Solomon SSD1307 OLED Controller Framebuffer
- 
- maintainers:
-   - Maxime Ripard <mripard@kernel.org>
-+  - Javier Martinez Canillas <javierm@redhat.com>
- 
- properties:
-   compatible:
 -- 
-2.34.1
+With Best Regards,
+Andy Shevchenko
+
 

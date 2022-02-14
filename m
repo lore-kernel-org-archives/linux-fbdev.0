@@ -2,135 +2,170 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 300B0C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Feb 2022 13:07:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14C94C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Feb 2022 13:29:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233758AbiBNNHX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Feb 2022 08:07:23 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:54428 "EHLO
+        id S229818AbiBNN34 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Feb 2022 08:29:56 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:46680 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233705AbiBNNHW (ORCPT
+        with ESMTP id S234405AbiBNN34 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Feb 2022 08:07:22 -0500
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 463AE4BFDF;
-        Mon, 14 Feb 2022 05:07:09 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1644844029; x=1676380029;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=cmRpyW5YxpRg0c6HVe02t3+JA7Epz3P6WvJ1r9gZPiM=;
-  b=fwnRiMLdnK/rmaMb7i6Y8iHrmqfh05bm8jOVB+xUxzKzpjVXqo6YXCAM
-   tP2aebyqD3f2Kov0sU36MQ6VugzMbpZiEMB24R4mQW5D4p6Q4bxn3GfDp
-   nscKJRZ23130KaUivYRP5tWZ5Ya3gjKJbO06iV02TBtuUkfd73tGMQ+m3
-   UE1S1Asn0wFByk6osL1SwBfOOsjt/0GE9JsNRzY7vQipL6fH+9+VsVxm5
-   zaQ1QiDvgw5UHTQDJPk2ni2hKttiGdMi4A4mojvmuPoZ54Qx2pL93pLm0
-   25Ax/qAYIcc37W5kR3/VqctpXpcsJcOJhHnVVQCFRhrwMbITXA7s6Qf3q
-   A==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10257"; a="230721425"
-X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
-   d="scan'208";a="230721425"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2022 05:07:09 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
-   d="scan'208";a="543555384"
-Received: from stinkpipe.fi.intel.com (HELO stinkbox) ([10.237.72.151])
-  by orsmga008.jf.intel.com with SMTP; 14 Feb 2022 05:07:04 -0800
-Received: by stinkbox (sSMTP sendmail emulation); Mon, 14 Feb 2022 15:07:03 +0200
-Date:   Mon, 14 Feb 2022 15:07:03 +0200
-From:   Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v4 1/6] drm/format-helper: Add
- drm_fb_xrgb8888_to_gray8_line()
-Message-ID: <YgpT91j+WajkuqXm@intel.com>
-References: <4fa465d9-4fac-4199-9a04-d8e09d164308@redhat.com>
- <YgZEuXvJ2ZiOyNS+@smile.fi.intel.com>
- <7560cd10-0a7c-3fda-da83-9008833e3901@suse.de>
- <87pmnt7gm3.fsf@intel.com>
- <YgaDj6Wld4b7S6DF@smile.fi.intel.com>
- <f87ce2fa-6b18-f985-eb86-506ce7103db3@suse.de>
- <YgoxFBGNsrezVxmi@smile.fi.intel.com>
- <5ee24960-7843-827a-2c47-b93a4b4798e3@suse.de>
- <YgpPR/lObRWwkjNN@intel.com>
- <65010c63-ef8a-4fff-00e4-73a9b6fd05b8@suse.de>
+        Mon, 14 Feb 2022 08:29:56 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 714DA4F9F0
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Feb 2022 05:29:48 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 2C13B1F38B;
+        Mon, 14 Feb 2022 13:29:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1644845387; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=dBYFKpfYPiq5qXDA4uSe9C+FEeYwTU0ApnNbJpDmu7U=;
+        b=vQIcyFZlRqNCiymSeRHK0mN+ozEkatEkESJ/IetNRGz+C2v0OUShJX9uDFaYG3elKooT+r
+        Go86x6ctYgsXc9Zd2ggVYd7N4qnuplPenbB8Yl2bocNm9pMiN2oAlHOa7s3UAXGM5JVxyF
+        ANnr0HEjqPceC6mt42UDur7aIMjXvuM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1644845387;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=dBYFKpfYPiq5qXDA4uSe9C+FEeYwTU0ApnNbJpDmu7U=;
+        b=zglN0Cribnhsg7fGfo2i8rCHebd7Lyd0jg0YrAvprUZSrshrAlg3AItBKF+GVYp9/lHAKH
+        GMV8doFWJDSGotDw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E520913B2B;
+        Mon, 14 Feb 2022 13:29:46 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id HclINkpZCmKcJwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 14 Feb 2022 13:29:46 +0000
+Message-ID: <4a0697de-52db-97e7-d528-c7e2fe000e66@suse.de>
+Date:   Mon, 14 Feb 2022 14:29:46 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <65010c63-ef8a-4fff-00e4-73a9b6fd05b8@suse.de>
-X-Patchwork-Hint: comment
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 2/2] fbdev: Don't sort deferred-I/O pages by default
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     linux-fbdev@vger.kernel.org, deller@gmx.de,
+        linux-staging@lists.linux.dev, bernie@plugable.com,
+        dri-devel@lists.freedesktop.org, javierm@redhat.com,
+        noralf@tronnes.org, andriy.shevchenko@linux.intel.com,
+        jayalk@intworks.biz
+References: <20220210141111.5231-1-tzimmermann@suse.de>
+ <20220210141111.5231-3-tzimmermann@suse.de>
+ <CAMuHMdVb1JjZkEo-PM6DTXOywcmJDRr0a=Ci94DJCj7dXbbihw@mail.gmail.com>
+ <9b2e2649-1511-66a3-b346-60863de788fc@suse.de>
+ <CAMuHMdWPw8UcTVown3Zghxn11-WuqSBNCWKpP3T5NUxxZmntcA@mail.gmail.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <CAMuHMdWPw8UcTVown3Zghxn11-WuqSBNCWKpP3T5NUxxZmntcA@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------cY83eb3xDQ46xO4efc8b4xec"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Feb 14, 2022 at 01:54:59PM +0100, Thomas Zimmermann wrote:
-> Hi
-> 
-> Am 14.02.22 um 13:47 schrieb Ville Syrjälä:
-> > On Mon, Feb 14, 2022 at 01:12:48PM +0100, Thomas Zimmermann wrote:
-> >> Hi
-> >>
-> >> Am 14.02.22 um 11:38 schrieb Andy Shevchenko:
-> >>> On Mon, Feb 14, 2022 at 10:03:53AM +0100, Thomas Zimmermann wrote:
-> >>>> Am 11.02.22 um 16:41 schrieb Andy Shevchenko:
-> >>>
-> >>> ...
-> >>>
-> >>>>>> IMO *always* prefer a for loop over while or do-while.
-> >>>>>>
-> >>>>>> The for (i = 0; i < N; i++) is such a strong paradigm in C. You
-> >>>>>> instantly know how many times you're going to loop, at a glance. Not so
-> >>>>>> with with the alternatives, which should be used sparingly.
-> >>>>>
-> >>>>> while () {}  _is_ a paradigm, for-loop is syntax sugar on top of it.
-> >>>>
-> >>>> Naw, that's not true.
-> >>>
-> >>> In the section 3.5 "Loops - While and For" in "The C Programming
-> >>> Language" 2nd by K&R, the authors said:
-> >>
-> >> Year of publication: 1988 . It's not the most up-to-date reference for C
-> >> programming.
-> >>
-> >>>
-> >>> 	The for statement ... is equivalent to ... while..."
-> >>>
-> >>> They said that for is equivalent to while, and not otherwise.
-> >>
-> >> Even leaving readability aside, it's not equivalent. You can declare
-> >> variables as part of the for statement. (I know it's not the kernel's
-> >> style.) Also, 'continue' statements are not well-suited in for loops,
-> >> because it's non-obvious if the loop's update statement is being
-> >> executed. (It isn't.)
-> > 
-> > It is.
-> > 
-> > 'continue' is just shorthand for 'goto end_of_loop_body'.
-> 
-> Well, indeed. lol
-> 
-> Fun fact: I actually had to look this up and still got it wrong. Let me 
-> just count it under proving-my-point: continue in a for statement is a 
-> bad idea and for isn't equivalent to while.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------cY83eb3xDQ46xO4efc8b4xec
+Content-Type: multipart/mixed; boundary="------------7oyYbAfnymsn2oK8u0wDPWX0";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev@vger.kernel.org, deller@gmx.de,
+ linux-staging@lists.linux.dev, bernie@plugable.com,
+ dri-devel@lists.freedesktop.org, javierm@redhat.com, noralf@tronnes.org,
+ andriy.shevchenko@linux.intel.com, jayalk@intworks.biz
+Message-ID: <4a0697de-52db-97e7-d528-c7e2fe000e66@suse.de>
+Subject: Re: [PATCH 2/2] fbdev: Don't sort deferred-I/O pages by default
+References: <20220210141111.5231-1-tzimmermann@suse.de>
+ <20220210141111.5231-3-tzimmermann@suse.de>
+ <CAMuHMdVb1JjZkEo-PM6DTXOywcmJDRr0a=Ci94DJCj7dXbbihw@mail.gmail.com>
+ <9b2e2649-1511-66a3-b346-60863de788fc@suse.de>
+ <CAMuHMdWPw8UcTVown3Zghxn11-WuqSBNCWKpP3T5NUxxZmntcA@mail.gmail.com>
+In-Reply-To: <CAMuHMdWPw8UcTVown3Zghxn11-WuqSBNCWKpP3T5NUxxZmntcA@mail.gmail.com>
 
-Nah. We use 'continue' a *lot* in for loops in kms/atomic code.
-I'd be surprised if you can find many loops without a 'continue'.
+--------------7oyYbAfnymsn2oK8u0wDPWX0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Looking at the loc stats I was a bit surprised to see more 'break'
-but then I realized switch() is bloating up those numbers quite
-a bit.
+SGkNCg0KQW0gMTQuMDIuMjIgdW0gMTA6MDUgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
+DQo+IEhpIFRob21hcywNCj4gDQo+IE9uIE1vbiwgRmViIDE0LCAyMDIyIGF0IDk6MjggQU0g
+VGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+IHdyb3RlOg0KPj4gQW0g
+MTQuMDIuMjIgdW0gMDk6MDUgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46DQo+Pj4gT24g
+VGh1LCBGZWIgMTAsIDIwMjIgYXQgNDoyNCBQTSBUaG9tYXMgWmltbWVybWFubiA8dHppbW1l
+cm1hbm5Ac3VzZS5kZT4gd3JvdGU6DQo+Pj4+IEZiZGV2J3MgZGVmZXJyZWQgSS9PIHNvcnRz
+IGFsbCBkaXJ0eSBwYWdlcyBieSBkZWZhdWx0LCB3aGljaCBpbmN1cnMgYQ0KPj4+PiBzaWdu
+aWZpY2FudCBvdmVyaGVhZC4gTWFrZSB0aGUgc29ydGluZyBzdGVwIG9wdGlvbmFsIGFuZCB1
+cGRhdGUgdGhlIGZldw0KPj4+PiBkcml2ZXJzIHRoYXQgcmVxdWlyZSBpdC4gVXNlIGEgRklG
+TyBsaXN0IGJ5IGRlZmF1bHQuDQo+Pj4+DQo+Pj4+IFNvcnRpbmcgcGFnZXMgYnkgbWVtb3J5
+IG9mZnNldCBmb3IgZGVmZXJyZWQgSS9PIHBlcmZvcm1zIGFuIGltcGxpY2l0DQo+Pj4+IGJ1
+YmJsZS1zb3J0IHN0ZXAgb24gdGhlIGxpc3Qgb2YgZGlydHkgcGFnZXMuIFRoZSBhbGdvcml0
+aG0gZ29lcyB0aHJvdWdoDQo+Pj4+IHRoZSBsaXN0IG9mIGRpcnR5IHBhZ2VzIGFuZCBpbnNl
+cnRzIGVhY2ggbmV3IHBhZ2UgYWNjb3JkaW5nIHRvIGl0cw0KPj4+PiBpbmRleCBmaWVsZC4g
+RXZlbiB3b3JzZSwgbGlzdCB0cmF2ZXJzYWwgYWx3YXlzIHN0YXJ0cyBhdCB0aGUgZmlyc3QN
+Cj4+Pj4gZW50cnkuIEFzIHZpZGVvIG1lbW9yeSBpcyBtb3N0IGxpa2VseSB1cGRhdGVkIHNj
+YW5saW5lIGJ5IHNjYW5saW5lLCB0aGUNCj4+Pj4gYWxnb3JpdGhtIHRyYXZlcnNlcyB0aHJv
+dWdoIHRoZSBjb21wbGV0ZSBsaXN0IGZvciBlYWNoIHVwZGF0ZWQgcGFnZS4NCj4+Pj4NCj4+
+Pj4gRm9yIGV4YW1wbGUsIHdpdGggMTAyNHg3Njh4MzJicHAgYSBwYWdlIGNvdmVycyBleGFj
+dGx5IG9uZSBzY2FubGluZS4NCj4+Pj4gV3JpdGluZyBhIHNpbmdsZSBzY3JlZW4gdXBkYXRl
+IGZyb20gdG9wIHRvIGJvdHRvbSByZXF1aXJlcyB1cGRhdGluZw0KPj4+PiA3NjggcGFnZXMu
+IFdpdGggYW4gYXZlcmFnZSBsaXN0IGxlbmd0aCBvZiAzODQgZW50cmllcywgYSBzY3JlZW4g
+dXBkYXRlDQo+Pj4+IGNyZWF0ZXMgKDc2OCAqIDM4NCA9KSAyOTQ5MTIgY29tcGFyZSBvcGVy
+YXRpb24uDQo+Pj4NCj4+PiBXaGF0IGFib3V0IHVzaW5nIGZvbGlvcz8NCj4+PiBJZiBjb25z
+ZWN1dGl2ZSBwYWdlcyBhcmUgbWVyZ2VkIGludG8gYSBzaW5nbGUgZW50cnksIHRoZXJlJ3Mg
+bXVjaCBsZXNzDQo+Pj4gKG9yIG5vdGhpbmcgaW4gdGhlIGV4YW1wbGUgYWJvdmUpIHRvIHNv
+cnQuDQo+Pg0KPj4gSG93IHdvdWxkIHRoZSBjb2RlIGtub3cgdGhhdD8gQ2FsbHMgdG8gcGFn
+ZV9ta3dyaXRlIGhhcHBlbg0KPj4gcGFnZWZhdWx0LWJ5LXBhZ2VmYXVsdCBpbiBhbnkgb3Jk
+ZXIgQUZBSUNULg0KPiANCj4gZmJfZGVmZXJyZWRfaW9fbWt3cml0ZSgpIHdvdWxkIHN0aWxs
+IGJlIGNhbGxlZCBmb3IgYSBwYWdlLCBidXQgYW4NCj4gYWRqYWNlbnQgcGFnZSBjYW4gYmUg
+bWVyZ2VkIHdpdGggYW4gZXhpc3RpbmcgZW50cnkgd2hpbGUgYWRkaW5nIGl0DQo+IHRvIHRo
+ZSBsaXN0Lg0KDQpJIHN0aWxsIGRvbid0IHVuZGVyc3RhbmQgaG93IHdlJ2QgdXNlIGl0IHRv
+IG91ciBhZHZhbnRhZ2UuIE1vc3QgZHJpdmVycyANCmRvbid0IG5lZWQgc29ydGVkIHBhZ2Vz
+IGF0IGFsbC4gQSBmb2xpbyBoYXMgc3Ryb25nIGFsaWdubWVudCANCnJlcXVpcmVtZW50cyBm
+b3Igc2l6ZSBhbmQgb2Zmc2V0IEFGQUlDVC4gV2UgbWlnaHQgZW5kIHVwIGZsdXNoaW5nIHdh
+eSANCnRvbyBtdWNoIG9mIHRoZSBkaXNwbGF5IG1lbW9yeS4NCg0KQmVzdCByZWdhcmRzDQpU
+aG9tYXMNCg0KPiANCj4gR3J7b2V0amUsZWV0aW5nfXMsDQo+IA0KPiAgICAgICAgICAgICAg
+ICAgICAgICAgICAgR2VlcnQNCj4gDQo+IC0tDQo+IEdlZXJ0IFV5dHRlcmhvZXZlbiAtLSBU
+aGVyZSdzIGxvdHMgb2YgTGludXggYmV5b25kIGlhMzIgLS0gZ2VlcnRAbGludXgtbTY4ay5v
+cmcNCj4gDQo+IEluIHBlcnNvbmFsIGNvbnZlcnNhdGlvbnMgd2l0aCB0ZWNobmljYWwgcGVv
+cGxlLCBJIGNhbGwgbXlzZWxmIGEgaGFja2VyLiBCdXQNCj4gd2hlbiBJJ20gdGFsa2luZyB0
+byBqb3VybmFsaXN0cyBJIGp1c3Qgc2F5ICJwcm9ncmFtbWVyIiBvciBzb21ldGhpbmcgbGlr
+ZSB0aGF0Lg0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAtLSBMaW51cyBU
+b3J2YWxkcw0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2
+ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRz
+dHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5i
+ZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
--- 
-Ville Syrjälä
-Intel
+--------------7oyYbAfnymsn2oK8u0wDPWX0--
+
+--------------cY83eb3xDQ46xO4efc8b4xec
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIKWUoFAwAAAAAACgkQlh/E3EQov+Cn
+7g//VR4bJ50USTs3KzUagxwdNLJmbwe8qSF9xEomwcWVoxO3uiUsIJWcOCJ66IN4S1HD19dAyCtf
+ic0+6vSkUtbtQ4M+Nzowv/yOng+nwoPQzUbK1GvNs8EyK5FHY+DwdvDeUPYssLXNcHVadJNjsrZ4
+hYBfdV+IXPO85D8ZYTG5MSBlVoQxxTpC/X1eqvE5ZhUsRD8khn021DdIcaIxzNAkyraSFpE91zDD
+Pys1ScZ1N1FYo6qv5u3T0zEdGHZMVTJ6ZL2VWoCSNOFMovWjtbzQfXyJ/7f0HtECNfrw5umY8MZC
+tQFgFvl3wg5u3xAXvIU8nIQenaLZobj2xKFeVvFVhmAcJrRQ/beFQ5HzH6BPvazS9YuoMdE/Goi4
+jct6jRA2Exx23aZhsfdZ19p7Wooj1f/vKHIEdoXIPBvzZK+r8DgDewYMqHgDmCdDL9Rc0+lPE8Wb
+acfSOUco4r59dmYnMcrxm0J/3LKQGaaK7ZP8NWg/6mRUjVft7HUbJKIGIr8GuMz+8CqvUtCRUMfg
+thbXvdEirLOd8htcoK4s/98rIHYsZ5fKHcAbPZsVniIKl8FVCEdZ/1Dit6CEnOGjOZjOHxQ4Lhvy
+yi3dtSQZWlpRUZypPAorOvtgP48lspmnjmYMDV4rsmU/g13Y3RtTLH8420qQmV1k2r27AFZ9/zRN
+YkQ=
+=GcVp
+-----END PGP SIGNATURE-----
+
+--------------cY83eb3xDQ46xO4efc8b4xec--

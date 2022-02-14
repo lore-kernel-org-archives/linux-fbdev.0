@@ -2,105 +2,214 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F71BC433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Feb 2022 09:05:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42270C433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Feb 2022 09:17:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231778AbiBNJFf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Feb 2022 04:05:35 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:56732 "EHLO
+        id S242765AbiBNJR1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Feb 2022 04:17:27 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:34920 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231230AbiBNJFf (ORCPT
+        with ESMTP id S242772AbiBNJRY (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Feb 2022 04:05:35 -0500
-Received: from mail-vk1-f180.google.com (mail-vk1-f180.google.com [209.85.221.180])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 342B25FF14
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Feb 2022 01:05:28 -0800 (PST)
-Received: by mail-vk1-f180.google.com with SMTP id n14so8586571vkk.6
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Feb 2022 01:05:28 -0800 (PST)
+        Mon, 14 Feb 2022 04:17:24 -0500
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4CC00606E8;
+        Mon, 14 Feb 2022 01:17:16 -0800 (PST)
+Received: by mail-lf1-x12b.google.com with SMTP id b11so4555358lfb.12;
+        Mon, 14 Feb 2022 01:17:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :mime-version;
+        bh=l9h0FTYLGGXap1dzR54tfKoCeVF0BWZXnPqUVsNDnPk=;
+        b=DkvwKpBhCufekGCIS5SQfzSw8JRCD5NCeSGrPcE9I6Po6jAmlGlUzZTeRka4A91X60
+         WnIiBro4xCKDtdUeNalV6JEU2KSM7JzyWIDz4kmSW0BYHi87Aqj7vd+2tIfxTxbPI8/g
+         05+r82GG9u8cYov5oGUZfMDtob2UsCFFcMsK6emvgWvxIF6P/dZ6LeVk8X0xOxPSHI2H
+         Pmy9A0dKDxP2VvsVsUl1WxfxR1xUqhPN3W4dcIGjgB11vReOpgnFmr52Ykl7CtJUhJSU
+         wJ/pXLQ0Qerjqyqj8Adelkp0i1Fe2B3PmlXGpgQ6RgBaa0P8LA2jh0FKg9c1VcymaSUL
+         0OZQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=ACc7MhlmQaRHyX1iGzVS1S3D+ci69MdBwNfaRqsmbHE=;
-        b=YZhu6SEE8QalJqWI8Ep+I5vQMwIdKru3ikif2s6e4GzXlfnm1ySAH4bvSbCq23LZWk
-         zexP01ECfYXX6kn2GDVfuZNqb4fPZiDziTwyHc4Di3jRMopeEGuJNratbOSsJkY0DFQb
-         BK+8WMPJKox1M7lo9BQDgm1KPeXJfm34FMQ9n6yckEZ1Ca+s1xUfRWH3IdamKOMcp7sV
-         Rt9fkyv+ew3LQSXIti/8I9Pgg7TYy8h7yBx4XvoRsoDBxv6mp//hPCNrAq57AwChaLnh
-         tRlPuNyx+1AtE+W0poyIVpf4mYygKTH9bImPt3Q/R+Ixp1foVOBl5EPCZWicVNLVqQVn
-         If7w==
-X-Gm-Message-State: AOAM530OstqNwPd0PQKv7she6Swn5M1YyoPs5PnsjXIRyHkZZUc/6ft5
-        3HEPNCRIkiRPg6EW0JHqjwn0xe7v/RsnXA==
-X-Google-Smtp-Source: ABdhPJyA602pYytcQyOCGJAPRAlQ9+dXXAs37NoMpMRt4dtxeDihW3TA2IhJlfP4vPU9TO2SDMzhcw==
-X-Received: by 2002:a05:6122:9a8:: with SMTP id g40mr3681130vkd.15.1644829527033;
-        Mon, 14 Feb 2022 01:05:27 -0800 (PST)
-Received: from mail-vs1-f44.google.com (mail-vs1-f44.google.com. [209.85.217.44])
-        by smtp.gmail.com with ESMTPSA id q131sm2273535vkq.23.2022.02.14.01.05.26
-        for <linux-fbdev@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 14 Feb 2022 01:05:26 -0800 (PST)
-Received: by mail-vs1-f44.google.com with SMTP id e5so456908vsg.12
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Feb 2022 01:05:26 -0800 (PST)
-X-Received: by 2002:a05:6102:440d:: with SMTP id df13mr936716vsb.5.1644829525839;
- Mon, 14 Feb 2022 01:05:25 -0800 (PST)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:mime-version;
+        bh=l9h0FTYLGGXap1dzR54tfKoCeVF0BWZXnPqUVsNDnPk=;
+        b=LnogE/cXsms1fYnlNRGbV+3WMxV6i4qObd/lDIylO/kK7xyf3dynX2KpQsCxzE4izo
+         Ab6BBJOc9liCD7Jyzq4/KUmhHMd5o1c9CzmSQigZeCxbbiSCMzKhm9s8Ptq4+RlWuhIe
+         8PtycnS+PnRjEC3UsAy84lCoMGhdimFsa03FuPhms3qYZTfZzYi0PJpA+V+EWEwbYZUB
+         Hep6Mf6mR0d3ZLsBHR7mcvIfGQ9nzXTccQZ2cSOR9gr0f7ItZsXyhRNULuIiZHWUMNHP
+         cOZ3WjKRzRcbPcbq0za2xhA6JNYppXnOlS3Cgny+0wTdVRPYJEH3KGSNaVZHgU4YQwBs
+         v1RA==
+X-Gm-Message-State: AOAM5335hrGRsmY1dC4HhDOn4aN7B4vSVRKLyudXspskwsc0nREAbc+Z
+        xlHYm2+0zE9erG4FpUTBvVE=
+X-Google-Smtp-Source: ABdhPJzY8VlEHMbQ0UPAMjV8gwTcFMkOtUQgC/50Zjpwrr8X7TpLyvwll4U+DinwVSe89ZzzHh+MWw==
+X-Received: by 2002:a05:6512:39c4:: with SMTP id k4mr10352957lfu.69.1644830234620;
+        Mon, 14 Feb 2022 01:17:14 -0800 (PST)
+Received: from eldfell ([194.136.85.206])
+        by smtp.gmail.com with ESMTPSA id v6sm4049956lfq.181.2022.02.14.01.17.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 14 Feb 2022 01:17:14 -0800 (PST)
+Date:   Mon, 14 Feb 2022 11:17:11 +0200
+From:   Pekka Paalanen <ppaalanen@gmail.com>
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc:     Jani Nikula <jani.nikula@linux.intel.com>,
+        linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Noralf =?UTF-8?B?VHLDuG5uZXM=?= <noralf@tronnes.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH v4 1/6] drm/format-helper: Add
+ drm_fb_xrgb8888_to_gray8_line()
+Message-ID: <20220214111711.6536b4b6@eldfell>
+In-Reply-To: <YgaccFjPfJO0Mj6a@smile.fi.intel.com>
+References: <20220211091927.2988283-1-javierm@redhat.com>
+        <20220211091927.2988283-2-javierm@redhat.com>
+        <YgY6OqN+guBlt/ED@smile.fi.intel.com>
+        <4fa465d9-4fac-4199-9a04-d8e09d164308@redhat.com>
+        <YgZEuXvJ2ZiOyNS+@smile.fi.intel.com>
+        <7560cd10-0a7c-3fda-da83-9008833e3901@suse.de>
+        <87pmnt7gm3.fsf@intel.com>
+        <YgaDj6Wld4b7S6DF@smile.fi.intel.com>
+        <87fsop74lu.fsf@intel.com>
+        <YgaccFjPfJO0Mj6a@smile.fi.intel.com>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-References: <20220210141111.5231-1-tzimmermann@suse.de> <20220210141111.5231-3-tzimmermann@suse.de>
- <CAMuHMdVb1JjZkEo-PM6DTXOywcmJDRr0a=Ci94DJCj7dXbbihw@mail.gmail.com> <9b2e2649-1511-66a3-b346-60863de788fc@suse.de>
-In-Reply-To: <9b2e2649-1511-66a3-b346-60863de788fc@suse.de>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 14 Feb 2022 10:05:14 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWPw8UcTVown3Zghxn11-WuqSBNCWKpP3T5NUxxZmntcA@mail.gmail.com>
-Message-ID: <CAMuHMdWPw8UcTVown3Zghxn11-WuqSBNCWKpP3T5NUxxZmntcA@mail.gmail.com>
-Subject: Re: [PATCH 2/2] fbdev: Don't sort deferred-I/O pages by default
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     linux-fbdev@vger.kernel.org, deller@gmx.de,
-        linux-staging@lists.linux.dev, javierm@redhat.com,
-        dri-devel@lists.freedesktop.org, bernie@plugable.com,
-        noralf@tronnes.org, andriy.shevchenko@linux.intel.com,
-        jayalk@intworks.biz
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; boundary="Sig_/4exzfizoYWTXAR0xVEcWx0+";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+--Sig_/4exzfizoYWTXAR0xVEcWx0+
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Feb 14, 2022 at 9:28 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> Am 14.02.22 um 09:05 schrieb Geert Uytterhoeven:
-> > On Thu, Feb 10, 2022 at 4:24 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> >> Fbdev's deferred I/O sorts all dirty pages by default, which incurs a
-> >> significant overhead. Make the sorting step optional and update the few
-> >> drivers that require it. Use a FIFO list by default.
-> >>
-> >> Sorting pages by memory offset for deferred I/O performs an implicit
-> >> bubble-sort step on the list of dirty pages. The algorithm goes through
-> >> the list of dirty pages and inserts each new page according to its
-> >> index field. Even worse, list traversal always starts at the first
-> >> entry. As video memory is most likely updated scanline by scanline, the
-> >> algorithm traverses through the complete list for each updated page.
-> >>
-> >> For example, with 1024x768x32bpp a page covers exactly one scanline.
-> >> Writing a single screen update from top to bottom requires updating
-> >> 768 pages. With an average list length of 384 entries, a screen update
-> >> creates (768 * 384 =) 294912 compare operation.
-> >
-> > What about using folios?
-> > If consecutive pages are merged into a single entry, there's much less
-> > (or nothing in the example above) to sort.
->
-> How would the code know that? Calls to page_mkwrite happen
-> pagefault-by-pagefault in any order AFAICT.
+On Fri, 11 Feb 2022 19:27:12 +0200
+Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
 
-fb_deferred_io_mkwrite() would still be called for a page, but an
-adjacent page can be merged with an existing entry while adding it
-to the list.
+> On Fri, Feb 11, 2022 at 06:25:17PM +0200, Jani Nikula wrote:
+> > On Fri, 11 Feb 2022, Andy Shevchenko <andriy.shevchenko@linux.intel.com=
+> wrote: =20
+> > > On Fri, Feb 11, 2022 at 02:05:56PM +0200, Jani Nikula wrote: =20
+> > >> On Fri, 11 Feb 2022, Thomas Zimmermann <tzimmermann@suse.de> wrote: =
+=20
+> > >> > Am 11.02.22 um 12:12 schrieb Andy Shevchenko: =20
+> > >> >> On Fri, Feb 11, 2022 at 11:40:13AM +0100, Javier Martinez Canilla=
+s wrote: =20
+> > >> >>> On 2/11/22 11:28, Andy Shevchenko wrote: =20
+> > >> >>>> On Fri, Feb 11, 2022 at 10:19:22AM +0100, Javier Martinez Canil=
+las wrote: =20
+> > >
+> > > ...
+> > > =20
+> > >> >>>>> +static void drm_fb_xrgb8888_to_gray8_line(u8 *dst, const u32 =
+*src, unsigned int pixels)
+> > >> >>>>> +{
+> > >> >>>>> +	unsigned int x;
+> > >> >>>>> +
+> > >> >>>>> +	for (x =3D 0; x < pixels; x++) {
+> > >> >>>>> +		u8 r =3D (*src & 0x00ff0000) >> 16;
+> > >> >>>>> +		u8 g =3D (*src & 0x0000ff00) >> 8;
+> > >> >>>>> +		u8 b =3D  *src & 0x000000ff;
+> > >> >>>>> +
+> > >> >>>>> +		/* ITU BT.601: Y =3D 0.299 R + 0.587 G + 0.114 B */
+> > >> >>>>> +		*dst++ =3D (3 * r + 6 * g + b) / 10;
+> > >> >>>>> +		src++;
+> > >> >>>>> +	} =20
+> > >> >>>>
+> > >> >>>> Can be done as
+> > >> >>>>
+> > >> >>>> 	while (pixels--) {
+> > >> >>>> 		...
+> > >> >>>> 	}
+> > >> >>>>
+> > >> >>>> or
+> > >> >>>>
+> > >> >>>> 	do {
+> > >> >>>> 		...
+> > >> >>>> 	} while (--pixels);
+> > >> >>>> =20
+> > >> >>>
+> > >> >>> I don't see why a while loop would be an improvement here TBH. =
+=20
+> > >> >>=20
+> > >> >> Less letters to parse when reading the code. =20
+> > >> >
+> > >> > It's a simple refactoring of code that has worked well so far. Let=
+'s=20
+> > >> > leave it as-is for now. =20
+> > >>=20
+> > >> IMO *always* prefer a for loop over while or do-while.
+> > >>=20
+> > >> The for (i =3D 0; i < N; i++) is such a strong paradigm in C. You
+> > >> instantly know how many times you're going to loop, at a glance. Not=
+ so
+> > >> with with the alternatives, which should be used sparingly. =20
+> > >
+> > > while () {}  _is_ a paradigm, for-loop is syntax sugar on top of it. =
+=20
+> >=20
+> > And while() is just syntax sugar for goto. :p
+> >=20
+> > The for loop written as for (i =3D 0; i < N; i++) is hands down the most
+> > obvious counting loop pattern there is in C.
+> >  =20
+> > >> And yes, the do-while suggested above is buggy, and you actually nee=
+d to
+> > >> stop and think to see why. =20
+> > >
+> > > It depends if pixels can be 0 or not and if it's not, then does it co=
+ntain last
+> > > or number.
+> > >
+> > > The do {} while (--pixels); might be buggy iff pixels may be 0. =20
+> >=20
+> > Yeah. And how long does it take to figure that out? =20
+>=20
+> Okay, I made a mistake to drop the explanation. So, I (mistakenly) assumed
+> that people know this difference between post-decrement and pre-decrement
+> (note, while-loop here is not what is problematic).
 
-Gr{oetje,eeting}s,
+That was not the question.
 
-                        Geert
+The question was, how long does it take to figure out if pixels can or
+cannot be zero?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Code is styled for humans other than the author, not for compilers.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Having to stop to think about the difference between post- and
+pre-decrement to figure out when the while-loop runs does take me a few
+more brain cycles to understand, even though I know the rules very well.
+
+I would call that brain cycle optimization, and leave the CPU cycle
+optimization for the compiler in these cases.
+
+
+Thanks,
+pq
+
+--Sig_/4exzfizoYWTXAR0xVEcWx0+
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJQjwWQChkWOYOIONI1/ltBGqqqcFAmIKHhcACgkQI1/ltBGq
+qqdGXQ/8Ce5+VDdFo8ZqWQRABxsfdcoBZkUB3cRRRD8YTXpIMW1qCfd4hY4Pc/XL
+JacypoitZ/9Oy9pctixUmmle4U9J9e1mXtkS5IGbCaZpGq/TkeGBHBQ8IuObt00r
+PzjKU7dkAsGHrWqKfozMegK/h/upIaGrO3Q24TtRu6mlKGQGMq2eeIJ1bl9XI36C
+DEgHzqM6vWkYk6nIDNNSiQmltdHlzWm2CfTsqe5tVTNvYKTO/zqKkOfJ21PY3LNX
+bl8IO+E7RPGGzBs0VV1W+AbgF8ZPX8YmHLjfRjYAk5jWARcMr2Cz4cKqB5GIo/sw
+YUabXM4dsnxBrPXDMyHgg+nwZXbQrdW0Vizn6JwPTUxQJWQ0arjewgUJv5YLygB+
+eDO/PoBaKU7rbh/ybaTmF06wVan7nDxD8sw8spNrAqb5+u7Lwt2v9ZwMenqrAC0s
+z/wrKFN91apZcuVMPWnskdktdl0dJJ2ZeyqDOXHdXa9mkIrqZ1cM5wBgfStonlbg
+d4g9I0Tmct/S4WuphGO4NCLm7vPahH0UtKqvWiK2K3DZVJf8rAOp6ePu4zKKMu80
+0pnrdhbzTtDiDJb0RGPGDQQ1Y08BS213Uc0gI11TQu2MEMaofvpptUsxXqqcr41H
+aSvDOqtOg42lKNTjHTfKOpObwScIrtRB7zPkr0kmOQxg3WZ00hc=
+=NCW9
+-----END PGP SIGNATURE-----
+
+--Sig_/4exzfizoYWTXAR0xVEcWx0+--

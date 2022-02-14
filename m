@@ -2,119 +2,180 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28B60C4167D
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Feb 2022 11:21:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDA9EC433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Feb 2022 12:12:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350843AbiBNLVr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Feb 2022 06:21:47 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:48410 "EHLO
+        id S1352724AbiBNMM6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Feb 2022 07:12:58 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:47530 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1352167AbiBNLVl (ORCPT
+        with ESMTP id S1352712AbiBNMM6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Feb 2022 06:21:41 -0500
-Received: from mail-vk1-f181.google.com (mail-vk1-f181.google.com [209.85.221.181])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BFF36584;
-        Mon, 14 Feb 2022 02:57:33 -0800 (PST)
-Received: by mail-vk1-f181.google.com with SMTP id bj24so2875205vkb.8;
-        Mon, 14 Feb 2022 02:57:33 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=3C7RZsUPH67gE+tnYDZyMgOb/jtRDu7g+Ix4wmjevW8=;
-        b=UaBHozIXPe18+KgmQSXZZsLH7SSOP6Unk2JCtECYxGRLVEW5CJ5OYUp/F3dPILiFJs
-         sjojXymmPqTInSoW7Yule3Fvk5cEe3lokUhJH3eXho1sLjOA1FWH6XMORuWrXUvO6oIJ
-         VReqC/pHF5BvFrh8f3bdG4PGzaczvr8irTtdIdDiRRu4zNNEpTQGkzFU0x7jHUf48GRq
-         cvZKYBzx6vNxL88uBGNL56FT8tzuAdVMlnKWZnp93/pn1WJDgWRhbNfJ0GXjXltE3kSS
-         sL3Lq0qYUE6IV3n74a8dPUk7gpjHk6ZDMgvOJKMP95QIMhZ9C8kGbovqUPbvVdHjPXcH
-         rQKA==
-X-Gm-Message-State: AOAM533lXWLhvlN7nS30pj5Qx8vxtU4/Q0G4XbrKpTtL/qIXT0FwFZpQ
-        johaid3TCqffMVcRQXQjeG5cz07ISJetAA==
-X-Google-Smtp-Source: ABdhPJzwKuNmxyGuDSGVgNeCo3ap3+ytp+2it/27uxcpIZ5Ql2gOJeGlJOFOle9Dq7DeUHBZ0AZ9jg==
-X-Received: by 2002:a05:6122:1c5:: with SMTP id h5mr3712385vko.2.1644836252598;
-        Mon, 14 Feb 2022 02:57:32 -0800 (PST)
-Received: from mail-vs1-f41.google.com (mail-vs1-f41.google.com. [209.85.217.41])
-        by smtp.gmail.com with ESMTPSA id 2sm738511vkn.35.2022.02.14.02.57.31
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 14 Feb 2022 02:57:32 -0800 (PST)
-Received: by mail-vs1-f41.google.com with SMTP id j20so4377376vsg.5;
-        Mon, 14 Feb 2022 02:57:31 -0800 (PST)
-X-Received: by 2002:a05:6102:440d:: with SMTP id df13mr1065090vsb.5.1644836251571;
- Mon, 14 Feb 2022 02:57:31 -0800 (PST)
+        Mon, 14 Feb 2022 07:12:58 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1B0C48E73;
+        Mon, 14 Feb 2022 04:12:50 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 7C887210F5;
+        Mon, 14 Feb 2022 12:12:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1644840769; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=M0N8Pd2rRpN6k5MDOssRV7i1L90wiC9I7WRVnUWCy7Q=;
+        b=goRCyBSfrUfjyUkWB/2mCwkuVSdVrUzcq1A1KE1AAY3t2F9fRxIxeVOkTCY052AsJi1if/
+        +A6PVzn7KNBxzYeKJrGUPeI3qNaV/h8FZh+ie5zDsiyWD99N+r6kwZLa86iNbeaSPEGyco
+        LQPXUVFVTeRRe57NC/+JYuImo/9EV2M=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1644840769;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=M0N8Pd2rRpN6k5MDOssRV7i1L90wiC9I7WRVnUWCy7Q=;
+        b=MKteQnr0rFBiv0DJ9u272iVeXkGY8ph2zltuqZij/fkumwZ7VaNn+Olq9qwI3iai7QpAYF
+        babkCn5RhjAMmiAQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 31C0B13AF2;
+        Mon, 14 Feb 2022 12:12:49 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id 2H00C0FHCmLLfQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 14 Feb 2022 12:12:49 +0000
+Message-ID: <5ee24960-7843-827a-2c47-b93a4b4798e3@suse.de>
+Date:   Mon, 14 Feb 2022 13:12:48 +0100
 MIME-Version: 1.0
-References: <20220211091927.2988283-1-javierm@redhat.com> <20220211091927.2988283-2-javierm@redhat.com>
- <YgY6OqN+guBlt/ED@smile.fi.intel.com> <4fa465d9-4fac-4199-9a04-d8e09d164308@redhat.com>
- <YgZEuXvJ2ZiOyNS+@smile.fi.intel.com> <7560cd10-0a7c-3fda-da83-9008833e3901@suse.de>
- <87pmnt7gm3.fsf@intel.com> <YgaDj6Wld4b7S6DF@smile.fi.intel.com>
- <f87ce2fa-6b18-f985-eb86-506ce7103db3@suse.de> <YgoxFBGNsrezVxmi@smile.fi.intel.com>
-In-Reply-To: <YgoxFBGNsrezVxmi@smile.fi.intel.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 14 Feb 2022 11:57:20 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVWUDo3v+=+Um_8_ys-a-5HovGTUeYjvkQ91R_JDf0Myg@mail.gmail.com>
-Message-ID: <CAMuHMdVWUDo3v+=+Um_8_ys-a-5HovGTUeYjvkQ91R_JDf0Myg@mail.gmail.com>
-Subject: Re: [PATCH v4 1/6] drm/format-helper: Add drm_fb_xrgb8888_to_gray8_line()
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v4 1/6] drm/format-helper: Add
+ drm_fb_xrgb8888_to_gray8_line()
+Content-Language: en-US
 To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Jani Nikula <jani.nikula@linux.intel.com>,
+Cc:     Jani Nikula <jani.nikula@linux.intel.com>,
         Javier Martinez Canillas <javierm@redhat.com>,
         linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
         Maxime Ripard <maxime@cerno.tech>,
         Sam Ravnborg <sam@ravnborg.org>
-Content-Type: text/plain; charset="UTF-8"
+References: <20220211091927.2988283-1-javierm@redhat.com>
+ <20220211091927.2988283-2-javierm@redhat.com>
+ <YgY6OqN+guBlt/ED@smile.fi.intel.com>
+ <4fa465d9-4fac-4199-9a04-d8e09d164308@redhat.com>
+ <YgZEuXvJ2ZiOyNS+@smile.fi.intel.com>
+ <7560cd10-0a7c-3fda-da83-9008833e3901@suse.de> <87pmnt7gm3.fsf@intel.com>
+ <YgaDj6Wld4b7S6DF@smile.fi.intel.com>
+ <f87ce2fa-6b18-f985-eb86-506ce7103db3@suse.de>
+ <YgoxFBGNsrezVxmi@smile.fi.intel.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <YgoxFBGNsrezVxmi@smile.fi.intel.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------wzw214BQ5G1QGXbdavDQU2NV"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Andy,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------wzw214BQ5G1QGXbdavDQU2NV
+Content-Type: multipart/mixed; boundary="------------5AmddLGv5nbVnhIdqMfCesQr";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Jani Nikula <jani.nikula@linux.intel.com>,
+ Javier Martinez Canillas <javierm@redhat.com>, linux-fbdev@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, Daniel Vetter <daniel.vetter@ffwll.ch>,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Maxime Ripard
+ <maxime@cerno.tech>, Sam Ravnborg <sam@ravnborg.org>
+Message-ID: <5ee24960-7843-827a-2c47-b93a4b4798e3@suse.de>
+Subject: Re: [PATCH v4 1/6] drm/format-helper: Add
+ drm_fb_xrgb8888_to_gray8_line()
+References: <20220211091927.2988283-1-javierm@redhat.com>
+ <20220211091927.2988283-2-javierm@redhat.com>
+ <YgY6OqN+guBlt/ED@smile.fi.intel.com>
+ <4fa465d9-4fac-4199-9a04-d8e09d164308@redhat.com>
+ <YgZEuXvJ2ZiOyNS+@smile.fi.intel.com>
+ <7560cd10-0a7c-3fda-da83-9008833e3901@suse.de> <87pmnt7gm3.fsf@intel.com>
+ <YgaDj6Wld4b7S6DF@smile.fi.intel.com>
+ <f87ce2fa-6b18-f985-eb86-506ce7103db3@suse.de>
+ <YgoxFBGNsrezVxmi@smile.fi.intel.com>
+In-Reply-To: <YgoxFBGNsrezVxmi@smile.fi.intel.com>
 
-On Mon, Feb 14, 2022 at 11:39 AM Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
-> On Mon, Feb 14, 2022 at 10:03:53AM +0100, Thomas Zimmermann wrote:
-> > Am 11.02.22 um 16:41 schrieb Andy Shevchenko:
-> > > > IMO *always* prefer a for loop over while or do-while.
-> > > >
-> > > > The for (i = 0; i < N; i++) is such a strong paradigm in C. You
-> > > > instantly know how many times you're going to loop, at a glance. Not so
-> > > > with with the alternatives, which should be used sparingly.
-> > >
-> > > while () {}  _is_ a paradigm, for-loop is syntax sugar on top of it.
-> >
-> > Naw, that's not true.
->
-> In the section 3.5 "Loops - While and For" in "The C Programming
-> Language" 2nd by K&R, the authors said:
->
->         The for statement ... is equivalent to ... while..."
->
-> They said that for is equivalent to while, and not otherwise.
+--------------5AmddLGv5nbVnhIdqMfCesQr
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-When I learned C, people told me to prefer while() over for() when
-possible, as several compilers are better at optimizing while()-loops
-than for()-loops.
+SGkNCg0KQW0gMTQuMDIuMjIgdW0gMTE6Mzggc2NocmllYiBBbmR5IFNoZXZjaGVua286DQo+
+IE9uIE1vbiwgRmViIDE0LCAyMDIyIGF0IDEwOjAzOjUzQU0gKzAxMDAsIFRob21hcyBaaW1t
+ZXJtYW5uIHdyb3RlOg0KPj4gQW0gMTEuMDIuMjIgdW0gMTY6NDEgc2NocmllYiBBbmR5IFNo
+ZXZjaGVua286DQo+IA0KPiAuLi4NCj4gDQo+Pj4+IElNTyAqYWx3YXlzKiBwcmVmZXIgYSBm
+b3IgbG9vcCBvdmVyIHdoaWxlIG9yIGRvLXdoaWxlLg0KPj4+Pg0KPj4+PiBUaGUgZm9yIChp
+ID0gMDsgaSA8IE47IGkrKykgaXMgc3VjaCBhIHN0cm9uZyBwYXJhZGlnbSBpbiBDLiBZb3UN
+Cj4+Pj4gaW5zdGFudGx5IGtub3cgaG93IG1hbnkgdGltZXMgeW91J3JlIGdvaW5nIHRvIGxv
+b3AsIGF0IGEgZ2xhbmNlLiBOb3Qgc28NCj4+Pj4gd2l0aCB3aXRoIHRoZSBhbHRlcm5hdGl2
+ZXMsIHdoaWNoIHNob3VsZCBiZSB1c2VkIHNwYXJpbmdseS4NCj4+Pg0KPj4+IHdoaWxlICgp
+IHt9ICBfaXNfIGEgcGFyYWRpZ20sIGZvci1sb29wIGlzIHN5bnRheCBzdWdhciBvbiB0b3Ag
+b2YgaXQuDQo+Pg0KPj4gTmF3LCB0aGF0J3Mgbm90IHRydWUuDQo+IA0KPiBJbiB0aGUgc2Vj
+dGlvbiAzLjUgIkxvb3BzIC0gV2hpbGUgYW5kIEZvciIgaW4gIlRoZSBDIFByb2dyYW1taW5n
+DQo+IExhbmd1YWdlIiAybmQgYnkgSyZSLCB0aGUgYXV0aG9ycyBzYWlkOg0KDQpZZWFyIG9m
+IHB1YmxpY2F0aW9uOiAxOTg4IC4gSXQncyBub3QgdGhlIG1vc3QgdXAtdG8tZGF0ZSByZWZl
+cmVuY2UgZm9yIEMgDQpwcm9ncmFtbWluZy4NCg0KPiANCj4gCVRoZSBmb3Igc3RhdGVtZW50
+IC4uLiBpcyBlcXVpdmFsZW50IHRvIC4uLiB3aGlsZS4uLiINCj4gDQo+IFRoZXkgc2FpZCB0
+aGF0IGZvciBpcyBlcXVpdmFsZW50IHRvIHdoaWxlLCBhbmQgbm90IG90aGVyd2lzZS4NCg0K
+RXZlbiBsZWF2aW5nIHJlYWRhYmlsaXR5IGFzaWRlLCBpdCdzIG5vdCBlcXVpdmFsZW50LiBZ
+b3UgY2FuIGRlY2xhcmUgDQp2YXJpYWJsZXMgYXMgcGFydCBvZiB0aGUgZm9yIHN0YXRlbWVu
+dC4gKEkga25vdyBpdCdzIG5vdCB0aGUga2VybmVsJ3MgDQpzdHlsZS4pIEFsc28sICdjb250
+aW51ZScgc3RhdGVtZW50cyBhcmUgbm90IHdlbGwtc3VpdGVkIGluIGZvciBsb29wcywgDQpi
+ZWNhdXNlIGl0J3Mgbm9uLW9idmlvdXMgaWYgdGhlIGxvb3AncyB1cGRhdGUgc3RhdGVtZW50
+IGlzIGJlaW5nIA0KZXhlY3V0ZWQuIChJdCBpc24ndC4pDQoNCj4gDQo+IEFsc28sIHN5bnRh
+eCBzdWdhciBieSBkZWZpbml0aW9uIGRlY2xhcmVzIHNvbWV0aGluZyB0aGF0IGNhbiBiZSB3
+cml0dGVuIGFzDQo+IGEgc2luZ2xlIGxpbmUgb2YgY29kZSwgd2hpY2ggdXN1YWxseSBpcyBk
+b25lIHVzaW5nIG1vcmUgKG5vdCBhbHdheXMpLg0KDQpUaGUgZGlzY3Vzc2lvbiBoYXMgZW50
+ZXJlZCB0aGUgcGhhc2Ugb2YgaGFpciBzcGxpdHRpbmcuIEdvb2QuDQoNCkJlc3QgcmVnYXJk
+cw0KVGhvbWFzDQoNCj4gDQo+PiBBbiBpZGlvbWF0aWMgZm9yIGxvb3AsIHN1Y2ggYXMgZm9y
+IChpID0gLi4uOyBpIDwgTjsNCj4+ICsraSksIGlzIHN1Y2ggYSBzdHJvbmcgcGF0dGVybiB0
+aGF0IGl0J3Mgd2F5IGJldHRlciB0aGFuIHRoZSBjb3JyZXNwb25kaW5nDQo+PiB3aGlsZSBs
+b29wLg0KPiANCj4+Pj4gQW5kIHllcywgdGhlIGRvLXdoaWxlIHN1Z2dlc3RlZCBhYm92ZSBp
+cyBidWdneSwgYW5kIHlvdSBhY3R1YWxseSBuZWVkIHRvDQo+Pj4+IHN0b3AgYW5kIHRoaW5r
+IHRvIHNlZSB3aHkuDQo+Pj4NCj4+PiBJdCBkZXBlbmRzIGlmIHBpeGVscyBjYW4gYmUgMCBv
+ciBub3QgYW5kIGlmIGl0J3Mgbm90LCB0aGVuIGRvZXMgaXQgY29udGFpbiBsYXN0DQo+Pj4g
+b3IgbnVtYmVyLg0KPj4+DQo+Pj4gVGhlIGRvIHt9IHdoaWxlICgtLXBpeGVscyk7IG1pZ2h0
+IGJlIGJ1Z2d5IGlmZiBwaXhlbHMgbWF5IGJlIDAuDQo+IA0KDQotLSANClRob21hcyBaaW1t
+ZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0
+aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2Vy
+bWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2
+byBUb3Rldg0K
 
-During the last 3 decades, optimizers got better, and all the bad
-old compilers went the way of the dodo (see also [1])...
-But even for a human, it's still less symbols to decode (and verify
-all the details about =/</>/<=/>=/++/--/...) for
+--------------5AmddLGv5nbVnhIdqMfCesQr--
 
-    while (n--) { ... }
+--------------wzw214BQ5G1QGXbdavDQU2NV
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-than for
+-----BEGIN PGP SIGNATURE-----
 
-   for (i = 0; i < n; i++) { ... }
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIKR0AFAwAAAAAACgkQlh/E3EQov+Ac
+ow//Z+EROskBIHEmVQM20sjUtJUUrIAVs9fdSV4FK1Evvh0BG2a69JtRWb33VnSBkO2vgOzqf/5H
+R9svrLtMuH0T4CsNqAHhbo+OpcEkcAVmmQQLPS5WCSQOTgcvZM3TB73MAIvMYvcv37U5/jWLmr2I
+7P0JQlQ2idMvPRXuYJfHFl6YS3efbugnZZiYGIvzIATlOHuP7gP9qK9Z+fJBNISzb7ccd6P4L0Q8
+OkzmMyFkVlkbTlDjlfrLGH2mJcgc5nCaHHrDYg25EvT0AHJ7KfksEyQvvzy95T0kOqFStCs0Mqxj
+6WzT+sEOvP4dlDRIMbCT7lrkui7f91WXOiPbODkK38MKP1qGlwsYvT6KB+sgLhxWSWjramxw67QF
+JzICpDRGZWg11l3KF+P18WoF63XsIk7rIZzrhvoi5002LD+9F07WO6D/HKtuzs3CkTo0TtX2Xyn0
+6YT7jwZUq12hNjuIVaod4QrP5vUaEYBL/GbxcXpQlJyK9SoTiNt82F0ilcupe3N8LGdkQwDqXnyu
+ebESiJHxhtI/mtbBuuWquA/9+KQxnRXT80g6nlF3m8yfx4y6ThhgYQxiVYEa0PrS/3askZiV1k5s
+NxK61yFRqwRMg2fxUM6vWLZhNJWHxyAlcI8HJBN//vckzgBUwtHzjtyxKZklDSX/42gSfigtyTld
+agc=
+=TV7o
+-----END PGP SIGNATURE-----
 
-[1] https://lwn.net/Articles/871283/
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--------------wzw214BQ5G1QGXbdavDQU2NV--

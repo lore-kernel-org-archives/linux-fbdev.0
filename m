@@ -2,117 +2,94 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0613C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Feb 2022 11:12:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40F29C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Feb 2022 11:19:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1349853AbiBNLMl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Feb 2022 06:12:41 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:41342 "EHLO
+        id S1345605AbiBNLTR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Feb 2022 06:19:17 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:48390 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350992AbiBNLLK (ORCPT
+        with ESMTP id S1350622AbiBNLTK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Feb 2022 06:11:10 -0500
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 00A3EA889C;
-        Mon, 14 Feb 2022 02:39:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1644835171; x=1676371171;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=C9m2rcxcDwLvUl2QbsECG3i5+PvKcHA60fHQFVqzZzs=;
-  b=dhkhntxuAdMfT9J1D8023bmadjBHne0lC0goQVMLLlrxixpdQRhFMXVw
-   wE9KhVl/y2By+y8UUtjFchH09gJWC6Tk7aaVx0xKDAzPRCOzG7EcOUhO4
-   4Hdfa5TEhNgenE7lB6+3f6N3dpfAJzoRRm0lZIQQri9Xmez1OyoshS5Z2
-   XUbOhVbyWbl2gTk/5CS5q1oE2f9JU7qPXhd/VY+iJ68as+6iIvHfWZgrz
-   KpYfRrHMIOlErd7l4yLHAtW5fPkoR2cwQS4dB3OfSekVpM/7KD8wG/R7O
-   XvqPP1i177p/Z3JnpvKxiukFzynom7c21l6Gy6lAoklGiMHXZrs68ch92
-   A==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10257"; a="313342043"
-X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
-   d="scan'208";a="313342043"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2022 02:39:15 -0800
-X-IronPort-AV: E=Sophos;i="5.88,367,1635231600"; 
-   d="scan'208";a="570085760"
-Received: from smile.fi.intel.com ([10.237.72.61])
-  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2022 02:39:12 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.95)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1nJYkG-004Pw8-Jg;
-        Mon, 14 Feb 2022 12:38:12 +0200
-Date:   Mon, 14 Feb 2022 12:38:12 +0200
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Jani Nikula <jani.nikula@linux.intel.com>,
-        Javier Martinez Canillas <javierm@redhat.com>,
+        Mon, 14 Feb 2022 06:19:10 -0500
+Received: from mail-41104.protonmail.ch (mail-41104.protonmail.ch [185.70.41.104])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2EA0A67369
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Feb 2022 02:52:21 -0800 (PST)
+Received: from mail-0201.mail-europe.com (mail-0201.mail-europe.com [51.77.79.158])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature RSA-PSS (4096 bits))
+        (No client certificate requested)
+        by mail-41104.protonmail.ch (Postfix) with ESMTPS id 4Jy1JM4VKYz4xCRM
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Feb 2022 10:52:19 +0000 (UTC)
+Authentication-Results: mail-41104.protonmail.ch;
+        dkim=pass (2048-bit key) header.d=emersion.fr header.i=@emersion.fr header.b="LThY4lgU"
+Date:   Mon, 14 Feb 2022 10:52:13 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=emersion.fr;
+        s=protonmail2; t=1644835934;
+        bh=MlZxepE7UcCIx7JdbAa36YidmF6d5y+C8F78t64Xio0=;
+        h=Date:To:From:Cc:Reply-To:Subject:Message-ID:In-Reply-To:
+         References:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+         Message-ID;
+        b=LThY4lgUqhN8sGqwUbzGNFG1jSZlOqseiQAm9FRwnlotQK8Bibz9NV5fvBRzZkA6e
+         AKdMcgVjEBUpigN+wbQqLLFpMpKqwoX4f/XY+4BKYUTk9WLnDIkOhF2IYvOYMxXq4H
+         /+su7TPrhRIkglRZdbbO4kQikJA2b6Qjq8D6y/OXk1/hIsJfRqkNgbPpDFTLkhegbZ
+         iaoLIMVLTzrHznyG58N/ooRjJnqpJpXq5iboveuFIgQPg4EJtHXoDn2D6MvMkgbJTs
+         nms6hiOAFWrVqs6w8Er37CEQVw+JzcW3PYzmzFJVIQyOmoq/+Qd497VPQPxmkUH7FK
+         VPZyRvj0tT/IA==
+To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+From:   Simon Ser <contact@emersion.fr>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        linux-kernel@vger.kernel.org,
+        =?utf-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
         Geert Uytterhoeven <geert@linux-m68k.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v4 1/6] drm/format-helper: Add
- drm_fb_xrgb8888_to_gray8_line()
-Message-ID: <YgoxFBGNsrezVxmi@smile.fi.intel.com>
-References: <20220211091927.2988283-1-javierm@redhat.com>
- <20220211091927.2988283-2-javierm@redhat.com>
- <YgY6OqN+guBlt/ED@smile.fi.intel.com>
- <4fa465d9-4fac-4199-9a04-d8e09d164308@redhat.com>
- <YgZEuXvJ2ZiOyNS+@smile.fi.intel.com>
- <7560cd10-0a7c-3fda-da83-9008833e3901@suse.de>
- <87pmnt7gm3.fsf@intel.com>
- <YgaDj6Wld4b7S6DF@smile.fi.intel.com>
- <f87ce2fa-6b18-f985-eb86-506ce7103db3@suse.de>
+        dri-devel@lists.freedesktop.org, Sam Ravnborg <sam@ravnborg.org>,
+        Maxime Ripard <maxime@cerno.tech>
+Reply-To: Simon Ser <contact@emersion.fr>
+Subject: Re: [PATCH v4 1/6] drm/format-helper: Add drm_fb_xrgb8888_to_gray8_line()
+Message-ID: <aW25lLbuIQGCr0FHtnqiM-UB-VYfk-BaLhhwq3Ur9ONgrXyxHspO_JKXCIgAeI0IBhW7hqZwTdACzd9a1b8A9MIBDrn12ymzMGYjbeqcSYE=@emersion.fr>
+In-Reply-To: <YgoxFBGNsrezVxmi@smile.fi.intel.com>
+References: <20220211091927.2988283-1-javierm@redhat.com> <20220211091927.2988283-2-javierm@redhat.com> <YgY6OqN+guBlt/ED@smile.fi.intel.com> <4fa465d9-4fac-4199-9a04-d8e09d164308@redhat.com> <YgZEuXvJ2ZiOyNS+@smile.fi.intel.com> <7560cd10-0a7c-3fda-da83-9008833e3901@suse.de> <87pmnt7gm3.fsf@intel.com> <YgaDj6Wld4b7S6DF@smile.fi.intel.com> <f87ce2fa-6b18-f985-eb86-506ce7103db3@suse.de> <YgoxFBGNsrezVxmi@smile.fi.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f87ce2fa-6b18-f985-eb86-506ce7103db3@suse.de>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Feb 14, 2022 at 10:03:53AM +0100, Thomas Zimmermann wrote:
-> Am 11.02.22 um 16:41 schrieb Andy Shevchenko:
+On Monday, February 14th, 2022 at 11:38, Andy Shevchenko <andriy.shevchenko=
+@linux.intel.com> wrote:
 
-...
+> > > > IMO *always* prefer a for loop over while or do-while.
+> > > >
+> > > > The for (i =3D 0; i < N; i++) is such a strong paradigm in C. You
+> > > > instantly know how many times you're going to loop, at a glance. No=
+t so
+> > > > with with the alternatives, which should be used sparingly.
+> > >
+> > > while () {}  _is_ a paradigm, for-loop is syntax sugar on top of it.
+> >
+> > Naw, that's not true.
+>
+> In the section 3.5 "Loops - While and For" in "The C Programming
+> Language" 2nd by K&R, the authors said:
+>
+> =09The for statement ... is equivalent to ... while..."
+>
+> They said that for is equivalent to while, and not otherwise.
+>
+> Also, syntax sugar by definition declares something that can be written a=
+s
+> a single line of code, which usually is done using more (not always).
 
-> > > IMO *always* prefer a for loop over while or do-while.
-> > > 
-> > > The for (i = 0; i < N; i++) is such a strong paradigm in C. You
-> > > instantly know how many times you're going to loop, at a glance. Not so
-> > > with with the alternatives, which should be used sparingly.
-> > 
-> > while () {}  _is_ a paradigm, for-loop is syntax sugar on top of it.
-> 
-> Naw, that's not true.
+arr[i] is syntaxic sugar for *(arr + i), yet we keep writing the former,
+because it's way more readable. The same goes for the for vs. while loops.
+It may be obvious for you because you're a C guru, but to me it just obfusc=
+ates
+the code. Too many C projects end up becoming completely unreadable because=
+ of
+patterns like these.
 
-In the section 3.5 "Loops - While and For" in "The C Programming
-Language" 2nd by K&R, the authors said:
-
-	The for statement ... is equivalent to ... while..."
-
-They said that for is equivalent to while, and not otherwise.
-
-Also, syntax sugar by definition declares something that can be written as
-a single line of code, which usually is done using more (not always).
-
-> An idiomatic for loop, such as for (i = ...; i < N;
-> ++i), is such a strong pattern that it's way better than the corresponding
-> while loop.
-
-> > > And yes, the do-while suggested above is buggy, and you actually need to
-> > > stop and think to see why.
-> > 
-> > It depends if pixels can be 0 or not and if it's not, then does it contain last
-> > or number.
-> > 
-> > The do {} while (--pixels); might be buggy iff pixels may be 0.
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Idiomatic C code isn't written by doing pointless micro-optimizations.

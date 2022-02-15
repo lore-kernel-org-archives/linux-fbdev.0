@@ -2,103 +2,93 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8674AC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Feb 2022 16:53:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5138C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Feb 2022 20:36:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241958AbiBOQxc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 15 Feb 2022 11:53:32 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:60774 "EHLO
+        id S244115AbiBOUgu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 15 Feb 2022 15:36:50 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:54382 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241957AbiBOQwz (ORCPT
+        with ESMTP id S244104AbiBOUgu (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 15 Feb 2022 11:52:55 -0500
-Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B56D9B0EBE
-        for <linux-fbdev@vger.kernel.org>; Tue, 15 Feb 2022 08:52:39 -0800 (PST)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:7534:e0be:5adf:2691])
-        by michel.telenet-ops.be with bizsmtp
-        id vUsV2600Z18GbK106UsWDe; Tue, 15 Feb 2022 17:52:32 +0100
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1nK141-000tUq-B1; Tue, 15 Feb 2022 17:52:29 +0100
-Received: from geert by rox.of.borg with local (Exim 4.93)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1nK140-00BUS5-2t; Tue, 15 Feb 2022 17:52:28 +0100
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 7/8] drm/fourcc: Add DRM_FORMAT_R[124]
-Date:   Tue, 15 Feb 2022 17:52:25 +0100
-Message-Id: <20220215165226.2738568-8-geert@linux-m68k.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220215165226.2738568-1-geert@linux-m68k.org>
-References: <20220215165226.2738568-1-geert@linux-m68k.org>
+        Tue, 15 Feb 2022 15:36:50 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3755AD7637
+        for <linux-fbdev@vger.kernel.org>; Tue, 15 Feb 2022 12:36:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1644957393;
+        bh=JFXCWCKql48UNlTh7Yst5igG5l8PdTcvllupvHIlkNA=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=j9lrOoPnHZXVsdTdCi9OVS5FbdwKCtwVruTCv8Alqiy5wqaK18XGmIvbK6n/BocvI
+         oAwYofjeK9RyiRakWr68RudAwa0XJmu6PxylS1s8Q5nv6byMmW6sQvKq7NOO06amWR
+         y5peN6jpnuRY0qgYX9/5/U42q//O5f0fi1I44nF4=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.185.100]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mgeo8-1nuVm11o7g-00h94m; Tue, 15
+ Feb 2022 21:36:33 +0100
+Message-ID: <e29f650b-0362-3210-0cff-3d60289268c3@gmx.de>
+Date:   Tue, 15 Feb 2022 21:36:26 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.3.0
+Subject: Re: [PATCH 0/3] video: fbdev: atari: Miscellaneous fixes
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Michael Schmitz <schmitzmic@gmail.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-m68k@vger.kernel.org
+References: <20220215112126.2633383-1-geert@linux-m68k.org>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220215112126.2633383-1-geert@linux-m68k.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:5i5oc5VahLUo0RFxymkaRjsyilZSwth5e50lwxXduUyW3UQjhFa
+ 3ZEpcayUb7tQe7k4Yh9AgWly6Q3aZZfYYiaoapOmO0lTlOp5BiLWOGOL0UwtFclaBSpOvc2
+ odmGs/+JvT6vDHk8tNOAF5en4d9U0eXKW5jkeZrRG60/a7V2gAtdcNLRvzZ2DYAg7c69KvM
+ cA8aNWgm2j6IcI4G85dbQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:CXeNC8zAOnA=:1B2E38jQGiVxnF5HYzG4vS
+ SVk31Kpj9x4nyR6MqQzvhvZqR782uJseyGL/EbTh6di6uerl2N83isFF7GvgPwkGuGveB9Upj
+ ltTWsGUjebl84jMSHEhf1j+/jnUz4JWBGLkCfqOy3SE+erlmavcvp0NAVvgFF5bf6F91S+fxw
+ nC2O7e6xw7g397+8euGHpsVDEkwNIriaTGKC2jbVOCw4YAUgtMEnbj4zqHz0ijt6HRgZ9J+Tw
+ NMaRg42+X4ZlH5Pj2v75NiBEQKJXbZSKP7b4mfg4KumiqIE9Eo9ZYNj+QmBtu53U69lOPJnz6
+ pgZFgqsI5fDe7DFsZgE/XFQtd/0lhs/xJZ9mnyhizDYgEvzhqzSfLApu32BUZNKjFVejarBPZ
+ z7rLbYU5ZCcBZdtFDWvcgpsYv1ktORIalv6F2ZfrcyqOIP7vevJT17n30weUX+4OsHMljaU6l
+ 1HRKjBKnb9FdioPQGSmKqaVziHWRBU+mFsmvVVEGhfNCGpJ1ctHnarq308yEJoZZH9G8ivyaF
+ tw9CyvaPzYdCKcVWzU0zAO3CbZUKBYT0GmKUmL5ARD2fNcTEIeLS/X0S9+WJBabS2GVXXGhkB
+ wDFT5Q1vmpcYIq0dC2f/y2iYR1J7JD2EUGc2e0Vr4jL5NIc5FAfakBhVH8TvYy3oez30j14Dz
+ jpfOAaoJ9oA39n2bK6IRSMfoER0QxsjwdcuDFZhRslrOBGkJRCDQp3H0b3qKfkM1b/i+stKhk
+ eibMgFshQfFc012hEYDHgKzUvbI76rEvXjGCORJziTMggGkLIVjdWJsqubu8MUwKLV3HKTfID
+ NCtCIS6+vgQxrw3vo/HYNaBO6cnau+PA/opJhY8wMqr7bk4EKLdyVcVgb1Hew6ekyUIkR6c3+
+ sTKOsoP8t/Zz4gokxxdZBwHZOSwxMkDHuBthojJj1gOYFtNPBGilqEFYlRhlHyKBss18Fz64x
+ OeXVkEpX4/f1XyMtFZwwfUTI6UHMmDiyMQws09szDDXUGRUBBC/9vtunPHau6nwgJ4cXlOUwn
+ L6PQLI+GaL57s9yjMT6YH0KCKKv0zOarMsxi2dQF3hal20e1v7xxWcHI2nSAGw5PfNfIGLR4F
+ 9i2vsC1ehm3n4w=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Introduce fourcc codes for single-channel frame buffer formats with two,
-four, and sixteen intensity levels.  Traditionally, the first channel
-has been called the "red" channel, but the fourcc can also be used for
-other light-on-dark displays.
+Hi Geert,
 
-As the number of bits per pixel is less than eight, these rely on proper
-block handling for the calculation of bits per pixel and pitch.
+On 2/15/22 12:21, Geert Uytterhoeven wrote:
+> This is a small series of miscellaneous fixes for the Atari frame buffer
+> device driver.
+>
+> The first patch has been sent before, and is untested, as I have no
+> access to the hardware.
+> The other patches have been tested on ARAnyM.
+>
+> Thanks!
+>
+> Geert Uytterhoeven (3):
+>   video: fbdev: atari: Fix TT High video mode
+>   video: fbdev: atari: Convert to standard round_up() helper
+>   video: fbdev: atari: Remove unused atafb_setcolreg()
+>
+>  drivers/video/fbdev/atafb.c | 23 +++++------------------
+>  1 file changed, 5 insertions(+), 18 deletions(-)
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/gpu/drm/drm_fourcc.c  | 6 ++++++
- include/uapi/drm/drm_fourcc.h | 9 +++++++++
- 2 files changed, 15 insertions(+)
+I've applied all 3 patches to the fbdev for-next tree.
 
-diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
-index 5c77ce10f53e3a64..c12e48ecb1ab8aad 100644
---- a/drivers/gpu/drm/drm_fourcc.c
-+++ b/drivers/gpu/drm/drm_fourcc.c
-@@ -151,6 +151,12 @@ const struct drm_format_info *__drm_format_info(u32 format)
- 		{ .format = DRM_FORMAT_C4,		.depth = 4,  .num_planes = 1,
- 		  .char_per_block = { 1, }, .block_w = { 2, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
- 		{ .format = DRM_FORMAT_C8,		.depth = 8,  .num_planes = 1, .cpp = { 1, 0, 0 }, .hsub = 1, .vsub = 1 },
-+		{ .format = DRM_FORMAT_R1,		.depth = 1,  .num_planes = 1,
-+		  .char_per_block = { 1, }, .block_w = { 8, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
-+		{ .format = DRM_FORMAT_R2,		.depth = 2,  .num_planes = 1,
-+		  .char_per_block = { 1, }, .block_w = { 4, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
-+		{ .format = DRM_FORMAT_R4,		.depth = 4,  .num_planes = 1,
-+		  .char_per_block = { 1, }, .block_w = { 2, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
- 		{ .format = DRM_FORMAT_R8,		.depth = 8,  .num_planes = 1, .cpp = { 1, 0, 0 }, .hsub = 1, .vsub = 1 },
- 		{ .format = DRM_FORMAT_R10,		.depth = 10, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
- 		{ .format = DRM_FORMAT_R12,		.depth = 12, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
-diff --git a/include/uapi/drm/drm_fourcc.h b/include/uapi/drm/drm_fourcc.h
-index 3f09174670b3cce6..8605a1acc6813e6c 100644
---- a/include/uapi/drm/drm_fourcc.h
-+++ b/include/uapi/drm/drm_fourcc.h
-@@ -104,6 +104,15 @@ extern "C" {
- #define DRM_FORMAT_C4		fourcc_code('C', '4', ' ', ' ') /* [3:0] C */
- #define DRM_FORMAT_C8		fourcc_code('C', '8', ' ', ' ') /* [7:0] C */
- 
-+/* 1 bpp Red */
-+#define DRM_FORMAT_R1		fourcc_code('R', '1', ' ', ' ') /* [0] R */
-+
-+/* 2 bpp Red */
-+#define DRM_FORMAT_R2		fourcc_code('R', '2', ' ', ' ') /* [1:0] R */
-+
-+/* 4 bpp Red */
-+#define DRM_FORMAT_R4		fourcc_code('R', '4', ' ', ' ') /* [3:0] R */
-+
- /* 8 bpp Red */
- #define DRM_FORMAT_R8		fourcc_code('R', '8', ' ', ' ') /* [7:0] R */
- 
--- 
-2.25.1
+Thank you!
 
+Helge

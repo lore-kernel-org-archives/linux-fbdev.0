@@ -2,30 +2,30 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20ABAC4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Feb 2022 16:52:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8674AC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Feb 2022 16:53:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233641AbiBOQw5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 15 Feb 2022 11:52:57 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:60164 "EHLO
+        id S241958AbiBOQxc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 15 Feb 2022 11:53:32 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:60774 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241901AbiBOQwr (ORCPT
+        with ESMTP id S241957AbiBOQwz (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 15 Feb 2022 11:52:47 -0500
+        Tue, 15 Feb 2022 11:52:55 -0500
 Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A9759E9DD
-        for <linux-fbdev@vger.kernel.org>; Tue, 15 Feb 2022 08:52:34 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B56D9B0EBE
+        for <linux-fbdev@vger.kernel.org>; Tue, 15 Feb 2022 08:52:39 -0800 (PST)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:7534:e0be:5adf:2691])
         by michel.telenet-ops.be with bizsmtp
-        id vUsV2600618GbK106UsVDJ; Tue, 15 Feb 2022 17:52:31 +0100
+        id vUsV2600Z18GbK106UsWDe; Tue, 15 Feb 2022 17:52:32 +0100
 Received: from rox.of.borg ([192.168.97.57])
         by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1nK140-000tUm-Kf; Tue, 15 Feb 2022 17:52:28 +0100
+        id 1nK141-000tUq-B1; Tue, 15 Feb 2022 17:52:29 +0100
 Received: from geert by rox.of.borg with local (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1nK140-00BURd-0H; Tue, 15 Feb 2022 17:52:28 +0100
+        id 1nK140-00BUS5-2t; Tue, 15 Feb 2022 17:52:28 +0100
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
 To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
@@ -36,9 +36,9 @@ To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
         Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 3/8] drm/fourcc: Add drm_format_info_bpp() helper
-Date:   Tue, 15 Feb 2022 17:52:21 +0100
-Message-Id: <20220215165226.2738568-4-geert@linux-m68k.org>
+Subject: [PATCH 7/8] drm/fourcc: Add DRM_FORMAT_R[124]
+Date:   Tue, 15 Feb 2022 17:52:25 +0100
+Message-Id: <20220215165226.2738568-8-geert@linux-m68k.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220215165226.2738568-1-geert@linux-m68k.org>
 References: <20220215165226.2738568-1-geert@linux-m68k.org>
@@ -48,57 +48,56 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Add a helper to retrieve the actual number of bits per pixel for a
-plane, taking into account the number of characters and pixels per
-block for tiled formats.
+Introduce fourcc codes for single-channel frame buffer formats with two,
+four, and sixteen intensity levels.  Traditionally, the first channel
+has been called the "red" channel, but the fourcc can also be used for
+other light-on-dark displays.
+
+As the number of bits per pixel is less than eight, these rely on proper
+block handling for the calculation of bits per pixel and pitch.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/gpu/drm/drm_fourcc.c | 19 +++++++++++++++++++
- include/drm/drm_fourcc.h     |  1 +
- 2 files changed, 20 insertions(+)
+ drivers/gpu/drm/drm_fourcc.c  | 6 ++++++
+ include/uapi/drm/drm_fourcc.h | 9 +++++++++
+ 2 files changed, 15 insertions(+)
 
 diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
-index 60ce63d728b8e308..5c77ce10f53e3a64 100644
+index 5c77ce10f53e3a64..c12e48ecb1ab8aad 100644
 --- a/drivers/gpu/drm/drm_fourcc.c
 +++ b/drivers/gpu/drm/drm_fourcc.c
-@@ -388,6 +388,25 @@ unsigned int drm_format_info_block_height(const struct drm_format_info *info,
- }
- EXPORT_SYMBOL(drm_format_info_block_height);
+@@ -151,6 +151,12 @@ const struct drm_format_info *__drm_format_info(u32 format)
+ 		{ .format = DRM_FORMAT_C4,		.depth = 4,  .num_planes = 1,
+ 		  .char_per_block = { 1, }, .block_w = { 2, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_C8,		.depth = 8,  .num_planes = 1, .cpp = { 1, 0, 0 }, .hsub = 1, .vsub = 1 },
++		{ .format = DRM_FORMAT_R1,		.depth = 1,  .num_planes = 1,
++		  .char_per_block = { 1, }, .block_w = { 8, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
++		{ .format = DRM_FORMAT_R2,		.depth = 2,  .num_planes = 1,
++		  .char_per_block = { 1, }, .block_w = { 4, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
++		{ .format = DRM_FORMAT_R4,		.depth = 4,  .num_planes = 1,
++		  .char_per_block = { 1, }, .block_w = { 2, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_R8,		.depth = 8,  .num_planes = 1, .cpp = { 1, 0, 0 }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_R10,		.depth = 10, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_R12,		.depth = 12, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
+diff --git a/include/uapi/drm/drm_fourcc.h b/include/uapi/drm/drm_fourcc.h
+index 3f09174670b3cce6..8605a1acc6813e6c 100644
+--- a/include/uapi/drm/drm_fourcc.h
++++ b/include/uapi/drm/drm_fourcc.h
+@@ -104,6 +104,15 @@ extern "C" {
+ #define DRM_FORMAT_C4		fourcc_code('C', '4', ' ', ' ') /* [3:0] C */
+ #define DRM_FORMAT_C8		fourcc_code('C', '8', ' ', ' ') /* [7:0] C */
  
-+/**
-+ * drm_format_info_bpp - number of bits per pixel
-+ * @info: pixel format info
-+ * @plane: plane index
-+ *
-+ * Returns:
-+ * The actual number of bits per pixel, depending on the plane index.
-+ */
-+unsigned int drm_format_info_bpp(const struct drm_format_info *info, int plane)
-+{
-+	if (!info || plane < 0 || plane >= info->num_planes)
-+		return 0;
++/* 1 bpp Red */
++#define DRM_FORMAT_R1		fourcc_code('R', '1', ' ', ' ') /* [0] R */
 +
-+	return info->char_per_block[plane] * 8 /
-+	       (drm_format_info_block_width(info, plane) *
-+		drm_format_info_block_height(info, plane));
-+}
-+EXPORT_SYMBOL(drm_format_info_bpp);
++/* 2 bpp Red */
++#define DRM_FORMAT_R2		fourcc_code('R', '2', ' ', ' ') /* [1:0] R */
 +
- /**
-  * drm_format_info_min_pitch - computes the minimum required pitch in bytes
-  * @info: pixel format info
-diff --git a/include/drm/drm_fourcc.h b/include/drm/drm_fourcc.h
-index 22aa64d07c7905e2..3800a7ad7f0cda7a 100644
---- a/include/drm/drm_fourcc.h
-+++ b/include/drm/drm_fourcc.h
-@@ -313,6 +313,7 @@ unsigned int drm_format_info_block_width(const struct drm_format_info *info,
- 					 int plane);
- unsigned int drm_format_info_block_height(const struct drm_format_info *info,
- 					  int plane);
-+unsigned int drm_format_info_bpp(const struct drm_format_info *info, int plane);
- uint64_t drm_format_info_min_pitch(const struct drm_format_info *info,
- 				   int plane, unsigned int buffer_width);
++/* 4 bpp Red */
++#define DRM_FORMAT_R4		fourcc_code('R', '4', ' ', ' ') /* [3:0] R */
++
+ /* 8 bpp Red */
+ #define DRM_FORMAT_R8		fourcc_code('R', '8', ' ', ' ') /* [7:0] R */
  
 -- 
 2.25.1

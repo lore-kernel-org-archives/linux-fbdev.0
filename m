@@ -2,93 +2,109 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8EC9C43217
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Feb 2022 11:21:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 336B0C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Feb 2022 16:52:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237037AbiBOLVt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 15 Feb 2022 06:21:49 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:41310 "EHLO
+        id S237285AbiBOQwp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 15 Feb 2022 11:52:45 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:59944 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234197AbiBOLVr (ORCPT
+        with ESMTP id S233641AbiBOQwo (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 15 Feb 2022 06:21:47 -0500
-Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8BD42AB460
-        for <linux-fbdev@vger.kernel.org>; Tue, 15 Feb 2022 03:21:36 -0800 (PST)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:8c73:faf1:1d11:4a47])
-        by michel.telenet-ops.be with bizsmtp
-        id vPMZ260013BmCM306PMZ0v; Tue, 15 Feb 2022 12:21:33 +0100
+        Tue, 15 Feb 2022 11:52:44 -0500
+Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 696049BAF5
+        for <linux-fbdev@vger.kernel.org>; Tue, 15 Feb 2022 08:52:33 -0800 (PST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:7534:e0be:5adf:2691])
+        by albert.telenet-ops.be with bizsmtp
+        id vUsV2600718GbK106UsVLq; Tue, 15 Feb 2022 17:52:31 +0100
 Received: from rox.of.borg ([192.168.97.57])
         by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1nJvtk-000rqe-KZ; Tue, 15 Feb 2022 12:21:32 +0100
+        id 1nK140-000tUj-RY; Tue, 15 Feb 2022 17:52:28 +0100
 Received: from geert by rox.of.borg with local (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1nJvtk-00B34u-5o; Tue, 15 Feb 2022 12:21:32 +0100
+        id 1nK13z-00BURL-Tk; Tue, 15 Feb 2022 17:52:27 +0100
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-To:     Helge Deller <deller@gmx.de>
-Cc:     Michael Schmitz <schmitzmic@gmail.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-m68k@vger.kernel.org,
+To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Javier Martinez Canillas <javierm@redhat.com>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
         Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 2/3] video: fbdev: atari: Convert to standard round_up() helper
-Date:   Tue, 15 Feb 2022 12:21:25 +0100
-Message-Id: <20220215112126.2633383-3-geert@linux-m68k.org>
+Subject: [PATCH 0/8] drm: Add support for low-color frame buffer formats
+Date:   Tue, 15 Feb 2022 17:52:18 +0100
+Message-Id: <20220215165226.2738568-1-geert@linux-m68k.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220215112126.2633383-1-geert@linux-m68k.org>
-References: <20220215112126.2633383-1-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Remove the custom macro up(), and convert the code to use the standard
-round_up() helper instead.
+	Hi all,
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/video/fbdev/atafb.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+A long outstanding issue with the DRM subsystem has been the lack of
+support for low-color displays, as used typically on older desktop
+systems and small embedded displays.
 
-diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-index a9f25cab4a1e6737..b9d6aaaeae43f2f1 100644
---- a/drivers/video/fbdev/atafb.c
-+++ b/drivers/video/fbdev/atafb.c
-@@ -76,8 +76,6 @@
- #define SWITCH_SND7 0x80
- #define SWITCH_NONE 0x00
- 
--#define up(x, r) (((x) + (r) - 1) & ~((r)-1))
--
- 
- static int default_par;		/* default resolution (0=none) */
- 
-@@ -1649,12 +1647,12 @@ static int falcon_pan_display(struct fb_var_screeninfo *var,
- 	int bpp = info->var.bits_per_pixel;
- 
- 	if (bpp == 1)
--		var->xoffset = up(var->xoffset, 32);
-+		var->xoffset = round_up(var->xoffset, 32);
- 	if (bpp != 16)
- 		par->hw.falcon.xoffset = var->xoffset & 15;
- 	else {
- 		par->hw.falcon.xoffset = 0;
--		var->xoffset = up(var->xoffset, 2);
-+		var->xoffset = round_up(var->xoffset, 2);
- 	}
- 	par->hw.falcon.line_offset = bpp *
- 		(info->var.xres_virtual - info->var.xres) / 16;
-@@ -2268,7 +2266,7 @@ static int pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
- 	if (!fbhw->set_screen_base ||
- 	    (!ATARIHW_PRESENT(EXTD_SHIFTER) && var->xoffset))
- 		return -EINVAL;
--	var->xoffset = up(var->xoffset, 16);
-+	var->xoffset = round_up(var->xoffset, 16);
- 	par->screen_base = screen_base +
- 	        (var->yoffset * info->var.xres_virtual + var->xoffset)
- 	        * info->var.bits_per_pixel / 8;
+This patch series adds support for color-indexed frame buffer formats
+with 2, 4, and 16 colors.  It has been tested on ARAnyM using a
+work-in-progress Atari DRM driver, with text console operation and
+fbtest.
+
+Overview:
+  - Patches 1 and 2 give a working system, albeit with a too large pitch
+    (line length),
+  - Patches 3 and 4 reduce memory consumption by correcting the pitch
+    in case bpp < 8,
+  - Patches 5 and 6 are untested, but may become useful with DRM
+    userspace,
+  - Patches 7 and 8 add more fourcc codes for grayscale and monochrome
+    frame buffer formats, which may be useful for e.g. the ssd130x and
+    repaper drivers.
+
+Notes:
+  - I haven't looked yet into making modetest draw a correct image.
+  - As this was used on emulated hardware only, and I do not have Atari
+    hardware, I do not have performance figures to compare with fbdev.
+    I hope to do proper measuring with an Amiga DRM driver, eventually.
+
+Thanks for your comments!
+
+Geert Uytterhoeven (8):
+  drm/fourcc: Add DRM_FORMAT_C[124]
+  drm/fb-helper: Add support for DRM_FORMAT_C[124]
+  drm/fourcc: Add drm_format_info_bpp() helper
+  drm/client: Use actual bpp when allocating frame buffers
+  drm/framebuffer: Use actual bpp for DRM_IOCTL_MODE_GETFB
+  drm/gem-fb-helper: Use actual bpp for size calculations
+  drm/fourcc: Add DRM_FORMAT_R[124]
+  drm/fourcc: Add DRM_FORMAT_D1
+
+ drivers/gpu/drm/drm_client.c                 |   4 +-
+ drivers/gpu/drm/drm_fb_helper.c              | 120 ++++++++++++++-----
+ drivers/gpu/drm/drm_fourcc.c                 |  45 +++++++
+ drivers/gpu/drm/drm_framebuffer.c            |   2 +-
+ drivers/gpu/drm/drm_gem_framebuffer_helper.c |  12 +-
+ include/drm/drm_fourcc.h                     |   1 +
+ include/uapi/drm/drm_fourcc.h                |  15 +++
+ 7 files changed, 160 insertions(+), 39 deletions(-)
+
 -- 
 2.25.1
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

@@ -2,110 +2,113 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CADEC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Feb 2022 09:56:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB6B1C4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Feb 2022 12:34:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231864AbiBPJ45 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 16 Feb 2022 04:56:57 -0500
-Received: from gmail-smtp-in.l.google.com ([23.128.96.19]:39574 "EHLO
+        id S233295AbiBPMe7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 16 Feb 2022 07:34:59 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:53200 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231767AbiBPJ44 (ORCPT
+        with ESMTP id S232850AbiBPMe6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 16 Feb 2022 04:56:56 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32F0A18CC57
-        for <linux-fbdev@vger.kernel.org>; Wed, 16 Feb 2022 01:56:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1645005396;
-        bh=vxAilGNhIkW3A4eLRH0QPhO9uPa6cXkvfIVt5ay4pC8=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=YSJiUqy4KqeLOxetSXbM08lICSYfGeQ8oQkCGvut7RPx14Tdp0222eo7D17PSxe50
-         JUIh6I+V0niClrjpCrZh0oeCOH6jZ5xrkDFLViEiiSP2v+wUrtFRiMIP4pEzy595nJ
-         Q+VQWU12ue3pEFmoi45JDP3sgvBH/++ywzpOYXdI=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.128.232]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MCKBm-1nTeic2ocs-009RoO; Wed, 16
- Feb 2022 10:56:36 +0100
-Message-ID: <4231ff97-944e-7a7f-6c21-da94970549a9@gmx.de>
-Date:   Wed, 16 Feb 2022 10:56:29 +0100
+        Wed, 16 Feb 2022 07:34:58 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 907B41F79EC
+        for <linux-fbdev@vger.kernel.org>; Wed, 16 Feb 2022 04:34:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1645014885;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=Fu6TzmgbMlYQuSDAMHkyuQBli3G2K2SmS218sexp9ic=;
+        b=VNukAEq4tQjN3l1MSMgWGQT4DaRVFuTyk+0kKOikl1ZXpcrFVFg8oGAItoFP85T2g8meWA
+        orEeFlLaalfvUU9wmjtgFAjsEiGcgLuQJ1rruaxr3M8RWWFqZSwfPD+bA/+Kv6yjeqkmKc
+        WiEeR2Ykj3PBFSrcQXhAI6muhONHVP8=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-657-2jW9D6oPO_6J_OoY0Irehg-1; Wed, 16 Feb 2022 07:34:42 -0500
+X-MC-Unique: 2jW9D6oPO_6J_OoY0Irehg-1
+Received: by mail-wm1-f69.google.com with SMTP id o24-20020a05600c379800b0037c3222c0faso1615100wmr.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 16 Feb 2022 04:34:42 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=Fu6TzmgbMlYQuSDAMHkyuQBli3G2K2SmS218sexp9ic=;
+        b=CI6e8QlsUPsA5k0M0Z/UdLjYrbA3C4Z6JdzovectiPwoEeGcdSgHPqvtvV3mwFD5IK
+         Ko78yuhKShMh/D2vlUiDJ+kB8H9Oj2rpqFwGPrPOwCyJrGXrP8iVZvWeGE74Yj271i1e
+         2G3hC1iJM7FU4x2i+Um2IjVLkqECd3c8SKR/TQf+AwTZ1P98CK/31M3Uey9iNy3brbDT
+         vWZb3MfIPpQcVi5u/G2mTYqDMS4cAM2g8cfHE45qfVU6vsr7W2QaOXo9tntoVhvWPua+
+         wv4c1/7AByYQd4EotNyVRUsi39nouzR146H/qBLmuiuDKCMFQl9j+/kAo8q5gSWhFdNC
+         BnbA==
+X-Gm-Message-State: AOAM533LrsBYHgTU1l4u0zq4XjwA2JsuO3fMlA68/VDa9z4NsEIRPP/d
+        fVhD8/7fGrbMHBWQVZQNVGMW1UI/94QFwJ+zC6fGlmGgsiOzxBr7uHQoMN40YkEoI4AnAg7OQHH
+        0gF2cVkMkbmFojVrqz0GFgz0=
+X-Received: by 2002:adf:f005:0:b0:1e3:1957:af07 with SMTP id j5-20020adff005000000b001e31957af07mr2203687wro.311.1645014881497;
+        Wed, 16 Feb 2022 04:34:41 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJww2pEBjWX6+qG9snaBEnYCCDQh6YGaz6Dcc7r7r2Rqwhne1V8moyLnyuF2IvLxEM9om9CJGQ==
+X-Received: by 2002:adf:f005:0:b0:1e3:1957:af07 with SMTP id j5-20020adff005000000b001e31957af07mr2203675wro.311.1645014881239;
+        Wed, 16 Feb 2022 04:34:41 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id l12sm32213684wrs.11.2022.02.16.04.34.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 16 Feb 2022 04:34:40 -0800 (PST)
+Message-ID: <2d0e88a3-8fa2-6b21-93da-1c9e6f8e3e84@redhat.com>
+Date:   Wed, 16 Feb 2022 13:34:39 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
-Subject: Re: [PATCH] video: fbdev: au1100fb: Spelling s/palette/palette/
+Subject: Re: [PATCH v6 0/6] drm: Add driver for Solomon SSD130x OLED displays
 Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20220216084029.2913685-1-geert@linux-m68k.org>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220216084029.2913685-1-geert@linux-m68k.org>
+To:     linux-kernel@vger.kernel.org
+Cc:     linux-fbdev@vger.kernel.org,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel@lists.freedesktop.org, Maxime Ripard <maxime@cerno.tech>,
+        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Lee Jones <lee.jones@linaro.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        devicetree@vger.kernel.org, linux-pwm@vger.kernel.org
+References: <20220214133710.3278506-1-javierm@redhat.com>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <20220214133710.3278506-1-javierm@redhat.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:vSqJPc7ClD8PMCvdkq5h9fAxYxqc+8R7P6HmllNif+DMKr1adjm
- XM7lX66U4+unv3r/BkHr6l8z9iFplmk7/P+E9xDHve457ajVHOEznwoPhyuHm4uXeRdCAIn
- I8rkSQKciEJolPI3GxM4bfSqlJTkBRAvpPu+CZghaYQ2aVb4LyJV4UOslvh8WgqRlmIzuRY
- 34sbTFUcr/Tc4KHMyHPWw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:a31ww4NVe2s=:Wpod6ZLC7gQci4U5KAebZF
- 9X/WcS0lD8izXHjEm1y67QgM7gzhlUVaHCPSIihrdG75I6opniFDM12Ed4QWo7LdpFtjgRP4x
- sU84l+dhyiFgsAhq8Yctd1z5+a6I0NeHEdIeMczchok4NwZt4Be8bw5wuJIg9HHyEYTVWoz/O
- 6Rhwn6KDzqY7vdGvdyHb14J3eh0+KPq4qOUkyGAmq0Bgam6wH+fmsZV0ukFBQB/Ei9jlM3UxR
- fdMhtfyff9i38kVj2Bb/NHEEvZDdPTGWE4yuP85mlnDZM1gu7Tky9macygLQMCMcIpiEKXT8j
- WIXp0NEOqma+kEHMeC1pEJHQkaHXOUzx5juBGxMzspq15ZiVafM0WPE4PqACFnvOKjCjWspp1
- dOI5nXbMHp4acKxKhUEoCe1gcM5Hwmq4I4SUndL6mFQydz7SNTnwoViu2dx/zfq1Seo3thxLQ
- a5dO82IKPivo/SCi48rTATa4+R4EZHWy/UfqjGW2YgLwI1gPA2hb5LTUYrw1H/w1oUR3i7Fg/
- FzIFXTLyj48ar+yi81i6qCrZkTYKI9Q5dW2S1v90mCrJTgB3rkTkDoJJhcFVNFFu3Q/bZaNyg
- YSYCKWDT/9p7cQRXxqPUg+ZQ/YJ71+f+XZtTo1ooGne0t4DiiHxDarHweTPlh+n/yQwqu13oD
- Zx4BLnaStqVwiY5NLmnDrrVIEhC0Qd5PcBg54itbUTD9OtHsVlvsPv/y59mXAgq0sq4IeOjDA
- nnrdgYVhgXvL+PhjaPnQpG4uMo7Km8sCrxTethfgklMgNWkkGvcjCP0d7VBHeOR2oj6L/5mWl
- onK7ITq/VgezgQNhmRoJlxt2KmeGmKM4c3FOzQoNbe4o0WyEJCLPkbQk4j+2JTQvcxy260jl8
- 5yyCjmIrZwCQEcLoz/ADkzsvNuldXeym5O7YyHV2nBDaiR4LsjynJsF+1dagRgPyRUCbHGxwv
- SeeafMQYX0hPsu4TZHaj+krPZ/0L6WQxg3cceKw8srtGPGy4UYNAMNPoTFCxClMNevO8i0uUW
- hsa5iDI8YeFWiovo4EAt+GU4AaPZhtrGuFxqyOCKwGdJKdozGPoF2IepzG2Ao782cd5KivmaG
- 6uvN52Q6GpnC0Y=
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2/16/22 09:40, Geert Uytterhoeven wrote:
-> Fix a misspelling of "palette" in a structure member.
->
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+On 2/14/22 14:37, Javier Martinez Canillas wrote:
+> This patch series adds a DRM driver for the Solomon OLED SSD1305, SSD1306,
+> SSD1307 and SSD1309 displays. It is a port of the ssd1307fb fbdev driver.
+> 
+> Using the DRM fbdev emulation, all the tests from Geert Uytterhoeven repo
+> (https://git.kernel.org/pub/scm/linux/kernel/git/geert/fbtest.git) passes.
+> 
+> I've also tested it using the display as a VT output and even though fbcon
+> seems to work, it is mostly unusable on a 128x64 SSD1306 display.
+> 
+> This is a v6 that addresses the issues pointed in v5. Thanks a lot to all
+> reviewers that gave me feedback and comments.
+> 
 
-applied.
-Thanks!
-Helge
+Pushed this series to drm-misc (drm-misc-next). Thanks all!
 
-> ---
->  drivers/video/fbdev/au1100fb.c | 2 +-
->  drivers/video/fbdev/au1100fb.h | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100=
-fb.c
-> index 37a6512feda0fb20..52f731a6148210eb 100644
-> --- a/drivers/video/fbdev/au1100fb.c
-> +++ b/drivers/video/fbdev/au1100fb.c
-> @@ -239,7 +239,7 @@ int au1100fb_fb_setcolreg(unsigned regno, unsigned r=
-ed, unsigned green, unsigned
->  	u32 value;
->
->  	fbdev =3D to_au1100fb_device(fbi);
-> -	palette =3D fbdev->regs->lcd_pallettebase;
-> +	palette =3D fbdev->regs->lcd_palettebase;
->
->  	if (regno > (AU1100_LCD_NBR_PALETTE_ENTRIES - 1))
->  		return -EINVAL;
-> diff --git a/drivers/video/fbdev/au1100fb.h b/drivers/video/fbdev/au1100=
-fb.h
-> index e7239bceefd3ad34..79f4048726f1af0f 100644
-> --- a/drivers/video/fbdev/au1100fb.h
-> +++ b/drivers/video/fbdev/au1100fb.h
-> @@ -92,7 +92,7 @@ struct au1100fb_regs
->  	u32  lcd_pwmdiv;
->  	u32  lcd_pwmhi;
->  	u32  reserved[(0x0400-0x002C)/4];
-> -	u32  lcd_pallettebase[256];
-> +	u32  lcd_palettebase[256];
->  };
->
->  struct au1100fb_device {
+Best regards,
+-- 
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 

@@ -2,94 +2,78 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34898C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Feb 2022 08:08:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 229EEC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Feb 2022 09:04:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230421AbiBPIJE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 16 Feb 2022 03:09:04 -0500
-Received: from gmail-smtp-in.l.google.com ([23.128.96.19]:45696 "EHLO
+        id S231784AbiBPJEq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 16 Feb 2022 04:04:46 -0500
+Received: from gmail-smtp-in.l.google.com ([23.128.96.19]:36134 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229542AbiBPIJE (ORCPT
+        with ESMTP id S231666AbiBPJEp (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 16 Feb 2022 03:09:04 -0500
-Received: from mail-ua1-f50.google.com (mail-ua1-f50.google.com [209.85.222.50])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7E047241D81;
-        Wed, 16 Feb 2022 00:08:52 -0800 (PST)
-Received: by mail-ua1-f50.google.com with SMTP id 60so738005uae.1;
-        Wed, 16 Feb 2022 00:08:52 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=WYSo5EgLaZzQKeOlQb07NB5X6ckWjcKbBmLtEm4WWR4=;
-        b=dj7H0tsUpGZilzlDD/sqsDcsCdMT3wtYLwzBWEsSDkzf8g0gab1+T147hxK1kDdt/G
-         mk5ZMRiuSBcr3/m2zmVM+UMcrBfmhrg/SEAJ8KDF9HHqTcHPmdc1GnICjwrPbshohOV8
-         wJK6ARaWMNpx/6m8kyAIe3Hu9gA9/cokLh/+djvUx5OMkOQ+O9PgnEVhYCPXtIsG8jQ6
-         Z+/UZ8KMPnaDdWBgts5rxJn1Lc2L8tCQj/5HQe5O38hpfqLzO+rvPlg1Wvyphx6QKQfL
-         Twe+FX2aeRWFI0gdWdB+mhYeo6BEfHlVqkSL3cAs6Xr/ujVJRcfLTACMUAUrgvLcDfh1
-         P0SQ==
-X-Gm-Message-State: AOAM532CK+8mcygkqykm0ErGhmjyJPk9FNXBgvvssNQ9f0OI4Ff3G1aO
-        jf4b5qPyjtGaWJosTGBpqpnsUQTDcgv2CQ==
-X-Google-Smtp-Source: ABdhPJwmdYpXaYbSh5qh2RLIgVntYbsKk7sBNm9blL1M6fUbqYyLom3KBqLMElkOLLCsOl0m9DLn7w==
-X-Received: by 2002:ab0:4982:0:b0:33c:8dbc:ffc8 with SMTP id e2-20020ab04982000000b0033c8dbcffc8mr602420uad.48.1644998931594;
-        Wed, 16 Feb 2022 00:08:51 -0800 (PST)
-Received: from mail-vs1-f51.google.com (mail-vs1-f51.google.com. [209.85.217.51])
-        by smtp.gmail.com with ESMTPSA id 128sm5981452vsz.4.2022.02.16.00.08.51
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 16 Feb 2022 00:08:51 -0800 (PST)
-Received: by mail-vs1-f51.google.com with SMTP id e6so1545281vsa.8;
-        Wed, 16 Feb 2022 00:08:51 -0800 (PST)
-X-Received: by 2002:a67:e113:0:b0:30e:303d:d1d6 with SMTP id
- d19-20020a67e113000000b0030e303dd1d6mr514682vsl.38.1644998931129; Wed, 16 Feb
- 2022 00:08:51 -0800 (PST)
-MIME-Version: 1.0
-References: <20220216072625.16947-1-schmitzmic@gmail.com>
-In-Reply-To: <20220216072625.16947-1-schmitzmic@gmail.com>
+        Wed, 16 Feb 2022 04:04:45 -0500
+Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA5F62AD675
+        for <linux-fbdev@vger.kernel.org>; Wed, 16 Feb 2022 01:04:31 -0800 (PST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:7534:e0be:5adf:2691])
+        by albert.telenet-ops.be with bizsmtp
+        id vl4V2600K18GbK106l4Veb; Wed, 16 Feb 2022 10:04:30 +0100
+Received: from rox.of.borg ([192.168.97.57])
+        by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1nKGEf-000wtW-Dn; Wed, 16 Feb 2022 10:04:29 +0100
+Received: from geert by rox.of.borg with local (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1nKFrS-00CDzg-BS; Wed, 16 Feb 2022 09:40:30 +0100
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 16 Feb 2022 09:08:40 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWMqpo9G+h7zteqUct2P0O4SaYDO3wtGxG=UnnYG7SJQQ@mail.gmail.com>
-Message-ID: <CAMuHMdWMqpo9G+h7zteqUct2P0O4SaYDO3wtGxG=UnnYG7SJQQ@mail.gmail.com>
-Subject: Re: [PATCH v1] video/fbdev: Atari 2 bpp (STe) palette bugfix
-To:     Michael Schmitz <schmitzmic@gmail.com>
-Cc:     Helge Deller <deller@gmx.de>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        "Linux/m68k" <linux-m68k@vger.kernel.org>,
-        stable <stable@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+To:     Helge Deller <deller@gmx.de>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] video: fbdev: au1100fb: Spelling s/palette/palette/
+Date:   Wed, 16 Feb 2022 09:40:29 +0100
+Message-Id: <20220216084029.2913685-1-geert@linux-m68k.org>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Feb 16, 2022 at 8:26 AM Michael Schmitz <schmitzmic@gmail.com> wrote:
-> The code to set the shifter STe palette registers has a long
-> standing operator precedence bug, manifesting as colors set
-> on a 2 bits per pixel frame buffer coming up with a distinctive
-> blue tint.
->
-> Add parentheses around the calculation of the per-color palette
-> data before shifting those into their respective bit field position.
->
-> This bug goes back a long way (2.4 days at the very least) so there
-> won't be a Fixes: tag.
->
-> Tested on ARAnyM as well on Falcon030 hardware.
->
-> Cc: stable@vger.kernel.org
-> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Link: https://lore.kernel.org/all/CAMuHMdU3ievhXxKR_xi_v3aumnYW7UNUO6qMdhgfyWTyVSsCkQ@mail.gmail.com
-> Tested-by: Michael Schmitz <schmitzmic@gmail.com>
-> Signed-off-by: Michael Schmitz <schmitzmic@gmail.com>
+Fix a misspelling of "palette" in a structure member.
 
-Thanks, fixes the issue for me.
-Tested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/video/fbdev/au1100fb.c | 2 +-
+ drivers/video/fbdev/au1100fb.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Gr{oetje,eeting}s,
+diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
+index 37a6512feda0fb20..52f731a6148210eb 100644
+--- a/drivers/video/fbdev/au1100fb.c
++++ b/drivers/video/fbdev/au1100fb.c
+@@ -239,7 +239,7 @@ int au1100fb_fb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned
+ 	u32 value;
+ 
+ 	fbdev = to_au1100fb_device(fbi);
+-	palette = fbdev->regs->lcd_pallettebase;
++	palette = fbdev->regs->lcd_palettebase;
+ 
+ 	if (regno > (AU1100_LCD_NBR_PALETTE_ENTRIES - 1))
+ 		return -EINVAL;
+diff --git a/drivers/video/fbdev/au1100fb.h b/drivers/video/fbdev/au1100fb.h
+index e7239bceefd3ad34..79f4048726f1af0f 100644
+--- a/drivers/video/fbdev/au1100fb.h
++++ b/drivers/video/fbdev/au1100fb.h
+@@ -92,7 +92,7 @@ struct au1100fb_regs
+ 	u32  lcd_pwmdiv;
+ 	u32  lcd_pwmhi;
+ 	u32  reserved[(0x0400-0x002C)/4];
+-	u32  lcd_pallettebase[256];
++	u32  lcd_palettebase[256];
+ };
+ 
+ struct au1100fb_device {
+-- 
+2.25.1
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

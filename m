@@ -2,118 +2,110 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFD8FC433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Feb 2022 09:17:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CADEC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Feb 2022 09:56:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231864AbiBPJRo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 16 Feb 2022 04:17:44 -0500
-Received: from gmail-smtp-in.l.google.com ([23.128.96.19]:50414 "EHLO
+        id S231864AbiBPJ45 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 16 Feb 2022 04:56:57 -0500
+Received: from gmail-smtp-in.l.google.com ([23.128.96.19]:39574 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231880AbiBPJRn (ORCPT
+        with ESMTP id S231767AbiBPJ44 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 16 Feb 2022 04:17:43 -0500
-Received: from wout2-smtp.messagingengine.com (wout2-smtp.messagingengine.com [64.147.123.25])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19DB321F1E9;
-        Wed, 16 Feb 2022 01:17:31 -0800 (PST)
-Received: from compute2.internal (compute2.nyi.internal [10.202.2.46])
-        by mailout.west.internal (Postfix) with ESMTP id BF0D33201F86;
-        Wed, 16 Feb 2022 04:17:30 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute2.internal (MEProxy); Wed, 16 Feb 2022 04:17:31 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
-        :cc:content-type:date:date:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to; s=fm2; bh=qsR1J4DV2a5/LauMmqRZ3xIwqaxibZ4KiJxVcK
-        3xHgU=; b=ayhgPKtsysFcxf2i/DdDw5JCrt8RneelVY5rh333UKnjeA1o7366b4
-        9/5YvAg8bfkjiy9LE1N/cCNtqt7osA1us3Vy9tf5xgSBBqZOpgJxF4OzWq/nGGAP
-        JQGThcJVm0+70k23Eo9qx4ICAk3v0fKxDpefoRnE9T22T12h2dhO/d/HXp+/gWM8
-        fr04PzJQvX6TbuTLQDiaW6+VAx149pawJG6RgRvl3DX4W2nU9B2rqWQYGzrpgdRf
-        SshCh7QWSJURTwpB8KgUXnGCCKPReZrU9cZF3XG7QwO+ethXrwwRVRM3TgtYr1zC
-        ktfAzPSmESWAxVqHT7krpiSupCGkBWWA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-type:date:date:from:from
-        :in-reply-to:in-reply-to:message-id:mime-version:references
-        :reply-to:sender:subject:subject:to:to:x-me-proxy:x-me-proxy
-        :x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=qsR1J4DV2a5/LauMm
-        qRZ3xIwqaxibZ4KiJxVcK3xHgU=; b=FqWDBGbBRdkGyQiFbJnayNJmN0BcW8AIb
-        OTvdafPl+2kMexVmG3g6IoXTZmSTe/5RP+vb+eM//mtGy0hSisaw1lZhuvjU1xAi
-        +/oENwaOJJaFm1s0yc7UgZhz5Ous1QEiDDXJwgbNYW+jM1b8mCbmJ0koIUYGxoxa
-        zG7duUE7YySbuFvEq9lpP26Fn935WTvHnBadVmbgs8mjIMwXTEdXH5lSVOxFT6uu
-        CZltQqMNTYvdusT16V6tGSD8lpnJM1sHBDVFDTXdW74SlDozfvdHOdcJmEsnHuhX
-        WGp5Z1VbEw3aP3teAWpa7STihurpuP9UIrOs5yv6WrToJum+GvfVg==
-X-ME-Sender: <xms:KsEMYoHremJAFbdKus8j9YvuA2qY6UGSnufZY_GN7WYMlSZ-w3gQWg>
-    <xme:KsEMYhVIzp6kZHeevh5koZz8UeQGqtuTIsNHMFLh8vRQCsn6dAVNluYph39pXDxRT
-    5FH5FT6-7ZFrE8v23g>
-X-ME-Received: <xmr:KsEMYiLnU5Mu-TP_Ad43YvsNz14DwcPmdvinN6anZojg30nwNuS8EX_ksrtwmGIBVA7webAe0WZOlWXasC1x3MSCWBIV9rjFcsywg1U>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvvddrjeeigddtudcutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpeffhffvuffkfhggtggujgesghdtreertddtvdenucfhrhhomhepofgrgihimhgv
-    ucftihhprghrugcuoehmrgigihhmvgestggvrhhnohdrthgvtghhqeenucggtffrrghtth
-    gvrhhnpeelkeeghefhuddtleejgfeljeffheffgfeijefhgfeufefhtdevteegheeiheeg
-    udenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehmrg
-    igihhmvgestggvrhhnohdrthgvtghh
-X-ME-Proxy: <xmx:KsEMYqFhnfAJSBbmb7_8ysPey9d6E25kA3BLQJu_pujTAlZzsi0mBA>
-    <xmx:KsEMYuX7aLMUdKWaiLmJfL-cYnBvKplQyueGKK8QNGE5eBviS814rA>
-    <xmx:KsEMYtOaBQTHM4MQLbJn6LcZ3ktMQFcLB77XuHhK1Ab3Rp6jz2idKQ>
-    <xmx:KsEMYircMsN74mUMMja4JZTb2CLEy_uhaaIv4LRHsV5pyJrnEvMAVw>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
- 16 Feb 2022 04:17:29 -0500 (EST)
-Date:   Wed, 16 Feb 2022 10:17:28 +0100
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-kernel@vger.kernel.org,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Noralf =?utf-8?Q?Tr=C3=B8nnes?= <noralf@tronnes.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Sam Ravnborg <sam@ravnborg.org>, Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v6 6/6] dt-bindings: display: ssd1307fb: Add myself as
- binding co-maintainer
-Message-ID: <20220216091728.3cz2zxvihhnexp4h@houat>
-References: <20220214133710.3278506-1-javierm@redhat.com>
- <20220214133935.3278933-1-javierm@redhat.com>
+        Wed, 16 Feb 2022 04:56:56 -0500
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32F0A18CC57
+        for <linux-fbdev@vger.kernel.org>; Wed, 16 Feb 2022 01:56:42 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1645005396;
+        bh=vxAilGNhIkW3A4eLRH0QPhO9uPa6cXkvfIVt5ay4pC8=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=YSJiUqy4KqeLOxetSXbM08lICSYfGeQ8oQkCGvut7RPx14Tdp0222eo7D17PSxe50
+         JUIh6I+V0niClrjpCrZh0oeCOH6jZ5xrkDFLViEiiSP2v+wUrtFRiMIP4pEzy595nJ
+         Q+VQWU12ue3pEFmoi45JDP3sgvBH/++ywzpOYXdI=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.128.232]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MCKBm-1nTeic2ocs-009RoO; Wed, 16
+ Feb 2022 10:56:36 +0100
+Message-ID: <4231ff97-944e-7a7f-6c21-da94970549a9@gmx.de>
+Date:   Wed, 16 Feb 2022 10:56:29 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="rrwezfnafowcbwm5"
-Content-Disposition: inline
-In-Reply-To: <20220214133935.3278933-1-javierm@redhat.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH] video: fbdev: au1100fb: Spelling s/palette/palette/
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20220216084029.2913685-1-geert@linux-m68k.org>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220216084029.2913685-1-geert@linux-m68k.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:vSqJPc7ClD8PMCvdkq5h9fAxYxqc+8R7P6HmllNif+DMKr1adjm
+ XM7lX66U4+unv3r/BkHr6l8z9iFplmk7/P+E9xDHve457ajVHOEznwoPhyuHm4uXeRdCAIn
+ I8rkSQKciEJolPI3GxM4bfSqlJTkBRAvpPu+CZghaYQ2aVb4LyJV4UOslvh8WgqRlmIzuRY
+ 34sbTFUcr/Tc4KHMyHPWw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:a31ww4NVe2s=:Wpod6ZLC7gQci4U5KAebZF
+ 9X/WcS0lD8izXHjEm1y67QgM7gzhlUVaHCPSIihrdG75I6opniFDM12Ed4QWo7LdpFtjgRP4x
+ sU84l+dhyiFgsAhq8Yctd1z5+a6I0NeHEdIeMczchok4NwZt4Be8bw5wuJIg9HHyEYTVWoz/O
+ 6Rhwn6KDzqY7vdGvdyHb14J3eh0+KPq4qOUkyGAmq0Bgam6wH+fmsZV0ukFBQB/Ei9jlM3UxR
+ fdMhtfyff9i38kVj2Bb/NHEEvZDdPTGWE4yuP85mlnDZM1gu7Tky9macygLQMCMcIpiEKXT8j
+ WIXp0NEOqma+kEHMeC1pEJHQkaHXOUzx5juBGxMzspq15ZiVafM0WPE4PqACFnvOKjCjWspp1
+ dOI5nXbMHp4acKxKhUEoCe1gcM5Hwmq4I4SUndL6mFQydz7SNTnwoViu2dx/zfq1Seo3thxLQ
+ a5dO82IKPivo/SCi48rTATa4+R4EZHWy/UfqjGW2YgLwI1gPA2hb5LTUYrw1H/w1oUR3i7Fg/
+ FzIFXTLyj48ar+yi81i6qCrZkTYKI9Q5dW2S1v90mCrJTgB3rkTkDoJJhcFVNFFu3Q/bZaNyg
+ YSYCKWDT/9p7cQRXxqPUg+ZQ/YJ71+f+XZtTo1ooGne0t4DiiHxDarHweTPlh+n/yQwqu13oD
+ Zx4BLnaStqVwiY5NLmnDrrVIEhC0Qd5PcBg54itbUTD9OtHsVlvsPv/y59mXAgq0sq4IeOjDA
+ nnrdgYVhgXvL+PhjaPnQpG4uMo7Km8sCrxTethfgklMgNWkkGvcjCP0d7VBHeOR2oj6L/5mWl
+ onK7ITq/VgezgQNhmRoJlxt2KmeGmKM4c3FOzQoNbe4o0WyEJCLPkbQk4j+2JTQvcxy260jl8
+ 5yyCjmIrZwCQEcLoz/ADkzsvNuldXeym5O7YyHV2nBDaiR4LsjynJsF+1dagRgPyRUCbHGxwv
+ SeeafMQYX0hPsu4TZHaj+krPZ/0L6WQxg3cceKw8srtGPGy4UYNAMNPoTFCxClMNevO8i0uUW
+ hsa5iDI8YeFWiovo4EAt+GU4AaPZhtrGuFxqyOCKwGdJKdozGPoF2IepzG2Ao782cd5KivmaG
+ 6uvN52Q6GpnC0Y=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On 2/16/22 09:40, Geert Uytterhoeven wrote:
+> Fix a misspelling of "palette" in a structure member.
+>
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
---rrwezfnafowcbwm5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+applied.
+Thanks!
+Helge
 
-On Mon, Feb 14, 2022 at 02:39:35PM +0100, Javier Martinez Canillas wrote:
-> The ssd130x DRM driver also makes use of this Device Tree binding to allow
-> existing users of the fbdev driver to migrate without the need to change
-> their Device Trees.
->=20
-> Add myself as another maintainer of the binding, to make sure that I will
-> be on Cc when patches are proposed for it.
->=20
-> Suggested-by: Sam Ravnborg <sam@ravnborg.org>
-> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-> Acked-by: Rob Herring <robh@kernel.org>
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Acked-by: Maxime Ripard <maxime@cerno.tech>
+> ---
+>  drivers/video/fbdev/au1100fb.c | 2 +-
+>  drivers/video/fbdev/au1100fb.h | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100=
+fb.c
+> index 37a6512feda0fb20..52f731a6148210eb 100644
+> --- a/drivers/video/fbdev/au1100fb.c
+> +++ b/drivers/video/fbdev/au1100fb.c
+> @@ -239,7 +239,7 @@ int au1100fb_fb_setcolreg(unsigned regno, unsigned r=
+ed, unsigned green, unsigned
+>  	u32 value;
+>
+>  	fbdev =3D to_au1100fb_device(fbi);
+> -	palette =3D fbdev->regs->lcd_pallettebase;
+> +	palette =3D fbdev->regs->lcd_palettebase;
+>
+>  	if (regno > (AU1100_LCD_NBR_PALETTE_ENTRIES - 1))
+>  		return -EINVAL;
+> diff --git a/drivers/video/fbdev/au1100fb.h b/drivers/video/fbdev/au1100=
+fb.h
+> index e7239bceefd3ad34..79f4048726f1af0f 100644
+> --- a/drivers/video/fbdev/au1100fb.h
+> +++ b/drivers/video/fbdev/au1100fb.h
+> @@ -92,7 +92,7 @@ struct au1100fb_regs
+>  	u32  lcd_pwmdiv;
+>  	u32  lcd_pwmhi;
+>  	u32  reserved[(0x0400-0x002C)/4];
+> -	u32  lcd_pallettebase[256];
+> +	u32  lcd_palettebase[256];
+>  };
+>
+>  struct au1100fb_device {
 
-Maxime
-
---rrwezfnafowcbwm5
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCYgzBKAAKCRDj7w1vZxhR
-xT4iAQCF5oEz3DtvvZKcTveObsVmtL6t+phZuQfEcF45C9PnTgD8CCq/2LT9cU7t
-Mee4yteC21yEVsE+i/YzUxaCod6+Zgo=
-=MXq/
------END PGP SIGNATURE-----
-
---rrwezfnafowcbwm5--

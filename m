@@ -2,139 +2,117 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D0A7C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Feb 2022 20:47:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7DCEC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Feb 2022 07:26:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243022AbiBOUrJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 15 Feb 2022 15:47:09 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:33790 "EHLO
+        id S229950AbiBPH0r (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 16 Feb 2022 02:26:47 -0500
+Received: from gmail-smtp-in.l.google.com ([23.128.96.19]:57454 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232797AbiBOUrI (ORCPT
+        with ESMTP id S229468AbiBPH0o (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 15 Feb 2022 15:47:08 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 58B6FD93;
-        Tue, 15 Feb 2022 12:46:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1644957995;
-        bh=0OSbOP7dVuxah5dzxOSWPDpWQt+waq4IO/yrm245na0=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=RM8lbqfXj4CquNffPjLDAk/zqsA2R7oPEntJIfErC/JFzifQUKiCCwI3sQ/AwS3UH
-         u+PDvEN61F59Ofw1QXdQ7s99jAvoAWJRtsvl3CYAHnhMh1rMymay5Nv8yKR1A9xG1K
-         XK+pIDDlkBrtJwgBGiQ/YPmKR4xRWeE8wNcYaJAw=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.185.100]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MJE27-1naNTk1Cfr-00KivD; Tue, 15
- Feb 2022 21:46:35 +0100
-Message-ID: <7e60cd01-8afc-ddb5-a1bb-6e9f53ccfba5@gmx.de>
-Date:   Tue, 15 Feb 2022 21:46:24 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.3.0
-Subject: Re: [PATCH 22/23] video: omapfb: dss: Make use of the helper
- component_compare_dev
-Content-Language: en-US
-To:     Yong Wu <yong.wu@mediatek.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        dri-devel@lists.freedesktop.org
-Cc:     James Wang <james.qian.wang@arm.com>,
-        Liviu Dudau <liviu.dudau@arm.com>,
-        iommu@lists.linux-foundation.org,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        linux-kernel@vger.kernel.org, Joerg Roedel <joro@8bytes.org>,
-        Will Deacon <will@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        linux-mediatek@lists.infradead.org,
-        Chun-Kuang Hu <chunkuang.hu@kernel.org>,
-        linux-arm-kernel@lists.infradead.org,
-        Stephen Boyd <sboyd@kernel.org>,
-        AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>,
-        Hsin-Yi Wang <hsinyi@chromium.org>,
-        Robin Murphy <robin.murphy@arm.com>,
-        Tomasz Figa <tfiga@chromium.org>, srv_heupstream@mediatek.com,
-        Rob Clark <robdclark@gmail.com>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>, linux-omap@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
-References: <20220214060819.7334-1-yong.wu@mediatek.com>
- <20220214060819.7334-23-yong.wu@mediatek.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220214060819.7334-23-yong.wu@mediatek.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:MjTT6/0mKscyzurmEJq+TRDLFWm722/o5oh1VceIWTDo9Su6z33
- Uqcw4r79WPXMZ1MHVQ5YZwMpT3/LUtQYuMEKT1s4Qsw268nztXs8M1PHTdwFSaaX3fRCVHa
- I5hj8j+9RzGYlu8e8qiZ43jIdVRKdmD+CGxvzWPF1Cw57f4/4D8ejp1FysOEiqU6iTGSqwc
- ErfKQfh2UKAhLIHNSceWg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:EO1+Ylb+ev0=:HpXUahwDBxS2Q6GJ/UdQMa
- n+62M3husXUXoHxxs8AxzjuuYDkqIBegYnyeAV7YgP0Mle0rT21+2LEV21Cm/oK+NdFah8S9W
- CpzPyAZIRuU01jq211YudtbXnvFOMgwbjvey4rIl2NTTJUDs+3nbJ6EgXSJwHO77nbgaCNttA
- G+VtN7qVCXCtu780Msj9tZjo7C1oDNvtl1Z0DVM0OdyjyuO5D93T57PbebQJO+46L8tQ0bfg4
- PClJhDBMO98xxmJRVp6iBSjNS7q7geteQaZ0ZJQVZhNyuKpKUNS7ESMvNsPEhSTzcXNJDdgSx
- Vq9g3AnCPk01P40v1QI4BqRKbdc93kQn/QMzvwnd6VKhhT5hOO0TqppV8u07Mwhznrax7VcRW
- +v1Ixw3WjKmrwEdG4wxBOsqT1dFC/6QoqorX3z1sqp7Ag6Ncwj2vZEjoNZ1YUThIr4BpD/vWq
- hjpVXVTw/vir74eHyvdnz2eZXfQD7YPWYiK3z1oTwSGkoUciP9hPqvp4WS1qWPD3Wx4UiMz4y
- 2dpK2641P1xHzfATt1y9hhMgc6vt9XFxpm9Ycl0uN+Nf/W9WIYa2fD+vPujh/CyO3jLklKrNP
- rhbT5NjDJGfC/AFaC2iH75aCY+P5r1pQZOBnvTunjmLUTuER4bhCqMQqM9G+WAIVA1mScRE7x
- z5RtmJWkKSwplc9SI/e09hsIAALu0cz7R3+T3vF1BUPB0RwiiTFPg2EbSOsu0l9GrJ8CkvoHP
- 6ajgPfPMXcn62tOWZWD9MMtunWjyjGeCeU0sZsO37FBgxO6O75XX5KNPo3ZtVKQ/rb45z2Rj6
- BmFoOKHsV5p6ypFwr9d2I3zNEcl0DYDNBnMwKA/3QTkYeOJgYkBDK8DU7dxFOUM6q9OWcMRcY
- NoMQI8g/0H0GxrMHZA3BmETGV399e4Ve0zB9yhBv/cd9YdH0LKj0wm2/KEIbC/oPNQrOB040l
- zX8J1rybbjKBBzimlhU2e1yTmGHdV4geJl204qxFdDOHSN0uiAnzvI89ljAQcys4MdV9EpQSa
- NnChsjeiQrZB5ZntJzdsbaO7RJJahTHLc0+epBUeuUd6C0orPGZgiQsH8Kwcy4p8Uu6vZoYIV
- JC4pPsVjDwiUHc=
+        Wed, 16 Feb 2022 02:26:44 -0500
+Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B9FB2DD5B;
+        Tue, 15 Feb 2022 23:26:32 -0800 (PST)
+Received: by mail-pg1-x52e.google.com with SMTP id z4so1372361pgh.12;
+        Tue, 15 Feb 2022 23:26:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id;
+        bh=HO6taZEnI8YA7qrP/AT0huv3lF5MGGX042n8Oc6pmjE=;
+        b=jbUFkgdVvvEXPqiJ+t2gDnE+y8iI1g1Er9neTmVbz9Cl3DhQUIln4lo/92HclKYh6l
+         qWTTJ08Co9WvclPu3pIHcrLurkpZ5vJqowBqk7tH7nbOUDAxO5HzU9iMa03VKGa+JIvR
+         ZKJP1F7TWfh48MXKToLNGUtZJl6pULLxkBPD6hLNG2eyEj8bU2pGC6veBaukFd0PA8QZ
+         o8Wf8i59/6z0d8KZV71RiBn4x/vdLGTvSh0iTarawz2xj/FMcQddyVBpbVcJJfuWSqfj
+         QrdeUYBO9Xm9dE5lJdRjZpbkqFTksMWWLcukxgnR4L4f2ZXpMCOsSrbtYc4C/uQo/e8q
+         r/NA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=HO6taZEnI8YA7qrP/AT0huv3lF5MGGX042n8Oc6pmjE=;
+        b=c+8XXE+7PAk+adlNBVgb0wXJS37GpgIExZ4gyASujabGSajrLtceIwqY7iOI9/FfRs
+         7e1j4mXtxHEssD4RJO7rkUkf4P8F5lAqG7EWgtW/8IlQtbW1vRXgjiEvk1zYDz4w2eDc
+         zT3HaljbeU6liazSwXSUpBhHDj12DJU2JcNYT6S/cwLdGXgpSPJlYE2UumZni6f1hWEk
+         ZZ1qPv/rZUtWKgN3xLwMaWKQ8XPoDNpi5CHN/HqxHhkNX+lBPuY07PUfApLx8s/VNYYD
+         4rdFJXQXS/kgjp0BtiKaioAi2heYZfKV0rlIvyhHBW4VMW6Z1BNFzKkAoivPfxMijDFA
+         5HIg==
+X-Gm-Message-State: AOAM533uGSE3r6oEf5jYPYG70W4hj04QPjbbwDosBncmMn9qngoYWUPp
+        /q6WVC2a9Ups2c0nsGtqxyI=
+X-Google-Smtp-Source: ABdhPJxWX73tl16/82RaCvzO0r1M6TT4cX2b655gMiclRI3BkcJonEV5wVvNqQc8BehzyUnpR41K7g==
+X-Received: by 2002:a62:ee12:0:b0:4e1:2ec1:cba2 with SMTP id e18-20020a62ee12000000b004e12ec1cba2mr1886990pfi.71.1644996391734;
+        Tue, 15 Feb 2022 23:26:31 -0800 (PST)
+Received: from xplor.waratah.dyndns.org (222-155-5-102-adsl.sparkbb.co.nz. [222.155.5.102])
+        by smtp.gmail.com with ESMTPSA id e3sm4545515pgc.41.2022.02.15.23.26.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Feb 2022 23:26:31 -0800 (PST)
+Received: by xplor.waratah.dyndns.org (Postfix, from userid 1000)
+        id 131BA36020A; Wed, 16 Feb 2022 20:26:27 +1300 (NZDT)
+From:   Michael Schmitz <schmitzmic@gmail.com>
+To:     deller@gmx.de, linux-fbdev@vger.kernel.org,
+        linux-m68k@vger.kernel.org
+Cc:     geert@linux-m68k.org, Michael Schmitz <schmitzmic@gmail.com>,
+        stable@vger.kernel.org
+Subject: [PATCH v1] video/fbdev: Atari 2 bpp (STe) palette bugfix
+Date:   Wed, 16 Feb 2022 20:26:25 +1300
+Message-Id: <20220216072625.16947-1-schmitzmic@gmail.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2/14/22 07:08, Yong Wu wrote:
-> Use the common compare helper from component.
->
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: linux-omap@vger.kernel.org
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Yong Wu <yong.wu@mediatek.com>
+The code to set the shifter STe palette registers has a long
+standing operator precedence bug, manifesting as colors set
+on a 2 bits per pixel frame buffer coming up with a distinctive
+blue tint.
 
-Applied to the fbdev for-next branch.
+Add parentheses around the calculation of the per-color palette
+data before shifting those into their respective bit field position.
 
-Thanks!
-Helge
+This bug goes back a long way (2.4 days at the very least) so there
+won't be a Fixes: tag.
 
->  drivers/video/fbdev/omap2/omapfb/dss/dss.c | 8 +-------
->  1 file changed, 1 insertion(+), 7 deletions(-)
->
-> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/=
-fbdev/omap2/omapfb/dss/dss.c
-> index a6b1c1598040..45b9d3cf3860 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-> @@ -1193,12 +1193,6 @@ static const struct component_master_ops dss_comp=
-onent_ops =3D {
->  	.unbind =3D dss_unbind,
->  };
->
-> -static int dss_component_compare(struct device *dev, void *data)
-> -{
-> -	struct device *child =3D data;
-> -	return dev =3D=3D child;
-> -}
-> -
->  static int dss_add_child_component(struct device *dev, void *data)
->  {
->  	struct component_match **match =3D data;
-> @@ -1212,7 +1206,7 @@ static int dss_add_child_component(struct device *=
-dev, void *data)
->  	if (strstr(dev_name(dev), "rfbi"))
->  		return 0;
->
-> -	component_match_add(dev->parent, match, dss_component_compare, dev);
-> +	component_match_add(dev->parent, match, component_compare_dev, dev);
->
->  	return 0;
->  }
->
+Tested on ARAnyM as well on Falcon030 hardware.
+
+Cc: stable@vger.kernel.org
+Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Link: https://lore.kernel.org/all/CAMuHMdU3ievhXxKR_xi_v3aumnYW7UNUO6qMdhgfyWTyVSsCkQ@mail.gmail.com
+Tested-by: Michael Schmitz <schmitzmic@gmail.com>
+Signed-off-by: Michael Schmitz <schmitzmic@gmail.com>
+---
+ drivers/video/fbdev/atafb.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+index e3812a8ff55a..29e650ecfceb 100644
+--- a/drivers/video/fbdev/atafb.c
++++ b/drivers/video/fbdev/atafb.c
+@@ -1683,9 +1683,9 @@ static int falcon_setcolreg(unsigned int regno, unsigned int red,
+ 			   ((blue & 0xfc00) >> 8));
+ 	if (regno < 16) {
+ 		shifter_tt.color_reg[regno] =
+-			(((red & 0xe000) >> 13) | ((red & 0x1000) >> 12) << 8) |
+-			(((green & 0xe000) >> 13) | ((green & 0x1000) >> 12) << 4) |
+-			((blue & 0xe000) >> 13) | ((blue & 0x1000) >> 12);
++			((((red & 0xe000) >> 13)   | ((red & 0x1000) >> 12)) << 8)   |
++			((((green & 0xe000) >> 13) | ((green & 0x1000) >> 12)) << 4) |
++			   ((blue & 0xe000) >> 13) | ((blue & 0x1000) >> 12);
+ 		((u32 *)info->pseudo_palette)[regno] = ((red & 0xf800) |
+ 						       ((green & 0xfc00) >> 5) |
+ 						       ((blue & 0xf800) >> 11));
+@@ -1971,9 +1971,9 @@ static int stste_setcolreg(unsigned int regno, unsigned int red,
+ 	green >>= 12;
+ 	if (ATARIHW_PRESENT(EXTD_SHIFTER))
+ 		shifter_tt.color_reg[regno] =
+-			(((red & 0xe) >> 1) | ((red & 1) << 3) << 8) |
+-			(((green & 0xe) >> 1) | ((green & 1) << 3) << 4) |
+-			((blue & 0xe) >> 1) | ((blue & 1) << 3);
++			((((red & 0xe)   >> 1) | ((red & 1)   << 3)) << 8) |
++			((((green & 0xe) >> 1) | ((green & 1) << 3)) << 4) |
++			  ((blue & 0xe)  >> 1) | ((blue & 1)  << 3);
+ 	else
+ 		shifter_tt.color_reg[regno] =
+ 			((red & 0xe) << 7) |
+-- 
+2.17.1
 

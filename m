@@ -2,63 +2,93 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60149C433FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Feb 2022 16:18:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 693FBC433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Feb 2022 17:21:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241969AbiBQQS7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 17 Feb 2022 11:18:59 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:54766 "EHLO
+        id S243662AbiBQRVz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 17 Feb 2022 12:21:55 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:60236 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239930AbiBQQS7 (ORCPT
+        with ESMTP id S236689AbiBQRVz (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 17 Feb 2022 11:18:59 -0500
-Received: from mail-4317.proton.ch (mail-4317.proton.ch [185.70.43.17])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F293D26550B;
-        Thu, 17 Feb 2022 08:18:43 -0800 (PST)
-Date:   Thu, 17 Feb 2022 16:18:40 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=emersion.fr;
-        s=protonmail2; t=1645114721;
-        bh=xig78IbVhEkp/h3Vt76vo9JttYCE5O3eydjvdxHGgXU=;
-        h=Date:To:From:Cc:Reply-To:Subject:Message-ID:In-Reply-To:
-         References:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
-         Message-ID;
-        b=lqOBZMqEfCVq3VumfrDJrT7drykDVqUPX2D3vk364ddWATgj8xPNQrXL7fqBbtGpg
-         c1b43UdLgmNm4g96P5YVN6Jq3Dd1PDCb9Qgl+/q81JHD42yDx5qm1Vl3QnE/P7ysLB
-         wioiqgNVq2+cqYjnFIbcuRcouR9qQl9K6b5z45VxxxpTAuLEiBp+qHvIt5oWyt7NXG
-         dWMUKvOU0bq5rH3P1yjDM2q9ISEdnvS7SOfpt1paw375giCIWg8IbBkyqgx4w8PM+I
-         gV1/rSgl37Z383id/4R+onPCEUP9nj9N34qp2QwhppVkwSk77Ji3jo2VfsUBJ0nPuC
-         rH48B50eaQYXQ==
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-From:   Simon Ser <contact@emersion.fr>
+        Thu, 17 Feb 2022 12:21:55 -0500
+Received: from mail-vs1-f51.google.com (mail-vs1-f51.google.com [209.85.217.51])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF2F165F5;
+        Thu, 17 Feb 2022 09:21:39 -0800 (PST)
+Received: by mail-vs1-f51.google.com with SMTP id e5so7022531vsg.12;
+        Thu, 17 Feb 2022 09:21:39 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=mDJqoFZz0dz3Q1I37x7okE1Q7HMXJStYbJXkk2d13x4=;
+        b=seO/xDPaXkxZDHFacKoggtganAFkKTlND89OCWoNcZ99Zl7b7OYzhQ+LEvjgtQoXC8
+         Hd4qBYJfoFZgdDXoBxq3aE4A8io9V641O9HCdqlT3I4nlkksAgw/oqO1UttUyhgzUhOD
+         QaMMx9jKU51LpxynYgCXimtkICxc8A+ril3ZOUx/pjkBhX5Pfynu/WD/PjN2IBacYsg+
+         rACC7GbOaadZ05AvBGL8i708VlSk5zmxwo7dA0TkgV7rmNkfoqP/nFMnGChmiuo9j4Lz
+         gNvibh6azwHf+f8DZ3ArheIRFzTtOUgzMnBJ3+7VGkjPLSa+0mj2fcyWCODKVS4cRTqj
+         mgzg==
+X-Gm-Message-State: AOAM531MuN0DgkFAdEE2+9K0jLrI5tk9duD9AVHqDzxuzIextY6fAMaV
+        jK/tZNsnXpoToB8cJ4Y02ZL35oQ6U2eMsw==
+X-Google-Smtp-Source: ABdhPJyBGvrDRIH7jsK3uqWORRSOhGUnqT6zXuk3lCyaSLH8jlp4pw+ZcgTe7kNab/FY35aQqoDjow==
+X-Received: by 2002:a05:6102:1622:b0:30f:8678:5bb7 with SMTP id cu34-20020a056102162200b0030f86785bb7mr1721707vsb.59.1645118498870;
+        Thu, 17 Feb 2022 09:21:38 -0800 (PST)
+Received: from mail-vs1-f48.google.com (mail-vs1-f48.google.com. [209.85.217.48])
+        by smtp.gmail.com with ESMTPSA id e9sm342847vsl.31.2022.02.17.09.21.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 17 Feb 2022 09:21:38 -0800 (PST)
+Received: by mail-vs1-f48.google.com with SMTP id d11so3039885vsm.5;
+        Thu, 17 Feb 2022 09:21:38 -0800 (PST)
+X-Received: by 2002:a67:b00e:0:b0:30d:dc98:6024 with SMTP id
+ z14-20020a67b00e000000b0030ddc986024mr1803164vse.57.1645118498172; Thu, 17
+ Feb 2022 09:21:38 -0800 (PST)
+MIME-Version: 1.0
+References: <20220215165226.2738568-1-geert@linux-m68k.org>
+ <20220215165226.2738568-3-geert@linux-m68k.org> <4fff0c08-adab-c1d5-4a7e-1513cb2bf7ca@suse.de>
+ <CAMuHMdVK7eWfod73JQAntO=7BAMEcS-ktH4NJmDjna3zUn7giw@mail.gmail.com> <z7NQYyKnuywG0bUt7Wr9e53SGgSZgbMVNKpLAOIP0mH3GljFQI3hd_aQFc8qaqwTbBq8yF3QvR9ugLxlivX-ogj508Vc60XHQPAN3IL5Uik=@emersion.fr>
+In-Reply-To: <z7NQYyKnuywG0bUt7Wr9e53SGgSZgbMVNKpLAOIP0mH3GljFQI3hd_aQFc8qaqwTbBq8yF3QvR9ugLxlivX-ogj508Vc60XHQPAN3IL5Uik=@emersion.fr>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Thu, 17 Feb 2022 18:21:27 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVeqOj1VfMC6EHHJSX1ttRW3RzaP5tw3aSM4=+SBcz3vg@mail.gmail.com>
+Message-ID: <CAMuHMdVeqOj1VfMC6EHHJSX1ttRW3RzaP5tw3aSM4=+SBcz3vg@mail.gmail.com>
+Subject: Re: [PATCH 2/8] drm/fb-helper: Add support for DRM_FORMAT_C[124]
+To:     Simon Ser <contact@emersion.fr>
 Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
         David Airlie <airlied@linux.ie>, Helge Deller <deller@gmx.de>,
         Javier Martinez Canillas <javierm@redhat.com>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux/m68k <linux-m68k@vger.kernel.org>,
+        "Linux/m68k" <linux-m68k@vger.kernel.org>,
         DRI Development <dri-devel@lists.freedesktop.org>
-Reply-To: Simon Ser <contact@emersion.fr>
-Subject: Re: [PATCH 2/8] drm/fb-helper: Add support for DRM_FORMAT_C[124]
-Message-ID: <z7NQYyKnuywG0bUt7Wr9e53SGgSZgbMVNKpLAOIP0mH3GljFQI3hd_aQFc8qaqwTbBq8yF3QvR9ugLxlivX-ogj508Vc60XHQPAN3IL5Uik=@emersion.fr>
-In-Reply-To: <CAMuHMdVK7eWfod73JQAntO=7BAMEcS-ktH4NJmDjna3zUn7giw@mail.gmail.com>
-References: <20220215165226.2738568-1-geert@linux-m68k.org> <20220215165226.2738568-3-geert@linux-m68k.org> <4fff0c08-adab-c1d5-4a7e-1513cb2bf7ca@suse.de> <CAMuHMdVK7eWfod73JQAntO=7BAMEcS-ktH4NJmDjna3zUn7giw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thursday, February 17th, 2022 at 17:12, Geert Uytterhoeven <geert@linux-=
-m68k.org> wrote:
+Hi Simon,
 
-> > What is C0?
+On Thu, Feb 17, 2022 at 5:18 PM Simon Ser <contact@emersion.fr> wrote:
+> On Thursday, February 17th, 2022 at 17:12, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > > What is C0?
+> >
+> > A non-existing color-indexed mode with zero colors ;-)
+> > Introduced purely to make a check like in the comment below work.
+> > What we really want to check here is if the mode is color-indexed
+> > or not...
 >
-> A non-existing color-indexed mode with zero colors ;-)
-> Introduced purely to make a check like in the comment below work.
-> What we really want to check here is if the mode is color-indexed
-> or not...
+> Maybe it would be worth introducing a drm_format_info_is_color_indexed
+> function? Would be self-describing when used, and would avoid to miss
+> some places to update when adding new color-indexed formats.
 
-Maybe it would be worth introducing a drm_format_info_is_color_indexed
-function? Would be self-describing when used, and would avoid to miss
-some places to update when adding new color-indexed formats.
+Yep, and a .is_color_indexed flag, cfr. the existing .is_yuv flag.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

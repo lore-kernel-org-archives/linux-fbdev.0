@@ -2,171 +2,122 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5A44C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Feb 2022 10:10:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 274D5C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Feb 2022 10:16:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238990AbiBQKKw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 17 Feb 2022 05:10:52 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:48086 "EHLO
+        id S232380AbiBQKQc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 17 Feb 2022 05:16:32 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:36788 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239001AbiBQKKw (ORCPT
+        with ESMTP id S232438AbiBQKQb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 17 Feb 2022 05:10:52 -0500
-Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEC7A2AAB0C;
-        Thu, 17 Feb 2022 02:10:37 -0800 (PST)
-Received: by mail-lf1-x132.google.com with SMTP id o2so9001969lfd.1;
-        Thu, 17 Feb 2022 02:10:37 -0800 (PST)
+        Thu, 17 Feb 2022 05:16:31 -0500
+Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7C5312AB504
+        for <linux-fbdev@vger.kernel.org>; Thu, 17 Feb 2022 02:16:17 -0800 (PST)
+Received: by mail-lj1-x22a.google.com with SMTP id t14so7489523ljh.8
+        for <linux-fbdev@vger.kernel.org>; Thu, 17 Feb 2022 02:16:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=date:from:to:cc:subject:message-id:in-reply-to:references
          :mime-version;
-        bh=wsBm9GlF6QBk+ga6odvG4D+yJfesdCIhGI6Qr588TUo=;
-        b=TrKDmwEnnG2m5f31bp3dJe99wKxPtwM+R3St+7DDbnp8bsJwZvieAD4m6QSKUpDEvZ
-         3cSAg+gssaRQ/+Gw9D1aU9LRUhFdKboR/ANIhPzFX6OUcnMEbJIuzfPTmDgiJLBALBcl
-         JhqWI7VIFp0x4d1jgalEpySbMm+KnKatTU04d811m2kFqVa+LPYLtxwn91j21CokyUi+
-         qBwibqLLsfDxDfPZpyC1aXZbSAImySOYF597S9wxB6+dfZuwuL8QqV67Auq/8N2P7i7V
-         IyKcRQ16+nW3tY7Iu1bQ8/4yR4zGGguDqLSTRttHWyFbFoB+pNoi/QXafGKhGLjQcJGb
-         qFZw==
+        bh=Nmn0JSXYFz1hIDL1/wW7UG7AeNYS6zrR/HrLEhvymsE=;
+        b=jR5xb9r/gmmYnscXhbvJ2QQFvZ6Ss1wVD9Vgdl8RN+VGj0IvjYWjpCjQnnW2Xp115Z
+         33UAKaPW8ddVE9BCglp69WejxAyB3gMkg4k710k7R741WZgG46RUpRvo8i6a6cdxxlhs
+         QGM7xHRKGoxZnr/gNaci9GzhUr6ItBwg307/59qxzryDHvTCsTf+RbwTBJjXhBVPgkFd
+         hyi2WNIaRGkRHhxMKSARuoTE8ZMGhVhwtlZLDRs5IJu2DSXTXmMWwiD8E3jvvD6BplSg
+         0FCWayja7aYhNPGvYJjoAyPzdIwUvuCHQUnvowYB0/MvvyJzWXHPlxppq/yTIq651B13
+         zwkA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
          :references:mime-version;
-        bh=wsBm9GlF6QBk+ga6odvG4D+yJfesdCIhGI6Qr588TUo=;
-        b=SMVIaXYh5uVkkcR/XQQ4IoqsfqlT8rThv1OCtyqB73FcruiNxEhewFx1w53B3BNwcD
-         y6EobGRm8J8YYVAzT4Nbgwp2UxdqWpIsS+Dk1zpAo8gUxUg9JKiHn5xgqKHX26jCLBq5
-         5EmFIm+UQKhv3b/jmIL1BopgjUBNHgPBkX2WAFD2sGa7w4vqhcjh7YSYW9iUyXS6xOFI
-         cznyNUUF7CDEbXU3iOzrCxtO5f2pXIaI9pGLU9jwvrxpGJvSmey595NqfKHfXl6l1Jhy
-         W97PIPEjeAxCbNiotWi0oQAgzfZvZY0WziWj0L+I9ge7qiRP1YBLV3NnigYXthG2hnNa
-         VOsQ==
-X-Gm-Message-State: AOAM5329cFmRtPTV8Af9RiCxrh7PyGGtqD61HQs6OsbCTiAe2RKjjAUm
-        OPifvygZwRpF1D2m4omlc6U=
-X-Google-Smtp-Source: ABdhPJw6d1Xx03VBy4x0vM44wpr0/W0ibQpAYvHtY4+JhKJFclWHt/sAdUZmSM5sc0c5Qyto8ako3w==
-X-Received: by 2002:a05:6512:3710:b0:43a:12aa:cb68 with SMTP id z16-20020a056512371000b0043a12aacb68mr1622061lfr.280.1645092636121;
-        Thu, 17 Feb 2022 02:10:36 -0800 (PST)
+        bh=Nmn0JSXYFz1hIDL1/wW7UG7AeNYS6zrR/HrLEhvymsE=;
+        b=QP+RM3IML4Hf+jZ/rLn2URCp0kQJj+iEN+SaXBGgF2PHkg2+cz2PMxeKkGJU+a9e6R
+         f/UUcCqbu9HDPVZCVdfrwixoE4+lRwOV4K4Tuz7BnFxP5edG8oa3L0NfEc0ILinP0bVn
+         yhKqTTvS/xc5kmBoQ1Ao1sg3Btq6G7KYc8Kln/+07W/Cwt/7FG10DSGQmHZuigUmILRR
+         2Q88IVo+J8augnrJSsOZY5Wa8PdkGSnpp21zTiqCngiUij3jURm/JpFqh7xWKB/DBidu
+         TxDT6OFttkE4IqiWpTcWoAeBnF+VSmUqBgSDSfhgDmNwK+k5Q3hkUJyeFYJqevYi8P5+
+         +B8A==
+X-Gm-Message-State: AOAM531ZTa9xfdgsYiVWH01SchQa79xn7gM2RAfcPKpfT1w4eErPxd2G
+        d0BOXj9rNlCeY9dPRs1uNew=
+X-Google-Smtp-Source: ABdhPJxge2OqSJsRoRKCis0JK1JOOZ0Hr2b1Ohcf8DyG+ZIs9S178aJsxYZE+MEzrO8QphYqbbEt8g==
+X-Received: by 2002:a05:651c:c7:b0:244:f9d7:7c48 with SMTP id 7-20020a05651c00c700b00244f9d77c48mr1800342ljr.300.1645092975792;
+        Thu, 17 Feb 2022 02:16:15 -0800 (PST)
 Received: from eldfell ([194.136.85.206])
-        by smtp.gmail.com with ESMTPSA id i3sm5094012lfj.144.2022.02.17.02.10.35
+        by smtp.gmail.com with ESMTPSA id t20sm88159lfe.277.2022.02.17.02.16.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Feb 2022 02:10:35 -0800 (PST)
-Date:   Thu, 17 Feb 2022 12:10:33 +0200
+        Thu, 17 Feb 2022 02:16:15 -0800 (PST)
+Date:   Thu, 17 Feb 2022 12:16:12 +0200
 From:   Pekka Paalanen <ppaalanen@gmail.com>
 To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 8/8] drm/fourcc: Add DRM_FORMAT_D1
-Message-ID: <20220217121033.0fc7f6ba@eldfell>
-In-Reply-To: <20220215165226.2738568-9-geert@linux-m68k.org>
-References: <20220215165226.2738568-1-geert@linux-m68k.org>
-        <20220215165226.2738568-9-geert@linux-m68k.org>
+Cc:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH] linux/fb.h: Spelling s/palette/palette/
+Message-ID: <20220217121612.66011b8c@eldfell>
+In-Reply-To: <20220216083922.2913515-1-geert@linux-m68k.org>
+References: <20220216083922.2913515-1-geert@linux-m68k.org>
 X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/nO3MwzHd32JIR23_QdrLEwe";
+Content-Type: multipart/signed; boundary="Sig_/_HUuAzPNnPIuJlK_Inr6/=4";
  protocol="application/pgp-signature"; micalg=pgp-sha256
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
---Sig_/nO3MwzHd32JIR23_QdrLEwe
+--Sig_/_HUuAzPNnPIuJlK_Inr6/=4
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 15 Feb 2022 17:52:26 +0100
+On Wed, 16 Feb 2022 09:39:22 +0100
 Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-> Introduce a fourcc code for a single-channel frame buffer format with two
-> darkness levels.  This can be used for two-level dark-on-light displays.
->=20
-> As the number of bits per pixel is less than eight, this relies on
-> proper block handling for the calculation of bits per pixel and pitch.
+> Fix a misspelling of "palette" in a comment.
 >=20
 > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 > ---
->  drivers/gpu/drm/drm_fourcc.c  | 2 ++
->  include/uapi/drm/drm_fourcc.h | 3 +++
->  2 files changed, 5 insertions(+)
+>  include/uapi/linux/fb.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
-> index c12e48ecb1ab8aad..d00ce5d8d1fb9dd3 100644
-> --- a/drivers/gpu/drm/drm_fourcc.c
-> +++ b/drivers/gpu/drm/drm_fourcc.c
-> @@ -151,6 +151,8 @@ const struct drm_format_info *__drm_format_info(u32 f=
-ormat)
->  		{ .format =3D DRM_FORMAT_C4,		.depth =3D 4,  .num_planes =3D 1,
->  		  .char_per_block =3D { 1, }, .block_w =3D { 2, }, .block_h =3D { 1, }=
-, .hsub =3D 1, .vsub =3D 1 },
->  		{ .format =3D DRM_FORMAT_C8,		.depth =3D 8,  .num_planes =3D 1, .cpp =
-=3D { 1, 0, 0 }, .hsub =3D 1, .vsub =3D 1 },
-> +		{ .format =3D DRM_FORMAT_D1,		.depth =3D 1,  .num_planes =3D 1,
-> +		  .char_per_block =3D { 1, }, .block_w =3D { 8, }, .block_h =3D { 1, }=
-, .hsub =3D 1, .vsub =3D 1 },
->  		{ .format =3D DRM_FORMAT_R1,		.depth =3D 1,  .num_planes =3D 1,
->  		  .char_per_block =3D { 1, }, .block_w =3D { 8, }, .block_h =3D { 1, }=
-, .hsub =3D 1, .vsub =3D 1 },
->  		{ .format =3D DRM_FORMAT_R2,		.depth =3D 2,  .num_planes =3D 1,
-> diff --git a/include/uapi/drm/drm_fourcc.h b/include/uapi/drm/drm_fourcc.h
-> index 8605a1acc6813e6c..c15c6efcc65e5827 100644
-> --- a/include/uapi/drm/drm_fourcc.h
-> +++ b/include/uapi/drm/drm_fourcc.h
-> @@ -104,6 +104,9 @@ extern "C" {
->  #define DRM_FORMAT_C4		fourcc_code('C', '4', ' ', ' ') /* [3:0] C */
->  #define DRM_FORMAT_C8		fourcc_code('C', '8', ' ', ' ') /* [7:0] C */
-> =20
-> +/* 1 bpp Darkness */
-> +#define DRM_FORMAT_D1		fourcc_code('D', '1', ' ', ' ') /* [0] D */
-> +
+> diff --git a/include/uapi/linux/fb.h b/include/uapi/linux/fb.h
+> index 4c14e8be7267761b..3a49913d006c9bf6 100644
+> --- a/include/uapi/linux/fb.h
+> +++ b/include/uapi/linux/fb.h
+> @@ -182,7 +182,7 @@ struct fb_fix_screeninfo {
+>   *
+>   * For pseudocolor: offset and length should be the same for all color
+>   * components. Offset specifies the position of the least significant bit
+> - * of the pallette index in a pixel value. Length indicates the number
+> + * of the palette index in a pixel value. Length indicates the number
+>   * of available palette entries (i.e. # of entries =3D 1 << length).
+>   */
+>  struct fb_bitfield {
 
-Hi Geert,
-
-the same comment here as for C1 and R1 formats, need to specify pixel
-ordering inside a byte.
-
-I think it would also be good to explain the rationale why C1 and R1
-are not suitable for this case and we need yet another 1-bit format in
-the commit message.
-
-For posterity, of course. I roughly remember the discussions.
-
-I also wonder if anyone would actually use D1. Should it be added
-anyway? There is no rule that a pixel format must be used inside the
-kernel AFAIK, but is there even a prospective userspace wanting this?
-
-Exposing R1 and inverting bits while copying to hardware might be
-enough?
+Reviewed-by: Pekka Paalanen <pekka.paalanen@collabora.com>
 
 
 Thanks,
 pq
 
->  /* 1 bpp Red */
->  #define DRM_FORMAT_R1		fourcc_code('R', '1', ' ', ' ') /* [0] R */
-> =20
-
-
---Sig_/nO3MwzHd32JIR23_QdrLEwe
+--Sig_/_HUuAzPNnPIuJlK_Inr6/=4
 Content-Type: application/pgp-signature
 Content-Description: OpenPGP digital signature
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEJQjwWQChkWOYOIONI1/ltBGqqqcFAmIOHxkACgkQI1/ltBGq
-qqfxtQ//cB5PpnZOZOuy1vfa4m+SVmb/OfNz3ra6mqw9akiOfUbA4cT/0vTDCtGl
-KzNEJaKvg1zt27R+FxRqUupLRBX30d0sCm83/eMCziS7+2BmfBm2Q03nsJxo3zW6
-CJXfT/O+cOMiBsJWEAd0kefgH7e5Ea1s3H5yDvMWr/VKg8R58M+OzYhtMlDRto/e
-VSsL2RlTp+tPJfUvrWX0sqCtH8KKAJVvIRAILJBCN6CA+qp50INFTZNTJ1rs293p
-KGmErPfLWStT0KFQPdzdBE/fC18xsjS5jCORvRmQMtlrcFZRJq6q3UTg7K7SiVKx
-1nJCl7b4RG9zNaAnwIFh8e629NpVaPewzpT1aXfWQ6afCCgebYoqbK+aR7Q9E3zX
-2iR0GJRVOrm6Xe8nVgOPNjNkb8HwhREfLoE7AYxDUgX3/4nfKvu8ElrcaeKenbM/
-6EcD5u5CVO2PINa5Dp2qXcgiC4u+pS4nko8yc+a0Zr+gP0BwM5FiQ2/mbZeP+0Ka
-aqYIntktyOsK5ppgJDaCHPnIQmPoJNJp7/JN05Se7Gg6ZyEv/zKRvOsjpACxKwFL
-fc+R38/3nG94r2h9O01qC35vXxr1CYSBtxSD861Nwpg+omICPh4WzQ8JWevT4mch
-x4aulQlxkRJmqe+oRk6urYTjDvR9KsYPWDn5sKCgMdAAIFgpSdM=
-=5ycp
+iQIzBAEBCAAdFiEEJQjwWQChkWOYOIONI1/ltBGqqqcFAmIOIGwACgkQI1/ltBGq
+qqc2wBAAimjDWNfhRvmN1ywJLVoX6Zm68Sz18nAxeBNxhwkSMOU02YP3CbyL2gPA
+Rn0eL/PpbG9sJV1hZqHgskZILdV5u6rNTHY5HBYSV0PAIjSOpNUKHQkXg405vFrm
+ywEx32oUFuUIGV+c455v6qy1kubU/GwBRdXvFiD+IX+VgenW6I9fu71ZPJeq6D0f
+Vhb0p48pd03hBLhgs0405OvHcOra/4aPcFHhx57AVd7DGDvOS0PGmhElCLluKeiB
+5CLtAh1MC1Y7nafoRNJ5hquOCx14kWPBk1cOmxGcZ5RP9aA/66gKnB7wE7UVYNP9
+TIiKr68O6ocvuKy5iBYgjmXWabugbIvl+YozDKj/UvQpRcE5UxiHUjLu3mYYfypb
+OTuOPTbJiTtTjvnMkwk16ex/SwLEd3tK1c0wubbnZ/RcW3vlrL23IX72b6bYohca
+/jIIU3r7WCZdCYa5qmdkfAkm2sDbOw0YqHT1JseGvqdG53Cp+9YtUdsd7wXF3xhL
+CWMLhI94FQOUmfOcDhBWvgq2Lpe5uhh/daAQsaZUfYO1oBQWaw1GRPLg6urnTouC
+YSP17QPPkG6pjEY3XhQeWsPaFXxCTCu+4FoqZSpuC8lEjrA/ObuziSr8/uvNoZW1
+fRLJYTvVwt7vyEPohUvwIwBImwajIV6rnJS7V8j4fQj+SdW+Czg=
+=75si
 -----END PGP SIGNATURE-----
 
---Sig_/nO3MwzHd32JIR23_QdrLEwe--
+--Sig_/_HUuAzPNnPIuJlK_Inr6/=4--

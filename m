@@ -2,155 +2,327 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD583C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Feb 2022 14:58:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 646CEC433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Feb 2022 16:13:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242275AbiBQO65 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 17 Feb 2022 09:58:57 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:47306 "EHLO
+        id S234209AbiBQQNW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 17 Feb 2022 11:13:22 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:34950 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239846AbiBQO6x (ORCPT
+        with ESMTP id S234027AbiBQQNW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 17 Feb 2022 09:58:53 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8EA317F100;
-        Thu, 17 Feb 2022 06:58:37 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 76D96219A6;
-        Thu, 17 Feb 2022 14:58:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1645109916; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=gm/0DermuwZ9gOzpd7kCABJLyp4XfnHzwQRiRZkB4oQ=;
-        b=zpLlnjR77rvzZfotVKgFeDgTl1XxYhh1OEr2Cgev9hvgfElxwdQl6NS9UGDW4NwNjnOziV
-        XY4ZHceZ30we7knLBhJPSTf4d6QCFVQzqc4Qzh/Dmi0smGC784bGnrJHD8GxM2T1N90K/l
-        DxMRfn5SQYRy0Nsk1HOynYCX+Q2Or3k=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1645109916;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=gm/0DermuwZ9gOzpd7kCABJLyp4XfnHzwQRiRZkB4oQ=;
-        b=IrgREaEWvJETlyocDyWC7JAUkgXxdeT7Z20MI5GzpaL+LgzOl6hTRAXdkA9zW4GzC82oXs
-        Wn55OGpP0B/a0WCw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3B91B13C19;
-        Thu, 17 Feb 2022 14:58:36 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id OY6NDZxiDmKyTQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 17 Feb 2022 14:58:36 +0000
-Message-ID: <4e617aec-33b5-c437-9f69-ea2341d432b8@suse.de>
-Date:   Thu, 17 Feb 2022 15:58:35 +0100
+        Thu, 17 Feb 2022 11:13:22 -0500
+Received: from mail-vs1-f54.google.com (mail-vs1-f54.google.com [209.85.217.54])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD10416A590;
+        Thu, 17 Feb 2022 08:13:06 -0800 (PST)
+Received: by mail-vs1-f54.google.com with SMTP id m24so6810954vsp.7;
+        Thu, 17 Feb 2022 08:13:06 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=ch9MypWpUQnZM5wHecAMH9Z6WzfQjeMjydR9fNyA8WE=;
+        b=uTKFJVMqenpVj3i8C4IKfY1qZajwqUbnuQc/7DWfHW+WztzXnYDX9+9dscO3zogIys
+         cnecczYn7LxAvCbfTn/neGx75PxeQfMXGT2uCfqNu7aqQxLEdtny08z3tTnn4iyccRlq
+         u5JKLPCpU8Uq8FR7ziyoHTxxcQcBVugqP+LgkbpRs0j7NkfjtgnPOmD/YkfvuKPAg/7Q
+         C0oLqacCxSjw/9AEAwj7NgsyBw7B3C3eWP1PGyUPk0WKuhoRIzW9QqdEUF6QjqmH2y7g
+         Cp2K4N36AxnyS13O2sx0fVcfcvIQMxcyZX65W0FovP/CrHB/iaqgmGz8FOjKJbKpzm4K
+         SlHQ==
+X-Gm-Message-State: AOAM530RvE3J46c27pMgxxql4feqz0zJjjXLMzMKybeaZCh3ad4sDA/X
+        gtty0lXuhHuV2m9ku0GqKxDEdn6OFIC3IA==
+X-Google-Smtp-Source: ABdhPJxtdBoUf2pCT404xzsSZrmdg9BrdLxb/6yd3TibYDibQY0SMI39/y066sSVZ0RaZWFZoegLcA==
+X-Received: by 2002:a67:fa93:0:b0:31b:738f:1954 with SMTP id f19-20020a67fa93000000b0031b738f1954mr1603015vsq.87.1645114385363;
+        Thu, 17 Feb 2022 08:13:05 -0800 (PST)
+Received: from mail-vk1-f169.google.com (mail-vk1-f169.google.com. [209.85.221.169])
+        by smtp.gmail.com with ESMTPSA id t24sm2297934vsk.27.2022.02.17.08.13.04
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 17 Feb 2022 08:13:04 -0800 (PST)
+Received: by mail-vk1-f169.google.com with SMTP id o129so3333054vko.7;
+        Thu, 17 Feb 2022 08:13:04 -0800 (PST)
+X-Received: by 2002:a05:6122:8c7:b0:32d:7e3:96c8 with SMTP id
+ 7-20020a05612208c700b0032d07e396c8mr1649377vkg.7.1645114384535; Thu, 17 Feb
+ 2022 08:13:04 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 4/8] drm/client: Use actual bpp when allocating frame
- buffers
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+References: <20220215165226.2738568-1-geert@linux-m68k.org>
+ <20220215165226.2738568-3-geert@linux-m68k.org> <4fff0c08-adab-c1d5-4a7e-1513cb2bf7ca@suse.de>
+In-Reply-To: <4fff0c08-adab-c1d5-4a7e-1513cb2bf7ca@suse.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Thu, 17 Feb 2022 17:12:53 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVK7eWfod73JQAntO=7BAMEcS-ktH4NJmDjna3zUn7giw@mail.gmail.com>
+Message-ID: <CAMuHMdVK7eWfod73JQAntO=7BAMEcS-ktH4NJmDjna3zUn7giw@mail.gmail.com>
+Subject: Re: [PATCH 2/8] drm/fb-helper: Add support for DRM_FORMAT_C[124]
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
         David Airlie <airlied@linux.ie>,
         Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20220215165226.2738568-1-geert@linux-m68k.org>
- <20220215165226.2738568-5-geert@linux-m68k.org>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20220215165226.2738568-5-geert@linux-m68k.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------f0rQO86WVT0bqVW7eV0DG68u"
+        Javier Martinez Canillas <javierm@redhat.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        "Linux/m68k" <linux-m68k@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------f0rQO86WVT0bqVW7eV0DG68u
-Content-Type: multipart/mixed; boundary="------------Po97X5mm8nlphmW9Hb2sl4W0";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@linux.ie>,
- Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
- Javier Martinez Canillas <javierm@redhat.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-ID: <4e617aec-33b5-c437-9f69-ea2341d432b8@suse.de>
-Subject: Re: [PATCH 4/8] drm/client: Use actual bpp when allocating frame
- buffers
-References: <20220215165226.2738568-1-geert@linux-m68k.org>
- <20220215165226.2738568-5-geert@linux-m68k.org>
-In-Reply-To: <20220215165226.2738568-5-geert@linux-m68k.org>
+Hi Thomas,
 
---------------Po97X5mm8nlphmW9Hb2sl4W0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Thanks for your review!
 
-DQoNCkFtIDE1LjAyLjIyIHVtIDE3OjUyIHNjaHJpZWIgR2VlcnQgVXl0dGVyaG9ldmVuOg0K
-PiBXaGVuIGFsbG9jYXRpbmcgYSBmcmFtZSBidWZmZXIsIHRoZSBudW1iZXIgb2YgYml0cyBw
-ZXIgcGl4ZWwgbmVlZGVkIGlzDQo+IGRlcml2ZWQgZnJvbSB0aGUgZGVwcmVjYXRlZCBkcm1f
-Zm9ybWF0X2luZm8uY3BwW10gZmllbGQuICBXaGlsZSB0aGlzDQo+IHdvcmtzIGZvciBmb3Jt
-YXRzIHVzaW5nIGxlc3MgdGhhbiA4IGJpdHMgcGVyIHBpeGVsLCBpdCBkb2VzIGxlYWQgdG8g
-YQ0KPiBsYXJnZSBvdmVyYWxsb2NhdGlvbi4NCj4gDQo+IFJlZHVjZSBtZW1vcnkgY29uc3Vt
-cHRpb24gYnkgdXNpbmcgdGhlIGFjdHVhbCBudW1iZXIgb2YgYml0cyBwZXIgcGl4ZWwNCj4g
-aW5zdGVhZC4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IEdlZXJ0IFV5dHRlcmhvZXZlbiA8Z2Vl
-cnRAbGludXgtbTY4ay5vcmc+DQpBY2tlZC1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1t
-ZXJtYW5uQHN1c2UuZGU+DQoNCj4gLS0tDQo+ICAgZHJpdmVycy9ncHUvZHJtL2RybV9jbGll
-bnQuYyB8IDQgKystLQ0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDIg
-ZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL2RybV9j
-bGllbnQuYyBiL2RyaXZlcnMvZ3B1L2RybS9kcm1fY2xpZW50LmMNCj4gaW5kZXggY2U0NWUz
-ODBmNGEyMDI4Zi4uYzZhMjc5ZTNkZTk1NTkxYSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9n
-cHUvZHJtL2RybV9jbGllbnQuYw0KPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vZHJtX2NsaWVu
-dC5jDQo+IEBAIC0yNjQsNyArMjY0LDcgQEAgZHJtX2NsaWVudF9idWZmZXJfY3JlYXRlKHN0
-cnVjdCBkcm1fY2xpZW50X2RldiAqY2xpZW50LCB1MzIgd2lkdGgsIHUzMiBoZWlnaHQsIHUN
-Cj4gICANCj4gICAJZHVtYl9hcmdzLndpZHRoID0gd2lkdGg7DQo+ICAgCWR1bWJfYXJncy5o
-ZWlnaHQgPSBoZWlnaHQ7DQo+IC0JZHVtYl9hcmdzLmJwcCA9IGluZm8tPmNwcFswXSAqIDg7
-DQo+ICsJZHVtYl9hcmdzLmJwcCA9IGRybV9mb3JtYXRfaW5mb19icHAoaW5mbywgMCk7DQo+
-ICAgCXJldCA9IGRybV9tb2RlX2NyZWF0ZV9kdW1iKGRldiwgJmR1bWJfYXJncywgY2xpZW50
-LT5maWxlKTsNCj4gICAJaWYgKHJldCkNCj4gICAJCWdvdG8gZXJyX2RlbGV0ZTsNCj4gQEAg
-LTM3Miw3ICszNzIsNyBAQCBzdGF0aWMgaW50IGRybV9jbGllbnRfYnVmZmVyX2FkZGZiKHN0
-cnVjdCBkcm1fY2xpZW50X2J1ZmZlciAqYnVmZmVyLA0KPiAgIAlpbnQgcmV0Ow0KPiAgIA0K
-PiAgIAlpbmZvID0gZHJtX2Zvcm1hdF9pbmZvKGZvcm1hdCk7DQo+IC0JZmJfcmVxLmJwcCA9
-IGluZm8tPmNwcFswXSAqIDg7DQo+ICsJZmJfcmVxLmJwcCA9IGRybV9mb3JtYXRfaW5mb19i
-cHAoaW5mbywgMCk7DQo+ICAgCWZiX3JlcS5kZXB0aCA9IGluZm8tPmRlcHRoOw0KPiAgIAlm
-Yl9yZXEud2lkdGggPSB3aWR0aDsNCj4gICAJZmJfcmVxLmhlaWdodCA9IGhlaWdodDsNCg0K
-LS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VT
-RSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQw
-OSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2No
-w6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
+On Thu, Feb 17, 2022 at 3:57 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Am 15.02.22 um 17:52 schrieb Geert Uytterhoeven:
+> > Add support for color-indexed frame buffer formats with two, four, and
+> > sixteen colors to the DRM framebuffer helper functions:
+> >    1. Add support for depths 1/2/4 to the damage helper,
+> >    2. For color-indexed modes, the length of the color bitfields must be
+> >       set to the color depth, else the logo code may pick a logo with too
+> >       many colors.  Drop the incorrect DAC width comment, which
+> >       originates from the i915 driver.
+> >    3. Accept C[124] modes when validating or filling in struct
+> >       fb_var_screeninfo, and  use the correct number of bits per pixel.
+> >    4. Set the visual to FB_VISUAL_PSEUDOCOLOR for all supported
+> >       color-indexed modes.
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
---------------Po97X5mm8nlphmW9Hb2sl4W0--
+> > --- a/drivers/gpu/drm/drm_fb_helper.c
+> > +++ b/drivers/gpu/drm/drm_fb_helper.c
+> > @@ -376,12 +376,34 @@ static void drm_fb_helper_damage_blit_real(struct drm_fb_helper *fb_helper,
+> >                                          struct iosys_map *dst)
+> >   {
+> >       struct drm_framebuffer *fb = fb_helper->fb;
+> > -     unsigned int cpp = fb->format->cpp[0];
+> > -     size_t offset = clip->y1 * fb->pitches[0] + clip->x1 * cpp;
+> > -     void *src = fb_helper->fbdev->screen_buffer + offset;
+> > -     size_t len = (clip->x2 - clip->x1) * cpp;
+> > +     size_t offset = clip->y1 * fb->pitches[0];
+> > +     size_t len = clip->x2 - clip->x1;
+> >       unsigned int y;
+> > +     void *src;
+> >
+> > +     switch (fb->format->depth) {
+>
+> The depth field is deprecated. It's probably better to use
+> fb->format->format and test against 4CC codes.
 
---------------f0rQO86WVT0bqVW7eV0DG68u
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+The reason I checked for depth instead of a 4CC code is that the only
+thing that matters here is the number of bits per pixel.  Hence this
+function won't need any changes to support R1, R2, R4, and D1 later.
+When we get here, we already know that we are using a format that
+is supported by the fbdev helper code, and thus passed the 4CC
+checks elsewhere.
 
------BEGIN PGP SIGNATURE-----
+Alternatively, we could introduce drm_format_info_bpp() earlier in
+the series, and use that?
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIOYpsFAwAAAAAACgkQlh/E3EQov+AW
-Rw//d948853dyMKjbROEjrYtlfWMVu3qcdqypusUfh3f3MVC7Tcxph+vosESVBagX5+uyMf1JVt+
-mHYOoCwp7jPAwKbPh/Ud9u4HgSwnMLhtkZ49AUXiQuoXgS6p/RkmuZZngjG9HW4ug7wmD/QNCbUd
-D++fTZGniiPEDxRSSfn62sjjpZzj1gAb7p/Lsv2Jlrr1KNFeDN8ZqAtQXEZZnnXPnFM50jjkd1Eo
-qztZBCMaoPAUhA6918S6y6LZnK16phhKlINhQtCNSh12u29YJ3XEMRQs1zIDHwmLEtvMWKLqf/tb
-6/pufxrTMBcM4JU+NqgX7zg4XHbR3KLW9J4wp2Zk6x/BXG79VsG1AaxbPy9jjHQFrmciKW/7UCLG
-3Vg1ISeVXH50XpqzTRO6HfBqygu+EWDI/0hzAn0Xol7tvnKOnPwQwHwQrfYORtBGhD5l8Y9hZfmt
-t8DsNz9c7XdDCA401dS2jqEC5e6RHkxAeLnBoREppSg4azP0ymvecEtmZgFVPf/9KQM9b0tsSgoL
-B3GDmZBFN996h2KdBwe0VJhJrKKoF1DjHpN08vBp631MqNh5Xa5nXtWhW764oWUevw+0ubzJRqqd
-6/8Ux2LnWkQ6SYRJtwcpHSgwwDKB/SpuSVCFcFvB6cq9S0IuWvx1X86rKl0IAhori/7kTzEmu5LI
-VJY=
-=r5wF
------END PGP SIGNATURE-----
+>
+> > +     case 1:
+> > +             offset += clip->x1 / 8;
+> > +             len = DIV_ROUND_UP(len + clip->x1 % 8, 8);
+> > +             break;
+> > +
+>
+> Style: no empty lines here.
 
---------------f0rQO86WVT0bqVW7eV0DG68u--
+OK.
+
+> > +     case 2:
+> > +             offset += clip->x1 / 4;
+> > +             len = DIV_ROUND_UP(len + clip->x1 % 4, 4);
+> > +             break;
+> > +
+> > +     case 4:
+> > +             offset += clip->x1 / 2;
+> > +             len = DIV_ROUND_UP(len + clip->x1 % 2, 2);
+> > +             break;
+> > +
+>
+> Can we handle case C8 like C[124]? Seems cleaner to me.
+
+The cases above are purely to handle bpp < 8; they are not
+about color-indexed vs. truecolor modes.
+XRGB1111 mode would need to be handled above, too.
+
+> > @@ -1231,19 +1253,30 @@ static bool drm_fb_pixel_format_equal(const struct fb_var_screeninfo *var_1,
+> >   }
+> >
+> >   static void drm_fb_helper_fill_pixel_fmt(struct fb_var_screeninfo *var,
+> > -                                      u8 depth)
+> > -{
+> > -     switch (depth) {
+> > -     case 8:
+> > +                                      const struct drm_format_info *format)
+> > +{
+> > +     u8 depth = format->depth;
+> > +
+> > +     switch (format->format) {
+> > +     // FIXME Perhaps
+> > +     // #define DRM_FORMAT_C0 fourcc_code('C', '0', ' ', ' ')
+>
+> What is C0?
+
+A non-existing color-indexed mode with zero colors ;-)
+Introduced purely to make a check like in the comment below work.
+What we really want to check here is if the mode is color-indexed
+or not...
+
+> > +     // if ((format & fourcc_code(0xff, 0xf8, 0xff, 0xff) == DRM_FORMAT_C0) ...
+> > +     case DRM_FORMAT_C1:
+> > +     case DRM_FORMAT_C2:
+> > +     case DRM_FORMAT_C4:
+> > +     case DRM_FORMAT_C8:
+> >               var->red.offset = 0;
+> >               var->green.offset = 0;
+> >               var->blue.offset = 0;
+> > -             var->red.length = 8; /* 8bit DAC */
+> > -             var->green.length = 8;
+> > -             var->blue.length = 8;
+> > +             var->red.length = depth;
+> > +             var->green.length = depth;
+> > +             var->blue.length = depth;
+> >               var->transp.offset = 0;
+> >               var->transp.length = 0;
+> > -             break;
+> > +             return;
+> > +     }
+> > +
+> > +     switch (depth) {
+> >       case 15:
+> >               var->red.offset = 10;
+> >               var->green.offset = 5;
+> > @@ -1298,7 +1331,9 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
+> >   {
+> >       struct drm_fb_helper *fb_helper = info->par;
+> >       struct drm_framebuffer *fb = fb_helper->fb;
+> > +     const struct drm_format_info *format = fb->format;
+> >       struct drm_device *dev = fb_helper->dev;
+> > +     unsigned int bpp;
+> >
+> >       if (in_dbg_master())
+> >               return -EINVAL;
+> > @@ -1308,22 +1343,34 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
+> >               var->pixclock = 0;
+> >       }
+> >
+> > -     if ((drm_format_info_block_width(fb->format, 0) > 1) ||
+> > -         (drm_format_info_block_height(fb->format, 0) > 1))
+> > -             return -EINVAL;
+> > +     switch (format->format) {
+> > +     case DRM_FORMAT_C1:
+> > +     case DRM_FORMAT_C2:
+> > +     case DRM_FORMAT_C4:
+> > +             bpp = format->depth;
+> > +             break;
+>
+> Added C8 here would be more consistent.
+
+Again, this is not about color-indexed vs. truecolor, but about bpp.
+drm_format_info_bpp()?
+
+ > +
+> > +     default:
+> > +             if ((drm_format_info_block_width(format, 0) > 1) ||
+> > +                 (drm_format_info_block_height(format, 0) > 1))
+> > +                     return -EINVAL;
+> > +
+> > +             bpp = format->cpp[0] * 8;
+> > +             break;
+> > +     }
+
+> > @@ -1680,11 +1727,20 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
+> >   }
+> >
+> >   static void drm_fb_helper_fill_fix(struct fb_info *info, uint32_t pitch,
+> > -                                uint32_t depth)
+> > +                                uint32_t format)
+> >   {
+> >       info->fix.type = FB_TYPE_PACKED_PIXELS;
+> > -     info->fix.visual = depth == 8 ? FB_VISUAL_PSEUDOCOLOR :
+> > -             FB_VISUAL_TRUECOLOR;
+> > +     switch (format) {
+
+This one is about color-indexed vs. truecolor.
+
+> > +     case DRM_FORMAT_C1:
+> > +     case DRM_FORMAT_C2:
+> > +     case DRM_FORMAT_C4:
+> > +     case DRM_FORMAT_C8:
+> > +             info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+> > +             break;
+> > +     default:
+> > +             info->fix.visual = FB_VISUAL_TRUECOLOR;
+> > +             break;
+> > +     }
+> >       info->fix.mmio_start = 0;
+> >       info->fix.mmio_len = 0;
+> >       info->fix.type_aux = 0;
+> > @@ -1701,19 +1757,29 @@ static void drm_fb_helper_fill_var(struct fb_info *info,
+> >                                  uint32_t fb_width, uint32_t fb_height)
+> >   {
+> >       struct drm_framebuffer *fb = fb_helper->fb;
+> > +     const struct drm_format_info *format = fb->format;
+> >
+> > -     WARN_ON((drm_format_info_block_width(fb->format, 0) > 1) ||
+> > -             (drm_format_info_block_height(fb->format, 0) > 1));
+> >       info->pseudo_palette = fb_helper->pseudo_palette;
+> >       info->var.xres_virtual = fb->width;
+> >       info->var.yres_virtual = fb->height;
+> > -     info->var.bits_per_pixel = fb->format->cpp[0] * 8;
+> > +     switch (format->format) {
+> > +     case DRM_FORMAT_C1:
+> > +     case DRM_FORMAT_C2:
+> > +     case DRM_FORMAT_C4:
+> > +             info->var.bits_per_pixel = format->depth;
+> > +             break;
+>
+> C8.
+
+Again, this is not about color-indexed vs. truecolor, but about bpp.
+Here I do check the 4CC codes, as this controls which modes can be
+handled by the fbdev emulation, and we do not want to let random
+modes with depth or bpp < 8 pass.
+
+> The fbdev helpers look correct to me.  I'm not so sure about the usage
+> of the format info; especially the depth field.  The docs say that the
+> field is deprecated and should be 0. Maybe depth can be handled within
+> fbdev?
+
+Perhaps. I don't know enough about DRM to know what the depth field
+is used for.
+
+Note that true fbdev supports all values of depth < bpp (e.g. a
+32-color mode (depth = 5) where each pixel is stored in one byte).
+I do not suggest adding support for that, though ;-)
+
+> > +
+> > +     default:
+> > +             WARN_ON((drm_format_info_block_width(format, 0) > 1) ||
+> > +                     (drm_format_info_block_height(format, 0) > 1));
+
+BTW, probably this WARN_ON() (which existed before, but got moved)
+should be converted into returning an error instead.
+
+> > +             info->var.bits_per_pixel = format->cpp[0] * 8;
+> > +     }
+> >       info->var.accel_flags = FB_ACCELF_TEXT;
+> >       info->var.xoffset = 0;
+> >       info->var.yoffset = 0;
+> >       info->var.activate = FB_ACTIVATE_NOW;
+> >
+> > -     drm_fb_helper_fill_pixel_fmt(&info->var, fb->format->depth);
+> > +     drm_fb_helper_fill_pixel_fmt(&info->var, format);
+> >
+> >       info->var.xres = fb_width;
+> >       info->var.yres = fb_height;
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

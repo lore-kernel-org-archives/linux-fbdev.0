@@ -2,147 +2,106 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD511C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Feb 2022 10:42:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65C8CC433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Feb 2022 11:05:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238685AbiBQKm5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 17 Feb 2022 05:42:57 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:55010 "EHLO
+        id S239785AbiBQLGK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 17 Feb 2022 06:06:10 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:59254 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237461AbiBQKm4 (ORCPT
+        with ESMTP id S237687AbiBQLFr (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 17 Feb 2022 05:42:56 -0500
-Received: from mail-vk1-f171.google.com (mail-vk1-f171.google.com [209.85.221.171])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5AD16293B73;
-        Thu, 17 Feb 2022 02:42:42 -0800 (PST)
-Received: by mail-vk1-f171.google.com with SMTP id k128so2779607vkk.10;
-        Thu, 17 Feb 2022 02:42:42 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=URz3vGbBYIEN5IQJZpThn97AmYBtZHbYQoPJObvpYus=;
-        b=G3Gd/cOW9B4p+iV9e4iuBpBPl644LnwAqTqPVZetBGkmj2jYS93B83PoMV+tstJofv
-         ++k0BjCioqKsuqwInJ1BFPIw61kIAGRMBz82LEJ+BhHZVY7BPtTLH6g64Gb53TIOJqoD
-         bkFgb21fFzy66ZMKAcqNOGHD+Qw89rr+uQVPKyza0L9MabqkqKI59cpl/k1uLXnVeK94
-         t7MmqRn0dcW0gavykd8pjPpUjY6OXMGsx2cVSmRCKRvb6LbhYlULDUCBePv+kRLDTe63
-         aGuo7Jd3oq0hFn3lyvSczcIGFVGa5ahyKPlKetKXPSsZEbEm63eJUG2nJCFXONlS8wcu
-         bJLQ==
-X-Gm-Message-State: AOAM533stlObAXiB8Ny1shBVhToRl/cJaTUJTY0OKacUSmqJJP8+CWny
-        KrZaQf0ok69R/5FpCZC9WdwOstFKMrKaHw==
-X-Google-Smtp-Source: ABdhPJxnktVpuCw857SVyJr4O9PFDjXNYxsMStC78sWGoiVxBEDELRuDgXzFxOOJ3DEsGsXG2Vd1ow==
-X-Received: by 2002:a05:6122:d9e:b0:331:33da:48e5 with SMTP id bc30-20020a0561220d9e00b0033133da48e5mr584012vkb.35.1645094561145;
-        Thu, 17 Feb 2022 02:42:41 -0800 (PST)
-Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com. [209.85.222.46])
-        by smtp.gmail.com with ESMTPSA id 17sm6720336vky.10.2022.02.17.02.42.40
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 17 Feb 2022 02:42:40 -0800 (PST)
-Received: by mail-ua1-f46.google.com with SMTP id g18so2449987uak.5;
-        Thu, 17 Feb 2022 02:42:40 -0800 (PST)
-X-Received: by 2002:ab0:750e:0:b0:33e:8f30:e8ec with SMTP id
- m14-20020ab0750e000000b0033e8f30e8ecmr816005uap.114.1645094560576; Thu, 17
- Feb 2022 02:42:40 -0800 (PST)
+        Thu, 17 Feb 2022 06:05:47 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5AE88D4C8F
+        for <linux-fbdev@vger.kernel.org>; Thu, 17 Feb 2022 03:05:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1645095932;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=6YSZbwBi3c0InCkDrYByE4b4NApn0BejRZUJ5ijAPEA=;
+        b=hdPTmift3fKLoVG/YV2MSnHLspV1BBUKmCeQPhdbbgvmZDoNLnpJtATVDg9OpaOkiIm2OZ
+        31V13IUEYlUsnCdPwvaoCCWg/VbGf5P7JgoWHxyleQCSPHS9+JwV6ukoFSwDXnufKSEK/8
+        oFtEKeJzEoQw3u30eXFd6PBLWpL4CFs=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-552-tz6_fUFfOR60RApTJwRpVQ-1; Thu, 17 Feb 2022 06:05:29 -0500
+X-MC-Unique: tz6_fUFfOR60RApTJwRpVQ-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id B9B3381424B;
+        Thu, 17 Feb 2022 11:05:27 +0000 (UTC)
+Received: from sirius.home.kraxel.org (unknown [10.39.192.34])
+        by smtp.corp.redhat.com (Postfix) with ESMTPS id EC03256A8A;
+        Thu, 17 Feb 2022 11:05:20 +0000 (UTC)
+Received: by sirius.home.kraxel.org (Postfix, from userid 1000)
+        id 267F618000AA; Thu, 17 Feb 2022 12:05:19 +0100 (CET)
+Date:   Thu, 17 Feb 2022 12:05:19 +0100
+From:   Gerd Hoffmann <kraxel@redhat.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com,
+        geert@linux-m68k.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 2/2] fbdev: Improve performance of sys_imageblit()
+Message-ID: <20220217110519.ql5baa46sbsfb5cy@sirius.home.kraxel.org>
+References: <20220217103405.26492-1-tzimmermann@suse.de>
+ <20220217103405.26492-3-tzimmermann@suse.de>
 MIME-Version: 1.0
-References: <20220215165226.2738568-1-geert@linux-m68k.org>
- <20220215165226.2738568-9-geert@linux-m68k.org> <20220217121033.0fc7f6ba@eldfell>
-In-Reply-To: <20220217121033.0fc7f6ba@eldfell>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 17 Feb 2022 11:42:29 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXf3tFLb16Y=wh5C3QUYN4PdCjaYPCzMOTCye-eYS-N8w@mail.gmail.com>
-Message-ID: <CAMuHMdXf3tFLb16Y=wh5C3QUYN4PdCjaYPCzMOTCye-eYS-N8w@mail.gmail.com>
-Subject: Re: [PATCH 8/8] drm/fourcc: Add DRM_FORMAT_D1
-To:     Pekka Paalanen <ppaalanen@gmail.com>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        "Linux/m68k" <linux-m68k@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220217103405.26492-3-tzimmermann@suse.de>
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Pekka,
+> -		for (j = k; j--; ) {
+> -			shift -= ppw;
+> -			end_mask = tab[(*src >> shift) & bit_mask];
+> -			*dst++ = (end_mask & eorx) ^ bgx;
+> -			if (!shift) {
+> -				shift = 8;
+> -				src++;
+> +		for (j = k; j; j -= jdecr, ++src) {
+> +			switch (ppw) {
+> +			case 4: /* 8 bpp */
+> +				*dst++ = colortab[(*src >> 4) & bit_mask];
+> +				*dst++ = colortab[(*src >> 0) & bit_mask];
+> +				break;
+> +			case 2: /* 16 bpp */
+> +				*dst++ = colortab[(*src >> 6) & bit_mask];
+> +				*dst++ = colortab[(*src >> 4) & bit_mask];
+> +				*dst++ = colortab[(*src >> 2) & bit_mask];
+> +				*dst++ = colortab[(*src >> 0) & bit_mask];
+> +				break;
+> +			case 1: /* 32 bpp */
+> +				*dst++ = colortab[(*src >> 7) & bit_mask];
+> +				*dst++ = colortab[(*src >> 6) & bit_mask];
+> +				*dst++ = colortab[(*src >> 5) & bit_mask];
+> +				*dst++ = colortab[(*src >> 4) & bit_mask];
+> +				*dst++ = colortab[(*src >> 3) & bit_mask];
+> +				*dst++ = colortab[(*src >> 2) & bit_mask];
+> +				*dst++ = colortab[(*src >> 1) & bit_mask];
+> +				*dst++ = colortab[(*src >> 0) & bit_mask];
+> +				break;
+>  			}
 
-On Thu, Feb 17, 2022 at 11:10 AM Pekka Paalanen <ppaalanen@gmail.com> wrote:
-> On Tue, 15 Feb 2022 17:52:26 +0100
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > Introduce a fourcc code for a single-channel frame buffer format with two
-> > darkness levels.  This can be used for two-level dark-on-light displays.
-> >
-> > As the number of bits per pixel is less than eight, this relies on
-> > proper block handling for the calculation of bits per pixel and pitch.
-> >
-> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+How about moving the switch out of the loop, i.e.
 
-> > --- a/drivers/gpu/drm/drm_fourcc.c
-> > +++ b/drivers/gpu/drm/drm_fourcc.c
-> > @@ -151,6 +151,8 @@ const struct drm_format_info *__drm_format_info(u32 format)
-> >               { .format = DRM_FORMAT_C4,              .depth = 4,  .num_planes = 1,
-> >                 .char_per_block = { 1, }, .block_w = { 2, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
-> >               { .format = DRM_FORMAT_C8,              .depth = 8,  .num_planes = 1, .cpp = { 1, 0, 0 }, .hsub = 1, .vsub = 1 },
-> > +             { .format = DRM_FORMAT_D1,              .depth = 1,  .num_planes = 1,
-> > +               .char_per_block = { 1, }, .block_w = { 8, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
-> >               { .format = DRM_FORMAT_R1,              .depth = 1,  .num_planes = 1,
-> >                 .char_per_block = { 1, }, .block_w = { 8, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
-> >               { .format = DRM_FORMAT_R2,              .depth = 2,  .num_planes = 1,
-> > diff --git a/include/uapi/drm/drm_fourcc.h b/include/uapi/drm/drm_fourcc.h
-> > index 8605a1acc6813e6c..c15c6efcc65e5827 100644
-> > --- a/include/uapi/drm/drm_fourcc.h
-> > +++ b/include/uapi/drm/drm_fourcc.h
-> > @@ -104,6 +104,9 @@ extern "C" {
-> >  #define DRM_FORMAT_C4                fourcc_code('C', '4', ' ', ' ') /* [3:0] C */
-> >  #define DRM_FORMAT_C8                fourcc_code('C', '8', ' ', ' ') /* [7:0] C */
-> >
-> > +/* 1 bpp Darkness */
-> > +#define DRM_FORMAT_D1                fourcc_code('D', '1', ' ', ' ') /* [0] D */
-> > +
->
-> the same comment here as for C1 and R1 formats, need to specify pixel
-> ordering inside a byte.
+switch (ppw) {
+case 4:
+    for (j = ...) {
+        *dst++ = colortab[(*src >> 4) & bit_mask];
+        *dst++ = colortab[(*src >> 0) & bit_mask];
+    }
+[ ... ]
+}
 
-Right, will do.
+?
 
-> I think it would also be good to explain the rationale why C1 and R1
-> are not suitable for this case and we need yet another 1-bit format in
-> the commit message.
->
-> For posterity, of course. I roughly remember the discussions.
+take care,
+  Gerd
 
-C1 is color-indexed, which can be any two colors.
-R1 is light-on-dark.
-D1 is dark-on-light.
-
-> I also wonder if anyone would actually use D1. Should it be added
-> anyway? There is no rule that a pixel format must be used inside the
-> kernel AFAIK, but is there even a prospective userspace wanting this?
->
-> Exposing R1 and inverting bits while copying to hardware might be
-> enough?
-
-That's an option.  The repaper driver does that:
-
-    drm_fb_xrgb8888_to_gray8(buf, 0, cma_obj->vaddr, fb, &clip);
-    repaper_gray8_to_mono_reversed(buf, fb->width, fb->height);
-
-Can drm_framebuffer objects be backed by graphics memory, i.e.
-can they be displayed without copying?
-
-> >  /* 1 bpp Red */
-> >  #define DRM_FORMAT_R1                fourcc_code('R', '1', ' ', ' ') /* [0] R */
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

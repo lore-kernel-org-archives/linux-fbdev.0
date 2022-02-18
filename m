@@ -2,310 +2,183 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40F77C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 12:38:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35488C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 14:09:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235190AbiBRMik (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 18 Feb 2022 07:38:40 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:54596 "EHLO
+        id S232063AbiBROJu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 18 Feb 2022 09:09:50 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:49432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234830AbiBRMij (ORCPT
+        with ESMTP id S233569AbiBROJt (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 18 Feb 2022 07:38:39 -0500
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E49441738F2;
-        Fri, 18 Feb 2022 04:38:21 -0800 (PST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        Fri, 18 Feb 2022 09:09:49 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6BF015F374
+        for <linux-fbdev@vger.kernel.org>; Fri, 18 Feb 2022 06:09:32 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 6D27EB8261C;
-        Fri, 18 Feb 2022 12:38:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 38114C340E9;
-        Fri, 18 Feb 2022 12:37:52 +0000 (UTC)
-Message-ID: <c70113dc-d017-b5bc-1466-02530f4707e2@xs4all.nl>
-Date:   Fri, 18 Feb 2022 13:37:50 +0100
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 75AB1210DB;
+        Fri, 18 Feb 2022 14:09:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1645193371; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=HB3L++4PQYNQLsMelrUuLKMCjKCIDMxJwwtm4wEKGjY=;
+        b=UUFBs1QlANkjpRuXLdMkzj3gr48U0BDmbLoFq/vKs1XLJ/FfewnQXKpruVwaszv+jtEyfI
+        AGrLryNOBE0RZwp/we1HhpZd/+ky8ufRA7DxWtBdKF7DGBlKNtzRfX8FioPgaHD0z1njXw
+        n9PMnOcJCX2lzdMAyUivLRbbGqsFfcU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1645193371;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=HB3L++4PQYNQLsMelrUuLKMCjKCIDMxJwwtm4wEKGjY=;
+        b=m2s1rNTUDX/63nXC/oYwaY8ZfMxQiwfoXbiBLni9mhSD2x9KqQTSkcCEJ5vddM/vBFmCVS
+        GbCYjoNZuEIow1Dw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 48A2713C93;
+        Fri, 18 Feb 2022 14:09:31 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id cJeMEJuoD2LyeQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 18 Feb 2022 14:09:31 +0000
+Message-ID: <103bb91e-676b-7930-020f-f2aa98595918@suse.de>
+Date:   Fri, 18 Feb 2022 15:09:30 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.1
-Subject: Re: [PATCH 5/5] spi: make remove callback a void function
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 2/2] fbdev: Improve performance of sys_imageblit()
 Content-Language: en-US
-To:     =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Mark Brown <broonie@kernel.org>
-Cc:     =?UTF-8?Q?Marek_Beh=c3=ban?= <kabel@kernel.org>,
-        Peter Huewe <peterhuewe@gmx.de>,
-        Jarkko Sakkinen <jarkko@kernel.org>,
-        Jason Gunthorpe <jgg@ziepe.ca>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Markuss Broks <markuss.broks@gmail.com>,
-        Emma Anholt <emma@anholt.net>,
-        David Lechner <david@lechnology.com>,
-        Kamlesh Gurudasani <kamlesh.gurudasani@gmail.com>,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Dan Robertson <dan@dlrobertson.com>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Marcus Folkesson <marcus.folkesson@gmail.com>,
-        Kent Gustavsson <kent@minoris.se>,
-        Rui Miguel Silva <rmfrfs@gmail.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        Yasunari Takiguchi <Yasunari.Takiguchi@sony.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Charles-Antoine Couret <charles-antoine.couret@nexvision.fr>,
-        Antti Palosaari <crope@iki.fi>,
-        Lee Jones <lee.jones@linaro.org>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Charles Keepax <ckeepax@opensource.cirrus.com>,
-        Richard Fitzgerald <rf@opensource.cirrus.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@foss.st.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Eric Piel <eric.piel@tremplin-utc.net>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Richard Weinberger <richard@nod.at>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Wolfgang Grandegger <wg@grandegger.com>,
-        Marc Kleine-Budde <mkl@pengutronix.de>,
-        "David S. Miller" <davem@davemloft.net>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>,
-        Thomas Kopp <thomas.kopp@microchip.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Andrew Lunn <andrew@lunn.ch>,
-        Vivien Didelot <vivien.didelot@gmail.com>,
-        Vladimir Oltean <olteanv@gmail.com>,
-        Woojung Huh <woojung.huh@microchip.com>,
-        UNGLinuxDriver@microchip.com,
-        =?UTF-8?Q?=c5=81ukasz_Stelmach?= <l.stelmach@samsung.com>,
-        Alexander Aring <alex.aring@gmail.com>,
-        Stefan Schmidt <stefan@datenfreihafen.org>,
-        Harry Morris <h.morris@cascoda.com>,
-        Varka Bhadram <varkabhadram@gmail.com>,
-        Xue Liu <liuxuenetmail@gmail.com>, Alan Ott <alan@signal11.us>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Christian Lamparter <chunkeey@googlemail.com>,
-        Kalle Valo <kvalo@kernel.org>,
-        Ajay Singh <ajay.kathat@microchip.com>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>,
-        Solomon Peachy <pizza@shaftnet.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Mark Greer <mgreer@animalcreek.com>,
-        Benson Leung <bleung@chromium.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Mark Gross <markgross@kernel.org>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        =?UTF-8?B?SsOpcsO0bWUgUG91aWxsZXI=?= <jerome.pouiller@silabs.com>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Felipe Balbi <balbi@kernel.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        James Schulman <james.schulman@cirrus.com>,
-        David Rhodes <david.rhodes@cirrus.com>,
-        Lucas Tanure <tanureal@opensource.cirrus.com>,
-        Jaroslav Kysela <perex@perex.cz>,
-        Takashi Iwai <tiwai@suse.com>,
-        =?UTF-8?Q?Nuno_S=c3=a1?= <nuno.sa@analog.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Daniel Mack <daniel@zonque.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Maxime Ripard <mripard@kernel.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Alexandru Ardelean <ardeleanalex@gmail.com>,
-        Mike Looijmans <mike.looijmans@topic.nl>,
-        Gwendal Grignou <gwendal@chromium.org>,
-        Cai Huoqing <caihuoqing@baidu.com>,
-        Minghao Chi <chi.minghao@zte.com.cn>,
-        Antoniu Miclaus <antoniu.miclaus@analog.com>,
-        Julia Lawall <Julia.Lawall@inria.fr>,
-        =?UTF-8?Q?Ronald_Tschal=c3=a4r?= <ronald@innovation.ch>,
-        Marco Felsch <m.felsch@pengutronix.de>,
-        =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>,
-        Emmanuel Gil Peyrot <linkmauve@linkmauve.fr>,
-        Jon Hunter <jonathanh@nvidia.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Heiko Schocher <hs@denx.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        Colin Ian King <colin.king@intel.com>,
-        Dan Carpenter <dan.carpenter@oracle.com>,
-        Tudor Ambarus <tudor.ambarus@microchip.com>,
-        Matt Kline <matt@bitbashing.io>,
-        Torin Cooper-Bennun <torin@maxiluxsystems.com>,
-        Vincent Mailhol <mailhol.vincent@wanadoo.fr>,
-        =?UTF-8?Q?Stefan_M=c3=a4tje?= <stefan.maetje@esd.eu>,
-        Frieder Schrempf <frieder.schrempf@kontron.de>,
-        Wei Yongjun <weiyongjun1@huawei.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Nanyong Sun <sunnanyong@huawei.com>,
-        Yang Shen <shenyang39@huawei.com>,
-        dingsenjie <dingsenjie@yulong.com>,
-        Aditya Srivastava <yashsri421@gmail.com>,
-        Stefan Wahren <stefan.wahren@i2se.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Michael Walle <michael@walle.cc>,
-        Yang Li <yang.lee@linux.alibaba.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        wengjianfeng <wengjianfeng@yulong.com>,
-        Sidong Yang <realwakka@gmail.com>,
-        Paulo Miguel Almeida <paulo.miguel.almeida.rodenas@gmail.com>,
-        Zhang Qilong <zhangqilong3@huawei.com>,
-        Will Deacon <will@kernel.org>,
-        Mark Tomlinson <mark.tomlinson@alliedtelesis.co.nz>,
-        Davidlohr Bueso <dbueso@suse.de>, Claudius Heine <ch@denx.de>,
-        Jiri Prchal <jiri.prchal@aksignal.cz>,
-        linux-kernel@vger.kernel.org, linux-integrity@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-hwmon@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
-        patches@opensource.cirrus.com, alsa-devel@alsa-project.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-arm-kernel@lists.infradead.org, linux-mmc@vger.kernel.org,
-        linux-mtd@lists.infradead.org, linux-can@vger.kernel.org,
-        netdev@vger.kernel.org, linux-wpan@vger.kernel.org,
-        linux-wireless@vger.kernel.org, libertas-dev@lists.infradead.org,
-        platform-driver-x86@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-serial@vger.kernel.org,
-        linux-usb@vger.kernel.org, linux-omap@vger.kernel.org,
-        kernel@pengutronix.de
-References: <20220123175201.34839-1-u.kleine-koenig@pengutronix.de>
- <20220123175201.34839-6-u.kleine-koenig@pengutronix.de>
-From:   Hans Verkuil <hverkuil@xs4all.nl>
-In-Reply-To: <20220123175201.34839-6-u.kleine-koenig@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To:     Sam Ravnborg <sam@ravnborg.org>
+Cc:     daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com,
+        geert@linux-m68k.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+References: <20220217103405.26492-1-tzimmermann@suse.de>
+ <20220217103405.26492-3-tzimmermann@suse.de> <Yg9xizrlvaNZFkCM@ravnborg.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <Yg9xizrlvaNZFkCM@ravnborg.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------msQEmOTRj08mvYRq0Jajw5Qq"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 23/01/2022 18:52, Uwe Kleine-König wrote:
-> The value returned by an spi driver's remove function is mostly ignored.
-> (Only an error message is printed if the value is non-zero that the
-> error is ignored.)
-> 
-> So change the prototype of the remove function to return no value. This
-> way driver authors are not tempted to assume that passing an error to
-> the upper layer is a good idea. All drivers are adapted accordingly.
-> There is no intended change of behaviour, all callbacks were prepared to
-> return 0 before.
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> ---
->  drivers/bus/moxtet.c                                  |  4 +---
->  drivers/char/tpm/st33zp24/spi.c                       |  4 +---
->  drivers/char/tpm/tpm_tis_spi_main.c                   |  3 +--
->  drivers/clk/clk-lmk04832.c                            |  4 +---
->  drivers/gpio/gpio-74x164.c                            |  4 +---
->  drivers/gpio/gpio-max3191x.c                          |  4 +---
->  drivers/gpio/gpio-max7301.c                           |  4 +---
->  drivers/gpio/gpio-mc33880.c                           |  4 +---
->  drivers/gpio/gpio-pisosr.c                            |  4 +---
->  drivers/gpu/drm/panel/panel-abt-y030xx067a.c          |  4 +---
->  drivers/gpu/drm/panel/panel-ilitek-ili9322.c          |  4 +---
->  drivers/gpu/drm/panel/panel-ilitek-ili9341.c          |  3 +--
->  drivers/gpu/drm/panel/panel-innolux-ej030na.c         |  4 +---
->  drivers/gpu/drm/panel/panel-lg-lb035q02.c             |  4 +---
->  drivers/gpu/drm/panel/panel-lg-lg4573.c               |  4 +---
->  drivers/gpu/drm/panel/panel-nec-nl8048hl11.c          |  4 +---
->  drivers/gpu/drm/panel/panel-novatek-nt39016.c         |  4 +---
->  drivers/gpu/drm/panel/panel-samsung-db7430.c          |  3 +--
->  drivers/gpu/drm/panel/panel-samsung-ld9040.c          |  4 +---
->  drivers/gpu/drm/panel/panel-samsung-s6d27a1.c         |  3 +--
->  drivers/gpu/drm/panel/panel-samsung-s6e63m0-spi.c     |  3 +--
->  drivers/gpu/drm/panel/panel-sitronix-st7789v.c        |  4 +---
->  drivers/gpu/drm/panel/panel-sony-acx565akm.c          |  4 +---
->  drivers/gpu/drm/panel/panel-tpo-td028ttec1.c          |  4 +---
->  drivers/gpu/drm/panel/panel-tpo-td043mtea1.c          |  4 +---
->  drivers/gpu/drm/panel/panel-tpo-tpg110.c              |  3 +--
->  drivers/gpu/drm/panel/panel-widechips-ws2401.c        |  3 +--
->  drivers/gpu/drm/tiny/hx8357d.c                        |  4 +---
->  drivers/gpu/drm/tiny/ili9163.c                        |  4 +---
->  drivers/gpu/drm/tiny/ili9225.c                        |  4 +---
->  drivers/gpu/drm/tiny/ili9341.c                        |  4 +---
->  drivers/gpu/drm/tiny/ili9486.c                        |  4 +---
->  drivers/gpu/drm/tiny/mi0283qt.c                       |  4 +---
->  drivers/gpu/drm/tiny/repaper.c                        |  4 +---
->  drivers/gpu/drm/tiny/st7586.c                         |  4 +---
->  drivers/gpu/drm/tiny/st7735r.c                        |  4 +---
->  drivers/hwmon/adcxx.c                                 |  4 +---
->  drivers/hwmon/adt7310.c                               |  3 +--
->  drivers/hwmon/max1111.c                               |  3 +--
->  drivers/hwmon/max31722.c                              |  4 +---
->  drivers/iio/accel/bma400_spi.c                        |  4 +---
->  drivers/iio/accel/bmc150-accel-spi.c                  |  4 +---
->  drivers/iio/accel/bmi088-accel-spi.c                  |  4 +---
->  drivers/iio/accel/kxsd9-spi.c                         |  4 +---
->  drivers/iio/accel/mma7455_spi.c                       |  4 +---
->  drivers/iio/accel/sca3000.c                           |  4 +---
->  drivers/iio/adc/ad7266.c                              |  4 +---
->  drivers/iio/adc/ltc2496.c                             |  4 +---
->  drivers/iio/adc/mcp320x.c                             |  4 +---
->  drivers/iio/adc/mcp3911.c                             |  4 +---
->  drivers/iio/adc/ti-adc12138.c                         |  4 +---
->  drivers/iio/adc/ti-ads7950.c                          |  4 +---
->  drivers/iio/adc/ti-ads8688.c                          |  4 +---
->  drivers/iio/adc/ti-tlc4541.c                          |  4 +---
->  drivers/iio/amplifiers/ad8366.c                       |  4 +---
->  drivers/iio/common/ssp_sensors/ssp_dev.c              |  4 +---
->  drivers/iio/dac/ad5360.c                              |  4 +---
->  drivers/iio/dac/ad5380.c                              |  4 +---
->  drivers/iio/dac/ad5446.c                              |  4 +---
->  drivers/iio/dac/ad5449.c                              |  4 +---
->  drivers/iio/dac/ad5504.c                              |  4 +---
->  drivers/iio/dac/ad5592r.c                             |  4 +---
->  drivers/iio/dac/ad5624r_spi.c                         |  4 +---
->  drivers/iio/dac/ad5686-spi.c                          |  4 +---
->  drivers/iio/dac/ad5761.c                              |  4 +---
->  drivers/iio/dac/ad5764.c                              |  4 +---
->  drivers/iio/dac/ad5791.c                              |  4 +---
->  drivers/iio/dac/ad8801.c                              |  4 +---
->  drivers/iio/dac/ltc1660.c                             |  4 +---
->  drivers/iio/dac/ltc2632.c                             |  4 +---
->  drivers/iio/dac/mcp4922.c                             |  4 +---
->  drivers/iio/dac/ti-dac082s085.c                       |  4 +---
->  drivers/iio/dac/ti-dac7311.c                          |  3 +--
->  drivers/iio/frequency/adf4350.c                       |  4 +---
->  drivers/iio/gyro/bmg160_spi.c                         |  4 +---
->  drivers/iio/gyro/fxas21002c_spi.c                     |  4 +---
->  drivers/iio/health/afe4403.c                          |  4 +---
->  drivers/iio/magnetometer/bmc150_magn_spi.c            |  4 +---
->  drivers/iio/magnetometer/hmc5843_spi.c                |  4 +---
->  drivers/iio/potentiometer/max5487.c                   |  4 +---
->  drivers/iio/pressure/ms5611_spi.c                     |  4 +---
->  drivers/iio/pressure/zpa2326_spi.c                    |  4 +---
->  drivers/input/keyboard/applespi.c                     |  4 +---
->  drivers/input/misc/adxl34x-spi.c                      |  4 +---
->  drivers/input/touchscreen/ads7846.c                   |  4 +---
->  drivers/input/touchscreen/cyttsp4_spi.c               |  4 +---
->  drivers/input/touchscreen/tsc2005.c                   |  4 +---
->  drivers/leds/leds-cr0014114.c                         |  4 +---
->  drivers/leds/leds-dac124s085.c                        |  4 +---
->  drivers/leds/leds-el15203000.c                        |  4 +---
->  drivers/leds/leds-spi-byte.c                          |  4 +---
->  drivers/media/spi/cxd2880-spi.c                       |  4 +---
->  drivers/media/spi/gs1662.c                            |  4 +---
->  drivers/media/tuners/msi001.c                         |  3 +--
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------msQEmOTRj08mvYRq0Jajw5Qq
+Content-Type: multipart/mixed; boundary="------------UiMfTtkjpF0tVRWKmaBLXSRJ";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com, geert@linux-m68k.org,
+ linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Message-ID: <103bb91e-676b-7930-020f-f2aa98595918@suse.de>
+Subject: Re: [PATCH 2/2] fbdev: Improve performance of sys_imageblit()
+References: <20220217103405.26492-1-tzimmermann@suse.de>
+ <20220217103405.26492-3-tzimmermann@suse.de> <Yg9xizrlvaNZFkCM@ravnborg.org>
+In-Reply-To: <Yg9xizrlvaNZFkCM@ravnborg.org>
 
-A bit late, but for drivers/media:
+--------------UiMfTtkjpF0tVRWKmaBLXSRJ
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Acked-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+SGkgU2FtDQoNCkFtIDE4LjAyLjIyIHVtIDExOjE0IHNjaHJpZWIgU2FtIFJhdm5ib3JnOg0K
+PiBIaSBUaG9tYXMsDQo+IA0KPiBPbiBUaHUsIEZlYiAxNywgMjAyMiBhdCAxMTozNDowNUFN
+ICswMTAwLCBUaG9tYXMgWmltbWVybWFubiB3cm90ZToNCj4+IEltcHJvdmUgdGhlIHBlcmZv
+cm1hbmNlIG9mIHN5c19pbWFnZWJsaXQoKSBieSBtYW51YWxseSB1bnJvbGxpbmcNCj4+IHRo
+ZSBpbm5lciBibGl0dGluZyBsb29wIGFuZCBtb3Zpbmcgc29tZSBpbnZhcmlhbnRzIG91dC4g
+VGhlIGNvbXBpbGVyDQo+PiBmYWlsZWQgdG8gZG8gdGhpcyBhdXRvbWF0aWNhbGx5LiBUaGUg
+cmVzdWx0aW5nIGJpbmFyeSBjb2RlIHdhcyBldmVuDQo+PiBzbG93ZXIgdGhhbiB0aGUgY2Zi
+X2ltYWdlYmxpdCgpIGhlbHBlciwgd2hpY2ggdXNlcyB0aGUgc2FtZSBhbGdvcml0aG0sDQo+
+PiBidXQgb3BlcmF0ZXMgb24gSS9PIG1lbW9yeS4NCj4gDQo+IEl0IHdvdWxkIGJlIHN1cGVy
+IHRvIGhhdmUgdGhlIHNhbWUgb3B0aW1pemF0aW9uIGRvbmUgdG8gY2ZiX2ltYWdlYmxpdCgp
+LA0KPiB0byBwcmV2ZW50IHRoYXQgdGhlIHR3byBjb2RlYmFzZXMgZGl2ZXJnZSBtb3JlIHRo
+YW4gbmVjZXNzYXJ5Lg0KPiBBbHNvIEkgdGhpbmsgY2ZiXyB2ZXJzaW9uIHdvdWxkIGFsc28g
+c2VlIGEgcGVyZm9ybWFuY2UgZ2FpbiBmcm9tIHRoaXMuDQoNClllcywgSSBjYW4gZG8gdGhh
+dC4NCg0KPiANCj4gVGhlIGFjdHVhbCBpbXBsZW1lbnRhdGlvbiBsb29rcyBnb29kLg0KPiBT
+byB3aXRoIG9yIHdpdGhvdXQgdGhlIGV4dHJhIHVuLXJvbGxpbmcgdGhlIHBhdGNoIGlzOg0K
+PiBBY2tlZC1ieTogU2FtIFJhdm5ib3JnIDxzYW1AcmF2bmJvcmcub3JnPg0KPiANCj4gT25l
+IHNtYWxsIG5pdCBiZWx3by4NCj4gDQo+IAlTYW0NCj4gDQo+Pg0KPj4gQSBtaWNyb2JlbmNo
+bWFyayBtZWFzdXJlcyB0aGUgYXZlcmFnZSBudW1iZXIgb2YgQ1BVIGN5Y2xlcw0KPj4gZm9y
+IHN5c19pbWFnZWJsaXQoKSBhZnRlciBhIHN0YWJpbGl6aW5nIHBlcmlvZCBvZiBhIGZldyBt
+aW51dGVzDQo+PiAoaTctNDc5MCwgRnVsbEhELCBzaW1wbGVkcm0sIGtlcm5lbCB3aXRoIGRl
+YnVnZ2luZykuIFRoZSB2YWx1ZQ0KPj4gZm9yIENGQiBpcyBnaXZlbiBhcyBhIHJlZmVyZW5j
+ZS4NCj4+DQo+PiAgICBzeXNfaW1hZ2VibGl0KCksIG5ldzogMjU5MzQgY3ljbGVzDQo+PiAg
+ICBzeXNfaW1hZ2VibGl0KCksIG9sZDogMzU5NDQgY3ljbGVzDQo+PiAgICBjZmJfaW1hZ2Vi
+bGl0KCk6ICAgICAgMzA1NjYgY3ljbGVzDQo+Pg0KPj4gSW4gdGhlIG9wdGltaXplZCBjYXNl
+LCBzeXNfaW1hZ2VibGl0KCkgaXMgbm93IH4zMCUgZmFzdGVyIHRoYW4gYmVmb3JlDQo+PiBh
+bmQgfjIwJSBmYXN0ZXIgdGhhbiBjZmJfaW1hZ2VibGl0KCkuDQo+Pg0KPj4gU2lnbmVkLW9m
+Zi1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+DQo+PiAtLS0N
+Cj4+ICAgZHJpdmVycy92aWRlby9mYmRldi9jb3JlL3N5c2ltZ2JsdC5jIHwgNTEgKysrKysr
+KysrKysrKysrKysrKysrLS0tLS0tLQ0KPj4gICAxIGZpbGUgY2hhbmdlZCwgMzkgaW5zZXJ0
+aW9ucygrKSwgMTIgZGVsZXRpb25zKC0pDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+dmlkZW8vZmJkZXYvY29yZS9zeXNpbWdibHQuYyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29y
+ZS9zeXNpbWdibHQuYw0KPj4gaW5kZXggYTRkMDViMWIxN2Q3Li5kNzBkNjVhZjZmY2IgMTAw
+NjQ0DQo+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvc3lzaW1nYmx0LmMNCj4+
+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9zeXNpbWdibHQuYw0KPj4gQEAgLTE4
+OCwyMyArMTg4LDMyIEBAIHN0YXRpYyB2b2lkIGZhc3RfaW1hZ2VibGl0KGNvbnN0IHN0cnVj
+dCBmYl9pbWFnZSAqaW1hZ2UsIHN0cnVjdCBmYl9pbmZvICpwLA0KPj4gICB7DQo+PiAgIAl1
+MzIgZmd4ID0gZmdjb2xvciwgYmd4ID0gYmdjb2xvciwgYnBwID0gcC0+dmFyLmJpdHNfcGVy
+X3BpeGVsOw0KPj4gICAJdTMyIHBwdyA9IDMyL2JwcCwgc3BpdGNoID0gKGltYWdlLT53aWR0
+aCArIDcpLzg7DQo+PiAtCXUzMiBiaXRfbWFzaywgZW5kX21hc2ssIGVvcngsIHNoaWZ0Ow0K
+Pj4gKwl1MzIgYml0X21hc2ssIGVvcng7DQo+PiAgIAljb25zdCBjaGFyICpzID0gaW1hZ2Ut
+PmRhdGEsICpzcmM7DQo+PiAgIAl1MzIgKmRzdDsNCj4+IC0JY29uc3QgdTMyICp0YWIgPSBO
+VUxMOw0KPj4gLQlpbnQgaSwgaiwgazsNCj4+ICsJY29uc3QgdTMyICp0YWI7DQo+PiArCXNp
+emVfdCB0YWJsZW47DQo+PiArCXUzMiBjb2xvcnRhYlsxNl07DQo+PiArCWludCBpLCBqLCBr
+LCBqZGVjcjsNCj4+ICsNCj4+ICsJaWYgKCh1aW50cHRyX3QpZHN0MSAlIDgpDQo+PiArCQly
+ZXR1cm47DQo+IFRoaXMgY2hlY2sgaXMgbmV3IC0gYW5kIHNob3VsZCBub3QgdHJpZ2dlciBl
+dmVyLiBNYXliZSBhZGQgYW4gdW5saWtlbHkNCj4gYW5kIGEgV0FSTl9PTl9PTkNFKCk/DQoN
+CkkgdGhpbmsgSSBjYW4gcmVtb3ZlIHRoaXMgdGVzdC4gSXQgd2FzIHN1cHBvc2VkIHRvIHRl
+bGwgdGhlIGNvbXBpbGVyIA0KdGhhdCBkc3QxIGlzIDgtYWxpZ25lZCwgYnV0IEkgZG9uJ3Qg
+dGhpbmsgaXQgd29ya2VkLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiANCj4+
+ICAgDQo+PiAgIAlzd2l0Y2ggKGJwcCkgew0KPj4gICAJY2FzZSA4Og0KPj4gICAJCXRhYiA9
+IGZiX2JlX21hdGgocCkgPyBjZmJfdGFiOF9iZSA6IGNmYl90YWI4X2xlOw0KPj4gKwkJdGFi
+bGVuID0gMTY7DQo+PiAgIAkJYnJlYWs7DQo+PiAgIAljYXNlIDE2Og0KPj4gICAJCXRhYiA9
+IGZiX2JlX21hdGgocCkgPyBjZmJfdGFiMTZfYmUgOiBjZmJfdGFiMTZfbGU7DQo+PiArCQl0
+YWJsZW4gPSA0Ow0KPj4gICAJCWJyZWFrOw0KPj4gICAJY2FzZSAzMjoNCj4+IC0JZGVmYXVs
+dDoNCj4+ICAgCQl0YWIgPSBjZmJfdGFiMzI7DQo+PiArCQl0YWJsZW4gPSAyOw0KPj4gICAJ
+CWJyZWFrOw0KPj4gKwlkZWZhdWx0Og0KPj4gKwkJcmV0dXJuOw0KPj4gICAJfQ0KPj4gICAN
+Cj4+ICAgCWZvciAoaSA9IHBwdy0xOyBpLS07ICkgew0KPj4gQEAgLTIxNywxOSArMjI2LDM3
+IEBAIHN0YXRpYyB2b2lkIGZhc3RfaW1hZ2VibGl0KGNvbnN0IHN0cnVjdCBmYl9pbWFnZSAq
+aW1hZ2UsIHN0cnVjdCBmYl9pbmZvICpwLA0KPj4gICAJYml0X21hc2sgPSAoMSA8PCBwcHcp
+IC0gMTsNCj4+ICAgCWVvcnggPSBmZ3ggXiBiZ3g7DQo+PiAgIAlrID0gaW1hZ2UtPndpZHRo
+L3BwdzsNCj4+ICsJamRlY3IgPSA4IC8gcHB3Ow0KPj4gKw0KPj4gKwlmb3IgKGkgPSAwOyBp
+IDwgdGFibGVuOyArK2kpDQo+PiArCQljb2xvcnRhYltpXSA9ICh0YWJbaV0gJiBlb3J4KSBe
+IGJneDsNCj4gVGhpcyBjb2RlIGNvdWxkIGhhdmUgYmVlbiBlbWJlZGRlZCB3aXRoIHRoZSBz
+d2l0Y2ggKGJwcCkgew0KPiBUaGF0IHdvdWxkIGhhdmUgbWFkZSBzb21lIHNlbnNlIEkgdGhp
+bmsuDQo+IEJ1dCBib3RoIHdheXMgd29ya3MsIHNvIHRoaXMgd2FzIGp1c3QgYSBzbWFsbCBv
+YnNlcnZhdGlvbi4NCj4gDQo+IAlTYW0NCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3Jh
+cGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFu
+eSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIg
+MzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
 
-Thanks!
 
-	Hans
+--------------UiMfTtkjpF0tVRWKmaBLXSRJ--
+
+--------------msQEmOTRj08mvYRq0Jajw5Qq
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIPqJoFAwAAAAAACgkQlh/E3EQov+Cb
+TxAAouSUstWFC5prf3HsEEjjctipErouPHKo/hImZNZjLc2NKdby8BzIk4udKyEMVBlQNVEAUO9D
+OsCQ6EXiugUql2zkYS+PHHC/MYRSsjV7TfxKyIjGGjLojZr0YL3qPqqiZerSaLARhfGDoXYNUxwR
+lErMJ7SWGGyL2GmfMEIE9D0/EEJn+nP2mIOG9a4jtlQtD2k9EbGd3pnbchCW5JjyMybygUudRLW7
+LCaivb1C2HCC03WTxQdvwuSbgqBUbfAjKaucU81I6ZeOvnGiG5tU3WhJwZMpRuNneFIzq1uA6F6F
+I6tnQCMinYwGxzOy6jyUYLFYWENnGmY+FFXs1z9dsPp2G3TkvYBXOO6HrjR72kX3Lo+4HZeArEZz
+5XI66UEJtAiY1Mlk2rLPwdqxjJhTGlaRL/4Ha9dhpdtsiZKs1u3Oh1w1iXNuktV6uPpjZJhbj8D/
+/OZ64sKWwYhd5VBzF5SVFSI4fTmKlboDaJ33vMTQJ2d9+QzVTsqR34SqmHMzt9hKZkMF+wh3c8E1
+388NP9RKdN2jpgOcTIIKR/NdOVLqAxVly9bFnNcGtpsZMOEd3zY276sS5CzSAGklK/H1Yi42Xg7M
+wdKRBwfqBCGxhJUick3D12WaKqnRfm/nvbRxCItJa61T4dXmcOBao/WLT65d4hkAYvUy2Gvtf5eB
+NFk=
+=8P/n
+-----END PGP SIGNATURE-----
+
+--------------msQEmOTRj08mvYRq0Jajw5Qq--

@@ -2,104 +2,215 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2AB1C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 09:35:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DCD0C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 09:57:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233625AbiBRJgE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 18 Feb 2022 04:36:04 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:54830 "EHLO
+        id S233657AbiBRJ5x (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 18 Feb 2022 04:57:53 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:41000 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232058AbiBRJgD (ORCPT
+        with ESMTP id S229993AbiBRJ5w (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 18 Feb 2022 04:36:03 -0500
-Received: from mx1.smtp.larsendata.com (mx1.smtp.larsendata.com [91.221.196.215])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAED9B2E1C
-        for <linux-fbdev@vger.kernel.org>; Fri, 18 Feb 2022 01:35:46 -0800 (PST)
-Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
-        by mx1.smtp.larsendata.com (Halon) with ESMTPS
-        id 30a45a6b-909e-11ec-baa1-0050568c148b;
-        Fri, 18 Feb 2022 09:36:03 +0000 (UTC)
-Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        Fri, 18 Feb 2022 04:57:52 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A7FBF2ABD0B;
+        Fri, 18 Feb 2022 01:57:35 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        (Authenticated sender: sam@ravnborg.org)
-        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 57E25194B47;
-        Fri, 18 Feb 2022 10:35:45 +0100 (CET)
-Date:   Fri, 18 Feb 2022 10:35:41 +0100
-X-Report-Abuse-To: abuse@mxhotel.dk
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com,
-        geert@linux-m68k.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 1/2] fbdev: Improve performance of sys_fillrect()
-Message-ID: <Yg9obUp9f08zQUEf@ravnborg.org>
-References: <20220217103405.26492-1-tzimmermann@suse.de>
- <20220217103405.26492-2-tzimmermann@suse.de>
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 31DFF1F383;
+        Fri, 18 Feb 2022 09:57:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1645178254; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=meHXPrizPyCIEzFx7pcREbA6tkmm7SE3B2g/xsTKkOA=;
+        b=bfr91BoF3RgLC/XuIYXAKcQZvo/5W4/c9b+O/QthcAZIti5QY4vMFWoI6q/NvPJrrW5P68
+        aa5N1ZGskApJH6hGZiKneH1RJhoF7pGy7ABe95hi65yPZjfZgGwcaT7cgcSEcGUt2pnvSk
+        JPtX4uhfTRywZT/dJBZqzrZBqHrwcYM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1645178254;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=meHXPrizPyCIEzFx7pcREbA6tkmm7SE3B2g/xsTKkOA=;
+        b=2okevh2hNmK62/Hpzu0J2NWSA1jn6WRze/gKWdqn7IsOYoMXH+CAb/3zTlMW6MotAX6gzL
+        bye2d8F61V9rS3Aw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id BEB7B13C53;
+        Fri, 18 Feb 2022 09:57:33 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id 9V+DLY1tD2LAeAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 18 Feb 2022 09:57:33 +0000
+Message-ID: <4c6e1d15-3bb3-5a69-972f-592cc33ac0cd@suse.de>
+Date:   Fri, 18 Feb 2022 10:57:33 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220217103405.26492-2-tzimmermann@suse.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH] simpldrm: Enable boot time VESA graphic mode selection.
+Content-Language: en-US
+To:     Michal Suchanek <msuchanek@suse.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc:     David Airlie <airlied@linux.ie>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
+        Helge Deller <deller@gmx.de>, x86@kernel.org,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+        Borislav Petkov <bp@alien8.de>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, Martin Mares <mj@ucw.cz>,
+        linux-video@atrey.karlin.mff.cuni.cz,
+        Daniel Mack <daniel@zonque.org>
+References: <20220218093334.24830-1-msuchanek@suse.de>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20220218093334.24830-1-msuchanek@suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------JYUW0XBHt0CzH6KJ0KeaIqyV"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------JYUW0XBHt0CzH6KJ0KeaIqyV
+Content-Type: multipart/mixed; boundary="------------6m9UmIRdykpjFkIQiBQka1kg";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Michal Suchanek <msuchanek@suse.de>, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org
+Cc: David Airlie <airlied@linux.ie>, Dave Hansen
+ <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>,
+ x86@kernel.org, Javier Martinez Canillas <javierm@redhat.com>,
+ Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ Borislav Petkov <bp@alien8.de>, Maxime Ripard <maxime@cerno.tech>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, Martin Mares <mj@ucw.cz>,
+ linux-video@atrey.karlin.mff.cuni.cz, Daniel Mack <daniel@zonque.org>
+Message-ID: <4c6e1d15-3bb3-5a69-972f-592cc33ac0cd@suse.de>
+Subject: Re: [PATCH] simpldrm: Enable boot time VESA graphic mode selection.
+References: <20220218093334.24830-1-msuchanek@suse.de>
+In-Reply-To: <20220218093334.24830-1-msuchanek@suse.de>
 
-On Thu, Feb 17, 2022 at 11:34:04AM +0100, Thomas Zimmermann wrote:
-> Improve the performance of sys_fillrect() by using word-aligned
-> 32/64-bit mov instructions. While the code tried to implement this,
-> the compiler failed to create fast instructions. The resulting
-> binary instructions were even slower than cfb_fillrect(), which
-> uses the same algorithm, but operates on I/O memory.
-> 
-> A microbenchmark measures the average number of CPU cycles
-> for sys_fillrect() after a stabilizing period of a few minutes
-> (i7-4790, FullHD, simpledrm, kernel with debugging). The value
-> for CFB is given as a reference.
-> 
->   sys_fillrect(), new:  26586 cycles
->   sys_fillrect(), old: 166603 cycles
->   cfb_fillrect():       41012 cycles
-> 
-> In the optimized case, sys_fillrect() is now ~6x faster than before
-> and ~1.5x faster than the CFB implementation.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+--------------6m9UmIRdykpjFkIQiBQka1kg
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Nice optimization.
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+SGkgTWljaGFsDQoNCkFtIDE4LjAyLjIyIHVtIDEwOjMzIHNjaHJpZWIgTWljaGFsIFN1Y2hh
+bmVrOg0KPiBTaW5jZSBzd2l0Y2ggdG8gc2ltcGxlZHJtIFZFU0EgZ3JhcGhpYyBtb2RlcyBh
+cmUgbm8gbG9uZ2VyIGF2YWlsYWJsZQ0KPiB3aXRoIGxlZ2FjeSBCSU9TLg0KPiANCj4gVGhl
+IHg4NiByZWFsbW9kZSBib290IGNvZGUgZW5hYmxlcyB0aGUgVkVTQSBncmFwaGljIG1vZGVz
+IHdoZW4gb3B0aW9uDQo+IEZCX0JPT1RfVkVTQV9TVVBQT1JUIGlzIGVuYWJsZWQuDQo+IA0K
+PiBUbyBlbmFibGUgdXNlIG9mIFZFU0EgbW9kZXMgd2l0aCBzaW1wbGVkcm0gaW4gbGVnYWN5
+IEJJT1MgYm9vdCBtb2RlIGRyb3ANCj4gZGVwZW5kZW5jeSBvZiBCT09UX1ZFU0FfU1VQUE9S
+VCBvbiBGQiwgYWxzbyBkcm9wIHRoZSBGQl8gcHJlZml4LCBhbmQNCj4gc2VsZWN0IHRoZSBv
+cHRpb24gd2hlbiBzaW1wbGVkcm0gaXMgYnVpbHQtaW4gb24geDg2Lg0KDQpUaGFua3MgZm9y
+IHNlbmRpbmcgdGhlIHBhdGNoLg0KDQpJIHRlc3RlZCBzaW1wbGVkcm0gb24gYSBWRVNBLWJh
+c2VkIHN5c3RlbXMgYW5kIGl0IHdvcmsuIERvIHlvdSBoYXZlIGEgDQpjb25jcmV0ZSBleGFt
+cGxlIG9mIGEgbW9kZSB0aGF0IGRvZXNuJ3Qgd29yayBhbnkgbG9uZ2VyPw0KDQo+IA0KPiBG
+aXhlczogMTFlOGY1ZmQyMjNiICgiZHJtOiBBZGQgc2ltcGxlZHJtIGRyaXZlciIpDQo+IFNp
+Z25lZC1vZmYtYnk6IE1pY2hhbCBTdWNoYW5layA8bXN1Y2hhbmVrQHN1c2UuZGU+DQo+IC0t
+LQ0KPiAgIGFyY2gveDg2L2Jvb3QvdmlkZW8tdmVzYS5jICAgfCA0ICsrLS0NCj4gICBkcml2
+ZXJzL2dwdS9kcm0vdGlueS9LY29uZmlnIHwgMSArDQo+ICAgZHJpdmVycy92aWRlby9mYmRl
+di9LY29uZmlnICB8IDkgKysrKy0tLS0tDQo+ICAgMyBmaWxlcyBjaGFuZ2VkLCA3IGluc2Vy
+dGlvbnMoKyksIDcgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvYXJjaC94ODYv
+Ym9vdC92aWRlby12ZXNhLmMgYi9hcmNoL3g4Ni9ib290L3ZpZGVvLXZlc2EuYw0KPiBpbmRl
+eCA3ZTE4NTk3N2E5ODQuLmMyYzZkMzVlM2E0MyAxMDA2NDQNCj4gLS0tIGEvYXJjaC94ODYv
+Ym9vdC92aWRlby12ZXNhLmMNCj4gKysrIGIvYXJjaC94ODYvYm9vdC92aWRlby12ZXNhLmMN
+Cj4gQEAgLTgzLDcgKzgzLDcgQEAgc3RhdGljIGludCB2ZXNhX3Byb2JlKHZvaWQpDQo+ICAg
+CQkJICAgKHZtaW5mby5tZW1vcnlfbGF5b3V0ID09IDQgfHwNCj4gICAJCQkgICAgdm1pbmZv
+Lm1lbW9yeV9sYXlvdXQgPT0gNikgJiYNCj4gICAJCQkgICB2bWluZm8ubWVtb3J5X3BsYW5l
+cyA9PSAxKSB7DQo+IC0jaWZkZWYgQ09ORklHX0ZCX0JPT1RfVkVTQV9TVVBQT1JUDQo+ICsj
+aWZkZWYgQ09ORklHX0JPT1RfVkVTQV9TVVBQT1JUDQo+ICAgCQkJLyogR3JhcGhpY3MgbW9k
+ZSwgY29sb3IsIGxpbmVhciBmcmFtZSBidWZmZXINCj4gICAJCQkgICBzdXBwb3J0ZWQuICBP
+bmx5IHJlZ2lzdGVyIHRoZSBtb2RlIGlmDQo+ICAgCQkJICAgaWYgZnJhbWVidWZmZXIgaXMg
+Y29uZmlndXJlZCwgaG93ZXZlciwNCj4gQEAgLTEyMSw3ICsxMjEsNyBAQCBzdGF0aWMgaW50
+IHZlc2Ffc2V0X21vZGUoc3RydWN0IG1vZGVfaW5mbyAqbW9kZSkNCj4gICAJaWYgKCh2bWlu
+Zm8ubW9kZV9hdHRyICYgMHgxNSkgPT0gMHgwNSkgew0KPiAgIAkJLyogSXQncyBhIHN1cHBv
+cnRlZCB0ZXh0IG1vZGUgKi8NCj4gICAJCWlzX2dyYXBoaWMgPSAwOw0KPiAtI2lmZGVmIENP
+TkZJR19GQl9CT09UX1ZFU0FfU1VQUE9SVA0KPiArI2lmZGVmIENPTkZJR19CT09UX1ZFU0Ff
+U1VQUE9SVA0KPiAgIAl9IGVsc2UgaWYgKCh2bWluZm8ubW9kZV9hdHRyICYgMHg5OSkgPT0g
+MHg5OSkgew0KPiAgIAkJLyogSXQncyBhIGdyYXBoaWNzIG1vZGUgd2l0aCBsaW5lYXIgZnJh
+bWUgYnVmZmVyICovDQo+ICAgCQlpc19ncmFwaGljID0gMTsNCj4gZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvZ3B1L2RybS90aW55L0tjb25maWcgYi9kcml2ZXJzL2dwdS9kcm0vdGlueS9LY29u
+ZmlnDQo+IGluZGV4IDcxMmUwMDA0ZTk2ZS4uMWJjMzBjNjRlZDE1IDEwMDY0NA0KPiAtLS0g
+YS9kcml2ZXJzL2dwdS9kcm0vdGlueS9LY29uZmlnDQo+ICsrKyBiL2RyaXZlcnMvZ3B1L2Ry
+bS90aW55L0tjb25maWcNCj4gQEAgLTU0LDYgKzU0LDcgQEAgY29uZmlnIERSTV9HTTEyVTMy
+MA0KPiAgIGNvbmZpZyBEUk1fU0lNUExFRFJNDQo+ICAgCXRyaXN0YXRlICJTaW1wbGUgZnJh
+bWVidWZmZXIgZHJpdmVyIg0KPiAgIAlkZXBlbmRzIG9uIERSTSAmJiBNTVUNCj4gKwlzZWxl
+Y3QgQk9PVF9WRVNBX1NVUFBPUlQgaWYgWDg2ICYmIERSTV9TSU1QTEVEUk0gPSB5DQoNCldl
+IHNob3VsZG4ndCBzZWxlY3QgdGhpcyBvcHRpb24gaW4gZHJpdmVycyBJTUhPLiBTaW1wbGUt
+ZnJhbWVidWZmZXIgDQpkZXZpY2VzIHdpdGggVkVTQSBhcmUgZW5hYmxlZCB3aXRoIFsxXSBh
+bmQgdGhhdCBzaG91bGQgYWxzbyBzZWxlY3QgdGhlIA0KQk9PVF9WRVNBX1NVUFBPUlQuDQoN
+CkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNClsxXSANCmh0dHBzOi8vZWxpeGlyLmJvb3RsaW4u
+Y29tL2xpbnV4L3Y1LjE2LjEwL3NvdXJjZS9kcml2ZXJzL2Zpcm13YXJlL0tjb25maWcjTDIy
+NA0KDQo+ICAgCXNlbGVjdCBEUk1fR0VNX1NITUVNX0hFTFBFUg0KPiAgIAlzZWxlY3QgRFJN
+X0tNU19IRUxQRVINCj4gICAJaGVscA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9m
+YmRldi9LY29uZmlnIGIvZHJpdmVycy92aWRlby9mYmRldi9LY29uZmlnDQo+IGluZGV4IDZl
+ZDVlNjA4ZGQwNC4uNGYzYmU5YjdhNTIwIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVv
+L2ZiZGV2L0tjb25maWcNCj4gKysrIGIvZHJpdmVycy92aWRlby9mYmRldi9LY29uZmlnDQo+
+IEBAIC02Niw5ICs2Niw4IEBAIGNvbmZpZyBGQl9EREMNCj4gICAJc2VsZWN0IEkyQ19BTEdP
+QklUDQo+ICAgCXNlbGVjdCBJMkMNCj4gICANCj4gLWNvbmZpZyBGQl9CT09UX1ZFU0FfU1VQ
+UE9SVA0KPiArY29uZmlnIEJPT1RfVkVTQV9TVVBQT1JUDQo+ICAgCWJvb2wNCj4gLQlkZXBl
+bmRzIG9uIEZCDQo+ICAgCWhlbHANCj4gICAJICBJZiB0cnVlLCBhdCBsZWFzdCBvbmUgc2Vs
+ZWN0ZWQgZnJhbWVidWZmZXIgZHJpdmVyIGNhbiB0YWtlIGFkdmFudGFnZQ0KPiAgIAkgIG9m
+IFZFU0EgdmlkZW8gbW9kZXMgc2V0IGF0IGFuIGVhcmx5IGJvb3Qgc3RhZ2UgdmlhIHRoZSB2
+Z2E9IHBhcmFtZXRlci4NCj4gQEAgLTYyNyw3ICs2MjYsNyBAQCBjb25maWcgRkJfVkVTQQ0K
+PiAgIAlzZWxlY3QgRkJfQ0ZCX0ZJTExSRUNUDQo+ICAgCXNlbGVjdCBGQl9DRkJfQ09QWUFS
+RUENCj4gICAJc2VsZWN0IEZCX0NGQl9JTUFHRUJMSVQNCj4gLQlzZWxlY3QgRkJfQk9PVF9W
+RVNBX1NVUFBPUlQNCj4gKwlzZWxlY3QgQk9PVF9WRVNBX1NVUFBPUlQNCj4gICAJaGVscA0K
+PiAgIAkgIFRoaXMgaXMgdGhlIGZyYW1lIGJ1ZmZlciBkZXZpY2UgZHJpdmVyIGZvciBnZW5l
+cmljIFZFU0EgMi4wDQo+ICAgCSAgY29tcGxpYW50IGdyYXBoaWMgY2FyZHMuIFRoZSBvbGRl
+ciBWRVNBIDEuMiBjYXJkcyBhcmUgbm90IHN1cHBvcnRlZC4NCj4gQEAgLTEwNTEsNyArMTA1
+MCw3IEBAIGNvbmZpZyBGQl9JTlRFTA0KPiAgIAlzZWxlY3QgRkJfQ0ZCX0ZJTExSRUNUDQo+
+ICAgCXNlbGVjdCBGQl9DRkJfQ09QWUFSRUENCj4gICAJc2VsZWN0IEZCX0NGQl9JTUFHRUJM
+SVQNCj4gLQlzZWxlY3QgRkJfQk9PVF9WRVNBX1NVUFBPUlQgaWYgRkJfSU5URUwgPSB5DQo+
+ICsJc2VsZWN0IEJPT1RfVkVTQV9TVVBQT1JUIGlmIEZCX0lOVEVMID0geQ0KPiAgIAlkZXBl
+bmRzIG9uICFEUk1fSTkxNQ0KPiAgIAloZWxwDQo+ICAgCSAgVGhpcyBkcml2ZXIgc3VwcG9y
+dHMgdGhlIG9uLWJvYXJkIGdyYXBoaWNzIGJ1aWx0IGluIHRvIHRoZSBJbnRlbA0KPiBAQCAt
+MTM3OCw3ICsxMzc3LDcgQEAgY29uZmlnIEZCX1NJUw0KPiAgIAlzZWxlY3QgRkJfQ0ZCX0ZJ
+TExSRUNUDQo+ICAgCXNlbGVjdCBGQl9DRkJfQ09QWUFSRUENCj4gICAJc2VsZWN0IEZCX0NG
+Ql9JTUFHRUJMSVQNCj4gLQlzZWxlY3QgRkJfQk9PVF9WRVNBX1NVUFBPUlQgaWYgRkJfU0lT
+ID0geQ0KPiArCXNlbGVjdCBCT09UX1ZFU0FfU1VQUE9SVCBpZiBGQl9TSVMgPSB5DQo+ICAg
+CXNlbGVjdCBGQl9TSVNfMzAwIGlmICFGQl9TSVNfMzE1DQo+ICAgCWhlbHANCj4gICAJICBU
+aGlzIGlzIHRoZSBmcmFtZSBidWZmZXIgZGV2aWNlIGRyaXZlciBmb3IgdGhlIFNpUyAzMDAs
+IDMxNSwgMzMwDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBE
+ZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVs
+ZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xy
+bmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
 
-> ---
->  drivers/video/fbdev/core/sysfillrect.c | 16 +++-------------
->  1 file changed, 3 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/core/sysfillrect.c b/drivers/video/fbdev/core/sysfillrect.c
-> index 33ee3d34f9d2..bcdcaeae6538 100644
-> --- a/drivers/video/fbdev/core/sysfillrect.c
-> +++ b/drivers/video/fbdev/core/sysfillrect.c
-> @@ -50,19 +50,9 @@ bitfill_aligned(struct fb_info *p, unsigned long *dst, int dst_idx,
->  
->  		/* Main chunk */
->  		n /= bits;
-> -		while (n >= 8) {
-> -			*dst++ = pat;
-> -			*dst++ = pat;
-> -			*dst++ = pat;
-> -			*dst++ = pat;
-> -			*dst++ = pat;
-> -			*dst++ = pat;
-> -			*dst++ = pat;
-> -			*dst++ = pat;
-> -			n -= 8;
-> -		}
-> -		while (n--)
-> -			*dst++ = pat;
-> +		memset_l(dst, pat, n);
-> +		dst += n;
-> +
->  		/* Trailing bits */
->  		if (last)
->  			*dst = comp(pat, *dst, last);
-> -- 
-> 2.34.1
+--------------6m9UmIRdykpjFkIQiBQka1kg--
+
+--------------JYUW0XBHt0CzH6KJ0KeaIqyV
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIPbY0FAwAAAAAACgkQlh/E3EQov+Bn
+2BAAjAwq+emgN48PSmawYbRBCYumLASLcliK2o74cowEUlmTldLrEiGiUcMfFD5dHEUbbs9KOkbw
+6pekDAoYR0IrDYl0DLKFUiYYP+n0ikZJPj7YhUytfHmEi2/Eict1rK13PNQZx3uI9ROUrIOnlhVM
+O9O/VVQw9ssEODyEkPnNN6wSM+2cmncMahXoffje3S8pl7ug2Blw+vYOnTWMXA5WPk9dYmyNTSTM
+HuUUAC16qvtSpbSGWDx/Ga27ySY1u7Fpq/cW319iSm7thrMsGYWb3yqZoK4p5F4GEMn5M2JuU2Q0
+vkyBOGcYBfnbQuNIxZHsMoPUmCGnLP3ixhT1uYaNDt6UuSwz5B3i3yxkg+7Heu0T836efpznGBjf
+j8SqVxFRCD1cK5h2gyMsiAc/axD+N6OH6n7ZHMr99mCg9Th4VTmN8853mwxjQZOdZC0kBWun0JM2
+7J62hCYcFd4yt7o3FhQtAhHXeyyDWnXOCyKakMoa1yJci8iFSYQVDRAbwKjvtrSh2U7QBNe7MbLo
+dnU08NZ3ch8U3nIIMobv5fWzXm1leJkN9JdIooHMIy9TC0GKgFV1k++zyvxXT1AdaYoAerPb1p6V
+IahTXTiMNtRFJPfJ31NRtXcwTncAQUa5HC+veTbY2skpGuU29tknU+nH6NYknLf9bExXYIGXlNqM
+dyM=
+=X4vd
+-----END PGP SIGNATURE-----
+
+--------------JYUW0XBHt0CzH6KJ0KeaIqyV--

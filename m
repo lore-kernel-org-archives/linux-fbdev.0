@@ -2,142 +2,207 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F25AC433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 10:14:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8C30C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 10:24:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233512AbiBRKO6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 18 Feb 2022 05:14:58 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:49202 "EHLO
+        id S231740AbiBRKY7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 18 Feb 2022 05:24:59 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:60326 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232790AbiBRKO6 (ORCPT
+        with ESMTP id S230098AbiBRKY6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 18 Feb 2022 05:14:58 -0500
-Received: from mx2.smtp.larsendata.com (mx2.smtp.larsendata.com [91.221.196.228])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAA2E986DD
-        for <linux-fbdev@vger.kernel.org>; Fri, 18 Feb 2022 02:14:40 -0800 (PST)
-Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
-        by mx2.smtp.larsendata.com (Halon) with ESMTPS
-        id 9fce41f1-90a3-11ec-b2df-0050568cd888;
-        Fri, 18 Feb 2022 10:14:57 +0000 (UTC)
-Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        Fri, 18 Feb 2022 05:24:58 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 461842B1AA8;
+        Fri, 18 Feb 2022 02:24:42 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        (Authenticated sender: sam@ravnborg.org)
-        by mail01.mxhotel.dk (Postfix) with ESMTPSA id EB8D7194B18;
-        Fri, 18 Feb 2022 11:14:38 +0100 (CET)
-Date:   Fri, 18 Feb 2022 11:14:35 +0100
-X-Report-Abuse-To: abuse@mxhotel.dk
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com,
-        geert@linux-m68k.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH 2/2] fbdev: Improve performance of sys_imageblit()
-Message-ID: <Yg9xizrlvaNZFkCM@ravnborg.org>
-References: <20220217103405.26492-1-tzimmermann@suse.de>
- <20220217103405.26492-3-tzimmermann@suse.de>
+        by smtp-out1.suse.de (Postfix) with ESMTPS id EF51A219A4;
+        Fri, 18 Feb 2022 10:24:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1645179880; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=pEW6tURx/EzwxI4FUVurCKiPgw0jrsrJlPXVlnXp/HE=;
+        b=SeoCtDNR2wsBLJTj900OTN3n7fC0g/p+HrcnzV651Qw3Pas8MIHw+vT5WvcTm8cLyvPUB4
+        pZ3+tmcKMwEhG3y8TeMQq2Q5Mq08k+tIGoZ6RDCRfv5KLQaOKU+X2GPFB77h7e+fayDkW9
+        DfTgYnjOlJcVmQOmBEJTunTHBHmr7lQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1645179880;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=pEW6tURx/EzwxI4FUVurCKiPgw0jrsrJlPXVlnXp/HE=;
+        b=gZ6C1Ocahxs4eYt0MvA84lXhjcbaOMrU+ICWDeayObwpAJxjPofiuEeRLkIFUO7dEhbQ+F
+        3goJdrfmlLmkMCAg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8B4F913C47;
+        Fri, 18 Feb 2022 10:24:40 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id zuG3IOhzD2LxCAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 18 Feb 2022 10:24:40 +0000
+Message-ID: <14dd85f1-21b1-2ff7-3491-466c077210e6@suse.de>
+Date:   Fri, 18 Feb 2022 11:24:39 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220217103405.26492-3-tzimmermann@suse.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH] simpldrm: Enable boot time VESA graphic mode selection.
+Content-Language: en-US
+To:     =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        David Airlie <airlied@linux.ie>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
+        Helge Deller <deller@gmx.de>, x86@kernel.org,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+        Borislav Petkov <bp@alien8.de>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, Martin Mares <mj@ucw.cz>,
+        linux-video@atrey.karlin.mff.cuni.cz,
+        Daniel Mack <daniel@zonque.org>
+References: <20220218093334.24830-1-msuchanek@suse.de>
+ <4c6e1d15-3bb3-5a69-972f-592cc33ac0cd@suse.de>
+ <20220218100841.GV3113@kunlun.suse.cz>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20220218100841.GV3113@kunlun.suse.cz>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------LTgM6u0q34vOjsOnn7OEejJ0"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------LTgM6u0q34vOjsOnn7OEejJ0
+Content-Type: multipart/mixed; boundary="------------TPm4NPg2Cxx7x1oIMonTxg69";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ David Airlie <airlied@linux.ie>, Dave Hansen <dave.hansen@linux.intel.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
+ Helge Deller <deller@gmx.de>, x86@kernel.org,
+ Javier Martinez Canillas <javierm@redhat.com>, Ingo Molnar
+ <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ Borislav Petkov <bp@alien8.de>, Maxime Ripard <maxime@cerno.tech>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, Martin Mares <mj@ucw.cz>,
+ linux-video@atrey.karlin.mff.cuni.cz, Daniel Mack <daniel@zonque.org>
+Message-ID: <14dd85f1-21b1-2ff7-3491-466c077210e6@suse.de>
+Subject: Re: [PATCH] simpldrm: Enable boot time VESA graphic mode selection.
+References: <20220218093334.24830-1-msuchanek@suse.de>
+ <4c6e1d15-3bb3-5a69-972f-592cc33ac0cd@suse.de>
+ <20220218100841.GV3113@kunlun.suse.cz>
+In-Reply-To: <20220218100841.GV3113@kunlun.suse.cz>
 
-On Thu, Feb 17, 2022 at 11:34:05AM +0100, Thomas Zimmermann wrote:
-> Improve the performance of sys_imageblit() by manually unrolling
-> the inner blitting loop and moving some invariants out. The compiler
-> failed to do this automatically. The resulting binary code was even
-> slower than the cfb_imageblit() helper, which uses the same algorithm,
-> but operates on I/O memory.
+--------------TPm4NPg2Cxx7x1oIMonTxg69
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-It would be super to have the same optimization done to cfb_imageblit(),
-to prevent that the two codebases diverge more than necessary.
-Also I think cfb_ version would also see a performance gain from this.
+SGkNCg0KQW0gMTguMDIuMjIgdW0gMTE6MDggc2NocmllYiBNaWNoYWwgU3VjaMOhbmVrOg0K
+PiBIZWxsbywNCj4gDQo+IE9uIEZyaSwgRmViIDE4LCAyMDIyIGF0IDEwOjU3OjMzQU0gKzAx
+MDAsIFRob21hcyBaaW1tZXJtYW5uIHdyb3RlOg0KPj4gSGkgTWljaGFsDQo+Pg0KPj4gQW0g
+MTguMDIuMjIgdW0gMTA6MzMgc2NocmllYiBNaWNoYWwgU3VjaGFuZWs6DQo+Pj4gU2luY2Ug
+c3dpdGNoIHRvIHNpbXBsZWRybSBWRVNBIGdyYXBoaWMgbW9kZXMgYXJlIG5vIGxvbmdlciBh
+dmFpbGFibGUNCj4+PiB3aXRoIGxlZ2FjeSBCSU9TLg0KPj4+DQo+Pj4gVGhlIHg4NiByZWFs
+bW9kZSBib290IGNvZGUgZW5hYmxlcyB0aGUgVkVTQSBncmFwaGljIG1vZGVzIHdoZW4gb3B0
+aW9uDQo+Pj4gRkJfQk9PVF9WRVNBX1NVUFBPUlQgaXMgZW5hYmxlZC4NCj4+Pg0KPj4+IFRv
+IGVuYWJsZSB1c2Ugb2YgVkVTQSBtb2RlcyB3aXRoIHNpbXBsZWRybSBpbiBsZWdhY3kgQklP
+UyBib290IG1vZGUgZHJvcA0KPj4+IGRlcGVuZGVuY3kgb2YgQk9PVF9WRVNBX1NVUFBPUlQg
+b24gRkIsIGFsc28gZHJvcCB0aGUgRkJfIHByZWZpeCwgYW5kDQo+Pj4gc2VsZWN0IHRoZSBv
+cHRpb24gd2hlbiBzaW1wbGVkcm0gaXMgYnVpbHQtaW4gb24geDg2Lg0KPj4NCj4+IFRoYW5r
+cyBmb3Igc2VuZGluZyB0aGUgcGF0Y2guDQo+Pg0KPj4gSSB0ZXN0ZWQgc2ltcGxlZHJtIG9u
+IGEgVkVTQS1iYXNlZCBzeXN0ZW1zIGFuZCBpdCB3b3JrLiBEbyB5b3UgaGF2ZSBhDQo+IA0K
+PiBJbiBFRkkgb3IgbGVnYWN5IG1vZGU/DQoNCkl0IHdhcyBhIDMyLWJpdCBBdGhsb25YUC4g
+U28gYXMgbGVnYWN5IGFzIGl0IGdldHMuDQoNCj4gDQo+PiBjb25jcmV0ZSBleGFtcGxlIG9m
+IGEgbW9kZSB0aGF0IGRvZXNuJ3Qgd29yayBhbnkgbG9uZ2VyPw0KPiANCj4gQXMgcGVyIGRp
+c2N1c3Npb24gaW4NCj4gaHR0cHM6Ly9idWd6aWxsYS5vcGVuc3VzZS5vcmcvc2hvd19idWcu
+Y2dpP2lkPTExOTMyNTAgdmdhPTc5MSBkb2VzIG5vdC4NCg0KSSB3b25kZXIgaWYgdGhpcyBm
+aXhlcyBhIGZldyBtb3JlIG9mIHRoZSBjb21wbGFpbnMgd2UndmUgc2VlbiBhYm91dCANCm1p
+c3NpbmcgcmVzb2x1dGlvbnMuDQoNCj4gDQo+IEFsc28gaXQgaXMgY2xlYXIgZXhhbWluaWcg
+dGhlIHJlYWxtb2RlIGNvZGUgdGhhdCB0aGlzIG9wdGlvbiBpcyBuZWVkZWQNCj4gdG8gZW5h
+YmxlIGdyYXBoaWMgbW9kZSBzZWxlY3Rpb24uDQo+IA0KPiBJIGRvbid0IGhhdmUgYSBzeXN0
+ZW0gd2l0aCBsZWdhY3kgQklPUyBhdCBoYW5kIGJ1dCBmcm9tIHVzZXIgdGVzdGluZw0KPiB0
+aGlzIGltcHJvdmVzIHRoZSBzaXR1YXRpb24gLSBrZXJuZWwgZG9lcyBub3QgcmVlamVjdCB0
+aGUgdmlkZW9tb2RlDQo+IGFyZ3VtZW50LCBhbmQgc2ltcGxlZHJtIGlzIGluaXRpYWxpemVk
+IGR1cmluZyBib290Lg0KDQpObyBkb3VidCBhYm91dCB0aGF0Lg0KDQpCZXN0IHJlZ2FyZHMN
+ClRob21hcw0KDQo+IA0KPiBUaGFua3MNCj4gDQo+IE1pY2hhbA0KPiANCj4+DQo+Pj4NCj4+
+PiBGaXhlczogMTFlOGY1ZmQyMjNiICgiZHJtOiBBZGQgc2ltcGxlZHJtIGRyaXZlciIpDQo+
+Pj4gU2lnbmVkLW9mZi1ieTogTWljaGFsIFN1Y2hhbmVrIDxtc3VjaGFuZWtAc3VzZS5kZT4N
+Cj4+PiAtLS0NCj4+PiAgICBhcmNoL3g4Ni9ib290L3ZpZGVvLXZlc2EuYyAgIHwgNCArKy0t
+DQo+Pj4gICAgZHJpdmVycy9ncHUvZHJtL3RpbnkvS2NvbmZpZyB8IDEgKw0KPj4+ICAgIGRy
+aXZlcnMvdmlkZW8vZmJkZXYvS2NvbmZpZyAgfCA5ICsrKystLS0tLQ0KPj4+ICAgIDMgZmls
+ZXMgY2hhbmdlZCwgNyBpbnNlcnRpb25zKCspLCA3IGRlbGV0aW9ucygtKQ0KPj4+DQo+Pj4g
+ZGlmZiAtLWdpdCBhL2FyY2gveDg2L2Jvb3QvdmlkZW8tdmVzYS5jIGIvYXJjaC94ODYvYm9v
+dC92aWRlby12ZXNhLmMNCj4+PiBpbmRleCA3ZTE4NTk3N2E5ODQuLmMyYzZkMzVlM2E0MyAx
+MDA2NDQNCj4+PiAtLS0gYS9hcmNoL3g4Ni9ib290L3ZpZGVvLXZlc2EuYw0KPj4+ICsrKyBi
+L2FyY2gveDg2L2Jvb3QvdmlkZW8tdmVzYS5jDQo+Pj4gQEAgLTgzLDcgKzgzLDcgQEAgc3Rh
+dGljIGludCB2ZXNhX3Byb2JlKHZvaWQpDQo+Pj4gICAgCQkJICAgKHZtaW5mby5tZW1vcnlf
+bGF5b3V0ID09IDQgfHwNCj4+PiAgICAJCQkgICAgdm1pbmZvLm1lbW9yeV9sYXlvdXQgPT0g
+NikgJiYNCj4+PiAgICAJCQkgICB2bWluZm8ubWVtb3J5X3BsYW5lcyA9PSAxKSB7DQo+Pj4g
+LSNpZmRlZiBDT05GSUdfRkJfQk9PVF9WRVNBX1NVUFBPUlQNCj4+PiArI2lmZGVmIENPTkZJ
+R19CT09UX1ZFU0FfU1VQUE9SVA0KPj4+ICAgIAkJCS8qIEdyYXBoaWNzIG1vZGUsIGNvbG9y
+LCBsaW5lYXIgZnJhbWUgYnVmZmVyDQo+Pj4gICAgCQkJICAgc3VwcG9ydGVkLiAgT25seSBy
+ZWdpc3RlciB0aGUgbW9kZSBpZg0KPj4+ICAgIAkJCSAgIGlmIGZyYW1lYnVmZmVyIGlzIGNv
+bmZpZ3VyZWQsIGhvd2V2ZXIsDQo+Pj4gQEAgLTEyMSw3ICsxMjEsNyBAQCBzdGF0aWMgaW50
+IHZlc2Ffc2V0X21vZGUoc3RydWN0IG1vZGVfaW5mbyAqbW9kZSkNCj4+PiAgICAJaWYgKCh2
+bWluZm8ubW9kZV9hdHRyICYgMHgxNSkgPT0gMHgwNSkgew0KPj4+ICAgIAkJLyogSXQncyBh
+IHN1cHBvcnRlZCB0ZXh0IG1vZGUgKi8NCj4+PiAgICAJCWlzX2dyYXBoaWMgPSAwOw0KPj4+
+IC0jaWZkZWYgQ09ORklHX0ZCX0JPT1RfVkVTQV9TVVBQT1JUDQo+Pj4gKyNpZmRlZiBDT05G
+SUdfQk9PVF9WRVNBX1NVUFBPUlQNCj4+PiAgICAJfSBlbHNlIGlmICgodm1pbmZvLm1vZGVf
+YXR0ciAmIDB4OTkpID09IDB4OTkpIHsNCj4+PiAgICAJCS8qIEl0J3MgYSBncmFwaGljcyBt
+b2RlIHdpdGggbGluZWFyIGZyYW1lIGJ1ZmZlciAqLw0KPj4+ICAgIAkJaXNfZ3JhcGhpYyA9
+IDE7DQo+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS90aW55L0tjb25maWcgYi9k
+cml2ZXJzL2dwdS9kcm0vdGlueS9LY29uZmlnDQo+Pj4gaW5kZXggNzEyZTAwMDRlOTZlLi4x
+YmMzMGM2NGVkMTUgMTAwNjQ0DQo+Pj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL3RpbnkvS2Nv
+bmZpZw0KPj4+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS90aW55L0tjb25maWcNCj4+PiBAQCAt
+NTQsNiArNTQsNyBAQCBjb25maWcgRFJNX0dNMTJVMzIwDQo+Pj4gICAgY29uZmlnIERSTV9T
+SU1QTEVEUk0NCj4+PiAgICAJdHJpc3RhdGUgIlNpbXBsZSBmcmFtZWJ1ZmZlciBkcml2ZXIi
+DQo+Pj4gICAgCWRlcGVuZHMgb24gRFJNICYmIE1NVQ0KPj4+ICsJc2VsZWN0IEJPT1RfVkVT
+QV9TVVBQT1JUIGlmIFg4NiAmJiBEUk1fU0lNUExFRFJNID0geQ0KPj4NCj4+IFdlIHNob3Vs
+ZG4ndCBzZWxlY3QgdGhpcyBvcHRpb24gaW4gZHJpdmVycyBJTUhPLiBTaW1wbGUtZnJhbWVi
+dWZmZXIgZGV2aWNlcw0KPj4gd2l0aCBWRVNBIGFyZSBlbmFibGVkIHdpdGggWzFdIGFuZCB0
+aGF0IHNob3VsZCBhbHNvIHNlbGVjdCB0aGUNCj4+IEJPT1RfVkVTQV9TVVBQT1JULg0KPiAN
+Cj4gU291bmRzIG9rIHRvIHNlbGVjdCBmcm9tIHRoZXJlLCBpdCBzaG91bGQgYWxzbyBjb3Zl
+ciBzaW1wbGVmYiB0aGVuLg0KPiANCj4gVGhhbmtzDQo+IA0KPiBNaWNoYWwNCg0KLS0gDQpU
+aG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0
+d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xy
+bmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNm
+w7xocmVyOiBJdm8gVG90ZXYNCg==
 
-The actual implementation looks good.
-So with or without the extra un-rolling the patch is:
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+--------------TPm4NPg2Cxx7x1oIMonTxg69--
 
-One small nit belwo.
+--------------LTgM6u0q34vOjsOnn7OEejJ0
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-	Sam
+-----BEGIN PGP SIGNATURE-----
 
-> 
-> A microbenchmark measures the average number of CPU cycles
-> for sys_imageblit() after a stabilizing period of a few minutes
-> (i7-4790, FullHD, simpledrm, kernel with debugging). The value
-> for CFB is given as a reference.
-> 
->   sys_imageblit(), new: 25934 cycles
->   sys_imageblit(), old: 35944 cycles
->   cfb_imageblit():      30566 cycles
-> 
-> In the optimized case, sys_imageblit() is now ~30% faster than before
-> and ~20% faster than cfb_imageblit().
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->  drivers/video/fbdev/core/sysimgblt.c | 51 +++++++++++++++++++++-------
->  1 file changed, 39 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/core/sysimgblt.c b/drivers/video/fbdev/core/sysimgblt.c
-> index a4d05b1b17d7..d70d65af6fcb 100644
-> --- a/drivers/video/fbdev/core/sysimgblt.c
-> +++ b/drivers/video/fbdev/core/sysimgblt.c
-> @@ -188,23 +188,32 @@ static void fast_imageblit(const struct fb_image *image, struct fb_info *p,
->  {
->  	u32 fgx = fgcolor, bgx = bgcolor, bpp = p->var.bits_per_pixel;
->  	u32 ppw = 32/bpp, spitch = (image->width + 7)/8;
-> -	u32 bit_mask, end_mask, eorx, shift;
-> +	u32 bit_mask, eorx;
->  	const char *s = image->data, *src;
->  	u32 *dst;
-> -	const u32 *tab = NULL;
-> -	int i, j, k;
-> +	const u32 *tab;
-> +	size_t tablen;
-> +	u32 colortab[16];
-> +	int i, j, k, jdecr;
-> +
-> +	if ((uintptr_t)dst1 % 8)
-> +		return;
-This check is new - and should not trigger ever. Maybe add an unlikely
-and a WARN_ON_ONCE()?
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIPc+cFAwAAAAAACgkQlh/E3EQov+BH
+gQ//RgDCqtQlenbOA0fCUdGHC+oXuhOec33RIYsU23am8QOxThWrmV4RIP12S+6kpvH9+c32lG/c
+HTIyxmE3T3igD5asQ29orKnxz2uOIuvC3lBW85zmantd4CZAFfMiFOZc/ZfZnFv+uWSlI8wcdxAQ
+kROUTY5N3brxOuidBSgTHwQtUW6SNP2ycxaD6aq8bKofX0dq1y28zkLby7UO1BUp+FnlIKFYYATv
+nkhxAiqfxBhbzjJQD90MsTqa3OJIXAyTO9CW0oHHHf0m42k+2bW9gLPwo3syv9VuRyCz4uDKmevO
+kjR208vGQyYBoYoarkbLLqyhcI1Kbgeky7s855+tiF9cpRZ1Up6+fKmOhHtd0gyJoy2Nnj0J3lf3
+amBhaTDVYqZl0p/WSRXz2bsCInRAz7Dl9w20SuiZDAXhVf7D4q6QmDKHL49eEwCFqgr+sXJnzbYz
+GJUh6YrKjsOps6+boxGHf5rMzvCL5iLiFaQ/91N98vBu+/p3UnUcUlBcWzdO3tA4rjY1bfkAkOcJ
+qNtGPQmczDWCtmRGJo2Fbl+ID9ILNMLdE0t9Oh/FSVpvwIdmTjs2/rFav9zkDVDkeKqzeBn6y1Iv
+QhLCt/52wf1XunOOqN6ljgppebY2PXgfLvt8hCgq4VfPPc3dJ40KuXP2xMYX98K7DbFrvMdASFfL
+v9w=
+=U2ec
+-----END PGP SIGNATURE-----
 
-
->  
->  	switch (bpp) {
->  	case 8:
->  		tab = fb_be_math(p) ? cfb_tab8_be : cfb_tab8_le;
-> +		tablen = 16;
->  		break;
->  	case 16:
->  		tab = fb_be_math(p) ? cfb_tab16_be : cfb_tab16_le;
-> +		tablen = 4;
->  		break;
->  	case 32:
-> -	default:
->  		tab = cfb_tab32;
-> +		tablen = 2;
->  		break;
-> +	default:
-> +		return;
->  	}
->  
->  	for (i = ppw-1; i--; ) {
-> @@ -217,19 +226,37 @@ static void fast_imageblit(const struct fb_image *image, struct fb_info *p,
->  	bit_mask = (1 << ppw) - 1;
->  	eorx = fgx ^ bgx;
->  	k = image->width/ppw;
-> +	jdecr = 8 / ppw;
-> +
-> +	for (i = 0; i < tablen; ++i)
-> +		colortab[i] = (tab[i] & eorx) ^ bgx;
-This code could have been embedded with the switch (bpp) {
-That would have made some sense I think.
-But both ways works, so this was just a small observation.
-
-	Sam
+--------------LTgM6u0q34vOjsOnn7OEejJ0--

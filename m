@@ -2,160 +2,142 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E712C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 10:08:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F25AC433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 10:14:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233884AbiBRKJG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 18 Feb 2022 05:09:06 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:57960 "EHLO
+        id S233512AbiBRKO6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 18 Feb 2022 05:14:58 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:49202 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233892AbiBRKJB (ORCPT
+        with ESMTP id S232790AbiBRKO6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 18 Feb 2022 05:09:01 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7CDDE369E8;
-        Fri, 18 Feb 2022 02:08:44 -0800 (PST)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-        by smtp-out1.suse.de (Postfix) with ESMTP id D9E04219A0;
-        Fri, 18 Feb 2022 10:08:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1645178922; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=pH/gpsR4V/bMLJyVBc0wWkSnS/FoIs/cyCo4Bs15SHM=;
-        b=Ll4ATReqN58yJ1DqMUkw+0+CJelCiPPtC0LbR0IkScm6rtH9ydUGQMxZOMShV9eomI7p4q
-        8r+qedUt544XWfkqGw7Upx2ByqHF7YEVJCyIN0t71eo0ByXGRQjMViskKxMG1FSRvtuOyT
-        d1G4vnBheCDwsKYfE2pgmxwq9UNlBw8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1645178922;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=pH/gpsR4V/bMLJyVBc0wWkSnS/FoIs/cyCo4Bs15SHM=;
-        b=AYvWPIaG2Azj0WJiP3xMoYp96W8Q5tJRoFKuCH/VsqtE0MFLrd2Eix+nCdwCTXLNcZWEpd
-        wkJCdcP01JfWIQAw==
-Received: from kunlun.suse.cz (unknown [10.100.128.76])
+        Fri, 18 Feb 2022 05:14:58 -0500
+Received: from mx2.smtp.larsendata.com (mx2.smtp.larsendata.com [91.221.196.228])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAA2E986DD
+        for <linux-fbdev@vger.kernel.org>; Fri, 18 Feb 2022 02:14:40 -0800 (PST)
+Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
+        by mx2.smtp.larsendata.com (Halon) with ESMTPS
+        id 9fce41f1-90a3-11ec-b2df-0050568cd888;
+        Fri, 18 Feb 2022 10:14:57 +0000 (UTC)
+Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by relay2.suse.de (Postfix) with ESMTPS id 949F5A3B84;
-        Fri, 18 Feb 2022 10:08:42 +0000 (UTC)
-Date:   Fri, 18 Feb 2022 11:08:41 +0100
-From:   Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+        (Authenticated sender: sam@ravnborg.org)
+        by mail01.mxhotel.dk (Postfix) with ESMTPSA id EB8D7194B18;
+        Fri, 18 Feb 2022 11:14:38 +0100 (CET)
+Date:   Fri, 18 Feb 2022 11:14:35 +0100
+X-Report-Abuse-To: abuse@mxhotel.dk
+From:   Sam Ravnborg <sam@ravnborg.org>
 To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        David Airlie <airlied@linux.ie>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
-        Helge Deller <deller@gmx.de>, x86@kernel.org,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-        Borislav Petkov <bp@alien8.de>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-kernel@vger.kernel.org, Martin Mares <mj@ucw.cz>,
-        linux-video@atrey.karlin.mff.cuni.cz,
-        Daniel Mack <daniel@zonque.org>
-Subject: Re: [PATCH] simpldrm: Enable boot time VESA graphic mode selection.
-Message-ID: <20220218100841.GV3113@kunlun.suse.cz>
-References: <20220218093334.24830-1-msuchanek@suse.de>
- <4c6e1d15-3bb3-5a69-972f-592cc33ac0cd@suse.de>
+Cc:     daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com,
+        geert@linux-m68k.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH 2/2] fbdev: Improve performance of sys_imageblit()
+Message-ID: <Yg9xizrlvaNZFkCM@ravnborg.org>
+References: <20220217103405.26492-1-tzimmermann@suse.de>
+ <20220217103405.26492-3-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4c6e1d15-3bb3-5a69-972f-592cc33ac0cd@suse.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20220217103405.26492-3-tzimmermann@suse.de>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+Hi Thomas,
 
-On Fri, Feb 18, 2022 at 10:57:33AM +0100, Thomas Zimmermann wrote:
-> Hi Michal
-> 
-> Am 18.02.22 um 10:33 schrieb Michal Suchanek:
-> > Since switch to simpledrm VESA graphic modes are no longer available
-> > with legacy BIOS.
-> > 
-> > The x86 realmode boot code enables the VESA graphic modes when option
-> > FB_BOOT_VESA_SUPPORT is enabled.
-> > 
-> > To enable use of VESA modes with simpledrm in legacy BIOS boot mode drop
-> > dependency of BOOT_VESA_SUPPORT on FB, also drop the FB_ prefix, and
-> > select the option when simpledrm is built-in on x86.
-> 
-> Thanks for sending the patch.
-> 
-> I tested simpledrm on a VESA-based systems and it work. Do you have a
+On Thu, Feb 17, 2022 at 11:34:05AM +0100, Thomas Zimmermann wrote:
+> Improve the performance of sys_imageblit() by manually unrolling
+> the inner blitting loop and moving some invariants out. The compiler
+> failed to do this automatically. The resulting binary code was even
+> slower than the cfb_imageblit() helper, which uses the same algorithm,
+> but operates on I/O memory.
 
-In EFI or legacy mode?
+It would be super to have the same optimization done to cfb_imageblit(),
+to prevent that the two codebases diverge more than necessary.
+Also I think cfb_ version would also see a performance gain from this.
 
-> concrete example of a mode that doesn't work any longer?
+The actual implementation looks good.
+So with or without the extra un-rolling the patch is:
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-As per discussion in
-https://bugzilla.opensuse.org/show_bug.cgi?id=1193250 vga=791 does not.
+One small nit belwo.
 
-Also it is clear examinig the realmode code that this option is needed
-to enable graphic mode selection.
-
-I don't have a system with legacy BIOS at hand but from user testing
-this improves the situation - kernel does not reeject the videomode
-argument, and simpledrm is initialized during boot.
-
-Thanks
-
-Michal
+	Sam
 
 > 
-> > 
-> > Fixes: 11e8f5fd223b ("drm: Add simpledrm driver")
-> > Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-> > ---
-> >   arch/x86/boot/video-vesa.c   | 4 ++--
-> >   drivers/gpu/drm/tiny/Kconfig | 1 +
-> >   drivers/video/fbdev/Kconfig  | 9 ++++-----
-> >   3 files changed, 7 insertions(+), 7 deletions(-)
-> > 
-> > diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
-> > index 7e185977a984..c2c6d35e3a43 100644
-> > --- a/arch/x86/boot/video-vesa.c
-> > +++ b/arch/x86/boot/video-vesa.c
-> > @@ -83,7 +83,7 @@ static int vesa_probe(void)
-> >   			   (vminfo.memory_layout == 4 ||
-> >   			    vminfo.memory_layout == 6) &&
-> >   			   vminfo.memory_planes == 1) {
-> > -#ifdef CONFIG_FB_BOOT_VESA_SUPPORT
-> > +#ifdef CONFIG_BOOT_VESA_SUPPORT
-> >   			/* Graphics mode, color, linear frame buffer
-> >   			   supported.  Only register the mode if
-> >   			   if framebuffer is configured, however,
-> > @@ -121,7 +121,7 @@ static int vesa_set_mode(struct mode_info *mode)
-> >   	if ((vminfo.mode_attr & 0x15) == 0x05) {
-> >   		/* It's a supported text mode */
-> >   		is_graphic = 0;
-> > -#ifdef CONFIG_FB_BOOT_VESA_SUPPORT
-> > +#ifdef CONFIG_BOOT_VESA_SUPPORT
-> >   	} else if ((vminfo.mode_attr & 0x99) == 0x99) {
-> >   		/* It's a graphics mode with linear frame buffer */
-> >   		is_graphic = 1;
-> > diff --git a/drivers/gpu/drm/tiny/Kconfig b/drivers/gpu/drm/tiny/Kconfig
-> > index 712e0004e96e..1bc30c64ed15 100644
-> > --- a/drivers/gpu/drm/tiny/Kconfig
-> > +++ b/drivers/gpu/drm/tiny/Kconfig
-> > @@ -54,6 +54,7 @@ config DRM_GM12U320
-> >   config DRM_SIMPLEDRM
-> >   	tristate "Simple framebuffer driver"
-> >   	depends on DRM && MMU
-> > +	select BOOT_VESA_SUPPORT if X86 && DRM_SIMPLEDRM = y
+> A microbenchmark measures the average number of CPU cycles
+> for sys_imageblit() after a stabilizing period of a few minutes
+> (i7-4790, FullHD, simpledrm, kernel with debugging). The value
+> for CFB is given as a reference.
 > 
-> We shouldn't select this option in drivers IMHO. Simple-framebuffer devices
-> with VESA are enabled with [1] and that should also select the
-> BOOT_VESA_SUPPORT.
+>   sys_imageblit(), new: 25934 cycles
+>   sys_imageblit(), old: 35944 cycles
+>   cfb_imageblit():      30566 cycles
+> 
+> In the optimized case, sys_imageblit() is now ~30% faster than before
+> and ~20% faster than cfb_imageblit().
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> ---
+>  drivers/video/fbdev/core/sysimgblt.c | 51 +++++++++++++++++++++-------
+>  1 file changed, 39 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/core/sysimgblt.c b/drivers/video/fbdev/core/sysimgblt.c
+> index a4d05b1b17d7..d70d65af6fcb 100644
+> --- a/drivers/video/fbdev/core/sysimgblt.c
+> +++ b/drivers/video/fbdev/core/sysimgblt.c
+> @@ -188,23 +188,32 @@ static void fast_imageblit(const struct fb_image *image, struct fb_info *p,
+>  {
+>  	u32 fgx = fgcolor, bgx = bgcolor, bpp = p->var.bits_per_pixel;
+>  	u32 ppw = 32/bpp, spitch = (image->width + 7)/8;
+> -	u32 bit_mask, end_mask, eorx, shift;
+> +	u32 bit_mask, eorx;
+>  	const char *s = image->data, *src;
+>  	u32 *dst;
+> -	const u32 *tab = NULL;
+> -	int i, j, k;
+> +	const u32 *tab;
+> +	size_t tablen;
+> +	u32 colortab[16];
+> +	int i, j, k, jdecr;
+> +
+> +	if ((uintptr_t)dst1 % 8)
+> +		return;
+This check is new - and should not trigger ever. Maybe add an unlikely
+and a WARN_ON_ONCE()?
 
-Sounds ok to select from there, it should also cover simplefb then.
 
-Thanks
+>  
+>  	switch (bpp) {
+>  	case 8:
+>  		tab = fb_be_math(p) ? cfb_tab8_be : cfb_tab8_le;
+> +		tablen = 16;
+>  		break;
+>  	case 16:
+>  		tab = fb_be_math(p) ? cfb_tab16_be : cfb_tab16_le;
+> +		tablen = 4;
+>  		break;
+>  	case 32:
+> -	default:
+>  		tab = cfb_tab32;
+> +		tablen = 2;
+>  		break;
+> +	default:
+> +		return;
+>  	}
+>  
+>  	for (i = ppw-1; i--; ) {
+> @@ -217,19 +226,37 @@ static void fast_imageblit(const struct fb_image *image, struct fb_info *p,
+>  	bit_mask = (1 << ppw) - 1;
+>  	eorx = fgx ^ bgx;
+>  	k = image->width/ppw;
+> +	jdecr = 8 / ppw;
+> +
+> +	for (i = 0; i < tablen; ++i)
+> +		colortab[i] = (tab[i] & eorx) ^ bgx;
+This code could have been embedded with the switch (bpp) {
+That would have made some sense I think.
+But both ways works, so this was just a small observation.
 
-Michal
+	Sam

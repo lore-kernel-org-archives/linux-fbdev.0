@@ -2,183 +2,162 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35488C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 14:09:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F501C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 14:56:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232063AbiBROJu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 18 Feb 2022 09:09:50 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:49432 "EHLO
+        id S236260AbiBRO4Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 18 Feb 2022 09:56:25 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:50166 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233569AbiBROJt (ORCPT
+        with ESMTP id S236272AbiBRO4Y (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 18 Feb 2022 09:09:49 -0500
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6BF015F374
-        for <linux-fbdev@vger.kernel.org>; Fri, 18 Feb 2022 06:09:32 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 75AB1210DB;
-        Fri, 18 Feb 2022 14:09:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1645193371; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=HB3L++4PQYNQLsMelrUuLKMCjKCIDMxJwwtm4wEKGjY=;
-        b=UUFBs1QlANkjpRuXLdMkzj3gr48U0BDmbLoFq/vKs1XLJ/FfewnQXKpruVwaszv+jtEyfI
-        AGrLryNOBE0RZwp/we1HhpZd/+ky8ufRA7DxWtBdKF7DGBlKNtzRfX8FioPgaHD0z1njXw
-        n9PMnOcJCX2lzdMAyUivLRbbGqsFfcU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1645193371;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=HB3L++4PQYNQLsMelrUuLKMCjKCIDMxJwwtm4wEKGjY=;
-        b=m2s1rNTUDX/63nXC/oYwaY8ZfMxQiwfoXbiBLni9mhSD2x9KqQTSkcCEJ5vddM/vBFmCVS
-        GbCYjoNZuEIow1Dw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 48A2713C93;
-        Fri, 18 Feb 2022 14:09:31 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id cJeMEJuoD2LyeQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 18 Feb 2022 14:09:31 +0000
-Message-ID: <103bb91e-676b-7930-020f-f2aa98595918@suse.de>
-Date:   Fri, 18 Feb 2022 15:09:30 +0100
+        Fri, 18 Feb 2022 09:56:24 -0500
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3948E580DA
+        for <linux-fbdev@vger.kernel.org>; Fri, 18 Feb 2022 06:55:58 -0800 (PST)
+Received: by mail-wm1-x344.google.com with SMTP id k41so5444789wms.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 18 Feb 2022 06:55:58 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=XGn4CkzlW3He7suVzPqPn3VD7gzaiArcrGd2MUYMtSU=;
+        b=0znZPsKcNdd1NmNr2Xn13+NpX3iZlRQKoZJpfmDBFyv5A0hV+K4AlVPvPmlaPIjpVE
+         7fV47gN4i6t29kArBwEYgJSBczEv/nhXke4N9H3Hm85Y3XHkjFf85bxzhlp52AZQvSPn
+         rnkl0YXYxpzLD0S/pxVg32Zn1CezaUjxvhzki+Ry7QhjX49Dub4bj6dC5TRoTFnYBhXM
+         vZ+K08ltxEWzFTsOK6QKSO16W/X0c7+69Gc7+LTNOdN487vCKHrdHNNkWM5LIYKYkyhY
+         U0FNxmKO9N7fC4g+j/xGKQdY2P8oQxtECcNg0HJbXJbgmiGtOqrxff2COk75zT1joSIu
+         HspQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=XGn4CkzlW3He7suVzPqPn3VD7gzaiArcrGd2MUYMtSU=;
+        b=WVqjv4peE43fzrPM6UpUFZtG2clj0eWLazl5irUiZJUrfXZzf0lE+bryHAQP86QyNM
+         nIA7LhYfEjM3KvkDGv+CFYy6DRdmI+A0tG0LT/2JSjp4V1KTNq9W7VUISDn9aMQm3AL2
+         TRoCJI1qxed0sNK2AWSVVM3Zhw53yCPo2tuBgu6Odh5g2yAELY/1wGBgPWYYGJN5T9Hn
+         4+k5u/XCHnlj8Oj6vJRIOZqh37sHYmc2mSLDKCci9QM5Rbb6tWrF+5XRRowE5X2/Zqca
+         4Bn6caIaflII3pAdna7sxdtb7g3bYy6YnSKxLp1z7I+o2FQCoYbrBKM+DgHIXSGoHvTu
+         +BjQ==
+X-Gm-Message-State: AOAM532RQ3N03ZNbE2tb6WsFtqalMhPmSI0VyDSxRc1+vXGVtARC0Ve7
+        BVT0uz80GXosjpGPvhwyI5D6gQ==
+X-Google-Smtp-Source: ABdhPJy/hWg5q4suBUdAaXAZ8422BePcDuhOqnlAR76Tw+/0DUL9qkMSzTulm5CpJQZwKlZUAe2+6A==
+X-Received: by 2002:a05:600c:154f:b0:37b:c5cf:40e8 with SMTP id f15-20020a05600c154f00b0037bc5cf40e8mr10984119wmg.27.1645196156766;
+        Fri, 18 Feb 2022 06:55:56 -0800 (PST)
+Received: from localhost.localdomain (2a02-8440-6241-3b28-3074-96af-9642-0002.rev.sfr.net. [2a02:8440:6241:3b28:3074:96af:9642:2])
+        by smtp.gmail.com with ESMTPSA id b10sm47431454wrd.8.2022.02.18.06.55.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 18 Feb 2022 06:55:56 -0800 (PST)
+From:   Guillaume Ranquet <granquet@baylibre.com>
+To:     chunkuang.hu@kernel.org, p.zabel@pengutronix.de, airlied@linux.ie,
+        daniel@ffwll.ch, robh+dt@kernel.org,
+        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        tzimmermann@suse.de, matthias.bgg@gmail.com,
+        chunfeng.yun@mediatek.com, kishon@ti.com, vkoul@kernel.org,
+        deller@gmx.de, ck.hu@mediatek.com, jitao.shi@mediatek.com,
+        angelogioacchino.delregno@collabora.com
+Cc:     dri-devel@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH v8 0/19] drm/mediatek: Add mt8195 DisplayPort driver
+Date:   Fri, 18 Feb 2022 15:54:18 +0100
+Message-Id: <20220218145437.18563-1-granquet@baylibre.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 2/2] fbdev: Improve performance of sys_imageblit()
-Content-Language: en-US
-To:     Sam Ravnborg <sam@ravnborg.org>
-Cc:     daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com,
-        geert@linux-m68k.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-References: <20220217103405.26492-1-tzimmermann@suse.de>
- <20220217103405.26492-3-tzimmermann@suse.de> <Yg9xizrlvaNZFkCM@ravnborg.org>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <Yg9xizrlvaNZFkCM@ravnborg.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------msQEmOTRj08mvYRq0Jajw5Qq"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------msQEmOTRj08mvYRq0Jajw5Qq
-Content-Type: multipart/mixed; boundary="------------UiMfTtkjpF0tVRWKmaBLXSRJ";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com, geert@linux-m68k.org,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Message-ID: <103bb91e-676b-7930-020f-f2aa98595918@suse.de>
-Subject: Re: [PATCH 2/2] fbdev: Improve performance of sys_imageblit()
-References: <20220217103405.26492-1-tzimmermann@suse.de>
- <20220217103405.26492-3-tzimmermann@suse.de> <Yg9xizrlvaNZFkCM@ravnborg.org>
-In-Reply-To: <Yg9xizrlvaNZFkCM@ravnborg.org>
+this series is built around the DisplayPort driver. The dpi/dpintf
+driver and the added helper functions are required for the DisplayPort
+driver to work.
 
---------------UiMfTtkjpF0tVRWKmaBLXSRJ
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Changes from v7:
 
-SGkgU2FtDQoNCkFtIDE4LjAyLjIyIHVtIDExOjE0IHNjaHJpZWIgU2FtIFJhdm5ib3JnOg0K
-PiBIaSBUaG9tYXMsDQo+IA0KPiBPbiBUaHUsIEZlYiAxNywgMjAyMiBhdCAxMTozNDowNUFN
-ICswMTAwLCBUaG9tYXMgWmltbWVybWFubiB3cm90ZToNCj4+IEltcHJvdmUgdGhlIHBlcmZv
-cm1hbmNlIG9mIHN5c19pbWFnZWJsaXQoKSBieSBtYW51YWxseSB1bnJvbGxpbmcNCj4+IHRo
-ZSBpbm5lciBibGl0dGluZyBsb29wIGFuZCBtb3Zpbmcgc29tZSBpbnZhcmlhbnRzIG91dC4g
-VGhlIGNvbXBpbGVyDQo+PiBmYWlsZWQgdG8gZG8gdGhpcyBhdXRvbWF0aWNhbGx5LiBUaGUg
-cmVzdWx0aW5nIGJpbmFyeSBjb2RlIHdhcyBldmVuDQo+PiBzbG93ZXIgdGhhbiB0aGUgY2Zi
-X2ltYWdlYmxpdCgpIGhlbHBlciwgd2hpY2ggdXNlcyB0aGUgc2FtZSBhbGdvcml0aG0sDQo+
-PiBidXQgb3BlcmF0ZXMgb24gSS9PIG1lbW9yeS4NCj4gDQo+IEl0IHdvdWxkIGJlIHN1cGVy
-IHRvIGhhdmUgdGhlIHNhbWUgb3B0aW1pemF0aW9uIGRvbmUgdG8gY2ZiX2ltYWdlYmxpdCgp
-LA0KPiB0byBwcmV2ZW50IHRoYXQgdGhlIHR3byBjb2RlYmFzZXMgZGl2ZXJnZSBtb3JlIHRo
-YW4gbmVjZXNzYXJ5Lg0KPiBBbHNvIEkgdGhpbmsgY2ZiXyB2ZXJzaW9uIHdvdWxkIGFsc28g
-c2VlIGEgcGVyZm9ybWFuY2UgZ2FpbiBmcm9tIHRoaXMuDQoNClllcywgSSBjYW4gZG8gdGhh
-dC4NCg0KPiANCj4gVGhlIGFjdHVhbCBpbXBsZW1lbnRhdGlvbiBsb29rcyBnb29kLg0KPiBT
-byB3aXRoIG9yIHdpdGhvdXQgdGhlIGV4dHJhIHVuLXJvbGxpbmcgdGhlIHBhdGNoIGlzOg0K
-PiBBY2tlZC1ieTogU2FtIFJhdm5ib3JnIDxzYW1AcmF2bmJvcmcub3JnPg0KPiANCj4gT25l
-IHNtYWxsIG5pdCBiZWx3by4NCj4gDQo+IAlTYW0NCj4gDQo+Pg0KPj4gQSBtaWNyb2JlbmNo
-bWFyayBtZWFzdXJlcyB0aGUgYXZlcmFnZSBudW1iZXIgb2YgQ1BVIGN5Y2xlcw0KPj4gZm9y
-IHN5c19pbWFnZWJsaXQoKSBhZnRlciBhIHN0YWJpbGl6aW5nIHBlcmlvZCBvZiBhIGZldyBt
-aW51dGVzDQo+PiAoaTctNDc5MCwgRnVsbEhELCBzaW1wbGVkcm0sIGtlcm5lbCB3aXRoIGRl
-YnVnZ2luZykuIFRoZSB2YWx1ZQ0KPj4gZm9yIENGQiBpcyBnaXZlbiBhcyBhIHJlZmVyZW5j
-ZS4NCj4+DQo+PiAgICBzeXNfaW1hZ2VibGl0KCksIG5ldzogMjU5MzQgY3ljbGVzDQo+PiAg
-ICBzeXNfaW1hZ2VibGl0KCksIG9sZDogMzU5NDQgY3ljbGVzDQo+PiAgICBjZmJfaW1hZ2Vi
-bGl0KCk6ICAgICAgMzA1NjYgY3ljbGVzDQo+Pg0KPj4gSW4gdGhlIG9wdGltaXplZCBjYXNl
-LCBzeXNfaW1hZ2VibGl0KCkgaXMgbm93IH4zMCUgZmFzdGVyIHRoYW4gYmVmb3JlDQo+PiBh
-bmQgfjIwJSBmYXN0ZXIgdGhhbiBjZmJfaW1hZ2VibGl0KCkuDQo+Pg0KPj4gU2lnbmVkLW9m
-Zi1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2UuZGU+DQo+PiAtLS0N
-Cj4+ICAgZHJpdmVycy92aWRlby9mYmRldi9jb3JlL3N5c2ltZ2JsdC5jIHwgNTEgKysrKysr
-KysrKysrKysrKysrKysrLS0tLS0tLQ0KPj4gICAxIGZpbGUgY2hhbmdlZCwgMzkgaW5zZXJ0
-aW9ucygrKSwgMTIgZGVsZXRpb25zKC0pDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-dmlkZW8vZmJkZXYvY29yZS9zeXNpbWdibHQuYyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29y
-ZS9zeXNpbWdibHQuYw0KPj4gaW5kZXggYTRkMDViMWIxN2Q3Li5kNzBkNjVhZjZmY2IgMTAw
-NjQ0DQo+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvc3lzaW1nYmx0LmMNCj4+
-ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9zeXNpbWdibHQuYw0KPj4gQEAgLTE4
-OCwyMyArMTg4LDMyIEBAIHN0YXRpYyB2b2lkIGZhc3RfaW1hZ2VibGl0KGNvbnN0IHN0cnVj
-dCBmYl9pbWFnZSAqaW1hZ2UsIHN0cnVjdCBmYl9pbmZvICpwLA0KPj4gICB7DQo+PiAgIAl1
-MzIgZmd4ID0gZmdjb2xvciwgYmd4ID0gYmdjb2xvciwgYnBwID0gcC0+dmFyLmJpdHNfcGVy
-X3BpeGVsOw0KPj4gICAJdTMyIHBwdyA9IDMyL2JwcCwgc3BpdGNoID0gKGltYWdlLT53aWR0
-aCArIDcpLzg7DQo+PiAtCXUzMiBiaXRfbWFzaywgZW5kX21hc2ssIGVvcngsIHNoaWZ0Ow0K
-Pj4gKwl1MzIgYml0X21hc2ssIGVvcng7DQo+PiAgIAljb25zdCBjaGFyICpzID0gaW1hZ2Ut
-PmRhdGEsICpzcmM7DQo+PiAgIAl1MzIgKmRzdDsNCj4+IC0JY29uc3QgdTMyICp0YWIgPSBO
-VUxMOw0KPj4gLQlpbnQgaSwgaiwgazsNCj4+ICsJY29uc3QgdTMyICp0YWI7DQo+PiArCXNp
-emVfdCB0YWJsZW47DQo+PiArCXUzMiBjb2xvcnRhYlsxNl07DQo+PiArCWludCBpLCBqLCBr
-LCBqZGVjcjsNCj4+ICsNCj4+ICsJaWYgKCh1aW50cHRyX3QpZHN0MSAlIDgpDQo+PiArCQly
-ZXR1cm47DQo+IFRoaXMgY2hlY2sgaXMgbmV3IC0gYW5kIHNob3VsZCBub3QgdHJpZ2dlciBl
-dmVyLiBNYXliZSBhZGQgYW4gdW5saWtlbHkNCj4gYW5kIGEgV0FSTl9PTl9PTkNFKCk/DQoN
-CkkgdGhpbmsgSSBjYW4gcmVtb3ZlIHRoaXMgdGVzdC4gSXQgd2FzIHN1cHBvc2VkIHRvIHRl
-bGwgdGhlIGNvbXBpbGVyIA0KdGhhdCBkc3QxIGlzIDgtYWxpZ25lZCwgYnV0IEkgZG9uJ3Qg
-dGhpbmsgaXQgd29ya2VkLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiANCj4+
-ICAgDQo+PiAgIAlzd2l0Y2ggKGJwcCkgew0KPj4gICAJY2FzZSA4Og0KPj4gICAJCXRhYiA9
-IGZiX2JlX21hdGgocCkgPyBjZmJfdGFiOF9iZSA6IGNmYl90YWI4X2xlOw0KPj4gKwkJdGFi
-bGVuID0gMTY7DQo+PiAgIAkJYnJlYWs7DQo+PiAgIAljYXNlIDE2Og0KPj4gICAJCXRhYiA9
-IGZiX2JlX21hdGgocCkgPyBjZmJfdGFiMTZfYmUgOiBjZmJfdGFiMTZfbGU7DQo+PiArCQl0
-YWJsZW4gPSA0Ow0KPj4gICAJCWJyZWFrOw0KPj4gICAJY2FzZSAzMjoNCj4+IC0JZGVmYXVs
-dDoNCj4+ICAgCQl0YWIgPSBjZmJfdGFiMzI7DQo+PiArCQl0YWJsZW4gPSAyOw0KPj4gICAJ
-CWJyZWFrOw0KPj4gKwlkZWZhdWx0Og0KPj4gKwkJcmV0dXJuOw0KPj4gICAJfQ0KPj4gICAN
-Cj4+ICAgCWZvciAoaSA9IHBwdy0xOyBpLS07ICkgew0KPj4gQEAgLTIxNywxOSArMjI2LDM3
-IEBAIHN0YXRpYyB2b2lkIGZhc3RfaW1hZ2VibGl0KGNvbnN0IHN0cnVjdCBmYl9pbWFnZSAq
-aW1hZ2UsIHN0cnVjdCBmYl9pbmZvICpwLA0KPj4gICAJYml0X21hc2sgPSAoMSA8PCBwcHcp
-IC0gMTsNCj4+ICAgCWVvcnggPSBmZ3ggXiBiZ3g7DQo+PiAgIAlrID0gaW1hZ2UtPndpZHRo
-L3BwdzsNCj4+ICsJamRlY3IgPSA4IC8gcHB3Ow0KPj4gKw0KPj4gKwlmb3IgKGkgPSAwOyBp
-IDwgdGFibGVuOyArK2kpDQo+PiArCQljb2xvcnRhYltpXSA9ICh0YWJbaV0gJiBlb3J4KSBe
-IGJneDsNCj4gVGhpcyBjb2RlIGNvdWxkIGhhdmUgYmVlbiBlbWJlZGRlZCB3aXRoIHRoZSBz
-d2l0Y2ggKGJwcCkgew0KPiBUaGF0IHdvdWxkIGhhdmUgbWFkZSBzb21lIHNlbnNlIEkgdGhp
-bmsuDQo+IEJ1dCBib3RoIHdheXMgd29ya3MsIHNvIHRoaXMgd2FzIGp1c3QgYSBzbWFsbCBv
-YnNlcnZhdGlvbi4NCj4gDQo+IAlTYW0NCg0KLS0gDQpUaG9tYXMgWmltbWVybWFubg0KR3Jh
-cGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlvbnMgR2VybWFu
-eSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1hbnkNCihIUkIg
-MzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8gVG90ZXYNCg==
+As requested from CK Hu, I've split the DP driver into multiple patches
+with initial support for eDP, then DP and finally Audio.
+
+the dpi patches have also been split to isolate all the boolean/config
+options added to the board config structure.
+
+I've thus removed the "Reviewed-By" tags (from AngeloGioacchino Del Regno) touching these patches.
+
+I've also included 2 patches from Jitao to the series:
+  drm/mediatek: add hpd debounce
+  drm/mediatek: change the aux retries times when receiving AUX_DEFER
+
+Older revisions:
+RFC - https://lore.kernel.org/linux-mediatek/20210816192523.1739365-1-msp@baylibre.com/
+v1  - https://lore.kernel.org/linux-mediatek/20210906193529.718845-1-msp@baylibre.com/
+v2  - https://lore.kernel.org/linux-mediatek/20210920084424.231825-1-msp@baylibre.com/
+v3  - https://lore.kernel.org/linux-mediatek/20211001094443.2770169-1-msp@baylibre.com/
+v4  - https://lore.kernel.org/linux-mediatek/20211011094624.3416029-1-msp@baylibre.com/
+v5  - https://lore.kernel.org/all/20211021092707.3562523-1-msp@baylibre.com/
+v6  - https://lore.kernel.org/linux-mediatek/20211110130623.20553-1-granquet@baylibre.com/
+v7  - https://lore.kernel.org/linux-mediatek/20211217150854.2081-1-granquet@baylibre.com/
+
+Functional dependencies are:
+- Add Mediatek Soc DRM (vdosys0) support for mt8195
+  https://lore.kernel.org/all/20211026155911.17651-1-jason-jh.lin@mediatek.com/
+- Add MediaTek SoC DRM (vdosys1) support for mt8195
+  https://lore.kernel.org/all/20211029075203.17093-1-nancy.lin@mediatek.com/
 
 
---------------UiMfTtkjpF0tVRWKmaBLXSRJ--
+Guillaume Ranquet (11):
+  drm/mediatek: dpi: move dpi limits to board config
+  drm/mediatek: dpi: implement a CK/DE pol toggle in board config
+  drm/mediatek: dpi: implement a swap_input toggle in board config
+  drm/mediatek: dpi: move dimension mask to board config
+  drm/mediatek: dpi: move dimension_mask to board config
+  drm/mediatek: dpi: move swap_shift to board config
+  drm/mediatek: dpi: move the yuv422_en_bit to board config
+  drm/mediatek: dpi: move the csc_enable bit to board config
+  drm/mediatek: dpi: Add dpintf support
+  drm/mediatek: Add mt8195 External DisplayPort support
+  drm/mediatek: DP audio support for mt8195
 
---------------msQEmOTRj08mvYRq0Jajw5Qq
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Jitao Shi (2):
+  drm/mediatek: add hpd debounce
+  drm/mediatek: change the aux retries times when receiving AUX_DEFER
 
------BEGIN PGP SIGNATURE-----
+Markus Schneider-Pargmann (6):
+  dt-bindings: mediatek,dpi: Add DP_INTF compatible
+  dt-bindings: mediatek,dp: Add Display Port binding
+  drm/edid: Add cea_sad helpers for freq/length
+  video/hdmi: Add audio_infoframe packing for DP
+  phy: phy-mtk-dp: Add driver for DP phy
+  drm/mediatek: Add mt8195 Embedded DisplayPort driver
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIPqJoFAwAAAAAACgkQlh/E3EQov+Cb
-TxAAouSUstWFC5prf3HsEEjjctipErouPHKo/hImZNZjLc2NKdby8BzIk4udKyEMVBlQNVEAUO9D
-OsCQ6EXiugUql2zkYS+PHHC/MYRSsjV7TfxKyIjGGjLojZr0YL3qPqqiZerSaLARhfGDoXYNUxwR
-lErMJ7SWGGyL2GmfMEIE9D0/EEJn+nP2mIOG9a4jtlQtD2k9EbGd3pnbchCW5JjyMybygUudRLW7
-LCaivb1C2HCC03WTxQdvwuSbgqBUbfAjKaucU81I6ZeOvnGiG5tU3WhJwZMpRuNneFIzq1uA6F6F
-I6tnQCMinYwGxzOy6jyUYLFYWENnGmY+FFXs1z9dsPp2G3TkvYBXOO6HrjR72kX3Lo+4HZeArEZz
-5XI66UEJtAiY1Mlk2rLPwdqxjJhTGlaRL/4Ha9dhpdtsiZKs1u3Oh1w1iXNuktV6uPpjZJhbj8D/
-/OZ64sKWwYhd5VBzF5SVFSI4fTmKlboDaJ33vMTQJ2d9+QzVTsqR34SqmHMzt9hKZkMF+wh3c8E1
-388NP9RKdN2jpgOcTIIKR/NdOVLqAxVly9bFnNcGtpsZMOEd3zY276sS5CzSAGklK/H1Yi42Xg7M
-wdKRBwfqBCGxhJUick3D12WaKqnRfm/nvbRxCItJa61T4dXmcOBao/WLT65d4hkAYvUy2Gvtf5eB
-NFk=
-=8P/n
------END PGP SIGNATURE-----
+ .../display/mediatek/mediatek,dp.yaml         |   87 +
+ .../display/mediatek/mediatek,dpi.yaml        |   11 +-
+ MAINTAINERS                                   |    1 +
+ drivers/gpu/drm/drm_edid.c                    |   74 +
+ drivers/gpu/drm/mediatek/Kconfig              |    7 +
+ drivers/gpu/drm/mediatek/Makefile             |    2 +
+ drivers/gpu/drm/mediatek/mtk_dp.c             | 3067 +++++++++++++++++
+ drivers/gpu/drm/mediatek/mtk_dp_reg.h         |  568 +++
+ drivers/gpu/drm/mediatek/mtk_dpi.c            |  287 +-
+ drivers/gpu/drm/mediatek/mtk_dpi_regs.h       |   38 +
+ drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.c   |    8 +
+ drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.h   |    1 +
+ drivers/gpu/drm/mediatek/mtk_drm_drv.c        |    6 +-
+ drivers/gpu/drm/mediatek/mtk_drm_drv.h        |    1 +
+ drivers/phy/mediatek/Kconfig                  |    8 +
+ drivers/phy/mediatek/Makefile                 |    1 +
+ drivers/phy/mediatek/phy-mtk-dp.c             |  199 ++
+ drivers/video/hdmi.c                          |   83 +-
+ include/drm/drm_dp_helper.h                   |    2 +
+ include/drm/drm_edid.h                        |   18 +-
+ include/linux/hdmi.h                          |    7 +-
+ include/linux/soc/mediatek/mtk-mmsys.h        |    2 +
+ 22 files changed, 4399 insertions(+), 79 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+ create mode 100644 drivers/gpu/drm/mediatek/mtk_dp.c
+ create mode 100644 drivers/gpu/drm/mediatek/mtk_dp_reg.h
+ create mode 100644 drivers/phy/mediatek/phy-mtk-dp.c
 
---------------msQEmOTRj08mvYRq0Jajw5Qq--
+-- 
+2.34.1
+

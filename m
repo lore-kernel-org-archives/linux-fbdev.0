@@ -2,207 +2,175 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8C30C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 10:24:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB597C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Feb 2022 10:51:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231740AbiBRKY7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 18 Feb 2022 05:24:59 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:60326 "EHLO
+        id S234147AbiBRKwE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 18 Feb 2022 05:52:04 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:51650 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230098AbiBRKY6 (ORCPT
+        with ESMTP id S232114AbiBRKwD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 18 Feb 2022 05:24:58 -0500
+        Fri, 18 Feb 2022 05:52:03 -0500
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 461842B1AA8;
-        Fri, 18 Feb 2022 02:24:42 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id EF51A219A4;
-        Fri, 18 Feb 2022 10:24:40 +0000 (UTC)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3F110E0E9;
+        Fri, 18 Feb 2022 02:51:46 -0800 (PST)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+        by smtp-out1.suse.de (Postfix) with ESMTP id DF376219A4;
+        Fri, 18 Feb 2022 10:51:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1645179880; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
+        t=1645181504; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=pEW6tURx/EzwxI4FUVurCKiPgw0jrsrJlPXVlnXp/HE=;
-        b=SeoCtDNR2wsBLJTj900OTN3n7fC0g/p+HrcnzV651Qw3Pas8MIHw+vT5WvcTm8cLyvPUB4
-        pZ3+tmcKMwEhG3y8TeMQq2Q5Mq08k+tIGoZ6RDCRfv5KLQaOKU+X2GPFB77h7e+fayDkW9
-        DfTgYnjOlJcVmQOmBEJTunTHBHmr7lQ=
+        bh=r4VLD7m5wPL60NKvEVAhzGCIMJAD3yDjimzKOIw9AfQ=;
+        b=D0eJ9PaqOgtHeGTiKBuoEhKfsPuPKQBnQzAafDJq/raOVBdWs7WwshxaJbKgVX+//y89pp
+        TjZttL/Kl6Tq37vrP6fGLqePcxICqWSJnfX5dPk0Eb20iwhrAgQGS+XzRYq7WP+3YaeI3S
+        g2HkUYDKQE64m2RLXzPI0yWhpyoS/vE=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1645179880;
+        s=susede2_ed25519; t=1645181504;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=pEW6tURx/EzwxI4FUVurCKiPgw0jrsrJlPXVlnXp/HE=;
-        b=gZ6C1Ocahxs4eYt0MvA84lXhjcbaOMrU+ICWDeayObwpAJxjPofiuEeRLkIFUO7dEhbQ+F
-        3goJdrfmlLmkMCAg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8B4F913C47;
-        Fri, 18 Feb 2022 10:24:40 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id zuG3IOhzD2LxCAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Fri, 18 Feb 2022 10:24:40 +0000
-Message-ID: <14dd85f1-21b1-2ff7-3491-466c077210e6@suse.de>
-Date:   Fri, 18 Feb 2022 11:24:39 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH] simpldrm: Enable boot time VESA graphic mode selection.
-Content-Language: en-US
-To:     =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        David Airlie <airlied@linux.ie>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
-        Helge Deller <deller@gmx.de>, x86@kernel.org,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-        Borislav Petkov <bp@alien8.de>,
-        Maxime Ripard <maxime@cerno.tech>,
+        bh=r4VLD7m5wPL60NKvEVAhzGCIMJAD3yDjimzKOIw9AfQ=;
+        b=GqODA8jnl4slVGzgXEuZUW5KUXxvUMaPS1Xelv1BTSB9U2qBWEW+CF9e2RFiOJd79MENfB
+        bzz+VxtDeeCp3LBA==
+Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
+        by relay2.suse.de (Postfix) with ESMTP id 7F135A3B83;
+        Fri, 18 Feb 2022 10:51:44 +0000 (UTC)
+From:   Michal Suchanek <msuchanek@suse.de>
+To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Michal Suchanek <msuchanek@suse.de>, Martin Mares <mj@ucw.cz>,
         Thomas Gleixner <tglx@linutronix.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+        "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-kernel@vger.kernel.org, Martin Mares <mj@ucw.cz>,
-        linux-video@atrey.karlin.mff.cuni.cz,
-        Daniel Mack <daniel@zonque.org>
-References: <20220218093334.24830-1-msuchanek@suse.de>
- <4c6e1d15-3bb3-5a69-972f-592cc33ac0cd@suse.de>
- <20220218100841.GV3113@kunlun.suse.cz>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20220218100841.GV3113@kunlun.suse.cz>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------LTgM6u0q34vOjsOnn7OEejJ0"
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
+        Simon Trimmer <simont@opensource.cirrus.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Rob Herring <robh@kernel.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        David Herrmann <dh.herrmann@gmail.com>,
+        linux-video@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] simplefb: Enable boot time VESA graphic mode selection.
+Date:   Fri, 18 Feb 2022 11:51:38 +0100
+Message-Id: <20220218105138.5384-1-msuchanek@suse.de>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <14dd85f1-21b1-2ff7-3491-466c077210e6@suse.de>
+References: <14dd85f1-21b1-2ff7-3491-466c077210e6@suse.de>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------LTgM6u0q34vOjsOnn7OEejJ0
-Content-Type: multipart/mixed; boundary="------------TPm4NPg2Cxx7x1oIMonTxg69";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- David Airlie <airlied@linux.ie>, Dave Hansen <dave.hansen@linux.intel.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
- Helge Deller <deller@gmx.de>, x86@kernel.org,
- Javier Martinez Canillas <javierm@redhat.com>, Ingo Molnar
- <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Borislav Petkov <bp@alien8.de>, Maxime Ripard <maxime@cerno.tech>,
- Thomas Gleixner <tglx@linutronix.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, Martin Mares <mj@ucw.cz>,
- linux-video@atrey.karlin.mff.cuni.cz, Daniel Mack <daniel@zonque.org>
-Message-ID: <14dd85f1-21b1-2ff7-3491-466c077210e6@suse.de>
-Subject: Re: [PATCH] simpldrm: Enable boot time VESA graphic mode selection.
-References: <20220218093334.24830-1-msuchanek@suse.de>
- <4c6e1d15-3bb3-5a69-972f-592cc33ac0cd@suse.de>
- <20220218100841.GV3113@kunlun.suse.cz>
-In-Reply-To: <20220218100841.GV3113@kunlun.suse.cz>
+Since switch to simplefb/simpledrm VESA graphic modes are no longer
+available with legacy BIOS.
 
---------------TPm4NPg2Cxx7x1oIMonTxg69
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+The x86 realmode boot code enables the VESA graphic modes when option
+FB_BOOT_VESA_SUPPORT is enabled.
 
-SGkNCg0KQW0gMTguMDIuMjIgdW0gMTE6MDggc2NocmllYiBNaWNoYWwgU3VjaMOhbmVrOg0K
-PiBIZWxsbywNCj4gDQo+IE9uIEZyaSwgRmViIDE4LCAyMDIyIGF0IDEwOjU3OjMzQU0gKzAx
-MDAsIFRob21hcyBaaW1tZXJtYW5uIHdyb3RlOg0KPj4gSGkgTWljaGFsDQo+Pg0KPj4gQW0g
-MTguMDIuMjIgdW0gMTA6MzMgc2NocmllYiBNaWNoYWwgU3VjaGFuZWs6DQo+Pj4gU2luY2Ug
-c3dpdGNoIHRvIHNpbXBsZWRybSBWRVNBIGdyYXBoaWMgbW9kZXMgYXJlIG5vIGxvbmdlciBh
-dmFpbGFibGUNCj4+PiB3aXRoIGxlZ2FjeSBCSU9TLg0KPj4+DQo+Pj4gVGhlIHg4NiByZWFs
-bW9kZSBib290IGNvZGUgZW5hYmxlcyB0aGUgVkVTQSBncmFwaGljIG1vZGVzIHdoZW4gb3B0
-aW9uDQo+Pj4gRkJfQk9PVF9WRVNBX1NVUFBPUlQgaXMgZW5hYmxlZC4NCj4+Pg0KPj4+IFRv
-IGVuYWJsZSB1c2Ugb2YgVkVTQSBtb2RlcyB3aXRoIHNpbXBsZWRybSBpbiBsZWdhY3kgQklP
-UyBib290IG1vZGUgZHJvcA0KPj4+IGRlcGVuZGVuY3kgb2YgQk9PVF9WRVNBX1NVUFBPUlQg
-b24gRkIsIGFsc28gZHJvcCB0aGUgRkJfIHByZWZpeCwgYW5kDQo+Pj4gc2VsZWN0IHRoZSBv
-cHRpb24gd2hlbiBzaW1wbGVkcm0gaXMgYnVpbHQtaW4gb24geDg2Lg0KPj4NCj4+IFRoYW5r
-cyBmb3Igc2VuZGluZyB0aGUgcGF0Y2guDQo+Pg0KPj4gSSB0ZXN0ZWQgc2ltcGxlZHJtIG9u
-IGEgVkVTQS1iYXNlZCBzeXN0ZW1zIGFuZCBpdCB3b3JrLiBEbyB5b3UgaGF2ZSBhDQo+IA0K
-PiBJbiBFRkkgb3IgbGVnYWN5IG1vZGU/DQoNCkl0IHdhcyBhIDMyLWJpdCBBdGhsb25YUC4g
-U28gYXMgbGVnYWN5IGFzIGl0IGdldHMuDQoNCj4gDQo+PiBjb25jcmV0ZSBleGFtcGxlIG9m
-IGEgbW9kZSB0aGF0IGRvZXNuJ3Qgd29yayBhbnkgbG9uZ2VyPw0KPiANCj4gQXMgcGVyIGRp
-c2N1c3Npb24gaW4NCj4gaHR0cHM6Ly9idWd6aWxsYS5vcGVuc3VzZS5vcmcvc2hvd19idWcu
-Y2dpP2lkPTExOTMyNTAgdmdhPTc5MSBkb2VzIG5vdC4NCg0KSSB3b25kZXIgaWYgdGhpcyBm
-aXhlcyBhIGZldyBtb3JlIG9mIHRoZSBjb21wbGFpbnMgd2UndmUgc2VlbiBhYm91dCANCm1p
-c3NpbmcgcmVzb2x1dGlvbnMuDQoNCj4gDQo+IEFsc28gaXQgaXMgY2xlYXIgZXhhbWluaWcg
-dGhlIHJlYWxtb2RlIGNvZGUgdGhhdCB0aGlzIG9wdGlvbiBpcyBuZWVkZWQNCj4gdG8gZW5h
-YmxlIGdyYXBoaWMgbW9kZSBzZWxlY3Rpb24uDQo+IA0KPiBJIGRvbid0IGhhdmUgYSBzeXN0
-ZW0gd2l0aCBsZWdhY3kgQklPUyBhdCBoYW5kIGJ1dCBmcm9tIHVzZXIgdGVzdGluZw0KPiB0
-aGlzIGltcHJvdmVzIHRoZSBzaXR1YXRpb24gLSBrZXJuZWwgZG9lcyBub3QgcmVlamVjdCB0
-aGUgdmlkZW9tb2RlDQo+IGFyZ3VtZW50LCBhbmQgc2ltcGxlZHJtIGlzIGluaXRpYWxpemVk
-IGR1cmluZyBib290Lg0KDQpObyBkb3VidCBhYm91dCB0aGF0Lg0KDQpCZXN0IHJlZ2FyZHMN
-ClRob21hcw0KDQo+IA0KPiBUaGFua3MNCj4gDQo+IE1pY2hhbA0KPiANCj4+DQo+Pj4NCj4+
-PiBGaXhlczogMTFlOGY1ZmQyMjNiICgiZHJtOiBBZGQgc2ltcGxlZHJtIGRyaXZlciIpDQo+
-Pj4gU2lnbmVkLW9mZi1ieTogTWljaGFsIFN1Y2hhbmVrIDxtc3VjaGFuZWtAc3VzZS5kZT4N
-Cj4+PiAtLS0NCj4+PiAgICBhcmNoL3g4Ni9ib290L3ZpZGVvLXZlc2EuYyAgIHwgNCArKy0t
-DQo+Pj4gICAgZHJpdmVycy9ncHUvZHJtL3RpbnkvS2NvbmZpZyB8IDEgKw0KPj4+ICAgIGRy
-aXZlcnMvdmlkZW8vZmJkZXYvS2NvbmZpZyAgfCA5ICsrKystLS0tLQ0KPj4+ICAgIDMgZmls
-ZXMgY2hhbmdlZCwgNyBpbnNlcnRpb25zKCspLCA3IGRlbGV0aW9ucygtKQ0KPj4+DQo+Pj4g
-ZGlmZiAtLWdpdCBhL2FyY2gveDg2L2Jvb3QvdmlkZW8tdmVzYS5jIGIvYXJjaC94ODYvYm9v
-dC92aWRlby12ZXNhLmMNCj4+PiBpbmRleCA3ZTE4NTk3N2E5ODQuLmMyYzZkMzVlM2E0MyAx
-MDA2NDQNCj4+PiAtLS0gYS9hcmNoL3g4Ni9ib290L3ZpZGVvLXZlc2EuYw0KPj4+ICsrKyBi
-L2FyY2gveDg2L2Jvb3QvdmlkZW8tdmVzYS5jDQo+Pj4gQEAgLTgzLDcgKzgzLDcgQEAgc3Rh
-dGljIGludCB2ZXNhX3Byb2JlKHZvaWQpDQo+Pj4gICAgCQkJICAgKHZtaW5mby5tZW1vcnlf
-bGF5b3V0ID09IDQgfHwNCj4+PiAgICAJCQkgICAgdm1pbmZvLm1lbW9yeV9sYXlvdXQgPT0g
-NikgJiYNCj4+PiAgICAJCQkgICB2bWluZm8ubWVtb3J5X3BsYW5lcyA9PSAxKSB7DQo+Pj4g
-LSNpZmRlZiBDT05GSUdfRkJfQk9PVF9WRVNBX1NVUFBPUlQNCj4+PiArI2lmZGVmIENPTkZJ
-R19CT09UX1ZFU0FfU1VQUE9SVA0KPj4+ICAgIAkJCS8qIEdyYXBoaWNzIG1vZGUsIGNvbG9y
-LCBsaW5lYXIgZnJhbWUgYnVmZmVyDQo+Pj4gICAgCQkJICAgc3VwcG9ydGVkLiAgT25seSBy
-ZWdpc3RlciB0aGUgbW9kZSBpZg0KPj4+ICAgIAkJCSAgIGlmIGZyYW1lYnVmZmVyIGlzIGNv
-bmZpZ3VyZWQsIGhvd2V2ZXIsDQo+Pj4gQEAgLTEyMSw3ICsxMjEsNyBAQCBzdGF0aWMgaW50
-IHZlc2Ffc2V0X21vZGUoc3RydWN0IG1vZGVfaW5mbyAqbW9kZSkNCj4+PiAgICAJaWYgKCh2
-bWluZm8ubW9kZV9hdHRyICYgMHgxNSkgPT0gMHgwNSkgew0KPj4+ICAgIAkJLyogSXQncyBh
-IHN1cHBvcnRlZCB0ZXh0IG1vZGUgKi8NCj4+PiAgICAJCWlzX2dyYXBoaWMgPSAwOw0KPj4+
-IC0jaWZkZWYgQ09ORklHX0ZCX0JPT1RfVkVTQV9TVVBQT1JUDQo+Pj4gKyNpZmRlZiBDT05G
-SUdfQk9PVF9WRVNBX1NVUFBPUlQNCj4+PiAgICAJfSBlbHNlIGlmICgodm1pbmZvLm1vZGVf
-YXR0ciAmIDB4OTkpID09IDB4OTkpIHsNCj4+PiAgICAJCS8qIEl0J3MgYSBncmFwaGljcyBt
-b2RlIHdpdGggbGluZWFyIGZyYW1lIGJ1ZmZlciAqLw0KPj4+ICAgIAkJaXNfZ3JhcGhpYyA9
-IDE7DQo+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS90aW55L0tjb25maWcgYi9k
-cml2ZXJzL2dwdS9kcm0vdGlueS9LY29uZmlnDQo+Pj4gaW5kZXggNzEyZTAwMDRlOTZlLi4x
-YmMzMGM2NGVkMTUgMTAwNjQ0DQo+Pj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL3RpbnkvS2Nv
-bmZpZw0KPj4+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS90aW55L0tjb25maWcNCj4+PiBAQCAt
-NTQsNiArNTQsNyBAQCBjb25maWcgRFJNX0dNMTJVMzIwDQo+Pj4gICAgY29uZmlnIERSTV9T
-SU1QTEVEUk0NCj4+PiAgICAJdHJpc3RhdGUgIlNpbXBsZSBmcmFtZWJ1ZmZlciBkcml2ZXIi
-DQo+Pj4gICAgCWRlcGVuZHMgb24gRFJNICYmIE1NVQ0KPj4+ICsJc2VsZWN0IEJPT1RfVkVT
-QV9TVVBQT1JUIGlmIFg4NiAmJiBEUk1fU0lNUExFRFJNID0geQ0KPj4NCj4+IFdlIHNob3Vs
-ZG4ndCBzZWxlY3QgdGhpcyBvcHRpb24gaW4gZHJpdmVycyBJTUhPLiBTaW1wbGUtZnJhbWVi
-dWZmZXIgZGV2aWNlcw0KPj4gd2l0aCBWRVNBIGFyZSBlbmFibGVkIHdpdGggWzFdIGFuZCB0
-aGF0IHNob3VsZCBhbHNvIHNlbGVjdCB0aGUNCj4+IEJPT1RfVkVTQV9TVVBQT1JULg0KPiAN
-Cj4gU291bmRzIG9rIHRvIHNlbGVjdCBmcm9tIHRoZXJlLCBpdCBzaG91bGQgYWxzbyBjb3Zl
-ciBzaW1wbGVmYiB0aGVuLg0KPiANCj4gVGhhbmtzDQo+IA0KPiBNaWNoYWwNCg0KLS0gDQpU
-aG9tYXMgWmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0
-d2FyZSBTb2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xy
-bmJlcmcsIEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNm
-w7xocmVyOiBJdm8gVG90ZXYNCg==
+To enable use of VESA modes with simpledrm in legacy BIOS boot mode drop
+dependency of BOOT_VESA_SUPPORT on FB, also drop the FB_ prefix, and
+select the option when simpledrm is built-in on x86.
 
---------------TPm4NPg2Cxx7x1oIMonTxg69--
+Fixes: e3263ab389a7 ("x86: provide platform-devices for boot-framebuffers")
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+v2: Select BOOT_VESA_SUPPORT from simplefb rather than simpledrm. The
+simpledrm driver uses the firmware provided video modes only indirectly
+through simplefb, and both can be enabled independently.
+---
+ arch/x86/boot/video-vesa.c  | 4 ++--
+ drivers/firmware/Kconfig    | 1 +
+ drivers/video/fbdev/Kconfig | 9 ++++-----
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
---------------LTgM6u0q34vOjsOnn7OEejJ0
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
+index 7e185977a984..c2c6d35e3a43 100644
+--- a/arch/x86/boot/video-vesa.c
++++ b/arch/x86/boot/video-vesa.c
+@@ -83,7 +83,7 @@ static int vesa_probe(void)
+ 			   (vminfo.memory_layout == 4 ||
+ 			    vminfo.memory_layout == 6) &&
+ 			   vminfo.memory_planes == 1) {
+-#ifdef CONFIG_FB_BOOT_VESA_SUPPORT
++#ifdef CONFIG_BOOT_VESA_SUPPORT
+ 			/* Graphics mode, color, linear frame buffer
+ 			   supported.  Only register the mode if
+ 			   if framebuffer is configured, however,
+@@ -121,7 +121,7 @@ static int vesa_set_mode(struct mode_info *mode)
+ 	if ((vminfo.mode_attr & 0x15) == 0x05) {
+ 		/* It's a supported text mode */
+ 		is_graphic = 0;
+-#ifdef CONFIG_FB_BOOT_VESA_SUPPORT
++#ifdef CONFIG_BOOT_VESA_SUPPORT
+ 	} else if ((vminfo.mode_attr & 0x99) == 0x99) {
+ 		/* It's a graphics mode with linear frame buffer */
+ 		is_graphic = 1;
+diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+index 75cb91055c17..8053c75b8645 100644
+--- a/drivers/firmware/Kconfig
++++ b/drivers/firmware/Kconfig
+@@ -224,6 +224,7 @@ config SYSFB
+ config SYSFB_SIMPLEFB
+ 	bool "Mark VGA/VBE/EFI FB as generic system framebuffer"
+ 	depends on SYSFB
++	select BOOT_VESA_SUPPORT if X86
+ 	help
+ 	  Firmwares often provide initial graphics framebuffers so the BIOS,
+ 	  bootloader or kernel can show basic video-output during boot for
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 6ed5e608dd04..4f3be9b7a520 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -66,9 +66,8 @@ config FB_DDC
+ 	select I2C_ALGOBIT
+ 	select I2C
+ 
+-config FB_BOOT_VESA_SUPPORT
++config BOOT_VESA_SUPPORT
+ 	bool
+-	depends on FB
+ 	help
+ 	  If true, at least one selected framebuffer driver can take advantage
+ 	  of VESA video modes set at an early boot stage via the vga= parameter.
+@@ -627,7 +626,7 @@ config FB_VESA
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	select FB_BOOT_VESA_SUPPORT
++	select BOOT_VESA_SUPPORT
+ 	help
+ 	  This is the frame buffer device driver for generic VESA 2.0
+ 	  compliant graphic cards. The older VESA 1.2 cards are not supported.
+@@ -1051,7 +1050,7 @@ config FB_INTEL
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	select FB_BOOT_VESA_SUPPORT if FB_INTEL = y
++	select BOOT_VESA_SUPPORT if FB_INTEL = y
+ 	depends on !DRM_I915
+ 	help
+ 	  This driver supports the on-board graphics built in to the Intel
+@@ -1378,7 +1377,7 @@ config FB_SIS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	select FB_BOOT_VESA_SUPPORT if FB_SIS = y
++	select BOOT_VESA_SUPPORT if FB_SIS = y
+ 	select FB_SIS_300 if !FB_SIS_315
+ 	help
+ 	  This is the frame buffer device driver for the SiS 300, 315, 330
+-- 
+2.31.1
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIPc+cFAwAAAAAACgkQlh/E3EQov+BH
-gQ//RgDCqtQlenbOA0fCUdGHC+oXuhOec33RIYsU23am8QOxThWrmV4RIP12S+6kpvH9+c32lG/c
-HTIyxmE3T3igD5asQ29orKnxz2uOIuvC3lBW85zmantd4CZAFfMiFOZc/ZfZnFv+uWSlI8wcdxAQ
-kROUTY5N3brxOuidBSgTHwQtUW6SNP2ycxaD6aq8bKofX0dq1y28zkLby7UO1BUp+FnlIKFYYATv
-nkhxAiqfxBhbzjJQD90MsTqa3OJIXAyTO9CW0oHHHf0m42k+2bW9gLPwo3syv9VuRyCz4uDKmevO
-kjR208vGQyYBoYoarkbLLqyhcI1Kbgeky7s855+tiF9cpRZ1Up6+fKmOhHtd0gyJoy2Nnj0J3lf3
-amBhaTDVYqZl0p/WSRXz2bsCInRAz7Dl9w20SuiZDAXhVf7D4q6QmDKHL49eEwCFqgr+sXJnzbYz
-GJUh6YrKjsOps6+boxGHf5rMzvCL5iLiFaQ/91N98vBu+/p3UnUcUlBcWzdO3tA4rjY1bfkAkOcJ
-qNtGPQmczDWCtmRGJo2Fbl+ID9ILNMLdE0t9Oh/FSVpvwIdmTjs2/rFav9zkDVDkeKqzeBn6y1Iv
-QhLCt/52wf1XunOOqN6ljgppebY2PXgfLvt8hCgq4VfPPc3dJ40KuXP2xMYX98K7DbFrvMdASFfL
-v9w=
-=U2ec
------END PGP SIGNATURE-----
-
---------------LTgM6u0q34vOjsOnn7OEejJ0--

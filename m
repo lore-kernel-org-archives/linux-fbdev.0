@@ -2,107 +2,212 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B24F4C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 21 Feb 2022 11:12:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 950E7C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 21 Feb 2022 14:30:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355675AbiBULMc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 21 Feb 2022 06:12:32 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:41056 "EHLO
+        id S1351161AbiBUOad (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 21 Feb 2022 09:30:33 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:39218 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1355758AbiBULMW (ORCPT
+        with ESMTP id S1346906AbiBUOad (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 21 Feb 2022 06:12:22 -0500
-X-Greylist: delayed 244 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 21 Feb 2022 02:45:55 PST
-Received: from out203-205-221-240.mail.qq.com (out203-205-221-240.mail.qq.com [203.205.221.240])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47C2B24B;
-        Mon, 21 Feb 2022 02:45:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
-        s=s201512; t=1645440353;
-        bh=4fADd5ckbj9wLsNGEkx/YWl2k1NstFX4D6yO2oX22N8=;
-        h=From:To:Cc:Subject:Date;
-        b=PHaq+c8CRFQrqVX1bOSiEyUc5E5SzgmuMEyyZILgJRJj3tUm3XaVHjvTOScJwOHYL
-         etsu5zHu1SgZ+rSKgDOfJczgsZSNwsgHr/9FWbVRGa37dpKGrsiii9yw3jbm+0kLtm
-         DFkqRoWjSchefQtg1j5YWKviVYN7wSk2aVD3hgWA=
-Received: from localhost.localdomain ([218.197.153.188])
-        by newxmesmtplogicsvrszc8.qq.com (NewEsmtp) with SMTP
-        id 9A09E009; Mon, 21 Feb 2022 18:38:32 +0800
-X-QQ-mid: xmsmtpt1645439912ty8r1galu
-Message-ID: <tencent_AD2E09472E455F78B792E6BF114813B35206@qq.com>
-X-QQ-XMAILINFO: Mx0gLVTpyl5nsAzj444ETocQ8S8QzHpdIe2WK5gE/ckWOfMwwiPqe8ilfBIyK6
-         ObfwC/6GBi8sc4OCc/rKxo8kHDrLFR39OPI7aep7JK2Lj3eo+I1GX/hvMMNq4hhurBjTJKIFHK/H
-         WbF/gDL8p9JT5N23RdNegZchcVNYTWzf8eS2qWoVkMnsKG+ZlB87nPPh7ZbK9tJgxFTELA4LCf+H
-         0xL74nJKSyx6osOoKUKZWAL+L6d4wpRHKvQ3kHbtVbWmjDvOkJ2Zlat22wAwfAYdkfToo444yH3h
-         deSvFU5NrEmQyqcof17yIOEM1vZ7z+BZ8/rJnrqqRJiScLFK5LUPqjhazqEQxrf2amQUAj6iCSDa
-         JtHIvZo8PkoU9VnoUe+c7Z/aRV++LMv6OJGTxJwfZRtfDoI+gNmIx1iRIyk3eX5Ezqy8FqyIMzSE
-         4ZPBKp3eJ8M8jBNtWIA9uU9KCzQ/Zkpbax/DgyE0y7gB1m6OVbGRoucVLo060+SsLTUy/uexUDgG
-         BtM71IXXh9mKwXkIsT3RK0HNMom+DsArAilPfTkUPnUiRmwwDHOrDQ2VORWY0+W9Z2hh2pdXybWb
-         /vw6tTGs0TV1IIMO17Qi/QcfgRZJFDJg3bh2B+QLrsigS7Z4Fag8fxO0Mgym1ePPVOFyxqZKnsWa
-         qR2uC1AQbiDBA4/kIsUTSlIRUbys1qMFnQmslLjQMOG8328ncJdv7slSUeGpB4VMPVORbHdLYfL5
-         QhV8WZKygAu3hs1cfxeXX3FhAVEamIoHOtX6GkTKgs8D2dgkTUM0tXU8kCJd0CzQ6VVyGwcHz3w2
-         A2ASV9jox6ygtf8UmdYqANgxEryX8GxMeSwMNzdSI02uPhUXR7rHqfOz5bUZGG1MoVL7qitnRTkM
-         GdjFO0xNBd
-From:   xkernel.wang@foxmail.com
-To:     FlorianSchandinat@gmx.de
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        Xiaoke Wang <xkernel.wang@foxmail.com>
-Subject: [PATCH] video: fbdev: via: check the return value of kstrdup()
-Date:   Mon, 21 Feb 2022 18:37:34 +0800
-X-OQ-MSGID: <20220221103734.3394-1-xkernel.wang@foxmail.com>
+        Mon, 21 Feb 2022 09:30:33 -0500
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D9861EC5E;
+        Mon, 21 Feb 2022 06:30:09 -0800 (PST)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: kholk11)
+        with ESMTPSA id E49B81F437A8
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1645453808;
+        bh=g3slv7bO+i9JLZnG8f+h6pHx2C2DHBVoYfxFRSRsfkU=;
+        h=Date:From:Subject:To:Cc:References:In-Reply-To:From;
+        b=AQ9zpeRHw4BCi6CuLlgjKEZrjpXNSRcN6K234xSdy7JXtdX2dDcmexIqP19rcxAdy
+         QL6qZgpsiQIlYliIHF6Q5CQ3NiTEc82v5ey0ftyb962tbeHWLgBb8pFcmTFKdHmxJO
+         GKXuxeo4muP0TLUli8w8ki4NtrXP4lI7wMGJyHm/ttmnQsupQIRNeMAN/54AgQOIGN
+         gnqCPt3OgXH/+C8BLro2XJhZjQYmhIzmDzbSQ2o9XhEe4gH4NCoT3JAHgEfi/l2IFs
+         9MXk+jRjgWh0LUG2lFnAvA90OziqJq8wz2942w/GJpMedTj7Rg/ty6FtiUrtI0qO6k
+         CYO/LmILCK0aw==
+Message-ID: <c5a83b5f-91cc-61f9-a570-fafb5672de9f@collabora.com>
+Date:   Mon, 21 Feb 2022 15:30:04 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.1
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+Subject: Re: [PATCH v8 03/19] drm/edid: Add cea_sad helpers for freq/length
+To:     Guillaume Ranquet <granquet@baylibre.com>, chunkuang.hu@kernel.org,
+        p.zabel@pengutronix.de, airlied@linux.ie, daniel@ffwll.ch,
+        robh+dt@kernel.org, maarten.lankhorst@linux.intel.com,
+        mripard@kernel.org, tzimmermann@suse.de, matthias.bgg@gmail.com,
+        chunfeng.yun@mediatek.com, kishon@ti.com, vkoul@kernel.org,
+        deller@gmx.de, ck.hu@mediatek.com, jitao.shi@mediatek.com
+Cc:     dri-devel@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org,
+        Markus Schneider-Pargmann <msp@baylibre.com>
+References: <20220218145437.18563-1-granquet@baylibre.com>
+ <20220218145437.18563-4-granquet@baylibre.com>
+Content-Language: en-US
+In-Reply-To: <20220218145437.18563-4-granquet@baylibre.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Xiaoke Wang <xkernel.wang@foxmail.com>
+Il 18/02/22 15:54, Guillaume Ranquet ha scritto:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> 
+> This patch adds two helper functions that extract the frequency and word
+> length from a struct cea_sad.
+> 
+> For these helper functions new defines are added that help translate the
+> 'freq' and 'byte2' fields into real numbers.
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> ---
+>   drivers/gpu/drm/drm_edid.c | 74 ++++++++++++++++++++++++++++++++++++++
+>   include/drm/drm_edid.h     | 18 ++++++++--
+>   2 files changed, 90 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
+> index 12893e7be89bb..500279a82167a 100644
+> --- a/drivers/gpu/drm/drm_edid.c
+> +++ b/drivers/gpu/drm/drm_edid.c
+> @@ -4747,6 +4747,80 @@ int drm_edid_to_speaker_allocation(struct edid *edid, u8 **sadb)
+>   }
+>   EXPORT_SYMBOL(drm_edid_to_speaker_allocation);
+>   
+> +/**
+> + * drm_cea_sad_get_sample_rate - Extract the sample rate from cea_sad
+> + * @sad: Pointer to the cea_sad struct
+> + *
+> + * Extracts the cea_sad frequency field and returns the sample rate in Hz.
+> + *
+> + * Return: Sample rate in Hz or a negative errno if parsing failed.
+> + */
+> +int drm_cea_sad_get_sample_rate(const struct cea_sad *sad)
+> +{
+> +	switch (sad->freq) {
+> +	case DRM_CEA_SAD_FREQ_32KHZ:
+> +		return 32000;
+> +	case DRM_CEA_SAD_FREQ_44KHZ:
+> +		return 44100;
+> +	case DRM_CEA_SAD_FREQ_48KHZ:
+> +		return 48000;
+> +	case DRM_CEA_SAD_FREQ_88KHZ:
+> +		return 88200;
+> +	case DRM_CEA_SAD_FREQ_96KHZ:
+> +		return 96000;
+> +	case DRM_CEA_SAD_FREQ_176KHZ:
+> +		return 176400;
+> +	case DRM_CEA_SAD_FREQ_192KHZ:
+> +		return 192000;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +EXPORT_SYMBOL(drm_cea_sad_get_sample_rate);
+> +
+> +static bool drm_cea_sad_is_uncompressed(const struct cea_sad *sad)
+> +{
+> +	switch (sad->format) {
+> +	case HDMI_AUDIO_CODING_TYPE_STREAM:
+> +	case HDMI_AUDIO_CODING_TYPE_PCM:
+> +		return true;
+> +	default:
+> +		return false;
+> +	}
+> +}
+> +
+> +/**
+> + * drm_cea_sad_get_uncompressed_word_length - Extract word length
+> + * @sad: Pointer to the cea_sad struct
+> + *
+> + * Extracts the cea_sad byte2 field and returns the word length for an
+> + * uncompressed stream.
+> + *
+> + * Note: This function may only be called for uncompressed audio.
+> + *
+> + * Return: Word length in bits or a negative errno if parsing failed.
+> + */
+> +int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad *sad)
+> +{
+> +	if (!drm_cea_sad_is_uncompressed(sad)) {
+> +		DRM_WARN("Unable to get the uncompressed word length for a compressed format: %u\n",
+> +			 sad->format);
+> +		return -EINVAL;
+> +	}
+> +
+> +	switch (sad->byte2) {
+> +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT:
+> +		return 16;
+> +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT:
+> +		return 20;
+> +	case DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT:
+> +		return 24;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +EXPORT_SYMBOL(drm_cea_sad_get_uncompressed_word_length);
+> +
+>   /**
+>    * drm_av_sync_delay - compute the HDMI/DP sink audio-video sync delay
+>    * @connector: connector associated with the HDMI/DP sink
+> diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
+> index 18f6c700f6d02..a30452b313979 100644
+> --- a/include/drm/drm_edid.h
+> +++ b/include/drm/drm_edid.h
+> @@ -361,12 +361,24 @@ struct edid {
+>   
+>   /* Short Audio Descriptor */
+>   struct cea_sad {
+> -	u8 format;
+> +	u8 format; /* See HDMI_AUDIO_CODING_TYPE_* */
 
-kstrdup() is a memory allocation function which can return NULL when
-some internal memory errors happen. It is better to check the return
-value of it to catch the error in time during the setup of viafb.
+Hello Guillaume,
 
-Signed-off-by: Xiaoke Wang <xkernel.wang@foxmail.com>
----
- drivers/video/fbdev/via/viafbdev.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+since you're adding comments to all the rest of the struct members,
+I think that a small effort to instead convert this to kerneldoc is
+totally worth it.
+Can you please do that?
 
-diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
-index 22deb34..2d67c92 100644
---- a/drivers/video/fbdev/via/viafbdev.c
-+++ b/drivers/video/fbdev/via/viafbdev.c
-@@ -1939,8 +1939,12 @@ static int __init viafb_setup(void)
- 
- 		if (!strncmp(this_opt, "viafb_mode1=", 12)) {
- 			viafb_mode1 = kstrdup(this_opt + 12, GFP_KERNEL);
-+			if (!viafb_mode1)
-+				return -ENOMEM;
- 		} else if (!strncmp(this_opt, "viafb_mode=", 11)) {
- 			viafb_mode = kstrdup(this_opt + 11, GFP_KERNEL);
-+			if (!viafb_mode)
-+				return -ENOMEM;
- 		} else if (!strncmp(this_opt, "viafb_bpp1=", 11)) {
- 			if (kstrtouint(this_opt + 11, 0, &viafb_bpp1) < 0)
- 				return -EINVAL;
-@@ -1969,6 +1973,8 @@ static int __init viafb_setup(void)
- 				return -EINVAL;
- 		} else if (!strncmp(this_opt, "viafb_active_dev=", 17)) {
- 			viafb_active_dev = kstrdup(this_opt + 17, GFP_KERNEL);
-+			if (!viafb_active_dev)
-+				return -ENOMEM;
- 		} else if (!strncmp(this_opt,
- 			"viafb_display_hardware_layout=", 30)) {
- 			if (kstrtoint(this_opt + 30, 0,
-@@ -1995,8 +2001,12 @@ static int __init viafb_setup(void)
- 				return -EINVAL;
- 		} else if (!strncmp(this_opt, "viafb_lcd_port=", 15)) {
- 			viafb_lcd_port = kstrdup(this_opt + 15, GFP_KERNEL);
-+			if (!viafb_lcd_port)
-+				return -ENOMEM;
- 		} else if (!strncmp(this_opt, "viafb_dvi_port=", 15)) {
- 			viafb_dvi_port = kstrdup(this_opt + 15, GFP_KERNEL);
-+			if (!viafb_dvi_port)
-+				return -ENOMEM;
- 		}
- 	}
- 	return 0;
--- 
+Thanks,
+Angelo
+
+>   	u8 channels; /* max number of channels - 1 */
+> -	u8 freq;
+> +	u8 freq; /* See CEA_SAD_FREQ_* */
+>   	u8 byte2; /* meaning depends on format */
+>   };
+>   
+> +#define DRM_CEA_SAD_FREQ_32KHZ  BIT(0)
+> +#define DRM_CEA_SAD_FREQ_44KHZ  BIT(1)
+> +#define DRM_CEA_SAD_FREQ_48KHZ  BIT(2)
+> +#define DRM_CEA_SAD_FREQ_88KHZ  BIT(3)
+> +#define DRM_CEA_SAD_FREQ_96KHZ  BIT(4)
+> +#define DRM_CEA_SAD_FREQ_176KHZ BIT(5)
+> +#define DRM_CEA_SAD_FREQ_192KHZ BIT(6)
+> +
+> +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT BIT(0)
+> +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT BIT(1)
+> +#define DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT BIT(2)
+> +
+>   struct drm_encoder;
+>   struct drm_connector;
+>   struct drm_connector_state;
+> @@ -374,6 +386,8 @@ struct drm_display_mode;
+>   
+>   int drm_edid_to_sad(struct edid *edid, struct cea_sad **sads);
+>   int drm_edid_to_speaker_allocation(struct edid *edid, u8 **sadb);
+> +int drm_cea_sad_get_sample_rate(const struct cea_sad *sad);
+> +int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad *sad);
+>   int drm_av_sync_delay(struct drm_connector *connector,
+>   		      const struct drm_display_mode *mode);
+>   
+
+

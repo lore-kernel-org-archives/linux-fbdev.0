@@ -2,245 +2,107 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E212C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 21 Feb 2022 10:31:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B24F4C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 21 Feb 2022 11:12:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354472AbiBUKbg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 21 Feb 2022 05:31:36 -0500
-Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:41122 "EHLO
+        id S1355675AbiBULMc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 21 Feb 2022 06:12:32 -0500
+Received: from mxb-00190b01.gslb.pphosted.com ([23.128.96.19]:41056 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354873AbiBUKak (ORCPT
+        with ESMTP id S1355758AbiBULMW (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 21 Feb 2022 05:30:40 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE58E692BA;
-        Mon, 21 Feb 2022 01:52:00 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 2B4441F391;
-        Mon, 21 Feb 2022 09:51:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1645437097; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=r/PMymSyVH0HxRXV1mvRKK9d297pAWOZI368Y8VdA2s=;
-        b=YWvtHoqSev5SgMiDUaQ8dJl01+oNgYuFH8iGbZWlnONiJurYAlcRijM/yvlFGFIvkf6GbR
-        OaPjcBdrKPIrBzaa3E40QNeidKumhNNuIjztkDgM11MO8wfHedPxybU39N8iQ6wWC7iiSc
-        oPO+iY+yTH9LCiEWdNqEKK0kVh484/Y=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1645437097;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=r/PMymSyVH0HxRXV1mvRKK9d297pAWOZI368Y8VdA2s=;
-        b=7KtOvq2a1W+AKcQ2Y5lk/iI2hZQ2Lb0z5BXzhXU6wM/R7XnsF/VFQdcmQ5gWtvfdiPELVV
-        72JvH2Bk5rGIpzBw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9D36413A7C;
-        Mon, 21 Feb 2022 09:51:36 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id fBwyJahgE2I6EQAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 21 Feb 2022 09:51:36 +0000
-Message-ID: <49f0642d-7078-8fba-c851-6e33658180ff@suse.de>
-Date:   Mon, 21 Feb 2022 10:51:35 +0100
+        Mon, 21 Feb 2022 06:12:22 -0500
+X-Greylist: delayed 244 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 21 Feb 2022 02:45:55 PST
+Received: from out203-205-221-240.mail.qq.com (out203-205-221-240.mail.qq.com [203.205.221.240])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47C2B24B;
+        Mon, 21 Feb 2022 02:45:55 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
+        s=s201512; t=1645440353;
+        bh=4fADd5ckbj9wLsNGEkx/YWl2k1NstFX4D6yO2oX22N8=;
+        h=From:To:Cc:Subject:Date;
+        b=PHaq+c8CRFQrqVX1bOSiEyUc5E5SzgmuMEyyZILgJRJj3tUm3XaVHjvTOScJwOHYL
+         etsu5zHu1SgZ+rSKgDOfJczgsZSNwsgHr/9FWbVRGa37dpKGrsiii9yw3jbm+0kLtm
+         DFkqRoWjSchefQtg1j5YWKviVYN7wSk2aVD3hgWA=
+Received: from localhost.localdomain ([218.197.153.188])
+        by newxmesmtplogicsvrszc8.qq.com (NewEsmtp) with SMTP
+        id 9A09E009; Mon, 21 Feb 2022 18:38:32 +0800
+X-QQ-mid: xmsmtpt1645439912ty8r1galu
+Message-ID: <tencent_AD2E09472E455F78B792E6BF114813B35206@qq.com>
+X-QQ-XMAILINFO: Mx0gLVTpyl5nsAzj444ETocQ8S8QzHpdIe2WK5gE/ckWOfMwwiPqe8ilfBIyK6
+         ObfwC/6GBi8sc4OCc/rKxo8kHDrLFR39OPI7aep7JK2Lj3eo+I1GX/hvMMNq4hhurBjTJKIFHK/H
+         WbF/gDL8p9JT5N23RdNegZchcVNYTWzf8eS2qWoVkMnsKG+ZlB87nPPh7ZbK9tJgxFTELA4LCf+H
+         0xL74nJKSyx6osOoKUKZWAL+L6d4wpRHKvQ3kHbtVbWmjDvOkJ2Zlat22wAwfAYdkfToo444yH3h
+         deSvFU5NrEmQyqcof17yIOEM1vZ7z+BZ8/rJnrqqRJiScLFK5LUPqjhazqEQxrf2amQUAj6iCSDa
+         JtHIvZo8PkoU9VnoUe+c7Z/aRV++LMv6OJGTxJwfZRtfDoI+gNmIx1iRIyk3eX5Ezqy8FqyIMzSE
+         4ZPBKp3eJ8M8jBNtWIA9uU9KCzQ/Zkpbax/DgyE0y7gB1m6OVbGRoucVLo060+SsLTUy/uexUDgG
+         BtM71IXXh9mKwXkIsT3RK0HNMom+DsArAilPfTkUPnUiRmwwDHOrDQ2VORWY0+W9Z2hh2pdXybWb
+         /vw6tTGs0TV1IIMO17Qi/QcfgRZJFDJg3bh2B+QLrsigS7Z4Fag8fxO0Mgym1ePPVOFyxqZKnsWa
+         qR2uC1AQbiDBA4/kIsUTSlIRUbys1qMFnQmslLjQMOG8328ncJdv7slSUeGpB4VMPVORbHdLYfL5
+         QhV8WZKygAu3hs1cfxeXX3FhAVEamIoHOtX6GkTKgs8D2dgkTUM0tXU8kCJd0CzQ6VVyGwcHz3w2
+         A2ASV9jox6ygtf8UmdYqANgxEryX8GxMeSwMNzdSI02uPhUXR7rHqfOz5bUZGG1MoVL7qitnRTkM
+         GdjFO0xNBd
+From:   xkernel.wang@foxmail.com
+To:     FlorianSchandinat@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org,
+        Xiaoke Wang <xkernel.wang@foxmail.com>
+Subject: [PATCH] video: fbdev: via: check the return value of kstrdup()
+Date:   Mon, 21 Feb 2022 18:37:34 +0800
+X-OQ-MSGID: <20220221103734.3394-1-xkernel.wang@foxmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.6.1
-Subject: Re: [PATCH v3] simplefb: Enable boot time VESA graphic mode
- selection.
-Content-Language: en-US
-To:     Michal Suchanek <msuchanek@suse.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc:     David Herrmann <dh.herrmann@gmail.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Helge Deller <deller@gmx.de>, x86@kernel.org,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-        Simon Trimmer <simont@opensource.cirrus.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-kernel@vger.kernel.org, Martin Mares <mj@ucw.cz>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        linux-video@atrey.karlin.mff.cuni.cz
-References: <a789e375-a23e-6988-33bc-1410eb5d974f@suse.de>
- <20220218160436.23211-1-msuchanek@suse.de>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20220218160436.23211-1-msuchanek@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------5xfb4X1E04eL1T0HbmH8ZNDW"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------5xfb4X1E04eL1T0HbmH8ZNDW
-Content-Type: multipart/mixed; boundary="------------gbvBRMJcwjZf4Ny0jTJL01x9";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Michal Suchanek <msuchanek@suse.de>, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org
-Cc: David Herrmann <dh.herrmann@gmail.com>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Daniel Vetter <daniel.vetter@ffwll.ch>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Bjorn Andersson <bjorn.andersson@linaro.org>, "H. Peter Anvin"
- <hpa@zytor.com>, Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
- Helge Deller <deller@gmx.de>, x86@kernel.org,
- Javier Martinez Canillas <javierm@redhat.com>, Ingo Molnar
- <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Simon Trimmer <simont@opensource.cirrus.com>, Borislav Petkov
- <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Cristian Marussi <cristian.marussi@arm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, Martin Mares <mj@ucw.cz>,
- Sudeep Holla <sudeep.holla@arm.com>, linux-video@atrey.karlin.mff.cuni.cz
-Message-ID: <49f0642d-7078-8fba-c851-6e33658180ff@suse.de>
-Subject: Re: [PATCH v3] simplefb: Enable boot time VESA graphic mode
- selection.
-References: <a789e375-a23e-6988-33bc-1410eb5d974f@suse.de>
- <20220218160436.23211-1-msuchanek@suse.de>
-In-Reply-To: <20220218160436.23211-1-msuchanek@suse.de>
+From: Xiaoke Wang <xkernel.wang@foxmail.com>
 
---------------gbvBRMJcwjZf4Ny0jTJL01x9
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+kstrdup() is a memory allocation function which can return NULL when
+some internal memory errors happen. It is better to check the return
+value of it to catch the error in time during the setup of viafb.
 
-SGkNCg0KQW0gMTguMDIuMjIgdW0gMTc6MDQgc2NocmllYiBNaWNoYWwgU3VjaGFuZWs6DQo+
-IFNpbmNlIHN3aXRjaCB0byBzaW1wbGVmYi9zaW1wbGVkcm0gVkVTQSBncmFwaGljIG1vZGVz
-IGFyZSBubyBsb25nZXINCj4gYXZhaWxhYmxlIHdpdGggbGVnYWN5IEJJT1MuDQo+IA0KPiBU
-aGUgeDg2IHJlYWxtb2RlIGJvb3QgY29kZSBlbmFibGVzIHRoZSBWRVNBIGdyYXBoaWMgbW9k
-ZXMgd2hlbiBvcHRpb24NCj4gRkJfQk9PVF9WRVNBX1NVUFBPUlQgaXMgZW5hYmxlZC4NCj4g
-DQo+IFRvIGVuYWJsZSB1c2Ugb2YgVkVTQSBtb2RlcyB3aXRoIHNpbXBsZWZiIGluIGxlZ2Fj
-eSBCSU9TIGJvb3QgbW9kZSBkcm9wDQo+IGRlcGVuZGVuY3kgb2YgQk9PVF9WRVNBX1NVUFBP
-UlQgb24gRkIsIGFsc28gZHJvcCB0aGUgRkJfIHByZWZpeCwgYW5kDQo+IHNlbGVjdCB0aGUg
-b3B0aW9uIHdoZW4gc2ltcGxlZmIgZW5hYmxlZCBvbiB4ODYuDQo+IA0KPiBUaGUgQk9PVF9W
-RVNBX1NVUFBPUlQgaXMgbm90IHNwZWNpZmljIHRvIGZyYW1lYnVmZmVyIGJ1dCByYXRoZXIg
-dG8geDg2DQo+IHBsYXRmb3JtLCBtb3ZlIGl0IGZyb20gZmJkZXYgdG8geDg2IEtjb25maWcu
-DQo+IA0KPiBGaXhlczogZTMyNjNhYjM4OWE3ICgieDg2OiBwcm92aWRlIHBsYXRmb3JtLWRl
-dmljZXMgZm9yIGJvb3QtZnJhbWVidWZmZXJzIikNCj4gU2lnbmVkLW9mZi1ieTogTWljaGFs
-IFN1Y2hhbmVrIDxtc3VjaGFuZWtAc3VzZS5kZT4NCg0KQWNrZWQtYnk6IFRob21hcyBaaW1t
-ZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPg0KDQpUaGFua3MgZm9yIHRoZSBwYXRjaC4g
-SSdsbCB3YWl0IGEgYml0IGZvciBhZGRpdGlvbmFsIHJldmlld3MgYmVmb3JlIA0KbWVyZ2lu
-ZyBpdC4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiAtLS0NCj4gdjI6IFNlbGVjdCBC
-T09UX1ZFU0FfU1VQUE9SVCBmcm9tIHNpbXBsZWZiIHJhdGhlciB0aGFuIHNpbXBsZWRybS4g
-VGhlDQo+IHNpbXBsZWRybSBkcml2ZXIgdXNlcyB0aGUgZmlybXdhcmUgcHJvdmlkZWQgdmlk
-ZW8gbW9kZXMgb25seSBpbmRpcmVjdGx5DQo+IHRocm91Z2ggc2ltcGxlZmIsIGFuZCBib3Ro
-IGNhbiBiZSBlbmFibGVkIGluZGVwZW5kZW50bHkuDQo+IHYzOiBNb3ZlIEJPT1RfVkVTQV9T
-VVBQT1JUIGZyb20gZmJkZXYgdG8geDg2DQo+IC0tLQ0KPiAgIGFyY2gveDg2L0tjb25maWcg
-ICAgICAgICAgICB8ICA2ICsrKysrKw0KPiAgIGFyY2gveDg2L2Jvb3QvdmlkZW8tdmVzYS5j
-ICB8ICA0ICsrLS0NCj4gICBkcml2ZXJzL2Zpcm13YXJlL0tjb25maWcgICAgfCAgMSArDQo+
-ICAgZHJpdmVycy92aWRlby9mYmRldi9LY29uZmlnIHwgMTMgKysrLS0tLS0tLS0tLQ0KPiAg
-IDQgZmlsZXMgY2hhbmdlZCwgMTIgaW5zZXJ0aW9ucygrKSwgMTIgZGVsZXRpb25zKC0pDQo+
-IA0KPiBkaWZmIC0tZ2l0IGEvYXJjaC94ODYvS2NvbmZpZyBiL2FyY2gveDg2L0tjb25maWcN
-Cj4gaW5kZXggOWY1YmQ0MWJmNjYwLi5jY2ViMWFhYjA0ODYgMTAwNjQ0DQo+IC0tLSBhL2Fy
-Y2gveDg2L0tjb25maWcNCj4gKysrIGIvYXJjaC94ODYvS2NvbmZpZw0KPiBAQCAtOTQyLDYg
-Kzk0MiwxMiBAQCBjb25maWcgR0FSVF9JT01NVQ0KPiAgIA0KPiAgIAkgIElmIHVuc3VyZSwg
-c2F5IFkuDQo+ICAgDQo+ICtjb25maWcgQk9PVF9WRVNBX1NVUFBPUlQNCj4gKwlib29sDQo+
-ICsJaGVscA0KPiArCSAgSWYgdHJ1ZSwgYXQgbGVhc3Qgb25lIHNlbGVjdGVkIGZyYW1lYnVm
-ZmVyIGRyaXZlciBjYW4gdGFrZSBhZHZhbnRhZ2UNCj4gKwkgIG9mIFZFU0EgdmlkZW8gbW9k
-ZXMgc2V0IGF0IGFuIGVhcmx5IGJvb3Qgc3RhZ2UgdmlhIHRoZSB2Z2E9IHBhcmFtZXRlci4N
-Cj4gKw0KPiAgIGNvbmZpZyBNQVhTTVANCj4gICAJYm9vbCAiRW5hYmxlIE1heGltdW0gbnVt
-YmVyIG9mIFNNUCBQcm9jZXNzb3JzIGFuZCBOVU1BIE5vZGVzIg0KPiAgIAlkZXBlbmRzIG9u
-IFg4Nl82NCAmJiBTTVAgJiYgREVCVUdfS0VSTkVMDQo+IGRpZmYgLS1naXQgYS9hcmNoL3g4
-Ni9ib290L3ZpZGVvLXZlc2EuYyBiL2FyY2gveDg2L2Jvb3QvdmlkZW8tdmVzYS5jDQo+IGlu
-ZGV4IDdlMTg1OTc3YTk4NC4uYzJjNmQzNWUzYTQzIDEwMDY0NA0KPiAtLS0gYS9hcmNoL3g4
-Ni9ib290L3ZpZGVvLXZlc2EuYw0KPiArKysgYi9hcmNoL3g4Ni9ib290L3ZpZGVvLXZlc2Eu
-Yw0KPiBAQCAtODMsNyArODMsNyBAQCBzdGF0aWMgaW50IHZlc2FfcHJvYmUodm9pZCkNCj4g
-ICAJCQkgICAodm1pbmZvLm1lbW9yeV9sYXlvdXQgPT0gNCB8fA0KPiAgIAkJCSAgICB2bWlu
-Zm8ubWVtb3J5X2xheW91dCA9PSA2KSAmJg0KPiAgIAkJCSAgIHZtaW5mby5tZW1vcnlfcGxh
-bmVzID09IDEpIHsNCj4gLSNpZmRlZiBDT05GSUdfRkJfQk9PVF9WRVNBX1NVUFBPUlQNCj4g
-KyNpZmRlZiBDT05GSUdfQk9PVF9WRVNBX1NVUFBPUlQNCj4gICAJCQkvKiBHcmFwaGljcyBt
-b2RlLCBjb2xvciwgbGluZWFyIGZyYW1lIGJ1ZmZlcg0KPiAgIAkJCSAgIHN1cHBvcnRlZC4g
-IE9ubHkgcmVnaXN0ZXIgdGhlIG1vZGUgaWYNCj4gICAJCQkgICBpZiBmcmFtZWJ1ZmZlciBp
-cyBjb25maWd1cmVkLCBob3dldmVyLA0KPiBAQCAtMTIxLDcgKzEyMSw3IEBAIHN0YXRpYyBp
-bnQgdmVzYV9zZXRfbW9kZShzdHJ1Y3QgbW9kZV9pbmZvICptb2RlKQ0KPiAgIAlpZiAoKHZt
-aW5mby5tb2RlX2F0dHIgJiAweDE1KSA9PSAweDA1KSB7DQo+ICAgCQkvKiBJdCdzIGEgc3Vw
-cG9ydGVkIHRleHQgbW9kZSAqLw0KPiAgIAkJaXNfZ3JhcGhpYyA9IDA7DQo+IC0jaWZkZWYg
-Q09ORklHX0ZCX0JPT1RfVkVTQV9TVVBQT1JUDQo+ICsjaWZkZWYgQ09ORklHX0JPT1RfVkVT
-QV9TVVBQT1JUDQo+ICAgCX0gZWxzZSBpZiAoKHZtaW5mby5tb2RlX2F0dHIgJiAweDk5KSA9
-PSAweDk5KSB7DQo+ICAgCQkvKiBJdCdzIGEgZ3JhcGhpY3MgbW9kZSB3aXRoIGxpbmVhciBm
-cmFtZSBidWZmZXIgKi8NCj4gICAJCWlzX2dyYXBoaWMgPSAxOw0KPiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy9maXJtd2FyZS9LY29uZmlnIGIvZHJpdmVycy9maXJtd2FyZS9LY29uZmlnDQo+
-IGluZGV4IDc1Y2I5MTA1NWMxNy4uYWQ2NGYzYTZmNTRmIDEwMDY0NA0KPiAtLS0gYS9kcml2
-ZXJzL2Zpcm13YXJlL0tjb25maWcNCj4gKysrIGIvZHJpdmVycy9maXJtd2FyZS9LY29uZmln
-DQo+IEBAIC0yMjQsNiArMjI0LDcgQEAgY29uZmlnIFNZU0ZCDQo+ICAgY29uZmlnIFNZU0ZC
-X1NJTVBMRUZCDQo+ICAgCWJvb2wgIk1hcmsgVkdBL1ZCRS9FRkkgRkIgYXMgZ2VuZXJpYyBz
-eXN0ZW0gZnJhbWVidWZmZXIiDQo+ICAgCWRlcGVuZHMgb24gU1lTRkINCj4gKwlzZWxlY3Qg
-Qk9PVF9WRVNBX1NVUFBPUlQNCj4gICAJaGVscA0KPiAgIAkgIEZpcm13YXJlcyBvZnRlbiBw
-cm92aWRlIGluaXRpYWwgZ3JhcGhpY3MgZnJhbWVidWZmZXJzIHNvIHRoZSBCSU9TLA0KPiAg
-IAkgIGJvb3Rsb2FkZXIgb3Iga2VybmVsIGNhbiBzaG93IGJhc2ljIHZpZGVvLW91dHB1dCBk
-dXJpbmcgYm9vdCBmb3INCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvS2Nv
-bmZpZyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvS2NvbmZpZw0KPiBpbmRleCA2ZWQ1ZTYwOGRk
-MDQuLjViZGQzMDNiNTI2OCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9L
-Y29uZmlnDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvS2NvbmZpZw0KPiBAQCAtNjYs
-MTMgKzY2LDYgQEAgY29uZmlnIEZCX0REQw0KPiAgIAlzZWxlY3QgSTJDX0FMR09CSVQNCj4g
-ICAJc2VsZWN0IEkyQw0KPiAgIA0KPiAtY29uZmlnIEZCX0JPT1RfVkVTQV9TVVBQT1JUDQo+
-IC0JYm9vbA0KPiAtCWRlcGVuZHMgb24gRkINCj4gLQloZWxwDQo+IC0JICBJZiB0cnVlLCBh
-dCBsZWFzdCBvbmUgc2VsZWN0ZWQgZnJhbWVidWZmZXIgZHJpdmVyIGNhbiB0YWtlIGFkdmFu
-dGFnZQ0KPiAtCSAgb2YgVkVTQSB2aWRlbyBtb2RlcyBzZXQgYXQgYW4gZWFybHkgYm9vdCBz
-dGFnZSB2aWEgdGhlIHZnYT0gcGFyYW1ldGVyLg0KPiAtDQo+ICAgY29uZmlnIEZCX0NGQl9G
-SUxMUkVDVA0KPiAgIAl0cmlzdGF0ZQ0KPiAgIAlkZXBlbmRzIG9uIEZCDQo+IEBAIC02Mjcs
-NyArNjIwLDcgQEAgY29uZmlnIEZCX1ZFU0ENCj4gICAJc2VsZWN0IEZCX0NGQl9GSUxMUkVD
-VA0KPiAgIAlzZWxlY3QgRkJfQ0ZCX0NPUFlBUkVBDQo+ICAgCXNlbGVjdCBGQl9DRkJfSU1B
-R0VCTElUDQo+IC0Jc2VsZWN0IEZCX0JPT1RfVkVTQV9TVVBQT1JUDQo+ICsJc2VsZWN0IEJP
-T1RfVkVTQV9TVVBQT1JUDQo+ICAgCWhlbHANCj4gICAJICBUaGlzIGlzIHRoZSBmcmFtZSBi
-dWZmZXIgZGV2aWNlIGRyaXZlciBmb3IgZ2VuZXJpYyBWRVNBIDIuMA0KPiAgIAkgIGNvbXBs
-aWFudCBncmFwaGljIGNhcmRzLiBUaGUgb2xkZXIgVkVTQSAxLjIgY2FyZHMgYXJlIG5vdCBz
-dXBwb3J0ZWQuDQo+IEBAIC0xMDUxLDcgKzEwNDQsNyBAQCBjb25maWcgRkJfSU5URUwNCj4g
-ICAJc2VsZWN0IEZCX0NGQl9GSUxMUkVDVA0KPiAgIAlzZWxlY3QgRkJfQ0ZCX0NPUFlBUkVB
-DQo+ICAgCXNlbGVjdCBGQl9DRkJfSU1BR0VCTElUDQo+IC0Jc2VsZWN0IEZCX0JPT1RfVkVT
-QV9TVVBQT1JUIGlmIEZCX0lOVEVMID0geQ0KPiArCXNlbGVjdCBCT09UX1ZFU0FfU1VQUE9S
-VCBpZiBGQl9JTlRFTCA9IHkNCj4gICAJZGVwZW5kcyBvbiAhRFJNX0k5MTUNCj4gICAJaGVs
-cA0KPiAgIAkgIFRoaXMgZHJpdmVyIHN1cHBvcnRzIHRoZSBvbi1ib2FyZCBncmFwaGljcyBi
-dWlsdCBpbiB0byB0aGUgSW50ZWwNCj4gQEAgLTEzNzgsNyArMTM3MSw3IEBAIGNvbmZpZyBG
-Ql9TSVMNCj4gICAJc2VsZWN0IEZCX0NGQl9GSUxMUkVDVA0KPiAgIAlzZWxlY3QgRkJfQ0ZC
-X0NPUFlBUkVBDQo+ICAgCXNlbGVjdCBGQl9DRkJfSU1BR0VCTElUDQo+IC0Jc2VsZWN0IEZC
-X0JPT1RfVkVTQV9TVVBQT1JUIGlmIEZCX1NJUyA9IHkNCj4gKwlzZWxlY3QgQk9PVF9WRVNB
-X1NVUFBPUlQgaWYgRkJfU0lTID0geQ0KPiAgIAlzZWxlY3QgRkJfU0lTXzMwMCBpZiAhRkJf
-U0lTXzMxNQ0KPiAgIAloZWxwDQo+ICAgCSAgVGhpcyBpcyB0aGUgZnJhbWUgYnVmZmVyIGRl
-dmljZSBkcml2ZXIgZm9yIHRoZSBTaVMgMzAwLCAzMTUsIDMzMA0KDQotLSANClRob21hcyBa
-aW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNv
-bHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywg
-R2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6
-IEl2byBUb3Rldg0K
+Signed-off-by: Xiaoke Wang <xkernel.wang@foxmail.com>
+---
+ drivers/video/fbdev/via/viafbdev.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
---------------gbvBRMJcwjZf4Ny0jTJL01x9--
-
---------------5xfb4X1E04eL1T0HbmH8ZNDW
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmITYKcFAwAAAAAACgkQlh/E3EQov+Ak
-2g/+JrapnWpG6tmMXT5Lc528f6S5HZNDWejUmaawkzf+90xzxJ0OAlGs7X4Dphmr/q/CCiaf8gkN
-e53y6OatO0my+lC1jRdFkVXsOA8WZzcyzNaIXp3tfJk6/ETQcjMXoAx3E7ao2XYg/6l+wB4qfgzE
-GOPitsJL21AyIlaDPmi311S7KVEKVk2wzsisGad/7MGZLpIYQfUD3rFoGZaAYMaPZHbwR1gVdDaI
-7kEElHdWpw9zQNJoRgMrCfx/6sQOiCdMo2/iz47iHUPAE95aJjRCa1SzW/aZT3qRZGfM60wYgHDH
-kx6Gf0/7Cd0DGbzdzpTQA1GcQUeAsBWVKtIg3umwaRywZ74cxavSmtezxA6cCmUVr5eGDnXpiE8T
-ptYB6IXySHFS6zf+6q46LiIGK57RX2tOlXc4fMGfyuhstpKBLXSOiM8vQIgb9TgcjCJE/z1nn9fn
-UVOxFmfFp4MXEmM9Webzcd/l+qMM+MRO9R473KSznk7ym9iiDPTvMFqfdfPrJl+NS7MbrXI8mbvQ
-/pEZWJsTFK2yEjOxvqVhwBxS8jy+zR5A1E8WKRPNUdpwN/sCIcMnKCqK/xdimyzaRLHfhQNParwU
-mnTuVMqjNyU7yJYrjZH+iP/9P7o88+ZEDsNTPCxhDbDLyJa5zW28JPjVlu13qIY2G3UQF32EitZF
-vvM=
-=KsP3
------END PGP SIGNATURE-----
-
---------------5xfb4X1E04eL1T0HbmH8ZNDW--
+diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
+index 22deb34..2d67c92 100644
+--- a/drivers/video/fbdev/via/viafbdev.c
++++ b/drivers/video/fbdev/via/viafbdev.c
+@@ -1939,8 +1939,12 @@ static int __init viafb_setup(void)
+ 
+ 		if (!strncmp(this_opt, "viafb_mode1=", 12)) {
+ 			viafb_mode1 = kstrdup(this_opt + 12, GFP_KERNEL);
++			if (!viafb_mode1)
++				return -ENOMEM;
+ 		} else if (!strncmp(this_opt, "viafb_mode=", 11)) {
+ 			viafb_mode = kstrdup(this_opt + 11, GFP_KERNEL);
++			if (!viafb_mode)
++				return -ENOMEM;
+ 		} else if (!strncmp(this_opt, "viafb_bpp1=", 11)) {
+ 			if (kstrtouint(this_opt + 11, 0, &viafb_bpp1) < 0)
+ 				return -EINVAL;
+@@ -1969,6 +1973,8 @@ static int __init viafb_setup(void)
+ 				return -EINVAL;
+ 		} else if (!strncmp(this_opt, "viafb_active_dev=", 17)) {
+ 			viafb_active_dev = kstrdup(this_opt + 17, GFP_KERNEL);
++			if (!viafb_active_dev)
++				return -ENOMEM;
+ 		} else if (!strncmp(this_opt,
+ 			"viafb_display_hardware_layout=", 30)) {
+ 			if (kstrtoint(this_opt + 30, 0,
+@@ -1995,8 +2001,12 @@ static int __init viafb_setup(void)
+ 				return -EINVAL;
+ 		} else if (!strncmp(this_opt, "viafb_lcd_port=", 15)) {
+ 			viafb_lcd_port = kstrdup(this_opt + 15, GFP_KERNEL);
++			if (!viafb_lcd_port)
++				return -ENOMEM;
+ 		} else if (!strncmp(this_opt, "viafb_dvi_port=", 15)) {
+ 			viafb_dvi_port = kstrdup(this_opt + 15, GFP_KERNEL);
++			if (!viafb_dvi_port)
++				return -ENOMEM;
+ 		}
+ 	}
+ 	return 0;
+-- 

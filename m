@@ -2,89 +2,141 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E692C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 22 Feb 2022 15:17:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FE9FC433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 22 Feb 2022 18:48:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233305AbiBVPRX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 22 Feb 2022 10:17:23 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40658 "EHLO
+        id S234912AbiBVSss (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 22 Feb 2022 13:48:48 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233313AbiBVPRV (ORCPT
+        with ESMTP id S232867AbiBVSsr (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 22 Feb 2022 10:17:21 -0500
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE0F32A721;
-        Tue, 22 Feb 2022 07:16:53 -0800 (PST)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: kholk11)
-        with ESMTPSA id 1402E1F42D79
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1645543012;
-        bh=m6iks4nKShpjnvSQCg9oNY965h9zeoboZznnHfhpxKI=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=hWvPkhkzNvqzNuA/40T3XKUxHYa8HSRU4pVMNzoIFWC7rXAT0apDYLnpkMJhnqbJM
-         arssexAyQVcSVzvw5Amf+UBgH8G+8JAoeSIFcUxhxPNyzQMNZV+16CstcTP/iDH5Hg
-         8XKAw2ROpBcy+hVlpJZNGroDpoRV/m8w9fVh/Yl0wVhuV6RPtUoYvkLuG/iZUukwGC
-         bAX9ZZ15SJkfiUYauqLfQv5HFCFnR47Rx3FLe1eOLehFQPIJKIeNvBPRO6NReiqME2
-         u+ne7v0rhJH3lU010TKtdqa7o08BP9WgUrRIeePPFQWufHuOtvUjuDVVM8Ex9z5m24
-         I22HEnZSbhtaw==
-Message-ID: <1c791b60-935c-1e8e-dd1b-4b18fc273c1b@collabora.com>
-Date:   Tue, 22 Feb 2022 16:16:48 +0100
+        Tue, 22 Feb 2022 13:48:47 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DECD311E3D7
+        for <linux-fbdev@vger.kernel.org>; Tue, 22 Feb 2022 10:48:21 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 83E91210E3;
+        Tue, 22 Feb 2022 18:48:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1645555700; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=gnS8fQ+eZypENXrGkhVMPq6EA2ZzelHoa60VcyvpT7Y=;
+        b=VajO6PyZPq2uYrYfvI7a4wQ6smyF8DKUU0TrPKsKA9Jfs/iK9txknIbzsMf+bNWwh4XRkH
+        wDVbKruTszBDqyhos/aA1gjurKdCHQi0c/+s0StLr4aUUTbh+ok5aRTLFBrBf8sByElLA5
+        5rejnxzPaPU4eYznC01AHk2S50IagNI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1645555700;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=gnS8fQ+eZypENXrGkhVMPq6EA2ZzelHoa60VcyvpT7Y=;
+        b=s3oFbQpcDNfSVOLLtWcVIoHPUhrtE9QZov9B5D3uoE0PwRqs161sxyCzJDD/gS+Vuz47dy
+        RKR0NsfEUyrtNRBw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 5538313C1A;
+        Tue, 22 Feb 2022 18:48:20 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id LKKtE/QvFWK/fQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Tue, 22 Feb 2022 18:48:20 +0000
+Message-ID: <44196aee-dedc-7019-2ca3-2801d8b5c2a8@suse.de>
+Date:   Tue, 22 Feb 2022 19:48:19 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.1
-Subject: Re: [PATCH v8 04/19] video/hdmi: Add audio_infoframe packing for DP
+ Thunderbird/91.6.1
+Subject: Re: [PATCH v2 4/5] fbdev: Improve performance of cfb_imageblit()
 Content-Language: en-US
-To:     Guillaume Ranquet <granquet@baylibre.com>, chunkuang.hu@kernel.org,
-        p.zabel@pengutronix.de, airlied@linux.ie, daniel@ffwll.ch,
-        robh+dt@kernel.org, maarten.lankhorst@linux.intel.com,
-        mripard@kernel.org, tzimmermann@suse.de, matthias.bgg@gmail.com,
-        chunfeng.yun@mediatek.com, kishon@ti.com, vkoul@kernel.org,
-        deller@gmx.de, ck.hu@mediatek.com, jitao.shi@mediatek.com
-Cc:     dri-devel@lists.freedesktop.org,
-        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        Markus Schneider-Pargmann <msp@baylibre.com>
-References: <20220218145437.18563-1-granquet@baylibre.com>
- <20220218145437.18563-5-granquet@baylibre.com>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20220218145437.18563-5-granquet@baylibre.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To:     Pekka Paalanen <ppaalanen@gmail.com>
+Cc:     linux-fbdev@vger.kernel.org, deller@gmx.de, javierm@redhat.com,
+        dri-devel@lists.freedesktop.org, geert@linux-m68k.org,
+        kraxel@redhat.com, sam@ravnborg.org
+References: <20220221195410.9172-1-tzimmermann@suse.de>
+ <20220221195410.9172-5-tzimmermann@suse.de> <20220222150111.506d2cee@eldfell>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20220222150111.506d2cee@eldfell>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------AzWiSJKhpxnsu1l2uTPuKR2O"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Il 18/02/22 15:54, Guillaume Ranquet ha scritto:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
-> 
-> Similar to HDMI, DP uses audio infoframes as well which are structured
-> very similar to the HDMI ones.
-> 
-> This patch adds a helper function to pack the HDMI audio infoframe for
-> DP, called hdmi_audio_infoframe_pack_for_dp().
-> hdmi_audio_infoframe_pack_only() is split into two parts. One of them
-> packs the payload only and can be used for HDMI and DP.
-> 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------AzWiSJKhpxnsu1l2uTPuKR2O
+Content-Type: multipart/mixed; boundary="------------2ltCs5GLiTZVO9LduECezZgG";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Pekka Paalanen <ppaalanen@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, deller@gmx.de, javierm@redhat.com,
+ dri-devel@lists.freedesktop.org, geert@linux-m68k.org, kraxel@redhat.com,
+ sam@ravnborg.org
+Message-ID: <44196aee-dedc-7019-2ca3-2801d8b5c2a8@suse.de>
+Subject: Re: [PATCH v2 4/5] fbdev: Improve performance of cfb_imageblit()
+References: <20220221195410.9172-1-tzimmermann@suse.de>
+ <20220221195410.9172-5-tzimmermann@suse.de> <20220222150111.506d2cee@eldfell>
+In-Reply-To: <20220222150111.506d2cee@eldfell>
 
-Hello Guillaume,
+--------------2ltCs5GLiTZVO9LduECezZgG
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-I've just noticed that this patch will not apply against the latest linux-next,
-as the include/drm/drm_dp_helper.h header was moved to
-include/drm/dp/drm_dp_helper.h
+SGkNCg0KQW0gMjIuMDIuMjIgdW0gMTQ6MDEgc2NocmllYiBQZWtrYSBQYWFsYW5lbjoNCj4g
+T24gTW9uLCAyMSBGZWIgMjAyMiAyMDo1NDowOSArMDEwMA0KPiBUaG9tYXMgWmltbWVybWFu
+biA8dHppbW1lcm1hbm5Ac3VzZS5kZT4gd3JvdGU6DQo+IA0KPj4gSW1wcm92ZSB0aGUgcGVy
+Zm9ybWFuY2Ugb2Ygc3lzX2ltYWdlYmxpdCgpIGJ5IG1hbnVhbGx5IHVucm9sbGluZw0KPiAN
+Cj4gc3lzPw0KPiANCj4+IHRoZSBpbm5lciBibGl0dGluZyBsb29wIGFuZCBtb3Zpbmcgc29t
+ZSBpbnZhcmlhbnRzIG91dC4gVGhlIGNvbXBpbGVyDQo+PiBmYWlsZWQgdG8gZG8gdGhpcyBh
+dXRvbWF0aWNhbGx5LiBUaGlzIGNoYW5nZSBrZWVwcyBjZmJfaW1hZ2VibGl0KCkNCj4+IGlu
+IHN5bmMgd2l0aCBzeXNfaW1hZ2ViaXQoKS4NCj4gDQo+IFRoaXMgaXMgY29ycmVjdCBoZXJl
+Lg0KPiANCj4+DQo+PiBBIG1pY3JvYmVuY2htYXJrIG1lYXN1cmVzIHRoZSBhdmVyYWdlIG51
+bWJlciBvZiBDUFUgY3ljbGVzDQo+PiBmb3Igc3lzX2ltYWdlYmxpdCgpIGFmdGVyIGEgc3Rh
+YmlsaXppbmcgcGVyaW9kIG9mIGEgZmV3IG1pbnV0ZXMNCj4gDQo+IHN5cz8NCj4gDQo+PiAo
+aTctNDc5MCwgRnVsbEhELCBzaW1wbGVkcm0sIGtlcm5lbCB3aXRoIGRlYnVnZ2luZykuDQo+
+Pg0KPj4gc3lzX2ltYWdlYmxpdCgpLCBuZXc6IDE1NzI0IGN5Y2xlcw0KPiANCj4gc3lzPw0K
+PiANCj4+IGNmYl9pbWFnZWJsaXQoKTogb2xkOiAzMDU2NiBjeWNsZXMNCj4+DQo+PiBJbiB0
+aGUgb3B0aW1pemVkIGNhc2UsIGNmYl9pbWFnZWJsaXQoKSBpcyBub3cgfjJ4IGZhc3RlciB0
+aGFuIGJlZm9yZS4NCj4+DQo+PiBTaWduZWQtb2ZmLWJ5OiBUaG9tYXMgWmltbWVybWFubiA8
+dHppbW1lcm1hbm5Ac3VzZS5kZT4NCj4+IC0tLQ0KPj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2
+L2NvcmUvY2ZiaW1nYmx0LmMgfCA1MSArKysrKysrKysrKysrKysrKysrKysrKy0tLS0tDQo+
+PiAgIDEgZmlsZSBjaGFuZ2VkLCA0MiBpbnNlcnRpb25zKCspLCA5IGRlbGV0aW9ucygtKQ0K
+PiANCj4gSnVzdCBub3RpY2VkIHNvbWUgY29uZnVzaW9uIGluIHRoZSBjb21taXQgbWVzc2Fn
+ZS4NCg0KSSBjb3BpZWQgc29tZSBvZiB0aGUgdGV4dCBmcm9tIHRoZSBvdGhlciBjb21taXQg
+YW5kIEkgY291bGQgaGF2ZSBzd29ybiBJIA0KdXBkYXRlZCBpdC4gQnV0IGFwcGFyZW50bHkg
+bm90Lg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiANCj4gVGhhbmtzLA0KPiBw
+cQ0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVy
+DQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUs
+IDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0K
+R2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
-Can you please rebase for v9?
+--------------2ltCs5GLiTZVO9LduECezZgG--
 
-Thanks,
-Angelo
+--------------AzWiSJKhpxnsu1l2uTPuKR2O
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-> ---
->   drivers/video/hdmi.c        | 83 ++++++++++++++++++++++++++++---------
->   include/drm/drm_dp_helper.h |  2 +
->   include/linux/hdmi.h        |  7 +++-
->   3 files changed, 72 insertions(+), 20 deletions(-)
-> 
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIVL/MFAwAAAAAACgkQlh/E3EQov+BL
+Ww/+PJJurvh4NAI5tlbBfG9q6t25ysyFk98nY6Lei+FL2ym8lewWrfWbMS+kMcjHzUqmRBvfsPWE
+MhzvxZlZ+YxU2cb5RUPC4ve69Qa5vOnWc3U6GKuh63XOfkZDWhPTPset7WtwPtrOzgG6JnEzu9eV
+bfVpACa65NHWfGlcnSrjKqo7IWZdCi7e4jy3Vi43updZgngAoRnXPqsyfzOogNq3JEA1CbJxRpoj
+NvbaPwNvFmWdKp3+vpzrZ4PABkUzRxlnn2Y/tOdrd9MYERIvpS4fO8p2HCX/RTkmifh9ZUIT1Wq/
+D236Vrbf5rrGGE7pzY7i983RwKIs3rGlYn3BqY/tsT0DcJ2PvAFPjSbkqZQmMkAp3UeX46ZzLHFh
+D2WqxJKszwgScJnofbmtZu0rPNS73dgJW4onCSiyZ6sVTOSUkUX/CLYHy9m40AsLS88NJ9wn1SyK
+/f5aDWNoX4DIJLNyTSd+M1FPORy8/2SzpoO58t/Hy1dyF9G7CZMUrRtBLBeoL5htGBf+KCIk6bQA
+n9nUiqwt/fez9VyV/LT2gsyfIrbs0OhrB5F1RDB/ndNFSmO1h4Vo3G1Zs31UuhwPxap8phHjtlDw
+Q87FgJiY2mAl4TA4DavqqIA2+0ucV8AmPzqosN9PiakKUegoktI+m+wyruYx+wuQiMT0Fq3gtEHO
+WjU=
+=2KuU
+-----END PGP SIGNATURE-----
+
+--------------AzWiSJKhpxnsu1l2uTPuKR2O--

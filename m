@@ -2,125 +2,134 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC76CC433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 22 Feb 2022 08:01:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E76F4C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 22 Feb 2022 13:01:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229628AbiBVIBl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 22 Feb 2022 03:01:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40398 "EHLO
+        id S231646AbiBVNBt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 22 Feb 2022 08:01:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42292 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229437AbiBVIBj (ORCPT
+        with ESMTP id S229590AbiBVNBt (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 22 Feb 2022 03:01:39 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7DD4B148921;
-        Tue, 22 Feb 2022 00:01:14 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1645516865;
-        bh=Wbkwg6IDeSigfLVXP44w+U6JsS8t374MsL2Uv1lERNM=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=jJ8agmZRWaSWMbzTiNL8UEB9YSkBvS0meQFiTDtdClaMh1jRW7CSQxXwv5IanTDOT
-         FRpKcavULXTiThiqxwIwyCfB7RRDiIgKUol7byb71+tJat6s8xwCRDKrKoXouXovdP
-         Eh8KLVN1f32FsjtzpXedVLeTuN4Q+FfHHGSFsyZ8=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.171.113]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1M8QWG-1nI0GG3dtw-004Qsi; Tue, 22
- Feb 2022 09:01:04 +0100
-Message-ID: <ed931578-c79e-0161-24d5-ab9c302350e6@gmx.de>
-Date:   Tue, 22 Feb 2022 09:01:02 +0100
+        Tue, 22 Feb 2022 08:01:49 -0500
+Received: from mail-lj1-x234.google.com (mail-lj1-x234.google.com [IPv6:2a00:1450:4864:20::234])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0AFAAA2FC
+        for <linux-fbdev@vger.kernel.org>; Tue, 22 Feb 2022 05:01:23 -0800 (PST)
+Received: by mail-lj1-x234.google.com with SMTP id f11so11623664ljq.11
+        for <linux-fbdev@vger.kernel.org>; Tue, 22 Feb 2022 05:01:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :mime-version;
+        bh=P8Fryrh/UfTp1Bt6LOv8QJW5oyWytViPC9OrCSUrMh0=;
+        b=ZmzMcHsV4aFAGltbsqW1Ct43LoRMsjOPQ76v7zqeiWTy/Ozsv2kNXYAAWjighAaGwx
+         1c3dbWLEbR3TboWjjkMFCovgaU7kdEtjndytJrgYvx8u/jbcyPjOEKrq+b5ehkJMWP+N
+         5OvHQ5ot1IDrOAb8FeP229MSf9v3Bn0kgMhLdeYtT35lL115x6+PEjjoWyQgLL4gsgT1
+         UaTy4eLdEwgH6qA2ywDFlOD83t4JalH8J3kXWVBm/muFXD87LsSgF1INo1QjVcmZqCXn
+         NWFrX9PgYrZYSBoTOPpZ/05Ck0s9bsnGJsVaZTjdU24bLylGSCtp58BMRuq9/hKZoW4N
+         eO2A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:mime-version;
+        bh=P8Fryrh/UfTp1Bt6LOv8QJW5oyWytViPC9OrCSUrMh0=;
+        b=mU5jtghyIb5USvYpf39MNpNljhkRa2+DPDw0RaBysjkVvxrktcHzvDxeAa+2GyBXiA
+         if1AkKOSSfuS0SQgoIyjPEYLfSQsTRjkLz9G7lJOWRbVXf0ZKCXxk6oclieL1ts5aWcK
+         7CWP0+fDH9f0BLm2Z8UHqXjwtAOtVI4U/79k+v0ZlQSEJavy0q7baiVlBh79YtJGGT73
+         AZ6H1Dj4qd7HYl78nbRoeXt9/mwuzGdG6n94VaEOlyYGvcDeoX8sDdfeGR1MeUN7CrI9
+         LOOtBNnjjEQx5EYdw6a46V/rMnHrD1mSWMr2J6dPiKXAYN6JsUQt+F5dnQ1+srJqD2/D
+         Krhw==
+X-Gm-Message-State: AOAM532KmCT4zw6j8S71BN4WICR9JjxX0dt4lb1oLTT8qce9Xx4K6IC2
+        TUTVJVKFwd4qvXivCRRsqiQ=
+X-Google-Smtp-Source: ABdhPJzu/yaIHb+pfJz4hSjGly2b6k2dPD29gtoRhayM+5TuhsABdfw6L/DEKEWI3lj3Des9pndb0w==
+X-Received: by 2002:a05:651c:b0a:b0:246:46e5:ca20 with SMTP id b10-20020a05651c0b0a00b0024646e5ca20mr4383876ljr.66.1645534882032;
+        Tue, 22 Feb 2022 05:01:22 -0800 (PST)
+Received: from eldfell ([194.136.85.206])
+        by smtp.gmail.com with ESMTPSA id m7sm1679595ljb.87.2022.02.22.05.01.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 22 Feb 2022 05:01:21 -0800 (PST)
+Date:   Tue, 22 Feb 2022 15:01:11 +0200
+From:   Pekka Paalanen <ppaalanen@gmail.com>
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com,
+        geert@linux-m68k.org, sam@ravnborg.org, kraxel@redhat.com,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v2 4/5] fbdev: Improve performance of cfb_imageblit()
+Message-ID: <20220222150111.506d2cee@eldfell>
+In-Reply-To: <20220221195410.9172-5-tzimmermann@suse.de>
+References: <20220221195410.9172-1-tzimmermann@suse.de>
+        <20220221195410.9172-5-tzimmermann@suse.de>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH] video: fbdev: via: check the return value of kstrdup()
-Content-Language: en-US
-To:     xkernel.wang@foxmail.com, FlorianSchandinat@gmx.de
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <tencent_AD2E09472E455F78B792E6BF114813B35206@qq.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <tencent_AD2E09472E455F78B792E6BF114813B35206@qq.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:wJCFas3iTYDKRy/G4Q+YVsZlHbHu1InHntEr+HGd7csopCqt0gk
- Het9BIY3anRiLBr624c2IjMYYMJUZjywh4jthMas2Q5s9EzZrm0uPIK2/Sp4E726khTTnCa
- eFCCrIIx+PBTlYHRg7ZQHQL9MMDXukUq6XPQkTyiP1xIYMfIkSZIyKsrzM+wGS0GIurVap1
- S3Pxl3XB6t4hE8/KJLZog==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:ZEU8riefV3U=:fv8lZBcdcNQE++XqHrpoeK
- asv+D/k7hSJ6Yxz9If35D9hoWXtsF5LOd+Lap02rV+c4i9owlERKYMdR1dAU+uqyIg1Lf+R15
- QMhdk3wm9Xwcvznm7LaJAyNq02RFRw1qtBXhhzMKrDnlxQhNlBliexXYRCVGp7VlH2pkf6dB5
- A+G56SCsqfccbO5RHGCljqnJ76hsZoUjwCDBJtiLL3fG/olJzyoRCnfdcYJQ4ys5Ovdmc99J4
- hZjx5XyLp6liVSKXw1mUpgQ3GntX2/3F0FTgzH7wDO1OmtYZT1EI2CN2O25vWtv18oGKZg65z
- u9tz/Vz8um/SjqhUkERjsP3fcx3Pxga36b6xn794KyPjUSYPfJA1ZcSwkktgjZe/22EpUxfgP
- toHXdmqnxIjLzP7v4KtLtf/mjEumec+YWoEgCS3Xexrfx9LoX3xUUvEr58Au5sV6SgSlMScWr
- 047rEP6QElE9gGSHO7BX1Yc3tel8dv/zaEjn6BtYuskL4bTBoOAGeoNIUhyv2GXpiIHFk3Wi4
- Hbb3ra2hZfYoYLmGfY1uwX2nRsClBkgPtV6wlDY1kRPDKsUHGjWyfSp0yBj+WMOEvBre6i3zM
- tXUaNNnxP0YP86BVW5sOLcc2xuUBcyTdJHZeQv7Cuztp6Rp94zzngS5Ami9xCWjJcZosRyFfz
- teODOvf8Ml68vt2SpnpxnPXo520Qw+ZvKOWXsmv+ykWpyW+IzWatrY4Ld92zi2ObT93gxKOL0
- tEeZw/ceJ7YHj0Xzu9XtGO46NoljWyupSZsu9LEPAQ1AwQUPeq2+jckSIWanRrcCKjdeHDWHm
- plY4gLH+KnJlioYXiUIZsVz1QkWfhRagmtvXEnjGJkIDgOFKN6vIrfv0KiJTpusogKgPU+Mxt
- O+LmZwBs3RMx63lxoOWv8eRovtr3S0YDY//QYVKuXhfvLr9PiYNHemE6ZZYK8ecNGyHvJx7yD
- psSu+OE3d6wsAna8JHSD6JMx5tUdtE1aK2FqMCTqflaq+A47H24I95zDrGgFae1JNm4zxawZL
- S5IcalwVIRU6A9ojq6aIHjBWRIslshfdnawHPtKX7CMDjSNpeDPYOMzhfFgcP7Fp3kHw5OIud
- f8TUg6ngHvCz6g=
+Content-Type: multipart/signed; boundary="Sig_/2klQmeI41pZg2jcGNXHFF56";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2/21/22 11:37, xkernel.wang@foxmail.com wrote:
-> From: Xiaoke Wang <xkernel.wang@foxmail.com>
->
-> kstrdup() is a memory allocation function which can return NULL when
-> some internal memory errors happen. It is better to check the return
-> value of it to catch the error in time during the setup of viafb.
->
-> Signed-off-by: Xiaoke Wang <xkernel.wang@foxmail.com>
+--Sig_/2klQmeI41pZg2jcGNXHFF56
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-applied to fbdev for-next tree.
-Thanks!
-Helge
+On Mon, 21 Feb 2022 20:54:09 +0100
+Thomas Zimmermann <tzimmermann@suse.de> wrote:
 
+> Improve the performance of sys_imageblit() by manually unrolling
+
+sys?
+
+> the inner blitting loop and moving some invariants out. The compiler
+> failed to do this automatically. This change keeps cfb_imageblit()
+> in sync with sys_imagebit().
+
+This is correct here.
+
+>=20
+> A microbenchmark measures the average number of CPU cycles
+> for sys_imageblit() after a stabilizing period of a few minutes
+
+sys?
+
+> (i7-4790, FullHD, simpledrm, kernel with debugging).
+>=20
+> sys_imageblit(), new: 15724 cycles
+
+sys?
+
+> cfb_imageblit(): old: 30566 cycles
+>=20
+> In the optimized case, cfb_imageblit() is now ~2x faster than before.
+>=20
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
->  drivers/video/fbdev/via/viafbdev.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->
-> diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/vi=
-a/viafbdev.c
-> index 22deb34..2d67c92 100644
-> --- a/drivers/video/fbdev/via/viafbdev.c
-> +++ b/drivers/video/fbdev/via/viafbdev.c
-> @@ -1939,8 +1939,12 @@ static int __init viafb_setup(void)
->
->  		if (!strncmp(this_opt, "viafb_mode1=3D", 12)) {
->  			viafb_mode1 =3D kstrdup(this_opt + 12, GFP_KERNEL);
-> +			if (!viafb_mode1)
-> +				return -ENOMEM;
->  		} else if (!strncmp(this_opt, "viafb_mode=3D", 11)) {
->  			viafb_mode =3D kstrdup(this_opt + 11, GFP_KERNEL);
-> +			if (!viafb_mode)
-> +				return -ENOMEM;
->  		} else if (!strncmp(this_opt, "viafb_bpp1=3D", 11)) {
->  			if (kstrtouint(this_opt + 11, 0, &viafb_bpp1) < 0)
->  				return -EINVAL;
-> @@ -1969,6 +1973,8 @@ static int __init viafb_setup(void)
->  				return -EINVAL;
->  		} else if (!strncmp(this_opt, "viafb_active_dev=3D", 17)) {
->  			viafb_active_dev =3D kstrdup(this_opt + 17, GFP_KERNEL);
-> +			if (!viafb_active_dev)
-> +				return -ENOMEM;
->  		} else if (!strncmp(this_opt,
->  			"viafb_display_hardware_layout=3D", 30)) {
->  			if (kstrtoint(this_opt + 30, 0,
-> @@ -1995,8 +2001,12 @@ static int __init viafb_setup(void)
->  				return -EINVAL;
->  		} else if (!strncmp(this_opt, "viafb_lcd_port=3D", 15)) {
->  			viafb_lcd_port =3D kstrdup(this_opt + 15, GFP_KERNEL);
-> +			if (!viafb_lcd_port)
-> +				return -ENOMEM;
->  		} else if (!strncmp(this_opt, "viafb_dvi_port=3D", 15)) {
->  			viafb_dvi_port =3D kstrdup(this_opt + 15, GFP_KERNEL);
-> +			if (!viafb_dvi_port)
-> +				return -ENOMEM;
->  		}
->  	}
->  	return 0;
+>  drivers/video/fbdev/core/cfbimgblt.c | 51 +++++++++++++++++++++++-----
+>  1 file changed, 42 insertions(+), 9 deletions(-)
 
+Just noticed some confusion in the commit message.
+
+
+Thanks,
+pq
+
+--Sig_/2klQmeI41pZg2jcGNXHFF56
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJQjwWQChkWOYOIONI1/ltBGqqqcFAmIU3pcACgkQI1/ltBGq
+qqeoJA/+PQ3+xQ+AEeMfrDoRKb2l0q6AgNwSlCUkdpXEz1zh5LrCvwjBLFpSHKur
+tB8dm+1+ty5bPBo5plxMqYmFDoX0RcLYadsOjw3TZ39zSBx8L9BKMCT+qrvf9Fy4
+wy8YgUnVseEppqksg4+qsOSW1rPE1U4aOY3E3xEnTm8IU4zdv39nm3GbSwoYXj40
+DTkai6qWurRV3+JBbsu8Pw2L9UrNH0ETkivEgxFIvTC4crjqr67oKP9yMbJGoYAs
+DqctM7UgayLerlNkj5ubJybQEYeGYB00rhtNeCM4HXtT/x1ICz9n9TbG0JZiEVJC
+Uwk0jSSZe4aQ2K1cSoqBHlAhH+9UrGPomWA+R7AW3ebbct9bUZKlyeIy0MzocKwT
+RCLu6aZDm1kwxNBUErcxzCEb7MzcmO1zsgOOqYHCCLq/V8/rU3Pv1SSdKzL4G8bw
+k67HQwp+onIZB/astL3sClD3j418xZ52o6A/NRrF+IQOlPd5FA3bmhyvB7nggvPY
+aHxpt79Y2WX3e5pzPdIaicdn3Z2W+svibAvxe94oLUu3Xwssg7FVwrL9QDADcZk2
+WoJnlqeN9cMFEPWrp/r+0D7KTgJ2tq54Y4iKKIvJen5d14v7Q69JpDa5+tbgpPG6
+N/HOFWvzICe2nKlNmsWG+grtlD26r2VZlDqPgjlPfHaMqkILWJY=
+=WKNs
+-----END PGP SIGNATURE-----
+
+--Sig_/2klQmeI41pZg2jcGNXHFF56--

@@ -2,80 +2,116 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43919C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Feb 2022 18:38:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D229C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Feb 2022 19:38:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243996AbiBWSi7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 23 Feb 2022 13:38:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55646 "EHLO
+        id S244466AbiBWTih (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 23 Feb 2022 14:38:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243992AbiBWSi5 (ORCPT
+        with ESMTP id S238574AbiBWTig (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 23 Feb 2022 13:38:57 -0500
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C38348381
-        for <linux-fbdev@vger.kernel.org>; Wed, 23 Feb 2022 10:38:27 -0800 (PST)
-Received: from zn.tnic (dslb-088-067-221-104.088.067.pools.vodafone-ip.de [88.67.221.104])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        Wed, 23 Feb 2022 14:38:36 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B173948E67
+        for <linux-fbdev@vger.kernel.org>; Wed, 23 Feb 2022 11:38:08 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id C28F51EC0494;
-        Wed, 23 Feb 2022 19:38:19 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
-        t=1645641499;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
-        bh=Ig+HgNxWjJgXASHFx0Eo0Cv/xBwjLhIfqzkOKH8oZL8=;
-        b=aoa6o+GB573FOU1Yz2rwNgdk0B5PctOgEt+lND/OrCeZGM0bc2h87e4u0VbtYxby21P+G2
-        mPGCDoGgpSUdOWg9IjT/QwPlvF8BcvdxjYN8UwNPlm7gdG9APhG23w4ApzoxGvEAZ8wEO3
-        5gEdFVswsXkZzbMKgiYvsBy4NwHfQ3s=
-Date:   Wed, 23 Feb 2022 19:38:23 +0100
-From:   Borislav Petkov <bp@alien8.de>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Michal Suchanek <msuchanek@suse.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        David Herrmann <dh.herrmann@gmail.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Helge Deller <deller@gmx.de>, x86@kernel.org,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-        Simon Trimmer <simont@opensource.cirrus.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-kernel@vger.kernel.org, Martin Mares <mj@ucw.cz>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        linux-video@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH v3] simplefb: Enable boot time VESA graphic mode
- selection.
-Message-ID: <YhZ/H9Ra+w7JC32g@zn.tnic>
-References: <a789e375-a23e-6988-33bc-1410eb5d974f@suse.de>
- <20220218160436.23211-1-msuchanek@suse.de>
- <49f0642d-7078-8fba-c851-6e33658180ff@suse.de>
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 4355B21891;
+        Wed, 23 Feb 2022 19:38:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1645645087; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=hTsJbLgi0af/PJW1g8Kt5i9GK08zKD43RJ0xOkUGFn4=;
+        b=Vz1BojSTHdKvfRA8SGnkCGxF0ajuIT+otpP2PbpWg8CFHqnDpwCoSVFbEp8YVdZ7C6dbap
+        kSthUIWCX2VJrUac2rs1AHTKQfT7VDlHfNbdsh+C+zYFsIuul/GW/lNQ9DVDFoMuKmAj6I
+        vsy7anao6eP8Vq7Ch/7UYqfckHM8jgg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1645645087;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=hTsJbLgi0af/PJW1g8Kt5i9GK08zKD43RJ0xOkUGFn4=;
+        b=LVQqJze1gvy+PJCrkLkB3DxMIEoAD4y49DPwL7YEhKZRy7Nf0/5Pb0MNYPMFpv49LQaoK0
+        /2UeeIyztom16TDg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 06C4613C7B;
+        Wed, 23 Feb 2022 19:38:07 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id C3iXAB+NFmKfUgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 23 Feb 2022 19:38:07 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com,
+        geert@linux-m68k.org, sam@ravnborg.org, kraxel@redhat.com,
+        ppaalanen@gmail.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v3 0/5] fbdev: Improve performance of fbdev console
+Date:   Wed, 23 Feb 2022 20:37:59 +0100
+Message-Id: <20220223193804.18636-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <49f0642d-7078-8fba-c851-6e33658180ff@suse.de>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Feb 21, 2022 at 10:51:35AM +0100, Thomas Zimmermann wrote:
-> Thanks for the patch. I'll wait a bit for additional reviews before merging
-> it.
+Optimize performance of the fbdev console for the common case of
+software-based clearing and image blitting.
 
-for the x86 bits:
+The commit descripton of each patch contains resuls os a simple
+microbenchmark. I also tested the full patchset's effect on the
+console output by printing directory listings (i7-4790, FullHD,
+simpledrm, kernel with debugging).
 
-Acked-by: Borislav Petkov <bp@suse.de>
+  > time find /usr/share/doc -type f
+
+In the unoptimized case:
+
+  real    0m6.173s
+  user    0m0.044s
+  sys     0m6.107s
+
+With optimizations applied:
+
+  real    0m4.754s
+  user    0m0.044s
+  sys     0m4.698s
+
+In the optimized case, printing the directory listing is ~25% faster
+than before.
+
+In v2 of the patchset, after implementing Sam's suggestion to update
+cfb_imageblit() as well, it turns out that the compiled code in
+sys_imageblit() is still significantly slower than the CFB version. A
+fix is probably a larger task and would include architecture-specific
+changes. A new TODO item suggests to investigate the performance of the
+various helpers and format-conversion functions in DRM and fbdev.
+
+v3:
+	* fix description of cfb_imageblit() patch (Pekka)
+v2:
+	* improve readability for sys_imageblit() (Gerd, Sam)
+	* new TODO item for further optimization
+
+Thomas Zimmermann (5):
+  fbdev: Improve performance of sys_fillrect()
+  fbdev: Improve performance of sys_imageblit()
+  fbdev: Remove trailing whitespaces from cfbimgblt.c
+  fbdev: Improve performance of cfb_imageblit()
+  drm: Add TODO item for optimizing format helpers
+
+ Documentation/gpu/todo.rst             |  22 +++++
+ drivers/video/fbdev/core/cfbimgblt.c   | 107 ++++++++++++++++---------
+ drivers/video/fbdev/core/sysfillrect.c |  16 +---
+ drivers/video/fbdev/core/sysimgblt.c   |  49 ++++++++---
+ 4 files changed, 133 insertions(+), 61 deletions(-)
 
 -- 
-Regards/Gruss,
-    Boris.
+2.35.1
 
-https://people.kernel.org/tglx/notes-about-netiquette

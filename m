@@ -2,62 +2,84 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 767D3C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Feb 2022 09:15:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B17AFC433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Feb 2022 10:30:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232702AbiBXJPl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 24 Feb 2022 04:15:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46382 "EHLO
+        id S232725AbiBXKad (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 24 Feb 2022 05:30:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50128 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232711AbiBXJPk (ORCPT
+        with ESMTP id S231235AbiBXKac (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 24 Feb 2022 04:15:40 -0500
-X-Greylist: delayed 458 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 24 Feb 2022 01:15:08 PST
-Received: from mail.onlinesuccesses.pl (mail.onlinesuccesses.pl [198.244.150.235])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6BA47279915
-        for <linux-fbdev@vger.kernel.org>; Thu, 24 Feb 2022 01:15:08 -0800 (PST)
-Received: by mail.onlinesuccesses.pl (Postfix, from userid 1002)
-        id A3981A4D55; Thu, 24 Feb 2022 09:06:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=onlinesuccesses.pl;
-        s=mail; t=1645693605;
-        bh=nE8HqilgMh4dy7+Z8ksfg7Bc9rmPeQtYFq3/3YR2ODU=;
-        h=Date:From:To:Subject:From;
-        b=Ci0ER/g/YuCn8SmvGILLloirEfTNtjcgsWCz1ZnN0P1yJd30dSsqmMd/rMp2wNuoT
-         +zGRAfOuE+M/itdDQSVQfSlCdQr80cN9HA24hyMIDLTeFmjz/Gt9g6W8jOFhnJ6zij
-         6Tu05HYkvhOYTPRodawqJJGz6rVTyO/8fxudeBzGdIHik4JMC96dIfsRwwHiHeSq8k
-         VCmVv7QwdAfrET5etiVOnB9ovVqsYfFBTi7aAGAisqez7wzXlfjihg4sHkj3sN2+LG
-         HroBHti7J1oq7K5MoUKXb0bya5pdzLBfrM96fG7ExBAl5MdBBiYM2T0csaAEW+U7JH
-         V/oqikHfU9MCw==
-Received: by mail.onlinesuccesses.pl for <linux-fbdev@vger.kernel.org>; Thu, 24 Feb 2022 09:05:53 GMT
-Message-ID: <20220224074501-0.1.2r.hodo.0.ocdh61jsr4@onlinesuccesses.pl>
-Date:   Thu, 24 Feb 2022 09:05:53 GMT
-From:   "Wiktor Zielonko" <wiktor.zielonko@onlinesuccesses.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: Ruch z pierwszej pozycji w Google
-X-Mailer: mail.onlinesuccesses.pl
+        Thu, 24 Feb 2022 05:30:32 -0500
+Received: from mx2.smtp.larsendata.com (mx2.smtp.larsendata.com [91.221.196.228])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06FB728F45D
+        for <linux-fbdev@vger.kernel.org>; Thu, 24 Feb 2022 02:30:00 -0800 (PST)
+Received: from mail01.mxhotel.dk (mail01.mxhotel.dk [91.221.196.236])
+        by mx2.smtp.larsendata.com (Halon) with ESMTPS
+        id c30dee63-955c-11ec-b2df-0050568cd888;
+        Thu, 24 Feb 2022 10:30:18 +0000 (UTC)
+Received: from ravnborg.org (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: sam@ravnborg.org)
+        by mail01.mxhotel.dk (Postfix) with ESMTPSA id 48650194B49;
+        Thu, 24 Feb 2022 11:30:02 +0100 (CET)
+Date:   Thu, 24 Feb 2022 11:29:55 +0100
+X-Report-Abuse-To: abuse@mxhotel.dk
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
+        deller@gmx.de, geert@linux-m68k.org, kraxel@redhat.com,
+        ppaalanen@gmail.com, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+Subject: Re: [PATCH v3 4/5] fbdev: Improve performance of cfb_imageblit()
+Message-ID: <YhdeIz29aHrwXvi8@ravnborg.org>
+References: <20220223193804.18636-1-tzimmermann@suse.de>
+ <20220223193804.18636-5-tzimmermann@suse.de>
+ <YhaYSeyYIwqur2hy@ravnborg.org>
+ <02cd3c81-d937-eb2a-ebe1-3eb9d83f6adc@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <02cd3c81-d937-eb2a-ebe1-3eb9d83f6adc@redhat.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,=20
+Hi Javier,
+On Thu, Feb 24, 2022 at 10:02:59AM +0100, Javier Martinez Canillas wrote:
+> Hello Sam,
+> 
+> On 2/23/22 21:25, Sam Ravnborg wrote:
+> 
+> [snip]
+> 
+> > 
+> > Question: What is cfb an abbreviation for anyway?
+> > Not related to the patch - but if I have known the memory is lost..
+> > 
+> 
+> I was curious so I dug on this. It seems CFB stands for Color Frame Buffer.
+> Doing a `git grep "(CFB)"` in the linux history repo [0], I get this:
+> 
+>   Documentation/isdn/README.diversion:   (CFB). 
+>   drivers/video/pmag-ba-fb.c: *   PMAG-BA TURBOchannel Color Frame Buffer (CFB) card support,
+>   include/video/pmag-ba-fb.h: *   TURBOchannel PMAG-BA Color Frame Buffer (CFB) card support,
+> 
+> Probably the helpers are called like this because they were for any fbdev
+> driver but assumed that the framebuffer was always in I/O memory. Later some
+> drivers were allocating the framebuffer in system memory and still using the
+> helpers, that were using I/O memory accessors and it's ilegal on some arches.
+> 
+> So the sys_* variants where introduced by commit 68648ed1f58d ("fbdev: add
+> drawing functions for framebuffers in system RAM") to fix this. The old
+> ones just kept their name, but probably it should had been renamed to io_*
+> for the naming to be consistent with the sys_* functions.
+> 
+> [0]: https://git.kernel.org/pub/scm/linux/kernel/git/history/history.git/
 
-jaki=C5=9B czas temu zg=C5=82osi=C5=82a si=C4=99 do nas firma, kt=C3=B3re=
-j strona internetowa nie pozycjonowa=C5=82a si=C4=99 wysoko w wyszukiwarc=
-e Google.=20
+Interesting - thanks for the history lesson and thanks for taking your
+time to share your findings too.
 
-Na podstawie wykonanego przez nas audytu SEO zoptymalizowali=C5=9Bmy tre=C5=
-=9Bci na stronie pod k=C4=85tem wcze=C5=9Bniej opracowanych s=C5=82=C3=B3=
-w kluczowych. Nasz wewn=C4=99trzny system codziennie analizuje prawid=C5=82=
-owe dzia=C5=82anie witryny.  Dzi=C4=99ki indywidualnej strategii, firma z=
-dobywa coraz wi=C4=99cej Klient=C3=B3w. =20
-
-Czy chcieliby Pa=C5=84stwo zwi=C4=99kszy=C4=87 liczb=C4=99 os=C3=B3b odwi=
-edzaj=C4=85cych stron=C4=99 internetow=C4=85 firmy? M=C3=B3g=C5=82bym prz=
-edstawi=C4=87 ofert=C4=99?=20
-
-
-Pozdrawiam serdecznie,
-Wiktor Zielonko
+	Sam

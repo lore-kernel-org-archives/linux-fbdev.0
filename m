@@ -2,114 +2,225 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06FDFC433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Feb 2022 10:40:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDB54C433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Feb 2022 10:45:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239764AbiBYKlQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 25 Feb 2022 05:41:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55100 "EHLO
+        id S239591AbiBYKqR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 25 Feb 2022 05:46:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44660 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238509AbiBYKlP (ORCPT
+        with ESMTP id S229914AbiBYKqQ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 25 Feb 2022 05:41:15 -0500
-Received: from mail-oi1-x233.google.com (mail-oi1-x233.google.com [IPv6:2607:f8b0:4864:20::233])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D463868FB7
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 02:40:37 -0800 (PST)
-Received: by mail-oi1-x233.google.com with SMTP id q5so6891235oij.6
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 02:40:37 -0800 (PST)
+        Fri, 25 Feb 2022 05:46:16 -0500
+Received: from mail-oi1-x22b.google.com (mail-oi1-x22b.google.com [IPv6:2607:f8b0:4864:20::22b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5EA1F1F6368
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 02:45:44 -0800 (PST)
+Received: by mail-oi1-x22b.google.com with SMTP id 12so6866438oix.12
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 02:45:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20210112.gappssmtp.com; s=20210112;
         h=mime-version:in-reply-to:references:from:user-agent:date:message-id
-         :subject:to:cc;
-        bh=XmHgx7i/9vNrhvW/myAVOgnrCLxN2TVncbf1coqXilo=;
-        b=JShMinXGneeNUXr6MBtvLnsdFzLyYYPtsUCiR1SgKcXep3GIi8/lspMh7qpTsNS+4P
-         IQU+sI8epCbEo+wm4GebX17uOpKZdhmwAdbT807V0RgLDlEvibQSQWM7XdjGnZCNmPIa
-         6hKDByDP3wolEPSOkSdLIyX3nQsPCK5Vfy5L+waT20TTaKawHhkeTmNSPEte2FmrceFe
-         v+6xcrbAgcBLra+7OTyLfY9V1z4JRO1vrdf5TwzAdbXW5ZbXl+1QiUYQJ4nnqrmbgfhV
-         rKN3RIc45tWwJoHgB8Zony4h91g7IoWebGN/osaLBTHRi4zLm2FgRV7TzjbfNPcVFxB6
-         LA2g==
+         :subject:to:cc:content-transfer-encoding;
+        bh=9W7E1hMeG1GpPjzQeVUD/1vCh2scmLIMnbP1N8G+QsU=;
+        b=a78eb+VOcuOTmv4bOMBCpo7vJLQy9FCHM/1qiKiR7NWjdkaaGpEheJtqR/k9YsTPrY
+         H1hfhI0UGkzflpg6UoZIcrmOmH62XVa/0pRdkVWK0co1ELJvTSAYxRnVmtgGsLhQOSqq
+         38DtnhPvdqltYNrOjAu41gmCWprvbnXkXHkrriTgzna054kb9OIAo9LV/Wg1EYiT90NT
+         d/0cgDiY2iIFsxqgzYrLQFo0fDOyX7sVmj5wj1TH467Et6ftpdH7dFxdSfzSK3WdTu+o
+         uH3mKU7NT9iEQKy3sYAUUiqBjtU4rK5/VyO10uQ0pHZSSz/KmCe8bjpipL1HyxRmed2f
+         3/ug==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:in-reply-to:references:from
-         :user-agent:date:message-id:subject:to:cc;
-        bh=XmHgx7i/9vNrhvW/myAVOgnrCLxN2TVncbf1coqXilo=;
-        b=39+2goUEaHjLR6tcktOaKX8Qb8ZmUcs4RiPwpAjzLOZbwgVHc5uVUUwkSB2vncHT3y
-         pOHuebViVhHFs0LNcbcDl1gobX5zzBuu2VYvqLYoYOWCtxeL5J2k98HxxLhQkdYD+aMs
-         SIef8D2KjwJTZcgrSZXQSbiehqC7/rdfcin08K/cjATJI2Isrx8lfeU1zDESSH9jJ1zL
-         B2n/zZzGLBEHPkXlAWr/eVIB3evsfexKZHFXdN16pcTNigTkYp89QTL9AI9n+9qpNaqY
-         Gd+21NHcCs3Pi0nexXmwf+Ahw91I4qwCEMUYuM8ninKx2CM6U0Wp/XS6niz6V15vkT7R
-         zYJw==
-X-Gm-Message-State: AOAM530ek2bG3RRdKW9qKTDZfLf7SmH1Vr7ovDfnTo4U90kmhzzY1gbI
-        n/ogTLa67rQpOGPmDkCTMC6xshjAucWNcGfQrMmr5Q==
-X-Google-Smtp-Source: ABdhPJx9aAd/x8lOBAlC3AOKrKYl71PZj1ZJrbUXQn++GPnT4jD/17UUadhTANVxEvJPL5JqOpZ6gLbTAqxp4YOXaXo=
+         :user-agent:date:message-id:subject:to:cc:content-transfer-encoding;
+        bh=9W7E1hMeG1GpPjzQeVUD/1vCh2scmLIMnbP1N8G+QsU=;
+        b=ZGGUkWBP0qqJqpnNgUzV7NcR24mAwUlWC4IQGAgX7sesdZXI2eHZYlSQvXOiSLdgRY
+         rfEABZBsgg2k2py/5psJegeFSiycrm8Nq7YteWZzQgSvb4TaTG5mzXv2Bp8f4NXtiF79
+         0EuiZRJJLkffWDuQEjkw+psWAo2q7IteAudizXVTkVkVlGzLtUrSDYSf7LoLzVYTWEL7
+         7T0hOm+7vywwv92H8dPENhmxJKZ3TonRMowbls1E90v3kgyXdiOYKyp2J6iNITWWRe67
+         pb24G6baif2Cqhr7tirmWzXjqs+mecjoiqXFiK8ztcdsrgIu9DDhjdCpQYxWkJu8aq1g
+         cK8Q==
+X-Gm-Message-State: AOAM5301Zm1M6HmKiwhLpi9XIahs3d5gDTzwUCpqxb+M1+Ltiqp1K2b5
+        3KqjX61dPj67cpXAARNCvReRWjQnexiUUAuI4jEs76RlClU=
+X-Google-Smtp-Source: ABdhPJxu3WAp8h43vtzTLY42//zgoS97B9OhbkZL3NmzaJ4HkMHPMXQTZzR34BelzCKWImB746hqT4H0VxqEaQANrdg=
 X-Received: by 2002:a05:6808:114e:b0:2d5:4101:844e with SMTP id
- u14-20020a056808114e00b002d54101844emr1162908oiu.169.1645785637242; Fri, 25
- Feb 2022 02:40:37 -0800 (PST)
+ u14-20020a056808114e00b002d54101844emr1171890oiu.169.1645785943634; Fri, 25
+ Feb 2022 02:45:43 -0800 (PST)
 Received: from 753933720722 named unknown by gmailapi.google.com with
- HTTPREST; Fri, 25 Feb 2022 02:40:36 -0800
+ HTTPREST; Fri, 25 Feb 2022 02:45:43 -0800
 MIME-Version: 1.0
-In-Reply-To: <1c791b60-935c-1e8e-dd1b-4b18fc273c1b@collabora.com>
-References: <20220218145437.18563-1-granquet@baylibre.com> <20220218145437.18563-5-granquet@baylibre.com>
- <1c791b60-935c-1e8e-dd1b-4b18fc273c1b@collabora.com>
+In-Reply-To: <CAAOTY__u8R-WkTmnKkey5p7_fVuy2mgoRY4Fx_kqb5kb4hnqmQ@mail.gmail.com>
+References: <20220218145437.18563-1-granquet@baylibre.com> <20220218145437.18563-6-granquet@baylibre.com>
+ <CAAOTY__u8R-WkTmnKkey5p7_fVuy2mgoRY4Fx_kqb5kb4hnqmQ@mail.gmail.com>
 From:   Guillaume Ranquet <granquet@baylibre.com>
 User-Agent: alot/0.10
-Date:   Fri, 25 Feb 2022 02:40:36 -0800
-Message-ID: <CABnWg9uoDNbA6ZYGdEgkyySBW0pfY1+3Zrnh51XjadNU8_+U9A@mail.gmail.com>
-Subject: Re: [PATCH v8 04/19] video/hdmi: Add audio_infoframe packing for DP
-To:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>, airlied@linux.ie,
-        chunfeng.yun@mediatek.com, chunkuang.hu@kernel.org,
-        ck.hu@mediatek.com, daniel@ffwll.ch, deller@gmx.de,
-        jitao.shi@mediatek.com, kishon@ti.com,
-        maarten.lankhorst@linux.intel.com, matthias.bgg@gmail.com,
-        mripard@kernel.org, p.zabel@pengutronix.de, robh+dt@kernel.org,
-        tzimmermann@suse.de, vkoul@kernel.org
-Cc:     dri-devel@lists.freedesktop.org,
-        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        Markus Schneider-Pargmann <msp@baylibre.com>
+Date:   Fri, 25 Feb 2022 02:45:43 -0800
+Message-ID: <CABnWg9t0x4GC_V+t9wkMJYjNnU0OYSaVdXi2sQD34dCNVHyVeQ@mail.gmail.com>
+Subject: Re: [PATCH v8 05/19] drm/mediatek: dpi: move dpi limits to board config
+To:     Chun-Kuang Hu <chunkuang.hu@kernel.org>
+Cc:     Philipp Zabel <p.zabel@pengutronix.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Rob Herring <robh+dt@kernel.org>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Chunfeng Yun <chunfeng.yun@mediatek.com>,
+        Kishon Vijay Abraham I <kishon@ti.com>,
+        Vinod Koul <vkoul@kernel.org>, deller@gmx.de,
+        CK Hu <ck.hu@mediatek.com>, Jitao Shi <jitao.shi@mediatek.com>,
+        AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        "ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>,
+        DTML <devicetree@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Quoting AngeloGioacchino Del Regno (2022-02-22 16:16:48)
-> Il 18/02/22 15:54, Guillaume Ranquet ha scritto:
-> > From: Markus Schneider-Pargmann <msp@baylibre.com>
+Quoting Chun-Kuang Hu (2022-02-21 02:46:15)
+> Hi, Guillaume:
+>
+> Guillaume Ranquet <granquet@baylibre.com> =E6=96=BC 2022=E5=B9=B42=E6=9C=
+=8818=E6=97=A5 =E9=80=B1=E4=BA=94 =E4=B8=8B=E5=8D=8810:56=E5=AF=AB=E9=81=93=
+=EF=BC=9A
 > >
-> > Similar to HDMI, DP uses audio infoframes as well which are structured
-> > very similar to the HDMI ones.
-> >
-> > This patch adds a helper function to pack the HDMI audio infoframe for
-> > DP, called hdmi_audio_infoframe_pack_for_dp().
-> > hdmi_audio_infoframe_pack_only() is split into two parts. One of them
-> > packs the payload only and can be used for HDMI and DP.
-> >
-> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
-> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > Add flexibility by moving the dpi limits to the board config
 >
-> Hello Guillaume,
+> This patch looks good to me. But I would like to know what's this
+> limit and why it vary in different SoC. If possible, would you please
+> provide more description for this?
 >
-> I've just noticed that this patch will not apply against the latest linux-next,
-> as the include/drm/drm_dp_helper.h header was moved to
-> include/drm/dp/drm_dp_helper.h
->
-> Can you please rebase for v9?
->
-> Thanks,
-> Angelo
+> Regards,
+> Chun-Kuang.
 >
 
-I'm sorry, I'm a bit of a noob, I rebased this series against 5.17-rc4 ...
-I'll rebase v9 against linux-next.
+Hi Chun-Kuang,
+
+You are right, the commit message is rather vague and deserves more details=
+.
+I'll have to dig into the documentations I have access to and ask maybe ask
+the engineers at mediatek for a detailed description.
 
 Thx,
 Guillaume.
 
+> >
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
 > > ---
-> >   drivers/video/hdmi.c        | 83 ++++++++++++++++++++++++++++---------
-> >   include/drm/drm_dp_helper.h |  2 +
-> >   include/linux/hdmi.h        |  7 +++-
-> >   3 files changed, 72 insertions(+), 20 deletions(-)
+> >  drivers/gpu/drm/mediatek/mtk_dpi.c | 25 ++++++++++++++++---------
+> >  1 file changed, 16 insertions(+), 9 deletions(-)
+> >
+> > diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c b/drivers/gpu/drm/media=
+tek/mtk_dpi.c
+> > index 4554e2de14309..4746eb3425674 100644
+> > --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
+> > +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
+> > @@ -125,6 +125,7 @@ struct mtk_dpi_conf {
+> >         bool edge_sel_en;
+> >         const u32 *output_fmts;
+> >         u32 num_output_fmts;
+> > +       const struct mtk_dpi_yc_limit *limit;
+> >  };
+> >
+> >  static void mtk_dpi_mask(struct mtk_dpi *dpi, u32 offset, u32 val, u32=
+ mask)
+> > @@ -235,9 +236,10 @@ static void mtk_dpi_config_fb_size(struct mtk_dpi =
+*dpi, u32 width, u32 height)
+> >         mtk_dpi_mask(dpi, DPI_SIZE, height << VSIZE, VSIZE_MASK);
+> >  }
+> >
+> > -static void mtk_dpi_config_channel_limit(struct mtk_dpi *dpi,
+> > -                                        struct mtk_dpi_yc_limit *limit=
+)
+> > +static void mtk_dpi_config_channel_limit(struct mtk_dpi *dpi)
+> >  {
+> > +       const struct mtk_dpi_yc_limit *limit =3D dpi->conf->limit;
+> > +
+> >         mtk_dpi_mask(dpi, DPI_Y_LIMIT, limit->y_bottom << Y_LIMINT_BOT,
+> >                      Y_LIMINT_BOT_MASK);
+> >         mtk_dpi_mask(dpi, DPI_Y_LIMIT, limit->y_top << Y_LIMINT_TOP,
+> > @@ -449,7 +451,6 @@ static int mtk_dpi_power_on(struct mtk_dpi *dpi)
+> >  static int mtk_dpi_set_display_mode(struct mtk_dpi *dpi,
+> >                                     struct drm_display_mode *mode)
+> >  {
+> > -       struct mtk_dpi_yc_limit limit;
+> >         struct mtk_dpi_polarities dpi_pol;
+> >         struct mtk_dpi_sync_param hsync;
+> >         struct mtk_dpi_sync_param vsync_lodd =3D { 0 };
+> > @@ -484,11 +485,6 @@ static int mtk_dpi_set_display_mode(struct mtk_dpi=
+ *dpi,
+> >         dev_dbg(dpi->dev, "Got  PLL %lu Hz, pixel clock %lu Hz\n",
+> >                 pll_rate, vm.pixelclock);
+> >
+> > -       limit.c_bottom =3D 0x0010;
+> > -       limit.c_top =3D 0x0FE0;
+> > -       limit.y_bottom =3D 0x0010;
+> > -       limit.y_top =3D 0x0FE0;
+> > -
+> >         dpi_pol.ck_pol =3D MTK_DPI_POLARITY_FALLING;
+> >         dpi_pol.de_pol =3D MTK_DPI_POLARITY_RISING;
+> >         dpi_pol.hsync_pol =3D vm.flags & DISPLAY_FLAGS_HSYNC_HIGH ?
+> > @@ -536,7 +532,7 @@ static int mtk_dpi_set_display_mode(struct mtk_dpi =
+*dpi,
+> >         else
+> >                 mtk_dpi_config_fb_size(dpi, vm.hactive, vm.vactive);
+> >
+> > -       mtk_dpi_config_channel_limit(dpi, &limit);
+> > +       mtk_dpi_config_channel_limit(dpi);
+> >         mtk_dpi_config_bit_num(dpi, dpi->bit_num);
+> >         mtk_dpi_config_channel_swap(dpi, dpi->channel_swap);
+> >         mtk_dpi_config_yc_map(dpi, dpi->yc_map);
+> > @@ -790,12 +786,20 @@ static const u32 mt8183_output_fmts[] =3D {
+> >         MEDIA_BUS_FMT_RGB888_2X12_BE,
+> >  };
+> >
+> > +static const struct mtk_dpi_yc_limit mtk_dpi_limit =3D {
+> > +       .c_bottom =3D 0x0010,
+> > +       .c_top =3D 0x0FE0,
+> > +       .y_bottom =3D 0x0010,
+> > +       .y_top =3D 0x0FE0,
+> > +};
+> > +
+> >  static const struct mtk_dpi_conf mt8173_conf =3D {
+> >         .cal_factor =3D mt8173_calculate_factor,
+> >         .reg_h_fre_con =3D 0xe0,
+> >         .max_clock_khz =3D 300000,
+> >         .output_fmts =3D mt8173_output_fmts,
+> >         .num_output_fmts =3D ARRAY_SIZE(mt8173_output_fmts),
+> > +       .limit =3D &mtk_dpi_limit,
+> >  };
+> >
+> >  static const struct mtk_dpi_conf mt2701_conf =3D {
+> > @@ -805,6 +809,7 @@ static const struct mtk_dpi_conf mt2701_conf =3D {
+> >         .max_clock_khz =3D 150000,
+> >         .output_fmts =3D mt8173_output_fmts,
+> >         .num_output_fmts =3D ARRAY_SIZE(mt8173_output_fmts),
+> > +       .limit =3D &mtk_dpi_limit,
+> >  };
+> >
+> >  static const struct mtk_dpi_conf mt8183_conf =3D {
+> > @@ -813,6 +818,7 @@ static const struct mtk_dpi_conf mt8183_conf =3D {
+> >         .max_clock_khz =3D 100000,
+> >         .output_fmts =3D mt8183_output_fmts,
+> >         .num_output_fmts =3D ARRAY_SIZE(mt8183_output_fmts),
+> > +       .limit =3D &mtk_dpi_limit,
+> >  };
+> >
+> >  static const struct mtk_dpi_conf mt8192_conf =3D {
+> > @@ -821,6 +827,7 @@ static const struct mtk_dpi_conf mt8192_conf =3D {
+> >         .max_clock_khz =3D 150000,
+> >         .output_fmts =3D mt8173_output_fmts,
+> >         .num_output_fmts =3D ARRAY_SIZE(mt8173_output_fmts),
+> > +       .limit =3D &mtk_dpi_limit,
+> >  };
+> >
+> >  static int mtk_dpi_probe(struct platform_device *pdev)
+> > --
+> > 2.34.1
 > >

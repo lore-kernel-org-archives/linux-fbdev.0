@@ -2,60 +2,60 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DEE08C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Feb 2022 10:52:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA919C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Feb 2022 10:55:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239836AbiBYKxY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 25 Feb 2022 05:53:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35484 "EHLO
+        id S239870AbiBYK4Q (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 25 Feb 2022 05:56:16 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44228 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238454AbiBYKxX (ORCPT
+        with ESMTP id S239867AbiBYK4P (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 25 Feb 2022 05:53:23 -0500
-Received: from mail-oi1-x22b.google.com (mail-oi1-x22b.google.com [IPv6:2607:f8b0:4864:20::22b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 291E317F6B5
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 02:52:51 -0800 (PST)
-Received: by mail-oi1-x22b.google.com with SMTP id y7so6938966oih.5
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 02:52:51 -0800 (PST)
+        Fri, 25 Feb 2022 05:56:15 -0500
+Received: from mail-oo1-xc36.google.com (mail-oo1-xc36.google.com [IPv6:2607:f8b0:4864:20::c36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EEC591DAC58
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 02:55:42 -0800 (PST)
+Received: by mail-oo1-xc36.google.com with SMTP id y15-20020a4a650f000000b0031c19e9fe9dso5670908ooc.12
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 02:55:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20210112.gappssmtp.com; s=20210112;
         h=mime-version:in-reply-to:references:from:user-agent:date:message-id
          :subject:to:cc:content-transfer-encoding;
-        bh=lCjS17RFbyRJS2Db4IElIeJl8aSxBOeolv8L7WEpzG0=;
-        b=ZxA07RL3mMl2OYCEdKyZ7YMkP6PPrkqbudpFP/Xwrvm3gMcx3tUnhRYv8Yk3mK4v3d
-         sc3DR0IdZD37Ua+cviUedxfolPE/qnsdmnqgBHPEpZC1+PgWDASxreISF1P1Ly2Uc/pI
-         wggbKGlXSnIWxZJSha4EF2De/dnO0fCLvkz6P5M18Y1PdanigCXjdE+5vkwPuaUO+0B5
-         i8GwmlHQgP4H8uSsxRwGBexOwkl/yUqMpcrbIrwN/4uQIhUr84KMQgf0PZk1BG66U7Jy
-         YRXGtmHxLmxy1pPqCe3Dtw8ydk2F6cu08Bbhkq7CFcvZxkCQ/X+xb7KWbb1WGerxvfvP
-         FsVA==
+        bh=kysMFOh8+xcDGXHPPVRwQiPaslPV5k2XuSftAh0IGXM=;
+        b=PfiEhsRzmUlc1wRl7CP4cP59K9Lm7uNP+Beg+DIjXFCoCXFJ6hYi3zhDk33axm8PI7
+         OX61MA/O4DZS/HoW6kOxIWkvBiMuwlsca/oj02T1KYHGmh7HU8j8l2wGRgmnrZyMrQLS
+         kXxVXXDFw3y+zQ+iN14/BLSQrgMsQfSFvHpmNWi95tMVAQyK7aoxcrrPGVyot4GcrsHL
+         HqOYh5V6/opTiE2A3eCCw6smo2gMJjIk+78lXh+jd0q4r6SgMWNjwP3t9C0e2BnAVkbd
+         NezHGnBxkQSrkIL3dcWMZI3u7OAGkRKDtJNnWZ8R9MWQw71qfg1N3irCviYM2WYS1oUs
+         FWuw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:in-reply-to:references:from
          :user-agent:date:message-id:subject:to:cc:content-transfer-encoding;
-        bh=lCjS17RFbyRJS2Db4IElIeJl8aSxBOeolv8L7WEpzG0=;
-        b=rdo+7zFcuqKCClLLJUtHHT4Rjo47th8sV+2iEDPn+b9J1SwQhVCMAyZehV9aUd4BIU
-         47Yn+fhRtKFiib3G8aGqdr+bRIBOrifCTRVxUcOWOz75VG0Q6/YEY10ggeNBmc3Sf6KZ
-         Rc5zyCT86u5ICALAN7Hz51VQ1eDhoZ9VbLtG7T+GNLj4q47xGWPElxSzzFtfypNidtVM
-         nsTZqWpSIFvRBlIcjaE4YM7SJ/kN5D0BKAOyHsMYYWQwu9il63nXCnyToeZHGLBJpl48
-         N7JzfxQuuUWvlYT6p5Ut+a1FcUkrm+kQNRQS1nxuCfXZaDMSyISm9CJJohdUfc+bO9ke
-         E8hg==
-X-Gm-Message-State: AOAM531Zi2w5rEAcZ+XjhowHOE9tGlpK9C1SBJU7MjwMDmRMZaL3PJcK
-        dCWEYajH8KkRHqz3hwbK/TgOi8SPYW5zPSXIdG6HuQ==
-X-Google-Smtp-Source: ABdhPJyteHJVXwqtREl4MhJz0dVR/k/rAMxVv+BnqtMnsqQSFUKqWOGlNhrZlPQ9P1vmHV6UVPKJuCBvnsGagSVbgHg=
-X-Received: by 2002:aca:1b13:0:b0:2d4:b033:450 with SMTP id
- b19-20020aca1b13000000b002d4b0330450mr1231170oib.214.1645786370409; Fri, 25
- Feb 2022 02:52:50 -0800 (PST)
+        bh=kysMFOh8+xcDGXHPPVRwQiPaslPV5k2XuSftAh0IGXM=;
+        b=OYziZw9VUz4To7IrzPmlOl3yaS0OoZOO5vuD4aO6be47ZJWZctnDDp8cxl2zpFOMS6
+         Kkdr19llR62nRjYqO0sYw1PIETVE4RAfM1J3pv3GR9QS3Ndsm6BuPeIL9SDJiCgyZGCJ
+         ZTv2SLlFVdUtKNXMnVez+tXEPil2GCX5HIzGAAI69Xr+rop0P+M6thAEEiFMRllUKIAM
+         bey0WOhBzM9iAK1fOgKPinJ0VbRjXI9YxVN8CnU+SnXNChykQxuVyvExuIpShnqsNNa0
+         53tMxEA+kNVDs2ywjNpMPQv7ZekKlmYF535dt2gu/ewf0wuiVDnof2mjjiQQsNUZ+Fk0
+         Qt+Q==
+X-Gm-Message-State: AOAM532rfGOuul5nPWBXTB/3YM0qB58qcnWKjZGk60/PJW7SVe/P8mrr
+        G0OFZrxUDCU+vzMXJRYGWh6nmtVijj+DLZSswGcUYg==
+X-Google-Smtp-Source: ABdhPJyj6wu6NzHc7L+z5p9txi1s1uYfQozYWTw3yryTNIRQzg7lTSsRCXyXFdJgD2WTiJR3FSSONQVrrSY9I5VWBm8=
+X-Received: by 2002:a4a:4112:0:b0:319:3eb2:11b with SMTP id
+ x18-20020a4a4112000000b003193eb2011bmr2462193ooa.40.1645786542268; Fri, 25
+ Feb 2022 02:55:42 -0800 (PST)
 Received: from 753933720722 named unknown by gmailapi.google.com with
- HTTPREST; Fri, 25 Feb 2022 02:52:49 -0800
+ HTTPREST; Fri, 25 Feb 2022 02:55:41 -0800
 MIME-Version: 1.0
-In-Reply-To: <CAAOTY__AgD_Rc_5TS4v+sBDeN-nd0DbwuERhW=OsvsbMWSsxsA@mail.gmail.com>
-References: <20220218145437.18563-1-granquet@baylibre.com> <20220218145437.18563-7-granquet@baylibre.com>
- <CAAOTY__AgD_Rc_5TS4v+sBDeN-nd0DbwuERhW=OsvsbMWSsxsA@mail.gmail.com>
+In-Reply-To: <CAAOTY_-5g4fXVTOETDxbn2Cp3MVjFs-Sh9NT1NepfEXUhdJQEw@mail.gmail.com>
+References: <20220218145437.18563-1-granquet@baylibre.com> <20220218145437.18563-8-granquet@baylibre.com>
+ <CAAOTY_-5g4fXVTOETDxbn2Cp3MVjFs-Sh9NT1NepfEXUhdJQEw@mail.gmail.com>
 From:   Guillaume Ranquet <granquet@baylibre.com>
 User-Agent: alot/0.10
-Date:   Fri, 25 Feb 2022 02:52:49 -0800
-Message-ID: <CABnWg9uUDH7Vo-=HTSjS7HRfdo=SQPk43ujT=jh5Q+VhAA2Hag@mail.gmail.com>
-Subject: Re: [PATCH v8 06/19] drm/mediatek: dpi: implement a CK/DE pol toggle
+Date:   Fri, 25 Feb 2022 02:55:41 -0800
+Message-ID: <CABnWg9vOOcKsGqjZmakX3XrMhHcj5r23AUs77EnLR+xuw0Cg3g@mail.gmail.com>
+Subject: Re: [PATCH v8 07/19] drm/mediatek: dpi: implement a swap_input toggle
  in board config
 To:     Chun-Kuang Hu <chunkuang.hu@kernel.org>
 Cc:     Philipp Zabel <p.zabel@pengutronix.de>,
@@ -84,121 +84,111 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Quoting Chun-Kuang Hu (2022-02-21 03:14:02)
-> HI, Guillaume:
+Quoting Chun-Kuang Hu (2022-02-21 03:32:32)
+> Hi, Guillaume:
 >
 > Guillaume Ranquet <granquet@baylibre.com> =E6=96=BC 2022=E5=B9=B42=E6=9C=
 =8818=E6=97=A5 =E9=80=B1=E4=BA=94 =E4=B8=8B=E5=8D=8810:56=E5=AF=AB=E9=81=93=
 =EF=BC=9A
 > >
-> > Adds a bit of flexibility to support boards without CK/DE pol support
+> > Adds a bit of flexibility to support boards without swap_input support
+> >
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > ---
+> >  drivers/gpu/drm/mediatek/mtk_dpi.c | 14 +++++++++++---
+> >  1 file changed, 11 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c b/drivers/gpu/drm/media=
+tek/mtk_dpi.c
+> > index 545a1337cc899..454f8563efae4 100644
+> > --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
+> > +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
+> > @@ -126,6 +126,7 @@ struct mtk_dpi_conf {
+> >         const u32 *output_fmts;
+> >         u32 num_output_fmts;
+> >         bool is_ck_de_pol;
+> > +       bool swap_input_support;
+> >         const struct mtk_dpi_yc_limit *limit;
+> >  };
+> >
+> > @@ -378,18 +379,21 @@ static void mtk_dpi_config_color_format(struct mt=
+k_dpi *dpi,
+> >             (format =3D=3D MTK_DPI_COLOR_FORMAT_YCBCR_444_FULL)) {
+> >                 mtk_dpi_config_yuv422_enable(dpi, false);
+> >                 mtk_dpi_config_csc_enable(dpi, true);
+> > -               mtk_dpi_config_swap_input(dpi, false);
+> > +               if (dpi->conf->swap_input_support)
+> > +                       mtk_dpi_config_swap_input(dpi, false);
+> >                 mtk_dpi_config_channel_swap(dpi, MTK_DPI_OUT_CHANNEL_SW=
+AP_BGR);
+> >         } else if ((format =3D=3D MTK_DPI_COLOR_FORMAT_YCBCR_422) ||
+> >                    (format =3D=3D MTK_DPI_COLOR_FORMAT_YCBCR_422_FULL))=
+ {
+> >                 mtk_dpi_config_yuv422_enable(dpi, true);
+> >                 mtk_dpi_config_csc_enable(dpi, true);
+> > -               mtk_dpi_config_swap_input(dpi, true);
+> > +               if (dpi->conf->swap_input_support)
+> > +                       mtk_dpi_config_swap_input(dpi, true);
 >
-> I'm not sure what the term 'board' mean. Do you mean different board
-> with different panel but all with mt8195-dpintf? If so, you should get
-> CK/DE support from panel driver not fix this information in dpi
-> driver.
+> In MT8173, MT2701, MT8183, MT8192, YCBCR_444 would not swap but
+> YCBCR_422 would swap. But In MT8195, both YCBCR_444 and YCBCR_422
+> would not swap, So I think one of these format would be abnormal in
+> MT8195, right? Or would you provide more information about how this
+> swap work?
 >
 > Regards,
 > Chun-Kuang.
 >
 
-Hi Chun-Kuang,
-
-The correct term (as pointed by Angelo) would be 'SoC' instead of
-'board' I guess.
-My understanding is that every SoC might have or might not have CK/DE suppo=
-rt.
-
-
-I'll try to dig into the documentation I have to understand exactly
-where this support
-is coming from.
+I'm not sure I have access to that level of information... and my
+knowledge on mediatek
+SoC is rather limited, I will circle back with mediatek engineers to
+have a definite
+answer.
 
 Thx,
-Guillaume.
-
-> >
-> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> > ---
-> >  drivers/gpu/drm/mediatek/mtk_dpi.c | 22 +++++++++++++++++-----
-> >  1 file changed, 17 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c b/drivers/gpu/drm/media=
-tek/mtk_dpi.c
-> > index 4746eb3425674..545a1337cc899 100644
-> > --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
-> > +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> > @@ -125,6 +125,7 @@ struct mtk_dpi_conf {
-> >         bool edge_sel_en;
-> >         const u32 *output_fmts;
-> >         u32 num_output_fmts;
-> > +       bool is_ck_de_pol;
-> >         const struct mtk_dpi_yc_limit *limit;
-> >  };
-> >
-> > @@ -211,13 +212,20 @@ static void mtk_dpi_config_pol(struct mtk_dpi *dp=
-i,
-> >                                struct mtk_dpi_polarities *dpi_pol)
-> >  {
-> >         unsigned int pol;
-> > +       unsigned int mask;
-> >
-> > -       pol =3D (dpi_pol->ck_pol =3D=3D MTK_DPI_POLARITY_RISING ? 0 : C=
-K_POL) |
-> > -             (dpi_pol->de_pol =3D=3D MTK_DPI_POLARITY_RISING ? 0 : DE_=
-POL) |
-> > -             (dpi_pol->hsync_pol =3D=3D MTK_DPI_POLARITY_RISING ? 0 : =
-HSYNC_POL) |
-> > +       mask =3D HSYNC_POL | VSYNC_POL;
-> > +       pol =3D (dpi_pol->hsync_pol =3D=3D MTK_DPI_POLARITY_RISING ? 0 =
-: HSYNC_POL) |
-> >               (dpi_pol->vsync_pol =3D=3D MTK_DPI_POLARITY_RISING ? 0 : =
-VSYNC_POL);
-> > -       mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, pol,
-> > -                    CK_POL | DE_POL | HSYNC_POL | VSYNC_POL);
-> > +       if (dpi->conf->is_ck_de_pol) {
-> > +               mask |=3D CK_POL | DE_POL;
-> > +               pol |=3D (dpi_pol->ck_pol =3D=3D MTK_DPI_POLARITY_RISIN=
-G ?
-> > +                       0 : CK_POL) |
-> > +                      (dpi_pol->de_pol =3D=3D MTK_DPI_POLARITY_RISING =
-?
-> > +                       0 : DE_POL);
-> > +       }
-> > +
-> > +       mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, pol, mask);
+Guillaume
+> >                 mtk_dpi_config_channel_swap(dpi, MTK_DPI_OUT_CHANNEL_SW=
+AP_RGB);
+> >         } else {
+> >                 mtk_dpi_config_yuv422_enable(dpi, false);
+> >                 mtk_dpi_config_csc_enable(dpi, false);
+> > -               mtk_dpi_config_swap_input(dpi, false);
+> > +               if (dpi->conf->swap_input_support)
+> > +                       mtk_dpi_config_swap_input(dpi, false);
+> >                 mtk_dpi_config_channel_swap(dpi, MTK_DPI_OUT_CHANNEL_SW=
+AP_RGB);
+> >         }
 > >  }
-> >
-> >  static void mtk_dpi_config_3d(struct mtk_dpi *dpi, bool en_3d)
-> > @@ -799,6 +807,7 @@ static const struct mtk_dpi_conf mt8173_conf =3D {
-> >         .max_clock_khz =3D 300000,
+> > @@ -808,6 +812,7 @@ static const struct mtk_dpi_conf mt8173_conf =3D {
 > >         .output_fmts =3D mt8173_output_fmts,
 > >         .num_output_fmts =3D ARRAY_SIZE(mt8173_output_fmts),
-> > +       .is_ck_de_pol =3D true,
+> >         .is_ck_de_pol =3D true,
+> > +       .swap_input_support =3D true,
 > >         .limit =3D &mtk_dpi_limit,
 > >  };
 > >
-> > @@ -809,6 +818,7 @@ static const struct mtk_dpi_conf mt2701_conf =3D {
-> >         .max_clock_khz =3D 150000,
+> > @@ -819,6 +824,7 @@ static const struct mtk_dpi_conf mt2701_conf =3D {
 > >         .output_fmts =3D mt8173_output_fmts,
 > >         .num_output_fmts =3D ARRAY_SIZE(mt8173_output_fmts),
-> > +       .is_ck_de_pol =3D true,
+> >         .is_ck_de_pol =3D true,
+> > +       .swap_input_support =3D true,
 > >         .limit =3D &mtk_dpi_limit,
 > >  };
 > >
-> > @@ -818,6 +828,7 @@ static const struct mtk_dpi_conf mt8183_conf =3D {
-> >         .max_clock_khz =3D 100000,
+> > @@ -829,6 +835,7 @@ static const struct mtk_dpi_conf mt8183_conf =3D {
 > >         .output_fmts =3D mt8183_output_fmts,
 > >         .num_output_fmts =3D ARRAY_SIZE(mt8183_output_fmts),
-> > +       .is_ck_de_pol =3D true,
+> >         .is_ck_de_pol =3D true,
+> > +       .swap_input_support =3D true,
 > >         .limit =3D &mtk_dpi_limit,
 > >  };
 > >
-> > @@ -827,6 +838,7 @@ static const struct mtk_dpi_conf mt8192_conf =3D {
-> >         .max_clock_khz =3D 150000,
+> > @@ -839,6 +846,7 @@ static const struct mtk_dpi_conf mt8192_conf =3D {
 > >         .output_fmts =3D mt8173_output_fmts,
 > >         .num_output_fmts =3D ARRAY_SIZE(mt8173_output_fmts),
-> > +       .is_ck_de_pol =3D true,
+> >         .is_ck_de_pol =3D true,
+> > +       .swap_input_support =3D true,
 > >         .limit =3D &mtk_dpi_limit,
 > >  };
 > >

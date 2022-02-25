@@ -2,42 +2,63 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83BA9C433EF
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Feb 2022 12:06:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84339C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Feb 2022 13:04:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229531AbiBYMHK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 25 Feb 2022 07:07:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55648 "EHLO
+        id S238554AbiBYNFZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 25 Feb 2022 08:05:25 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40140 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229537AbiBYMHK (ORCPT
+        with ESMTP id S236386AbiBYNFY (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 25 Feb 2022 07:07:10 -0500
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C9D9C267D;
-        Fri, 25 Feb 2022 04:06:34 -0800 (PST)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: kholk11)
-        with ESMTPSA id 6B3AC1F42522
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1645790793;
-        bh=bCvONPGPweF9C0iIikhI+xXmgfTZPFzQXLGikPMic4Q=;
-        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=NUdBb0+vQZH9FR5rKRZuLNISs3qEAxljfZxyX/wjLatzxAmwaTmRWfJmN854GQnnP
-         elhn7SJKFAOyWwiGMiAw7rGokii5TDEQBg9fCuv3L9ofZuZ1zFN+F64J8dP9dYQTlJ
-         dcsEF3s1quTSkbShgCbYTkm6yK4R8RAVDKjQI/BV2C3ToBbzXP8/Lh+OPo+U+TDLzB
-         TOQSvp5E1tgdUAdbB3rZ9f6gekB+4LKSz3UsPHk6meK51t9YoX0odctJxl76GeijL9
-         zNrysxDz9Bv8nxRlUybyWDDYCYDTDhrObaNriQVzfep8rKnf3RxcLPhvK/gH0IDDHF
-         8i6+AtMAKSCHQ==
-Message-ID: <cca52225-629c-bb18-8d62-7b8f65e88064@collabora.com>
-Date:   Fri, 25 Feb 2022 13:06:29 +0100
+        Fri, 25 Feb 2022 08:05:24 -0500
+Received: from mail-oi1-x22f.google.com (mail-oi1-x22f.google.com [IPv6:2607:f8b0:4864:20::22f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B134C1E5A5A
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 05:04:47 -0800 (PST)
+Received: by mail-oi1-x22f.google.com with SMTP id x193so7392476oix.0
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 05:04:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
+        h=mime-version:in-reply-to:references:from:user-agent:date:message-id
+         :subject:to:cc;
+        bh=qpCLiBzRlJC5XhuMltg4PH37HJYFELUnHZd9am5tLiU=;
+        b=WOyGrdV+9c4MC7siBhPVli3rndAMVAIfFCaDbZH5nLP/v8STcPEw1PLV79OCMzUU//
+         +JKW3cONinG9hBjFXNdctKU6E16tFiRcUiyGDFeAKz94hGhD/2w+wzaFDNMuWhDF8VMc
+         MCd5ADjOB/rl0vNdp+PYAfsaU2h1iaAFEF46LEC9qTCGW2Ci7Z/bnjjdihIpZW2fb2x6
+         dzonV+mSepQxNhyKkrvaja9BTc2uiNM7YWFs14AFkX1YfJqtHZgOEjpLPzdB2+VILTca
+         yUr/p+kM9OlFIbaXvJL7ftsh2PzFsNyn7/j8qUNtt4c+7fnoFNiF3N+P41Rbn/lSChla
+         TXug==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:in-reply-to:references:from
+         :user-agent:date:message-id:subject:to:cc;
+        bh=qpCLiBzRlJC5XhuMltg4PH37HJYFELUnHZd9am5tLiU=;
+        b=6WLUDiF+4KxVhdf2CltHgQGdQ09FqkRt6XeZ3vcRdxpu0tFK7zBzO9qlwtWTN05dVp
+         ZubQczMltnQrfYJIWtndOjB5LQYhaf87knSnS7CvV1T7ChhAN6PS4CkgWjebmGuVby2m
+         tqPMoUfEM+XwSuGT/5A7BimTS5TUSP0rYRhGYB/MpN5o9SdCeARtQo8XvWzGoITYCbIo
+         HikVxyzCUQRkGWHyA3BpIRnAma0g6tbDOxrMicm7IM+p4jJbwoK9c2kSf6HCKq0vmoqI
+         oY6hYV5p+rOQUUKmyJjQQ9zFK6S5cXFFrAZOfGtaxV+6lL+CF+BTQDA11zmkReXtnTxr
+         jrGw==
+X-Gm-Message-State: AOAM533QPFsKGmmuVYK/24/uU7zJAVFV9uB/1cutbHwATTFOkWOnfpV0
+        OV34BJtTa/JIjronXGlB0G3q7ZV7+eq63yLn70iOqA==
+X-Google-Smtp-Source: ABdhPJzIaZMqWdp+H4loCziAbw3sR72kXDohahJPhw/sRFW5q/U/TtwO1Ts+6RsQ6d49UNf23SfzdLUUI+GV5euJHEY=
+X-Received: by 2002:aca:1b13:0:b0:2d4:b033:450 with SMTP id
+ b19-20020aca1b13000000b002d4b0330450mr1533064oib.214.1645794286909; Fri, 25
+ Feb 2022 05:04:46 -0800 (PST)
+Received: from 753933720722 named unknown by gmailapi.google.com with
+ HTTPREST; Fri, 25 Feb 2022 05:04:46 -0800
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.1
-Subject: Re: [PATCH v8 14/19] phy: phy-mtk-dp: Add driver for DP phy
-Content-Language: en-US
-To:     Guillaume Ranquet <granquet@baylibre.com>, airlied@linux.ie,
-        chunfeng.yun@mediatek.com, chunkuang.hu@kernel.org,
-        ck.hu@mediatek.com, daniel@ffwll.ch, deller@gmx.de,
+In-Reply-To: <9069bd9d83653fbb286f9e8fa53827b1639d1923.camel@mediatek.com>
+References: <20220218145437.18563-1-granquet@baylibre.com> <20220218145437.18563-16-granquet@baylibre.com>
+ <9069bd9d83653fbb286f9e8fa53827b1639d1923.camel@mediatek.com>
+From:   Guillaume Ranquet <granquet@baylibre.com>
+User-Agent: alot/0.10
+Date:   Fri, 25 Feb 2022 05:04:46 -0800
+Message-ID: <CABnWg9tv5rgvLgc59PhqCFtPNL+gAVQ-LauAFG=7zuW_yV=PUA@mail.gmail.com>
+Subject: Re: [PATCH v8 15/19] drm/mediatek: Add mt8195 Embedded DisplayPort driver
+To:     CK Hu <ck.hu@mediatek.com>, airlied@linux.ie,
+        angelogioacchino.delregno@collabora.com, chunfeng.yun@mediatek.com,
+        chunkuang.hu@kernel.org, daniel@ffwll.ch, deller@gmx.de,
         jitao.shi@mediatek.com, kishon@ti.com,
         maarten.lankhorst@linux.intel.com, matthias.bgg@gmail.com,
         mripard@kernel.org, p.zabel@pengutronix.de, robh+dt@kernel.org,
@@ -46,221 +67,316 @@ Cc:     dri-devel@lists.freedesktop.org,
         linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        Markus Schneider-Pargmann <msp@baylibre.com>
-References: <20220218145437.18563-1-granquet@baylibre.com>
- <20220218145437.18563-15-granquet@baylibre.com>
- <bdd867fe-3103-a99b-e9ec-02df6a18d385@collabora.com>
- <CABnWg9tfutasgiUaLBvb8CxTycLKf8Ry=9PMi2Vtu2JeB4a=dQ@mail.gmail.com>
-From:   AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <CABnWg9tfutasgiUaLBvb8CxTycLKf8Ry=9PMi2Vtu2JeB4a=dQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+        Markus Schneider-Pargmann <msp@baylibre.com>,
+        kernel test robot <lkp@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Il 25/02/22 12:49, Guillaume Ranquet ha scritto:
-> Quoting AngeloGioacchino Del Regno (2022-02-21 15:31:51)
->> Il 18/02/22 15:54, Guillaume Ranquet ha scritto:
->>> From: Markus Schneider-Pargmann <msp@baylibre.com>
->>>
->>> This is a new driver that supports the integrated DisplayPort phy for
->>> mediatek SoCs, especially the mt8195. The phy is integrated into the
->>> DisplayPort controller and will be created by the mtk-dp driver. This
->>> driver expects a struct regmap to be able to work on the same registers
->>> as the DisplayPort controller. It sets the device data to be the struct
->>> phy so that the DisplayPort controller can easily work with it.
->>>
->>> The driver does not have any devicetree bindings because the datasheet
->>> does not list the controller and the phy as distinct units.
->>>
->>> The interaction with the controller can be covered by the configure
->>> callback of the phy framework and its displayport parameters.
->>>
->>> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
->>> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
->>> ---
->>>    MAINTAINERS                       |   1 +
->>>    drivers/phy/mediatek/Kconfig      |   8 ++
->>>    drivers/phy/mediatek/Makefile     |   1 +
->>>    drivers/phy/mediatek/phy-mtk-dp.c | 199 ++++++++++++++++++++++++++++++
->>>    4 files changed, 209 insertions(+)
->>>    create mode 100644 drivers/phy/mediatek/phy-mtk-dp.c
->>>
+Quoting CK Hu (2022-02-25 10:45:26)
+> Hi, Guillaume:
+>
+> On Fri, 2022-02-18 at 15:54 +0100, Guillaume Ranquet wrote:
+> > From: Markus Schneider-Pargmann <msp@baylibre.com>
+> >
+> > This patch adds a DisplayPort driver for the Mediatek mt8195 SoC.
+> >
+> > It supports the mt8195, the embedded DisplayPort units. It offers
+> > hot-plug-detection and DisplayPort 1.4 with up to 4 lanes.
+> >
+> > The driver creates a child device for the phy. The child device will
+> > never exist without the parent being active. As they are sharing a
+> > register range, the parent passes a regmap pointer to the child so
+> > that
+> > both can work with the same register range. The phy driver sets
+> > device
+> > data that is read by the parent to get the phy device that can be
+> > used
+> > to control the phy properties.
+> >
+> > This driver is based on an initial version by
+> > Jason-JH.Lin <jason-jh.lin@mediatek.com>.
+> >
+> > Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> > Reported-by: kernel test robot <lkp@intel.com>
+> > ---
+> >  drivers/gpu/drm/mediatek/Kconfig       |    7 +
+> >  drivers/gpu/drm/mediatek/Makefile      |    2 +
+> >  drivers/gpu/drm/mediatek/mtk_dp.c      | 2358
+> > ++++++++++++++++++++++++
+> >  drivers/gpu/drm/mediatek/mtk_dp_reg.h  |  568 ++++++
+> >  drivers/gpu/drm/mediatek/mtk_drm_drv.c |    1 +
+> >  drivers/gpu/drm/mediatek/mtk_drm_drv.h |    1 +
+> >  6 files changed, 2937 insertions(+)
+> >  create mode 100644 drivers/gpu/drm/mediatek/mtk_dp.c
+> >  create mode 100644 drivers/gpu/drm/mediatek/mtk_dp_reg.h
+> >
+> >
+>
+> [snip]
+>
+> > +
+> > +static u32 *mtk_dp_bridge_atomic_get_output_bus_fmts(struct
+> > drm_bridge *bridge,
+> > +                                                  struct
+> > drm_bridge_state *bridge_state,
+> > +                                                  struct
+> > drm_crtc_state *crtc_state,
+> > +                                                  struct
+> > drm_connector_state *conn_state,
+> > +                                                  unsigned int
+> > *num_output_fmts)
+> > +{
+> > +     u32 *output_fmts;
+> > +
+> > +     *num_output_fmts = 0;
+> > +     output_fmts = kcalloc(1, sizeof(*output_fmts), GFP_KERNEL);
+> > +     if (!output_fmts)
+> > +             return NULL;
+> > +     *num_output_fmts = 1;
+> > +     output_fmts[0] = MEDIA_BUS_FMT_FIXED;
+> > +     return output_fmts;
+> > +}
+> > +
+> > +static const u32 mt8195_input_fmts[] = {
+> > +     MEDIA_BUS_FMT_RGB888_1X24,
+> > +     MEDIA_BUS_FMT_YUV8_1X24,
+> > +     MEDIA_BUS_FMT_YUYV8_1X16,
+> > +};
+>
+> This means DPINTF output format, right? Does DPINTF switch output
+> buffer format?
+>
+I'll circle back with mediatek engineers, as I don't have a clue here.
 
-..snip..
+> > +
+> > +static u32 *mtk_dp_bridge_atomic_get_input_bus_fmts(struct
+> > drm_bridge *bridge,
+> > +                                                 struct
+> > drm_bridge_state *bridge_state,
+> > +                                                 struct
+> > drm_crtc_state *crtc_state,
+> > +                                                 struct
+> > drm_connector_state *conn_state,
+> > +                                                 u32 output_fmt,
+> > +                                                 unsigned int
+> > *num_input_fmts)
+> > +{
+> > +     u32 *input_fmts;
+> > +     struct mtk_dp *mtk_dp = mtk_dp_from_bridge(bridge);
+> > +     struct drm_display_mode *mode = &crtc_state->adjusted_mode;
+> > +     struct drm_display_info *display_info =
+> > +             &conn_state->connector->display_info;
+> > +     u32 rx_linkrate;
+> > +     u32 bpp;
+> > +
+> > +     bpp = (display_info->color_formats & DRM_COLOR_FORMAT_YCRCB422)
+> > ? 16 :
+> > +
+> >       24;
+> > +     rx_linkrate = (u32)mtk_dp->train_info.link_rate * 27000;
+> > +     *num_input_fmts = 0;
+> > +     input_fmts = kcalloc(ARRAY_SIZE(mt8195_input_fmts),
+> > sizeof(*input_fmts),
+> > +                          GFP_KERNEL);
+> > +     if (!input_fmts)
+> > +             return NULL;
+> > +
+> > +     *num_input_fmts = ARRAY_SIZE(mt8195_input_fmts);
+> > +
+> > +     memcpy(input_fmts, mt8195_input_fmts,
+> > +            sizeof(*input_fmts) * ARRAY_SIZE(mt8195_input_fmts));
+> > +
+> > +     if (((rx_linkrate * mtk_dp->train_info.lane_count) <
+> > +          (mode->clock * 24 / 8)) &&
+> > +         ((rx_linkrate * mtk_dp->train_info.lane_count) >
+> > +          (mode->clock * 16 / 8)) &&
+> > +         (display_info->color_formats & DRM_COLOR_FORMAT_YCRCB422))
+> > {
+> > +             kfree(input_fmts);
+> > +             input_fmts = kcalloc(1, sizeof(*input_fmts),
+> > GFP_KERNEL);
+> > +             *num_input_fmts = 1;
+> > +             input_fmts[0] = MEDIA_BUS_FMT_YUYV8_1X16;
+> > +     }
+> > +
+> > +     return input_fmts;
+> > +}
+> > +
+>
+> [snip]
+>
+> > +
+> > +static int mtk_dp_probe(struct platform_device *pdev)
+> > +{
+> > +     struct mtk_dp *mtk_dp;
+> > +     struct device *dev = &pdev->dev;
+> > +     int ret;
+> > +     int irq_num = 0;
+> > +
+> > +     mtk_dp = devm_kzalloc(dev, sizeof(*mtk_dp), GFP_KERNEL);
+> > +     if (!mtk_dp)
+> > +             return -ENOMEM;
+> > +
+> > +     mtk_dp->dev = dev;
+> > +
+> > +     irq_num = platform_get_irq(pdev, 0);
+> > +     if (irq_num < 0) {
+> > +             dev_err(dev, "failed to request dp irq resource\n");
+> > +             return irq_num;
+> > +     }
+> > +
+> > +     mtk_dp->next_bridge = devm_drm_of_get_bridge(dev, dev->of_node,
+> > 1, 0);
+> > +     if (IS_ERR(mtk_dp->next_bridge)) {
+> > +             ret = PTR_ERR(mtk_dp->next_bridge);
+> > +             dev_err_probe(dev, ret, "Failed to get bridge\n");
+> > +             return ret;
+> > +     }
+> > +
+> > +     ret = mtk_dp_dt_parse(mtk_dp, pdev);
+> > +     if (ret)
+> > +             return ret;
+> > +
+> > +     mtk_dp_aux_init(mtk_dp);
+> > +
+> > +     ret = devm_request_threaded_irq(dev, irq_num, mtk_dp_hpd_event,
+> > +                                     mtk_dp_hpd_event_thread,
+> > +                                     IRQ_TYPE_LEVEL_HIGH,
+> > dev_name(dev),
+> > +                                     mtk_dp);
+>
+> Embedded displayport is always connected, right? Why do we need process
+> hot plug? Move this to the patch of external displayport.
+>
+That was my initial plan, remove all the HPD related "stuff"... but something
+is being done in the irq that is needed to get eDP working.
+I haven't been able to retrieve the EDID with the irq removed.
 
->>> +static int mtk_dp_phy_reset(struct phy *phy)
->>> +{
->>> +     struct mtk_dp_phy *dp_phy = phy_get_drvdata(phy);
->>> +
->>> +     regmap_update_bits(dp_phy->regs, MTK_DP_PHY_DIG_SW_RST,
->>> +                        DP_GLB_SW_RST_PHYD, 0);
->>
->> Please, when you add delays/sleeps, add a comment explaining the reason for that.
->>
->> To you.. and to me as well.. the reason is very much known and honestly obvious,
->> but let's be nice with people that don't know the MediaTek platforms :)
->>
-> It's sadly not obvious to me, I've asked mediatek engineers mutlple
-> times for these
-> kind of information, but I'm rather short on information... :-/
-> 
+As I'm not knowledgeable in this domain or on the architecture, I couldn't
+get to the bottom of it with the available documentation I have.
 
-Clearly, the PHY needs at least 50uS to perform software reset (SW_RST) of
-the digital (controller? my brain doesn't want to cooperate on giving the
-right word right now, sorry), so we sleep that time after asserting the
-reset bit to comply with this timing.
+Probably something is done in the irq for eDP that should happen outside?
+I will try for v9 to remove hot plug detection entirely for the
+initial eDP support.
 
->>> +     usleep_range(50, 200);
->>> +     regmap_update_bits(dp_phy->regs, MTK_DP_PHY_DIG_SW_RST,
->>> +                        DP_GLB_SW_RST_PHYD, 1);
->>> +
->>> +     return 0;
->>> +}
->>> +
->>> +static const struct phy_ops mtk_dp_phy_dev_ops = {
->>> +     .init = mtk_dp_phy_init,
->>> +     .configure = mtk_dp_phy_configure,
->>> +     .reset = mtk_dp_phy_reset,
->>> +     .owner = THIS_MODULE,
->>> +};
->>> +
->>> +static int mtk_dp_phy_probe(struct platform_device *pdev)
->>> +{
->>> +     struct device *dev = &pdev->dev;
->>> +     struct mtk_dp_phy *dp_phy;
->>> +     struct phy *phy;
->>
->>          struct regmap *regs = (blah);
->>
->>          if (!dp_phy->regs)
->>                  return -EINVAL;
->>
->> Doing that before allocating the dp_phy struct seems sensible as, even
->> if it's unlikely that this platform data is not passed, we'd be sparing
->> some time around.
->>
->> Besides - I think that the error message is not necessary here, but, if
->> you really want to keep it, please return dev_err_probe(): using it in
->> these cases is also allowed.
->>
-> You are right, it's logical to return as early as possible.
-> 
->>> +
->>> +     dp_phy = devm_kzalloc(dev, sizeof(*dp_phy), GFP_KERNEL);
->>> +     if (!dp_phy)
->>> +             return -ENOMEM;
->>> +
->>> +     dp_phy->regs = *(struct regmap **)dev->platform_data;
->>> +     if (!dp_phy->regs) {
->>> +             dev_err(dev, "No data passed, requires struct regmap**\n");
->>> +             return -EINVAL;
->>> +     }
->>> +
->>> +     phy = devm_phy_create(dev, NULL, &mtk_dp_phy_dev_ops);
->>
->>          if (IS_ERR(phy))
->>                  return dev_err_probe(dev, PTR_ERR(phy), "Cannot create DP PHY\n");
->>
->>> +     if (IS_ERR(phy)) {
->>> +             dev_err(dev, "Failed to create DP PHY: %ld\n", PTR_ERR(phy));
->>> +             return PTR_ERR(phy);
->>> +     }
->>> +     phy_set_drvdata(phy, dp_phy);
->>> +
->>> +     if (!dev->of_node)
->>
->> This will never happen if you use DT to probe this driver - and please do!
->>
->> An example device-tree binding would be:
->>
->> dp_phy: phy@somewhere {
->>          compatible = "mediatek,mt8195-dp-phy", "mediatek,dp-phy";
->>          reg = <...>;
->>          #phy-cells = <0>;
->> };
->>
->> mtk_dp: displayport-controller@somewhere_else {
->>          compatible = "mediatek,mt8195-edp-tx", "mediatek,edp-tx";
->>          reg = <....>;
->>          other-properties;
->>
->>          phys = <&dp_phy>;
->>          phy-names = "dp";
->> };
->>
->> Also, remember: since you're nicely using regmap, if you - for any reason - need
->> to share the same iospace between the two drivers, you can always use a
->> syscon node for that purpose.
->>
-> Sadly, I'm not using DT to prove this driver... and this driver will
-> probably never
-> be used with DT.
-> This phy is actually an integral part of the dp ip, this driver is
-> only a "logical"
-> separation between the DP/phy functionnalities.
-> It's probed from the DP driver with a call to `platform_register_device()`.
-> Both the DP and phy driver share the same regmap struct.
-> 
-> Markus tried to explain that in the commit message, please tell me if this needs
-> a reword?
-> The original discussion is here:
-> https://lore.kernel.org/all/CAAOTY__cJMqcAieEraJ2sz4gi0Zs-aiNXz38_x7dPQea6HvYEg@mail.gmail.com/
-> 
-
-I understand the fact that the PHY is part of the entire block, but you cannot
-guarantee that the next block will have an entirely different PHY and also an
-entirely different port IP.
-
-I will pretty much oversimplify this as to make sure that you understand the
-strategy and concerns that I have in mind, and why I think that this should
-still be probed separately with its own device-tree compatible:
-
-1. The DisplayPort IP that we have in MT8195 is composed of
-A - DisplayPort PHY, let's give it a fantasy version V1.0
-B - DisplayPort "port" IP, also fantasy version V1.0
-
-2. DisplayPort IP in a future MT9988 chip may be composed of
-A - DisplayPort PHY, V1.0
-B - DisplayPort "port" IP, V1.1, maybe in a different iospace
-
-3. Of course, it may happen that MT9999 chip may have a variant of the one in 9988
-A - DisplayPort PHY, V1.01, maybe in a different iospace
-B - DisplayPort "port" IP, V1.1
-
-In cases 2, 3, having both drivers probed as I suggest, will allow to not only
-specify a different iospace (which may not be contiguous anymore!), but also to
-avoid specifying a different compatible string for one of the two components
-which are not carrying any variation in the register layout and/or management.
-
-This, in turn, will also make it easier for developers reading the SoC device
-trees to get more immediate knowledge of the hardware, but of course this is not
-a primary reason, but more like a side-benefit.
-
-> I didn't know about syscon, I'll have a look... but it's definitively what
-> I'm doing here...
-> 
-
-P.S.: As for "holes in the middle", remember that device-tree supports "ranges"!
-
->>> +             phy_create_lookup(phy, "dp", dev_name(dev));
->>> +
->>> +     return 0;
->>> +}
->>> +
->>> +struct platform_driver mtk_dp_phy_driver = {
->>> +     .probe = mtk_dp_phy_probe,
->>> +     .driver = {
->>> +             .name = "mediatek-dp-phy",
->>> +     },
->>> +};
->>> +module_platform_driver(mtk_dp_phy_driver);
->>> +
->>> +MODULE_AUTHOR("Markus Schneider-Pargmann <msp@baylibre.com>");
->>> +MODULE_DESCRIPTION("MediaTek DP PHY Driver");
->>> +MODULE_LICENSE("GPL v2");
->>
-
-
+> > +     if (ret) {
+> > +             dev_err(dev, "failed to request mediatek dptx irq\n");
+> > +             return -EPROBE_DEFER;
+> > +     }
+> > +
+> > +     mutex_init(&mtk_dp->dp_lock);
+>
+> Why need dp_lock, please provide the case information.
+>
+> > +     mutex_init(&mtk_dp->edid_lock);
+>
+> edid_lock is necessary when irq exist.
+>
+> > +
+> > +     platform_set_drvdata(pdev, mtk_dp);
+> > +
+> > +     mtk_dp->phy_dev = platform_device_register_data(dev, "mediatek-
+> > dp-phy",
+> > +                                                     PLATFORM_DEVID_
+> > AUTO,
+> > +                                                     &mtk_dp->regs,
+> > +                                                     sizeof(struct
+> > regmap *));
+> > +     if (IS_ERR(mtk_dp->phy_dev)) {
+> > +             dev_err(dev, "Failed to create device mediatek-dp-phy:
+> > %ld\n",
+> > +                     PTR_ERR(mtk_dp->phy_dev));
+> > +             return PTR_ERR(mtk_dp->phy_dev);
+> > +     }
+> > +
+> > +     mtk_dp_get_calibration_data(mtk_dp);
+> > +
+> > +     mtk_dp->phy = devm_phy_get(&mtk_dp->phy_dev->dev, "dp");
+> > +     if (IS_ERR(mtk_dp->phy)) {
+> > +             dev_err(dev, "Failed to get phy: %ld\n",
+> > PTR_ERR(mtk_dp->phy));
+> > +             platform_device_unregister(mtk_dp->phy_dev);
+> > +             return PTR_ERR(mtk_dp->phy);
+> > +     }
+> > +
+> > +     mtk_dp->bridge.funcs = &mtk_dp_bridge_funcs;
+> > +     mtk_dp->bridge.of_node = dev->of_node;
+> > +     mtk_dp->bridge.type = DRM_MODE_CONNECTOR_eDP;
+> > +
+> > +     mtk_dp->bridge.ops =
+> > +             DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID |
+> > DRM_BRIDGE_OP_HPD;
+>
+> DRM_BRIDGE_OP_DETECT? DRM_BRIDGE_OP_HPD?
+>
+> > +     drm_bridge_add(&mtk_dp->bridge);
+> > +
+> > +     pm_runtime_enable(dev);
+> > +     pm_runtime_get_sync(dev);
+> > +
+> > +     return 0;
+> > +}
+> > +
+> >
+>
+> [snip]
+>
+> > diff --git a/drivers/gpu/drm/mediatek/mtk_dp_reg.h
+> > b/drivers/gpu/drm/mediatek/mtk_dp_reg.h
+> > new file mode 100644
+> > index 0000000000000..79952ac30e9e6
+> > --- /dev/null
+> > +++ b/drivers/gpu/drm/mediatek/mtk_dp_reg.h
+> > @@ -0,0 +1,568 @@
+> > +/* SPDX-License-Identifier: GPL-2.0 */
+> > +/*
+> > + * Copyright (c) 2019 MediaTek Inc.
+> > + * Copyright (c) 2021 BayLibre
+> > + */
+> > +#ifndef _MTK_DP_REG_H_
+> > +#define _MTK_DP_REG_H_
+> > +
+> > +#define MTK_DP_SIP_CONTROL_AARCH32 0x82000523
+> > +#define MTK_DP_SIP_ATF_VIDEO_UNMUTE 0x20
+> > +#define MTK_DP_SIP_ATF_EDP_VIDEO_UNMUTE 0x21
+> > +
+> > +#define DP_PHY_GLB_BIAS_GEN_00 0x0000
+> > +#define RG_XTP_GLB_BIAS_INTR_CTRL (0x1f << 16)
+> > +
+> > +#define DP_PHY_GLB_DPAUX_TX 0x0008
+> > +#define RG_CKM_PT0_CKTX_IMPSEL (0xf << 20)
+> > +
+> > +#define DP_PHY_LANE_TX_0 0x104
+> > +#define RG_XTP_LN0_TX_IMPSEL_PMOS (0xf << 12)
+> > +#define RG_XTP_LN0_TX_IMPSEL_NMOS (0xf << 16)
+> > +
+> > +#define DP_PHY_LANE_TX_1 0x204
+> > +#define RG_XTP_LN1_TX_IMPSEL_PMOS (0xf << 12)
+> > +#define RG_XTP_LN1_TX_IMPSEL_NMOS (0xf << 16)
+> > +
+> > +#define DP_PHY_LANE_TX_2 0x304
+> > +#define RG_XTP_LN2_TX_IMPSEL_PMOS (0xf << 12)
+> > +#define RG_XTP_LN2_TX_IMPSEL_NMOS (0xf << 16)
+> > +
+> > +#define DP_PHY_LANE_TX_3 0x404
+> > +#define RG_XTP_LN3_TX_IMPSEL_PMOS (0xf << 12)
+> > +#define RG_XTP_LN3_TX_IMPSEL_NMOS (0xf << 16)
+>
+> These register should be controlled by dp_phy driver?
+>
+> Regards,
+> CK
+>
+> > +
+> > +#define TOP_OFFSET 0x2000
+> > +#define ENC0_OFFSET 0x3000
+> > +#define ENC1_OFFSET 0x3200
+> > +#define TRANS_OFFSET 0x3400
+> > +#define AUX_OFFSET 0x3600
+> > +#define SEC_OFFSET 0x4000
+> > +
+> >
+>

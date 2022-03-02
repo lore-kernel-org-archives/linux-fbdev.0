@@ -2,142 +2,153 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11769C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Mar 2022 16:50:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9256EC433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Mar 2022 19:30:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231920AbiCBQun (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 2 Mar 2022 11:50:43 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56218 "EHLO
+        id S237010AbiCBTb1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 2 Mar 2022 14:31:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55698 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233651AbiCBQum (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Mar 2022 11:50:42 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8357CB647;
-        Wed,  2 Mar 2022 08:49:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1646239787;
-        bh=gxRPdEU+QPahBjvaCt/q+5WcE48CF2vkdjeoCYbnm8k=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=DIMAUtcbBH5aqT9ZHQJ49EvcpD8/ypWqdlBWZPQQMbaBqO5jD+/8XM0cbNeG9S1ZM
-         b9YaXqmGovnW/hbIQWTfqZVUN8P4BqoDlTzQMa3ucH125OJGinNUXcRZ0mEyGyC/M0
-         jgA9WqEk+61Rwwl1vXZePt++Kygkx/354hdI5sNk=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.242.61] ([80.187.121.99]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MBlxW-1nUvo71KOK-00CCTW; Wed, 02
- Mar 2022 17:49:47 +0100
-Message-ID: <666d1565-0467-bb21-916b-073392129e1a@gmx.de>
-Date:   Wed, 2 Mar 2022 17:48:19 +0100
+        with ESMTP id S232209AbiCBTb0 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 2 Mar 2022 14:31:26 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06AA3D64F7
+        for <linux-fbdev@vger.kernel.org>; Wed,  2 Mar 2022 11:30:43 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 997FA1F37E;
+        Wed,  2 Mar 2022 19:30:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1646249441; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=fcHoM6cQ9at4klEyIoq3bVgBwzGCr3APnq0fqr+Iq5c=;
+        b=QCaSewL2i8uH7CA4Zq0V4kDTsEH5rdkyX9S7xMmnfijO75M1kTzv7zkJ8S+824K7E7M4ir
+        LIaOniYciCLu+h293ZmKSM80ZVRxTMuQRgJO1RhEFtBpmi1iDvtKpTiPVEDPEg3inDoj30
+        wlnGp0EkiUd7Aimcc6KXpjvhWUo4bQc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1646249441;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=fcHoM6cQ9at4klEyIoq3bVgBwzGCr3APnq0fqr+Iq5c=;
+        b=ShPOk5CWFlLLIps+BEXzezAFkSzYpIyZaNtU9pfek0OG4fSfq5TDfW0k83T9QkAXkK6Ksz
+        OqSLJYIVnx9533BQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 64C4E13AA7;
+        Wed,  2 Mar 2022 19:30:41 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id PHOPF+HFH2KWcwAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 02 Mar 2022 19:30:41 +0000
+Message-ID: <64a99de0-3a22-af8a-fe77-4c19b5f56af3@suse.de>
+Date:   Wed, 2 Mar 2022 20:30:40 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH] video: fbdev: sm712fb: Fix crash in smtcfb_write()
+ Thunderbird/91.6.1
+Subject: Re: [PATCH v3 0/5] fbdev: Improve performance of fbdev console
 Content-Language: en-US
-To:     Zheyu Ma <zheyuma97@gmail.com>, sudipm.mukherjee@gmail.com,
-        teddy.wang@siliconmotion.com
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20220302143311.2109322-1-zheyuma97@gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220302143311.2109322-1-zheyuma97@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:jWj92EA9VN2CX3/FfWKXV7Wf4QzTMp4F0RdNd9teZOaVJaTwfM/
- z6zv8GaRMaBYDFqDoC3j4AFCCYfDyZKl1a5AefVuBN5MDm9QLcnbymtz6px/wLjOlTshd/V
- BXA4Ttg4qeQvlf/uK6XGRbWVnIgKAGSbK+tSHPGkzO329uMnxLzPrXuedGI0YPGm/RARiOl
- wetzzGtJTs7+Jifa37Hmw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:b4o7OKXxOvc=:3+02oL21ahFgW0JgnDjGPr
- oh3YlTwndNXo83yaKdaAhiEX9XT8LcyiP74h0zMaNA8RILtMzLB+xG/t3v8mFR6q7TyyKpfbg
- wXR3HdnjwV7Lq27CkUuVoJazqnacDXhKU3R3h60pzmiysIM6igaAHspAUG054DuUYqnFWQMeE
- Cb0FvvjAZcsUuhyiTStAcoZFXyMgzqSbJeix367DdS3/PhxldhjLP03+hJiOYi6JYmpJQTAXY
- Dl3Fi74FEvxgmbW4yPvu3sT49hIl+ZME4VG01A7qj9BMFO8+qqsaxIGXguwdwXOYgMh0Bv2pf
- WJNkfbTT6rb48kRfTm14u5AzfBAxGd2lMQuNwo7yKUpIZ5gFSX4TlKwOqYCkgwagTRj5TPuv1
- iMM/xGVafTZ1kixB87pFhLx1BD8o6BGAzHewMVLVL6scXQ3KVZ2dDPLPKrVesWqBM520Uipel
- PC6TLdJ9agW8MBOeM4LwWlepnXbQk8ai+ou0LZhKgY0QeMjpm/0cZ0/nOR/gCS1DS4w3hGiNW
- 9NhNyAy2I6Lfsc5oZlpRIl7Tx3ERrZODRD+wqDeofykMm8y5qpN8V9KRKBdeDXYCVc/TiHVXV
- FHsj3fi9XTnmoD1KEK9Hd2VcRt2UoQyK3cGnqTT45ecDh0No+kKGw6kRKJNppNDvQrnrMo4sP
- vfAFXsB6C9PUwQ0WE0OL/T/b8HpvUk48qNaYLhxoIloivxSmJOm9axXnhNpfV+34q0aJClvYM
- PpZlXMK/6buNhl9eVj9D3szUINc1oO/BPX+4zgTQugrnICrMSdWPm/4BeYuAnuIAuo27sV+5r
- cVwHFYp2EuT7glZ16l/GJ5vzY5VoQagK6609qWHjUvx+YTJ1bPsk6K3Dv229BPTzhGg3GWh64
- mG85I+kchWaME2DBFaJORAvAWggUbqdtfQT0bEtsbiThItF0l8u7fRAlybWvYUUURm9CxDZE5
- QKVTQ2WoiXMcVsAC1eAtpQLz8QMZu3p6wInpRjTYvqd+wvj68AD8zisl8tpAsQ+qETcY2YCvp
- 5ZxgIJCJDKJb5kAclIqrxFHa0rGcWwHCf6bhZznMZS4DidNcHEkqiYkvMyjlJgkma1pyAWqUT
- gmlFHFgC54EfFg=
+To:     daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com,
+        geert@linux-m68k.org, sam@ravnborg.org, kraxel@redhat.com,
+        ppaalanen@gmail.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20220223193804.18636-1-tzimmermann@suse.de>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20220223193804.18636-1-tzimmermann@suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------iYN3qqew3186UAYwbeo9FkBy"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 3/2/22 15:33, Zheyu Ma wrote:
-> When the sm712fb driver writes three bytes to the framebuffer, the
-> driver will crash:
->
->     BUG: unable to handle page fault for address: ffffc90001ffffff
->     RIP: 0010:smtcfb_write+0x454/0x5b0
->     Call Trace:
->      vfs_write+0x291/0xd60
->      ? do_sys_openat2+0x27d/0x350
->      ? __fget_light+0x54/0x340
->      ksys_write+0xce/0x190
->      do_syscall_64+0x43/0x90
->      entry_SYSCALL_64_after_hwframe+0x44/0xae
->
-> Fix it by removing the open-coded endianness fixup-code.
->
-> Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------iYN3qqew3186UAYwbeo9FkBy
+Content-Type: multipart/mixed; boundary="------------MRF06PG04iBGucZbDlbaVMDC";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com, geert@linux-m68k.org,
+ sam@ravnborg.org, kraxel@redhat.com, ppaalanen@gmail.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Message-ID: <64a99de0-3a22-af8a-fe77-4c19b5f56af3@suse.de>
+Subject: Re: [PATCH v3 0/5] fbdev: Improve performance of fbdev console
+References: <20220223193804.18636-1-tzimmermann@suse.de>
+In-Reply-To: <20220223193804.18636-1-tzimmermann@suse.de>
 
-Thanks... it's already in the fbdev git tree and queued up for v5.18...
-https://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git/com=
-mit/?h=3Dfor-next&id=3Dbd771cf5c4254511cc4abb88f3dab3bd58bdf8e8
+--------------MRF06PG04iBGucZbDlbaVMDC
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-Helge
+SGksDQoNCm1lcmdlZCB3aXRoIGZpeGVzIGZvciB0aGUgdHlwb2VzIGluIHRoZSBmaW5hbCBw
+YXRjaC4gVGhhbmtzIGZvciByZXZpZXdpbmcuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoN
+CkFtIDIzLjAyLjIyIHVtIDIwOjM3IHNjaHJpZWIgVGhvbWFzIFppbW1lcm1hbm46DQo+IE9w
+dGltaXplIHBlcmZvcm1hbmNlIG9mIHRoZSBmYmRldiBjb25zb2xlIGZvciB0aGUgY29tbW9u
+IGNhc2Ugb2YNCj4gc29mdHdhcmUtYmFzZWQgY2xlYXJpbmcgYW5kIGltYWdlIGJsaXR0aW5n
+Lg0KPiANCj4gVGhlIGNvbW1pdCBkZXNjcmlwdG9uIG9mIGVhY2ggcGF0Y2ggY29udGFpbnMg
+cmVzdWxzIG9zIGEgc2ltcGxlDQo+IG1pY3JvYmVuY2htYXJrLiBJIGFsc28gdGVzdGVkIHRo
+ZSBmdWxsIHBhdGNoc2V0J3MgZWZmZWN0IG9uIHRoZQ0KPiBjb25zb2xlIG91dHB1dCBieSBw
+cmludGluZyBkaXJlY3RvcnkgbGlzdGluZ3MgKGk3LTQ3OTAsIEZ1bGxIRCwNCj4gc2ltcGxl
+ZHJtLCBrZXJuZWwgd2l0aCBkZWJ1Z2dpbmcpLg0KPiANCj4gICAgPiB0aW1lIGZpbmQgL3Vz
+ci9zaGFyZS9kb2MgLXR5cGUgZg0KPiANCj4gSW4gdGhlIHVub3B0aW1pemVkIGNhc2U6DQo+
+IA0KPiAgICByZWFsICAgIDBtNi4xNzNzDQo+ICAgIHVzZXIgICAgMG0wLjA0NHMNCj4gICAg
+c3lzICAgICAwbTYuMTA3cw0KPiANCj4gV2l0aCBvcHRpbWl6YXRpb25zIGFwcGxpZWQ6DQo+
+IA0KPiAgICByZWFsICAgIDBtNC43NTRzDQo+ICAgIHVzZXIgICAgMG0wLjA0NHMNCj4gICAg
+c3lzICAgICAwbTQuNjk4cw0KPiANCj4gSW4gdGhlIG9wdGltaXplZCBjYXNlLCBwcmludGlu
+ZyB0aGUgZGlyZWN0b3J5IGxpc3RpbmcgaXMgfjI1JSBmYXN0ZXINCj4gdGhhbiBiZWZvcmUu
+DQo+IA0KPiBJbiB2MiBvZiB0aGUgcGF0Y2hzZXQsIGFmdGVyIGltcGxlbWVudGluZyBTYW0n
+cyBzdWdnZXN0aW9uIHRvIHVwZGF0ZQ0KPiBjZmJfaW1hZ2VibGl0KCkgYXMgd2VsbCwgaXQg
+dHVybnMgb3V0IHRoYXQgdGhlIGNvbXBpbGVkIGNvZGUgaW4NCj4gc3lzX2ltYWdlYmxpdCgp
+IGlzIHN0aWxsIHNpZ25pZmljYW50bHkgc2xvd2VyIHRoYW4gdGhlIENGQiB2ZXJzaW9uLiBB
+DQo+IGZpeCBpcyBwcm9iYWJseSBhIGxhcmdlciB0YXNrIGFuZCB3b3VsZCBpbmNsdWRlIGFy
+Y2hpdGVjdHVyZS1zcGVjaWZpYw0KPiBjaGFuZ2VzLiBBIG5ldyBUT0RPIGl0ZW0gc3VnZ2Vz
+dHMgdG8gaW52ZXN0aWdhdGUgdGhlIHBlcmZvcm1hbmNlIG9mIHRoZQ0KPiB2YXJpb3VzIGhl
+bHBlcnMgYW5kIGZvcm1hdC1jb252ZXJzaW9uIGZ1bmN0aW9ucyBpbiBEUk0gYW5kIGZiZGV2
+Lg0KPiANCj4gdjM6DQo+IAkqIGZpeCBkZXNjcmlwdGlvbiBvZiBjZmJfaW1hZ2VibGl0KCkg
+cGF0Y2ggKFBla2thKQ0KPiB2MjoNCj4gCSogaW1wcm92ZSByZWFkYWJpbGl0eSBmb3Igc3lz
+X2ltYWdlYmxpdCgpIChHZXJkLCBTYW0pDQo+IAkqIG5ldyBUT0RPIGl0ZW0gZm9yIGZ1cnRo
+ZXIgb3B0aW1pemF0aW9uDQo+IA0KPiBUaG9tYXMgWmltbWVybWFubiAoNSk6DQo+ICAgIGZi
+ZGV2OiBJbXByb3ZlIHBlcmZvcm1hbmNlIG9mIHN5c19maWxscmVjdCgpDQo+ICAgIGZiZGV2
+OiBJbXByb3ZlIHBlcmZvcm1hbmNlIG9mIHN5c19pbWFnZWJsaXQoKQ0KPiAgICBmYmRldjog
+UmVtb3ZlIHRyYWlsaW5nIHdoaXRlc3BhY2VzIGZyb20gY2ZiaW1nYmx0LmMNCj4gICAgZmJk
+ZXY6IEltcHJvdmUgcGVyZm9ybWFuY2Ugb2YgY2ZiX2ltYWdlYmxpdCgpDQo+ICAgIGRybTog
+QWRkIFRPRE8gaXRlbSBmb3Igb3B0aW1pemluZyBmb3JtYXQgaGVscGVycw0KPiANCj4gICBE
+b2N1bWVudGF0aW9uL2dwdS90b2RvLnJzdCAgICAgICAgICAgICB8ICAyMiArKysrKw0KPiAg
+IGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9jZmJpbWdibHQuYyAgIHwgMTA3ICsrKysrKysr
+KysrKysrKystLS0tLS0tLS0NCj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvc3lzZmls
+bHJlY3QuYyB8ICAxNiArLS0tDQo+ICAgZHJpdmVycy92aWRlby9mYmRldi9jb3JlL3N5c2lt
+Z2JsdC5jICAgfCAgNDkgKysrKysrKystLS0NCj4gICA0IGZpbGVzIGNoYW5nZWQsIDEzMyBp
+bnNlcnRpb25zKCspLCA2MSBkZWxldGlvbnMoLSkNCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1l
+cm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRp
+b25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJt
+YW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZv
+IFRvdGV2DQo=
 
+--------------MRF06PG04iBGucZbDlbaVMDC--
 
-> ---
->  drivers/video/fbdev/sm712fb.c | 21 ++++-----------------
->  1 file changed, 4 insertions(+), 17 deletions(-)
->
-> diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb=
-.c
-> index 0dbc6bf8268a..e355089ac7d6 100644
-> --- a/drivers/video/fbdev/sm712fb.c
-> +++ b/drivers/video/fbdev/sm712fb.c
-> @@ -1130,7 +1130,7 @@ static ssize_t smtcfb_write(struct fb_info *info, =
-const char __user *buf,
->  		count =3D total_size - p;
->  	}
->
-> -	buffer =3D kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count, GFP_KERNEL=
-);
-> +	buffer =3D kmalloc(PAGE_SIZE, GFP_KERNEL);
->  	if (!buffer)
->  		return -ENOMEM;
->
-> @@ -1148,24 +1148,11 @@ static ssize_t smtcfb_write(struct fb_info *info=
-, const char __user *buf,
->  			break;
->  		}
->
-> -		for (i =3D c >> 2; i--;) {
-> -			fb_writel(big_swap(*src), dst++);
-> +		for (i =3D (c + 3) >> 2; i--;) {
-> +			fb_writel(big_swap(*src), dst);
-> +			dst++;
->  			src++;
->  		}
-> -		if (c & 3) {
-> -			u8 *src8 =3D (u8 *)src;
-> -			u8 __iomem *dst8 =3D (u8 __iomem *)dst;
-> -
-> -			for (i =3D c & 3; i--;) {
-> -				if (i & 1) {
-> -					fb_writeb(*src8++, ++dst8);
-> -				} else {
-> -					fb_writeb(*src8++, --dst8);
-> -					dst8 +=3D 2;
-> -				}
-> -			}
-> -			dst =3D (u32 __iomem *)dst8;
-> -		}
->
->  		*ppos +=3D c;
->  		buf +=3D c;
+--------------iYN3qqew3186UAYwbeo9FkBy
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIfxeAFAwAAAAAACgkQlh/E3EQov+CN
+MBAAqqvnn3Ja9uh9l4/JBHvhQm4BRK++FdFiXbUOK+po4kjwep47F9M1Wej85pIoUj0nexQpKsG9
+0vVc/iIFJOVUgmR8v0i4kAkHLoFGff0T86Qi+BCksBk7+EyF5xNMbz5C0T4EE8E3XzH2T/ADyjjQ
+3OnCGC5BTL862wP91waAI3ftU11GPx7ugu61OY9+sff3Chwo9OKefl4b3jxhOD5J5kjuVaY8Y+ej
+uvMx49NYQSwmBp8tZbkWw0PF0rdUBznCIHgsJqL/kDTkXguwjs89YKOIJ0sZZSuX3JNKOKAz+gMB
++VUt39au+58Pn89p56LZ8h+NlcqHbjg/8ZlxpD5KKQKIZLYh7EOy882KU7W/526Nr5uu6CHHM3sy
+aTkI6PO/OYzfGdrsNRIBUaPmmd5pz1iSQp5j0sl5bxFGKALRCxH/tZBNPx12C/UzukqjU7JRtXzr
+CCkKke5J827R6M3j9GOhpeH0oHm1RxKzdNUlMC8HDfR9TwIPdK5871k0a6s+OOyb/DG50DjCjJVw
+2lrZJXvUrrc0ZRehkMYFkA83W84NKlKsAd9278CWcGHqpG9aFqhKVGvrmbwY2A9cg0yqO//PdWya
+iUxyyiFdp5v845KLVbrWGlFT2u0Vat/XQkU/ujQvu2ovZZ3Nhmb2u9wvFHc0UdEbpaEXk5MyV0PW
+B70=
+=KgK4
+-----END PGP SIGNATURE-----
+
+--------------iYN3qqew3186UAYwbeo9FkBy--

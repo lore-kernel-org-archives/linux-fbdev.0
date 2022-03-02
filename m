@@ -2,136 +2,133 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D208DC433EF
-	for <linux-fbdev@archiver.kernel.org>; Sun, 27 Feb 2022 06:17:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21DFEC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  2 Mar 2022 03:44:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229699AbiB0GSF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 27 Feb 2022 01:18:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46512 "EHLO
+        id S233574AbiCBDpL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 1 Mar 2022 22:45:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34276 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229920AbiB0GSE (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 27 Feb 2022 01:18:04 -0500
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40AB82DDE;
-        Sat, 26 Feb 2022 22:17:28 -0800 (PST)
-Received: by mail-pg1-x529.google.com with SMTP id o8so8634200pgf.9;
-        Sat, 26 Feb 2022 22:17:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Ow8n9bnT7hSkaP9jr1cS5lcPgbno/KHHbNMAFcjqosI=;
-        b=pLWATeuoF6Rho2C/qM1ObggjqCTCKSIYrmdUZXDGKsszkUsAcjDi8VTX5dBAAheyrc
-         2eLojOdeb2kcq1mma3uEI8OUkGk26ttPxm8x3MSBLv08iAAlkpKYBpjC/08jQI8CI6g7
-         mNTlEeepAa7CPOnQwdggaSjivRcEMvtwVnkI0rwbjzZqdq3Yk+OshYxU4s/sij/K1dcS
-         CYYILFIBcnoy7ZXwgSbgGYPV5U2DYKSXKjk/BuAA0Gdr7+/snYtbGwJMnqjfG25q1NiG
-         YE0EA8C6V7uyinJ7fGojLVAL7sWjiuk5pgwHshd1MK98BogSKQHXMomLJq7bf/rjT7dB
-         HxPA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Ow8n9bnT7hSkaP9jr1cS5lcPgbno/KHHbNMAFcjqosI=;
-        b=CAiT0Eilt3VU2TQO6kkNZcpv5KOtQtmzXABY18eDW7+5/7GaW49NwtHK4z7Hb1V0Kh
-         c3v9u6Hsjz9dyNofglmJ+BRcPP8QkZs87GZ3Si03+KoqhQ+JacY5UA3Bqmgf7YMoqsrx
-         ZhLJ8A3wPEKpoBgf9Lccm0+3P61yjky19Z2XxrOP3yqpoumSwd2bSytjXQQ1tXz6JQAx
-         5CewMHSMuJxT107M7szde5HNycy7OtAIMnn/7lCDxmNHk+IIIyKw9Y4vu+smUBt23l2a
-         xlzL3hOY7V0UDGMQtAUgolpDOv3uaFVAKlYhaX0Bo/DgWeCYhqY24MRKNRz/qNqukaPA
-         Cf4A==
-X-Gm-Message-State: AOAM531soG9hOyp/hln9wxSXq0xpcFYyWabl6l5OA0fq0Ppd1+Sh5lNF
-        a5fOVNaiBSRZnKMO9s8CokkMfxGJNlmm+Vn3+b8wZibshQ==
-X-Google-Smtp-Source: ABdhPJy1AveXJn8qgloASy8DlTcYT+KqBr50ybb+b17ayKSx1dDtKKCqD4uBZzJB1bfxpLxka+6SDhFJU63Wx843Tfo=
-X-Received: by 2002:a05:6a00:1991:b0:4e1:a7dd:96e5 with SMTP id
- d17-20020a056a00199100b004e1a7dd96e5mr15890456pfl.2.1645942647724; Sat, 26
- Feb 2022 22:17:27 -0800 (PST)
+        with ESMTP id S231517AbiCBDpJ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 1 Mar 2022 22:45:09 -0500
+Received: from APC01-HK2-obe.outbound.protection.outlook.com (mail-eopbgr1300124.outbound.protection.outlook.com [40.107.130.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED9874D628;
+        Tue,  1 Mar 2022 19:44:25 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=ck2pIdQSyZq9TRiYnSstEP2Osxnib/sdMs8dYQrtPGtfDlTA0QhMGe2i20LfDuygyFnGK/9o68vmpgRbmd8z/4/vTA03vLwVijW5PEBr1cCh+KIacqefSMSw3V74l3ePV44+R1RSY+oYc0aDXB0t+VSk+WSBSph39iBL+594GDelJl3O4/U4/T9VL3Du+gKAGCKE9gSDJ+6BQ8QpWvmgS7KgEN+5hHYI3BlG1MWplyOYUPTJPGQA3c3jn2ao0CUXjfDeyPe9LR+5aABv5MMzXTcY09D38Knv6/BlKTPrzYDhS6Fo3tWSsYZ3EE0oYhcxngNYiTU3lyMpBl37qBnJHA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=IV+OL3vzi6rIEDvi8v40fpd2Zvt22IpdTp/OWFlkbHY=;
+ b=AcLV7OOsxGSwBb+kMuwj4aCiu/bExKV2SO/OG1GuY8YE8lgibL0/B7CbbgZBbPYcC0CpUdw0iGGuspoo+RIPRXqTxMNmJqW7bseZnQ7vGTTnn3im7NYWdD7E7rHp5IbODAfg7q+jxqlxF7PGaKVi32kkXM2KAbu94qf5hbnGtYHlBObY0tvwAeIz3YWvklk3wQtXAXNHOQykTBPmUhiwTfWU+rKbLwroTJLUOGyJ5BhayiIA6rhU661BzntRz02rgE2lYOeWgynSc65PV47NF3Rb9GwyAwGY9GuCvwhPcPoAYeqRlnD9bSiN3cJLbS1VhCWmQ/NEADeAuYTjt2il9g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
+ dkim=pass header.d=vivo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo0.onmicrosoft.com;
+ s=selector2-vivo0-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=IV+OL3vzi6rIEDvi8v40fpd2Zvt22IpdTp/OWFlkbHY=;
+ b=BIXAPFOeSdZEu5YcK6pMlQEouDviMC6QACMe1qIVRNMnV+zLBSsBaNIAfape2hFzap2TL40fcRgwK4WyzjEUHRuzXc9eA237X2NGykbhFmPPzrRNCMCKx1g3Bevw5jH7meDaOJapPGZ2XRjzPZQQGx9C+SzfQ4oEj/fBqIBsKSY=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=vivo.com;
+Received: from TYZPR06MB4173.apcprd06.prod.outlook.com (2603:1096:400:26::14)
+ by SI2PR06MB4058.apcprd06.prod.outlook.com (2603:1096:4:fa::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5017.24; Wed, 2 Mar
+ 2022 03:44:22 +0000
+Received: from TYZPR06MB4173.apcprd06.prod.outlook.com
+ ([fe80::30ce:609e:c8e8:8a06]) by TYZPR06MB4173.apcprd06.prod.outlook.com
+ ([fe80::30ce:609e:c8e8:8a06%4]) with mapi id 15.20.5038.014; Wed, 2 Mar 2022
+ 03:44:22 +0000
+From:   Yihao Han <hanyihao@vivo.com>
+To:     Jingoo Han <jingoohan1@gmail.com>, Helge Deller <deller@gmx.de>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Cc:     kernel@vivo.com, Yihao Han <hanyihao@vivo.com>
+Subject: [PATCH] video: fbdev: s3c-fb: fix platform_get_irq.cocci warning
+Date:   Tue,  1 Mar 2022 19:44:08 -0800
+Message-Id: <20220302034408.5990-1-hanyihao@vivo.com>
+X-Mailer: git-send-email 2.17.1
+Content-Type: text/plain
+X-ClientProxiedBy: HK2PR02CA0143.apcprd02.prod.outlook.com
+ (2603:1096:202:16::27) To TYZPR06MB4173.apcprd06.prod.outlook.com
+ (2603:1096:400:26::14)
 MIME-Version: 1.0
-References: <CAMhUBjmetJqbERvQ8513b-wHuV68hqLTuUVWiORyJyXP26gO7Q@mail.gmail.com>
- <YhpBPQuqPNmqasxE@ls3530>
-In-Reply-To: <YhpBPQuqPNmqasxE@ls3530>
-From:   Zheyu Ma <zheyuma97@gmail.com>
-Date:   Sun, 27 Feb 2022 14:17:16 +0800
-Message-ID: <CAMhUBjn_cGF_Htap+iJri991tXPQiqwn_EPY6XuPu+bH07m=eg@mail.gmail.com>
-Subject: Re: [BUG] fbdev: sm712fb: Page fault in smtcfb_read
-To:     Helge Deller <deller@gmx.de>
-Cc:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-        dri-devel@lists.freedesktop.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 71a777d3-d2f2-402a-7a9f-08d9fbfef057
+X-MS-TrafficTypeDiagnostic: SI2PR06MB4058:EE_
+X-Microsoft-Antispam-PRVS: <SI2PR06MB40584D2A147640CA6039821FA2039@SI2PR06MB4058.apcprd06.prod.outlook.com>
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: M34YJa3Zso2XCYipJnJhERXrGOYOwKPMSqazCtnLjXvqW3eD+qyL91VtOSGCInW3yGd95VPF5cIw7bTgP72WAgyzL2qNI/1i68xnhZB3bnL/2zqSrbl5wrHwcbQuiYHRIKzOEqAbtLFbVD/3ezbKjske6GuhDarAY5zcoF1VYFMcCxqvzbyJPZG05To5UTAXqzwaZ687m9pvyc/jTk5RjJP0CL3m37l8bYj4yKa1fGz4+XpLOnB4GhIcTiDKWCH3OJins7ilyYnpnp3Xjl0tdVeg/hz1SvrZw1p0/eLdPvM5EqX0T6ee0KEeO7ECqzjDs67C/kg1B7SW7JeyPpPIdXt64vO5uftvtEuttSjzrY/g+xrwFCcesra+YUvSWALFFE+IkfYEzN99IHhXtLcJ0Okm2wxOlwIYjSmove8AbdbEV9F2h3krpOwPNWgXnI2jphd3IE8M6ScO5DYq49aI9Bjx09auJm8tfeOi/jHspgfpy6kCCZhe9xsfmVVcO7TtAx/97Izi/kexOSMwPjc1/oUAqNkOR10C92SJ3Yqc7wUn+4ahsbfuDzpSMy3lucN0+Mp43PIvEFPQAGaYV+x0ukMdn7YYLNMbQeAdQ05I4ryhoSCOq0yE8DkgojzFZS2kxgpaQGE38BBI2PZOrrq9ZQi4UDjaErP18Xwp/6P+xONtMGZ3t1pSqIVTFap305sGfTXSRO8jEsSzp0o8BR1e9Q==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYZPR06MB4173.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(186003)(2616005)(1076003)(26005)(107886003)(8936002)(4744005)(52116002)(6506007)(6666004)(6512007)(36756003)(508600001)(83380400001)(6486002)(66556008)(38100700002)(38350700002)(86362001)(110136005)(4326008)(5660300002)(316002)(8676002)(66946007)(66476007)(2906002);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?UH6dRLZ+Y1TPjk3cZRl1uoDevTmh46C9svXGjjVl7sGLdFrnBG6Qwz04qVVA?=
+ =?us-ascii?Q?q/CCbDs+08ShCQX10Nncr5OgptgtyvJguq1LmZ5RsWjjahkgWgDtcpIn8MRq?=
+ =?us-ascii?Q?/lW7zUvtSVrvMLglDhUBX4/tMyLya1eJs56K2QoR2ruZt5ownMEAPkMzHQU3?=
+ =?us-ascii?Q?dCjOHjbZXVmD4vNHVA40qf/JfLLcAsQIN4kaZ/+UURU6ogek8kvxR0d2VarK?=
+ =?us-ascii?Q?YnI4zwW96Aq+Uoe9uJXsXp7XgBAJWT/MW2SFSu/m0GKL2XVnkZiDLb9/lpeO?=
+ =?us-ascii?Q?8ck2YIrZnsaCkOBOCPuGajCLI3yBZ/72zLAljrQQFk3VOmnyvWio1Bs7/EWN?=
+ =?us-ascii?Q?wqhzeWGzrSIqoWGm7ISHXcS0/aoy74S2frjEoxvCA5VBo5PlcCsLnV+Tb5Yx?=
+ =?us-ascii?Q?6qbNN/kAOyFHXisS2iucVMZZ+b7BAUYUqWRg5STryHBI4WwunD+j09/avOgL?=
+ =?us-ascii?Q?4VhvSKMRU9Dm8hl2z3rSjUe+pWPPB+HUN2VBwrg4iZzMQ1RrkBJmpckqpJZC?=
+ =?us-ascii?Q?46dT0CTCUcdwWTmc9QniWgk/ffSdKXmU8oWaTIXW4g97LQnYQEmMKwNIH8LP?=
+ =?us-ascii?Q?8BSzJi/roiNGQO4hiQ1bEruSadEbeFTAYLwsTeVGUGpY7827c7W04TmmYUCm?=
+ =?us-ascii?Q?iPqp/Fmv9YISDN1XaPtLhBSTazIV2YP8Xmsd8HwL1F6hb5h3JZPqeRmo1lsc?=
+ =?us-ascii?Q?or9L1bHtZibrpw4dzQ0IXqh4TVokOMM40rIdU0845Gy3dgeevAwOMvex523Z?=
+ =?us-ascii?Q?qitMnvLlNLsPQ8p6myifMNiWo4pPbfWUOX9MScKhLUNeAm1NbVZSm7zdaT9d?=
+ =?us-ascii?Q?jBPC5lVwCukVJ+wZ2EOckwP4r8GaZHZElDq73UgJSHkq7y32qhBq8zgf2C7M?=
+ =?us-ascii?Q?XMCHw2BJrEwuORPCSvppzcDKfBtB87B609H/OvkB3kjTKgaqCoKGER1OYpcb?=
+ =?us-ascii?Q?Vg+0fzZgIMTJMyIOR1eL5qaZvntFZ5vkF6Vp3cpRlAJIiov7Uh2ani4oKMYI?=
+ =?us-ascii?Q?PktDTVXPafC5CFjupLguaJ+8eb6DNbcw6EgZeuBQfvTjF4jJylXHchSX3L/t?=
+ =?us-ascii?Q?hRWgb2QvDkJniWv/2Pkv2oixrBcZDYxxHjy5BvDQw9HtT5l3KPrnlRJBLdXf?=
+ =?us-ascii?Q?OvdxhDPIJ5A6ApNNmO2HLwahaIb4ofRxY/WH3gh/wF4v34MybBGR3WNwNpnL?=
+ =?us-ascii?Q?D295HE/bsgfyXrU5ikFNOzwd9DuajfjkfZjd6fEJFIN5YRvw87HbRAXt+UVR?=
+ =?us-ascii?Q?JlBD9EIeKC6M7cckMxUsc9vDgYx6dc74NORIt8J9pZjYyisxtX3CO8YMBPUI?=
+ =?us-ascii?Q?1iWbGD8MODpwozo1ONoTVVGXfcrBbiaM8geTbyPWguFZ+GmApAav6/keiEK8?=
+ =?us-ascii?Q?Vfm/7I683XzXXUD0RyzoRsYkLdM7oNYGPRqZmbds+kqdDe8CTRUuww6wWkc1?=
+ =?us-ascii?Q?ZdhskKXdPsIQLr8B/DpvMahbpML7AuXWDezsMovJBtQUrSV3TSgWtW6vBZ8N?=
+ =?us-ascii?Q?xrcEL8m9K5s9lu5ENidocFnVy2uMUcPjvcJghhD4RBXVEhG9PDq59I7j9VWN?=
+ =?us-ascii?Q?NtP/lpAQCrEI/VxebfeeCCuW8FLlf7iezOawmOHJ+LbbIVNsK6SPbuYrfpVH?=
+ =?us-ascii?Q?/lNC6FCHDVuzr6nCQk3XV9M=3D?=
+X-OriginatorOrg: vivo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 71a777d3-d2f2-402a-7a9f-08d9fbfef057
+X-MS-Exchange-CrossTenant-AuthSource: TYZPR06MB4173.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Mar 2022 03:44:22.4018
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: N9Bh/gloQ0NQ8KK+M/9eSR7eXkrolm8jv6QudQVAxM7+l8RJx4vrXq5ExpCp6sSvaLKH8iQM1rM4YKwbtoK2gA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI2PR06MB4058
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Feb 26, 2022 at 11:03 PM Helge Deller <deller@gmx.de> wrote:
->
-> * Zheyu Ma <zheyuma97@gmail.com>:
-> > I found a minor in the smtcfb_read() function of the driver sm712fb.
-> >
-> > This read function can not handle the case that the size of the
-> > buffer is 3 and does not check for it, which may cause a page fault.
-> >
-> > The following log reveals it:
-> >
-> > [ 2432.614490] BUG: unable to handle page fault for address: ffffc90001ffffff
-> > [ 2432.618474] RIP: 0010:smtcfb_read+0x230/0x3e0
-> > [ 2432.626551] Call Trace:
-> > [ 2432.626770]  <TASK>
-> > [ 2432.626950]  vfs_read+0x198/0xa00
-> > [ 2432.627225]  ? do_sys_openat2+0x27d/0x350
-> > [ 2432.627552]  ? __fget_light+0x54/0x340
-> > [ 2432.627871]  ksys_read+0xce/0x190
-> > [ 2432.628143]  do_syscall_64+0x43/0x90
->
-> Could you try the attached patch ?
+Remove dev_err() messages after platform_get_irq*() failures.
+platform_get_irq() already prints an error.
 
-Good, the patch works for me, thanks.
+Generated by: scripts/coccinelle/api/platform_get_irq.cocci
 
-Tested-by: Zheyu Ma <zheyuma97@gmail.com>
->
->
-> diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
-> index 0dbc6bf8268a..ab45212ccf66 100644
-> --- a/drivers/video/fbdev/sm712fb.c
-> +++ b/drivers/video/fbdev/sm712fb.c
-> @@ -1047,7 +1047,7 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf,
->         if (count + p > total_size)
->                 count = total_size - p;
->
-> -       buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count, GFP_KERNEL);
-> +       buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
->         if (!buffer)
->                 return -ENOMEM;
->
-> @@ -1059,25 +1059,11 @@ static ssize_t smtcfb_read(struct fb_info *info, char __user *buf,
->         while (count) {
->                 c = (count > PAGE_SIZE) ? PAGE_SIZE : count;
->                 dst = buffer;
-> -               for (i = c >> 2; i--;) {
-> -                       *dst = fb_readl(src++);
-> -                       *dst = big_swap(*dst);
-> +               for (i = (c + 3) >> 2; i--;) {
-> +                       u32 val = fb_readl(src++);
-> +                       *dst = big_swap(val);
->                         dst++;
->                 }
-> -               if (c & 3) {
-> -                       u8 *dst8 = (u8 *)dst;
-> -                       u8 __iomem *src8 = (u8 __iomem *)src;
-> -
-> -                       for (i = c & 3; i--;) {
-> -                               if (i & 1) {
-> -                                       *dst8++ = fb_readb(++src8);
-> -                               } else {
-> -                                       *dst8++ = fb_readb(--src8);
-> -                                       src8 += 2;
-> -                               }
-> -                       }
-> -                       src = (u32 __iomem *)src8;
-> -               }
->
->                 if (copy_to_user(buf, buffer, c)) {
->                         err = -EFAULT;
+Signed-off-by: Yihao Han <hanyihao@vivo.com>
+---
+ drivers/video/fbdev/s3c-fb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-Regards,
-Zheyu Ma
+diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
+index 208514054c23..3abbc5737c3b 100644
+--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -1418,7 +1418,6 @@ static int s3c_fb_probe(struct platform_device *pdev)
+ 
+ 	sfb->irq_no = platform_get_irq(pdev, 0);
+ 	if (sfb->irq_no < 0) {
+-		dev_err(dev, "failed to acquire irq resource\n");
+ 		ret = -ENOENT;
+ 		goto err_lcd_clk;
+ 	}
+-- 
+2.17.1
+

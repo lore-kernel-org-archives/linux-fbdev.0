@@ -2,113 +2,153 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B516C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Mar 2022 10:18:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B40F3C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Mar 2022 20:58:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231625AbiCCKSz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 3 Mar 2022 05:18:55 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38676 "EHLO
+        id S236388AbiCCU7a (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 3 Mar 2022 15:59:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58718 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231436AbiCCKSx (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Mar 2022 05:18:53 -0500
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5B6F43EEF;
-        Thu,  3 Mar 2022 02:18:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1646302675;
-        bh=yNu5aV72kAVxWE9AEOpRwhvXEvz9REi7V2L5i8b9h3s=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=jqnKQY8QLOza54CSQbVUOmiQNlvoH/SQ3tAXO3JCVh1otqSL05CaQe7NMWApUEI2P
-         PouLUKOwI8kjcNnVO98rScBjHK1x7721Iu+pmTOX+yUMA4n9YhOE2vNPXgYDeqCDLp
-         ZzC/aUE9MkCTBwO9KVvb9oE7Q9eQYs3lwXUHPFeM=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.242.61] ([80.187.120.72]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1Mj8mb-1o4WrG29AL-00f7DI; Thu, 03
- Mar 2022 11:17:55 +0100
-Message-ID: <3c08fd49-75e6-7016-a686-06a761cc679a@gmx.de>
-Date:   Thu, 3 Mar 2022 11:16:27 +0100
+        with ESMTP id S231549AbiCCU73 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Mar 2022 15:59:29 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E50DA42A2D
+        for <linux-fbdev@vger.kernel.org>; Thu,  3 Mar 2022 12:58:42 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 7A01A2113B;
+        Thu,  3 Mar 2022 20:58:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1646341121; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=tzloYSWb9woade52JqwYOqpvH73D+5PCkYIzoJtfRww=;
+        b=AIrTsKO9vnJOw1oFTXXsfqeHUJMRimn68YjArpRaPC3pmCCVrz84EulVb0fSij/uRlL+KH
+        znF5zxY/XTTJu3Qy/nsnoRk3bZVGjrm/wfGMS7Cvm//MXKUvXq23YVcRpoChS2bLiwgf7P
+        xe2q0RUPOS0+7XZyagG+GdCaCXKHTgs=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1646341121;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+        bh=tzloYSWb9woade52JqwYOqpvH73D+5PCkYIzoJtfRww=;
+        b=ceEcdBlqmxmv3j9lGl0H0Np853JQLmaQiX7E851kbA6RXMLNq0sVRCgUDKfA8CzafManHh
+        9jne/VvxuoaXa0CQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3E5C0139B5;
+        Thu,  3 Mar 2022 20:58:41 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id lq2bDQEsIWJoHAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 03 Mar 2022 20:58:41 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     daniel@ffwll.ch, airlied@linux.ie, mripard@kernel.org,
+        maarten.lankhorst@linux.intel.com, deller@gmx.de,
+        javierm@redhat.com
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 0/9] drm: Support GEM SHMEM fbdev without shadow FB
+Date:   Thu,  3 Mar 2022 21:58:30 +0100
+Message-Id: <20220303205839.28484-1-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH] video: fbdev: sm712fb: Fix crash in smtcfb_write()
-Content-Language: en-US
-To:     Zheyu Ma <zheyuma97@gmail.com>
-Cc:     sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20220302143311.2109322-1-zheyuma97@gmail.com>
- <666d1565-0467-bb21-916b-073392129e1a@gmx.de>
- <CAMhUBj=P82_f6LdhWqEbe06SRPrMU2jxquNzgWkrttGDy6C4Kg@mail.gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <CAMhUBj=P82_f6LdhWqEbe06SRPrMU2jxquNzgWkrttGDy6C4Kg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:sAuAfXYVTz6VzBrsH0AZ6HYOL+QvuzH6C6VJQMmPCQOOf7g6N8V
- 8fkZrdNxVTACopONE1EiqqXi4q0t4n1GveqG93hk6YSmhwZirDXLAarWnen/abTWi9qfYI4
- zlTaMeHpviWUsI+OYubD/B5rTs/Co0x1YEwJAM4ZLzsBf5WtKMa614rthfCexDC5wVtPFFD
- vNfnoyjY+0Kl52myht5Wg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:0Z+A3Af0e4Y=:BO1NxRaM9pV41v0I9lTPln
- JOPxRf0O6EL7ElB7OoTlW4bET6INglJZiTidgeVP4thMMeirpfSdHoZ26DbSVer8qq06OtfVy
- RtL5IEdtAzS0RSkne6SNYm4UJyG2eX1X0Qu2YPFQN6Btf5+qRbz1UVGqM+GQimVtajaubMA2Z
- CVKje8ENX2nbbSkBCUn1gmae2dczvB2+t+qukd2v7E692w1M1N1dAvvmevXmaOlcJ1aeImnTT
- ECP71SL2grzMFGdgmwVwNEkLHAFVDDCCGCbAulPxK3KCAdjW0uOjAfVOvZ+zXXCnEWLcVktzQ
- Q7zVQuvTSpKSatdt1ejgwKmgDYA08C9qLLujmTVssxpY86Vn063vR7BGvvYfKcQzEKPAH4bR8
- xmdGGREub7/VhIzGXKxtfmuk6+Q/gqBdnadu8vwdp0hoSYkdoaaLIr8PKtCQ/PwBh6D4yVoPu
- cwAATba8u9ftOc6hucQ5/byfC7GeEnmhsMa+7MKHVghFrPE/SrxlwkqdsKWojIhjJd5O/idty
- 7yBPegqYvQyqzDMJxe+1x63CDYjQgRekl3yZ7FBMockfZyHHgKF5MBI3iA+MfJ+6os1k2wt1T
- JVFgNS4jVTPW0DNy6t2I20xp3dNf7NDL5peHr3xRt7OX4+EwuJ+iH83EDauBemxlhPs2ol2ID
- +EIm5Z/ahVx1+6u1qCrzhIcHqnWPEbMyFJ2cyancsOz11AMUAsUWOK/kb6+4VEdrrxgrW0wwl
- f4un8VCMenf34zIIZVhmiC2pvgr+H8j6/74lC2SX5zuqXAAQN0UT56WjnUolbry8nXwovOQNZ
- cCrhP0DuK3A57wKiaXrcHcjT1ill94A8qM3ClJ9K+xBlFAEteFN1tcM3n4/KH7w2fZ5Nb5O3c
- +h+sJy/t+VUTWaKtG2YPi7/Wv173MBfBUs5KK9IH1JvDaUungVe4sKfZzxkFO9a9uqHrW8Wbb
- L/Wq4H8/oDLIx4CpGcJAoJMJgdp2uwR3Bc/maPw2Yq3Y5B98GhfDYd+72smv4q/Ssd1r+SGiZ
- 4P90OY6QTe8cQrChV5L7nRLjNoqv8OB8eFmIRFCtsMut2VWrKkbW7c2PcbieTuAHakiZxhBxZ
- P8JUPgbpvREqPY=
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 3/3/22 02:34, Zheyu Ma wrote:
-> Hi,
->
-> On Thu, Mar 3, 2022 at 12:49 AM Helge Deller <deller@gmx.de> wrote:
->>
->> On 3/2/22 15:33, Zheyu Ma wrote:
->>> When the sm712fb driver writes three bytes to the framebuffer, the
->>> driver will crash:
->>>
->>>     BUG: unable to handle page fault for address: ffffc90001ffffff
->>>     RIP: 0010:smtcfb_write+0x454/0x5b0
->>>     Call Trace:
->>>      vfs_write+0x291/0xd60
->>>      ? do_sys_openat2+0x27d/0x350
->>>      ? __fget_light+0x54/0x340
->>>      ksys_write+0xce/0x190
->>>      do_syscall_64+0x43/0x90
->>>      entry_SYSCALL_64_after_hwframe+0x44/0xae
->>>
->>> Fix it by removing the open-coded endianness fixup-code.
->>>
->>> Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
->>
->> Thanks... it's already in the fbdev git tree and queued up for v5.18...
->> https://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git/=
-commit/?h=3Dfor-next&id=3Dbd771cf5c4254511cc4abb88f3dab3bd58bdf8e8
->
-> This patch fixes the crash in smtcfb_read(), but there is a similar
-> bug in smtcfb_write(), and I mocked up your patch a wrote a new patch
-> for it.
-> So we should fix two bugs with two patches.
+Rework the fbdev deferred-I/O to not interfere with fields of struct
+page. Make the code more flexible and implement GEM SHMEM mmap on top
+of it.
 
-Right, I missed the read() code.
+This patchset removes the need for a special shadow framebuffer for
+fbdev mmap when using GEM SHMEM. SHMEM pages are now mmap'ed from
+/dev/fb directly.
 
-I applied your patch now to the fbdev for-next git tree.
+Patches 2 and 3 rework the fbdev deferred I/O code. It now allows
+drivers to have better control of the mmap operations. All references
+to fields in struct page are gone. The rsp state is help in a 
+separate pageref structure.
 
-Thanks!
-Helge
+Patches 4 to 7 provide callbacks an helpers to implement deferred I/O
+with DRM drivers. Specifically, patch 6 introduces a callback to create
+a dumb buffer for fbdev. This will be useful for many drivers that
+currently cannot use generic fbdev emulation because of special placement
+needs of the BO, such as amdgpu or radeon. The drivers can handle the
+differences to regular dumb buffers in their new callback implementation.
+
+Patch 8 extends the GEM SHMEM memory manager with a new helper for fbdev
+dumb-buffer creation. The returned BO has it's mmap set up to implement
+deferred I/O with SHMEM pages. No additional shadow buffer is requires
+any longer. Many drivers can immediatelly benefit from this change.
+
+Patch 9 extends virtgpu to support fbdev dumb buffers. It's build on
+top of GEM SHMEM, but has some modifications that need to be implemented
+for fbdev as well.
+
+There's no immediate fbdev performance improvement from this patchset.
+Most of all, it removes unnecessary shadow framebuffers and rsp memcpys.
+A shadow fb for a FullHD display is ~8 MiB, which we now save. The patches
+do reduce latency between drawing to the fbdev buffer to displaying
+on the screen. Watching a video on the fbdev console felt smoother and
+had less flickering.
+
+Thomas Zimmermann (9):
+  drm/simpledrm: Use fbdev defaults for shadow buffering
+  fbdev: Put mmap for deferred I/O into drivers
+  fbdev: Track deferred-I/O pages in pageref struct
+  fbdev: Export helper for implementing page_mkwrite
+  drm/fb-helper: Separate deferred I/O from shadow buffers
+  drm/fb-helper: Provide callback to create fbdev dumb buffers
+  drm/fb-helper: Provide fbdev deferred-I/O helpers
+  drm/gem-shmem: Implement fbdev dumb buffer and mmap helpers
+  drm/virtio: Implement dumb_create_fbdev with GEM SHMEM helpers
+
+ drivers/gpu/drm/drm_client.c            |  14 +-
+ drivers/gpu/drm/drm_crtc_internal.h     |   3 +
+ drivers/gpu/drm/drm_dumb_buffers.c      |  36 +++-
+ drivers/gpu/drm/drm_fb_helper.c         |  79 +++++++--
+ drivers/gpu/drm/drm_gem_shmem_helper.c  | 204 ++++++++++++++++++++---
+ drivers/gpu/drm/gud/gud_drv.c           |   2 +-
+ drivers/gpu/drm/hyperv/hyperv_drm_drv.c |   2 +-
+ drivers/gpu/drm/mgag200/mgag200_drv.c   |   2 +-
+ drivers/gpu/drm/tiny/cirrus.c           |   2 +-
+ drivers/gpu/drm/tiny/gm12u320.c         |   2 +-
+ drivers/gpu/drm/tiny/simpledrm.c        |   3 +-
+ drivers/gpu/drm/udl/udl_drv.c           |   2 +-
+ drivers/gpu/drm/virtio/virtgpu_drv.c    |   2 +
+ drivers/gpu/drm/virtio/virtgpu_drv.h    |   2 +
+ drivers/gpu/drm/virtio/virtgpu_object.c |  54 +++++-
+ drivers/gpu/drm/vkms/vkms_drv.c         |   2 +-
+ drivers/gpu/drm/vmwgfx/vmwgfx_fb.c      |   6 +-
+ drivers/hid/hid-picolcd_fb.c            |   1 +
+ drivers/staging/fbtft/fbtft-core.c      |   6 +-
+ drivers/video/fbdev/broadsheetfb.c      |   6 +-
+ drivers/video/fbdev/core/fb_defio.c     | 211 +++++++++++++++++-------
+ drivers/video/fbdev/core/fbmem.c        |  19 +--
+ drivers/video/fbdev/hecubafb.c          |   1 +
+ drivers/video/fbdev/hyperv_fb.c         |   6 +-
+ drivers/video/fbdev/metronomefb.c       |   6 +-
+ drivers/video/fbdev/sh_mobile_lcdcfb.c  |  12 +-
+ drivers/video/fbdev/smscufx.c           |   8 +-
+ drivers/video/fbdev/ssd1307fb.c         |   1 +
+ drivers/video/fbdev/udlfb.c             |   8 +-
+ drivers/video/fbdev/xen-fbfront.c       |   6 +-
+ include/drm/drm_client.h                |   3 +-
+ include/drm/drm_drv.h                   |  27 +++
+ include/drm/drm_fb_helper.h             |   9 +
+ include/drm/drm_gem_shmem_helper.h      |  63 ++++++-
+ include/linux/fb.h                      |  12 +-
+ 35 files changed, 668 insertions(+), 154 deletions(-)
 
 
->
-> Regards,
-> Zheyu Ma
+base-commit: 710a019ad85e96e66f7d75ee7f4733cdd8a2b0d0
+prerequisite-patch-id: c2b2f08f0eccc9f5df0c0da49fa1d36267deb11d
+prerequisite-patch-id: c67e5d886a47b7d0266d81100837557fda34cb24
+prerequisite-patch-id: 6e1032c6302461624f33194c8b8f37103a3fa6ef
+-- 
+2.35.1
 

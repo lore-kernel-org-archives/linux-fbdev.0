@@ -2,61 +2,61 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15D9EC433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Mar 2022 20:58:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AD77C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Mar 2022 20:58:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236368AbiCCU7d (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 3 Mar 2022 15:59:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58952 "EHLO
+        id S236397AbiCCU7c (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 3 Mar 2022 15:59:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58916 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236395AbiCCU7b (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Mar 2022 15:59:31 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1300342EE3
-        for <linux-fbdev@vger.kernel.org>; Thu,  3 Mar 2022 12:58:45 -0800 (PST)
+        with ESMTP id S236392AbiCCU7a (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Mar 2022 15:59:30 -0500
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3DC2241F9C
+        for <linux-fbdev@vger.kernel.org>; Thu,  3 Mar 2022 12:58:44 -0800 (PST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 92ACF1F387;
-        Thu,  3 Mar 2022 20:58:43 +0000 (UTC)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id D559C218E6;
+        Thu,  3 Mar 2022 20:58:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1646341123; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+        t=1646341122; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=UGKPWdswBenK67eQjyzqzCZAIpf0aWbVZ9VytjJasTw=;
-        b=u5ehuTqRLSvIpHum2nwBwBaKqq+xFxMDx7RiR8Ny5v2Y50i5Z8asdG70yJMb5HGmb9zlsx
-        ZvtSmDXulMJXYnzTDeJsHkMqAvBYnN66dxtESSYO+oZrqawICWGDuWA2FvpDYCjTPv9yU5
-        GouRFKZDasJSxqhK+KY3gSBuukJA3R4=
+        bh=L3e+1ciDGqD2s/iqm/ZtOxkRig2RHyQsLRvyc+Ijx30=;
+        b=z2VZ8HWreTEYHvlzpcGMD2MLYq3WzmHOzU3FnYwvKlaQ+Cd13YetqnfrFNLvCHD8FIzYOC
+        dfQnvBWqc8KGzSj/4NrxOqD391n3IxishT48IUR/1b06Z3+PMbtf4GJ++CXBbF4TgyIyd2
+        Py54C3DwApmX98A4U+XAZ+98m8Y94fE=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1646341123;
+        s=susede2_ed25519; t=1646341122;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=UGKPWdswBenK67eQjyzqzCZAIpf0aWbVZ9VytjJasTw=;
-        b=r61MdzQz4lpwo78o/VqXJ878NqMVOZUueoFBSDJZgwLBrXo5BofSAWM4WPg6c1eqqZGdjv
-        Pv1lLE5wDG3eHGBQ==
+        bh=L3e+1ciDGqD2s/iqm/ZtOxkRig2RHyQsLRvyc+Ijx30=;
+        b=Q2BtL3LikJJbwh6KdXF9cU4EkHc+PB58UjQaBJL1nohl/OwogX9cApznDnpoEVJLdQtzJj
+        9ePCNPm4IWyxi6AQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 5F4D613AEE;
-        Thu,  3 Mar 2022 20:58:43 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id A15DD139B5;
+        Thu,  3 Mar 2022 20:58:42 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id EGpWFgMsIWJoHAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 03 Mar 2022 20:58:43 +0000
+        id uBNoJgIsIWJoHAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 03 Mar 2022 20:58:42 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     daniel@ffwll.ch, airlied@linux.ie, mripard@kernel.org,
         maarten.lankhorst@linux.intel.com, deller@gmx.de,
         javierm@redhat.com
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 9/9] drm/virtio: Implement dumb_create_fbdev with GEM SHMEM helpers
-Date:   Thu,  3 Mar 2022 21:58:39 +0100
-Message-Id: <20220303205839.28484-10-tzimmermann@suse.de>
+Subject: [PATCH 6/9] drm/fb-helper: Provide callback to create fbdev dumb buffers
+Date:   Thu,  3 Mar 2022 21:58:36 +0100
+Message-Id: <20220303205839.28484-7-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220303205839.28484-1-tzimmermann@suse.de>
 References: <20220303205839.28484-1-tzimmermann@suse.de>
@@ -66,174 +66,266 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Implement struct drm_driver.dumb_create_fbdev with the helpers
-provided by GEM SHMEM. Fbdev deferred I/O will now work without
-an intermediate shadow buffer for mmap.
+Provide struct drm_driver.dumb_create_fbdev, a callback hook for
+fbdev dumb buffers. Wire up fbdev and client helpers to use the new
+interface, if present.
 
-As the virtio driver replaces several of the regular GEM SHMEM
-functions with its own implementation, some additional code is
-necessary make fbdev optimization work. Especially, the driver
-has to provide buffer-object functions for fbdev. Add the hook
-struct drm_driver.gem_create_object_fbdev, which is similar to
-struct drm_driver.gem_create_object and allows for the creation
-of dedicated fbdev buffer objects. Wire things up within GEM
-SHMEM.
+This acknowledges the fact that fbdev buffers are different. The most
+significant difference to regular GEM BOs is in mmap semantics. Fbdev
+userspace treats the pages as video memory, which makes it impossible
+to ever move the mmap'ed buffer. Hence, drivers ussually have to pin
+the BO permanently or install an intermediate shadow buffer for mmap.
+
+So far, fbdev memory came from dumb buffers and DRM drivers had no
+means of detecting this without reimplementing a good part of the fbdev
+code. With the new callback, drivers can perma-pin fbdev buffer objects
+if needed.
+
+Several drivers also require damage handling, which fbdev implements
+with its deferred I/O helpers. The new callback allows a driver's memory
+manager to set up a suitable mmap.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/gpu/drm/drm_gem_shmem_helper.c  |  7 +++-
- drivers/gpu/drm/virtio/virtgpu_drv.c    |  2 +
- drivers/gpu/drm/virtio/virtgpu_drv.h    |  2 +
- drivers/gpu/drm/virtio/virtgpu_object.c | 54 +++++++++++++++++++++++--
- include/drm/drm_drv.h                   | 10 +++++
- 5 files changed, 71 insertions(+), 4 deletions(-)
+ drivers/gpu/drm/drm_client.c        | 14 +++++++----
+ drivers/gpu/drm/drm_crtc_internal.h |  3 +++
+ drivers/gpu/drm/drm_dumb_buffers.c  | 36 +++++++++++++++++++++++++----
+ drivers/gpu/drm/drm_fb_helper.c     | 26 +++++++++++++++++----
+ include/drm/drm_client.h            |  3 ++-
+ include/drm/drm_drv.h               | 17 ++++++++++++++
+ 6 files changed, 84 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_gem_shmem_helper.c b/drivers/gpu/drm/drm_gem_shmem_helper.c
-index ab7cb7d896c3..225aa17895bd 100644
---- a/drivers/gpu/drm/drm_gem_shmem_helper.c
-+++ b/drivers/gpu/drm/drm_gem_shmem_helper.c
-@@ -71,7 +71,12 @@ __drm_gem_shmem_create(struct drm_device *dev, size_t size, bool private, bool f
- 
- 	size = PAGE_ALIGN(size);
- 
--	if (dev->driver->gem_create_object) {
-+	if (dev->driver->gem_create_object_fbdev && fbdev) {
-+		obj = dev->driver->gem_create_object_fbdev(dev, size);
-+		if (IS_ERR(obj))
-+			return ERR_CAST(obj);
-+		shmem = to_drm_gem_shmem_obj(obj);
-+	} else if (dev->driver->gem_create_object) {
- 		obj = dev->driver->gem_create_object(dev, size);
- 		if (IS_ERR(obj))
- 			return ERR_CAST(obj);
-diff --git a/drivers/gpu/drm/virtio/virtgpu_drv.c b/drivers/gpu/drm/virtio/virtgpu_drv.c
-index 5f25a8d15464..ee414f6e785a 100644
---- a/drivers/gpu/drm/virtio/virtgpu_drv.c
-+++ b/drivers/gpu/drm/virtio/virtgpu_drv.c
-@@ -203,6 +203,7 @@ static const struct drm_driver driver = {
- 	.postclose = virtio_gpu_driver_postclose,
- 
- 	.dumb_create = virtio_gpu_mode_dumb_create,
-+	.dumb_create_fbdev = virtio_gpu_mode_dumb_create, // same as dumb_create
- 	.dumb_map_offset = virtio_gpu_mode_dumb_mmap,
- 
- #if defined(CONFIG_DEBUG_FS)
-@@ -215,6 +216,7 @@ static const struct drm_driver driver = {
- 	.gem_prime_import_sg_table = virtgpu_gem_prime_import_sg_table,
- 
- 	.gem_create_object = virtio_gpu_create_object,
-+	.gem_create_object_fbdev = virtio_gpu_create_object_fbdev,
- 	.fops = &virtio_gpu_driver_fops,
- 
- 	.ioctls = virtio_gpu_ioctls,
-diff --git a/drivers/gpu/drm/virtio/virtgpu_drv.h b/drivers/gpu/drm/virtio/virtgpu_drv.h
-index 0a194aaad419..71556c21c029 100644
---- a/drivers/gpu/drm/virtio/virtgpu_drv.h
-+++ b/drivers/gpu/drm/virtio/virtgpu_drv.h
-@@ -449,6 +449,8 @@ void virtio_gpu_fence_event_process(struct virtio_gpu_device *vdev,
- void virtio_gpu_cleanup_object(struct virtio_gpu_object *bo);
- struct drm_gem_object *virtio_gpu_create_object(struct drm_device *dev,
- 						size_t size);
-+struct drm_gem_object *virtio_gpu_create_object_fbdev(struct drm_device *dev,
-+						      size_t size);
- int virtio_gpu_object_create(struct virtio_gpu_device *vgdev,
- 			     struct virtio_gpu_object_params *params,
- 			     struct virtio_gpu_object **bo_ptr,
-diff --git a/drivers/gpu/drm/virtio/virtgpu_object.c b/drivers/gpu/drm/virtio/virtgpu_object.c
-index f293e6ad52da..255f2d650451 100644
---- a/drivers/gpu/drm/virtio/virtgpu_object.c
-+++ b/drivers/gpu/drm/virtio/virtgpu_object.c
-@@ -132,8 +132,8 @@ bool virtio_gpu_is_shmem(struct virtio_gpu_object *bo)
- 	return bo->base.base.funcs == &virtio_gpu_shmem_funcs;
+diff --git a/drivers/gpu/drm/drm_client.c b/drivers/gpu/drm/drm_client.c
+index af3b7395bf69..c964064651d5 100644
+--- a/drivers/gpu/drm/drm_client.c
++++ b/drivers/gpu/drm/drm_client.c
+@@ -247,7 +247,8 @@ static void drm_client_buffer_delete(struct drm_client_buffer *buffer)
  }
  
--struct drm_gem_object *virtio_gpu_create_object(struct drm_device *dev,
--						size_t size)
-+static struct drm_gem_object *__virtio_gpu_create_object(struct drm_device *dev,
-+							 size_t size)
+ static struct drm_client_buffer *
+-drm_client_buffer_create(struct drm_client_dev *client, u32 width, u32 height, u32 format)
++drm_client_buffer_create(struct drm_client_dev *client, u32 width, u32 height, u32 format,
++			 bool fbdev)
  {
- 	struct virtio_gpu_object_shmem *shmem;
- 	struct drm_gem_shmem_object *dshmem;
-@@ -143,10 +143,58 @@ struct drm_gem_object *virtio_gpu_create_object(struct drm_device *dev,
- 		return ERR_PTR(-ENOMEM);
+ 	const struct drm_format_info *info = drm_format_info(format);
+ 	struct drm_mode_create_dumb dumb_args = { };
+@@ -265,7 +266,10 @@ drm_client_buffer_create(struct drm_client_dev *client, u32 width, u32 height, u
+ 	dumb_args.width = width;
+ 	dumb_args.height = height;
+ 	dumb_args.bpp = info->cpp[0] * 8;
+-	ret = drm_mode_create_dumb(dev, &dumb_args, client->file);
++	if (fbdev)
++		ret = drm_mode_create_dumb_fbdev(dev, &dumb_args, client->file);
++	else
++		ret = drm_mode_create_dumb(dev, &dumb_args, client->file);
+ 	if (ret)
+ 		goto err_delete;
  
- 	dshmem = &shmem->base.base;
--	dshmem->base.funcs = &virtio_gpu_shmem_funcs;
- 	return &dshmem->base;
+@@ -402,6 +406,7 @@ static int drm_client_buffer_addfb(struct drm_client_buffer *buffer,
+  * @width: Framebuffer width
+  * @height: Framebuffer height
+  * @format: Buffer format
++ * @fbdev: True if the client provides an fbdev device, or false otherwise
+  *
+  * This function creates a &drm_client_buffer which consists of a
+  * &drm_framebuffer backed by a dumb buffer.
+@@ -411,12 +416,13 @@ static int drm_client_buffer_addfb(struct drm_client_buffer *buffer,
+  * Pointer to a client buffer or an error pointer on failure.
+  */
+ struct drm_client_buffer *
+-drm_client_framebuffer_create(struct drm_client_dev *client, u32 width, u32 height, u32 format)
++drm_client_framebuffer_create(struct drm_client_dev *client, u32 width, u32 height, u32 format,
++			      bool fbdev)
+ {
+ 	struct drm_client_buffer *buffer;
+ 	int ret;
+ 
+-	buffer = drm_client_buffer_create(client, width, height, format);
++	buffer = drm_client_buffer_create(client, width, height, format, fbdev);
+ 	if (IS_ERR(buffer))
+ 		return buffer;
+ 
+diff --git a/drivers/gpu/drm/drm_crtc_internal.h b/drivers/gpu/drm/drm_crtc_internal.h
+index 63279e984342..34e532953b5a 100644
+--- a/drivers/gpu/drm/drm_crtc_internal.h
++++ b/drivers/gpu/drm/drm_crtc_internal.h
+@@ -101,6 +101,9 @@ int drm_mode_getresources(struct drm_device *dev,
+ int drm_mode_create_dumb(struct drm_device *dev,
+ 			 struct drm_mode_create_dumb *args,
+ 			 struct drm_file *file_priv);
++int drm_mode_create_dumb_fbdev(struct drm_device *dev,
++			       struct drm_mode_create_dumb *args,
++			       struct drm_file *file_priv);
+ int drm_mode_destroy_dumb(struct drm_device *dev, u32 handle,
+ 			  struct drm_file *file_priv);
+ 
+diff --git a/drivers/gpu/drm/drm_dumb_buffers.c b/drivers/gpu/drm/drm_dumb_buffers.c
+index ad17fa21cebb..a605b4c4e4a3 100644
+--- a/drivers/gpu/drm/drm_dumb_buffers.c
++++ b/drivers/gpu/drm/drm_dumb_buffers.c
+@@ -57,14 +57,10 @@
+  * a hardware-specific ioctl to allocate suitable buffer objects.
+  */
+ 
+-int drm_mode_create_dumb(struct drm_device *dev,
+-			 struct drm_mode_create_dumb *args,
+-			 struct drm_file *file_priv)
++static int drm_mode_sanitize_args(struct drm_mode_create_dumb *args)
+ {
+ 	u32 cpp, stride, size;
+ 
+-	if (!dev->driver->dumb_create)
+-		return -ENOSYS;
+ 	if (!args->width || !args->height || !args->bpp)
+ 		return -EINVAL;
+ 
+@@ -93,6 +89,21 @@ int drm_mode_create_dumb(struct drm_device *dev,
+ 	args->pitch = 0;
+ 	args->size = 0;
+ 
++	return 0;
++}
++
++int drm_mode_create_dumb(struct drm_device *dev,
++			 struct drm_mode_create_dumb *args,
++			 struct drm_file *file_priv)
++{
++	int ret;
++
++	if (!dev->driver->dumb_create)
++		return -ENOSYS;
++	ret = drm_mode_sanitize_args(args);
++	if (ret)
++		return ret;
++
+ 	return dev->driver->dumb_create(file_priv, dev, args);
  }
  
-+struct drm_gem_object *virtio_gpu_create_object(struct drm_device *dev,
-+						size_t size)
+@@ -102,6 +113,21 @@ int drm_mode_create_dumb_ioctl(struct drm_device *dev,
+ 	return drm_mode_create_dumb(dev, data, file_priv);
+ }
+ 
++int drm_mode_create_dumb_fbdev(struct drm_device *dev,
++			       struct drm_mode_create_dumb *args,
++			       struct drm_file *file_priv)
 +{
-+	struct drm_gem_object *obj;
++	int ret;
 +
-+	obj = __virtio_gpu_create_object(dev, size);
-+	if (IS_ERR(obj))
-+		return obj;
-+	obj->funcs = &virtio_gpu_shmem_funcs;
++	if (!dev->driver->dumb_create_fbdev)
++		return -ENOSYS;
++	ret = drm_mode_sanitize_args(args);
++	if (ret)
++		return ret;
 +
-+	return obj;
++	return dev->driver->dumb_create_fbdev(file_priv, dev, args);
 +}
 +
-+#if defined(CONFIG_DRM_FBDEV_EMULATION)
-+static const struct drm_gem_object_funcs virtio_gpu_shmem_funcs_fbdev = {
-+	.free = virtio_gpu_free_object,
-+	.open = virtio_gpu_gem_object_open,
-+	.close = virtio_gpu_gem_object_close,
-+	.print_info = drm_gem_shmem_object_print_info,
-+	.export = virtgpu_gem_prime_export,
-+	.pin = drm_gem_shmem_object_pin,
-+	.unpin = drm_gem_shmem_object_unpin,
-+	.get_sg_table = drm_gem_shmem_object_get_sg_table,
-+	.vmap = drm_gem_shmem_object_vmap,
-+	.vunmap = drm_gem_shmem_object_vunmap,
-+	.mmap = drm_gem_shmem_object_mmap_fbdev,
-+	.vm_ops = &drm_gem_shmem_vm_ops_fbdev,
-+};
+ /**
+  * drm_mode_mmap_dumb_ioctl - create an mmap offset for a dumb backing storage buffer
+  * @dev: DRM device
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index 660ec5038c4e..9d1140a789f4 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -655,6 +655,15 @@ static bool drm_fbdev_use_shadow_fb(struct drm_fb_helper *fb_helper)
+ 	struct drm_device *dev = fb_helper->dev;
+ 	struct drm_framebuffer *fb = fb_helper->fb;
+ 
++	/*
++	 * If the driver provides an fbdev create function, it is expected
++	 * to provide its own implementation of deferred I/O. Shadow
++	 * buffering can still be enabled with the prefer_shadow_fbdev
++	 * flag.
++	 */
++	if (dev->driver->dumb_create_fbdev)
++		return dev->mode_config.prefer_shadow_fbdev;
 +
-+struct drm_gem_object *virtio_gpu_create_object_fbdev(struct drm_device *dev,
-+						      size_t size)
-+{
-+	struct drm_gem_object *obj;
+ 	return dev->mode_config.prefer_shadow_fbdev ||
+ 	       dev->mode_config.prefer_shadow ||
+ 	       fb->funcs->dirty;
+@@ -2130,6 +2139,7 @@ static void drm_fbdev_fb_destroy(struct fb_info *info)
+ static int drm_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	struct drm_fb_helper *fb_helper = info->par;
++	struct drm_device *dev = fb_helper->dev;
+ 
+ 	if (drm_fbdev_use_shadow_fb(fb_helper))
+ 		/*
+@@ -2137,14 +2147,20 @@ static int drm_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 		 * deferred I/O.
+ 		 */
+ 		return fb_deferred_io_mmap(info, vma);
+-	else if (fb_helper->dev->driver->gem_prime_mmap)
++	else if (!dev->driver->dumb_create_fbdev && drm_fbdev_use_deferred_io(fb_helper))
++		/*
++		 * Drivers without fbdev dumb-create helper rely on fbdev's
++		 * deferred I/O.
++		 */
++		return fb_deferred_io_mmap(info, vma);
++	else if (dev->driver->gem_prime_mmap)
+ 		/*
+ 		 * Either directly mmap'ed or with deferred I/O; drivers
+ 		 * without shadow buffer handle mmap themselves.
+ 		 */
+-		return fb_helper->dev->driver->gem_prime_mmap(fb_helper->buffer->gem, vma);
+-	else
+-		return -ENODEV;
++		return dev->driver->gem_prime_mmap(fb_helper->buffer->gem, vma);
 +
-+	obj = __virtio_gpu_create_object(dev, size);
-+	if (IS_ERR(obj))
-+		return obj;
-+	obj->funcs = &virtio_gpu_shmem_funcs_fbdev;
-+
-+	return obj;
-+}
-+#else
-+struct drm_gem_object *virtio_gpu_create_object_fbdev(struct drm_device *dev,
-+						      size_t size)
-+{
-+	return ERR_PTR(-ENOSYS);
-+}
-+#endif
-+
- static int virtio_gpu_object_shmem_init(struct virtio_gpu_device *vgdev,
- 					struct virtio_gpu_object *bo,
- 					struct virtio_gpu_mem_entry **ents,
++	return -ENODEV;
+ }
+ 
+ static bool drm_fbdev_use_iomem(struct fb_info *info)
+@@ -2395,7 +2411,7 @@ static int drm_fb_helper_generic_probe(struct drm_fb_helper *fb_helper,
+ 
+ 	format = drm_mode_legacy_fb_format(sizes->surface_bpp, sizes->surface_depth);
+ 	buffer = drm_client_framebuffer_create(client, sizes->surface_width,
+-					       sizes->surface_height, format);
++					       sizes->surface_height, format, true);
+ 	if (IS_ERR(buffer))
+ 		return PTR_ERR(buffer);
+ 
+diff --git a/include/drm/drm_client.h b/include/drm/drm_client.h
+index 4fc8018eddda..8d80d5594bea 100644
+--- a/include/drm/drm_client.h
++++ b/include/drm/drm_client.h
+@@ -153,7 +153,8 @@ struct drm_client_buffer {
+ };
+ 
+ struct drm_client_buffer *
+-drm_client_framebuffer_create(struct drm_client_dev *client, u32 width, u32 height, u32 format);
++drm_client_framebuffer_create(struct drm_client_dev *client, u32 width, u32 height, u32 format,
++			      bool fbdev);
+ void drm_client_framebuffer_delete(struct drm_client_buffer *buffer);
+ int drm_client_framebuffer_flush(struct drm_client_buffer *buffer, struct drm_rect *rect);
+ int drm_client_buffer_vmap(struct drm_client_buffer *buffer,
 diff --git a/include/drm/drm_drv.h b/include/drm/drm_drv.h
-index da4a095de1e7..9081281c1f39 100644
+index f6159acb8856..da4a095de1e7 100644
 --- a/include/drm/drm_drv.h
 +++ b/include/drm/drm_drv.h
-@@ -298,6 +298,16 @@ struct drm_driver {
- 	struct drm_gem_object *(*gem_create_object)(struct drm_device *dev,
- 						    size_t size);
- 
+@@ -379,6 +379,23 @@ struct drm_driver {
+ 	int (*dumb_create)(struct drm_file *file_priv,
+ 			   struct drm_device *dev,
+ 			   struct drm_mode_create_dumb *args);
 +	/**
-+	 * @gem_create_object_fbdev: constructor for gem objects that back fbdev
++	 * @dumb_create_fbdev:
 +	 *
-+	 * Hook for allocating the GEM object struct, for use by the CMA
-+	 * and SHMEM GEM helpers. Returns a GEM object on success, or an
-+	 * ERR_PTR()-encoded error code otherwise.
++	 * This creates a new dumb buffer for use with DRM fbdev clients and
++	 * returns the resulting buffer handle. This handle can then be wrapped
++	 * up into a framebuffer modeset object.
++	 *
++	 * This is an interface for kernel clients and never called via ioctl.
++	 *
++	 * See @dumb_create for more information.
++	 *
++	 * Returns:
++	 * Zero on success, negative errno on failure.
 +	 */
-+	struct drm_gem_object *(*gem_create_object_fbdev)(struct drm_device *dev,
-+							  size_t size);
-+
++	int (*dumb_create_fbdev)(struct drm_file *file_priv,
++				 struct drm_device *dev,
++				 struct drm_mode_create_dumb *args);
  	/**
- 	 * @prime_handle_to_fd:
+ 	 * @dumb_map_offset:
  	 *
 -- 
 2.35.1

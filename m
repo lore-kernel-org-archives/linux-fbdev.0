@@ -2,567 +2,576 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F508C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu,  3 Mar 2022 20:58:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C39CC433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri,  4 Mar 2022 02:43:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236394AbiCCU7e (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 3 Mar 2022 15:59:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58964 "EHLO
+        id S232537AbiCDCnz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 3 Mar 2022 21:43:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50574 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236378AbiCCU7b (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Mar 2022 15:59:31 -0500
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B449842A2D
-        for <linux-fbdev@vger.kernel.org>; Thu,  3 Mar 2022 12:58:44 -0800 (PST)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 5AAA91F386;
-        Thu,  3 Mar 2022 20:58:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1646341123; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=pHr5544ROJhBojHHXpax9c0eRTjBslUEweLX/2Wuka8=;
-        b=h31R2g0opHQRtiNxzQJ4h1xbA83FuI/rpRYQwjxavjHgbDVoMbYoGr5CyAtp88CYHY6amk
-        rT3VaqMh2MnGJr0t6CxAA0ORf3G3pd1VCJ0f+9zwfZArzbwcnF/oAAu3G/W7QHqaL43HQ4
-        8T3V1eafPycHxZf1+rrRCj8M+NSy2TE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1646341123;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=pHr5544ROJhBojHHXpax9c0eRTjBslUEweLX/2Wuka8=;
-        b=1I0Mpdbc70c8rdPSSVacoJpDztDJc0IijqlKSxrUDi+kKBhDN62/iCsKgUbHyENNohtH10
-        djXCYhpPqXMfDZDg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 207BA139B5;
-        Thu,  3 Mar 2022 20:58:43 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id UDIDBwMsIWJoHAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 03 Mar 2022 20:58:43 +0000
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-To:     daniel@ffwll.ch, airlied@linux.ie, mripard@kernel.org,
-        maarten.lankhorst@linux.intel.com, deller@gmx.de,
-        javierm@redhat.com
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 8/9] drm/gem-shmem: Implement fbdev dumb buffer and mmap helpers
-Date:   Thu,  3 Mar 2022 21:58:38 +0100
-Message-Id: <20220303205839.28484-9-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220303205839.28484-1-tzimmermann@suse.de>
-References: <20220303205839.28484-1-tzimmermann@suse.de>
+        with ESMTP id S231310AbiCDCny (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 3 Mar 2022 21:43:54 -0500
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0AA245D5FB;
+        Thu,  3 Mar 2022 18:43:01 -0800 (PST)
+X-UUID: ddcd53243d804e7dac19bd61d4c6cad4-20220304
+X-UUID: ddcd53243d804e7dac19bd61d4c6cad4-20220304
+Received: from mtkexhb02.mediatek.inc [(172.21.101.103)] by mailgw01.mediatek.com
+        (envelope-from <ck.hu@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1831687328; Fri, 04 Mar 2022 10:42:55 +0800
+Received: from mtkexhb02.mediatek.inc (172.21.101.103) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Fri, 4 Mar 2022 10:42:53 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by mtkexhb02.mediatek.inc
+ (172.21.101.103) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Fri, 4 Mar
+ 2022 10:42:53 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Fri, 4 Mar 2022 10:42:53 +0800
+Message-ID: <5c86954704df2c4e71cca2ce10c35641b65c78f1.camel@mediatek.com>
+Subject: Re: [PATCH v8 15/19] drm/mediatek: Add mt8195 Embedded DisplayPort
+ driver
+From:   CK Hu <ck.hu@mediatek.com>
+To:     Guillaume Ranquet <granquet@baylibre.com>,
+        <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
+        <airlied@linux.ie>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <maarten.lankhorst@linux.intel.com>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>,
+        <chunfeng.yun@mediatek.com>, <kishon@ti.com>, <vkoul@kernel.org>,
+        <deller@gmx.de>, <jitao.shi@mediatek.com>,
+        <angelogioacchino.delregno@collabora.com>
+CC:     <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>,
+        Markus Schneider-Pargmann <msp@baylibre.com>,
+        kernel test robot <lkp@intel.com>
+Date:   Fri, 4 Mar 2022 10:42:53 +0800
+In-Reply-To: <20220218145437.18563-16-granquet@baylibre.com>
+References: <20220218145437.18563-1-granquet@baylibre.com>
+         <20220218145437.18563-16-granquet@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Implement struct drm_driver.dumb_create_fbdev for GEM SHMEM. The
-created buffer object returned by this function implements deferred
-I/O for its mmap operation.
+Hi, Guillaume:
 
-Add this feature to a number of drivers that use GEM SHMEM helpers
-as shadow planes over their regular video memory. The new macro
-DRM_GEM_SHMEM_DRIVER_OPS_WITH_SHADOW_PLANES sets the regular GEM
-functions and dumb_create_fbdev in struct drm_driver. Fbdev emulation
-on these drivers will now mmap the GEM SHMEM pages directly with
-deferred I/O without an intermediate shadow buffer.
+On Fri, 2022-02-18 at 15:54 +0100, Guillaume Ranquet wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> 
+> This patch adds a DisplayPort driver for the Mediatek mt8195 SoC.
+> 
+> It supports the mt8195, the embedded DisplayPort units. It offers
+> hot-plug-detection and DisplayPort 1.4 with up to 4 lanes.
+> 
+> The driver creates a child device for the phy. The child device will
+> never exist without the parent being active. As they are sharing a
+> register range, the parent passes a regmap pointer to the child so
+> that
+> both can work with the same register range. The phy driver sets
+> device
+> data that is read by the parent to get the phy device that can be
+> used
+> to control the phy properties.
+> 
+> This driver is based on an initial version by
+> Jason-JH.Lin <jason-jh.lin@mediatek.com>.
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Reported-by: kernel test robot <lkp@intel.com>
+> ---
+>  drivers/gpu/drm/mediatek/Kconfig       |    7 +
+>  drivers/gpu/drm/mediatek/Makefile      |    2 +
+>  drivers/gpu/drm/mediatek/mtk_dp.c      | 2358
+> ++++++++++++++++++++++++
+>  drivers/gpu/drm/mediatek/mtk_dp_reg.h  |  568 ++++++
+>  drivers/gpu/drm/mediatek/mtk_drm_drv.c |    1 +
+>  drivers/gpu/drm/mediatek/mtk_drm_drv.h |    1 +
+>  6 files changed, 2937 insertions(+)
+>  create mode 100644 drivers/gpu/drm/mediatek/mtk_dp.c
+>  create mode 100644 drivers/gpu/drm/mediatek/mtk_dp_reg.h
+> 
+> 
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/gpu/drm/drm_gem_shmem_helper.c  | 197 +++++++++++++++++++++---
- drivers/gpu/drm/gud/gud_drv.c           |   2 +-
- drivers/gpu/drm/hyperv/hyperv_drm_drv.c |   2 +-
- drivers/gpu/drm/mgag200/mgag200_drv.c   |   2 +-
- drivers/gpu/drm/tiny/cirrus.c           |   2 +-
- drivers/gpu/drm/tiny/gm12u320.c         |   2 +-
- drivers/gpu/drm/tiny/simpledrm.c        |   2 +-
- drivers/gpu/drm/udl/udl_drv.c           |   2 +-
- drivers/gpu/drm/vkms/vkms_drv.c         |   2 +-
- include/drm/drm_gem_shmem_helper.h      |  63 +++++++-
- 10 files changed, 240 insertions(+), 36 deletions(-)
+[snip]
 
-diff --git a/drivers/gpu/drm/drm_gem_shmem_helper.c b/drivers/gpu/drm/drm_gem_shmem_helper.c
-index 8ad0e02991ca..ab7cb7d896c3 100644
---- a/drivers/gpu/drm/drm_gem_shmem_helper.c
-+++ b/drivers/gpu/drm/drm_gem_shmem_helper.c
-@@ -19,6 +19,7 @@
- #include <drm/drm.h>
- #include <drm/drm_device.h>
- #include <drm/drm_drv.h>
-+#include <drm/drm_fb_helper.h>
- #include <drm/drm_gem_shmem_helper.h>
- #include <drm/drm_prime.h>
- #include <drm/drm_print.h>
-@@ -49,8 +50,20 @@ static const struct drm_gem_object_funcs drm_gem_shmem_funcs = {
- 	.vm_ops = &drm_gem_shmem_vm_ops,
- };
- 
-+static const struct drm_gem_object_funcs drm_gem_shmem_funcs_fbdev = {
-+	.free = drm_gem_shmem_object_free,
-+	.print_info = drm_gem_shmem_object_print_info,
-+	.pin = drm_gem_shmem_object_pin,
-+	.unpin = drm_gem_shmem_object_unpin,
-+	.get_sg_table = drm_gem_shmem_object_get_sg_table,
-+	.vmap = drm_gem_shmem_object_vmap,
-+	.vunmap = drm_gem_shmem_object_vunmap,
-+	.mmap = drm_gem_shmem_object_mmap_fbdev,
-+	.vm_ops = &drm_gem_shmem_vm_ops_fbdev,
-+};
-+
- static struct drm_gem_shmem_object *
--__drm_gem_shmem_create(struct drm_device *dev, size_t size, bool private)
-+__drm_gem_shmem_create(struct drm_device *dev, size_t size, bool private, bool fbdev)
- {
- 	struct drm_gem_shmem_object *shmem;
- 	struct drm_gem_object *obj;
-@@ -70,8 +83,12 @@ __drm_gem_shmem_create(struct drm_device *dev, size_t size, bool private)
- 		obj = &shmem->base;
- 	}
- 
--	if (!obj->funcs)
--		obj->funcs = &drm_gem_shmem_funcs;
-+	if (!obj->funcs) {
-+		if (fbdev)
-+			obj->funcs = &drm_gem_shmem_funcs_fbdev;
-+		else
-+			obj->funcs = &drm_gem_shmem_funcs;
-+	}
- 
- 	if (private) {
- 		drm_gem_private_object_init(dev, obj, size);
-@@ -124,7 +141,7 @@ __drm_gem_shmem_create(struct drm_device *dev, size_t size, bool private)
-  */
- struct drm_gem_shmem_object *drm_gem_shmem_create(struct drm_device *dev, size_t size)
- {
--	return __drm_gem_shmem_create(dev, size, false);
-+	return __drm_gem_shmem_create(dev, size, false, false);
- }
- EXPORT_SYMBOL_GPL(drm_gem_shmem_create);
- 
-@@ -415,12 +432,12 @@ EXPORT_SYMBOL(drm_gem_shmem_vunmap);
- static struct drm_gem_shmem_object *
- drm_gem_shmem_create_with_handle(struct drm_file *file_priv,
- 				 struct drm_device *dev, size_t size,
--				 uint32_t *handle)
-+				 bool fbdev, uint32_t *handle)
- {
- 	struct drm_gem_shmem_object *shmem;
- 	int ret;
- 
--	shmem = drm_gem_shmem_create(dev, size);
-+	shmem = __drm_gem_shmem_create(dev, size, false, fbdev);
- 	if (IS_ERR(shmem))
- 		return shmem;
- 
-@@ -496,6 +513,29 @@ bool drm_gem_shmem_purge(struct drm_gem_shmem_object *shmem)
- }
- EXPORT_SYMBOL(drm_gem_shmem_purge);
- 
-+static int __drm_gem_shmem_dumb_create(struct drm_file *file, struct drm_device *dev,
-+				       bool fbdev, struct drm_mode_create_dumb *args)
-+{
-+	u32 min_pitch = DIV_ROUND_UP(args->width * args->bpp, 8);
-+	struct drm_gem_shmem_object *shmem;
-+
-+	if (!args->pitch || !args->size) {
-+		args->pitch = min_pitch;
-+		args->size = PAGE_ALIGN(args->pitch * args->height);
-+	} else {
-+		/* ensure sane minimum values */
-+		if (args->pitch < min_pitch)
-+			args->pitch = min_pitch;
-+		if (args->size < args->pitch * args->height)
-+			args->size = PAGE_ALIGN(args->pitch * args->height);
-+	}
-+
-+	shmem = drm_gem_shmem_create_with_handle(file, dev, args->size, fbdev,
-+						 &args->handle);
-+
-+	return PTR_ERR_OR_ZERO(shmem);
-+}
-+
- /**
-  * drm_gem_shmem_dumb_create - Create a dumb shmem buffer object
-  * @file: DRM file structure to create the dumb buffer for
-@@ -516,26 +556,38 @@ EXPORT_SYMBOL(drm_gem_shmem_purge);
- int drm_gem_shmem_dumb_create(struct drm_file *file, struct drm_device *dev,
- 			      struct drm_mode_create_dumb *args)
- {
--	u32 min_pitch = DIV_ROUND_UP(args->width * args->bpp, 8);
--	struct drm_gem_shmem_object *shmem;
--
--	if (!args->pitch || !args->size) {
--		args->pitch = min_pitch;
--		args->size = PAGE_ALIGN(args->pitch * args->height);
--	} else {
--		/* ensure sane minimum values */
--		if (args->pitch < min_pitch)
--			args->pitch = min_pitch;
--		if (args->size < args->pitch * args->height)
--			args->size = PAGE_ALIGN(args->pitch * args->height);
--	}
--
--	shmem = drm_gem_shmem_create_with_handle(file, dev, args->size, &args->handle);
--
--	return PTR_ERR_OR_ZERO(shmem);
-+	return __drm_gem_shmem_dumb_create(file, dev, false, args);
- }
- EXPORT_SYMBOL_GPL(drm_gem_shmem_dumb_create);
- 
-+/**
-+ * drm_gem_shmem_dumb_create_fbdev - Create a dumb shmem buffer object for fbdev
-+ * @file: DRM file structure to create the dumb buffer for
-+ * @dev: DRM device
-+ * @args: IOCTL data
-+ *
-+ * This function computes the pitch of the dumb buffer and rounds it up to an
-+ * integer number of bytes per pixel. Drivers for hardware that doesn't have
-+ * any additional restrictions on the pitch can directly use this function as
-+ * their &drm_driver.dumb_create_fbdev callback.
-+ *
-+ * For hardware with additional restrictions, drivers can adjust the fields
-+ * set up by userspace before calling into this function.
-+ *
-+ * Returns:
-+ * 0 on success or a negative error code on failure.
-+ */
-+int drm_gem_shmem_dumb_create_fbdev(struct drm_file *file, struct drm_device *dev,
-+				    struct drm_mode_create_dumb *args)
-+{
-+#if defined(CONFIG_DRM_FBDEV_EMULATION)
-+	return __drm_gem_shmem_dumb_create(file, dev, true, args);
-+#else
-+	return -ENOSYS;
-+#endif
-+}
-+EXPORT_SYMBOL_GPL(drm_gem_shmem_dumb_create_fbdev);
-+
- static vm_fault_t drm_gem_shmem_fault(struct vm_fault *vmf)
- {
- 	struct vm_area_struct *vma = vmf->vma;
-@@ -635,6 +687,103 @@ int drm_gem_shmem_mmap(struct drm_gem_shmem_object *shmem, struct vm_area_struct
- }
- EXPORT_SYMBOL_GPL(drm_gem_shmem_mmap);
- 
-+#if defined(CONFIG_DRM_FBDEV_EMULATION)
-+static vm_fault_t drm_gem_shmem_fault_fbdev(struct vm_fault *vmf)
-+{
-+	struct vm_area_struct *vma = vmf->vma;
-+	struct drm_gem_object *obj = vma->vm_private_data;
-+	struct drm_gem_shmem_object *shmem = to_drm_gem_shmem_obj(obj);
-+	loff_t num_pages = obj->size >> PAGE_SHIFT;
-+	struct drm_device *dev = obj->dev;
-+	vm_fault_t ret;
-+	struct page *page;
-+	pgoff_t page_offset;
-+
-+	/* We don't use vmf->pgoff since that has the fake offset */
-+	page_offset = (vmf->address - vma->vm_start) >> PAGE_SHIFT;
-+
-+	mutex_lock(&shmem->pages_lock);
-+
-+	if (page_offset >= num_pages || WARN_ON_ONCE(!shmem->pages) || shmem->madv < 0) {
-+		ret = VM_FAULT_SIGBUS;
-+		goto err_mutex_unlock;
-+	}
-+
-+	page = shmem->pages[page_offset];
-+
-+	get_page(page);
-+
-+	if (vmf->vma->vm_file)
-+		page->mapping = vmf->vma->vm_file->f_mapping;
-+	else
-+		drm_err(dev, "no mapping available\n");
-+
-+	if (drm_WARN_ON_ONCE(dev, !page->mapping)) {
-+		ret = VM_FAULT_SIGBUS;
-+		goto err_put_page;
-+	}
-+
-+	/* for page_mkclean(); include the fake offset in the page index */
-+	page->index = vmf->pgoff;
-+
-+	vmf->page = page;
-+
-+	mutex_unlock(&shmem->pages_lock);
-+
-+	return 0;
-+
-+err_put_page:
-+	put_page(page);
-+err_mutex_unlock:
-+	mutex_unlock(&shmem->pages_lock);
-+	return ret;
-+}
-+
-+static vm_fault_t drm_gem_shmem_vm_page_mkwrite_fbdev(struct vm_fault *vmf)
-+{
-+	struct drm_gem_object *obj = vmf->vma->vm_private_data;
-+
-+	return drm_fb_helper_vm_page_mkwrite(obj->dev->fb_helper, vmf);
-+}
-+
-+const struct vm_operations_struct drm_gem_shmem_vm_ops_fbdev = {
-+	.open = drm_gem_shmem_vm_open,
-+	.close = drm_gem_shmem_vm_close,
-+	.fault = drm_gem_shmem_fault_fbdev,
-+	.page_mkwrite = drm_gem_shmem_vm_page_mkwrite_fbdev,
-+};
-+EXPORT_SYMBOL_GPL(drm_gem_shmem_vm_ops_fbdev);
-+
-+int drm_gem_shmem_mmap_fbdev(struct drm_gem_shmem_object *shmem, struct vm_area_struct *vma)
-+{
-+	struct drm_gem_object *obj = &shmem->base;
-+	int ret;
-+
-+	if (obj->import_attach) {
-+		/* Drop the reference drm_gem_mmap_obj() acquired.*/
-+		drm_gem_object_put(obj);
-+		vma->vm_private_data = NULL;
-+
-+		return dma_buf_mmap(obj->dma_buf, vma, 0);
-+	}
-+
-+	ret = drm_gem_shmem_get_pages(shmem);
-+	if (ret) {
-+		drm_gem_vm_close(vma);
-+		return ret;
-+	}
-+
-+	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
-+	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
-+	vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
-+	if (shmem->map_wc)
-+		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(drm_gem_shmem_mmap_fbdev);
-+#endif
-+
- /**
-  * drm_gem_shmem_print_info() - Print &drm_gem_shmem_object info for debugfs
-  * @shmem: shmem GEM object
-@@ -751,7 +900,7 @@ drm_gem_shmem_prime_import_sg_table(struct drm_device *dev,
- 	size_t size = PAGE_ALIGN(attach->dmabuf->size);
- 	struct drm_gem_shmem_object *shmem;
- 
--	shmem = __drm_gem_shmem_create(dev, size, true);
-+	shmem = __drm_gem_shmem_create(dev, size, true, false);
- 	if (IS_ERR(shmem))
- 		return ERR_CAST(shmem);
- 
-diff --git a/drivers/gpu/drm/gud/gud_drv.c b/drivers/gpu/drm/gud/gud_drv.c
-index 3f9d4b9a1e3d..1ac1ff1b2f81 100644
---- a/drivers/gpu/drm/gud/gud_drv.c
-+++ b/drivers/gpu/drm/gud/gud_drv.c
-@@ -382,7 +382,7 @@ DEFINE_DRM_GEM_FOPS(gud_fops);
- static const struct drm_driver gud_drm_driver = {
- 	.driver_features	= DRIVER_MODESET | DRIVER_GEM | DRIVER_ATOMIC,
- 	.fops			= &gud_fops,
--	DRM_GEM_SHMEM_DRIVER_OPS,
-+	DRM_GEM_SHMEM_DRIVER_OPS_WITH_SHADOW_PLANES,
- 	.gem_prime_import	= gud_gem_prime_import,
- 	.debugfs_init		= gud_debugfs_init,
- 
-diff --git a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-index 4a8941fa0815..2701664c127b 100644
---- a/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-+++ b/drivers/gpu/drm/hyperv/hyperv_drm_drv.c
-@@ -38,7 +38,7 @@ static struct drm_driver hyperv_driver = {
- 	.minor		 = DRIVER_MINOR,
- 
- 	.fops		 = &hv_fops,
--	DRM_GEM_SHMEM_DRIVER_OPS,
-+	DRM_GEM_SHMEM_DRIVER_OPS_WITH_SHADOW_PLANES,
- };
- 
- static int hyperv_pci_probe(struct pci_dev *pdev,
-diff --git a/drivers/gpu/drm/mgag200/mgag200_drv.c b/drivers/gpu/drm/mgag200/mgag200_drv.c
-index 217844d71ab5..57dd5511e118 100644
---- a/drivers/gpu/drm/mgag200/mgag200_drv.c
-+++ b/drivers/gpu/drm/mgag200/mgag200_drv.c
-@@ -38,7 +38,7 @@ static const struct drm_driver mgag200_driver = {
- 	.major = DRIVER_MAJOR,
- 	.minor = DRIVER_MINOR,
- 	.patchlevel = DRIVER_PATCHLEVEL,
--	DRM_GEM_SHMEM_DRIVER_OPS,
-+	DRM_GEM_SHMEM_DRIVER_OPS_WITH_SHADOW_PLANES,
- };
- 
- /*
-diff --git a/drivers/gpu/drm/tiny/cirrus.c b/drivers/gpu/drm/tiny/cirrus.c
-index c8e791840862..17d8ca07af94 100644
---- a/drivers/gpu/drm/tiny/cirrus.c
-+++ b/drivers/gpu/drm/tiny/cirrus.c
-@@ -542,7 +542,7 @@ static const struct drm_driver cirrus_driver = {
- 	.minor		 = DRIVER_MINOR,
- 
- 	.fops		 = &cirrus_fops,
--	DRM_GEM_SHMEM_DRIVER_OPS,
-+	DRM_GEM_SHMEM_DRIVER_OPS_WITH_SHADOW_PLANES,
- };
- 
- static int cirrus_pci_probe(struct pci_dev *pdev,
-diff --git a/drivers/gpu/drm/tiny/gm12u320.c b/drivers/gpu/drm/tiny/gm12u320.c
-index 648e585d40a8..97946f0637f3 100644
---- a/drivers/gpu/drm/tiny/gm12u320.c
-+++ b/drivers/gpu/drm/tiny/gm12u320.c
-@@ -620,7 +620,7 @@ static const struct drm_driver gm12u320_drm_driver = {
- 	.minor		 = DRIVER_MINOR,
- 
- 	.fops		 = &gm12u320_fops,
--	DRM_GEM_SHMEM_DRIVER_OPS,
-+	DRM_GEM_SHMEM_DRIVER_OPS_WITH_SHADOW_PLANES,
- 	.gem_prime_import = gm12u320_gem_prime_import,
- };
- 
-diff --git a/drivers/gpu/drm/tiny/simpledrm.c b/drivers/gpu/drm/tiny/simpledrm.c
-index 768242a78e2b..562d09627330 100644
---- a/drivers/gpu/drm/tiny/simpledrm.c
-+++ b/drivers/gpu/drm/tiny/simpledrm.c
-@@ -871,7 +871,7 @@ simpledrm_device_create(struct drm_driver *drv, struct platform_device *pdev)
- DEFINE_DRM_GEM_FOPS(simpledrm_fops);
- 
- static struct drm_driver simpledrm_driver = {
--	DRM_GEM_SHMEM_DRIVER_OPS,
-+	DRM_GEM_SHMEM_DRIVER_OPS_WITH_SHADOW_PLANES,
- 	.name			= DRIVER_NAME,
- 	.desc			= DRIVER_DESC,
- 	.date			= DRIVER_DATE,
-diff --git a/drivers/gpu/drm/udl/udl_drv.c b/drivers/gpu/drm/udl/udl_drv.c
-index 5703277c6f52..87f7648e73a5 100644
---- a/drivers/gpu/drm/udl/udl_drv.c
-+++ b/drivers/gpu/drm/udl/udl_drv.c
-@@ -55,7 +55,7 @@ static const struct drm_driver driver = {
- 
- 	/* GEM hooks */
- 	.fops = &udl_driver_fops,
--	DRM_GEM_SHMEM_DRIVER_OPS,
-+	DRM_GEM_SHMEM_DRIVER_OPS_WITH_SHADOW_PLANES,
- 	.gem_prime_import = udl_driver_gem_prime_import,
- 
- 	.name = DRIVER_NAME,
-diff --git a/drivers/gpu/drm/vkms/vkms_drv.c b/drivers/gpu/drm/vkms/vkms_drv.c
-index 0ffe5f0e33f7..645b92149b8b 100644
---- a/drivers/gpu/drm/vkms/vkms_drv.c
-+++ b/drivers/gpu/drm/vkms/vkms_drv.c
-@@ -116,7 +116,7 @@ static const struct drm_driver vkms_driver = {
- 	.driver_features	= DRIVER_MODESET | DRIVER_ATOMIC | DRIVER_GEM,
- 	.release		= vkms_release,
- 	.fops			= &vkms_driver_fops,
--	DRM_GEM_SHMEM_DRIVER_OPS,
-+	DRM_GEM_SHMEM_DRIVER_OPS_WITH_SHADOW_PLANES,
- 
- 	.debugfs_init           = vkms_config_debugfs_init,
- 
-diff --git a/include/drm/drm_gem_shmem_helper.h b/include/drm/drm_gem_shmem_helper.h
-index d0a57853c188..16b0f4b60d33 100644
---- a/include/drm/drm_gem_shmem_helper.h
-+++ b/include/drm/drm_gem_shmem_helper.h
-@@ -139,6 +139,11 @@ void drm_gem_shmem_print_info(const struct drm_gem_shmem_object *shmem,
- 
- extern const struct vm_operations_struct drm_gem_shmem_vm_ops;
- 
-+#if defined(CONFIG_DRM_FBDEV_EMULATION)
-+extern const struct vm_operations_struct drm_gem_shmem_vm_ops_fbdev;
-+int drm_gem_shmem_mmap_fbdev(struct drm_gem_shmem_object *shmem, struct vm_area_struct *vma);
-+#endif
-+
- /*
-  * GEM object functions
-  */
-@@ -272,6 +277,27 @@ static inline int drm_gem_shmem_object_mmap(struct drm_gem_object *obj, struct v
- 	return drm_gem_shmem_mmap(shmem, vma);
- }
- 
-+#if defined(CONFIG_DRM_FBDEV_EMULATION)
-+/**
-+ * drm_gem_shmem_object_mmap_fbdev - GEM object function for drm_gem_shmem_mmap_fbdev()
-+ * @obj: GEM object
-+ * @vma: VMA for the area to be mapped
-+ *
-+ * This function wraps drm_gem_shmem_mmap(). Drivers that employ the shmem helpers should
-+ * use it as their &drm_gem_object_funcs.mmap handler.
-+ *
-+ * Returns:
-+ * 0 on success or a negative error code on failure.
-+ */
-+static inline int drm_gem_shmem_object_mmap_fbdev(struct drm_gem_object *obj,
-+						  struct vm_area_struct *vma)
-+{
-+	struct drm_gem_shmem_object *shmem = to_drm_gem_shmem_obj(obj);
-+
-+	return drm_gem_shmem_mmap_fbdev(shmem, vma);
-+}
-+#endif
-+
- /*
-  * Driver ops
-  */
-@@ -282,18 +308,47 @@ drm_gem_shmem_prime_import_sg_table(struct drm_device *dev,
- 				    struct sg_table *sgt);
- int drm_gem_shmem_dumb_create(struct drm_file *file, struct drm_device *dev,
- 			      struct drm_mode_create_dumb *args);
-+int drm_gem_shmem_dumb_create_fbdev(struct drm_file *file, struct drm_device *dev,
-+				    struct drm_mode_create_dumb *args);
- 
- /**
-- * DRM_GEM_SHMEM_DRIVER_OPS - Default shmem GEM operations
-+ * DRM_GEM_SHMEM_DRIVER_OPS_WITH_DUMB_CREATE - Default shmem GEM operations
-+ * @dumb_create_func: callback function for .dumb_create
-+ * @dumb_create_fbdev_func: callback function for .dumb_create_fbdev
-  *
-  * This macro provides a shortcut for setting the shmem GEM operations in
-- * the &drm_driver structure.
-+ * the &drm_driver structure. The callbacks for creating dumb buffers are
-+ * given as parameters. Use DRM_GEM_SHMEM_DRIVER_OPS or
-+ * DRM_GEM_SHMEM_OPS_WITH_SHADOW_PLANES if possible.
-  */
--#define DRM_GEM_SHMEM_DRIVER_OPS \
-+#define DRM_GEM_SHMEM_DRIVER_OPS_WITH_DUMB_CREATE(dumb_create_func, dumb_create_fbdev_func) \
- 	.prime_handle_to_fd	= drm_gem_prime_handle_to_fd, \
- 	.prime_fd_to_handle	= drm_gem_prime_fd_to_handle, \
- 	.gem_prime_import_sg_table = drm_gem_shmem_prime_import_sg_table, \
- 	.gem_prime_mmap		= drm_gem_prime_mmap, \
--	.dumb_create		= drm_gem_shmem_dumb_create
-+	.dumb_create		= dumb_create_func, \
-+	.dumb_create_fbdev	= dumb_create_fbdev_func
-+
-+/**
-+ * DRM_GEM_SHMEM_DRIVER_OPS - Default shmem GEM operations
-+ *
-+ * This macro provides a shortcut for setting the shmem GEM operations in
-+ * the &drm_driver structure.
-+ */
-+#define DRM_GEM_SHMEM_DRIVER_OPS \
-+	DRM_GEM_SHMEM_DRIVER_OPS_WITH_DUMB_CREATE(drm_gem_shmem_dumb_create, NULL)
-+
-+/**
-+ * DRM_GEM_SHMEM_DRIVER_OPS_WITH_SHADOW_PLANES - Default shmem GEM operations
-+ *                                               for drivers that use shadow
-+ *                                               planes
-+ *
-+ * This macro provides a shortcut for setting the shmem GEM operations in
-+ * the &drm_driver structure. Drivers that employ shmem GEM for shadow
-+ * buffering should use this macro.
-+ */
-+#define DRM_GEM_SHMEM_DRIVER_OPS_WITH_SHADOW_PLANES \
-+	DRM_GEM_SHMEM_DRIVER_OPS_WITH_DUMB_CREATE(drm_gem_shmem_dumb_create, \
-+						  drm_gem_shmem_dumb_create_fbdev)
- 
- #endif /* __DRM_GEM_SHMEM_HELPER_H__ */
--- 
-2.35.1
+> +
+> +struct mtk_dp_train_info {
+> +	bool tps3;
+> +	bool tps4;
+> +	bool sink_ssc;
+> +	bool cable_plugged_in;
+
+Move to external display port patch.
+
+> +	bool cable_state_change;
+
+Move to external display port patch.
+
+> +	bool cr_done;
+> +	bool eq_done;
+> +
+> +	// link_rate is in multiple of 0.27Gbps
+> +	int link_rate;
+> +	int lane_count;
+> +
+> +	int irq_status;
+
+Move to external display port patch.
+
+> +	int check_cap_count;
+> +};
+> +
+> 
+
+[snip]
+
+> +
+> +// Same values as used for DP Spec MISC0 bits 5,6,7
+> +enum mtk_dp_color_depth {
+> +	MTK_DP_COLOR_DEPTH_6BIT = 0,
+> +	MTK_DP_COLOR_DEPTH_8BIT = 1,
+
+Only 8bits is used, so drop other definition.
+
+> +	MTK_DP_COLOR_DEPTH_10BIT = 2,
+> +	MTK_DP_COLOR_DEPTH_12BIT = 3,
+> +	MTK_DP_COLOR_DEPTH_16BIT = 4,
+> +	MTK_DP_COLOR_DEPTH_UNKNOWN = 5,
+> +};
+> +
+> 
+
+[snip]
+
+> +
+> +struct mtk_dp {
+> +	struct device *dev;
+> +	struct platform_device *phy_dev;
+> +	struct phy *phy;
+> +	struct dp_cal_data cal_data;
+> +
+> +	struct drm_device *drm_dev;
+> +	struct drm_bridge bridge;
+> +	struct drm_bridge *next_bridge;
+> +	struct drm_dp_aux aux;
+> +
+> +	/* Protects edid as it is used in both bridge ops and IRQ
+> handler */
+> +	struct mutex edid_lock;
+> +	struct edid *edid;
+> +
+> +	u8 rx_cap[DP_RECEIVER_CAP_SIZE];
+> +
+> +	struct mtk_dp_info info;
+> +	enum mtk_dp_state state;
+> +
+> +	struct mtk_dp_train_info train_info;
+> +	enum mtk_dp_train_state train_state;
+> +	unsigned int input_fmt;
+> +
+> +	struct regmap *regs;
+> +	struct clk *dp_tx_clk;
+> +
+> +	bool enabled;
+> +
+> +	bool has_fec;
+> +	/* Protects the mtk_dp struct */
+> +	struct mutex dp_lock;
+> +
+> +	hdmi_codec_plugged_cb plugged_cb;
+> +	struct device *codec_dev;
+> +	u8 connector_eld[MAX_ELD_BYTES];
+
+Move this to dp audio patch.
+
+> +	struct drm_connector *conn;
+> +};
+> +
+> 
+
+[snip]
+
+> +
+> +static void mtk_dp_set_color_format(struct mtk_dp *mtk_dp,
+> +				    enum mtk_dp_color_format
+> color_format)
+> +{
+> +	u32 val;
+> +
+> +	mtk_dp->info.format = color_format;
+
+When call into this function from mtk_dp_video_config(), it calls
+
+mtk_dp_set_color_format(mtk_dp, mtk_dp->info.format);
+
+It looks weird that you pass mtk_dp->info.format into this function and
+set it to it. So I would like this function to be pure register
+setting, and move this variable keeping out of this function.
+
+
+> +
+> +	// Update MISC0
+> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_3034,
+> +			   color_format << DP_TEST_COLOR_FORMAT_SHIFT,
+> +			   DP_TEST_COLOR_FORMAT_MASK);
+> +
+> +	switch (color_format) {
+> +	case MTK_DP_COLOR_FORMAT_YUV_422:
+> +		val = PIXEL_ENCODE_FORMAT_DP_ENC0_P0_YCBCR422;
+> +		break;
+> +	case MTK_DP_COLOR_FORMAT_YUV_420:
+> +		val = PIXEL_ENCODE_FORMAT_DP_ENC0_P0_YCBCR420;
+> +		break;
+> +	case MTK_DP_COLOR_FORMAT_YONLY:
+> +	case MTK_DP_COLOR_FORMAT_RAW:
+> +	case MTK_DP_COLOR_FORMAT_RESERVED:
+> +	case MTK_DP_COLOR_FORMAT_UNKNOWN:
+> +		drm_warn(mtk_dp->drm_dev, "Unsupported color format:
+> %d\n",
+> +			 color_format);
+> +		fallthrough;
+> +	case MTK_DP_COLOR_FORMAT_RGB_444:
+> +	case MTK_DP_COLOR_FORMAT_YUV_444:
+> +		val = PIXEL_ENCODE_FORMAT_DP_ENC0_P0_RGB;
+> +		break;
+> +	}
+> +
+> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_303C, val,
+> +			   PIXEL_ENCODE_FORMAT_DP_ENC0_P0_MASK);
+> +}
+> +
+> 
+
+[snip]
+
+> +
+> +static void mtk_dp_pg_disable(struct mtk_dp *mtk_dp)
+> +{
+> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_3038, 0,
+> +			   VIDEO_SOURCE_SEL_DP_ENC0_P0_MASK);
+> +	mtk_dp_update_bits(mtk_dp, MTK_DP_ENC0_P0_31B0,
+> +			   4 << PGEN_PATTERN_SEL_SHIFT,
+> PGEN_PATTERN_SEL_MASK);
+> +}
+> +
+> +static bool mtk_dp_plug_state(struct mtk_dp *mtk_dp)
+
+Move this function to external dp patch.
+
+> +{
+> +	return !!(mtk_dp_read(mtk_dp, MTK_DP_TRANS_P0_3414) &
+> +		  HPD_DB_DP_TRANS_P0_MASK);
+> +}
+> +
+> 
+
+[snip]
+
+> +
+> +static void mtk_dp_train_set_pattern(struct mtk_dp *mtk_dp, int
+> pattern)
+> +{
+> +	if (pattern < 0 || pattern > 4) {
+
+Never happen, remove this checking.
+
+> +		drm_err(mtk_dp->drm_dev,
+> +			"Implementation error, no such pattern %d\n",
+> pattern);
+> +		return;
+> +	}
+> +
+> +	if (pattern == 1) // TPS1
+> +		mtk_dp_set_idle_pattern(mtk_dp, false);
+> +
+> +	mtk_dp_update_bits(mtk_dp,
+> +			   MTK_DP_TRANS_P0_3400,
+> +			   pattern ? BIT(pattern - 1) <<
+> PATTERN1_EN_DP_TRANS_P0_SHIFT : 0,
+> +			   PATTERN1_EN_DP_TRANS_P0_MASK |
+> PATTERN2_EN_DP_TRANS_P0_MASK |
+> +			   PATTERN3_EN_DP_TRANS_P0_MASK |
+> +			   PATTERN4_EN_DP_TRANS_P0_MASK);
+> +}
+> +
+> 
+
+[snip]
+
+> +
+> +static void mtk_dp_setup_tu(struct mtk_dp *mtk_dp)
+> +{
+> +	u32 sram_read_start = MTK_DP_TBC_BUF_READ_START_ADDR;
+
+It's not necessary to have a initial value.
+
+> +
+> +	if (mtk_dp->train_info.lane_count > 0) {
+> +		sram_read_start = min_t(u32,
+> +					MTK_DP_TBC_BUF_READ_START_ADDR,
+> +					mtk_dp->info.timings.vm.hactive 
+> /
+> +					(mtk_dp->train_info.lane_count
+> * 4 * 2 * 2));
+> +		mtk_dp_set_sram_read_start(mtk_dp, sram_read_start);
+> +	}
+> +
+> +	mtk_dp_setup_encoder(mtk_dp);
+> +}
+> +
+> 
+
+[snip]
+
+> +static void mtk_dp_train_handler(struct mtk_dp *mtk_dp)
+> +{
+> +	int ret = 0;
+> +	int i = 50;
+> +
+> +	do {
+> +		if (mtk_dp->train_state == MTK_DP_TRAIN_STATE_NORMAL)
+> +			continue;
+> +
+> +		switch (mtk_dp->train_state) {
+> +		case MTK_DP_TRAIN_STATE_STARTUP:
+> +			mtk_dp->train_state =
+> MTK_DP_TRAIN_STATE_CHECKCAP;
+> +			break;
+> +
+> +		case MTK_DP_TRAIN_STATE_CHECKCAP:
+> +			if (mtk_dp_parse_capabilities(mtk_dp)) {
+> +				mtk_dp->train_info.check_cap_count = 0;
+> +				mtk_dp->train_state =
+> MTK_DP_TRAIN_STATE_CHECKEDID;
+> +			} else {
+> +				mtk_dp->train_info.check_cap_count++;
+> +
+> +				if (mtk_dp->train_info.check_cap_count
+> >
+> +					MTK_DP_CHECK_SINK_CAP_TIMEOUT_C
+> OUNT) {
+> +					mtk_dp-
+> >train_info.check_cap_count = 0;
+> +					mtk_dp->train_state =
+> MTK_DP_TRAIN_STATE_DPIDLE;
+> +					ret = -ETIMEDOUT;
+> +				}
+> +			}
+> +			break;
+> +
+> +		case MTK_DP_TRAIN_STATE_CHECKEDID:
+> +			mtk_dp->train_state =
+> MTK_DP_TRAIN_STATE_TRAINING_PRE;
+> +			break;
+> +
+> +		case MTK_DP_TRAIN_STATE_TRAINING_PRE:
+> +			mtk_dp->train_state =
+> MTK_DP_TRAIN_STATE_TRAINING;
+> +			break;
+> +
+> +		case MTK_DP_TRAIN_STATE_TRAINING:
+> +			ret = mtk_dp_train_start(mtk_dp);
+> +			if (!ret) {
+> +				mtk_dp_video_mute(mtk_dp, true);
+> +				mtk_dp->train_state =
+> MTK_DP_TRAIN_STATE_NORMAL;
+> +				mtk_dp_fec_enable(mtk_dp, mtk_dp-
+> >has_fec);
+> +			} else if (ret != -EAGAIN) {
+> +				mtk_dp->train_state =
+> MTK_DP_TRAIN_STATE_DPIDLE;
+> +			}
+> +
+> +			ret = 0;
+> +			break;
+> +
+> +		case MTK_DP_TRAIN_STATE_NORMAL:
+> +			break;
+> +		case MTK_DP_TRAIN_STATE_DPIDLE:
+> +			break;
+> +		default:
+
+You have list all 7 states, why need default?
+
+> +			break;
+> +		}
+> +	} while (ret && i--);
+
+Why keep in this loop while error happen?
+
+> +
+> +	if (ret)
+> +		drm_err(mtk_dp->drm_dev, "Train handler failed %d\n",
+> ret);
+> +}
+> +
+> 
+
+[snip]
+
+> +static void mtk_dp_state_handler(struct mtk_dp *mtk_dp)
+> +{
+> +	switch (mtk_dp->state) {
+> +	case MTK_DP_STATE_INITIAL:
+> +		mtk_dp_video_mute(mtk_dp, true);
+> +		mtk_dp->state = MTK_DP_STATE_IDLE;
+> +		break;
+> +
+> +	case MTK_DP_STATE_IDLE:
+> +		if (mtk_dp->train_state == MTK_DP_TRAIN_STATE_NORMAL)
+> +			mtk_dp->state = MTK_DP_STATE_PREPARE;
+> +		break;
+> +
+> +	case MTK_DP_STATE_PREPARE:
+> +		mtk_dp_video_config(mtk_dp);
+> +		mtk_dp_video_enable(mtk_dp, true);
+> +
+> +		mtk_dp->state = MTK_DP_STATE_NORMAL;
+> +		break;
+> +
+> +	case MTK_DP_STATE_NORMAL:
+> +		if (mtk_dp->train_state != MTK_DP_TRAIN_STATE_NORMAL) {
+> +			mtk_dp_video_mute(mtk_dp, true);
+> +			mtk_dp->state = MTK_DP_STATE_IDLE;
+> +		}
+> +		break;
+> +
+> +	default:
+
+There is no default case, so remove this.
+
+> +		break;
+> +	}
+> +}
+> +
+> 
+
+[snip]
+
+> +
+> +static struct edid *mtk_dp_get_edid(struct drm_bridge *bridge,
+> +				    struct drm_connector *connector)
+> +{
+> +	struct mtk_dp *mtk_dp = mtk_dp_from_bridge(bridge);
+> +	bool enabled = mtk_dp->enabled;
+> +	struct edid *new_edid = NULL;
+> +
+> +	if (!enabled)
+
+Would DRM core make this happen?
+
+> +		drm_bridge_chain_pre_enable(bridge);
+> +
+> +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER,
+> DP_SET_POWER_D0);
+> +	usleep_range(2000, 5000);
+> +
+> +	if (mtk_dp_plug_state(mtk_dp))
+> +		new_edid = drm_get_edid(connector, &mtk_dp->aux.ddc);
+> +
+> +	if (!enabled)
+> +		drm_bridge_chain_post_disable(bridge);
+> +
+> +	mutex_lock(&mtk_dp->edid_lock);
+> +	kfree(mtk_dp->edid);
+> +	mtk_dp->edid = NULL;
+> +
+> +	if (!new_edid) {
+> +		mutex_unlock(&mtk_dp->edid_lock);
+> +		return NULL;
+> +	}
+> +
+> +	mtk_dp->edid = drm_edid_duplicate(new_edid);
+> +	mutex_unlock(&mtk_dp->edid_lock);
+> +
+> +	return new_edid;
+> +}
+> +
+> 
+
+[snip]
+
+> +
+> +static void mtk_dp_bridge_atomic_enable(struct drm_bridge *bridge,
+> +					struct drm_bridge_state
+> *old_state)
+> +{
+> +	struct mtk_dp *mtk_dp = mtk_dp_from_bridge(bridge);
+> +	struct drm_connector_state *conn_state;
+> +	struct drm_crtc *crtc;
+> +	struct drm_crtc_state *crtc_state;
+> +
+> +	mtk_dp->conn =
+> drm_atomic_get_new_connector_for_encoder(old_state->base.state,
+> +								bridge-
+> >encoder);
+> +	if (!mtk_dp->conn) {
+> +		drm_err(mtk_dp->drm_dev,
+> +			"Can't enable bridge as connector is
+> missing\n");
+> +		return;
+> +	}
+> +
+> +	memcpy(mtk_dp->connector_eld, mtk_dp->conn->eld,
+> MAX_ELD_BYTES);
+> +
+> +	conn_state =
+> +		drm_atomic_get_new_connector_state(old_state-
+> >base.state, mtk_dp->conn);
+> +	if (!conn_state) {
+> +		drm_err(mtk_dp->drm_dev,
+> +			"Can't enable bridge as connector state is
+> missing\n");
+> +		return;
+> +	}
+> +
+> +	crtc = conn_state->crtc;
+> +	if (!crtc) {
+> +		drm_err(mtk_dp->drm_dev,
+> +			"Can't enable bridge as connector state doesn't
+> have a crtc\n");
+> +		return;
+> +	}
+> +
+> +	crtc_state = drm_atomic_get_new_crtc_state(old_state-
+> >base.state, crtc);
+> +	if (!crtc_state) {
+> +		drm_err(mtk_dp->drm_dev,
+> +			"Can't enable bridge as crtc state is
+> missing\n");
+> +		return;
+> +	}
+> +
+> +	mtk_dp_parse_drm_mode_timings(mtk_dp, &crtc_state-
+> >adjusted_mode);
+
+I think this bridge should implement mode_set() and these code is moved
+to mode_set().
+
+Regards,
+CK
+
+> +	if (!mtk_dp_parse_capabilities(mtk_dp)) {
+> +		drm_err(mtk_dp->drm_dev,
+> +			"Can't enable bridge as nothing is plugged
+> in\n");
+> +		return;
+> +	}
+> +
+> +	/* Training */
+> +	mtk_dp_train_handler(mtk_dp);
+> +	mtk_dp_state_handler(mtk_dp);
+> +	mtk_dp->enabled = true;
+> +}
+> +
+> 
 

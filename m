@@ -2,29 +2,29 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 745F1C433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon,  7 Mar 2022 20:53:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD507C433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon,  7 Mar 2022 20:54:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245379AbiCGUyU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 7 Mar 2022 15:54:20 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43590 "EHLO
+        id S245441AbiCGUzE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 7 Mar 2022 15:55:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45488 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S245392AbiCGUyT (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 7 Mar 2022 15:54:19 -0500
-Received: from andre.telenet-ops.be (andre.telenet-ops.be [IPv6:2a02:1800:120:4::f00:15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61E4E286E6
-        for <linux-fbdev@vger.kernel.org>; Mon,  7 Mar 2022 12:53:23 -0800 (PST)
+        with ESMTP id S245440AbiCGUyn (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 7 Mar 2022 15:54:43 -0500
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8C6E3150A
+        for <linux-fbdev@vger.kernel.org>; Mon,  7 Mar 2022 12:53:33 -0800 (PST)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed40:6100:2d37:4115:c358])
-        by andre.telenet-ops.be with bizsmtp
-        id 3YtK2700F1Yj8bA01YtKzF; Mon, 07 Mar 2022 21:53:23 +0100
+        by xavier.telenet-ops.be with bizsmtp
+        id 3YtW2700A1Yj8bA01YtWF7; Mon, 07 Mar 2022 21:53:33 +0100
 Received: from rox.of.borg ([192.168.97.57])
         by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
         (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1nRKLY-0036Qi-Kw; Mon, 07 Mar 2022 21:52:48 +0100
+        id 1nRKLY-0036Ql-Nk; Mon, 07 Mar 2022 21:52:48 +0100
 Received: from geert by rox.of.borg with local (Exim 4.93)
         (envelope-from <geert@linux-m68k.org>)
-        id 1nRKLY-0034ho-0P; Mon, 07 Mar 2022 21:52:48 +0100
+        id 1nRKLY-0034iA-3I; Mon, 07 Mar 2022 21:52:48 +0100
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
 To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
@@ -36,9 +36,9 @@ To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
         Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v2 06/10] drm/fb-helper: Add support for DRM_FORMAT_C[124]
-Date:   Mon,  7 Mar 2022 21:52:41 +0100
-Message-Id: <c665d6ba072f3debb3fa0a139454fefef6a55011.1646683502.git.geert@linux-m68k.org>
+Subject: [PATCH v2 RFC 09/10] drm/fourcc: Add DRM_FORMAT_R[124]
+Date:   Mon,  7 Mar 2022 21:52:44 +0100
+Message-Id: <98c062f1b5c71427d5ba6c7bca706d04b1892162.1646683502.git.geert@linux-m68k.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <cover.1646683502.git.geert@linux-m68k.org>
 References: <cover.1646683502.git.geert@linux-m68k.org>
@@ -48,226 +48,63 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Add support for color-indexed frame buffer formats with two, four, and
-sixteen colors to the DRM framebuffer helper functions:
-  1. Add support for 1, 2, and 4 bits per pixel to the damage helper,
-  2. For color-indexed modes, the length of the color bitfields must be
-     set to the color depth, else the logo code may pick a logo with too
-     many colors.  Drop the incorrect DAC width comment, which
-     originates from the i915 driver.
-  3. Accept C[124] modes when validating or filling in struct
-     fb_var_screeninfo, and use the correct number of bits per pixel.
-  4. Set the visual to FB_VISUAL_PSEUDOCOLOR for all color-indexed
-     modes.
+Introduce fourcc codes for single-channel light-on-dark frame buffer
+formats with two, four, and sixteen intensity levels.
+
+As the number of bits per pixel is less than eight, these rely on proper
+block handling for the calculation of bits per pixel and pitch.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
-v2:
-  - Use drm_format_info_bpp() helper instead of deprecated .depth field
-    or format-dependent calculations,
-  - Use new .is_color_indexed field instead of checking against a list
-    of formats.
----
- drivers/gpu/drm/drm_fb_helper.c | 101 ++++++++++++++++++++++++--------
- 1 file changed, 75 insertions(+), 26 deletions(-)
+RFC, as I have no immediate need for these formats.
 
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index ed43b987d306afce..ba1c303a294d8c6f 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -376,12 +376,31 @@ static void drm_fb_helper_damage_blit_real(struct drm_fb_helper *fb_helper,
- 					   struct iosys_map *dst)
- {
- 	struct drm_framebuffer *fb = fb_helper->fb;
--	unsigned int cpp = fb->format->cpp[0];
--	size_t offset = clip->y1 * fb->pitches[0] + clip->x1 * cpp;
--	void *src = fb_helper->fbdev->screen_buffer + offset;
--	size_t len = (clip->x2 - clip->x1) * cpp;
-+	size_t offset = clip->y1 * fb->pitches[0];
-+	size_t len = clip->x2 - clip->x1;
- 	unsigned int y;
-+	void *src;
+v2:
+  - Improve pixel descriptions.
+---
+ drivers/gpu/drm/drm_fourcc.c  |  6 ++++++
+ include/uapi/drm/drm_fourcc.h | 11 ++++++++++-
+ 2 files changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
+index 29f4fe199c4ddcf0..05e65e9ab0c69c6a 100644
+--- a/drivers/gpu/drm/drm_fourcc.c
++++ b/drivers/gpu/drm/drm_fourcc.c
+@@ -154,6 +154,12 @@ const struct drm_format_info *__drm_format_info(u32 format)
+ 		{ .format = DRM_FORMAT_C4,		.depth = 4,  .num_planes = 1,
+ 		  .char_per_block = { 1, }, .block_w = { 2, }, .block_h = { 1, }, .hsub = 1, .vsub = 1, .is_color_indexed = true },
+ 		{ .format = DRM_FORMAT_C8,		.depth = 8,  .num_planes = 1, .cpp = { 1, 0, 0 }, .hsub = 1, .vsub = 1, .is_color_indexed = true },
++		{ .format = DRM_FORMAT_R1,		.depth = 1,  .num_planes = 1,
++		  .char_per_block = { 1, }, .block_w = { 8, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
++		{ .format = DRM_FORMAT_R2,		.depth = 2,  .num_planes = 1,
++		  .char_per_block = { 1, }, .block_w = { 4, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
++		{ .format = DRM_FORMAT_R4,		.depth = 4,  .num_planes = 1,
++		  .char_per_block = { 1, }, .block_w = { 2, }, .block_h = { 1, }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_R8,		.depth = 8,  .num_planes = 1, .cpp = { 1, 0, 0 }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_R10,		.depth = 10, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
+ 		{ .format = DRM_FORMAT_R12,		.depth = 12, .num_planes = 1, .cpp = { 2, 0, 0 }, .hsub = 1, .vsub = 1 },
+diff --git a/include/uapi/drm/drm_fourcc.h b/include/uapi/drm/drm_fourcc.h
+index f0187cf20e4619d2..def0a73620dc86d2 100644
+--- a/include/uapi/drm/drm_fourcc.h
++++ b/include/uapi/drm/drm_fourcc.h
+@@ -104,8 +104,17 @@ extern "C" {
+ #define DRM_FORMAT_C4		fourcc_code('C', '4', ' ', ' ') /* [7:0] C0:C1 4:4 two pixels/byte */
+ #define DRM_FORMAT_C8		fourcc_code('C', '8', ' ', ' ') /* [7:0] C 8 one pixel/byte */
  
-+	switch (drm_format_info_bpp(fb->format, 0)) {
-+	case 1:
-+		offset += clip->x1 / 8;
-+		len = DIV_ROUND_UP(len + clip->x1 % 8, 8);
-+		break;
-+	case 2:
-+		offset += clip->x1 / 4;
-+		len = DIV_ROUND_UP(len + clip->x1 % 4, 4);
-+		break;
-+	case 4:
-+		offset += clip->x1 / 2;
-+		len = DIV_ROUND_UP(len + clip->x1 % 2, 2);
-+		break;
-+	default:
-+		offset += clip->x1 * fb->format->cpp[0];
-+		len *= fb->format->cpp[0];
-+		break;
-+	}
++/* 1 bpp Red (or monochrome light-on-dark) */
++#define DRM_FORMAT_R1		fourcc_code('R', '1', ' ', ' ') /* [7:0] R0:R1:R2:R3:R4:R5:R6:R7 1:1:1:1:1:1:1:1 eight pixels/byte */
 +
-+	src = fb_helper->fbdev->screen_buffer + offset;
- 	iosys_map_incr(dst, offset); /* go to first pixel within clip rect */
- 
- 	for (y = clip->y1; y < clip->y2; y++) {
-@@ -1231,19 +1250,23 @@ static bool drm_fb_pixel_format_equal(const struct fb_var_screeninfo *var_1,
- }
- 
- static void drm_fb_helper_fill_pixel_fmt(struct fb_var_screeninfo *var,
--					 u8 depth)
-+					 const struct drm_format_info *format)
- {
--	switch (depth) {
--	case 8:
-+	u8 depth = format->depth;
++/* 2 bpp Red (or generic light-on-dark) */
++#define DRM_FORMAT_R2		fourcc_code('R', '2', ' ', ' ') /* [7:0] R0:R1:R2:R3 2:2:2:2 four pixels/byte */
 +
-+	if (format->is_color_indexed) {
- 		var->red.offset = 0;
- 		var->green.offset = 0;
- 		var->blue.offset = 0;
--		var->red.length = 8; /* 8bit DAC */
--		var->green.length = 8;
--		var->blue.length = 8;
-+		var->red.length = depth;
-+		var->green.length = depth;
-+		var->blue.length = depth;
- 		var->transp.offset = 0;
- 		var->transp.length = 0;
--		break;
-+		return;
-+	}
++/* 4 bpp Red (or generic light-on-dark) */
++#define DRM_FORMAT_R4		fourcc_code('R', '4', ' ', ' ') /* [7:0] R0:R1 4:4 two pixels/byte */
 +
-+	switch (depth) {
- 	case 15:
- 		var->red.offset = 10;
- 		var->green.offset = 5;
-@@ -1298,7 +1321,9 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
- {
- 	struct drm_fb_helper *fb_helper = info->par;
- 	struct drm_framebuffer *fb = fb_helper->fb;
-+	const struct drm_format_info *format = fb->format;
- 	struct drm_device *dev = fb_helper->dev;
-+	unsigned int bpp;
+ /* 8 bpp Red (or generic light-on-dark) */
+-#define DRM_FORMAT_R8		fourcc_code('R', '8', ' ', ' ') /* [7:0] R */
++#define DRM_FORMAT_R8		fourcc_code('R', '8', ' ', ' ') /* [7:0] R 8 one pixel/byte */
  
- 	if (in_dbg_master())
- 		return -EINVAL;
-@@ -1308,22 +1333,33 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
- 		var->pixclock = 0;
- 	}
- 
--	if ((drm_format_info_block_width(fb->format, 0) > 1) ||
--	    (drm_format_info_block_height(fb->format, 0) > 1))
--		return -EINVAL;
-+	switch (format->format) {
-+	case DRM_FORMAT_C1:
-+	case DRM_FORMAT_C2:
-+	case DRM_FORMAT_C4:
-+		/* supported format with sub-byte pixels */
-+		break;
-+
-+	default:
-+		if ((drm_format_info_block_width(format, 0) > 1) ||
-+		    (drm_format_info_block_height(format, 0) > 1))
-+			return -EINVAL;
-+		break;
-+	}
- 
- 	/*
- 	 * Changes struct fb_var_screeninfo are currently not pushed back
- 	 * to KMS, hence fail if different settings are requested.
- 	 */
--	if (var->bits_per_pixel > fb->format->cpp[0] * 8 ||
-+	bpp = drm_format_info_bpp(format, 0);
-+	if (var->bits_per_pixel > bpp ||
- 	    var->xres > fb->width || var->yres > fb->height ||
- 	    var->xres_virtual > fb->width || var->yres_virtual > fb->height) {
- 		drm_dbg_kms(dev, "fb requested width/height/bpp can't fit in current fb "
- 			  "request %dx%d-%d (virtual %dx%d) > %dx%d-%d\n",
- 			  var->xres, var->yres, var->bits_per_pixel,
- 			  var->xres_virtual, var->yres_virtual,
--			  fb->width, fb->height, fb->format->cpp[0] * 8);
-+			  fb->width, fb->height, bpp);
- 		return -EINVAL;
- 	}
- 
-@@ -1338,13 +1374,13 @@ int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
- 	    !var->blue.length    && !var->transp.length   &&
- 	    !var->red.msb_right  && !var->green.msb_right &&
- 	    !var->blue.msb_right && !var->transp.msb_right) {
--		drm_fb_helper_fill_pixel_fmt(var, fb->format->depth);
-+		drm_fb_helper_fill_pixel_fmt(var, format);
- 	}
- 
- 	/*
- 	 * Likewise, bits_per_pixel should be rounded up to a supported value.
- 	 */
--	var->bits_per_pixel = fb->format->cpp[0] * 8;
-+	var->bits_per_pixel = bpp;
- 
- 	/*
- 	 * drm fbdev emulation doesn't support changing the pixel format at all,
-@@ -1680,11 +1716,11 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
- }
- 
- static void drm_fb_helper_fill_fix(struct fb_info *info, uint32_t pitch,
--				   uint32_t depth)
-+				   bool is_color_indexed)
- {
- 	info->fix.type = FB_TYPE_PACKED_PIXELS;
--	info->fix.visual = depth == 8 ? FB_VISUAL_PSEUDOCOLOR :
--		FB_VISUAL_TRUECOLOR;
-+	info->fix.visual = is_color_indexed ? FB_VISUAL_PSEUDOCOLOR
-+					    : info->fix.visual;
- 	info->fix.mmio_start = 0;
- 	info->fix.mmio_len = 0;
- 	info->fix.type_aux = 0;
-@@ -1701,19 +1737,31 @@ static void drm_fb_helper_fill_var(struct fb_info *info,
- 				   uint32_t fb_width, uint32_t fb_height)
- {
- 	struct drm_framebuffer *fb = fb_helper->fb;
-+	const struct drm_format_info *format = fb->format;
-+
-+	switch (format->format) {
-+	case DRM_FORMAT_C1:
-+	case DRM_FORMAT_C2:
-+	case DRM_FORMAT_C4:
-+		/* supported format with sub-byte pixels */
-+		break;
-+
-+	default:
-+		WARN_ON((drm_format_info_block_width(format, 0) > 1) ||
-+			(drm_format_info_block_height(format, 0) > 1));
-+		break;
-+	}
- 
--	WARN_ON((drm_format_info_block_width(fb->format, 0) > 1) ||
--		(drm_format_info_block_height(fb->format, 0) > 1));
- 	info->pseudo_palette = fb_helper->pseudo_palette;
- 	info->var.xres_virtual = fb->width;
- 	info->var.yres_virtual = fb->height;
--	info->var.bits_per_pixel = fb->format->cpp[0] * 8;
-+	info->var.bits_per_pixel = drm_format_info_bpp(format, 0);
- 	info->var.accel_flags = FB_ACCELF_TEXT;
- 	info->var.xoffset = 0;
- 	info->var.yoffset = 0;
- 	info->var.activate = FB_ACTIVATE_NOW;
- 
--	drm_fb_helper_fill_pixel_fmt(&info->var, fb->format->depth);
-+	drm_fb_helper_fill_pixel_fmt(&info->var, format);
- 
- 	info->var.xres = fb_width;
- 	info->var.yres = fb_height;
-@@ -1738,7 +1786,8 @@ void drm_fb_helper_fill_info(struct fb_info *info,
- {
- 	struct drm_framebuffer *fb = fb_helper->fb;
- 
--	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->format->depth);
-+	drm_fb_helper_fill_fix(info, fb->pitches[0],
-+			       fb->format->is_color_indexed);
- 	drm_fb_helper_fill_var(info, fb_helper,
- 			       sizes->fb_width, sizes->fb_height);
- 
+ /* 10 bpp Red (or generic light-on-dark) */
+ #define DRM_FORMAT_R10		fourcc_code('R', '1', '0', ' ') /* [15:0] x:R 6:10 little endian */
 -- 
 2.25.1
 

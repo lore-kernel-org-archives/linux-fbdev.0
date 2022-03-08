@@ -2,106 +2,169 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2C19C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Mar 2022 09:31:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44576C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Mar 2022 09:45:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345295AbiCHJcx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 8 Mar 2022 04:32:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58478 "EHLO
+        id S243798AbiCHJp4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Mar 2022 04:45:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46838 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345383AbiCHJcv (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Mar 2022 04:32:51 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 331F7329AD
-        for <linux-fbdev@vger.kernel.org>; Tue,  8 Mar 2022 01:31:15 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1646731874;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
+        with ESMTP id S1344110AbiCHJp4 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Mar 2022 04:45:56 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D8013EF1C
+        for <linux-fbdev@vger.kernel.org>; Tue,  8 Mar 2022 01:45:00 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id BC5271F396;
+        Tue,  8 Mar 2022 09:44:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1646732698; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=x4qouXnlwX5t+UMG1KaeRHyqe8z7wUEDOrDVLTeWY98=;
-        b=IZhwDPwLpTCXwz+U5eAMpk+8mkXQhgHtSa77jFNg2m5AsAvrw+judpuLrGW4n3FgX3igfD
-        tPaWVDjLe2zVNKifzJdVXKwWv3NI5URhKn9gVeeYCbKsD5vESj93ckbUBwqb9jActJ4CVz
-        FOBoB6LobdAu/Q6a9X0N7JgGSpbKK0s=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-447-ayy-C0eZOOu4gLyZrLg4Pg-1; Tue, 08 Mar 2022 04:31:13 -0500
-X-MC-Unique: ayy-C0eZOOu4gLyZrLg4Pg-1
-Received: by mail-wr1-f69.google.com with SMTP id l10-20020a05600012ca00b001f1e4669c98so1579046wrx.23
-        for <linux-fbdev@vger.kernel.org>; Tue, 08 Mar 2022 01:31:12 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=x4qouXnlwX5t+UMG1KaeRHyqe8z7wUEDOrDVLTeWY98=;
-        b=0PIwsCTN3cLCqIa/GxYe02ea5ytDDG+WJppUCttwVi0Gy/jeGW1YJlseN7pFgwv8y5
-         squcHZQE3u25iLClCxTw2J8xKxkUvUyod22YW8v+HnMIcFOe66PQzbfkjgfFHwu6+2Dw
-         Ts7kMUiIgQd74LWVKbl1P8C38HXaf80OloyZ0nZbAadkveHHeoacmuIUflO6cEp6MGlk
-         IdQ7u+eKL1VEbPS4OGFTNOrhO0zJrUf9OyeHKOjzpVSYKc25PXSYmuaojE7voBAFauDh
-         hAHOSxsME8oUyedJ6/o2Lxsw/wppKr3pvlWzjcMCr2wZ4VFKeFRq+pBV6sg40iKQ+zDP
-         cB2A==
-X-Gm-Message-State: AOAM530D6YhqZMhlhzCnjkRf7HMRYJkKeywZvdTQS+ELtIZWk3N/UUdb
-        77ojpTSgcSCtHXl2ojELB6VmQxso+5NCpBrkhVCtmNaa9qnPJngBjHUaSCOlmUICNQ3jXWwZSPx
-        h/m58I5MnhzOkwmpFcXcGzDI=
-X-Received: by 2002:adf:ea0d:0:b0:1f1:f958:a90c with SMTP id q13-20020adfea0d000000b001f1f958a90cmr5983636wrm.22.1646731871991;
-        Tue, 08 Mar 2022 01:31:11 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJz2YcYQtOKaJj6Kx9VJLZ9GXsAOh+8pPCVnE98u0EUxvrX5Nnbiit3xxbS2WR2MOzf0v5nzXg==
-X-Received: by 2002:adf:ea0d:0:b0:1f1:f958:a90c with SMTP id q13-20020adfea0d000000b001f1f958a90cmr5983622wrm.22.1646731871789;
-        Tue, 08 Mar 2022 01:31:11 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id d18-20020adff2d2000000b001f025ea3a20sm22158909wrp.0.2022.03.08.01.31.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 08 Mar 2022 01:31:10 -0800 (PST)
-Message-ID: <a9e7aa2c-9954-94ee-6f7c-0d6822342897@redhat.com>
-Date:   Tue, 8 Mar 2022 10:31:08 +0100
+        bh=kpHjumSWpKgMug35vEyl7CC/OVgTfDjtoHX6Y26cqiw=;
+        b=10KHbdD9Ubm+xSRCRF6tRPSIvK8k3AxHjyeGsbuoUhZpMYJNMUhDK9HcQW1H3YCaAA+fw3
+        OatRIDqB9BpAitClG/zCAxGB/A1wL6E2d62t8EIPR+aQvZYH4LDfg20n6RscCTGP4ZnYA1
+        kIYNa2LLYQKVjneJXHF4EJ8i23yTgLM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1646732698;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=kpHjumSWpKgMug35vEyl7CC/OVgTfDjtoHX6Y26cqiw=;
+        b=mj+b5zDYRZs+ZpXV4zdL2/ENkDv93qV1upo9TDsImWHIvMf0aDgpQYE1fmYjn7zTCEG7y6
+        +dlPvpclX8wMCuDw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 80E9313C24;
+        Tue,  8 Mar 2022 09:44:58 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id uKjCHZolJ2JUMQAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Tue, 08 Mar 2022 09:44:58 +0000
+Message-ID: <f94a6b14-e884-5af4-436b-37715a9c7693@suse.de>
+Date:   Tue, 8 Mar 2022 10:44:57 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 1/9] drm/simpledrm: Use fbdev defaults for shadow
- buffering
+ Thunderbird/91.6.1
+Subject: Re: [PATCH 0/9] drm: Support GEM SHMEM fbdev without shadow FB
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
+To:     Javier Martinez Canillas <javierm@redhat.com>, daniel@ffwll.ch,
         airlied@linux.ie, mripard@kernel.org,
         maarten.lankhorst@linux.intel.com, deller@gmx.de
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 References: <20220303205839.28484-1-tzimmermann@suse.de>
- <20220303205839.28484-2-tzimmermann@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220303205839.28484-2-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <9ccf6f00-6611-7bbb-0ea8-ccf4f0a2920f@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <9ccf6f00-6611-7bbb-0ea8-ccf4f0a2920f@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------efYlL8xBs1Adf5KDbgqz5xaP"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 3/3/22 21:58, Thomas Zimmermann wrote:
-> Don't select shadow buffering for the fbdev console explicitly. The
-> fbdev emulation's heuristic will enable it for any framebuffer with
-> .dirty callback.
->
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------efYlL8xBs1Adf5KDbgqz5xaP
+Content-Type: multipart/mixed; boundary="------------lbNzRd5Jc6xrvvxkgVyLKP5j";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>, daniel@ffwll.ch,
+ airlied@linux.ie, mripard@kernel.org, maarten.lankhorst@linux.intel.com,
+ deller@gmx.de
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Message-ID: <f94a6b14-e884-5af4-436b-37715a9c7693@suse.de>
+Subject: Re: [PATCH 0/9] drm: Support GEM SHMEM fbdev without shadow FB
+References: <20220303205839.28484-1-tzimmermann@suse.de>
+ <9ccf6f00-6611-7bbb-0ea8-ccf4f0a2920f@redhat.com>
+In-Reply-To: <9ccf6f00-6611-7bbb-0ea8-ccf4f0a2920f@redhat.com>
 
-Indeed it does. Not related to your series but looking at this
-patch I noticed that drivers/gpu/drm/tiny/bochs.c will be the
-only driver that sets .prefer_shadow_fbdev after this lands.
+--------------lbNzRd5Jc6xrvvxkgVyLKP5j
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-The driver is using GEM so I wonder if after your series this
-DRM driver could have a .dirty callback and the field just be
-dropped? Or there would still be a case where it is needed ?
+SGkgSmF2aWVyDQoNCkFtIDA4LjAzLjIyIHVtIDEwOjEzIHNjaHJpZWIgSmF2aWVyIE1hcnRp
+bmV6IENhbmlsbGFzOg0KPiBIZWxsbyBUaG9tYXMsDQo+IA0KPiBPbiAzLzMvMjIgMjE6NTgs
+IFRob21hcyBaaW1tZXJtYW5uIHdyb3RlOg0KPj4gUmV3b3JrIHRoZSBmYmRldiBkZWZlcnJl
+ZC1JL08gdG8gbm90IGludGVyZmVyZSB3aXRoIGZpZWxkcyBvZiBzdHJ1Y3QNCj4+IHBhZ2Uu
+IE1ha2UgdGhlIGNvZGUgbW9yZSBmbGV4aWJsZSBhbmQgaW1wbGVtZW50IEdFTSBTSE1FTSBt
+bWFwIG9uIHRvcA0KPj4gb2YgaXQuDQo+Pg0KPj4gVGhpcyBwYXRjaHNldCByZW1vdmVzIHRo
+ZSBuZWVkIGZvciBhIHNwZWNpYWwgc2hhZG93IGZyYW1lYnVmZmVyIGZvcg0KPj4gZmJkZXYg
+bW1hcCB3aGVuIHVzaW5nIEdFTSBTSE1FTS4gU0hNRU0gcGFnZXMgYXJlIG5vdyBtbWFwJ2Vk
+IGZyb20NCj4+IC9kZXYvZmIgZGlyZWN0bHkuDQo+Pg0KPiANCj4gSW50ZXJlc3RpbmcuIEkg
+d29uZGVyIGlmIHlvdSBoYXZlIGFueSBwZXJmb3JtYW5jZSBpbXByb3ZlbWVudHMgYWZ0ZXIN
+Cj4gZHJvcHBpbmcgdGhlIHNoYWRvdyBidWZmZXIuDQo+IA0KPj4gUGF0Y2hlcyAyIGFuZCAz
+IHJld29yayB0aGUgZmJkZXYgZGVmZXJyZWQgSS9PIGNvZGUuIEl0IG5vdyBhbGxvd3MNCj4+
+IGRyaXZlcnMgdG8gaGF2ZSBiZXR0ZXIgY29udHJvbCBvZiB0aGUgbW1hcCBvcGVyYXRpb25z
+LiBBbGwgcmVmZXJlbmNlcw0KPj4gdG8gZmllbGRzIGluIHN0cnVjdCBwYWdlIGFyZSBnb25l
+LiBUaGUgcnNwIHN0YXRlIGlzIGhlbHAgaW4gYQ0KPj4gc2VwYXJhdGUgcGFnZXJlZiBzdHJ1
+Y3R1cmUuDQo+Pg0KPiANCj4gVGhhdCdzIGEgdmVyeSBuaWNlIGNsZWFudXAuIFRoaXMgcmVh
+bGx5IHdhcyBhIGh1Z2UgbGF5ZXJpbmcgdmlvbGF0aW9uLg0KPiAgIA0KPj4gUGF0Y2hlcyA0
+IHRvIDcgcHJvdmlkZSBjYWxsYmFja3MgYW4gaGVscGVycyB0byBpbXBsZW1lbnQgZGVmZXJy
+ZWQgSS9PDQo+PiB3aXRoIERSTSBkcml2ZXJzLiBTcGVjaWZpY2FsbHksIHBhdGNoIDYgaW50
+cm9kdWNlcyBhIGNhbGxiYWNrIHRvIGNyZWF0ZQ0KPj4gYSBkdW1iIGJ1ZmZlciBmb3IgZmJk
+ZXYuIFRoaXMgd2lsbCBiZSB1c2VmdWwgZm9yIG1hbnkgZHJpdmVycyB0aGF0DQo+PiBjdXJy
+ZW50bHkgY2Fubm90IHVzZSBnZW5lcmljIGZiZGV2IGVtdWxhdGlvbiBiZWNhdXNlIG9mIHNw
+ZWNpYWwgcGxhY2VtZW50DQo+PiBuZWVkcyBvZiB0aGUgQk8sIHN1Y2ggYXMgYW1kZ3B1IG9y
+IHJhZGVvbi4gVGhlIGRyaXZlcnMgY2FuIGhhbmRsZSB0aGUNCj4+IGRpZmZlcmVuY2VzIHRv
+IHJlZ3VsYXIgZHVtYiBidWZmZXJzIGluIHRoZWlyIG5ldyBjYWxsYmFjayBpbXBsZW1lbnRh
+dGlvbi4NCj4+DQo+PiBQYXRjaCA4IGV4dGVuZHMgdGhlIEdFTSBTSE1FTSBtZW1vcnkgbWFu
+YWdlciB3aXRoIGEgbmV3IGhlbHBlciBmb3IgZmJkZXYNCj4+IGR1bWItYnVmZmVyIGNyZWF0
+aW9uLiBUaGUgcmV0dXJuZWQgQk8gaGFzIGl0J3MgbW1hcCBzZXQgdXAgdG8gaW1wbGVtZW50
+DQo+PiBkZWZlcnJlZCBJL08gd2l0aCBTSE1FTSBwYWdlcy4gTm8gYWRkaXRpb25hbCBzaGFk
+b3cgYnVmZmVyIGlzIHJlcXVpcmVzDQo+PiBhbnkgbG9uZ2VyLiBNYW55IGRyaXZlcnMgY2Fu
+IGltbWVkaWF0ZWxseSBiZW5lZml0IGZyb20gdGhpcyBjaGFuZ2UuDQo+Pg0KPj4gUGF0Y2gg
+OSBleHRlbmRzIHZpcnRncHUgdG8gc3VwcG9ydCBmYmRldiBkdW1iIGJ1ZmZlcnMuIEl0J3Mg
+YnVpbGQgb24NCj4+IHRvcCBvZiBHRU0gU0hNRU0sIGJ1dCBoYXMgc29tZSBtb2RpZmljYXRp
+b25zIHRoYXQgbmVlZCB0byBiZSBpbXBsZW1lbnRlZA0KPj4gZm9yIGZiZGV2IGFzIHdlbGwu
+DQo+Pg0KPj4gVGhlcmUncyBubyBpbW1lZGlhdGUgZmJkZXYgcGVyZm9ybWFuY2UgaW1wcm92
+ZW1lbnQgZnJvbSB0aGlzIHBhdGNoc2V0Lg0KPj4gTW9zdCBvZiBhbGwsIGl0IHJlbW92ZXMg
+dW5uZWNlc3Nhcnkgc2hhZG93IGZyYW1lYnVmZmVycyBhbmQgcnNwIG1lbWNweXMuDQo+PiBB
+IHNoYWRvdyBmYiBmb3IgYSBGdWxsSEQgZGlzcGxheSBpcyB+OCBNaUIsIHdoaWNoIHdlIG5v
+dyBzYXZlLiBUaGUgcGF0Y2hlcw0KPj4gZG8gcmVkdWNlIGxhdGVuY3kgYmV0d2VlbiBkcmF3
+aW5nIHRvIHRoZSBmYmRldiBidWZmZXIgdG8gZGlzcGxheWluZw0KPj4gb24gdGhlIHNjcmVl
+bi4gV2F0Y2hpbmcgYSB2aWRlbyBvbiB0aGUgZmJkZXYgY29uc29sZSBmZWx0IHNtb290aGVy
+IGFuZA0KPj4gaGFkIGxlc3MgZmxpY2tlcmluZy4NCj4+DQo+IA0KPiBBd2Vzb21lLiBBbmQg
+eW91IGFsc28gYW5zd2VyZWQgaGVyZSB0aGUgcXVlc3Rpb24gSSBoYWQgYWJvdmUuDQoNClRo
+ZXJlJ3Mgbm8gc2lnbmlmaWNhbnQgaW1wcm92ZW1lbnQgaW4gcGVyZm9ybWFuY2UuDQoNCkJ1
+dCB3aGVuIEkgcGxheSBCdWcgQnVjayBCdW5ueSBpbiBtcGxheWVyJ3MgYmVuY2htYXJrIG1v
+ZGUsIHRoZSANCmRpc3BsYXllZCBhbmltYXRpb24gbG9va3Mgc21vb3RoZXIgdGhhbiBiZWZv
+cmUuIFRoZSB0ZXN0IGZpbmlzaGVzIGluIDczIA0Kc2Vjb25kcyBpbnN0ZWFkIG9mIDc0LiBJ
+IGd1ZXNzIHRoYXQgb25lLXNlY29uZCBpbXByb3ZlbWVudCBjb21lcyBmcm9tIA0KdGhlIG1l
+bWNweSB0aGF0IHdlIG5vdyBzYXZlLiBJIHVzZSBhIHNvbWV3aGF0IHJlY2VudCBDb3JlIGk3
+IGZvciANCnRlc3RpbmcuIE9uIG9sZCBoYXJkd2FyZSwgd2UgbWlnaHQgZ2V0IG1vcmUgcGVy
+Zm9ybWFuY2Ugb3V0IG9mIGl0LiBJIGNhbiANCnJlYWxseSBvbmx5IGd1ZXNzIGhlcmUuDQoN
+CkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4N
+CkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdl
+cm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQoo
+SFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2
+DQo=
 
-Anyway, just wanted to mention in case I forget later.
+--------------lbNzRd5Jc6xrvvxkgVyLKP5j--
 
-Your patch looks good to me and I think it could be pushed
-without waiting for the other patches in the series.
+--------------efYlL8xBs1Adf5KDbgqz5xaP
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+-----BEGIN PGP SIGNATURE-----
 
--- 
-Best regards,
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmInJZkFAwAAAAAACgkQlh/E3EQov+Dv
+Mw/+LOC/WzJfPQQ7D38jyWkjwz5NUGY1IXZ31qV1QTsOrS7paUkg/KHiAGmjM03/uzIJrNgUijmR
+h5Y95cpDZKMKxGke+4kzC9N9Gm1wWq1RCo5EB2XaEMUKumnUBWNtIyREa8l8SkMuV4jL+sJf0H2w
+U7Vm96VmE2xlL4rWNG73Pt0Vx9Bjhtxbfz06YZ+kE/uUt+vpL+fL/USZcIMx+3DU063hqZkyC0nD
+eKhuiwsgs1u/N8T7py3I4bKbZhai9z02xwIx7KSAhs15SraWOrsYpHQBvOOQv631FMDJpGdkGglY
+6MsYgcTQ1Td0/TPD6tgkeyxtUCfZ4UvxJVNzmOsifseOlztsS94bgRHlkdqFQpQ7nz8EJtJbVxhu
+lJh08gCQG/Ecmcs2x2PEUjoAEop9NEwQAdoyuleghfgqCRUGdtsddnfj6lNZB/IgcO7vCj7YF7tr
+2sigWg3Y/q+BTlFeiYuudPpwiuzcNJgljT0w38ljW0qP4zYVSb+ykMP99qVMavOnsUPIARwdoIgf
+dJY3FBRbtSsG7KEz+6T11dcpIC6m7Ot4K9dDHntOpw4QPHJXE1TupG4SNtvax9Sbe1HMzLs/Xqz7
+3h6ttvmEKVJCBumUBhS+cKcCh5rybvo9o1lC+EKTFy6/Z0et6zU3zWKymoM2NsoJt5MTFIpBbGUn
+PHk=
+=OQ1v
+-----END PGP SIGNATURE-----
 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+--------------efYlL8xBs1Adf5KDbgqz5xaP--

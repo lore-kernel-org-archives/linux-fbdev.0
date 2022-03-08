@@ -2,166 +2,249 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 799EDC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Mar 2022 14:42:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C198C4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Mar 2022 16:13:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231288AbiCHOnq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 8 Mar 2022 09:43:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60632 "EHLO
+        id S234194AbiCHQOw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Mar 2022 11:14:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34200 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233878AbiCHOnp (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Mar 2022 09:43:45 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 4CF752B1AE
-        for <linux-fbdev@vger.kernel.org>; Tue,  8 Mar 2022 06:42:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1646750566;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=tATbOgHJcJ/4hUpKdLQsepBRnBgdhbYd9x5YyJps/7o=;
-        b=hS5rXwykWhb1j9uio9P63VIMU85kRt2VQ6ob528lKNYo3OTVMMUbIMgdJklO5dI8UB63ch
-        1uQX1TYI2/IhDLHAFsrX2zAnGIQobhWed/7wr1BxBXBSQRSNtOvbM5tffSUWQoXGHyx+hN
-        sGbKAI7JemVKpvLpyhPl+jEdF0e1BQM=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-475-t9wPLld8MySv_zrqESXY8g-1; Tue, 08 Mar 2022 09:42:45 -0500
-X-MC-Unique: t9wPLld8MySv_zrqESXY8g-1
-Received: by mail-wr1-f69.google.com with SMTP id m18-20020a5d4a12000000b00203731460e6so354965wrq.3
-        for <linux-fbdev@vger.kernel.org>; Tue, 08 Mar 2022 06:42:45 -0800 (PST)
+        with ESMTP id S1348235AbiCHQOt (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Mar 2022 11:14:49 -0500
+Received: from mail-qk1-f180.google.com (mail-qk1-f180.google.com [209.85.222.180])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BF60F506ED;
+        Tue,  8 Mar 2022 08:13:52 -0800 (PST)
+Received: by mail-qk1-f180.google.com with SMTP id h196so1569337qke.12;
+        Tue, 08 Mar 2022 08:13:52 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=tATbOgHJcJ/4hUpKdLQsepBRnBgdhbYd9x5YyJps/7o=;
-        b=nWNxKX4s0zPend6u9WPuXkC7Etm/n5vJeEyM+mIyF6KgrhNIzgA5AymeL1FgmfSTAc
-         yMd8Ttl2T1tvpOOH6SN1WDuHZB0dOWc/w6+T8y3SsqrV+k6DMJaDFf1fBo9E/h6Ji08b
-         dXmzyHuFpjmzu7J9QDeQ15aRB25t37yKyeZDcuVTMJ9zCo2AuZvimp7aOkR3cOG5b7OA
-         AV/TVRG5IAXoSSf25W8I/ZvRyitxn95VM2jzyMugfFls7gNOi0SO3An1s6CEgtdWe9Gt
-         amqoN36hqE9Ws62iC0BO8s/7HzqktFfgZqWpQJS2UCcrkcpcSEYiYIHLmp0Vpy3raR7L
-         3g+Q==
-X-Gm-Message-State: AOAM530+ciw/xd/YPaBpvhledkuFzcUZjHaQpOiBo4podZ9oQ19p2jA1
-        zF+eaEJPSAI5u+vnm33SvIQGnsB/dQ++JUUG/dPEDf4SDl2y875PfYq93K70O/l1KPUzcTqsSBm
-        HIAli9hbDSwhqdxlqOLlvS04=
-X-Received: by 2002:adf:b1da:0:b0:1f0:1205:89c1 with SMTP id r26-20020adfb1da000000b001f0120589c1mr12369657wra.27.1646750563991;
-        Tue, 08 Mar 2022 06:42:43 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJzOZcVU+hFCO17d0FKfNV//pcbVvoZdXclr9zQPpsTXnY/L9Y2Kt6jpCy1GSMTv1uSfM8TgFQ==
-X-Received: by 2002:adf:b1da:0:b0:1f0:1205:89c1 with SMTP id r26-20020adfb1da000000b001f0120589c1mr12369647wra.27.1646750563746;
-        Tue, 08 Mar 2022 06:42:43 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id e2-20020adfe7c2000000b001f04d622e7fsm14003199wrn.39.2022.03.08.06.42.42
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=gbmDfuUW6oAHjPTcZ3JNsr9CL4G+BTHO+raMIW3ftzU=;
+        b=TMan+liWQQhiGyC10aLN/RNp3c7UvXLxpEfBHpEvvpSohtomUgg3r5QOpEtF6eGci7
+         9+q8RgXgdjm6fLQCJEkWuuJVFjj+P5zlJ7NjGnKf0P8cAZGczk3L7Em/MKv98JWJeYRp
+         EoOKaMLbAbcvPE33NXVe5JuIB7Oo8c3kybbGnswKoFwrF+Pqsyj7RlgLORyYPTtmedep
+         24a+LVU4VWCNe/X6RKnNJN3f/gbhmvcv0iR/Drw+ZLwV0/54SYPkzWyGIFpgK6Ym/KiI
+         QyC6Y9vCNeYnQr68VVd2O2YdVqGS+cJ5SDC2tmVBOGm4cssEAnGE0vi25KgrgW1ra1ST
+         5vwA==
+X-Gm-Message-State: AOAM533PiUKSqi0493fvCV4bBzElvdyuay09z8fP4bXoidiQq4kB24aw
+        fiOMuh/iQe6TsEC9qvOvzs4gbOLecV/xMA==
+X-Google-Smtp-Source: ABdhPJzjltD0PO11+L8829weslubb4ui+8/m2UfsRN6p+08QyqK4TfIf7IRXhTv7YEbdiiVF/CP3CA==
+X-Received: by 2002:a37:909:0:b0:67b:3289:4c8f with SMTP id 9-20020a370909000000b0067b32894c8fmr5792858qkj.249.1646756031488;
+        Tue, 08 Mar 2022 08:13:51 -0800 (PST)
+Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com. [209.85.219.178])
+        by smtp.gmail.com with ESMTPSA id j11-20020a37a00b000000b0067b436faccesm2008675qke.122.2022.03.08.08.13.51
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 08 Mar 2022 06:42:43 -0800 (PST)
-Message-ID: <291426e8-32ed-ba0b-4d23-38218d450c93@redhat.com>
-Date:   Tue, 8 Mar 2022 15:42:42 +0100
+        Tue, 08 Mar 2022 08:13:51 -0800 (PST)
+Received: by mail-yb1-f178.google.com with SMTP id j2so38858735ybu.0;
+        Tue, 08 Mar 2022 08:13:51 -0800 (PST)
+X-Received: by 2002:a25:dfd3:0:b0:629:24ff:eab0 with SMTP id
+ w202-20020a25dfd3000000b0062924ffeab0mr10980528ybg.613.1646756030721; Tue, 08
+ Mar 2022 08:13:50 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 3/9] fbdev: Track deferred-I/O pages in pageref struct
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
-        airlied@linux.ie, mripard@kernel.org,
-        maarten.lankhorst@linux.intel.com, deller@gmx.de
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20220303205839.28484-1-tzimmermann@suse.de>
- <20220303205839.28484-4-tzimmermann@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220303205839.28484-4-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20220214133710.3278506-1-javierm@redhat.com> <20220214133710.3278506-3-javierm@redhat.com>
+In-Reply-To: <20220214133710.3278506-3-javierm@redhat.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 8 Mar 2022 17:13:38 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWZHBVwaLDi-B=PrVOfcHxGLxwgDBisvexE94x72qvdJg@mail.gmail.com>
+Message-ID: <CAMuHMdWZHBVwaLDi-B=PrVOfcHxGLxwgDBisvexE94x72qvdJg@mail.gmail.com>
+Subject: Re: [PATCH v6 2/6] drm/format-helper: Add drm_fb_xrgb8888_to_mono_reversed()
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 3/3/22 21:58, Thomas Zimmermann wrote:
-> Store the per-page state for fbdev's deferred I/O in struct
-> fb_deferred_io_pageref. Maintain a list of pagerefs for the pages
-> that have to be flushed out to video memory. Update all affected
-> drivers.
-> 
-> Like with pages before, fbdev acquires a pageref when an mmaped page
-> of the framebuffer is being written to. It holds the pageref in a
-> list of all currently written pagerefs until it flushes the written
-> pages to video memory. Writeback occurs periodically. After writeback
-> fbdev releases all pagerefs and builds up a new dirty list until the
-> next writeback occurs.
-> 
-> Using pagerefs has a number of benefits.
-> 
-> For pages of the framebuffer, the deferred I/O code used struct
-> page.lru as an entry into the list of dirty pages. The lru field is
-> owned by the page cache, which makes deferred I/O incompatible with
-> some memory pages (e.g., most notably DRM's GEM SHMEM allocator).
-> struct fb_deferred_io_pageref now provides an entry into a list of
-> dirty framebuffer pages, free'ing lru for use with the page cache.
-> 
-> Drivers also assumed that struct page.index is the page offset into
-> the framebuffer. This is not true for DRM buffers, which are located
-> at various offset within a mapped area. struct fb_deferred_io_pageref
-> explicitly stores an offset into the framebuffer. struct page.index
-> is now only the page offset into the mapped area.
-> 
-> These changes will allow DRM to use fbdev deferred I/O without an
-> intermediate shadow buffer.
-> 
+Hi Javier,
 
-As mentioned, this is a very nice cleanup.
+On Mon, Feb 14, 2022 at 2:37 PM Javier Martinez Canillas
+<javierm@redhat.com> wrote:
+> Add support to convert from XR24 to reversed monochrome for drivers that
+> control monochromatic display panels, that only have 1 bit per pixel.
+>
+> The function does a line-by-line conversion doing an intermediate step
+> first from XR24 to 8-bit grayscale and then to reversed monochrome.
+>
+> The drm_fb_gray8_to_mono_reversed_line() helper was based on code from
+> drivers/gpu/drm/tiny/repaper.c driver.
+>
+> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
+Thanks for your patch, which is now commit bcf8b616deb87941
+("drm/format-helper: Add drm_fb_xrgb8888_to_mono_reversed()")
+in drm/drm-next.
 
-[snip]
+> --- a/drivers/gpu/drm/drm_format_helper.c
+> +++ b/drivers/gpu/drm/drm_format_helper.c
+> @@ -12,9 +12,11 @@
+>  #include <linux/slab.h>
+>  #include <linux/io.h>
+>
+> +#include <drm/drm_device.h>
+>  #include <drm/drm_format_helper.h>
+>  #include <drm/drm_framebuffer.h>
+>  #include <drm/drm_fourcc.h>
+> +#include <drm/drm_print.h>
+>  #include <drm/drm_rect.h>
+>
+>  static unsigned int clip_offset(const struct drm_rect *clip, unsigned int pitch, unsigned int cpp)
+> @@ -591,3 +593,111 @@ int drm_fb_blit_toio(void __iomem *dst, unsigned int dst_pitch, uint32_t dst_for
+>         return -EINVAL;
+>  }
+>  EXPORT_SYMBOL(drm_fb_blit_toio);
+> +
+> +static void drm_fb_gray8_to_mono_reversed_line(u8 *dst, const u8 *src, unsigned int pixels,
 
-> diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c b/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
-> index 33f355907fbb..a35f695727c9 100644
-> --- a/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
-> +++ b/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
-> @@ -322,12 +322,13 @@ static void vmw_deferred_io(struct fb_info *info,
->  	struct vmw_fb_par *par = info->par;
->  	unsigned long start, end, min, max;
->  	unsigned long flags;
-> -	struct page *page;
-> +	struct fb_deferred_io_pageref *pageref;
->  	int y1, y2;
->  
->  	min = ULONG_MAX;
->  	max = 0;
-> -	list_for_each_entry(page, pagelist, lru) {
-> +	list_for_each_entry(pageref, pagelist, list) {
-> +		struct page *page = pageref->page;
->  		start = page->index << PAGE_SHIFT;
+"pixels" is not the number of pixels to process, but the number of
+bytes in the monochrome destination buffer.
 
-Do you think that may be worth it to also decouple the struct page.index and 
-store the index as a struct fb_deferred_io_pageref.index field ? 
+> +                                              unsigned int start_offset, unsigned int end_len)
+> +{
+> +       unsigned int xb, i;
+> +
+> +       for (xb = 0; xb < pixels; xb++) {
+> +               unsigned int start = 0, end = 8;
+> +               u8 byte = 0x00;
+> +
+> +               if (xb == 0 && start_offset)
+> +                       start = start_offset;
+> +
+> +               if (xb == pixels - 1 && end_len)
+> +                       end = end_len;
+> +
+> +               for (i = start; i < end; i++) {
+> +                       unsigned int x = xb * 8 + i;
+> +
+> +                       byte >>= 1;
+> +                       if (src[x] >> 7)
+> +                               byte |= BIT(7);
+> +               }
+> +               *dst++ = byte;
+> +       }
 
-It's unlikely that this would change but it feels as if the layers are more
-separated that way, since no driver will access struct page fields directly.
+The above is IMHO very hard to read.
+I think it can be made simpler by passing the total number of pixels
+to process instead of "pixels" (which is bytes) and "end_len".
 
-The mapping would be 1:1 anyways just like it's the case for the page offset.
+> +}
+> +
+> +/**
+> + * drm_fb_xrgb8888_to_mono_reversed - Convert XRGB8888 to reversed monochrome
+> + * @dst: reversed monochrome destination buffer
+> + * @dst_pitch: Number of bytes between two consecutive scanlines within dst
+> + * @src: XRGB8888 source buffer
+> + * @fb: DRM framebuffer
+> + * @clip: Clip rectangle area to copy
+> + *
+> + * DRM doesn't have native monochrome support.
+> + * Such drivers can announce the commonly supported XR24 format to userspace
+> + * and use this function to convert to the native format.
+> + *
+> + * This function uses drm_fb_xrgb8888_to_gray8() to convert to grayscale and
+> + * then the result is converted from grayscale to reversed monohrome.
+> + */
+> +void drm_fb_xrgb8888_to_mono_reversed(void *dst, unsigned int dst_pitch, const void *vaddr,
+> +                                     const struct drm_framebuffer *fb, const struct drm_rect *clip)
+> +{
+> +       unsigned int linepixels = drm_rect_width(clip);
+> +       unsigned int lines = clip->y2 - clip->y1;
 
-In fact, that could allow to even avoid declaring a struct page *page here.
+drm_rect_height(clip)?
 
-[snip]
+> +       unsigned int cpp = fb->format->cpp[0];
+> +       unsigned int len_src32 = linepixels * cpp;
+> +       struct drm_device *dev = fb->dev;
+> +       unsigned int start_offset, end_len;
+> +       unsigned int y;
+> +       u8 *mono = dst, *gray8;
+> +       u32 *src32;
+> +
+> +       if (drm_WARN_ON(dev, fb->format->format != DRM_FORMAT_XRGB8888))
+> +               return;
+> +
+> +       /*
+> +        * The reversed mono destination buffer contains 1 bit per pixel
+> +        * and destination scanlines have to be in multiple of 8 pixels.
+> +        */
+> +       if (!dst_pitch)
+> +               dst_pitch = DIV_ROUND_UP(linepixels, 8);
 
-> @@ -340,7 +340,8 @@ static void fbtft_deferred_io(struct fb_info *info, struct list_head *pagelist)
->  	spin_unlock(&par->dirty_lock);
->  
->  	/* Mark display lines as dirty */
-> -	list_for_each_entry(page, pagelist, lru) {
-> +	list_for_each_entry(pageref, pagelist, list) {
-> +		struct page *page = pageref->page;
+This is not correct when clip->x1 is not a multiple of 8 pixels.
+Should be:
 
-Same here and the other drivers. You only need the page for the index AFAICT.
+    DIV_ROUND_UP(linepixels + clip->x1 % 8, 8);
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+> +
+> +       drm_WARN_ONCE(dev, dst_pitch % 8 != 0, "dst_pitch is not a multiple of 8\n");
 
--- 
-Best regards,
+This triggers for me: dst_pitch = 1.
+Which is perfectly fine, when flashing an 8-pixel wide cursor ;-)
 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+> +
+> +       /*
+> +        * The cma memory is write-combined so reads are uncached.
+> +        * Speed up by fetching one line at a time.
+> +        *
+> +        * Also, format conversion from XR24 to reversed monochrome
+> +        * are done line-by-line but are converted to 8-bit grayscale
+> +        * as an intermediate step.
+> +        *
+> +        * Allocate a buffer to be used for both copying from the cma
+> +        * memory and to store the intermediate grayscale line pixels.
+> +        */
+> +       src32 = kmalloc(len_src32 + linepixels, GFP_KERNEL);
+> +       if (!src32)
+> +               return;
+> +
+> +       gray8 = (u8 *)src32 + len_src32;
+> +
+> +       /*
+> +        * For damage handling, it is possible that only parts of the source
+> +        * buffer is copied and this could lead to start and end pixels that
+> +        * are not aligned to multiple of 8.
+> +        *
+> +        * Calculate if the start and end pixels are not aligned and set the
+> +        * offsets for the reversed mono line conversion function to adjust.
+> +        */
+> +       start_offset = clip->x1 % 8;
+> +       end_len = clip->x2 % 8;
+> +
+> +       vaddr += clip_offset(clip, fb->pitches[0], cpp);
+> +       for (y = 0; y < lines; y++) {
+> +               src32 = memcpy(src32, vaddr, len_src32);
+> +               drm_fb_xrgb8888_to_gray8_line(gray8, src32, linepixels);
+> +               drm_fb_gray8_to_mono_reversed_line(mono, gray8, dst_pitch,
+> +                                                  start_offset, end_len);
+> +               vaddr += fb->pitches[0];
+> +               mono += dst_pitch;
+> +       }
+> +
+> +       kfree(src32);
+> +}
+> +EXPORT_SYMBOL(drm_fb_xrgb8888_to_mono_reversed);
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -2,168 +2,132 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF6E8C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Mar 2022 09:07:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A974C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Mar 2022 09:13:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345302AbiCHJH6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 8 Mar 2022 04:07:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59916 "EHLO
+        id S1345262AbiCHJOq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Mar 2022 04:14:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42350 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233897AbiCHJHp (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Mar 2022 04:07:45 -0500
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25A233FBE0;
-        Tue,  8 Mar 2022 01:06:49 -0800 (PST)
-Received: by mail-lf1-x144.google.com with SMTP id g39so30951063lfv.10;
-        Tue, 08 Mar 2022 01:06:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references
-         :mime-version;
-        bh=ZSSqssguaqD2tjMmjJKfil49rhUxKlYemuYgWRJDFc4=;
-        b=i8KUKVpplsOozfpS14HotNRNIdGXHN1AJwMaWOsj/7F1Z/kamP4qLBs1oQDWZJFPQp
-         IjgvlodAyvdg4SoaDmaGyc+bxGAuQUi3+QsWoG7ibRCJN+/hUy/CwnDceCejBmQfuwYd
-         fe9E7f1yKxtRd30ECx58R64okM17jy8ojVQcvuUxAGPYcpkNfKUQjM8AP2tMV7cVA1FZ
-         UW6+c6/e5A9PdwjoykmWlafGXizCSH6U1CcDMu7qSQhl/po96hOnF6wGaaVpChd8s0r0
-         zHy3iLteMOKwp8mJCqEFLjU7La0luzdqGLLByI6GgBoGEn1GRP6suqma9mi7yNp7Uc7N
-         aB/A==
+        with ESMTP id S1345258AbiCHJOq (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Mar 2022 04:14:46 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id AA5273E5EB
+        for <linux-fbdev@vger.kernel.org>; Tue,  8 Mar 2022 01:13:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1646730828;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=zlzDZFRzgx9xVyZXX5HJhFOJlKtod0cn2NQcAWeFY8k=;
+        b=PyAeDUWa9Om2EiPn4emVdfoUSZtleeeW3MgM7rcG38lxijmatpd6NCbLrI4nyhFl2wlL/r
+        DD4gl7Xh74cislmAfCJn8So9R09AEQvGwZ1FVNjCxOrgN/revoNu/uk3gqE4wDCDstZY0h
+        IqiusEvvPWttmWWX3OGeiJyd52VQnqY=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-614-UXqnyH8bPHSQErGSItwfbw-1; Tue, 08 Mar 2022 04:13:47 -0500
+X-MC-Unique: UXqnyH8bPHSQErGSItwfbw-1
+Received: by mail-wr1-f71.google.com with SMTP id h11-20020a5d430b000000b001f01a35a86fso5230816wrq.4
+        for <linux-fbdev@vger.kernel.org>; Tue, 08 Mar 2022 01:13:47 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
-         :references:mime-version;
-        bh=ZSSqssguaqD2tjMmjJKfil49rhUxKlYemuYgWRJDFc4=;
-        b=xejnvqwttB317hl/WQ2wGQo0lt7kL/3SUdFvxY63RnxKi8L7+3MR6P1aa59qG1gU30
-         mbQjcEmdV5dWP1SIC7kx9TNcuA73IiNiTASB/LK/7yskrtfaBR89IgmJOz/5/TP63rzt
-         fo7dDeo5uc5Ziha5FgNZEmDQv+nHeoPAjx/tJJ1WALMhQYaF2c8GJaYti3SY4ec+SwFP
-         +YeN9B1aC+iB4RdTscBRB+5X3rRKmrQD7GPLYFU84XBsd1f0/5TNS0AB4j088Tgx5YxV
-         ix5afYfGJvfyDgQ7aV8j9F2IosmLuD9bpxQ3sem9hQBf9mjJaQeyjdhQhyYILlRZGl3z
-         EPLQ==
-X-Gm-Message-State: AOAM532DXCzAecIH0HhPHiSwPXS0s03kyTI5jiax4HzitBVuO2jgof9w
-        vJzlGYYYqq5TmJ06mxYEgxU=
-X-Google-Smtp-Source: ABdhPJw9TP6u4KkztcCyk+LiyHCv0kAMZ0i30SGTKsh3ic6MF4I9uJqKFnh7OrKajZI+ONY2va6a6Q==
-X-Received: by 2002:a05:6512:b19:b0:446:f1c6:81bd with SMTP id w25-20020a0565120b1900b00446f1c681bdmr10299826lfu.320.1646730407178;
-        Tue, 08 Mar 2022 01:06:47 -0800 (PST)
-Received: from eldfell ([194.136.85.206])
-        by smtp.gmail.com with ESMTPSA id f21-20020ac251b5000000b004478fa4a744sm2871298lfk.56.2022.03.08.01.06.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Mar 2022 01:06:46 -0800 (PST)
-Date:   Tue, 8 Mar 2022 11:06:43 +0200
-From:   Pekka Paalanen <ppaalanen@gmail.com>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>,
-        linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 RFC 08/10] drm/fourcc: Document that single-channel
- "red" can be any color
-Message-ID: <20220308110643.5220f8ae@eldfell>
-In-Reply-To: <585dc03acb4016bba910e7d15fec3ef4f0aec5b0.1646683502.git.geert@linux-m68k.org>
-References: <cover.1646683502.git.geert@linux-m68k.org>
-        <585dc03acb4016bba910e7d15fec3ef4f0aec5b0.1646683502.git.geert@linux-m68k.org>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=zlzDZFRzgx9xVyZXX5HJhFOJlKtod0cn2NQcAWeFY8k=;
+        b=iTXCjCTT18AL5whWcoFM7UKZDRc9XScaAeHCSXH8A4w/c4Cql1V68n0qFAprTJL9d2
+         mZq5jwZiOAAbA1olm11GdTXDFiIsBl8b4tPexjZ0b8UkfboDRfxmsEFyI11IshP/boz5
+         5ujcazGmAplTjla6coqH5+t/KEUTpDiSReereW/tzhkYr3r9XTR34ZX8f4iQw2CYmkyk
+         n/AVfgUkffy8Bk8KJgQk02YQJPVvJ79lStjxxmElWVU5hYcMjw3gO4RLLpp6aH1+WpWW
+         9+pl6tIAeptfW7KUM3qQIc9qAvSNMwUoVJCF6HXxTsyWOxPddE+utledzOUYDxKJFzLX
+         9F/g==
+X-Gm-Message-State: AOAM531H27bSsqVn1P5u0OPYVIc7P2GpFvUZuyo+9reqEN4MzTm71//v
+        5WGtnobbxkangoV60u4ehEbr9jQSXiYBfW/lGf57zx2Cj2G98mW1AeZT6ycVUcFP8PKeRqeM8cr
+        B2kgWsVovIgjCGfPrZHmv9RY=
+X-Received: by 2002:adf:d238:0:b0:1f0:6105:520a with SMTP id k24-20020adfd238000000b001f06105520amr11116402wrh.531.1646730826133;
+        Tue, 08 Mar 2022 01:13:46 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJxKmkKxbfIdrIWp45PAltn78uV3fLKVuKMdJnj7tC85n4cuoVSGoh1IyCePxKQaBsiWu+Zm5A==
+X-Received: by 2002:adf:d238:0:b0:1f0:6105:520a with SMTP id k24-20020adfd238000000b001f06105520amr11116389wrh.531.1646730825812;
+        Tue, 08 Mar 2022 01:13:45 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id o3-20020a1c7503000000b0038100e2a1adsm1554517wmc.47.2022.03.08.01.13.44
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 08 Mar 2022 01:13:45 -0800 (PST)
+Message-ID: <9ccf6f00-6611-7bbb-0ea8-ccf4f0a2920f@redhat.com>
+Date:   Tue, 8 Mar 2022 10:13:44 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/hJXpHsxaCnYZ11VUzvhv1th";
- protocol="application/pgp-signature"; micalg=pgp-sha256
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 0/9] drm: Support GEM SHMEM fbdev without shadow FB
+Content-Language: en-US
+To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
+        airlied@linux.ie, mripard@kernel.org,
+        maarten.lankhorst@linux.intel.com, deller@gmx.de
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20220303205839.28484-1-tzimmermann@suse.de>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <20220303205839.28484-1-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
---Sig_/hJXpHsxaCnYZ11VUzvhv1th
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hello Thomas,
 
-On Mon,  7 Mar 2022 21:52:43 +0100
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On 3/3/22 21:58, Thomas Zimmermann wrote:
+> Rework the fbdev deferred-I/O to not interfere with fields of struct
+> page. Make the code more flexible and implement GEM SHMEM mmap on top
+> of it.
+> 
+> This patchset removes the need for a special shadow framebuffer for
+> fbdev mmap when using GEM SHMEM. SHMEM pages are now mmap'ed from
+> /dev/fb directly.
+>
 
-> Traditionally, the first channel has been called the "red" channel, but
-> the fourcc values for single-channel "red" formats can also be used for
-> other light-on-dark displays, like grayscale.
->=20
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
-> RFC, as I have no immediate need for these formats.
->=20
-> v2:
->   - New.
-> ---
->  include/uapi/drm/drm_fourcc.h | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->=20
-> diff --git a/include/uapi/drm/drm_fourcc.h b/include/uapi/drm/drm_fourcc.h
-> index 457ed39cc48f08e1..f0187cf20e4619d2 100644
-> --- a/include/uapi/drm/drm_fourcc.h
-> +++ b/include/uapi/drm/drm_fourcc.h
-> @@ -104,16 +104,16 @@ extern "C" {
->  #define DRM_FORMAT_C4		fourcc_code('C', '4', ' ', ' ') /* [7:0] C0:C1 4:=
-4 two pixels/byte */
->  #define DRM_FORMAT_C8		fourcc_code('C', '8', ' ', ' ') /* [7:0] C 8 one =
-pixel/byte */
-> =20
-> -/* 8 bpp Red */
-> +/* 8 bpp Red (or generic light-on-dark) */
->  #define DRM_FORMAT_R8		fourcc_code('R', '8', ' ', ' ') /* [7:0] R */
-> =20
-> -/* 10 bpp Red */
-> +/* 10 bpp Red (or generic light-on-dark) */
->  #define DRM_FORMAT_R10		fourcc_code('R', '1', '0', ' ') /* [15:0] x:R 6:=
-10 little endian */
-> =20
-> -/* 12 bpp Red */
-> +/* 12 bpp Red (or generic light-on-dark) */
->  #define DRM_FORMAT_R12		fourcc_code('R', '1', '2', ' ') /* [15:0] x:R 4:=
-12 little endian */
-> =20
-> -/* 16 bpp Red */
-> +/* 16 bpp Red (or generic light-on-dark) */
->  #define DRM_FORMAT_R16		fourcc_code('R', '1', '6', ' ') /* [15:0] R litt=
-le endian */
-> =20
->  /* 16 bpp RG */
+Interesting. I wonder if you have any performance improvements after
+dropping the shadow buffer.
 
-Hi Geert,
+> Patches 2 and 3 rework the fbdev deferred I/O code. It now allows
+> drivers to have better control of the mmap operations. All references
+> to fields in struct page are gone. The rsp state is help in a 
+> separate pageref structure.
+>
 
-this is a good idea. I just wonder whether light-on-dark is an accurate
-description. To me, light-on-dark means things like bright characters
-on a dark background, but that is a property of the image as a whole and
-not a property of the pixel format. What I think you are after here is
-that increasing channel value mean increasing brightness.
+That's a very nice cleanup. This really was a huge layering violation.
+ 
+> Patches 4 to 7 provide callbacks an helpers to implement deferred I/O
+> with DRM drivers. Specifically, patch 6 introduces a callback to create
+> a dumb buffer for fbdev. This will be useful for many drivers that
+> currently cannot use generic fbdev emulation because of special placement
+> needs of the BO, such as amdgpu or radeon. The drivers can handle the
+> differences to regular dumb buffers in their new callback implementation.
+> 
+> Patch 8 extends the GEM SHMEM memory manager with a new helper for fbdev
+> dumb-buffer creation. The returned BO has it's mmap set up to implement
+> deferred I/O with SHMEM pages. No additional shadow buffer is requires
+> any longer. Many drivers can immediatelly benefit from this change.
+> 
+> Patch 9 extends virtgpu to support fbdev dumb buffers. It's build on
+> top of GEM SHMEM, but has some modifications that need to be implemented
+> for fbdev as well.
+> 
+> There's no immediate fbdev performance improvement from this patchset.
+> Most of all, it removes unnecessary shadow framebuffers and rsp memcpys.
+> A shadow fb for a FullHD display is ~8 MiB, which we now save. The patches
+> do reduce latency between drawing to the fbdev buffer to displaying
+> on the screen. Watching a video on the fbdev console felt smoother and
+> had less flickering.
+>
 
-How to word that concisely...
+Awesome. And you also answered here the question I had above.
 
-Direct relationship to brightness (vs. inverse relationship to brightness)?
+-- 
+Best regards,
 
-This does not imply a linear relationship, and I'd also use
-"brightness" to denote that it is a qualitative factor relating to
-human observation.
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 
-
-Thanks,
-pq
-
---Sig_/hJXpHsxaCnYZ11VUzvhv1th
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEJQjwWQChkWOYOIONI1/ltBGqqqcFAmInHKMACgkQI1/ltBGq
-qqe1FhAAhV61IfBbTfh9T9cYYsQ6Hh2uefFJl1NqodXNWfd7nLXNxgkcTZ5YeMYY
-WvKAbNrIX24tS4ZJWjQWK0o/L+TPilrKph0QgB7qeAsPL/uXomH0YJI3YQ70/eCF
-JHFt3aQH8ne8VTN5IwGdDh+4vpyO/S5924QbxyXG8yVRAnKL1e0dfGFmNM8luQd+
-4ON5X2Fw2jwC61bZfvPVo2lO+2Osw84nrgkMOpCqJLxjPzxjBRH8V4UPi6UPru+Z
-7BkXVAqoSby15cM2fsSGEd4OnTRbsdkCX9uptsPaqVenhM6pzE6pN9E9plzckmjW
-mWGwxsUPT5AHRCQPxRPak6ClYCIpmg9AA8aMngRmcUjXuPqH1/s6q0tPFPCDkbbL
-brrvRgUYtBVdwKeJ1uUsfsAbqRl2rDIlCu3MdrrOlMthDx4llBJ89gmrYgemvqbV
-ZuPg5fx/n5sQfROyU9HFboaFyBkP6t7xsc8Wdp/3tsDuPZiwCNzmfOy0qTes4pya
-craCaUJf9VXE2F8ZBOOIgYzAlt/nso4JZE/Dzt2bUb86FWOQhP79qo6qSZSxqfEY
-NKPKGiWEqnpe8q26KTSgbV5ACiy3rW/o/H7Rz0sdmkwm0j3pcWYqcSyLnwvJdmCl
-SsiBN+ZkqdxpjnVc2uvYaJc5Vw6t6lTzE+sPyTp6/1aEFlIFFvw=
-=nrsn
------END PGP SIGNATURE-----
-
---Sig_/hJXpHsxaCnYZ11VUzvhv1th--

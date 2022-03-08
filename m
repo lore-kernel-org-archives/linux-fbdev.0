@@ -2,138 +2,88 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B739C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Mar 2022 19:37:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3071C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue,  8 Mar 2022 20:23:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241171AbiCHTin (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 8 Mar 2022 14:38:43 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43622 "EHLO
+        id S1344808AbiCHUYc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 8 Mar 2022 15:24:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42874 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233118AbiCHTin (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Mar 2022 14:38:43 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5606D17AA0
-        for <linux-fbdev@vger.kernel.org>; Tue,  8 Mar 2022 11:37:45 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1646768264;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=+2k8YN3Ua/MfrbcPLU4d/FurtW2MEzsF3PwIrji3KUA=;
-        b=AoFgmBIsuwZ8BDkjZmAYOMIvx+VY6QIISXMZeBH6up79w0NXMaAQg+fuyY6FI/g6ifRrHc
-        jlB49mQDAHiFVEwB0yzFArC3YiEY7zzG0S1i3I+aZ+jwnAFunD3iKvjhEYQRGpXrz9nqyu
-        iKpk2DoXKxDRvHADGsMjmP8j0AEXAZs=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-73-gLV9qEK4PL24g-4vS8CVfA-1; Tue, 08 Mar 2022 14:37:43 -0500
-X-MC-Unique: gLV9qEK4PL24g-4vS8CVfA-1
-Received: by mail-wr1-f72.google.com with SMTP id o9-20020adfca09000000b001ea79f7edf8so5774205wrh.16
-        for <linux-fbdev@vger.kernel.org>; Tue, 08 Mar 2022 11:37:43 -0800 (PST)
+        with ESMTP id S242196AbiCHUY3 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 8 Mar 2022 15:24:29 -0500
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 64D253586E;
+        Tue,  8 Mar 2022 12:23:31 -0800 (PST)
+Received: by mail-wr1-x432.google.com with SMTP id k24so20871927wrd.7;
+        Tue, 08 Mar 2022 12:23:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=mXyC5AW49mHHOyaspB0AVoqut4G8nZTKpgTNMZNuGkQ=;
+        b=YE3ikwTb5vEazQMOdf5t2mhQdCFCrUylGfLVztMn0JsQ5sHGAF003QZjiCwd5Di4OE
+         ch8vMt9MsFW2Uk4VIQ0TXXbw0JxzgbW6LZkixNNDSVQGi0TE+KS0ydhL7mNvod+OvHQ+
+         FTzeHMDjFzCvg3qGbG+2QyoEC1zEuTfiT6Uuh7N3D/5TnvuSJlvu/aPZLRDyucuTuiVn
+         qVd8sJ3aY3fmIgZNdsgn2Wm+iBHg7PXyaVCjKJ4QXbuV6deIUHgv0KZ4B5bfU4c3WINr
+         HCCaZ9GDLpKKudwakKi7v8WMMQ7tLi2gyhEs8hzI/H9VNykYVZXvbOV81YcT57B8iJtx
+         cgsg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=+2k8YN3Ua/MfrbcPLU4d/FurtW2MEzsF3PwIrji3KUA=;
-        b=MJPtAETujAftSteWJsqtQvH51n57PDmmEW8ap5Sko47ylg8kkzPut2wB/MExd6iZWR
-         pJ4iwT0CcLoQFgQfpfll5qC5VZNQz2WyPGYkrJ+F6uZAa+2POgcUz8k3SDm69vQW6wNP
-         MqqUKjprMJKjZhZGMdjBgFrxI94SntK9EcDTlnNorppFk0djVn9hnAkc3ZAwNkIVTw1H
-         wvESij0VpHoRaZBZwyw77T1I/iD5rVGsIWxmXVJF8/fT8ikQXEU+wsiR2AGZd3e38efu
-         O56ER7mN9PBgAhp31IDEcvSfTh54gHiKWZHNYU5ffRVG+jML8qIipRpJCslw7LFlXe/M
-         PM9A==
-X-Gm-Message-State: AOAM531acSBDa81/IWFED/FDHYfBZAHL55o3vcasLgH6pNWb1SjtjQsJ
-        KWDBBisC6XJl3wTotKVP3LijqA8RsKE2prkJNAFovX6p1J/Qz1OXOgSsYe2/Z8Gmk2xw9C0hsHv
-        NKTHYqW6jDUp8KeGmPyeeuoc=
-X-Received: by 2002:a5d:5707:0:b0:1f0:1815:be86 with SMTP id a7-20020a5d5707000000b001f01815be86mr13648919wrv.383.1646768262277;
-        Tue, 08 Mar 2022 11:37:42 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJzQDbHk0Oyh98eHSFSfeioEZRSnYXr6P9e7XMlZU3xU/Hyrpx++ggBV0z8kJBT7QQ599GCKow==
-X-Received: by 2002:a5d:5707:0:b0:1f0:1815:be86 with SMTP id a7-20020a5d5707000000b001f01815be86mr13648907wrv.383.1646768262062;
-        Tue, 08 Mar 2022 11:37:42 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id w9-20020a5d6089000000b001f0256761b9sm23862348wrt.45.2022.03.08.11.37.41
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 08 Mar 2022 11:37:41 -0800 (PST)
-Message-ID: <b1af16e7-a20f-5499-6234-c5090349305f@redhat.com>
-Date:   Tue, 8 Mar 2022 20:37:40 +0100
+        bh=mXyC5AW49mHHOyaspB0AVoqut4G8nZTKpgTNMZNuGkQ=;
+        b=C/esyRYqsJ/6uW0n6MZDSLgyd60WVFPvYB1s3tkgkmz/CxcSL+9Qi9dRZ055DTRUYl
+         /kdr5vTV9KsMiQfVPPRerPGD4QZ7Uc/6T6o9oYFfMCsHZA3j3LAOqxQyONqnQ51iUCpS
+         SHxF600W6qwjHwVmZsx/bRZIS5VLSXM4KMIxQPwHZsXvd027yAcE1kq3PIs5b4XcNquS
+         7YNocexs3oQTcI2CIutH5ZesXj2JSJSHtCgqF1PC6UOy1DPX0W4U1O4o5saZdO5aK9ht
+         AL20RDvuyzHivnAJusK7gAI2dK8Y24z12DJI6E80k/Vr0C6mGqPd12Ra6qFfXO53kth4
+         Q9Nw==
+X-Gm-Message-State: AOAM531HMdHaD0QQiagLFs5OlLK/gtHG45bTmeD2CheuUyskU5QQS0Rp
+        UzCzdY5tP2byY8pDaQD5XkI=
+X-Google-Smtp-Source: ABdhPJwGZBW6UGqgP6AXu3Bnw4JCg8loJncWlCnrpwjKMWSgonD6uc188068eNC50h8fIMk7j7fT4A==
+X-Received: by 2002:a05:6000:508:b0:1e4:a027:d147 with SMTP id a8-20020a056000050800b001e4a027d147mr13610952wrf.315.1646771009903;
+        Tue, 08 Mar 2022 12:23:29 -0800 (PST)
+Received: from localhost (cpc154979-craw9-2-0-cust193.16-3.cable.virginm.net. [80.193.200.194])
+        by smtp.gmail.com with ESMTPSA id z6-20020adfd0c6000000b001f1ffd04672sm4832933wrh.12.2022.03.08.12.23.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Mar 2022 12:23:29 -0800 (PST)
+From:   Colin Ian King <colin.i.king@gmail.com>
+To:     Helge Deller <deller@gmx.de>, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] video: fbdev: kyro: make read-only array ODValues static const
+Date:   Tue,  8 Mar 2022 20:23:28 +0000
+Message-Id: <20220308202328.104043-1-colin.i.king@gmail.com>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 9/9] drm/virtio: Implement dumb_create_fbdev with GEM
- SHMEM helpers
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
-        airlied@linux.ie, mripard@kernel.org,
-        maarten.lankhorst@linux.intel.com, deller@gmx.de
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20220303205839.28484-1-tzimmermann@suse.de>
- <20220303205839.28484-10-tzimmermann@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220303205839.28484-10-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 3/3/22 21:58, Thomas Zimmermann wrote:
-> Implement struct drm_driver.dumb_create_fbdev with the helpers
-> provided by GEM SHMEM. Fbdev deferred I/O will now work without
-> an intermediate shadow buffer for mmap.
-> 
-> As the virtio driver replaces several of the regular GEM SHMEM
-> functions with its own implementation, some additional code is
-> necessary make fbdev optimization work. Especially, the driver
-> has to provide buffer-object functions for fbdev. Add the hook
-> struct drm_driver.gem_create_object_fbdev, which is similar to
-> struct drm_driver.gem_create_object and allows for the creation
-> of dedicated fbdev buffer objects. Wire things up within GEM
-> SHMEM.
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> ---
->  drivers/gpu/drm/drm_gem_shmem_helper.c  |  7 +++-
->  drivers/gpu/drm/virtio/virtgpu_drv.c    |  2 +
->  drivers/gpu/drm/virtio/virtgpu_drv.h    |  2 +
->  drivers/gpu/drm/virtio/virtgpu_object.c | 54 +++++++++++++++++++++++--
->  include/drm/drm_drv.h                   | 10 +++++
->  5 files changed, 71 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/drm_gem_shmem_helper.c b/drivers/gpu/drm/drm_gem_shmem_helper.c
-> index ab7cb7d896c3..225aa17895bd 100644
-> --- a/drivers/gpu/drm/drm_gem_shmem_helper.c
-> +++ b/drivers/gpu/drm/drm_gem_shmem_helper.c
-> @@ -71,7 +71,12 @@ __drm_gem_shmem_create(struct drm_device *dev, size_t size, bool private, bool f
->  
->  	size = PAGE_ALIGN(size);
->  
-> -	if (dev->driver->gem_create_object) {
-> +	if (dev->driver->gem_create_object_fbdev && fbdev) {
+Don't populate the read-only array ODValues on the stack but
+instead make it static const. Also makes the object code a little
+smaller.
 
-Same comment here to check if fbdev emulation is enabled or maybe is not
-worht it ? But I think this hints the compiler to optimize the if branch.
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+---
+ drivers/video/fbdev/kyro/STG4000InitDevice.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[snip]
-
-> +}
-> +#else
-> +struct drm_gem_object *virtio_gpu_create_object_fbdev(struct drm_device *dev,
-> +						      size_t size)
-> +{
-> +	return ERR_PTR(-ENOSYS);
-> +}
-
-As mentioned, I believe this should be ERR_PTR(-ENOTSUPP) instead.
-
-Feel free to ignore all this nits if you consider that are not applicable.
-
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-
+diff --git a/drivers/video/fbdev/kyro/STG4000InitDevice.c b/drivers/video/fbdev/kyro/STG4000InitDevice.c
+index 21875d3c2dc2..ffeb355c8b50 100644
+--- a/drivers/video/fbdev/kyro/STG4000InitDevice.c
++++ b/drivers/video/fbdev/kyro/STG4000InitDevice.c
+@@ -124,7 +124,7 @@ u32 ProgramClock(u32 refClock,
+ 	u32 ulScore, ulPhaseScore, ulVcoScore;
+ 	u32 ulTmp = 0, ulVCO;
+ 	u32 ulScaleClockReq, ulMinClock, ulMaxClock;
+-	u32 ODValues[] = { 1, 2, 0 };
++	static const u32 ODValues[] = { 1, 2, 0 };
+ 
+ 	/* Translate clock in Hz */
+ 	coreClock *= 100;	/* in Hz */
 -- 
-Best regards,
-
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+2.35.1
 

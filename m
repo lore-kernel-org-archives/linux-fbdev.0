@@ -2,66 +2,65 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 028AAC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Mar 2022 13:33:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85443C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Mar 2022 13:39:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232994AbiCINex (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Mar 2022 08:34:53 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59600 "EHLO
+        id S233216AbiCINkc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Mar 2022 08:40:32 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48104 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231897AbiCINew (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Mar 2022 08:34:52 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 3852713CA0E
-        for <linux-fbdev@vger.kernel.org>; Wed,  9 Mar 2022 05:33:54 -0800 (PST)
+        with ESMTP id S229789AbiCINkb (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Mar 2022 08:40:31 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 3BAEC4C7AD
+        for <linux-fbdev@vger.kernel.org>; Wed,  9 Mar 2022 05:39:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1646832833;
+        s=mimecast20190719; t=1646833172;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=IOaaETwHyO6EXDP09qs4E16KNNpKkz6jydXWMB+nH2Q=;
-        b=HM8d45OWCLZMG0sY2Crud5FiGlM7f5d0X2lGyPAtQt6LBSoWbk4PemWJj5cupKtaOhLhEe
-        uMGEhVgdi5O1IU8rMuBknwE49OMiHWMOeW7VmFQw7nxEa8EbRgcysxy2KDzFj+BQ06L9ji
-        neKPdQBi3slbOY+mnwKl0xChK/uK/Mg=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=hxJPMn5J6L7pDstxJt5mOgE1pVrNFlShCuIhtS3CI8s=;
+        b=TFYWktsgqqwZ67O/n7tL3HSIba6ugwInPiRRLqe8sEJwa0liIWmYg2j+VbZXlrZuTEtJa+
+        3JJNfOup+GJTgJ2fpoRliYWWZl0MJzphmR3FEAtipttZieBNlYHU3d1bxXcSmUqiKeeW9E
+        ykANW/y7fSBWu6gs8umJnHY3DAVePhc=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-613-ErtQSThxOwmCR9sOnUYxTw-1; Wed, 09 Mar 2022 08:33:52 -0500
-X-MC-Unique: ErtQSThxOwmCR9sOnUYxTw-1
-Received: by mail-wr1-f71.google.com with SMTP id a16-20020adff7d0000000b001f0473a6b25so769474wrq.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 09 Mar 2022 05:33:52 -0800 (PST)
+ us-mta-256-yk79Cn32O4GH3T9sCg6x1Q-1; Wed, 09 Mar 2022 08:39:31 -0500
+X-MC-Unique: yk79Cn32O4GH3T9sCg6x1Q-1
+Received: by mail-wm1-f69.google.com with SMTP id c19-20020a05600c0ad300b00385bb3db625so2603497wmr.4
+        for <linux-fbdev@vger.kernel.org>; Wed, 09 Mar 2022 05:39:30 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=IOaaETwHyO6EXDP09qs4E16KNNpKkz6jydXWMB+nH2Q=;
-        b=MhYkof9sTb3hid3Q7bCCebRYxqNY8CHHemx9CGdQUB0fCSFUfDnB3pppG/4Yngz34V
-         hMgU/VNkHNL5+g9E0GmEGobTvO1Jxhnt5mO4/W4bvvS1TUJ9ZaiCSNX0eR82UxwV5zWF
-         DFtjH6deBlTwBL2lF7CoMhNZpw3vgwRcXXm8Gwda6s+OTeQyBWTU9f4ZfVyL8eGZRcio
-         u/NEQLSrO4op0C2d324q/dnp3I8mNcvVcKp7qYD4pvKo55NxNzzNBOrKDsAIXsDawb6r
-         vOAAILMQFOhJ9txeYVaeb/zMamrnqKBPeEhh9i5CT1ylsNsM8Fh1dYxAisPOdkZrnByw
-         Wk9Q==
-X-Gm-Message-State: AOAM533xUM0De5/QyL4WHeUjPXoIKh1ei2CKkn8jvHhGezJaxdjR57M3
-        CXAHQCWOPWB/KqmaQe5c75d2x0vOfGAqn9Ad29T6qkXejNxN/4W/10oLMfj2rp/WsDyJsGvTBxd
-        Ky67+OwyUFqiqI4CnoVLrXRc=
-X-Received: by 2002:a05:6000:18a4:b0:203:63e9:3e52 with SMTP id b4-20020a05600018a400b0020363e93e52mr7208820wri.192.1646832830940;
-        Wed, 09 Mar 2022 05:33:50 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJw39VeeJL2sLF2yNLhIAAzipl//IMHBr51izsAjQZj6VqCMsVOEfSQoR8CT5v/PXd09VKNfrg==
-X-Received: by 2002:a05:6000:18a4:b0:203:63e9:3e52 with SMTP id b4-20020a05600018a400b0020363e93e52mr7208790wri.192.1646832830663;
-        Wed, 09 Mar 2022 05:33:50 -0800 (PST)
+        bh=hxJPMn5J6L7pDstxJt5mOgE1pVrNFlShCuIhtS3CI8s=;
+        b=t98wRqUJdgYW/R49dhdAMhVUHiIx0HXQhPbbwe0FBzSg4c66OVbqxM2jGEPxPunB6M
+         FjS0w0IZQElUCq8Sg/p0538WahXG2dA/FstHnmmiGeLCuO3M2vNjU7Mtn43FGBFWF6a3
+         IHOMJM/1fxlnuB2gSkEURRsLDAhwi299yNADDPe/N/RwSQ5Oto5w0kHGk09btTgHUB3V
+         fOB9mYOWZAnGUhkW8yuQqOgaA0Qq9H60pFUjy/yCjDijy1SP4OhwG68Fjf5aYYATI7OT
+         /DnWsfLQgQL7qmrb5h4bozKeA2seOE8YiLy10L5swwJdHufSCP+S6fVkZAJmVcWRWrl1
+         LtNA==
+X-Gm-Message-State: AOAM533RtF8KZpG7moWVm1XOC7DntvUKMmJAUr8HtkS2G8RI/onO4Sie
+        HvgFCU9rWbCT9Ga8cnIh/NALl+b/KDt7npXSx84d9+kpags6Vl7h2APWmUqxExn2XwSamFwHON3
+        5fF9BXE2kCkCBYP/mz98a2QI=
+X-Received: by 2002:a1c:6a01:0:b0:37f:1b18:6b17 with SMTP id f1-20020a1c6a01000000b0037f1b186b17mr7467017wmc.146.1646833169796;
+        Wed, 09 Mar 2022 05:39:29 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJyUiXVqoM47oNz6ncRVRIq/E3m1+h7KnHuneTo0rnDdEN8qOnGhuo4BXntkJRz7KSBVfpVw1Q==
+X-Received: by 2002:a1c:6a01:0:b0:37f:1b18:6b17 with SMTP id f1-20020a1c6a01000000b0037f1b186b17mr7466991wmc.146.1646833169595;
+        Wed, 09 Mar 2022 05:39:29 -0800 (PST)
 Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id k14-20020a5d518e000000b002019c7402aasm1732693wrv.25.2022.03.09.05.33.37
+        by smtp.gmail.com with ESMTPSA id y10-20020adfee0a000000b001f0639001ffsm2618429wrn.9.2022.03.09.05.39.28
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Mar 2022 05:33:42 -0800 (PST)
-Message-ID: <88ae42f3-8e56-75e9-b1c0-abefe3496a8d@redhat.com>
-Date:   Wed, 9 Mar 2022 14:33:31 +0100
+        Wed, 09 Mar 2022 05:39:29 -0800 (PST)
+Message-ID: <d1003594-dc26-23d4-a402-2951b3ed395d@redhat.com>
+Date:   Wed, 9 Mar 2022 14:39:28 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
-Subject: Re: [PATCH v2 RFC 08/10] drm/fourcc: Document that single-channel
- "red" can be any color
+Subject: Re: [PATCH v2 RFC 09/10] drm/fourcc: Add DRM_FORMAT_R[124]
 Content-Language: en-US
 To:     Geert Uytterhoeven <geert@linux-m68k.org>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
@@ -73,9 +72,9 @@ To:     Geert Uytterhoeven <geert@linux-m68k.org>,
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <cover.1646683502.git.geert@linux-m68k.org>
- <585dc03acb4016bba910e7d15fec3ef4f0aec5b0.1646683502.git.geert@linux-m68k.org>
+ <98c062f1b5c71427d5ba6c7bca706d04b1892162.1646683502.git.geert@linux-m68k.org>
 From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <585dc03acb4016bba910e7d15fec3ef4f0aec5b0.1646683502.git.geert@linux-m68k.org>
+In-Reply-To: <98c062f1b5c71427d5ba6c7bca706d04b1892162.1646683502.git.geert@linux-m68k.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -83,17 +82,17 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 On 3/7/22 21:52, Geert Uytterhoeven wrote:
-> Traditionally, the first channel has been called the "red" channel, but
-> the fourcc values for single-channel "red" formats can also be used for
-> other light-on-dark displays, like grayscale.
+> Introduce fourcc codes for single-channel light-on-dark frame buffer
+> formats with two, four, and sixteen intensity levels.
+> 
+> As the number of bits per pixel is less than eight, these rely on proper
+> block handling for the calculation of bits per pixel and pitch.
 > 
 > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 > ---
 
-Yes, I learned that "Red" actually meant just a color channel
-that may not be red in one of the thread about fourcc formats.
-
-So I agree that would be good to have a comment about this.
+IIRC the agreement was that it was worth to have both Cx and Rx fourcc
+formats separately, so this patch makes sense to me.
 
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 

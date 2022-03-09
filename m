@@ -2,163 +2,106 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF035C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Mar 2022 10:40:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAA8DC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Mar 2022 11:21:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230434AbiCIKlK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Mar 2022 05:41:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37006 "EHLO
+        id S231842AbiCILW4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Mar 2022 06:22:56 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41994 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230125AbiCIKlK (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Mar 2022 05:41:10 -0500
-Received: from mail-qt1-f169.google.com (mail-qt1-f169.google.com [209.85.160.169])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C83C05FE3
-        for <linux-fbdev@vger.kernel.org>; Wed,  9 Mar 2022 02:40:10 -0800 (PST)
-Received: by mail-qt1-f169.google.com with SMTP id s15so1466311qtk.10
-        for <linux-fbdev@vger.kernel.org>; Wed, 09 Mar 2022 02:40:10 -0800 (PST)
+        with ESMTP id S232174AbiCILWz (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Mar 2022 06:22:55 -0500
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 8541713DFE
+        for <linux-fbdev@vger.kernel.org>; Wed,  9 Mar 2022 03:21:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1646824916;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=axxJQPKDz/ZKFzx7js+EM+U1rMdue7zxP8Cr6MBe+XM=;
+        b=El6MM3OeyKYvwTg6GPUK5FAaGy5WE6Gur8kUTOhaLZ2jejkcggW/gxEawwshzB6UxRvEgr
+        F8/6oYCco7DU3yNPwlx5uMloLIapFKVeG4iVh1YNVRWPiuH4TMa0f8VE2jAvrWOcu9ZeOR
+        bRSEmDEmXXS4sTUbPRX++grmZN0PA6A=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-670-jd1iRk8KMm-evYqNDKjYuQ-1; Wed, 09 Mar 2022 06:21:55 -0500
+X-MC-Unique: jd1iRk8KMm-evYqNDKjYuQ-1
+Received: by mail-wm1-f70.google.com with SMTP id 3-20020a05600c230300b00384e15ceae4so2455151wmo.7
+        for <linux-fbdev@vger.kernel.org>; Wed, 09 Mar 2022 03:21:55 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=6DrAJtOqN7GdwM4Pk9v4ngdziJV9PvRnIvi0h8uX290=;
-        b=AdgjnWxr6BqOJgQgQPAKdxhD9NPzms0PWSixfeChVypgL2JY8sXhFBLsIfNyU6iWUZ
-         tvt8qCkzXx4wK0cD7149gUGF4fHI5AgX32G7ohIbxwVFdEJU8UzMNEUD/Sn1H5JKBUT6
-         PY61+jYQa+cIQN+r56YYyBHNSp/ItBtUdzN5hI+IL+67dpCLbrBowmgmVSce1xyqBUxX
-         z7QwsbeOOxLXAUM7RrpJ5T1K0tXfETkeamdVRqsIzna8FAYvQR9fDzPmeSURK9D1ZpHo
-         LNx8VQINd0qoXqNDdt+sFDfl5KaGb1a0I4I2xF8qgcyAELxXwsj+v/MK64bSaddFJ9c+
-         4ZNw==
-X-Gm-Message-State: AOAM533ycSgkadakZIzztOeOpR2FF/Dux/v3ryP/bTegq2hYtpYVNJya
-        TfOJp1vm/0gB28oezCsIh989m+/xZ+qeQg==
-X-Google-Smtp-Source: ABdhPJyw21eUByviZ5dkYcBz1WGwFnSYL8xuBCyjE+ztryefMmQk+mIm1tHYeTRuhvUIZXBHwEjxdQ==
-X-Received: by 2002:ac8:5911:0:b0:2e0:5a1f:9ac7 with SMTP id 17-20020ac85911000000b002e05a1f9ac7mr16542407qty.170.1646822409550;
-        Wed, 09 Mar 2022 02:40:09 -0800 (PST)
-Received: from mail-yw1-f172.google.com (mail-yw1-f172.google.com. [209.85.128.172])
-        by smtp.gmail.com with ESMTPSA id c16-20020a05622a059000b002dc93dc92d1sm1060098qtb.48.2022.03.09.02.40.08
-        for <linux-fbdev@vger.kernel.org>
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=axxJQPKDz/ZKFzx7js+EM+U1rMdue7zxP8Cr6MBe+XM=;
+        b=dHkV+nk1k64W45FHt0iPKAyknDHQ3NHs/45+sIPJJbNlLQJ3hnKMgF5CZ5OdsYREw0
+         CeMmOau7cuTMR4RCxz8QR8za3/BRaIIbQRZ1VeV8fZFxt9Tzg0vEvGb/Qyn/QDUhmGZC
+         0Cvd46wVjFkfMZC6i7uwJyAYS736TVFnqONPtOP8hCvb4ToL2Gx5IMQ8vMgW1P4iVXcL
+         nl6mNPd83SOw/Z5vLh5d0crkyGvcHDA/dLvpZcKc42UTSfNR/k7CNd0JV2JCOQDt0adN
+         v1TQ46e/zwtsuOOONR5LkbYdXyGfybK02zqm2QP43ipdl7A8LZP8ruALZliXeZaa4+xc
+         TVsQ==
+X-Gm-Message-State: AOAM530r5ahZ9lXgRc+oRxpIXkAnv4xRQYoDVjWCCiOOFXNSzdNRlLaU
+        4NB+sVuneX452UtfSL1Ncz4wjzarjloOpgnhX/3onjrGBJnv6wU4ZSOuFgQhi35XwbTbD5cj+jd
+        DcRjvzDX0c95EzMojPo6ntkI=
+X-Received: by 2002:a5d:6405:0:b0:1f1:faf1:a48f with SMTP id z5-20020a5d6405000000b001f1faf1a48fmr9546217wru.684.1646824914262;
+        Wed, 09 Mar 2022 03:21:54 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJzdqAEqF3qLcKLuYFsHLZlnN18Wpty0xUyufZbpPlI3IiACoue56r06p5xuvHPwTYE1rxu7kg==
+X-Received: by 2002:a5d:6405:0:b0:1f1:faf1:a48f with SMTP id z5-20020a5d6405000000b001f1faf1a48fmr9546205wru.684.1646824914048;
+        Wed, 09 Mar 2022 03:21:54 -0800 (PST)
+Received: from [192.168.1.102] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id b3-20020a5d4d83000000b001f1d72a6f97sm1384827wru.50.2022.03.09.03.21.52
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Mar 2022 02:40:08 -0800 (PST)
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-2db2add4516so17999987b3.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 09 Mar 2022 02:40:08 -0800 (PST)
-X-Received: by 2002:a81:c703:0:b0:2d0:cc6b:3092 with SMTP id
- m3-20020a81c703000000b002d0cc6b3092mr16062763ywi.449.1646822408061; Wed, 09
- Mar 2022 02:40:08 -0800 (PST)
+        Wed, 09 Mar 2022 03:21:53 -0800 (PST)
+Message-ID: <7599362f-4c66-673b-7cd4-cbb3e81c8755@redhat.com>
+Date:   Wed, 9 Mar 2022 12:21:51 +0100
 MIME-Version: 1.0
-References: <20220223193804.18636-5-tzimmermann@suse.de> <CGME20220308225225eucas1p12fcdd6e5dc83308b19d51ad7b2a13141@eucas1p1.samsung.com>
- <21110de8-d52a-e55e-8853-1f073c4ab969@samsung.com> <a7c8ee6c-185e-916c-c92a-d3b3f4fd9135@suse.de>
- <f318d57d-ef9e-295a-6865-eb0377a9bd07@samsung.com>
-In-Reply-To: <f318d57d-ef9e-295a-6865-eb0377a9bd07@samsung.com>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 9 Mar 2022 11:39:56 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdU4w-68-V2QXqbJqorL3iQFyBSRkGTrz5ePFRRUC8mRzw@mail.gmail.com>
-Message-ID: <CAMuHMdU4w-68-V2QXqbJqorL3iQFyBSRkGTrz5ePFRRUC8mRzw@mail.gmail.com>
-Subject: Re: [v3,4/5] fbdev: Improve performance of cfb_imageblit()
-To:     Marek Szyprowski <m.szyprowski@samsung.com>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Gerd Hoffmann <kraxel@redhat.com>,
-        Pekka Paalanen <ppaalanen@gmail.com>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 3/9] fbdev: Track deferred-I/O pages in pageref struct
+Content-Language: en-US
+To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
+        airlied@linux.ie, mripard@kernel.org,
+        maarten.lankhorst@linux.intel.com, deller@gmx.de
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+References: <20220303205839.28484-1-tzimmermann@suse.de>
+ <20220303205839.28484-4-tzimmermann@suse.de>
+ <291426e8-32ed-ba0b-4d23-38218d450c93@redhat.com>
+ <0dcc965e-fbda-fbe7-fac0-31f0df9f3234@suse.de>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <0dcc965e-fbda-fbe7-fac0-31f0df9f3234@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Marek,
+Hello Thomas,
 
-On Wed, Mar 9, 2022 at 10:22 AM Marek Szyprowski
-<m.szyprowski@samsung.com> wrote:
-> On 09.03.2022 09:22, Thomas Zimmermann wrote:
-> > Am 08.03.22 um 23:52 schrieb Marek Szyprowski:
-> >> On 23.02.2022 20:38, Thomas Zimmermann wrote:
-> >>> Improve the performance of cfb_imageblit() by manually unrolling
-> >>> the inner blitting loop and moving some invariants out. The compiler
-> >>> failed to do this automatically. This change keeps cfb_imageblit()
-> >>> in sync with sys_imagebit().
-> >>>
-> >>> A microbenchmark measures the average number of CPU cycles
-> >>> for cfb_imageblit() after a stabilizing period of a few minutes
-> >>> (i7-4790, FullHD, simpledrm, kernel with debugging).
-> >>>
-> >>> cfb_imageblit(), new: 15724 cycles
-> >>> cfb_imageblit(): old: 30566 cycles
-> >>>
-> >>> In the optimized case, cfb_imageblit() is now ~2x faster than before.
-> >>>
-> >>> v3:
-> >>>     * fix commit description (Pekka)
-> >>>
-> >>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> >>> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> >>> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-> >> This patch landed recently in linux next-20220308 as commit 0d03011894d2
-> >> ("fbdev: Improve performance of cfb_imageblit()"). Sadly it causes a
-> >> freeze after DRM and emulated fbdev initialization on various Samsung
-> >> Exynos ARM 32bit based boards. This happens when kernel is compiled from
-> >> exynos_defconfig. Surprisingly when kernel is compiled from
-> >> multi_v7_defconfig all those boards boot fine, so this is a matter of
-> >> one of the debugging options enabled in the exynos_defconfig. I will try
-> >> to analyze this further and share the results. Reverting $subject on top
-> >> of next-20220308 fixes the boot issue.
-> >
-> > Thanks for reporting. I don't have the hardware to reproduce it and
-> > there's no obvious difference to the original version. It's supposed
-> > to be the same algorithm with a different implementation. Unless you
-> > can figure out the issue, we can also revert the patch easily.
+On 3/9/22 09:36, Thomas Zimmermann wrote:
+
+[snip]
+
+> 
+> I thought about using pageref->offset in fbdev drivers as well. It would 
+> be more correct, but didn't want to add unnecessary churn. Especially 
+> since I cannot test most of the fbdev drivers. If you think it's worth 
+> it, I'd change the drivers as well.
 >
-> I've played a bit with .config options and found that the issue is
-> caused by the compiled-in fonts used for the framebuffer. For some
-> reasons (so far unknown to me), exynos_defconfig has the following odd
-> setup:
->
-> CONFIG_FONT_SUPPORT=y
-> CONFIG_FONTS=y
-> # CONFIG_FONT_8x8 is not set
-> # CONFIG_FONT_8x16 is not set
-> # CONFIG_FONT_6x11 is not set
-> CONFIG_FONT_7x14=y
-> # CONFIG_FONT_PEARL_8x8 is not set
-> # CONFIG_FONT_ACORN_8x8 is not set
-> # CONFIG_FONT_MINI_4x6 is not set
-> # CONFIG_FONT_6x10 is not set
-> # CONFIG_FONT_10x18 is not set
-> # CONFIG_FONT_SUN8x16 is not set
-> # CONFIG_FONT_SUN12x22 is not set
-> # CONFIG_FONT_TER16x32 is not set
-> # CONFIG_FONT_6x8 is not set
->
-> Such setup causes a freeze during framebuffer initialization (or just
-> after it got registered). I've reproduced this even on Raspberry Pi 3B
-> with multi_v7_defconfig and changed fonts configuration (this also
-> required to disable vivid driver, which forces 8x16 font), where I got
-> the following panic:
->
-> simple-framebuffer 3eace000.framebuffer: framebuffer at 0x3eace000,
-> 0x12c000 bytes
-> simple-framebuffer 3eace000.framebuffer: format=a8r8g8b8,
-> mode=640x480x32, linelength=2560
-> 8<--- cut here ---
-> Unable to handle kernel paging request at virtual address f0aac000
 
-So support for images with offsets or widths that are not a multiple
-of 8 got broken in cfb_imageblit(). Oops...
+Thanks for the explanation. No, I don't think is worth it or at least as
+as part of this series.
+ 
+> Best regards
+> Thomas
+> 
 
-BTW, the various drawing routines used to set a bitmask indicating
-which alignments were supported (see blit_x), but most of them no
-longer do, presumably because all alignments are now supported
-(since ca. 20 years?).
-So you can (temporarily) work around this by filling in blit_x,
-preventing the use of the 7x14 font.
+-- 
+Best regards,
 
-Gr{oetje,eeting}s,
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

@@ -2,102 +2,109 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C9A3C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Mar 2022 12:53:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82B81C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed,  9 Mar 2022 12:57:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232060AbiCIMy3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 9 Mar 2022 07:54:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60886 "EHLO
+        id S232991AbiCIM6M convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 9 Mar 2022 07:58:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44502 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231512AbiCIMy3 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Mar 2022 07:54:29 -0500
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id D0897C487E
-        for <linux-fbdev@vger.kernel.org>; Wed,  9 Mar 2022 04:53:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1646830410;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=bHT0karyGRRNCWlLhVHNQSuvHWxMwLXpGfkux8ifP78=;
-        b=WoV1SDspwTkuXdIYl4tHkWEr475mZtxZKGxb8Kuh7X7FP7RcA7xcM2s+t8vmT1r78taVHm
-        3M9C5S5THbE5gMyZ4Ywyia7+0ZrXTKzEXLkVHIoTZAqachuZoNXieDxjWVZSe8HODKKAhK
-        vQWPN2VJe42pqVSjxcBOP2WgTqzaVP4=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-645-pIUc_mfIPvmP3MJc_CMI_w-1; Wed, 09 Mar 2022 07:53:28 -0500
-X-MC-Unique: pIUc_mfIPvmP3MJc_CMI_w-1
-Received: by mail-wr1-f69.google.com with SMTP id k20-20020adfc714000000b001e305cd1597so729962wrg.19
-        for <linux-fbdev@vger.kernel.org>; Wed, 09 Mar 2022 04:53:28 -0800 (PST)
+        with ESMTP id S232926AbiCIM55 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 9 Mar 2022 07:57:57 -0500
+Received: from mail-qk1-f178.google.com (mail-qk1-f178.google.com [209.85.222.178])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED7AE177D14;
+        Wed,  9 Mar 2022 04:56:58 -0800 (PST)
+Received: by mail-qk1-f178.google.com with SMTP id s16so1610980qks.4;
+        Wed, 09 Mar 2022 04:56:58 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=bHT0karyGRRNCWlLhVHNQSuvHWxMwLXpGfkux8ifP78=;
-        b=bKHAZWuVtrZ7Hr+tFvvnIdkt9bm/69mNWSOkBie2sbKQhbQ2v+phAFEXIVMsvcbTLS
-         Yz/ttwuoj0RU+3fJG9LCL91t4dWpY3CqI9+KT4NYbapRmy5epcyPPEiUXVHozf928dhb
-         ++aKBEUlkVeqbjapoAMtEgl8Xf2xTAmG044wExpvj9P4uWIlbQKpXQAJoQfYlUH2pPtN
-         9fJv99xYG5urVZCALziyc2uJoxtgv87bGdNCRaZjT2wi1bT7XKHmps1yHAhUieVPKP++
-         0hXa5UdB+mANGvrsfrkBZZZcxbaHMxGtqOv2BAi9QcMQuZdKcu0zo+DqWK0Tz6T6p8O9
-         Upcg==
-X-Gm-Message-State: AOAM531IUHy1cCmQHX5JK/ddgIX/X6XCUzaWvEwrtzwHnYQN2ATvHpZZ
-        +ELFnY9I3wHKw0dkCtYwaJ6wXKiknSIP78KKZsrmLUOLff5GSFRt4cuWvcP/BSmTY12Hte13f3z
-        HZS3TbUkjcBkAMh1Nxm3NWRU=
-X-Received: by 2002:a05:600c:4f8f:b0:383:d0b:3706 with SMTP id n15-20020a05600c4f8f00b003830d0b3706mr3328430wmq.117.1646830407595;
-        Wed, 09 Mar 2022 04:53:27 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJwhA94T4hLNZGfPp9ZlHTC1cFNUMD4hfeN8kfLp3ziXcsrKaa2MDMubqSWEOGZcY5C6vhou4g==
-X-Received: by 2002:a05:600c:4f8f:b0:383:d0b:3706 with SMTP id n15-20020a05600c4f8f00b003830d0b3706mr3328411wmq.117.1646830407398;
-        Wed, 09 Mar 2022 04:53:27 -0800 (PST)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id l25-20020a1c7919000000b0038999b380e9sm1663075wme.38.2022.03.09.04.53.26
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=12vkeayAZrB46KbYGTQzYxqSQYZ5jeg6ghfEwNKBKIY=;
+        b=He5SNcNJFrTFGYjfDokRnEDJg46xt+l6qOgjAgmF88IF6Yufq7gwhSnx1mExi1gess
+         fpha0tN90C4MyIguMO4m6fZeP+uaHdCiJ1tv0jleSJAFv+AmmuEA2RPUDv9NnInvyX9S
+         LoXyfl1NXXKC7ami6TB/qdWiEh7DjlUdmAZKOwnfprpNhWkynYoODg6tQaMvgMmxpp2T
+         9+pNKOC9I6qhN+SbOJaduALARJV6Pl4+bFPcA1GhV2idy68PoeXtSjP8b9VsmkZsgIJO
+         ZcJOxpnn6f4cgVkHtrKA6EekVBD5h0mIkKolkLoK3KNB+5zDuvS7pSfF6HRJhyqmboK8
+         LYJg==
+X-Gm-Message-State: AOAM530OSQ8ZoZtDJFaOArZgCbeE7Wi1SnttTRIV9xucJBVHtUTQDxU/
+        2sQwo8knM3PftrmrIrLPkNHLMkJqO5C8zg==
+X-Google-Smtp-Source: ABdhPJwW+Br3W+o+H84WZLA7xKUAwB4mVRTCIRhFbeErVPPTYhyVRJX290JlQFCYyYYM+/36duDNBw==
+X-Received: by 2002:a05:620a:2a05:b0:67d:2fb0:b292 with SMTP id o5-20020a05620a2a0500b0067d2fb0b292mr3241306qkp.343.1646830617857;
+        Wed, 09 Mar 2022 04:56:57 -0800 (PST)
+Received: from mail-yw1-f179.google.com (mail-yw1-f179.google.com. [209.85.128.179])
+        by smtp.gmail.com with ESMTPSA id r184-20020ae9ddc1000000b0067ca2630aa8sm904213qkf.114.2022.03.09.04.56.57
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 09 Mar 2022 04:53:27 -0800 (PST)
-Message-ID: <7d9b2035-13d6-5d58-e21c-52bbb9282796@redhat.com>
-Date:   Wed, 9 Mar 2022 13:53:25 +0100
+        Wed, 09 Mar 2022 04:56:57 -0800 (PST)
+Received: by mail-yw1-f179.google.com with SMTP id 00721157ae682-2d6d0cb5da4so21365387b3.10;
+        Wed, 09 Mar 2022 04:56:57 -0800 (PST)
+X-Received: by 2002:a81:618b:0:b0:2db:d952:8a39 with SMTP id
+ v133-20020a81618b000000b002dbd9528a39mr16792727ywb.132.1646830616881; Wed, 09
+ Mar 2022 04:56:56 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v2 04/10] drm/framebuffer: Use actual bpp for
- DRM_IOCTL_MODE_GETFB
-Content-Language: en-US
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+References: <20220214133710.3278506-1-javierm@redhat.com> <20220214133710.3278506-4-javierm@redhat.com>
+ <CAMuHMdU+29x4ZHLAiPiReyLKw_VYBCCLw0bCoQmw9s6sQ4Bxcw@mail.gmail.com> <fd6ec463-f46d-0813-5d87-a00c07739e01@redhat.com>
+In-Reply-To: <fd6ec463-f46d-0813-5d87-a00c07739e01@redhat.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Wed, 9 Mar 2022 13:56:44 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdUVWKee+Wm=EP49=5TAgqodPsMjkC2MHUfnyBDF_zt_Zg@mail.gmail.com>
+Message-ID: <CAMuHMdUVWKee+Wm=EP49=5TAgqodPsMjkC2MHUfnyBDF_zt_Zg@mail.gmail.com>
+Subject: Re: [PATCH v6 3/6] drm: Add driver for Solomon SSD130x OLED displays
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Maxime Ripard <maxime@cerno.tech>,
+        =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        David Airlie <airlied@linux.ie>,
+        Lee Jones <lee.jones@linaro.org>,
         Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <cover.1646683502.git.geert@linux-m68k.org>
- <d87068fd1e2cc6f772a64ba9306350a31baeae58.1646683502.git.geert@linux-m68k.org>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <d87068fd1e2cc6f772a64ba9306350a31baeae58.1646683502.git.geert@linux-m68k.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        Linux PWM List <linux-pwm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 3/7/22 21:52, Geert Uytterhoeven wrote:
-> When userspace queries the properties of a frame buffer, the number of
-> bits per pixel is derived from the deprecated drm_format_info.cpp[]
-> field, which does not take into account block sizes.
-> 
-> Fix this by using the actual number of bits per pixel instead.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
+Hi Javier,
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+On Wed, Mar 9, 2022 at 1:14 PM Javier Martinez Canillas
+<javierm@redhat.com> wrote:
+> On 3/8/22 17:30, Geert Uytterhoeven wrote:
+> > Unfortunately a regression was introduced since your v3: printed
+> > text is mirrored upside-down. I.e. "E" is rendered correctly, but "L"
+> > turns into "Γ" (Greek Gamma).
+> > I suspect something went wrong with the display initialization
+> > sequence.
+> >
+>
+> Could you please try Chen-Yu's fix for the COM scan direction mask ?
+>
+> https://lists.freedesktop.org/archives/dri-devel/2022-March/345915.html
+>
+> I made a mistake when converting to use the GENMASK() and FIELD_PREP()
+> macros in v4 as suggested by Andy. The SSD130X_SET_COM_SCAN_DIR_MASK
+> wasn't correct which would explain the output to be vertically flipped.
 
--- 
-Best regards,
+Thanks, confirmed fixed.
 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+Gr{oetje,eeting}s,
 
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

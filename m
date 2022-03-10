@@ -2,241 +2,218 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BC57C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Mar 2022 13:24:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C447EC433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu, 10 Mar 2022 19:22:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242374AbiCJNZO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 10 Mar 2022 08:25:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44560 "EHLO
+        id S237363AbiCJTXE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 10 Mar 2022 14:23:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49138 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236943AbiCJNZN (ORCPT
+        with ESMTP id S232191AbiCJTXD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 10 Mar 2022 08:25:13 -0500
-X-Greylist: delayed 652 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 10 Mar 2022 05:24:10 PST
-Received: from mx4.securetransport.de (mx4.securetransport.de [178.254.6.145])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4EB979A4DC;
-        Thu, 10 Mar 2022 05:24:09 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dh-electronics.com;
-        s=dhelectronicscom; t=1646917891;
-        bh=pmnm+l4Ris569uSGaDzzAWRmTE1k7P6kzMdlq+dUBJU=;
-        h=From:To:CC:Subject:Date:From;
-        b=IEYJKJPTVm6IOq4bFF/sqtLs/b1NqX7NZant+U2HkO2ybbBVF1ouTkmXAZxpFCNvO
-         uPKG7rkztrUh4a/4De4gSUHeQ3uOk+TM4pimYj6jH6EAnS7iTsKs+yyL4U3um/BRuA
-         kBccWgEp66MweKLrnhVCtjYzyFfm++5bI6XiEQqULuOkGQHXFQEUCxIN/8vXCBitcN
-         0bgcpa79nFuZi0nBvZQoEdqW2JOVGFZKzt0bEJul7KJoujxgs9nP/y5D59h0BngDAl
-         fQTcara+u9IHnCttbfu7VtyoAtDXIR8SQgQBNx6umXul3Q1FNIvVCRj/ezXKiLoKAL
-         nCKe7LW2I51NA==
-X-secureTransport-forwarded: yes
-From:   Dominik Kierner <dkierner@dh-electronics.com>
-Complaints-To: abuse@cubewerk.de
-To:     "javierm@redhat.com" <javierm@redhat.com>
-CC:     "airlied@linux.ie" <airlied@linux.ie>,
-        "andriy.shevchenko@linux.intel.com" 
-        <andriy.shevchenko@linux.intel.com>,
-        "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "geert@linux-m68k.org" <geert@linux-m68k.org>,
-        "lee.jones@linaro.org" <lee.jones@linaro.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>,
-        "maxime@cerno.tech" <maxime@cerno.tech>,
-        "noralf@tronnes.org" <noralf@tronnes.org>,
-        "sam@ravnborg.org" <sam@ravnborg.org>,
-        "thierry.reding@gmail.com" <thierry.reding@gmail.com>,
-        "tzimmermann@suse.de" <tzimmermann@suse.de>,
-        "u.kleine-koenig@pengutronix.de" <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH v6 3/6] drm: Add driver for Solomon SSD130x OLED displays
-Thread-Topic: Re: [PATCH v6 3/6] drm: Add driver for Solomon SSD130x OLED
- displays
-Thread-Index: Adg0f9qHOCAIrgXYTGq8frgJBu/0lA==
-Date:   Thu, 10 Mar 2022 13:11:27 +0000
-Message-ID: <5d817ea54144414aa7865a72694b5811@dh-electronics.com>
-Accept-Language: de-DE, en-US
-Content-Language: de-DE
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+        Thu, 10 Mar 2022 14:23:03 -0500
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2CF3F1191
+        for <linux-fbdev@vger.kernel.org>; Thu, 10 Mar 2022 11:22:01 -0800 (PST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 7D1A21F381;
+        Thu, 10 Mar 2022 19:22:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1646940120; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Gm3ynX3tI89AtyrZantCIi+jTB6DzoQd6gDDaz6YUa8=;
+        b=rWrcVGkLomnoxi6TKc054i7EyySA/eJwhylSUjgvjCbEdZrkFIgF9QR6hvNKspmVRF2FhI
+        gsxtcpu0s/VaXwRnIYCp2rINw36tHEvks+eDlWtG2vV5Z0ExJhlbfhF8MDfdhu6KHGY+1i
+        nmFL595aBtrsRKfiSdqY623mKtJ97ag=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1646940120;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=Gm3ynX3tI89AtyrZantCIi+jTB6DzoQd6gDDaz6YUa8=;
+        b=fOPPeLoG+yaK62VmVEKfwRfNlAfUpyAvGZiYzBCsS4LbDcAbKu0VDTodIj8rlJvM4kDE8d
+        P/2t7dzORaQ9FwBQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 3D82113A66;
+        Thu, 10 Mar 2022 19:22:00 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id RxQRDdhPKmJ5WgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 10 Mar 2022 19:22:00 +0000
+Message-ID: <d8726a6e-d0a9-1471-c113-a7bf567aa994@suse.de>
+Date:   Thu, 10 Mar 2022 20:21:59 +0100
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.6.1
+Subject: Re: [v3,4/5] fbdev: Improve performance of cfb_imageblit()
+Content-Language: en-US
+To:     Geert Uytterhoeven <geert@linux-m68k.org>,
+        Marek Szyprowski <m.szyprowski@samsung.com>
+Cc:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Gerd Hoffmann <kraxel@redhat.com>,
+        Pekka Paalanen <ppaalanen@gmail.com>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>
+References: <20220223193804.18636-5-tzimmermann@suse.de>
+ <CGME20220308225225eucas1p12fcdd6e5dc83308b19d51ad7b2a13141@eucas1p1.samsung.com>
+ <21110de8-d52a-e55e-8853-1f073c4ab969@samsung.com>
+ <a7c8ee6c-185e-916c-c92a-d3b3f4fd9135@suse.de>
+ <f318d57d-ef9e-295a-6865-eb0377a9bd07@samsung.com>
+ <CAMuHMdU4w-68-V2QXqbJqorL3iQFyBSRkGTrz5ePFRRUC8mRzw@mail.gmail.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <CAMuHMdU4w-68-V2QXqbJqorL3iQFyBSRkGTrz5ePFRRUC8mRzw@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------baL2B05bDt0QU09HTAUrZZmq"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Javier,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------baL2B05bDt0QU09HTAUrZZmq
+Content-Type: multipart/mixed; boundary="------------id7xRhjsDjLW1TL3TT70Qtpf";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ Sam Ravnborg <sam@ravnborg.org>, Gerd Hoffmann <kraxel@redhat.com>,
+ Pekka Paalanen <ppaalanen@gmail.com>,
+ Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ DRI Development <dri-devel@lists.freedesktop.org>
+Message-ID: <d8726a6e-d0a9-1471-c113-a7bf567aa994@suse.de>
+Subject: Re: [v3,4/5] fbdev: Improve performance of cfb_imageblit()
+References: <20220223193804.18636-5-tzimmermann@suse.de>
+ <CGME20220308225225eucas1p12fcdd6e5dc83308b19d51ad7b2a13141@eucas1p1.samsung.com>
+ <21110de8-d52a-e55e-8853-1f073c4ab969@samsung.com>
+ <a7c8ee6c-185e-916c-c92a-d3b3f4fd9135@suse.de>
+ <f318d57d-ef9e-295a-6865-eb0377a9bd07@samsung.com>
+ <CAMuHMdU4w-68-V2QXqbJqorL3iQFyBSRkGTrz5ePFRRUC8mRzw@mail.gmail.com>
+In-Reply-To: <CAMuHMdU4w-68-V2QXqbJqorL3iQFyBSRkGTrz5ePFRRUC8mRzw@mail.gmail.com>
 
-I was working on a SSD130x driver as well, although with a different
-(drm_panel) approach and hit a bit of a roadblock.
-Now that Your driver is quite a bit maturer than mine,
-I will happily provide You with the source of my draft,
-so that any useful bits can be incorporated in Your driver.
-I know that links are a bit frowned upon,
-but I'd rather avoid cluttering the thread with my draft code,
-which is unfinished and incompatible with the code in this thread.
+--------------id7xRhjsDjLW1TL3TT70Qtpf
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-https://github.com/dh-electronics/panel-solomon-ssd130x-draft
-https://github.com/dh-electronics/panel-solomon-ssd130x-draft/tree/drm-ssd1=
-30x/drivers/gpu/drm/panel
+SGkNCg0KQW0gMDkuMDMuMjIgdW0gMTE6Mzkgc2NocmllYiBHZWVydCBVeXR0ZXJob2V2ZW46
+DQo+IEhpIE1hcmVrLA0KPiANCj4gT24gV2VkLCBNYXIgOSwgMjAyMiBhdCAxMDoyMiBBTSBN
+YXJlayBTenlwcm93c2tpDQo+IDxtLnN6eXByb3dza2lAc2Ftc3VuZy5jb20+IHdyb3RlOg0K
+Pj4gT24gMDkuMDMuMjAyMiAwOToyMiwgVGhvbWFzIFppbW1lcm1hbm4gd3JvdGU6DQo+Pj4g
+QW0gMDguMDMuMjIgdW0gMjM6NTIgc2NocmllYiBNYXJlayBTenlwcm93c2tpOg0KPj4+PiBP
+biAyMy4wMi4yMDIyIDIwOjM4LCBUaG9tYXMgWmltbWVybWFubiB3cm90ZToNCj4+Pj4+IElt
+cHJvdmUgdGhlIHBlcmZvcm1hbmNlIG9mIGNmYl9pbWFnZWJsaXQoKSBieSBtYW51YWxseSB1
+bnJvbGxpbmcNCj4+Pj4+IHRoZSBpbm5lciBibGl0dGluZyBsb29wIGFuZCBtb3Zpbmcgc29t
+ZSBpbnZhcmlhbnRzIG91dC4gVGhlIGNvbXBpbGVyDQo+Pj4+PiBmYWlsZWQgdG8gZG8gdGhp
+cyBhdXRvbWF0aWNhbGx5LiBUaGlzIGNoYW5nZSBrZWVwcyBjZmJfaW1hZ2VibGl0KCkNCj4+
+Pj4+IGluIHN5bmMgd2l0aCBzeXNfaW1hZ2ViaXQoKS4NCj4+Pj4+DQo+Pj4+PiBBIG1pY3Jv
+YmVuY2htYXJrIG1lYXN1cmVzIHRoZSBhdmVyYWdlIG51bWJlciBvZiBDUFUgY3ljbGVzDQo+
+Pj4+PiBmb3IgY2ZiX2ltYWdlYmxpdCgpIGFmdGVyIGEgc3RhYmlsaXppbmcgcGVyaW9kIG9m
+IGEgZmV3IG1pbnV0ZXMNCj4+Pj4+IChpNy00NzkwLCBGdWxsSEQsIHNpbXBsZWRybSwga2Vy
+bmVsIHdpdGggZGVidWdnaW5nKS4NCj4+Pj4+DQo+Pj4+PiBjZmJfaW1hZ2VibGl0KCksIG5l
+dzogMTU3MjQgY3ljbGVzDQo+Pj4+PiBjZmJfaW1hZ2VibGl0KCk6IG9sZDogMzA1NjYgY3lj
+bGVzDQo+Pj4+Pg0KPj4+Pj4gSW4gdGhlIG9wdGltaXplZCBjYXNlLCBjZmJfaW1hZ2VibGl0
+KCkgaXMgbm93IH4yeCBmYXN0ZXIgdGhhbiBiZWZvcmUuDQo+Pj4+Pg0KPj4+Pj4gdjM6DQo+
+Pj4+PiAgICAgICogZml4IGNvbW1pdCBkZXNjcmlwdGlvbiAoUGVra2EpDQo+Pj4+Pg0KPj4+
+Pj4gU2lnbmVkLW9mZi1ieTogVGhvbWFzIFppbW1lcm1hbm4gPHR6aW1tZXJtYW5uQHN1c2Uu
+ZGU+DQo+Pj4+PiBBY2tlZC1ieTogU2FtIFJhdm5ib3JnIDxzYW1AcmF2bmJvcmcub3JnPg0K
+Pj4+Pj4gUmV2aWV3ZWQtYnk6IEphdmllciBNYXJ0aW5leiBDYW5pbGxhcyA8amF2aWVybUBy
+ZWRoYXQuY29tPg0KPj4+PiBUaGlzIHBhdGNoIGxhbmRlZCByZWNlbnRseSBpbiBsaW51eCBu
+ZXh0LTIwMjIwMzA4IGFzIGNvbW1pdCAwZDAzMDExODk0ZDINCj4+Pj4gKCJmYmRldjogSW1w
+cm92ZSBwZXJmb3JtYW5jZSBvZiBjZmJfaW1hZ2VibGl0KCkiKS4gU2FkbHkgaXQgY2F1c2Vz
+IGENCj4+Pj4gZnJlZXplIGFmdGVyIERSTSBhbmQgZW11bGF0ZWQgZmJkZXYgaW5pdGlhbGl6
+YXRpb24gb24gdmFyaW91cyBTYW1zdW5nDQo+Pj4+IEV4eW5vcyBBUk0gMzJiaXQgYmFzZWQg
+Ym9hcmRzLiBUaGlzIGhhcHBlbnMgd2hlbiBrZXJuZWwgaXMgY29tcGlsZWQgZnJvbQ0KPj4+
+PiBleHlub3NfZGVmY29uZmlnLiBTdXJwcmlzaW5nbHkgd2hlbiBrZXJuZWwgaXMgY29tcGls
+ZWQgZnJvbQ0KPj4+PiBtdWx0aV92N19kZWZjb25maWcgYWxsIHRob3NlIGJvYXJkcyBib290
+IGZpbmUsIHNvIHRoaXMgaXMgYSBtYXR0ZXIgb2YNCj4+Pj4gb25lIG9mIHRoZSBkZWJ1Z2dp
+bmcgb3B0aW9ucyBlbmFibGVkIGluIHRoZSBleHlub3NfZGVmY29uZmlnLiBJIHdpbGwgdHJ5
+DQo+Pj4+IHRvIGFuYWx5emUgdGhpcyBmdXJ0aGVyIGFuZCBzaGFyZSB0aGUgcmVzdWx0cy4g
+UmV2ZXJ0aW5nICRzdWJqZWN0IG9uIHRvcA0KPj4+PiBvZiBuZXh0LTIwMjIwMzA4IGZpeGVz
+IHRoZSBib290IGlzc3VlLg0KPj4+DQo+Pj4gVGhhbmtzIGZvciByZXBvcnRpbmcuIEkgZG9u
+J3QgaGF2ZSB0aGUgaGFyZHdhcmUgdG8gcmVwcm9kdWNlIGl0IGFuZA0KPj4+IHRoZXJlJ3Mg
+bm8gb2J2aW91cyBkaWZmZXJlbmNlIHRvIHRoZSBvcmlnaW5hbCB2ZXJzaW9uLiBJdCdzIHN1
+cHBvc2VkDQo+Pj4gdG8gYmUgdGhlIHNhbWUgYWxnb3JpdGhtIHdpdGggYSBkaWZmZXJlbnQg
+aW1wbGVtZW50YXRpb24uIFVubGVzcyB5b3UNCj4+PiBjYW4gZmlndXJlIG91dCB0aGUgaXNz
+dWUsIHdlIGNhbiBhbHNvIHJldmVydCB0aGUgcGF0Y2ggZWFzaWx5Lg0KPj4NCj4+IEkndmUg
+cGxheWVkIGEgYml0IHdpdGggLmNvbmZpZyBvcHRpb25zIGFuZCBmb3VuZCB0aGF0IHRoZSBp
+c3N1ZSBpcw0KPj4gY2F1c2VkIGJ5IHRoZSBjb21waWxlZC1pbiBmb250cyB1c2VkIGZvciB0
+aGUgZnJhbWVidWZmZXIuIEZvciBzb21lDQo+PiByZWFzb25zIChzbyBmYXIgdW5rbm93biB0
+byBtZSksIGV4eW5vc19kZWZjb25maWcgaGFzIHRoZSBmb2xsb3dpbmcgb2RkDQo+PiBzZXR1
+cDoNCj4+DQo+PiBDT05GSUdfRk9OVF9TVVBQT1JUPXkNCj4+IENPTkZJR19GT05UUz15DQo+
+PiAjIENPTkZJR19GT05UXzh4OCBpcyBub3Qgc2V0DQo+PiAjIENPTkZJR19GT05UXzh4MTYg
+aXMgbm90IHNldA0KPj4gIyBDT05GSUdfRk9OVF82eDExIGlzIG5vdCBzZXQNCj4+IENPTkZJ
+R19GT05UXzd4MTQ9eQ0KPj4gIyBDT05GSUdfRk9OVF9QRUFSTF84eDggaXMgbm90IHNldA0K
+Pj4gIyBDT05GSUdfRk9OVF9BQ09STl84eDggaXMgbm90IHNldA0KPj4gIyBDT05GSUdfRk9O
+VF9NSU5JXzR4NiBpcyBub3Qgc2V0DQo+PiAjIENPTkZJR19GT05UXzZ4MTAgaXMgbm90IHNl
+dA0KPj4gIyBDT05GSUdfRk9OVF8xMHgxOCBpcyBub3Qgc2V0DQo+PiAjIENPTkZJR19GT05U
+X1NVTjh4MTYgaXMgbm90IHNldA0KPj4gIyBDT05GSUdfRk9OVF9TVU4xMngyMiBpcyBub3Qg
+c2V0DQo+PiAjIENPTkZJR19GT05UX1RFUjE2eDMyIGlzIG5vdCBzZXQNCj4+ICMgQ09ORklH
+X0ZPTlRfNng4IGlzIG5vdCBzZXQNCj4+DQo+PiBTdWNoIHNldHVwIGNhdXNlcyBhIGZyZWV6
+ZSBkdXJpbmcgZnJhbWVidWZmZXIgaW5pdGlhbGl6YXRpb24gKG9yIGp1c3QNCj4+IGFmdGVy
+IGl0IGdvdCByZWdpc3RlcmVkKS4gSSd2ZSByZXByb2R1Y2VkIHRoaXMgZXZlbiBvbiBSYXNw
+YmVycnkgUGkgM0INCj4+IHdpdGggbXVsdGlfdjdfZGVmY29uZmlnIGFuZCBjaGFuZ2VkIGZv
+bnRzIGNvbmZpZ3VyYXRpb24gKHRoaXMgYWxzbw0KPj4gcmVxdWlyZWQgdG8gZGlzYWJsZSB2
+aXZpZCBkcml2ZXIsIHdoaWNoIGZvcmNlcyA4eDE2IGZvbnQpLCB3aGVyZSBJIGdvdA0KPj4g
+dGhlIGZvbGxvd2luZyBwYW5pYzoNCj4+DQo+PiBzaW1wbGUtZnJhbWVidWZmZXIgM2VhY2Uw
+MDAuZnJhbWVidWZmZXI6IGZyYW1lYnVmZmVyIGF0IDB4M2VhY2UwMDAsDQo+PiAweDEyYzAw
+MCBieXRlcw0KPj4gc2ltcGxlLWZyYW1lYnVmZmVyIDNlYWNlMDAwLmZyYW1lYnVmZmVyOiBm
+b3JtYXQ9YThyOGc4YjgsDQo+PiBtb2RlPTY0MHg0ODB4MzIsIGxpbmVsZW5ndGg9MjU2MA0K
+Pj4gODwtLS0gY3V0IGhlcmUgLS0tDQo+PiBVbmFibGUgdG8gaGFuZGxlIGtlcm5lbCBwYWdp
+bmcgcmVxdWVzdCBhdCB2aXJ0dWFsIGFkZHJlc3MgZjBhYWMwMDANCj4gDQo+IFNvIHN1cHBv
+cnQgZm9yIGltYWdlcyB3aXRoIG9mZnNldHMgb3Igd2lkdGhzIHRoYXQgYXJlIG5vdCBhIG11
+bHRpcGxlDQo+IG9mIDggZ290IGJyb2tlbiBpbiBjZmJfaW1hZ2VibGl0KCkuIE9vcHMuLi4N
+Cj4gDQo+IEJUVywgdGhlIHZhcmlvdXMgZHJhd2luZyByb3V0aW5lcyB1c2VkIHRvIHNldCBh
+IGJpdG1hc2sgaW5kaWNhdGluZw0KPiB3aGljaCBhbGlnbm1lbnRzIHdlcmUgc3VwcG9ydGVk
+IChzZWUgYmxpdF94KSwgYnV0IG1vc3Qgb2YgdGhlbSBubw0KPiBsb25nZXIgZG8sIHByZXN1
+bWFibHkgYmVjYXVzZSBhbGwgYWxpZ25tZW50cyBhcmUgbm93IHN1cHBvcnRlZA0KPiAoc2lu
+Y2UgY2EuIDIwIHllYXJzPykuDQo+IFNvIHlvdSBjYW4gKHRlbXBvcmFyaWx5KSB3b3JrIGFy
+b3VuZCB0aGlzIGJ5IGZpbGxpbmcgaW4gYmxpdF94LA0KPiBwcmV2ZW50aW5nIHRoZSB1c2Ug
+b2YgdGhlIDd4MTQgZm9udC4NCg0KSG93IGRvIEkgYWN0aXZhdGUgdGhlIDd4MTQgZm9udD8g
+SXQncyBjb21waWxlZCBpbnRvIHRoZSBrZXJuZWwgYWxyZWFkeQ0KKENPTkZJR19GT05UXzd4
+MTQ9eSkuDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNCj4gDQo+IEdye29ldGplLGVldGlu
+Z31zLA0KPiANCj4gICAgICAgICAgICAgICAgICAgICAgICAgIEdlZXJ0DQo+IA0KPiAtLQ0K
+PiBHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9uZCBp
+YTMyIC0tIGdlZXJ0QGxpbnV4LW02OGsub3JnDQo+IA0KPiBJbiBwZXJzb25hbCBjb252ZXJz
+YXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4g
+QnV0DQo+IHdoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNheSAicHJv
+Z3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4NCj4gICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgLS0gTGludXMgVG9ydmFsZHMNCg0KLS0gDQpUaG9tYXMgWmltbWVy
+bWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBTb2x1dGlv
+bnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcsIEdlcm1h
+bnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVyOiBJdm8g
+VG90ZXYNCg==
 
-The code was designed as a rewrite from scratch, as I assumed that a new
-DRM driver that accommodates for I2C, 3- and 4-wire-SPI,
-will probably need a new DTS interface for differentiating the
-protocol-specific drivers, which would obviously break compatibility.
+--------------id7xRhjsDjLW1TL3TT70Qtpf--
 
-I do have few suggestions though:
+--------------baL2B05bDt0QU09HTAUrZZmq
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-# Atomic Configuration of Display Driving Regulator and the Charge Pump
+-----BEGIN PGP SIGNATURE-----
 
-The regulator VBAT is the SSD1306-specific low-voltage (3.3 V to 5 V)
-regulator for the charge pump and takes the place of the voltage
-regulator VCC, that would otherwise supply the OLED driver block with
-7 V to 15 V.
-The charge pump is never enabled when a VCC with 7 V to 15 V is present.
-Configuring the charge pump based on the available regulators,
-would provide an atomic configuration for either low-voltage +
-charge pump or the regular voltage.
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIqT9cFAwAAAAAACgkQlh/E3EQov+BB
+rhAAoXEuTibitBoFI5yRHx8nAg1O7H7hIyJ5dCKPCv3WsWql/vmbCRVOxlx+z/9Ap5836x7j8ou8
+W8q8s5b14xXb05LsDnHoCIxq+SmwfGTTwA1dNjFVp4NFpO9HOxs3OFqg+YuSH8VIXszV+aOBN1bO
+faAl1tbStoYtFhXlMznuaWpkogfcsVWbgqTOxuS+AEFGWC0l97A23Rm81cw50NM6MEoqcn50tbAf
+J4N3KLgi/ACfiCUj0tvupQ7LYi/4WM+UlSmz+hymEkYBkks9Q2FmC0CBmLqkemC2+bhvNWtZKkhg
+t/kRE3ifO0UgV5/80DykEBCruCF6SCr9S+aoBL5RqUQaJm4EAiDhyqSrEiMbKVfQIC91fgv9LYjY
+Vfxjn4gKMmqsgsmZtC0i3I2YeIlP/l/AoExjPetzo9xf1hJo6maN/2VNKuifRH8SkqR74VFxq7Pd
+DxVlYgN9tqCt32mQVqxAfRvhKPHoHQ+NPQuXIpl/ogcHE5DGytwVPCNble643ao49scAfOG4h9Ij
+thrQVDXYnhSyMesaOshU8wJvSxXqnYvKQpQ0di0fsiSQLTcYlxEJC3f9FSO7h7RSWyIgRU66Fw5w
+4t9zIfrv0f4LCvsW7JEMkz5scIMtmEux1FvCW9tmzdcTKD/21UwMULpuK6IcCQlf8hch/IbDf77q
+s7Q=
+=z01R
+-----END PGP SIGNATURE-----
 
-This way, the device tree boolean for enabling the charge pump could be
-removed by probing for an optional VBAT first, which replaces VCC,
-and falling back to a mandatory VCC otherwise:
-
-```
-[...]
-struct ssd130x_panel {
-...
-	struct regulator *vdd;		/* Core logic supply */
-	union {
-		struct regulator *vcc;	/* Panel driving supply */
-		struct regulator *vbat;	/* Charge pump regulator supply */
-	};
-	struct backlight_device *backlight;
-		struct {
-		unsigned int com_scan_dir_inv : 1;
-		unsigned int com_seq_pin_cfg : 1;
-		unsigned int com_lr_remap : 1;
-		unsigned int seg_remap : 1;
-		unsigned int inverse_display : 1;
-		unsigned int use_charge_pump : 1;
-		uint8_t height;
-		uint8_t width;
-		uint8_t height_mm;
-		uint8_t width_mm;
-		uint8_t display_start_line;
-		uint8_t com_offset ;
-		uint8_t contrast;
-		uint8_t pre_charge_period_dclocks_phase1;
-		uint8_t pre_charge_period_dclocks_phase2;
-		uint8_t vcomh_deselect_level;
-		uint8_t clock_divide_ratio;
-		uint8_t oscillator_frequency;
-	} display_settings;
-	bool prepared;
-	bool enabled;
-
-[...]
-
-ssd130x->vbat =3D devm_regulator_get_optional(dev, "vbat");
-if (IS_ERR(ssd130x->vbat)) {
-	ret =3D PTR_ERR(ssd130x->vbat);
-
-	if (ret !=3D -ENODEV) {
-		if (ret !=3D -EPROBE_DEFER)
-			dev_err(dev,
-				"failed to request regulator: %d\n",
-				ret);
-		return ret;
-	}
-
-	ssd130x->vbat =3D NULL;
-}
-else {
-	ssd130x->display_settings.use_charge_pump =3D true;
-}
-
-/* Get panel driving supply */
-If (!ssd130x->vbat) {
-	ssd130x->vcc =3D devm_regulator_get(dev, "vcc");
-	if (IS_ERR(ssd130x->vcc)){
-		ret =3D PTR_ERR(ssd130x->vcc);
-		return ret;
-	}
-	else {
-		ssd130x->display_settings.use_charge_pump =3D false;
-	}
-}
-```
-
-Splitting in VCC/VBAT and VDD and enforcing their presence is
-of course compatibility breaking.
-
-https://github.com/dh-electronics/panel-solomon-ssd130x-draft/blob/drm-ssd1=
-30x/drivers/gpu/drm/panel/panel-solomon-ssd130x.h#L85
-https://github.com/dh-electronics/panel-solomon-ssd130x-draft/blob/drm-ssd1=
-30x/drivers/gpu/drm/panel/panel-solomon-ssd130x.c#L80
-
-
-# Static or Dynamic Configuration for SPI-Modes 3-Wire and 4-Wire
-
-For the SPI-protocol drivers I see two possible approaches:
-* Dynamic configuration by determining the presence/absence of the
-  D/C-GPIO and assigning the functions accordingly.
-  This way a single driver file for both SPI modes could be sufficient.
-* Static configuration by using the device-tree names
-  (ssd130x-spi-3wire/-4wire) to differentiate between the SPI protocol
-  drivers.
-  This would obviously necessitate two drivers files.
-
-Which one do you think would be the best approach for this?
-
-
-# DRM Mode Configuration via Device Tree
-
-In the old fbdev driver, the display modes are hard-coded, which means
-for every new display configuration, a new patch needs to be mainlined,
-which slows down official Kernel support and
-puts burden on the maintainers.
-Additionally, with the DRM-subsystem supporting height and length
-information, for scaling, this opens up a lot of new combinations.
-The SSD1306 for example, is available in multiple resolutions like
-128x64 and 96x16 and comes in different sizes per resolution as well.
-Just to name a few:
-* 128x64 0.96" (22x11mm)
-* 128x64 1.3" (30x15mm)
-* 96x16 0.69" (18x3mm)
-
-Instead of hard-coding, I would suggest something along the lines of
-of_get_drm_display_mode().
-The displays won't need to support multiple modes at the same time,
-let alone support for switching between them,
-so the one-time invocation of this expensive function might be worth it.=20
-maybe a new and simpler function that could be named:
-of_get_drm_display_mode_simple()
-
-Providing a mode could later prove useful for a conversion to
-drm_panel, if that is feasible.
-
-But for a function like this, I have to chicken out.
-
-
-# DRM Panel
-
-The reason why I decided for the drm_panel approach in my code,
-was power management and a clean handling of the software backlight
-dependency, which requires powered display regulators to be powered.
-
-Prepare/unprepare would power on/off the display logic regulator VDD.
-
-Enable/disable would power on/off VCC/VBAT, optionally turn on/off
-the charge pump and send the DISPLAY_ON/OFF commands.
-The SSD1305's PWM part would likely be placed in enable/disable as well.
-
-What is Your opinion on using drm_panel for Your driver?
-
-
-Mit freundlichen Gr=FC=DFen / Best regards
-
-Dominik Kierner
-Student Employee
-Research & Development
-DH electronics
-
+--------------baL2B05bDt0QU09HTAUrZZmq--

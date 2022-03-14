@@ -2,165 +2,82 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C02D1C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Mar 2022 19:01:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 571E7C433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Mar 2022 20:57:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243961AbiCNTCp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Mar 2022 15:02:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40844 "EHLO
+        id S245176AbiCNU6L (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Mar 2022 16:58:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33456 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235386AbiCNTCo (ORCPT
+        with ESMTP id S234775AbiCNU6K (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Mar 2022 15:02:44 -0400
-Received: from mail-qt1-f169.google.com (mail-qt1-f169.google.com [209.85.160.169])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5628A13D62;
-        Mon, 14 Mar 2022 12:01:34 -0700 (PDT)
-Received: by mail-qt1-f169.google.com with SMTP id 11so13994130qtt.9;
-        Mon, 14 Mar 2022 12:01:34 -0700 (PDT)
+        Mon, 14 Mar 2022 16:58:10 -0400
+Received: from mail-qt1-f172.google.com (mail-qt1-f172.google.com [209.85.160.172])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83E6B3D1ED
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Mar 2022 13:57:00 -0700 (PDT)
+Received: by mail-qt1-f172.google.com with SMTP id f7so2063307qtk.1
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Mar 2022 13:57:00 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=9wa7IOBiuASlB+32+n56EcLNxFBqD1voa0yMtMLvTIY=;
-        b=tCuGkN0Jy0pXo+js4sX5ErdPbHAiKCs+QzC6H/oZSQH6vB8PjvrBzj5RNydHKHGSAX
-         iJGa4YDyfsHRuhC8uT2AdwrrOkbFmoGwvth2PeMXtj2d8vNfe0m81IFqGoLiEqPjnWaj
-         A/rEtlCZC3aKMs6rPotKtv5+BlxxDjh70Djaqx5tT7xgLbnjd1TPkxo23bc88y3NSwhU
-         4hTndDmBA2yKCtFfZ+dHnX3jsLqeKIyNEnOHy8eP+zRA6FibxQYMcRH7ek9THM9PWtdK
-         aERW1T+g5WhwX5UmmtV5UQajqXBW1NukPHTU5fabJc4cgz3nXTflerIjj9Ys3c/LbmkO
-         qkYg==
-X-Gm-Message-State: AOAM53175trLomStlFA+igCb72ZVAIlJ3TZHFWeKpxmFBdd+BwQjUcpE
-        JBHt8StheKPyapFO8Wpm0WF2MijZWBP+kQ==
-X-Google-Smtp-Source: ABdhPJyokr4F5vnkSAZdCZ9FvU9cBFmqIYoHWZWsavJuNGY1oVVGjihLuFkd6WX/XnjC9F/ZTprSRQ==
-X-Received: by 2002:a05:622a:1c1:b0:2e1:b35c:2aa9 with SMTP id t1-20020a05622a01c100b002e1b35c2aa9mr17296010qtw.313.1647284492384;
-        Mon, 14 Mar 2022 12:01:32 -0700 (PDT)
-Received: from mail-yb1-f173.google.com (mail-yb1-f173.google.com. [209.85.219.173])
-        by smtp.gmail.com with ESMTPSA id k8-20020a05620a138800b00679fc7566fcsm8029617qki.18.2022.03.14.12.01.31
+        bh=BmG2yYfE0o7/L9fLZmp2P49FR3lsd0GCX3VrEQxdEUg=;
+        b=wbEzKMS98gzc2B4uxO/PeDhm/nlvicmnu14Fun/mecy6DiP+OG2K29yEKrvj9VOdBg
+         FdtbBiGw0ilsfX28LyCJWfY+zCyPGmCBCYmwzLssfuI66XFs/sqyxKI1CHxd0TNxKbYZ
+         7ZyHIpg0TKnJ4VVonBXrYqK3qXZedWuWLPBy3hFRDb3cKiuc8ziC20OewPiDL/TAMS0H
+         lwhzQnEq1Wl4VbgqRsdnjU9yTrjLTj5+wdofMDsjc3E5Ux4r3IBRxSD+gHyPUxxLLAL6
+         j7Nuqo+/0X8WSnoc7qN9oC7oMDUQTNJiRj7SaPSRSoUvx69T5PNBsFUzxThFYecwO5m5
+         Z3Jg==
+X-Gm-Message-State: AOAM531WJydclc14XPsrc9IziBq/CZBxuSeKStH5bZGkj5JBNbV6WKQD
+        t/rQT2ogH8yv9/3mefzkErQGfQkQnBiCYQ==
+X-Google-Smtp-Source: ABdhPJySxo4m/gHKHdOJbTHc++EfDqC4VfkIhjL5/n+celkaBlqSNZNvBP54rUI6QMt5wIaXVCYheg==
+X-Received: by 2002:a05:622a:138c:b0:2e1:d525:969 with SMTP id o12-20020a05622a138c00b002e1d5250969mr4977211qtk.154.1647291419312;
+        Mon, 14 Mar 2022 13:56:59 -0700 (PDT)
+Received: from mail-yb1-f170.google.com (mail-yb1-f170.google.com. [209.85.219.170])
+        by smtp.gmail.com with ESMTPSA id o28-20020a05620a111c00b0067d3b9ef388sm7873466qkk.98.2022.03.14.13.56.57
+        for <linux-fbdev@vger.kernel.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 14 Mar 2022 12:01:31 -0700 (PDT)
-Received: by mail-yb1-f173.google.com with SMTP id g26so32672294ybj.10;
-        Mon, 14 Mar 2022 12:01:31 -0700 (PDT)
-X-Received: by 2002:a25:d782:0:b0:628:942b:3815 with SMTP id
- o124-20020a25d782000000b00628942b3815mr20400266ybg.393.1647284490932; Mon, 14
- Mar 2022 12:01:30 -0700 (PDT)
+        Mon, 14 Mar 2022 13:56:57 -0700 (PDT)
+Received: by mail-yb1-f170.google.com with SMTP id j2so33439159ybu.0
+        for <linux-fbdev@vger.kernel.org>; Mon, 14 Mar 2022 13:56:57 -0700 (PDT)
+X-Received: by 2002:a25:dc4:0:b0:629:2337:f9ea with SMTP id
+ 187-20020a250dc4000000b006292337f9eamr19641831ybn.6.1647291417430; Mon, 14
+ Mar 2022 13:56:57 -0700 (PDT)
 MIME-Version: 1.0
-References: <cover.1646683502.git.geert@linux-m68k.org> <8d3c0cc370b0214244b01a64c588e5e506531716.1646683502.git.geert@linux-m68k.org>
- <CAMuHMdVq19wpA_7nKKTm-G2EmK3cMxxP6nbR_u=vkazqCZ=KhQ@mail.gmail.com> <20220314170539.17400f93@eldfell>
-In-Reply-To: <20220314170539.17400f93@eldfell>
+References: <20220313192952.12058-1-tzimmermann@suse.de> <20220313192952.12058-2-tzimmermann@suse.de>
+In-Reply-To: <20220313192952.12058-2-tzimmermann@suse.de>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Mon, 14 Mar 2022 20:01:19 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVj8wxAVbcov1wFsgt_knMkcySBH8nMoKjyr=G+mLQmjQ@mail.gmail.com>
-Message-ID: <CAMuHMdVj8wxAVbcov1wFsgt_knMkcySBH8nMoKjyr=G+mLQmjQ@mail.gmail.com>
-Subject: Re: [PATCH v2 05/10] drm/fourcc: Add DRM_FORMAT_C[124]
-To:     Pekka Paalanen <ppaalanen@gmail.com>
-Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
+Date:   Mon, 14 Mar 2022 21:56:45 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWqZ3HgUe1b3bpjWmFLKm4dTrfAioD2Hk8H5iDaY4C-yw@mail.gmail.com>
+Message-ID: <CAMuHMdWqZ3HgUe1b3bpjWmFLKm4dTrfAioD2Hk8H5iDaY4C-yw@mail.gmail.com>
+Subject: Re: [PATCH 1/2] fbdev: Fix sys_imageblit() for arbitrary image widths
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
         Javier Martinez Canillas <javierm@redhat.com>,
-        Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
         Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        "Linux/m68k" <linux-m68k@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        DRI Development <dri-devel@lists.freedesktop.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Pekka,
+Hi Thomas,
 
-On Mon, Mar 14, 2022 at 4:05 PM Pekka Paalanen <ppaalanen@gmail.com> wrote:
-> On Mon, 14 Mar 2022 14:30:18 +0100
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Mon, Mar 7, 2022 at 9:53 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > Introduce fourcc codes for color-indexed frame buffer formats with two,
-> > > four, and sixteen colors, and provide a mapping from bit per pixel and
-> > > depth to fourcc codes.
-> > >
-> > > As the number of bits per pixel is less than eight, these rely on proper
-> > > block handling for the calculation of bits per pixel and pitch.
-> > >
-> > > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> >
-> > > --- a/include/uapi/drm/drm_fourcc.h
-> > > +++ b/include/uapi/drm/drm_fourcc.h
-> > > @@ -99,7 +99,10 @@ extern "C" {
-> > >  #define DRM_FORMAT_INVALID     0
-> > >
-> > >  /* color index */
-> > > -#define DRM_FORMAT_C8          fourcc_code('C', '8', ' ', ' ') /* [7:0] C */
-> > > +#define DRM_FORMAT_C1          fourcc_code('C', '1', ' ', ' ') /* [7:0] C0:C1:C2:C3:C4:C5:C6:C7 1:1:1:1:1:1:1:1 eight pixels/byte */
-> > > +#define DRM_FORMAT_C2          fourcc_code('C', '2', ' ', ' ') /* [7:0] C0:C1:C2:C3 2:2:2:2 four pixels/byte */
-> > > +#define DRM_FORMAT_C4          fourcc_code('C', '4', ' ', ' ') /* [7:0] C0:C1 4:4 two pixels/byte */
-> > > +#define DRM_FORMAT_C8          fourcc_code('C', '8', ' ', ' ') /* [7:0] C 8 one pixel/byte */
-> > >
-> > >  /* 8 bpp Red */
-> > >  #define DRM_FORMAT_R8          fourcc_code('R', '8', ' ', ' ') /* [7:0] R */
-> >
-> > After replying to Ilia's comment[1], I realized the CFB drawing
-> > operations use native byte and bit ordering, unless
-> > FBINFO_FOREIGN_ENDIAN is set.
-> > While Amiga, Atari, and Sun-3 use big-endian bit ordering,
-> > e.g. Acorn VIDC[2] uses little endian, and SH7760[3] is configurable
-> > (sh7760fb configures ordering to match host order).
-> > BTW, ssd130{7fb,x}_update_rect() both assume little-endian, so I
-> > guess they are broken on big-endian.
-> > Fbtest uses big-endian bit ordering, so < 8 bpp is probably broken
-> > on little-endian.
-> >
-> > Hence the above should become:
-> >
-> >     #define DRM_FORMAT_C1          fourcc_code('C', '1', ' ', ' ') /*
-> > [7:0] C7:C6:C5:C4:C3:C2:C1:C0 1:1:1:1:1:1:1:1 eight pixels/byte */
-> >     #define DRM_FORMAT_C2          fourcc_code('C', '2', ' ', ' ') /*
-> > [7:0] C3:C2:C1:C0 2:2:2:2 four pixels/byte */
-> >     #define DRM_FORMAT_C4          fourcc_code('C', '4', ' ', ' ') /*
-> > [7:0] C1:C0 4:4 two pixels/byte */
-> >
-> > The same changes should be made for DRM_FORMAT_[RD][124].
-> >
-> > The fbdev emulation code should gain support for these with and without
-> > DRM_FORMAT_BIG_ENDIAN, the latter perhaps only on big-endian platforms?
-> >
-> > [1] https://lore.kernel.org/r/CAKb7UvgEdm9U=+RyRwL0TGRfA_Qc7NbhCWoZOft2DKdXggtKYw@mail.gmail.com/
-> > [2] See p.30 of the VIDC datasheet
-> >     http://chrisacorns.computinghistory.org.uk/docs/Acorn/Misc/Acorn_VIDC_Datasheet.pdf
-> > [3] See p.1178 of the SH7660 datasheet
-> >     https://datasheet.octopart.com/HD6417760BL200AV-Renesas-datasheet-14105759.pdf
+On Sun, Mar 13, 2022 at 8:29 PM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> Commit 6f29e04938bf ("fbdev: Improve performance of sys_imageblit()")
+> broke sys_imageblit() for image width that are not aligned to 8-bit
+> boundaries. Fix this by handling the trailing pixels on each line
+> separately. The performance improvements in the original commit do not
+> regress by this change.
 >
-> why would CPU endianess affect the order of bits in a byte?
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-It doesn't, but see below.
+Thanks for fixing! This was very valuable for hammering the bugs
+out of ssd130xdrm and the xrgb888-to-mono conversion...
 
-> Do you mean that bit 0 one machine is (1 << 0), and on another machine
-> bit 0 is (1 << 7)?
-
-No, I mean that in case of multiple pixels per byte, the display
-hardware pumps out pixels to the CRTC starting from either the MSB
-or the LSB of the first display byte.  Which order depends on the
-display hardware, not on the CPU.
-
-> In C, we have only one way to address bits of a byte and that is with
-> arithmetic. You cannot take the address of a bit any other way, can you?
->
-> Can we standardise on "bit n of a byte is addressed as (1 << n)"?
-
-BIT(n) in Linux works the same for little- and big-endian CPUs.
-But display hardware may use a different bit order.
-
-> I don't mind in which order the pixels are inside a byte, as long as it
-> doesn't change by CPU endianess. If you need both directions, then use
-> two different drm_fourcc codes that do not change their meaning by CPU
-> endianess. Just like we have XRGB and BGRX formats.
-
-OK.
-
-> I would not like to see DRM_FORMAT_BIG_ENDIAN used for this, it would
-> conflate a whole new concept into the mess that is little- vs.
-> big-endian.
-
-OK.
+Tested-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 Gr{oetje,eeting}s,
 

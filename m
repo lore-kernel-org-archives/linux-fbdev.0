@@ -2,204 +2,133 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95EF4C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Mar 2022 08:41:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B46F2C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Mar 2022 13:30:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229955AbiCNInD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Mar 2022 04:43:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59824 "EHLO
+        id S233201AbiCNNbn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Mar 2022 09:31:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237660AbiCNImz (ORCPT
+        with ESMTP id S233166AbiCNNbn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Mar 2022 04:42:55 -0400
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C70FB3EF36
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Mar 2022 01:41:44 -0700 (PDT)
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20220314084141euoutp010bd695269e88274ed8de886a458e8b47~cMrFpR6HU1138211382euoutp01r
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Mar 2022 08:41:41 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20220314084141euoutp010bd695269e88274ed8de886a458e8b47~cMrFpR6HU1138211382euoutp01r
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1647247301;
-        bh=QzWsiaCXF/XnwpKhvZQAPNdButwclLs37p5octIymVk=;
-        h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
-        b=ue6N/yjuoD8xEnnuR00Hy8nFuXTwj3tdiMmNSs5zpwyTiLMNy/moTrHfrto4Al+B9
-         hzWfRr6zAM3gu+1Y+HtN5MccyMUcjuy+9fFZe1svREi+vLZq2jbwCv8kEiGVRJtEoP
-         /YpRsOjE9wc0vRIcG+5FjyXjfo0H15bzmsWn9q4Y=
-Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20220314084141eucas1p1f355bc57886d2a0f7a9a624a04f9b890~cMrFbN6BZ2099020990eucas1p1L;
-        Mon, 14 Mar 2022 08:41:41 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges3new.samsung.com (EUCPMTA) with SMTP id AE.68.10260.4CFFE226; Mon, 14
-        Mar 2022 08:41:40 +0000 (GMT)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20220314084140eucas1p24eba008ab47155c66d365432fbab80c4~cMrFJqgcN1053010530eucas1p2E;
-        Mon, 14 Mar 2022 08:41:40 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20220314084140eusmtrp2623ea207aca3605efa5a410815d1945c~cMrFIfoqH1247712477eusmtrp2g;
-        Mon, 14 Mar 2022 08:41:40 +0000 (GMT)
-X-AuditID: cbfec7f5-bddff70000002814-74-622effc496f3
-Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id 99.85.09404.4CFFE226; Mon, 14
-        Mar 2022 08:41:40 +0000 (GMT)
-Received: from [106.210.134.192] (unknown [106.210.134.192]) by
-        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20220314084140eusmtip1cfaa29432b31795e740e253fe31bd17f~cMrEqCnqB0569505695eusmtip1C;
-        Mon, 14 Mar 2022 08:41:40 +0000 (GMT)
-Message-ID: <08bdcc50-5c82-9058-a5b3-85bbef631b9e@samsung.com>
-Date:   Mon, 14 Mar 2022 09:41:39 +0100
+        Mon, 14 Mar 2022 09:31:43 -0400
+Received: from mail-qk1-f176.google.com (mail-qk1-f176.google.com [209.85.222.176])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77B7A13D73;
+        Mon, 14 Mar 2022 06:30:32 -0700 (PDT)
+Received: by mail-qk1-f176.google.com with SMTP id q4so12660482qki.11;
+        Mon, 14 Mar 2022 06:30:32 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=7ESmoGYKvForOfgnFNNl3bul8J0TvzMfyrdSY3ncE6E=;
+        b=uO+Um3ZMkaOLd27w4397t+Fkci9z8p3BGpG5jW0zNEyNevdQQ3tfMYRQx9pNG+RhSO
+         QAsxZlkwXCeoTcUeUAe1swxy98G/HDfoZh//jGFz/JX6ZKfggiHzqsgI+1hKpkYMkCLA
+         Xq1e6uM7YUAZmXhnNKlGjDNL+YA4lkbjb05Rb4WQ+9jzlcWCsd7NdS5v+Yovyyq+B6Xt
+         HauZd5YXzbkC71oZgaILvTVBcKFwPBMBzjYNbXUuvK4uP/8H+VVg4nMW9Y/R9aeqq3o0
+         wjayk+HwknTMqAXIUBrL3IFro1AQ69neLCqIjCTYulhrVSLFgMyMk2CNKgUWwxUTlhEO
+         vUpw==
+X-Gm-Message-State: AOAM530oWWKWLE09SRWpWTbka181do3MQbbMp7Uj40CiL+jDxlcKW9b/
+        XefFAtyX4Fne666Zy+onTgYoCxKduszn7w==
+X-Google-Smtp-Source: ABdhPJzO94wE27iqfcTwnmSWUlJLQydrjBgOPb1Wr0PywBgDqz56YNMacz/XufAKVIYWUsYJQWs5Aw==
+X-Received: by 2002:a05:620a:4085:b0:67b:315b:a09f with SMTP id f5-20020a05620a408500b0067b315ba09fmr14881685qko.334.1647264631247;
+        Mon, 14 Mar 2022 06:30:31 -0700 (PDT)
+Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com. [209.85.128.175])
+        by smtp.gmail.com with ESMTPSA id h8-20020ac87d48000000b002e1c6faae9csm5564977qtb.28.2022.03.14.06.30.30
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 14 Mar 2022 06:30:30 -0700 (PDT)
+Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-2db2add4516so163661667b3.1;
+        Mon, 14 Mar 2022 06:30:30 -0700 (PDT)
+X-Received: by 2002:a0d:f1c7:0:b0:2db:d2bc:be11 with SMTP id
+ a190-20020a0df1c7000000b002dbd2bcbe11mr18928111ywf.62.1647264630398; Mon, 14
+ Mar 2022 06:30:30 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0)
-        Gecko/20100101 Thunderbird/91.6.2
-Subject: Re: [PATCH 2/2] fbdev: Fix cfb_imageblit() for arbitrary image
- widths
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
-        deller@gmx.de, geert@linux-m68k.org, javierm@redhat.com,
-        sam@ravnborg.org
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-From:   Marek Szyprowski <m.szyprowski@samsung.com>
-In-Reply-To: <20220313192952.12058-3-tzimmermann@suse.de>
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA02SbUiTURTHu3v28ria3JbhaUbGQM2iVWrx9GYWg4YfoqAvRaSzPW2mztg0
-        e58ZM50l08RqSpYl01W+Za6C9bLMma9lGmFWZEtKXGW6wqiZ22Pll8v/nP+555zf5ZKEsI4j
-        IhPVabRGLU8Wc/nsxubxzqVNE5KE5bkda6mJxgKCevvtFaJ63F+41GCfjUVdLjYjqiX/K4eq
-        HL+FqIbhAk4MKbN9v8SWfR3ZLbM/ykGyt3kOluxqcS9X9uXe5HGz7YhstH7BVnInf52CTk48
-        QGuWRcfzVfYKD7G/J+ig21rMzUS/AwzIjwQcBc7iYcKA+KQQVyIoKdAjJhhD0J7dxmOCUQSW
-        Z2fR3yvvPTemDDMClyuTxQQjCC7axyYdkhTgaDAZ13svsHEImHrLuV4twLPhyQUn26vn4gSw
-        FZ7gePUcvBWu3W/2aQIHQp+zzNczAOciaLI+mTJiwJNzxdeIi1eAwWXwaT+8GtwXHrKYmmCw
-        ukp9QIAnSHiVq+cxa0vB7ejnMHoODDkapvLzYeIOMw3wSQTvOhk2wKcRPM86PwW9Fvo7f3K9
-        aAQOh5q7y5j0Rhguve4jBuwPL12zmSX8obDxHMGkBZCTLWSqQ8HkqP439uHTbsKIxKZp72Ka
-        xm+ahmP6P/cSYltQIJ2uTVHS2kg1nSHRylO06WqlZE9qSj2a/FVtHof7NqocGpHYEYtEdgQk
-        IQ4QrKmQJAgFCvmhw7QmNU6Tnkxr7SiIZIsDBXsSa+VCrJSn0Uk0vZ/W/HVZpJ8ok5Wvu6xT
-        GS0HVdXBA9nnhkL2OgvF6nLhoE71eKFxgaW5cv7dYOv7QOmMjh2GXPvTNW+qqxT3JC1bBto9
-        NQ1d8KA/qqj7daS5rpXo2IdSqwh2meDXymPzut5l6YtCS5cPlov0u0Z1rasiQrfFOD1Bn1oj
-        A2Z9jG5fpFh6UZfcZY57nrQkTFMa4V+0K99POqss70OaOsHaJZ0rDHs5Y6GiqEZ/nHes9sTY
-        xm9ZNwdFqs7QqFjRZkvm9l5U65EOlPVhVnp43tH7sTaP8QU/XmTLWPWL5xibueG1+8gGJXW+
-        KVY588foJlRPQMmpkNaR8dQwXprrs3mxrudM7YtPGW5azNaq5CsWExqt/A+EZ7QcxAMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrEIsWRmVeSWpSXmKPExsVy+t/xu7pH/uslGazo0LD4v20is8X9T7cZ
-        La58fc9m8ezWXiaLhdOWM1qc6PvAarHi51ZGiy1vJrI6cHjs/baAxePDxziPQ4c7GD3udx9n
-        8lgy7Sqbx/t9QGLz6WqPz5vkAjii9GyK8ktLUhUy8otLbJWiDS2M9AwtLfSMTCz1DI3NY62M
-        TJX07WxSUnMyy1KL9O0S9DIOLf3HXHBFuuLr9mlsDYx/RboYOTkkBEwkHv9by97FyMUhJLCU
-        UeLG8Z2MEAkZiZPTGlghbGGJP9e62CCK3jNK3H80g7mLkYODV8BOYtYEW5AaFgFViVlXF7GB
-        2LwCghInZz5hAbFFBZIker+9ZgEpFxbwk/g+uwAkzCwgLnHryXwmkJEiAp2MEt2bL7FBJBwk
-        /nUshtq1m1Hi6vR5zCAJNgFDia63XWBFnAKWEl9nHmSCaDCT6NraxQhhy0tsfzuHeQKj0Cwk
-        d8xCsnAWkpZZSFoWMLKsYhRJLS3OTc8tNtIrTswtLs1L10vOz93ECIzMbcd+btnBuPLVR71D
-        jEwcjIcYJTiYlUR4rZbqJQnxpiRWVqUW5ccXleakFh9iNAUGxkRmKdHkfGBqyCuJNzQzMDU0
-        MbM0MLU0M1YS5/Us6EgUEkhPLEnNTk0tSC2C6WPi4JRqYNr433St7qbMv6zhl+O4+q8m6/2L
-        YV2gtIeBscu4kLdK/eXWqAVlrcbmoRzH1Jz+rfS/ssbvbLUhT9mCVZp8didqz3c8O7Lqw4+I
-        vy1CXcoeXwMEwhrUi27y5bHkfP+m+Tv+zMTFadPeh2/ve3TUZXL6t3XPe6JvPGlvjmbZfvTb
-        NLU9K+etVPzhFfSh7OVeDuNA9r+VD++qaIb98v+r9Paj8vwXdw4on5OJlptr+i+hYbW7qsgz
-        aWWR18LXkuQfp9R28OfZ5nvM0f19e+NbTn/1pz4zgw51cvlPmv7Y5+3HefyXW19e+FNbuTPT
-        jWX33XN39sv263w7+/PhZHH7QDWRiDmeLHsZym/cC94zrV2JpTgj0VCLuag4EQAHaklwVQMA
-        AA==
-X-CMS-MailID: 20220314084140eucas1p24eba008ab47155c66d365432fbab80c4
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20220313193000eucas1p1ca39fa83b854d7c4ed5507325983eaa3
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20220313193000eucas1p1ca39fa83b854d7c4ed5507325983eaa3
-References: <20220313192952.12058-1-tzimmermann@suse.de>
-        <CGME20220313193000eucas1p1ca39fa83b854d7c4ed5507325983eaa3@eucas1p1.samsung.com>
-        <20220313192952.12058-3-tzimmermann@suse.de>
+References: <cover.1646683502.git.geert@linux-m68k.org> <8d3c0cc370b0214244b01a64c588e5e506531716.1646683502.git.geert@linux-m68k.org>
+In-Reply-To: <8d3c0cc370b0214244b01a64c588e5e506531716.1646683502.git.geert@linux-m68k.org>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 14 Mar 2022 14:30:18 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVq19wpA_7nKKTm-G2EmK3cMxxP6nbR_u=vkazqCZ=KhQ@mail.gmail.com>
+Message-ID: <CAMuHMdVq19wpA_7nKKTm-G2EmK3cMxxP6nbR_u=vkazqCZ=KhQ@mail.gmail.com>
+Subject: Re: [PATCH v2 05/10] drm/fourcc: Add DRM_FORMAT_C[124]
+To:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>
+Cc:     DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        "Linux/m68k" <linux-m68k@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 13.03.2022 20:29, Thomas Zimmermann wrote:
-> Commit 0d03011894d2 ("fbdev: Improve performance of cfb_imageblit()")
-> broke cfb_imageblit() for image widths that are not aligned to 8-bit
-> boundaries. Fix this by handling the trailing pixels on each line
-> separately. The performance improvements in the original commit do not
-> regress by this change.
+On Mon, Mar 7, 2022 at 9:53 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Introduce fourcc codes for color-indexed frame buffer formats with two,
+> four, and sixteen colors, and provide a mapping from bit per pixel and
+> depth to fourcc codes.
 >
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Fixes: 0d03011894d2 ("fbdev: Improve performance of cfb_imageblit()")
-> Reported-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Javier Martinez Canillas <javierm@redhat.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> ---
->   drivers/video/fbdev/core/cfbimgblt.c | 28 ++++++++++++++++++++++++----
->   1 file changed, 24 insertions(+), 4 deletions(-)
+> As the number of bits per pixel is less than eight, these rely on proper
+> block handling for the calculation of bits per pixel and pitch.
 >
-> diff --git a/drivers/video/fbdev/core/cfbimgblt.c b/drivers/video/fbdev/core/cfbimgblt.c
-> index 7361cfabdd85..9ebda4e0dc7a 100644
-> --- a/drivers/video/fbdev/core/cfbimgblt.c
-> +++ b/drivers/video/fbdev/core/cfbimgblt.c
-> @@ -218,7 +218,7 @@ static inline void fast_imageblit(const struct fb_image *image, struct fb_info *
->   {
->   	u32 fgx = fgcolor, bgx = bgcolor, bpp = p->var.bits_per_pixel;
->   	u32 ppw = 32/bpp, spitch = (image->width + 7)/8;
-> -	u32 bit_mask, eorx;
-> +	u32 bit_mask, eorx, shift;
->   	const char *s = image->data, *src;
->   	u32 __iomem *dst;
->   	const u32 *tab = NULL;
-> @@ -259,17 +259,23 @@ static inline void fast_imageblit(const struct fb_image *image, struct fb_info *
->   
->   	for (i = image->height; i--; ) {
->   		dst = (u32 __iomem *)dst1;
-> +		shift = 8;
->   		src = s;
->   
-> +		/*
-> +		 * Manually unroll the per-line copying loop for better
-> +		 * performance. This works until we processed the last
-> +		 * completely filled source byte (inclusive).
-> +		 */
->   		switch (ppw) {
->   		case 4: /* 8 bpp */
-> -			for (j = k; j; j -= 2, ++src) {
-> +			for (j = k; j >= 2; j -= 2, ++src) {
->   				FB_WRITEL(colortab[(*src >> 4) & bit_mask], dst++);
->   				FB_WRITEL(colortab[(*src >> 0) & bit_mask], dst++);
->   			}
->   			break;
->   		case 2: /* 16 bpp */
-> -			for (j = k; j; j -= 4, ++src) {
-> +			for (j = k; j >= 4; j -= 4, ++src) {
->   				FB_WRITEL(colortab[(*src >> 6) & bit_mask], dst++);
->   				FB_WRITEL(colortab[(*src >> 4) & bit_mask], dst++);
->   				FB_WRITEL(colortab[(*src >> 2) & bit_mask], dst++);
-> @@ -277,7 +283,7 @@ static inline void fast_imageblit(const struct fb_image *image, struct fb_info *
->   			}
->   			break;
->   		case 1: /* 32 bpp */
-> -			for (j = k; j; j -= 8, ++src) {
-> +			for (j = k; j >= 8; j -= 8, ++src) {
->   				FB_WRITEL(colortab[(*src >> 7) & bit_mask], dst++);
->   				FB_WRITEL(colortab[(*src >> 6) & bit_mask], dst++);
->   				FB_WRITEL(colortab[(*src >> 5) & bit_mask], dst++);
-> @@ -290,6 +296,20 @@ static inline void fast_imageblit(const struct fb_image *image, struct fb_info *
->   			break;
->   		}
->   
-> +		/*
-> +		 * For image widths that are not a multiple of 8, there
-> +		 * are trailing pixels left on the current line. Print
-> +		 * them as well.
-> +		 */
-> +		for (; j--; ) {
-> +			shift -= ppw;
-> +			FB_WRITEL(colortab[(*src >> shift) & bit_mask], dst++);
-> +			if (!shift) {
-> +				shift = 8;
-> +				++src;
-> +			}
-> +		}
-> +
->   		dst1 += p->fix.line_length;
->   		s += spitch;
->   	}
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+> --- a/include/uapi/drm/drm_fourcc.h
+> +++ b/include/uapi/drm/drm_fourcc.h
+> @@ -99,7 +99,10 @@ extern "C" {
+>  #define DRM_FORMAT_INVALID     0
+>
+>  /* color index */
+> -#define DRM_FORMAT_C8          fourcc_code('C', '8', ' ', ' ') /* [7:0] C */
+> +#define DRM_FORMAT_C1          fourcc_code('C', '1', ' ', ' ') /* [7:0] C0:C1:C2:C3:C4:C5:C6:C7 1:1:1:1:1:1:1:1 eight pixels/byte */
+> +#define DRM_FORMAT_C2          fourcc_code('C', '2', ' ', ' ') /* [7:0] C0:C1:C2:C3 2:2:2:2 four pixels/byte */
+> +#define DRM_FORMAT_C4          fourcc_code('C', '4', ' ', ' ') /* [7:0] C0:C1 4:4 two pixels/byte */
+> +#define DRM_FORMAT_C8          fourcc_code('C', '8', ' ', ' ') /* [7:0] C 8 one pixel/byte */
+>
+>  /* 8 bpp Red */
+>  #define DRM_FORMAT_R8          fourcc_code('R', '8', ' ', ' ') /* [7:0] R */
 
+After replying to Ilia's comment[1], I realized the CFB drawing
+operations use native byte and bit ordering, unless
+FBINFO_FOREIGN_ENDIAN is set.
+While Amiga, Atari, and Sun-3 use big-endian bit ordering,
+e.g. Acorn VIDC[2] uses little endian, and SH7760[3] is configurable
+(sh7760fb configures ordering to match host order).
+BTW, ssd130{7fb,x}_update_rect() both assume little-endian, so I
+guess they are broken on big-endian.
+Fbtest uses big-endian bit ordering, so < 8 bpp is probably broken
+on little-endian.
+
+Hence the above should become:
+
+    #define DRM_FORMAT_C1          fourcc_code('C', '1', ' ', ' ') /*
+[7:0] C7:C6:C5:C4:C3:C2:C1:C0 1:1:1:1:1:1:1:1 eight pixels/byte */
+    #define DRM_FORMAT_C2          fourcc_code('C', '2', ' ', ' ') /*
+[7:0] C3:C2:C1:C0 2:2:2:2 four pixels/byte */
+    #define DRM_FORMAT_C4          fourcc_code('C', '4', ' ', ' ') /*
+[7:0] C1:C0 4:4 two pixels/byte */
+
+The same changes should be made for DRM_FORMAT_[RD][124].
+
+The fbdev emulation code should gain support for these with and without
+DRM_FORMAT_BIG_ENDIAN, the latter perhaps only on big-endian platforms?
+
+[1] https://lore.kernel.org/r/CAKb7UvgEdm9U=+RyRwL0TGRfA_Qc7NbhCWoZOft2DKdXggtKYw@mail.gmail.com/
+[2] See p.30 of the VIDC datasheet
+    http://chrisacorns.computinghistory.org.uk/docs/Acorn/Misc/Acorn_VIDC_Datasheet.pdf
+[3] See p.1178 of the SH7660 datasheet
+    https://datasheet.octopart.com/HD6417760BL200AV-Renesas-datasheet-14105759.pdf
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

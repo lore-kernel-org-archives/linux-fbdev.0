@@ -2,144 +2,197 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82A9CC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Mar 2022 14:07:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 660ECC433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 14 Mar 2022 15:05:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242137AbiCNOJA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 14 Mar 2022 10:09:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37858 "EHLO
+        id S242417AbiCNPHE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 14 Mar 2022 11:07:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46958 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239477AbiCNOI7 (ORCPT
+        with ESMTP id S242409AbiCNPHD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 14 Mar 2022 10:08:59 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 93008B7C8
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Mar 2022 07:07:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1647266868;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=1n9imp/roVGFW+MJg7Js2iXDtKYDylDPOOBQLufwOMo=;
-        b=Ib7Pdsjf9S4oNapcCrEYDvb9D+sgnXAUpoPBex98vP0pq+qX/rUUst20SGJKrSmL+SBYnh
-        6/A3zMb9MSxgkmNe8+N1yO9TZhX9ABkLiAtNdcAfZL2rpOJdaOrmFv9jjgG6wnliAJmLET
-        yhcikAupQIvbLDXRtM06kaTDOJPwsGM=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-657-vIS3shY1OV2NPl1WlOBQ7w-1; Mon, 14 Mar 2022 10:07:47 -0400
-X-MC-Unique: vIS3shY1OV2NPl1WlOBQ7w-1
-Received: by mail-wm1-f69.google.com with SMTP id 26-20020a05600c22da00b00388307f3503so7086839wmg.1
-        for <linux-fbdev@vger.kernel.org>; Mon, 14 Mar 2022 07:07:47 -0700 (PDT)
+        Mon, 14 Mar 2022 11:07:03 -0400
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 94F7641F85;
+        Mon, 14 Mar 2022 08:05:52 -0700 (PDT)
+Received: by mail-lf1-x131.google.com with SMTP id w27so27741799lfa.5;
+        Mon, 14 Mar 2022 08:05:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
+         :mime-version;
+        bh=CxKS4vf3LBZ0P9NuD5cqIWteJHioyMZPeyVmyPljpRw=;
+        b=oa3EGNgEUsDhIWXUBLOAY449V2R/hTnXlm8IUsWlSGouPyQo3Jjgb8U11sEl8tbPKU
+         CS0W/TVZFNk9ow7xMvEcGIM9OfjQ/urSTMGQHmK/PcEnJX/Kgqr5Xqx3tv6HRoGBy+vW
+         Vtqpuvw+wc5VwQc6covh8nFsrDpUiXctRmGfBF7s6oDMHuAy+h7TFJYbuZc6vlvxQc8U
+         ImaCGvY7emJ0ijc3xtjqVgqvzOH8FXm61hLqILjlteIxSPm0VwQfqIVkeijVqca3y7uu
+         7LIIOXJPwUfw4JtC8RNEX2XSGzjTGPBKUy8rYp3TguX6Shn7+6WnG52/OUUHz7KYJV1U
+         29JQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=1n9imp/roVGFW+MJg7Js2iXDtKYDylDPOOBQLufwOMo=;
-        b=rj7cREM8Gz+r9G1tcr/n4EhOVPnCNre6GrAA+EW77xHFCPKlZMtdZIUneXhX6PwHSr
-         l0UUvc+3ODsLCTIokO+TaqqNX7y1Xix9r0rtzflUerpzJX9b62d2T9kyRxE2+Bresd6v
-         9Gq2zuYY6WXy43sojB8YHWumv0iQGHmAtT7XkcIyPJ0vmPNWFoJpYSk/4HXTE4OjqR8t
-         ZTLBSKVypx/Ryf82PgVaYFR0fpHSxFv/kuxzhgCm65qJAs70CTlUnqzheWjexPCfTRS8
-         goDBJmKMeKW8n5YYwo9T5hvCORoaRgTh1PyL0dJac96BwSWckaGaTIaBt73hBePebLBv
-         WPnQ==
-X-Gm-Message-State: AOAM531zGyfvaV8t/g5CmMnevakzCXbjOTyd7pCjnd7yVRuRmuupNw6F
-        VzsF/50bcRUHH8hGi6rPFVGKpqd+ERlAVE7kCfSJ8snSFTYZNXkzuS/jUVTbp0GyC/fOVOI63kC
-        RgIHreKBs+ygmC372jVp+n/o=
-X-Received: by 2002:a5d:6daf:0:b0:203:8214:ae65 with SMTP id u15-20020a5d6daf000000b002038214ae65mr16784121wrs.145.1647266866161;
-        Mon, 14 Mar 2022 07:07:46 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJxUmZKMWpb2vbN6Fu8O0zteEWAjmmY/DHvyxw4A1qQVFF+i6VWRfQ9qS5Kjt/nNczT10/+Vzw==
-X-Received: by 2002:a5d:6daf:0:b0:203:8214:ae65 with SMTP id u15-20020a5d6daf000000b002038214ae65mr16784102wrs.145.1647266865920;
-        Mon, 14 Mar 2022 07:07:45 -0700 (PDT)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id v10-20020a05600c214a00b00389bcc75559sm15441665wml.27.2022.03.14.07.07.44
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 14 Mar 2022 07:07:45 -0700 (PDT)
-Message-ID: <9b8bbc6a-e499-99c7-8fe6-95c4256ef61d@redhat.com>
-Date:   Mon, 14 Mar 2022 15:07:43 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 2/4] drm/format-helper: Add
- drm_fb_gray8_to_mono_reversed()
-Content-Language: en-US
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
+         :references:mime-version;
+        bh=CxKS4vf3LBZ0P9NuD5cqIWteJHioyMZPeyVmyPljpRw=;
+        b=NkA15HpxVC3oq3EAhlxCj2wJWoMJsIGmsLl/HtMCCa3PRzQtqLqtdoQntyfunVGoSI
+         lIEDHO6Oxxb9CXCt+JjE9ZpCbPAIdBKcWwRVSBjtrjjS2gKeD4H1cGbRZXb+peuS3s+z
+         qE69yN3IBW3xM8wPkCf4PE72o8kIxAUzh5VNWnW8Du6MeSuqLWAPjkOF7sFeuxoNXyVP
+         OXjTxL9rOGPQ2RJ9VjjTxDL6uA9wz1NcgdaZ7rU04DE+7BSBsUFML5TdWlN6IA6rsgzD
+         m/d7wY1K507nXYbVndQuJ408x4oPlQNutivWfaKg1KCvAyzsCP8zb16AzsMrjUIyEyWF
+         pRCA==
+X-Gm-Message-State: AOAM5330/5RCh+V5KqmvT3PLtpnj+kSC8OPMiCAkcUl05k4jJ8HC2dPu
+        YhvU57fHRusuUu0wOJKxL1M=
+X-Google-Smtp-Source: ABdhPJympt8IztXzbSAF44xWmW5WNMlPlHXRGdCNPqrccwiPz0YDLyvQ93ZECixu5gb0lAn94tT46Q==
+X-Received: by 2002:a19:430a:0:b0:445:b7f5:de35 with SMTP id q10-20020a19430a000000b00445b7f5de35mr13423435lfa.41.1647270350388;
+        Mon, 14 Mar 2022 08:05:50 -0700 (PDT)
+Received: from eldfell ([194.136.85.206])
+        by smtp.gmail.com with ESMTPSA id t2-20020a2e2d02000000b00244dc8ba5absm4017773ljt.117.2022.03.14.08.05.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 14 Mar 2022 08:05:50 -0700 (PDT)
+Date:   Mon, 14 Mar 2022 17:05:39 +0200
+From:   Pekka Paalanen <ppaalanen@gmail.com>
 To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Maxime Ripard <maxime@cerno.tech>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+Cc:     Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
         Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>
-References: <20220131201225.2324984-1-javierm@redhat.com>
- <20220131201225.2324984-3-javierm@redhat.com>
- <CAMuHMdWPQrErbMZ4wJPgROY7XOnKGvimNFg8JpiyuWqz2a3Gzw@mail.gmail.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <CAMuHMdWPQrErbMZ4wJPgROY7XOnKGvimNFg8JpiyuWqz2a3Gzw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Sam Ravnborg <sam@ravnborg.org>, Helge Deller <deller@gmx.de>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux/m68k <linux-m68k@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 05/10] drm/fourcc: Add DRM_FORMAT_C[124]
+Message-ID: <20220314170539.17400f93@eldfell>
+In-Reply-To: <CAMuHMdVq19wpA_7nKKTm-G2EmK3cMxxP6nbR_u=vkazqCZ=KhQ@mail.gmail.com>
+References: <cover.1646683502.git.geert@linux-m68k.org>
+        <8d3c0cc370b0214244b01a64c588e5e506531716.1646683502.git.geert@linux-m68k.org>
+        <CAMuHMdVq19wpA_7nKKTm-G2EmK3cMxxP6nbR_u=vkazqCZ=KhQ@mail.gmail.com>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/m.YG_1yyujXTxoe21w.WtAn";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Geert,
+--Sig_/m.YG_1yyujXTxoe21w.WtAn
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-On 3/14/22 14:40, Geert Uytterhoeven wrote:
-> Hi Javier,
-> 
-> On Mon, Jan 31, 2022 at 9:12 PM Javier Martinez Canillas
-> <javierm@redhat.com> wrote:
->> Add support to convert 8-bit grayscale to reversed monochrome for drivers
->> that control monochromatic displays, that only have 1 bit per pixel depth.
->>
->> This helper function was based on repaper_gray8_to_mono_reversed() from
->> the drivers/gpu/drm/tiny/repaper.c driver.
->>
->> Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-> 
->> --- a/drivers/gpu/drm/drm_format_helper.c
->> +++ b/drivers/gpu/drm/drm_format_helper.c
->> @@ -584,3 +584,38 @@ int drm_fb_blit_toio(void __iomem *dst, unsigned int dst_pitch, uint32_t dst_for
->>         return -EINVAL;
->>  }
->>  EXPORT_SYMBOL(drm_fb_blit_toio);
->> +
->> +/**
->> + * drm_fb_gray8_to_mono_reversed - Convert grayscale to reversed monochrome
->> + * @dst: reversed monochrome destination buffer
-> 
-> What's the meaning of "reversed"?
+On Mon, 14 Mar 2022 14:30:18 +0100
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-Originally I took this helper from the repaper driver and it was called
-repaper_gray8_to_mono_reversed(), so the naming just got carried over.
+> On Mon, Mar 7, 2022 at 9:53 PM Geert Uytterhoeven <geert@linux-m68k.org> =
+wrote:
+> > Introduce fourcc codes for color-indexed frame buffer formats with two,
+> > four, and sixteen colors, and provide a mapping from bit per pixel and
+> > depth to fourcc codes.
+> >
+> > As the number of bits per pixel is less than eight, these rely on proper
+> > block handling for the calculation of bits per pixel and pitch.
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org> =20
+>=20
+> > --- a/include/uapi/drm/drm_fourcc.h
+> > +++ b/include/uapi/drm/drm_fourcc.h
+> > @@ -99,7 +99,10 @@ extern "C" {
+> >  #define DRM_FORMAT_INVALID     0
+> >
+> >  /* color index */
+> > -#define DRM_FORMAT_C8          fourcc_code('C', '8', ' ', ' ') /* [7:0=
+] C */
+> > +#define DRM_FORMAT_C1          fourcc_code('C', '1', ' ', ' ') /* [7:0=
+] C0:C1:C2:C3:C4:C5:C6:C7 1:1:1:1:1:1:1:1 eight pixels/byte */
+> > +#define DRM_FORMAT_C2          fourcc_code('C', '2', ' ', ' ') /* [7:0=
+] C0:C1:C2:C3 2:2:2:2 four pixels/byte */
+> > +#define DRM_FORMAT_C4          fourcc_code('C', '4', ' ', ' ') /* [7:0=
+] C0:C1 4:4 two pixels/byte */
+> > +#define DRM_FORMAT_C8          fourcc_code('C', '8', ' ', ' ') /* [7:0=
+] C 8 one pixel/byte */
+> >
+> >  /* 8 bpp Red */
+> >  #define DRM_FORMAT_R8          fourcc_code('R', '8', ' ', ' ') /* [7:0=
+] R */ =20
+>=20
+> After replying to Ilia's comment[1], I realized the CFB drawing
+> operations use native byte and bit ordering, unless
+> FBINFO_FOREIGN_ENDIAN is set.
+> While Amiga, Atari, and Sun-3 use big-endian bit ordering,
+> e.g. Acorn VIDC[2] uses little endian, and SH7760[3] is configurable
+> (sh7760fb configures ordering to match host order).
+> BTW, ssd130{7fb,x}_update_rect() both assume little-endian, so I
+> guess they are broken on big-endian.
+> Fbtest uses big-endian bit ordering, so < 8 bpp is probably broken
+> on little-endian.
+>=20
+> Hence the above should become:
+>=20
+>     #define DRM_FORMAT_C1          fourcc_code('C', '1', ' ', ' ') /*
+> [7:0] C7:C6:C5:C4:C3:C2:C1:C0 1:1:1:1:1:1:1:1 eight pixels/byte */
+>     #define DRM_FORMAT_C2          fourcc_code('C', '2', ' ', ' ') /*
+> [7:0] C3:C2:C1:C0 2:2:2:2 four pixels/byte */
+>     #define DRM_FORMAT_C4          fourcc_code('C', '4', ' ', ' ') /*
+> [7:0] C1:C0 4:4 two pixels/byte */
+>=20
+> The same changes should be made for DRM_FORMAT_[RD][124].
+>=20
+> The fbdev emulation code should gain support for these with and without
+> DRM_FORMAT_BIG_ENDIAN, the latter perhaps only on big-endian platforms?
+>=20
+> [1] https://lore.kernel.org/r/CAKb7UvgEdm9U=3D+RyRwL0TGRfA_Qc7NbhCWoZOft2=
+DKdXggtKYw@mail.gmail.com/
+> [2] See p.30 of the VIDC datasheet
+>     http://chrisacorns.computinghistory.org.uk/docs/Acorn/Misc/Acorn_VIDC=
+_Datasheet.pdf
+> [3] See p.1178 of the SH7660 datasheet
+>     https://datasheet.octopart.com/HD6417760BL200AV-Renesas-datasheet-141=
+05759.pdf
 
-> During the last few days, I've been balancing between (a) "reverse
-> video" and (b) "reverse bit order", but none of them seems to be true.
->
-> (a) The code maps 0-127 to 0 and 8-255 to 1, which just reduces from
->     256 to 2 grayscale levels, without inversion. The result is also
->     white-on-black on my ssd130x OLED.
-> (b) On little-endian, the CFB drawops use little-endian bit order,
->     which is what ends up in "byte" in the code below.
->
+Hi Geert,
 
-As far as I understand is (a) from the options since the repaper display
-uses black-on-white. But as you pointed out the ssd130x OLEDs instead do
-white-on-black.
+why would CPU endianess affect the order of bits in a byte?
 
-I should had probably just name the helper drm_fb_gray8_to_monochrome()
-or maybe drm_fb_gray8_to_gray1() ?
+Do you mean that bit 0 one machine is (1 << 0), and on another machine
+bit 0 is (1 << 7)?
 
--- 
-Best regards,
+In C, we have only one way to address bits of a byte and that is with
+arithmetic. You cannot take the address of a bit any other way, can you?
 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+Can we standardise on "bit n of a byte is addressed as (1 << n)"?
 
+I don't mind in which order the pixels are inside a byte, as long as it
+doesn't change by CPU endianess. If you need both directions, then use
+two different drm_fourcc codes that do not change their meaning by CPU
+endianess. Just like we have XRGB and BGRX formats.
+
+I would not like to see DRM_FORMAT_BIG_ENDIAN used for this, it would
+conflate a whole new concept into the mess that is little- vs.
+big-endian.
+
+
+Thanks,
+pq
+
+--Sig_/m.YG_1yyujXTxoe21w.WtAn
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJQjwWQChkWOYOIONI1/ltBGqqqcFAmIvWcMACgkQI1/ltBGq
+qqfXcQ//YRyfURp9d78SsBIIc7E+JMTInSnBi+DsN5ajonw6bUXBpcyhbo8aJG+p
+68tYcUrLaoizXdL318OYH3bVjAfWEhuIjjsGPJ/iUptXmv1D+zEaIRI+h+aYcDcs
+V310ZEYnBkEmG6aKSzwIjCFM8KoB+2oydLhDldQta8oAoIJ4gCED2ARFbpyS8k7H
+kNPY9/lU1uUJdjLDcGChmmwwv1sAL8aXUUmmqYfEg4Dv7XzEi71FRYKJlYq7TuNC
+lGbXZOoyha64DYQbuNiNL/eGSkporUlOdRQrOGMCWIPqNzm8/DrSRtPtNu5h+2Mv
+4LJ/Y/Q57Seur9+Lu3HkXkkq11ET1F64a7FHPplj87XzwM0y3Kn/f+6Y2jJy9DEM
+fcXZdv29ofEeXL1o43Pvka0UziTOALJLxLgNAhS47mNnIklBeihSlbIU3nez15oV
+t3icfb6qdJ5Bkt9sG3vbcjuFf8+dPDMTUqruM7CoF4zrC+e22YVdxX7dXmNlsAzc
+hhlmZAM+dCNN6w2lQoZIgl5rqTBGK8ruCtOl5G/lOjqOXxg/EBfHsSiSGvUsZWAz
+WiO0jLJy/XdijASav+n5dRFQWSgrp8vjwzZbkRcwlb57sxlKd6BGN5/wmAMiCyu1
+5V35MiBAGi45uGU+mVx0Y74j+HIag65ZaWMkN27VtjsCtYMf/xc=
+=cv7k
+-----END PGP SIGNATURE-----
+
+--Sig_/m.YG_1yyujXTxoe21w.WtAn--

@@ -2,167 +2,201 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4107DC433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 15 Mar 2022 19:11:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C517EC4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 16 Mar 2022 06:48:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245706AbiCOTMn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 15 Mar 2022 15:12:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44510 "EHLO
+        id S1353214AbiCPGts (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 16 Mar 2022 02:49:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53132 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240212AbiCOTMm (ORCPT
+        with ESMTP id S236005AbiCPGtr (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 15 Mar 2022 15:12:42 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B89C13DE7
-        for <linux-fbdev@vger.kernel.org>; Tue, 15 Mar 2022 12:11:30 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id BC3821F38C;
-        Tue, 15 Mar 2022 19:11:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1647371488; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=U+wuXADdZPHxyGByvjYaQrasduwIkd3zx/8ELCxw9I4=;
-        b=P9ZQvoaUKV2+6Nr6USxAYLZFgdM0cTg5yV1g3jgxefRWBjJEl57PTkj+k05Cah1EELDx8u
-        NG6LLzf2M4SlMd/vb5Z9iQ1IoTfhkpw481mXWBVEUSC9QgdCbNzlWDO117/gpNDEvMkVju
-        lZX8fX6KSvRulQ4CzlZwvjHw/Hya7Bg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1647371488;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=U+wuXADdZPHxyGByvjYaQrasduwIkd3zx/8ELCxw9I4=;
-        b=rGb67r7A7o4BFIDUZMTv35wGFZucePLrrtEonEu2cKqWACojyHEgrwxzosgjX8RNuEM1bz
-        fEFTk8TiDtVsKwCw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8883813B66;
-        Tue, 15 Mar 2022 19:11:28 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id KXeQH+DkMGLaewAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 15 Mar 2022 19:11:28 +0000
-Message-ID: <3e4584c5-2abb-e4ac-e914-aae6a0fcf83a@suse.de>
-Date:   Tue, 15 Mar 2022 20:11:27 +0100
+        Wed, 16 Mar 2022 02:49:47 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D1E1329B1;
+        Tue, 15 Mar 2022 23:48:32 -0700 (PDT)
+X-UUID: 775435b4fdf54be98e65a091eb42944a-20220316
+X-UUID: 775435b4fdf54be98e65a091eb42944a-20220316
+Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 606893099; Wed, 16 Mar 2022 14:48:25 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Wed, 16 Mar 2022 14:48:24 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Wed, 16 Mar 2022 14:48:24 +0800
+Message-ID: <75015615bbd69d68e42c1fff70872ebc4bd48be5.camel@mediatek.com>
+Subject: Re: [PATCH v8 17/19] drm/mediatek: add hpd debounce
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     Guillaume Ranquet <granquet@baylibre.com>,
+        <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
+        <airlied@linux.ie>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
+        <maarten.lankhorst@linux.intel.com>, <mripard@kernel.org>,
+        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>,
+        <chunfeng.yun@mediatek.com>, <kishon@ti.com>, <vkoul@kernel.org>,
+        <deller@gmx.de>, <ck.hu@mediatek.com>, <jitao.shi@mediatek.com>,
+        <angelogioacchino.delregno@collabora.com>
+CC:     <dri-devel@lists.freedesktop.org>,
+        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>,
+        <Project_Global_Chrome_Upstream_Group@mediatek.com>
+Date:   Wed, 16 Mar 2022 14:48:24 +0800
+In-Reply-To: <20220218145437.18563-18-granquet@baylibre.com>
+References: <20220218145437.18563-1-granquet@baylibre.com>
+         <20220218145437.18563-18-granquet@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.6.1
-Subject: Re: [PATCH 6/9] drm/fb-helper: Provide callback to create fbdev dumb
- buffers
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>, daniel@ffwll.ch,
-        airlied@linux.ie, mripard@kernel.org,
-        maarten.lankhorst@linux.intel.com, deller@gmx.de
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20220303205839.28484-1-tzimmermann@suse.de>
- <20220303205839.28484-7-tzimmermann@suse.de>
- <4d489fba-917f-4212-0528-0295e86c4c4a@redhat.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <4d489fba-917f-4212-0528-0295e86c4c4a@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------QZaMYUB3obhuYdlzkD8v3DEs"
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------QZaMYUB3obhuYdlzkD8v3DEs
-Content-Type: multipart/mixed; boundary="------------LsgRS9vlipehI6sr7fBgp0vx";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Javier Martinez Canillas <javierm@redhat.com>, daniel@ffwll.ch,
- airlied@linux.ie, mripard@kernel.org, maarten.lankhorst@linux.intel.com,
- deller@gmx.de
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Message-ID: <3e4584c5-2abb-e4ac-e914-aae6a0fcf83a@suse.de>
-Subject: Re: [PATCH 6/9] drm/fb-helper: Provide callback to create fbdev dumb
- buffers
-References: <20220303205839.28484-1-tzimmermann@suse.de>
- <20220303205839.28484-7-tzimmermann@suse.de>
- <4d489fba-917f-4212-0528-0295e86c4c4a@redhat.com>
-In-Reply-To: <4d489fba-917f-4212-0528-0295e86c4c4a@redhat.com>
+On Fri, 2022-02-18 at 15:54 +0100, Guillaume Ranquet wrote:
+> From: Jitao Shi <jitao.shi@mediatek.com>
+> 
+> Implement the DP HDP debounce described in DP 1.4a 3.3.
 
---------------LsgRS9vlipehI6sr7fBgp0vx
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Hello Guillaume,
 
-SGkgSmF2aWVyDQoNCkFtIDA4LjAzLjIyIHVtIDE4OjUxIHNjaHJpZWIgSmF2aWVyIE1hcnRp
-bmV6IENhbmlsbGFzOg0KWy4uLl0NCj4+ICAgDQo+PiAgIHN0YXRpYyBzdHJ1Y3QgZHJtX2Ns
-aWVudF9idWZmZXIgKg0KPj4gLWRybV9jbGllbnRfYnVmZmVyX2NyZWF0ZShzdHJ1Y3QgZHJt
-X2NsaWVudF9kZXYgKmNsaWVudCwgdTMyIHdpZHRoLCB1MzIgaGVpZ2h0LCB1MzIgZm9ybWF0
-KQ0KPj4gK2RybV9jbGllbnRfYnVmZmVyX2NyZWF0ZShzdHJ1Y3QgZHJtX2NsaWVudF9kZXYg
-KmNsaWVudCwgdTMyIHdpZHRoLCB1MzIgaGVpZ2h0LCB1MzIgZm9ybWF0LA0KPj4gKwkJCSBi
-b29sIGZiZGV2KQ0KPj4gICB7DQo+PiAgIAljb25zdCBzdHJ1Y3QgZHJtX2Zvcm1hdF9pbmZv
-ICppbmZvID0gZHJtX2Zvcm1hdF9pbmZvKGZvcm1hdCk7DQo+PiAgIAlzdHJ1Y3QgZHJtX21v
-ZGVfY3JlYXRlX2R1bWIgZHVtYl9hcmdzID0geyB9Ow0KPj4gQEAgLTI2NSw3ICsyNjYsMTAg
-QEAgZHJtX2NsaWVudF9idWZmZXJfY3JlYXRlKHN0cnVjdCBkcm1fY2xpZW50X2RldiAqY2xp
-ZW50LCB1MzIgd2lkdGgsIHUzMiBoZWlnaHQsIHUNCj4+ICAgCWR1bWJfYXJncy53aWR0aCA9
-IHdpZHRoOw0KPj4gICAJZHVtYl9hcmdzLmhlaWdodCA9IGhlaWdodDsNCj4+ICAgCWR1bWJf
-YXJncy5icHAgPSBpbmZvLT5jcHBbMF0gKiA4Ow0KPj4gLQlyZXQgPSBkcm1fbW9kZV9jcmVh
-dGVfZHVtYihkZXYsICZkdW1iX2FyZ3MsIGNsaWVudC0+ZmlsZSk7DQo+PiArCWlmIChmYmRl
-dikNCj4gDQo+IE1heWJlIGlmIChkZWZpbmVkKENPTkZJR19EUk1fRkJERVZfRU1VTEFUSU9O
-KSAmJiBmYmRldikgPw0KPiANCj4+ICsJCXJldCA9IGRybV9tb2RlX2NyZWF0ZV9kdW1iX2Zi
-ZGV2KGRldiwgJmR1bWJfYXJncywgY2xpZW50LT5maWxlKTsNCj4gDQo+IEFuZCBkcm1fbW9k
-ZV9jcmVhdGVfZHVtYl9mYmRldigpIGNvdWxkIGp1c3QgYmUgbWFkZSBhIHN0dWIgaWYNCj4g
-Q09ORklHX0RSTV9GQkRFVl9FTVVMQVRJT04gaXNuJ3QgZW5hYmxlZC4NCg0KV2hpbGUgZ29p
-bmcgdGhyb3VnaCB0aGVzZSBjb21taXRzIGFnYWluLCBJIGRlY2lkZWQgdG8gY2hhbmdlIHRo
-ZSBsb2dpYyANCnRvIHVzZSBhIGZ1bmN0aW9uIHBvaW50ZXIgZm9yIHRoZSBhbGxvY2F0aW9u
-LiBUaGUgZmJkZXYgZW11bGF0aW9uIHdpbGwgDQpwcm92aWRlIGFuIGltcGxlbWVudGF0aW9u
-IHRoYXQgYWxsb2NhdGVzIHRoZSBidWZmZXIgb2JqZWN0LiBUaGUgbG9naWMgDQpmb3IgcGlj
-a2luZyB0aGUgY29ycmVjdCBjcmVhdGUtZHVtYiBmdW5jdGlvbiB3aWxsIGJlIHBsYWNlZCB0
-aGVyZS4NCg0KQWx0aG91Z2ggaXQgcHJvYmFibHkgd29uJ3QgZXZlciBiZSBuZWVkZWQsIG90
-aGVyIGNsaWVudHMgY291bGQgYWxsb2NhdGUgDQpidWZmZXJzIHdpdGggb3RoZXIgY29uc3Ry
-YWludHMsIG9yIGV2ZW4gc3VwcG9ydCBhY2NlbGVyYXRpb24gaW5zdGVhZCBvZiANCmR1bWIg
-YnVmZmVycy4NCg0KWW91IG1heSB3YW50IHRvIHRha2UgYW5vdGhlciBsb29rIGF0IHRoaXMg
-cGF0Y2ggaW4gdGhlIHBhdGNoc2V0J3MgbmV4dCANCml0ZXJhdGlvbi4NCg0KQmVzdCByZWdh
-cmRzDQpUaG9tYXMNCg0KPiANCj4gSSBiZWxpZXZlIHRoZSBvbmx5IHVzYWdlIG9mIHRoZSBE
-Uk0gY2xpZW50IEFQSSBjdXJyZW50bHkgaXMgdGhlIGZiZGV2DQo+IGVtdWxhdGlvbiBsYXll
-ciBhbnl3YXlzPyBCdXQgc3RpbGwgbWFrZXMgc2Vuc2UgSSB0aGluayB0byBjb25kdGlvbmFs
-bHkNCj4gY29tcGlsZSB0aGF0IHNpbmNlIGRybV9jbGllbnQubyBpcyBidWlsdCBpbiB0aGUg
-ZHJtLmtvIG1vZHVsZSBhbmQgdGhlDQo+IGRybV9mYl9oZWxwZXIubyBvbmx5IGluY2x1ZGVk
-IGlmIGZiZGV2IGVtdWxhdGlvbiBoYXMgYmVlbiBlbmFibGVkLg0KPiANCj4+ICsJZWxzZQ0K
-Pj4gKwkJcmV0ID0gZHJtX21vZGVfY3JlYXRlX2R1bWIoZGV2LCAmZHVtYl9hcmdzLCBjbGll
-bnQtPmZpbGUpOw0KPj4gICAJaWYgKHJldCkNCj4+ICAgCQlnb3RvIGVycl9kZWxldGU7DQo+
-PiAgIA0KPj4gQEAgLTQwMiw2ICs0MDYsNyBAQCBzdGF0aWMgaW50IGRybV9jbGllbnRfYnVm
-ZmVyX2FkZGZiKHN0cnVjdCBkcm1fY2xpZW50X2J1ZmZlciAqYnVmZmVyLA0KPj4gICAgKiBA
-d2lkdGg6IEZyYW1lYnVmZmVyIHdpZHRoDQo+PiAgICAqIEBoZWlnaHQ6IEZyYW1lYnVmZmVy
-IGhlaWdodA0KPj4gICAgKiBAZm9ybWF0OiBCdWZmZXIgZm9ybWF0DQo+PiArICogQGZiZGV2
-OiBUcnVlIGlmIHRoZSBjbGllbnQgcHJvdmlkZXMgYW4gZmJkZXYgZGV2aWNlLCBvciBmYWxz
-ZSBvdGhlcndpc2UNCj4+ICAgICoNCj4gDQo+IEFuIGVtdWxhdGVkIGZiZGV2IGRldmljZSA/
-DQo+IA0KPiBPdGhlciB0aGFuIHRob3NlIHNtYWxsIG5pdCwNCj4gDQo+IFJldmlld2VkLWJ5
-OiBKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllcm1AcmVkaGF0LmNvbT4NCj4gDQoN
-Ci0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNV
-U0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0
-MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNj
-aMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+Thanks for your patch, and here is some tests we do and I will explain
+the HPD deboucing. Maybe you can put these in commit message next time:
 
---------------LsgRS9vlipehI6sr7fBgp0vx--
+From the DP spec 1.4a chapter 3.3, upstream devices should implement
+HPD signal de-bouncing on an external connection.
+A period of 100ms should be used for detecting an HPD connect event.
+To cover these cases, HPD de-bounce should be implemented only after
+HPD low has been detected for 100ms.
 
---------------QZaMYUB3obhuYdlzkD8v3DEs
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Therefore,
+1. If HPD low (which means plugging out) is more than 100ms,
+   we need to do de-bouncing (which means we need to wait for 100ms).
+2. If HPD low is less than 100ms,
+   we don't need to care about the de-bouncing.
 
------BEGIN PGP SIGNATURE-----
+In this patch, we can see the timer start to count 100ms and clear the
+need_debounce to false.
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIw5N8FAwAAAAAACgkQlh/E3EQov+AE
-nw/+PdDJp0Sdsqij72OEFR6H//7ZbwRKDA1jrQJIZgRw0JALH1jJ2vO+jcXJUMcZbKgGkeuDhAwi
-YT2S7lPBmpJo0UOwDQF32f5azA6Uj7n5oo4IZeuFQQmtR4WpGaohJqJKh8xiI0aFFSxND/RFLmPN
-edDp9Xii4rLxnF2ybW/025rLWYJEHjeKNNZmOnfr2CU6ZIkVcJYUdtUx1pYtBstkXvbTHgq64QeP
-1aD0ubQiNO9SsdnQ5EIGOuuQ6MWJ6a0Ww+1QwShxzVXBqQeWnG0FTGR192QrOQwr4uDqoMV9cdXE
-j7XMaM2w5USnyGu0CCrUS9VuspJkgQCP0KLJ8KhvQio+GSZgBm736MP6OHuCcoKmZlVGlxL4ToTu
-Z9irhataGSR6BY+MgWHll2VjqDXbF9/rtG4vfWg9JmWPBSH9Sno2LBY96nUSruOHAiPpDFwChgFE
-iLTIFvBU5bZ4jmXeAXVoM/NZasueUYyJpvMvCGF/I5qjQxIug1X0wlHeZ5IrXc8I8bqWbtsvaq8Q
-J2ZZbrBkMpUCzRzKLNsNHvLx+CkLECzNPIs7L8BCTzC45EuFGTxktfYxE84kLPaKA2ophpkQ8d2R
-A0B1tcFJL1KptTtSXLJCK8tIWwBMQyqamDSfGPqQCteKolyb5FAcqy41lHuxeQIBytw6edce78Zq
-Cv0=
-=Z0KX
------END PGP SIGNATURE-----
+There will be two situation when HPD high:
+1. If the timer is expired (which means it's more than 100ms):
+   - need_debounce will be set as true.
+   - When HPD high (plugging event comes), need_debounce will be true
+     and then we need to do de-bouncing (wait for 100ms).
+2. If the timer is not expired (which means it's less than 100ms):
+   - need_debounce keeps as false.
+   - When HPD high (plugging event comes), need_debounce will be false
+     and no need to do de-bouncing.
 
---------------QZaMYUB3obhuYdlzkD8v3DEs--
+HPD_______             __________________
+          |            |<-  100ms   ->
+          |____________|
+          <-  100ms   ->
+
+Original issue is that we do not implement the HPD de-bouncing and the
+device (Dell Adapter - USB-C to HDMI) will not be detected.
+After applying this patch, we can detect the device
+(Dell Adapter - USB-C to HDMI) successfully.
+
+We test the following devices and they can be detected successfully:
+- Dell Adapter - USB-C to HDMI
+- Acer 1in1 HDMI dongle
+- Ugreen 1in1 HDMI dongle
+- innowatt HDMI + USB3 hub
+- Acer 2in1 HDMI dongle
+- Apple 3in1 HDMI dongle (A2119)
+- J5Create 3in1 HDMI dongle (JAC379)
+
+Tested-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+
+BRs,
+Rex
+> 
+> Signed-off-by: Jitao Shi <jitao.shi@mediatek.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> ---
+>  drivers/gpu/drm/mediatek/mtk_dp.c | 23 +++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+> 
+> diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c
+> b/drivers/gpu/drm/mediatek/mtk_dp.c
+> index 2a3d5f15b651b..fe91ab8b2fd89 100644
+> --- a/drivers/gpu/drm/mediatek/mtk_dp.c
+> +++ b/drivers/gpu/drm/mediatek/mtk_dp.c
+> @@ -178,6 +178,8 @@ struct mtk_dp {
+>  	struct device *codec_dev;
+>  	u8 connector_eld[MAX_ELD_BYTES];
+>  	struct drm_connector *conn;
+> +	bool need_debounce;
+> +	struct timer_list debounce_timer;
+>  };
+>  
+>  static struct regmap_config mtk_dp_regmap_config = {
+> @@ -1698,6 +1700,9 @@ static irqreturn_t mtk_dp_hpd_event_thread(int
+> hpd, void *dev)
+>  	if (event < 0)
+>  		return IRQ_HANDLED;
+>  
+> +	if (mtk_dp->need_debounce && mtk_dp-
+> >train_info.cable_plugged_in)
+> +		msleep(100);
+> +
+>  	if (mtk_dp->drm_dev) {
+>  		dev_info(mtk_dp->dev, "drm_helper_hpd_irq_event\n");
+>  		drm_helper_hpd_irq_event(mtk_dp->bridge.dev);
+> @@ -1776,6 +1781,13 @@ static irqreturn_t
+> mtk_dp_hpd_isr_handler(struct mtk_dp *mtk_dp)
+>  	}
+>  	train_info->cable_state_change = true;
+>  
+> +	if (train_info->cable_state_change) {
+> +		if (!train_info->cable_plugged_in) {
+> +			mod_timer(&mtk_dp->debounce_timer, jiffies +
+> msecs_to_jiffies(100) - 1);
+> +			mtk_dp->need_debounce = false;
+> +		}
+> +	}
+> +
+>  	return IRQ_WAKE_THREAD;
+>  }
+>  
+> @@ -2239,6 +2251,13 @@ static const struct drm_bridge_funcs
+> mtk_dp_bridge_funcs = {
+>  	.detect = mtk_dp_bdg_detect,
+>  };
+>  
+> +static void mtk_dp_debounce_timer(struct timer_list *t)
+> +{
+> +	struct mtk_dp *mtk_dp = from_timer(mtk_dp, t, debounce_timer);
+> +
+> +	mtk_dp->need_debounce = true;
+> +}
+> +
+>  static int mtk_dp_probe(struct platform_device *pdev)
+>  {
+>  	struct mtk_dp *mtk_dp;
+> @@ -2319,6 +2338,9 @@ static int mtk_dp_probe(struct platform_device
+> *pdev)
+>  	else
+>  		mtk_dp->bridge.type = DRM_MODE_CONNECTOR_DisplayPort;
+>  
+> +	mtk_dp->need_debounce = true;
+> +	timer_setup(&mtk_dp->debounce_timer, mtk_dp_debounce_timer, 0);
+> +
+>  	pm_runtime_enable(dev);
+>  	pm_runtime_get_sync(dev);
+>  
+> @@ -2332,6 +2354,7 @@ static int mtk_dp_remove(struct platform_device
+> *pdev)
+>  	platform_device_unregister(mtk_dp->phy_dev);
+>  
+>  	mtk_dp_video_mute(mtk_dp, true);
+> +	del_timer_sync(&mtk_dp->debounce_timer);
+>  
+>  	pm_runtime_disable(&pdev->dev);
+>  
+

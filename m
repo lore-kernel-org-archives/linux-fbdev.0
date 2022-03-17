@@ -2,99 +2,95 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A96DC433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Mar 2022 11:20:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52D44C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Mar 2022 11:22:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229764AbiCQLWM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 17 Mar 2022 07:22:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42126 "EHLO
+        id S231824AbiCQLXj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 17 Mar 2022 07:23:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42820 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231635AbiCQLWL (ORCPT
+        with ESMTP id S232971AbiCQLXi (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 17 Mar 2022 07:22:11 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 676E71E374B
-        for <linux-fbdev@vger.kernel.org>; Thu, 17 Mar 2022 04:20:55 -0700 (PDT)
+        Thu, 17 Mar 2022 07:23:38 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7E9AB1E3E05
+        for <linux-fbdev@vger.kernel.org>; Thu, 17 Mar 2022 04:22:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1647516054;
+        s=mimecast20190719; t=1647516141;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=ooJ9GuDR1zDRA6wa1d+2YqoS6wsKS/sfV2gTAnIiGxs=;
-        b=K/y3wYE5Kf+i+hJNcVhNUros1+pJaD+krNyBixqk0HX9mei6E0IL95Rn1g/dwMFrx8g1JB
-        BWUqmlYP1/Siw6XIMaYxAYcWc46Pqgnr4H7Nr9nNJfMZGeF3kc33I/Vf8hPHaVhs59tKFf
-        GNUo6Qs4Qr/A2wJKW4EHjh/z5D6IQbo=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=QEoSz7AAiKghjz9qVXr4NOtovhAAAhgUZtpSN8iw34Y=;
+        b=RlUslJd/KUKwxPYiifSxAj/o5STzvYLOV+EIkfbBJQqa3RaB0rZjIvO/FxoYyNrE8UIUv8
+        QhqR8wtHd99ck6467nqN/R5aZElUt9OD2lsDKac1Bwsolw48+MqBs+b6Opwb9Fuikuvb2t
+        Z1GnqQdwky6I1Kdmm2s8jomT/bMc88s=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-471-xT8sX41YMC6R2iekS6j8RQ-1; Thu, 17 Mar 2022 07:20:53 -0400
-X-MC-Unique: xT8sX41YMC6R2iekS6j8RQ-1
-Received: by mail-wm1-f71.google.com with SMTP id r64-20020a1c2b43000000b0038b59eb1940so2973616wmr.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 17 Mar 2022 04:20:52 -0700 (PDT)
+ us-mta-278-7oniDHStMBi7DzR245Kl4A-1; Thu, 17 Mar 2022 07:22:20 -0400
+X-MC-Unique: 7oniDHStMBi7DzR245Kl4A-1
+Received: by mail-wr1-f71.google.com with SMTP id 71-20020adf82cd000000b00203dc43d216so1444493wrc.22
+        for <linux-fbdev@vger.kernel.org>; Thu, 17 Mar 2022 04:22:20 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=ooJ9GuDR1zDRA6wa1d+2YqoS6wsKS/sfV2gTAnIiGxs=;
-        b=p7u669JIe2VNmcsX2trtLeRmP4gKzfTljuTjM12Ehe410sjSv1Q66I85FJ7430tENE
-         +cwXmvCSMR+tXd4kBou/Dxh6PQtDj/p0Yn0l0M3s8zwFXk0Va4lR2/2Fjt7ziRpIO5fu
-         tGOsSin7gMHwsKr7Sw5A3DIglx5w3jGjFThNYjdV4SIsvm/Q33kl8oOhXA2X2umVT94n
-         So6lgGkVJ0reu67PoECdQEvAIx7HIlhavIxnYjxW32wgsb7KtEdqgvOEcmQ1Zkqy68ca
-         bCKyasuI48Bu8wZTc6S+a+BGlYahu3S9ineEg9nI8IRik22QeiQfMt5ULlKoIXVT7ha2
-         n72w==
-X-Gm-Message-State: AOAM532t6RwtXpDnwc9TxCEsrah6xewFC3nxQDXAro5nTqgbCGoZ5kFw
-        OafdhkbVbopVZR9vFaqVlrx/7yaVgZojGM+qWdMApa+axw+p7Th8cXYoOgFlLnpqDd3mZhsbhGH
-        fiLpSU5m8t/Bg6N2ITCQ9tGc=
-X-Received: by 2002:a5d:52c7:0:b0:1ed:a12e:bbed with SMTP id r7-20020a5d52c7000000b001eda12ebbedmr3565753wrv.97.1647516051886;
-        Thu, 17 Mar 2022 04:20:51 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJx+noMHruT1Sne6ijibg7bHIXzxkZckSPpwOnAtzNb9wfj3uDW78GC2bclNntk+Vo7eA39oSA==
-X-Received: by 2002:a5d:52c7:0:b0:1ed:a12e:bbed with SMTP id r7-20020a5d52c7000000b001eda12ebbedmr3565744wrv.97.1647516051687;
-        Thu, 17 Mar 2022 04:20:51 -0700 (PDT)
+        bh=QEoSz7AAiKghjz9qVXr4NOtovhAAAhgUZtpSN8iw34Y=;
+        b=m0sTWc9LkHKrUXzoAXkjIvakL5IcK15PrRZ3eq87KA3tO/qlZ53KwLvg2ex3IkOAkd
+         2mkRc4J18WKf0DbrqA9U3okHRCsqpknzhF+OpkJ+8LzRj9LoINUHNgcQkUUa8j/kKfd4
+         5HHLVpC7ZEAOzzSmWx+hYvE8XWKS+fC+7ErXS43rYbfYB9V767Db7/uXXo3CFWSU4blF
+         EYOyqLvB0lm5lK70KW3tOGI1A+BdbXqOlc87UHFpV6MeKVd2yi7vJdZqix4W2LgTamyB
+         K5FVOEBBmCaoWp1zeYs6d1T6EMMZ4IirSFtlVYri+YOXYPDdkA8hh6O/h20kYDPn/Kd3
+         P0cA==
+X-Gm-Message-State: AOAM530T8v/LUmJ/WpMx9ao/7HVsU/eFaf/iEa93T1zKTENCx4W7W7/B
+        s9llMkg3u7hB5f8hR3nSiL8RLpslQ9Fgz08sQTN93mJJFKo2uIRas1M3i7BTJGSMZa9Nlp+Nv+a
+        B0sEMOQkVDzrCQ6gcASBEI40=
+X-Received: by 2002:adf:e605:0:b0:203:d5f6:86f1 with SMTP id p5-20020adfe605000000b00203d5f686f1mr3310058wrm.689.1647516139108;
+        Thu, 17 Mar 2022 04:22:19 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJxW/NSLjkVDqNHoNB6Qk8HNunBT0QXw4v4wJ9GqJWC4CW8lzSq73gga5dYuo+CGC1TrzNeJ7g==
+X-Received: by 2002:adf:e605:0:b0:203:d5f6:86f1 with SMTP id p5-20020adfe605000000b00203d5f686f1mr3310044wrm.689.1647516138891;
+        Thu, 17 Mar 2022 04:22:18 -0700 (PDT)
 Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id v14-20020a7bcb4e000000b0034492fa24c6sm4002044wmj.34.2022.03.17.04.20.50
+        by smtp.gmail.com with ESMTPSA id l13-20020a5d4bcd000000b001f0620ecb3csm3897610wrt.40.2022.03.17.04.22.18
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 17 Mar 2022 04:20:51 -0700 (PDT)
-Message-ID: <f867cce1-04dd-a87a-700d-343cc28f188f@redhat.com>
-Date:   Thu, 17 Mar 2022 12:20:50 +0100
+        Thu, 17 Mar 2022 04:22:18 -0700 (PDT)
+Message-ID: <95d70bc0-491c-f208-5536-e1242a2d7d30@redhat.com>
+Date:   Thu, 17 Mar 2022 12:22:17 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
-Subject: Re: [PATCH 1/2] fbdev: Fix sys_imageblit() for arbitrary image widths
+Subject: Re: [PATCH 2/2] fbdev: Fix cfb_imageblit() for arbitrary image widths
 Content-Language: en-US
 To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
         deller@gmx.de, m.szyprowski@samsung.com, geert@linux-m68k.org,
         sam@ravnborg.org
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 References: <20220313192952.12058-1-tzimmermann@suse.de>
- <20220313192952.12058-2-tzimmermann@suse.de>
+ <20220313192952.12058-3-tzimmermann@suse.de>
 From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220313192952.12058-2-tzimmermann@suse.de>
+In-Reply-To: <20220313192952.12058-3-tzimmermann@suse.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Thomas,
-
 On 3/13/22 20:29, Thomas Zimmermann wrote:
-> Commit 6f29e04938bf ("fbdev: Improve performance of sys_imageblit()")
-> broke sys_imageblit() for image width that are not aligned to 8-bit
+> Commit 0d03011894d2 ("fbdev: Improve performance of cfb_imageblit()")
+> broke cfb_imageblit() for image widths that are not aligned to 8-bit
 > boundaries. Fix this by handling the trailing pixels on each line
 > separately. The performance improvements in the original commit do not
 > regress by this change.
 > 
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Fixes: 6f29e04938bf ("fbdev: Improve performance of sys_imageblit()")
+> Fixes: 0d03011894d2 ("fbdev: Improve performance of cfb_imageblit()")
+> Reported-by: Marek Szyprowski <m.szyprowski@samsung.com>
 > Cc: Thomas Zimmermann <tzimmermann@suse.de>
 > Cc: Javier Martinez Canillas <javierm@redhat.com>
 > Cc: Sam Ravnborg <sam@ravnborg.org>
 > ---
-
-Looks good to me. Also Marek and Geert mentioned that fixes the issue
-they were seeing.
 
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 

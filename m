@@ -2,167 +2,136 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF671C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 17 Mar 2022 13:34:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00765C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 18 Mar 2022 01:06:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234605AbiCQNfb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 17 Mar 2022 09:35:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55730 "EHLO
+        id S231351AbiCRBHi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 17 Mar 2022 21:07:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50958 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234604AbiCQNfb (ORCPT
+        with ESMTP id S231346AbiCRBHh (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 17 Mar 2022 09:35:31 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E3AE18A3DE
-        for <linux-fbdev@vger.kernel.org>; Thu, 17 Mar 2022 06:34:14 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id 4DD9821108;
-        Thu, 17 Mar 2022 13:34:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1647524053; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=TnTW0AHfArrZNnyXiVHt4csKgKZmgMwipN/WKuAH7ao=;
-        b=ouZDJ+4vuj781dxIHZJshd3jYQBowR5FHcxA3cQi/c68Cay/myZ0Y9y7XibBb3aNLbN1W0
-        8+U8U/89wBtvmBW4Ob0VBM1qUPdphBiUUonTJuJQqOA5peGrV2i3cLr4HEOshiGW7Exq91
-        2Tdl7mV+wl4+Rxounbv/KEbzf/L5xtE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1647524053;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=TnTW0AHfArrZNnyXiVHt4csKgKZmgMwipN/WKuAH7ao=;
-        b=atKJO+9nj51/AJIkaI/3R+tamSSc63N1SjzS4/R/j0YSdil/+cuJSFm4dT29bpnm0sdJnu
-        Md2yPDX04otnhgBQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 25F2C13BAC;
-        Thu, 17 Mar 2022 13:34:13 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id Ts03CNU4M2KeFAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 17 Mar 2022 13:34:13 +0000
-Message-ID: <7fec4a78-9a48-788e-44aa-d0f42350d00d@suse.de>
-Date:   Thu, 17 Mar 2022 14:34:12 +0100
+        Thu, 17 Mar 2022 21:07:37 -0400
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B501F1AFE86
+        for <linux-fbdev@vger.kernel.org>; Thu, 17 Mar 2022 18:06:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1647565579; x=1679101579;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=VWC6HUH11zHEaXwf+ALnIMxVDNWIX7ILw0OIDe/QfRw=;
+  b=CY76ZgazjiIpS+QD8Iu2pA2ufAdBC3vmwgVAqp5EeUnf/5djiWV3H3YO
+   mGeAwm93MYMjPirJKLqkg/AyGLt/YEirD2zYweDbrfx6grOZrxRJcsH4L
+   uJgTkrs4PnEDUj8pLyLG76JhxW1IJDQgyyCzHlL1rj2I9EKc4wiWBKfsX
+   L7QrlSA2LWyWeGtq4RTBrtMwLkL+zQIjWs/wKGKsX+hfyT6jZRmWDe1yu
+   hGXvXecocfw37RHG5OKauadKb863KFhHWtfMwvTXXZkqbvFCwSmaRhY5I
+   ltvMMZLdKKcUyIClO1vbpo5Q9bMqR9/h/AIJ3wAUHDvZYmLuSPAyiVOiJ
+   Q==;
+X-IronPort-AV: E=McAfee;i="6200,9189,10289"; a="254575410"
+X-IronPort-AV: E=Sophos;i="5.90,190,1643702400"; 
+   d="scan'208";a="254575410"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Mar 2022 18:06:19 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.90,190,1643702400"; 
+   d="scan'208";a="647259586"
+Received: from cliu38-mobl3.sh.intel.com ([10.239.147.106])
+  by orsmga004.jf.intel.com with ESMTP; 17 Mar 2022 18:06:16 -0700
+From:   Chuansheng Liu <chuansheng.liu@intel.com>
+To:     jayalk@intworks.biz, daniel@ffwll.ch, deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        chuansheng.liu@intel.com, Thomas Zimmermann <tzimmermann@suse.de>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Javier Martinez Canillas <javierm@redhat.com>
+Subject: [PATCH v2] fbdev: defio: fix the pagelist corruption
+Date:   Fri, 18 Mar 2022 08:50:03 +0800
+Message-Id: <20220318005003.51810-1-chuansheng.liu@intel.com>
+X-Mailer: git-send-email 2.25.0.rc2
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.6.1
-Subject: Re: [PATCH] fbdev: defio: fix the pagelist corruption
-Content-Language: en-US
-To:     Chuansheng Liu <chuansheng.liu@intel.com>, jayalk@intworks.biz,
-        daniel@ffwll.ch, deller@gmx.de
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <20220317054602.28846-1-chuansheng.liu@intel.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20220317054602.28846-1-chuansheng.liu@intel.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------be07U3Qd9ZKbKruygCjUopbf"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------be07U3Qd9ZKbKruygCjUopbf
-Content-Type: multipart/mixed; boundary="------------3e7v8DAR0tPjI7yWfAB0kmoP";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Chuansheng Liu <chuansheng.liu@intel.com>, jayalk@intworks.biz,
- daniel@ffwll.ch, deller@gmx.de
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Message-ID: <7fec4a78-9a48-788e-44aa-d0f42350d00d@suse.de>
-Subject: Re: [PATCH] fbdev: defio: fix the pagelist corruption
-References: <20220317054602.28846-1-chuansheng.liu@intel.com>
-In-Reply-To: <20220317054602.28846-1-chuansheng.liu@intel.com>
+Easily hit the below list corruption:
+==
+list_add corruption. prev->next should be next (ffffffffc0ceb090), but
+was ffffec604507edc8. (prev=ffffec604507edc8).
+WARNING: CPU: 65 PID: 3959 at lib/list_debug.c:26
+__list_add_valid+0x53/0x80
+CPU: 65 PID: 3959 Comm: fbdev Tainted: G     U
+RIP: 0010:__list_add_valid+0x53/0x80
+Call Trace:
+ <TASK>
+ fb_deferred_io_mkwrite+0xea/0x150
+ do_page_mkwrite+0x57/0xc0
+ do_wp_page+0x278/0x2f0
+ __handle_mm_fault+0xdc2/0x1590
+ handle_mm_fault+0xdd/0x2c0
+ do_user_addr_fault+0x1d3/0x650
+ exc_page_fault+0x77/0x180
+ ? asm_exc_page_fault+0x8/0x30
+ asm_exc_page_fault+0x1e/0x30
+RIP: 0033:0x7fd98fc8fad1
+==
 
---------------3e7v8DAR0tPjI7yWfAB0kmoP
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+Figure out the race happens when one process is adding &page->lru into
+the pagelist tail in fb_deferred_io_mkwrite(), another process is
+re-initializing the same &page->lru in fb_deferred_io_fault(), which is
+not protected by the lock.
 
-SGkNCg0KQW0gMTcuMDMuMjIgdW0gMDY6NDYgc2NocmllYiBDaHVhbnNoZW5nIExpdToNCj4g
-RWFzaWx5IGhpdCB0aGUgYmVsb3cgbGlzdCBjb3JydXB0aW9uOg0KPiA9PQ0KPiBsaXN0X2Fk
-ZCBjb3JydXB0aW9uLiBwcmV2LT5uZXh0IHNob3VsZCBiZSBuZXh0IChmZmZmZmZmZmMwY2Vi
-MDkwKSwgYnV0DQo+IHdhcyBmZmZmZWM2MDQ1MDdlZGM4LiAocHJldj1mZmZmZWM2MDQ1MDdl
-ZGM4KS4NCj4gV0FSTklORzogQ1BVOiA2NSBQSUQ6IDM5NTkgYXQgbGliL2xpc3RfZGVidWcu
-YzoyNg0KPiBfX2xpc3RfYWRkX3ZhbGlkKzB4NTMvMHg4MA0KPiBDUFU6IDY1IFBJRDogMzk1
-OSBDb21tOiBmYmRldiBUYWludGVkOiBHICAgICBVDQo+IFJJUDogMDAxMDpfX2xpc3RfYWRk
-X3ZhbGlkKzB4NTMvMHg4MA0KPiBDYWxsIFRyYWNlOg0KPiAgIDxUQVNLPg0KPiAgIGZiX2Rl
-ZmVycmVkX2lvX21rd3JpdGUrMHhlYS8weDE1MA0KPiAgIGRvX3BhZ2VfbWt3cml0ZSsweDU3
-LzB4YzANCj4gICBkb193cF9wYWdlKzB4Mjc4LzB4MmYwDQo+ICAgX19oYW5kbGVfbW1fZmF1
-bHQrMHhkYzIvMHgxNTkwDQo+ICAgaGFuZGxlX21tX2ZhdWx0KzB4ZGQvMHgyYzANCj4gICBk
-b191c2VyX2FkZHJfZmF1bHQrMHgxZDMvMHg2NTANCj4gICBleGNfcGFnZV9mYXVsdCsweDc3
-LzB4MTgwDQo+ICAgPyBhc21fZXhjX3BhZ2VfZmF1bHQrMHg4LzB4MzANCj4gICBhc21fZXhj
-X3BhZ2VfZmF1bHQrMHgxZS8weDMwDQo+IFJJUDogMDAzMzoweDdmZDk4ZmM4ZmFkMQ0KPiA9
-PQ0KPiANCj4gRmlndXJlIG91dCB0aGUgcmFjZSBoYXBwZW5zIHdoZW4gb25lIHByb2Nlc3Mg
-aXMgYWRkaW5nICZwYWdlLT5scnUgaW50bw0KPiB0aGUgcGFnZWxpc3QgdGFpbCBpbiBmYl9k
-ZWZlcnJlZF9pb19ta3dyaXRlKCksIGFub3RoZXIgcHJvY2VzcyBpcw0KPiByZS1pbml0aWFs
-aXppbmcgdGhlIHNhbWUgJnBhZ2UtPmxydSBpbiBmYl9kZWZlcnJlZF9pb19mYXVsdCgpLCB3
-aGljaCBpcw0KPiBub3QgcHJvdGVjdGVkIGJ5IHRoZSBsb2NrLg0KPiANCj4gVGhpcyBmaXgg
-aXMgdG8gaW5pdCBhbGwgdGhlIHBhZ2UgbGlzdHMgb25lIHRpbWUgZHVyaW5nIGluaXRpYWxp
-emF0aW9uLA0KPiBpdCBub3Qgb25seSBmaXhlcyB0aGUgbGlzdCBjb3JydXB0aW9uLCBidXQg
-YWxzbyBhdm9pZHMgSU5JVF9MSVNUX0hFQUQoKQ0KPiByZWR1bmRhbnRseS4NCj4gDQo+IEZp
-eGVzOiAxMDVhOTQwNDE2ZmMgKCJmYmRldi9kZWZpbzogRWFybHktb3V0IGlmIHBhZ2UgaXMg
-YWxyZWFkeQ0KPiBlbmxpc3RlZCIpDQo+IENjOiBUaG9tYXMgWmltbWVybWFubiA8dHppbW1l
-cm1hbm5Ac3VzZS5kZT4NCj4gU2lnbmVkLW9mZi1ieTogQ2h1YW5zaGVuZyBMaXUgPGNodWFu
-c2hlbmcubGl1QGludGVsLmNvbT4NCg0KSWYgeW91IGZpeCBHZWVydCdzIGNvbW1lbnQsIGZl
-ZWwgZnJlZSB0byBhZGQNCg0KUmV2aWV3ZWQtYnk6IFRob21hcyBaaW1tZXJtYW5uIDx0emlt
-bWVybWFubkBzdXNlLmRlPg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IC0tLQ0KPiAg
-IGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYl9kZWZpby5jIHwgOSArKysrKysrKy0NCj4g
-ICAxIGZpbGUgY2hhbmdlZCwgOCBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+IA0K
-PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiX2RlZmlvLmMgYi9k
-cml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJfZGVmaW8uYw0KPiBpbmRleCA5OGIwZjIzYmY1
-ZTIuLmVhZmI2NmNhNGYyOCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9j
-b3JlL2ZiX2RlZmlvLmMNCj4gKysrIGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiX2Rl
-ZmlvLmMNCj4gQEAgLTU5LDcgKzU5LDYgQEAgc3RhdGljIHZtX2ZhdWx0X3QgZmJfZGVmZXJy
-ZWRfaW9fZmF1bHQoc3RydWN0IHZtX2ZhdWx0ICp2bWYpDQo+ICAgCQlwcmludGsoS0VSTl9F
-UlIgIm5vIG1hcHBpbmcgYXZhaWxhYmxlXG4iKTsNCj4gICANCj4gICAJQlVHX09OKCFwYWdl
-LT5tYXBwaW5nKTsNCj4gLQlJTklUX0xJU1RfSEVBRCgmcGFnZS0+bHJ1KTsNCj4gICAJcGFn
-ZS0+aW5kZXggPSB2bWYtPnBnb2ZmOw0KPiAgIA0KPiAgIAl2bWYtPnBhZ2UgPSBwYWdlOw0K
-PiBAQCAtMjIwLDYgKzIxOSw4IEBAIHN0YXRpYyB2b2lkIGZiX2RlZmVycmVkX2lvX3dvcmso
-c3RydWN0IHdvcmtfc3RydWN0ICp3b3JrKQ0KPiAgIHZvaWQgZmJfZGVmZXJyZWRfaW9faW5p
-dChzdHJ1Y3QgZmJfaW5mbyAqaW5mbykNCj4gICB7DQo+ICAgCXN0cnVjdCBmYl9kZWZlcnJl
-ZF9pbyAqZmJkZWZpbyA9IGluZm8tPmZiZGVmaW87DQo+ICsJc3RydWN0IHBhZ2UgKnBhZ2U7
-DQo+ICsJaW50IGk7DQo+ICAgDQo+ICAgCUJVR19PTighZmJkZWZpbyk7DQo+ICAgCW11dGV4
-X2luaXQoJmZiZGVmaW8tPmxvY2spOw0KPiBAQCAtMjI3LDYgKzIyOCwxMiBAQCB2b2lkIGZi
-X2RlZmVycmVkX2lvX2luaXQoc3RydWN0IGZiX2luZm8gKmluZm8pDQo+ICAgCUlOSVRfTElT
-VF9IRUFEKCZmYmRlZmlvLT5wYWdlbGlzdCk7DQo+ICAgCWlmIChmYmRlZmlvLT5kZWxheSA9
-PSAwKSAvKiBzZXQgYSBkZWZhdWx0IG9mIDEgcyAqLw0KPiAgIAkJZmJkZWZpby0+ZGVsYXkg
-PSBIWjsNCj4gKw0KPiArCS8qIGluaXRpYWxpemUgYWxsIHRoZSBwYWdlIGxpc3RzIG9uZSB0
-aW1lICovDQo+ICsJZm9yIChpID0gMDsgaSA8IGluZm8tPmZpeC5zbWVtX2xlbjsgaSArPSBQ
-QUdFX1NJWkUpIHsNCj4gKwkJcGFnZSA9IGZiX2RlZmVycmVkX2lvX3BhZ2UoaW5mbywgaSk7
-DQo+ICsJCUlOSVRfTElTVF9IRUFEKCZwYWdlLT5scnUpOw0KPiArCX0NCj4gICB9DQo+ICAg
-RVhQT1JUX1NZTUJPTF9HUEwoZmJfZGVmZXJyZWRfaW9faW5pdCk7DQo+ICAgDQoNCi0tIA0K
-VGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29m
-dHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8
-cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRz
-ZsO8aHJlcjogSXZvIFRvdGV2DQo=
+This fix is to init all the page lists one time during initialization,
+it not only fixes the list corruption, but also avoids INIT_LIST_HEAD()
+redundantly.
 
---------------3e7v8DAR0tPjI7yWfAB0kmoP--
+V2: change "int i" to "unsigned int i" (Geert Uytterhoeven)
 
---------------be07U3Qd9ZKbKruygCjUopbf
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Fixes: 105a940416fc ("fbdev/defio: Early-out if page is already
+enlisted")
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+---
+ drivers/video/fbdev/core/fb_defio.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
------BEGIN PGP SIGNATURE-----
+diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
+index 98b0f23bf5e2..a1da54016c88 100644
+--- a/drivers/video/fbdev/core/fb_defio.c
++++ b/drivers/video/fbdev/core/fb_defio.c
+@@ -59,7 +59,6 @@ static vm_fault_t fb_deferred_io_fault(struct vm_fault *vmf)
+ 		printk(KERN_ERR "no mapping available\n");
+ 
+ 	BUG_ON(!page->mapping);
+-	INIT_LIST_HEAD(&page->lru);
+ 	page->index = vmf->pgoff;
+ 
+ 	vmf->page = page;
+@@ -220,6 +219,8 @@ static void fb_deferred_io_work(struct work_struct *work)
+ void fb_deferred_io_init(struct fb_info *info)
+ {
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
++	struct page *page;
++	unsigned int i;
+ 
+ 	BUG_ON(!fbdefio);
+ 	mutex_init(&fbdefio->lock);
+@@ -227,6 +228,12 @@ void fb_deferred_io_init(struct fb_info *info)
+ 	INIT_LIST_HEAD(&fbdefio->pagelist);
+ 	if (fbdefio->delay == 0) /* set a default of 1 s */
+ 		fbdefio->delay = HZ;
++
++	/* initialize all the page lists one time */
++	for (i = 0; i < info->fix.smem_len; i += PAGE_SIZE) {
++		page = fb_deferred_io_page(info, i);
++		INIT_LIST_HEAD(&page->lru);
++	}
+ }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_init);
+ 
+-- 
+2.25.0.rc2
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmIzONQFAwAAAAAACgkQlh/E3EQov+AG
-Rw//SZtWsBmQK+ly779aKo7P3Na0OyFMSvTZE5bW4HMt0ySPccDQXeznCdogDXFOuxS9i0uGiZM9
-xrEaTF2BwrdwAV3qERXsO9lxMKYHNQe54WGq4u/nVtp7D75afQEF1nuVfEqel+ErHFEJOk9QGrHt
-FDr+jznzE7Iojkn3sqGjTMLjNafV1MtPU4eNddElwmzPA+dStf0zqmhKw8HrnVZEhfgaNjYrwtdS
-zhyqDdDVmEGEVrn7YdaFR5jK9tQhWq899mASy5k1GYVNmm/5AhYvbJtB0lD4ZndeByt2v9E3ERzs
-UeJRo2fFPUQt9FZI0qqdInSJPZz1js1XqV/TSx+p/EbO4i7yj1jjEbukvGm9btB2l9LGhNk+oTlL
-27iOrJylp9iRfT4MftPqRAraSc5M9obtu9NRbcsLx8669z/s1c2+ebtr/Q0f9p59bqLpBl0Horv/
-DX3hrplFJyTkHbSPiYNnB+TMd5XCInBMyjRTIIy5HiWBEa0NlE7pLSVorK3c0+/gvtkN2Dc+EiCd
-S7yz4MUtzGRK+0oEFJOkBqc0n5BkYy9Orf5frphkUjKrj8KRwx2UqRLxd0wjljvPnM/WgM+3Qtz4
-v9QeRzzHqHwv2OFtq6a/zGdyQyPg0UPmIxfskCYsfD8OtgROgvztxdkcuSnT+9VjjqMohV8CPuUU
-1rA=
-=1L9C
------END PGP SIGNATURE-----
-
---------------be07U3Qd9ZKbKruygCjUopbf--

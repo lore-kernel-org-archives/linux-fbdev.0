@@ -2,153 +2,97 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA5A9C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 21 Mar 2022 07:25:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BFC1C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 21 Mar 2022 08:06:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238257AbiCUH00 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 21 Mar 2022 03:26:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37044 "EHLO
+        id S1345083AbiCUIIH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 21 Mar 2022 04:08:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41720 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244518AbiCUH0Y (ORCPT
+        with ESMTP id S1345091AbiCUIHy (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 21 Mar 2022 03:26:24 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 20BE258806;
-        Mon, 21 Mar 2022 00:24:59 -0700 (PDT)
-X-UUID: bf319316ec4c4ac78d0bf8b63b671b06-20220321
-X-UUID: bf319316ec4c4ac78d0bf8b63b671b06-20220321
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 1336590698; Mon, 21 Mar 2022 15:24:54 +0800
-Received: from mtkexhb01.mediatek.inc (172.21.101.102) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Mon, 21 Mar 2022 15:24:52 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by mtkexhb01.mediatek.inc
- (172.21.101.102) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Mon, 21 Mar
- 2022 15:24:52 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Mon, 21 Mar 2022 15:24:52 +0800
-Message-ID: <dae3ccb3e2f658418d6b1c061181a0b9291c108f.camel@mediatek.com>
-Subject: Re: [PATCH v8 17/19] drm/mediatek: add hpd debounce
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     Guillaume Ranquet <granquet@baylibre.com>,
-        <chunkuang.hu@kernel.org>, <p.zabel@pengutronix.de>,
-        <airlied@linux.ie>, <daniel@ffwll.ch>, <robh+dt@kernel.org>,
-        <maarten.lankhorst@linux.intel.com>, <mripard@kernel.org>,
-        <tzimmermann@suse.de>, <matthias.bgg@gmail.com>,
-        <chunfeng.yun@mediatek.com>, <kishon@ti.com>, <vkoul@kernel.org>,
-        <deller@gmx.de>, <ck.hu@mediatek.com>, <jitao.shi@mediatek.com>,
-        <angelogioacchino.delregno@collabora.com>
-CC:     <dri-devel@lists.freedesktop.org>,
-        <linux-mediatek@lists.infradead.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-phy@lists.infradead.org>, <linux-fbdev@vger.kernel.org>
-Date:   Mon, 21 Mar 2022 15:24:52 +0800
-In-Reply-To: <20220218145437.18563-18-granquet@baylibre.com>
-References: <20220218145437.18563-1-granquet@baylibre.com>
-         <20220218145437.18563-18-granquet@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        Mon, 21 Mar 2022 04:07:54 -0400
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92291F2138;
+        Mon, 21 Mar 2022 01:06:28 -0700 (PDT)
+Received: from mail-wr1-f54.google.com ([209.85.221.54]) by
+ mrelayeu.kundenserver.de (mreue108 [213.165.67.113]) with ESMTPSA (Nemesis)
+ id 1N0X0U-1oJtik1HZU-00wVqJ; Mon, 21 Mar 2022 09:01:18 +0100
+Received: by mail-wr1-f54.google.com with SMTP id q8so8128981wrc.0;
+        Mon, 21 Mar 2022 01:01:18 -0700 (PDT)
+X-Gm-Message-State: AOAM530QyJNXpQwGNlPMqeItywJxqMsl/zbjvWWzDpdlrZkXCr8RJaxz
+        quxuO6/2myPpZKT/w0nv6SS5TdiP5FOIXzaaers=
+X-Google-Smtp-Source: ABdhPJyn1rYxVcE3vSEk7fX9M0V9XhL9fPzronNopTs/qFftIqrfqDJrF+1Q25gMK0KMvVps+51S6HSesNjON/ttkuc=
+X-Received: by 2002:a5d:6d0f:0:b0:203:9157:1c48 with SMTP id
+ e15-20020a5d6d0f000000b0020391571c48mr17006225wrq.192.1647849677912; Mon, 21
+ Mar 2022 01:01:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+References: <20220310233307.99220-1-jmkrzyszt@gmail.com> <YixWZ+IiN2l9jmzg@atomide.com>
+In-Reply-To: <YixWZ+IiN2l9jmzg@atomide.com>
+From:   Arnd Bergmann <arnd@arndb.de>
+Date:   Mon, 21 Mar 2022 09:01:02 +0100
+X-Gmail-Original-Message-ID: <CAK8P3a3nLV2FXRQVocELNTiLqJY-CZXy9Ko6CSunFnhou_493Q@mail.gmail.com>
+Message-ID: <CAK8P3a3nLV2FXRQVocELNTiLqJY-CZXy9Ko6CSunFnhou_493Q@mail.gmail.com>
+Subject: Re: [RFC RFT PATCH 0/4] ARM: OMAP1: clock: Convert to CCF
+To:     Tony Lindgren <tony@atomide.com>
+Cc:     Janusz Krzysztofik <jmkrzyszt@gmail.com>,
+        Paul Walmsley <paul@pwsan.com>,
+        Aaro Koskinen <aaro.koskinen@iki.fi>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Helge Deller <deller@gmx.de>,
+        linux-omap <linux-omap@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        USB list <linux-usb@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:vgAUigR5OPNj49ogn46JzH0xL1qFerLhCnQe2Rw4G41COIuYwD2
+ gDQhNMFMotYD1t0mm2MBqsdJWdav5iLbb5T0IpEp2gVK2WGlmTxXsfJ7ELVnTmM7NPGp78h
+ ejDsVzbVo7ItJ26utXeSWw6cgLBwubNJdmpeMif5wlsKHWpInaHGs7TdHV5BGlq174FP8v/
+ E1fG47z+WffR58W8Wpasw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:BPOaNPv7Tw0=:8k4QFT0FY7a7GBg9NpCVN4
+ gCtHYVOrczoclRfMhTn+HeOmoTv95UKmbhp7rRDzXAECtbN5CRw71LFCl9merFGku/DXwKCWJ
+ EL1kN8pfG25zBsgXFFvPHnrfV9jVMcr6ykgbZ6/IB9cPm0NVpqiaHFRsjo7izLrSNZX6tE951
+ Xt80xYb75m0I3g/at+NiPs1FwPiRjSRpDf85zmKbdECUBKqUR65Z8e9ucf9wrH/oQjZDKt4uC
+ ZjxDOz0cSWbN0C5DdxRrAIUjH4F4cUjn00SR54mt8Gp0m4hA9uaOrkSt2Rxse1va1MaLyxy8+
+ /GqIk1KAvWSqhIyeKVdc9PON6xI+qRIoimZ4QAMIuOLn6DYz6ozKOi0K0BSDDGDzW9BzpZ+qL
+ G7aEbOFwChDX2CxCXMJCNirvzR+/slUgAjpJnjmPf8VJ2dM+UpjbcxsLw3fT2SyKeqoqD0/ww
+ mMlyvLGEzKtMEKIafqbL5f0MhTol50eAB7HcIhfOFqpefBp+vayLqUD2nwtDntXOBWA5cfcLx
+ RCN4/M25Qua849SAcQv70bdHAtmESJ4FDfgVGKp9Hc9hW21JbsSTX7w6BMVgjLZ7LbM4L8rjk
+ iTY9WH7M4HWMYHIFUnwSG0pEpAWsxMBvtZtf3PO7Am/l7snxlHDFN3Ckan9XbRiFdBba/N/lx
+ Hczg0DwL89oiMjbqBl2v7LpmXGIubg5HsCj24O9nodhG0Df6rba9vfmD2/ZH5qycEv/cfyBWI
+ HcZ0mPM6pYgzGsE4U67PU9yaB9o3xLjODH0/i5f1QJW+Wg0X+g69hTYF/XTG45nxTW9bCmos+
+ jEueFjvZ8eyWVKzzDrPFHIpLFozxoP6Xx5t0pooa0cp9G+TGgc=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, 2022-02-18 at 15:54 +0100, Guillaume Ranquet wrote:
-> From: Jitao Shi <jitao.shi@mediatek.com>
-> 
-> Implement the DP HDP debounce described in DP 1.4a 3.3.
-> 
-> Signed-off-by: Jitao Shi <jitao.shi@mediatek.com>
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+On Sat, Mar 12, 2022 at 9:14 AM Tony Lindgren <tony@atomide.com> wrote:
+>
+> * Janusz Krzysztofik <jmkrzyszt@gmail.com> [220310 23:32]:
+> > The main motivation behind this series is planned resurection of OMAP1
+> > camera driver.  Since OMAP1 clock internals have never been visible to
+> > drivers, that driver used to use v4l2-clk to expose a pixel clock for a
+> > sensor.  The v4l2-clk code has been recently depreciated and removed from
+> > the media subtree, hence the need for an alternative solution.
+>
+> Nice :) This will also help Arnd with building multi-v5 kernels.
 
-Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+Thanks for looping me in, I missed the thread originally but now
+got the replies.
 
-> ---
->  drivers/gpu/drm/mediatek/mtk_dp.c | 23 +++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
-> 
-> diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c
-> b/drivers/gpu/drm/mediatek/mtk_dp.c
-> index 2a3d5f15b651b..fe91ab8b2fd89 100644
-> --- a/drivers/gpu/drm/mediatek/mtk_dp.c
-> +++ b/drivers/gpu/drm/mediatek/mtk_dp.c
-> @@ -178,6 +178,8 @@ struct mtk_dp {
->  	struct device *codec_dev;
->  	u8 connector_eld[MAX_ELD_BYTES];
->  	struct drm_connector *conn;
-> +	bool need_debounce;
-> +	struct timer_list debounce_timer;
->  };
->  
->  static struct regmap_config mtk_dp_regmap_config = {
-> @@ -1698,6 +1700,9 @@ static irqreturn_t mtk_dp_hpd_event_thread(int
-> hpd, void *dev)
->  	if (event < 0)
->  		return IRQ_HANDLED;
->  
-> +	if (mtk_dp->need_debounce && mtk_dp-
-> >train_info.cable_plugged_in)
-> +		msleep(100);
-> +
->  	if (mtk_dp->drm_dev) {
->  		dev_info(mtk_dp->dev, "drm_helper_hpd_irq_event\n");
->  		drm_helper_hpd_irq_event(mtk_dp->bridge.dev);
-> @@ -1776,6 +1781,13 @@ static irqreturn_t
-> mtk_dp_hpd_isr_handler(struct mtk_dp *mtk_dp)
->  	}
->  	train_info->cable_state_change = true;
->  
-> +	if (train_info->cable_state_change) {
-> +		if (!train_info->cable_plugged_in) {
-> +			mod_timer(&mtk_dp->debounce_timer, jiffies +
-> msecs_to_jiffies(100) - 1);
-> +			mtk_dp->need_debounce = false;
-> +		}
-> +	}
-> +
->  	return IRQ_WAKE_THREAD;
->  }
->  
-> @@ -2239,6 +2251,13 @@ static const struct drm_bridge_funcs
-> mtk_dp_bridge_funcs = {
->  	.detect = mtk_dp_bdg_detect,
->  };
->  
-> +static void mtk_dp_debounce_timer(struct timer_list *t)
-> +{
-> +	struct mtk_dp *mtk_dp = from_timer(mtk_dp, t, debounce_timer);
-> +
-> +	mtk_dp->need_debounce = true;
-> +}
-> +
->  static int mtk_dp_probe(struct platform_device *pdev)
->  {
->  	struct mtk_dp *mtk_dp;
-> @@ -2319,6 +2338,9 @@ static int mtk_dp_probe(struct platform_device
-> *pdev)
->  	else
->  		mtk_dp->bridge.type = DRM_MODE_CONNECTOR_DisplayPort;
->  
-> +	mtk_dp->need_debounce = true;
-> +	timer_setup(&mtk_dp->debounce_timer, mtk_dp_debounce_timer, 0);
-> +
->  	pm_runtime_enable(dev);
->  	pm_runtime_get_sync(dev);
->  
-> @@ -2332,6 +2354,7 @@ static int mtk_dp_remove(struct platform_device
-> *pdev)
->  	platform_device_unregister(mtk_dp->phy_dev);
->  
->  	mtk_dp_video_mute(mtk_dp, true);
-> +	del_timer_sync(&mtk_dp->debounce_timer);
->  
->  	pm_runtime_disable(&pdev->dev);
->  
+As OMAP1 is the last user of HAVE_LEGACY_CLK on Arm, converting
+it would be particularly nice, and it allows me to dig out my omap1
+multiplatform patches, which does get us closer to endgame.
 
+The only other ARM9 platforms that are not multiplatform yet are
+ep93xx (which can probably be done now as well after its
+clk conversion) and s3c24xx (which is scheduled for removal next
+year).
+
+When those are out of the way, we only have StrongARM (rpc,
+sa1100, footbridge) and XScale (pxa, ixp, iop) remaining.
+
+      Arnd

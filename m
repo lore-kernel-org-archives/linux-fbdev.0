@@ -2,100 +2,276 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C8ACC4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 22 Mar 2022 19:08:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6BE9C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 22 Mar 2022 19:32:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230517AbiCVTJ3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 22 Mar 2022 15:09:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50046 "EHLO
+        id S231485AbiCVTdc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 22 Mar 2022 15:33:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34572 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230383AbiCVTJ3 (ORCPT
+        with ESMTP id S230461AbiCVTdb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 22 Mar 2022 15:09:29 -0400
-Received: from meesny.iki.fi (meesny.iki.fi [IPv6:2001:67c:2b0:1c1::201])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B56861A6;
-        Tue, 22 Mar 2022 12:08:00 -0700 (PDT)
-Received: from darkstar.musicnaut.iki.fi (85-76-100-34-nat.elisa-mobile.fi [85.76.100.34])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: aaro.koskinen)
-        by meesny.iki.fi (Postfix) with ESMTPSA id B3C5F20388;
-        Tue, 22 Mar 2022 21:07:54 +0200 (EET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=meesny;
-        t=1647976075;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=9zTS3DT6xcfZw/ju05KElVTkQiN1fQ/ztsa9TbNgG2s=;
-        b=cX6LmeT38lN2NaF7Qsx5VX0GwklLy2du9kOpxTh3b4+Qw5wrtoKy5+CaPdFHVPF7PUQJV7
-        JP0eZNy7X0Jfbj3WAB5bQXsUGhmUeS+qIfMHxdWpTOM+QUCxar+jfmcf0+g1AFcQ1pCKkA
-        q4bRX979489LLYULp2d8EW4EbP4qAGY=
-Date:   Tue, 22 Mar 2022 21:07:53 +0200
-From:   Aaro Koskinen <aaro.koskinen@iki.fi>
-To:     Janusz Krzysztofik <jmkrzyszt@gmail.com>
-Cc:     Tony Lindgren <tony@atomide.com>, Paul Walmsley <paul@pwsan.com>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Helge Deller <deller@gmx.de>, linux-omap@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-usb@vger.kernel.org,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Arnd Bergmann <arnd@arndb.de>, Felipe Balbi <balbi@kernel.org>,
-        Peter Ujfalusi <peter.ujfalusi@gmail.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>, linux-mmc@vger.kernel.org,
-        alsa-devel@alsa-project.org
-Subject: Re: [PATCH v2] ARM: OMAP1: Prepare for conversion of OMAP1 clocks to
- CCF
-Message-ID: <20220322190753.GF297526@darkstar.musicnaut.iki.fi>
-References: <20220310233307.99220-3-jmkrzyszt@gmail.com>
- <20220321215416.236250-1-jmkrzyszt@gmail.com>
- <20220322163646.GD297526@darkstar.musicnaut.iki.fi>
+        Tue, 22 Mar 2022 15:33:31 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5996A8A302;
+        Tue, 22 Mar 2022 12:32:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1647977517;
+        bh=93SXfuVtjQYZvz66Kex1MpWSLNXZlFaoSJzxEq6295U=;
+        h=X-UI-Sender-Class:Date:From:To:Cc:Subject;
+        b=TPcmE+Z152KRwiGn8Ja1WqY502jC9un30y2trKb/GPrLxyxkJNFFOgB8coH1EjmC7
+         knLRPMSx29WONo8B2+up+EMrRQ8fC368fyQHf5oHV5ppGAwN+4fAYGOKaqB+0iMiZc
+         FUGnlE+1nI1JQihJQS2lwjhlfXbFLmIN6BuIybCk=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from ls3530 ([92.116.191.132]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MbRk3-1o4AJ33zqL-00brWf; Tue, 22
+ Mar 2022 20:31:57 +0100
+Date:   Tue, 22 Mar 2022 20:31:55 +0100
+From:   Helge Deller <deller@gmx.de>
+To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>
+Subject: [GIT PULL] fbdev updates & fixes for v5.18-rc1
+Message-ID: <YjokKxSLtqMwyLyB@ls3530>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220322163646.GD297526@darkstar.musicnaut.iki.fi>
-ARC-Authentication-Results: i=1;
-        ORIGINATING;
-        auth=pass smtp.auth=aaro.koskinen smtp.mailfrom=aaro.koskinen@iki.fi
-ARC-Seal: i=1; s=meesny; d=iki.fi; t=1647976075; a=rsa-sha256; cv=none;
-        b=X6jYN8e4edIdwhVqd08HooVar4l9k4zaeYIbPBffuNKwdkVOZqop0cLduutP177L6DWw1t
-        z3md1/KyrpNc4Oj2NmcgYKgqs06xOi37+Q82NbgDQR7qRGbl7dmfLBEOUOb/ZvPz8Q9kzG
-        iv9WWWKrxOwoKKPEYH88Tk0Gi1Jit1A=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
-        s=meesny; t=1647976075;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=9zTS3DT6xcfZw/ju05KElVTkQiN1fQ/ztsa9TbNgG2s=;
-        b=uVqGTgouIQJQ2R58scj6U0J2KM/YtrOq4hq0tSnqJjTw6VkH13Shbd3ZumElBWGBl6w/C+
-        SIBA6Ck0VAZhNiAy4cgvRL+DdTJJmixLaEk9B9FpqhWM/Nmc5koLsdctAdg9syFOac++N8
-        L8McGNzCb7F/2+k2v1U0gta89xs02Sw=
+X-Provags-ID: V03:K1:/UMe39qFB1IobjfPzjP934uywvXFxhr7TLggs0tWKOWDPNIGonr
+ OhgJE3d9d+Np48tGi0SnCrXPajX7Rsq4xoDa26+7WAZoJECXAho79Wr4s/RQM0IIWlzOQKX
+ VibjBebK+b5J1K6HGUeEX1NDso6QwG+whtlLZzxl07OZmdEtAc/v4qTIoI6ADwvf68Y0i8k
+ BSwH10GUUeba9+ei9ya0g==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:a7ApWNi/GkE=:11CVAUu/hiXqZbG2wuj0HP
+ UAUI8fR9wXPmykUkRbNy1xYBNQJ3EvmduImCC7wJgQ34UFH8HhNwPTc7ucu/gfwptNEcsYDzC
+ Fv0ZuqrHFd0c00p/DO2zbSPyWCTaaq9vDZ1tkAyj6rQn75xt2LdaSZwTQuVhiZCTaWrcXZPQ1
+ PG/X3ZUmm+60j3YNPmSovMyzr/zHfLfXKPo1WPxnukHh+ChUvOV9pL9GLur3X5OsPlIZ3I6sf
+ zA4WvBR2JwoOfwTRJC+pv0QffxshXJiXQXuOjIJGLKZ0Qqo9PgQDxhHlZCbxAyrn0jIaXVB/m
+ 0kR/cGtGQQA6VHCAQPHfxRQ84HIuAikDD/g9DxWlwXQ4bU6BOJVlRqE4+gFzvSA2lZDdM7dJg
+ v3DliXrWA9NhbsBzNeCaRvgW9guHn/9Myif+TR7UtGWrbR25pAgGbcrO5x0XkDKSUkCoBZrYG
+ tk06UwPCHkM6rRqi6HQ6sHIPqZH8bfaeg02GIFZdoUYLQuBFV/InELr1KieUJ8jwvAlFe/LGI
+ WailG8Io7UtzYrYeofaaspAiXWiIcStLL1OJCQ2DHWv06mu5HlsVWtOuJ0gMZgYVS/Shjtc7A
+ NxJ0gpKuST2UvvBsye9YfsDFNj2MtW/HDljCLLuavT1nIcxevpEvMflYBQNR3L2g2TWaHQ1rv
+ SWXuk35d/+qpX8idPHaDDJL+GV43y3AT7AgPev1qLjzWZCu0FaIW52dQS8+VBvVrICZIpuc6J
+ gvMzIVlqkqbiGv5uUj6lfIMYJP3z+QH4ArKgFSXET+XSlRWEMVAFdFo4MKdV4XstpqkIJXznt
+ CWrTcQ3U+5CbP3cJgt2WPX6cQ91/3jpiarCouL68pgzDcpyP+wX5d2in0fjs9ilzP95ZXnL0R
+ JhSC/3ddTAdORko7iwtBq/5aOGcFdelA09JFXTxMUqV9bV+DV+32s9+qgy/RpfCBBBs6hVvr7
+ sflwvvuZkYHyFHnnmKVPUzsEbGn6VWaxslusF+oMcVS/4Z5TJb0r7p4JLPjMgYJc2cHXL2oFF
+ cHyosJEks34XSR5ziEgJGG4YFlOdmwrqqfftfsbtjorH3X316wRy4F2ror1fgnZrbVfQ5lyUs
+ kgqZXE1ZtLdmR4=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+Hello Linus,
 
-On Tue, Mar 22, 2022 at 06:36:48PM +0200, Aaro Koskinen wrote:
-> On Mon, Mar 21, 2022 at 10:54:16PM +0100, Janusz Krzysztofik wrote:
-> > In preparation for conversion of OMAP1 clocks to common clock framework,
-> > identify users of those clocks which don't call clk_prepare/unprepare()
-> > and update them to call clk_prepare_enable/clk_disable_unprepare() instead
-> > of just clk_enable/disable(), as required by CCF implementation of clock
-> > API.
-> > 
-> > v2: update still a few more OMAP specific drivers missed in v1,
-> >   - call clk_prepare/unprepare() just after/before clk_get/put() where it
-> >     can make more sense than merging prepare/unprepare with enable/disable.
-> 
-> Something is still broken. When doing kexec (using CCF kernel), the
-> kexec'ed kernel now hangs early (on 770):
-[...]
-> [    0.928863] calling  omap1_init_devices+0x0/0x2c @ 1
+please pull the latest fbdev updates and fixes for kernel 5.18-rc1.
 
-It hangs in omap_sram_reprogram_clock() (<- omap1_select_table_rate()
-<- omap1_clk_late_init()).
+This patchset has been in linux-next without any reported problems and
+includes a lot of small fixes and code cleanups across many traditional
+fbdev drivers.
 
-A.
+Thanks!
+Helge
+
+----------------------------------------------------------------
+
+The following changes since commit e783362eb54cd99b2cac8b3a9aeac942e6f6ac07:
+
+  Linux 5.17-rc1 (2022-01-23 10:12:53 +0200)
+
+are available in the Git repository at:
+
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/for-5.18/fbdev-1
+
+for you to fetch changes up to e445c8b2aa2df0e49f6037886c32d54a5e3960b1:
+
+  video: fbdev: kyro: make read-only array ODValues static const (2022-03-11 08:27:37 +0100)
+
+----------------------------------------------------------------
+fbdev fixes and updates for kernel v5.18-rc1
+
+Lots of small fixes and code cleanups across most of the fbdev drivers.
+
+This includes conversions to use helper functions, const conversions, spelling
+fixes, help text updates, adding return value checks, small build fixes, and
+much more.
+
+----------------------------------------------------------------
+Arnd Bergmann (1):
+      agp: define proper stubs for empty helpers
+
+Cai Huoqing (11):
+      video: fbdev: au1200fb: Make use of dma_mmap_coherent()
+      video: fbdev: omapfb: panel-lgphilips-lb035q02: Make use of the helper function dev_err_probe()
+      video: fbdev: omapfb: lcd_ams_delta: Make use of the helper function dev_err_probe()
+      video: fbdev: omapfb: panel-sharp-ls037v7dw01: Make use of the helper function dev_err_probe()
+      video: fbdev: omapfb: panel-tpo-td043mtea1: Make use of the helper function dev_err_probe()
+      video: fbdev: da8xx-fb: Make use of the helper function dev_err_probe()
+      video: fbdev: pxa168fb: Make use of the helper function dev_err_probe()
+      video: fbdev: pxa3xx-gcu: Make use of the helper function dev_err_probe()
+      video: fbdev: ssd1307fb: Make use of the helper function dev_err_probe()
+      video: fbdev: s3c-fb: Make use of the helper function dev_err_probe()
+      video: fbdev: mmp: Make use of the helper function dev_err_probe()
+
+Changcheng Deng (1):
+      video: fbmem: use swap() to make code cleaner in fb_rotate_logo()
+
+Chunyang Zhong (1):
+      video: fbdev: ocfb: add const to of_device_id
+
+Colin Ian King (7):
+      video: fbdev: aty128fb: make some arrays static const
+      video: fbdev: mb862xx: remove redundant assignment to pointer ptr
+      video: fbdev: via: Fix spelling mistake "bellow" -> "below"
+      video: fbdev: atyfb: Remove assigned but never used variable statements
+      video: fbdev: asiliantfb: remove redundant assignment to variable Ftarget
+      video: fbdev: pxa168fb: Initialize pointers with NULL and not plain integer 0
+      video: fbdev: kyro: make read-only array ODValues static const
+
+Dan Carpenter (3):
+      video: fbdev: savagefb: make a variable local
+      video: fbdev: atmel_lcdfb: fix an error code in atmel_lcdfb_probe()
+      video: fbdev: fbcvt.c: fix printing in fb_cvt_print_name()
+
+Evgeny Novikov (1):
+      video: fbdev: w100fb: Reset global state
+
+Geert Uytterhoeven (4):
+      video: fbdev: atari: Fix TT High video mode
+      video: fbdev: atari: Convert to standard round_up() helper
+      video: fbdev: atari: Remove unused atafb_setcolreg()
+      video: fbdev: au1100fb: Spelling s/palette/palette/
+
+George Kennedy (1):
+      video: fbdev: cirrusfb: check pixclock to avoid divide by zero
+
+Greg Kroah-Hartman (1):
+      video: fbdev: omapfb: use default_groups in kobj_type
+
+Guo Zhengkui (1):
+      video: fbdev: omapfb: Use sysfs_emit() instead of snprintf()
+
+Haowen Bai (1):
+      video: fbdev: offb: fix warning comparing pointer to 0
+
+Helge Deller (1):
+      video: fbdev: sm712fb: Fix crash in smtcfb_read()
+
+Jiasheng Jiang (1):
+      video: fbdev: imxfb: Check for null res pointer
+
+Jing Yao (3):
+      video: fbdev: omapfb: panel-dsi-cm: Use sysfs_emit() instead of snprintf()
+      video: fbdev: omapfb: panel-tpo-td043mtea1: Use sysfs_emit() instead of snprintf()
+      video: fbdev: udlfb: replace snprintf in show functions with sysfs_emit
+
+Krzysztof Kozlowski (1):
+      video: fbdev: s3c-fb: drop unneeded MODULE_ALIAS
+
+Luca Weiss (2):
+      backlight: qcom-wled: Add PM6150L compatible
+      dt-bindings: simple-framebuffer: allow standalone compatible
+
+Miaoqian Lin (1):
+      video: fbdev: omapfb: Add missing of_node_put() in dvic_probe_of
+
+Michael Schmitz (1):
+      video: fbdev: atari: Atari 2 bpp (STe) palette bugfix
+
+Minghao Chi (1):
+      video: fbdev: mach64_ct: remove redundant res variable
+
+Tim Gardner (1):
+      video: fbdev: nvidiafb: Use strscpy() to prevent buffer overflow
+
+Wang Hai (1):
+      video: fbdev: smscufx: Fix null-ptr-deref in ufx_usb_probe()
+
+Wei Ming Chen (1):
+      video: fbdev: Fix wrong file path for pvr2fb.c in Kconfig help text
+
+Xiaoke Wang (1):
+      video: fbdev: via: check the return value of kstrdup()
+
+Xu Wang (2):
+      backlight: lm3630a_bl: Remove redundant 'flush_workqueue()' calls
+      video: fbdev: omapfb: Remove redundant 'flush_workqueue()' calls
+
+Yang Guang (2):
+      video: fbdev: sis: use swap() to make code cleaner
+      video: fbdev: omapfb: acx565akm: replace snprintf with sysfs_emit
+
+Yang Li (2):
+      video: fbdev: pxa168fb: Remove unnecessary print function dev_err()
+      video: fbdev: pxa3xx-gcu: Remove unnecessary print function dev_err()
+
+Yihao Han (1):
+      video: fbdev: s3c-fb: fix platform_get_irq.cocci warning
+
+YueHaibing (1):
+      video: fbdev: controlfb: Fix COMPILE_TEST build
+
+Z. Liu (1):
+      video: fbdev: matroxfb: set maxvram of vbG200eW to the same as vbG200 to avoid black screen
+
+Zheyu Ma (1):
+      video: fbdev: sm712fb: Fix crash in smtcfb_write()
+
+zhaoxiao (1):
+      video: fbdev: s3c-fb: Use platform_get_irq() to get the interrupt
+
+ .../bindings/display/simple-framebuffer.yaml       | 12 +++--
+ arch/parisc/include/asm/agp.h                      |  4 +-
+ arch/powerpc/include/asm/agp.h                     |  4 +-
+ arch/sparc/include/asm/agp.h                       |  6 +--
+ drivers/video/backlight/lm3630a_bl.c               |  1 -
+ drivers/video/backlight/qcom-wled.c                |  1 +
+ drivers/video/fbdev/Kconfig                        |  2 +-
+ drivers/video/fbdev/asiliantfb.c                   |  2 +-
+ drivers/video/fbdev/atafb.c                        | 35 +++++---------
+ drivers/video/fbdev/atmel_lcdfb.c                  | 11 +++--
+ drivers/video/fbdev/aty/aty128fb.c                 | 10 ++--
+ drivers/video/fbdev/aty/mach64_ct.c                |  4 +-
+ drivers/video/fbdev/aty/mach64_gx.c                |  2 -
+ drivers/video/fbdev/au1100fb.c                     |  2 +-
+ drivers/video/fbdev/au1100fb.h                     |  2 +-
+ drivers/video/fbdev/au1200fb.c                     |  4 +-
+ drivers/video/fbdev/cirrusfb.c                     | 16 +++----
+ drivers/video/fbdev/controlfb.c                    |  2 +
+ drivers/video/fbdev/core/fbcvt.c                   | 53 +++++++++-------------
+ drivers/video/fbdev/core/fbmem.c                   |  8 +---
+ drivers/video/fbdev/da8xx-fb.c                     |  7 ++-
+ drivers/video/fbdev/imxfb.c                        |  2 +
+ drivers/video/fbdev/kyro/STG4000InitDevice.c       |  2 +-
+ drivers/video/fbdev/matrox/matroxfb_base.c         |  2 +-
+ drivers/video/fbdev/mb862xx/mb862xxfb_accel.c      |  2 +-
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c              |  3 +-
+ drivers/video/fbdev/nvidia/nv_i2c.c                |  2 +-
+ drivers/video/fbdev/ocfb.c                         |  2 +-
+ drivers/video/fbdev/offb.c                         |  2 +-
+ drivers/video/fbdev/omap/lcd_ams_delta.c           | 16 +++----
+ drivers/video/fbdev/omap/omapfb_main.c             | 13 +++---
+ .../fbdev/omap2/omapfb/displays/connector-dvi.c    |  1 +
+ .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     |  8 ++--
+ .../omapfb/displays/panel-lgphilips-lb035q02.c     |  7 ++-
+ .../omapfb/displays/panel-sharp-ls037v7dw01.c      |  7 ++-
+ .../omap2/omapfb/displays/panel-sony-acx565akm.c   |  2 +-
+ .../omap2/omapfb/displays/panel-tpo-td043mtea1.c   |  7 ++-
+ .../video/fbdev/omap2/omapfb/dss/display-sysfs.c   |  3 +-
+ .../video/fbdev/omap2/omapfb/dss/manager-sysfs.c   |  3 +-
+ .../video/fbdev/omap2/omapfb/dss/overlay-sysfs.c   |  3 +-
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c     |  1 -
+ drivers/video/fbdev/pxa168fb.c                     | 15 +++---
+ drivers/video/fbdev/pxa3xx-gcu.c                   | 10 ++--
+ drivers/video/fbdev/s3c-fb.c                       | 20 ++++----
+ drivers/video/fbdev/savage/savagefb.h              |  1 -
+ drivers/video/fbdev/savage/savagefb_driver.c       |  7 +--
+ drivers/video/fbdev/sis/sis_main.c                 |  2 +-
+ drivers/video/fbdev/sm712fb.c                      | 46 +++++--------------
+ drivers/video/fbdev/smscufx.c                      |  3 +-
+ drivers/video/fbdev/ssd1307fb.c                    |  7 ++-
+ drivers/video/fbdev/udlfb.c                        |  8 ++--
+ drivers/video/fbdev/via/lcd.c                      |  2 +-
+ drivers/video/fbdev/via/viafbdev.c                 | 10 ++++
+ drivers/video/fbdev/w100fb.c                       | 15 ++++--
+ 54 files changed, 189 insertions(+), 233 deletions(-)

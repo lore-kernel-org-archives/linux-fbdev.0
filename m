@@ -2,163 +2,120 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 039C8C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Mar 2022 06:41:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC3F0C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Mar 2022 07:06:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235641AbiCXGmo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 24 Mar 2022 02:42:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44308 "EHLO
+        id S245013AbiCXHIH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 24 Mar 2022 03:08:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46654 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234676AbiCXGmo (ORCPT
+        with ESMTP id S230024AbiCXHIH (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 24 Mar 2022 02:42:44 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51FA5E0F2;
-        Wed, 23 Mar 2022 23:41:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1648104066;
-        bh=oG+rbJAm+AG9M3LiDWs+HaYi73GayH2tAZGdv8/RRoI=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=S2FF7aE5pEQs5rGsjp5rWb8851LRaSn3D138pQfabvVTv6DOKSLG/CgBW11bg+f6h
-         HL0Q7P1nl51t+rmMcrE5mOtq7xXv3e5Y4w1nVoffAN8Mly+vyYOr0eAg71zI+tPKZN
-         KhW2b0NkrKejxzkBQEsb0COk6A4LcYlVioq6CSvM=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.161.116]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1N7i8Y-1oBe0e1vGs-014lkP; Thu, 24
- Mar 2022 07:41:06 +0100
-Message-ID: <4ff1bba5-3645-97b3-da66-8d413b8db2e1@gmx.de>
-Date:   Thu, 24 Mar 2022 07:41:02 +0100
+        Thu, 24 Mar 2022 03:08:07 -0400
+Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com [IPv6:2a00:1450:4864:20::629])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A62491AE6;
+        Thu, 24 Mar 2022 00:06:32 -0700 (PDT)
+Received: by mail-ej1-x629.google.com with SMTP id qx21so7200568ejb.13;
+        Thu, 24 Mar 2022 00:06:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=gyjq9zdDhX6RlmCOAFpwWrWqHwqUR/OK0/YrxmP9mpE=;
+        b=Nkjpyy9ZyUVLrvtPqSrFBmdZO0gQSf1HZ/lGBJRfGxBuIBZvGttXqZ9Yi3goQh7XwP
+         tfW0Aw+eZLOvvUmz/j/Ai7HSKUSx6k+BabRVwHINjfk8kUS2Uw21dwDbKlTNdy8KtMM9
+         p/L3+1ko9RSZVa0HmXTnTCIYJjgGNZCLW3T6qf+DSysj0876kU9Eq+/DTF/Lr4o7XEri
+         4TuTn/f6u+YF6CY1ZRbfdZWyq3ruzVaUw/79lzXKHUckh9mj1k+XyDdXCoLwR983TPN5
+         /atmeF97PAqqSGvq9PatGilN75mw2mcLsQz0DM5cVYj0HVJBseb8f40KfqE3m/EuD1a1
+         GCvg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=gyjq9zdDhX6RlmCOAFpwWrWqHwqUR/OK0/YrxmP9mpE=;
+        b=GQaGX8FUnvLt1BpqLeVedrXeRHOGwoRcCfsd5uOg4y+OUXpDRuFGuZ/w98Px5z+Dqh
+         ClS1dDItgg0/+dT63cNgkrZg5iOa2l1uRobm3mtFZBL6thzPP8VbLiZ8wgJI+xtWBw/q
+         V1QABMOIDIiMhD2LpFleSWOjFtn/5LGkFZBF0D+SsaqVfUf15O0ygpxurVSD3T+UfO55
+         nPKd2E+f7pY9azfNPUwvs3AG52Hv5AI/4sv8eLn+xxZbWhVQ+5/ajBtzKgq0prkWcCTc
+         x9p2qEXbb6oL+exy2j3s3ChcixaG6nO+HlkAZhd2x972uItDF8fOKPjsQ29lbb1CVCLI
+         +s1g==
+X-Gm-Message-State: AOAM5314nk0lHpnqzeQhJZRCGXdSy33J1le/lMJHM2+0OZivGHf+3lxe
+        k7mICAfjG/XQ6UHsS7CWQHU=
+X-Google-Smtp-Source: ABdhPJyUE78skfv/AqLpnp/mVa6k6QKT8XGbJKI2o7hjsYtY7V0495iNlUhXbzcX1tm6egg7oWrh5w==
+X-Received: by 2002:a17:907:60c8:b0:6da:83f0:9eaa with SMTP id hv8-20020a17090760c800b006da83f09eaamr4064343ejc.605.1648105591138;
+        Thu, 24 Mar 2022 00:06:31 -0700 (PDT)
+Received: from localhost.localdomain (i130160.upc-i.chello.nl. [62.195.130.160])
+        by smtp.googlemail.com with ESMTPSA id o7-20020a17090608c700b006cef23cf158sm763537eje.175.2022.03.24.00.06.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 24 Mar 2022 00:06:30 -0700 (PDT)
+From:   Jakob Koschel <jakobkoschel@gmail.com>
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Mike Rapoport <rppt@kernel.org>,
+        "Brian Johannesmeyer" <bjohannesmeyer@gmail.com>,
+        Cristiano Giuffrida <c.giuffrida@vu.nl>,
+        "Bos, H.J." <h.j.bos@vu.nl>, Jakob Koschel <jakobkoschel@gmail.com>
+Subject: [PATCH] backlight: replace usage of found with dedicated list iterator variable
+Date:   Thu, 24 Mar 2022 08:06:08 +0100
+Message-Id: <20220324070608.57057-1-jakobkoschel@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.6.2
-Subject: Re: [PATCH] fbdev: udlfb: properly check endpoint type
-Content-Language: en-US
-To:     Pavel Skripkin <paskripkin@gmail.com>, bernie@plugable.com
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        syzbot+53ce4a4246d0fe0fee34@syzkaller.appspotmail.com
-References: <20220322200438.17998-1-paskripkin@gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220322200438.17998-1-paskripkin@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:/XAFFZp6PO9BerQtIDwhx4StVjl+zIed3G1ZiAVxV6TfGCJ278T
- 6lRU7el1gK+zDoXGRntW9+339zS3dkq7gIF08JA2sKwGSbfkr8NyLnm35ZPCG2defmuk3B9
- NO0Wx8e7Q/jK+gUh86mvKix8UwGhLojF+P/MkSjqorMA6uhGb5AFCwjT/noechHtSdwXAyr
- t3RqATF8peyc284A57WBw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:JD9Gtfjzj/E=:RyuRtZUGCHF4aZncS5zsFR
- DtiIGqJh5M9P5O4i0l0kS0VM1OWDJbO81jQN6sHqlGAU0Z1Ai5VZgWk3Sn1BLVUHm+GJBLI+D
- OtdI1BI1sGjJYfwK6FlNLglmvx2dNXJk93S9YlcWOu4LaSIUm+eqIS+pCUrgS5fkWg3+CAgEE
- zdyBPy5vMrwooXZGTEle9xrMKC2IFUfBKBrleTLK3/lbacpVndAPrWdZLYJzRiiIT0jNacgAU
- M/FoSXAPlcQ72xUZs551UCGB+B4MJ7l4tOs3DlfjTvmLXCtDxTd886C7SMt5nCIHa3FBsxNmg
- 37mnHE12kltm5zQhZeAX4xF9NVsq5vO7uHZW9RwMb1PuJTtmplUPkPIQcQ0XRwjcNXm5DQwJj
- QLswcaNE+uYFZC2f0ZKGK0qB9Rr8Hy0e//8e80COrVQoRP9wJ1Y9vbnRl1xGZNYyDFEwWNfu4
- QXzEULN5Yo47CcAeXr8u//G1x4uWfzkTeQevjJID2yjGQ94Z7h9729GvpIC2MVUCXOrdwneNK
- NPoZuJCuTc8PKKiOjjrIaV0Vkje0oGVRSxRVvB5n8d4h4esbWrPpKt1QSUE7SUzB9PeN/PYdZ
- jUrIqaLxkdqbWTbE1Czd+hvzE6ExqqLsXYzhZjrr71D9cdcXFs1UPevV6FRJqCRu9QF2n8Ja8
- mdepWhUcbM20IcF+9716X1Y3dw9I2cm0YvDg6WmRAYGmvR01GmUPWyqa1u5UHw/lXkzznHmj4
- JesSi5FHjiMplAqctvhdzQ5uiX+cNYyOQBSAglDVx4OMkjyzW50o6R62pLNnzUFlS+K7tCzEr
- 8sGo9eJaglz4Q6D8ecTBQ0j2l0WwIlMQCquUtGCBOysPIEn8jBfGjnuGsxJtuVCN0bDj/AwwB
- sFh/WutqW2dcciFl152dbq/0Nt2H05M4M7hs4ulV5wnpUfH6sVWq7H+RIcKb5dN0tTc1oM5ZX
- DI4i4arQmHHvzc3EixNMsvOi5SfUulFySdIF8fm4smzpXLp4kZH5uF54ibBgYn9D5ri61eelY
- C2Nhg1tjtG1fVlXsZVN/SWXaQNHTL3fdFcYppbwYSqHTHfS/RZEnD/q207i+B9LOVQJJ3Cike
- Iv1cT3hVQ/ZEiA=
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 3/22/22 21:04, Pavel Skripkin wrote:
-> syzbot reported warning in usb_submit_urb, which is caused by wrong
-> endpoint type.
->
-> This driver uses out bulk endpoint for communication, so
-> let's check if this endpoint is present and bail out early if not.
->
-> Fail log:
->
-> usb 1-1: BOGUS urb xfer, pipe 3 !=3D type 1
-> WARNING: CPU: 0 PID: 4822 at drivers/usb/core/urb.c:493 usb_submit_urb+0=
-xd27/0x1540 drivers/usb/core/urb.c:493
-> Modules linked in:
-> CPU: 0 PID: 4822 Comm: kworker/0:3 Tainted: G        W         5.13.0-sy=
-zkaller #0
-> ...
-> Workqueue: usb_hub_wq hub_event
-> RIP: 0010:usb_submit_urb+0xd27/0x1540 drivers/usb/core/urb.c:493
-> ...
-> Call Trace:
->  dlfb_submit_urb+0x89/0x160 drivers/video/fbdev/udlfb.c:1969
->  dlfb_set_video_mode+0x21f0/0x2950 drivers/video/fbdev/udlfb.c:315
->  dlfb_ops_set_par+0x2a3/0x840 drivers/video/fbdev/udlfb.c:1110
->  dlfb_usb_probe.cold+0x113e/0x1f4a drivers/video/fbdev/udlfb.c:1732
->  usb_probe_interface+0x315/0x7f0 drivers/usb/core/driver.c:396
->
-> Fixes: 88e58b1a42f8 ("Staging: add udlfb driver")
-> Reported-and-tested-by: syzbot+53ce4a4246d0fe0fee34@syzkaller.appspotmai=
-l.com
-> Signed-off-by: Pavel Skripkin <paskripkin@gmail.com>
+To move the list iterator variable into the list_for_each_entry_*()
+macro in the future it should be avoided to use the list iterator
+variable after the loop body.
 
-applied.
+To *never* use the list iterator variable after the loop it was
+concluded to use a separate iterator variable instead of a
+found boolean [1].
 
-Thanks,
-Helge
+This removes the need to use a found variable and simply checking if
+the variable was set, can determine if the break/goto was hit.
 
-> ---
->  drivers/video/fbdev/udlfb.c | 14 ++++++++++++--
->  1 file changed, 12 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-> index b9cdd02c1000..2343c7955747 100644
-> --- a/drivers/video/fbdev/udlfb.c
-> +++ b/drivers/video/fbdev/udlfb.c
-> @@ -1649,8 +1649,9 @@ static int dlfb_usb_probe(struct usb_interface *in=
-tf,
->  	const struct device_attribute *attr;
->  	struct dlfb_data *dlfb;
->  	struct fb_info *info;
-> -	int retval =3D -ENOMEM;
-> +	int retval;
->  	struct usb_device *usbdev =3D interface_to_usbdev(intf);
-> +	struct usb_endpoint_descriptor *out;
->
->  	/* usb initialization */
->  	dlfb =3D kzalloc(sizeof(*dlfb), GFP_KERNEL);
-> @@ -1664,6 +1665,12 @@ static int dlfb_usb_probe(struct usb_interface *i=
-ntf,
->  	dlfb->udev =3D usb_get_dev(usbdev);
->  	usb_set_intfdata(intf, dlfb);
->
-> +	retval =3D usb_find_common_endpoints(intf->cur_altsetting, NULL, &out,=
- NULL, NULL);
-> +	if (retval) {
-> +		dev_err(&intf->dev, "Device should have at lease 1 bulk endpoint!\n")=
-;
-> +		goto error;
-> +	}
-> +
->  	dev_dbg(&intf->dev, "console enable=3D%d\n", console);
->  	dev_dbg(&intf->dev, "fb_defio enable=3D%d\n", fb_defio);
->  	dev_dbg(&intf->dev, "shadow enable=3D%d\n", shadow);
-> @@ -1673,6 +1680,7 @@ static int dlfb_usb_probe(struct usb_interface *in=
-tf,
->  	if (!dlfb_parse_vendor_descriptor(dlfb, intf)) {
->  		dev_err(&intf->dev,
->  			"firmware not recognized, incompatible device?\n");
-> +		retval =3D -ENODEV;
->  		goto error;
->  	}
->
-> @@ -1686,8 +1694,10 @@ static int dlfb_usb_probe(struct usb_interface *i=
-ntf,
->
->  	/* allocates framebuffer driver structure, not framebuffer memory */
->  	info =3D framebuffer_alloc(0, &dlfb->udev->dev);
-> -	if (!info)
-> +	if (!info) {
-> +		retval =3D -ENOMEM;
->  		goto error;
-> +	}
->
->  	dlfb->info =3D info;
->  	info->par =3D dlfb;
+Link: https://lore.kernel.org/all/CAHk-=wgRr_D8CB-D9Kg-c=EHreAsk5SqXPwr9Y7k9sA6cWXJ6w@mail.gmail.com/
+Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
+---
+ drivers/video/backlight/backlight.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index 4ae6fae94ac2..c05380d7a09e 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -479,19 +479,18 @@ EXPORT_SYMBOL(backlight_device_register);
+  */
+ struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
+ {
+-	bool found = false;
+-	struct backlight_device *bd;
++	struct backlight_device *bd = NULL, *iter;
+ 
+ 	mutex_lock(&backlight_dev_list_mutex);
+-	list_for_each_entry(bd, &backlight_dev_list, entry) {
+-		if (bd->props.type == type) {
+-			found = true;
++	list_for_each_entry(iter, &backlight_dev_list, entry) {
++		if (iter->props.type == type) {
++			bd = iter;
+ 			break;
+ 		}
+ 	}
+ 	mutex_unlock(&backlight_dev_list_mutex);
+ 
+-	return found ? bd : NULL;
++	return bd;
+ }
+ EXPORT_SYMBOL(backlight_device_get_by_type);
+ 
+
+base-commit: f443e374ae131c168a065ea1748feac6b2e76613
+-- 
+2.25.1
 

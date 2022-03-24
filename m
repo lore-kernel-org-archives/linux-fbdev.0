@@ -2,120 +2,91 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC3F0C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Mar 2022 07:06:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8764BC433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Mar 2022 14:55:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245013AbiCXHIH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 24 Mar 2022 03:08:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46654 "EHLO
+        id S1350697AbiCXO44 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 24 Mar 2022 10:56:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45240 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230024AbiCXHIH (ORCPT
+        with ESMTP id S1344773AbiCXO44 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 24 Mar 2022 03:08:07 -0400
-Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com [IPv6:2a00:1450:4864:20::629])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A62491AE6;
-        Thu, 24 Mar 2022 00:06:32 -0700 (PDT)
-Received: by mail-ej1-x629.google.com with SMTP id qx21so7200568ejb.13;
-        Thu, 24 Mar 2022 00:06:32 -0700 (PDT)
+        Thu, 24 Mar 2022 10:56:56 -0400
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D73797A987
+        for <linux-fbdev@vger.kernel.org>; Thu, 24 Mar 2022 07:55:23 -0700 (PDT)
+Received: by mail-wm1-x32b.google.com with SMTP id r190-20020a1c2bc7000000b0038a1013241dso2727894wmr.1
+        for <linux-fbdev@vger.kernel.org>; Thu, 24 Mar 2022 07:55:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=gyjq9zdDhX6RlmCOAFpwWrWqHwqUR/OK0/YrxmP9mpE=;
-        b=Nkjpyy9ZyUVLrvtPqSrFBmdZO0gQSf1HZ/lGBJRfGxBuIBZvGttXqZ9Yi3goQh7XwP
-         tfW0Aw+eZLOvvUmz/j/Ai7HSKUSx6k+BabRVwHINjfk8kUS2Uw21dwDbKlTNdy8KtMM9
-         p/L3+1ko9RSZVa0HmXTnTCIYJjgGNZCLW3T6qf+DSysj0876kU9Eq+/DTF/Lr4o7XEri
-         4TuTn/f6u+YF6CY1ZRbfdZWyq3ruzVaUw/79lzXKHUckh9mj1k+XyDdXCoLwR983TPN5
-         /atmeF97PAqqSGvq9PatGilN75mw2mcLsQz0DM5cVYj0HVJBseb8f40KfqE3m/EuD1a1
-         GCvg==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=ugHrK80HET8DZ+f74WXVZ6NolmaYIO5eOQX+LhNJahg=;
+        b=AJCj/zXjgICiAM6Sf8VVdd5x8Xm4KQgPnUhD7Eq/Kg/cYJh9gjSoxdFjIVApiwnMSn
+         XyYmCURT4GW6P6ew6BgF2ylK/+uhwjIlgN6aaZ7Pzdp0bt2lPvKzFb+rX47jhI0XTlwB
+         W3SaOfQHkaOHHCIpsqQqG57jkWC1Dl52pB5PGpcR0Sau6xYefwskTmXNuH8CXCX9MK+A
+         41nITgNnzJ0xoAkWgatllGKlTgUZI9H6nd5dI5jxvSQfj56scXisDkBUeiwuxHXvhwrW
+         MaNE0KrJEMS2P/09t2E/ng0jgLuV/TraAlOF2HIu96aGvw228Aylx+sMHjnXJ/lfOYHK
+         mLsg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=gyjq9zdDhX6RlmCOAFpwWrWqHwqUR/OK0/YrxmP9mpE=;
-        b=GQaGX8FUnvLt1BpqLeVedrXeRHOGwoRcCfsd5uOg4y+OUXpDRuFGuZ/w98Px5z+Dqh
-         ClS1dDItgg0/+dT63cNgkrZg5iOa2l1uRobm3mtFZBL6thzPP8VbLiZ8wgJI+xtWBw/q
-         V1QABMOIDIiMhD2LpFleSWOjFtn/5LGkFZBF0D+SsaqVfUf15O0ygpxurVSD3T+UfO55
-         nPKd2E+f7pY9azfNPUwvs3AG52Hv5AI/4sv8eLn+xxZbWhVQ+5/ajBtzKgq0prkWcCTc
-         x9p2qEXbb6oL+exy2j3s3ChcixaG6nO+HlkAZhd2x972uItDF8fOKPjsQ29lbb1CVCLI
-         +s1g==
-X-Gm-Message-State: AOAM5314nk0lHpnqzeQhJZRCGXdSy33J1le/lMJHM2+0OZivGHf+3lxe
-        k7mICAfjG/XQ6UHsS7CWQHU=
-X-Google-Smtp-Source: ABdhPJyUE78skfv/AqLpnp/mVa6k6QKT8XGbJKI2o7hjsYtY7V0495iNlUhXbzcX1tm6egg7oWrh5w==
-X-Received: by 2002:a17:907:60c8:b0:6da:83f0:9eaa with SMTP id hv8-20020a17090760c800b006da83f09eaamr4064343ejc.605.1648105591138;
-        Thu, 24 Mar 2022 00:06:31 -0700 (PDT)
-Received: from localhost.localdomain (i130160.upc-i.chello.nl. [62.195.130.160])
-        by smtp.googlemail.com with ESMTPSA id o7-20020a17090608c700b006cef23cf158sm763537eje.175.2022.03.24.00.06.30
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=ugHrK80HET8DZ+f74WXVZ6NolmaYIO5eOQX+LhNJahg=;
+        b=LR2nQ2sWCPeRLsdxip5InK0lAo8P+EsbNAD4HKIp7UEdSr4NLTZWefVsAohIRkz8U0
+         lTo8T6n/nfvxM8Wmt/NmdYoVY8bdQ4RE+1wkzJZGfGlq0gxjPKJZ2F9rRIIA4TQRK7RW
+         feCq5mdojOE3ujiAetoFmVIWZn24oz2iYyQIkT99+gTisKGkbc9YRTSFpj3NnUUEF0eT
+         Lk7+UIboEz9hGdcThcAQEk5HtvPP0FxQ0xnqeUU7Ojv8D6ajaMp8Bxmlnsxdf+9RF+p7
+         j3Uizl6dKiiXGhA0EEWZ2gDEEfZycspxwGJDGkb3abXI1bhLjAnTlEsFeMB4ECjOcz5D
+         Huww==
+X-Gm-Message-State: AOAM533rSLRicUctDtwYS4EKZLM88c/meq9/4R4CbcpNh6oNoCddPZxK
+        5dvvy7mo/H8CT19HS6r038KBdQ==
+X-Google-Smtp-Source: ABdhPJzlGM7+aVhd+ESPeY+mOcfoNjBXue9ITUmk62M2qek0XavekfwVYbwwMPo/YwS+kAvuUXPAqA==
+X-Received: by 2002:a7b:c381:0:b0:37b:e01f:c1c0 with SMTP id s1-20020a7bc381000000b0037be01fc1c0mr15024216wmj.98.1648133722411;
+        Thu, 24 Mar 2022 07:55:22 -0700 (PDT)
+Received: from maple.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id f7-20020a1cc907000000b0038c756fe683sm6202357wmb.43.2022.03.24.07.55.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Mar 2022 00:06:30 -0700 (PDT)
-From:   Jakob Koschel <jakobkoschel@gmail.com>
-To:     Lee Jones <lee.jones@linaro.org>
-Cc:     Daniel Thompson <daniel.thompson@linaro.org>,
+        Thu, 24 Mar 2022 07:55:21 -0700 (PDT)
+Date:   Thu, 24 Mar 2022 14:55:19 +0000
+From:   Daniel Thompson <daniel.thompson@linaro.org>
+To:     Jakob Koschel <jakobkoschel@gmail.com>
+Cc:     Lee Jones <lee.jones@linaro.org>,
         Jingoo Han <jingoohan1@gmail.com>,
         Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
         Mike Rapoport <rppt@kernel.org>,
-        "Brian Johannesmeyer" <bjohannesmeyer@gmail.com>,
+        Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
         Cristiano Giuffrida <c.giuffrida@vu.nl>,
-        "Bos, H.J." <h.j.bos@vu.nl>, Jakob Koschel <jakobkoschel@gmail.com>
-Subject: [PATCH] backlight: replace usage of found with dedicated list iterator variable
-Date:   Thu, 24 Mar 2022 08:06:08 +0100
-Message-Id: <20220324070608.57057-1-jakobkoschel@gmail.com>
-X-Mailer: git-send-email 2.25.1
+        "Bos, H.J." <h.j.bos@vu.nl>
+Subject: Re: [PATCH] backlight: replace usage of found with dedicated list
+ iterator variable
+Message-ID: <20220324145519.lcalgtmw3ih4y4li@maple.lan>
+References: <20220324070608.57057-1-jakobkoschel@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220324070608.57057-1-jakobkoschel@gmail.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-To move the list iterator variable into the list_for_each_entry_*()
-macro in the future it should be avoided to use the list iterator
-variable after the loop body.
+On Thu, Mar 24, 2022 at 08:06:08AM +0100, Jakob Koschel wrote:
+> To move the list iterator variable into the list_for_each_entry_*()
+> macro in the future it should be avoided to use the list iterator
+> variable after the loop body.
+> 
+> To *never* use the list iterator variable after the loop it was
+> concluded to use a separate iterator variable instead of a
+> found boolean [1].
+> 
+> This removes the need to use a found variable and simply checking if
+> the variable was set, can determine if the break/goto was hit.
+> 
+> Link: https://lore.kernel.org/all/CAHk-=wgRr_D8CB-D9Kg-c=EHreAsk5SqXPwr9Y7k9sA6cWXJ6w@mail.gmail.com/
+> Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
 
-To *never* use the list iterator variable after the loop it was
-concluded to use a separate iterator variable instead of a
-found boolean [1].
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-This removes the need to use a found variable and simply checking if
-the variable was set, can determine if the break/goto was hit.
 
-Link: https://lore.kernel.org/all/CAHk-=wgRr_D8CB-D9Kg-c=EHreAsk5SqXPwr9Y7k9sA6cWXJ6w@mail.gmail.com/
-Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
----
- drivers/video/backlight/backlight.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index 4ae6fae94ac2..c05380d7a09e 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -479,19 +479,18 @@ EXPORT_SYMBOL(backlight_device_register);
-  */
- struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
- {
--	bool found = false;
--	struct backlight_device *bd;
-+	struct backlight_device *bd = NULL, *iter;
- 
- 	mutex_lock(&backlight_dev_list_mutex);
--	list_for_each_entry(bd, &backlight_dev_list, entry) {
--		if (bd->props.type == type) {
--			found = true;
-+	list_for_each_entry(iter, &backlight_dev_list, entry) {
-+		if (iter->props.type == type) {
-+			bd = iter;
- 			break;
- 		}
- 	}
- 	mutex_unlock(&backlight_dev_list_mutex);
- 
--	return found ? bd : NULL;
-+	return bd;
- }
- EXPORT_SYMBOL(backlight_device_get_by_type);
- 
-
-base-commit: f443e374ae131c168a065ea1748feac6b2e76613
--- 
-2.25.1
-
+Daniel.

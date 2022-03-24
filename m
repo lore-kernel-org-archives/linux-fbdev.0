@@ -2,71 +2,101 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97877C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 23 Mar 2022 23:36:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC54CC433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Mar 2022 06:38:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345691AbiCWXhu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 23 Mar 2022 19:37:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53352 "EHLO
+        id S1347058AbiCXGjw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 24 Mar 2022 02:39:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34366 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345968AbiCWXht (ORCPT
+        with ESMTP id S1348222AbiCXGjv (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 23 Mar 2022 19:37:49 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 15FC26E781;
-        Wed, 23 Mar 2022 16:36:19 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id B4F55B8217F;
-        Wed, 23 Mar 2022 23:36:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 8342BC340EE;
-        Wed, 23 Mar 2022 23:36:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648078576;
-        bh=OhUtQJJcoj3Jnk+YaF08+vf4O/Og/N3qZbD+HriaA6o=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=FxYxD7nCVLDq6hbcb3BiqybyqBqZNuMPjqlSSwRXchs5bpYJ/FdHkokYDmMRSwtg8
-         Emnn3ie0xYYJyPLLiHISd5/3FvuPX5i8WLGJ1g3Hq0qe2D4N2skzt3SLdgNR+aD1S6
-         SmJehFYCaRYRVDw2wAulnS1y6Fxyl/4LpozIeUXzLThQ2UdG3Li8XlejVFYtvRL+vL
-         2dFoZedKeCHigpzmKnBrQ3Np2dbspRdXcEs5dHgl6QL3ECRO1jELBgYqQWf+jVfCsS
-         FRO050UwMzvGWg2WaT6z+6898bli1aiZOo8m5LKDmWc9EFRiVxicJ7VY5Q904ID3z8
-         msZeTBvnX7DLQ==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 71078E6D402;
-        Wed, 23 Mar 2022 23:36:16 +0000 (UTC)
-Subject: Re: [GIT PULL] fbdev updates & fixes for v5.18-rc1
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <YjokKxSLtqMwyLyB@ls3530>
-References: <YjokKxSLtqMwyLyB@ls3530>
-X-PR-Tracked-List-Id: Direct Rendering Infrastructure - Development
- <dri-devel.lists.freedesktop.org>
-X-PR-Tracked-Message-Id: <YjokKxSLtqMwyLyB@ls3530>
-X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/for-5.18/fbdev-1
-X-PR-Tracked-Commit-Id: e445c8b2aa2df0e49f6037886c32d54a5e3960b1
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 9c4b86ebf5bfdaceba4bedbaf76e4ff745db17ef
-Message-Id: <164807857645.14397.13955122823620181053.pr-tracker-bot@kernel.org>
-Date:   Wed, 23 Mar 2022 23:36:16 +0000
-To:     Helge Deller <deller@gmx.de>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        Daniel Vetter <daniel.vetter@ffwll.ch>
+        Thu, 24 Mar 2022 02:39:51 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE5D0E0F2;
+        Wed, 23 Mar 2022 23:38:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1648103892;
+        bh=eSQq/XcXAU2lYmD2WDC139IVXbDfpofvYA+9iId4Q5I=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=XyvlhDz5hIo6BOU0qJ/Vs0MX5Uv1gue06676C6xOtggsFAxOHDpH72iDXTlkdZnrS
+         2WZXl5whAUh5D7uUIWRJdOtnD+nd34RS4FayNy7uqfSlEvWUrayXZtAy3JkA3rU9/l
+         uaK6ZrZMSjPOJgJtJ8cPkpiPa2o2U5ger6j457W4=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.161.116]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MIwz4-1nnIrO1VSE-00KT0S; Thu, 24
+ Mar 2022 07:38:12 +0100
+Message-ID: <4115b2c5-7f7f-2ef3-e368-b21766774b5c@gmx.de>
+Date:   Thu, 24 Mar 2022 07:38:08 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.6.2
+Subject: Re: [PATCH] video: of: display_timing: Remove a redundant zeroing of
+ memory
+Content-Language: en-US
+To:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc:     linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <99f22ad1068fbbbc95acea59871cd408cde2623d.1647981212.git.christophe.jaillet@wanadoo.fr>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <99f22ad1068fbbbc95acea59871cd408cde2623d.1647981212.git.christophe.jaillet@wanadoo.fr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:CDiv9WbLv+NmReFdAyGNEBUXfh08WS4B6T6bgkSs+Df40MoBKCt
+ Uad2SOYmSFYzTh5TyaEI6SHLEN42QkGaLXHXbWFH2ev/HpAQW2PYdcDWK5CjioKp5eKg2Lw
+ C1KfZBYwGV5w/nzFHG7DbEQVSiYGhEkDYxcBG5T0h4VVATOWNLW8uTWqrQkeRG61vEibYmo
+ QUxCnelQpkjykACYJDhCQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:ReJHmqSzpso=:cbmuW9uJdhzyf2ri8d8jsy
+ GEswZP+eO0EMizGOirmsSqMkCq41SexPFM10EpFt755q+S7W4gMBnkUefZVXobwBT6zE/hIks
+ KPxWKftCmlOafw96s2ukQ1STUldb2aRjdVAMrefInWqUwUmYMCb04yoZRou7mSPrdhq5K33/p
+ /GtS2tbtxGpXz29t2kLwIkByTjE+4INgoY6nOAhwTLL1y9lJF33GCZbECl5JCmpBnzr+JMbaX
+ EE3hMRD0VNIYRJNe43bbavOVRz893GOUcN6EWIv56AID9ggfSQ1Gv4irk3bsf/tm67zYLAEu2
+ sivQ5sjU4yUEP7LlMLOxhVDQVQia4DnW2JXEBtd7xUY/dGRJ6aW365vxbDRrP7LI5yCP5CKxI
+ InSMy9gu5Eng7jVaDhzuPMmm7c+WKp0/KxDvj3fiVYdtPPs3zmGE0vFQvXlQEVh6fUjXndcCb
+ b7ijcmHdG4H4VydgRH04met58N02f9De+lZW8n+XjDOPiBNvLGbpe1NhfvP+7kzenxK3Yo++y
+ eGEKqZdylLopdAAhaXOCSd9f1oqKPeSUzdaZ+nMSwznMsOyCHlHX6aNe28KT18h1yMQYyASUi
+ 0fQJLMulge1v5hfO95puNvnoruqDPilxHWv7QgktacgA8GDQMHhwwWGnzIikVGTjq3e0zJC2c
+ eTDF08Yh17bSPHbCW+82BjzaZkMRMmMeM/MkljjPi7UyABLNqJSBlitO6KeDiew0EXyJyyskJ
+ QzBFAqFmzU1IkpbGNRt49Wt1lO24840U0RY23f5Pn81oHEIrmI+XnyZyO8yL+UP2DQze4jLxh
+ QjwW8nIFv9fmeNxV3WGfNrEUhp0dmf92YRowm9q/n4DjkykDaFoKEhlZ8aeRy4NNwk9T/mO2m
+ PQlnU7QSQCZyK7/7Oiv5sEchaKZUz7BhdcrkgQA1TBoux7eL1XePIxVGrs58FrO2nffIiSrRJ
+ o2WwHXJyuk9mSYHKRncj43lWWWyV9mP8jv+50509Np7ai7djeMg0JFiYPLLNKrCJfXjZEJM4L
+ //3tgS0n5ziEGSOesSnLOp5ILeH0KYeO/38DxC2yl/TB4JsxJ0rbidlu4QdRSCq8CNRkC9cpf
+ nLPzmP1TTKBXjs=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The pull request you sent on Tue, 22 Mar 2022 20:31:55 +0100:
+On 3/22/22 21:33, Christophe JAILLET wrote:
+> of_parse_display_timing() already call memset(0) on its 2nd argument, so
+> there is no need to clear it explicitly before calling this function.
+>
+> Use kmalloc() instead of kzalloc() to save a few cycles.
+>
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/for-5.18/fbdev-1
+applied.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/9c4b86ebf5bfdaceba4bedbaf76e4ff745db17ef
+Thanks!
+Helge
 
-Thank you!
+> ---
+>  drivers/video/of_display_timing.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_displa=
+y_timing.c
+> index f93b6abbe258..bebd371c6b93 100644
+> --- a/drivers/video/of_display_timing.c
+> +++ b/drivers/video/of_display_timing.c
+> @@ -199,7 +199,7 @@ struct display_timings *of_get_display_timings(const=
+ struct device_node *np)
+>  		struct display_timing *dt;
+>  		int r;
+>
+> -		dt =3D kzalloc(sizeof(*dt), GFP_KERNEL);
+> +		dt =3D kmalloc(sizeof(*dt), GFP_KERNEL);
+>  		if (!dt) {
+>  			pr_err("%pOF: could not allocate display_timing struct\n",
+>  				np);
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html

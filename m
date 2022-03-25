@@ -2,52 +2,52 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11904C433FE
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Mar 2022 17:17:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BA20C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Mar 2022 17:17:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1377285AbiCYRSi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 25 Mar 2022 13:18:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34014 "EHLO
+        id S1377413AbiCYRSq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 25 Mar 2022 13:18:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34556 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1377387AbiCYRSh (ORCPT
+        with ESMTP id S1377321AbiCYRSo (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 25 Mar 2022 13:18:37 -0400
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5FBBDE886D
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Mar 2022 10:16:55 -0700 (PDT)
-Received: by mail-wm1-x32b.google.com with SMTP id bi13-20020a05600c3d8d00b0038c2c33d8f3so9385164wmb.4
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Mar 2022 10:16:55 -0700 (PDT)
+        Fri, 25 Mar 2022 13:18:44 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A596E995F
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Mar 2022 10:17:01 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id p184-20020a1c29c1000000b0037f76d8b484so4780205wmp.5
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Mar 2022 10:17:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20210112.gappssmtp.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=bYxsps88w8XOTS4NTOr0eUjfIjqeWe2ct6Gz/AMg8SQ=;
-        b=3QeDLL+kno2ASafNq1yAb+eY4UN1c6ynD3eQFooOufQwRPGl+4wMEaT1N5cCrY99Si
-         VNLFY0Y4we3NdSHkYcoBhNLSatiuy3H1J6+K4H7kV2i6VXlK+v6UlgAC8se+jjwoqjhX
-         mTW/CF6a0rKfHBItcMn8Ar9gBmCKsHWpdqXWF2kUrpr6qCLPj5ssBHCupdrOLoJlLXK2
-         IdW2FqJnPqf8Wtlswtx2B/Ec4RsCJZKUr2Y5tKvf+xYGsnzYz3Wfgl3WpLExdToNMG0D
-         J/ni6ftntvbnq0QHLkXZE0xTJQoTJKifEvEOIVtULBJPX8kk/ujsIBCkEmzaexC2xD69
-         ja5Q==
+        bh=Z0UyPlWzo4y5KtqMIJtLeHp3pqp/XkkAPry5DhA+scQ=;
+        b=nK1lACwsSe7yZ3o29QQ6+6LAQXlxmu33SzVyzVt0/58cIz6yqIZK4LVHTdn/y/nXa5
+         /phwBmD8Xwg45AKK2t28fX0I+lQWTfsIC5T370z21ccs1KQN4iKIA7ud0yQAqta2HWyL
+         TeQ37+O1zjxS5J6PF+PZvfkRpKYaOcngE9UCN0pClS16YPQVAm1tSnJS3conrPYsL2+j
+         GTY9h2ht0vbLF5K5xr/k8DalzyZmBr6jf2ZGRdlooXYNI5DG2l6pTXxyes3xxGPw9ypn
+         nnZaeIjkaBPqjPI7gWan+GxMlcwfC1cDuPjjR5rUNKGsMPiB+i0cMnOfRZCT37p1TbwL
+         jb/A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=bYxsps88w8XOTS4NTOr0eUjfIjqeWe2ct6Gz/AMg8SQ=;
-        b=6nG8/Elr8CQmBOjorjD8QxdJUi2p1o+kM88MiHWmXUoM8vhbRjPEY0zUBlczwLk37z
-         nJ4sly3OSHZszwpzx55/2bOOhmavi7sDjWASpxfRw5LfcoM2G73FjCEFkH6x5G3OQAhZ
-         ykeWOhp5DRSH3k4+G7VzpL3PfFVbI8UbC4zpbMxu7ifoey8eER+u3h495d3++Ka6YOPY
-         E5Ltu8wVOEOlbYutiJPsdjQX2QznsaE/jjRLWX3+Q1InPl9l2zJYp2qd4R1RgB350ao4
-         nEnbqeWwsAStxhushpyDFUIhJmJtGXXX8GoEqK5VTRTuRWCzHn8SPTtfU6SFI96BRpWb
-         0+4w==
-X-Gm-Message-State: AOAM532gkhcr34fcEjkzyf7xMt4CLUOf6sAbELp2rBKEOONhQDEHtg73
-        C2rvyeR4v23IZ0oqh+ehm9smPg==
-X-Google-Smtp-Source: ABdhPJydSZEDR1RKQvP5hXg5nNvDMg1nkizYbpag71bPLKRQ0E5MKTsq4pT9e5lWJ5szAy/SJlYt9g==
-X-Received: by 2002:a05:600c:3b1e:b0:38c:da9f:9309 with SMTP id m30-20020a05600c3b1e00b0038cda9f9309mr7349169wms.9.1648228613538;
-        Fri, 25 Mar 2022 10:16:53 -0700 (PDT)
+        bh=Z0UyPlWzo4y5KtqMIJtLeHp3pqp/XkkAPry5DhA+scQ=;
+        b=aHvP10Xe6nRzQO+xdJpifVh6HXghA6rJsOxlSRDcfD5pKukIO3UfC7S9ziQR98Bnlq
+         Vl3EZtiI68axZ8Ikx0ZqyL8nlWj+1I0+fpJ9SYAX8qM2d7nPwjyV37LyTBh7BSteydb/
+         32dRMJ/Bo14ExOmK3Peh20JLdw8PWjKPJYcQSDamYkvdHb0U3qXsKhF6i8flU3T70BLg
+         ajj1DMDzlYceGHw/CgTcEDWFJsn0hsQeXJgGuwwhzw1e7NSTHbDXN2Ftzh0YQ+MnK1a8
+         W6Rt3LM4uZoLfFTRCFMlmK/8V3CiOL5t7Dn2Xeu3cX9SS11M+0q32NBoTM9NhIxNJFsX
+         SvUA==
+X-Gm-Message-State: AOAM530/3H0tEBDb7c+TJUHpMDCskDx6y2g08GxO13GrQG5t5JPwwJqR
+        U7Q8cTDdsJ32XJFdgd7gXhVMsw==
+X-Google-Smtp-Source: ABdhPJyXo6ik6r6RQSTysIePMHUG22CLd2y8/JaDeZs3aASy/dXgh8ev1U594xWC7kSgpqvduNejAg==
+X-Received: by 2002:a05:600c:4e4b:b0:38c:eebc:2ec4 with SMTP id e11-20020a05600c4e4b00b0038ceebc2ec4mr2058412wmq.47.1648228619892;
+        Fri, 25 Mar 2022 10:16:59 -0700 (PDT)
 Received: from localhost.localdomain (2a02-8440-6240-cc41-3074-96af-9642-0003.rev.sfr.net. [2a02:8440:6240:cc41:3074:96af:9642:3])
-        by smtp.gmail.com with ESMTPSA id p16-20020a5d6390000000b00203ffebddf3sm7547464wru.99.2022.03.25.10.16.51
+        by smtp.gmail.com with ESMTPSA id p16-20020a5d6390000000b00203ffebddf3sm7547464wru.99.2022.03.25.10.16.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Mar 2022 10:16:53 -0700 (PDT)
+        Fri, 25 Mar 2022 10:16:59 -0700 (PDT)
 From:   Guillaume Ranquet <granquet@baylibre.com>
 To:     chunkuang.hu@kernel.org, p.zabel@pengutronix.de, airlied@linux.ie,
         daniel@ffwll.ch, robh+dt@kernel.org,
@@ -60,10 +60,10 @@ Cc:     dri-devel@lists.freedesktop.org,
         linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        markyacoub@google.com, Markus Schneider-Pargmann <msp@baylibre.com>
-Subject: [PATCH 05/22] drm/edid: Add cea_sad helpers for freq/length
-Date:   Fri, 25 Mar 2022 18:14:54 +0100
-Message-Id: <20220325171511.23493-6-granquet@baylibre.com>
+        markyacoub@google.com
+Subject: [PATCH 08/22] drm/mediatek: dpi: implement a CK/DE pol toggle in SoC config
+Date:   Fri, 25 Mar 2022 18:14:57 +0100
+Message-Id: <20220325171511.23493-9-granquet@baylibre.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220325171511.23493-1-granquet@baylibre.com>
 References: <20220325171511.23493-1-granquet@baylibre.com>
@@ -73,135 +73,83 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This patch adds two helper functions that extract the frequency and word
-length from a struct cea_sad.
+Adds a bit of flexibility to support SoCs without CK/DE pol support
 
-For these helper functions new defines are added that help translate the
-'freq' and 'byte2' fields into real numbers.
-
-Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
 Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+Reviewed-by: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
 ---
- drivers/gpu/drm/drm_edid.c | 74 ++++++++++++++++++++++++++++++++++++++
- include/drm/drm_edid.h     | 14 ++++++++
- 2 files changed, 88 insertions(+)
+ drivers/gpu/drm/mediatek/mtk_dpi.c | 22 +++++++++++++++++-----
+ 1 file changed, 17 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
-index 3b7041fc9cdf..2e98c993aaca 100644
---- a/drivers/gpu/drm/drm_edid.c
-+++ b/drivers/gpu/drm/drm_edid.c
-@@ -4758,6 +4758,80 @@ int drm_edid_to_speaker_allocation(struct edid *edid, u8 **sadb)
- }
- EXPORT_SYMBOL(drm_edid_to_speaker_allocation);
- 
-+/**
-+ * drm_cea_sad_get_sample_rate - Extract the sample rate from cea_sad
-+ * @sad: Pointer to the cea_sad struct
-+ *
-+ * Extracts the cea_sad frequency field and returns the sample rate in Hz.
-+ *
-+ * Return: Sample rate in Hz or a negative errno if parsing failed.
-+ */
-+int drm_cea_sad_get_sample_rate(const struct cea_sad *sad)
-+{
-+	switch (sad->freq) {
-+	case DRM_CEA_SAD_FREQ_32KHZ:
-+		return 32000;
-+	case DRM_CEA_SAD_FREQ_44KHZ:
-+		return 44100;
-+	case DRM_CEA_SAD_FREQ_48KHZ:
-+		return 48000;
-+	case DRM_CEA_SAD_FREQ_88KHZ:
-+		return 88200;
-+	case DRM_CEA_SAD_FREQ_96KHZ:
-+		return 96000;
-+	case DRM_CEA_SAD_FREQ_176KHZ:
-+		return 176400;
-+	case DRM_CEA_SAD_FREQ_192KHZ:
-+		return 192000;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+EXPORT_SYMBOL(drm_cea_sad_get_sample_rate);
-+
-+static bool drm_cea_sad_is_uncompressed(const struct cea_sad *sad)
-+{
-+	switch (sad->format) {
-+	case HDMI_AUDIO_CODING_TYPE_STREAM:
-+	case HDMI_AUDIO_CODING_TYPE_PCM:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+/**
-+ * drm_cea_sad_get_uncompressed_word_length - Extract word length
-+ * @sad: Pointer to the cea_sad struct
-+ *
-+ * Extracts the cea_sad byte2 field and returns the word length for an
-+ * uncompressed stream.
-+ *
-+ * Note: This function may only be called for uncompressed audio.
-+ *
-+ * Return: Word length in bits or a negative errno if parsing failed.
-+ */
-+int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad *sad)
-+{
-+	if (!drm_cea_sad_is_uncompressed(sad)) {
-+		DRM_WARN("Unable to get the uncompressed word length for a compressed format: %u\n",
-+			 sad->format);
-+		return -EINVAL;
-+	}
-+
-+	switch (sad->byte2) {
-+	case DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT:
-+		return 16;
-+	case DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT:
-+		return 20;
-+	case DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT:
-+		return 24;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+EXPORT_SYMBOL(drm_cea_sad_get_uncompressed_word_length);
-+
- /**
-  * drm_av_sync_delay - compute the HDMI/DP sink audio-video sync delay
-  * @connector: connector associated with the HDMI/DP sink
-diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
-index 5d4d840b9904..ebd00ecae205 100644
---- a/include/drm/drm_edid.h
-+++ b/include/drm/drm_edid.h
-@@ -372,6 +372,18 @@ struct cea_sad {
- 	u8 byte2;
+diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c b/drivers/gpu/drm/mediatek/mtk_dpi.c
+index 4746eb342567..545a1337cc89 100644
+--- a/drivers/gpu/drm/mediatek/mtk_dpi.c
++++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
+@@ -125,6 +125,7 @@ struct mtk_dpi_conf {
+ 	bool edge_sel_en;
+ 	const u32 *output_fmts;
+ 	u32 num_output_fmts;
++	bool is_ck_de_pol;
+ 	const struct mtk_dpi_yc_limit *limit;
  };
  
-+#define DRM_CEA_SAD_FREQ_32KHZ  BIT(0)
-+#define DRM_CEA_SAD_FREQ_44KHZ  BIT(1)
-+#define DRM_CEA_SAD_FREQ_48KHZ  BIT(2)
-+#define DRM_CEA_SAD_FREQ_88KHZ  BIT(3)
-+#define DRM_CEA_SAD_FREQ_96KHZ  BIT(4)
-+#define DRM_CEA_SAD_FREQ_176KHZ BIT(5)
-+#define DRM_CEA_SAD_FREQ_192KHZ BIT(6)
-+
-+#define DRM_CEA_SAD_UNCOMPRESSED_WORD_16BIT BIT(0)
-+#define DRM_CEA_SAD_UNCOMPRESSED_WORD_20BIT BIT(1)
-+#define DRM_CEA_SAD_UNCOMPRESSED_WORD_24BIT BIT(2)
-+
- struct drm_encoder;
- struct drm_connector;
- struct drm_connector_state;
-@@ -379,6 +391,8 @@ struct drm_display_mode;
+@@ -211,13 +212,20 @@ static void mtk_dpi_config_pol(struct mtk_dpi *dpi,
+ 			       struct mtk_dpi_polarities *dpi_pol)
+ {
+ 	unsigned int pol;
++	unsigned int mask;
  
- int drm_edid_to_sad(struct edid *edid, struct cea_sad **sads);
- int drm_edid_to_speaker_allocation(struct edid *edid, u8 **sadb);
-+int drm_cea_sad_get_sample_rate(const struct cea_sad *sad);
-+int drm_cea_sad_get_uncompressed_word_length(const struct cea_sad *sad);
- int drm_av_sync_delay(struct drm_connector *connector,
- 		      const struct drm_display_mode *mode);
+-	pol = (dpi_pol->ck_pol == MTK_DPI_POLARITY_RISING ? 0 : CK_POL) |
+-	      (dpi_pol->de_pol == MTK_DPI_POLARITY_RISING ? 0 : DE_POL) |
+-	      (dpi_pol->hsync_pol == MTK_DPI_POLARITY_RISING ? 0 : HSYNC_POL) |
++	mask = HSYNC_POL | VSYNC_POL;
++	pol = (dpi_pol->hsync_pol == MTK_DPI_POLARITY_RISING ? 0 : HSYNC_POL) |
+ 	      (dpi_pol->vsync_pol == MTK_DPI_POLARITY_RISING ? 0 : VSYNC_POL);
+-	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, pol,
+-		     CK_POL | DE_POL | HSYNC_POL | VSYNC_POL);
++	if (dpi->conf->is_ck_de_pol) {
++		mask |= CK_POL | DE_POL;
++		pol |= (dpi_pol->ck_pol == MTK_DPI_POLARITY_RISING ?
++			0 : CK_POL) |
++		       (dpi_pol->de_pol == MTK_DPI_POLARITY_RISING ?
++			0 : DE_POL);
++	}
++
++	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, pol, mask);
+ }
+ 
+ static void mtk_dpi_config_3d(struct mtk_dpi *dpi, bool en_3d)
+@@ -799,6 +807,7 @@ static const struct mtk_dpi_conf mt8173_conf = {
+ 	.max_clock_khz = 300000,
+ 	.output_fmts = mt8173_output_fmts,
+ 	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
++	.is_ck_de_pol = true,
+ 	.limit = &mtk_dpi_limit,
+ };
+ 
+@@ -809,6 +818,7 @@ static const struct mtk_dpi_conf mt2701_conf = {
+ 	.max_clock_khz = 150000,
+ 	.output_fmts = mt8173_output_fmts,
+ 	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
++	.is_ck_de_pol = true,
+ 	.limit = &mtk_dpi_limit,
+ };
+ 
+@@ -818,6 +828,7 @@ static const struct mtk_dpi_conf mt8183_conf = {
+ 	.max_clock_khz = 100000,
+ 	.output_fmts = mt8183_output_fmts,
+ 	.num_output_fmts = ARRAY_SIZE(mt8183_output_fmts),
++	.is_ck_de_pol = true,
+ 	.limit = &mtk_dpi_limit,
+ };
+ 
+@@ -827,6 +838,7 @@ static const struct mtk_dpi_conf mt8192_conf = {
+ 	.max_clock_khz = 150000,
+ 	.output_fmts = mt8173_output_fmts,
+ 	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
++	.is_ck_de_pol = true,
+ 	.limit = &mtk_dpi_limit,
+ };
  
 -- 
 2.34.1

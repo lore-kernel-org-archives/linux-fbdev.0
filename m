@@ -2,48 +2,49 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46519C4321E
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Mar 2022 19:47:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6222FC433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Mar 2022 19:48:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231534AbiCYTtI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 25 Mar 2022 15:49:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41298 "EHLO
+        id S231682AbiCYTto (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 25 Mar 2022 15:49:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55728 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232761AbiCYTss (ORCPT
+        with ESMTP id S232109AbiCYTsD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 25 Mar 2022 15:48:48 -0400
-Received: from mail-lf1-f48.google.com (mail-lf1-f48.google.com [209.85.167.48])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1094F2F09E0;
-        Fri, 25 Mar 2022 12:32:17 -0700 (PDT)
-Received: by mail-lf1-f48.google.com with SMTP id bt26so15010589lfb.3;
-        Fri, 25 Mar 2022 12:32:17 -0700 (PDT)
+        Fri, 25 Mar 2022 15:48:03 -0400
+Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9640ABE00;
+        Fri, 25 Mar 2022 12:36:46 -0700 (PDT)
+Received: by mail-ed1-f54.google.com with SMTP id g20so10357724edw.6;
+        Fri, 25 Mar 2022 12:36:46 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=fJjnFfBeI9XuoTQ2rMHlb5QSE/FCm1zaIPOSdIZQTC0=;
-        b=dAj2wD+WlFpoqnvGloKEsvWktHaO84sl8sKvbts9N8TEPEFkNbXkAfc7GjCuueeYgJ
-         VqtIuwzPwMN9zLe4QPNcSJswxW44Nz58QGMBYmDlg6mD5EQF9DKLAww9wDZxAnWSkeJW
-         m2kg/Js/171qVkLrpU2cU5Yq0+lGrDr3zHPdz3vsQIDDVrbbpq2jvxwM8GtaSTKVsCaG
-         xgul2tEsnSY60AVMSMuVKI2Qfz+6xMqlNtBf08UPb9DaikBMSf8A5rPDGk0S3dHx9Zaj
-         2XJ9RqHxLplbx1SCuXuTenmLdb/75xOEmdr5vQRrzmtITfgbrPrFOUP1MNZdKCZkePZA
-         mQzg==
-X-Gm-Message-State: AOAM532k6HqlXYgNIM8Y+SrhF8WTdg8Lz0R5zvdJiIHN/c0OCFFgFbFj
-        oGlXn7QLanNwWwDLaB+T8S4RzXtuSiiSzA==
-X-Google-Smtp-Source: ABdhPJx9AcLbB10hWUvMbGKFbcDWJCdGLEjuW1LTkWr28eOxybEpkzk0b+GmAPMNBBmIQ+Z8/uaDWQ==
-X-Received: by 2002:a05:6402:5215:b0:419:4c82:8f06 with SMTP id s21-20020a056402521500b004194c828f06mr14488943edd.275.1648230198996;
-        Fri, 25 Mar 2022 10:43:18 -0700 (PDT)
+        bh=+IQOL/i3pOvSW6gL8acHIjGAB8zIBWe2pJauIvLBYZw=;
+        b=Jpg3SFWpcGh+acolcJXQrC8Vd1srCmtpuOfqxFA3X06ggAkJ/Jtj/Tjzkx1LTb2yq0
+         WW7ytd0qzqXhnOu8ykX7dAoqOvu3kV2xTXoxfzhMCjO9gu32FpxU1wTKrbuxsl5NlK2C
+         4B7NBRJZ5XGXhnTJZL/mIhlcM38zAwYtwAZ+hs3aMH3DMzrYKesUOHOE1+a0RXWrKqQ/
+         SCP8nc3Eo8lmOB3vVepsvMMFcBFBLZs39ey9nafL6Pnj2t0dpNiW6fZKASniAcIW9gBi
+         MNnJsI8JaakB/jJR3G7buEKrVCpi+f02ToiE0widEIR7lPuvmsIkTaq9667x++yj+Z8z
+         c/iA==
+X-Gm-Message-State: AOAM5327RPpM6kyHVTS2ut1hC2CH45AKirwbrbIKNIgWBDsk6DLaw1f8
+        r8UpHECdif+cijYUqC4c5Q4z4ncPQNALRg==
+X-Google-Smtp-Source: ABdhPJxMwXvlpL+4JyEmyf1bVymPZHtcHyRrXsWs0hxmehdLZOEYA6fVeuX2XFBlMV/UWRok9ezgvg==
+X-Received: by 2002:a50:9fad:0:b0:419:f22:46db with SMTP id c42-20020a509fad000000b004190f2246dbmr14492584edf.354.1648229797742;
+        Fri, 25 Mar 2022 10:36:37 -0700 (PDT)
 Received: from [192.168.0.162] (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
-        by smtp.googlemail.com with ESMTPSA id j9-20020a170906534900b006df9b29eaf1sm2596918ejo.8.2022.03.25.10.43.17
+        by smtp.googlemail.com with ESMTPSA id g4-20020a170906520400b006e0b798a0b8sm490009ejm.94.2022.03.25.10.36.36
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 25 Mar 2022 10:43:18 -0700 (PDT)
-Message-ID: <21791df4-d983-36a1-001d-42a3176e9700@kernel.org>
-Date:   Fri, 25 Mar 2022 18:43:17 +0100
+        Fri, 25 Mar 2022 10:36:37 -0700 (PDT)
+Message-ID: <da463ecb-e4ac-6e9c-c3a6-775d5c853807@kernel.org>
+Date:   Fri, 25 Mar 2022 18:36:35 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.5.0
-Subject: Re: [PATCH 02/22] dt-bindings: mediatek,dp: Add Display Port binding
+Subject: Re: [PATCH 03/22] dt-bindings: mediatek,dp_phy: Add Display Port PHY
+ binding
 Content-Language: en-US
 To:     Guillaume Ranquet <granquet@baylibre.com>, chunkuang.hu@kernel.org,
         p.zabel@pengutronix.de, airlied@linux.ie, daniel@ffwll.ch,
@@ -56,13 +57,11 @@ Cc:     dri-devel@lists.freedesktop.org,
         linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        markyacoub@google.com,
-        Markus Schneider-Pargmann <msp@baylibre.com>,
-        Rob Herring <robh@kernel.org>
+        markyacoub@google.com
 References: <20220325171511.23493-1-granquet@baylibre.com>
- <20220325171511.23493-3-granquet@baylibre.com>
+ <20220325171511.23493-4-granquet@baylibre.com>
 From:   Krzysztof Kozlowski <krzk@kernel.org>
-In-Reply-To: <20220325171511.23493-3-granquet@baylibre.com>
+In-Reply-To: <20220325171511.23493-4-granquet@baylibre.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -70,139 +69,71 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 On 25/03/2022 18:14, Guillaume Ranquet wrote:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> This phy controller is embedded in the Display Port Controller on mt8195 SoCs.
 > 
-> This controller is present on several mediatek hardware. Currently
-> mt8195 and mt8395 have this controller without a functional difference,
-> so only one compatible field is added.
-> 
-> The controller can have two forms, as a normal display port and as an
-> embedded display port.
-> 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
 > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
 > ---
->  .../display/mediatek/mediatek,dp.yaml         | 97 +++++++++++++++++++
->  1 file changed, 97 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+>  .../bindings/phy/mediatek,dp-phy.yaml         | 43 +++++++++++++++++++
+>  1 file changed, 43 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
 > 
-> diff --git a/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+> diff --git a/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml b/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
 > new file mode 100644
-> index 000000000000..74db5c4e0f73
+> index 000000000000..4180d40f4fa7
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
-> @@ -0,0 +1,97 @@
+> +++ b/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
+> @@ -0,0 +1,43 @@
 > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +# Copyright (c) 2022 MediaTek
 > +%YAML 1.2
 > +---
-> +$id: http://devicetree.org/schemas/display/mediatek/mediatek,dp.yaml#
+> +$id: http://devicetree.org/schemas/phy/mediatek,dp-phy.yaml#
 > +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +title: Mediatek Display Port Controller
+> +title: MediaTek Display Port PHY binding
+
+Skip "binding"
+
 > +
 > +maintainers:
 > +  - CK Hu <ck.hu@mediatek.com>
 > +  - Jitao shi <jitao.shi@mediatek.com>
 > +
 > +description: |
-> +  Device tree bindings for the Mediatek (embedded) Display Port controller
+> +  Device tree bindings for the Mediatek (embedded) Display Port PHY
 > +  present on some Mediatek SoCs.
 > +
 > +properties:
 > +  compatible:
 > +    enum:
-> +      - mediatek,mt8195-dp-tx
-> +      - syscon
+> +      - mediatek,mt8195-dp-phy
+> +
+> +  regmap:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: Phandle to the Display Port node.
 
-This is wrong, should be a list. Are you sure you got Rob's review? I
-see now v8 with his Reviewed-by tag, but without syscon, so he looked at
-something else.
-
-Please drop his tag and please test your changes. This would be easily
-spotted with dt_binding_check.
+Need a vendor prefix and descriptive suffix (e.g. mediatek,dp-syscon).
 
 > +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    items:
-> +      - description: faxi clock
-> +
-> +  clock-names:
-> +    items:
-> +      - const: faxi
-> +
-> +  phys:
-> +    maxItems: 1
-> +
-> +  phy-names:
-> +    items:
-> +      - const: dp
-> +
-> +  power-domains:
-> +    maxItems: 1
-> +
-> +  ports:
-> +    $ref: /schemas/graph.yaml#/properties/ports
-> +    properties:
-> +      port@0:
-> +        $ref: /schemas/graph.yaml#/properties/port
-> +        description: Input endpoint of the controller, usually dp_intf
-> +
-> +      port@1:
-> +        $ref: /schemas/graph.yaml#/properties/port
-> +        description: Output endpoint of the controller
-
-None of the ports are required?
-
+> +  "#phy-cells":
+> +    const: 0
 > +
 > +required:
 > +  - compatible
-> +  - reg
-> +  - interrupts
-> +  - ports
+> +  - regmap
+> +  - "#phy-cells"
 > +
 > +additionalProperties: false
 > +
 > +examples:
 > +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    #include <dt-bindings/power/mt8195-power.h>
-> +    edp_tx: edp_tx@1c500000 {
+> +    dp_phy: dp_phy {
 
-generic node name, so I guess "dp" as display-port.
+Generic node name: just phy. Also underscores shoulk not be in node name.
 
-> +        compatible = "mediatek,mt8195-dp-tx","syscon";
-> +        reg = <0 0x1c500000 0 0x8000>;
-> +        interrupts = <GIC_SPI 676 IRQ_TYPE_LEVEL_HIGH 0>;
-> +        power-domains = <&spm MT8195_POWER_DOMAIN_EPD_TX>;
-> +        pinctrl-names = "default";
-> +        pinctrl-0 = <&edp_pin>;
-> +        phys = <&dp_phy>;
-> +        phy-names = "dp";
-> +
-> +        ports {
-> +            #address-cells = <1>;
-> +            #size-cells = <0>;
-> +
-> +            port@0 {
-> +                reg = <0>;
-> +                edp_in: endpoint {
-> +                    remote-endpoint = <&dp_intf0_out>;
-> +                };
-> +            };
-> +            port@1 {
-> +                reg = <1>;
-> +                edp_out: endpoint {
-> +                	remote-endpoint = <&panel_in>;
-> +                };
-> +            };
-> +        };
+> +      compatible = "mediatek,mt8195-dp-phy";
+> +      regmap = <&dp_tx>;
+> +      #phy-cells = <0>;
 > +    };
 
 

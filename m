@@ -2,124 +2,185 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3779CC433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 24 Mar 2022 22:13:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C304C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Mar 2022 17:16:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355272AbiCXWPW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 24 Mar 2022 18:15:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44784 "EHLO
+        id S1358013AbiCYRSW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 25 Mar 2022 13:18:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32818 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230169AbiCXWPV (ORCPT
+        with ESMTP id S1377349AbiCYRSV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 24 Mar 2022 18:15:21 -0400
-X-Greylist: delayed 1749 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 24 Mar 2022 15:13:48 PDT
-Received: from gateway30.websitewelcome.com (gateway30.websitewelcome.com [192.185.193.11])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC46CA6E14
-        for <linux-fbdev@vger.kernel.org>; Thu, 24 Mar 2022 15:13:47 -0700 (PDT)
-Received: from cm17.websitewelcome.com (cm17.websitewelcome.com [100.42.49.20])
-        by gateway30.websitewelcome.com (Postfix) with ESMTP id 930F31B6EF
-        for <linux-fbdev@vger.kernel.org>; Thu, 24 Mar 2022 16:18:10 -0500 (CDT)
-Received: from 162-215-252-75.unifiedlayer.com ([208.91.199.152])
-        by cmsmtp with SMTP
-        id XUqQnX13c22u3XUqQntFpS; Thu, 24 Mar 2022 16:18:10 -0500
-X-Authority-Reason: nr=8
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=roeck-us.net; s=default; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
-        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=uYIalswLom+ceKwMGJo6mQG4+4OkZPeJDwH7fRE+ZPk=; b=cMxNZZ92vrPsegNwniVsIiJu6H
-        cjg0z0Aq0AcDBpxN2VsWvG9wDTT34MReKb1oO5UGRnZcwNJG1f9Eo2uM8Naq2VkW6x7XwbmQAfXHr
-        JRf0KsW/pTJcxLSqrCMQAeqPnwqhxfoq8whse9R2+mxnQuUxiRsHU0wvZvzM4D9LQEimEOudZyKRN
-        0OQ4O6f2mVCShIIEnnJVdSHl/D2eJc/Fctnfq0YAJoTLwVPQIGBEtboCNaPZ89EgVBCNdZwEvetjP
-        3/KFA5PV1K09QNsDE9HnEkNKxCFok3ntDVoKIc1bV7MPs2TQDER2STwyF4iPJzJ7a+G8q/URFCqB5
-        DxVxXxdg==;
-Received: from 108-223-40-66.lightspeed.sntcca.sbcglobal.net ([108.223.40.66]:54452)
-        by bh-25.webhostbox.net with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        (Exim 4.94.2)
-        (envelope-from <linux@roeck-us.net>)
-        id 1nXUqP-004IOY-Ss; Thu, 24 Mar 2022 21:18:09 +0000
-Message-ID: <05be3d3b-16a7-2a65-fa58-606f22bfeeb8@roeck-us.net>
-Date:   Thu, 24 Mar 2022 14:18:08 -0700
+        Fri, 25 Mar 2022 13:18:21 -0400
+Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83360E8862
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Mar 2022 10:16:44 -0700 (PDT)
+Received: by mail-wm1-x330.google.com with SMTP id p12-20020a05600c430c00b0038cbdf52227so4795424wme.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Mar 2022 10:16:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=ttvVODLTTBaqB4olSje/RjnCtKXgr801DvSo2q2eG0E=;
+        b=N1CIxrPllldGtyrr6zpOrMX0FXbRkN9jSKNyyoOnpgzvf3oO00M6yzMIR/NdW3SJ1m
+         tZDvFwFHCU0wiAvTdbmuCf6VURSMugIOFNr9ByRJR0ccKWPVhDJ7OExv6Yl/GbZu2pNx
+         DFDfr7MvT/GIw1bYXLKZB5vruoRQkJsBGc5R6DF2aFSuHAmh0nlo2LSe6a8nhmC2xaav
+         EgQhahyI4MwTpYQ1VKfoG4vl0ZOx69Oca5bEdc+a5E3kKOyNye+xSmu/v+bAY0WrrMKO
+         66HRHMw6d8lSFlB4Oacgo6ig6bCAad0RlRsdWosVOW5xo2PQC/W6/hpVr/LU68aFVsKX
+         Qz7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=ttvVODLTTBaqB4olSje/RjnCtKXgr801DvSo2q2eG0E=;
+        b=jS7+VyEkPamyuLzKtO4gprAO3psJLy29+j99jWHfcmvhXdOqQFgp2BIKULd3Wd1ShB
+         jHeV4OU3ls1iuCdJ2mE6B+Ojs58tkqIfsg7ScbaIDRMSJn0HAC5IZfjAUEupGJTEf6x0
+         ffe2lxmJEb7v2h3L/Z+rvmKX2j5m3Z8kJEDe4W3c1ZPkm7rSZpN15RN2Hd07rr1Pj+1y
+         gzZA2On7zau/gVpQwhn7GeD7+mJstwqpamcovdZbExVlRYzyf93qHqqA3BS/KJ2QvQB+
+         fZNkhrYJr0gS99TOLIx11bSOXtN80p2739vJe26pfPWVqigkeVMBb+R1Phm2x9B9tC6/
+         IMCA==
+X-Gm-Message-State: AOAM531IygLuNLGqMc7mQfoRzDg/pT2UB7XALIEKjOn6j1yQW+q6E6P0
+        o+yU0yXP/8xS6JpCyxX1ie0GUg==
+X-Google-Smtp-Source: ABdhPJxYt+gdFp9cOKWjwZsLb/u9lRiQpwwVDTh6wjY60qcTISWQeI+ehBpxnSUzrqMg6tzyAQdKCA==
+X-Received: by 2002:a05:600c:19ce:b0:38c:dcc1:4cf3 with SMTP id u14-20020a05600c19ce00b0038cdcc14cf3mr6782388wmq.126.1648228602590;
+        Fri, 25 Mar 2022 10:16:42 -0700 (PDT)
+Received: from localhost.localdomain (2a02-8440-6240-cc41-3074-96af-9642-0003.rev.sfr.net. [2a02:8440:6240:cc41:3074:96af:9642:3])
+        by smtp.gmail.com with ESMTPSA id p16-20020a5d6390000000b00203ffebddf3sm7547464wru.99.2022.03.25.10.16.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 25 Mar 2022 10:16:42 -0700 (PDT)
+From:   Guillaume Ranquet <granquet@baylibre.com>
+To:     chunkuang.hu@kernel.org, p.zabel@pengutronix.de, airlied@linux.ie,
+        daniel@ffwll.ch, robh+dt@kernel.org,
+        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        tzimmermann@suse.de, matthias.bgg@gmail.com,
+        chunfeng.yun@mediatek.com, kishon@ti.com, vkoul@kernel.org,
+        deller@gmx.de, ck.hu@mediatek.com, jitao.shi@mediatek.com,
+        angelogioacchino.delregno@collabora.com
+Cc:     dri-devel@lists.freedesktop.org,
+        linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org,
+        markyacoub@google.com
+Subject: [PATCH 00/22] drm/mediatek: Add mt8195 DisplayPort driver
+Date:   Fri, 25 Mar 2022 18:14:49 +0100
+Message-Id: <20220325171511.23493-1-granquet@baylibre.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v3 4/5] fbdev: Improve performance of cfb_imageblit()
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     daniel@ffwll.ch, deller@gmx.de, javierm@redhat.com,
-        geert@linux-m68k.org, sam@ravnborg.org, kraxel@redhat.com,
-        ppaalanen@gmail.com, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-References: <20220223193804.18636-1-tzimmermann@suse.de>
- <20220223193804.18636-5-tzimmermann@suse.de>
- <20220324191116.GA1045463@roeck-us.net>
- <db7e3568-5dc2-eb84-8ee4-191442da85e9@suse.de>
-From:   Guenter Roeck <linux@roeck-us.net>
-In-Reply-To: <db7e3568-5dc2-eb84-8ee4-191442da85e9@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - bh-25.webhostbox.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - roeck-us.net
-X-BWhitelist: no
-X-Source-IP: 108.223.40.66
-X-Source-L: No
-X-Exim-ID: 1nXUqP-004IOY-Ss
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: 108-223-40-66.lightspeed.sntcca.sbcglobal.net [108.223.40.66]:54452
-X-Source-Auth: linux@roeck-us.net
-X-Email-Count: 10
-X-Source-Cap: cm9lY2s7YWN0aXZzdG07YmgtMjUud2ViaG9zdGJveC5uZXQ=
-X-Local-Domain: yes
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 3/24/22 12:18, Thomas Zimmermann wrote:
-> Hi
-> 
-> Am 24.03.22 um 20:11 schrieb Guenter Roeck:
->> Hi,
->>
->> On Wed, Feb 23, 2022 at 08:38:03PM +0100, Thomas Zimmermann wrote:
->>> Improve the performance of cfb_imageblit() by manually unrolling
->>> the inner blitting loop and moving some invariants out. The compiler
->>> failed to do this automatically. This change keeps cfb_imageblit()
->>> in sync with sys_imagebit().
->>>
->>> A microbenchmark measures the average number of CPU cycles
->>> for cfb_imageblit() after a stabilizing period of a few minutes
->>> (i7-4790, FullHD, simpledrm, kernel with debugging).
->>>
->>> cfb_imageblit(), new: 15724 cycles
->>> cfb_imageblit(): old: 30566 cycles
->>>
->>> In the optimized case, cfb_imageblit() is now ~2x faster than before.
->>>
->>> v3:
->>>     * fix commit description (Pekka)
->>>
->>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->>
->> This patch causes crashes with arm mainstone, z2, and collie emulations.
->> Reverting it fixes the problem.
->>
->> collie crash log and bisect log attached.
-> 
-> Does it work if you apply the fixes at
-> 
-> https://patchwork.freedesktop.org/series/101321/
-> 
-> ?
-> 
+this series is built around the DisplayPort driver. The dpi/dpintf
+driver and the added helper functions are required for the DisplayPort
+driver to work.
 
-Yes, it does, specifically the cfb related patch. I sent a Tested-by:.
+This v9 is not quite ready yet, as project constraints forces me to
+publish v9 this week, I'm sorry if it's not standard practice.
 
-Thanks,
-Guenter
+Moreover, it is still un-tested on a recent kernel.
+The integration kernel we are using is still based on 5.10... but we
+are actively working on bringing up a mt8195 integration branch on 5.17.
+The patches have been rebased on top of next-20220301 and have been
+tested to build sucessfully (no functional testing).
+
+Changes from v8:
+- The DP-Phy now has its own dt-bindings and now shares a regmap using the
+  syscon facility with the DP driver.
+- hot plug detection has been removed from the Embedded Display Port.
+  patch and moved to the patch adding External Display Port support.
+- started working on better error handling for the mtk_dp driver.
+- rebased on linux-next.
+- removal of tvd pll clocks re-introduced by mistake.
+- various coding style fixes.
+
+Things that are in my todolist for v10:
+- fixing the train_handler in the mtk_dp driver, as I haven't been able
+  to reproduce locally (hopefully migrating to running the tests on a
+  more recent kernel will help)
+- explaining the various sleep/delays introduced in the drivers
+- explaining some of the differences between mt8195 and "legacy"
+- retrieve CK/DE support from panel driver instead of hardcoding it into
+  the dpi driver.
+- better error handling/reporting in mtk_dp
+- look into re-implementing mtk_dp_aux_transfer() using drm_dp_dpcd_read and
+  drm_dp_dpcd_write as suggested by Rex.
+
+Older revisions:
+RFC - https://lore.kernel.org/linux-mediatek/20210816192523.1739365-1-msp@baylibre.com/
+v1  - https://lore.kernel.org/linux-mediatek/20210906193529.718845-1-msp@baylibre.com/
+v2  - https://lore.kernel.org/linux-mediatek/20210920084424.231825-1-msp@baylibre.com/
+v3  - https://lore.kernel.org/linux-mediatek/20211001094443.2770169-1-msp@baylibre.com/
+v4  - https://lore.kernel.org/linux-mediatek/20211011094624.3416029-1-msp@baylibre.com/
+v5  - https://lore.kernel.org/all/20211021092707.3562523-1-msp@baylibre.com/
+v6  - https://lore.kernel.org/linux-mediatek/20211110130623.20553-1-granquet@baylibre.com/
+v7  - https://lore.kernel.org/linux-mediatek/20211217150854.2081-1-granquet@baylibre.com/
+v8  - https://lore.kernel.org/linux-mediatek/20220218145437.18563-1-granquet@baylibre.com/
+
+Functional dependencies are:
+- Add Mediatek Soc DRM (vdosys0) support for mt8195
+  https://lore.kernel.org/all/20211026155911.17651-1-jason-jh.lin@mediatek.com/
+- Add MediaTek SoC DRM (vdosys1) support for mt8195
+  https://lore.kernel.org/all/20211029075203.17093-1-nancy.lin@mediatek.com/
+
+Guillaume Ranquet (15):
+  dt-bindings: mediatek,dp_phy: Add Display Port PHY binding
+  drm/edid: Convert cea_sad helper struct to kernelDoc
+  drm/edid: Add cea_sad helpers for freq/length
+  drm/mediatek: dpi: move dpi limits to SoC config
+  drm/mediatek: dpi: implement a CK/DE pol toggle in SoC config
+  drm/mediatek: dpi: implement a swap_input toggle in SoC config
+  drm/mediatek: dpi: move dimension mask to SoC config
+  drm/mediatek: dpi: move hvsize_mask to SoC config
+  drm/mediatek: dpi: move swap_shift to SoC config
+  drm/mediatek: dpi: move the yuv422_en_bit to SoC config
+  drm/mediatek: dpi: move the csc_enable bit to SoC config
+  drm/mediatek: dpi: Add dpintf support
+  drm/meditek: dpi: Add matrix_sel helper
+  drm/mediatek: Add mt8195 External DisplayPort support
+  drm/mediatek: DP audio support for mt8195
+
+Jitao Shi (2):
+  drm/mediatek: add hpd debounce
+  drm/mediatek: change the aux retries times when receiving AUX_DEFER
+
+Markus Schneider-Pargmann (5):
+  dt-bindings: mediatek,dpi: Add DP_INTF compatible
+  dt-bindings: mediatek,dp: Add Display Port binding
+  video/hdmi: Add audio_infoframe packing for DP
+  phy: phy-mtk-dp: Add driver for DP phy
+  drm/mediatek: Add mt8195 Embedded DisplayPort driver
+
+ .../display/mediatek/mediatek,dp.yaml         |   97 +
+ .../display/mediatek/mediatek,dpi.yaml        |   11 +-
+ .../bindings/phy/mediatek,dp-phy.yaml         |   43 +
+ MAINTAINERS                                   |    1 +
+ drivers/gpu/drm/drm_edid.c                    |   74 +
+ drivers/gpu/drm/mediatek/Kconfig              |    8 +
+ drivers/gpu/drm/mediatek/Makefile             |    2 +
+ drivers/gpu/drm/mediatek/mtk_dp.c             | 3204 +++++++++++++++++
+ drivers/gpu/drm/mediatek/mtk_dp_reg.h         |  568 +++
+ drivers/gpu/drm/mediatek/mtk_dpi.c            |  222 +-
+ drivers/gpu/drm/mediatek/mtk_dpi_regs.h       |   38 +
+ drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.c   |    8 +
+ drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.h   |    1 +
+ drivers/gpu/drm/mediatek/mtk_drm_drv.c        |    6 +-
+ drivers/gpu/drm/mediatek/mtk_drm_drv.h        |    1 +
+ drivers/phy/mediatek/Kconfig                  |    8 +
+ drivers/phy/mediatek/Makefile                 |    1 +
+ drivers/phy/mediatek/phy-mtk-dp.c             |  202 ++
+ drivers/video/hdmi.c                          |   82 +-
+ include/drm/dp/drm_dp_helper.h                |    2 +
+ include/drm/drm_edid.h                        |   25 +-
+ include/linux/hdmi.h                          |    7 +-
+ include/linux/soc/mediatek/mtk-mmsys.h        |    3 +-
+ 23 files changed, 4541 insertions(+), 73 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+ create mode 100644 Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
+ create mode 100644 drivers/gpu/drm/mediatek/mtk_dp.c
+ create mode 100644 drivers/gpu/drm/mediatek/mtk_dp_reg.h
+ create mode 100644 drivers/phy/mediatek/phy-mtk-dp.c
+
+-- 
+2.34.1
+

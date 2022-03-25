@@ -2,107 +2,131 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1424FC433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Mar 2022 19:15:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C7BFC433FE
+	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Mar 2022 19:26:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229441AbiCYTQ7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 25 Mar 2022 15:16:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55716 "EHLO
+        id S229750AbiCYT2J (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 25 Mar 2022 15:28:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58054 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229379AbiCYTQ6 (ORCPT
+        with ESMTP id S229762AbiCYT1s (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 25 Mar 2022 15:16:58 -0400
-Received: from mail-ej1-x62e.google.com (mail-ej1-x62e.google.com [IPv6:2a00:1450:4864:20::62e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 882671D4C12;
-        Fri, 25 Mar 2022 11:57:31 -0700 (PDT)
-Received: by mail-ej1-x62e.google.com with SMTP id pv16so17196899ejb.0;
-        Fri, 25 Mar 2022 11:57:31 -0700 (PDT)
+        Fri, 25 Mar 2022 15:27:48 -0400
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2029B262D58
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Mar 2022 12:01:13 -0700 (PDT)
+Received: by mail-wm1-x32f.google.com with SMTP id r190-20020a1c2bc7000000b0038a1013241dso4942887wmr.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 25 Mar 2022 12:01:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=NwaCkEqFprXU1DDLFh3M1rthbSN4qp5btRr4op3u7Dg=;
+        b=7+559TLX/pioNdz1OStNbK5yndhEtZqY7oRe7DN3eda0eZGYiKl7cuYaeNKN9wfO5+
+         2EVK0jBa2hpoOb2M+o3xC/kOAzMg/p+jLHr312Zr2oqH6JbHqm+hS0jQcfW0c+YDN8rM
+         dNwh2bYxcWpeEsblHgYn2R1bpZ19mfs3/U4hWWoo7Wo7+84TzrDVVqpDeGEnrLDFEpjk
+         2MIuXtJk4s9pmQxwXc8scdaoDXiunsLCYjovDLxlFSyYMOCef2wAm3klalE9kmryA4fr
+         VbeoPziB2NXy+FW+t5+ArlEH8rbXlxr6pn15lJkU+4OhelKVwl/1pvER4s+xO1KjM2TV
+         YgYQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=T3ZMNixaLJElkzcw1+eEB0m28rN9ABVv9LlORr52Gis=;
-        b=PNMCGyzqdZkskLEoMdE9Gtua770PVsvcZuEPgyfaD2as7q6DITIzIfqsQJ1YxrtZkG
-         CJvEf9K4Awr1A8bhyRAlYNNQYiBpcz0dM2pRqahByiv598O/i1W54oSs/EzHs/nyHEDR
-         3BfMPU9AzsqkDaY8FWg1DsDVNCNK+LdBfsTASUGL+vPoJ/vQzfnXczfeBzZKnWI+/TA/
-         doeehD0nCXCnkykiP/jO+wCTO7Ff+LawTP+Ov7sDaulmYYqj/4VOoczn8bmr3V9nkRRu
-         4fv4/dYY6wOBgpEKVDQ+bpFVHMheYfL+IO3Dr4f6fNTFzjU72GyoAPx+vRA0HmT5ssPq
-         u0Pw==
-X-Gm-Message-State: AOAM531BnUsfvxTUNJp53tfZ0UH9C9ljjZj1wbGWVMuqLhtrrXJWPMPQ
-        u82bPpBx+vHKQCL9WEUFYN6W8uYbAkal2A==
-X-Google-Smtp-Source: ABdhPJxzhvYxQoq+OEFG3ywwQ643UpdmE/aW2fDwOBXfrMtLACv55jBSXSPboOkX/8x59n4J/6WaDQ==
-X-Received: by 2002:a17:907:2dac:b0:6db:e1e8:c66f with SMTP id gt44-20020a1709072dac00b006dbe1e8c66fmr12992334ejc.382.1648230362374;
-        Fri, 25 Mar 2022 10:46:02 -0700 (PDT)
-Received: from [192.168.0.162] (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
-        by smtp.googlemail.com with ESMTPSA id bd12-20020a056402206c00b00418c9bf71cbsm3079365edb.68.2022.03.25.10.45.59
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 25 Mar 2022 10:46:01 -0700 (PDT)
-Message-ID: <5f864d33-3370-7a1b-d796-908ff49d3e3b@kernel.org>
-Date:   Fri, 25 Mar 2022 18:45:59 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH 01/22] dt-bindings: mediatek,dpi: Add DP_INTF compatible
-Content-Language: en-US
-To:     Guillaume Ranquet <granquet@baylibre.com>,
-        angelogioacchino.delregno@collabora.com, chunkuang.hu@kernel.org,
-        p.zabel@pengutronix.de, airlied@linux.ie, daniel@ffwll.ch,
-        robh+dt@kernel.org, maarten.lankhorst@linux.intel.com,
-        mripard@kernel.org, tzimmermann@suse.de, matthias.bgg@gmail.com,
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=NwaCkEqFprXU1DDLFh3M1rthbSN4qp5btRr4op3u7Dg=;
+        b=HMJAPScW8qc6uk/O92f4zYV8XTFUpI/2z/8Eln3i0oiTHRdEJpiTQ+ff9od909cPPY
+         ers5nkuNvGFFsZxgfPT84ATK2zXhFg57Ws4moG4PAwiStkesgzT9iBjwOGckGokkARqY
+         2Bb1E4Z/Ht4Zy6t7jYU5zM8VJ8GuXWmv0V9cYXoJ4Mdst1gAXKsehUVZL+QnSwYxdACi
+         924qmuWKm1NXRp2gRKGS7A31jUDGADGTVdIWVK7f0tX/Jp1v2w3dMeK2azoLL/1FZhHw
+         rHCEMmFMklYn8/2ZRhnCci/D6cjebdK48ikrosUJfe6Fu2uzMVV9whlY/ikQV8wEB1pr
+         Mx4A==
+X-Gm-Message-State: AOAM531pKdu5EdeYA2ss/i/UlbQaoSSdwRAk0M6Q881OgFMAZVuBR7Sl
+        Amr7/L80Ap+BaFfElm+fm+d1JENQ7gdoVQ==
+X-Google-Smtp-Source: ABdhPJxEd+5sCQHRN5kY92E454qYqOoufquWOJKPEAnY7ClBAak5cOcqSUJO3F8SRwH3b790AmcVyA==
+X-Received: by 2002:a05:600c:3b1e:b0:38c:da9f:9309 with SMTP id m30-20020a05600c3b1e00b0038cda9f9309mr7351158wms.9.1648228637535;
+        Fri, 25 Mar 2022 10:17:17 -0700 (PDT)
+Received: from localhost.localdomain (2a02-8440-6240-cc41-3074-96af-9642-0003.rev.sfr.net. [2a02:8440:6240:cc41:3074:96af:9642:3])
+        by smtp.gmail.com with ESMTPSA id p16-20020a5d6390000000b00203ffebddf3sm7547464wru.99.2022.03.25.10.17.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 25 Mar 2022 10:17:17 -0700 (PDT)
+From:   Guillaume Ranquet <granquet@baylibre.com>
+To:     chunkuang.hu@kernel.org, p.zabel@pengutronix.de, airlied@linux.ie,
+        daniel@ffwll.ch, robh+dt@kernel.org,
+        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
+        tzimmermann@suse.de, matthias.bgg@gmail.com,
         chunfeng.yun@mediatek.com, kishon@ti.com, vkoul@kernel.org,
-        deller@gmx.de, ck.hu@mediatek.com, jitao.shi@mediatek.com
+        deller@gmx.de, ck.hu@mediatek.com, jitao.shi@mediatek.com,
+        angelogioacchino.delregno@collabora.com
 Cc:     dri-devel@lists.freedesktop.org,
         linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        markyacoub@google.com,
-        Markus Schneider-Pargmann <msp@baylibre.com>,
-        Rob Herring <robh@kernel.org>
+        markyacoub@google.com
+Subject: [PATCH 16/22] drm/meditek: dpi: Add matrix_sel helper
+Date:   Fri, 25 Mar 2022 18:15:05 +0100
+Message-Id: <20220325171511.23493-17-granquet@baylibre.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220325171511.23493-1-granquet@baylibre.com>
 References: <20220325171511.23493-1-granquet@baylibre.com>
- <20220325171511.23493-2-granquet@baylibre.com>
- <8baedbe6-eb60-02b4-a6b8-fe3abc566335@kernel.org>
- <CABnWg9s3vmpCFFai_BMjagqHehk2vbP0ST_tfWvOxmtubPm14g@mail.gmail.com>
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-In-Reply-To: <CABnWg9s3vmpCFFai_BMjagqHehk2vbP0ST_tfWvOxmtubPm14g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 25/03/2022 18:43, Guillaume Ranquet wrote:
-> On Fri, 25 Mar 2022 18:31, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->> On 25/03/2022 18:14, Guillaume Ranquet wrote:
->>> From: Markus Schneider-Pargmann <msp@baylibre.com>
->>>
->>> DP_INTF is similar to DPI but does not have the exact same feature set
->>> or register layouts.
->>>
->>> DP_INTF is the sink of the display pipeline that is connected to the
->>> DisplayPort controller and encoder unit. It takes the same clocks as
->>> DPI.
->>>
->>> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
->>> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
->>> Reviewed-by: Rob Herring <robh@kernel.org>
->>
->> This is v1, how did you get Rob's review already?
->>
-> 
-> Because this is not v1... I'm not really good at this... 
+Add a mtk_dpi_matrix_sel() helper to update the DPI_MATRIX_SET
+register depending on the color format.
 
-Don't worry, I made many more mistakes...
+Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+---
+ drivers/gpu/drm/mediatek/mtk_dpi.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-> this is actually v9...
-> I just didn't pay attention enough before sending the series.
-> 
-> What's the standard thing to do? resend with the proper versionning?
+diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c b/drivers/gpu/drm/mediatek/mtk_dpi.c
+index 8198d3cf23ac..82f97c687652 100644
+--- a/drivers/gpu/drm/mediatek/mtk_dpi.c
++++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
+@@ -385,6 +385,25 @@ static void mtk_dpi_config_disable_edge(struct mtk_dpi *dpi)
+ 		mtk_dpi_mask(dpi, dpi->conf->reg_h_fre_con, 0, EDGE_SEL_EN);
+ }
+ 
++static void mtk_dpi_matrix_sel(struct mtk_dpi *dpi, enum mtk_dpi_out_color_format format)
++{
++	u32 matrix_sel = 0;
++
++	switch (format) {
++	case MTK_DPI_COLOR_FORMAT_YCBCR_422:
++	case MTK_DPI_COLOR_FORMAT_YCBCR_422_FULL:
++	case MTK_DPI_COLOR_FORMAT_YCBCR_444:
++	case MTK_DPI_COLOR_FORMAT_YCBCR_444_FULL:
++	case MTK_DPI_COLOR_FORMAT_XV_YCC:
++		if (dpi->mode.hdisplay <= 720)
++			matrix_sel = 0x2;
++		break;
++	default:
++		break;
++	}
++	mtk_dpi_mask(dpi, DPI_MATRIX_SET, matrix_sel, INT_MATRIX_SEL_MASK);
++}
++
+ static void mtk_dpi_config_color_format(struct mtk_dpi *dpi,
+ 					enum mtk_dpi_out_color_format format)
+ {
+@@ -392,6 +411,7 @@ static void mtk_dpi_config_color_format(struct mtk_dpi *dpi,
+ 	    (format == MTK_DPI_COLOR_FORMAT_YCBCR_444_FULL)) {
+ 		mtk_dpi_config_yuv422_enable(dpi, false);
+ 		mtk_dpi_config_csc_enable(dpi, true);
++		mtk_dpi_matrix_sel(dpi, format);
+ 		if (dpi->conf->swap_input_support)
+ 			mtk_dpi_config_swap_input(dpi, false);
+ 		mtk_dpi_config_channel_swap(dpi, MTK_DPI_OUT_CHANNEL_SWAP_BGR);
+@@ -399,6 +419,7 @@ static void mtk_dpi_config_color_format(struct mtk_dpi *dpi,
+ 		   (format == MTK_DPI_COLOR_FORMAT_YCBCR_422_FULL)) {
+ 		mtk_dpi_config_yuv422_enable(dpi, true);
+ 		mtk_dpi_config_csc_enable(dpi, true);
++		mtk_dpi_matrix_sel(dpi, format);
+ 		if (dpi->conf->swap_input_support)
+ 			mtk_dpi_config_swap_input(dpi, true);
+ 		mtk_dpi_config_channel_swap(dpi, MTK_DPI_OUT_CHANNEL_SWAP_RGB);
+-- 
+2.34.1
 
-Yes, please resend as v1 with cover-letter containing changelog. Anyway
-someone might scream that you spam his box (immediate resends are also
-not welcomed), but what to do. :)
-
-
-Best regards,
-Krzysztof

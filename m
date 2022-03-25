@@ -2,57 +2,53 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50816C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Mar 2022 19:46:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E90DC4167B
+	for <linux-fbdev@archiver.kernel.org>; Fri, 25 Mar 2022 19:47:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231437AbiCYTrd (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 25 Mar 2022 15:47:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40436 "EHLO
+        id S231585AbiCYTtI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 25 Mar 2022 15:49:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39320 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231609AbiCYTrZ (ORCPT
+        with ESMTP id S232594AbiCYTsh (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 25 Mar 2022 15:47:25 -0400
-Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 052943D8F0D
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Mar 2022 12:30:34 -0700 (PDT)
-Received: by mail-lf1-x136.google.com with SMTP id e16so14960362lfc.13
-        for <linux-fbdev@vger.kernel.org>; Fri, 25 Mar 2022 12:30:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=oQqH7RE8MK40fYi7hpHL4DQe6UoMb5CeZccvHzoocCY=;
-        b=HACFnoQINTauO6TKeIefRi9vM/en2n66uEqYmJBdSo4ooC8iGMFaFYF18rGW5rhOLS
-         bQBwiT+gV33kC1eSID8QefbZoxMx1SeimigboDvyhnvVH6AhiSLshOUyK11pVRjezrQI
-         C1/E6jXK/MK9rxuRK8Dtwr9ZOr0gG1Rl40ZKbLsmg7FH5fXdFMYInNf0tqcfZ3P4nbTT
-         bnZqeCMSG+v6DzrN8ISz0nB5vMkTFV/0h2KmbU4o3ptSXlNi2aRjuw/Z/fAxrJXLG6lh
-         PeNp2DZYgQ2YtPg+O49kL36qOahs2e9oPI2DIEhxXknnZ+d5nb8osxGA4BWQgL/N4DIN
-         4qEg==
+        Fri, 25 Mar 2022 15:48:37 -0400
+Received: from mail-lf1-f48.google.com (mail-lf1-f48.google.com [209.85.167.48])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F38B223840;
+        Fri, 25 Mar 2022 12:32:07 -0700 (PDT)
+Received: by mail-lf1-f48.google.com with SMTP id m3so14989808lfj.11;
+        Fri, 25 Mar 2022 12:32:07 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=oQqH7RE8MK40fYi7hpHL4DQe6UoMb5CeZccvHzoocCY=;
-        b=TiT+lm9BqEBYl1+adNcn5h9pZuHBOE9pX6/n9AGDZZeNPqoSxNFqmn8Kxr/b57P6to
-         S+jYIBCyq1kiGotjfFh6iPazHK6dDV99x6tkr28C7VRhXkGd53ozvMcmSV3QeOqHyuE6
-         7ZakZvBef9juEvY08XxsqzPE5eglx1/DKeTt/4h38/F0uca8fU2bUPiJ2Mhd05mNaJ0S
-         c8WiZjgUOEiYr3fs7G0/epXixs4F8Jum/W+fjdQ5iPPVDZpah1tKjgXqnCXd23HIhgKC
-         /RDxupw8GvfJkJUlZXrqUZgVwEnvKtwvr4bGpJqU66oevbwlsx6rLhpVtGlZk1wvHg5e
-         1pGw==
-X-Gm-Message-State: AOAM532k8bCJwCUrQK/MDICvHnPNd8g/yd1x3RqcuUXKS77w9f3ztHBw
-        Aj/0uABX/Nd/fiQCtLeKUBzEvPWrK67Amg==
-X-Google-Smtp-Source: ABdhPJykkJ59FKYm8DQF+mpfHc6QKyYL4B/eRIG1b3yUyL1vz+MK/Wc9y/AlvWXIwnWFRgxsWLzrTA==
-X-Received: by 2002:a5d:4ec7:0:b0:203:de83:6f44 with SMTP id s7-20020a5d4ec7000000b00203de836f44mr10022067wrv.56.1648228647982;
-        Fri, 25 Mar 2022 10:17:27 -0700 (PDT)
-Received: from localhost.localdomain (2a02-8440-6240-cc41-3074-96af-9642-0003.rev.sfr.net. [2a02:8440:6240:cc41:3074:96af:9642:3])
-        by smtp.gmail.com with ESMTPSA id p16-20020a5d6390000000b00203ffebddf3sm7547464wru.99.2022.03.25.10.17.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 25 Mar 2022 10:17:27 -0700 (PDT)
-From:   Guillaume Ranquet <granquet@baylibre.com>
-To:     chunkuang.hu@kernel.org, p.zabel@pengutronix.de, airlied@linux.ie,
-        daniel@ffwll.ch, robh+dt@kernel.org,
-        maarten.lankhorst@linux.intel.com, mripard@kernel.org,
-        tzimmermann@suse.de, matthias.bgg@gmail.com,
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=fRup0HhTI1fItvOnWgW1apl6hJ+hovK5wDJd4/CJEws=;
+        b=m12DW7F/KxegR9D+RbcCP/FsyoJqn1Q7vDwxkuPbGaUo5off6jkMbcu78TeXgKUBvc
+         nvUePxxPS8Nk1bTnvF5NkmnugZI4gK6EzQhqq9PltfE8PaEA5gZeJTKD39t/bN3qtV3E
+         kAfqnHxiJB69bcbAbwa6JjiSTvA19v/qbggObr+ZPb/qHJp1WsGRp5EGD/KP1vtLNvZS
+         b7VqPKfNVqIrcI7H7s9mPujpfNwUD0d9fsRdBzgJHVHtIjWarnyBePlfcCILlSdIQo0M
+         8Tx1YUiJQX7y8xlWcyg8ke+ssl0B2SbUC5fewGcW2U/cjElpqLs00ljkZPm/FaKmfaX6
+         o3PA==
+X-Gm-Message-State: AOAM530Ka7v6Y+qBNa95EqZ6u1qT273UFhi6g7prrflumBp1YtMB4e9y
+        5UiMyZ9STRGPB1w9hZ8Mp3X9t5l+gdOeDw==
+X-Google-Smtp-Source: ABdhPJxBJl5W6RwFQAyh8otMltwQxLkSdlG8+OGsciwzNPCea5FQXhEojfuAMY1CBRj+1zzaCrkF1w==
+X-Received: by 2002:a50:d84c:0:b0:418:f176:79df with SMTP id v12-20020a50d84c000000b00418f17679dfmr14200983edj.353.1648229500341;
+        Fri, 25 Mar 2022 10:31:40 -0700 (PDT)
+Received: from [192.168.0.162] (xdsl-188-155-201-27.adslplus.ch. [188.155.201.27])
+        by smtp.googlemail.com with ESMTPSA id c12-20020a05640227cc00b004192114e521sm3209328ede.60.2022.03.25.10.31.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 25 Mar 2022 10:31:39 -0700 (PDT)
+Message-ID: <8baedbe6-eb60-02b4-a6b8-fe3abc566335@kernel.org>
+Date:   Fri, 25 Mar 2022 18:31:38 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH 01/22] dt-bindings: mediatek,dpi: Add DP_INTF compatible
+Content-Language: en-US
+To:     Guillaume Ranquet <granquet@baylibre.com>, chunkuang.hu@kernel.org,
+        p.zabel@pengutronix.de, airlied@linux.ie, daniel@ffwll.ch,
+        robh+dt@kernel.org, maarten.lankhorst@linux.intel.com,
+        mripard@kernel.org, tzimmermann@suse.de, matthias.bgg@gmail.com,
         chunfeng.yun@mediatek.com, kishon@ti.com, vkoul@kernel.org,
         deller@gmx.de, ck.hu@mediatek.com, jitao.shi@mediatek.com,
         angelogioacchino.delregno@collabora.com
@@ -60,162 +56,54 @@ Cc:     dri-devel@lists.freedesktop.org,
         linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-phy@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        markyacoub@google.com, Rex-BC Chen <rex-bc.chen@mediatek.com>
-Subject: [PATCH 20/22] drm/mediatek: add hpd debounce
-Date:   Fri, 25 Mar 2022 18:15:09 +0100
-Message-Id: <20220325171511.23493-21-granquet@baylibre.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220325171511.23493-1-granquet@baylibre.com>
+        markyacoub@google.com,
+        Markus Schneider-Pargmann <msp@baylibre.com>,
+        Rob Herring <robh@kernel.org>
 References: <20220325171511.23493-1-granquet@baylibre.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ <20220325171511.23493-2-granquet@baylibre.com>
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+In-Reply-To: <20220325171511.23493-2-granquet@baylibre.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Jitao Shi <jitao.shi@mediatek.com>
+On 25/03/2022 18:14, Guillaume Ranquet wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> 
+> DP_INTF is similar to DPI but does not have the exact same feature set
+> or register layouts.
+> 
+> DP_INTF is the sink of the display pipeline that is connected to the
+> DisplayPort controller and encoder unit. It takes the same clocks as
+> DPI.
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 
-From the DP spec 1.4a chapter 3.3, upstream devices should implement
-HPD signal de-bouncing on an external connection.
-A period of 100ms should be used to detect an HPD connect event.
-To cover these cases, HPD de-bounce should be implemented only after
-HPD low has been detected for at least 100ms.
+This is v1, how did you get Rob's review already?
 
-Therefore,
-1. If HPD is low (which means plugging out) for longer than 100ms:
-   we need to do de-bouncing (which means we need to wait for 100ms).
-2. If HPD low is for less than 100ms:
-   we don't need to care about the de-bouncing.
+> ---
+>  .../bindings/display/mediatek/mediatek,dpi.yaml       | 11 ++++++-----
+>  1 file changed, 6 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml b/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
+> index dd2896a40ff0..53acf9a84f7f 100644
+> --- a/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
+> +++ b/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
+> @@ -4,16 +4,16 @@
+>  $id: http://devicetree.org/schemas/display/mediatek/mediatek,dpi.yaml#
+>  $schema: http://devicetree.org/meta-schemas/core.yaml#
+>  
+> -title: mediatek DPI Controller Device Tree Bindings
+> +title: mediatek DPI/DP_INTF Controller Device Tree Bindings
 
-In this patch, we start a 100ms timer and use a need_debounce boolean
-to implement the feature.
+While at it, remove "Device Tree Bindings". It's about hardware.
 
-Two cases when HPD is high:
-1. If the timer is expired (>100ms):
-   - need_debounce is true.
-   - When HPD high (plugging event comes), need_debounce will be true
-     and then we need to do de-bouncing (wait for 100ms).
-2. If the timer is not expired (<100ms):
-   - need_debounce is false.
-   - When HPD high (plugging event comes), need_debounce will be false
-     and no need to do de-bouncing.
 
-HPD_______             __________________
-          |            |<-  100ms   ->
-          |____________|
-          <-  100ms   ->
+Please also rebase your tree as you use my old email address.
 
-Without HPD de-bouncing, USB-C to HDMI Adapaters will not be detected.
-
-The change has been successfully tested with the following devices:
-- Dell Adapter - USB-C to HDMI
-- Acer 1in1 HDMI dongle
-- Ugreen 1in1 HDMI dongle
-- innowatt HDMI + USB3 hub
-- Acer 2in1 HDMI dongle
-- Apple 3in1 HDMI dongle (A2119)
-- J5Create 3in1 HDMI dongle (JAC379)
-
-Tested-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
-Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
-Signed-off-by: Jitao Shi <jitao.shi@mediatek.com>
-Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
----
- drivers/gpu/drm/mediatek/mtk_dp.c | 46 +++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
-
-diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
-index d9606c743a9e..4981a3a3b9ca 100644
---- a/drivers/gpu/drm/mediatek/mtk_dp.c
-+++ b/drivers/gpu/drm/mediatek/mtk_dp.c
-@@ -174,6 +174,33 @@ struct mtk_dp {
- 	struct device *codec_dev;
- 	u8 connector_eld[MAX_ELD_BYTES];
- 	struct drm_connector *conn;
-+	bool need_debounce;
-+	struct timer_list debounce_timer;
-+};
-+
-+enum mtk_dp_sdp_type {
-+	MTK_DP_SDP_NONE = 0x00,
-+	MTK_DP_SDP_ACM = 0x01,
-+	MTK_DP_SDP_ISRC = 0x02,
-+	MTK_DP_SDP_AVI = 0x03,
-+	MTK_DP_SDP_AUI = 0x04,
-+	MTK_DP_SDP_SPD = 0x05,
-+	MTK_DP_SDP_MPEG = 0x06,
-+	MTK_DP_SDP_NTSC = 0x07,
-+	MTK_DP_SDP_VSP = 0x08,
-+	MTK_DP_SDP_VSC = 0x09,
-+	MTK_DP_SDP_EXT = 0x0A,
-+	MTK_DP_SDP_PPS0 = 0x0B,
-+	MTK_DP_SDP_PPS1 = 0x0C,
-+	MTK_DP_SDP_PPS2 = 0x0D,
-+	MTK_DP_SDP_PPS3 = 0x0E,
-+	MTK_DP_SDP_DRM = 0x10,
-+	MTK_DP_SDP_MAX_NUM
-+};
-+
-+struct mtk_dp_sdp_packet {
-+	enum mtk_dp_sdp_type type;
-+	struct dp_sdp sdp;
- };
- 
- static bool mtk_dp_is_edp(struct mtk_dp *mtk_dp)
-@@ -1814,6 +1841,9 @@ static irqreturn_t mtk_dp_hpd_event_thread(int hpd, void *dev)
- 	if (event < 0)
- 		return IRQ_HANDLED;
- 
-+	if (mtk_dp->need_debounce && mtk_dp->train_info.cable_plugged_in)
-+		msleep(100);
-+
- 	if (mtk_dp->drm_dev) {
- 		dev_info(mtk_dp->dev, "drm_helper_hpd_irq_event\n");
- 		drm_helper_hpd_irq_event(mtk_dp->bridge.dev);
-@@ -1892,6 +1922,11 @@ static irqreturn_t mtk_dp_hpd_isr_handler(struct mtk_dp *mtk_dp)
- 	}
- 	train_info->cable_state_change = true;
- 
-+	if (!train_info->cable_plugged_in) {
-+		mod_timer(&mtk_dp->debounce_timer, jiffies + msecs_to_jiffies(100) - 1);
-+		mtk_dp->need_debounce = false;
-+	}
-+
- 	return IRQ_WAKE_THREAD;
- }
- 
-@@ -2339,6 +2374,13 @@ static const struct drm_bridge_funcs mtk_dp_bridge_funcs = {
- 	.detect = mtk_dp_bdg_detect,
- };
- 
-+static void mtk_dp_debounce_timer(struct timer_list *t)
-+{
-+	struct mtk_dp *mtk_dp = from_timer(mtk_dp, t, debounce_timer);
-+
-+	mtk_dp->need_debounce = true;
-+}
-+
- static int mtk_dp_probe(struct platform_device *pdev)
- {
- 	struct mtk_dp *mtk_dp;
-@@ -2396,6 +2438,9 @@ static int mtk_dp_probe(struct platform_device *pdev)
- 	mtk_dp->bridge.of_node = dev->of_node;
- 	mtk_dp->bridge.type = DRM_MODE_CONNECTOR_eDP;
- 
-+	mtk_dp->need_debounce = true;
-+	timer_setup(&mtk_dp->debounce_timer, mtk_dp_debounce_timer, 0);
-+
- 	mtk_dp->bridge.ops =
- 		DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID | DRM_BRIDGE_OP_HPD;
- 	drm_bridge_add(&mtk_dp->bridge);
-@@ -2415,6 +2460,7 @@ static int mtk_dp_remove(struct platform_device *pdev)
- 	struct mtk_dp *mtk_dp = platform_get_drvdata(pdev);
- 
- 	mtk_dp_video_mute(mtk_dp, true);
-+	del_timer_sync(&mtk_dp->debounce_timer);
- 
- 	pm_runtime_disable(&pdev->dev);
- 
--- 
-2.34.1
-
+Best regards,
+Krzysztof

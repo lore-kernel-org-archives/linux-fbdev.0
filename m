@@ -2,39 +2,38 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90648C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Mar 2022 08:04:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE6E1C433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Mar 2022 08:10:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239103AbiC1IGN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Mar 2022 04:06:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35342 "EHLO
+        id S237114AbiC1ILm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Mar 2022 04:11:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52488 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239098AbiC1IGK (ORCPT
+        with ESMTP id S236254AbiC1ILl (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Mar 2022 04:06:10 -0400
+        Mon, 28 Mar 2022 04:11:41 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BC3652E6F;
-        Mon, 28 Mar 2022 01:04:30 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 726D6527D2;
+        Mon, 28 Mar 2022 01:10:01 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: kholk11)
-        with ESMTPSA id 6A11F1F42F03
+        with ESMTPSA id 0E96B1F430E3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
-        s=mail; t=1648454668;
-        bh=OgeZn3h62XRwSUZAUHSs6JjYPCvTevBe27bS/7gUpUU=;
+        s=mail; t=1648455000;
+        bh=/nWwqk3sPy6vmwVbxGTUip5rp6cQqefeecpSJO7M4VU=;
         h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-        b=RYSAAir6nrRU1Bv61iSlbrH6+U+cZjsjYqInwDj/OIUQpvqrymdIIn/bg8TvOTvun
-         U7K6MQUOZmaOMEzQ2bOcq3rv7glozuTwUnHAADB55ZmlByZyawn3Oh8hklLJuEM/Fx
-         F8jZNLKTAGZtBTykPIf/+nsEWBtpa7Tsp9kI05bCOHix34dlzPJzC/JZhl9dDjju0s
-         XHADgeqcLyRs9PlPLGlclF5ilyASiSDqC/pggNZRefQahGSBi2D0E7klkS4cHtNhZm
-         /t6CjUsFLlXSRFX2MhoHYXteDVyOGWJfhOKBmdRv9UNBkfBBGkiALXB/7UjOL0QFye
-         BoNjq6IFiSFcg==
-Message-ID: <0c523ad5-6a71-5c71-17b8-1f15c1860d89@collabora.com>
-Date:   Mon, 28 Mar 2022 10:04:24 +0200
+        b=UiJeHcrb22+gxlwFAcWUPiZHHp8/logMJ7mTY54Dc1dhEE8gp3W9RL0O7G2CeQXbV
+         gIqH3zqEye8pXt/cRvpTwr9+Q8OjU5Dx0heK90tYwCh0FG6ooKJCrPf7lDXXZpsFOU
+         iwY+2LC5L/DGNeGUnoN9ihJH5wnjerx0CcCMLOPISGODK27sNNctav+XfeXXZnT9LJ
+         CHFwHtVxRjUBayuSZAllKSy96pw17v1+oZgJF5zYl3SpZC9S5LcITyy6uM2G5QoBXJ
+         hgfBsPl3nn+kuliZ6N1Fg1z4XIIGmoYOMwZlhuvbmsSXO3z/csC/LfIC/IJsyFz+yx
+         8fyq0INsI78aQ==
+Message-ID: <33212024-ae93-32c3-7890-09006057ff49@collabora.com>
+Date:   Mon, 28 Mar 2022 10:09:55 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.7.0
-Subject: Re: [PATCH v9 04/22] drm/edid: Convert cea_sad helper struct to
- kernelDoc
+Subject: Re: [PATCH v9 06/22] video/hdmi: Add audio_infoframe packing for DP
 Content-Language: en-US
 To:     Guillaume Ranquet <granquet@baylibre.com>, airlied@linux.ie,
         chunfeng.yun@mediatek.com, chunkuang.hu@kernel.org,
@@ -46,12 +45,13 @@ To:     Guillaume Ranquet <granquet@baylibre.com>, airlied@linux.ie,
 Cc:     devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org,
-        linux-phy@lists.infradead.org, markyacoub@google.com
+        linux-phy@lists.infradead.org, markyacoub@google.com,
+        Markus Schneider-Pargmann <msp@baylibre.com>
 References: <20220327223927.20848-1-granquet@baylibre.com>
- <20220327223927.20848-5-granquet@baylibre.com>
+ <20220327223927.20848-7-granquet@baylibre.com>
 From:   AngeloGioacchino Del Regno 
         <angelogioacchino.delregno@collabora.com>
-In-Reply-To: <20220327223927.20848-5-granquet@baylibre.com>
+In-Reply-To: <20220327223927.20848-7-granquet@baylibre.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
@@ -59,33 +59,48 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 Il 28/03/22 00:39, Guillaume Ranquet ha scritto:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> 
+> Similar to HDMI, DP uses audio infoframes as well which are structured
+> very similar to the HDMI ones.
+> 
+> This patch adds a helper function to pack the HDMI audio infoframe for
+> DP, called hdmi_audio_infoframe_pack_for_dp().
+> hdmi_audio_infoframe_pack_only() is split into two parts. One of them
+> packs the payload only and can be used for HDMI and DP.
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
 > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
 > ---
->   include/drm/drm_edid.h | 11 ++++++++---
->   1 file changed, 8 insertions(+), 3 deletions(-)
+>   drivers/video/hdmi.c           | 82 ++++++++++++++++++++++++++--------
+>   include/drm/dp/drm_dp_helper.h |  2 +
+>   include/linux/hdmi.h           |  7 ++-
+>   3 files changed, 71 insertions(+), 20 deletions(-)
 > 
-> diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
-> index 144c495b99c4..5d4d840b9904 100644
-> --- a/include/drm/drm_edid.h
-> +++ b/include/drm/drm_edid.h
-> @@ -359,12 +359,17 @@ struct edid {
+> diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
+> index 947be761dfa4..5f50237554ed 100644
+> --- a/drivers/video/hdmi.c
+> +++ b/drivers/video/hdmi.c
+> @@ -21,6 +21,7 @@
+>    * DEALINGS IN THE SOFTWARE.
+>    */
 >   
->   #define EDID_PRODUCT_ID(e) ((e)->prod_code[0] | ((e)->prod_code[1] << 8))
->   
-> -/* Short Audio Descriptor */
+> +#include <drm/dp/drm_dp_helper.h>
+>   #include <linux/bitops.h>
+>   #include <linux/bug.h>
+>   #include <linux/errno.h>
+> @@ -381,12 +382,34 @@ static int hdmi_audio_infoframe_check_only(const struct hdmi_audio_infoframe *fr
+>    *
+>    * Returns 0 on success or a negative error code on failure.
+>    */
+> -int hdmi_audio_infoframe_check(struct hdmi_audio_infoframe *frame)
+> +int hdmi_audio_infoframe_check(const struct hdmi_audio_infoframe *frame)
 
-Hello Guillaume,
+I agree with this change, as hdmi_audio_infoframe_check_only()'s param is a const,
+but you really should mention that you're constifying this one in your commit
+description, or do that in a separate commit.
 
-> +/* struct cea_sad - Short Audio Descriptor.
-> +	@format: See HDMI_AUDIO_CODING_TYPE_*.
-> +	@channels: max number of channels - 1.
-> +	@freq: See CEA_SAD_FREQ_*.
-> +	@byte2: meaning depends on format.
-> +*/
-
-I appreciate the effort, but this is not valid kerneldoc.
-
-Please refer to https://docs.kernel.org/doc-guide/kernel-doc.html
+Either of the two is fine.
 
 Regards,
 Angelo

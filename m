@@ -2,63 +2,90 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90C3CC433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Mar 2022 07:55:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90648C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Mar 2022 08:04:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238983AbiC1H4j (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Mar 2022 03:56:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38432 "EHLO
+        id S239103AbiC1IGN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Mar 2022 04:06:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35342 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238986AbiC1H4i (ORCPT
+        with ESMTP id S239098AbiC1IGK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Mar 2022 03:56:38 -0400
-X-Greylist: delayed 484 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 28 Mar 2022 00:54:58 PDT
-Received: from mail.ourpartnership.pl (mail.ourpartnership.pl [80.211.82.238])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A2E99DEC4
-        for <linux-fbdev@vger.kernel.org>; Mon, 28 Mar 2022 00:54:57 -0700 (PDT)
-Received: by mail.ourpartnership.pl (Postfix, from userid 1001)
-        id 25939617E9; Mon, 28 Mar 2022 08:46:27 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ourpartnership.pl;
-        s=mail; t=1648453611;
-        bh=M1ZVeu3q6Upppe+FUx/3rgI7MKJXh389NZDbgCK1SX4=;
-        h=Date:From:To:Subject:From;
-        b=c1Y3sJh4vumbCZB9z6WZpFrIQWOFp5upeOuhP+t1+PTB64lEEOE10X0t9V4CDM/oo
-         5+l0kR3bIYnPM+pkCpV2j0fNuG1cSVu5d5Ap5Ek07tE7/HPfrFWVFgyKM56gleemVX
-         tbAZSqvb98D1oD6CLge+2/bVODYdYp+aIIaz8Fl0xP+pecUr6PJpS3zmFygLYN5x1l
-         G4bO38ZFUOpIcTi6OlwQGjGuLKtFPNaYGNMDA3D9u0gQJ8iZthKppT9MFW2HTiOaZp
-         6nubZhLFwSv30GzVdcqgsYpMP26bpUxwZdbFjRwwtEDZxLI8Rd71QWdYR9h3bHRAz7
-         vLqk632WgJVRA==
-Received: by mail.ourpartnership.pl for <linux-fbdev@vger.kernel.org>; Mon, 28 Mar 2022 07:46:04 GMT
-Message-ID: <20220328074501-0.1.9.2ab6.0.nof105ibkx@ourpartnership.pl>
-Date:   Mon, 28 Mar 2022 07:46:04 GMT
-From:   =?UTF-8?Q? "Arkadiusz_Soko=C5=82owski" ?= 
-        <arkadiusz.sokolowski@ourpartnership.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: Koszty instalacji fotowoltaicznej
-X-Mailer: mail.ourpartnership.pl
+        Mon, 28 Mar 2022 04:06:10 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [46.235.227.227])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9BC3652E6F;
+        Mon, 28 Mar 2022 01:04:30 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: kholk11)
+        with ESMTPSA id 6A11F1F42F03
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1648454668;
+        bh=OgeZn3h62XRwSUZAUHSs6JjYPCvTevBe27bS/7gUpUU=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=RYSAAir6nrRU1Bv61iSlbrH6+U+cZjsjYqInwDj/OIUQpvqrymdIIn/bg8TvOTvun
+         U7K6MQUOZmaOMEzQ2bOcq3rv7glozuTwUnHAADB55ZmlByZyawn3Oh8hklLJuEM/Fx
+         F8jZNLKTAGZtBTykPIf/+nsEWBtpa7Tsp9kI05bCOHix34dlzPJzC/JZhl9dDjju0s
+         XHADgeqcLyRs9PlPLGlclF5ilyASiSDqC/pggNZRefQahGSBi2D0E7klkS4cHtNhZm
+         /t6CjUsFLlXSRFX2MhoHYXteDVyOGWJfhOKBmdRv9UNBkfBBGkiALXB/7UjOL0QFye
+         BoNjq6IFiSFcg==
+Message-ID: <0c523ad5-6a71-5c71-17b8-1f15c1860d89@collabora.com>
+Date:   Mon, 28 Mar 2022 10:04:24 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Subject: Re: [PATCH v9 04/22] drm/edid: Convert cea_sad helper struct to
+ kernelDoc
+Content-Language: en-US
+To:     Guillaume Ranquet <granquet@baylibre.com>, airlied@linux.ie,
+        chunfeng.yun@mediatek.com, chunkuang.hu@kernel.org,
+        ck.hu@mediatek.com, daniel@ffwll.ch, deller@gmx.de,
+        jitao.shi@mediatek.com, kishon@ti.com, krzk+dt@kernel.org,
+        maarten.lankhorst@linux.intel.com, matthias.bgg@gmail.com,
+        mripard@kernel.org, p.zabel@pengutronix.de, robh+dt@kernel.org,
+        tzimmermann@suse.de, vkoul@kernel.org
+Cc:     devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-phy@lists.infradead.org, markyacoub@google.com
+References: <20220327223927.20848-1-granquet@baylibre.com>
+ <20220327223927.20848-5-granquet@baylibre.com>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <20220327223927.20848-5-granquet@baylibre.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+Il 28/03/22 00:39, Guillaume Ranquet ha scritto:
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> ---
+>   include/drm/drm_edid.h | 11 ++++++++---
+>   1 file changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/drm/drm_edid.h b/include/drm/drm_edid.h
+> index 144c495b99c4..5d4d840b9904 100644
+> --- a/include/drm/drm_edid.h
+> +++ b/include/drm/drm_edid.h
+> @@ -359,12 +359,17 @@ struct edid {
+>   
+>   #define EDID_PRODUCT_ID(e) ((e)->prod_code[0] | ((e)->prod_code[1] << 8))
+>   
+> -/* Short Audio Descriptor */
 
-stworzyli=C5=9Bmy specjaln=C4=85 ofert=C4=99 dla firm, na kompleksow=C4=85=
- obs=C5=82ug=C4=99 inwestycji w fotowoltaik=C4=99. =20
+Hello Guillaume,
 
-Specjalizujemy si=C4=99 w zakresie doboru, monta=C5=BCu i serwisie instal=
-acji fotowoltaicznych, dysponujemy najnowocze=C5=9Bniejszymi rozwi=C4=85z=
-ania, kt=C3=B3re zapewni=C4=85 Pa=C5=84stwu oczekiwane rezultaty.
+> +/* struct cea_sad - Short Audio Descriptor.
+> +	@format: See HDMI_AUDIO_CODING_TYPE_*.
+> +	@channels: max number of channels - 1.
+> +	@freq: See CEA_SAD_FREQ_*.
+> +	@byte2: meaning depends on format.
+> +*/
 
-Mo=C5=BCemy przygotowa=C4=87 dla Pa=C5=84stwa wst=C4=99pn=C4=85 kalkulacj=
-=C4=99 i przeanalizowa=C4=87 efekty mo=C5=BCliwe do osi=C4=85gni=C4=99cia=
-=2E
+I appreciate the effort, but this is not valid kerneldoc.
 
-Czy s=C4=85 Pa=C5=84stwo otwarci na wst=C4=99pn=C4=85 rozmow=C4=99 w tym =
-temacie?
+Please refer to https://docs.kernel.org/doc-guide/kernel-doc.html
 
-
-Pozdrawiam
-Arkadiusz Soko=C5=82owski
+Regards,
+Angelo

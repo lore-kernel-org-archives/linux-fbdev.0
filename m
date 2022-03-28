@@ -2,36 +2,34 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3701C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Mar 2022 08:49:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8ADCC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Mar 2022 08:54:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235189AbiC1IvZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Mar 2022 04:51:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54666 "EHLO
+        id S239131AbiC1Izz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Mar 2022 04:55:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36272 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S233393AbiC1IvZ (ORCPT
+        with ESMTP id S236266AbiC1Izz (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Mar 2022 04:51:25 -0400
+        Mon, 28 Mar 2022 04:55:55 -0400
 Received: from mailgw02.mediatek.com (unknown [210.61.82.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6E604248C;
-        Mon, 28 Mar 2022 01:49:43 -0700 (PDT)
-X-UUID: a89e698ef5b54476859e923c5fb1fd57-20220328
-X-UUID: a89e698ef5b54476859e923c5fb1fd57-20220328
-Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw02.mediatek.com
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EDD451A1;
+        Mon, 28 Mar 2022 01:54:13 -0700 (PDT)
+X-UUID: f59d76b19b5c4eb2a3b7cc9515aabbe6-20220328
+X-UUID: f59d76b19b5c4eb2a3b7cc9515aabbe6-20220328
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
         (envelope-from <rex-bc.chen@mediatek.com>)
         (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 315161075; Mon, 28 Mar 2022 16:49:38 +0800
-Received: from mtkexhb02.mediatek.inc (172.21.101.103) by
+        with ESMTP id 1065172380; Mon, 28 Mar 2022 16:54:10 +0800
+Received: from mtkcas11.mediatek.inc (172.21.101.40) by
  mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Mon, 28 Mar 2022 16:49:37 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by mtkexhb02.mediatek.inc
- (172.21.101.103) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Mon, 28 Mar
- 2022 16:49:36 +0800
+ 15.0.1497.2; Mon, 28 Mar 2022 16:54:09 +0800
 Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Mon, 28 Mar 2022 16:49:36 +0800
-Message-ID: <736a7f6710f1ea31eff4abcc3d9c3ff79a1f0ddb.camel@mediatek.com>
-Subject: Re: [PATCH v9 16/22] drm/meditek: dpi: Add matrix_sel helper
+ Transport; Mon, 28 Mar 2022 16:54:09 +0800
+Message-ID: <00cabba08cff881ea282fdf0ee097f6b35b2c76d.camel@mediatek.com>
+Subject: Re: [PATCH v9 13/22] drm/mediatek: dpi: move the yuv422_en_bit to
+ SoC config
 From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
 To:     Guillaume Ranquet <granquet@baylibre.com>, <airlied@linux.ie>,
         <angelogioacchino.delregno@collabora.com>,
@@ -46,10 +44,10 @@ CC:     <devicetree@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
         <linux-fbdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <linux-mediatek@lists.infradead.org>,
         <linux-phy@lists.infradead.org>, <markyacoub@google.com>
-Date:   Mon, 28 Mar 2022 16:49:36 +0800
-In-Reply-To: <20220327223927.20848-17-granquet@baylibre.com>
+Date:   Mon, 28 Mar 2022 16:54:09 +0800
+In-Reply-To: <20220327223927.20848-14-granquet@baylibre.com>
 References: <20220327223927.20848-1-granquet@baylibre.com>
-         <20220327223927.20848-17-granquet@baylibre.com>
+         <20220327223927.20848-14-granquet@baylibre.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
@@ -60,80 +58,74 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 On Mon, 2022-03-28 at 00:39 +0200, Guillaume Ranquet wrote:
-> Add a mtk_dpi_matrix_sel() helper to update the DPI_MATRIX_SET
-> register depending on the color format.
+> Add flexibility by moving the yuv422 en bit to SoC specific config
 > 
 > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Reviewed-by: AngeloGioacchino Del Regno <
+> angelogioacchino.delregno@collabora.com>
 > ---
->  drivers/gpu/drm/mediatek/mtk_dpi.c | 21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
+>  drivers/gpu/drm/mediatek/mtk_dpi.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
 > 
 > diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c
 > b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> index 8198d3cf23ac..82f97c687652 100644
+> index 6d4d8c6ec47d..40254cd9d168 100644
 > --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
 > +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> @@ -385,6 +385,25 @@ static void mtk_dpi_config_disable_edge(struct
-> mtk_dpi *dpi)
->  		mtk_dpi_mask(dpi, dpi->conf->reg_h_fre_con, 0,
-> EDGE_SEL_EN);
+> @@ -132,6 +132,7 @@ struct mtk_dpi_conf {
+>  	/* HSIZE and VSIZE mask (no shift) */
+>  	u32 hvsize_mask;
+>  	u32 channel_swap_shift;
+> +	u32 yuv422_en_bit;
+>  	const struct mtk_dpi_yc_limit *limit;
+>  };
+>  
+> @@ -356,7 +357,8 @@ static void mtk_dpi_config_channel_swap(struct
+> mtk_dpi *dpi,
+>  
+>  static void mtk_dpi_config_yuv422_enable(struct mtk_dpi *dpi, bool
+> enable)
+>  {
+> -	mtk_dpi_mask(dpi, DPI_CON, enable ? YUV422_EN : 0, YUV422_EN);
+> +	mtk_dpi_mask(dpi, DPI_CON, enable ? dpi->conf->yuv422_en_bit :
+> 0,
+> +		     dpi->conf->yuv422_en_bit);
 >  }
 >  
-> +static void mtk_dpi_matrix_sel(struct mtk_dpi *dpi, enum
-> mtk_dpi_out_color_format format)
-> +{
-> +	u32 matrix_sel = 0;
-> +
-> +	switch (format) {
-> +	case MTK_DPI_COLOR_FORMAT_YCBCR_422:
-> +	case MTK_DPI_COLOR_FORMAT_YCBCR_422_FULL:
-> +	case MTK_DPI_COLOR_FORMAT_YCBCR_444:
-> +	case MTK_DPI_COLOR_FORMAT_YCBCR_444_FULL:
-> +	case MTK_DPI_COLOR_FORMAT_XV_YCC:
-> +		if (dpi->mode.hdisplay <= 720)
-> +			matrix_sel = 0x2;
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +	mtk_dpi_mask(dpi, DPI_MATRIX_SET, matrix_sel,
-> INT_MATRIX_SEL_MASK);
-> +}
-> +
->  static void mtk_dpi_config_color_format(struct mtk_dpi *dpi,
->  					enum mtk_dpi_out_color_format
-> format)
->  {
-> @@ -392,6 +411,7 @@ static void mtk_dpi_config_color_format(struct
-> mtk_dpi *dpi,
->  	    (format == MTK_DPI_COLOR_FORMAT_YCBCR_444_FULL)) {
->  		mtk_dpi_config_yuv422_enable(dpi, false);
->  		mtk_dpi_config_csc_enable(dpi, true);
-> +		mtk_dpi_matrix_sel(dpi, format);
->  		if (dpi->conf->swap_input_support)
->  			mtk_dpi_config_swap_input(dpi, false);
->  		mtk_dpi_config_channel_swap(dpi,
-> MTK_DPI_OUT_CHANNEL_SWAP_BGR);
-> @@ -399,6 +419,7 @@ static void mtk_dpi_config_color_format(struct
-> mtk_dpi *dpi,
->  		   (format == MTK_DPI_COLOR_FORMAT_YCBCR_422_FULL)) {
->  		mtk_dpi_config_yuv422_enable(dpi, true);
->  		mtk_dpi_config_csc_enable(dpi, true);
-> +		mtk_dpi_matrix_sel(dpi, format);
->  		if (dpi->conf->swap_input_support)
->  			mtk_dpi_config_swap_input(dpi, true);
->  		mtk_dpi_config_channel_swap(dpi,
-> MTK_DPI_OUT_CHANNEL_SWAP_RGB);
+>  static void mtk_dpi_config_csc_enable(struct mtk_dpi *dpi, bool
+> enable)
+> @@ -824,6 +826,7 @@ static const struct mtk_dpi_conf mt8173_conf = {
+>  	.dimension_mask = HPW_MASK,
+>  	.hvsize_mask = HSIZE_MASK,
+>  	.channel_swap_shift = CH_SWAP,
+> +	.yuv422_en_bit = YUV422_EN,
+>  	.limit = &mtk_dpi_limit,
+>  };
+>  
+> @@ -839,6 +842,7 @@ static const struct mtk_dpi_conf mt2701_conf = {
+>  	.dimension_mask = HPW_MASK,
+>  	.hvsize_mask = HSIZE_MASK,
+>  	.channel_swap_shift = CH_SWAP,
+> +	.yuv422_en_bit = YUV422_EN,
+>  	.limit = &mtk_dpi_limit,
+>  };
+>  
+> @@ -853,6 +857,7 @@ static const struct mtk_dpi_conf mt8183_conf = {
+>  	.dimension_mask = HPW_MASK,
+>  	.hvsize_mask = HSIZE_MASK,
+>  	.channel_swap_shift = CH_SWAP,
+> +	.yuv422_en_bit = YUV422_EN,
+>  	.limit = &mtk_dpi_limit,
+>  };
+>  
+> @@ -867,6 +872,7 @@ static const struct mtk_dpi_conf mt8192_conf = {
+>  	.dimension_mask = HPW_MASK,
+>  	.hvsize_mask = HSIZE_MASK,
+>  	.channel_swap_shift = CH_SWAP,
+> +	.yuv422_en_bit = YUV422_EN,
+>  	.limit = &mtk_dpi_limit,
+>  };
+>  
 
-Hello Guillaume,
-
-Thanks for your patch.
-I have one question:
-Do this setting affect the dpi for previous SoCs?
-(8183, 8192, or 8186)
-If we can confirm the original register setting for this offset in
-8183/8192/8186, I think we can clarify this question.
-
-BRs,
-Rex
+Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
 

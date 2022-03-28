@@ -2,149 +2,63 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C229C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Mar 2022 07:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90C3CC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Mar 2022 07:55:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234539AbiC1HdR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Mar 2022 03:33:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37198 "EHLO
+        id S238983AbiC1H4j (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Mar 2022 03:56:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234268AbiC1HdQ (ORCPT
+        with ESMTP id S238986AbiC1H4i (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Mar 2022 03:33:16 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05F7751E4B;
-        Mon, 28 Mar 2022 00:31:33 -0700 (PDT)
-X-UUID: 10bfd5f56ccd47739d9962a536d27e70-20220328
-X-UUID: 10bfd5f56ccd47739d9962a536d27e70-20220328
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
-        (envelope-from <rex-bc.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 860874880; Mon, 28 Mar 2022 15:31:29 +0800
-Received: from mtkcas11.mediatek.inc (172.21.101.40) by
- mtkmbs10n1.mediatek.inc (172.21.101.34) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- 15.2.792.15; Mon, 28 Mar 2022 15:31:28 +0800
-Received: from mtksdccf07 (172.21.84.99) by mtkcas11.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Mon, 28 Mar 2022 15:31:28 +0800
-Message-ID: <8c7d47869dc8a9e8580740fe25bb2fd289253a4d.camel@mediatek.com>
-Subject: Re: [PATCH v9 08/22] drm/mediatek: dpi: implement a CK/DE pol
- toggle in SoC config
-From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
-To:     Guillaume Ranquet <granquet@baylibre.com>, <airlied@linux.ie>,
-        <angelogioacchino.delregno@collabora.com>,
-        <chunfeng.yun@mediatek.com>, <chunkuang.hu@kernel.org>,
-        <ck.hu@mediatek.com>, <daniel@ffwll.ch>, <deller@gmx.de>,
-        <jitao.shi@mediatek.com>, <kishon@ti.com>, <krzk+dt@kernel.org>,
-        <maarten.lankhorst@linux.intel.com>, <matthias.bgg@gmail.com>,
-        <mripard@kernel.org>, <p.zabel@pengutronix.de>,
-        <robh+dt@kernel.org>, <tzimmermann@suse.de>, <vkoul@kernel.org>
-CC:     <devicetree@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-fbdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-phy@lists.infradead.org>, <markyacoub@google.com>
-Date:   Mon, 28 Mar 2022 15:31:28 +0800
-In-Reply-To: <20220327223927.20848-9-granquet@baylibre.com>
-References: <20220327223927.20848-1-granquet@baylibre.com>
-         <20220327223927.20848-9-granquet@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
+        Mon, 28 Mar 2022 03:56:38 -0400
+X-Greylist: delayed 484 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 28 Mar 2022 00:54:58 PDT
+Received: from mail.ourpartnership.pl (mail.ourpartnership.pl [80.211.82.238])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A2E99DEC4
+        for <linux-fbdev@vger.kernel.org>; Mon, 28 Mar 2022 00:54:57 -0700 (PDT)
+Received: by mail.ourpartnership.pl (Postfix, from userid 1001)
+        id 25939617E9; Mon, 28 Mar 2022 08:46:27 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ourpartnership.pl;
+        s=mail; t=1648453611;
+        bh=M1ZVeu3q6Upppe+FUx/3rgI7MKJXh389NZDbgCK1SX4=;
+        h=Date:From:To:Subject:From;
+        b=c1Y3sJh4vumbCZB9z6WZpFrIQWOFp5upeOuhP+t1+PTB64lEEOE10X0t9V4CDM/oo
+         5+l0kR3bIYnPM+pkCpV2j0fNuG1cSVu5d5Ap5Ek07tE7/HPfrFWVFgyKM56gleemVX
+         tbAZSqvb98D1oD6CLge+2/bVODYdYp+aIIaz8Fl0xP+pecUr6PJpS3zmFygLYN5x1l
+         G4bO38ZFUOpIcTi6OlwQGjGuLKtFPNaYGNMDA3D9u0gQJ8iZthKppT9MFW2HTiOaZp
+         6nubZhLFwSv30GzVdcqgsYpMP26bpUxwZdbFjRwwtEDZxLI8Rd71QWdYR9h3bHRAz7
+         vLqk632WgJVRA==
+Received: by mail.ourpartnership.pl for <linux-fbdev@vger.kernel.org>; Mon, 28 Mar 2022 07:46:04 GMT
+Message-ID: <20220328074501-0.1.9.2ab6.0.nof105ibkx@ourpartnership.pl>
+Date:   Mon, 28 Mar 2022 07:46:04 GMT
+From:   =?UTF-8?Q? "Arkadiusz_Soko=C5=82owski" ?= 
+        <arkadiusz.sokolowski@ourpartnership.pl>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: Koszty instalacji fotowoltaicznej
+X-Mailer: mail.ourpartnership.pl
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-MTK:  N
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 2022-03-28 at 00:39 +0200, Guillaume Ranquet wrote:
-> Adds a bit of flexibility to support SoCs without CK/DE pol support
-> 
-> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> Reviewed-by: AngeloGioacchino Del Regno <
-> angelogioacchino.delregno@collabora.com>
-> ---
->  drivers/gpu/drm/mediatek/mtk_dpi.c | 22 +++++++++++++++++-----
->  1 file changed, 17 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c
-> b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> index 4746eb342567..545a1337cc89 100644
-> --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
-> +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
-> @@ -125,6 +125,7 @@ struct mtk_dpi_conf {
->  	bool edge_sel_en;
->  	const u32 *output_fmts;
->  	u32 num_output_fmts;
-> +	bool is_ck_de_pol;
->  	const struct mtk_dpi_yc_limit *limit;
->  };
->  
-> @@ -211,13 +212,20 @@ static void mtk_dpi_config_pol(struct mtk_dpi
-> *dpi,
->  			       struct mtk_dpi_polarities *dpi_pol)
->  {
->  	unsigned int pol;
-> +	unsigned int mask;
->  
-> -	pol = (dpi_pol->ck_pol == MTK_DPI_POLARITY_RISING ? 0 : CK_POL)
-> |
-> -	      (dpi_pol->de_pol == MTK_DPI_POLARITY_RISING ? 0 : DE_POL)
-> |
-> -	      (dpi_pol->hsync_pol == MTK_DPI_POLARITY_RISING ? 0 :
-> HSYNC_POL) |
-> +	mask = HSYNC_POL | VSYNC_POL;
-> +	pol = (dpi_pol->hsync_pol == MTK_DPI_POLARITY_RISING ? 0 :
-> HSYNC_POL) |
->  	      (dpi_pol->vsync_pol == MTK_DPI_POLARITY_RISING ? 0 :
-> VSYNC_POL);
-> -	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, pol,
-> -		     CK_POL | DE_POL | HSYNC_POL | VSYNC_POL);
-> +	if (dpi->conf->is_ck_de_pol) {
-> +		mask |= CK_POL | DE_POL;
-> +		pol |= (dpi_pol->ck_pol == MTK_DPI_POLARITY_RISING ?
-> +			0 : CK_POL) |
-> +		       (dpi_pol->de_pol == MTK_DPI_POLARITY_RISING ?
-> +			0 : DE_POL);
-> +	}
-> +
-> +	mtk_dpi_mask(dpi, DPI_OUTPUT_SETTING, pol, mask);
->  }
->  
->  static void mtk_dpi_config_3d(struct mtk_dpi *dpi, bool en_3d)
-> @@ -799,6 +807,7 @@ static const struct mtk_dpi_conf mt8173_conf = {
->  	.max_clock_khz = 300000,
->  	.output_fmts = mt8173_output_fmts,
->  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
-> +	.is_ck_de_pol = true,
->  	.limit = &mtk_dpi_limit,
->  };
->  
-> @@ -809,6 +818,7 @@ static const struct mtk_dpi_conf mt2701_conf = {
->  	.max_clock_khz = 150000,
->  	.output_fmts = mt8173_output_fmts,
->  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
-> +	.is_ck_de_pol = true,
->  	.limit = &mtk_dpi_limit,
->  };
->  
-> @@ -818,6 +828,7 @@ static const struct mtk_dpi_conf mt8183_conf = {
->  	.max_clock_khz = 100000,
->  	.output_fmts = mt8183_output_fmts,
->  	.num_output_fmts = ARRAY_SIZE(mt8183_output_fmts),
-> +	.is_ck_de_pol = true,
->  	.limit = &mtk_dpi_limit,
->  };
->  
-> @@ -827,6 +838,7 @@ static const struct mtk_dpi_conf mt8192_conf = {
->  	.max_clock_khz = 150000,
->  	.output_fmts = mt8173_output_fmts,
->  	.num_output_fmts = ARRAY_SIZE(mt8173_output_fmts),
-> +	.is_ck_de_pol = true,
->  	.limit = &mtk_dpi_limit,
->  };
->  
+Dzie=C5=84 dobry,
 
-Reviewed-by: Rex-BC Chen <rex-bc.chen@mediatek.com>
+stworzyli=C5=9Bmy specjaln=C4=85 ofert=C4=99 dla firm, na kompleksow=C4=85=
+ obs=C5=82ug=C4=99 inwestycji w fotowoltaik=C4=99. =20
 
+Specjalizujemy si=C4=99 w zakresie doboru, monta=C5=BCu i serwisie instal=
+acji fotowoltaicznych, dysponujemy najnowocze=C5=9Bniejszymi rozwi=C4=85z=
+ania, kt=C3=B3re zapewni=C4=85 Pa=C5=84stwu oczekiwane rezultaty.
+
+Mo=C5=BCemy przygotowa=C4=87 dla Pa=C5=84stwa wst=C4=99pn=C4=85 kalkulacj=
+=C4=99 i przeanalizowa=C4=87 efekty mo=C5=BCliwe do osi=C4=85gni=C4=99cia=
+=2E
+
+Czy s=C4=85 Pa=C5=84stwo otwarci na wst=C4=99pn=C4=85 rozmow=C4=99 w tym =
+temacie?
+
+
+Pozdrawiam
+Arkadiusz Soko=C5=82owski

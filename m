@@ -2,68 +2,72 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 171B8C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Mar 2022 12:51:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86DB6C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Mar 2022 16:33:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242631AbiC1MxG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Mar 2022 08:53:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34934 "EHLO
+        id S238810AbiC1QfB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Mar 2022 12:35:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40448 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242635AbiC1Mwu (ORCPT
+        with ESMTP id S238904AbiC1QfA (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Mar 2022 08:52:50 -0400
-Received: from mail-oa1-f41.google.com (mail-oa1-f41.google.com [209.85.160.41])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9DF023ED3E;
-        Mon, 28 Mar 2022 05:51:08 -0700 (PDT)
-Received: by mail-oa1-f41.google.com with SMTP id 586e51a60fabf-de3ca1efbaso15056127fac.9;
-        Mon, 28 Mar 2022 05:51:08 -0700 (PDT)
+        Mon, 28 Mar 2022 12:35:00 -0400
+Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com [209.85.167.180])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 695BA7648;
+        Mon, 28 Mar 2022 09:33:18 -0700 (PDT)
+Received: by mail-oi1-f180.google.com with SMTP id e189so16151635oia.8;
+        Mon, 28 Mar 2022 09:33:18 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:in-reply-to:references:subject:date
-         :message-id;
-        bh=YKxyUK+Nou4xViHDx8TkfPYtGoA/VwvXE7HQXU1aq8I=;
-        b=uGEGFy03xxAvRqNyUMlVHsjmP42NeryTXBBNTGQkGysZ49e3LGGf1JVYFSMvuQ/wne
-         j6K5VrJdfNxPlsnTMn0EAroBTRQki8VXBly3HGnKKgFx4ACvuXvWrnAKtLih+MXFPxPY
-         +mKGoEWgrz416l/CSbZsILZQqNX1mAhengWe8PTScUeaeC2xYHqdElwVNrPX0mWKlbIy
-         uccPJbrzEvWrY3RkpRMHj9uF7Van2R99kJsYsiI5S0Po6f4FEbHvfLwUbWCmB8cwjAq3
-         nLDg8LAbrUO/EnBgg/0A6iTjLi8+YMLhWgCschGaByfLCd2T+8Jraido+gNMbWZfysuh
-         cg8w==
-X-Gm-Message-State: AOAM530uv5A6V6vymiQyeDONB/3stKkMy74hILXIfCMIquyrgpIWNUJO
-        qMDXxqCqKInBJA5wJwUnVPoQbQSVQQ==
-X-Google-Smtp-Source: ABdhPJx44lE4vp2aYCeZ7I/lyjmousbKuU1sEX5HIWJFpKqkaVPGdwLqNEmBm4TX4iixQSE+3S145A==
-X-Received: by 2002:a05:6871:694:b0:dd:a43e:fca4 with SMTP id l20-20020a056871069400b000dda43efca4mr15486919oao.77.1648471867780;
-        Mon, 28 Mar 2022 05:51:07 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=bIvjLAN1WghVKdHbiAwbpiS4KUlO9J5lK2uou4RVILk=;
+        b=4BuMH9UC17PguaV7KVJJqo4LZHm4VxTwZQ3azrARHcBzitgGWODEb3IuIXHryl09Q1
+         PHaRtwISpRuw28cShPTwqWLLFh7u7Kf6lp2nRJXrKXQ9SrzTt2xkRC+LC8RWE8/3Q78k
+         yYSACNPIxAk3HmJwe6x295vWxb02lfeMTeshxV2f1pQWc+zy3AdgzfFKKPb3nB+C54Wl
+         1OVH3WCZxz2Wv3rntn6tQvi5d9beZDsDnPQ64uXi1D0e45vNcfYi3Sty1Imrp4cBRshp
+         hpde1HBbm95O1T56LfCUAWRpyYjJgvNlOAZm7M0o4E5JfQeXpVLrRIYZ9i1diSYMl0VU
+         39nQ==
+X-Gm-Message-State: AOAM533GjdNXKY4KDptnJoLLywK33KVjrlY8NuTPLNeK75esrMK0Eeu7
+        ejVBq6tWoln0o2EjEQtjDg==
+X-Google-Smtp-Source: ABdhPJwNVh5RZ1sp9MXlR5GlreRlGRTmHJKVh03oTfj9pol2juq4vLORJb84KwOjAAWD3ibi6+xCCg==
+X-Received: by 2002:a05:6808:1059:b0:2ed:b699:7f2e with SMTP id c25-20020a056808105900b002edb6997f2emr909oih.240.1648485197630;
+        Mon, 28 Mar 2022 09:33:17 -0700 (PDT)
 Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id y67-20020a4a4546000000b0032476e1cb40sm6811033ooa.25.2022.03.28.05.51.06
+        by smtp.gmail.com with ESMTPSA id t15-20020a056808158f00b002e331356c87sm7218218oiw.39.2022.03.28.09.33.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Mar 2022 05:51:07 -0700 (PDT)
-Received: (nullmailer pid 2153569 invoked by uid 1000);
-        Mon, 28 Mar 2022 12:51:05 -0000
+        Mon, 28 Mar 2022 09:33:16 -0700 (PDT)
+Received: (nullmailer pid 2515489 invoked by uid 1000);
+        Mon, 28 Mar 2022 16:33:15 -0000
+Date:   Mon, 28 Mar 2022 11:33:15 -0500
 From:   Rob Herring <robh@kernel.org>
 To:     Guillaume Ranquet <granquet@baylibre.com>
-Cc:     mripard@kernel.org, airlied@linux.ie, tzimmermann@suse.de,
-        maarten.lankhorst@linux.intel.com, chunfeng.yun@mediatek.com,
-        krzk+dt@kernel.org, linux-phy@lists.infradead.org,
-        matthias.bgg@gmail.com, chunkuang.hu@kernel.org,
-        jitao.shi@mediatek.com, vkoul@kernel.org, robh+dt@kernel.org,
-        devicetree@vger.kernel.org, kishon@ti.com,
-        linux-fbdev@vger.kernel.org, daniel@ffwll.ch,
-        angelogioacchino.delregno@collabora.com,
-        Markus Schneider-Pargmann <msp@baylibre.com>,
-        p.zabel@pengutronix.de, linux-mediatek@lists.infradead.org,
-        deller@gmx.de, linux-arm-kernel@lists.infradead.org,
-        markyacoub@google.com, ck.hu@mediatek.com,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc:     airlied@linux.ie, angelogioacchino.delregno@collabora.com,
+        chunfeng.yun@mediatek.com, chunkuang.hu@kernel.org,
+        ck.hu@mediatek.com, daniel@ffwll.ch, deller@gmx.de,
+        jitao.shi@mediatek.com, kishon@ti.com, krzk+dt@kernel.org,
+        maarten.lankhorst@linux.intel.com, matthias.bgg@gmail.com,
+        mripard@kernel.org, p.zabel@pengutronix.de, tzimmermann@suse.de,
+        vkoul@kernel.org, devicetree@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-phy@lists.infradead.org, markyacoub@google.com,
+        Markus Schneider-Pargmann <msp@baylibre.com>
+Subject: Re: [PATCH v9 02/22] dt-bindings: mediatek,dp: Add Display Port
+ binding
+Message-ID: <YkHjS9ToXqyliItf@robh.at.kernel.org>
+References: <20220327223927.20848-1-granquet@baylibre.com>
+ <20220327223927.20848-3-granquet@baylibre.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20220327223927.20848-3-granquet@baylibre.com>
-References: <20220327223927.20848-1-granquet@baylibre.com> <20220327223927.20848-3-granquet@baylibre.com>
-Subject: Re: [PATCH v9 02/22] dt-bindings: mediatek,dp: Add Display Port binding
-Date:   Mon, 28 Mar 2022 07:51:05 -0500
-Message-Id: <1648471865.772251.2153568.nullmailer@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, 28 Mar 2022 00:39:07 +0200, Guillaume Ranquet wrote:
+On Mon, Mar 28, 2022 at 12:39:07AM +0200, Guillaume Ranquet wrote:
 > From: Markus Schneider-Pargmann <msp@baylibre.com>
 > 
 > This controller is present on several mediatek hardware. Currently
@@ -80,33 +84,37 @@ On Mon, 28 Mar 2022 00:39:07 +0200, Guillaume Ranquet wrote:
 >  1 file changed, 100 insertions(+)
 >  create mode 100644 Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
 > 
+> diff --git a/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+> new file mode 100644
+> index 000000000000..802cc406c72b
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/display/mediatek/mediatek,dp.yaml
+> @@ -0,0 +1,100 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/display/mediatek/mediatek,dp.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Mediatek Display Port Controller
+> +
+> +maintainers:
+> +  - CK Hu <ck.hu@mediatek.com>
+> +  - Jitao shi <jitao.shi@mediatek.com>
+> +
+> +description: |
+> +  Device tree bindings for the Mediatek (embedded) Display Port controller
+> +  present on some Mediatek SoCs.
+> +
+> +properties:
+> +  compatible:
+> +    items:
+> +      - const: mediatek,mt8195-dp-tx
+> +      - const: syscon
 
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
+Add something to the above description to convince me this is a syscon. 
 
-yamllint warnings/errors:
+If you need a regmap, the driver can create one. 'syscon' is really only 
+needed if there's not a specific driver.
 
-dtschema/dtc warnings/errors:
-Documentation/devicetree/bindings/display/mediatek/mediatek,dp.example.dts:24:18: fatal error: dt-bindings/power/mt8195-power.h: No such file or directory
-   24 |         #include <dt-bindings/power/mt8195-power.h>
-      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-compilation terminated.
-make[1]: *** [scripts/Makefile.lib:378: Documentation/devicetree/bindings/display/mediatek/mediatek,dp.example.dt.yaml] Error 1
-make[1]: *** Waiting for unfinished jobs....
-make: *** [Makefile:1398: dt_binding_check] Error 2
-
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.ozlabs.org/patch/1609955
-
-This check can fail if there are any dependencies. The base for a patch
-series is generally the most recent rc1.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit.
-
+Rob

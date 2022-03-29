@@ -2,242 +2,469 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CA6DC433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 28 Mar 2022 23:59:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45A3AC433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Mar 2022 03:17:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230522AbiC2AAo (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 28 Mar 2022 20:00:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60138 "EHLO
+        id S231542AbiC2DSk (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 28 Mar 2022 23:18:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59142 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231229AbiC2AAn (ORCPT
+        with ESMTP id S231536AbiC2DSj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 28 Mar 2022 20:00:43 -0400
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 138A6165AAD
-        for <linux-fbdev@vger.kernel.org>; Mon, 28 Mar 2022 16:59:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1648511940; x=1680047940;
-  h=from:to:cc:subject:date:message-id:references:
-   in-reply-to:content-transfer-encoding:mime-version;
-  bh=kOpz971qK4RHXgCOmw9n9Fzd3A4pjjKvU6Hw0SvgWwY=;
-  b=DIUqvYmOg9tEAyi7qGax+D2iZXYt+QOsCcYJNOcs67XtosPqXUuqJJxq
-   sanT19gjppRCcB29mwBazeTjUoHHZ0OK3yJMrV65GbQrp3bZXBmvb0SFU
-   4/9ukJuQh5hRdzIiQw4PCZeCv/Sec++hMrZuhc2/Qx51per9L3PQ8uqyw
-   564s91pO3VAq6jhPyzVlt0xDOgORU9f1fqAFQd5/Bm13ArePEhafhkOmE
-   PVMl3tZreskENIWI6JNakxN4LNHC61y7Cg9lotjwclVtv53nyPOfVBYWa
-   /OfgDr8VV41m4RGXkxQdTWrxNYaI9BI9lK4QTjdUKdL40erRnRmnL8PMi
-   Q==;
-X-IronPort-AV: E=McAfee;i="6200,9189,10300"; a="322313223"
-X-IronPort-AV: E=Sophos;i="5.90,218,1643702400"; 
-   d="scan'208";a="322313223"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Mar 2022 16:58:59 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.90,218,1643702400"; 
-   d="scan'208";a="694531929"
-Received: from fmsmsx605.amr.corp.intel.com ([10.18.126.85])
-  by fmsmga001.fm.intel.com with ESMTP; 28 Mar 2022 16:58:58 -0700
-Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
- fmsmsx605.amr.corp.intel.com (10.18.126.85) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.27; Mon, 28 Mar 2022 16:58:58 -0700
-Received: from fmsedg601.ED.cps.intel.com (10.1.192.135) by
- fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.27 via Frontend Transport; Mon, 28 Mar 2022 16:58:58 -0700
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com (104.47.58.169)
- by edgegateway.intel.com (192.55.55.70) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2308.21; Mon, 28 Mar 2022 16:58:57 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=i7rtiTEmciMA6+T3nAiBBkdNDrHhlbWSG48hIs4qKrTnouw3ppdCU6KgCsjh2/tY7swmZ+00jZ0DomWfJVGdfChG65zSv4eUkOxjy9TKfn+Qar3fQV7KdhpWPHywLtSBhlurFMbTUnpUg9QXfrYshr3qKQ2/GOHtQsCcZGnNxMOxrCLv6QkFnzjA0KXcq/6AK5DG/y+41v6WthRhS10mOmTpxz+FF41ylmxSKkII1EkE/WJt637EaDhMBLKxkjZzsoJBq0EQugkQpNe49ccrRdvBSF1T++GzToj9TzY7fAl9OF47OHrm+4X57evzNPdiECN8KvfHIKecu7RHHlToAw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=kOpz971qK4RHXgCOmw9n9Fzd3A4pjjKvU6Hw0SvgWwY=;
- b=DMPAme4B1rXtjkfoDHxhVKhaQvM0UzB9BKo8mFpdLQEAYyYId5WUOiT9gzLELYReuDvyktKfe/7BuKWl8L4uHChT+/sZ9QnsvTiiXHaA9gHDd+Tnv5VRZnXj1YxzIGCOg7T3QjHo68e6vNDRsDuLGFPhlJX1a/k9cGjt7ZvRUFAxZuGeGysFWzgfFxCBsfFBl3oUFxyIOBD2w9iNVan0DjVXYQvWtLLh9KByMrAXYCVp08fXkXPKjsDAaniwcJQlTECzeDV91skC8sNRrmtFTSTcPQTHhG1CkMz/ODThaxWPc+05GhWcsYChPY0k7r0DOuffCOB0Rn2cTZucoVi+Dw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from BL1PR11MB5445.namprd11.prod.outlook.com (2603:10b6:208:30b::7)
- by SN6PR11MB2927.namprd11.prod.outlook.com (2603:10b6:805:cc::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5102.19; Mon, 28 Mar
- 2022 23:58:56 +0000
-Received: from BL1PR11MB5445.namprd11.prod.outlook.com
- ([fe80::55fe:1d31:4f97:9f92]) by BL1PR11MB5445.namprd11.prod.outlook.com
- ([fe80::55fe:1d31:4f97:9f92%6]) with mapi id 15.20.5102.023; Mon, 28 Mar 2022
- 23:58:56 +0000
-From:   "Liu, Chuansheng" <chuansheng.liu@intel.com>
-To:     Paul Menzel <pmenzel@molgen.mpg.de>
-CC:     "tzimmermann@suse.de" <tzimmermann@suse.de>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "deller@gmx.de" <deller@gmx.de>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "jayalk@intworks.biz" <jayalk@intworks.biz>
-Subject: RE: [PATCH] fbdev: defio: fix the pagelist corruption
-Thread-Topic: [PATCH] fbdev: defio: fix the pagelist corruption
-Thread-Index: AQHYOcSRnc9LTAQJmE6ZG+PF4wN6xazRXpEAgAKlKOCAAF8dAIABKG+w
-Date:   Mon, 28 Mar 2022 23:58:55 +0000
-Message-ID: <BL1PR11MB544534F78BE2AB3502981AE5971D9@BL1PR11MB5445.namprd11.prod.outlook.com>
-References: <20220317054602.28846-1-chuansheng.liu@intel.com>
- <c058f18b-3dae-9ceb-57b4-ed62fedef50a@molgen.mpg.de>
- <BL1PR11MB54455684D2A1B4F0A666F861971D9@BL1PR11MB5445.namprd11.prod.outlook.com>
- <502adc88-740f-fd68-d870-4f5577e1254d@molgen.mpg.de>
-In-Reply-To: <502adc88-740f-fd68-d870-4f5577e1254d@molgen.mpg.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-dlp-product: dlpe-windows
-dlp-reaction: no-action
-dlp-version: 11.6.401.20
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 7def2c2b-f303-4c12-a347-08da1116eb44
-x-ms-traffictypediagnostic: SN6PR11MB2927:EE_
-x-microsoft-antispam-prvs: <SN6PR11MB29276E1C4BE1E8857A13D0AE971D9@SN6PR11MB2927.namprd11.prod.outlook.com>
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: IwH+G2HYL8C4vXe2Ac2TzOJARwczcmWiXZDLtgzNLm6iE1UmLrvTrfAQgWX00klNUwiNE+Vcojt5phmjxM6p5Ro7UW9tX6Xkz9h4u7df1QJHDX8M+cj+JvYrlci16Eqm2W+OSeYQxZlXQgpNHk+fHN+OwGVWTLsvhXWWLuXDbUnVKAPqqF4YP8LOWhB9MWdMKqtMEuo5kphok+kRtN5vSC+MCWe6LMRTTPNjVahE+TRevcdT8IoIlkpbP9dlaghZz6iOJjZ71/Pe8Sn3wCymFa8nKZ/xhk4qIrUr8h6v0DKIoQYFY3mQQ8FglFSUi0XIb21H/7F07rsoVqMsh5yHhA4ymQWmTLBSV4ncIyuCq4Vrv2kSWtduRwWJMa2vDnRHzOqTs/Ub7yRSAwu3SZus2dHBDcIHMsKKXdzUkLsIPBUTzCumd+TOEdEcsdvdJP4kuIsPfKrfUhFgmULQvOPiV98h4xmrXIy9zOKP7fY0FsIEY34703OXGiorNzdO0b5tcoqKDDv52UzUjIbdy8NwtuwakBbG6cF1t5ssfYPetuuGtjoVLk/Rq0bJjtVxwsiF2Jpe0y4JS7Hk3tlnfwZQl/DpUga7K8dLeaWe++DMIQ7D/DRJXcIKhUTdmew6UyGEzy+D3khlj9x2SC1ESz4OVmkflLv2XzMo403VgJehRdG5RSQaQOipdSKq6I9X8NUWSTcS3vFxHREKLgJjDL8Vug==
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL1PR11MB5445.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(366004)(8676002)(4326008)(66946007)(71200400001)(66556008)(76116006)(66476007)(64756008)(53546011)(86362001)(82960400001)(26005)(186003)(2906002)(66446008)(7696005)(83380400001)(33656002)(54906003)(6506007)(6916009)(9686003)(508600001)(316002)(52536014)(8936002)(38100700002)(5660300002)(38070700005)(55016003)(122000001);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?VkwvYVc0WmZ6NmRHWTlVdHBhR2wrTDAzRER4Sk5LMUhNdHpHV2xpWmIyWS81?=
- =?utf-8?B?c2JseXVYY1BNL09UdEEvMGRYc0d2MTAzQzhDYW9BMnJZM3Y4T0ozaW5peHZT?=
- =?utf-8?B?a2hnb0h5OFkwMmRjS3crZktpUEF2dEMrNW5pUEkyN0x6TmduRW9vRmx2M1lS?=
- =?utf-8?B?SENaUzdUR2ZZT1N2WVJlRzlDSXhMMFNjMW1WWkwxUlA1SlF3WVJFdlBYSytO?=
- =?utf-8?B?WmthWTkwV1k5QlNzWG02bEJkVXBxRUViSDdyZC9YODdJOUdwelRlRWNNdUNW?=
- =?utf-8?B?RVRkcnZoejVSSS83SjZDd1psZXNicVRCVlpVRUJ4VXJvL2ZLMDdXV2dGZWRW?=
- =?utf-8?B?ZVdUcWdYRE16Y1I1S1VmMFJjUmhURmlrZlI3ZmYwUjVzdGFHRGVmTW02NUN0?=
- =?utf-8?B?MEQ5VFFCTW5oWW5Bd2oxR3lFdFlxRFRQbmg4OVV4R0IyUFFkU3V3VUExNjlY?=
- =?utf-8?B?OC9EYmRGVU02WGtEM0pxSHRSRWR3cmxzZXJRdjNPR2IvanRFK2xqTmVyVEhP?=
- =?utf-8?B?MkF2SlRuSWV5NzVNWnpEcUxGR09YWnpRTndqRVpESzUvV0VDcG5YNGdObFJC?=
- =?utf-8?B?QXBueFl3bHVWTE5UQ0t0c0pET2FQM3R4WjZlVWpLZmpSRUs1bGhkMUovZlpI?=
- =?utf-8?B?ckJzeUZ0RER0cVdIOHVCYklhSXpOUzliemhIeWd6Um81Q3JRZ0t6NEpDWDBO?=
- =?utf-8?B?bTF3MjJmbFZBQXRiYnJRR2pad3ZuWnNBVGtzYXFLNHBhVDRoMldpRGc1WlU2?=
- =?utf-8?B?SWdrK0NKZTZadFN4SkFBOTJaWHQvNElVQ0R6MTltYjZDNTNteXR6RU9XWTlY?=
- =?utf-8?B?UWQvTmxndlkyQUV6OG1UdWJySFpWSjB0RjV1R0cxb0RaNmFUb21NVXZlSUxM?=
- =?utf-8?B?dTZ5ZjkrcWFYdi9rck1nZWdOa0xyU2liWmZqRmlBdlFTRmZhM2VRa213RGdN?=
- =?utf-8?B?VDRFQ3ZEMlpQalNLT0ZpWnN6TDBrUWtlS2toMjVreHFaNWJ3WTh3QUZ0UW5O?=
- =?utf-8?B?Z21mSlpSTW1QcEhOSkhnQ20wMDREd0I1NEhRdTcrcDIySWNxdWZNREdwcWZF?=
- =?utf-8?B?M05saGUwamRpQk90NmgrUkUybXJtMFFDN054M1FEZXc3RE52TVcvdEdlcnZj?=
- =?utf-8?B?Zll2V1kyNHd1YkcwNlFqNzMzWjFUWVdReElBQWJmM292ZGdXZEdGLzZIQ3Jh?=
- =?utf-8?B?Rlp6WUxnaXVubTF2QWRQdnhNb0UvUm03YUttRVZheVhHaW94QTk0bk1oUmxT?=
- =?utf-8?B?ZzM0VTJ1QTNJQzl2ZnRYYW9PYnVyMmJzSm1kVENjRmtiVmFhWDU0dnRtWmg3?=
- =?utf-8?B?NGs1MmlobEJwNXY3K3QwNDlqRGJlcGZ6MlFuS1ZrZG0xME9TNXo2ZW4waWNm?=
- =?utf-8?B?UXJjQ3I1akVIK1RYTzVEZEw0ckozT1dmWHBOUWVWTWF1eXVCQmlkYytRMTll?=
- =?utf-8?B?YmY4N2dGWkZqQm9jMU1NZzJpdVJuRUwrTkRkVjYvZzVmZkJ3bW9ibFZuUHUy?=
- =?utf-8?B?d1plOUhGOTNTY04weS9BSnZ5Wm1tQzRrRkdsL05QekdlajZIMDhGSkVVVWFK?=
- =?utf-8?B?cWFnSXc3ck1YNWtTaE9iSkZwb08vbWJFMUhJN3pOOTlDQVFONldYVnZqZDc1?=
- =?utf-8?B?YUxscGp4U2lUUzY2QWZycjNuR3JhdVVHWnFsM3Z1b3BEc0FLc1MyNXNLZXp0?=
- =?utf-8?B?T0lxQndITmpVdFI1UDRtaWk5VlVPdGNqYUh3U1JISVhsZVEwQUpmNnZ1bmxv?=
- =?utf-8?B?M0NSUTRHd0RrRXVFUEh2NzZUQjNCM1lpazg2K2JQUS9HSEp4bDg1QjF3elh5?=
- =?utf-8?B?blRZYlNpZkxVeVVSVmVJWlQ0SnBORnZ6WDVzY2d0SVVBV1hsbVJrTmJoUDla?=
- =?utf-8?B?S3p5b1lCazJURFo0a1hIdXJGL3hxRkNLcFAvQThUdUU0RUl3REl2QjVNVjBY?=
- =?utf-8?B?bFZwNURNNDU2VFZKSXVZd2NPeEEwZTM2ZFpBb21qc1grb1kzS1ZHNkVSVUFX?=
- =?utf-8?B?cGxvY0tGUmFVZzI2YS9KYUpXTW0yVjlYa0FWOWRqQkN6bm9OdGRtek91dWtT?=
- =?utf-8?B?dXk4Z2ROR2s5Z2tMb0MzbFJiYi9MaHdYZkNPVG93SEhhRlJtOStIZVNybTBs?=
- =?utf-8?B?eGZGeHg5Qlk5V1BrNkYwb2ZLOEpDSWZkQjVyclNHNGRhUTZJYjFCSTFmeWlP?=
- =?utf-8?B?Mk85dC9WWERVOEs0VDJLUFdlS053VUFYUVBRVW8xQk9ENHFSNm9IWUhnUTJm?=
- =?utf-8?B?QjVCZi9sTkRJSGlQWlpMSUZjNTdoZ2ordEFVTzUzZGpUcFNRNksyN1BGWS9k?=
- =?utf-8?B?UE9uL2pSbEZkWGNMWUNJK2xRS3FQbUd6MkFOUWEyZ3c5RFh2cHJacmxDTnlZ?=
- =?utf-8?Q?g5ycduFpbG4LAeB8=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+        Mon, 28 Mar 2022 23:18:39 -0400
+Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DA9E7939F7;
+        Mon, 28 Mar 2022 20:16:55 -0700 (PDT)
+X-UUID: 3cdd3f4c568d4f00b2dd82e915e40f62-20220329
+X-UUID: 3cdd3f4c568d4f00b2dd82e915e40f62-20220329
+Received: from mtkcas11.mediatek.inc [(172.21.101.40)] by mailgw01.mediatek.com
+        (envelope-from <rex-bc.chen@mediatek.com>)
+        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1480044459; Tue, 29 Mar 2022 11:16:49 +0800
+Received: from mtkcas10.mediatek.inc (172.21.101.39) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Tue, 29 Mar 2022 11:16:48 +0800
+Received: from mtksdccf07 (172.21.84.99) by mtkcas10.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Tue, 29 Mar 2022 11:16:48 +0800
+Message-ID: <b308f2b37f6e9768fb3b5d85b906a3961ca8419a.camel@mediatek.com>
+Subject: Re: [PATCH v9 15/22] drm/mediatek: dpi: Add dpintf support
+From:   Rex-BC Chen <rex-bc.chen@mediatek.com>
+To:     Guillaume Ranquet <granquet@baylibre.com>, <airlied@linux.ie>,
+        <angelogioacchino.delregno@collabora.com>,
+        <chunfeng.yun@mediatek.com>, <chunkuang.hu@kernel.org>,
+        <ck.hu@mediatek.com>, <daniel@ffwll.ch>, <deller@gmx.de>,
+        <jitao.shi@mediatek.com>, <kishon@ti.com>, <krzk+dt@kernel.org>,
+        <maarten.lankhorst@linux.intel.com>, <matthias.bgg@gmail.com>,
+        <mripard@kernel.org>, <p.zabel@pengutronix.de>,
+        <robh+dt@kernel.org>, <tzimmermann@suse.de>, <vkoul@kernel.org>
+CC:     <devicetree@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-fbdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-phy@lists.infradead.org>, <markyacoub@google.com>,
+        "Markus Schneider-Pargmann" <msp@baylibre.com>
+Date:   Tue, 29 Mar 2022 11:16:48 +0800
+In-Reply-To: <20220327223927.20848-16-granquet@baylibre.com>
+References: <20220327223927.20848-1-granquet@baylibre.com>
+         <20220327223927.20848-16-granquet@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.2 
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BL1PR11MB5445.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7def2c2b-f303-4c12-a347-08da1116eb44
-X-MS-Exchange-CrossTenant-originalarrivaltime: 28 Mar 2022 23:58:55.9349
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 2M5Y7Na8oKuCib0Uu8xEHypNu9Fb9RyOQ82lPl9peM2VnQGs60NETwUDTD9h8gbcM1km6EAkhT1i6oXfF5FCJ+/EHbTDcWWizUkPzI7ZeNM=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR11MB2927
-X-OriginatorOrg: intel.com
+Content-Transfer-Encoding: 7bit
+X-MTK:  N
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-SGkgUGF1bCwNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBkcmktZGV2
-ZWwgPGRyaS1kZXZlbC1ib3VuY2VzQGxpc3RzLmZyZWVkZXNrdG9wLm9yZz4gT24gQmVoYWxmIE9m
-IFBhdWwNCj4gTWVuemVsDQo+IFNlbnQ6IE1vbmRheSwgTWFyY2ggMjgsIDIwMjIgMjoxNSBQTQ0K
-PiBUbzogTGl1LCBDaHVhbnNoZW5nIDxjaHVhbnNoZW5nLmxpdUBpbnRlbC5jb20+DQo+IENjOiB0
-emltbWVybWFubkBzdXNlLmRlOyBsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmc7IGRlbGxlckBn
-bXguZGU7IGRyaS0NCj4gZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnOyBqYXlhbGtAaW50d29y
-a3MuYml6DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGZiZGV2OiBkZWZpbzogZml4IHRoZSBwYWdl
-bGlzdCBjb3JydXB0aW9uDQo+IA0KPiBEZWFyIENodWFuc2hlbmcsDQo+IA0KPiANCj4gQW0gMjgu
-MDMuMjIgdW0gMDI6NTggc2NocmllYiBMaXUsIENodWFuc2hlbmc6DQo+IA0KPiA+PiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiANCj4gPj4gU2VudDogU2F0dXJkYXksIE1hcmNoIDI2LCAy
-MDIyIDQ6MTEgUE0NCj4gDQo+ID4+IEFtIDE3LjAzLjIyIHVtIDA2OjQ2IHNjaHJpZWIgQ2h1YW5z
-aGVuZyBMaXU6DQo+ID4+PiBFYXNpbHkgaGl0IHRoZSBiZWxvdyBsaXN0IGNvcnJ1cHRpb246DQo+
-ID4+PiA9PQ0KPiA+Pj4gbGlzdF9hZGQgY29ycnVwdGlvbi4gcHJldi0+bmV4dCBzaG91bGQgYmUg
-bmV4dCAoZmZmZmZmZmZjMGNlYjA5MCksIGJ1dA0KPiA+Pj4gd2FzIGZmZmZlYzYwNDUwN2VkYzgu
-IChwcmV2PWZmZmZlYzYwNDUwN2VkYzgpLg0KPiA+Pj4gV0FSTklORzogQ1BVOiA2NSBQSUQ6IDM5
-NTkgYXQgbGliL2xpc3RfZGVidWcuYzoyNg0KPiA+Pj4gX19saXN0X2FkZF92YWxpZCsweDUzLzB4
-ODANCj4gPj4+IENQVTogNjUgUElEOiAzOTU5IENvbW06IGZiZGV2IFRhaW50ZWQ6IEcgICAgIFUN
-Cj4gPj4+IFJJUDogMDAxMDpfX2xpc3RfYWRkX3ZhbGlkKzB4NTMvMHg4MA0KPiA+Pj4gQ2FsbCBU
-cmFjZToNCj4gPj4+ICAgIDxUQVNLPg0KPiA+Pj4gICAgZmJfZGVmZXJyZWRfaW9fbWt3cml0ZSsw
-eGVhLzB4MTUwDQo+ID4+PiAgICBkb19wYWdlX21rd3JpdGUrMHg1Ny8weGMwDQo+ID4+PiAgICBk
-b193cF9wYWdlKzB4Mjc4LzB4MmYwDQo+ID4+PiAgICBfX2hhbmRsZV9tbV9mYXVsdCsweGRjMi8w
-eDE1OTANCj4gPj4+ICAgIGhhbmRsZV9tbV9mYXVsdCsweGRkLzB4MmMwDQo+ID4+PiAgICBkb191
-c2VyX2FkZHJfZmF1bHQrMHgxZDMvMHg2NTANCj4gPj4+ICAgIGV4Y19wYWdlX2ZhdWx0KzB4Nzcv
-MHgxODANCj4gPj4+ICAgID8gYXNtX2V4Y19wYWdlX2ZhdWx0KzB4OC8weDMwDQo+ID4+PiAgICBh
-c21fZXhjX3BhZ2VfZmF1bHQrMHgxZS8weDMwDQo+ID4+PiBSSVA6IDAwMzM6MHg3ZmQ5OGZjOGZh
-ZDENCj4gPj4+ID09DQo+ID4+Pg0KPiA+Pj4gRmlndXJlIG91dCB0aGUgcmFjZSBoYXBwZW5zIHdo
-ZW4gb25lIHByb2Nlc3MgaXMgYWRkaW5nICZwYWdlLT5scnUgaW50bw0KPiA+Pj4gdGhlIHBhZ2Vs
-aXN0IHRhaWwgaW4gZmJfZGVmZXJyZWRfaW9fbWt3cml0ZSgpLCBhbm90aGVyIHByb2Nlc3MgaXMN
-Cj4gPj4+IHJlLWluaXRpYWxpemluZyB0aGUgc2FtZSAmcGFnZS0+bHJ1IGluIGZiX2RlZmVycmVk
-X2lvX2ZhdWx0KCksIHdoaWNoIGlzDQo+ID4+PiBub3QgcHJvdGVjdGVkIGJ5IHRoZSBsb2NrLg0K
-PiA+Pj4NCj4gPj4+IFRoaXMgZml4IGlzIHRvIGluaXQgYWxsIHRoZSBwYWdlIGxpc3RzIG9uZSB0
-aW1lIGR1cmluZyBpbml0aWFsaXphdGlvbiwNCj4gPj4+IGl0IG5vdCBvbmx5IGZpeGVzIHRoZSBs
-aXN0IGNvcnJ1cHRpb24sIGJ1dCBhbHNvIGF2b2lkcyBJTklUX0xJU1RfSEVBRCgpDQo+ID4+PiBy
-ZWR1bmRhbnRseS4NCj4gPj4+DQo+ID4+PiBGaXhlczogMTA1YTk0MDQxNmZjICgiZmJkZXYvZGVm
-aW86IEVhcmx5LW91dCBpZiBwYWdlIGlzIGFscmVhZHkgZW5saXN0ZWQiKQ0KPiA+Pj4gQ2M6IFRo
-b21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPg0KPiA+Pj4gU2lnbmVkLW9mZi1i
-eTogQ2h1YW5zaGVuZyBMaXUgPGNodWFuc2hlbmcubGl1QGludGVsLmNvbT4NCj4gPj4+IC0tLQ0K
-PiA+Pj4gICAgZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiX2RlZmlvLmMgfCA5ICsrKysrKysr
-LQ0KPiA+Pj4gICAgMSBmaWxlIGNoYW5nZWQsIDggaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigt
-KQ0KPiA+Pj4NCj4gPj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJf
-ZGVmaW8uYw0KPiBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYl9kZWZpby5jDQo+ID4+PiBp
-bmRleCA5OGIwZjIzYmY1ZTIuLmVhZmI2NmNhNGYyOCAxMDA2NDQNCj4gPj4+IC0tLSBhL2RyaXZl
-cnMvdmlkZW8vZmJkZXYvY29yZS9mYl9kZWZpby5jDQo+ID4+PiArKysgYi9kcml2ZXJzL3ZpZGVv
-L2ZiZGV2L2NvcmUvZmJfZGVmaW8uYw0KPiA+Pj4gQEAgLTU5LDcgKzU5LDYgQEAgc3RhdGljIHZt
-X2ZhdWx0X3QgZmJfZGVmZXJyZWRfaW9fZmF1bHQoc3RydWN0IHZtX2ZhdWx0DQo+ICp2bWYpDQo+
-ID4+PiAgICAJCXByaW50ayhLRVJOX0VSUiAibm8gbWFwcGluZyBhdmFpbGFibGVcbiIpOw0KPiA+
-Pj4NCj4gPj4+ICAgIAlCVUdfT04oIXBhZ2UtPm1hcHBpbmcpOw0KPiA+Pj4gLQlJTklUX0xJU1Rf
-SEVBRCgmcGFnZS0+bHJ1KTsNCj4gPj4+ICAgIAlwYWdlLT5pbmRleCA9IHZtZi0+cGdvZmY7DQo+
-ID4+Pg0KPiA+Pj4gICAgCXZtZi0+cGFnZSA9IHBhZ2U7DQo+ID4+PiBAQCAtMjIwLDYgKzIxOSw4
-IEBAIHN0YXRpYyB2b2lkIGZiX2RlZmVycmVkX2lvX3dvcmsoc3RydWN0IHdvcmtfc3RydWN0DQo+
-ICp3b3JrKQ0KPiA+Pj4gICAgdm9pZCBmYl9kZWZlcnJlZF9pb19pbml0KHN0cnVjdCBmYl9pbmZv
-ICppbmZvKQ0KPiA+Pj4gICAgew0KPiA+Pj4gICAgCXN0cnVjdCBmYl9kZWZlcnJlZF9pbyAqZmJk
-ZWZpbyA9IGluZm8tPmZiZGVmaW87DQo+ID4+PiArCXN0cnVjdCBwYWdlICpwYWdlOw0KPiA+Pj4g
-KwlpbnQgaTsNCj4gPj4+DQo+ID4+PiAgICAJQlVHX09OKCFmYmRlZmlvKTsNCj4gPj4+ICAgIAlt
-dXRleF9pbml0KCZmYmRlZmlvLT5sb2NrKTsNCj4gPj4+IEBAIC0yMjcsNiArMjI4LDEyIEBAIHZv
-aWQgZmJfZGVmZXJyZWRfaW9faW5pdChzdHJ1Y3QgZmJfaW5mbyAqaW5mbykNCj4gPj4+ICAgIAlJ
-TklUX0xJU1RfSEVBRCgmZmJkZWZpby0+cGFnZWxpc3QpOw0KPiA+Pj4gICAgCWlmIChmYmRlZmlv
-LT5kZWxheSA9PSAwKSAvKiBzZXQgYSBkZWZhdWx0IG9mIDEgcyAqLw0KPiA+Pj4gICAgCQlmYmRl
-ZmlvLT5kZWxheSA9IEhaOw0KPiA+Pj4gKw0KPiA+Pj4gKwkvKiBpbml0aWFsaXplIGFsbCB0aGUg
-cGFnZSBsaXN0cyBvbmUgdGltZSAqLw0KPiA+Pj4gKwlmb3IgKGkgPSAwOyBpIDwgaW5mby0+Zml4
-LnNtZW1fbGVuOyBpICs9IFBBR0VfU0laRSkgew0KPiA+Pj4gKwkJcGFnZSA9IGZiX2RlZmVycmVk
-X2lvX3BhZ2UoaW5mbywgaSk7DQo+ID4+PiArCQlJTklUX0xJU1RfSEVBRCgmcGFnZS0+bHJ1KTsN
-Cj4gPj4+ICsJfQ0KPiA+Pj4gICAgfQ0KPiA+Pj4gICAgRVhQT1JUX1NZTUJPTF9HUEwoZmJfZGVm
-ZXJyZWRfaW9faW5pdCk7DQo+ID4+Pg0KPiA+PiBBcHBseWluZyB5b3VyIHBhdGNoIG9uIHRvcCBv
-ZiBjdXJyZW50IExpbnVz4oCZIG1hc3RlciBicmFuY2gsIHR0eTAgaXMNCj4gPj4gdW51c2FibGUg
-YW5kIGxvb2tzIGZyb3plbi4gU29tZXRpbWVzIG5ldHdvcmsgY2FyZCBzdGlsbCB3b3Jrcywgc29t
-ZXRpbWVzDQo+ID4+IG5vdC4NCj4gPg0KPiA+IEkgZG9uJ3Qgc2VlIGhvdyB0aGUgcGF0Y2ggd291
-bGQgY2F1c2UgYmVsb3cgQlVHIGNhbGwgc3RhY2ssIG5lZWQgc29tZSB0aW1lDQo+IHRvDQo+ID4g
-ZGVidWcuIEp1c3QgZmV3IGNvbW1lbnRzOg0KPiA+IDEuIFdpbGwgdGhlIHN5c3RlbSB3b3JrIHdl
-bGwgd2l0aG91dCB0aGlzIHBhdGNoPw0KPiANCj4gWWVzLCB0aGUgZnJhbWVidWZmZXIgd29ya3Mg
-d2VsbCB3aXRob3V0IHRoZSBwYXRjaC4NCj4gDQo+ID4gMi4gV2hlbiB5b3UgYXJlIHN1cmUgdGhl
-IHBhdGNoIGNhdXNlcyB0aGUgcmVncmVzc2lvbiB5b3Ugc2F3LCBwbGVhc2UgZ2V0IGZyZWUNCj4g
-dG8gc3VibWl0DQo+ID4gb25lIHJldmVydGVkIHBhdGNoLCB0aGFua3MgOiApDQo+IA0KPiBJIHRo
-aW5rIHlvdSBmb3IgcGF0Y2ggd2FzbuKAmXQgc3VibWl0dGVkIHlldCDigJMgYXQgbGVhc3Qgbm90
-IHB1bGxlZCBieSBMaW51cy4NClRoZSBwYXRjaCBoYXMgYmVlbiBpbiBkcm0tdGlwLCBjb3VsZCB5
-b3UgaGF2ZSBhIHRyeSB3aXRoIHRoZSBsYXRlc3QgZHJtLXRpcCB0byBzZWUgaWYgdGhlDQpGcmFt
-ZWJ1ZmZlciB3b3JrcyB3ZWxsLCBpbiB0aGF0IGNhc2UsIHdlIGNvdWxkIHJldmVydCBpdCBpbiBk
-cm0tdGlwIHRoZW4uDQoNCkJlc3QgUmVnYXJkcw0KQ2h1YW5zaGVuZw0KDQo=
+On Mon, 2022-03-28 at 00:39 +0200, Guillaume Ranquet wrote:
+> dpintf is the displayport interface hardware unit. This unit is
+> similar
+> to dpi and can reuse most of the code.
+> 
+> This patch adds support for mt8195-dpintf to this dpi driver. Main
+> differences are:
+>  - Some features/functional components are not available for dpintf
+>    which are now excluded from code execution once is_dpintf is set
+>  - dpintf can and needs to choose between different clockdividers
+> based
+>    on the clockspeed. This is done by choosing a different clock
+> parent.
+>  - There are two additional clocks that need to be managed. These are
+>    only set for dpintf and will be set to NULL if not supplied. The
+>    clk_* calls handle these as normal clocks then.
+>  - Some register contents differ slightly between the two components.
+> To
+>    work around this I added register bits/masks with a DPINTF_ prefix
+>    and use them where different.
+> 
+> Based on a separate driver for dpintf created by
+> Jason-JH.Lin <jason-jh.lin@mediatek.com>.
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Reviewed-by: AngeloGioacchino Del Regno <
+> angelogioacchino.delregno@collabora.com>
+> ---
+>  drivers/gpu/drm/mediatek/mtk_dpi.c          | 78 ++++++++++++++++++-
+> --
+>  drivers/gpu/drm/mediatek/mtk_dpi_regs.h     | 38 ++++++++++
+>  drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.c |  8 +++
+>  drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.h |  1 +
+>  drivers/gpu/drm/mediatek/mtk_drm_drv.c      |  5 +-
+>  include/linux/soc/mediatek/mtk-mmsys.h      |  2 +
+>  6 files changed, 120 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/mediatek/mtk_dpi.c
+> b/drivers/gpu/drm/mediatek/mtk_dpi.c
+> index eb969c5c5c2e..8198d3cf23ac 100644
+> --- a/drivers/gpu/drm/mediatek/mtk_dpi.c
+> +++ b/drivers/gpu/drm/mediatek/mtk_dpi.c
+> @@ -126,6 +126,7 @@ struct mtk_dpi_conf {
+>  	const u32 *output_fmts;
+>  	u32 num_output_fmts;
+>  	bool is_ck_de_pol;
+> +	bool is_dpintf;
+>  	bool swap_input_support;
+>  	/* Mask used for HWIDTH, HPORCH, VSYNC_WIDTH and VSYNC_PORCH
+> (no shift) */
+>  	u32 dimension_mask;
+> @@ -498,11 +499,11 @@ static int mtk_dpi_set_display_mode(struct
+> mtk_dpi *dpi,
+>  
+>  	vm.pixelclock = pll_rate / factor;
+>  	if ((dpi->output_fmt == MEDIA_BUS_FMT_RGB888_2X12_LE) ||
+> -	    (dpi->output_fmt == MEDIA_BUS_FMT_RGB888_2X12_BE))
+> +		 (dpi->output_fmt == MEDIA_BUS_FMT_RGB888_2X12_BE)) {
+>  		clk_set_rate(dpi->pixel_clk, vm.pixelclock * 2);
+> -	else
+> +	} else {
+>  		clk_set_rate(dpi->pixel_clk, vm.pixelclock);
+> -
+> +	}
+>  
+>  	vm.pixelclock = clk_get_rate(dpi->pixel_clk);
+>  
+> @@ -515,9 +516,15 @@ static int mtk_dpi_set_display_mode(struct
+> mtk_dpi *dpi,
+>  			    MTK_DPI_POLARITY_FALLING :
+> MTK_DPI_POLARITY_RISING;
+>  	dpi_pol.vsync_pol = vm.flags & DISPLAY_FLAGS_VSYNC_HIGH ?
+>  			    MTK_DPI_POLARITY_FALLING :
+> MTK_DPI_POLARITY_RISING;
+> -	hsync.sync_width = vm.hsync_len;
+> -	hsync.back_porch = vm.hback_porch;
+> -	hsync.front_porch = vm.hfront_porch;
+> +	if (dpi->conf->is_dpintf) {
+> +		hsync.sync_width = vm.hsync_len / 4;
+> +		hsync.back_porch = vm.hback_porch / 4;
+> +		hsync.front_porch = vm.hfront_porch / 4;
+> +	} else {
+> +		hsync.sync_width = vm.hsync_len;
+> +		hsync.back_porch = vm.hback_porch;
+> +		hsync.front_porch = vm.hfront_porch;
+> +	}
+>  	hsync.shift_half_line = false;
+>  	vsync_lodd.sync_width = vm.vsync_len;
+>  	vsync_lodd.back_porch = vm.vback_porch;
+> @@ -559,13 +566,20 @@ static int mtk_dpi_set_display_mode(struct
+> mtk_dpi *dpi,
+>  	mtk_dpi_config_channel_limit(dpi);
+>  	mtk_dpi_config_bit_num(dpi, dpi->bit_num);
+>  	mtk_dpi_config_channel_swap(dpi, dpi->channel_swap);
+> -	mtk_dpi_config_yc_map(dpi, dpi->yc_map);
+>  	mtk_dpi_config_color_format(dpi, dpi->color_format);
+> -	mtk_dpi_config_2n_h_fre(dpi);
+> -	mtk_dpi_dual_edge(dpi);
+> -	mtk_dpi_config_disable_edge(dpi);
+> +	if (dpi->conf->is_dpintf) {
+> +		mtk_dpi_mask(dpi, DPI_CON, DPINTF_INPUT_2P_EN,
+> +			     DPINTF_INPUT_2P_EN);
+> +	} else {
+> +		mtk_dpi_config_yc_map(dpi, dpi->yc_map);
+> +		mtk_dpi_config_2n_h_fre(dpi);
+> +		mtk_dpi_dual_edge(dpi);
+> +		mtk_dpi_config_disable_edge(dpi);
+> +	}
+>  	mtk_dpi_sw_reset(dpi, false);
+>  
+> +	mtk_dpi_enable(dpi);
+> +
+>  	return 0;
+>  }
+>  
+> @@ -642,7 +656,10 @@ static int mtk_dpi_bridge_atomic_check(struct
+> drm_bridge *bridge,
+>  	dpi->bit_num = MTK_DPI_OUT_BIT_NUM_8BITS;
+>  	dpi->channel_swap = MTK_DPI_OUT_CHANNEL_SWAP_RGB;
+>  	dpi->yc_map = MTK_DPI_OUT_YC_MAP_RGB;
+> -	dpi->color_format = MTK_DPI_COLOR_FORMAT_RGB;
+> +	if (out_bus_format == MEDIA_BUS_FMT_YUYV8_1X16)
+> +		dpi->color_format =
+> MTK_DPI_COLOR_FORMAT_YCBCR_422_FULL;
+> +	else
+> +		dpi->color_format = MTK_DPI_COLOR_FORMAT_RGB;
+>  
+>  	return 0;
+>  }
+> @@ -801,6 +818,16 @@ static unsigned int mt8183_calculate_factor(int
+> clock)
+>  		return 2;
+>  }
+>  
+> +static unsigned int mt8195_dpintf_calculate_factor(int clock)
+> +{
+> +	if (clock < 70000)
+> +		return 4;
+> +	else if (clock < 200000)
+> +		return 2;
+> +	else
+> +		return 1;
+> +}
+> +
+>  static const u32 mt8173_output_fmts[] = {
+>  	MEDIA_BUS_FMT_RGB888_1X24,
+>  };
+> @@ -810,6 +837,12 @@ static const u32 mt8183_output_fmts[] = {
+>  	MEDIA_BUS_FMT_RGB888_2X12_BE,
+>  };
+>  
+> +static const u32 mt8195_output_fmts[] = {
+> +	MEDIA_BUS_FMT_RGB888_1X24,
+> +	MEDIA_BUS_FMT_YUV8_1X24,
+> +	MEDIA_BUS_FMT_YUYV8_1X16,
+> +};
+> +
+>  static const struct mtk_dpi_yc_limit mtk_dpi_limit = {
+>  	.c_bottom = 0x0010,
+>  	.c_top = 0x0FE0,
+> @@ -817,6 +850,13 @@ static const struct mtk_dpi_yc_limit
+> mtk_dpi_limit = {
+>  	.y_top = 0x0FE0,
+>  };
+>  
+> +static const struct mtk_dpi_yc_limit mtk_dpintf_limit = {
+> +	.c_bottom = 0x0000,
+> +	.c_top = 0xFFF,
+> +	.y_bottom = 0x0000,
+> +	.y_top = 0xFFF,
+> +};
+> +
+>  static const struct mtk_dpi_conf mt8173_conf = {
+>  	.cal_factor = mt8173_calculate_factor,
+>  	.reg_h_fre_con = 0xe0,
+> @@ -882,6 +922,19 @@ static const struct mtk_dpi_conf mt8192_conf = {
+>  	.limit = &mtk_dpi_limit,
+>  };
+>  
+> +static const struct mtk_dpi_conf mt8195_dpintf_conf = {
+> +	.cal_factor = mt8195_dpintf_calculate_factor,
+> +	.output_fmts = mt8195_output_fmts,
+> +	.num_output_fmts = ARRAY_SIZE(mt8195_output_fmts),
+> +	.is_dpintf = true,
+> +	.dimension_mask = DPINTF_HPW_MASK,
+> +	.hvsize_mask = DPINTF_HSIZE_MASK,
+> +	.channel_swap_shift = DPINTF_CH_SWAP,
+> +	.yuv422_en_bit = DPINTF_YUV422_EN,
+> +	.csc_enable_bit = DPINTF_CSC_ENABLE,
+> +	.limit = &mtk_dpintf_limit,
+> +};
+> +
+>  static int mtk_dpi_probe(struct platform_device *pdev)
+>  {
+>  	struct device *dev = &pdev->dev;
+> @@ -1004,6 +1057,9 @@ static const struct of_device_id
+> mtk_dpi_of_ids[] = {
+>  	{ .compatible = "mediatek,mt8192-dpi",
+>  	  .data = &mt8192_conf,
+>  	},
+> +	{ .compatible = "mediatek,mt8195-dpintf",
+> +	  .data = &mt8195_dpintf_conf,
+> +	},
+>  	{ },
+>  };
+>  MODULE_DEVICE_TABLE(of, mtk_dpi_of_ids);
+> diff --git a/drivers/gpu/drm/mediatek/mtk_dpi_regs.h
+> b/drivers/gpu/drm/mediatek/mtk_dpi_regs.h
+> index 3a02fabe1662..91b32dfffced 100644
+> --- a/drivers/gpu/drm/mediatek/mtk_dpi_regs.h
+> +++ b/drivers/gpu/drm/mediatek/mtk_dpi_regs.h
+> @@ -40,10 +40,15 @@
+>  #define FAKE_DE_LEVEN			BIT(21)
+>  #define FAKE_DE_RODD			BIT(22)
+>  #define FAKE_DE_REVEN			BIT(23)
+> +#define DPINTF_YUV422_EN		BIT(24)
+> +#define DPINTF_CSC_ENABLE		BIT(26)
+> +#define DPINTF_INPUT_2P_EN		BIT(29)
+>  
+>  #define DPI_OUTPUT_SETTING	0x14
+>  #define CH_SWAP				0
+> +#define DPINTF_CH_SWAP			BIT(1)
+>  #define CH_SWAP_MASK			(0x7 << 0)
+> +#define DPINTF_CH_SWAP_MASK		(0x7 << 1)
+>  #define SWAP_RGB			0x00
+>  #define SWAP_GBR			0x01
+>  #define SWAP_BRG			0x02
+> @@ -80,8 +85,10 @@
+>  #define DPI_SIZE		0x18
+>  #define HSIZE				0
+>  #define HSIZE_MASK			(0x1FFF << 0)
+> +#define DPINTF_HSIZE_MASK		(0xFFFF << 0)
+>  #define VSIZE				16
+>  #define VSIZE_MASK			(0x1FFF << 16)
+> +#define DPINTF_VSIZE_MASK		(0xFFFF << 16)
+>  
+>  #define DPI_DDR_SETTING		0x1C
+>  #define DDR_EN				BIT(0)
+> @@ -93,24 +100,30 @@
+>  #define DPI_TGEN_HWIDTH		0x20
+>  #define HPW				0
+>  #define HPW_MASK			(0xFFF << 0)
+> +#define DPINTF_HPW_MASK			(0xFFFF << 0)
+>  
+>  #define DPI_TGEN_HPORCH		0x24
+>  #define HBP				0
+>  #define HBP_MASK			(0xFFF << 0)
+> +#define DPINTF_HBP_MASK			(0xFFFF << 0)
+>  #define HFP				16
+>  #define HFP_MASK			(0xFFF << 16)
+> +#define DPINTF_HFP_MASK			(0xFFFF << 16)
+>  
+>  #define DPI_TGEN_VWIDTH		0x28
+>  #define DPI_TGEN_VPORCH		0x2C
+>  
+>  #define VSYNC_WIDTH_SHIFT		0
+>  #define VSYNC_WIDTH_MASK		(0xFFF << 0)
+> +#define DPINTF_VSYNC_WIDTH_MASK		(0xFFFF << 0)
+>  #define VSYNC_HALF_LINE_SHIFT		16
+>  #define VSYNC_HALF_LINE_MASK		BIT(16)
+>  #define VSYNC_BACK_PORCH_SHIFT		0
+>  #define VSYNC_BACK_PORCH_MASK		(0xFFF << 0)
+> +#define DPINTF_VSYNC_BACK_PORCH_MASK	(0xFFFF << 0)
+>  #define VSYNC_FRONT_PORCH_SHIFT		16
+>  #define VSYNC_FRONT_PORCH_MASK		(0xFFF << 16)
+> +#define DPINTF_VSYNC_FRONT_PORCH_MASK	(0xFFFF << 16)
+>  
+>  #define DPI_BG_HCNTL		0x30
+>  #define BG_RIGHT			(0x1FFF << 0)
+> @@ -217,4 +230,29 @@
+>  
+>  #define EDGE_SEL_EN			BIT(5)
+>  #define H_FRE_2N			BIT(25)
+> +
+> +#define DPI_MATRIX_SET	0xB4
+> +#define INT_MATRIX_SEL			BIT(0)
+> +#define INT_MATRIX_SEL_MASK		(0x1F << 0)
+> +#define RGB_TO_JPEG			0x00
+> +#define RGB_TO_FULL709			0x01
+> +#define RGB_TO_BT601			0x02
+> +#define RGB_TO_BT709			0x03
+> +#define JPEG_TO_RGB			0x04
+> +#define FULL709_TO_RGB			0x05
+> +#define BT601_TO_RGB			0x06
+> +#define BT709_TO_RGB			0x07
+> +#define JPEG_TO_BT601			0x08
+> +#define JPEG_TO_BT709			0x09
+> +#define BT601_TO_JPEG			0xA
+> +#define BT709_TO_JPEG			0xB
+> +#define BT709_TO_BT601			0xC
+> +#define BT601_TO_BT709			0xD
+> +#define JPEG_TO_CERGB			0x14
+> +#define FULL709_TO_CERGB		0x15
+> +#define BT601_TO_CERGB			0x16
+> +#define BT709_TO_CERGB			0x17
+> +#define RGB_TO_CERGB			0x1C
+> +#define MATRIX_BIT			BIT(8)
+> +#define EXT_MATRIX_EN			BIT(12)
+>  #endif /* __MTK_DPI_REGS_H */
+> diff --git a/drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.c
+> b/drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.c
+> index 2e99aee13dfe..558fc2733358 100644
+> --- a/drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.c
+> +++ b/drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.c
+> @@ -351,6 +351,11 @@ static const char * const
+> mtk_ddp_comp_stem[MTK_DDP_COMP_TYPE_MAX] = {
+>  	[MTK_DISP_WDMA] = "wdma",
+>  	[MTK_DPI] = "dpi",
+>  	[MTK_DSI] = "dsi",
+> +	[MTK_DP_INTF] = "dp-intf",
+> +	[MTK_DISP_PWM] = "pwm",
+> +	[MTK_DISP_MUTEX] = "mutex",
+> +	[MTK_DISP_OD] = "od",
+> +	[MTK_DISP_BLS] = "bls",
+>  };
+>  
+>  struct mtk_ddp_comp_match {
+> @@ -369,6 +374,8 @@ static const struct mtk_ddp_comp_match
+> mtk_ddp_matches[DDP_COMPONENT_ID_MAX] = {
+>  	[DDP_COMPONENT_DITHER]		= { MTK_DISP_DITHER,	0,
+> &ddp_dither },
+>  	[DDP_COMPONENT_DPI0]		= { MTK_DPI,		0,
+> &ddp_dpi },
+>  	[DDP_COMPONENT_DPI1]		= { MTK_DPI,		1,
+> &ddp_dpi },
+> +	[DDP_COMPONENT_DP_INTF0]	= { MTK_DP_INTF,	0, &ddp_dpi
+> },
+> +	[DDP_COMPONENT_DP_INTF1]	= { MTK_DP_INTF,	1, &ddp_dpi
+> },
+>  	[DDP_COMPONENT_DSI0]		= { MTK_DSI,		0,
+> &ddp_dsi },
+>  	[DDP_COMPONENT_DSI1]		= { MTK_DSI,		1,
+> &ddp_dsi },
+>  	[DDP_COMPONENT_DSI2]		= { MTK_DSI,		2,
+> &ddp_dsi },
+> @@ -481,6 +488,7 @@ int mtk_ddp_comp_init(struct device_node *node,
+> struct mtk_ddp_comp *comp,
+>  	    type == MTK_DISP_PWM ||
+>  	    type == MTK_DISP_RDMA ||
+>  	    type == MTK_DPI ||
+> +	    type == MTK_DP_INTF ||
+>  	    type == MTK_DSI)
+>  		return 0;
+>  
+> diff --git a/drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.h
+> b/drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.h
+> index ad267bb8fc9b..43ad74be509e 100644
+> --- a/drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.h
+> +++ b/drivers/gpu/drm/mediatek/mtk_drm_ddp_comp.h
+> @@ -34,6 +34,7 @@ enum mtk_ddp_comp_type {
+>  	MTK_DISP_UFOE,
+>  	MTK_DISP_WDMA,
+>  	MTK_DPI,
+> +	MTK_DP_INTF,
+>  	MTK_DSI,
+>  	MTK_DDP_COMP_TYPE_MAX,
+>  };
+> diff --git a/drivers/gpu/drm/mediatek/mtk_drm_drv.c
+> b/drivers/gpu/drm/mediatek/mtk_drm_drv.c
+> index 247c6ff277ef..c8a233f609f0 100644
+> --- a/drivers/gpu/drm/mediatek/mtk_drm_drv.c
+> +++ b/drivers/gpu/drm/mediatek/mtk_drm_drv.c
+> @@ -509,6 +509,8 @@ static const struct of_device_id
+> mtk_ddp_comp_dt_ids[] = {
+>  	  .data = (void *)MTK_DPI },
+>  	{ .compatible = "mediatek,mt8183-dpi",
+>  	  .data = (void *)MTK_DPI },
+> +	{ .compatible = "mediatek,mt8195-dpintf",
+> +	  .data = (void *)MTK_DP_INTF },
+>  	{ .compatible = "mediatek,mt2701-dsi",
+>  	  .data = (void *)MTK_DSI },
+>  	{ .compatible = "mediatek,mt8173-dsi",
+> @@ -609,7 +611,8 @@ static int mtk_drm_probe(struct platform_device
+> *pdev)
+>  		    comp_type == MTK_DISP_OVL_2L ||
+>  		    comp_type == MTK_DISP_RDMA ||
+>  		    comp_type == MTK_DPI ||
+> -		    comp_type == MTK_DSI) {
+> +		    comp_type == MTK_DPI ||
+> +		    comp_type == MTK_DP_INTF) {
+
+Hello Guillaume,
+
+Is this modification correct?
+MTK_DPI appears twice and MTK_DSI is removed.
+
+
+BRs,
+Rex
+
+>  			dev_info(dev, "Adding component match for
+> %pOF\n",
+>  				 node);
+>  			drm_of_component_match_add(dev, &match,
+> component_compare_of,
+> diff --git a/include/linux/soc/mediatek/mtk-mmsys.h
+> b/include/linux/soc/mediatek/mtk-mmsys.h
+> index 4bba275e235a..56ed2fa5f59e 100644
+> --- a/include/linux/soc/mediatek/mtk-mmsys.h
+> +++ b/include/linux/soc/mediatek/mtk-mmsys.h
+> @@ -19,6 +19,8 @@ enum mtk_ddp_comp_id {
+>  	DDP_COMPONENT_DITHER,
+>  	DDP_COMPONENT_DPI0,
+>  	DDP_COMPONENT_DPI1,
+> +	DDP_COMPONENT_DP_INTF0,
+> +	DDP_COMPONENT_DP_INTF1,
+>  	DDP_COMPONENT_DSI0,
+>  	DDP_COMPONENT_DSI1,
+>  	DDP_COMPONENT_DSI2,
+

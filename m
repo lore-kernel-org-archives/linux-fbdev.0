@@ -2,145 +2,136 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9D7CC433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Mar 2022 10:42:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C334C433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Mar 2022 22:58:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235315AbiC2Ko1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 29 Mar 2022 06:44:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57432 "EHLO
+        id S238462AbiC2XAD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 29 Mar 2022 19:00:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39036 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232979AbiC2Ko1 (ORCPT
+        with ESMTP id S238409AbiC2XAC (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 29 Mar 2022 06:44:27 -0400
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE7AAECDAD;
-        Tue, 29 Mar 2022 03:42:43 -0700 (PDT)
-Received: by mail-wm1-x32d.google.com with SMTP id p189so10012491wmp.3;
-        Tue, 29 Mar 2022 03:42:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=f3iBbK5fy2drNJnHSVd6h7L8RLpAs5pbHayacM7gQx0=;
-        b=Nt78WXBKY+MY3+gr7xrFbMs04A5JgW4P5Hmd599UBhQBR7XU0sztciOhTjgTLJoBZx
-         5/YqXihN7sBYpKymfVax90fPW3K+7HOUrmshJEaPR5X48tPrU6usCZLMe2yYujwCvtsw
-         p6YScdT6Eq5nn0msocyNsxo2JWuqJFXPmx54pAaJWbo/ATPgSvuOnFaohfvW5FktMgXd
-         5GUdSZx7vH2paIueNF6BeyOLtb98kzSiiKiGC0qu//dXk9j4KoZqsAjmb1d5T2QOeCyP
-         BXKGIamIzxi0ScmxTfurAE4jsL7PZtE0ICPQGtYfA4Ov8cnT/BRcHPcrFJU4OM+b9/wG
-         0pkA==
+        Tue, 29 Mar 2022 19:00:02 -0400
+Received: from mail-oa1-f54.google.com (mail-oa1-f54.google.com [209.85.160.54])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3051035256;
+        Tue, 29 Mar 2022 15:58:18 -0700 (PDT)
+Received: by mail-oa1-f54.google.com with SMTP id 586e51a60fabf-df22f50e0cso3090957fac.3;
+        Tue, 29 Mar 2022 15:58:18 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=f3iBbK5fy2drNJnHSVd6h7L8RLpAs5pbHayacM7gQx0=;
-        b=CibbA0nNPhtL5cBHYG30HRoNsP7oPWBM07cZ3xWbrk5fZGvYozWLKf1d8Gu5bUvsjg
-         34qO2MhP+T0inBmc2u+xFBNPQOM/toMjRu19bl6/h1uUdwgNf9GX+4t4M/QMyBFJmmXA
-         Z+MyHY3EzzsMld7GZvdZCAPPsjzxJztazYQoaxKZBHl/8EUZbmqbZ/t3V0uSyKNBdydJ
-         REQEmRQB6IglwpnN/q/BVD3oOe6VU+nyI3L/IfA+WbZl+PVx0Dod7vYE/txCvs1LPfr/
-         5UoNSmsHi63Pe7//XDtPnckurAiTX8A+JEB4zjBqQr92pc/FUid+91ib4V9fNy/BgRLo
-         +viQ==
-X-Gm-Message-State: AOAM531x8eTXWiNwjGWqQBOwR/u/hCcEbMKSU1TLJMnSo74sFaYVv+Mw
-        hZxIt8U1FLhjHRiRoogvRHE=
-X-Google-Smtp-Source: ABdhPJwB/NXK19sx39DAWQg5uHNzUaed7dLgj4bbX1z3ETXRa6KA+QTBRYPZmGbtTluMMiRRs7y9PA==
-X-Received: by 2002:a05:600c:3d86:b0:38d:581:89ad with SMTP id bi6-20020a05600c3d8600b0038d058189admr5993185wmb.42.1648550562084;
-        Tue, 29 Mar 2022 03:42:42 -0700 (PDT)
-Received: from [192.168.1.145] ([207.188.167.132])
-        by smtp.gmail.com with ESMTPSA id g17-20020a05600c4ed100b0038ca32d0f26sm2099039wmq.17.2022.03.29.03.42.39
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 29 Mar 2022 03:42:41 -0700 (PDT)
-Message-ID: <dc80d7f7-7a7b-62fb-fbd6-346dba9fdac5@gmail.com>
-Date:   Tue, 29 Mar 2022 12:42:38 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.5.0
-Subject: Re: [PATCH v9 01/22] dt-bindings: mediatek,dpi: Add DP_INTF
- compatible
-Content-Language: en-US
-To:     Guillaume Ranquet <granquet@baylibre.com>, airlied@linux.ie,
-        angelogioacchino.delregno@collabora.com, chunfeng.yun@mediatek.com,
-        chunkuang.hu@kernel.org, ck.hu@mediatek.com, daniel@ffwll.ch,
-        deller@gmx.de, jitao.shi@mediatek.com, kishon@ti.com,
-        krzk+dt@kernel.org, maarten.lankhorst@linux.intel.com,
-        mripard@kernel.org, p.zabel@pengutronix.de, robh+dt@kernel.org,
-        tzimmermann@suse.de, vkoul@kernel.org
-Cc:     devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=LWrhu1SJIKP91XWNKb4WbsxhL8e6xpsiZxtyqvL5Z0w=;
+        b=Xnuj1Hx4HXaavx/eFalHV+/z3zIFtcLolNMQIWttsSwwuHN5g/KWqt4Wetzju03Too
+         mcm8pnqSIutkaRMg9MngS7KJdqJl/TBdrDFMdJz37HxsaXl7EVOSCYsBtaMp/BwuUiyl
+         wQ0a3LPR1EMAqiNNPwd0p2qW9/26fvkw+qMgoHWYza/y/PkYHRliwx33Lxe7OO4eko6i
+         FcMHIudyk3nTPNxS7kvhQbbmexz5oWpmCBxQl6q24zKfjhckIpg+p0/8T/Gmu0Xy5g92
+         2f/Am+Z1aFj75FhemntP1sGuqRdBj6/THh3DGQX8x+D99UbwjT9nNPC2u9bZhjabh6FF
+         jsfw==
+X-Gm-Message-State: AOAM533OuZEDdGQLJyp7Vrx9JgkN3gm2k03JdCeKowlwux0M9KGBDrMZ
+        VPiPsCRt289HX3wnKh1kWA==
+X-Google-Smtp-Source: ABdhPJz+emekgDFz5mKWRmNRlRNMSrX19JPwwY5w06pHDZVUQBWmNvGk1+vhyDXsbkBHNm4tAEBj9Q==
+X-Received: by 2002:a05:6870:a106:b0:de:de08:4e3d with SMTP id m6-20020a056870a10600b000dede084e3dmr859501oae.256.1648594697439;
+        Tue, 29 Mar 2022 15:58:17 -0700 (PDT)
+Received: from robh.at.kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id k22-20020a056870959600b000d277c48d18sm9802811oao.3.2022.03.29.15.58.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 29 Mar 2022 15:58:16 -0700 (PDT)
+Received: (nullmailer pid 1505955 invoked by uid 1000);
+        Tue, 29 Mar 2022 22:58:15 -0000
+Date:   Tue, 29 Mar 2022 17:58:15 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Guillaume Ranquet <granquet@baylibre.com>
+Cc:     airlied@linux.ie, angelogioacchino.delregno@collabora.com,
+        chunfeng.yun@mediatek.com, chunkuang.hu@kernel.org,
+        ck.hu@mediatek.com, daniel@ffwll.ch, deller@gmx.de,
+        jitao.shi@mediatek.com, kishon@ti.com, krzk+dt@kernel.org,
+        maarten.lankhorst@linux.intel.com, matthias.bgg@gmail.com,
+        mripard@kernel.org, p.zabel@pengutronix.de, tzimmermann@suse.de,
+        vkoul@kernel.org, devicetree@vger.kernel.org,
+        dri-devel@lists.freedesktop.org,
         linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org,
-        linux-phy@lists.infradead.org, markyacoub@google.com,
-        Markus Schneider-Pargmann <msp@baylibre.com>,
-        Rob Herring <robh@kernel.org>
+        linux-phy@lists.infradead.org, markyacoub@google.com
+Subject: Re: [PATCH v9 03/22] dt-bindings: mediatek,dp_phy: Add Display Port
+ PHY binding
+Message-ID: <YkOPB5W7uXkOc72/@robh.at.kernel.org>
 References: <20220327223927.20848-1-granquet@baylibre.com>
- <20220327223927.20848-2-granquet@baylibre.com>
-From:   Matthias Brugger <matthias.bgg@gmail.com>
-In-Reply-To: <20220327223927.20848-2-granquet@baylibre.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+ <20220327223927.20848-4-granquet@baylibre.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220327223927.20848-4-granquet@baylibre.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
+On Mon, Mar 28, 2022 at 12:39:08AM +0200, Guillaume Ranquet wrote:
+> This phy controller is embedded in the Display Port Controller on mt8195 SoCs.
 
+Sorry, but I think you need to go back to what you had in v8. While yes, 
+the phy and controller IP often do change independently, this h/w looks 
+pretty interwined. 
 
-On 28/03/2022 00:39, Guillaume Ranquet wrote:
-> From: Markus Schneider-Pargmann <msp@baylibre.com>
+You could make the controller a phy provider to itself if you wanted.
+
 > 
-> DP_INTF is similar to DPI but does not have the exact same feature set
-> or register layouts.
-> 
-> DP_INTF is the sink of the display pipeline that is connected to the
-> DisplayPort controller and encoder unit. It takes the same clocks as
-> DPI.
-> 
-> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
 > Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-
-Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
-
 > ---
->   .../bindings/display/mediatek/mediatek,dpi.yaml       | 11 ++++++-----
->   1 file changed, 6 insertions(+), 5 deletions(-)
+>  .../bindings/phy/mediatek,dp-phy.yaml         | 43 +++++++++++++++++++
+>  1 file changed, 43 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
 > 
-> diff --git a/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml b/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
-> index dd2896a40ff0..2dba80ad3b18 100644
-> --- a/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
-> +++ b/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
-> @@ -4,16 +4,16 @@
->   $id: http://devicetree.org/schemas/display/mediatek/mediatek,dpi.yaml#
->   $schema: http://devicetree.org/meta-schemas/core.yaml#
->   
-> -title: mediatek DPI Controller Device Tree Bindings
-> +title: mediatek DPI/DP_INTF Controller
->   
->   maintainers:
->     - CK Hu <ck.hu@mediatek.com>
->     - Jitao shi <jitao.shi@mediatek.com>
->   
->   description: |
-> -  The Mediatek DPI function block is a sink of the display subsystem and
-> -  provides 8-bit RGB/YUV444 or 8/10/10-bit YUV422 pixel data on a parallel
-> -  output bus.
-> +  The Mediatek DPI and DP_INTF function blocks are a sink of the display
-> +  subsystem and provides 8-bit RGB/YUV444 or 8/10/10-bit YUV422 pixel data on a
-> +  parallel output bus.
->   
->   properties:
->     compatible:
-> @@ -23,6 +23,7 @@ properties:
->         - mediatek,mt8173-dpi
->         - mediatek,mt8183-dpi
->         - mediatek,mt8192-dpi
-> +      - mediatek,mt8195-dpintf
->   
->     reg:
->       maxItems: 1
-> @@ -54,7 +55,7 @@ properties:
->       $ref: /schemas/graph.yaml#/properties/port
->       description:
->         Output port node. This port should be connected to the input port of an
-> -      attached HDMI or LVDS encoder chip.
-> +      attached HDMI, LVDS or DisplayPort encoder chip.
->   
->   required:
->     - compatible
+> diff --git a/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml b/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
+> new file mode 100644
+> index 000000000000..1f5ffca4e140
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
+> @@ -0,0 +1,43 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +# Copyright (c) 2022 MediaTek
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/phy/mediatek,dp-phy.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: MediaTek Display Port PHY
+> +
+> +maintainers:
+> +  - CK Hu <ck.hu@mediatek.com>
+> +  - Jitao shi <jitao.shi@mediatek.com>
+> +
+> +description: |
+> +  Device tree bindings for the Mediatek (embedded) Display Port PHY
+> +  present on some Mediatek SoCs.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - mediatek,mt8195-dp-phy
+> +
+> +  mediatek,dp-syscon:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: Phandle to the Display Port node.
+> +
+> +  "#phy-cells":
+> +    const: 0
+> +
+> +required:
+> +  - compatible
+> +  - mediatek,dp-syscon
+> +  - "#phy-cells"
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    dp_phy: dp-phy {
+> +      compatible = "mediatek,mt8195-dp-phy";
+> +      mediatek,dp-syscon = <&dp_tx>;
+> +      #phy-cells = <0>;
+> +    };
+> -- 
+> 2.34.1
+> 
+> 

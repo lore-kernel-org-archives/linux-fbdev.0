@@ -2,140 +2,145 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A432C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Mar 2022 09:14:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9D7CC433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue, 29 Mar 2022 10:42:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233009AbiC2JQj (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 29 Mar 2022 05:16:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45484 "EHLO
+        id S235315AbiC2Ko1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 29 Mar 2022 06:44:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232677AbiC2JQg (ORCPT
+        with ESMTP id S232979AbiC2Ko1 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 29 Mar 2022 05:16:36 -0400
-Received: from APC01-TYZ-obe.outbound.protection.outlook.com (mail-tyzapc01on2133.outbound.protection.outlook.com [40.107.117.133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BEDF42CE3D;
-        Tue, 29 Mar 2022 02:14:53 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=KMt7LhBbsuvTUFj6rhv6/OH/aTvMUaMFKNS/Et9VpNla7Ogt182iK3wPkX/K69IWiFPdlVp404IcQAG57eNUjWf6FXMoTQJWbUrVHtecYa/TFHIrnBqUzMmGWv1fbNHFVxVtDeUvHu/7sYJFVNWr7bzKpEJTlh14U3+xHAops3r+Tko6Hm8QJGOEHdbo29LGRnyaFXWpHXgFJrpB9uOOl4YRJggthp1oqAagFxUkxSg41PTgEB0u2DQ9Dal82QFlvCp8SBiLEevF0w165t54NHPUCPx86n18FPFwL0Wv0ag8n+/XtozhpS5kE7kjmBzVNk25k3v6O1z+Ilr6x+cTvw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=k9qJr6LBAYeL9XxDnwMviKxgPa80VYlDabQ3MTbAi/w=;
- b=R5bfJlSkaHS3bALlDljtyKeJQB5lsf33W6vjM29sRrg35p2rhxSqBBJ9EdvNXGnrfTH2h3JcK1eLDRjJkusMhVRJd7rUFFS/Pc1YAHHui9GukCq8Pp6SooAt6ahW0nf31VSS16W6a05chYZM3EKEJSKBTgyU0cqZOUhKli6WtpSnbEAsc2wdid0CCHcy4EDfC4WRVPL8GVgwCXjvdhrUTYZu+hniUFErprzahCwA4Vh4iLcjhRHAKWQC0iY523nmSleeNcQnizETbxnrhEQVaFY4XS7dFZx0ullnCcdTVF5K4XAvGFAkii9Gr89ilD6fZQ84JWXePSpm0q2xe/egSg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
- dkim=pass header.d=vivo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo0.onmicrosoft.com;
- s=selector2-vivo0-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=k9qJr6LBAYeL9XxDnwMviKxgPa80VYlDabQ3MTbAi/w=;
- b=nhjGeExpTwcwvyEEwv2PD248/c9vNchHATeL36VFHqKFR4wtLkbjAr7tb9Ix9xaBKQhMNaXAfayeIu903WTp3BdO0Nn2FDwK7VK9915iaxPA82DDq6en68e83kst4hEqBsGUGRhrrhovRjI+REO2LbO0g7x0yfuLt5IDmr5+oVE=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=vivo.com;
-Received: from SL2PR06MB3082.apcprd06.prod.outlook.com (2603:1096:100:37::17)
- by KL1PR0601MB3875.apcprd06.prod.outlook.com (2603:1096:820:21::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5102.17; Tue, 29 Mar
- 2022 09:14:50 +0000
-Received: from SL2PR06MB3082.apcprd06.prod.outlook.com
- ([fe80::49ef:baa:8c3b:cb3d]) by SL2PR06MB3082.apcprd06.prod.outlook.com
- ([fe80::49ef:baa:8c3b:cb3d%5]) with mapi id 15.20.5102.023; Tue, 29 Mar 2022
- 09:14:50 +0000
-From:   Qing Wang <wangqing@vivo.com>
-To:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     Wang Qing <wangqing@vivo.com>
-Subject: [PATCH] video: fbdev: use if else instead
-Date:   Tue, 29 Mar 2022 02:14:32 -0700
-Message-Id: <1648545274-14481-1-git-send-email-wangqing@vivo.com>
-X-Mailer: git-send-email 2.7.4
-Content-Type: text/plain
-X-ClientProxiedBy: HK0PR01CA0066.apcprd01.prod.exchangelabs.com
- (2603:1096:203:a6::30) To SL2PR06MB3082.apcprd06.prod.outlook.com
- (2603:1096:100:37::17)
+        Tue, 29 Mar 2022 06:44:27 -0400
+Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com [IPv6:2a00:1450:4864:20::32d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BE7AAECDAD;
+        Tue, 29 Mar 2022 03:42:43 -0700 (PDT)
+Received: by mail-wm1-x32d.google.com with SMTP id p189so10012491wmp.3;
+        Tue, 29 Mar 2022 03:42:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=f3iBbK5fy2drNJnHSVd6h7L8RLpAs5pbHayacM7gQx0=;
+        b=Nt78WXBKY+MY3+gr7xrFbMs04A5JgW4P5Hmd599UBhQBR7XU0sztciOhTjgTLJoBZx
+         5/YqXihN7sBYpKymfVax90fPW3K+7HOUrmshJEaPR5X48tPrU6usCZLMe2yYujwCvtsw
+         p6YScdT6Eq5nn0msocyNsxo2JWuqJFXPmx54pAaJWbo/ATPgSvuOnFaohfvW5FktMgXd
+         5GUdSZx7vH2paIueNF6BeyOLtb98kzSiiKiGC0qu//dXk9j4KoZqsAjmb1d5T2QOeCyP
+         BXKGIamIzxi0ScmxTfurAE4jsL7PZtE0ICPQGtYfA4Ov8cnT/BRcHPcrFJU4OM+b9/wG
+         0pkA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=f3iBbK5fy2drNJnHSVd6h7L8RLpAs5pbHayacM7gQx0=;
+        b=CibbA0nNPhtL5cBHYG30HRoNsP7oPWBM07cZ3xWbrk5fZGvYozWLKf1d8Gu5bUvsjg
+         34qO2MhP+T0inBmc2u+xFBNPQOM/toMjRu19bl6/h1uUdwgNf9GX+4t4M/QMyBFJmmXA
+         Z+MyHY3EzzsMld7GZvdZCAPPsjzxJztazYQoaxKZBHl/8EUZbmqbZ/t3V0uSyKNBdydJ
+         REQEmRQB6IglwpnN/q/BVD3oOe6VU+nyI3L/IfA+WbZl+PVx0Dod7vYE/txCvs1LPfr/
+         5UoNSmsHi63Pe7//XDtPnckurAiTX8A+JEB4zjBqQr92pc/FUid+91ib4V9fNy/BgRLo
+         +viQ==
+X-Gm-Message-State: AOAM531x8eTXWiNwjGWqQBOwR/u/hCcEbMKSU1TLJMnSo74sFaYVv+Mw
+        hZxIt8U1FLhjHRiRoogvRHE=
+X-Google-Smtp-Source: ABdhPJwB/NXK19sx39DAWQg5uHNzUaed7dLgj4bbX1z3ETXRa6KA+QTBRYPZmGbtTluMMiRRs7y9PA==
+X-Received: by 2002:a05:600c:3d86:b0:38d:581:89ad with SMTP id bi6-20020a05600c3d8600b0038d058189admr5993185wmb.42.1648550562084;
+        Tue, 29 Mar 2022 03:42:42 -0700 (PDT)
+Received: from [192.168.1.145] ([207.188.167.132])
+        by smtp.gmail.com with ESMTPSA id g17-20020a05600c4ed100b0038ca32d0f26sm2099039wmq.17.2022.03.29.03.42.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 29 Mar 2022 03:42:41 -0700 (PDT)
+Message-ID: <dc80d7f7-7a7b-62fb-fbd6-346dba9fdac5@gmail.com>
+Date:   Tue, 29 Mar 2022 12:42:38 +0200
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 8d7a2ed9-91a8-44fd-b7f9-08da116493d8
-X-MS-TrafficTypeDiagnostic: KL1PR0601MB3875:EE_
-X-Microsoft-Antispam-PRVS: <KL1PR0601MB3875ABF0F6BA626A1903B631BD1E9@KL1PR0601MB3875.apcprd06.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: OR2CNc4ZO5NYKRFxzaqU2djaXjKKCjtbuC3RD7uMBepG0EnHbu2VXUMKMD+Y/f2F+frCOlmOC8KcFol59jcoUr7JuEYQulJLzNpDL+/qU+fhRO7pbeWEANPdgh7GH5vqTXnIyOev1U8EMpwtjwdiJ1wSn/d5eDNuBkeFInAdMmFH2U+lWuJFaM71/gCma6GzslSqhaboiZ/Hg0nnjs4skpM1C11vra7q+qjweclvcgcC5Dvg0mQmRYCNRWJfYyN6LA36dxsvg1teoBfgXS0UGd08Ic6CplpBwvuXsbLF055UyRiFhyKe46l3j0N8qbyo+ZCLy0Q72dPUFPQ5IWi6tCxXJSvUNY1PJrXZBU4aULw1oHRgENGQZfKjzjb9ySBrmOkMWlnND25YmGsyzF6qZTXjNA3IHMUKYAOqZMqbHNBRmZc6wIeoQKaulrMmPZgpyDfFE+vPzcEeT4CWcRFVcYvoaquCr0u9W7FzdCNHmQHC7wy//WcDidIm+pCg5lR75xoPYVU8kHarY3+Kq5Z4UXenAs5wTbCVrAND2zjYH/Qu/kIFyipHwWaN7hJprNg42kFIO5X6VCmyWGnct6xfcEWPkjD6O/70vFs3ljh4BBua/EDB8k5V6ivY4YrEBE0WxB4lfLFqK9I9Y9wiYQIBRR9KksYsKjVCz8LHAB0OZdjjNmSA0pZG6r3wgFbw2Sy9p/CiufFZPFiMOoWb6tP7zA==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SL2PR06MB3082.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(8936002)(5660300002)(66946007)(6666004)(6486002)(83380400001)(508600001)(38350700002)(38100700002)(8676002)(66556008)(66476007)(4326008)(86362001)(6512007)(36756003)(2616005)(52116002)(107886003)(2906002)(6506007)(316002)(4744005)(186003)(26005);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?Txi3YtUjb0AdXfUiZvzBA0LtjhWPyBzW0LXrxPbvlacpgl7Rz7WrfkUQffWj?=
- =?us-ascii?Q?CaRZ3SQ0Gj44oHDkqzfAlarIDKtFVfiJ3og/ysHlJjjR/L2xpoFdv/Dnt1g1?=
- =?us-ascii?Q?KlhQ/yhthyVX/5HGwliBYeY+EbBEqZL8cMKZC4LUlbBtnaPJG8bvDfO+fKPQ?=
- =?us-ascii?Q?4Iv+FGsBAobd6oM9JxmSNY9sPKaDudn+DHjhd7vo+dpM14WPocrbQ7hYBIET?=
- =?us-ascii?Q?ykqJmcp5Cei5O0/0dPjinoOQIIce526MNWkQTPurfnQx6EDaE5425g2XxmqS?=
- =?us-ascii?Q?zmVxmq2GJ3mKqyYSbCXxRzElIUkPE/5CsZq+VOjafvEM/Yypx1R/61pdsy8r?=
- =?us-ascii?Q?d3rH1F0q7/qmIeMSoJyD/m1+5sni7tivznh3bSlBGArRp32WR5WSgmKvJeb9?=
- =?us-ascii?Q?7tmL5nt+lEnL5E3FZqVQsSBrC0h9HRgyAtr53GzTP4Byr3eipQW/myql50Fj?=
- =?us-ascii?Q?6Kg4Rfx9wzy7kyGOCtVFpWFcsRRD4bU9GAM+SdC+zs83/wHvmN+3Gp2+oi4m?=
- =?us-ascii?Q?s+SQYtBfazlIp/t0SRiaTEy5m0gXFzGRhD7YOQcetN5DdqVeqv1EhrGDbPvq?=
- =?us-ascii?Q?MsuCWrURdTLuBBUk72AZhNpRm/NL3ZHsdjrvdMkXRpBr9D71Seq+pcW6pgGD?=
- =?us-ascii?Q?jj/KfHYrvuG/eRwmNTGIO4OK5kznZOPOc625cniw1e8irFmAER/k9m4krXud?=
- =?us-ascii?Q?6llon1EA1QY0BWpk9r132/fYKzwtXS0TZXYS5WI/cUpbabZ71BCUjW5uvxXs?=
- =?us-ascii?Q?pW+58Wd1bIgJ0mnf9FXtrZ0UTKtb0NIKFeKYbqv06jzIbGgH+2MCYsS4mSJm?=
- =?us-ascii?Q?dLodR9nwm0nh/fS9Y07pQDVLvz3uC84iF+SyI1DowJO2USo1wfg6aMCYMuJE?=
- =?us-ascii?Q?B2hSxLY/kvSep/fua+WZqGUP9U+puBt1wbMTGC9lSoXQgDrWZYSLHd249YNP?=
- =?us-ascii?Q?TIwN4URuvl3w2L32HilHcoLBhiJEN1Sew9pC2qUd441ZC51OaFPSnL6ooFqx?=
- =?us-ascii?Q?QReOFRDSzBM9IBxBPHpzf/EKcDFcU1WW7LBFK2tY9itPQgrCejAJJsn7JwQk?=
- =?us-ascii?Q?d1XUzQhruU3rAy4rMv5fq5DJ0Kk+j42C3XqQeETUKyl+TcHHsGdCF+crTlzK?=
- =?us-ascii?Q?jTwp0ETteFwNSMLUSR558FpEpFgg3ixOBx5WNFE444PJ5uJNqVN395FLvYkh?=
- =?us-ascii?Q?zdzM0C3MpeWNsc268j094wHRYJUJevkKViMkyOkY4pusAhFJ6xIxGdyYQgrQ?=
- =?us-ascii?Q?e7kDdJ5u80ilWIYzy0O8r23fttEePLAtMSjsS5jwTBb4XpUuxvuZzdNoGRU3?=
- =?us-ascii?Q?4lGj0Qu0LkPQfD6leNe000tx2abQ2LpbasN8OZcfoFycOI4AHyCPdAb9CyZX?=
- =?us-ascii?Q?MDb/fbJYYG2FIB3fghA3Faw+OEaM1nSr/KghR4QMPP1VXHxaWjy6ufRXuyGF?=
- =?us-ascii?Q?CS8o1tEwnd535C4rlZ3Sz9BoTc7WbE57auCSBe5uKsklTV4Xpb0cXZ8IQ0wJ?=
- =?us-ascii?Q?GLkOflW6TYJUk5330maIFYTXnyF3d4XbaILSUmBloksFvI7n6BYDwUn8Nv3S?=
- =?us-ascii?Q?DXe7Un+ZRJs3EWPA+7yV5HlawTzXomTguZqW5jZVbjop9hvW5j/EZuHNfdUe?=
- =?us-ascii?Q?QEeRo0Z8SEZ9iDSozGypL/dMUZMiUHM/TEx7ZEiP1m8UwzAikME56SCB9/GN?=
- =?us-ascii?Q?omb12yEcpwSlrdpuQjkpb3Q3vPXrjCupjnPabVRPJ4Faaovp/casL7R9l3XI?=
- =?us-ascii?Q?5CpCdjw0pQ=3D=3D?=
-X-OriginatorOrg: vivo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8d7a2ed9-91a8-44fd-b7f9-08da116493d8
-X-MS-Exchange-CrossTenant-AuthSource: SL2PR06MB3082.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Mar 2022 09:14:50.3545
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: l5dQByppMut8i/M2N+ZxeVpluNNWPEtmi1R1usSAfqqS/c+bLmOr930Pe6jde5JW0SfeDGrL/gKJHFgZ4RAGQg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: KL1PR0601MB3875
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.5.0
+Subject: Re: [PATCH v9 01/22] dt-bindings: mediatek,dpi: Add DP_INTF
+ compatible
+Content-Language: en-US
+To:     Guillaume Ranquet <granquet@baylibre.com>, airlied@linux.ie,
+        angelogioacchino.delregno@collabora.com, chunfeng.yun@mediatek.com,
+        chunkuang.hu@kernel.org, ck.hu@mediatek.com, daniel@ffwll.ch,
+        deller@gmx.de, jitao.shi@mediatek.com, kishon@ti.com,
+        krzk+dt@kernel.org, maarten.lankhorst@linux.intel.com,
+        mripard@kernel.org, p.zabel@pengutronix.de, robh+dt@kernel.org,
+        tzimmermann@suse.de, vkoul@kernel.org
+Cc:     devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-phy@lists.infradead.org, markyacoub@google.com,
+        Markus Schneider-Pargmann <msp@baylibre.com>,
+        Rob Herring <robh@kernel.org>
+References: <20220327223927.20848-1-granquet@baylibre.com>
+ <20220327223927.20848-2-granquet@baylibre.com>
+From:   Matthias Brugger <matthias.bgg@gmail.com>
+In-Reply-To: <20220327223927.20848-2-granquet@baylibre.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Wang Qing <wangqing@vivo.com>
 
-use if and else instead of consequent if(A) and if (!A)
 
-Signed-off-by: Wang Qing <wangqing@vivo.com>
----
- drivers/video/fbdev/pxafb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
- mode change 100644 => 100755 drivers/video/fbdev/pxafb.c
+On 28/03/2022 00:39, Guillaume Ranquet wrote:
+> From: Markus Schneider-Pargmann <msp@baylibre.com>
+> 
+> DP_INTF is similar to DPI but does not have the exact same feature set
+> or register layouts.
+> 
+> DP_INTF is the sink of the display pipeline that is connected to the
+> DisplayPort controller and encoder unit. It takes the same clocks as
+> DPI.
+> 
+> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 
-diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-index f1551e0..8ad91c2
---- a/drivers/video/fbdev/pxafb.c
-+++ b/drivers/video/fbdev/pxafb.c
-@@ -2256,10 +2256,10 @@ static int pxafb_probe(struct platform_device *dev)
- 			goto failed;
- 		for (i = 0; i < inf->num_modes; i++)
- 			inf->modes[i] = pdata->modes[i];
-+	} else {
-+		inf = of_pxafb_of_mach_info(&dev->dev);
- 	}
- 
--	if (!pdata)
--		inf = of_pxafb_of_mach_info(&dev->dev);
- 	if (IS_ERR_OR_NULL(inf))
- 		goto failed;
- 
--- 
-2.7.4
+Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
 
+> ---
+>   .../bindings/display/mediatek/mediatek,dpi.yaml       | 11 ++++++-----
+>   1 file changed, 6 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml b/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
+> index dd2896a40ff0..2dba80ad3b18 100644
+> --- a/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
+> +++ b/Documentation/devicetree/bindings/display/mediatek/mediatek,dpi.yaml
+> @@ -4,16 +4,16 @@
+>   $id: http://devicetree.org/schemas/display/mediatek/mediatek,dpi.yaml#
+>   $schema: http://devicetree.org/meta-schemas/core.yaml#
+>   
+> -title: mediatek DPI Controller Device Tree Bindings
+> +title: mediatek DPI/DP_INTF Controller
+>   
+>   maintainers:
+>     - CK Hu <ck.hu@mediatek.com>
+>     - Jitao shi <jitao.shi@mediatek.com>
+>   
+>   description: |
+> -  The Mediatek DPI function block is a sink of the display subsystem and
+> -  provides 8-bit RGB/YUV444 or 8/10/10-bit YUV422 pixel data on a parallel
+> -  output bus.
+> +  The Mediatek DPI and DP_INTF function blocks are a sink of the display
+> +  subsystem and provides 8-bit RGB/YUV444 or 8/10/10-bit YUV422 pixel data on a
+> +  parallel output bus.
+>   
+>   properties:
+>     compatible:
+> @@ -23,6 +23,7 @@ properties:
+>         - mediatek,mt8173-dpi
+>         - mediatek,mt8183-dpi
+>         - mediatek,mt8192-dpi
+> +      - mediatek,mt8195-dpintf
+>   
+>     reg:
+>       maxItems: 1
+> @@ -54,7 +55,7 @@ properties:
+>       $ref: /schemas/graph.yaml#/properties/port
+>       description:
+>         Output port node. This port should be connected to the input port of an
+> -      attached HDMI or LVDS encoder chip.
+> +      attached HDMI, LVDS or DisplayPort encoder chip.
+>   
+>   required:
+>     - compatible

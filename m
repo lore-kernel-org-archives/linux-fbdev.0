@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60E4DC4707A
-	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:55:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AE5BC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:55:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344907AbiC3L4l (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 30 Mar 2022 07:56:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34186 "EHLO
+        id S1344911AbiC3L4n (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 30 Mar 2022 07:56:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58946 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244155AbiC3Lz1 (ORCPT
+        with ESMTP id S1345787AbiC3LzB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 30 Mar 2022 07:55:27 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6ECD913CE3;
-        Wed, 30 Mar 2022 04:53:42 -0700 (PDT)
+        Wed, 30 Mar 2022 07:55:01 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2B740263647;
+        Wed, 30 Mar 2022 04:51:45 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 255B8B81BBA;
-        Wed, 30 Mar 2022 11:53:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DCC20C340EE;
-        Wed, 30 Mar 2022 11:53:38 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id B7BA4615F5;
+        Wed, 30 Mar 2022 11:51:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20FC4C340EE;
+        Wed, 30 Mar 2022 11:51:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648641219;
+        s=k20201202; t=1648641094;
         bh=qW1x31HnZxqlWv9yLK7leVGiHSRFHxjgpFRqN+3ePM4=;
-        h=From:To:Cc:Subject:Date:From;
-        b=E4qvaE4lujLNTa+UEfl9Fb5wzRQ5hKamuC6IdjcxnV0GwNRv2x67lLYsmJjTAwN0m
-         AYeZABtj4FEl6rj6lD3bpapv9UXokAb0+rJGIKXI71BNPpj75q0s4/NOf3nI1BHmSx
-         WoClee53xRL3JfYZgyOx6sMGAqbB6Qbj9GwEx9Ihcieyh/fiRQ2NfHeCi4q9FkGoHD
-         f4AevgisdYdjBNNQ6Wh07fN4eS9RsskxwaCOty20n2omEYpsrLZAGDEsToPy8coVx7
-         t7y041KpJ+Yr4QJkgdQnMhFhNnvKXjP0YPpzDAXz4hZjat1CJOrsmK7rWVXRtP36pv
-         u6LCg5H2PhLnw==
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=u/Hn/9Y+fIQAHKalGj2yAhLJ8q5I0HlAvDQ+YsjFXDDNkvOczSmtVB6/XuaZCMjQM
+         vmEIhEIUyLeX1Ikp4EqQ1/ud58KTZnVoLVKIYsWdI+7BHnu4rXxCBLGb9V0hlwo8NZ
+         anI46FBwymrwOVYyoa7tZkFrrnM9o6GGpyMxb5MQbQqxJ3QGTeYrHO5uuvDbUaMrLZ
+         8BEJZc6HngJFyFswSU2eaMtPdWkfU2WfY1JnMtdo067RfrLeUqDuyVbttK5n+P0bXi
+         6gb4BQ8Z7bOd6g3Tt7RW7CrnAulcV/7I/nbFjWF1JaBs48Fza+EMaknP4heoTCGilV
+         5wxWky9Vpp4jQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Tim Gardner <tim.gardner@canonical.com>,
@@ -39,10 +39,12 @@ Cc:     Tim Gardner <tim.gardner@canonical.com>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
         tomi.valkeinen@ti.com
-Subject: [PATCH AUTOSEL 4.14 01/20] video: fbdev: nvidiafb: Use strscpy() to prevent buffer overflow
-Date:   Wed, 30 Mar 2022 07:53:17 -0400
-Message-Id: <20220330115336.1672930-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 06/37] video: fbdev: nvidiafb: Use strscpy() to prevent buffer overflow
+Date:   Wed, 30 Mar 2022 07:50:51 -0400
+Message-Id: <20220330115122.1671763-6-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220330115122.1671763-1-sashal@kernel.org>
+References: <20220330115122.1671763-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore

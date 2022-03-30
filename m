@@ -2,48 +2,48 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A8ECC35294
-	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:54:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 879F5C35273
+	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:54:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344729AbiC3L42 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 30 Mar 2022 07:56:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56766 "EHLO
+        id S1344750AbiC3L43 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 30 Mar 2022 07:56:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58364 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345813AbiC3LzD (ORCPT
+        with ESMTP id S1345951AbiC3LzP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 30 Mar 2022 07:55:03 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1894B264546;
-        Wed, 30 Mar 2022 04:51:47 -0700 (PDT)
+        Wed, 30 Mar 2022 07:55:15 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BB3572B26E;
+        Wed, 30 Mar 2022 04:53:21 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 720B2615E2;
-        Wed, 30 Mar 2022 11:51:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB76DC3410F;
-        Wed, 30 Mar 2022 11:51:37 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 6A379B81C3B;
+        Wed, 30 Mar 2022 11:53:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 15D7DC340EE;
+        Wed, 30 Mar 2022 11:53:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648641098;
-        bh=NllYYjWNYzcx38lK6Tp0ggC0JWbVpRuJplNhOQvulmw=;
+        s=k20201202; t=1648641199;
+        bh=i+ke+0LyftTFAtgMY5X7MwRW8EZFbLFNvYR/L4nrTng=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=TKpiNqoPXVlETMLSiBpaqeDnc6518HfPVaQliLavblaWFzB+84OKiY10+xcwxVkjA
-         mvODHfEK3HUTfcA3LclPT5LaZxNnto+N9MUs7R11Ao6+OlKBpoDOhG927QDPIzCkRH
-         ZvuWdxTlLL8dpHvgJD/ERof/xj/YHLvLmVNsGqeRZaOSKZJ9Y/YUOf5bdLEwJH48KZ
-         GCUch0O1jN2Dc18c9z5ekP5Z3G9X78oU2DBl62r9KyTQbpK+0E8o2cUEwQakjqLEGl
-         zpUqi5PMHn/fx//7O+4VI7t5A15YSW2fAhE0VwwPqOsxFValbgApQ/3dRZiqXr5Xjn
-         p9WgIYbimJDlQ==
+        b=X1HSjYKFd9P7RRXj3N7M/84VGcNyvEH1Zj6sPSohYckkMBFUcmK07lJoWkiBg24q3
+         a+WkuzecF5GhN6U9Ky2sNSlUPnIo0RWnaMAGtgLg2uV0VrgGyNNXa+ju31BIAT5j+p
+         /k/OhfU+/gqvSxrC5LG481PtTiIsH55o91MdyBBqlap30W+DAVFSh7FFodTUvs0gU5
+         drpILXHZtYB8pLv744aTqxAot5eJNfrlo9DbDAHwiSoq/r25TEdXduGOEgpQhPIXl3
+         UvNCUPy9r+IW0j5lhYEYwfAtVq2+Glb78/JlIeBbdU+W3fOmw9k6AH8YqwKBDxabMs
+         mrA+T2m2iDmjA==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Yang Guang <yang.guang5@zte.com.cn>,
-        Zeal Robot <zealci@zte.com.cn>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, tomi.valkeinen@ti.com,
-        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 09/37] video: fbdev: omapfb: acx565akm: replace snprintf with sysfs_emit
-Date:   Wed, 30 Mar 2022 07:50:54 -0400
-Message-Id: <20220330115122.1671763-9-sashal@kernel.org>
+Cc:     Jing Yao <yao.jing2@zte.com.cn>, Zeal Robot <zealci@zte.com.cn>,
+        Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
+        tomi.valkeinen@ti.com, linux-omap@vger.kernel.org,
+        linux-fbdev@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.19 09/22] video: fbdev: omapfb: panel-tpo-td043mtea1: Use sysfs_emit() instead of snprintf()
+Date:   Wed, 30 Mar 2022 07:52:50 -0400
+Message-Id: <20220330115303.1672616-9-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220330115122.1671763-1-sashal@kernel.org>
-References: <20220330115122.1671763-1-sashal@kernel.org>
+In-Reply-To: <20220330115303.1672616-1-sashal@kernel.org>
+References: <20220330115303.1672616-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -52,37 +52,42 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Yang Guang <yang.guang5@zte.com.cn>
+From: Jing Yao <yao.jing2@zte.com.cn>
 
-[ Upstream commit 24565bc4115961db7ee64fcc7ad2a7437c0d0a49 ]
+[ Upstream commit c07a039cbb96748f54c02995bae8131cc9a73b0a ]
 
-coccinelle report:
-./drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c:
-479:9-17: WARNING: use scnprintf or sprintf
-
-Use sysfs_emit instead of scnprintf or sprintf makes more sense.
+Use sysfs_emit instead of scnprintf, snprintf or sprintf.
 
 Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
+Signed-off-by: Jing Yao <yao.jing2@zte.com.cn>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- .../video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c    | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c  | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-index 1293515e4b16..0cbc5b9183f8 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-@@ -476,7 +476,7 @@ static ssize_t show_cabc_available_modes(struct device *dev,
- 	int i;
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+index ea8c79a42b41..3f1389bfba6f 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+@@ -173,7 +173,7 @@ static ssize_t tpo_td043_vmirror_show(struct device *dev,
+ {
+ 	struct panel_drv_data *ddata = dev_get_drvdata(dev);
  
- 	if (!ddata->has_cabc)
--		return snprintf(buf, PAGE_SIZE, "%s\n", cabc_modes[0]);
-+		return sysfs_emit(buf, "%s\n", cabc_modes[0]);
+-	return snprintf(buf, PAGE_SIZE, "%d\n", ddata->vmirror);
++	return sysfs_emit(buf, "%d\n", ddata->vmirror);
+ }
  
- 	for (i = 0, len = 0;
- 	     len < PAGE_SIZE && i < ARRAY_SIZE(cabc_modes); i++)
+ static ssize_t tpo_td043_vmirror_store(struct device *dev,
+@@ -203,7 +203,7 @@ static ssize_t tpo_td043_mode_show(struct device *dev,
+ {
+ 	struct panel_drv_data *ddata = dev_get_drvdata(dev);
+ 
+-	return snprintf(buf, PAGE_SIZE, "%d\n", ddata->mode);
++	return sysfs_emit(buf, "%d\n", ddata->mode);
+ }
+ 
+ static ssize_t tpo_td043_mode_store(struct device *dev,
 -- 
 2.34.1
 

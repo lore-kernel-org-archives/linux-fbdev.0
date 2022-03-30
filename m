@@ -2,48 +2,48 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69DE0C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:58:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CBE1C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:58:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236484AbiC3L74 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 30 Mar 2022 07:59:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39168 "EHLO
+        id S242537AbiC3MA1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 30 Mar 2022 08:00:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35192 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344792AbiC3L4d (ORCPT
+        with ESMTP id S1344044AbiC3Lzj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 30 Mar 2022 07:56:33 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 053302FE7A;
-        Wed, 30 Mar 2022 04:54:33 -0700 (PDT)
+        Wed, 30 Mar 2022 07:55:39 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F13002BB01;
+        Wed, 30 Mar 2022 04:53:43 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 3A961615AD;
-        Wed, 30 Mar 2022 11:54:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 940EEC340F2;
-        Wed, 30 Mar 2022 11:54:30 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 9C92FB81C36;
+        Wed, 30 Mar 2022 11:53:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70321C340F3;
+        Wed, 30 Mar 2022 11:53:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648641271;
-        bh=CwXo1Xi4X6yTwH2R5Qn0VlAOm24N5SbG2+rxf6ZY88o=;
+        s=k20201202; t=1648641221;
+        bh=XGwqFT0oW95ciFt+vOb6lf4/eOqu5hiiwyCdGxGNLCk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=SP94ZHTDBaqdurKhGiqrfOYXDdqZ1yFGLmBZHgFXR1vbc4Ij5zW6C41nutCHe3t+A
-         Hbu/PAnisPG974LizldvbdEwsnblBqB7QU94rvXWk2uVQo1F14ZYat9WXBCEllZRfe
-         NcBXzjzjMeWTeJZTQ7v+/90Y+FxndzMz+CQ9EL9EPvqgSSW+dMf17xVHwjHOA0w0jy
-         b8VYDJNgHKo1z/b0LyfXd5cLEJsB2FbAKwuSVeiV2wkVmgGgbUyx5ayb3kQRABNwFG
-         eLFGqqY0Xsa1eeVQOn0wkJMzmwQAdvqOsdUU1h6uDM4635eAD1eaIgZLFdpXosa2om
-         p4J3zogL9ddXA==
+        b=nbMDkwxWpENbbjPPsplCVW0F428GWZMIKA0Ou8NRgit4yGxZJmSRW2RYWzO8yZmPu
+         ahKtX3ArVIQLtmwxzC06CLmDGneCdCMPgkPbcLsSzouATYNuAlynSy5AyWnlq7rTq0
+         te16nU2Zvm9DTy1Fs/T770cTuNZVo+Lk1wZZb4Kk9kA+3D6XqaYjsBlueB5HT8D9Tm
+         R04r87o4p31os4DrHJWNzflo5nHUqGJr+zB+ViDWq9WmxT18QrKT1Pu1ETQwvX0Tly
+         /Rcln6iJ7KqtgK3ENaM41OFNFKe1PkOsxMhJXwkSggcaH63UfZKKJOF9ekhDSI3O0S
+         jjt/mIyuy3xdQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Zheyu Ma <zheyuma97@gmail.com>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, sudipm.mukherjee@gmail.com,
-        teddy.wang@siliconmotion.com, tomi.valkeinen@ti.com,
-        linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 14/17] video: fbdev: sm712fb: Fix crash in smtcfb_write()
-Date:   Wed, 30 Mar 2022 07:54:03 -0400
-Message-Id: <20220330115407.1673214-14-sashal@kernel.org>
+Cc:     Evgeny Novikov <novikov@ispras.ru>,
+        Kirill Shilimanov <kirill.shilimanov@huawei.com>,
+        Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
+        tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.14 02/20] video: fbdev: w100fb: Reset global state
+Date:   Wed, 30 Mar 2022 07:53:18 -0400
+Message-Id: <20220330115336.1672930-2-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220330115407.1673214-1-sashal@kernel.org>
-References: <20220330115407.1673214-1-sashal@kernel.org>
+In-Reply-To: <20220330115336.1672930-1-sashal@kernel.org>
+References: <20220330115336.1672930-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -52,73 +52,66 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Zheyu Ma <zheyuma97@gmail.com>
+From: Evgeny Novikov <novikov@ispras.ru>
 
-[ Upstream commit 4f01d09b2bbfbcb47b3eb305560a7f4857a32260 ]
+[ Upstream commit 8738ddcac644964ae128ccd3d80d48773c8d528e ]
 
-When the sm712fb driver writes three bytes to the framebuffer, the
-driver will crash:
+w100fb_probe() did not reset the global state to its initial state. This
+can result in invocation of iounmap() even when there was not the
+appropriate successful call of ioremap(). For instance, this may be the
+case if first probe fails after two successful ioremap() while second
+probe fails when first ioremap() fails. The similar issue is with
+w100fb_remove(). The patch fixes both bugs.
 
-    BUG: unable to handle page fault for address: ffffc90001ffffff
-    RIP: 0010:smtcfb_write+0x454/0x5b0
-    Call Trace:
-     vfs_write+0x291/0xd60
-     ? do_sys_openat2+0x27d/0x350
-     ? __fget_light+0x54/0x340
-     ksys_write+0xce/0x190
-     do_syscall_64+0x43/0x90
-     entry_SYSCALL_64_after_hwframe+0x44/0xae
+Found by Linux Driver Verification project (linuxtesting.org).
 
-Fix it by removing the open-coded endianness fixup-code.
-
-Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
+Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
+Co-developed-by: Kirill Shilimanov <kirill.shilimanov@huawei.com>
+Signed-off-by: Kirill Shilimanov <kirill.shilimanov@huawei.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/sm712fb.c | 21 ++++-----------------
- 1 file changed, 4 insertions(+), 17 deletions(-)
+ drivers/video/fbdev/w100fb.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
-index 17efcdd4dc99..baa2514f01db 100644
---- a/drivers/video/fbdev/sm712fb.c
-+++ b/drivers/video/fbdev/sm712fb.c
-@@ -1129,7 +1129,7 @@ static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
- 		count = total_size - p;
+diff --git a/drivers/video/fbdev/w100fb.c b/drivers/video/fbdev/w100fb.c
+index ffda1d68fb05..566eacd903a3 100644
+--- a/drivers/video/fbdev/w100fb.c
++++ b/drivers/video/fbdev/w100fb.c
+@@ -772,12 +772,18 @@ int w100fb_probe(struct platform_device *pdev)
+ 		fb_dealloc_cmap(&info->cmap);
+ 		kfree(info->pseudo_palette);
  	}
+-	if (remapped_fbuf != NULL)
++	if (remapped_fbuf != NULL) {
+ 		iounmap(remapped_fbuf);
+-	if (remapped_regs != NULL)
++		remapped_fbuf = NULL;
++	}
++	if (remapped_regs != NULL) {
+ 		iounmap(remapped_regs);
+-	if (remapped_base != NULL)
++		remapped_regs = NULL;
++	}
++	if (remapped_base != NULL) {
+ 		iounmap(remapped_base);
++		remapped_base = NULL;
++	}
+ 	if (info)
+ 		framebuffer_release(info);
+ 	return err;
+@@ -802,8 +808,11 @@ static int w100fb_remove(struct platform_device *pdev)
+ 	fb_dealloc_cmap(&info->cmap);
  
--	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count, GFP_KERNEL);
-+	buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
- 	if (!buffer)
- 		return -ENOMEM;
+ 	iounmap(remapped_base);
++	remapped_base = NULL;
+ 	iounmap(remapped_regs);
++	remapped_regs = NULL;
+ 	iounmap(remapped_fbuf);
++	remapped_fbuf = NULL;
  
-@@ -1147,24 +1147,11 @@ static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
- 			break;
- 		}
+ 	framebuffer_release(info);
  
--		for (i = c >> 2; i--;) {
--			fb_writel(big_swap(*src), dst++);
-+		for (i = (c + 3) >> 2; i--;) {
-+			fb_writel(big_swap(*src), dst);
-+			dst++;
- 			src++;
- 		}
--		if (c & 3) {
--			u8 *src8 = (u8 *)src;
--			u8 __iomem *dst8 = (u8 __iomem *)dst;
--
--			for (i = c & 3; i--;) {
--				if (i & 1) {
--					fb_writeb(*src8++, ++dst8);
--				} else {
--					fb_writeb(*src8++, --dst8);
--					dst8 += 2;
--				}
--			}
--			dst = (u32 __iomem *)dst8;
--		}
- 
- 		*ppos += c;
- 		buf += c;
 -- 
 2.34.1
 

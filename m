@@ -2,123 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACC7DC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 05:12:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 565CFC433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:47:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242794AbiC3FOT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 30 Mar 2022 01:14:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51962 "EHLO
+        id S1343841AbiC3LtL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 30 Mar 2022 07:49:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242795AbiC3FOO (ORCPT
+        with ESMTP id S1343839AbiC3Ls5 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 30 Mar 2022 01:14:14 -0400
-Received: from mailgw01.mediatek.com (unknown [60.244.123.138])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D37C29BAED;
-        Tue, 29 Mar 2022 22:12:28 -0700 (PDT)
-X-UUID: c788adcedbfb4701b48689ef8bb3e588-20220330
-X-UUID: c788adcedbfb4701b48689ef8bb3e588-20220330
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
-        (envelope-from <miles.chen@mediatek.com>)
-        (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 838381258; Wed, 30 Mar 2022 13:12:19 +0800
-Received: from mtkcas10.mediatek.inc (172.21.101.39) by
- mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Wed, 30 Mar 2022 13:12:17 +0800
-Received: from mtksdccf07.mediatek.inc (172.21.84.99) by mtkcas10.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Wed, 30 Mar 2022 13:12:17 +0800
-From:   Miles Chen <miles.chen@mediatek.com>
-To:     <granquet@baylibre.com>
-CC:     <airlied@linux.ie>, <angelogioacchino.delregno@collabora.com>,
-        <chunfeng.yun@mediatek.com>, <chunkuang.hu@kernel.org>,
-        <ck.hu@mediatek.com>, <daniel@ffwll.ch>, <deller@gmx.de>,
-        <devicetree@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
-        <jitao.shi@mediatek.com>, <kishon@ti.com>, <krzk+dt@kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-fbdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-phy@lists.infradead.org>,
-        <maarten.lankhorst@linux.intel.com>, <markyacoub@google.com>,
-        <matthias.bgg@gmail.com>, <mripard@kernel.org>,
-        <p.zabel@pengutronix.de>, <robh+dt@kernel.org>,
-        <tzimmermann@suse.de>, <vkoul@kernel.org>
-Subject: Re: [PATCH v9 03/22] dt-bindings: mediatek,dp_phy: Add Display Port PHY binding
-Date:   Wed, 30 Mar 2022 13:12:17 +0800
-Message-ID: <20220330051217.19789-1-miles.chen@mediatek.com>
-X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20220327223927.20848-4-granquet@baylibre.com>
-References: <20220327223927.20848-4-granquet@baylibre.com>
+        Wed, 30 Mar 2022 07:48:57 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 308EF25E331;
+        Wed, 30 Mar 2022 04:47:11 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id B73BD61626;
+        Wed, 30 Mar 2022 11:47:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 410B2C34111;
+        Wed, 30 Mar 2022 11:47:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1648640830;
+        bh=qW1x31HnZxqlWv9yLK7leVGiHSRFHxjgpFRqN+3ePM4=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=jVe2bgqYJOjR2o9wpfYrWZTKv9D7xDB6LqbBdycuoJmuXMM2FgZ7HMwVmLVkSwDon
+         7ODdg+pV8rrR9+TmUnbMC1FQZYvq9c/F3XFIZYEj2dVkSHaDKaYCjzGTmdYTCWxwBz
+         Lg4RY+6MZF8KBTJa0moZnb5516WAZkqXrb37a3kCL998I6uKgds2/TpWEP4tM0nMe0
+         1ryz1QnLX1cPofBRpgEStDxWq1uo9GcVYuYbjciFx70KYhYPZn1z7zENWR+i0PRCdt
+         Pz8b0qBH+qXWk3tiWPgIUPw7U+tXx9SdptMth1EUT/PX8qz68j9IWayOO72Tded0GQ
+         QiQrKUZBGTRyA==
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Tim Gardner <tim.gardner@canonical.com>,
+        Antonino Daplas <adaplas@gmail.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
+        tomi.valkeinen@ti.com
+Subject: [PATCH AUTOSEL 5.17 14/66] video: fbdev: nvidiafb: Use strscpy() to prevent buffer overflow
+Date:   Wed, 30 Mar 2022 07:45:53 -0400
+Message-Id: <20220330114646.1669334-14-sashal@kernel.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220330114646.1669334-1-sashal@kernel.org>
+References: <20220330114646.1669334-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
->This phy controller is embedded in the Display Port Controller on mt8195 SoCs.
->
->Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
->---
-> .../bindings/phy/mediatek,dp-phy.yaml         | 43 +++++++++++++++++++
-> 1 file changed, 43 insertions(+)
-> create mode 100644 Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
->
->diff --git a/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml b/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
->new file mode 100644
->index 000000000000..1f5ffca4e140
->--- /dev/null
->+++ b/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
->@@ -0,0 +1,43 @@
->+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->+# Copyright (c) 2022 MediaTek
->+%YAML 1.2
->+---
->+$id: http://devicetree.org/schemas/phy/mediatek,dp-phy.yaml#
->+$schema: http://devicetree.org/meta-schemas/core.yaml#
->+
->+title: MediaTek Display Port PHY
->+
->+maintainers:
->+  - CK Hu <ck.hu@mediatek.com>
->+  - Jitao shi <jitao.shi@mediatek.com>
->+
->+description: |
->+  Device tree bindings for the Mediatek (embedded) Display Port PHY
+From: Tim Gardner <tim.gardner@canonical.com>
 
-s/Mediatek/MediaTek/
+[ Upstream commit 37a1a2e6eeeb101285cd34e12e48a881524701aa ]
 
->+  present on some Mediatek SoCs.
+Coverity complains of a possible buffer overflow. However,
+given the 'static' scope of nvidia_setup_i2c_bus() it looks
+like that can't happen after examiniing the call sites.
 
-s/Mediatek/MediaTek/
+CID 19036 (#1 of 1): Copy into fixed size buffer (STRING_OVERFLOW)
+1. fixed_size_dest: You might overrun the 48-character fixed-size string
+  chan->adapter.name by copying name without checking the length.
+2. parameter_as_source: Note: This defect has an elevated risk because the
+  source argument is a parameter of the current function.
+ 89        strcpy(chan->adapter.name, name);
 
->+
->+properties:
->+  compatible:
->+    enum:
->+      - mediatek,mt8195-dp-phy
->+
->+  mediatek,dp-syscon:
->+    $ref: /schemas/types.yaml#/definitions/phandle
->+    description: Phandle to the Display Port node.
->+
->+  "#phy-cells":
->+    const: 0
->+
->+required:
->+  - compatible
->+  - mediatek,dp-syscon
->+  - "#phy-cells"
->+
->+additionalProperties: false
->+
->+examples:
->+  - |
->+    dp_phy: dp-phy {
->+      compatible = "mediatek,mt8195-dp-phy";
->+      mediatek,dp-syscon = <&dp_tx>;
->+      #phy-cells = <0>;
->+    };
->-- 
->2.34.1
->
->
+Fix this warning by using strscpy() which will silence the warning and
+prevent any future buffer overflows should the names used to identify the
+channel become much longer.
+
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/nvidia/nv_i2c.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/nvidia/nv_i2c.c b/drivers/video/fbdev/nvidia/nv_i2c.c
+index d7994a173245..0b48965a6420 100644
+--- a/drivers/video/fbdev/nvidia/nv_i2c.c
++++ b/drivers/video/fbdev/nvidia/nv_i2c.c
+@@ -86,7 +86,7 @@ static int nvidia_setup_i2c_bus(struct nvidia_i2c_chan *chan, const char *name,
+ {
+ 	int rc;
+ 
+-	strcpy(chan->adapter.name, name);
++	strscpy(chan->adapter.name, name, sizeof(chan->adapter.name));
+ 	chan->adapter.owner = THIS_MODULE;
+ 	chan->adapter.class = i2c_class;
+ 	chan->adapter.algo_data = &chan->algo;
+-- 
+2.34.1
+

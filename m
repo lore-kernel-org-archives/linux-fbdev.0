@@ -2,48 +2,48 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DEC8C4167E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:54:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74B00C35273
+	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:54:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344367AbiC3Lzv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 30 Mar 2022 07:55:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57772 "EHLO
+        id S1344377AbiC3Lzw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 30 Mar 2022 07:55:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57746 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345945AbiC3LzP (ORCPT
+        with ESMTP id S1345155AbiC3LyK (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 30 Mar 2022 07:55:15 -0400
+        Wed, 30 Mar 2022 07:54:10 -0400
 Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F0B213CE3;
-        Wed, 30 Mar 2022 04:53:10 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5085D25FD42;
+        Wed, 30 Mar 2022 04:50:31 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 3A357B81C35;
-        Wed, 30 Mar 2022 11:53:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F02DC3410F;
-        Wed, 30 Mar 2022 11:53:07 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id D5B8FB81C28;
+        Wed, 30 Mar 2022 11:50:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1D69C340F2;
+        Wed, 30 Mar 2022 11:50:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648641188;
-        bh=05cThSb22/+lIGkr5ns+nVLnLvru2HHP6djIf1hnw0w=;
+        s=k20201202; t=1648641028;
+        bh=/hJvC2gf0i2zGMllIvwBp0yhdrPxL94SQLzsN5wb/G8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=bArdrmO96qR7pPvyLUfSre+NZ1tW3SIn+j5SUpCC7+SnpEwZOMvI+WMDABBAZFDC5
-         AXXbBxaXehYvhPlBFwFq2q35V1vmXRpEPqVWdAV7c5ztCKPQWNdu0Bkkk1sqQsZVm9
-         yMsDCo8rxNWGDkT8wmdR+0DAFhUTDaekQuklW+BjmjD7yxFTfVcDzzenUlcyFzf9mu
-         9ljm7CCBCE5dRayv3/dcDDa1zWR76oR7JI5Sr1n65Hek1QCjAOGuxIl/zT6ikwKJrI
-         R3X+QD/p2fTXXXFJcPSWVJdngLdkQLdbGIVFbt7JV84gZKj0XX7GYpYqJBsy2BVZ03
-         UE0SeqvWKjF2w==
+        b=uDpyKx1GBB5F9mnll9S71hlqnHp7LCHxn/wM8+UMVnaYdAWbyKIhANhedLp1r1Gow
+         ZiDUpmOv7Jgbr4oe0wI1920Q0KNPzeNhXKLnov+3EoRp4XMDGEhJCUCEHQBnU82pEL
+         LpzgFkKkf/k6uQ/FtRJJKJlN95W9Gf/GymMjTTSksBHCtkouPK0Q0jl2nX5ffmqgKD
+         S1alOWzgzVTmZRka+MWYFY1dUJsKQqNSOk3TPz7N9UEpQSNkcV3t2U33bIxc8sLIBq
+         dngydnW9WYtiQowCNam/AeleIFLtw2BOhdolBaQHkRAgLjWFQSqvoxnxYGpvnnPqZw
+         2KhLd/e0DHL6A==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Evgeny Novikov <novikov@ispras.ru>,
         Kirill Shilimanov <kirill.shilimanov@huawei.com>,
         Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
         tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 02/22] video: fbdev: w100fb: Reset global state
-Date:   Wed, 30 Mar 2022 07:52:43 -0400
-Message-Id: <20220330115303.1672616-2-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 14/50] video: fbdev: w100fb: Reset global state
+Date:   Wed, 30 Mar 2022 07:49:28 -0400
+Message-Id: <20220330115005.1671090-14-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220330115303.1672616-1-sashal@kernel.org>
-References: <20220330115303.1672616-1-sashal@kernel.org>
+In-Reply-To: <20220330115005.1671090-1-sashal@kernel.org>
+References: <20220330115005.1671090-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -75,10 +75,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 12 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/video/fbdev/w100fb.c b/drivers/video/fbdev/w100fb.c
-index 967030176d87..307066113c35 100644
+index d96ab28f8ce4..4e641a780726 100644
 --- a/drivers/video/fbdev/w100fb.c
 +++ b/drivers/video/fbdev/w100fb.c
-@@ -773,12 +773,18 @@ int w100fb_probe(struct platform_device *pdev)
+@@ -770,12 +770,18 @@ static int w100fb_probe(struct platform_device *pdev)
  		fb_dealloc_cmap(&info->cmap);
  		kfree(info->pseudo_palette);
  	}
@@ -100,7 +100,7 @@ index 967030176d87..307066113c35 100644
  	if (info)
  		framebuffer_release(info);
  	return err;
-@@ -803,8 +809,11 @@ static int w100fb_remove(struct platform_device *pdev)
+@@ -795,8 +801,11 @@ static int w100fb_remove(struct platform_device *pdev)
  	fb_dealloc_cmap(&info->cmap);
  
  	iounmap(remapped_base);

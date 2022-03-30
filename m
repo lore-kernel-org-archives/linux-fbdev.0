@@ -2,48 +2,48 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AE39C352AA
-	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:57:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 506B7C4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:57:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344392AbiC3Lzx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 30 Mar 2022 07:55:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33220 "EHLO
+        id S1344450AbiC3L7K (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 30 Mar 2022 07:59:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38358 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344693AbiC3LxZ (ORCPT
+        with ESMTP id S1344597AbiC3L4T (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 30 Mar 2022 07:53:25 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 182CC26C546;
-        Wed, 30 Mar 2022 04:49:26 -0700 (PDT)
+        Wed, 30 Mar 2022 07:56:19 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D5102E686;
+        Wed, 30 Mar 2022 04:54:14 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 4E069B81C29;
-        Wed, 30 Mar 2022 11:49:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B05DC34112;
-        Wed, 30 Mar 2022 11:49:17 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 10894B81C25;
+        Wed, 30 Mar 2022 11:54:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C8B2CC3410F;
+        Wed, 30 Mar 2022 11:54:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648640958;
-        bh=hP7Ta8lHWxh6NeT9h5JeWb6KQ3S+wTrRwcg0WqNvRtc=;
+        s=k20201202; t=1648641251;
+        bh=KCdXw1ny4TNy0K+BLzYJ0gRmwDx43DnoQ1MrFXnm9PI=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=nKzquNuGgbBdVaYNa++gnkiKLDG7tNUNcPV/Kqx9LVnL4UrK+9Wqw1fSNLobk5gtL
-         AM/WGxNU3GrGi5U+q5P1aC2lZzkG9dz4PvIsFzKO8EK8XUlQFLcDl5zzCmLv9/bwal
-         puyTr5FSWJCb5Gs68aBc9W5OCoN6+c9n7v32uWlf8k73jco++2wYdzNwog5HO6zCFo
-         4RnSJuKfon1wCaX0Zz6p14Ho4lDM68snMIU5Vx6SXYy+2bxDjaox6bYxk4n8J/jpjt
-         /oVBCMK0NqzW/j6ejxjfRm9FfD3Lk7FTO5fHaq0Vl1DAFlMPqFJFsf7RIqWH0gDF/j
-         +H4AhTOcdeWSg==
+        b=V7lwm0hSr64ZLUN9BaV3lnJz+63uF9At19Hm5YKKFCCQz3dFWxUq0qvtRxj+glV76
+         1aoLAZWIlLVv/qFVlp6aiu+Jf3dAMInbAfrKxCxBpNs2n2by7uszHruNngCIJeaPSZ
+         3uBE1xvuTlrmut59dIJBnQIkdAw2PP1R5Lw4yE8s98Rl3mIEh5EOQdPWY4Tg3xKeF4
+         pK64OuZBG5p1eq4ooeyQ+WL+jqjVeyXAcolu0gmmpk780x2baDNpjiuzbIFzfV+o5U
+         nKknHS5Ibo8qRS9undD/NPc+a0xctxHPJt549MaB7lGIJkJHCJZwZ//leEPefRqhWl
+         PCrHxtTF4IjlQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Jing Yao <yao.jing2@zte.com.cn>, Zeal Robot <zealci@zte.com.cn>,
+Cc:     Evgeny Novikov <novikov@ispras.ru>,
+        Kirill Shilimanov <kirill.shilimanov@huawei.com>,
         Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
-        bernie@plugable.com, tomi.valkeinen@ti.com,
-        linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.16 29/59] video: fbdev: udlfb: replace snprintf in show functions with sysfs_emit
-Date:   Wed, 30 Mar 2022 07:48:01 -0400
-Message-Id: <20220330114831.1670235-29-sashal@kernel.org>
+        tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.9 02/17] video: fbdev: w100fb: Reset global state
+Date:   Wed, 30 Mar 2022 07:53:51 -0400
+Message-Id: <20220330115407.1673214-2-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220330114831.1670235-1-sashal@kernel.org>
-References: <20220330114831.1670235-1-sashal@kernel.org>
+In-Reply-To: <20220330115407.1673214-1-sashal@kernel.org>
+References: <20220330115407.1673214-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -52,59 +52,65 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Jing Yao <yao.jing2@zte.com.cn>
+From: Evgeny Novikov <novikov@ispras.ru>
 
-[ Upstream commit 81a998288956d09d7a7a2303d47e4d60ad55c401 ]
+[ Upstream commit 8738ddcac644964ae128ccd3d80d48773c8d528e ]
 
-Use sysfs_emit instead of scnprintf, snprintf or sprintf.
+w100fb_probe() did not reset the global state to its initial state. This
+can result in invocation of iounmap() even when there was not the
+appropriate successful call of ioremap(). For instance, this may be the
+case if first probe fails after two successful ioremap() while second
+probe fails when first ioremap() fails. The similar issue is with
+w100fb_remove(). The patch fixes both bugs.
 
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Jing Yao <yao.jing2@zte.com.cn>
+Found by Linux Driver Verification project (linuxtesting.org).
+
+Signed-off-by: Evgeny Novikov <novikov@ispras.ru>
+Co-developed-by: Kirill Shilimanov <kirill.shilimanov@huawei.com>
+Signed-off-by: Kirill Shilimanov <kirill.shilimanov@huawei.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/udlfb.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/w100fb.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index b9cdd02c1000..90f48b71fd8f 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -1426,7 +1426,7 @@ static ssize_t metrics_bytes_rendered_show(struct device *fbdev,
- 				   struct device_attribute *a, char *buf) {
- 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
- 	struct dlfb_data *dlfb = fb_info->par;
--	return snprintf(buf, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(buf, "%u\n",
- 			atomic_read(&dlfb->bytes_rendered));
- }
+diff --git a/drivers/video/fbdev/w100fb.c b/drivers/video/fbdev/w100fb.c
+index 7bd4c27cfb14..b3b17b6adb7e 100644
+--- a/drivers/video/fbdev/w100fb.c
++++ b/drivers/video/fbdev/w100fb.c
+@@ -772,12 +772,18 @@ int w100fb_probe(struct platform_device *pdev)
+ 		fb_dealloc_cmap(&info->cmap);
+ 		kfree(info->pseudo_palette);
+ 	}
+-	if (remapped_fbuf != NULL)
++	if (remapped_fbuf != NULL) {
+ 		iounmap(remapped_fbuf);
+-	if (remapped_regs != NULL)
++		remapped_fbuf = NULL;
++	}
++	if (remapped_regs != NULL) {
+ 		iounmap(remapped_regs);
+-	if (remapped_base != NULL)
++		remapped_regs = NULL;
++	}
++	if (remapped_base != NULL) {
+ 		iounmap(remapped_base);
++		remapped_base = NULL;
++	}
+ 	if (info)
+ 		framebuffer_release(info);
+ 	return err;
+@@ -802,8 +808,11 @@ static int w100fb_remove(struct platform_device *pdev)
+ 	fb_dealloc_cmap(&info->cmap);
  
-@@ -1434,7 +1434,7 @@ static ssize_t metrics_bytes_identical_show(struct device *fbdev,
- 				   struct device_attribute *a, char *buf) {
- 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
- 	struct dlfb_data *dlfb = fb_info->par;
--	return snprintf(buf, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(buf, "%u\n",
- 			atomic_read(&dlfb->bytes_identical));
- }
+ 	iounmap(remapped_base);
++	remapped_base = NULL;
+ 	iounmap(remapped_regs);
++	remapped_regs = NULL;
+ 	iounmap(remapped_fbuf);
++	remapped_fbuf = NULL;
  
-@@ -1442,7 +1442,7 @@ static ssize_t metrics_bytes_sent_show(struct device *fbdev,
- 				   struct device_attribute *a, char *buf) {
- 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
- 	struct dlfb_data *dlfb = fb_info->par;
--	return snprintf(buf, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(buf, "%u\n",
- 			atomic_read(&dlfb->bytes_sent));
- }
- 
-@@ -1450,7 +1450,7 @@ static ssize_t metrics_cpu_kcycles_used_show(struct device *fbdev,
- 				   struct device_attribute *a, char *buf) {
- 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
- 	struct dlfb_data *dlfb = fb_info->par;
--	return snprintf(buf, PAGE_SIZE, "%u\n",
-+	return sysfs_emit(buf, "%u\n",
- 			atomic_read(&dlfb->cpu_kcycles_used));
- }
+ 	framebuffer_release(info);
  
 -- 
 2.34.1

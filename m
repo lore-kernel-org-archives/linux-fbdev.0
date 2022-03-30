@@ -2,48 +2,48 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3692C4321E
-	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:54:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DDC8C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:54:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344469AbiC3L4H (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 30 Mar 2022 07:56:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35192 "EHLO
+        id S1344479AbiC3L4I (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 30 Mar 2022 07:56:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58266 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344196AbiC3Lzl (ORCPT
+        with ESMTP id S1345921AbiC3LzN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 30 Mar 2022 07:55:41 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C02E22B250;
-        Wed, 30 Mar 2022 04:53:46 -0700 (PDT)
+        Wed, 30 Mar 2022 07:55:13 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EAA96BA2;
+        Wed, 30 Mar 2022 04:52:45 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 6A0B8B81ACC;
-        Wed, 30 Mar 2022 11:53:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 368DCC340F3;
-        Wed, 30 Mar 2022 11:53:43 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 8465E61616;
+        Wed, 30 Mar 2022 11:52:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0815C34111;
+        Wed, 30 Mar 2022 11:52:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648641224;
-        bh=Owx5cXHHiohKZCzYmdkV7BuW9d3Ur7SqGy69wNLF/4g=;
+        s=k20201202; t=1648641164;
+        bh=NjDs/hNJ5jIoUTekqUpGzHpgZgjOw+eFz6PtiTcPvs8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=dBEx/I6MWNvqwOXZM/RAhUJ1P8D9NP93LW38GrmyCSBG/SlH8yPycsJQ5jOaVWHZI
-         uLbXwmKzil2yvkoLx5QsCdsc9uDRF3rogkqpWkQnhUy5xKfENc1otx+XxNz4TUEYYD
-         TWtnYfDOok3MUDo5G0Kwc2e6rVjdMHMNqKLb/9vfhZ6onwTv4UVE6hLZSTFw3ji1fG
-         KvGRhXOGf203iZI9Ed0MGRWwnEuU3uuUDXS6hAdLc8/ksYE+j+xfDys3bl4jmaD99i
-         qrS+tiv+Ejzl+KDv2Ibk6haw9+Dfl9tm3QySrQWaLWI1X3K1OY00W6mthv6LST4Fap
-         tx1441KyLZ3vw==
+        b=RhI4nj3oSpONL+nLST4sQSjZ2qIp1MpPVYV9tkJc2nJ4r0LXl2OYWNBjKfGHLrjx8
+         jW6icdIBCD/sQ6MMEzyfM9Vs+oFQCtcrZRIizqjhMByid/pnsdrOQXM7DeLixaTYV7
+         PAwbiacSUX8BS1oP0s37cj6DC1pPBJeW0fXE4W2gGGc+UuiIMdvO4rPCDikA8UDx6B
+         P5LMtoXGY58pq/21TdgmA0jPN+gDAhpnMHEpz3AnVwCqXmyS/aR5rRBGiUnQBTXAYO
+         V9DTO3+e80v6ge3J2DMRIOo1ogBP5NMetGIq1eFiZVfLMW4l/nWExkHWgHJSJJMoxE
+         FRLqmRrZnPPeg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Yang Guang <yang.guang5@zte.com.cn>,
-        Zeal Robot <zealci@zte.com.cn>, Helge Deller <deller@gmx.de>,
-        Sasha Levin <sashal@kernel.org>, tomi.valkeinen@ti.com,
-        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 04/20] video: fbdev: omapfb: acx565akm: replace snprintf with sysfs_emit
-Date:   Wed, 30 Mar 2022 07:53:20 -0400
-Message-Id: <20220330115336.1672930-4-sashal@kernel.org>
+Cc:     Jing Yao <yao.jing2@zte.com.cn>, Zeal Robot <zealci@zte.com.cn>,
+        Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
+        bernie@plugable.com, tomi.valkeinen@ti.com,
+        linux-fbdev@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.4 12/25] video: fbdev: udlfb: replace snprintf in show functions with sysfs_emit
+Date:   Wed, 30 Mar 2022 07:52:12 -0400
+Message-Id: <20220330115225.1672278-12-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220330115336.1672930-1-sashal@kernel.org>
-References: <20220330115336.1672930-1-sashal@kernel.org>
+In-Reply-To: <20220330115225.1672278-1-sashal@kernel.org>
+References: <20220330115225.1672278-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -52,37 +52,60 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Yang Guang <yang.guang5@zte.com.cn>
+From: Jing Yao <yao.jing2@zte.com.cn>
 
-[ Upstream commit 24565bc4115961db7ee64fcc7ad2a7437c0d0a49 ]
+[ Upstream commit 81a998288956d09d7a7a2303d47e4d60ad55c401 ]
 
-coccinelle report:
-./drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c:
-479:9-17: WARNING: use scnprintf or sprintf
-
-Use sysfs_emit instead of scnprintf or sprintf makes more sense.
+Use sysfs_emit instead of scnprintf, snprintf or sprintf.
 
 Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
+Signed-off-by: Jing Yao <yao.jing2@zte.com.cn>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- .../video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c    | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/udlfb.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-index f2c2fef3db74..87c4f420a9d9 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-@@ -487,7 +487,7 @@ static ssize_t show_cabc_available_modes(struct device *dev,
- 	int i;
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index ecbfbbf1c1a7..e269b1391e14 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -1427,7 +1427,7 @@ static ssize_t metrics_bytes_rendered_show(struct device *fbdev,
+ 				   struct device_attribute *a, char *buf) {
+ 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
+ 	struct dlfb_data *dlfb = fb_info->par;
+-	return snprintf(buf, PAGE_SIZE, "%u\n",
++	return sysfs_emit(buf, "%u\n",
+ 			atomic_read(&dlfb->bytes_rendered));
+ }
  
- 	if (!ddata->has_cabc)
--		return snprintf(buf, PAGE_SIZE, "%s\n", cabc_modes[0]);
-+		return sysfs_emit(buf, "%s\n", cabc_modes[0]);
+@@ -1435,7 +1435,7 @@ static ssize_t metrics_bytes_identical_show(struct device *fbdev,
+ 				   struct device_attribute *a, char *buf) {
+ 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
+ 	struct dlfb_data *dlfb = fb_info->par;
+-	return snprintf(buf, PAGE_SIZE, "%u\n",
++	return sysfs_emit(buf, "%u\n",
+ 			atomic_read(&dlfb->bytes_identical));
+ }
  
- 	for (i = 0, len = 0;
- 	     len < PAGE_SIZE && i < ARRAY_SIZE(cabc_modes); i++)
+@@ -1443,7 +1443,7 @@ static ssize_t metrics_bytes_sent_show(struct device *fbdev,
+ 				   struct device_attribute *a, char *buf) {
+ 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
+ 	struct dlfb_data *dlfb = fb_info->par;
+-	return snprintf(buf, PAGE_SIZE, "%u\n",
++	return sysfs_emit(buf, "%u\n",
+ 			atomic_read(&dlfb->bytes_sent));
+ }
+ 
+@@ -1451,7 +1451,7 @@ static ssize_t metrics_cpu_kcycles_used_show(struct device *fbdev,
+ 				   struct device_attribute *a, char *buf) {
+ 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
+ 	struct dlfb_data *dlfb = fb_info->par;
+-	return snprintf(buf, PAGE_SIZE, "%u\n",
++	return sysfs_emit(buf, "%u\n",
+ 			atomic_read(&dlfb->cpu_kcycles_used));
+ }
+ 
 -- 
 2.34.1
 

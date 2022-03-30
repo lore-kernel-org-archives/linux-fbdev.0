@@ -2,49 +2,48 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44FF2C433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4DCFC4167B
 	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:55:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344925AbiC3L4p (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 30 Mar 2022 07:56:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59178 "EHLO
+        id S242668AbiC3L4u (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 30 Mar 2022 07:56:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57824 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344501AbiC3LxN (ORCPT
+        with ESMTP id S1345950AbiC3LzP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 30 Mar 2022 07:53:13 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BEBFF262D69;
-        Wed, 30 Mar 2022 04:49:05 -0700 (PDT)
+        Wed, 30 Mar 2022 07:55:15 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 34D2C2B250;
+        Wed, 30 Mar 2022 04:53:20 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 01201B81C38;
-        Wed, 30 Mar 2022 11:48:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A9AB9C36AE2;
-        Wed, 30 Mar 2022 11:48:54 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id E3C28B81C24;
+        Wed, 30 Mar 2022 11:53:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 987C6C36AE3;
+        Wed, 30 Mar 2022 11:53:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648640935;
-        bh=qW1x31HnZxqlWv9yLK7leVGiHSRFHxjgpFRqN+3ePM4=;
+        s=k20201202; t=1648641197;
+        bh=EMxSx4orwuA7jGZm2KFPLJ5bfImcWmd7r958OxzUynE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=PxKxUdLdo+N1VBpnDbqseQVPv33pJ+1pX09PlodQnZwLU5OCv8fwC4+gFao1DpAZ9
-         tzBgTNQTrkyeS2QjMnVg3VUSTw5KmfVcxsbOQlyuzLTtXDrL9/Qi/DsT5eFHHrqqvC
-         GWsa28wYXdl7L/gcrSCdmj9DVpB3fL87ahJxCL94WZK+mbol1ry9EJ1g4y6DNIuS8Q
-         AvHeyA67H6Mni6ZcOQqVhRjHJVheOguvDUNgpoi+ZXf6WBdgSyBiVV/0mJOCRf/nAp
-         oTUbpgL4ciUNp7A22zXgg4X5AzcwYdF+Mv06PVxIy+uMcOz8gTmTPcyRuQeO/HKC0x
-         hx9aQ+MFl13AQ==
+        b=srEKnLVqvS8dSCSYw7Sxq/eiqgluX0nqkuaqmYK4x7gnB1djsTniOJiqfc/1c3Hxg
+         Qs4241WVQYq2HwrzUzNOWoUdWX9JsR3hSUkmpCP0nyt5VdueVBRdclt09p7xxNQsa8
+         J2mOAm8Lc9ADiuHamKRzWx2mwOd985c4Ul3JkoKiLenYJIUH2fmDiB0leabVw91Ug7
+         Nl/Srg0bPKQMaOMHVf+if5KFbl+tmXsYCZhaacR01znG/WBsunDjb3lG0sfL+mKIHi
+         SJ8S3A4f7UcHwzX8WmSw8aTGtm+PWPZEt9ysfPpE5duwTvm/3jAW0yLJSvNZxyBbao
+         e5NfC7pX98smg==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Tim Gardner <tim.gardner@canonical.com>,
-        Antonino Daplas <adaplas@gmail.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+Cc:     Jing Yao <yao.jing2@zte.com.cn>, Zeal Robot <zealci@zte.com.cn>,
         Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
-        tomi.valkeinen@ti.com
-Subject: [PATCH AUTOSEL 5.16 14/59] video: fbdev: nvidiafb: Use strscpy() to prevent buffer overflow
-Date:   Wed, 30 Mar 2022 07:47:46 -0400
-Message-Id: <20220330114831.1670235-14-sashal@kernel.org>
+        tomi.valkeinen@ti.com, linux-omap@vger.kernel.org,
+        linux-fbdev@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.19 08/22] video: fbdev: omapfb: panel-dsi-cm: Use sysfs_emit() instead of snprintf()
+Date:   Wed, 30 Mar 2022 07:52:49 -0400
+Message-Id: <20220330115303.1672616-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220330114831.1670235-1-sashal@kernel.org>
-References: <20220330114831.1670235-1-sashal@kernel.org>
+In-Reply-To: <20220330115303.1672616-1-sashal@kernel.org>
+References: <20220330115303.1672616-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -53,49 +52,60 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Tim Gardner <tim.gardner@canonical.com>
+From: Jing Yao <yao.jing2@zte.com.cn>
 
-[ Upstream commit 37a1a2e6eeeb101285cd34e12e48a881524701aa ]
+[ Upstream commit f63658a59c3d439c8ad7b290f8ec270980e0f384 ]
 
-Coverity complains of a possible buffer overflow. However,
-given the 'static' scope of nvidia_setup_i2c_bus() it looks
-like that can't happen after examiniing the call sites.
+Use sysfs_emit instead of scnprintf, snprintf or sprintf.
 
-CID 19036 (#1 of 1): Copy into fixed size buffer (STRING_OVERFLOW)
-1. fixed_size_dest: You might overrun the 48-character fixed-size string
-  chan->adapter.name by copying name without checking the length.
-2. parameter_as_source: Note: This defect has an elevated risk because the
-  source argument is a parameter of the current function.
- 89        strcpy(chan->adapter.name, name);
-
-Fix this warning by using strscpy() which will silence the warning and
-prevent any future buffer overflows should the names used to identify the
-channel become much longer.
-
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Jing Yao <yao.jing2@zte.com.cn>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/nvidia/nv_i2c.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/nvidia/nv_i2c.c b/drivers/video/fbdev/nvidia/nv_i2c.c
-index d7994a173245..0b48965a6420 100644
---- a/drivers/video/fbdev/nvidia/nv_i2c.c
-+++ b/drivers/video/fbdev/nvidia/nv_i2c.c
-@@ -86,7 +86,7 @@ static int nvidia_setup_i2c_bus(struct nvidia_i2c_chan *chan, const char *name,
- {
- 	int rc;
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
+index 87497a00241f..1c57ddaeff1b 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
+@@ -412,7 +412,7 @@ static ssize_t dsicm_num_errors_show(struct device *dev,
+ 	if (r)
+ 		return r;
  
--	strcpy(chan->adapter.name, name);
-+	strscpy(chan->adapter.name, name, sizeof(chan->adapter.name));
- 	chan->adapter.owner = THIS_MODULE;
- 	chan->adapter.class = i2c_class;
- 	chan->adapter.algo_data = &chan->algo;
+-	return snprintf(buf, PAGE_SIZE, "%d\n", errors);
++	return sysfs_emit(buf, "%d\n", errors);
+ }
+ 
+ static ssize_t dsicm_hw_revision_show(struct device *dev,
+@@ -442,7 +442,7 @@ static ssize_t dsicm_hw_revision_show(struct device *dev,
+ 	if (r)
+ 		return r;
+ 
+-	return snprintf(buf, PAGE_SIZE, "%02x.%02x.%02x\n", id1, id2, id3);
++	return sysfs_emit(buf, "%02x.%02x.%02x\n", id1, id2, id3);
+ }
+ 
+ static ssize_t dsicm_store_ulps(struct device *dev,
+@@ -490,7 +490,7 @@ static ssize_t dsicm_show_ulps(struct device *dev,
+ 	t = ddata->ulps_enabled;
+ 	mutex_unlock(&ddata->lock);
+ 
+-	return snprintf(buf, PAGE_SIZE, "%u\n", t);
++	return sysfs_emit(buf, "%u\n", t);
+ }
+ 
+ static ssize_t dsicm_store_ulps_timeout(struct device *dev,
+@@ -535,7 +535,7 @@ static ssize_t dsicm_show_ulps_timeout(struct device *dev,
+ 	t = ddata->ulps_timeout;
+ 	mutex_unlock(&ddata->lock);
+ 
+-	return snprintf(buf, PAGE_SIZE, "%u\n", t);
++	return sysfs_emit(buf, "%u\n", t);
+ }
+ 
+ static DEVICE_ATTR(num_dsi_errors, S_IRUGO, dsicm_num_errors_show, NULL);
 -- 
 2.34.1
 

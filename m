@@ -2,48 +2,48 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 602EAC35296
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A8ECC35294
 	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:54:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344740AbiC3L42 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S1344729AbiC3L42 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Wed, 30 Mar 2022 07:56:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35806 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56766 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344480AbiC3LxM (ORCPT
+        with ESMTP id S1345813AbiC3LzD (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 30 Mar 2022 07:53:12 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 242AB26242A;
-        Wed, 30 Mar 2022 04:49:02 -0700 (PDT)
+        Wed, 30 Mar 2022 07:55:03 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1894B264546;
+        Wed, 30 Mar 2022 04:51:47 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id C32F3B81C23;
-        Wed, 30 Mar 2022 11:48:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C58BC3410F;
-        Wed, 30 Mar 2022 11:48:57 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 720B2615E2;
+        Wed, 30 Mar 2022 11:51:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB76DC3410F;
+        Wed, 30 Mar 2022 11:51:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648640938;
-        bh=xuNZMXifvmTGhpPgK2BkPkaKp82sCR/h9SV2ylyFzog=;
+        s=k20201202; t=1648641098;
+        bh=NllYYjWNYzcx38lK6Tp0ggC0JWbVpRuJplNhOQvulmw=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=V1CzbiX94X8okQBVm/cClxTSxBpu1OoXuA2A+YBLsE+rJNxVVWq8tNiFPeIYZioUS
-         snNMU32ZTUcHeLClDHHSZBpyxuYJ37HU9heEpV33mH0kgtOR20YPBeJHQZHGWRzX4P
-         dih65CsmknuDSyJTe0QdsOXlFusM7areYImmoK+qE1UWjaeOkREb9fgcps+8bXld0W
-         9bmzvaVyTq+37s5a6gUF6kdlyKUUnwCXwspu7CJqoqBBZT6stIPxUbZL7RHCQWm3++
-         k81JbpkAFCcqK41S5xIvqiB8PWDuAqSDv0WNYSg38AvIJimgZCdvqRBA0sGq8uOObb
-         rSDHPKxGc8/Vg==
+        b=TKpiNqoPXVlETMLSiBpaqeDnc6518HfPVaQliLavblaWFzB+84OKiY10+xcwxVkjA
+         mvODHfEK3HUTfcA3LclPT5LaZxNnto+N9MUs7R11Ao6+OlKBpoDOhG927QDPIzCkRH
+         ZvuWdxTlLL8dpHvgJD/ERof/xj/YHLvLmVNsGqeRZaOSKZJ9Y/YUOf5bdLEwJH48KZ
+         GCUch0O1jN2Dc18c9z5ekP5Z3G9X78oU2DBl62r9KyTQbpK+0E8o2cUEwQakjqLEGl
+         zpUqi5PMHn/fx//7O+4VI7t5A15YSW2fAhE0VwwPqOsxFValbgApQ/3dRZiqXr5Xjn
+         p9WgIYbimJDlQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     George Kennedy <george.kennedy@oracle.com>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
-        tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.16 16/59] video: fbdev: cirrusfb: check pixclock to avoid divide by zero
-Date:   Wed, 30 Mar 2022 07:47:48 -0400
-Message-Id: <20220330114831.1670235-16-sashal@kernel.org>
+Cc:     Yang Guang <yang.guang5@zte.com.cn>,
+        Zeal Robot <zealci@zte.com.cn>, Helge Deller <deller@gmx.de>,
+        Sasha Levin <sashal@kernel.org>, tomi.valkeinen@ti.com,
+        linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.10 09/37] video: fbdev: omapfb: acx565akm: replace snprintf with sysfs_emit
+Date:   Wed, 30 Mar 2022 07:50:54 -0400
+Message-Id: <20220330115122.1671763-9-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220330114831.1670235-1-sashal@kernel.org>
-References: <20220330114831.1670235-1-sashal@kernel.org>
+In-Reply-To: <20220330115122.1671763-1-sashal@kernel.org>
+References: <20220330115122.1671763-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -52,81 +52,37 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: George Kennedy <george.kennedy@oracle.com>
+From: Yang Guang <yang.guang5@zte.com.cn>
 
-[ Upstream commit 5c6f402bdcf9e7239c6bc7087eda71ac99b31379 ]
+[ Upstream commit 24565bc4115961db7ee64fcc7ad2a7437c0d0a49 ]
 
-Do a sanity check on pixclock value to avoid divide by zero.
+coccinelle report:
+./drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c:
+479:9-17: WARNING: use scnprintf or sprintf
 
-If the pixclock value is zero, the cirrusfb driver will round up
-pixclock to get the derived frequency as close to maxclock as
-possible.
+Use sysfs_emit instead of scnprintf or sprintf makes more sense.
 
-Syzkaller reported a divide error in cirrusfb_check_pixclock.
-
-divide error: 0000 [#1] SMP KASAN PTI
-CPU: 0 PID: 14938 Comm: cirrusfb_test Not tainted 5.15.0-rc6 #1
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.11.0-2
-RIP: 0010:cirrusfb_check_var+0x6f1/0x1260
-
-Call Trace:
- fb_set_var+0x398/0xf90
- do_fb_ioctl+0x4b8/0x6f0
- fb_ioctl+0xeb/0x130
- __x64_sys_ioctl+0x19d/0x220
- do_syscall_64+0x3a/0x80
- entry_SYSCALL_64_after_hwframe+0x44/0xae
-
-Signed-off-by: George Kennedy <george.kennedy@oracle.com>
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Yang Guang <yang.guang5@zte.com.cn>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/cirrusfb.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ .../video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c    | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
-index 93802abbbc72..3d47c347b897 100644
---- a/drivers/video/fbdev/cirrusfb.c
-+++ b/drivers/video/fbdev/cirrusfb.c
-@@ -469,7 +469,7 @@ static int cirrusfb_check_mclk(struct fb_info *info, long freq)
- 	return 0;
- }
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
+index 1293515e4b16..0cbc5b9183f8 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
+@@ -476,7 +476,7 @@ static ssize_t show_cabc_available_modes(struct device *dev,
+ 	int i;
  
--static int cirrusfb_check_pixclock(const struct fb_var_screeninfo *var,
-+static int cirrusfb_check_pixclock(struct fb_var_screeninfo *var,
- 				   struct fb_info *info)
- {
- 	long freq;
-@@ -478,9 +478,7 @@ static int cirrusfb_check_pixclock(const struct fb_var_screeninfo *var,
- 	unsigned maxclockidx = var->bits_per_pixel >> 3;
+ 	if (!ddata->has_cabc)
+-		return snprintf(buf, PAGE_SIZE, "%s\n", cabc_modes[0]);
++		return sysfs_emit(buf, "%s\n", cabc_modes[0]);
  
- 	/* convert from ps to kHz */
--	freq = PICOS2KHZ(var->pixclock);
--
--	dev_dbg(info->device, "desired pixclock: %ld kHz\n", freq);
-+	freq = PICOS2KHZ(var->pixclock ? : 1);
- 
- 	maxclock = cirrusfb_board_info[cinfo->btype].maxclock[maxclockidx];
- 	cinfo->multiplexing = 0;
-@@ -488,11 +486,13 @@ static int cirrusfb_check_pixclock(const struct fb_var_screeninfo *var,
- 	/* If the frequency is greater than we can support, we might be able
- 	 * to use multiplexing for the video mode */
- 	if (freq > maxclock) {
--		dev_err(info->device,
--			"Frequency greater than maxclock (%ld kHz)\n",
--			maxclock);
--		return -EINVAL;
-+		var->pixclock = KHZ2PICOS(maxclock);
-+
-+		while ((freq = PICOS2KHZ(var->pixclock)) > maxclock)
-+			var->pixclock++;
- 	}
-+	dev_dbg(info->device, "desired pixclock: %ld kHz\n", freq);
-+
- 	/*
- 	 * Additional constraint: 8bpp uses DAC clock doubling to allow maximum
- 	 * pixel clock
+ 	for (i = 0, len = 0;
+ 	     len < PAGE_SIZE && i < ARRAY_SIZE(cabc_modes); i++)
 -- 
 2.34.1
 

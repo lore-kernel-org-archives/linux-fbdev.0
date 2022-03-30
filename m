@@ -2,45 +2,45 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C372BC4321E
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EAD09C3527E
 	for <linux-fbdev@archiver.kernel.org>; Wed, 30 Mar 2022 11:54:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244425AbiC3L4Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 30 Mar 2022 07:56:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57746 "EHLO
+        id S1344305AbiC3L40 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 30 Mar 2022 07:56:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56648 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1345441AbiC3Lya (ORCPT
+        with ESMTP id S1345662AbiC3Lyx (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 30 Mar 2022 07:54:30 -0400
+        Wed, 30 Mar 2022 07:54:53 -0400
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2FAC9282B2F;
-        Wed, 30 Mar 2022 04:51:10 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD919260C5C;
+        Wed, 30 Mar 2022 04:51:32 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id BF655B81C28;
-        Wed, 30 Mar 2022 11:50:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D16DC36AE5;
-        Wed, 30 Mar 2022 11:50:45 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 58020B81C23;
+        Wed, 30 Mar 2022 11:51:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10061C36AE5;
+        Wed, 30 Mar 2022 11:51:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1648641046;
-        bh=giM/BAivgxJrob6NYPSr1zOqqdEG4sFSemV5nmzN4OM=;
+        s=k20201202; t=1648641069;
+        bh=9A522rPgTeH0BLQe8vYOfJKRowXSm5djhJZvpnvcLJU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=GAmuxRyW6X6tf+HGsTfDN3NOqDAroTk6nAlDPBeKrDwkOqsYpfG5b97sNjav+tP2C
-         SrlWk3CfQfSctItMl1TyC783JfWrjdZHqC/Uv53nqICHb0FZFeU8sOOXzX5gILp6H1
-         LzjvYZNz0dwjTJK8eaT7C/ezIVq/ud1dNlUIeKoPFgpDDNb4nM2lj4uKKR9hAasTJ5
-         GMW/8c6NuEi7Peq2YdktoiwGxz9CmuMJQVnZRfAUz4VynoikRluyKmaHTGECK3UPIn
-         nEWcZowTn6717lN3Jb1jDU6RpPJ2wWOdrYKg4LUTxbX20hGGjh45LQdIt77qdxYT9s
-         GQYWL4R4gXrLw==
+        b=BAtRU3Ec6kHX1fK+kxWc3TdLKMuBHhnJb0JrKSFw8pfi+85SKu5gysazWiMEnuvvW
+         q3vhvwlr8urvAazmgzUYbQC8oGIbqx59Y2Vrhx7TcO9AwPVf35dsSXOQdMhpr8SbCt
+         QhMaKgBsCHKs0mKaTji37cyTNUIVS0oob1WB+0SlzQ/z1vuvu7E3QWMdtyp6dLz6le
+         nz1KtL2b7Ytv+kc26H/8Yr21EKh16BF5Mb+tQiq5D2rFPwHUhpTdBnHmvivV28ivwl
+         xZ1Rqa52j6NlhvhMhbmUS7v03BJQb+mM7z7IzgrrkJGpoy/BoFOSivsuCJ+E+uvcHE
+         1IuulJLQtDMjQ==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Jing Yao <yao.jing2@zte.com.cn>, Zeal Robot <zealci@zte.com.cn>,
-        Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>,
-        tomi.valkeinen@ti.com, linux-omap@vger.kernel.org,
+Cc:     Zheyu Ma <zheyuma97@gmail.com>, Helge Deller <deller@gmx.de>,
+        Sasha Levin <sashal@kernel.org>, sudipm.mukherjee@gmail.com,
+        teddy.wang@siliconmotion.com, tomi.valkeinen@ti.com,
         linux-fbdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 26/50] video: fbdev: omapfb: panel-tpo-td043mtea1: Use sysfs_emit() instead of snprintf()
-Date:   Wed, 30 Mar 2022 07:49:40 -0400
-Message-Id: <20220330115005.1671090-26-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 41/50] video: fbdev: sm712fb: Fix crash in smtcfb_write()
+Date:   Wed, 30 Mar 2022 07:49:55 -0400
+Message-Id: <20220330115005.1671090-41-sashal@kernel.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220330115005.1671090-1-sashal@kernel.org>
 References: <20220330115005.1671090-1-sashal@kernel.org>
@@ -52,42 +52,73 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Jing Yao <yao.jing2@zte.com.cn>
+From: Zheyu Ma <zheyuma97@gmail.com>
 
-[ Upstream commit c07a039cbb96748f54c02995bae8131cc9a73b0a ]
+[ Upstream commit 4f01d09b2bbfbcb47b3eb305560a7f4857a32260 ]
 
-Use sysfs_emit instead of scnprintf, snprintf or sprintf.
+When the sm712fb driver writes three bytes to the framebuffer, the
+driver will crash:
 
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Jing Yao <yao.jing2@zte.com.cn>
+    BUG: unable to handle page fault for address: ffffc90001ffffff
+    RIP: 0010:smtcfb_write+0x454/0x5b0
+    Call Trace:
+     vfs_write+0x291/0xd60
+     ? do_sys_openat2+0x27d/0x350
+     ? __fget_light+0x54/0x340
+     ksys_write+0xce/0x190
+     do_syscall_64+0x43/0x90
+     entry_SYSCALL_64_after_hwframe+0x44/0xae
+
+Fix it by removing the open-coded endianness fixup-code.
+
+Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
 Signed-off-by: Helge Deller <deller@gmx.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- .../video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c  | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/sm712fb.c | 21 ++++-----------------
+ 1 file changed, 4 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-index afac1d9445aa..57b7d1f49096 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-@@ -169,7 +169,7 @@ static ssize_t tpo_td043_vmirror_show(struct device *dev,
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(dev);
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index 0dbc6bf8268a..e355089ac7d6 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -1130,7 +1130,7 @@ static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
+ 		count = total_size - p;
+ 	}
  
--	return snprintf(buf, PAGE_SIZE, "%d\n", ddata->vmirror);
-+	return sysfs_emit(buf, "%d\n", ddata->vmirror);
- }
+-	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count, GFP_KERNEL);
++	buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
+ 	if (!buffer)
+ 		return -ENOMEM;
  
- static ssize_t tpo_td043_vmirror_store(struct device *dev,
-@@ -199,7 +199,7 @@ static ssize_t tpo_td043_mode_show(struct device *dev,
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(dev);
+@@ -1148,24 +1148,11 @@ static ssize_t smtcfb_write(struct fb_info *info, const char __user *buf,
+ 			break;
+ 		}
  
--	return snprintf(buf, PAGE_SIZE, "%d\n", ddata->mode);
-+	return sysfs_emit(buf, "%d\n", ddata->mode);
- }
+-		for (i = c >> 2; i--;) {
+-			fb_writel(big_swap(*src), dst++);
++		for (i = (c + 3) >> 2; i--;) {
++			fb_writel(big_swap(*src), dst);
++			dst++;
+ 			src++;
+ 		}
+-		if (c & 3) {
+-			u8 *src8 = (u8 *)src;
+-			u8 __iomem *dst8 = (u8 __iomem *)dst;
+-
+-			for (i = c & 3; i--;) {
+-				if (i & 1) {
+-					fb_writeb(*src8++, ++dst8);
+-				} else {
+-					fb_writeb(*src8++, --dst8);
+-					dst8 += 2;
+-				}
+-			}
+-			dst = (u32 __iomem *)dst8;
+-		}
  
- static ssize_t tpo_td043_mode_store(struct device *dev,
+ 		*ppos += c;
+ 		buf += c;
 -- 
 2.34.1
 

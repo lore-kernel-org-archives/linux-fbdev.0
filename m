@@ -2,87 +2,98 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2C9CC433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Apr 2022 08:42:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED078C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Apr 2022 20:53:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243908AbiDAIn7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 1 Apr 2022 04:43:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35012 "EHLO
+        id S240853AbiDAUzH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 1 Apr 2022 16:55:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60520 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230512AbiDAIn6 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Apr 2022 04:43:58 -0400
-Received: from mail.meizu.com (edge07.meizu.com [112.91.151.210])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1477A255AB8;
-        Fri,  1 Apr 2022 01:42:08 -0700 (PDT)
-Received: from IT-EXMB-1-125.meizu.com (172.16.1.125) by mz-mail11.meizu.com
- (172.16.1.15) with Microsoft SMTP Server (TLS) id 14.3.487.0; Fri, 1 Apr 2022
- 16:42:01 +0800
-Received: from meizu.meizu.com (172.16.137.70) by IT-EXMB-1-125.meizu.com
- (172.16.1.125) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Fri, 1 Apr
- 2022 16:42:00 +0800
-From:   Haowen Bai <baihaowen@meizu.com>
-To:     Helge Deller <deller@gmx.de>
-CC:     Haowen Bai <baihaowen@meizu.com>, <linux-fbdev@vger.kernel.org>,
-        <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Hvideo: fbdev: pm2fb: Fix a kernel-doc formatting issue
-Date:   Fri, 1 Apr 2022 16:41:57 +0800
-Message-ID: <1648802518-10571-1-git-send-email-baihaowen@meizu.com>
-X-Mailer: git-send-email 2.7.4
+        with ESMTP id S234080AbiDAUzH (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Apr 2022 16:55:07 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D15221C34B2;
+        Fri,  1 Apr 2022 13:53:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1648846385;
+        bh=XBQN4Y8cY6863locdXVbzi2Vq6V+H1v2SxPMFzNkCPo=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=OYTqi2prkndGI/ORGpjS+vnKtXl+OmGYiTqwelq0yTAS7/Jjgk+SIjpx0vY3eX+9Y
+         Cpen5R+JveUaI3t44wRlqs9rF/FH7IYYmVz6t8wgx6jcmUYu6Szv5crjYh3cWyJ0hM
+         M6arbyu7Bz3DghRqe/joNvt2qfAYXTtuqBFjO6yo=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.191.12]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MtOGa-1nsbwV1DuI-00uupR; Fri, 01
+ Apr 2022 22:53:05 +0200
+Message-ID: <f6802e83-0fc6-ffe6-cea1-d2a39d768514@gmx.de>
+Date:   Fri, 1 Apr 2022 22:53:02 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [172.16.137.70]
-X-ClientProxiedBy: IT-EXMB-1-124.meizu.com (172.16.1.124) To
- IT-EXMB-1-125.meizu.com (172.16.1.125)
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Subject: Re: [PATCH] video: fbdev: sis: fix potential NULL dereference in
+ sisfb_post_sis300()
+Content-Language: en-US
+To:     Haowen Bai <baihaowen@meizu.com>,
+        Thomas Winischhofer <thomas@winischhofer.net>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+References: <1648784476-20803-1-git-send-email-baihaowen@meizu.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <1648784476-20803-1-git-send-email-baihaowen@meizu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:jqSUrZEkWBRjiAbZGSBMpExq4v+hgcH4biJGJErpd8gmlIXCNtj
+ HSBeMgO224TpGgAVQdXvF2pmAs9LVA+J89TQNBpsezoHFqUgLMPEPevYjjkn8JlDQbPZ36b
+ lQ8n0RY3EDclGiYEIetK31BqjjXu6e82as1P3vma4VwQb8B3MAsqxOWmPaC47ilbSCyrwYL
+ RGFONn2o0MSQv+kZTN1Cg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:8KFcAgyHg6o=:11aIfxQ0Zlsyeanjppqz0z
+ OLNfjn00nnTIgmKHvnUhJ8klyMyGa7czYWsXDdBhiUv2dMESFbBa+ll/lAv4kMnfaXxLzoDxP
+ DSaMrtArtBVxzE9vFHMzopDwDrYxEiqXkGU4me+SEnCmI//LZKBeRoBSTnW3rlj4vyK5d06P6
+ EVyvtQcRuQEGRR2erhzUoGzg02RHdBz34oMC3zHJ0Nvod/3iL3t6pztdgM4zg+02TQv7K6tKt
+ LXXmVS+0RYDMWo0/fx54WcxjboICJCT4al+Rh13ieDpmC5SVSbYo9t3B+kFg2e1ZSbc08mEWK
+ isJ9ZoArTrwabqfz8zjazBwtECiHkwb1VW9eUm+AQCbQYOAIlDcAcrtyvzNvVUiMUQRX3vLIs
+ 0gIdEcX3IXY4S1HPo0Gp94qhq0Z5XTsHK3yncfLIP4j2N3j/yu7S2ZbtCXS7xMvgRlZdmGCxK
+ 0Vpwf4coxclXBqM7O1tRdPFwBc7ucZH1RHymZO0aP7vRnv53IqO5tlRIPMO5C5jmpcWvWejzr
+ TwWFZNKsp+jq6yNkPxMK2q4DB0I7IEFcDl4N6/AyDV8zPF3Krjob+6pXtUUIOEKrc09BNx+kY
+ feTd7dZMlO9VWDNw9lk01o69ss0PxuDK4X5CztukKXpsaJ33XPD1xdpt8MdeJNnJmtGbsNVGs
+ DAiIfGDxB+LzLkCue+oids+pGAKEA5CoMkzHbReqGd8PZLLrl+NZzVdJOQrIQ2tDjIFkMiwPM
+ CyvmIPQBZyFvvRckE0qGS1ELL0jzhIcohc/h6PJjCKVNsCCdJWZoQltfy/9gyZKKIeQwwdT2W
+ /PydMo6n/qsr/crSmzyRdMAymNOt6qV6G1RSF5eNq2zThoKuGWP78FPNZRZh3OhJHmIT6YGvA
+ BT6zcofyzQyisXI3VR1Znh2OposN+zUqRVYwzBytr6rY6y3dbURQ/jB4n1q7819ii8+O1DG+m
+ 22QgFmNy5/gpqCo1B38asxfFlBLd5eTg1J/UtuIUFMPEBRCdkBcmzGdbt2WcYynIiFGu6VD5s
+ ablP2n2qanFtPOKQpleUWMT6CDFeB4i0H96Q6D9qozBQ4eewJOFr57PC/V2A9OiOq8QIY9BAh
+ i3RPaaAulys7Rw=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This function had kernel-doc that not used a hash to separate
-the function name from the one line description.
+On 4/1/22 05:41, Haowen Bai wrote:
+> bios could be null without checking null and return in this function,
+> but still dereference bios[0xf5].
+>
+> Signed-off-by: Haowen Bai <baihaowen@meizu.com>
 
-The warning was found by running scripts/kernel-doc, which is
-caused by using 'make W=1'.
+applied.
+Thanks!
+Helge
 
-drivers/video/fbdev/pm2fb.c:1507: warning: This comment starts with '/**', 
-but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
- * Device initialisation
-drivers/video/fbdev/pm2fb.c:1714: warning: This comment starts with '/**', 
-but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
- * Device removal.
-
-
-Signed-off-by: Haowen Bai <baihaowen@meizu.com>
----
- drivers/video/fbdev/pm2fb.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
-index c68725eebee3..d3be2c64f1c0 100644
---- a/drivers/video/fbdev/pm2fb.c
-+++ b/drivers/video/fbdev/pm2fb.c
-@@ -1504,9 +1504,7 @@ static const struct fb_ops pm2fb_ops = {
- 
- 
- /**
-- * Device initialisation
-- *
-- * Initialise and allocate resource for PCI device.
-+ * pm2fb_probe - Initialise and allocate resource for PCI device.
-  *
-  * @pdev:	PCI device.
-  * @id:		PCI device ID.
-@@ -1711,9 +1709,7 @@ static int pm2fb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- }
- 
- /**
-- * Device removal.
-- *
-- * Release all device resources.
-+ * pm2fb_remove - Release all device resources.
-  *
-  * @pdev:	PCI device to clean up.
-  */
--- 
-2.7.4
+> ---
+>  drivers/video/fbdev/sis/sis_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/si=
+s/sis_main.c
+> index 742f629..24a0299 100644
+> --- a/drivers/video/fbdev/sis/sis_main.c
+> +++ b/drivers/video/fbdev/sis/sis_main.c
+> @@ -4463,7 +4463,7 @@ static void sisfb_post_sis300(struct pci_dev *pdev=
+)
+>  		SiS_SetReg(SISCR, 0x37, 0x02);
+>  		SiS_SetReg(SISPART2, 0x00, 0x1c);
+>  		v4 =3D 0x00; v5 =3D 0x00; v6 =3D 0x10;
+> -		if(ivideo->SiS_Pr.UseROM) {
+> +		if (ivideo->SiS_Pr.UseROM && bios) {
+>  			v4 =3D bios[0xf5];
+>  			v5 =3D bios[0xf6];
+>  			v6 =3D bios[0xf7];
 

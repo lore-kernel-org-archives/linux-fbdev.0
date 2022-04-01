@@ -2,34 +2,32 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D591C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Apr 2022 03:41:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2C9CC433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Apr 2022 08:42:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244691AbiDADnQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 31 Mar 2022 23:43:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40338 "EHLO
+        id S243908AbiDAIn7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 1 Apr 2022 04:43:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35012 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241756AbiDADnP (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 31 Mar 2022 23:43:15 -0400
-Received: from mail.meizu.com (edge05.meizu.com [157.122.146.251])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 882DC53711;
-        Thu, 31 Mar 2022 20:41:25 -0700 (PDT)
-Received: from IT-EXMB-1-125.meizu.com (172.16.1.125) by mz-mail12.meizu.com
- (172.16.1.108) with Microsoft SMTP Server (TLS) id 14.3.487.0; Fri, 1 Apr
- 2022 11:41:26 +0800
+        with ESMTP id S230512AbiDAIn6 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Fri, 1 Apr 2022 04:43:58 -0400
+Received: from mail.meizu.com (edge07.meizu.com [112.91.151.210])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1477A255AB8;
+        Fri,  1 Apr 2022 01:42:08 -0700 (PDT)
+Received: from IT-EXMB-1-125.meizu.com (172.16.1.125) by mz-mail11.meizu.com
+ (172.16.1.15) with Microsoft SMTP Server (TLS) id 14.3.487.0; Fri, 1 Apr 2022
+ 16:42:01 +0800
 Received: from meizu.meizu.com (172.16.137.70) by IT-EXMB-1-125.meizu.com
  (172.16.1.125) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Fri, 1 Apr
- 2022 11:41:23 +0800
+ 2022 16:42:00 +0800
 From:   Haowen Bai <baihaowen@meizu.com>
-To:     Thomas Winischhofer <thomas@winischhofer.net>,
-        Helge Deller <deller@gmx.de>
+To:     Helge Deller <deller@gmx.de>
 CC:     Haowen Bai <baihaowen@meizu.com>, <linux-fbdev@vger.kernel.org>,
         <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] video: fbdev: sis: fix potential NULL dereference in sisfb_post_sis300()
-Date:   Fri, 1 Apr 2022 11:41:16 +0800
-Message-ID: <1648784476-20803-1-git-send-email-baihaowen@meizu.com>
+Subject: [PATCH] Hvideo: fbdev: pm2fb: Fix a kernel-doc formatting issue
+Date:   Fri, 1 Apr 2022 16:41:57 +0800
+Message-ID: <1648802518-10571-1-git-send-email-baihaowen@meizu.com>
 X-Mailer: git-send-email 2.7.4
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -40,27 +38,51 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-bios could be null without checking null and return in this function,
-but still dereference bios[0xf5].
+This function had kernel-doc that not used a hash to separate
+the function name from the one line description.
+
+The warning was found by running scripts/kernel-doc, which is
+caused by using 'make W=1'.
+
+drivers/video/fbdev/pm2fb.c:1507: warning: This comment starts with '/**', 
+but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
+ * Device initialisation
+drivers/video/fbdev/pm2fb.c:1714: warning: This comment starts with '/**', 
+but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
+ * Device removal.
+
 
 Signed-off-by: Haowen Bai <baihaowen@meizu.com>
 ---
- drivers/video/fbdev/sis/sis_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/pm2fb.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
-index 742f629..24a0299 100644
---- a/drivers/video/fbdev/sis/sis_main.c
-+++ b/drivers/video/fbdev/sis/sis_main.c
-@@ -4463,7 +4463,7 @@ static void sisfb_post_sis300(struct pci_dev *pdev)
- 		SiS_SetReg(SISCR, 0x37, 0x02);
- 		SiS_SetReg(SISPART2, 0x00, 0x1c);
- 		v4 = 0x00; v5 = 0x00; v6 = 0x10;
--		if(ivideo->SiS_Pr.UseROM) {
-+		if (ivideo->SiS_Pr.UseROM && bios) {
- 			v4 = bios[0xf5];
- 			v5 = bios[0xf6];
- 			v6 = bios[0xf7];
+diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
+index c68725eebee3..d3be2c64f1c0 100644
+--- a/drivers/video/fbdev/pm2fb.c
++++ b/drivers/video/fbdev/pm2fb.c
+@@ -1504,9 +1504,7 @@ static const struct fb_ops pm2fb_ops = {
+ 
+ 
+ /**
+- * Device initialisation
+- *
+- * Initialise and allocate resource for PCI device.
++ * pm2fb_probe - Initialise and allocate resource for PCI device.
+  *
+  * @pdev:	PCI device.
+  * @id:		PCI device ID.
+@@ -1711,9 +1709,7 @@ static int pm2fb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+ }
+ 
+ /**
+- * Device removal.
+- *
+- * Release all device resources.
++ * pm2fb_remove - Release all device resources.
+  *
+  * @pdev:	PCI device to clean up.
+  */
 -- 
 2.7.4
 

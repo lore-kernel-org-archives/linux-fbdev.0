@@ -2,117 +2,65 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1BC0C433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 31 Mar 2022 22:35:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D591C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri,  1 Apr 2022 03:41:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242174AbiCaWhg (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 31 Mar 2022 18:37:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57100 "EHLO
+        id S244691AbiDADnQ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 31 Mar 2022 23:43:16 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40338 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240705AbiCaWhf (ORCPT
+        with ESMTP id S241756AbiDADnP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 31 Mar 2022 18:37:35 -0400
-Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com [IPv6:2a00:1450:4864:20::62f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D61E71C8A8E;
-        Thu, 31 Mar 2022 15:35:47 -0700 (PDT)
-Received: by mail-ej1-x62f.google.com with SMTP id p15so2199679ejc.7;
-        Thu, 31 Mar 2022 15:35:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=nik1iTbxoUWnG6UF8WspcQRjvneqvZ965qd0fvy6u0Q=;
-        b=onwlNXEfsXY5267AxROmbVgwPHyozyAkfW/eFrSTJ29X2muD4OpT4LcAzhalPbQd/b
-         CKKvVbnuI0cwUFkWWUdzbnGsJSK/fRV89XUWiC/WnV/yncPvIhtMQLgUICGaLathnPov
-         SQyfqPvBUDIKdjR1LnGVk9ymAD/jMYdQ11bhYyZ6DboyOFk2Q51P/4WpDFx66Om+IUPr
-         oLc4SWKuRN472tKQAwpou0cQPzrxZnWOpoX0P8iqr85CgjGt3djEDjxAQwAcR9K779Qe
-         brkBa++inBLdnrRA2nDX/4m88mHASicccPQr2P8VaqCzfDtNDb6I/AVh+jqSYcSwCVvh
-         1sfQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=nik1iTbxoUWnG6UF8WspcQRjvneqvZ965qd0fvy6u0Q=;
-        b=k0Sk+aWfmTpdSHV5Fl8BjCF9aAhkfiHjwn7gpm0EITMz9pMBEbP7v/DSK68T/3UzBg
-         htSUJWqVtblriVSv72bct7MjRbTz2xlICoq8uqsyen3bHQULkKTIIOUKxHn3sw/wrKYx
-         ux7pieF0pm6LoXv2sRsbVOJzgOa0f4TEg8DfCWV3PysuXRx9P+B9qh8dy9Z0G8jywMr4
-         R0HT2I/abgakujS1xJRMiaJq+pXpmW6P47eIm9XhCTvm/hFu1U4N1c9sp6xeKWLL3tPU
-         pEIibWl5kjxG7xEDuGLf7DjqHRFXmmg/iAln0szg/otOAoVRywUq46RMbgw63Wy2Zj+S
-         ifww==
-X-Gm-Message-State: AOAM5304QjDr8rHJAu+kAULSImKhHqVV499TKpRBfk1Cmt3X8ks0ZCxO
-        Ba9E68NtNPWXajvHQYTQ+RzbHS9rEP1uJSpS
-X-Google-Smtp-Source: ABdhPJwvadEyXeLejHBvKE54rjB5jVViHNh1B2AJIl0ecn//oet1U6QeTVIECiwaHI2D6i+E5n0PVw==
-X-Received: by 2002:a17:907:9725:b0:6e0:b274:aa4c with SMTP id jg37-20020a170907972500b006e0b274aa4cmr6900584ejc.565.1648766146417;
-        Thu, 31 Mar 2022 15:35:46 -0700 (PDT)
-Received: from localhost.localdomain (i130160.upc-i.chello.nl. [62.195.130.160])
-        by smtp.googlemail.com with ESMTPSA id p14-20020a05640210ce00b00413211746d4sm337761edu.51.2022.03.31.15.35.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 31 Mar 2022 15:35:46 -0700 (PDT)
-From:   Jakob Koschel <jakobkoschel@gmail.com>
-To:     Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, Mike Rapoport <rppt@kernel.org>,
-        "Brian Johannesmeyer" <bjohannesmeyer@gmail.com>,
-        Cristiano Giuffrida <c.giuffrida@vu.nl>,
-        "Bos, H.J." <h.j.bos@vu.nl>, Jakob Koschel <jakobkoschel@gmail.com>
-Subject: [PATCH] video: fbdev-MMP: replace usage of found with dedicated list iterator variable
-Date:   Fri,  1 Apr 2022 00:35:03 +0200
-Message-Id: <20220331223503.902142-1-jakobkoschel@gmail.com>
-X-Mailer: git-send-email 2.25.1
+        Thu, 31 Mar 2022 23:43:15 -0400
+Received: from mail.meizu.com (edge05.meizu.com [157.122.146.251])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 882DC53711;
+        Thu, 31 Mar 2022 20:41:25 -0700 (PDT)
+Received: from IT-EXMB-1-125.meizu.com (172.16.1.125) by mz-mail12.meizu.com
+ (172.16.1.108) with Microsoft SMTP Server (TLS) id 14.3.487.0; Fri, 1 Apr
+ 2022 11:41:26 +0800
+Received: from meizu.meizu.com (172.16.137.70) by IT-EXMB-1-125.meizu.com
+ (172.16.1.125) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2308.14; Fri, 1 Apr
+ 2022 11:41:23 +0800
+From:   Haowen Bai <baihaowen@meizu.com>
+To:     Thomas Winischhofer <thomas@winischhofer.net>,
+        Helge Deller <deller@gmx.de>
+CC:     Haowen Bai <baihaowen@meizu.com>, <linux-fbdev@vger.kernel.org>,
+        <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] video: fbdev: sis: fix potential NULL dereference in sisfb_post_sis300()
+Date:   Fri, 1 Apr 2022 11:41:16 +0800
+Message-ID: <1648784476-20803-1-git-send-email-baihaowen@meizu.com>
+X-Mailer: git-send-email 2.7.4
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [172.16.137.70]
+X-ClientProxiedBy: IT-EXMB-1-124.meizu.com (172.16.1.124) To
+ IT-EXMB-1-125.meizu.com (172.16.1.125)
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-To move the list iterator variable into the list_for_each_entry_*()
-macro in the future it should be avoided to use the list iterator
-variable after the loop body.
+bios could be null without checking null and return in this function,
+but still dereference bios[0xf5].
 
-To *never* use the list iterator variable after the loop it was
-concluded to use a separate iterator variable instead of a
-found boolean [1].
-
-This removes the need to use a found variable and simply checking if
-the variable was set, can determine if the break/goto was hit.
-
-Link: https://lore.kernel.org/all/CAHk-=wgRr_D8CB-D9Kg-c=EHreAsk5SqXPwr9Y7k9sA6cWXJ6w@mail.gmail.com/ [1]
-Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
+Signed-off-by: Haowen Bai <baihaowen@meizu.com>
 ---
- drivers/video/fbdev/mmp/core.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/sis/sis_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/mmp/core.c b/drivers/video/fbdev/mmp/core.c
-index 154127256a2c..03707461eced 100644
---- a/drivers/video/fbdev/mmp/core.c
-+++ b/drivers/video/fbdev/mmp/core.c
-@@ -127,19 +127,18 @@ EXPORT_SYMBOL_GPL(mmp_unregister_panel);
-  */
- struct mmp_path *mmp_get_path(const char *name)
- {
--	struct mmp_path *path;
--	int found = 0;
-+	struct mmp_path *path = NULL, *iter;
- 
- 	mutex_lock(&disp_lock);
--	list_for_each_entry(path, &path_list, node) {
--		if (!strcmp(name, path->name)) {
--			found = 1;
-+	list_for_each_entry(iter, &path_list, node) {
-+		if (!strcmp(name, iter->name)) {
-+			path = iter;
- 			break;
- 		}
- 	}
- 	mutex_unlock(&disp_lock);
- 
--	return found ? path : NULL;
-+	return path;
- }
- EXPORT_SYMBOL_GPL(mmp_get_path);
- 
-
-base-commit: f82da161ea75dc4db21b2499e4b1facd36dab275
+diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
+index 742f629..24a0299 100644
+--- a/drivers/video/fbdev/sis/sis_main.c
++++ b/drivers/video/fbdev/sis/sis_main.c
+@@ -4463,7 +4463,7 @@ static void sisfb_post_sis300(struct pci_dev *pdev)
+ 		SiS_SetReg(SISCR, 0x37, 0x02);
+ 		SiS_SetReg(SISPART2, 0x00, 0x1c);
+ 		v4 = 0x00; v5 = 0x00; v6 = 0x10;
+-		if(ivideo->SiS_Pr.UseROM) {
++		if (ivideo->SiS_Pr.UseROM && bios) {
+ 			v4 = bios[0xf5];
+ 			v5 = bios[0xf6];
+ 			v6 = bios[0xf7];
 -- 
-2.25.1
+2.7.4
 

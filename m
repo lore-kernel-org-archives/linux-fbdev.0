@@ -2,202 +2,170 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09C0AC433FE
-	for <linux-fbdev@archiver.kernel.org>; Sat,  2 Apr 2022 10:23:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61B66C433F5
+	for <linux-fbdev@archiver.kernel.org>; Sat,  2 Apr 2022 11:55:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240177AbiDBKZD (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 2 Apr 2022 06:25:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38026 "EHLO
+        id S236713AbiDBL4u (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 2 Apr 2022 07:56:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43960 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238093AbiDBKZD (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 2 Apr 2022 06:25:03 -0400
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79D791AA056;
-        Sat,  2 Apr 2022 03:23:11 -0700 (PDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-        by localhost (Postfix) with ESMTP id 4KVtR21LGgz9sSZ;
-        Sat,  2 Apr 2022 12:23:10 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-        by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id hZquyIJd4SRe; Sat,  2 Apr 2022 12:23:10 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-        by pegase2.c-s.fr (Postfix) with ESMTP id 4KVtR20SFlz9sSQ;
-        Sat,  2 Apr 2022 12:23:10 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-        by messagerie.si.c-s.fr (Postfix) with ESMTP id E92E08B76D;
-        Sat,  2 Apr 2022 12:23:09 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-        by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-        with ESMTP id C6PcTIWmTHoD; Sat,  2 Apr 2022 12:23:09 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.136])
-        by messagerie.si.c-s.fr (Postfix) with ESMTP id A012F8B768;
-        Sat,  2 Apr 2022 12:23:09 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-        by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 232AMwHq685346
-        (version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-        Sat, 2 Apr 2022 12:22:58 +0200
-Received: (from chleroy@localhost)
-        by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 232AMuYv685345;
-        Sat, 2 Apr 2022 12:22:56 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From:   Christophe Leroy <christophe.leroy@csgroup.eu>
-To:     Paul Mackerras <paulus@samba.org>, Helge Deller <deller@gmx.de>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc:     Christophe Leroy <christophe.leroy@csgroup.eu>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Subject: [PATCH] video: fbdev: Prepare cleanup of powerpc's asm/prom.h
-Date:   Sat,  2 Apr 2022 12:22:56 +0200
-Message-Id: <68d44009feb802c58b855ade3ac9109496b9d0e5.1648833426.git.christophe.leroy@csgroup.eu>
+        with ESMTP id S229534AbiDBL4t (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 2 Apr 2022 07:56:49 -0400
+Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FD5210BBC9;
+        Sat,  2 Apr 2022 04:54:57 -0700 (PDT)
+Received: by mail-lf1-x12e.google.com with SMTP id h7so9287678lfl.2;
+        Sat, 02 Apr 2022 04:54:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=O7nG8AJS/R9S2ZJAIN62cFFHL53dA2MgyCxhgMT/sn0=;
+        b=T3J+o4FO/uAU8qIqjeZbmKanNd/OutwBIyxA3oYPX/iFeQk5dFNYTdCPRjhF1Mz+hw
+         bVDeLx6EUfipSXgpLnH+v77PPj0OOIzO6pk1EUfG4E0eok9EF0IJtTfs8C04iGZzh0zG
+         x4gjByHDoiNzcqWuk68Y8E4qet8Lh6QkRRpVvWPbyFATUHLwSXYNHBPa0E69Pfx1SMbM
+         IEhvuTxpdWH53mfWOiL25ReVrTN4ZX305vwlBvwUknlwx+h5HrE0oPu7XvRO3BriZqqp
+         8Jz0w0RmJGjEct2OxMKkmyKX1gQjy0vu7Ye5oHcw/zXSU1elj94BLcy2F1pBG11OQ11d
+         chzQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=O7nG8AJS/R9S2ZJAIN62cFFHL53dA2MgyCxhgMT/sn0=;
+        b=KGSnXTaBvIsF4L12B6ms7tNTI6ilX1wiBFh7j1+85YNgaXKWl+lpwpEx4X46xoPY0S
+         hh5x09f9qMjMWyFtDEUUPZkYRwm8rTdhgBNOt9sxajxo8I4jnrcqhbembY4L7nDxubrD
+         kIHt8WgvOmSmDWw8PQwACXS9U2VDg8AJ+0rFyehvfjlnZiplGB43IZFzasZXsh6yB2YJ
+         /XObhpoBbWM6IGcRPmlrfVUAVr8Px2SjHvwo9aqTo5sWilaoAAedviJBKf9/cySQBbEh
+         f36rtGpNYbI+pnCVKA9FIN/9oODcyzZfHmAMymI66kSkiebp2sWl1uzZh5StFyTHEmZC
+         81mQ==
+X-Gm-Message-State: AOAM532gb8tK5SCf96+OrN0RQIK9uHSUMkvQHOZDs7wGZxKbIKHhMqIp
+        1Zg/Cq7dVQxsNWNxxmvVPGubukPnmYKM5hsa
+X-Google-Smtp-Source: ABdhPJza7N3uBhLaWceoecrnl35xtMsLyegy8nmRMBZtbKetasJkvfws4mM6r4sHWGm/uLh6CNAfsQ==
+X-Received: by 2002:a05:6512:130c:b0:44a:2dd3:91d0 with SMTP id x12-20020a056512130c00b0044a2dd391d0mr17253016lfu.234.1648900495457;
+        Sat, 02 Apr 2022 04:54:55 -0700 (PDT)
+Received: from dell.lan (93-181-165-181.internetia.net.pl. [93.181.165.181])
+        by smtp.gmail.com with ESMTPSA id m2-20020a05651202e200b0044a0d0f99b9sm504846lfq.278.2022.04.02.04.54.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 02 Apr 2022 04:54:54 -0700 (PDT)
+From:   Janusz Krzysztofik <jmkrzyszt@gmail.com>
+To:     Helge Deller <deller@gmx.de>
+Cc:     linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
+        Janusz Krzysztofik <jmkrzyszt@gmail.com>
+Subject: [PATCH] video: fbdev: omap: Make it CCF clk API compatible
+Date:   Sat,  2 Apr 2022 13:54:44 +0200
+Message-Id: <20220402115444.130999-1-jmkrzyszt@gmail.com>
 X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1648894975; l=4417; s=20211009; h=from:subject:message-id; bh=NUrHFSycOvagcdRTsZ0KQOWwYFUWWBtR8hlzOrV8ib0=; b=l7Qb3dp99ynwky4d0UQJ3JdMGk7zv+x3ehiGgnBVDG2PjZuA50gzwIi53OWyRGw1RuqAMkcs8uEU cRMaGK1HBJCKKH6tnhTx9ElNNLaV+eAdiyo10o+t4GX49Rs5SX8P
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-powerpc's asm/prom.h brings some headers that it doesn't
-need itself.
+OMAP1 LCDC drivers now omit clk_prepare/unprepare() steps, not supported
+by OMAP1 custom implementation of clock API.  However, non-CCF stubs of
+those functions exist for use on such platforms until converted to CCF.
 
-In order to clean it up, first add missing headers in
-users of asm/prom.h
+Update the drivers to be compatible with CCF implementation of clock API.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Janusz Krzysztofik <jmkrzyszt@gmail.com>
 ---
- drivers/video/fbdev/aty/aty128fb.c         | 1 -
- drivers/video/fbdev/aty/atyfb_base.c       | 1 -
- drivers/video/fbdev/aty/radeon_pm.c        | 1 -
- drivers/video/fbdev/aty/radeonfb.h         | 2 +-
- drivers/video/fbdev/controlfb.c            | 3 ---
- drivers/video/fbdev/matrox/matroxfb_base.h | 1 -
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 2 ++
- drivers/video/fbdev/platinumfb.c           | 2 +-
- drivers/video/fbdev/valkyriefb.c           | 3 +--
- 9 files changed, 5 insertions(+), 11 deletions(-)
+ drivers/video/fbdev/omap/hwa742.c | 6 +++---
+ drivers/video/fbdev/omap/lcdc.c   | 6 +++---
+ drivers/video/fbdev/omap/sossi.c  | 5 +++--
+ 3 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index 6ff16d3132e5..b26c81233b6b 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -68,7 +68,6 @@
- #ifdef CONFIG_PPC_PMAC
- #include <asm/machdep.h>
- #include <asm/pmac_feature.h>
--#include <asm/prom.h>
- #include "../macmodes.h"
- #endif
+diff --git a/drivers/video/fbdev/omap/hwa742.c b/drivers/video/fbdev/omap/hwa742.c
+index b191bef22d98..9d9fe5c3a7a1 100644
+--- a/drivers/video/fbdev/omap/hwa742.c
++++ b/drivers/video/fbdev/omap/hwa742.c
+@@ -964,7 +964,7 @@ static int hwa742_init(struct omapfb_device *fbdev, int ext_mode,
+ 	if ((r = calc_extif_timings(ext_clk, &extif_mem_div)) < 0)
+ 		goto err3;
+ 	hwa742.extif->set_timings(&hwa742.reg_timings);
+-	clk_enable(hwa742.sys_ck);
++	clk_prepare_enable(hwa742.sys_ck);
  
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 1aef3d6ebd88..a3e6faed7745 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -79,7 +79,6 @@
+ 	calc_hwa742_clk_rates(ext_clk, &sys_clk, &pix_clk);
+ 	if ((r = calc_extif_timings(sys_clk, &extif_mem_div)) < 0)
+@@ -1023,7 +1023,7 @@ static int hwa742_init(struct omapfb_device *fbdev, int ext_mode,
  
- #ifdef __powerpc__
- #include <asm/machdep.h>
--#include <asm/prom.h>
- #include "../macmodes.h"
- #endif
- #ifdef __sparc__
-diff --git a/drivers/video/fbdev/aty/radeon_pm.c b/drivers/video/fbdev/aty/radeon_pm.c
-index b5fbd5329652..97a5972f5b1f 100644
---- a/drivers/video/fbdev/aty/radeon_pm.c
-+++ b/drivers/video/fbdev/aty/radeon_pm.c
-@@ -22,7 +22,6 @@
+ 	return 0;
+ err4:
+-	clk_disable(hwa742.sys_ck);
++	clk_disable_unprepare(hwa742.sys_ck);
+ err3:
+ 	hwa742.extif->cleanup();
+ err2:
+@@ -1037,7 +1037,7 @@ static void hwa742_cleanup(void)
+ 	hwa742_set_update_mode(OMAPFB_UPDATE_DISABLED);
+ 	hwa742.extif->cleanup();
+ 	hwa742.int_ctrl->cleanup();
+-	clk_disable(hwa742.sys_ck);
++	clk_disable_unprepare(hwa742.sys_ck);
+ }
  
- #ifdef CONFIG_PPC_PMAC
- #include <asm/machdep.h>
--#include <asm/prom.h>
- #include <asm/pmac_feature.h>
- #endif
+ struct lcd_ctrl hwa742_ctrl = {
+diff --git a/drivers/video/fbdev/omap/lcdc.c b/drivers/video/fbdev/omap/lcdc.c
+index 7317c9aad677..97d20dc0d1d0 100644
+--- a/drivers/video/fbdev/omap/lcdc.c
++++ b/drivers/video/fbdev/omap/lcdc.c
+@@ -711,7 +711,7 @@ static int omap_lcdc_init(struct omapfb_device *fbdev, int ext_mode,
+ 		dev_err(fbdev->dev, "failed to adjust LCD rate\n");
+ 		goto fail1;
+ 	}
+-	clk_enable(lcdc.lcd_ck);
++	clk_prepare_enable(lcdc.lcd_ck);
  
-diff --git a/drivers/video/fbdev/aty/radeonfb.h b/drivers/video/fbdev/aty/radeonfb.h
-index 93f403cbb415..91d81b576231 100644
---- a/drivers/video/fbdev/aty/radeonfb.h
-+++ b/drivers/video/fbdev/aty/radeonfb.h
-@@ -21,7 +21,7 @@
+ 	r = request_irq(OMAP_LCDC_IRQ, lcdc_irq_handler, 0, MODULE_NAME, fbdev);
+ 	if (r) {
+@@ -746,7 +746,7 @@ static int omap_lcdc_init(struct omapfb_device *fbdev, int ext_mode,
+ fail3:
+ 	free_irq(OMAP_LCDC_IRQ, lcdc.fbdev);
+ fail2:
+-	clk_disable(lcdc.lcd_ck);
++	clk_disable_unprepare(lcdc.lcd_ck);
+ fail1:
+ 	clk_put(lcdc.lcd_ck);
+ fail0:
+@@ -760,7 +760,7 @@ static void omap_lcdc_cleanup(void)
+ 	free_fbmem();
+ 	omap_free_lcd_dma();
+ 	free_irq(OMAP_LCDC_IRQ, lcdc.fbdev);
+-	clk_disable(lcdc.lcd_ck);
++	clk_disable_unprepare(lcdc.lcd_ck);
+ 	clk_put(lcdc.lcd_ck);
+ }
  
- #include <asm/io.h>
+diff --git a/drivers/video/fbdev/omap/sossi.c b/drivers/video/fbdev/omap/sossi.c
+index 80ac67f27f0d..b9cb8b386627 100644
+--- a/drivers/video/fbdev/omap/sossi.c
++++ b/drivers/video/fbdev/omap/sossi.c
+@@ -598,7 +598,7 @@ static int sossi_init(struct omapfb_device *fbdev)
+ 	l &= ~CONF_SOSSI_RESET_R;
+ 	omap_writel(l, MOD_CONF_CTRL_1);
  
--#if defined(CONFIG_PPC) || defined(CONFIG_SPARC)
-+#ifdef CONFIG_SPARC
- #include <asm/prom.h>
- #endif
+-	clk_enable(sossi.fck);
++	clk_prepare_enable(sossi.fck);
+ 	l = omap_readl(ARM_IDLECT2);
+ 	l &= ~(1 << 8);			/* DMACK_REQ */
+ 	omap_writel(l, ARM_IDLECT2);
+@@ -649,7 +649,7 @@ static int sossi_init(struct omapfb_device *fbdev)
+ 	return 0;
  
-diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
-index bd59e7b11ed5..aba46118b208 100644
---- a/drivers/video/fbdev/controlfb.c
-+++ b/drivers/video/fbdev/controlfb.c
-@@ -47,9 +47,6 @@
- #include <linux/nvram.h>
- #include <linux/adb.h>
- #include <linux/cuda.h>
--#ifdef CONFIG_PPC_PMAC
--#include <asm/prom.h>
--#endif
- #ifdef CONFIG_BOOTX_TEXT
- #include <asm/btext.h>
- #endif
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.h b/drivers/video/fbdev/matrox/matroxfb_base.h
-index 759dee996af1..958be6805f87 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.h
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.h
-@@ -47,7 +47,6 @@
- #include <asm/unaligned.h>
- 
- #if defined(CONFIG_PPC_PMAC)
--#include <asm/prom.h>
- #include "../macmodes.h"
- #endif
- 
-diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-index 63721337a377..a7508f5be343 100644
---- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-@@ -18,6 +18,8 @@
- #include <linux/interrupt.h>
- #include <linux/pci.h>
- #if defined(CONFIG_OF)
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
- #include <linux/of_platform.h>
- #endif
- #include "mb862xxfb.h"
-diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
-index ce413a9df06e..5b9e26ea6449 100644
---- a/drivers/video/fbdev/platinumfb.c
-+++ b/drivers/video/fbdev/platinumfb.c
-@@ -30,9 +30,9 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/nvram.h>
-+#include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/of_platform.h>
--#include <asm/prom.h>
- 
- #include "macmodes.h"
- #include "platinumfb.h"
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-index 8425afe37d7c..a6c9d4f26669 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -54,10 +54,9 @@
- #include <linux/nvram.h>
- #include <linux/adb.h>
- #include <linux/cuda.h>
-+#include <linux/of_address.h>
- #ifdef CONFIG_MAC
- #include <asm/macintosh.h>
--#else
--#include <asm/prom.h>
- #endif
- 
- #include "macmodes.h"
+ err:
+-	clk_disable(sossi.fck);
++	clk_disable_unprepare(sossi.fck);
+ 	clk_put(sossi.fck);
+ 	return r;
+ }
+@@ -657,6 +657,7 @@ static int sossi_init(struct omapfb_device *fbdev)
+ static void sossi_cleanup(void)
+ {
+ 	omap_lcdc_free_dma_callback();
++	clk_unprepare(sossi.fck);
+ 	clk_put(sossi.fck);
+ 	iounmap(sossi.base);
+ }
 -- 
 2.35.1
 

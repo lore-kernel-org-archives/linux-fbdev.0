@@ -2,170 +2,93 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61B66C433F5
-	for <linux-fbdev@archiver.kernel.org>; Sat,  2 Apr 2022 11:55:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07DE5C433F5
+	for <linux-fbdev@archiver.kernel.org>; Sat,  2 Apr 2022 17:57:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236713AbiDBL4u (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 2 Apr 2022 07:56:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43960 "EHLO
+        id S241048AbiDBR6z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 2 Apr 2022 13:58:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53162 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229534AbiDBL4t (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 2 Apr 2022 07:56:49 -0400
-Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FD5210BBC9;
-        Sat,  2 Apr 2022 04:54:57 -0700 (PDT)
-Received: by mail-lf1-x12e.google.com with SMTP id h7so9287678lfl.2;
-        Sat, 02 Apr 2022 04:54:57 -0700 (PDT)
+        with ESMTP id S231678AbiDBR6y (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 2 Apr 2022 13:58:54 -0400
+Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1118F13F8DF;
+        Sat,  2 Apr 2022 10:57:02 -0700 (PDT)
+Received: by mail-ej1-x636.google.com with SMTP id o10so12085423ejd.1;
+        Sat, 02 Apr 2022 10:57:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=O7nG8AJS/R9S2ZJAIN62cFFHL53dA2MgyCxhgMT/sn0=;
-        b=T3J+o4FO/uAU8qIqjeZbmKanNd/OutwBIyxA3oYPX/iFeQk5dFNYTdCPRjhF1Mz+hw
-         bVDeLx6EUfipSXgpLnH+v77PPj0OOIzO6pk1EUfG4E0eok9EF0IJtTfs8C04iGZzh0zG
-         x4gjByHDoiNzcqWuk68Y8E4qet8Lh6QkRRpVvWPbyFATUHLwSXYNHBPa0E69Pfx1SMbM
-         IEhvuTxpdWH53mfWOiL25ReVrTN4ZX305vwlBvwUknlwx+h5HrE0oPu7XvRO3BriZqqp
-         8Jz0w0RmJGjEct2OxMKkmyKX1gQjy0vu7Ye5oHcw/zXSU1elj94BLcy2F1pBG11OQ11d
-         chzQ==
+        bh=BVxMHUicLbUH3Hvb1PPfVYvYyoskkvyv49vbgbrFCNo=;
+        b=l4c6G01X/mM7+1GnZ7oTuCLmtLgPbKG3mx7SbFPIku+ccwGTElZ0p+W8JpJcckG2wh
+         /lF6CkMeckAATTx3qq8eCxC0mdDSJ0VT019mKzu8JOetLhqQuR09W5RVyrR1UzGEDt7H
+         knZw+WaqR0Sidvgu5QJrnqYYMGo1Y1pb08ICafpgzDjkd/Q6yIWrf7dgseR/JD945Em3
+         9BH+Nb3SU6TlJBW8YtlSz/fuKkv3a9zHjIUAn2x7LKtTPE+BqSFW9l9bishHF4Eei2fe
+         fJhs+n3r7vBmF7oQn92ysEu3AeNjnZ7OlVofn2YH8295+lgWegZ90Ap6GMNXlUY+LxGh
+         c2sw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=O7nG8AJS/R9S2ZJAIN62cFFHL53dA2MgyCxhgMT/sn0=;
-        b=KGSnXTaBvIsF4L12B6ms7tNTI6ilX1wiBFh7j1+85YNgaXKWl+lpwpEx4X46xoPY0S
-         hh5x09f9qMjMWyFtDEUUPZkYRwm8rTdhgBNOt9sxajxo8I4jnrcqhbembY4L7nDxubrD
-         kIHt8WgvOmSmDWw8PQwACXS9U2VDg8AJ+0rFyehvfjlnZiplGB43IZFzasZXsh6yB2YJ
-         /XObhpoBbWM6IGcRPmlrfVUAVr8Px2SjHvwo9aqTo5sWilaoAAedviJBKf9/cySQBbEh
-         f36rtGpNYbI+pnCVKA9FIN/9oODcyzZfHmAMymI66kSkiebp2sWl1uzZh5StFyTHEmZC
-         81mQ==
-X-Gm-Message-State: AOAM532gb8tK5SCf96+OrN0RQIK9uHSUMkvQHOZDs7wGZxKbIKHhMqIp
-        1Zg/Cq7dVQxsNWNxxmvVPGubukPnmYKM5hsa
-X-Google-Smtp-Source: ABdhPJza7N3uBhLaWceoecrnl35xtMsLyegy8nmRMBZtbKetasJkvfws4mM6r4sHWGm/uLh6CNAfsQ==
-X-Received: by 2002:a05:6512:130c:b0:44a:2dd3:91d0 with SMTP id x12-20020a056512130c00b0044a2dd391d0mr17253016lfu.234.1648900495457;
-        Sat, 02 Apr 2022 04:54:55 -0700 (PDT)
-Received: from dell.lan (93-181-165-181.internetia.net.pl. [93.181.165.181])
-        by smtp.gmail.com with ESMTPSA id m2-20020a05651202e200b0044a0d0f99b9sm504846lfq.278.2022.04.02.04.54.54
+        bh=BVxMHUicLbUH3Hvb1PPfVYvYyoskkvyv49vbgbrFCNo=;
+        b=ZuGYeZYiUHLKCbhIkK2JhN9wQNBD40VMaoOofC50oIHn7kYCkc881k+M7Py3RDJFJ4
+         Kh6tBCrOwcq9zdX9Guk2zcTDwbdiPIl1nRx9zkYQU1VGdo+3L9eTE/KhzfcqPSVML78Z
+         8ot3ZdXNP0TSjnAeBgj2YPlY0U6u66AmgW2Le8cpzkF/dShMMQ+CLSQG+5j4s6+fE+A3
+         PYLIzXewKj2eGwhP4/MNobn3DkQsLOe8FHeEDXHVbzvPiAIIYIYJHnKfdx//a+/AIPHN
+         1eaobQKP++AzLBzK+S1ZGwjBgBBOLKwu8m4Z4npHE7pAhdPRP25lBj8UX/+OpHfQLMDW
+         lYCw==
+X-Gm-Message-State: AOAM530lOyga1/NAwu8ATbOnwbtK1hkNVGfdOJ6Z5Dxmae/L+J4ceUBT
+        V8TYlidUsJOS7SYgxmB7rOc=
+X-Google-Smtp-Source: ABdhPJxRkR3w6MzpTeXo9b3BtpKvfUhBJrw6SYUseLvbqksVCDq8E3opTpW2w3JsDEAmAT8cwPaL5Q==
+X-Received: by 2002:a17:907:62a9:b0:6da:7953:4df0 with SMTP id nd41-20020a17090762a900b006da79534df0mr4472210ejc.316.1648922220505;
+        Sat, 02 Apr 2022 10:57:00 -0700 (PDT)
+Received: from localhost.localdomain (host-95-249-145-232.retail.telecomitalia.it. [95.249.145.232])
+        by smtp.gmail.com with ESMTPSA id hs12-20020a1709073e8c00b006dfd7dee980sm2330857ejc.30.2022.04.02.10.56.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 02 Apr 2022 04:54:54 -0700 (PDT)
-From:   Janusz Krzysztofik <jmkrzyszt@gmail.com>
-To:     Helge Deller <deller@gmx.de>
-Cc:     linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org,
-        Janusz Krzysztofik <jmkrzyszt@gmail.com>
-Subject: [PATCH] video: fbdev: omap: Make it CCF clk API compatible
-Date:   Sat,  2 Apr 2022 13:54:44 +0200
-Message-Id: <20220402115444.130999-1-jmkrzyszt@gmail.com>
-X-Mailer: git-send-email 2.35.1
+        Sat, 02 Apr 2022 10:56:59 -0700 (PDT)
+From:   "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
+To:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+        Teddy Wang <teddy.wang@siliconmotion.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-kernel@vger.kernel.org, outreachy@lists.linux.dev
+Cc:     "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
+Subject: [PATCH] staging: sm750fb: Call iounmap() to free mapped bus memory
+Date:   Sat,  2 Apr 2022 19:56:55 +0200
+Message-Id: <20220402175655.31512-1-fmdefrancesco@gmail.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-OMAP1 LCDC drivers now omit clk_prepare/unprepare() steps, not supported
-by OMAP1 custom implementation of clock API.  However, non-CCF stubs of
-those functions exist for use on such platforms until converted to CCF.
+If ioremap_wc() fails, the code jumps to the "exit" label and forgets to
+free the bus memory mapped into "sm750_dev->pvReg". Mapped bus memory must
+always be freed by calling iounmap().
 
-Update the drivers to be compatible with CCF implementation of clock API.
+Call iounmap(sm750_dev->pvReg) when the above-mentioned failures happen.
 
-Signed-off-by: Janusz Krzysztofik <jmkrzyszt@gmail.com>
+The site of the missing iounmap() has been detected by Smatch.
+
+Signed-off-by: Fabio M. De Francesco <fmdefrancesco@gmail.com>
 ---
- drivers/video/fbdev/omap/hwa742.c | 6 +++---
- drivers/video/fbdev/omap/lcdc.c   | 6 +++---
- drivers/video/fbdev/omap/sossi.c  | 5 +++--
- 3 files changed, 9 insertions(+), 8 deletions(-)
+ drivers/staging/sm750fb/sm750_hw.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/omap/hwa742.c b/drivers/video/fbdev/omap/hwa742.c
-index b191bef22d98..9d9fe5c3a7a1 100644
---- a/drivers/video/fbdev/omap/hwa742.c
-+++ b/drivers/video/fbdev/omap/hwa742.c
-@@ -964,7 +964,7 @@ static int hwa742_init(struct omapfb_device *fbdev, int ext_mode,
- 	if ((r = calc_extif_timings(ext_clk, &extif_mem_div)) < 0)
- 		goto err3;
- 	hwa742.extif->set_timings(&hwa742.reg_timings);
--	clk_enable(hwa742.sys_ck);
-+	clk_prepare_enable(hwa742.sys_ck);
- 
- 	calc_hwa742_clk_rates(ext_clk, &sys_clk, &pix_clk);
- 	if ((r = calc_extif_timings(sys_clk, &extif_mem_div)) < 0)
-@@ -1023,7 +1023,7 @@ static int hwa742_init(struct omapfb_device *fbdev, int ext_mode,
- 
- 	return 0;
- err4:
--	clk_disable(hwa742.sys_ck);
-+	clk_disable_unprepare(hwa742.sys_ck);
- err3:
- 	hwa742.extif->cleanup();
- err2:
-@@ -1037,7 +1037,7 @@ static void hwa742_cleanup(void)
- 	hwa742_set_update_mode(OMAPFB_UPDATE_DISABLED);
- 	hwa742.extif->cleanup();
- 	hwa742.int_ctrl->cleanup();
--	clk_disable(hwa742.sys_ck);
-+	clk_disable_unprepare(hwa742.sys_ck);
- }
- 
- struct lcd_ctrl hwa742_ctrl = {
-diff --git a/drivers/video/fbdev/omap/lcdc.c b/drivers/video/fbdev/omap/lcdc.c
-index 7317c9aad677..97d20dc0d1d0 100644
---- a/drivers/video/fbdev/omap/lcdc.c
-+++ b/drivers/video/fbdev/omap/lcdc.c
-@@ -711,7 +711,7 @@ static int omap_lcdc_init(struct omapfb_device *fbdev, int ext_mode,
- 		dev_err(fbdev->dev, "failed to adjust LCD rate\n");
- 		goto fail1;
- 	}
--	clk_enable(lcdc.lcd_ck);
-+	clk_prepare_enable(lcdc.lcd_ck);
- 
- 	r = request_irq(OMAP_LCDC_IRQ, lcdc_irq_handler, 0, MODULE_NAME, fbdev);
- 	if (r) {
-@@ -746,7 +746,7 @@ static int omap_lcdc_init(struct omapfb_device *fbdev, int ext_mode,
- fail3:
- 	free_irq(OMAP_LCDC_IRQ, lcdc.fbdev);
- fail2:
--	clk_disable(lcdc.lcd_ck);
-+	clk_disable_unprepare(lcdc.lcd_ck);
- fail1:
- 	clk_put(lcdc.lcd_ck);
- fail0:
-@@ -760,7 +760,7 @@ static void omap_lcdc_cleanup(void)
- 	free_fbmem();
- 	omap_free_lcd_dma();
- 	free_irq(OMAP_LCDC_IRQ, lcdc.fbdev);
--	clk_disable(lcdc.lcd_ck);
-+	clk_disable_unprepare(lcdc.lcd_ck);
- 	clk_put(lcdc.lcd_ck);
- }
- 
-diff --git a/drivers/video/fbdev/omap/sossi.c b/drivers/video/fbdev/omap/sossi.c
-index 80ac67f27f0d..b9cb8b386627 100644
---- a/drivers/video/fbdev/omap/sossi.c
-+++ b/drivers/video/fbdev/omap/sossi.c
-@@ -598,7 +598,7 @@ static int sossi_init(struct omapfb_device *fbdev)
- 	l &= ~CONF_SOSSI_RESET_R;
- 	omap_writel(l, MOD_CONF_CTRL_1);
- 
--	clk_enable(sossi.fck);
-+	clk_prepare_enable(sossi.fck);
- 	l = omap_readl(ARM_IDLECT2);
- 	l &= ~(1 << 8);			/* DMACK_REQ */
- 	omap_writel(l, ARM_IDLECT2);
-@@ -649,7 +649,7 @@ static int sossi_init(struct omapfb_device *fbdev)
- 	return 0;
- 
- err:
--	clk_disable(sossi.fck);
-+	clk_disable_unprepare(sossi.fck);
- 	clk_put(sossi.fck);
- 	return r;
- }
-@@ -657,6 +657,7 @@ static int sossi_init(struct omapfb_device *fbdev)
- static void sossi_cleanup(void)
- {
- 	omap_lcdc_free_dma_callback();
-+	clk_unprepare(sossi.fck);
- 	clk_put(sossi.fck);
- 	iounmap(sossi.base);
- }
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index a7c6eb07b62e..55cb00e8b0d1 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -81,6 +81,7 @@ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+ 	sm750_dev->pvMem =
+ 		ioremap_wc(sm750_dev->vidmem_start, sm750_dev->vidmem_size);
+ 	if (!sm750_dev->pvMem) {
++		iounmap(sm750_dev->pvReg);
+ 		pr_err("Map video memory failed\n");
+ 		ret = -EFAULT;
+ 		goto exit;
 -- 
-2.35.1
+2.34.1
 

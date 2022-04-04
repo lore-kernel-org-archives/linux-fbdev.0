@@ -2,58 +2,58 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A2FBC4332F
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Apr 2022 08:48:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B7F2C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Apr 2022 08:48:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242749AbiDDIuL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        id S242503AbiDDIuL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
         Mon, 4 Apr 2022 04:50:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49574 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49866 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242942AbiDDIty (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Apr 2022 04:49:54 -0400
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7EA263BBC1;
-        Mon,  4 Apr 2022 01:47:58 -0700 (PDT)
-Received: by mail-pf1-x42a.google.com with SMTP id w7so8298022pfu.11;
-        Mon, 04 Apr 2022 01:47:58 -0700 (PDT)
+        with ESMTP id S242301AbiDDItv (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Apr 2022 04:49:51 -0400
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 109873B540;
+        Mon,  4 Apr 2022 01:47:56 -0700 (PDT)
+Received: by mail-pj1-x102e.google.com with SMTP id gt4so2239587pjb.4;
+        Mon, 04 Apr 2022 01:47:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=SWpUGp4NjV3mF23nQixJRErG81vz0xeRsfDHiseYmFE=;
-        b=b0BitWdvZHTGzL4flNceTWdnxQtwSwZY5rAnnRUa1Ml+nFqLcBJ2kKJx/fs6xfPFvl
-         CnhHwqlgN/roC4WdLsqaGZsrjw6Ld8wHYNg7TEz0LuvMMuJCYT1osfRnlImjbXzJc5Gj
-         9vDQNbKfeIWAgtHngp01v6YPYfxabAvWqaqYHRs2bqWl2kkaRyMwlJu+2ZrhHUj5PLrs
-         yjl5sBxSLIL93Y2FN9GX0kX6956qgWteXsvblXuZLS6Fbf4RptxQoU6nDZ3xBJFrZK1w
-         V/7LXCAYAJvqjwVBn/J4+KZoqUzskh2ygSUXO4hEz6OnN7FCJ/rzL3/obwNAklbZ0TYN
-         kF+w==
+        bh=99A9a3hHeLpuMdZogws2agT3Pd/9V9gAGhJHXsYptTw=;
+        b=FEWaJFqHiORNV4n3ITN4hvIxL/s/r/ujDrwxJkvlaNB8kwZiS7A/KFs0C6nSH9Fjj6
+         hNV2GTIYaKbOjwploqMSVC3IkiQ05w14dN/RGAB8X+ZUWmFvKEk5sV3bc6Bx758tPqHO
+         U2reaV4WrwQFVFhhL69S6ey2NDHe74btKudCdicMuTYguS0WMfO/xMb5nQ9CIifNSOkA
+         TMPenuoIkkxwusMIeBOg0m7n7IG3XCVpVwQtNJBYiCUz+ujG6hh/6zX8ne+OduhAujW1
+         MmPUHKNB2dDspHO3g9QYl+owLNVEgfl8hubi9rQ1xusjDFxsx1kIdlwZfP//ZNtzqbKA
+         M9oQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=SWpUGp4NjV3mF23nQixJRErG81vz0xeRsfDHiseYmFE=;
-        b=US3FOB8Gtnk1/PBVb5AQnDtER/KrYNkkV5H/VOqKsxiunR5xi+VVVOwkqObSPGGhFY
-         KmUHtzrfbvJvYouCAGXTuwNN9759HCQBMDWKNFAR0BgeVxwXZULP/OpsMlGOp2LN16L0
-         1wMtjEg5sW6Eok/8C3nTHt31Kb/kzzLipr2d2mX2V1yzA+ZwWQbK9nkzJJfjnDlDV577
-         UYdkwpPkWA3jnHH53Uz5rHABiYuB4cDaX3/yRY9GAP5/pssZVYCxjMYtSH0+2gI30ZGP
-         Y+uQabOT3GCah8/BFh/ct9Yud4QUw8PfT6D/1pPtDjnHBTlQ60WlmoIwk/1pLwM9za8f
-         Lt6Q==
-X-Gm-Message-State: AOAM531c2QFmkLERUiz1dsUhZ3Y8a3t9DIb+ZdP1XoA/KdMzHP7dBd81
-        T9T6PKlWmz2oFSCbObpAxYlUu4XOxCWdYsBAuw==
-X-Google-Smtp-Source: ABdhPJxz/8JcRIXtURoXNzWsyUQjQh/GXQxIkNp1/xI8KkbxCy3Pghw6PtQScHAtt2QEukPM+DPMqg==
-X-Received: by 2002:a63:4f08:0:b0:34c:6090:603e with SMTP id d8-20020a634f08000000b0034c6090603emr24435870pgb.15.1649062077959;
-        Mon, 04 Apr 2022 01:47:57 -0700 (PDT)
+        bh=99A9a3hHeLpuMdZogws2agT3Pd/9V9gAGhJHXsYptTw=;
+        b=e61PPw0t9fu3LPv+vKMQzUD/zjz0UXoB4wE4Blzk9nHQ66C5g7SLrv8whpyYuG12QO
+         1fv0SJJRjRL8SKmkyrtbZFUXkMM69L28tvTizptGieWOPCP0ZiYtPcnzjutZ2itbdYWt
+         xiv670I6BKbRAjHhJrNJ23VAOycJSB3pNoNWXEAoUSJmEAoLptYlqeSFfW9upLj0HxLt
+         TWtOEbLfpITkErbYHooLFrSAWyPYMjq6OjmpwasIZeCUHxZul5w7i190ZEUr/hr351j3
+         MLsdRpo3BzG47FYZdRcLJlPVQELVQEY7RcM+hIQd+5ABCtzd9L5XYQh5EfEseLTyxt2Q
+         M6tA==
+X-Gm-Message-State: AOAM532pGMOuqokwsDgdpPgpEOxUqOC+2/A9t6H0Guvp8Jzk7nQ+BI1L
+        uV+C2VEmppdQrSe1sMECQQ==
+X-Google-Smtp-Source: ABdhPJzHEpK7iQlUi2JXa05S2CyzF7s2BEpWcpFng5mVwfJfydFQGtfX42aZdvVbPwni/HDOC/K2tw==
+X-Received: by 2002:a17:90a:7288:b0:1ca:6e77:84a0 with SMTP id e8-20020a17090a728800b001ca6e7784a0mr9647359pjg.60.1649062075558;
+        Mon, 04 Apr 2022 01:47:55 -0700 (PDT)
 Received: from localhost.localdomain ([144.202.91.207])
-        by smtp.gmail.com with ESMTPSA id u6-20020a17090a3fc600b001ca88b0bdfesm3991960pjm.13.2022.04.04.01.47.56
+        by smtp.gmail.com with ESMTPSA id u6-20020a17090a3fc600b001ca88b0bdfesm3991960pjm.13.2022.04.04.01.47.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Apr 2022 01:47:57 -0700 (PDT)
+        Mon, 04 Apr 2022 01:47:55 -0700 (PDT)
 From:   Zheyu Ma <zheyuma97@gmail.com>
 To:     deller@gmx.de
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org, Zheyu Ma <zheyuma97@gmail.com>
-Subject: [PATCH 5/7] video: fbdev: tridentfb: Error out if 'pixclock' equals zero
-Date:   Mon,  4 Apr 2022 16:47:21 +0800
-Message-Id: <20220404084723.79089-6-zheyuma97@gmail.com>
+Subject: [PATCH 4/7] video: fbdev: vt8623fb: Error out if 'pixclock' equals zero
+Date:   Mon,  4 Apr 2022 16:47:20 +0800
+Message-Id: <20220404084723.79089-5-zheyuma97@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220404084723.79089-1-zheyuma97@gmail.com>
 References: <20220404084723.79089-1-zheyuma97@gmail.com>
@@ -67,38 +67,39 @@ The userspace program could pass any values to the driver through
 ioctl() interface. If the driver doesn't check the value of 'pixclock',
 it may cause divide error.
 
-Fix this by checking whether 'pixclock' is zero.
+Fix this by checking whether 'pixclock' is zero in the function
+vt8623fb_check_var().
 
 The following log reveals it:
 
-[   38.260715] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-[   38.260733] RIP: 0010:tridentfb_check_var+0x853/0xe60
-[   38.260791] Call Trace:
-[   38.260793]  <TASK>
-[   38.260796]  fb_set_var+0x367/0xeb0
-[   38.260879]  do_fb_ioctl+0x234/0x670
-[   38.260922]  fb_ioctl+0xdd/0x130
-[   38.260930]  do_syscall_64+0x3b/0x90
+[   47.778727] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
+[   47.778803] RIP: 0010:vt8623fb_set_par+0xecd/0x2210
+[   47.778870] Call Trace:
+[   47.778872]  <TASK>
+[   47.778909]  fb_set_var+0x604/0xeb0
+[   47.778995]  do_fb_ioctl+0x234/0x670
+[   47.779041]  fb_ioctl+0xdd/0x130
+[   47.779048]  do_syscall_64+0x3b/0x90
 
 Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
 ---
- drivers/video/fbdev/tridentfb.c | 3 +++
+ drivers/video/fbdev/vt8623fb.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/tridentfb.c b/drivers/video/fbdev/tridentfb.c
-index 4d20cb557ff0..319131bd72cf 100644
---- a/drivers/video/fbdev/tridentfb.c
-+++ b/drivers/video/fbdev/tridentfb.c
-@@ -996,6 +996,9 @@ static int tridentfb_check_var(struct fb_var_screeninfo *var,
- 	int ramdac = 230000; /* 230MHz for most 3D chips */
- 	debug("enter\n");
+diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
+index 7a959e5ba90b..a92a8c670cf0 100644
+--- a/drivers/video/fbdev/vt8623fb.c
++++ b/drivers/video/fbdev/vt8623fb.c
+@@ -321,6 +321,9 @@ static int vt8623fb_check_var(struct fb_var_screeninfo *var, struct fb_info *inf
+ {
+ 	int rv, mem, step;
  
 +	if (!var->pixclock)
 +		return -EINVAL;
 +
- 	/* check color depth */
- 	if (bpp == 24)
- 		bpp = var->bits_per_pixel = 32;
+ 	/* Find appropriate format */
+ 	rv = svga_match_format (vt8623fb_formats, var, NULL);
+ 	if (rv < 0)
 -- 
 2.25.1
 

@@ -2,103 +2,115 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD76DC433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Apr 2022 08:48:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C5F9C433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Apr 2022 11:46:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244037AbiDDIuP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 4 Apr 2022 04:50:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50180 "EHLO
+        id S1356290AbiDDLs0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 4 Apr 2022 07:48:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48638 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S244363AbiDDIt7 (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Apr 2022 04:49:59 -0400
-Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B24D73BBDB;
-        Mon,  4 Apr 2022 01:48:03 -0700 (PDT)
-Received: by mail-pg1-x52e.google.com with SMTP id b130so7750774pga.13;
-        Mon, 04 Apr 2022 01:48:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=4A8goeGhaPhZ1beeVbOmqSl7OQXT8O1NS+m0bvoRpjo=;
-        b=Z5fOUGpEhMxgb4z/mtIOFAioIea+f/nCbEWUv8Yc6LLoDU5lLJDNnCsq5hFzojhak0
-         Cpd/FUmkGKRxZm8OAqAhKgAQvxZc7WWQUMQqWe16bro7kvVcDjmeE8HdAc3xNj2Uc9Z3
-         3MKyhPIweU/fiD2Iu5nHmMxT1satV8rgRS0NvN/KSMPMTw9Xtn8fydugpQ3kxsTigncU
-         +6KFV45Hw5cXz1Tt6bMiBFJErOKt8U5tsxq9xs/X8aNgAZXjcSL4WDEJIMfU7HrruZJN
-         xGklKNJLiDWylzwjOKJpGorgKod+gO4IL8JbhP/zGQ/gzFGsJEd4j516K772rau002Dh
-         LB7Q==
+        with ESMTP id S1376455AbiDDLsZ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Apr 2022 07:48:25 -0400
+Received: from mail-qt1-f175.google.com (mail-qt1-f175.google.com [209.85.160.175])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 029273D1EF;
+        Mon,  4 Apr 2022 04:46:30 -0700 (PDT)
+Received: by mail-qt1-f175.google.com with SMTP id j21so7466948qta.0;
+        Mon, 04 Apr 2022 04:46:29 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=4A8goeGhaPhZ1beeVbOmqSl7OQXT8O1NS+m0bvoRpjo=;
-        b=AwQORM+bQltJ2HNAb+1dLd4Rk7OSmE10Ks0rgtP4nC4JpRPlVx2/o+hDkqswQ8/kWc
-         bosv3r+xy0W6YBDwTRy9LscRQOIUpaA5xPqgJ0zgD/FsY2bQz2oehaPNYHBUUrQlN5qx
-         zcn4rHOqtSZBSeuM4ynBYXuZ1ZF880pfqu3Ei3Uch7VsHZNj+22QZnGk4XYhulUbfewd
-         LSu1WWy3uu/8axOYYh0FJedwU46Yu+TojIuNUiUf4T93da6s500gct/h+ojV9r9hyx3L
-         6rIjdi0GOZzRQ7GtM+e7Nbb17Sesup5hpdY+kkbuUl3WaDfhBAuVUJfnXb1roeA9i5iB
-         YUtQ==
-X-Gm-Message-State: AOAM531WYqv4Nj3kZWpj5IeiHIS4GVGJBBt7htJ66VU0yirGkRkq1W1q
-        KK2G/YoGWi4x93F7eZxlerliHvV8ktDgxCUZvw==
-X-Google-Smtp-Source: ABdhPJy6JgPINls43h0o9/63+vpTSZFuQEI/lBMSWnAyDFK5g+Sq5Oe+7B9z4yzg4UkAlq/ZDjIVVg==
-X-Received: by 2002:a05:6a00:228b:b0:4fa:e12b:2c7b with SMTP id f11-20020a056a00228b00b004fae12b2c7bmr55776235pfe.79.1649062083039;
-        Mon, 04 Apr 2022 01:48:03 -0700 (PDT)
-Received: from localhost.localdomain ([144.202.91.207])
-        by smtp.gmail.com with ESMTPSA id u6-20020a17090a3fc600b001ca88b0bdfesm3991960pjm.13.2022.04.04.01.48.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Apr 2022 01:48:02 -0700 (PDT)
-From:   Zheyu Ma <zheyuma97@gmail.com>
-To:     deller@gmx.de
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, Zheyu Ma <zheyuma97@gmail.com>
-Subject: [PATCH 7/7] video: fbdev: s3fb: Error out if 'pixclock' equals zero
-Date:   Mon,  4 Apr 2022 16:47:23 +0800
-Message-Id: <20220404084723.79089-8-zheyuma97@gmail.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220404084723.79089-1-zheyuma97@gmail.com>
-References: <20220404084723.79089-1-zheyuma97@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=0vrtxx97wpbMiIv6dqlYr09ni3VUiuon0GQZYjngD7U=;
+        b=Y4yaAmm3bSfP7/yoAfy7Ex0tI04wuGvwDBxTEIj5sr1nMU/oAcYBs+GLAnT6SfMCmf
+         PGaQLyYVn+vV2xoIRDc6S8digk6hJLpfjA3+L8XfjDc/evZkXHL9SKFVoANvQTjJ6wji
+         L+ZUe2gyKR/VRhVDSuQdt9duwHNioSwquWB+JF/6fhmJHV/J3yDvH15rsDnzcVPMdUdK
+         41oL/l2fFN1tquVqvDJ7u1c7Qexn/ZXM+aU3F9Fw+HjOqiRl3y5PJXY27ZGmrKERrJP2
+         WwI9fU0+n/9b6/Z3Qhs1cbSS25aK9A5I0DZmeLWlhyq1PNAneb42+77alcZsPKMQj2ok
+         6Mag==
+X-Gm-Message-State: AOAM533ofFBGwiPsJMXN/oETRkDjF9BVzc7l6qCBtbYOrSk/EElHCveG
+        vbNqMrRk2wRfxAyazxwgWarPgAhbs579KQ==
+X-Google-Smtp-Source: ABdhPJz2ewvGsYibxNfE7bXjCReetrEhDdrHZe8K30OJ33aDtA4KVrpgTnhxm/BQbAUOm818Erjc0Q==
+X-Received: by 2002:a05:622a:1051:b0:2e1:eb06:ecc2 with SMTP id f17-20020a05622a105100b002e1eb06ecc2mr16957921qte.171.1649072788539;
+        Mon, 04 Apr 2022 04:46:28 -0700 (PDT)
+Received: from mail-yw1-f173.google.com (mail-yw1-f173.google.com. [209.85.128.173])
+        by smtp.gmail.com with ESMTPSA id m4-20020ac85b04000000b002e1dcaed228sm7840681qtw.7.2022.04.04.04.46.27
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 04 Apr 2022 04:46:28 -0700 (PDT)
+Received: by mail-yw1-f173.google.com with SMTP id 00721157ae682-2eb43ad7909so44370057b3.2;
+        Mon, 04 Apr 2022 04:46:27 -0700 (PDT)
+X-Received: by 2002:a81:5c2:0:b0:2e5:e4eb:c3e7 with SMTP id
+ 185-20020a8105c2000000b002e5e4ebc3e7mr22191370ywf.62.1649072787360; Mon, 04
+ Apr 2022 04:46:27 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <CAMhUBjmFhqTLBscHHVZ1VTSqrJBT1VEevA+KkjY+y9_ZtdRkMg@mail.gmail.com>
+ <631f03bd-0fdf-9cc8-bf37-89235fb84162@gmx.de>
+In-Reply-To: <631f03bd-0fdf-9cc8-bf37-89235fb84162@gmx.de>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Mon, 4 Apr 2022 13:46:16 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUiEo8q9x0C0x5zOM=ax1=S06=s0JjcJvZYD4aMGLmEaQ@mail.gmail.com>
+Message-ID: <CAMuHMdUiEo8q9x0C0x5zOM=ax1=S06=s0JjcJvZYD4aMGLmEaQ@mail.gmail.com>
+Subject: =?UTF-8?B?UmU6IFtCVUddIGZiZGV2OiBpNzQwZmI6IERpdmlkZSBlcnJvciB3aGVuIOKAmHZhci0+cA==?=
+        =?UTF-8?B?aXhjbG9ja+KAmSBpcyB6ZXJv?=
+To:     Helge Deller <deller@gmx.de>
+Cc:     Zheyu Ma <zheyuma97@gmail.com>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The userspace program could pass any values to the driver through
-ioctl() interface. If the driver doesn't check the value of 'pixclock',
-it may cause divide error.
+Hi Helge,
 
-Fix this by checking whether 'pixclock' is zero in s3fb_check_var().
+On Sun, Apr 3, 2022 at 5:41 PM Helge Deller <deller@gmx.de> wrote:
+> On 4/3/22 13:26, Zheyu Ma wrote:
+> > I found a bug in the function i740fb_set_par().
+>
+> Nice catch!
+>
+> > When the user calls the ioctl system call without setting the value to
+> > 'var->pixclock', the driver will throw a divide error.
+> >
+> > This bug occurs because the driver uses the value of 'var->pixclock'
+> > without checking it, as the following code snippet show:
+> >
+> > if ((1000000 / var->pixclock) > DACSPEED8) {
+> >      dev_err(info->device, "requested pixclock %i MHz out of range
+> > (max. %i MHz at 8bpp)\n",
+> >          1000000 / var->pixclock, DACSPEED8);
+> >     return -EINVAL;x
+> > }
+> >
+> > We can fix this by checking the value of 'var->pixclock' in the
+> > function i740fb_check_var() similar to commit
+> > b36b242d4b8ea178f7fd038965e3cac7f30c3f09, or we should set the lowest
+> > supported value when this field is zero.
+> > I have no idea about which solution is better.
+>
+> Me neither.
+> I think a solution like commit b36b242d4b8ea178f7fd038965e3cac7f30c3f09
+> is sufficient.
+>
+> Note that i740fb_set_par() is called in i740fb_resume() as well.
+> Since this doesn't comes form userspace I think adding a check for
+> the return value there isn't necessary.
+>
+> Would you mind sending a patch like b36b242d4b8ea178f7fd038965e3cac7f30c3f09 ?
 
-The following log reveals it:
+When passed an invalid value, .check_var() is supposed to
+round up the invalid to a valid value, if possible.
 
-[  511.141561] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-[  511.141607] RIP: 0010:s3fb_check_var+0x3f3/0x530
-[  511.141693] Call Trace:
-[  511.141695]  <TASK>
-[  511.141716]  fb_set_var+0x367/0xeb0
-[  511.141815]  do_fb_ioctl+0x234/0x670
-[  511.141876]  fb_ioctl+0xdd/0x130
-[  511.141888]  do_syscall_64+0x3b/0x90
+Commit b36b242d4b8ea178 ("video: fbdev: asiliantfb: Error out if
+'pixclock' equals zero") does not do that.
 
-Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
----
- drivers/video/fbdev/s3fb.c | 3 +++
- 1 file changed, 3 insertions(+)
+Gr{oetje,eeting}s,
 
-diff --git a/drivers/video/fbdev/s3fb.c b/drivers/video/fbdev/s3fb.c
-index 5c74253e7b2c..b93c8eb02336 100644
---- a/drivers/video/fbdev/s3fb.c
-+++ b/drivers/video/fbdev/s3fb.c
-@@ -549,6 +549,9 @@ static int s3fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 	int rv, mem, step;
- 	u16 m, n, r;
- 
-+	if (!var->pixclock)
-+		return -EINVAL;
-+
- 	/* Find appropriate format */
- 	rv = svga_match_format (s3fb_formats, var, NULL);
- 
--- 
-2.25.1
+                        Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

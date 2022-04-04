@@ -2,58 +2,58 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62E19C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Apr 2022 08:48:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17BEAC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Apr 2022 08:48:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240381AbiDDIuF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 4 Apr 2022 04:50:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49366 "EHLO
+        id S240308AbiDDIuJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 4 Apr 2022 04:50:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50030 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240272AbiDDItu (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Apr 2022 04:49:50 -0400
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A67B63BA6C;
-        Mon,  4 Apr 2022 01:47:53 -0700 (PDT)
-Received: by mail-pj1-x1032.google.com with SMTP id n6-20020a17090a670600b001caa71a9c4aso1224672pjj.1;
-        Mon, 04 Apr 2022 01:47:53 -0700 (PDT)
+        with ESMTP id S243582AbiDDIt4 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Apr 2022 04:49:56 -0400
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0F01C30F64;
+        Mon,  4 Apr 2022 01:48:00 -0700 (PDT)
+Received: by mail-pl1-x634.google.com with SMTP id o10so1663403ple.7;
+        Mon, 04 Apr 2022 01:48:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=7Dp26xvo/OWBw1ANhAEXpc1rNkAlB/vfXe93IpIqI6Y=;
-        b=N7B4YUdHA5X14Z98xRic3ph/TDam03J6r+SaLio3r0NOrD/uN9H48sTbuxImkJLW6I
-         E8YSiitNg3JBfvyiLYk0iX5RhtHSWP8CCCzGIxGBUIjIVEDMkhTXu66s5tVJt4nXf77d
-         fnW3+qY01p2fv5GqiFsqluOe0hfxdqab2PqDznLJ/IsyhuwRHxm2nx9FFq0aYTHvH1Iy
-         r357HRXMjj2B2PkwGIoMFVRn4nGBsZ2qS/VczSqSQoVcO38+AyBhGhlApWOns/NUXmII
-         /imIbWKUoE62Q1s1yjN+kpBOaZzHqCvzg2F4JLGaO2i5roWGM8IuN1RUbmNuehZfZDGQ
-         a88w==
+        bh=AsQsOGOBswiqIkfE+MmZmSYrrU64sgPI4cLq7rNPZkk=;
+        b=b4c7KmBW0dluWZGhagtxX35zeboI86n00qjpygwNWb4mr9DaRZ6+hVK0lwlf8CRknM
+         knRly/iSX7myVM4yjqVn9+5Uhrp+Vd9NDBC9jeUSfKfGic+DoUDOwQVqCgZKUxY4t30s
+         S6co9ns78h8EOSuPT5AW8xTNGw0kx1dbO/fN703kgdlfd9EpmDl6na6IHiv77Z6ogI8H
+         BfBso/WnyYdmflfwlALETgTAH7sMrjnWUAcl9+bTz9wrqXAWCSYTIFxvt91ZxjwL7m0q
+         04g+YjOhsvC6gzJ7L91krIz8eBRXNArQZXmByvOfA/8CUOj9Ct224O1V/oXSr5Xj6gJ6
+         EcdQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=7Dp26xvo/OWBw1ANhAEXpc1rNkAlB/vfXe93IpIqI6Y=;
-        b=pKhP/9loDEbBH0p0OJqh14c0wnzd8nszvL3medAq0M6rLyInvCsVW24MsPzWUVJkAX
-         yDv5ps661NsMZKzK5/Z1bhsVgc1FkqDjSuIiE2MGJtAjykMaNZkMU5+co4kpgb4eaNRr
-         MJhsD+8Bn0/Rs1fUMbhJx/XYRwTbcwyCKtOVq3sN6QHhkxpgRqdUpn1sdtl536SE8WqC
-         9WrsUaeaGGEqnepP/ao9fVPkikFxpYkMsCt+hwZDNyHHoMjc1xQFRIOXDb5UuuU8rSz8
-         I1xliPBFKJH16QaTyqgHl8vLQ1HNAkDorla2IMFnzV9BngeJbbTEhkqWEur5KTwhDFND
-         nhwQ==
-X-Gm-Message-State: AOAM531SClznbtTCtv1wvsrlRuqnoUhfGBcRiWx5gRyJxbMya7TTyfjs
-        N9b3Ef/3PnmDfpWIJAmMFg==
-X-Google-Smtp-Source: ABdhPJy72jA/2st/G//51PTWh7W6OWC4XiZ2I9BsaCCF+sqVXaF/3AWziOFSL05+SBew/BNAaFPMKQ==
-X-Received: by 2002:a17:902:e746:b0:156:9eed:d2d6 with SMTP id p6-20020a170902e74600b001569eedd2d6mr4849504plf.144.1649062073047;
-        Mon, 04 Apr 2022 01:47:53 -0700 (PDT)
+        bh=AsQsOGOBswiqIkfE+MmZmSYrrU64sgPI4cLq7rNPZkk=;
+        b=PGE67l69uFiC3DwMREm0HDuYgn3dcZkoQ/nbe+SwrJyS4PLSFuXfKeKvCt9Hw8w0yV
+         GzaoSbu2abJ2tBxXDVj9qrbeTTQnIAtAd/tNpdjbTE4t6QBviS2+4TY9anreCWtiAm2x
+         HgbnK3BEyXYuPV9WjA43Z7HPan28s0XIEwgUCqhBb01NuWWMV1klltEczwaJlarzYXz9
+         pKkzsAysNJbvV0QXs2MlvahjTtLJGXDgoOngJLfd2Rw+O3N/IaDi6SnbHnqBq2UU9+Nr
+         eBkYCf7OvjGjYPnjLHlMcZ5K9b2tPmfzeB753+E2FQDY28JVzPwn7iK009BNyCZ12rvU
+         D9Vg==
+X-Gm-Message-State: AOAM5321pPgV+RsaPG3q4bci2+jgDIemhlXtCXgUY9uiQNIptmWzmTsg
+        CftVhF7UdJIakooz6TXI2rD9hHl2L4tMMDMysQ==
+X-Google-Smtp-Source: ABdhPJyaumC2pAoaVZdgGxH0C6+k3h97CLv5+0nGYCnk+CTU9mYZSDQ8odzFEQgW1zPAVxACmLujOw==
+X-Received: by 2002:a17:902:8f94:b0:14f:d9b3:52c2 with SMTP id z20-20020a1709028f9400b0014fd9b352c2mr21780055plo.103.1649062080299;
+        Mon, 04 Apr 2022 01:48:00 -0700 (PDT)
 Received: from localhost.localdomain ([144.202.91.207])
-        by smtp.gmail.com with ESMTPSA id u6-20020a17090a3fc600b001ca88b0bdfesm3991960pjm.13.2022.04.04.01.47.51
+        by smtp.gmail.com with ESMTPSA id u6-20020a17090a3fc600b001ca88b0bdfesm3991960pjm.13.2022.04.04.01.47.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Apr 2022 01:47:52 -0700 (PDT)
+        Mon, 04 Apr 2022 01:48:00 -0700 (PDT)
 From:   Zheyu Ma <zheyuma97@gmail.com>
 To:     deller@gmx.de
 Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-kernel@vger.kernel.org, Zheyu Ma <zheyuma97@gmail.com>
-Subject: [PATCH 3/7] video: fbdev: kyro: Error out if 'lineclock' equals zero
-Date:   Mon,  4 Apr 2022 16:47:19 +0800
-Message-Id: <20220404084723.79089-4-zheyuma97@gmail.com>
+Subject: [PATCH 6/7] video: fbdev: arkfb: Error out if 'pixclock' equals zero
+Date:   Mon,  4 Apr 2022 16:47:22 +0800
+Message-Id: <20220404084723.79089-7-zheyuma97@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220404084723.79089-1-zheyuma97@gmail.com>
 References: <20220404084723.79089-1-zheyuma97@gmail.com>
@@ -64,40 +64,41 @@ List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
 The userspace program could pass any values to the driver through
-ioctl() interface. If the driver doesn't check the value of 'lineclock',
+ioctl() interface. If the driver doesn't check the value of 'pixclock',
 it may cause divide error.
 
-Fix this by checking whether 'lineclock' is zero.
+Fix this by checking whether 'pixclock' is zero.
 
 The following log reveals it:
 
-[   33.404918] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-[   33.404932] RIP: 0010:kyrofb_set_par+0x30d/0xd80
-[   33.404976] Call Trace:
-[   33.404978]  <TASK>
-[   33.404987]  fb_set_var+0x604/0xeb0
-[   33.405038]  do_fb_ioctl+0x234/0x670
-[   33.405083]  fb_ioctl+0xdd/0x130
-[   33.405091]  do_syscall_64+0x3b/0x90
+[   76.603696] divide error: 0000 [#1] PREEMPT SMP KASAN PTI
+[   76.603712] RIP: 0010:arkfb_set_par+0x10fc/0x24f0
+[   76.603762] Call Trace:
+[   76.603764]  <TASK>
+[   76.603773]  fb_set_var+0x604/0xeb0
+[   76.603827]  do_fb_ioctl+0x234/0x670
+[   76.603873]  fb_ioctl+0xdd/0x130
+[   76.603881]  do_syscall_64+0x3b/0x90
 
 Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
 ---
- drivers/video/fbdev/kyro/fbdev.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/arkfb.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
-index 25801e8e3f74..d57772f96ad2 100644
---- a/drivers/video/fbdev/kyro/fbdev.c
-+++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -494,6 +494,8 @@ static int kyrofb_set_par(struct fb_info *info)
- 				    info->var.hsync_len +
- 				    info->var.left_margin)) / 1000;
+diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+index edf169d0816e..eb3e47c58c5f 100644
+--- a/drivers/video/fbdev/arkfb.c
++++ b/drivers/video/fbdev/arkfb.c
+@@ -566,6 +566,9 @@ static int arkfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	int rv, mem, step;
  
-+	if (!lineclock)
++	if (!var->pixclock)
 +		return -EINVAL;
- 
- 	/* time for a frame in ns (precision in 32bpp) */
- 	frameclock = lineclock * (info->var.yres +
++
+ 	/* Find appropriate format */
+ 	rv = svga_match_format (arkfb_formats, var, NULL);
+ 	if (rv < 0)
 -- 
 2.25.1
 

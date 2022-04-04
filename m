@@ -2,67 +2,90 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86168C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Apr 2022 08:17:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D43BC433FE
+	for <linux-fbdev@archiver.kernel.org>; Mon,  4 Apr 2022 08:47:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241481AbiDDIT1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 4 Apr 2022 04:19:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43688 "EHLO
+        id S241262AbiDDItu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 4 Apr 2022 04:49:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49250 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235810AbiDDITS (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Apr 2022 04:19:18 -0400
-X-Greylist: delayed 509 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 04 Apr 2022 01:17:23 PDT
-Received: from mail.coredeal.pl (mail.coredeal.pl [51.75.73.133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69B423B3EF
-        for <linux-fbdev@vger.kernel.org>; Mon,  4 Apr 2022 01:17:23 -0700 (PDT)
-Received: by mail.coredeal.pl (Postfix, from userid 1002)
-        id 81058A3AA7; Mon,  4 Apr 2022 08:06:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=coredeal.pl; s=mail;
-        t=1649059611; bh=9KGuIG62LgzC9aYmjKxzocuYLRCVghXg6v9Q1q2LHec=;
-        h=Date:From:To:Subject:From;
-        b=P421Kt3uEG5UA/E7P4dLnrNUH1doUWCk5gmYbjkP0AB58ktF70TJP4bA205OE0+Nt
-         pV+fahAGlp29oG3D+QoTZ/OIyyafw4vD7gl2XHY/LtA8w3+MyQaqrLzgI2CL+gkSPG
-         uwxq0JptUn3J8xkiZNoydZ5YiSS7E4HByCtjmdzdUGrVUtHSUJQDgf23efvD3uymfT
-         z9dhkqUvqr+YZjqQ52+Muu1ihj4ErvwdUA08CDHK3h8ndic/kv5SdrAmXX+NI8/4Uf
-         w4ew8kedvO0mUocftdozz9gnBSXfoWDBU3oTBEVhcAEvR7/iwp6QHePGz6bBwE4guO
-         O9L4m7pSnjh4w==
-Received: by mail.coredeal.pl for <linux-fbdev@vger.kernel.org>; Mon,  4 Apr 2022 08:05:41 GMT
-Message-ID: <20220404064500-0.1.2c.c831.0.aciimlyn8o@coredeal.pl>
-Date:   Mon,  4 Apr 2022 08:05:41 GMT
-From:   "Krzysztof Maj" <krzysztof.maj@coredeal.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: Biznesowy angielski
-X-Mailer: mail.coredeal.pl
+        with ESMTP id S240841AbiDDItl (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 4 Apr 2022 04:49:41 -0400
+Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B0AC930F64;
+        Mon,  4 Apr 2022 01:47:44 -0700 (PDT)
+Received: by mail-pg1-x536.google.com with SMTP id l129so7790009pga.3;
+        Mon, 04 Apr 2022 01:47:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=iezfqCSLi9aeu9geiwLSpu2ZGrh8RQtJ4hILxdTJPow=;
+        b=YtZhxs5DRluKygjqYGKUkZHGilAsQaQg+/Yh6XhjAIHye3WtPxHz6OVtRzlCw0j2AJ
+         EPD/kRpfj7N4WP1druCEOIr8C5js8jI6h5uIGtsqhj7buJS4KE40uEjZs0uyq4MaPLPc
+         9Lp98IVFB6Sb0PT23Jjm+wQszcBoOuzxaiMyu9RB53sgu2pNXBIiuXzZKnM9fq+5R+T7
+         CznVXqTEM79IapOa7jfCD0H8pp5iZxKudOhjJKTYMLZTGFFZFvQXZh3FeaynGy6j2y4Q
+         RynB/Fbids5KUpCXdFnFQ3HFRGKwf/jBvP59VoEBkmYQ4X1mWi/TCs8/cHjtzlLg9qjd
+         ekCw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=iezfqCSLi9aeu9geiwLSpu2ZGrh8RQtJ4hILxdTJPow=;
+        b=uut79MlEpOHwSFHsGjZsEmYQUeqROGVMMuGFRA6sLyCzCD3gKH4L+zDwcroQGrzi4M
+         9sXSeD14S69yFEvx3Jr/AloSq6jZ5p6q9SGkuXl+k9dGu5ENC1t5bMOe6kJ13OoXVbQ8
+         Rkyweni4qOY1dLyrEOU4A9YsbIgN07ef40R1/sOUnJvFwv6iFq5Y3Y7ia8cMfVSAPLXm
+         pNtQIyDa+/MwwVCCFZZsfKRxpgV22O2zYKK4nJdnd3LCreAn53iK9CgZN/wqUm4TSYPu
+         w5c2TiyMTguT8TA8yV9ZCFwkRTX2Qe41nNarIqhnbWd73mtHvaERmxpC5pHK/9yOoKoq
+         qOAQ==
+X-Gm-Message-State: AOAM533/wL+V2P5x0s/bgwLyZ7YSr0aPCfmHLXoAQNYJGTg+w3XFYBWg
+        yVU8wZ58ZWHS5A3ADt4DSn22ocSw8Itgw6f1Ew==
+X-Google-Smtp-Source: ABdhPJxIscq7kv48PLNHhvQHl4s43/rPzURDjQM7KlkXxVudjUh0+KERzVFVcUn4q3vRY9v3WKhDlA==
+X-Received: by 2002:a05:6a00:4007:b0:4fa:9505:8ac0 with SMTP id by7-20020a056a00400700b004fa95058ac0mr22981759pfb.67.1649062063779;
+        Mon, 04 Apr 2022 01:47:43 -0700 (PDT)
+Received: from localhost.localdomain ([144.202.91.207])
+        by smtp.gmail.com with ESMTPSA id u6-20020a17090a3fc600b001ca88b0bdfesm3991960pjm.13.2022.04.04.01.47.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 04 Apr 2022 01:47:43 -0700 (PDT)
+From:   Zheyu Ma <zheyuma97@gmail.com>
+To:     deller@gmx.de
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, Zheyu Ma <zheyuma97@gmail.com>
+Subject: [PATCH 0/7] Fix divide errors in fbdev drivers
+Date:   Mon,  4 Apr 2022 16:47:16 +0800
+Message-Id: <20220404084723.79089-1-zheyuma97@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,=20
+None of these framebuffer drivers checks for 'pixclock', leading to many
+divide errors, which we fix by checking the value of 'pixclock' in
+*_check_var(). As discussed before, it is better to keep the check per
+driver rather than in the caller.
 
-czy rozwa=C5=BCali Pa=C5=84stwo rozw=C3=B3j kwalifikacji j=C4=99zykowych =
-swoich pracownik=C3=B3w?
+https://lore.kernel.org/all/YPgbHMtLQqb1kP0l@ravnborg.org/
 
-Opracowali=C5=9Bmy kursy j=C4=99zykowe dla r=C3=B3=C5=BCnych bran=C5=BC, =
-w kt=C3=B3rych koncentrujemy si=C4=99 na podniesieniu poziomu s=C5=82owni=
-ctwa i jako=C5=9Bci komunikacji wykorzystuj=C4=85c autorsk=C4=85 metod=C4=
-=99, stworzon=C4=85 specjalnie dla wymagaj=C4=85cego biznesu.=20
+Zheyu Ma (7):
+  video: fbdev: i740fb: Error out if 'pixclock' equals zero
+  video: fbdev: neofb: Fix the check of 'var->pixclock'
+  video: fbdev: kyro: Error out if 'lineclock' equals zero
+  video: fbdev: vt8623fb: Error out if 'pixclock' equals zero
+  video: fbdev: tridentfb: Error out if 'pixclock' equals zero
+  video: fbdev: arkfb: Error out if 'pixclock' equals zero
+  video: fbdev: s3fb: Error out if 'pixclock' equals zero
 
-Niestandardowy kurs on-line, dopasowany do profilu firmy i obszar=C3=B3w =
-=C5=9Bwiadczonych us=C5=82ug, w szybkim czasie przyniesie efekty, kt=C3=B3=
-re zwi=C4=99ksz=C4=85 komfort i jako=C5=9B=C4=87 pracy, rozwijaj=C4=85c m=
-o=C5=BCliwo=C5=9Bci biznesowe.=20
+ drivers/video/fbdev/arkfb.c      | 3 +++
+ drivers/video/fbdev/i740fb.c     | 3 +++
+ drivers/video/fbdev/kyro/fbdev.c | 2 ++
+ drivers/video/fbdev/neofb.c      | 2 +-
+ drivers/video/fbdev/s3fb.c       | 3 +++
+ drivers/video/fbdev/tridentfb.c  | 3 +++
+ drivers/video/fbdev/vt8623fb.c   | 3 +++
+ 7 files changed, 18 insertions(+), 1 deletion(-)
 
-Zdalne szkolenie j=C4=99zykowe to m.in. zaj=C4=99cia z native speakerami,=
- kt=C3=B3re w szybkim czasie naucz=C4=85 pracownik=C3=B3w rozmawia=C4=87 =
-za pomoc=C4=85 jasnego i zwi=C4=99z=C5=82ego j=C4=99zyka Business English=
-=2E
+-- 
+2.25.1
 
-Czy m=C3=B3g=C5=82bym przedstawi=C4=87 wi=C4=99cej szczeg=C3=B3=C5=82=C3=B3=
-w i opowiedzie=C4=87 jak dzia=C5=82amy?=20
-
-
-Pozdrawiam
-Krzysztof Maj

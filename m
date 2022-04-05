@@ -2,32 +2,32 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D88C7C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Apr 2022 09:33:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B221BC4332F
+	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Apr 2022 10:33:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238318AbiDEJe7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 5 Apr 2022 05:34:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34658 "EHLO
+        id S238949AbiDEKfn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 5 Apr 2022 06:35:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38010 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344732AbiDEJVI (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Apr 2022 05:21:08 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A90724BFF;
-        Tue,  5 Apr 2022 02:08:40 -0700 (PDT)
+        with ESMTP id S1351687AbiDEKDL (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Apr 2022 06:03:11 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3136973060;
+        Tue,  5 Apr 2022 02:52:12 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 6FB6561577;
-        Tue,  5 Apr 2022 09:08:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7327EC385A1;
-        Tue,  5 Apr 2022 09:08:38 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 81237616D7;
+        Tue,  5 Apr 2022 09:52:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8BFB5C385A2;
+        Tue,  5 Apr 2022 09:52:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1649149718;
+        s=korg; t=1649152331;
         bh=qW1x31HnZxqlWv9yLK7leVGiHSRFHxjgpFRqN+3ePM4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=WVftuMhdy1ZG54iKGq4PViKdgdmhkUJcT3WE9Und/3WKdfRAvOZz0D2OiNRy7eHgO
-         +SCVbUh6890huTTQBgfkQ4FXhCKsdU7Q/qLZz5qYk8LJDJhBqEsIn6sgTckNEW4K7g
-         2CR1Yh3f6Oindm6yD676fsqDsCZBoEYYj7P2gc8w=
+        b=qWz10RDKOyKNugTych2AqL1vRausJfYBSRUYZ7Bq5NDgsi8yNgQbA5wTyOj04hM/U
+         ymkdTxPnTD5fQHsoXt81rge6I7uNnlSgfKnq8kN7wkgILsUcuWU4OTSx4yohwcdkul
+         QnVLfc7pt1jbz6K0v2r907ZMYsHbfKm2K1SJBp+8=
 From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -35,12 +35,12 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         Tim Gardner <tim.gardner@canonical.com>,
         Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 5.16 0816/1017] video: fbdev: nvidiafb: Use strscpy() to prevent buffer overflow
-Date:   Tue,  5 Apr 2022 09:28:49 +0200
-Message-Id: <20220405070418.471174787@linuxfoundation.org>
+Subject: [PATCH 5.15 737/913] video: fbdev: nvidiafb: Use strscpy() to prevent buffer overflow
+Date:   Tue,  5 Apr 2022 09:29:59 +0200
+Message-Id: <20220405070401.926691966@linuxfoundation.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220405070354.155796697@linuxfoundation.org>
-References: <20220405070354.155796697@linuxfoundation.org>
+In-Reply-To: <20220405070339.801210740@linuxfoundation.org>
+References: <20220405070339.801210740@linuxfoundation.org>
 User-Agent: quilt/0.66
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8

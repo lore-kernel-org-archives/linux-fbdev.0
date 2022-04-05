@@ -2,53 +2,51 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45CAFC3527E
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DDE3C47082
 	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Apr 2022 09:13:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1343906AbiDEJP0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 5 Apr 2022 05:15:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38112 "EHLO
+        id S1343913AbiDEJPe (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 5 Apr 2022 05:15:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50852 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241028AbiDEIsX (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Apr 2022 04:48:23 -0400
-Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32ACC286DC
-        for <linux-fbdev@vger.kernel.org>; Tue,  5 Apr 2022 01:36:40 -0700 (PDT)
-Received: by mail-ej1-x644.google.com with SMTP id bg10so25180036ejb.4
-        for <linux-fbdev@vger.kernel.org>; Tue, 05 Apr 2022 01:36:39 -0700 (PDT)
+        with ESMTP id S244281AbiDEIvz (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Apr 2022 04:51:55 -0400
+Received: from mail-ed1-x544.google.com (mail-ed1-x544.google.com [IPv6:2a00:1450:4864:20::544])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA9E3D4C8B
+        for <linux-fbdev@vger.kernel.org>; Tue,  5 Apr 2022 01:40:41 -0700 (PDT)
+Received: by mail-ed1-x544.google.com with SMTP id g22so14044804edz.2
+        for <linux-fbdev@vger.kernel.org>; Tue, 05 Apr 2022 01:40:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+        h=date:from:to:subject:message-id:mail-followup-to:references
          :mime-version:content-disposition:in-reply-to;
-        bh=mJA2lhSAjBvIdBD6ROp3kAhgwFUlfyK4RHs6V3CcZqc=;
-        b=CoDDZytP68BFexlTIPRQI8kK37R3nkDSnUvaKkmrkNmy4gvuhmA1JNDkNuSgkZWq1B
-         SPVXZnfmJ1KZ2BcMTxTfOn8NWJRZBSQFcRh33LIG1mXQk1fprvTxxxWhJlo1JRRTupfp
-         NYRI5YI0Mx8QJ9eR4E1LndjI8q21tuCQaKLHc=
+        bh=QRQdW4TxY/XkOYOT3oxLG3OIsaxqVCqvMm2visUSAZI=;
+        b=R5WyFM3Hb3GT2s4H08DzUIMQiUCuX9Lg5BSB6FtLOqpb9+K0R/+NXBIvm5gKP5c9J3
+         9uKEocy6gvBxFpFp3qCT0vApX1ZAxWoy2UjfBaiGsZGlxJO8MBrCopzDmKf7hLQSHfEx
+         1t/1TiVB/Zv+FY3jh4d8cFdSJTjj852yReO4U=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to;
-        bh=mJA2lhSAjBvIdBD6ROp3kAhgwFUlfyK4RHs6V3CcZqc=;
-        b=y205z+pdvTfVtcL667yuXX5aOllBeEaR7UoLEXSDdeeHJv4a+NLT52PDIqtb//gJ6F
-         q/HUNDsznopQF2s96d9tEwNG2P5EW8yWeuEfAbBkKaqyqlszjSiStR2w20v3KNLAt/uA
-         VRxVYbJo9QLZ9YFlrxRshToDPbc94xQDdqZ1zdPl0AkonNHqEGeprfPdSEylgujKkJCj
-         eqmo1Z/OcWfxBOk8YZy5s3wLg+u8NsQhf5afNWEBsGpSAsls1atLMFUuF49/1IHoHDob
-         y3Do9ZcNO+oYhpJleDVPBG04NsWHIEoA1bTyBuBUz/06xAvFtpOkdgiv7YVPd/XOOg79
-         cqDw==
-X-Gm-Message-State: AOAM530eCleU2bas0FpYL9tBS3qTD8SDHICO0Cn0RuoGgAFj4d50hof9
-        JiPKqFalYEIZBaHBjk+XdJUZqA==
-X-Google-Smtp-Source: ABdhPJx4CvLt4qnid/daWeAwD8jdaiFdmc1pOY90sZa/ptwTWKFAv9S6pqBc7QGu5+ZIghApbsrfYw==
-X-Received: by 2002:a17:907:c309:b0:6e8:4e5:6504 with SMTP id tl9-20020a170907c30900b006e804e56504mr2322280ejc.706.1649147797582;
-        Tue, 05 Apr 2022 01:36:37 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:subject:message-id:mail-followup-to
+         :references:mime-version:content-disposition:in-reply-to;
+        bh=QRQdW4TxY/XkOYOT3oxLG3OIsaxqVCqvMm2visUSAZI=;
+        b=xneD3lNc85yYNBAjNAwLvj5sxhAuISrFwsx62bMlgq8bzJEAqwmxVI0HMkCaMrd6dK
+         9Ao6yuJMlXGE9IC7jL7j9UGDbvvTioCJ4f5rvmhs2LSmPcBCO2qafG8pdSwXnGEfeChS
+         DniXyptrUhAVllLQOP1lyOSsvev+T9Ibkk09k+0MmSLgd1wWs+Fl/t3k3on61H8VmmCg
+         OE30Oe/6R++b3asasnAmrHjvieXL2U9UC7km769d/isOaRvQzaDfjp3F5h3DMqDB5tCF
+         UYuZ3U1ngdhWxKh++c0NsZTAJF2BYRzdjYJ1KTUOp8SuViMmiArg2/3JC3Pg4tluXgZc
+         V6dA==
+X-Gm-Message-State: AOAM533CaGC8xNPn40x3xkA0CmWN1ZJXg49Fogi4JYv4kHSLPXLPr7Rb
+        VeELsEWvZDRUmR6mPsc745YPVQ==
+X-Google-Smtp-Source: ABdhPJxdMNTJdlht0ASSjqOZpmGfUZPUZ3aVJQxSpEJt0tJUibhrkRySvqoqStIMLvI+YtZTojtm1Q==
+X-Received: by 2002:a05:6402:31e2:b0:41c:dd5e:3c61 with SMTP id dy2-20020a05640231e200b0041cdd5e3c61mr2342747edb.407.1649148039950;
+        Tue, 05 Apr 2022 01:40:39 -0700 (PDT)
 Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id h30-20020a056402095e00b00412b81dd96esm6220634edz.29.2022.04.05.01.36.36
+        by smtp.gmail.com with ESMTPSA id d7-20020a170906174700b006e80a7e3111sm568499eje.17.2022.04.05.01.40.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Apr 2022 01:36:37 -0700 (PDT)
-Date:   Tue, 5 Apr 2022 10:36:35 +0200
+        Tue, 05 Apr 2022 01:40:39 -0700 (PDT)
+Date:   Tue, 5 Apr 2022 10:40:37 +0200
 From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+To:     Javier Martinez Canillas <javierm@redhat.com>,
         DRI Development <dri-devel@lists.freedesktop.org>,
         Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
         linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
@@ -60,7 +58,7 @@ Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Peter Jones <pjones@redhat.com>
 Subject: Re: [PATCH v2 18/19] Revert "fbdev: Prevent probing generic drivers
  if a FB is already registered"
-Message-ID: <Ykv/k/WoVemoCJJA@phenom.ffwll.local>
+Message-ID: <YkwAhSt9HlbxcuZo@phenom.ffwll.local>
 Mail-Followup-To: Javier Martinez Canillas <javierm@redhat.com>,
         DRI Development <dri-devel@lists.freedesktop.org>,
         Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
@@ -73,51 +71,65 @@ Mail-Followup-To: Javier Martinez Canillas <javierm@redhat.com>,
 References: <20220208210824.2238981-1-daniel.vetter@ffwll.ch>
  <20220208210824.2238981-19-daniel.vetter@ffwll.ch>
  <4ae20b63-f452-fdb4-ced6-d4968a8d69f0@redhat.com>
+ <Ykv/k/WoVemoCJJA@phenom.ffwll.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4ae20b63-f452-fdb4-ced6-d4968a8d69f0@redhat.com>
+In-Reply-To: <Ykv/k/WoVemoCJJA@phenom.ffwll.local>
 X-Operating-System: Linux phenom 5.10.0-8-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Feb 09, 2022 at 01:19:26AM +0100, Javier Martinez Canillas wrote:
-> On 2/8/22 22:08, Daniel Vetter wrote:
-> > This reverts commit fb561bf9abde49f7e00fdbf9ed2ccf2d86cac8ee.
+On Tue, Apr 05, 2022 at 10:36:35AM +0200, Daniel Vetter wrote:
+> On Wed, Feb 09, 2022 at 01:19:26AM +0100, Javier Martinez Canillas wrote:
+> > On 2/8/22 22:08, Daniel Vetter wrote:
+> > > This reverts commit fb561bf9abde49f7e00fdbf9ed2ccf2d86cac8ee.
+> > > 
+> > > With
+> > > 
+> > > commit 27599aacbaefcbf2af7b06b0029459bbf682000d
+> > > Author: Thomas Zimmermann <tzimmermann@suse.de>
+> > > Date:   Tue Jan 25 10:12:18 2022 +0100
+> > > 
+> > >     fbdev: Hot-unplug firmware fb devices on forced removal
+> > > 
+> > > this should be fixed properly and we can remove this somewhat hackish
+> > > check here (e.g. this won't catch drm drivers if fbdev emulation isn't
+> > > enabled).
+> > >
 > > 
-> > With
+> > Unfortunately this hack can't be reverted yet. Thomas' patch solves the issue
+> > of platform devices matched with fbdev drivers to be properly unregistered if
+> > a DRM driver attempts to remove all the conflicting framebuffers.
 > > 
-> > commit 27599aacbaefcbf2af7b06b0029459bbf682000d
-> > Author: Thomas Zimmermann <tzimmermann@suse.de>
-> > Date:   Tue Jan 25 10:12:18 2022 +0100
+> > But the problem that fb561bf9abde ("fbdev: Prevent probing generic drivers if
+> > a FB is already registered") worked around is different. It happens when the
+> > DRM driver is probed before the {efi,simple}fb and other fbdev drivers, the
+> > kicking out of conflicting framebuffers already happened and these drivers
+> > will be allowed to probe even when a DRM driver is already present.
 > > 
-> >     fbdev: Hot-unplug firmware fb devices on forced removal
-> > 
-> > this should be fixed properly and we can remove this somewhat hackish
-> > check here (e.g. this won't catch drm drivers if fbdev emulation isn't
-> > enabled).
-> >
+> > We need a clearer way to prevent it, but can't revert fb561bf9abde until that.
 > 
-> Unfortunately this hack can't be reverted yet. Thomas' patch solves the issue
-> of platform devices matched with fbdev drivers to be properly unregistered if
-> a DRM driver attempts to remove all the conflicting framebuffers.
+> Yeah that entire area is a mess still, ideally we'd have something else
+> creating the platform devices, and efifb/offb and all these would just
+> bind against them.
 > 
-> But the problem that fb561bf9abde ("fbdev: Prevent probing generic drivers if
-> a FB is already registered") worked around is different. It happens when the
-> DRM driver is probed before the {efi,simple}fb and other fbdev drivers, the
-> kicking out of conflicting framebuffers already happened and these drivers
-> will be allowed to probe even when a DRM driver is already present.
-> 
-> We need a clearer way to prevent it, but can't revert fb561bf9abde until that.
+> Hm one idea that just crossed my mind: Could we have a flag in fb_info for
+> fw drivers, and check this in framebuffer_register? Then at least all the
+> logic would be in the fbdev core.
 
-Yeah that entire area is a mess still, ideally we'd have something else
-creating the platform devices, and efifb/offb and all these would just
-bind against them.
+Ok coffee just kicked in, how exactly does your scenario work?
 
-Hm one idea that just crossed my mind: Could we have a flag in fb_info for
-fw drivers, and check this in framebuffer_register? Then at least all the
-logic would be in the fbdev core.
+This code I'm reverting here is in the platform_dev->probe function.
+Thomas' patch removes the platform_dev. How exactly can you still probe
+against a platform dev if that platform dev is gone?
+
+Iow, now that I reponder your case after a few weeks I'm no longer sure
+things work like you claim.
+
+There is the issue that offb still bidns without a platform_dev, but
+that's not affected by this patch here.
 -Daniel
 -- 
 Daniel Vetter

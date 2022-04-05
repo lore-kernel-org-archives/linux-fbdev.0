@@ -2,98 +2,124 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 243B4C4167E
-	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Apr 2022 08:37:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45CAFC3527E
+	for <linux-fbdev@archiver.kernel.org>; Tue,  5 Apr 2022 09:13:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233771AbiDEIjJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 5 Apr 2022 04:39:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55950 "EHLO
+        id S1343906AbiDEJP0 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 5 Apr 2022 05:15:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38112 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234314AbiDEIYo (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Apr 2022 04:24:44 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 03BDF13CD7;
-        Tue,  5 Apr 2022 01:20:28 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id A748BB81BB0;
-        Tue,  5 Apr 2022 08:20:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9D29C385A4;
-        Tue,  5 Apr 2022 08:20:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1649146825;
-        bh=qW1x31HnZxqlWv9yLK7leVGiHSRFHxjgpFRqN+3ePM4=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=bsJZsHI+TBKqkMNhBKBqciGASA47um7CDLpgyfHSZXgFbWwN6E0NLA7PrCTlNFOpc
-         UqElw566k199UyfewNA1p1ckCKV3Ouax3LsGUHPNfXLIxAQX9Z8qXm/uCJTT0gQ6s4
-         KXtvtWOpLTbJJvMN+iLAlFfLMyiYaxdySGXktvLA=
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        stable@vger.kernel.org, Antonino Daplas <adaplas@gmail.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Tim Gardner <tim.gardner@canonical.com>,
-        Helge Deller <deller@gmx.de>, Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 5.17 0902/1126] video: fbdev: nvidiafb: Use strscpy() to prevent buffer overflow
-Date:   Tue,  5 Apr 2022 09:27:29 +0200
-Message-Id: <20220405070434.006314514@linuxfoundation.org>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220405070407.513532867@linuxfoundation.org>
-References: <20220405070407.513532867@linuxfoundation.org>
-User-Agent: quilt/0.66
+        with ESMTP id S241028AbiDEIsX (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Apr 2022 04:48:23 -0400
+Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32ACC286DC
+        for <linux-fbdev@vger.kernel.org>; Tue,  5 Apr 2022 01:36:40 -0700 (PDT)
+Received: by mail-ej1-x644.google.com with SMTP id bg10so25180036ejb.4
+        for <linux-fbdev@vger.kernel.org>; Tue, 05 Apr 2022 01:36:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=mJA2lhSAjBvIdBD6ROp3kAhgwFUlfyK4RHs6V3CcZqc=;
+        b=CoDDZytP68BFexlTIPRQI8kK37R3nkDSnUvaKkmrkNmy4gvuhmA1JNDkNuSgkZWq1B
+         SPVXZnfmJ1KZ2BcMTxTfOn8NWJRZBSQFcRh33LIG1mXQk1fprvTxxxWhJlo1JRRTupfp
+         NYRI5YI0Mx8QJ9eR4E1LndjI8q21tuCQaKLHc=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id
+         :mail-followup-to:references:mime-version:content-disposition
+         :in-reply-to;
+        bh=mJA2lhSAjBvIdBD6ROp3kAhgwFUlfyK4RHs6V3CcZqc=;
+        b=y205z+pdvTfVtcL667yuXX5aOllBeEaR7UoLEXSDdeeHJv4a+NLT52PDIqtb//gJ6F
+         q/HUNDsznopQF2s96d9tEwNG2P5EW8yWeuEfAbBkKaqyqlszjSiStR2w20v3KNLAt/uA
+         VRxVYbJo9QLZ9YFlrxRshToDPbc94xQDdqZ1zdPl0AkonNHqEGeprfPdSEylgujKkJCj
+         eqmo1Z/OcWfxBOk8YZy5s3wLg+u8NsQhf5afNWEBsGpSAsls1atLMFUuF49/1IHoHDob
+         y3Do9ZcNO+oYhpJleDVPBG04NsWHIEoA1bTyBuBUz/06xAvFtpOkdgiv7YVPd/XOOg79
+         cqDw==
+X-Gm-Message-State: AOAM530eCleU2bas0FpYL9tBS3qTD8SDHICO0Cn0RuoGgAFj4d50hof9
+        JiPKqFalYEIZBaHBjk+XdJUZqA==
+X-Google-Smtp-Source: ABdhPJx4CvLt4qnid/daWeAwD8jdaiFdmc1pOY90sZa/ptwTWKFAv9S6pqBc7QGu5+ZIghApbsrfYw==
+X-Received: by 2002:a17:907:c309:b0:6e8:4e5:6504 with SMTP id tl9-20020a170907c30900b006e804e56504mr2322280ejc.706.1649147797582;
+        Tue, 05 Apr 2022 01:36:37 -0700 (PDT)
+Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
+        by smtp.gmail.com with ESMTPSA id h30-20020a056402095e00b00412b81dd96esm6220634edz.29.2022.04.05.01.36.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 05 Apr 2022 01:36:37 -0700 (PDT)
+Date:   Tue, 5 Apr 2022 10:36:35 +0200
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Zack Rusin <zackr@vmware.com>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Ilya Trukhanov <lahvuun@gmail.com>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Peter Jones <pjones@redhat.com>
+Subject: Re: [PATCH v2 18/19] Revert "fbdev: Prevent probing generic drivers
+ if a FB is already registered"
+Message-ID: <Ykv/k/WoVemoCJJA@phenom.ffwll.local>
+Mail-Followup-To: Javier Martinez Canillas <javierm@redhat.com>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
+        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Zack Rusin <zackr@vmware.com>, Hans de Goede <hdegoede@redhat.com>,
+        Ilya Trukhanov <lahvuun@gmail.com>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Peter Jones <pjones@redhat.com>
+References: <20220208210824.2238981-1-daniel.vetter@ffwll.ch>
+ <20220208210824.2238981-19-daniel.vetter@ffwll.ch>
+ <4ae20b63-f452-fdb4-ced6-d4968a8d69f0@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ae20b63-f452-fdb4-ced6-d4968a8d69f0@redhat.com>
+X-Operating-System: Linux phenom 5.10.0-8-amd64 
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Tim Gardner <tim.gardner@canonical.com>
+On Wed, Feb 09, 2022 at 01:19:26AM +0100, Javier Martinez Canillas wrote:
+> On 2/8/22 22:08, Daniel Vetter wrote:
+> > This reverts commit fb561bf9abde49f7e00fdbf9ed2ccf2d86cac8ee.
+> > 
+> > With
+> > 
+> > commit 27599aacbaefcbf2af7b06b0029459bbf682000d
+> > Author: Thomas Zimmermann <tzimmermann@suse.de>
+> > Date:   Tue Jan 25 10:12:18 2022 +0100
+> > 
+> >     fbdev: Hot-unplug firmware fb devices on forced removal
+> > 
+> > this should be fixed properly and we can remove this somewhat hackish
+> > check here (e.g. this won't catch drm drivers if fbdev emulation isn't
+> > enabled).
+> >
+> 
+> Unfortunately this hack can't be reverted yet. Thomas' patch solves the issue
+> of platform devices matched with fbdev drivers to be properly unregistered if
+> a DRM driver attempts to remove all the conflicting framebuffers.
+> 
+> But the problem that fb561bf9abde ("fbdev: Prevent probing generic drivers if
+> a FB is already registered") worked around is different. It happens when the
+> DRM driver is probed before the {efi,simple}fb and other fbdev drivers, the
+> kicking out of conflicting framebuffers already happened and these drivers
+> will be allowed to probe even when a DRM driver is already present.
+> 
+> We need a clearer way to prevent it, but can't revert fb561bf9abde until that.
 
-[ Upstream commit 37a1a2e6eeeb101285cd34e12e48a881524701aa ]
+Yeah that entire area is a mess still, ideally we'd have something else
+creating the platform devices, and efifb/offb and all these would just
+bind against them.
 
-Coverity complains of a possible buffer overflow. However,
-given the 'static' scope of nvidia_setup_i2c_bus() it looks
-like that can't happen after examiniing the call sites.
-
-CID 19036 (#1 of 1): Copy into fixed size buffer (STRING_OVERFLOW)
-1. fixed_size_dest: You might overrun the 48-character fixed-size string
-  chan->adapter.name by copying name without checking the length.
-2. parameter_as_source: Note: This defect has an elevated risk because the
-  source argument is a parameter of the current function.
- 89        strcpy(chan->adapter.name, name);
-
-Fix this warning by using strscpy() which will silence the warning and
-prevent any future buffer overflows should the names used to identify the
-channel become much longer.
-
-Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/nvidia/nv_i2c.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/nvidia/nv_i2c.c b/drivers/video/fbdev/nvidia/nv_i2c.c
-index d7994a173245..0b48965a6420 100644
---- a/drivers/video/fbdev/nvidia/nv_i2c.c
-+++ b/drivers/video/fbdev/nvidia/nv_i2c.c
-@@ -86,7 +86,7 @@ static int nvidia_setup_i2c_bus(struct nvidia_i2c_chan *chan, const char *name,
- {
- 	int rc;
- 
--	strcpy(chan->adapter.name, name);
-+	strscpy(chan->adapter.name, name, sizeof(chan->adapter.name));
- 	chan->adapter.owner = THIS_MODULE;
- 	chan->adapter.class = i2c_class;
- 	chan->adapter.algo_data = &chan->algo;
+Hm one idea that just crossed my mind: Could we have a flag in fb_info for
+fw drivers, and check this in framebuffer_register? Then at least all the
+logic would be in the fbdev core.
+-Daniel
 -- 
-2.34.1
-
-
-
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

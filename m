@@ -2,146 +2,121 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E277AC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Apr 2022 17:55:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C9AAC433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Apr 2022 20:26:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239569AbiDFR5V (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Apr 2022 13:57:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46214 "EHLO
+        id S234408AbiDFU2a (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Apr 2022 16:28:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42856 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239761AbiDFR5K (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Apr 2022 13:57:10 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 5C59D1AEC86
-        for <linux-fbdev@vger.kernel.org>; Wed,  6 Apr 2022 09:06:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1649261213;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=z2VH15DInn1AZtnEsLb+elNYhtkABvKZLJ4uYvk26l8=;
-        b=jQAZaN085TXgf5PJi0AoPGwSO6b4APgOJ9vwAKwy3YUwbb7YR92FDmxx1Qkpg3rkusNI4E
-        Gc2odAtiJxorN63FRPlziJGFfJHljoiJQe/CiQ4DEE41fFTUMwFiKRsqDOxOV91b7/7g5X
-        0fksW98NjQpznvHJdOY7u1XcDFaGeYU=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-111-FqtKPzdXNLivR6zNVXc53w-1; Wed, 06 Apr 2022 12:06:44 -0400
-X-MC-Unique: FqtKPzdXNLivR6zNVXc53w-1
-Received: by mail-wm1-f72.google.com with SMTP id x8-20020a7bc768000000b0038e73173886so1513737wmk.6
-        for <linux-fbdev@vger.kernel.org>; Wed, 06 Apr 2022 09:06:44 -0700 (PDT)
+        with ESMTP id S234330AbiDFU2K (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Apr 2022 16:28:10 -0400
+Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4838413D09;
+        Wed,  6 Apr 2022 11:48:19 -0700 (PDT)
+Received: by mail-lf1-x12e.google.com with SMTP id k21so5687961lfe.4;
+        Wed, 06 Apr 2022 11:48:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=j9395K+P3ckPAEpp0VngX/lMlS/mSO7/OiLA6T9rii8=;
+        b=AdiupK0f5tH3mzh81yMw74TNiqYSKhpRq5BV6vNWimIJM65sCmwtO0VGTLEIQSkjg/
+         xHomBGdi80pYAOjj2DuUq1oWwtOlgDYUspbmgS50UQ2XpWmFvFb64rmVAjIspPHu8v/N
+         raKCDBS81RRn+l35CiP8V9s15SZMqyc+I6CC6eNFaX7SY9jCEODu+ODqKQrEXvDnNfW9
+         06BmSYAMjoFA6bYLj+hs4lTp1VvofM5xzi/2yOrMuJgyl5vhhS2Qt0VQ3ZrZxNRi+m2Y
+         ZVJqXmFHD7We6zWDIH1c5jJ/5vx6iC0vE5/vmSAzew0dRX0CYnl+53PUQ+FMuZ066+V3
+         5MlQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=z2VH15DInn1AZtnEsLb+elNYhtkABvKZLJ4uYvk26l8=;
-        b=O1m8jjnA7z0Olm217qKse8w2fxOsSussvKtk+t3Z4a057BMl0920F6TTqdo08MT2J4
-         Bzf6D3j1Gu55T8m8S1UTMoihuwr2URb64FRCCDiVGJdpDuNlUoEP3ZIcjeb1VhAHuPJL
-         RmQSoTbEBymRmFBFB5An0x1kWPMAUEWfcSNdT8j8QcMQTXTpDAggBC029hAr4YnrP2Zn
-         Funp5LCiIewIjNPOW77YcaPRXUai/5uqbuqMJ8RYAhk11XAxV/cB6JQWu1rN9xlY7dnk
-         eDeBhrWHGFfWKhGFngL0aupUHeo9ki2djfLibGNL7Io0RRjuxvWaaYKjrlLjYEC/cly4
-         rnIw==
-X-Gm-Message-State: AOAM530MzNkAEkXFKWV/S96GcDUARspuslrvvC4BZ0FhnungfEbUYz7i
-        ZrZA2KxQxd1dArSpE5IfbwbxWz4hJbfhS13jS9iXq6xmaHca6LY94Wub3z/wJMiKPEffaMpSGc8
-        H9M9oTg3VR2KCPmESzPmP8fQ=
-X-Received: by 2002:a05:600c:b55:b0:38e:70e7:511f with SMTP id k21-20020a05600c0b5500b0038e70e7511fmr8332651wmr.178.1649261203159;
-        Wed, 06 Apr 2022 09:06:43 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJw7yE8td6/fkffNhvrsqmHf15H0cuBaZltuOzDP9IJ5K6fOajl4WM2WGSsI9m1B/7+4GryIGA==
-X-Received: by 2002:a05:600c:b55:b0:38e:70e7:511f with SMTP id k21-20020a05600c0b5500b0038e70e7511fmr8332625wmr.178.1649261202834;
-        Wed, 06 Apr 2022 09:06:42 -0700 (PDT)
-Received: from minerva.home ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id f1-20020a1c6a01000000b0038c9f6a3634sm5038899wmc.7.2022.04.06.09.06.41
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=j9395K+P3ckPAEpp0VngX/lMlS/mSO7/OiLA6T9rii8=;
+        b=C9xni2Se3KsxJ/qA93W+xT20Lw3+mTceU3wgH16Dve2CQ7nmCmvrtOUmZD0avnYS2S
+         YmqpjEb78NypbSAU+0QDfalhlbm7FtQnPIlFdG/05lAYnVqgSslrUyVzNxG5yHzUXbtT
+         5TUZYkFpCdtJwRYIvdGa4Mx+fmCErSMshhNppBLX2HnXOMvylHXA5DgldxXFZ8Mw32/b
+         RZ9UKjpvY8iAEM3wSAylA1/cwa3L6vBrcRLV5ILiJq4shdrvxaFjGIoU9E/buKc4gkVP
+         kFZOU3CpMbZF+yCcvcX4+GLM8S+4Kp5lBqTmCd8noPP9LVf2QoKGRzIAFN6HnTxNcc44
+         6Hzw==
+X-Gm-Message-State: AOAM532pgeNnve5fE9O4raZl5zCCcOeWUnFsS38sUmEVI1sjGjGMNMMv
+        J99BOXbnijdY3dBwS55rfaP1ZIb57nLf9boT
+X-Google-Smtp-Source: ABdhPJzNADicM+sXa4roBFQ7B2f4eH3VnwkH5xkwOrMbesUL+8GJo8yXhHvLj4BO2Bo5WHfPEDGStA==
+X-Received: by 2002:a05:6512:39c1:b0:44a:e25d:47fd with SMTP id k1-20020a05651239c100b0044ae25d47fdmr6907751lfu.580.1649270897430;
+        Wed, 06 Apr 2022 11:48:17 -0700 (PDT)
+Received: from dell.intranet (93-181-165-181.internetia.net.pl. [93.181.165.181])
+        by smtp.gmail.com with ESMTPSA id e14-20020a19500e000000b0044a16931c7csm1912219lfb.97.2022.04.06.11.48.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 06 Apr 2022 09:06:42 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Borislav Petkov <bp@suse.de>,
+        Wed, 06 Apr 2022 11:48:16 -0700 (PDT)
+From:   Janusz Krzysztofik <jmkrzyszt@gmail.com>
+To:     Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc:     Tony Lindgren <tony@atomide.com>, Paul Walmsley <paul@pwsan.com>,
+        Alan Stern <stern@rowland.harvard.edu>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Helge Deller <deller@gmx.de>,
-        Miaoqian Lin <linmq006@gmail.com>,
-        Peter Jones <pjones@redhat.com>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Zheyu Ma <zheyuma97@gmail.com>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Subject: [RFC PATCH 0/5] Fix some race conditions that exists between fbmem and sysfb
-Date:   Wed,  6 Apr 2022 18:06:27 +0200
-Message-Id: <20220406160632.496684-1-javierm@redhat.com>
-X-Mailer: git-send-email 2.35.1
+        Helge Deller <deller@gmx.de>, linux-omap@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-usb@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Arnd Bergmann <arnd@arndb.de>, Felipe Balbi <balbi@kernel.org>,
+        Peter Ujfalusi <peter.ujfalusi@gmail.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>, linux-mmc@vger.kernel.org,
+        alsa-devel@alsa-project.org
+Subject: Re: [PATCH v2] ARM: OMAP1: Prepare for conversion of OMAP1 clocks to CCF
+Date:   Wed, 06 Apr 2022 20:48:14 +0200
+Message-ID: <1888452.PYKUYFuaPT@dell>
+In-Reply-To: <20220406132149.GC594699@darkstar.musicnaut.iki.fi>
+References: <20220310233307.99220-3-jmkrzyszt@gmail.com> <1810824.tdWV9SEqCh@dell> <20220406132149.GC594699@darkstar.musicnaut.iki.fi>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+Dnia =C5=9Broda, 6 kwietnia 2022 15:21:49 CEST Aaro Koskinen pisze:
+> Hi,
+>=20
+> On Sat, Mar 26, 2022 at 10:17:49PM +0100, Janusz Krzysztofik wrote:
+> > Dnia wtorek, 22 marca 2022 20:07:53 CET Aaro Koskinen pisze:
+> > > On Tue, Mar 22, 2022 at 06:36:48PM +0200, Aaro Koskinen wrote:
+> > > > Something is still broken. When doing kexec (using CCF kernel), the
+> > > > kexec'ed kernel now hangs early (on 770):
+> > > [...]
+> > > > [    0.928863] calling  omap1_init_devices+0x0/0x2c @ 1
+> > >=20
+> > > It hangs in omap_sram_reprogram_clock() (<- omap1_select_table_rate()
+> > > <- omap1_clk_late_init()).
+> >=20
+> > I've reviewed my changes but haven't found anything suspicious.
+>=20
+> The below change is fixing the kexec boot. Based on the comment in the
+> code, it seems this clock is needed for the SRAM to work.
+>=20
+> diff --git a/arch/arm/mach-omap1/clock_data.c b/arch/arm/mach-omap1/clock=
+_data.c
+> index e33e11f826af..b8b4876ff935 100644
+> --- a/arch/arm/mach-omap1/clock_data.c
+> +++ b/arch/arm/mach-omap1/clock_data.c
+> @@ -285,7 +285,7 @@ static struct omap1_clk tc1_ck =3D {
+>   */
+> =20
+>  static struct omap1_clk tc2_ck =3D {
+> -	.hw.init	=3D CLK_HW_INIT("tc2_ck", "tc_ck", &omap1_clk_gate_ops, 0),
+> +	.hw.init	=3D CLK_HW_INIT("tc2_ck", "tc_ck", &omap1_clk_gate_ops, CLK_IS=
+_CRITICAL),
+>  	.ops		=3D &clkops_generic,
+>  	.enable_reg	=3D OMAP1_IO_ADDRESS(ARM_IDLECT3),
+>  	.enable_bit	=3D EN_TC2_CK,
+>=20
+> A.
+>=20
 
-The patches in this series are mostly changes suggested by Daniel Vetter
-to fix some race conditions that exists between the fbdev core (fbmem)
-and sysfb with regard to device registration and removal.
+Thank you Aaro.  Will you submit this as a separate fix, or should I submit=
+=20
+v2 of my patch 4/4 with your fix included?
 
-For example, it is currently possible for sysfb to register a platform
-device after a real DRM driver was registered and requested to remove the
-conflicting framebuffers.
-
-A symptom of this issue, was worked around with by commit fb561bf9abde
-("fbdev: Prevent probing generic drivers if a FB is already registered")
-but that's really a hack and should be reverted.
-
-This series attempt to fix it more properly and reverted the mentioned
-hack. This will also unblock a pending patch to not make num_registered_fb
-visible to drivers anymore, since that's really internal to fbdev core.
-
-Patch #1 is just a trivial preparatory change.
-
-Patch #2 add sysfb_disable() and sysfb_try_unregister() helpers for fbmem
-to use them.
-
-Patch #3 changes how is dealt with conflicting framebuffers unregistering,
-rather than having a variable to determine if a lock should be take, it
-just drops the lock before unregistering the platform device.
-
-Patch #4 fixes the mentioned race conditions and finally patch #5 is the
-revert patch that was posted by Daniel before but he dropped from his set.
-
-The patches were tested on a rpi4 using different video configurations:
-(simpledrm -> vc4 both builtin, only vc4 builtin, only simpledrm builtin
-and simpledrm builtin with vc4 built as a module).
-
-I'm sending as an RFC since there are many changes to the locking scheme
-and that is always tricky to get right. Please let me know what you think.
-
-Best regards,
-Javier
+Thanks,
+Janusz
 
 
-Daniel Vetter (1):
-  Revert "fbdev: Prevent probing generic drivers if a FB is already
-    registered"
-
-Javier Martinez Canillas (4):
-  firmware: sysfb: Make sysfb_create_simplefb() return a pdev pointer
-  firmware: sysfb: Add helpers to unregister a pdev and disable
-    registration
-  fbdev: Restart conflicting fb removal loop when unregistering devices
-  fbdev: Fix some race conditions between fbmem and sysfb
-
- drivers/firmware/sysfb.c          | 51 ++++++++++++++++++++++++++-----
- drivers/firmware/sysfb_simplefb.c | 24 +++++++++------
- drivers/video/fbdev/core/fbmem.c  | 38 ++++++++++++++++++-----
- drivers/video/fbdev/efifb.c       | 11 -------
- drivers/video/fbdev/simplefb.c    | 11 -------
- include/linux/fb.h                |  1 -
- include/linux/sysfb.h             | 27 +++++++++++++---
- 7 files changed, 111 insertions(+), 52 deletions(-)
-
--- 
-2.35.1
 

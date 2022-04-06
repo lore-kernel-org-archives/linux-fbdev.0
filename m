@@ -2,128 +2,117 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCD59C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Apr 2022 14:51:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30EC1C4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Apr 2022 15:55:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S234212AbiDFOxB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Apr 2022 10:53:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56122 "EHLO
+        id S236749AbiDFP5H (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Apr 2022 11:57:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57322 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235048AbiDFOwp (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Apr 2022 10:52:45 -0400
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05A54278540;
-        Tue,  5 Apr 2022 18:24:32 -0700 (PDT)
-Received: by mail-pg1-x531.google.com with SMTP id 66so869924pga.12;
-        Tue, 05 Apr 2022 18:24:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=+kvmNeaIx7IB5BYMxWZTmG2UdGRttU94dBZuAtL4Mmo=;
-        b=LEzG1yPF+iOw/30hd5E7mWGalRFTazmZ26PA34EyQTbkg0YljKXLaPf2eOppyTj4H6
-         yLrLvmCh4vLS4e2+5tjq6DOsc6DDq3GCdY9pxzAAVprQOEvgGRqi/GvrU1xlenMON/oq
-         vqkTGOyRs5HC02ZNBLpMhFjGj8eayV8R8iQ4TlHoXJUQ6x8p1czQStn3js4L+fBTje6D
-         D9DXldHCWPPs3LnMdGHflwmMfHA4JbQ0XtCSRo6SWODePkGh6Q2o1+rlWu9XV6ZxJBvE
-         WKfi+upKy5fetBruNDSKmuKInPS/KDtKhk4gPSPMsFIHEDOfnCEdEMka4RBlnM5rIHVv
-         VTSQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=+kvmNeaIx7IB5BYMxWZTmG2UdGRttU94dBZuAtL4Mmo=;
-        b=GeKK+TT4Os8Iv3J1j3gn2/gs5w6uyLZK6ljYAUGFEIPl6MntscdHodiAwCYOwN/BKb
-         h1N9cUPWfA1H8L0IaRHCxOTB6MOfI7mf4pDtaUXih0vxBALU/h0THXR/zN7xl3usUVYV
-         7mEmSQamYg1WtJi7v04QeMcLDPuDA08yT64+9ALE81pi8IuWaIRILPfTLrcC0dCXQKlN
-         HOkNk/b47lZ0/hHGrmFoJrIh0zRR1v+F+w6aRvNin2GWhX+kV143ZsUFqNmyeG9+KGKF
-         ohcFgX3z4+ibni5MHwjD8143494noTazIXtP6EMVz9G8vHFsBqIEKkliUlkr53ediXaa
-         +YpQ==
-X-Gm-Message-State: AOAM530BNqw5YP0UqCXx4CRsG8BatEWATRKw3fNMHabTiXA4WbOTWf+0
-        OeeeNAiy6D15auOavZlBj0n36fWzQ1bht35ZACGpzMqIl1QL9lY=
-X-Google-Smtp-Source: ABdhPJxTPLh2sMTHkDH1jcm5HIN822wKj5fW0FIFDwf+vBCsisO7uLWVer2kyP1/VgsP1RgN6oAFUVzW0GGO1epC5+4=
-X-Received: by 2002:a62:4e4e:0:b0:4fa:b1d4:3405 with SMTP id
- c75-20020a624e4e000000b004fab1d43405mr6433730pfb.71.1649208271487; Tue, 05
- Apr 2022 18:24:31 -0700 (PDT)
+        with ESMTP id S236759AbiDFP4z (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Apr 2022 11:56:55 -0400
+Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [IPv6:2a0b:5c81:1c1::37])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E8CD156ED5D;
+        Wed,  6 Apr 2022 06:21:56 -0700 (PDT)
+Received: from darkstar.musicnaut.iki.fi (85-76-76-218-nat.elisa-mobile.fi [85.76.76.218])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: aaro.koskinen)
+        by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 67FC71B000E0;
+        Wed,  6 Apr 2022 16:21:51 +0300 (EEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
+        t=1649251312;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=wwR7bU/LqezBbEgTJDf+iEsMymzvGIHgAIteyu5Psh0=;
+        b=eQ8xzLBJMgXjtwB7Yzjx/LojJlTidJ/nTLI5pX0s3cY3Zpsn8b7BqqyMs3XT0RDiE5x3gs
+        VxYcG9eYTL2ti5Y7V7hFYM+rqV7NikHD3H+p5eERqlQfhhkziGxt5EzkIqEux9pVT/63ct
+        9RZefQzE5i14yPjKv+zCKIJs/eTPZg90LntJxUwFkLpuxJfeJHGC27x/eapHvMw+3QBCfO
+        gmU++itRdwNwFQooc8+77js9RrGrUrR+mkDgelpwUoV/wq1kCEziaeZMKg/gpUDKVDqGmb
+        sdmlvWnhCTYcYS7NFr9PDY7i6KlEk5IH1VV/If5zeEdFsCEIB7hDvyObaWz3Xw==
+Date:   Wed, 6 Apr 2022 16:21:49 +0300
+From:   Aaro Koskinen <aaro.koskinen@iki.fi>
+To:     Janusz Krzysztofik <jmkrzyszt@gmail.com>
+Cc:     Tony Lindgren <tony@atomide.com>, Paul Walmsley <paul@pwsan.com>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Helge Deller <deller@gmx.de>, linux-omap@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-usb@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Arnd Bergmann <arnd@arndb.de>, Felipe Balbi <balbi@kernel.org>,
+        Peter Ujfalusi <peter.ujfalusi@gmail.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>, linux-mmc@vger.kernel.org,
+        alsa-devel@alsa-project.org
+Subject: Re: [PATCH v2] ARM: OMAP1: Prepare for conversion of OMAP1 clocks to
+ CCF
+Message-ID: <20220406132149.GC594699@darkstar.musicnaut.iki.fi>
+References: <20220310233307.99220-3-jmkrzyszt@gmail.com>
+ <20220322163646.GD297526@darkstar.musicnaut.iki.fi>
+ <20220322190753.GF297526@darkstar.musicnaut.iki.fi>
+ <1810824.tdWV9SEqCh@dell>
 MIME-Version: 1.0
-References: <CAMhUBjmFhqTLBscHHVZ1VTSqrJBT1VEevA+KkjY+y9_ZtdRkMg@mail.gmail.com>
- <CAMuHMdUiEo8q9x0C0x5zOM=ax1=S06=s0JjcJvZYD4aMGLmEaQ@mail.gmail.com>
- <a564f6af-31fa-79a2-72c3-578f2c095b23@gmx.de> <202204051946.43277.linux@zary.sk>
- <527a8c23-609f-5f8a-e076-a8a59da59865@gmx.de>
-In-Reply-To: <527a8c23-609f-5f8a-e076-a8a59da59865@gmx.de>
-From:   Zheyu Ma <zheyuma97@gmail.com>
-Date:   Wed, 6 Apr 2022 09:24:20 +0800
-Message-ID: <CAMhUBjmBm3=CY=cCZuH0+ZeemNVT=9XywSoYiR7WLcYOUGu9VQ@mail.gmail.com>
-Subject: =?UTF-8?B?UmU6IFtCVUddIGZiZGV2OiBpNzQwZmI6IERpdmlkZSBlcnJvciB3aGVuIOKAmHZhci0+cA==?=
-        =?UTF-8?B?aXhjbG9ja+KAmSBpcyB6ZXJv?=
-To:     Helge Deller <deller@gmx.de>
-Cc:     Ondrej Zary <linux@zary.sk>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1810824.tdWV9SEqCh@dell>
+ARC-Seal: i=1; s=lahtoruutu; d=iki.fi; t=1649251312; a=rsa-sha256;
+        cv=none;
+        b=G3rkvREcvYSgPILWjB5NXkPEwDB12zuDb/aFmiEvpjUFHoIPAJkYCg4gSvydBuXsCOrASV
+        qwVzzbSSEMx9mt98MsnoQGVKzIanrO0nr1oceqozsnLldbYtfYofM5nMCz1ygfNCoiqH+K
+        IgUw/j2ZP7FR0vbtq7AE6gODdl7vMQ3Vfs+C4Xr8gfhiKcLrcewjnyFbLJ8VzM6wBTdU7t
+        gGydIzbI/MdPmrFnVpcq2dLpYJlLq8V5O5cFhpaQPPezxVpgC6QZLcN3upxt341r2aPWzQ
+        DGmnbA4hUe8LZaRUfUkOTNHA0z69SzxLRjRbScNwYpTyKIoK+T6Q5ps5tgqjKw==
+ARC-Authentication-Results: i=1;
+        ORIGINATING;
+        auth=pass smtp.auth=aaro.koskinen smtp.mailfrom=aaro.koskinen@iki.fi
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
+        s=lahtoruutu; t=1649251312;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=wwR7bU/LqezBbEgTJDf+iEsMymzvGIHgAIteyu5Psh0=;
+        b=vWn818AHWtvsq5cDnlrJUnWE79qMNnj8xFj19jFSqwBPLeAtdZ43oHVi70bcMK+nMmLrSK
+        egs3u5wrj9LuerZbuMRnIpytvyvxIRPPV7q5I7a2AsQUHhbykzAHVVpq/9fp7ydLJC4BkE
+        /j7PyMCSQ8gsrfNhsiwPPt7loNA6QMRRlDk5Z6QZ2s9NdMXLpTvDXdFyETUiIH9yQ6N8ZV
+        UA7Ohf8mDgm8uV/Dx1bNcCT7oIamV8mar/PlKoL+fP1XJy/PNu3ZxCz87uc5NkMQwotWIp
+        I92ppcKhR83XiGqTSWPAjd1EkDpGjMI2CtDXW+kr0FIUmivOhk5Ny7zCGfDavA==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Apr 6, 2022 at 2:23 AM Helge Deller <deller@gmx.de> wrote:
->
-> On 4/5/22 19:46, Ondrej Zary wrote:
-> > On Tuesday 05 April 2022 08:33:57 Helge Deller wrote:
-> >> Hello Geert,
-> >>
-> >> On 4/4/22 13:46, Geert Uytterhoeven wrote:
-> >>> Hi Helge,
-> >>>
-> >>> On Sun, Apr 3, 2022 at 5:41 PM Helge Deller <deller@gmx.de> wrote:
-> >>>> On 4/3/22 13:26, Zheyu Ma wrote:
-> >>>>> I found a bug in the function i740fb_set_par().
-> >>>>
-> >>>> Nice catch!
-> >>>>
-> >>>>> When the user calls the ioctl system call without setting the value to
-> >>>>> 'var->pixclock', the driver will throw a divide error.
-> >>>>>
-> >>>>> This bug occurs because the driver uses the value of 'var->pixclock'
-> >>>>> without checking it, as the following code snippet show:
-> >>>>>
-> >>>>> if ((1000000 / var->pixclock) > DACSPEED8) {
-> >>>>>      dev_err(info->device, "requested pixclock %i MHz out of range
-> >>>>> (max. %i MHz at 8bpp)\n",
-> >>>>>          1000000 / var->pixclock, DACSPEED8);
-> >>>>>     return -EINVAL;x
-> >>>>> }
-> >>>>>
-> >>>>> We can fix this by checking the value of 'var->pixclock' in the
-> >>>>> function i740fb_check_var() similar to commit
-> >>>>> b36b242d4b8ea178f7fd038965e3cac7f30c3f09, or we should set the lowest
-> >>>>> supported value when this field is zero.
-> >>>>> I have no idea about which solution is better.
-> >>>>
-> >>>> Me neither.
-> >>>> I think a solution like commit b36b242d4b8ea178f7fd038965e3cac7f30c3f09
-> >>>> is sufficient.
-> >>>>
-> >>>> Note that i740fb_set_par() is called in i740fb_resume() as well.
-> >>>> Since this doesn't comes form userspace I think adding a check for
-> >>>> the return value there isn't necessary.
-> >>>>
-> >>>> Would you mind sending a patch like b36b242d4b8ea178f7fd038965e3cac7f30c3f09 ?
-> >>>
-> >>> When passed an invalid value, .check_var() is supposed to
-> >>> round up the invalid to a valid value, if possible.
-> >>
-> >> I don't disagree.
-> >> The main problem probably is: what is the next valid value?
-> >> This needs to be analyzed on a per-driver base and ideally tested.
-> >> Right now a division-by-zero is tiggered which is probably more worse.
-> >
-> > I still have an i740 card so I can test it.
->
-> Good. Someone wants to come up with a proposed patch?
+Hi,
 
-I have submitted patches for the i740fb driver and other drivers which
-have similar bugs as follows:
-https://lore.kernel.org/all/20220404084723.79089-1-zheyuma97@gmail.com/
+On Sat, Mar 26, 2022 at 10:17:49PM +0100, Janusz Krzysztofik wrote:
+> Dnia wtorek, 22 marca 2022 20:07:53 CET Aaro Koskinen pisze:
+> > On Tue, Mar 22, 2022 at 06:36:48PM +0200, Aaro Koskinen wrote:
+> > > Something is still broken. When doing kexec (using CCF kernel), the
+> > > kexec'ed kernel now hangs early (on 770):
+> > [...]
+> > > [    0.928863] calling  omap1_init_devices+0x0/0x2c @ 1
+> > 
+> > It hangs in omap_sram_reprogram_clock() (<- omap1_select_table_rate()
+> > <- omap1_clk_late_init()).
+> 
+> I've reviewed my changes but haven't found anything suspicious.
 
-Zheyu Ma
+The below change is fixing the kexec boot. Based on the comment in the
+code, it seems this clock is needed for the SRAM to work.
+
+diff --git a/arch/arm/mach-omap1/clock_data.c b/arch/arm/mach-omap1/clock_data.c
+index e33e11f826af..b8b4876ff935 100644
+--- a/arch/arm/mach-omap1/clock_data.c
++++ b/arch/arm/mach-omap1/clock_data.c
+@@ -285,7 +285,7 @@ static struct omap1_clk tc1_ck = {
+  */
+ 
+ static struct omap1_clk tc2_ck = {
+-	.hw.init	= CLK_HW_INIT("tc2_ck", "tc_ck", &omap1_clk_gate_ops, 0),
++	.hw.init	= CLK_HW_INIT("tc2_ck", "tc_ck", &omap1_clk_gate_ops, CLK_IS_CRITICAL),
+ 	.ops		= &clkops_generic,
+ 	.enable_reg	= OMAP1_IO_ADDRESS(ARM_IDLECT3),
+ 	.enable_bit	= EN_TC2_CK,
+
+A.

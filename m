@@ -2,102 +2,128 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4DDFC4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Apr 2022 01:05:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCD59C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Apr 2022 14:51:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352977AbiDFA7a (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 5 Apr 2022 20:59:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58342 "EHLO
+        id S234212AbiDFOxB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 6 Apr 2022 10:53:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56122 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1386363AbiDEVuf (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Tue, 5 Apr 2022 17:50:35 -0400
-Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB712137008
-        for <linux-fbdev@vger.kernel.org>; Tue,  5 Apr 2022 13:54:55 -0700 (PDT)
-Received: by mail-wr1-x441.google.com with SMTP id k23so287205wrd.8
-        for <linux-fbdev@vger.kernel.org>; Tue, 05 Apr 2022 13:54:55 -0700 (PDT)
+        with ESMTP id S235048AbiDFOwp (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Apr 2022 10:52:45 -0400
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 05A54278540;
+        Tue,  5 Apr 2022 18:24:32 -0700 (PDT)
+Received: by mail-pg1-x531.google.com with SMTP id 66so869924pga.12;
+        Tue, 05 Apr 2022 18:24:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=9NHEHnuZ3EwIt6oRfVHzwUDeTZ1Be9ZvXyD0BUY2xlM=;
-        b=dMIxaOA+PwGmGbUBgSF+BtNgTUc4RKGxiEJxcOGGW41WPS35KSWlB4hv7i4DbpxOGC
-         ZH1S+U4+vSggXY1XAGmMMGqiGDAAFbM1TiIfR+O950jkhP22hrN5zpqEUFn8ZJUif7W1
-         UT9mutnETTYpsxdjQi923ezsNRj0CTq+AgkAA=
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=+kvmNeaIx7IB5BYMxWZTmG2UdGRttU94dBZuAtL4Mmo=;
+        b=LEzG1yPF+iOw/30hd5E7mWGalRFTazmZ26PA34EyQTbkg0YljKXLaPf2eOppyTj4H6
+         yLrLvmCh4vLS4e2+5tjq6DOsc6DDq3GCdY9pxzAAVprQOEvgGRqi/GvrU1xlenMON/oq
+         vqkTGOyRs5HC02ZNBLpMhFjGj8eayV8R8iQ4TlHoXJUQ6x8p1czQStn3js4L+fBTje6D
+         D9DXldHCWPPs3LnMdGHflwmMfHA4JbQ0XtCSRo6SWODePkGh6Q2o1+rlWu9XV6ZxJBvE
+         WKfi+upKy5fetBruNDSKmuKInPS/KDtKhk4gPSPMsFIHEDOfnCEdEMka4RBlnM5rIHVv
+         VTSQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to;
-        bh=9NHEHnuZ3EwIt6oRfVHzwUDeTZ1Be9ZvXyD0BUY2xlM=;
-        b=j3K3OgbLL/epOepOZ8cmg9fqk40QB6KHw5TsE6TYX3927858nv6n1awqphy78Speq6
-         aXUN/66R8LjrYu+luulMqImleX2y3Yx8tHx22kIKASP41Y1wzOSe+aTmaWuFuerr7vMk
-         ClWrG72VEHC47lrHGLpgD1zFXlPukzhTS1ogc7w1yBcOo1mfq441F+KWGBpOVgMMmByS
-         SaKOikqVCqa5wCi81+zo5THLlyHPR8YrP+a45xPlBI5zFeKdNdGEp8fgZRMC8H+uug4U
-         KYTpMqvQ4Zy8quon8rp40mm6drVluR2ZDEejqHkr/sod2zp2z14XLXXL2crquCrdQdhy
-         tOPg==
-X-Gm-Message-State: AOAM5315gRGr1dUSF/1Tau26HR+/TCB61cebG3UN8u0Aea4X2kCeYK3w
-        ka5bHyPXRvtLwCGjogDjYt2f2Q==
-X-Google-Smtp-Source: ABdhPJyhXpgIjQQcv0SKxB4ADopYBn4Ma33nCG5hGhtlwq04P9w9qJQ0mEskhuSP+q2j89By5mUeGg==
-X-Received: by 2002:adf:f24d:0:b0:206:96b:4ea1 with SMTP id b13-20020adff24d000000b00206096b4ea1mr4059467wrp.694.1649192093853;
-        Tue, 05 Apr 2022 13:54:53 -0700 (PDT)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id s1-20020adfb781000000b002060d4a8bd9sm8008923wre.17.2022.04.05.13.54.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Apr 2022 13:54:53 -0700 (PDT)
-Date:   Tue, 5 Apr 2022 22:54:51 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
-        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Claudio Suarez <cssk@net-c.es>, Du Cheng <ducheng2@gmail.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v2 06/19] fbcon: Use delayed work for cursor
-Message-ID: <Ykysm3EJd3XLrzyr@phenom.ffwll.local>
-Mail-Followup-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Intel Graphics Development <intel-gfx@lists.freedesktop.org>,
-        linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Claudio Suarez <cssk@net-c.es>, Du Cheng <ducheng2@gmail.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-References: <20220208210824.2238981-1-daniel.vetter@ffwll.ch>
- <20220208210824.2238981-7-daniel.vetter@ffwll.ch>
- <7f6d61f4-042f-8c9d-23ed-da6f1dcb20d0@I-love.SAKURA.ne.jp>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=+kvmNeaIx7IB5BYMxWZTmG2UdGRttU94dBZuAtL4Mmo=;
+        b=GeKK+TT4Os8Iv3J1j3gn2/gs5w6uyLZK6ljYAUGFEIPl6MntscdHodiAwCYOwN/BKb
+         h1N9cUPWfA1H8L0IaRHCxOTB6MOfI7mf4pDtaUXih0vxBALU/h0THXR/zN7xl3usUVYV
+         7mEmSQamYg1WtJi7v04QeMcLDPuDA08yT64+9ALE81pi8IuWaIRILPfTLrcC0dCXQKlN
+         HOkNk/b47lZ0/hHGrmFoJrIh0zRR1v+F+w6aRvNin2GWhX+kV143ZsUFqNmyeG9+KGKF
+         ohcFgX3z4+ibni5MHwjD8143494noTazIXtP6EMVz9G8vHFsBqIEKkliUlkr53ediXaa
+         +YpQ==
+X-Gm-Message-State: AOAM530BNqw5YP0UqCXx4CRsG8BatEWATRKw3fNMHabTiXA4WbOTWf+0
+        OeeeNAiy6D15auOavZlBj0n36fWzQ1bht35ZACGpzMqIl1QL9lY=
+X-Google-Smtp-Source: ABdhPJxTPLh2sMTHkDH1jcm5HIN822wKj5fW0FIFDwf+vBCsisO7uLWVer2kyP1/VgsP1RgN6oAFUVzW0GGO1epC5+4=
+X-Received: by 2002:a62:4e4e:0:b0:4fa:b1d4:3405 with SMTP id
+ c75-20020a624e4e000000b004fab1d43405mr6433730pfb.71.1649208271487; Tue, 05
+ Apr 2022 18:24:31 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7f6d61f4-042f-8c9d-23ed-da6f1dcb20d0@I-love.SAKURA.ne.jp>
-X-Operating-System: Linux phenom 5.10.0-8-amd64 
+References: <CAMhUBjmFhqTLBscHHVZ1VTSqrJBT1VEevA+KkjY+y9_ZtdRkMg@mail.gmail.com>
+ <CAMuHMdUiEo8q9x0C0x5zOM=ax1=S06=s0JjcJvZYD4aMGLmEaQ@mail.gmail.com>
+ <a564f6af-31fa-79a2-72c3-578f2c095b23@gmx.de> <202204051946.43277.linux@zary.sk>
+ <527a8c23-609f-5f8a-e076-a8a59da59865@gmx.de>
+In-Reply-To: <527a8c23-609f-5f8a-e076-a8a59da59865@gmx.de>
+From:   Zheyu Ma <zheyuma97@gmail.com>
+Date:   Wed, 6 Apr 2022 09:24:20 +0800
+Message-ID: <CAMhUBjmBm3=CY=cCZuH0+ZeemNVT=9XywSoYiR7WLcYOUGu9VQ@mail.gmail.com>
+Subject: =?UTF-8?B?UmU6IFtCVUddIGZiZGV2OiBpNzQwZmI6IERpdmlkZSBlcnJvciB3aGVuIOKAmHZhci0+cA==?=
+        =?UTF-8?B?aXhjbG9ja+KAmSBpcyB6ZXJv?=
+To:     Helge Deller <deller@gmx.de>
+Cc:     Ondrej Zary <linux@zary.sk>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Thu, Feb 10, 2022 at 08:43:36PM +0900, Tetsuo Handa wrote:
-> On 2022/02/09 6:08, Daniel Vetter wrote:
-> > @@ -714,6 +700,8 @@ static int con2fb_acquire_newinfo(struct vc_data *vc, struct fb_info *info,
-> >  		ops = kzalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
-> >  		if (!ops)
-> >  			err = -ENOMEM;
-> > +
-> > +		INIT_DELAYED_WORK(&ops->cursor_work, fb_flashcursor);
-> >  	}
-> >  
-> >  	if (!err) {
-> 
-> Memory allocation fault injection will hit NULL pointer dereference.
+On Wed, Apr 6, 2022 at 2:23 AM Helge Deller <deller@gmx.de> wrote:
+>
+> On 4/5/22 19:46, Ondrej Zary wrote:
+> > On Tuesday 05 April 2022 08:33:57 Helge Deller wrote:
+> >> Hello Geert,
+> >>
+> >> On 4/4/22 13:46, Geert Uytterhoeven wrote:
+> >>> Hi Helge,
+> >>>
+> >>> On Sun, Apr 3, 2022 at 5:41 PM Helge Deller <deller@gmx.de> wrote:
+> >>>> On 4/3/22 13:26, Zheyu Ma wrote:
+> >>>>> I found a bug in the function i740fb_set_par().
+> >>>>
+> >>>> Nice catch!
+> >>>>
+> >>>>> When the user calls the ioctl system call without setting the value to
+> >>>>> 'var->pixclock', the driver will throw a divide error.
+> >>>>>
+> >>>>> This bug occurs because the driver uses the value of 'var->pixclock'
+> >>>>> without checking it, as the following code snippet show:
+> >>>>>
+> >>>>> if ((1000000 / var->pixclock) > DACSPEED8) {
+> >>>>>      dev_err(info->device, "requested pixclock %i MHz out of range
+> >>>>> (max. %i MHz at 8bpp)\n",
+> >>>>>          1000000 / var->pixclock, DACSPEED8);
+> >>>>>     return -EINVAL;x
+> >>>>> }
+> >>>>>
+> >>>>> We can fix this by checking the value of 'var->pixclock' in the
+> >>>>> function i740fb_check_var() similar to commit
+> >>>>> b36b242d4b8ea178f7fd038965e3cac7f30c3f09, or we should set the lowest
+> >>>>> supported value when this field is zero.
+> >>>>> I have no idea about which solution is better.
+> >>>>
+> >>>> Me neither.
+> >>>> I think a solution like commit b36b242d4b8ea178f7fd038965e3cac7f30c3f09
+> >>>> is sufficient.
+> >>>>
+> >>>> Note that i740fb_set_par() is called in i740fb_resume() as well.
+> >>>> Since this doesn't comes form userspace I think adding a check for
+> >>>> the return value there isn't necessary.
+> >>>>
+> >>>> Would you mind sending a patch like b36b242d4b8ea178f7fd038965e3cac7f30c3f09 ?
+> >>>
+> >>> When passed an invalid value, .check_var() is supposed to
+> >>> round up the invalid to a valid value, if possible.
+> >>
+> >> I don't disagree.
+> >> The main problem probably is: what is the next valid value?
+> >> This needs to be analyzed on a per-driver base and ideally tested.
+> >> Right now a division-by-zero is tiggered which is probably more worse.
+> >
+> > I still have an i740 card so I can test it.
+>
+> Good. Someone wants to come up with a proposed patch?
 
-The error handling here is convoluted and I got this wrong, but a later
-patch to extract an fbcon_open() helper fixes it. I'll fix this small
-bisect issue for v3 anyway, thanks for taking a look at the patches.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+I have submitted patches for the i740fb driver and other drivers which
+have similar bugs as follows:
+https://lore.kernel.org/all/20220404084723.79089-1-zheyuma97@gmail.com/
+
+Zheyu Ma

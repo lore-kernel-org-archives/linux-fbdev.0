@@ -2,158 +2,97 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3017AC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed,  6 Apr 2022 21:49:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C92A3C43217
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Apr 2022 09:01:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236519AbiDFVvi (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 6 Apr 2022 17:51:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42498 "EHLO
+        id S240640AbiDGJDt (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 7 Apr 2022 05:03:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54608 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236388AbiDFVvM (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 6 Apr 2022 17:51:12 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id DD4FE5B3D7
-        for <linux-fbdev@vger.kernel.org>; Wed,  6 Apr 2022 14:41:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1649281260;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=4FhXBUnLq/AeYpcQ43hIiOOWtFlBWzfoVNvi0Bsh0Mg=;
-        b=PyUfjGCC1VQFwn7lvEXn9IaB8SfkWw63Oi/RdasUCAQ4WZbSlyNZuw5y7qn95Xp6+gD+UF
-        7FUEv95qfmg6ShaDW1Gr1skp8u+EBXfg/Q5ca4H0tHwq/azB1mDp2Fwg+sSbRwpx/RDIpM
-        CJHFQro0+shaq22fQd0UTbiWesgNsBE=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-631-E5D0HNKOPqCL1y069tjALg-1; Wed, 06 Apr 2022 17:40:59 -0400
-X-MC-Unique: E5D0HNKOPqCL1y069tjALg-1
-Received: by mail-wm1-f72.google.com with SMTP id x8-20020a7bc768000000b0038e73173886so1901152wmk.6
-        for <linux-fbdev@vger.kernel.org>; Wed, 06 Apr 2022 14:40:58 -0700 (PDT)
+        with ESMTP id S243765AbiDGJD3 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Apr 2022 05:03:29 -0400
+Received: from mail-qt1-x82b.google.com (mail-qt1-x82b.google.com [IPv6:2607:f8b0:4864:20::82b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 17AA68164F;
+        Thu,  7 Apr 2022 02:01:30 -0700 (PDT)
+Received: by mail-qt1-x82b.google.com with SMTP id t19so7580710qtc.4;
+        Thu, 07 Apr 2022 02:01:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=7k9wHjGCmirLGQtDNZunWvATfCdcYy0H3Z1yCUnVVgo=;
+        b=eoSQ6dFjX7ebCs11Jl1ZGRgtLmSxbNl8ge+CP32X1ALfHiAP2IqJsNz2PI1FytMYUG
+         wUlrBhsUyB8iWdbxQvx7SEou0vURFav0N5dpZmkhWn1epeWwsbtahWixJ+DvtrgxM7O1
+         cAyCa3JpyK47O59pZ7QhhwWLIWuO1h3ttFuePmUQSOpK4UesJik8t17h7x/b1PySd85y
+         W1hb6lPqoW6xpJx88rax1kgFmWI8v/12R9K4AU+Y8W6Vs3STD1QjVe0nB0w5ZedFy8Ql
+         94sSm72kvl24tKaaqoNkeiKR56ArK91gf6jWl5bv1YLhOjabEm6zcLamLIAsZFavr8sQ
+         VyMw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=4FhXBUnLq/AeYpcQ43hIiOOWtFlBWzfoVNvi0Bsh0Mg=;
-        b=KegbbIbdR5A9cHck95RZru7dddqNjh+AJnE6ZxaFWxeJLjy7B0G6jvDWVwwfzWsu7b
-         KAYEW5SI9f3fuj2zQvkAEiiES8RpIuEOuWukW3UIjIkNrbNzNd63cvD1jVbWpGdjnzUW
-         bYQHU5bG73EvOgeC6jb7AXky11vjDJVcLidfuf6ygPxX8jlZQbjc+HuPRcn9nxMhUqqz
-         qdSYWYd5lO/gDP1KR4N95r5owk2WU4IJwFm/NwuyUfvd88TxpinBirtVBdUq5ISgWpmM
-         RCqQF5Nov30X7eQ6Vln/a08Iwxeo7cuUF2m2IFSHiEW49NyY/sCaBAUPLM7nRcq1Ri2I
-         k8QA==
-X-Gm-Message-State: AOAM5324vav9XJiYBms2D7GGtl7ZOnwgfu5AWnvkfMAn8WANmJLZRfSs
-        JwqleaHV0p5j5k2dsjBi+8LwUdwSlsC93JXL5krBvMMVHdGuqGsYV6xTq6ej3qQqI+La1CYJW6H
-        RNBMBvz2w/Ntp/xFqiQzV+zg=
-X-Received: by 2002:a7b:cf2f:0:b0:38e:6f21:bba9 with SMTP id m15-20020a7bcf2f000000b0038e6f21bba9mr9082584wmg.94.1649281257932;
-        Wed, 06 Apr 2022 14:40:57 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzu0lYRk3QkxgnvH66v8eUTrMYR+LVlqeV9xMaH6jcY66CpHDS6DKp0bRanjMtEYrzwKOSL2A==
-X-Received: by 2002:a7b:cf2f:0:b0:38e:6f21:bba9 with SMTP id m15-20020a7bcf2f000000b0038e6f21bba9mr9082565wmg.94.1649281257668;
-        Wed, 06 Apr 2022 14:40:57 -0700 (PDT)
-Received: from minerva.home ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id o29-20020a05600c511d00b0038e3532b23csm5876020wms.15.2022.04.06.14.40.55
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=7k9wHjGCmirLGQtDNZunWvATfCdcYy0H3Z1yCUnVVgo=;
+        b=JaBvADIcdcoid7PhhANHYlwxuU77kIVTbGnYp+Qvky8E43hwY2s25PLc9xXdLFPJDN
+         vWL7N/1wO1urQLv7tasFJP6ChgWKfaGpTJDXVQ9TdqgXk2dpOS7nzllmC3aJsuBhStg/
+         8nV80SSzGHxnLVhm65IT28qK/hCrNLKDycxnxMFWBNF8vsM9GK41wKMC5wGnDmvpgU2U
+         sDjjkKsMdasciL88jOJoLv8zjcRA1bEImbj60QSVOST6K6AYKYA5yvkeasP+/LEhvFFK
+         pRn29dnaJjqH+gRJdy8WCnL4gVIUGZ+r8EXjkfMFy860JMu0hp7G9AKqds5y5aoMzXm6
+         Yudw==
+X-Gm-Message-State: AOAM532Jb60/tJ5HrCdCHJRdR13FdNNYW6ouB13tT0Rt1MY+JrjVQWGM
+        QHSxUcgisi3aMiWAXV8DV9U=
+X-Google-Smtp-Source: ABdhPJyt6Mnnqh0FTkOo1W8dKin7q9bCtIm4dDnlr76kyfZvugnPP3KPcRcXj0jwBM7EhC3Ss1VxKQ==
+X-Received: by 2002:a05:622a:653:b0:2e1:c046:4825 with SMTP id a19-20020a05622a065300b002e1c0464825mr11178669qtb.430.1649322089296;
+        Thu, 07 Apr 2022 02:01:29 -0700 (PDT)
+Received: from localhost.localdomain ([193.203.214.57])
+        by smtp.gmail.com with ESMTPSA id o21-20020ac85a55000000b002e16389b501sm15031194qta.96.2022.04.07.02.01.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 06 Apr 2022 14:40:57 -0700 (PDT)
-From:   Javier Martinez Canillas <javierm@redhat.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Zack Rusin <zackr@vmware.com>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Ilya Trukhanov <lahvuun@gmail.com>,
-        Daniel Vetter <daniel.vetter@intel.com>,
-        Peter Jones <pjones@redhat.com>, linux-fbdev@vger.kernel.org,
-        Helge Deller <deller@gmx.de>
-Subject: [RESEND RFC PATCH 5/5] Revert "fbdev: Prevent probing generic drivers if a FB is already registered"
-Date:   Wed,  6 Apr 2022 23:39:19 +0200
-Message-Id: <20220406213919.600294-6-javierm@redhat.com>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220406213919.600294-1-javierm@redhat.com>
-References: <20220406213919.600294-1-javierm@redhat.com>
+        Thu, 07 Apr 2022 02:01:29 -0700 (PDT)
+From:   cgel.zte@gmail.com
+X-Google-Original-From: lv.ruyi@zte.com.cn
+To:     s.hauer@pengutronix.de, kernel@pengutronix.de
+Cc:     deller@gmx.de, shawnguo@kernel.org, festevam@gmail.com,
+        linux-imx@nxp.com, linux-fbdev@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Lv Ruyi <lv.ruyi@zte.com.cn>, Zeal Robot <zealci@zte.com.cn>
+Subject: [PATCH] video: fbdev:  Fix missing of_node_put in imxfb_probe
+Date:   Thu,  7 Apr 2022 09:01:22 +0000
+Message-Id: <20220407090122.2491922-1-lv.ruyi@zte.com.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
+From: Lv Ruyi <lv.ruyi@zte.com.cn>
 
-This reverts commit fb561bf9abde49f7e00fdbf9ed2ccf2d86cac8ee.
+of_parse_phandle returns node pointer with refcount incremented,
+use of_node_put() on it when done.
 
-With
-
-commit 27599aacbaefcbf2af7b06b0029459bbf682000d
-Author: Thomas Zimmermann <tzimmermann@suse.de>
-Date:   Tue Jan 25 10:12:18 2022 +0100
-
-    fbdev: Hot-unplug firmware fb devices on forced removal
-
-this should be fixed properly and we can remove this somewhat hackish
-check here (e.g. this won't catch drm drivers if fbdev emulation isn't
-enabled).
-
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Zack Rusin <zackr@vmware.com>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Zack Rusin <zackr@vmware.com>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Ilya Trukhanov <lahvuun@gmail.com>
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Cc: Peter Jones <pjones@redhat.com>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Lv Ruyi <lv.ruyi@zte.com.cn>
 ---
+ drivers/video/fbdev/imxfb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
- drivers/video/fbdev/efifb.c    | 11 -----------
- drivers/video/fbdev/simplefb.c | 11 -----------
- 2 files changed, 22 deletions(-)
-
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index ea42ba6445b2..edca3703b964 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -351,17 +351,6 @@ static int efifb_probe(struct platform_device *dev)
- 	char *option = NULL;
- 	efi_memory_desc_t md;
+diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+index 68288756ffff..a2f644c97f28 100644
+--- a/drivers/video/fbdev/imxfb.c
++++ b/drivers/video/fbdev/imxfb.c
+@@ -925,10 +925,12 @@ static int imxfb_probe(struct platform_device *pdev)
+ 				sizeof(struct imx_fb_videomode), GFP_KERNEL);
+ 		if (!fbi->mode) {
+ 			ret = -ENOMEM;
++			of_node_put(display_np);
+ 			goto failed_of_parse;
+ 		}
  
--	/*
--	 * Generic drivers must not be registered if a framebuffer exists.
--	 * If a native driver was probed, the display hardware was already
--	 * taken and attempting to use the system framebuffer is dangerous.
--	 */
--	if (num_registered_fb > 0) {
--		dev_err(&dev->dev,
--			"efifb: a framebuffer is already registered\n");
--		return -EINVAL;
--	}
--
- 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI || pci_dev_disabled)
- 		return -ENODEV;
- 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index 94fc9c6d0411..0ef41173325a 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -413,17 +413,6 @@ static int simplefb_probe(struct platform_device *pdev)
- 	struct simplefb_par *par;
- 	struct resource *res, *mem;
- 
--	/*
--	 * Generic drivers must not be registered if a framebuffer exists.
--	 * If a native driver was probed, the display hardware was already
--	 * taken and attempting to use the system framebuffer is dangerous.
--	 */
--	if (num_registered_fb > 0) {
--		dev_err(&pdev->dev,
--			"simplefb: a framebuffer is already registered\n");
--		return -EINVAL;
--	}
--
- 	if (fb_get_options("simplefb", NULL))
- 		return -ENODEV;
- 
+ 		ret = imxfb_of_read_mode(&pdev->dev, display_np, fbi->mode);
++		of_node_put(display_np);
+ 		if (ret)
+ 			goto failed_of_parse;
+ 	}
 -- 
-2.35.1
+2.25.1
 

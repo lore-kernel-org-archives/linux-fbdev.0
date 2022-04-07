@@ -2,108 +2,149 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26EB3C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Apr 2022 09:15:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B2D0C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Apr 2022 15:52:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243704AbiDGJRw (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 7 Apr 2022 05:17:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56906 "EHLO
+        id S242311AbiDGPy1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 7 Apr 2022 11:54:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243706AbiDGJRv (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Apr 2022 05:17:51 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id BF941D557E
-        for <linux-fbdev@vger.kernel.org>; Thu,  7 Apr 2022 02:15:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1649322950;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=CmxBb4M+/kdbgcE8GirSAAcAN2ciEIElRp8Y7WJjwMM=;
-        b=Cf6+wb09S4d3vn0Kr/YiJVGuCixamPsRLhLrO90hRw1+vvbsN5ADfNfAK6xVMw+sdGeYzh
-        zbf9u1S+vMuIXo0g6XOMXNUzZLXI5/0wFCT4hwEmzHK7GNGIvLZWStWYXb7M8QJfo/dfrk
-        e8/Qh/4K9sT6gbxjB5ots5x5BgnuJVs=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-240-fQ23iPYzNmKzltoSJh470Q-1; Thu, 07 Apr 2022 05:15:49 -0400
-X-MC-Unique: fQ23iPYzNmKzltoSJh470Q-1
-Received: by mail-wm1-f69.google.com with SMTP id 189-20020a1c02c6000000b0038e6c4c6472so4315924wmc.1
-        for <linux-fbdev@vger.kernel.org>; Thu, 07 Apr 2022 02:15:49 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=CmxBb4M+/kdbgcE8GirSAAcAN2ciEIElRp8Y7WJjwMM=;
-        b=s7ecJjrn1f45qQPwItaXaZTrPBOnG05NWnPaIQYALNkcYteqeSf2Wv4zUe6eBv3Beo
-         VxC1LJQ2QngtsIIQiCy91P6e/BbZ5pL1qzPXHdhUeTu7KCAQ7tBH9p5F8gv414ueoaiJ
-         d9jMKOk5MrLYKU0v6iN/yjWEFeaR3A44MhvrMGhMKu/ORMN4p0oyIhsLwuyxNnJQcole
-         Gra/yDc0fzmDK1Y3A2UeZJE9oticLlvnF6mt8M5qwsy07b+gL3afe+Vo9EjEi4ETlycu
-         bIj2xYNB17GYk3E/24nDBkAzaIxoa9d81/o1C31yeX4VebJmBWnTbsLFfeq6UT8K7s7K
-         hMVg==
-X-Gm-Message-State: AOAM533tLmp8UsaRKuPwMUTbcOHs1vrGHqV3g4ktxNjAdHUl84IeWEIM
-        5R4eKNT0yOZIRrGuewe9Qidqg+d/uTp7x90LQ2c1U+FJBirDS81ai/QROPvEhZqBio6xzVAF3HZ
-        u2OTa/aB/cxVxeWqkRelGR6E=
-X-Received: by 2002:a05:600c:a4b:b0:37b:ea2b:5583 with SMTP id c11-20020a05600c0a4b00b0037bea2b5583mr11418261wmq.139.1649322948601;
-        Thu, 07 Apr 2022 02:15:48 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzR+LYKbt9u3VokYFVPcbGSqCBhtUuOTFAakMiYXEbr6yt5DBwUZeDZJFTJ+SKPtiP285isGg==
-X-Received: by 2002:a05:600c:a4b:b0:37b:ea2b:5583 with SMTP id c11-20020a05600c0a4b00b0037bea2b5583mr11418242wmq.139.1649322948426;
-        Thu, 07 Apr 2022 02:15:48 -0700 (PDT)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id s10-20020adf978a000000b002060c258514sm11680472wrb.23.2022.04.07.02.15.47
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 07 Apr 2022 02:15:48 -0700 (PDT)
-Message-ID: <31932dda-bfd2-01ca-8ff4-9239ce0b0dd4@redhat.com>
-Date:   Thu, 7 Apr 2022 11:15:47 +0200
+        with ESMTP id S230513AbiDGPy0 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Apr 2022 11:54:26 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA29713F0A;
+        Thu,  7 Apr 2022 08:52:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1649346737;
+        bh=8F0t/FONcQor1dELWSbQulID3wh2RD6EgpmnVPvR4Cg=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=LH6lTAjpY2/vfJbAhwMhsLPCl5/7kNEUeo8cnzY0NdBzcCVU1yB45AhU/Ua3dIahB
+         nN8WcqpDqyG/if4ubmgTdOjM4ZoX8Wfc5bgQmL4GLHgMwvLVR6W0E0WtaymfRI3djO
+         jMastlx6rGqUHvMXFBVhcyCjBGyYFBe88pRMeJvg=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.161.122]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MysW2-1nyAD52mPK-00vz3W; Thu, 07
+ Apr 2022 17:52:17 +0200
+Message-ID: <9f694b7e-4cd1-9682-76bd-d534b8b2a485@gmx.de>
+Date:   Thu, 7 Apr 2022 17:50:35 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.7.0
-Subject: Re: [RESEND RFC PATCH 4/5] fbdev: Fix some race conditions between
- fbmem and sysfb
+Subject: =?UTF-8?Q?Re=3a_=5bBUG=5d_fbdev=3a_i740fb=3a_Divide_error_when_?=
+ =?UTF-8?B?4oCYdmFyLT5waXhjbG9ja+KAmSBpcyB6ZXJv?=
 Content-Language: en-US
-To:     linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Helge Deller <deller@gmx.de>, Sam Ravnborg <sam@ravnborg.org>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        linux-fbdev@vger.kernel.org
-References: <20220406213919.600294-1-javierm@redhat.com>
- <20220406213919.600294-5-javierm@redhat.com>
- <Yk6qwiP2kEh2M3Fm@phenom.ffwll.local>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <Yk6qwiP2kEh2M3Fm@phenom.ffwll.local>
+To:     Zheyu Ma <zheyuma97@gmail.com>
+Cc:     Ondrej Zary <linux@zary.sk>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        DRI Development <dri-devel@lists.freedesktop.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <CAMhUBjmFhqTLBscHHVZ1VTSqrJBT1VEevA+KkjY+y9_ZtdRkMg@mail.gmail.com>
+ <CAMuHMdUiEo8q9x0C0x5zOM=ax1=S06=s0JjcJvZYD4aMGLmEaQ@mail.gmail.com>
+ <a564f6af-31fa-79a2-72c3-578f2c095b23@gmx.de>
+ <202204051946.43277.linux@zary.sk>
+ <527a8c23-609f-5f8a-e076-a8a59da59865@gmx.de>
+ <CAMhUBjmBm3=CY=cCZuH0+ZeemNVT=9XywSoYiR7WLcYOUGu9VQ@mail.gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <CAMhUBjmBm3=CY=cCZuH0+ZeemNVT=9XywSoYiR7WLcYOUGu9VQ@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:j7cwFdDjfVpmsMjtwyB3OUO3MWVOnbnSkDpNGxr2ahnxJ0HapcD
+ seqSeH1J65LYC2zINMl3QQ3kUlVW2w6Uy48vibjsCLuRB52GKJK8RSoJq1MbSo7epPtt1S4
+ sSmiyqwW1P25PnRxxd7gdDNSny94/LFpndPKFc+zmcZwatijIwkiknxWGlQLWJbUtWeiccX
+ kf1GHJVmQ01X1HeAZxxnA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:SJimqgsyAOI=:yRiGBCv6dGeOAaSZuVtb4t
+ mU7w2KeSgRPfrLmWIYGVPVhFoUdFXe94WqSEHnCZezoZAd2WeLXUUfj4QCEV6yQYga7jtzqnO
+ AanGJRCNxtza0lHWJHC6VUd+Fi+2wN4QKMT4vpHQemGery8sWHEfrmnRE8YAatEFJrW08/BIr
+ j5mUUFoLSEgp0HCOjOuKmf0CP/E9zYUpseBKUiZd/7dsRmsibT5Cbs21fklzJd6hikmPYFIjx
+ Wi42YAdxiPFm9FK6XMFg/WkTljqPRLXFrHgzZ2qthY3CshUdr9o5Ev2D2rzwYeKj/PrGXLDV/
+ A908ImudFpb7OdyH0PCywCudum30manYCDxEaxCL06eeWlPOW80BqZkOcIldFj3Q2IQVh+e5/
+ wUznNDbCNhcDKRIoKgBS+cw//4CPAq8V/NfvrMDbR/1T/1MQDIL+2EMbQUh2Oakk0Dwz8ENII
+ Y6fPmT8UMq+9f+7LDDzFBoJtOtpPMylM/xIkiN55HLYMztNmjQFvAza8wfS+xv+mubZvnWwPw
+ 7upJhKUlrj4XQmgk2mtp2SEjWWNKOJimbUMe9ruQpl0XDk6VnvHFaN51eATWHGHGJ2JQosHzv
+ +WvO64XmS3MkyeGTkCxMQ3TRSysAeR7j8G/p155s0v07nkpKtvBzLMlCtGA6/3AFFrgfHU7i+
+ ZczJXv4Yl4ZCHag7KTbxIe/oG56kdH0A9FsJq1Ded+NZeWQLsZEdAP/neiKokhDKEqmU98Ogn
+ xDgyeSfiKAdTZSiFATJyGXQ9K3cuswmKmTOXUs4D+Sx0ZRD5dtCsvin/jfiXiSOwhAG28irx0
+ S3Z/+OJzYiFahYA2PVNkYUDavkhi+g83FZ79WTiUriggR8+R8nzhN0M/KT69ruvpIj26ul8/b
+ u3LvavI89dl6hzJ/EV3F9brJVJch50NXOvLwFJdldJXTiFnzaHdh+Axi7p9FiGqJfJpSXlZ+K
+ XsqPDqbwJQri8LrTrh2ugGKzL+OIe+4fm8tqPb6b2GxPW95PMHxEa5csy4rQVJ6c1aYe2dUTE
+ 1/lSyaGB0/M9G1lkgHI2l4gvq88B0e0jm997O5oURNMoHYXHAKkXTrvltPDv+uDRAwuTv/2/s
+ 8unlWpwiWn3YJA=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/7/22 11:11, Daniel Vetter wrote:
-> On Wed, Apr 06, 2022 at 11:39:18PM +0200, Javier Martinez Canillas wrote:
-
-[snip]
-
-> 
-> Yeah it's disappointing, but no worse than the piles of hacks we have now.
-> 
-> With the bikesheds addressed above:
+On 4/6/22 03:24, Zheyu Ma wrote:
+> On Wed, Apr 6, 2022 at 2:23 AM Helge Deller <deller@gmx.de> wrote:
+>>
+>> On 4/5/22 19:46, Ondrej Zary wrote:
+>>> On Tuesday 05 April 2022 08:33:57 Helge Deller wrote:
+>>>> Hello Geert,
+>>>>
+>>>> On 4/4/22 13:46, Geert Uytterhoeven wrote:
+>>>>> Hi Helge,
+>>>>>
+>>>>> On Sun, Apr 3, 2022 at 5:41 PM Helge Deller <deller@gmx.de> wrote:
+>>>>>> On 4/3/22 13:26, Zheyu Ma wrote:
+>>>>>>> I found a bug in the function i740fb_set_par().
+>>>>>>
+>>>>>> Nice catch!
+>>>>>>
+>>>>>>> When the user calls the ioctl system call without setting the valu=
+e to
+>>>>>>> 'var->pixclock', the driver will throw a divide error.
+>>>>>>>
+>>>>>>> This bug occurs because the driver uses the value of 'var->pixcloc=
+k'
+>>>>>>> without checking it, as the following code snippet show:
+>>>>>>>
+>>>>>>> if ((1000000 / var->pixclock) > DACSPEED8) {
+>>>>>>>      dev_err(info->device, "requested pixclock %i MHz out of range
+>>>>>>> (max. %i MHz at 8bpp)\n",
+>>>>>>>          1000000 / var->pixclock, DACSPEED8);
+>>>>>>>     return -EINVAL;x
+>>>>>>> }
+>>>>>>>
+>>>>>>> We can fix this by checking the value of 'var->pixclock' in the
+>>>>>>> function i740fb_check_var() similar to commit
+>>>>>>> b36b242d4b8ea178f7fd038965e3cac7f30c3f09, or we should set the low=
+est
+>>>>>>> supported value when this field is zero.
+>>>>>>> I have no idea about which solution is better.
+>>>>>>
+>>>>>> Me neither.
+>>>>>> I think a solution like commit b36b242d4b8ea178f7fd038965e3cac7f30c=
+3f09
+>>>>>> is sufficient.
+>>>>>>
+>>>>>> Note that i740fb_set_par() is called in i740fb_resume() as well.
+>>>>>> Since this doesn't comes form userspace I think adding a check for
+>>>>>> the return value there isn't necessary.
+>>>>>>
+>>>>>> Would you mind sending a patch like b36b242d4b8ea178f7fd038965e3cac=
+7f30c3f09 ?
+>>>>>
+>>>>> When passed an invalid value, .check_var() is supposed to
+>>>>> round up the invalid to a valid value, if possible.
+>>>>
+>>>> I don't disagree.
+>>>> The main problem probably is: what is the next valid value?
+>>>> This needs to be analyzed on a per-driver base and ideally tested.
+>>>> Right now a division-by-zero is tiggered which is probably more worse=
+.
+>>>
+>>> I still have an i740 card so I can test it.
+>>
+>> Good. Someone wants to come up with a proposed patch?
 >
+> I have submitted patches for the i740fb driver and other drivers which
+> have similar bugs as follows:
+> https://lore.kernel.org/all/20220404084723.79089-1-zheyuma97@gmail.com/
 
-Agree with all your comments and will address in the next version.
- 
-> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
->
+Yes, I know.
+But Ondrej offered to test a patch which would round an invalid pixclock u=
+p
+instead of just returning EINVAL (which is what your patch does).
+So, if someone comes up with such a patch it'd be the preferred solution.
 
-Thanks for reviewing these patches so quickly!
-
--- 
-Best regards,
-
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+Helge

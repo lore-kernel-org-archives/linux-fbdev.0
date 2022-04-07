@@ -2,123 +2,104 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B166C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Apr 2022 20:28:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8168AC433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu,  7 Apr 2022 20:37:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229595AbiDGUa5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 7 Apr 2022 16:30:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55678 "EHLO
+        id S229905AbiDGUjB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 7 Apr 2022 16:39:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39394 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229677AbiDGUac (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Apr 2022 16:30:32 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 236462E0F33;
-        Thu,  7 Apr 2022 13:14:54 -0700 (PDT)
+        with ESMTP id S230052AbiDGUim (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 7 Apr 2022 16:38:42 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA5E5345D62;
+        Thu,  7 Apr 2022 13:25:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1649362493;
-        bh=N6/FEyVpcVAz4B+dz6VLJs5njSr6wfG1FKLDFl/Zz78=;
+        s=badeba3b8450; t=1649363116;
+        bh=DlbOpXdlheJlXvoOey1WuM162xwLkn8EcO/3A3LfIes=;
         h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=YMpmWNQm2OdUv19j7O4H83V2BjrmoSr3pRMxdw1SfkJ3AGeFUf4uHe1sHid2daq2o
-         MCJsEn+j5zXjz4e0B8G+2gtdKQUlvAk5eGbMl5sxCxSkTPmQxbEwXCiv+DcQGZWfFx
-         eKCz04B9QadiWiTAqWhPvmj2Q2Q9A0DrNwHRwTLY=
+        b=ISVjbvZ4W/FVDTaW8PzYEnrlar8SoPAFSzU6vkATj8nnOBo243llbtTDlWtea8NF6
+         KivKy/3R22fq8DH5pQFimKbuTW4DIS3U3Wyo83UPbPk8ryUCAQuOiqmlXur0wEa/LL
+         GWDLf4a9mQDSABFUS2zmbTcGy9S9E8XXBTYogVTE=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from [192.168.20.60] ([92.116.161.122]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M2f9h-1nYRQ20Y2B-004BOi; Thu, 07
- Apr 2022 21:50:45 +0200
-Message-ID: <eb2edc5a-afad-f0c9-012f-9b9f226d2e5a@gmx.de>
-Date:   Thu, 7 Apr 2022 21:49:03 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MLzFr-1nKkAE36sj-00Hzfk; Thu, 07
+ Apr 2022 21:42:59 +0200
+Message-ID: <67698385-b2fe-2de9-9775-9f6320a0e9e3@gmx.de>
+Date:   Thu, 7 Apr 2022 21:41:16 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.7.0
-Subject: Re: [PATCH 1/7] video: fbdev: i740fb: Error out if 'pixclock' equals
- zero
+Subject: Re: [PATCH] video: fbdev: Fix missing of_node_put in imxfb_probe
 Content-Language: en-US
-To:     Zheyu Ma <zheyuma97@gmail.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20220404084723.79089-1-zheyuma97@gmail.com>
- <20220404084723.79089-2-zheyuma97@gmail.com>
+To:     cgel.zte@gmail.com, s.hauer@pengutronix.de, kernel@pengutronix.de
+Cc:     shawnguo@kernel.org, festevam@gmail.com, linux-imx@nxp.com,
+        linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        Lv Ruyi <lv.ruyi@zte.com.cn>, Zeal Robot <zealci@zte.com.cn>
+References: <20220407090122.2491922-1-lv.ruyi@zte.com.cn>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220404084723.79089-2-zheyuma97@gmail.com>
+In-Reply-To: <20220407090122.2491922-1-lv.ruyi@zte.com.cn>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:XxvmZy8oYHEoPKTe6X2SYk0Pjr8XeAjoK1SV6d6GPPRKYzfl92j
- 4mENiOhlREipIcFBpaEyuyq4T/upzS8fU2vT8q0RJJMgI4yc5/vQWvPaWZvMmu6Cm2xlZXy
- 6nDRqB2J2mlNs05MzmcULprxcIGyOVwxdD4TnYt3q088BbkH56pExHZjsdgwhWzLlBCpYU4
- QIykXMIP/DCNAllnteMnQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:XzunuzazY+I=:FtKKRBnvFXRuGBImamICcS
- oHZmmQJQeuBnRbEj0mwVBLNln6Mh6kUd+kmPF7OJ+5lEf7rsR5ifbhpFd3BWFFz+6y/4SzuB/
- hojIGzBerQKR9hSWaWLsfEy2/JSo4kKgy8BJKQN24QV1E6iPWtxzG8j5MJnnDBXUBxUrEU70a
- 2dxHARhJPXX5b7BlndjoR0lXL2QjK/obqoHs4U1O+v9lySTcRk7hkZiM35H/JpmXI7fsaDZpi
- xYjRg9dHYoMGAFUpy24ZEkM74bOeKrKT2pdWeQnrv7bTQ1YWDv+nVokqg54m5rzJ7jz9toPGz
- uSlD8JAw36lr0qepK9drnAnb6nxpeD0Sk7T1niAsf5AFWPiydbXl+aUta4Lpe9VKw4Tx9FY7g
- 6bE8hzn1o/6sH4ZykQKfyqimFb3b/dyrh3km2YvV4krqPusWvcACC5ib4XAlwgEjj9GxjPndj
- P+rLIHNiWG/GzYWjKhlVc1DLFbruDdjZwMDKrQr898ankBz5Q2Nlwm2w1VcCmY9KSrmSu4Xnd
- 9w+hfO2KFZCbTIKNuQwOGZuzDbhBYgWL/lbRlp0hkH8PQceos8fnoOeGeNzPzXVqA9ZXpRkJJ
- C9Emz90FBcajJE7vdDGGnjVjCUBPD/879xXMuJV1YpBStYfaOXW+EfMnuaKRLKqrlwq1Vk8KO
- 99y6pAJFsC1gTkrqX70ZU95PN/SFHo5X2rbXsRYC1MnuaFyjpIWAb0NtXoS8TXPIK8O8tSgRi
- RZJ/wT6p5/rcYqgmT2UrE/IdZRlbGKut46un+xBdV7egTYQe1XBvQmDhlpCmewMLGL4nzLc1k
- vGRKrUk6UvEpW1VdqZ5jNIKOXmMajAKLwioYwVD9yeuLS5N4ujn5E1ThNCf+vCFldrRpW4/p1
- 8EMd7QmcrBxk1ThZEDdG7pjtjpvK5Lk/BNHkPw0KhHYDoYj28aSjhT2TTUmNzvFmhs99o9NvN
- roAbtOu6kSSD6ZeHx4o/WZWodgqZUPhm3ISR+tAN0lfp6y3CIsxEWtRdZcLzz2eWrW2gL4V/E
- mPkvD/BsdgCyAZLr4VSMRGAXSBGNREnVRlhKQOxDMB4TG5HbaIw9kTA3pFFt50I+ymySWddLx
- wRRGTCsjSDu2Nc=
+X-Provags-ID: V03:K1:p8vzFrrvIKVFtaDT5l91hwUiLPe13/ZAgxzuyd2hmZIvj7Byh+E
+ bTNrO2hlWJyT3u/MXuenFvALE+UwOdfIacAKaHtRH/4at5tF8O2x33miZCZSrd5HVyRuVSl
+ uKygwSj3diqZz43fAJYPAVr/6FSb/UZxRBISPq2bS1hQj8AuZMdCTjutD0IhOWzFdU2+i53
+ B4UU9mCfo86WAK2ZpyZpw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:MT51GlYzjyc=:ek4qURxclpD/olO6J+acDd
+ wQTkL9Zpo5+pfflMX+aQKvkNLtI1eKVO5kLJy1fDF3s9KqTrfKwcL/WymWo7tIEfsv4K9R6rC
+ xYJ1Rpq2JPu6Kt6H+qRp54y3q0hSOWTUGKUzKuRvH4nRgcAIMtICylmx51DeoBVA59vrDUTsL
+ ujsdtDiyjgoOvYueDoleErWOmzKF7B+eGqc9GRqiz0F2ekD5LSRYU1ePMPTDPwv/JkPis73/6
+ tX0Ni1NnACcPNWcAVUJZZ5qCwrwlFYNkWfmjPNANuHtbKoNR+KYvo72IhKaPSJSmpP0oDTBLL
+ M06usSYH5ka/o0hqSn1lO8o35dyLFXd7fh8RfhLKZBIi43kgwuRMhYd/+WBYvUN0OJOOLgcYy
+ roUeakhuvhKOPAqm3AtT+QS3SHn0KZ8rdiMOr8pIICmGn4At9s7TA4HJjFzv+HdQ3MSf0KvtQ
+ 4NlkYYDsEhhoQJxLd95ACeEoAI72Jtol6jJpgw+H77WFDTvhHYTR9IC0ga7dsufi2faX9u8kZ
+ FAZ5QZum0gt1lq46JDWE9QZ/+yNZnh4yE+bKSBHgvJbXxOE005pQdpXQJ9w6yoCsBQcoqDxer
+ HBaL74XqQ7nZ+gDWtO04t8Fz/4SxZ2mIHioQF6i7QHUdOA8kLqLMiCH7xNj5FHwbO4tm40hUf
+ 3eFb6jJSsDK99cmuIbEKnV34VkYCkurdAobiRfNwxDDvIvC3uMhb9mmY7bM8NDaSuvfglEMrV
+ qszoaF31iVjVkvYmPZrsV+JAwoNICgYzwbmSpLrlt0X/bQxqJLm1DSYHS0RfFk9vba2hOCFMz
+ 6Jza3Pxq17/j6x9v4ATEVRzGkkTsNeVkV7NKXQtqZgePf0AlQLu1Xj79uuwxK3Q1o/qarPSKL
+ f0jSYV15DBkBOmmREXJcoUH+MgqR2sYiyK1TB0fWH7rZZrLTH3Hoaez3Bv9Sj4NspjnRKnezC
+ rq1zk1JxV5AQ++gCQvQ+iZ3ULLzrmw/Y0uYcxfe6NuVkTdQBFC8iaRNUwqT/LwVewd1HS82U7
+ 8ekTcfZothpqJeUEhX2FOcuiWFEJKZ8gMKF6P5nNgQLmFqX0nrQwNsPc+p9uShouTcd9MlRhI
+ JBlDpmHqXsjkRw=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/4/22 10:47, Zheyu Ma wrote:
-> The userspace program could pass any values to the driver through
-> ioctl() interface. If the driver doesn't check the value of 'pixclock',
-> it may cause divide error.
+On 4/7/22 11:01, cgel.zte@gmail.com wrote:
+> From: Lv Ruyi <lv.ruyi@zte.com.cn>
 >
-> Fix this by checking whether 'pixclock' is zero in the function
-> i740fb_check_var().
+> of_parse_phandle returns node pointer with refcount incremented,
+> use of_node_put() on it when done.
 >
-> The following log reveals it:
->
-> divide error: 0000 [#1] PREEMPT SMP KASAN PTI
-> RIP: 0010:i740fb_decode_var drivers/video/fbdev/i740fb.c:444 [inline]
-> RIP: 0010:i740fb_set_par+0x272f/0x3bb0 drivers/video/fbdev/i740fb.c:739
-> Call Trace:
->     fb_set_var+0x604/0xeb0 drivers/video/fbdev/core/fbmem.c:1036
->     do_fb_ioctl+0x234/0x670 drivers/video/fbdev/core/fbmem.c:1112
->     fb_ioctl+0xdd/0x130 drivers/video/fbdev/core/fbmem.c:1191
->     vfs_ioctl fs/ioctl.c:51 [inline]
->     __do_sys_ioctl fs/ioctl.c:874 [inline]
->
-> Signed-off-by: Zheyu Ma <zheyuma97@gmail.com>
+> Reported-by: Zeal Robot <zealci@zte.com.cn>
+> Signed-off-by: Lv Ruyi <lv.ruyi@zte.com.cn>
 
-Hello Zheyu,
-
-I've applied the patches #2-#7 of this series, but left
-out this specific patch (for now).
-As discussed on the mailing list we can try to come up with a
-better fix (to round up the pixclock when it's invalid).
-If not, I will apply this one later.
-
+applied.
 Thanks!
 Helge
 
-
 > ---
->  drivers/video/fbdev/i740fb.c | 3 +++
->  1 file changed, 3 insertions(+)
+>  drivers/video/fbdev/imxfb.c | 2 ++
+>  1 file changed, 2 insertions(+)
 >
-> diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
-> index 52cce0db8bd3..b595437a5752 100644
-> --- a/drivers/video/fbdev/i740fb.c
-> +++ b/drivers/video/fbdev/i740fb.c
-> @@ -657,6 +657,9 @@ static int i740fb_decode_var(const struct fb_var_scr=
-eeninfo *var,
+> diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+> index 68288756ffff..a2f644c97f28 100644
+> --- a/drivers/video/fbdev/imxfb.c
+> +++ b/drivers/video/fbdev/imxfb.c
+> @@ -925,10 +925,12 @@ static int imxfb_probe(struct platform_device *pde=
+v)
+>  				sizeof(struct imx_fb_videomode), GFP_KERNEL);
+>  		if (!fbi->mode) {
+>  			ret =3D -ENOMEM;
+> +			of_node_put(display_np);
+>  			goto failed_of_parse;
+>  		}
 >
->  static int i740fb_check_var(struct fb_var_screeninfo *var, struct fb_in=
-fo *info)
->  {
-> +	if (!var->pixclock)
-> +		return -EINVAL;
-> +
->  	switch (var->bits_per_pixel) {
->  	case 8:
->  		var->red.offset	=3D var->green.offset =3D var->blue.offset =3D 0;
+>  		ret =3D imxfb_of_read_mode(&pdev->dev, display_np, fbi->mode);
+> +		of_node_put(display_np);
+>  		if (ret)
+>  			goto failed_of_parse;
+>  	}
 

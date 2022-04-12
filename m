@@ -2,33 +2,33 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22376C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Apr 2022 07:25:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25418C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Apr 2022 09:49:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235726AbiDLHWR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Apr 2022 03:22:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57124 "EHLO
+        id S233655AbiDLJvr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Apr 2022 05:51:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351708AbiDLHMv (ORCPT
+        with ESMTP id S1355125AbiDLH1K (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Apr 2022 03:12:51 -0400
+        Tue, 12 Apr 2022 03:27:10 -0400
 Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B819DFC0;
-        Mon, 11 Apr 2022 23:51:54 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 263A148332;
+        Tue, 12 Apr 2022 00:07:11 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 17837B81B47;
-        Tue, 12 Apr 2022 06:51:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32240C385A6;
-        Tue, 12 Apr 2022 06:51:51 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 831A4B81B4D;
+        Tue, 12 Apr 2022 07:07:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BFC52C385A8;
+        Tue, 12 Apr 2022 07:07:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1649746311;
+        s=korg; t=1649747228;
         bh=sXplmjtci3GWzKPGj7qmndHKq1WQI2fvhmgLsZ33CEY=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=YFdQBXqG1wRcElC7ui6t+o7z/X2Y0e4XQGl1z/uPqXchEXQS13CV8h9tqq8zQ4Cmz
-         VSaq/D9spJ7TNN+XpYq8D1ydXfDz2BfZ56+j5H7BRjBgyosTN83AR+sPmmOR+Dcqyx
-         8s7tMxgUmkg43qFkOtSWJXdgpKvbi8k8EhoxjA/A=
+        b=Ya39TrhC7pOQ5dpmI0Ywg74BhsGI+zqKBPjvQh0+8MaElBhMIFRKoTzwDuoerDDoi
+         JeUrkx6Cmc1g8VrL7R4+hpJXxdCEyTq1XmSEqAj5F1gw7I8WTLOxDefkbKBi+S+9CB
+         oRHSoHA/2WN5pcGUDBBPU+ThFJH6QIrWDgX6fPzI=
 From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -48,12 +48,12 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
         Guenter Roeck <linux@roeck-us.net>,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH 5.15 238/277] fbdev: Fix unregistering of framebuffers without device
-Date:   Tue, 12 Apr 2022 08:30:41 +0200
-Message-Id: <20220412062948.931924795@linuxfoundation.org>
+Subject: [PATCH 5.16 249/285] fbdev: Fix unregistering of framebuffers without device
+Date:   Tue, 12 Apr 2022 08:31:46 +0200
+Message-Id: <20220412062950.845598901@linuxfoundation.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220412062942.022903016@linuxfoundation.org>
-References: <20220412062942.022903016@linuxfoundation.org>
+In-Reply-To: <20220412062943.670770901@linuxfoundation.org>
+References: <20220412062943.670770901@linuxfoundation.org>
 User-Agent: quilt/0.66
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8

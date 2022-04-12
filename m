@@ -2,158 +2,179 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E904C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Apr 2022 09:49:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5DF9C433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Apr 2022 10:13:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229685AbiDLJvz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Apr 2022 05:51:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48716 "EHLO
+        id S242255AbiDLKPa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Apr 2022 06:15:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53736 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1359225AbiDLHmw (ORCPT
+        with ESMTP id S1377709AbiDLJ7T (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Apr 2022 03:42:52 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DBEC29CA5;
-        Tue, 12 Apr 2022 00:20:53 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 29560616B2;
-        Tue, 12 Apr 2022 07:20:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3CD4C385A5;
-        Tue, 12 Apr 2022 07:20:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1649748052;
-        bh=m3tZRxMr7S8zSbKcnoVMQqq10GyW2aQbMlmVavnojeY=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=o4d5oc5leogTQ7ZP6BjcfkOJbIzCbiAw9b6yFVA+I12IMmR/WwcdO2s36GlreLuKy
-         xugTBf7eTxlLa0PMIKdjQbckUANpoMYYL7kipAQhN1zarWQmDKXLota/V8RLieB47i
-         XdZ+jaD8wa3lZD8ViB42/vRAAeyUP0kJKi6eeXlQ=
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        stable@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Javier Martinez Canillas <javierm@redhat.com>,
-        Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>,
-        Zack Rusin <zackr@vmware.com>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Helge Deller <deller@gmx.de>, Sam Ravnborg <sam@ravnborg.org>,
-        Zheyu Ma <zheyuma97@gmail.com>,
-        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        Matthew Wilcox <willy@infradead.org>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Guenter Roeck <linux@roeck-us.net>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH 5.17 302/343] fbdev: Fix unregistering of framebuffers without device
-Date:   Tue, 12 Apr 2022 08:32:00 +0200
-Message-Id: <20220412063000.040458442@linuxfoundation.org>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220412062951.095765152@linuxfoundation.org>
-References: <20220412062951.095765152@linuxfoundation.org>
-User-Agent: quilt/0.66
+        Tue, 12 Apr 2022 05:59:19 -0400
+Received: from mail-oi1-x22c.google.com (mail-oi1-x22c.google.com [IPv6:2607:f8b0:4864:20::22c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8F977E0C
+        for <linux-fbdev@vger.kernel.org>; Tue, 12 Apr 2022 02:04:03 -0700 (PDT)
+Received: by mail-oi1-x22c.google.com with SMTP id a19so13875101oie.7
+        for <linux-fbdev@vger.kernel.org>; Tue, 12 Apr 2022 02:04:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
+        h=from:user-agent:references:in-reply-to:mime-version:date:message-id
+         :subject:to:cc;
+        bh=TaVLZyoZEENt9mm6XHe8rhxlLaPeM8tk8R1AgC2794g=;
+        b=sesqj42IAFm9WSWsTOqHdYA5Rorjo3bfN3YoTtq6JHYKWQqX1WmBP4uULeeni1uzGm
+         /hfuD40g58GgUJw3f9vzeM8X+LkiE2vXLWO6yolkj181V2nTWeGDiebzZ91tyH5BpGPv
+         zoQIBLJLMpiNHlQdyQc9zrY059t+bgc1gIWC7WwGslbm7t2nXtJJ5k723Eh4DT8Tb0QL
+         GFGKkRRWR16wjNsMJ07818rU6oJfnetWzWgQauQeYKQj0z3lhi3ue8MXM9rZPV19+9rQ
+         zqEOHIBojyGpj0ozyivfpOgZ5YZi4XuapP//Puf3rnOnvV42BlenzwpudpXnFaFyKAcx
+         bC8Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:user-agent:references:in-reply-to
+         :mime-version:date:message-id:subject:to:cc;
+        bh=TaVLZyoZEENt9mm6XHe8rhxlLaPeM8tk8R1AgC2794g=;
+        b=4DuqT+Qoo7HJphQDSi9deJm+9C+FCtZx6ZuH8zf6YXfhilcejWBqOhuo2cvx4DV3Lh
+         yCsqJX5ExPMnSVWQHudHvooIdMJe9pLvzXxvbVzqxOdwvki96NN2sRBl3FtNv06Sapf5
+         sQmOI5TshcDB6PkcN82qObjfdvbQW/QUDtMnF3ww+D/AKQ7GenNMh+kGvWBrAlqq/XvP
+         M5tmp/XjC1vpCzo3D+PB71tD9B4T05PGWCiihnZNuMJRzw5D1NEl9+4tJhsYuJo5yHCE
+         NNloeaRt6J5ODEWhQQppMg7/XUFzVWDmHDkahi2hW3e4zblJnH3sXjlEDHXkQ7roMOhE
+         kb4w==
+X-Gm-Message-State: AOAM532oNvv/r0JuznUBmnOuWMtjAkpmn9oaFiGsc+YamqraPmJ+NjzR
+        r0qQW8MSWbl2dUDluwxA+J+9qvzsiAK5mWU3uHEVNw==
+X-Google-Smtp-Source: ABdhPJzzWwf0u6lyl2/9u7EvJbdiNju6WRex6OFE3yBhD7hT45+S39d1b5mmEOgGvzLwyVK+y4+UdItaHwgA6/SFgm8=
+X-Received: by 2002:a05:6808:159d:b0:2da:3946:ab3d with SMTP id
+ t29-20020a056808159d00b002da3946ab3dmr1265654oiw.248.1649754242818; Tue, 12
+ Apr 2022 02:04:02 -0700 (PDT)
+Received: from 753933720722 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 12 Apr 2022 02:04:02 -0700
+From:   Guillaume Ranquet <granquet@baylibre.com>
+User-Agent: meli 0.7.2
+References: <20220327223927.20848-1-granquet@baylibre.com> <20220327223927.20848-18-granquet@baylibre.com>
+ <4697e3af-86f7-83e0-1737-3f5000fc8d30@collabora.com>
+In-Reply-To: <4697e3af-86f7-83e0-1737-3f5000fc8d30@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Date:   Tue, 12 Apr 2022 02:04:02 -0700
+Message-ID: <CABnWg9s7MN_21CEYVJV9=udfYkYQ_huJjQvLf+Jcb3Dmc8pNCA@mail.gmail.com>
+Subject: Re: [PATCH v9 17/22] phy: phy-mtk-dp: Add driver for DP phy
+To:     AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>, vkoul@kernel.org,
+        airlied@linux.ie, chunfeng.yun@mediatek.com,
+        chunkuang.hu@kernel.org, ck.hu@mediatek.com, daniel@ffwll.ch,
+        deller@gmx.de, jitao.shi@mediatek.com, kishon@ti.com,
+        krzk+dt@kernel.org, maarten.lankhorst@linux.intel.com,
+        matthias.bgg@gmail.com, mripard@kernel.org, p.zabel@pengutronix.de,
+        robh+dt@kernel.org, tzimmermann@suse.de
+Cc:     devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-phy@lists.infradead.org, markyacoub@google.com,
+        Markus Schneider-Pargmann <msp@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Thomas Zimmermann <tzimmermann@suse.de>
+On Mon, 28 Mar 2022 10:20, AngeloGioacchino Del Regno
+<angelogioacchino.delregno@collabora.com> wrote:
+>Il 28/03/22 00:39, Guillaume Ranquet ha scritto:
+>> From: Markus Schneider-Pargmann <msp@baylibre.com>
+>>
+>> This is a new driver that supports the integrated DisplayPort phy for
+>> mediatek SoCs, especially the mt8195. The phy is integrated into the
+>> DisplayPort controller and will be created by the mtk-dp driver. This
+>> driver expects a struct regmap to be able to work on the same registers
+>> as the DisplayPort controller. It sets the device data to be the struct
+>> phy so that the DisplayPort controller can easily work with it.
+>>
+>> The driver does not have any devicetree bindings because the datasheet
+>> does not list the controller and the phy as distinct units.
+>>
+>> The interaction with the controller can be covered by the configure
+>> callback of the phy framework and its displayport parameters.
+>>
+>> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+>> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+>> ---
+>>   MAINTAINERS                       |   1 +
+>>   drivers/phy/mediatek/Kconfig      |   8 ++
+>>   drivers/phy/mediatek/Makefile     |   1 +
+>>   drivers/phy/mediatek/phy-mtk-dp.c | 201 ++++++++++++++++++++++++++++++
+>>   4 files changed, 211 insertions(+)
+>>   create mode 100644 drivers/phy/mediatek/phy-mtk-dp.c
+>>
+>
+>..snip..
+>
+>> diff --git a/drivers/phy/mediatek/phy-mtk-dp.c b/drivers/phy/mediatek/phy-mtk-dp.c
+>> new file mode 100644
+>> index 000000000000..e5c5494f3636
+>> --- /dev/null
+>> +++ b/drivers/phy/mediatek/phy-mtk-dp.c
+>
+>..snip..
+>
+>> +
+>> +static int mtk_dp_phy_probe(struct platform_device *pdev)
+>> +{
+>> +	struct device *dev = &pdev->dev;
+>> +	struct mtk_dp_phy *dp_phy;
+>> +	struct phy *phy;
+>> +	struct regmap *regs;
+>> +
+>> +	regs = syscon_regmap_lookup_by_phandle(dev->of_node, "mediatek,dp-syscon");
+>> +
+>
+>Please drop this blank line
+>
+>> +	if (IS_ERR(regs))
+>> +		return PTR_ERR(regs);
+>> +
+>> +	dp_phy = devm_kzalloc(dev, sizeof(*dp_phy), GFP_KERNEL);
+>> +	if (!dp_phy)
+>> +		return -ENOMEM;
+>> +
+>> +	dp_phy->regs = regs;
+>> +
+>> +	phy = devm_phy_create(dev, NULL, &mtk_dp_phy_dev_ops);
+>> +
+>
+>Same here
+>
+>> +	if (IS_ERR(phy))
+>> +		return dev_err_probe(dev, PTR_ERR(phy), "Failed to create DP PHY: %ld\n", PTR_ERR(phy));
+>> +
+>
+>Using dev_err_probe automates printing the error, so the correct usage is:
+>
+>return dev_err_probe(dev, PTR_ERR(phy), "Failed to create DP PHY\n");
+>
+>> +	phy_set_drvdata(phy, dp_phy);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +struct platform_driver mtk_dp_phy_driver = {
+>> +	.probe = mtk_dp_phy_probe,
+>> +	.driver = {
+>> +		.name = "mediatek-dp-phy",
+>> +	},
+>> +};
+>> +module_platform_driver(mtk_dp_phy_driver);
+>
+>Also, in your dt-binding, you mention a compatible for this driver, but I don't see
+>any, here. This means that you do know what to do, so please do it.
+>
 
-commit 0f525289ff0ddeb380813bd81e0f9bdaaa1c9078 upstream.
+Following the comments from rob [1], I'll revert back to using
+platform_device_register_data() from v8.
 
-OF framebuffers do not have an underlying device in the Linux
-device hierarchy. Do a regular unregister call instead of hot
-unplugging such a non-existing device. Fixes a NULL dereference.
-An example error message on ppc64le is shown below.
+[1] https://lore.kernel.org/linux-mediatek/YkOPB5W7uXkOc72%2F@robh.at.kernel.org/
 
-  BUG: Kernel NULL pointer dereference on read at 0x00000060
-  Faulting instruction address: 0xc00000000080dfa4
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries
-  [...]
-  CPU: 2 PID: 139 Comm: systemd-udevd Not tainted 5.17.0-ae085d7f9365 #1
-  NIP:  c00000000080dfa4 LR: c00000000080df9c CTR: c000000000797430
-  REGS: c000000004132fe0 TRAP: 0300   Not tainted  (5.17.0-ae085d7f9365)
-  MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 28228282  XER: 20000000
-  CFAR: c00000000000c80c DAR: 0000000000000060 DSISR: 40000000 IRQMASK: 0
-  GPR00: c00000000080df9c c000000004133280 c00000000169d200 0000000000000029
-  GPR04: 00000000ffffefff c000000004132f90 c000000004132f88 0000000000000000
-  GPR08: c0000000015658f8 c0000000015cd200 c0000000014f57d0 0000000048228283
-  GPR12: 0000000000000000 c00000003fffe300 0000000020000000 0000000000000000
-  GPR16: 0000000000000000 0000000113fc4a40 0000000000000005 0000000113fcfb80
-  GPR20: 000001000f7283b0 0000000000000000 c000000000e4a588 c000000000e4a5b0
-  GPR24: 0000000000000001 00000000000a0000 c008000000db0168 c0000000021f6ec0
-  GPR28: c0000000016d65a8 c000000004b36460 0000000000000000 c0000000016d64b0
-  NIP [c00000000080dfa4] do_remove_conflicting_framebuffers+0x184/0x1d0
-  [c000000004133280] [c00000000080df9c] do_remove_conflicting_framebuffers+0x17c/0x1d0 (unreliable)
-  [c000000004133350] [c00000000080e4d0] remove_conflicting_framebuffers+0x60/0x150
-  [c0000000041333a0] [c00000000080e6f4] remove_conflicting_pci_framebuffers+0x134/0x1b0
-  [c000000004133450] [c008000000e70438] drm_aperture_remove_conflicting_pci_framebuffers+0x90/0x100 [drm]
-  [c000000004133490] [c008000000da0ce4] bochs_pci_probe+0x6c/0xa64 [bochs]
-  [...]
-  [c000000004133db0] [c00000000002aaa0] system_call_exception+0x170/0x2d0
-  [c000000004133e10] [c00000000000c3cc] system_call_common+0xec/0x250
-
-The bug [1] was introduced by commit 27599aacbaef ("fbdev: Hot-unplug
-firmware fb devices on forced removal"). Most firmware framebuffers
-have an underlying platform device, which can be hot-unplugged
-before loading the native graphics driver. OF framebuffers do not
-(yet) have that device. Fix the code by unregistering the framebuffer
-as before without a hot unplug.
-
-Tested with 5.17 on qemu ppc64le emulation.
-
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Fixes: 27599aacbaef ("fbdev: Hot-unplug firmware fb devices on forced removal")
-Reported-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-Tested-by: Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>
-Cc: Zack Rusin <zackr@vmware.com>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: stable@vger.kernel.org # v5.11+
-Cc: Helge Deller <deller@gmx.de>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Zheyu Ma <zheyuma97@gmail.com>
-Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>
-Cc: Zhen Lei <thunder.leizhen@huawei.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Alex Deucher <alexander.deucher@amd.com>
-Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Link: https://lore.kernel.org/all/YkHXO6LGHAN0p1pq@debian/ # [1]
-Link: https://patchwork.freedesktop.org/patch/msgid/20220404194402.29974-1-tzimmermann@suse.de
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/video/fbdev/core/fbmem.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1583,7 +1583,14 @@ static void do_remove_conflicting_frameb
- 			 * If it's not a platform device, at least print a warning. A
- 			 * fix would add code to remove the device from the system.
- 			 */
--			if (dev_is_platform(device)) {
-+			if (!device) {
-+				/* TODO: Represent each OF framebuffer as its own
-+				 * device in the device hierarchy. For now, offb
-+				 * doesn't have such a device, so unregister the
-+				 * framebuffer as before without warning.
-+				 */
-+				do_unregister_framebuffer(registered_fb[i]);
-+			} else if (dev_is_platform(device)) {
- 				registered_fb[i]->forced_out = true;
- 				platform_device_unregister(to_platform_device(device));
- 			} else {
-
-
+>Regards,
+>Angelo
+>
+>> +
+>> +MODULE_AUTHOR("Markus Schneider-Pargmann <msp@baylibre.com>");
+>> +MODULE_DESCRIPTION("MediaTek DP PHY Driver");
+>> +MODULE_LICENSE("GPL");
+>

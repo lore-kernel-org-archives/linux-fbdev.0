@@ -2,153 +2,129 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42FCAC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Apr 2022 11:24:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B70C7C433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Apr 2022 20:38:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242012AbiDLL0Z (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Apr 2022 07:26:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52142 "EHLO
+        id S229521AbiDLUkB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 12 Apr 2022 16:40:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42682 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241211AbiDLLZd (ORCPT
+        with ESMTP id S230181AbiDLUjw (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Apr 2022 07:25:33 -0400
-Received: from mail-oa1-x2e.google.com (mail-oa1-x2e.google.com [IPv6:2001:4860:4864:20::2e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43808A0BFB
-        for <linux-fbdev@vger.kernel.org>; Tue, 12 Apr 2022 03:06:10 -0700 (PDT)
-Received: by mail-oa1-x2e.google.com with SMTP id 586e51a60fabf-de3ca1efbaso20251459fac.9
-        for <linux-fbdev@vger.kernel.org>; Tue, 12 Apr 2022 03:06:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20210112.gappssmtp.com; s=20210112;
-        h=from:user-agent:references:in-reply-to:mime-version:date:message-id
-         :subject:to:cc;
-        bh=tZvbGpFjILGpekjAvGDF0y9dQ6Kd+gBt4gVMWfKJuAk=;
-        b=Xo8+YSn3qT7Jhf9u4FuGYXY6Bov1PRuEhL0/Es2kDk9T156ExPENxfB+L80w1q/WN8
-         AY7X2X8pBC+egX5EAP7hbmLqVYYquyMaM+9TMa0V8rrwt4eOMwpnKS1rXrmKnJYddRKl
-         WXqMioKIAM/xFynvUhz/5U8QrlcdzmdQycq7DES/Sco99BT/85Gs/jV5R1n5nlmInzkN
-         Xusklq+2enfKbeU1Z/uYCXgSMZElx/lRCPsCgmbehOhUkX+zIy72zJ9+1JEhZnnHiF0b
-         7lrsXEthfoBv0c5BqbSXLUfcVprx8t79rP5dVaUdlBdoIR+brcAYyZc6c3+7XT7Jw7uM
-         vcvQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:user-agent:references:in-reply-to
-         :mime-version:date:message-id:subject:to:cc;
-        bh=tZvbGpFjILGpekjAvGDF0y9dQ6Kd+gBt4gVMWfKJuAk=;
-        b=nvC6e7Mkc93H3c0STKFmlFY9kjqgoIZIuPd5g6I27ltTyKg9XeTLT0jvCmQwGKrYDQ
-         wTF5h6azZ44pipWr/KXXnNBoFv97lANbR14VShVmMlCBpjfIGBjRw/91UN797SxzcDJU
-         Yu5BKk8lXXK1cFjFjp7hG1/GiATp/NlMkWm3BI/dhNrXf2X4pvJvhex9cpbtrpnVVFAs
-         GeI+InoZkcFABNzLTThE+g1yp6pxitU1yGuJpJsFN1DI+w59THFEgDMN84N2/uT7zha6
-         rj2r5C6dt5n4KQKBQcIUO9B0F05op596ZsTZOMUYsYOeITL/pLB2nUs50aqyl/999Nzn
-         h1ng==
-X-Gm-Message-State: AOAM530Hp+9/xnACWTXM6e8Qz4auw+QUrAR9Th/9N6GFAa6y6NUXN6pe
-        +LVua1MRdc0UIew7xcSyymwMQ7huX+YKc1Tk+KPwxw==
-X-Google-Smtp-Source: ABdhPJw3WX7NFQkxU4ADRLrRdzB/pHuRSdo1xjaZj5zggo6wW/RSRVmkJtH7xxbo7eDcNYsrg++TE2K0RicigcNQMoo=
-X-Received: by 2002:a05:6870:f21a:b0:dd:9bec:caf8 with SMTP id
- t26-20020a056870f21a00b000dd9beccaf8mr1670792oao.78.1649757969594; Tue, 12
- Apr 2022 03:06:09 -0700 (PDT)
-Received: from 753933720722 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 12 Apr 2022 03:06:08 -0700
-From:   Guillaume Ranquet <granquet@baylibre.com>
-User-Agent: meli 0.7.2
-References: <20220327223927.20848-1-granquet@baylibre.com> <20220327223927.20848-4-granquet@baylibre.com>
- <YkOPB5W7uXkOc72/@robh.at.kernel.org>
-In-Reply-To: <YkOPB5W7uXkOc72/@robh.at.kernel.org>
+        Tue, 12 Apr 2022 16:39:52 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E799778921;
+        Tue, 12 Apr 2022 13:35:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1649795549;
+        bh=IrspqYP8ymy9ueHzSGHCQmZBice+jhJrZO+S5bPpMWk=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=GBGjuOQvVglx1k+KBeiBiGY/1jHQqh3P1CmDsSga+SvcxhTvOnCIF33w4uL8EjkF5
+         eE/I4/B2ka+7X5AMMBNt+Sd7cpf/MdU47xLt/6uwiz+f89whBAj6iY6Y7QhFqL/OA6
+         +1LQma0vp7WIY3gomFwn/jMO14qApD9FDmbEPLlU=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.135.215]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M5fMe-1ncglq2Hak-007B7f; Tue, 12
+ Apr 2022 22:07:00 +0200
+Message-ID: <d90f37a3-e91a-c2a2-e349-5f835b048e5b@gmx.de>
+Date:   Tue, 12 Apr 2022 22:06:59 +0200
 MIME-Version: 1.0
-Date:   Tue, 12 Apr 2022 03:06:08 -0700
-Message-ID: <CABnWg9tvh31wibtTO2nETfJ9XtST0Ejjea0_2q1Hd5GRs9DN4Q@mail.gmail.com>
-Subject: Re: [PATCH v9 03/22] dt-bindings: mediatek,dp_phy: Add Display Port
- PHY binding
-To:     Rob Herring <robh@kernel.org>
-Cc:     airlied@linux.ie, angelogioacchino.delregno@collabora.com,
-        chunfeng.yun@mediatek.com, chunkuang.hu@kernel.org,
-        ck.hu@mediatek.com, daniel@ffwll.ch, deller@gmx.de,
-        jitao.shi@mediatek.com, kishon@ti.com, krzk+dt@kernel.org,
-        maarten.lankhorst@linux.intel.com, matthias.bgg@gmail.com,
-        mripard@kernel.org, p.zabel@pengutronix.de, tzimmermann@suse.de,
-        vkoul@kernel.org, devicetree@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org,
-        linux-phy@lists.infradead.org, markyacoub@google.com
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+Subject: Re: [PATCH] video: fbdev-MMP: replace usage of found with dedicated
+ list iterator variable
+Content-Language: en-US
+To:     Jakob Koschel <jakobkoschel@gmail.com>
+Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org, Mike Rapoport <rppt@kernel.org>,
+        Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
+        Cristiano Giuffrida <c.giuffrida@vu.nl>,
+        "Bos, H.J." <h.j.bos@vu.nl>
+References: <20220331223503.902142-1-jakobkoschel@gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220331223503.902142-1-jakobkoschel@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:v3JE1ZICfMfPrsfvy8/eg3kgYv0qoPZEH4uA47/8+QfPmHfZC8F
+ wuCWQdxmVwbOna7Nhk3SfJlsWB4Hrx7jlmLOstCstC04FFWEM+kq9gUooAqQO6LHsLXtK0X
+ sNFkMEqV7A5+DltONIy/a2vCxkJ/HHMYane6dasVaYOz5ckKOdJnajhBWeUMhzpjVk3Hcgs
+ EQCeR0mI9DgaAtz8MihpA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:qN/aei8zZyE=:EqvKNSZX+hPqr949MSxvMp
+ eQKsFxq5fmqFbY3xjmMtT3D+wa+U+ht4xxcqst6URvYsRecL65NUDRHkJev6NvADnHJ5Kq2J0
+ EBEX1O2BGYocKeRW0JjJ19YyPkfLozOwkk9ZogAYK4P0XGMdV7Tku9uiWPP1eBcRSbOo5t1we
+ TCKpo52CVJsDNS3NT6fNfwR8avJ4bOW5Jei+B0+zAQpzs68ebmav1i/6o/531KJvmewRegbrG
+ so2Txl41QLOz4uXId3BddAZXLWSwtzKqNl4F8ABfXcx/NQOcJY+fv3E51IXq6vcbzr7crNvnc
+ AIlsgb+xHO0gY7NZwDkIj6gP2WvfsLgS0bvuHc6uG+7ujRis0Ai4w+4huytapG64jQx60MPi/
+ veZX9fpmJ+8eO2hkRQ1zr+qBO72E6E44mOBupStaVfjBI1v9lncTp6rmshGETPhXH21oAtCQc
+ 49EvJJyM6ZyKAZnNOxAM5cF7sjc2IzCUzpZXLX3Fi7vIBzVDtHXqG2yBoOB1ZeMGaH1H33Bvo
+ qRgKxDnpqvNHQ/CxiGKKLtbIzIqE/JaltcuwHPKuwpqPN6bfxHtlgqR7SqLqJgjoAGtSRO4/V
+ pCjdcbSgRE0jfxuYR3wT0OBuEhaCpe6a+TYd7mQ9DR6YRjafIYB1fMVtKbU9nEAAeGmw2UAqg
+ eqf7GNCbWwc1OHd9qy1SI03PW07Ud5bVAtTwmTF32lFXtyEmiIwRUOz/IEPcnKFnqNv/JMdrn
+ /6qecm5MSM3ujxSZY4Bk8B7ZnM4vaU8kgsemPZr1uNkNatLXcTTOE7GJp8/7Ku366Fe7SGUA2
+ w4P0K0TVqQmb8T2ZynX19uAlg3DBiABD01Vhcitvhtfg6xoIzWdbYdMXPyCsRbF6S0i6aKVRs
+ TDWzrM4Ec/R+ktxCniUgh/ruAgdSZOdkbasXw4bp5Jlz46nEiPqU6fGkueqzk36k6ndXjidJK
+ C3BmPtoHMc/X3o5lZrQk58dKuWbas600o3TjsUr21b9BDrcNGiekUZ/vzGjbRw/IUNysyRzwA
+ PlNqk7HXOEKumV2ifOpwYaO+xIAO5xPvRXTTPVTOqTLqe/6veoNax9aSFkQKVdpJ229dKnNfQ
+ md6ekKGn5pbbpk=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, 30 Mar 2022 00:58, Rob Herring <robh@kernel.org> wrote:
->On Mon, Mar 28, 2022 at 12:39:08AM +0200, Guillaume Ranquet wrote:
->> This phy controller is embedded in the Display Port Controller on mt8195 SoCs.
+On 4/1/22 00:35, Jakob Koschel wrote:
+> To move the list iterator variable into the list_for_each_entry_*()
+> macro in the future it should be avoided to use the list iterator
+> variable after the loop body.
 >
->Sorry, but I think you need to go back to what you had in v8. While yes,
->the phy and controller IP often do change independently, this h/w looks
->pretty interwined.
-
-Understood, I'll revert back to v8.
-
+> To *never* use the list iterator variable after the loop it was
+> concluded to use a separate iterator variable instead of a
+> found boolean [1].
 >
->You could make the controller a phy provider to itself if you wanted.
-
-Not sure I follow, could you point me to an example?
-
-Thx,
-Guillaume.
+> This removes the need to use a found variable and simply checking if
+> the variable was set, can determine if the break/goto was hit.
 >
->>
->> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
->> ---
->>  .../bindings/phy/mediatek,dp-phy.yaml         | 43 +++++++++++++++++++
->>  1 file changed, 43 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
->>
->> diff --git a/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml b/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
->> new file mode 100644
->> index 000000000000..1f5ffca4e140
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/phy/mediatek,dp-phy.yaml
->> @@ -0,0 +1,43 @@
->> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->> +# Copyright (c) 2022 MediaTek
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/phy/mediatek,dp-phy.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: MediaTek Display Port PHY
->> +
->> +maintainers:
->> +  - CK Hu <ck.hu@mediatek.com>
->> +  - Jitao shi <jitao.shi@mediatek.com>
->> +
->> +description: |
->> +  Device tree bindings for the Mediatek (embedded) Display Port PHY
->> +  present on some Mediatek SoCs.
->> +
->> +properties:
->> +  compatible:
->> +    enum:
->> +      - mediatek,mt8195-dp-phy
->> +
->> +  mediatek,dp-syscon:
->> +    $ref: /schemas/types.yaml#/definitions/phandle
->> +    description: Phandle to the Display Port node.
->> +
->> +  "#phy-cells":
->> +    const: 0
->> +
->> +required:
->> +  - compatible
->> +  - mediatek,dp-syscon
->> +  - "#phy-cells"
->> +
->> +additionalProperties: false
->> +
->> +examples:
->> +  - |
->> +    dp_phy: dp-phy {
->> +      compatible = "mediatek,mt8195-dp-phy";
->> +      mediatek,dp-syscon = <&dp_tx>;
->> +      #phy-cells = <0>;
->> +    };
->> --
->> 2.34.1
->>
->>
+> Link: https://lore.kernel.org/all/CAHk-=3DwgRr_D8CB-D9Kg-c=3DEHreAsk5SqX=
+Pwr9Y7k9sA6cWXJ6w@mail.gmail.com/ [1]
+> Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
+
+applied.
+
+Thanks!
+Helge
+
+> ---
+>  drivers/video/fbdev/mmp/core.c | 11 +++++------
+>  1 file changed, 5 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/mmp/core.c b/drivers/video/fbdev/mmp/co=
+re.c
+> index 154127256a2c..03707461eced 100644
+> --- a/drivers/video/fbdev/mmp/core.c
+> +++ b/drivers/video/fbdev/mmp/core.c
+> @@ -127,19 +127,18 @@ EXPORT_SYMBOL_GPL(mmp_unregister_panel);
+>   */
+>  struct mmp_path *mmp_get_path(const char *name)
+>  {
+> -	struct mmp_path *path;
+> -	int found =3D 0;
+> +	struct mmp_path *path =3D NULL, *iter;
+>
+>  	mutex_lock(&disp_lock);
+> -	list_for_each_entry(path, &path_list, node) {
+> -		if (!strcmp(name, path->name)) {
+> -			found =3D 1;
+> +	list_for_each_entry(iter, &path_list, node) {
+> +		if (!strcmp(name, iter->name)) {
+> +			path =3D iter;
+>  			break;
+>  		}
+>  	}
+>  	mutex_unlock(&disp_lock);
+>
+> -	return found ? path : NULL;
+> +	return path;
+>  }
+>  EXPORT_SYMBOL_GPL(mmp_get_path);
+>
+>
+> base-commit: f82da161ea75dc4db21b2499e4b1facd36dab275
+

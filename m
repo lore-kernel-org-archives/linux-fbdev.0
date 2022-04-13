@@ -2,126 +2,209 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3785CC433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Apr 2022 10:50:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99988C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Apr 2022 12:52:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231675AbiDMKxR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 13 Apr 2022 06:53:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55092 "EHLO
+        id S233060AbiDMMyf (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 13 Apr 2022 08:54:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55482 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231372AbiDMKxQ (ORCPT
+        with ESMTP id S233328AbiDMMyf (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 13 Apr 2022 06:53:16 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 26126C51
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Apr 2022 03:50:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1649847054;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=8f/PwshmkguRT4VixsIFRRZxWGHz2g1FKjPSgvCys1U=;
-        b=YvWwsX42oWJbar3pG2gGY6mBxHDHtTLTuDYGUjDDjmLlUpUs614PFbTHJEsHtV1lAYyvnj
-        vk3zTUN8KrpLj9zBM7mb6fm6EGmeEooGpDuoSVj+IOEL2KiGwfIN6695wsgpTZX1jVgp4/
-        qXB8rZiu8oWoiK7Wc5xcMWP0bZzkb3I=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-13-xfBIsP5MMoyCxVoCT05ITQ-1; Wed, 13 Apr 2022 06:50:53 -0400
-X-MC-Unique: xfBIsP5MMoyCxVoCT05ITQ-1
-Received: by mail-wr1-f70.google.com with SMTP id j67-20020adf9149000000b00203e6b7d151so254509wrj.13
-        for <linux-fbdev@vger.kernel.org>; Wed, 13 Apr 2022 03:50:53 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=8f/PwshmkguRT4VixsIFRRZxWGHz2g1FKjPSgvCys1U=;
-        b=psAwmPRllaCsYOtSIVELvVie1/tM+Zn82+7WxqsbDCT0J9Pyn0l644Xvg+ulBVhmm3
-         w6PbULIrCZLXHBCBIBiMMu8X0mJW7WZerw/XDtzAfMNOFBDHHS/kS5vn+UvQ9AUo7Nlx
-         N4/YtQP1aNSLyWfvJuoaSUM6gfTZZMeOXfOJptj9ie4eNy8V9//2DqUH0/gPZRoNar7O
-         q0+3KcJId32xgmr6ghNsEYIyj06/ackp4b6ShoRz6jJ8XquvpzAL7NJkCmYIdZ8MmF0k
-         lLcfHNhAQTCsUuDl+VKS5tT16btK6MPvSr3rf7ysgS4Vgjw5weJ1HZHeXW8P3kmrEaQh
-         J9JA==
-X-Gm-Message-State: AOAM530c5cEkRztrxpqGuDH0DESClkdCmEp+Q8TnQ06Jss1tH7UXw/Xd
-        Nlc4B4eqySTIVIiXP1Y/ZjDE0p+cOzKcNibtQdCucPhqQ/5BwjdvKQ4IpA/+OHfpm9o7VBBm0Su
-        NP4A+4EeM/XG3vWrcCGtrMAM=
-X-Received: by 2002:adf:e2cb:0:b0:203:7564:1076 with SMTP id d11-20020adfe2cb000000b0020375641076mr32602167wrj.199.1649847052082;
-        Wed, 13 Apr 2022 03:50:52 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzRxfN1JAPTNpXMTTDU9DhECg4cctSX/rrDt8wkv7XgQMTGGJbHn9zb6tPrmr8j280opAJ2Jg==
-X-Received: by 2002:adf:e2cb:0:b0:203:7564:1076 with SMTP id d11-20020adfe2cb000000b0020375641076mr32602150wrj.199.1649847051871;
-        Wed, 13 Apr 2022 03:50:51 -0700 (PDT)
-Received: from [192.168.1.102] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id r4-20020a1c2b04000000b0038a0e15ee13sm2157211wmr.8.2022.04.13.03.50.50
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 13 Apr 2022 03:50:51 -0700 (PDT)
-Message-ID: <2e183cc9-603d-f038-54aa-5601f11b0484@redhat.com>
-Date:   Wed, 13 Apr 2022 12:50:50 +0200
+        Wed, 13 Apr 2022 08:54:35 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DA2B53B4C;
+        Wed, 13 Apr 2022 05:52:13 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 17A11B82460;
+        Wed, 13 Apr 2022 12:52:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9591DC385B0;
+        Wed, 13 Apr 2022 12:52:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1649854330;
+        bh=+sQUQHAMr60oibMcSb+X1heh23Rmrdns5Ug52FcWZis=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=nHieiynxTKUOZ+/GgQbKN0LsqKZRjZxrh+7eXt+9WJEEf0DBzz444TIxgXoEmaaiK
+         Yfu4UbnumxFYrMTZ3ph2I6cgbNCCp0yGYxuwqOjPZUkbKTSW08ESSg0sReURKkhkBP
+         XAdCHi7MbsUHELaQYQ0Kp4wHWHxR1gBwDs+3i8rIXouiK4Up6BFCX205c0q++YQOTj
+         aO+1X5DE/GJo/1vfeeSWKErbxW9tU78sAKxqz3SR76bqdA8qTrBwZU9G7Bcnkm813T
+         4s3b16NSarLsZbNM8OPIvzYSIOJy58BrXj0cTAIgpXRB9DiZtYKhZPGnEdfqTQsSvO
+         A19loAMfcGwBg==
+Received: by mail-il1-f182.google.com with SMTP id h4so1020359ilq.8;
+        Wed, 13 Apr 2022 05:52:10 -0700 (PDT)
+X-Gm-Message-State: AOAM530UeaUVWThezQYqcim5BE6Xwg/hWxm9lmBgDEJizwSqzt6uZTTf
+        tDudAlKIw3PBXKytImi2d6aXi7hnW6szMeE5rA==
+X-Google-Smtp-Source: ABdhPJwbRYO1nv4ZLeWNM6dbn6sh8AG/4Kjt3a50tl385H2g3r9fNB8qWeSivwG1d+EYScK/dc9o6SVMic7J4HVFBnU=
+X-Received: by 2002:a92:dd86:0:b0:2bc:805c:23c7 with SMTP id
+ g6-20020a92dd86000000b002bc805c23c7mr17319621iln.279.1649854329414; Wed, 13
+ Apr 2022 05:52:09 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.7.0
-Subject: Re: [PATCH 2/2] fbdev: Remove hot-unplug workaround for framebuffers
- without device
-Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>, robh+dt@kernel.org,
-        frowand.list@gmail.com, daniel@ffwll.ch, deller@gmx.de,
-        sam@ravnborg.org, linux@roeck-us.net, mpe@ellerman.id.au,
-        benh@kernel.crashing.org, paulus@samba.org
-Cc:     devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
-References: <20220413092454.1073-1-tzimmermann@suse.de>
- <20220413092454.1073-3-tzimmermann@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220413092454.1073-3-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20220413092454.1073-1-tzimmermann@suse.de> <20220413092454.1073-2-tzimmermann@suse.de>
+In-Reply-To: <20220413092454.1073-2-tzimmermann@suse.de>
+From:   Rob Herring <robh+dt@kernel.org>
+Date:   Wed, 13 Apr 2022 07:51:58 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqK4oT47Q=XFTZ0a=g3-DiB1JsW7_j9M1qRzpeahhz0muA@mail.gmail.com>
+Message-ID: <CAL_JsqK4oT47Q=XFTZ0a=g3-DiB1JsW7_j9M1qRzpeahhz0muA@mail.gmail.com>
+Subject: Re: [PATCH 1/2] of: Create platform devices for OF framebuffers
+To:     Thomas Zimmermann <tzimmermann@suse.de>
+Cc:     Frank Rowand <frowand.list@gmail.com>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>, devicetree@vger.kernel.org,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/13/22 11:24, Thomas Zimmermann wrote:
-> A workaround makes fbdev hot-unplugging work for framebuffers without
-> device. The only user for this feature was offb. As each OF framebuffer
-> now has an associated platform device, the workaround is no longer
-> needed. Remove it. Effectively reverts commit 0f525289ff0d ("fbdev: Fix
-> unregistering of framebuffers without device").
-> 
+On Wed, Apr 13, 2022 at 4:24 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+>
+> Create a platform device for each OF-declared framebuffer and have
+> offb bind to these devices. Allows for real hot-unplugging and other
+> drivers besides offb.
+>
+> Originally, offb created framebuffer devices while initializing its
+> module by parsing the OF device tree. No actual Linux device was set
+> up. This tied OF framebuffers to offb and makes writing other drivers
+> for the OF framebuffers complicated. The absence of a Linux device
+> prevented real hot-unplugging. Adding a distinct platform device for
+> each OF framebuffer solves both problems. Specifically, a DRM drivers
+> can now provide graphics output with modern userspace.
+>
+> Some of the offb init code is now located in the OF initialization.
+> There's now also an implementation of of_platform_default_populate_init(),
+> which was missing before. The OF side creates different devices for
+> either OF display nodes or bootx displays as they require different
+> handling by the driver. The offb drivers picks up each type of device
+> and runs the appropriate fbdev initialization.
+>
+> Tested with OF display nodes on qemu's ppc64le target.
+>
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
->  drivers/video/fbdev/core/fbmem.c | 9 +--------
->  1 file changed, 1 insertion(+), 8 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> index bc6ed750e915..bdd00d381bbc 100644
-> --- a/drivers/video/fbdev/core/fbmem.c
-> +++ b/drivers/video/fbdev/core/fbmem.c
-> @@ -1579,14 +1579,7 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
->  			 * If it's not a platform device, at least print a warning. A
->  			 * fix would add code to remove the device from the system.
->  			 */
-> -			if (!device) {
-> -				/* TODO: Represent each OF framebuffer as its own
-> -				 * device in the device hierarchy. For now, offb
-> -				 * doesn't have such a device, so unregister the
-> -				 * framebuffer as before without warning.
-> -				 */
-> -				do_unregister_framebuffer(registered_fb[i]);
+>  drivers/of/platform.c      | 73 ++++++++++++++++++++++++++--
+>  drivers/video/fbdev/offb.c | 98 +++++++++++++++++++++++++-------------
+>  2 files changed, 134 insertions(+), 37 deletions(-)
+>
+> diff --git a/drivers/of/platform.c b/drivers/of/platform.c
+> index a16b74f32aa9..4c63b9a73587 100644
+> --- a/drivers/of/platform.c
+> +++ b/drivers/of/platform.c
+> @@ -447,6 +447,60 @@ int of_platform_bus_probe(struct device_node *root,
+>  }
+>  EXPORT_SYMBOL(of_platform_bus_probe);
+>
+> +static int __init of_platform_populate_framebuffers(void)
+> +{
+> +       struct device_node *boot_display = NULL;
+> +       struct device_node *node;
+> +       struct platform_device *dev;
+> +       int ret;
+> +
+> +       node = of_get_compatible_child(of_chosen, "simple-framebuffer");
+> +       of_platform_device_create(node, NULL, NULL);
+> +       of_node_put(node);
+> +
 
-Maybe we could still keep this for a couple of releases but with a big
-warning that's not supported in case there are out-of-tree drivers out
-there that still do this ?
+The rest is PPC only, so bail out here if !PPC.
 
-Or at least a warning if the do_unregister_framebuffer() call is removed.
+> +       /* Check if we have a MacOS display without a node spec */
+> +       if (of_get_property(of_chosen, "linux,bootx-noscreen", NULL)) {
+> +               /*
+> +                * The old code tried to work out which node was the MacOS
+> +                * display based on the address. I'm dropping that since the
+> +                * lack of a node spec only happens with old BootX versions
+> +                * (users can update) and with this code, they'll still get
+> +                * a display (just not the palette hacks).
+> +                */
+> +               dev = platform_device_alloc("bootx-noscreen", 0);
+> +               if (WARN_ON(!dev))
+> +                       return -ENOMEM;
+> +               ret = platform_device_add(dev);
+> +               if (WARN_ON(ret)) {
+> +                       platform_device_put(dev);
+> +                       return ret;
+> +               }
+> +       }
+> +
+> +       /*
+> +        * For OF framebuffers, first create the device for the boot display,
+> +        * then for the other framebuffers. Only fail for the boot display;
+> +        * ignore errors for the rest.
+> +        */
+> +       for_each_node_by_type(node, "display") {
+> +               if (!of_get_property(node, "linux,opened", NULL) ||
+> +                   !of_get_property(node, "linux,boot-display", NULL))
+> +                       continue;
+> +               dev = of_platform_device_create(node, "of-display", NULL);
+> +               if (WARN_ON(!dev))
+> +                       return -ENOMEM;
+> +               boot_display = node;
+> +               break;
+> +       }
+> +       for_each_node_by_type(node, "display") {
+> +               if (!of_get_property(node, "linux,opened", NULL) || node == boot_display)
+> +                       continue;
+> +               of_platform_device_create(node, "of-display", NULL);
+> +       }
+> +
+> +       return 0;
+> +}
+> +
+>  /**
+>   * of_platform_populate() - Populate platform_devices from device tree data
+>   * @root: parent of the first level to probe or NULL for the root of the tree
+> @@ -541,9 +595,7 @@ static int __init of_platform_default_populate_init(void)
+>                 of_node_put(node);
+>         }
+>
+> -       node = of_get_compatible_child(of_chosen, "simple-framebuffer");
+> -       of_platform_device_create(node, NULL, NULL);
+> -       of_node_put(node);
+> +       of_platform_populate_framebuffers();
+>
+>         /* Populate everything else. */
+>         of_platform_default_populate(NULL, NULL, NULL);
 
-Regardless of what you chose to do, the patch looks good to me.
+I'm pretty sure it's just this call that's the problem for PPC though
+none of the above existed when adding this caused a regression. Can we
+remove the ifdef and just make this call conditional on
+!IS_ENABLED(CONFIG_PPC).
 
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
--- 
-Best regards,
-
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+> @@ -551,6 +603,20 @@ static int __init of_platform_default_populate_init(void)
+>         return 0;
+>  }
+>  arch_initcall_sync(of_platform_default_populate_init);
+> +#else
+> +static int __init of_platform_default_populate_init(void)
+> +{
+> +       device_links_supplier_sync_state_pause();
+> +
+> +       if (!of_have_populated_dt())
+> +               return -ENODEV;
+> +
+> +       of_platform_populate_framebuffers();
+> +
+> +       return 0;
+> +}
+> +arch_initcall_sync(of_platform_default_populate_init);
+> +#endif
+>
+>  static int __init of_platform_sync_state_init(void)
+>  {
+> @@ -558,7 +624,6 @@ static int __init of_platform_sync_state_init(void)
+>         return 0;
+>  }
+>  late_initcall_sync(of_platform_sync_state_init);
+> -#endif
+>
+>  int of_platform_device_destroy(struct device *dev, void *data)
+>  {

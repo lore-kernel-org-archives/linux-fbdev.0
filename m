@@ -2,129 +2,285 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B70C7C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 12 Apr 2022 20:38:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48B83C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 13 Apr 2022 07:51:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S229521AbiDLUkB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 12 Apr 2022 16:40:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42682 "EHLO
+        id S233482AbiDMHxS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 13 Apr 2022 03:53:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45468 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230181AbiDLUjw (ORCPT
+        with ESMTP id S233465AbiDMHxR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 12 Apr 2022 16:39:52 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E799778921;
-        Tue, 12 Apr 2022 13:35:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1649795549;
-        bh=IrspqYP8ymy9ueHzSGHCQmZBice+jhJrZO+S5bPpMWk=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=GBGjuOQvVglx1k+KBeiBiGY/1jHQqh3P1CmDsSga+SvcxhTvOnCIF33w4uL8EjkF5
-         eE/I4/B2ka+7X5AMMBNt+Sd7cpf/MdU47xLt/6uwiz+f89whBAj6iY6Y7QhFqL/OA6
-         +1LQma0vp7WIY3gomFwn/jMO14qApD9FDmbEPLlU=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.20.60] ([92.116.135.215]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1M5fMe-1ncglq2Hak-007B7f; Tue, 12
- Apr 2022 22:07:00 +0200
-Message-ID: <d90f37a3-e91a-c2a2-e349-5f835b048e5b@gmx.de>
-Date:   Tue, 12 Apr 2022 22:06:59 +0200
+        Wed, 13 Apr 2022 03:53:17 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC7122AC50;
+        Wed, 13 Apr 2022 00:50:56 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: kholk11)
+        with ESMTPSA id 880501F44E42
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=collabora.com;
+        s=mail; t=1649836253;
+        bh=kBohRZbbvH0FPbbKRTyvrZHhm1a8/xbvKLbr4Ggeb1g=;
+        h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+        b=LsGydncRfzaqHxjjpdOT4mnl9g2Fb5Z1tzlmd5qWcNEHOuIp0fsdoJeTBM0FKXHhi
+         6kXmphv2HOGb5Z9N97JRclBtrUUT0s5UZnTDEtsMJLcHOw3Ccy6f/x0tfP/68faFTQ
+         zZtH5xUBpL5RNbZgkRs5CpjTOqsP5OTTjRWe5lMwOyTWUCnTdX6/n1OKXxYSCgcMw/
+         9ujbqctshpYYKyqIzjMP3MqF12oCydnqvAY/NveBufiEbAd4Zx7t8hnk2PAI/hA6z7
+         MZdFiGIAuhh0WH1aCCmkCQafgbrc8btd7UmKye1jG3US6pK10zw0aARx7H13LneJWZ
+         CccuGxXWFzWpw==
+Message-ID: <1893708d-12d7-eefb-6e59-ab1074d01949@collabora.com>
+Date:   Wed, 13 Apr 2022 09:50:50 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.7.0
-Subject: Re: [PATCH] video: fbdev-MMP: replace usage of found with dedicated
- list iterator variable
+Subject: Re: [PATCH v9 18/22] drm/mediatek: Add mt8195 Embedded DisplayPort
+ driver
 Content-Language: en-US
-To:     Jakob Koschel <jakobkoschel@gmail.com>
-Cc:     linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org, Mike Rapoport <rppt@kernel.org>,
-        Brian Johannesmeyer <bjohannesmeyer@gmail.com>,
-        Cristiano Giuffrida <c.giuffrida@vu.nl>,
-        "Bos, H.J." <h.j.bos@vu.nl>
-References: <20220331223503.902142-1-jakobkoschel@gmail.com>
-From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220331223503.902142-1-jakobkoschel@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:v3JE1ZICfMfPrsfvy8/eg3kgYv0qoPZEH4uA47/8+QfPmHfZC8F
- wuCWQdxmVwbOna7Nhk3SfJlsWB4Hrx7jlmLOstCstC04FFWEM+kq9gUooAqQO6LHsLXtK0X
- sNFkMEqV7A5+DltONIy/a2vCxkJ/HHMYane6dasVaYOz5ckKOdJnajhBWeUMhzpjVk3Hcgs
- EQCeR0mI9DgaAtz8MihpA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:qN/aei8zZyE=:EqvKNSZX+hPqr949MSxvMp
- eQKsFxq5fmqFbY3xjmMtT3D+wa+U+ht4xxcqst6URvYsRecL65NUDRHkJev6NvADnHJ5Kq2J0
- EBEX1O2BGYocKeRW0JjJ19YyPkfLozOwkk9ZogAYK4P0XGMdV7Tku9uiWPP1eBcRSbOo5t1we
- TCKpo52CVJsDNS3NT6fNfwR8avJ4bOW5Jei+B0+zAQpzs68ebmav1i/6o/531KJvmewRegbrG
- so2Txl41QLOz4uXId3BddAZXLWSwtzKqNl4F8ABfXcx/NQOcJY+fv3E51IXq6vcbzr7crNvnc
- AIlsgb+xHO0gY7NZwDkIj6gP2WvfsLgS0bvuHc6uG+7ujRis0Ai4w+4huytapG64jQx60MPi/
- veZX9fpmJ+8eO2hkRQ1zr+qBO72E6E44mOBupStaVfjBI1v9lncTp6rmshGETPhXH21oAtCQc
- 49EvJJyM6ZyKAZnNOxAM5cF7sjc2IzCUzpZXLX3Fi7vIBzVDtHXqG2yBoOB1ZeMGaH1H33Bvo
- qRgKxDnpqvNHQ/CxiGKKLtbIzIqE/JaltcuwHPKuwpqPN6bfxHtlgqR7SqLqJgjoAGtSRO4/V
- pCjdcbSgRE0jfxuYR3wT0OBuEhaCpe6a+TYd7mQ9DR6YRjafIYB1fMVtKbU9nEAAeGmw2UAqg
- eqf7GNCbWwc1OHd9qy1SI03PW07Ud5bVAtTwmTF32lFXtyEmiIwRUOz/IEPcnKFnqNv/JMdrn
- /6qecm5MSM3ujxSZY4Bk8B7ZnM4vaU8kgsemPZr1uNkNatLXcTTOE7GJp8/7Ku366Fe7SGUA2
- w4P0K0TVqQmb8T2ZynX19uAlg3DBiABD01Vhcitvhtfg6xoIzWdbYdMXPyCsRbF6S0i6aKVRs
- TDWzrM4Ec/R+ktxCniUgh/ruAgdSZOdkbasXw4bp5Jlz46nEiPqU6fGkueqzk36k6ndXjidJK
- C3BmPtoHMc/X3o5lZrQk58dKuWbas600o3TjsUr21b9BDrcNGiekUZ/vzGjbRw/IUNysyRzwA
- PlNqk7HXOEKumV2ifOpwYaO+xIAO5xPvRXTTPVTOqTLqe/6veoNax9aSFkQKVdpJ229dKnNfQ
- md6ekKGn5pbbpk=
+To:     Guillaume Ranquet <granquet@baylibre.com>, vkoul@kernel.org,
+        airlied@linux.ie, chunfeng.yun@mediatek.com,
+        chunkuang.hu@kernel.org, ck.hu@mediatek.com, daniel@ffwll.ch,
+        deller@gmx.de, jitao.shi@mediatek.com, kishon@ti.com,
+        krzk+dt@kernel.org, maarten.lankhorst@linux.intel.com,
+        matthias.bgg@gmail.com, mripard@kernel.org, p.zabel@pengutronix.de,
+        robh+dt@kernel.org, tzimmermann@suse.de
+Cc:     devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-phy@lists.infradead.org, markyacoub@google.com,
+        Markus Schneider-Pargmann <msp@baylibre.com>,
+        kernel test robot <lkp@intel.com>
+References: <20220327223927.20848-1-granquet@baylibre.com>
+ <20220327223927.20848-19-granquet@baylibre.com>
+ <9a31c1ce-829b-acc7-6fc1-2a9df45e5c38@collabora.com>
+ <CABnWg9tou2S-LX7SpW=ALEdLwu9dXbOsxhvQ2WBWaCJW-qt8_Q@mail.gmail.com>
+From:   AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@collabora.com>
+In-Reply-To: <CABnWg9tou2S-LX7SpW=ALEdLwu9dXbOsxhvQ2WBWaCJW-qt8_Q@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/1/22 00:35, Jakob Koschel wrote:
-> To move the list iterator variable into the list_for_each_entry_*()
-> macro in the future it should be avoided to use the list iterator
-> variable after the loop body.
->
-> To *never* use the list iterator variable after the loop it was
-> concluded to use a separate iterator variable instead of a
-> found boolean [1].
->
-> This removes the need to use a found variable and simply checking if
-> the variable was set, can determine if the break/goto was hit.
->
-> Link: https://lore.kernel.org/all/CAHk-=3DwgRr_D8CB-D9Kg-c=3DEHreAsk5SqX=
-Pwr9Y7k9sA6cWXJ6w@mail.gmail.com/ [1]
-> Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
+Il 12/04/22 11:46, Guillaume Ranquet ha scritto:
+> On Mon, 28 Mar 2022 11:14, AngeloGioacchino Del Regno
+> <angelogioacchino.delregno@collabora.com> wrote:
+>> Il 28/03/22 00:39, Guillaume Ranquet ha scritto:
+>>> From: Markus Schneider-Pargmann <msp@baylibre.com>
+>>>
+>>> This patch adds a DisplayPort driver for the Mediatek mt8195 SoC.
+>>>
+>>> It supports the mt8195, the embedded DisplayPort units. It offers
+>>> DisplayPort 1.4 with up to 4 lanes.
+>>>
+>>> The driver shares its iomap range with the mtk-dp-phy driver using
+>>> the regmap/syscon facility.
+>>>
+>>> This driver is based on an initial version by
+>>> Jason-JH.Lin <jason-jh.lin@mediatek.com>.
+>>>
+>>> Signed-off-by: Markus Schneider-Pargmann <msp@baylibre.com>
+>>> Signed-off-by: Guillaume Ranquet <granquet@baylibre.com>
+>>> Reported-by: kernel test robot <lkp@intel.com>
+>>
+>> Hello Guillaume,
+>> as you know, there's some more work to do on this driver.
+>>
+>> I will also mention here, not on the code, that at this point, your
+>> mtk_dp_aux_transfer() function has something VERY similar to function
+>> drm_dp_dpcd_access(), so I really believe that you can instead use
+>> functions drm_dp_dpcd_read() and drm_dp_dpcd_write(), avoiding code
+>> duplication around.
+>>
+>> Please check drivers/gpu/drm/dp/drm_dp.c.
+>>
+> 
+> This is already in my TODO list as this has been suggested by Rex earlier.
+> 
+>>> ---
+>>>    drivers/gpu/drm/mediatek/Kconfig       |    8 +
+>>>    drivers/gpu/drm/mediatek/Makefile      |    2 +
+>>>    drivers/gpu/drm/mediatek/mtk_dp.c      | 2221 ++++++++++++++++++++++++
+>>>    drivers/gpu/drm/mediatek/mtk_dp_reg.h  |  568 ++++++
+>>>    drivers/gpu/drm/mediatek/mtk_drm_drv.c |    1 +
+>>>    drivers/gpu/drm/mediatek/mtk_drm_drv.h |    1 +
+>>>    6 files changed, 2801 insertions(+)
+>>>    create mode 100644 drivers/gpu/drm/mediatek/mtk_dp.c
+>>>    create mode 100644 drivers/gpu/drm/mediatek/mtk_dp_reg.h
+>>>
+>>> diff --git a/drivers/gpu/drm/mediatek/Kconfig b/drivers/gpu/drm/mediatek/Kconfig
+>>> index 2976d21e9a34..03ffa9b896c3 100644
+>>> --- a/drivers/gpu/drm/mediatek/Kconfig
+>>> +++ b/drivers/gpu/drm/mediatek/Kconfig
+>>> @@ -28,3 +28,11 @@ config DRM_MEDIATEK_HDMI
+>>>    	select PHY_MTK_HDMI
+>>>    	help
+>>>    	  DRM/KMS HDMI driver for Mediatek SoCs
+>>> +
+>>> +config MTK_DPTX_SUPPORT
+>>
+>> Actually, I think that the best would be DRM_MEDIATEK_DP_TX or DRM_MEDIATEK_DP...
+>> ...also, ordering is important, please!
+>>
+> I will update the name.
+> What do you mean by ordering? do you expect the configs to be ordered
+> alphabetically?
+> 
 
-applied.
+Yes, correct. Configuration options shall be alphabetically ordered.
+Obviously, the same applies for Makefile :)
 
-Thanks!
-Helge
+>>> +	tristate "DRM DPTX Support for Mediatek SoCs"
+>>> +	depends on DRM_MEDIATEK
+>>> +	select PHY_MTK_DP
+>>> +	select DRM_DP_HELPER
+>>> +	help
+>>> +	  DRM/KMS Display Port driver for Mediatek SoCs.
+>>> diff --git a/drivers/gpu/drm/mediatek/Makefile b/drivers/gpu/drm/mediatek/Makefile
+>>> index 29098d7c8307..d86a6406055e 100644
+>>> --- a/drivers/gpu/drm/mediatek/Makefile
+>>> +++ b/drivers/gpu/drm/mediatek/Makefile
+>>> @@ -21,3 +21,5 @@ mediatek-drm-hdmi-objs := mtk_cec.o \
+>>>    			  mtk_hdmi_ddc.o
+>>>
+>>>    obj-$(CONFIG_DRM_MEDIATEK_HDMI) += mediatek-drm-hdmi.o
+>>> +
+>>> +obj-$(CONFIG_MTK_DPTX_SUPPORT) += mtk_dp.o
+>>> diff --git a/drivers/gpu/drm/mediatek/mtk_dp.c b/drivers/gpu/drm/mediatek/mtk_dp.c
+>>> new file mode 100644
+>>> index 000000000000..7cd8459cf719
+>>> --- /dev/null
+>>> +++ b/drivers/gpu/drm/mediatek/mtk_dp.c
 
-> ---
->  drivers/video/fbdev/mmp/core.c | 11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/video/fbdev/mmp/core.c b/drivers/video/fbdev/mmp/co=
-re.c
-> index 154127256a2c..03707461eced 100644
-> --- a/drivers/video/fbdev/mmp/core.c
-> +++ b/drivers/video/fbdev/mmp/core.c
-> @@ -127,19 +127,18 @@ EXPORT_SYMBOL_GPL(mmp_unregister_panel);
->   */
->  struct mmp_path *mmp_get_path(const char *name)
->  {
-> -	struct mmp_path *path;
-> -	int found =3D 0;
-> +	struct mmp_path *path =3D NULL, *iter;
->
->  	mutex_lock(&disp_lock);
-> -	list_for_each_entry(path, &path_list, node) {
-> -		if (!strcmp(name, path->name)) {
-> -			found =3D 1;
-> +	list_for_each_entry(iter, &path_list, node) {
-> +		if (!strcmp(name, iter->name)) {
-> +			path =3D iter;
->  			break;
->  		}
->  	}
->  	mutex_unlock(&disp_lock);
->
-> -	return found ? path : NULL;
-> +	return path;
->  }
->  EXPORT_SYMBOL_GPL(mmp_get_path);
->
->
-> base-commit: f82da161ea75dc4db21b2499e4b1facd36dab275
+..snip..
 
+>>> +
+>>> +#define MTK_UPD_BITS_OR_OUT(mtk_dp, offset, val, mask, ret, label) \
+>>> +	do {\
+>>> +		ret = mtk_dp_update_bits(mtk_dp, offset, val, mask); \
+>>> +		if (ret) \
+>>> +			goto label; \
+>>> +	} while (0)
+>>
+>> I'm sorry, no offense - but this macro is a bit ugly...
+>>
+>> I think I understand why you have introduced it, but in my opinion this decreases
+>> human readability a lot, I was even about to point out multiple functions that
+>> you had unused labels before checking this macro, as that was totally unexpected...
+>>
+>> In my opinion, this should be open-coded everywhere... yes it makes the file a
+>> bit fatter in terms of amount of text, but eh... it's life :)))
+>>
+>>
+> No offense taken... I find the macro ugly too... but I couldn't think
+> of anything less
+> ugly... I'll bite the bullet and write all of the code then.
+> 
+
+I can't think of anything shorter, either.. so yep, sometimes writing 'em all
+is simply the best option.
+
+>>> +
+>>
+>> ....snip....
+>>
+>>> +
+>>> +static int mtk_dp_set_color_format(struct mtk_dp *mtk_dp,
+>>> +				   enum mtk_dp_color_format color_format)
+>>> +{
+
+
+..snip..
+
+>>> +
+>>> +static int mtk_dp_dt_parse(struct mtk_dp *mtk_dp,
+>>> +			   struct platform_device *pdev)
+>>> +{
+>>> +	struct device *dev = &pdev->dev;
+>>> +	int ret = 0;
+>>> +	void __iomem *base;
+>>> +
+>>> +	base = devm_platform_ioremap_resource(pdev, 0);
+>>> +	if (IS_ERR(base))
+>>> +		return PTR_ERR(base);
+>>> +
+>>> +	mtk_dp->regs = syscon_node_to_regmap(dev->of_node);
+>>> +	if (IS_ERR(mtk_dp->regs))
+>>> +		return PTR_ERR(mtk_dp->regs);
+>>> +
+>>> +	//TODO: optional clock?
+>>
+>> Well, if it's optional, you should use devm_clk_get_optional(), meaning
+>> that......
+>>
+>>> +	mtk_dp->dp_tx_clk = devm_clk_get(dev, "faxi");
+>>> +	if (IS_ERR(mtk_dp->dp_tx_clk)) {
+>>> +		ret = PTR_ERR(mtk_dp->dp_tx_clk);
+>>> +		dev_info(dev, "Failed to get dptx clock: %d\n", ret);
+>>> +		mtk_dp->dp_tx_clk = NULL;
+>>
+>> ...I shouldn't see this snippet of code, as it should be a bit different... :)
+>>
+> It is still unclear to me if this should be optional or not, hence the 'TODO'
+> 
+
+Thinking about this a bit more - this driver is for MT8195 only, for now... and
+the DP cannot work without the AXI clock being up... logically.
+
+I'd say, at this point, to make this mandatory.
+
+If any newer platform will make this optional, we can either assign clk26m (ugh!)
+or we can get back to this one and convert this to devm_clk_get_optional().
+
+Don't forget that we can also manage this in devicetree bindings, where we can
+for example declare a property to be optional for one or more compatibles, so
+there's no problem if we'd be doing such a change in the future, I think.
+
+>>> +	}
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>
+>> ..snip..
+>>
+>>> +static void mtk_dp_bridge_atomic_disable(struct drm_bridge *bridge,
+>>> +					 struct drm_bridge_state *old_state)
+>>> +{
+>>> +	struct mtk_dp *mtk_dp = mtk_dp_from_bridge(bridge);
+>>> +
+>>> +	mtk_dp_video_mute(mtk_dp, true);
+>>> +	mtk_dp->state = MTK_DP_STATE_IDLE;
+>>> +	mtk_dp->train_state = MTK_DP_TRAIN_STATE_STARTUP;
+>>> +
+>>> +	mtk_dp->enabled = false;
+>>
+>>> +	msleep(100);
+>>
+>> 100 milliseconds is an eternity, why are we sleeping for *so long* here?
+>>
+>> Please, either add a comment that fully explains the resons for that, or
+>> remove the sleep entirely: to my eyes, it doesn't look like this sleep is
+>> really needed for anything important because here you are disabling the
+>> bridge and *powering off* the IP entirely.
+>>
+> This sleep can be removed.
+> I will also make an effort to document all the other delays in the code for v10.
+> 
+
+Thanks for that.
+
+(snip)
+
+>>> +
+>>
+>>
+> 
+> Thx a lot for your review,
+> Guillaume.
+
+
+You're welcome!
+
+Cheers,
+Angelo

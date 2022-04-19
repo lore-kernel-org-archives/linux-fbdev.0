@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D00A3C3526F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 640A7C4743F
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355258AbiDSQss (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:48:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51718 "EHLO
+        id S237561AbiDSQsp (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:48:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56496 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354910AbiDSQmc (ORCPT
+        with ESMTP id S1355112AbiDSQrj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 12:42:32 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 01F54C39;
-        Tue, 19 Apr 2022 09:39:47 -0700 (PDT)
+        Tue, 19 Apr 2022 12:47:39 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3F8F310F0;
+        Tue, 19 Apr 2022 09:44:54 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 1EDD56182B;
-        Tue, 19 Apr 2022 16:39:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E9A2C385AC;
-        Tue, 19 Apr 2022 16:39:39 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id A74A4B81BDE;
+        Tue, 19 Apr 2022 16:44:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26F49C385AE;
+        Tue, 19 Apr 2022 16:44:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386386;
-        bh=LG1bcBYOkdyP7KLIymt99RG2NdIiaXEuRSrVvs573KY=;
+        s=k20201202; t=1650386691;
+        bh=Q+hKS3gu9ozJQemd2cebipFlCYB+OBJ4+1494EInzlc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=T4H7dpvXVANFtFG0af2IjmNie+uHIUShZAvOn5+alhwiwzWuBABhSLilb4FntAhkl
-         4imNwHrVwSEHgo3fZAIk6eFmmbos3nMQK+2PjuXVe24Fz2RZQwZl2AFECOq1lvtND1
-         zOhTT7LlzFsRKVGze1tRhKmDiBuAvKvZQyo6LeIL1a0E/8C8W5iNqIJxcoCANAELae
-         +0Jz2e4Q0RxrvG0QLmW5gSNVi55sHZ5paYTOzFzPMcbrvXkLms2rBkuPOn8C2igEVo
-         7NMJqhgh31cgPGSKy0Sn7sP5T3vY8TL6kJyHyGaucJKImVbhxu7YvS9tj2UsEOHtSw
-         u/x4fel6q7MzQ==
+        b=uVJA17DW8g6LLXA9uZBkgJXYGqfW/DR9m7+0LIbHwLFkDMVhfXjDo7GE3E6G5cIvH
+         A7I3WEQ3j7r7KlVhCylo5SdgM+WjxsqW+v02JiImfKAs88RDNenRIsFTxNd5Ds1ZlR
+         7CMUSoWIIpMvcga6dpE19EzA+Jbj4t3qxa1e+1xa/nH51R0T1WWTdB9otegZVrCmyF
+         YzLNohYe40975YvkQ4TLRjT3AAjSHpMt4ltJ0YgjfVmI7Crq+6vBYj+b4nhb84w828
+         Dyq9p11+OjYw5iVNo5voSaUAwITvDg4qoYd5lYi2KFxQncIdymitm0Soxfw1sTzvWC
+         4KulWEnXqufog==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -60,9 +60,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         alsa-devel@alsa-project.org
-Subject: [PATCH 07/48] ARM: pxa: move mach/sound.h to linux/platform_data/
-Date:   Tue, 19 Apr 2022 18:37:29 +0200
-Message-Id: <20220419163810.2118169-8-arnd@kernel.org>
+Subject: [PATCH 46/48] ARM: pxa: move mach/*.h to mach-pxa/
+Date:   Tue, 19 Apr 2022 18:38:08 +0200
+Message-Id: <20220419163810.2118169-47-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -74,611 +74,1085 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-This is a basically a platform_data file, so move it out of
-the mach/* header directory.
+None of the headers are included from outside of the mach-pxa
+directory, so move them all in there.
 
-Cc: Marek Vasut <marek.vasut@gmail.com>
-Cc: Tomas Cech <sleep_walker@suse.com>
-Cc: Sergey Lapin <slapin@ossfans.org>
-Acked-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: alsa-devel@alsa-project.org
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-pxa/balloon3.c                                  | 2 +-
- arch/arm/mach-pxa/cm-x300.c                                   | 2 +-
- arch/arm/mach-pxa/colibri-pxa270.c                            | 2 +-
- arch/arm/mach-pxa/colibri-pxa300.c                            | 2 +-
- arch/arm/mach-pxa/colibri-pxa320.c                            | 2 +-
- arch/arm/mach-pxa/csb726.c                                    | 2 +-
- arch/arm/mach-pxa/devices.c                                   | 2 +-
- arch/arm/mach-pxa/eseries.c                                   | 2 +-
- arch/arm/mach-pxa/lpd270.c                                    | 2 +-
- arch/arm/mach-pxa/lubbock.c                                   | 2 +-
- arch/arm/mach-pxa/mainstone.c                                 | 2 +-
- arch/arm/mach-pxa/mioa701.c                                   | 2 +-
- arch/arm/mach-pxa/palm27x.c                                   | 2 +-
- arch/arm/mach-pxa/palmld.c                                    | 2 +-
- arch/arm/mach-pxa/palmt5.c                                    | 2 +-
- arch/arm/mach-pxa/palmtc.c                                    | 2 +-
- arch/arm/mach-pxa/palmte2.c                                   | 2 +-
- arch/arm/mach-pxa/palmtreo.c                                  | 2 +-
- arch/arm/mach-pxa/palmtx.c                                    | 2 +-
- arch/arm/mach-pxa/palmz72.c                                   | 2 +-
- arch/arm/mach-pxa/pcm990-baseboard.c                          | 2 +-
- arch/arm/mach-pxa/tosa.c                                      | 2 +-
- arch/arm/mach-pxa/trizeps4.c                                  | 2 +-
- arch/arm/mach-pxa/viper.c                                     | 2 +-
- arch/arm/mach-pxa/vpac270.c                                   | 2 +-
- arch/arm/mach-pxa/zeus.c                                      | 2 +-
- arch/arm/mach-pxa/zylonite.c                                  | 2 +-
- .../mach/audio.h => include/linux/platform_data/asoc-pxa.h    | 4 ++--
- sound/arm/pxa2xx-ac97-lib.c                                   | 2 +-
- sound/arm/pxa2xx-ac97.c                                       | 2 +-
- sound/soc/pxa/corgi.c                                         | 2 +-
- sound/soc/pxa/e740_wm9705.c                                   | 2 +-
- sound/soc/pxa/e750_wm9705.c                                   | 2 +-
- sound/soc/pxa/e800_wm9712.c                                   | 2 +-
- sound/soc/pxa/em-x270.c                                       | 2 +-
- sound/soc/pxa/mioa701_wm9713.c                                | 2 +-
- sound/soc/pxa/palm27x.c                                       | 2 +-
- sound/soc/pxa/poodle.c                                        | 2 +-
- sound/soc/pxa/pxa2xx-ac97.c                                   | 2 +-
- sound/soc/pxa/pxa2xx-i2s.c                                    | 2 +-
- sound/soc/pxa/tosa.c                                          | 2 +-
- sound/soc/pxa/z2.c                                            | 2 +-
- 42 files changed, 43 insertions(+), 43 deletions(-)
- rename arch/arm/mach-pxa/include/mach/audio.h => include/linux/platform_data/asoc-pxa.h (93%)
+ arch/arm/mach-pxa/am300epd.c                  |  2 +-
+ arch/arm/mach-pxa/balloon3.h                  |  2 +-
+ arch/arm/mach-pxa/colibri-pxa3xx.c            |  2 +-
+ arch/arm/mach-pxa/colibri.h                   |  2 +-
+ arch/arm/mach-pxa/corgi.h                     |  2 +-
+ arch/arm/mach-pxa/corgi_pm.c                  |  2 +-
+ arch/arm/mach-pxa/csb726.c                    |  2 +-
+ arch/arm/mach-pxa/csb726.h                    |  2 +-
+ arch/arm/mach-pxa/devices.c                   |  6 +--
+ arch/arm/mach-pxa/e740-pcmcia.c               |  2 +-
+ .../{include/mach => }/eseries-gpio.h         |  0
+ arch/arm/mach-pxa/eseries.c                   |  2 +-
+ arch/arm/mach-pxa/generic.c                   |  8 +--
+ arch/arm/mach-pxa/gumstix.h                   |  2 +-
+ arch/arm/mach-pxa/h5000.c                     |  2 +-
+ arch/arm/mach-pxa/hx4700.h                    |  2 +-
+ arch/arm/mach-pxa/idp.h                       |  2 +-
+ arch/arm/mach-pxa/include/mach/pxa-regs.h     | 52 ------------------
+ arch/arm/mach-pxa/irq.c                       |  2 +-
+ arch/arm/mach-pxa/{include/mach => }/irqs.h   |  0
+ arch/arm/mach-pxa/lpd270.c                    |  2 +-
+ arch/arm/mach-pxa/lubbock.c                   |  2 +-
+ arch/arm/mach-pxa/lubbock.h                   |  2 +-
+ arch/arm/mach-pxa/magician.c                  |  2 +-
+ .../mach-pxa/{include/mach => }/magician.h    |  2 +-
+ arch/arm/mach-pxa/mainstone.c                 |  2 +-
+ arch/arm/mach-pxa/mainstone.h                 |  2 +-
+ arch/arm/mach-pxa/mfp-pxa2xx.c                |  2 +-
+ arch/arm/mach-pxa/mfp-pxa3xx.c                |  2 +-
+ arch/arm/mach-pxa/{include/mach => }/mfp.h    |  0
+ arch/arm/mach-pxa/mioa701.c                   |  2 +-
+ arch/arm/mach-pxa/palmld.h                    |  2 +-
+ arch/arm/mach-pxa/palmt5.h                    |  2 +-
+ arch/arm/mach-pxa/palmtc.h                    |  2 +-
+ arch/arm/mach-pxa/palmtreo.c                  |  2 +-
+ arch/arm/mach-pxa/palmtx.h                    |  2 +-
+ arch/arm/mach-pxa/pcm027.h                    |  2 +-
+ arch/arm/mach-pxa/pcm990_baseboard.h          |  2 +-
+ arch/arm/mach-pxa/poodle.h                    |  2 +-
+ arch/arm/mach-pxa/pxa-dt.c                    |  2 +-
+ arch/arm/mach-pxa/pxa-regs.h                  | 53 ++++++++++++++++++-
+ arch/arm/mach-pxa/pxa25x.c                    |  6 +--
+ arch/arm/mach-pxa/pxa25x.h                    |  4 +-
+ arch/arm/mach-pxa/pxa27x.c                    |  6 +--
+ arch/arm/mach-pxa/pxa27x.h                    |  4 +-
+ .../mach-pxa/{include/mach => }/pxa2xx-regs.h |  0
+ arch/arm/mach-pxa/pxa2xx.c                    |  6 +--
+ .../mach-pxa/{include/mach => }/pxa3xx-regs.h |  0
+ arch/arm/mach-pxa/pxa3xx.c                    |  8 +--
+ arch/arm/mach-pxa/pxa3xx.h                    |  4 +-
+ .../mach-pxa/{include/mach => }/regs-ost.h    |  0
+ arch/arm/mach-pxa/reset.c                     |  6 +--
+ arch/arm/mach-pxa/{include/mach => }/reset.h  |  0
+ arch/arm/mach-pxa/sharpsl_pm.c                |  2 +-
+ arch/arm/mach-pxa/sleep.S                     |  4 +-
+ arch/arm/mach-pxa/smemc.c                     |  2 +-
+ arch/arm/mach-pxa/{include/mach => }/smemc.h  |  0
+ arch/arm/mach-pxa/spitz.c                     |  4 +-
+ arch/arm/mach-pxa/spitz.h                     |  2 +-
+ arch/arm/mach-pxa/standby.S                   |  2 +-
+ arch/arm/mach-pxa/tosa.c                      |  6 +--
+ arch/arm/mach-pxa/{include/mach => }/tosa.h   |  0
+ arch/arm/mach-pxa/trizeps4-pcmcia.c           |  2 +-
+ arch/arm/mach-pxa/trizeps4.c                  |  2 +-
+ arch/arm/mach-pxa/trizeps4.h                  |  2 +-
+ arch/arm/mach-pxa/xcep.c                      |  2 +-
+ arch/arm/mach-pxa/z2.c                        |  2 +-
+ arch/arm/mach-pxa/{include/mach => }/z2.h     |  0
+ arch/arm/mach-pxa/zeus.c                      |  2 +-
+ arch/arm/mach-pxa/zylonite.c                  |  2 +-
+ 70 files changed, 133 insertions(+), 134 deletions(-)
+ rename arch/arm/mach-pxa/{include/mach => }/eseries-gpio.h (100%)
+ delete mode 100644 arch/arm/mach-pxa/include/mach/pxa-regs.h
+ rename arch/arm/mach-pxa/{include/mach => }/irqs.h (100%)
+ rename arch/arm/mach-pxa/{include/mach => }/magician.h (99%)
+ rename arch/arm/mach-pxa/{include/mach => }/mfp.h (100%)
+ rename arch/arm/mach-pxa/{include/mach => }/pxa2xx-regs.h (100%)
+ rename arch/arm/mach-pxa/{include/mach => }/pxa3xx-regs.h (100%)
+ rename arch/arm/mach-pxa/{include/mach => }/regs-ost.h (100%)
+ rename arch/arm/mach-pxa/{include/mach => }/reset.h (100%)
+ rename arch/arm/mach-pxa/{include/mach => }/smemc.h (100%)
+ rename arch/arm/mach-pxa/{include/mach => }/tosa.h (100%)
+ rename arch/arm/mach-pxa/{include/mach => }/z2.h (100%)
 
-diff --git a/arch/arm/mach-pxa/balloon3.c b/arch/arm/mach-pxa/balloon3.c
-index 26140249c784..82f9299f67d3 100644
---- a/arch/arm/mach-pxa/balloon3.c
-+++ b/arch/arm/mach-pxa/balloon3.c
-@@ -41,7 +41,7 @@
+diff --git a/arch/arm/mach-pxa/am300epd.c b/arch/arm/mach-pxa/am300epd.c
+index 17d08abeeb17..4b55bc89db8f 100644
+--- a/arch/arm/mach-pxa/am300epd.c
++++ b/arch/arm/mach-pxa/am300epd.c
+@@ -30,7 +30,7 @@
  
- #include "pxa27x.h"
- #include <mach/balloon3.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
+ #include "gumstix.h"
+ #include "mfp-pxa25x.h"
+-#include <mach/irqs.h>
++#include "irqs.h"
  #include <linux/platform_data/video-pxafb.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include "udc.h"
-diff --git a/arch/arm/mach-pxa/cm-x300.c b/arch/arm/mach-pxa/cm-x300.c
-index 85e2537fdc15..09a5264a27c8 100644
---- a/arch/arm/mach-pxa/cm-x300.c
-+++ b/arch/arm/mach-pxa/cm-x300.c
-@@ -53,7 +53,7 @@
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/usb-ohci-pxa27x.h>
- #include <linux/platform_data/mtd-nand-pxa3xx.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/usb-pxa3xx-ulpi.h>
  
- #include <asm/mach/map.h>
-diff --git a/arch/arm/mach-pxa/colibri-pxa270.c b/arch/arm/mach-pxa/colibri-pxa270.c
-index 2f2cd2ae4187..5dc669752836 100644
---- a/arch/arm/mach-pxa/colibri-pxa270.c
-+++ b/arch/arm/mach-pxa/colibri-pxa270.c
-@@ -23,7 +23,7 @@
+ #include "generic.h"
+diff --git a/arch/arm/mach-pxa/balloon3.h b/arch/arm/mach-pxa/balloon3.h
+index f351358c0e5b..04f3639c4082 100644
+--- a/arch/arm/mach-pxa/balloon3.h
++++ b/arch/arm/mach-pxa/balloon3.h
+@@ -11,7 +11,7 @@
+ #ifndef ASM_ARCH_BALLOON3_H
+ #define ASM_ARCH_BALLOON3_H
+ 
+-#include <mach/irqs.h> /* PXA_NR_BUILTIN_GPIO */
++#include "irqs.h" /* PXA_NR_BUILTIN_GPIO */
+ 
+ enum balloon3_features {
+ 	BALLOON3_FEATURE_OHCI,
+diff --git a/arch/arm/mach-pxa/colibri-pxa3xx.c b/arch/arm/mach-pxa/colibri-pxa3xx.c
+index 701dfef930eb..77d6ef5fa42d 100644
+--- a/arch/arm/mach-pxa/colibri-pxa3xx.c
++++ b/arch/arm/mach-pxa/colibri-pxa3xx.c
+@@ -17,7 +17,7 @@
+ #include <asm/system_info.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach/irq.h>
+-#include <mach/pxa3xx-regs.h>
++#include "pxa3xx-regs.h"
+ #include "mfp-pxa300.h"
+ #include "colibri.h"
+ #include <linux/platform_data/mmc-pxamci.h>
+diff --git a/arch/arm/mach-pxa/colibri.h b/arch/arm/mach-pxa/colibri.h
+index 85525d49e321..01a46f36cc1f 100644
+--- a/arch/arm/mach-pxa/colibri.h
++++ b/arch/arm/mach-pxa/colibri.h
+@@ -3,7 +3,7 @@
+ #define _COLIBRI_H_
+ 
+ #include <net/ax88796.h>
+-#include <mach/mfp.h>
++#include "mfp.h"
+ 
+ /*
+  * base board glue for PXA270 module
+diff --git a/arch/arm/mach-pxa/corgi.h b/arch/arm/mach-pxa/corgi.h
+index fe2fcf6532b9..b565ca7b8cda 100644
+--- a/arch/arm/mach-pxa/corgi.h
++++ b/arch/arm/mach-pxa/corgi.h
+@@ -9,7 +9,7 @@
+ #ifndef __ASM_ARCH_CORGI_H
+ #define __ASM_ARCH_CORGI_H  1
+ 
+-#include <mach/irqs.h> /* PXA_NR_BUILTIN_GPIO */
++#include "irqs.h" /* PXA_NR_BUILTIN_GPIO */
+ 
+ /*
+  * Corgi (Non Standard) GPIO Definitions
+diff --git a/arch/arm/mach-pxa/corgi_pm.c b/arch/arm/mach-pxa/corgi_pm.c
+index c6ddfc737644..555a5c1afd96 100644
+--- a/arch/arm/mach-pxa/corgi_pm.c
++++ b/arch/arm/mach-pxa/corgi_pm.c
+@@ -21,7 +21,7 @@
  #include <asm/mach-types.h>
- #include <linux/sizes.h>
  
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include "colibri.h"
- #include "pxa27x.h"
+ #include "corgi.h"
+-#include <mach/pxa2xx-regs.h>
++#include "pxa2xx-regs.h"
+ #include "sharpsl_pm.h"
  
-diff --git a/arch/arm/mach-pxa/colibri-pxa300.c b/arch/arm/mach-pxa/colibri-pxa300.c
-index 4ceeea142bfd..11ca6c4795e7 100644
---- a/arch/arm/mach-pxa/colibri-pxa300.c
-+++ b/arch/arm/mach-pxa/colibri-pxa300.c
-@@ -24,7 +24,7 @@
- #include "colibri.h"
+ #include "generic.h"
+diff --git a/arch/arm/mach-pxa/csb726.c b/arch/arm/mach-pxa/csb726.c
+index 88f2f1d96c7b..410b1af87d55 100644
+--- a/arch/arm/mach-pxa/csb726.c
++++ b/arch/arm/mach-pxa/csb726.c
+@@ -23,7 +23,7 @@
+ #include <linux/platform_data/mmc-pxamci.h>
  #include <linux/platform_data/usb-ohci-pxa27x.h>
- #include <linux/platform_data/video-pxafb.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
+ #include <linux/platform_data/asoc-pxa.h>
+-#include <mach/smemc.h>
++#include "smemc.h"
  
  #include "generic.h"
  #include "devices.h"
-diff --git a/arch/arm/mach-pxa/colibri-pxa320.c b/arch/arm/mach-pxa/colibri-pxa320.c
-index 35dd3adb7712..1a59056e181e 100644
---- a/arch/arm/mach-pxa/colibri-pxa320.c
-+++ b/arch/arm/mach-pxa/colibri-pxa320.c
-@@ -24,7 +24,7 @@
- #include "colibri.h"
- #include <linux/platform_data/video-pxafb.h>
- #include <linux/platform_data/usb-ohci-pxa27x.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include "pxa27x-udc.h"
- #include "udc.h"
+diff --git a/arch/arm/mach-pxa/csb726.h b/arch/arm/mach-pxa/csb726.h
+index 30d7cf926b84..628928743bd5 100644
+--- a/arch/arm/mach-pxa/csb726.h
++++ b/arch/arm/mach-pxa/csb726.h
+@@ -7,7 +7,7 @@
+ #ifndef CSB726_H
+ #define CSB726_H
  
-diff --git a/arch/arm/mach-pxa/csb726.c b/arch/arm/mach-pxa/csb726.c
-index d48493445ae5..88f2f1d96c7b 100644
---- a/arch/arm/mach-pxa/csb726.c
-+++ b/arch/arm/mach-pxa/csb726.c
-@@ -22,7 +22,7 @@
- #include "pxa27x.h"
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/usb-ohci-pxa27x.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/smemc.h>
+-#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_GPIO_TO_IRQ */
  
- #include "generic.h"
+ #define CSB726_GPIO_IRQ_LAN	52
+ #define CSB726_GPIO_IRQ_SM501	53
 diff --git a/arch/arm/mach-pxa/devices.c b/arch/arm/mach-pxa/devices.c
-index 7ca97ddef6fe..454523237c97 100644
+index 12f78636045f..a7b92dd1ca9e 100644
 --- a/arch/arm/mach-pxa/devices.c
 +++ b/arch/arm/mach-pxa/devices.c
-@@ -20,7 +20,7 @@
+@@ -16,7 +16,7 @@
+ #include <linux/platform_data/video-pxafb.h>
+ #include <linux/platform_data/mmc-pxamci.h>
+ #include <linux/platform_data/irda-pxaficp.h>
+-#include <mach/irqs.h>
++#include "irqs.h"
  #include <linux/platform_data/usb-ohci-pxa27x.h>
  #include <linux/platform_data/keypad-pxa27x.h>
  #include <linux/platform_data/media/camera-pxa.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
+@@ -24,8 +24,8 @@
  #include <linux/platform_data/mmp_dma.h>
  #include <linux/platform_data/mtd-nand-pxa3xx.h>
  
-diff --git a/arch/arm/mach-pxa/eseries.c b/arch/arm/mach-pxa/eseries.c
-index f37c44b6139d..a8b6483ff665 100644
---- a/arch/arm/mach-pxa/eseries.c
-+++ b/arch/arm/mach-pxa/eseries.c
-@@ -34,7 +34,7 @@
- #include "pxa25x.h"
- #include <mach/eseries-gpio.h>
- #include "eseries-irq.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/video-pxafb.h>
- #include "udc.h"
- #include <linux/platform_data/irda-pxaficp.h>
-diff --git a/arch/arm/mach-pxa/lpd270.c b/arch/arm/mach-pxa/lpd270.c
-index eac32bd9e385..7f10b86f85fd 100644
---- a/arch/arm/mach-pxa/lpd270.c
-+++ b/arch/arm/mach-pxa/lpd270.c
-@@ -39,7 +39,7 @@
- #include "pxa27x.h"
- #include "lpd270.h"
- #include <mach/addr-map.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/video-pxafb.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/irda-pxaficp.h>
-diff --git a/arch/arm/mach-pxa/lubbock.c b/arch/arm/mach-pxa/lubbock.c
-index 72816e7c206f..46aef93c0615 100644
---- a/arch/arm/mach-pxa/lubbock.c
-+++ b/arch/arm/mach-pxa/lubbock.c
-@@ -45,7 +45,7 @@
- #include <asm/hardware/sa1111.h>
+-#include <mach/regs-ost.h>
+-#include <mach/reset.h>
++#include "regs-ost.h"
++#include "reset.h"
+ #include "devices.h"
+ #include "generic.h"
  
- #include "pxa25x.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/lubbock.h>
- #include "udc.h"
- #include <linux/platform_data/irda-pxaficp.h>
-diff --git a/arch/arm/mach-pxa/mainstone.c b/arch/arm/mach-pxa/mainstone.c
-index cf74adfe65df..c8200fc2159d 100644
---- a/arch/arm/mach-pxa/mainstone.c
-+++ b/arch/arm/mach-pxa/mainstone.c
-@@ -45,7 +45,7 @@
- 
- #include "pxa27x.h"
- #include "mainstone.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/video-pxafb.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/irda-pxaficp.h>
-diff --git a/arch/arm/mach-pxa/mioa701.c b/arch/arm/mach-pxa/mioa701.c
-index a79f296e81e0..907cd7b5f58c 100644
---- a/arch/arm/mach-pxa/mioa701.c
-+++ b/arch/arm/mach-pxa/mioa701.c
-@@ -41,7 +41,7 @@
- #include "udc.h"
- #include "pxa27x-udc.h"
- #include <linux/platform_data/media/camera-pxa.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/smemc.h>
- 
- #include "mioa701.h"
-diff --git a/arch/arm/mach-pxa/palm27x.c b/arch/arm/mach-pxa/palm27x.c
-index 6230381a7ca0..1a8d25eecac3 100644
---- a/arch/arm/mach-pxa/palm27x.c
-+++ b/arch/arm/mach-pxa/palm27x.c
-@@ -25,7 +25,7 @@
- #include <asm/mach/map.h>
- 
- #include "pxa27x.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/video-pxafb.h>
- #include <linux/platform_data/irda-pxaficp.h>
-diff --git a/arch/arm/mach-pxa/palmld.c b/arch/arm/mach-pxa/palmld.c
-index 5f73716a77f0..d85146957004 100644
---- a/arch/arm/mach-pxa/palmld.c
-+++ b/arch/arm/mach-pxa/palmld.c
-@@ -29,7 +29,7 @@
- #include <asm/mach/map.h>
- 
- #include "pxa27x.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/palmld.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/video-pxafb.h>
-diff --git a/arch/arm/mach-pxa/palmt5.c b/arch/arm/mach-pxa/palmt5.c
-index 7c7cbb4e677e..460a8b1043a5 100644
---- a/arch/arm/mach-pxa/palmt5.c
-+++ b/arch/arm/mach-pxa/palmt5.c
-@@ -29,7 +29,7 @@
- #include <asm/mach/map.h>
- 
- #include "pxa27x.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include "palmt5.h"
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/video-pxafb.h>
-diff --git a/arch/arm/mach-pxa/palmtc.c b/arch/arm/mach-pxa/palmtc.c
-index 455cb8ccaf26..c59fc76c0c3d 100644
---- a/arch/arm/mach-pxa/palmtc.c
-+++ b/arch/arm/mach-pxa/palmtc.c
-@@ -29,7 +29,7 @@
- #include <asm/mach/map.h>
- 
- #include "pxa25x.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/palmtc.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/video-pxafb.h>
-diff --git a/arch/arm/mach-pxa/palmte2.c b/arch/arm/mach-pxa/palmte2.c
-index a2b10db4aacc..fedac670a8af 100644
---- a/arch/arm/mach-pxa/palmte2.c
-+++ b/arch/arm/mach-pxa/palmte2.c
-@@ -29,7 +29,7 @@
- #include <asm/mach/map.h>
- 
- #include "pxa25x.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include "palmte2.h"
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/video-pxafb.h>
-diff --git a/arch/arm/mach-pxa/palmtreo.c b/arch/arm/mach-pxa/palmtreo.c
-index 2bf0f7f3ea24..d6d5b90d9578 100644
---- a/arch/arm/mach-pxa/palmtreo.c
-+++ b/arch/arm/mach-pxa/palmtreo.c
-@@ -29,7 +29,7 @@
- 
- #include "pxa27x.h"
- #include "pxa27x-udc.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include "palmtreo.h"
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/video-pxafb.h>
-diff --git a/arch/arm/mach-pxa/palmtx.c b/arch/arm/mach-pxa/palmtx.c
-index 07332c92c9f7..097b88638863 100644
---- a/arch/arm/mach-pxa/palmtx.c
-+++ b/arch/arm/mach-pxa/palmtx.c
-@@ -32,7 +32,7 @@
- #include <asm/mach/map.h>
- 
- #include "pxa27x.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/palmtx.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/video-pxafb.h>
-diff --git a/arch/arm/mach-pxa/palmz72.c b/arch/arm/mach-pxa/palmz72.c
-index b4a5fe02a0af..66e8fe6f1661 100644
---- a/arch/arm/mach-pxa/palmz72.c
-+++ b/arch/arm/mach-pxa/palmz72.c
-@@ -34,7 +34,7 @@
- #include <asm/mach/map.h>
- 
- #include "pxa27x.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include "palmz72.h"
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/video-pxafb.h>
-diff --git a/arch/arm/mach-pxa/pcm990-baseboard.c b/arch/arm/mach-pxa/pcm990-baseboard.c
-index 8dfcc366d0fe..33a9d2eeca1c 100644
---- a/arch/arm/mach-pxa/pcm990-baseboard.c
-+++ b/arch/arm/mach-pxa/pcm990-baseboard.c
-@@ -26,7 +26,7 @@
- 
- #include <asm/mach/map.h>
- #include "pxa27x.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/usb-ohci-pxa27x.h>
- #include "pcm990_baseboard.h"
-diff --git a/arch/arm/mach-pxa/tosa.c b/arch/arm/mach-pxa/tosa.c
-index 431709725d02..5af980d77d39 100644
---- a/arch/arm/mach-pxa/tosa.c
-+++ b/arch/arm/mach-pxa/tosa.c
-@@ -45,7 +45,7 @@
- #include <linux/platform_data/mmc-pxamci.h>
- #include "udc.h"
- #include "tosa_bt.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/smemc.h>
- 
- #include <asm/mach/arch.h>
-diff --git a/arch/arm/mach-pxa/trizeps4.c b/arch/arm/mach-pxa/trizeps4.c
-index f76f8be09554..1337008cc760 100644
---- a/arch/arm/mach-pxa/trizeps4.c
-+++ b/arch/arm/mach-pxa/trizeps4.c
-@@ -41,7 +41,7 @@
- 
- #include "pxa27x.h"
- #include <mach/trizeps4.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/video-pxafb.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/irda-pxaficp.h>
-diff --git a/arch/arm/mach-pxa/viper.c b/arch/arm/mach-pxa/viper.c
-index 4b81c0117971..ac94b10bf8c1 100644
---- a/arch/arm/mach-pxa/viper.c
-+++ b/arch/arm/mach-pxa/viper.c
-@@ -46,7 +46,7 @@
- #include <linux/syscore_ops.h>
- 
- #include "pxa25x.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/video-pxafb.h>
- #include "regs-uart.h"
- #include <linux/platform_data/pcmcia-pxa2xx_viper.h>
-diff --git a/arch/arm/mach-pxa/vpac270.c b/arch/arm/mach-pxa/vpac270.c
-index 14505e83479e..7067d1464689 100644
---- a/arch/arm/mach-pxa/vpac270.c
-+++ b/arch/arm/mach-pxa/vpac270.c
-@@ -29,7 +29,7 @@
- #include <asm/mach/arch.h>
- 
- #include "pxa27x.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/vpac270.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/platform_data/video-pxafb.h>
-diff --git a/arch/arm/mach-pxa/zeus.c b/arch/arm/mach-pxa/zeus.c
-index 5d02f10b5b5a..67396e85bb66 100644
---- a/arch/arm/mach-pxa/zeus.c
-+++ b/arch/arm/mach-pxa/zeus.c
-@@ -46,7 +46,7 @@
- #include "udc.h"
- #include <linux/platform_data/video-pxafb.h>
- #include "pm.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/pcmcia-pxa2xx_viper.h>
- #include "zeus.h"
- #include <mach/smemc.h>
-diff --git a/arch/arm/mach-pxa/zylonite.c b/arch/arm/mach-pxa/zylonite.c
-index 9bcb81688201..c48dd6d03df9 100644
---- a/arch/arm/mach-pxa/zylonite.c
-+++ b/arch/arm/mach-pxa/zylonite.c
-@@ -25,7 +25,7 @@
- #include <asm/mach-types.h>
- #include <asm/mach/arch.h>
- #include "pxa3xx.h"
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/video-pxafb.h>
- #include "zylonite.h"
- #include <linux/platform_data/mmc-pxamci.h>
-diff --git a/arch/arm/mach-pxa/include/mach/audio.h b/include/linux/platform_data/asoc-pxa.h
-similarity index 93%
-rename from arch/arm/mach-pxa/include/mach/audio.h
-rename to include/linux/platform_data/asoc-pxa.h
-index 7beebf7297b5..327454cd8246 100644
---- a/arch/arm/mach-pxa/include/mach/audio.h
-+++ b/include/linux/platform_data/asoc-pxa.h
-@@ -1,6 +1,6 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--#ifndef __ASM_ARCH_AUDIO_H__
--#define __ASM_ARCH_AUDIO_H__
-+#ifndef __SOC_PXA_AUDIO_H__
-+#define __SOC_PXA_AUDIO_H__
- 
- #include <sound/core.h>
- #include <sound/pcm.h>
-diff --git a/sound/arm/pxa2xx-ac97-lib.c b/sound/arm/pxa2xx-ac97-lib.c
-index 84d5f85073b9..9b5c1f0f8998 100644
---- a/sound/arm/pxa2xx-ac97-lib.c
-+++ b/sound/arm/pxa2xx-ac97-lib.c
-@@ -23,7 +23,7 @@
- 
- #include <mach/irqs.h>
- #include <mach/regs-ac97.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- 
- static DEFINE_MUTEX(car_mutex);
- static DECLARE_WAIT_QUEUE_HEAD(gsr_wq);
-diff --git a/sound/arm/pxa2xx-ac97.c b/sound/arm/pxa2xx-ac97.c
-index c17a19fe59ed..57c3e12e6629 100644
---- a/sound/arm/pxa2xx-ac97.c
-+++ b/sound/arm/pxa2xx-ac97.c
-@@ -22,7 +22,7 @@
- #include <sound/dmaengine_pcm.h>
- 
- #include <mach/regs-ac97.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- 
- static void pxa2xx_ac97_legacy_reset(struct snd_ac97 *ac97)
- {
-diff --git a/sound/soc/pxa/corgi.c b/sound/soc/pxa/corgi.c
-index 8ee2dea25a8d..8b83709431cb 100644
---- a/sound/soc/pxa/corgi.c
-+++ b/sound/soc/pxa/corgi.c
-@@ -22,7 +22,7 @@
- 
- #include <asm/mach-types.h>
- #include <mach/corgi.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- 
- #include "../codecs/wm8731.h"
- #include "pxa2xx-i2s.h"
-diff --git a/sound/soc/pxa/e740_wm9705.c b/sound/soc/pxa/e740_wm9705.c
-index eafa1482afbe..f922be7e0016 100644
---- a/sound/soc/pxa/e740_wm9705.c
-+++ b/sound/soc/pxa/e740_wm9705.c
+diff --git a/arch/arm/mach-pxa/e740-pcmcia.c b/arch/arm/mach-pxa/e740-pcmcia.c
+index 133535d7ac05..11a2c5d42920 100644
+--- a/arch/arm/mach-pxa/e740-pcmcia.c
++++ b/arch/arm/mach-pxa/e740-pcmcia.c
 @@ -13,7 +13,7 @@
- #include <sound/pcm.h>
- #include <sound/soc.h>
- 
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/eseries-gpio.h>
- 
- #include <asm/mach-types.h>
-diff --git a/sound/soc/pxa/e750_wm9705.c b/sound/soc/pxa/e750_wm9705.c
-index d75510d7b16b..308828cd736b 100644
---- a/sound/soc/pxa/e750_wm9705.c
-+++ b/sound/soc/pxa/e750_wm9705.c
-@@ -13,7 +13,7 @@
- #include <sound/pcm.h>
- #include <sound/soc.h>
- 
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/eseries-gpio.h>
- 
- #include <asm/mach-types.h>
-diff --git a/sound/soc/pxa/e800_wm9712.c b/sound/soc/pxa/e800_wm9712.c
-index 56d543da938a..d74fcceef687 100644
---- a/sound/soc/pxa/e800_wm9712.c
-+++ b/sound/soc/pxa/e800_wm9712.c
-@@ -14,7 +14,7 @@
- #include <sound/soc.h>
- 
- #include <asm/mach-types.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/eseries-gpio.h>
- 
- static int e800_spk_amp_event(struct snd_soc_dapm_widget *w,
-diff --git a/sound/soc/pxa/em-x270.c b/sound/soc/pxa/em-x270.c
-index 9076ea7e9339..b59ec22e1e7e 100644
---- a/sound/soc/pxa/em-x270.c
-+++ b/sound/soc/pxa/em-x270.c
-@@ -23,7 +23,7 @@
- #include <sound/soc.h>
- 
- #include <asm/mach-types.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- 
- SND_SOC_DAILINK_DEFS(ac97,
- 	DAILINK_COMP_ARRAY(COMP_CPU("pxa2xx-ac97")),
-diff --git a/sound/soc/pxa/mioa701_wm9713.c b/sound/soc/pxa/mioa701_wm9713.c
-index 763db7bbd9bb..0fa37637eca9 100644
---- a/sound/soc/pxa/mioa701_wm9713.c
-+++ b/sound/soc/pxa/mioa701_wm9713.c
-@@ -33,7 +33,7 @@
+ #include <linux/interrupt.h>
  #include <linux/platform_device.h>
  
- #include <asm/mach-types.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
+-#include <mach/eseries-gpio.h>
++#include "eseries-gpio.h"
  
- #include <sound/core.h>
- #include <sound/pcm.h>
-diff --git a/sound/soc/pxa/palm27x.c b/sound/soc/pxa/palm27x.c
-index b92ea1a0453f..275c86379e88 100644
---- a/sound/soc/pxa/palm27x.c
-+++ b/sound/soc/pxa/palm27x.c
+ #include <asm/irq.h>
+ #include <asm/mach-types.h>
+diff --git a/arch/arm/mach-pxa/include/mach/eseries-gpio.h b/arch/arm/mach-pxa/eseries-gpio.h
+similarity index 100%
+rename from arch/arm/mach-pxa/include/mach/eseries-gpio.h
+rename to arch/arm/mach-pxa/eseries-gpio.h
+diff --git a/arch/arm/mach-pxa/eseries.c b/arch/arm/mach-pxa/eseries.c
+index 2643a2a72408..c441a299b1ac 100644
+--- a/arch/arm/mach-pxa/eseries.c
++++ b/arch/arm/mach-pxa/eseries.c
+@@ -33,7 +33,7 @@
+ #include <asm/mach-types.h>
+ 
+ #include "pxa25x.h"
+-#include <mach/eseries-gpio.h>
++#include "eseries-gpio.h"
+ #include "eseries-irq.h"
+ #include <linux/platform_data/asoc-pxa.h>
+ #include <linux/platform_data/video-pxafb.h>
+diff --git a/arch/arm/mach-pxa/generic.c b/arch/arm/mach-pxa/generic.c
+index 91ea063dc54d..02fdde7e3e34 100644
+--- a/arch/arm/mach-pxa/generic.c
++++ b/arch/arm/mach-pxa/generic.c
+@@ -25,10 +25,10 @@
+ #include <asm/mach-types.h>
+ 
+ #include "addr-map.h"
+-#include <mach/irqs.h>
+-#include <mach/reset.h>
+-#include <mach/smemc.h>
+-#include <mach/pxa3xx-regs.h>
++#include "irqs.h"
++#include "reset.h"
++#include "smemc.h"
++#include "pxa3xx-regs.h"
+ 
+ #include "generic.h"
+ #include <clocksource/pxa.h>
+diff --git a/arch/arm/mach-pxa/gumstix.h b/arch/arm/mach-pxa/gumstix.h
+index 470250cdee16..9005b3c0aabd 100644
+--- a/arch/arm/mach-pxa/gumstix.h
++++ b/arch/arm/mach-pxa/gumstix.h
+@@ -3,7 +3,7 @@
+  *  arch/arm/mach-pxa/include/mach/gumstix.h
+  */
+ 
+-#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_GPIO_TO_IRQ */
+ 
+ /* BTRESET - Reset line to Bluetooth module, active low signal. */
+ #define GPIO_GUMSTIX_BTRESET          7
+diff --git a/arch/arm/mach-pxa/h5000.c b/arch/arm/mach-pxa/h5000.c
+index ece1e71c90a9..212efe24aedb 100644
+--- a/arch/arm/mach-pxa/h5000.c
++++ b/arch/arm/mach-pxa/h5000.c
+@@ -29,7 +29,7 @@
+ #include "pxa25x.h"
+ #include "h5000.h"
+ #include "udc.h"
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include "generic.h"
+ 
+diff --git a/arch/arm/mach-pxa/hx4700.h b/arch/arm/mach-pxa/hx4700.h
+index ce2db33989e1..0c30e6d9c660 100644
+--- a/arch/arm/mach-pxa/hx4700.h
++++ b/arch/arm/mach-pxa/hx4700.h
+@@ -10,7 +10,7 @@
+ 
+ #include <linux/gpio.h>
+ #include <linux/mfd/asic3.h>
+-#include <mach/irqs.h> /* PXA_NR_BUILTIN_GPIO */
++#include "irqs.h" /* PXA_NR_BUILTIN_GPIO */
+ 
+ #define HX4700_ASIC3_GPIO_BASE	PXA_NR_BUILTIN_GPIO
+ #define HX4700_EGPIO_BASE	(HX4700_ASIC3_GPIO_BASE + ASIC3_NUM_GPIOS)
+diff --git a/arch/arm/mach-pxa/idp.h b/arch/arm/mach-pxa/idp.h
+index a89e6723b1a1..81b9bd9ba754 100644
+--- a/arch/arm/mach-pxa/idp.h
++++ b/arch/arm/mach-pxa/idp.h
 @@ -20,7 +20,7 @@
- #include <sound/jack.h>
+  * IDP hardware.
+  */
  
- #include <asm/mach-types.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
+-#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_GPIO_TO_IRQ */
+ 
+ #define IDP_FLASH_PHYS		(PXA_CS0_PHYS)
+ #define IDP_ALT_FLASH_PHYS	(PXA_CS1_PHYS)
+diff --git a/arch/arm/mach-pxa/include/mach/pxa-regs.h b/arch/arm/mach-pxa/include/mach/pxa-regs.h
+deleted file mode 100644
+index ba5120c06b8a..000000000000
+--- a/arch/arm/mach-pxa/include/mach/pxa-regs.h
++++ /dev/null
+@@ -1,52 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/*
+- *  Author:	Nicolas Pitre
+- *  Created:	Jun 15, 2001
+- *  Copyright:	MontaVista Software Inc.
+- */
+-#ifndef __ASM_MACH_PXA_REGS_H
+-#define __ASM_MACH_PXA_REGS_H
+-
+-/*
+- * Workarounds for at least 2 errata so far require this.
+- * The mapping is set in mach-pxa/generic.c.
+- */
+-#define UNCACHED_PHYS_0		0xfe000000
+-#define UNCACHED_PHYS_0_SIZE	0x00100000
+-
+-/*
+- * Intel PXA2xx internal register mapping:
+- *
+- * 0x40000000 - 0x41ffffff <--> 0xf2000000 - 0xf3ffffff
+- * 0x44000000 - 0x45ffffff <--> 0xf4000000 - 0xf5ffffff
+- * 0x48000000 - 0x49ffffff <--> 0xf6000000 - 0xf7ffffff
+- * 0x4c000000 - 0x4dffffff <--> 0xf8000000 - 0xf9ffffff
+- * 0x50000000 - 0x51ffffff <--> 0xfa000000 - 0xfbffffff
+- * 0x54000000 - 0x55ffffff <--> 0xfc000000 - 0xfdffffff
+- * 0x58000000 - 0x59ffffff <--> 0xfe000000 - 0xffffffff
+- *
+- * Note that not all PXA2xx chips implement all those addresses, and the
+- * kernel only maps the minimum needed range of this mapping.
+- */
+-#define io_v2p(x) (0x3c000000 + ((x) & 0x01ffffff) + (((x) & 0x0e000000) << 1))
+-#define io_p2v(x) IOMEM(0xf2000000 + ((x) & 0x01ffffff) + (((x) & 0x1c000000) >> 1))
+-
+-#ifndef __ASSEMBLY__
+-# define __REG(x)	(*((volatile u32 __iomem *)io_p2v(x)))
+-
+-/* With indexed regs we don't want to feed the index through io_p2v()
+-   especially if it is a variable, otherwise horrible code will result. */
+-# define __REG2(x,y)	\
+-	(*(volatile u32 __iomem*)((u32)&__REG(x) + (y)))
+-
+-# define __PREG(x)	(io_v2p((u32)&(x)))
+-
+-#else
+-
+-# define __REG(x)	io_p2v(x)
+-# define __PREG(x)	io_v2p(x)
+-
+-#endif
+-
+-
+-#endif
+diff --git a/arch/arm/mach-pxa/irq.c b/arch/arm/mach-pxa/irq.c
+index f25c30e8a834..96f33ef1d9ea 100644
+--- a/arch/arm/mach-pxa/irq.c
++++ b/arch/arm/mach-pxa/irq.c
+@@ -21,7 +21,7 @@
+ 
+ #include <asm/exception.h>
+ 
+-#include <mach/irqs.h>
++#include "irqs.h"
+ 
+ #include "generic.h"
+ #include "pxa-regs.h"
+diff --git a/arch/arm/mach-pxa/include/mach/irqs.h b/arch/arm/mach-pxa/irqs.h
+similarity index 100%
+rename from arch/arm/mach-pxa/include/mach/irqs.h
+rename to arch/arm/mach-pxa/irqs.h
+diff --git a/arch/arm/mach-pxa/lpd270.c b/arch/arm/mach-pxa/lpd270.c
+index e03436710752..0e4123c5fd42 100644
+--- a/arch/arm/mach-pxa/lpd270.c
++++ b/arch/arm/mach-pxa/lpd270.c
+@@ -44,7 +44,7 @@
+ #include <linux/platform_data/mmc-pxamci.h>
+ #include <linux/platform_data/irda-pxaficp.h>
+ #include <linux/platform_data/usb-ohci-pxa27x.h>
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include "generic.h"
+ #include "devices.h"
+diff --git a/arch/arm/mach-pxa/lubbock.c b/arch/arm/mach-pxa/lubbock.c
+index 201f89f49642..4f0944f3b262 100644
+--- a/arch/arm/mach-pxa/lubbock.c
++++ b/arch/arm/mach-pxa/lubbock.c
+@@ -52,7 +52,7 @@
+ #include <linux/platform_data/video-pxafb.h>
+ #include <linux/platform_data/mmc-pxamci.h>
+ #include "pm.h"
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include "generic.h"
+ #include "devices.h"
+diff --git a/arch/arm/mach-pxa/lubbock.h b/arch/arm/mach-pxa/lubbock.h
+index 8e3ff7d57121..55cf91e22ae2 100644
+--- a/arch/arm/mach-pxa/lubbock.h
++++ b/arch/arm/mach-pxa/lubbock.h
+@@ -5,7 +5,7 @@
+  *  Copyright:	MontaVista Software Inc.
+  */
+ 
+-#include <mach/irqs.h>
++#include "irqs.h"
+ 
+ #define LUBBOCK_ETH_PHYS	PXA_CS3_PHYS
+ 
+diff --git a/arch/arm/mach-pxa/magician.c b/arch/arm/mach-pxa/magician.c
+index 598c977a8ae6..20456a55c4c5 100644
+--- a/arch/arm/mach-pxa/magician.c
++++ b/arch/arm/mach-pxa/magician.c
+@@ -35,7 +35,7 @@
+ 
+ #include "pxa27x.h"
+ #include "addr-map.h"
+-#include <mach/magician.h>
++#include "magician.h"
+ #include <linux/platform_data/video-pxafb.h>
+ #include <linux/platform_data/mmc-pxamci.h>
+ #include <linux/platform_data/irda-pxaficp.h>
+diff --git a/arch/arm/mach-pxa/include/mach/magician.h b/arch/arm/mach-pxa/magician.h
+similarity index 99%
+rename from arch/arm/mach-pxa/include/mach/magician.h
+rename to arch/arm/mach-pxa/magician.h
+index 7d3af561af6f..e1e4f9f6b22b 100644
+--- a/arch/arm/mach-pxa/include/mach/magician.h
++++ b/arch/arm/mach-pxa/magician.h
+@@ -9,7 +9,7 @@
+ #define _MAGICIAN_H_
+ 
+ #include <linux/gpio.h>
+-#include <mach/irqs.h>
++#include "irqs.h"
+ 
+ /*
+  * PXA GPIOs
+diff --git a/arch/arm/mach-pxa/mainstone.c b/arch/arm/mach-pxa/mainstone.c
+index 599736c93163..fd386f1c414c 100644
+--- a/arch/arm/mach-pxa/mainstone.c
++++ b/arch/arm/mach-pxa/mainstone.c
+@@ -52,7 +52,7 @@
+ #include <linux/platform_data/usb-ohci-pxa27x.h>
+ #include <linux/platform_data/keypad-pxa27x.h>
+ #include "addr-map.h"
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include "generic.h"
+ #include "devices.h"
+diff --git a/arch/arm/mach-pxa/mainstone.h b/arch/arm/mach-pxa/mainstone.h
+index ba003742e003..f116c56cf5d9 100644
+--- a/arch/arm/mach-pxa/mainstone.h
++++ b/arch/arm/mach-pxa/mainstone.h
+@@ -8,7 +8,7 @@
+ #ifndef ASM_ARCH_MAINSTONE_H
+ #define ASM_ARCH_MAINSTONE_H
+ 
+-#include <mach/irqs.h>
++#include "irqs.h"
+ 
+ #define MST_ETH_PHYS		PXA_CS4_PHYS
+ 
+diff --git a/arch/arm/mach-pxa/mfp-pxa2xx.c b/arch/arm/mach-pxa/mfp-pxa2xx.c
+index 6bc7206fd2ac..57b0782880de 100644
+--- a/arch/arm/mach-pxa/mfp-pxa2xx.c
++++ b/arch/arm/mach-pxa/mfp-pxa2xx.c
+@@ -18,7 +18,7 @@
+ #include <linux/syscore_ops.h>
+ #include <linux/soc/pxa/cpu.h>
+ 
+-#include <mach/pxa2xx-regs.h>
++#include "pxa2xx-regs.h"
+ #include "mfp-pxa2xx.h"
+ 
+ #include "generic.h"
+diff --git a/arch/arm/mach-pxa/mfp-pxa3xx.c b/arch/arm/mach-pxa/mfp-pxa3xx.c
+index f26b5e5412cf..d16ab7451efe 100644
+--- a/arch/arm/mach-pxa/mfp-pxa3xx.c
++++ b/arch/arm/mach-pxa/mfp-pxa3xx.c
+@@ -17,7 +17,7 @@
+ #include <linux/syscore_ops.h>
+ 
+ #include "mfp-pxa3xx.h"
+-#include <mach/pxa3xx-regs.h>
++#include "pxa3xx-regs.h"
+ 
+ #ifdef CONFIG_PM
+ /*
+diff --git a/arch/arm/mach-pxa/include/mach/mfp.h b/arch/arm/mach-pxa/mfp.h
+similarity index 100%
+rename from arch/arm/mach-pxa/include/mach/mfp.h
+rename to arch/arm/mach-pxa/mfp.h
+diff --git a/arch/arm/mach-pxa/mioa701.c b/arch/arm/mach-pxa/mioa701.c
+index 907cd7b5f58c..d08f962ffb04 100644
+--- a/arch/arm/mach-pxa/mioa701.c
++++ b/arch/arm/mach-pxa/mioa701.c
+@@ -42,7 +42,7 @@
+ #include "pxa27x-udc.h"
+ #include <linux/platform_data/media/camera-pxa.h>
+ #include <linux/platform_data/asoc-pxa.h>
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include "mioa701.h"
+ 
+diff --git a/arch/arm/mach-pxa/palmld.h b/arch/arm/mach-pxa/palmld.h
+index ee3bc15b71a2..99a6d8b3a1e3 100644
+--- a/arch/arm/mach-pxa/palmld.h
++++ b/arch/arm/mach-pxa/palmld.h
+@@ -9,7 +9,7 @@
+ #ifndef _INCLUDE_PALMLD_H_
+ #define _INCLUDE_PALMLD_H_
+ 
+-#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_GPIO_TO_IRQ */
+ 
+ /** HERE ARE GPIOs **/
+ 
+diff --git a/arch/arm/mach-pxa/palmt5.h b/arch/arm/mach-pxa/palmt5.h
+index 1fb1da7c8da3..cf84aedca717 100644
+--- a/arch/arm/mach-pxa/palmt5.h
++++ b/arch/arm/mach-pxa/palmt5.h
+@@ -11,7 +11,7 @@
+ #ifndef _INCLUDE_PALMT5_H_
+ #define _INCLUDE_PALMT5_H_
+ 
+-#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_GPIO_TO_IRQ */
+ 
+ /** HERE ARE GPIOs **/
+ 
+diff --git a/arch/arm/mach-pxa/palmtc.h b/arch/arm/mach-pxa/palmtc.h
+index afec057c2857..9257a02c46e5 100644
+--- a/arch/arm/mach-pxa/palmtc.h
++++ b/arch/arm/mach-pxa/palmtc.h
+@@ -12,7 +12,7 @@
+ #ifndef _INCLUDE_PALMTC_H_
+ #define _INCLUDE_PALMTC_H_
+ 
+-#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_GPIO_TO_IRQ */
+ 
+ /** HERE ARE GPIOs **/
+ 
+diff --git a/arch/arm/mach-pxa/palmtreo.c b/arch/arm/mach-pxa/palmtreo.c
+index d6d5b90d9578..238a31f32cba 100644
+--- a/arch/arm/mach-pxa/palmtreo.c
++++ b/arch/arm/mach-pxa/palmtreo.c
+@@ -37,7 +37,7 @@
+ #include <linux/platform_data/keypad-pxa27x.h>
+ #include "udc.h"
+ #include <linux/platform_data/usb-ohci-pxa27x.h>
+-#include <mach/pxa2xx-regs.h>
++#include "pxa2xx-regs.h"
  #include <linux/platform_data/asoc-palm27x.h>
+ #include <linux/platform_data/media/camera-pxa.h>
+ #include "palm27x.h"
+diff --git a/arch/arm/mach-pxa/palmtx.h b/arch/arm/mach-pxa/palmtx.h
+index a2bb993952d9..ec88abf0fc6c 100644
+--- a/arch/arm/mach-pxa/palmtx.h
++++ b/arch/arm/mach-pxa/palmtx.h
+@@ -12,7 +12,7 @@
+ #ifndef _INCLUDE_PALMTX_H_
+ #define _INCLUDE_PALMTX_H_
  
- static struct snd_soc_jack hs_jack;
-diff --git a/sound/soc/pxa/poodle.c b/sound/soc/pxa/poodle.c
-index 323ba3e23039..176a0441235a 100644
---- a/sound/soc/pxa/poodle.c
-+++ b/sound/soc/pxa/poodle.c
-@@ -22,7 +22,7 @@
- #include <asm/mach-types.h>
- #include <asm/hardware/locomo.h>
- #include <mach/poodle.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
+-#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_GPIO_TO_IRQ */
  
- #include "../codecs/wm8731.h"
- #include "pxa2xx-i2s.h"
-diff --git a/sound/soc/pxa/pxa2xx-ac97.c b/sound/soc/pxa/pxa2xx-ac97.c
-index 8f78c5a359c5..9443c1390d2f 100644
---- a/sound/soc/pxa/pxa2xx-ac97.c
-+++ b/sound/soc/pxa/pxa2xx-ac97.c
-@@ -23,7 +23,7 @@
+ /** HERE ARE GPIOs **/
  
- #include <mach/pxa-regs.h>
- #include <mach/regs-ac97.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
+diff --git a/arch/arm/mach-pxa/pcm027.h b/arch/arm/mach-pxa/pcm027.h
+index 0c4ab636ce4e..58ade4ad6ba3 100644
+--- a/arch/arm/mach-pxa/pcm027.h
++++ b/arch/arm/mach-pxa/pcm027.h
+@@ -10,7 +10,7 @@
+  * Definitions of CPU card resources only
+  */
  
- static void pxa2xx_ac97_warm_reset(struct ac97_controller *adrv)
- {
-diff --git a/sound/soc/pxa/pxa2xx-i2s.c b/sound/soc/pxa/pxa2xx-i2s.c
-index 114a33c4a064..5164c60ba89f 100644
---- a/sound/soc/pxa/pxa2xx-i2s.c
-+++ b/sound/soc/pxa/pxa2xx-i2s.c
-@@ -22,7 +22,7 @@
- #include <sound/dmaengine_pcm.h>
+-#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_GPIO_TO_IRQ */
  
- #include <mach/pxa-regs.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
+ /* phyCORE-PXA270 (PCM027) Interrupts */
+ #define PCM027_IRQ(x)          (IRQ_BOARD_START + (x))
+diff --git a/arch/arm/mach-pxa/pcm990_baseboard.h b/arch/arm/mach-pxa/pcm990_baseboard.h
+index 5be11d1b7019..18cf71decb03 100644
+--- a/arch/arm/mach-pxa/pcm990_baseboard.h
++++ b/arch/arm/mach-pxa/pcm990_baseboard.h
+@@ -7,7 +7,7 @@
+  */
  
- #include "pxa2xx-i2s.h"
+ #include "pcm027.h"
+-#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_GPIO_TO_IRQ */
  
-diff --git a/sound/soc/pxa/tosa.c b/sound/soc/pxa/tosa.c
-index 3b40b5fa5de7..06226f9b863e 100644
---- a/sound/soc/pxa/tosa.c
-+++ b/sound/soc/pxa/tosa.c
+ /*
+  * definitions relevant only when the PCM-990
+diff --git a/arch/arm/mach-pxa/poodle.h b/arch/arm/mach-pxa/poodle.h
+index e675a3d1aa18..00798b44f204 100644
+--- a/arch/arm/mach-pxa/poodle.h
++++ b/arch/arm/mach-pxa/poodle.h
+@@ -15,7 +15,7 @@
+ #ifndef __ASM_ARCH_POODLE_H
+ #define __ASM_ARCH_POODLE_H  1
+ 
+-#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_GPIO_TO_IRQ */
+ 
+ /*
+  * GPIOs
+diff --git a/arch/arm/mach-pxa/pxa-dt.c b/arch/arm/mach-pxa/pxa-dt.c
+index d32d5c8e966f..5e5d543fdf46 100644
+--- a/arch/arm/mach-pxa/pxa-dt.c
++++ b/arch/arm/mach-pxa/pxa-dt.c
+@@ -11,7 +11,7 @@
+ #include <linux/of_platform.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach/time.h>
+-#include <mach/irqs.h>
++#include "irqs.h"
+ 
+ #include "generic.h"
+ 
+diff --git a/arch/arm/mach-pxa/pxa-regs.h b/arch/arm/mach-pxa/pxa-regs.h
+index 584d2ac592cc..ba5120c06b8a 100644
+--- a/arch/arm/mach-pxa/pxa-regs.h
++++ b/arch/arm/mach-pxa/pxa-regs.h
+@@ -1 +1,52 @@
+-#include <mach/pxa-regs.h>
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ *  Author:	Nicolas Pitre
++ *  Created:	Jun 15, 2001
++ *  Copyright:	MontaVista Software Inc.
++ */
++#ifndef __ASM_MACH_PXA_REGS_H
++#define __ASM_MACH_PXA_REGS_H
++
++/*
++ * Workarounds for at least 2 errata so far require this.
++ * The mapping is set in mach-pxa/generic.c.
++ */
++#define UNCACHED_PHYS_0		0xfe000000
++#define UNCACHED_PHYS_0_SIZE	0x00100000
++
++/*
++ * Intel PXA2xx internal register mapping:
++ *
++ * 0x40000000 - 0x41ffffff <--> 0xf2000000 - 0xf3ffffff
++ * 0x44000000 - 0x45ffffff <--> 0xf4000000 - 0xf5ffffff
++ * 0x48000000 - 0x49ffffff <--> 0xf6000000 - 0xf7ffffff
++ * 0x4c000000 - 0x4dffffff <--> 0xf8000000 - 0xf9ffffff
++ * 0x50000000 - 0x51ffffff <--> 0xfa000000 - 0xfbffffff
++ * 0x54000000 - 0x55ffffff <--> 0xfc000000 - 0xfdffffff
++ * 0x58000000 - 0x59ffffff <--> 0xfe000000 - 0xffffffff
++ *
++ * Note that not all PXA2xx chips implement all those addresses, and the
++ * kernel only maps the minimum needed range of this mapping.
++ */
++#define io_v2p(x) (0x3c000000 + ((x) & 0x01ffffff) + (((x) & 0x0e000000) << 1))
++#define io_p2v(x) IOMEM(0xf2000000 + ((x) & 0x01ffffff) + (((x) & 0x1c000000) >> 1))
++
++#ifndef __ASSEMBLY__
++# define __REG(x)	(*((volatile u32 __iomem *)io_p2v(x)))
++
++/* With indexed regs we don't want to feed the index through io_p2v()
++   especially if it is a variable, otherwise horrible code will result. */
++# define __REG2(x,y)	\
++	(*(volatile u32 __iomem*)((u32)&__REG(x) + (y)))
++
++# define __PREG(x)	(io_v2p((u32)&(x)))
++
++#else
++
++# define __REG(x)	io_p2v(x)
++# define __PREG(x)	io_v2p(x)
++
++#endif
++
++
++#endif
+diff --git a/arch/arm/mach-pxa/pxa25x.c b/arch/arm/mach-pxa/pxa25x.c
+index 8d21c7eef1d2..6b34d7c169ea 100644
+--- a/arch/arm/mach-pxa/pxa25x.c
++++ b/arch/arm/mach-pxa/pxa25x.c
+@@ -30,12 +30,12 @@
+ 
+ #include <asm/mach/map.h>
+ #include <asm/suspend.h>
+-#include <mach/irqs.h>
++#include "irqs.h"
+ #include "pxa25x.h"
+-#include <mach/reset.h>
++#include "reset.h"
+ #include "pm.h"
+ #include "addr-map.h"
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include "generic.h"
+ #include "devices.h"
+diff --git a/arch/arm/mach-pxa/pxa25x.h b/arch/arm/mach-pxa/pxa25x.h
+index 4699ebf7b486..eaaa87666324 100644
+--- a/arch/arm/mach-pxa/pxa25x.h
++++ b/arch/arm/mach-pxa/pxa25x.h
+@@ -3,8 +3,8 @@
+ #define __MACH_PXA25x_H
+ 
+ #include "addr-map.h"
+-#include <mach/pxa2xx-regs.h>
++#include "pxa2xx-regs.h"
+ #include "mfp-pxa25x.h"
+-#include <mach/irqs.h>
++#include "irqs.h"
+ 
+ #endif /* __MACH_PXA25x_H */
+diff --git a/arch/arm/mach-pxa/pxa27x.c b/arch/arm/mach-pxa/pxa27x.c
+index c36a9784fab8..afbf6ace954f 100644
+--- a/arch/arm/mach-pxa/pxa27x.c
++++ b/arch/arm/mach-pxa/pxa27x.c
+@@ -28,13 +28,13 @@
+ #include <asm/mach/map.h>
+ #include <asm/irq.h>
+ #include <asm/suspend.h>
+-#include <mach/irqs.h>
++#include "irqs.h"
+ #include "pxa27x.h"
+-#include <mach/reset.h>
++#include "reset.h"
+ #include <linux/platform_data/usb-ohci-pxa27x.h>
+ #include "pm.h"
+ #include "addr-map.h"
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include "generic.h"
+ #include "devices.h"
+diff --git a/arch/arm/mach-pxa/pxa27x.h b/arch/arm/mach-pxa/pxa27x.h
+index bf2755561fe5..ede96f3f7214 100644
+--- a/arch/arm/mach-pxa/pxa27x.h
++++ b/arch/arm/mach-pxa/pxa27x.h
+@@ -4,9 +4,9 @@
+ 
+ #include <linux/suspend.h>
+ #include "addr-map.h"
+-#include <mach/pxa2xx-regs.h>
++#include "pxa2xx-regs.h"
+ #include "mfp-pxa27x.h"
+-#include <mach/irqs.h>
++#include "irqs.h"
+ 
+ #define ARB_CNTRL	__REG(0x48000048)  /* Arbiter Control Register */
+ 
+diff --git a/arch/arm/mach-pxa/include/mach/pxa2xx-regs.h b/arch/arm/mach-pxa/pxa2xx-regs.h
+similarity index 100%
+rename from arch/arm/mach-pxa/include/mach/pxa2xx-regs.h
+rename to arch/arm/mach-pxa/pxa2xx-regs.h
+diff --git a/arch/arm/mach-pxa/pxa2xx.c b/arch/arm/mach-pxa/pxa2xx.c
+index f583759ac00d..84712a688e5c 100644
+--- a/arch/arm/mach-pxa/pxa2xx.c
++++ b/arch/arm/mach-pxa/pxa2xx.c
+@@ -12,10 +12,10 @@
+ #include <linux/device.h>
+ #include <linux/io.h>
+ 
+-#include <mach/pxa2xx-regs.h>
++#include "pxa2xx-regs.h"
+ #include "mfp-pxa25x.h"
+-#include <mach/reset.h>
+-#include <mach/smemc.h>
++#include "reset.h"
++#include "smemc.h"
+ #include <linux/platform_data/irda-pxaficp.h>
+ 
+ void pxa2xx_clear_reset_status(unsigned int mask)
+diff --git a/arch/arm/mach-pxa/include/mach/pxa3xx-regs.h b/arch/arm/mach-pxa/pxa3xx-regs.h
+similarity index 100%
+rename from arch/arm/mach-pxa/include/mach/pxa3xx-regs.h
+rename to arch/arm/mach-pxa/pxa3xx-regs.h
+diff --git a/arch/arm/mach-pxa/pxa3xx.c b/arch/arm/mach-pxa/pxa3xx.c
+index d486efb79dcd..979642aa7ffe 100644
+--- a/arch/arm/mach-pxa/pxa3xx.c
++++ b/arch/arm/mach-pxa/pxa3xx.c
+@@ -29,13 +29,13 @@
+ 
+ #include <asm/mach/map.h>
+ #include <asm/suspend.h>
+-#include <mach/pxa3xx-regs.h>
+-#include <mach/reset.h>
++#include "pxa3xx-regs.h"
++#include "reset.h"
+ #include <linux/platform_data/usb-ohci-pxa27x.h>
+ #include "pm.h"
+ #include "addr-map.h"
+-#include <mach/smemc.h>
+-#include <mach/irqs.h>
++#include "smemc.h"
++#include "irqs.h"
+ 
+ #include "generic.h"
+ #include "devices.h"
+diff --git a/arch/arm/mach-pxa/pxa3xx.h b/arch/arm/mach-pxa/pxa3xx.h
+index 6b424d328680..81825f7ad258 100644
+--- a/arch/arm/mach-pxa/pxa3xx.h
++++ b/arch/arm/mach-pxa/pxa3xx.h
+@@ -3,7 +3,7 @@
+ #define __MACH_PXA3XX_H
+ 
+ #include "addr-map.h"
+-#include <mach/pxa3xx-regs.h>
+-#include <mach/irqs.h>
++#include "pxa3xx-regs.h"
++#include "irqs.h"
+ 
+ #endif /* __MACH_PXA3XX_H */
+diff --git a/arch/arm/mach-pxa/include/mach/regs-ost.h b/arch/arm/mach-pxa/regs-ost.h
+similarity index 100%
+rename from arch/arm/mach-pxa/include/mach/regs-ost.h
+rename to arch/arm/mach-pxa/regs-ost.h
+diff --git a/arch/arm/mach-pxa/reset.c b/arch/arm/mach-pxa/reset.c
+index fcb791c5ae3e..f0be90573ad3 100644
+--- a/arch/arm/mach-pxa/reset.c
++++ b/arch/arm/mach-pxa/reset.c
+@@ -7,9 +7,9 @@
+ #include <asm/proc-fns.h>
+ #include <asm/system_misc.h>
+ 
+-#include <mach/regs-ost.h>
+-#include <mach/reset.h>
+-#include <mach/smemc.h>
++#include "regs-ost.h"
++#include "reset.h"
++#include "smemc.h"
+ 
+ static void do_hw_reset(void);
+ 
+diff --git a/arch/arm/mach-pxa/include/mach/reset.h b/arch/arm/mach-pxa/reset.h
+similarity index 100%
+rename from arch/arm/mach-pxa/include/mach/reset.h
+rename to arch/arm/mach-pxa/reset.h
+diff --git a/arch/arm/mach-pxa/sharpsl_pm.c b/arch/arm/mach-pxa/sharpsl_pm.c
+index 83cfbb882a2d..a829baf8d922 100644
+--- a/arch/arm/mach-pxa/sharpsl_pm.c
++++ b/arch/arm/mach-pxa/sharpsl_pm.c
 @@ -24,7 +24,7 @@
  
  #include <asm/mach-types.h>
- #include <mach/tosa.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
+ #include "pm.h"
+-#include <mach/pxa2xx-regs.h>
++#include "pxa2xx-regs.h"
+ #include "regs-rtc.h"
+ #include "sharpsl_pm.h"
  
- #define TOSA_HP        0
- #define TOSA_MIC_INT   1
-diff --git a/sound/soc/pxa/z2.c b/sound/soc/pxa/z2.c
-index 7e8f33d7b83f..dc6c48e4738b 100644
---- a/sound/soc/pxa/z2.c
-+++ b/sound/soc/pxa/z2.c
-@@ -21,7 +21,7 @@
- #include <sound/jack.h>
+diff --git a/arch/arm/mach-pxa/sleep.S b/arch/arm/mach-pxa/sleep.S
+index ab50fe2cf923..d58cf52e3848 100644
+--- a/arch/arm/mach-pxa/sleep.S
++++ b/arch/arm/mach-pxa/sleep.S
+@@ -13,8 +13,8 @@
  
+ #include <linux/linkage.h>
+ #include <asm/assembler.h>
+-#include <mach/smemc.h>
+-#include <mach/pxa2xx-regs.h>
++#include "smemc.h"
++#include "pxa2xx-regs.h"
+ 
+ #define MDREFR_KDIV	0x200a4000	// all banks
+ #define CCCR_SLEEP	0x00000107	// L=7 2N=2 A=0 PPDIS=0 CPDIS=0
+diff --git a/arch/arm/mach-pxa/smemc.c b/arch/arm/mach-pxa/smemc.c
+index da0eeafdb5a0..3ea8daf1a7f1 100644
+--- a/arch/arm/mach-pxa/smemc.c
++++ b/arch/arm/mach-pxa/smemc.c
+@@ -10,7 +10,7 @@
+ #include <linux/syscore_ops.h>
+ #include <linux/soc/pxa/cpu.h>
+ 
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #ifdef CONFIG_PM
+ static unsigned long msc[2];
+diff --git a/arch/arm/mach-pxa/include/mach/smemc.h b/arch/arm/mach-pxa/smemc.h
+similarity index 100%
+rename from arch/arm/mach-pxa/include/mach/smemc.h
+rename to arch/arm/mach-pxa/smemc.h
+diff --git a/arch/arm/mach-pxa/spitz.c b/arch/arm/mach-pxa/spitz.c
+index cd8f00945373..dd88953adc9d 100644
+--- a/arch/arm/mach-pxa/spitz.c
++++ b/arch/arm/mach-pxa/spitz.c
+@@ -39,14 +39,14 @@
+ 
+ #include "pxa27x.h"
+ #include "pxa27x-udc.h"
+-#include <mach/reset.h>
++#include "reset.h"
+ #include <linux/platform_data/irda-pxaficp.h>
+ #include <linux/platform_data/mmc-pxamci.h>
+ #include <linux/platform_data/usb-ohci-pxa27x.h>
+ #include <linux/platform_data/video-pxafb.h>
+ #include "spitz.h"
+ #include "sharpsl_pm.h"
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include "generic.h"
+ #include "devices.h"
+diff --git a/arch/arm/mach-pxa/spitz.h b/arch/arm/mach-pxa/spitz.h
+index f97e3ebd762d..04828d8918aa 100644
+--- a/arch/arm/mach-pxa/spitz.h
++++ b/arch/arm/mach-pxa/spitz.h
+@@ -11,7 +11,7 @@
+ #define __ASM_ARCH_SPITZ_H  1
+ #endif
+ 
+-#include <mach/irqs.h> /* PXA_NR_BUILTIN_GPIO, PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_NR_BUILTIN_GPIO, PXA_GPIO_TO_IRQ */
+ #include <linux/fb.h>
+ 
+ /* Spitz/Akita GPIOs */
+diff --git a/arch/arm/mach-pxa/standby.S b/arch/arm/mach-pxa/standby.S
+index 626fecdefb1c..938310b708a0 100644
+--- a/arch/arm/mach-pxa/standby.S
++++ b/arch/arm/mach-pxa/standby.S
+@@ -12,7 +12,7 @@
+ #include <linux/linkage.h>
+ #include <asm/assembler.h>
+ 
+-#include <mach/pxa2xx-regs.h>
++#include "pxa2xx-regs.h"
+ 
+ 		.text
+ 
+diff --git a/arch/arm/mach-pxa/tosa.c b/arch/arm/mach-pxa/tosa.c
+index 19fe79518aaf..62626cc2a2c5 100644
+--- a/arch/arm/mach-pxa/tosa.c
++++ b/arch/arm/mach-pxa/tosa.c
+@@ -40,16 +40,16 @@
  #include <asm/mach-types.h>
--#include <mach/audio.h>
-+#include <linux/platform_data/asoc-pxa.h>
- #include <mach/z2.h>
  
- #include "../codecs/wm8750.h"
+ #include "pxa25x.h"
+-#include <mach/reset.h>
++#include "reset.h"
+ #include <linux/platform_data/irda-pxaficp.h>
+ #include <linux/platform_data/mmc-pxamci.h>
+ #include "udc.h"
+ #include "tosa_bt.h"
+ #include <linux/platform_data/asoc-pxa.h>
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include <asm/mach/arch.h>
+-#include <mach/tosa.h>
++#include "tosa.h"
+ 
+ #include <asm/hardware/scoop.h>
+ #include <asm/mach/sharpsl_param.h>
+diff --git a/arch/arm/mach-pxa/include/mach/tosa.h b/arch/arm/mach-pxa/tosa.h
+similarity index 100%
+rename from arch/arm/mach-pxa/include/mach/tosa.h
+rename to arch/arm/mach-pxa/tosa.h
+diff --git a/arch/arm/mach-pxa/trizeps4-pcmcia.c b/arch/arm/mach-pxa/trizeps4-pcmcia.c
+index 02d7bb0c538f..25e363770565 100644
+--- a/arch/arm/mach-pxa/trizeps4-pcmcia.c
++++ b/arch/arm/mach-pxa/trizeps4-pcmcia.c
+@@ -19,7 +19,7 @@
+ #include <asm/mach-types.h>
+ #include <asm/irq.h>
+ 
+-#include <mach/pxa2xx-regs.h>
++#include "pxa2xx-regs.h"
+ #include "trizeps4.h"
+ 
+ #include <pcmcia/soc_common.h>
+diff --git a/arch/arm/mach-pxa/trizeps4.c b/arch/arm/mach-pxa/trizeps4.c
+index fadfbb40cd6c..716cce885379 100644
+--- a/arch/arm/mach-pxa/trizeps4.c
++++ b/arch/arm/mach-pxa/trizeps4.c
+@@ -46,7 +46,7 @@
+ #include <linux/platform_data/mmc-pxamci.h>
+ #include <linux/platform_data/irda-pxaficp.h>
+ #include <linux/platform_data/usb-ohci-pxa27x.h>
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include "generic.h"
+ #include "devices.h"
+diff --git a/arch/arm/mach-pxa/trizeps4.h b/arch/arm/mach-pxa/trizeps4.h
+index e0f37c0ff06f..b6c19d155ef9 100644
+--- a/arch/arm/mach-pxa/trizeps4.h
++++ b/arch/arm/mach-pxa/trizeps4.h
+@@ -12,7 +12,7 @@
+ #define _TRIPEPS4_H_
+ 
+ #include "addr-map.h"
+-#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
++#include "irqs.h" /* PXA_GPIO_TO_IRQ */
+ 
+ /* physical memory regions */
+ #define TRIZEPS4_FLASH_PHYS	(PXA_CS0_PHYS)  /* Flash region */
+diff --git a/arch/arm/mach-pxa/xcep.c b/arch/arm/mach-pxa/xcep.c
+index 7389e0199144..6bb02b65fb82 100644
+--- a/arch/arm/mach-pxa/xcep.c
++++ b/arch/arm/mach-pxa/xcep.c
+@@ -26,7 +26,7 @@
+ 
+ #include "pxa25x.h"
+ #include "addr-map.h"
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include "generic.h"
+ #include "devices.h"
+diff --git a/arch/arm/mach-pxa/z2.c b/arch/arm/mach-pxa/z2.c
+index bb854e903c8f..d03520555497 100644
+--- a/arch/arm/mach-pxa/z2.c
++++ b/arch/arm/mach-pxa/z2.c
+@@ -34,7 +34,7 @@
+ 
+ #include "pxa27x.h"
+ #include "mfp-pxa27x.h"
+-#include <mach/z2.h>
++#include "z2.h"
+ #include <linux/platform_data/video-pxafb.h>
+ #include <linux/platform_data/mmc-pxamci.h>
+ #include <linux/platform_data/keypad-pxa27x.h>
+diff --git a/arch/arm/mach-pxa/include/mach/z2.h b/arch/arm/mach-pxa/z2.h
+similarity index 100%
+rename from arch/arm/mach-pxa/include/mach/z2.h
+rename to arch/arm/mach-pxa/z2.h
+diff --git a/arch/arm/mach-pxa/zeus.c b/arch/arm/mach-pxa/zeus.c
+index 2e6c8d156d77..1fdef9426784 100644
+--- a/arch/arm/mach-pxa/zeus.c
++++ b/arch/arm/mach-pxa/zeus.c
+@@ -49,7 +49,7 @@
+ #include <linux/platform_data/asoc-pxa.h>
+ #include "viper-pcmcia.h"
+ #include "zeus.h"
+-#include <mach/smemc.h>
++#include "smemc.h"
+ 
+ #include "generic.h"
+ 
+diff --git a/arch/arm/mach-pxa/zylonite.c b/arch/arm/mach-pxa/zylonite.c
+index ba6dc86da855..8ed75ac29b1a 100644
+--- a/arch/arm/mach-pxa/zylonite.c
++++ b/arch/arm/mach-pxa/zylonite.c
+@@ -32,7 +32,7 @@
+ #include <linux/platform_data/usb-ohci-pxa27x.h>
+ #include <linux/platform_data/keypad-pxa27x.h>
+ #include <linux/platform_data/mtd-nand-pxa3xx.h>
+-#include <mach/mfp.h>
++#include "mfp.h"
+ 
+ #include "devices.h"
+ #include "generic.h"
 -- 
 2.29.2
 

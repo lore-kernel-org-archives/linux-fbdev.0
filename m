@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 333A3C38A04
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 629F3C38A05
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355295AbiDSQtA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:49:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53402 "EHLO
+        id S1355298AbiDSQtB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:49:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56658 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242507AbiDSQnM (ORCPT
+        with ESMTP id S1355187AbiDSQrn (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 12:43:12 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10BD617E23;
-        Tue, 19 Apr 2022 09:40:29 -0700 (PDT)
+        Tue, 19 Apr 2022 12:47:43 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2614B2617;
+        Tue, 19 Apr 2022 09:45:00 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 8B4FDB819DE;
-        Tue, 19 Apr 2022 16:40:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDD0FC385A5;
-        Tue, 19 Apr 2022 16:40:18 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id B729F6187A;
+        Tue, 19 Apr 2022 16:44:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DEE24C385A5;
+        Tue, 19 Apr 2022 16:44:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386426;
-        bh=ptMtOudbQ5loXUIBoTxa9Js2NvWZa4r2mq6O40yUHH0=;
+        s=k20201202; t=1650386699;
+        bh=TQPO8Eb4DXbuBVjH4snBze/CPXLx8hYfj8F7j3GxU9A=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=sn7fnX8rRkBuqtQMfRkdqeTmIHa3aEVyEQqy3ea6Rcph7o5+q2+oJQtgfayzkGgGD
-         pBrobPc0a288Jt5l21HSNaRfaU6aAdkHaECQNojqoW85epuPmw1VvMwvkSO6N07k/3
-         115Wizs7BJeOANhRCBPtn5ETmJ1DN/7eD9VqdGz01zYvnNHqGUiTr7Xr5IQ32fnJKz
-         73a5FySo1/OXZDPRM/Hg6r35U+vs89tmssHNWG7O1Y8buOzXQepqwD84VLvP022GvN
-         c6H9ZVfE372WNIs8vRZiLFyLD+Hr6zPSL7rCagmKzA+O8wvtPs7NCaSk+bRoY9berF
-         uj9Ak7o458yOA==
+        b=PkE+S9qLLt/uVvjmX7SVYzOD8H0A2jnCwpUediQL9CiEFuo2XQ7+fzVe5orFR/j+B
+         1Kn0644vK/CRT07rVNiayly/tbCE5RPqmVa3sV7YLFN50VR4KOu5kwLyvCKy7UdWrd
+         PpC3+mfHHUpdHO2H25Am/SucJvYtHlNwTKkTuKmcMj5yZ3LlaeFsGLmcsHCxsrNU/J
+         cXPXnNTaI9aPH1OycStlSzavEF+2HEuf5KBubApJxMqmt5vWDdLpCukXObZY00wvyD
+         QUu8InZhgmCtgAChwTU5DZn/0HRUIttBKkcHuZWOka//Ki7ysvaMnLhCuX+trrjXmv
+         KfputJ5rHCapw==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -60,9 +60,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         alsa-devel@alsa-project.org
-Subject: [PATCH 12/48] ARM: pxa: make addr-map.h header local
-Date:   Tue, 19 Apr 2022 18:37:34 +0200
-Message-Id: <20220419163810.2118169-13-arnd@kernel.org>
+Subject: [PATCH 47/48] ARM: pxa: remove support for MTD_XIP
+Date:   Tue, 19 Apr 2022 18:38:09 +0200
+Message-Id: <20220419163810.2118169-48-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -74,205 +74,76 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-Drivers should not rely on the contents of this file, so
-move it into the platform directory directly.
+Using MTD-XIP does not work on multiplatform kernels because
+it requires SoC specific register accesses to be done from
+low-level flash handling functions in RAM while the rest of the
+kernel sits in flash.
 
-Cc: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: Paul Parsons <lost.distance@yahoo.com>
+I found no evidence of anyone still actually using this feature,
+so remove it from PXA to avoid spending a lot of time on
+actually making it work.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Link: https://lore.kernel.org/lkml/87mudkmx8g.fsf@belgarion.home/
 ---
- arch/arm/mach-pxa/{include/mach => }/addr-map.h | 0
- arch/arm/mach-pxa/generic.c                     | 2 +-
- arch/arm/mach-pxa/hx4700.c                      | 2 +-
- arch/arm/mach-pxa/lpd270.c                      | 2 +-
- arch/arm/mach-pxa/magician.c                    | 2 +-
- arch/arm/mach-pxa/mainstone.c                   | 2 +-
- arch/arm/mach-pxa/pxa25x.c                      | 2 +-
- arch/arm/mach-pxa/pxa25x.h                      | 2 +-
- arch/arm/mach-pxa/pxa27x.c                      | 2 +-
- arch/arm/mach-pxa/pxa27x.h                      | 2 +-
- arch/arm/mach-pxa/pxa3xx.c                      | 2 +-
- arch/arm/mach-pxa/pxa3xx.h                      | 2 +-
- arch/arm/mach-pxa/trizeps4.h                    | 2 +-
- arch/arm/mach-pxa/xcep.c                        | 2 +-
- 14 files changed, 13 insertions(+), 13 deletions(-)
- rename arch/arm/mach-pxa/{include/mach => }/addr-map.h (100%)
+ arch/arm/Kconfig                         |  1 -
+ arch/arm/mach-pxa/include/mach/mtd-xip.h | 36 ------------------------
+ 2 files changed, 37 deletions(-)
+ delete mode 100644 arch/arm/mach-pxa/include/mach/mtd-xip.h
 
-diff --git a/arch/arm/mach-pxa/include/mach/addr-map.h b/arch/arm/mach-pxa/addr-map.h
-similarity index 100%
-rename from arch/arm/mach-pxa/include/mach/addr-map.h
-rename to arch/arm/mach-pxa/addr-map.h
-diff --git a/arch/arm/mach-pxa/generic.c b/arch/arm/mach-pxa/generic.c
-index 3c3cd90bb9b4..f9083c4f0aea 100644
---- a/arch/arm/mach-pxa/generic.c
-+++ b/arch/arm/mach-pxa/generic.c
-@@ -22,7 +22,7 @@
- #include <asm/mach/map.h>
- #include <asm/mach-types.h>
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index eef8cbf20045..ace6c08c8ae2 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -413,7 +413,6 @@ config ARCH_DOVE
  
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/irqs.h>
- #include <mach/reset.h>
- #include <mach/smemc.h>
-diff --git a/arch/arm/mach-pxa/hx4700.c b/arch/arm/mach-pxa/hx4700.c
-index 191a6c24fe19..140a44cb2989 100644
---- a/arch/arm/mach-pxa/hx4700.c
-+++ b/arch/arm/mach-pxa/hx4700.c
-@@ -40,7 +40,7 @@
- #include <asm/mach/arch.h>
- 
- #include "pxa27x.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/hx4700.h>
- #include <linux/platform_data/irda-pxaficp.h>
- 
-diff --git a/arch/arm/mach-pxa/lpd270.c b/arch/arm/mach-pxa/lpd270.c
-index 7f10b86f85fd..e03436710752 100644
---- a/arch/arm/mach-pxa/lpd270.c
-+++ b/arch/arm/mach-pxa/lpd270.c
-@@ -38,7 +38,7 @@
- 
- #include "pxa27x.h"
- #include "lpd270.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <linux/platform_data/asoc-pxa.h>
- #include <linux/platform_data/video-pxafb.h>
- #include <linux/platform_data/mmc-pxamci.h>
-diff --git a/arch/arm/mach-pxa/magician.c b/arch/arm/mach-pxa/magician.c
-index 345a44d15a2c..20ca3e28c7fb 100644
---- a/arch/arm/mach-pxa/magician.c
-+++ b/arch/arm/mach-pxa/magician.c
-@@ -34,7 +34,7 @@
- #include <asm/system_info.h>
- 
- #include "pxa27x.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/magician.h>
- #include <linux/platform_data/video-pxafb.h>
- #include <linux/platform_data/mmc-pxamci.h>
-diff --git a/arch/arm/mach-pxa/mainstone.c b/arch/arm/mach-pxa/mainstone.c
-index c8200fc2159d..f0072e63b456 100644
---- a/arch/arm/mach-pxa/mainstone.c
-+++ b/arch/arm/mach-pxa/mainstone.c
-@@ -51,7 +51,7 @@
- #include <linux/platform_data/irda-pxaficp.h>
- #include <linux/platform_data/usb-ohci-pxa27x.h>
- #include <linux/platform_data/keypad-pxa27x.h>
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/smemc.h>
- 
- #include "generic.h"
-diff --git a/arch/arm/mach-pxa/pxa25x.c b/arch/arm/mach-pxa/pxa25x.c
-index dfc90b41fba3..8d21c7eef1d2 100644
---- a/arch/arm/mach-pxa/pxa25x.c
-+++ b/arch/arm/mach-pxa/pxa25x.c
-@@ -34,7 +34,7 @@
- #include "pxa25x.h"
- #include <mach/reset.h>
- #include "pm.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/smemc.h>
- 
- #include "generic.h"
-diff --git a/arch/arm/mach-pxa/pxa25x.h b/arch/arm/mach-pxa/pxa25x.h
-index 403bc16c2ed2..4699ebf7b486 100644
---- a/arch/arm/mach-pxa/pxa25x.h
-+++ b/arch/arm/mach-pxa/pxa25x.h
-@@ -2,7 +2,7 @@
- #ifndef __MACH_PXA25x_H
- #define __MACH_PXA25x_H
- 
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/pxa2xx-regs.h>
- #include "mfp-pxa25x.h"
- #include <mach/irqs.h>
-diff --git a/arch/arm/mach-pxa/pxa27x.c b/arch/arm/mach-pxa/pxa27x.c
-index 38fdd22c4dc5..c36a9784fab8 100644
---- a/arch/arm/mach-pxa/pxa27x.c
-+++ b/arch/arm/mach-pxa/pxa27x.c
-@@ -33,7 +33,7 @@
- #include <mach/reset.h>
- #include <linux/platform_data/usb-ohci-pxa27x.h>
- #include "pm.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/smemc.h>
- 
- #include "generic.h"
-diff --git a/arch/arm/mach-pxa/pxa27x.h b/arch/arm/mach-pxa/pxa27x.h
-index 6c99090647d2..bf2755561fe5 100644
---- a/arch/arm/mach-pxa/pxa27x.h
-+++ b/arch/arm/mach-pxa/pxa27x.h
-@@ -3,7 +3,7 @@
- #define __MACH_PXA27x_H
- 
- #include <linux/suspend.h>
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/pxa2xx-regs.h>
- #include "mfp-pxa27x.h"
- #include <mach/irqs.h>
-diff --git a/arch/arm/mach-pxa/pxa3xx.c b/arch/arm/mach-pxa/pxa3xx.c
-index 7c569fa2a6da..7881888107c7 100644
---- a/arch/arm/mach-pxa/pxa3xx.c
-+++ b/arch/arm/mach-pxa/pxa3xx.c
-@@ -32,7 +32,7 @@
- #include <mach/reset.h>
- #include <linux/platform_data/usb-ohci-pxa27x.h>
- #include "pm.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/smemc.h>
- #include <mach/irqs.h>
- 
-diff --git a/arch/arm/mach-pxa/pxa3xx.h b/arch/arm/mach-pxa/pxa3xx.h
-index 22ace053ea25..6b424d328680 100644
---- a/arch/arm/mach-pxa/pxa3xx.h
-+++ b/arch/arm/mach-pxa/pxa3xx.h
-@@ -2,7 +2,7 @@
- #ifndef __MACH_PXA3XX_H	
- #define __MACH_PXA3XX_H
- 
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/pxa3xx-regs.h>
- #include <mach/irqs.h>
- 
-diff --git a/arch/arm/mach-pxa/trizeps4.h b/arch/arm/mach-pxa/trizeps4.h
-index 7597b9de11e2..e0f37c0ff06f 100644
---- a/arch/arm/mach-pxa/trizeps4.h
-+++ b/arch/arm/mach-pxa/trizeps4.h
-@@ -11,7 +11,7 @@
- #ifndef _TRIPEPS4_H_
- #define _TRIPEPS4_H_
- 
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
- 
- /* physical memory regions */
-diff --git a/arch/arm/mach-pxa/xcep.c b/arch/arm/mach-pxa/xcep.c
-index e6ab428287ae..7389e0199144 100644
---- a/arch/arm/mach-pxa/xcep.c
-+++ b/arch/arm/mach-pxa/xcep.c
-@@ -25,7 +25,7 @@
- #include <asm/mach/map.h>
- 
- #include "pxa25x.h"
--#include <mach/addr-map.h>
-+#include "addr-map.h"
- #include <mach/smemc.h>
- 
- #include "generic.h"
+ config ARCH_PXA
+ 	bool "PXA2xx/PXA3xx-based"
+-	select ARCH_MTD_XIP
+ 	select ARM_CPU_SUSPEND if PM
+ 	select AUTO_ZRELADDR
+ 	select COMMON_CLK
+diff --git a/arch/arm/mach-pxa/include/mach/mtd-xip.h b/arch/arm/mach-pxa/include/mach/mtd-xip.h
+deleted file mode 100644
+index 4b31bef9e50a..000000000000
+--- a/arch/arm/mach-pxa/include/mach/mtd-xip.h
++++ /dev/null
+@@ -1,36 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/*
+- * MTD primitives for XIP support. Architecture specific functions
+- *
+- * Do not include this file directly. It's included from linux/mtd/xip.h
+- * 
+- * Author:	Nicolas Pitre
+- * Created:	Nov 2, 2004
+- * Copyright:	(C) 2004 MontaVista Software, Inc.
+- */
+-
+-#ifndef __ARCH_PXA_MTD_XIP_H__
+-#define __ARCH_PXA_MTD_XIP_H__
+-
+-#include <mach/regs-ost.h>
+-
+-/* restored July 2017, this did not build since 2011! */
+-
+-#define ICIP			io_p2v(0x40d00000)
+-#define ICMR			io_p2v(0x40d00004)
+-#define xip_irqpending()	(readl(ICIP) & readl(ICMR))
+-
+-/* we sample OSCR and convert desired delta to usec (1/4 ~= 1000000/3686400) */
+-#define xip_currtime()		readl(OSCR)
+-#define xip_elapsed_since(x)	(signed)((readl(OSCR) - (x)) / 4)
+-
+-/*
+- * xip_cpu_idle() is used when waiting for a delay equal or larger than
+- * the system timer tick period.  This should put the CPU into idle mode
+- * to save power and to be woken up only when some interrupts are pending.
+- * As above, this should not rely upon standard kernel code.
+- */
+-
+-#define xip_cpu_idle()  asm volatile ("mcr p14, 0, %0, c7, c0, 0" :: "r" (1))
+-
+-#endif /* __ARCH_PXA_MTD_XIP_H__ */
 -- 
 2.29.2
 

@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F81FC4332F
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6E32C47088
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355102AbiDSQsb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:48:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55678 "EHLO
+        id S1355191AbiDSQs2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:48:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53888 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231271AbiDSQrG (ORCPT
+        with ESMTP id S1355069AbiDSQnv (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 12:47:06 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC6C339692;
-        Tue, 19 Apr 2022 09:44:22 -0700 (PDT)
+        Tue, 19 Apr 2022 12:43:51 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46CC223BF4;
+        Tue, 19 Apr 2022 09:41:08 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 98D31B81BB6;
-        Tue, 19 Apr 2022 16:44:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 21D49C385B6;
-        Tue, 19 Apr 2022 16:44:12 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id E6505B81BBE;
+        Tue, 19 Apr 2022 16:41:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63D13C385AB;
+        Tue, 19 Apr 2022 16:40:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386660;
-        bh=/6iIOutIe2dthl0F9tUwRrWmTz1Y+vHGyZSNFuNK4W0=;
+        s=k20201202; t=1650386465;
+        bh=U6UXkGiba+IWPQ84YTVH8JdmB9ez+oeADVDoBoSMAeA=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=r9TzRbN2wJ9anV7WP0E3rP1S1Cki++xSivN4dBdyNHhyWwMh/MI+BtyAeqgYlBYXV
-         ItPRfCU6w7MqI+MFhEsR5oorVEigDVDTfLVzE3yCgnLfKVyWW3gfUdTAbpfQ+0xMlv
-         4h+YVQk5XgEEoQXPsOwj0Fou41j1UM7Ct/jvU8LRL/8ndMFQ+B79JydmegZ2DAQ0SW
-         JwbK17hawoV1JcDkXQOweIbtoMS6G5Dy/AtPICtIdIqThqKAcNwIk2Z+V0Gk8YY1UC
-         qolXwRGVZyysQKzmwpm1PVfh5Wsw43vmB7v0Jz+vdy/0bIr6cZp8M8u+LOSFSklyM5
-         I5AkVeQlQC3Hw==
+        b=Dx+/8hWSqP54Qj1bLqmbcjy7EOlZLK7fehRxrCDudwV6M9Fy7SO9kbeCNChaDPtyq
+         nsffbT6io+sZXH1/7PSZ5lArW4jYfo9IEA5PA3ZHDbrheUIW4wgeNtLX6XxzXMp7NU
+         dcGLlN+W9BezzkCXSsS0Z38Bztbsq5Tl/AIm+XmzC4ZeRrzAQBlu7Gz95MmYpNBKUO
+         +zYF0K/ue6uCvMR2BqEUgUOzd4ohj0vXKRplH8aesj7MKBVuUE0XKQbk8x9Ts6ZZtj
+         bQk4zfxsOkvz3MM9GolbI20rGgZi2As8q/AuQe5U6ARsz3ojSijMOH4RPSyzfZLrvr
+         P0YR74cjlR93A==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -60,9 +60,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         alsa-devel@alsa-project.org
-Subject: [PATCH 42/48] ARM: mmp: remove tavorevb board support
-Date:   Tue, 19 Apr 2022 18:38:04 +0200
-Message-Id: <20220419163810.2118169-43-arnd@kernel.org>
+Subject: [PATCH 17/48] ARM: pxa: corgi: use gpio descriptors for audio
+Date:   Tue, 19 Apr 2022 18:37:39 +0200
+Message-Id: <20220419163810.2118169-18-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -74,192 +74,209 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-There are two tavorevb boards in the kernel, one using a PXA930 chip in
-mach-pxa, and one using the later PXA910 chip in mach-mmp.  They use the
-same board number, which is generally a bad idea, and in a multiplatform
-kernel, we can end up with funny link errors like this one resulting
-from two boards gettting controlled by the same Kconfig symbol:
+The audio driver should not use a hardwired gpio number
+from the header. Change it to use a lookup table.
 
-arch/arm/mach-mmp/tavorevb.o: In function `tavorevb_init':
-tavorevb.c:(.init.text+0x4c): undefined reference to `pxa910_device_uart1'
-tavorevb.c:(.init.text+0x50): undefined reference to `pxa910_device_gpio'
-tavorevb.o:(.arch.info.init+0x54): undefined reference to `pxa910_init_irq'
-tavorevb.o:(.arch.info.init+0x58): undefined reference to `pxa910_timer_init'
-
-The mach-pxa TavorEVB seems much more complete than the mach-mmp one
-that supports only uart, gpio and ethernet. Further, I could find no
-information about the board on the internet aside from references to
-the Linux kernel, so I assume this was never available outside of Marvell
-and can be removed entirely.
-
-There is a third board named TavorEVB in the Kconfig description,
-but this refers to the "TTC_DKB" machine. The two are clearly
-related, so I change the Kconfig description to just list both
-names.
-
-Cc: Lubomir Rintel <lkundrak@v3.sk>
-Reviewed-by: Lubomir Rintel <lkundrak@v3.sk>
+Acked-by: Mark Brown <broonie@kernel.org>
+Cc: alsa-devel@alsa-project.org
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-mmp/Kconfig    |  10 +---
- arch/arm/mach-mmp/Makefile   |   1 -
- arch/arm/mach-mmp/tavorevb.c | 113 -----------------------------------
- 3 files changed, 1 insertion(+), 123 deletions(-)
- delete mode 100644 arch/arm/mach-mmp/tavorevb.c
+ arch/arm/mach-pxa/corgi.c                    | 22 ++++++++++-
+ arch/arm/mach-pxa/{include/mach => }/corgi.h |  2 +-
+ arch/arm/mach-pxa/corgi_pm.c                 |  2 +-
+ sound/soc/pxa/corgi.c                        | 41 +++++++++++++-------
+ 4 files changed, 51 insertions(+), 16 deletions(-)
+ rename arch/arm/mach-pxa/{include/mach => }/corgi.h (98%)
 
-diff --git a/arch/arm/mach-mmp/Kconfig b/arch/arm/mach-mmp/Kconfig
-index 0dd999212944..92a730a573b9 100644
---- a/arch/arm/mach-mmp/Kconfig
-+++ b/arch/arm/mach-mmp/Kconfig
-@@ -39,16 +39,8 @@ config MACH_AVENGERS_LITE
- 	  Say 'Y' here if you want to support the Marvell PXA168-based
- 	  Avengers Lite Development Board.
+diff --git a/arch/arm/mach-pxa/corgi.c b/arch/arm/mach-pxa/corgi.c
+index f897762c8b58..c546356d0f02 100644
+--- a/arch/arm/mach-pxa/corgi.c
++++ b/arch/arm/mach-pxa/corgi.c
+@@ -49,7 +49,7 @@
+ #include <linux/platform_data/irda-pxaficp.h>
+ #include <linux/platform_data/mmc-pxamci.h>
+ #include "udc.h"
+-#include <mach/corgi.h>
++#include "corgi.h"
+ #include "sharpsl_pm.h"
  
--config MACH_TAVOREVB
--	bool "Marvell's PXA910 TavorEVB Development Board"
--	depends on ARCH_MULTI_V5
--	select CPU_PXA910
--	help
--	  Say 'Y' here if you want to support the Marvell PXA910-based
--	  TavorEVB Development Board.
--
- config MACH_TTC_DKB
--	bool "Marvell's PXA910 TavorEVB Development Board"
-+	bool "Marvell's PXA910 TavorEVB/TTC_DKB Development Board"
- 	depends on ARCH_MULTI_V5
- 	select CPU_PXA910
- 	help
-diff --git a/arch/arm/mach-mmp/Makefile b/arch/arm/mach-mmp/Makefile
-index e3758f7e1fe7..81338db77ec7 100644
---- a/arch/arm/mach-mmp/Makefile
-+++ b/arch/arm/mach-mmp/Makefile
-@@ -24,7 +24,6 @@ endif
- obj-$(CONFIG_MACH_ASPENITE)	+= aspenite.o
- obj-$(CONFIG_MACH_ZYLONITE2)	+= aspenite.o
- obj-$(CONFIG_MACH_AVENGERS_LITE)+= avengers_lite.o
--obj-$(CONFIG_MACH_TAVOREVB)	+= tavorevb.o
- obj-$(CONFIG_MACH_TTC_DKB)	+= ttc_dkb.o
- obj-$(CONFIG_MACH_BROWNSTONE)	+= brownstone.o
- obj-$(CONFIG_MACH_FLINT)	+= flint.o
-diff --git a/arch/arm/mach-mmp/tavorevb.c b/arch/arm/mach-mmp/tavorevb.c
-deleted file mode 100644
-index 3261d2322198..000000000000
---- a/arch/arm/mach-mmp/tavorevb.c
-+++ /dev/null
-@@ -1,113 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- *  linux/arch/arm/mach-mmp/tavorevb.c
-- *
-- *  Support for the Marvell PXA910-based TavorEVB Development Platform.
-- */
--#include <linux/gpio.h>
--#include <linux/gpio-pxa.h>
--#include <linux/init.h>
--#include <linux/kernel.h>
--#include <linux/platform_device.h>
--#include <linux/smc91x.h>
--
--#include <asm/mach-types.h>
--#include <asm/mach/arch.h>
--#include "addr-map.h"
--#include "mfp-pxa910.h"
--#include "pxa910.h"
--#include "irqs.h"
--
--#include "common.h"
--
--static unsigned long tavorevb_pin_config[] __initdata = {
--	/* UART2 */
--	GPIO47_UART2_RXD,
--	GPIO48_UART2_TXD,
--
--	/* SMC */
--	SM_nCS0_nCS0,
--	SM_ADV_SM_ADV,
--	SM_SCLK_SM_SCLK,
--	SM_SCLK_SM_SCLK,
--	SM_BE0_SM_BE0,
--	SM_BE1_SM_BE1,
--
--	/* DFI */
--	DF_IO0_ND_IO0,
--	DF_IO1_ND_IO1,
--	DF_IO2_ND_IO2,
--	DF_IO3_ND_IO3,
--	DF_IO4_ND_IO4,
--	DF_IO5_ND_IO5,
--	DF_IO6_ND_IO6,
--	DF_IO7_ND_IO7,
--	DF_IO8_ND_IO8,
--	DF_IO9_ND_IO9,
--	DF_IO10_ND_IO10,
--	DF_IO11_ND_IO11,
--	DF_IO12_ND_IO12,
--	DF_IO13_ND_IO13,
--	DF_IO14_ND_IO14,
--	DF_IO15_ND_IO15,
--	DF_nCS0_SM_nCS2_nCS0,
--	DF_ALE_SM_WEn_ND_ALE,
--	DF_CLE_SM_OEn_ND_CLE,
--	DF_WEn_DF_WEn,
--	DF_REn_DF_REn,
--	DF_RDY0_DF_RDY0,
--};
--
--static struct pxa_gpio_platform_data pxa910_gpio_pdata = {
--	.irq_base	= MMP_GPIO_TO_IRQ(0),
--};
--
--static struct smc91x_platdata tavorevb_smc91x_info = {
--	.flags	= SMC91X_USE_16BIT | SMC91X_NOWAIT,
--};
--
--static struct resource smc91x_resources[] = {
--	[0] = {
--		.start	= SMC_CS1_PHYS_BASE + 0x300,
--		.end	= SMC_CS1_PHYS_BASE + 0xfffff,
--		.flags	= IORESOURCE_MEM,
--	},
--	[1] = {
--		.start	= MMP_GPIO_TO_IRQ(80),
--		.end	= MMP_GPIO_TO_IRQ(80),
--		.flags	= IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE,
--	}
--};
--
--static struct platform_device smc91x_device = {
--	.name		= "smc91x",
--	.id		= 0,
--	.dev		= {
--		.platform_data = &tavorevb_smc91x_info,
--	},
--	.num_resources	= ARRAY_SIZE(smc91x_resources),
--	.resource	= smc91x_resources,
--};
--
--static void __init tavorevb_init(void)
--{
--	mfp_config(ARRAY_AND_SIZE(tavorevb_pin_config));
--
--	/* on-chip devices */
--	pxa910_add_uart(1);
--	platform_device_add_data(&pxa910_device_gpio, &pxa910_gpio_pdata,
--				 sizeof(struct pxa_gpio_platform_data));
--	platform_device_register(&pxa910_device_gpio);
--
--	/* off-chip devices */
--	platform_device_register(&smc91x_device);
--}
--
--MACHINE_START(TAVOREVB, "PXA910 Evaluation Board (aka TavorEVB)")
--	.map_io		= mmp_map_io,
--	.nr_irqs	= MMP_NR_IRQS,
--	.init_irq       = pxa910_init_irq,
--	.init_time	= pxa910_timer_init,
--	.init_machine   = tavorevb_init,
--	.restart	= mmp_restart,
--MACHINE_END
+ #include <asm/mach/sharpsl_param.h>
+@@ -472,6 +472,25 @@ static struct platform_device corgiled_device = {
+ 	},
+ };
+ 
++static struct gpiod_lookup_table corgi_audio_gpio_table = {
++	.dev_id = "corgi-audio",
++	.table = {
++		GPIO_LOOKUP("sharp-scoop",
++			    CORGI_GPIO_MUTE_L - CORGI_SCOOP_GPIO_BASE,
++			    "mute-l", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("sharp-scoop",
++			    CORGI_GPIO_MUTE_R - CORGI_SCOOP_GPIO_BASE,
++			    "mute-r", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("sharp-scoop",
++			    CORGI_GPIO_APM_ON - CORGI_SCOOP_GPIO_BASE,
++			    "apm-on", GPIO_ACTIVE_HIGH),
++		GPIO_LOOKUP("sharp-scoop",
++			    CORGI_GPIO_MIC_BIAS - CORGI_SCOOP_GPIO_BASE,
++			    "mic-bias", GPIO_ACTIVE_HIGH),
++		{ },
++	},
++};
++
+ /*
+  * Corgi Audio
+  */
+@@ -744,6 +763,7 @@ static void __init corgi_init(void)
+ 
+  	pxa_set_udc_info(&udc_info);
+ 	gpiod_add_lookup_table(&corgi_mci_gpio_table);
++	gpiod_add_lookup_table(&corgi_audio_gpio_table);
+ 	pxa_set_mci_info(&corgi_mci_platform_data);
+ 	pxa_set_ficp_info(&corgi_ficp_platform_data);
+ 	pxa_set_i2c_info(NULL);
+diff --git a/arch/arm/mach-pxa/include/mach/corgi.h b/arch/arm/mach-pxa/corgi.h
+similarity index 98%
+rename from arch/arm/mach-pxa/include/mach/corgi.h
+rename to arch/arm/mach-pxa/corgi.h
+index b565ca7b8cda..fe2fcf6532b9 100644
+--- a/arch/arm/mach-pxa/include/mach/corgi.h
++++ b/arch/arm/mach-pxa/corgi.h
+@@ -9,7 +9,7 @@
+ #ifndef __ASM_ARCH_CORGI_H
+ #define __ASM_ARCH_CORGI_H  1
+ 
+-#include "irqs.h" /* PXA_NR_BUILTIN_GPIO */
++#include <mach/irqs.h> /* PXA_NR_BUILTIN_GPIO */
+ 
+ /*
+  * Corgi (Non Standard) GPIO Definitions
+diff --git a/arch/arm/mach-pxa/corgi_pm.c b/arch/arm/mach-pxa/corgi_pm.c
+index ff1ac9bf37cb..c6ddfc737644 100644
+--- a/arch/arm/mach-pxa/corgi_pm.c
++++ b/arch/arm/mach-pxa/corgi_pm.c
+@@ -20,7 +20,7 @@
+ #include <asm/irq.h>
+ #include <asm/mach-types.h>
+ 
+-#include <mach/corgi.h>
++#include "corgi.h"
+ #include <mach/pxa2xx-regs.h>
+ #include "sharpsl_pm.h"
+ 
+diff --git a/sound/soc/pxa/corgi.c b/sound/soc/pxa/corgi.c
+index 8b83709431cb..4489d2c8b124 100644
+--- a/sound/soc/pxa/corgi.c
++++ b/sound/soc/pxa/corgi.c
+@@ -21,7 +21,6 @@
+ #include <sound/soc.h>
+ 
+ #include <asm/mach-types.h>
+-#include <mach/corgi.h>
+ #include <linux/platform_data/asoc-pxa.h>
+ 
+ #include "../codecs/wm8731.h"
+@@ -41,6 +40,9 @@
+ static int corgi_jack_func;
+ static int corgi_spk_func;
+ 
++static struct gpio_desc *gpiod_mute_l, *gpiod_mute_r,
++			*gpiod_apm_on, *gpiod_mic_bias;
++
+ static void corgi_ext_control(struct snd_soc_dapm_context *dapm)
+ {
+ 	snd_soc_dapm_mutex_lock(dapm);
+@@ -49,8 +51,8 @@ static void corgi_ext_control(struct snd_soc_dapm_context *dapm)
+ 	switch (corgi_jack_func) {
+ 	case CORGI_HP:
+ 		/* set = unmute headphone */
+-		gpio_set_value(CORGI_GPIO_MUTE_L, 1);
+-		gpio_set_value(CORGI_GPIO_MUTE_R, 1);
++		gpiod_set_value(gpiod_mute_l, 1);
++		gpiod_set_value(gpiod_mute_r, 1);
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Mic Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Line Jack");
+ 		snd_soc_dapm_enable_pin_unlocked(dapm, "Headphone Jack");
+@@ -58,24 +60,24 @@ static void corgi_ext_control(struct snd_soc_dapm_context *dapm)
+ 		break;
+ 	case CORGI_MIC:
+ 		/* reset = mute headphone */
+-		gpio_set_value(CORGI_GPIO_MUTE_L, 0);
+-		gpio_set_value(CORGI_GPIO_MUTE_R, 0);
++		gpiod_set_value(gpiod_mute_l, 0);
++		gpiod_set_value(gpiod_mute_r, 0);
+ 		snd_soc_dapm_enable_pin_unlocked(dapm, "Mic Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Line Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Headphone Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Headset Jack");
+ 		break;
+ 	case CORGI_LINE:
+-		gpio_set_value(CORGI_GPIO_MUTE_L, 0);
+-		gpio_set_value(CORGI_GPIO_MUTE_R, 0);
++		gpiod_set_value(gpiod_mute_l, 0);
++		gpiod_set_value(gpiod_mute_r, 0);
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Mic Jack");
+ 		snd_soc_dapm_enable_pin_unlocked(dapm, "Line Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Headphone Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Headset Jack");
+ 		break;
+ 	case CORGI_HEADSET:
+-		gpio_set_value(CORGI_GPIO_MUTE_L, 0);
+-		gpio_set_value(CORGI_GPIO_MUTE_R, 1);
++		gpiod_set_value(gpiod_mute_l, 0);
++		gpiod_set_value(gpiod_mute_r, 1);
+ 		snd_soc_dapm_enable_pin_unlocked(dapm, "Mic Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Line Jack");
+ 		snd_soc_dapm_disable_pin_unlocked(dapm, "Headphone Jack");
+@@ -108,8 +110,8 @@ static int corgi_startup(struct snd_pcm_substream *substream)
+ static void corgi_shutdown(struct snd_pcm_substream *substream)
+ {
+ 	/* set = unmute headphone */
+-	gpio_set_value(CORGI_GPIO_MUTE_L, 1);
+-	gpio_set_value(CORGI_GPIO_MUTE_R, 1);
++	gpiod_set_value(gpiod_mute_l, 1);
++	gpiod_set_value(gpiod_mute_r, 1);
+ }
+ 
+ static int corgi_hw_params(struct snd_pcm_substream *substream,
+@@ -199,14 +201,14 @@ static int corgi_set_spk(struct snd_kcontrol *kcontrol,
+ static int corgi_amp_event(struct snd_soc_dapm_widget *w,
+ 	struct snd_kcontrol *k, int event)
+ {
+-	gpio_set_value(CORGI_GPIO_APM_ON, SND_SOC_DAPM_EVENT_ON(event));
++	gpiod_set_value(gpiod_apm_on, SND_SOC_DAPM_EVENT_ON(event));
+ 	return 0;
+ }
+ 
+ static int corgi_mic_event(struct snd_soc_dapm_widget *w,
+ 	struct snd_kcontrol *k, int event)
+ {
+-	gpio_set_value(CORGI_GPIO_MIC_BIAS, SND_SOC_DAPM_EVENT_ON(event));
++	gpiod_set_value(gpiod_mic_bias, SND_SOC_DAPM_EVENT_ON(event));
+ 	return 0;
+ }
+ 
+@@ -293,6 +295,19 @@ static int corgi_probe(struct platform_device *pdev)
+ 
+ 	card->dev = &pdev->dev;
+ 
++	gpiod_mute_l = devm_gpiod_get(&pdev->dev, "mute-l", GPIOD_OUT_HIGH);
++	if (IS_ERR(gpiod_mute_l))
++		return PTR_ERR(gpiod_mute_l);
++	gpiod_mute_r = devm_gpiod_get(&pdev->dev, "mute-r", GPIOD_OUT_HIGH);
++	if (IS_ERR(gpiod_mute_r))
++		return PTR_ERR(gpiod_mute_r);
++	gpiod_apm_on = devm_gpiod_get(&pdev->dev, "apm-on", GPIOD_OUT_LOW);
++	if (IS_ERR(gpiod_apm_on))
++		return PTR_ERR(gpiod_apm_on);
++	gpiod_mic_bias = devm_gpiod_get(&pdev->dev, "mic-bias", GPIOD_OUT_LOW);
++	if (IS_ERR(gpiod_mic_bias))
++		return PTR_ERR(gpiod_mic_bias);
++
+ 	ret = devm_snd_soc_register_card(&pdev->dev, card);
+ 	if (ret)
+ 		dev_err(&pdev->dev, "snd_soc_register_card() failed: %d\n",
 -- 
 2.29.2
 

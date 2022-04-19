@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B1B1C43217
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 790B5C47087
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355182AbiDSQsX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:48:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55284 "EHLO
+        id S1355193AbiDSQsZ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:48:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55636 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1348967AbiDSQqC (ORCPT
+        with ESMTP id S234455AbiDSQq6 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 12:46:02 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 113A5396A3;
-        Tue, 19 Apr 2022 09:43:19 -0700 (PDT)
+        Tue, 19 Apr 2022 12:46:58 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 270DC39692;
+        Tue, 19 Apr 2022 09:44:15 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id A15E56145C;
-        Tue, 19 Apr 2022 16:43:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BED67C385A9;
-        Tue, 19 Apr 2022 16:43:10 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id DDBCBB81BFD;
+        Tue, 19 Apr 2022 16:44:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61AA5C385AD;
+        Tue, 19 Apr 2022 16:44:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386598;
-        bh=v2JXUsT+aPSiyV8AWZ0OLtn99RZRKtVDeuty5M4eG68=;
+        s=k20201202; t=1650386652;
+        bh=xU/U9xkTvFUXFL8Wopr4rZHXHyzXgLRf0YqQRK4Kvss=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=tt/fiI6JfMKScsjC4gupDTlXwIFAYWcsYENflWn5n3kMrbCN+Y2cCr3glEwE1sItJ
-         cONsIQQLt01Y/qCAeHUUbJd9TpD27gE/DUc3zMZ7c0U2VwpCWQ+qBf7uwrq/GZGzTX
-         3FGOj+knk17r2GSyltkagM0yCF+n9LJkDIwNmtctqNly1C9p720AIevLts/VbLM17G
-         O+4nFGEcvsfnWMk8Au/5OQB6coNhg3LP2cgERB8iHAG0NNlBzSNRpU2laCxc90/bD8
-         8gZIgUWRqfgnaIv2WyLz/01oqgCe1ixn6EBO/7GUMc0aVvmzyH6K1PsZ1Shk5OoOYF
-         /MoVumyBheReg==
+        b=OM0GwvoFjDTXu7F7DMTK9IAJLrdekpoJNNdqgKZOqnT0MxcJctOA38FNelxFTEIEi
+         rfOkyib+5L0BuGs5gSth50JnQfK4wt3P5XbEMzwjlxtkKR2D5Fp6NSpVpT6JKLzOYa
+         sUcSPu9YpMeAuC5R0d9Ntrrwz+yhMHEr/UloCY/EYZJ1RL8i+BYnDoiDTB5kDUDvsN
+         cfM9amClMURurngFRlcw5eiNrdaaZ0Wt5Rgqq1W263FPZpQFgkIEKzYtsp52+Hu//Z
+         ZDG5KKaetJsY/MAdjSi0qUGYxcFLyaW3uLnIWcs9gXXeXABgeTGYRt2fpOditJ3OfS
+         VNvsgnrEcsb+w==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -60,9 +60,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         alsa-devel@alsa-project.org
-Subject: [PATCH 34/48] ARM: pxa: pcmcia: move smemc configuration back to arch
-Date:   Tue, 19 Apr 2022 18:37:56 +0200
-Message-Id: <20220419163810.2118169-35-arnd@kernel.org>
+Subject: [PATCH 41/48] ARM: pxa: remove unused mach/bitfield.h
+Date:   Tue, 19 Apr 2022 18:38:03 +0200
+Message-Id: <20220419163810.2118169-42-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -74,193 +74,151 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-Rather than poking at the smemc registers directly from the
-pcmcia/pxa2xx_base driver, move those bits into machine file
-to have a cleaner interface.
+The sa1111.h header defines some constants using the bitfield
+macros, but those are only used on sa1100, not on pxa, and the
+users include the bitfield header through mach/hardware.h.
 
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>
-Link: https://lore.kernel.org/lkml/87d0egjzxk.fsf@belgarion.home/
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-pxa/generic.c   | 29 ++++++++++++++++++++++
- drivers/pcmcia/pxa2xx_base.c  | 46 ++++++++++++-----------------------
- include/linux/soc/pxa/smemc.h | 10 ++++++++
- 3 files changed, 55 insertions(+), 30 deletions(-)
- create mode 100644 include/linux/soc/pxa/smemc.h
+ arch/arm/include/asm/hardware/sa1111.h    |   2 -
+ arch/arm/mach-pxa/include/mach/bitfield.h | 114 ----------------------
+ 2 files changed, 116 deletions(-)
+ delete mode 100644 arch/arm/mach-pxa/include/mach/bitfield.h
 
-diff --git a/arch/arm/mach-pxa/generic.c b/arch/arm/mach-pxa/generic.c
-index f9083c4f0aea..fe1d55d328e5 100644
---- a/arch/arm/mach-pxa/generic.c
-+++ b/arch/arm/mach-pxa/generic.c
-@@ -70,6 +70,35 @@ unsigned int get_clk_frequency_khz(int info)
- }
- EXPORT_SYMBOL(get_clk_frequency_khz);
+diff --git a/arch/arm/include/asm/hardware/sa1111.h b/arch/arm/include/asm/hardware/sa1111.h
+index 2e70db6f22ea..d8c6f8a99dfa 100644
+--- a/arch/arm/include/asm/hardware/sa1111.h
++++ b/arch/arm/include/asm/hardware/sa1111.h
+@@ -13,8 +13,6 @@
+ #ifndef _ASM_ARCH_SA1111
+ #define _ASM_ARCH_SA1111
  
-+void pxa_smemc_set_pcmcia_timing(int sock, u32 mcmem, u32 mcatt, u32 mcio)
-+{
-+	__raw_writel(mcmem, MCMEM(sock));
-+	__raw_writel(mcatt, MCATT(sock));
-+	__raw_writel(mcio, MCIO(sock));
-+}
-+EXPORT_SYMBOL_GPL(pxa_smemc_set_pcmcia_timing);
-+
-+void pxa_smemc_set_pcmcia_socket(int nr)
-+{
-+	switch (nr) {
-+	case 0:
-+		__raw_writel(0, MECR);
-+		break;
-+	case 1:
-+		/*
-+		 * We have at least one socket, so set MECR:CIT
-+		 * (Card Is There)
-+		 */
-+		__raw_writel(MECR_CIT, MECR);
-+		break;
-+	case 2:
-+		/* Set CIT and MECR:NOS (Number Of Sockets) */
-+		__raw_writel(MECR_CIT | MECR_NOS, MECR);
-+		break;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(pxa_smemc_set_pcmcia_socket);
-+
+-#include <mach/bitfield.h>
+-
  /*
-  * Intel PXA2xx internal register mapping.
-  *
-diff --git a/drivers/pcmcia/pxa2xx_base.c b/drivers/pcmcia/pxa2xx_base.c
-index 7cd1375d6087..0ea41f1411e5 100644
---- a/drivers/pcmcia/pxa2xx_base.c
-+++ b/drivers/pcmcia/pxa2xx_base.c
-@@ -24,11 +24,10 @@
- #include <linux/spinlock.h>
- #include <linux/platform_device.h>
- #include <linux/soc/pxa/cpu.h>
-+#include <linux/soc/pxa/smemc.h>
- 
--#include <mach/smemc.h>
- #include <asm/io.h>
- #include <asm/irq.h>
--#include <mach/pxa2xx-regs.h>
- #include <asm/mach-types.h>
- 
- #include <pcmcia/ss.h>
-@@ -113,7 +112,7 @@ static inline u_int pxa2xx_pcmcia_cmd_time(u_int mem_clk_10khz,
- 	return (300000 * (pcmcia_mcxx_asst + 1) / mem_clk_10khz);
- }
- 
--static int pxa2xx_pcmcia_set_mcmem( int sock, int speed, int clock )
-+static uint32_t pxa2xx_pcmcia_mcmem(int sock, int speed, int clock)
- {
- 	uint32_t val;
- 
-@@ -124,12 +123,10 @@ static int pxa2xx_pcmcia_set_mcmem( int sock, int speed, int clock )
- 		| ((pxa2xx_mcxx_hold(speed, clock)
- 		& MCXX_HOLD_MASK) << MCXX_HOLD_SHIFT);
- 
--	__raw_writel(val, MCMEM(sock));
+  * Don't ask the (SAC) DMA engines to move less than this amount.
+  */
+diff --git a/arch/arm/mach-pxa/include/mach/bitfield.h b/arch/arm/mach-pxa/include/mach/bitfield.h
+deleted file mode 100644
+index fe2ca441bc0a..000000000000
+--- a/arch/arm/mach-pxa/include/mach/bitfield.h
++++ /dev/null
+@@ -1,114 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/*
+- *	FILE    	bitfield.h
+- *
+- *	Version 	1.1
+- *	Author  	Copyright (c) Marc A. Viredaz, 1998
+- *	        	DEC Western Research Laboratory, Palo Alto, CA
+- *	Date    	April 1998 (April 1997)
+- *	System  	Advanced RISC Machine (ARM)
+- *	Language	C or ARM Assembly
+- *	Purpose 	Definition of macros to operate on bit fields.
+- */
 -
--	return 0;
-+	return val;
- }
- 
--static int pxa2xx_pcmcia_set_mcio( int sock, int speed, int clock )
-+static int pxa2xx_pcmcia_mcio(int sock, int speed, int clock)
- {
- 	uint32_t val;
- 
-@@ -140,12 +137,11 @@ static int pxa2xx_pcmcia_set_mcio( int sock, int speed, int clock )
- 		| ((pxa2xx_mcxx_hold(speed, clock)
- 		& MCXX_HOLD_MASK) << MCXX_HOLD_SHIFT);
- 
--	__raw_writel(val, MCIO(sock));
- 
--	return 0;
-+	return val;
- }
- 
--static int pxa2xx_pcmcia_set_mcatt( int sock, int speed, int clock )
-+static int pxa2xx_pcmcia_mcatt(int sock, int speed, int clock)
- {
- 	uint32_t val;
- 
-@@ -156,31 +152,26 @@ static int pxa2xx_pcmcia_set_mcatt( int sock, int speed, int clock )
- 		| ((pxa2xx_mcxx_hold(speed, clock)
- 		& MCXX_HOLD_MASK) << MCXX_HOLD_SHIFT);
- 
--	__raw_writel(val, MCATT(sock));
- 
--	return 0;
-+	return val;
- }
- 
--static int pxa2xx_pcmcia_set_mcxx(struct soc_pcmcia_socket *skt, unsigned int clk)
-+static int pxa2xx_pcmcia_set_timing(struct soc_pcmcia_socket *skt)
- {
-+	unsigned long clk = clk_get_rate(skt->clk) / 10000;
- 	struct soc_pcmcia_timing timing;
- 	int sock = skt->nr;
- 
- 	soc_common_pcmcia_get_timing(skt, &timing);
- 
--	pxa2xx_pcmcia_set_mcmem(sock, timing.mem, clk);
--	pxa2xx_pcmcia_set_mcatt(sock, timing.attr, clk);
--	pxa2xx_pcmcia_set_mcio(sock, timing.io, clk);
-+	pxa_smemc_set_pcmcia_timing(sock,
-+		pxa2xx_pcmcia_mcmem(sock, timing.mem, clk),
-+		pxa2xx_pcmcia_mcatt(sock, timing.attr, clk),
-+		pxa2xx_pcmcia_mcio(sock, timing.io, clk));
- 
- 	return 0;
- }
- 
--static int pxa2xx_pcmcia_set_timing(struct soc_pcmcia_socket *skt)
--{
--	unsigned long clk = clk_get_rate(skt->clk);
--	return pxa2xx_pcmcia_set_mcxx(skt, clk / 10000);
--}
 -
- #ifdef CONFIG_CPU_FREQ
- 
- static int
-@@ -215,18 +206,13 @@ pxa2xx_pcmcia_frequency_change(struct soc_pcmcia_socket *skt,
- 
- void pxa2xx_configure_sockets(struct device *dev, struct pcmcia_low_level *ops)
- {
--	/*
--	 * We have at least one socket, so set MECR:CIT
--	 * (Card Is There)
--	 */
--	uint32_t mecr = MECR_CIT;
-+	int nr = 1;
- 
--	/* Set MECR:NOS (Number Of Sockets) */
- 	if ((ops->first + ops->nr) > 1 ||
- 	    machine_is_viper() || machine_is_arcom_zeus())
--		mecr |= MECR_NOS;
-+		nr = 2;
- 
--	__raw_writel(mecr, MECR);
-+	pxa_smemc_set_pcmcia_socket(nr);
- }
- EXPORT_SYMBOL(pxa2xx_configure_sockets);
- 
-diff --git a/include/linux/soc/pxa/smemc.h b/include/linux/soc/pxa/smemc.h
-new file mode 100644
-index 000000000000..cbf1a2d8af29
---- /dev/null
-+++ b/include/linux/soc/pxa/smemc.h
-@@ -0,0 +1,10 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef __PXA_REGS_H
-+#define __PXA_REGS_H
-+
-+#include <linux/types.h>
-+
-+void pxa_smemc_set_pcmcia_timing(int sock, u32 mcmem, u32 mcatt, u32 mcio);
-+void pxa_smemc_set_pcmcia_socket(int nr);
-+
-+#endif
+-
+-#ifndef __BITFIELD_H
+-#define __BITFIELD_H
+-
+-#ifndef __ASSEMBLY__
+-#define UData(Data)	((unsigned long) (Data))
+-#else
+-#define UData(Data)	(Data)
+-#endif
+-
+-
+-/*
+- * MACRO: Fld
+- *
+- * Purpose
+- *    The macro "Fld" encodes a bit field, given its size and its shift value
+- *    with respect to bit 0.
+- *
+- * Note
+- *    A more intuitive way to encode bit fields would have been to use their
+- *    mask. However, extracting size and shift value information from a bit
+- *    field's mask is cumbersome and might break the assembler (255-character
+- *    line-size limit).
+- *
+- * Input
+- *    Size      	Size of the bit field, in number of bits.
+- *    Shft      	Shift value of the bit field with respect to bit 0.
+- *
+- * Output
+- *    Fld       	Encoded bit field.
+- */
+-
+-#define Fld(Size, Shft)	(((Size) << 16) + (Shft))
+-
+-
+-/*
+- * MACROS: FSize, FShft, FMsk, FAlnMsk, F1stBit
+- *
+- * Purpose
+- *    The macros "FSize", "FShft", "FMsk", "FAlnMsk", and "F1stBit" return
+- *    the size, shift value, mask, aligned mask, and first bit of a
+- *    bit field.
+- *
+- * Input
+- *    Field     	Encoded bit field (using the macro "Fld").
+- *
+- * Output
+- *    FSize     	Size of the bit field, in number of bits.
+- *    FShft     	Shift value of the bit field with respect to bit 0.
+- *    FMsk      	Mask for the bit field.
+- *    FAlnMsk   	Mask for the bit field, aligned on bit 0.
+- *    F1stBit   	First bit of the bit field.
+- */
+-
+-#define FSize(Field)	((Field) >> 16)
+-#define FShft(Field)	((Field) & 0x0000FFFF)
+-#define FMsk(Field)	(((UData (1) << FSize (Field)) - 1) << FShft (Field))
+-#define FAlnMsk(Field)	((UData (1) << FSize (Field)) - 1)
+-#define F1stBit(Field)	(UData (1) << FShft (Field))
+-
+-
+-/*
+- * MACRO: FInsrt
+- *
+- * Purpose
+- *    The macro "FInsrt" inserts a value into a bit field by shifting the
+- *    former appropriately.
+- *
+- * Input
+- *    Value     	Bit-field value.
+- *    Field     	Encoded bit field (using the macro "Fld").
+- *
+- * Output
+- *    FInsrt    	Bit-field value positioned appropriately.
+- */
+-
+-#define FInsrt(Value, Field) \
+-                	(UData (Value) << FShft (Field))
+-
+-
+-/*
+- * MACRO: FExtr
+- *
+- * Purpose
+- *    The macro "FExtr" extracts the value of a bit field by masking and
+- *    shifting it appropriately.
+- *
+- * Input
+- *    Data      	Data containing the bit-field to be extracted.
+- *    Field     	Encoded bit field (using the macro "Fld").
+- *
+- * Output
+- *    FExtr     	Bit-field value.
+- */
+-
+-#define FExtr(Data, Field) \
+-                	((UData (Data) >> FShft (Field)) & FAlnMsk (Field))
+-
+-
+-#endif /* __BITFIELD_H */
 -- 
 2.29.2
 

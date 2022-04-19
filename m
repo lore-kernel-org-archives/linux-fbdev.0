@@ -2,168 +2,159 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B86AC433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon, 18 Apr 2022 18:09:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C33CBC433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 07:22:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347321AbiDRSMM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 18 Apr 2022 14:12:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58994 "EHLO
+        id S1349302AbiDSHZN (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 03:25:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46100 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347318AbiDRSMK (ORCPT
+        with ESMTP id S1349300AbiDSHZM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 18 Apr 2022 14:12:10 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2935A369FD;
-        Mon, 18 Apr 2022 11:09:31 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 979D11F37C;
-        Mon, 18 Apr 2022 18:09:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1650305369; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
+        Tue, 19 Apr 2022 03:25:12 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id C498232056
+        for <linux-fbdev@vger.kernel.org>; Tue, 19 Apr 2022 00:22:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1650352949;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=XRWAll3cRM0fEt+86roWxVLbr8d1Y6gI2JaM6RMC2GE=;
-        b=qxInrmW71zuEDnd19WGfw3JLaQLa6toY8MGLNPe3MYEXm3+ndAhf41G6CBGlrsDNjKPPgZ
-        1XRIx9w8CVQijhu/38J0wmeC7X8mCeInvkXKPNJ0gvXgyMjCjfk5yHwG65ercER+/bMYtG
-        hle8FxSZABUToA4lJv4yIX8dO0IiNcA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1650305369;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=XRWAll3cRM0fEt+86roWxVLbr8d1Y6gI2JaM6RMC2GE=;
-        b=bBx1bJ1p3C0O6DDYunQDREpW7ZUeOOjEpNr9GqmgUMWdFuOZpcrp93JYDX/qavD9ZstPtR
-        zvgGkJBDrgV2rYCA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 5882C13ACB;
-        Mon, 18 Apr 2022 18:09:29 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id /+F/FFmpXWLceAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 18 Apr 2022 18:09:29 +0000
-Message-ID: <2951f153-609f-ad8a-dc6e-feafb8aabca1@suse.de>
-Date:   Mon, 18 Apr 2022 20:09:28 +0200
+        bh=XE7bs+vMucrnxP7rX6KAEFBKjoWlCkL1ofuWPanz4ws=;
+        b=VWWHSkACKSlH6QF1wwznZPBKO1ESP8dUzv8GZCjxrTcVSAj/9z8HY0avsr+g5h+sLVjuri
+        d9zABHs6VQZ72JSA95WGmUhV0Zkw08ZPA0LggyIk3+jQuoF7Az1dHZ4oT6MiGTKKrsEllT
+        DfOhMfxCY+SyuIINF33fARkvi5ZJUys=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-10-0i09vS1vN5yA39DGKkreJg-1; Tue, 19 Apr 2022 03:22:27 -0400
+X-MC-Unique: 0i09vS1vN5yA39DGKkreJg-1
+Received: by mail-wm1-f72.google.com with SMTP id d6-20020a05600c34c600b0039296a2ac7cso807846wmq.1
+        for <linux-fbdev@vger.kernel.org>; Tue, 19 Apr 2022 00:22:27 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=XE7bs+vMucrnxP7rX6KAEFBKjoWlCkL1ofuWPanz4ws=;
+        b=sZMyvdhyeBdDrKoerOaddL+zQ/VYY6EfGYjnmo1qpS0YDqGMNVEXlUeuPwghe80sNG
+         LRLr22xiJcwlJQh70foYPfjc95RRfrZSbFhfbToTB6G91mcG9vQ1hWEr/UpRwfM0Umj7
+         2gAIq1UIzdYFmuHx6XtX55ZmhSSHgDfA/yNxzvBmokNBn0FG3fmgKR9i1Va8UmgAAAgb
+         VaGpFw39cQMo8YXgXat3ACJ0MkM2Bw+WCw+rEWhRm/ZKqknboRhkm24SeDen69NJCTGH
+         HghuQj56surPUbDhyacNYIeoLGaGfYXwPmpU7fNXo3pvfgouxwcZ45VlfhnzboQ2CAQQ
+         WLGw==
+X-Gm-Message-State: AOAM532Qzhg/2u488fMZ+sEJN6OxN6ACshaqw0pMTOhqQnxzYdtqraFC
+        0rQjgtxiTmeCSbQ9FLgFpSP5qp+pRvLXz+b5XisQIrdzprJU9d1cBfZbcmYYIxqJxm7+T9P0jLT
+        3kWRQRFGeTWbPMzuiDDklers=
+X-Received: by 2002:a05:6000:1b08:b0:207:ad5b:83a0 with SMTP id f8-20020a0560001b0800b00207ad5b83a0mr10619555wrz.564.1650352946330;
+        Tue, 19 Apr 2022 00:22:26 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJxPE0Lfb8036FFd0ol7Vvhr6xWQ3rGpwS+oyiFhkfgu+5MXMGjFNhcWkb9aY1gomEOacxFDLg==
+X-Received: by 2002:a05:6000:1b08:b0:207:ad5b:83a0 with SMTP id f8-20020a0560001b0800b00207ad5b83a0mr10619538wrz.564.1650352946065;
+        Tue, 19 Apr 2022 00:22:26 -0700 (PDT)
+Received: from [192.168.1.129] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id o6-20020a05600c378600b0038eca3cdbb3sm15128816wmr.13.2022.04.19.00.22.24
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 19 Apr 2022 00:22:25 -0700 (PDT)
+Message-ID: <fb7b8ca6-a252-c021-fe74-4e7ffbb3eb7e@redhat.com>
+Date:   Tue, 19 Apr 2022 09:22:24 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.7.0
-Subject: Re: [PATCH 1/2] of: Create platform devices for OF framebuffers
+ Thunderbird/91.8.0
+Subject: Re: [PATCH 2/2] fbdev: Remove hot-unplug workaround for framebuffers
+ without device
 Content-Language: en-US
-To:     Rob Herring <robh+dt@kernel.org>
-Cc:     devicetree@vger.kernel.org,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        Frank Rowand <frowand.list@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Guenter Roeck <linux@roeck-us.net>
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Daniel Vetter <daniel@ffwll.ch>
+Cc:     devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        frowand.list@gmail.com, deller@gmx.de,
+        linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
+        robh+dt@kernel.org, paulus@samba.org, mpe@ellerman.id.au,
+        sam@ravnborg.org, linux@roeck-us.net
 References: <20220413092454.1073-1-tzimmermann@suse.de>
- <20220413092454.1073-2-tzimmermann@suse.de>
- <CAL_JsqK4oT47Q=XFTZ0a=g3-DiB1JsW7_j9M1qRzpeahhz0muA@mail.gmail.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <CAL_JsqK4oT47Q=XFTZ0a=g3-DiB1JsW7_j9M1qRzpeahhz0muA@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------rprr3qXUNrc3UlEJIlw8bi8k"
+ <20220413092454.1073-3-tzimmermann@suse.de>
+ <2e183cc9-603d-f038-54aa-5601f11b0484@redhat.com>
+ <Ylb0316ABOhOe1Rb@phenom.ffwll.local>
+ <9d4599d9-e094-e7dd-5b91-282c2679aae4@suse.de>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <9d4599d9-e094-e7dd-5b91-282c2679aae4@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------rprr3qXUNrc3UlEJIlw8bi8k
-Content-Type: multipart/mixed; boundary="------------aZPMTyhvY1SIWpwEhr8aWvvJ";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Rob Herring <robh+dt@kernel.org>
-Cc: devicetree@vger.kernel.org,
- Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
- Frank Rowand <frowand.list@gmail.com>, Helge Deller <deller@gmx.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- dri-devel <dri-devel@lists.freedesktop.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Sam Ravnborg <sam@ravnborg.org>, Guenter Roeck <linux@roeck-us.net>
-Message-ID: <2951f153-609f-ad8a-dc6e-feafb8aabca1@suse.de>
-Subject: Re: [PATCH 1/2] of: Create platform devices for OF framebuffers
-References: <20220413092454.1073-1-tzimmermann@suse.de>
- <20220413092454.1073-2-tzimmermann@suse.de>
- <CAL_JsqK4oT47Q=XFTZ0a=g3-DiB1JsW7_j9M1qRzpeahhz0muA@mail.gmail.com>
-In-Reply-To: <CAL_JsqK4oT47Q=XFTZ0a=g3-DiB1JsW7_j9M1qRzpeahhz0muA@mail.gmail.com>
+Hello Thomas,
 
---------------aZPMTyhvY1SIWpwEhr8aWvvJ
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+On 4/13/22 20:09, Thomas Zimmermann wrote:
 
-SGkNCg0KQW0gMTMuMDQuMjIgdW0gMTQ6NTEgc2NocmllYiBSb2IgSGVycmluZzoNCi4uLg0K
-Pj4gKw0KPj4gICAvKioNCj4+ICAgICogb2ZfcGxhdGZvcm1fcG9wdWxhdGUoKSAtIFBvcHVs
-YXRlIHBsYXRmb3JtX2RldmljZXMgZnJvbSBkZXZpY2UgdHJlZSBkYXRhDQo+PiAgICAqIEBy
-b290OiBwYXJlbnQgb2YgdGhlIGZpcnN0IGxldmVsIHRvIHByb2JlIG9yIE5VTEwgZm9yIHRo
-ZSByb290IG9mIHRoZSB0cmVlDQo+PiBAQCAtNTQxLDkgKzU5NSw3IEBAIHN0YXRpYyBpbnQg
-X19pbml0IG9mX3BsYXRmb3JtX2RlZmF1bHRfcG9wdWxhdGVfaW5pdCh2b2lkKQ0KPj4gICAg
-ICAgICAgICAgICAgICBvZl9ub2RlX3B1dChub2RlKTsNCj4+ICAgICAgICAgIH0NCj4+DQo+
-PiAtICAgICAgIG5vZGUgPSBvZl9nZXRfY29tcGF0aWJsZV9jaGlsZChvZl9jaG9zZW4sICJz
-aW1wbGUtZnJhbWVidWZmZXIiKTsNCj4+IC0gICAgICAgb2ZfcGxhdGZvcm1fZGV2aWNlX2Ny
-ZWF0ZShub2RlLCBOVUxMLCBOVUxMKTsNCj4+IC0gICAgICAgb2Zfbm9kZV9wdXQobm9kZSk7
-DQo+PiArICAgICAgIG9mX3BsYXRmb3JtX3BvcHVsYXRlX2ZyYW1lYnVmZmVycygpOw0KPj4N
-Cj4+ICAgICAgICAgIC8qIFBvcHVsYXRlIGV2ZXJ5dGhpbmcgZWxzZS4gKi8NCj4+ICAgICAg
-ICAgIG9mX3BsYXRmb3JtX2RlZmF1bHRfcG9wdWxhdGUoTlVMTCwgTlVMTCwgTlVMTCk7DQo+
-IA0KPiBJJ20gcHJldHR5IHN1cmUgaXQncyBqdXN0IHRoaXMgY2FsbCB0aGF0J3MgdGhlIHBy
-b2JsZW0gZm9yIFBQQyB0aG91Z2gNCj4gbm9uZSBvZiB0aGUgYWJvdmUgZXhpc3RlZCB3aGVu
-IGFkZGluZyB0aGlzIGNhdXNlZCBhIHJlZ3Jlc3Npb24uIENhbiB3ZQ0KPiByZW1vdmUgdGhl
-IGlmZGVmIGFuZCBqdXN0IG1ha2UgdGhpcyBjYWxsIGNvbmRpdGlvbmFsIG9uDQo+ICFJU19F
-TkFCTEVEKENPTkZJR19QUEMpLg0KDQpUaGF0IGRpZG4ndCB3b3JrLiBUaGUgYm9vdCBwcm9j
-ZXNzIHN0b3BzIGF0IHNvbWUgcG9pbnQuIEknbGwgc2VuZCB5b3UgYW4gDQp1cGRhdGVkIHBh
-dGNoIHRoYXQgY292ZXJzIG1vc3Qgb2YgdGhlIGZ1bmN0aW9uIHdpdGggSVNfRU5BQkxFRChD
-T05GSUdfUFBDKQ0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiANCj4+IEBAIC01
-NTEsNiArNjAzLDIwIEBAIHN0YXRpYyBpbnQgX19pbml0IG9mX3BsYXRmb3JtX2RlZmF1bHRf
-cG9wdWxhdGVfaW5pdCh2b2lkKQ0KPj4gICAgICAgICAgcmV0dXJuIDA7DQo+PiAgIH0NCj4+
-ICAgYXJjaF9pbml0Y2FsbF9zeW5jKG9mX3BsYXRmb3JtX2RlZmF1bHRfcG9wdWxhdGVfaW5p
-dCk7DQo+PiArI2Vsc2UNCj4+ICtzdGF0aWMgaW50IF9faW5pdCBvZl9wbGF0Zm9ybV9kZWZh
-dWx0X3BvcHVsYXRlX2luaXQodm9pZCkNCj4+ICt7DQo+PiArICAgICAgIGRldmljZV9saW5r
-c19zdXBwbGllcl9zeW5jX3N0YXRlX3BhdXNlKCk7DQo+PiArDQo+PiArICAgICAgIGlmICgh
-b2ZfaGF2ZV9wb3B1bGF0ZWRfZHQoKSkNCj4+ICsgICAgICAgICAgICAgICByZXR1cm4gLUVO
-T0RFVjsNCj4+ICsNCj4+ICsgICAgICAgb2ZfcGxhdGZvcm1fcG9wdWxhdGVfZnJhbWVidWZm
-ZXJzKCk7DQo+PiArDQo+PiArICAgICAgIHJldHVybiAwOw0KPj4gK30NCj4+ICthcmNoX2lu
-aXRjYWxsX3N5bmMob2ZfcGxhdGZvcm1fZGVmYXVsdF9wb3B1bGF0ZV9pbml0KTsNCj4+ICsj
-ZW5kaWYNCj4+DQo+PiAgIHN0YXRpYyBpbnQgX19pbml0IG9mX3BsYXRmb3JtX3N5bmNfc3Rh
-dGVfaW5pdCh2b2lkKQ0KPj4gICB7DQo+PiBAQCAtNTU4LDcgKzYyNCw2IEBAIHN0YXRpYyBp
-bnQgX19pbml0IG9mX3BsYXRmb3JtX3N5bmNfc3RhdGVfaW5pdCh2b2lkKQ0KPj4gICAgICAg
-ICAgcmV0dXJuIDA7DQo+PiAgIH0NCj4+ICAgbGF0ZV9pbml0Y2FsbF9zeW5jKG9mX3BsYXRm
-b3JtX3N5bmNfc3RhdGVfaW5pdCk7DQo+PiAtI2VuZGlmDQo+Pg0KPj4gICBpbnQgb2ZfcGxh
-dGZvcm1fZGV2aWNlX2Rlc3Ryb3koc3RydWN0IGRldmljZSAqZGV2LCB2b2lkICpkYXRhKQ0K
-Pj4gICB7DQoNCi0tIA0KVGhvbWFzIFppbW1lcm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZl
-bG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRpb25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0
-ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJtYW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJl
-cmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZvIFRvdGV2DQo=
+[snip]
 
---------------aZPMTyhvY1SIWpwEhr8aWvvJ--
+>>>> index bc6ed750e915..bdd00d381bbc 100644
+>>>> --- a/drivers/video/fbdev/core/fbmem.c
+>>>> +++ b/drivers/video/fbdev/core/fbmem.c
+>>>> @@ -1579,14 +1579,7 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
+>>>>   			 * If it's not a platform device, at least print a warning. A
+>>>>   			 * fix would add code to remove the device from the system.
+>>>>   			 */
+>>>> -			if (!device) {
+>>>> -				/* TODO: Represent each OF framebuffer as its own
+>>>> -				 * device in the device hierarchy. For now, offb
+>>>> -				 * doesn't have such a device, so unregister the
+>>>> -				 * framebuffer as before without warning.
+>>>> -				 */
+>>>> -				do_unregister_framebuffer(registered_fb[i]);
+>>>
+>>> Maybe we could still keep this for a couple of releases but with a big
+>>> warning that's not supported in case there are out-of-tree drivers out
+>>> there that still do this ?
+>>>
+>>> Or at least a warning if the do_unregister_framebuffer() call is removed.
+>>
+>> Yeah dying while holding console_lock isn't fun, and not having a WARN_ON
+>> + bail-out code pretty much forces bug reporters to do a bisect here to
+>> give us something more than "machine dies at boot with no messages".
+>>
+>> I'd just outright keep the WARN_ON here for 1-2 years even to really make
+>> sure we got all the bug reports, since often these older machines only
+>> update onto LTS releases.
+> 
+> If that's what the consent is, I'll go with it.
+> 
+> I'm just not sure if we talk about the same problem. offb didn't have a 
+> platform device, so we recently added this workaround with 'if 
+> (!device)'.  All the other fbdev drivers have a platform device; and 
+> anything else that could fail is out-of-tree. We don't really care about 
+> those AFAIK.
+>
 
---------------rprr3qXUNrc3UlEJIlw8bi8k
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+Yes, agreed on the offb change but I'm not really sure if we don't care
+about out-of-tree modules. I mean, you are right in theory but I still
+feel that we are changing a core behavior without giving people time to
+sort out if needed.
 
------BEGIN PGP SIGNATURE-----
+Since before commit 27599aacbaef ("fbdev: Hot-unplug firmware fb devices
+on forced removal") registered FBs didn't need to have a device, but now
+that will lead to a NULL pointer dereference in dev_is_platform(device).
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmJdqVgFAwAAAAAACgkQlh/E3EQov+Dp
-ug//X4Lj/BZJaEm3/ZMTdb1bXPcbNtVjKZwAyVzgU8e3kpOF46troFn26QENLQSy48vroGAK/L0K
-nr3K9+rWBdFynDbO4ov7UtvUqFV0WbTGCjyuBSUWwvjonz8ZNmHzPf5J1y1vaC5ufxoZ8eUadCWF
-OncuFDb3oa3JddufnTqmciNGmFukPWJ2AH8xiKW6UAzRsgBklCG0jplzZ8piD0P3hvtAR7Jd3xDL
-uVQKMSRhORuXJwapPuZSS+qq/KL+MNDOTC6R/bojFBKHte1yE/Lwp0yajVStmXCwL+Z3xVOfcv3x
-unlqrUyudM5a83TINLPYCTSxYLjucgHXCOWYyAPrJkiboZssLiA/8F7xw7LhiT+bzv/HgAHwJ6Nx
-3inBCh6dj9quSEzKPIKKbTwyiVT6pKSevSdgKtU0a+z1AVyJuoqevbXjtxb8zc2IhQBqRCB045Pv
-7Cb6miq/NGSGiN83am8+UMqXrCPKBdVah5NL+S5dsqWQ88ZObvS8eRxEkQuo42yM6EejrCkSLxVf
-ZkizQdGw6VrPvUFcig9eMBPOB3Ml9mPUPtqusd9ms6uPDfV3xmjp0kMf60mTgVGzYEMgza1uDK2p
-5RLpSxCk6z0g+hV5auR7p0GxZGnP1D4hwfqEMJGR9c8tV4lGzFLSkH9UgkJOsxvluMFT7NRye8WY
-BfQ=
-=KHBy
------END PGP SIGNATURE-----
+And that change only landed in v5.18-rc1, so it is fairly recent.
 
---------------rprr3qXUNrc3UlEJIlw8bi8k--
+I know that we follow https://www.kernel.org/doc/Documentation/process/stable-api-nonsense.rst
+but still my opinion is that having a warning for a couple of releases
+if registered_fb[i]->device is NULL, instead of just crashing would be
+a better way to handle this.
+ 
+> With offb converted, we could practically remove all of the checks here 
+> and call platform_device_unregister() unconditionally.
+>
+
+Yes for mainline, but as mentioned I thought mostly about out-of-tree. If
+folks agree that we shouldn't care about these, I'm Ok with that as well.
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
+

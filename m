@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C3AAC4167D
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 13:39:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0D4BC433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 13:40:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352522AbiDSNmI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 09:42:08 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36950 "EHLO
+        id S1346540AbiDSNnI (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 09:43:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36996 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1352456AbiDSNlq (ORCPT
+        with ESMTP id S1352737AbiDSNml (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 09:41:46 -0400
+        Tue, 19 Apr 2022 09:42:41 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9FBBB3818A;
-        Tue, 19 Apr 2022 06:38:47 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B96543914F;
+        Tue, 19 Apr 2022 06:39:45 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 39F0D6169B;
-        Tue, 19 Apr 2022 13:38:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BFE78C385A5;
-        Tue, 19 Apr 2022 13:38:39 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 437EB616A3;
+        Tue, 19 Apr 2022 13:39:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 11D9CC385A7;
+        Tue, 19 Apr 2022 13:39:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650375526;
-        bh=RR8FHUt8/oVOHCndemgdv0yQ+gJWVi08oSUPSCA8r+A=;
+        s=k20201202; t=1650375584;
+        bh=x1mvWl2U7fZILb5TbyNkFpMm6/MypG7RO5sXAsxLvRg=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=FjyAQX1V1Mtq5rmgyreMTZhE3/aJBxgkMqWfV0riRO23vuyzYq/zn4LgLEsRpPY/l
-         DQmmsn9xT0+qY3/PXuyKKsFDGMgZhu8Ddawg3jVOO+PbTKZTwvJLooQWJOrl+HaB/O
-         AN85kED9oV3T2m4YPSPzkaicNd85/MKhtRTpzOZrR1O1IwS5AGlDoe22qvgRvyYVmp
-         0q0Z8oey3GPFsFg0mzWOUndrW5ruI9D+QP02L6mUJV+H5efX4UhX5GpUaq3ZRQjLzt
-         xg9dQpFAlmTyoWXkYs+Cvc8YFJt1I6n7of27SYxlG1Q2NZgRo7lBZYbAsDvPq2cz0n
-         ZD+j1qthwTwyg==
+        b=PZTxNL5DSXCYDgJG8/+vLbglm3Bhpk5h/Ugh3KUJ531orszQSnNDG73cQlb4bZj0Z
+         HBwfwm3Fn7Q0EsAJCI4GK9LiCXzD1yNHN8VW/FO14KinCNU1FkRN0TGkYURwKC6MQ+
+         DTiCUh0nUOK7+AnvZnl6/cpsoi3FJisdZmBonypOAIOjqDOfu07w90A2ngtcRTl0k/
+         tn3+f7kw7MCBRbxGjZrMN+Jpn0HXe4XH2X02BuHpYN9z5uaKHSEmxpZnVQHVMccNtZ
+         ujjtywF56S80y2RETVswGMcLzlBjDwf5rDrx3BJsgCkT53Z2c14D77ga1UB6uWLFWf
+         6ZqDHxa1AcOJg==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     linux-omap@vger.kernel.org, tony@atomide.com, aaro.koskinen@iki.fi,
         jmkrzyszt@gmail.com
@@ -58,9 +58,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>,
         linux-input@vger.kernel.org, linux-mmc@vger.kernel.org,
         linux-serial@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: [PATCH 09/41] ARM: omap1: move perseus spi pinconf to board file
-Date:   Tue, 19 Apr 2022 15:36:51 +0200
-Message-Id: <20220419133723.1394715-10-arnd@kernel.org>
+Subject: [PATCH 17/41] ARM: omap1: move 32k counter from plat-omap to mach-omap1
+Date:   Tue, 19 Apr 2022 15:36:59 +0200
+Message-Id: <20220419133723.1394715-18-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419133723.1394715-1-arnd@kernel.org>
 References: <20220419133723.1394715-1-arnd@kernel.org>
@@ -72,86 +72,337 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-The driver has always had a FIXME about this, and it seems
-like this trivial code move avoids a mach header inclusion,
-so just do it.
+omap2 stopped using this code with commit 8d39ff3d1696 ("ARM: OMAP2+:
+Remove unused legacy code for timer"), so just move it to mach-omap1 now,
+along with the other half of that driver.
 
-With that out of the way, and the header file inclusions
-changed to global files, the driver can also be compile-tested
-on other platforms.
-
-Acked-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-omap1/board-perseus2.c |  6 ++++++
- drivers/spi/Kconfig                  |  2 +-
- drivers/spi/spi-omap-uwire.c         | 15 +++------------
- 3 files changed, 10 insertions(+), 13 deletions(-)
+ arch/arm/mach-omap1/Kconfig                   |  16 +++
+ arch/arm/mach-omap1/timer32k.c                |  96 ++++++++++++++-
+ arch/arm/plat-omap/Kconfig                    |  17 ---
+ arch/arm/plat-omap/Makefile                   |   2 +-
+ arch/arm/plat-omap/counter_32k.c              | 114 ------------------
+ arch/arm/plat-omap/include/plat/counter-32k.h |   1 -
+ 6 files changed, 110 insertions(+), 136 deletions(-)
+ delete mode 100644 arch/arm/plat-omap/counter_32k.c
+ delete mode 100644 arch/arm/plat-omap/include/plat/counter-32k.h
 
-diff --git a/arch/arm/mach-omap1/board-perseus2.c b/arch/arm/mach-omap1/board-perseus2.c
-index 1aeeb7337d29..da0155107d85 100644
---- a/arch/arm/mach-omap1/board-perseus2.c
-+++ b/arch/arm/mach-omap1/board-perseus2.c
-@@ -289,6 +289,12 @@ static void __init omap_perseus2_init(void)
- 	omap_cfg_reg(F4_7XX_KBC3);
- 	omap_cfg_reg(E3_7XX_KBC4);
+diff --git a/arch/arm/mach-omap1/Kconfig b/arch/arm/mach-omap1/Kconfig
+index 208c700c2455..04155b5ce978 100644
+--- a/arch/arm/mach-omap1/Kconfig
++++ b/arch/arm/mach-omap1/Kconfig
+@@ -53,6 +53,22 @@ config OMAP_MUX_WARNINGS
+ 	  to change the pin multiplexing setup.	 When there are no warnings
+ 	  printed, it's safe to deselect OMAP_MUX for your product.
  
-+	if (IS_ENABLED(CONFIG_SPI_OMAP_UWIRE)) {
-+		/* configure pins: MPU_UW_nSCS1, MPU_UW_SDO, MPU_UW_SCLK */
-+		int val = omap_readl(OMAP7XX_IO_CONF_9) & ~0x00EEE000;
-+		omap_writel(val | 0x00AAA000, OMAP7XX_IO_CONF_9);
-+	}
++config OMAP_32K_TIMER
++	bool "Use 32KHz timer"
++	depends on ARCH_OMAP16XX
++	default ARCH_OMAP16XX
++	help
++	  Select this option if you want to enable the OMAP 32KHz timer.
++	  This timer saves power compared to the OMAP_MPU_TIMER, and has
++	  support for no tick during idle. The 32KHz timer provides less
++	  intra-tick resolution than OMAP_MPU_TIMER. The 32KHz timer is
++	  currently only available for OMAP16XX, 24XX, 34XX, OMAP4/5 and DRA7XX.
 +
- 	platform_add_devices(devices, ARRAY_SIZE(devices));
++	  On OMAP2PLUS this value is only used for CONFIG_HZ and
++	  CLOCK_TICK_RATE compile time calculation.
++	  The actual timer selection is done in the board file
++	  through the (DT_)MACHINE_START structure.
++
+ comment "OMAP Board Type"
  
- 	omap_serial_init();
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index d2815eb361c0..6c28ca232444 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -631,7 +631,7 @@ config SPI_OCTEON
- 
- config SPI_OMAP_UWIRE
- 	tristate "OMAP1 MicroWire"
--	depends on ARCH_OMAP1
-+	depends on ARCH_OMAP1 || (ARM && COMPILE_TEST)
- 	select SPI_BITBANG
- 	help
- 	  This hooks up to the MicroWire controller on OMAP1 chips.
-diff --git a/drivers/spi/spi-omap-uwire.c b/drivers/spi/spi-omap-uwire.c
-index 087172a193fa..29198e6815b2 100644
---- a/drivers/spi/spi-omap-uwire.c
-+++ b/drivers/spi/spi-omap-uwire.c
-@@ -44,13 +44,10 @@
- #include <linux/module.h>
+ config MACH_OMAP_INNOVATOR
+diff --git a/arch/arm/mach-omap1/timer32k.c b/arch/arm/mach-omap1/timer32k.c
+index 780fdf03c3ce..11958ccd894d 100644
+--- a/arch/arm/mach-omap1/timer32k.c
++++ b/arch/arm/mach-omap1/timer32k.c
+@@ -45,15 +45,13 @@
+ #include <linux/clocksource.h>
+ #include <linux/clockchips.h>
  #include <linux/io.h>
++#include <linux/sched_clock.h>
  
--#include <mach/hardware.h>
- #include <asm/mach-types.h>
--
--#include <mach/mux.h>
--
--#include <mach/omap7xx.h>	/* OMAP7XX_IO_CONF registers */
--
-+#include <linux/soc/ti/omap1-io.h>
-+#include <linux/soc/ti/omap1-soc.h>
-+#include <linux/soc/ti/omap1-mux.h>
+ #include <asm/irq.h>
+ #include <asm/mach/irq.h>
+ #include <asm/mach/time.h>
  
- /* FIXME address is now a platform device resource,
-  * and irqs should show there too...
-@@ -548,12 +545,6 @@ static int __init omap_uwire_init(void)
- 		omap_cfg_reg(N14_1610_UWIRE_CS0);
- 		omap_cfg_reg(N15_1610_UWIRE_CS1);
- 	}
--	if (machine_is_omap_perseus2()) {
--		/* configure pins: MPU_UW_nSCS1, MPU_UW_SDO, MPU_UW_SCLK */
--		int val = omap_readl(OMAP7XX_IO_CONF_9) & ~0x00EEE000;
--		omap_writel(val | 0x00AAA000, OMAP7XX_IO_CONF_9);
--	}
+-#include <plat/counter-32k.h>
 -
- 	return platform_driver_register(&uwire_driver);
+ #include <mach/hardware.h>
+-
+ #include "common.h"
+ 
+ /*
+@@ -159,6 +157,98 @@ static __init void omap_init_32k_timer(void)
+ 					OMAP_32K_TICKS_PER_SEC, 1, 0xfffffffe);
  }
  
++/* OMAP2_32KSYNCNT_CR_OFF: offset of 32ksync counter register */
++#define OMAP2_32KSYNCNT_REV_OFF		0x0
++#define OMAP2_32KSYNCNT_REV_SCHEME	(0x3 << 30)
++#define OMAP2_32KSYNCNT_CR_OFF_LOW	0x10
++#define OMAP2_32KSYNCNT_CR_OFF_HIGH	0x30
++
++/*
++ * 32KHz clocksource ... always available, on pretty most chips except
++ * OMAP 730 and 1510.  Other timers could be used as clocksources, with
++ * higher resolution in free-running counter modes (e.g. 12 MHz xtal),
++ * but systems won't necessarily want to spend resources that way.
++ */
++static void __iomem *sync32k_cnt_reg;
++
++static u64 notrace omap_32k_read_sched_clock(void)
++{
++	return sync32k_cnt_reg ? readl_relaxed(sync32k_cnt_reg) : 0;
++}
++
++/**
++ * omap_read_persistent_clock64 -  Return time from a persistent clock.
++ *
++ * Reads the time from a source which isn't disabled during PM, the
++ * 32k sync timer.  Convert the cycles elapsed since last read into
++ * nsecs and adds to a monotonically increasing timespec64.
++ */
++static struct timespec64 persistent_ts;
++static cycles_t cycles;
++static unsigned int persistent_mult, persistent_shift;
++
++static void omap_read_persistent_clock64(struct timespec64 *ts)
++{
++	unsigned long long nsecs;
++	cycles_t last_cycles;
++
++	last_cycles = cycles;
++	cycles = sync32k_cnt_reg ? readl_relaxed(sync32k_cnt_reg) : 0;
++
++	nsecs = clocksource_cyc2ns(cycles - last_cycles,
++					persistent_mult, persistent_shift);
++
++	timespec64_add_ns(&persistent_ts, nsecs);
++
++	*ts = persistent_ts;
++}
++
++/**
++ * omap_init_clocksource_32k - setup and register counter 32k as a
++ * kernel clocksource
++ * @pbase: base addr of counter_32k module
++ * @size: size of counter_32k to map
++ *
++ * Returns 0 upon success or negative error code upon failure.
++ *
++ */
++int __init omap_init_clocksource_32k(void __iomem *vbase)
++{
++	int ret;
++
++	/*
++	 * 32k sync Counter IP register offsets vary between the
++	 * highlander version and the legacy ones.
++	 * The 'SCHEME' bits(30-31) of the revision register is used
++	 * to identify the version.
++	 */
++	if (readl_relaxed(vbase + OMAP2_32KSYNCNT_REV_OFF) &
++						OMAP2_32KSYNCNT_REV_SCHEME)
++		sync32k_cnt_reg = vbase + OMAP2_32KSYNCNT_CR_OFF_HIGH;
++	else
++		sync32k_cnt_reg = vbase + OMAP2_32KSYNCNT_CR_OFF_LOW;
++
++	/*
++	 * 120000 rough estimate from the calculations in
++	 * __clocksource_update_freq_scale.
++	 */
++	clocks_calc_mult_shift(&persistent_mult, &persistent_shift,
++			32768, NSEC_PER_SEC, 120000);
++
++	ret = clocksource_mmio_init(sync32k_cnt_reg, "32k_counter", 32768,
++				250, 32, clocksource_mmio_readl_up);
++	if (ret) {
++		pr_err("32k_counter: can't register clocksource\n");
++		return ret;
++	}
++
++	sched_clock_register(omap_32k_read_sched_clock, 32, 32768);
++	register_persistent_clock(omap_read_persistent_clock64);
++	pr_info("OMAP clocksource: 32k_counter at 32768 Hz\n");
++
++	return 0;
++}
++
+ /*
+  * ---------------------------------------------------------------------------
+  * Timer initialization
+diff --git a/arch/arm/plat-omap/Kconfig b/arch/arm/plat-omap/Kconfig
+index 272670ef1e92..dfa19d5030e3 100644
+--- a/arch/arm/plat-omap/Kconfig
++++ b/arch/arm/plat-omap/Kconfig
+@@ -72,23 +72,6 @@ config OMAP_MPU_TIMER
+ 	  timer provides more intra-tick resolution than the 32KHz timer,
+ 	  but consumes more power.
+ 
+-config OMAP_32K_TIMER
+-	bool "Use 32KHz timer"
+-	depends on ARCH_OMAP16XX || ARCH_OMAP2PLUS
+-	default y if (ARCH_OMAP16XX || ARCH_OMAP2PLUS)
+-	help
+-	  Select this option if you want to enable the OMAP 32KHz timer.
+-	  This timer saves power compared to the OMAP_MPU_TIMER, and has
+-	  support for no tick during idle. The 32KHz timer provides less
+-	  intra-tick resolution than OMAP_MPU_TIMER. The 32KHz timer is
+-	  currently only available for OMAP16XX, 24XX, 34XX, OMAP4/5 and DRA7XX.
+-
+-	  On OMAP2PLUS this value is only used for CONFIG_HZ and
+-	  CLOCK_TICK_RATE compile time calculation.
+-	  The actual timer selection is done in the board file
+-	  through the (DT_)MACHINE_START structure.
+-
+-
+ config OMAP3_L2_AUX_SECURE_SAVE_RESTORE
+ 	bool "OMAP3 HS/EMU save and restore for L2 AUX control register"
+ 	depends on ARCH_OMAP3 && PM
+diff --git a/arch/arm/plat-omap/Makefile b/arch/arm/plat-omap/Makefile
+index 371f2ed00eda..98a7b607873a 100644
+--- a/arch/arm/plat-omap/Makefile
++++ b/arch/arm/plat-omap/Makefile
+@@ -6,7 +6,7 @@
+ ccflags-$(CONFIG_ARCH_MULTIPLATFORM) := -I$(srctree)/arch/arm/plat-omap/include
+ 
+ # Common support
+-obj-y := sram.o dma.o counter_32k.o
++obj-y := sram.o dma.o
+ 
+ # omap_device support (OMAP2+ only at the moment)
+ 
+diff --git a/arch/arm/plat-omap/counter_32k.c b/arch/arm/plat-omap/counter_32k.c
+deleted file mode 100644
+index 7a729ade2105..000000000000
+--- a/arch/arm/plat-omap/counter_32k.c
++++ /dev/null
+@@ -1,114 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * OMAP 32ksynctimer/counter_32k-related code
+- *
+- * Copyright (C) 2009 Texas Instruments
+- * Copyright (C) 2010 Nokia Corporation
+- * Tony Lindgren <tony@atomide.com>
+- * Added OMAP4 support - Santosh Shilimkar <santosh.shilimkar@ti.com>
+- *
+- * NOTE: This timer is not the same timer as the old OMAP1 MPU timer.
+- */
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/clk.h>
+-#include <linux/err.h>
+-#include <linux/io.h>
+-#include <linux/clocksource.h>
+-#include <linux/sched_clock.h>
+-
+-#include <asm/mach/time.h>
+-
+-#include <plat/counter-32k.h>
+-
+-/* OMAP2_32KSYNCNT_CR_OFF: offset of 32ksync counter register */
+-#define OMAP2_32KSYNCNT_REV_OFF		0x0
+-#define OMAP2_32KSYNCNT_REV_SCHEME	(0x3 << 30)
+-#define OMAP2_32KSYNCNT_CR_OFF_LOW	0x10
+-#define OMAP2_32KSYNCNT_CR_OFF_HIGH	0x30
+-
+-/*
+- * 32KHz clocksource ... always available, on pretty most chips except
+- * OMAP 730 and 1510.  Other timers could be used as clocksources, with
+- * higher resolution in free-running counter modes (e.g. 12 MHz xtal),
+- * but systems won't necessarily want to spend resources that way.
+- */
+-static void __iomem *sync32k_cnt_reg;
+-
+-static u64 notrace omap_32k_read_sched_clock(void)
+-{
+-	return sync32k_cnt_reg ? readl_relaxed(sync32k_cnt_reg) : 0;
+-}
+-
+-/**
+- * omap_read_persistent_clock64 -  Return time from a persistent clock.
+- *
+- * Reads the time from a source which isn't disabled during PM, the
+- * 32k sync timer.  Convert the cycles elapsed since last read into
+- * nsecs and adds to a monotonically increasing timespec64.
+- */
+-static struct timespec64 persistent_ts;
+-static cycles_t cycles;
+-static unsigned int persistent_mult, persistent_shift;
+-
+-static void omap_read_persistent_clock64(struct timespec64 *ts)
+-{
+-	unsigned long long nsecs;
+-	cycles_t last_cycles;
+-
+-	last_cycles = cycles;
+-	cycles = sync32k_cnt_reg ? readl_relaxed(sync32k_cnt_reg) : 0;
+-
+-	nsecs = clocksource_cyc2ns(cycles - last_cycles,
+-					persistent_mult, persistent_shift);
+-
+-	timespec64_add_ns(&persistent_ts, nsecs);
+-
+-	*ts = persistent_ts;
+-}
+-
+-/**
+- * omap_init_clocksource_32k - setup and register counter 32k as a
+- * kernel clocksource
+- * @pbase: base addr of counter_32k module
+- * @size: size of counter_32k to map
+- *
+- * Returns 0 upon success or negative error code upon failure.
+- *
+- */
+-int __init omap_init_clocksource_32k(void __iomem *vbase)
+-{
+-	int ret;
+-
+-	/*
+-	 * 32k sync Counter IP register offsets vary between the
+-	 * highlander version and the legacy ones.
+-	 * The 'SCHEME' bits(30-31) of the revision register is used
+-	 * to identify the version.
+-	 */
+-	if (readl_relaxed(vbase + OMAP2_32KSYNCNT_REV_OFF) &
+-						OMAP2_32KSYNCNT_REV_SCHEME)
+-		sync32k_cnt_reg = vbase + OMAP2_32KSYNCNT_CR_OFF_HIGH;
+-	else
+-		sync32k_cnt_reg = vbase + OMAP2_32KSYNCNT_CR_OFF_LOW;
+-
+-	/*
+-	 * 120000 rough estimate from the calculations in
+-	 * __clocksource_update_freq_scale.
+-	 */
+-	clocks_calc_mult_shift(&persistent_mult, &persistent_shift,
+-			32768, NSEC_PER_SEC, 120000);
+-
+-	ret = clocksource_mmio_init(sync32k_cnt_reg, "32k_counter", 32768,
+-				250, 32, clocksource_mmio_readl_up);
+-	if (ret) {
+-		pr_err("32k_counter: can't register clocksource\n");
+-		return ret;
+-	}
+-
+-	sched_clock_register(omap_32k_read_sched_clock, 32, 32768);
+-	register_persistent_clock(omap_read_persistent_clock64);
+-	pr_info("OMAP clocksource: 32k_counter at 32768 Hz\n");
+-
+-	return 0;
+-}
+diff --git a/arch/arm/plat-omap/include/plat/counter-32k.h b/arch/arm/plat-omap/include/plat/counter-32k.h
+deleted file mode 100644
+index da000d482ff2..000000000000
+--- a/arch/arm/plat-omap/include/plat/counter-32k.h
++++ /dev/null
+@@ -1 +0,0 @@
+-int omap_init_clocksource_32k(void __iomem *vbase);
 -- 
 2.29.2
 

@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0AE2C35294
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:42:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92CFFC43217
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355080AbiDSQoM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:44:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53978 "EHLO
+        id S1354851AbiDSQr7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:47:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54810 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1355077AbiDSQn5 (ORCPT
+        with ESMTP id S1344193AbiDSQpP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 12:43:57 -0400
+        Tue, 19 Apr 2022 12:45:15 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 600E22A249;
-        Tue, 19 Apr 2022 09:41:14 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 834293467B;
+        Tue, 19 Apr 2022 09:42:32 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id F21E661821;
-        Tue, 19 Apr 2022 16:41:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 23064C385A5;
-        Tue, 19 Apr 2022 16:41:05 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id EDD8E61874;
+        Tue, 19 Apr 2022 16:42:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A777C385AC;
+        Tue, 19 Apr 2022 16:42:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386473;
-        bh=UmyAEDevE+rFHmIeeKFFlzSBscHHSEtR+AtXVKUZXjI=;
+        s=k20201202; t=1650386551;
+        bh=ZitIFNWOGNclnWEkC5k5wKgP8LZADBB8lqdOWZNB8wQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=VBOATLbRuYChK3MBgRX8mPip9VFQsTd4uM6E3FKAYou3P3IZa9nmev0mrBBoYpVGs
-         Nl+voA7jYEZWdMuLiO7BEMPH+MVsDjnXXGALSLYw1w1AX0WnSQTPUBDuRtK63hpICj
-         8+5p1J7vvcJkBz7CuQogkh9GDU2SBWlcgjibaorUtjAG4DdHSgFg+dieu5I1H5UTwe
-         yODr+X/HyGXAHTGbi4Lq4APNxVx4sfb3QJu3sbtv29oNO8I1LDZpvn7U0jmcS7bSjQ
-         9f0xIKo83CR6rz6qWgvk3LUsWMEix8qqKI0I+7fX418R/bEF9m0lgtwSh1l4J0GIYp
-         y51mpx0B4pZoQ==
+        b=M+b/M4GGqpVoZ/vtuDGOrUAXIOp7QmnE+sliunl9FKuasZGbZF8J7WC0f5+dwHIfV
+         QC+dZIBkk7Hf4pg+kZCT8EC/A41AqH2ENGG3vZIkxJLPpRBM+Aex4V3HjClb5ZY2s8
+         QXyUz7wFF1e86cNx2J/LH32cIfYAT9jRVz/3EZvQYWNJDZXGGvuD5wmAvR7FCCQYz2
+         NZPv5X3QIar8bWv9pUOFMdDuQHRolS5csdfPn4P7i2wmWxafJsowCMdw66MeqUo3e4
+         4cfMCEif39tK7z2xRA3fIStlRIiOkBAdJrgnC88utYEWooh/HHVaMdBdkWFUYWuz/m
+         6oQTHQqp34oXw==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -60,9 +60,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         alsa-devel@alsa-project.org
-Subject: [PATCH 18/48] ARM: pxa: hx4700: use gpio descriptors for audio
-Date:   Tue, 19 Apr 2022 18:37:40 +0200
-Message-Id: <20220419163810.2118169-19-arnd@kernel.org>
+Subject: [PATCH 28/48] Input: touchscreen: use wrapper for pxa2xx ac97 registers
+Date:   Tue, 19 Apr 2022 18:37:50 +0200
+Message-Id: <20220419163810.2118169-29-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -74,194 +74,176 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-The audio driver should not use a hardwired gpio number
-from the header. Change it to use a lookup table.
+To avoid a dependency on the pxa platform header files with
+hardcoded registers, change the driver to call a wrapper
+in the pxa2xx-ac97-lib that encapsulates all the other
+ac97 stuff.
 
-Cc: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: Paul Parsons <lost.distance@yahoo.com>
-Acked-by: Mark Brown <broonie@kernel.org>
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: linux-input@vger.kernel.org
 Cc: alsa-devel@alsa-project.org
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-pxa/hx4700-pcmcia.c             |  2 +-
- arch/arm/mach-pxa/hx4700.c                    | 16 ++++++++-
- arch/arm/mach-pxa/{include/mach => }/hx4700.h |  2 +-
- sound/soc/pxa/hx4700.c                        | 34 ++++++++-----------
- 4 files changed, 31 insertions(+), 23 deletions(-)
- rename arch/arm/mach-pxa/{include/mach => }/hx4700.h (99%)
+ drivers/input/touchscreen/Kconfig            |  2 ++
+ drivers/input/touchscreen/mainstone-wm97xx.c | 16 ++++++++--------
+ drivers/input/touchscreen/zylonite-wm97xx.c  | 12 ++++++------
+ include/sound/pxa2xx-lib.h                   |  4 ++++
+ sound/arm/pxa2xx-ac97-lib.c                  | 12 ++++++++++++
+ 5 files changed, 32 insertions(+), 14 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/hx4700-pcmcia.c b/arch/arm/mach-pxa/hx4700-pcmcia.c
-index e8acbfc9ef6c..e2331dfe427d 100644
---- a/arch/arm/mach-pxa/hx4700-pcmcia.c
-+++ b/arch/arm/mach-pxa/hx4700-pcmcia.c
-@@ -10,7 +10,7 @@
- #include <linux/irq.h>
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index 43c7d6e5bdc0..2d70c945b20a 100644
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -902,6 +902,7 @@ config TOUCHSCREEN_WM9713
+ config TOUCHSCREEN_WM97XX_MAINSTONE
+ 	tristate "WM97xx Mainstone/Palm accelerated touch"
+ 	depends on TOUCHSCREEN_WM97XX && ARCH_PXA
++	depends on SND_PXA2XX_LIB_AC97
+ 	help
+ 	  Say Y here for support for streaming mode with WM97xx touchscreens
+ 	  on Mainstone, Palm Tungsten T5, TX and LifeDrive systems.
+@@ -914,6 +915,7 @@ config TOUCHSCREEN_WM97XX_MAINSTONE
+ config TOUCHSCREEN_WM97XX_ZYLONITE
+ 	tristate "Zylonite accelerated touch"
+ 	depends on TOUCHSCREEN_WM97XX && MACH_ZYLONITE
++	depends on SND_PXA2XX_LIB_AC97
+ 	select TOUCHSCREEN_WM9713
+ 	help
+ 	  Say Y here for support for streaming mode with the touchscreen
+diff --git a/drivers/input/touchscreen/mainstone-wm97xx.c b/drivers/input/touchscreen/mainstone-wm97xx.c
+index 940d3c92b1f8..8f6fe68f1f99 100644
+--- a/drivers/input/touchscreen/mainstone-wm97xx.c
++++ b/drivers/input/touchscreen/mainstone-wm97xx.c
+@@ -28,7 +28,7 @@
+ #include <linux/soc/pxa/cpu.h>
+ #include <linux/wm97xx.h>
+ 
+-#include <mach/regs-ac97.h>
++#include <sound/pxa2xx-lib.h>
  
  #include <asm/mach-types.h>
--#include <mach/hx4700.h>
-+#include "hx4700.h"
  
- #include <pcmcia/soc_common.h>
+@@ -104,11 +104,11 @@ static void wm97xx_acc_pen_up(struct wm97xx *wm)
+ 	msleep(1);
  
-diff --git a/arch/arm/mach-pxa/hx4700.c b/arch/arm/mach-pxa/hx4700.c
-index 140a44cb2989..2b7f37172725 100644
---- a/arch/arm/mach-pxa/hx4700.c
-+++ b/arch/arm/mach-pxa/hx4700.c
-@@ -41,7 +41,7 @@
+ 	if (cpu_is_pxa27x()) {
+-		while (MISR & (1 << 2))
+-			MODR;
++		while (pxa2xx_ac97_read_misr() & (1 << 2))
++			pxa2xx_ac97_read_modr();
+ 	} else if (cpu_is_pxa3xx()) {
+ 		for (count = 0; count < 16; count++)
+-			MODR;
++			pxa2xx_ac97_read_modr();
+ 	}
+ }
  
- #include "pxa27x.h"
- #include "addr-map.h"
--#include <mach/hx4700.h>
-+#include "hx4700.h"
- #include <linux/platform_data/irda-pxaficp.h>
+@@ -130,7 +130,7 @@ static int wm97xx_acc_pen_down(struct wm97xx *wm)
+ 		return RC_PENUP;
+ 	}
  
- #include <sound/ak4641.h>
-@@ -834,6 +834,19 @@ static struct i2c_board_info i2c_board_info[] __initdata = {
- 	},
- };
+-	x = MODR;
++	x = pxa2xx_ac97_read_modr();
+ 	if (x == last) {
+ 		tries++;
+ 		return RC_AGAIN;
+@@ -138,10 +138,10 @@ static int wm97xx_acc_pen_down(struct wm97xx *wm)
+ 	last = x;
+ 	do {
+ 		if (reads)
+-			x = MODR;
+-		y = MODR;
++			x = pxa2xx_ac97_read_modr();
++		y = pxa2xx_ac97_read_modr();
+ 		if (pressure)
+-			p = MODR;
++			p = pxa2xx_ac97_read_modr();
  
-+static struct gpiod_lookup_table hx4700_audio_gpio_table = {
-+	.dev_id = "hx4700-audio",
-+	.table = {
-+		GPIO_LOOKUP("gpio-pxa", GPIO75_HX4700_EARPHONE_nDET,
-+			    "earphone-ndet", GPIO_ACTIVE_HIGH),
-+		GPIO_LOOKUP("gpio-pxa", GPIO92_HX4700_HP_DRIVER,
-+			    "hp-driver", GPIO_ACTIVE_HIGH),
-+		GPIO_LOOKUP("gpio-pxa", GPIO107_HX4700_SPK_nSD,
-+			    "spk-nsd", GPIO_ACTIVE_HIGH),
-+		{ },
-+	},
-+};
+ 		dev_dbg(wm->dev, "Raw coordinates: x=%x, y=%x, p=%x\n",
+ 			x, y, p);
+diff --git a/drivers/input/touchscreen/zylonite-wm97xx.c b/drivers/input/touchscreen/zylonite-wm97xx.c
+index cabdd6e3c6f8..ed7eae638713 100644
+--- a/drivers/input/touchscreen/zylonite-wm97xx.c
++++ b/drivers/input/touchscreen/zylonite-wm97xx.c
+@@ -24,7 +24,7 @@
+ #include <linux/soc/pxa/cpu.h>
+ #include <linux/wm97xx.h>
+ 
+-#include <mach/regs-ac97.h>
++#include <sound/pxa2xx-lib.h>
+ 
+ struct continuous {
+ 	u16 id;    /* codec id */
+@@ -79,7 +79,7 @@ static void wm97xx_acc_pen_up(struct wm97xx *wm)
+ 	msleep(1);
+ 
+ 	for (i = 0; i < 16; i++)
+-		MODR;
++		pxa2xx_ac97_read_modr();
+ }
+ 
+ static int wm97xx_acc_pen_down(struct wm97xx *wm)
+@@ -100,7 +100,7 @@ static int wm97xx_acc_pen_down(struct wm97xx *wm)
+ 		return RC_PENUP;
+ 	}
+ 
+-	x = MODR;
++	x = pxa2xx_ac97_read_modr();
+ 	if (x == last) {
+ 		tries++;
+ 		return RC_AGAIN;
+@@ -108,10 +108,10 @@ static int wm97xx_acc_pen_down(struct wm97xx *wm)
+ 	last = x;
+ 	do {
+ 		if (reads)
+-			x = MODR;
+-		y = MODR;
++			x = pxa2xx_ac97_read_modr();
++		y = pxa2xx_ac97_read_modr();
+ 		if (pressure)
+-			p = MODR;
++			p = pxa2xx_ac97_read_modr();
+ 
+ 		dev_dbg(wm->dev, "Raw coordinates: x=%x, y=%x, p=%x\n",
+ 			x, y, p);
+diff --git a/include/sound/pxa2xx-lib.h b/include/sound/pxa2xx-lib.h
+index 95100cff25d1..0a6f8dabf8c4 100644
+--- a/include/sound/pxa2xx-lib.h
++++ b/include/sound/pxa2xx-lib.h
+@@ -52,4 +52,8 @@ extern int pxa2xx_ac97_hw_resume(void);
+ extern int pxa2xx_ac97_hw_probe(struct platform_device *dev);
+ extern void pxa2xx_ac97_hw_remove(struct platform_device *dev);
+ 
++/* modem registers, used by touchscreen driver */
++u32 pxa2xx_ac97_read_modr(void);
++u32 pxa2xx_ac97_read_misr(void);
 +
- static struct platform_device audio = {
- 	.name	= "hx4700-audio",
- 	.id	= -1,
-@@ -895,6 +908,7 @@ static void __init hx4700_init(void)
- 
- 	gpiod_add_lookup_table(&bq24022_gpiod_table);
- 	gpiod_add_lookup_table(&gpio_vbus_gpiod_table);
-+	gpiod_add_lookup_table(&hx4700_audio_gpio_table);
- 	platform_add_devices(devices, ARRAY_SIZE(devices));
- 	pwm_add_table(hx4700_pwm_lookup, ARRAY_SIZE(hx4700_pwm_lookup));
- 
-diff --git a/arch/arm/mach-pxa/include/mach/hx4700.h b/arch/arm/mach-pxa/hx4700.h
-similarity index 99%
-rename from arch/arm/mach-pxa/include/mach/hx4700.h
-rename to arch/arm/mach-pxa/hx4700.h
-index 0c30e6d9c660..ce2db33989e1 100644
---- a/arch/arm/mach-pxa/include/mach/hx4700.h
-+++ b/arch/arm/mach-pxa/hx4700.h
-@@ -10,7 +10,7 @@
- 
- #include <linux/gpio.h>
- #include <linux/mfd/asic3.h>
--#include "irqs.h" /* PXA_NR_BUILTIN_GPIO */
-+#include <mach/irqs.h> /* PXA_NR_BUILTIN_GPIO */
- 
- #define HX4700_ASIC3_GPIO_BASE	PXA_NR_BUILTIN_GPIO
- #define HX4700_EGPIO_BASE	(HX4700_ASIC3_GPIO_BASE + ASIC3_NUM_GPIOS)
-diff --git a/sound/soc/pxa/hx4700.c b/sound/soc/pxa/hx4700.c
-index 7334fac758de..e70dc38d9892 100644
---- a/sound/soc/pxa/hx4700.c
-+++ b/sound/soc/pxa/hx4700.c
-@@ -10,7 +10,7 @@
- #include <linux/interrupt.h>
- #include <linux/platform_device.h>
- #include <linux/delay.h>
--#include <linux/gpio.h>
-+#include <linux/gpio/consumer.h>
- 
- #include <sound/core.h>
- #include <sound/jack.h>
-@@ -18,10 +18,10 @@
- #include <sound/pcm_params.h>
- #include <sound/soc.h>
- 
--#include <mach/hx4700.h>
- #include <asm/mach-types.h>
- #include "pxa2xx-i2s.h"
- 
-+static struct gpio_desc *gpiod_hp_driver, *gpiod_spk_nsd;
- static struct snd_soc_jack hs_jack;
- 
- /* Headphones jack detection DAPM pin */
-@@ -40,9 +40,8 @@ static struct snd_soc_jack_pin hs_jack_pin[] = {
- 
- /* Headphones jack detection GPIO */
- static struct snd_soc_jack_gpio hs_jack_gpio = {
--	.gpio		= GPIO75_HX4700_EARPHONE_nDET,
- 	.invert		= true,
--	.name		= "hp-gpio",
-+	.name		= "earphone-ndet",
- 	.report		= SND_JACK_HEADPHONE,
- 	.debounce_time	= 200,
- };
-@@ -81,14 +80,14 @@ static const struct snd_soc_ops hx4700_ops = {
- static int hx4700_spk_power(struct snd_soc_dapm_widget *w,
- 			    struct snd_kcontrol *k, int event)
- {
--	gpio_set_value(GPIO107_HX4700_SPK_nSD, !!SND_SOC_DAPM_EVENT_ON(event));
-+	gpiod_set_value(gpiod_spk_nsd, !!SND_SOC_DAPM_EVENT_ON(event));
- 	return 0;
+ #endif
+diff --git a/sound/arm/pxa2xx-ac97-lib.c b/sound/arm/pxa2xx-ac97-lib.c
+index 8c79d224f03b..572b73d73762 100644
+--- a/sound/arm/pxa2xx-ac97-lib.c
++++ b/sound/arm/pxa2xx-ac97-lib.c
+@@ -428,6 +428,18 @@ void pxa2xx_ac97_hw_remove(struct platform_device *dev)
  }
+ EXPORT_SYMBOL_GPL(pxa2xx_ac97_hw_remove);
  
- static int hx4700_hp_power(struct snd_soc_dapm_widget *w,
- 			   struct snd_kcontrol *k, int event)
- {
--	gpio_set_value(GPIO92_HX4700_HP_DRIVER, !!SND_SOC_DAPM_EVENT_ON(event));
-+	gpiod_set_value(gpiod_hp_driver, !!SND_SOC_DAPM_EVENT_ON(event));
- 	return 0;
- }
- 
-@@ -162,11 +161,6 @@ static struct snd_soc_card snd_soc_card_hx4700 = {
- 	.fully_routed		= true,
- };
- 
--static struct gpio hx4700_audio_gpios[] = {
--	{ GPIO107_HX4700_SPK_nSD, GPIOF_OUT_INIT_HIGH, "SPK_POWER" },
--	{ GPIO92_HX4700_HP_DRIVER, GPIOF_OUT_INIT_LOW, "EP_POWER" },
--};
--
- static int hx4700_audio_probe(struct platform_device *pdev)
- {
- 	int ret;
-@@ -174,26 +168,26 @@ static int hx4700_audio_probe(struct platform_device *pdev)
- 	if (!machine_is_h4700())
- 		return -ENODEV;
- 
--	ret = gpio_request_array(hx4700_audio_gpios,
--				ARRAY_SIZE(hx4700_audio_gpios));
-+	gpiod_hp_driver = devm_gpiod_get(&pdev->dev, "hp-driver", GPIOD_OUT_HIGH);
-+	ret = PTR_ERR_OR_ZERO(gpiod_hp_driver);
-+	if (ret)
-+		return ret;
-+	gpiod_spk_nsd = devm_gpiod_get(&pdev->dev, "spk-nsd", GPIOD_OUT_HIGH);
-+	ret = PTR_ERR_OR_ZERO(gpiod_spk_nsd);
- 	if (ret)
- 		return ret;
- 
-+	hs_jack_gpio.gpiod_dev = &pdev->dev;
- 	snd_soc_card_hx4700.dev = &pdev->dev;
- 	ret = devm_snd_soc_register_card(&pdev->dev, &snd_soc_card_hx4700);
--	if (ret)
--		gpio_free_array(hx4700_audio_gpios,
--				ARRAY_SIZE(hx4700_audio_gpios));
- 
- 	return ret;
- }
- 
- static int hx4700_audio_remove(struct platform_device *pdev)
- {
--	gpio_set_value(GPIO92_HX4700_HP_DRIVER, 0);
--	gpio_set_value(GPIO107_HX4700_SPK_nSD, 0);
--
--	gpio_free_array(hx4700_audio_gpios, ARRAY_SIZE(hx4700_audio_gpios));
-+	gpiod_set_value(gpiod_hp_driver, 0);
-+	gpiod_set_value(gpiod_spk_nsd, 0);
- 	return 0;
- }
- 
++u32 pxa2xx_ac97_read_modr(void)
++{
++	return MODR;
++}
++EXPORT_SYMBOL_GPL(pxa2xx_ac97_read_modr);
++
++u32 pxa2xx_ac97_read_misr(void)
++{
++	return MISR;
++}
++EXPORT_SYMBOL_GPL(pxa2xx_ac97_read_misr);
++
+ MODULE_AUTHOR("Nicolas Pitre");
+ MODULE_DESCRIPTION("Intel/Marvell PXA sound library");
+ MODULE_LICENSE("GPL");
 -- 
 2.29.2
 

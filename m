@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89468C433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99905C433EF
 	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347573AbiDSQsB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:48:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53632 "EHLO
+        id S1354909AbiDSQsC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:48:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54886 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1355054AbiDSQn0 (ORCPT
+        with ESMTP id S1344027AbiDSQpX (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 12:43:26 -0400
+        Tue, 19 Apr 2022 12:45:23 -0400
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4807A2612A;
-        Tue, 19 Apr 2022 09:40:43 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2107F36152;
+        Tue, 19 Apr 2022 09:42:40 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id D63E060B34;
-        Tue, 19 Apr 2022 16:40:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C4F6BC385A5;
-        Tue, 19 Apr 2022 16:40:34 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id A9E7A6145C;
+        Tue, 19 Apr 2022 16:42:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D0C57C385AD;
+        Tue, 19 Apr 2022 16:42:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386442;
-        bh=rF4AqAeeG3pFiw8ba+j1AjJKI0o8rpvYnUVlfmsd5CQ=;
+        s=k20201202; t=1650386559;
+        bh=6qz24JeYkT/szoUulUC11ktMbSMxaia2ZM53W0WWa5k=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=rZcwYWiPc2XajjwXFY6Hgb0z8xaKQouR3mgetcNfOG0jAxjf+wc+NkAqTEieKNj2K
-         hTb4pSkBn4p6/vPrbGHHFSjrFJKYhOj58gtETWj5zjgxOpUV+N5TFkzWHrEi+oCpGA
-         Z7qHH3Z4/Qz1lfbHK13P/9eVzrzGxLoE72yig5fdPb2W9JmcSPG6EbgjwxoLszNbC8
-         JtYVwf2JvVtYboOyzewKz6pEaGgLg3OpWUMntuI+0iqBattNddhmtXKm3DuOkqoKaX
-         6oeCBZj9AZy/bFRn3L+Ral/WFjNSaI6bmC11HJKF0hZPiK+pyR2FGR0p1wVrtmDFDN
-         RN3P/E7CISDfQ==
+        b=OQbcZhU1YyaWiVoymRlCpzVRaDV6+oOUhic1Kg4DXMriEEdQTb3Ol248UgeiguRcV
+         AADXBOzx4zqgQNOk8kqSzTZHT8QIWeMxKyU23zO+RJE2VESVS0XI60vTW/g7muIAwS
+         8PC9xUtDQIiLYabZtjUMpFcY4iEN8SE8ABotebLwqZt2mev8Theryu21oiciT6uNJG
+         jkegeWr772BxLlRDA+zY95CIesNGVFaK7EjAjyLas9VMV8jQ2YcKVPWTYE+Of1svA5
+         xXLxVX0vDq/uA9rastXjDbWACQcopxN6Tk8sAWc6oesLyUD/wEISCwtksws8Opfw6K
+         j1eP3Wy/Abdpw==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -59,10 +59,10 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        alsa-devel@alsa-project.org, stable@vger.kernel.org
-Subject: [PATCH 14/48] ARM: pxa: maybe fix gpio lookup tables
-Date:   Tue, 19 Apr 2022 18:37:36 +0200
-Message-Id: <20220419163810.2118169-15-arnd@kernel.org>
+        alsa-devel@alsa-project.org
+Subject: [PATCH 29/48] Input: wm97xx - switch to using threaded IRQ
+Date:   Tue, 19 Apr 2022 18:37:51 +0200
+Message-Id: <20220419163810.2118169-30-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -72,76 +72,114 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-From inspection I found a couple of GPIO lookups that are
-listed with device "gpio-pxa", but actually have a number
-from a different gpio controller.
+Instead of manually disabling and enabling interrupts and scheduling work
+to access the device, let's use threaded oneshot interrupt handler. It
+simplifies things.
 
-Try to rectify that here, with a guess of what the actual
-device name is.
-
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Cc: stable@vger.kernel.org
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-pxa/cm-x300.c  | 8 ++++----
- arch/arm/mach-pxa/magician.c | 2 +-
- arch/arm/mach-pxa/tosa.c     | 4 ++--
- 3 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/input/touchscreen/wm97xx-core.c | 42 +++++--------------------
+ include/linux/wm97xx.h                  |  1 -
+ 2 files changed, 7 insertions(+), 36 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/cm-x300.c b/arch/arm/mach-pxa/cm-x300.c
-index 09a5264a27c8..01f364a66446 100644
---- a/arch/arm/mach-pxa/cm-x300.c
-+++ b/arch/arm/mach-pxa/cm-x300.c
-@@ -356,13 +356,13 @@ static struct platform_device cm_x300_spi_gpio = {
- static struct gpiod_lookup_table cm_x300_spi_gpiod_table = {
- 	.dev_id         = "spi_gpio",
- 	.table          = {
--		GPIO_LOOKUP("gpio-pxa", GPIO_LCD_SCL,
-+		GPIO_LOOKUP("pca9555.1", GPIO_LCD_SCL - GPIO_LCD_BASE,
- 			    "sck", GPIO_ACTIVE_HIGH),
--		GPIO_LOOKUP("gpio-pxa", GPIO_LCD_DIN,
-+		GPIO_LOOKUP("pca9555.1", GPIO_LCD_DIN - GPIO_LCD_BASE,
- 			    "mosi", GPIO_ACTIVE_HIGH),
--		GPIO_LOOKUP("gpio-pxa", GPIO_LCD_DOUT,
-+		GPIO_LOOKUP("pca9555.1", GPIO_LCD_DOUT - GPIO_LCD_BASE,
- 			    "miso", GPIO_ACTIVE_HIGH),
--		GPIO_LOOKUP("gpio-pxa", GPIO_LCD_CS,
-+		GPIO_LOOKUP("pca9555.1", GPIO_LCD_CS - GPIO_LCD_BASE,
- 			    "cs", GPIO_ACTIVE_HIGH),
- 		{ },
- 	},
-diff --git a/arch/arm/mach-pxa/magician.c b/arch/arm/mach-pxa/magician.c
-index 20ca3e28c7fb..d105deb1e098 100644
---- a/arch/arm/mach-pxa/magician.c
-+++ b/arch/arm/mach-pxa/magician.c
-@@ -681,7 +681,7 @@ static struct platform_device bq24022 = {
- static struct gpiod_lookup_table bq24022_gpiod_table = {
- 	.dev_id = "gpio-regulator",
- 	.table = {
--		GPIO_LOOKUP("gpio-pxa", EGPIO_MAGICIAN_BQ24022_ISET2,
-+		GPIO_LOOKUP("htc-egpio-0", EGPIO_MAGICIAN_BQ24022_ISET2 - MAGICIAN_EGPIO_BASE,
- 			    NULL, GPIO_ACTIVE_HIGH),
- 		GPIO_LOOKUP("gpio-pxa", GPIO30_MAGICIAN_BQ24022_nCHARGE_EN,
- 			    "enable", GPIO_ACTIVE_LOW),
-diff --git a/arch/arm/mach-pxa/tosa.c b/arch/arm/mach-pxa/tosa.c
-index 5af980d77d39..9476ed0f55e9 100644
---- a/arch/arm/mach-pxa/tosa.c
-+++ b/arch/arm/mach-pxa/tosa.c
-@@ -296,9 +296,9 @@ static struct gpiod_lookup_table tosa_mci_gpio_table = {
- 	.table = {
- 		GPIO_LOOKUP("gpio-pxa", TOSA_GPIO_nSD_DETECT,
- 			    "cd", GPIO_ACTIVE_LOW),
--		GPIO_LOOKUP("gpio-pxa", TOSA_GPIO_SD_WP,
-+		GPIO_LOOKUP("sharp-scoop.0", TOSA_GPIO_SD_WP - TOSA_SCOOP_GPIO_BASE,
- 			    "wp", GPIO_ACTIVE_LOW),
--		GPIO_LOOKUP("gpio-pxa", TOSA_GPIO_PWR_ON,
-+		GPIO_LOOKUP("sharp-scoop.0", TOSA_GPIO_PWR_ON - TOSA_SCOOP_GPIO_BASE,
- 			    "power", GPIO_ACTIVE_HIGH),
- 		{ },
- 	},
+diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
+index 1b58611c8084..2757c7768ffe 100644
+--- a/drivers/input/touchscreen/wm97xx-core.c
++++ b/drivers/input/touchscreen/wm97xx-core.c
+@@ -285,11 +285,12 @@ void wm97xx_set_suspend_mode(struct wm97xx *wm, u16 mode)
+ EXPORT_SYMBOL_GPL(wm97xx_set_suspend_mode);
+ 
+ /*
+- * Handle a pen down interrupt.
++ * Codec PENDOWN irq handler
++ *
+  */
+-static void wm97xx_pen_irq_worker(struct work_struct *work)
++static irqreturn_t wm97xx_pen_interrupt(int irq, void *dev_id)
+ {
+-	struct wm97xx *wm = container_of(work, struct wm97xx, pen_event_work);
++	struct wm97xx *wm = dev_id;
+ 	int pen_was_down = wm->pen_is_down;
+ 
+ 	/* do we need to enable the touch panel reader */
+@@ -343,27 +344,6 @@ static void wm97xx_pen_irq_worker(struct work_struct *work)
+ 	if (!wm->pen_is_down && wm->mach_ops->acc_enabled)
+ 		wm->mach_ops->acc_pen_up(wm);
+ 
+-	wm->mach_ops->irq_enable(wm, 1);
+-}
+-
+-/*
+- * Codec PENDOWN irq handler
+- *
+- * We have to disable the codec interrupt in the handler because it
+- * can take up to 1ms to clear the interrupt source. We schedule a task
+- * in a work queue to do the actual interaction with the chip.  The
+- * interrupt is then enabled again in the slow handler when the source
+- * has been cleared.
+- */
+-static irqreturn_t wm97xx_pen_interrupt(int irq, void *dev_id)
+-{
+-	struct wm97xx *wm = dev_id;
+-
+-	if (!work_pending(&wm->pen_event_work)) {
+-		wm->mach_ops->irq_enable(wm, 0);
+-		queue_work(wm->ts_workq, &wm->pen_event_work);
+-	}
+-
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -374,12 +354,9 @@ static int wm97xx_init_pen_irq(struct wm97xx *wm)
+ {
+ 	u16 reg;
+ 
+-	/* If an interrupt is supplied an IRQ enable operation must also be
+-	 * provided. */
+-	BUG_ON(!wm->mach_ops->irq_enable);
+-
+-	if (request_irq(wm->pen_irq, wm97xx_pen_interrupt, IRQF_SHARED,
+-			"wm97xx-pen", wm)) {
++	if (request_threaded_irq(wm->pen_irq, NULL, wm97xx_pen_interrupt,
++				 IRQF_SHARED | IRQF_ONESHOT,
++				 "wm97xx-pen", wm)) {
+ 		dev_err(wm->dev,
+ 			"Failed to register pen down interrupt, polling");
+ 		wm->pen_irq = 0;
+@@ -509,7 +486,6 @@ static int wm97xx_ts_input_open(struct input_dev *idev)
+ 	wm->codec->dig_enable(wm, 1);
+ 
+ 	INIT_DELAYED_WORK(&wm->ts_reader, wm97xx_ts_reader);
+-	INIT_WORK(&wm->pen_event_work, wm97xx_pen_irq_worker);
+ 
+ 	wm->ts_reader_min_interval = HZ >= 100 ? HZ / 100 : 1;
+ 	if (wm->ts_reader_min_interval < 1)
+@@ -560,10 +536,6 @@ static void wm97xx_ts_input_close(struct input_dev *idev)
+ 
+ 	wm->pen_is_down = 0;
+ 
+-	/* Balance out interrupt disables/enables */
+-	if (cancel_work_sync(&wm->pen_event_work))
+-		wm->mach_ops->irq_enable(wm, 1);
+-
+ 	/* ts_reader rearms itself so we need to explicitly stop it
+ 	 * before we destroy the workqueue.
+ 	 */
+diff --git a/include/linux/wm97xx.h b/include/linux/wm97xx.h
+index 462854f4f286..85bd8dd3caea 100644
+--- a/include/linux/wm97xx.h
++++ b/include/linux/wm97xx.h
+@@ -281,7 +281,6 @@ struct wm97xx {
+ 	unsigned long ts_reader_min_interval; /* Minimum interval */
+ 	unsigned int pen_irq;		/* Pen IRQ number in use */
+ 	struct workqueue_struct *ts_workq;
+-	struct work_struct pen_event_work;
+ 	u16 acc_slot;			/* AC97 slot used for acc touch data */
+ 	u16 acc_rate;			/* acc touch data rate */
+ 	unsigned pen_is_down:1;		/* Pen is down */
 -- 
 2.29.2
 

@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC478C352B6
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 333A3C38A04
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355290AbiDSQs6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:48:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54046 "EHLO
+        id S1355295AbiDSQtA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:49:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53402 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237117AbiDSQoF (ORCPT
+        with ESMTP id S242507AbiDSQnM (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 12:44:05 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8291E23BF4;
-        Tue, 19 Apr 2022 09:41:22 -0700 (PDT)
+        Tue, 19 Apr 2022 12:43:12 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 10BD617E23;
+        Tue, 19 Apr 2022 09:40:29 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 2060B61821;
-        Tue, 19 Apr 2022 16:41:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBCD4C385A7;
-        Tue, 19 Apr 2022 16:41:13 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 8B4FDB819DE;
+        Tue, 19 Apr 2022 16:40:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDD0FC385A5;
+        Tue, 19 Apr 2022 16:40:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386481;
-        bh=B/EPqKtpF/X7/qtDP9YwLKtvodaWStDsu3zudJ8kKz8=;
+        s=k20201202; t=1650386426;
+        bh=ptMtOudbQ5loXUIBoTxa9Js2NvWZa4r2mq6O40yUHH0=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=e/RYNgH/mBUlontysDvDDbQEl/w5JkQ9KERIge+TcJ551/XZYLOWdDTGCMdx+YKy7
-         Eo/SvJOdF5wgBq+JPCny5Iz4sfnm67vOL/aV3JDNF+eu3PEHxKh+sOrXkMuKManFEB
-         FvCJgeGTM+6w0HGQJbhRtyvAVvYZhIZUQzpHF2wCtgZokugnVX+Kwy6gFqN6W1IZJt
-         h6Z8zUzZzd2yynsmy/ykvebZNOmvxQfFa0IczJPaH1E/UzhZyrRLjpixBmukOAd097
-         r+a1YGs658YewbGmFKHNY8vaSw30yUPgx99OTD0iJIm65L2L+bhpmbdN90g/nC0hhO
-         aQjZ7EgUWchew==
+        b=sn7fnX8rRkBuqtQMfRkdqeTmIHa3aEVyEQqy3ea6Rcph7o5+q2+oJQtgfayzkGgGD
+         pBrobPc0a288Jt5l21HSNaRfaU6aAdkHaECQNojqoW85epuPmw1VvMwvkSO6N07k/3
+         115Wizs7BJeOANhRCBPtn5ETmJ1DN/7eD9VqdGz01zYvnNHqGUiTr7Xr5IQ32fnJKz
+         73a5FySo1/OXZDPRM/Hg6r35U+vs89tmssHNWG7O1Y8buOzXQepqwD84VLvP022GvN
+         c6H9ZVfE372WNIs8vRZiLFyLD+Hr6zPSL7rCagmKzA+O8wvtPs7NCaSk+bRoY9berF
+         uj9Ak7o458yOA==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -59,11 +59,10 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        alsa-devel@alsa-project.org, Felipe Balbi <balbi@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 19/48] ARM: pxa: lubbock: pass udc irqs as resource
-Date:   Tue, 19 Apr 2022 18:37:41 +0200
-Message-Id: <20220419163810.2118169-20-arnd@kernel.org>
+        alsa-devel@alsa-project.org
+Subject: [PATCH 12/48] ARM: pxa: make addr-map.h header local
+Date:   Tue, 19 Apr 2022 18:37:34 +0200
+Message-Id: <20220419163810.2118169-13-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -75,175 +74,205 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-Lubbock is the only machine that has three IRQs for the UDC.
-These are currently hardcoded in the driver based on a
-machine header file.
+Drivers should not rely on the contents of this file, so
+move it into the platform directory directly.
 
-Change this to use platform device resources as we use for
-the generic IRQ anyway.
+Cc: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: Paul Parsons <lost.distance@yahoo.com>
 
-Cc: Felipe Balbi <balbi@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-usb@vger.kernel.org
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Link: https://lore.kernel.org/lkml/87mudkmx8g.fsf@belgarion.home/
 ---
- arch/arm/mach-pxa/lubbock.c                   | 12 +++++-
- .../arm/mach-pxa/{include/mach => }/lubbock.h |  2 -
- drivers/usb/gadget/udc/pxa25x_udc.c           | 37 ++++++++++---------
- drivers/usb/gadget/udc/pxa25x_udc.h           |  7 +---
- 4 files changed, 32 insertions(+), 26 deletions(-)
- rename arch/arm/mach-pxa/{include/mach => }/lubbock.h (97%)
+ arch/arm/mach-pxa/{include/mach => }/addr-map.h | 0
+ arch/arm/mach-pxa/generic.c                     | 2 +-
+ arch/arm/mach-pxa/hx4700.c                      | 2 +-
+ arch/arm/mach-pxa/lpd270.c                      | 2 +-
+ arch/arm/mach-pxa/magician.c                    | 2 +-
+ arch/arm/mach-pxa/mainstone.c                   | 2 +-
+ arch/arm/mach-pxa/pxa25x.c                      | 2 +-
+ arch/arm/mach-pxa/pxa25x.h                      | 2 +-
+ arch/arm/mach-pxa/pxa27x.c                      | 2 +-
+ arch/arm/mach-pxa/pxa27x.h                      | 2 +-
+ arch/arm/mach-pxa/pxa3xx.c                      | 2 +-
+ arch/arm/mach-pxa/pxa3xx.h                      | 2 +-
+ arch/arm/mach-pxa/trizeps4.h                    | 2 +-
+ arch/arm/mach-pxa/xcep.c                        | 2 +-
+ 14 files changed, 13 insertions(+), 13 deletions(-)
+ rename arch/arm/mach-pxa/{include/mach => }/addr-map.h (100%)
 
-diff --git a/arch/arm/mach-pxa/lubbock.c b/arch/arm/mach-pxa/lubbock.c
-index 46aef93c0615..201f89f49642 100644
---- a/arch/arm/mach-pxa/lubbock.c
-+++ b/arch/arm/mach-pxa/lubbock.c
-@@ -46,7 +46,7 @@
+diff --git a/arch/arm/mach-pxa/include/mach/addr-map.h b/arch/arm/mach-pxa/addr-map.h
+similarity index 100%
+rename from arch/arm/mach-pxa/include/mach/addr-map.h
+rename to arch/arm/mach-pxa/addr-map.h
+diff --git a/arch/arm/mach-pxa/generic.c b/arch/arm/mach-pxa/generic.c
+index 3c3cd90bb9b4..f9083c4f0aea 100644
+--- a/arch/arm/mach-pxa/generic.c
++++ b/arch/arm/mach-pxa/generic.c
+@@ -22,7 +22,7 @@
+ #include <asm/mach/map.h>
+ #include <asm/mach-types.h>
+ 
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/irqs.h>
+ #include <mach/reset.h>
+ #include <mach/smemc.h>
+diff --git a/arch/arm/mach-pxa/hx4700.c b/arch/arm/mach-pxa/hx4700.c
+index 191a6c24fe19..140a44cb2989 100644
+--- a/arch/arm/mach-pxa/hx4700.c
++++ b/arch/arm/mach-pxa/hx4700.c
+@@ -40,7 +40,7 @@
+ #include <asm/mach/arch.h>
+ 
+ #include "pxa27x.h"
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/hx4700.h>
+ #include <linux/platform_data/irda-pxaficp.h>
+ 
+diff --git a/arch/arm/mach-pxa/lpd270.c b/arch/arm/mach-pxa/lpd270.c
+index 7f10b86f85fd..e03436710752 100644
+--- a/arch/arm/mach-pxa/lpd270.c
++++ b/arch/arm/mach-pxa/lpd270.c
+@@ -38,7 +38,7 @@
+ 
+ #include "pxa27x.h"
+ #include "lpd270.h"
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <linux/platform_data/asoc-pxa.h>
+ #include <linux/platform_data/video-pxafb.h>
+ #include <linux/platform_data/mmc-pxamci.h>
+diff --git a/arch/arm/mach-pxa/magician.c b/arch/arm/mach-pxa/magician.c
+index 345a44d15a2c..20ca3e28c7fb 100644
+--- a/arch/arm/mach-pxa/magician.c
++++ b/arch/arm/mach-pxa/magician.c
+@@ -34,7 +34,7 @@
+ #include <asm/system_info.h>
+ 
+ #include "pxa27x.h"
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/magician.h>
+ #include <linux/platform_data/video-pxafb.h>
+ #include <linux/platform_data/mmc-pxamci.h>
+diff --git a/arch/arm/mach-pxa/mainstone.c b/arch/arm/mach-pxa/mainstone.c
+index c8200fc2159d..f0072e63b456 100644
+--- a/arch/arm/mach-pxa/mainstone.c
++++ b/arch/arm/mach-pxa/mainstone.c
+@@ -51,7 +51,7 @@
+ #include <linux/platform_data/irda-pxaficp.h>
+ #include <linux/platform_data/usb-ohci-pxa27x.h>
+ #include <linux/platform_data/keypad-pxa27x.h>
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/smemc.h>
+ 
+ #include "generic.h"
+diff --git a/arch/arm/mach-pxa/pxa25x.c b/arch/arm/mach-pxa/pxa25x.c
+index dfc90b41fba3..8d21c7eef1d2 100644
+--- a/arch/arm/mach-pxa/pxa25x.c
++++ b/arch/arm/mach-pxa/pxa25x.c
+@@ -34,7 +34,7 @@
+ #include "pxa25x.h"
+ #include <mach/reset.h>
+ #include "pm.h"
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/smemc.h>
+ 
+ #include "generic.h"
+diff --git a/arch/arm/mach-pxa/pxa25x.h b/arch/arm/mach-pxa/pxa25x.h
+index 403bc16c2ed2..4699ebf7b486 100644
+--- a/arch/arm/mach-pxa/pxa25x.h
++++ b/arch/arm/mach-pxa/pxa25x.h
+@@ -2,7 +2,7 @@
+ #ifndef __MACH_PXA25x_H
+ #define __MACH_PXA25x_H
+ 
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/pxa2xx-regs.h>
+ #include "mfp-pxa25x.h"
+ #include <mach/irqs.h>
+diff --git a/arch/arm/mach-pxa/pxa27x.c b/arch/arm/mach-pxa/pxa27x.c
+index 38fdd22c4dc5..c36a9784fab8 100644
+--- a/arch/arm/mach-pxa/pxa27x.c
++++ b/arch/arm/mach-pxa/pxa27x.c
+@@ -33,7 +33,7 @@
+ #include <mach/reset.h>
+ #include <linux/platform_data/usb-ohci-pxa27x.h>
+ #include "pm.h"
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/smemc.h>
+ 
+ #include "generic.h"
+diff --git a/arch/arm/mach-pxa/pxa27x.h b/arch/arm/mach-pxa/pxa27x.h
+index 6c99090647d2..bf2755561fe5 100644
+--- a/arch/arm/mach-pxa/pxa27x.h
++++ b/arch/arm/mach-pxa/pxa27x.h
+@@ -3,7 +3,7 @@
+ #define __MACH_PXA27x_H
+ 
+ #include <linux/suspend.h>
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/pxa2xx-regs.h>
+ #include "mfp-pxa27x.h"
+ #include <mach/irqs.h>
+diff --git a/arch/arm/mach-pxa/pxa3xx.c b/arch/arm/mach-pxa/pxa3xx.c
+index 7c569fa2a6da..7881888107c7 100644
+--- a/arch/arm/mach-pxa/pxa3xx.c
++++ b/arch/arm/mach-pxa/pxa3xx.c
+@@ -32,7 +32,7 @@
+ #include <mach/reset.h>
+ #include <linux/platform_data/usb-ohci-pxa27x.h>
+ #include "pm.h"
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/smemc.h>
+ #include <mach/irqs.h>
+ 
+diff --git a/arch/arm/mach-pxa/pxa3xx.h b/arch/arm/mach-pxa/pxa3xx.h
+index 22ace053ea25..6b424d328680 100644
+--- a/arch/arm/mach-pxa/pxa3xx.h
++++ b/arch/arm/mach-pxa/pxa3xx.h
+@@ -2,7 +2,7 @@
+ #ifndef __MACH_PXA3XX_H	
+ #define __MACH_PXA3XX_H
+ 
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/pxa3xx-regs.h>
+ #include <mach/irqs.h>
+ 
+diff --git a/arch/arm/mach-pxa/trizeps4.h b/arch/arm/mach-pxa/trizeps4.h
+index 7597b9de11e2..e0f37c0ff06f 100644
+--- a/arch/arm/mach-pxa/trizeps4.h
++++ b/arch/arm/mach-pxa/trizeps4.h
+@@ -11,7 +11,7 @@
+ #ifndef _TRIPEPS4_H_
+ #define _TRIPEPS4_H_
+ 
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
+ 
+ /* physical memory regions */
+diff --git a/arch/arm/mach-pxa/xcep.c b/arch/arm/mach-pxa/xcep.c
+index e6ab428287ae..7389e0199144 100644
+--- a/arch/arm/mach-pxa/xcep.c
++++ b/arch/arm/mach-pxa/xcep.c
+@@ -25,7 +25,7 @@
+ #include <asm/mach/map.h>
  
  #include "pxa25x.h"
- #include <linux/platform_data/asoc-pxa.h>
--#include <mach/lubbock.h>
-+#include "lubbock.h"
- #include "udc.h"
- #include <linux/platform_data/irda-pxaficp.h>
- #include <linux/platform_data/video-pxafb.h>
-@@ -131,6 +131,13 @@ static struct pxa2xx_udc_mach_info udc_info __initdata = {
- 	// no D+ pullup; lubbock can't connect/disconnect in software
- };
+-#include <mach/addr-map.h>
++#include "addr-map.h"
+ #include <mach/smemc.h>
  
-+static struct resource lubbock_udc_resources[] = {
-+	DEFINE_RES_MEM(0x40600000, 0x10000),
-+	DEFINE_RES_IRQ(IRQ_USB),
-+	DEFINE_RES_IRQ(LUBBOCK_USB_IRQ),
-+	DEFINE_RES_IRQ(LUBBOCK_USB_DISC_IRQ),
-+};
-+
- /* GPIOs for SA1111 PCMCIA */
- static struct gpiod_lookup_table sa1111_pcmcia_gpio_table = {
- 	.dev_id = "1800",
-@@ -496,6 +503,9 @@ static void __init lubbock_init(void)
- 	lubbock_init_pcmcia();
- 
- 	clk_add_alias("SA1111_CLK", NULL, "GPIO11_CLK", NULL);
-+	/* lubbock has two extra IRQs */
-+	pxa25x_device_udc.resource = lubbock_udc_resources;
-+	pxa25x_device_udc.num_resources = ARRAY_SIZE(lubbock_udc_resources);
- 	pxa_set_udc_info(&udc_info);
- 	pxa_set_fb_info(NULL, &sharp_lm8v31);
- 	pxa_set_mci_info(&lubbock_mci_platform_data);
-diff --git a/arch/arm/mach-pxa/include/mach/lubbock.h b/arch/arm/mach-pxa/lubbock.h
-similarity index 97%
-rename from arch/arm/mach-pxa/include/mach/lubbock.h
-rename to arch/arm/mach-pxa/lubbock.h
-index a3af4a2f9446..8e3ff7d57121 100644
---- a/arch/arm/mach-pxa/include/mach/lubbock.h
-+++ b/arch/arm/mach-pxa/lubbock.h
-@@ -1,7 +1,5 @@
- /* SPDX-License-Identifier: GPL-2.0-only */
- /*
-- *  arch/arm/mach-pxa/include/mach/lubbock.h
-- *
-  *  Author:	Nicolas Pitre
-  *  Created:	Jun 15, 2001
-  *  Copyright:	MontaVista Software Inc.
-diff --git a/drivers/usb/gadget/udc/pxa25x_udc.c b/drivers/usb/gadget/udc/pxa25x_udc.c
-index 6c414c99d01c..c593fc383481 100644
---- a/drivers/usb/gadget/udc/pxa25x_udc.c
-+++ b/drivers/usb/gadget/udc/pxa25x_udc.c
-@@ -44,10 +44,6 @@
- #include <linux/usb/gadget.h>
- #include <linux/usb/otg.h>
- 
--#ifdef CONFIG_ARCH_LUBBOCK
--#include <mach/lubbock.h>
--#endif
--
- #define UDCCR	 0x0000 /* UDC Control Register */
- #define UDC_RES1 0x0004 /* UDC Undocumented - Reserved1 */
- #define UDC_RES2 0x0008 /* UDC Undocumented - Reserved2 */
-@@ -1578,18 +1574,15 @@ lubbock_vbus_irq(int irq, void *_dev)
- 	int			vbus;
- 
- 	dev->stats.irqs++;
--	switch (irq) {
--	case LUBBOCK_USB_IRQ:
-+	if (irq == dev->usb_irq) {
- 		vbus = 1;
--		disable_irq(LUBBOCK_USB_IRQ);
--		enable_irq(LUBBOCK_USB_DISC_IRQ);
--		break;
--	case LUBBOCK_USB_DISC_IRQ:
-+		disable_irq(dev->usb_irq);
-+		enable_irq(dev->usb_disc_irq);
-+	} else if (irq == dev->usb_disc_irq) {
- 		vbus = 0;
--		disable_irq(LUBBOCK_USB_DISC_IRQ);
--		enable_irq(LUBBOCK_USB_IRQ);
--		break;
--	default:
-+		disable_irq(dev->usb_disc_irq);
-+		enable_irq(dev->usb_irq);
-+	} else {
- 		return IRQ_NONE;
- 	}
- 
-@@ -2422,20 +2415,28 @@ static int pxa25x_udc_probe(struct platform_device *pdev)
- 
- #ifdef CONFIG_ARCH_LUBBOCK
- 	if (machine_is_lubbock()) {
--		retval = devm_request_irq(&pdev->dev, LUBBOCK_USB_DISC_IRQ,
-+		dev->usb_irq = platform_get_irq(pdev, 1);
-+		if (dev->usb_irq < 0)
-+			return dev->usb_irq;
-+
-+		dev->usb_disc_irq = platform_get_irq(pdev, 2);
-+		if (dev->usb_disc_irq < 0)
-+			return dev->usb_disc_irq;
-+
-+		retval = devm_request_irq(&pdev->dev, dev->usb_disc_irq,
- 					  lubbock_vbus_irq, 0, driver_name,
- 					  dev);
- 		if (retval != 0) {
- 			pr_err("%s: can't get irq %i, err %d\n",
--				driver_name, LUBBOCK_USB_DISC_IRQ, retval);
-+				driver_name, dev->usb_disc_irq, retval);
- 			goto err;
- 		}
--		retval = devm_request_irq(&pdev->dev, LUBBOCK_USB_IRQ,
-+		retval = devm_request_irq(&pdev->dev, dev->usb_irq,
- 					  lubbock_vbus_irq, 0, driver_name,
- 					  dev);
- 		if (retval != 0) {
- 			pr_err("%s: can't get irq %i, err %d\n",
--				driver_name, LUBBOCK_USB_IRQ, retval);
-+				driver_name, dev->usb_irq, retval);
- 			goto err;
- 		}
- 	} else
-diff --git a/drivers/usb/gadget/udc/pxa25x_udc.h b/drivers/usb/gadget/udc/pxa25x_udc.h
-index aa4b68fd9fc0..6ab6047edc83 100644
---- a/drivers/usb/gadget/udc/pxa25x_udc.h
-+++ b/drivers/usb/gadget/udc/pxa25x_udc.h
-@@ -117,16 +117,13 @@ struct pxa25x_udc {
- 	u64					dma_mask;
- 	struct pxa25x_ep			ep [PXA_UDC_NUM_ENDPOINTS];
- 	void __iomem				*regs;
-+	int					usb_irq;
-+	int					usb_disc_irq;
- };
- #define to_pxa25x(g)	(container_of((g), struct pxa25x_udc, gadget))
- 
- /*-------------------------------------------------------------------------*/
- 
--#ifdef CONFIG_ARCH_LUBBOCK
--#include <mach/lubbock.h>
--/* lubbock can also report usb connect/disconnect irqs */
--#endif
--
- static struct pxa25x_udc *the_controller;
- 
- /*-------------------------------------------------------------------------*/
+ #include "generic.h"
 -- 
 2.29.2
 

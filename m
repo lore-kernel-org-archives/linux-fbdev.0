@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99905C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C391C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354909AbiDSQsC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:48:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54886 "EHLO
+        id S1354957AbiDSQsE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:48:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55058 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344027AbiDSQpX (ORCPT
+        with ESMTP id S1350141AbiDSQpj (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 12:45:23 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2107F36152;
-        Tue, 19 Apr 2022 09:42:40 -0700 (PDT)
+        Tue, 19 Apr 2022 12:45:39 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C924F36E26;
+        Tue, 19 Apr 2022 09:42:55 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id A9E7A6145C;
-        Tue, 19 Apr 2022 16:42:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D0C57C385AD;
-        Tue, 19 Apr 2022 16:42:31 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 63FC761874;
+        Tue, 19 Apr 2022 16:42:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 80884C385AC;
+        Tue, 19 Apr 2022 16:42:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386559;
-        bh=6qz24JeYkT/szoUulUC11ktMbSMxaia2ZM53W0WWa5k=;
+        s=k20201202; t=1650386574;
+        bh=RVE6EmI/XNsvZr+sz6SY+1PqohGEsq3I0n4zlwh58+w=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=OQbcZhU1YyaWiVoymRlCpzVRaDV6+oOUhic1Kg4DXMriEEdQTb3Ol248UgeiguRcV
-         AADXBOzx4zqgQNOk8kqSzTZHT8QIWeMxKyU23zO+RJE2VESVS0XI60vTW/g7muIAwS
-         8PC9xUtDQIiLYabZtjUMpFcY4iEN8SE8ABotebLwqZt2mev8Theryu21oiciT6uNJG
-         jkegeWr772BxLlRDA+zY95CIesNGVFaK7EjAjyLas9VMV8jQ2YcKVPWTYE+Of1svA5
-         xXLxVX0vDq/uA9rastXjDbWACQcopxN6Tk8sAWc6oesLyUD/wEISCwtksws8Opfw6K
-         j1eP3Wy/Abdpw==
+        b=dHkbZ59jO4tpFys0DP7olW8IY7ZH5CGyEM3n2P2fl7D3JvK9hQ7BKYiNMCkVX0QMO
+         DzwIJv2XuHva+L/KHbieQhFRPKov89shvDnwcRIqSGqfBDAYykBmRV+5xMRQwCndOp
+         sHEX5civiLh3GC6mOa9LkgRIlBFjYRIyGRh7lIfTZoJ/GNwulWi9NOLR6NJJ2N2jTC
+         fWVoQDYVTClTgFIbtWF4Aw1YdDz3Dn9HqY5Kktz5XtwGO57L+cplp1HmwGjhzgiXge
+         HL9aNnhck3V9UwzUA23nrnbbVePDqvxauzNlGoRmQeEK/cTZnnxkove2t2MWjx50A7
+         aeTu+UERvoByg==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -60,9 +60,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
         alsa-devel@alsa-project.org
-Subject: [PATCH 29/48] Input: wm97xx - switch to using threaded IRQ
-Date:   Tue, 19 Apr 2022 18:37:51 +0200
-Message-Id: <20220419163810.2118169-30-arnd@kernel.org>
+Subject: [PATCH 31/48] ASoC: pxa: use pdev resource for FIFO regs
+Date:   Tue, 19 Apr 2022 18:37:53 +0200
+Message-Id: <20220419163810.2118169-32-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -72,114 +72,100 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
 
-Instead of manually disabling and enabling interrupts and scheduling work
-to access the device, let's use threaded oneshot interrupt handler. It
-simplifies things.
+The driver currently takes the hardwired FIFO address from
+a header file that we want to eliminate. Change it to use
+the mmio resource instead and stop including the here.
 
-Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Acked-by: Mark Brown <broonie@kernel.org>
+Cc: alsa-devel@alsa-project.org
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/input/touchscreen/wm97xx-core.c | 42 +++++--------------------
- include/linux/wm97xx.h                  |  1 -
- 2 files changed, 7 insertions(+), 36 deletions(-)
+ sound/soc/pxa/pxa2xx-ac97.c | 22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
-index 1b58611c8084..2757c7768ffe 100644
---- a/drivers/input/touchscreen/wm97xx-core.c
-+++ b/drivers/input/touchscreen/wm97xx-core.c
-@@ -285,11 +285,12 @@ void wm97xx_set_suspend_mode(struct wm97xx *wm, u16 mode)
- EXPORT_SYMBOL_GPL(wm97xx_set_suspend_mode);
+diff --git a/sound/soc/pxa/pxa2xx-ac97.c b/sound/soc/pxa/pxa2xx-ac97.c
+index 9443c1390d2f..809ea34736ed 100644
+--- a/sound/soc/pxa/pxa2xx-ac97.c
++++ b/sound/soc/pxa/pxa2xx-ac97.c
+@@ -21,10 +21,12 @@
+ #include <sound/pxa2xx-lib.h>
+ #include <sound/dmaengine_pcm.h>
  
- /*
-- * Handle a pen down interrupt.
-+ * Codec PENDOWN irq handler
-+ *
-  */
--static void wm97xx_pen_irq_worker(struct work_struct *work)
-+static irqreturn_t wm97xx_pen_interrupt(int irq, void *dev_id)
+-#include <mach/pxa-regs.h>
+-#include <mach/regs-ac97.h>
+ #include <linux/platform_data/asoc-pxa.h>
+ 
++#define PCDR	0x0040  /* PCM FIFO Data Register */
++#define MODR	0x0140  /* Modem FIFO Data Register */
++#define MCDR	0x0060  /* Mic-in FIFO Data Register */
++
+ static void pxa2xx_ac97_warm_reset(struct ac97_controller *adrv)
  {
--	struct wm97xx *wm = container_of(work, struct wm97xx, pen_event_work);
-+	struct wm97xx *wm = dev_id;
- 	int pen_was_down = wm->pen_is_down;
+ 	pxa2xx_ac97_try_warm_reset();
+@@ -59,35 +61,30 @@ static struct ac97_controller_ops pxa2xx_ac97_ops = {
+ };
  
- 	/* do we need to enable the touch panel reader */
-@@ -343,27 +344,6 @@ static void wm97xx_pen_irq_worker(struct work_struct *work)
- 	if (!wm->pen_is_down && wm->mach_ops->acc_enabled)
- 		wm->mach_ops->acc_pen_up(wm);
+ static struct snd_dmaengine_dai_dma_data pxa2xx_ac97_pcm_stereo_in = {
+-	.addr		= __PREG(PCDR),
+ 	.addr_width	= DMA_SLAVE_BUSWIDTH_4_BYTES,
+ 	.chan_name	= "pcm_pcm_stereo_in",
+ 	.maxburst	= 32,
+ };
  
--	wm->mach_ops->irq_enable(wm, 1);
--}
--
--/*
-- * Codec PENDOWN irq handler
-- *
-- * We have to disable the codec interrupt in the handler because it
-- * can take up to 1ms to clear the interrupt source. We schedule a task
-- * in a work queue to do the actual interaction with the chip.  The
-- * interrupt is then enabled again in the slow handler when the source
-- * has been cleared.
-- */
--static irqreturn_t wm97xx_pen_interrupt(int irq, void *dev_id)
--{
--	struct wm97xx *wm = dev_id;
--
--	if (!work_pending(&wm->pen_event_work)) {
--		wm->mach_ops->irq_enable(wm, 0);
--		queue_work(wm->ts_workq, &wm->pen_event_work);
--	}
--
- 	return IRQ_HANDLED;
- }
+ static struct snd_dmaengine_dai_dma_data pxa2xx_ac97_pcm_stereo_out = {
+-	.addr		= __PREG(PCDR),
+ 	.addr_width	= DMA_SLAVE_BUSWIDTH_4_BYTES,
+ 	.chan_name	= "pcm_pcm_stereo_out",
+ 	.maxburst	= 32,
+ };
  
-@@ -374,12 +354,9 @@ static int wm97xx_init_pen_irq(struct wm97xx *wm)
- {
- 	u16 reg;
+ static struct snd_dmaengine_dai_dma_data pxa2xx_ac97_pcm_aux_mono_out = {
+-	.addr		= __PREG(MODR),
+ 	.addr_width	= DMA_SLAVE_BUSWIDTH_2_BYTES,
+ 	.chan_name	= "pcm_aux_mono_out",
+ 	.maxburst	= 16,
+ };
  
--	/* If an interrupt is supplied an IRQ enable operation must also be
--	 * provided. */
--	BUG_ON(!wm->mach_ops->irq_enable);
--
--	if (request_irq(wm->pen_irq, wm97xx_pen_interrupt, IRQF_SHARED,
--			"wm97xx-pen", wm)) {
-+	if (request_threaded_irq(wm->pen_irq, NULL, wm97xx_pen_interrupt,
-+				 IRQF_SHARED | IRQF_ONESHOT,
-+				 "wm97xx-pen", wm)) {
- 		dev_err(wm->dev,
- 			"Failed to register pen down interrupt, polling");
- 		wm->pen_irq = 0;
-@@ -509,7 +486,6 @@ static int wm97xx_ts_input_open(struct input_dev *idev)
- 	wm->codec->dig_enable(wm, 1);
+ static struct snd_dmaengine_dai_dma_data pxa2xx_ac97_pcm_aux_mono_in = {
+-	.addr		= __PREG(MODR),
+ 	.addr_width	= DMA_SLAVE_BUSWIDTH_2_BYTES,
+ 	.chan_name	= "pcm_aux_mono_in",
+ 	.maxburst	= 16,
+ };
  
- 	INIT_DELAYED_WORK(&wm->ts_reader, wm97xx_ts_reader);
--	INIT_WORK(&wm->pen_event_work, wm97xx_pen_irq_worker);
+ static struct snd_dmaengine_dai_dma_data pxa2xx_ac97_pcm_mic_mono_in = {
+-	.addr		= __PREG(MCDR),
+ 	.addr_width	= DMA_SLAVE_BUSWIDTH_2_BYTES,
+ 	.chan_name	= "pcm_aux_mic_mono",
+ 	.maxburst	= 16,
+@@ -226,6 +223,7 @@ static int pxa2xx_ac97_dev_probe(struct platform_device *pdev)
+ 	int ret;
+ 	struct ac97_controller *ctrl;
+ 	pxa2xx_audio_ops_t *pdata = pdev->dev.platform_data;
++	struct resource *regs;
+ 	void **codecs_pdata;
  
- 	wm->ts_reader_min_interval = HZ >= 100 ? HZ / 100 : 1;
- 	if (wm->ts_reader_min_interval < 1)
-@@ -560,10 +536,6 @@ static void wm97xx_ts_input_close(struct input_dev *idev)
+ 	if (pdev->id != -1) {
+@@ -233,6 +231,16 @@ static int pxa2xx_ac97_dev_probe(struct platform_device *pdev)
+ 		return -ENXIO;
+ 	}
  
- 	wm->pen_is_down = 0;
- 
--	/* Balance out interrupt disables/enables */
--	if (cancel_work_sync(&wm->pen_event_work))
--		wm->mach_ops->irq_enable(wm, 1);
--
- 	/* ts_reader rearms itself so we need to explicitly stop it
- 	 * before we destroy the workqueue.
- 	 */
-diff --git a/include/linux/wm97xx.h b/include/linux/wm97xx.h
-index 462854f4f286..85bd8dd3caea 100644
---- a/include/linux/wm97xx.h
-+++ b/include/linux/wm97xx.h
-@@ -281,7 +281,6 @@ struct wm97xx {
- 	unsigned long ts_reader_min_interval; /* Minimum interval */
- 	unsigned int pen_irq;		/* Pen IRQ number in use */
- 	struct workqueue_struct *ts_workq;
--	struct work_struct pen_event_work;
- 	u16 acc_slot;			/* AC97 slot used for acc touch data */
- 	u16 acc_rate;			/* acc touch data rate */
- 	unsigned pen_is_down:1;		/* Pen is down */
++	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!regs)
++		return -ENXIO;
++
++	pxa2xx_ac97_pcm_stereo_in.addr = regs->start + PCDR;
++	pxa2xx_ac97_pcm_stereo_out.addr = regs->start + PCDR;
++	pxa2xx_ac97_pcm_aux_mono_out.addr = regs->start + MODR;
++	pxa2xx_ac97_pcm_aux_mono_in.addr = regs->start + MODR;
++	pxa2xx_ac97_pcm_mic_mono_in.addr = regs->start + MCDR;
++
+ 	ret = pxa2xx_ac97_hw_probe(pdev);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "PXA2xx AC97 hw probe error (%d)\n", ret);
 -- 
 2.29.2
 

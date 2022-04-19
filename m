@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50F2BC433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01EB6C43219
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:45:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355066AbiDSQsT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:48:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51340 "EHLO
+        id S1355114AbiDSQsU (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:48:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53524 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354886AbiDSQmY (ORCPT
+        with ESMTP id S1354823AbiDSQnf (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 12:42:24 -0400
+        Tue, 19 Apr 2022 12:43:35 -0400
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B8D415FDD;
-        Tue, 19 Apr 2022 09:39:41 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BECA8286FB;
+        Tue, 19 Apr 2022 09:40:52 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 0D7A3B81BEB;
-        Tue, 19 Apr 2022 16:39:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 50CD1C385AF;
-        Tue, 19 Apr 2022 16:39:31 +0000 (UTC)
+        by ams.source.kernel.org (Postfix) with ESMTPS id 646A7B81BB5;
+        Tue, 19 Apr 2022 16:40:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8675C385AD;
+        Tue, 19 Apr 2022 16:40:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386378;
-        bh=7xEnZ0JSPWZhTH940v/NcGNAbOyRIyfBWQe+0s0khHM=;
+        s=k20201202; t=1650386450;
+        bh=jhDfr1ZWF3PO87dsTFnhjEgY7CrgFIhStoxQAjgbO8c=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=U2+iU6c8bjeJ3b4/hWR8738LXyw2qX/PeoFQkQee06q/vC7ddu3A5paCnfw9cViZ0
-         1fBHsL7duftcUL7G4nuM2IRlQk2KY6lsgVtQuDj/pHPyjLxqHD/8dTXiqD3xm3lzOw
-         3zqMMyS3sa9kuU55H0WPkrepH99Qln75vsXp46325cju4AxH9JOASF64ejSwaYDiQW
-         XK4cjQPK/vvSqzAbE/RPMy1oHrXG/vxp89TInVKBQwrtCc6W5mnrs/h8bNfSFxEhEX
-         cWCDK6zl1DWuudpeHuSJIn2jTIsuGmr5kz5m3ceIgi2uQGIuHn5uclCDYzNllRUsoG
-         VX9+70vTRthWw==
+        b=IQZbCphc2aVG/7nQPc8i6SmaXQBHDLcd8lu8VCmzfuxTE9zQ1fttSmG7EuqkoEKfV
+         +AijdqGUGVaVV7Gc6JQtpvmfbM8oJLiqSVhH1EBaliC1N03xEc1T1smfyTfNlPQ+ci
+         g7D2ubLO4DZSZbQ1S7mLLZAjhkr/Lf9nzpyNW7rUgW2JoDBYVacKhRiIFK/VFk/Xdk
+         UDw/LuEvBj9xe6IYc/bXh3fl9uuuA9b3Lcl7FHH7ZpoOjUIFEYceuWcUa/cIuAsEha
+         DxLdKbU1RVdss4xqHuQUN0IBiEAqCfNSmrZdnpLyeTBHr4KtQrWshWX4LLED0dDmoN
+         GxgomaIMHhKEQ==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -59,11 +59,10 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        alsa-devel@alsa-project.org,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 06/48] ARM: pxa: stop using mach/bitfield.h
-Date:   Tue, 19 Apr 2022 18:37:28 +0200
-Message-Id: <20220419163810.2118169-7-arnd@kernel.org>
+        alsa-devel@alsa-project.org
+Subject: [PATCH 15/48] ARM: pxa: tosa: use gpio descriptor for audio
+Date:   Tue, 19 Apr 2022 18:37:37 +0200
+Message-Id: <20220419163810.2118169-16-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -75,82 +74,115 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-There are two identical copies of mach/bitfield.h, one for
-mach-sa1100 and one for mach-pxa. The pxafb driver only
-makes use of two macros, which can be trivially open-coded
-in the header.
+The audio driver should not use a hardwired gpio number
+from the header. Change it to use a lookup table.
 
-Cc: dri-devel@lists.freedesktop.org
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Acked-by: Mark Brown <broonie@kernel.org>
 Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: alsa-devel@alsa-project.org
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-pxa/idp.c                   | 1 -
- arch/arm/mach-pxa/include/mach/regs-lcd.h | 5 +++--
- arch/arm/mach-pxa/regs-u2d.h              | 2 --
- drivers/video/fbdev/pxafb.c               | 1 -
- 4 files changed, 3 insertions(+), 6 deletions(-)
+ arch/arm/mach-pxa/tosa.c | 12 ++++++++++++
+ sound/soc/pxa/tosa.c     | 16 +++++++---------
+ 2 files changed, 19 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/idp.c b/arch/arm/mach-pxa/idp.c
-index 57c0511472bc..525d01ddfbbb 100644
---- a/arch/arm/mach-pxa/idp.c
-+++ b/arch/arm/mach-pxa/idp.c
-@@ -30,7 +30,6 @@
- #include "pxa25x.h"
- #include "idp.h"
- #include <linux/platform_data/video-pxafb.h>
--#include <mach/bitfield.h>
- #include <linux/platform_data/mmc-pxamci.h>
- #include <linux/smc91x.h>
+diff --git a/arch/arm/mach-pxa/tosa.c b/arch/arm/mach-pxa/tosa.c
+index 9476ed0f55e9..5a16a025192c 100644
+--- a/arch/arm/mach-pxa/tosa.c
++++ b/arch/arm/mach-pxa/tosa.c
+@@ -887,6 +887,17 @@ static struct platform_device wm9712_device = {
+ 	.id	= -1,
+ };
  
-diff --git a/arch/arm/mach-pxa/include/mach/regs-lcd.h b/arch/arm/mach-pxa/include/mach/regs-lcd.h
-index e2b6e3d1f625..6a434675f84a 100644
---- a/arch/arm/mach-pxa/include/mach/regs-lcd.h
-+++ b/arch/arm/mach-pxa/include/mach/regs-lcd.h
-@@ -2,8 +2,6 @@
- #ifndef __ASM_ARCH_REGS_LCD_H
- #define __ASM_ARCH_REGS_LCD_H
- 
--#include <mach/bitfield.h>
--
- /*
-  * LCD Controller Registers and Bits Definitions
-  */
-@@ -86,6 +84,9 @@
- #define LCCR0_OUC	(1 << 25)	/* Overlay Underlay control bit */
- #define LCCR0_LDDALT	(1 << 26)	/* LDD alternate mapping control */
- 
-+#define Fld(Size, Shft)	(((Size) << 16) + (Shft))
-+#define FShft(Field)	((Field) & 0x0000FFFF)
++static struct gpiod_lookup_table tosa_audio_gpio_table = {
++	.dev_id = "tosa-audio",
++	.table = {
++		GPIO_LOOKUP("tc6393xb",
++			    TOSA_GPIO_L_MUTE - TOSA_TC6393XB_GPIO_BASE,
++			    "l-mute", GPIO_ACTIVE_HIGH),
++		{ },
++	},
++};
 +
- #define LCCR1_PPL	Fld (10, 0)	/* Pixels Per Line - 1 */
- #define LCCR1_DisWdth(Pixel)	(((Pixel) - 1) << FShft (LCCR1_PPL))
++
+ static struct platform_device tosa_audio_device = {
+ 	.name	= "tosa-audio",
+ 	.id	= -1,
+@@ -944,6 +955,7 @@ static void __init tosa_init(void)
+ 	PMCR = 0x01;
  
-diff --git a/arch/arm/mach-pxa/regs-u2d.h b/arch/arm/mach-pxa/regs-u2d.h
-index fe4c80ad87ec..ab517ba62c9a 100644
---- a/arch/arm/mach-pxa/regs-u2d.h
-+++ b/arch/arm/mach-pxa/regs-u2d.h
-@@ -2,8 +2,6 @@
- #ifndef __ASM_ARCH_PXA3xx_U2D_H
- #define __ASM_ARCH_PXA3xx_U2D_H
+ 	gpiod_add_lookup_table(&tosa_mci_gpio_table);
++	gpiod_add_lookup_table(&tosa_audio_gpio_table);
+ 	pxa_set_mci_info(&tosa_mci_platform_data);
+ 	pxa_set_ficp_info(&tosa_ficp_platform_data);
+ 	pxa_set_i2c_info(NULL);
+diff --git a/sound/soc/pxa/tosa.c b/sound/soc/pxa/tosa.c
+index 06226f9b863e..157e6bcacffd 100644
+--- a/sound/soc/pxa/tosa.c
++++ b/sound/soc/pxa/tosa.c
+@@ -16,14 +16,13 @@
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/device.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
  
--#include <mach/bitfield.h>
--
- /*
-  * USB2 device controller registers and bits definitions
-  */
-diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-index e3d1a184d2be..edf080f64a8c 100644
---- a/drivers/video/fbdev/pxafb.c
-+++ b/drivers/video/fbdev/pxafb.c
-@@ -64,7 +64,6 @@
- #include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/div64.h>
--#include <mach/bitfield.h>
- #include <linux/platform_data/video-pxafb.h>
+ #include <sound/core.h>
+ #include <sound/pcm.h>
+ #include <sound/soc.h>
  
- /*
+ #include <asm/mach-types.h>
+-#include <mach/tosa.h>
+ #include <linux/platform_data/asoc-pxa.h>
+ 
+ #define TOSA_HP        0
+@@ -35,6 +34,7 @@
+ 
+ static int tosa_jack_func;
+ static int tosa_spk_func;
++static struct gpio_desc *l_mute_gpio;
+ 
+ static void tosa_ext_control(struct snd_soc_dapm_context *dapm)
+ {
+@@ -128,7 +128,7 @@ static int tosa_set_spk(struct snd_kcontrol *kcontrol,
+ static int tosa_hp_event(struct snd_soc_dapm_widget *w,
+ 	struct snd_kcontrol *k, int event)
+ {
+-	gpio_set_value(TOSA_GPIO_L_MUTE, SND_SOC_DAPM_EVENT_ON(event) ? 1 : 0);
++	gpiod_set_value(l_mute_gpio, SND_SOC_DAPM_EVENT_ON(event) ? 1 : 0);
+ 	return 0;
+ }
+ 
+@@ -222,25 +222,23 @@ static int tosa_probe(struct platform_device *pdev)
+ 	struct snd_soc_card *card = &tosa;
+ 	int ret;
+ 
+-	ret = gpio_request_one(TOSA_GPIO_L_MUTE, GPIOF_OUT_INIT_LOW,
+-			       "Headphone Jack");
++	l_mute_gpio = devm_gpiod_get(&pdev->dev, "l-mute", GPIOD_OUT_LOW);
++	ret = PTR_ERR_OR_ZERO(l_mute_gpio);
+ 	if (ret)
+ 		return ret;
+ 
+ 	card->dev = &pdev->dev;
+ 
+ 	ret = devm_snd_soc_register_card(&pdev->dev, card);
+-	if (ret) {
++	if (ret)
+ 		dev_err(&pdev->dev, "snd_soc_register_card() failed: %d\n",
+ 			ret);
+-		gpio_free(TOSA_GPIO_L_MUTE);
+-	}
++
+ 	return ret;
+ }
+ 
+ static int tosa_remove(struct platform_device *pdev)
+ {
+-	gpio_free(TOSA_GPIO_L_MUTE);
+ 	return 0;
+ }
+ 
 -- 
 2.29.2
 

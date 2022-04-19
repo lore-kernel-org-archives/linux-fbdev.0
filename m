@@ -2,113 +2,231 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CB18C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 19:21:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 783FBC433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 23:55:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1345577AbiDSTYb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 15:24:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41238 "EHLO
+        id S1347760AbiDSX6e (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 19:58:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45258 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239660AbiDSTYb (ORCPT
+        with ESMTP id S230177AbiDSX6d (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 15:24:31 -0400
-Received: from bee.birch.relay.mailchannels.net (bee.birch.relay.mailchannels.net [23.83.209.14])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C54BF1263E
-        for <linux-fbdev@vger.kernel.org>; Tue, 19 Apr 2022 12:21:46 -0700 (PDT)
-X-Sender-Id: dreamhost|x-authsender|ian@linux.cowan.aero
-Received: from relay.mailchannels.net (localhost [127.0.0.1])
-        by relay.mailchannels.net (Postfix) with ESMTP id 68BED2119F;
-        Tue, 19 Apr 2022 19:21:45 +0000 (UTC)
-Received: from pdx1-sub0-mail-a217.dreamhost.com (unknown [127.0.0.6])
-        (Authenticated sender: dreamhost)
-        by relay.mailchannels.net (Postfix) with ESMTPA id DEDDD20F82;
-        Tue, 19 Apr 2022 19:21:44 +0000 (UTC)
-ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1650396105; a=rsa-sha256;
-        cv=none;
-        b=Ir5Hab98+53dg6Hlj7tR19dQNsXY0t9YesuMPKllRtdPolktgsqMGio0Wy/J+UygUNQe9a
-        v7aGjrdB5cKW7r2hzgYsXmtQ9q2k3n5SEth1HWSa03bndvHnUcvauDZ57DFAe9k22knVXM
-        D2ZrF+823oehBvEDrhhFPbo4h+kUI0QeeF3/gA6LfN7p0kgBmdiG/KypThmejWa4UELPkk
-        sQZ78se1e+bX+c4GSMcanYzgyho3FMJSoSBIcfLF5aISjuW4J2iY8rzsfwPoN6ApKO9mGs
-        O+Tov3lgVujB/ae6GOzaJsnTz9MGk40XE7AzQTHqnC+yX/U5cfAkNtX53ji2HA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
- d=mailchannels.net;
-        s=arc-2022; t=1650396105;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding:dkim-signature;
-        bh=sVsng9DLDN55YcF0EyjuXTIIw+v25YZDIwBp8VCD4Kk=;
-        b=thfNFP6QfcS39gEn+LxjtcvNgrvyYZEBDfrhDCFsrdg+12GaBImiZeHy+nTF65tZkO9ole
-        GBK6ROqSvxq+mFdWu+0l00HEIWaod9aYrat+vlZ0yDNM0e0y2MCAyULzPAYW4TrtwnqWV+
-        BNhMx0+kkWc6UBU7em/L1dQIi4invsCwjD+//wGWf+xXIMhnueR3C9B1ShjXxcnTDpoaHu
-        Q2kbpKdvUIwnhuV9FcjnCJsAmkBt7DPseiuH6onqBUfTofrwyhu1XH5YwMqFY2rdtTnutD
-        Zd1xpYDugMJxNTfjrC/yqxTSwHv1rYGMVWBHyokWANIEQkxaHe/RRH5RNnkqCg==
-ARC-Authentication-Results: i=1;
-        rspamd-5fd5798557-4qwrk;
-        auth=pass smtp.auth=dreamhost smtp.mailfrom=ian@linux.cowan.aero
-X-Sender-Id: dreamhost|x-authsender|ian@linux.cowan.aero
-Received: from pdx1-sub0-mail-a217.dreamhost.com (pop.dreamhost.com
- [64.90.62.162])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
-        by 100.107.255.147 (trex/6.7.1);
-        Tue, 19 Apr 2022 19:21:45 +0000
-X-MC-Relay: Neutral
-X-MailChannels-SenderId: dreamhost|x-authsender|ian@linux.cowan.aero
-X-MailChannels-Auth-Id: dreamhost
-X-Chemical-Tangy: 0ad2c9aa2d9bd37c_1650396105193_4083120808
-X-MC-Loop-Signature: 1650396105193:2692126077
-X-MC-Ingress-Time: 1650396105193
-Received: from localhost.localdomain (unknown [69.12.38.97])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: ian@linux.cowan.aero)
-        by pdx1-sub0-mail-a217.dreamhost.com (Postfix) with ESMTPSA id 4KjYZb0vMxz1K3;
-        Tue, 19 Apr 2022 12:21:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.cowan.aero;
-        s=dreamhost; t=1650396103;
-        bh=sVsng9DLDN55YcF0EyjuXTIIw+v25YZDIwBp8VCD4Kk=;
-        h=From:To:Cc:Subject:Date:Content-Transfer-Encoding;
-        b=4k4ye652+roz0yL8ErtX8tPc/VrX59olFJTe8E5ZQ5IkmeAu8zjt0GmQAEJcALJ0w
-         7PZehKS6PJpfhAEtq8O+rTwJLlCIgD/JsdHFDj3cTJq7Dj66WKXZwBkPRMmxrfIrql
-         OWe7+OCXLCDk6/CuNBsD22nU3LR4a+9VPZ3Oz/+d005yp8zk3xsE7LZ2tlh1TzJJhx
-         1jb0Mc8iQdxmOn7GQitem3zNNGqDLSznTQgRJkTgP/PSOFk/dPY13yvFO0ZuwUCDoa
-         xtxAubIox73LDhrMWSY9ieLZ6ns05JxkltzpttjlOoWyJSTdyYQ1ZlcborJ+YfuXdB
-         Rjl3nUqLkL+Ig==
-From:   Ian Cowan <ian@linux.cowan.aero>
-To:     gregkh@linuxfoundation.org
-Cc:     u.kleine-koenig@pengutronix.de, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        ian@linux.cowan.aero
-Subject: [PATCH] Staging: fbtft: Fix style problem in header
-Date:   Tue, 19 Apr 2022 15:21:28 -0400
-Message-Id: <20220419192128.445023-1-ian@linux.cowan.aero>
-X-Mailer: git-send-email 2.32.0
+        Tue, 19 Apr 2022 19:58:33 -0400
+Received: from esa2.hgst.iphmx.com (esa2.hgst.iphmx.com [68.232.143.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 691101D323
+        for <linux-fbdev@vger.kernel.org>; Tue, 19 Apr 2022 16:55:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
+  t=1650412549; x=1681948549;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=KKbVILJHDOZ2N6m0wCdUFAHCkLkQrMH0aZI7ADXChcU=;
+  b=JiYYZepznrycFIyiywMElA0Fod1ejYIb1/pMvYF0BA/mj46PiFs9P/Jf
+   EByCcODzT/bf8KO946FhieK4gwZD5mK/XdFnnlz1POw9/AVqIgYFMIxMg
+   +jdgvCzJsb+YM7vraCaO0+knoOOUlL4BuwhSdwd4I4Ns76gfPhTdgJsLM
+   tmD9ZDpKNXvOcW08FYGGzAkhDnhc/YV1hxwNyERE0wgQIE3NoqefVkv8X
+   EWaXwrBOtwZF9w5bC7XuoHPldqY2bN9/2PKuNbtVmFmII8cZnqNBMEvzL
+   a8uondfcTtfn63xABSYeANmnlFenwXK3XeyU1/0rCf0RMf9XzW8OaqpOn
+   A==;
+X-IronPort-AV: E=Sophos;i="5.90,274,1643644800"; 
+   d="scan'208";a="302502769"
+Received: from h199-255-45-14.hgst.com (HELO uls-op-cesaep01.wdc.com) ([199.255.45.14])
+  by ob1.hgst.iphmx.com with ESMTP; 20 Apr 2022 07:55:48 +0800
+IronPort-SDR: +/2Y68cactt4XIc0kA3tFsQ48Gxgmxs+mWQMxKQwAnQLxNIgZyraVyPsnFZmN+naBybI3oGkQ3
+ zVV6qWo3+dt6PGEs7ssMkuUfP/2cTm3tuLJwdohoHGvR0hLrjhVdl9gtZeiaP6nVohR96/dtUd
+ ql9McSe7MO6ICJVYiw4eT26Gj2oSRdRdgnbrxCecVm51A5vC5sdSotBiNfz1CT0XD3UNRe2LqQ
+ aELlOO2kUPjCgD/P5DX18oyBTSgd/15Z9bZ8CqL1bReVgPRg9rDFUA8TUevtgyTS7wVZS9nOKh
+ WbYTlj0PH5aXf4DaFFHgt+YQ
+Received: from uls-op-cesaip02.wdc.com ([10.248.3.37])
+  by uls-op-cesaep01.wdc.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 19 Apr 2022 16:26:52 -0700
+IronPort-SDR: m8+VpSuCBEgN5YgEvoF4b4KCtr8pZe4X/9cQP+0aA+XdtTynCju+zlKfyF5ZFFSOHoRnDlzmzX
+ lHds+TGLWbndTUvAIMnfNdjFKeIXyj1kOp8Pwz1mGYWicF/xtsCClqRrxaWbdKwZL182mCGe/8
+ o5THI1+FN9kvAn/RIvbOwYspmcAUdpaHWnJ2jq6U3u+wwA0OS1gFOdZ4ku2u8Eri7oEEzcJVAL
+ 2vfpEyHw7bZChGWumuMfhk6VGUgpS7pK32UUJzaYDcZsUxSMpJrvqFwFaTdmK5IMrtGOPTsLRI
+ fCU=
+WDCIronportException: Internal
+Received: from usg-ed-osssrv.wdc.com ([10.3.10.180])
+  by uls-op-cesaip02.wdc.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 19 Apr 2022 16:55:48 -0700
+Received: from usg-ed-osssrv.wdc.com (usg-ed-osssrv.wdc.com [127.0.0.1])
+        by usg-ed-osssrv.wdc.com (Postfix) with ESMTP id 4Kjgfq0fg7z1SVp5
+        for <linux-fbdev@vger.kernel.org>; Tue, 19 Apr 2022 16:55:46 -0700 (PDT)
+Authentication-Results: usg-ed-osssrv.wdc.com (amavisd-new); dkim=pass
+        reason="pass (just generated, assumed good)"
+        header.d=opensource.wdc.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=
+        opensource.wdc.com; h=content-transfer-encoding:content-type
+        :in-reply-to:organization:from:references:to:content-language
+        :subject:user-agent:mime-version:date:message-id; s=dkim; t=
+        1650412546; x=1653004547; bh=KKbVILJHDOZ2N6m0wCdUFAHCkLkQrMH0aZI
+        7ADXChcU=; b=LCqvtKdjRzDf5W/dOuU4+TSqtj4jJ6smpVH8RFQjhPvD0oWKSgK
+        VNbKgZqe7cD95Wa4oWwwzQwFfFjHRTAt35h60/w1of/oOG9jfbrw4iqvuZS7dtTe
+        aZtfiNytQfRTWGOEMs2tAcmlOzwo+vE0kys3+zkyflfi5RxJfbaxotJUsG4D0jJy
+        WojFgUn199a5v964YoPbv5FCMw8NXqS+6upFcwqh5wpiQQtGpdju9BDzMHfoMB6A
+        m60tmCvI2wmQoTXA6bLHrqCEivcB876f24T7gNJPXqdWy6pTqCQua5gzTqx0/f/H
+        kRzjX0Tbt6TjZYydknqyZIUM109PRCFtLhg==
+X-Virus-Scanned: amavisd-new at usg-ed-osssrv.wdc.com
+Received: from usg-ed-osssrv.wdc.com ([127.0.0.1])
+        by usg-ed-osssrv.wdc.com (usg-ed-osssrv.wdc.com [127.0.0.1]) (amavisd-new, port 10026)
+        with ESMTP id 1zGvq9yVATOk for <linux-fbdev@vger.kernel.org>;
+        Tue, 19 Apr 2022 16:55:46 -0700 (PDT)
+Received: from [10.225.163.14] (unknown [10.225.163.14])
+        by usg-ed-osssrv.wdc.com (Postfix) with ESMTPSA id 4Kjgff0k5zz1Rvlx;
+        Tue, 19 Apr 2022 16:55:37 -0700 (PDT)
+Message-ID: <56f889d7-2305-ba7a-42af-9580d8f7df93@opensource.wdc.com>
+Date:   Wed, 20 Apr 2022 08:55:36 +0900
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.0
+Subject: Re: [PATCH 13/48] ARM: pxa: use pdev resource for palmld mmio
+Content-Language: en-US
+To:     Arnd Bergmann <arnd@kernel.org>, robert.jarzmik@free.fr,
+        linux-arm-kernel@lists.infradead.org
+Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
+        Haojian Zhuang <haojian.zhuang@gmail.com>,
+        Marek Vasut <marek.vasut@gmail.com>,
+        Philipp Zabel <philipp.zabel@gmail.com>,
+        Lubomir Rintel <lkundrak@v3.sk>,
+        Paul Parsons <lost.distance@yahoo.com>,
+        Tomas Cech <sleep_walker@suse.com>,
+        Sergey Lapin <slapin@ossfans.org>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Dominik Brodowski <linux@dominikbrodowski.net>,
+        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
+        linux-ide@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-input@vger.kernel.org,
+        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
+        linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        alsa-devel@alsa-project.org, Jens Axboe <axboe@kernel.dk>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+References: <20220419163810.2118169-1-arnd@kernel.org>
+ <20220419163810.2118169-14-arnd@kernel.org>
+From:   Damien Le Moal <damien.lemoal@opensource.wdc.com>
+Organization: Western Digital Research
+In-Reply-To: <20220419163810.2118169-14-arnd@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Removed an unnecessary semicolon at the end of a macro call
+On 4/20/22 01:37, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> The palmld header is almost unused in drivers, the only
+> remaining thing now is the PATA device address, which should
+> really be passed as a resource.
+> 
+> Cc: Jens Axboe <axboe@kernel.dk>
+> Cc: linux-ide@vger.kernel.org
+> Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+> Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  arch/arm/mach-pxa/palmld-pcmcia.c             |  3 ++-
+>  arch/arm/mach-pxa/palmld.c                    | 12 +++++++++---
+>  arch/arm/mach-pxa/{include/mach => }/palmld.h |  2 +-
+>  drivers/ata/pata_palmld.c                     |  3 +--
+>  4 files changed, 13 insertions(+), 7 deletions(-)
+>  rename arch/arm/mach-pxa/{include/mach => }/palmld.h (98%)
+> 
+> diff --git a/arch/arm/mach-pxa/palmld-pcmcia.c b/arch/arm/mach-pxa/palmld-pcmcia.c
+> index 07e0f7438db1..720294a50864 100644
+> --- a/arch/arm/mach-pxa/palmld-pcmcia.c
+> +++ b/arch/arm/mach-pxa/palmld-pcmcia.c
+> @@ -13,9 +13,10 @@
+>  #include <linux/gpio.h>
+>  
+>  #include <asm/mach-types.h>
+> -#include <mach/palmld.h>
+>  #include <pcmcia/soc_common.h>
+>  
+> +#include "palmld.h"
+> +
+>  static struct gpio palmld_pcmcia_gpios[] = {
+>  	{ GPIO_NR_PALMLD_PCMCIA_POWER,	GPIOF_INIT_LOW,	"PCMCIA Power" },
+>  	{ GPIO_NR_PALMLD_PCMCIA_RESET,	GPIOF_INIT_HIGH,"PCMCIA Reset" },
+> diff --git a/arch/arm/mach-pxa/palmld.c b/arch/arm/mach-pxa/palmld.c
+> index d85146957004..d821606ce0b5 100644
+> --- a/arch/arm/mach-pxa/palmld.c
+> +++ b/arch/arm/mach-pxa/palmld.c
+> @@ -29,8 +29,8 @@
+>  #include <asm/mach/map.h>
+>  
+>  #include "pxa27x.h"
+> +#include "palmld.h"
+>  #include <linux/platform_data/asoc-pxa.h>
+> -#include <mach/palmld.h>
+>  #include <linux/platform_data/mmc-pxamci.h>
+>  #include <linux/platform_data/video-pxafb.h>
+>  #include <linux/platform_data/irda-pxaficp.h>
+> @@ -279,9 +279,15 @@ static inline void palmld_leds_init(void) {}
+>   * HDD
+>   ******************************************************************************/
+>  #if defined(CONFIG_PATA_PALMLD) || defined(CONFIG_PATA_PALMLD_MODULE)
+> +static struct resource palmld_ide_resources[] = {
+> +	DEFINE_RES_MEM(PALMLD_IDE_PHYS, 0x1000),
+> +};
+> +
+>  static struct platform_device palmld_ide_device = {
+> -	.name	= "pata_palmld",
+> -	.id	= -1,
+> +	.name		= "pata_palmld",
+> +	.id		= -1,
+> +	.resource	= palmld_ide_resources,
+> +	.num_resources	= ARRAY_SIZE(palmld_ide_resources),
+>  };
+>  
+>  static struct gpiod_lookup_table palmld_ide_gpio_table = {
+> diff --git a/arch/arm/mach-pxa/include/mach/palmld.h b/arch/arm/mach-pxa/palmld.h
+> similarity index 98%
+> rename from arch/arm/mach-pxa/include/mach/palmld.h
+> rename to arch/arm/mach-pxa/palmld.h
+> index 99a6d8b3a1e3..ee3bc15b71a2 100644
+> --- a/arch/arm/mach-pxa/include/mach/palmld.h
+> +++ b/arch/arm/mach-pxa/palmld.h
+> @@ -9,7 +9,7 @@
+>  #ifndef _INCLUDE_PALMLD_H_
+>  #define _INCLUDE_PALMLD_H_
+>  
+> -#include "irqs.h" /* PXA_GPIO_TO_IRQ */
+> +#include <mach/irqs.h> /* PXA_GPIO_TO_IRQ */
+>  
+>  /** HERE ARE GPIOs **/
+>  
+> diff --git a/drivers/ata/pata_palmld.c b/drivers/ata/pata_palmld.c
+> index 2448441571ed..400e65190904 100644
+> --- a/drivers/ata/pata_palmld.c
+> +++ b/drivers/ata/pata_palmld.c
+> @@ -25,7 +25,6 @@
+>  #include <linux/gpio/consumer.h>
+>  
+>  #include <scsi/scsi_host.h>
+> -#include <mach/palmld.h>
+>  
+>  #define DRV_NAME "pata_palmld"
+>  
+> @@ -63,7 +62,7 @@ static int palmld_pata_probe(struct platform_device *pdev)
+>  		return -ENOMEM;
+>  
+>  	/* remap drive's physical memory address */
+> -	mem = devm_ioremap(dev, PALMLD_IDE_PHYS, 0x1000);
+> +	mem = devm_platform_ioremap_resource(pdev, 0);
+>  	if (!mem)
+>  		return -ENOMEM;
+>  
 
-Signed-off-by: Ian Cowan <ian@linux.cowan.aero>
----
- drivers/staging/fbtft/fbtft.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Acked-by: Damien Le Moal <damien.lemoal@opensource.wdc.com>
 
-diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-index 2c2b5f1c1df3..aa66760e1a9c 100644
---- a/drivers/staging/fbtft/fbtft.h
-+++ b/drivers/staging/fbtft/fbtft.h
-@@ -277,7 +277,7 @@ static const struct of_device_id dt_ids[] = {					\
- 	{ .compatible = _compatible },						\
- 	{},									\
- };										\
--MODULE_DEVICE_TABLE(of, dt_ids);
-+MODULE_DEVICE_TABLE(of, dt_ids)
- 
- #define FBTFT_SPI_DRIVER(_name, _compatible, _display, _spi_ids)		\
- 										\
 -- 
-2.32.0
-
+Damien Le Moal
+Western Digital Research

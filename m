@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DF0DC46467
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D171C4167B
 	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 13:41:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352559AbiDSNnX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 09:43:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39934 "EHLO
+        id S1352552AbiDSNnW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 09:43:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37002 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234762AbiDSNnI (ORCPT
+        with ESMTP id S1352553AbiDSNls (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 09:43:08 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C35AE182;
-        Tue, 19 Apr 2022 06:40:25 -0700 (PDT)
+        Tue, 19 Apr 2022 09:41:48 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5C26D381AA;
+        Tue, 19 Apr 2022 06:38:55 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 7A754B81983;
-        Tue, 19 Apr 2022 13:40:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B32FFC385A5;
-        Tue, 19 Apr 2022 13:40:15 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id EE5CF616A7;
+        Tue, 19 Apr 2022 13:38:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F1F3C385B0;
+        Tue, 19 Apr 2022 13:38:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650375623;
-        bh=R5zRvKa0SoyT3N6cs+9ATf3vspiQLolbMLlEiLA/7fA=;
+        s=k20201202; t=1650375534;
+        bh=4iDu1ZR93Hpdk0ePDMtItzf+hxINHA/lI2UqgUNvzAk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=h4qvsRlCqc1+D/Un3T++kg9XOlylFj9tu57mNt8nm00hUNQ6OKBJwfaNIy8CUc5b/
-         qlJ5Qll9E9CFFYZxtIhDJzmK+qDlqq4+ArAd2BBXudLqHYrCpKgbUoCnwsfLaR2pgk
-         Q7EkW4bPFi3bk0l1eRnod+7F8TcxdVYbp1x3X1kd6GHmuGnsuLz3ITS24UVsnNzXdg
-         x/K6BdB+SIi+C9NttQpeR53oMsrljIEQWrLP8CdiwfvAVwJt/CIv2ZT1IB0hwp9ZMU
-         YhjJTR86Ah4hamcr5wDfPSVrUyclrlzsHDyDQ4lgL5SrWli+rzKao8UrzltowcxyNH
-         vWiGzLOvfg/Eg==
+        b=iYu4XDHn5LNc7q3bp0MnU+38E/Ct276pZyBclM70B5U7U15YheXM7tnLSDrpUiUFQ
+         LOdrjAjpzyttsvLOqFC2b7tDcSoaZFMybnxyY5aUJrfJtURup3vbi2iY75ltYnDLuS
+         R0BLoJT+6r95ZIXxT2lNCWCFV7jGVZ7Sde1XjlYMf9LdvnqvV4unQN9PnYwj+Xjx8X
+         7eBiNtO4k2iiNvODCKeMIIYXlu+l9Iz92DSuTWievPEejspI9ZHnElvJr2WOS2dbqw
+         lFRLt6aXKxLOfia2VmyXNyqNDgSTrk89Sgbp424LQiBRKM9tKYyKriV+ZzqFh6k3u5
+         x1pStxY//K6Sg==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     linux-omap@vger.kernel.org, tony@atomide.com, aaro.koskinen@iki.fi,
         jmkrzyszt@gmail.com
@@ -58,9 +58,9 @@ Cc:     Arnd Bergmann <arnd@arndb.de>,
         linux-input@vger.kernel.org, linux-mmc@vger.kernel.org,
         linux-serial@vger.kernel.org, dri-devel@lists.freedesktop.org,
         linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: [PATCH 22/41] ARM: omap1: move plat/dma.c to mach/omap-dma.c
-Date:   Tue, 19 Apr 2022 15:37:04 +0200
-Message-Id: <20220419133723.1394715-23-arnd@kernel.org>
+Subject: [PATCH 10/41] ARM: omap1: move CF chipselect setup to board file
+Date:   Tue, 19 Apr 2022 15:36:52 +0200
+Message-Id: <20220419133723.1394715-11-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419133723.1394715-1-arnd@kernel.org>
 References: <20220419133723.1394715-1-arnd@kernel.org>
@@ -72,48 +72,186 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-Most of the interface functions in plat/dma.c are only used from the
-USB driver, which is practically OMAP1 specific, except for compile
-testing.
-
-The omap_get_plat_info(), omap_request_dma() and omap_free_dma()
-functions are never called on omap2 because of runtime checks.
+There is only one board that uses the omap_cf driver, so
+moving the chipselect configuration there does not lead
+to code duplication but avoids the use of mach/tc.h
+in drivers.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-omap1/Makefile                        | 2 +-
- arch/arm/{plat-omap/dma.c => mach-omap1/omap-dma.c} | 0
- arch/arm/plat-omap/Makefile                         | 2 +-
- 3 files changed, 2 insertions(+), 2 deletions(-)
- rename arch/arm/{plat-omap/dma.c => mach-omap1/omap-dma.c} (100%)
+ arch/arm/mach-omap1/board-osk.c | 38 ++++++++++++++++++++++++++++-----
+ drivers/pcmcia/Kconfig          |  3 ++-
+ drivers/pcmcia/omap_cf.c        | 38 ++++++---------------------------
+ 3 files changed, 42 insertions(+), 37 deletions(-)
 
-diff --git a/arch/arm/mach-omap1/Makefile b/arch/arm/mach-omap1/Makefile
-index 450bbf552b57..0615cb0ba580 100644
---- a/arch/arm/mach-omap1/Makefile
-+++ b/arch/arm/mach-omap1/Makefile
-@@ -5,7 +5,7 @@
+diff --git a/arch/arm/mach-omap1/board-osk.c b/arch/arm/mach-omap1/board-osk.c
+index b627a4351cf0..5dbc8f109aa7 100644
+--- a/arch/arm/mach-omap1/board-osk.c
++++ b/arch/arm/mach-omap1/board-osk.c
+@@ -153,14 +153,14 @@ static struct resource osk5912_cf_resources[] = {
+ 	[0] = {
+ 		.flags	= IORESOURCE_IRQ,
+ 	},
++	[1] = {
++		.flags = IORESOURCE_MEM,
++	},
+ };
  
- # Common support
- obj-y := io.o id.o sram-init.o sram.o time.o irq.o mux.o flash.o \
--	 serial.o devices.o dma.o fb.o
-+	 serial.o devices.o dma.o omap-dma.o fb.o
- obj-y += clock.o clock_data.o opp_data.o reset.o pm_bus.o timer.o
+ static struct platform_device osk5912_cf_device = {
+ 	.name		= "omap_cf",
+ 	.id		= -1,
+-	.dev = {
+-		.platform_data	= (void *) 2 /* CS2 */,
+-	},
+ 	.num_resources	= ARRAY_SIZE(osk5912_cf_resources),
+ 	.resource	= osk5912_cf_resources,
+ };
+@@ -275,13 +275,41 @@ static void __init osk_init_smc91x(void)
+ 	omap_writel(l, EMIFS_CCS(1));
+ }
  
- ifneq ($(CONFIG_SND_SOC_OMAP_MCBSP),)
-diff --git a/arch/arm/plat-omap/dma.c b/arch/arm/mach-omap1/omap-dma.c
-similarity index 100%
-rename from arch/arm/plat-omap/dma.c
-rename to arch/arm/mach-omap1/omap-dma.c
-diff --git a/arch/arm/plat-omap/Makefile b/arch/arm/plat-omap/Makefile
-index 68ccec9de106..5d55295a14ee 100644
---- a/arch/arm/plat-omap/Makefile
-+++ b/arch/arm/plat-omap/Makefile
-@@ -6,4 +6,4 @@
- ccflags-$(CONFIG_ARCH_MULTIPLATFORM) := -I$(srctree)/arch/arm/plat-omap/include
+-static void __init osk_init_cf(void)
++static void __init osk_init_cf(int seg)
+ {
++	struct resource *res = &osk5912_cf_resources[1];
++
+ 	omap_cfg_reg(M7_1610_GPIO62);
+ 	if ((gpio_request(62, "cf_irq")) < 0) {
+ 		printk("Error requesting gpio 62 for CF irq\n");
+ 		return;
+ 	}
++
++	switch (seg) {
++	/* NOTE: CS0 could be configured too ... */
++	case 1:
++		res->start = OMAP_CS1_PHYS;
++		break;
++	case 2:
++		res->start = OMAP_CS2_PHYS;
++		break;
++	case 3:
++		res->start = omap_cs3_phys();
++		break;
++	}
++
++	res->end = res->start + SZ_8K - 1;
++	osk5912_cf_device.dev.platform_data = (void *)(uintptr_t)seg;
++
++	/* NOTE:  better EMIFS setup might support more cards; but the
++	 * TRM only shows how to affect regular flash signals, not their
++	 * CF/PCMCIA variants...
++	 */
++	pr_debug("%s: cs%d, previous ccs %08x acs %08x\n", __func__,
++		seg, omap_readl(EMIFS_CCS(seg)), omap_readl(EMIFS_ACS(seg)));
++	omap_writel(0x0004a1b3, EMIFS_CCS(seg));	/* synch mode 4 etc */
++	omap_writel(0x00000000, EMIFS_ACS(seg));	/* OE hold/setup */
++
+ 	/* the CF I/O IRQ is really active-low */
+ 	irq_set_irq_type(gpio_to_irq(62), IRQ_TYPE_EDGE_FALLING);
+ }
+@@ -580,7 +608,7 @@ static void __init osk_init(void)
+ 	u32 l;
  
- # Common support
--obj-y := sram.o dma.o
-+obj-y := sram.o
+ 	osk_init_smc91x();
+-	osk_init_cf();
++	osk_init_cf(2); /* CS2 */
+ 
+ 	/* Workaround for wrong CS3 (NOR flash) timing
+ 	 * There are some U-Boot versions out there which configure
+diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
+index 2ce261cfff8e..ec977f031bc2 100644
+--- a/drivers/pcmcia/Kconfig
++++ b/drivers/pcmcia/Kconfig
+@@ -246,7 +246,8 @@ config PCMCIA_VRC4171
+ 
+ config OMAP_CF
+ 	tristate "OMAP CompactFlash Controller"
+-	depends on PCMCIA && ARCH_OMAP16XX
++	depends on PCMCIA
++	depends on ARCH_OMAP16XX || (ARM && COMPILE_TEST)
+ 	help
+ 	  Say Y here to support the CompactFlash controller on OMAP.
+ 	  Note that this doesn't support "True IDE" mode.
+diff --git a/drivers/pcmcia/omap_cf.c b/drivers/pcmcia/omap_cf.c
+index f0b2c2d03469..093022ce7d91 100644
+--- a/drivers/pcmcia/omap_cf.c
++++ b/drivers/pcmcia/omap_cf.c
+@@ -16,13 +16,12 @@
+ 
+ #include <pcmcia/ss.h>
+ 
+-#include <mach/hardware.h>
+ #include <asm/io.h>
+ #include <linux/sizes.h>
+ 
+-#include <mach/mux.h>
+-#include <mach/tc.h>
+-
++#include <linux/soc/ti/omap1-io.h>
++#include <linux/soc/ti/omap1-soc.h>
++#include <linux/soc/ti/omap1-mux.h>
+ 
+ /* NOTE:  don't expect this to support many I/O cards.  The 16xx chips have
+  * hard-wired timings to support Compact Flash memory cards; they won't work
+@@ -205,6 +204,7 @@ static int __init omap_cf_probe(struct platform_device *pdev)
+ 	struct omap_cf_socket	*cf;
+ 	int			irq;
+ 	int			status;
++	struct resource		*res;
+ 
+ 	seg = (int) pdev->dev.platform_data;
+ 	if (seg == 0 || seg > 3)
+@@ -215,6 +215,8 @@ static int __init omap_cf_probe(struct platform_device *pdev)
+ 	if (irq < 0)
+ 		return -EINVAL;
+ 
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++
+ 	cf = kzalloc(sizeof *cf, GFP_KERNEL);
+ 	if (!cf)
+ 		return -ENOMEM;
+@@ -230,24 +232,7 @@ static int __init omap_cf_probe(struct platform_device *pdev)
+ 		goto fail0;
+ 	cf->irq = irq;
+ 	cf->socket.pci_irq = irq;
+-
+-	switch (seg) {
+-	/* NOTE: CS0 could be configured too ... */
+-	case 1:
+-		cf->phys_cf = OMAP_CS1_PHYS;
+-		break;
+-	case 2:
+-		cf->phys_cf = OMAP_CS2_PHYS;
+-		break;
+-	case 3:
+-		cf->phys_cf = omap_cs3_phys();
+-		break;
+-	default:
+-		goto  fail1;
+-	}
+-	cf->iomem.start = cf->phys_cf;
+-	cf->iomem.end = cf->iomem.end + SZ_8K - 1;
+-	cf->iomem.flags = IORESOURCE_MEM;
++	cf->phys_cf = res->start;
+ 
+ 	/* pcmcia layer only remaps "real" memory */
+ 	cf->socket.io_offset = (unsigned long)
+@@ -273,15 +258,6 @@ static int __init omap_cf_probe(struct platform_device *pdev)
+ 
+ 	pr_info("%s: cs%d on irq %d\n", driver_name, seg, irq);
+ 
+-	/* NOTE:  better EMIFS setup might support more cards; but the
+-	 * TRM only shows how to affect regular flash signals, not their
+-	 * CF/PCMCIA variants...
+-	 */
+-	pr_debug("%s: cs%d, previous ccs %08x acs %08x\n", driver_name,
+-		seg, omap_readl(EMIFS_CCS(seg)), omap_readl(EMIFS_ACS(seg)));
+-	omap_writel(0x0004a1b3, EMIFS_CCS(seg));	/* synch mode 4 etc */
+-	omap_writel(0x00000000, EMIFS_ACS(seg));	/* OE hold/setup */
+-
+ 	/* CF uses armxor_ck, which is "always" available */
+ 
+ 	pr_debug("%s: sts %04x cfg %04x control %04x %s\n", driver_name,
 -- 
 2.29.2
 

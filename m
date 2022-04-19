@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13E1CC47080
-	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC478C352B6
+	for <linux-fbdev@archiver.kernel.org>; Tue, 19 Apr 2022 16:46:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1353825AbiDSQs7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 19 Apr 2022 12:48:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56062 "EHLO
+        id S1355290AbiDSQs6 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 19 Apr 2022 12:48:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54046 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354759AbiDSQra (ORCPT
+        with ESMTP id S237117AbiDSQoF (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 19 Apr 2022 12:47:30 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A8C69D;
-        Tue, 19 Apr 2022 09:44:46 -0700 (PDT)
+        Tue, 19 Apr 2022 12:44:05 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8291E23BF4;
+        Tue, 19 Apr 2022 09:41:22 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 02B1BB81BB6;
-        Tue, 19 Apr 2022 16:44:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6062FC385A5;
-        Tue, 19 Apr 2022 16:44:36 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 2060B61821;
+        Tue, 19 Apr 2022 16:41:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBCD4C385A7;
+        Tue, 19 Apr 2022 16:41:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650386683;
-        bh=XdueS6o3x8Genbrjo7SphR5bJ8o+YLBkmS/22/Y/tzI=;
+        s=k20201202; t=1650386481;
+        bh=B/EPqKtpF/X7/qtDP9YwLKtvodaWStDsu3zudJ8kKz8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=YXQtUJB7B4bM52daStJxTBrA8/zErvRHpHn2okco8xXiPRjGGTcMxZ34F9ihe2zZF
-         1BoMvocNKdvX/A7Mn4lmcao9QbvEfofhr0515a2QLJ4e/1ti5g/eDZCmDNi5sdZR/I
-         9XNG+Otrayi6yRijGpRrnLzixoTgFiEZlFFL/2ise5K7ONOzh9kv641LscK+chNQJ7
-         Q9EFuzcxnFtDUtDisGrueMKhbPDgR4AstoPr4QwJ7WiTnp9E3XeIFc84uL5FnW7uoT
-         5DjaGzrz2kHiXzQHJSz/k+R25fFOoMSH+WeElYMHF7zCHXx8w3wvu8Yx03jMnZvboF
-         gxYGbk6+OLuAg==
+        b=e/RYNgH/mBUlontysDvDDbQEl/w5JkQ9KERIge+TcJ551/XZYLOWdDTGCMdx+YKy7
+         Eo/SvJOdF5wgBq+JPCny5Iz4sfnm67vOL/aV3JDNF+eu3PEHxKh+sOrXkMuKManFEB
+         FvCJgeGTM+6w0HGQJbhRtyvAVvYZhIZUQzpHF2wCtgZokugnVX+Kwy6gFqN6W1IZJt
+         h6Z8zUzZzd2yynsmy/ykvebZNOmvxQfFa0IczJPaH1E/UzhZyrRLjpixBmukOAd097
+         r+a1YGs658YewbGmFKHNY8vaSw30yUPgx99OTD0iJIm65L2L+bhpmbdN90g/nC0hhO
+         aQjZ7EgUWchew==
 From:   Arnd Bergmann <arnd@kernel.org>
 To:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org
 Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -59,10 +59,11 @@ Cc:     Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
         linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
         linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        alsa-devel@alsa-project.org
-Subject: [PATCH 45/48] ARM: PXA: fix multi-cpu build of xsc3
-Date:   Tue, 19 Apr 2022 18:38:07 +0200
-Message-Id: <20220419163810.2118169-46-arnd@kernel.org>
+        alsa-devel@alsa-project.org, Felipe Balbi <balbi@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 19/48] ARM: pxa: lubbock: pass udc irqs as resource
+Date:   Tue, 19 Apr 2022 18:37:41 +0200
+Message-Id: <20220419163810.2118169-20-arnd@kernel.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 References: <20220419163810.2118169-1-arnd@kernel.org>
@@ -74,38 +75,175 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-On a kernel that includes both ARMv4 and XScale support,
-the copypage function fails to build with invalid
-instructions.
+Lubbock is the only machine that has three IRQs for the UDC.
+These are currently hardcoded in the driver based on a
+machine header file.
 
-Since these are only called on an actual XScale processor,
-annotate the assembly with the correct .arch directive.
+Change this to use platform device resources as we use for
+the generic IRQ anyway.
 
+Cc: Felipe Balbi <balbi@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-usb@vger.kernel.org
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mm/copypage-xsc3.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm/mach-pxa/lubbock.c                   | 12 +++++-
+ .../arm/mach-pxa/{include/mach => }/lubbock.h |  2 -
+ drivers/usb/gadget/udc/pxa25x_udc.c           | 37 ++++++++++---------
+ drivers/usb/gadget/udc/pxa25x_udc.h           |  7 +---
+ 4 files changed, 32 insertions(+), 26 deletions(-)
+ rename arch/arm/mach-pxa/{include/mach => }/lubbock.h (97%)
 
-diff --git a/arch/arm/mm/copypage-xsc3.c b/arch/arm/mm/copypage-xsc3.c
-index 6f0909dda2f9..c86e79677ff9 100644
---- a/arch/arm/mm/copypage-xsc3.c
-+++ b/arch/arm/mm/copypage-xsc3.c
-@@ -29,6 +29,7 @@ static void xsc3_mc_copy_user_page(void *kto, const void *kfrom)
- 	int tmp;
+diff --git a/arch/arm/mach-pxa/lubbock.c b/arch/arm/mach-pxa/lubbock.c
+index 46aef93c0615..201f89f49642 100644
+--- a/arch/arm/mach-pxa/lubbock.c
++++ b/arch/arm/mach-pxa/lubbock.c
+@@ -46,7 +46,7 @@
  
- 	asm volatile ("\
-+.arch xscale					\n\
- 	pld	[%1, #0]			\n\
- 	pld	[%1, #32]			\n\
- 1:	pld	[%1, #64]			\n\
-@@ -80,6 +81,7 @@ void xsc3_mc_clear_user_highpage(struct page *page, unsigned long vaddr)
- {
- 	void *ptr, *kaddr = kmap_atomic(page);
- 	asm volatile ("\
-+.arch xscale					\n\
- 	mov	r1, %2				\n\
- 	mov	r2, #0				\n\
- 	mov	r3, #0				\n\
+ #include "pxa25x.h"
+ #include <linux/platform_data/asoc-pxa.h>
+-#include <mach/lubbock.h>
++#include "lubbock.h"
+ #include "udc.h"
+ #include <linux/platform_data/irda-pxaficp.h>
+ #include <linux/platform_data/video-pxafb.h>
+@@ -131,6 +131,13 @@ static struct pxa2xx_udc_mach_info udc_info __initdata = {
+ 	// no D+ pullup; lubbock can't connect/disconnect in software
+ };
+ 
++static struct resource lubbock_udc_resources[] = {
++	DEFINE_RES_MEM(0x40600000, 0x10000),
++	DEFINE_RES_IRQ(IRQ_USB),
++	DEFINE_RES_IRQ(LUBBOCK_USB_IRQ),
++	DEFINE_RES_IRQ(LUBBOCK_USB_DISC_IRQ),
++};
++
+ /* GPIOs for SA1111 PCMCIA */
+ static struct gpiod_lookup_table sa1111_pcmcia_gpio_table = {
+ 	.dev_id = "1800",
+@@ -496,6 +503,9 @@ static void __init lubbock_init(void)
+ 	lubbock_init_pcmcia();
+ 
+ 	clk_add_alias("SA1111_CLK", NULL, "GPIO11_CLK", NULL);
++	/* lubbock has two extra IRQs */
++	pxa25x_device_udc.resource = lubbock_udc_resources;
++	pxa25x_device_udc.num_resources = ARRAY_SIZE(lubbock_udc_resources);
+ 	pxa_set_udc_info(&udc_info);
+ 	pxa_set_fb_info(NULL, &sharp_lm8v31);
+ 	pxa_set_mci_info(&lubbock_mci_platform_data);
+diff --git a/arch/arm/mach-pxa/include/mach/lubbock.h b/arch/arm/mach-pxa/lubbock.h
+similarity index 97%
+rename from arch/arm/mach-pxa/include/mach/lubbock.h
+rename to arch/arm/mach-pxa/lubbock.h
+index a3af4a2f9446..8e3ff7d57121 100644
+--- a/arch/arm/mach-pxa/include/mach/lubbock.h
++++ b/arch/arm/mach-pxa/lubbock.h
+@@ -1,7 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-only */
+ /*
+- *  arch/arm/mach-pxa/include/mach/lubbock.h
+- *
+  *  Author:	Nicolas Pitre
+  *  Created:	Jun 15, 2001
+  *  Copyright:	MontaVista Software Inc.
+diff --git a/drivers/usb/gadget/udc/pxa25x_udc.c b/drivers/usb/gadget/udc/pxa25x_udc.c
+index 6c414c99d01c..c593fc383481 100644
+--- a/drivers/usb/gadget/udc/pxa25x_udc.c
++++ b/drivers/usb/gadget/udc/pxa25x_udc.c
+@@ -44,10 +44,6 @@
+ #include <linux/usb/gadget.h>
+ #include <linux/usb/otg.h>
+ 
+-#ifdef CONFIG_ARCH_LUBBOCK
+-#include <mach/lubbock.h>
+-#endif
+-
+ #define UDCCR	 0x0000 /* UDC Control Register */
+ #define UDC_RES1 0x0004 /* UDC Undocumented - Reserved1 */
+ #define UDC_RES2 0x0008 /* UDC Undocumented - Reserved2 */
+@@ -1578,18 +1574,15 @@ lubbock_vbus_irq(int irq, void *_dev)
+ 	int			vbus;
+ 
+ 	dev->stats.irqs++;
+-	switch (irq) {
+-	case LUBBOCK_USB_IRQ:
++	if (irq == dev->usb_irq) {
+ 		vbus = 1;
+-		disable_irq(LUBBOCK_USB_IRQ);
+-		enable_irq(LUBBOCK_USB_DISC_IRQ);
+-		break;
+-	case LUBBOCK_USB_DISC_IRQ:
++		disable_irq(dev->usb_irq);
++		enable_irq(dev->usb_disc_irq);
++	} else if (irq == dev->usb_disc_irq) {
+ 		vbus = 0;
+-		disable_irq(LUBBOCK_USB_DISC_IRQ);
+-		enable_irq(LUBBOCK_USB_IRQ);
+-		break;
+-	default:
++		disable_irq(dev->usb_disc_irq);
++		enable_irq(dev->usb_irq);
++	} else {
+ 		return IRQ_NONE;
+ 	}
+ 
+@@ -2422,20 +2415,28 @@ static int pxa25x_udc_probe(struct platform_device *pdev)
+ 
+ #ifdef CONFIG_ARCH_LUBBOCK
+ 	if (machine_is_lubbock()) {
+-		retval = devm_request_irq(&pdev->dev, LUBBOCK_USB_DISC_IRQ,
++		dev->usb_irq = platform_get_irq(pdev, 1);
++		if (dev->usb_irq < 0)
++			return dev->usb_irq;
++
++		dev->usb_disc_irq = platform_get_irq(pdev, 2);
++		if (dev->usb_disc_irq < 0)
++			return dev->usb_disc_irq;
++
++		retval = devm_request_irq(&pdev->dev, dev->usb_disc_irq,
+ 					  lubbock_vbus_irq, 0, driver_name,
+ 					  dev);
+ 		if (retval != 0) {
+ 			pr_err("%s: can't get irq %i, err %d\n",
+-				driver_name, LUBBOCK_USB_DISC_IRQ, retval);
++				driver_name, dev->usb_disc_irq, retval);
+ 			goto err;
+ 		}
+-		retval = devm_request_irq(&pdev->dev, LUBBOCK_USB_IRQ,
++		retval = devm_request_irq(&pdev->dev, dev->usb_irq,
+ 					  lubbock_vbus_irq, 0, driver_name,
+ 					  dev);
+ 		if (retval != 0) {
+ 			pr_err("%s: can't get irq %i, err %d\n",
+-				driver_name, LUBBOCK_USB_IRQ, retval);
++				driver_name, dev->usb_irq, retval);
+ 			goto err;
+ 		}
+ 	} else
+diff --git a/drivers/usb/gadget/udc/pxa25x_udc.h b/drivers/usb/gadget/udc/pxa25x_udc.h
+index aa4b68fd9fc0..6ab6047edc83 100644
+--- a/drivers/usb/gadget/udc/pxa25x_udc.h
++++ b/drivers/usb/gadget/udc/pxa25x_udc.h
+@@ -117,16 +117,13 @@ struct pxa25x_udc {
+ 	u64					dma_mask;
+ 	struct pxa25x_ep			ep [PXA_UDC_NUM_ENDPOINTS];
+ 	void __iomem				*regs;
++	int					usb_irq;
++	int					usb_disc_irq;
+ };
+ #define to_pxa25x(g)	(container_of((g), struct pxa25x_udc, gadget))
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+-#ifdef CONFIG_ARCH_LUBBOCK
+-#include <mach/lubbock.h>
+-/* lubbock can also report usb connect/disconnect irqs */
+-#endif
+-
+ static struct pxa25x_udc *the_controller;
+ 
+ /*-------------------------------------------------------------------------*/
 -- 
 2.29.2
 

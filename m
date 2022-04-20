@@ -2,118 +2,137 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9D62C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Apr 2022 17:08:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE6CAC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Apr 2022 17:19:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1380906AbiDTRLb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 20 Apr 2022 13:11:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57078 "EHLO
+        id S1381051AbiDTRWK (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 20 Apr 2022 13:22:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38620 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236999AbiDTRLa (ORCPT
+        with ESMTP id S1381015AbiDTRWI (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 20 Apr 2022 13:11:30 -0400
-Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [IPv6:2a0b:5c81:1c1::37])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3478D140E8;
-        Wed, 20 Apr 2022 10:08:43 -0700 (PDT)
-Received: from darkstar.musicnaut.iki.fi (85-76-69-216-nat.elisa-mobile.fi [85.76.69.216])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        (Authenticated sender: aaro.koskinen)
-        by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 75C061B00220;
-        Wed, 20 Apr 2022 20:08:38 +0300 (EEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
-        t=1650474519;
+        Wed, 20 Apr 2022 13:22:08 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id E897B46150
+        for <linux-fbdev@vger.kernel.org>; Wed, 20 Apr 2022 10:19:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1650475161;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=B5msNSogp8zw4YAcAsDj6Qc4zdyDGRTVYmRgqRI/0Bk=;
-        b=kTa4PeKcYbiz8v0d1bG/DaDfDPW+JW/Y5caY8AdpKOUIvDM5o36RCvYnTBodU8x4tUxuiF
-        ktxA1VDWnp4JhwdnVZN87iQgFWmYig18OVXRM8AVMhj39aWpQH20CPI4avqgLCd+YIg1Qy
-        idcTWI4UYPweIAjRUudXT1Zf+FbV1KFQ6CsP671o0mcoZYtmGXBa6OtYrK6P6K3jtGr5MZ
-        EHOyrIqm3R/nP1YaqVIW53HsDJDowGirtgtowbqAHter8eYPWisaRosyEAvgWd8N5xDazf
-        MEVSDjkPCt3ICTrqoO34GRh7hV71rJoxKjbq4SJKV8lZ4881URlm0+K8k78LMA==
-Date:   Wed, 20 Apr 2022 20:08:36 +0300
-From:   Aaro Koskinen <aaro.koskinen@iki.fi>
-To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     linux-omap@vger.kernel.org, tony@atomide.com, jmkrzyszt@gmail.com,
-        Arnd Bergmann <arnd@arndb.de>,
-        Russell King <linux@armlinux.org.uk>,
-        Paul Walmsley <paul@pwsan.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Peter Ujfalusi <peter.ujfalusi@gmail.com>,
-        Vinod Koul <vkoul@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Dominik Brodowski <linux@dominikbrodowski.net>,
-        Mark Brown <broonie@kernel.org>,
-        Felipe Balbi <balbi@kernel.org>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Lee Jones <lee.jones@linaro.org>,
-        Daniel Thompson <daniel.thompson@linaro.org>,
-        Jingoo Han <jingoohan1@gmail.com>,
-        Helge Deller <deller@gmx.de>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-usb@vger.kernel.org, dmaengine@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-mmc@vger.kernel.org,
-        linux-serial@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: Re: [PATCH 00/41] OMAP1 full multiplatform conversion
-Message-ID: <20220420170836.GB1947@darkstar.musicnaut.iki.fi>
-References: <20220419133723.1394715-1-arnd@kernel.org>
+        bh=8WE22VxbN1gg12dVEBct61VeLxa0U0wVvS6fYCbCOo0=;
+        b=iOdpV1rS2tjTYFEy7GxQXPVN4UkqyCqd721S+Q6pNlU3+WlfUPIVCfppc6FfX43shMVoqR
+        7yLu7kyR64XbVuTt3Bfz3JFHJdFQm75o9yS36Ha7zNEXy9IEQpV/Evj+8PkO3s1BZxQCB4
+        myZ4D4b0WlJpsKYEwwN4xFTXI8DKyBo=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-588-jF2AeY5VO8CWN28F2Kedpw-1; Wed, 20 Apr 2022 13:19:18 -0400
+X-MC-Unique: jF2AeY5VO8CWN28F2Kedpw-1
+Received: by mail-wm1-f72.google.com with SMTP id q188-20020a1c43c5000000b003928f679c42so1153460wma.5
+        for <linux-fbdev@vger.kernel.org>; Wed, 20 Apr 2022 10:19:16 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:from:to:cc:references:in-reply-to
+         :content-transfer-encoding;
+        bh=8WE22VxbN1gg12dVEBct61VeLxa0U0wVvS6fYCbCOo0=;
+        b=1jti0bPc2Et0mPtHZsXhystNOqVSHwewpDCnBkpgZac7vmW4MsvD1ADUWM+nVw55T+
+         arPtLYsTTTayFfHSi0f5SLt6PWGJs9ToCWhfFmDvAkwcJHgwDx8ch1riqDRAW6q6pYGS
+         JT23nuAdhGWCRyl3W4IM+YQ9MNKQG/x1XtAUh+OfcqFrOPB8p1VsRN7b9XIgzJ27MEDm
+         +L39TJMzJUDH/x+NBZ58GmznJN2Bhh6uwrRXdYaF1Q3mEwgopJjYZrq9BSXrWIRh+r1F
+         tWXrInq4i1Lj6VNpnszekWmLpdKWQREXPfpWf4BaRilUzxPQBH2sl7P45rksuTkzgUAe
+         TQDw==
+X-Gm-Message-State: AOAM5308DDVUmBCnjtEa09bhDThIE3Qk3Yh/bCHIEL3reVbXc69zuofC
+        WchYohXWWXmUtybtZnnHXLWqZ+5FBLWiAAtqmx7B0GtzLmmy16Do2KA/Y1iO/TSM1kSHcZkNwhH
+        h8CMA/MldE9BXS6ajJPGLBxo=
+X-Received: by 2002:a1c:f605:0:b0:37b:b5de:89a0 with SMTP id w5-20020a1cf605000000b0037bb5de89a0mr4631147wmc.88.1650475155375;
+        Wed, 20 Apr 2022 10:19:15 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJxl5ctt7vDZBEVXVTgasUErK1Xu3KASfnJV+d0id411WCB95qt2LS8YqIMFqmRv7QhA0TQDFg==
+X-Received: by 2002:a1c:f605:0:b0:37b:b5de:89a0 with SMTP id w5-20020a1cf605000000b0037bb5de89a0mr4631125wmc.88.1650475155130;
+        Wed, 20 Apr 2022 10:19:15 -0700 (PDT)
+Received: from [192.168.1.129] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id q14-20020a1cf30e000000b0038986a18ec8sm305270wmq.46.2022.04.20.10.19.14
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 20 Apr 2022 10:19:14 -0700 (PDT)
+Message-ID: <10561c08-c021-74be-b07b-a3489502e38f@redhat.com>
+Date:   Wed, 20 Apr 2022 19:19:14 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220419133723.1394715-1-arnd@kernel.org>
-ARC-Seal: i=1; s=lahtoruutu; d=iki.fi; t=1650474519; a=rsa-sha256;
-        cv=none;
-        b=fUP5y+/XQ6zNbth6dMfmG2kN9cICXfnwRNYbkGoVeRNsnY+v6znhO5ch2i5vR5slzPAUec
-        Sztc4GVEZyZOwSwkjLWA4eNpQZV5fEBKgPV4PA0N+8DX6z5GrX6hFbFsM5SltaEfdOE+4X
-        UDuk5UOcv8jYUvEeGfo5RBPyqhwpuA6b4fVpMKqPEFiwGDCvSZdERPOuJX+KlmiYWEjjRQ
-        bzFS2MgkL1ik8EAGHbfrB4YVK4K3DZYBDGcMAmDesHi8ybCiB4PqONwfrj/O7/GLX4DLwE
-        F7s5Eze8miwVNtjGjumlbsWMr0sA8n2Asp4QdugmIsfg6AnQuJaXDQ3ZfwifVA==
-ARC-Authentication-Results: i=1;
-        ORIGINATING;
-        auth=pass smtp.auth=aaro.koskinen smtp.mailfrom=aaro.koskinen@iki.fi
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
-        s=lahtoruutu; t=1650474519;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=B5msNSogp8zw4YAcAsDj6Qc4zdyDGRTVYmRgqRI/0Bk=;
-        b=uAZuJDKZ7bj4MVqgI3bbcZAOIBMgL+TVcCp9+D4Bx6tcZMUwn0Yukw4zw8doMpCzXb5WaN
-        pJVbadhIweA9yGpQNueUVV9vr1H4bIPdTLnUt9sq85H8sbrTY3WHbuj7hKBBvCPd9hNdLm
-        1ukZgRh1UpuRnt4Qyg6muAqbGwQyb+0ufFu2ZZFIwmdViYeENLfMfCKbIoMvRNyQt/3O2K
-        fLMvlRgaN2w7kyqhajE30yj5vD3Ir8o/PY21vwX9mxyhgmVGkpxJMIAtFXlT8CRNLmGomp
-        hDjQyLXElaOcP4BTszvgdBbpo30Bae+K5TvQUlGAai/EzsAchzF8OdhdOWxG2A==
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.0
+Subject: Re: [PATCH] Staging: fbtft: Fix style problem in header
+Content-Language: en-US
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+        Ian Cowan <ian@linux.cowan.aero>
+Cc:     gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
+        linux-staging@lists.linux.dev, dri-devel@lists.freedesktop.org
+References: <20220419192128.445023-1-ian@linux.cowan.aero>
+ <20220420064711.xuhuyhtgcrs3avhk@pengutronix.de> <YmARR6+XQeVqlusK@fedora>
+ <20220420143608.yuxleiffs234dfog@pengutronix.de>
+ <e4f56999-cf58-abff-edf5-ae11d024012b@redhat.com>
+In-Reply-To: <e4f56999-cf58-abff-edf5-ae11d024012b@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+On 4/20/22 17:47, Javier Martinez Canillas wrote:
 
-On Tue, Apr 19, 2022 at 03:36:42PM +0200, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+[snip]
+
+>>
+>>> When I built this, it appeared to succeed. I used the command "make
+>>> M=/drivers/staging/fbtft modules". Is this incorrect? For reference this
+>>> is my first patch so it's highly likely I did this incorrectly.
+>>
 > 
-> This is the full series for converting OMAP1 to multiplatform, rebased
-> from my 2019 attempt to do the same thing. The soc tree contains simpler
-> patches to do the same for iop32x, ixp4xx, ep93xx and s3c24xx, which
-> means we are getting closer to completing this for all ARMv5 platforms
-> (I have patches for PXA, which is the last one remaining).
+> You are just changing a header file though, did you also enable one of the
+> fbtft drivers as a module to see if those build? But as said, by looking at
+> the code it seems that should build correctly.
 > 
-> Janusz already tested the branch separately and did the missing work
-> for the common-clk conversion after my previous approach was broken.
 
-I tested the full series on the following OMAP1 boards: ams-delta,
-nokia770, osk, palmte and sx1 (QEMU only).
+It seems that this is the problem with Ian's build test. If I enabled both
+CONFIG_FB_TFT=y and CONFIG_FB_TFT_AGM1264K_FL=m, I get the following build
+error (as Uwe pointed out before):
 
-Apart from the earlyprintk breakage, everything seemed to work OK.
+$ make M=drivers/staging/fbtft/
+  CC [M]  drivers/staging/fbtft/fb_agm1264k-fl.o
+In file included from drivers/staging/fbtft/fb_agm1264k-fl.c:15:
+drivers/staging/fbtft/fbtft.h:284:1: error: expected ‘,’ or ‘;’ before ‘static’
+  284 | static int fbtft_driver_probe_spi(struct spi_device *spi)                       \
+      | ^~~~~~
+drivers/staging/fbtft/fbtft.h:323:1: note: in expansion of macro ‘FBTFT_SPI_DRIVER’
+  323 | FBTFT_SPI_DRIVER(_name, _compatible, _display, NULL)                       \
+      | ^~~~~~~~~~~~~~~~
+drivers/staging/fbtft/fb_agm1264k-fl.c:435:1: note: in expansion of macro ‘FBTFT_REGISTER_DRIVER’
+  435 | FBTFT_REGISTER_DRIVER(DRVNAME, "displaytronic,fb_agm1264k-fl", &display);
+      | ^~~~~~~~~~~~~~~~~~~~~
+drivers/staging/fbtft/fbtft.h:302:18: error: ‘fbtft_driver_probe_spi’ undeclared here (not in a function); did you mean ‘fbtft_driver_remove_spi’?
+  302 |         .probe = fbtft_driver_probe_spi,                                        \
+      |                  ^~~~~~~~~~~~~~~~~~~~~~
+drivers/staging/fbtft/fbtft.h:323:1: note: in expansion of macro ‘FBTFT_SPI_DRIVER’
+  323 | FBTFT_SPI_DRIVER(_name, _compatible, _display, NULL)                       \
+      | ^~~~~~~~~~~~~~~~
+drivers/staging/fbtft/fb_agm1264k-fl.c:435:1: note: in expansion of macro ‘FBTFT_REGISTER_DRIVER’
+  435 | FBTFT_REGISTER_DRIVER(DRVNAME, "displaytronic,fb_agm1264k-fl", &display);
+      | ^~~~~~~~~~~~~~~~~~~~~
+make[1]: *** [scripts/Makefile.build:288: drivers/staging/fbtft/fb_agm1264k-fl.o] Error 1
+make: *** [Makefile:1834: drivers/staging/fbtft] Error 2
 
-A minor note, zImage grows about 50 KB with a minimal kernel config. This
-is not yet critical, there's still about 7% headroom on 770 to the 2 MB
-bootloader limit on my setup. Also the decompression time is approaching
-the hardcoded watchdog timeout...
+while without removing the semicolon like this patch does, it builds correctly:
 
-A.
+$ make M=drivers/staging/fbtft/
+  CC [M]  drivers/staging/fbtft/fb_agm1264k-fl.o
+  MODPOST drivers/staging/fbtft/Module.symvers
+  LD [M]  drivers/staging/fbtft/fb_agm1264k-fl.ko
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
+

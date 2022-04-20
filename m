@@ -2,167 +2,118 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B08E2C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Apr 2022 15:47:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9D62C433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Apr 2022 17:08:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1380210AbiDTPul (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 20 Apr 2022 11:50:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57694 "EHLO
+        id S1380906AbiDTRLb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 20 Apr 2022 13:11:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57078 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349122AbiDTPuk (ORCPT
+        with ESMTP id S236999AbiDTRLa (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 20 Apr 2022 11:50:40 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 3B8023B568
-        for <linux-fbdev@vger.kernel.org>; Wed, 20 Apr 2022 08:47:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1650469673;
+        Wed, 20 Apr 2022 13:11:30 -0400
+Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [IPv6:2a0b:5c81:1c1::37])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3478D140E8;
+        Wed, 20 Apr 2022 10:08:43 -0700 (PDT)
+Received: from darkstar.musicnaut.iki.fi (85-76-69-216-nat.elisa-mobile.fi [85.76.69.216])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: aaro.koskinen)
+        by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 75C061B00220;
+        Wed, 20 Apr 2022 20:08:38 +0300 (EEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
+        t=1650474519;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=g4zx1+iaFnljCivWLV5r3ZrNdjPIVxfvxiAee1dsRow=;
-        b=JlXBgvLJwjrsuTRhq7ihVCorAGCyCRC/KJG4MEIkoxOtzb0oWWvjMkanUKTTY4OPskIF3V
-        UWL2x/vnrZu29xv/s2SATdu/oG1MGst4Fs8q/Z04/Pp+uHTrqZIVoG4l72/XbqCsQEsn+F
-        KauwYl2rLlRs6Sh0xJCOKklIdci0wnM=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-16-1LDauT1xN7yLm6oXxXg1pw-1; Wed, 20 Apr 2022 11:47:52 -0400
-X-MC-Unique: 1LDauT1xN7yLm6oXxXg1pw-1
-Received: by mail-wr1-f72.google.com with SMTP id c17-20020a5d6cd1000000b00207a6974951so522321wrc.1
-        for <linux-fbdev@vger.kernel.org>; Wed, 20 Apr 2022 08:47:52 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=g4zx1+iaFnljCivWLV5r3ZrNdjPIVxfvxiAee1dsRow=;
-        b=GPXT5Zw7BV73sMrHo5FLg0wNrIPA2hppR7tVEuI86emJrX5mIRWcQydT5z5+fxz/Jv
-         9GVFkBnVTPSKt3PLuasIjOJ1AINVNlU/GMhpiuR7i5t3GaaGsj7leflDeTUjN2BphaWN
-         Rd2cVTAcuEe4cy6sxh7JfMUsmp2Bl1Hpo1ZgqmcyiXP0gELWjHZeKniMd+Ew38zsQCNT
-         H6GISyY4THNOvQ3dU2+ZTHgwnF+P2/nqQpAyI5hAk1TxjzaNaDvlsrK0Ls+L7ghJ3i00
-         cBFq2+mcFq0WJ4Yfe7cRcret4+kUDeAUBF1bNs478mhRiNYEzeuPnJDJcAgC+d+roMHu
-         Q99Q==
-X-Gm-Message-State: AOAM531N6XiGVg7J8DYISpBFiDhzD0d2gQbb8JdQOvo+KCRBPpfJ1eoj
-        d7/bEPo9r0z/4Wo7u0OtG1xhTKH3Ek7P1bynMvjjicqvwPUVjT3qtcO/h0YY0yudCIUWIXb4uPu
-        LeMtWJO/9oP77abV+WmHUTdg=
-X-Received: by 2002:a5d:522d:0:b0:207:a11d:edf5 with SMTP id i13-20020a5d522d000000b00207a11dedf5mr16194845wra.60.1650469670964;
-        Wed, 20 Apr 2022 08:47:50 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJz8WUIYjdcVWdqmj4AO4brA33DVhgGSAEP3X+EOPWZZEYpduVkk/X5bHxcW5UEIED0Fk9af+w==
-X-Received: by 2002:a5d:522d:0:b0:207:a11d:edf5 with SMTP id i13-20020a5d522d000000b00207a11dedf5mr16194835wra.60.1650469670712;
-        Wed, 20 Apr 2022 08:47:50 -0700 (PDT)
-Received: from [192.168.1.129] ([92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id z18-20020a5d6552000000b00207b65f745bsm152396wrv.83.2022.04.20.08.47.50
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 20 Apr 2022 08:47:50 -0700 (PDT)
-Message-ID: <e4f56999-cf58-abff-edf5-ae11d024012b@redhat.com>
-Date:   Wed, 20 Apr 2022 17:47:49 +0200
+        bh=B5msNSogp8zw4YAcAsDj6Qc4zdyDGRTVYmRgqRI/0Bk=;
+        b=kTa4PeKcYbiz8v0d1bG/DaDfDPW+JW/Y5caY8AdpKOUIvDM5o36RCvYnTBodU8x4tUxuiF
+        ktxA1VDWnp4JhwdnVZN87iQgFWmYig18OVXRM8AVMhj39aWpQH20CPI4avqgLCd+YIg1Qy
+        idcTWI4UYPweIAjRUudXT1Zf+FbV1KFQ6CsP671o0mcoZYtmGXBa6OtYrK6P6K3jtGr5MZ
+        EHOyrIqm3R/nP1YaqVIW53HsDJDowGirtgtowbqAHter8eYPWisaRosyEAvgWd8N5xDazf
+        MEVSDjkPCt3ICTrqoO34GRh7hV71rJoxKjbq4SJKV8lZ4881URlm0+K8k78LMA==
+Date:   Wed, 20 Apr 2022 20:08:36 +0300
+From:   Aaro Koskinen <aaro.koskinen@iki.fi>
+To:     Arnd Bergmann <arnd@kernel.org>
+Cc:     linux-omap@vger.kernel.org, tony@atomide.com, jmkrzyszt@gmail.com,
+        Arnd Bergmann <arnd@arndb.de>,
+        Russell King <linux@armlinux.org.uk>,
+        Paul Walmsley <paul@pwsan.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Peter Ujfalusi <peter.ujfalusi@gmail.com>,
+        Vinod Koul <vkoul@kernel.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Dominik Brodowski <linux@dominikbrodowski.net>,
+        Mark Brown <broonie@kernel.org>,
+        Felipe Balbi <balbi@kernel.org>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-usb@vger.kernel.org, dmaengine@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-serial@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: Re: [PATCH 00/41] OMAP1 full multiplatform conversion
+Message-ID: <20220420170836.GB1947@darkstar.musicnaut.iki.fi>
+References: <20220419133723.1394715-1-arnd@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-Subject: Re: [PATCH] Staging: fbtft: Fix style problem in header
-Content-Language: en-US
-To:     =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-        Ian Cowan <ian@linux.cowan.aero>
-Cc:     gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, dri-devel@lists.freedesktop.org
-References: <20220419192128.445023-1-ian@linux.cowan.aero>
- <20220420064711.xuhuyhtgcrs3avhk@pengutronix.de> <YmARR6+XQeVqlusK@fedora>
- <20220420143608.yuxleiffs234dfog@pengutronix.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220420143608.yuxleiffs234dfog@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220419133723.1394715-1-arnd@kernel.org>
+ARC-Seal: i=1; s=lahtoruutu; d=iki.fi; t=1650474519; a=rsa-sha256;
+        cv=none;
+        b=fUP5y+/XQ6zNbth6dMfmG2kN9cICXfnwRNYbkGoVeRNsnY+v6znhO5ch2i5vR5slzPAUec
+        Sztc4GVEZyZOwSwkjLWA4eNpQZV5fEBKgPV4PA0N+8DX6z5GrX6hFbFsM5SltaEfdOE+4X
+        UDuk5UOcv8jYUvEeGfo5RBPyqhwpuA6b4fVpMKqPEFiwGDCvSZdERPOuJX+KlmiYWEjjRQ
+        bzFS2MgkL1ik8EAGHbfrB4YVK4K3DZYBDGcMAmDesHi8ybCiB4PqONwfrj/O7/GLX4DLwE
+        F7s5Eze8miwVNtjGjumlbsWMr0sA8n2Asp4QdugmIsfg6AnQuJaXDQ3ZfwifVA==
+ARC-Authentication-Results: i=1;
+        ORIGINATING;
+        auth=pass smtp.auth=aaro.koskinen smtp.mailfrom=aaro.koskinen@iki.fi
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
+        s=lahtoruutu; t=1650474519;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=B5msNSogp8zw4YAcAsDj6Qc4zdyDGRTVYmRgqRI/0Bk=;
+        b=uAZuJDKZ7bj4MVqgI3bbcZAOIBMgL+TVcCp9+D4Bx6tcZMUwn0Yukw4zw8doMpCzXb5WaN
+        pJVbadhIweA9yGpQNueUVV9vr1H4bIPdTLnUt9sq85H8sbrTY3WHbuj7hKBBvCPd9hNdLm
+        1ukZgRh1UpuRnt4Qyg6muAqbGwQyb+0ufFu2ZZFIwmdViYeENLfMfCKbIoMvRNyQt/3O2K
+        fLMvlRgaN2w7kyqhajE30yj5vD3Ir8o/PY21vwX9mxyhgmVGkpxJMIAtFXlT8CRNLmGomp
+        hDjQyLXElaOcP4BTszvgdBbpo30Bae+K5TvQUlGAai/EzsAchzF8OdhdOWxG2A==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/20/22 16:36, Uwe Kleine-König wrote:
-> Hello Ian,
+Hi,
+
+On Tue, Apr 19, 2022 at 03:36:42PM +0200, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
 > 
-> On Wed, Apr 20, 2022 at 09:57:27AM -0400, Ian Cowan wrote:
->> On Wed, Apr 20, 2022 at 08:47:11AM +0200, Uwe Kleine-König wrote:
->>> On Tue, Apr 19, 2022 at 03:21:28PM -0400, Ian Cowan wrote:
->>>> Removed an unnecessary semicolon at the end of a macro call
->>>>
->>>> Signed-off-by: Ian Cowan <ian@linux.cowan.aero>
->>>> ---
->>>>  drivers/staging/fbtft/fbtft.h | 2 +-
->>>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>>
->>>> diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
->>>> index 2c2b5f1c1df3..aa66760e1a9c 100644
->>>> --- a/drivers/staging/fbtft/fbtft.h
->>>> +++ b/drivers/staging/fbtft/fbtft.h
->>>> @@ -277,7 +277,7 @@ static const struct of_device_id dt_ids[] = {					\
->>>>  	{ .compatible = _compatible },						\
->>>>  	{},									\
->>>>  };										\
->>>> -MODULE_DEVICE_TABLE(of, dt_ids);
->>>> +MODULE_DEVICE_TABLE(of, dt_ids)
->>>
->>> In fact the ; after MODULE_DEVICE_TABLE is necessary. There is only a
->>> single instance in the kernel without a semicolon[1]. That's in
->>> drivers/pci/controller/pcie-microchip-host.c and this only works because
->>> this driver cannot be compiled as a module and so MODULE_DEVICE_TABLE
->>> evaluates to nothing. Will send a patch for that one.
->
-
-Indeed. I was curious about this so I went to look at the driver code.
-
-For this particular driver it may be not necessary, but that's just due
-how these fbtft drivers define their MODULE_DEVICE_TABLE(), using a lot
-of macro layers.
-
-As an example, drivers/staging/fbtft/fb_agm1264k-fl.c does the following:
-
-FBTFT_REGISTER_DRIVER(DRVNAME, "displaytronic,fb_agm1264k-fl", &display);
-
-which is defined as:
-
-#define FBTFT_REGISTER_DRIVER(_name, _compatible, _display)                \
-...									   \
-FBTFT_DT_TABLE(_compatible)						   \
-...
-
-which in turn is defined as:
-
-#define FBTFT_DT_TABLE(_compatible)						\
-static const struct of_device_id dt_ids[] = {					\
-	{ .compatible = _compatible },						\
-	{},									\
-};										\
-MODULE_DEVICE_TABLE(of, dt_ids);
-
-so it seems that it builds, just because the semicolon for the expression
-is the one that's after the FBTFT_REGISTER_DRIVER(); in the driver.
-
-> FTR: Patch was sent: https://lore.kernel.org/linux-pci/20220420065832.14173-1-u.kleine-koenig@pengutronix.de
+> This is the full series for converting OMAP1 to multiplatform, rebased
+> from my 2019 attempt to do the same thing. The soc tree contains simpler
+> patches to do the same for iop32x, ixp4xx, ep93xx and s3c24xx, which
+> means we are getting closer to completing this for all ARMv5 platforms
+> (I have patches for PXA, which is the last one remaining).
 > 
->> When I built this, it appeared to succeed. I used the command "make
->> M=/drivers/staging/fbtft modules". Is this incorrect? For reference this
->> is my first patch so it's highly likely I did this incorrectly.
->
+> Janusz already tested the branch separately and did the missing work
+> for the common-clk conversion after my previous approach was broken.
 
-You are just changing a header file though, did you also enable one of the
-fbtft drivers as a module to see if those build? But as said, by looking at
-the code it seems that should build correctly.
+I tested the full series on the following OMAP1 boards: ams-delta,
+nokia770, osk, palmte and sx1 (QEMU only).
 
-I agree with Uwe though that is less confusing to have a semicolon after
-the MODULE_DEVICE_TABLE(), but I'm not the driver maintainer to decide.
- 
-> I don't know for sure, but I'd have said that the M= stuff is for
-> out-of-tree modules only.
->
+Apart from the earlyprintk breakage, everything seemed to work OK.
 
-It does work, I use M= to build drivers in mainline that are configured
-to build as a module all the time.
+A minor note, zImage grows about 50 KB with a minimal kernel config. This
+is not yet critical, there's still about 7% headroom on 770 to the 2 MB
+bootloader limit on my setup. Also the decompression time is approaching
+the hardcoded watchdog timeout...
 
--- 
-Best regards,
-
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+A.

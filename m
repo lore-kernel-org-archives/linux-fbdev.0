@@ -2,109 +2,118 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C301FC433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Apr 2022 17:20:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 678D6C4332F
+	for <linux-fbdev@archiver.kernel.org>; Wed, 20 Apr 2022 19:21:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S243255AbiDTRXT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 20 Apr 2022 13:23:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40944 "EHLO
+        id S1381715AbiDTTXx (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 20 Apr 2022 15:23:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44820 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240007AbiDTRXS (ORCPT
+        with ESMTP id S230233AbiDTTXw (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 20 Apr 2022 13:23:18 -0400
-Received: from bee.birch.relay.mailchannels.net (bee.birch.relay.mailchannels.net [23.83.209.14])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A47B718E15
-        for <linux-fbdev@vger.kernel.org>; Wed, 20 Apr 2022 10:20:30 -0700 (PDT)
-X-Sender-Id: dreamhost|x-authsender|ian@linux.cowan.aero
-Received: from relay.mailchannels.net (localhost [127.0.0.1])
-        by relay.mailchannels.net (Postfix) with ESMTP id 22C07760EF8;
-        Wed, 20 Apr 2022 17:20:18 +0000 (UTC)
-Received: from pdx1-sub0-mail-a217.dreamhost.com (unknown [127.0.0.6])
-        (Authenticated sender: dreamhost)
-        by relay.mailchannels.net (Postfix) with ESMTPA id 9DA27761E06;
-        Wed, 20 Apr 2022 17:20:17 +0000 (UTC)
-ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1650475217; a=rsa-sha256;
-        cv=none;
-        b=s0RJWcnTBaikUpP2bdENAkxCaxueJhakQv3bdyStQQH4WxzxQgy1N1ckoapMzJ36h9gniC
-        VELrp99uSpJPE25wRxLp2zYpnft31WGJFqyA8YRjxxsjEjezfXIX4YvZvy915Q8V5S+0z3
-        1cRlQw6VTcRi2MIX+Oi+P8IExrazSd+nCyBkTZY9YJlS+1lK4d0KJaB324AEREAGexzswR
-        4MtXdEOdS6MP2mSE5VOcR4UPQ/w7/2G9d96vN79vxaMg+hfsg11j8wm2h6sNCWDo+CwA3v
-        hm5Ir4beM0zkxov3yCwlsW0OkHah55iM5GE+iohwiFkDckaetnTsvokb7kA77A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
- d=mailchannels.net;
-        s=arc-2022; t=1650475217;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references:dkim-signature;
-        bh=cdf9+k2VtzTYEJ/Pkh71vf3BfUPmRtgtQ3uFbGpaeMk=;
-        b=8Coi8OH7XLRzpsgWiWi/u0Jl54NuXBOaTKKoRvX7VWkNi3wVoFKnNxQP4lnK97zg6mcqQ/
-        DpQjIz+wa04WRxVSh8uma4IXXtKiYumHZG/Ms2Bmi9puMhAMenHkFKtML7a2dnRmiiQ+rF
-        Jum3dJBRbyo/2jmis6++J2CzwF7m11NNJkDpw46tSBZrmKyxbrvTf44PobxxDGQpY7gH6Z
-        SERbPog6+69HfO8nkg/neVuCjOpA7Xn9a87Wuc7zjThI3pmxORvwElKUuVU1/RKtJ0n+kN
-        3KmJObns+VzaL80C1hY5D6wrYhxtuYELnCKR/hIgnQQzuLaOAtAjlGKEz8GxVQ==
-ARC-Authentication-Results: i=1;
-        rspamd-58ff8d7479-2jpfw;
-        auth=pass smtp.auth=dreamhost smtp.mailfrom=ian@linux.cowan.aero
-X-Sender-Id: dreamhost|x-authsender|ian@linux.cowan.aero
-Received: from pdx1-sub0-mail-a217.dreamhost.com (pop.dreamhost.com
- [64.90.62.162])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
-        by 100.115.45.25 (trex/6.7.1);
-        Wed, 20 Apr 2022 17:20:18 +0000
-X-MC-Relay: Neutral
-X-MailChannels-SenderId: dreamhost|x-authsender|ian@linux.cowan.aero
-X-MailChannels-Auth-Id: dreamhost
-X-Obese-Sponge: 1fefb2c312ac0071_1650475217954_481480763
-X-MC-Loop-Signature: 1650475217954:3309040606
-X-MC-Ingress-Time: 1650475217954
-Received: from fedora (unknown [69.12.38.97])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        Wed, 20 Apr 2022 15:23:52 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA1ED13FBB;
+        Wed, 20 Apr 2022 12:21:05 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        (Authenticated sender: ian@linux.cowan.aero)
-        by pdx1-sub0-mail-a217.dreamhost.com (Postfix) with ESMTPSA id 4Kk6r04fgMz1L;
-        Wed, 20 Apr 2022 10:20:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.cowan.aero;
-        s=dreamhost; t=1650475217;
-        bh=cdf9+k2VtzTYEJ/Pkh71vf3BfUPmRtgtQ3uFbGpaeMk=;
-        h=Date:From:To:Cc:Subject:Content-Type:Content-Transfer-Encoding;
-        b=mqNGUQzXCPkxLoMRh7xClxiLUkEU5/luuPaKDg9MNoqjy2CLqMQmGSPDhRUr6vxnC
-         iyyfk78aapwEFfoRMRuXumSB5nGnhn3z10vSJChkoJv3X4NSVLtN8iuT8uvhjjL2ie
-         C5GdMLBQGgIU3LTWvQtPx0kdF15SayU584FfBTTupGCzCnnS9fwgYuwBjSt+5HfXYz
-         TUC9lZmN/N/GGEWZNB2v2ra2CueFGrzoAJKRGhmuFh+uWe+dqPoOqufZ1dWuKMn6cq
-         MU1FDoNbXBTegPkU0kYhpAZNRwSjMyFsZ7uWPZsTUcqWJUGPf4UNsTABbv71546Cks
-         0oXKM36lLudQQ==
-Date:   Wed, 20 Apr 2022 13:20:14 -0400
-From:   Ian Cowan <ian@linux.cowan.aero>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>, gregkh@linuxfoundation.org,
-        linux-fbdev@vger.kernel.org, linux-staging@lists.linux.dev,
-        dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH] Staging: fbtft: Fix style problem in header
-Message-ID: <YmBAzpHz2qhb69Ux@fedora>
-References: <20220419192128.445023-1-ian@linux.cowan.aero>
- <20220420064711.xuhuyhtgcrs3avhk@pengutronix.de>
- <YmARR6+XQeVqlusK@fedora>
- <20220420143608.yuxleiffs234dfog@pengutronix.de>
- <e4f56999-cf58-abff-edf5-ae11d024012b@redhat.com>
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 64F6161647;
+        Wed, 20 Apr 2022 19:21:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C350EC385A8;
+        Wed, 20 Apr 2022 19:21:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1650482464;
+        bh=+PgOfT87QXZRKpM2v9ZNowWskAsreLZEe6RAZERVuxs=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=LWkg8+P3Xly8sjIxoqjEgUnQ8BqoLngtqGiQEPZggl4dkK1DiOpgHHwSwn56ifoYf
+         0jYMBC2y9oudEQNk98zILpE9CQilgE7tkJqFfirwGiPaSzGz60rXyG7LagSrWPhQem
+         gbXXIArHrbaEUbVwFKFsMGfZw+kiVhQTkNWJBmFatyWcBtF+i4qgINtXXuldo7Vx0G
+         RpToCuYAP6mrwt+aiH/IjOOBsTv71f5Oi3+i5AJ3tiOTaMEh/815Em+H9EnYveGtMX
+         wgIyjIS3nQS3pxspnrQ1f27FpB7+Y6rOGSmBE7zDDiBd809M2ZhAxpsXP8A+8SQw2R
+         w9+fnlrAhUS+g==
+Received: by mail-wr1-f47.google.com with SMTP id m14so3602817wrb.6;
+        Wed, 20 Apr 2022 12:21:04 -0700 (PDT)
+X-Gm-Message-State: AOAM531HBf5PvIpNJOJDMxIoRo2xda1qDyp1WenSvo6XtyrM6cHHhQeu
+        u4iC9XS8SJYNsKkRkMm7dhmZ0zBzHXaHtBvuABs=
+X-Google-Smtp-Source: ABdhPJznf39uJYDI3N62QzlkS6buptTPqwk86KhjNzbLbHyB/jaRCmYyra2UZ9f1wUtI0joZyTmyxGE4xOIYt2PeYqA=
+X-Received: by 2002:a5d:64a3:0:b0:20a:7931:5b84 with SMTP id
+ m3-20020a5d64a3000000b0020a79315b84mr17397786wrp.407.1650482462896; Wed, 20
+ Apr 2022 12:21:02 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e4f56999-cf58-abff-edf5-ae11d024012b@redhat.com>
+References: <20220419133723.1394715-1-arnd@kernel.org> <20220419133723.1394715-27-arnd@kernel.org>
+ <20220420134615.GA1947@darkstar.musicnaut.iki.fi>
+In-Reply-To: <20220420134615.GA1947@darkstar.musicnaut.iki.fi>
+From:   Arnd Bergmann <arnd@kernel.org>
+Date:   Wed, 20 Apr 2022 21:20:46 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a00DgKYdzTZFiBfKDF_zwaJjL6Duw8aOOJ-gVkz4L1ZwQ@mail.gmail.com>
+Message-ID: <CAK8P3a00DgKYdzTZFiBfKDF_zwaJjL6Duw8aOOJ-gVkz4L1ZwQ@mail.gmail.com>
+Subject: Re: [PATCH 26/41] ARM: omap1: relocate static I/O mapping
+To:     Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc:     linux-omap <linux-omap@vger.kernel.org>,
+        Tony Lindgren <tony@atomide.com>,
+        Janusz Krzysztofik <jmkrzyszt@gmail.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Russell King <linux@armlinux.org.uk>,
+        Paul Walmsley <paul@pwsan.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Peter Ujfalusi <peter.ujfalusi@gmail.com>,
+        Vinod Koul <vkoul@kernel.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Dominik Brodowski <linux@dominikbrodowski.net>,
+        Mark Brown <broonie@kernel.org>,
+        Felipe Balbi <balbi@kernel.org>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        Lee Jones <lee.jones@linaro.org>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Helge Deller <deller@gmx.de>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        USB list <linux-usb@vger.kernel.org>,
+        dmaengine@vger.kernel.org,
+        "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
+        linux-mmc <linux-mmc@vger.kernel.org>,
+        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        ALSA Development Mailing List <alsa-devel@alsa-project.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Apr 20, 2022 at 05:47:49PM +0200, Javier Martinez Canillas wrote:
-> On 4/20/22 16:36, Uwe Kleine-König wrote:
-> You are just changing a header file though, did you also enable one of the
-> fbtft drivers as a module to see if those build? But as said, by looking at
-> the code it seems that should build correctly.
+On Wed, Apr 20, 2022 at 3:46 PM Aaro Koskinen <aaro.koskinen@iki.fi> wrote:
+>
+> Hi,
+>
+> On Tue, Apr 19, 2022 at 03:37:08PM +0200, Arnd Bergmann wrote:
+> > From: Arnd Bergmann <arnd@arndb.de>
+> >
+> > The address range 0xfee00000-0xfeffffff is used for PCI and
+> > PCMCIA I/O port mappings, but OMAP1 has its static mappings
+> > there as well.
+> >
+> > Move the OMAP1 addresses a little higher to avoid crashing
+> > at boot.
+>
+> This has the same problem I reported in 2019, with earlyprintk the
+> system no longer boots:
+>
+>         https://marc.info/?t=156530014200005&r=1&w=2
+>
+> Tested on OSK and SX1/qemu.
 
-Not loading the driver was the issue. Thanks for helping me get it fixed!
+Thanks a lot for testing!
 
----
-Ian Cowan
+I managed to get to the bottom of this after just a few hours, and
+it turned out to be a simple math error on my end, as I got
+the alignment wrong, the offset has to be 0x00f00000
+instead of 0x00fb0000 be section aligned. I made sure the
+kernel boots up (to the point of missing a rootfs) and uploaded
+the fixed branch.
+
+      Arnd

@@ -2,27 +2,44 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C4CBC433FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Apr 2022 06:32:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF32DC433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 21 Apr 2022 13:34:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S240678AbiDUGe5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 21 Apr 2022 02:34:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38120 "EHLO
+        id S1386830AbiDUNhm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 21 Apr 2022 09:37:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53728 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S242783AbiDUGex (ORCPT
+        with ESMTP id S230271AbiDUNhb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 21 Apr 2022 02:34:53 -0400
-Received: from muru.com (muru.com [72.249.23.125])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 8BE8513F36;
-        Wed, 20 Apr 2022 23:32:05 -0700 (PDT)
-Received: from localhost (localhost [127.0.0.1])
-        by muru.com (Postfix) with ESMTPS id F2B92811B;
-        Thu, 21 Apr 2022 06:29:13 +0000 (UTC)
-Date:   Thu, 21 Apr 2022 09:32:03 +0300
-From:   Tony Lindgren <tony@atomide.com>
+        Thu, 21 Apr 2022 09:37:31 -0400
+Received: from lahtoruutu.iki.fi (lahtoruutu.iki.fi [IPv6:2a0b:5c81:1c1::37])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7AFD12ED69;
+        Thu, 21 Apr 2022 06:34:41 -0700 (PDT)
+Received: from darkstar.musicnaut.iki.fi (85-76-47-192-nat.elisa-mobile.fi [85.76.47.192])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+        (No client certificate requested)
+        (Authenticated sender: aaro.koskinen)
+        by lahtoruutu.iki.fi (Postfix) with ESMTPSA id 047811B00252;
+        Thu, 21 Apr 2022 16:34:32 +0300 (EEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi; s=lahtoruutu;
+        t=1650548074;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=oVFIWam2OH5Kq5QzsfblzUEMIMiatzAi7D5irCcCglk=;
+        b=Xk3qyrppSMBB4y+4boXcQF3oQ0tJICSyEousvelDBkd8/PVx55tQbJieAi/Q0KQa0aNG+G
+        Gh88Z+pM8E36JmzxlWSVvjXm3PFhBwLXYL2LZOWOsctt2/ybfngzEzXevKqVRqqsk+dHOX
+        5L1WRR3RN0Tc57TLDGaoxQzs/vTRLS73kqV8NQ7Pr+rYaKPhEVw6YpbHAi1CUcgHmT/iJb
+        sSsFTNRKlLJoxWjnYPJUSCoDtMuNfYAqp6Y4933cAcgTAbeGBst/0aU+ZHi8x118KnYG/L
+        TTEMpWSI21eBdlKccjScwxNSRB5ywON2ldVT1bI/+m9vyrFPnxxWxtiiOfNC6w==
+Date:   Thu, 21 Apr 2022 16:34:31 +0300
+From:   Aaro Koskinen <aaro.koskinen@iki.fi>
 To:     Arnd Bergmann <arnd@kernel.org>
-Cc:     linux-omap@vger.kernel.org, aaro.koskinen@iki.fi,
-        jmkrzyszt@gmail.com, Arnd Bergmann <arnd@arndb.de>,
+Cc:     linux-omap <linux-omap@vger.kernel.org>,
+        Tony Lindgren <tony@atomide.com>,
+        Janusz Krzysztofik <jmkrzyszt@gmail.com>,
+        Arnd Bergmann <arnd@arndb.de>,
         Russell King <linux@armlinux.org.uk>,
         Paul Walmsley <paul@pwsan.com>,
         Kevin Hilman <khilman@kernel.org>,
@@ -40,36 +57,78 @@ Cc:     linux-omap@vger.kernel.org, aaro.koskinen@iki.fi,
         Helge Deller <deller@gmx.de>,
         Linus Walleij <linus.walleij@linaro.org>,
         Krzysztof Kozlowski <krzk@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-usb@vger.kernel.org, dmaengine@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-mmc@vger.kernel.org,
-        linux-serial@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: Re: [PATCH 24/41] ARM: omap: un-merge plat/sram.c
-Message-ID: <YmD6Y2BlGWjLWw8d@atomide.com>
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        USB list <linux-usb@vger.kernel.org>,
+        dmaengine@vger.kernel.org,
+        "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
+        linux-mmc <linux-mmc@vger.kernel.org>,
+        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        ALSA Development Mailing List <alsa-devel@alsa-project.org>
+Subject: Re: [PATCH 00/41] OMAP1 full multiplatform conversion
+Message-ID: <20220421133431.GE1947@darkstar.musicnaut.iki.fi>
 References: <20220419133723.1394715-1-arnd@kernel.org>
- <20220419133723.1394715-25-arnd@kernel.org>
+ <20220420170836.GB1947@darkstar.musicnaut.iki.fi>
+ <CAK8P3a1+sOrn8BWPVc7f+QFZ5=7fE6=MLsMYV9t+HJcG2aRCXA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220419133723.1394715-25-arnd@kernel.org>
+In-Reply-To: <CAK8P3a1+sOrn8BWPVc7f+QFZ5=7fE6=MLsMYV9t+HJcG2aRCXA@mail.gmail.com>
+ARC-Seal: i=1; s=lahtoruutu; d=iki.fi; t=1650548074; a=rsa-sha256;
+        cv=none;
+        b=ENXGTtwbaVogGy0K8rD23cjHmjO1KDBpZYPSWyAXiJ0/g3DluUJMMqXizYyXV1sh/1O56S
+        hChw4SwQwbKFg4HYlY2SOiU8koj4G0UA6uGgTWSMxSwgySv+tbXfSR2Tt70pNgc6FN/vqj
+        fDExRVdSPenGd/ZTQhfjmyvSX3P7pooRbwh0WQDjEhItMOJyG5yZgN9teFQT3NBHXEEZkO
+        lTJHNaVgxdVFvqiak5FfjdiYOvwW5qr/IFspdks2sOUviaT7JpvKaacUapRAwuXFYtOguN
+        JXEZ3bM5xviSbbt9Tw3xErBDkB9cnwUXXzqGZHNp79d0+eb+sY0cVMOQI8ss7A==
+ARC-Authentication-Results: i=1;
+        ORIGINATING;
+        auth=pass smtp.auth=aaro.koskinen smtp.mailfrom=aaro.koskinen@iki.fi
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=iki.fi;
+        s=lahtoruutu; t=1650548074;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=oVFIWam2OH5Kq5QzsfblzUEMIMiatzAi7D5irCcCglk=;
+        b=Eu1uUO0EKvbhrdQZfCpIhRELzJA5jQZA+tye8R+aaTvgG9DkVEsXKYWX2Sby3kmhYmBCFx
+        570Cbs63dCqUFZqQdnWOK5t2vzZfwXPpwZynEikAKA3hi3QfuIi/BoBmae0xNSLey+fMmB
+        6AN1xF39YRJln008whjTgBohIBALbd/JXyh+rxwe1mx9rmT55Z+64rbOepQpAj7WZ0ttFr
+        jnTgxti7i7/9Pg4jNgskYWOOvKpXwrgTWzEQwA6H3TD1Jh0kJTMK2AunGS+FmvtC90A9Rp
+        r/9gYERVC+5BvSqEpSaGtYy+3htyiKaREqUWXaB7dxpxJqJYBA33p4txWzgVSw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-* Arnd Bergmann <arnd@kernel.org> [220419 13:37]:
-> From: Arnd Bergmann <arnd@arndb.de>
+Hi,
+
+On Wed, Apr 20, 2022 at 10:00:13PM +0200, Arnd Bergmann wrote:
+> On Wed, Apr 20, 2022 at 7:08 PM Aaro Koskinen <aaro.koskinen@iki.fi> wrote:
+> > On Tue, Apr 19, 2022 at 03:36:42PM +0200, Arnd Bergmann wrote:
+> > > From: Arnd Bergmann <arnd@arndb.de>
+> > >
+> > > This is the full series for converting OMAP1 to multiplatform, rebased
+> > > from my 2019 attempt to do the same thing. The soc tree contains simpler
+> > > patches to do the same for iop32x, ixp4xx, ep93xx and s3c24xx, which
+> > > means we are getting closer to completing this for all ARMv5 platforms
+> > > (I have patches for PXA, which is the last one remaining).
+> > >
+> > > Janusz already tested the branch separately and did the missing work
+> > > for the common-clk conversion after my previous approach was broken.
+> >
+> > I tested the full series on the following OMAP1 boards: ams-delta,
+> > nokia770, osk, palmte and sx1 (QEMU only).
+> >
+> > Apart from the earlyprintk breakage, everything seemed to work OK.
 > 
-> The sram initialization code is the only shared omap1/2 code that
-> is not a standalone driver, but it is very short. Having two copies
-> of this code means some duplication of the sources, but actually
-> saves object code size as it can be inlined better.
+> Nice, thanks a lot for testing!
 
-FYI, the sram code should eventually be updated to use drivers/misc/sram.c,
-I recall there being some issues to deal with for PM related code though.
-Probably the PM related save and restore could be now handled with cpu_pm.
+With the updated patch 26 also earlyprintk now works, so if you still
+update the patches, feel free to add for the whole series:
 
-Regards,
+Tested-by: Aaro Koskinen <aaro.koskinen@iki.fi>
 
-Tony
+Thanks,
 
+A.

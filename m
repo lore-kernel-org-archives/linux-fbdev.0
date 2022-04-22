@@ -2,102 +2,213 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A61FC433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Apr 2022 15:18:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E02DC433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 22 Apr 2022 17:05:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237761AbiDVPUz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 22 Apr 2022 11:20:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34792 "EHLO
+        id S1382329AbiDVRIa (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 22 Apr 2022 13:08:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37798 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1449390AbiDVPUx (ORCPT
+        with ESMTP id S1355052AbiDVRI3 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 22 Apr 2022 11:20:53 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5E6F5DA37;
-        Fri, 22 Apr 2022 08:17:53 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id 66C26B830EE;
-        Fri, 22 Apr 2022 15:17:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A523BC385A0;
-        Fri, 22 Apr 2022 15:17:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-        s=korg; t=1650640671;
-        bh=OQu2HnPIYsfQw0YtgkB3j0oCb5sAGQ5oTcK00sCNEoQ=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=ziLUmyry5BXoBF9rZ5VdG5+lvPTU7ab5iiUsLrmyA/DfjkCh/W3oZv/EPJQTm2bSp
-         x7937822JWbxTjtKGf/0GvPPWve40RfNLMDLl/deXWMwUbxprutwKZAsx/1HzJ1WHB
-         xbCMyZG6JVxLqWl47+Nfiob9MOHr7SO/pLVBZbhw=
-Date:   Fri, 22 Apr 2022 17:17:48 +0200
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-kernel@vger.kernel.org,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Borislav Petkov <bp@suse.de>,
-        Changcheng Deng <deng.changcheng@zte.com.cn>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Helge Deller <deller@gmx.de>, Johan Hovold <johan@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Miaoqian Lin <linmq006@gmail.com>,
-        Peter Jones <pjones@redhat.com>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Yizhuo Zhai <yzhai003@ucr.edu>,
-        Zhen Lei <thunder.leizhen@huawei.com>,
-        linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 0/5] Fix some race conditions that exists between
- fbmem and sysfb
-Message-ID: <YmLHHCQyN03oAqr0@kroah.com>
-References: <20220420085303.100654-1-javierm@redhat.com>
+        Fri, 22 Apr 2022 13:08:29 -0400
+Received: from mail-oa1-x30.google.com (mail-oa1-x30.google.com [IPv6:2001:4860:4864:20::30])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ED99079387;
+        Fri, 22 Apr 2022 10:05:34 -0700 (PDT)
+Received: by mail-oa1-x30.google.com with SMTP id 586e51a60fabf-e5e433d66dso9249190fac.5;
+        Fri, 22 Apr 2022 10:05:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=mY0tGuFElI+pBCvZypa+uhiwZDGlD+rd5RyfMzCDiwY=;
+        b=WZlDhNUU9Bv3cLd9+2BUj8PQ0W0vdOUPUmbjOUjWVaDfQ++uQetdgsjMFfM5tQA3nH
+         sCDuOGgcoexnVdriYT7wSzZfCJbgMRVjzS/zY0sm9eBjtSMplJnXlCozOQSUZuZt/R/s
+         bd/r4UiG41dF4YE96ThOOaTA0KtRp/dsKV/PzUOQiC8g8n5LxQWGIXxcSy6NwpEaGeZd
+         8B/yftIZJl8x1Gt9EJXz5WpTY43u/pqfRC5abtUKCtKu1leMlOXnw6fNpSNlvPScI5gf
+         mdiun0U49jszbERlNzo3xDzRuqVbk/oT44mXcwf5hBePbqplV9DIZqHZjSAqPA09ahwa
+         M3kg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+         :references:mime-version:content-disposition:in-reply-to;
+        bh=mY0tGuFElI+pBCvZypa+uhiwZDGlD+rd5RyfMzCDiwY=;
+        b=fAbTxITYL11oPwN049xVLEy0Ti/ZUFMhOBuJUa3k/KMxZhY254oUtzxyAxnnqu3Ujf
+         SmFrGnC7WKYziqCCfB0+YYWV5PcdFTwHLT1SwmawXQCgXUb1KKmwc564QS4TGSudGpBU
+         OY8Zaz/73rB2GdpMMY38r0yuSsDisiQuuzYkC8GlJi99Hxy2ej6ji8fYF3MmawGx2kjz
+         6Z7PwVlRrcvfFsY2sAEA/7EkRxKCHnT85g0BLoIDgsNNEkjyo8N7I/dwW/qwVW4K656c
+         A2CpTZINZJHcdoxnDgAh3kIQqcOYvj8iSlPU2duh8L86RLeHirb6iQvT2N6+I0smq4B5
+         u6iQ==
+X-Gm-Message-State: AOAM530yej6Nm4zuZOoPRTeDNJMpfu2tlv6tIcRAMqT/l6i0rCo1lhrg
+        xt9MzYTAzX0Rfxss0QNd3iI=
+X-Google-Smtp-Source: ABdhPJwyV4g1eWudYtD/hcz6EJxOYDu09EkjJlhrgLVZDzcFDGxflUVQ6LGY40Te5XJPDjVadkCTWg==
+X-Received: by 2002:a05:6870:1607:b0:de:984:496d with SMTP id b7-20020a056870160700b000de0984496dmr6469615oae.253.1650647133866;
+        Fri, 22 Apr 2022 10:05:33 -0700 (PDT)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id j9-20020a056808056900b0032252797ea4sm971770oig.6.2022.04.22.10.05.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 22 Apr 2022 10:05:32 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date:   Fri, 22 Apr 2022 10:05:30 -0700
+From:   Guenter Roeck <linux@roeck-us.net>
+To:     Arnd Bergmann <arnd@kernel.org>
+Cc:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org,
+        Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
+        Haojian Zhuang <haojian.zhuang@gmail.com>,
+        Marek Vasut <marek.vasut@gmail.com>,
+        Philipp Zabel <philipp.zabel@gmail.com>,
+        Lubomir Rintel <lkundrak@v3.sk>,
+        Paul Parsons <lost.distance@yahoo.com>,
+        Tomas Cech <sleep_walker@suse.com>,
+        Sergey Lapin <slapin@ossfans.org>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Dominik Brodowski <linux@dominikbrodowski.net>,
+        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
+        linux-ide@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-input@vger.kernel.org,
+        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
+        linux-rtc@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        alsa-devel@alsa-project.org
+Subject: Re: [PATCH v2 00/48] ARM: PXA multiplatform support
+Message-ID: <20220422170530.GA2338209@roeck-us.net>
+References: <20220419163810.2118169-1-arnd@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220420085303.100654-1-javierm@redhat.com>
+In-Reply-To: <20220419163810.2118169-1-arnd@kernel.org>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, Apr 20, 2022 at 10:52:58AM +0200, Javier Martinez Canillas wrote:
-> Hello,
+On Tue, Apr 19, 2022 at 06:37:22PM +0200, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
 > 
-> The patches in this series are mostly changes suggested by Daniel Vetter
-> to fix some race conditions that exists between the fbdev core (fbmem)
-> and sysfb with regard to device registration and removal.
+> This revisits a series I sent a few years ago:
 > 
-> For example, it is currently possible for sysfb to register a platform
-> device after a real DRM driver was registered and requested to remove the
-> conflicting framebuffers.
+> https://lore.kernel.org/lkml/20191018154052.1276506-1-arnd@arndb.de/
 > 
-> A symptom of this issue, was worked around with by commit fb561bf9abde
-> ("fbdev: Prevent probing generic drivers if a FB is already registered")
-> but that's really a hack and should be reverted.
+> All the other ARMv5 conversions are under way now, with
+> OMAP1 being the only one still not in linux-next yet,
+> and PXA completing the set.
 > 
-> This series attempt to fix it more properly and revert the mentioned hack.
-> That will also unblock a pending patch to not make the num_registered_fb
-> variable visible to drivers anymore, since that's internal to fbdev core.
+> Most of the patches are unchanged from before, furtunately
+> the PXA code is fairly stable. I addressed Robert's comments,
+> pulled in two patches from Dmitry, and added the last a the
+> final four patches to finish off the multiplatform conversion.
 > 
-> Patch #1 is just a trivial preparatory change.
+> I hope someone is left to test these on PXA: if this works,
+> I'd like to merge it for 5.19. A git tree with these is avaialable
+> for testing at
 > 
-> Patch #2 add sysfb_disable() and sysfb_try_unregister() helpers for fbmem
-> to use them.
+> https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git/log/?h=pxa-multiplatform-5.18
 > 
-> Patch #3 changes how is dealt with conflicting framebuffers unregistering,
-> rather than having a variable to determine if a lock should be take, it
-> just drops the lock before unregistering the platform device.
-> 
-> Patch #4 fixes the mentioned race conditions and finally patch #5 is the
-> revert patch that was posted by Daniel before but he dropped from his set.
-> 
-> The patches were tested on a rpi4 using different video configurations:
-> (simpledrm -> vc4 both builtin, only vc4 builtin, only simpledrm builtin
-> and simpledrm builtin with vc4 built as a module).
-> 
-> Best regards,
-> Javier
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Unfortunately that crashes for me when trying to boot from ide.
+Bisect points to the last patch of the series.
+
+Guenter
+
+---
+[    1.403715] 8<--- cut here ---
+[    1.403848] Unable to handle kernel paging request at virtual address feeb000e
+[    1.404097] [feeb000e] *pgd=00000000
+[    1.404400] Internal error: Oops: 805 [#1] PREEMPT ARM
+[    1.404648] Modules linked in:
+[    1.404890] CPU: 0 PID: 22 Comm: pccardd Not tainted 5.18.0-rc3-next-20220422 #1
+[    1.405159] Hardware name: SHARP Borzoi
+[    1.405319] PC is at pcmcia_init_one+0xf8/0x27c
+[    1.405476] LR is at devres_add+0x40/0x6c
+[    1.405611] pc : [<c04bdea0>]    lr : [<c044d808>]    psr: a0000113
+[    1.405846] sp : c48a5d00  ip : c15f4220  fp : 60000113
+[    1.406026] r10: 00000000  r9 : c48b000e  r8 : c48b0000
+[    1.406195] r7 : feeb0000  r6 : feeb000e  r5 : c15ec090  r4 : c15ec020
+[    1.406395] r3 : 00000002  r2 : 00000000  r1 : c15f4200  r0 : feeb000e
+[    1.406615] Flags: NzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment none
+[    1.406847] Control: 00007977  Table: a0004000  DAC: 00000071
+[    1.407042] Register r0 information: 0-page vmalloc region starting at 0xfee00000 allocated at pci_reserve_io+0x0/0x38
+[    1.407453] Register r1 information: slab
+[    1.407721] Register r2 information: NULL pointer
+[    1.407885] Register r3 information: non-paged memory
+[    1.408047] Register r4 information: slab
+[    1.408179] Register r5 information: slab
+[    1.408310] Register r6 information: 0-page vmalloc region starting at 0xfee00000 allocated at pci_reserve_io+0x0/0x38
+[    1.408622] Register r7 information: 0-page vmalloc region starting at 0xfee00000 allocated at pci_reserve_io+0x0/0x38
+[    1.408941] Register r8 information: 0-page vmalloc region starting at 0xc48b0000 allocated at soc_pcmcia_add_one+0xf0/0x370
+[    1.409291] Register r9 information: 0-page vmalloc region starting at 0xc48b0000 allocated at soc_pcmcia_add_one+0xf0/0x370
+[    1.409617] Register r10 information: NULL pointer
+[    1.409768] Register r11 information: non-paged memory
+[    1.409924] Register r12 information: slab
+[    1.410066] Process pccardd (pid: 22, stack limit = 0x(ptrval))
+[    1.410268] Stack: (0xc48a5d00 to 0xc48a6000)
+[    1.410448] 5d00: c15ebb78 00000000 0000001a 00000110 00000000 c0ad702c ff00051a c15ec090
+[    1.410694] 5d20: c0b713ec c0b713ec c12f6048 c0b644fc 00000000 00000000 60000113 c053f6bc
+[    1.410938] 5d40: c16b3bf0 c15efa88 c09d4e48 00000001 00000007 00000200 0000000f 00000000
+[    1.411174] 5d60: 00000000 00000000 c0b71300 c0ad702c c0b644fc 00000000 c15ec090 c0b713ec
+[    1.411410] 5d80: c0b9f980 c04491a8 c15ec090 00000000 60000113 c15ec090 c0b713ec c15ec090
+[    1.411644] 5da0: 00000003 c0449530 c078a988 c0399c90 ffffff08 c0be4d7c c0b713ec c15ec090
+[    1.411882] 5dc0: 00000003 c0b644fc 00000000 00000000 60000113 c04496e0 00000001 c0b713ec
+[    1.412117] 5de0: c48a5e2c c15ec090 c0b644fc c0449aa0 00000000 c48a5e2c c04499fc c0be4d50
+[    1.412352] 5e00: c0b644fc c044702c 00000000 c12f407c c16b3bd4 c0ad702c c15ec090 00000001
+[    1.412587] 5e20: c15ec0d4 c0449030 c15ec090 c15ec090 00000001 c0ad702c c15ec090 c15ec090
+[    1.412827] 5e40: c0b77a9c c0448044 c15ec090 00000000 c12f5030 c04458bc 00000001 c009c720
+[    1.413065] 5e60: c15ec090 c04590e4 c15ec090 00000002 c12f6048 c12f6150 c15ec088 c0ad702c
+[    1.413307] 5e80: c15ec090 c15ec020 c12f6150 c12f6048 c12f6150 c15ec088 c15ec090 c12f6160
+[    1.413551] 5ea0: 60000113 c0540820 00000000 c12f6048 c12f6150 ffffffe4 c12f6178 c12f6900
+[    1.413804] 5ec0: c0bb6828 c05409e8 00000000 00000011 c12f6048 00000000 c12f6150 c0ba35c8
+[    1.414050] 5ee0: c12f6178 c12f6900 c0bb6828 c074c3a8 c48a5f04 c0ad702c c48a5f10 c074c44c
+[    1.414294] 5f00: c098de10 c09acdc0 c12f4fa0 c48a5f1c 000031d0 c0ad702c c12f6048 c12f6048
+[    1.414538] 5f20: 00000000 c12f6150 c0ba35c8 c0540af8 c12f6048 00000000 c12f6150 c053dcd4
+[    1.414791] 5f40: c12f6048 00000000 00000080 c12f6144 c12f6900 c053e704 00000000 c12f6178
+[    1.415037] 5f60: 000030d0 c0ad702c c12f6900 c12f4fe0 c12f21a0 c053e36c c12f6048 c12f6900
+[    1.415282] 5f80: c4809cc0 00000000 00000000 c004d67c c12f4fe0 c004d5a0 00000000 00000000
+[    1.415531] 5fa0: 00000000 00000000 00000000 c0008368 00000000 00000000 00000000 00000000
+[    1.415780] 5fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+[    1.416025] 5fe0: 00000000 00000000 00000000 00000000 00000013 00000000 00000000 00000000
+[    1.416643]  pcmcia_init_one from pcmcia_device_probe+0xe4/0x2a0
+[    1.416882]  pcmcia_device_probe from really_probe+0xc8/0x3b4
+[    1.417070]  really_probe from __driver_probe_device+0x9c/0x214
+[    1.417255]  __driver_probe_device from driver_probe_device+0x38/0xe0
+[    1.417454]  driver_probe_device from __device_attach_driver+0xa4/0x11c
+[    1.417657]  __device_attach_driver from bus_for_each_drv+0x88/0xd8
+[    1.417864]  bus_for_each_drv from __device_attach+0xf4/0x194
+[    1.418047]  __device_attach from bus_probe_device+0x8c/0x94
+[    1.418224]  bus_probe_device from device_add+0x3d0/0x894
+[    1.418395]  device_add from pcmcia_device_add+0x2ec/0x3e0
+[    1.418568]  pcmcia_device_add from pcmcia_card_add+0xd4/0x1a0
+[    1.418756]  pcmcia_card_add from pcmcia_bus_add+0x44/0x4c
+[    1.418930]  pcmcia_bus_add from socket_insert+0x12c/0x150
+[    1.419103]  socket_insert from pccardd+0x398/0x44c
+[    1.419257]  pccardd from kthread+0xdc/0x114
+[    1.419400]  kthread from ret_from_fork+0x14/0x2c
+[    1.419569] Exception stack(0xc48a5fb0 to 0xc48a5ff8)
+[    1.419735] 5fa0:                                     00000000 00000000 00000000 00000000
+[    1.419979] 5fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+[    1.420222] 5fe0: 00000000 00000000 00000000 00000000 00000013 00000000
+[    1.420501] Code: 13570000 e1a06000 0a000043 e3a03002 (e5c03000)
+[    1.420874] ---[ end trace 0000000000000000 ]---
+
+---
+# bad: [7643a9ca9f8e08f71e15f89dd74863635e981e03] ARM: pxa: convert to multiplatform
+# good: [3123109284176b1532874591f7c81f3837bbdc17] Linux 5.18-rc1
+git bisect start 'HEAD' 'v5.18-rc1'
+# good: [9b03d7f95bd4d97101ecb8ea1e822103b81fdb2d] ARM: pxa: mainstone-wm97xx: use gpio lookup table
+git bisect good 9b03d7f95bd4d97101ecb8ea1e822103b81fdb2d
+# good: [764063eee7620ea9abb940068a7ad0e7f9efa1b6] cpufreq: pxa3: move clk register access to clk driver
+git bisect good 764063eee7620ea9abb940068a7ad0e7f9efa1b6
+# good: [5153474f0a4388b7ddb59add4be73bfb42b2007f] ARM: mmp: remove tavorevb board support
+git bisect good 5153474f0a4388b7ddb59add4be73bfb42b2007f
+# good: [2746f7c78b428c8b01b691a29a972c08101ae343] ARM: PXA: fix multi-cpu build of xsc3
+git bisect good 2746f7c78b428c8b01b691a29a972c08101ae343
+# good: [73d5106e9489464eac84362705e93bcf3b376123] ARM: pxa: remove support for MTD_XIP
+git bisect good 73d5106e9489464eac84362705e93bcf3b376123
+# first bad commit: [7643a9ca9f8e08f71e15f89dd74863635e981e03] ARM: pxa: convert to multiplatform

@@ -2,88 +2,151 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EAE5C433EF
-	for <linux-fbdev@archiver.kernel.org>; Sat, 23 Apr 2022 13:53:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAF77C43219
+	for <linux-fbdev@archiver.kernel.org>; Sat, 23 Apr 2022 19:55:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235861AbiDWN4k (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 23 Apr 2022 09:56:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58998 "EHLO
+        id S236896AbiDWT63 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 23 Apr 2022 15:58:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44584 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235860AbiDWN4j (ORCPT
+        with ESMTP id S236914AbiDWT60 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sat, 23 Apr 2022 09:56:39 -0400
-X-Greylist: delayed 62 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Sat, 23 Apr 2022 06:53:41 PDT
-Received: from mailrelay3-1.pub.mailoutpod1-cph3.one.com (mailrelay3-1.pub.mailoutpod1-cph3.one.com [46.30.210.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A6A715708
-        for <linux-fbdev@vger.kernel.org>; Sat, 23 Apr 2022 06:53:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=DiK8nxAmT5CjsuqAm40aEBUJBBmqvVVGEPk3NssYP10=;
-        b=YOIntkTZj1R//lKe47NzRJJXg89UyUGK1bpz517IXiiYqXzBJuDgZCS1rSQKA2hYxMzDC2ySesW67
-         M4Tf3LQw8GaUWYZoZUgh8zhqM7ODmCicDYhWczQi1E77WJM86eak06HKCb3Ar1x8GG/q1XFGGF6LH5
-         +4+UhmACuEObDb+4U4Fgz7v7X1ohT49GmZDj6HrOShAJTKMZX3dyGrS6nXafaAo1+TY+UuIFJWKPtR
-         5EsybSbsEU3MlX2s7wcpFpOQwBlh8Jv4SN0DcaL0XMchI+L9b3+aQ4CuV77d9TMSNv2A/DmfpPa5qo
-         vgbqaDnnU3fWXrbYjMPg2er3OTyqYwQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=DiK8nxAmT5CjsuqAm40aEBUJBBmqvVVGEPk3NssYP10=;
-        b=3FxP/bRo0OofayGaYqrhv1GXum/iei6Z5bGl9JZOETuUd36XHKGVJtTbpKQZ6yocRu6LsB6bt1ler
-         vgcNxLEDw==
-X-HalOne-Cookie: af45df9e17cb05a2750f22d339417b5f127d72f1
-X-HalOne-ID: a1ddb960-c30c-11ec-be69-d0431ea8bb03
-Received: from mailproxy2.cst.dirpod4-cph3.one.com (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
-        by mailrelay3.pub.mailoutpod1-cph3.one.com (Halon) with ESMTPSA
-        id a1ddb960-c30c-11ec-be69-d0431ea8bb03;
-        Sat, 23 Apr 2022 13:52:36 +0000 (UTC)
-Date:   Sat, 23 Apr 2022 15:52:35 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Tom Rix <trix@redhat.com>
-Cc:     daniel@ffwll.ch, deller@gmx.de, tzimmermann@suse.de,
-        javierm@redhat.com, cssk@net-c.es, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fbcon: change fbcon_*registered_fb variables to static
-Message-ID: <YmQEo6FWXOsdhiz5@ravnborg.org>
-References: <20220423125618.1916005-1-trix@redhat.com>
+        Sat, 23 Apr 2022 15:58:26 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2115F183FBD;
+        Sat, 23 Apr 2022 12:55:24 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id C5E94B80D1C;
+        Sat, 23 Apr 2022 19:55:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CA3CC385B5;
+        Sat, 23 Apr 2022 19:55:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1650743721;
+        bh=f+gN5VFSk9TvNUY6oLSGkqRdwS9xhEyKvVqBzBXLs0k=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=PzAHzR20lzvPfCTqt/UUzx12IPhOfz+TRjqNJ8NxEoRI/bWqgErqlZjk7cfTM259a
+         ES9ZLzK7AQ5x5SMPoX4fGuEBvk10IF/bYoYOZNrIybBirPtSW18FdAPqWZza8MudXV
+         vG23F9GYtnFHpHrf84m9ZBvRrLCT6HR3YBoZ5rIdgNbcdWJ4WulW+Ag5txr/fArK/K
+         8hzENh6M4DW/B6aRii4K02sQiyHAgWdV6wTeninHDFb9FTGsk1kC60BC8Ty7Z9oRiu
+         uezNy/Q8OZSv9U2rlimKsK6lo1l+EW6dZRWZhxxZjuCiGNgZmaJtyoN+hSdEOEgF8G
+         ZbIfS2Abjyb2Q==
+Received: by mail-wm1-f48.google.com with SMTP id v64-20020a1cac43000000b0038cfd1b3a6dso10070118wme.5;
+        Sat, 23 Apr 2022 12:55:21 -0700 (PDT)
+X-Gm-Message-State: AOAM533lGh9EPqhUPg/nNViJ/yIL6iwq+/2Z9XUGtlSB1o1YIthHmVZa
+        ZwNhKnBa6uPnYoSswxFiRZFxxDjgek5kduGVgxM=
+X-Google-Smtp-Source: ABdhPJwI9oPHj0hjS6Y5T/XpNunPLjXzfhDb/y4TSIxWhFvis5ICGMzIa2Kp6ZajGKm/dLFayXeKiCmoNnJ4Fu7pVP8=
+X-Received: by 2002:a1c:f219:0:b0:38c:782c:3bb with SMTP id
+ s25-20020a1cf219000000b0038c782c03bbmr18417513wmc.94.1650743719480; Sat, 23
+ Apr 2022 12:55:19 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220423125618.1916005-1-trix@redhat.com>
+References: <20220419163810.2118169-1-arnd@kernel.org> <20220422170530.GA2338209@roeck-us.net>
+ <CAK8P3a3V=qxUqYT3Yt=dpXVv58-Y+HVi952wO6D4LPN5NNphGA@mail.gmail.com>
+ <8b36d3a4-ec85-2f9f-e4b7-734d8ddd3d8f@roeck-us.net> <CAK8P3a0R9cpEb1d2=e9KnGSbi_uRv48RWfCu_J4DDak_cGZSuw@mail.gmail.com>
+ <20220422234150.GA3442771@roeck-us.net>
+In-Reply-To: <20220422234150.GA3442771@roeck-us.net>
+From:   Arnd Bergmann <arnd@kernel.org>
+Date:   Sat, 23 Apr 2022 21:55:03 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a3qZdEqnJ2nTOKwDMossngOgCpEvZq4cQMPQjSsUoU=6g@mail.gmail.com>
+Message-ID: <CAK8P3a3qZdEqnJ2nTOKwDMossngOgCpEvZq4cQMPQjSsUoU=6g@mail.gmail.com>
+Subject: Re: [PATCH v2 00/48] ARM: PXA multiplatform support
+To:     Guenter Roeck <linux@roeck-us.net>
+Cc:     Robert Jarzmik <robert.jarzmik@free.fr>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
+        Haojian Zhuang <haojian.zhuang@gmail.com>,
+        Marek Vasut <marek.vasut@gmail.com>,
+        Philipp Zabel <philipp.zabel@gmail.com>,
+        Lubomir Rintel <lkundrak@v3.sk>,
+        Paul Parsons <lost.distance@yahoo.com>,
+        Tomas Cech <sleep_walker@suse.com>,
+        Sergey Lapin <slapin@ossfans.org>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Dominik Brodowski <linux@dominikbrodowski.net>,
+        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
+        IDE-ML <linux-ide@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
+        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
+        linux-mmc <linux-mmc@vger.kernel.org>,
+        linux-mtd <linux-mtd@lists.infradead.org>,
+        linux-rtc@vger.kernel.org, USB list <linux-usb@vger.kernel.org>,
+        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        ALSA Development Mailing List <alsa-devel@alsa-project.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, Apr 23, 2022 at 08:56:18AM -0400, Tom Rix wrote:
-> Sparse reports these issues
-> fbcon.c:106:16: warning: symbol 'fbcon_registered_fb' was not declared. Should it be static?
-> fbcon.c:107:5: warning: symbol 'fbcon_num_registered_fb' was not declared. Should it be static?
-> 
-> These variables are only used in fbcon.c. Single file use variables should
-> be static, so change their storage-class specifiers to static.
-> 
-> Signed-off-by: Tom Rix <trix@redhat.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> ---
->  drivers/video/fbdev/core/fbcon.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index c4e91715ef00..225ac0fe0143 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -103,8 +103,8 @@ enum {
->  
->  static struct fbcon_display fb_display[MAX_NR_CONSOLES];
->  
-> -struct fb_info *fbcon_registered_fb[FB_MAX];
-> -int fbcon_num_registered_fb;
-> +static struct fb_info *fbcon_registered_fb[FB_MAX];
-> +static int fbcon_num_registered_fb;
->  
->  #define fbcon_for_each_registered_fb(i)		\
->  	for (i = 0; WARN_CONSOLE_UNLOCKED(), i < FB_MAX; i++)		\
-> -- 
-> 2.27.0
+On Sat, Apr 23, 2022 at 1:41 AM Guenter Roeck <linux@roeck-us.net> wrote:
+>
+> On Sat, Apr 23, 2022 at 12:04:31AM +0200, Arnd Bergmann wrote:
+> > On Fri, Apr 22, 2022 at 10:55 PM Guenter Roeck <linux@roeck-us.net> wrote:
+> > > On 4/22/22 12:16, Arnd Bergmann wrote:
+> > > > On Fri, Apr 22, 2022 at 7:05 PM Guenter Roeck <linux@roeck-us.net> wrote:
+> > > >
+> > > > Which machine did you hit this on? Is this on hardware or in qemu?
+> > > >
+> > > qemu, as always. borzoi, spitz, terrier, tosa, z2, and sx1 fail.
+> > > Also, I just noticed that the failure is not always the same.
+> > > z2 fails to boot from initrd, and sx1 fails to boot completely.
+> >
+> > That's a lot of machines failing, I hope at least we got the same bugs more
+> > than once here.
+> >
+> > For the I/O space, I found now that PXA was not using the standard
+> > virtual I/O address yet, but instead used a NULL-based offset.
+> >
+> > I'm not entirely happy with this patch, but this is an outline of what
+> > I think we need to fix that: https://pastebin.com/3nVgQsEw
+> > This one is probably incomplete, at least it breaks sa1100 for now,
+> > and it adds a bogus CONFIG_PCI dependency. I'm also not sure
+> > in what way the last patch in the series triggers it, rather than the
+> > one that removed mach/io.h.
+> >
+> > I had sx1 booting in qemu at least, with the omap1 multiplatform series only.
+> > If you have a custom config for this one, make sure you get the right
+> > DEBUG_LL address.
+> >
+> > > I'll do another round of bisects.
+> >
+>
+> Here is the bisect for the sx1 boot failure.
+
+Odd, I can't reproduce this at all. Do you get any console output at
+all for this?
+
+Is this the plain omap1_defconfig, or something else?
+
+One thing I keep having to apply myself is this snippet:
+
+diff --git a/arch/arm/mm/proc-arm925.S b/arch/arm/mm/proc-arm925.S
+index 0bfad62ea858..87c695703580 100644
+--- a/arch/arm/mm/proc-arm925.S
++++ b/arch/arm/mm/proc-arm925.S
+@@ -441,7 +441,6 @@ __arm925_setup:
+
+ #ifdef CONFIG_CPU_DCACHE_WRITETHROUGH
+        mov     r0, #4                          @ disable write-back
+on caches explicitly
+-       mcr     p15, 7, r0, c15, c0, 0
+ #endif
+
+        adr     r5, arm925_crval
+
+I don't remember what the story is behind this, but I can't actually manage
+to boot omap1_defconfig on qemu with the instruction intact.
+
+       Arnd

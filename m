@@ -2,61 +2,61 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8298C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Apr 2022 11:27:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD2EFC4332F
+	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Apr 2022 11:27:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235383AbiDYLa7 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 25 Apr 2022 07:30:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35854 "EHLO
+        id S234255AbiDYLbA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 25 Apr 2022 07:31:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231446AbiDYLa6 (ORCPT
+        with ESMTP id S234796AbiDYLa7 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 25 Apr 2022 07:30:58 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5528716599
+        Mon, 25 Apr 2022 07:30:59 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B60CF1EAE7
         for <linux-fbdev@vger.kernel.org>; Mon, 25 Apr 2022 04:27:54 -0700 (PDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 092AA1F38C;
+        by smtp-out1.suse.de (Postfix) with ESMTPS id 6EB0721100;
         Mon, 25 Apr 2022 11:27:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
         t=1650886073; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=W0PMh2q6LVO/UifHJwUURah/ur8/b5GdL3/RLq+zA74=;
-        b=ltT2sqZbAzTuY2f0DB6QYoNQ3hvpg2vGOnYEyCpFP+VEabBYBhPeUnK942uct8i8SGLeV2
-        sOk0syD2+xGODh8zZ3YOYTChj01pgSSpSvLjcCgodiIHS49eM992iuJZdvKxZhxUL96Odv
-        sZ/HF0eHPCUGHZJ/hyET06b7vDVJTMI=
+        bh=AhG85TsSK3EUNgu/Na86s/FJVe6togqbhN7J3edS+WM=;
+        b=vqg2CryCgYd6kLH0tLoFQyHhVg4AhY8NLQCAJeDzo5yC2EjCeynr2o0HM2trjGWh3nTIY3
+        R5+Kz4+rIv25UsRHhRWuXYrLfWaA7/5layykgX0YHU5AH+S4Tuj/0WpTTUNBjt61lLZius
+        CNmkh2n+4ddM2Gl3XpSNAXcKlXfcmOg=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
         s=susede2_ed25519; t=1650886073;
         h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
          mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=W0PMh2q6LVO/UifHJwUURah/ur8/b5GdL3/RLq+zA74=;
-        b=TdiAqi82LD9NZ+JufDIST/NHTXP173ayOz1kao/tsm47mqmqi2Z8C5v0xLP70YOuheQYaX
-        faH2goLoiOHXEtAw==
+        bh=AhG85TsSK3EUNgu/Na86s/FJVe6togqbhN7J3edS+WM=;
+        b=IHWVCNEy65SK8ormwXXXRu52C2dClqGRD+8E5d7P7VgIIyyiTMq1rM1RcNw+qYtlBDNBVL
+        OC1pzVA2tgbzDMCw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D0D4D13AF3;
-        Mon, 25 Apr 2022 11:27:52 +0000 (UTC)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 419BF13AF3;
+        Mon, 25 Apr 2022 11:27:53 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
         by imap2.suse-dmz.suse.de with ESMTPSA
-        id cBkhMriFZmIPUAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Mon, 25 Apr 2022 11:27:52 +0000
+        id yFsxD7mFZmIPUAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 25 Apr 2022 11:27:53 +0000
 From:   Thomas Zimmermann <tzimmermann@suse.de>
 To:     javierm@redhat.com, daniel@ffwll.ch, deller@gmx.de,
         airlied@linux.ie, maarten.lankhorst@linux.intel.com
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH v2 1/3] fbdev: Put mmap for deferred I/O into drivers
-Date:   Mon, 25 Apr 2022 13:27:49 +0200
-Message-Id: <20220425112751.25985-2-tzimmermann@suse.de>
+Subject: [PATCH v2 3/3] fbdev: Refactor implementation of page_mkwrite
+Date:   Mon, 25 Apr 2022 13:27:51 +0200
+Message-Id: <20220425112751.25985-4-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.36.0
 In-Reply-To: <20220425112751.25985-1-tzimmermann@suse.de>
 References: <20220425112751.25985-1-tzimmermann@suse.de>
@@ -66,274 +66,117 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The fbdev mmap function fb_mmap() unconditionally overrides the
-driver's implementation if deferred I/O has been activated. This
-makes it hard to implement mmap with anything but a vmalloc()'ed
-software buffer. That is specifically a problem for DRM, where
-video memory is maintained by a memory manager.
-
-Leave the mmap handling to drivers and expect them to call the
-helper for deferred I/O by thmeselves.
+Refactor the page-write handler for deferred I/O. Drivers use the
+function to let fbdev track written pages of mmap'ed framebuffer
+memory.
 
 v2:
-	* print a helpful error message if the defio setup is
-	  incorrect (Javier)
+	* don't export the helper until we have an external caller
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
- drivers/gpu/drm/drm_fb_helper.c        |  4 +++-
- drivers/gpu/drm/vmwgfx/vmwgfx_fb.c     |  1 +
- drivers/hid/hid-picolcd_fb.c           |  1 +
- drivers/staging/fbtft/fbtft-core.c     |  1 +
- drivers/video/fbdev/broadsheetfb.c     |  1 +
- drivers/video/fbdev/core/fb_defio.c    |  1 +
- drivers/video/fbdev/core/fbmem.c       | 19 +++++++++----------
- drivers/video/fbdev/hecubafb.c         |  1 +
- drivers/video/fbdev/hyperv_fb.c        |  1 +
- drivers/video/fbdev/metronomefb.c      |  1 +
- drivers/video/fbdev/sh_mobile_lcdcfb.c |  6 ++++++
- drivers/video/fbdev/smscufx.c          |  3 +++
- drivers/video/fbdev/ssd1307fb.c        |  1 +
- drivers/video/fbdev/udlfb.c            |  3 +++
- drivers/video/fbdev/xen-fbfront.c      |  1 +
- 15 files changed, 34 insertions(+), 11 deletions(-)
+ drivers/video/fbdev/core/fb_defio.c | 68 ++++++++++++++++++++---------
+ 1 file changed, 48 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index d265a73313c9..d06ce0e92d66 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -2118,7 +2118,9 @@ static int drm_fbdev_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
- {
- 	struct drm_fb_helper *fb_helper = info->par;
- 
--	if (fb_helper->dev->driver->gem_prime_mmap)
-+	if (drm_fbdev_use_shadow_fb(fb_helper))
-+		return fb_deferred_io_mmap(info, vma);
-+	else if (fb_helper->dev->driver->gem_prime_mmap)
- 		return fb_helper->dev->driver->gem_prime_mmap(fb_helper->buffer->gem, vma);
- 	else
- 		return -ENODEV;
-diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c b/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
-index adf17c740656..02a4a4fa3da3 100644
---- a/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
-+++ b/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
-@@ -619,6 +619,7 @@ static const struct fb_ops vmw_fb_ops = {
- 	.fb_imageblit = vmw_fb_imageblit,
- 	.fb_pan_display = vmw_fb_pan_display,
- 	.fb_blank = vmw_fb_blank,
-+	.fb_mmap = fb_deferred_io_mmap,
- };
- 
- int vmw_fb_init(struct vmw_private *vmw_priv)
-diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
-index 33c102a60992..78515e6bacf0 100644
---- a/drivers/hid/hid-picolcd_fb.c
-+++ b/drivers/hid/hid-picolcd_fb.c
-@@ -428,6 +428,7 @@ static const struct fb_ops picolcdfb_ops = {
- 	.fb_imageblit = picolcd_fb_imageblit,
- 	.fb_check_var = picolcd_fb_check_var,
- 	.fb_set_par   = picolcd_set_par,
-+	.fb_mmap      = fb_deferred_io_mmap,
- };
- 
- 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 9c4d797e7ae4..d4e14f7c9d57 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -652,6 +652,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	fbops->fb_imageblit =      fbtft_fb_imageblit;
- 	fbops->fb_setcolreg =      fbtft_fb_setcolreg;
- 	fbops->fb_blank     =      fbtft_fb_blank;
-+	fbops->fb_mmap      =      fb_deferred_io_mmap;
- 
- 	fbdefio->delay =           HZ / fps;
- 	fbdefio->sort_pagelist =   true;
-diff --git a/drivers/video/fbdev/broadsheetfb.c b/drivers/video/fbdev/broadsheetfb.c
-index b9054f658838..528bc0902338 100644
---- a/drivers/video/fbdev/broadsheetfb.c
-+++ b/drivers/video/fbdev/broadsheetfb.c
-@@ -1055,6 +1055,7 @@ static const struct fb_ops broadsheetfb_ops = {
- 	.fb_fillrect	= broadsheetfb_fillrect,
- 	.fb_copyarea	= broadsheetfb_copyarea,
- 	.fb_imageblit	= broadsheetfb_imageblit,
-+	.fb_mmap	= fb_deferred_io_mmap,
- };
- 
- static struct fb_deferred_io broadsheetfb_defio = {
 diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-index 6aaf6d0abf39..6924d489a289 100644
+index a03b9c64fc61..214581ce5840 100644
 --- a/drivers/video/fbdev/core/fb_defio.c
 +++ b/drivers/video/fbdev/core/fb_defio.c
-@@ -181,6 +181,7 @@ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
- 	vma->vm_private_data = info;
- 	return 0;
+@@ -143,29 +143,18 @@ int fb_deferred_io_fsync(struct file *file, loff_t start, loff_t end, int datasy
  }
-+EXPORT_SYMBOL_GPL(fb_deferred_io_mmap);
+ EXPORT_SYMBOL_GPL(fb_deferred_io_fsync);
  
- /* workqueue callback */
- static void fb_deferred_io_work(struct work_struct *work)
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 84427470367b..52440e3f8f69 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1334,7 +1334,6 @@ static int
- fb_mmap(struct file *file, struct vm_area_struct * vma)
+-/* vm_ops->page_mkwrite handler */
+-static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
++/*
++ * Adds a page to the dirty list. Requires caller to hold
++ * struct fb_deferred_io.lock. Call this from struct
++ * vm_operations_struct.page_mkwrite.
++ */
++static vm_fault_t __fb_deferred_io_track_page(struct fb_info *info, unsigned long offset,
++					      struct page *page)
  {
- 	struct fb_info *info = file_fb_info(file);
--	int (*fb_mmap_fn)(struct fb_info *info, struct vm_area_struct *vma);
- 	unsigned long mmio_pgoff;
- 	unsigned long start;
- 	u32 len;
-@@ -1343,14 +1342,7 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
- 		return -ENODEV;
- 	mutex_lock(&info->mm_lock);
+-	struct page *page = vmf->page;
+-	struct fb_info *info = vmf->vma->vm_private_data;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
+ 	struct fb_deferred_io_pageref *pageref;
+-	unsigned long offset;
+ 	vm_fault_t ret;
  
--	fb_mmap_fn = info->fbops->fb_mmap;
+-	offset = (vmf->address - vmf->vma->vm_start);
 -
--#if IS_ENABLED(CONFIG_FB_DEFERRED_IO)
--	if (info->fbdefio)
--		fb_mmap_fn = fb_deferred_io_mmap;
--#endif
+-	/* this is a callback we get when userspace first tries to
+-	write to the page. we schedule a workqueue. that workqueue
+-	will eventually mkclean the touched pages and execute the
+-	deferred framebuffer IO. then if userspace touches a page
+-	again, we repeat the same scheme */
 -
--	if (fb_mmap_fn) {
-+	if (info->fbops->fb_mmap) {
- 		int res;
+-	file_update_time(vmf->vma->vm_file);
+-
+-	/* protect against the workqueue changing the page list */
+-	mutex_lock(&fbdefio->lock);
+-
+ 	/* first write in this cycle, notify the driver */
+ 	if (fbdefio->first_io && list_empty(&fbdefio->pagelist))
+ 		fbdefio->first_io(info);
+@@ -186,8 +175,6 @@ static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
+ 	 */
+ 	lock_page(pageref->page);
  
- 		/*
-@@ -1358,11 +1350,18 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
- 		 * SME protection is removed ahead of the call
- 		 */
- 		vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
--		res = fb_mmap_fn(info, vma);
-+		res = info->fbops->fb_mmap(info, vma);
- 		mutex_unlock(&info->mm_lock);
- 		return res;
- 	}
- 
-+	/*
-+	 * FB deferred I/O wants you to handle mmap in your drivers. At a
-+	 * minimum, point struct fb_ops.fb_mmap to fb_deferred_io_mmap().
-+	 */
-+	if (dev_WARN_ONCE(info->dev, info->fbdefio, "fbdev mmap not set up for defered I/O.\n"))
-+		return -ENODEV;
-+
- 	/*
- 	 * Ugh. This can be either the frame buffer mapping, or
- 	 * if pgoff points past it, the mmio mapping.
-diff --git a/drivers/video/fbdev/hecubafb.c b/drivers/video/fbdev/hecubafb.c
-index 00d77105161a..2c483e2cf9ec 100644
---- a/drivers/video/fbdev/hecubafb.c
-+++ b/drivers/video/fbdev/hecubafb.c
-@@ -204,6 +204,7 @@ static const struct fb_ops hecubafb_ops = {
- 	.fb_fillrect	= hecubafb_fillrect,
- 	.fb_copyarea	= hecubafb_copyarea,
- 	.fb_imageblit	= hecubafb_imageblit,
-+	.fb_mmap	= fb_deferred_io_mmap,
- };
- 
- static struct fb_deferred_io hecubafb_defio = {
-diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-index c8e0ea27caf1..d7f6abf827b9 100644
---- a/drivers/video/fbdev/hyperv_fb.c
-+++ b/drivers/video/fbdev/hyperv_fb.c
-@@ -909,6 +909,7 @@ static const struct fb_ops hvfb_ops = {
- 	.fb_copyarea = hvfb_cfb_copyarea,
- 	.fb_imageblit = hvfb_cfb_imageblit,
- 	.fb_blank = hvfb_blank,
-+	.fb_mmap = fb_deferred_io_mmap,
- };
- 
- 
-diff --git a/drivers/video/fbdev/metronomefb.c b/drivers/video/fbdev/metronomefb.c
-index af858dd23ea6..2541f2fe065b 100644
---- a/drivers/video/fbdev/metronomefb.c
-+++ b/drivers/video/fbdev/metronomefb.c
-@@ -564,6 +564,7 @@ static const struct fb_ops metronomefb_ops = {
- 	.fb_fillrect	= metronomefb_fillrect,
- 	.fb_copyarea	= metronomefb_copyarea,
- 	.fb_imageblit	= metronomefb_imageblit,
-+	.fb_mmap	= fb_deferred_io_mmap,
- };
- 
- static struct fb_deferred_io metronomefb_defio = {
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index aa4ebe3192ec..1dc5079e4518 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -1483,6 +1483,9 @@ sh_mobile_lcdc_overlay_mmap(struct fb_info *info, struct vm_area_struct *vma)
- {
- 	struct sh_mobile_lcdc_overlay *ovl = info->par;
- 
-+	if (info->fbdefio)
-+		return fb_deferred_io_mmap(info, vma);
-+
- 	return dma_mmap_coherent(ovl->channel->lcdc->dev, vma, ovl->fb_mem,
- 				 ovl->dma_handle, ovl->fb_size);
+-	mutex_unlock(&fbdefio->lock);
+-
+ 	/* come back after delay to process the deferred IO */
+ 	schedule_delayed_work(&info->deferred_work, fbdefio->delay);
+ 	return VM_FAULT_LOCKED;
+@@ -197,6 +184,47 @@ static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
+ 	return ret;
  }
-@@ -1957,6 +1960,9 @@ sh_mobile_lcdc_mmap(struct fb_info *info, struct vm_area_struct *vma)
- {
- 	struct sh_mobile_lcdc_chan *ch = info->par;
  
-+	if (info->fbdefio)
-+		return fb_deferred_io_mmap(info, vma);
++/*
++ * fb_deferred_io_page_mkwrite - Mark a page as written for deferred I/O
++ * @fb_info: The fbdev info structure
++ * @vmf: The VM fault
++ *
++ * This is a callback we get when userspace first tries to
++ * write to the page. We schedule a workqueue. That workqueue
++ * will eventually mkclean the touched pages and execute the
++ * deferred framebuffer IO. Then if userspace touches a page
++ * again, we repeat the same scheme.
++ *
++ * Returns:
++ * VM_FAULT_LOCKED on success, or a VM_FAULT error otherwise.
++ */
++static vm_fault_t fb_deferred_io_page_mkwrite(struct fb_info *info, struct vm_fault *vmf)
++{
++	struct page *page = vmf->page;
++	struct fb_deferred_io *fbdefio = info->fbdefio;
++	unsigned long offset;
++	vm_fault_t ret;
 +
- 	return dma_mmap_coherent(ch->lcdc->dev, vma, ch->fb_mem,
- 				 ch->dma_handle, ch->fb_size);
- }
-diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
-index 28768c272b73..9383f8d0914c 100644
---- a/drivers/video/fbdev/smscufx.c
-+++ b/drivers/video/fbdev/smscufx.c
-@@ -779,6 +779,9 @@ static int ufx_ops_mmap(struct fb_info *info, struct vm_area_struct *vma)
- 	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
- 	unsigned long page, pos;
- 
-+	if (info->fbdefio)
-+		return fb_deferred_io_mmap(info, vma);
++	offset = (vmf->address - vmf->vma->vm_start);
 +
- 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
- 		return -EINVAL;
- 	if (size > info->fix.smem_len)
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index c6d5df31111d..7547b4628afc 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -368,6 +368,7 @@ static const struct fb_ops ssd1307fb_ops = {
- 	.fb_fillrect	= ssd1307fb_fillrect,
- 	.fb_copyarea	= ssd1307fb_copyarea,
- 	.fb_imageblit	= ssd1307fb_imageblit,
-+	.fb_mmap	= fb_deferred_io_mmap,
- };
- 
- static void ssd1307fb_deferred_io(struct fb_info *info,
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index b6ec0b8e2b72..9e5a33396ef9 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -326,6 +326,9 @@ static int dlfb_ops_mmap(struct fb_info *info, struct vm_area_struct *vma)
- 	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
- 	unsigned long page, pos;
- 
-+	if (info->fbdefio)
-+		return fb_deferred_io_mmap(info, vma);
++	file_update_time(vmf->vma->vm_file);
 +
- 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
- 		return -EINVAL;
- 	if (size > info->fix.smem_len)
-diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
-index 6826f986da43..6c8846eba2fb 100644
---- a/drivers/video/fbdev/xen-fbfront.c
-+++ b/drivers/video/fbdev/xen-fbfront.c
-@@ -338,6 +338,7 @@ static const struct fb_ops xenfb_fb_ops = {
- 	.fb_imageblit	= xenfb_imageblit,
- 	.fb_check_var	= xenfb_check_var,
- 	.fb_set_par     = xenfb_set_par,
-+	.fb_mmap	= fb_deferred_io_mmap,
- };
- 
- static irqreturn_t xenfb_event_handler(int rq, void *dev_id)
++	/* protect against the workqueue changing the page list */
++	mutex_lock(&fbdefio->lock);
++	ret = __fb_deferred_io_track_page(info, offset, page);
++	mutex_unlock(&fbdefio->lock);
++
++	return ret;
++}
++
++/* vm_ops->page_mkwrite handler */
++static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
++{
++	struct fb_info *info = vmf->vma->vm_private_data;
++
++	return fb_deferred_io_page_mkwrite(info, vmf);
++}
++
+ static const struct vm_operations_struct fb_deferred_io_vm_ops = {
+ 	.fault		= fb_deferred_io_fault,
+ 	.page_mkwrite	= fb_deferred_io_mkwrite,
 -- 
 2.36.0
 

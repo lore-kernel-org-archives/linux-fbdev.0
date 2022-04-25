@@ -2,136 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AC15C433F5
-	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Apr 2022 17:47:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8265C433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Apr 2022 18:13:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242750AbiDYRuE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 25 Apr 2022 13:50:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44670 "EHLO
+        id S236022AbiDYSQ5 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 25 Apr 2022 14:16:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36056 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S235684AbiDYRuE (ORCPT
+        with ESMTP id S239452AbiDYSQ4 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 25 Apr 2022 13:50:04 -0400
-Received: from mailrelay2-1.pub.mailoutpod1-cph3.one.com (mailrelay2-1.pub.mailoutpod1-cph3.one.com [46.30.210.183])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 901881C901
-        for <linux-fbdev@vger.kernel.org>; Mon, 25 Apr 2022 10:46:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=wLUmUeHVyJX9afsutX3xLdFQV+vAlD5FZapuJ+ZSqgI=;
-        b=JmMQHZDt456dDRO3ht2PPyuSljzBpy4RYLU/ZUXX01/1lS1LPy/mkQGtsl8SM6PzEUzw3MVrED1di
-         WA0RINPw7vZ0hH1RP/1OwKOLSsyuModUhEaWBnZUnwUFQ7+eJ7uTQub2naU2aV9BjoksQktzzPNt3H
-         5W2zKNmFDIAwY2MAjS3QOdMjLDNmlte/DxFPvgO6irbM3WfSzc8gCeGLEdy+Mz+avxhMuYzSDnxNVr
-         BxHGj8/C7kPNpjRpWZ+ulvXojtK6+LWTUFdqrh0IUn2PPeNhXvMlvCVhkiH79/M4VQ5uubDdyo5n1Z
-         zd3RF/pEalj36qaYlVazJ/BweLj3KVw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=wLUmUeHVyJX9afsutX3xLdFQV+vAlD5FZapuJ+ZSqgI=;
-        b=VxDRTx3fkE5BJbSS846w6+epT06MYLAASTua0OfWOi7eiFwBVzY+42wcBt8c1MD67sVPWQOP6gHFA
-         6t0e3SfDA==
-X-HalOne-Cookie: aa683d150876407bc5e03b6084f90a79eaae35b0
-X-HalOne-ID: b2a720be-c4bf-11ec-a907-d0431ea8a290
-Received: from mailproxy2.cst.dirpod4-cph3.one.com (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
-        by mailrelay2.pub.mailoutpod1-cph3.one.com (Halon) with ESMTPSA
-        id b2a720be-c4bf-11ec-a907-d0431ea8a290;
-        Mon, 25 Apr 2022 17:46:55 +0000 (UTC)
-Date:   Mon, 25 Apr 2022 19:46:54 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     linux-fbdev@vger.kernel.org, airlied@linux.ie, deller@gmx.de,
-        javierm@redhat.com, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v2 1/3] fbdev: Put mmap for deferred I/O into drivers
-Message-ID: <Ymbejo2702tUUyNW@ravnborg.org>
-References: <20220425112751.25985-1-tzimmermann@suse.de>
- <20220425112751.25985-2-tzimmermann@suse.de>
- <YmbZyI0kVzLo2gR6@ravnborg.org>
+        Mon, 25 Apr 2022 14:16:56 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 286E411117B
+        for <linux-fbdev@vger.kernel.org>; Mon, 25 Apr 2022 11:13:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1650910426;
+        bh=bJ90ezvleG1sU/lSXLEfIAk0n9mJEPKUzQTL5yg8kxk=;
+        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+        b=K0fJaHih8/XHSps3U2ON8qFn187LxGSaMqhOUkQQ5WullY9Dyqxw5m2nNQnimh21X
+         p49zvQFaufzS7fYgxqKdv4rhPpFJvlskKYku9JHsvVGFMf/pv2wAAYRYMvN73rzpPx
+         zSUsrVtvoHgQDQeVfWj6W68bbXjJ/sG+7BMNZpT4=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [192.168.20.60] ([92.116.172.223]) by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MQe5k-1nU9E427YE-00Nkhf; Mon, 25
+ Apr 2022 20:13:46 +0200
+Message-ID: <572c6b31-9f16-55e7-09c9-5fd53dfc9a29@gmx.de>
+Date:   Mon, 25 Apr 2022 20:13:46 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YmbZyI0kVzLo2gR6@ravnborg.org>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.0
+Subject: Re: [PATCH] video: clps711x-fb: Use syscon_regmap_lookup_by_phandle
+Content-Language: en-US
+To:     Alexander Shiyan <eagle.alexander923@gmail.com>,
+        linux-fbdev@vger.kernel.org
+Cc:     dri-devel@lists.freedesktop.org
+References: <20220420070639.62440-1-eagle.alexander923@gmail.com>
+From:   Helge Deller <deller@gmx.de>
+In-Reply-To: <20220420070639.62440-1-eagle.alexander923@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:p0vOob8NbfAgW1Fh0XJMvJhQhGMkk1aOWQT2b3XGXIBALFGxUgG
+ Yloj6lZCw690/mqUZlzEADKUvJUicF+UicrtvmFiAD13+frOP1ZlEUa3GvVF98T8Gg+7AS9
+ KAulrfyAWiVyiRxz6JpOHH+5MOrxXKu8N5/8cPx6UzaIpKHhOl+Tf3t9r+t4FBvjue42z9R
+ 4r2cMz2ruBpkzSfkbbfKw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:UvLuQhp9ZFg=:9UyVBZgm6q2kA1FsyptQ0H
+ 31cqDir1ju/iO/V3YSlc/M7GC4NdCPY4eW+iUZAH6FNIra3hunZUNxwx9pY7IiJXHXr5mCZvU
+ KufMbfEhqT4rPB3/7wyDfuBrHV4YrJtI2RRND0HQcHJOU1buxej6H2JUKA5uYv/pZVoHgFkkA
+ RVlP2XGJXFrsp1v9B3RzUpIPE7ygx96mgFCbx2QXWiDUhrPyd8k1ODWEuW5qURfhIq07gNZlW
+ WyVV+0D99LcdAhbgt92P59mTkB4eqP2VZQMhCMdOLg4M6e82xaI2+/flOofhFHP2vX22ZQUYB
+ vcUunsjgf59lFVkcqrLmpfYkE+XLuSt3BdEoJ81qKpuH4yGxeu4vzhIH5L+lo8ff/g/2Xrz62
+ KkwUn5KbwnnNYxv1Q6rBqZWs4mXJfjHtUBYIx54ttG2x+Pvyynw2lSL2NL5qVnduV9AJCh7Ad
+ 4wt80buwDxaYT+W96FyVQAN5S70u9L/ffzy4Gh4P0gOgK1Ko50AlM7D1Q5WQN/2R1pqk8tyMS
+ ETV/zoNwpfCwKN5fcEPnNIYZeSNSV9PykZri7dKy5FwQCAynWaN5GX2mUhy8VASlkBobZbBBQ
+ s6ZNtOWfPDQya6/8S+cuc9OQuDozJaPRjJnWVDK7PW1Bewh2I0JktBo8lr+XfNc692Bczlr4F
+ scPXt4G4EoQNXF4zF/CyLhGu8jAJflRZR2qUkEDmMrzD64iq4EEqjvYVKMRDbRzpDApzVWqRA
+ nmwCwb+VVMKF5jdDFJJ/uOl3Src2LsmYRGRf8b0KSPiA7AHwd1AayUAYsNlVubTAkeLixH4Je
+ W+N/+8R3jfqf0sg4ZqVymnXgN+0A/kd+A83ZmHGQPokAaVqAWmW9PA+O47W620GQ8knDWh0cb
+ DTo7cyXBaNBGJzL3CvvrvanHmhZzpWfyf301Fo97V+wpmWyTstTMgURFBzBgO0ARjhhID/ed/
+ Wy+tIvUHjTdtOM5ZK4/OnBGhCTlCEPTkAn5kcpj9Vb3glkaWE6/LtkZpJ32AAlRxae1QMg6Wn
+ GUxig6NRVhmZlwhgQrxeEjDajoleDFEzVeRhBjhM5cBByKB0Nv5HkuMz+oYT4XgJAxNwzcHKu
+ El5PFAW/gAcQRs=
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas,
+On 4/20/22 09:06, Alexander Shiyan wrote:
+> Since version 5.13, the standard syscon bindings have been added
+> to all clps711x DT nodes, so we can now use the more general
+> syscon_regmap_lookup_by_phandle function to get the syscon pointer.
+>
+> Signed-off-by: Alexander Shiyan <eagle.alexander923@gmail.com>
 
-On Mon, Apr 25, 2022 at 07:26:32PM +0200, Sam Ravnborg wrote:
-> Hi Thomas,
-> 
-> > diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-> > index 6aaf6d0abf39..6924d489a289 100644
-> > --- a/drivers/video/fbdev/core/fb_defio.c
-> > +++ b/drivers/video/fbdev/core/fb_defio.c
-> > @@ -181,6 +181,7 @@ int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
-> >  	vma->vm_private_data = info;
-> >  	return 0;
-> >  }
-> > +EXPORT_SYMBOL_GPL(fb_deferred_io_mmap);
-> >  
-> >  /* workqueue callback */
-> >  static void fb_deferred_io_work(struct work_struct *work)
-> > diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-> > index 84427470367b..52440e3f8f69 100644
-> > --- a/drivers/video/fbdev/core/fbmem.c
-> > +++ b/drivers/video/fbdev/core/fbmem.c
-> > @@ -1334,7 +1334,6 @@ static int
-> >  fb_mmap(struct file *file, struct vm_area_struct * vma)
-> >  {
-> >  	struct fb_info *info = file_fb_info(file);
-> > -	int (*fb_mmap_fn)(struct fb_info *info, struct vm_area_struct *vma);
-> >  	unsigned long mmio_pgoff;
-> >  	unsigned long start;
-> >  	u32 len;
-> > @@ -1343,14 +1342,7 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
-> >  		return -ENODEV;
-> >  	mutex_lock(&info->mm_lock);
-> >  
-> > -	fb_mmap_fn = info->fbops->fb_mmap;
-> > -
-> > -#if IS_ENABLED(CONFIG_FB_DEFERRED_IO)
-> > -	if (info->fbdefio)
-> > -		fb_mmap_fn = fb_deferred_io_mmap;
-> > -#endif
-> > -
-> > -	if (fb_mmap_fn) {
-> > +	if (info->fbops->fb_mmap) {
-> >  		int res;
-> >  
-> >  		/*
-> > @@ -1358,11 +1350,18 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
-> >  		 * SME protection is removed ahead of the call
-> >  		 */
-> >  		vma->vm_page_prot = pgprot_decrypted(vma->vm_page_prot);
-> > -		res = fb_mmap_fn(info, vma);
-> > +		res = info->fbops->fb_mmap(info, vma);
-> >  		mutex_unlock(&info->mm_lock);
-> >  		return res;
-> >  	}
-> >  
-> > +	/*
-> > +	 * FB deferred I/O wants you to handle mmap in your drivers. At a
-> > +	 * minimum, point struct fb_ops.fb_mmap to fb_deferred_io_mmap().
-> > +	 */
-> > +	if (dev_WARN_ONCE(info->dev, info->fbdefio, "fbdev mmap not set up for defered I/O.\n"))
-> > +		return -ENODEV;
-> > +
-> 
-> If not configured - then why not just call fb_deferred_io_mmap(), as
-> this seems to be the default implementation anyway.
-> Then drivers that needs it can override - and the rest fallback to the
-> default.
+applied.
+Thanks,
+Helge
 
-Just to be clear - I already read:
-"
-Leave the mmap handling to drivers and expect them to call the
-helper for deferred I/O by thmeselves.
-"
 
-But this does not help me understand why we need to explicit do what
-could be a simple default implementation.
-Chances are that I am stupid and it is obvious..
+> ---
+>  drivers/video/fbdev/clps711x-fb.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clp=
+s711x-fb.c
+> index c5d15c6db287..771ce1f76951 100644
+> --- a/drivers/video/fbdev/clps711x-fb.c
+> +++ b/drivers/video/fbdev/clps711x-fb.c
+> @@ -268,8 +268,7 @@ static int clps711x_fb_probe(struct platform_device =
+*pdev)
+>  		goto out_fb_release;
+>  	}
+>
+> -	cfb->syscon =3D
+> -		syscon_regmap_lookup_by_compatible("cirrus,ep7209-syscon1");
+> +	cfb->syscon =3D syscon_regmap_lookup_by_phandle(np, "syscon");
+>  	if (IS_ERR(cfb->syscon)) {
+>  		ret =3D PTR_ERR(cfb->syscon);
+>  		goto out_fb_release;
 
-	Sam

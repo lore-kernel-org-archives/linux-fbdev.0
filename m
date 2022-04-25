@@ -2,142 +2,210 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9F3FC433EF
-	for <linux-fbdev@archiver.kernel.org>; Sun, 24 Apr 2022 18:49:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29260C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Apr 2022 08:27:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S237146AbiDXSwB (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 24 Apr 2022 14:52:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44386 "EHLO
+        id S231555AbiDYIaq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 25 Apr 2022 04:30:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39652 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S229929AbiDXSwA (ORCPT
+        with ESMTP id S237626AbiDYIa3 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Sun, 24 Apr 2022 14:52:00 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 848D813F51;
-        Sun, 24 Apr 2022 11:48:58 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        Mon, 25 Apr 2022 04:30:29 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 488C71DA57;
+        Mon, 25 Apr 2022 01:27:02 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id B01276124F;
-        Sun, 24 Apr 2022 18:48:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 12B0CC385B1;
-        Sun, 24 Apr 2022 18:48:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1650826137;
-        bh=ipl3oSa3DODJXFqNROBx1CoqGwslciyjMuC+i+Saf6s=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=BOkM82fII90m6hiFZrsM+S6NoOx/9JSXO645uDox3wouyvV5cDVRWJxz7xq/cB9au
-         LYrBwqxSBkhIKBzBNs0hwtCBHRO1gixAqGnRtxVTd+01UzyFfxHSDne9WN6ttlm+rb
-         jcQBniXrkaKqn2jBmZOb15DeGZFcd9PAC8aU0sErmt9X3VJ12+DgM2/0JBOHnN/nNw
-         G4IIFddQ3lsrPoLfBPfhYi7wy7+MEYhHtnQkavlIidm5fb5N3XrXiQ6swPnyQws0/W
-         CtU43okgiFy2OpjRFiWX3gSYz6BOM2afEEdzeBOnonvAaXEfnmyinRGY3cRVziG/FD
-         TihvS5WssHAGA==
-Received: by mail-wm1-f49.google.com with SMTP id n126-20020a1c2784000000b0038e8af3e788so8339736wmn.1;
-        Sun, 24 Apr 2022 11:48:56 -0700 (PDT)
-X-Gm-Message-State: AOAM532dCbbuPtNLiFWY0oLFZs8XVfrMBbWkSdIYLtsNfBb72iV3o7bU
-        it6YCv5pHi/kxy42HhEx37g9WQ8uhZLw+EPMKaw=
-X-Google-Smtp-Source: ABdhPJy0bXzhrJhOMZ1X8kbnkslFxEyAGa0Ih/9fgvnO3mTuzgN7/0kU+dSPN2u/9dZRAXnrV+Nc5ftINsUw3V0d/rc=
-X-Received: by 2002:a05:600c:4e4a:b0:392:88e1:74a7 with SMTP id
- e10-20020a05600c4e4a00b0039288e174a7mr22771106wmq.174.1650826135238; Sun, 24
- Apr 2022 11:48:55 -0700 (PDT)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 01AE21F37D;
+        Mon, 25 Apr 2022 08:27:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1650875221; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=w4ANeXLzjcqotnphnOK0rUPz/EKYu7iEZD+lfX94N5M=;
+        b=AklELnOH5ksAZwBokZhcRdfs2KA+xCZFzqI4I8LzcMbiOxJ8L0C6QlnWkvSs5xF0CvPape
+        4zd3lNTLNfNmqZwvA5cqCXf4uNwfhirt4X7Ay32IM78ZUgBA4nHCDawmPcEqZ6d/BbyMCu
+        NJRiFfmAWIKgTe6IqYTaZr5IxDKDpL8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1650875221;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=w4ANeXLzjcqotnphnOK0rUPz/EKYu7iEZD+lfX94N5M=;
+        b=LKWQEiQj0RfY51/CMozD8tJt6TuYAXiTApafez9NxgDnRXuIpqc4hX+ppNMq/1Mzy9sPzG
+        3Iqf8Ge2GMBCx/Cg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B3BD513AED;
+        Mon, 25 Apr 2022 08:27:00 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id kMzhKlRbZmIjfAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 25 Apr 2022 08:27:00 +0000
+Message-ID: <44804419-0e83-b584-96d9-a35939b715bf@suse.de>
+Date:   Mon, 25 Apr 2022 10:27:00 +0200
 MIME-Version: 1.0
-References: <20220419163810.2118169-1-arnd@kernel.org> <20220422170530.GA2338209@roeck-us.net>
- <CAK8P3a3V=qxUqYT3Yt=dpXVv58-Y+HVi952wO6D4LPN5NNphGA@mail.gmail.com>
- <8b36d3a4-ec85-2f9f-e4b7-734d8ddd3d8f@roeck-us.net> <CAK8P3a0R9cpEb1d2=e9KnGSbi_uRv48RWfCu_J4DDak_cGZSuw@mail.gmail.com>
- <20220422234150.GA3442771@roeck-us.net> <CAK8P3a3qZdEqnJ2nTOKwDMossngOgCpEvZq4cQMPQjSsUoU=6g@mail.gmail.com>
- <3b4046ed-fd75-13ea-fac3-06469172806c@roeck-us.net> <CAK8P3a1LzEG1vo+5nMrnL3TOMcbSKJ3u=StcfY8dajV2raUBjA@mail.gmail.com>
- <3df135a2-17f5-d6c6-b4a8-e1a60e254297@roeck-us.net>
-In-Reply-To: <3df135a2-17f5-d6c6-b4a8-e1a60e254297@roeck-us.net>
-From:   Arnd Bergmann <arnd@kernel.org>
-Date:   Sun, 24 Apr 2022 20:48:39 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a2EHMQPN4ny9sXXuReFG0jN0hyRV7h9v_AR_0pqpOU41w@mail.gmail.com>
-Message-ID: <CAK8P3a2EHMQPN4ny9sXXuReFG0jN0hyRV7h9v_AR_0pqpOU41w@mail.gmail.com>
-Subject: Re: [PATCH v2 00/48] ARM: PXA multiplatform support
-To:     Guenter Roeck <linux@roeck-us.net>
-Cc:     Robert Jarzmik <robert.jarzmik@free.fr>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        Marek Vasut <marek.vasut@gmail.com>,
-        Philipp Zabel <philipp.zabel@gmail.com>,
-        Lubomir Rintel <lkundrak@v3.sk>,
-        Paul Parsons <lost.distance@yahoo.com>,
-        Tomas Cech <sleep_walker@suse.com>,
-        Sergey Lapin <slapin@ossfans.org>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Dominik Brodowski <linux@dominikbrodowski.net>,
-        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
-        IDE-ML <linux-ide@vger.kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
-        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
-        linux-mmc <linux-mmc@vger.kernel.org>,
-        linux-mtd <linux-mtd@lists.infradead.org>,
-        linux-rtc@vger.kernel.org, USB list <linux-usb@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        ALSA Development Mailing List <alsa-devel@alsa-project.org>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.1
+Subject: Re: [PATCH v3 3/5] fbdev: Restart conflicting fb removal loop when
+ unregistering devices
+Content-Language: en-US
+To:     Javier Martinez Canillas <javierm@redhat.com>,
+        linux-kernel@vger.kernel.org
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        dri-devel@lists.freedesktop.org,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Changcheng Deng <deng.changcheng@zte.com.cn>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
+        linux-fbdev@vger.kernel.org
+References: <20220420085303.100654-1-javierm@redhat.com>
+ <20220420085303.100654-4-javierm@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20220420085303.100654-4-javierm@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------ZBj3qqpnqvIaLxVKiCxcVXoT"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Apr 24, 2022 at 5:28 PM Guenter Roeck <linux@roeck-us.net> wrote:
-> On 4/24/22 01:52, Arnd Bergmann wrote:
-> > On Sun, Apr 24, 2022 at 4:09 AM Guenter Roeck <linux@roeck-us.net> wrote:
-> > into the defconfig file, otherwise the multiplatform target defaults to
-> > an ARMv7 instead of ARMv5 build. For an OMAP15xx as in the SX1,
-> > you also need to enable CONFIG_ARCH_MULTI_V4T.
-> >
-> > This is slightly unfortunate, but I don't see any way to avoid it, and the
-> > modified defconfig will still work fine with older kernel trees.
-> >
->
-> Yes, that works. I changed it in my configuration.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------ZBj3qqpnqvIaLxVKiCxcVXoT
+Content-Type: multipart/mixed; boundary="------------tndJ8OcZcz64aezTVTn0Tn0n";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>, dri-devel@lists.freedesktop.org,
+ Alex Deucher <alexander.deucher@amd.com>,
+ Changcheng Deng <deng.changcheng@zte.com.cn>, Daniel Vetter
+ <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+ Sam Ravnborg <sam@ravnborg.org>, Zhen Lei <thunder.leizhen@huawei.com>,
+ linux-fbdev@vger.kernel.org
+Message-ID: <44804419-0e83-b584-96d9-a35939b715bf@suse.de>
+Subject: Re: [PATCH v3 3/5] fbdev: Restart conflicting fb removal loop when
+ unregistering devices
+References: <20220420085303.100654-1-javierm@redhat.com>
+ <20220420085303.100654-4-javierm@redhat.com>
+In-Reply-To: <20220420085303.100654-4-javierm@redhat.com>
 
-Ok, great!. I managed to boot the z2 machine with PCMCIA support
-and it gets around the issue with my patch, correctly detecting the
-CF card.
+--------------tndJ8OcZcz64aezTVTn0Tn0n
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-> >>> One thing I keep having to apply myself is this snippet:
-> >>>
-> >>> diff --git a/arch/arm/mm/proc-arm925.S b/arch/arm/mm/proc-arm925.S
-> >>> index 0bfad62ea858..87c695703580 100644
-> >>> --- a/arch/arm/mm/proc-arm925.S
-> >>> +++ b/arch/arm/mm/proc-arm925.S
-> >>> @@ -441,7 +441,6 @@ __arm925_setup:
-> >>>
-> >>>    #ifdef CONFIG_CPU_DCACHE_WRITETHROUGH
-> >>>           mov     r0, #4                          @ disable write-back
-> >>> on caches explicitly
-> >>> -       mcr     p15, 7, r0, c15, c0, 0
-> >>>    #endif
-> >>
-> >> it does not have CONFIG_CPU_DCACHE_WRITETHROUGH enabled.
-> >
-> > Maybe it was disabled explicitly for the sx1_defconfig because of this
-> > bug. I would think that this is required for actual sx1 hardware because the
-> > option is default-enabled for ARM925T, and that CPU core is exclusively
-> > used in OMAP15xx.
-> >
->
-> That looks like a bug in qemu. ARM925T instruction support is limited to V4T
-> instructions. qemu doesn't have explicit 5T support. It is either V4T
-> or V5.
+SGkNCg0KQW0gMjAuMDQuMjIgdW0gMTA6NTMgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
+aWxsYXM6DQo+IERyaXZlcnMgdGhhdCB3YW50IHRvIHJlbW92ZSByZWdpc3RlcmVkIGNvbmZs
+aWN0aW5nIGZyYW1lYnVmZmVycyBwcmlvciB0bw0KPiByZWdpc3RlciB0aGVpciBvd24gZnJh
+bWVidWZmZXIsIGNhbGxzIHJlbW92ZV9jb25mbGljdGluZ19mcmFtZWJ1ZmZlcnMoKS4NCj4g
+DQo+IFRoaXMgZnVuY3Rpb24gdGFrZXMgdGhlIHJlZ2lzdHJhdGlvbl9sb2NrIG11dGV4LCB0
+byBwcmV2ZW50IGEgcmFjZXMgd2hlbg0KPiBkcml2ZXJzIHJlZ2lzdGVyIGZyYW1lYnVmZmVy
+IGRldmljZXMuIEJ1dCBpZiBhIGNvbmZsaWN0aW5nIGZyYW1lYnVmZmVyDQo+IGRldmljZSBp
+cyBmb3VuZCwgdGhlIHVuZGVybGF5aW5nIHBsYXRmb3JtIGRldmljZSBpcyB1bnJlZ2lzdGVy
+ZWQgYW5kIHRoaXMNCj4gd2lsbCBsZWFkIHRvIHRoZSBwbGF0Zm9ybSBkcml2ZXIgLnJlbW92
+ZSBjYWxsYmFjayB0byBiZSBjYWxsZWQsIHdoaWNoIGluDQo+IHR1cm4gd2lsbCBjYWxsIHRv
+IHRoZSB1bnJlZ2lzdGVyX2ZyYW1lYnVmZmVyKCkgdGhhdCB0YWtlcyB0aGUgc2FtZSBsb2Nr
+Lg0KPiANCj4gVG8gcHJldmVudCB0aGlzLCBhIHN0cnVjdCBmYl9pbmZvLmZvcmNlZF9vdXQg
+ZmllbGQgd2FzIHVzZWQgYXMgaW5kaWNhdGlvbg0KPiB0byB1bnJlZ2lzdGVyX2ZyYW1lYnVm
+ZmVyKCkgd2hldGhlciB0aGUgbXV0ZXggaGFzIHRvIGJlIGdyYWJiZWQgb3Igbm90Lg0KPiAN
+Cj4gQSBjbGVhbmVyIHNvbHV0aW9uIGlzIHRvIGRyb3AgdGhlIGxvY2sgYmVmb3JlIHBsYXRm
+b3JtX2RldmljZV91bnJlZ2lzdGVyKCkNCj4gc28gdW5yZWdpc3Rlcl9mcmFtZWJ1ZmZlcigp
+IGNhbiB0YWtlIGl0IHdoZW4gY2FsbGVkIGZyb20gdGhlIGZiZGV2IGRyaXZlciwNCj4gYW5k
+IGp1c3QgZ3JhYiB0aGUgbG9jayBhZ2FpbiBhZnRlciB0aGUgZGV2aWNlIGhhcyBiZWVuIHJl
+Z2lzdGVyZWQgYW5kIGRvDQo+IGEgcmVtb3ZhbCBsb29wIHJlc3RhcnQuDQoNCkkgZG9uJ3Qg
+c2VlIGhvdyB0aGlzIHBhdGNoIGltcHJvdmVzIHRoZSBzaXR1YXRpb24uIFNvIGZhciwgDQpk
+b19yZW1vdmVfY29uZmxpY3RpbmdfZnJhbWVidWZmZXJzKCkgaGFkIG5vIGJ1c2luZXNzIGlu
+IG1haW50YWluaW5nIA0KbG9ja3MuIEFuZCBub3cgaXQncyBkb2luZyB0aGlzIGluIGluIGEg
+Z290by1sb29wIHdoZXJlIGl0IGtlZXBzIA0KZ2V0dGluZy9kcm9wcGluZyBsb2Nrcy4gIFRo
+YXQncyBhc2tpbmcgZm9yIGJ1Z3MgSU1ITy4NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0K
+PiANCj4gU2luY2UgdGhlIGZyYW1lYnVmZmVyIGRldmljZXMgd2lsbCBhbHJlYWR5IGJlIHJl
+bW92ZWQsIHRoZSBsb29wIHdvdWxkIGp1c3QNCj4gZmluaXNoIHdoZW4gbm8gbW9yZSBjb25m
+bGljdGluZyBmcmFtZWJ1ZmZlcnMgYXJlIGZvdW5kLg0KPiANCj4gU3VnZ2VzdGVkLWJ5OiBE
+YW5pZWwgVmV0dGVyIDxkYW5pZWwudmV0dGVyQGZmd2xsLmNoPg0KPiBTaWduZWQtb2ZmLWJ5
+OiBKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllcm1AcmVkaGF0LmNvbT4NCj4gUmV2
+aWV3ZWQtYnk6IERhbmllbCBWZXR0ZXIgPGRhbmllbC52ZXR0ZXJAZmZ3bGwuY2g+DQo+IC0t
+LQ0KPiANCj4gKG5vIGNoYW5nZXMgc2luY2UgdjEpDQo+IA0KPiAgIGRyaXZlcnMvdmlkZW8v
+ZmJkZXYvY29yZS9mYm1lbS5jIHwgMjIgKysrKysrKysrKysrKysrLS0tLS0tLQ0KPiAgIGlu
+Y2x1ZGUvbGludXgvZmIuaCAgICAgICAgICAgICAgIHwgIDEgLQ0KPiAgIDIgZmlsZXMgY2hh
+bmdlZCwgMTUgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1n
+aXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJtZW0uYyBiL2RyaXZlcnMvdmlkZW8v
+ZmJkZXYvY29yZS9mYm1lbS5jDQo+IGluZGV4IDg0NDI3NDcwMzY3Yi4uMGJiNDU5MjU4ZGYz
+IDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJtZW0uYw0KPiAr
+KysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJtZW0uYw0KPiBAQCAtMTU1Myw2ICsx
+NTUzLDcgQEAgc3RhdGljIHZvaWQgZG9fcmVtb3ZlX2NvbmZsaWN0aW5nX2ZyYW1lYnVmZmVy
+cyhzdHJ1Y3QgYXBlcnR1cmVzX3N0cnVjdCAqYSwNCj4gICB7DQo+ICAgCWludCBpOw0KPiAg
+IA0KPiArcmVzdGFydF9yZW1vdmFsOg0KPiAgIAkvKiBjaGVjayBhbGwgZmlybXdhcmUgZmJz
+IGFuZCBraWNrIG9mZiBpZiB0aGUgYmFzZSBhZGRyIG92ZXJsYXBzICovDQo+ICAgCWZvcl9l
+YWNoX3JlZ2lzdGVyZWRfZmIoaSkgew0KPiAgIAkJc3RydWN0IGFwZXJ0dXJlc19zdHJ1Y3Qg
+Kmdlbl9hcGVyOw0KPiBAQCAtMTU4NSwxMiArMTU4NiwyMyBAQCBzdGF0aWMgdm9pZCBkb19y
+ZW1vdmVfY29uZmxpY3RpbmdfZnJhbWVidWZmZXJzKHN0cnVjdCBhcGVydHVyZXNfc3RydWN0
+ICphLA0KPiAgIAkJCQlwcl93YXJuKCJmYiVkOiBubyBkZXZpY2Ugc2V0XG4iLCBpKTsNCj4g
+ICAJCQkJZG9fdW5yZWdpc3Rlcl9mcmFtZWJ1ZmZlcihyZWdpc3RlcmVkX2ZiW2ldKTsNCj4g
+ICAJCQl9IGVsc2UgaWYgKGRldl9pc19wbGF0Zm9ybShkZXZpY2UpKSB7DQo+IC0JCQkJcmVn
+aXN0ZXJlZF9mYltpXS0+Zm9yY2VkX291dCA9IHRydWU7DQo+ICsJCQkJLyoNCj4gKwkJCQkg
+KiBEcm9wIHRoZSBsb2NrIGJlY2F1c2UgaWYgdGhlIGRldmljZSBpcyB1bnJlZ2lzdGVyZWQs
+IGl0cw0KPiArCQkJCSAqIGRyaXZlciB3aWxsIGNhbGwgdG8gdW5yZWdpc3Rlcl9mcmFtZWJ1
+ZmZlcigpLCB0aGF0IHRha2VzDQo+ICsJCQkJICogdGhpcyBsb2NrLg0KPiArCQkJCSAqLw0K
+PiArCQkJCW11dGV4X3VubG9jaygmcmVnaXN0cmF0aW9uX2xvY2spOw0KPiAgIAkJCQlwbGF0
+Zm9ybV9kZXZpY2VfdW5yZWdpc3Rlcih0b19wbGF0Zm9ybV9kZXZpY2UoZGV2aWNlKSk7DQo+
+ICsJCQkJbXV0ZXhfbG9jaygmcmVnaXN0cmF0aW9uX2xvY2spOw0KPiAgIAkJCX0gZWxzZSB7
+DQo+ICAgCQkJCXByX3dhcm4oImZiJWQ6IGNhbm5vdCByZW1vdmUgZGV2aWNlXG4iLCBpKTsN
+Cj4gICAJCQkJZG9fdW5yZWdpc3Rlcl9mcmFtZWJ1ZmZlcihyZWdpc3RlcmVkX2ZiW2ldKTsN
+Cj4gICAJCQl9DQo+ICsJCQkvKg0KPiArCQkJICogUmVzdGFydCB0aGUgcmVtb3ZhbCBsb29w
+IG5vdyB0aGF0IHRoZSBkZXZpY2UgaGFzIGJlZW4NCj4gKwkJCSAqIHVucmVnaXN0ZXJlZCBh
+bmQgaXRzIGFzc29jaWF0ZWQgZnJhbWVidWZmZXIgZ29uZS4NCj4gKwkJCSAqLw0KPiArCQkJ
+Z290byByZXN0YXJ0X3JlbW92YWw7DQo+ICAgCQl9DQo+ICAgCX0NCj4gICB9DQo+IEBAIC0x
+ODk3LDEzICsxOTA5LDkgQEAgRVhQT1JUX1NZTUJPTChyZWdpc3Rlcl9mcmFtZWJ1ZmZlcik7
+DQo+ICAgdm9pZA0KPiAgIHVucmVnaXN0ZXJfZnJhbWVidWZmZXIoc3RydWN0IGZiX2luZm8g
+KmZiX2luZm8pDQo+ICAgew0KPiAtCWJvb2wgZm9yY2VkX291dCA9IGZiX2luZm8tPmZvcmNl
+ZF9vdXQ7DQo+IC0NCj4gLQlpZiAoIWZvcmNlZF9vdXQpDQo+IC0JCW11dGV4X2xvY2soJnJl
+Z2lzdHJhdGlvbl9sb2NrKTsNCj4gKwltdXRleF9sb2NrKCZyZWdpc3RyYXRpb25fbG9jayk7
+DQo+ICAgCWRvX3VucmVnaXN0ZXJfZnJhbWVidWZmZXIoZmJfaW5mbyk7DQo+IC0JaWYgKCFm
+b3JjZWRfb3V0KQ0KPiAtCQltdXRleF91bmxvY2soJnJlZ2lzdHJhdGlvbl9sb2NrKTsNCj4g
+KwltdXRleF91bmxvY2soJnJlZ2lzdHJhdGlvbl9sb2NrKTsNCj4gICB9DQo+ICAgRVhQT1JU
+X1NZTUJPTCh1bnJlZ2lzdGVyX2ZyYW1lYnVmZmVyKTsNCj4gICANCj4gZGlmZiAtLWdpdCBh
+L2luY2x1ZGUvbGludXgvZmIuaCBiL2luY2x1ZGUvbGludXgvZmIuaA0KPiBpbmRleCBmOTVk
+YTFhZjlmZjYuLmI3ODFiYzcyMTExMyAxMDA2NDQNCj4gLS0tIGEvaW5jbHVkZS9saW51eC9m
+Yi5oDQo+ICsrKyBiL2luY2x1ZGUvbGludXgvZmIuaA0KPiBAQCAtNTAyLDcgKzUwMiw2IEBA
+IHN0cnVjdCBmYl9pbmZvIHsNCj4gICAJfSAqYXBlcnR1cmVzOw0KPiAgIA0KPiAgIAlib29s
+IHNraXBfdnRfc3dpdGNoOyAvKiBubyBWVCBzd2l0Y2ggb24gc3VzcGVuZC9yZXN1bWUgcmVx
+dWlyZWQgKi8NCj4gLQlib29sIGZvcmNlZF9vdXQ7IC8qIHNldCB3aGVuIGJlaW5nIHJlbW92
+ZWQgYnkgYW5vdGhlciBkcml2ZXIgKi8NCj4gICB9Ow0KPiAgIA0KPiAgIHN0YXRpYyBpbmxp
+bmUgc3RydWN0IGFwZXJ0dXJlc19zdHJ1Y3QgKmFsbG9jX2FwZXJ0dXJlcyh1bnNpZ25lZCBp
+bnQgbWF4X251bSkgew0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2
+ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1h
+eGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcg
+TsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
-I'm not entirely sure what instructions the CPU supports, but Linux
-treats it as ARMv4T as well, and qemu supports some of the 925t
-specific instructions as "ti925t" in target/arm/cpu_tcg.c, it just seems
-it's missing some others.
+--------------tndJ8OcZcz64aezTVTn0Tn0n--
 
-      Arnd
+--------------ZBj3qqpnqvIaLxVKiCxcVXoT
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmJmW1QFAwAAAAAACgkQlh/E3EQov+D5
+EQ/+LYErdR2uljbQz9gIF56jHpRYK9entfnaNT/iWs4+3EE6NRaPYieK3BOP8fkOGKx0njYfBl/k
+/dlQ1INXlX8rcn/5VmWMbtYt///Rd6eaw0n8plz4lbq69sEEzRAIAxgC8nA78lQ6ipHnDXXso3C7
+hpj5u/eNdsfUCoGNy8Msi3NcNfZmk/jnMQyu3UsoBJnMIukI+EvAeHCIX9O1uj3JkZcf2udE97QP
+3RWb5UaQhc69Rl4fe8WSq3E00edwo+UDgazzfGckjvYYUaoIuQdnUwzehRFylnpEPfZkL95eVm6w
+tQkgJTBCMI14mAhyEyNMg/Y7Rb5zsnFywCSY/wHD1mkygUn1MvUUw0QXBUkHQ8e3p0kVfa+cUMW/
+bzumF9LIn2IpBEh2VbSqLVNO6P9lZz4Otelu3Z6knfCyCd3Fw/YDWJcNv+QZidz/SrgvCkpA0jLh
+A0m7xyhha6wTOiaOdSe55+1S4bEaoq8YCcfzD9uGMwHailGjXanw+aUC9v2mDpyK95lEVPud22nx
+QTJ+yI6WZwg2bvfpV/wQtqoyDO+LrHW/tevSijiDex5W/akVz8OtrlBF//TxTJfYDNWPCO/MBuOY
+BLYT1Z2HH63P9X4jJbw4QsVwLeLeNvP9K4n/Qka8OAwkDv/5xbM6Jd+Y0NL0AR5V002Lt0bX030o
+wVw=
+=4Zal
+-----END PGP SIGNATURE-----
+
+--------------ZBj3qqpnqvIaLxVKiCxcVXoT--

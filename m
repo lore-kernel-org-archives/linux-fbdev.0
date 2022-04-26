@@ -2,150 +2,211 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BDB4C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Apr 2022 12:05:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17779C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Apr 2022 15:20:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1344971AbiDZMIb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 26 Apr 2022 08:08:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55622 "EHLO
+        id S1352275AbiDZPXc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 26 Apr 2022 11:23:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42176 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S241378AbiDZMI3 (ORCPT
+        with ESMTP id S1352364AbiDZPXN (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 26 Apr 2022 08:08:29 -0400
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 758B8E3CF1
-        for <linux-fbdev@vger.kernel.org>; Tue, 26 Apr 2022 05:05:19 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out2.suse.de (Postfix) with ESMTPS id 32CD51F380;
-        Tue, 26 Apr 2022 12:05:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1650974718; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=rAxgvEu9F877OplDwpBy3QTAWfomeepgxNBFbyw8ZRc=;
-        b=xPdt0nQi9f8JTfTKba6yulGsulOhz0csCwKpwrK8phmFaCtEjZKy+vaOH2YqUYCqTmRMgz
-        6uQbuctHBqNHcCOEQAyeAxnocFIXjQ17x3UrJR7yrqXD+NX8Yu4sE8Pt/t3oLox5atAcKM
-        YNFdpNbOIeiVivWpytxzBcdbJPvRnQQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1650974718;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=rAxgvEu9F877OplDwpBy3QTAWfomeepgxNBFbyw8ZRc=;
-        b=YpdVukhdh3D1TX7d7LNjamM8zGaCKrG8MZ3r32uMAESpjFFs37ure3Mh7/hwjQ2X36wR2i
-        0pmKpQ1mUEHeuUBA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 090AE13223;
-        Tue, 26 Apr 2022 12:05:18 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id 37A+Af7fZ2I8BgAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Tue, 26 Apr 2022 12:05:18 +0000
-Message-ID: <9acf4bb3-e765-c1dd-bc75-05e9c7a0430f@suse.de>
-Date:   Tue, 26 Apr 2022 14:05:17 +0200
+        Tue, 26 Apr 2022 11:23:13 -0400
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 570DD369E0;
+        Tue, 26 Apr 2022 08:18:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1650986324;
+        bh=E+Hg8XB0uplXpNREVgCkI8/u05xO4CQqpmVf+gTT7wY=;
+        h=X-UI-Sender-Class:Date:From:To:Subject;
+        b=bo5MO2ICe2f0JE3WvbKHu5Reo0qEuFJrDy3qzhFhqykQZp//CmngMH2g4Mz2h45l0
+         PzZRoRS1cAW/OTlGbT9aGGf0qrBx2zBGiwsqjpguirMQPGwV/KW40dvuY3Zsi7oRsZ
+         nymvB5JZBAM3T/Arn4EBr0euhSr+5uI90881qnhw=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from ls3530 ([92.116.164.205]) by mail.gmx.net (mrgmx105
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1N3bSt-1ntEgR2owV-010ZBp; Tue, 26
+ Apr 2022 17:18:44 +0200
+Date:   Tue, 26 Apr 2022 17:18:42 +0200
+From:   Helge Deller <deller@gmx.de>
+To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        dri-devel@lists.freedesktop.org
+Subject: [GIT PULL] fbdev updates & fixes for v5.18-rc5
+Message-ID: <YmgNUgK/FeNcX0MG@ls3530>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.1
-Subject: Re: [PATCH v3 0/5] fbdev: Decouple deferred I/O from struct page
-Content-Language: en-US
-To:     javierm@redhat.com, daniel@ffwll.ch, deller@gmx.de,
-        airlied@linux.ie, maarten.lankhorst@linux.intel.com,
-        Sam Ravnborg <sam@ravnborg.org>
-Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-References: <20220426120359.17437-1-tzimmermann@suse.de>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20220426120359.17437-1-tzimmermann@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------0y5oa20v5Kz6SLHnjway1hlh"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Provags-ID: V03:K1:yiY1Xgsfm/t116KfFvkQOFaBDvx2+7IMm7NAfFr/xG2YuqgxNS4
+ msZ6vS75sv5bAowYt1Qs2CKdelJ0gy0w44CV6mZmDUVZC59OjpObznSVs5CT3dSnZteE76u
+ uyd2Hc7mVwfVT925LAeRZ8eBrRicyqAJZathX1NBGxvF+IEkfe972l0G5O+HUFdJ65ne6Ku
+ R4hk2BKWUPA1tCW6FMlkg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:qL696Dzs5uQ=:UgDe8enbU4oVBhSd5mi6qa
+ IhAkDUaWzXEfYhkhoAcnISx9WdHfpt4Sr1DHI1uuf242oyhisrzqZ4X3XIwOLGUuuupL+j17a
+ JhbE+VSaXo3d3vUW44m0UVrAI2nxfrBlYJRMRbJOo/KKd5oSWH9w1MJ1qnbFStRAxbn5WHBGN
+ AMpcW5HK7NJIfvSmU+jkDpW7OXCDk9tc88yY24FjIUpzjwyIHO+30G/B2Tjrm7BgYsJMV5dJv
+ CONMrivpkBSt8sy/TdEpGrBXtOD6Y3ii5lv6nunFyQtqiAIDTZR4Acvlxtk8PLUxDJDI1Sbq2
+ NLO1Ilpu92wzOpxIm48xuMNsSkPRs97TaU/zpIw1eyytVGfz2U8JFSh92w15cqdUGh9XQLLJ7
+ uCfF5XAdbcja+eDMFzN0NdXeEmD5h39oZ8gGsDuHGea7pPOzcF/ZMRlB7CkS9TTc8Wl1sat+l
+ m7OXTUjx+BqXEHJO/gJ8ZIWKp+2TW67bOdxCjJVKY3XWXWql9T3UoBONTqgUxhndpChjG4Pmy
+ 9L7e0HzMj/fSIv4e7E4z8hUZuJxVpgfdvTDqFOrZwFTLr++keYQgRLrznNNTWxr1KOHiYUkYA
+ k/LZ0XHp3+Gwk3b2fiJfa29bQyFBcQrJnJv80FBiZZeS9zOk08Q8eemr8sA0kLGEqIll1Xi6z
+ B2S+5DI98Og9LnyTHkBJCfmQ4jlK+M659NfTVQLBopHFeSHzmgIOkgl/JOIo5a9hfdX7j2LYm
+ IekoV9V89QJUIzKYIskkMor7sIo5iqz8DqtTrgFMTIKlqOOyl1xfuhNdZ5VyE3cF3eDjvPJ7D
+ UiFdX91QFUBCocsSREsqAT/ebGu8uoyXeqnVYHpbro4JAgGs8jpGdyI3ZOtT2apYpdiXm6uOl
+ YZGDMgEqlaXabGCeyooikuoFgvTBlo4bhVU7sSUIDFc9fK0nh6s9cq3Vlm7NNLqM0lEo9mid6
+ kiqEI76hJF5nBV+vxAGBF9FYGGcd93y2CnFUa6wE063hJhja71xxUF8Cfbh0Hs8lZzq13jSdF
+ DsSGC6kdMMUGDmJ80QOvrfVKl6+RMhmVtk7lWY0VL9FFO+ZNV7FJ4mHTnsU2RX4WCw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------0y5oa20v5Kz6SLHnjway1hlh
-Content-Type: multipart/mixed; boundary="------------ZGEEZcn3JUVHW42iKjOQYMp0";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: javierm@redhat.com, daniel@ffwll.ch, deller@gmx.de, airlied@linux.ie,
- maarten.lankhorst@linux.intel.com, Sam Ravnborg <sam@ravnborg.org>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Message-ID: <9acf4bb3-e765-c1dd-bc75-05e9c7a0430f@suse.de>
-Subject: Re: [PATCH v3 0/5] fbdev: Decouple deferred I/O from struct page
-References: <20220426120359.17437-1-tzimmermann@suse.de>
-In-Reply-To: <20220426120359.17437-1-tzimmermann@suse.de>
+Hi Linus,
 
---------------ZGEEZcn3JUVHW42iKjOQYMp0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+I've finished checking all outstanding fbdev patches which had queued up
+during the last few months. This is now the last bunch.
+All are either trivial and/or small.
+The changelog is below.
 
-KGNjJ2luZyBTYW0pDQoNCkFtIDI2LjA0LjIyIHVtIDE0OjAzIHNjaHJpZWIgVGhvbWFzIFpp
-bW1lcm1hbm46DQo+IFJld29yayB0aGUgZmJkZXYgZGVmZXJyZWQtSS9PIHRvIG5vdCBpbnRl
-cmZlcmUgd2l0aCBmaWVsZHMgb2Ygc3RydWN0DQo+IHBhZ2UuIEFsbCByZWZlcmVuY2VzIGZy
-b20gZGVmZXJyZWQtSS9PIGNvZGUgdG8gZmllbGRzIGluIHN0cnVjdCBwYWdlDQo+IGFyZSBn
-b25lLiBUaGUgcnNwIHN0YXRlIGlzIGhlbHAgaW4gYSBzZXBhcmF0ZSBwYWdlcmVmIHN0cnVj
-dHVyZS4NCj4gDQo+IHYzOg0KPiAJKiByZW5hbWUgcGFnZWxpc3QgdG8gcGFnZXJlZmxpc3Qg
-KFNhbSkNCj4gCSogdXNlIHBhZ2VyZWYtPm9mZnNldCBvdmVyIHBhZ2UtPmluZGV4IChKYXZp
-ZXIpDQo+IHYyOg0KPiAJKiBzcGxpdCBvZmYgZnJvbSBhIGxhcmdlciBwYXRjaHNldCBbMV0N
-Cj4gDQo+IFsxXSBodHRwczovL2xvcmUua2VybmVsLm9yZy9kcmktZGV2ZWwvMjAyMjAzMDMy
-MDU4MzkuMjg0ODQtMS10emltbWVybWFubkBzdXNlLmRlLw0KPiANCj4gVGhvbWFzIFppbW1l
-cm1hbm4gKDUpOg0KPiAgICBmYmRldjogUHV0IG1tYXAgZm9yIGRlZmVycmVkIEkvTyBpbnRv
-IGRyaXZlcnMNCj4gICAgZmJkZXY6IFRyYWNrIGRlZmVycmVkLUkvTyBwYWdlcyBpbiBwYWdl
-cmVmIHN0cnVjdA0KPiAgICBmYmRldjogUmVmYWN0b3IgaW1wbGVtZW50YXRpb24gb2YgcGFn
-ZV9ta3dyaXRlDQo+ICAgIGZiZGV2OiBSZW5hbWUgcGFnZWxpc3QgdG8gcGFnZXJlZmxpc3Qg
-Zm9yIGRlZmVycmVkIEkvTw0KPiAgICBmYmRldjogVXNlIHBhZ2VyZWYgb2Zmc2V0IGZvciBk
-ZWZlcnJlZC1JL08gd3JpdGViYWNrDQo+IA0KPiAgIGRyaXZlcnMvZ3B1L2RybS9kcm1fZmJf
-aGVscGVyLmMgICAgICAgIHwgIDE1ICstDQo+ICAgZHJpdmVycy9ncHUvZHJtL3Ztd2dmeC92
-bXdnZnhfZmIuYyAgICAgfCAgMTAgKy0NCj4gICBkcml2ZXJzL2hpZC9oaWQtcGljb2xjZF9m
-Yi5jICAgICAgICAgICB8ICAgMyArLQ0KPiAgIGRyaXZlcnMvc3RhZ2luZy9mYnRmdC9mYnRm
-dC1jb3JlLmMgICAgIHwgIDIxICsrLQ0KPiAgIGRyaXZlcnMvdmlkZW8vZmJkZXYvYnJvYWRz
-aGVldGZiLmMgICAgIHwgIDI3ICsrLS0NCj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUv
-ZmJfZGVmaW8uYyAgICB8IDIxMiArKysrKysrKysrKysrKysrKy0tLS0tLS0tDQo+ICAgZHJp
-dmVycy92aWRlby9mYmRldi9jb3JlL2ZibWVtLmMgICAgICAgfCAgMjEgKy0tDQo+ICAgZHJp
-dmVycy92aWRlby9mYmRldi9oZWN1YmFmYi5jICAgICAgICAgfCAgIDQgKy0NCj4gICBkcml2
-ZXJzL3ZpZGVvL2ZiZGV2L2h5cGVydl9mYi5jICAgICAgICB8ICAxMCArLQ0KPiAgIGRyaXZl
-cnMvdmlkZW8vZmJkZXYvbWV0cm9ub21lZmIuYyAgICAgIHwgIDIzICsrLQ0KPiAgIGRyaXZl
-cnMvdmlkZW8vZmJkZXYvc2hfbW9iaWxlX2xjZGNmYi5jIHwgIDI3ICsrLS0NCj4gICBkcml2
-ZXJzL3ZpZGVvL2ZiZGV2L3Ntc2N1ZnguYyAgICAgICAgICB8ICAxMyArLQ0KPiAgIGRyaXZl
-cnMvdmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMgICAgICAgIHwgICA0ICstDQo+ICAgZHJpdmVy
-cy92aWRlby9mYmRldi91ZGxmYi5jICAgICAgICAgICAgfCAgMTggKy0tDQo+ICAgZHJpdmVy
-cy92aWRlby9mYmRldi94ZW4tZmJmcm9udC5jICAgICAgfCAgMTAgKy0NCj4gICBpbmNsdWRl
-L2RybS9kcm1fZmJfaGVscGVyLmggICAgICAgICAgICB8ICAgMyArLQ0KPiAgIGluY2x1ZGUv
-bGludXgvZmIuaCAgICAgICAgICAgICAgICAgICAgIHwgIDE3ICstDQo+ICAgMTcgZmlsZXMg
-Y2hhbmdlZCwgMjY0IGluc2VydGlvbnMoKyksIDE3NCBkZWxldGlvbnMoLSkNCj4gDQo+IA0K
-PiBiYXNlLWNvbW1pdDogMGU3ZGVmZjY0NDZhNGJhMmM3NWY0OTlhMGJmYTgwY2Q2YTE1YzEy
-OQ0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVy
-DQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUs
-IDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0K
-R2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
+Please pull.
 
---------------ZGEEZcn3JUVHW42iKjOQYMp0--
+Thanks,
+Helge
 
---------------0y5oa20v5Kz6SLHnjway1hlh
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+----------------------------------------------------------------
+The following changes since commit 3123109284176b1532874591f7c81f3837bbdc17:
 
------BEGIN PGP SIGNATURE-----
+  Linux 5.18-rc1 (2022-04-03 14:08:21 -0700)
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmJn3/0FAwAAAAAACgkQlh/E3EQov+AN
-ow/+MEz7Ydk0PIfsBqNYvKaFdAr/YCC+uoNJHoI+dykLDMowmAvt3yb2LTSqrQln58/NniL9ZGVf
-QUqjyQIi8gStIESk+pZzWk+p4HhBkyPSoi/UZMiI4jGpTDOApQEeee9NKSACiHG7mnNVaPLQYpe/
-4w+6SbK/Jv369xqpHrkfBiexynllaUMHUpduKhTYWrDexlCRq0YBu1UwMwj/a6UYhLjp835G5ci8
-qie7ZHaMxz1JQpJ9CLkj4bXE3cvVrpjsVunWmkpsVYM+fwMKs3nUOAkj8eezmH+o4JsHIqWoreSg
-6+rI8KSWWlU79aLYl3g+tDNRSNWS4gmLXlU/3XY/8t1zGVHNe3MwL7ihELB/pIMCrwsUKo3GFvhD
-CLdCkcdouzuV6ELRjowAxrpYzIyrULynuHjlh6/50ioor8zGc4HYO7OJzwwnEWTb/L3J/6AvakjS
-tjcJihjms6LEst4VNiXSF9Z3Q8qfpD4F9biw8oYzEmsxZepq3cy048h26Q5bL+RLYPEy4PnDUwvS
-/bvrbNZpSxdSxYubSB4PIWNN7SH5Hdj+DrGHlXbtKDKdTyEbZJWqvdj6HywEu9ModO+w8StHcAWQ
-ewUR5QJvz5m/wmru3+4awTjJMNkbLJLh9r7T2cSjAWCi6wlC8cqjyl0tbUCEHEKyVa3dTpSHbTs4
-U+s=
-=j1xf
------END PGP SIGNATURE-----
+are available in the Git repository at:
 
---------------0y5oa20v5Kz6SLHnjway1hlh--
+  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/for-5.18/fbdev-2
+
+for you to fetch changes up to 6fbe0cc53a1b5f7abe2c44399c18e943adbebe2f:
+
+  video: fbdev: clps711x-fb: Use syscon_regmap_lookup_by_phandle (2022-04-25 20:12:12 +0200)
+
+----------------------------------------------------------------
+fbdev fixes and updates for kernel v5.18-rc5
+
+A bunch of outstanding fbdev patches:
+
+neofb:
+	Fix the check of 'var->pixclock'
+
+kyro, vt8623fb, tridentfb, arkfb, s3fb, i740fb:
+	Error out if 'lineclock' equals zero
+
+sis:
+	Fix potential NULL dereference in sisfb_post_sis300()
+
+fb.h:
+	Spelling fix: palette/palette/
+
+pm2fb:
+	Fix kernel-doc formatting issue
+
+clps711x-fb:
+	Use syscon_regmap_lookup_by_phandle()
+
+of:
+	display_timing: Remove a redundant zeroing of memory
+
+aty & matrox:
+	Cleanup for powerpc's asm/prom.h
+
+sh_mobile_lcdcfb:
+	Remove sh_mobile_lcdc_check_var() declaration
+
+mmp:
+	Replace usage of found with dedicated list iterator variable
+
+omap:
+	Make it CCF clk API compatible
+
+imxfb:
+	Fix missing of_node_put in imxfb_probe
+
+i740fb:
+	Use memset_io() to clear screen
+
+udlfb:
+	Properly check endpoint type
+
+pxafb:
+	Use if else instead
+
+----------------------------------------------------------------
+Alexander Shiyan (1):
+      video: fbdev: clps711x-fb: Use syscon_regmap_lookup_by_phandle
+
+Christophe JAILLET (1):
+      video: fbdev: of: display_timing: Remove a redundant zeroing of memory
+
+Christophe Leroy (1):
+      video: fbdev: aty/matrox/...: Prepare cleanup of powerpc's asm/prom.h
+
+Geert Uytterhoeven (2):
+      linux/fb.h: Spelling s/palette/palette/
+      video: fbdev: sh_mobile_lcdcfb: Remove sh_mobile_lcdc_check_var() declaration
+
+Haowen Bai (2):
+      video: fbdev: sis: fix potential NULL dereference in sisfb_post_sis300()
+      video: fbdev: pm2fb: Fix a kernel-doc formatting issue
+
+Jakob Koschel (1):
+      video: fbdev: mmp: replace usage of found with dedicated list iterator variable
+
+Janusz Krzysztofik (1):
+      video: fbdev: omap: Make it CCF clk API compatible
+
+Lv Ruyi (1):
+      video: fbdev: imxfb: Fix missing of_node_put in imxfb_probe
+
+Ondrej Zary (1):
+      video: fbdev: i740fb: use memset_io() to clear screen
+
+Pavel Skripkin (1):
+      video: fbdev: udlfb: properly check endpoint type
+
+Wang Qing (1):
+      video: fbdev: pxafb: use if else instead
+
+Zheyu Ma (7):
+      video: fbdev: neofb: Fix the check of 'var->pixclock'
+      video: fbdev: kyro: Error out if 'lineclock' equals zero
+      video: fbdev: vt8623fb: Error out if 'pixclock' equals zero
+      video: fbdev: tridentfb: Error out if 'pixclock' equals zero
+      video: fbdev: arkfb: Error out if 'pixclock' equals zero
+      video: fbdev: s3fb: Error out if 'pixclock' equals zero
+      video: fbdev: i740fb: Error out if 'pixclock' equals zero
+
+ drivers/video/fbdev/arkfb.c                |  3 +++
+ drivers/video/fbdev/aty/aty128fb.c         |  1 -
+ drivers/video/fbdev/aty/atyfb_base.c       |  1 -
+ drivers/video/fbdev/aty/radeon_pm.c        |  1 -
+ drivers/video/fbdev/aty/radeonfb.h         |  2 +-
+ drivers/video/fbdev/clps711x-fb.c          |  3 +--
+ drivers/video/fbdev/controlfb.c            |  3 ---
+ drivers/video/fbdev/i740fb.c               |  5 ++++-
+ drivers/video/fbdev/imxfb.c                |  2 ++
+ drivers/video/fbdev/kyro/fbdev.c           |  2 ++
+ drivers/video/fbdev/matrox/matroxfb_base.h |  1 -
+ drivers/video/fbdev/mb862xx/mb862xxfbdrv.c |  2 ++
+ drivers/video/fbdev/mmp/core.c             | 11 +++++------
+ drivers/video/fbdev/neofb.c                |  2 +-
+ drivers/video/fbdev/omap/hwa742.c          |  6 +++---
+ drivers/video/fbdev/omap/lcdc.c            |  6 +++---
+ drivers/video/fbdev/omap/sossi.c           |  5 +++--
+ drivers/video/fbdev/platinumfb.c           |  2 +-
+ drivers/video/fbdev/pm2fb.c                |  8 ++------
+ drivers/video/fbdev/pxafb.c                |  4 ++--
+ drivers/video/fbdev/s3fb.c                 |  3 +++
+ drivers/video/fbdev/sh_mobile_lcdcfb.c     |  3 ---
+ drivers/video/fbdev/sis/sis_main.c         |  2 +-
+ drivers/video/fbdev/tridentfb.c            |  3 +++
+ drivers/video/fbdev/udlfb.c                | 14 ++++++++++++--
+ drivers/video/fbdev/valkyriefb.c           |  3 +--
+ drivers/video/fbdev/vt8623fb.c             |  3 +++
+ drivers/video/of_display_timing.c          |  2 +-
+ include/uapi/linux/fb.h                    |  2 +-
+ 29 files changed, 60 insertions(+), 45 deletions(-)

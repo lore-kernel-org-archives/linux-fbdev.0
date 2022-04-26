@@ -2,211 +2,69 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17779C433EF
-	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Apr 2022 15:20:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 049E3C433FE
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Apr 2022 19:07:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1352275AbiDZPXc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 26 Apr 2022 11:23:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42176 "EHLO
+        id S1354100AbiDZTKv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 26 Apr 2022 15:10:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60942 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1352364AbiDZPXN (ORCPT
+        with ESMTP id S1354006AbiDZTKU (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 26 Apr 2022 11:23:13 -0400
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 570DD369E0;
-        Tue, 26 Apr 2022 08:18:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1650986324;
-        bh=E+Hg8XB0uplXpNREVgCkI8/u05xO4CQqpmVf+gTT7wY=;
-        h=X-UI-Sender-Class:Date:From:To:Subject;
-        b=bo5MO2ICe2f0JE3WvbKHu5Reo0qEuFJrDy3qzhFhqykQZp//CmngMH2g4Mz2h45l0
-         PzZRoRS1cAW/OTlGbT9aGGf0qrBx2zBGiwsqjpguirMQPGwV/KW40dvuY3Zsi7oRsZ
-         nymvB5JZBAM3T/Arn4EBr0euhSr+5uI90881qnhw=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from ls3530 ([92.116.164.205]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1N3bSt-1ntEgR2owV-010ZBp; Tue, 26
- Apr 2022 17:18:44 +0200
-Date:   Tue, 26 Apr 2022 17:18:42 +0200
-From:   Helge Deller <deller@gmx.de>
-To:     Linus Torvalds <torvalds@linux-foundation.org>,
+        Tue, 26 Apr 2022 15:10:20 -0400
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 440113584F;
+        Tue, 26 Apr 2022 12:07:01 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by ams.source.kernel.org (Postfix) with ESMTPS id DF6BAB82252;
+        Tue, 26 Apr 2022 19:07:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id AC0C4C385AA;
+        Tue, 26 Apr 2022 19:06:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1651000019;
+        bh=oB0PfXfFNyYYN59yI+8k+hxgU+ymNaYK85FvevEPleU=;
+        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+        b=c8+hQmuDBqba9roo9nMVxo1NRDvaMZRSuO5pgX33I1+QQBnB0eK/gulCpV0AOWeFH
+         XapDFiJa8ErKUjurLspATxV3WBJ/udblaWkLaXdFjevkfIsRNOMQG5t2lv5FRUiLr5
+         KsokaWPbIvct/yj6sYiGatpshUd4O50BdTXkT0APXFoaoBAec2uRiXqPlRZXLFkPsd
+         HJ0gp4Fo1ZSipUKj6wonapEaZG8ajj3dDecq1H+QguZRt1ZLaKnqm4dM2vqS2JFOu1
+         vRXtyhtO6Jt/ojZADq5vy31uE+ga3neJF9tRoOYSKLneMIxXerBzveJN/ZYCHAt89g
+         lXOlnKbVHS2lA==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 97714E8DD85;
+        Tue, 26 Apr 2022 19:06:59 +0000 (UTC)
+Subject: Re: [GIT PULL] fbdev updates & fixes for v5.18-rc5
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <YmgNUgK/FeNcX0MG@ls3530>
+References: <YmgNUgK/FeNcX0MG@ls3530>
+X-PR-Tracked-List-Id: <linux-fbdev.vger.kernel.org>
+X-PR-Tracked-Message-Id: <YmgNUgK/FeNcX0MG@ls3530>
+X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/for-5.18/fbdev-2
+X-PR-Tracked-Commit-Id: 6fbe0cc53a1b5f7abe2c44399c18e943adbebe2f
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: cf424ef014ac30b0da27125dd1fbdf10b0d3a520
+Message-Id: <165100001961.21339.1776716463797926143.pr-tracker-bot@kernel.org>
+Date:   Tue, 26 Apr 2022 19:06:59 +0000
+To:     Helge Deller <deller@gmx.de>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
         linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
         dri-devel@lists.freedesktop.org
-Subject: [GIT PULL] fbdev updates & fixes for v5.18-rc5
-Message-ID: <YmgNUgK/FeNcX0MG@ls3530>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Provags-ID: V03:K1:yiY1Xgsfm/t116KfFvkQOFaBDvx2+7IMm7NAfFr/xG2YuqgxNS4
- msZ6vS75sv5bAowYt1Qs2CKdelJ0gy0w44CV6mZmDUVZC59OjpObznSVs5CT3dSnZteE76u
- uyd2Hc7mVwfVT925LAeRZ8eBrRicyqAJZathX1NBGxvF+IEkfe972l0G5O+HUFdJ65ne6Ku
- R4hk2BKWUPA1tCW6FMlkg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:qL696Dzs5uQ=:UgDe8enbU4oVBhSd5mi6qa
- IhAkDUaWzXEfYhkhoAcnISx9WdHfpt4Sr1DHI1uuf242oyhisrzqZ4X3XIwOLGUuuupL+j17a
- JhbE+VSaXo3d3vUW44m0UVrAI2nxfrBlYJRMRbJOo/KKd5oSWH9w1MJ1qnbFStRAxbn5WHBGN
- AMpcW5HK7NJIfvSmU+jkDpW7OXCDk9tc88yY24FjIUpzjwyIHO+30G/B2Tjrm7BgYsJMV5dJv
- CONMrivpkBSt8sy/TdEpGrBXtOD6Y3ii5lv6nunFyQtqiAIDTZR4Acvlxtk8PLUxDJDI1Sbq2
- NLO1Ilpu92wzOpxIm48xuMNsSkPRs97TaU/zpIw1eyytVGfz2U8JFSh92w15cqdUGh9XQLLJ7
- uCfF5XAdbcja+eDMFzN0NdXeEmD5h39oZ8gGsDuHGea7pPOzcF/ZMRlB7CkS9TTc8Wl1sat+l
- m7OXTUjx+BqXEHJO/gJ8ZIWKp+2TW67bOdxCjJVKY3XWXWql9T3UoBONTqgUxhndpChjG4Pmy
- 9L7e0HzMj/fSIv4e7E4z8hUZuJxVpgfdvTDqFOrZwFTLr++keYQgRLrznNNTWxr1KOHiYUkYA
- k/LZ0XHp3+Gwk3b2fiJfa29bQyFBcQrJnJv80FBiZZeS9zOk08Q8eemr8sA0kLGEqIll1Xi6z
- B2S+5DI98Og9LnyTHkBJCfmQ4jlK+M659NfTVQLBopHFeSHzmgIOkgl/JOIo5a9hfdX7j2LYm
- IekoV9V89QJUIzKYIskkMor7sIo5iqz8DqtTrgFMTIKlqOOyl1xfuhNdZ5VyE3cF3eDjvPJ7D
- UiFdX91QFUBCocsSREsqAT/ebGu8uoyXeqnVYHpbro4JAgGs8jpGdyI3ZOtT2apYpdiXm6uOl
- YZGDMgEqlaXabGCeyooikuoFgvTBlo4bhVU7sSUIDFc9fK0nh6s9cq3Vlm7NNLqM0lEo9mid6
- kiqEI76hJF5nBV+vxAGBF9FYGGcd93y2CnFUa6wE063hJhja71xxUF8Cfbh0Hs8lZzq13jSdF
- DsSGC6kdMMUGDmJ80QOvrfVKl6+RMhmVtk7lWY0VL9FFO+ZNV7FJ4mHTnsU2RX4WCw==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Linus,
+The pull request you sent on Tue, 26 Apr 2022 17:18:42 +0200:
 
-I've finished checking all outstanding fbdev patches which had queued up
-during the last few months. This is now the last bunch.
-All are either trivial and/or small.
-The changelog is below.
+> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/for-5.18/fbdev-2
 
-Please pull.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/cf424ef014ac30b0da27125dd1fbdf10b0d3a520
 
-Thanks,
-Helge
+Thank you!
 
-----------------------------------------------------------------
-The following changes since commit 3123109284176b1532874591f7c81f3837bbdc17:
-
-  Linux 5.18-rc1 (2022-04-03 14:08:21 -0700)
-
-are available in the Git repository at:
-
-  http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/for-5.18/fbdev-2
-
-for you to fetch changes up to 6fbe0cc53a1b5f7abe2c44399c18e943adbebe2f:
-
-  video: fbdev: clps711x-fb: Use syscon_regmap_lookup_by_phandle (2022-04-25 20:12:12 +0200)
-
-----------------------------------------------------------------
-fbdev fixes and updates for kernel v5.18-rc5
-
-A bunch of outstanding fbdev patches:
-
-neofb:
-	Fix the check of 'var->pixclock'
-
-kyro, vt8623fb, tridentfb, arkfb, s3fb, i740fb:
-	Error out if 'lineclock' equals zero
-
-sis:
-	Fix potential NULL dereference in sisfb_post_sis300()
-
-fb.h:
-	Spelling fix: palette/palette/
-
-pm2fb:
-	Fix kernel-doc formatting issue
-
-clps711x-fb:
-	Use syscon_regmap_lookup_by_phandle()
-
-of:
-	display_timing: Remove a redundant zeroing of memory
-
-aty & matrox:
-	Cleanup for powerpc's asm/prom.h
-
-sh_mobile_lcdcfb:
-	Remove sh_mobile_lcdc_check_var() declaration
-
-mmp:
-	Replace usage of found with dedicated list iterator variable
-
-omap:
-	Make it CCF clk API compatible
-
-imxfb:
-	Fix missing of_node_put in imxfb_probe
-
-i740fb:
-	Use memset_io() to clear screen
-
-udlfb:
-	Properly check endpoint type
-
-pxafb:
-	Use if else instead
-
-----------------------------------------------------------------
-Alexander Shiyan (1):
-      video: fbdev: clps711x-fb: Use syscon_regmap_lookup_by_phandle
-
-Christophe JAILLET (1):
-      video: fbdev: of: display_timing: Remove a redundant zeroing of memory
-
-Christophe Leroy (1):
-      video: fbdev: aty/matrox/...: Prepare cleanup of powerpc's asm/prom.h
-
-Geert Uytterhoeven (2):
-      linux/fb.h: Spelling s/palette/palette/
-      video: fbdev: sh_mobile_lcdcfb: Remove sh_mobile_lcdc_check_var() declaration
-
-Haowen Bai (2):
-      video: fbdev: sis: fix potential NULL dereference in sisfb_post_sis300()
-      video: fbdev: pm2fb: Fix a kernel-doc formatting issue
-
-Jakob Koschel (1):
-      video: fbdev: mmp: replace usage of found with dedicated list iterator variable
-
-Janusz Krzysztofik (1):
-      video: fbdev: omap: Make it CCF clk API compatible
-
-Lv Ruyi (1):
-      video: fbdev: imxfb: Fix missing of_node_put in imxfb_probe
-
-Ondrej Zary (1):
-      video: fbdev: i740fb: use memset_io() to clear screen
-
-Pavel Skripkin (1):
-      video: fbdev: udlfb: properly check endpoint type
-
-Wang Qing (1):
-      video: fbdev: pxafb: use if else instead
-
-Zheyu Ma (7):
-      video: fbdev: neofb: Fix the check of 'var->pixclock'
-      video: fbdev: kyro: Error out if 'lineclock' equals zero
-      video: fbdev: vt8623fb: Error out if 'pixclock' equals zero
-      video: fbdev: tridentfb: Error out if 'pixclock' equals zero
-      video: fbdev: arkfb: Error out if 'pixclock' equals zero
-      video: fbdev: s3fb: Error out if 'pixclock' equals zero
-      video: fbdev: i740fb: Error out if 'pixclock' equals zero
-
- drivers/video/fbdev/arkfb.c                |  3 +++
- drivers/video/fbdev/aty/aty128fb.c         |  1 -
- drivers/video/fbdev/aty/atyfb_base.c       |  1 -
- drivers/video/fbdev/aty/radeon_pm.c        |  1 -
- drivers/video/fbdev/aty/radeonfb.h         |  2 +-
- drivers/video/fbdev/clps711x-fb.c          |  3 +--
- drivers/video/fbdev/controlfb.c            |  3 ---
- drivers/video/fbdev/i740fb.c               |  5 ++++-
- drivers/video/fbdev/imxfb.c                |  2 ++
- drivers/video/fbdev/kyro/fbdev.c           |  2 ++
- drivers/video/fbdev/matrox/matroxfb_base.h |  1 -
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c |  2 ++
- drivers/video/fbdev/mmp/core.c             | 11 +++++------
- drivers/video/fbdev/neofb.c                |  2 +-
- drivers/video/fbdev/omap/hwa742.c          |  6 +++---
- drivers/video/fbdev/omap/lcdc.c            |  6 +++---
- drivers/video/fbdev/omap/sossi.c           |  5 +++--
- drivers/video/fbdev/platinumfb.c           |  2 +-
- drivers/video/fbdev/pm2fb.c                |  8 ++------
- drivers/video/fbdev/pxafb.c                |  4 ++--
- drivers/video/fbdev/s3fb.c                 |  3 +++
- drivers/video/fbdev/sh_mobile_lcdcfb.c     |  3 ---
- drivers/video/fbdev/sis/sis_main.c         |  2 +-
- drivers/video/fbdev/tridentfb.c            |  3 +++
- drivers/video/fbdev/udlfb.c                | 14 ++++++++++++--
- drivers/video/fbdev/valkyriefb.c           |  3 +--
- drivers/video/fbdev/vt8623fb.c             |  3 +++
- drivers/video/of_display_timing.c          |  2 +-
- include/uapi/linux/fb.h                    |  2 +-
- 29 files changed, 60 insertions(+), 45 deletions(-)
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html

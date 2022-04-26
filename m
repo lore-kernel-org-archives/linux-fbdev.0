@@ -2,184 +2,183 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2761C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon, 25 Apr 2022 18:24:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C4D9C433EF
+	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Apr 2022 07:40:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S244339AbiDYS2B (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 25 Apr 2022 14:28:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49960 "EHLO
+        id S1344246AbiDZHnT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 26 Apr 2022 03:43:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38790 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S243533AbiDYS2A (ORCPT
+        with ESMTP id S1344177AbiDZHnR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Mon, 25 Apr 2022 14:28:00 -0400
-Received: from mailrelay3-1.pub.mailoutpod1-cph3.one.com (mailrelay3-1.pub.mailoutpod1-cph3.one.com [46.30.210.184])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DAD6011246C
-        for <linux-fbdev@vger.kernel.org>; Mon, 25 Apr 2022 11:24:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=rsa1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=7kuXBnYKbene2Vy5ddL4QLJVZExSdzHjcyeztknIyk4=;
-        b=g54t+7+cA0BilM+bYHzEsaEveTEyQJ+5dppgZAbR6Xo0XoUL+atLdfkhvy6JhRz93JqMZub0n31YJ
-         GW9s7q0LnjHgW0uVlF3LM+b0UOxx49lF3FCZE1Sr9v85yF6ruQcIZInVxzqWJTp4BNAzIfa29/mZGi
-         /nHCGu+PaACQ88NAi0zBNX0BNARy+uMe4dNU+ayQ1FKYmQ48aBvNCGmG0PI4ExVvl6BHO/msnK+V3d
-         cPbC0oqAVyFud1OfkJhySO/YQYcF08pGIg/zj5z7Uzz/Tia6iW8zvci8V9QSsITqhOftMpJJ5cz6AM
-         ehhxzgqp6Wa4BQME5zAfNGWRJlMG7AQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-        d=ravnborg.org; s=ed1;
-        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-         from:date:from;
-        bh=7kuXBnYKbene2Vy5ddL4QLJVZExSdzHjcyeztknIyk4=;
-        b=jXXrW02P8sqjJ8y8GvxFepLYXJmArqv5iYyQYwNR7yrBfFBE22owmPMu6GJwKlNjJW2r3b7/pQOUe
-         53W7U0qCA==
-X-HalOne-Cookie: fbc2a83891d50f0728fc12458d75734d1cf92e37
-X-HalOne-ID: ff763677-c4c4-11ec-be69-d0431ea8bb03
-Received: from mailproxy4.cst.dirpod3-cph3.one.com (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
-        by mailrelay3.pub.mailoutpod1-cph3.one.com (Halon) with ESMTPSA
-        id ff763677-c4c4-11ec-be69-d0431ea8bb03;
-        Mon, 25 Apr 2022 18:24:52 +0000 (UTC)
-Date:   Mon, 25 Apr 2022 20:24:50 +0200
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Thomas Zimmermann <tzimmermann@suse.de>
-Cc:     javierm@redhat.com, daniel@ffwll.ch, deller@gmx.de,
-        airlied@linux.ie, maarten.lankhorst@linux.intel.com,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v2 3/3] fbdev: Refactor implementation of page_mkwrite
-Message-ID: <YmbncpwerOQLB1cS@ravnborg.org>
-References: <20220425112751.25985-1-tzimmermann@suse.de>
- <20220425112751.25985-4-tzimmermann@suse.de>
+        Tue, 26 Apr 2022 03:43:17 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F9C112758
+        for <linux-fbdev@vger.kernel.org>; Tue, 26 Apr 2022 00:40:01 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id B2F0F1F74E;
+        Tue, 26 Apr 2022 07:39:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1650958799; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=VVs9h0AdAmN5eF9XIHmkmMmE01zWGLPyXO6MEkefwhU=;
+        b=o0YSd6wffgknLwvufdCniMQX8SMsCaxoGQDgHnPs2pks7i9/hmZ0C5QEQXKd4hM1k8hJzf
+        5/9oir6ZRSfCbP5dze7m/2Hw316Bm2u7Vlr0/Y/G35GEbsSAYF4CZSEP5YtW2hfKIoIgu8
+        J53mV/0WfdLfV5UKEBmarjZmH8LLbgQ=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1650958799;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=VVs9h0AdAmN5eF9XIHmkmMmE01zWGLPyXO6MEkefwhU=;
+        b=X/vaPCBALdkB/EBLZ0u5GJPQjpHHjTEQjskOkQfdbCd43crxcO3DORfGLc5mKA/yeJZ5xU
+        pJpD37dpfopoq1AA==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 89AB913223;
+        Tue, 26 Apr 2022 07:39:59 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id r3L3H8+hZ2KGfgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Tue, 26 Apr 2022 07:39:59 +0000
+Message-ID: <dde9b74c-264b-9dab-2381-76aa92945ab0@suse.de>
+Date:   Tue, 26 Apr 2022 09:39:58 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220425112751.25985-4-tzimmermann@suse.de>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.1
+Subject: Re: [PATCH v2 1/3] fbdev: Put mmap for deferred I/O into drivers
+Content-Language: en-US
+To:     Sam Ravnborg <sam@ravnborg.org>
+Cc:     airlied@linux.ie, linux-fbdev@vger.kernel.org, deller@gmx.de,
+        dri-devel@lists.freedesktop.org, javierm@redhat.com
+References: <20220425112751.25985-1-tzimmermann@suse.de>
+ <20220425112751.25985-2-tzimmermann@suse.de> <YmbZyI0kVzLo2gR6@ravnborg.org>
+ <Ymbejo2702tUUyNW@ravnborg.org>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <Ymbejo2702tUUyNW@ravnborg.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------n2xlpgdOrHPk1euDl2E63Sfo"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi Thomas.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------n2xlpgdOrHPk1euDl2E63Sfo
+Content-Type: multipart/mixed; boundary="------------kDyr0Q3hyzT1PgjR0a62rSDs";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: airlied@linux.ie, linux-fbdev@vger.kernel.org, deller@gmx.de,
+ dri-devel@lists.freedesktop.org, javierm@redhat.com
+Message-ID: <dde9b74c-264b-9dab-2381-76aa92945ab0@suse.de>
+Subject: Re: [PATCH v2 1/3] fbdev: Put mmap for deferred I/O into drivers
+References: <20220425112751.25985-1-tzimmermann@suse.de>
+ <20220425112751.25985-2-tzimmermann@suse.de> <YmbZyI0kVzLo2gR6@ravnborg.org>
+ <Ymbejo2702tUUyNW@ravnborg.org>
+In-Reply-To: <Ymbejo2702tUUyNW@ravnborg.org>
 
-On Mon, Apr 25, 2022 at 01:27:51PM +0200, Thomas Zimmermann wrote:
-> Refactor the page-write handler for deferred I/O. Drivers use the
-> function to let fbdev track written pages of mmap'ed framebuffer
-> memory.
+--------------kDyr0Q3hyzT1PgjR0a62rSDs
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-I like how the comments got a brush up and a little more info was added.
-But I do not see the point of the refactoring - the code is equally
-readable before and after - maybe even easier before (modulus the
-improved comments).
+SGkgU2FtDQoNCkFtIDI1LjA0LjIyIHVtIDE5OjQ2IHNjaHJpZWIgU2FtIFJhdm5ib3JnOg0K
+PiBIaSBUaG9tYXMsDQo+IA0KPiBPbiBNb24sIEFwciAyNSwgMjAyMiBhdCAwNzoyNjozMlBN
+ICswMjAwLCBTYW0gUmF2bmJvcmcgd3JvdGU6DQo+PiBIaSBUaG9tYXMsDQo+Pg0KPj4+IGRp
+ZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJfZGVmaW8uYyBiL2RyaXZl
+cnMvdmlkZW8vZmJkZXYvY29yZS9mYl9kZWZpby5jDQo+Pj4gaW5kZXggNmFhZjZkMGFiZjM5
+Li42OTI0ZDQ4OWEyODkgMTAwNjQ0DQo+Pj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9j
+b3JlL2ZiX2RlZmlvLmMNCj4+PiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJf
+ZGVmaW8uYw0KPj4+IEBAIC0xODEsNiArMTgxLDcgQEAgaW50IGZiX2RlZmVycmVkX2lvX21t
+YXAoc3RydWN0IGZiX2luZm8gKmluZm8sIHN0cnVjdCB2bV9hcmVhX3N0cnVjdCAqdm1hKQ0K
+Pj4+ICAgCXZtYS0+dm1fcHJpdmF0ZV9kYXRhID0gaW5mbzsNCj4+PiAgIAlyZXR1cm4gMDsN
+Cj4+PiAgIH0NCj4+PiArRVhQT1JUX1NZTUJPTF9HUEwoZmJfZGVmZXJyZWRfaW9fbW1hcCk7
+DQo+Pj4gICANCj4+PiAgIC8qIHdvcmtxdWV1ZSBjYWxsYmFjayAqLw0KPj4+ICAgc3RhdGlj
+IHZvaWQgZmJfZGVmZXJyZWRfaW9fd29yayhzdHJ1Y3Qgd29ya19zdHJ1Y3QgKndvcmspDQo+
+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1lbS5jIGIvZHJp
+dmVycy92aWRlby9mYmRldi9jb3JlL2ZibWVtLmMNCj4+PiBpbmRleCA4NDQyNzQ3MDM2N2Iu
+LjUyNDQwZTNmOGY2OSAxMDA2NDQNCj4+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2Nv
+cmUvZmJtZW0uYw0KPj4+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1lbS5j
+DQo+Pj4gQEAgLTEzMzQsNyArMTMzNCw2IEBAIHN0YXRpYyBpbnQNCj4+PiAgIGZiX21tYXAo
+c3RydWN0IGZpbGUgKmZpbGUsIHN0cnVjdCB2bV9hcmVhX3N0cnVjdCAqIHZtYSkNCj4+PiAg
+IHsNCj4+PiAgIAlzdHJ1Y3QgZmJfaW5mbyAqaW5mbyA9IGZpbGVfZmJfaW5mbyhmaWxlKTsN
+Cj4+PiAtCWludCAoKmZiX21tYXBfZm4pKHN0cnVjdCBmYl9pbmZvICppbmZvLCBzdHJ1Y3Qg
+dm1fYXJlYV9zdHJ1Y3QgKnZtYSk7DQo+Pj4gICAJdW5zaWduZWQgbG9uZyBtbWlvX3Bnb2Zm
+Ow0KPj4+ICAgCXVuc2lnbmVkIGxvbmcgc3RhcnQ7DQo+Pj4gICAJdTMyIGxlbjsNCj4+PiBA
+QCAtMTM0MywxNCArMTM0Miw3IEBAIGZiX21tYXAoc3RydWN0IGZpbGUgKmZpbGUsIHN0cnVj
+dCB2bV9hcmVhX3N0cnVjdCAqIHZtYSkNCj4+PiAgIAkJcmV0dXJuIC1FTk9ERVY7DQo+Pj4g
+ICAJbXV0ZXhfbG9jaygmaW5mby0+bW1fbG9jayk7DQo+Pj4gICANCj4+PiAtCWZiX21tYXBf
+Zm4gPSBpbmZvLT5mYm9wcy0+ZmJfbW1hcDsNCj4+PiAtDQo+Pj4gLSNpZiBJU19FTkFCTEVE
+KENPTkZJR19GQl9ERUZFUlJFRF9JTykNCj4+PiAtCWlmIChpbmZvLT5mYmRlZmlvKQ0KPj4+
+IC0JCWZiX21tYXBfZm4gPSBmYl9kZWZlcnJlZF9pb19tbWFwOw0KPj4+IC0jZW5kaWYNCj4+
+PiAtDQo+Pj4gLQlpZiAoZmJfbW1hcF9mbikgew0KPj4+ICsJaWYgKGluZm8tPmZib3BzLT5m
+Yl9tbWFwKSB7DQo+Pj4gICAJCWludCByZXM7DQo+Pj4gICANCj4+PiAgIAkJLyoNCj4+PiBA
+QCAtMTM1OCwxMSArMTM1MCwxOCBAQCBmYl9tbWFwKHN0cnVjdCBmaWxlICpmaWxlLCBzdHJ1
+Y3Qgdm1fYXJlYV9zdHJ1Y3QgKiB2bWEpDQo+Pj4gICAJCSAqIFNNRSBwcm90ZWN0aW9uIGlz
+IHJlbW92ZWQgYWhlYWQgb2YgdGhlIGNhbGwNCj4+PiAgIAkJICovDQo+Pj4gICAJCXZtYS0+
+dm1fcGFnZV9wcm90ID0gcGdwcm90X2RlY3J5cHRlZCh2bWEtPnZtX3BhZ2VfcHJvdCk7DQo+
+Pj4gLQkJcmVzID0gZmJfbW1hcF9mbihpbmZvLCB2bWEpOw0KPj4+ICsJCXJlcyA9IGluZm8t
+PmZib3BzLT5mYl9tbWFwKGluZm8sIHZtYSk7DQo+Pj4gICAJCW11dGV4X3VubG9jaygmaW5m
+by0+bW1fbG9jayk7DQo+Pj4gICAJCXJldHVybiByZXM7DQo+Pj4gICAJfQ0KPj4+ICAgDQo+
+Pj4gKwkvKg0KPj4+ICsJICogRkIgZGVmZXJyZWQgSS9PIHdhbnRzIHlvdSB0byBoYW5kbGUg
+bW1hcCBpbiB5b3VyIGRyaXZlcnMuIEF0IGENCj4+PiArCSAqIG1pbmltdW0sIHBvaW50IHN0
+cnVjdCBmYl9vcHMuZmJfbW1hcCB0byBmYl9kZWZlcnJlZF9pb19tbWFwKCkuDQo+Pj4gKwkg
+Ki8NCj4+PiArCWlmIChkZXZfV0FSTl9PTkNFKGluZm8tPmRldiwgaW5mby0+ZmJkZWZpbywg
+ImZiZGV2IG1tYXAgbm90IHNldCB1cCBmb3IgZGVmZXJlZCBJL08uXG4iKSkNCj4+PiArCQly
+ZXR1cm4gLUVOT0RFVjsNCj4+PiArDQo+Pg0KPj4gSWYgbm90IGNvbmZpZ3VyZWQgLSB0aGVu
+IHdoeSBub3QganVzdCBjYWxsIGZiX2RlZmVycmVkX2lvX21tYXAoKSwgYXMNCj4+IHRoaXMg
+c2VlbXMgdG8gYmUgdGhlIGRlZmF1bHQgaW1wbGVtZW50YXRpb24gYW55d2F5Lg0KPj4gVGhl
+biBkcml2ZXJzIHRoYXQgbmVlZHMgaXQgY2FuIG92ZXJyaWRlIC0gYW5kIHRoZSByZXN0IGZh
+bGxiYWNrIHRvIHRoZQ0KPj4gZGVmYXVsdC4NCj4gDQo+IEp1c3QgdG8gYmUgY2xlYXIgLSBJ
+IGFscmVhZHkgcmVhZDoNCj4gIg0KPiBMZWF2ZSB0aGUgbW1hcCBoYW5kbGluZyB0byBkcml2
+ZXJzIGFuZCBleHBlY3QgdGhlbSB0byBjYWxsIHRoZQ0KPiBoZWxwZXIgZm9yIGRlZmVycmVk
+IEkvTyBieSB0aG1lc2VsdmVzLg0KPiAiDQo+IA0KPiBCdXQgdGhpcyBkb2VzIG5vdCBoZWxw
+IG1lIHVuZGVyc3RhbmQgd2h5IHdlIG5lZWQgdG8gZXhwbGljaXQgZG8gd2hhdA0KPiBjb3Vs
+ZCBiZSBhIHNpbXBsZSBkZWZhdWx0IGltcGxlbWVudGF0aW9uLg0KPiBDaGFuY2VzIGFyZSB0
+aGF0IEkgYW0gc3R1cGlkIGFuZCBpdCBpcyBvYnZpb3VzLi4NCg0KVGhhdCdzIG5vIHN0dXBp
+ZCBxdWVzdGlvbi4gSSBkaWRuJ3Qgd2FudCB0byB1c2UgYSBkZWZhdWx0IGltcGxlbWVudGF0
+aW9uIA0KYmVjYXVzZSB0aGVyZSdzIG5vIHNpbmdsZSBvbmUgdGhhdCBzZXZlcnMgYWxsIHB1
+cnBvc2VzLiBUaGUgY3VycmVudCBjb2RlIA0KYWxsIHVzZXMgdGhlIHNhbWUgaGVscGVyLCBi
+dXQgdGhpcyB3aWxsIGNoYW5nZSB3aXRoIGxhdGVyIHBhdGNoc2V0cy4gQXQgDQpzb21lIHBv
+aW50LCBHRU0gaXMgc3VwcG9zZWQgdG8gaW1wbGVtZW50IHNvbWUgb2YgdGhlIGxvZ2ljIGZv
+ciBkZWZlcnJlZCANCkkvTyBhbmQgd2lsbCBoYXZlIHRvIHNldCBpdCdzIG93biBoZWxwZXJz
+LiBUaGlzIGNhbiBiZSBzZWVuIGluIHBhdGNoZXMgOCANCmFuZCA5IG9mIFsxXS4gSSB0aGlu
+ayBpdCdzIGJldHRlciB0byBjbGVhcmx5IGZhaWwgaGVyZSB0aGFuIHRvIHByb3ZpZGUgYSAN
+CmRlZmF1bHQgaW1wbGVtZW50YXRpb24uDQoNCkJlc3QgcmVnYXJkcw0KVGhvbWFzDQoNClsx
+XSANCmh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL2RyaS1kZXZlbC8yMDIyMDMwMzIwNTgzOS4y
+ODQ4NC0xLXR6aW1tZXJtYW5uQHN1c2UuZGUvDQoNCg0KPiANCj4gCVNhbQ0KDQotLSANClRo
+b21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3
+YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJu
+YmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bD
+vGhyZXI6IEl2byBUb3Rldg0K
 
-But if you consider it better keep it. Again just my thoughts when
-reading the code.
+--------------kDyr0Q3hyzT1PgjR0a62rSDs--
 
-	Sam
+--------------n2xlpgdOrHPk1euDl2E63Sfo
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-> 
-> v2:
-> 	* don't export the helper until we have an external caller
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-> ---
->  drivers/video/fbdev/core/fb_defio.c | 68 ++++++++++++++++++++---------
->  1 file changed, 48 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core/fb_defio.c
-> index a03b9c64fc61..214581ce5840 100644
-> --- a/drivers/video/fbdev/core/fb_defio.c
-> +++ b/drivers/video/fbdev/core/fb_defio.c
-> @@ -143,29 +143,18 @@ int fb_deferred_io_fsync(struct file *file, loff_t start, loff_t end, int datasy
->  }
->  EXPORT_SYMBOL_GPL(fb_deferred_io_fsync);
->  
-> -/* vm_ops->page_mkwrite handler */
-> -static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
-> +/*
-> + * Adds a page to the dirty list. Requires caller to hold
-> + * struct fb_deferred_io.lock. Call this from struct
-> + * vm_operations_struct.page_mkwrite.
-> + */
-> +static vm_fault_t __fb_deferred_io_track_page(struct fb_info *info, unsigned long offset,
-> +					      struct page *page)
->  {
-> -	struct page *page = vmf->page;
-> -	struct fb_info *info = vmf->vma->vm_private_data;
->  	struct fb_deferred_io *fbdefio = info->fbdefio;
->  	struct fb_deferred_io_pageref *pageref;
-> -	unsigned long offset;
->  	vm_fault_t ret;
->  
-> -	offset = (vmf->address - vmf->vma->vm_start);
-> -
-> -	/* this is a callback we get when userspace first tries to
-> -	write to the page. we schedule a workqueue. that workqueue
-> -	will eventually mkclean the touched pages and execute the
-> -	deferred framebuffer IO. then if userspace touches a page
-> -	again, we repeat the same scheme */
-> -
-> -	file_update_time(vmf->vma->vm_file);
-> -
-> -	/* protect against the workqueue changing the page list */
-> -	mutex_lock(&fbdefio->lock);
-> -
->  	/* first write in this cycle, notify the driver */
->  	if (fbdefio->first_io && list_empty(&fbdefio->pagelist))
->  		fbdefio->first_io(info);
-> @@ -186,8 +175,6 @@ static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
->  	 */
->  	lock_page(pageref->page);
->  
-> -	mutex_unlock(&fbdefio->lock);
-> -
->  	/* come back after delay to process the deferred IO */
->  	schedule_delayed_work(&info->deferred_work, fbdefio->delay);
->  	return VM_FAULT_LOCKED;
-> @@ -197,6 +184,47 @@ static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
->  	return ret;
->  }
->  
-> +/*
-> + * fb_deferred_io_page_mkwrite - Mark a page as written for deferred I/O
-> + * @fb_info: The fbdev info structure
-> + * @vmf: The VM fault
-> + *
-> + * This is a callback we get when userspace first tries to
-> + * write to the page. We schedule a workqueue. That workqueue
-> + * will eventually mkclean the touched pages and execute the
-> + * deferred framebuffer IO. Then if userspace touches a page
-> + * again, we repeat the same scheme.
-> + *
-> + * Returns:
-> + * VM_FAULT_LOCKED on success, or a VM_FAULT error otherwise.
-> + */
-> +static vm_fault_t fb_deferred_io_page_mkwrite(struct fb_info *info, struct vm_fault *vmf)
-> +{
-> +	struct page *page = vmf->page;
-> +	struct fb_deferred_io *fbdefio = info->fbdefio;
-> +	unsigned long offset;
-> +	vm_fault_t ret;
-> +
-> +	offset = (vmf->address - vmf->vma->vm_start);
-> +
-> +	file_update_time(vmf->vma->vm_file);
-> +
-> +	/* protect against the workqueue changing the page list */
-> +	mutex_lock(&fbdefio->lock);
-> +	ret = __fb_deferred_io_track_page(info, offset, page);
-> +	mutex_unlock(&fbdefio->lock);
-> +
-> +	return ret;
-> +}
-> +
-> +/* vm_ops->page_mkwrite handler */
-> +static vm_fault_t fb_deferred_io_mkwrite(struct vm_fault *vmf)
-> +{
-> +	struct fb_info *info = vmf->vma->vm_private_data;
-> +
-> +	return fb_deferred_io_page_mkwrite(info, vmf);
-> +}
-> +
->  static const struct vm_operations_struct fb_deferred_io_vm_ops = {
->  	.fault		= fb_deferred_io_fault,
->  	.page_mkwrite	= fb_deferred_io_mkwrite,
-> -- 
-> 2.36.0
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmJnoc4FAwAAAAAACgkQlh/E3EQov+Df
+QA/+NYDsnIvDwi5I7yRS85qW+hPNm8zEdd3ajWAyyzRDzYfzLIGWglEVWGqJSOUhuiBVq0pXijI2
+VtF9JCIvcLlWW4YJLoAGHx/D0Y7w+9wUgTNSVtQxBWDC2cJF+zfNlAMIaHZ0krVWxEeZ41gN3/hK
+a+RtRnEwkx/qnXaEqw6aL2///TxyR90yvZE+ki8NRqNxbPEs8WqJWyv/pANcacftBVBDJ+6Iol8C
+GdWqxv9VR94lqBHZ3nBt+9pGCP5jqEZqRImOMESrDnaHzHUWDmAGrPdg1OvHlpw7Z0i4WZvrNvJv
+YGGKc1mpwrah6yjaWURxzlnkU45s3ukRN+Cdzk6WkXOYg55pzSl6pgufmiA/Nrxm7U5abHb5YfJW
+Boz6nOqSisMxAwqX5IhkvRj6FLDxyYjP0KeLosDIrN85XXKJPIA+piYgJ7hnz+jUtILF/0AVxBEn
+/DeV8NYofjYnFT6y77ZGmRGJMNsAdmKo9ofKDcOa27r0elCpB233E0Q+k0LgwAyUwjPOiHDF5m4u
+TSeGes1mgg/HB4QnZ+BT6jR4fLwc9bjzhQMKxLCvFCyvdp0GKbsvCssQmNrMGnwfbCr2gJZGH3sT
+5eCWl0ATUayWfDQyoCGZwuT7efpBXdAP/m6nhxFYqOm7GjUEMiACV0YbD2H17u5loL354L8D2SKw
+iL8=
+=gE9D
+-----END PGP SIGNATURE-----
+
+--------------n2xlpgdOrHPk1euDl2E63Sfo--

@@ -2,56 +2,92 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AC73C433F5
-	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Apr 2022 07:29:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 660EBC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Apr 2022 13:48:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1358827AbiD0Hcm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 27 Apr 2022 03:32:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50894 "EHLO
+        id S236434AbiD0NvL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Apr 2022 09:51:11 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54868 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1358825AbiD0Hcl (ORCPT
+        with ESMTP id S236554AbiD0NvJ (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 27 Apr 2022 03:32:41 -0400
-Received: from mail.fixingbiz.pl (mail.fixingbiz.pl [217.61.22.139])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB0247939E
-        for <linux-fbdev@vger.kernel.org>; Wed, 27 Apr 2022 00:29:30 -0700 (PDT)
-Received: by mail.fixingbiz.pl (Postfix, from userid 1001)
-        id 033F6A53F0; Wed, 27 Apr 2022 08:28:54 +0100 (BST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=fixingbiz.pl; s=mail;
-        t=1651044568; bh=FDuFY3XQoq0gMX1b2gxgT7Py2p4Sxl0PJZYZ4NVaPho=;
-        h=Date:From:To:Subject:From;
-        b=NKi8CQ327krzMePscIP+ptFu24lLLe+HNfVoaxdl9DlJs8caZqITC1NW/qvL7/ktn
-         zwenpBO911NnrwBU4o9PBaKdf6nNuvqX59bR3/TKsHZomUIEk7jejLzAbuEv4qsIA4
-         5304zGn0dUNx8Zg1Bxo151Ho1Daojq9Fly4bVKnLDYlNLXuj7UyA/vGKLcc/NXFhmI
-         f9Z5Du46PczxZ2EX0F5+2MbzDzZDYSVH47C4qkV1uvuFjCP5b1v9ZmYhxgwJRu89YH
-         5kttkgXTl45+F2PgLDI55o2EMD41dpRbOOD7nZ+Xk/V6a5mrIAlXyFIpFaADuniVMC
-         W5FgDQ6Txfc4A==
-Received: by mail.fixingbiz.pl for <linux-fbdev@vger.kernel.org>; Wed, 27 Apr 2022 07:28:09 GMT
-Message-ID: <20220427073002-0.1.22.aj1w.0.i97pxttga7@fixingbiz.pl>
-Date:   Wed, 27 Apr 2022 07:28:09 GMT
-From:   =?UTF-8?Q? "Przemys=C5=82aw_Wr=C3=B3blewski" ?= 
-        <przemyslaw.wroblewski@fixingbiz.pl>
-To:     <linux-fbdev@vger.kernel.org>
-Subject: Wycena paneli fotowoltaicznych
-X-Mailer: mail.fixingbiz.pl
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        Wed, 27 Apr 2022 09:51:09 -0400
+Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 731C3766A;
+        Wed, 27 Apr 2022 06:47:58 -0700 (PDT)
+Received: from linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net (linux.microsoft.com [13.77.154.182])
+        by linux.microsoft.com (Postfix) with ESMTPSA id 1C85520E97B0;
+        Wed, 27 Apr 2022 06:47:58 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 1C85520E97B0
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
+        s=default; t=1651067278;
+        bh=s71BKG69g523heKe1yEo9VKmSL/5EGLlD50AE/SchRU=;
+        h=From:To:Subject:Date:From;
+        b=ifbwO0m7s/jATQqceeCrnmVeEIvhHzX2cXKpEfhAwiCd74/M8VzUv42AlybCLlOns
+         rXoAQoxBIm3S8+db/8ujimleKpMTVlNzlj3vui3OcfDgu45PD4JteeDG+oO42hHoVq
+         pFFnzL2EG/CJS60yxHsd3dFozwBleudDIoiEp79k=
+From:   Saurabh Sengar <ssengar@linux.microsoft.com>
+To:     ssengar@microsoft.com, kys@microsoft.com, haiyangz@microsoft.com,
+        sthemmin@microsoft.com, wei.liu@kernel.org, decui@microsoft.com,
+        deller@gmx.de, linux-hyperv@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] video: hyperv_fb: Allow resolutions with size > 64 MB for Gen1
+Date:   Wed, 27 Apr 2022 06:47:53 -0700
+Message-Id: <1651067273-6635-1-git-send-email-ssengar@linux.microsoft.com>
+X-Mailer: git-send-email 1.8.3.1
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Dzie=C5=84 dobry,
+This patch fixes a bug where GEN1 VMs doesn't allow resolutions greater
+than 64 MB size (eg 7680x4320). Unnecessary PCI check limits Gen1 VRAM
+to legacy PCI BAR size only (ie 64MB). Thus any, resolution requesting
+greater then 64MB (eg 7680x4320) would fail. MMIO region assigning this
+memory shouldn't be limited by PCI bar size.
 
-dostrzegam mo=C5=BCliwo=C5=9B=C4=87 wsp=C3=B3=C5=82pracy z Pa=C5=84stwa f=
-irm=C4=85.
+Signed-off-by: Saurabh Sengar <ssengar@linux.microsoft.com>
+---
+ drivers/video/fbdev/hyperv_fb.c | 19 +------------------
+ 1 file changed, 1 insertion(+), 18 deletions(-)
 
-=C5=9Awiadczymy kompleksow=C4=85 obs=C5=82ug=C4=99 inwestycji w fotowolta=
-ik=C4=99, kt=C3=B3ra obni=C5=BCa koszty energii elektrycznej nawet o 90%.
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index c8e0ea2..58c304a 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -1009,7 +1009,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 	struct pci_dev *pdev  = NULL;
+ 	void __iomem *fb_virt;
+ 	int gen2vm = efi_enabled(EFI_BOOT);
+-	resource_size_t pot_start, pot_end;
+ 	phys_addr_t paddr;
+ 	int ret;
+ 
+@@ -1060,23 +1059,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 	dio_fb_size =
+ 		screen_width * screen_height * screen_depth / 8;
+ 
+-	if (gen2vm) {
+-		pot_start = 0;
+-		pot_end = -1;
+-	} else {
+-		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+-		    pci_resource_len(pdev, 0) < screen_fb_size) {
+-			pr_err("Resource not available or (0x%lx < 0x%lx)\n",
+-			       (unsigned long) pci_resource_len(pdev, 0),
+-			       (unsigned long) screen_fb_size);
+-			goto err1;
+-		}
+-
+-		pot_end = pci_resource_end(pdev, 0);
+-		pot_start = pot_end - screen_fb_size + 1;
+-	}
+-
+-	ret = vmbus_allocate_mmio(&par->mem, hdev, pot_start, pot_end,
++	ret = vmbus_allocate_mmio(&par->mem, hdev, 0, -1,
+ 				  screen_fb_size, 0x100000, true);
+ 	if (ret != 0) {
+ 		pr_err("Unable to allocate framebuffer memory\n");
+-- 
+1.8.3.1
 
-Czy s=C4=85 Pa=C5=84stwo zainteresowani weryfikacj=C4=85 wst=C4=99pnych p=
-ropozycji?
-
-
-Pozdrawiam,
-Przemys=C5=82aw Wr=C3=B3blewski

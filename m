@@ -2,69 +2,56 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 049E3C433FE
-	for <linux-fbdev@archiver.kernel.org>; Tue, 26 Apr 2022 19:07:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AC73C433F5
+	for <linux-fbdev@archiver.kernel.org>; Wed, 27 Apr 2022 07:29:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354100AbiDZTKv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 26 Apr 2022 15:10:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60942 "EHLO
+        id S1358827AbiD0Hcm (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 27 Apr 2022 03:32:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354006AbiDZTKU (ORCPT
+        with ESMTP id S1358825AbiD0Hcl (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 26 Apr 2022 15:10:20 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 440113584F;
-        Tue, 26 Apr 2022 12:07:01 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id DF6BAB82252;
-        Tue, 26 Apr 2022 19:07:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id AC0C4C385AA;
-        Tue, 26 Apr 2022 19:06:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1651000019;
-        bh=oB0PfXfFNyYYN59yI+8k+hxgU+ymNaYK85FvevEPleU=;
-        h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-        b=c8+hQmuDBqba9roo9nMVxo1NRDvaMZRSuO5pgX33I1+QQBnB0eK/gulCpV0AOWeFH
-         XapDFiJa8ErKUjurLspATxV3WBJ/udblaWkLaXdFjevkfIsRNOMQG5t2lv5FRUiLr5
-         KsokaWPbIvct/yj6sYiGatpshUd4O50BdTXkT0APXFoaoBAec2uRiXqPlRZXLFkPsd
-         HJ0gp4Fo1ZSipUKj6wonapEaZG8ajj3dDecq1H+QguZRt1ZLaKnqm4dM2vqS2JFOu1
-         vRXtyhtO6Jt/ojZADq5vy31uE+ga3neJF9tRoOYSKLneMIxXerBzveJN/ZYCHAt89g
-         lXOlnKbVHS2lA==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-        by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 97714E8DD85;
-        Tue, 26 Apr 2022 19:06:59 +0000 (UTC)
-Subject: Re: [GIT PULL] fbdev updates & fixes for v5.18-rc5
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <YmgNUgK/FeNcX0MG@ls3530>
-References: <YmgNUgK/FeNcX0MG@ls3530>
-X-PR-Tracked-List-Id: <linux-fbdev.vger.kernel.org>
-X-PR-Tracked-Message-Id: <YmgNUgK/FeNcX0MG@ls3530>
-X-PR-Tracked-Remote: http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/for-5.18/fbdev-2
-X-PR-Tracked-Commit-Id: 6fbe0cc53a1b5f7abe2c44399c18e943adbebe2f
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: cf424ef014ac30b0da27125dd1fbdf10b0d3a520
-Message-Id: <165100001961.21339.1776716463797926143.pr-tracker-bot@kernel.org>
-Date:   Tue, 26 Apr 2022 19:06:59 +0000
-To:     Helge Deller <deller@gmx.de>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
+        Wed, 27 Apr 2022 03:32:41 -0400
+Received: from mail.fixingbiz.pl (mail.fixingbiz.pl [217.61.22.139])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CB0247939E
+        for <linux-fbdev@vger.kernel.org>; Wed, 27 Apr 2022 00:29:30 -0700 (PDT)
+Received: by mail.fixingbiz.pl (Postfix, from userid 1001)
+        id 033F6A53F0; Wed, 27 Apr 2022 08:28:54 +0100 (BST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=fixingbiz.pl; s=mail;
+        t=1651044568; bh=FDuFY3XQoq0gMX1b2gxgT7Py2p4Sxl0PJZYZ4NVaPho=;
+        h=Date:From:To:Subject:From;
+        b=NKi8CQ327krzMePscIP+ptFu24lLLe+HNfVoaxdl9DlJs8caZqITC1NW/qvL7/ktn
+         zwenpBO911NnrwBU4o9PBaKdf6nNuvqX59bR3/TKsHZomUIEk7jejLzAbuEv4qsIA4
+         5304zGn0dUNx8Zg1Bxo151Ho1Daojq9Fly4bVKnLDYlNLXuj7UyA/vGKLcc/NXFhmI
+         f9Z5Du46PczxZ2EX0F5+2MbzDzZDYSVH47C4qkV1uvuFjCP5b1v9ZmYhxgwJRu89YH
+         5kttkgXTl45+F2PgLDI55o2EMD41dpRbOOD7nZ+Xk/V6a5mrIAlXyFIpFaADuniVMC
+         W5FgDQ6Txfc4A==
+Received: by mail.fixingbiz.pl for <linux-fbdev@vger.kernel.org>; Wed, 27 Apr 2022 07:28:09 GMT
+Message-ID: <20220427073002-0.1.22.aj1w.0.i97pxttga7@fixingbiz.pl>
+Date:   Wed, 27 Apr 2022 07:28:09 GMT
+From:   =?UTF-8?Q? "Przemys=C5=82aw_Wr=C3=B3blewski" ?= 
+        <przemyslaw.wroblewski@fixingbiz.pl>
+To:     <linux-fbdev@vger.kernel.org>
+Subject: Wycena paneli fotowoltaicznych
+X-Mailer: mail.fixingbiz.pl
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-The pull request you sent on Tue, 26 Apr 2022 17:18:42 +0200:
+Dzie=C5=84 dobry,
 
-> http://git.kernel.org/pub/scm/linux/kernel/git/deller/linux-fbdev.git tags/for-5.18/fbdev-2
+dostrzegam mo=C5=BCliwo=C5=9B=C4=87 wsp=C3=B3=C5=82pracy z Pa=C5=84stwa f=
+irm=C4=85.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/cf424ef014ac30b0da27125dd1fbdf10b0d3a520
+=C5=9Awiadczymy kompleksow=C4=85 obs=C5=82ug=C4=99 inwestycji w fotowolta=
+ik=C4=99, kt=C3=B3ra obni=C5=BCa koszty energii elektrycznej nawet o 90%.
 
-Thank you!
+Czy s=C4=85 Pa=C5=84stwo zainteresowani weryfikacj=C4=85 wst=C4=99pnych p=
+ropozycji?
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+
+Pozdrawiam,
+Przemys=C5=82aw Wr=C3=B3blewski

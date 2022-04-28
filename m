@@ -2,129 +2,117 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49136C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Apr 2022 13:45:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7AB2C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 28 Apr 2022 14:37:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1347596AbiD1NsY (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 28 Apr 2022 09:48:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37380 "EHLO
+        id S235253AbiD1OlG (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 28 Apr 2022 10:41:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55282 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1347594AbiD1NsX (ORCPT
+        with ESMTP id S229978AbiD1OlF (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 28 Apr 2022 09:48:23 -0400
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 613661009;
-        Thu, 28 Apr 2022 06:45:07 -0700 (PDT)
-Received: from mail-yw1-f172.google.com ([209.85.128.172]) by
- mrelayeu.kundenserver.de (mreue106 [213.165.67.113]) with ESMTPSA (Nemesis)
- id 1Mbj7g-1oHTX51Pwc-00dBzt; Thu, 28 Apr 2022 15:45:05 +0200
-Received: by mail-yw1-f172.google.com with SMTP id 00721157ae682-2f16645872fso53520157b3.4;
-        Thu, 28 Apr 2022 06:45:04 -0700 (PDT)
-X-Gm-Message-State: AOAM531rqS3TMANA9dj5PbXHgYaYSabwGuCiqYz/vsc+5F15FvO6r45T
-        WzYb45HYkZmr2LEKIEQie8lnR4wtPfawCBHHv8E=
-X-Google-Smtp-Source: ABdhPJzhKdbLezBOw+onlWys2HjSNrb5hSb6f6j0ogYNPd9ax1npbHyo1Y6CrpuYIOWED3Pgr1SGQ4YvAKDaJmP/tmM=
-X-Received: by 2002:a0d:fc83:0:b0:2e5:b0f4:c125 with SMTP id
- m125-20020a0dfc83000000b002e5b0f4c125mr33063062ywf.347.1651153503029; Thu, 28
- Apr 2022 06:45:03 -0700 (PDT)
+        Thu, 28 Apr 2022 10:41:05 -0400
+Received: from mail-wr1-f44.google.com (mail-wr1-f44.google.com [209.85.221.44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 830A6515BF;
+        Thu, 28 Apr 2022 07:37:50 -0700 (PDT)
+Received: by mail-wr1-f44.google.com with SMTP id t6so7091292wra.4;
+        Thu, 28 Apr 2022 07:37:50 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=CszHRjQoYJFbbrNoQtqtvbGaCDV1vUEycKzVbNvIqjk=;
+        b=Dq/Orag9zgUc8mFXtMaSclVFBune0QOU+m0fR1yQ+vfTMzRdMaRSn+5QSwWmW4l41p
+         o29MEpd4eLAGeuTRzEm4Hd9Rp/XkRqPMbAuYttwE8CtmU5AQbW28WiMcprd1uvL5z9Ee
+         xqyKhLggaj5PvwE0AF3vvWwmrS1xswroZRi3jABs58+LQGc7kBeLxieXZDFNAMYSOKSc
+         WfgKcDDTlvUAxBnKu9ZMCvFRTl5Fg53V+RlMQcDIr4lpv/1keaEsO3D6Z5TRPyd7RPOQ
+         7SwTD3Hg28oFZJw26O9/KoBRFfn86oCne4MLKvwNO/Paf8owKiC2H06dI7nvuHt2QNFa
+         WPjA==
+X-Gm-Message-State: AOAM532ySvA0Vhj3tH1VoR1oeqwCWYQO2NsyGT/ikc/qCx7V5o8tr78I
+        n8efFI2IHdRxDHiMV/Qhso8=
+X-Google-Smtp-Source: ABdhPJzs5p+R/52J26Y4hNZlqsAqpuaqNSum/qnfJUJoomeoLuITL3BI/R01M0v0Da4gdkvXq3jXdA==
+X-Received: by 2002:adf:eb12:0:b0:207:b333:5e7d with SMTP id s18-20020adfeb12000000b00207b3335e7dmr27573896wrn.585.1651156669059;
+        Thu, 28 Apr 2022 07:37:49 -0700 (PDT)
+Received: from liuwe-devbox-debian-v2 ([51.145.34.42])
+        by smtp.gmail.com with ESMTPSA id o42-20020a05600c512a00b00393f143efd8sm4542105wms.16.2022.04.28.07.37.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 28 Apr 2022 07:37:48 -0700 (PDT)
+Date:   Thu, 28 Apr 2022 14:37:46 +0000
+From:   Wei Liu <wei.liu@kernel.org>
+To:     Saurabh Sengar <ssengar@linux.microsoft.com>
+Cc:     ssengar@microsoft.com, kys@microsoft.com, haiyangz@microsoft.com,
+        sthemmin@microsoft.com, wei.liu@kernel.org, decui@microsoft.com,
+        deller@gmx.de, linux-hyperv@vger.kernel.org,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] video: hyperv_fb: Allow resolutions with size > 64 MB
+ for Gen1
+Message-ID: <20220428143746.sya775ro5zi3kgm3@liuwe-devbox-debian-v2>
+References: <1651067273-6635-1-git-send-email-ssengar@linux.microsoft.com>
 MIME-Version: 1.0
-References: <20220419163810.2118169-1-arnd@kernel.org> <20220422170530.GA2338209@roeck-us.net>
- <CAK8P3a3V=qxUqYT3Yt=dpXVv58-Y+HVi952wO6D4LPN5NNphGA@mail.gmail.com>
- <8b36d3a4-ec85-2f9f-e4b7-734d8ddd3d8f@roeck-us.net> <CAK8P3a0R9cpEb1d2=e9KnGSbi_uRv48RWfCu_J4DDak_cGZSuw@mail.gmail.com>
- <20220422234150.GA3442771@roeck-us.net> <CAK8P3a3qZdEqnJ2nTOKwDMossngOgCpEvZq4cQMPQjSsUoU=6g@mail.gmail.com>
- <3b4046ed-fd75-13ea-fac3-06469172806c@roeck-us.net> <CAK8P3a1LzEG1vo+5nMrnL3TOMcbSKJ3u=StcfY8dajV2raUBjA@mail.gmail.com>
- <3df135a2-17f5-d6c6-b4a8-e1a60e254297@roeck-us.net> <CAK8P3a2EHMQPN4ny9sXXuReFG0jN0hyRV7h9v_AR_0pqpOU41w@mail.gmail.com>
-In-Reply-To: <CAK8P3a2EHMQPN4ny9sXXuReFG0jN0hyRV7h9v_AR_0pqpOU41w@mail.gmail.com>
-From:   Arnd Bergmann <arnd@arndb.de>
-Date:   Thu, 28 Apr 2022 15:44:47 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a09+nFS3g1rgvTW9da3tMiAhHjkjZVs1QOJOj8TJ-9MDg@mail.gmail.com>
-Message-ID: <CAK8P3a09+nFS3g1rgvTW9da3tMiAhHjkjZVs1QOJOj8TJ-9MDg@mail.gmail.com>
-Subject: Re: [PATCH v2 00/48] ARM: PXA multiplatform support
-To:     Guenter Roeck <linux@roeck-us.net>
-Cc:     Robert Jarzmik <robert.jarzmik@free.fr>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        Marek Vasut <marek.vasut@gmail.com>,
-        Philipp Zabel <philipp.zabel@gmail.com>,
-        Lubomir Rintel <lkundrak@v3.sk>,
-        Paul Parsons <lost.distance@yahoo.com>,
-        Sergey Lapin <slapin@ossfans.org>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Dominik Brodowski <linux@dominikbrodowski.net>,
-        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
-        IDE-ML <linux-ide@vger.kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
-        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
-        linux-mmc <linux-mmc@vger.kernel.org>,
-        linux-mtd <linux-mtd@lists.infradead.org>,
-        linux-rtc@vger.kernel.org, USB list <linux-usb@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        ALSA Development Mailing List <alsa-devel@alsa-project.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:FlIDVPKXj9nzRwbk/wtccBdWDayg3PeTGiQuZ0/K42Bc7lGmPdy
- zssQcyDZ/DvWHSLnMLZ2c9c0/R8//Ct6Le7VOKueD5Qrh1XSkN/immCrCQM54OpPKR7UGyt
- rQR8FQFtM5HLTQupvDTlwrysBtqfjlwTZD25pEF/Z42s6fyHy6hxD7eWpHSPUujdYwhn8pQ
- hp2z24g1g13nAlk8lrHHQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:bRWqGE+N+ZY=:1iRjrIl6V157UK5O78TAoc
- 5W5zmo/RxHt6piZZQJR7bHPk8veJW7G/eD5jO6ABZaX8NSxlHXJ4TP5x5uFoaOWveTMuY2YNB
- E/S7IJzqQcjMpAVq0rBO649N779tX8wy6iezjQHdAX7O/6l7dHbxrLeGuJGtVvy5SPmFPsnuF
- 7hnbUhs94zbUsLMYQRcLlnGNptZ7bFxfi+PlNYB3jQQh0+wXdJS+P/EHPJK8UZHs5BjQBv+Qa
- EX048TdTH+63xTL5zzrwgKZLFucF2PiHs68Y/WDhFOvULFD5XwxnpC8QYME42zx9V0NjnR5nN
- Zars/a9a2hpnBBVlPLxle2k0Ttww//0frPo+wnR8G+aU3Z16D9IvAlHwSrOB4KMSHfQcLKCXw
- tPZA1Y7PpVtBkQv7lmHrlSCe1xcRYAXOza/mWm2Xjc8xgk76wXvHvzBr1oDGBEonkVw+bOSVk
- vREnB57Ovs/1UlfpUFpyy1eB8Q7JaktAGlKXASPtn19bnV5rt2G4I4ntfhaJQgAmDnlzlZpC5
- Evd5+7v4S1X/iOOX+m+Ahkho8f4fM1ugsUVvQaHKOghqQBb6nN0eAvrdXIURg56QmTfn7UwPn
- N0bxJ5G7FH8Br9CiO+tOZBKs/TdaV+aEaEj9KMO4yP5VYEF6IpBEitkf9ifUTwFwihqSEjEM8
- bFcGWSSCC9/0KLlTg8Gh5+db6LA5cg7itMKXDE5C7XsBAI9Hm3mx1p5yWo7HLHsbXHmzeASA2
- rpwe5iV2gi/30EyX8gsnnoe4xEtOTZhUuWGdwxWCA0Vb4Q0oLDG+gyWlREBg6vyV7SR9Ag7iE
- yckvS97oNG9rtf98GBy9xysVb2+4/y8JObMv6+5+lQPd284ay4=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1651067273-6635-1-git-send-email-ssengar@linux.microsoft.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, Apr 24, 2022 at 8:48 PM Arnd Bergmann <arnd@kernel.org> wrote:
-> On Sun, Apr 24, 2022 at 5:28 PM Guenter Roeck <linux@roeck-us.net> wrote:
-> > On 4/24/22 01:52, Arnd Bergmann wrote:
-> > > On Sun, Apr 24, 2022 at 4:09 AM Guenter Roeck <linux@roeck-us.net> wrote:
-> > > into the defconfig file, otherwise the multiplatform target defaults to
-> > > an ARMv7 instead of ARMv5 build. For an OMAP15xx as in the SX1,
-> > > you also need to enable CONFIG_ARCH_MULTI_V4T.
-> > >
-> > > This is slightly unfortunate, but I don't see any way to avoid it, and the
-> > > modified defconfig will still work fine with older kernel trees.
-> > >
-> >
-> > Yes, that works. I changed it in my configuration.
->
-> Ok, great!. I managed to boot the z2 machine with PCMCIA support
-> and it gets around the issue with my patch, correctly detecting the
-> CF card.
+On Wed, Apr 27, 2022 at 06:47:53AM -0700, Saurabh Sengar wrote:
+> This patch fixes a bug where GEN1 VMs doesn't allow resolutions greater
+> than 64 MB size (eg 7680x4320). Unnecessary PCI check limits Gen1 VRAM
+> to legacy PCI BAR size only (ie 64MB). Thus any, resolution requesting
+> greater then 64MB (eg 7680x4320) would fail. MMIO region assigning this
+> memory shouldn't be limited by PCI bar size.
+> 
+> Signed-off-by: Saurabh Sengar <ssengar@linux.microsoft.com>
+> ---
+>  drivers/video/fbdev/hyperv_fb.c | 19 +------------------
+>  1 file changed, 1 insertion(+), 18 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+> index c8e0ea2..58c304a 100644
+> --- a/drivers/video/fbdev/hyperv_fb.c
+> +++ b/drivers/video/fbdev/hyperv_fb.c
+> @@ -1009,7 +1009,6 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+>  	struct pci_dev *pdev  = NULL;
+>  	void __iomem *fb_virt;
+>  	int gen2vm = efi_enabled(EFI_BOOT);
+> -	resource_size_t pot_start, pot_end;
+>  	phys_addr_t paddr;
+>  	int ret;
+>  
+> @@ -1060,23 +1059,7 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+>  	dio_fb_size =
+>  		screen_width * screen_height * screen_depth / 8;
+>  
+> -	if (gen2vm) {
+> -		pot_start = 0;
+> -		pot_end = -1;
+> -	} else {
+> -		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+> -		    pci_resource_len(pdev, 0) < screen_fb_size) {
+> -			pr_err("Resource not available or (0x%lx < 0x%lx)\n",
+> -			       (unsigned long) pci_resource_len(pdev, 0),
+> -			       (unsigned long) screen_fb_size);
+> -			goto err1;
 
-Hi Guenter,
+This restriction has been in place since day 1. Haiyang, you wrote this
+driver. Can you comment on whether this change here is sensible?
 
-I have now sent out a fix that I'm happy with, and applied it to the
-pxa-multiplatform-5.18 branch of the soc tree as well as the
-combined arm/multiplatform tree.
+Thanks,
+Wei.
 
-I have not merged this new version into the for-next branch
-since I would like to see if there are any other regressions first.
-
-Can you run your boot tests on the arm/multiplatform branch
-and let me know if that fixes everything you found? If that
-takes a lot of manual steps on your side, I'd just wait for the
-build bots and merge it after all there are no new compile-time
-issues.
-
-       Arnd
+> -		}
+> -
+> -		pot_end = pci_resource_end(pdev, 0);
+> -		pot_start = pot_end - screen_fb_size + 1;
+> -	}
+> -
+> -	ret = vmbus_allocate_mmio(&par->mem, hdev, pot_start, pot_end,
+> +	ret = vmbus_allocate_mmio(&par->mem, hdev, 0, -1,
+>  				  screen_fb_size, 0x100000, true);
+>  	if (ret != 0) {
+>  		pr_err("Unable to allocate framebuffer memory\n");
+> -- 
+> 1.8.3.1
+> 

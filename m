@@ -2,102 +2,107 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 944B3C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Apr 2022 05:51:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0670CC433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Apr 2022 07:21:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354316AbiD2Fyq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 29 Apr 2022 01:54:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55014 "EHLO
+        id S1350755AbiD2HYu (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 29 Apr 2022 03:24:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52522 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354315AbiD2Fyk (ORCPT
+        with ESMTP id S238464AbiD2HYs (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 29 Apr 2022 01:54:40 -0400
-Received: from mail-qv1-xf30.google.com (mail-qv1-xf30.google.com [IPv6:2607:f8b0:4864:20::f30])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25FD6B89AA;
-        Thu, 28 Apr 2022 22:51:20 -0700 (PDT)
-Received: by mail-qv1-xf30.google.com with SMTP id js10so4741581qvb.0;
-        Thu, 28 Apr 2022 22:51:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=aDJuHsnb5EzH/lpZ47Oj8fmkH3usiQ2wqUINLtDi+c8=;
-        b=Ye/6eHlQjd1t3TB0u3vmRazBP4a7XLeXMdJ1Rnhm3IbbOnJVrjRTMYYoH7mFIDlD98
-         C0A1qidM9UjvmMemSlGxoli2t6CpOcGjR4bfXGEXmsu00Jp6xe53RvfkJ05P396gZ/rQ
-         NJw/pMooJ2VKutmKBIYcuyGId2tVz/6m/Ebwltc/is+lAUfoHhhnY173siIkMqVxCHse
-         hdrXVD+mxKCeoWqZ4BCMEPurb2KQaHudSQB6jFpFknCl7lyVD+u55HTBu+ZLVRw6lAhJ
-         Mwb8WL6EV+5/jRpXwXdduh2t8j2oE3CFyE/el9k2vmvPZfo8huvRw82DQbMgLabJqrQY
-         QSQw==
+        Fri, 29 Apr 2022 03:24:48 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 73A5649900
+        for <linux-fbdev@vger.kernel.org>; Fri, 29 Apr 2022 00:21:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1651216889;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=KhufJyVKGuqE38/lC9MCkIJ+lznHw0RTCwOxniA4aiU=;
+        b=bPfw/uPcSRlpZ4pWXmmKoCOWeY7wJ9DjOm3HrZ4n8k96FZa5Z8G6ndY0juDOahTs3YNAQV
+        ThxDXQD95ghtB4EN1q65CfG3/c3up5jJExsXW8wQkI+f4GNywEGI3zrLBOo1dhnbiBnwNp
+        0pBRnEY/Vp3VvaCw2bKtLUFZUbuj3+g=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-210-LWYgF9wQO6SlwHpAqk1rYw-1; Fri, 29 Apr 2022 03:21:28 -0400
+X-MC-Unique: LWYgF9wQO6SlwHpAqk1rYw-1
+Received: by mail-wm1-f70.google.com with SMTP id bh7-20020a05600c3d0700b003940829b48dso3028757wmb.1
+        for <linux-fbdev@vger.kernel.org>; Fri, 29 Apr 2022 00:21:28 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=aDJuHsnb5EzH/lpZ47Oj8fmkH3usiQ2wqUINLtDi+c8=;
-        b=BiR6XBUFCLz6fJmPviJ006u5kH64B1KINCS3KeknWrgG0sYGIleQQTFq3+U6ejj1OY
-         QGXrJkb54AqiIoKP2eYedS9+cxPFFo/Zn7t5MGRf7Jie3fQ/z0VRZzZwe6gjmzjfxJ+o
-         YjdS2Yefluo2gRJin4CF4Euqf6kVDtLCyQezAUcZb5dh+XOR2rtEZkhIXSv0KPA1W43C
-         0ekutWfrajLAcnataWSy7yds4CqNH+/e1Mxqn7myvfRKpC9rLB+J1vO6cy0pxC7ntxCA
-         3d9PzoQyCIg1S761hZ45a8c1Lse6allyUReZJSED1vbvQpqpNyMIhl+i+aTtVPZ2K28i
-         eQ4w==
-X-Gm-Message-State: AOAM530lg1oRXK50D0qCsAMhNikR6+UwxOT0cBFuFP4PknoC3FrAARBp
-        uPirXmCWcrLuxDhfa7iTNFu8B0RiuKs=
-X-Google-Smtp-Source: ABdhPJwixi6jHMC7bGvPnpTqiNSXfVsJOyc9CaKMVWXZvsnUu8ogEfLH6vW++steXpoKW/9kxxCI4g==
-X-Received: by 2002:ad4:4345:0:b0:456:915e:9bcc with SMTP id q5-20020ad44345000000b00456915e9bccmr5240086qvs.109.1651211479166;
-        Thu, 28 Apr 2022 22:51:19 -0700 (PDT)
-Received: from localhost.localdomain ([193.203.214.57])
-        by smtp.gmail.com with ESMTPSA id f10-20020a05622a104a00b002f35726ccd8sm1194328qte.86.2022.04.28.22.51.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 Apr 2022 22:51:18 -0700 (PDT)
-From:   cgel.zte@gmail.com
-X-Google-Original-From: chi.minghao@zte.com.cn
-To:     deller@gmx.de
-Cc:     linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        Minghao Chi <chi.minghao@zte.com.cn>,
-        Zeal Robot <zealci@zte.com.cn>
-Subject: [PATCH] omapfb: simplify the return expression of nec_8048_connect()
-Date:   Fri, 29 Apr 2022 05:51:12 +0000
-Message-Id: <20220429055112.3852209-1-chi.minghao@zte.com.cn>
-X-Mailer: git-send-email 2.25.1
+        bh=KhufJyVKGuqE38/lC9MCkIJ+lznHw0RTCwOxniA4aiU=;
+        b=qeP4XK2CVvvqBfv3DZa/WeoZHd3a8L8ELmU3e7OzxY+J/Vza22NAMDR6175zfwNdFT
+         3wkiI+BtlOpQj4HmO1HeYoFg7n4q5j2oy7GgOK5OUN1QJ+HG1HYajFoSTEBkvd9Qye5k
+         AkCF4YDqoKFPCrzOCtqZRIJ/DyQPjDnMBqPwp0lH9q/aBG9Lmy10NcRu0iK1CgP7S6fW
+         tlM4njn121Ky4nWSWs/vujukYgYJmZITGmgO6/z4ek8YmzmN0ETaZxrffuZUqY+60nis
+         IvNKOBML3/gOPIIhE+w2duayqdQNOaa0zUrH3ck/o/+Ig5kEf+8iWiMJT/7DDKFAQ3RQ
+         t5vw==
+X-Gm-Message-State: AOAM530r6TeRtfFCLCJk2sNqqJHxtHx4PZ13i7PQcE/0/dJYIk9xxAuC
+        NTfH4H2cLKPS02tM7aMeIrnIUjxxkAJrxX01NnPOgqvBdbzbuhQ9TyDKL8Tl2sWJVAFLL4saneC
+        UZJgCvCwhzxQhoMGlEV9M00E=
+X-Received: by 2002:a05:6000:178a:b0:20a:b841:e245 with SMTP id e10-20020a056000178a00b0020ab841e245mr28718376wrg.480.1651216887009;
+        Fri, 29 Apr 2022 00:21:27 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJyPIPWeMcZ7+EpP1llYZtueltVMigG+lBk12vAwzoZab7JmQCjpZ7LD1dreGefOAYkwb4N7lA==
+X-Received: by 2002:a05:6000:178a:b0:20a:b841:e245 with SMTP id e10-20020a056000178a00b0020ab841e245mr28718361wrg.480.1651216886766;
+        Fri, 29 Apr 2022 00:21:26 -0700 (PDT)
+Received: from [192.168.1.129] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id k14-20020a05600c1c8e00b00393e9293064sm6276797wms.35.2022.04.29.00.21.25
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 29 Apr 2022 00:21:26 -0700 (PDT)
+Message-ID: <ac24d81e-f6c5-0763-909a-c15d223f1ea9@redhat.com>
+Date:   Fri, 29 Apr 2022 09:21:25 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.0
+Subject: Re: [PATCH v3 4/5] fbdev: Rename pagelist to pagereflist for deferred
+ I/O
+Content-Language: en-US
+To:     Thomas Zimmermann <tzimmermann@suse.de>, daniel@ffwll.ch,
+        deller@gmx.de, airlied@linux.ie, maarten.lankhorst@linux.intel.com
+Cc:     linux-fbdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+        dri-devel@lists.freedesktop.org
+References: <20220426120359.17437-1-tzimmermann@suse.de>
+ <20220426120359.17437-5-tzimmermann@suse.de>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <20220426120359.17437-5-tzimmermann@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Minghao Chi <chi.minghao@zte.com.cn>
+Hello Thomas,
 
-Simplify the return expression.
+On 4/26/22 14:03, Thomas Zimmermann wrote:
+> Rename various instances of pagelist to pagereflist. The list now
+> stores pageref structures, so the new name is more appropriate.
+> 
+> In their write-back helpers, several fbdev drivers refer to the
+> pageref list in struct fb_deferred_io instead of using the one
+> supplied as argument to the function. Convert them over to the
+> supplied one. It's the same instance, so no change of behavior
+> occurs.
+> 
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Suggested-by: Sam Ravnborg <sam@ravnborg.org>
 
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
----
- .../fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c     | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+I thougt the convention was to have Suggested-by before your S-o-B.
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c
-index be9910ff6e62..b407173e27b1 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c
-@@ -117,16 +117,11 @@ static int nec_8048_connect(struct omap_dss_device *dssdev)
- {
- 	struct panel_drv_data *ddata = to_panel_data(dssdev);
- 	struct omap_dss_device *in = ddata->in;
--	int r;
- 
- 	if (omapdss_device_is_connected(dssdev))
- 		return 0;
- 
--	r = in->ops.dpi->connect(in, dssdev);
--	if (r)
--		return r;
--
--	return 0;
-+	return in->ops.dpi->connect(in, dssdev);
- }
- 
- static void nec_8048_disconnect(struct omap_dss_device *dssdev)
+The patch looks good to me.
+
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+
 -- 
-2.25.1
+Best regards,
 
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
 

@@ -2,63 +2,75 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8C31C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Apr 2022 07:47:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52C00C433F5
+	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Apr 2022 08:07:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1355256AbiD2Huy (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 29 Apr 2022 03:50:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55504 "EHLO
+        id S1355375AbiD2IKS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 29 Apr 2022 04:10:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43678 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S237489AbiD2Hux (ORCPT
+        with ESMTP id S1355373AbiD2IKR (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 29 Apr 2022 03:50:53 -0400
-Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com [IPv6:2a00:1450:4864:20::629])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5130EAAB57
-        for <linux-fbdev@vger.kernel.org>; Fri, 29 Apr 2022 00:47:36 -0700 (PDT)
-Received: by mail-ej1-x629.google.com with SMTP id l7so13890496ejn.2
-        for <linux-fbdev@vger.kernel.org>; Fri, 29 Apr 2022 00:47:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=VUCWa3lSIaNzDwHCn+z/F0FVFVoykexDHXhwFfLqcXs=;
-        b=Hb9Qr18ymp5oDvIwpneOgr2tAoqL9sBJ7zKZgSyrpcbSV5mYNUK9omsjGB2BUHy+wF
-         hvNETRF2PNhs7QD9/wvRRjDcTsr8N9DePY6cH8hHGqe1tUFA4SY2HS0R26d67pVic+WS
-         nfGHe2KFkWF9WqSUjRo8/UlNwH/umWyfvVFqw=
+        Fri, 29 Apr 2022 04:10:17 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id EE4ACBC85D
+        for <linux-fbdev@vger.kernel.org>; Fri, 29 Apr 2022 01:06:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1651219619;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=DLGpZkEk0zrBfkXdyDNagV1Ot68Eefe6MnXYNDLKtfw=;
+        b=QTjC2iFKVFQk6y/2r2Z7/mQuZ0pwzA7EYrbNajsQi0knxTNti1DXoVLccT/zvelepw4TXK
+        U1Rmd6vM3NfSp+pYi/GkXW2y2dgFUYmEw7/AjxGb51vipjfZ6nhD61uLDz0NHHy5RRtf0d
+        UBq3DTv7rvNQ64mpvMu1F6IKVoA070I=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-588-Ja2L1DCGNQqUdTibEretiA-1; Fri, 29 Apr 2022 04:06:57 -0400
+X-MC-Unique: Ja2L1DCGNQqUdTibEretiA-1
+Received: by mail-wm1-f69.google.com with SMTP id h65-20020a1c2144000000b0038e9ce3b29cso5558724wmh.2
+        for <linux-fbdev@vger.kernel.org>; Fri, 29 Apr 2022 01:06:57 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :content-transfer-encoding:in-reply-to;
-        bh=VUCWa3lSIaNzDwHCn+z/F0FVFVoykexDHXhwFfLqcXs=;
-        b=Kml06pEiUtRnprVAojQ7plNNHQ8aJAztYRodz6LIH312zrb+fRtSvAJ3xn1S/We5P4
-         n1QxplnCIo2QsQMoYc9xDREqVYOiFlh2yEhQcLwx/xxYrvq53BQq+DgLv7KTOZgKmX2/
-         ZY3sKLpTbpoKz2aQTA6xKJoSDIbVHh6gaU70gwXBn22k3Fzs8eq5AJYTfg5qkJD4Xjcu
-         ivNRXEENmGRZr3+7GlRavc6odhxRtYojzCYbA2IZ8xVnHZAWKN+N3sn0VYhp9/IPVu8K
-         NESv8DCLlC4ZKrg1qbd7nmTSgOAoILU+zlIZub/JezmjTwWrRzRr3e1HRpzMtM0y/Xf9
-         JRRA==
-X-Gm-Message-State: AOAM533eUkhJM+5NAHuy6BjKYHAd1XEiIOXfv+2pEY/UGoH8mRoL+HQs
-        BIXhzI4rAu/2l+B4HQymkNFbfQ==
-X-Google-Smtp-Source: ABdhPJx0LzJCI67IHW7p4FMMHHkPQKC/N0VzjjyRtPZ0oOI21KH7mh9tFSrg8s64jQaUV9HW5qz+Kw==
-X-Received: by 2002:a17:907:3f8f:b0:6f3:d4a0:e80c with SMTP id hr15-20020a1709073f8f00b006f3d4a0e80cmr8378065ejc.709.1651218453598;
-        Fri, 29 Apr 2022 00:47:33 -0700 (PDT)
-Received: from phenom.ffwll.local ([2a02:168:57f4:0:efd0:b9e5:5ae6:c2fa])
-        by smtp.gmail.com with ESMTPSA id hv6-20020a17090760c600b006f3ef214e34sm389502ejc.154.2022.04.29.00.47.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 29 Apr 2022 00:47:32 -0700 (PDT)
-Date:   Fri, 29 Apr 2022 09:47:31 +0200
-From:   Daniel Vetter <daniel@ffwll.ch>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=DLGpZkEk0zrBfkXdyDNagV1Ot68Eefe6MnXYNDLKtfw=;
+        b=2C0GyaumC5ihsK0Ca/+IqJAjha8+heWdelQDd1adAGc6yn36FRgO9UPzDcPDaU4fPi
+         bXQ33HaZvUCUN6npEontq9uHT9qPFBgmq8noQVghEKctWFFS5VYZL0hB8LLok4q1+R9o
+         HV4iTFVzz5kCRF9pZeS9JqoUHEwSOOfWG5ccg7vxaYbQL4Jll3yhps6FcpPEQlSAIuVu
+         4OkTtZFYaK5kuFKER4jYdkpX8xHSMkqrUm/y674Ghoz9nKF/nTYQRd4iKHf3X09x7FL8
+         WgfT3+FTEXyECzKXAf05JXpEcIlZD9xC9Qdy6VGjIYo5df/XinMbEPbV7wdhaf+rnxoH
+         reAQ==
+X-Gm-Message-State: AOAM531A6q1ODRzhXBXRlrgtpZD70p6p8Orxbdeq9+cN3TVQ8yJDic6f
+        BG0nmohP7pN/bnds6dtsWV+7+d5k9IdYAbMafLI1pQcM8le5N5qiS5YqPH5fP1rAJDHFCUJIPd8
+        OUAhpNn6klioI+kw2zzmGpkQ=
+X-Received: by 2002:a05:600c:4ec6:b0:394:1f35:4c69 with SMTP id g6-20020a05600c4ec600b003941f354c69mr1623996wmq.61.1651219616605;
+        Fri, 29 Apr 2022 01:06:56 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJy4nhCTQSlkHFSNiSRmvTsdvHGIghcHcLc724I/E5mgFee4F74Ys2EQrG5GMimuyw2I7UjkHA==
+X-Received: by 2002:a05:600c:4ec6:b0:394:1f35:4c69 with SMTP id g6-20020a05600c4ec600b003941f354c69mr1623967wmq.61.1651219616352;
+        Fri, 29 Apr 2022 01:06:56 -0700 (PDT)
+Received: from [192.168.1.129] ([92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id z11-20020a7bc14b000000b0039419dfbb39sm2210341wmi.33.2022.04.29.01.06.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 29 Apr 2022 01:06:54 -0700 (PDT)
+Message-ID: <97339148-9876-cfc1-8df8-dbb21a9c3c7c@redhat.com>
+Date:   Fri, 29 Apr 2022 10:06:52 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.0
+Subject: Re: [PATCH v3 0/5] Fix some race conditions that exists between fbmem
+ and sysfb
+Content-Language: en-US
+To:     Thomas Zimmermann <tzimmermann@suse.de>,
         linux-kernel@vger.kernel.org,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
         dri-devel@lists.freedesktop.org,
         Alex Deucher <alexander.deucher@amd.com>,
         Borislav Petkov <bp@suse.de>,
         Changcheng Deng <deng.changcheng@zte.com.cn>,
-        Daniel Vetter <daniel@ffwll.ch>,
         Hans de Goede <hdegoede@redhat.com>,
         Helge Deller <deller@gmx.de>, Johan Hovold <johan@kernel.org>,
         Jonathan Corbet <corbet@lwn.net>,
@@ -69,120 +81,52 @@ Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
         Yizhuo Zhai <yzhai003@ucr.edu>,
         Zhen Lei <thunder.leizhen@huawei.com>,
         linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org
-Subject: Re: [PATCH v3 0/5] Fix some race conditions that exists between
- fbmem and sysfb
-Message-ID: <YmuYE2t51lPIRT8p@phenom.ffwll.local>
-Mail-Followup-To: Javier Martinez Canillas <javierm@redhat.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        linux-kernel@vger.kernel.org,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        dri-devel@lists.freedesktop.org,
-        Alex Deucher <alexander.deucher@amd.com>,
-        Borislav Petkov <bp@suse.de>,
-        Changcheng Deng <deng.changcheng@zte.com.cn>,
-        Hans de Goede <hdegoede@redhat.com>, Helge Deller <deller@gmx.de>,
-        Johan Hovold <johan@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-        Miaoqian Lin <linmq006@gmail.com>, Peter Jones <pjones@redhat.com>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-        Yizhuo Zhai <yzhai003@ucr.edu>,
-        Zhen Lei <thunder.leizhen@huawei.com>, linux-doc@vger.kernel.org,
-        linux-fbdev@vger.kernel.org
 References: <20220420085303.100654-1-javierm@redhat.com>
  <535ebbe4-605c-daf5-1afb-f5225e4bb3a8@suse.de>
  <093d742f-4c87-2ff3-e9fe-153cd734f8e4@suse.de>
  <220929be-91c4-d19c-b04f-312c5f7e9e40@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <220929be-91c4-d19c-b04f-312c5f7e9e40@redhat.com>
-X-Operating-System: Linux phenom 5.10.0-8-amd64 
+ <YmuYE2t51lPIRT8p@phenom.ffwll.local>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <YmuYE2t51lPIRT8p@phenom.ffwll.local>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, Apr 25, 2022 at 11:49:13AM +0200, Javier Martinez Canillas wrote:
-> Hello Thomas,
-> 
-> Thanks for the feedback. It was very useful.
-> 
-> On 4/25/22 11:15, Thomas Zimmermann wrote:
-> > Hi
-> > 
-> > Am 25.04.22 um 10:54 schrieb Thomas Zimmermann:
-> >> Hi
-> >>
-> >> Am 20.04.22 um 10:52 schrieb Javier Martinez Canillas:
-> >>> Hello,
-> >>>
-> >>> The patches in this series are mostly changes suggested by Daniel Vetter
-> >>> to fix some race conditions that exists between the fbdev core (fbmem)
-> >>> and sysfb with regard to device registration and removal.
-> >>>
-> >>> For example, it is currently possible for sysfb to register a platform
-> >>> device after a real DRM driver was registered and requested to remove the
-> >>> conflicting framebuffers.
-> >>>
-> >>> A symptom of this issue, was worked around with by commit fb561bf9abde
-> >>> ("fbdev: Prevent probing generic drivers if a FB is already registered")
-> >>> but that's really a hack and should be reverted.
-> >>
-> >> As I mentioned on IRC, I think this series should be merged for the 
-> >> reasons I give in the other comments.
-> >>
-> 
-> You meant that should *not* get merged, as we discussed over IRC.
-> 
-> >>>
-> >>> This series attempt to fix it more properly and revert the mentioned 
-> >>> hack.
-> >>> That will also unblock a pending patch to not make the num_registered_fb
-> >>> variable visible to drivers anymore, since that's internal to fbdev core.
-> >>
-> >> Here's as far as I understand the problem:
-> >>
-> >>   1) build DRM/fbdev and sysfb code into the kernel
-> >>   2) during boot, load the DRM/fbdev modules and have them acquire I/O 
-> >> ranges
-> >>   3) afterwards load sysfb and have it register platform devices for the 
-> >> generic framebuffers
-> >>   4) these devices now conflict with the already-registered DRM/fbdev 
-> >> devices
-> >>
-> 
-> That's correct, yes.
-> 
-> >> If that is the problem here, let's simply set a sysfb_disable flag in 
-> >> sysfb code when the first DRM/fbdev driver first loads. With the flag 
-> >> set, sysfb won't create any platform devices. We assume that there are 
-> >> now DRM/fbdev drivers for the framebuffers and sysfb won't be needed.
-> >>
-> >> We can set the flag internally from drm_aperture_detach_drivers() [1] 
-> >> and do_remove_conflicting_framebuffers() [2].
-> > 
-> > And further thinking about it, it would be better to set such a flag 
-> > after successfully registering a DRM/fbdev device.  So we know that 
-> > there's at least one working display in the system. We don't have to 
-> > rely on generic framebuffers after that.
-> >
-> 
-> Exactly, should be done when the device is registered rather than when
-> the driver is registered or a call is made to remove the conflicting FB.
-> 
-> I'll rework this series with only the bits for sysfb_disable() and drop
-> the rest. We can go back to the discussion of the remaining parts later
-> if that makes sense (I still think that patch 3/5 is a better approach,
-> but let's defer that for a different series).
+Hello Daniel,
 
-We need to kill sysfb _before_ the driver loads, otherwise you can have
-two drivers fighting over each another. And yes that means you might end
-up with black screen if the driver load goes wrong, but the two drivers
-fighting over each another can also result in black screens. And the
-latter isn't fixable any other way (in general at least) than by making
-sure the fw stuff is gone before driver load starts in earnest.
--Daniel
+On 4/29/22 09:47, Daniel Vetter wrote:
+
+[snip]
+
+>>
+>> Exactly, should be done when the device is registered rather than when
+>> the driver is registered or a call is made to remove the conflicting FB.
+>>
+>> I'll rework this series with only the bits for sysfb_disable() and drop
+>> the rest. We can go back to the discussion of the remaining parts later
+>> if that makes sense (I still think that patch 3/5 is a better approach,
+>> but let's defer that for a different series).
+> 
+> We need to kill sysfb _before_ the driver loads, otherwise you can have
+> two drivers fighting over each another. And yes that means you might end
+> up with black screen if the driver load goes wrong, but the two drivers
+> fighting over each another can also result in black screens. And the
+> latter isn't fixable any other way (in general at least) than by making
+> sure the fw stuff is gone before driver load starts in earnest.
+
+Yes, you are correct. I didn't realize all the possible cases when agreed
+with Thomas about doing this but tried and found that it's not enough.
+
+I've a full patch-set now and will post as a RFC so we can discuss more.
+
+> -Daniel
+
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Best regards,
+
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
+

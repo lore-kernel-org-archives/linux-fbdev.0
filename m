@@ -2,141 +2,106 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DAD1C4332F
-	for <linux-fbdev@archiver.kernel.org>; Fri, 29 Apr 2022 23:09:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32A58C433F5
+	for <linux-fbdev@archiver.kernel.org>; Sat, 30 Apr 2022 02:59:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1381693AbiD2XMs (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 29 Apr 2022 19:12:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60542 "EHLO
+        id S240403AbiD3DCT (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 29 Apr 2022 23:02:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38676 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1381689AbiD2XMq (ORCPT
+        with ESMTP id S234047AbiD3DCT (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 29 Apr 2022 19:12:46 -0400
-Received: from mail-oi1-x22a.google.com (mail-oi1-x22a.google.com [IPv6:2607:f8b0:4864:20::22a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 706C384EC8;
-        Fri, 29 Apr 2022 16:09:26 -0700 (PDT)
-Received: by mail-oi1-x22a.google.com with SMTP id s131so10060528oie.1;
-        Fri, 29 Apr 2022 16:09:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=sender:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=43bhXKjvki5l9d/uYFdijwNa1GUErzr1H3q463hR+XU=;
-        b=OUSt6wkRUbg0ovBrwSGrseeTfVqA3atJE26IGGL8DNDKMbVWyzV7fWqixesYb9S/mA
-         rgBp/vgWVmZ/2SlxqdaVKFisC/DX2eo4pEgNEmTUveV61siwDvexnXReKJ4KInzJ+JVf
-         qFRYIk57Zf7KE5IqQd6E9kuwLyNvXqeY18u9sXPldsZHCbpZQ9kw31XwNt/jpYsmggt1
-         3DzogSdIaSMtewj0hqjuAW3EwbG0+z+yCYsMAftASTL8pYSQ3/TIzpEEpEvE1aCdKITD
-         c0o8+XWDHiHzhST5JtA4/c6tGuJLD552k5cdjIV4SeeCvbAOGItN9qS8zGZ2A17U8O+I
-         msTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:sender:message-id:date:mime-version:user-agent
-         :subject:content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=43bhXKjvki5l9d/uYFdijwNa1GUErzr1H3q463hR+XU=;
-        b=mT2oX+us+jAjxxNCRAJwVItXzD9LCXnKAwnPlt3aIz/DOTvh4zEJ7csNhtctH1hi3N
-         QaU2rmb3tV1C4TnbhRCsu+FuOB5Y+syVxgRa13zFZZbydkiidaJ1jeAOlqP8rugq+A4o
-         3E7/GcQLpEYkxWRUPddwjYgLvuJaXIWys6nABTZK7592NBLfDysn94vUCV1dHO/q9eIh
-         GyJeTxQNl0BgkbD8rAHINhr+dESERaMYN07cyxzU547ZJGRIfoFZO2ClfRWOEghmPRAe
-         MhPpsaM9OxMzIE6PNVPrg1XTXD6hpDSg6hocSqTPLPMWkDpUTsQTmFMe7VrmiklJS4f6
-         I3Aw==
-X-Gm-Message-State: AOAM532b+VCyaP8EQwBbr+0jiSGuVCIm00hhDNz+IOPB97TXHu8yz44/
-        tT1gdgA7aGoG24sCARBJ99s=
-X-Google-Smtp-Source: ABdhPJwXwAJF7RkFvU52UI/VP0gJxz700pwOLyrX7CYTkoQTpT4bc4rvMjOD84iMZwh8LrG+2Nl3bg==
-X-Received: by 2002:a05:6808:17a7:b0:325:c561:31fb with SMTP id bg39-20020a05680817a700b00325c56131fbmr1544693oib.75.1651273765807;
-        Fri, 29 Apr 2022 16:09:25 -0700 (PDT)
-Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id w1-20020a9d77c1000000b0060603221242sm230484otl.18.2022.04.29.16.09.21
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 29 Apr 2022 16:09:24 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Message-ID: <149509dd-f43d-1b27-4395-81eab4ff3455@roeck-us.net>
-Date:   Fri, 29 Apr 2022 16:09:19 -0700
+        Fri, 29 Apr 2022 23:02:19 -0400
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E425FB25
+        for <linux-fbdev@vger.kernel.org>; Fri, 29 Apr 2022 19:58:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1651287538; x=1682823538;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=tIlOkmldkdpbOQRhdoU8+GxwKCLAG9CBfNwO4dyhs1Q=;
+  b=YBljpio3bq63thVCCD6dbaiZ8w4jKGunXp9aWVICwaV/rjemI97B3G8P
+   WRE1zb2KpHY/bzaT6zmJ/a9juc3S46VSaxUDEaZweXFdTBDG2Cw7VfAMM
+   bEd1K1zCDcbK3JisZ7tj0weRfW1zcI0+HlyINFDlMhF/MWhh6hnPxYMm2
+   dvaKtgkWsPds50WTvs8q8XpTvhn2Lyu4GNeF4BdlGL/RSbTBJ5OsZPu+z
+   b37LpWGBfX59RYA4X4yoOzXoVNCNg1N07Avv6pypCxqfUyDPwWUVgjHj7
+   mUfYwPy6v7z7zPZuPu6a6tSCbEiPUQ+ij4SMo6QPJ77qTSo5kDmIoitHf
+   g==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10332"; a="353253202"
+X-IronPort-AV: E=Sophos;i="5.91,187,1647327600"; 
+   d="scan'208";a="353253202"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2022 19:58:58 -0700
+X-IronPort-AV: E=Sophos;i="5.91,187,1647327600"; 
+   d="scan'208";a="534805399"
+Received: from junxiaochang.bj.intel.com ([10.238.135.52])
+  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2022 19:58:56 -0700
+From:   Junxiao Chang <junxiao.chang@intel.com>
+To:     linux-fbdev@vger.kernel.org
+Cc:     lethal@linux-sh.org, patchwork-bot@kernel.org, deller@gmx.de,
+        lili.li@intel.com, junxiao.chang@intel.com
+Subject: [PATCH] video: fbdev: don't remove firmware fb device if it is busy
+Date:   Sat, 30 Apr 2022 10:57:49 +0800
+Message-Id: <20220430025749.2320824-1-junxiao.chang@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.1
-Subject: Re: [PATCH v2 00/48] ARM: PXA multiplatform support
-Content-Language: en-US
-To:     Arnd Bergmann <arnd@arndb.de>
-Cc:     Robert Jarzmik <robert.jarzmik@free.fr>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        Marek Vasut <marek.vasut@gmail.com>,
-        Philipp Zabel <philipp.zabel@gmail.com>,
-        Lubomir Rintel <lkundrak@v3.sk>,
-        Paul Parsons <lost.distance@yahoo.com>,
-        Sergey Lapin <slapin@ossfans.org>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Dominik Brodowski <linux@dominikbrodowski.net>,
-        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
-        IDE-ML <linux-ide@vger.kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
-        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
-        linux-mmc <linux-mmc@vger.kernel.org>,
-        linux-mtd <linux-mtd@lists.infradead.org>,
-        linux-rtc@vger.kernel.org, USB list <linux-usb@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        ALSA Development Mailing List <alsa-devel@alsa-project.org>
-References: <20220419163810.2118169-1-arnd@kernel.org>
- <20220422170530.GA2338209@roeck-us.net>
- <CAK8P3a3V=qxUqYT3Yt=dpXVv58-Y+HVi952wO6D4LPN5NNphGA@mail.gmail.com>
- <8b36d3a4-ec85-2f9f-e4b7-734d8ddd3d8f@roeck-us.net>
- <CAK8P3a0R9cpEb1d2=e9KnGSbi_uRv48RWfCu_J4DDak_cGZSuw@mail.gmail.com>
- <20220422234150.GA3442771@roeck-us.net>
- <CAK8P3a3qZdEqnJ2nTOKwDMossngOgCpEvZq4cQMPQjSsUoU=6g@mail.gmail.com>
- <3b4046ed-fd75-13ea-fac3-06469172806c@roeck-us.net>
- <CAK8P3a1LzEG1vo+5nMrnL3TOMcbSKJ3u=StcfY8dajV2raUBjA@mail.gmail.com>
- <3df135a2-17f5-d6c6-b4a8-e1a60e254297@roeck-us.net>
- <CAK8P3a2EHMQPN4ny9sXXuReFG0jN0hyRV7h9v_AR_0pqpOU41w@mail.gmail.com>
- <CAK8P3a09+nFS3g1rgvTW9da3tMiAhHjkjZVs1QOJOj8TJ-9MDg@mail.gmail.com>
- <6f1b27fa-96d1-4be7-ac6a-762610314f2a@roeck-us.net>
- <8d6d453a-e6fc-439b-2f34-e60c22fc9e98@roeck-us.net>
- <CAK8P3a2Ekvis1YcrJZtuga+XQdbeTC98PkOszCpS2DiZri7VMQ@mail.gmail.com>
-From:   Guenter Roeck <linux@roeck-us.net>
-In-Reply-To: <CAK8P3a2Ekvis1YcrJZtuga+XQdbeTC98PkOszCpS2DiZri7VMQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/29/22 14:46, Arnd Bergmann wrote:
-> On Fri, Apr 29, 2022 at 10:23 PM Guenter Roeck <linux@roeck-us.net> wrote:
->> On 4/29/22 10:48, Guenter Roeck wrote:
->>>
->>> I tried the pxa-multiplatform-5.18 branch. Its failures match
->>> those in v5.18-rc1.
->>>
->>
->> Uuh, wait, the build wasn't complete. There are still some
->> failures. I'll report later.
-> 
-> Sorry about the breakage, I got a few more reports about minor build errors
-> and warnings, the newly uploaded branches should address all of the ones
-> I got reports for.
-> 
+When firmware framebuffer is in use, don't remove its platform
+device. Or else its fb_info buffer is released by platform remove
+hook while device is still opened. This introduces use after free
+issue.
 
-Unless I am missing something the failures are the same as before. See
-https://kerneltests.org/builders/qemu-arm-testing/builds/74/steps/qemubuildcommand/logs/stdio
+A kernel panic example:
+CPU: 2 PID: 3425 Comm: psplash Tainted: G     U  W     5.18.0-rc3
+Hardware name: Intel Client Platform/ADP-S DDR5 UDIMM CRB
+RIP: 0010:native_queued_spin_lock_slowpath+0x1c7/0x210
+RSP: 0018:ffffb3a0c0c2fdb0 EFLAGS: 00010206
+RAX: 002dc074ff5c0988 RBX: ffff92e987a5d818 RCX: ffff92e989ba9f40
+RDX: 0000000000002067 RSI: ffffffff864344f1 RDI: ffffffff8644183c
+RBP: ffff92f10f4abd40 R08: 0000000000000001 R09: ffff92e986dc2188
+...
+Call Trace:
+ <TASK>
+ _raw_spin_lock+0x2c/0x30
+ __mutex_lock.constprop.0+0x175/0x4f0
+ ? _raw_spin_unlock+0x15/0x30
+ ? list_lru_add+0x124/0x160
+ fb_release+0x1b/0x60
+ __fput+0x89/0x240
+ task_work_run+0x59/0x90
+ do_exit+0x343/0xaf0
+ do_group_exit+0x2d/0x90
+ __x64_sys_exit_group+0x14/0x20
+ do_syscall_64+0x40/0x90
+ entry_SYSCALL_64_after_hwframe+0x44/0xae
 
-This is with v5.18-rc1-49-ge8ab9a9a2745 which is the tip of
-soc/pxa-multiplatform-5.18.
+Fixes: 27599aacbaef ("fbdev: Hot-unplug firmware fb devices on forced removal")
+Signed-off-by: Junxiao Chang <junxiao.chang@intel.com>
+Signed-off-by: Lili Li <lili.li@intel.com>
+---
+ drivers/video/fbdev/core/fbmem.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Should I check a different branch ?
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index a6bb0e438216..ff9b9830b398 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1586,7 +1586,9 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
+ 				 * framebuffer as before without warning.
+ 				 */
+ 				do_unregister_framebuffer(registered_fb[i]);
+-			} else if (dev_is_platform(device)) {
++			} else if (dev_is_platform(device) &&
++					refcount_read(&registered_fb[i]->count) == 1) {
++				/* Remove platform device if it is not in use. */
+ 				registered_fb[i]->forced_out = true;
+ 				platform_device_unregister(to_platform_device(device));
+ 			} else {
+-- 
+2.25.1
 
-Thanks,
-Guenter

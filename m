@@ -2,55 +2,55 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C232C4332F
-	for <linux-fbdev@archiver.kernel.org>; Sun,  1 May 2022 21:45:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 902DDC43217
+	for <linux-fbdev@archiver.kernel.org>; Sun,  1 May 2022 21:45:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1357362AbiEAVsr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sun, 1 May 2022 17:48:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41748 "EHLO
+        id S1357515AbiEAVtX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sun, 1 May 2022 17:49:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43332 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1356447AbiEAVsq (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 1 May 2022 17:48:46 -0400
-Received: from mail-yb1-xb31.google.com (mail-yb1-xb31.google.com [IPv6:2607:f8b0:4864:20::b31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E14D2103B
-        for <linux-fbdev@vger.kernel.org>; Sun,  1 May 2022 14:45:18 -0700 (PDT)
-Received: by mail-yb1-xb31.google.com with SMTP id v59so23273801ybi.12
-        for <linux-fbdev@vger.kernel.org>; Sun, 01 May 2022 14:45:18 -0700 (PDT)
+        with ESMTP id S1357753AbiEAVtS (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sun, 1 May 2022 17:49:18 -0400
+Received: from mail-yw1-x1134.google.com (mail-yw1-x1134.google.com [IPv6:2607:f8b0:4864:20::1134])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D393913FB4
+        for <linux-fbdev@vger.kernel.org>; Sun,  1 May 2022 14:45:49 -0700 (PDT)
+Received: by mail-yw1-x1134.google.com with SMTP id 00721157ae682-2f7b815ac06so131771537b3.3
+        for <linux-fbdev@vger.kernel.org>; Sun, 01 May 2022 14:45:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=2Zs9ZXFuA5R/0ymMTjHB7/FZWKOdSvop8pXLfIOyulA=;
-        b=jIUUFw/Dk0bJvSpV2KhChXMwtNlLYqsYYK4oY1ZrIaM5CwokwxvKI2nY/2x/UYhhSZ
-         cnYvPcNR4I1+2mQEXOx+fTBIepxbMOgfBDYzGHDeV47Jl9VtWIb/nS+yTlzYid021q5y
-         4rk1aenFHUTcFpOe8yZyA6PrfG7AdYTLzyJZCxoXrUBdmiOH7kD+EpptUWvO22jzMcIN
-         xSCS+MFyhpSsWhXxvfUnHSHIueURSlmIpP3ceYNATHQiGd7mRdyumFBzg7HidVpGXR/K
-         HmLBNFjobzv+Lfi/mc0Jdu1mADUOwm6Q+P8Sv4LOYfSplf9TRRKfiG/zS7FqqwYnszNe
-         9g7g==
+        bh=o3VTjpYc9+BjQELkkDsO6dDpNInM+ADeLzZMH34mpi4=;
+        b=IlP4JxWiKPX4bdEFyXCD3r8ZIjy820mwzPJu5QBfX6JOIDpKbziHZBpvkLwS1biul5
+         Vimbnc6q3YqDRk8Lv5gWl87dhWqMWENdviVtYTsAxbIk9GG8htKIqqRPSBp/+9HtETZK
+         b/t8bZ+U1wIG7y6zWRcffdetv4BAhU7UA2QEHAQwMXONuSvmCO2rY+CtjgbI5/Ma6YlU
+         kWAGtHNrt343kNKsGD+I2Y/6PvJNoiyDTUg4ZMBuoELLk6FST+Q8DrxXYDX/Mansop6f
+         o3Bzc8R/DTDYkzc4Hc1n9ke1F4dA09COrrypaspfm37rYZnvy7T/tJTY1N+SNxQtplpo
+         NoAQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=2Zs9ZXFuA5R/0ymMTjHB7/FZWKOdSvop8pXLfIOyulA=;
-        b=taudE7fC/CSibd3xSDJBrKmNVGnH455KFFvPMPs3t/S/cmOwOQZte8mUX6bnlXZ3ao
-         GoPnW5xs/97bolskh5YsMKV5iwUOKa3AZSf9DYfdFsR4SHtjI5HEE8baDJWNnrNnYm2L
-         /RuGy02TsstInWf8h4lsd3/2EaMKlElxSP79nNAR+P3vUgNRARHaGBUTKLB1sJf4GanJ
-         E4f3kiCxB96yZVbdWwI6eRZ5F+j6oBx1NWv9LZC+IfsvF3Fm3uxTOxFnYnCfYgX1pwkn
-         O4cecgUL2IotEg8MVC3pJsfOCHUxTdumvNcQ6yMPLnfvAJAHo7B184poSpMEEeCvVy/5
-         Kccg==
-X-Gm-Message-State: AOAM5323tLzV9pdSdm8+79Ic8daiBiBKpu3Iu+FgZklITV13qhODAVjT
-        gpxcHmgE530WuQOeOOGbq7NkP0CQ7Q4o2o63LAxz3Q==
-X-Google-Smtp-Source: ABdhPJz9eJE7cneK+kxH13EYMup9tW/2JAXx6cXKgLkzm/eVQ61nD3w0biIeuzEawWWGZ8vTkmgdM3jCm2iwQFey2JY=
-X-Received: by 2002:a25:e684:0:b0:645:d429:78e9 with SMTP id
- d126-20020a25e684000000b00645d42978e9mr8658475ybh.369.1651441518148; Sun, 01
- May 2022 14:45:18 -0700 (PDT)
+        bh=o3VTjpYc9+BjQELkkDsO6dDpNInM+ADeLzZMH34mpi4=;
+        b=VitHoLr9MLAX/9qQApv0wMVTAkS41wN4sO56Q20rO11bW1XtH9QbkbcqahwX1fJzS/
+         /R5Le/A5z6Cou/n68vZ+QCjUsOKEkGvgSKZtTra/dYrdPa1TRdQIKkxoSgldcx3yt7uX
+         BQjpK9w7L2J+Jdn65fE7i6TXjMOvNclfrPvhiDocYk+xFxHUFDjhrD2/u0xIVIG8yiCX
+         +eHzNoUpm6Y4ybIyXbDAlwCHqqQQozdl8cv5jUQ1xUYVnf2CqHMaDxlkgmKTZUT2TZK9
+         Svnwt4+IBqLG089cxkeg2NFjG7RVUgRbZ9o+J4QSdl27VS6chTg+mltm7MjJtjzirpDd
+         rvrA==
+X-Gm-Message-State: AOAM533wRwbYhgg1oibB9RmSe0a9pl9aKLynylJNR8MDwhDDarCWfyJh
+        jIr3/nOrEGODbpva6LrGBzUOHhDHvutsPi5WqZTP9A==
+X-Google-Smtp-Source: ABdhPJwxWmrDPa3pAAvzVAJiLkxc6AUbWqJKUhGlchnr506qlQhemC8j8o9s5HTpW2MMnSqOK1sjRziG/+tL7yd80+w=
+X-Received: by 2002:a0d:e5c6:0:b0:2f8:c866:7af9 with SMTP id
+ o189-20020a0de5c6000000b002f8c8667af9mr9171844ywe.268.1651441549128; Sun, 01
+ May 2022 14:45:49 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220419163810.2118169-1-arnd@kernel.org> <20220419163810.2118169-22-arnd@kernel.org>
-In-Reply-To: <20220419163810.2118169-22-arnd@kernel.org>
+References: <20220419163810.2118169-1-arnd@kernel.org> <20220419163810.2118169-23-arnd@kernel.org>
+In-Reply-To: <20220419163810.2118169-23-arnd@kernel.org>
 From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Sun, 1 May 2022 23:45:06 +0200
-Message-ID: <CACRpkdZsSdOSq=sdxDZMb8QJCRsrxm280RvYzH2Ns9L5+RtU8g@mail.gmail.com>
-Subject: Re: [PATCH 21/48] ARM: pxa: eseries: use gpio lookup for audio
+Date:   Sun, 1 May 2022 23:45:37 +0200
+Message-ID: <CACRpkdbHyjJ+nbaU0=JSs6yDzFfNnqCJqGiKG_LW4HyAJBw8aw@mail.gmail.com>
+Subject: Re: [PATCH 22/48] ARM: pxa: z2: use gpio lookup for audio device
 To:     Arnd Bergmann <arnd@kernel.org>
 Cc:     robert.jarzmik@free.fr, linux-arm-kernel@lists.infradead.org,
         Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -87,24 +87,19 @@ On Tue, Apr 19, 2022 at 6:41 PM Arnd Bergmann <arnd@kernel.org> wrote:
 
 > From: Arnd Bergmann <arnd@arndb.de>
 >
-> The three eseries machines have very similar drivers for audio, all
-> using the mach/eseries-gpio.h header for finding the gpio numbers.
+> The audio device is allocated by the audio driver, and it uses a gpio
+> number from the mach/z2.h header file.
 >
-> Change these to use gpio descriptors to avoid the header file
-> dependency.
->
-> I convert the _OFF gpio numbers into GPIO_ACTIVE_LOW ones for
-> consistency here.
+> Change it to use a gpio lookup table for the device allocated by the
+> driver to keep the header file local to the machine.
 >
 > Acked-by: Mark Brown <broonie@kernel.org>
-> Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 > Cc: alsa-devel@alsa-project.org
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Nice use of active low. Maybe I would simply have dropped
-the _OFF suffix on these GPIO lines as it can be confusing now
-that their active level is encoded but no big deal.
+Looks good to me!
 Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
 Yours,

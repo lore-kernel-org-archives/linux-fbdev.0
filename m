@@ -2,170 +2,199 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC087C433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon,  2 May 2022 16:26:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F410C433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon,  2 May 2022 16:52:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242446AbiEBQ3s (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 2 May 2022 12:29:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43118 "EHLO
+        id S1386413AbiEBQzn (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 2 May 2022 12:55:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34804 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238076AbiEBQ3r (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 2 May 2022 12:29:47 -0400
-Received: from mail-oi1-x229.google.com (mail-oi1-x229.google.com [IPv6:2607:f8b0:4864:20::229])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 24CEB7642;
-        Mon,  2 May 2022 09:26:18 -0700 (PDT)
-Received: by mail-oi1-x229.google.com with SMTP id q8so15268881oif.13;
-        Mon, 02 May 2022 09:26:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=sender:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=64QIA6q/Jq1SXZtvXAHmkaqaem8y9EOcss9DFzQHU9s=;
-        b=lSCTdreNcz/0Ozt6K1HBv4cRzX5rD5YkQNxljOsfS8tDiCYDoI+IPMQxP7X/EZIUm6
-         nEUbOImYvwji0WLPLOr7WKakqkxdg7JpvGJPTfUXZcQQCuBLI6CBT8jIjTQ6snEColp+
-         42NQ0U8dK6CrK0vLyvJNfr+ZWyi1wOVvde/g8GkgMS8kO99Le/sMzMeHcBDeFPgZnh0r
-         LROiIiUnXvzBr+1b680itD4douFeeTEs3uEVAyKivH87Mp4cNraXu5PlswZdijptsHiy
-         E/tGZIauqoE0htLx1qKBecZCr69Lv4Vi0nEVaQXlcbRczQ9R4I77j4rRVkbcch1Z44Nq
-         l6TQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:sender:message-id:date:mime-version:user-agent
-         :subject:content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=64QIA6q/Jq1SXZtvXAHmkaqaem8y9EOcss9DFzQHU9s=;
-        b=kNapBUcPZwXpLZ3g9kNgyu9Z5XM9RnsUEVkTsYSXqmuPJC4KNEHppWIsd2zkCGKnuo
-         N9kGqkMKnEAGbB4eOeVqQ2BimR//z9O91gzQNzylBIDoSVIng/ejs+fHd3o2N2KrfV2X
-         BdMooJZTCzIno50wqD8Ot6L2FfK27Ccmz9haJ835eCTF8iMEXrWNHESQVM0dgKu8ojo1
-         GB19Is4FiQD5MvomPb29ddCxDcNNbchEX9fjyosfUjDIZvgCc9mhniFjF2YZjsjz6dNI
-         OP5T+u/y2liR03ufp6TnVg+mJnS1wzeIG6UiGQjUpVGSO01LYxkM7Rk4ZCcKMTfHXkfR
-         hzXQ==
-X-Gm-Message-State: AOAM531rbeQB9qw40jfeG0QqNsgp7Cv7nCBQvWtWQBeGpvHmHFRHP3l3
-        HqhMTF/5mJtrYEvCmax77UM=
-X-Google-Smtp-Source: ABdhPJw9C3TtXs+N7Y0xL4doHaW0x+AFJyxcg+z0+P8jqToBpOw3SVN62D2BXqS+EDk7pkn5yUYINw==
-X-Received: by 2002:a05:6808:140f:b0:322:cbe9:8d29 with SMTP id w15-20020a056808140f00b00322cbe98d29mr7789910oiv.220.1651508777476;
-        Mon, 02 May 2022 09:26:17 -0700 (PDT)
-Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id l39-20020a0568302b2700b0060603221256sm3008945otv.38.2022.05.02.09.26.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 02 May 2022 09:26:16 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Message-ID: <4dcdbfe2-9edf-320b-d123-3b62c8b5e28e@roeck-us.net>
-Date:   Mon, 2 May 2022 09:26:12 -0700
+        with ESMTP id S1386393AbiEBQyn (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 2 May 2022 12:54:43 -0400
+Received: from na01-obe.outbound.protection.outlook.com (mail-centralusazon11021014.outbound.protection.outlook.com [52.101.62.14])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C16F96245;
+        Mon,  2 May 2022 09:51:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Iz82rLC/u3RMIgxaZqYb4+Fm5a2CupVlhO4TI8/0EF3T57u0t7B/ULvN2UOV/wkJ1Mb2vsMcMcV8LPYRwY5zNZC3r7hUGsLpgvSkk39nexHXKKj7mlnyJG6YFeN6fPiGmoXsYTm70tEMsxuthSdvZFILodb34NRokgea9YJYO8xxU/0XhHIv72MJKvOBZ7BaZAEKXEMLD9UQE/jXb/EKFVWU2C2KOd/60Ae/JY6vYyWLWDQbeSZHLzhTOAkJ/WbXiN6NqO+vjuaf+KGa07f/4Yy6P1zdMzu839jb1kIE6BZCJftLkn4dV6AjCVDiMfRGG2KJxWGI3Dmv8tDeG6PnFw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=hpm0B8znkiT/KSp9Hgvhde9feu11S0SLNlKNoQjIs1Q=;
+ b=PZ6jXehPs1MEys/q3SyXlecJRpJ6renYfL/7FFeAAUUYD1SMKnnsvu01g5NhmSD1TuC4i33+vJTnP0Z+9rUlMurGTEPLDSIbwgItlrVKMhr1v+FocD6ndz/XBNDsZJgOy/MIcLTge6LgBpFSkA0k06FUf5TnxYVDAUlW8ImvYP0CFn57ku1Q+iZEFQO9TCRqfU3NuxBkhuzDg8qzl6cN4qscyFHGMhp+kvreOKmg3TybFYzcHwx1tMyEHlQfQcz44nVPPKv/r2Xb6LSI+ujUSo0g9URYN5M5iPsvRh6p3Fd6wndb4Zru0Q1l18SWjI76hi6VnpVYCOu+eNuRS7aozw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=microsoft.com; dmarc=pass action=none
+ header.from=microsoft.com; dkim=pass header.d=microsoft.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=hpm0B8znkiT/KSp9Hgvhde9feu11S0SLNlKNoQjIs1Q=;
+ b=beQ3VwpKCVjbx7FL1qckRFU3ibTfhQ+mga+j0EioOUvqoKKmfwa/F9KzsqxA3SBI5BFTb7edQp6YYF0EecLhkv5vW7LdfaqixdaNHdWNtcHG5Z1BeIWi1eGUJ7mMmzxHgl23r3MWN8UNrwg+V1Up/T/s+AOa5SfNSGTNYhyP/iM=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=microsoft.com;
+Received: from DM6PR21MB1370.namprd21.prod.outlook.com (2603:10b6:5:16b::28)
+ by DM6PR21MB1180.namprd21.prod.outlook.com (2603:10b6:5:161::30) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5206.4; Mon, 2 May
+ 2022 16:37:06 +0000
+Received: from DM6PR21MB1370.namprd21.prod.outlook.com
+ ([fe80::588e:9ede:461a:2372]) by DM6PR21MB1370.namprd21.prod.outlook.com
+ ([fe80::588e:9ede:461a:2372%4]) with mapi id 15.20.5250.004; Mon, 2 May 2022
+ 16:37:06 +0000
+From:   Michael Kelley <mikelley@microsoft.com>
+To:     kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com,
+        wei.liu@kernel.org, linux-kernel@vger.kernel.org,
+        linux-hyperv@vger.kernel.org, vkuznets@redhat.com,
+        decui@microsoft.com, drawat.floss@gmail.com, airlied@linux.ie,
+        daniel@ffwll.ch, jejb@linux.ibm.com, martin.petersen@oracle.com,
+        deller@gmx.de, dri-devel@lists.freedesktop.org,
+        linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc:     mikelley@microsoft.com
+Subject: [PATCH 3/4] video: hyperv_fb: Remove support for Hyper-V 2008 and 2008R2/Win7
+Date:   Mon,  2 May 2022 09:36:30 -0700
+Message-Id: <1651509391-2058-4-git-send-email-mikelley@microsoft.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1651509391-2058-1-git-send-email-mikelley@microsoft.com>
+References: <1651509391-2058-1-git-send-email-mikelley@microsoft.com>
+Content-Type: text/plain
+X-ClientProxiedBy: MW2PR2101CA0020.namprd21.prod.outlook.com
+ (2603:10b6:302:1::33) To DM6PR21MB1370.namprd21.prod.outlook.com
+ (2603:10b6:5:16b::28)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.1
-Subject: Re: [PATCH v2 00/48] ARM: PXA multiplatform support
-Content-Language: en-US
-To:     Arnd Bergmann <arnd@arndb.de>
-Cc:     Robert Jarzmik <robert.jarzmik@free.fr>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        Marek Vasut <marek.vasut@gmail.com>,
-        Philipp Zabel <philipp.zabel@gmail.com>,
-        Lubomir Rintel <lkundrak@v3.sk>,
-        Paul Parsons <lost.distance@yahoo.com>,
-        Sergey Lapin <slapin@ossfans.org>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Dominik Brodowski <linux@dominikbrodowski.net>,
-        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
-        IDE-ML <linux-ide@vger.kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
-        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
-        linux-mmc <linux-mmc@vger.kernel.org>,
-        linux-mtd <linux-mtd@lists.infradead.org>,
-        linux-rtc@vger.kernel.org, USB list <linux-usb@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        ALSA Development Mailing List <alsa-devel@alsa-project.org>
-References: <20220419163810.2118169-1-arnd@kernel.org>
- <20220422234150.GA3442771@roeck-us.net>
- <CAK8P3a3qZdEqnJ2nTOKwDMossngOgCpEvZq4cQMPQjSsUoU=6g@mail.gmail.com>
- <3b4046ed-fd75-13ea-fac3-06469172806c@roeck-us.net>
- <CAK8P3a1LzEG1vo+5nMrnL3TOMcbSKJ3u=StcfY8dajV2raUBjA@mail.gmail.com>
- <3df135a2-17f5-d6c6-b4a8-e1a60e254297@roeck-us.net>
- <CAK8P3a2EHMQPN4ny9sXXuReFG0jN0hyRV7h9v_AR_0pqpOU41w@mail.gmail.com>
- <CAK8P3a09+nFS3g1rgvTW9da3tMiAhHjkjZVs1QOJOj8TJ-9MDg@mail.gmail.com>
- <6f1b27fa-96d1-4be7-ac6a-762610314f2a@roeck-us.net>
- <8d6d453a-e6fc-439b-2f34-e60c22fc9e98@roeck-us.net>
- <CAK8P3a2Ekvis1YcrJZtuga+XQdbeTC98PkOszCpS2DiZri7VMQ@mail.gmail.com>
- <149509dd-f43d-1b27-4395-81eab4ff3455@roeck-us.net>
- <CAK8P3a05vFdBnXXAMPVS82xX29+uinvWPcWxAgvj0TfoOk+1kg@mail.gmail.com>
- <b13783aa-9225-d52a-3800-c97ad772688b@roeck-us.net>
- <CAK8P3a3S5OjkKq_u5FpnwzYv+0+typya6Z4MzTez5ZH+do00xQ@mail.gmail.com>
- <CAK8P3a3jiqf_zpBsZyvAb5ZtkwDa7KkqExqDAdpY_pYqkr_NgQ@mail.gmail.com>
-From:   Guenter Roeck <linux@roeck-us.net>
-In-Reply-To: <CAK8P3a3jiqf_zpBsZyvAb5ZtkwDa7KkqExqDAdpY_pYqkr_NgQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-MS-Exchange-MessageSentRepresentingType: 1
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: b53f87e5-7e92-4268-ba56-08da2c59fea0
+X-MS-TrafficTypeDiagnostic: DM6PR21MB1180:EE_
+X-LD-Processed: 72f988bf-86f1-41af-91ab-2d7cd011db47,ExtAddr
+X-Microsoft-Antispam-PRVS: <DM6PR21MB11804512435C9597ACAE9FA5D7C19@DM6PR21MB1180.namprd21.prod.outlook.com>
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 6Zq4TsfllzaIWCrUOLCcwScJduGamnW9zCM3iWb0s2bZiWPihXtBHCSiWO7FIPGV2NklAO+V0T+zEXv2Pt5KwfXh2kNyLnilCrZwPtZw9mzwXHKmbdzX3cLkFf1rLgnySb6GKmvn0cx4McGnRY6Cj3Y6IPDPeUbI9RAZWHbsPOUbV35sDQBYXNcL4fm+MfNgPy+jo1MEQloirVirFrezKTburAEpobmbj7Hi5v/GvWFuLR+/gnNdQOol7PSNp/piAb8yUd9lrIjJdGHlYJIgRV5n7jXAqvP+VjG1K2yW+pKDGZNRYgY2ORvemAOxBouZ/Lu7zo5kxOBIxcIyGO4X0YDAgFJ6pLzybaqKt8t+NYCdBhTljKzaARqN9RtBpnwx8xonRuKjLsWcIZTMDcMRMGRDMX9IF/rnfp89t1XbKIFhCHTUYz1OGg6Oy8+Yl2oI5ikfte3QmwmBOuDq33S8FUqzsMInXTlBF6FpOlEZXkQueH/x0/QpvcMORTTyH3SzSbsPCF09DPmAFq3GumSuNJkYVB24pwM8XhVDySa3P80EiAZoDbC+d/0ZMToOVjd+HxMW6S+nd6hN6D3Htx64kbFVAAJIc4llpqteo2+DwrOlDfCB1RyF6NUROmWZjAT057ZeXFduGYSEYxlwdh1b/aFeFW0ow3OyjLq5soyIQ17BS6LWx/eEmRPS+GARNHg5xgS440aPcFlByrt00bJY9Sofoh2tDNeOEetU4F5TU7Qhnj97VgscQezpz7os6/eqvvG1pOaGbuwWLCsyiz91jA==
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR21MB1370.namprd21.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(451199009)(82950400001)(7416002)(10290500003)(66946007)(6486002)(66556008)(66476007)(2616005)(107886003)(6512007)(26005)(921005)(5660300002)(6506007)(83380400001)(508600001)(82960400001)(86362001)(6666004)(316002)(8936002)(38350700002)(38100700002)(186003)(52116002)(4326008)(36756003)(8676002)(2906002);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?m2xUdC9Y2FCkZAsF0GqyQMSUK5RZezP756VMHCDmJyKcjKg4RiYFiRpKW2pI?=
+ =?us-ascii?Q?YVw41uV4rIVLDqiKCzTcWhak0AeBYr+HOnBT+UDty3UI+3V3DbmZD3U37Rzt?=
+ =?us-ascii?Q?XNz6OfN3mTNW5j/MMBtBT8vMOCZ8LiGYApfbS4VXCFcLrmRy4HmQLVD/arOE?=
+ =?us-ascii?Q?mpjxHEzd08RfbsmYJYg9mabFc6mso/2D/y729xKHH6UlHBlmMyu+ibFpZszp?=
+ =?us-ascii?Q?bn7HlH7VjmjBmm78ko93OWs4PretiT4LBVZNCCGeS5v/SyUgmoI68rdTd1qA?=
+ =?us-ascii?Q?fh2m/t3vKh4+pz488VNlqgts0hedESuxF/vaixe/1E0PgbSQVXEwPqCZdFFL?=
+ =?us-ascii?Q?XMGyVEgcIXHq1fB6tbw5SkcB98utvNX7166afANyZ/Akl6SmVwjfdKhHax+4?=
+ =?us-ascii?Q?E/tchIw8mqTXRZ7Mow4khAWsvq1/OGibRa+af+qRz44DOOL5XBEzAzMpgv0H?=
+ =?us-ascii?Q?mU/iZTirDU/IRw8bQzLFel1/UrcwnJsLsnJVavYOjtWsHX0VKoCokppLYGhl?=
+ =?us-ascii?Q?v/2eue/KF3h4lkM5pUdK6d9ozcVm/T+VfhzB8RITqLZO2sdvjLMZwHBw0dGv?=
+ =?us-ascii?Q?3X0kSlgr9mgWdwa0UDnuJd4f4AcCi/ZfbOPLiBX3WLoVh/upJfxR/yCTy2K8?=
+ =?us-ascii?Q?pGNPgeJdf9oq4AvOIWOpXv5KTaW7OkfEYBAO6K9sPHoZEMHoGWTg9cSUBC0n?=
+ =?us-ascii?Q?vLlwmvxectwL8MrQtHaVxbhCG6y7GH6Rmn+fAuAYj6Nw8apkRfDpiFSk4pQg?=
+ =?us-ascii?Q?pJbVhlxqRwjpYDAFVqB6WST6XxGhyr5VJ/JyW6elOTWRJxOb4hQTUkNaSoyn?=
+ =?us-ascii?Q?O4XEluHDr6YSAsrNZczl/kWtRzcsrY3Be3gH5544XhVYBr1FsQuUNZoSmKvm?=
+ =?us-ascii?Q?aok2GBxr94klaNFIMiwZEbFHo+cfmDItuLc7b0ByUgrCS3eRhahgHyoBl2sA?=
+ =?us-ascii?Q?QUGV7vwe6P8WHTgdMvzyiiA+DNd0tP5iVeA36uIrB5GBZ40ezTNXf77EhQ7t?=
+ =?us-ascii?Q?3eouJ6dsFS+26BcOQJbIocGWJdQD6RdnX0YxjuIDRcKfL+aDtseyrSydcjTE?=
+ =?us-ascii?Q?uDRPQDF/a2qG6THNmwH2z5nFnqbmD1zJsWjf+V5hagmndJpSBB6mqvK5sVMN?=
+ =?us-ascii?Q?/o9IsttB8R4OF9gvJ5wztO2bXV3jhLiBVi6Beu1vGL1T6mw0rXZPtvbGI4fP?=
+ =?us-ascii?Q?VpdpVbXzCkbC2kkL0c7fqLi9XXKR8MhOdDdIlnbTbB6p3SkTAG+pexIaGnR3?=
+ =?us-ascii?Q?m1SFQ7ilaESEJ06sTmlXCwhVMvkVQZi5UbXvFdWFo/HBdpVJBYYnuVRhMROF?=
+ =?us-ascii?Q?vlAsF30ZMJNNsPMm6hCy3ST7ObblRvGgefpWH3UviYyRwmTeyvoI9QBmec4O?=
+ =?us-ascii?Q?1EIqmRup5EnAgLtp37XbbBocmlj2lVqXzSVzjTbvd0M3vzL5LVV+nDDeMrR7?=
+ =?us-ascii?Q?fPro31AYneq72HEYnt1rgJ1Y7OUfkLxjAuQ1OmsZQTXImce9Z1I0AFv+L0cP?=
+ =?us-ascii?Q?i87qAYgtTDFMb2NeePUxzLS1xtCpU4LspC4nsJ2ybYcmZ6HEokZWVwvC6ndx?=
+ =?us-ascii?Q?hjQDO1iDLzbZ6ALCixyty/HBg2LaAlDjNL/SvXoioR41xj8F2KMOD/GBP90D?=
+ =?us-ascii?Q?lrvSIOWz3S9cFm7dKO209g/Ce24aip9G73R8pOfsCvH2Rt/jZK3Y/vUUM8Kf?=
+ =?us-ascii?Q?/mgraPzei48s3JGUhmHw1NFVj+FMJrXS+2JGNAKLDyeYZawiEVJQBPmPJsf/?=
+ =?us-ascii?Q?S92ItCYN/giLuA+JjLjbP4bJ41ASYUk=3D?=
+X-OriginatorOrg: microsoft.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b53f87e5-7e92-4268-ba56-08da2c59fea0
+X-MS-Exchange-CrossTenant-AuthSource: DM6PR21MB1370.namprd21.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 May 2022 16:37:06.3304
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 72f988bf-86f1-41af-91ab-2d7cd011db47
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: VKc8XnBF7m9mKYfGGLlBkk18aJp+R0IjlU/tov84Ea9Ra4RBaBppFDTxJSItLnEwp3Rt3O+NRYbzitXUmPaq3g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR21MB1180
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/30/22 07:23, Arnd Bergmann wrote:
-> On Sat, Apr 30, 2022 at 3:32 PM Arnd Bergmann <arnd@arndb.de> wrote:
->>
->> On Sat, Apr 30, 2022 at 2:41 PM Guenter Roeck <linux@roeck-us.net> wrote:
->>> On 4/30/22 01:04, Arnd Bergmann wrote:
->>>> and concluded that it must have done this for a long time. In my own qemu
->>>> instance, I see a crash from iWMMXt, but that works fine on your machine.
->>>> OTOH, your failed instances all look like they either time out or
->>>> failed to find a
->>>> rootfs. I tried passing an MMC device as root, and that works here.
->>>>
->>>
->>> Booting from mmc works for me as well. Booting from pcmcia worked before,
->>> so I assume that there must be some regression.
->>
->> Ok, got it, and managed to reproduce the hang now. My "ARM: pxa/sa1100: move
->> I/O space to PCI_IOBASE" patch managed to get it to the point of detecting
->> the pcmcia device instead of crashing, so I assumed it was enough when it
->> clearly was not. Before that patch, it still works, afterwards it hangs with
->> "pata_pcmcia: probe of 0.0 failed with error -12" as mentioned above. I'll
->> have another look.
-> 
-> Got it: as the PCMCIA bus on this machine is the only thing with an I/O space,
-> I assigned it port number range 0-0x1000, with an io_offset of 0, but this
-> was apparently unexpected and triggered this sanity check:
-> 
-> static int static_find_io(struct pcmcia_socket *s, unsigned int attr,
->                          unsigned int *base, unsigned int num,
->                          unsigned int align, struct resource **parent)
-> {
->        if (!s->io_offset)
->                return -EINVAL;
->        ...
->        return 0;
-> }
-> 
-> I moved the devices around now, giving zeus/viper I/O space an offset of
-> zero, and moving PCMCIA to offset 0x10000 and 0x11000 for the two slots,
-> which now works because the io_offset is nonzero. I've regenerated the
-> branches again, and confirmed the for-next branch still boots from pcmcia.
-> 
+The hyperv_fb driver has special case code for running on the first
+released versions of Hyper-V: 2008 and 2008 R2/Windows 7.  These versions
+are now out of support (except for extended security updates) and lack
+support for performance features that are needed for effective production
+usage of Linux guests.
 
+The negotiation of the VMbus protocol versions required by these old
+Hyper-V versions has been removed from the VMbus driver.  So now remove
+the handling of these VMbus protocol versions from the hyperv_fb driver.
 
-With v5.18-rc1-49-gcb813018b5c1, I still get:
+Signed-off-by: Michael Kelley <mikelley@microsoft.com>
+---
+ drivers/video/fbdev/hyperv_fb.c | 23 +++--------------------
+ 1 file changed, 3 insertions(+), 20 deletions(-)
 
-[    0.797668] RAMDISK: Couldn't find valid RAM disk image starting at 0.
-[    0.805262] /dev/root: Can't open blockdev
-[    0.805487] VFS: Cannot open root device "(null)" or unknown-block(0,0): error -6
-[    0.805674] Please append a correct "root=" boot option; here are the available partitions:
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index c8e0ea2..7563d54 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -63,6 +63,7 @@
+ #define MAX_VMBUS_PKT_SIZE 0x4000
+ 
+ #define SYNTHVID_VERSION(major, minor) ((minor) << 16 | (major))
++/* Support for VERSION_WIN7 is removed. #define is retained for reference. */
+ #define SYNTHVID_VERSION_WIN7 SYNTHVID_VERSION(3, 0)
+ #define SYNTHVID_VERSION_WIN8 SYNTHVID_VERSION(3, 2)
+ #define SYNTHVID_VERSION_WIN10 SYNTHVID_VERSION(3, 5)
+@@ -70,13 +71,7 @@
+ #define SYNTHVID_VER_GET_MAJOR(ver) (ver & 0x0000ffff)
+ #define SYNTHVID_VER_GET_MINOR(ver) ((ver & 0xffff0000) >> 16)
+ 
+-#define SYNTHVID_DEPTH_WIN7 16
+ #define SYNTHVID_DEPTH_WIN8 32
+-
+-#define SYNTHVID_FB_SIZE_WIN7 (4 * 1024 * 1024)
+-#define SYNTHVID_WIDTH_MAX_WIN7 1600
+-#define SYNTHVID_HEIGHT_MAX_WIN7 1200
+-
+ #define SYNTHVID_FB_SIZE_WIN8 (8 * 1024 * 1024)
+ 
+ #define PCI_VENDOR_ID_MICROSOFT 0x1414
+@@ -644,12 +639,6 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
+ 	case VERSION_WIN8:
+ 	case VERSION_WIN8_1:
+ 		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN8);
+-		if (!ret)
+-			break;
+-		fallthrough;
+-	case VERSION_WS2008:
+-	case VERSION_WIN7:
+-		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN7);
+ 		break;
+ 	default:
+ 		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN10);
+@@ -661,11 +650,7 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
+ 		goto error;
+ 	}
+ 
+-	if (par->synthvid_version == SYNTHVID_VERSION_WIN7)
+-		screen_depth = SYNTHVID_DEPTH_WIN7;
+-	else
+-		screen_depth = SYNTHVID_DEPTH_WIN8;
+-
++	screen_depth = SYNTHVID_DEPTH_WIN8;
+ 	if (synthvid_ver_ge(par->synthvid_version, SYNTHVID_VERSION_WIN10)) {
+ 		ret = synthvid_get_supported_resolution(hdev);
+ 		if (ret)
+@@ -933,9 +918,7 @@ static void hvfb_get_option(struct fb_info *info)
+ 	    (synthvid_ver_ge(par->synthvid_version, SYNTHVID_VERSION_WIN10) &&
+ 	    (x * y * screen_depth / 8 > screen_fb_size)) ||
+ 	    (par->synthvid_version == SYNTHVID_VERSION_WIN8 &&
+-	     x * y * screen_depth / 8 > SYNTHVID_FB_SIZE_WIN8) ||
+-	    (par->synthvid_version == SYNTHVID_VERSION_WIN7 &&
+-	     (x > SYNTHVID_WIDTH_MAX_WIN7 || y > SYNTHVID_HEIGHT_MAX_WIN7))) {
++	     x * y * screen_depth / 8 > SYNTHVID_FB_SIZE_WIN8)) {
+ 		pr_err("Screen resolution option is out of range: skipped\n");
+ 		return;
+ 	}
+-- 
+1.8.3.1
 
-when trying to boot z2 from initrd.
-
-The other problems are gone.
-
-Guenter

@@ -2,182 +2,199 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57438C4332F
-	for <linux-fbdev@archiver.kernel.org>; Wed,  4 May 2022 13:48:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CF66C433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed,  4 May 2022 16:43:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1350839AbiEDNw1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 4 May 2022 09:52:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40790 "EHLO
+        id S1353377AbiEDQrE (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 4 May 2022 12:47:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47452 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1350848AbiEDNwZ (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 4 May 2022 09:52:25 -0400
-Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on2074.outbound.protection.outlook.com [40.107.244.74])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E68A72FFEC
-        for <linux-fbdev@vger.kernel.org>; Wed,  4 May 2022 06:48:47 -0700 (PDT)
+        with ESMTP id S1345266AbiEDQrD (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 4 May 2022 12:47:03 -0400
+Received: from na01-obe.outbound.protection.outlook.com (mail-cusazon11020026.outbound.protection.outlook.com [52.101.61.26])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88E72443D5;
+        Wed,  4 May 2022 09:43:27 -0700 (PDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Z5nHmusXRB1z8GwcFGhvXCFT4QQJ3KNaO5kO6Daxw7UVq+2obnhdTpeeeG6EHAg2IMFTiJlrlI339OGdNypErjlSn/S62MsRBVeIfG5dIPOf7oeXnaSdFrN+Qw2mTQYXVGoA/IMssm4JGNb+ZjNijm7CqAVseMPsSEKfjFMvRXmW2AQA7H2xj0jdjpoBPS/k37EBKoBN/Et6hyX7Zffr7T7FlURw90827rWyS1CSNkGx+eQ7R+W9CMUjVE+Ziqv8sdKP7stb5DBYLIExyyoAt/lWdVDxRdSuDsYKqoCjYh3KfpsoJFmto6HO9OIUSG+s3Vd6sSANYSo5D1PsaWMt6w==
+ b=W3kVbMCjckZb/GO2rKXkekMKykljcOw/vH/lSakEmrP3K0S59WoXmF63rCaiFQI+FQq0/Mzp3Odq7kaLunh6EkRyYujiqfyYhhkPTWDAyggBUPuY+BpGFMiOW0gulu11eoIAJmeN2M23oFbRaR3QSX263Em+pEFFZbN7SOKqxT0uwhKQMSdbaYacgAoJu6pdGNXaUQEfMjqtg5bgan0rIuYOtMr1UMyKE+W19CH1fqAFgbV0sT7b2uhGL+8vtse9Q/RZsn3czmVz0zIECO5XaqfpIpccajCKR8cpE9HUJ7iLFIz8EaVqwmfACg3Ykw2xExbKYcDzuKfHPNl1OtAFNQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=zNEwRkM/oeT/JZA1BHdLz+fGM1EKplmX67+VQp95irA=;
- b=esepTZaxeGhF4Zvf05EgmJ21A8CDWJUtLiM5CDup8bcfhg0jSYp0lZszV2IoE/7AKmXyS2j1N04jdbfdfP/EqNI3vX6sNh73yptc/XNLlkqUs/ZwHlYVvBHe6kMygOdRNt/0iB2bTOCiUcq4AVwW4swMt64870+7heKrpOxOqDW38JIkCBEBDGa5ynccxBRa8YvxlmMKntJ6zbj10R8WpJSjCtGkpSdbylsH1LJ522wUHE7N7VwYe2RsVbnwD2KXBdMHeTat9B2ixWA2nLLzE7f5UpFsX87xZfUfYm9W/8agf/iIFW+GXEUqQp6xKQfn12OHxS/HsT3Wn6PGg1+6TA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=lists.freedesktop.org smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ bh=EbadKU2ja4QhdqHNENqqNrvpNboQ2IhA9jknKuNRtV0=;
+ b=lbvhihjSuTRs3HLNK6qc/nXPvxbsZ4Axw9hzOTse6BGD+PPCu0+1IpYEAkmqYK2nst3L/WSq+rYDxtDr2rJ6zXOd+VpX9QeXXuNpGuZkSd6TeIsX6cjGY/uMeH1P7YHvJfDHeC59GjscOmu8odkrIjO6VZVhB1Z52w4EhMBAK8Ouug4hovduc2ASWjsn+ImNTklkARfFcpjo0RC2tj8My/vBNcx4ItEEbO8nqsTGl62PoyFsQCc/DT/F3K3slj/IlSiLkSN5nHrlEo3BMfw1GfiR8ryEv4bYQBY1BjJ3+Nvbfv9swWYlLl75iZjKkHZRuZH5FgoCMG4s2b9YwGLC2Q==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=microsoft.com; dmarc=pass action=none
+ header.from=microsoft.com; dkim=pass header.d=microsoft.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=zNEwRkM/oeT/JZA1BHdLz+fGM1EKplmX67+VQp95irA=;
- b=aeMnP1QpRyhbLkbbOh7YGqZb9DBJPlcF4iPnkd+oIIjpgp3uw508y2WVHy10Bl53bSYgrVRGBVFUpwCUFI/m3OUiMQM65hfMWTdarlbNtGagVmBFC6Tn/KsoSclG47gdV23pgFSCIJIKHoZFzWLV54lRb704NRep8jV01pu8Z54=
-Received: from DS7P222CA0020.NAMP222.PROD.OUTLOOK.COM (2603:10b6:8:2e::16) by
- BN6PR1201MB0146.namprd12.prod.outlook.com (2603:10b6:405:59::18) with
+ bh=EbadKU2ja4QhdqHNENqqNrvpNboQ2IhA9jknKuNRtV0=;
+ b=hWeWbXdZ66uXc97hTzN85obTxMi3vWQ9UygktMOe9CfBdpKy8Vm1lZYEaiCREGb96mt58B1geSQzdaedxWOMN1X0TXa4qx7mIMu5Ro2d6x4OmleJtQiBngVN+jXgyXBuySOt88W2mRtgKB/V6/+aBD28Gahljz+k0rtmRVTiES4=
+Received: from DM5PR21MB1749.namprd21.prod.outlook.com (2603:10b6:4:9f::21) by
+ BY5PR21MB1457.namprd21.prod.outlook.com (2603:10b6:a03:21f::13) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5206.24; Wed, 4 May
- 2022 13:48:46 +0000
-Received: from DM6NAM11FT044.eop-nam11.prod.protection.outlook.com
- (2603:10b6:8:2e:cafe::40) by DS7P222CA0020.outlook.office365.com
- (2603:10b6:8:2e::16) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5206.24 via Frontend
- Transport; Wed, 4 May 2022 13:48:46 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com;
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- DM6NAM11FT044.mail.protection.outlook.com (10.13.173.185) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.5227.15 via Frontend Transport; Wed, 4 May 2022 13:48:45 +0000
-Received: from tr4.amd.com (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Wed, 4 May
- 2022 08:48:45 -0500
-From:   Alex Deucher <alexander.deucher@amd.com>
-To:     <amd-gfx@lists.freedesktop.org>, <dri-devel@lists.freedesktop.org>,
-        <linux-fbdev@vger.kernel.org>
-CC:     Alex Deucher <alexander.deucher@amd.com>
-Subject: [PATCH 2/2] Revert "fbdev: fbmem: add a helper to determine if an aperture is used by a fw fb"
-Date:   Wed, 4 May 2022 09:48:33 -0400
-Message-ID: <20220504134833.1672728-2-alexander.deucher@amd.com>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220504134833.1672728-1-alexander.deucher@amd.com>
-References: <20220504134833.1672728-1-alexander.deucher@amd.com>
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5250.7; Wed, 4 May
+ 2022 16:43:24 +0000
+Received: from DM5PR21MB1749.namprd21.prod.outlook.com
+ ([fe80::6d4a:ca20:4584:49f]) by DM5PR21MB1749.namprd21.prod.outlook.com
+ ([fe80::6d4a:ca20:4584:49f%5]) with mapi id 15.20.5250.006; Wed, 4 May 2022
+ 16:43:24 +0000
+From:   Haiyang Zhang <haiyangz@microsoft.com>
+To:     Wei Liu <wei.liu@kernel.org>,
+        Saurabh Sengar <ssengar@linux.microsoft.com>,
+        Dexuan Cui <decui@microsoft.com>,
+        "Michael Kelley (LINUX)" <mikelley@microsoft.com>
+CC:     Saurabh Singh Sengar <ssengar@microsoft.com>,
+        KY Srinivasan <kys@microsoft.com>,
+        Stephen Hemminger <sthemmin@microsoft.com>,
+        "deller@gmx.de" <deller@gmx.de>,
+        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
+        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH] video: hyperv_fb: Allow resolutions with size > 64 MB for
+ Gen1
+Thread-Topic: [PATCH] video: hyperv_fb: Allow resolutions with size > 64 MB
+ for Gen1
+Thread-Index: AQHYWj1qgbQXzG7yeUuG8g2gPWY4Wa0FZpIAgAmPjZA=
+Date:   Wed, 4 May 2022 16:43:24 +0000
+Message-ID: <DM5PR21MB1749EE7458996FF22AAA9AF8CAC39@DM5PR21MB1749.namprd21.prod.outlook.com>
+References: <1651067273-6635-1-git-send-email-ssengar@linux.microsoft.com>
+ <20220428143746.sya775ro5zi3kgm3@liuwe-devbox-debian-v2>
+In-Reply-To: <20220428143746.sya775ro5zi3kgm3@liuwe-devbox-debian-v2>
+Accept-Language: en-US
+Content-Language: en-US
+X-Mentions: decui@microsoft.com,mikelley@microsoft.com
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+msip_labels: MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_ActionId=ea6efad5-303e-4efd-b054-9cb15ed3afe4;MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_ContentBits=0;MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Enabled=true;MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Method=Standard;MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_Name=Internal;MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_SetDate=2022-05-04T16:37:53Z;MSIP_Label_f42aa342-8706-4288-bd11-ebb85995028c_SiteId=72f988bf-86f1-41af-91ab-2d7cd011db47;
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=microsoft.com;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 2d7664d1-3fe8-4291-4841-08da2ded351c
+x-ms-traffictypediagnostic: BY5PR21MB1457:EE_
+x-microsoft-antispam-prvs: <BY5PR21MB1457BA31FA97B22C7DC19AF4CAC39@BY5PR21MB1457.namprd21.prod.outlook.com>
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: nOVi5VlB+KwXGtbfh9dBdFGNrjD24UGAmqRdbCCxDat4erlPD/qWxxQ9BhF0fLtLWXEfxI+YsYmT+9OZtBilNcQKqp25fP9Yd0c8yrZA7ft94TAcrIngiHnLc7f4+sOr6RWkNiLT7w1hFUamBt7OD2chrbh6lB9pqzTF6U2rHBhY+ret7yaggGfEjENzjwOD9XtLL69qyDJSEr2Rj2AQGQudT7mEodTFRVpLj94OqRHo7PNNSBO1HRIqOBADrfQJYKDwsnIIGRHecovywY47HPCMwc5wyuGa/TPEDObW3P8HhYqefSuRRJe+rd+oZBmBmXhymWZNVGhthfzTLXsVxHexG2E1liyb+beBPpNwl2J5A8cd8dYbz74ZMNh5f+n2cVnr4CDo3hMJIF44HC29zL5O2ZYBDfeWRGRMFd+ut6XnkFArT15ghF27GcSPrH6yKpPsggVz1XzCJD2cevYsu79U20MZ83oTWXY2ibZ6NaBatjHytOELAylF/KUbFt8tspqnlC7xrDwg4AJqjDeP2av/D6TSXQkr0D/b3tGgGan3U31pLA9A4Et6krtAE+s6PcjQpB5FZll4jDt3spwuttXXVspKQi+kKu3LNDldQ9C1TcjpACbf4CnIiMx8uZhJ0oDWSZ+ulsFY6aXeVyqhcFw+ZD1BwIMDdDbyk98coom0m3gYPru/u/2LSeXKvnsqiis3ldXZYf+eVnOIxE3VfDFXfX1JU8J6eDy6rwExcKfCil7v8MsgG2tRrK7ZUnhU
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM5PR21MB1749.namprd21.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(451199009)(71200400001)(86362001)(52536014)(8990500004)(33656002)(38100700002)(8936002)(83380400001)(4326008)(8676002)(5660300002)(64756008)(66446008)(66476007)(66556008)(66946007)(76116006)(2906002)(38070700005)(110136005)(122000001)(6506007)(10290500003)(9686003)(55016003)(7696005)(508600001)(26005)(82950400001)(53546011)(54906003)(82960400001)(6636002)(316002)(186003);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?pDDtLISk+QTUEkLC1Lya5i1HDARXCIgcu30Q2k2kegQJHOAWOyUVYOswBP0h?=
+ =?us-ascii?Q?h9CcpsG9VIGWQ7zPdUFFbLi9mOlMpZ1LJJ/557Undg+PVR3C7vu/4hH2ygbV?=
+ =?us-ascii?Q?hU7l/NRWO0Li8GFPN8f1J0lDJXJ+iHUeVG1odfUWmwnaFk3jak3qoT1ZZ/kb?=
+ =?us-ascii?Q?92moFyAiH+HKiZ5KOrIOZ53F3WaBy5YrD8p83VdsWIVZLYKR+ZEH0XMZi+hJ?=
+ =?us-ascii?Q?eqdk5ypg3wZMslcyLEOdoZOnoWgrxyV0r7NMS+LGdr9evVsLk5jXys/DcAMZ?=
+ =?us-ascii?Q?xEcImdOiA8ohh8AX8Pt7LGEmUluX+vzRjW1xM06Ir0jZl76ult6AGTXClmc0?=
+ =?us-ascii?Q?cnTL/jaJ6r24Mz6bItvyZGKs25g+iAy8gj/kDLp1wKbuQ+T1iY+gE7J4QSjq?=
+ =?us-ascii?Q?1FeYrRAAhOR4XWzIEzVMLmDXXYA6yGxYizzYXBiUYlbWfken86WosdpAmgBb?=
+ =?us-ascii?Q?sfIH6pE7UuU37gHSp511Wm2UtPjY3tN3+i8qfhIzNS3NuU+Zm+C9IYD+7RBp?=
+ =?us-ascii?Q?zuL5T+ABY01uP9wJjdh2q0VpMH7ZCN+eBEbI4e3D3SC+OXaVD70Qu/4LpLmE?=
+ =?us-ascii?Q?bXPWF8liuV7eM3YXhsZw7HHetJhNmvePYYxUIeG78UQFtlUtkYgEfpX10+ig?=
+ =?us-ascii?Q?3gSVcyElT7GWQuAUnWMTW6hQ6d5ZSKE3h6KKm3ODVGHej/ai0HW1z8OKCdzA?=
+ =?us-ascii?Q?mJSmZzVGE+QMHjYbB39L2zQO9R8VXlwegYL0gk1Y207t8ov+9E68+d6W52LV?=
+ =?us-ascii?Q?bdlu0C7i+6UYZ8i+AqpByUs+gazXV8B1JJEDyvmDb6MkXhMQUmQE4LcSCYto?=
+ =?us-ascii?Q?fcwm8STDfBlaW29WLKf8EA4x9zttjyaLC7J4egd+w4Fw82JiZGb0eZn8pfim?=
+ =?us-ascii?Q?qNmlmXJTt16rn3OAzwzSMlRuKiArsiTLLXO4jVrlU+E1mDxvsfcarvyXJfA+?=
+ =?us-ascii?Q?SIyoN/+FhGYqe43nfL8J/THoHYuIv4sAfj5LQ64gu6re1rHxgIqQcnEGUn62?=
+ =?us-ascii?Q?XVqT++Whw4PKj5zGI1XPn8T3aF/PUrP5LYX3kMsdtFiqZsIlmc01UuqDmLAc?=
+ =?us-ascii?Q?8FFNhiRlMy5TsFaMJYyEtBHON6tOp2V/M7EU2s3qwyIv/hFdm+bqbkzNOxBP?=
+ =?us-ascii?Q?YZIkUCBDW8aNO7kH9M65vdOwTYlYif0Qu0gE901zly0uBMuRjNIh856PthjR?=
+ =?us-ascii?Q?oD1YGzZMMxUINzucul5IDD+vHvpc7wzzcN5Cp3qzgqNAQfFBfzcnnTcqPllg?=
+ =?us-ascii?Q?Yhmd1FMT7QX8CVquUmEsnzC9TeHQJ6k09acYoBBpCYNO52NIHKeSy6AClWVA?=
+ =?us-ascii?Q?Yqjw+DfN7K42NZF4VsLds+f0+uPMmNVnFJenhRl6lJYMu8XhgkaJcvgdYRa2?=
+ =?us-ascii?Q?ABGbOdoXNrpqIyp34clMYAKdXF2kryasJEVKOs7b2XXsLKJDd340XwZqekLb?=
+ =?us-ascii?Q?XSigSwbjH+JPiyi24x/wqjqrLGm90HcKNKKmR+Kn/y/J3ZpUnZqKxWifJ4w+?=
+ =?us-ascii?Q?9EEh/R1E8a6VJetsl/evoljrHJGrnZWObrGt1kIlDPUCLEA1dxb92b9Hfh0Z?=
+ =?us-ascii?Q?yBrQkl9pWagpAlSmfP+yTjndU0wcEa39Z9D3EE9zd5dkYNQIDSpBc8e2Y/8o?=
+ =?us-ascii?Q?lXPZ3XT1uRNpEQukMr5xySHdQDt2MTOa8Pr3IouqpMbQeGt6gYjVNmRABC3k?=
+ =?us-ascii?Q?JN0tgkBCpJosWlRulbW4IgvEHo8TueLzip9VrkJnHcTuFG8/1lmthxn8b3QP?=
+ =?us-ascii?Q?jIV0hCS88Q=3D=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 54ab7a14-707b-4a11-b241-08da2dd4cf48
-X-MS-TrafficTypeDiagnostic: BN6PR1201MB0146:EE_
-X-Microsoft-Antispam-PRVS: <BN6PR1201MB0146836327D47F4CEC5893A5F7C39@BN6PR1201MB0146.namprd12.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: jF8Xx5t4R1RCNzidacs5CDY9jZWvh3AtWK8bpy/zTEjtfWaZyvAU8RpT86KrVVnIwSzaHaqkuecJK8iLlwrZMrSPSYzikWs03b3/louHicsLXISxo/2clxU69loVyI34RhTQh8e7vDq9ZTyyo/XVwGCsgA3QO25SAwArvXAyDAcYxHFUgV65NVQ8tLC6yDQ3+ab6JkYErX3hJu6Rz5gWdu5w8MpKuFB7XOdjJBxikGlaFiwhJdss8YGV7hfGYqB2IEGQZmZ8bRfybIG1YtDQFId9l2z4f9tskjab52+mg9h+1qOqVn7ZsnSTMWcW3CycsnelydEFksEy8n7UxGcZWSvCPUksxm/ecY7hbgolHV6/PjQofo6zN5P+fuhuA+ibC3b3KGfZd7Od+HWRYY0slTihIWS7j/Qx6JrZlFaOa0F5Wq0RrAy2KDQxCYsvMeB0V8aJ+8WYeYLa46tSjuHoSCmEC6NTtFDpzP9Z/sBUT1tc0XsC43uF0uYLvLcO/zRTvJU3QEuUe3ULsyGl5wVZTW5hQDKygNgBfkNRpvy5pQs1iYHHFytZcSJ83BVOzWT4VJKJKlfGqauJ/aSzP9MhbAn8X3cWBSwXe2n5svAu1iAsRrAHaeb8eMKRuOFAycA0q+7gTBJ5/BKxyVCxxca37WDlrc4FzMeeGnuOPVkgUjzyhNu2GNzb1Gl9cy0Tt7G64NxZl09uXz8GmQmaQ1MVJA==
-X-Forefront-Antispam-Report: CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230001)(4636009)(40470700004)(36840700001)(46966006)(4326008)(40460700003)(47076005)(336012)(426003)(70206006)(82310400005)(70586007)(83380400001)(81166007)(8676002)(110136005)(36860700001)(2616005)(16526019)(186003)(1076003)(316002)(2906002)(26005)(86362001)(6666004)(356005)(36756003)(5660300002)(7696005)(508600001)(8936002)(36900700001);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 May 2022 13:48:45.9217
+X-OriginatorOrg: microsoft.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: DM5PR21MB1749.namprd21.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2d7664d1-3fe8-4291-4841-08da2ded351c
+X-MS-Exchange-CrossTenant-originalarrivaltime: 04 May 2022 16:43:24.7641
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 54ab7a14-707b-4a11-b241-08da2dd4cf48
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: DM6NAM11FT044.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN6PR1201MB0146
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 72f988bf-86f1-41af-91ab-2d7cd011db47
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: tWc2Lzx23dOu+zxLkuYNXfpdWhfjBZ9eb/zkiChTurSVpqqlFelu+jcG+ZHo948H/rnvp1Q948c1zYa0JlySDw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR21MB1457
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This reverts commit 9a45ac2320d0a6ae01880a30d4b86025fce4061b.
 
-This was added a helper for amdgpu to workaround a runtime pm regression
-caused by a runtime pm fix in efifb.  We now have a better workarouund
-in amdgpu in
-commit f95af4a9236695 ("drm/amdgpu: don't runtime suspend if there are displays attached (v3)")
-so this workaround is no longer necessary.  Since amdgpu was the only
-user of this interface, we can remove it.
 
-Signed-off-by: Alex Deucher <alexander.deucher@amd.com>
----
- drivers/video/fbdev/core/fbmem.c | 47 --------------------------------
- include/linux/fb.h               |  1 -
- 2 files changed, 48 deletions(-)
+> -----Original Message-----
+> From: Wei Liu <wei.liu@kernel.org>
+> Sent: Thursday, April 28, 2022 10:38 AM
+> To: Saurabh Sengar <ssengar@linux.microsoft.com>
+> Cc: Saurabh Singh Sengar <ssengar@microsoft.com>; KY Srinivasan
+> <kys@microsoft.com>; Haiyang Zhang <haiyangz@microsoft.com>; Stephen
+> Hemminger <sthemmin@microsoft.com>; wei.liu@kernel.org; Dexuan Cui
+> <decui@microsoft.com>; deller@gmx.de; linux-hyperv@vger.kernel.org; linux=
+-
+> fbdev@vger.kernel.org; dri-devel@lists.freedesktop.org; linux-
+> kernel@vger.kernel.org
+> Subject: Re: [PATCH] video: hyperv_fb: Allow resolutions with size > 64 M=
+B for
+> Gen1
+>=20
+> On Wed, Apr 27, 2022 at 06:47:53AM -0700, Saurabh Sengar wrote:
+> > This patch fixes a bug where GEN1 VMs doesn't allow resolutions greater
+> > than 64 MB size (eg 7680x4320). Unnecessary PCI check limits Gen1 VRAM
+> > to legacy PCI BAR size only (ie 64MB). Thus any, resolution requesting
+> > greater then 64MB (eg 7680x4320) would fail. MMIO region assigning this
+> > memory shouldn't be limited by PCI bar size.
+> >
+> > Signed-off-by: Saurabh Sengar <ssengar@linux.microsoft.com>
+> > ---
+> >  drivers/video/fbdev/hyperv_fb.c | 19 +------------------
+> >  1 file changed, 1 insertion(+), 18 deletions(-)
+> >
+> > diff --git a/drivers/video/fbdev/hyperv_fb.c
+> b/drivers/video/fbdev/hyperv_fb.c
+> > index c8e0ea2..58c304a 100644
+> > --- a/drivers/video/fbdev/hyperv_fb.c
+> > +++ b/drivers/video/fbdev/hyperv_fb.c
+> > @@ -1009,7 +1009,6 @@ static int hvfb_getmem(struct hv_device *hdev,
+> struct fb_info *info)
+> >  	struct pci_dev *pdev  =3D NULL;
+> >  	void __iomem *fb_virt;
+> >  	int gen2vm =3D efi_enabled(EFI_BOOT);
+> > -	resource_size_t pot_start, pot_end;
+> >  	phys_addr_t paddr;
+> >  	int ret;
+> >
+> > @@ -1060,23 +1059,7 @@ static int hvfb_getmem(struct hv_device *hdev,
+> struct fb_info *info)
+> >  	dio_fb_size =3D
+> >  		screen_width * screen_height * screen_depth / 8;
+> >
+> > -	if (gen2vm) {
+> > -		pot_start =3D 0;
+> > -		pot_end =3D -1;
+> > -	} else {
+> > -		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+> > -		    pci_resource_len(pdev, 0) < screen_fb_size) {
+> > -			pr_err("Resource not available or (0x%lx < 0x%lx)\n",
+> > -			       (unsigned long) pci_resource_len(pdev, 0),
+> > -			       (unsigned long) screen_fb_size);
+> > -			goto err1;
+>=20
+> This restriction has been in place since day 1. Haiyang, you wrote this
+> driver. Can you comment on whether this change here is sensible?
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index ad9aac06427a..700ac4a83329 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1783,53 +1783,6 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
- }
- EXPORT_SYMBOL(remove_conflicting_framebuffers);
- 
--/**
-- * is_firmware_framebuffer - detect if firmware-configured framebuffer matches
-- * @a: memory range, users of which are to be checked
-- *
-- * This function checks framebuffer devices (initialized by firmware/bootloader)
-- * which use memory range described by @a. If @a matchesm the function returns
-- * true, otherwise false.
-- */
--bool is_firmware_framebuffer(struct apertures_struct *a)
--{
--	bool do_free = false;
--	bool found = false;
--	int i;
--
--	if (!a) {
--		a = alloc_apertures(1);
--		if (!a)
--			return false;
--
--		a->ranges[0].base = 0;
--		a->ranges[0].size = ~0;
--		do_free = true;
--	}
--
--	mutex_lock(&registration_lock);
--	/* check all firmware fbs and kick off if the base addr overlaps */
--	for_each_registered_fb(i) {
--		struct apertures_struct *gen_aper;
--
--		if (!(registered_fb[i]->flags & FBINFO_MISC_FIRMWARE))
--			continue;
--
--		gen_aper = registered_fb[i]->apertures;
--		if (fb_do_apertures_overlap(gen_aper, a)) {
--			found = true;
--			break;
--		}
--	}
--	mutex_unlock(&registration_lock);
--
--	if (do_free)
--		kfree(a);
--
--	return found;
--}
--EXPORT_SYMBOL(is_firmware_framebuffer);
--
- /**
-  * remove_conflicting_pci_framebuffers - remove firmware-configured framebuffers for PCI devices
-  * @pdev: PCI device
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 9a77ab615c36..147d582dab41 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -612,7 +612,6 @@ extern int remove_conflicting_pci_framebuffers(struct pci_dev *pdev,
- 					       const char *name);
- extern int remove_conflicting_framebuffers(struct apertures_struct *a,
- 					   const char *name, bool primary);
--extern bool is_firmware_framebuffer(struct apertures_struct *a);
- extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
- extern int fb_show_logo(struct fb_info *fb_info, int rotate);
- extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
--- 
-2.35.1
+When I initially implemented this driver 10 years ago, I believe there=20
+was smaller limit for the fb... But I think this patch is good for the=20
+newer MMIO alloc scheme. I hope to see reviews also from
+ @Dexuan Cui @Michael Kelley (LINUX) who are more familiar with=20
+the PCI/BAR/MMIO area.
+
+Thanks,
+- Haiyang
 

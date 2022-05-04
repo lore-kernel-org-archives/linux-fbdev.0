@@ -2,68 +2,67 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4EA1C433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed,  4 May 2022 21:57:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D6DFC433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed,  4 May 2022 21:58:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233740AbiEDWBM (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 4 May 2022 18:01:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54542 "EHLO
+        id S1353639AbiEDWBz (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 4 May 2022 18:01:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55030 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1352006AbiEDWBL (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 4 May 2022 18:01:11 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 354944C7B3
-        for <linux-fbdev@vger.kernel.org>; Wed,  4 May 2022 14:57:33 -0700 (PDT)
+        with ESMTP id S241111AbiEDWBy (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 4 May 2022 18:01:54 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 9F9564C7AC
+        for <linux-fbdev@vger.kernel.org>; Wed,  4 May 2022 14:58:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1651701452;
+        s=mimecast20190719; t=1651701496;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=d5E68EYuJS0cLv3NadyCR6Subawx0t/0D3XRnBIF5EA=;
-        b=B1jkjqHLDlL5FaW6/IJrxYQ63GM9qf0gCZ8pb/QKj+XOhRdUtJhLtZCF5n25AUrBfcB1v1
-        OoxlI6yp/6lXVc0OfwFdJ4m+6LaRh+d3pOYmgKEyv42F5F3ScOvsCOW3TnhnNehz2lvoZm
-        H+JoVUJIrIMBQRT4J+UZ9XGzCYBoWnI=
+        bh=J9HgWbd8sU4BMyUvUsTJN8e3BPoAu1T5H5ui+stohEE=;
+        b=So+BpLNVPCiQ/WB/zdHMlSMLOY7MabjIy6VhzSe276e0FxsFeJrmZ+6kwjepD12Jprjeo4
+        QltDsQVOPboIuIeUAno0QAKL05YKLcFGfrweQIcew7Gf1qW3JKkYVGwebgMQJWnc0PhRo/
+        3wa77LW6Bw2DXmyTulz4n4y2WYgljq4=
 Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
  [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-569-GsOuTOL3Ns-BVcdMwakH1g-1; Wed, 04 May 2022 17:57:31 -0400
-X-MC-Unique: GsOuTOL3Ns-BVcdMwakH1g-1
-Received: by mail-wr1-f71.google.com with SMTP id k29-20020adfb35d000000b0020adc94662dso812743wrd.12
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 May 2022 14:57:31 -0700 (PDT)
+ us-mta-320-kfFbgcjPMMi-LH3TTjh-Eg-1; Wed, 04 May 2022 17:58:15 -0400
+X-MC-Unique: kfFbgcjPMMi-LH3TTjh-Eg-1
+Received: by mail-wr1-f71.google.com with SMTP id m8-20020adfc588000000b0020c4edd8a57so816775wrg.10
+        for <linux-fbdev@vger.kernel.org>; Wed, 04 May 2022 14:58:15 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=d5E68EYuJS0cLv3NadyCR6Subawx0t/0D3XRnBIF5EA=;
-        b=NILIWst/+41lfN9DugRU2BBWn1XFJnGzb9XURDjuwghQK2GeJHlrmAaTaUG/m1rnPj
-         txJ7CAMpZDl6gAyUQUmOtkRbVEKQiCK5TdYoFtW9Eud8afej+Z9gCJkKex6Elm7VwbSl
-         pFfni3lUPz/UuPgbW76GJtmYZyMR1h3B+FVsCm+0hQ1xtjmPO9APBEOzvAm2FtLrzQzo
-         pqbnsgJOwqbfGjCdS5wqEiZis4ztoxRlGj0FtOFpIUUnUTMvTWUvloSThdeQT7A99fWZ
-         sBe4jCos7L0za0vBNEbrQxrcqvK0pXiOjb0m2sTCAXrl2ipwr5mYbdHokpcrWl9NmiCE
-         ujog==
-X-Gm-Message-State: AOAM531kvgPtoox+9bScra2rb9gokkjNpnK7SzuIE17e6s06rZY1ljgt
-        h4hznVyANEmxP8pUFoqqJz/8xJL0vjjaGPy15W0YKn+U5HZyMDbkMXHJT0/GwJFIFbXvKcqMhzm
-        cmCKbMKYpFuPXCwsd8gNx6us=
-X-Received: by 2002:a7b:c199:0:b0:394:26d0:a6a9 with SMTP id y25-20020a7bc199000000b0039426d0a6a9mr1363672wmi.116.1651701450032;
-        Wed, 04 May 2022 14:57:30 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJw1qMT5MICoWPkF4Ji0uGyxOCxsrRQ04CuhwRhiVVfyNZ8vIEl2jgygGi1ttKO9pWOlUIHlhA==
-X-Received: by 2002:a7b:c199:0:b0:394:26d0:a6a9 with SMTP id y25-20020a7bc199000000b0039426d0a6a9mr1363665wmi.116.1651701449798;
-        Wed, 04 May 2022 14:57:29 -0700 (PDT)
+        bh=J9HgWbd8sU4BMyUvUsTJN8e3BPoAu1T5H5ui+stohEE=;
+        b=o/dnbyE2WR5pgObKcSFNcX1ijHhmve3ZU6ZoWEoLDb0hiTcq4Wu5SStKYWYNhVcWRp
+         VQ2RXYE2YI6H8QhwuM/wJW0cDZCFGWwqgi4RTfrWFmBXsvyn8sviEgcNgxWB87zG23rQ
+         w3FUoiam89Rs0NVGHeljUe4sJoxpN2siUQgSvQ1TUSR4Ka8jHBkEHBCcTc7CamczoRTB
+         ypkM877ogkffsAZ7+krjTt3ajFXgwZDO/79eUTgCA9WPgVmhoiHRKaH985XluC5zy1jM
+         bxccL3XB83ysq5dgvHEkAmNz6enPsWPhcpy7QflwALCy9ya2wQKP17BRuhXLQRW1qIQU
+         dAEQ==
+X-Gm-Message-State: AOAM532OOPtlChTtQ2tJuPbAmegFdy+MSNr/hwrmRN7Z5tXuKcAmZnsK
+        kbVkJdpyFN6JgrQjbCLWnvcC0Zcz0vjWnEo6/DhMzqxCbGC/kjy/Y1haxOOpmdCxqA5EE0RFFQY
+        w0ghFY9JINXUZsDVfMcCSHDE=
+X-Received: by 2002:a5d:584a:0:b0:20c:5a8b:cee7 with SMTP id i10-20020a5d584a000000b0020c5a8bcee7mr14891884wrf.111.1651701494278;
+        Wed, 04 May 2022 14:58:14 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJyi1rI7Ysw/yS2KuEXDRIJhqrF+e633rbFMsZfhkqQBH5RX7aHp1FggslnaX3+T4EtZ2beo3g==
+X-Received: by 2002:a5d:584a:0:b0:20c:5a8b:cee7 with SMTP id i10-20020a5d584a000000b0020c5a8bcee7mr14891871wrf.111.1651701494069;
+        Wed, 04 May 2022 14:58:14 -0700 (PDT)
 Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id 11-20020a05600c264b00b0039444973258sm5213068wmy.0.2022.05.04.14.57.29
+        by smtp.gmail.com with ESMTPSA id q10-20020a1cf30a000000b003942a244ee9sm4553648wmq.46.2022.05.04.14.58.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 May 2022 14:57:29 -0700 (PDT)
+        Wed, 04 May 2022 14:58:13 -0700 (PDT)
 From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Helge Deller <deller@gmx.de>,
-        Hans de Goede <hdegoede@redhat.com>,
+        Helge Deller <deller@gmx.de>, Peter Jones <pjones@redhat.com>,
         Javier Martinez Canillas <javierm@redhat.com>
-Subject: [PATCH 2/3] fbdev/simplefb: Cleanup fb_info in .fb_destroy rather than .remove
-Date:   Wed,  4 May 2022 23:57:22 +0200
-Message-Id: <20220504215722.56970-1-javierm@redhat.com>
+Subject: [PATCH 3/3] fbdev/efifb: Cleanup fb_info in .fb_destroy rather than .remove
+Date:   Wed,  4 May 2022 23:58:06 +0200
+Message-Id: <20220504215806.57147-1-javierm@redhat.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220504215151.55082-1-javierm@redhat.com>
 References: <20220504215151.55082-1-javierm@redhat.com>
@@ -87,39 +86,41 @@ Suggested-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
 
- drivers/video/fbdev/simplefb.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/efifb.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index 94fc9c6d0411..2c198561c338 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -84,6 +84,10 @@ struct simplefb_par {
- static void simplefb_clocks_destroy(struct simplefb_par *par);
- static void simplefb_regulators_destroy(struct simplefb_par *par);
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index ea42ba6445b2..cfa3dc0b4eee 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -243,6 +243,10 @@ static void efifb_show_boot_graphics(struct fb_info *info)
+ static inline void efifb_show_boot_graphics(struct fb_info *info) {}
+ #endif
  
 +/*
 + * fb_ops.fb_destroy is called by the last put_fb_info() call at the end
 + * of unregister_framebuffer() or fb_release(). Do any cleanup here.
 + */
- static void simplefb_destroy(struct fb_info *info)
+ static void efifb_destroy(struct fb_info *info)
  {
- 	struct simplefb_par *par = info->par;
-@@ -94,6 +98,8 @@ static void simplefb_destroy(struct fb_info *info)
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
- 
+ 	if (efifb_pci_dev)
+@@ -254,6 +258,9 @@ static void efifb_destroy(struct fb_info *info)
+ 		else
+ 			memunmap(info->screen_base);
+ 	}
++
 +	framebuffer_release(info);
 +
- 	if (mem)
- 		release_mem_region(mem->start, resource_size(mem));
- }
-@@ -545,8 +551,8 @@ static int simplefb_remove(struct platform_device *pdev)
+ 	if (request_mem_succeeded)
+ 		release_mem_region(info->apertures->ranges[0].base,
+ 				   info->apertures->ranges[0].size);
+@@ -620,9 +627,9 @@ static int efifb_remove(struct platform_device *pdev)
  {
  	struct fb_info *info = platform_get_drvdata(pdev);
  
-+	/* simplefb_destroy takes care of info cleanup */
++	/* efifb_destroy takes care of info cleanup */
  	unregister_framebuffer(info);
+ 	sysfs_remove_groups(&pdev->dev.kobj, efifb_groups);
 -	framebuffer_release(info);
  
  	return 0;

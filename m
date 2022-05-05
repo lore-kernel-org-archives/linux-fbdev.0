@@ -2,170 +2,148 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44197C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 May 2022 08:49:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 590B5C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 May 2022 11:31:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S233735AbiEEIxS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 5 May 2022 04:53:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34524 "EHLO
+        id S1355252AbiEELfW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 May 2022 07:35:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35558 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S232713AbiEEIxR (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 May 2022 04:53:17 -0400
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0782B4AE0F;
-        Thu,  5 May 2022 01:49:39 -0700 (PDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by smtp-out1.suse.de (Postfix) with ESMTPS id B9E39218ED;
-        Thu,  5 May 2022 08:49:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-        t=1651740577; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=G98mln19ZgjcWOJ1EpprkkSYVYDttaLj17m3CPfaya0=;
-        b=fP+Z5rt/gxgHBIrKtnF8r6iXxmrS8OqhX5a0Jd2K/jAFSnh/hnzl6Y23ku2iKW7Ak3Wgjg
-        CP3DhBzzJdO+V4n/WY0mmOUNdrPcxAqbnRRr0STjn+uqGG7cUEr8zh2/MzNC2A1ONdESvN
-        6n0luq29P6mtKdlN0jkz8emg+8ozKdU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-        s=susede2_ed25519; t=1651740577;
-        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-         mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=G98mln19ZgjcWOJ1EpprkkSYVYDttaLj17m3CPfaya0=;
-        b=f38ImMI5VE2CUGPJDEK5AU0qXgyiUT6TFQUq4oabCBu3l+IwipxnyrFPd6Vtr3017BXXde
-        04t5xS23Keci0uCQ==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-        (No client certificate requested)
-        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8C7B713B11;
-        Thu,  5 May 2022 08:49:37 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-        by imap2.suse-dmz.suse.de with ESMTPSA
-        id gXkCIaGPc2LoGAAAMHmgww
-        (envelope-from <tzimmermann@suse.de>); Thu, 05 May 2022 08:49:37 +0000
-Message-ID: <e1797321-d901-45dc-713f-7f706147c341@suse.de>
-Date:   Thu, 5 May 2022 10:49:36 +0200
+        with ESMTP id S240742AbiEELfU (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 May 2022 07:35:20 -0400
+Received: from us-smtp-delivery-74.mimecast.com (us-smtp-delivery-74.mimecast.com [170.10.133.74])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 4764925C4F
+        for <linux-fbdev@vger.kernel.org>; Thu,  5 May 2022 04:31:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1651750299;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=bN3Uh2LhXlJZ1HGDsbuHnMTmS7+4/Zex2TjyKUB51Mw=;
+        b=YcDRqyWyCtbpyZrLZRnmxi7eomj1ajrMnXXw3S64gMeEfdUsPMkftHS1gBlpDySmDhSEe+
+        TCdT7AIWF5/U1eCszLRoMgs8UlZ4dRT/KicJXkARYx0jf/uw2VViHjT/xxe/3Uyx8k9eP6
+        p7DUlwbS2ZFKNIck5ol/og/JhHnwvXc=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-562-HZyDECL1MoGQfi7aYRlcdw-1; Thu, 05 May 2022 07:31:38 -0400
+X-MC-Unique: HZyDECL1MoGQfi7aYRlcdw-1
+Received: by mail-wm1-f72.google.com with SMTP id t184-20020a1c46c1000000b00394209f54f1so1591773wma.4
+        for <linux-fbdev@vger.kernel.org>; Thu, 05 May 2022 04:31:38 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=bN3Uh2LhXlJZ1HGDsbuHnMTmS7+4/Zex2TjyKUB51Mw=;
+        b=kT/XKRA10SZajT2hVZPUip6edgnGof7WCl8I6hap08Jtpjz94onsu9YTSJduS4D15C
+         oqq2iqWD1/fHBBwBKbJWecM8mrVmxrg54eD6wL59bUciHY05SM2ZtxuHGkOa3VLxDf7v
+         UvjAFnBr58nwMBYejt7OkMnCpC7L0Z9FyVePmesF4a7lrmdfFbpZHZozq4Nilep9WHAZ
+         qjMoKrjg1sdAKKVjqrbsafdU4/60EqEyJfcV6mQEMbR06youC5T5kMB4s068121VDFN0
+         A4ouhHo0r40D4TXnzB8h/YNPhifZCRALb+kmAuBHkqGj8rNSEXUg3da4ZYV4CgDk5CH2
+         +zOg==
+X-Gm-Message-State: AOAM531VXSrSy+xEWWuqsyg7xsSMYF0ee4SySaFzhaRyJc9V5rUHoHQv
+        f3MSkmXZDBwsFXYIvrqFrZl0s88xs3VZIVkXaNYomE40ckV3zLmKvgcH1xY8iaYV7YDVEw8yEWj
+        A//p/QT74WjTe2oWkKi8VHbs=
+X-Received: by 2002:a05:600c:1e8a:b0:394:a8:234 with SMTP id be10-20020a05600c1e8a00b0039400a80234mr4310552wmb.117.1651750296624;
+        Thu, 05 May 2022 04:31:36 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJyYkJhU3npy2RP0EYd+TCS/YRsPqKFjNBTxwh4iOfYuxwgG9V/BfOG8Dx2RoPJjNmCfU8QlfQ==
+X-Received: by 2002:a05:600c:1e8a:b0:394:a8:234 with SMTP id be10-20020a05600c1e8a00b0039400a80234mr4310517wmb.117.1651750296280;
+        Thu, 05 May 2022 04:31:36 -0700 (PDT)
+Received: from minerva.. ([90.167.94.135])
+        by smtp.gmail.com with ESMTPSA id k1-20020a5d5181000000b0020c5253d8f5sm995809wrv.65.2022.05.05.04.31.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 05 May 2022 04:31:35 -0700 (PDT)
+From:   Javier Martinez Canillas <javierm@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Javier Martinez Canillas <javierm@redhat.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Helge Deller <deller@gmx.de>, Peter Jones <pjones@redhat.com>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Subject: [PATCH v2 0/4] fbdev: Fix use-after-free caused by wrong fb_info cleanup in drivers
+Date:   Thu,  5 May 2022 13:31:23 +0200
+Message-Id: <20220505113128.264963-1-javierm@redhat.com>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.1
-Subject: Re: [PATCH 2/3] fbdev/simplefb: Cleanup fb_info in .fb_destroy rather
- than .remove
-Content-Language: en-US
-To:     Javier Martinez Canillas <javierm@redhat.com>,
-        linux-kernel@vger.kernel.org
-Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
-        linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
-        dri-devel@lists.freedesktop.org,
-        Hans de Goede <hdegoede@redhat.com>
-References: <20220504215151.55082-1-javierm@redhat.com>
- <20220504215722.56970-1-javierm@redhat.com>
- <974f4d00-89bc-a2da-6d65-ca4207300794@suse.de>
- <d9a5cb30-2d9b-50b5-d287-0ead0fe252f3@redhat.com>
- <78167587-fd2e-354c-485b-db4ee9251178@suse.de>
- <237c7fa0-744d-97c2-2bba-3f714d6c2e9d@redhat.com>
-From:   Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <237c7fa0-744d-97c2-2bba-3f714d6c2e9d@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------bfNxQvqkcvpizuhcxOBwiAnc"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------bfNxQvqkcvpizuhcxOBwiAnc
-Content-Type: multipart/mixed; boundary="------------MF9XvBTem0bHn0z8Qv0sXD0P";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Javier Martinez Canillas <javierm@redhat.com>,
- linux-kernel@vger.kernel.org
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org,
- Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
- Hans de Goede <hdegoede@redhat.com>
-Message-ID: <e1797321-d901-45dc-713f-7f706147c341@suse.de>
-Subject: Re: [PATCH 2/3] fbdev/simplefb: Cleanup fb_info in .fb_destroy rather
- than .remove
-References: <20220504215151.55082-1-javierm@redhat.com>
- <20220504215722.56970-1-javierm@redhat.com>
- <974f4d00-89bc-a2da-6d65-ca4207300794@suse.de>
- <d9a5cb30-2d9b-50b5-d287-0ead0fe252f3@redhat.com>
- <78167587-fd2e-354c-485b-db4ee9251178@suse.de>
- <237c7fa0-744d-97c2-2bba-3f714d6c2e9d@redhat.com>
-In-Reply-To: <237c7fa0-744d-97c2-2bba-3f714d6c2e9d@redhat.com>
+Hello,
 
---------------MF9XvBTem0bHn0z8Qv0sXD0P
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+This series contains patches suggested by Daniel Vetter to fix a use-after-free
+error in the fb_release() function, due a fb_info associated with a fbdev being
+freed too early while a user-space process still has the fbdev dev node opened.
 
-SGkNCg0KQW0gMDUuMDUuMjIgdW0gMTA6Mjggc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
-aWxsYXM6DQo+IEhlbGxvIFRob21hcywNCj4gDQo+IE9uIDUvNS8yMiAxMDowNSwgVGhvbWFz
-IFppbW1lcm1hbm4gd3JvdGU6DQo+IA0KPiBbc25pcF0NCj4gDQo+Pj4NCj4+PiBJbiBvdGhl
-ciB3b3JkcywgaW4gbW9zdCBjYXNlcyAoaS5lOiBvbmx5IGZiY29uIGJvdW5kIHRvIHRoZSBm
-YmRldikNCj4+PiB0aGUgZHJpdmVyJ3MgcmVtb3ZhbC8gZGV2aWNlIHVuYmluZCBhbmQgdGhl
-IG1lbW9yeSByZWxlYXNlIHdpbGwgYmUNCj4+PiBhdCB0aGUgc2FtZSB0aW1lLg0KPj4+DQo+
-Pg0KPj4gV2UncmUgb25lIHRoZSBzYW1lIHBhZ2UgaGVyZSwgYnV0IGl0J3Mgc3RpbGwgc29y
-dCBvZiBhIG15c3RlcnkgdG8gbWUgd2h5DQo+PiB0aGlzIHdvcmtzIGluIHByYWN0aWNlLg0K
-Pj4NCj4+IEknbSBzcGVjaWZpY2FsbHkgdGFsa2luZyBhYm91dCBwY2lfcmVxdWVzdF9yZWdp
-b25zKCkgaW4gdm13Z2Z4IFsxXS4gSUlSQw0KPj4gdGhpcyB3b3VsZCBmYWlsIGlmIHNpbXBs
-ZWZiIHN0aWxsIG93bnMgdGhlIGZyYW1lYnVmZmVyIHJlZ2lvbi4gTG90cyBvZg0KPj4gc3lz
-dGVtcyBydW4gUGx5bW91dGggZHVyaW5nIGJvb3QgYW5kIHRoaXMgc2hvdWxkIHJlc3VsdCBp
-biBmYWlsdXJlcw0KPj4gb2NjYXNpb25hbGx5LiBTdGlsbCwgd2UgbmV2ZXIgaGVhcmQgYWJv
-dXQgYW55dGhpbmcuDQo+Pg0KPiANCj4gWWVzLCBJIHRoaW5rIGlzIGJlY2F1c2UgUGx5bW91
-dGggSUlVQyB3YWl0cyBmb3IgYSAvZGV2L2RyaS9jYXJkPyB0byBiZQ0KPiBwcmVzZW50IGFu
-ZCBvbmx5IHVzZXMgYSAvZGV2L2ZiPyBhcyBhIGZhbGxiYWNrIGlmIGEgdGltZW91dCBleHBp
-cmVzLg0KDQpPaCwgcmlnaHQhIFRoZSBpbmZhbW91cyBwbHltb3V0aCB0aW1lb3V0LiAnc2xl
-ZXAoMzApJyBpcyB0aGUgc3dpc3MtYXJteSANCmtuaWZlIG9mIGNvbmN1cnJlbnQgcHJvZ3Jh
-bW1pbmcuIDspDQoNCkJ1dCBJJ20gbm90IGJsYW1pbmcgYW55b25lLiBUaGVyZSBhcmUgc2l0
-dWF0aW9ucyB3aGVyZSBub3RoaW5nIGVsc2UgDQpoZWxwcy4gUGx5bW91dGggcmVhbGx5IGNh
-bid0IGRvIGFueXRoaW5nIGVsc2UgaGVyZS4gV2UndmUgcmVjZWl2ZWQgDQpyZXBvcnRzIGZv
-ciBnZngtaGFuZG92ZXIgYnVncyB3aGVuIHRoZSB0aW1lb3V0IGV4cGlyZWQgYW5kIHBseW1v
-dXRoIHVzZXMgDQp0aGUgZmJkZXYuIFRoZSBzeXN0ZW0gZ290IHN0dWNrIHRoZW4gYmVjYXVz
-ZSBvZiBmYmRldiBJSVJDLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiBBdCBs
-ZWFzdCBpbiBGZWRvcmEgKGV2ZW4gYmVmb3JlIHRoZSBlZmlmYiAtPiBzaW1wbGVkcm0gY2hh
-bmdlKSBpdCB3aWxsDQo+IHVzZSBLTVMvRFJNIHNpbmNlIHRoZSBEUk0ga2VybmVsIG1vZHVs
-ZSBmb3IgdGhlIGdyYXBoaWNzIGRldmljZSBpbiB0aGUNCj4gbWFjaGluZSB3b3VsZCBiZSBp
-biB0aGUgaW50aXJkLg0KPiANCj4gU28gZWZpZmIgd2FzIG9ubHkgdXNlZCBmb3IgZmJjb24g
-YW5kIHBseW1vdXRoIHdvdWxkIG9ubHkgdXNlIERSTS9LTVMNCj4gYW5kIG5vdCBpdHMgZmJk
-ZXYgYmFja2VuZC4NCj4gDQo+IFRoaXMgc2VlbXMgdG8gYmUgc29ydCBvZiBhIGNvcm5lciBj
-YXNlIHdoZW4geW91IGhhdmUge2VmaSxzaW1wbGV9ZmINCj4gaW4gdGhlIGVhcmx5IGJvb3Qg
-YnV0IHRoZSByZWFsIERSTSBtb2R1bGUgb25seSBpbiB0aGUgcm9vdGZzIGFmdGVyIHRoZQ0K
-PiBpbml0cmQgaGFzIGRvbmUgYSBwaXZvdF9yb290KDIpLg0KPiAgIA0KPj4gT2YgY291cnNl
-LCBpdCdzIGFsd2F5cyBiZWVuIGJyb2tlbiAoZXZlbiBsb25nIGJlZm9yZSByZWFsIGZiZGV2
-DQo+PiBob3R1bnBsdWdnaW5nKS4gU3dpdGNoaW5nIHRvIHNpbXBsZWRybSByZXNvbHZlcyB0
-aGUgcHJvYmxlbS4NCj4+DQo+IA0KPiBJbmRlZWQuIE15IG9waW5pb24gYWZ0ZXIgZGVhbGlu
-ZyB3aXRoIHRoZXNlIGZiZGV2IHByb2JsZW1zIGlzIHRoYXQgd2UNCj4gc2hvdWxkbid0IHRy
-eSB0byBmaXggYWxsIHBvc3NpYmxlIGNvcm5lciBjYXNlcyBhbmQganVzdCB0cnkgdG8gZ2V0
-IHJpZA0KPiBvZiBmYmRldiBhcyBzb29uIGFzIHBvc3NpYmxlLg0KPiAgIC0tDQo+IEJlc3Qg
-cmVnYXJkcywNCj4gDQo+IEphdmllciBNYXJ0aW5leiBDYW5pbGxhcw0KPiBMaW51eCBFbmdp
-bmVlcmluZw0KPiBSZWQgSGF0DQo+IA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFw
-aGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55
-IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAz
-NjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
+That is caused by a wrong management of the struct fb_info lifetime in drivers,
+but the fbdev core can also be made more resilient about it an leak
 
---------------MF9XvBTem0bHn0z8Qv0sXD0P--
+This can easily be reproduced with the simplefb driver doing the following:
 
---------------bfNxQvqkcvpizuhcxOBwiAnc
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+$ cat < /dev/fb0 &
+$ echo simple-framebuffer.0 > /sys/bus/platform/drivers/simple-framebuffer/unbind
+$ kill %1
 
------BEGIN PGP SIGNATURE-----
+[  257.490471] ------------[ cut here ]------------
+...
+[  257.495125] refcount_t: underflow; use-after-free.
+[  257.495222] WARNING: CPU: 0 PID: 975 at lib/refcount.c:28 refcount_warn_saturate+0xf4/0x144
+...
+[  257.637482] pstate: 80400005 (Nzcv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[  257.644441] pc : refcount_warn_saturate+0xf4/0x144
+[  257.649226] lr : refcount_warn_saturate+0xf4/0x144
+[  257.654009] sp : ffff80000a06bbf0
+[  257.657315] x29: ffff80000a06bbf0 x28: 000000000000000a x27: 000000000000000a
+[  257.664448] x26: 0000000000000000 x25: ffff470b88c6a180 x24: 000000000000000a
+[  257.671581] x23: ffff470b81706480 x22: ffff470b808c2160 x21: ffff470b8922ba20
+[  257.678713] x20: ffff470b891f5810 x19: ffff470b891f5800 x18: ffffffffffffffff
+[  257.685846] x17: 3a725f7463656a62 x16: ffffbb18c6465fd4 x15: 0720072007200720
+[  257.692978] x14: 0720072d072d072d x13: 0a2e656572662d72 x12: 657466612d657375
+[  257.700110] x11: 203b776f6c667265 x10: 646e75203a745f74 x9 : ffffbb18c58f6c90
+[  257.707242] x8 : 75203b776f6c6672 x7 : 65646e75203a745f x6 : 0000000000000001
+[  257.714373] x5 : ffff470bff8ec418 x4 : 0000000000000000 x3 : 0000000000000027
+[  257.721506] x2 : 0000000000000000 x1 : 0000000000000027 x0 : 0000000000000026
+[  257.728638] Call trace:
+[  257.731075]  refcount_warn_saturate+0xf4/0x144
+[  257.735513]  put_fb_info+0x70/0x7c
+[  257.738916]  fb_release+0x60/0x74
+[  257.742225]  __fput+0x88/0x240
+[  257.745276]  ____fput+0x1c/0x30
+[  257.748410]  task_work_run+0xc4/0x21c
+[  257.752066]  do_exit+0x170/0x370
+[  257.755288]  do_group_exit+0x40/0xb4
+[  257.758858]  get_signal+0x8e0/0x90c
+[  257.762339]  do_signal+0x1a0/0x280
+[  257.765733]  do_notify_resume+0xc8/0x390
+[  257.769650]  el0_da+0xe8/0xf0
+[  257.772613]  el0t_64_sync_handler+0xe8/0x130
+[  257.776877]  el0t_64_sync+0x190/0x194
+[  257.780534] ---[ end trace 0000000000000000 ]---
 
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmJzj6AFAwAAAAAACgkQlh/E3EQov+AS
-bRAA0XI+TZwItuDpnm0hiVI3S04EtviZIWLBCjC9Z3Sv2jm60QyRUUv+S8+Up5EHoBCMGhy2kD40
-EGtnMIHqnCB9pahLx/yvy//bQ1lD6kIfRHQgqD0REZPxjf+WD7vVZ3jLdO3YqSOvxc7pamS3jcWr
-yd6lyjEpuYfwa8GA+n2stNk9w97SaRC8xRzrKw2SYY3dEgW+RJL6NwCD1DOMvnvrFj2+hN6LuWck
-lxw5JqT+i7zHRVeCGCMXBy9VL66+ZCnyYhwpAlrOjpTnV+YYT32Mk5y53kh+SYOmT3U3PJmtYdtN
-HwT4poXg2pQSs5WBbqW8qUUZJzj9nv/3Wo3j0G4GjjPECn49d6KMSHt2lqDVJbJoVaMNdmvbZ/5l
-1HTLiJblC7oszL+fqHbBArdQRCjwAFmiWXyfz4lBHhOT6VlEOGljEHVo2bVZ9u2DHu1EAeZVGUU2
-N8zw88QxwLV4dMUcTkEJ+mwGTw7Ois5KGqxLAeDxDHUqgIc+5GgPE5j6puj+rI/27GmB7xvhEVRv
-okR5eJLymIY2hHvIdF+1bDJmR2CmBbrRYzGrOqR/jQ4YCdfG2uYyG0AA5QX4Fsi/kbZ08HYk4H/l
-U/NmGFOmF1aygCAFSdzTlnav4eEgMpVdNWKBQmjuYohPr4MP+hbROebysqHbJo295u6UwUh8TSTZ
-t7I=
-=b7m2
------END PGP SIGNATURE-----
+Patch #1 adds a WARN_ON() to framebuffer_release() to prevent the use-after-free
+to happen.
 
---------------bfNxQvqkcvpizuhcxOBwiAnc--
+Patch #2, #3 and #4 fix the simplefb, efifb and vesafb drivers respectively, to
+free the resources at the correct place.
+
+Changes in v2:
+- Also do the change for vesafb (Thomas Zimmermann).
+
+Daniel Vetter (1):
+  fbdev: Prevent possible use-after-free in fb_release()
+
+Javier Martinez Canillas (3):
+  fbdev: simplefb: Cleanup fb_info in .fb_destroy rather than .remove
+  fbdev: efifb: Cleanup fb_info in .fb_destroy rather than .remove
+  fbdev: vesafb: Cleanup fb_info in .fb_destroy rather than .remove
+
+ drivers/video/fbdev/core/fbsysfs.c |  4 ++++
+ drivers/video/fbdev/efifb.c        |  9 ++++++++-
+ drivers/video/fbdev/simplefb.c     |  8 +++++++-
+ drivers/video/fbdev/vesafb.c       | 14 +++++++++++---
+ 4 files changed, 30 insertions(+), 5 deletions(-)
+
+-- 
+2.35.1
+

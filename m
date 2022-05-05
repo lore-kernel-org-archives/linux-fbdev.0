@@ -2,110 +2,170 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2232C433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 May 2022 08:32:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44197C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 May 2022 08:49:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S245722AbiEEIfl (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 5 May 2022 04:35:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47650 "EHLO
+        id S233735AbiEEIxS (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 May 2022 04:53:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34524 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1349368AbiEEIfk (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 May 2022 04:35:40 -0400
-X-Greylist: delayed 73 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 05 May 2022 01:32:01 PDT
-Received: from us-smtp-delivery-74.mimecast.com (us-smtp-delivery-74.mimecast.com [170.10.133.74])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 98CA2488B2
-        for <linux-fbdev@vger.kernel.org>; Thu,  5 May 2022 01:32:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1651739520;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
+        with ESMTP id S232713AbiEEIxR (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 May 2022 04:53:17 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0782B4AE0F;
+        Thu,  5 May 2022 01:49:39 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id B9E39218ED;
+        Thu,  5 May 2022 08:49:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1651740577; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=rqBSEx+prjdTiMrGpV1aqsQTWQSdTrwVLGOaM2DRpu0=;
-        b=B2rVNF/82K29tAxdsJ6AJU940swyqY+PIwDfdbYxpBTtsm+mb9FTiG4uhMza5tyHM5WBPd
-        BUCJNRLqyORMDIAvR7k4ops8PXid9T24U+H9oCcDE36H3xauwH/7OETcQzD9PUm6ecq8Ij
-        aMwap4UqZozBl2JwcTGIjtEsaL7wFgw=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-434-Totl_EkpPxKtN94MmnBmfA-1; Thu, 05 May 2022 04:30:46 -0400
-X-MC-Unique: Totl_EkpPxKtN94MmnBmfA-1
-Received: by mail-wm1-f71.google.com with SMTP id k16-20020a7bc310000000b0038e6cf00439so1488001wmj.0
-        for <linux-fbdev@vger.kernel.org>; Thu, 05 May 2022 01:30:46 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=rqBSEx+prjdTiMrGpV1aqsQTWQSdTrwVLGOaM2DRpu0=;
-        b=r2cMt0RW/cRi6dVl7zW8fahz9KISLacrvbjoIGZwoYLj0wMffQnE2B95Yo0gsKBYkI
-         XiWQ7yaMQCBQ1kfqVqJnFeWe8MgkWz01lw/OsasPFJwxXclVtu0bl5NvcegGo3aBxO5I
-         Pcaif83sei4fuaU56WdFy5eS7eF4v0o1rTIfEVg5FLwzsK0CS6aiajlGkqIv1wC5xBDx
-         mAksuWjZKukHhz8WBW5n7sO1MNr6etpigStZ+pO7yNmHXH8ktPVnf2Fhx93p9S0AlzDJ
-         qjQDT0Z8H4OSGh0KUEr80nsDC7Tr8MeEZv5UXfvvvUo0vx+NLfrymkegpNmHQxuq/TCG
-         r1AA==
-X-Gm-Message-State: AOAM531O6B6w92gHRP0aBigLQZNhvh1GGhl9XXXtp4w/0ORK0qk0Fp6A
-        juQNwZAaA17A+9gl4ydC6l6gIvvZrWmB2d7C0v0sg/7raumcjwwAyMxLN3XhAuFvhmnXYxedNFJ
-        n5jdG5pJJDY+AaKLPYkdHJCw=
-X-Received: by 2002:a05:600c:21cc:b0:394:12ff:dd8d with SMTP id x12-20020a05600c21cc00b0039412ffdd8dmr3524891wmj.132.1651739445193;
-        Thu, 05 May 2022 01:30:45 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzFHaBQnPBJ08w4wMFqpq4uA/qAMN794Kl5iBycIsNges0PhcSzS7HhVQE1ACXB2xwj0udL/A==
-X-Received: by 2002:a05:600c:21cc:b0:394:12ff:dd8d with SMTP id x12-20020a05600c21cc00b0039412ffdd8dmr3524869wmj.132.1651739444856;
-        Thu, 05 May 2022 01:30:44 -0700 (PDT)
-Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id l18-20020a1ced12000000b003942a244edcsm846083wmh.33.2022.05.05.01.30.43
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 05 May 2022 01:30:44 -0700 (PDT)
-Message-ID: <14afd90b-0bf3-aa01-3b97-db7e29fb858a@redhat.com>
-Date:   Thu, 5 May 2022 10:30:43 +0200
+        bh=G98mln19ZgjcWOJ1EpprkkSYVYDttaLj17m3CPfaya0=;
+        b=fP+Z5rt/gxgHBIrKtnF8r6iXxmrS8OqhX5a0Jd2K/jAFSnh/hnzl6Y23ku2iKW7Ak3Wgjg
+        CP3DhBzzJdO+V4n/WY0mmOUNdrPcxAqbnRRr0STjn+uqGG7cUEr8zh2/MzNC2A1ONdESvN
+        6n0luq29P6mtKdlN0jkz8emg+8ozKdU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1651740577;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=G98mln19ZgjcWOJ1EpprkkSYVYDttaLj17m3CPfaya0=;
+        b=f38ImMI5VE2CUGPJDEK5AU0qXgyiUT6TFQUq4oabCBu3l+IwipxnyrFPd6Vtr3017BXXde
+        04t5xS23Keci0uCQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 8C7B713B11;
+        Thu,  5 May 2022 08:49:37 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id gXkCIaGPc2LoGAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 05 May 2022 08:49:37 +0000
+Message-ID: <e1797321-d901-45dc-713f-7f706147c341@suse.de>
+Date:   Thu, 5 May 2022 10:49:36 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-Subject: Re: [PATCH 0/3] fbdev: Fix use-after-free caused by wrong fb_info
- cleanup in drivers
+ Thunderbird/91.8.1
+Subject: Re: [PATCH 2/3] fbdev/simplefb: Cleanup fb_info in .fb_destroy rather
+ than .remove
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
+To:     Javier Martinez Canillas <javierm@redhat.com>,
         linux-kernel@vger.kernel.org
-Cc:     linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
         dri-devel@lists.freedesktop.org,
-        Hans de Goede <hdegoede@redhat.com>,
-        Peter Jones <pjones@redhat.com>
+        Hans de Goede <hdegoede@redhat.com>
 References: <20220504215151.55082-1-javierm@redhat.com>
- <e0bc775a-f17a-adf1-9b2c-4be91468b7f8@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <e0bc775a-f17a-adf1-9b2c-4be91468b7f8@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <20220504215722.56970-1-javierm@redhat.com>
+ <974f4d00-89bc-a2da-6d65-ca4207300794@suse.de>
+ <d9a5cb30-2d9b-50b5-d287-0ead0fe252f3@redhat.com>
+ <78167587-fd2e-354c-485b-db4ee9251178@suse.de>
+ <237c7fa0-744d-97c2-2bba-3f714d6c2e9d@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <237c7fa0-744d-97c2-2bba-3f714d6c2e9d@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------bfNxQvqkcvpizuhcxOBwiAnc"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Thomas,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------bfNxQvqkcvpizuhcxOBwiAnc
+Content-Type: multipart/mixed; boundary="------------MF9XvBTem0bHn0z8Qv0sXD0P";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ linux-kernel@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org,
+ Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+ Hans de Goede <hdegoede@redhat.com>
+Message-ID: <e1797321-d901-45dc-713f-7f706147c341@suse.de>
+Subject: Re: [PATCH 2/3] fbdev/simplefb: Cleanup fb_info in .fb_destroy rather
+ than .remove
+References: <20220504215151.55082-1-javierm@redhat.com>
+ <20220504215722.56970-1-javierm@redhat.com>
+ <974f4d00-89bc-a2da-6d65-ca4207300794@suse.de>
+ <d9a5cb30-2d9b-50b5-d287-0ead0fe252f3@redhat.com>
+ <78167587-fd2e-354c-485b-db4ee9251178@suse.de>
+ <237c7fa0-744d-97c2-2bba-3f714d6c2e9d@redhat.com>
+In-Reply-To: <237c7fa0-744d-97c2-2bba-3f714d6c2e9d@redhat.com>
 
-On 5/5/22 10:16, Thomas Zimmermann wrote:
+--------------MF9XvBTem0bHn0z8Qv0sXD0P
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-[snip]
+SGkNCg0KQW0gMDUuMDUuMjIgdW0gMTA6Mjggc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
+aWxsYXM6DQo+IEhlbGxvIFRob21hcywNCj4gDQo+IE9uIDUvNS8yMiAxMDowNSwgVGhvbWFz
+IFppbW1lcm1hbm4gd3JvdGU6DQo+IA0KPiBbc25pcF0NCj4gDQo+Pj4NCj4+PiBJbiBvdGhl
+ciB3b3JkcywgaW4gbW9zdCBjYXNlcyAoaS5lOiBvbmx5IGZiY29uIGJvdW5kIHRvIHRoZSBm
+YmRldikNCj4+PiB0aGUgZHJpdmVyJ3MgcmVtb3ZhbC8gZGV2aWNlIHVuYmluZCBhbmQgdGhl
+IG1lbW9yeSByZWxlYXNlIHdpbGwgYmUNCj4+PiBhdCB0aGUgc2FtZSB0aW1lLg0KPj4+DQo+
+Pg0KPj4gV2UncmUgb25lIHRoZSBzYW1lIHBhZ2UgaGVyZSwgYnV0IGl0J3Mgc3RpbGwgc29y
+dCBvZiBhIG15c3RlcnkgdG8gbWUgd2h5DQo+PiB0aGlzIHdvcmtzIGluIHByYWN0aWNlLg0K
+Pj4NCj4+IEknbSBzcGVjaWZpY2FsbHkgdGFsa2luZyBhYm91dCBwY2lfcmVxdWVzdF9yZWdp
+b25zKCkgaW4gdm13Z2Z4IFsxXS4gSUlSQw0KPj4gdGhpcyB3b3VsZCBmYWlsIGlmIHNpbXBs
+ZWZiIHN0aWxsIG93bnMgdGhlIGZyYW1lYnVmZmVyIHJlZ2lvbi4gTG90cyBvZg0KPj4gc3lz
+dGVtcyBydW4gUGx5bW91dGggZHVyaW5nIGJvb3QgYW5kIHRoaXMgc2hvdWxkIHJlc3VsdCBp
+biBmYWlsdXJlcw0KPj4gb2NjYXNpb25hbGx5LiBTdGlsbCwgd2UgbmV2ZXIgaGVhcmQgYWJv
+dXQgYW55dGhpbmcuDQo+Pg0KPiANCj4gWWVzLCBJIHRoaW5rIGlzIGJlY2F1c2UgUGx5bW91
+dGggSUlVQyB3YWl0cyBmb3IgYSAvZGV2L2RyaS9jYXJkPyB0byBiZQ0KPiBwcmVzZW50IGFu
+ZCBvbmx5IHVzZXMgYSAvZGV2L2ZiPyBhcyBhIGZhbGxiYWNrIGlmIGEgdGltZW91dCBleHBp
+cmVzLg0KDQpPaCwgcmlnaHQhIFRoZSBpbmZhbW91cyBwbHltb3V0aCB0aW1lb3V0LiAnc2xl
+ZXAoMzApJyBpcyB0aGUgc3dpc3MtYXJteSANCmtuaWZlIG9mIGNvbmN1cnJlbnQgcHJvZ3Jh
+bW1pbmcuIDspDQoNCkJ1dCBJJ20gbm90IGJsYW1pbmcgYW55b25lLiBUaGVyZSBhcmUgc2l0
+dWF0aW9ucyB3aGVyZSBub3RoaW5nIGVsc2UgDQpoZWxwcy4gUGx5bW91dGggcmVhbGx5IGNh
+bid0IGRvIGFueXRoaW5nIGVsc2UgaGVyZS4gV2UndmUgcmVjZWl2ZWQgDQpyZXBvcnRzIGZv
+ciBnZngtaGFuZG92ZXIgYnVncyB3aGVuIHRoZSB0aW1lb3V0IGV4cGlyZWQgYW5kIHBseW1v
+dXRoIHVzZXMgDQp0aGUgZmJkZXYuIFRoZSBzeXN0ZW0gZ290IHN0dWNrIHRoZW4gYmVjYXVz
+ZSBvZiBmYmRldiBJSVJDLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQo+IA0KPiBBdCBs
+ZWFzdCBpbiBGZWRvcmEgKGV2ZW4gYmVmb3JlIHRoZSBlZmlmYiAtPiBzaW1wbGVkcm0gY2hh
+bmdlKSBpdCB3aWxsDQo+IHVzZSBLTVMvRFJNIHNpbmNlIHRoZSBEUk0ga2VybmVsIG1vZHVs
+ZSBmb3IgdGhlIGdyYXBoaWNzIGRldmljZSBpbiB0aGUNCj4gbWFjaGluZSB3b3VsZCBiZSBp
+biB0aGUgaW50aXJkLg0KPiANCj4gU28gZWZpZmIgd2FzIG9ubHkgdXNlZCBmb3IgZmJjb24g
+YW5kIHBseW1vdXRoIHdvdWxkIG9ubHkgdXNlIERSTS9LTVMNCj4gYW5kIG5vdCBpdHMgZmJk
+ZXYgYmFja2VuZC4NCj4gDQo+IFRoaXMgc2VlbXMgdG8gYmUgc29ydCBvZiBhIGNvcm5lciBj
+YXNlIHdoZW4geW91IGhhdmUge2VmaSxzaW1wbGV9ZmINCj4gaW4gdGhlIGVhcmx5IGJvb3Qg
+YnV0IHRoZSByZWFsIERSTSBtb2R1bGUgb25seSBpbiB0aGUgcm9vdGZzIGFmdGVyIHRoZQ0K
+PiBpbml0cmQgaGFzIGRvbmUgYSBwaXZvdF9yb290KDIpLg0KPiAgIA0KPj4gT2YgY291cnNl
+LCBpdCdzIGFsd2F5cyBiZWVuIGJyb2tlbiAoZXZlbiBsb25nIGJlZm9yZSByZWFsIGZiZGV2
+DQo+PiBob3R1bnBsdWdnaW5nKS4gU3dpdGNoaW5nIHRvIHNpbXBsZWRybSByZXNvbHZlcyB0
+aGUgcHJvYmxlbS4NCj4+DQo+IA0KPiBJbmRlZWQuIE15IG9waW5pb24gYWZ0ZXIgZGVhbGlu
+ZyB3aXRoIHRoZXNlIGZiZGV2IHByb2JsZW1zIGlzIHRoYXQgd2UNCj4gc2hvdWxkbid0IHRy
+eSB0byBmaXggYWxsIHBvc3NpYmxlIGNvcm5lciBjYXNlcyBhbmQganVzdCB0cnkgdG8gZ2V0
+IHJpZA0KPiBvZiBmYmRldiBhcyBzb29uIGFzIHBvc3NpYmxlLg0KPiAgIC0tDQo+IEJlc3Qg
+cmVnYXJkcywNCj4gDQo+IEphdmllciBNYXJ0aW5leiBDYW5pbGxhcw0KPiBMaW51eCBFbmdp
+bmVlcmluZw0KPiBSZWQgSGF0DQo+IA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFw
+aGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55
+IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAz
+NjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
->> Patch #1 adds a WARN_ON() to framebuffer_release() to prevent the use-after-free
->> to happen.
->>
->> Patch #2 and patch #3 fixes the simplefb and efifb drivers respectively, to
->> free the resources at the correct place.
-> 
->  From a quick look, vesafb seems to be affected as well.
->
+--------------MF9XvBTem0bHn0z8Qv0sXD0P--
 
-Right, I wrongly assumed that we only cared about efifb and simplefb but forgot
-that vesafb is used when setting a VESA mode with vga=foo. I'll add it in a v2.
- 
-> Best regards
-> Thomas
-> 
+--------------bfNxQvqkcvpizuhcxOBwiAnc
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
--- 
-Best regards,
+-----BEGIN PGP SIGNATURE-----
 
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmJzj6AFAwAAAAAACgkQlh/E3EQov+AS
+bRAA0XI+TZwItuDpnm0hiVI3S04EtviZIWLBCjC9Z3Sv2jm60QyRUUv+S8+Up5EHoBCMGhy2kD40
+EGtnMIHqnCB9pahLx/yvy//bQ1lD6kIfRHQgqD0REZPxjf+WD7vVZ3jLdO3YqSOvxc7pamS3jcWr
+yd6lyjEpuYfwa8GA+n2stNk9w97SaRC8xRzrKw2SYY3dEgW+RJL6NwCD1DOMvnvrFj2+hN6LuWck
+lxw5JqT+i7zHRVeCGCMXBy9VL66+ZCnyYhwpAlrOjpTnV+YYT32Mk5y53kh+SYOmT3U3PJmtYdtN
+HwT4poXg2pQSs5WBbqW8qUUZJzj9nv/3Wo3j0G4GjjPECn49d6KMSHt2lqDVJbJoVaMNdmvbZ/5l
+1HTLiJblC7oszL+fqHbBArdQRCjwAFmiWXyfz4lBHhOT6VlEOGljEHVo2bVZ9u2DHu1EAeZVGUU2
+N8zw88QxwLV4dMUcTkEJ+mwGTw7Ois5KGqxLAeDxDHUqgIc+5GgPE5j6puj+rI/27GmB7xvhEVRv
+okR5eJLymIY2hHvIdF+1bDJmR2CmBbrRYzGrOqR/jQ4YCdfG2uYyG0AA5QX4Fsi/kbZ08HYk4H/l
+U/NmGFOmF1aygCAFSdzTlnav4eEgMpVdNWKBQmjuYohPr4MP+hbROebysqHbJo295u6UwUh8TSTZ
+t7I=
+=b7m2
+-----END PGP SIGNATURE-----
 
+--------------bfNxQvqkcvpizuhcxOBwiAnc--

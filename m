@@ -2,57 +2,54 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E96B3C43217
-	for <linux-fbdev@archiver.kernel.org>; Wed,  4 May 2022 21:59:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 581F6C4332F
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 May 2022 06:04:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1378937AbiEDWDW (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 4 May 2022 18:03:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55708 "EHLO
+        id S231643AbiEEGIO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 May 2022 02:08:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57590 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1357859AbiEDWDV (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Wed, 4 May 2022 18:03:21 -0400
-Received: from mail-yb1-xb2d.google.com (mail-yb1-xb2d.google.com [IPv6:2607:f8b0:4864:20::b2d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3B1C64CD4F
-        for <linux-fbdev@vger.kernel.org>; Wed,  4 May 2022 14:59:43 -0700 (PDT)
-Received: by mail-yb1-xb2d.google.com with SMTP id f38so4732762ybi.3
-        for <linux-fbdev@vger.kernel.org>; Wed, 04 May 2022 14:59:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=rmJxiEP7m5MkHAr9riUqfx3uT8FiWx1lLvenswbOwJo=;
-        b=QoiC7QZe2hJyujp1ZRg0nlXjXopykN2j/DeYH65TBWATXUktJf0x/kyffuuacsI/Xo
-         3U/WGyV+fixlajIQ09GKt1DZZYpxMas0dWaDYCL8jonCJtMRr4CSZtyBZVh8caz3Zhfm
-         KLVYZqsNmH6MjXnLA95998XCfsQEg4LoRnNmHuqp/sQ2AApgVFWMqqZBdroSiC1gbSmN
-         F4COMU/J9YGu52LHRSSP9wDA3f+g3bnizNxpCHxuTE9h/gJ7KhKhsdH72IujMMikVg4I
-         fP3vyeXEvVrVnkAX/oRVPo4TmV6M5W4ptTtqSYXWLDxsKe5hoIl7+BOBmDpgqE7s/ubD
-         8xlA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=rmJxiEP7m5MkHAr9riUqfx3uT8FiWx1lLvenswbOwJo=;
-        b=gwfYn170WjH7RZdgC/UEkUPFpvYm0mJYS/Vin0/R9E9Zh2PwDdYPxJyc5KdzErzUt9
-         vNlFV5PLJB8Gz12bOIEuxBvIF0MnOe3yxoNCmWMa5CiMpywaEFJWvZSwL1rCqW9OavRa
-         hXp4ZfcctzXGLROK5Mkgvyy2vIX2uGYj/inViLRor/VwIQAXQr2pd0KjP/aR8QzqnE5n
-         kPTyhd6Fy/3mNi5lXDVNKyV+kpJgU6oNYU2J53pLmOCVTbHdywImvpKrdMtkl7s7gTDc
-         WaWE54zr5Etk7fI8k6XTRL8HeiOpi56jbkd5G+bMlPEzavEIKrIkU1JZS1mtfrKCtvIZ
-         JMng==
-X-Gm-Message-State: AOAM533Mfk3QkFKo0UlAIjJLEaEDdzRQXzF5SNAnMpYrAacXEU11q6Fa
-        vWF3FI7U1YYlawwn8PQ8KBirpUSfCeZraqbu0Itw4Q==
-X-Google-Smtp-Source: ABdhPJws0kFu4uk8m+EBRW3/56Ag/4uZ6hdskWay/lA/R4RBYkLUb5oUPb5cyXOdcEWwAD5EvFRWUXI3Mh6lxHFGeY0=
-X-Received: by 2002:a25:bcc7:0:b0:648:d728:d39 with SMTP id
- l7-20020a25bcc7000000b00648d7280d39mr19634791ybm.514.1651701582183; Wed, 04
- May 2022 14:59:42 -0700 (PDT)
+        with ESMTP id S230306AbiEEGIN (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 May 2022 02:08:13 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E07F8366A5;
+        Wed,  4 May 2022 23:04:34 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 766EA61C03;
+        Thu,  5 May 2022 06:04:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF6FEC385BC;
+        Thu,  5 May 2022 06:04:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1651730673;
+        bh=gGag8LcvVDzOYjY7vVQNICNRVUATqvouUQ3T9qB8Y4k=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=IzeX2fl3N2x2kryaheKunqUXxhYq2EKW3EevzAcRMispu7pOGu+LIVB4gtA4lt47H
+         kuw8arO+PfbPq7WQnALg8Llzkb+hKwtvB/sYTsnK/90IacYZCB6DJZ5ZQJOsJ5C1F3
+         TeSHzM+uYa+G41zdiYBmFF25L9TEm88hz+cFkf+LED+1kXeRmilzEAvsC7hDnbfjGn
+         7+T7Dj+o9VKBm1U6ge16L5XMEd+1ntq34MUjLp9fn2cdJO958LQytdZ8prNLl0PmNR
+         JJUBc01v6sbgWXUsh3IWA1bR3+vxPlhbpLgI0/bOseW+q4bkkad+M4ksyG11vuvJyh
+         VmRMQT8XoxC+g==
+Received: by mail-wm1-f49.google.com with SMTP id q20so2010918wmq.1;
+        Wed, 04 May 2022 23:04:33 -0700 (PDT)
+X-Gm-Message-State: AOAM532KYwJ4kV4x0ust3FQTY5P7lDLmdAqa0ZHF8tckDNZFQ3EHpIll
+        agg4oXhlxqv95Hv8yxNuanYbXaFOameqvZcXfEI=
+X-Google-Smtp-Source: ABdhPJxJJBc6IXeb9FDBUjhMgPRC02W3Kaja9XP7Gl4879zHpOvDa2WCA8GypEt4poAHxn+t5qvz/Rnv+5FUxU+6qJI=
+X-Received: by 2002:a05:600c:4f0f:b0:394:54c1:f5b3 with SMTP id
+ l15-20020a05600c4f0f00b0039454c1f5b3mr3065513wmq.33.1651730671693; Wed, 04
+ May 2022 23:04:31 -0700 (PDT)
 MIME-Version: 1.0
 References: <20220419163810.2118169-1-arnd@kernel.org> <20220419163810.2118169-19-arnd@kernel.org>
- <CACRpkdac8dGKSEmc-HpgooJefrDtiKK+_A1Mv7AJM8yQV9UY-w@mail.gmail.com> <CAK8P3a0w3gFzZoBzyRsi1Ta4prESf8Fp0=quAPSKMnaXvbXNTQ@mail.gmail.com>
-In-Reply-To: <CAK8P3a0w3gFzZoBzyRsi1Ta4prESf8Fp0=quAPSKMnaXvbXNTQ@mail.gmail.com>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Wed, 4 May 2022 23:59:30 +0200
-Message-ID: <CACRpkdZNryYkidvdKuT57RM3fz6_X+3oOzF5xaOZd+TyScfUsw@mail.gmail.com>
+ <CACRpkdac8dGKSEmc-HpgooJefrDtiKK+_A1Mv7AJM8yQV9UY-w@mail.gmail.com>
+ <CAK8P3a0w3gFzZoBzyRsi1Ta4prESf8Fp0=quAPSKMnaXvbXNTQ@mail.gmail.com> <CACRpkdZNryYkidvdKuT57RM3fz6_X+3oOzF5xaOZd+TyScfUsw@mail.gmail.com>
+In-Reply-To: <CACRpkdZNryYkidvdKuT57RM3fz6_X+3oOzF5xaOZd+TyScfUsw@mail.gmail.com>
+From:   Arnd Bergmann <arnd@kernel.org>
+Date:   Thu, 5 May 2022 08:04:14 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a0y0tVZODpp+GSf0EkMPWbbvMqA-4kNf0NJMc0M2=2WHw@mail.gmail.com>
+Message-ID: <CAK8P3a0y0tVZODpp+GSf0EkMPWbbvMqA-4kNf0NJMc0M2=2WHw@mail.gmail.com>
 Subject: Re: [PATCH 18/48] ARM: pxa: hx4700: use gpio descriptors for audio
-To:     Arnd Bergmann <arnd@kernel.org>
+To:     Linus Walleij <linus.walleij@linaro.org>
 Cc:     Robert Jarzmik <robert.jarzmik@free.fr>,
         Linux ARM <linux-arm-kernel@lists.infradead.org>,
         Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
@@ -90,58 +87,71 @@ Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Mon, May 2, 2022 at 9:08 AM Arnd Bergmann <arnd@kernel.org> wrote:
-> On Sun, May 1, 2022 at 11:41 PM Linus Walleij <linus.walleij@linaro.org> wrote:
+On Wed, May 4, 2022 at 11:59 PM Linus Walleij <linus.walleij@linaro.org> wrote:
+> On Mon, May 2, 2022 at 9:08 AM Arnd Bergmann <arnd@kernel.org> wrote:
+> > On Sun, May 1, 2022 at 11:41 PM Linus Walleij <linus.walleij@linaro.org> wrote:
+> > >
+> > > (...)
+> > > > +static struct gpiod_lookup_table hx4700_audio_gpio_table = {
+> > > > +       .dev_id = "hx4700-audio",
+> > > > +       .table = {
+> > > > +               GPIO_LOOKUP("gpio-pxa", GPIO75_HX4700_EARPHONE_nDET,
+> > > > +                           "earphone-ndet", GPIO_ACTIVE_HIGH),
+> > >
+> > > This looks wrong. The n in nDET in the end of the name of the GPIO line
+> > > means active low does it not?
+> > >
+> > > What I usually do when I see this is to properly set it to
+> > > GPIO_ACTIVE_LOW in the descriptor table, then invert the logic
+> > > where it's getting used.
+> > >
+> > > Also rename to earphone-det instead of -ndet
 > >
-> > (...)
-> > > +static struct gpiod_lookup_table hx4700_audio_gpio_table = {
-> > > +       .dev_id = "hx4700-audio",
-> > > +       .table = {
-> > > +               GPIO_LOOKUP("gpio-pxa", GPIO75_HX4700_EARPHONE_nDET,
-> > > +                           "earphone-ndet", GPIO_ACTIVE_HIGH),
-> >
-> > This looks wrong. The n in nDET in the end of the name of the GPIO line
-> > means active low does it not?
-> >
-> > What I usually do when I see this is to properly set it to
-> > GPIO_ACTIVE_LOW in the descriptor table, then invert the logic
-> > where it's getting used.
-> >
-> > Also rename to earphone-det instead of -ndet
+> > Thanks for taking a look! I changed it now, but I don't know if
+> > I got the correct number of inversions in the end. How does this look?
 >
-> Thanks for taking a look! I changed it now, but I don't know if
-> I got the correct number of inversions in the end. How does this look?
+> Looks wrong, you can just invert the argument to any statement of set_value()
+> after tagging respective line as active low. Then gpilob will do a second
+> inversion.
+>
+> > +               GPIO_LOOKUP("gpio-pxa", GPIO75_HX4700_EARPHONE_nDET,
+> > +                           "earphone-det", GPIO_ACTIVE_LOW),
+> > +               GPIO_LOOKUP("gpio-pxa", GPIO107_HX4700_SPK_nSD,
+> > +                           "spk-sd", GPIO_ACTIVE_LOW),
+>
+> So those two have switched polarity.
+>
+> > @@ -81,14 +79,14 @@ static const struct snd_soc_ops hx4700_ops = {
+> >  static int hx4700_spk_power(struct snd_soc_dapm_widget *w,
+> >                             struct snd_kcontrol *k, int event)
+> >  {
+> > -       gpio_set_value(GPIO107_HX4700_SPK_nSD, !!SND_SOC_DAPM_EVENT_ON(event));
+> > +       gpiod_set_value(gpiod_spk_sd, !!SND_SOC_DAPM_EVENT_ON(event));
+>
+> Thus drop one ! in front of the expression, just !SND_SOC_DAPM_EVENT_ON(event)
 
-Looks wrong, you can just invert the argument to any statement of set_value()
-after tagging respective line as active low. Then gpilob will do a second
-inversion.
+Ok, done. But I still leave the extra 'invert=1' in hs_jack_pin[], right?
 
-> +               GPIO_LOOKUP("gpio-pxa", GPIO75_HX4700_EARPHONE_nDET,
-> +                           "earphone-det", GPIO_ACTIVE_LOW),
-> +               GPIO_LOOKUP("gpio-pxa", GPIO107_HX4700_SPK_nSD,
-> +                           "spk-sd", GPIO_ACTIVE_LOW),
+/* Headphones jack detection DAPM pin */
+static struct snd_soc_jack_pin hs_jack_pin[] = {
+        {
+                .pin    = "Headphone Jack",
+                .mask   = SND_JACK_HEADPHONE,
+        },
+        {
+                .pin    = "Speaker",
+                /* disable speaker when hp jack is inserted */
+                .mask   = SND_JACK_HEADPHONE,
+                .invert = 1,
+        },
+};
 
-So those two have switched polarity.
+> > +       gpiod_spk_sd = devm_gpiod_get(&pdev->dev, "spk-sd", GPIOD_OUT_LOW);
+>
+> These initial values don't seem to be set in the old code you could
+> just use GPIOD_ASIS as flag to make sure the new code behaves
+> the same.
 
-> @@ -81,14 +79,14 @@ static const struct snd_soc_ops hx4700_ops = {
->  static int hx4700_spk_power(struct snd_soc_dapm_widget *w,
->                             struct snd_kcontrol *k, int event)
->  {
-> -       gpio_set_value(GPIO107_HX4700_SPK_nSD, !!SND_SOC_DAPM_EVENT_ON(event));
-> +       gpiod_set_value(gpiod_spk_sd, !!SND_SOC_DAPM_EVENT_ON(event));
+Ok.
 
-Thus drop one ! in front of the expression, just !SND_SOC_DAPM_EVENT_ON(event)
-
-> -       gpio_set_value(GPIO92_HX4700_HP_DRIVER, !!SND_SOC_DAPM_EVENT_ON(event));
-> +       gpiod_set_value(gpiod_hp_driver, !!SND_SOC_DAPM_EVENT_ON(event));
-
-But not this.
-
-> +       gpiod_spk_sd = devm_gpiod_get(&pdev->dev, "spk-sd", GPIOD_OUT_LOW);
-
-These initial values don't seem to be set in the old code you could
-just use GPIOD_ASIS as flag to make sure the new code behaves
-the same.
-
-Yours,
-Linus Walleij
+        Arnd

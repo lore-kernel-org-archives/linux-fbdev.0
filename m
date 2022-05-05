@@ -2,156 +2,169 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 581F6C4332F
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 May 2022 06:04:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24AC9C4332F
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 May 2022 07:29:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S231643AbiEEGIO (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 5 May 2022 02:08:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57590 "EHLO
+        id S1344666AbiEEHdV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 May 2022 03:33:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40926 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230306AbiEEGIN (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 May 2022 02:08:13 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E07F8366A5;
-        Wed,  4 May 2022 23:04:34 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        with ESMTP id S1344519AbiEEHdU (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 May 2022 03:33:20 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 396BB47AE1;
+        Thu,  5 May 2022 00:29:42 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 766EA61C03;
-        Thu,  5 May 2022 06:04:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF6FEC385BC;
-        Thu,  5 May 2022 06:04:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1651730673;
-        bh=gGag8LcvVDzOYjY7vVQNICNRVUATqvouUQ3T9qB8Y4k=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=IzeX2fl3N2x2kryaheKunqUXxhYq2EKW3EevzAcRMispu7pOGu+LIVB4gtA4lt47H
-         kuw8arO+PfbPq7WQnALg8Llzkb+hKwtvB/sYTsnK/90IacYZCB6DJZ5ZQJOsJ5C1F3
-         TeSHzM+uYa+G41zdiYBmFF25L9TEm88hz+cFkf+LED+1kXeRmilzEAvsC7hDnbfjGn
-         7+T7Dj+o9VKBm1U6ge16L5XMEd+1ntq34MUjLp9fn2cdJO958LQytdZ8prNLl0PmNR
-         JJUBc01v6sbgWXUsh3IWA1bR3+vxPlhbpLgI0/bOseW+q4bkkad+M4ksyG11vuvJyh
-         VmRMQT8XoxC+g==
-Received: by mail-wm1-f49.google.com with SMTP id q20so2010918wmq.1;
-        Wed, 04 May 2022 23:04:33 -0700 (PDT)
-X-Gm-Message-State: AOAM532KYwJ4kV4x0ust3FQTY5P7lDLmdAqa0ZHF8tckDNZFQ3EHpIll
-        agg4oXhlxqv95Hv8yxNuanYbXaFOameqvZcXfEI=
-X-Google-Smtp-Source: ABdhPJxJJBc6IXeb9FDBUjhMgPRC02W3Kaja9XP7Gl4879zHpOvDa2WCA8GypEt4poAHxn+t5qvz/Rnv+5FUxU+6qJI=
-X-Received: by 2002:a05:600c:4f0f:b0:394:54c1:f5b3 with SMTP id
- l15-20020a05600c4f0f00b0039454c1f5b3mr3065513wmq.33.1651730671693; Wed, 04
- May 2022 23:04:31 -0700 (PDT)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id E82741F891;
+        Thu,  5 May 2022 07:29:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1651735780; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=7oszj393KfchLXHg916YqCIeRK1AJbaDk3ClmN+/Bh4=;
+        b=KdLoTN4Z75Y80d7DYk9en/+bOUYMRXtWatVyv7dJiVIBls8UFNV99CZuO6NwRWNGnUmIWE
+        2MEbQJ8AHYjtzQMWGXF8ZMd6P65JGgaWUbbhs108yX/XngaaR9htNy0OpeFFZ+qoOJu0aO
+        ikHel9TmvzGJxuYVkAjIL4zVhuQNXTA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1651735780;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=7oszj393KfchLXHg916YqCIeRK1AJbaDk3ClmN+/Bh4=;
+        b=xXwR5T8/3cxrsCpiuRH/xS7eWWLDuAie/ZvWTTQ/JmGVcpQmWw0OeaCDHWQpy3r8ojlK6o
+        aSv4lpGtJnZYsbDg==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id B5FAF13A65;
+        Thu,  5 May 2022 07:29:40 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id ahhCK+R8c2LwcAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Thu, 05 May 2022 07:29:40 +0000
+Message-ID: <974f4d00-89bc-a2da-6d65-ca4207300794@suse.de>
+Date:   Thu, 5 May 2022 09:29:40 +0200
 MIME-Version: 1.0
-References: <20220419163810.2118169-1-arnd@kernel.org> <20220419163810.2118169-19-arnd@kernel.org>
- <CACRpkdac8dGKSEmc-HpgooJefrDtiKK+_A1Mv7AJM8yQV9UY-w@mail.gmail.com>
- <CAK8P3a0w3gFzZoBzyRsi1Ta4prESf8Fp0=quAPSKMnaXvbXNTQ@mail.gmail.com> <CACRpkdZNryYkidvdKuT57RM3fz6_X+3oOzF5xaOZd+TyScfUsw@mail.gmail.com>
-In-Reply-To: <CACRpkdZNryYkidvdKuT57RM3fz6_X+3oOzF5xaOZd+TyScfUsw@mail.gmail.com>
-From:   Arnd Bergmann <arnd@kernel.org>
-Date:   Thu, 5 May 2022 08:04:14 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a0y0tVZODpp+GSf0EkMPWbbvMqA-4kNf0NJMc0M2=2WHw@mail.gmail.com>
-Message-ID: <CAK8P3a0y0tVZODpp+GSf0EkMPWbbvMqA-4kNf0NJMc0M2=2WHw@mail.gmail.com>
-Subject: Re: [PATCH 18/48] ARM: pxa: hx4700: use gpio descriptors for audio
-To:     Linus Walleij <linus.walleij@linaro.org>
-Cc:     Robert Jarzmik <robert.jarzmik@free.fr>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>,
-        Haojian Zhuang <haojian.zhuang@gmail.com>,
-        Marek Vasut <marek.vasut@gmail.com>,
-        Philipp Zabel <philipp.zabel@gmail.com>,
-        Lubomir Rintel <lkundrak@v3.sk>,
-        Paul Parsons <lost.distance@yahoo.com>,
-        Tomas Cech <sleep_walker@suse.com>,
-        Sergey Lapin <slapin@ossfans.org>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Dominik Brodowski <linux@dominikbrodowski.net>,
-        Helge Deller <deller@gmx.de>, Mark Brown <broonie@kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
-        IDE-ML <linux-ide@vger.kernel.org>,
-        linux-clk <linux-clk@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "open list:HID CORE LAYER" <linux-input@vger.kernel.org>,
-        patches@opensource.cirrus.com, linux-leds@vger.kernel.org,
-        linux-mmc <linux-mmc@vger.kernel.org>,
-        linux-mtd <linux-mtd@lists.infradead.org>,
-        linux-rtc@vger.kernel.org, USB list <linux-usb@vger.kernel.org>,
-        Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        ALSA Development Mailing List <alsa-devel@alsa-project.org>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.1
+Subject: Re: [PATCH 2/3] fbdev/simplefb: Cleanup fb_info in .fb_destroy rather
+ than .remove
+Content-Language: en-US
+To:     Javier Martinez Canillas <javierm@redhat.com>,
+        linux-kernel@vger.kernel.org
+Cc:     linux-fbdev@vger.kernel.org,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+        Hans de Goede <hdegoede@redhat.com>
+References: <20220504215151.55082-1-javierm@redhat.com>
+ <20220504215722.56970-1-javierm@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <20220504215722.56970-1-javierm@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------M6QrRRNoD3q2fMmWOKHoyYDu"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Wed, May 4, 2022 at 11:59 PM Linus Walleij <linus.walleij@linaro.org> wrote:
-> On Mon, May 2, 2022 at 9:08 AM Arnd Bergmann <arnd@kernel.org> wrote:
-> > On Sun, May 1, 2022 at 11:41 PM Linus Walleij <linus.walleij@linaro.org> wrote:
-> > >
-> > > (...)
-> > > > +static struct gpiod_lookup_table hx4700_audio_gpio_table = {
-> > > > +       .dev_id = "hx4700-audio",
-> > > > +       .table = {
-> > > > +               GPIO_LOOKUP("gpio-pxa", GPIO75_HX4700_EARPHONE_nDET,
-> > > > +                           "earphone-ndet", GPIO_ACTIVE_HIGH),
-> > >
-> > > This looks wrong. The n in nDET in the end of the name of the GPIO line
-> > > means active low does it not?
-> > >
-> > > What I usually do when I see this is to properly set it to
-> > > GPIO_ACTIVE_LOW in the descriptor table, then invert the logic
-> > > where it's getting used.
-> > >
-> > > Also rename to earphone-det instead of -ndet
-> >
-> > Thanks for taking a look! I changed it now, but I don't know if
-> > I got the correct number of inversions in the end. How does this look?
->
-> Looks wrong, you can just invert the argument to any statement of set_value()
-> after tagging respective line as active low. Then gpilob will do a second
-> inversion.
->
-> > +               GPIO_LOOKUP("gpio-pxa", GPIO75_HX4700_EARPHONE_nDET,
-> > +                           "earphone-det", GPIO_ACTIVE_LOW),
-> > +               GPIO_LOOKUP("gpio-pxa", GPIO107_HX4700_SPK_nSD,
-> > +                           "spk-sd", GPIO_ACTIVE_LOW),
->
-> So those two have switched polarity.
->
-> > @@ -81,14 +79,14 @@ static const struct snd_soc_ops hx4700_ops = {
-> >  static int hx4700_spk_power(struct snd_soc_dapm_widget *w,
-> >                             struct snd_kcontrol *k, int event)
-> >  {
-> > -       gpio_set_value(GPIO107_HX4700_SPK_nSD, !!SND_SOC_DAPM_EVENT_ON(event));
-> > +       gpiod_set_value(gpiod_spk_sd, !!SND_SOC_DAPM_EVENT_ON(event));
->
-> Thus drop one ! in front of the expression, just !SND_SOC_DAPM_EVENT_ON(event)
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------M6QrRRNoD3q2fMmWOKHoyYDu
+Content-Type: multipart/mixed; boundary="------------UIiPyxvlLyMVaz0POf4AxHbW";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+ Hans de Goede <hdegoede@redhat.com>
+Message-ID: <974f4d00-89bc-a2da-6d65-ca4207300794@suse.de>
+Subject: Re: [PATCH 2/3] fbdev/simplefb: Cleanup fb_info in .fb_destroy rather
+ than .remove
+References: <20220504215151.55082-1-javierm@redhat.com>
+ <20220504215722.56970-1-javierm@redhat.com>
+In-Reply-To: <20220504215722.56970-1-javierm@redhat.com>
 
-Ok, done. But I still leave the extra 'invert=1' in hs_jack_pin[], right?
+--------------UIiPyxvlLyMVaz0POf4AxHbW
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-/* Headphones jack detection DAPM pin */
-static struct snd_soc_jack_pin hs_jack_pin[] = {
-        {
-                .pin    = "Headphone Jack",
-                .mask   = SND_JACK_HEADPHONE,
-        },
-        {
-                .pin    = "Speaker",
-                /* disable speaker when hp jack is inserted */
-                .mask   = SND_JACK_HEADPHONE,
-                .invert = 1,
-        },
-};
+SGkNCg0KQW0gMDQuMDUuMjIgdW0gMjM6NTcgc2NocmllYiBKYXZpZXIgTWFydGluZXogQ2Fu
+aWxsYXM6DQo+IFRoZSBkcml2ZXIgaXMgY2FsbGluZyBmcmFtZWJ1ZmZlcl9yZWxlYXNlKCkg
+aW4gaXRzIC5yZW1vdmUgY2FsbGJhY2ssIGJ1dA0KPiB0aGlzIHdpbGwgY2F1c2UgdGhlIHN0
+cnVjdCBmYl9pbmZvIHRvIGJlIGZyZWVkIHRvbyBlYXJseS4gU2luY2UgaXQgY291bGQNCj4g
+YmUgdGhhdCBhIHJlZmVyZW5jZSBpcyBzdGlsbCBob2xkIHRvIGl0IGlmIHVzZXItc3BhY2Ug
+b3BlbmVkIHRoZSBmYmRldi4NCj4gDQo+IFRoaXMgd291bGQgbGVhZCB0byBhIHVzZS1hZnRl
+ci1mcmVlIGVycm9yIGlmIHRoZSBmcmFtZWJ1ZmZlciBkZXZpY2Ugd2FzDQo+IHVucmVnaXN0
+ZXJlZCBidXQgbGF0ZXIgYSB1c2VyLXNwYWNlIHByb2Nlc3MgdHJpZXMgdG8gY2xvc2UgdGhl
+IGZiZGV2IGZkLg0KPiANCj4gVGhlIGNvcnJlY3QgdGhpbmcgdG8gZG8gaXMgdG8gb25seSB1
+bnJlZ2lzdGVyIHRoZSBmcmFtZWJ1ZmZlciBpbiB0aGUNCj4gZHJpdmVyJ3MgLnJlbW92ZSBj
+YWxsYmFjaywgYnV0IGRvIGFueSBjbGVhbnVwIGluIHRoZSBmYl9vcHMuZmJfZGVzdHJveS4N
+Cj4gDQo+IFN1Z2dlc3RlZC1ieTogRGFuaWVsIFZldHRlciA8ZGFuaWVsLnZldHRlckBmZnds
+bC5jaD4NCj4gU2lnbmVkLW9mZi1ieTogSmF2aWVyIE1hcnRpbmV6IENhbmlsbGFzIDxqYXZp
+ZXJtQHJlZGhhdC5jb20+DQoNClJldmlld2VkLWJ5OiBUaG9tYXMgWmltbWVybWFubiA8dHpp
+bW1lcm1hbm5Ac3VzZS5kZT4NCg0KUGxlYXNlIHNlZSBteSBxdWVzdGlvbiBiZWxvdy4NCg0K
+PiAtLS0NCj4gDQo+ICAgZHJpdmVycy92aWRlby9mYmRldi9zaW1wbGVmYi5jIHwgOCArKysr
+KysrLQ0KPiAgIDEgZmlsZSBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24o
+LSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3NpbXBsZWZiLmMg
+Yi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3NpbXBsZWZiLmMNCj4gaW5kZXggOTRmYzljNmQwNDEx
+Li4yYzE5ODU2MWMzMzggMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvc2lt
+cGxlZmIuYw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3NpbXBsZWZiLmMNCj4gQEAg
+LTg0LDYgKzg0LDEwIEBAIHN0cnVjdCBzaW1wbGVmYl9wYXIgew0KPiAgIHN0YXRpYyB2b2lk
+IHNpbXBsZWZiX2Nsb2Nrc19kZXN0cm95KHN0cnVjdCBzaW1wbGVmYl9wYXIgKnBhcik7DQo+
+ICAgc3RhdGljIHZvaWQgc2ltcGxlZmJfcmVndWxhdG9yc19kZXN0cm95KHN0cnVjdCBzaW1w
+bGVmYl9wYXIgKnBhcik7DQo+ICAgDQo+ICsvKg0KPiArICogZmJfb3BzLmZiX2Rlc3Ryb3kg
+aXMgY2FsbGVkIGJ5IHRoZSBsYXN0IHB1dF9mYl9pbmZvKCkgY2FsbCBhdCB0aGUgZW5kDQo+
+ICsgKiBvZiB1bnJlZ2lzdGVyX2ZyYW1lYnVmZmVyKCkgb3IgZmJfcmVsZWFzZSgpLiBEbyBh
+bnkgY2xlYW51cCBoZXJlLg0KPiArICovDQo+ICAgc3RhdGljIHZvaWQgc2ltcGxlZmJfZGVz
+dHJveShzdHJ1Y3QgZmJfaW5mbyAqaW5mbykNCj4gICB7DQo+ICAgCXN0cnVjdCBzaW1wbGVm
+Yl9wYXIgKnBhciA9IGluZm8tPnBhcjsNCj4gQEAgLTk0LDYgKzk4LDggQEAgc3RhdGljIHZv
+aWQgc2ltcGxlZmJfZGVzdHJveShzdHJ1Y3QgZmJfaW5mbyAqaW5mbykNCj4gICAJaWYgKGlu
+Zm8tPnNjcmVlbl9iYXNlKQ0KPiAgIAkJaW91bm1hcChpbmZvLT5zY3JlZW5fYmFzZSk7DQo+
+ICAgDQo+ICsJZnJhbWVidWZmZXJfcmVsZWFzZShpbmZvKTsNCj4gKw0KPiAgIAlpZiAobWVt
+KQ0KPiAgIAkJcmVsZWFzZV9tZW1fcmVnaW9uKG1lbS0+c3RhcnQsIHJlc291cmNlX3NpemUo
+bWVtKSk7DQoNClRoZSBvcmlnaW5hbCBwcm9ibGVtIHdpdGggZmJkZXYgaG90LXVucGx1ZyB3
+YXMgdGhhdCB2bXdnZnggbmVlZGVkIHRoZSANCmZyYW1lYnVmZmVyIHJlZ2lvbiB0byBiZSBy
+ZWxlYXNlZC4gSWYgd2UgcmVsZWFzZSBpdCBvbmx5IGFmdGVyIHVzZXJzcGFjZSANCmNsb3Nl
+ZCBpdCdzIGZpbmFsIGZpbGUgZGVzY3JpcHRvciwgdm13Z2Z4IGNvdWxkIGhhdmUgYWxyZWFk
+eSBmYWlsZWQuDQoNCkkgc3RpbGwgZG9uJ3QgZnVsbHkgZ2V0IHdoeSB0aGlzIGNvZGUgYXBw
+YXJlbnRseSB3b3JrcyBvciBhdCBsZWFzdCANCmRvZXNuJ3QgYmxvdyB1cCBvY2Nhc2lvbmFs
+bHkuIEFueSBpZGVhcz8NCg0KQmVzdCByZWdhcmRzDQpUaG9tYXMNCg0KPiAgIH0NCj4gQEAg
+LTU0NSw4ICs1NTEsOCBAQCBzdGF0aWMgaW50IHNpbXBsZWZiX3JlbW92ZShzdHJ1Y3QgcGxh
+dGZvcm1fZGV2aWNlICpwZGV2KQ0KPiAgIHsNCj4gICAJc3RydWN0IGZiX2luZm8gKmluZm8g
+PSBwbGF0Zm9ybV9nZXRfZHJ2ZGF0YShwZGV2KTsNCj4gICANCj4gKwkvKiBzaW1wbGVmYl9k
+ZXN0cm95IHRha2VzIGNhcmUgb2YgaW5mbyBjbGVhbnVwICovDQo+ICAgCXVucmVnaXN0ZXJf
+ZnJhbWVidWZmZXIoaW5mbyk7DQo+IC0JZnJhbWVidWZmZXJfcmVsZWFzZShpbmZvKTsNCj4g
+ICANCj4gICAJcmV0dXJuIDA7DQo+ICAgfQ0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpH
+cmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJt
+YW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhS
+QiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
-> > +       gpiod_spk_sd = devm_gpiod_get(&pdev->dev, "spk-sd", GPIOD_OUT_LOW);
->
-> These initial values don't seem to be set in the old code you could
-> just use GPIOD_ASIS as flag to make sure the new code behaves
-> the same.
 
-Ok.
+--------------UIiPyxvlLyMVaz0POf4AxHbW--
 
-        Arnd
+--------------M6QrRRNoD3q2fMmWOKHoyYDu
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmJzfOQFAwAAAAAACgkQlh/E3EQov+D3
+Xg/9HjoP34X+CZ1CZUlKTe8unr/01RG2xvoO67jA9JafUhE5+LdK6wDeDOL4KMsxtg8cIh7qWNBX
+pN4vxSieVJB96bfisMmFNc+1H4XK0AqxG0d9UscOCvl2H3R/gvDMm0NUmLPVPe9ZXB4P3/zFQzTs
+oSjhCjUwMP/3HwJofYMImSreDOHOCgHEYS33MR8aAEi5gy6e/yZfQrt57SZyEXlmW0lyC8FXmcFz
+J+1zEvQ9OijFvguegpyUD8p8htJisk7hbm4VdodnDPUCAvz0XqqpjdNdgkybZf5NO22cGP/kF8DG
+M5hmxD5uOIkjXML/1lIa327Hbfi6lWSJ1Dhdjlj7GNdqUJ3N4LrMhh2V/L5zrBQu6Z5VYGNmIgkB
+5Kw1rpAobocgO5VQNvWtxGMgKLGndl4u78Ue91YoWmcpC3KwHyPub6HncH6fnVXo0sdjqXeTJX2c
+JYucSPQmF0aaDRdbStokM1PgVOtsWDX8OlRBOZSUjhZoyau5TqA87MwpgnkIhsk2yRjzr9s417Rd
+KflWlcUkrpTCQx751Npvt7tOQQ8CV7fH1JnpWKnLD7z4nYr0FlskUvo1MqE1LXi7gMoVSJNi64jR
+Zp6iHP8KbItbaia1/glFvbs9aK+Wl+FIkKvEhoTLDHybeHa43i8H4DaLod16NuPFBaXJPd5RlFv1
+aa0=
+=adqs
+-----END PGP SIGNATURE-----
+
+--------------M6QrRRNoD3q2fMmWOKHoyYDu--

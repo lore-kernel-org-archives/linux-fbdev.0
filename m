@@ -2,157 +2,116 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB2CCC433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu,  5 May 2022 22:00:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F36D6C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu,  5 May 2022 22:04:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1358460AbiEEWEA (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 5 May 2022 18:04:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51454 "EHLO
+        id S1352708AbiEEWII (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 5 May 2022 18:08:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54616 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1377701AbiEEWDx (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 May 2022 18:03:53 -0400
+        with ESMTP id S237116AbiEEWII (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Thu, 5 May 2022 18:08:08 -0400
 Received: from us-smtp-delivery-74.mimecast.com (us-smtp-delivery-74.mimecast.com [170.10.133.74])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id DCCF45C743
-        for <linux-fbdev@vger.kernel.org>; Thu,  5 May 2022 15:00:10 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 3B7F71EEF0
+        for <linux-fbdev@vger.kernel.org>; Thu,  5 May 2022 15:04:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1651788009;
+        s=mimecast20190719; t=1651788266;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=g7o/PcjByL5k08SmN+MKIpgdp4lhrjdKDcCDQqkuG3g=;
-        b=ILJ7hGUaV9x5/jQ9AZ+5lR6KPBetiFC7g44LbfsbAvW8QdGuAo/RzYW5Zupxd5XZwuyg2e
-        8tzO9yQMXcAEvqHkE1ylcg4192NtH1PgPfSjjGOJ/dKx4+ILBF5OzdrHZ9eNtHWcofTwPc
-        t2v2sY41HlGD7dPLM8avG+u56ZdFctc=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=ncwUrPXa6D//xAE+gUKX4W9jlEJvsWNrctcaxVQSCb8=;
+        b=Isl8L8SfNHWV+t69isu/BtN20Sgshf/20p+Iu+td7e6wq1+qXH2knLE4E/Uhwye1+93X0Y
+        IHG2r22GyP17PK67t3geDT+zboBJqO/ytwvdrjtbwsE5lolvvk2LpZIsMYKCkwo6F7cMxG
+        /n3gjTxzKGS0hfURfM3Q8/z6dBSem2g=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-478-nUiLOTU2MOmwShig7K0yVg-1; Thu, 05 May 2022 18:00:08 -0400
-X-MC-Unique: nUiLOTU2MOmwShig7K0yVg-1
-Received: by mail-wm1-f72.google.com with SMTP id v184-20020a1cacc1000000b00393e492a398so5096210wme.5
-        for <linux-fbdev@vger.kernel.org>; Thu, 05 May 2022 15:00:08 -0700 (PDT)
+ us-mta-586-B5bSwudJNImKQaS0N_vm6g-1; Thu, 05 May 2022 18:04:25 -0400
+X-MC-Unique: B5bSwudJNImKQaS0N_vm6g-1
+Received: by mail-wr1-f72.google.com with SMTP id p18-20020adf9592000000b00207bc12decbso1870534wrp.21
+        for <linux-fbdev@vger.kernel.org>; Thu, 05 May 2022 15:04:25 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=g7o/PcjByL5k08SmN+MKIpgdp4lhrjdKDcCDQqkuG3g=;
-        b=ypyMamiv2lqZaQtx7/salw3OvNADs90qZpnpyVnZ+Lzw7MhRWJ8muDFLncue5WYbtK
-         mffM97u02EnfwpAdtTDv4QMvkKwJ2egmy7uh0/X81nHgjOvaVtpBg/q72alValsg3H9k
-         rCZp/DOhr8qtXdUIM00kVS++YPKpwdc6aWIJ1c1u3S9iOiZgp/Wty69TrCKPlyaTwjIO
-         fujz3o6X0bl4AHRLyQc3mTnqdMSnJ/buOE66mM9Yznr2jov+J4yMR1EWW0Q/ulur0JHl
-         6AJAxcbfkw67lcFNCypCO3UxYnU1+LDOBlEabht5b6ma1lmEKK9cmvKwEqbmdQeX1g7/
-         9g5w==
-X-Gm-Message-State: AOAM530/UxI17UhtENtGdPmwK96BhLspnLZNQvhIKywpAwHIvxbbHTFT
-        vWYT9fpSt1S2CbTdCTmfS9940HWfPHvzIfy+YkJswrSg5rUv2Ge6/VrVQFooHeshLTPI+88D3LC
-        DNJF9u/sjPST62UUp1SSONHY=
-X-Received: by 2002:a05:6000:1815:b0:20a:deee:3cf0 with SMTP id m21-20020a056000181500b0020adeee3cf0mr154921wrh.210.1651788006924;
-        Thu, 05 May 2022 15:00:06 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJzk9nG54+YuJURc6OI8oVH2TrMJldwkCWvspEI1wXTQzvXeoooK0kqJvqJXa5/C6tS1lOzpJQ==
-X-Received: by 2002:a05:6000:1815:b0:20a:deee:3cf0 with SMTP id m21-20020a056000181500b0020adeee3cf0mr154910wrh.210.1651788006661;
-        Thu, 05 May 2022 15:00:06 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=ncwUrPXa6D//xAE+gUKX4W9jlEJvsWNrctcaxVQSCb8=;
+        b=Jd2nA0/2oBAZ8KcHOL0tKHQpGZqKSLK1BmWvrWDghM2cUtfWohFrR8TEFg9j9qN1vM
+         UcRrF/Pjm8eoLMXfAu4FBHpTr/+Bn8t0r5SpXJOLBqMHQ2v6xZdYXqYOyQtxBDxRClvr
+         LNkWYvR8TEc5NUcy/NvyJ/JSzQH7Ulgf9XyCGdUs44RQ/vx3ntWcmFGrqw/eQGn2vdkp
+         /lGb/Iebj7ZGoGRQmfyg2JHjEoO9PxfUzBJvW78POlZ+OowmZFwryMEh6eo2UN3PEtjq
+         wuqhsicADAWmNieHTC7QC0WmMTO0jh8hT0lxiVbjULSdyFOK9690OKvAfSsZ0XVeKxw6
+         jzIA==
+X-Gm-Message-State: AOAM5303pt01BGDpn2Xrqt5nBP70t0XadhV1YiMzZwmL2PQBz7RyYB9q
+        vbLfS/bDKTt2aGY5jZC//TbMgKTjrxNR2x22SiBk6Fr3U/ZZjgIdlhxGxL2COwdRFMusOaeEomT
+        q4C0FuFisy3HI9N+mbp/jeY8=
+X-Received: by 2002:a05:600c:3d8c:b0:394:6097:9994 with SMTP id bi12-20020a05600c3d8c00b0039460979994mr6726651wmb.29.1651788263959;
+        Thu, 05 May 2022 15:04:23 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJyfwhAOIQeVF2O3srNOg8rIqNBWMADJBM0ucjW4JDKss+KaRrP/Oe0Hd/iuu0biw9+SXEcE9g==
+X-Received: by 2002:a05:600c:3d8c:b0:394:6097:9994 with SMTP id bi12-20020a05600c3d8c00b0039460979994mr6726643wmb.29.1651788263758;
+        Thu, 05 May 2022 15:04:23 -0700 (PDT)
 Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id 25-20020a05600c029900b003942a244ed1sm2271241wmk.22.2022.05.05.15.00.05
+        by smtp.gmail.com with ESMTPSA id m21-20020a05600c3b1500b003942a244f4bsm7980875wms.36.2022.05.05.15.04.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 May 2022 15:00:06 -0700 (PDT)
+        Thu, 05 May 2022 15:04:23 -0700 (PDT)
 From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     linux-kernel@vger.kernel.org
-Cc:     Javier Martinez Canillas <javierm@redhat.com>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Helge Deller <deller@gmx.de>, Peter Jones <pjones@redhat.com>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Zack Rusin <zackr@vmware.com>, dri-devel@lists.freedesktop.org,
-        linux-fbdev@vger.kernel.org
-Subject: [PATCH v3 0/4] fbdev: Fix use-after-free caused by wrong fb_info cleanup in drivers
-Date:   Thu,  5 May 2022 23:59:43 +0200
-Message-Id: <20220505215947.364694-1-javierm@redhat.com>
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Helge Deller <deller@gmx.de>,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Javier Martinez Canillas <javierm@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH v3 1/4] fbdev: Prevent possible use-after-free in fb_release()
+Date:   Fri,  6 May 2022 00:04:13 +0200
+Message-Id: <20220505220413.365977-1-javierm@redhat.com>
 X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220505215947.364694-1-javierm@redhat.com>
+References: <20220505215947.364694-1-javierm@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello,
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-This series contains patches suggested by Daniel Vetter to fix a use-after-free
-error in the fb_release() function, due a fb_info associated with a fbdev being
-freed too early while a user-space process still has the fbdev dev node opened.
+Most fbdev drivers have issues with the fb_info lifetime, because call to
+framebuffer_release() from their driver's .remove callback, rather than
+doing from fbops.fb_destroy callback.
 
-That is caused by a wrong management of the struct fb_info lifetime in drivers,
-but the fbdev core can also be made more resilient about it an leak
+Doing that will destroy the fb_info too early, while references to it may
+still exist, leading to a use-after-free error.
 
-This can easily be reproduced with the simplefb driver doing the following:
+To prevent this, check the fb_info reference counter when attempting to
+kfree the data structure in framebuffer_release(). That will leak it but
+at least will prevent the mentioned error.
 
-$ cat < /dev/fb0 &
-$ echo simple-framebuffer.0 > /sys/bus/platform/drivers/simple-framebuffer/unbind
-$ kill %1
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
+Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
 
-[  257.490471] ------------[ cut here ]------------
-...
-[  257.495125] refcount_t: underflow; use-after-free.
-[  257.495222] WARNING: CPU: 0 PID: 975 at lib/refcount.c:28 refcount_warn_saturate+0xf4/0x144
-...
-[  257.637482] pstate: 80400005 (Nzcv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
-[  257.644441] pc : refcount_warn_saturate+0xf4/0x144
-[  257.649226] lr : refcount_warn_saturate+0xf4/0x144
-[  257.654009] sp : ffff80000a06bbf0
-[  257.657315] x29: ffff80000a06bbf0 x28: 000000000000000a x27: 000000000000000a
-[  257.664448] x26: 0000000000000000 x25: ffff470b88c6a180 x24: 000000000000000a
-[  257.671581] x23: ffff470b81706480 x22: ffff470b808c2160 x21: ffff470b8922ba20
-[  257.678713] x20: ffff470b891f5810 x19: ffff470b891f5800 x18: ffffffffffffffff
-[  257.685846] x17: 3a725f7463656a62 x16: ffffbb18c6465fd4 x15: 0720072007200720
-[  257.692978] x14: 0720072d072d072d x13: 0a2e656572662d72 x12: 657466612d657375
-[  257.700110] x11: 203b776f6c667265 x10: 646e75203a745f74 x9 : ffffbb18c58f6c90
-[  257.707242] x8 : 75203b776f6c6672 x7 : 65646e75203a745f x6 : 0000000000000001
-[  257.714373] x5 : ffff470bff8ec418 x4 : 0000000000000000 x3 : 0000000000000027
-[  257.721506] x2 : 0000000000000000 x1 : 0000000000000027 x0 : 0000000000000026
-[  257.728638] Call trace:
-[  257.731075]  refcount_warn_saturate+0xf4/0x144
-[  257.735513]  put_fb_info+0x70/0x7c
-[  257.738916]  fb_release+0x60/0x74
-[  257.742225]  __fput+0x88/0x240
-[  257.745276]  ____fput+0x1c/0x30
-[  257.748410]  task_work_run+0xc4/0x21c
-[  257.752066]  do_exit+0x170/0x370
-[  257.755288]  do_group_exit+0x40/0xb4
-[  257.758858]  get_signal+0x8e0/0x90c
-[  257.762339]  do_signal+0x1a0/0x280
-[  257.765733]  do_notify_resume+0xc8/0x390
-[  257.769650]  el0_da+0xe8/0xf0
-[  257.772613]  el0t_64_sync_handler+0xe8/0x130
-[  257.776877]  el0t_64_sync+0x190/0x194
-[  257.780534] ---[ end trace 0000000000000000 ]---
-
-Patch #1 adds a WARN_ON() to framebuffer_release() to prevent the use-after-free
-to happen.
-
-Patch #2, #3 and #4 fix the simplefb, efifb and vesafb drivers respectively, to
-free the resources at the correct place.
-
-Changes in v3:
-- Add Fixes: tag (Daniel Vetter).
-- Include in commit message a note that drivers are still broken
-  but at least reverts to the previous behavior (Daniel Vetter).
-- Only move framebuffer_release() and don't do any other change
-  (Daniel Vetter).
-
-Changes in v2:
-- Also do the change for vesafb (Thomas Zimmermann).
-
-Daniel Vetter (1):
-  fbdev: Prevent possible use-after-free in fb_release()
-
-Javier Martinez Canillas (3):
-  fbdev: simplefb: Cleanup fb_info in .fb_destroy rather than .remove
-  fbdev: efifb: Cleanup fb_info in .fb_destroy rather than .remove
-  fbdev: vesafb: Cleanup fb_info in .fb_destroy rather than .remove
+(no changes since v1)
 
  drivers/video/fbdev/core/fbsysfs.c | 4 ++++
- drivers/video/fbdev/efifb.c        | 9 ++++++++-
- drivers/video/fbdev/simplefb.c     | 8 +++++++-
- drivers/video/fbdev/vesafb.c       | 8 +++++++-
- 4 files changed, 26 insertions(+), 3 deletions(-)
+ 1 file changed, 4 insertions(+)
 
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index 8c1ee9ecec3d..c2a60b187467 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -80,6 +80,10 @@ void framebuffer_release(struct fb_info *info)
+ {
+ 	if (!info)
+ 		return;
++
++	if (WARN_ON(refcount_read(&info->count)))
++		return;
++
+ 	kfree(info->apertures);
+ 	kfree(info);
+ }
 -- 
 2.35.1
 

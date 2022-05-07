@@ -2,111 +2,121 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EA80C433F5
-	for <linux-fbdev@archiver.kernel.org>; Sat,  7 May 2022 16:21:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B883C433EF
+	for <linux-fbdev@archiver.kernel.org>; Sat,  7 May 2022 16:40:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S241045AbiEGQYq (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Sat, 7 May 2022 12:24:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33548 "EHLO
+        id S1446630AbiEGQoJ (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Sat, 7 May 2022 12:44:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45516 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240717AbiEGQYp (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 7 May 2022 12:24:45 -0400
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B39D420186;
-        Sat,  7 May 2022 09:20:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1651940458; x=1683476458;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=/b/+Mr0B5Zhv55WA58zICS5As/BFDYSFtkZY5yJGamg=;
-  b=YudgmDP/5Ndca9n+OqqhclBIR3VUXtdzUKtiANrqiPKFIDCCUKI0WxKf
-   Qf2R7ehOJTlXpTxvJVFeoOy+e9Yp7DXS3Gy4hCXI/XR800vcvXEYDPNoN
-   bQHp0adi6jp5XgYyv8u41tEEZlEwxz5naSGYFJILkZM8fe1cRK0fy2uDK
-   WL6hrOtWX/26HusT5F5s1pim18K+X9q+PKbr4Z6lv8rC6dAJjYm65wmIt
-   CSCwlV+WsF77DXdzKP5cZK3ERgnXVrwBGPhu6HjECOHxNEm+7mqa+YTY3
-   fFxG+iVlEdtRMENs7bcfbSGOoI8Qv5/bBQiei4SjNUOh59K+IJajV5snW
-   Q==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10340"; a="329278706"
-X-IronPort-AV: E=Sophos;i="5.91,207,1647327600"; 
-   d="scan'208";a="329278706"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2022 09:20:54 -0700
-X-IronPort-AV: E=Sophos;i="5.91,207,1647327600"; 
-   d="scan'208";a="586552379"
-Received: from hmendezc-mobl.amr.corp.intel.com (HELO ldmartin-desk2) ([10.252.138.85])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2022 09:20:54 -0700
-Date:   Sat, 7 May 2022 09:20:53 -0700
-From:   Lucas De Marchi <lucas.demarchi@intel.com>
-To:     Javier Martinez Canillas <javierm@redhat.com>
-Cc:     linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-        Peter Jones <pjones@redhat.com>,
-        Andrzej Hajda <andrzej.hajda@intel.com>,
-        Helge Deller <deller@gmx.de>
+        with ESMTP id S1446655AbiEGQoJ (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Sat, 7 May 2022 12:44:09 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 08A2C26EC
+        for <linux-fbdev@vger.kernel.org>; Sat,  7 May 2022 09:40:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1651941620;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=inhGipBUDTXnB2qKEYfxvYqIWIZ4u692zATmOyojLEY=;
+        b=DGn71tS+FTNn/jiB0hJwTlqvs9YOZI8QMMY1QOVJNj4fotIs7SLOf5GdbYTrb3dW5eGedF
+        BSojKAUMzEQBoplguA7fb1XOvrU2U+xqAdWYTkCPufXJV2VbzR1Gs89K6IKq5MnLANV5tV
+        Dz1WyURenHTzXLFWgoybeG1ehnq4P8o=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-417-lJ05bExkPcCp68d3SH3VdQ-1; Sat, 07 May 2022 12:40:19 -0400
+X-MC-Unique: lJ05bExkPcCp68d3SH3VdQ-1
+Received: by mail-wm1-f72.google.com with SMTP id bi5-20020a05600c3d8500b0039489e1d18dso11298wmb.5
+        for <linux-fbdev@vger.kernel.org>; Sat, 07 May 2022 09:40:19 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=inhGipBUDTXnB2qKEYfxvYqIWIZ4u692zATmOyojLEY=;
+        b=Wc3b254PB/f7O2eM1/Ubqf/PiAnnjZCmwkyQwYhXMCRnifIzcjtLtP/9VIa2ncIBrY
+         9e2lJtZ5XD8h0/4L7SeUdVJY5V5vexVwY+KEiWj3nB0S7uHAU+rVfncTzKucAmRS6Hyp
+         loS/KATnUGZ0z9C1W8Tzvx7HMBIjjD1Nw40+XcVEjlRTNgLM/YYX2Qvb7mjmsBzCf9S1
+         NcoEB3CindD/HrzBgtR5B72b+XpPNYYDQ5EgI63YOhpcgL5XSqDq1pRSj1MT9ty3nS3b
+         D3VrRHA102xnm6eQW1z5y/XBXMhAmDhbtAb9QWeXJtgcLN4A9+VBdjv4XBVe2Rk1AwU/
+         HuTw==
+X-Gm-Message-State: AOAM530e/Pu9MzhxVocUPPRxKVbz6ZfL5prcPc6F4vuWOyPOcmpNpDAh
+        lds2QnuUZYLJNmx364OfPcZPG1Ytto4AKCA1MV2BU+JyhkS1sP6PynOp5oyjq/Z2qGfygk1iOhT
+        fZNNspPKeSHgUaYbl/aXPhO0=
+X-Received: by 2002:a1c:f705:0:b0:37d:f2e5:d8ec with SMTP id v5-20020a1cf705000000b0037df2e5d8ecmr15431643wmh.21.1651941618486;
+        Sat, 07 May 2022 09:40:18 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJykhasS4dK4eppFGtBqCb2g0PaleaocuXsAQca/dvV5qInWX6ynRAZXrO0TJxqEd2vidA73gA==
+X-Received: by 2002:a1c:f705:0:b0:37d:f2e5:d8ec with SMTP id v5-20020a1cf705000000b0037df2e5d8ecmr15431630wmh.21.1651941618195;
+        Sat, 07 May 2022 09:40:18 -0700 (PDT)
+Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
+        by smtp.gmail.com with ESMTPSA id e2-20020a5d5942000000b0020c5253d8e1sm7951521wri.45.2022.05.07.09.40.17
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 07 May 2022 09:40:17 -0700 (PDT)
+Message-ID: <981d7ed4-8554-73ca-bfd1-2d89e4e91af3@redhat.com>
+Date:   Sat, 7 May 2022 18:40:16 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.8.0
 Subject: Re: [PATCH] fbdev: efifb: Fix a use-after-free due early fb_info
  cleanup
-Message-ID: <20220507162053.auo2idd5twvnxatj@ldmartin-desk2>
+Content-Language: en-US
+To:     Lucas De Marchi <lucas.demarchi@intel.com>
+Cc:     linux-fbdev@vger.kernel.org,
+        Andrzej Hajda <andrzej.hajda@intel.com>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, Peter Jones <pjones@redhat.com>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Helge Deller <deller@gmx.de>
 References: <20220506132225.588379-1-javierm@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20220506132225.588379-1-javierm@redhat.com>
+ <20220507162053.auo2idd5twvnxatj@ldmartin-desk2>
+From:   Javier Martinez Canillas <javierm@redhat.com>
+In-Reply-To: <20220507162053.auo2idd5twvnxatj@ldmartin-desk2>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Fri, May 06, 2022 at 03:22:25PM +0200, Javier Martinez Canillas wrote:
->Commit d258d00fb9c7 ("fbdev: efifb: Cleanup fb_info in .fb_destroy rather
->than .remove") attempted to fix a use-after-free error due driver freeing
->the fb_info in the .remove handler instead of doing it in .fb_destroy.
->
->But ironically that change introduced yet another use-after-free since the
->fb_info was still used after the free.
->
->This should fix for good by freeing the fb_info at the end of the handler.
->
->Fixes: d258d00fb9c7 ("fbdev: efifb: Cleanup fb_info in .fb_destroy rather than .remove")
+Hello Lucas,
 
-are these patches going through any CI before being applied? Maybe would
-be a good idea to cc intel-gfx mailing list on these fixes to have Intel
-CI to pick them up for some tests?
+On 5/7/22 18:20, Lucas De Marchi wrote:
+> On Fri, May 06, 2022 at 03:22:25PM +0200, Javier Martinez Canillas wrote:
+>> Commit d258d00fb9c7 ("fbdev: efifb: Cleanup fb_info in .fb_destroy rather
+>> than .remove") attempted to fix a use-after-free error due driver freeing
+>> the fb_info in the .remove handler instead of doing it in .fb_destroy.
+>>
+>> But ironically that change introduced yet another use-after-free since the
+>> fb_info was still used after the free.
+>>
+>> This should fix for good by freeing the fb_info at the end of the handler.
+>>
+>> Fixes: d258d00fb9c7 ("fbdev: efifb: Cleanup fb_info in .fb_destroy rather than .remove")
+> 
+> are these patches going through any CI before being applied? Maybe would
+> be a good idea to cc intel-gfx mailing list on these fixes to have Intel
+> CI to pick them up for some tests?
+>
 
-pushed to drm-misc-fixes where the previous patch was applied.
+I Cc'ed intel-gfx for this particular patch. I should had done it for the
+previous patches too, but I wasn't aware that Cc'ing that list would make
+it run on your CI.
 
-thanks
-LUcas De Marchi
+I tested locally the offending patch on an EFI platform before applying it
+and I don't know why it didn't fail there. Sorry all for the inconvenience.
+ 
+> pushed to drm-misc-fixes where the previous patch was applied.
+> 
 
->Reported-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
->Reported-by: Andrzej Hajda <andrzej.hajda@intel.com>
->Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
->---
->
-> drivers/video/fbdev/efifb.c | 4 ++--
-> 1 file changed, 2 insertions(+), 2 deletions(-)
->
->diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
->index cfa3dc0b4eee..b3d5f884c544 100644
->--- a/drivers/video/fbdev/efifb.c
->+++ b/drivers/video/fbdev/efifb.c
->@@ -259,12 +259,12 @@ static void efifb_destroy(struct fb_info *info)
-> 			memunmap(info->screen_base);
-> 	}
->
->-	framebuffer_release(info);
->-
-> 	if (request_mem_succeeded)
-> 		release_mem_region(info->apertures->ranges[0].base,
-> 				   info->apertures->ranges[0].size);
-> 	fb_dealloc_cmap(&info->cmap);
->+
->+	framebuffer_release(info);
-> }
->
-> static const struct fb_ops efifb_ops = {
->-- 
->2.35.1
->
+Thanks.
+
+-- 
+Best regards,
+
+Javier Martinez Canillas
+Linux Engineering
+Red Hat
+

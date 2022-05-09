@@ -2,130 +2,169 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04414C433EF
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 May 2022 16:33:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D26CC433EF
+	for <linux-fbdev@archiver.kernel.org>; Mon,  9 May 2022 18:13:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S239177AbiEIQhr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 May 2022 12:37:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39968 "EHLO
+        id S240051AbiEISRv (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 9 May 2022 14:17:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55450 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S239174AbiEIQhq (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 May 2022 12:37:46 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 94E6A28ED28
-        for <linux-fbdev@vger.kernel.org>; Mon,  9 May 2022 09:33:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1652114030;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
+        with ESMTP id S240152AbiEISQ1 (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 May 2022 14:16:27 -0400
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7FF750E25;
+        Mon,  9 May 2022 11:12:31 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out1.suse.de (Postfix) with ESMTPS id C0A7021C78;
+        Mon,  9 May 2022 18:12:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1652119949; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=zaU6wCec1EMQuT5ULCUqY7NTQ3dkhl3bP6/9uWSpRY0=;
-        b=KY3Hw9tEznsUne+dQbBXq+/NoEr3RtIr45zdpDnhxNaNjvbkpYfmtVoat3P62HT89qp0xh
-        I1Fll234+M1PZrItQgFBQeTaMVGm3Kwl2agyqP4DeHF9GLAqI2WyjLCMXL0kriLLzwnGwO
-        KLMHEL1t6qIQRPzEOHjdEGax8pzIAyA=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-214-E_oyPZ_8P6q8TliMMJ6m4w-1; Mon, 09 May 2022 12:33:49 -0400
-X-MC-Unique: E_oyPZ_8P6q8TliMMJ6m4w-1
-Received: by mail-wr1-f72.google.com with SMTP id u11-20020a056000038b00b0020c9ea8b64fso4701582wrf.2
-        for <linux-fbdev@vger.kernel.org>; Mon, 09 May 2022 09:33:48 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=zaU6wCec1EMQuT5ULCUqY7NTQ3dkhl3bP6/9uWSpRY0=;
-        b=THouq+w3vpHbsTzgwJaYJewa+oLuoHxbDctpMh8zUKh5QNSO7hxtZzMsYkFSdZlkde
-         FU+6ZigX1foKnevXhrwiH4kPRQFtZLC0a1KhhliCtvSxEaUZySm5Ii4MQq12sYupOTUq
-         AIUQsb0g3MQj0k8m0bIhKMrXxKDZz8xomUO63GZd5leAvLoyjONkttTyOSiQIOUYCwql
-         qHQ0x+uKOeNFS0ETnnXLLohK5EMLvmokrrSeugwQhsZt2Skp+O5Zq4XpilSN1RnDuaWC
-         k5NQ37I5eGoLxBW5kXryhnx1s1JdSyePVd82cFzat3Hg2QUA1hq6H7JP2ov/6uaOfHTH
-         15HA==
-X-Gm-Message-State: AOAM533kzISAXtwAvDbsx8QahPR/vmprucdAeoT+fwdzPdIrY/0kuyjW
-        put/Pu9M6NQmFbaktFB7ELEPUGQh6ZY249huXPVR78/dcFqXp+jmo7ciPAnxU2Bmm7Of6fLvhqi
-        b6j+CX8KR+9ZJX7zgvWmCwRQ=
-X-Received: by 2002:a7b:c3c2:0:b0:394:9229:3b40 with SMTP id t2-20020a7bc3c2000000b0039492293b40mr5126307wmj.195.1652114027776;
-        Mon, 09 May 2022 09:33:47 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJz7bKnj6TnYeYMJ8WQEUK1qVaIvYRO7Ss8XM5JhYhOquufFe51hhnCGnSjqUxw1TY5t+U+8cQ==
-X-Received: by 2002:a7b:c3c2:0:b0:394:9229:3b40 with SMTP id t2-20020a7bc3c2000000b0039492293b40mr5126294wmj.195.1652114027554;
-        Mon, 09 May 2022 09:33:47 -0700 (PDT)
-Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id h3-20020a5d6883000000b0020c5253d91asm11484506wru.102.2022.05.09.09.33.46
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 09 May 2022 09:33:47 -0700 (PDT)
-Message-ID: <3b7fe4fe-fdec-cef2-4e0e-309d9dc4a8af@redhat.com>
-Date:   Mon, 9 May 2022 18:33:46 +0200
+        bh=aVJNDHCPrYhpEGCKd4JONsO07ZViNqzGwhPYmef++R4=;
+        b=uWjotg7DlK2IwQ44cWHWT50Mi/jim+8nrl7L4a7tT5jUzDfRkhN4OWHmHtpqrLvSkb23gv
+        WQcN8EhrfYp0HjxfF7GcOTiZt/RK/5CSDd4hIDjLQPBa0gKoEE9qBT3CJVxSGOyUg5/P5c
+        MGk/1xIzVXDnztT6B/p7bPNbPzoqbvg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1652119949;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=aVJNDHCPrYhpEGCKd4JONsO07ZViNqzGwhPYmef++R4=;
+        b=A5itkYGR9XpFHdq8IcUWHentxTaXeKhi2HSeLtKxoXjheR3u2JVX7N5PIqN9O3HNm7YKnU
+        pNY/iHPEFhcVGcDw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9497013AA5;
+        Mon,  9 May 2022 18:12:29 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id TUrdIo1ZeWLhYAAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Mon, 09 May 2022 18:12:29 +0000
+Message-ID: <b5ab1c49-04e7-36c3-677d-2989b79e50ca@suse.de>
+Date:   Mon, 9 May 2022 20:12:28 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
+ Thunderbird/91.9.0
 Subject: Re: [PATCH v3 1/4] fbdev: Prevent possible use-after-free in
  fb_release()
 Content-Language: en-US
-To:     Andrzej Hajda <andrzej.hajda@intel.com>,
+To:     Javier Martinez Canillas <javierm@redhat.com>,
+        Andrzej Hajda <andrzej.hajda@intel.com>,
         linux-kernel@vger.kernel.org
 Cc:     linux-fbdev@vger.kernel.org,
         Daniel Vetter <daniel.vetter@ffwll.ch>,
         Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
-        Thomas Zimmermann <tzimmermann@suse.de>,
         Daniel Vetter <daniel.vetter@intel.com>
 References: <20220505215947.364694-1-javierm@redhat.com>
  <20220505220413.365977-1-javierm@redhat.com>
  <753d0350-42dc-389b-b10b-4533ddcf32ac@intel.com>
  <1f788b8f-0bea-1818-349e-b1bc907bf251@redhat.com>
  <a339df59-9e00-c7cb-e33d-2ac626443639@intel.com>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <a339df59-9e00-c7cb-e33d-2ac626443639@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <3b7fe4fe-fdec-cef2-4e0e-309d9dc4a8af@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <3b7fe4fe-fdec-cef2-4e0e-309d9dc4a8af@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------Y4cdGtjzag3yXAAgKVCxRy2T"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 5/9/22 17:51, Andrzej Hajda wrote:
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------Y4cdGtjzag3yXAAgKVCxRy2T
+Content-Type: multipart/mixed; boundary="------------0FWf6gk9D6ci0RGqpyJQqk10";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ Andrzej Hajda <andrzej.hajda@intel.com>, linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+ Daniel Vetter <daniel.vetter@intel.com>
+Message-ID: <b5ab1c49-04e7-36c3-677d-2989b79e50ca@suse.de>
+Subject: Re: [PATCH v3 1/4] fbdev: Prevent possible use-after-free in
+ fb_release()
+References: <20220505215947.364694-1-javierm@redhat.com>
+ <20220505220413.365977-1-javierm@redhat.com>
+ <753d0350-42dc-389b-b10b-4533ddcf32ac@intel.com>
+ <1f788b8f-0bea-1818-349e-b1bc907bf251@redhat.com>
+ <a339df59-9e00-c7cb-e33d-2ac626443639@intel.com>
+ <3b7fe4fe-fdec-cef2-4e0e-309d9dc4a8af@redhat.com>
+In-Reply-To: <3b7fe4fe-fdec-cef2-4e0e-309d9dc4a8af@redhat.com>
 
-[snip]
+--------------0FWf6gk9D6ci0RGqpyJQqk10
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
->>>> +
->>> Regarding drm:
->>> What about drm_fb_helper_fini? It calls also framebuffer_release and is
->>> called often from _remove paths (checked intel/radeon/nouveau). I guess
->>> it should be fixed as well. Do you plan to fix it?
->>>
->> I think you are correct. Maybe we need something like the following?
->>
->> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
->> index d265a73313c9..b09598f7af28 100644
->> --- a/drivers/gpu/drm/drm_fb_helper.c
->> +++ b/drivers/gpu/drm/drm_fb_helper.c
->> @@ -631,7 +631,6 @@ void drm_fb_helper_fini(struct drm_fb_helper *fb_helper)
->>          if (info) {
->>                  if (info->cmap.len)
->>                          fb_dealloc_cmap(&info->cmap);
->> -               framebuffer_release(info);
-> 
-> What about cmap? I am not an fb expert, but IMO cmap can be accessed 
-> from userspace as well.
-> 
+SGkgSmF2aWVyDQoNCkFtIDA5LjA1LjIyIHVtIDE4OjMzIHNjaHJpZWIgSmF2aWVyIE1hcnRp
+bmV6IENhbmlsbGFzOg0KPiBPbiA1LzkvMjIgMTc6NTEsIEFuZHJ6ZWogSGFqZGEgd3JvdGU6
+DQo+IA0KPiBbc25pcF0NCj4gDQo+Pj4+PiArDQo+Pj4+IFJlZ2FyZGluZyBkcm06DQo+Pj4+
+IFdoYXQgYWJvdXQgZHJtX2ZiX2hlbHBlcl9maW5pPyBJdCBjYWxscyBhbHNvIGZyYW1lYnVm
+ZmVyX3JlbGVhc2UgYW5kIGlzDQo+Pj4+IGNhbGxlZCBvZnRlbiBmcm9tIF9yZW1vdmUgcGF0
+aHMgKGNoZWNrZWQgaW50ZWwvcmFkZW9uL25vdXZlYXUpLiBJIGd1ZXNzDQo+Pj4+IGl0IHNo
+b3VsZCBiZSBmaXhlZCBhcyB3ZWxsLiBEbyB5b3UgcGxhbiB0byBmaXggaXQ/DQo+Pj4+DQo+
+Pj4gSSB0aGluayB5b3UgYXJlIGNvcnJlY3QuIE1heWJlIHdlIG5lZWQgc29tZXRoaW5nIGxp
+a2UgdGhlIGZvbGxvd2luZz8NCj4+Pg0KPj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9k
+cm0vZHJtX2ZiX2hlbHBlci5jIGIvZHJpdmVycy9ncHUvZHJtL2RybV9mYl9oZWxwZXIuYw0K
+Pj4+IGluZGV4IGQyNjVhNzMzMTNjOS4uYjA5NTk4ZjdhZjI4IDEwMDY0NA0KPj4+IC0tLSBh
+L2RyaXZlcnMvZ3B1L2RybS9kcm1fZmJfaGVscGVyLmMNCj4+PiArKysgYi9kcml2ZXJzL2dw
+dS9kcm0vZHJtX2ZiX2hlbHBlci5jDQo+Pj4gQEAgLTYzMSw3ICs2MzEsNiBAQCB2b2lkIGRy
+bV9mYl9oZWxwZXJfZmluaShzdHJ1Y3QgZHJtX2ZiX2hlbHBlciAqZmJfaGVscGVyKQ0KPj4+
+ICAgICAgICAgICBpZiAoaW5mbykgew0KPj4+ICAgICAgICAgICAgICAgICAgIGlmIChpbmZv
+LT5jbWFwLmxlbikNCj4+PiAgICAgICAgICAgICAgICAgICAgICAgICAgIGZiX2RlYWxsb2Nf
+Y21hcCgmaW5mby0+Y21hcCk7DQo+Pj4gLSAgICAgICAgICAgICAgIGZyYW1lYnVmZmVyX3Jl
+bGVhc2UoaW5mbyk7DQo+Pg0KPj4gV2hhdCBhYm91dCBjbWFwPyBJIGFtIG5vdCBhbiBmYiBl
+eHBlcnQsIGJ1dCBJTU8gY21hcCBjYW4gYmUgYWNjZXNzZWQNCj4+IGZyb20gdXNlcnNwYWNl
+IGFzIHdlbGwuDQo+Pg0KPiANCj4gSSBhY3R1YWxseSB0aG91Z2h0IGFib3V0IHRoZSBzYW1l
+IGJ1dCB0aGVuIHJlbWVtYmVyZWQgd2hhdCBEYW5pZWwgc2FpZCBpbiBbMF0NCj4gKEFGQUlV
+IGF0IGxlYXN0KSB0aGF0IHRoZXNlIHNob3VsZCBiZSBkb25lIGluIC5yZW1vdmUoKSBzbyB0
+aGUgY3VycmVudCBjb2RlDQo+IGxvb2tzIGxpa2UgbWF0Y2hlcyB0aGF0IGFuZCBvbmx5IGZy
+YW1lYnVmZmVyX3JlbGVhc2UoKSBzaG91bGQgYmUgbW92ZWQuDQo+IA0KPiBGb3IgdmVzYWZi
+IGEgcHJldmlvdXMgcGF0Y2ggcHJvcG9zZWQgdG8gYWxzbyBtb3ZlIGEgcmVsZWFzZV9yZWdp
+b24oKSBjYWxsIHRvDQo+IC5mYl9kZXN0cm95KCkgYW5kIERhbmllbCBhbHNvIHNhaWQgdGhh
+dCBpdCB3YXMgaWZmeSBhbmQgc2hvdWxkbid0IGJlIGRvbmUgWzFdLg0KPiANCj4gQnV0IEkn
+bSBhbHNvIG5vdCBmYiBleHBlcnQgc28gaGFwcHkgdG8gbW92ZSBmYl9kZWFsbG9jX2NtYXAo
+KSBhcyB3ZWxsIGlmIHRoYXQNCj4gaXMgdGhlIGNvcnJlY3QgdGhpbmcgdG8gZG8uDQoNClRo
+ZSBjbWFwIGRhdGEgc3RydWN0dXJlIGlzIHNvZnR3YXJlIHN0YXRlIHRoYXQgY2FuIGJlIGFj
+Y2Vzc2VkIHZpYSBpY290bCANCmFzIGxvbmcgYXMgdGhlIGRldmZpbGUgaXMgb3Blbi4gRHJp
+dmVycyB1cGRhdGUgdGhlIGhhcmR3YXJlIGZyb20gaXQuIFNlZSANClsxXS4gIE1vdmluZyB0
+aGF0IGNsZWFudXAgaW50byBmYl9kZXN0cm95IHNlZW1zIGFwcHJvcHJpYXRlIHRvIG1lLg0K
+DQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQpbMV0gDQpodHRwczovL2VsaXhpci5ib290bGlu
+LmNvbS9saW51eC92NS4xNy42L3NvdXJjZS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJj
+bWFwLmMjTDIzMQ0KDQo+IA0KPiBbMF06IGh0dHBzOi8vd3d3LnNwaW5pY3MubmV0L2xpc3Rz
+L2RyaS1kZXZlbC9tc2czNDYyNTcuaHRtbA0KPiBbMV06IGh0dHBzOi8vd3d3LnNwaW5pY3Mu
+bmV0L2xpc3RzL2RyaS1kZXZlbC9tc2czNDYyNjEuaHRtbA0KPiANCg0KLS0gDQpUaG9tYXMg
+WmltbWVybWFubg0KR3JhcGhpY3MgRHJpdmVyIERldmVsb3Blcg0KU1VTRSBTb2Z0d2FyZSBT
+b2x1dGlvbnMgR2VybWFueSBHbWJIDQpNYXhmZWxkc3RyLiA1LCA5MDQwOSBOw7xybmJlcmcs
+IEdlcm1hbnkNCihIUkIgMzY4MDksIEFHIE7DvHJuYmVyZykNCkdlc2Now6RmdHNmw7xocmVy
+OiBJdm8gVG90ZXYNCg==
 
-I actually thought about the same but then remembered what Daniel said in [0]
-(AFAIU at least) that these should be done in .remove() so the current code
-looks like matches that and only framebuffer_release() should be moved.
+--------------0FWf6gk9D6ci0RGqpyJQqk10--
 
-For vesafb a previous patch proposed to also move a release_region() call to
-.fb_destroy() and Daniel also said that it was iffy and shouldn't be done [1].
+--------------Y4cdGtjzag3yXAAgKVCxRy2T
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-But I'm also not fb expert so happy to move fb_dealloc_cmap() as well if that
-is the correct thing to do.
+-----BEGIN PGP SIGNATURE-----
 
-[0]: https://www.spinics.net/lists/dri-devel/msg346257.html
-[1]: https://www.spinics.net/lists/dri-devel/msg346261.html
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmJ5WYwFAwAAAAAACgkQlh/E3EQov+D3
+oRAAwhcWj+xF2+5wjrKlJ+fOT7Ya14ZtuAsZGX3eGUPFbPJgVrwBuLARp6cxL16bgX91/oRodc24
+6Oxua0woQBDG9Y5P3rw6Z2Xx1Z7TgubZ/1RNYvg/VKuIkYOETnYX3nu/zjOzxlPuI4f3KHM3NB0A
+WSZnIQ3P8UNndkJC+Q40khcaalFhYQtcGm65ROrqF80I6seXrs5St9az3df1Ea8caLhebMkAALVY
+jwx2fQMh3aaXuEVWs/QwtfXTSf9pXZKESlMJA7wsJMKSlFE1No5vryPd57CrbLQlbNieFElX0W3e
+apvf37cCjE3M+nWPGlFq59SAVWY2MXLS7So9/GAlzeuSpaZyTZ05joIX1yOadIonwlZsa7lGrjH7
+1xUW6CJvxRUSauw6HmcYa2eEK3jv1Mt2yitGhBm87E8dALIAVvmmTLiudakJ24SQ2I4y8V0R5jFI
+UmTaR5QsNHT3MHKemojaA23CdnAu1EBWoOFa0qGuvdzFbsib3LNXfT2/rMtVf1MCGXv5Qqda8gx5
+9TLUiXpQSD2ALqhpmqLSBAh/CJ0VEfSHGP9C6eNurwiOrOq+VTmQ5pv8fzTbJmFN8HjmT9tWnexp
+WJKChQ7ZxhcnI0ETqKQR05j5PiXtZ96kTV1D9z0y8UFvhAnVzbW0yjKtTsdbsbmpjUGYIMmu8Zx7
+4J8=
+=xG2O
+-----END PGP SIGNATURE-----
 
--- 
-Best regards,
-
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+--------------Y4cdGtjzag3yXAAgKVCxRy2T--

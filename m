@@ -2,178 +2,57 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1DC6C433FE
-	for <linux-fbdev@archiver.kernel.org>; Mon,  9 May 2022 10:47:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A867DC433F5
+	for <linux-fbdev@archiver.kernel.org>; Mon,  9 May 2022 14:10:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S230175AbiEIKu4 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Mon, 9 May 2022 06:50:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59744 "EHLO
+        id S236724AbiEIOOF (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Mon, 9 May 2022 10:14:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46050 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S230443AbiEIKuR (ORCPT
-        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 May 2022 06:50:17 -0400
-Received: from mail-wr1-f41.google.com (mail-wr1-f41.google.com [209.85.221.41])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 770DC2181E4;
-        Mon,  9 May 2022 03:44:49 -0700 (PDT)
-Received: by mail-wr1-f41.google.com with SMTP id b19so18818194wrh.11;
-        Mon, 09 May 2022 03:44:49 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=oLgVaTlTDXgUX6d5oxdF7XG7KD8YlqPFqEct4VY7hn0=;
-        b=7bN7J8VsOe6NdV+3pMrVlJpTsLIJPGvez/qwbnnCKrKLHXhCyr3hkrjij4hEHh5uTt
-         AOtljiaW2m3GmOY5aR+mgeY9RtmFhA09rJPGys1QaK+mDcCBV2PQ+K9lkeDR7/s70jk9
-         e8tg+bXHEyEWLOWRjUZBhtYdDJ3V+MiK19pbuqqv5ZARmGsSjjTWrEjjkw0mJduTEoca
-         Nx52yAjCTAbPhptJh53bAiKTbLqAZBLJ6pv+V890J0k6N77qsdPwqSSoec+0BGxksIyF
-         7xta393YI+MekATkEpnF7T3quUcEQL4+sqxowd28ShUyYB3nQTtT2jXAaGSvcnbqASht
-         05eQ==
-X-Gm-Message-State: AOAM531pGfMX1OZidal7u+pddrjV4UPtMOAvLWe6ylB1RCmGrR4/8F2x
-        18UQKUPJJkuLOTeU9RuJ7Vs=
-X-Google-Smtp-Source: ABdhPJwDKaChWloXe++r5p1goEJJuS40KKco4mLZWce3U6q798YBSkWjgoJuS1gFOHxVdXkf6GhOpA==
-X-Received: by 2002:a5d:590d:0:b0:20a:c3eb:2584 with SMTP id v13-20020a5d590d000000b0020ac3eb2584mr13000908wrd.18.1652093087866;
-        Mon, 09 May 2022 03:44:47 -0700 (PDT)
-Received: from liuwe-devbox-debian-v2 ([51.145.34.42])
-        by smtp.gmail.com with ESMTPSA id q1-20020adf9dc1000000b0020c5253d8b8sm11582748wre.4.2022.05.09.03.44.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 May 2022 03:44:47 -0700 (PDT)
-Date:   Mon, 9 May 2022 10:44:45 +0000
-From:   Wei Liu <wei.liu@kernel.org>
-To:     "Michael Kelley (LINUX)" <mikelley@microsoft.com>
-Cc:     Pavel Machek <pavel@ucw.cz>, KY Srinivasan <kys@microsoft.com>,
-        Haiyang Zhang <haiyangz@microsoft.com>,
-        Stephen Hemminger <sthemmin@microsoft.com>,
-        "wei.liu@kernel.org" <wei.liu@kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-        vkuznets <vkuznets@redhat.com>, Dexuan Cui <decui@microsoft.com>,
-        "drawat.floss@gmail.com" <drawat.floss@gmail.com>,
-        "airlied@linux.ie" <airlied@linux.ie>,
-        "daniel@ffwll.ch" <daniel@ffwll.ch>,
-        "jejb@linux.ibm.com" <jejb@linux.ibm.com>,
-        "martin.petersen@oracle.com" <martin.petersen@oracle.com>,
-        "deller@gmx.de" <deller@gmx.de>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
-Subject: Re: [PATCH 0/4] Remove support for Hyper-V 2008 and 2008R2/Win7
-Message-ID: <20220509104445.umicxfdpy65nm4us@liuwe-devbox-debian-v2>
-References: <1651509391-2058-1-git-send-email-mikelley@microsoft.com>
- <20220504172307.GB1623@bug>
- <PH0PR21MB302590D20E95D9076FDA9C99D7C79@PH0PR21MB3025.namprd21.prod.outlook.com>
+        with ESMTP id S236692AbiEIOOE (ORCPT
+        <rfc822;linux-fbdev@vger.kernel.org>); Mon, 9 May 2022 10:14:04 -0400
+X-Greylist: delayed 460 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 09 May 2022 07:10:08 PDT
+Received: from mout-p-201.mailbox.org (mout-p-201.mailbox.org [80.241.56.171])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0145D2B165A;
+        Mon,  9 May 2022 07:10:08 -0700 (PDT)
+Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+        (No client certificate requested)
+        by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4KxjXd4Q4kz9sSm;
+        Mon,  9 May 2022 16:02:09 +0200 (CEST)
+From:   public@timruffing.de
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Thomas Zimmermann <tzimmermann@suse.de>,
+        Maxime Ripard <maxime@cerno.tech>,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Daniel Vetter <daniel@ffwll.ch>, Helge Deller <deller@gmx.de>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linux-kernel@vger.kernel.org, public@timruffing.de
+Subject: Re: [PATCH v2] Revert "fbdev: Make fb_release() return -ENODEV if fbdev was unregistered"
+Date:   Mon,  9 May 2022 16:01:49 +0200
+Message-Id: <20220509140149.34734-1-public@timruffing.de>
+In-Reply-To: <642f515e-aa71-7c90-a715-e49dcf12baee@redhat.com>
+References: <642f515e-aa71-7c90-a715-e49dcf12baee@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <PH0PR21MB302590D20E95D9076FDA9C99D7C79@PH0PR21MB3025.namprd21.prod.outlook.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sun, May 08, 2022 at 03:43:26PM +0000, Michael Kelley (LINUX) wrote:
-> From: Pavel Machek <pavel@ucw.cz> Sent: Wednesday, May 4, 2022 10:23 AM
-> > 
-> > Hi!
-> > 
-> > > Linux code for running as a Hyper-V guest includes special cases for the
-> > > first released versions of Hyper-V: 2008 and 2008R2/Windows 7. These
-> > > versions were very thinly used for running Linux guests when first
-> > > released more than 12 years ago, and they are now out of support
-> > > (except for extended security updates). As initial versions, they
-> > > lack the performance features needed for effective production usage
-> > > of Linux guests. In total, there's no need to continue to support
-> > > the latest Linux kernels on these versions of Hyper-V.
-> > >
-> > > Simplify the code for running on Hyper-V by removing the special
-> > > cases. This includes removing the negotiation of the VMbus protocol
-> > > versions for 2008 and 2008R2, and the special case code based on
-> > > those VMbus protocol versions. Changes are in the core VMbus code and
-> > > several drivers for synthetic VMbus devices.
-> > 
-> > > 2008 and 2008R2, so if the broader Linux kernel community surfaces
-> > > a reason why this clean-up should not be done now, we can wait.
-> > > But I think we want to eventually stop carrying around this extra
-> > > baggage, and based on discussions with the Hyper-V team within
-> > > Microsoft, we're already past the point that it has any value.
-> > 
-> > Normal way to do such deprecations is to put printks in first, then hide it
-> > under config option noone sets, and wait for year or so if anyone complains.
-> > 
-> 
-> Are there any examples of doing these deprecation steps that you can
-> point me to?  I did not see anything in the Documentation directory
-> covering the deprecation process you describe.
-> 
-> I'd also make the case that we are already well down the deprecation
-> path.  For at least the last 5 years, the public Microsoft documentation
-> for Linux guests has listed Hyper-V 2012 R2 as the earliest supported
-> Hyper-V version.  Other current and new Microsoft products aren't
-> supported on Hyper-V 2008/Win7 either -- the usual Word/Excel/
-> PowerPoint, etc. fall into this category as well as Windows 10 and Windows
-> 11 as guests.  So for a rare user who might still be using Hyper-V
-> 2008/Win7, there's no reasonable expectation of being able to run
-> the latest upstream Linux kernel on Hyper-V 2008/Win7.  Other
-> current software doesn't.
-> 
-> Given that running Linux guests on Hyper-V sort of implicitly
-> combines Microsoft commercial thinking and Linux open source
-> thinking about version support, I could see putting the old Hyper-V
-> version support under a config option that defaults to "no", with a 
-> deprecation comment, and seeing if that garners any complaints.
-> But given the broader situation with Hyper-V 2008/Win7, in my
-> judgment even that is more cautious than we need to be.
-> 
+Thanks for this patch. Do you think this can be backported to LTS 5.17.y and
+5.15.y, which are still buggy? It's not a big deal for me but others might
+profit.
 
-In general we should trust the judgement from the main developers.
+Background:
+The patch solves a regression from 5.17.1 to 5.17.2 or 5.15.32 and
+5.15.33 I was about to report. On my Thinkpad T570, I got random "BUG", "Oops"
+or even panics when during booting with efifb and plymouthd (and then sometimes
+also problems when shutting down because). I had bisected the issue to commit
+27599aacbaef. I could provide more info but I don't think it's necessary given
+that either aafa025c76dcc7d1a8c8f0bdefcbe4eb480b2f6a or your better patch now
+fixes the issue (I tested both, both work for me).
 
-There have been recent examples that things are dropped without any
-deprecation warnings. See below.
+Best,
+Tim Ruffing
 
-By and large the usefulness of the code in kernel relies on a lot of
-factors. In this particular case, I don't think adding a KCONFIG makes
-sense. Printing a warning in _guest_ won't help. Whoever still runs
-these ancient versions has had ample warnings.
-
-Thanks,
-Wei.
-
-commit c645a883df34ee10b884ec921e850def54b7f461
-Author:     NeilBrown <neilb@suse.de>
-AuthorDate: Thu Sep 2 11:15:29 2021 +1000
-Commit:     J. Bruce Fields <bfields@redhat.com>
-CommitDate: Sat Oct 2 15:51:10 2021 -0400
-
-    NFSD: drop support for ancient filehandles
-
-    Filehandles not in the "new" or "version 1" format have not been handed
-    out for new mounts since Linux 2.4 which was released 20 years ago.
-    I think it is safe to say that no such file handles are still in use,
-    and that we can drop support for them.
-
-    Signed-off-by: NeilBrown <neilb@suse.de>
-    Signed-off-by: J. Bruce Fields <bfields@redhat.com>
-
-commit 9b472e85d098a40b84dd8b33fbf8a15ab1452025
-Author:     Nick Desaulniers <ndesaulniers@google.com>
-AuthorDate: Thu May 6 18:04:54 2021 -0700
-Commit:     Linus Torvalds <torvalds@linux-foundation.org>
-CommitDate: Fri May 7 00:26:32 2021 -0700
-
-    gcov: clang: drop support for clang-10 and older
-
-    LLVM changed the expected function signatures for llvm_gcda_start_file()
-    and llvm_gcda_emit_function() in the clang-11 release.  Drop the older
-    implementations and require folks to upgrade their compiler if they're
-    interested in GCOV support.
-
-    Link: https://reviews.llvm.org/rGcdd683b516d147925212724b09ec6fb792a40041
-    Link: https://reviews.llvm.org/rG13a633b438b6500ecad9e4f936ebadf3411d0f44
-    Link: https://lkml.kernel.org/r/20210312224132.3413602-3-ndesaulniers@google.com
-    Link: https://lkml.kernel.org/r/20210413183113.2977432-1-ndesaulniers@google.com
-    Signed-off-by: Nick Desaulniers <ndesaulniers@google.com>
-    Suggested-by: Nathan Chancellor <nathan@kernel.org>
-    Acked-by: Peter Oberparleiter <oberpar@linux.ibm.com>
-    Reviewed-by: Nathan Chancellor <nathan@kernel.org>
-    Reviewed-by: Fangrui Song <maskray@google.com>
-    Cc: Prasad Sodagudi <psodagud@quicinc.com>
-    Cc: Johannes Berg <johannes.berg@intel.com>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>

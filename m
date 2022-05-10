@@ -2,74 +2,65 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3EE4C433F5
-	for <linux-fbdev@archiver.kernel.org>; Tue, 10 May 2022 09:06:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7AF9C433F5
+	for <linux-fbdev@archiver.kernel.org>; Tue, 10 May 2022 09:39:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S238423AbiEJJKV (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Tue, 10 May 2022 05:10:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55642 "EHLO
+        id S236766AbiEJJno (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Tue, 10 May 2022 05:43:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42134 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S238412AbiEJJKU (ORCPT
+        with ESMTP id S238219AbiEJJnm (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Tue, 10 May 2022 05:10:20 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 25B1B1DFDA9
-        for <linux-fbdev@vger.kernel.org>; Tue, 10 May 2022 02:06:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1652173583;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
+        Tue, 10 May 2022 05:43:42 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7CC4C36E3D;
+        Tue, 10 May 2022 02:39:39 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 735B91F45F;
+        Tue, 10 May 2022 09:39:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1652175578; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=YkLXI1wXFekph/z4VKeGBxzhcAjKRPjiQoN66BncwP8=;
-        b=i9B9Pt3fkWA5lZ024hkhUVyS2eWPWmJ8gNRwODBhcvNk6tJ8jMwVGTYSCEKAph6+g34v5D
-        u+vVPb0QN3kTWeMdZ5IhndW1okxjSBBvRrFsiELOsxhyFVdZvqnf5ilgDLtLB+pytZsgp+
-        MqqRqhxnxikoZwWBNOFB8EUWQOnfY4E=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-54-9MqrpdXIM_iDgynLr_wfOA-1; Tue, 10 May 2022 05:06:20 -0400
-X-MC-Unique: 9MqrpdXIM_iDgynLr_wfOA-1
-Received: by mail-wm1-f70.google.com with SMTP id c125-20020a1c3583000000b0038e3f6e871aso5020083wma.8
-        for <linux-fbdev@vger.kernel.org>; Tue, 10 May 2022 02:06:19 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=YkLXI1wXFekph/z4VKeGBxzhcAjKRPjiQoN66BncwP8=;
-        b=XuWiw1X6NYkNISkP/79k04FmiCyBw7wGMgcA9BbIaJqp7k6DocpAswsVGZmcnOAyZI
-         EI3cAx/reZQQ1ux+vYPNNZTSsPZ2+yCz44cuDQ1C5IwgOU2cdmpv9yDMQkY1tYj1+X5I
-         qKdbo6H/x5n3cS1emdztLvmdf7rkznYcGeztp9VbkDEfj1uHvF3vANLGYi9B9f5OkL7v
-         uRD9B067ZVVtgUinP87Ay5GYHF84oA89j6REShon2kV6AAj6LrA6n6HLJYVcTjd1D1VJ
-         OsXd4apdcLwa/L5NXFyc04+zNOLWGXl4y3nPCgRC5wIQ9t42PBU7Wg0z66V+g7QwBLHl
-         vY4A==
-X-Gm-Message-State: AOAM5328t9PCBSjUl2aH8vOsHCz0fiGXjuH1SIxsSiyj9EwzrQimu2gy
-        CaFnwkhaeimKkkh2zkMBW2DsYvInSwZNuLij6M6CUCouJHfLyUgmTunSFqYIF4df62kfcWGQNAn
-        apExh/xYR/phkPHWwkvXHByA=
-X-Received: by 2002:a1c:29c3:0:b0:350:9797:b38f with SMTP id p186-20020a1c29c3000000b003509797b38fmr27220452wmp.22.1652173578862;
-        Tue, 10 May 2022 02:06:18 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJz+io9oYE+kEwQcWEN1hSZmc2C7/AOzrie5EH4r5n8J8XZWOWG3RH6soTrmiHV4LmVSFrAdKg==
-X-Received: by 2002:a1c:29c3:0:b0:350:9797:b38f with SMTP id p186-20020a1c29c3000000b003509797b38fmr27220430wmp.22.1652173578640;
-        Tue, 10 May 2022 02:06:18 -0700 (PDT)
-Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id q8-20020a1cf308000000b00394975e14f4sm1894098wmq.8.2022.05.10.02.06.17
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 10 May 2022 02:06:18 -0700 (PDT)
-Message-ID: <35ffd96d-3cbe-12dd-c1ea-878299ec173c@redhat.com>
-Date:   Tue, 10 May 2022 11:06:17 +0200
+        bh=OteHJkuIhNqIOiapSJLhMk6mw7w8TgJo/S2yjbeQnOw=;
+        b=eoZLLoSS+49GGuKDz9vaDTRzNArtoNN5yFNEsj5o1PwMEcfKJQeYA3OPJtNxjl3zSjG0Lv
+        dTcysndLw6oHjvJhlFn639xETOO54QloiFeQw9KJtLBHnTa74dKUUFShxXjFTAvAOcMvD/
+        AbTEELQqGXfe6Fm/RBYeQFM4qhPnJcE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1652175578;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=OteHJkuIhNqIOiapSJLhMk6mw7w8TgJo/S2yjbeQnOw=;
+        b=nFVRv94eH8ILY7iQiISXz3IxUobatGLQvimDnsd7gZg27xtBtaRRAehysKZdhryvJj5uA8
+        lvoW6Q5q8ExbazDQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4984213AA5;
+        Tue, 10 May 2022 09:39:38 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id hfHVENoyemK8NgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Tue, 10 May 2022 09:39:38 +0000
+Message-ID: <23ae6eaa-c281-9fc1-2c64-dd953ad2f5f1@suse.de>
+Date:   Tue, 10 May 2022 11:39:37 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
+ Thunderbird/91.9.0
 Subject: Re: [PATCH v3 1/4] fbdev: Prevent possible use-after-free in
  fb_release()
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
+To:     Javier Martinez Canillas <javierm@redhat.com>,
         Andrzej Hajda <andrzej.hajda@intel.com>,
         linux-kernel@vger.kernel.org
-Cc:     linux-fbdev@vger.kernel.org,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
+        linux-fbdev@vger.kernel.org, Helge Deller <deller@gmx.de>,
+        dri-devel@lists.freedesktop.org,
         Daniel Vetter <daniel.vetter@intel.com>
 References: <20220505215947.364694-1-javierm@redhat.com>
  <20220505220413.365977-1-javierm@redhat.com>
@@ -85,50 +76,111 @@ References: <20220505215947.364694-1-javierm@redhat.com>
  <2d8d8583-3a39-b826-dd83-ba5bc4c5b082@redhat.com>
  <7ffd92d7-9c07-fa9c-dc95-9e82719fd237@suse.de>
  <71ebd5f7-64d0-510a-6f1b-29921fca19fa@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <71ebd5f7-64d0-510a-6f1b-29921fca19fa@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <35ffd96d-3cbe-12dd-c1ea-878299ec173c@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <35ffd96d-3cbe-12dd-c1ea-878299ec173c@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------Pr0hBfL67iKQw76eSiX70wuZ"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Thomas,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------Pr0hBfL67iKQw76eSiX70wuZ
+Content-Type: multipart/mixed; boundary="------------RMriG2XPeJByxqDDiiYDx0DK";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ Andrzej Hajda <andrzej.hajda@intel.com>, linux-kernel@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org,
+ Helge Deller <deller@gmx.de>, dri-devel@lists.freedesktop.org,
+ Daniel Vetter <daniel.vetter@intel.com>
+Message-ID: <23ae6eaa-c281-9fc1-2c64-dd953ad2f5f1@suse.de>
+Subject: Re: [PATCH v3 1/4] fbdev: Prevent possible use-after-free in
+ fb_release()
+References: <20220505215947.364694-1-javierm@redhat.com>
+ <20220505220413.365977-1-javierm@redhat.com>
+ <753d0350-42dc-389b-b10b-4533ddcf32ac@intel.com>
+ <1f788b8f-0bea-1818-349e-b1bc907bf251@redhat.com>
+ <a339df59-9e00-c7cb-e33d-2ac626443639@intel.com>
+ <3b7fe4fe-fdec-cef2-4e0e-309d9dc4a8af@redhat.com>
+ <b5ab1c49-04e7-36c3-677d-2989b79e50ca@suse.de>
+ <2bf27b09-0896-1849-254f-d5b19abdc892@redhat.com>
+ <fc3e8a40-664f-07ae-7474-c0412a1ab1b5@intel.com>
+ <1c36d431-d5c0-7278-c9e0-61867e9dc174@redhat.com>
+ <79aaea41-5dab-f896-ab3d-d6bc9a5de615@suse.de>
+ <2d8d8583-3a39-b826-dd83-ba5bc4c5b082@redhat.com>
+ <7ffd92d7-9c07-fa9c-dc95-9e82719fd237@suse.de>
+ <71ebd5f7-64d0-510a-6f1b-29921fca19fa@suse.de>
+ <35ffd96d-3cbe-12dd-c1ea-878299ec173c@redhat.com>
+In-Reply-To: <35ffd96d-3cbe-12dd-c1ea-878299ec173c@redhat.com>
 
-On 5/10/22 10:50, Thomas Zimmermann wrote:
+--------------RMriG2XPeJByxqDDiiYDx0DK
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-[snip]
+SGkgSmF2aWVyDQoNCkFtIDEwLjA1LjIyIHVtIDExOjA2IHNjaHJpZWIgSmF2aWVyIE1hcnRp
+bmV6IENhbmlsbGFzOg0KPiBIZWxsbyBUaG9tYXMsDQo+IA0KPiBPbiA1LzEwLzIyIDEwOjUw
+LCBUaG9tYXMgWmltbWVybWFubiB3cm90ZToNCj4gDQo+IFtzbmlwXQ0KPiANCj4+Pj4gRHJp
+dmVycyBzaG91bGRuJ3QgcmVhbGx5IGV4cGxpY2l0bHkgY2FsbCB0aGlzIGhlbHBlciBpbiBt
+eSBvcGluaW9uLg0KPj4NCj4+IE9uZSBtb3JlIHN0dXBpZCBxdWVzdGlvbjogZG9lcyBhcm1h
+ZGEgYWN0dWFsbHkgdXNlDQo+PiBkcm1fZmJkZXZfZmJfZGVzdHJveSgpPyBJdCdzIHN1cHBv
+c2VkIHRvIGJlIGEgY2FsbGJhY2sgZm9yIHN0cnVjdA0KPj4gZmJfb3BzLiBBcm1hZGEgdXNl
+cyBpdCdzIG93biBpbnN0YW5jZSBvZiBmYl9vcHMsIHdoaWNoIGFwcGFyZW50bHkNCj4+IGRv
+ZXNuJ3QgY29udGFpbiBmYl9kZXN0cm95LiBbMV0NCj4+DQo+IA0KPiBObyBzdHVwaWQgcXVl
+c3Rpb24gYXQgYWxsLiBZb3UgYXJlIGNvcnJlY3Qgb24gdGhpcy4gU28gSSBndWVzcyB3ZSBz
+dGlsbA0KPiBuZWVkIHRoaXMgY2FsbCBpbiB0aGUgZHJpdmVycyB0aGF0IGRvbid0IHByb3Zp
+ZGUgYSAuZmJfZGVzdHJveSgpIGhhbmRsZXIuDQo+IA0KPiBJIHNlZSBtYW55IG9wdGlvbnMg
+aGVyZToNCj4gDQo+IDEpIERvY3VtZW50IGluIGRybV9mYl9oZWxwZXJfYWxsb2NfZmJpKCkg
+dGhhdCBkcml2ZXJzIG9ubHkgbmVlZCB0byBjYWxsDQo+ICAgICBkcm1fZmJfaGVscGVyX2Zp
+bmkoKSBleHBsaWNpdGx5IGlmIHRoZXkgYXJlIG5vdCBzZXR0aW5nIHVwIGEgZmJkZXYNCj4g
+ICAgIHdpdGggZHJtX2ZiZGV2X2dlbmVyaWNfc2V0dXAoKSwgb3RoZXJ3aXNlIGlzIG5vdCBu
+ZWVkZWQuDQo+IA0KPiAyKSBNYWtlIGRybV9mYmRldl9mYl9kZXN0cm95KCkgYW4gZXhwb3J0
+ZWQgc3ltYm9sIHNvIGRyaXZlcnMgdGhhdCBoYXZlDQo+ICAgICBjdXN0b20gZmJfb3BzIGNh
+biB1c2UgaXQuDQo+IA0KPiAzKSBTZXQgLmZiX2Rlc3Ryb3kgdG8gZHJtX2ZiZGV2X2ZiX2Rl
+c3Ryb3koKSBpZiBpc24ndCBzZXQgYnkgZHJpdmVycyB3aGVuDQo+ICAgICB0aGV5IGNhbGwg
+ZHJtX2ZiX2hlbHBlcl9pbml0aWFsX2NvbmZpZygpIG9yIGRybV9mYl9oZWxwZXJfZmlsbF9p
+bmZvKCkuDQo+IA0KPiBJJ20gbGVhbmluZyB0b3dhcmRzIG9wdGlvbiAoMykuIFRoZW4gdGhl
+IGZiX2luZm8gcmVsZWFzZSB3aWxsIGJlIGF1dG9tYXRpYw0KPiB3aGV0aGVyIGRyaXZlcnMg
+YXJlIHVzaW5nIHRoZSBnZW5lcmljIHNldHVwIG9yIGEgY3VzdG9tIG9uZS4NCg0KSU1ITyB0
+aGlzIHdvdWxkIGp1c3QgYmUgYW5vdGhlciBnbGl0Y2ggdG8gcGFwZXIgb3ZlciBhbGwgdGhl
+IGJyb2tlbiANCmNvZGUuIEFuZCBpZiB5b3UgZm9sbG93IHRocm91Z2ggZHJtX2ZiZGV2X2Zi
+X2hlbHBlcigpLCBbMV0gaXQnbGwgY2FsbCANCl9maW5pIGF0IHNvbWUgcG9pbnQgYW5kIHBy
+b2JhYmx5IGJsb3cgdXAgaW4gc29tZSBvdGhlciB3YXkuIEluc3RhbmNlcyBvZiANCnN0cnVj
+dCBmYl9vcHMgYXJlIGFsc28gdXN1YWxseSBjb25zdC4NCg0KVGhlIG9ubHkgcmVsaWFibGUg
+d2F5IEFGQUlDVCBpcyB0byBkbyB3aGF0IGdlbmVyaWMgZmJkZXYgZG9lczogdXNlIA0KdW5y
+ZWdpc3Rlcl9mcmFtZWJ1ZmZlciBhbmQgZG8gdGhlIHNvZnR3YXJlIGNsZWFudXAgc29tZXdo
+ZXJlIHdpdGhpbiANCmZiX2Rlc3Ryb3kuIEFuZCB0aGVuIGZpeCBhbGwgZHJpdmVycyB0byB1
+c2UgdGhhdCBwYXR0ZXJuLg0KDQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQpbMV0gDQpodHRw
+czovL2VsaXhpci5ib290bGluLmNvbS9saW51eC92NS4xNy42L3NvdXJjZS9kcml2ZXJzL2dw
+dS9kcm0vZHJtX2ZiX2hlbHBlci5jI0wyMDgyDQoNCj4gDQoNCi0tIA0KVGhvbWFzIFppbW1l
+cm1hbm4NCkdyYXBoaWNzIERyaXZlciBEZXZlbG9wZXINClNVU0UgU29mdHdhcmUgU29sdXRp
+b25zIEdlcm1hbnkgR21iSA0KTWF4ZmVsZHN0ci4gNSwgOTA0MDkgTsO8cm5iZXJnLCBHZXJt
+YW55DQooSFJCIDM2ODA5LCBBRyBOw7xybmJlcmcpDQpHZXNjaMOkZnRzZsO8aHJlcjogSXZv
+IFRvdGV2DQo=
 
->>> Drivers shouldn't really explicitly call this helper in my opinion.
-> 
-> One more stupid question: does armada actually use 
-> drm_fbdev_fb_destroy()? It's supposed to be a callback for struct 
-> fb_ops. Armada uses it's own instance of fb_ops, which apparently 
-> doesn't contain fb_destroy. [1]
->
+--------------RMriG2XPeJByxqDDiiYDx0DK--
 
-No stupid question at all. You are correct on this. So I guess we still
-need this call in the drivers that don't provide a .fb_destroy() handler.
+--------------Pr0hBfL67iKQw76eSiX70wuZ
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-I see many options here:
+-----BEGIN PGP SIGNATURE-----
 
-1) Document in drm_fb_helper_alloc_fbi() that drivers only need to call
-   drm_fb_helper_fini() explicitly if they are not setting up a fbdev
-   with drm_fbdev_generic_setup(), otherwise is not needed.
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmJ6MtkFAwAAAAAACgkQlh/E3EQov+B8
+ABAAmOlPG+zQT0HBwlB0JVRJG+cYfU8cwS5kJpxC5knB3RdmAEPYHBJsiIUJ3SGE4MZ4OlWWpdA+
+vNjOncwKkAcXkmyrfYtNdVO7LpS4B61HnsL97VZfziEXGuz/ceHOFZAaBvPe/RPHKrINhsOr2qD8
+NBL9EXjXtvhG9a2flyTJGCJIAtueZQqkmxx9yqNeiJ6AlKMx9B7zg1QnVEr2Iff0mKmyy+eD9RQ/
+biM7/ioAKduLUb/ATIASz/6EJsorvHPKheuRlM2vJ6LShqBxeNb0XzeCKF3n/JLzUlO1HBueZT+3
+k0LgEFm/LBBO04EFpP/HXCt5naKtPXYb5vMRwWdE0ILYcNFCzbdsOKN6SDlULQP208+BIo4JFq70
+GfeLyyZoJxtOOdn8YSPfQdUh59pubkUOrQQjTwDP+M85+/MCop32K1xFpllfviV1gY6Cc5rn/KiL
+PYk50YtisPcKrYEXjXZ+3cAV81WT+YZV1Nxc4+JARgpN11gQpSbZhBluI9OO7VUYfnAOp3OdaoVK
+7/YnzZBOfwpxjfTCunL3e9hdfLhVkX/C4O6k+WZfpw6LgChjR7sKCH/QVL1IhjxZ5ACoqQCUepke
+m4wb+y0uGATmkcPCzKi2PEWEfqnOeHxo+w5d22jvZrSXvZ6ZAoBGjRjr1RWj8IQTDIIAvgPzDZkC
+Wyw=
+=Rqge
+-----END PGP SIGNATURE-----
 
-2) Make drm_fbdev_fb_destroy() an exported symbol so drivers that have
-   custom fb_ops can use it.
-
-3) Set .fb_destroy to drm_fbdev_fb_destroy() if isn't set by drivers when
-   they call drm_fb_helper_initial_config() or drm_fb_helper_fill_info().
-
-I'm leaning towards option (3). Then the fb_info release will be automatic
-whether drivers are using the generic setup or a custom one.
-
--- 
-Best regards,
-
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+--------------Pr0hBfL67iKQw76eSiX70wuZ--

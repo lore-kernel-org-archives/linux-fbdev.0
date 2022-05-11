@@ -2,59 +2,59 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A923EC433EF
-	for <linux-fbdev@archiver.kernel.org>; Wed, 11 May 2022 11:32:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C21EC433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 11 May 2022 11:32:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S232925AbiEKLcb (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 11 May 2022 07:32:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54884 "EHLO
+        id S239492AbiEKLcr (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 11 May 2022 07:32:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S240566AbiEKLc3 (ORCPT
+        with ESMTP id S239439AbiEKLck (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 11 May 2022 07:32:29 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 7BE8D23BB7B
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 May 2022 04:32:24 -0700 (PDT)
+        Wed, 11 May 2022 07:32:40 -0400
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 1032241332
+        for <linux-fbdev@vger.kernel.org>; Wed, 11 May 2022 04:32:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1652268743;
+        s=mimecast20190719; t=1652268758;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=UDplaZMb5YseJ+Hq/qs3ip7VsbbgryHldJFcbzukwP8=;
-        b=hoDQq/OPlPA1jIbWxLpQn1eaMCxeQk0RSlIkcJZiZ0i1/bLzwG8WTGnBA/CABRbdFhK/gN
-        I60tCXvY26uk2UjfG/gnDuGI27/SRafC2SVLITBo7+M2GVBt3xZcqB/aRY9wuflFTBOk7r
-        8T3xUgLXEozVJLsbmvoQHQNjjSTgdCU=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
+        bh=j9CH2v0YXJ3HjUK6dIstavUpY+IdJA0p7lKZyzF8giE=;
+        b=QljuTuDGkoTfJn2Q/jAgjWR9qIs1l0rRUGFoDuz9tjiWtcjjOHSq1Rs/syy3L6hX9k7ygA
+        xUDxJAjb1LVjz3oxU68YKeOH6C2ahPiSuPu5xFHxSqP3O3xZeB3p/Euv+wLB0qC9tCWCoj
+        EPtk06Z7PG85X4DhGb9RsTwlGZtZUuQ=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-267-J983cpqMNe6iVep0K9utpQ-1; Wed, 11 May 2022 07:32:22 -0400
-X-MC-Unique: J983cpqMNe6iVep0K9utpQ-1
-Received: by mail-wr1-f71.google.com with SMTP id e4-20020a056000034400b0020cdf0dbf49so465776wre.20
-        for <linux-fbdev@vger.kernel.org>; Wed, 11 May 2022 04:32:22 -0700 (PDT)
+ us-mta-158-JLg6-oJkPGy17g4_oZv98A-1; Wed, 11 May 2022 07:32:37 -0400
+X-MC-Unique: JLg6-oJkPGy17g4_oZv98A-1
+Received: by mail-wm1-f72.google.com with SMTP id h6-20020a7bc926000000b0039470bcb9easo624793wml.1
+        for <linux-fbdev@vger.kernel.org>; Wed, 11 May 2022 04:32:36 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=UDplaZMb5YseJ+Hq/qs3ip7VsbbgryHldJFcbzukwP8=;
-        b=FszPVWpTKntDOR0Vv0ugop2MPrpDjiL3PPYzu3zPu7r1lED2nMt5yeHJRUPyNlCF+P
-         Q8vwhJUF2rlTGqbRbVThW0NLJAaD0RaNMl/6mIG7JZCvOwyI0TZah9pLZeyDZMzh20R3
-         fMLYOLw6/mf74MOrEf/bit62EOAzwLsjRA/UEvwTopOENRPnwY1XY5dFcoKhE5JZFvib
-         +ZtWYcyBy86IcBmGvlMEaTiZmxfTSmSzvzpsGvy8uDAkcdIN2WJTl8kz5FaXjkepgsLm
-         5IsFNUm1+bvUGquDlRm25qsMIAgwLzz07E3GhRuOy8BvmbG44+++oEVxjHgWoUKrH1en
-         SchQ==
-X-Gm-Message-State: AOAM532xrQ4g6AhXJU3wdXphxOSnHgXVjd8POcoU01zEELSLfBu2tCp2
-        R+B3nV35K7hmYpfzwwdbV+zl2BFq2gsbrNAf0LCzOOS4dMekajItJesJJJgiP3ruE00mmE2h8G5
-        PHyNfUhUWZUJ4I9kj7jbK0q8=
-X-Received: by 2002:a05:6000:1d8b:b0:20c:54e6:1659 with SMTP id bk11-20020a0560001d8b00b0020c54e61659mr22002275wrb.169.1652268741177;
-        Wed, 11 May 2022 04:32:21 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJy8DOa4eVy/j4OxWjmKfDXFScY2hy71AEkR7bJehfJjo+JROKXYZWV1lJqXARoz2/Z0HXw3aQ==
-X-Received: by 2002:a05:6000:1d8b:b0:20c:54e6:1659 with SMTP id bk11-20020a0560001d8b00b0020c54e61659mr22002251wrb.169.1652268740906;
-        Wed, 11 May 2022 04:32:20 -0700 (PDT)
+        bh=j9CH2v0YXJ3HjUK6dIstavUpY+IdJA0p7lKZyzF8giE=;
+        b=RSGqOypJhYMwD0+symc1btgoUV3bKT/v3MqlGv9JmR+QfAHgxhQASRoq0nuGscB8wt
+         FE8TcxGkMchCbimKzbdZfWw9i/JcK5byfwa+qXefYWh2kyl41B6g9Lf4LlzvKqOtMubp
+         QrNzdUhACDueTbYi6zaiWzh03muy8ClXpG+7s3nN+zM5YJ9zUzwFcrQ9UZ7IMG0m2wXa
+         CpwE98EeCt0QrEDw8w5NKax4FfK/vWNIcePTv2Xnv5IldE0Wvx+Ane6rEILQhz7jwaR/
+         edSoUNT5qCRoWFWbAnlLGkpqcLzD4YuWyy1/yknvZngGQqHAKwOgwRjccVT0PmtDsTfg
+         pHaQ==
+X-Gm-Message-State: AOAM531YR7uIAKl8am4A+abhC9lFwH9onFjP4yK97iZNATmjLoizvnFF
+        0CjpvD/+gjAvuYGEdNqhwwdfKNAjK+kiHx2gbMMhUy0Z+B6pO2rlmWVATjOOUUHO0h43PnA2ubA
+        nQGF95AVOjwP/aTx0A3PCnro=
+X-Received: by 2002:adf:f747:0:b0:20a:d30a:5f08 with SMTP id z7-20020adff747000000b0020ad30a5f08mr22334007wrp.278.1652268755751;
+        Wed, 11 May 2022 04:32:35 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJwgrtdXH49XbKTYGY6jvwa/LsalnhjTRPZOQcdgbrMeYtoBsK3sJMoM3gRNyeWCwdLsXBrWuA==
+X-Received: by 2002:adf:f747:0:b0:20a:d30a:5f08 with SMTP id z7-20020adff747000000b0020ad30a5f08mr22333989wrp.278.1652268755534;
+        Wed, 11 May 2022 04:32:35 -0700 (PDT)
 Received: from minerva.home (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id w12-20020adfde8c000000b0020c5253d8dfsm1476857wrl.43.2022.05.11.04.32.19
+        by smtp.gmail.com with ESMTPSA id bd6-20020a05600c1f0600b00394615cf468sm4928533wmb.28.2022.05.11.04.32.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 May 2022 04:32:20 -0700 (PDT)
+        Wed, 11 May 2022 04:32:35 -0700 (PDT)
 From:   Javier Martinez Canillas <javierm@redhat.com>
 To:     linux-kernel@vger.kernel.org
 Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
@@ -63,14 +63,23 @@ Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         Helge Deller <deller@gmx.de>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Zack Rusin <zackr@vmware.com>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Ilya Trukhanov <lahvuun@gmail.com>,
+        kernel test robot <lkp@intel.com>,
+        Jens Frederich <jfrederich@gmail.com>,
+        Jon Nettleton <jon.nettleton@gmail.com>,
+        linux-staging@lists.linux.dev,
         Daniel Vetter <daniel.vetter@intel.com>,
-        Peter Jones <pjones@redhat.com>
-Subject: [PATCH v5 6/7] Revert "fbdev: Prevent probing generic drivers if a FB is already registered"
-Date:   Wed, 11 May 2022 13:32:04 +0200
-Message-Id: <20220511113204.1252828-1-javierm@redhat.com>
+        Daniel Vetter <daniel@ffwll.ch>,
+        Matthew Wilcox <willy@infradead.org>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
+        Zheyu Ma <zheyuma97@gmail.com>,
+        Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v5 7/7] fbdev: Make registered_fb[] private to fbmem.c
+Date:   Wed, 11 May 2022 13:32:30 +0200
+Message-Id: <20220511113230.1252910-1-javierm@redhat.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220511112438.1251024-1-javierm@redhat.com>
 References: <20220511112438.1251024-1-javierm@redhat.com>
@@ -82,85 +91,86 @@ X-Mailing-List: linux-fbdev@vger.kernel.org
 
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-This reverts commit fb561bf9abde49f7e00fdbf9ed2ccf2d86cac8ee.
+Well except when the olpc dcon fbdev driver is enabled, that thing
+digs around in there in rather unfixable ways.
 
-With
+Cc oldc_dcon maintainers as fyi.
 
-commit 27599aacbaefcbf2af7b06b0029459bbf682000d
-Author: Thomas Zimmermann <tzimmermann@suse.de>
-Date:   Tue Jan 25 10:12:18 2022 +0100
+v2: I typoed the config name (0day)
 
-    fbdev: Hot-unplug firmware fb devices on forced removal
-
-this should be fixed properly and we can remove this somewhat hackish
-check here (e.g. this won't catch drm drivers if fbdev emulation isn't
-enabled).
-
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Zack Rusin <zackr@vmware.com>
-Cc: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Zack Rusin <zackr@vmware.com>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Ilya Trukhanov <lahvuun@gmail.com>
+Cc: kernel test robot <lkp@intel.com>
+Cc: Jens Frederich <jfrederich@gmail.com>
+Cc: Jon Nettleton <jon.nettleton@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-staging@lists.linux.dev
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
-Cc: Peter Jones <pjones@redhat.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: Zhen Lei <thunder.leizhen@huawei.com>
+Cc: Alex Deucher <alexander.deucher@amd.com>
+Cc: Xiyu Yang <xiyuyang19@fudan.edu.cn>
 Cc: linux-fbdev@vger.kernel.org
-
+Cc: Zheyu Ma <zheyuma97@gmail.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
 Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
 ---
 
 (no changes since v1)
 
- drivers/video/fbdev/efifb.c    | 11 -----------
- drivers/video/fbdev/simplefb.c | 11 -----------
- 2 files changed, 22 deletions(-)
+ drivers/video/fbdev/core/fbmem.c | 8 ++++++--
+ include/linux/fb.h               | 7 +++----
+ 2 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index ea42ba6445b2..edca3703b964 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -351,17 +351,6 @@ static int efifb_probe(struct platform_device *dev)
- 	char *option = NULL;
- 	efi_memory_desc_t md;
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 265efa189bcc..6cab5f4c1fb3 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -50,10 +50,14 @@
+ static DEFINE_MUTEX(registration_lock);
  
--	/*
--	 * Generic drivers must not be registered if a framebuffer exists.
--	 * If a native driver was probed, the display hardware was already
--	 * taken and attempting to use the system framebuffer is dangerous.
--	 */
--	if (num_registered_fb > 0) {
--		dev_err(&dev->dev,
--			"efifb: a framebuffer is already registered\n");
--		return -EINVAL;
--	}
+ struct fb_info *registered_fb[FB_MAX] __read_mostly;
+-EXPORT_SYMBOL(registered_fb);
 -
- 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI || pci_dev_disabled)
- 		return -ENODEV;
+ int num_registered_fb __read_mostly;
++#if IS_ENABLED(CONFIG_FB_OLPC_DCON)
++EXPORT_SYMBOL(registered_fb);
+ EXPORT_SYMBOL(num_registered_fb);
++#endif
++#define for_each_registered_fb(i)		\
++	for (i = 0; i < FB_MAX; i++)		\
++		if (!registered_fb[i]) {} else
  
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index 94fc9c6d0411..0ef41173325a 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -413,17 +413,6 @@ static int simplefb_probe(struct platform_device *pdev)
- 	struct simplefb_par *par;
- 	struct resource *res, *mem;
+ bool fb_center_logo __read_mostly;
  
--	/*
--	 * Generic drivers must not be registered if a framebuffer exists.
--	 * If a native driver was probed, the display hardware was already
--	 * taken and attempting to use the system framebuffer is dangerous.
--	 */
--	if (num_registered_fb > 0) {
--		dev_err(&pdev->dev,
--			"simplefb: a framebuffer is already registered\n");
--		return -EINVAL;
--	}
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index bbe1e4571899..c563e24b6293 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -632,16 +632,15 @@ extern int fb_get_color_depth(struct fb_var_screeninfo *var,
+ extern int fb_get_options(const char *name, char **option);
+ extern int fb_new_modelist(struct fb_info *info);
+ 
++#if IS_ENABLED(CONFIG_FB_OLPC_DCON)
+ extern struct fb_info *registered_fb[FB_MAX];
++
+ extern int num_registered_fb;
++#endif
+ extern bool fb_center_logo;
+ extern int fb_logo_count;
+ extern struct class *fb_class;
+ 
+-#define for_each_registered_fb(i)		\
+-	for (i = 0; i < FB_MAX; i++)		\
+-		if (!registered_fb[i]) {} else
 -
- 	if (fb_get_options("simplefb", NULL))
- 		return -ENODEV;
- 
+ static inline void lock_fb_info(struct fb_info *info)
+ {
+ 	mutex_lock(&info->lock);
 -- 
 2.35.1
 

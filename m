@@ -2,100 +2,91 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D1B9C433FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 12 May 2022 11:59:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7C5BC433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 12 May 2022 13:21:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1353482AbiELL7Y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 12 May 2022 07:59:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40318 "EHLO
+        id S1354163AbiELNV1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 12 May 2022 09:21:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40676 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1344488AbiELL7Y (ORCPT
+        with ESMTP id S1354213AbiELNV0 (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 12 May 2022 07:59:24 -0400
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5004D219C03;
-        Thu, 12 May 2022 04:59:23 -0700 (PDT)
-Received: by mail-pl1-x632.google.com with SMTP id m12so4653211plb.4;
-        Thu, 12 May 2022 04:59:23 -0700 (PDT)
+        Thu, 12 May 2022 09:21:26 -0400
+Received: from mail-oa1-x32.google.com (mail-oa1-x32.google.com [IPv6:2001:4860:4864:20::32])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04CAE3DDD4
+        for <linux-fbdev@vger.kernel.org>; Thu, 12 May 2022 06:21:26 -0700 (PDT)
+Received: by mail-oa1-x32.google.com with SMTP id 586e51a60fabf-ee1e7362caso6559064fac.10
+        for <linux-fbdev@vger.kernel.org>; Thu, 12 May 2022 06:21:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=a/Jq44xoX1PX4n3n8Vf2G0RTQLdM4u3R8vUUYgDiB04=;
-        b=mlMqYveSz/+4qyhU7Gn2t3oWFvyH+LSNhqreDHRhYlwIHWqahZCFudIHWm6Ja6shfJ
-         l6FeEnF5N+f7cfpHAwyX2D2A6Im2Xst2Vt0KatDULbUJMvR/gjU0p6whZWNLymtnRqdg
-         XpenVROQ7O74LbOF/JN8z421V3oYlvmaPamURNP0qMVllMgrdgR7WQx0k1yzliiAGDc/
-         cu1N8Oiya9M7Ouij7ORwpMcmR5valH7ZFw2ufqvt0khJMMvqGuQBiA299NVzlEwNymzT
-         Fmu3DKnijVF6aP7k4Dbi0eWKnD7hm4SYQVcNLVueHvuwGkD28M55+CTWIy3+s1oDCUFV
-         sAVw==
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=o1LkdWLl5bERB7RO9RpYQ/us9kzwvuP0AILwTfB/8W4=;
+        b=V1n/chSwX/yC24Pb7iPWi90T+RcN5kcECtqlaG1lb2FQPhSjWGqyC8u1wLLBtlPBGQ
+         cPmbAr+aoI8KHHy8rnBeCHl88BAf0PNQEHZ6RKwOqa/cs6eUhsZ22PLkytm8TvaV3EZ0
+         GqG3x/DwoMEG/FmOy7Cq7xGIrRIA8u+0mFTSpS7kRlD/yas4kNL9gniA1YXtEI+IAFQX
+         ac4x3PitUBuhA0TGej7bL8ti3Gwp/6BYgV/m+7HgP+q5xfUtF+pJp4MxCeZIlJF9z36F
+         aLHpmFm0LV5yiGTWOYTEUXuL/1NlhQWm91KnC61/zjxGjS2y6xHTijiPUTZO4LIEGiWa
+         Cv4A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=a/Jq44xoX1PX4n3n8Vf2G0RTQLdM4u3R8vUUYgDiB04=;
-        b=QnMJ/W3QTQfW+6vqQYOVc/11LauENffY3wfmXCnClxvZ447ojY+kO+Ts8DqvKjOAqN
-         w5Z9J6POpse/wEGYyCnvLoSjRDu6ofdG7fbZ6QWR6t3CQ1QhX90fPLuIOLtG9fucFRmq
-         fG0iVNWsvPCPOZZkSKzR7cSE3A3leFkwFDPY6cg49cGulcjwFvGehEziwSXO2FUDQliE
-         kFir4DB5AiNLaf6GEQV7Oc5QM5nf96LZwtU/ZOSx7crVxx1Lz8lJJbhAfUEQQTNF+gdI
-         UJJFz1IENqlPd3TZ/0MYbF3Nomv626dOJwtj1BMrAikLgYNA+nHnKq3C6WM7MC75+F/8
-         2SKg==
-X-Gm-Message-State: AOAM533IFhe8YGy9VAdQMIg5d32mgvWEh+hpbD8sNzpTNPrrRcUJQVbB
-        dQGLqEaFyGq3hVnmrLeS8qo=
-X-Google-Smtp-Source: ABdhPJxUkdcERAaY6EHXM+YWGl5OJizIGEsi9bYKgIcAV4R0PZrxLengDsUUSp2cSZor8m+omxbfVQ==
-X-Received: by 2002:a17:902:7445:b0:15f:2eb6:2c3d with SMTP id e5-20020a170902744500b0015f2eb62c3dmr9432973plt.132.1652356762826;
-        Thu, 12 May 2022 04:59:22 -0700 (PDT)
-Received: from localhost.localdomain ([202.120.234.246])
-        by smtp.googlemail.com with ESMTPSA id k34-20020a635a62000000b003c14af5063esm1653594pgm.86.2022.05.12.04.59.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 May 2022 04:59:22 -0700 (PDT)
-From:   Miaoqian Lin <linmq006@gmail.com>
-To:     Russell King <linux@armlinux.org.uk>, Helge Deller <deller@gmx.de>,
-        Miaoqian Lin <linmq006@gmail.com>,
-        Pawel Moll <pawel.moll@arm.com>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] video: fbdev: Fix refcount leak in clcdfb_of_vram_setup
-Date:   Thu, 12 May 2022 15:59:08 +0400
-Message-Id: <20220512115913.48685-1-linmq006@gmail.com>
-X-Mailer: git-send-email 2.25.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=o1LkdWLl5bERB7RO9RpYQ/us9kzwvuP0AILwTfB/8W4=;
+        b=7zwSOGg231guvp/ZVKzAbMZKGPohZuxlxaiaJrcYb68UdhwTOddfOyiE2lzQlNto0P
+         9DT9mfbGRZJIZqxGc+awpuxwB6jsONJ1UwENXS1Skj+w3zvrTMFvxb50cFOCcByMfdqZ
+         2y77J6NAENl1KtbkKYoxo3u5NpAUkTNhHWS1skVeiRam+REPdCMjMbd1TQcuDmIJpxjA
+         oItpnDaH1AceC6rYgXJ0pK/6zP6g5F3SSrku9l1efnvG87foA4CbWxC0EnH6FB+gsytR
+         cNLtISVunAb2JfKKpTl21aQcC4MMt4xNXhQOgAXTSrHj58LR8tAr6KvPeyH2WhLal/P9
+         l/1A==
+X-Gm-Message-State: AOAM533maqdsHJSol2R4ZG+yzrshLap5/X26z7awyq1CmsBJuZuAaiZC
+        gTjW568WsO49fL7z7xZrxVzzaKIxlGTo6dCuNhz9tA==
+X-Google-Smtp-Source: ABdhPJwwmEGtUQearzvM5CoarRF5IQke11aUPGfWHgUZFWZGWDLSi4YMil+hfBnKvXUHDizXhPtCMeu7zduTNUZAPdw=
+X-Received: by 2002:a05:6870:d254:b0:db:12b5:da3 with SMTP id
+ h20-20020a056870d25400b000db12b50da3mr5492856oac.211.1652361685131; Thu, 12
+ May 2022 06:21:25 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <000000000000ab6df705b453993a@google.com> <00000000000035befb05d6b91185@google.com>
+In-Reply-To: <00000000000035befb05d6b91185@google.com>
+From:   Dmitry Vyukov <dvyukov@google.com>
+Date:   Thu, 12 May 2022 15:21:14 +0200
+Message-ID: <CACT4Y+bi-h7PGWqM=JyjvaTHcyzkg9nndUTVCyV-rADPYgHspA@mail.gmail.com>
+Subject: Re: [syzbot] BUG: unable to handle kernel paging request in
+ bitfill_aligned (2)
+To:     syzbot <syzbot+a4edd73d589b0b7efbeb@syzkaller.appspotmail.com>
+Cc:     b.zolnierkie@samsung.com, bugs-a21@moonlit-rail.com,
+        dri-devel@lists.freedesktop.org, javierm@redhat.com,
+        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        maxime@cerno.tech, ngraniel@cocobongo.net,
+        syzkaller-bugs@googlegroups.com
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-of_parse_phandle() returns a node pointer with refcount
-incremented, we should use of_node_put() on it when not need anymore.
-Add missing of_node_put() to avoid refcount leak.
+On Sat, 29 Jan 2022 at 15:07, syzbot
+<syzbot+a4edd73d589b0b7efbeb@syzkaller.appspotmail.com> wrote:
+>
+> syzbot suspects this issue was fixed by commit:
+>
+> commit 0499f419b76f94ede08304aad5851144813ac55c
+> Author: Javier Martinez Canillas <javierm@redhat.com>
+> Date:   Mon Jan 10 09:56:25 2022 +0000
+>
+>     video: vga16fb: Only probe for EGA and VGA 16 color graphic cards
+>
+> bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=1752f5c0700000
+> start commit:   2a987e65025e Merge tag 'perf-tools-fixes-for-v5.16-2021-12..
+> git tree:       upstream
+> kernel config:  https://syzkaller.appspot.com/x/.config?x=7d5e878e3399b6cc
+> dashboard link: https://syzkaller.appspot.com/bug?extid=a4edd73d589b0b7efbeb
+> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16671badb00000
+> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=122beabdb00000
+>
+> If the result looks correct, please mark the issue as fixed by replying with:
+>
+> #syz fix: video: vga16fb: Only probe for EGA and VGA 16 color graphic cards
 
-Fixes: d10715be03bd ("video: ARM CLCD: Add DT support")
-Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
----
- drivers/video/fbdev/amba-clcd.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Based on commit subject looks legit:
 
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index 9ec969e136bf..8080116aea84 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -758,12 +758,15 @@ static int clcdfb_of_vram_setup(struct clcd_fb *fb)
- 		return -ENODEV;
- 
- 	fb->fb.screen_base = of_iomap(memory, 0);
--	if (!fb->fb.screen_base)
-+	if (!fb->fb.screen_base) {
-+		of_node_put(memory);
- 		return -ENOMEM;
-+	}
- 
- 	fb->fb.fix.smem_start = of_translate_address(memory,
- 			of_get_address(memory, 0, &size, NULL));
- 	fb->fb.fix.smem_len = size;
-+	of_node_put(memory);
- 
- 	return 0;
- }
--- 
-2.25.1
-
+#syz fix: video: vga16fb: Only probe for EGA and VGA 16 color graphic cards

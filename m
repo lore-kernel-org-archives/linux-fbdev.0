@@ -2,91 +2,120 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7C5BC433EF
-	for <linux-fbdev@archiver.kernel.org>; Thu, 12 May 2022 13:21:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 683B1C433EF
+	for <linux-fbdev@archiver.kernel.org>; Thu, 12 May 2022 18:32:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1354163AbiELNV1 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 12 May 2022 09:21:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40676 "EHLO
+        id S1357555AbiELScX (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 12 May 2022 14:32:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59686 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1354213AbiELNV0 (ORCPT
+        with ESMTP id S1357546AbiELScV (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 12 May 2022 09:21:26 -0400
-Received: from mail-oa1-x32.google.com (mail-oa1-x32.google.com [IPv6:2001:4860:4864:20::32])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04CAE3DDD4
-        for <linux-fbdev@vger.kernel.org>; Thu, 12 May 2022 06:21:26 -0700 (PDT)
-Received: by mail-oa1-x32.google.com with SMTP id 586e51a60fabf-ee1e7362caso6559064fac.10
-        for <linux-fbdev@vger.kernel.org>; Thu, 12 May 2022 06:21:25 -0700 (PDT)
+        Thu, 12 May 2022 14:32:21 -0400
+Received: from mailrelay4-1.pub.mailoutpod1-cph3.one.com (mailrelay4-1.pub.mailoutpod1-cph3.one.com [46.30.210.185])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB77864709
+        for <linux-fbdev@vger.kernel.org>; Thu, 12 May 2022 11:32:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=o1LkdWLl5bERB7RO9RpYQ/us9kzwvuP0AILwTfB/8W4=;
-        b=V1n/chSwX/yC24Pb7iPWi90T+RcN5kcECtqlaG1lb2FQPhSjWGqyC8u1wLLBtlPBGQ
-         cPmbAr+aoI8KHHy8rnBeCHl88BAf0PNQEHZ6RKwOqa/cs6eUhsZ22PLkytm8TvaV3EZ0
-         GqG3x/DwoMEG/FmOy7Cq7xGIrRIA8u+0mFTSpS7kRlD/yas4kNL9gniA1YXtEI+IAFQX
-         ac4x3PitUBuhA0TGej7bL8ti3Gwp/6BYgV/m+7HgP+q5xfUtF+pJp4MxCeZIlJF9z36F
-         aLHpmFm0LV5yiGTWOYTEUXuL/1NlhQWm91KnC61/zjxGjS2y6xHTijiPUTZO4LIEGiWa
-         Cv4A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=o1LkdWLl5bERB7RO9RpYQ/us9kzwvuP0AILwTfB/8W4=;
-        b=7zwSOGg231guvp/ZVKzAbMZKGPohZuxlxaiaJrcYb68UdhwTOddfOyiE2lzQlNto0P
-         9DT9mfbGRZJIZqxGc+awpuxwB6jsONJ1UwENXS1Skj+w3zvrTMFvxb50cFOCcByMfdqZ
-         2y77J6NAENl1KtbkKYoxo3u5NpAUkTNhHWS1skVeiRam+REPdCMjMbd1TQcuDmIJpxjA
-         oItpnDaH1AceC6rYgXJ0pK/6zP6g5F3SSrku9l1efnvG87foA4CbWxC0EnH6FB+gsytR
-         cNLtISVunAb2JfKKpTl21aQcC4MMt4xNXhQOgAXTSrHj58LR8tAr6KvPeyH2WhLal/P9
-         l/1A==
-X-Gm-Message-State: AOAM533maqdsHJSol2R4ZG+yzrshLap5/X26z7awyq1CmsBJuZuAaiZC
-        gTjW568WsO49fL7z7xZrxVzzaKIxlGTo6dCuNhz9tA==
-X-Google-Smtp-Source: ABdhPJwwmEGtUQearzvM5CoarRF5IQke11aUPGfWHgUZFWZGWDLSi4YMil+hfBnKvXUHDizXhPtCMeu7zduTNUZAPdw=
-X-Received: by 2002:a05:6870:d254:b0:db:12b5:da3 with SMTP id
- h20-20020a056870d25400b000db12b50da3mr5492856oac.211.1652361685131; Thu, 12
- May 2022 06:21:25 -0700 (PDT)
+        d=ravnborg.org; s=rsa1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=O8SS8tR6KzBteRzzV4PMFZxsbdP8o7OvOren4W79nuw=;
+        b=h7ZNvfc9avhDt9okNYnG1IgGZnDItoaBEkXyNthysrfKmHtpKX7wDWuLH5KG3Iywu8NOqH+7WLZuQ
+         MnpkF89PW8JzZGoE9JLyR4KdVe9+bAIYLiQD136jCrzGp1k40JxdtVhEBk+nwb0x05k3DYqZbisrtN
+         j7e8ukhv08m6oq7+6e997j5AUB/8ZG9VCcIwetPEOJ79RTTWLJN5BJVTJ8vu0jjAIAoUQDxxRoisSM
+         N9jq5+4/VB+uvogOuIBEU7O4qJ6SWpuYQfYfWmyBsnBRbTuI/CKD25yCMVv/UqT9ugfVLoLuE/snxf
+         nLO3Tp7gs3zv/RGajEZVV0pxKdWv1hw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+        d=ravnborg.org; s=ed1;
+        h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+         from:date:from;
+        bh=O8SS8tR6KzBteRzzV4PMFZxsbdP8o7OvOren4W79nuw=;
+        b=F+p45EAMDelLJaqsvbV923D4aMqVja+yHAlwwJJfG5Uvo2AxRvdFs4aw7v7EuZqlp1V4TsAC7Wad2
+         dnMPZyUAg==
+X-HalOne-Cookie: 9bbbb5e34672ef539628ef080ed8275be782a0a2
+X-HalOne-ID: d92e617e-d221-11ec-822c-d0431ea8bb10
+Received: from mailproxy3.cst.dirpod3-cph3.one.com (80-162-45-141-cable.dk.customer.tdc.net [80.162.45.141])
+        by mailrelay4.pub.mailoutpod1-cph3.one.com (Halon) with ESMTPSA
+        id d92e617e-d221-11ec-822c-d0431ea8bb10;
+        Thu, 12 May 2022 18:32:16 +0000 (UTC)
+Date:   Thu, 12 May 2022 20:32:14 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Javier Martinez Canillas <javierm@redhat.com>
+Cc:     Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        Daniel Vetter <daniel.vetter@ffwll.ch>,
+        Helge Deller <deller@gmx.de>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        kernel test robot <lkp@intel.com>,
+        Jens Frederich <jfrederich@gmail.com>,
+        Jon Nettleton <jon.nettleton@gmail.com>,
+        linux-staging@lists.linux.dev,
+        Daniel Vetter <daniel.vetter@intel.com>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Matthew Wilcox <willy@infradead.org>,
+        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+        Zhen Lei <thunder.leizhen@huawei.com>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        Xiyu Yang <xiyuyang19@fudan.edu.cn>,
+        Zheyu Ma <zheyuma97@gmail.com>
+Subject: Re: [PATCH v5 7/7] fbdev: Make registered_fb[] private to fbmem.c
+Message-ID: <Yn1SrtRHIjapcIjp@ravnborg.org>
+References: <20220511112438.1251024-1-javierm@redhat.com>
+ <20220511113230.1252910-1-javierm@redhat.com>
+ <YnvrxICnisXU6I1y@ravnborg.org>
+ <8c84428c-2740-4046-74c9-298b854944d0@roeck-us.net>
+ <48f164af-99d2-9e74-e307-003be0677384@redhat.com>
 MIME-Version: 1.0
-References: <000000000000ab6df705b453993a@google.com> <00000000000035befb05d6b91185@google.com>
-In-Reply-To: <00000000000035befb05d6b91185@google.com>
-From:   Dmitry Vyukov <dvyukov@google.com>
-Date:   Thu, 12 May 2022 15:21:14 +0200
-Message-ID: <CACT4Y+bi-h7PGWqM=JyjvaTHcyzkg9nndUTVCyV-rADPYgHspA@mail.gmail.com>
-Subject: Re: [syzbot] BUG: unable to handle kernel paging request in
- bitfill_aligned (2)
-To:     syzbot <syzbot+a4edd73d589b0b7efbeb@syzkaller.appspotmail.com>
-Cc:     b.zolnierkie@samsung.com, bugs-a21@moonlit-rail.com,
-        dri-devel@lists.freedesktop.org, javierm@redhat.com,
-        linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        maxime@cerno.tech, ngraniel@cocobongo.net,
-        syzkaller-bugs@googlegroups.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48f164af-99d2-9e74-e307-003be0677384@redhat.com>
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On Sat, 29 Jan 2022 at 15:07, syzbot
-<syzbot+a4edd73d589b0b7efbeb@syzkaller.appspotmail.com> wrote:
->
-> syzbot suspects this issue was fixed by commit:
->
-> commit 0499f419b76f94ede08304aad5851144813ac55c
-> Author: Javier Martinez Canillas <javierm@redhat.com>
-> Date:   Mon Jan 10 09:56:25 2022 +0000
->
->     video: vga16fb: Only probe for EGA and VGA 16 color graphic cards
->
-> bisection log:  https://syzkaller.appspot.com/x/bisect.txt?x=1752f5c0700000
-> start commit:   2a987e65025e Merge tag 'perf-tools-fixes-for-v5.16-2021-12..
-> git tree:       upstream
-> kernel config:  https://syzkaller.appspot.com/x/.config?x=7d5e878e3399b6cc
-> dashboard link: https://syzkaller.appspot.com/bug?extid=a4edd73d589b0b7efbeb
-> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16671badb00000
-> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=122beabdb00000
->
-> If the result looks correct, please mark the issue as fixed by replying with:
->
-> #syz fix: video: vga16fb: Only probe for EGA and VGA 16 color graphic cards
+On Wed, May 11, 2022 at 07:34:38PM +0200, Javier Martinez Canillas wrote:
+> Hello Guenter,
+> 
+> On 5/11/22 19:17, Guenter Roeck wrote:
+> > On 5/11/22 10:00, Sam Ravnborg wrote:
+> 
+> [snip]
+> 
+> >>>   struct fb_info *registered_fb[FB_MAX] __read_mostly;
+> >>> -EXPORT_SYMBOL(registered_fb);
+> >>> -
+> >>>   int num_registered_fb __read_mostly;
+> >>> +#if IS_ENABLED(CONFIG_FB_OLPC_DCON)
+> >>> +EXPORT_SYMBOL(registered_fb);
+> >>>   EXPORT_SYMBOL(num_registered_fb);
+> >>> +#endif
+> >>
+> >> It is stuff like this I refer to as "ugly" in the comment above.
+> >>
+> > 
+> > My "solution" for that kind of thing is to use a namespace,
+> > such as
+> > 
+> > EXPORT_SYMBOL_NS(registered_fb, FB_OLPC_DCON);
+> > EXPORT_SYMBOL_NS(num_registered_fb, FB_OLPC_DCON);
+> >
+> 
+> Using a namespace in this case is indeed a great idea I think.
+> 
+> I've used in the past to limit the export of a symbol for within a driver
+> that could be scattered across different compilations units, but it never
+> occurred to me using it to limit symbols exported by core code.
+>  
+> > and import it from the offending code. That avoids ifdefs
+> > while at the same time limiting the use of the symbols
+> > to the expected scope. Of course that could be abused but
+> > that abuse would be obvious.
+> >
+> 
+> Agreed. For the next revision, besides using an namespaced export symbol
+> as you suggested, I'll include a comment to make clear that it shouldn't
+> by any other driver and FB_OLPC_DCON fixed instead.
+A very nice compromise, thanks Guenter and Javier.
 
-Based on commit subject looks legit:
-
-#syz fix: video: vga16fb: Only probe for EGA and VGA 16 color graphic cards
+	Sam

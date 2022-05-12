@@ -2,243 +2,100 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA994C433FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 12 May 2022 07:51:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D1B9C433FE
+	for <linux-fbdev@archiver.kernel.org>; Thu, 12 May 2022 11:59:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1351197AbiELHvR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 12 May 2022 03:51:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37094 "EHLO
+        id S1353482AbiELL7Y (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 12 May 2022 07:59:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40318 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1351176AbiELHvP (ORCPT
+        with ESMTP id S1344488AbiELL7Y (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 12 May 2022 03:51:15 -0400
-X-Greylist: delayed 372 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 12 May 2022 00:51:09 PDT
-Received: from wnew4-smtp.messagingengine.com (wnew4-smtp.messagingengine.com [64.147.123.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5D6841838F;
-        Thu, 12 May 2022 00:51:08 -0700 (PDT)
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-        by mailnew.west.internal (Postfix) with ESMTP id DB9CC2B059AE;
-        Thu, 12 May 2022 03:44:50 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute3.internal (MEProxy); Thu, 12 May 2022 03:44:53 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=cc
-        :cc:content-transfer-encoding:content-type:date:date:from:from
-        :in-reply-to:in-reply-to:message-id:mime-version:references
-        :reply-to:sender:subject:subject:to:to; s=fm3; t=1652341490; x=
-        1652348690; bh=F/3C1V38ahUzifyHzEs+CWDQJfKIOWf16zUshCZyYK4=; b=f
-        oyo14B5q77HWBztYyB6jy0JiEQ9Ii/BiEb6AG0JsU2fDxdZqUcK68yNGAC7EoaS0
-        MLdiGoW2wTpmdb51vgwhwQiNWtPftgTIU60n5uuzPE360fUVgjTUAya9IPqnwNKb
-        BnviiRI1bsbrEa+UsHZFVi+kJ9LICkw7R3oWYCMgAfhrwml2d5eev3yTn9skCxBg
-        VH8/RSJY4M5b81xtpsc+F9ey0/umPWOxbsk7XMP+7d9G9PDaBbhhl/f5taTsz5RB
-        6dmN6bGq0hhSJ7jW2s6IqG39WvMgsRgpCq0P2vXnglINSYJVGREHl0DALEPDRllK
-        ioGt2OrO1hw7MXf06E+fg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:cc:content-transfer-encoding
-        :content-type:date:date:from:from:in-reply-to:in-reply-to
-        :message-id:mime-version:references:reply-to:sender:subject
-        :subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-        :x-sasl-enc; s=fm1; t=1652341490; x=1652348690; bh=F/3C1V38ahUzi
-        fyHzEs+CWDQJfKIOWf16zUshCZyYK4=; b=PwYCoCpllwsaeQDZ/UbNYqufIcU3D
-        ZUWgY8F7k7Saqv2O6zyjaOoYF5xcDIWEnLSGiwdoo9z8lCBMr/tHJh5b0zfeFWE6
-        /Z2RCJLc+r2pnrvNhImcW02ht7w/mv4bgobAnb9k0gXLDcWXAQYuz3K1z9POKN/y
-        S/eqJzDh+501oGPp9exuG3dzomL2dp5vuGlGULmmWXC8cqRqYHf4z9q8S2BE/UHo
-        6LyF8q2ZC7+aDXKLXASdRi94nP7is08wABRLovnl/szz04ritVADLELl1cAAm1+2
-        90qcou1rCuxePxCOn11vTIOW78qBQGe0KsUAxnEyD9NN9GYZScntiuXrg==
-X-ME-Sender: <xms:8bp8YqcK-fdwBudEcm5H1P_35GB8Y7LkLxZ4zJkH7TKJFPY--ts9wQ>
-    <xme:8bp8YkOvhUAnmlQU_F1xaAbi92HOEjaEU2MhKVss9NVtJC1EMVj_Hk3wd-nXqt7XK
-    R68JXUE9Mg8QkPMOf4>
-X-ME-Received: <xmr:8bp8Yrgphjel3L9AUZeENPZqw0iDm42eTLMqQ_jugzMVv5Ex1vLAqdXFGcdo-J9RZVw2IZo3EkihHmK8LVQqL50inCCR6S8SR81EWos>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrgeeigdduvdduucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvfevuffkfhggtggugfgjsehtqhertddttddvnecuhfhrohhmpeforgig
-    ihhmvgcutfhiphgrrhguuceomhgrgihimhgvsegtvghrnhhordhtvggthheqnecuggftrf
-    grthhtvghrnhepheejffefgefgieevjedvfffgvdfghedtgfdvueejvdejgfffvdeuteei
-    vedufedvnecuffhomhgrihhnpegsohhothhlihhnrdgtohhmnecuvehluhhsthgvrhfuih
-    iivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepmhgrgihimhgvsegtvghrnhhordht
-    vggthh
-X-ME-Proxy: <xmx:8bp8Yn9_Hnhd8voI202NNd_FlS4bmUHGt3SBFFkI5a5B-1Sfmlps8Q>
-    <xmx:8bp8Ymsn4HLY6Dqe7h0m9lGhr8Ulxluora9B7319zC42M3vRgIlJhg>
-    <xmx:8bp8YuGGZe5sCyNbypDOt_k8OycLAKInPJrliLcAmGL5wufwJB_p0w>
-    <xmx:8rp8Yu2wRlaVZOp8yBGYU65RItWFtHlRMmFrvZtBCrOu7SA0hzrdwpMFxjs>
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 12 May 2022 03:44:48 -0400 (EDT)
-Date:   Thu, 12 May 2022 09:44:46 +0200
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     Guillaume Ranquet <granquet@baylibre.com>
-Cc:     airlied@linux.ie, angelogioacchino.delregno@collabora.com,
-        chunfeng.yun@mediatek.com, chunkuang.hu@kernel.org,
-        ck.hu@mediatek.com, daniel@ffwll.ch, deller@gmx.de,
-        jitao.shi@mediatek.com, kishon@ti.com, krzk+dt@kernel.org,
-        maarten.lankhorst@linux.intel.com, matthias.bgg@gmail.com,
-        p.zabel@pengutronix.de, robh+dt@kernel.org, tzimmermann@suse.de,
-        vkoul@kernel.org, devicetree@vger.kernel.org,
-        dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org,
-        linux-phy@lists.infradead.org, markyacoub@google.com,
-        Markus Schneider-Pargmann <msp@baylibre.com>,
-        kernel test robot <lkp@intel.com>
-Subject: Re: [PATCH v9 18/22] drm/mediatek: Add mt8195 Embedded DisplayPort
- driver
-Message-ID: <20220512074446.ihilbbnbuwesxbbg@houat>
-References: <20220327223927.20848-1-granquet@baylibre.com>
- <20220327223927.20848-19-granquet@baylibre.com>
- <20220429083933.q3w75q3zuyyuvo4w@houat>
- <CABnWg9tzhZjrdKT4chkDrY-uH8BMUoxyNLUSwfuG6Sv1J+8ddg@mail.gmail.com>
+        Thu, 12 May 2022 07:59:24 -0400
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5004D219C03;
+        Thu, 12 May 2022 04:59:23 -0700 (PDT)
+Received: by mail-pl1-x632.google.com with SMTP id m12so4653211plb.4;
+        Thu, 12 May 2022 04:59:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=a/Jq44xoX1PX4n3n8Vf2G0RTQLdM4u3R8vUUYgDiB04=;
+        b=mlMqYveSz/+4qyhU7Gn2t3oWFvyH+LSNhqreDHRhYlwIHWqahZCFudIHWm6Ja6shfJ
+         l6FeEnF5N+f7cfpHAwyX2D2A6Im2Xst2Vt0KatDULbUJMvR/gjU0p6whZWNLymtnRqdg
+         XpenVROQ7O74LbOF/JN8z421V3oYlvmaPamURNP0qMVllMgrdgR7WQx0k1yzliiAGDc/
+         cu1N8Oiya9M7Ouij7ORwpMcmR5valH7ZFw2ufqvt0khJMMvqGuQBiA299NVzlEwNymzT
+         Fmu3DKnijVF6aP7k4Dbi0eWKnD7hm4SYQVcNLVueHvuwGkD28M55+CTWIy3+s1oDCUFV
+         sAVw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=a/Jq44xoX1PX4n3n8Vf2G0RTQLdM4u3R8vUUYgDiB04=;
+        b=QnMJ/W3QTQfW+6vqQYOVc/11LauENffY3wfmXCnClxvZ447ojY+kO+Ts8DqvKjOAqN
+         w5Z9J6POpse/wEGYyCnvLoSjRDu6ofdG7fbZ6QWR6t3CQ1QhX90fPLuIOLtG9fucFRmq
+         fG0iVNWsvPCPOZZkSKzR7cSE3A3leFkwFDPY6cg49cGulcjwFvGehEziwSXO2FUDQliE
+         kFir4DB5AiNLaf6GEQV7Oc5QM5nf96LZwtU/ZOSx7crVxx1Lz8lJJbhAfUEQQTNF+gdI
+         UJJFz1IENqlPd3TZ/0MYbF3Nomv626dOJwtj1BMrAikLgYNA+nHnKq3C6WM7MC75+F/8
+         2SKg==
+X-Gm-Message-State: AOAM533IFhe8YGy9VAdQMIg5d32mgvWEh+hpbD8sNzpTNPrrRcUJQVbB
+        dQGLqEaFyGq3hVnmrLeS8qo=
+X-Google-Smtp-Source: ABdhPJxUkdcERAaY6EHXM+YWGl5OJizIGEsi9bYKgIcAV4R0PZrxLengDsUUSp2cSZor8m+omxbfVQ==
+X-Received: by 2002:a17:902:7445:b0:15f:2eb6:2c3d with SMTP id e5-20020a170902744500b0015f2eb62c3dmr9432973plt.132.1652356762826;
+        Thu, 12 May 2022 04:59:22 -0700 (PDT)
+Received: from localhost.localdomain ([202.120.234.246])
+        by smtp.googlemail.com with ESMTPSA id k34-20020a635a62000000b003c14af5063esm1653594pgm.86.2022.05.12.04.59.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 12 May 2022 04:59:22 -0700 (PDT)
+From:   Miaoqian Lin <linmq006@gmail.com>
+To:     Russell King <linux@armlinux.org.uk>, Helge Deller <deller@gmx.de>,
+        Miaoqian Lin <linmq006@gmail.com>,
+        Pawel Moll <pawel.moll@arm.com>,
+        Tomi Valkeinen <tomi.valkeinen@ti.com>,
+        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] video: fbdev: Fix refcount leak in clcdfb_of_vram_setup
+Date:   Thu, 12 May 2022 15:59:08 +0400
+Message-Id: <20220512115913.48685-1-linmq006@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <CABnWg9tzhZjrdKT4chkDrY-uH8BMUoxyNLUSwfuG6Sv1J+8ddg@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hi,
+of_parse_phandle() returns a node pointer with refcount
+incremented, we should use of_node_put() on it when not need anymore.
+Add missing of_node_put() to avoid refcount leak.
 
-On Wed, May 11, 2022 at 05:59:13AM -0700, Guillaume Ranquet wrote:
-> >> +#include <drm/drm_atomic_helper.h>
-> >> +#include <drm/drm_bridge.h>
-> >> +#include <drm/drm_crtc.h>
-> >> +#include <drm/dp/drm_dp_helper.h>
-> >> +#include <drm/drm_edid.h>
-> >> +#include <drm/drm_of.h>
-> >> +#include <drm/drm_panel.h>
-> >> +#include <drm/drm_print.h>
-> >> +#include <drm/drm_probe_helper.h>
-> >> +#include <linux/arm-smccc.h>
-> >> +#include <linux/clk.h>
-> >> +#include <linux/delay.h>
-> >> +#include <linux/errno.h>
-> >> +#include <linux/kernel.h>
-> >> +#include <linux/mfd/syscon.h>
-> >> +#include <linux/nvmem-consumer.h>
-> >> +#include <linux/of.h>
-> >> +#include <linux/of_irq.h>
-> >> +#include <linux/of_platform.h>
-> >> +#include <linux/phy/phy.h>
-> >> +#include <linux/platform_device.h>
-> >> +#include <linux/pm_runtime.h>
-> >> +#include <linux/regmap.h>
-> >> +#include <sound/hdmi-codec.h>
-> >> +#include <video/videomode.h>
-> >> +
-> >> +#include "mtk_dp_reg.h"
-> >> +
-> >> +#define MTK_DP_AUX_WAIT_REPLY_COUNT 20
-> >> +#define MTK_DP_CHECK_SINK_CAP_TIMEOUT_COUNT 3
-> >> +
-> >> +//TODO: platform/device data or dts?
-> >
-> >DTS :)
->=20
-> It's probably going to be a platform_data struct for v10...
-> If I have time, I'll change it to a dts property for v10.
+Fixes: d10715be03bd ("video: ARM CLCD: Add DT support")
+Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
+---
+ drivers/video/fbdev/amba-clcd.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-I can't really imagine a case where we would need platform_data
-nowadays. If you have a device tree, then it should be part of the
-binding.
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index 9ec969e136bf..8080116aea84 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -758,12 +758,15 @@ static int clcdfb_of_vram_setup(struct clcd_fb *fb)
+ 		return -ENODEV;
+ 
+ 	fb->fb.screen_base = of_iomap(memory, 0);
+-	if (!fb->fb.screen_base)
++	if (!fb->fb.screen_base) {
++		of_node_put(memory);
+ 		return -ENOMEM;
++	}
+ 
+ 	fb->fb.fix.smem_start = of_translate_address(memory,
+ 			of_get_address(memory, 0, &size, NULL));
+ 	fb->fb.fix.smem_len = size;
++	of_node_put(memory);
+ 
+ 	return 0;
+ }
+-- 
+2.25.1
 
-What issue would you like to address by using a platform_data?
-
-> >> +static enum drm_connector_status mtk_dp_bdg_detect(struct drm_bridge =
-*bridge)
-> >> +{
-> >> +	return connector_status_connected;
-> >> +}
-> >
-> >I'm not quite sure what's going on there. You seem to have some support
-> >for HPD interrupts above, but you always report the display as
-> >connected?
-> >
-> >I'd assume that either you don't have HPD support and then always report
-> >it as connected, or you have HPD support and report the current status
-> >in detect, but that combination seems weird.
->=20
-> The HPD logic needs more work, some things have been broken when I split
-> the driver into three patches eDP - DP - Audio
-> The assumption at first was that eDP didn't need any HPD handling... but =
-it
-> seems I was wrong and the eDP driver needs to be reworked.
-
-That can be made into a patch of its own if you prefer.
-
-You first introduce the driver without status reporting (always
-returning connected or unknown), and then add the needed bits for HPD.
-
-However, that first patch shouldn't contain the interrupt plumbing and
-so on, it's just confusing.
-
-> >> +static struct edid *mtk_dp_get_edid(struct drm_bridge *bridge,
-> >> +				    struct drm_connector *connector)
-> >> +{
-> >> +	struct mtk_dp *mtk_dp =3D mtk_dp_from_bridge(bridge);
-> >> +	bool enabled =3D mtk_dp->enabled;
-> >> +	struct edid *new_edid =3D NULL;
-> >> +
-> >> +	if (!enabled)
-> >> +		drm_bridge_chain_pre_enable(bridge);
-> >> +
-> >> +	drm_dp_dpcd_writeb(&mtk_dp->aux, DP_SET_POWER, DP_SET_POWER_D0);
-> >> +	usleep_range(2000, 5000);
-> >> +
-> >> +	if (mtk_dp_plug_state(mtk_dp))
-> >> +		new_edid =3D drm_get_edid(connector, &mtk_dp->aux.ddc);
-> >> +
-> >> +	if (!enabled)
-> >> +		drm_bridge_chain_post_disable(bridge);
-> >
-> >Are you sure we can't get a mode set while get_edid is called?
-> >
-> >If we can, then you could end up disabling the device while it's being
-> >powered on.
->=20
-> I'm a bit unsure, I need to spend more time in the drm stack to make sure.
-> I'll get back to you when I have a definitive answer.
-
-So, it looks like it's ok.
-
-get_edid is your implementation of get_modes, which is called by
-drm_helper_probe_single_connector_modes
-
-https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/drm_probe_he=
-lper.c#L416
-
-This is the standard implemantion of fill_modes, which is called
-whenever the get_connector ioctl is called (or similar paths, like
-drm_client_modeset_probe)
-
-drm_helper_probe_single_connector_modes is under the assumption that the
-mode_config.mutex is held though, and that the big lock. So it should be
-serialized there.
-
-Just for future proofing though, it would be better to use refcounting
-there. Would runtime_pm work for you there?
-
-> >> +static void mtk_dp_parse_drm_mode_timings(struct mtk_dp *mtk_dp,
-> >> +					  struct drm_display_mode *mode)
-> >> +{
-> >> +	struct mtk_dp_timings *timings =3D &mtk_dp->info.timings;
-> >> +
-> >> +	drm_display_mode_to_videomode(mode, &timings->vm);
-> >> +	timings->frame_rate =3D mode->clock * 1000 / mode->htotal / mode->vt=
-otal;
-> >
-> >drm_mode_vrefresh()
-> >
-> >> +	timings->htotal =3D mode->htotal;
-> >> +	timings->vtotal =3D mode->vtotal;
-> >> +}
-> >
-> >It's not really clear to me why you need to duplicate drm_display_mode
-> >here?
-> >
-> It's saved to be re-used in mtk_dp_set_msa().
-> It's not ideal, I'll check if I can get the mode directly from mtk_dp_set=
-_msa()
-
-Yeah, it looks like mtk_dp_set_msa() uses fairly straightforward values,
-this will be just as easy with drm_display_mode.
-
-Maxime

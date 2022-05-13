@@ -2,69 +2,60 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 765E4C433F5
-	for <linux-fbdev@archiver.kernel.org>; Fri, 13 May 2022 11:11:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA1B5C433EF
+	for <linux-fbdev@archiver.kernel.org>; Fri, 13 May 2022 11:33:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1379817AbiEMLLL (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Fri, 13 May 2022 07:11:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44618 "EHLO
+        id S1379680AbiEMLdC (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Fri, 13 May 2022 07:33:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36806 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1379809AbiEMLLH (ORCPT
+        with ESMTP id S1376806AbiEMLdB (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Fri, 13 May 2022 07:11:07 -0400
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTP id 84AA148392
-        for <linux-fbdev@vger.kernel.org>; Fri, 13 May 2022 04:11:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1652440264;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
+        Fri, 13 May 2022 07:33:01 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2128166D79;
+        Fri, 13 May 2022 04:32:58 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 8B6781F938;
+        Fri, 13 May 2022 11:32:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1652441577; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
          in-reply-to:in-reply-to:references:references;
-        bh=1dg98KrUX9HZ3UiGHczFtY+YKU5lrgUcO+i/Ssa7vQM=;
-        b=P2oBC1eyKUgB+ySFgk6PKc66YX2OhKpo2Y8xdZVxWjT37btfIpr9efBDwI9QXQWm2xM2ER
-        6nSGlzH1+fuHa0IGlSdgc3M/m5d6znLDgqqxyFgEhfmGUHQUFGEF76X6euqrKhjSiNXRnM
-        wmgFSLj2hYKL5MfJT7dmn0kwFZdRx68=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-9-nbfg6ppXNTC4Mp1mJUPXEA-1; Fri, 13 May 2022 07:11:03 -0400
-X-MC-Unique: nbfg6ppXNTC4Mp1mJUPXEA-1
-Received: by mail-wr1-f69.google.com with SMTP id j21-20020adfa555000000b0020adb9ac14fso2818574wrb.13
-        for <linux-fbdev@vger.kernel.org>; Fri, 13 May 2022 04:11:02 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=1dg98KrUX9HZ3UiGHczFtY+YKU5lrgUcO+i/Ssa7vQM=;
-        b=k1jcQ2pXol4KR/Fv+dWrnOeRtNMGl7hRrFyytjQviWEq4DuXPRlIZkYINnn6mfk0bJ
-         Vhjo4BX3dL9Bpr13Gnsg9Qtmu0G2lzN348PTTPjJ39BtzhHSukxy4Pqu6izQzt80zQZj
-         688LlkPH9kB+FqJg0eWPaMQnDvgLo28I4i17umoxk1e2ijHf1RfOhErUFOou8791L0aK
-         JLkCJQ7G3NGXRDmV8Gyav5FdRVUDSCLhgAt7LknwbOcgik7tFKrLoOQMDtlP6yM+zA+S
-         oBHJIfNtUb7uCvkMtIQYcreg6CKjtFXja8gqYKHJzWoMHZVkt/yE8Kd6Sl9P7lqCC4gd
-         ynxw==
-X-Gm-Message-State: AOAM530fhofW5FmrW4gDvYRt+3D69uMOtlzRhhvRhvdUWhkOj8VO7gDX
-        hdbUW0YmDZvH09MNDXuSET/nd1h8hKwF0LKKK2GE05pUVp4seGKsEyWaBEPPzeacCzcgjdsyaM0
-        0PXz/Ez5t8l3Wcv40k4BSiug=
-X-Received: by 2002:a05:6000:186f:b0:20c:5f3d:44a4 with SMTP id d15-20020a056000186f00b0020c5f3d44a4mr3503168wri.152.1652440261849;
-        Fri, 13 May 2022 04:11:01 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJz/YFMyk04oK3bo+dwXS1g1NDlB6m16iuaGSyBDul6+/O2Z2C7hErBVucJfnB5E8m7EhPFJSA==
-X-Received: by 2002:a05:6000:186f:b0:20c:5f3d:44a4 with SMTP id d15-20020a056000186f00b0020c5f3d44a4mr3503146wri.152.1652440261602;
-        Fri, 13 May 2022 04:11:01 -0700 (PDT)
-Received: from [192.168.1.129] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id l12-20020adfbd8c000000b0020c547f75easm1820013wrh.101.2022.05.13.04.11.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 13 May 2022 04:11:01 -0700 (PDT)
-Message-ID: <cc0d6635-c739-490d-9c8d-7f53da48e61a@redhat.com>
-Date:   Fri, 13 May 2022 13:10:59 +0200
+        bh=MiDmOs1/H6dqhYoSsVl9AlYWy58YcyCRs35aUMxOAmk=;
+        b=iyQpKgT6MMw5KR0+jUn8wy2p2zhml+IT3FWNBgzqrnI+bTe7jjvfmhFmjvdVzwSbMAkyNr
+        qiTx70JKfRIEF+dPJAKdKa8+FHqZH//GU0KiinAFGrT9++z/7dGmZxRogoI4PMlZL1T2lE
+        l0T8JiBr/iIt1rL0etW1TeiS0RAMdfk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1652441577;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:content-type:content-type:
+         in-reply-to:in-reply-to:references:references;
+        bh=MiDmOs1/H6dqhYoSsVl9AlYWy58YcyCRs35aUMxOAmk=;
+        b=dUuReiObJGHJyunjgGcV3jKOLA10P5dDxluAqyqHphNI3qjbgp/tzpkMqsGQaH3uIb+lsk
+        /h3E33yI2aHg8vCw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4474813A84;
+        Fri, 13 May 2022 11:32:57 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id dxe7D+lBfmKROgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Fri, 13 May 2022 11:32:57 +0000
+Message-ID: <026b1c6d-c258-fa88-ed08-d1b5784c95b0@suse.de>
+Date:   Fri, 13 May 2022 13:32:56 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
+ Thunderbird/91.9.0
 Subject: Re: [PATCH v5 0/7] Fix some races between sysfb device registration
  and drivers probe
 Content-Language: en-US
-To:     Thomas Zimmermann <tzimmermann@suse.de>,
+To:     Javier Martinez Canillas <javierm@redhat.com>,
         linux-kernel@vger.kernel.org
 Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -75,87 +66,105 @@ Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         linux-fbdev@vger.kernel.org
 References: <20220511112438.1251024-1-javierm@redhat.com>
  <f726c96b-1924-841f-0125-9f7ed37de20a@suse.de>
-From:   Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <f726c96b-1924-841f-0125-9f7ed37de20a@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <cc0d6635-c739-490d-9c8d-7f53da48e61a@redhat.com>
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+In-Reply-To: <cc0d6635-c739-490d-9c8d-7f53da48e61a@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------740qThg0O9gjX6BQllYOYoVE"
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-Hello Thomas,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------740qThg0O9gjX6BQllYOYoVE
+Content-Type: multipart/mixed; boundary="------------RZpES3ql0GSOSsXG7T1LU8ih";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Javier Martinez Canillas <javierm@redhat.com>,
+ linux-kernel@vger.kernel.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ dri-devel@lists.freedesktop.org, Daniel Vetter <daniel@ffwll.ch>,
+ Hans de Goede <hdegoede@redhat.com>, Helge Deller <deller@gmx.de>,
+ Jonathan Corbet <corbet@lwn.net>, Peter Jones <pjones@redhat.com>,
+ linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org
+Message-ID: <026b1c6d-c258-fa88-ed08-d1b5784c95b0@suse.de>
+Subject: Re: [PATCH v5 0/7] Fix some races between sysfb device registration
+ and drivers probe
+References: <20220511112438.1251024-1-javierm@redhat.com>
+ <f726c96b-1924-841f-0125-9f7ed37de20a@suse.de>
+ <cc0d6635-c739-490d-9c8d-7f53da48e61a@redhat.com>
+In-Reply-To: <cc0d6635-c739-490d-9c8d-7f53da48e61a@redhat.com>
 
-Thanks for your feedback and comments.
+--------------RZpES3ql0GSOSsXG7T1LU8ih
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-On 5/13/22 12:48, Thomas Zimmermann wrote:
-> Hi Javier,
-> 
-> thanks again for providing the examples. I think I now better get what 
-> you're trying to solve.
->
+SGkgSmF2aWVyDQoNCkFtIDEzLjA1LjIyIHVtIDEzOjEwIHNjaHJpZWIgSmF2aWVyIE1hcnRp
+bmV6IENhbmlsbGFzOg0KLi4uDQo+PiBXZSBhbHJlYWR5IHRyYWNrIHRoZSBtZW1vcnkgcmFu
+Z2VzIGluIGRybSBhcGVydHVyZSBoZWxwZXJzLiBXZSdkIG5lZWQgdG8NCj4+IG1vdmUgdGhl
+IGNvZGUgdG8gYSBtb3JlIHByb21pbmVudCBsb2NhdGlvbiAoZS5nLiwgPGxpbnV4L2FwZXJ0
+dXJlLmg+KQ0KPj4gYW5kIGNoYW5nZSBmYmRldiB0byB1c2UgaXQuIFN5c2ZiIGFuZCBEVCBj
+b2RlIG5lZWRzIHRvIGluc2VydCBwbGF0Zm9ybQ0KPj4gZGV2aWNlcyB1cG9uIGNyZWF0aW9u
+LiBXZSBjYW4gdGhlbiBpbXBsZW1lbnQgdGhlIG1vcmUgZmFuY3kgc3R1ZmYsIHN1Y2gNCj4+
+IGFzIHRyYWNraW5nIG5hdGl2ZS1kZXZpY2UgbWVtb3J5LiAgKEFuZCBpZiB3ZSBldmVyIGdl
+dCB0byBmaXggYWxsIHVzYWdlDQo+PiBvZiBMaW51eCcgcmVxdWVzdC1tZW0tcmVnaW9uLCB3
+ZSBjYW4gZXZlbiBtb3ZlIGFsbCB0aGUgZnVuY3Rpb25hbGl0eSB0aGVyZSkuDQo+Pg0KPiAN
+Cj4gQWdyZWVkLiBBbmQgYXMgbWVudGlvbmVkLCB0aGUgcmFjZSB0aGF0IHRoZXNlIHBhdGNo
+ZXMgYXR0ZW1wdCB0byBmaXggYXJlIGZvcg0KPiB0aGUgbGVzcyBjb21tb24gY2FzZSB3aGVu
+IGEgbmF0aXZlIGRyaXZlciBwcm9iZXMgYnV0IGVpdGhlciBubyBnZW5lcmljIGRyaXZlcg0K
+PiByZWdpc3RlcmVkIGEgZnJhbWVidWZmZXIgeWV0IG9yIHRoZSBwbGF0Zm9ybSBkZXZpY2Ug
+d2Fzbid0IHJlZ2lzdGVyZWQgeWV0Lg0KPiANCj4gQnV0IHRoaXMgY2FuIG9ubHkgaGFwcGVu
+IGlmIGZvciBleGFtcGxlIGEgbmF0aXZlIGRyaXZlciBpcyBidWlsdC1pbiBidXQgdGhlDQo+
+IGdlbmVyaWMgZHJpdmVyIGlzIGJ1aWxkIGFzIGEgbW9kdWxlLCB3aGljaCBpcyBub3QgdGhl
+IGNvbW1vbiBjb25maWd1cmF0aW9uLg0KPiANCj4gV2hhdCBtb3N0IGRpc3Ryb3MgZG8gaXMg
+dGhlIG9wcG9zaXRlLCB0byBoYXZlIHtzaW1wbGUsb2YsZWZpLHZlc2F9ZmIgb3INCj4gc2lt
+cGxlZHJtIGJ1aWx0LWluIGFuZCB0aGUgbmF0aXZlIGRyaXZlcnMgYnVpbHQgYXMgbW9kdWxl
+cy4NCj4gDQo+IFNvIHRoZXJlJ3Mgbm8gcnVzaCB0byBmaXggdGhpcyBieSBwaWxpbmcgbW9y
+ZSBoYWNrcyBvbiB0b3Agb2YgdGhlIG9uZXMgd2UNCj4gYWxyZWFkeSBoYXZlIGFuZCBpbnN0
+ZWFkIHRyeSB0byBmaXggaXQgbW9yZSBwcm9wZXJseSBhcyB5b3Ugc3VnZ2VzdGVkLg0KPiAg
+IA0KDQpBIGZpcnN0IHN0ZXAgd291bGQgYmUgdG8gdXNlIERSTSdzIGFwZXJ0dXJlIGhlbHBl
+cnMgaW4gZmJkZXYuIFRoYXQgd291bGQgDQpiZSBhIGdvb2QgaWRlYSBhbnl3YXksIGFzIGl0
+IHdvdWxkIHNpbXBsaWZ5IGJvdGguIFlvdSBhbHJlYWR5IG1lbnRpb25lZCANCnNvbWUgQVBJ
+IGNoYW5nZXMgdG8gbWFrZSBhcGVydHVyZSBoZWxwZXJzIERSTS1pbmRlcGVuZGVudC4NCg0K
+VGhlIGFmZmVjdGVkIGZiZGV2IGRyaXZlcnMgdXNlIHBsYXRmb3JtIGRldmljZXMsIHNvIHRo
+aXMgc2hvdWxkIGJlIGVhc3kuDQoNCkFwZXJ0dXJlIGhlbHBlcnMgaGF2ZSBzb21ldGhpbmcg
+bGlrZSB0aGUgcmVnaXN0cmF0aW9uX2xvY2suIFsxXSBJIGRvbid0IA0Ka25vdyBpZiB3ZSBu
+ZWVkIHRvIHJlY3JlYXRlIHBhdGNoIDMgZm9yIHRoaXMgYXMgd2VsbC4NCg0KSWYgd2UgYWJz
+b2x1dGVseSBuZWVkIHNvbWUgc3BlY2lhbCBkZXRhY2htZW50IGhhbmRsaW5nIGZvciBmYmRl
+diwgd2UgY2FuIA0KbWFrZSBkZXZtX2FwZXJ0dXJlX2FxdWlyZSgpIGEgcHVibGljIGludGVy
+ZmFjZS4gVGhlIGRldGFjaCBoZWxwZXIgaXMgDQpwcm92aWRlZCBieSB0aGUgY2FsbGVyLg0K
+DQpCZXN0IHJlZ2FyZHMNClRob21hcw0KDQoNClsxXSANCmh0dHBzOi8vZWxpeGlyLmJvb3Rs
+aW4uY29tL2xpbnV4L3Y1LjE3LjYvc291cmNlL2RyaXZlcnMvZ3B1L2RybS9kcm1fYXBlcnR1
+cmUuYyNMMjU0DQpbMl0gDQpodHRwczovL2VsaXhpci5ib290bGluLmNvbS9saW51eC92NS4x
+Ny42L3NvdXJjZS9kcml2ZXJzL2dwdS9kcm0vZHJtX2FwZXJ0dXJlLmMjTDE1OQ0KDQotLSAN
+ClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBEcml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNv
+ZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgNCk1heGZlbGRzdHIuIDUsIDkwNDA5IE7D
+vHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwgQUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0
+c2bDvGhyZXI6IEl2byBUb3Rldg0K
 
-You are welcome.
- 
-> First of all let's merge patch 3, as it seems unrelated.
->
+--------------RZpES3ql0GSOSsXG7T1LU8ih--
 
-Agreed. I can push it to drm-misc-next.
- 
-> For the other patches, I'd like to take a step back and try to solve the 
-> broader problem. IIRC we talked about this briefly already.
-> 
+--------------740qThg0O9gjX6BQllYOYoVE
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
 
-Yes, that's what we discussed on IRC some time ago.
+-----BEGIN PGP SIGNATURE-----
 
->  From my understanding, the problem of the current code is that removal 
-> of the firmware device is build around drivers (either DRM or fbdev). 
-> Everything works fine if a driver is bound to the firmware device and 
-> the native driver can remove it.  In other case, we have to manually 
+wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmJ+QegFAwAAAAAACgkQlh/E3EQov+A2
+sQ/8D7aYwDIgk8L3+1bF/YeMSNhqsgkRqp2BLg+P6/S1AVKfDJVfmx0u3sofTWUL4A1IZgQrhY9G
+A8TeLgAete6GUD3w0Zx7cRNGwznM6lTLkUrIumH53UcEnbSCdMtC301wA3RnKbLOw0Q7EGn6CpMo
+lZw/ufb0z9VR7RjRCa+dcWKt8kVyUr0ijdLC0Xhvv1PWe5IHklz/+HAyOV7ms1NKsVWu5mWuD0Te
+MTjlbq2WzQeiL+XL3j1ZizUzkm8Cnb3yxk4NDqm1Z9BfuUpVk7TppZpj6AyhZNkarRXQB2T+fIbD
+f54mH5Z7gcb4B8kzNgrGPmlsQJbiHgkwZnSgcKmnDaDRx8VEoMLPSc+aeBUbeD/cH84MRl6HPCK/
+f7U8DGqbipB8XfaZWyko7S2cW21ZevZjXETQrME2nmw7LzvUz2RnYuQaOAbvX20QZ8PKgrcTNUli
+bW9ocCXXTBExjFojM+Mn3Xnnlmrb/t7soiQ4lW2wcf7qiYkCx39CeJ14zz3BHA2PKeFB2Zbo43/N
+4L7BF+xCwQFAk6aWJ6bBIhh3SLO16tr0Q7CmFxaxRsEQmo6lQr9puQ6JYuQ57ylxufWJ5HTyzXsQ
+xgMnM8X6qU29lb9qtuug6os2MxNsfMKwolYMISIzWkaDhjl7W+AdEkQ8kxxSySCgH2GU29X7vN3Q
+ov0=
+=0rOq
+-----END PGP SIGNATURE-----
 
-And this is the common case, since most kernels will have some driver
-that binds to a platform device registered to provide the firmware FB.
-
-> disable sysfb and force-remove unbound firmware devices.  And the 
-> patchset doesn't even cover firmware devices that come from DT nodes.
->
-
-Indeed.
- 
-> But what we really want is to track resource ownership based on devices. 
-> When we add a firmware device (via sysfb or DT), we immediately add it 
-> to a list of firmware devices. When the native driver arrives, it can 
-> remove the firmware device even if no driver has been bound.
-> 
-> We can also operate in the other way if the native drivers implicitly 
-> reserves the framebuffer range. If sysfb would try to register a 
-> firmware device in that range, he can let it fail. No more need to fully 
-> disable sysfb on the first arriving native device.
-> 
-> We already track the memory ranges in drm aperture helpers. We'd need to 
-> move the code to a more prominent location (e.g., <linux/aperture.h>) 
-> and change fbdev to use it. Sysfb and DT code needs to insert platform 
-> devices upon creation. We can then implement the more fancy stuff, such 
-> as tracking native-device memory.  (And if we ever get to fix all usage 
-> of Linux' request-mem-region, we can even move all the functionality there).
->
-
-Agreed. And as mentioned, the race that these patches attempt to fix are for
-the less common case when a native driver probes but either no generic driver
-registered a framebuffer yet or the platform device wasn't registered yet.
-
-But this can only happen if for example a native driver is built-in but the
-generic driver is build as a module, which is not the common configuration.
-
-What most distros do is the opposite, to have {simple,of,efi,vesa}fb or
-simpledrm built-in and the native drivers built as modules.
-
-So there's no rush to fix this by piling more hacks on top of the ones we
-already have and instead try to fix it more properly as you suggested.
- 
--- 
-Best regards,
-
-Javier Martinez Canillas
-Linux Engineering
-Red Hat
-
+--------------740qThg0O9gjX6BQllYOYoVE--

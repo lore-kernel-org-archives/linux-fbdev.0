@@ -2,36 +2,36 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57E1BC43217
-	for <linux-fbdev@archiver.kernel.org>; Wed, 18 May 2022 12:27:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 396BCC433FE
+	for <linux-fbdev@archiver.kernel.org>; Wed, 18 May 2022 12:30:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236492AbiERM1R (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 18 May 2022 08:27:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47660 "EHLO
+        id S236792AbiERMaH (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 18 May 2022 08:30:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49354 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236483AbiERM1O (ORCPT
+        with ESMTP id S236867AbiERM3r (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 18 May 2022 08:27:14 -0400
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77BE18DDCE;
-        Wed, 18 May 2022 05:27:07 -0700 (PDT)
+        Wed, 18 May 2022 08:29:47 -0400
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0F26E195795;
+        Wed, 18 May 2022 05:28:13 -0700 (PDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by ams.source.kernel.org (Postfix) with ESMTPS id C923DB81FB6;
-        Wed, 18 May 2022 12:27:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 407DDC385AA;
-        Wed, 18 May 2022 12:27:03 +0000 (UTC)
+        by dfw.source.kernel.org (Postfix) with ESMTPS id 240FD6164C;
+        Wed, 18 May 2022 12:28:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44938C34119;
+        Wed, 18 May 2022 12:28:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1652876824;
-        bh=doQRzfdvKQcqj96z7UMVJeMF3Ya4m94Bf6rITo95dKE=;
+        s=k20201202; t=1652876891;
+        bh=2G3O/BeuOB/LP+pXY8WjpNyQcb0iZ9J+DrQIeLIcGXY=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=uTE9CK8kHOpcgsW4skP3AYCrsPD5jlqZA0wckV3P8PejKR4zOlKKGzHWZS1FbzR6d
-         i6rw8Q0s5fvovFzBH+P+ogzFuK76axYa9CM9w7UZkMnK3374bF2Twj0cjhmwVW4fBR
-         sYvIzl03GN+qGkesa7AAcVs+0LdN9I3QdswiICZeR4/FxsZizn5JglmrGyxqiPi1tS
-         ad7MePLICIj31QyMzo/fikfftOfRD5FZ9alhCGkCnW/twrbk7hmKyRFEMwtXw5zk9B
-         b08PWiqCW6erupdG1sT7kz5ttZLDR+YAD1zbmgXJsgovqJ7ktepS6J4rAks8RSBXmy
-         WSt5Vvlet+E6w==
+        b=boOUcq/+nlWQEoFW6WOugy+AXfoip8MtHPwSJ2jzQu5iucQZa6ZHqkvuUPd8gV1cv
+         SEIeJ9Rr5K6MXJ8AYXtRY740YD+OBB1AKHjjCSCRGzkxuOVw+8IXKTQIsUBe4T6SdW
+         YN9L02OCFTmew9kz+//gRD0qJca91EUxGD5p2k06Ztj43S1p0GMcN9psuQkQ8HNTzT
+         umPjyzoAWkQ+OOBODwIVGr/+aVG7mMVUJK8N90HciP2/CPjKQ6ycoE5vCU4nHtAzOX
+         jFycRdjAA40VGdSiLOdnHH0hrbvo1uesHAvTtvOAd1W9+ifVlF3BTTDB/zGLVUKw7H
+         HpEmhdlE2P89Q==
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
@@ -39,14 +39,14 @@ Cc:     Daniel Vetter <daniel.vetter@ffwll.ch>,
         Javier Martinez Canillas <javierm@redhat.com>,
         Thomas Zimmermann <tzimmermann@suse.de>,
         Sasha Levin <sashal@kernel.org>, daniel@ffwll.ch,
-        deller@gmx.de, sam@ravnborg.org, wangqing@vivo.com,
+        deller@gmx.de, wangqing@vivo.com, sam@ravnborg.org,
         linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.17 08/23] fbdev: Prevent possible use-after-free in fb_release()
-Date:   Wed, 18 May 2022 08:26:21 -0400
-Message-Id: <20220518122641.342120-8-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 07/17] fbdev: Prevent possible use-after-free in fb_release()
+Date:   Wed, 18 May 2022 08:27:41 -0400
+Message-Id: <20220518122753.342758-7-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220518122641.342120-1-sashal@kernel.org>
-References: <20220518122641.342120-1-sashal@kernel.org>
+In-Reply-To: <20220518122753.342758-1-sashal@kernel.org>
+References: <20220518122753.342758-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -80,7 +80,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+)
 
 diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index 26892940c213..82e31a2d845e 100644
+index 65dae05fff8e..ce699396d6ba 100644
 --- a/drivers/video/fbdev/core/fbsysfs.c
 +++ b/drivers/video/fbdev/core/fbsysfs.c
 @@ -80,6 +80,10 @@ void framebuffer_release(struct fb_info *info)

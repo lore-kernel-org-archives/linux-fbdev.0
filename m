@@ -2,108 +2,104 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49D93C433FE
-	for <linux-fbdev@archiver.kernel.org>; Wed, 18 May 2022 12:31:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00C9EC433EF
+	for <linux-fbdev@archiver.kernel.org>; Wed, 18 May 2022 18:30:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S236769AbiERMb2 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Wed, 18 May 2022 08:31:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48496 "EHLO
+        id S241407AbiERSaP (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Wed, 18 May 2022 14:30:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48766 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S236886AbiERMaR (ORCPT
+        with ESMTP id S241376AbiERSaO (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Wed, 18 May 2022 08:30:17 -0400
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 052D114D7AB;
-        Wed, 18 May 2022 05:28:44 -0700 (PDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        Wed, 18 May 2022 14:30:14 -0400
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5D3E2268A5
+        for <linux-fbdev@vger.kernel.org>; Wed, 18 May 2022 11:30:11 -0700 (PDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
         (No client certificate requested)
-        by dfw.source.kernel.org (Postfix) with ESMTPS id 28DEF61688;
-        Wed, 18 May 2022 12:28:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E517EC34115;
-        Wed, 18 May 2022 12:28:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1652876887;
-        bh=iKQ0hZxnLPgEJ50DVj3I4D8Qng3oKsd31mCAqKdvhDo=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=gbVJvYKBaEO77WQHWyHmDbwPpo7yzm4MJMOwcWj0FqG7LWLTvbABpqVxRN2NmF86B
-         sW81TRfB/K6Gn3f1l5SvFstjWIS6cNyTxUayblajrtJpgYqNoOs/HlLuEAjnizEDlZ
-         ZjOMhpRdtR29d8X8GaaUzD8eiqWoxaCzYs3oNBmob4Hcmnqkyk+pLRZ2GI80UqHfDR
-         sUCg3hWo/+rFpFkC5ZO5iPN+p9T8gZj9gguvkq4fx9ccbWBGomfOzg4n53cDycj8kt
-         86QlUP58phTTkLtBhkIEGVpkQiFfbSQnba2atwNr4mt4l4H8JhKekU8n+alWAbyZHY
-         WgdKmJRpNIflw==
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Javier Martinez Canillas <javierm@redhat.com>,
-        Daniel Vetter <daniel.vetter@ffwll.ch>,
-        Sasha Levin <sashal@kernel.org>, daniel@ffwll.ch,
-        deller@gmx.de, sam@ravnborg.org, tzimmermann@suse.de,
-        deng.changcheng@zte.com.cn, xiyuyang19@fudan.edu.cn,
-        zheyuma97@gmail.com, alexander.deucher@amd.com,
-        penguin-kernel@i-love.sakura.ne.jp, thunder.leizhen@huawei.com,
-        linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH AUTOSEL 5.15 06/17] Revert "fbdev: Make fb_release() return -ENODEV if fbdev was unregistered"
-Date:   Wed, 18 May 2022 08:27:40 -0400
-Message-Id: <20220518122753.342758-6-sashal@kernel.org>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220518122753.342758-1-sashal@kernel.org>
-References: <20220518122753.342758-1-sashal@kernel.org>
+        by smtp-out2.suse.de (Postfix) with ESMTPS id 349FF1F9C4;
+        Wed, 18 May 2022 18:30:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+        t=1652898610; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=LhFDl2NOlV91LYZ76ENca4DEnibAY9AsTKgpOxk6/Lc=;
+        b=wMsWtuBhE56i8OgwKTz+ZhItOV2OWx6xUDrHDlFg3KYXU/3jkr67BwkzfM9q3OT7w9i18P
+        uZexzv1A4dzD8aTkoVKIYYXfmCn1uem2xb2Rn4jbbOJuYeynO9qkCMjb0hqv3IEHfvIXeH
+        IGpIpdpTda/GRF/exK08N/7qejbyXjc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+        s=susede2_ed25519; t=1652898610;
+        h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+         mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=LhFDl2NOlV91LYZ76ENca4DEnibAY9AsTKgpOxk6/Lc=;
+        b=qmyJSBzXsHKtMCjXRivek24kDukp5WMRHl3fYz3MMpdK836l/NuDX/tt1BAV/3E9BPlA6m
+        5IGAkWzZr1MlooDw==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+         key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+        (No client certificate requested)
+        by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id E4DBE13ADC;
+        Wed, 18 May 2022 18:30:09 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+        by imap2.suse-dmz.suse.de with ESMTPSA
+        id QKQCNzE7hWLPGgAAMHmgww
+        (envelope-from <tzimmermann@suse.de>); Wed, 18 May 2022 18:30:09 +0000
+From:   Thomas Zimmermann <tzimmermann@suse.de>
+To:     javierm@redhat.com, airlied@linux.ie, daniel@ffwll.ch,
+        deller@gmx.de, maxime@cerno.tech, sam@ravnborg.org,
+        msuchanek@suse.de, mpe@ellerman.id.au, benh@kernel.crashing.org,
+        paulus@samba.org
+Cc:     dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org,
+        Thomas Zimmermann <tzimmermann@suse.de>
+Subject: [PATCH 1/2] MAINTAINERS: Broaden scope of simpledrm entry
+Date:   Wed, 18 May 2022 20:30:05 +0200
+Message-Id: <20220518183006.14548-2-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.36.1
+In-Reply-To: <20220518183006.14548-1-tzimmermann@suse.de>
+References: <20220518183006.14548-1-tzimmermann@suse.de>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-From: Javier Martinez Canillas <javierm@redhat.com>
+There will be more DRM drivers for firmware-provided framebuffers. Use
+the existing entry for simpledrm instead of adding a new one for each
+driver. Also add DRM's aperture helpers, which are part of the driver's
+infrastructure.
 
-[ Upstream commit 135332f34ba2662bc1e32b5c612e06a8cc41a053 ]
-
-This reverts commit aafa025c76dcc7d1a8c8f0bdefcbe4eb480b2f6a. That commit
-attempted to fix a NULL pointer dereference, caused by the struct fb_info
-associated with a framebuffer device to not longer be valid when the file
-descriptor was closed.
-
-The issue was exposed by commit 27599aacbaef ("fbdev: Hot-unplug firmware
-fb devices on forced removal"), which added a new path that goes through
-the struct device removal instead of directly unregistering the fb.
-
-Most fbdev drivers have issues with the fb_info lifetime, because call to
-framebuffer_release() from their driver's .remove callback, rather than
-doing from fbops.fb_destroy callback. This meant that due to this switch,
-the fb_info was now destroyed too early, while references still existed,
-while before it was simply leaked.
-
-The patch we're reverting here reinstated that leak, hence "fixed" the
-regression. But the proper solution is to fix the drivers to not release
-the fb_info too soon.
-
-Suggested-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Javier Martinez Canillas <javierm@redhat.com>
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Link: https://patchwork.freedesktop.org/patch/msgid/20220504115917.758787-1-javierm@redhat.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/core/fbmem.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ MAINTAINERS | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 8e38a7a5cf2f..0371ad233fdf 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1436,10 +1436,7 @@ fb_release(struct inode *inode, struct file *file)
- __acquires(&info->lock)
- __releases(&info->lock)
- {
--	struct fb_info * const info = file_fb_info(file);
--
--	if (!info)
--		return -ENODEV;
-+	struct fb_info * const info = file->private_data;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 5c1fd93d9050..43d833273ae9 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6388,13 +6388,15 @@ S:	Orphan / Obsolete
+ F:	drivers/gpu/drm/savage/
+ F:	include/uapi/drm/savage_drm.h
  
- 	lock_fb_info(info);
- 	if (info->fbops->fb_release)
+-DRM DRIVER FOR SIMPLE FRAMEBUFFERS
++DRM DRIVER FOR FIRMWARE FRAMEBUFFERS
+ M:	Thomas Zimmermann <tzimmermann@suse.de>
+ M:	Javier Martinez Canillas <javierm@redhat.com>
+ L:	dri-devel@lists.freedesktop.org
+ S:	Maintained
+ T:	git git://anongit.freedesktop.org/drm/drm-misc
++F:	drivers/gpu/drm/drm_aperture.c
+ F:	drivers/gpu/drm/tiny/simpledrm.c
++F:	include/drm/drm_aperture.h
+ 
+ DRM DRIVER FOR SIS VIDEO CARDS
+ S:	Orphan / Obsolete
 -- 
-2.35.1
+2.36.1
 

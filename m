@@ -2,119 +2,133 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28EABC433FE
-	for <linux-fbdev@archiver.kernel.org>; Thu, 19 May 2022 09:20:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E313C433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 19 May 2022 09:37:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S235939AbiESJU3 (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 19 May 2022 05:20:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52762 "EHLO
+        id S232653AbiESJhc (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 19 May 2022 05:37:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57818 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S231784AbiESJUZ (ORCPT
+        with ESMTP id S230428AbiESJhb (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 19 May 2022 05:20:25 -0400
+        Thu, 19 May 2022 05:37:31 -0400
 Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 983FEA76C3;
-        Thu, 19 May 2022 02:20:24 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 853EF78918;
+        Thu, 19 May 2022 02:37:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1652952015;
-        bh=zpK7qmEuxYge/gUsHgQmO3AEd42zsCHNUQv8iJ6JeEY=;
-        h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-        b=CdNeUfReA6WbMSCQHTQ2eEMhitppc/U+OoAgYQcLmFSoqHXS+ELByIPIFHeqTua4H
-         86g0YuhyyFdZNHHXKSDDe1hTFMqaIoi74GHPiheB4NRKiNtruAbCOWHfUDV7+uEkXE
-         cGiCU+ZZ2uLOSUPn850M2oniTL4rCwQz2ivmzhO8=
+        s=badeba3b8450; t=1652953037;
+        bh=N4+dzENszk7EjcP6QEPG3DSK2vLDP5A+aM1bUGENtoU=;
+        h=X-UI-Sender-Class:Date:Subject:To:References:From:In-Reply-To;
+        b=ibe/MwLFCPT67vMgQQXi6vRQIrAFoU9fJmtE+jbjTLRMB4YXectMWQnNabbOdeCLb
+         BwrvVEnEgJThlDh6vsO+8XIaBXX42iXvnoWmrfp9BCJMtzf+O4us/rgB86Vm3geXWY
+         sYtnZOTvBf0y2N+0XOpAtXkI09Rmryv2pItPk8Wo=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from [192.168.20.60] ([92.116.152.7]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MIdiZ-1o42w60SBR-00Eg37; Thu, 19
- May 2022 11:20:15 +0200
-Message-ID: <bf122ee3-1af8-b4d9-bf1d-828bec24deae@gmx.de>
-Date:   Thu, 19 May 2022 11:20:04 +0200
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MMGN2-1o7dH90PG2-00JGVp; Thu, 19
+ May 2022 11:37:17 +0200
+Message-ID: <e1d467ab-4ce6-6702-bd96-4ed5f4c6543c@gmx.de>
+Date:   Thu, 19 May 2022 11:37:06 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.9.0
-Subject: Re: [PATCH] omapfb: simplify the return expression of
- dsi_init_pll_data()
+Subject: Re: [PATCH -next] video: fbdev: pxa3xx-gcu: release the resources
+ correctly in pxa3xx_gcu_probe/remove()
 Content-Language: en-US
-To:     cgel.zte@gmail.com
-Cc:     linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        Minghao Chi <chi.minghao@zte.com.cn>,
-        Zeal Robot <zealci@zte.com.cn>
-References: <20220429054751.3851851-1-chi.minghao@zte.com.cn>
+To:     Yang Yingliang <yangyingliang@huawei.com>,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-fbdev@vger.kernel.org
+References: <20220513100541.2665467-1-yangyingliang@huawei.com>
 From:   Helge Deller <deller@gmx.de>
-In-Reply-To: <20220429054751.3851851-1-chi.minghao@zte.com.cn>
+In-Reply-To: <20220513100541.2665467-1-yangyingliang@huawei.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:P6UDANQEdedYY9HQw8mDtHj4tEHpfK3Hz3gS/vJ4zFANaeOZfBg
- rHQWB6oCiIq454K6hkK61A3uQOM1MFDWoHJsLtHjcnPW4y3au4MNxXa4aXaNhNFxXrxh1+g
- SzlazJW7FE+ldMnjAbijY97ajC2YQRqby43w6AMPwiqoyCyGK5Tlsr/T1+mSI7vg4Srw1j3
- 6OBebPhwGkn3/maaQwH7g==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:i77wvuez/cA=:u3+HeHHbFME606UA3zpR/7
- o29/5sSUmesHBsO64UA4uq9UzRjpx1xj6asdAhYs+QJ9YqDG3J+nCcHsK4NwFXofV9L1XjhxS
- Ex4mQpY8xZEqkat2DD/KhFNLHGdDNX6UkLvpyNyNuKwoAwsSGvHhA/+C6Lh0TISOsb6896NMV
- CEaYg+y+Z44vpQ2r6F80eXDjkbOgg0BcYWheI7lojRreDQxOsqS1Ze0/pE9s1UKCg4GCxTdbf
- m7Lq1dkLz3W+4z6ta/ucAXnolny3fWwLoNZ0AVQfaVnC/0ztRT44jgAVen76vrHAfi+eGfD4p
- EYMSQYQk7KyurFB05E+n8wrt1aEAbbuY0N9JpobsU/EKZLwINGcRuCyqgek3AC0ZPDfSM+krb
- R3yJL8TvXkubgxuMHmpcZU4QSXgR931z9YCqUkssy6eLPqkqKTl1SiGucwvp78kXsaypLxVhI
- r0QOsZdehMBtzb/o3S3olb4M7xEgm51jrlqgzxVOL5roml9m3DUIyZ2yncT4XtuFC9bNzxq1k
- CJGbZCgqSblYFzatsulvhwwIcHge4msLh5xJCpOiNh1h/2YNpXiAPbNzJ20zoUKJa3pM+zwbY
- QYhXwziVRg4BFY72gGTnUcmY5MLMAOGNCSnrUWAi5mamFH9yh7R2gBHV0VYZlOjgLJmY1CdqG
- 8bx8f4np7iAcFAgmiF/JeMkQtWvNQYqnfVmqqFJiFP5gwPABzk3vm/B46tahdj+wmPYdLkwCD
- j+WTpTybKFn0VJJDJiMy5tOEYIO0QOHp5JXYrUD9St/Jr+VeH9UDykzZrk2U23meSXPH4TMHB
- rbv8n5saozb4MK85eZjcG/3JlXQ0N3KKCCI19a4sFxhxrBkxYvsJRyjnCirCnN/d12icztqYJ
- q5SE/2osGEalyaHvNc0sI3Kr7Xv0d2fHRc4DXCh2Hegmf+tPoC2wQI6C6FZtpNEPY/jKCDhOj
- NjcAtm45OlFPF09/qBVpk/+/MR2+wmvy8mAVHq1aGqC9jdqN5wuf4mvdo3t0f7Lx2tc9EVhyJ
- lwCujmIt/e9hjA8mjnlw3U8QThiqgn9yAhxd+NIRFDUIXmI+tqlnVo+UZwdKGPlfTqMoBV2Xg
- zYFPdy6zeMgTyAfiMQ50/EtEcYJOAd0RoAoh2A0T3htwXiO6+j2WCCIsA==
+X-Provags-ID: V03:K1:ebaSU/xZ4T/UJa7gN3ZOW6FXe26rKla8kTIdy+5kcvbSvy25IJn
+ uJktWwDhmDVMgZZt+EyTXX5QPgL7yKQZ5Pk7XBn0EVjVNwpkXGR+tp7clsC4a8/DUYA76By
+ 3WJTdp1BET2BUeHJqxhVmQbbN2uyHySZNDFTq6eO5LvFSzgRDR7kPhQ71BBz1fk3cn7K/5G
+ BKtgtt54OmA2dCx5kKAFg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:vbKg9C5u+iQ=:Kt1F/dbe2n8qiSHFmm4uwM
+ nqvnToH/GMrC+66EDQQ2x7vodIDjrbvjmfpH/8qIa0fjBUjmjscisX84AiIeU2VL6Qfup9bDC
+ SvuI2s6yM6FCCbc1Ef7R1aEm9tT6HRv9PANGY5zSmFAOjgNQodSSiwC/dyvktUwNniQiRiARV
+ Fq80Mq3WKSYAPqumVN4xZkAfHiv/qTTHJaakXfIcZLn/P+sUqOwEwDPKlOVlMzI88cyzNXxeo
+ z0lBfmQQPpWS9/A41sjQTeG6FYAtSg2WuuAQCIaSLuyeonR0OIaX7+hezsp4tbHeOMDA7G5G3
+ ZX6cYSRHxSEpibIZgfVV2of3dovBD5Oj+uS0SLDKwD+jhxUwuCXn93dP7jVBGfK8gqACwP+5W
+ qFsyEj7JjQ/rr9bOf84Sw5c2HY1oPh4phVAIiHdzF2DciLepcCWC3RxQE0jgIa8LkXa1XMaXd
+ Oa2w6yDWepPHx5dWN2+fIyQtm4TrscTQiByLVC4AaHAPAAg9OxqHiSyeTOse+iv7JHYSZjJJp
+ mmthA961QTvoDlXlBBvyuDBcO12wRCGGm0NlUaOq2SVq439YWrKYjux4d9bqU23hRvqOexd4a
+ LPr9lLXr8gx8qkKZtcpW5N+BGzNz0wm/VCpCpbH4XtTAuatsRVGez1B5OTb+3WLJiv4856egD
+ 6SPFCAVC9Q6jZwrfIW/MJUr/QH8oGKFHbPgsa7MWUMh0SzQ/yv/g7ZLUpomlNk3lK8MyexmxT
+ IDS1N3QIyUnvP9vqxSsqKmw8JEpp7biSu3Q8trCretBUkNmQyKMKcalmC+jx+od2HHZYoBmKm
+ Sd+Zf0ezmGhopZ6vpOIi6qEJuMWgFNSzWefm0AjmzWwDS1UaJEYgLXhk+X+lWgJFfbzl2K04k
+ z83kSuea51xmHuUo+MIdlmEte/IF9xaIGfkSV7eqNpltN8b9T1blZsEdLG2+QvbFw1AO4+OKQ
+ rsVgo0PzFi9OBunPux7gM+U+/mC/WvxuCZG9nS209VWQedHZgubbF5nL7jgGQ32hwi8PGHf3B
+ PkLSfa5oNF/W3QqZCHhXRZAM3WS3PtFWu5eOGTSjzx7lESVy42VC7AryWkSaMbPfGitxLiesA
+ 91Cf5i8pl48NXMSulWcuigJVxp7XU9TuXHyOzcGyeYwcvU94rVyNHn4AQ==
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-On 4/29/22 07:47, cgel.zte@gmail.com wrote:
-> From: Minghao Chi <chi.minghao@zte.com.cn>
+On 5/13/22 12:05, Yang Yingliang wrote:
+> In pxa3xx_gcu_probe(), the sequence of error lable is wrong, it will
+> leads some resource leaked, so adjust the sequence to handle the error
+> correctly, and if pxa3xx_gcu_add_buffer() fails, pxa3xx_gcu_free_buffers=
+()
+> need be called.
+> In pxa3xx_gcu_remove(), add missing clk_disable_unpreprare().
 >
-> Simplify the return expression.
->
-> Reported-by: Zeal Robot <zealci@zte.com.cn>
-> Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 
-I've applied both of your omapfb patches to the fbdev tree.
+applied to fbdev tree.
 
 Thanks!
 Helge
 
-
 > ---
->  drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c | 8 +-------
->  1 file changed, 1 insertion(+), 7 deletions(-)
+>  drivers/video/fbdev/pxa3xx-gcu.c | 12 +++++++-----
+>  1 file changed, 7 insertions(+), 5 deletions(-)
 >
-> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c b/drivers/v=
-ideo/fbdev/omap2/omapfb/dss/hdmi_pll.c
-> index c5f89129dcdd..531b36d2232b 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
-> @@ -173,7 +173,6 @@ static int dsi_init_pll_data(struct platform_device =
-*pdev, struct hdmi_pll_data
->  {
->  	struct dss_pll *pll =3D &hpll->pll;
->  	struct clk *clk;
-> -	int r;
+> diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3=
+xx-gcu.c
+> index 350b3139c863..043cc8f9ef1c 100644
+> --- a/drivers/video/fbdev/pxa3xx-gcu.c
+> +++ b/drivers/video/fbdev/pxa3xx-gcu.c
+> @@ -646,6 +646,7 @@ static int pxa3xx_gcu_probe(struct platform_device *=
+pdev)
+>  	for (i =3D 0; i < 8; i++) {
+>  		ret =3D pxa3xx_gcu_add_buffer(dev, priv);
+>  		if (ret) {
+> +			pxa3xx_gcu_free_buffers(dev, priv);
+>  			dev_err(dev, "failed to allocate DMA memory\n");
+>  			goto err_disable_clk;
+>  		}
+> @@ -662,15 +663,15 @@ static int pxa3xx_gcu_probe(struct platform_device=
+ *pdev)
+>  			SHARED_SIZE, irq);
+>  	return 0;
 >
->  	clk =3D devm_clk_get(&pdev->dev, "sys_clk");
->  	if (IS_ERR(clk)) {
-> @@ -203,12 +202,7 @@ static int dsi_init_pll_data(struct platform_device=
- *pdev, struct hdmi_pll_data
->  	}
+> -err_free_dma:
+> -	dma_free_coherent(dev, SHARED_SIZE,
+> -			priv->shared, priv->shared_phys);
+> +err_disable_clk:
+> +	clk_disable_unprepare(priv->clk);
 >
->  	pll->ops =3D &dsi_pll_ops;
-> -
-> -	r =3D dss_pll_register(pll);
-> -	if (r)
-> -		return r;
-> -
-> -	return 0;
-> +	return dss_pll_register(pll);
+>  err_misc_deregister:
+>  	misc_deregister(&priv->misc_dev);
+>
+> -err_disable_clk:
+> -	clk_disable_unprepare(priv->clk);
+> +err_free_dma:
+> +	dma_free_coherent(dev, SHARED_SIZE,
+> +			  priv->shared, priv->shared_phys);
+>
+>  	return ret;
 >  }
+> @@ -683,6 +684,7 @@ static int pxa3xx_gcu_remove(struct platform_device =
+*pdev)
+>  	pxa3xx_gcu_wait_idle(priv);
+>  	misc_deregister(&priv->misc_dev);
+>  	dma_free_coherent(dev, SHARED_SIZE, priv->shared, priv->shared_phys);
+> +	clk_disable_unprepare(priv->clk);
+>  	pxa3xx_gcu_free_buffers(dev, priv);
 >
->  int hdmi_pll_init(struct platform_device *pdev, struct hdmi_pll_data *p=
-ll,
+>  	return 0;
 

@@ -2,88 +2,85 @@ Return-Path: <linux-fbdev-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2992CC433F5
-	for <linux-fbdev@archiver.kernel.org>; Thu, 19 May 2022 17:34:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F67DC433F5
+	for <linux-fbdev@archiver.kernel.org>; Thu, 19 May 2022 18:44:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S242486AbiESRev (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
-        Thu, 19 May 2022 13:34:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50658 "EHLO
+        id S239279AbiESSoR (ORCPT <rfc822;linux-fbdev@archiver.kernel.org>);
+        Thu, 19 May 2022 14:44:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53068 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S234169AbiESReu (ORCPT
+        with ESMTP id S237790AbiESSoP (ORCPT
         <rfc822;linux-fbdev@vger.kernel.org>);
-        Thu, 19 May 2022 13:34:50 -0400
-X-Greylist: delayed 561 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 19 May 2022 10:34:49 PDT
-Received: from mail.wantyapps.xyz (unknown [66.135.5.160])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 146821DF
-        for <linux-fbdev@vger.kernel.org>; Thu, 19 May 2022 10:34:48 -0700 (PDT)
-Received: from localhost (bzq-79-183-83-88.red.bezeqint.net [79.183.83.88])
-        by mail.wantyapps.xyz (Postfix) with ESMTPSA id 41DC57D654;
-        Thu, 19 May 2022 17:25:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=wantyapps.xyz;
-        s=mail; t=1652981122;
-        bh=bwIKlOGYkL2L4Ao4onVXBZ5fa9b9XMy3wOyD2HdryOQ=;
-        h=From:To:Cc:Subject:Date:From;
-        b=oQUhwKS+DczDCMjN3HbYDbECzhCixVy+OoQ5gWsypv1yLI2z+K/H/Thbk8xn8nEbF
-         45G8ezHEH3zy0jk9t3w76n96o7YtAM4cCOiorLVmsK+U7/HPTdxDb4YS2b1Scgdl8s
-         SkHbRRdGryTQORDrCUDksuCfncEgXMCl9gXskbpENN4v5auzz1TrWZh5FCersqOZS6
-         Q0W8NWdHL9sdiGX3MIVmIHlacYbJ09fcAM3aMIcNyKqnHSsqmeJ5SODukMgRhlBxYX
-         6t+GvpZVoCCSkqwTWTOdfX2ZiX6s/IalCK+9+UlaaHZ8H1vY01bMvajC27p5Qsi1Eq
-         fH1XgkGos0Vxw==
-From:   Uri Arev <me@wantyapps.xyz>
-Cc:     Uri Arev <me@wantyapps.xyz>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Len Baker <len.baker@gmx.com>, Sam Ravnborg <sam@ravnborg.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Srivathsa Dara <srivathsa729.8@gmail.com>,
-        =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org
-Subject: [PATCH] staging: fbtft: fix checkpatch.pl struct should normally be const
-Date:   Thu, 19 May 2022 20:25:01 +0300
-Message-Id: <20220519172503.10821-1-me@wantyapps.xyz>
-X-Mailer: git-send-email 2.36.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+        Thu, 19 May 2022 14:44:15 -0400
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C3955C856;
+        Thu, 19 May 2022 11:44:14 -0700 (PDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by sin.source.kernel.org (Postfix) with ESMTPS id 63690CE2747;
+        Thu, 19 May 2022 18:44:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20673C34100;
+        Thu, 19 May 2022 18:44:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+        s=korg; t=1652985851;
+        bh=LV7LTnAH/p1rCGESk6oys94gfkqXoBT21ZKPBvHkVag=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=PJntBITtl+Ix70J0sB1XcPAphJMOsg4aFBWMHvc0SY2z73uU+bdYPDEbFBi+d1k76
+         ysN5otvLvJDv0wXhWJUhkShJ6y0IswWrsq/4D0zNAN/gjfwPvXK6nuH5Fo5/HvjFsM
+         DcteBtGl6sEhkNPBAN1XO2L3TUlpiYC03t69XjLY=
+Date:   Thu, 19 May 2022 11:44:10 -0700
+From:   Andrew Morton <akpm@linux-foundation.org>
+To:     Guenter Roeck <linux@roeck-us.net>
+Cc:     kernel test robot <lkp@intel.com>, linux-staging@lists.linux.dev,
+        linux-omap@vger.kernel.org, linux-nvme@lists.infradead.org,
+        linux-hwmon@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        kvm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        amd-gfx@lists.freedesktop.org,
+        Linux Memory Management List <linux-mm@kvack.org>,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [linux-next:master] BUILD REGRESSION
+ 736ee37e2e8eed7fe48d0a37ee5a709514d478b3
+Message-Id: <20220519114410.638baa38ab2067884600cb72@linux-foundation.org>
+In-Reply-To: <0530d502-1291-23f3-64ac-97bd38a26bd4@roeck-us.net>
+References: <6285958d.+Z2aDZ4O1Y9eiazd%lkp@intel.com>
+        <0530d502-1291-23f3-64ac-97bd38a26bd4@roeck-us.net>
+X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-fbdev.vger.kernel.org>
 X-Mailing-List: linux-fbdev@vger.kernel.org
 
-This simple patch fixes a checkpatch.pl warning in `fbtft/fbtft-core.c`.
+On Wed, 18 May 2022 20:41:27 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
 
-Reported by Checkpatch:
-WARNING: struct fb_ops should normally be const
+> On 5/18/22 17:55, kernel test robot wrote:
+> > tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
+> > branch HEAD: 736ee37e2e8eed7fe48d0a37ee5a709514d478b3  Add linux-next specific files for 20220518
+> > 
+> > Error/Warning reports:
+> > 
+> > https://lore.kernel.org/linux-mm/202204291924.vTGZmerI-lkp@intel.com
+> > https://lore.kernel.org/linux-mm/202205041248.WgCwPcEV-lkp@intel.com
+> > https://lore.kernel.org/linux-mm/202205122113.uLKzd3SZ-lkp@intel.com
+> > https://lore.kernel.org/linux-mm/202205172344.3GFeaum1-lkp@intel.com
+> > https://lore.kernel.org/linux-mm/202205190527.o9wVEvHI-lkp@intel.com
+> > 
+> > Error/Warning: (recently discovered and may have been fixed)
+> > 
+> [ .. ]
+> > drivers/hwmon/nct6775-platform.c:199:9: sparse:    unsigned char
+> > drivers/hwmon/nct6775-platform.c:199:9: sparse:    void
+> 
+> This is getting tiresome. Every driver using outb() on m68k will
+> experience that "problem". As far as I can see, it is caused by
+> 
+> #define out_8(addr,b) (void)((*(__force volatile u8 *) (unsigned long)(addr)) = (b))
+> 
+> in arch/m68k/include/asm/raw_io.h. I have no idea what the
+> "(void)" is for, but removing it "fixes" the problem.
+> Either case, this is not a problem with the nct6775 driver,
+> nor is it a new problem.
 
-Signed-off-by: Uri Arev <me@wantyapps.xyz>
----
- drivers/staging/fbtft/fbtft-core.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index 9c4d797e7ae4..9ff2b8230caf 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -539,7 +539,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- {
- 	struct fb_info *info;
- 	struct fbtft_par *par;
--	struct fb_ops *fbops = NULL;
-+	const struct fb_ops *fbops = NULL;
- 	struct fb_deferred_io *fbdefio = NULL;
- 	u8 *vmem = NULL;
- 	void *txbuf = NULL;
-@@ -614,7 +614,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	if (!vmem)
- 		goto alloc_fail;
- 
--	fbops = devm_kzalloc(dev, sizeof(struct fb_ops), GFP_KERNEL);
-+	const fbops = devm_kzalloc(dev, sizeof(struct fb_ops), GFP_KERNEL);
- 	if (!fbops)
- 		goto alloc_fail;
- 
--- 
-2.36.1
-
+(cc Geert)
